@@ -1154,13 +1154,13 @@ temporal_extent_transfn(Period *p, Temporal *temp)
 /**
  * Transition function for temporal extent aggregation for temporal numbers
  */
-TBOX *
-tnumber_extent_transfn(TBOX *box, Temporal *temp)
+TBox *
+tnumber_extent_transfn(TBox *box, Temporal *temp)
 {
   /* Can't do anything with null inputs */
   if (!box && !temp)
     return NULL;
-  TBOX *result = palloc0(sizeof(TBOX));
+  TBox *result = palloc0(sizeof(TBox));
   /* Null box and non-null temporal, return the bbox of the temporal */
   if (! box)
   {
@@ -1170,7 +1170,7 @@ tnumber_extent_transfn(TBOX *box, Temporal *temp)
   /* Non-null box and null temporal, return the box */
   if (! temp)
   {
-    memcpy(result, box, sizeof(TBOX));
+    memcpy(result, box, sizeof(TBox));
     return result;
   }
   /* Both box and temporal are not null */

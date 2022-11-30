@@ -324,8 +324,8 @@ enum MOBDB_WKB_TSUBTYPE
 typedef union bboxunion
 {
   Period    p;      /**< Period */
-  TBOX      b;      /**< Temporal box */
-  STBOX     g;      /**< Spatiotemporal box */
+  TBox      b;      /**< Temporal box */
+  STBox     g;      /**< Spatiotemporal box */
 } bboxunion;
 
 /**

@@ -73,7 +73,7 @@
  * @note This function is used for both GiST and SP-GiST indexes
  */
 bool
-tbox_index_consistent_leaf(const TBOX *key, const TBOX *query,
+tbox_index_consistent_leaf(const TBox *key, const TBox *query,
   StrategyNumber strategy)
 {
   bool retval;
@@ -139,7 +139,7 @@ tbox_index_consistent_leaf(const TBOX *key, const TBOX *query,
  * @param[in] strategy Operator of the operator class being applied
  */
 static bool
-tnumber_gist_consistent(const TBOX *key, const TBOX *query,
+tnumber_gist_consistent(const TBox *key, const TBox *query,
   StrategyNumber strategy)
 {
   bool retval;
@@ -195,7 +195,7 @@ tnumber_gist_consistent(const TBOX *key, const TBOX *query,
  * must not be taken into account by the operators to infinity.
  */
 static bool
-tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBOX *result, Oid typid)
+tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBox *result, Oid typid)
 {
   mobdbType type = oid_type(typid);
   if (tnumber_basetype(type))
@@ -232,10 +232,10 @@ tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBOX *result, Oid typid)
   }
   else if (type == T_TBOX)
   {
-    TBOX *box = PG_GETARG_TBOX_P(1);
+    TBox *box = PG_GETARG_TBOX_P(1);
     if (box == NULL)
       return false;
-    memcpy(result, box, sizeof(TBOX));
+    memcpy(result, box, sizeof(TBox));
   }
   else if (tnumber_type(type))
   {
@@ -260,8 +260,8 @@ Tnumber_gist_consistent(PG_FUNCTION_ARGS)
   StrategyNumber strategy = (StrategyNumber) PG_GETARG_UINT16(2);
   Oid typid = PG_GETARG_OID(3);
   bool *recheck = (bool *) PG_GETARG_POINTER(4), result;
-  const TBOX *key = DatumGetTboxP(entry->key);
-  TBOX query;
+  const TBox *key = DatumGetTboxP(entry->key);
+  TBox query;
 
   /*
    * All tests are lossy since boxes do not distinghish between inclusive
@@ -299,8 +299,8 @@ Tnumber_gist_consistent(PG_FUNCTION_ARGS)
 static void
 tbox_adjust(void *bbox1, void *bbox2)
 {
-  TBOX *box1 = (TBOX *) bbox1;
-  TBOX *box2 = (TBOX *) bbox2;
+  TBox *box1 = (TBox *) bbox1;
+  TBox *box2 = (TBox *) bbox2;
   double xmin = FLOAT8_MIN(DatumGetFloat8(box1->span.lower),
     DatumGetFloat8(box2->span.lower));
   double xmax = FLOAT8_MAX(DatumGetFloat8(box1->span.upper),
@@ -327,7 +327,7 @@ Tbox_gist_union(PG_FUNCTION_ARGS)
 {
   GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
   GISTENTRY *ent = entryvec->vector;
-  TBOX *result = tbox_copy(DatumGetTboxP(ent[0].key));
+  TBox *result = tbox_copy(DatumGetTboxP(ent[0].key));
   for (int i = 1; i < entryvec->n; i++)
     tbox_adjust((void *)result, DatumGetPointer(ent[i].key));
   PG_RETURN_POINTER(result);
@@ -348,7 +348,7 @@ Tnumber_gist_compress(PG_FUNCTION_ARGS)
   if (entry->leafkey)
   {
     GISTENTRY *retval = palloc(sizeof(GISTENTRY));
-    TBOX *box = palloc(sizeof(TBOX));
+    TBox *box = palloc(sizeof(TBox));
     temporal_bbox_slice(entry->key, box);
     gistentryinit(*retval, PointerGetDatum(box), entry->rel, entry->page,
       entry->offset, false);
@@ -369,9 +369,9 @@ Tnumber_gist_compress(PG_FUNCTION_ARGS)
  * @note This function uses NaN-aware comparisons
  */
 static void
-tbox_union_rt(const TBOX *a, const TBOX *b, TBOX *new)
+tbox_union_rt(const TBox *a, const TBox *b, TBox *new)
 {
-  memset(new, 0, sizeof(TBOX));
+  memset(new, 0, sizeof(TBox));
   double xmin = FLOAT8_MIN(DatumGetFloat8(a->span.lower),
     DatumGetFloat8(b->span.lower));
   double xmax = FLOAT8_MAX(DatumGetFloat8(a->span.upper),
@@ -392,7 +392,7 @@ tbox_union_rt(const TBOX *a, const TBOX *b, TBOX *new)
  * The result can be +Infinity, but not NaN.
  */
 static double
-tbox_size(const TBOX *box)
+tbox_size(const TBox *box)
 {
   /*
    * Check for zero-width cases.  Note that we define the size of a zero-
@@ -419,14 +419,14 @@ tbox_size(const TBOX *box)
 
 /**
  * Return the amount by which the union of the two boxes is larger than
- * the original TBOX's area.  The result can be +Infinity, but not NaN.
+ * the original TBox's area.  The result can be +Infinity, but not NaN.
  */
 double
 tbox_penalty(void *bbox1, void *bbox2)
 {
-  const TBOX *original = (TBOX *) bbox1;
-  const TBOX *new = (TBOX *) bbox2;
-  TBOX unionbox;
+  const TBox *original = (TBox *) bbox1;
+  const TBox *new = (TBox *) bbox2;
+  TBox unionbox;
   tbox_union_rt(original, new, &unionbox);
   return tbox_size(&unionbox) - tbox_size(original);
 }
@@ -537,7 +537,7 @@ bbox_gist_consider_split(ConsiderSplitContext *context, int dimNum,
      */
     if (bboxtype == T_TBOX)
     {
-      TBOX *bbox = (TBOX *) &context->boundingBox;
+      TBox *bbox = (TBox *) &context->boundingBox;
       if (dimNum == 0)
         range = DatumGetFloat8(bbox->span.upper) -
           DatumGetFloat8(bbox->span.lower);
@@ -547,7 +547,7 @@ bbox_gist_consider_split(ConsiderSplitContext *context, int dimNum,
     }
     else /* bboxtype == T_STBOX */
     {
-      STBOX *bbox = (STBOX *) &context->boundingBox;
+      STBox *bbox = (STBox *) &context->boundingBox;
       if (dimNum == 0)
         range = bbox->xmax - bbox->xmin;
       else if (dimNum == 1)
@@ -735,7 +735,7 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, mobdbType bboxtype,
   if (bboxtype == T_STBOX)
   {
     box = DatumGetPointer(entryvec->vector[FirstOffsetNumber].key);
-    hasz = MOBDB_FLAGS_GET_Z(((STBOX *) box)->flags);
+    hasz = MOBDB_FLAGS_GET_Z(((STBox *) box)->flags);
   }
 
   /*
@@ -760,41 +760,41 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, mobdbType bboxtype,
         if (dim == 0)
         {
           intervalsLower[i - FirstOffsetNumber].lower =
-            DatumGetFloat8(((TBOX *) box)->span.lower);
+            DatumGetFloat8(((TBox *) box)->span.lower);
           intervalsLower[i - FirstOffsetNumber].upper =
-            DatumGetFloat8(((TBOX *) box)->span.upper);
+            DatumGetFloat8(((TBox *) box)->span.upper);
         }
         else
         {
           intervalsLower[i - FirstOffsetNumber].lower =
-            DatumGetTimestampTz(((TBOX *) box)->period.lower);
+            DatumGetTimestampTz(((TBox *) box)->period.lower);
           intervalsLower[i - FirstOffsetNumber].upper =
-            DatumGetTimestampTz(((TBOX *) box)->period.upper);
+            DatumGetTimestampTz(((TBox *) box)->period.upper);
         }
       }
       else /* bboxtype == T_STBOX */
       {
         if (dim == 0)
         {
-          intervalsLower[i - FirstOffsetNumber].lower = ((STBOX *) box)->xmin;
-          intervalsLower[i - FirstOffsetNumber].upper = ((STBOX *) box)->xmax;
+          intervalsLower[i - FirstOffsetNumber].lower = ((STBox *) box)->xmin;
+          intervalsLower[i - FirstOffsetNumber].upper = ((STBox *) box)->xmax;
         }
         else if (dim == 1)
         {
-          intervalsLower[i - FirstOffsetNumber].lower = ((STBOX *) box)->ymin;
-          intervalsLower[i - FirstOffsetNumber].upper = ((STBOX *) box)->ymax;
+          intervalsLower[i - FirstOffsetNumber].lower = ((STBox *) box)->ymin;
+          intervalsLower[i - FirstOffsetNumber].upper = ((STBox *) box)->ymax;
         }
         else if (dim == 2)
         {
-          intervalsLower[i - FirstOffsetNumber].lower = ((STBOX *) box)->zmin;
-          intervalsLower[i - FirstOffsetNumber].upper = ((STBOX *) box)->zmax;
+          intervalsLower[i - FirstOffsetNumber].lower = ((STBox *) box)->zmin;
+          intervalsLower[i - FirstOffsetNumber].upper = ((STBox *) box)->zmax;
         }
         else
         {
           intervalsLower[i - FirstOffsetNumber].lower =
-            DatumGetTimestampTz(((STBOX *) box)->period.lower);
+            DatumGetTimestampTz(((STBox *) box)->period.lower);
           intervalsLower[i - FirstOffsetNumber].upper =
-            DatumGetTimestampTz(((STBOX *) box)->period.upper);
+            DatumGetTimestampTz(((STBox *) box)->period.upper);
         }
       }
     }
@@ -964,36 +964,36 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, mobdbType bboxtype,
     {
       if (context.dim == 0)
       {
-        lower = DatumGetFloat8(((TBOX *) box)->span.lower);
-        upper = DatumGetFloat8(((TBOX *) box)->span.upper);
+        lower = DatumGetFloat8(((TBox *) box)->span.lower);
+        upper = DatumGetFloat8(((TBox *) box)->span.upper);
       }
       else
       {
-        lower = (double) DatumGetTimestampTz(((TBOX *) box)->period.lower);
-        upper = (double) DatumGetTimestampTz(((TBOX *) box)->period.upper);
+        lower = (double) DatumGetTimestampTz(((TBox *) box)->period.lower);
+        upper = (double) DatumGetTimestampTz(((TBox *) box)->period.upper);
       }
     }
     else /* bboxtype == T_STBOX */
     {
       if (context.dim == 0)
       {
-        lower = ((STBOX *) box)->xmin;
-        upper = ((STBOX *) box)->xmax;
+        lower = ((STBox *) box)->xmin;
+        upper = ((STBox *) box)->xmax;
       }
       else if (context.dim == 1)
       {
-        lower = ((STBOX *) box)->ymin;
-        upper = ((STBOX *) box)->ymax;
+        lower = ((STBox *) box)->ymin;
+        upper = ((STBox *) box)->ymax;
       }
       else if (context.dim == 2 && hasz)
       {
-        lower = ((STBOX *) box)->zmin;
-        upper = ((STBOX *) box)->zmax;
+        lower = ((STBox *) box)->zmin;
+        upper = ((STBox *) box)->zmax;
       }
       else
       {
-        lower = (double) DatumGetTimestampTz(((TBOX *) box)->period.lower);
-        upper = (double) DatumGetTimestampTz(((TBOX *) box)->period.upper);
+        lower = (double) DatumGetTimestampTz(((TBox *) box)->period.lower);
+        upper = (double) DatumGetTimestampTz(((TBox *) box)->period.upper);
       }
     }
 
@@ -1108,8 +1108,8 @@ PG_FUNCTION_INFO_V1(Tbox_gist_same);
 PGDLLEXPORT Datum
 Tbox_gist_same(PG_FUNCTION_ARGS)
 {
-  TBOX *b1 = PG_GETARG_TBOX_P(0);
-  TBOX *b2 = PG_GETARG_TBOX_P(1);
+  TBox *b1 = PG_GETARG_TBOX_P(0);
+  TBox *b2 = PG_GETARG_TBOX_P(1);
   bool *result = (bool *) PG_GETARG_POINTER(2);
   if (b1 && b2)
     *result = FLOAT8_EQ(DatumGetFloat8(b1->span.lower),
@@ -1139,8 +1139,8 @@ Tbox_gist_distance(PG_FUNCTION_ARGS)
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
   Oid typid = PG_GETARG_OID(3);
   bool *recheck = (bool *) PG_GETARG_POINTER(4);
-  TBOX *key = (TBOX *) DatumGetPointer(entry->key);
-  TBOX query;
+  TBox *key = (TBox *) DatumGetPointer(entry->key);
+  TBox query;
   double distance;
 
   /* The index is lossy for leaf levels */

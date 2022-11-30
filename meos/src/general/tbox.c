@@ -46,7 +46,7 @@
 #include "general/temporal_util.h"
 #include "general/tnumber_mathfuncs.h"
 
-/** Buffer size for input and output of TBOX values */
+/** Buffer size for input and output of TBox values */
 #define MAXTBOXLEN    128
 
 /*****************************************************************************
@@ -57,7 +57,7 @@
  * Ensure that a temporal box has X values
  */
 void
-ensure_has_X_tbox(const TBOX *box)
+ensure_has_X_tbox(const TBox *box)
 {
   if (! MOBDB_FLAGS_GET_X(box->flags))
     elog(ERROR, "The box must have value dimension");
@@ -67,7 +67,7 @@ ensure_has_X_tbox(const TBOX *box)
  * Ensure that a temporal box has T values
  */
 void
-ensure_has_T_tbox(const TBOX *box)
+ensure_has_T_tbox(const TBox *box)
 {
   if (! MOBDB_FLAGS_GET_T(box->flags))
     elog(ERROR, "The box must have time dimension");
@@ -77,7 +77,7 @@ ensure_has_T_tbox(const TBOX *box)
  * Ensure that a temporal boxes have the same dimensionality
  */
 void
-ensure_same_dimensionality_tbox(const TBOX *box1, const TBOX *box2)
+ensure_same_dimensionality_tbox(const TBox *box1, const TBox *box2)
 {
   if (MOBDB_FLAGS_GET_X(box1->flags) != MOBDB_FLAGS_GET_X(box2->flags) ||
     MOBDB_FLAGS_GET_T(box1->flags) != MOBDB_FLAGS_GET_T(box2->flags))
@@ -92,7 +92,7 @@ ensure_same_dimensionality_tbox(const TBOX *box1, const TBOX *box2)
  * @ingroup libmeos_box_in_out
  * @brief Return a temporal box from its Well-Known Text (WKT) representation.
  */
-TBOX *
+TBox *
 tbox_in(const char *str)
 {
   return tbox_parse(&str);
@@ -103,7 +103,7 @@ tbox_in(const char *str)
  * @brief Return the Well-Known Text (WKT) representation of a temporal box.
  */
 char *
-tbox_out(const TBOX *box, int maxdd)
+tbox_out(const TBox *box, int maxdd)
 {
   static size_t size = MAXTBOXLEN + 1;
   char *result = palloc(size);
@@ -142,11 +142,11 @@ tbox_out(const TBOX *box, int maxdd)
  * @brief Construct a temporal box from the arguments.
  * @sqlfunc tbox()
  */
-TBOX *
+TBox *
 tbox_make(const Period *p, const Span *s)
 {
   /* Note: zero-fill is done in function tbox_set */
-  TBOX *result = palloc(sizeof(TBOX));
+  TBox *result = palloc(sizeof(TBox));
   tbox_set(p, s, result);
   return result;
 }
@@ -158,12 +158,12 @@ tbox_make(const Period *p, const Span *s)
  * allocation
  */
 void
-tbox_set(const Period *p, const Span *s, TBOX *box)
+tbox_set(const Period *p, const Span *s, TBox *box)
 {
   /* At least on of the X or T dimensions should be given */
   assert(p || s);
   /* Note: zero-fill is required here, just as in heap tuples */
-  memset(box, 0, sizeof(TBOX));
+  memset(box, 0, sizeof(TBox));
   if (p)
   {
     memcpy(&box->period, p, sizeof(Span));
@@ -181,11 +181,11 @@ tbox_set(const Period *p, const Span *s, TBOX *box)
  * @ingroup libmeos_box_constructor
  * @brief Return a copy of a temporal box.
  */
-TBOX *
-tbox_copy(const TBOX *box)
+TBox *
+tbox_copy(const TBox *box)
 {
-  TBOX *result = palloc(sizeof(TBOX));
-  memcpy(result, box, sizeof(TBOX));
+  TBox *result = palloc(sizeof(TBox));
+  memcpy(result, box, sizeof(TBox));
   return result;
 }
 
@@ -199,10 +199,10 @@ tbox_copy(const TBOX *box)
  * @brief Set a temporal box from a number.
  */
 void
-number_set_tbox(Datum value, mobdbType basetype, TBOX *box)
+number_set_tbox(Datum value, mobdbType basetype, TBox *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
-  memset(box, 0, sizeof(TBOX));
+  memset(box, 0, sizeof(TBox));
   ensure_tnumber_basetype(basetype);
   Datum dvalue;
   if (basetype == T_INT4)
@@ -220,10 +220,10 @@ number_set_tbox(Datum value, mobdbType basetype, TBOX *box)
  * @brief Set a temporal box from an integer.
  */
 void
-int_set_tbox(int i, TBOX *box)
+int_set_tbox(int i, TBox *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
-  memset(box, 0, sizeof(TBOX));
+  memset(box, 0, sizeof(TBox));
   Datum d = Float8GetDatum((double) i);
   span_set(d, d, true, true, T_FLOAT8, &box->span);
   MOBDB_FLAGS_SET_X(box->flags, true);
@@ -238,10 +238,10 @@ int_set_tbox(int i, TBOX *box)
  * @sqlfunc tbox()
  * @sqlop @p ::
  */
-TBOX *
+TBox *
 int_to_tbox(int i)
 {
-  TBOX *result = palloc(sizeof(TBOX));
+  TBox *result = palloc(sizeof(TBox));
   int_set_tbox(i, result);
   return result;
 }
@@ -252,10 +252,10 @@ int_to_tbox(int i)
  * @brief Set a temporal box from a float.
  */
 void
-float_set_tbox(double d, TBOX *box)
+float_set_tbox(double d, TBox *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
-  memset(box, 0, sizeof(TBOX));
+  memset(box, 0, sizeof(TBox));
   Datum dd = Float8GetDatum(d);
   span_set(dd, dd, true, true, T_FLOAT8, &box->span);
   MOBDB_FLAGS_SET_X(box->flags, true);
@@ -270,10 +270,10 @@ float_set_tbox(double d, TBOX *box)
  * @sqlfunc tbox()
  * @sqlop @p ::
  */
-TBOX *
+TBox *
 float_to_tbox(double d)
 {
-  TBOX *result = palloc(sizeof(TBOX));
+  TBox *result = palloc(sizeof(TBox));
   float_set_tbox(d, result);
   return result;
 }
@@ -284,11 +284,11 @@ float_to_tbox(double d)
  * @brief Set a temporal box from a span.
  */
 void
-span_set_tbox(const Span *span, TBOX *box)
+span_set_tbox(const Span *span, TBox *box)
 {
   ensure_tnumber_spantype(span->spantype);
   /* Note: zero-fill is required here, just as in heap tuples */
-  memset(box, 0, sizeof(TBOX));
+  memset(box, 0, sizeof(TBox));
   if (span->basetype == T_INT4)
     intspan_set_floatspan(span, &box->span);
   else
@@ -303,11 +303,11 @@ span_set_tbox(const Span *span, TBOX *box)
  * @brief Set a temporal box from a span set.
  */
 void
-spanset_set_tbox(const SpanSet *ss, TBOX *box)
+spanset_set_tbox(const SpanSet *ss, TBox *box)
 {
   ensure_tnumber_spansettype(ss->spantype);
   /* Note: zero-fill is required here, just as in heap tuples */
-  memset(box, 0, sizeof(TBOX));
+  memset(box, 0, sizeof(TBox));
   if (ss->basetype == T_INT4)
     intspan_set_floatspan(&ss->span, &box->span);
   else
@@ -324,10 +324,10 @@ spanset_set_tbox(const SpanSet *ss, TBOX *box)
  * @sqlfunc tbox()
  * @sqlop @p ::
  */
-TBOX *
+TBox *
 span_to_tbox(const Span *span)
 {
-  TBOX *result = palloc(sizeof(TBOX));
+  TBox *result = palloc(sizeof(TBox));
   span_set_tbox(span, result);
   return result;
 }
@@ -338,10 +338,10 @@ span_to_tbox(const Span *span)
  * @brief Set a temporal box from a timestamp.
  */
 void
-timestamp_set_tbox(TimestampTz t, TBOX *box)
+timestamp_set_tbox(TimestampTz t, TBox *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
-  memset(box, 0, sizeof(TBOX));
+  memset(box, 0, sizeof(TBox));
   span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
     T_TIMESTAMPTZ, &box->period);
   MOBDB_FLAGS_SET_X(box->flags, false);
@@ -356,10 +356,10 @@ timestamp_set_tbox(TimestampTz t, TBOX *box)
  * @sqlfunc tbox()
  * @sqlop @p ::
  */
-TBOX *
+TBox *
 timestamp_to_tbox(TimestampTz t)
 {
-  TBOX *result = palloc(sizeof(TBOX));
+  TBox *result = palloc(sizeof(TBox));
   timestamp_set_tbox(t, result);
   return result;
 }
@@ -370,10 +370,10 @@ timestamp_to_tbox(TimestampTz t)
  * @brief Set a temporal box from a period set.
  */
 void
-timestampset_set_tbox(const TimestampSet *ts, TBOX *box)
+timestampset_set_tbox(const TimestampSet *ts, TBox *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
-  memset(box, 0, sizeof(TBOX));
+  memset(box, 0, sizeof(TBox));
   memcpy(&box->period, &ts->period, sizeof(Span));
   MOBDB_FLAGS_SET_X(box->flags, false);
   MOBDB_FLAGS_SET_T(box->flags, true);
@@ -387,10 +387,10 @@ timestampset_set_tbox(const TimestampSet *ts, TBOX *box)
  * @sqlfunc tbox()
  * @sqlop @p ::
  */
-TBOX *
+TBox *
 timestampset_to_tbox(const TimestampSet *ts)
 {
-  TBOX *result = palloc(sizeof(TBOX));
+  TBox *result = palloc(sizeof(TBox));
   timestampset_set_tbox(ts, result);
   return result;
 }
@@ -401,10 +401,10 @@ timestampset_to_tbox(const TimestampSet *ts)
  * @brief Set a temporal box from a period.
  */
 void
-period_set_tbox(const Period *p, TBOX *box)
+period_set_tbox(const Period *p, TBox *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
-  memset(box, 0, sizeof(TBOX));
+  memset(box, 0, sizeof(TBox));
   memcpy(&box->period, p, sizeof(Span));
   MOBDB_FLAGS_SET_X(box->flags, false);
   MOBDB_FLAGS_SET_T(box->flags, true);
@@ -418,10 +418,10 @@ period_set_tbox(const Period *p, TBOX *box)
  * @sqlfunc tbox()
  * @sqlop @p ::
  */
-TBOX *
+TBox *
 period_to_tbox(const Period *p)
 {
-  TBOX *result = palloc(sizeof(TBOX));
+  TBox *result = palloc(sizeof(TBox));
   period_set_tbox(p, result);
   return result;
 }
@@ -432,10 +432,10 @@ period_to_tbox(const Period *p)
  * @brief Set a temporal box from a period set.
  */
 void
-periodset_set_tbox(const PeriodSet *ps, TBOX *box)
+periodset_set_tbox(const PeriodSet *ps, TBox *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
-  memset(box, 0, sizeof(TBOX));
+  memset(box, 0, sizeof(TBox));
   memcpy(&box->period, &ps->span, sizeof(Span));
   MOBDB_FLAGS_SET_X(box->flags, false);
   MOBDB_FLAGS_SET_T(box->flags, true);
@@ -449,10 +449,10 @@ periodset_set_tbox(const PeriodSet *ps, TBOX *box)
  * @sqlfunc tbox()
  * @sqlop @p ::
  */
-TBOX *
+TBox *
 periodset_to_tbox(const PeriodSet *ps)
 {
-  TBOX *result = palloc(sizeof(TBOX));
+  TBox *result = palloc(sizeof(TBox));
   periodset_set_tbox(ps, result);
   return result;
 }
@@ -463,10 +463,10 @@ periodset_to_tbox(const PeriodSet *ps)
  * @brief Return a temporal box from an integer and a timestamp
  * @sqlfunc tbox()
  */
-TBOX *
+TBox *
 int_timestamp_to_tbox(int i, TimestampTz t)
 {
-  TBOX *result = palloc(sizeof(TBOX));
+  TBox *result = palloc(sizeof(TBox));
   int_set_tbox(i, result);
   Datum dt = TimestampTzGetDatum(t);
   span_set(dt, dt, true, true, T_TIMESTAMPTZ, &result->period);
@@ -479,10 +479,10 @@ int_timestamp_to_tbox(int i, TimestampTz t)
  * @brief Return a temporal box from a float and a timestamp
  * @sqlfunc tbox()
  */
-TBOX *
+TBox *
 float_timestamp_to_tbox(double d, TimestampTz t)
 {
-  TBOX *result = palloc(sizeof(TBOX));
+  TBox *result = palloc(sizeof(TBox));
   float_set_tbox(d, result);
   Datum dt = TimestampTzGetDatum(t);
   span_set(dt, dt, true, true, T_TIMESTAMPTZ, &result->period);
@@ -495,10 +495,10 @@ float_timestamp_to_tbox(double d, TimestampTz t)
  * @brief Return a temporal box from an integer and a period
  * @sqlfunc tbox()
  */
-TBOX *
+TBox *
 int_period_to_tbox(int i, const Period *p)
 {
-  TBOX *result = palloc(sizeof(TBOX));
+  TBox *result = palloc(sizeof(TBox));
   int_set_tbox(i, result);
   memcpy(&result->period, p, sizeof(Span));
   MOBDB_FLAGS_SET_T(result->flags, true);
@@ -510,10 +510,10 @@ int_period_to_tbox(int i, const Period *p)
  * @brief Return a temporal box from a float and a period
  * @sqlfunc tbox()
  */
-TBOX *
+TBox *
 float_period_to_tbox(double d, const Period *p)
 {
-  TBOX *result = palloc(sizeof(TBOX));
+  TBox *result = palloc(sizeof(TBox));
   float_set_tbox(d, result);
   memcpy(&result->period, p, sizeof(Span));
   MOBDB_FLAGS_SET_T(result->flags, true);
@@ -525,11 +525,11 @@ float_period_to_tbox(double d, const Period *p)
  * @brief Return a temporal box from a span and a timestamp
  * @sqlfunc tbox()
  */
-TBOX *
+TBox *
 span_timestamp_to_tbox(const Span *span, TimestampTz t)
 {
   ensure_tnumber_spantype(span->spantype);
-  TBOX *result = palloc(sizeof(TBOX));
+  TBox *result = palloc(sizeof(TBox));
   if (span->basetype == T_INT4)
     intspan_set_floatspan(span, &result->span);
   else
@@ -546,12 +546,12 @@ span_timestamp_to_tbox(const Span *span, TimestampTz t)
  * @brief Return a temporal box from a span and a period
  * @sqlfunc tbox()
  */
-TBOX *
+TBox *
 span_period_to_tbox(const Span *span, const Period *p)
 {
   ensure_tnumber_spantype(span->spantype);
   assert(p->basetype == T_TIMESTAMPTZ);
-  TBOX *result = palloc(sizeof(TBOX));
+  TBox *result = palloc(sizeof(TBox));
   if (span->basetype == T_INT4)
     intspan_set_floatspan(span, &result->span);
   else
@@ -570,7 +570,7 @@ span_period_to_tbox(const Span *span, const Period *p)
  * @sqlop @p ::
  */
 Span *
-tbox_to_floatspan(const TBOX *box)
+tbox_to_floatspan(const TBox *box)
 {
   if (! MOBDB_FLAGS_GET_X(box->flags))
     return NULL;
@@ -583,7 +583,7 @@ tbox_to_floatspan(const TBOX *box)
  * @sqlop @p ::
  */
 Period *
-tbox_to_period(const TBOX *box)
+tbox_to_period(const TBox *box)
 {
   if (! MOBDB_FLAGS_GET_T(box->flags))
     return NULL;
@@ -600,7 +600,7 @@ tbox_to_period(const TBOX *box)
  * @sqlfunc hasX()
  */
 bool
-tbox_hasx(const TBOX *box)
+tbox_hasx(const TBox *box)
 {
   bool result = MOBDB_FLAGS_GET_X(box->flags);
   return result;
@@ -612,7 +612,7 @@ tbox_hasx(const TBOX *box)
  * @sqlfunc hasT()
  */
 bool
-tbox_hast(const TBOX *box)
+tbox_hast(const TBox *box)
 {
   bool result = MOBDB_FLAGS_GET_T(box->flags);
   return result;
@@ -629,7 +629,7 @@ tbox_hast(const TBOX *box)
  * @pymeosfunc xmin()
  */
 bool
-tbox_xmin(const TBOX *box, double *result)
+tbox_xmin(const TBox *box, double *result)
 {
   if (! MOBDB_FLAGS_GET_X(box->flags))
     return false;
@@ -648,7 +648,7 @@ tbox_xmin(const TBOX *box, double *result)
  * @pymeosfunc xmax()
  */
 bool
-tbox_xmax(const TBOX *box, double *result)
+tbox_xmax(const TBox *box, double *result)
 {
   if (! MOBDB_FLAGS_GET_X(box->flags))
     return false;
@@ -667,7 +667,7 @@ tbox_xmax(const TBOX *box, double *result)
  * @pymeosfunc tmin()
  */
 bool
-tbox_tmin(const TBOX *box, TimestampTz *result)
+tbox_tmin(const TBox *box, TimestampTz *result)
 {
   if (! MOBDB_FLAGS_GET_T(box->flags))
     return false;
@@ -686,7 +686,7 @@ tbox_tmin(const TBOX *box, TimestampTz *result)
  * @pymeosfunc tmax()
  */
 bool
-tbox_tmax(const TBOX *box, TimestampTz *result)
+tbox_tmax(const TBox *box, TimestampTz *result)
 {
   if (! MOBDB_FLAGS_GET_T(box->flags))
     return false;
@@ -703,7 +703,7 @@ tbox_tmax(const TBOX *box, TimestampTz *result)
  * @brief Expand the second temporal box with the first one
  */
 void
-tbox_expand(const TBOX *box1, TBOX *box2)
+tbox_expand(const TBox *box1, TBox *box2)
 {
   if (MOBDB_FLAGS_GET_X(box2->flags))
     span_expand(&box1->span, &box2->span);
@@ -719,7 +719,7 @@ tbox_expand(const TBOX *box1, TBOX *box2)
  * @sqlfunc shift(), tscale(), shiftTscale()
  */
 void
-tbox_shift_tscale(const Interval *shift, const Interval *duration, TBOX *box)
+tbox_shift_tscale(const Interval *shift, const Interval *duration, TBox *box)
 {
   period_shift_tscale(shift, duration, &box->period);
   return;
@@ -730,11 +730,11 @@ tbox_shift_tscale(const Interval *shift, const Interval *duration, TBOX *box)
  * @brief Return a temporal box expanded in the value dimension by a double.
  * @sqlfunc @p expandValue()
  */
-TBOX *
-tbox_expand_value(const TBOX *box, const double d)
+TBox *
+tbox_expand_value(const TBox *box, const double d)
 {
   ensure_has_X_tbox(box);
-  TBOX *result = tbox_copy(box);
+  TBox *result = tbox_copy(box);
   result->span.lower = Float8GetDatum(DatumGetFloat8(result->span.lower) - d);
   result->span.upper = Float8GetDatum(DatumGetFloat8(result->span.upper) + d);
   return result;
@@ -745,11 +745,11 @@ tbox_expand_value(const TBOX *box, const double d)
  * @brief Return a temporal box expanded in the time dimension by an interval.
  * @sqlfunc expandTemporal()
  */
-TBOX *
-tbox_expand_temporal(const TBOX *box, const Interval *interval)
+TBox *
+tbox_expand_temporal(const TBox *box, const Interval *interval)
 {
   ensure_has_T_tbox(box);
-  TBOX *result = tbox_copy(box);
+  TBox *result = tbox_copy(box);
   TimestampTz tmin = pg_timestamp_mi_interval(DatumGetTimestampTz(
     box->period.lower), interval);
   TimestampTz tmax = pg_timestamp_pl_interval(DatumGetTimestampTz(
@@ -770,7 +770,7 @@ tbox_expand_temporal(const TBOX *box, const Interval *interval)
  * @param[out] hasx,hast Boolean variables
  */
 static void
-tbox_tbox_flags(const TBOX *box1, const TBOX *box2, bool *hasx, bool *hast)
+tbox_tbox_flags(const TBox *box1, const TBox *box2, bool *hasx, bool *hast)
 {
   *hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
   *hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
@@ -784,7 +784,7 @@ tbox_tbox_flags(const TBOX *box1, const TBOX *box2, bool *hasx, bool *hast)
  * @param[out] hasx,hast Boolean variables
  */
 static void
-topo_tbox_tbox_init(const TBOX *box1, const TBOX *box2, bool *hasx, bool *hast)
+topo_tbox_tbox_init(const TBox *box1, const TBox *box2, bool *hasx, bool *hast)
 {
   ensure_common_dimension(box1->flags, box2->flags);
   *hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
@@ -798,7 +798,7 @@ topo_tbox_tbox_init(const TBOX *box1, const TBOX *box2, bool *hasx, bool *hast)
  * @sqlop @p \@>
  */
 bool
-contains_tbox_tbox(const TBOX *box1, const TBOX *box2)
+contains_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   bool hasx, hast;
   topo_tbox_tbox_init(box1, box2, &hasx, &hast);
@@ -815,7 +815,7 @@ contains_tbox_tbox(const TBOX *box1, const TBOX *box2)
  * @sqlop @p @<
  */
 bool
-contained_tbox_tbox(const TBOX *box1, const TBOX *box2)
+contained_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   return contains_tbox_tbox(box2, box1);
 }
@@ -826,7 +826,7 @@ contained_tbox_tbox(const TBOX *box1, const TBOX *box2)
  * @sqlop @p &&
  */
 bool
-overlaps_tbox_tbox(const TBOX *box1, const TBOX *box2)
+overlaps_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   bool hasx, hast;
   topo_tbox_tbox_init(box1, box2, &hasx, &hast);
@@ -843,7 +843,7 @@ overlaps_tbox_tbox(const TBOX *box1, const TBOX *box2)
  * @sqlop @p ~=
  */
 bool
-same_tbox_tbox(const TBOX *box1, const TBOX *box2)
+same_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   bool hasx, hast;
   topo_tbox_tbox_init(box1, box2, &hasx, &hast);
@@ -860,11 +860,11 @@ same_tbox_tbox(const TBOX *box1, const TBOX *box2)
  * @sqlop @p -|-
  */
 bool
-adjacent_tbox_tbox(const TBOX *box1, const TBOX *box2)
+adjacent_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   bool hasx, hast;
   topo_tbox_tbox_init(box1, box2, &hasx, &hast);
-  TBOX inter;
+  TBox inter;
   if (! inter_tbox_tbox(box1, box2, &inter))
     return false;
   /* Boxes are adjacent if they share n dimensions and their intersection is
@@ -889,7 +889,7 @@ adjacent_tbox_tbox(const TBOX *box1, const TBOX *box2)
  * @sqlop @p <<
  */
 bool
-left_tbox_tbox(const TBOX *box1, const TBOX *box2)
+left_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   ensure_has_X_tbox(box1);
   ensure_has_X_tbox(box2);
@@ -903,7 +903,7 @@ left_tbox_tbox(const TBOX *box1, const TBOX *box2)
  * @sqlop @p &<
  */
 bool
-overleft_tbox_tbox(const TBOX *box1, const TBOX *box2)
+overleft_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   ensure_has_X_tbox(box1);
   ensure_has_X_tbox(box2);
@@ -917,7 +917,7 @@ overleft_tbox_tbox(const TBOX *box1, const TBOX *box2)
  * @sqlop @p >>
  */
 bool
-right_tbox_tbox(const TBOX *box1, const TBOX *box2)
+right_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   ensure_has_X_tbox(box1);
   ensure_has_X_tbox(box2);
@@ -931,7 +931,7 @@ right_tbox_tbox(const TBOX *box1, const TBOX *box2)
  * @sqlop @p &>
  */
 bool
-overright_tbox_tbox(const TBOX *box1, const TBOX *box2)
+overright_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   ensure_has_X_tbox(box1);
   ensure_has_X_tbox(box2);
@@ -945,7 +945,7 @@ overright_tbox_tbox(const TBOX *box1, const TBOX *box2)
  * @sqlop @p <<#
  */
 bool
-before_tbox_tbox(const TBOX *box1, const TBOX *box2)
+before_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   ensure_has_T_tbox(box1);
   ensure_has_T_tbox(box2);
@@ -959,7 +959,7 @@ before_tbox_tbox(const TBOX *box1, const TBOX *box2)
  * @sqlop @p &<#
  */
 bool
-overbefore_tbox_tbox(const TBOX *box1, const TBOX *box2)
+overbefore_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   ensure_has_T_tbox(box1);
   ensure_has_T_tbox(box2);
@@ -973,7 +973,7 @@ overbefore_tbox_tbox(const TBOX *box1, const TBOX *box2)
  * @sqlop @p #>>
  */
 bool
-after_tbox_tbox(const TBOX *box1, const TBOX *box2)
+after_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   ensure_has_T_tbox(box1);
   ensure_has_T_tbox(box2);
@@ -987,7 +987,7 @@ after_tbox_tbox(const TBOX *box1, const TBOX *box2)
  * @sqlop @p #&>
  */
 bool
-overafter_tbox_tbox(const TBOX *box1, const TBOX *box2)
+overafter_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   ensure_has_T_tbox(box1);
   ensure_has_T_tbox(box2);
@@ -1003,8 +1003,8 @@ overafter_tbox_tbox(const TBOX *box1, const TBOX *box2)
  * @brief Return the union of the temporal boxes.
  * @sqlop @p +
  */
-TBOX *
-union_tbox_tbox(const TBOX *box1, const TBOX *box2)
+TBox *
+union_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   ensure_same_dimensionality_tbox(box1, box2);
   /* The union of boxes that do not intersect cannot be represented by a box */
@@ -1018,7 +1018,7 @@ union_tbox_tbox(const TBOX *box1, const TBOX *box2)
     period = bbox_union_span_span(&box1->period, &box2->period, true);
   if (hasx)
     span = bbox_union_span_span(&box1->span, &box2->span, true);
-  TBOX *result = tbox_make(period, span);
+  TBox *result = tbox_make(period, span);
   return result;
 }
 
@@ -1030,7 +1030,7 @@ union_tbox_tbox(const TBOX *box1, const TBOX *box2)
  * memory allocation
  */
 bool
-inter_tbox_tbox(const TBOX *box1, const TBOX *box2, TBOX *result)
+inter_tbox_tbox(const TBox *box1, const TBox *box2, TBox *result)
 {
   bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
   bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
@@ -1055,10 +1055,10 @@ inter_tbox_tbox(const TBOX *box1, const TBOX *box2, TBOX *result)
  * @brief Return the intersection of the spatiotemporal boxes.
  * @sqlop @p *
  */
-TBOX *
-intersection_tbox_tbox(const TBOX *box1, const TBOX *box2)
+TBox *
+intersection_tbox_tbox(const TBox *box1, const TBox *box2)
 {
-  TBOX *result = palloc(sizeof(TBOX));
+  TBox *result = palloc(sizeof(TBox));
   if (! inter_tbox_tbox(box1, box2, result))
   {
     pfree(result);
@@ -1079,7 +1079,7 @@ intersection_tbox_tbox(const TBOX *box1, const TBOX *box2)
  * @pymeosfunc __eq__()
  */
 bool
-tbox_eq(const TBOX *box1, const TBOX *box2)
+tbox_eq(const TBox *box1, const TBox *box2)
 {
   if (MOBDB_FLAGS_GET_X(box1->flags) != MOBDB_FLAGS_GET_X(box2->flags) ||
     MOBDB_FLAGS_GET_T(box1->flags) != MOBDB_FLAGS_GET_T(box2->flags))
@@ -1097,7 +1097,7 @@ tbox_eq(const TBOX *box1, const TBOX *box2)
  * @sqlop @p <>
  */
 bool
-tbox_ne(const TBOX *box1, const TBOX *box2)
+tbox_ne(const TBox *box1, const TBox *box2)
 {
   return ! tbox_eq(box1, box2);
 }
@@ -1112,7 +1112,7 @@ tbox_ne(const TBOX *box1, const TBOX *box2)
  * @sqlfunc tbox_cmp()
  */
 int
-tbox_cmp(const TBOX *box1, const TBOX *box2)
+tbox_cmp(const TBox *box1, const TBox *box2)
 {
   bool hasx, hast;
   tbox_tbox_flags(box1, box2, &hasx, &hast);
@@ -1146,7 +1146,7 @@ tbox_cmp(const TBOX *box1, const TBOX *box2)
  * @sqlop @p <
  */
 bool
-tbox_lt(const TBOX *box1, const TBOX *box2)
+tbox_lt(const TBox *box1, const TBox *box2)
 {
   int cmp = tbox_cmp(box1, box2);
   return cmp < 0;
@@ -1159,7 +1159,7 @@ tbox_lt(const TBOX *box1, const TBOX *box2)
  * @sqlop @p <=
  */
 bool
-tbox_le(const TBOX *box1, const TBOX *box2)
+tbox_le(const TBox *box1, const TBox *box2)
 {
   int cmp = tbox_cmp(box1, box2);
   return cmp <= 0;
@@ -1172,7 +1172,7 @@ tbox_le(const TBOX *box1, const TBOX *box2)
  * @sqlop @p >=
  */
 bool
-tbox_ge(const TBOX *box1, const TBOX *box2)
+tbox_ge(const TBox *box1, const TBox *box2)
 {
   int cmp = tbox_cmp(box1, box2);
   return cmp >= 0;
@@ -1184,7 +1184,7 @@ tbox_ge(const TBOX *box1, const TBOX *box2)
  * @sqlop @p >
  */
 bool
-tbox_gt(const TBOX *box1, const TBOX *box2)
+tbox_gt(const TBox *box1, const TBox *box2)
 {
   int cmp = tbox_cmp(box1, box2);
   return cmp > 0;

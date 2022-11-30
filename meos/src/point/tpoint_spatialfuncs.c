@@ -383,7 +383,7 @@ ensure_same_srid(int32_t srid1, int32_t srid2)
  * Ensure that the spatiotemporal boxes have the same SRID
  */
 void
-ensure_same_srid_stbox(const STBOX *box1, const STBOX *box2)
+ensure_same_srid_stbox(const STBox *box1, const STBox *box2)
 {
   if (MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags) &&
     box1->srid != box2->srid)
@@ -395,7 +395,7 @@ ensure_same_srid_stbox(const STBOX *box1, const STBOX *box2)
  * Ensure that a temporal point and a spatiotemporal boxes have the same SRID
  */
 void
-ensure_same_srid_tpoint_stbox(const Temporal *temp, const STBOX *box)
+ensure_same_srid_tpoint_stbox(const Temporal *temp, const STBox *box)
 {
   if (MOBDB_FLAGS_GET_X(box->flags) &&
     tpoint_srid(temp) != box->srid)
@@ -407,7 +407,7 @@ ensure_same_srid_tpoint_stbox(const Temporal *temp, const STBOX *box)
  * Ensure that a temporal point and a geometry/geography have the same SRID
  */
 void
-ensure_same_srid_stbox_gs(const STBOX *box, const GSERIALIZED *gs)
+ensure_same_srid_stbox_gs(const STBox *box, const GSERIALIZED *gs)
 {
   if (box->srid != gserialized_get_srid(gs))
     elog(ERROR, "Operation on mixed SRID");
@@ -482,7 +482,7 @@ ensure_same_dimensionality_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs
  * Ensure that the spatiotemporal boxes have the same spatial dimensionality
  */
 void
-ensure_same_spatial_dimensionality_stbox_gs(const STBOX *box, const GSERIALIZED *gs)
+ensure_same_spatial_dimensionality_stbox_gs(const STBox *box, const GSERIALIZED *gs)
 {
   if (! MOBDB_FLAGS_GET_X(box->flags) ||
       /* Geodetic boxes are always in 3D */
@@ -1822,7 +1822,7 @@ tpointinst_srid(const TInstant *inst)
 int
 tpointseq_srid(const TSequence *seq)
 {
-  STBOX *box = TSEQUENCE_BBOX_PTR(seq);
+  STBox *box = TSEQUENCE_BBOX_PTR(seq);
   return box->srid;
 }
 
@@ -1834,7 +1834,7 @@ tpointseq_srid(const TSequence *seq)
 int
 tpointseqset_srid(const TSequenceSet *ss)
 {
-  STBOX *box = TSEQUENCESET_BBOX_PTR(ss);
+  STBox *box = TSEQUENCESET_BBOX_PTR(ss);
   return box->srid;
 }
 
@@ -1890,7 +1890,7 @@ tpointseq_set_srid(const TSequence *seq, int32 srid)
     gserialized_set_srid(gs, srid);
   }
   /* Set the SRID of the bounding box */
-  STBOX *box = TSEQUENCE_BBOX_PTR(result);
+  STBox *box = TSEQUENCE_BBOX_PTR(result);
   box->srid = srid;
   return result;
 }
@@ -1903,7 +1903,7 @@ tpointseq_set_srid(const TSequence *seq, int32 srid)
 TSequenceSet *
 tpointseqset_set_srid(const TSequenceSet *ss, int32 srid)
 {
-  STBOX *box;
+  STBox *box;
   TSequenceSet *result = tsequenceset_copy(ss);
   /* Loop for every composing sequence */
   for (int i = 0; i < ss->count; i++)
@@ -4152,7 +4152,7 @@ tpointseq_restrict_geometry(const TSequence *seq, const GSERIALIZED *gs,
  */
 TSequenceSet *
 tpointseqset_restrict_geometry(const TSequenceSet *ss, const GSERIALIZED *gs,
-  const STBOX *box, bool atfunc)
+  const STBox *box, bool atfunc)
 {
   /* Singleton sequence set */
   if (ss->count == 1)
@@ -4166,7 +4166,7 @@ tpointseqset_restrict_geometry(const TSequenceSet *ss, const GSERIALIZED *gs,
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
     /* Bounding box test */
-    STBOX *box1 = TSEQUENCE_BBOX_PTR(seq);
+    STBox *box1 = TSEQUENCE_BBOX_PTR(seq);
     bool overlaps = overlaps_stbox_stbox(box1, box);
     if (atfunc)
     {
@@ -4226,7 +4226,7 @@ tpoint_restrict_geometry(const Temporal *temp, const GSERIALIZED *gs,
   ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
 
   /* Bounding box test */
-  STBOX box1, box2;
+  STBox box1, box2;
   temporal_set_bbox(temp, &box1);
   /* Non-empty geometries have a bounding box */
   geo_set_stbox(gs, &box2);
@@ -4361,7 +4361,7 @@ tpoint_add_z(Temporal *temp, Temporal *temp_z, int srid)
  * @pre The arguments are of the same dimensionality and have the same SRID
  */
 Temporal *
-tpoint_at_stbox1(const Temporal *temp, const STBOX *box, bool upper_inc)
+tpoint_at_stbox1(const Temporal *temp, const STBox *box, bool upper_inc)
 {
   /* At least one of MOBDB_FLAGS_GET_X and MOBDB_FLAGS_GET_T is true */
   bool hasx = MOBDB_FLAGS_GET_X(box->flags);
@@ -4370,7 +4370,7 @@ tpoint_at_stbox1(const Temporal *temp, const STBOX *box, bool upper_inc)
   assert(hasx || hast);
 
   /* Bounding box test */
-  STBOX box1;
+  STBox box1;
   temporal_set_bbox(temp, &box1);
   if (! overlaps_stbox_stbox(box, &box1))
     return NULL;
@@ -4447,10 +4447,10 @@ tpoint_at_stbox1(const Temporal *temp, const STBOX *box, bool upper_inc)
  * @pre The arguments are of the same dimensionality and have the same SRID
  */
 static Temporal *
-tpoint_minus_stbox1(const Temporal *temp, const STBOX *box)
+tpoint_minus_stbox1(const Temporal *temp, const STBox *box)
 {
   /* Bounding box test */
-  STBOX box1;
+  STBox box1;
   temporal_set_bbox(temp, &box1);
   if (! overlaps_stbox_stbox(box, &box1))
     return temporal_copy(temp);
@@ -4484,7 +4484,7 @@ tpoint_minus_stbox1(const Temporal *temp, const STBOX *box)
  * @sqlfunc atStbox(), minusStbox()
  */
 Temporal *
-tpoint_restrict_stbox(const Temporal *temp, const STBOX *box, bool atfunc)
+tpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool atfunc)
 {
   ensure_common_dimension(temp->flags, box->flags);
   if (MOBDB_FLAGS_GET_X(box->flags))
@@ -4505,7 +4505,7 @@ tpoint_restrict_stbox(const Temporal *temp, const STBOX *box, bool atfunc)
  * @sqlfunc atStbox(), minusGeometry()
  */
 Temporal *
-tpoint_at_stbox(const Temporal *temp, const STBOX *box)
+tpoint_at_stbox(const Temporal *temp, const STBox *box)
 {
   Temporal *result = tpoint_restrict_stbox(temp, box, REST_AT);
   return result;
@@ -4517,7 +4517,7 @@ tpoint_at_stbox(const Temporal *temp, const STBOX *box)
  * @sqlfunc minusStbox()
  */
 Temporal *
-tpoint_minus_stbox(const Temporal *temp, const STBOX *box)
+tpoint_minus_stbox(const Temporal *temp, const STBox *box)
 {
   Temporal *result = tpoint_restrict_stbox(temp, box, REST_MINUS);
   return result;

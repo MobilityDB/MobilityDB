@@ -84,10 +84,10 @@ extern void ensure_spatial_validity(const Temporal *temp1,
 extern void ensure_not_geodetic(int16 flags);
 extern void ensure_same_geodetic(int16 flags1, int16 flags2);
 extern void ensure_same_srid(int32_t srid1, int32_t srid2);
-extern void ensure_same_srid_stbox(const STBOX *box1, const STBOX *box2);
+extern void ensure_same_srid_stbox(const STBox *box1, const STBox *box2);
 extern void ensure_same_srid_tpoint_stbox(const Temporal *temp,
-  const STBOX *box);
-extern void ensure_same_srid_stbox_gs(const STBOX *box, const GSERIALIZED *gs);
+  const STBox *box);
+extern void ensure_same_srid_stbox_gs(const STBox *box, const GSERIALIZED *gs);
 extern void ensure_same_dimensionality(int16 flags1, int16 flags2);
 extern void ensure_same_spatial_dimensionality(int16 flags1, int16 flags2);
 extern void ensure_same_spatial_dimensionality_temp_box(int16 flags1, int16 flags2);
@@ -95,7 +95,7 @@ extern void ensure_same_dimensionality_gs(const GSERIALIZED *gs1,
   const GSERIALIZED *gs2);
 extern void ensure_same_dimensionality_tpoint_gs(const Temporal *temp,
   const GSERIALIZED *gs);
-extern void ensure_same_spatial_dimensionality_stbox_gs(const STBOX *box1,
+extern void ensure_same_spatial_dimensionality_stbox_gs(const STBox *box1,
   const GSERIALIZED *gs);
 extern void ensure_has_Z(int16 flags);
 extern void ensure_has_not_Z(int16 flags);
@@ -170,9 +170,9 @@ extern Temporal *tpoint_get_coord(const Temporal *temp, int coord);
 
 extern TSequence **tpointseq_at_geometry(const TSequence *seq,
   const GSERIALIZED *gs, int *count);
-extern Temporal *tpoint_at_stbox1(const Temporal *temp, const STBOX *box,
+extern Temporal *tpoint_at_stbox1(const Temporal *temp, const STBox *box,
   bool upper_inc);
-extern Temporal *tpoint_minus_stbox(const Temporal *temp, const STBOX *box);
+extern Temporal *tpoint_minus_stbox(const Temporal *temp, const STBox *box);
 extern Period **tpointseq_interperiods(const TSequence *seq,
   GSERIALIZED *gsinter, int *count);
 

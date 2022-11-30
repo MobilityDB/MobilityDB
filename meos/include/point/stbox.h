@@ -45,7 +45,7 @@
  * fmgr macros
  *****************************************************************************/
 
-#define DatumGetSTboxP(X)    ((STBOX *) DatumGetPointer(X))
+#define DatumGetSTboxP(X)    ((STBox *) DatumGetPointer(X))
 #define STboxPGetDatum(X)    PointerGetDatum(X)
 #define PG_GETARG_STBOX_P(n) DatumGetSTboxP(PG_GETARG_DATUM(n))
 #define PG_RETURN_STBOX_P(x) return STboxPGetDatum(x)
@@ -54,17 +54,17 @@
 
 /* Parameter tests */
 
-extern void ensure_has_X_stbox(const STBOX *box);
-extern void ensure_has_T_stbox(const STBOX *box);
+extern void ensure_has_X_stbox(const STBox *box);
+extern void ensure_has_T_stbox(const STBox *box);
 
-/* Set an STBOX from a <Type> */
+/* Set an STBox from a <Type> */
 
-extern void timestampset_stbox_slice(Datum tsdatum, STBOX *box);
-extern void periodset_stbox_slice(Datum psdatum, STBOX *box);
+extern void timestampset_stbox_slice(Datum tsdatum, STBox *box);
+extern void periodset_stbox_slice(Datum psdatum, STBox *box);
 
 /* SRID functions */
 
-extern STBOX * stbox_set_srid(const STBOX *box, int32 srid);
+extern STBox * stbox_set_srid(const STBox *box, int32 srid);
 
 /*****************************************************************************/
 

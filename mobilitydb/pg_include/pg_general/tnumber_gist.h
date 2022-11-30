@@ -78,7 +78,7 @@ extern Datum bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, mobdbType bboxtype
   void (*bbox_adjust)(void *, void *), double (*bbox_penalty)(void *, void *));
 
 /* The following functions are also called by tnumber_spgist.c */
-extern bool tbox_index_consistent_leaf(const TBOX *key, const TBOX *query,
+extern bool tbox_index_consistent_leaf(const TBox *key, const TBox *query,
   StrategyNumber strategy);
 
 /*****************************************************************************/

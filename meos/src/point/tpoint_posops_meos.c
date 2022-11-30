@@ -40,7 +40,7 @@
  * `overbefore`,  `after`, `overafter`. For both temporal geometry and
  * geography points the same operators are derived from the basic temporal
  * types. In this file they are defined when one of the arguments is an
- * `STBOX`.
+ * `STBox`.
  */
 
 /* MobilityDB */
@@ -339,7 +339,7 @@ overback_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
  * @sqlop @p <<
  */
 bool
-left_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
+left_stbox_tpoint(const STBox *stbox, const Temporal *tpoint)
 {
   return boxop_tpoint_stbox(tpoint, stbox, &left_stbox_stbox, INVERT);
 }
@@ -351,7 +351,7 @@ left_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
  * @sqlop @p &<
  */
 bool
-overleft_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
+overleft_stbox_tpoint(const STBox *stbox, const Temporal *tpoint)
 {
   return boxop_tpoint_stbox(tpoint, stbox, &overleft_stbox_stbox, INVERT);
 }
@@ -363,7 +363,7 @@ overleft_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
  * @sqlop @p >>
  */
 bool
-right_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
+right_stbox_tpoint(const STBox *stbox, const Temporal *tpoint)
 {
   return boxop_tpoint_stbox(tpoint, stbox, &right_stbox_stbox, INVERT);
 }
@@ -375,7 +375,7 @@ right_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
  * @sqlop @p &>
  */
 bool
-overright_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
+overright_stbox_tpoint(const STBox *stbox, const Temporal *tpoint)
 {
   return boxop_tpoint_stbox(tpoint, stbox, &overright_stbox_stbox, INVERT);
 }
@@ -387,7 +387,7 @@ overright_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
  * @sqlop @p <<|
  */
 bool
-below_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
+below_stbox_tpoint(const STBox *stbox, const Temporal *tpoint)
 {
   return boxop_tpoint_stbox(tpoint, stbox, &below_stbox_stbox, INVERT);
 }
@@ -399,7 +399,7 @@ below_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
  * @sqlop @p &<|
  */
 bool
-overbelow_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
+overbelow_stbox_tpoint(const STBox *stbox, const Temporal *tpoint)
 {
   return boxop_tpoint_stbox(tpoint, stbox, &overbelow_stbox_stbox, INVERT);
 }
@@ -411,7 +411,7 @@ overbelow_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
  * @sqlop @p |>>
  */
 bool
-above_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
+above_stbox_tpoint(const STBox *stbox, const Temporal *tpoint)
 {
   return boxop_tpoint_stbox(tpoint, stbox, &above_stbox_stbox, INVERT);
 }
@@ -423,7 +423,7 @@ above_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
  * @sqlop @p |&>
  */
 bool
-overabove_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
+overabove_stbox_tpoint(const STBox *stbox, const Temporal *tpoint)
 {
   return boxop_tpoint_stbox(tpoint, stbox, &overabove_stbox_stbox, INVERT);
 }
@@ -435,7 +435,7 @@ overabove_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
  * @sqlop @p <</
  */
 bool
-front_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
+front_stbox_tpoint(const STBox *stbox, const Temporal *tpoint)
 {
   return boxop_tpoint_stbox(tpoint, stbox, &front_stbox_stbox, INVERT);
 }
@@ -447,7 +447,7 @@ front_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
  * @sqlop @p &</
  */
 bool
-overfront_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
+overfront_stbox_tpoint(const STBox *stbox, const Temporal *tpoint)
 {
   return boxop_tpoint_stbox(tpoint, stbox, &overfront_stbox_stbox, INVERT);
 }
@@ -459,7 +459,7 @@ overfront_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
  * @sqlop @p />>
  */
 bool
-back_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
+back_stbox_tpoint(const STBox *stbox, const Temporal *tpoint)
 {
   return boxop_tpoint_stbox(tpoint, stbox, &back_stbox_stbox, INVERT);
 }
@@ -471,7 +471,7 @@ back_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
  * @sqlop @p /&>
  */
 bool
-overback_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
+overback_stbox_tpoint(const STBox *stbox, const Temporal *tpoint)
 {
   return boxop_tpoint_stbox(tpoint, stbox, &overback_stbox_stbox, INVERT);
 }
@@ -483,7 +483,7 @@ overback_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
  * @sqlop @p <<#
  */
 bool
-before_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
+before_stbox_tpoint(const STBox *stbox, const Temporal *tpoint)
 {
   return boxop_tpoint_stbox(tpoint, stbox, &before_stbox_stbox, INVERT);
 }
@@ -495,7 +495,7 @@ before_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
  * @sqlop @p &<#
  */
 bool
-overbefore_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
+overbefore_stbox_tpoint(const STBox *stbox, const Temporal *tpoint)
 {
   return boxop_tpoint_stbox(tpoint, stbox, &overbefore_stbox_stbox, INVERT);
 }
@@ -507,7 +507,7 @@ overbefore_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
  * @sqlop @p #>>
  */
 bool
-after_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
+after_stbox_tpoint(const STBox *stbox, const Temporal *tpoint)
 {
   return boxop_tpoint_stbox(tpoint, stbox, &after_stbox_stbox, INVERT);
 }
@@ -519,7 +519,7 @@ after_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
  * @sqlop @p #&>
  */
 bool
-overafter_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
+overafter_stbox_tpoint(const STBox *stbox, const Temporal *tpoint)
 {
   return boxop_tpoint_stbox(tpoint, stbox, &overafter_stbox_stbox, INVERT);
 }
@@ -534,7 +534,7 @@ overafter_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
  * @sqlop @p <<
  */
 bool
-left_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
+left_tpoint_stbox(const Temporal *tpoint, const STBox *stbox)
 {
   return boxop_tpoint_stbox(tpoint, stbox, &left_stbox_stbox, INVERT_NO);
 }
@@ -546,7 +546,7 @@ left_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
  * @sqlop @p &<
  */
 bool
-overleft_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
+overleft_tpoint_stbox(const Temporal *tpoint, const STBox *stbox)
 {
   return boxop_tpoint_stbox(tpoint, stbox, &overleft_stbox_stbox, INVERT_NO);
 }
@@ -558,7 +558,7 @@ overleft_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
  * @sqlop @p >>
  */
 bool
-right_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
+right_tpoint_stbox(const Temporal *tpoint, const STBox *stbox)
 {
   return boxop_tpoint_stbox(tpoint, stbox, &right_stbox_stbox, INVERT_NO);
 }
@@ -570,7 +570,7 @@ right_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
  * @sqlop @p &>
  */
 bool
-overright_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
+overright_tpoint_stbox(const Temporal *tpoint, const STBox *stbox)
 {
   return boxop_tpoint_stbox(tpoint, stbox, &overright_stbox_stbox, INVERT_NO);
 }
@@ -582,7 +582,7 @@ overright_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
  * @sqlop @p <<|
  */
 bool
-below_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
+below_tpoint_stbox(const Temporal *tpoint, const STBox *stbox)
 {
   return boxop_tpoint_stbox(tpoint, stbox, &below_stbox_stbox, INVERT_NO);
 }
@@ -594,7 +594,7 @@ below_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
  * @sqlop @p &<|
  */
 bool
-overbelow_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
+overbelow_tpoint_stbox(const Temporal *tpoint, const STBox *stbox)
 {
   return boxop_tpoint_stbox(tpoint, stbox, &overbelow_stbox_stbox, INVERT_NO);
 }
@@ -606,7 +606,7 @@ overbelow_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
  * @sqlop @p |>>
  */
 bool
-above_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
+above_tpoint_stbox(const Temporal *tpoint, const STBox *stbox)
 {
   return boxop_tpoint_stbox(tpoint, stbox, &above_stbox_stbox, INVERT_NO);
 }
@@ -618,7 +618,7 @@ above_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
  * @sqlop @p |&>
  */
 bool
-overabove_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
+overabove_tpoint_stbox(const Temporal *tpoint, const STBox *stbox)
 {
   return boxop_tpoint_stbox(tpoint, stbox, &overabove_stbox_stbox, INVERT_NO);
 }
@@ -630,7 +630,7 @@ overabove_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
  * @sqlop @p <</
  */
 bool
-front_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
+front_tpoint_stbox(const Temporal *tpoint, const STBox *stbox)
 {
   return boxop_tpoint_stbox(tpoint, stbox, &front_stbox_stbox, INVERT_NO);
 }
@@ -642,7 +642,7 @@ front_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
  * @sqlop @p &</
  */
 bool
-overfront_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
+overfront_tpoint_stbox(const Temporal *tpoint, const STBox *stbox)
 {
   return boxop_tpoint_stbox(tpoint, stbox, &overfront_stbox_stbox, INVERT_NO);
 }
@@ -654,7 +654,7 @@ overfront_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
  * @sqlop @p />>
  */
 bool
-back_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
+back_tpoint_stbox(const Temporal *tpoint, const STBox *stbox)
 {
   return boxop_tpoint_stbox(tpoint, stbox, &back_stbox_stbox, INVERT_NO);
 }
@@ -666,7 +666,7 @@ back_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
  * @sqlop @p /&>
  */
 bool
-overback_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
+overback_tpoint_stbox(const Temporal *tpoint, const STBox *stbox)
 {
   return boxop_tpoint_stbox(tpoint, stbox, &overback_stbox_stbox, INVERT_NO);
 }
@@ -678,7 +678,7 @@ overback_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
  * @sqlop @p <<#
  */
 bool
-before_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
+before_tpoint_stbox(const Temporal *tpoint, const STBox *stbox)
 {
   return boxop_tpoint_stbox(tpoint, stbox, &before_stbox_stbox, INVERT_NO);
 }
@@ -690,7 +690,7 @@ before_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
  * @sqlop @p &<#
  */
 bool
-overbefore_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
+overbefore_tpoint_stbox(const Temporal *tpoint, const STBox *stbox)
 {
   return boxop_tpoint_stbox(tpoint, stbox, &overbefore_stbox_stbox, INVERT_NO);
 }
@@ -702,7 +702,7 @@ overbefore_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
  * @sqlop @p #>>
  */
 bool
-after_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
+after_tpoint_stbox(const Temporal *tpoint, const STBox *stbox)
 {
   return boxop_tpoint_stbox(tpoint, stbox, &after_stbox_stbox, INVERT_NO);
 }
@@ -714,7 +714,7 @@ after_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
  * @sqlop @p #&>
  */
 bool
-overafter_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
+overafter_tpoint_stbox(const Temporal *tpoint, const STBox *stbox)
 {
   return boxop_tpoint_stbox(tpoint, stbox, &overafter_stbox_stbox, INVERT_NO);
 }

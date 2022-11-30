@@ -1523,7 +1523,7 @@ tpoint_grid(const Temporal *temp, const gridspec *grid, bool filter_pts)
  * @param[in] clip_geom True if temporal point should be clipped
  */
 static Temporal *
-tpoint_mvt(const Temporal *tpoint, const STBOX *box, uint32_t extent,
+tpoint_mvt(const Temporal *tpoint, const STBox *box, uint32_t extent,
   uint32_t buffer, bool clip_geom)
 {
   AFFINE affine = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -1564,7 +1564,7 @@ tpoint_mvt(const Temporal *tpoint, const STBOX *box, uint32_t extent,
   double max = (double) extent + (double) buffer;
   double min = -(double) buffer;
   int srid = tpoint_srid(tpoint);
-  STBOX clip_box;
+  STBox clip_box;
   stbox_set(NULL, true, false, false, srid, min, max, min, max, 0, 0,
     &clip_box);
   Temporal *tpoint5 = tpoint_at_stbox1(tpoint4, &clip_box, UPPER_INC);
@@ -1719,7 +1719,7 @@ tpoint_decouple(const Temporal *temp, int64 **timesarr, int *count)
  * @sqlfunc AsMVTGeom()
  */
 bool
-tpoint_AsMVTGeom(const Temporal *temp, const STBOX *bounds, int32_t extent,
+tpoint_AsMVTGeom(const Temporal *temp, const STBox *bounds, int32_t extent,
   int32_t buffer, bool clip_geom, GSERIALIZED **geom, int64 **timesarr,
   int *count)
 {
@@ -1733,7 +1733,7 @@ tpoint_AsMVTGeom(const Temporal *temp, const STBOX *bounds, int32_t extent,
    * PostGIS filtering adapted to MobilityDB would be as follows.
 
   / * Bounding box test to drop geometries smaller than the resolution * /
-  STBOX box;
+  STBox box;
   temporal_set_bbox(temp, &box);
   double tpoint_width = box.xmax - box.xmin;
   double tpoint_height = box.ymax - box.ymin;

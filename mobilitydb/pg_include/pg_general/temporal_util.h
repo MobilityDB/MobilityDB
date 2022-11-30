@@ -93,7 +93,7 @@ extern ArrayType *periodarr_to_array(const Period **periods, int count);
 extern ArrayType *spanarr_to_array(const Span **spans, int count);
 extern ArrayType *strarr_to_textarray(char **strarr, int count);
 extern ArrayType *temporalarr_to_array(const Temporal **temporal, int count);
-extern ArrayType *stboxarr_to_array(STBOX *boxarr, int count);
+extern ArrayType *stboxarr_to_array(STBox *boxarr, int count);
 
 /*****************************************************************************/
 

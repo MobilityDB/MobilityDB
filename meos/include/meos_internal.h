@@ -175,23 +175,23 @@ extern double distance_spanset_value(const SpanSet *ss, Datum d, mobdbType baset
 
 /* Cast functions for box types */
 
-extern void int_set_tbox(int i, TBOX *box);
-extern void float_set_tbox(double d, TBOX *box);
-extern void span_set_tbox(const Span *span, TBOX *box);
-extern void spanset_set_tbox(const SpanSet *ss, TBOX *box);
-extern void timestamp_set_tbox(TimestampTz t, TBOX *box);
-extern void timestampset_set_tbox(const TimestampSet *ss, TBOX *box);
-extern void period_set_tbox(const Period *p, TBOX *box);
-extern void periodset_set_tbox(const PeriodSet *ps, TBOX *box);
-extern bool geo_set_stbox(const GSERIALIZED *gs, STBOX *box);
-extern void timestamp_set_stbox(TimestampTz t, STBOX *box);
-extern void timestampset_set_stbox(const TimestampSet *ts, STBOX *box);
-extern void period_set_stbox(const Period *p, STBOX *box);
-extern void periodset_set_stbox(const PeriodSet *ps, STBOX *box);
+extern void int_set_tbox(int i, TBox *box);
+extern void float_set_tbox(double d, TBox *box);
+extern void span_set_tbox(const Span *span, TBox *box);
+extern void spanset_set_tbox(const SpanSet *ss, TBox *box);
+extern void timestamp_set_tbox(TimestampTz t, TBox *box);
+extern void timestampset_set_tbox(const TimestampSet *ss, TBox *box);
+extern void period_set_tbox(const Period *p, TBox *box);
+extern void periodset_set_tbox(const PeriodSet *ps, TBox *box);
+extern bool geo_set_stbox(const GSERIALIZED *gs, STBox *box);
+extern void timestamp_set_stbox(TimestampTz t, STBox *box);
+extern void timestampset_set_stbox(const TimestampSet *ts, STBox *box);
+extern void period_set_stbox(const Period *p, STBox *box);
+extern void periodset_set_stbox(const PeriodSet *ps, STBox *box);
 
-extern void number_set_tbox(Datum value, mobdbType basetype, TBOX *box);
-extern void stbox_set_gbox(const STBOX *box, GBOX *gbox);
-extern void stbox_set_box3d(const STBOX *box, BOX3D *box3d);
+extern void number_set_tbox(Datum value, mobdbType basetype, TBox *box);
+extern void stbox_set_gbox(const STBox *box, GBOX *gbox);
+extern void stbox_set_box3d(const STBox *box, BOX3D *box3d);
 
 /*****************************************************************************/
 
@@ -501,9 +501,9 @@ extern TSequenceSet *tsequenceset_restrict_periodset(const TSequenceSet *ss, con
 extern TInstant *tpointinst_restrict_geometry(const TInstant *inst, const GSERIALIZED *gs, bool atfunc);
 extern TSequence *tpointdiscseq_restrict_geometry(const TSequence *seq, const GSERIALIZED *gs, bool atfunc);
 extern TSequenceSet *tpointseq_restrict_geometry(const TSequence *seq, const GSERIALIZED *gs, bool atfunc);
-extern TSequenceSet *tpointseqset_restrict_geometry(const TSequenceSet *ss, const GSERIALIZED *gs, const STBOX *box, bool atfunc);
+extern TSequenceSet *tpointseqset_restrict_geometry(const TSequenceSet *ss, const GSERIALIZED *gs, const STBox *box, bool atfunc);
 extern Temporal *tpoint_restrict_geometry(const Temporal *temp, const GSERIALIZED *gs, bool atfunc);
-extern Temporal *tpoint_restrict_stbox(const Temporal *temp, const STBOX *box, bool atfunc);
+extern Temporal *tpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool atfunc);
 
 /*****************************************************************************/
 
@@ -637,14 +637,14 @@ extern bool tpointseq_is_simple(const TSequence *seq);
 extern double tpointseq_length(const TSequence *seq);
 extern TSequence *tpointseq_speed(const TSequence *seq);
 extern int tpointseq_srid(const TSequence *seq);
-extern STBOX *tpointseq_stboxes(const TSequence *seq, int *count);
+extern STBox *tpointseq_stboxes(const TSequence *seq, int *count);
 extern TSequenceSet *tpointseqset_azimuth(const TSequenceSet *ss);
 extern TSequenceSet *tpointseqset_cumulative_length(const TSequenceSet *ss);
 extern bool tpointseqset_is_simple(const TSequenceSet *ss);
 extern double tpointseqset_length(const TSequenceSet *ss);
 extern TSequenceSet *tpointseqset_speed(const TSequenceSet *ss);
 extern int tpointseqset_srid(const TSequenceSet *ss);
-extern STBOX *tpointseqset_stboxes(const TSequenceSet *ss, int *count);
+extern STBox *tpointseqset_stboxes(const TSequenceSet *ss, int *count);
 extern GSERIALIZED *tpointseqset_trajectory(const TSequenceSet *ss);
 
 /*****************************************************************************/

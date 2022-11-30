@@ -260,7 +260,7 @@ PGDLLEXPORT Datum
 NAD_geo_stbox(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  STBOX *box = PG_GETARG_STBOX_P(1);
+  STBox *box = PG_GETARG_STBOX_P(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
   double result = nad_stbox_geo(box, gs);
@@ -281,7 +281,7 @@ PG_FUNCTION_INFO_V1(NAD_stbox_geo);
 PGDLLEXPORT Datum
 NAD_stbox_geo(PG_FUNCTION_ARGS)
 {
-  STBOX *box = PG_GETARG_STBOX_P(0);
+  STBox *box = PG_GETARG_STBOX_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
@@ -302,8 +302,8 @@ PG_FUNCTION_INFO_V1(NAD_stbox_stbox);
 PGDLLEXPORT Datum
 NAD_stbox_stbox(PG_FUNCTION_ARGS)
 {
-  STBOX *box1 = PG_GETARG_STBOX_P(0);
-  STBOX *box2 = PG_GETARG_STBOX_P(1);
+  STBox *box1 = PG_GETARG_STBOX_P(0);
+  STBox *box2 = PG_GETARG_STBOX_P(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
   double result = nad_stbox_stbox(box1, box2);
@@ -323,7 +323,7 @@ PG_FUNCTION_INFO_V1(NAD_stbox_tpoint);
 PGDLLEXPORT Datum
 NAD_stbox_tpoint(PG_FUNCTION_ARGS)
 {
-  STBOX *box = PG_GETARG_STBOX_P(0);
+  STBox *box = PG_GETARG_STBOX_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
@@ -346,7 +346,7 @@ PGDLLEXPORT Datum
 NAD_tpoint_stbox(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  STBOX *box = PG_GETARG_STBOX_P(1);
+  STBox *box = PG_GETARG_STBOX_P(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
   double result = nad_tpoint_stbox(temp, box);

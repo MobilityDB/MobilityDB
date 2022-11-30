@@ -54,8 +54,8 @@ extern Datum number_distance(Datum l, Datum r, mobdbType typel,
 
 extern double nad_tnumber_number(const Temporal *temp, Datum value,
   mobdbType basetype);
-extern double nad_tbox_tbox(const TBOX *box1, const TBOX *box2);
-extern double nad_tnumber_tbox(const Temporal *temp, const TBOX *box);
+extern double nad_tbox_tbox(const TBox *box1, const TBox *box2);
+extern double nad_tnumber_tbox(const Temporal *temp, const TBox *box);
 
 // NAI and shortestline functions are not yet implemented
 // Are they useful ?

@@ -235,8 +235,8 @@ tinterrel_tpointseq_step_geom(const TSequence *seq, Datum geom, bool tinter,
  * @pre The temporal point is simple, that is, non self-intersecting
  */
 static TSequence **
-tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom, const STBOX *box,
-  bool tinter, int *count)
+tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom,
+  const STBox *box, bool tinter, int *count)
 {
   /* The temporal sequence has at least 2 instants since
    * (1) the instantaneous full sequence test is done in the calling function
@@ -249,7 +249,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom, const STBOX *b
   Datum datum_no = tinter ? BoolGetDatum(false) : BoolGetDatum(true);
 
   /* Bounding box test */
-  STBOX *box1 = TSEQUENCE_BBOX_PTR(seq);
+  STBox *box1 = TSEQUENCE_BBOX_PTR(seq);
   if (! overlaps_stbox_stbox(box1, box))
   {
     result = palloc(sizeof(TSequence *));
@@ -348,7 +348,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom, const STBOX *b
  * @param[out] count Number of elements in the output array
  */
 static TSequence **
-tinterrel_tpointcontseq_geom1(const TSequence *seq, Datum geom, const STBOX *box,
+tinterrel_tpointcontseq_geom1(const TSequence *seq, Datum geom, const STBox *box,
   bool tinter, Datum (*func)(Datum, Datum), int *count)
 {
   /* Instantaneous sequence */
@@ -399,7 +399,7 @@ tinterrel_tpointcontseq_geom1(const TSequence *seq, Datum geom, const STBOX *box
  * @param[in] tinter True when computing tintersects, false for tdisjoint
  */
 TSequenceSet *
-tinterrel_tpointcontseq_geom(const TSequence *seq, Datum geom, const STBOX *box,
+tinterrel_tpointcontseq_geom(const TSequence *seq, Datum geom, const STBox *box,
   bool tinter, Datum (*func)(Datum, Datum))
 {
   /* Split the temporal point in an array of non self-intersecting
@@ -421,7 +421,7 @@ tinterrel_tpointcontseq_geom(const TSequence *seq, Datum geom, const STBOX *box,
  */
 TSequenceSet *
 tinterrel_tpointseqset_geom(const TSequenceSet *ss, Datum geom,
-  const STBOX *box, bool tinter, Datum (*func)(Datum, Datum))
+  const STBox *box, bool tinter, Datum (*func)(Datum, Datum))
 {
   /* Singleton sequence set */
   if (ss->count == 1)
@@ -469,7 +469,7 @@ tinterrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
   Datum datum_no = tinter ? BoolGetDatum(false) : BoolGetDatum(true);
 
   /* Bounding box test */
-  STBOX box1, box2;
+  STBox box1, box2;
   temporal_set_bbox(temp, &box1);
   /* Non-empty geometries have a bounding box */
   geo_set_stbox(gs, &box2);

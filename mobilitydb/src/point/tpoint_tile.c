@@ -71,7 +71,7 @@ Stbox_tile_list(PG_FUNCTION_ARGS)
   if (SRF_IS_FIRSTCALL())
   {
     /* Get input parameters */
-    STBOX *bounds = PG_GETARG_STBOX_P(0);
+    STBox *bounds = PG_GETARG_STBOX_P(0);
     ensure_has_X_stbox(bounds);
     ensure_not_geodetic(bounds->flags);
     double size = PG_GETARG_FLOAT8(1);
@@ -94,7 +94,7 @@ Stbox_tile_list(PG_FUNCTION_ARGS)
     ensure_non_empty(sorigin);
     ensure_point_type(sorigin);
     /* Since we pass by default Point(0 0 0) as origin independently of the input
-     * STBOX, we test the same spatial dimensionality only for STBOX Z */
+     * STBox, we test the same spatial dimensionality only for STBox Z */
     if (MOBDB_FLAGS_GET_Z(bounds->flags))
       ensure_same_spatial_dimensionality_stbox_gs(bounds, sorigin);
     int32 srid = bounds->srid;
@@ -143,7 +143,7 @@ Stbox_tile_list(PG_FUNCTION_ARGS)
   }
 
   /* Allocate box */
-  STBOX *box = palloc(sizeof(STBOX));
+  STBox *box = palloc(sizeof(STBox));
   /* Get current tile and advance state
    * There is no need to test if the tile is found since all tiles should be
    * generated and thus there is no associated bit matrix */
@@ -227,7 +227,7 @@ Stbox_tile(PG_FUNCTION_ARGS)
   TimestampTz tmin = 0; /* make compiler quiet */
   if (hast)
     tmin = timestamptz_bucket1(t, tunits, torigin);
-  STBOX *result = palloc0(sizeof(STBOX));
+  STBox *result = palloc0(sizeof(STBox));
   stbox_tile_set(xmin, ymin, zmin, tmin, size, tunits, hasz, hast, srid,
     result);
   PG_RETURN_POINTER(result);
@@ -274,7 +274,7 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
     bool bitmatrix = PG_GETARG_BOOL(i++);
 
     /* Set bounding box */
-    STBOX bounds;
+    STBox bounds;
     temporal_set_bbox(temp, &bounds);
     if (! timesplit)
       /* Disallow T dimension for generating a spatial only grid */
@@ -362,7 +362,7 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
     /* Get current tile (if any) and advance state
      * It is necessary to test if we found a tile since the previous tile
      * may be the last one set in the associated bit matrix */
-    STBOX box;
+    STBox box;
     bool found = stbox_tile_state_get(state, &box);
     if (! found)
     {

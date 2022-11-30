@@ -2409,7 +2409,7 @@ tsequence_values(const TSequence *seq, int *count)
 Span *
 tfloatseq_span(const TSequence *seq)
 {
-  TBOX *box = TSEQUENCE_BBOX_PTR(seq);
+  TBox *box = TSEQUENCE_BBOX_PTR(seq);
   Datum min = box->span.lower;
   Datum max = box->span.upper;
   /* It step interpolation or equal bounding box bounds */
@@ -2587,7 +2587,7 @@ tsequence_min_value(const TSequence *seq)
 {
   if (seq->temptype == T_TINT || seq->temptype == T_TFLOAT)
   {
-    TBOX *box = TSEQUENCE_BBOX_PTR(seq);
+    TBox *box = TSEQUENCE_BBOX_PTR(seq);
     Datum min = box->span.lower;
     if (seq->temptype == T_TINT)
       min = Int32GetDatum((int) DatumGetFloat8(min));
@@ -2615,7 +2615,7 @@ tsequence_max_value(const TSequence *seq)
 {
   if (seq->temptype == T_TINT || seq->temptype == T_TFLOAT)
   {
-    TBOX *box = TSEQUENCE_BBOX_PTR(seq);
+    TBox *box = TSEQUENCE_BBOX_PTR(seq);
     Datum max = box->span.upper;
     /* The upper bound for integer spans is exclusive due to canonicalization */
     if (seq->temptype == T_TINT)
@@ -4014,7 +4014,7 @@ tnumbercontseq_restrict_span2(const TSequence *seq, const Span *span,
   bool atfunc, TSequence **result)
 {
   /* Bounding box test */
-  TBOX box1, box2;
+  TBox box1, box2;
   tsequence_set_bbox(seq, &box1);
   span_set_tbox(span, &box2);
   if (! overlaps_tbox_tbox(&box1, &box2))

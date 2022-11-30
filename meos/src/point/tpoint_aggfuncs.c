@@ -207,13 +207,13 @@ tpoint_transform_tcentroid(const Temporal *temp, int *count)
 /**
  * Transition function for temporal extent aggregation of temporal point values
  */
-STBOX *
-tpoint_extent_transfn(STBOX *box, Temporal *temp)
+STBox *
+tpoint_extent_transfn(STBox *box, Temporal *temp)
 {
   /* Can't do anything with null inputs */
   if (! box && ! temp)
     return NULL;
-  STBOX *result = palloc0(sizeof(STBOX));
+  STBox *result = palloc0(sizeof(STBox));
   /* Null box and non-null temporal, return the bbox of the temporal */
   if (temp && ! box )
   {
@@ -223,7 +223,7 @@ tpoint_extent_transfn(STBOX *box, Temporal *temp)
   /* Non-null box and null temporal, return the box */
   if (box && ! temp)
   {
-    memcpy(result, box, sizeof(STBOX));
+    memcpy(result, box, sizeof(STBox));
     return result;
   }
 

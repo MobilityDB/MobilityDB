@@ -582,7 +582,7 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   {
     Datum datum;
     Temporal *temp;
-    STBOX box;
+    STBox box;
     GBOX gbox;
     ND_BOX *nd_box;
     bool is_null;

@@ -161,8 +161,8 @@ PG_FUNCTION_INFO_V1(NAD_tbox_tbox);
 PGDLLEXPORT Datum
 NAD_tbox_tbox(PG_FUNCTION_ARGS)
 {
-  TBOX *box1 = PG_GETARG_TBOX_P(0);
-  TBOX *box2 = PG_GETARG_TBOX_P(1);
+  TBox *box1 = PG_GETARG_TBOX_P(0);
+  TBox *box2 = PG_GETARG_TBOX_P(1);
   double result = nad_tbox_tbox(box1, box2);
   if (result == DBL_MAX)
     PG_RETURN_NULL();
@@ -179,7 +179,7 @@ PG_FUNCTION_INFO_V1(NAD_tbox_tnumber);
 PGDLLEXPORT Datum
 NAD_tbox_tnumber(PG_FUNCTION_ARGS)
 {
-  TBOX *box = PG_GETARG_TBOX_P(0);
+  TBox *box = PG_GETARG_TBOX_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   double result = nad_tnumber_tbox(temp, box);
   PG_FREE_IF_COPY(temp, 1);
@@ -199,7 +199,7 @@ PGDLLEXPORT Datum
 NAD_tnumber_tbox(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  TBOX *box = PG_GETARG_TBOX_P(1);
+  TBox *box = PG_GETARG_TBOX_P(1);
   double result = nad_tnumber_tbox(temp, box);
   PG_FREE_IF_COPY(temp, 0);
   if (result == DBL_MAX)

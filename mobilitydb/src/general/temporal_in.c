@@ -184,7 +184,7 @@ Tbox_from_wkb(PG_FUNCTION_ARGS)
 {
   bytea *bytea_wkb = PG_GETARG_BYTEA_P(0);
   uint8_t *wkb = (uint8_t *) VARDATA(bytea_wkb);
-  TBOX *box = tbox_from_wkb(wkb, VARSIZE(bytea_wkb) - VARHDRSZ);
+  TBox *box = tbox_from_wkb(wkb, VARSIZE(bytea_wkb) - VARHDRSZ);
   PG_FREE_IF_COPY(bytea_wkb, 0);
   PG_RETURN_POINTER(box);
 }
@@ -200,7 +200,7 @@ Tbox_from_hexwkb(PG_FUNCTION_ARGS)
 {
   text *hexwkb_text = PG_GETARG_TEXT_P(0);
   char *hexwkb = text2cstring(hexwkb_text);
-  TBOX *box = tbox_from_hexwkb(hexwkb);
+  TBox *box = tbox_from_hexwkb(hexwkb);
   pfree(hexwkb);
   PG_FREE_IF_COPY(hexwkb_text, 0);
   PG_RETURN_POINTER(box);
@@ -219,7 +219,7 @@ Stbox_from_wkb(PG_FUNCTION_ARGS)
 {
   bytea *bytea_wkb = PG_GETARG_BYTEA_P(0);
   uint8_t *wkb = (uint8_t *) VARDATA(bytea_wkb);
-  STBOX *box = stbox_from_wkb(wkb, VARSIZE(bytea_wkb) - VARHDRSZ);
+  STBox *box = stbox_from_wkb(wkb, VARSIZE(bytea_wkb) - VARHDRSZ);
   PG_FREE_IF_COPY(bytea_wkb, 0);
   PG_RETURN_POINTER(box);
 }
@@ -235,7 +235,7 @@ Stbox_from_hexwkb(PG_FUNCTION_ARGS)
 {
   text *hexwkb_text = PG_GETARG_TEXT_P(0);
   char *hexwkb = text2cstring(hexwkb_text);
-  STBOX *box = stbox_from_hexwkb(hexwkb);
+  STBox *box = stbox_from_hexwkb(hexwkb);
   pfree(hexwkb);
   PG_FREE_IF_COPY(hexwkb_text, 0);
   PG_RETURN_POINTER(box);

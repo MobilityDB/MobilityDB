@@ -56,7 +56,7 @@
  *              |                               |
  *            FRONT                           BACK
  * @endcode
- * We are using STBOX data type as the prefix, but we are treating them
+ * We are using STBox data type as the prefix, but we are treating them
  * as points in 8-dimensional space, because 4D boxes are not enough
  * to represent the quadrant boundaries in 8D space.  They however are
  * sufficient to point out the additional boundaries of the next
@@ -121,8 +121,8 @@
  */
 typedef struct
 {
-  STBOX left;
-  STBOX right;
+  STBox left;
+  STBox right;
 } STboxNode;
 
 /*****************************************************************************
@@ -144,11 +144,11 @@ cubestbox_copy(const STboxNode *box)
  * Calculate the quadrant
  *
  * The quadrant is 8 bit unsigned integer with all bits in use.
- * This function accepts 2 STBOX as input.  All 8 bits are set by comparing a
+ * This function accepts 2 STBox as input.  All 8 bits are set by comparing a
  * corner of the box. This makes 256 quadrants in total.
  */
 static uint8
-getOctant8D(const STBOX *centroid, const STBOX *inBox)
+getOctant8D(const STBox *centroid, const STBox *inBox)
 {
   uint8 quadrant = 0;
 
@@ -189,7 +189,7 @@ getOctant8D(const STBOX *centroid, const STBOX *inBox)
  * initialize the struct to cover the whole 8D space.
  */
 static void
-stboxnode_init(const STBOX *centroid, STboxNode *nodebox)
+stboxnode_init(const STBox *centroid, STboxNode *nodebox)
 {
   memset(nodebox, 0, sizeof(STboxNode));
   double infinity = get_float8_infinity();
@@ -222,7 +222,7 @@ stboxnode_init(const STBOX *centroid, STboxNode *nodebox)
  * using centroid and quadrant.
  */
 static void
-stboxnode_quadtree_next(const STboxNode *nodebox, const STBOX *centroid,
+stboxnode_quadtree_next(const STboxNode *nodebox, const STBox *centroid,
   uint8 quadrant, STboxNode *next_nodebox)
 {
   memcpy(next_nodebox, nodebox, sizeof(STboxNode));
@@ -277,7 +277,7 @@ stboxnode_quadtree_next(const STboxNode *nodebox, const STBOX *centroid,
  * Can any box from nodebox overlap with query?
  */
 static bool
-overlap8D(const STboxNode *nodebox, const STBOX *query)
+overlap8D(const STboxNode *nodebox, const STBox *query)
 {
   bool result = true;
   /* Result value is computed only for the dimensions of the query */
@@ -300,7 +300,7 @@ overlap8D(const STboxNode *nodebox, const STBOX *query)
  * Can any box from nodebox contain query?
  */
 static bool
-contain8D(const STboxNode *nodebox, const STBOX *query)
+contain8D(const STboxNode *nodebox, const STBox *query)
 {
   bool result = true;
   /* Result value is computed only for the dimensions of the query */
@@ -323,7 +323,7 @@ contain8D(const STboxNode *nodebox, const STBOX *query)
  * Can any box from nodebox be left of query?
  */
 static bool
-left8D(const STboxNode *nodebox, const STBOX *query)
+left8D(const STboxNode *nodebox, const STBox *query)
 {
   return (nodebox->right.xmax < query->xmin);
 }
@@ -332,7 +332,7 @@ left8D(const STboxNode *nodebox, const STBOX *query)
  * Can any box from nodebox does not extend the right of query?
  */
 static bool
-overLeft8D(const STboxNode *nodebox, const STBOX *query)
+overLeft8D(const STboxNode *nodebox, const STBox *query)
 {
   return (nodebox->right.xmax <= query->xmax);
 }
@@ -341,7 +341,7 @@ overLeft8D(const STboxNode *nodebox, const STBOX *query)
  * Can any box from nodebox be right of query?
  */
 static bool
-right8D(const STboxNode *nodebox, const STBOX *query)
+right8D(const STboxNode *nodebox, const STBox *query)
 {
   return (nodebox->left.xmin > query->xmax);
 }
@@ -350,7 +350,7 @@ right8D(const STboxNode *nodebox, const STBOX *query)
  * Can any box from nodebox does not extend the left of query?
  */
 static bool
-overRight8D(const STboxNode *nodebox, const STBOX *query)
+overRight8D(const STboxNode *nodebox, const STBox *query)
 {
   return (nodebox->left.xmin >= query->xmin);
 }
@@ -359,7 +359,7 @@ overRight8D(const STboxNode *nodebox, const STBOX *query)
  * Can any box from nodebox be below of query?
  */
 static bool
-below8D(const STboxNode *nodebox, const STBOX *query)
+below8D(const STboxNode *nodebox, const STBox *query)
 {
   return (nodebox->right.ymax < query->ymin);
 }
@@ -368,7 +368,7 @@ below8D(const STboxNode *nodebox, const STBOX *query)
  * Can any box from nodebox does not extend above query?
  */
 static bool
-overBelow8D(const STboxNode *nodebox, const STBOX *query)
+overBelow8D(const STboxNode *nodebox, const STBox *query)
 {
   return (nodebox->right.ymax <= query->ymax);
 }
@@ -377,7 +377,7 @@ overBelow8D(const STboxNode *nodebox, const STBOX *query)
  * Can any box from nodebox be above of query?
  */
 static bool
-above8D(const STboxNode *nodebox, const STBOX *query)
+above8D(const STboxNode *nodebox, const STBox *query)
 {
   return (nodebox->left.ymin > query->ymax);
 }
@@ -386,7 +386,7 @@ above8D(const STboxNode *nodebox, const STBOX *query)
  * Can any box from nodebox does not extend below of query?
  */
 static bool
-overAbove8D(const STboxNode *nodebox, const STBOX *query)
+overAbove8D(const STboxNode *nodebox, const STBox *query)
 {
   return (nodebox->left.ymin >= query->ymin);
 }
@@ -395,7 +395,7 @@ overAbove8D(const STboxNode *nodebox, const STBOX *query)
  * Can any box from nodebox be in front of query?
  */
 static bool
-front8D(STboxNode *nodebox, STBOX *query)
+front8D(STboxNode *nodebox, STBox *query)
 {
   return (nodebox->right.zmax < query->zmin);
 }
@@ -404,7 +404,7 @@ front8D(STboxNode *nodebox, STBOX *query)
  * Can any box from nodebox does not extend the back of query?
  */
 static bool
-overFront8D(const STboxNode *nodebox, const STBOX *query)
+overFront8D(const STboxNode *nodebox, const STBox *query)
 {
   return (nodebox->right.zmax <= query->zmax);
 }
@@ -413,7 +413,7 @@ overFront8D(const STboxNode *nodebox, const STBOX *query)
  * Can any box from nodebox be back to query?
  */
 static bool
-back8D(const STboxNode *nodebox, const STBOX *query)
+back8D(const STboxNode *nodebox, const STBox *query)
 {
   return (nodebox->left.zmin > query->zmax);
 }
@@ -422,7 +422,7 @@ back8D(const STboxNode *nodebox, const STBOX *query)
  * Can any box from nodebox does not extend the front of query?
  */
 static bool
-overBack8D(const STboxNode *nodebox, const STBOX *query)
+overBack8D(const STboxNode *nodebox, const STBox *query)
 {
   return (nodebox->left.zmin >= query->zmin);
 }
@@ -431,7 +431,7 @@ overBack8D(const STboxNode *nodebox, const STBOX *query)
  * Can any box from nodebox be before of query?
  */
 static bool
-before8D(const STboxNode *nodebox, const STBOX *query)
+before8D(const STboxNode *nodebox, const STBox *query)
 {
   return datum_lt(nodebox->right.period.upper, query->period.lower, T_TIMESTAMPTZ);
 }
@@ -440,7 +440,7 @@ before8D(const STboxNode *nodebox, const STBOX *query)
  * Can any box from nodebox does not extend the after of query?
  */
 static bool
-overBefore8D(const STboxNode *nodebox, const STBOX *query)
+overBefore8D(const STboxNode *nodebox, const STBox *query)
 {
   return datum_le(nodebox->right.period.upper, query->period.upper, T_TIMESTAMPTZ);
 }
@@ -449,7 +449,7 @@ overBefore8D(const STboxNode *nodebox, const STBOX *query)
  * Can any box from nodebox be after of query?
  */
 static bool
-after8D(const STboxNode *nodebox, const STBOX *query)
+after8D(const STboxNode *nodebox, const STBox *query)
 {
   return datum_gt(nodebox->left.period.lower, query->period.upper, T_TIMESTAMPTZ);
 }
@@ -458,7 +458,7 @@ after8D(const STboxNode *nodebox, const STBOX *query)
  * Can any box from nodebox does not extend the before of query?
  */
 static bool
-overAfter8D(const STboxNode *nodebox, const STBOX *query)
+overAfter8D(const STboxNode *nodebox, const STBox *query)
 {
   return datum_ge(nodebox->left.period.lower, query->period.lower, T_TIMESTAMPTZ);
 }
@@ -472,7 +472,7 @@ overAfter8D(const STboxNode *nodebox, const STBOX *query)
  * restrictive.
  */
 static double
-distance_stbox_nodebox(const STBOX *query, const STboxNode *nodebox)
+distance_stbox_nodebox(const STBox *query, const STboxNode *nodebox)
 {
   /* The query argument can be an empty geometry */
   if (! MOBDB_FLAGS_GET_X(query->flags))
@@ -515,10 +515,10 @@ distance_stbox_nodebox(const STBOX *query, const STboxNode *nodebox)
 }
 
 /**
- * Transform a query argument into an STBOX.
+ * Transform a query argument into an STBox.
  */
 static bool
-tpoint_spgist_get_stbox(const ScanKeyData *scankey, STBOX *result)
+tpoint_spgist_get_stbox(const ScanKeyData *scankey, STBox *result)
 {
   mobdbType type = oid_type(scankey->sk_subtype);
   if (tgeo_basetype(type))
@@ -548,7 +548,7 @@ tpoint_spgist_get_stbox(const ScanKeyData *scankey, STBOX *result)
   }
   else if (type == T_STBOX)
   {
-    memcpy(result, DatumGetSTboxP(scankey->sk_argument), sizeof(STBOX));
+    memcpy(result, DatumGetSTboxP(scankey->sk_argument), sizeof(STBox));
   }
   else if (tspatial_type(type))
   {
@@ -593,7 +593,7 @@ Stbox_quadtree_choose(PG_FUNCTION_ARGS)
 {
   spgChooseIn *in = (spgChooseIn *) PG_GETARG_POINTER(0);
   spgChooseOut *out = (spgChooseOut *) PG_GETARG_POINTER(1);
-  STBOX *centroid = DatumGetSTboxP(in->prefixDatum),
+  STBox *centroid = DatumGetSTboxP(in->prefixDatum),
     *box = DatumGetSTboxP(in->leafDatum);
 
   out->resultType = spgMatchNode;
@@ -622,9 +622,9 @@ Stbox_quadtree_picksplit(PG_FUNCTION_ARGS)
 {
   spgPickSplitIn *in = (spgPickSplitIn *) PG_GETARG_POINTER(0);
   spgPickSplitOut *out = (spgPickSplitOut *) PG_GETARG_POINTER(1);
-  STBOX *box = DatumGetSTboxP(in->datums[0]);
+  STBox *box = DatumGetSTboxP(in->datums[0]);
   bool hasz = MOBDB_FLAGS_GET_Z(box->flags);
-  STBOX *centroid = palloc0(sizeof(STBOX));
+  STBox *centroid = palloc0(sizeof(STBox));
   centroid->srid = box->srid;
   centroid->flags = box->flags;
   int  median, i;
@@ -733,7 +733,7 @@ Stbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
   MemoryContext old_ctx;
   STboxNode *nodebox, infbox, next_nodebox;
   uint16 quadrant;
-  STBOX *centroid, *queries, *orderbys;
+  STBox *centroid, *queries, *orderbys;
 
   /* Fetch the centroid of this node. */
   assert(in->hasPrefix);
@@ -759,7 +759,7 @@ Stbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
    */
   if (in->norderbys > 0)
   {
-    orderbys = palloc0(sizeof(STBOX) * in->norderbys);
+    orderbys = palloc0(sizeof(STBox) * in->norderbys);
     for (i = 0; i < in->norderbys; i++)
       /* If the argument is an empty geometry the following call will do nothing */
       tpoint_spgist_get_stbox(&in->orderbys[i], &orderbys[i]);
@@ -801,7 +801,7 @@ Stbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
    */
   if (in->nkeys > 0)
   {
-    queries = palloc0(sizeof(STBOX) * in->nkeys);
+    queries = palloc0(sizeof(STBox) * in->nkeys);
     for (i = 0; i < in->nkeys; i++)
       /* If the argument is an empty geometry the following call will do nothing */
       tpoint_spgist_get_stbox(&in->scankeys[i], &queries[i]);
@@ -929,7 +929,7 @@ Stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
 {
   spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
   spgLeafConsistentOut *out = (spgLeafConsistentOut *) PG_GETARG_POINTER(1);
-  STBOX *key = DatumGetSTboxP(in->leafDatum), box;
+  STBox *key = DatumGetSTboxP(in->leafDatum), box;
   bool result = true;
   int i;
 
@@ -987,7 +987,7 @@ PGDLLEXPORT Datum
 Tpoint_spgist_compress(PG_FUNCTION_ARGS)
 {
   Datum tempdatum = PG_GETARG_DATUM(0);
-  STBOX *result = palloc(sizeof(STBOX));
+  STBox *result = palloc(sizeof(STBox));
   temporal_bbox_slice(tempdatum, result);
   PG_RETURN_STBOX_P(result);
 }

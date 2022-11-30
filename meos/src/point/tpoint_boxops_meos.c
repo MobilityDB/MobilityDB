@@ -60,7 +60,7 @@ overlaps_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
  * @sqlop @p &&
  */
 bool
-overlaps_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
+overlaps_stbox_tpoint(const STBox *stbox, const Temporal *tpoint)
 {
   return boxop_tpoint_stbox(tpoint, stbox, &overlaps_stbox_stbox, INVERT);
 }
@@ -84,7 +84,7 @@ overlaps_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
  * @sqlop @p &&
  */
 bool
-overlaps_tpoint_stbox(const Temporal* tpoint, const STBOX *stbox)
+overlaps_tpoint_stbox(const Temporal* tpoint, const STBox *stbox)
 {
   return boxop_tpoint_stbox(tpoint, stbox, &overlaps_stbox_stbox, INVERT_NO);
 }
@@ -123,7 +123,7 @@ contains_bbox_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
  * @sqlop @p \@>
  */
 bool
-contains_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
+contains_stbox_tpoint(const STBox *stbox, const Temporal *tpoint)
 {
   return boxop_tpoint_stbox(tpoint, stbox, &contains_stbox_stbox, INVERT);
 }
@@ -147,7 +147,7 @@ contains_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
  * @sqlop @p \@>
  */
 bool
-contains_tpoint_stbox(const Temporal* tpoint, const STBOX *stbox)
+contains_tpoint_stbox(const Temporal* tpoint, const STBox *stbox)
 {
   return boxop_tpoint_stbox(tpoint, stbox, &contains_stbox_stbox, INVERT_NO);
 }
@@ -187,7 +187,7 @@ contained_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
  * @sqlop @p <@
  */
 bool
-contained_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
+contained_stbox_tpoint(const STBox *stbox, const Temporal *tpoint)
 {
   return boxop_tpoint_stbox(tpoint, stbox, &contained_stbox_stbox, INVERT);
 }
@@ -211,7 +211,7 @@ contained_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
  * @sqlop @p <@
  */
 bool
-contained_tpoint_stbox(const Temporal* tpoint, const STBOX *stbox)
+contained_tpoint_stbox(const Temporal* tpoint, const STBox *stbox)
 {
   return boxop_tpoint_stbox(tpoint, stbox, &contained_stbox_stbox, INVERT_NO);
 }
@@ -251,7 +251,7 @@ same_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
  * @sqlop @p ~=
  */
 bool
-same_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
+same_stbox_tpoint(const STBox *stbox, const Temporal *tpoint)
 {
   return boxop_tpoint_stbox(tpoint, stbox, &same_stbox_stbox, INVERT);
 }
@@ -275,7 +275,7 @@ same_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
  * @sqlop @p ~=
  */
 bool
-same_tpoint_stbox(const Temporal* tpoint, const STBOX *stbox)
+same_tpoint_stbox(const Temporal* tpoint, const STBox *stbox)
 {
   return boxop_tpoint_stbox(tpoint, stbox, &same_stbox_stbox, INVERT_NO);
 }
@@ -315,7 +315,7 @@ adjacent_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
  * @sqlop @p -|-
  */
 bool
-adjacent_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
+adjacent_stbox_tpoint(const STBox *stbox, const Temporal *tpoint)
 {
   return boxop_tpoint_stbox(tpoint, stbox, &adjacent_stbox_stbox, INVERT);
 }
@@ -339,7 +339,7 @@ adjacent_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
  * @sqlop @p -|-
  */
 bool
-adjacent_tpoint_stbox(const Temporal* tpoint, const STBOX *stbox)
+adjacent_tpoint_stbox(const Temporal* tpoint, const STBox *stbox)
 {
   return boxop_tpoint_stbox(tpoint, stbox, &adjacent_stbox_stbox, INVERT_NO);
 }

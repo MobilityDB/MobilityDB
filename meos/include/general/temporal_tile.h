@@ -64,7 +64,7 @@ typedef struct TboxGridState
   int i;
   double xsize;
   int64 tunits;
-  TBOX box;
+  TBox box;
   double value;
   TimestampTz t;
 } TboxGridState;
@@ -97,8 +97,8 @@ extern SpanBucketState *span_bucket_state_make(const Span *s, Datum size,
 extern void span_bucket_state_next(SpanBucketState *state);
 
 extern void tbox_tile_get(double value, TimestampTz t, double xsize,
-  int64 tunits, TBOX *box);
-extern TboxGridState *tbox_tile_state_make(const TBOX *box, double xsize,
+  int64 tunits, TBox *box);
+extern TboxGridState *tbox_tile_state_make(const TBox *box, double xsize,
   const Interval *duration, double xorigin, TimestampTz torigin);
 extern void tbox_tile_state_next(TboxGridState *state);
 

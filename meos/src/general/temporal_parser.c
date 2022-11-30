@@ -234,7 +234,7 @@ basetype_parse(const char **str, mobdbType basetype)
 /**
  * @brief Parse a temporal box value from the buffer.
  */
-TBOX *
+TBox *
 tbox_parse(const char **str)
 {
   bool hasx = false, hast = false;
@@ -297,7 +297,7 @@ tbox_parse(const char **str)
   /* Ensure there is no more input */
   ensure_end_input(str, true, "temporal box");
 
-  TBOX *result = tbox_make(period, span);
+  TBox *result = tbox_make(period, span);
   if (hast)
     pfree(period);
   if (hasx)

@@ -32,7 +32,7 @@
  *
  * The bounding box of temporal values are
  * - a `Period` for temporal Booleans
- * - a `TBOX` for temporal integers and floats, where the *x* coordinate is for
+ * - a `TBox` for temporal integers and floats, where the *x* coordinate is for
  *   the value dimension and the *t* coordinate is for the time dimension.
  * The following operators are defined: `overlaps`, `contains`, `contained`,
  * `same`, and `adjacent`.
@@ -713,7 +713,7 @@ contains_tnumber_spanset(const Temporal *tnumber, const SpanSet *ss)
  * @sqlop @p \@>
  */
 bool
-contains_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
+contains_tbox_tnumber(const TBox *tbox, const Temporal *tnumber)
 {
   return boxop_tnumber_tbox(tnumber, tbox, &contains_tbox_tbox, INVERT);
 }
@@ -725,7 +725,7 @@ contains_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
  * @sqlop @p \@>
  */
 bool
-contains_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
+contains_tnumber_tbox(const Temporal *tnumber, const TBox *tbox)
 {
   return boxop_tnumber_tbox(tnumber, tbox, &contains_tbox_tbox, INVERT_NO);
 }
@@ -851,7 +851,7 @@ contained_tnumber_spanset(const Temporal *tnumber, const SpanSet *ss)
  * @sqlop @p <@
  */
 bool
-contained_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
+contained_tbox_tnumber(const TBox *tbox, const Temporal *tnumber)
 {
   return boxop_tnumber_tbox(tnumber, tbox, &contained_tbox_tbox, INVERT);
 }
@@ -863,7 +863,7 @@ contained_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
  * @sqlop @p <@
  */
 bool
-contained_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
+contained_tnumber_tbox(const Temporal *tnumber, const TBox *tbox)
 {
   return boxop_tnumber_tbox(tnumber, tbox, &contained_tbox_tbox, INVERT_NO);
 }
@@ -988,7 +988,7 @@ overlaps_tnumber_spanset(const Temporal *tnumber, const SpanSet *ss)
  * @sqlop @p &&
  */
 bool
-overlaps_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
+overlaps_tbox_tnumber(const TBox *tbox, const Temporal *tnumber)
 {
   return boxop_tnumber_tbox(tnumber, tbox, &overlaps_tbox_tbox, INVERT);
 }
@@ -1000,7 +1000,7 @@ overlaps_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
  * @sqlop @p &&
  */
 bool
-overlaps_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
+overlaps_tnumber_tbox(const Temporal *tnumber, const TBox *tbox)
 {
   return boxop_tnumber_tbox(tnumber, tbox, &overlaps_tbox_tbox, INVERT_NO);
 }
@@ -1125,7 +1125,7 @@ same_tnumber_spanset(const Temporal *tnumber, const SpanSet *ss)
  * @sqlop @p ~=
  */
 bool
-same_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
+same_tbox_tnumber(const TBox *tbox, const Temporal *tnumber)
 {
   return boxop_tnumber_tbox(tnumber, tbox, &same_tbox_tbox, INVERT);
 }
@@ -1137,7 +1137,7 @@ same_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
  * @sqlop @p ~=
  */
 bool
-same_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
+same_tnumber_tbox(const Temporal *tnumber, const TBox *tbox)
 {
   return boxop_tnumber_tbox(tnumber, tbox, &same_tbox_tbox, INVERT_NO);
 }
@@ -1263,7 +1263,7 @@ adjacent_tnumber_spanset(const Temporal *tnumber, const SpanSet *ss)
  * @sqlop @p -|-
  */
 bool
-adjacent_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
+adjacent_tbox_tnumber(const TBox *tbox, const Temporal *tnumber)
 {
   return boxop_tnumber_tbox(tnumber, tbox, &adjacent_tbox_tbox, INVERT);
 }
@@ -1275,7 +1275,7 @@ adjacent_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
  * @sqlop @p -|-
  */
 bool
-adjacent_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
+adjacent_tnumber_tbox(const Temporal *tnumber, const TBox *tbox)
 {
   return boxop_tnumber_tbox(tnumber, tbox, &adjacent_tbox_tbox, INVERT_NO);
 }

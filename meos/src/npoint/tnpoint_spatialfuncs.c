@@ -53,10 +53,10 @@
  *****************************************************************************/
 
 /**
- * Ensure that a temporal network point and a STBOX have the same SRID
+ * Ensure that a temporal network point and a STBox have the same SRID
  */
 void
-ensure_same_srid_tnpoint_stbox(const Temporal *temp, const STBOX *box)
+ensure_same_srid_tnpoint_stbox(const Temporal *temp, const STBox *box)
 {
   if (MOBDB_FLAGS_GET_X(box->flags) &&
     tnpoint_srid(temp) != box->srid)

@@ -817,7 +817,7 @@ PGDLLEXPORT Datum
 Tnumber_to_tbox(PG_FUNCTION_ARGS)
 {
   Datum tempdatum = PG_GETARG_DATUM(0);
-  TBOX *result = palloc(sizeof(TBOX));
+  TBox *result = palloc(sizeof(TBox));
   temporal_bbox_slice(tempdatum, result);
   PG_RETURN_POINTER(result);
 }
@@ -2111,7 +2111,7 @@ static Datum
 tnumber_restrict_tbox_ext(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  TBOX *box = PG_GETARG_TBOX_P(1);
+  TBox *box = PG_GETARG_TBOX_P(1);
   Temporal *result = atfunc ? tnumber_at_tbox(temp, box) :
     tnumber_minus_tbox(temp, box);
   PG_FREE_IF_COPY(temp, 0);

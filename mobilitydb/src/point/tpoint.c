@@ -495,7 +495,7 @@ PGDLLEXPORT Datum
 Tpoint_to_stbox(PG_FUNCTION_ARGS)
 {
   Datum tempdatum = PG_GETARG_DATUM(0);
-  STBOX *result = palloc(sizeof(STBOX));
+  STBox *result = palloc(sizeof(STBox));
   temporal_bbox_slice(tempdatum, result);
   PG_RETURN_POINTER(result);
 }
@@ -516,7 +516,7 @@ Geo_expand_spatial(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   double d = PG_GETARG_FLOAT8(1);
-  STBOX *result = geo_expand_spatial(gs, d);
+  STBox *result = geo_expand_spatial(gs, d);
   PG_FREE_IF_COPY(gs, 0);
   if (! result)
     PG_RETURN_NULL();
@@ -535,7 +535,7 @@ Tpoint_expand_spatial(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   double d = PG_GETARG_FLOAT8(1);
-  STBOX *result = tpoint_expand_spatial(temp, d);
+  STBox *result = tpoint_expand_spatial(temp, d);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

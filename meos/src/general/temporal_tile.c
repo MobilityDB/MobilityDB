@@ -406,7 +406,7 @@ period_bucket_list(const Span *bounds, const Interval *duration,
 #endif /* MEOS */
 
 /*****************************************************************************
- * TBOX tile functions
+ * TBox tile functions
  *****************************************************************************/
 
 /**
@@ -420,7 +420,7 @@ period_bucket_list(const Span *bounds, const Interval *duration,
  */
 void
 tbox_tile_get(double value, TimestampTz t, double xsize, int64 tunits,
-  TBOX *box)
+  TBox *box)
 {
   Datum xmin = Float8GetDatum(value);
   Datum xmax = Float8GetDatum(value + xsize);
@@ -446,7 +446,7 @@ tbox_tile_get(double value, TimestampTz t, double xsize, int64 tunits,
  * @pre Both xsize and tunits must be greater than 0.
  */
 TboxGridState *
-tbox_tile_state_make(const TBOX *box, double xsize, const Interval *duration,
+tbox_tile_state_make(const TBox *box, double xsize, const Interval *duration,
   double xorigin, TimestampTz torigin)
 {
   int64 tunits = interval_units(duration);
@@ -512,7 +512,7 @@ tbox_tile_state_next(TboxGridState *state)
 
 #if MEOS
 /**
- * @brief Return the tile list from a TBOX.
+ * @brief Return the tile list from a TBox.
  *
  * @param[in] bounds Input span to split
  * @param[in] xsize Value size of the tiles
@@ -522,8 +522,8 @@ tbox_tile_state_next(TboxGridState *state)
  * @param[out] rows,columns Number of rows and columns in the output array
  */
 
-TBOX *
-tbox_tile_list(const TBOX *bounds, double xsize, const Interval *duration,
+TBox *
+tbox_tile_list(const TBox *bounds, double xsize, const Interval *duration,
   double xorigin, TimestampTz torigin, int *rows, int *columns)
 {
   // TODO: generalize for intspan
@@ -536,7 +536,7 @@ tbox_tile_list(const TBOX *bounds, double xsize, const Interval *duration,
     DatumGetFloat8(bounds->span.lower)) / xsize);
   int no_cols = ceil((DatumGetTimestampTz(bounds->period.upper) -
     DatumGetTimestampTz(bounds->period.lower)) / tsize);
-  TBOX *result = palloc0(sizeof(TBOX) * no_rows * no_cols);
+  TBox *result = palloc0(sizeof(TBox) * no_rows * no_cols);
   for (int i = 0; i < no_rows * no_cols; i++)
   {
     tbox_tile_get(state->value, state->t, state->xsize, state->tunits,
@@ -559,8 +559,8 @@ tbox_tile_list(const TBOX *bounds, double xsize, const Interval *duration,
  * @param[in] torigin Time origin of the tiles
  * @param[out] rows,columns Number of rows and columns in the output array
  */
-TBOX *
-floatspan_period_tile_list(const TBOX *bounds, double xsize,
+TBox *
+floatspan_period_tile_list(const TBox *bounds, double xsize,
   const Interval *duration, double xorigin, TimestampTz torigin, int *rows,
   int *columns)
 {

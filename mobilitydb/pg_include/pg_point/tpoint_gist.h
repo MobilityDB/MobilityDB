@@ -44,7 +44,7 @@
 
 /* The following functions are also called by tpoint_spgist.c */
 extern bool tpoint_index_recheck(StrategyNumber strategy);
-extern bool stbox_index_consistent_leaf(const STBOX *key, const STBOX *query,
+extern bool stbox_index_consistent_leaf(const STBox *key, const STBox *query,
   StrategyNumber strategy);
 
 /*****************************************************************************/

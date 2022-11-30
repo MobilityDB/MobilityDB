@@ -31,7 +31,7 @@
  * @brief Bounding box operators for temporal network points.
  *
  * These operators test the bounding boxes of temporal npoints, which are
- * STBOX boxes. The following operators are defined:
+ * STBox boxes. The following operators are defined:
  *    overlaps, contains, contained, same
  * The operators consider as many dimensions as they are shared in both
  * arguments: only the space dimension, only the time dimension, or both
@@ -54,7 +54,7 @@
 #include "pg_npoint/tnpoint.h"
 
 /*****************************************************************************
- * Transform a temporal Npoint to a STBOX
+ * Transform a temporal Npoint to a STBox
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(Npoint_to_stbox);
@@ -68,7 +68,7 @@ PGDLLEXPORT Datum
 Npoint_to_stbox(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
-  STBOX *result = palloc0(sizeof(STBOX));
+  STBox *result = palloc0(sizeof(STBox));
   npoint_set_stbox(np, result);
   PG_RETURN_POINTER(result);
 }
@@ -84,7 +84,7 @@ PGDLLEXPORT Datum
 Nsegment_to_stbox(PG_FUNCTION_ARGS)
 {
   Nsegment *ns = PG_GETARG_NSEGMENT_P(0);
-  STBOX *result = palloc(sizeof(STBOX));
+  STBox *result = palloc(sizeof(STBox));
   nsegment_set_stbox(ns, result);
   PG_RETURN_POINTER(result);
 }
@@ -103,7 +103,7 @@ Npoint_timestamp_to_stbox(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  STBOX *result = palloc0(sizeof(STBOX));
+  STBox *result = palloc0(sizeof(STBox));
   npoint_timestamp_set_stbox(np, t, result);
   PG_RETURN_POINTER(result);
 }
@@ -120,7 +120,7 @@ Npoint_period_to_stbox(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
   Period *p = PG_GETARG_SPAN_P(1);
-  STBOX *result = palloc0(sizeof(STBOX));
+  STBox *result = palloc0(sizeof(STBox));
   npoint_period_set_stbox(np, p, result);
   PG_RETURN_POINTER(result);
 }
@@ -138,7 +138,7 @@ PGDLLEXPORT Datum
 Tnpoint_to_stbox(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  STBOX *result = tpoint_to_stbox(temp);
+  STBox *result = tpoint_to_stbox(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -155,7 +155,7 @@ Tnpoint_to_stbox(PG_FUNCTION_ARGS)
  */
 Datum
 boxop_geo_tnpoint_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const STBOX *, const STBOX *))
+  bool (*func)(const STBox *, const STBox *))
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
@@ -175,7 +175,7 @@ boxop_geo_tnpoint_ext(FunctionCallInfo fcinfo,
  */
 Datum
 boxop_tnpoint_geo_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const STBOX *, const STBOX *))
+  bool (*func)(const STBox *, const STBox *))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
@@ -197,9 +197,9 @@ boxop_tnpoint_geo_ext(FunctionCallInfo fcinfo,
  */
 Datum
 boxop_stbox_tnpoint_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const STBOX *, const STBOX *), bool spatial)
+  bool (*func)(const STBox *, const STBox *), bool spatial)
 {
-  STBOX *box = PG_GETARG_STBOX_P(0);
+  STBox *box = PG_GETARG_STBOX_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   int result = boxop_tnpoint_stbox(temp, box, func, spatial, INVERT);
   PG_FREE_IF_COPY(temp, 1);
@@ -218,10 +218,10 @@ boxop_stbox_tnpoint_ext(FunctionCallInfo fcinfo,
  */
 Datum
 boxop_tnpoint_stbox_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const STBOX *, const STBOX *), bool spatial)
+  bool (*func)(const STBox *, const STBox *), bool spatial)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  STBOX *box = PG_GETARG_STBOX_P(1);
+  STBox *box = PG_GETARG_STBOX_P(1);
   int result = boxop_tnpoint_stbox(temp, box, func, spatial, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
   if (result < 0)
@@ -237,7 +237,7 @@ boxop_tnpoint_stbox_ext(FunctionCallInfo fcinfo,
  */
 Datum
 boxop_npoint_tnpoint_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const STBOX *, const STBOX *))
+  bool (*func)(const STBox *, const STBox *))
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
@@ -254,7 +254,7 @@ boxop_npoint_tnpoint_ext(FunctionCallInfo fcinfo,
  */
 Datum
 boxop_tnpoint_npoint_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const STBOX *, const STBOX *))
+  bool (*func)(const STBox *, const STBox *))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Npoint *np = PG_GETARG_NPOINT_P(1);
@@ -271,7 +271,7 @@ boxop_tnpoint_npoint_ext(FunctionCallInfo fcinfo,
  */
 Datum
 boxop_tnpoint_tnpoint_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const STBOX *, const STBOX *))
+  bool (*func)(const STBox *, const STBox *))
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
@@ -419,7 +419,7 @@ Contains_stbox_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contains_npoint_tnpoint);
 /**
- * @ingroup mobilitydb_temporal_bbox 
+ * @ingroup mobilitydb_temporal_bbox
  * @brief Return true if the spatiotemporal box of the network point contains the one
  * of the temporal network point
  * @sqlfunc contains_bbox()

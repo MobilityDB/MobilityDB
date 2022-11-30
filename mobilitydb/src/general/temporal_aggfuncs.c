@@ -221,9 +221,9 @@ PG_FUNCTION_INFO_V1(Tnumber_extent_transfn);
 PGDLLEXPORT Datum
 Tnumber_extent_transfn(PG_FUNCTION_ARGS)
 {
-  TBOX *box = PG_ARGISNULL(0) ? NULL : PG_GETARG_TBOX_P(0);
+  TBox *box = PG_ARGISNULL(0) ? NULL : PG_GETARG_TBOX_P(0);
   Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL_P(1);
-  TBOX *result = tnumber_extent_transfn(box, temp);
+  TBox *result = tnumber_extent_transfn(box, temp);
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
     PG_RETURN_NULL();

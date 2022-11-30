@@ -1282,7 +1282,7 @@ tbox_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
 /**
  * Return a temporal box from its WKB representation
  */
-static TBOX *
+static TBox *
 tbox_from_wkb_state(wkb_parse_state *s)
 {
   /* Read the temporal flags */
@@ -1299,7 +1299,7 @@ tbox_from_wkb_state(wkb_parse_state *s)
   if (s->hasx)
     span = span_from_wkb_state(s);
   /* Create the temporal box */
-  TBOX *result = tbox_make(period, span);
+  TBox *result = tbox_make(period, span);
   return result;
 }
 
@@ -1333,7 +1333,7 @@ stbox_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
 /**
  * Return a spatiotemporal box from its WKB representation
  */
-static STBOX *
+static STBox *
 stbox_from_wkb_state(wkb_parse_state *s)
 {
   /* Read the temporal flags */
@@ -1363,7 +1363,7 @@ stbox_from_wkb_state(wkb_parse_state *s)
       zmax = double_from_wkb_state(s);
     }
   }
-  STBOX *result = stbox_make(period, s->hasx, s->hasz, s->geodetic, s->srid,
+  STBox *result = stbox_make(period, s->hasx, s->hasz, s->geodetic, s->srid,
     xmin, xmax, ymin, ymax, zmin, zmax);
   if (s->hast)
     pfree(period);
@@ -1802,7 +1802,7 @@ spanset_from_hexwkb(const char *hexwkb)
  * representation.
  * @sqlfunc tboxFromBinary()
  */
-TBOX *
+TBox *
 tbox_from_wkb(const uint8_t *wkb, int size)
 {
   return DatumGetTboxP(datum_from_wkb(wkb, size, T_TBOX));
@@ -1813,7 +1813,7 @@ tbox_from_wkb(const uint8_t *wkb, int size)
  * @brief Return a temporal box from its WKB representation in hex-encoded ASCII
  * @sqlfunc tboxFromHexWKB()
  */
-TBOX *
+TBox *
 tbox_from_hexwkb(const char *hexwkb)
 {
   int size = strlen(hexwkb);
@@ -1828,7 +1828,7 @@ tbox_from_hexwkb(const char *hexwkb)
  * representation.
  * @sqlfunc stboxFromBinary()
  */
-STBOX *
+STBox *
 stbox_from_wkb(const uint8_t *wkb, int size)
 {
   return DatumGetSTboxP(datum_from_wkb(wkb, size, T_STBOX));
@@ -1840,7 +1840,7 @@ stbox_from_wkb(const uint8_t *wkb, int size)
  * hex-encoded ASCII
  * @sqlfunc stboxFromWKB()
  */
-STBOX *
+STBox *
 stbox_from_hexwkb(const char *hexwkb)
 {
   int size = strlen(hexwkb);

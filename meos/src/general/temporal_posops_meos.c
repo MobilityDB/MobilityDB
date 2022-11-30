@@ -831,7 +831,7 @@ overright_tnumber_span(const Temporal *tnumber, const Span *span)
 }
 
 /*****************************************************************************/
-/* TBOX op Temporal */
+/* TBox op Temporal */
 
 /**
  * @ingroup libmeos_temporal_pos
@@ -840,7 +840,7 @@ overright_tnumber_span(const Temporal *tnumber, const Span *span)
  * @sqlop @p <<
  */
 bool
-left_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
+left_tbox_tnumber(const TBox *tbox, const Temporal *tnumber)
 {
   return boxop_tnumber_tbox(tnumber, tbox, &left_tbox_tbox, INVERT);
 }
@@ -852,7 +852,7 @@ left_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
  * @sqlop @p &<
  */
 bool
-overleft_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
+overleft_tbox_tnumber(const TBox *tbox, const Temporal *tnumber)
 {
   return boxop_tnumber_tbox(tnumber, tbox, &overleft_tbox_tbox, INVERT);
 }
@@ -864,7 +864,7 @@ overleft_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
  * @sqlop @p >>
  */
 bool
-right_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
+right_tbox_tnumber(const TBox *tbox, const Temporal *tnumber)
 {
   return boxop_tnumber_tbox(tnumber, tbox, &right_tbox_tbox, INVERT);
 }
@@ -876,7 +876,7 @@ right_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
  * @sqlop @p &>
  */
 bool
-overright_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
+overright_tbox_tnumber(const TBox *tbox, const Temporal *tnumber)
 {
   return boxop_tnumber_tbox(tnumber, tbox, &overright_tbox_tbox, INVERT);
 }
@@ -888,7 +888,7 @@ overright_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
  * @sqlop @p <<#
  */
 bool
-before_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
+before_tbox_tnumber(const TBox *tbox, const Temporal *tnumber)
 {
   return boxop_tnumber_tbox(tnumber, tbox, &before_tbox_tbox, INVERT);
 }
@@ -899,7 +899,7 @@ before_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
  * @sqlop @p &<#
  */
 bool
-overbefore_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
+overbefore_tbox_tnumber(const TBox *tbox, const Temporal *tnumber)
 {
   return boxop_tnumber_tbox(tnumber, tbox, &overbefore_tbox_tbox, INVERT);
 }
@@ -910,7 +910,7 @@ overbefore_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
  * @sqlop @p #>>
  */
 bool
-after_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
+after_tbox_tnumber(const TBox *tbox, const Temporal *tnumber)
 {
   return boxop_tnumber_tbox(tnumber, tbox, &after_tbox_tbox, INVERT);
 }
@@ -921,13 +921,13 @@ after_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
  * @sqlop @p #&>
  */
 bool
-overafter_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
+overafter_tbox_tnumber(const TBox *tbox, const Temporal *tnumber)
 {
   return boxop_tnumber_tbox(tnumber, tbox, &overafter_tbox_tbox, INVERT);
 }
 
 /*****************************************************************************/
-/* Temporal op TBOX */
+/* Temporal op TBox */
 
 /**
  * @ingroup libmeos_temporal_pos
@@ -936,7 +936,7 @@ overafter_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
  * @sqlop @p <<
  */
 bool
-left_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
+left_tnumber_tbox(const Temporal *tnumber, const TBox *tbox)
 {
   return boxop_tnumber_tbox(tnumber, tbox, &left_tbox_tbox, INVERT_NO);
 }
@@ -948,7 +948,7 @@ left_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
  * @sqlop @p &<
  */
 bool
-overleft_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
+overleft_tnumber_tbox(const Temporal *tnumber, const TBox *tbox)
 {
   return boxop_tnumber_tbox(tnumber, tbox, &overleft_tbox_tbox, INVERT_NO);
 }
@@ -960,7 +960,7 @@ overleft_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
  * @sqlop @p >>
  */
 bool
-right_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
+right_tnumber_tbox(const Temporal *tnumber, const TBox *tbox)
 {
   return boxop_tnumber_tbox(tnumber, tbox, &right_tbox_tbox, INVERT_NO);
 }
@@ -971,7 +971,7 @@ right_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
  * @sqlop @p &>
  */
 bool
-overright_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
+overright_tnumber_tbox(const Temporal *tnumber, const TBox *tbox)
 {
   return boxop_tnumber_tbox(tnumber, tbox, &overright_tbox_tbox, INVERT_NO);
 }
@@ -982,7 +982,7 @@ overright_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
  * @sqlop @p <<#
  */
 bool
-before_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
+before_tnumber_tbox(const Temporal *tnumber, const TBox *tbox)
 {
   return boxop_tnumber_tbox(tnumber, tbox, &before_tbox_tbox, INVERT_NO);
 }
@@ -993,7 +993,7 @@ before_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
  * @sqlop @p &<#
  */
 bool
-overbefore_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
+overbefore_tnumber_tbox(const Temporal *tnumber, const TBox *tbox)
 {
   return boxop_tnumber_tbox(tnumber, tbox, &overbefore_tbox_tbox, INVERT_NO);
 }
@@ -1004,7 +1004,7 @@ overbefore_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
  * @sqlop @p #>>
  */
 bool
-after_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
+after_tnumber_tbox(const Temporal *tnumber, const TBox *tbox)
 {
   return boxop_tnumber_tbox(tnumber, tbox, &after_tbox_tbox, INVERT_NO);
 }
@@ -1015,7 +1015,7 @@ after_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
  * @sqlop @p #&>
  */
 bool
-overafter_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
+overafter_tnumber_tbox(const Temporal *tnumber, const TBox *tbox)
 {
   return boxop_tnumber_tbox(tnumber, tbox, &overafter_tbox_tbox, INVERT_NO);
 }

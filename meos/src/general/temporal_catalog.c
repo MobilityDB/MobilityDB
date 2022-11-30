@@ -502,17 +502,11 @@ ensure_tnumber_spansettype(mobdbType spansettype)
   return;
 }
 
-
-
-
-
-
-
 /**
  * Return true if the type is a spatiotemporal type
  *
  * @note This function is used for features common to all spatiotemporal types,
- * in particular, all of them use the same bounding box STBOX. Therefore it is
+ * in particular, all of them use the same bounding box STBox. Therefore it is
  * used for the indexes and selectivity functions
  */
 bool
@@ -531,7 +525,7 @@ tspatial_type(mobdbType temptype)
  * Return true if the type is a spatiotemporal type
  *
  * @note This function is used for features common to all spatiotemporal types,
- * in particular, all of them use the same bounding box STBOX
+ * in particular, all of them use the same bounding box STBox
  */
 bool
 tspatial_basetype(mobdbType basetype)

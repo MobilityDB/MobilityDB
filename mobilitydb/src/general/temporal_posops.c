@@ -863,7 +863,7 @@ Overright_tnumber_spanset(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************/
-/* TBOX op Temporal */
+/* TBox op Temporal */
 
 PG_FUNCTION_INFO_V1(Left_tbox_tnumber);
 /**
@@ -970,7 +970,7 @@ Overafter_tbox_tnumber(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************/
-/* Temporal op TBOX */
+/* Temporal op TBox */
 
 PG_FUNCTION_INFO_V1(Left_tnumber_tbox);
 /**

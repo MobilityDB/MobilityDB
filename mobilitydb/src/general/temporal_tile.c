@@ -240,7 +240,7 @@ Tbox_tile_list(PG_FUNCTION_ARGS)
   if (SRF_IS_FIRSTCALL())
   {
     /* Get input parameters */
-    TBOX *bounds = PG_GETARG_TBOX_P(0);
+    TBox *bounds = PG_GETARG_TBOX_P(0);
     double xsize = PG_GETARG_FLOAT8(1);
     Interval *duration = PG_GETARG_INTERVAL_P(2);
     double xorigin = PG_GETARG_FLOAT8(3);
@@ -280,7 +280,7 @@ Tbox_tile_list(PG_FUNCTION_ARGS)
   }
 
   /* Allocate box */
-  TBOX *box = palloc(sizeof(STBOX));
+  TBox *box = palloc(sizeof(STBox));
   /* Store tile value and time */
   tuple_arr[0] = Int32GetDatum(state->i);
   /* Generate box */
@@ -314,7 +314,7 @@ Tbox_tile(PG_FUNCTION_ARGS)
   TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(5);
   double value_bucket = float_bucket(value, xsize, xorigin);
   TimestampTz time_bucket = timestamptz_bucket(t, duration, torigin);
-  TBOX *result = palloc(sizeof(TBOX));
+  TBox *result = palloc(sizeof(TBox));
   tbox_tile_get(value_bucket, time_bucket, xsize, tunits, result);
   PG_RETURN_POINTER(result);
 }

@@ -209,7 +209,7 @@ double
 nad_tnumber_number(const Temporal *temp, Datum value, mobdbType basetype)
 {
   ensure_tnumber_basetype(basetype);
-  TBOX box1, box2;
+  TBox box1, box2;
   temporal_set_bbox(temp, &box1);
   if (basetype == T_INT4)
     int_set_tbox(DatumGetInt32(value), &box2);
@@ -251,7 +251,7 @@ nad_tfloat_float(const Temporal *temp, double d)
  * @sqlop @p |=|
  */
 double
-nad_tbox_tbox(const TBOX *box1, const TBOX *box2)
+nad_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   /* Test the validity of the arguments */
   ensure_has_X_tbox(box1); ensure_has_X_tbox(box2);
@@ -281,7 +281,7 @@ nad_tbox_tbox(const TBOX *box1, const TBOX *box2)
  * @sqlop @p |=|
  */
 double
-nad_tnumber_tbox(const Temporal *temp, const TBOX *box)
+nad_tnumber_tbox(const Temporal *temp, const TBox *box)
 {
   /* Test the validity of the arguments */
   ensure_has_X_tbox(box);
@@ -298,7 +298,7 @@ nad_tnumber_tbox(const Temporal *temp, const TBOX *box)
   Temporal *temp1 = hast ?
     temporal_restrict_period(temp, &inter, REST_AT) : (Temporal *) temp;
   /* Test if the bounding boxes overlap */
-  TBOX box1;
+  TBox box1;
   temporal_set_bbox(temp1, &box1);
   if (overlaps_tbox_tbox(box, &box1))
     return 0.0;
@@ -321,7 +321,7 @@ nad_tnumber_tbox(const Temporal *temp, const TBOX *box)
 Datum
 nad_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 {
-  TBOX box1, box2;
+  TBox box1, box2;
   temporal_set_bbox(temp1, &box1);
   temporal_set_bbox(temp2, &box2);
   double result = nad_tbox_tbox(&box1, &box2);

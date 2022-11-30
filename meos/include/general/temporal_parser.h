@@ -56,7 +56,7 @@ extern Datum basetype_parse(const char **str, mobdbType basetypid);
 extern double double_parse(const char **str);
 extern TimestampTz timestamp_parse(const char **str);
 
-extern TBOX *tbox_parse(const char **str);
+extern TBox *tbox_parse(const char **str);
 extern TimestampSet *timestampset_parse(const char **str);
 extern Period *period_parse(const char **str, bool make);
 extern PeriodSet *periodset_parse(const char **str);

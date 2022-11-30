@@ -44,7 +44,7 @@
 /**
  * @brief Parse a spatiotemporal box from the buffer.
  */
-STBOX *
+STBox *
 stbox_parse(const char **str)
 {
   /* make compiler quiet */
@@ -71,7 +71,7 @@ stbox_parse(const char **str)
     *str += delim + 1;
     hassrid = true;
   }
-  if (strncasecmp(*str, "STBOX", 5) == 0)
+  if (strncasecmp(*str, "STBox", 5) == 0)
   {
     *str += 5;
     p_whitespace(str);
@@ -198,7 +198,7 @@ stbox_parse(const char **str)
   /* Ensure there is no more input */
   ensure_end_input(str, true, "spatiotemporal box");
 
-  STBOX *result = stbox_make(period, hasx, hasz, geodetic, srid, xmin, xmax,
+  STBox *result = stbox_make(period, hasx, hasz, geodetic, srid, xmin, xmax,
     ymin, ymax, zmin, zmax);
   if (period)
     pfree(period);

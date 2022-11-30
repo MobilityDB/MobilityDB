@@ -47,30 +47,30 @@
 
 /* Functions computing the bounding box at the creation of a temporal point */
 
-extern void tpointinst_set_stbox(const TInstant *inst, STBOX *box);
+extern void tpointinst_set_stbox(const TInstant *inst, STBox *box);
 extern void tgeompointinstarr_set_stbox(const TInstant **inst, int count,
-  STBOX *box);
+  STBox *box);
 extern void tgeogpointinstarr_set_stbox(const TInstant **instants, int count,
-  interpType interp, STBOX *box);
+  interpType interp, STBox *box);
 extern void tpointseqarr_set_stbox(const TSequence **seq, int count,
-  STBOX *box);
+  STBox *box);
 extern void tgeompointseq_expand_stbox(TSequence *seq, const TInstant *inst);
 extern void tgeogpointseq_expand_stbox(TSequence *seq, const TInstant *inst);
 
 /* Boxes functions */
 
-extern STBOX *tpointseq_stboxes(const TSequence *seq, int *count);
-extern STBOX *tpointseqset_stboxes(const TSequenceSet *ts, int *count);
-extern STBOX * tpoint_stboxes(const Temporal *temp, int *count);
+extern STBox *tpointseq_stboxes(const TSequence *seq, int *count);
+extern STBox *tpointseqset_stboxes(const TSequenceSet *ts, int *count);
+extern STBox * tpoint_stboxes(const Temporal *temp, int *count);
 
 /* Generic box functions */
 
 extern int boxop_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
-  bool (*func)(const STBOX *, const STBOX *), bool invert);
-extern Datum boxop_tpoint_stbox(const Temporal *temp, const STBOX *box,
-  bool (*func)(const STBOX *, const STBOX *), bool invert);
+  bool (*func)(const STBox *, const STBox *), bool invert);
+extern Datum boxop_tpoint_stbox(const Temporal *temp, const STBox *box,
+  bool (*func)(const STBox *, const STBox *), bool invert);
 extern bool boxop_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
-  bool (*func)(const STBOX *, const STBOX *));
+  bool (*func)(const STBox *, const STBox *));
 
 /*****************************************************************************/
 

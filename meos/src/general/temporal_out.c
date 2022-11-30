@@ -309,7 +309,7 @@ tbox_mfjson_size(int precision)
  * Write into the buffer the temporal bounding box represented in MF-JSON format
  */
 static size_t
-tbox_mfjson_buf(char *output, const TBOX *bbox, int precision)
+tbox_mfjson_buf(char *output, const TBox *bbox, int precision)
 {
   assert (precision <= OUT_MAX_DOUBLE_PRECISION);
   char *ptr = output;
@@ -354,7 +354,7 @@ stbox_mfjson_size(bool hasz, int precision)
  * MF-JSON format
  */
 static size_t
-stbox_mfjson_buf(char *output, const STBOX *bbox, bool hasz, int precision)
+stbox_mfjson_buf(char *output, const STBox *bbox, bool hasz, int precision)
 {
   assert (precision <= OUT_MAX_DOUBLE_PRECISION);
   char *ptr = output;
@@ -427,10 +427,10 @@ bbox_mfjson_buf(mobdbType temptype, char *output, const bboxunion *bbox,
       return period_mfjson_buf(output, (Period *) bbox);
     case T_TINT:
     case T_TFLOAT:
-      return tbox_mfjson_buf(output, (TBOX *) bbox, precision);
+      return tbox_mfjson_buf(output, (TBox *) bbox, precision);
     case T_TGEOMPOINT:
     case T_TGEOGPOINT:
-      return stbox_mfjson_buf(output, (STBOX *) bbox, hasz, precision);
+      return stbox_mfjson_buf(output, (STBox *) bbox, hasz, precision);
     default: /* Error! */
       elog(ERROR, "Unknown temporal type: %d", temptype);
   }
@@ -1137,7 +1137,7 @@ spanset_to_wkb_size(const SpanSet *ss)
  * (WKB) format
  */
 static size_t
-tbox_to_wkb_size(const TBOX *box)
+tbox_to_wkb_size(const TBox *box)
 {
   /* Endian flag + temporal flag */
   size_t size = MOBDB_WKB_BYTE_SIZE * 2;
@@ -1156,7 +1156,7 @@ tbox_to_wkb_size(const TBOX *box)
  * Return true if the spatiotemporal box needs to output the SRID
  */
 static bool
-stbox_wkb_needs_srid(const STBOX *box, uint8_t variant)
+stbox_wkb_needs_srid(const STBox *box, uint8_t variant)
 {
   /* Add an SRID if the WKB form is extended and if the temporal point has one */
   if ((variant & WKB_EXTENDED) && stbox_srid(box) != SRID_UNKNOWN)
@@ -1171,7 +1171,7 @@ stbox_wkb_needs_srid(const STBOX *box, uint8_t variant)
  * Binary (WKB) format
  */
 static size_t
-stbox_to_wkb_size(const STBOX *box, uint8_t variant)
+stbox_to_wkb_size(const STBox *box, uint8_t variant)
 {
   /* Endian flag + temporal flag */
   size_t size = MOBDB_WKB_BYTE_SIZE * 2;
@@ -1370,10 +1370,10 @@ datum_to_wkb_size(Datum value, mobdbType type, uint8_t variant)
       result = spanset_to_wkb_size((SpanSet *) DatumGetPointer(value));
       break;
     case T_TBOX:
-      result = tbox_to_wkb_size((TBOX *) DatumGetPointer(value));
+      result = tbox_to_wkb_size((TBox *) DatumGetPointer(value));
       break;
     case T_STBOX:
-      result = stbox_to_wkb_size((STBOX *) DatumGetPointer(value), variant);
+      result = stbox_to_wkb_size((STBox *) DatumGetPointer(value), variant);
       break;
     case T_TBOOL:
     case T_TINT:
@@ -1848,7 +1848,7 @@ spanset_to_wkb_buf(const SpanSet *ss, uint8_t *buf, uint8_t variant)
  * T = has T, X = has X, x = unused bit
  */
 static uint8_t *
-tbox_to_wkb_flags_buf(const TBOX *box, uint8_t *buf, uint8_t variant)
+tbox_to_wkb_flags_buf(const TBox *box, uint8_t *buf, uint8_t variant)
 {
   uint8_t wkb_flags = 0;
   if (MOBDB_FLAGS_GET_X(box->flags))
@@ -1877,7 +1877,7 @@ tbox_to_wkb_flags_buf(const TBOX *box, uint8_t *buf, uint8_t variant)
  *   2 timestamps for the time dimension (if there is one)
  */
 static uint8_t *
-tbox_to_wkb_buf(const TBOX *box, uint8_t *buf, uint8_t variant)
+tbox_to_wkb_buf(const TBox *box, uint8_t *buf, uint8_t variant)
 {
   /* Write the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
@@ -1901,7 +1901,7 @@ tbox_to_wkb_buf(const TBOX *box, uint8_t *buf, uint8_t variant)
  * G = Geodetic, Z = has Z, T = has T, X = has X, x = unused bit
  */
 static uint8_t *
-stbox_flags_to_wkb_buf(const STBOX *box, uint8_t *buf, uint8_t variant)
+stbox_flags_to_wkb_buf(const STBox *box, uint8_t *buf, uint8_t variant)
 {
   uint8_t wkb_flags = 0;
   if (MOBDB_FLAGS_GET_X(box->flags))
@@ -1930,7 +1930,7 @@ stbox_flags_to_wkb_buf(const STBOX *box, uint8_t *buf, uint8_t variant)
  *   time dimension)
  */
 static uint8_t *
-stbox_to_wkb_buf(const STBOX *box, uint8_t *buf, uint8_t variant)
+stbox_to_wkb_buf(const STBox *box, uint8_t *buf, uint8_t variant)
 {
   /* Write the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
@@ -2230,10 +2230,10 @@ datum_to_wkb_buf(Datum value, mobdbType type, uint8_t *buf, uint8_t variant)
         variant);
       break;
     case T_TBOX:
-      buf = tbox_to_wkb_buf((TBOX *) DatumGetPointer(value), buf, variant);
+      buf = tbox_to_wkb_buf((TBox *) DatumGetPointer(value), buf, variant);
       break;
     case T_STBOX:
-      buf = stbox_to_wkb_buf((STBOX *) DatumGetPointer(value), buf, variant);
+      buf = stbox_to_wkb_buf((STBox *) DatumGetPointer(value), buf, variant);
       break;
     case T_TBOOL:
     case T_TINT:
@@ -2449,7 +2449,7 @@ spanset_as_hexwkb(const SpanSet *ss, uint8_t variant, size_t *size_out)
  * @sqlfunc asBinary()
  */
 uint8_t *
-tbox_as_wkb(const TBOX *box, uint8_t variant, size_t *size_out)
+tbox_as_wkb(const TBox *box, uint8_t variant, size_t *size_out)
 {
   uint8_t *result = datum_as_wkb(PointerGetDatum(box), T_TBOX, variant,
     size_out);
@@ -2463,7 +2463,7 @@ tbox_as_wkb(const TBOX *box, uint8_t variant, size_t *size_out)
  * @sqlfunc asHexWKB()
  */
 char *
-tbox_as_hexwkb(const TBOX *box, uint8_t variant, size_t *size_out)
+tbox_as_hexwkb(const TBox *box, uint8_t variant, size_t *size_out)
 {
   char *result = (char *) datum_as_wkb(PointerGetDatum(box), T_TBOX,
     variant | (uint8_t) WKB_HEX, size_out);
@@ -2479,7 +2479,7 @@ tbox_as_hexwkb(const TBOX *box, uint8_t variant, size_t *size_out)
  * @sqlfunc asBinary()
  */
 uint8_t *
-stbox_as_wkb(const STBOX *box, uint8_t variant, size_t *size_out)
+stbox_as_wkb(const STBox *box, uint8_t variant, size_t *size_out)
 {
   uint8_t *result = datum_as_wkb(PointerGetDatum(box), T_STBOX, variant,
     size_out);
@@ -2493,7 +2493,7 @@ stbox_as_wkb(const STBOX *box, uint8_t variant, size_t *size_out)
  * @sqlfunc asHexWKB()
  */
 char *
-stbox_as_hexwkb(const STBOX *box, uint8_t variant, size_t *size_out)
+stbox_as_hexwkb(const STBox *box, uint8_t variant, size_t *size_out)
 {
   char *result = (char *) datum_as_wkb(PointerGetDatum(box), T_STBOX,
     variant | (uint8_t) WKB_HEX, size_out);

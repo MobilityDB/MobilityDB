@@ -329,14 +329,14 @@ temporalarr_to_array(const Temporal **temporalarr, int count)
  * Convert a C array of spatiotemporal boxes into a PostgreSQL array
  */
 ArrayType *
-stboxarr_to_array(STBOX *boxarr, int count)
+stboxarr_to_array(STBox *boxarr, int count)
 {
   assert(count > 0);
-  STBOX **boxes = palloc(sizeof(STBOX *) * count);
+  STBox **boxes = palloc(sizeof(STBox *) * count);
   for (int i = 0; i < count; i++)
     boxes[i] = &boxarr[i];
   ArrayType *result = construct_array((Datum *) boxes, count,
-    type_oid(T_STBOX), sizeof(STBOX), false, 'd');
+    type_oid(T_STBOX), sizeof(STBox), false, 'd');
   pfree(boxes);
   return result;
 }

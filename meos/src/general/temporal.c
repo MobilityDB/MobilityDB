@@ -1132,7 +1132,7 @@ tnumber_set_span(const Temporal *temp, Span *s)
   }
   else
   {
-    TBOX *box = (TBOX *) temporal_bbox_ptr(temp);
+    TBox *box = (TBox *) temporal_bbox_ptr(temp);
     if (temp->temptype == T_TINT)
       floatspan_set_intspan(&box->span, s);
     else
@@ -1160,10 +1160,10 @@ tnumber_to_span(const Temporal *temp)
  * @brief Return the bounding box of a temporal number.
  * @sqlop @p ::
  */
-TBOX *
+TBox *
 tnumber_to_tbox(const Temporal *temp)
 {
-  TBOX *result = palloc(sizeof(TBOX));
+  TBox *result = palloc(sizeof(TBox));
   temporal_set_bbox(temp, result);
   return result;
 }
@@ -2293,7 +2293,7 @@ temporal_bbox_ev_al_eq(const Temporal *temp, Datum value, bool ever)
   /* Bounding box test */
   if (tnumber_type(temp->temptype))
   {
-    TBOX box;
+    TBox box;
     temporal_set_bbox(temp, &box);
     Datum dvalue = (temp->temptype == T_TINT) ?
       Float8GetDatum(DatumGetInt32(value)) : value;
@@ -2305,7 +2305,7 @@ temporal_bbox_ev_al_eq(const Temporal *temp, Datum value, bool ever)
   }
   else if (tspatial_type(temp->temptype))
   {
-    STBOX box1, box2;
+    STBox box1, box2;
     temporal_set_bbox(temp, &box1);
     if (tgeo_type(temp->temptype))
       geo_set_stbox(DatumGetGserializedP(value), &box2);
@@ -2337,7 +2337,7 @@ temporal_bbox_ev_al_lt_le(const Temporal *temp, Datum value, bool ever)
 {
   if (tnumber_type(temp->temptype))
   {
-    TBOX box;
+    TBox box;
     temporal_set_bbox(temp, &box);
     Datum dvalue = (temp->temptype == T_TINT) ?
       Float8GetDatum(DatumGetInt32(value)) : value;
@@ -2684,7 +2684,7 @@ temporal_bbox_restrict_value(const Temporal *temp, Datum value)
   /* Bounding box test */
   if (tnumber_type(temp->temptype))
   {
-    TBOX box1, box2;
+    TBox box1, box2;
     temporal_set_bbox(temp, &box1);
     number_set_tbox(value, temptype_basetype(temp->temptype), &box2);
     return contains_tbox_tbox(&box1, &box2);
@@ -2700,7 +2700,7 @@ temporal_bbox_restrict_value(const Temporal *temp, Datum value)
       return false;
     if (temp->subtype != TINSTANT)
     {
-      STBOX box1, box2;
+      STBox box1, box2;
       temporal_set_bbox(temp, &box1);
       geo_set_stbox(gs, &box2);
       return contains_stbox_stbox(&box1, &box2);
@@ -2730,11 +2730,11 @@ temporal_bbox_restrict_values(const Temporal *temp, const Datum *values,
   /* Bounding box test */
   if (tnumber_type(temp->temptype))
   {
-    TBOX box1;
+    TBox box1;
     temporal_set_bbox(temp, &box1);
     for (int i = 0; i < count; i++)
     {
-      TBOX box2;
+      TBox box2;
       number_set_tbox(values[i], basetype, &box2);
       if (contains_tbox_tbox(&box1, &box2))
         newvalues[k++] = values[i];
@@ -2742,7 +2742,7 @@ temporal_bbox_restrict_values(const Temporal *temp, const Datum *values,
   }
   if (tgeo_type(temp->temptype))
   {
-    STBOX box1;
+    STBox box1;
     temporal_set_bbox(temp, &box1);
     for (int i = 0; i < count; i++)
     {
@@ -2753,7 +2753,7 @@ temporal_bbox_restrict_values(const Temporal *temp, const Datum *values,
       ensure_same_dimensionality_tpoint_gs(temp, gs);
       if (! gserialized_is_empty(gs))
       {
-        STBOX box2;
+        STBox box2;
         geo_set_stbox(gs, &box2);
         if (contains_stbox_stbox(&box1, &box2))
           newvalues[k++] = values[i];
@@ -2790,7 +2790,7 @@ tnumber_bbox_restrict_span(const Temporal *temp, const Span *span)
 {
   /* Bounding box test */
   assert(tnumber_type(temp->temptype));
-  TBOX box1, box2;
+  TBox box1, box2;
   temporal_set_bbox(temp, &box1);
   span_set_tbox(span, &box2);
   return overlaps_tbox_tbox(&box1, &box2);
@@ -3145,10 +3145,10 @@ temporal_restrict_periodset(const Temporal *temp, const PeriodSet *ps,
  * @sqlfunc atTbox()
  */
 Temporal *
-tnumber_at_tbox(const Temporal *temp, const TBOX *box)
+tnumber_at_tbox(const Temporal *temp, const TBox *box)
 {
   /* Bounding box test */
-  TBOX box1;
+  TBox box1;
   temporal_set_bbox(temp, &box1);
   if (! overlaps_tbox_tbox(box, &box1))
     return NULL;
@@ -3187,10 +3187,10 @@ tnumber_at_tbox(const Temporal *temp, const TBOX *box)
  * @sqlfunc minusTbox()
  */
 Temporal *
-tnumber_minus_tbox(const Temporal *temp, const TBOX *box)
+tnumber_minus_tbox(const Temporal *temp, const TBox *box)
 {
   /* Bounding box test */
-  TBOX box1;
+  TBox box1;
   temporal_set_bbox(temp, &box1);
   if (! overlaps_tbox_tbox(box, &box1))
     return temporal_copy(temp);
