@@ -904,7 +904,7 @@ tbox_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
           MemoryContextSwitchTo(old_ctx);
 
           /* Compute the distances */
-          double *distances = palloc(sizeof(double) * in->norderbys);
+          double *distances = palloc0(sizeof(double) * in->norderbys);
           out->distances[i] = distances;
           for (int j = 0; j < in->norderbys; j++)
             distances[j] = distance_tbox_nodebox(&orderbys[j], nodebox);
