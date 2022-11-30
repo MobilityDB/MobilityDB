@@ -204,6 +204,53 @@ CREATE OPERATOR CLASS intspanset_quadtree_ops
 
 /******************************************************************************/
 
+CREATE OPERATOR CLASS intspanset_kdtree_ops
+  FOR TYPE intspanset USING spgist AS
+  -- strictly left
+  OPERATOR  1     << (intspanset, int),
+  OPERATOR  1     << (intspanset, intspan),
+  OPERATOR  1     << (intspanset, intspanset),
+  -- overlaps or left
+  OPERATOR  2     &< (intspanset, int),
+  OPERATOR  2     &< (intspanset, intspan),
+  OPERATOR  2     &< (intspanset, intspanset),
+  -- overlaps
+  OPERATOR  3     && (intspanset, intspan),
+  OPERATOR  3     && (intspanset, intspanset),
+  -- overlaps or right
+  OPERATOR  4     &> (intspanset, int),
+  OPERATOR  4     &> (intspanset, intspan),
+  OPERATOR  4     &> (intspanset, intspanset),
+  -- strictly right
+  OPERATOR  5     >> (intspanset, int),
+  OPERATOR  5     >> (intspanset, intspan),
+  OPERATOR  5     >> (intspanset, intspanset),
+  -- contains
+  OPERATOR  7     @> (intspanset, int),
+  OPERATOR  7     @> (intspanset, intspan),
+  OPERATOR  7     @> (intspanset, intspanset),
+  -- contained by
+  OPERATOR  8     <@ (intspanset, intspan),
+  OPERATOR  8     <@ (intspanset, intspanset),
+  -- adjacent
+  OPERATOR  17    -|- (intspanset, intspan),
+  OPERATOR  17    -|- (intspanset, intspanset),
+  -- equals
+  OPERATOR  18    = (intspanset, intspanset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (intspanset, int) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (intspanset, intspan) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (intspanset, intspanset) FOR ORDER BY pg_catalog.float_ops,
+  -- functions
+  FUNCTION  1  intspan_spgist_config(internal, internal),
+  FUNCTION  2  span_kdtree_choose(internal, internal),
+  FUNCTION  3  span_kdtree_picksplit(internal, internal),
+  FUNCTION  4  span_kdtree_inner_consistent(internal, internal),
+  FUNCTION  5  span_spgist_leaf_consistent(internal, internal),
+  FUNCTION  6  spanset_spgist_compress(internal);
+
+/******************************************************************************/
+
 CREATE OPERATOR CLASS floatspanset_quadtree_ops
   DEFAULT FOR TYPE floatspanset USING spgist AS
   -- strictly left
@@ -251,3 +298,49 @@ CREATE OPERATOR CLASS floatspanset_quadtree_ops
 
 /******************************************************************************/
 
+CREATE OPERATOR CLASS floatspanset_kdtree_ops
+  FOR TYPE floatspanset USING spgist AS
+  -- strictly left
+  OPERATOR  1     << (floatspanset, float),
+  OPERATOR  1     << (floatspanset, floatspan),
+  OPERATOR  1     << (floatspanset, floatspanset),
+  -- overlaps or left
+  OPERATOR  2     &< (floatspanset, float),
+  OPERATOR  2     &< (floatspanset, floatspan),
+  OPERATOR  2     &< (floatspanset, floatspanset),
+  -- overlaps
+  OPERATOR  3     && (floatspanset, floatspan),
+  OPERATOR  3     && (floatspanset, floatspanset),
+  -- overlaps or right
+  OPERATOR  4     &> (floatspanset, float),
+  OPERATOR  4     &> (floatspanset, floatspan),
+  OPERATOR  4     &> (floatspanset, floatspanset),
+  -- strictly right
+  OPERATOR  5     >> (floatspanset, float),
+  OPERATOR  5     >> (floatspanset, floatspan),
+  OPERATOR  5     >> (floatspanset, floatspanset),
+  -- contains
+  OPERATOR  7     @> (floatspanset, float),
+  OPERATOR  7     @> (floatspanset, floatspan),
+  OPERATOR  7     @> (floatspanset, floatspanset),
+  -- contained by
+  OPERATOR  8     <@ (floatspanset, floatspan),
+  OPERATOR  8     <@ (floatspanset, floatspanset),
+  -- adjacent
+  OPERATOR  17    -|- (floatspanset, floatspan),
+  OPERATOR  17    -|- (floatspanset, floatspanset),
+  -- equals
+  OPERATOR  18    = (floatspanset, floatspanset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (floatspanset, float) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (floatspanset, floatspan) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (floatspanset, floatspanset) FOR ORDER BY pg_catalog.float_ops,
+  -- functions
+  FUNCTION  1  floatspan_spgist_config(internal, internal),
+  FUNCTION  2  span_kdtree_choose(internal, internal),
+  FUNCTION  3  span_kdtree_picksplit(internal, internal),
+  FUNCTION  4  span_kdtree_inner_consistent(internal, internal),
+  FUNCTION  5  span_spgist_leaf_consistent(internal, internal),
+  FUNCTION  6  spanset_spgist_compress(internal);
+
+/******************************************************************************/

@@ -40,6 +40,10 @@ DROP INDEX IF EXISTS tbl_timestampset_quadtree_idx;
 DROP INDEX IF EXISTS tbl_period_quadtree_idx;
 DROP INDEX IF EXISTS tbl_periodset_quadtree_idx;
 
+DROP INDEX IF EXISTS tbl_timestampset_kdtree_idx;
+DROP INDEX IF EXISTS tbl_period_kdtree_idx;
+DROP INDEX IF EXISTS tbl_periodset_kdtree_idx;
+
 -------------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS test_timeops;
@@ -49,7 +53,8 @@ CREATE TABLE test_timeops(
   rightarg TEXT,
   no_idx BIGINT,
   rtree_idx BIGINT,
-  quadtree_idx BIGINT
+  quadtree_idx BIGINT,
+  kdtree_idx BIGINT
 );
 
 -------------------------------------------------------------------------------
@@ -1033,10 +1038,734 @@ DROP INDEX tbl_timestampset_quadtree_idx;
 DROP INDEX tbl_period_quadtree_idx;
 DROP INDEX tbl_periodset_quadtree_idx;
 
+
+-------------------------------------------------------------------------------
+
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_timestamptz WHERE ts @> t )
+WHERE op = '@>' AND leftarg = 'timestampset' AND rightarg = 'timestamptz';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts @> t2.ts )
+WHERE op = '@>' AND leftarg = 'timestampset' AND rightarg = 'timestampset';
+
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_timestamptz WHERE p @> t )
+WHERE op = '@>' AND leftarg = 'period' AND rightarg = 'timestamptz';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_timestampset WHERE p @> ts )
+WHERE op = '@>' AND leftarg = 'period' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p @> t2.p )
+WHERE op = '@>' AND leftarg = 'period' AND rightarg = 'period';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_periodset WHERE p @> ps )
+WHERE op = '@>' AND leftarg = 'period' AND rightarg = 'periodset';
+
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestamptz WHERE ps @> t )
+WHERE op = '@>' AND leftarg = 'periodset' AND rightarg = 'timestamptz';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestampset WHERE ps @> ts )
+WHERE op = '@>' AND leftarg = 'periodset' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_period WHERE ps @> p )
+WHERE op = '@>' AND leftarg = 'periodset' AND rightarg = 'period';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps @> t2.ps )
+WHERE op = '@>' AND leftarg = 'periodset' AND rightarg = 'periodset';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts <@ t2.ts )
+WHERE op = '<@' AND leftarg = 'timestampset' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_period WHERE ts <@ p )
+WHERE op = '<@' AND leftarg = 'timestampset' AND rightarg = 'period';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts <@ ps )
+WHERE op = '<@' AND leftarg = 'timestampset' AND rightarg = 'periodset';
+
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p <@ t2.p )
+WHERE op = '<@' AND leftarg = 'period' AND rightarg = 'period';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_periodset WHERE p <@ ps )
+WHERE op = '<@' AND leftarg = 'period' AND rightarg = 'periodset';
+
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_period WHERE ps <@ p )
+WHERE op = '<@' AND leftarg = 'periodset' AND rightarg = 'period';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps <@ t2.ps )
+WHERE op = '<@' AND leftarg = 'periodset' AND rightarg = 'periodset';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts && t2.ts )
+WHERE op = '&&' AND leftarg = 'timestampset' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_period WHERE ts && p )
+WHERE op = '&&' AND leftarg = 'timestampset' AND rightarg = 'period';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts && ps )
+WHERE op = '&&' AND leftarg = 'timestampset' AND rightarg = 'periodset';
+
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_timestampset WHERE p && ts )
+WHERE op = '&&' AND leftarg = 'period' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p && t2.p )
+WHERE op = '&&' AND leftarg = 'period' AND rightarg = 'period';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_periodset WHERE p && ps )
+WHERE op = '&&' AND leftarg = 'period' AND rightarg = 'periodset';
+
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestampset WHERE ps && ts )
+WHERE op = '&&' AND leftarg = 'periodset' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_period WHERE ps && p )
+WHERE op = '&&' AND leftarg = 'periodset' AND rightarg = 'period';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps && t2.ps )
+WHERE op = '&&' AND leftarg = 'periodset' AND rightarg = 'periodset';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_period WHERE t -|- p )
+WHERE op = '-|-' AND leftarg = 'timestamptz' AND rightarg = 'period';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_periodset WHERE t -|- ps )
+WHERE op = '-|-' AND leftarg = 'timestamptz' AND rightarg = 'periodset';
+
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_period WHERE ts -|- p )
+WHERE op = '-|-' AND leftarg = 'timestampset' AND rightarg = 'period';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts -|- ps )
+WHERE op = '-|-' AND leftarg = 'timestampset' AND rightarg = 'periodset';
+
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_timestamptz WHERE p -|- t )
+WHERE op = '-|-' AND leftarg = 'period' AND rightarg = 'timestamptz';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_timestampset WHERE p -|- ts )
+WHERE op = '-|-' AND leftarg = 'period' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p -|- t2.p )
+WHERE op = '-|-' AND leftarg = 'period' AND rightarg = 'period';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_periodset WHERE p -|- ps )
+WHERE op = '-|-' AND leftarg = 'period' AND rightarg = 'periodset';
+
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestamptz WHERE ps -|- t )
+WHERE op = '-|-' AND leftarg = 'periodset' AND rightarg = 'timestamptz';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestampset WHERE ps -|- ts )
+WHERE op = '-|-' AND leftarg = 'periodset' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_period WHERE ps -|- p )
+WHERE op = '-|-' AND leftarg = 'periodset' AND rightarg = 'period';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps -|- t2.ps )
+WHERE op = '-|-' AND leftarg = 'periodset' AND rightarg = 'periodset';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz t1, tbl_timestamptz t2 WHERE t1.t = t2.t )
+WHERE op = '=' AND leftarg = 'timestamptz' AND rightarg = 'timestamptz';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts = t2.ts )
+WHERE op = '=' AND leftarg = 'timestampset' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p = t2.p )
+WHERE op = '=' AND leftarg = 'period' AND rightarg = 'period';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps = t2.ps )
+WHERE op = '=' AND leftarg = 'periodset' AND rightarg = 'periodset';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_timestampset WHERE t <<# ts )
+WHERE op = '<<#' AND leftarg = 'timestamptz' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_period WHERE t <<# p )
+WHERE op = '<<#' AND leftarg = 'timestamptz' AND rightarg = 'period';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_periodset WHERE t <<# ps )
+WHERE op = '<<#' AND leftarg = 'timestamptz' AND rightarg = 'periodset';
+
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_timestamptz WHERE ts <<# t )
+WHERE op = '<<#' AND leftarg = 'timestampset' AND rightarg = 'timestamptz';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts <<# t2.ts )
+WHERE op = '<<#' AND leftarg = 'timestampset' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_period WHERE ts <<# p )
+WHERE op = '<<#' AND leftarg = 'timestampset' AND rightarg = 'period';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts <<# ps )
+WHERE op = '<<#' AND leftarg = 'timestampset' AND rightarg = 'periodset';
+
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_timestamptz WHERE p <<# t )
+WHERE op = '<<#' AND leftarg = 'period' AND rightarg = 'timestamptz';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_timestampset WHERE p <<# ts )
+WHERE op = '<<#' AND leftarg = 'period' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p <<# t2.p )
+WHERE op = '<<#' AND leftarg = 'period' AND rightarg = 'period';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_periodset WHERE p <<# ps )
+WHERE op = '<<#' AND leftarg = 'period' AND rightarg = 'periodset';
+
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestamptz WHERE ps <<# t )
+WHERE op = '<<#' AND leftarg = 'periodset' AND rightarg = 'timestamptz';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestampset WHERE ps <<# ts )
+WHERE op = '<<#' AND leftarg = 'periodset' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_period WHERE ps <<# p )
+WHERE op = '<<#' AND leftarg = 'periodset' AND rightarg = 'period';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps <<# t2.ps )
+WHERE op = '<<#' AND leftarg = 'periodset' AND rightarg = 'periodset';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_timestampset WHERE t &<# ts )
+WHERE op = '&<#' AND leftarg = 'timestamptz' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_period WHERE t &<# p )
+WHERE op = '&<#' AND leftarg = 'timestamptz' AND rightarg = 'period';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_periodset WHERE t &<# ps )
+WHERE op = '&<#' AND leftarg = 'timestamptz' AND rightarg = 'periodset';
+
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_timestamptz WHERE ts &<# t )
+WHERE op = '&<#' AND leftarg = 'timestampset' AND rightarg = 'timestamptz';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts &<# t2.ts )
+WHERE op = '&<#' AND leftarg = 'timestampset' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_period WHERE ts &<# p )
+WHERE op = '&<#' AND leftarg = 'timestampset' AND rightarg = 'period';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts &<# ps )
+WHERE op = '&<#' AND leftarg = 'timestampset' AND rightarg = 'periodset';
+
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_timestamptz WHERE p &<# t )
+WHERE op = '&<#' AND leftarg = 'period' AND rightarg = 'timestamptz';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_timestampset WHERE p &<# ts )
+WHERE op = '&<#' AND leftarg = 'period' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p &<# t2.p )
+WHERE op = '&<#' AND leftarg = 'period' AND rightarg = 'period';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_periodset WHERE p &<# ps )
+WHERE op = '&<#' AND leftarg = 'period' AND rightarg = 'periodset';
+
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestamptz WHERE ps &<# t )
+WHERE op = '&<#' AND leftarg = 'periodset' AND rightarg = 'timestamptz';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestampset WHERE ps &<# ts )
+WHERE op = '&<#' AND leftarg = 'periodset' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_period WHERE ps &<# p )
+WHERE op = '&<#' AND leftarg = 'periodset' AND rightarg = 'period';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps &<# t2.ps )
+WHERE op = '&<#' AND leftarg = 'periodset' AND rightarg = 'periodset';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_timestampset WHERE t #>> ts )
+WHERE op = '#>>' AND leftarg = 'timestamptz' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_period WHERE t #>> p )
+WHERE op = '#>>' AND leftarg = 'timestamptz' AND rightarg = 'period';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_periodset WHERE t #>> ps )
+WHERE op = '#>>' AND leftarg = 'timestamptz' AND rightarg = 'periodset';
+
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_timestamptz WHERE ts #>> t )
+WHERE op = '#>>' AND leftarg = 'timestampset' AND rightarg = 'timestamptz';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts #>> t2.ts )
+WHERE op = '#>>' AND leftarg = 'timestampset' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_period WHERE ts #>> p )
+WHERE op = '#>>' AND leftarg = 'timestampset' AND rightarg = 'period';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts #>> ps )
+WHERE op = '#>>' AND leftarg = 'timestampset' AND rightarg = 'periodset';
+
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_timestamptz WHERE p #>> t )
+WHERE op = '#>>' AND leftarg = 'period' AND rightarg = 'timestamptz';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_timestampset WHERE p #>> ts )
+WHERE op = '#>>' AND leftarg = 'period' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p #>> t2.p )
+WHERE op = '#>>' AND leftarg = 'period' AND rightarg = 'period';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_periodset WHERE p #>> ps )
+WHERE op = '#>>' AND leftarg = 'period' AND rightarg = 'periodset';
+
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestamptz WHERE ps #>> t )
+WHERE op = '#>>' AND leftarg = 'periodset' AND rightarg = 'timestamptz';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestampset WHERE ps #>> ts )
+WHERE op = '#>>' AND leftarg = 'periodset' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_period WHERE ps #>> p )
+WHERE op = '#>>' AND leftarg = 'periodset' AND rightarg = 'period';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps #>> t2.ps )
+WHERE op = '#>>' AND leftarg = 'periodset' AND rightarg = 'periodset';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_timestampset WHERE t #&> ts )
+WHERE op = '#&>' AND leftarg = 'timestamptz' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_period WHERE t #&> p )
+WHERE op = '#&>' AND leftarg = 'timestamptz' AND rightarg = 'period';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_periodset WHERE t #&> ps )
+WHERE op = '#&>' AND leftarg = 'timestamptz' AND rightarg = 'periodset';
+
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_timestamptz WHERE ts #&> t )
+WHERE op = '#&>' AND leftarg = 'timestampset' AND rightarg = 'timestamptz';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts #&> t2.ts )
+WHERE op = '#&>' AND leftarg = 'timestampset' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_period WHERE ts #&> p )
+WHERE op = '#&>' AND leftarg = 'timestampset' AND rightarg = 'period';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts #&> ps )
+WHERE op = '#&>' AND leftarg = 'timestampset' AND rightarg = 'periodset';
+
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_timestamptz WHERE p #&> t )
+WHERE op = '#&>' AND leftarg = 'period' AND rightarg = 'timestamptz';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_timestampset WHERE p #&> ts )
+WHERE op = '#&>' AND leftarg = 'period' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p #&> t2.p )
+WHERE op = '#&>' AND leftarg = 'period' AND rightarg = 'period';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_periodset WHERE p #&> ps )
+WHERE op = '#&>' AND leftarg = 'period' AND rightarg = 'periodset';
+
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestamptz WHERE ps #&> t )
+WHERE op = '#&>' AND leftarg = 'periodset' AND rightarg = 'timestamptz';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestampset WHERE ps #&> ts )
+WHERE op = '#&>' AND leftarg = 'periodset' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_period WHERE ps #&> p )
+WHERE op = '#&>' AND leftarg = 'periodset' AND rightarg = 'period';
+UPDATE test_timeops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps #&> t2.ps )
+WHERE op = '#&>' AND leftarg = 'periodset' AND rightarg = 'periodset';
+
+-------------------------------------------------------------------------------
+
+DROP INDEX tbl_timestampset_rtree_idx;
+DROP INDEX tbl_period_rtree_idx;
+DROP INDEX tbl_periodset_rtree_idx;
+
+CREATE INDEX tbl_timestampset_kdtree_idx ON tbl_timestampset USING SPGIST(ts);
+CREATE INDEX tbl_period_kdtree_idx ON tbl_period USING SPGIST(p);
+CREATE INDEX tbl_periodset_kdtree_idx ON tbl_periodset USING SPGIST(ps);
+
+-------------------------------------------------------------------------------
+
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_timestamptz WHERE ts @> t )
+WHERE op = '@>' AND leftarg = 'timestampset' AND rightarg = 'timestamptz';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts @> t2.ts )
+WHERE op = '@>' AND leftarg = 'timestampset' AND rightarg = 'timestampset';
+
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_timestamptz WHERE p @> t )
+WHERE op = '@>' AND leftarg = 'period' AND rightarg = 'timestamptz';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_timestampset WHERE p @> ts )
+WHERE op = '@>' AND leftarg = 'period' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p @> t2.p )
+WHERE op = '@>' AND leftarg = 'period' AND rightarg = 'period';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_periodset WHERE p @> ps )
+WHERE op = '@>' AND leftarg = 'period' AND rightarg = 'periodset';
+
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestamptz WHERE ps @> t )
+WHERE op = '@>' AND leftarg = 'periodset' AND rightarg = 'timestamptz';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestampset WHERE ps @> ts )
+WHERE op = '@>' AND leftarg = 'periodset' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_period WHERE ps @> p )
+WHERE op = '@>' AND leftarg = 'periodset' AND rightarg = 'period';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps @> t2.ps )
+WHERE op = '@>' AND leftarg = 'periodset' AND rightarg = 'periodset';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts <@ t2.ts )
+WHERE op = '<@' AND leftarg = 'timestampset' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_period WHERE ts <@ p )
+WHERE op = '<@' AND leftarg = 'timestampset' AND rightarg = 'period';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts <@ ps )
+WHERE op = '<@' AND leftarg = 'timestampset' AND rightarg = 'periodset';
+
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p <@ t2.p )
+WHERE op = '<@' AND leftarg = 'period' AND rightarg = 'period';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_periodset WHERE p <@ ps )
+WHERE op = '<@' AND leftarg = 'period' AND rightarg = 'periodset';
+
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_period WHERE ps <@ p )
+WHERE op = '<@' AND leftarg = 'periodset' AND rightarg = 'period';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps <@ t2.ps )
+WHERE op = '<@' AND leftarg = 'periodset' AND rightarg = 'periodset';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts && t2.ts )
+WHERE op = '&&' AND leftarg = 'timestampset' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_period WHERE ts && p )
+WHERE op = '&&' AND leftarg = 'timestampset' AND rightarg = 'period';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts && ps )
+WHERE op = '&&' AND leftarg = 'timestampset' AND rightarg = 'periodset';
+
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_timestampset WHERE p && ts )
+WHERE op = '&&' AND leftarg = 'period' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p && t2.p )
+WHERE op = '&&' AND leftarg = 'period' AND rightarg = 'period';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_periodset WHERE p && ps )
+WHERE op = '&&' AND leftarg = 'period' AND rightarg = 'periodset';
+
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestampset WHERE ps && ts )
+WHERE op = '&&' AND leftarg = 'periodset' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_period WHERE ps && p )
+WHERE op = '&&' AND leftarg = 'periodset' AND rightarg = 'period';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps && t2.ps )
+WHERE op = '&&' AND leftarg = 'periodset' AND rightarg = 'periodset';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_period WHERE t -|- p )
+WHERE op = '-|-' AND leftarg = 'timestamptz' AND rightarg = 'period';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_periodset WHERE t -|- ps )
+WHERE op = '-|-' AND leftarg = 'timestamptz' AND rightarg = 'periodset';
+
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_period WHERE ts -|- p )
+WHERE op = '-|-' AND leftarg = 'timestampset' AND rightarg = 'period';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts -|- ps )
+WHERE op = '-|-' AND leftarg = 'timestampset' AND rightarg = 'periodset';
+
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_timestamptz WHERE p -|- t )
+WHERE op = '-|-' AND leftarg = 'period' AND rightarg = 'timestamptz';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_timestampset WHERE p -|- ts )
+WHERE op = '-|-' AND leftarg = 'period' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p -|- t2.p )
+WHERE op = '-|-' AND leftarg = 'period' AND rightarg = 'period';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_periodset WHERE p -|- ps )
+WHERE op = '-|-' AND leftarg = 'period' AND rightarg = 'periodset';
+
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestamptz WHERE ps -|- t )
+WHERE op = '-|-' AND leftarg = 'periodset' AND rightarg = 'timestamptz';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestampset WHERE ps -|- ts )
+WHERE op = '-|-' AND leftarg = 'periodset' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_period WHERE ps -|- p )
+WHERE op = '-|-' AND leftarg = 'periodset' AND rightarg = 'period';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps -|- t2.ps )
+WHERE op = '-|-' AND leftarg = 'periodset' AND rightarg = 'periodset';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz t1, tbl_timestamptz t2 WHERE t1.t = t2.t )
+WHERE op = '=' AND leftarg = 'timestamptz' AND rightarg = 'timestamptz';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts = t2.ts )
+WHERE op = '=' AND leftarg = 'timestampset' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p = t2.p )
+WHERE op = '=' AND leftarg = 'period' AND rightarg = 'period';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps = t2.ps )
+WHERE op = '=' AND leftarg = 'periodset' AND rightarg = 'periodset';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_timestampset WHERE t <<# ts )
+WHERE op = '<<#' AND leftarg = 'timestamptz' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_period WHERE t <<# p )
+WHERE op = '<<#' AND leftarg = 'timestamptz' AND rightarg = 'period';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_periodset WHERE t <<# ps )
+WHERE op = '<<#' AND leftarg = 'timestamptz' AND rightarg = 'periodset';
+
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_timestamptz WHERE ts <<# t )
+WHERE op = '<<#' AND leftarg = 'timestampset' AND rightarg = 'timestamptz';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts <<# t2.ts )
+WHERE op = '<<#' AND leftarg = 'timestampset' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_period WHERE ts <<# p )
+WHERE op = '<<#' AND leftarg = 'timestampset' AND rightarg = 'period';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts <<# ps )
+WHERE op = '<<#' AND leftarg = 'timestampset' AND rightarg = 'periodset';
+
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_timestamptz WHERE p <<# t )
+WHERE op = '<<#' AND leftarg = 'period' AND rightarg = 'timestamptz';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_timestampset WHERE p <<# ts )
+WHERE op = '<<#' AND leftarg = 'period' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p <<# t2.p )
+WHERE op = '<<#' AND leftarg = 'period' AND rightarg = 'period';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_periodset WHERE p <<# ps )
+WHERE op = '<<#' AND leftarg = 'period' AND rightarg = 'periodset';
+
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestamptz WHERE ps <<# t )
+WHERE op = '<<#' AND leftarg = 'periodset' AND rightarg = 'timestamptz';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestampset WHERE ps <<# ts )
+WHERE op = '<<#' AND leftarg = 'periodset' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_period WHERE ps <<# p )
+WHERE op = '<<#' AND leftarg = 'periodset' AND rightarg = 'period';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps <<# t2.ps )
+WHERE op = '<<#' AND leftarg = 'periodset' AND rightarg = 'periodset';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_timestampset WHERE t &<# ts )
+WHERE op = '&<#' AND leftarg = 'timestamptz' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_period WHERE t &<# p )
+WHERE op = '&<#' AND leftarg = 'timestamptz' AND rightarg = 'period';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_periodset WHERE t &<# ps )
+WHERE op = '&<#' AND leftarg = 'timestamptz' AND rightarg = 'periodset';
+
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_timestamptz WHERE ts &<# t )
+WHERE op = '&<#' AND leftarg = 'timestampset' AND rightarg = 'timestamptz';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts &<# t2.ts )
+WHERE op = '&<#' AND leftarg = 'timestampset' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_period WHERE ts &<# p )
+WHERE op = '&<#' AND leftarg = 'timestampset' AND rightarg = 'period';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts &<# ps )
+WHERE op = '&<#' AND leftarg = 'timestampset' AND rightarg = 'periodset';
+
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_timestamptz WHERE p &<# t )
+WHERE op = '&<#' AND leftarg = 'period' AND rightarg = 'timestamptz';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_timestampset WHERE p &<# ts )
+WHERE op = '&<#' AND leftarg = 'period' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p &<# t2.p )
+WHERE op = '&<#' AND leftarg = 'period' AND rightarg = 'period';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_periodset WHERE p &<# ps )
+WHERE op = '&<#' AND leftarg = 'period' AND rightarg = 'periodset';
+
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestamptz WHERE ps &<# t )
+WHERE op = '&<#' AND leftarg = 'periodset' AND rightarg = 'timestamptz';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestampset WHERE ps &<# ts )
+WHERE op = '&<#' AND leftarg = 'periodset' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_period WHERE ps &<# p )
+WHERE op = '&<#' AND leftarg = 'periodset' AND rightarg = 'period';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps &<# t2.ps )
+WHERE op = '&<#' AND leftarg = 'periodset' AND rightarg = 'periodset';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_timestampset WHERE t #>> ts )
+WHERE op = '#>>' AND leftarg = 'timestamptz' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_period WHERE t #>> p )
+WHERE op = '#>>' AND leftarg = 'timestamptz' AND rightarg = 'period';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_periodset WHERE t #>> ps )
+WHERE op = '#>>' AND leftarg = 'timestamptz' AND rightarg = 'periodset';
+
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_timestamptz WHERE ts #>> t )
+WHERE op = '#>>' AND leftarg = 'timestampset' AND rightarg = 'timestamptz';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts #>> t2.ts )
+WHERE op = '#>>' AND leftarg = 'timestampset' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_period WHERE ts #>> p )
+WHERE op = '#>>' AND leftarg = 'timestampset' AND rightarg = 'period';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts #>> ps )
+WHERE op = '#>>' AND leftarg = 'timestampset' AND rightarg = 'periodset';
+
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_timestamptz WHERE p #>> t )
+WHERE op = '#>>' AND leftarg = 'period' AND rightarg = 'timestamptz';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_timestampset WHERE p #>> ts )
+WHERE op = '#>>' AND leftarg = 'period' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p #>> t2.p )
+WHERE op = '#>>' AND leftarg = 'period' AND rightarg = 'period';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_periodset WHERE p #>> ps )
+WHERE op = '#>>' AND leftarg = 'period' AND rightarg = 'periodset';
+
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestamptz WHERE ps #>> t )
+WHERE op = '#>>' AND leftarg = 'periodset' AND rightarg = 'timestamptz';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestampset WHERE ps #>> ts )
+WHERE op = '#>>' AND leftarg = 'periodset' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_period WHERE ps #>> p )
+WHERE op = '#>>' AND leftarg = 'periodset' AND rightarg = 'period';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps #>> t2.ps )
+WHERE op = '#>>' AND leftarg = 'periodset' AND rightarg = 'periodset';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_timestampset WHERE t #&> ts )
+WHERE op = '#&>' AND leftarg = 'timestamptz' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_period WHERE t #&> p )
+WHERE op = '#&>' AND leftarg = 'timestamptz' AND rightarg = 'period';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_periodset WHERE t #&> ps )
+WHERE op = '#&>' AND leftarg = 'timestamptz' AND rightarg = 'periodset';
+
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_timestamptz WHERE ts #&> t )
+WHERE op = '#&>' AND leftarg = 'timestampset' AND rightarg = 'timestamptz';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts #&> t2.ts )
+WHERE op = '#&>' AND leftarg = 'timestampset' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_period WHERE ts #&> p )
+WHERE op = '#&>' AND leftarg = 'timestampset' AND rightarg = 'period';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts #&> ps )
+WHERE op = '#&>' AND leftarg = 'timestampset' AND rightarg = 'periodset';
+
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_timestamptz WHERE p #&> t )
+WHERE op = '#&>' AND leftarg = 'period' AND rightarg = 'timestamptz';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_timestampset WHERE p #&> ts )
+WHERE op = '#&>' AND leftarg = 'period' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p #&> t2.p )
+WHERE op = '#&>' AND leftarg = 'period' AND rightarg = 'period';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_periodset WHERE p #&> ps )
+WHERE op = '#&>' AND leftarg = 'period' AND rightarg = 'periodset';
+
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestamptz WHERE ps #&> t )
+WHERE op = '#&>' AND leftarg = 'periodset' AND rightarg = 'timestamptz';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestampset WHERE ps #&> ts )
+WHERE op = '#&>' AND leftarg = 'periodset' AND rightarg = 'timestampset';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_period WHERE ps #&> p )
+WHERE op = '#&>' AND leftarg = 'periodset' AND rightarg = 'period';
+UPDATE test_timeops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps #&> t2.ps )
+WHERE op = '#&>' AND leftarg = 'periodset' AND rightarg = 'periodset';
+-------------------------------------------------------------------------------
+
+DROP INDEX tbl_timestampset_kdtree_idx;
+DROP INDEX tbl_period_kdtree_idx;
+DROP INDEX tbl_periodset_kdtree_idx;
+
 -------------------------------------------------------------------------------
 
 SELECT * FROM test_timeops
-WHERE no_idx <> rtree_idx OR no_idx <> quadtree_idx
+WHERE no_idx <> rtree_idx OR no_idx <> quadtree_idx OR no_idx <> kdtree_idx
 ORDER BY op, leftarg, rightarg;
 
 DROP TABLE test_timeops;

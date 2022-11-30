@@ -37,6 +37,9 @@ DROP INDEX IF EXISTS tbl_floatspan_rtree_idx;
 DROP INDEX IF EXISTS tbl_intspan_quadtree_idx;
 DROP INDEX IF EXISTS tbl_floatspan_quadtree_idx;
 
+DROP INDEX IF EXISTS tbl_intspan_kdtree_idx;
+DROP INDEX IF EXISTS tbl_floatspan_kdtree_idx;
+
 -------------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS test_spanops;
@@ -46,7 +49,8 @@ CREATE TABLE test_spanops(
   rightarg TEXT,
   no_idx BIGINT,
   rtree_idx BIGINT,
-  quadtree_idx BIGINT
+  quadtree_idx BIGINT,
+  kdtree_idx BIGINT
 );
 
 -------------------------------------------------------------------------------
@@ -483,10 +487,171 @@ WHERE op = '&>' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
 DROP INDEX tbl_intspan_quadtree_idx;
 DROP INDEX tbl_floatspan_quadtree_idx;
 
+
+CREATE INDEX tbl_intspan_kdtree_idx ON tbl_intspan USING SPGIST(i intspan_kdtree_ops);
+CREATE INDEX tbl_floatspan_kdtree_idx ON tbl_floatspan USING SPGIST(f floatspan_kdtree_ops);
+
+-------------------------------------------------------------------------------
+
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i @> t2.i )
+WHERE op = '@>' AND leftarg = 'intspan' AND rightarg = 'int';
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i @> t2.i )
+WHERE op = '@>' AND leftarg = 'intspan' AND rightarg = 'intspan';
+
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f @> t2.f )
+WHERE op = '@>' AND leftarg = 'floatspan' AND rightarg = 'float';
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f @> t2.f )
+WHERE op = '@>' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i <@ t2.i )
+WHERE op = '<@' AND leftarg = 'int' AND rightarg = 'intspan';
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i <@ t2.i )
+WHERE op = '<@' AND leftarg = 'intspan' AND rightarg = 'intspan';
+
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f <@ t2.f )
+WHERE op = '<@' AND leftarg = 'float' AND rightarg = 'floatspan';
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f <@ t2.f )
+WHERE op = '<@' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i && t2.i )
+WHERE op = '&&' AND leftarg = 'intspan' AND rightarg = 'intspan';
+
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f && t2.f )
+WHERE op = '&&' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i -|- t2.i )
+WHERE op = '-|-' AND leftarg = 'int' AND rightarg = 'intspan';
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i -|- t2.i )
+WHERE op = '-|-' AND leftarg = 'intspan' AND rightarg = 'int';
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i -|- t2.i )
+WHERE op = '-|-' AND leftarg = 'intspan' AND rightarg = 'intspan';
+
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f -|- t2.f )
+WHERE op = '-|-' AND leftarg = 'float' AND rightarg = 'floatspan';
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f -|- t2.f )
+WHERE op = '-|-' AND leftarg = 'floatspan' AND rightarg = 'float';
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f -|- t2.f )
+WHERE op = '-|-' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i << t2.i )
+WHERE op = '<<' AND leftarg = 'int' AND rightarg = 'intspan';
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i << t2.i )
+WHERE op = '<<' AND leftarg = 'intspan' AND rightarg = 'int';
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i << t2.i )
+WHERE op = '<<' AND leftarg = 'intspan' AND rightarg = 'intspan';
+
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f << t2.f )
+WHERE op = '<<' AND leftarg = 'float' AND rightarg = 'floatspan';
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f << t2.f )
+WHERE op = '<<' AND leftarg = 'floatspan' AND rightarg = 'float';
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f << t2.f )
+WHERE op = '<<' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i &< t2.i )
+WHERE op = '&<' AND leftarg = 'int' AND rightarg = 'intspan';
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i &< t2.i )
+WHERE op = '&<' AND leftarg = 'intspan' AND rightarg = 'int';
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i &< t2.i )
+WHERE op = '&<' AND leftarg = 'intspan' AND rightarg = 'intspan';
+
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f &< t2.f )
+WHERE op = '&<' AND leftarg = 'float' AND rightarg = 'floatspan';
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f &< t2.f )
+WHERE op = '&<' AND leftarg = 'floatspan' AND rightarg = 'float';
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f &< t2.f )
+WHERE op = '&<' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i >> t2.i )
+WHERE op = '>>' AND leftarg = 'int' AND rightarg = 'intspan';
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i >> t2.i )
+WHERE op = '>>' AND leftarg = 'intspan' AND rightarg = 'int';
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i >> t2.i )
+WHERE op = '>>' AND leftarg = 'intspan' AND rightarg = 'intspan';
+
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f >> t2.f )
+WHERE op = '>>' AND leftarg = 'float' AND rightarg = 'floatspan';
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f >> t2.f )
+WHERE op = '>>' AND leftarg = 'floatspan' AND rightarg = 'float';
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f >> t2.f )
+WHERE op = '>>' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i &> t2.i )
+WHERE op = '&>' AND leftarg = 'int' AND rightarg = 'intspan';
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i &> t2.i )
+WHERE op =  '&>' AND leftarg = 'intspan' AND rightarg = 'int';
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i &> t2.i )
+WHERE op = '&>' AND leftarg = 'intspan' AND rightarg = 'intspan';
+
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f &> t2.f )
+WHERE op = '&>' AND leftarg = 'float' AND rightarg = 'floatspan';
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f &> t2.f )
+WHERE op =  '&>' AND leftarg = 'floatspan' AND rightarg = 'float';
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f &> t2.f )
+WHERE op = '&>' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
+
+-------------------------------------------------------------------------------
+
+DROP INDEX tbl_intspan_kdtree_idx;
+DROP INDEX tbl_floatspan_kdtree_idx;
+
 -------------------------------------------------------------------------------
 
 SELECT * FROM test_spanops
-WHERE no_idx <> rtree_idx OR no_idx <> quadtree_idx
+WHERE no_idx <> rtree_idx OR no_idx <> quadtree_idx OR no_idx <> kdtree_idx
 ORDER BY op, leftarg, rightarg;
 
 DROP TABLE test_spanops;

@@ -388,21 +388,6 @@ CREATE OPERATOR CLASS periodset_quadtree_ops
   FUNCTION  5  span_spgist_leaf_consistent(internal, internal),
   FUNCTION  6  spanset_spgist_compress(internal);
 
-/*****************************************************************************/
-
-CREATE FUNCTION span_kdtree_choose(internal, internal)
-  RETURNS void
-  AS 'MODULE_PATHNAME', 'Span_kdtree_choose'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_kdtree_picksplit(internal, internal)
-  RETURNS void
-  AS 'MODULE_PATHNAME', 'Span_kdtree_picksplit'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_kdtree_inner_consistent(internal, internal)
-  RETURNS void
-  AS 'MODULE_PATHNAME', 'Span_kdtree_inner_consistent'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 /******************************************************************************/
 
 CREATE OPERATOR CLASS timestampset_kdtree_ops

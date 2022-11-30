@@ -173,128 +173,6 @@ tboxnode_copy(const TboxNode *box)
 }
 
 /**
- * Comparator for qsort
- *
- * We don't need to use the floating point macros in here, because this is
- * only going to be used in a place to affect the performance of the index,
- * not the correctness.
- */
-int
-compareDoubles(const void *a, const void *b)
-{
-  double x = *(double *) a;
-  double y = *(double *) b;
-  if (x == y)
-    return 0;
-  return (x > y) ? 1 : -1;
-}
-
-/**
- * Qsort comparator for timestamps
- */
-int
-compareTimestamps(const void *a, const void *b)
-{
-  TimestampTz x = *(TimestampTz *) a;
-  TimestampTz y = *(TimestampTz *) b;
-  if (x == y)
-    return 0;
-  return (x > y) ? 1 : -1;
-}
-
-/**
- * Comparator of temporal boxes based on their xmin value
- */
-static int
-tbox_xmin_cmp(const TBox *box1, const TBox *box2)
-{
-  assert(MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags));
-  if (datum_eq2(box1->span.lower, box2->span.lower, box1->span.basetype,
-        box2->span.basetype))
-    return 0;
-  return datum_gt2(box1->span.lower, box2->span.lower, box1->span.basetype,
-    box2->span.basetype) ? 1 : -1;
-}
-
-/**
- * Qsort comparator for temporal boxes based on their xmin value
- */
-int
-tbox_xmin_qsort_cmp(const TBox **a, const TBox **b)
-{
-  return tbox_xmin_cmp(*a, *b);
-}
-
-/**
- * Comparator of temporal boxes based on their xmax value
- */
-static int
-tbox_xmax_cmp(const TBox *box1, const TBox *box2)
-{
-  assert(MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags));
-  if (datum_eq2(box1->span.upper, box2->span.upper, box1->span.basetype,
-        box2->span.basetype))
-    return 0;
-  return datum_gt2(box1->span.upper, box2->span.upper, box1->span.basetype,
-    box2->span.basetype) ? 1 : -1;
-}
-
-/**
- * Qsort comparator for temporal boxes based on their xmax value
- */
-int
-tbox_xmax_qsort_cmp(const TBox **a, const TBox **b)
-{
-  return tbox_xmax_cmp(*a, *b);
-}
-
-/**
- * Comparator of temporal boxes based on their tmin value
- */
-static int
-tbox_tmin_cmp(const TBox *box1, const TBox *box2)
-{
-  assert(MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags));
-  if (datum_eq2(box1->period.lower, box2->period.lower, box1->period.basetype,
-        box2->period.basetype))
-    return 0;
-  return datum_gt2(box1->period.lower, box2->period.lower, box1->period.basetype,
-        box2->period.basetype) ? 1 : -1;
-}
-
-/**
- * Qsort comparator for temporal boxes based on their tmin value
- */
-int
-tbox_tmin_qsort_cmp(const TBox **a, const TBox **b)
-{
-  return tbox_tmin_cmp(*a, *b);
-}
-
-/**
- * Comparator of temporal boxes based on their tmax value
- */
-static int
-tbox_tmax_cmp(const TBox *box1, const TBox *box2)
-{
-  assert(MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags));
-  if (datum_eq2(box1->period.upper, box2->period.upper, box1->period.basetype,
-        box2->period.basetype))
-    return 0;
-  return datum_gt2(box1->period.upper, box2->period.upper, box1->period.basetype,
-        box2->period.basetype) ? 1 : -1;
-}
-
-/**
- * Qsort comparator for temporal boxes based on their tmax value
- */
-int
-tbox_tmax_qsort_cmp(const TBox **a, const TBox **b)
-{
-  return tbox_tmax_cmp(*a, *b);
-}
-
-/**
  * Calculate the quadrant
  *
  * The quadrant is 8 bit unsigned integer with 4 least bits in use.
@@ -590,6 +468,112 @@ tnumber_spgist_get_tbox(const ScanKeyData *scankey, TBox *result)
   return true;
 }
 
+/**
+ * Comparator of temporal boxes based on their xmin value
+ */
+static int
+tbox_xmin_cmp(const TBox *box1, const TBox *box2)
+{
+  assert(MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags));
+  if (datum_eq2(box1->span.lower, box2->span.lower, box1->span.basetype,
+        box2->span.basetype))
+    return 0;
+  return datum_gt2(box1->span.lower, box2->span.lower, box1->span.basetype,
+    box2->span.basetype) ? 1 : -1;
+}
+
+/**
+ * Qsort comparator for temporal boxes based on their xmin value
+ */
+int
+tbox_xmin_qsort_cmp(const TBox **a, const TBox **b)
+{
+  return tbox_xmin_cmp(*a, *b);
+}
+
+/**
+ * Comparator of temporal boxes based on their xmax value
+ */
+static int
+tbox_xmax_cmp(const TBox *box1, const TBox *box2)
+{
+  assert(MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags));
+  if (datum_eq2(box1->span.upper, box2->span.upper, box1->span.basetype,
+        box2->span.basetype))
+    return 0;
+  return datum_gt2(box1->span.upper, box2->span.upper, box1->span.basetype,
+    box2->span.basetype) ? 1 : -1;
+}
+
+/**
+ * Qsort comparator for temporal boxes based on their xmax value
+ */
+int
+tbox_xmax_qsort_cmp(const TBox **a, const TBox **b)
+{
+  return tbox_xmax_cmp(*a, *b);
+}
+
+/**
+ * Comparator of temporal boxes based on their tmin value
+ */
+static int
+tbox_tmin_cmp(const TBox *box1, const TBox *box2)
+{
+  assert(MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags));
+  if (datum_eq2(box1->period.lower, box2->period.lower, box1->period.basetype,
+        box2->period.basetype))
+    return 0;
+  return datum_gt2(box1->period.lower, box2->period.lower, box1->period.basetype,
+        box2->period.basetype) ? 1 : -1;
+}
+
+/**
+ * Qsort comparator for temporal boxes based on their tmin value
+ */
+int
+tbox_tmin_qsort_cmp(const TBox **a, const TBox **b)
+{
+  return tbox_tmin_cmp(*a, *b);
+}
+
+/**
+ * Comparator of temporal boxes based on their tmax value
+ */
+static int
+tbox_tmax_cmp(const TBox *box1, const TBox *box2)
+{
+  assert(MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags));
+  if (datum_eq2(box1->period.upper, box2->period.upper, box1->period.basetype,
+        box2->period.basetype))
+    return 0;
+  return datum_gt2(box1->period.upper, box2->period.upper, box1->period.basetype,
+        box2->period.basetype) ? 1 : -1;
+}
+
+/**
+ * Qsort comparator for temporal boxes based on their tmax value
+ */
+int
+tbox_tmax_qsort_cmp(const TBox **a, const TBox **b)
+{
+  return tbox_tmax_cmp(*a, *b);
+}
+
+static int
+tbox_level_cmp(TBox *centroid, TBox *query, int level)
+{
+  int mod = level % 4;
+  if (mod == 0)
+    return tbox_xmin_cmp(query, centroid);
+  else if (mod == 1)
+    return tbox_xmax_cmp(query, centroid);
+  else if (mod == 2)
+    return tbox_tmin_cmp(query, centroid);
+  else
+    return tbox_tmax_cmp(query, centroid);
+}
+
 /*****************************************************************************
  * SP-GiST config function
  *****************************************************************************/
@@ -671,19 +655,6 @@ Tbox_quadtree_choose(PG_FUNCTION_ARGS)
  * have many instances of the same box value. In this way, we should never
  * trigger the allTheSame logic.
  */
-static int
-tbox_level_cmp(TBox *centroid, TBox *query, int level)
-{
-  int mod = level % 4;
-  if (mod == 0)
-    return tbox_xmin_cmp(query, centroid);
-  else if (mod == 1)
-    return tbox_xmax_cmp(query, centroid);
-  else if (mod == 2)
-    return tbox_tmin_cmp(query, centroid);
-  else
-    return tbox_tmax_cmp(query, centroid);
-}
 
 PG_FUNCTION_INFO_V1(Tbox_kdtree_choose);
 /**
@@ -709,6 +680,23 @@ Tbox_kdtree_choose(PG_FUNCTION_ARGS)
 /*****************************************************************************
  * SP-GiST pick-split function
  *****************************************************************************/
+
+/**
+ * Comparator for qsort
+ *
+ * We don't need to use the floating point macros in here, because this is
+ * only going to be used in a place to affect the performance of the index,
+ * not the correctness.
+ */
+int
+compareDoubles(const void *a, const void *b)
+{
+  double x = *(double *) a;
+  double y = *(double *) b;
+  if (x == y)
+    return 0;
+  return (x > y) ? 1 : -1;
+}
 
 PG_FUNCTION_INFO_V1(Tbox_quadtree_picksplit);
 /**

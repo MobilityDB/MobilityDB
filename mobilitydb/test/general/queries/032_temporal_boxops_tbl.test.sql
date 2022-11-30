@@ -39,6 +39,11 @@ DROP INDEX IF EXISTS tbl_tint_quadtree_idx;
 DROP INDEX IF EXISTS tbl_tfloat_quadtree_idx;
 DROP INDEX IF EXISTS tbl_ttext_quadtree_idx;
 
+DROP INDEX IF EXISTS tbl_tbool_big_kdtree_idx;
+DROP INDEX IF EXISTS tbl_tint_big_kdtree_idx;
+DROP INDEX IF EXISTS tbl_tfloat_big_kdtree_idx;
+DROP INDEX IF EXISTS tbl_ttext_big_kdtree_idx;
+
 -------------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS test_boundboxops;
@@ -48,7 +53,8 @@ CREATE TABLE test_boundboxops(
   rightarg TEXT,
   no_idx BIGINT,
   rtree_idx BIGINT,
-  quadtree_idx BIGINT
+  quadtree_idx BIGINT,
+  kdtree_idx BIGINT
 );
 
 -------------------------------------------------------------------------------
@@ -2165,8 +2171,797 @@ DROP INDEX tbl_ttext_quadtree_idx;
 
 -------------------------------------------------------------------------------
 
+CREATE INDEX tbl_tbool_kdtree_idx ON tbl_tbool USING SPGIST(temp);
+CREATE INDEX tbl_tint_kdtree_idx ON tbl_tint USING SPGIST(temp);
+CREATE INDEX tbl_tfloat_kdtree_idx ON tbl_tfloat USING SPGIST(temp);
+CREATE INDEX tbl_ttext_kdtree_idx ON tbl_ttext USING SPGIST(temp);
+
+-------------------------------------------------------------------------------
+-- Overlaps
+-------------------------------------------------------------------------------
+
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tbool WHERE t && temp )
+WHERE op = '&&' AND leftarg = 'timestamptz' AND rightarg = 'tbool';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tint WHERE t && temp )
+WHERE op = '&&' AND leftarg = 'timestamptz' AND rightarg = 'tint';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tfloat WHERE t && temp )
+WHERE op = '&&' AND leftarg = 'timestamptz' AND rightarg = 'tfloat';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_ttext WHERE t && temp )
+WHERE op = '&&' AND leftarg = 'timestamptz' AND rightarg = 'ttext';
+
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tbool WHERE ts && temp )
+WHERE op = '&&' AND leftarg = 'timestampset' AND rightarg = 'tbool';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tint WHERE ts && temp )
+WHERE op = '&&' AND leftarg = 'timestampset' AND rightarg = 'tint';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tfloat WHERE ts && temp )
+WHERE op = '&&' AND leftarg = 'timestampset' AND rightarg = 'tfloat';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_ttext WHERE ts && temp )
+WHERE op = '&&' AND leftarg = 'timestampset' AND rightarg = 'ttext';
+
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tbool WHERE p && temp )
+WHERE op = '&&' AND leftarg = 'period' AND rightarg = 'tbool';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tint WHERE p && temp )
+WHERE op = '&&' AND leftarg = 'period' AND rightarg = 'tint';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tfloat WHERE p && temp )
+WHERE op = '&&' AND leftarg = 'period' AND rightarg = 'tfloat';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_ttext WHERE p && temp )
+WHERE op = '&&' AND leftarg = 'period' AND rightarg = 'ttext';
+
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tbool WHERE ps && temp )
+WHERE op = '&&' AND leftarg = 'periodset' AND rightarg = 'tbool';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tint WHERE ps && temp )
+WHERE op = '&&' AND leftarg = 'periodset' AND rightarg = 'tint';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tfloat WHERE ps && temp )
+WHERE op = '&&' AND leftarg = 'periodset' AND rightarg = 'tfloat';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_ttext WHERE ps && temp )
+WHERE op = '&&' AND leftarg = 'periodset' AND rightarg = 'ttext';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE temp && t )
+WHERE op = '&&' AND leftarg = 'tbool' AND rightarg = 'timestamptz';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestampset WHERE temp && ts )
+WHERE op = '&&' AND leftarg = 'tbool' AND rightarg = 'timestampset';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_period WHERE temp && p )
+WHERE op = '&&' AND leftarg = 'tbool' AND rightarg = 'period';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_periodset WHERE temp && ps )
+WHERE op = '&&' AND leftarg = 'tbool' AND rightarg = 'periodset';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool t1, tbl_tbool t2 WHERE t1.temp && t2.temp )
+WHERE op = '&&' AND leftarg = 'tbool' AND rightarg = 'tbool';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp && i )
+WHERE op = '&&' AND leftarg = 'tint' AND rightarg = 'int';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_intspan WHERE temp && i )
+WHERE op = '&&' AND leftarg = 'tint' AND rightarg = 'intspan';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_float WHERE temp && f )
+WHERE op = '&&' AND leftarg = 'tint' AND rightarg = 'float';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE temp && t )
+WHERE op = '&&' AND leftarg = 'tint' AND rightarg = 'timestamptz';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestampset WHERE temp && ts )
+WHERE op = '&&' AND leftarg = 'tint' AND rightarg = 'timestampset';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_period WHERE temp && p )
+WHERE op = '&&' AND leftarg = 'tint' AND rightarg = 'period';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_periodset WHERE temp && ps )
+WHERE op = '&&' AND leftarg = 'tint' AND rightarg = 'periodset';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tbox WHERE temp && b )
+WHERE op = '&&' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp && t2.temp )
+WHERE op = '&&' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tfloat t2 WHERE t1.temp && t2.temp )
+WHERE op = '&&' AND leftarg = 'tint' AND rightarg = 'tfloat';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_int WHERE temp && i )
+WHERE op = '&&' AND leftarg = 'tfloat' AND rightarg = 'int';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp && f )
+WHERE op = '&&' AND leftarg = 'tfloat' AND rightarg = 'float';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_floatspan WHERE temp && f )
+WHERE op = '&&' AND leftarg = 'tfloat' AND rightarg = 'floatspan';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp && t )
+WHERE op = '&&' AND leftarg = 'tfloat' AND rightarg = 'timestamptz';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestampset WHERE temp && ts )
+WHERE op = '&&' AND leftarg = 'tfloat' AND rightarg = 'timestampset';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_period WHERE temp && p )
+WHERE op = '&&' AND leftarg = 'tfloat' AND rightarg = 'period';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_periodset WHERE temp && ps )
+WHERE op = '&&' AND leftarg = 'tfloat' AND rightarg = 'periodset';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tbox WHERE temp && b )
+WHERE op = '&&' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp && t2.temp )
+WHERE op = '&&' AND leftarg = 'tfloat' AND rightarg = 'tint';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.temp && t2.temp )
+WHERE op = '&&' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE temp && t )
+WHERE op = '&&' AND leftarg = 'ttext' AND rightarg = 'timestamptz';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestampset WHERE temp && ts )
+WHERE op = '&&' AND leftarg = 'ttext' AND rightarg = 'timestampset';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_period WHERE temp && p )
+WHERE op = '&&' AND leftarg = 'ttext' AND rightarg = 'period';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_periodset WHERE temp && ps )
+WHERE op = '&&' AND leftarg = 'ttext' AND rightarg = 'periodset';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext t2 WHERE t1.temp && t2.temp )
+WHERE op = '&&' AND leftarg = 'ttext' AND rightarg = 'ttext';
+
+-------------------------------------------------------------------------------
+-- Contains
+-------------------------------------------------------------------------------
+
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tbool WHERE t @> temp )
+WHERE op = '@>' AND leftarg = 'timestamptz' AND rightarg = 'tbool';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tint WHERE t @> temp )
+WHERE op = '@>' AND leftarg = 'timestamptz' AND rightarg = 'tint';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tfloat WHERE t @> temp )
+WHERE op = '@>' AND leftarg = 'timestamptz' AND rightarg = 'tfloat';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_ttext WHERE t @> temp )
+WHERE op = '@>' AND leftarg = 'timestamptz' AND rightarg = 'ttext';
+
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tbool WHERE ts @> temp )
+WHERE op = '@>' AND leftarg = 'timestampset' AND rightarg = 'tbool';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tint WHERE ts @> temp )
+WHERE op = '@>' AND leftarg = 'timestampset' AND rightarg = 'tint';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tfloat WHERE ts @> temp )
+WHERE op = '@>' AND leftarg = 'timestampset' AND rightarg = 'tfloat';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_ttext WHERE ts @> temp )
+WHERE op = '@>' AND leftarg = 'timestampset' AND rightarg = 'ttext';
+
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tbool WHERE p @> temp )
+WHERE op = '@>' AND leftarg = 'period' AND rightarg = 'tbool';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tint WHERE p @> temp )
+WHERE op = '@>' AND leftarg = 'period' AND rightarg = 'tint';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tfloat WHERE p @> temp )
+WHERE op = '@>' AND leftarg = 'period' AND rightarg = 'tfloat';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_ttext WHERE p @> temp )
+WHERE op = '@>' AND leftarg = 'period' AND rightarg = 'ttext';
+
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tbool WHERE ps @> temp )
+WHERE op = '@>' AND leftarg = 'periodset' AND rightarg = 'tbool';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tint WHERE ps @> temp )
+WHERE op = '@>' AND leftarg = 'periodset' AND rightarg = 'tint';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tfloat WHERE ps @> temp )
+WHERE op = '@>' AND leftarg = 'periodset' AND rightarg = 'tfloat';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_ttext WHERE ps @> temp )
+WHERE op = '@>' AND leftarg = 'periodset' AND rightarg = 'ttext';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE temp @> t )
+WHERE op = '@>' AND leftarg = 'tbool' AND rightarg = 'timestamptz';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestampset WHERE temp @> ts )
+WHERE op = '@>' AND leftarg = 'tbool' AND rightarg = 'timestampset';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_period WHERE temp @> p )
+WHERE op = '@>' AND leftarg = 'tbool' AND rightarg = 'period';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_periodset WHERE temp @> ps )
+WHERE op = '@>' AND leftarg = 'tbool' AND rightarg = 'periodset';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool t1, tbl_tbool t2 WHERE t1.temp @> t2.temp )
+WHERE op = '@>' AND leftarg = 'tbool' AND rightarg = 'tbool';
+
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp @> i )
+WHERE op = '@>' AND leftarg = 'tint' AND rightarg = 'int';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_intspan WHERE temp @> i )
+WHERE op = '@>' AND leftarg = 'tint' AND rightarg = 'intspan';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_float WHERE temp @> f )
+WHERE op = '@>' AND leftarg = 'tint' AND rightarg = 'float';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE temp @> t )
+WHERE op = '@>' AND leftarg = 'tint' AND rightarg = 'timestamptz';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestampset WHERE temp @> ts )
+WHERE op = '@>' AND leftarg = 'tint' AND rightarg = 'timestampset';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_period WHERE temp @> p )
+WHERE op = '@>' AND leftarg = 'tint' AND rightarg = 'period';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_periodset WHERE temp @> ps )
+WHERE op = '@>' AND leftarg = 'tint' AND rightarg = 'periodset';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tbox WHERE temp @> b )
+WHERE op = '@>' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp @> t2.temp )
+WHERE op = '@>' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tfloat t2 WHERE t1.temp @> t2.temp )
+WHERE op = '@>' AND leftarg = 'tint' AND rightarg = 'tfloat';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_int WHERE temp @> i )
+WHERE op = '@>' AND leftarg = 'tfloat' AND rightarg = 'int';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp @> f )
+WHERE op = '@>' AND leftarg = 'tfloat' AND rightarg = 'float';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_floatspan WHERE temp @> f )
+WHERE op = '@>' AND leftarg = 'tfloat' AND rightarg = 'floatspan';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp @> t )
+WHERE op = '@>' AND leftarg = 'tfloat' AND rightarg = 'timestamptz';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestampset WHERE temp @> ts )
+WHERE op = '@>' AND leftarg = 'tfloat' AND rightarg = 'timestampset';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_period WHERE temp @> p )
+WHERE op = '@>' AND leftarg = 'tfloat' AND rightarg = 'period';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_periodset WHERE temp @> ps )
+WHERE op = '@>' AND leftarg = 'tfloat' AND rightarg = 'periodset';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tbox WHERE temp @> b )
+WHERE op = '@>' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp @> t2.temp )
+WHERE op = '@>' AND leftarg = 'tfloat' AND rightarg = 'tint';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.temp @> t2.temp )
+WHERE op = '@>' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE temp @> t )
+WHERE op = '@>' AND leftarg = 'ttext' AND rightarg = 'timestamptz';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestampset WHERE temp @> ts )
+WHERE op = '@>' AND leftarg = 'ttext' AND rightarg = 'timestampset';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_period WHERE temp @> p )
+WHERE op = '@>' AND leftarg = 'ttext' AND rightarg = 'period';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_periodset WHERE temp @> ps )
+WHERE op = '@>' AND leftarg = 'ttext' AND rightarg = 'periodset';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext t2 WHERE t1.temp @> t2.temp )
+WHERE op = '@>' AND leftarg = 'ttext' AND rightarg = 'ttext';
+
+-------------------------------------------------------------------------------
+-- Contained
+-------------------------------------------------------------------------------
+
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tbool WHERE t <@ temp )
+WHERE op = '<@' AND leftarg = 'timestamptz' AND rightarg = 'tbool';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tint WHERE t <@ temp )
+WHERE op = '<@' AND leftarg = 'timestamptz' AND rightarg = 'tint';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tfloat WHERE t <@ temp )
+WHERE op = '<@' AND leftarg = 'timestamptz' AND rightarg = 'tfloat';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_ttext WHERE t <@ temp )
+WHERE op = '<@' AND leftarg = 'timestamptz' AND rightarg = 'ttext';
+
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tbool WHERE ts <@ temp )
+WHERE op = '<@' AND leftarg = 'timestampset' AND rightarg = 'tbool';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tint WHERE ts <@ temp )
+WHERE op = '<@' AND leftarg = 'timestampset' AND rightarg = 'tint';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tfloat WHERE ts <@ temp )
+WHERE op = '<@' AND leftarg = 'timestampset' AND rightarg = 'tfloat';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_ttext WHERE ts <@ temp )
+WHERE op = '<@' AND leftarg = 'timestampset' AND rightarg = 'ttext';
+
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tbool WHERE p <@ temp )
+WHERE op = '<@' AND leftarg = 'period' AND rightarg = 'tbool';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tint WHERE p <@ temp )
+WHERE op = '<@' AND leftarg = 'period' AND rightarg = 'tint';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tfloat WHERE p <@ temp )
+WHERE op = '<@' AND leftarg = 'period' AND rightarg = 'tfloat';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_ttext WHERE p <@ temp )
+WHERE op = '<@' AND leftarg = 'period' AND rightarg = 'ttext';
+
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tbool WHERE ps <@ temp )
+WHERE op = '<@' AND leftarg = 'periodset' AND rightarg = 'tbool';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tint WHERE ps <@ temp )
+WHERE op = '<@' AND leftarg = 'periodset' AND rightarg = 'tint';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tfloat WHERE ps <@ temp )
+WHERE op = '<@' AND leftarg = 'periodset' AND rightarg = 'tfloat';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_ttext WHERE ps <@ temp )
+WHERE op = '<@' AND leftarg = 'periodset' AND rightarg = 'ttext';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE temp <@ t )
+WHERE op = '<@' AND leftarg = 'tbool' AND rightarg = 'timestamptz';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestampset WHERE temp <@ ts )
+WHERE op = '<@' AND leftarg = 'tbool' AND rightarg = 'timestampset';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_period WHERE temp <@ p )
+WHERE op = '<@' AND leftarg = 'tbool' AND rightarg = 'period';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_periodset WHERE temp <@ ps )
+WHERE op = '<@' AND leftarg = 'tbool' AND rightarg = 'periodset';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool t1, tbl_tbool t2 WHERE t1.temp <@ t2.temp )
+WHERE op = '<@' AND leftarg = 'tbool' AND rightarg = 'tbool';
+
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp <@ i )
+WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'int';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_intspan WHERE temp <@ i )
+WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'intspan';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_float WHERE temp <@ f )
+WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'float';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE temp <@ t )
+WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'timestamptz';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestampset WHERE temp <@ ts )
+WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'timestampset';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_period WHERE temp <@ p )
+WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'period';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_periodset WHERE temp <@ ps )
+WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'periodset';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tbox WHERE temp <@ b )
+WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp <@ t2.temp )
+WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tfloat t2 WHERE t1.temp <@ t2.temp )
+WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'tfloat';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_int WHERE temp <@ i )
+WHERE op = '<@' AND leftarg = 'tfloat' AND rightarg = 'int';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp <@ f )
+WHERE op = '<@' AND leftarg = 'tfloat' AND rightarg = 'float';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_floatspan WHERE temp <@ f )
+WHERE op = '<@' AND leftarg = 'tfloat' AND rightarg = 'floatspan';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp <@ t )
+WHERE op = '<@' AND leftarg = 'tfloat' AND rightarg = 'timestamptz';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestampset WHERE temp <@ ts )
+WHERE op = '<@' AND leftarg = 'tfloat' AND rightarg = 'timestampset';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_period WHERE temp <@ p )
+WHERE op = '<@' AND leftarg = 'tfloat' AND rightarg = 'period';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_periodset WHERE temp <@ ps )
+WHERE op = '<@' AND leftarg = 'tfloat' AND rightarg = 'periodset';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tbox WHERE temp <@ b )
+WHERE op = '<@' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp <@ t2.temp )
+WHERE op = '<@' AND leftarg = 'tfloat' AND rightarg = 'tint';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.temp <@ t2.temp )
+WHERE op = '<@' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE temp <@ t )
+WHERE op = '<@' AND leftarg = 'ttext' AND rightarg = 'timestamptz';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestampset WHERE temp <@ ts )
+WHERE op = '<@' AND leftarg = 'ttext' AND rightarg = 'timestampset';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_period WHERE temp <@ p )
+WHERE op = '<@' AND leftarg = 'ttext' AND rightarg = 'period';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_periodset WHERE temp <@ ps )
+WHERE op = '<@' AND leftarg = 'ttext' AND rightarg = 'periodset';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext t2 WHERE t1.temp <@ t2.temp )
+WHERE op = '<@' AND leftarg = 'ttext' AND rightarg = 'ttext';
+
+-------------------------------------------------------------------------------
+-- Overlaps
+-------------------------------------------------------------------------------
+
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tbool WHERE t -|- temp )
+WHERE op = '-|-' AND leftarg = 'timestamptz' AND rightarg = 'tbool';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tint WHERE t -|- temp )
+WHERE op = '-|-' AND leftarg = 'timestamptz' AND rightarg = 'tint';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tfloat WHERE t -|- temp )
+WHERE op = '-|-' AND leftarg = 'timestamptz' AND rightarg = 'tfloat';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_ttext WHERE t -|- temp )
+WHERE op = '-|-' AND leftarg = 'timestamptz' AND rightarg = 'ttext';
+
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tbool WHERE ts -|- temp )
+WHERE op = '-|-' AND leftarg = 'timestampset' AND rightarg = 'tbool';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tint WHERE ts -|- temp )
+WHERE op = '-|-' AND leftarg = 'timestampset' AND rightarg = 'tint';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tfloat WHERE ts -|- temp )
+WHERE op = '-|-' AND leftarg = 'timestampset' AND rightarg = 'tfloat';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_ttext WHERE ts -|- temp )
+WHERE op = '-|-' AND leftarg = 'timestampset' AND rightarg = 'ttext';
+
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tbool WHERE p -|- temp )
+WHERE op = '-|-' AND leftarg = 'period' AND rightarg = 'tbool';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tint WHERE p -|- temp )
+WHERE op = '-|-' AND leftarg = 'period' AND rightarg = 'tint';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tfloat WHERE p -|- temp )
+WHERE op = '-|-' AND leftarg = 'period' AND rightarg = 'tfloat';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_ttext WHERE p -|- temp )
+WHERE op = '-|-' AND leftarg = 'period' AND rightarg = 'ttext';
+
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tbool WHERE ps -|- temp )
+WHERE op = '-|-' AND leftarg = 'periodset' AND rightarg = 'tbool';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tint WHERE ps -|- temp )
+WHERE op = '-|-' AND leftarg = 'periodset' AND rightarg = 'tint';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tfloat WHERE ps -|- temp )
+WHERE op = '-|-' AND leftarg = 'periodset' AND rightarg = 'tfloat';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_ttext WHERE ps -|- temp )
+WHERE op = '-|-' AND leftarg = 'periodset' AND rightarg = 'ttext';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE temp -|- t )
+WHERE op = '-|-' AND leftarg = 'tbool' AND rightarg = 'timestamptz';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestampset WHERE temp -|- ts )
+WHERE op = '-|-' AND leftarg = 'tbool' AND rightarg = 'timestampset';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_period WHERE temp -|- p )
+WHERE op = '-|-' AND leftarg = 'tbool' AND rightarg = 'period';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_periodset WHERE temp -|- ps )
+WHERE op = '-|-' AND leftarg = 'tbool' AND rightarg = 'periodset';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool t1, tbl_tbool t2 WHERE t1.temp -|- t2.temp )
+WHERE op = '-|-' AND leftarg = 'tbool' AND rightarg = 'tbool';
+
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp -|- i )
+WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'int';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_intspan WHERE temp -|- i )
+WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'intspan';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_float WHERE temp -|- f )
+WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'float';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE temp -|- t )
+WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'timestamptz';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestampset WHERE temp -|- ts )
+WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'timestampset';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_period WHERE temp -|- p )
+WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'period';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_periodset WHERE temp -|- ps )
+WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'periodset';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tbox WHERE temp -|- b )
+WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp -|- t2.temp )
+WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tfloat t2 WHERE t1.temp -|- t2.temp )
+WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'tfloat';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_int WHERE temp -|- i )
+WHERE op = '-|-' AND leftarg = 'tfloat' AND rightarg = 'int';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp -|- f )
+WHERE op = '-|-' AND leftarg = 'tfloat' AND rightarg = 'float';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_floatspan WHERE temp -|- f )
+WHERE op = '-|-' AND leftarg = 'tfloat' AND rightarg = 'floatspan';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp -|- t )
+WHERE op = '-|-' AND leftarg = 'tfloat' AND rightarg = 'timestamptz';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestampset WHERE temp -|- ts )
+WHERE op = '-|-' AND leftarg = 'tfloat' AND rightarg = 'timestampset';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_period WHERE temp -|- p )
+WHERE op = '-|-' AND leftarg = 'tfloat' AND rightarg = 'period';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_periodset WHERE temp -|- ps )
+WHERE op = '-|-' AND leftarg = 'tfloat' AND rightarg = 'periodset';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tbox WHERE temp -|- b )
+WHERE op = '-|-' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp -|- t2.temp )
+WHERE op = '-|-' AND leftarg = 'tfloat' AND rightarg = 'tint';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.temp -|- t2.temp )
+WHERE op = '-|-' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE temp -|- t )
+WHERE op = '-|-' AND leftarg = 'ttext' AND rightarg = 'timestamptz';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestampset WHERE temp -|- ts )
+WHERE op = '-|-' AND leftarg = 'ttext' AND rightarg = 'timestampset';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_period WHERE temp -|- p )
+WHERE op = '-|-' AND leftarg = 'ttext' AND rightarg = 'period';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_periodset WHERE temp -|- ps )
+WHERE op = '-|-' AND leftarg = 'ttext' AND rightarg = 'periodset';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext t2 WHERE t1.temp -|- t2.temp )
+WHERE op = '-|-' AND leftarg = 'ttext' AND rightarg = 'ttext';
+
+-------------------------------------------------------------------------------
+-- Same
+-------------------------------------------------------------------------------
+
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tbool WHERE t ~= temp )
+WHERE op = '~=' AND leftarg = 'timestamptz' AND rightarg = 'tbool';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tint WHERE t ~= temp )
+WHERE op = '~=' AND leftarg = 'timestamptz' AND rightarg = 'tint';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tfloat WHERE t ~= temp )
+WHERE op = '~=' AND leftarg = 'timestamptz' AND rightarg = 'tfloat';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_ttext WHERE t ~= temp )
+WHERE op = '~=' AND leftarg = 'timestamptz' AND rightarg = 'ttext';
+
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tbool WHERE ts ~= temp )
+WHERE op = '~=' AND leftarg = 'timestampset' AND rightarg = 'tbool';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tint WHERE ts ~= temp )
+WHERE op = '~=' AND leftarg = 'timestampset' AND rightarg = 'tint';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tfloat WHERE ts ~= temp )
+WHERE op = '~=' AND leftarg = 'timestampset' AND rightarg = 'tfloat';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_ttext WHERE ts ~= temp )
+WHERE op = '~=' AND leftarg = 'timestampset' AND rightarg = 'ttext';
+
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tbool WHERE p ~= temp )
+WHERE op = '~=' AND leftarg = 'period' AND rightarg = 'tbool';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tint WHERE p ~= temp )
+WHERE op = '~=' AND leftarg = 'period' AND rightarg = 'tint';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tfloat WHERE p ~= temp )
+WHERE op = '~=' AND leftarg = 'period' AND rightarg = 'tfloat';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_ttext WHERE p ~= temp )
+WHERE op = '~=' AND leftarg = 'period' AND rightarg = 'ttext';
+
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tbool WHERE ps ~= temp )
+WHERE op = '~=' AND leftarg = 'periodset' AND rightarg = 'tbool';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tint WHERE ps ~= temp )
+WHERE op = '~=' AND leftarg = 'periodset' AND rightarg = 'tint';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tfloat WHERE ps ~= temp )
+WHERE op = '~=' AND leftarg = 'periodset' AND rightarg = 'tfloat';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_ttext WHERE ps ~= temp )
+WHERE op = '~=' AND leftarg = 'periodset' AND rightarg = 'ttext';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE temp ~= t )
+WHERE op = '~=' AND leftarg = 'tbool' AND rightarg = 'timestamptz';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestampset WHERE temp ~= ts )
+WHERE op = '~=' AND leftarg = 'tbool' AND rightarg = 'timestampset';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_period WHERE temp ~= p )
+WHERE op = '~=' AND leftarg = 'tbool' AND rightarg = 'period';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_periodset WHERE temp ~= ps )
+WHERE op = '~=' AND leftarg = 'tbool' AND rightarg = 'periodset';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool t1, tbl_tbool t2 WHERE t1.temp ~= t2.temp )
+WHERE op = '~=' AND leftarg = 'tbool' AND rightarg = 'tbool';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp ~= i )
+WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'int';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_intspan WHERE temp ~= i )
+WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'intspan';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_float WHERE temp ~= f )
+WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'float';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE temp ~= t )
+WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'timestamptz';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestampset WHERE temp ~= ts )
+WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'timestampset';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_period WHERE temp ~= p )
+WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'period';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_periodset WHERE temp ~= ps )
+WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'periodset';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tbox WHERE temp ~= b )
+WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp ~= t2.temp )
+WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint t1, tbl_tfloat t2 WHERE t1.temp ~= t2.temp )
+WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'tfloat';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_int WHERE temp ~= i )
+WHERE op = '~=' AND leftarg = 'tfloat' AND rightarg = 'int';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp ~= f )
+WHERE op = '~=' AND leftarg = 'tfloat' AND rightarg = 'float';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_floatspan WHERE temp ~= f )
+WHERE op = '~=' AND leftarg = 'tfloat' AND rightarg = 'floatspan';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp ~= t )
+WHERE op = '~=' AND leftarg = 'tfloat' AND rightarg = 'timestamptz';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestampset WHERE temp ~= ts )
+WHERE op = '~=' AND leftarg = 'tfloat' AND rightarg = 'timestampset';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_period WHERE temp ~= p )
+WHERE op = '~=' AND leftarg = 'tfloat' AND rightarg = 'period';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_periodset WHERE temp ~= ps )
+WHERE op = '~=' AND leftarg = 'tfloat' AND rightarg = 'periodset';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tbox WHERE temp ~= b )
+WHERE op = '~=' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp ~= t2.temp )
+WHERE op = '~=' AND leftarg = 'tfloat' AND rightarg = 'tint';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.temp ~= t2.temp )
+WHERE op = '~=' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE temp ~= t )
+WHERE op = '~=' AND leftarg = 'ttext' AND rightarg = 'timestamptz';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestampset WHERE temp ~= ts )
+WHERE op = '~=' AND leftarg = 'ttext' AND rightarg = 'timestampset';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_period WHERE temp ~= p )
+WHERE op = '~=' AND leftarg = 'ttext' AND rightarg = 'period';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_periodset WHERE temp ~= ps )
+WHERE op = '~=' AND leftarg = 'ttext' AND rightarg = 'periodset';
+UPDATE test_boundboxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext t2 WHERE t1.temp ~= t2.temp )
+WHERE op = '~=' AND leftarg = 'ttext' AND rightarg = 'ttext';
+
+-------------------------------------------------------------------------------
+
 SELECT * FROM test_boundboxops
-WHERE no_idx <> rtree_idx OR no_idx <> quadtree_idx
+WHERE no_idx <> rtree_idx OR no_idx <> quadtree_idx OR no_idx <> kdtree_idx
 ORDER BY op, leftarg, rightarg;
 
 DROP TABLE test_boundboxops;
