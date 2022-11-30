@@ -954,8 +954,11 @@ span_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
   bool found = (spansel == SPANSEL) ?
     value_cachedop(operid, &cachedOp) : time_cachedop(operid, &cachedOp);
   if (! found)
+  {
     /* Unknown operator */
+    ReleaseVariableStats(vardata);
     return span_sel_default(operid);
+  }
 
   /*
    * Estimate using statistics. Note that span_sel need not handle

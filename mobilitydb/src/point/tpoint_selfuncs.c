@@ -975,7 +975,7 @@ static ND_STATS *
 pg_get_nd_stats(const Oid tableid, AttrNumber att_num, int mode, bool only_parent)
 {
   HeapTuple stats_tuple = NULL;
-  ND_STATS *nd_stats;
+  ND_STATS *nd_stats = NULL;
 
   /* First pull the stats tuple for the whole tree */
   if ( ! only_parent )
@@ -983,10 +983,9 @@ pg_get_nd_stats(const Oid tableid, AttrNumber att_num, int mode, bool only_paren
   /* Fall-back to main table stats only, if not found for whole tree or explicitly ignored */
   if ( only_parent || ! stats_tuple )
     stats_tuple = SearchSysCache3(STATRELATTINH, ObjectIdGetDatum(tableid), Int16GetDatum(att_num), BoolGetDatum(false));
-  if ( ! stats_tuple )
-    return NULL;
+  if ( stats_tuple )
+    nd_stats = pg_nd_stats_from_tuple(stats_tuple, mode);
 
-  nd_stats = pg_nd_stats_from_tuple(stats_tuple, mode);
   ReleaseSysCache(stats_tuple);
   return nd_stats;
 }

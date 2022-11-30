@@ -1096,7 +1096,7 @@ Stbox_kdtree_picksplit(PG_FUNCTION_ARGS)
     qsortfn = (qsort_comparator) &stbox_tmin_qsort_cmp;
   else /* (hasz && mod == 7) || (! hasz && mod == 5) */
     qsortfn = (qsort_comparator) &stbox_tmax_qsort_cmp;
-  qsort(sorted, in->nTuples, sizeof(SortedSTbox), qsortfn);
+  qsort(&sorted, in->nTuples, sizeof(SortedSTbox), qsortfn);
   int median = in->nTuples >> 1;
   STBox *centroid = stbox_copy(&sorted[median].box);
 

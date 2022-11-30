@@ -2289,7 +2289,6 @@ SELECT COUNT(*) FROM tbl_periodset_big WHERE ps <<# period '[2001-01-01, 2001-02
 (1 row)
 
 SELECT COUNT(*) FROM tbl_periodset_big WHERE ps &<# period '[2001-01-01, 2001-02-01]';
-WARNING:  cache reference leak: cache pg_statistic (59), tuple 29/5 has count 1
  count 
 -------
   1031
