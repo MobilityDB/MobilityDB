@@ -1598,11 +1598,11 @@ DROP INDEX tbl_period_rtree_idx;
 ERROR:  index "tbl_period_rtree_idx" does not exist
 DROP INDEX tbl_periodset_rtree_idx;
 ERROR:  index "tbl_periodset_rtree_idx" does not exist
-CREATE INDEX tbl_timestampset_kdtree_idx ON tbl_timestampset USING SPGIST(ts);
+CREATE INDEX tbl_timestampset_kdtree_idx ON tbl_timestampset USING SPGIST(ts timestampset_kdtree_ops);
 CREATE INDEX
-CREATE INDEX tbl_period_kdtree_idx ON tbl_period USING SPGIST(p);
+CREATE INDEX tbl_period_kdtree_idx ON tbl_period USING SPGIST(p period_kdtree_ops);
 CREATE INDEX
-CREATE INDEX tbl_periodset_kdtree_idx ON tbl_periodset USING SPGIST(ps);
+CREATE INDEX tbl_periodset_kdtree_idx ON tbl_periodset USING SPGIST(ps periodset_kdtree_ops);
 CREATE INDEX
 UPDATE test_timeops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_timestamptz WHERE ts @> t )

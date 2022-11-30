@@ -487,8 +487,8 @@ WHERE op = '&>' AND leftarg = 'floatspanset' AND rightarg = 'floatspanset';
 DROP INDEX tbl_intspanset_quadtree_idx;
 DROP INDEX tbl_floatspanset_quadtree_idx;
 
-CREATE INDEX tbl_intspanset_kdtree_idx ON tbl_intspanset USING SPGIST(ss);
-CREATE INDEX tbl_floatspanset_kdtree_idx ON tbl_floatspanset USING SPGIST(ss);
+CREATE INDEX tbl_intspanset_kdtree_idx ON tbl_intspanset USING SPGIST(ss intspanset_kdtree_ops);
+CREATE INDEX tbl_floatspanset_kdtree_idx ON tbl_floatspanset USING SPGIST(ss floatspanset_kdtree_ops);
 
 -------------------------------------------------------------------------------
 

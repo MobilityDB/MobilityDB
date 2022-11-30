@@ -1399,9 +1399,9 @@ DROP INDEX tbl_timestampset_rtree_idx;
 DROP INDEX tbl_period_rtree_idx;
 DROP INDEX tbl_periodset_rtree_idx;
 
-CREATE INDEX tbl_timestampset_kdtree_idx ON tbl_timestampset USING SPGIST(ts);
-CREATE INDEX tbl_period_kdtree_idx ON tbl_period USING SPGIST(p);
-CREATE INDEX tbl_periodset_kdtree_idx ON tbl_periodset USING SPGIST(ps);
+CREATE INDEX tbl_timestampset_kdtree_idx ON tbl_timestampset USING SPGIST(ts timestampset_kdtree_ops);
+CREATE INDEX tbl_period_kdtree_idx ON tbl_period USING SPGIST(p period_kdtree_ops);
+CREATE INDEX tbl_periodset_kdtree_idx ON tbl_periodset USING SPGIST(ps periodset_kdtree_ops);
 
 -------------------------------------------------------------------------------
 

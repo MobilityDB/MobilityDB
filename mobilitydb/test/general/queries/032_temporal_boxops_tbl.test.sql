@@ -2171,10 +2171,10 @@ DROP INDEX tbl_ttext_quadtree_idx;
 
 -------------------------------------------------------------------------------
 
-CREATE INDEX tbl_tbool_kdtree_idx ON tbl_tbool USING SPGIST(temp);
-CREATE INDEX tbl_tint_kdtree_idx ON tbl_tint USING SPGIST(temp);
-CREATE INDEX tbl_tfloat_kdtree_idx ON tbl_tfloat USING SPGIST(temp);
-CREATE INDEX tbl_ttext_kdtree_idx ON tbl_ttext USING SPGIST(temp);
+CREATE INDEX tbl_tbool_kdtree_idx ON tbl_tbool USING SPGIST(temp tbool_kdtree_ops);
+CREATE INDEX tbl_tint_kdtree_idx ON tbl_tint USING SPGIST(temp tint_kdtree_ops);
+CREATE INDEX tbl_tfloat_kdtree_idx ON tbl_tfloat USING SPGIST(temp tfloat_kdtree_ops);
+CREATE INDEX tbl_ttext_kdtree_idx ON tbl_ttext USING SPGIST(temp ttext_kdtree_ops);
 
 -------------------------------------------------------------------------------
 -- Overlaps

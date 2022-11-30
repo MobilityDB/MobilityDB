@@ -341,7 +341,7 @@ stboxnode_kdtree_next(const STboxNode *nodebox, const STBox *centroid,
     else
       next_nodebox->left.zmax = centroid->zmax;
   }
-  else if ((hasz && mod == 6) || (! hasz && 4))
+  else if ((hasz && mod == 6) || (! hasz && mod == 4))
   {
     /* Split the bounding box by lower bound  */
     if (node == 0)
@@ -742,15 +742,6 @@ stbox_xmin_cmp(const STBox *box1, const STBox *box2)
 }
 
 /**
- * Qsort comparator for temporal boxes based on their xmin value
- */
-int
-stbox_xmin_qsort_cmp(const STBox **a, const STBox **b)
-{
-  return stbox_xmin_cmp(*a, *b);
-}
-
-/**
  * Comparator of temporal boxes based on their xmax value
  */
 static int
@@ -760,15 +751,6 @@ stbox_xmax_cmp(const STBox *box1, const STBox *box2)
   if (box1->xmax == box2->xmax)
     return 0;
   return (box1->xmax > box2->xmax) ? 1 : -1;
-}
-
-/**
- * Qsort comparator for temporal boxes based on their xmax value
- */
-int
-stbox_xmax_qsort_cmp(const STBox **a, const STBox **b)
-{
-  return stbox_xmax_cmp(*a, *b);
 }
 
 /**
@@ -784,15 +766,6 @@ stbox_ymin_cmp(const STBox *box1, const STBox *box2)
 }
 
 /**
- * Qsort comparator for temporal boxes based on their ymin value
- */
-int
-stbox_ymin_qsort_cmp(const STBox **a, const STBox **b)
-{
-  return stbox_ymin_cmp(*a, *b);
-}
-
-/**
  * Comparator of temporal boxes based on their ymax value
  */
 static int
@@ -802,15 +775,6 @@ stbox_ymax_cmp(const STBox *box1, const STBox *box2)
   if (box1->ymax == box2->ymax)
     return 0;
   return (box1->ymax > box2->ymax) ? 1 : -1;
-}
-
-/**
- * Qsort comparator for temporal boxes based on their ymax value
- */
-int
-stbox_ymax_qsort_cmp(const STBox **a, const STBox **b)
-{
-  return stbox_ymax_cmp(*a, *b);
 }
 
 /**
@@ -826,15 +790,6 @@ stbox_zmin_cmp(const STBox *box1, const STBox *box2)
 }
 
 /**
- * Qsort comparator for temporal boxes based on their zmin value
- */
-int
-stbox_zmin_qsort_cmp(const STBox **a, const STBox **b)
-{
-  return stbox_zmin_cmp(*a, *b);
-}
-
-/**
  * Comparator of temporal boxes based on their zmax value
  */
 static int
@@ -844,15 +799,6 @@ stbox_zmax_cmp(const STBox *box1, const STBox *box2)
   if (box1->zmax == box2->zmax)
     return 0;
   return (box1->zmax > box2->zmax) ? 1 : -1;
-}
-
-/**
- * Qsort comparator for temporal boxes based on their zmax value
- */
-int
-stbox_zmax_qsort_cmp(const STBox **a, const STBox **b)
-{
-  return stbox_zmax_cmp(*a, *b);
 }
 
 /**
@@ -870,15 +816,6 @@ stbox_tmin_cmp(const STBox *box1, const STBox *box2)
 }
 
 /**
- * Qsort comparator for temporal boxes based on their tmin value
- */
-int
-stbox_tmin_qsort_cmp(const STBox **a, const STBox **b)
-{
-  return stbox_tmin_cmp(*a, *b);
-}
-
-/**
  * Comparator of temporal boxes based on their tmax value
  */
 static int
@@ -890,15 +827,6 @@ stbox_tmax_cmp(const STBox *box1, const STBox *box2)
     return 0;
   return datum_gt2(box1->period.upper, box2->period.upper, box1->period.basetype,
         box2->period.basetype) ? 1 : -1;
-}
-
-/**
- * Qsort comparator for temporal boxes based on their tmax value
- */
-int
-stbox_tmax_qsort_cmp(const STBox **a, const STBox **b)
-{
-  return stbox_tmax_cmp(*a, *b);
 }
 
 /*****************************************************************************/
@@ -1081,22 +1009,22 @@ Stbox_kdtree_picksplit(PG_FUNCTION_ARGS)
   int mod = hasz ? in->level % 8 : in->level % 6;
   qsort_comparator qsortfn;
   if (mod == 0)
-    qsortfn = (qsort_comparator) &stbox_xmin_qsort_cmp;
+    qsortfn = (qsort_comparator) &stbox_xmin_cmp;
   else if (mod == 1)
-    qsortfn = (qsort_comparator) &stbox_xmax_qsort_cmp;
+    qsortfn = (qsort_comparator) &stbox_xmax_cmp;
   else if (mod == 2)
-    qsortfn = (qsort_comparator) &stbox_ymin_qsort_cmp;
+    qsortfn = (qsort_comparator) &stbox_ymin_cmp;
   else if (mod == 3)
-    qsortfn = (qsort_comparator) &stbox_ymax_qsort_cmp;
+    qsortfn = (qsort_comparator) &stbox_ymax_cmp;
   else if (hasz && mod == 4)
-    qsortfn = (qsort_comparator) &stbox_zmin_qsort_cmp;
+    qsortfn = (qsort_comparator) &stbox_zmin_cmp;
   else if (hasz && mod == 5)
-    qsortfn = (qsort_comparator) &stbox_zmax_qsort_cmp;
+    qsortfn = (qsort_comparator) &stbox_zmax_cmp;
   else if ((hasz && mod == 6) || (! hasz && mod == 4))
-    qsortfn = (qsort_comparator) &stbox_tmin_qsort_cmp;
+    qsortfn = (qsort_comparator) &stbox_tmin_cmp;
   else /* (hasz && mod == 7) || (! hasz && mod == 5) */
-    qsortfn = (qsort_comparator) &stbox_tmax_qsort_cmp;
-  qsort(&sorted, in->nTuples, sizeof(SortedSTbox), qsortfn);
+    qsortfn = (qsort_comparator) &stbox_tmax_cmp;
+  qsort(sorted, in->nTuples, sizeof(SortedSTbox), qsortfn);
   int median = in->nTuples >> 1;
   STBox *centroid = stbox_copy(&sorted[median].box);
 

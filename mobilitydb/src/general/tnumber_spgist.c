@@ -483,15 +483,6 @@ tbox_xmin_cmp(const TBox *box1, const TBox *box2)
 }
 
 /**
- * Qsort comparator for temporal boxes based on their xmin value
- */
-int
-tbox_xmin_qsort_cmp(const TBox **a, const TBox **b)
-{
-  return tbox_xmin_cmp(*a, *b);
-}
-
-/**
  * Comparator of temporal boxes based on their xmax value
  */
 static int
@@ -503,15 +494,6 @@ tbox_xmax_cmp(const TBox *box1, const TBox *box2)
     return 0;
   return datum_gt2(box1->span.upper, box2->span.upper, box1->span.basetype,
     box2->span.basetype) ? 1 : -1;
-}
-
-/**
- * Qsort comparator for temporal boxes based on their xmax value
- */
-int
-tbox_xmax_qsort_cmp(const TBox **a, const TBox **b)
-{
-  return tbox_xmax_cmp(*a, *b);
 }
 
 /**
@@ -529,15 +511,6 @@ tbox_tmin_cmp(const TBox *box1, const TBox *box2)
 }
 
 /**
- * Qsort comparator for temporal boxes based on their tmin value
- */
-int
-tbox_tmin_qsort_cmp(const TBox **a, const TBox **b)
-{
-  return tbox_tmin_cmp(*a, *b);
-}
-
-/**
  * Comparator of temporal boxes based on their tmax value
  */
 static int
@@ -549,15 +522,6 @@ tbox_tmax_cmp(const TBox *box1, const TBox *box2)
     return 0;
   return datum_gt2(box1->period.upper, box2->period.upper, box1->period.basetype,
         box2->period.basetype) ? 1 : -1;
-}
-
-/**
- * Qsort comparator for temporal boxes based on their tmax value
- */
-int
-tbox_tmax_qsort_cmp(const TBox **a, const TBox **b)
-{
-  return tbox_tmax_cmp(*a, *b);
 }
 
 static int
@@ -789,13 +753,13 @@ Tbox_kdtree_picksplit(PG_FUNCTION_ARGS)
   qsort_comparator qsortfn;
   int mod = in->level % 4;
   if (mod == 0)
-    qsortfn = (qsort_comparator) &tbox_xmin_qsort_cmp;
+    qsortfn = (qsort_comparator) &tbox_xmin_cmp;
   else if (mod == 1)
-    qsortfn = (qsort_comparator) &tbox_xmax_qsort_cmp;
+    qsortfn = (qsort_comparator) &tbox_xmax_cmp;
   else if (mod == 2)
-    qsortfn = (qsort_comparator) &tbox_tmin_qsort_cmp;
+    qsortfn = (qsort_comparator) &tbox_tmin_cmp;
   else
-    qsortfn = (qsort_comparator) &tbox_tmax_qsort_cmp;
+    qsortfn = (qsort_comparator) &tbox_tmax_cmp;
   qsort(sorted, in->nTuples, sizeof(SortedTbox), qsortfn);
   int median = in->nTuples >> 1;
   TBox *centroid = tbox_copy(&sorted[median].box);
