@@ -384,6 +384,46 @@ overlap8D(const STboxNode *nodebox, const STBox *query)
 }
 
 /**
+ * Can any box from nodebox overlap with query?
+ */
+static bool
+overlapKD(const STboxNode *nodebox, const STBox *query, int level)
+{
+  bool hasz = MOBDB_FLAGS_GET_Z(nodebox->left.flags);
+  int mod = hasz ? level % 8 : level % 6;
+  bool result = true;
+  /* Result value is computed only for the dimensions of the query */
+  if (MOBDB_FLAGS_GET_X(query->flags))
+  {
+    if (mod == 0)
+      result &= nodebox->left.xmin <= query->xmax;
+    else if (mod == 1)
+      result &= nodebox->right.xmax >= query->xmin;
+    else if (mod == 2)
+      result &= nodebox->left.ymin <= query->ymax;
+    else if (mod == 3)
+      result &= nodebox->right.ymax >= query->ymin;
+  }
+  if (MOBDB_FLAGS_GET_Z(query->flags))
+  {
+    if (hasz && mod == 4)
+      result &= nodebox->left.zmin <= query->zmax;
+    else if (hasz && mod == 5)
+      result &= nodebox->right.zmax >= query->zmin;
+  }
+  if (MOBDB_FLAGS_GET_T(query->flags))
+  {
+    if ((hasz && mod == 6) || (! hasz && mod == 4))
+      result &= datum_le(nodebox->left.period.lower, query->period.upper,
+        T_TIMESTAMPTZ);
+    else /* (hasz && mod == 7) || (! hasz && mod == 5) */
+      result &= datum_ge(nodebox->right.period.upper, query->period.lower,
+        T_TIMESTAMPTZ);
+  }
+  return result;
+}
+
+/**
  * Can any box from nodebox contain query?
  */
 static bool
@@ -835,7 +875,7 @@ static int
 stbox_level_cmp(STBox *centroid, STBox *query, int level)
 {
   bool hasz = MOBDB_FLAGS_GET_Z(centroid->flags);
-  int mod = hasz ? level % 8 :  level % 6;
+  int mod = hasz ? level % 8 : level % 6;
   if (mod == 0)
     return stbox_xmin_cmp(query, centroid);
   else if (mod == 1)
@@ -1179,7 +1219,9 @@ stbox_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
         case RTOverlapStrategyNumber:
         case RTContainedByStrategyNumber:
         case RTAdjacentStrategyNumber:
-          flag = overlap8D(&next_nodebox, &queries[i]);
+          flag = (idxtype == SPGIST_QUADTREE) ?
+            overlap8D(&next_nodebox, &queries[i]) :
+            overlapKD(&next_nodebox, &queries[i], in->level);
           break;
         case RTContainsStrategyNumber:
         case RTSameStrategyNumber:

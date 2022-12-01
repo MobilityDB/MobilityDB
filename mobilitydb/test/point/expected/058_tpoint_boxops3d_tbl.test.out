@@ -2008,10 +2008,6 @@ WHERE no_idx <> rtree_idx OR no_idx <> quadtree_idx OR no_idx <> kdtree_idx
 ORDER BY op, leftarg, rightarg;
  op  |     leftarg      |     rightarg     | no_idx | rtree_idx | quadtree_idx | kdtree_idx 
 -----+------------------+------------------+--------+-----------+--------------+------------
- &&  | geogcollection3D | tgeogpoint3D     |   6775 |      6775 |         6775 |       4778
- &&  | tgeogpoint3D     | geogcollection3D |   6775 |      6775 |         6775 |       4778
- -|- | geogcollection3D | tgeogpoint3D     |   1878 |      1878 |         1878 |       1684
- -|- | tgeogpoint3D     | geogcollection3D |   1878 |      1878 |         1878 |       1684
  <@  | geogcollection3D | tgeogpoint3D     |    922 |       922 |          922 |         57
  <@  | geomcollection3D | tgeompoint3D     |   1190 |      1190 |         1190 |       1188
  <@  | tgeogpoint3D     | tgeogpoint3D     |    119 |       119 |          119 |         57
@@ -2020,7 +2016,7 @@ ORDER BY op, leftarg, rightarg;
  @>  | tgeompoint3D     | geomcollection3D |   1190 |      1190 |         1190 |       1188
  ~=  | tgeogpoint3D     | tgeogpoint3D     |    118 |       118 |          118 |         57
  ~=  | tgeompoint3D     | tgeompoint3D     |    118 |       118 |          118 |        114
-(12 rows)
+(8 rows)
 
 DROP TABLE test_geoboundboxops3d;
 DROP TABLE

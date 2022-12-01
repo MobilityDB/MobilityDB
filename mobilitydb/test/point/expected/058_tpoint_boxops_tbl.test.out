@@ -2008,14 +2008,6 @@ WHERE no_idx <> rtree_idx OR no_idx <> quadtree_idx OR no_idx <> kdtree_idx
 ORDER BY op, leftarg, rightarg;
  op  |    leftarg     |    rightarg    | no_idx | rtree_idx | quadtree_idx | kdtree_idx 
 -----+----------------+----------------+--------+-----------+--------------+------------
- &&  | geogcollection | tgeogpoint     |   6971 |      6971 |         6971 |       5538
- &&  | geometry       | tgeompoint     |   7053 |      7053 |         7053 |       6656
- &&  | tgeogpoint     | geogcollection |   6971 |      6971 |         6971 |       5538
- &&  | tgeompoint     | geometry       |   7053 |      7053 |         7053 |       6656
- -|- | geogcollection | tgeogpoint     |   1747 |      1747 |         1747 |       1343
- -|- | geometry       | tgeompoint     |   1469 |      1469 |         1469 |       1283
- -|- | tgeogpoint     | geogcollection |   1747 |      1747 |         1747 |       1343
- -|- | tgeompoint     | geometry       |   1469 |      1469 |         1469 |       1283
  <@  | geogcollection | tgeogpoint     |   1455 |      1455 |         1455 |        138
  <@  | geometry       | tgeompoint     |   1637 |      1637 |         1637 |        567
  <@  | tgeogpoint     | tgeogpoint     |    118 |       118 |          118 |         57
@@ -2024,7 +2016,7 @@ ORDER BY op, leftarg, rightarg;
  @>  | tgeompoint     | geometry       |   1637 |      1637 |         1637 |        567
  ~=  | tgeogpoint     | tgeogpoint     |    118 |       118 |          118 |         57
  ~=  | tgeompoint     | tgeompoint     |    118 |       118 |          118 |         63
-(16 rows)
+(8 rows)
 
 DROP TABLE test_geoboundboxops;
 DROP TABLE
