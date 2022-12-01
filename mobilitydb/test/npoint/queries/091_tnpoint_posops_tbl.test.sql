@@ -33,6 +33,8 @@ DROP INDEX IF EXISTS tbl_tnpoint_rtree_idx;
 
 DROP INDEX IF EXISTS tbl_tnpoint_quadtree_idx;
 
+DROP INDEX IF EXISTS tbl_tnpoint_kdtree_idx;
+
 -------------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS test_tnpointrelativeposops;
@@ -42,7 +44,8 @@ CREATE TABLE test_tnpointrelativeposops(
   rightarg text,
   no_idx BIGINT,
   rtree_idx BIGINT,
-  quadtree_idx BIGINT
+  quadtree_idx BIGINT,
+  kdtree_idx BIGINT
 );
 
 -------------------------------------------------------------------------------
@@ -733,13 +736,272 @@ WHERE op = '#&>' and leftarg = 'tnpoint' and rightarg = 'tnpoint';
 
 -------------------------------------------------------------------------------
 
-SELECT * FROM test_tnpointrelativeposops
-WHERE no_idx <> rtree_idx OR no_idx <> quadtree_idx
-ORDER BY op, leftarg, rightarg;
+DROP INDEX IF EXISTS tbl_tnpoint_quadtree_idx;
 
 -------------------------------------------------------------------------------
 
-DROP INDEX IF EXISTS tbl_tnpoint_quadtree_idx;
+CREATE INDEX tbl_tnpoint_kdtree_idx ON tbl_tnpoint USING SPGIST(temp tnpoint_kdtree_ops);
+
+-------------------------------------------------------------------------------
+
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tnpoint WHERE ST_SetSRID(g, 5676) << temp )
+WHERE op = '<<' and leftarg = 'geometry' and rightarg = 'tnpoint';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tnpoint WHERE ST_SetSRID(g, 5676) >> temp )
+WHERE op = '>>' and leftarg = 'geometry' and rightarg = 'tnpoint';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tnpoint WHERE ST_SetSRID(g, 5676) &< temp )
+WHERE op = '&<' and leftarg = 'geometry' and rightarg = 'tnpoint';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tnpoint WHERE ST_SetSRID(g, 5676) &> temp )
+WHERE op = '&>' and leftarg = 'geometry' and rightarg = 'tnpoint';
+
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_npoint, tbl_tnpoint WHERE np << temp )
+WHERE op = '<<' and leftarg = 'npoint' and rightarg = 'tnpoint';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_npoint, tbl_tnpoint WHERE np >> temp )
+WHERE op = '>>' and leftarg = 'npoint' and rightarg = 'tnpoint';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_npoint, tbl_tnpoint WHERE np &< temp )
+WHERE op = '&<' and leftarg = 'npoint' and rightarg = 'tnpoint';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_npoint, tbl_tnpoint WHERE np &> temp )
+WHERE op = '&>' and leftarg = 'npoint' and rightarg = 'tnpoint';
+
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tnpoint WHERE ST_SetSRID(g, 5676) <<| temp )
+WHERE op = '<<|' and leftarg = 'geometry' and rightarg = 'tnpoint';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tnpoint WHERE ST_SetSRID(g, 5676) |>> temp )
+WHERE op = '|>>' and leftarg = 'geometry' and rightarg = 'tnpoint';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tnpoint WHERE ST_SetSRID(g, 5676) &<| temp )
+WHERE op = '&<|' and leftarg = 'geometry' and rightarg = 'tnpoint';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tnpoint WHERE ST_SetSRID(g, 5676) |&> temp )
+WHERE op = '|&>' and leftarg = 'geometry' and rightarg = 'tnpoint';
+
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_npoint, tbl_tnpoint WHERE np <<| temp )
+WHERE op = '<<|' and leftarg = 'npoint' and rightarg = 'tnpoint';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_npoint, tbl_tnpoint WHERE np |>> temp )
+WHERE op = '|>>' and leftarg = 'npoint' and rightarg = 'tnpoint';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_npoint, tbl_tnpoint WHERE np &<| temp )
+WHERE op = '&<|' and leftarg = 'npoint' and rightarg = 'tnpoint';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_npoint, tbl_tnpoint WHERE np |&> temp )
+WHERE op = '|&>' and leftarg = 'npoint' and rightarg = 'tnpoint';
+
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tnpoint WHERE t <<# temp )
+WHERE op = '<<#' and leftarg = 'timestamptz' and rightarg = 'tnpoint';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tnpoint WHERE t #>> temp )
+WHERE op = '#>>' and leftarg = 'timestamptz' and rightarg = 'tnpoint';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tnpoint WHERE t &<# temp )
+WHERE op = '&<#' and leftarg = 'timestamptz' and rightarg = 'tnpoint';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tnpoint WHERE t #&> temp )
+WHERE op = '#&>' and leftarg = 'timestamptz' and rightarg = 'tnpoint';
+
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tnpoint WHERE ts <<# temp )
+WHERE op = '<<#' and leftarg = 'timestampset' and rightarg = 'tnpoint';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tnpoint WHERE ts #>> temp )
+WHERE op = '#>>' and leftarg = 'timestampset' and rightarg = 'tnpoint';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tnpoint WHERE ts &<# temp )
+WHERE op = '&<#' and leftarg = 'timestampset' and rightarg = 'tnpoint';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tnpoint WHERE ts #&> temp )
+WHERE op = '#&>' and leftarg = 'timestampset' and rightarg = 'tnpoint';
+
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tnpoint WHERE p <<# temp )
+WHERE op = '<<#' and leftarg = 'period' and rightarg = 'tnpoint';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tnpoint WHERE p #>> temp )
+WHERE op = '#>>' and leftarg = 'period' and rightarg = 'tnpoint';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tnpoint WHERE p &<# temp )
+WHERE op = '&<#' and leftarg = 'period' and rightarg = 'tnpoint';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tnpoint WHERE p #&> temp )
+WHERE op = '#&>' and leftarg = 'period' and rightarg = 'tnpoint';
+
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tnpoint WHERE ps <<# temp )
+WHERE op = '<<#' and leftarg = 'periodset' and rightarg = 'tnpoint';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tnpoint WHERE ps #>> temp )
+WHERE op = '#>>' and leftarg = 'periodset' and rightarg = 'tnpoint';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tnpoint WHERE ps &<# temp )
+WHERE op = '&<#' and leftarg = 'periodset' and rightarg = 'tnpoint';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tnpoint WHERE ps #&> temp )
+WHERE op = '#&>' and leftarg = 'periodset' and rightarg = 'tnpoint';
+
+-------------------------------------------------------------------------------
+
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_geometry WHERE temp << ST_SetSRID(g, 5676) )
+WHERE op = '<<' and leftarg = 'tnpoint' and rightarg = 'geometry';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_geometry WHERE temp >> ST_SetSRID(g, 5676) )
+WHERE op = '>>' and leftarg = 'tnpoint' and rightarg = 'geometry';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_geometry WHERE temp &< ST_SetSRID(g, 5676) )
+WHERE op = '&<' and leftarg = 'tnpoint' and rightarg = 'geometry';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_geometry WHERE temp &> ST_SetSRID(g, 5676) )
+WHERE op = '&>' and leftarg = 'tnpoint' and rightarg = 'geometry';
+
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_geometry WHERE temp <<| ST_SetSRID(g, 5676) )
+WHERE op = '<<|' and leftarg = 'tnpoint' and rightarg = 'geometry';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_geometry WHERE temp |>> ST_SetSRID(g, 5676) )
+WHERE op = '|>>' and leftarg = 'tnpoint' and rightarg = 'geometry';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_geometry WHERE temp &<| ST_SetSRID(g, 5676) )
+WHERE op = '&<|' and leftarg = 'tnpoint' and rightarg = 'geometry';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_geometry WHERE temp |&> ST_SetSRID(g, 5676) )
+WHERE op = '|&>' and leftarg = 'tnpoint' and rightarg = 'geometry';
+
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_npoint WHERE temp << np )
+WHERE op = '<<' and leftarg = 'tnpoint' and rightarg = 'npoint';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_npoint WHERE temp >> np )
+WHERE op = '>>' and leftarg = 'tnpoint' and rightarg = 'npoint';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_npoint WHERE temp &< np )
+WHERE op = '&<' and leftarg = 'tnpoint' and rightarg = 'npoint';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_npoint WHERE temp &> np )
+WHERE op = '&>' and leftarg = 'tnpoint' and rightarg = 'npoint';
+
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_npoint WHERE temp <<| np )
+WHERE op = '<<|' and leftarg = 'tnpoint' and rightarg = 'npoint';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_npoint WHERE temp |>> np )
+WHERE op = '|>>' and leftarg = 'tnpoint' and rightarg = 'npoint';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_npoint WHERE temp &<| np )
+WHERE op = '&<|' and leftarg = 'tnpoint' and rightarg = 'npoint';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_npoint WHERE temp |&> np )
+WHERE op = '|&>' and leftarg = 'tnpoint' and rightarg = 'npoint';
+
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz WHERE temp <<# t )
+WHERE op = '<<#' and leftarg = 'tnpoint' and rightarg = 'timestamptz';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz WHERE temp #>> t )
+WHERE op = '#>>' and leftarg = 'tnpoint' and rightarg = 'timestamptz';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz WHERE temp &<# t )
+WHERE op = '&<#' and leftarg = 'tnpoint' and rightarg = 'timestamptz';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz WHERE temp #&> t )
+WHERE op = '#&>' and leftarg = 'tnpoint' and rightarg = 'timestamptz';
+
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestampset WHERE temp <<# ts )
+WHERE op = '<<#' and leftarg = 'tnpoint' and rightarg = 'timestampset';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestampset WHERE temp #>> ts )
+WHERE op = '#>>' and leftarg = 'tnpoint' and rightarg = 'timestampset';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestampset WHERE temp &<# ts )
+WHERE op = '&<#' and leftarg = 'tnpoint' and rightarg = 'timestampset';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestampset WHERE temp #&> ts )
+WHERE op = '#&>' and leftarg = 'tnpoint' and rightarg = 'timestampset';
+
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_period WHERE temp <<# p )
+WHERE op = '<<#' and leftarg = 'tnpoint' and rightarg = 'period';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_period WHERE temp #>> p )
+WHERE op = '#>>' and leftarg = 'tnpoint' and rightarg = 'period';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_period WHERE temp &<# p )
+WHERE op = '&<#' and leftarg = 'tnpoint' and rightarg = 'period';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_period WHERE temp #&> p )
+WHERE op = '#&>' and leftarg = 'tnpoint' and rightarg = 'period';
+
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_periodset WHERE temp <<# ps )
+WHERE op = '<<#' and leftarg = 'tnpoint' and rightarg = 'periodset';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_periodset WHERE temp #>> ps )
+WHERE op = '#>>' and leftarg = 'tnpoint' and rightarg = 'periodset';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_periodset WHERE temp &<# ps )
+WHERE op = '&<#' and leftarg = 'tnpoint' and rightarg = 'periodset';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_periodset WHERE temp #&> ps )
+WHERE op = '#&>' and leftarg = 'tnpoint' and rightarg = 'periodset';
+
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.temp << t2.temp )
+WHERE op = '<<' and leftarg = 'tnpoint' and rightarg = 'tnpoint';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.temp >> t2.temp )
+WHERE op = '>>' and leftarg = 'tnpoint' and rightarg = 'tnpoint';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.temp &< t2.temp )
+WHERE op = '&<' and leftarg = 'tnpoint' and rightarg = 'tnpoint';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.temp &> t2.temp )
+WHERE op = '&>' and leftarg = 'tnpoint' and rightarg = 'tnpoint';
+
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.temp <<| t2.temp )
+WHERE op = '<<|' and leftarg = 'tnpoint' and rightarg = 'tnpoint';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.temp |>> t2.temp )
+WHERE op = '|>>' and leftarg = 'tnpoint' and rightarg = 'tnpoint';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.temp &<| t2.temp )
+WHERE op = '&<|' and leftarg = 'tnpoint' and rightarg = 'tnpoint';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.temp |&> t2.temp )
+WHERE op = '|&>' and leftarg = 'tnpoint' and rightarg = 'tnpoint';
+
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.temp <<# t2.temp )
+WHERE op = '<<#' and leftarg = 'tnpoint' and rightarg = 'tnpoint';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.temp #>> t2.temp )
+WHERE op = '#>>' and leftarg = 'tnpoint' and rightarg = 'tnpoint';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.temp &<# t2.temp )
+WHERE op = '&<#' and leftarg = 'tnpoint' and rightarg = 'tnpoint';
+UPDATE test_tnpointrelativeposops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.temp #&> t2.temp )
+WHERE op = '#&>' and leftarg = 'tnpoint' and rightarg = 'tnpoint';
+
+-------------------------------------------------------------------------------
+
+DROP INDEX tbl_tnpoint_kdtree_idx;
+
+-------------------------------------------------------------------------------
+
+SELECT * FROM test_tnpointrelativeposops
+WHERE no_idx <> rtree_idx OR no_idx <> quadtree_idx
+ORDER BY op, leftarg, rightarg;
 
 DROP TABLE test_tnpointrelativeposops;
 
