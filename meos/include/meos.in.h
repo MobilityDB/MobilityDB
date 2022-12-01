@@ -288,6 +288,7 @@ extern char *pg_timestamptz_out(TimestampTz dt);
  *****************************************************************************/
 
 extern bytea *gserialized_as_ewkb(const GSERIALIZED *geom, char *type);
+extern char *gserialized_as_ewkt(const GSERIALIZED *geom, int precision);
 extern char *gserialized_as_geojson(const GSERIALIZED *geom, int option, int precision, char *srs);
 extern char *gserialized_as_hexewkb(const GSERIALIZED *geom, const char *type);
 extern char *gserialized_as_text(const GSERIALIZED *geom, int precision);

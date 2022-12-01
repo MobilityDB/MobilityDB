@@ -850,7 +850,7 @@ gserialized_inter_contains(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
    * short-circuit 2: if the geoms are a point and a polygon,
    * call the point_outside_polygon function.
    */
-  if ((gserialized_is_point(geom1) && gserialized_is_poly(geom2)) || 
+  if ((gserialized_is_point(geom1) && gserialized_is_poly(geom2)) ||
       (gserialized_is_poly(geom1) && gserialized_is_point(geom2)))
   {
     int pip_result = MOBDB_point_in_polygon(geom1, geom2, inter);
@@ -1471,7 +1471,7 @@ gserialized_from_text(char *wkt, int srid)
 
 /**
  * @ingroup libmeos_pgis_types
- * @brief Return the WKT representation (and optionally a SRID) of a geometry 
+ * @brief Return the WKT representation (and optionally a SRID) of a geometry
  * @note This is a a stricter version of geometry_in, where we refuse to accept
  * (HEX)WKB or EWKT.
  * @note PostGIS function: LWGEOM_asText(PG_FUNCTION_ARGS)
@@ -1485,6 +1485,21 @@ gserialized_as_text(const GSERIALIZED *geom, int precision)
 
 /**
  * @ingroup libmeos_pgis_types
+ * @brief Return the EWKT representation (and optionally a SRID) of a geometry
+ * @note This is a a stricter version of geometry_in, where we refuse to accept
+ * (HEX)WKB or EWKT.
+ * @note PostGIS function: LWGEOM_asEWKT(PG_FUNCTION_ARGS)
+ */
+char *
+gserialized_as_ewkt(const GSERIALIZED *geom, int precision)
+{
+  LWGEOM *lwgeom = lwgeom_from_gserialized(geom);
+  return lwgeom_to_wkt(lwgeom, WKT_EXTENDED, precision, NULL);
+}
+
+
+/**
+ * @ingroup libmeos_pgis_types
  * @brief Return a geometry from its WKT representation
  * @note This is a a stricter version of geometry_in, where we refuse to accept
  * (HEX)WKB or EWKT.
@@ -1495,7 +1510,7 @@ gserialized_from_hexewkb(const char *wkt)
 {
   return gserialized_in((char *) wkt, -1);
 }
-  
+
 /**
  * @ingroup libmeos_pgis_types
  * @brief Return the WKB representation of a geometry in hex-encoded ASCII.

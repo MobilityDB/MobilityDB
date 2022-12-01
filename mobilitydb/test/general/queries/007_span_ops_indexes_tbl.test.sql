@@ -487,6 +487,7 @@ WHERE op = '&>' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
 DROP INDEX tbl_intspan_quadtree_idx;
 DROP INDEX tbl_floatspan_quadtree_idx;
 
+-------------------------------------------------------------------------------
 
 CREATE INDEX tbl_intspan_kdtree_idx ON tbl_intspan USING SPGIST(i intspan_kdtree_ops);
 CREATE INDEX tbl_floatspan_kdtree_idx ON tbl_floatspan USING SPGIST(f floatspan_kdtree_ops);

@@ -187,7 +187,7 @@ int main(void)
 
     /* Write line in the CSV file */
     char *date_str = pg_date_out(trips[min_trip].day);
-    char *geom_str = gserialized_as_text((GSERIALIZED *)&min_inst->value, 6);
+    char *geom_str = gserialized_as_ewkt((GSERIALIZED *)&min_inst->value, 6);
     char *time_str = pg_timestamptz_out(min_inst->t);
     fprintf(file,"%d,%d,%s,%d,%s,%s\n", trips[min_trip].vehid,
       trips[min_trip].vehid, date_str, trips[min_trip].seq, geom_str, time_str);

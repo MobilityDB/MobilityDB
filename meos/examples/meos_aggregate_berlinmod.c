@@ -129,8 +129,8 @@ int main(void)
     }
 
     /* Add the current value to the running aggregates */
-    extent = tpoint_extent_transfn(extent, trip);
-    state = temporal_tcount_transfn(state, trip, interval, origin);
+    extent = tpoint_extent_transfn(extent, trip_rec.trip);
+    state = temporal_tcount_transfn(state, trip_rec.trip, interval, origin);
     /* Free memory */
     free(trip_rec.trip);
 
@@ -151,7 +151,6 @@ int main(void)
     printf("\%s\n", tint_out(tcount_seqs[i]));
 
   /* Free memory */
-  free(trip_rec.trip);
   skiplist_free(state);
   free(tcount_seqs);
 
