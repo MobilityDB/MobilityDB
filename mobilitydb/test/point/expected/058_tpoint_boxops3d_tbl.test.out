@@ -2006,17 +2006,9 @@ DROP INDEX
 SELECT * FROM test_geoboundboxops3d
 WHERE no_idx <> rtree_idx OR no_idx <> quadtree_idx OR no_idx <> kdtree_idx
 ORDER BY op, leftarg, rightarg;
- op  |     leftarg      |     rightarg     | no_idx | rtree_idx | quadtree_idx | kdtree_idx 
------+------------------+------------------+--------+-----------+--------------+------------
- <@  | geogcollection3D | tgeogpoint3D     |    922 |       922 |          922 |         57
- <@  | geomcollection3D | tgeompoint3D     |   1190 |      1190 |         1190 |       1188
- <@  | tgeogpoint3D     | tgeogpoint3D     |    119 |       119 |          119 |         57
- <@  | tgeompoint3D     | tgeompoint3D     |    119 |       119 |          119 |        115
- @>  | tgeogpoint3D     | geogcollection3D |    922 |       922 |          922 |         57
- @>  | tgeompoint3D     | geomcollection3D |   1190 |      1190 |         1190 |       1188
- ~=  | tgeogpoint3D     | tgeogpoint3D     |    118 |       118 |          118 |         57
- ~=  | tgeompoint3D     | tgeompoint3D     |    118 |       118 |          118 |        114
-(8 rows)
+ op | leftarg | rightarg | no_idx | rtree_idx | quadtree_idx | kdtree_idx 
+----+---------+----------+--------+-----------+--------------+------------
+(0 rows)
 
 DROP TABLE test_geoboundboxops3d;
 DROP TABLE

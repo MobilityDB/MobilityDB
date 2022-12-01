@@ -447,6 +447,46 @@ contain8D(const STboxNode *nodebox, const STBox *query)
 }
 
 /**
+ * Can any box from nodebox overlap with query?
+ */
+static bool
+containKD(const STboxNode *nodebox, const STBox *query, int level)
+{
+  bool hasz = MOBDB_FLAGS_GET_Z(nodebox->left.flags);
+  int mod = hasz ? level % 8 : level % 6;
+  bool result = true;
+  /* Result value is computed only for the dimensions of the query */
+  if (MOBDB_FLAGS_GET_X(query->flags))
+  {
+    if (mod == 0)
+      result &= nodebox->left.xmin <= query->xmin;
+    else if (mod == 1)
+      result &= nodebox->right.xmax >= query->xmax;
+    else if (mod == 2)
+      result &= nodebox->left.ymin <= query->ymin;
+    else if (mod == 3)
+      result &= nodebox->right.ymax >= query->ymax;
+  }
+  if (MOBDB_FLAGS_GET_Z(query->flags))
+  {
+    if (hasz && mod == 4)
+      result &= nodebox->left.zmin <= query->zmin;
+    else if (hasz && mod == 5)
+      result &= nodebox->right.zmax >= query->zmax;
+  }
+  if (MOBDB_FLAGS_GET_T(query->flags))
+  {
+    if ((hasz && mod == 6) || (! hasz && mod == 4))
+      result &= datum_le(nodebox->left.period.lower, query->period.lower,
+        T_TIMESTAMPTZ);
+    else /* (hasz && mod == 7) || (! hasz && mod == 5) */
+      result &= datum_ge(nodebox->right.period.upper, query->period.upper,
+        T_TIMESTAMPTZ);
+  }
+  return result;
+}
+
+/**
  * Can any box from nodebox be left of query?
  */
 static bool
@@ -1225,7 +1265,9 @@ stbox_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
           break;
         case RTContainsStrategyNumber:
         case RTSameStrategyNumber:
-          flag = contain8D(&next_nodebox, &queries[i]);
+          flag = (idxtype == SPGIST_QUADTREE) ?
+            contain8D(&next_nodebox, &queries[i]) :
+            containKD(&next_nodebox, &queries[i], in->level);
           break;
         case RTLeftStrategyNumber:
           flag = ! overRight8D(&next_nodebox, &queries[i]);
