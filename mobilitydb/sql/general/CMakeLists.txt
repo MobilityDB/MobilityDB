@@ -26,6 +26,7 @@ SET(LOCAL_FILES
   038_temporal_aggfuncs
   040_temporal_waggfuncs
   042_temporal_gist
+  043_ttext_gin
   044_temporal_spgist
   999_temporal_cache
   )

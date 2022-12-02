@@ -468,7 +468,7 @@ tnumber_minus_span(const Temporal *temp, const Span *span)
  * @sqlfunc minusSpans()
  */
 Temporal *
-tnumber_at_spanset(const Temporal *temp, SpanSet *ss)
+tnumber_at_spanset(const Temporal *temp, const SpanSet *ss)
 {
   Temporal *result = tnumber_restrict_spanset(temp, ss, REST_AT);
   return result;
@@ -481,7 +481,7 @@ tnumber_at_spanset(const Temporal *temp, SpanSet *ss)
  * @sqlfunc minusSpans()
  */
 Temporal *
-tnumber_minus_spanset(const Temporal *temp, SpanSet *ss)
+tnumber_minus_spanset(const Temporal *temp, const SpanSet *ss)
 {
   Temporal *result = tnumber_restrict_spanset(temp, ss, REST_AT);
   return result;
