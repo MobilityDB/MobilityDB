@@ -110,8 +110,8 @@ Span_bucket_list_ext(FunctionCallInfo fcinfo, bool valuelist)
     {
       size = PG_GETARG_DATUM(1);
       origin = PG_GETARG_DATUM(2);
-      mobdbType type = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-      ensure_positive_datum(size, type);
+      mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+      ensure_positive_datum(size, basetype);
     }
     else
     {

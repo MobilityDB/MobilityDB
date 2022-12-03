@@ -333,11 +333,11 @@ timestamp_parse(const char **str)
 /**
  * @brief Parse a timestamp set value from the buffer.
  */
-TimestampSet *
-timestampset_parse(const char **str)
+OrderedSet *
+orderedset_parse(const char **str, mobdbType basetype)
 {
   if (!p_obrace(str))
-    elog(ERROR, "Could not parse timestamp set");
+    elog(ERROR, "Could not parse ordered set");
 
   /* First parsing */
   const char *bak = *str;
@@ -349,17 +349,17 @@ timestampset_parse(const char **str)
     timestamp_parse(str);
   }
   if (!p_cbrace(str))
-    elog(ERROR, "Could not parse timestamp set");
+    elog(ERROR, "Could not parse ordered set");
 
   *str = bak;
-  TimestampTz *times = palloc(sizeof(TimestampTz) * count);
+  Datum *values = palloc(sizeof(Datum) * count);
   for (int i = 0; i < count; i++)
   {
     p_comma(str);
-    times[i] = timestamp_parse(str);
+    values[i] = TimestampTzGetDatum(timestamp_parse(str));
   }
   p_cbrace(str);
-  return timestampset_make_free(times, count);
+  return orderedset_make_free(values, count, basetype);
 }
 
 /**

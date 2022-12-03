@@ -849,7 +849,7 @@ tinstant_restrict_timestampset_test(const TInstant *inst, const TimestampSet *ts
   bool atfunc)
 {
   for (int i = 0; i < ts->count; i++)
-    if (inst->t == timestampset_time_n(ts, i))
+    if (inst->t == DatumGetTimestampTz(orderedset_val_n(ts, i)))
       return atfunc ? true : false;
   return atfunc ? false : true;
 }
@@ -1002,7 +1002,7 @@ bool
 tinstant_overlaps_timestampset(const TInstant *inst, const TimestampSet *ts)
 {
   for (int i = 0; i < ts->count; i++)
-    if (inst->t == timestampset_time_n(ts, i))
+    if (inst->t == DatumGetTimestampTz(orderedset_val_n(ts, i)))
       return true;
   return false;
 }

@@ -243,27 +243,29 @@ enum MOBDB_WKB_TYPE
   MOBDB_WKB_T_INTSPAN =        9,   /**< int4 span type */
   MOBDB_WKB_T_INTSPANSET =     10,  /**< int4 span type */
   MOBDB_WKB_T_INT8 =           11,  /**< int8 type */
-  MOBDB_WKB_T_PERIOD =         12,  /**< period type */
-  MOBDB_WKB_T_PERIODSET =      13,  /**< period set type */
-  MOBDB_WKB_T_STBOX =          14,  /**< spatiotemporal box type */
-  MOBDB_WKB_T_TBOOL =          15,  /**< temporal boolean type */
-  MOBDB_WKB_T_TBOX =           16,  /**< temporal box type */
-  MOBDB_WKB_T_TDOUBLE2 =       17,  /**< temporal double2 type */
-  MOBDB_WKB_T_TDOUBLE3 =       18,  /**< temporal double3 type */
-  MOBDB_WKB_T_TDOUBLE4 =       19,  /**< temporal double4 type */
-  MOBDB_WKB_T_TEXT =           20,  /**< text type */
-  MOBDB_WKB_T_TFLOAT =         21,  /**< temporal float type */
-  MOBDB_WKB_T_TIMESTAMPSET =   22,  /**< timestamp set type */
-  MOBDB_WKB_T_TIMESTAMPTZ =    23,  /**< timestamp with time zone type */
-  MOBDB_WKB_T_TINT =           24,  /**< temporal integer type */
-  MOBDB_WKB_T_TTEXT =          25,  /**< temporal text type */
-  MOBDB_WKB_T_GEOMETRY =       26,  /**< geometry type */
-  MOBDB_WKB_T_GEOGRAPHY =      27,  /**< geography type */
-  MOBDB_WKB_T_TGEOMPOINT =     28,  /**< temporal geometry point type */
-  MOBDB_WKB_T_TGEOGPOINT =     29,  /**< temporal geography point type */
-  MOBDB_WKB_T_NPOINT =         30,  /**< network point type */
-  MOBDB_WKB_T_NSEGMENT =       31,  /**< network segment type */
-  MOBDB_WKB_T_TNPOINT =        32,  /**< temporal network point type */
+  MOBDB_WKB_T_BIGINTSPAN =     12,   /**< int4 span type */
+  MOBDB_WKB_T_BIGINTSPANSET =  13,  /**< int4 span type */
+  MOBDB_WKB_T_PERIOD =         14,  /**< period type */
+  MOBDB_WKB_T_PERIODSET =      15,  /**< period set type */
+  MOBDB_WKB_T_STBOX =          16,  /**< spatiotemporal box type */
+  MOBDB_WKB_T_TBOOL =          17,  /**< temporal boolean type */
+  MOBDB_WKB_T_TBOX =           18,  /**< temporal box type */
+  MOBDB_WKB_T_TDOUBLE2 =       19,  /**< temporal double2 type */
+  MOBDB_WKB_T_TDOUBLE3 =       20,  /**< temporal double3 type */
+  MOBDB_WKB_T_TDOUBLE4 =       21,  /**< temporal double4 type */
+  MOBDB_WKB_T_TEXT =           22,  /**< text type */
+  MOBDB_WKB_T_TFLOAT =         23,  /**< temporal float type */
+  MOBDB_WKB_T_TIMESTAMPSET =   24,  /**< timestamp set type */
+  MOBDB_WKB_T_TIMESTAMPTZ =    25,  /**< timestamp with time zone type */
+  MOBDB_WKB_T_TINT =           26,  /**< temporal integer type */
+  MOBDB_WKB_T_TTEXT =          27,  /**< temporal text type */
+  MOBDB_WKB_T_GEOMETRY =       28,  /**< geometry type */
+  MOBDB_WKB_T_GEOGRAPHY =      29,  /**< geography type */
+  MOBDB_WKB_T_TGEOMPOINT =     30,  /**< temporal geometry point type */
+  MOBDB_WKB_T_TGEOGPOINT =     31,  /**< temporal geography point type */
+  MOBDB_WKB_T_NPOINT =         32,  /**< network point type */
+  MOBDB_WKB_T_NSEGMENT =       33,  /**< network segment type */
+  MOBDB_WKB_T_TNPOINT =        34,  /**< temporal network point type */
 };
 
 /* Temporal subtype */
@@ -313,6 +315,7 @@ enum MOBDB_WKB_TSUBTYPE
 #define DEFAULT_TIME_ORIGIN (JAN_3_2000)
 #define DEFAULT_FLOATSPAN_ORIGIN (0.0)
 #define DEFAULT_INTSPAN_ORIGIN (0)
+#define DEFAULT_BIGINTSPAN_ORIGIN (0)
 
 /*****************************************************************************
  * Additional struct definitions for temporal types

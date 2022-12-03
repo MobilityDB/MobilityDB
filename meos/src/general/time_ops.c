@@ -59,8 +59,8 @@ setop_timestampset_timestampset(const TimestampSet *ts1,
   if (setop == INTER || setop == MINUS)
   {
     /* Bounding box test */
-    if (! overlaps_span_span(&ts1->period, &ts2->period))
-      return setop == INTER ? NULL : timestampset_copy(ts1);
+    if (! overlaps_span_span(&ts1->span, &ts2->span))
+      return setop == INTER ? NULL : orderedset_copy(ts1);
   }
 
   int count;
@@ -70,52 +70,53 @@ setop_timestampset_timestampset(const TimestampSet *ts1,
     count = Min(ts1->count, ts2->count);
   else /* setop == MINUS */
     count = ts1->count;
-  TimestampTz *times = palloc(sizeof(TimestampTz) * count);
+  Datum *values = palloc(sizeof(Datum) * count);
   int i = 0, j = 0, k = 0;
-  TimestampTz t1 = timestampset_time_n(ts1, 0);
-  TimestampTz t2 = timestampset_time_n(ts2, 0);
+  Datum t1 = orderedset_val_n(ts1, 0);
+  Datum t2 = orderedset_val_n(ts2, 0);
+  mobdbType basetype = ts1->span.basetype;
   while (i < ts1->count && j < ts2->count)
   {
-    int cmp = timestamptz_cmp_internal(t1, t2);
+    int cmp = datum_cmp(t1, t2, basetype);
     if (cmp == 0)
     {
       if (setop == UNION || setop == INTER)
-        times[k++] = t1;
+        values[k++] = t1;
       i++; j++;
       if (i == ts1->count || j == ts2->count)
         break;
-      t1 = timestampset_time_n(ts1, i);
-      t2 = timestampset_time_n(ts2, j);
+      t1 = orderedset_val_n(ts1, i);
+      t2 = orderedset_val_n(ts2, j);
     }
     else if (cmp < 0)
     {
       if (setop == UNION || setop == MINUS)
-        times[k++] = t1;
+        values[k++] = t1;
       i++;
       if (i == ts1->count)
         break;
       else
-        t1 = timestampset_time_n(ts1, i);
+        t1 = orderedset_val_n(ts1, i);
     }
     else
     {
       if (setop == UNION || setop == MINUS)
-        times[k++] = t2;
+        values[k++] = t2;
       j++;
       if (j == ts2->count)
         break;
       else
-        t2 = timestampset_time_n(ts2, j);
+        t2 = orderedset_val_n(ts2, j);
     }
   }
   if (setop == UNION)
   {
     while (i < ts1->count)
-      times[k++] = timestampset_time_n(ts1, i++);
+      values[k++] = orderedset_val_n(ts1, i++);
     while (j < ts2->count)
-      times[k++] = timestampset_time_n(ts2, j++);
+      values[k++] = orderedset_val_n(ts2, j++);
   }
-  return timestampset_make_free(times, k);
+  return orderedset_make_free(values, k, basetype);
 }
 
 /**
@@ -127,19 +128,20 @@ setop_timestampset_period(const TimestampSet *ts, const Period *p,
 {
   assert(setop == INTER || setop == MINUS);
   /* Bounding box test */
-  if (! overlaps_span_span(&ts->period, p))
-    return (setop == INTER) ? NULL : timestampset_copy(ts);
+  if (! overlaps_span_span(&ts->span, p))
+    return (setop == INTER) ? NULL : orderedset_copy(ts);
 
-  TimestampTz *times = palloc(sizeof(TimestampTz) * ts->count);
+  Datum *values = palloc(sizeof(Datum) * ts->count);
   int k = 0;
   for (int i = 0; i < ts->count; i++)
   {
-    TimestampTz t = timestampset_time_n(ts, i);
+    Datum v = orderedset_val_n(ts, i);
+    TimestampTz t = DatumGetTimestampTz(v);
     if (((setop == INTER) && contains_period_timestamp(p, t)) ||
       ((setop == MINUS) && ! contains_period_timestamp(p, t)))
-      times[k++] = t;
+      values[k++] = v;
   }
-  return timestampset_make_free(times, k);
+  return orderedset_make_free(values, k, T_TIMESTAMPTZ);
 }
 
 /*
@@ -151,26 +153,26 @@ setop_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps,
 {
   assert(setop == INTER || setop == MINUS);
   /* Bounding box test */
-  if (! overlaps_span_span(&ts->period, &ps->span))
-    return (setop == INTER) ? NULL : timestampset_copy(ts);
+  if (! overlaps_span_span(&ts->span, &ps->span))
+    return (setop == INTER) ? NULL : orderedset_copy(ts);
 
-  TimestampTz *times = palloc(sizeof(TimestampTz) * ts->count);
-  TimestampTz t = timestampset_time_n(ts, 0);
+  Datum *values = palloc(sizeof(Datum) * ts->count);
+  Datum v = orderedset_val_n(ts, 0);
   const Period *p = spanset_sp_n(ps, 0);
   int i = 0, j = 0, k = 0;
   while (i < ts->count && j < ps->count)
   {
-    if (t < (TimestampTz) p->lower)
+    if (datum_lt(v, p->lower, T_TIMESTAMPTZ))
     {
       if (setop == MINUS)
-        times[k++] = t;
+        values[k++] = v;
       i++;
       if (i == ts->count)
         break;
       else
-        t = timestampset_time_n(ts, i);
+        v = orderedset_val_n(ts, i);
     }
-    else if (t > (TimestampTz) p->upper)
+    else if (datum_gt(v, p->upper, T_TIMESTAMPTZ))
     {
       j++;
       if (j == ps->count)
@@ -180,22 +182,24 @@ setop_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps,
     }
     else
     {
-      if ((setop == INTER && contains_period_timestamp(p, t)) ||
-        (setop == MINUS && ! contains_period_timestamp(p, t)))
-        times[k++] = t;
+      if ((setop == INTER && contains_period_timestamp(p,
+            DatumGetTimestampTz(v))) ||
+        (setop == MINUS && ! contains_period_timestamp(p,
+            DatumGetTimestampTz(v))))
+        values[k++] = v;
       i++;
       if (i == ts->count)
         break;
       else
-        t = timestampset_time_n(ts, i);
+        v = orderedset_val_n(ts, i);
     }
   }
   if (setop == MINUS)
   {
     for (int l = i; l < ts->count; l++)
-      times[k++] = timestampset_time_n(ts, l);
+      values[k++] = orderedset_val_n(ts, l);
   }
-  return timestampset_make_free(times, k);
+  return orderedset_make_free(values, k, T_TIMESTAMPTZ);
 }
 
 /*****************************************************************************
@@ -211,7 +215,7 @@ bool
 contains_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 {
   /* Bounding box test */
-  if (! contains_period_timestamp(&ts->period, t))
+  if (! contains_period_timestamp(&ts->span, t))
     return false;
 
   int loc;
@@ -228,14 +232,14 @@ contains_timestampset_timestampset(const TimestampSet *ts1,
   const TimestampSet *ts2)
 {
   /* Bounding box test */
-  if (! contains_span_span(&ts1->period, &ts2->period))
+  if (! contains_span_span(&ts1->span, &ts2->span))
     return false;
 
   int i = 0, j = 0;
   while (j < ts2->count)
   {
-    TimestampTz t1 = timestampset_time_n(ts1, i);
-    TimestampTz t2 = timestampset_time_n(ts2, j);
+    TimestampTz t1 = DatumGetTimestampTz(orderedset_val_n(ts1, i));
+    TimestampTz t2 = DatumGetTimestampTz(orderedset_val_n(ts2, j));
     int cmp = timestamptz_cmp_internal(t1, t2);
     if (cmp == 0)
     {
@@ -270,7 +274,7 @@ bool
 contains_period_timestampset(const Period *p, const TimestampSet *ts)
 {
   /* It is sufficient to do a bounding box test */
-  if (! contains_span_span(p, &ts->period))
+  if (! contains_span_span(p, &ts->span))
     return false;
   return true;
 }
@@ -295,14 +299,14 @@ bool
 contains_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 {
   /* Bounding box test */
-  if (! contains_span_span(&ps->span, &ts->period))
+  if (! contains_span_span(&ps->span, &ts->span))
     return false;
 
   int i = 0, j = 0;
   while (j < ts->count)
   {
     const Period *p = spanset_sp_n(ps, i);
-    TimestampTz t = timestampset_time_n(ts, j);
+    TimestampTz t = DatumGetTimestampTz(orderedset_val_n(ts, j));
     if (contains_period_timestamp(p, t))
       j++;
     else
@@ -401,14 +405,14 @@ overlaps_timestampset_timestampset(const TimestampSet *ts1,
   const TimestampSet *ts2)
 {
   /* Bounding box test */
-  if (! overlaps_span_span(&ts1->period, &ts2->period))
+  if (! overlaps_span_span(&ts1->span, &ts2->span))
     return false;
 
   int i = 0, j = 0;
   while (i < ts1->count && j < ts2->count)
   {
-    TimestampTz t1 = timestampset_time_n(ts1, i);
-    TimestampTz t2 = timestampset_time_n(ts2, j);
+    TimestampTz t1 = DatumGetTimestampTz(orderedset_val_n(ts1, i));
+    TimestampTz t2 = DatumGetTimestampTz(orderedset_val_n(ts2, j));
     int cmp = timestamptz_cmp_internal(t1, t2);
     if (cmp == 0)
       return true;
@@ -429,12 +433,12 @@ bool
 overlaps_timestampset_period(const TimestampSet *ts, const Period *p)
 {
   /* Bounding box test */
-  if (! overlaps_span_span(p, &ts->period))
+  if (! overlaps_span_span(p, &ts->span))
     return false;
 
   for (int i = 0; i < ts->count; i++)
   {
-    TimestampTz t = timestampset_time_n(ts, i);
+    TimestampTz t = DatumGetTimestampTz(orderedset_val_n(ts, i));
     if (contains_period_timestamp(p, t))
       return true;
   }
@@ -450,13 +454,13 @@ bool
 overlaps_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 {
   /* Bounding box test */
-  if (! overlaps_span_span(&ps->span, &ts->period))
+  if (! overlaps_span_span(&ps->span, &ts->span))
     return false;
 
   int i = 0, j = 0;
   while (i < ts->count && j < ps->count)
   {
-    TimestampTz t = timestampset_time_n(ts, i);
+    TimestampTz t = DatumGetTimestampTz(orderedset_val_n(ts, i));
     const Period *p = spanset_sp_n(ps, j);
     if (contains_period_timestamp(p, t))
       return true;
@@ -528,8 +532,8 @@ adjacent_timestampset_period(const TimestampSet *ts, const Period *p)
    * A periods A..B and a timestamptz C are adjacent if and only if
    * B is adjacent to C, or C is adjacent to A.
    */
-  TimestampTz t1 = timestampset_time_n(ts, 0);
-  TimestampTz t2 = timestampset_time_n(ts, ts->count - 1);
+  TimestampTz t1 = DatumGetTimestampTz(orderedset_val_n(ts, 0));
+  TimestampTz t2 = DatumGetTimestampTz(orderedset_val_n(ts, ts->count - 1));
   return (t2 == (TimestampTz) p->lower && ! p->lower_inc) ||
          ((TimestampTz) p->upper == t1 && ! p->upper_inc);
 }
@@ -546,8 +550,8 @@ adjacent_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
    * A periods A..B and a timestamptz C are adjacent if and only if
    * B is adjacent to C, or C is adjacent to A.
    */
-  TimestampTz t1 = timestampset_time_n(ts, 0);
-  TimestampTz t2 = timestampset_time_n(ts, ts->count - 1);
+  TimestampTz t1 = DatumGetTimestampTz(orderedset_val_n(ts, 0));
+  TimestampTz t2 = DatumGetTimestampTz(orderedset_val_n(ts, ts->count - 1));
   const Period *p1 = spanset_sp_n(ps, 0);
   const Period *p2 = spanset_sp_n(ps, ps->count - 1);
   return (t2 == (TimestampTz) p1->lower && ! p1->lower_inc) ||
@@ -610,7 +614,7 @@ adjacent_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 bool
 before_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 {
-  TimestampTz t1 = timestampset_time_n(ts, 0);
+  TimestampTz t1 = DatumGetTimestampTz(orderedset_val_n(ts, 0));
   return (t < t1);
 }
 
@@ -644,7 +648,7 @@ before_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 bool
 before_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 {
-  TimestampTz t1 = timestampset_time_n(ts, ts->count - 1);
+  TimestampTz t1 = DatumGetTimestampTz(orderedset_val_n(ts, ts->count - 1));
   return (t1 < t);
 }
 
@@ -657,8 +661,8 @@ bool
 before_timestampset_timestampset(const TimestampSet *ts1,
   const TimestampSet *ts2)
 {
-  TimestampTz t1 = timestampset_time_n(ts1, ts1->count - 1);
-  TimestampTz t2 = timestampset_time_n(ts2, 0);
+  TimestampTz t1 = DatumGetTimestampTz(orderedset_val_n(ts1, ts1->count - 1));
+  TimestampTz t2 = DatumGetTimestampTz(orderedset_val_n(ts2, 0));
   return (t1 < t2);
 }
 
@@ -670,7 +674,7 @@ before_timestampset_timestampset(const TimestampSet *ts1,
 bool
 before_timestampset_period(const TimestampSet *ts, const Period *p)
 {
-  TimestampTz t = timestampset_time_n(ts, ts->count - 1);
+  TimestampTz t = DatumGetTimestampTz(orderedset_val_n(ts, ts->count - 1));
   return left_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p);
 }
 
@@ -683,7 +687,7 @@ bool
 before_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 {
   const Period *p = spanset_sp_n(ps, 0);
-  TimestampTz t = timestampset_time_n(ts, ts->count - 1);
+  TimestampTz t = DatumGetTimestampTz(orderedset_val_n(ts, ts->count - 1));
   return left_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p);
 }
 
@@ -706,7 +710,7 @@ before_period_timestamp(const Period *p, TimestampTz t)
 bool
 before_period_timestampset(const Period *p, const TimestampSet *ts)
 {
-  TimestampTz t = timestampset_time_n(ts, 0);
+  TimestampTz t = DatumGetTimestampTz(orderedset_val_n(ts, 0));
   return left_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 
@@ -730,7 +734,7 @@ bool
 before_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 {
   const Period *p = spanset_sp_n(ps, ps->count - 1);
-  TimestampTz t = timestampset_time_n(ts, 0);
+  TimestampTz t = DatumGetTimestampTz(orderedset_val_n(ts, 0));
   return left_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 
@@ -746,7 +750,7 @@ before_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 bool
 after_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 {
-  TimestampTz t1 = timestampset_time_n(ts, ts->count - 1);
+  TimestampTz t1 = DatumGetTimestampTz(orderedset_val_n(ts, ts->count - 1));
   return (t > t1);
 }
 
@@ -780,7 +784,7 @@ after_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 bool
 after_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 {
-  TimestampTz t1 = timestampset_time_n(ts, 0);
+  TimestampTz t1 = DatumGetTimestampTz(orderedset_val_n(ts, 0));
   return (t1 > t);
 }
 
@@ -793,8 +797,8 @@ bool
 after_timestampset_timestampset(const TimestampSet *ts1,
   const TimestampSet *ts2)
 {
-  TimestampTz t1 = timestampset_time_n(ts1, 0);
-  TimestampTz t2 = timestampset_time_n(ts2, ts2->count - 1);
+  TimestampTz t1 = DatumGetTimestampTz(orderedset_val_n(ts1, 0));
+  TimestampTz t2 = DatumGetTimestampTz(orderedset_val_n(ts2, ts2->count - 1));
   return (t1 > t2);
 }
 
@@ -806,7 +810,7 @@ after_timestampset_timestampset(const TimestampSet *ts1,
 bool
 after_timestampset_period(const TimestampSet *ts, const Period *p)
 {
-  TimestampTz t = timestampset_time_n(ts, 0);
+  TimestampTz t = DatumGetTimestampTz(orderedset_val_n(ts, 0));
   return right_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p);
 }
 
@@ -819,7 +823,7 @@ bool
 after_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 {
   const Period *p = spanset_sp_n(ps, ps->count - 1);
-  TimestampTz t = timestampset_time_n(ts, 0);
+  TimestampTz t = DatumGetTimestampTz(orderedset_val_n(ts, 0));
   return right_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p);
 }
 
@@ -842,7 +846,7 @@ after_period_timestamp(const Period *p, TimestampTz t)
 bool
 after_period_timestampset(const Period *p, const TimestampSet *ts)
 {
-  TimestampTz t = timestampset_time_n(ts, ts->count - 1);
+  TimestampTz t = DatumGetTimestampTz(orderedset_val_n(ts, ts->count - 1));
   return right_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 
@@ -867,7 +871,7 @@ bool
 after_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 {
   const Period *p = spanset_sp_n(ps, 0);
-  TimestampTz t = timestampset_time_n(ts, ts->count - 1);
+  TimestampTz t = DatumGetTimestampTz(orderedset_val_n(ts, ts->count - 1));
   return right_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 
@@ -883,7 +887,7 @@ after_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 bool
 overbefore_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 {
-  TimestampTz t1 = timestampset_time_n(ts, ts->count - 1);
+  TimestampTz t1 = DatumGetTimestampTz(orderedset_val_n(ts, ts->count - 1));
   return (t <= t1);
 }
 
@@ -917,7 +921,7 @@ overbefore_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 bool
 overbefore_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 {
-  TimestampTz t1 = timestampset_time_n(ts, ts->count - 1);
+  TimestampTz t1 = DatumGetTimestampTz(orderedset_val_n(ts, ts->count - 1));
   return (t1 <= t);
 }
 
@@ -930,8 +934,8 @@ bool
 overbefore_timestampset_timestampset(const TimestampSet *ts1,
   const TimestampSet *ts2)
 {
-  TimestampTz t1 = timestampset_time_n(ts1, ts1->count - 1);
-  TimestampTz t2 = timestampset_time_n(ts2, ts2->count - 1);
+  TimestampTz t1 = DatumGetTimestampTz(orderedset_val_n(ts1, ts1->count - 1));
+  TimestampTz t2 = DatumGetTimestampTz(orderedset_val_n(ts2, ts2->count - 1));
   return (t1 <= t2);
 }
 
@@ -943,7 +947,7 @@ overbefore_timestampset_timestampset(const TimestampSet *ts1,
 bool
 overbefore_timestampset_period(const TimestampSet *ts, const Period *p)
 {
-  TimestampTz t = timestampset_time_n(ts, ts->count - 1);
+  TimestampTz t = orderedset_val_n(ts, ts->count - 1);
   return overleft_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p);
 }
 
@@ -955,7 +959,7 @@ overbefore_timestampset_period(const TimestampSet *ts, const Period *p)
 bool
 overbefore_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 {
-  TimestampTz t = timestampset_time_n(ts, ts->count - 1);
+  TimestampTz t = DatumGetTimestampTz(orderedset_val_n(ts, ts->count - 1));
   const Span *s = spanset_sp_n(ps, ps->count - 1);
   return overleft_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, s);
 }
@@ -979,7 +983,7 @@ overbefore_period_timestamp(const Period *p, TimestampTz t)
 bool
 overbefore_period_timestampset(const Period *p, const TimestampSet *ts)
 {
-  TimestampTz t = timestampset_time_n(ts, ts->count - 1);
+  TimestampTz t = DatumGetTimestampTz(orderedset_val_n(ts, ts->count - 1));
   return overleft_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 
@@ -1004,7 +1008,7 @@ bool
 overbefore_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 {
   TimestampTz t1 = periodset_end_timestamp(ps);
-  TimestampTz t2 = timestampset_time_n(ts, ts->count - 1);
+  TimestampTz t2 = DatumGetTimestampTz(orderedset_val_n(ts, ts->count - 1));
   return (t1 <= t2);
 }
 
@@ -1020,7 +1024,7 @@ overbefore_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 bool
 overafter_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 {
-  TimestampTz t1 = timestampset_time_n(ts, 0);
+  TimestampTz t1 = DatumGetTimestampTz(orderedset_val_n(ts, 0));
   return (t >= t1);
 }
 
@@ -1054,7 +1058,7 @@ overafter_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 bool
 overafter_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 {
-  TimestampTz t1 = timestampset_time_n(ts, 0);
+  TimestampTz t1 = DatumGetTimestampTz(orderedset_val_n(ts, 0));
   return (t1 >= t);
 }
 
@@ -1067,8 +1071,8 @@ bool
 overafter_timestampset_timestampset(const TimestampSet *ts1,
   const TimestampSet *ts2)
 {
-  TimestampTz t1 = timestampset_time_n(ts1, 0);
-  TimestampTz t2 = timestampset_time_n(ts2, 0);
+  TimestampTz t1 = DatumGetTimestampTz(orderedset_val_n(ts1, 0));
+  TimestampTz t2 = DatumGetTimestampTz(orderedset_val_n(ts2, 0));
   return (t1 >= t2);
 }
 
@@ -1080,7 +1084,7 @@ overafter_timestampset_timestampset(const TimestampSet *ts1,
 bool
 overafter_timestampset_period(const TimestampSet *ts, const Period *p)
 {
-  TimestampTz t = timestampset_time_n(ts, 0);
+  TimestampTz t = DatumGetTimestampTz(orderedset_val_n(ts, 0));
   return overright_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p);
 }
 
@@ -1092,7 +1096,7 @@ overafter_timestampset_period(const TimestampSet *ts, const Period *p)
 bool
 overafter_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 {
-  TimestampTz t = timestampset_time_n(ts, 0);
+  TimestampTz t = DatumGetTimestampTz(orderedset_val_n(ts, 0));
   const Period *p = spanset_sp_n(ps, 0);
   return overright_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p);
 }
@@ -1116,7 +1120,7 @@ overafter_period_timestamp(const Period *p, TimestampTz t)
 bool
 overafter_period_timestampset(const Period *p, const TimestampSet *ts)
 {
-  TimestampTz t = timestampset_time_n(ts, 0);
+  TimestampTz t = DatumGetTimestampTz(orderedset_val_n(ts, 0));
   return overright_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 
@@ -1141,7 +1145,7 @@ bool
 overafter_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 {
   TimestampTz t1 = periodset_start_timestamp(ps);
-  TimestampTz t2 = timestampset_time_n(ts, 0);
+  TimestampTz t2 = DatumGetTimestampTz(orderedset_val_n(ts, 0));
   return (t1 >= t2);
 }
 
@@ -1157,24 +1161,26 @@ overafter_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 TimestampSet *
 union_timestamp_timestamp(TimestampTz t1, TimestampTz t2)
 {
+  Datum v1 = TimestampTzGetDatum(t1);
+  Datum v2 = TimestampTzGetDatum(t2);
   TimestampSet *result;
-  int cmp = timestamptz_cmp_internal(t1, t2);
+  int cmp = datum_cmp(v1, v2, T_TIMESTAMPTZ);
   if (cmp == 0)
-    result = timestampset_make(&t1, 1);
+    result = orderedset_make(&v1, 1, T_TIMESTAMPTZ);
   else
   {
-    TimestampTz times[2];
+    Datum values[2];
     if (cmp < 0)
     {
-      times[0] = t1;
-      times[1] = t2;
+      values[0] = v1;
+      values[1] = v2;
     }
     else
     {
-      times[0] = t2;
-      times[1] = t1;
+      values[0] = v2;
+      values[1] = v1;
     }
-    result = timestampset_make(times, 2);
+    result = orderedset_make(values, 2, T_TIMESTAMPTZ);
   }
   return result;
 }
@@ -1187,28 +1193,29 @@ union_timestamp_timestamp(TimestampTz t1, TimestampTz t2)
 TimestampSet *
 union_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 {
-  TimestampTz *times = palloc(sizeof(TimestampTz) * (ts->count + 1));
+  Datum v = TimestampTzGetDatum(t);
+  Datum *values = palloc(sizeof(TimestampTz) * (ts->count + 1));
   int k = 0;
   bool found = false;
   for (int i = 0; i < ts->count; i++)
   {
-    TimestampTz t1 = timestampset_time_n(ts, i);
+    Datum v1 = orderedset_val_n(ts, i);
     if (! found)
     {
-      int cmp = timestamptz_cmp_internal(t, t1);
+      int cmp = datum_cmp(v, v1, T_TIMESTAMPTZ);
       if (cmp < 0)
       {
-        times[k++] = t;
+        values[k++] = v;
         found = true;
       }
       else if (cmp == 0)
         found = true;
     }
-    times[k++] = t1;
+    values[k++] = v1;
   }
   if (! found)
-    times[k++] = t;
-  return timestampset_make_free(times, k);
+    values[k++] = v;
+  return orderedset_make_free(values, k, T_TIMESTAMPTZ);
 }
 
 /**
@@ -1594,18 +1601,19 @@ TimestampSet *
 minus_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 {
   /* Bounding box test */
-  if (! contains_period_timestamp(&ts->period, t))
-    return timestampset_copy(ts);
+  if (! contains_period_timestamp(&ts->span, t))
+    return orderedset_copy(ts);
 
-  TimestampTz *times = palloc(sizeof(TimestampTz) * ts->count);
+  Datum *values = palloc(sizeof(TimestampTz) * ts->count);
   int k = 0;
+  Datum v = TimestampTzGetDatum(t);
   for (int i = 0; i < ts->count; i++)
   {
-    TimestampTz t1 = timestampset_time_n(ts, i);
-    if (t != t1)
-      times[k++] = t1;
+    Datum v1 = orderedset_val_n(ts, i);
+    if (datum_ne(v, v1, T_TIMESTAMPTZ))
+      values[k++] = v1;
   }
-  return timestampset_make_free(times, k);
+  return orderedset_make_free(values, k, T_TIMESTAMPTZ);
 }
 
 /**
@@ -1666,7 +1674,7 @@ minus_period_timestampset(const Period *p, const TimestampSet *ts)
   /* Transform the period into a period set */
   PeriodSet *ps = span_to_spanset(p);
   /* Bounding box test */
-  if (! overlaps_span_span(p, &ts->period))
+  if (! overlaps_span_span(p, &ts->span))
     return ps;
 
   /* Call the function for the period set */
@@ -1697,14 +1705,14 @@ PeriodSet *
 minus_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 {
   /* Bounding box test */
-  if (! overlaps_span_span(&ps->span, &ts->period))
+  if (! overlaps_span_span(&ps->span, &ts->span))
     return spanset_copy(ps);
 
   /* Each timestamp will split at most one composing period into two */
   Period **periods = palloc(sizeof(Period *) * (ps->count + ts->count + 1));
   int i = 0, j = 0, k = 0;
   Period *curr = span_copy(spanset_sp_n(ps, 0));
-  TimestampTz t = timestampset_time_n(ts, 0);
+  TimestampTz t = DatumGetTimestampTz(orderedset_val_n(ts, 0));
   while (i < ps->count && j < ts->count)
   {
     if (t > (TimestampTz) curr->upper)
@@ -1722,7 +1730,7 @@ minus_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
       if (j == ts->count)
         break;
       else
-        t = timestampset_time_n(ts, j);
+        t = DatumGetTimestampTz(orderedset_val_n(ts, j));
     }
     else
     {
@@ -1781,7 +1789,7 @@ minus_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
       if (j == ts->count)
         break;
       else
-        t = timestampset_time_n(ts, j);
+        t = DatumGetTimestampTz(orderedset_val_n(ts, j));
     }
   }
   /* If we ran through all the instants */
@@ -1829,7 +1837,7 @@ distance_timestamp_timestamp(TimestampTz t1, TimestampTz t2)
 double
 distance_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 {
-  double result = distance_period_timestamp(&ts->period, t);
+  double result = distance_period_timestamp(&ts->span, t);
   return result;
 }
 
@@ -1867,7 +1875,7 @@ distance_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 double
 distance_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 {
-  return distance_period_timestamp(&ts->period, t);
+  return distance_period_timestamp(&ts->span, t);
 }
 
 /**
@@ -1890,7 +1898,7 @@ distance_timestampset_timestampset(const TimestampSet *ts1,
 double
 distance_timestampset_period(const TimestampSet *ts, const Period *p)
 {
-  return distance_span_span(&ts->period, p);
+  return distance_span_span(&ts->span, p);
 }
 
 /**
@@ -1902,7 +1910,7 @@ double
 distance_timestampset_periodset(const TimestampSet *ts,
   const PeriodSet *ps)
 {
-  return distance_span_span(&ts->period, &ps->span);
+  return distance_span_span(&ts->span, &ps->span);
 }
 #endif
 

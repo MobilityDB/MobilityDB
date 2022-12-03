@@ -87,9 +87,11 @@ typedef struct
 {
   int32 vl_len_;        /**< Varlena header (do not touch directly!) */
   int32 count;          /**< Number of TimestampTz elements */
-  Period period;        /**< Bounding period */
-  TimestampTz elems[1]; /**< Beginning of variable-length data */
-} TimestampSet;
+  Span span;            /**< Bounding period */
+  Datum elems[1];       /**< Beginning of variable-length data */
+} OrderedSet;
+
+typedef OrderedSet TimestampSet;
 
 /**
  * Structure to represent temporal boxes
@@ -312,10 +314,6 @@ extern Span *intspan_in(const char *str);
 extern char *intspan_out(const Span *s);
 extern Period *period_in(const char *str);
 extern char *period_out(const Span *s);
-// extern char *periodset_as_hexwkb(const PeriodSet *ps, uint8_t variant, size_t *size_out);
-// extern uint8_t *periodset_as_wkb(const PeriodSet *ps, uint8_t variant, size_t *size_out);
-// extern PeriodSet *periodset_from_hexwkb(const char *hexwkb);
-// extern PeriodSet *periodset_from_wkb(const uint8_t *wkb, int size);
 extern PeriodSet *periodset_in(const char *str);
 extern char *periodset_out(const PeriodSet *ps);
 extern char *span_as_hexwkb(const Span *s, uint8_t variant, size_t *size_out);
@@ -329,12 +327,12 @@ extern uint8_t *spanset_as_wkb(const SpanSet *ss, uint8_t variant, size_t *size_
 extern SpanSet *spanset_from_hexwkb(const char *hexwkb);
 extern SpanSet *spanset_from_wkb(const uint8_t *wkb, int size);
 
-extern char *timestampset_as_hexwkb(const TimestampSet *ts, uint8_t variant, size_t *size_out);
-extern uint8_t *timestampset_as_wkb(const TimestampSet *ts, uint8_t variant, size_t *size_out);
+extern char *orderedset_as_hexwkb(const TimestampSet *ts, uint8_t variant, size_t *size_out);
+extern uint8_t *orderedset_as_wkb(const TimestampSet *ts, uint8_t variant, size_t *size_out);
 extern TimestampSet *timestampset_from_hexwkb(const char *hexwkb);
 extern TimestampSet *timestampset_from_wkb(const uint8_t *wkb, int size);
 extern TimestampSet *timestampset_in(const char *str);
-extern char *timestampset_out(const TimestampSet *ts);
+extern char *orderedset_out(const OrderedSet *os);
 
 /*****************************************************************************/
 
@@ -408,7 +406,7 @@ extern double spanset_width(const SpanSet *ss);
 extern TimestampTz timestampset_end_timestamp(const TimestampSet *ss);
 extern uint32 timestampset_hash(const TimestampSet *ss);
 extern uint64 timestampset_hash_extended(const TimestampSet *ss, uint64 seed);
-extern int timestampset_mem_size(const TimestampSet *ss);
+extern int orderedset_mem_size(const TimestampSet *ss);
 extern int timestampset_num_timestamps(const TimestampSet *ss);
 extern TimestampTz timestampset_start_timestamp(const TimestampSet *ss);
 extern Interval *timestampset_timespan(const TimestampSet *ss);

@@ -101,7 +101,7 @@ Span_from_hexwkb(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Timestampset_from_wkb);
+PG_FUNCTION_INFO_V1(Orderedset_from_wkb);
 /**
  * @ingroup mobilitydb_temporal_in_out
  * @brief Input a timestamp set from its WKB representation
@@ -109,30 +109,30 @@ PG_FUNCTION_INFO_V1(Timestampset_from_wkb);
  *
  */
 PGDLLEXPORT Datum
-Timestampset_from_wkb(PG_FUNCTION_ARGS)
+Orderedset_from_wkb(PG_FUNCTION_ARGS)
 {
   bytea *bytea_wkb = PG_GETARG_BYTEA_P(0);
   uint8_t *wkb = (uint8_t *) VARDATA(bytea_wkb);
-  TimestampSet *ts = timestampset_from_wkb(wkb, VARSIZE(bytea_wkb) - VARHDRSZ);
+  OrderedSet *os = orderedset_from_wkb(wkb, VARSIZE(bytea_wkb) - VARHDRSZ);
   PG_FREE_IF_COPY(bytea_wkb, 0);
-  PG_RETURN_POINTER(ts);
+  PG_RETURN_POINTER(os);
 }
 
-PG_FUNCTION_INFO_V1(Timestampset_from_hexwkb);
+PG_FUNCTION_INFO_V1(Orderedset_from_hexwkb);
 /**
  * @ingroup mobilitydb_temporal_in_out
  * @brief Input a timestamp set from its HexWKB representation
  * @sqlfunc timestampsetFromHexWKB()
  */
 PGDLLEXPORT Datum
-Timestampset_from_hexwkb(PG_FUNCTION_ARGS)
+Orderedset_from_hexwkb(PG_FUNCTION_ARGS)
 {
   text *hexwkb_text = PG_GETARG_TEXT_P(0);
   char *hexwkb = text2cstring(hexwkb_text);
-  TimestampSet *ts = timestampset_from_hexwkb(hexwkb);
+  OrderedSet *os = orderedset_from_hexwkb(hexwkb);
   pfree(hexwkb);
   PG_FREE_IF_COPY(hexwkb_text, 0);
-  PG_RETURN_POINTER(ts);
+  PG_RETURN_POINTER(os);
 }
 
 /*****************************************************************************/

@@ -42,5 +42,4 @@ add_library(pg_general OBJECT
   tnumber_spgist.c
   tsequence.c
   ttext_textfuncs.c
-  ttext_gin.c
 )

@@ -77,7 +77,7 @@ timestampset_to_periodset(const TimestampSet *ts)
   Period **periods = palloc(sizeof(Period *) * ts->count);
   for (int i = 0; i < ts->count; i++)
   {
-    TimestampTz t = timestampset_time_n(ts, i);
+    TimestampTz t = DatumGetTimestampTz(orderedset_val_n(ts, i));
     periods[i] = span_make(t, t, true, true, T_TIMESTAMPTZ);
   }
   PeriodSet *result = spanset_make_free(periods, ts->count, NORMALIZE_NO);

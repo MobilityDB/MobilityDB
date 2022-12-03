@@ -147,12 +147,15 @@ datum_cmp2(Datum l, Datum r, mobdbType typel, mobdbType typer)
   if (typel == T_INT4 && typer == T_INT4)
     return (DatumGetInt32(l) < DatumGetInt32(r)) ? -1 :
       ((DatumGetInt32(l) > DatumGetInt32(r)) ? 1 : 0);
+  if (typel == T_INT8 && typer == T_INT8)
+    return (DatumGetInt64(l) < DatumGetInt64(r)) ? -1 :
+      ((DatumGetInt64(l) > DatumGetInt64(r)) ? 1 : 0);
+  if (typel == T_FLOAT8 && typer == T_FLOAT8)
+    return float8_cmp_internal(DatumGetFloat8(l), DatumGetFloat8(r));
   if (typel == T_INT4 && typer == T_FLOAT8)
     return float8_cmp_internal((double) DatumGetInt32(l), DatumGetFloat8(r));
   if (typel == T_FLOAT8 && typer == T_INT4)
     return float8_cmp_internal(DatumGetFloat8(l), (double) DatumGetInt32(r));
-  if (typel == T_FLOAT8 && typer == T_FLOAT8)
-    return float8_cmp_internal(DatumGetFloat8(l), DatumGetFloat8(r));
   elog(ERROR, "unknown span_value_cmp function for span base type: %d", typel);
 }
 
@@ -167,7 +170,8 @@ datum_eq2(Datum l, Datum r, mobdbType typel, mobdbType typer)
     ensure_temporal_basetype(typer);
   if ((typel == T_TIMESTAMPTZ && typer == T_TIMESTAMPTZ) ||
     (typel == T_BOOL && typer == T_BOOL) ||
-    (typel == T_INT4 && typer == T_INT4))
+    (typel == T_INT4 && typer == T_INT4) ||
+    (typel == T_INT8 && typer == T_INT8))
     return l == r;
   if (typel == T_FLOAT8 && typer == T_FLOAT8)
     return MOBDB_FP_EQ(DatumGetFloat8(l), DatumGetFloat8(r));
@@ -218,6 +222,8 @@ datum_lt2(Datum l, Datum r, mobdbType typel, mobdbType typer)
     return DatumGetBool(l) < DatumGetBool(r);
   if (typel == T_INT4 && typer == T_INT4)
     return DatumGetInt32(l) < DatumGetInt32(r);
+  if (typel == T_INT8 && typer == T_INT8)
+    return DatumGetInt64(l) < DatumGetInt64(r);
   if (typel == T_INT4 && typer == T_FLOAT8)
     return MOBDB_FP_LT((double) DatumGetInt32(l), DatumGetFloat8(r));
   if (typel == T_FLOAT8 && typer == T_INT4)
@@ -340,13 +346,26 @@ datum_add(Datum l, Datum r, mobdbType typel, mobdbType typer)
   {
     if (typer == T_INT4)
       result = Int32GetDatum(DatumGetInt32(l) + DatumGetInt32(r));
+    else if (typer == T_INT8)
+      result = Int64GetDatum((int64) DatumGetInt32(l) + DatumGetInt64(r));
+    else /* typer == T_FLOAT8 */
+      result = Float8GetDatum(DatumGetInt32(l) + DatumGetFloat8(r));
+  }
+  else if (typel == T_INT8)
+  {
+    if (typer == T_INT4)
+      result = Int64GetDatum(DatumGetInt64(l) + DatumGetInt32(r));
+    else if (typer == T_INT8)
+      result = Int64GetDatum(DatumGetInt64(l) + DatumGetInt64(r));
     else /* typer == T_FLOAT8 */
       result = Float8GetDatum(DatumGetInt32(l) + DatumGetFloat8(r));
   }
   else /* typel == T_FLOAT8 */
   {
     if (typer == T_INT4)
-      result = Float8GetDatum(DatumGetFloat8(l) + DatumGetInt32(r));
+      result = Float8GetDatum(DatumGetFloat8(l) + (double) DatumGetInt32(r));
+    else if (typer == T_INT8)
+      result = Float8GetDatum(DatumGetFloat8(l) + (double) DatumGetInt64(r));
     else /* typer == T_FLOAT8 */
       result = Float8GetDatum(DatumGetFloat8(l) + DatumGetFloat8(r));
   }
@@ -364,13 +383,26 @@ datum_sub(Datum l, Datum r, mobdbType typel, mobdbType typer)
   {
     if (typer == T_INT4)
       result = Int32GetDatum(DatumGetInt32(l) - DatumGetInt32(r));
+    else if (typer == T_INT8)
+      result = Int64GetDatum(DatumGetInt32(l) - DatumGetInt64(r));
     else /* typer == T_FLOAT8 */
-      result = Float8GetDatum(DatumGetInt32(l) - DatumGetFloat8(r));
+      result = Float8GetDatum((double) DatumGetInt32(l) - DatumGetFloat8(r));
+  }
+  else if (typel == T_INT8)
+  {
+    if (typer == T_INT4)
+      result = Int64GetDatum(DatumGetInt64(l) - (int64) DatumGetInt32(r));
+    else if (typer == T_INT8)
+      result = Int64GetDatum(DatumGetInt64(l) - DatumGetInt64(r));
+    else /* typer == T_FLOAT8 */
+      result = Float8GetDatum((double) DatumGetInt32(l) - DatumGetFloat8(r));
   }
   else /* typel == T_FLOAT8 */
   {
     if (typer == T_INT4)
-      result = Float8GetDatum(DatumGetFloat8(l) - DatumGetInt32(r));
+      result = Float8GetDatum(DatumGetFloat8(l) - (double) DatumGetInt32(r));
+    else if (typer == T_INT8)
+      result = Float8GetDatum(DatumGetFloat8(l) - (double) DatumGetInt64(r));
     else /* typer == T_FLOAT8 */
       result = Float8GetDatum(DatumGetFloat8(l) - DatumGetFloat8(r));
   }
@@ -388,13 +420,26 @@ datum_mult(Datum l, Datum r, mobdbType typel, mobdbType typer)
   {
     if (typer == T_INT4)
       result = Int32GetDatum(DatumGetInt32(l) * DatumGetInt32(r));
+    else if (typer == T_INT8)
+      result = Int64GetDatum((int64) DatumGetInt32(l) * DatumGetInt64(r));
     else /* typer == T_FLOAT8 */
-      result = Float8GetDatum(DatumGetInt32(l) * DatumGetFloat8(r));
+      result = Float8GetDatum((double) DatumGetInt32(l) * DatumGetFloat8(r));
+  }
+  else if (typel == T_INT8)
+  {
+    if (typer == T_INT4)
+      result = Int64GetDatum(DatumGetInt64(l) * (int64) DatumGetInt32(r));
+    else if (typer == T_INT8)
+      result = Int64GetDatum(DatumGetInt64(l) * DatumGetInt64(r));
+    else /* typer == T_FLOAT8 */
+      result = Float8GetDatum((double) DatumGetInt64(l) * DatumGetFloat8(r));
   }
   else /* typel == T_FLOAT8 */
   {
     if (typer == T_INT4)
-      result = Float8GetDatum(DatumGetFloat8(l) * DatumGetInt32(r));
+      result = Float8GetDatum(DatumGetFloat8(l) * (double) DatumGetInt32(r));
+    else if (typer == T_INT8)
+      result = Float8GetDatum(DatumGetFloat8(l) * (double) DatumGetInt64(r));
     else /* typer == T_FLOAT8 */
       result = Float8GetDatum(DatumGetFloat8(l) * DatumGetFloat8(r));
   }
@@ -412,13 +457,26 @@ datum_div(Datum l, Datum r, mobdbType typel, mobdbType typer)
   {
     if (typer == T_INT4)
       result = Int32GetDatum(DatumGetInt32(l) / DatumGetInt32(r));
+    else if (typer == T_INT8)
+      result = Int64GetDatum((int64) DatumGetInt32(l) / DatumGetInt64(r));
     else /* typer == T_FLOAT8 */
-      result = Float8GetDatum(DatumGetInt32(l) / DatumGetFloat8(r));
+      result = Float8GetDatum((double) DatumGetInt32(l) / DatumGetFloat8(r));
+  }
+  else if (typel == T_INT8)
+  {
+    if (typer == T_INT4)
+      result = Int64GetDatum(DatumGetInt64(l) / (int64) DatumGetInt32(r));
+    else if (typer == T_INT8)
+      result = Int64GetDatum(DatumGetInt64(l) / DatumGetInt64(r));
+    else /* typer == T_FLOAT8 */
+      result = Float8GetDatum((double) DatumGetInt64(l) / DatumGetFloat8(r));
   }
   else /* typel == T_FLOAT8 */
   {
     if (typer == T_INT4)
-      result = Float8GetDatum(DatumGetFloat8(l) / DatumGetInt32(r));
+      result = Float8GetDatum(DatumGetFloat8(l) / (double) DatumGetInt32(r));
+    else if (typer == T_INT8)
+      result = Float8GetDatum(DatumGetFloat8(l) / (double) DatumGetInt64(r));
     else /* typer == T_FLOAT8 */
       result = Float8GetDatum(DatumGetFloat8(l) / DatumGetFloat8(r));
   }
@@ -465,7 +523,9 @@ datum_double(Datum d, mobdbType basetype)
 {
   ensure_tnumber_basetype(basetype);
   if (basetype == T_INT4)
-    return (double)(DatumGetInt32(d));
+    return (double) DatumGetInt32(d);
+  if (basetype == T_INT8)
+    return (double) DatumGetInt64(d);
   else /* basetype == T_FLOAT8 */
     return DatumGetFloat8(d);
 }
@@ -972,10 +1032,8 @@ basetype_output(mobdbType basetype, Datum value, Datum maxdd)
       return bool_out(DatumGetBool(value));
     case T_INT4:
       return int4_out(DatumGetInt32(value));
-  #if 0 /* not used */
     case T_INT8:
       return int8_out(DatumGetInt64(value));
-  #endif /* not used */
     case T_FLOAT8:
       return float8_out(DatumGetFloat8(value), DatumGetInt32(maxdd));
     case T_TEXT:

@@ -2388,9 +2388,9 @@ span_as_hexwkb(const Span *s, uint8_t variant, size_t *size_out)
  * @sqlfunc asBinary()
  */
 uint8_t *
-timestampset_as_wkb(const TimestampSet *ts, uint8_t variant, size_t *size_out)
+orderedset_as_wkb(const OrderedSet *os, uint8_t variant, size_t *size_out)
 {
-  uint8_t *result = datum_as_wkb(PointerGetDatum(ts), T_TIMESTAMPSET, variant,
+  uint8_t *result = datum_as_wkb(PointerGetDatum(os), T_TIMESTAMPSET, variant,
     size_out);
   return result;
 }

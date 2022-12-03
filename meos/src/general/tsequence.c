@@ -1839,7 +1839,8 @@ tdiscseq_from_base_time(Datum value, mobdbType temptype,
 {
   TInstant **instants = palloc(sizeof(TInstant *) * ts->count);
   for (int i = 0; i < ts->count; i++)
-    instants[i] = tinstant_make(value, temptype, timestampset_time_n(ts, i));
+    instants[i] = tinstant_make(value, temptype,
+      DatumGetTimestampTz(orderedset_val_n(ts, i)));
   return tsequence_make_free(instants, ts->count, true, true, DISCRETE,
     NORMALIZE_NO);
 }
@@ -4339,8 +4340,10 @@ tdiscseq_restrict_timestampset(const TSequence *seq, const TimestampSet *ts,
   if (ts->count == 1)
   {
     Temporal *temp = atfunc ?
-      (Temporal *) tdiscseq_at_timestamp(seq, timestampset_time_n(ts, 0)) :
-      (Temporal *) tdiscseq_minus_timestamp(seq, timestampset_time_n(ts, 0));
+      (Temporal *) tdiscseq_at_timestamp(seq,
+        DatumGetTimestampTz(orderedset_val_n(ts, 0))) :
+      (Temporal *) tdiscseq_minus_timestamp(seq,
+        DatumGetTimestampTz(orderedset_val_n(ts, 0)));
     if (temp == NULL || ! atfunc)
       return (TSequence *) temp;
     /* Transform the result of tdiscseq_at_timestamp into a sequence */
@@ -4350,7 +4353,7 @@ tdiscseq_restrict_timestampset(const TSequence *seq, const TimestampSet *ts,
   }
 
   /* Bounding box test */
-  if (! overlaps_span_span(&seq->period, &ts->period))
+  if (! overlaps_span_span(&seq->period, &ts->span))
     return atfunc ? NULL : tsequence_copy(seq);
 
   /* Instantaneous sequence */
@@ -4368,7 +4371,7 @@ tdiscseq_restrict_timestampset(const TSequence *seq, const TimestampSet *ts,
   while (i < seq->count && j < ts->count)
   {
     inst = tsequence_inst_n(seq, i);
-    TimestampTz t = timestampset_time_n(ts, j);
+    TimestampTz t = DatumGetTimestampTz(orderedset_val_n(ts, j));
     int cmp = timestamptz_cmp_internal(inst->t, t);
     if (cmp == 0)
     {
@@ -4692,7 +4695,8 @@ tcontseq_at_timestampset(const TSequence *seq, const TimestampSet *ts)
   /* Singleton timestamp set */
   if (ts->count == 1)
   {
-    inst = tsequence_at_timestamp(seq, timestampset_time_n(ts, 0));
+    inst = tsequence_at_timestamp(seq,
+      DatumGetTimestampTz(orderedset_val_n(ts, 0)));
     if (inst == NULL)
       return NULL;
     TSequence *result = tinstant_to_tsequence((const TInstant *) inst, DISCRETE);
@@ -4701,7 +4705,7 @@ tcontseq_at_timestampset(const TSequence *seq, const TimestampSet *ts)
   }
 
   /* Bounding box test */
-  if (! overlaps_span_span(&seq->period, &ts->period))
+  if (! overlaps_span_span(&seq->period, &ts->span))
     return NULL;
 
   inst = (TInstant *) tsequence_inst_n(seq, 0);
@@ -4715,14 +4719,14 @@ tcontseq_at_timestampset(const TSequence *seq, const TimestampSet *ts)
   }
 
   /* General case */
-  TimestampTz t = Max(seq->period.lower, ts->period.lower);
+  TimestampTz t = Max(seq->period.lower, ts->span.lower);
   int loc;
   timestampset_find_timestamp(ts, t, &loc);
   TInstant **instants = palloc(sizeof(TInstant *) * (ts->count - loc));
   int k = 0;
   for (int i = loc; i < ts->count; i++)
   {
-    t = timestampset_time_n(ts, i);
+    t = DatumGetTimestampTz(orderedset_val_n(ts, i));
     inst = tcontseq_at_timestamp(seq, t);
     if (inst != NULL)
       instants[k++] = inst;
@@ -4748,10 +4752,11 @@ tcontseq_minus_timestampset1(const TSequence *seq, const TimestampSet *ts,
 {
   /* Singleton timestamp set */
   if (ts->count == 1)
-    return tcontseq_minus_timestamp1(seq, timestampset_time_n(ts, 0), result);
+    return tcontseq_minus_timestamp1(seq,
+      DatumGetTimestampTz(orderedset_val_n(ts, 0)), result);
 
   /* Bounding box test */
-  if (! overlaps_span_span(&seq->period, &ts->period))
+  if (! overlaps_span_span(&seq->period, &ts->span))
   {
     result[0] = tsequence_copy(seq);
     return 1;
@@ -4782,7 +4787,7 @@ tcontseq_minus_timestampset1(const TSequence *seq, const TimestampSet *ts,
   while (i < seq->count && j < ts->count)
   {
     inst = tsequence_inst_n(seq, i);
-    TimestampTz t = timestampset_time_n(ts, j);
+    TimestampTz t = DatumGetTimestampTz(orderedset_val_n(ts, j));
     if (inst->t < t)
     {
       instants[l++] = (TInstant *) inst;
@@ -5292,10 +5297,11 @@ tcontseq_delete_timestampset(const TSequence *seq, const TimestampSet *ts)
 {
   /* Singleton timestamp set */
   if (ts->count == 1)
-    return tcontseq_delete_timestamp(seq, timestampset_time_n(ts, 0));
+    return tcontseq_delete_timestamp(seq,
+      DatumGetTimestampTz(orderedset_val_n(ts, 0)));
 
   /* Bounding box test */
-  if (! overlaps_span_span(&seq->period, &ts->period))
+  if (! overlaps_span_span(&seq->period, &ts->span))
     return tsequence_copy(seq);
 
   const TInstant *inst;
@@ -5320,7 +5326,7 @@ tcontseq_delete_timestampset(const TSequence *seq, const TimestampSet *ts)
   while (i < seq->count && j < ts->count)
   {
     inst = tsequence_inst_n(seq, i);
-    TimestampTz t = timestampset_time_n(ts, j);
+    TimestampTz t = DatumGetTimestampTz(orderedset_val_n(ts, j));
     if (inst->t < t)
     {
       instants[k++] = (TInstant *) inst;
@@ -5492,7 +5498,8 @@ bool
 tsequence_overlaps_timestampset(const TSequence *seq, const TimestampSet *ts)
 {
   for (int i = 0; i < ts->count; i++)
-    if (tsequence_overlaps_timestamp(seq, timestampset_time_n(ts, i)))
+    if (tsequence_overlaps_timestamp(seq,
+        DatumGetTimestampTz(orderedset_val_n(ts, i))))
       return true;
   return false;
 }

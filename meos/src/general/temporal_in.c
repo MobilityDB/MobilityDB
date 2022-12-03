@@ -1173,17 +1173,17 @@ span_from_wkb_state(wkb_parse_state *s)
 /**
  * Return a timestamp set from its WKB representation
  */
-static TimestampSet *
-timestampset_from_wkb_state(wkb_parse_state *s)
+static OrderedSet *
+orderedset_from_wkb_state(wkb_parse_state *s)
 {
   /* Read the number of timestamps and allocate space for them */
   int count = int32_from_wkb_state(s);
-  TimestampTz *times = palloc(sizeof(TimestampTz) * count);
+  Datum *values = palloc(sizeof(TimestampTz) * count);
 
   /* Read and create the timestamp set */
   for (int i = 0; i < count; i++)
-    times[i] = timestamp_from_wkb_state(s);
-  TimestampSet *result = timestampset_make_free(times, count);
+    values[i] = TimestampTzGetDatum(timestamp_from_wkb_state(s));
+  OrderedSet *result = orderedset_make_free(values, count, T_TIMESTAMPTZ);
   return result;
 }
 
@@ -1661,7 +1661,7 @@ datum_from_wkb(const uint8_t *wkb, int size, mobdbType type)
       result = PointerGetDatum(span_from_wkb_state(&s));
       break;
     case T_TIMESTAMPSET:
-      result = PointerGetDatum(timestampset_from_wkb_state(&s));
+      result = PointerGetDatum(orderedset_from_wkb_state(&s));
       break;
     case T_INTSPANSET:
     case T_FLOATSPANSET:
@@ -1745,8 +1745,8 @@ span_from_hexwkb(const char *hexwkb)
  * representation.
  * @sqlfunc timestampsetFromBinary()
  */
-TimestampSet *
-timestampset_from_wkb(const uint8_t *wkb, int size)
+OrderedSet *
+orderedset_from_wkb(const uint8_t *wkb, int size)
 {
   return DatumGetTimestampSetP(datum_from_wkb(wkb, size, T_TIMESTAMPSET));
 }
@@ -1757,8 +1757,8 @@ timestampset_from_wkb(const uint8_t *wkb, int size)
  * ASCII.
  * @sqlfunc timestampsetFromHexWKB()
  */
-TimestampSet *
-timestampset_from_hexwkb(const char *hexwkb)
+OrderedSet *
+orderedset_from_hexwkb(const char *hexwkb)
 {
   int size = strlen(hexwkb);
   return DatumGetTimestampSetP(datum_from_hexwkb(hexwkb, size, T_TIMESTAMPSET));

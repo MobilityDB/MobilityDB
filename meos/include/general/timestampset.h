@@ -34,16 +34,31 @@
 #ifndef __TIMESTAMPSET_H__
 #define __TIMESTAMPSET_H__
 
+/*****************************************************************************/
+
+/*
+ * fmgr macros for ordered set types
+ */
+
 /* PostgreSQL */
 #include <postgres.h>
 /* MobilityDB */
 #include "general/timetypes.h"
 
+#if MEOS
+  #define DatumGetOrderedSetP(X)      ((OrderedSet *) DatumGetPointer(X))
+#else
+  #define DatumGetOrderedSetP(X)      ((OrderedSet *) PG_DETOAST_DATUM(X))
+#endif /* MEOS */
+#define OrderedSetPGetDatum(X)        PointerGetDatum(X)
+#define PG_GETARG_ORDEREDSET_P(X)     ((OrderedSet *) PG_GETARG_VARLENA_P(X))
+#define PG_RETURN_ORDEREDSET_P(X)     PG_RETURN_POINTER(X)
+
 /*****************************************************************************/
 
 /* General functions */
 
-extern void timestampset_period_slice(Datum tsdatum, Period *p);
+extern void orderedset_span_slice(Datum d, Span *s);
 extern bool timestampset_find_timestamp(const TimestampSet *ts, TimestampTz t,
   int *loc);
 

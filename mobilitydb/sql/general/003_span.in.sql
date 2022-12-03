@@ -33,6 +33,7 @@
  */
 
 CREATE TYPE intspan;
+CREATE TYPE bigintspan;
 CREATE TYPE floatspan;
 CREATE TYPE period;
 
@@ -49,6 +50,23 @@ CREATE FUNCTION intspan_recv(internal)
   AS 'MODULE_PATHNAME', 'Span_recv'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION intspan_send(intspan)
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Span_send'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION bigintspan_in(cstring)
+  RETURNS bigintspan
+  AS 'MODULE_PATHNAME', 'Span_in'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION bigintspan_out(bigintspan)
+  RETURNS cstring
+  AS 'MODULE_PATHNAME', 'Span_out'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION bigintspan_recv(internal)
+  RETURNS bigintspan
+  AS 'MODULE_PATHNAME', 'Span_recv'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION bigintspan_send(bigintspan)
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Span_send'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -91,6 +109,10 @@ CREATE FUNCTION intspan_analyze(internal)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Intspan_analyze'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- CREATE FUNCTION bigintspan_analyze(internal)
+  -- RETURNS boolean
+  -- AS 'MODULE_PATHNAME', 'Bigintspan_analyze'
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION floatspan_analyze(internal)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Floatspan_analyze'
@@ -108,6 +130,16 @@ CREATE TYPE intspan (
   send = intspan_send,
   alignment = double,
   analyze = intspan_analyze
+);
+
+CREATE TYPE bigintspan (
+  internallength = 24,
+  input = bigintspan_in,
+  output = bigintspan_out,
+  receive = bigintspan_recv,
+  send = bigintspan_send,
+  alignment = double
+  -- , analyze = intspan_analyze
 );
 
 CREATE TYPE floatspan (
@@ -136,6 +168,10 @@ CREATE FUNCTION intspanFromBinary(bytea)
   RETURNS intspan
   AS 'MODULE_PATHNAME', 'Span_from_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION bigintspanFromBinary(bytea)
+  RETURNS bigintspan
+  AS 'MODULE_PATHNAME', 'Span_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION floatspanFromBinary(bytea)
   RETURNS floatspan
   AS 'MODULE_PATHNAME', 'Span_from_wkb'
@@ -149,6 +185,10 @@ CREATE FUNCTION intspanFromHexWKB(text)
   RETURNS intspan
   AS 'MODULE_PATHNAME', 'Span_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION bigintspanFromHexWKB(text)
+  RETURNS bigintspan
+  AS 'MODULE_PATHNAME', 'Span_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION floatspanFromHexWKB(text)
   RETURNS floatspan
   AS 'MODULE_PATHNAME', 'Span_from_hexwkb'
@@ -159,6 +199,10 @@ CREATE FUNCTION periodFromHexWKB(text)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asText(intspan)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Span_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asText(bigintspan)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Span_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -175,6 +219,10 @@ CREATE FUNCTION asBinary(intspan, endianenconding text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Span_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asBinary(bigintspan, endianenconding text DEFAULT '')
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Span_as_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asBinary(floatspan, endianenconding text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Span_as_wkb'
@@ -185,6 +233,10 @@ CREATE FUNCTION asBinary(period, endianenconding text DEFAULT '')
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asHexWKB(intspan, endianenconding text DEFAULT '')
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Span_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asHexWKB(bigintspan, endianenconding text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Span_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -205,6 +257,10 @@ CREATE FUNCTION intspan(int, int)
   RETURNS intspan
   AS 'MODULE_PATHNAME', 'Span_constructor2'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION bigintspan(bigint, bigint)
+  RETURNS bigintspan
+  AS 'MODULE_PATHNAME', 'Span_constructor2'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION floatspan(float, float)
   RETURNS floatspan
   AS 'MODULE_PATHNAME', 'Span_constructor2'
@@ -216,6 +272,10 @@ CREATE FUNCTION period(timestamptz, timestamptz)
 
 CREATE FUNCTION intspan(int, int, boolean, boolean)
   RETURNS intspan
+  AS 'MODULE_PATHNAME', 'Span_constructor4'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION bigintspan(bigint, bigint, boolean, boolean)
+  RETURNS bigintspan
   AS 'MODULE_PATHNAME', 'Span_constructor4'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION floatspan(float, float, boolean, boolean)
@@ -235,6 +295,10 @@ CREATE FUNCTION intspan(integer)
   RETURNS intspan
   AS 'MODULE_PATHNAME', 'Value_to_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION bigintspan(bigint)
+  RETURNS bigintspan
+  AS 'MODULE_PATHNAME', 'Value_to_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION floatspan(float)
   RETURNS floatspan
   AS 'MODULE_PATHNAME', 'Value_to_span'
@@ -245,7 +309,7 @@ CREATE FUNCTION period(timestamptz)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION period(timestampset)
   RETURNS period
-  AS 'MODULE_PATHNAME', 'Timestampset_to_period'
+  AS 'MODULE_PATHNAME', 'Orderedset_to_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION int4range(intspan)
@@ -286,6 +350,10 @@ CREATE FUNCTION shift(intspan, int)
   RETURNS intspan
   AS 'MODULE_PATHNAME', 'Span_shift'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shift(bigintspan, bigint)
+  RETURNS bigintspan
+  AS 'MODULE_PATHNAME', 'Span_shift'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shift(floatspan, float)
   RETURNS floatspan
   AS 'MODULE_PATHNAME', 'Span_shift'
@@ -313,6 +381,10 @@ CREATE FUNCTION lower(intspan)
   RETURNS int
   AS 'MODULE_PATHNAME', 'Span_lower'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION lower(bigintspan)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'Span_lower'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION lower(floatspan)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Span_lower'
@@ -326,6 +398,10 @@ CREATE FUNCTION upper(intspan)
   RETURNS int
   AS 'MODULE_PATHNAME', 'Span_upper'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION upper(bigintspan)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'Span_upper'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION upper(floatspan)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Span_upper'
@@ -336,6 +412,10 @@ CREATE FUNCTION upper(period)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION lower_inc(intspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Span_lower_inc'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION lower_inc(bigintspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_lower_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -352,6 +432,10 @@ CREATE FUNCTION upper_inc(intspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_upper_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION upper_inc(bigintspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Span_upper_inc'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION upper_inc(floatspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_upper_inc'
@@ -362,6 +446,10 @@ CREATE FUNCTION upper_inc(period)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION width(intspan)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Span_width'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION width(bigintspan)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Span_width'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -397,6 +485,11 @@ CREATE FUNCTION _mobdb_span_sel(tbl regclass, col text, oper regoper,
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION _mobdb_span_sel(tbl regclass, col text, oper regoper,
+    b bigintspan)
+  RETURNS float
+  AS 'MODULE_PATHNAME'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION _mobdb_span_sel(tbl regclass, col text, oper regoper,
     f floatspan)
   RETURNS float
   AS 'MODULE_PATHNAME'
@@ -424,6 +517,10 @@ CREATE FUNCTION span_eq(intspan, intspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_eq(bigintspan, bigintspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Span_eq'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_eq(floatspan, floatspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_eq'
@@ -434,6 +531,10 @@ CREATE FUNCTION period_eq(period, period)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION span_ne(intspan, intspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Span_ne'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_ne(bigintspan, bigintspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -450,6 +551,10 @@ CREATE FUNCTION span_lt(intspan, intspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_lt(bigintspan, bigintspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Span_lt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_lt(floatspan, floatspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_lt'
@@ -460,6 +565,10 @@ CREATE FUNCTION period_lt(period, period)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION span_le(intspan, intspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Span_le'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_le(bigintspan, bigintspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -476,6 +585,10 @@ CREATE FUNCTION span_ge(intspan, intspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_ge(bigintspan, bigintspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Span_ge'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_ge(floatspan, floatspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_ge'
@@ -486,6 +599,10 @@ CREATE FUNCTION period_ge(period, period)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION span_gt(intspan, intspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Span_gt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_gt(bigintspan, bigintspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -502,6 +619,10 @@ CREATE FUNCTION span_cmp(intspan, intspan)
   RETURNS int4
   AS 'MODULE_PATHNAME', 'Span_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_cmp(bigintspan, bigintspan)
+  RETURNS int4
+  AS 'MODULE_PATHNAME', 'Span_cmp'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_cmp(floatspan, floatspan)
   RETURNS int4
   AS 'MODULE_PATHNAME', 'Span_cmp'
@@ -514,6 +635,12 @@ CREATE FUNCTION period_cmp(period, period)
 CREATE OPERATOR = (
   PROCEDURE = span_eq,
   LEFTARG = intspan, RIGHTARG = intspan,
+  COMMUTATOR = =, NEGATOR = <>,
+  RESTRICT = eqsel, JOIN = eqjoinsel
+);
+CREATE OPERATOR = (
+  PROCEDURE = span_eq,
+  LEFTARG = bigintspan, RIGHTARG = bigintspan,
   COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = eqsel, JOIN = eqjoinsel
 );
@@ -538,6 +665,12 @@ CREATE OPERATOR <> (
 );
 CREATE OPERATOR <> (
   PROCEDURE = span_ne,
+  LEFTARG = bigintspan, RIGHTARG = bigintspan,
+  COMMUTATOR = <>, NEGATOR = =,
+  RESTRICT = neqsel, JOIN = neqjoinsel
+);
+CREATE OPERATOR <> (
+  PROCEDURE = span_ne,
   LEFTARG = floatspan, RIGHTARG = floatspan,
   COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = neqsel, JOIN = neqjoinsel
@@ -552,6 +685,12 @@ CREATE OPERATOR <> (
 CREATE OPERATOR < (
   PROCEDURE = span_lt,
   LEFTARG = intspan, RIGHTARG = intspan,
+  COMMUTATOR = >, NEGATOR = >=,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR < (
+  PROCEDURE = span_lt,
+  LEFTARG = bigintspan, RIGHTARG = bigintspan,
   COMMUTATOR = >, NEGATOR = >=,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
@@ -576,6 +715,12 @@ CREATE OPERATOR <= (
 );
 CREATE OPERATOR <= (
   PROCEDURE = span_le,
+  LEFTARG = bigintspan, RIGHTARG = bigintspan,
+  COMMUTATOR = >=, NEGATOR = >,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR <= (
+  PROCEDURE = span_le,
   LEFTARG = floatspan, RIGHTARG = floatspan,
   COMMUTATOR = >=, NEGATOR = >,
   RESTRICT = span_sel, JOIN = span_joinsel
@@ -590,6 +735,12 @@ CREATE OPERATOR <= (
 CREATE OPERATOR >= (
   PROCEDURE = span_ge,
   LEFTARG = intspan, RIGHTARG = intspan,
+  COMMUTATOR = <=, NEGATOR = <,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR >= (
+  PROCEDURE = span_ge,
+  LEFTARG = bigintspan, RIGHTARG = bigintspan,
   COMMUTATOR = <=, NEGATOR = <,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
@@ -614,6 +765,12 @@ CREATE OPERATOR > (
 );
 CREATE OPERATOR > (
   PROCEDURE = span_gt,
+  LEFTARG = bigintspan, RIGHTARG = bigintspan,
+  COMMUTATOR = <, NEGATOR = <=,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR > (
+  PROCEDURE = span_gt,
   LEFTARG = floatspan, RIGHTARG = floatspan,
   COMMUTATOR = <, NEGATOR = <=,
   RESTRICT = span_sel, JOIN = span_joinsel
@@ -633,6 +790,14 @@ CREATE OPERATOR CLASS intspan_ops
   OPERATOR  4  >= ,
   OPERATOR  5  > ,
   FUNCTION  1  span_cmp(intspan, intspan);
+CREATE OPERATOR CLASS bigintspan_ops
+  DEFAULT FOR TYPE bigintspan USING btree AS
+  OPERATOR  1  < ,
+  OPERATOR  2  <= ,
+  OPERATOR  3  = ,
+  OPERATOR  4  >= ,
+  OPERATOR  5  > ,
+  FUNCTION  1  span_cmp(bigintspan, bigintspan);
 CREATE OPERATOR CLASS floatspan_ops
   DEFAULT FOR TYPE floatspan USING btree AS
   OPERATOR  1  < ,
@@ -656,6 +821,10 @@ CREATE FUNCTION span_hash(intspan)
   RETURNS integer
  AS 'MODULE_PATHNAME', 'Span_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_hash(bigintspan)
+  RETURNS integer
+ AS 'MODULE_PATHNAME', 'Span_hash'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_hash(floatspan)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Span_hash'
@@ -666,6 +835,10 @@ CREATE FUNCTION period_hash(period)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION span_hash_extended(intspan, bigint)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'Span_hash_extended'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_hash_extended(bigintspan, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Span_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -683,6 +856,11 @@ CREATE OPERATOR CLASS intspan_hash_ops
     OPERATOR    1   = ,
     FUNCTION    1   span_hash(intspan),
     FUNCTION    2   span_hash_extended(intspan, bigint);
+CREATE OPERATOR CLASS bigintspan_hash_ops
+  DEFAULT FOR TYPE bigintspan USING hash AS
+    OPERATOR    1   = ,
+    FUNCTION    1   span_hash(bigintspan),
+    FUNCTION    2   span_hash_extended(bigintspan, bigint);
 CREATE OPERATOR CLASS floatspan_hash_ops
   DEFAULT FOR TYPE floatspan USING hash AS
     OPERATOR    1   = ,

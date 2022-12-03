@@ -40,6 +40,7 @@
 #include <meos_internal.h>
 #include "general/temporal_out.h"
 #include "general/temporal_util.h"
+#include "general/timestampset.h"
 /* MobilityDB */
 #include "pg_general/temporal_util.h"
 #include "pg_point/postgis.h"
@@ -285,37 +286,37 @@ Span_as_hexwkb(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Timestampset_as_wkb);
+PG_FUNCTION_INFO_V1(Orderedset_as_wkb);
 /**
  * @ingroup mobilitydb_temporal_in_out
  * @brief Output a timestamp set in WKB format.
  * @sqlfunc asBinary()
  */
 PGDLLEXPORT Datum
-Timestampset_as_wkb(PG_FUNCTION_ARGS)
+Orderedset_as_wkb(PG_FUNCTION_ARGS)
 {
   /* Ensure that the value is detoasted if necessary */
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  bytea *result = datum_as_wkb_ext(fcinfo, PointerGetDatum(ts),
+  OrderedSet *os = PG_GETARG_ORDEREDSET_P(0);
+  bytea *result = datum_as_wkb_ext(fcinfo, PointerGetDatum(os),
     T_TIMESTAMPSET, false);
-  PG_FREE_IF_COPY(ts, 0);
+  PG_FREE_IF_COPY(os, 0);
   PG_RETURN_BYTEA_P(result);
 }
 
-PG_FUNCTION_INFO_V1(Timestampset_as_hexwkb);
+PG_FUNCTION_INFO_V1(Orderedset_as_hexwkb);
 /**
  * @ingroup mobilitydb_temporal_in_out
  * @brief Output the timestamp set in HexWKB format.
  * @sqlfunc asHexWKB()
  */
 PGDLLEXPORT Datum
-Timestampset_as_hexwkb(PG_FUNCTION_ARGS)
+Orderedset_as_hexwkb(PG_FUNCTION_ARGS)
 {
   /* Ensure that the value is detoasted if necessary */
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  text *result = datum_as_hexwkb_ext(fcinfo, PointerGetDatum(ts),
+  OrderedSet *os = PG_GETARG_TIMESTAMPSET_P(0);
+  text *result = datum_as_hexwkb_ext(fcinfo, PointerGetDatum(os),
     T_TIMESTAMPSET);
-  PG_FREE_IF_COPY(ts, 0);
+  PG_FREE_IF_COPY(os, 0);
   PG_RETURN_TEXT_P(result);
 }
 

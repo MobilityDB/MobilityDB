@@ -65,6 +65,8 @@ typedef enum
   T_INTSPAN,        /**< int4 span type */
   T_INTSPANSET,     /**< int4 span set type */
   T_INT8,           /**< int8 type */
+  T_BIGINTSPAN,     /**< int8 span type */
+  T_BIGINTSPANSET,  /**< int8 span set type */
   T_PERIOD,         /**< period type */
   T_PERIODSET,      /**< period set type */
   T_STBOX,          /**< spatiotemporal box type */

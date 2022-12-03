@@ -381,16 +381,18 @@ span_spgist_get_span(const ScanKeyData *scankey, Span *result)
     Datum d = scankey->sk_argument;
     span_set(d, d, true, true, type, result);
   }
-  else if (type == T_INTSPAN || type == T_FLOATSPAN || type == T_PERIOD)
+  else if (type == T_INTSPAN || type == T_BIGINTSPAN || type == T_FLOATSPAN ||
+    type == T_PERIOD)
   {
     Span *s = DatumGetSpanP(scankey->sk_argument);
     memcpy(result, s, sizeof(Span));
   }
   else if (type == T_TIMESTAMPSET)
   {
-    timestampset_period_slice(scankey->sk_argument, result);
+    orderedset_span_slice(scankey->sk_argument, result);
   }
-  else if (type == T_INTSPANSET || type == T_FLOATSPANSET || type == T_PERIODSET)
+  else if (type == T_INTSPANSET || type == T_BIGINTSPANSET ||
+    type == T_FLOATSPANSET || type == T_PERIODSET)
   {
     spanset_span_slice(scankey->sk_argument, result);
   }
@@ -987,7 +989,7 @@ Timestampset_spgist_compress(PG_FUNCTION_ARGS)
 {
   Datum tsdatum = PG_GETARG_DATUM(0);
   Period *result = palloc(sizeof(Period));
-  timestampset_period_slice(tsdatum, result);
+  orderedset_span_slice(tsdatum, result);
   PG_RETURN_SPAN_P(result);
 }
 

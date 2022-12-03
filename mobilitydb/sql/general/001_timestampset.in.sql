@@ -40,19 +40,19 @@ CREATE TYPE timestampset;
 
 CREATE FUNCTION timestampset_in(cstring)
   RETURNS timestampset
-  AS 'MODULE_PATHNAME', 'Timestampset_in'
+  AS 'MODULE_PATHNAME', 'Orderedset_in'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestampset_out(timestampset)
   RETURNS cstring
-  AS 'MODULE_PATHNAME', 'Timestampset_out'
+  AS 'MODULE_PATHNAME', 'Orderedset_out'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestampset_recv(internal)
   RETURNS timestampset
-  AS 'MODULE_PATHNAME', 'Timestampset_recv'
+  AS 'MODULE_PATHNAME', 'Orderedset_recv'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestampset_send(timestampset)
   RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Timestampset_send'
+  AS 'MODULE_PATHNAME', 'Orderedset_send'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION timestampset_analyze(internal)
@@ -76,29 +76,29 @@ CREATE TYPE timestampset (
 
 CREATE FUNCTION timestampsetFromBinary(bytea)
   RETURNS timestampset
-  AS 'MODULE_PATHNAME', 'Timestampset_from_wkb'
+  AS 'MODULE_PATHNAME', 'Orderedset_from_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestampsetFromHexWKB(text)
   RETURNS timestampset
-  AS 'MODULE_PATHNAME', 'Timestampset_from_hexwkb'
+  AS 'MODULE_PATHNAME', 'Orderedset_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asBinary(timestampset)
   RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Timestampset_as_wkb'
+  AS 'MODULE_PATHNAME', 'Orderedset_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asBinary(timestampset, endianenconding text)
   RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Timestampset_as_wkb'
+  AS 'MODULE_PATHNAME', 'Orderedset_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asHexWKB(timestampset)
   RETURNS text
-  AS 'MODULE_PATHNAME', 'Timestampset_as_hexwkb'
+  AS 'MODULE_PATHNAME', 'Orderedset_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asHexWKB(timestampset, endianenconding text)
   RETURNS text
-  AS 'MODULE_PATHNAME', 'Timestampset_as_hexwkb'
+  AS 'MODULE_PATHNAME', 'Orderedset_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
@@ -107,7 +107,7 @@ CREATE FUNCTION asHexWKB(timestampset, endianenconding text)
 
 CREATE FUNCTION timestampset(timestamptz[])
   RETURNS timestampset
-  AS 'MODULE_PATHNAME', 'Timestampset_constructor'
+  AS 'MODULE_PATHNAME', 'Orderedset_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
@@ -127,7 +127,7 @@ CREATE CAST (timestamptz AS timestampset) WITH FUNCTION timestampset(timestamptz
 
 CREATE FUNCTION memSize(timestampset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Timestampset_mem_size'
+  AS 'MODULE_PATHNAME', 'Orderedset_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION timespan(timestampset)
@@ -137,27 +137,27 @@ CREATE FUNCTION timespan(timestampset)
 
 CREATE FUNCTION numTimestamps(timestampset)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Timestampset_num_timestamps'
+  AS 'MODULE_PATHNAME', 'Orderedset_num_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION startTimestamp(timestampset)
   RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'Timestampset_start_timestamp'
+  AS 'MODULE_PATHNAME', 'Orderedset_start_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION endTimestamp(timestampset)
   RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'Timestampset_end_timestamp'
+  AS 'MODULE_PATHNAME', 'Orderedset_end_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION timestampN(timestampset, integer)
   RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'Timestampset_timestamp_n'
+  AS 'MODULE_PATHNAME', 'Orderedset_value_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION timestamps(timestampset)
   RETURNS timestamptz[]
-  AS 'MODULE_PATHNAME', 'Timestampset_timestamps'
+  AS 'MODULE_PATHNAME', 'Orderedset_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION shift(timestampset, interval)

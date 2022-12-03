@@ -128,7 +128,7 @@ tnumber_const_to_span_period(const Node *other, Span **s, Period **p,
     Datum value = ((Const *) other)->constvalue;
     *s = value_to_span(value, type);
   }
-  else if (type == T_INTSPAN || type == T_FLOATSPAN)
+  else if (type == T_INTSPAN || type == T_BIGINTSPAN || type == T_FLOATSPAN)
   {
     Span *span = DatumGetSpanP(((Const *) other)->constvalue);
     *s = span_copy(span);
@@ -141,7 +141,7 @@ tnumber_const_to_span_period(const Node *other, Span **s, Period **p,
   else if (type == T_TIMESTAMPSET)
   {
     *p = palloc(sizeof(Period));
-    timestampset_period_slice(((Const *) other)->constvalue, *p);
+    orderedset_span_slice(((Const *) other)->constvalue, *p);
   }
   else if (type == T_PERIOD)
   {

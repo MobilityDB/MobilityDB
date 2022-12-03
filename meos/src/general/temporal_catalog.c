@@ -75,6 +75,7 @@ spantype_cache_struct _spantype_cache[] =
 {
   /* spantype       basetype */
   {T_INTSPAN,       T_INT4},
+  {T_BIGINTSPAN,    T_INT8},
   {T_FLOATSPAN,     T_FLOAT8},
   {T_PERIOD,        T_TIMESTAMPTZ},
 };
@@ -87,6 +88,7 @@ spansettype_cache_struct _spansettype_cache[] =
 {
   /* spansettype    spantype */
   {T_INTSPANSET,    T_INTSPAN},
+  {T_BIGINTSPANSET, T_BIGINTSPAN},
   {T_FLOATSPANSET,  T_FLOATSPAN},
   {T_PERIODSET,     T_PERIOD},
 };
@@ -212,7 +214,8 @@ ensure_time_type(mobdbType timetype)
 bool
 span_type(mobdbType spantype)
 {
-  if (spantype == T_PERIOD || spantype == T_INTSPAN || spantype == T_FLOATSPAN)
+  if (spantype == T_PERIOD || spantype == T_INTSPAN ||
+      spantype == T_BIGINTSPAN || spantype == T_FLOATSPAN)
     return true;
   return false;
 }
@@ -234,7 +237,8 @@ ensure_span_type(mobdbType spantype)
 bool
 span_basetype(mobdbType basetype)
 {
-  if (basetype == T_TIMESTAMPTZ || basetype == T_INT4 || basetype == T_FLOAT8)
+  if (basetype == T_TIMESTAMPTZ || basetype == T_INT4 || basetype == T_INT8 ||
+      basetype == T_FLOAT8)
     return true;
   return false;
 }
@@ -256,7 +260,7 @@ ensure_span_basetype(mobdbType basetype)
 bool
 numspan_basetype(mobdbType basetype)
 {
-  if (basetype == T_INT4 || basetype == T_FLOAT8)
+  if (basetype == T_INT4 || basetype == T_INT8 || basetype == T_FLOAT8)
     return true;
   return false;
 }
@@ -363,7 +367,8 @@ bool
 basetype_byvalue(mobdbType basetype)
 {
   ensure_temporal_basetype(basetype);
-  if (basetype == T_BOOL || basetype == T_INT4 || basetype == T_FLOAT8)
+  if (basetype == T_BOOL || basetype == T_INT4 || basetype == T_INT8 ||
+      basetype == T_FLOAT8)
     return true;
   return false;
 }

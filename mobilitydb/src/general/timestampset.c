@@ -50,64 +50,64 @@
  * Input/output functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Timestampset_in);
+PG_FUNCTION_INFO_V1(Orderedset_in);
 /**
  * @ingroup mobilitydb_spantime_in_out
  * @brief Input function for timestamp sets
  * @sqlfunc timestampset_in()
  */
 PGDLLEXPORT Datum
-Timestampset_in(PG_FUNCTION_ARGS)
+Orderedset_in(PG_FUNCTION_ARGS)
 {
   const char *input = PG_GETARG_CSTRING(0);
-  TimestampSet *result = timestampset_in(input);
+  OrderedSet *result = orderedset_in(input, T_TIMESTAMPTZ);
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Timestampset_out);
+PG_FUNCTION_INFO_V1(Orderedset_out);
 /**
  * @ingroup mobilitydb_spantime_in_out
  * @brief Output function for timestamp sets
  * @sqlfunc timestampset_out()
  */
 PGDLLEXPORT Datum
-Timestampset_out(PG_FUNCTION_ARGS)
+Orderedset_out(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  char *result = timestampset_out(ts);
+  char *result = orderedset_out(ts);
   PG_FREE_IF_COPY(ts, 0);
   PG_RETURN_CSTRING(result);
 }
 
-PG_FUNCTION_INFO_V1(Timestampset_recv);
+PG_FUNCTION_INFO_V1(Orderedset_recv);
 /**
  * @ingroup mobilitydb_spantime_in_out
  * @brief Receive function for timestamp set
  * @sqlfunc timestampset_recv()
  */
 PGDLLEXPORT Datum
-Timestampset_recv(PG_FUNCTION_ARGS)
+Orderedset_recv(PG_FUNCTION_ARGS)
 {
   StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
-  TimestampSet *result = timestampset_from_wkb((uint8_t *) buf->data, buf->len);
+  OrderedSet *result = orderedset_from_wkb((uint8_t *) buf->data, buf->len);
   /* Set cursor to the end of buffer (so the backend is happy) */
   buf->cursor = buf->len;
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Timestampset_send);
+PG_FUNCTION_INFO_V1(Orderedset_send);
 /**
  * @ingroup mobilitydb_spantime_in_out
  * @brief Send function for timestamp set
  * @sqlfunc timestampset_send()
  */
 PGDLLEXPORT Datum
-Timestampset_send(PG_FUNCTION_ARGS)
+Orderedset_send(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  OrderedSet *os = PG_GETARG_ORDEREDSET_P(0);
   uint8_t variant = 0;
-  size_t wkb_size = VARSIZE_ANY_EXHDR(ts);
-  uint8_t *wkb = timestampset_as_wkb(ts, variant, &wkb_size);
+  size_t wkb_size = VARSIZE_ANY_EXHDR(os);
+  uint8_t *wkb = orderedset_as_wkb(os, variant, &wkb_size);
   bytea *result = bstring2bytea(wkb, wkb_size);
   pfree(wkb);
   PG_RETURN_BYTEA_P(result);
@@ -117,20 +117,20 @@ Timestampset_send(PG_FUNCTION_ARGS)
  * Constructor function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Timestampset_constructor);
+PG_FUNCTION_INFO_V1(Orderedset_constructor);
 /**
  * @ingroup mobilitydb_spantime_constructor
  * @brief Construct a timestamp set from an array of timestamps
  * @sqlfunc timestampset()
  */
 PGDLLEXPORT Datum
-Timestampset_constructor(PG_FUNCTION_ARGS)
+Orderedset_constructor(PG_FUNCTION_ARGS)
 {
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
   ensure_non_empty_array(array);
   int count;
-  TimestampTz *times = timestamparr_extract(array, &count);
-  TimestampSet *result = timestampset_make_free(times, count);
+  Datum *values = datumarr_extract(array, &count);
+  OrderedSet *result = orderedset_make_free(values, count, T_TIMESTAMPTZ);
   PG_FREE_IF_COPY(array, 0);
   PG_RETURN_POINTER(result);
 }
@@ -159,7 +159,7 @@ Timestamp_to_timestampset(PG_FUNCTION_ARGS)
  * to be detoasted, extract only the header and not the full object.
  */
 void
-timestampset_period_slice(Datum tsdatum, Period *p)
+orderedset_span_slice(Datum tsdatum, Period *p)
 {
   TimestampSet *ts = NULL;
   if (PG_DATUM_NEEDS_DETOAST((struct varlena *) tsdatum))
@@ -167,23 +167,23 @@ timestampset_period_slice(Datum tsdatum, Period *p)
       time_max_header_size());
   else
     ts = (TimestampSet *) tsdatum;
-  memcpy(p, &ts->period, sizeof(Period));
+  memcpy(p, &ts->span, sizeof(Period));
   PG_FREE_IF_COPY_P(ts, DatumGetPointer(tsdatum));
   return;
 }
 
-PG_FUNCTION_INFO_V1(Timestampset_to_period);
+PG_FUNCTION_INFO_V1(Orderedset_to_span);
 /**
  * @ingroup mobilitydb_spantime_cast
  * @brief Return the bounding period on which a timestamp set is defined
  * @sqlfunc period()
  */
 PGDLLEXPORT Datum
-Timestampset_to_period(PG_FUNCTION_ARGS)
+Orderedset_to_span(PG_FUNCTION_ARGS)
 {
   Datum tsdatum = PG_GETARG_DATUM(0);
   Period *result = palloc(sizeof(Period));
-  timestampset_period_slice(tsdatum, result);
+  orderedset_span_slice(tsdatum, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -191,18 +191,18 @@ Timestampset_to_period(PG_FUNCTION_ARGS)
  * Accessor functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Timestampset_mem_size);
+PG_FUNCTION_INFO_V1(Orderedset_mem_size);
 /**
  * @ingroup mobilitydb_spantime_accessor
  * @brief Return the size in bytes of a timestamp set
  * @sqlfunc memSize()
  */
 PGDLLEXPORT Datum
-Timestampset_mem_size(PG_FUNCTION_ARGS)
+Orderedset_mem_size(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  Datum result = timestampset_mem_size(ts);
-  PG_FREE_IF_COPY(ts, 0);
+  OrderedSet *os = PG_GETARG_ORDEREDSET_P(0);
+  Datum result = orderedset_mem_size(os);
+  PG_FREE_IF_COPY(os, 0);
   PG_RETURN_DATUM(result);
 }
 
@@ -221,82 +221,83 @@ Timestampset_timespan(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Timestampset_num_timestamps);
+PG_FUNCTION_INFO_V1(Orderedset_num_values);
 /**
  * @ingroup mobilitydb_spantime_accessor
  * @brief Return the number of timestamps of a timestamp set
  * @sqlfunc numTimestamp()
  */
 PGDLLEXPORT Datum
-Timestampset_num_timestamps(PG_FUNCTION_ARGS)
+Orderedset_num_values(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  int result = orderedset_num_values(ts);
   PG_FREE_IF_COPY(ts, 0);
-  PG_RETURN_INT32(timestampset_num_timestamps(ts));
+  PG_RETURN_INT32(result);
 }
 
-PG_FUNCTION_INFO_V1(Timestampset_start_timestamp);
+PG_FUNCTION_INFO_V1(Orderedset_start_value);
 /**
  * @ingroup mobilitydb_spantime_accessor
  * @brief Return the start timestamp of a timestamp set
  * @sqlfunc startTimestamp()
  */
 PGDLLEXPORT Datum
-Timestampset_start_timestamp(PG_FUNCTION_ARGS)
+Orderedset_start_value(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  TimestampTz result = timestampset_start_timestamp(ts);
+  TimestampTz result = orderedset_start_value(ts);
   PG_FREE_IF_COPY(ts, 0);
   PG_RETURN_TIMESTAMPTZ(result);
 }
 
-PG_FUNCTION_INFO_V1(Timestampset_end_timestamp);
+PG_FUNCTION_INFO_V1(Orderedset_end_value);
 /**
  * @ingroup mobilitydb_spantime_accessor
  * @brief Return the end timestamp of a timestamp set
  * @sqlfunc endTimestamp()
  */
 PGDLLEXPORT Datum
-Timestampset_end_timestamp(PG_FUNCTION_ARGS)
+Orderedset_end_value(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  TimestampTz result = timestampset_end_timestamp(ts);
+  TimestampTz result = orderedset_end_value(ts);
   PG_FREE_IF_COPY(ts, 0);
   PG_RETURN_TIMESTAMPTZ(result);
 }
 
-PG_FUNCTION_INFO_V1(Timestampset_timestamp_n);
+PG_FUNCTION_INFO_V1(Orderedset_value_n);
 /**
  * @ingroup mobilitydb_spantime_accessor
  * @brief Return the n-th timestamp of a timestamp set
  * @sqlfunc timestampN()
  */
 PGDLLEXPORT Datum
-Timestampset_timestamp_n(PG_FUNCTION_ARGS)
+Orderedset_value_n(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
   int n = PG_GETARG_INT32(1); /* Assume 1-based */
-  TimestampTz result;
-  bool found = timestampset_timestamp_n(ts, n, &result);
+  Datum result;
+  bool found = orderedset_value_n(ts, n, &result);
   PG_FREE_IF_COPY(ts, 0);
   if (! found)
     PG_RETURN_NULL();
-  PG_RETURN_TIMESTAMPTZ(result);
+  PG_RETURN_DATUM(result);
 }
 
-PG_FUNCTION_INFO_V1(Timestampset_timestamps);
+PG_FUNCTION_INFO_V1(Orderedset_values);
 /**
  * @ingroup mobilitydb_spantime_accessor
  * @brief Return the timestamps of a timestamp set
  * @sqlfunc timestamps()
  */
 PGDLLEXPORT Datum
-Timestampset_timestamps(PG_FUNCTION_ARGS)
+Orderedset_values(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  TimestampTz *times = timestampset_timestamps(ts);
-  ArrayType *result = timestamparr_to_array(times, ts->count);
-  pfree(times);
+  Datum *values = orderedset_values(ts);
+  ArrayType *result = datumarr_to_array(values, ts->count, ts->span.basetype);
+  pfree(values);
   PG_FREE_IF_COPY(ts, 0);
   PG_RETURN_ARRAYTYPE_P(result);
 }

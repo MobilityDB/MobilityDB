@@ -305,6 +305,16 @@ intspan_in(const char *str)
 
 /**
  * @ingroup libmeos_spantime_in_out
+ * @brief Return an integer span from its Well-Known Text (WKT) representation.
+ */
+Span *
+bigintspan_in(const char *str)
+{
+  return span_parse(&str, T_BIGINTSPAN, true, true);
+}
+
+/**
+ * @ingroup libmeos_spantime_in_out
  * @brief Return a float span from its Well-Known Text (WKT) representation.
  */
 Span *
@@ -388,6 +398,16 @@ intspan_out(const Span *s)
  * @brief Return the Well-Known Text (WKT) representation of a span.
  */
 char *
+bigintspan_out(const Span *s)
+{
+  return span_out(s, Int64GetDatum(0));
+}
+
+/**
+ * @ingroup libmeos_spantime_in_out
+ * @brief Return the Well-Known Text (WKT) representation of a span.
+ */
+char *
 period_out(const Span *s)
 {
   return span_out(s, Int32GetDatum(0));
@@ -425,6 +445,36 @@ intspan_make(int lower, int upper, bool lower_inc, bool upper_inc)
   Span *s = palloc(sizeof(Span));
   span_set(Int32GetDatum(lower), Int32GetDatum(upper), lower_inc, upper_inc,
     T_INT4, s);
+  return s;
+}
+
+/**
+ * @ingroup libmeos_spantime_constructor
+ * @brief Construct an integer span from the bounds.
+ * @sqlfunc intspan()
+ */
+Span *
+bigintspan_make(int64 lower, int64 upper, bool lower_inc, bool upper_inc)
+{
+  /* Note: zero-fill is done in the span_set function */
+  Span *s = palloc(sizeof(Span));
+  span_set(Int64GetDatum(lower), Int64GetDatum(upper), lower_inc, upper_inc,
+    T_INT8, s);
+  return s;
+}
+
+/**
+ * @ingroup libmeos_spantime_constructor
+ * @brief Construct an integer span from the bounds.
+ * @sqlfunc intspan()
+ */
+Span *
+bigintspan_make(int64 lower, int64 upper, bool lower_inc, bool upper_inc)
+{
+  /* Note: zero-fill is done in the span_set function */
+  Span *s = palloc(sizeof(Span));
+  span_set(Int64GetDatum(lower), Int64GetDatum(upper), lower_inc, upper_inc,
+    T_INT8, s);
   return s;
 }
 
@@ -481,6 +531,20 @@ span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
     if (upper_inc)
     {
       upper = Int32GetDatum(DatumGetInt32(upper) + 1);
+      upper_inc = false;
+    }
+  }
+  else if (basetype == T_INT8)
+  {
+    if (! lower_inc)
+    {
+      lower = Int64GetDatum(DatumGetInt64(lower) + 1);
+      lower_inc = true;
+    }
+
+    if (upper_inc)
+    {
+      upper = Int64GetDatum(DatumGetInt64(upper) + 1);
       upper_inc = false;
     }
   }
@@ -555,6 +619,19 @@ int_to_intspan(int i)
  * @sqlop @p ::
  */
 Span *
+bigint_to_intspan(int i)
+{
+  Span *result = span_make(Int64GetDatum(i), Int64GetDatum(i), true, true,
+    T_INT8);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_spantime_cast
+ * @brief Cast an element as a span
+ * @sqlop @p ::
+ */
+Span *
 float_to_floaspan(double d)
 {
   Span *result = span_make(Float8GetDatum(d), Float8GetDatum(d), true, true,
@@ -594,6 +671,17 @@ intspan_lower(const Span *s)
 
 /**
  * @ingroup libmeos_spantime_accessor
+ * @brief Return the lower bound of an integer span
+ * @sqlfunc lower()
+ */
+int
+bigintspan_lower(const Span *s)
+{
+  return DatumGetInt64(s->lower);
+}
+
+/**
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the lower bound of a float span
  * @sqlfunc lower()
  */
@@ -624,6 +712,17 @@ int
 intspan_upper(const Span *s)
 {
   return Int32GetDatum(s->upper);
+}
+
+/**
+ * @ingroup libmeos_spantime_accessor
+ * @brief Return the upper bound of an integer span
+ * @sqlfunc upper()
+ */
+int
+bigintspan_upper(const Span *s)
+{
+  return Int64GetDatum(s->upper);
 }
 
 /**
@@ -717,6 +816,20 @@ intspan_set_floatspan(const Span *s1, Span *s2)
 
 /**
  * @ingroup libmeos_spantime_transf
+ * @brief Set the second span with the first one transformed to floatspan
+ */
+void
+bigintspan_set_floatspan(const Span *s1, Span *s2)
+{
+  memset(s2, 0, sizeof(Span));
+  Datum lower = Float8GetDatum((double) DatumGetInt64(s1->lower));
+  Datum upper = Float8GetDatum((double) (DatumGetInt64(s1->upper) - 1));
+  span_set(lower, upper, true, true, T_FLOAT8, s2);
+  return;
+}
+
+/**
+ * @ingroup libmeos_spantime_transf
  * @brief Set the second span with the first one transformed to intspan
  */
 void
@@ -726,6 +839,20 @@ floatspan_set_intspan(const Span *s1, Span *s2)
   Datum lower = Int32GetDatum((int) DatumGetFloat8(s1->lower));
   Datum upper = Int32GetDatum((int) (DatumGetFloat8(s1->upper)) + 1);
   span_set(lower, upper, true, false, T_INT4, s2);
+  return;
+}
+
+/**
+ * @ingroup libmeos_spantime_transf
+ * @brief Set the second span with the first one transformed to intspan
+ */
+void
+floatspan_set_bigintspan(const Span *s1, Span *s2)
+{
+  memset(s2, 0, sizeof(Span));
+  Datum lower = Int64GetDatum((int64) DatumGetFloat8(s1->lower));
+  Datum upper = Int64GetDatum((int64) (DatumGetFloat8(s1->upper)) + 1);
+  span_set(lower, upper, true, false, T_INT8, s2);
   return;
 }
 
@@ -849,7 +976,7 @@ span_ne(const Span *s1, const Span *s2)
  * @brief Return -1, 0, or 1 depending on whether the first span
  * is less than, equal, or greater than the second one.
  * @note Function used for B-tree comparison
- * @sqlfunc intspan_cmp(), floatspan_cmp(), period_cmp()
+ * @sqlfunc intspan_cmp(), bigintspan_cmp(), floatspan_cmp(), period_cmp()
  * @pymeosfunc _cmp()
  */
 int
@@ -931,7 +1058,7 @@ span_gt(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_spantime_accessor
  * @brief Return the 32-bit hash value of a span.
- * @sqlfunc intspan_hash(), floatspan_hash(), period_hash()
+ * @sqlfunc intspan_hash(), bigintspan_hash(), floatspan_hash(), period_hash()
  */
 uint32
 span_hash(const Span *s)

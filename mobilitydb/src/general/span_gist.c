@@ -167,7 +167,8 @@ span_gist_get_span(FunctionCallInfo fcinfo, Span *result, Oid typid)
     Datum d = PG_GETARG_DATUM(1);
     span_set(d, d, true, true, type, result);
   }
-  else if (type == T_INTSPAN || type == T_FLOATSPAN || type == T_PERIOD)
+  else if (type == T_INTSPAN || type == T_BIGINTSPAN || type == T_FLOATSPAN ||
+    type == T_PERIOD)
   {
     Span *s = PG_GETARG_SPAN_P(1);
     if (s == NULL)
@@ -177,9 +178,10 @@ span_gist_get_span(FunctionCallInfo fcinfo, Span *result, Oid typid)
   else if (type == T_TIMESTAMPSET)
   {
     Datum tsdatum = PG_GETARG_DATUM(1);
-    timestampset_period_slice(tsdatum, result);
+    orderedset_span_slice(tsdatum, result);
   }
-  else if (type == T_INTSPANSET || type == T_FLOATSPANSET || type == T_PERIODSET)
+  else if (type == T_INTSPANSET || type == T_BIGINTSPANSET ||
+    type == T_FLOATSPANSET || type == T_PERIODSET)
   {
     Datum psdatum = PG_GETARG_DATUM(1);
     spanset_span_slice(psdatum, result);
@@ -263,7 +265,7 @@ Timestampset_gist_compress(PG_FUNCTION_ARGS)
   {
     GISTENTRY *retval = palloc(sizeof(GISTENTRY));
     Period *period = palloc(sizeof(Period));
-    timestampset_period_slice(entry->key, period);
+    orderedset_span_slice(entry->key, period);
     gistentryinit(*retval, PointerGetDatum(period), entry->rel, entry->page,
       entry->offset, false);
     PG_RETURN_POINTER(retval);

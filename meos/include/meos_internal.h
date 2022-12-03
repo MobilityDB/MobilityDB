@@ -58,6 +58,10 @@ extern Span *span_in(const char *str, mobdbType spantype);
 
 extern SpanSet *spanset_in(const char *str, mobdbType spantype);
 extern char *spanset_out(const SpanSet *ss, Datum maxdd);
+extern OrderedSet *orderedset_in(const char *str, mobdbType basetype);
+
+extern OrderedSet *orderedset_from_hexwkb(const char *hexwkb);
+extern OrderedSet *orderedset_from_wkb(const uint8_t *wkb, int size);
 
 /*****************************************************************************/
 
@@ -65,6 +69,9 @@ extern char *spanset_out(const SpanSet *ss, Datum maxdd);
 
 extern Span *span_make(Datum lower, Datum upper, bool lower_inc, bool upper_inc, mobdbType basetype);
 extern void span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc, mobdbType basetype, Span *s);
+extern OrderedSet *orderedset_copy(const TimestampSet *os);
+extern OrderedSet *orderedset_make(const Datum *values, int count, mobdbType basetype);
+extern OrderedSet *orderedset_make_free(Datum *values, int count, mobdbType basetype);
 
 /*****************************************************************************/
 
@@ -78,7 +85,12 @@ extern Span *value_to_span(Datum d, mobdbType basetype);
 
 extern const Span *spanset_sp_n(const SpanSet *ss, int index);
 extern void timestampset_set_period(const TimestampSet *ts, Period *p);
-extern TimestampTz timestampset_time_n(const TimestampSet *ts, int index);
+extern Datum orderedset_val_n(const TimestampSet *ts, int index);
+extern int orderedset_num_values(const OrderedSet *os);
+extern Datum orderedset_start_value(const OrderedSet *os);
+extern Datum orderedset_end_value(const OrderedSet *os);
+extern bool orderedset_value_n(const OrderedSet *os, int n, Datum *result);
+extern Datum *orderedset_values(const OrderedSet *os);
 
 /*****************************************************************************/
 

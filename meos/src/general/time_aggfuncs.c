@@ -219,12 +219,12 @@ timestampset_extent_transfn(Period *p, const TimestampSet *ts)
     return NULL;
   /* Null period and non-null timestampset, return the bbox of the timestampset */
   if (! p)
-    return span_copy(&ts->period);
+    return span_copy(&ts->span);
   /* Non-null period and null timestampset, return the period */
   if (! ts)
     return span_copy(p);
 
-  span_expand(&ts->period, p);
+  span_expand(&ts->span, p);
   return p;
 }
 
@@ -380,10 +380,11 @@ timestamp_tunion_finalfn(SkipList *state)
     return NULL;
 
   assert(state->elemtype == TIMESTAMPTZ);
-  TimestampTz *values = (TimestampTz *) skiplist_values(state);
-  TimestampSet *result = timestampset_make(values, state->length);
+  Datum *values = (Datum *) skiplist_values(state);
+
+  OrderedSet *result = orderedset_make(values, state->length, T_TIMESTAMPTZ);
   pfree(values);
-  return result;
+  return (TimestampSet *) result;
 }
 
 /**
@@ -430,13 +431,13 @@ timestampset_transform_tcount(const TimestampSet *ts, const Interval *interval,
 {
   TInstant **result = palloc(sizeof(TInstant *) * ts->count);
 
-  TimestampTz t = timestampset_time_n(ts, 0);
+  TimestampTz t = DatumGetTimestampTz(orderedset_val_n(ts, 0));
   if (interval)
     t = timestamptz_bucket(t, interval, origin);
   int k = 0, count = 1;
   for (int i = 1; i < ts->count; i++)
   {
-    TimestampTz t1 = timestampset_time_n(ts, i);
+    TimestampTz t1 = DatumGetTimestampTz(orderedset_val_n(ts, i));
     if (interval)
       t1 = timestamptz_bucket(t1, interval, origin);
     if (timestamptz_cmp_internal(t, t1) == 0)

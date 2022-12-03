@@ -1832,7 +1832,7 @@ tsequenceset_restrict_timestampset(const TSequenceSet *ss,
   if (ts->count == 1)
   {
     Temporal *temp = tsequenceset_restrict_timestamp(ss,
-      timestampset_time_n(ts, 0), atfunc);
+      DatumGetTimestampTz(orderedset_val_n(ts, 0)), atfunc);
     if (atfunc && temp != NULL)
     {
       Temporal *result = (Temporal *) tinstant_to_tsequence(
@@ -1844,7 +1844,7 @@ tsequenceset_restrict_timestampset(const TSequenceSet *ss,
   }
 
   /* Bounding box test */
-  if (! overlaps_span_span(&ss->period, &ts->period))
+  if (! overlaps_span_span(&ss->period, &ts->span))
     return atfunc ? NULL : (Temporal *) tsequenceset_copy(ss);
 
   /* Singleton sequence set */
@@ -1863,7 +1863,7 @@ tsequenceset_restrict_timestampset(const TSequenceSet *ss,
     while (i < ts->count && j < ss->count)
     {
       seq = tsequenceset_seq_n(ss, j);
-      TimestampTz t = timestampset_time_n(ts, i);
+      TimestampTz t = DatumGetTimestampTz(orderedset_val_n(ts, i));
       if (contains_period_timestamp(&seq->period, t))
       {
         instants[count++] = tsequence_at_timestamp(seq, t);
@@ -2783,10 +2783,11 @@ tsequenceset_delete_timestampset(const TSequenceSet *ss,
 {
   /* Singleton timestamp set */
   if (ts->count == 1)
-    return tsequenceset_delete_timestamp(ss, timestampset_time_n(ts, 0));
+    return tsequenceset_delete_timestamp(ss,
+      DatumGetTimestampTz(orderedset_val_n(ts, 0)));
 
   /* Bounding box test */
-  if (! overlaps_span_span(&ss->period, &ts->period))
+  if (! overlaps_span_span(&ss->period, &ts->span))
     return tsequenceset_copy(ss);
 
   TSequence *seq1;
@@ -2939,7 +2940,8 @@ tsequenceset_overlaps_timestampset(const TSequenceSet *ss,
   const TimestampSet *ss1)
 {
   for (int i = 0; i < ss1->count; i++)
-    if (tsequenceset_overlaps_timestamp(ss, timestampset_time_n(ss1, i)))
+    if (tsequenceset_overlaps_timestamp(ss,
+        DatumGetTimestampTz(orderedset_val_n(ss1, i))))
       return true;
   return false;
 }

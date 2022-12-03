@@ -57,10 +57,10 @@
  * @pre The argument @p index is less than or equal to the number of timestamps
  * in the timestamp set
  */
-TimestampTz
-timestampset_time_n(const TimestampSet *ts, int index)
+Datum
+orderedset_val_n(const OrderedSet *os, int index)
 {
-  return ts->elems[index];
+  return os->elems[index];
 }
 
 /**
@@ -96,7 +96,7 @@ timestampset_find_timestamp(const TimestampSet *ts, TimestampTz t, int *loc)
   while (first <= last)
   {
     middle = (first + last)/2;
-    TimestampTz t1 = timestampset_time_n(ts, middle);
+    TimestampTz t1 = DatumGetTimestampTz(orderedset_val_n(ts, middle));
     int cmp = timestamptz_cmp_internal(t, t1);
     if (cmp == 0)
     {
@@ -120,30 +120,42 @@ timestampset_find_timestamp(const TimestampSet *ts, TimestampTz t, int *loc)
 
 /**
  * @ingroup libmeos_spantime_in_out
- * @brief Return a timestampt set from its Well-Known Text (WKT) representation.
+ * @brief Return an ordered set from its Well-Known Text (WKT) representation.
+ */
+OrderedSet *
+orderedset_in(const char *str, mobdbType basetype)
+{
+  return orderedset_parse(&str, basetype);
+}
+
+#if MEOS
+/**
+ * @ingroup libmeos_spantime_in_out
+ * @brief Return a timestampset from its Well-Known Text (WKT) representation.
  */
 TimestampSet *
 timestampset_in(const char *str)
 {
-  return timestampset_parse(&str);
+  return orderedset_parse(&str, T_TIMESTAMPSET);
 }
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_spantime_in_out
  * @brief Return the Well-Known Text (WKT) representation of a timestamp set.
  */
 char *
-timestampset_out(const TimestampSet *ts)
+orderedset_out(const OrderedSet *os)
 {
-  char **strings = palloc(sizeof(char *) * ts->count);
+  char **strings = palloc(sizeof(char *) * os->count);
   size_t outlen = 0;
-  for (int i = 0; i < ts->count; i++)
+  for (int i = 0; i < os->count; i++)
   {
-    TimestampTz t = timestampset_time_n(ts, i);
+    TimestampTz t = DatumGetTimestampTz(orderedset_val_n(os, i));
     strings[i] = pg_timestamptz_out(t);
     outlen += strlen(strings[i]) + 2;
   }
-  return stringarr_to_string(strings, ts->count, outlen, "", '{', '}');
+  return stringarr_to_string(strings, os->count, outlen, "", '{', '}');
 }
 
 /*****************************************************************************
@@ -157,41 +169,40 @@ timestampset_out(const TimestampSet *ts)
  * For example, the memory structure of a timestamp set with 3
  * timestamps is as follows
  * @code
- * ---------------------------------------------------------------------------
- * ( TimestampSet )_X | ( bbox )_X | Timestamp_0 | Timestamp_1 | Timestamp_2 |
- * ---------------------------------------------------------------------------
+ * -------------------------------------------------------------
+ * ( OrderedSet )_X | ( bbox )_X | Value_0 | Value_1 | Value_2 |
+ * -------------------------------------------------------------
  * @endcode
  * where the `X` are unused bytes added for double padding, and bbox is the
- * bounding box which is a period.
+ * bounding box which is a span.
  *
- * @param[in] times Array of timestamps
+ * @param[in] values Array of values
  * @param[in] count Number of elements in the array
  * @sqlfunc timestampset()
  * @pymeosfunc TimestampSet()
  */
-TimestampSet *
-timestampset_make(const TimestampTz *times, int count)
+OrderedSet *
+orderedset_make(const Datum *values, int count, mobdbType basetype)
 {
   /* Test the validity of the timestamps */
   for (int i = 0; i < count - 1; i++)
   {
-    if (times[i] >= times[i + 1])
-      elog(ERROR, "Invalid value for timestamp set");
+    if (datum_ge(values[i], values[i + 1], basetype))
+      elog(ERROR, "Invalid value for ordered set");
   }
   /* Notice that the first timestamp is already declared in the struct */
-  size_t memsize = double_pad(sizeof(TimestampSet)) +
+  size_t memsize = double_pad(sizeof(OrderedSet)) +
     sizeof(TimestampTz) * (count - 1);
-  /* Create the TimestampSet */
-  TimestampSet *result = palloc0(memsize);
+  /* Create the OrderedSet */
+  OrderedSet *result = palloc0(memsize);
   SET_VARSIZE(result, memsize);
   result->count = count;
 
   /* Compute the bounding period */
-  span_set(TimestampTzGetDatum(times[0]), TimestampTzGetDatum(times[count - 1]),
-    true, true, T_TIMESTAMPTZ, &result->period);
-  /* Copy the timestamp array */
+  span_set(values[0], values[count - 1], true, true, basetype, &result->span);
+  /* Copy the value array */
   for (int i = 0; i < count; i++)
-    result->elems[i] = times[i];
+    result->elems[i] = values[i];
   return result;
 }
 
@@ -200,22 +211,22 @@ timestampset_make(const TimestampTz *times, int count)
  * @brief Construct a timestamp set from the array of timestamps and free the
  * array after the creation.
  *
- * @param[in] times Array of timestamps
+ * @param[in] values Array of values
  * @param[in] count Number of elements in the array
  * @see timestampset_make
  * @sqlfunc timestampset()
  * @pymeosfunc TimestampSet()
  */
-TimestampSet *
-timestampset_make_free(TimestampTz *times, int count)
+OrderedSet *
+orderedset_make_free(Datum *values, int count, mobdbType basetype)
 {
   if (count == 0)
   {
-    pfree(times);
+    pfree(values);
     return NULL;
   }
-  TimestampSet *result = timestampset_make(times, count);
-  pfree(times);
+  OrderedSet *result = orderedset_make(values, count, basetype);
+  pfree(values);
   return result;
 }
 
@@ -224,7 +235,7 @@ timestampset_make_free(TimestampTz *times, int count)
  * @brief Return a copy of a timestamp set.
  */
 TimestampSet *
-timestampset_copy(const TimestampSet *ts)
+orderedset_copy(const TimestampSet *ts)
 {
   TimestampSet *result = palloc(VARSIZE(ts));
   memcpy(result, ts, VARSIZE(ts));
@@ -243,7 +254,8 @@ timestampset_copy(const TimestampSet *ts)
 TimestampSet *
 timestamp_to_timestampset(TimestampTz t)
 {
-  TimestampSet *result = timestampset_make(&t, 1);
+  Datum v = TimestampTzGetDatum(t);
+  TimestampSet *result = orderedset_make(&v, 1, T_TIMESTAMPTZ);
   return result;
 }
 
@@ -257,9 +269,9 @@ timestamp_to_timestampset(TimestampTz t)
  * @sqlfunc memSize()
  */
 int
-timestampset_mem_size(const TimestampSet *ts)
+orderedset_mem_size(const OrderedSet *os)
 {
-  return (int) VARSIZE(DatumGetPointer(ts));
+  return (int) VARSIZE(DatumGetPointer(os));
 }
 
 /**
@@ -271,8 +283,8 @@ timestampset_mem_size(const TimestampSet *ts)
 Interval *
 timestampset_timespan(const TimestampSet *ts)
 {
-  TimestampTz start = timestampset_time_n(ts, 0);
-  TimestampTz end = timestampset_time_n(ts, ts->count - 1);
+  TimestampTz start = DatumGetTimestampTz(orderedset_val_n(ts, 0));
+  TimestampTz end = DatumGetTimestampTz(orderedset_val_n(ts, ts->count - 1));
   Interval *result = pg_timestamp_mi(end, start);
   return result;
 }
@@ -289,11 +301,86 @@ Period *
 timestampset_to_period(const TimestampSet *ts)
 {
   Period *result = palloc(sizeof(Period));
-  memcpy(result, &ts->period, sizeof(Period));
+  memcpy(result, &ts->span, sizeof(Period));
   return result;
 }
 #endif /* MEOS */
 
+/**
+ * @ingroup libmeos_spantime_accessor
+ * @brief Return the number of timestamps of a timestamp set.
+ * @sqlfunc numTimestamps()
+ * @pymeosfunc numTimestamps()
+ */
+int
+orderedset_num_values(const OrderedSet *os)
+{
+  return os->count;
+}
+
+/**
+ * @ingroup libmeos_spantime_accessor
+ * @brief Return the start timestamp of a timestamp set.
+ * @sqlfunc startTimestamp()
+ * @pymeosfunc startTimestamp()
+ */
+Datum
+orderedset_start_value(const OrderedSet *os)
+{
+  Datum result = orderedset_val_n(os, 0);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_spantime_accessor
+ * @brief Return the end timestamp of a timestamp set.
+ * @sqlfunc endTimestamp()
+ * @pymeosfunc endTimestamp()
+ */
+Datum
+orderedset_end_value(const OrderedSet *os)
+{
+  Datum result = orderedset_val_n(os, os->count - 1);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_spantime_accessor
+ * @brief Return the n-th timestamp of a timestamp set.
+ *
+ * @param[in] os Timestamp set
+ * @param[in] n Number
+ * @param[out] result Timestamp
+ * @result Return true if the timestamp is found
+ * @note It is assumed that n is 1-based
+ * @sqlfunc timestampN()
+ * @pymeosfunc timestampN()
+ */
+bool
+orderedset_value_n(const OrderedSet *os, int n, Datum *result)
+{
+  if (n < 1 || n > os->count)
+    return false;
+  *result = orderedset_val_n(os, n - 1);
+  return true;
+}
+
+/**
+ * @ingroup libmeos_spantime_accessor
+ * @brief Return the array of timestamps of a timestamp set.
+ * @sqlfunc timestamps()
+ * @pymeosfunc timestamps()
+ */
+Datum *
+orderedset_values(const OrderedSet *os)
+{
+  Datum *result = palloc(sizeof(Datum) * os->count);
+  for (int i = 0; i < os->count; i++)
+    result[i] = orderedset_val_n(os, i);
+  return result;
+}
+
+#if MEOS
 /**
  * @ingroup libmeos_spantime_accessor
  * @brief Return the number of timestamps of a timestamp set.
@@ -315,7 +402,7 @@ timestampset_num_timestamps(const TimestampSet *ts)
 TimestampTz
 timestampset_start_timestamp(const TimestampSet *ts)
 {
-  TimestampTz result = timestampset_time_n(ts, 0);
+  TimestampTz result = DatumGetTimestampTz(orderedset_val_n(ts, 0));
   return result;
 }
 
@@ -328,7 +415,7 @@ timestampset_start_timestamp(const TimestampSet *ts)
 TimestampTz
 timestampset_end_timestamp(const TimestampSet *ts)
 {
-  TimestampTz result = timestampset_time_n(ts, ts->count - 1);
+  TimestampTz result = DatumGetTimestampTz(orderedset_val_n(ts, ts->count - 1)à;
   return result;
 }
 
@@ -349,9 +436,10 @@ timestampset_timestamp_n(const TimestampSet *ts, int n, TimestampTz *result)
 {
   if (n < 1 || n > ts->count)
     return false;
-  *result = timestampset_time_n(ts, n - 1);
+  *result = DatumGetTimestampTz(orderedset_val_n(ts, n - 1));
   return true;
 }
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_spantime_accessor
@@ -364,7 +452,7 @@ timestampset_timestamps(const TimestampSet *ts)
 {
   TimestampTz *result = palloc(sizeof(TimestampTz) * ts->count);
   for (int i = 0; i < ts->count; i++)
-    result[i] = timestampset_time_n(ts, i);
+    result[i] = DatumGetTimestampTz(orderedset_val_n(ts, i));
   return result;
 }
 
@@ -385,33 +473,33 @@ timestampset_shift_tscale(const TimestampSet *ts, const Interval *shift,
   assert(shift != NULL || duration != NULL);
   if (duration != NULL)
     ensure_valid_duration(duration);
-  TimestampSet *result = timestampset_copy(ts);
+  TimestampSet *result = orderedset_copy(ts);
 
   /* Shift and/or scale the bounding period */
-  period_shift_tscale(shift, duration, &result->period);
+  period_shift_tscale(shift, duration, &result->span);
 
   /* Set the first instant */
-  result->elems[0] = result->period.lower;
+  result->elems[0] = result->span.lower;
   if (ts->count > 1)
   {
     /* Shift and/or scale from the second to the penultimate instant */
     TimestampTz delta;
     if (shift != NULL)
-      delta = result->period.lower - ts->period.lower;
+      delta = result->span.lower - ts->span.lower;
     double scale;
     if (duration != NULL)
-      scale = (double) (result->period.upper - result->period.lower) /
-        (double) (ts->period.upper - ts->period.lower);
+      scale = (double) (result->span.upper - result->span.lower) /
+        (double) (ts->span.upper - ts->span.lower);
     for (int i = 1; i < ts->count - 1; i++)
     {
       if (shift != NULL)
         result->elems[i] += delta;
       if (duration != NULL)
-        result->elems[i] = result->period.lower +
-          (result->elems[i] - result->period.lower) * scale;
+        result->elems[i] = result->span.lower +
+          (result->elems[i] - result->span.lower) * scale;
     }
     /* Set the last instant */
-    result->elems[ts->count - 1] = result->period.upper;
+    result->elems[ts->count - 1] = result->span.upper;
   }
   return result;
 }
@@ -435,8 +523,8 @@ timestampset_eq(const TimestampSet *ts1, const TimestampSet *ts2)
   /* ts1 and ts2 have the same number of TimestampSet */
   for (int i = 0; i < ts1->count; i++)
   {
-    TimestampTz t1 = timestampset_time_n(ts1, i);
-    TimestampTz t2 = timestampset_time_n(ts2, i);
+    TimestampTz t1 = orderedset_val_n(ts1, i);
+    TimestampTz t2 = orderedset_val_n(ts2, i);
     if (t1 != t2)
       return false;
   }
@@ -471,8 +559,8 @@ timestampset_cmp(const TimestampSet *ts1, const TimestampSet *ts2)
   int result = 0;
   for (int i = 0; i < count; i++)
   {
-    TimestampTz t1 = timestampset_time_n(ts1, i);
-    TimestampTz t2 = timestampset_time_n(ts2, i);
+    TimestampTz t1 = orderedset_val_n(ts1, i);
+    TimestampTz t2 = orderedset_val_n(ts2, i);
     result = timestamptz_cmp_internal(t1, t2);
     if (result)
       break;
@@ -557,7 +645,7 @@ timestampset_hash(const TimestampSet *ts)
   uint32 result = 1;
   for (int i = 0; i < ts->count; i++)
   {
-    TimestampTz t = timestampset_time_n(ts, i);
+    TimestampTz t = orderedset_val_n(ts, i);
     uint32 time_hash = pg_hashint8(t);
     result = (result << 5) - result + time_hash;
   }
@@ -575,7 +663,7 @@ timestampset_hash_extended(const TimestampSet *ts, uint64 seed)
   uint64 result = 1;
   for (int i = 0; i < ts->count; i++)
   {
-    TimestampTz t = timestampset_time_n(ts, i);
+    TimestampTz t = orderedset_val_n(ts, i);
     uint64 time_hash = pg_hashint8extended(t, seed);
     result = (result << 5) - result + time_hash;
   }

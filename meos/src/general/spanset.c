@@ -133,6 +133,26 @@ intspanset_in(const char *str)
 
 /**
  * @ingroup libmeos_spantime_in_out
+ * @brief Return an integer span from its Well-Known Text (WKT) representation.
+ */
+SpanSet *
+bigintspanset_in(const char *str)
+{
+  return spanset_parse(&str, T_BIGINTSPANSET);
+}
+
+/**
+ * @ingroup libmeos_spantime_in_out
+ * @brief Return an integer span from its Well-Known Text (WKT) representation.
+ */
+SpanSet *
+bigintspanset_in(const char *str)
+{
+  return spanset_parse(&str, T_BIGINTSPANSET);
+}
+
+/**
+ * @ingroup libmeos_spantime_in_out
  * @brief Return a float span from its Well-Known Text (WKT) representation.
  */
 SpanSet *
@@ -177,9 +197,9 @@ spanset_out(const SpanSet *ss, Datum maxdd)
  * @brief Return the Well-Known Text (WKT) representation of a span set.
  */
 char *
-floatspanset_out(const SpanSet *ss, int maxdd)
+intspanset_out(const SpanSet *ss)
 {
-  return spanset_out(ss, Int32GetDatum(maxdd));
+  return spanset_out(ss, Int32GetDatum(0));
 }
 
 /**
@@ -187,9 +207,29 @@ floatspanset_out(const SpanSet *ss, int maxdd)
  * @brief Return the Well-Known Text (WKT) representation of a span set.
  */
 char *
-intspanset_out(const SpanSet *ss)
+bigintspanset_out(const SpanSet *ss)
 {
-  return spanset_out(ss, Int32GetDatum(0));
+  return spanset_out(ss, Int64GetDatum(0));
+}
+
+/**
+ * @ingroup libmeos_spantime_in_out
+ * @brief Return the Well-Known Text (WKT) representation of a span set.
+ */
+char *
+bigintspanset_out(const SpanSet *ss)
+{
+  return spanset_out(ss, Int64GetDatum(0));
+}
+
+/**
+ * @ingroup libmeos_spantime_in_out
+ * @brief Return the Well-Known Text (WKT) representation of a span set.
+ */
+char *
+floatspanset_out(const SpanSet *ss, int maxdd)
+{
+  return spanset_out(ss, Int32GetDatum(maxdd));
 }
 
 /**
@@ -400,6 +440,17 @@ intspanset_lower(const SpanSet *ss)
 
 /**
  * @ingroup libmeos_spantime_accessor
+ * @brief Return the lower bound of an integer span set
+ * @sqlfunc lower()
+ */
+int
+bigintspanset_lower(const SpanSet *ss)
+{
+  return DatumGetInt64(ss->elems[0].lower);
+}
+
+/**
+ * @ingroup libmeos_spantime_accessor
  * @brief Return the lower bound of a float span set
  * @sqlfunc lower()
  */
@@ -430,6 +481,17 @@ int
 intspanset_upper(const SpanSet *ss)
 {
   return Int32GetDatum(ss->elems[ss->count - 1].upper);
+}
+
+/**
+ * @ingroup libmeos_spantime_accessor
+ * @brief Return the upper bound of an integer span set
+ * @sqlfunc upper()
+ */
+int
+bigintspanset_upper(const SpanSet *ss)
+{
+  return Int64GetDatum(ss->elems[ss->count - 1].upper);
 }
 
 /**
