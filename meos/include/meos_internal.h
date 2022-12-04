@@ -78,6 +78,7 @@ extern OrderedSet *orderedset_make_free(Datum *values, int count, mobdbType base
 /* Cast functions for span and time types */
 
 extern Span *value_to_span(Datum d, mobdbType basetype);
+extern OrderedSet *value_to_orderedset(Datum d, mobdbType basetype);
 
 /*****************************************************************************/
 
@@ -168,8 +169,10 @@ extern double distance_spanset_value(const SpanSet *ss, Datum d, mobdbType baset
 
 /*****************************************************************************/
 
-/* Comparison functions for span and time types */
+/* Hash functions for span and time types */
 
+extern uint32 datum_hash(Datum d, mobdbType basetype);
+extern uint64 datum_hash_extended(Datum d, mobdbType basetype, uint64 seed);
 
 /******************************************************************************
  * Functions for box types

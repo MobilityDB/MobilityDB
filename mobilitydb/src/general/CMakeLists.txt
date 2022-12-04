@@ -2,6 +2,7 @@ add_library(pg_general OBJECT
   doublen.c
   geo_constructors.c
   periodset.c
+  set.c
   skiplist.c
   span.c
   span_aggfuncs.c
@@ -33,7 +34,6 @@ add_library(pg_general OBJECT
   temporal_out.c
   time_aggfuncs.c
   time_ops.c
-  timestampset.c
   tinstant.c
   tnumber_distance.c
   tnumber_gist.c

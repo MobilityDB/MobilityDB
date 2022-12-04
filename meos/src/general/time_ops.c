@@ -42,7 +42,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/periodset.h"
-#include "general/timestampset.h"
+#include "general/set.h"
 #include "general/temporal_util.h"
 
 /*****************************************************************************

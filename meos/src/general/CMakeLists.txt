@@ -5,6 +5,7 @@ add_library(general OBJECT
   periodset.c
   pg_call.c
   skiplist.c
+  set.c
   span.c
   spanset.c
   span_ops.c
@@ -29,7 +30,6 @@ add_library(general OBJECT
   temporal_util.c
   time_aggfuncs.c
   time_ops.c
-  timestampset.c
   tinstant.c
   tnumber_distance.c
   tnumber_mathfuncs.c

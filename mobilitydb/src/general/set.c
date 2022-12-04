@@ -28,11 +28,11 @@
  *****************************************************************************/
 
 /**
- * @brief General functions for `timestampset` values composed of an ordered
- * list of distinct `timestamptz` values.
+ * @brief General functions for ordered set values composed of an ordered
+ * list of distinct values.
  */
 
-#include "general/timestampset.h"
+#include "general/set.h"
 
 /* PostgreSQL */
 #include <postgres.h>
@@ -44,6 +44,7 @@
 #include "general/temporal_util.h"
 /* MobilityDB */
 #include "pg_general/temporal.h"
+#include "pg_general/temporal_catalog.h"
 #include "pg_general/temporal_util.h"
 
 /*****************************************************************************
@@ -54,13 +55,14 @@ PG_FUNCTION_INFO_V1(Orderedset_in);
 /**
  * @ingroup mobilitydb_spantime_in_out
  * @brief Input function for timestamp sets
- * @sqlfunc timestampset_in()
+ * @sqlfunc intset_in(), bigintset_in(), floatset_in(), timestampset_in()
  */
 PGDLLEXPORT Datum
 Orderedset_in(PG_FUNCTION_ARGS)
 {
   const char *input = PG_GETARG_CSTRING(0);
-  OrderedSet *result = orderedset_in(input, T_TIMESTAMPTZ);
+  Oid ostypid = PG_GETARG_OID(1);
+  OrderedSet *result = orderedset_in(input, oid_type(ostypid));
   PG_RETURN_POINTER(result);
 }
 
@@ -68,14 +70,14 @@ PG_FUNCTION_INFO_V1(Orderedset_out);
 /**
  * @ingroup mobilitydb_spantime_in_out
  * @brief Output function for timestamp sets
- * @sqlfunc timestampset_out()
+ * @sqlfunc intset_out(), bigintset_out(), floatset_out(), timestampset_out()
  */
 PGDLLEXPORT Datum
 Orderedset_out(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  char *result = orderedset_out(ts);
-  PG_FREE_IF_COPY(ts, 0);
+  OrderedSet *os = PG_GETARG_ORDEREDSET_P(0);
+  char *result = orderedset_out(os);
+  PG_FREE_IF_COPY(os, 0);
   PG_RETURN_CSTRING(result);
 }
 
@@ -83,7 +85,7 @@ PG_FUNCTION_INFO_V1(Orderedset_recv);
 /**
  * @ingroup mobilitydb_spantime_in_out
  * @brief Receive function for timestamp set
- * @sqlfunc timestampset_recv()
+ * @sqlfunc intset_recv(), bigintset_recv(), floatset_recv(), timestampset_recv()
  */
 PGDLLEXPORT Datum
 Orderedset_recv(PG_FUNCTION_ARGS)
@@ -99,7 +101,7 @@ PG_FUNCTION_INFO_V1(Orderedset_send);
 /**
  * @ingroup mobilitydb_spantime_in_out
  * @brief Send function for timestamp set
- * @sqlfunc timestampset_send()
+ * @sqlfunc intset_send(), bigintset_send(), floatset_send(), timestampset_send()
  */
 PGDLLEXPORT Datum
 Orderedset_send(PG_FUNCTION_ARGS)
@@ -120,17 +122,19 @@ Orderedset_send(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Orderedset_constructor);
 /**
  * @ingroup mobilitydb_spantime_constructor
- * @brief Construct a timestamp set from an array of timestamps
- * @sqlfunc timestampset()
+ * @brief Construct an ordered set from an array of values
+ * @sqlfunc intset(), bigintset(), floatset(), timestampset()
  */
 PGDLLEXPORT Datum
 Orderedset_constructor(PG_FUNCTION_ARGS)
 {
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
   ensure_non_empty_array(array);
+  mobdbType settype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
   int count;
   Datum *values = datumarr_extract(array, &count);
-  OrderedSet *result = orderedset_make_free(values, count, T_TIMESTAMPTZ);
+  mobdbType basetype = settype_basetype(settype);
+  OrderedSet *result = orderedset_make_free(values, count, basetype);
   PG_FREE_IF_COPY(array, 0);
   PG_RETURN_POINTER(result);
 }
@@ -139,17 +143,18 @@ Orderedset_constructor(PG_FUNCTION_ARGS)
  * Cast function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Timestamp_to_timestampset);
+PG_FUNCTION_INFO_V1(Value_to_orderedset);
 /**
  * @ingroup mobilitydb_spantime_cast
  * @brief Cast a timestamp as a timestamp set
  * @sqlfunc timestampset()
  */
 PGDLLEXPORT Datum
-Timestamp_to_timestampset(PG_FUNCTION_ARGS)
+Value_to_orderedset(PG_FUNCTION_ARGS)
 {
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  TimestampSet *result = timestamp_to_timestampset(t);
+  Datum d = PG_GETARG_DATUM(0);
+  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  TimestampSet *result = value_to_orderedset(d, basetype);
   PG_RETURN_POINTER(result);
 }
 
@@ -159,31 +164,46 @@ Timestamp_to_timestampset(PG_FUNCTION_ARGS)
  * to be detoasted, extract only the header and not the full object.
  */
 void
-orderedset_span_slice(Datum tsdatum, Period *p)
+orderedset_span_slice(Datum d, Span *p)
 {
-  TimestampSet *ts = NULL;
-  if (PG_DATUM_NEEDS_DETOAST((struct varlena *) tsdatum))
-    ts = (TimestampSet *) PG_DETOAST_DATUM_SLICE(tsdatum, 0,
+  OrderedSet *os = NULL;
+  if (PG_DATUM_NEEDS_DETOAST((struct varlena *) d))
+    os = (OrderedSet *) PG_DETOAST_DATUM_SLICE(d, 0,
       time_max_header_size());
   else
-    ts = (TimestampSet *) tsdatum;
-  memcpy(p, &ts->span, sizeof(Period));
-  PG_FREE_IF_COPY_P(ts, DatumGetPointer(tsdatum));
+    os = (OrderedSet *) d;
+  memcpy(p, &os->span, sizeof(Span));
+  PG_FREE_IF_COPY_P(os, DatumGetPointer(d));
   return;
 }
 
 PG_FUNCTION_INFO_V1(Orderedset_to_span);
 /**
- * @ingroup mobilitydb_spantime_cast
- * @brief Return the bounding period on which a timestamp set is defined
- * @sqlfunc period()
+ * @ingroup mobilitydb_spantime_accessor
+ * @brief Return the span of an ordered set
+ * @sqlfunc timespan()
  */
 PGDLLEXPORT Datum
 Orderedset_to_span(PG_FUNCTION_ARGS)
 {
-  Datum tsdatum = PG_GETARG_DATUM(0);
-  Period *result = palloc(sizeof(Period));
-  orderedset_span_slice(tsdatum, result);
+  Datum d = PG_GETARG_DATUM(0);
+  Span *result = palloc(sizeof(Span));
+  orderedset_span_slice(d, result);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Timestampset_to_timespan);
+/**
+ * @ingroup mobilitydb_spantime_accessor
+ * @brief Return the timespan of a timestamp set
+ * @sqlfunc timespan()
+ */
+PGDLLEXPORT Datum
+Timestampset_to_timespan(PG_FUNCTION_ARGS)
+{
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  Interval *result = timestampset_to_timespan(ts);
+  PG_FREE_IF_COPY(ts, 0);
   PG_RETURN_POINTER(result);
 }
 
@@ -360,7 +380,7 @@ Timestampset_shift_tscale(PG_FUNCTION_ARGS)
  * Functions for defining B-tree index
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Timestampset_cmp);
+PG_FUNCTION_INFO_V1(Orderedset_cmp);
 /**
  * @ingroup mobilitydb_spantime_comp
  * @brief Return -1, 0, or 1 depending on whether the first timestamp set
@@ -368,17 +388,17 @@ PG_FUNCTION_INFO_V1(Timestampset_cmp);
  * @sqlfunc timestampset_cmp()
  */
 PGDLLEXPORT Datum
-Timestampset_cmp(PG_FUNCTION_ARGS)
+Orderedset_cmp(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
   TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  int cmp = timestampset_cmp(ts1, ts2);
+  int cmp = orderedset_cmp(ts1, ts2);
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);
   PG_RETURN_INT32(cmp);
 }
 
-PG_FUNCTION_INFO_V1(Timestampset_eq);
+PG_FUNCTION_INFO_V1(Orderedset_eq);
 /**
  * @ingroup mobilitydb_spantime_comp
  * @brief Return true if the first timestamp set is equal to the second one
@@ -386,17 +406,17 @@ PG_FUNCTION_INFO_V1(Timestampset_eq);
  * @sqlop @p =
  */
 PGDLLEXPORT Datum
-Timestampset_eq(PG_FUNCTION_ARGS)
+Orderedset_eq(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
   TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = timestampset_eq(ts1, ts2);
+  bool result = orderedset_eq(ts1, ts2);
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(Timestampset_ne);
+PG_FUNCTION_INFO_V1(Orderedset_ne);
 /**
  * @ingroup mobilitydb_spantime_comp
  * @brief Return true if the first timestamp set is different from the second one
@@ -404,17 +424,17 @@ PG_FUNCTION_INFO_V1(Timestampset_ne);
  * @sqlop @p <>
  */
 PGDLLEXPORT Datum
-Timestampset_ne(PG_FUNCTION_ARGS)
+Orderedset_ne(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
   TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = timestampset_ne(ts1, ts2);
+  bool result = orderedset_ne(ts1, ts2);
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(Timestampset_lt);
+PG_FUNCTION_INFO_V1(Orderedset_lt);
 /**
  * @ingroup mobilitydb_spantime_comp
  * @brief Return true if the first timestamp set is less than the second one
@@ -422,17 +442,17 @@ PG_FUNCTION_INFO_V1(Timestampset_lt);
  * @sqlop @p <
  */
 PGDLLEXPORT Datum
-Timestampset_lt(PG_FUNCTION_ARGS)
+Orderedset_lt(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
   TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = timestampset_lt(ts1, ts2);
+  bool result = orderedset_lt(ts1, ts2);
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(Timestampset_le);
+PG_FUNCTION_INFO_V1(Orderedset_le);
 /**
  * @ingroup mobilitydb_spantime_comp
  * @brief Return true if the first timestamp set is less than
@@ -441,17 +461,17 @@ PG_FUNCTION_INFO_V1(Timestampset_le);
  * @sqlop @p <=
  */
 PGDLLEXPORT Datum
-Timestampset_le(PG_FUNCTION_ARGS)
+Orderedset_le(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
   TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = timestampset_le(ts1, ts2);
+  bool result = orderedset_le(ts1, ts2);
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(Timestampset_ge);
+PG_FUNCTION_INFO_V1(Orderedset_ge);
 /**
  * @ingroup mobilitydb_spantime_comp
  * @brief Return true if the first timestamp set is greater than
@@ -460,17 +480,17 @@ PG_FUNCTION_INFO_V1(Timestampset_ge);
  * @sqlop @p >=
  */
 PGDLLEXPORT Datum
-Timestampset_ge(PG_FUNCTION_ARGS)
+Orderedset_ge(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
   TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = timestampset_ge(ts1, ts2);
+  bool result = orderedset_ge(ts1, ts2);
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(Timestampset_gt);
+PG_FUNCTION_INFO_V1(Orderedset_gt);
 /**
  * @ingroup mobilitydb_spantime_comp
  * @brief Return true if the first timestamp set is greater than the second one
@@ -478,11 +498,11 @@ PG_FUNCTION_INFO_V1(Timestampset_gt);
  * @sqlop @p >
  */
 PGDLLEXPORT Datum
-Timestampset_gt(PG_FUNCTION_ARGS)
+Orderedset_gt(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
   TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = timestampset_gt(ts1, ts2);
+  bool result = orderedset_gt(ts1, ts2);
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);
   PG_RETURN_BOOL(result);
@@ -492,32 +512,32 @@ Timestampset_gt(PG_FUNCTION_ARGS)
  * Function for defining hash index
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Timestampset_hash);
+PG_FUNCTION_INFO_V1(Orderedset_hash);
 /**
  * @ingroup mobilitydb_spantime_accessor
  * @brief Return the 32-bit hash value of a timestamp set
  * @sqlfunc timestampset_hash()
  */
 PGDLLEXPORT Datum
-Timestampset_hash(PG_FUNCTION_ARGS)
+Orderedset_hash(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  uint32 result = timestampset_hash(ts);
+  uint32 result = orderedset_hash(ts);
   PG_RETURN_UINT32(result);
 }
 
-PG_FUNCTION_INFO_V1(Timestampset_hash_extended);
+PG_FUNCTION_INFO_V1(Orderedset_hash_extended);
 /**
  * @ingroup mobilitydb_spantime_accessor
  * @brief Return the 64-bit hash value of a timestamp set using a seed
  * @sqlfunc timestampset_hash_extended()
  */
 PGDLLEXPORT Datum
-Timestampset_hash_extended(PG_FUNCTION_ARGS)
+Orderedset_hash_extended(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
   uint64 seed = PG_GETARG_INT64(1);
-  uint64 result = timestampset_hash_extended(ts, seed);
+  uint64 result = orderedset_hash_extended(ts, seed);
   PG_RETURN_UINT64(result);
 }
 

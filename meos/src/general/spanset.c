@@ -644,6 +644,7 @@ spanset_spans(const SpanSet *ss, int *count)
 bool
 spanset_eq(const SpanSet *ss1, const SpanSet *ss2)
 {
+  assert(ss1->spantype == ss2->spantype);
   if (ss1->count != ss2->count)
     return false;
   /* ss1 and ss2 have the same number of SpanSet */
@@ -679,6 +680,7 @@ spanset_ne(const SpanSet *ss1, const SpanSet *ss2)
 int
 spanset_cmp(const SpanSet *ss1, const SpanSet *ss2)
 {
+  assert(ss1->spantype == ss2->spantype);
   int count1 = ss1->count;
   int count2 = ss2->count;
   int count = count1 < count2 ? count1 : count2;

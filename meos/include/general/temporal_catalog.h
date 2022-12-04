@@ -53,6 +53,7 @@ typedef enum
   T_DOUBLE3,        /**< double3 type */
   T_DOUBLE4,        /**< double4 type */
   T_FLOAT8,         /**< float8 type */
+  T_FLOATSET,       /**< float8 set type */
   T_FLOATSPAN,      /**< float8 span type */
   T_FLOATSPANSET,   /**< float8 span set type */
   T_INT4,           /**< int4 type */
@@ -62,9 +63,11 @@ typedef enum
   T_INT4MULTIRANGE, /**< PostgreSQL int4 multirange type */
 #endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
 #endif /* ! MEOS */
+  T_INTSET,         /**< int4 set type */
   T_INTSPAN,        /**< int4 span type */
   T_INTSPANSET,     /**< int4 span set type */
   T_INT8,           /**< int8 type */
+  T_BIGINTSET,      /**< int8 set type */
   T_BIGINTSPAN,     /**< int8 span type */
   T_BIGINTSPANSET,  /**< int8 span set type */
   T_PERIOD,         /**< period type */
@@ -112,6 +115,15 @@ typedef struct
  */
 typedef struct
 {
+  mobdbType settype;     /**< Enum value of the set type */
+  mobdbType basetype;    /**< Enum value of the base type */
+} settype_cache_struct;
+
+/**
+ * Structure to represent the span type cache array.
+ */
+typedef struct
+{
   mobdbType spantype;    /**< Enum value of the span type */
   mobdbType basetype;    /**< Enum value of the base type */
 } spantype_cache_struct;
@@ -130,10 +142,12 @@ typedef struct
 /* Cache functions */
 
 extern mobdbType temptype_basetype(mobdbType temptype);
+extern mobdbType settype_basetype(mobdbType settype);
 extern mobdbType spantype_basetype(mobdbType spantype);
 extern mobdbType spantype_spansettype(mobdbType spantype);
 extern mobdbType spansettype_spantype(mobdbType spansettype);
 extern mobdbType basetype_spantype(mobdbType basetype);
+extern mobdbType basetype_settype(mobdbType basetype);
 
 /* Catalog functions */
 
@@ -142,6 +156,7 @@ extern void ensure_time_type(mobdbType timetype);
 extern bool span_type(mobdbType spantype);
 extern void ensure_span_type(mobdbType spantype);
 extern bool span_basetype(mobdbType basetype);
+extern void ensure_set_basetype(mobdbType basetype);
 extern void ensure_span_basetype(mobdbType basetype);
 extern bool numspan_basetype(mobdbType basetype);
 extern void ensure_numspan_basetype(mobdbType basetype);

@@ -49,8 +49,8 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/timestampset.h"
 #include "general/periodset.h"
+#include "general/set.h"
 /* MobilityDB */
 #include "pg_general/span_analyze.h"
 #include "pg_general/temporal_catalog.h"

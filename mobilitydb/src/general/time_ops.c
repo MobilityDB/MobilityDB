@@ -38,8 +38,8 @@
 /* MobilityDB */
 #include <meos.h>
 #include "general/periodset.h"
+#include "general/set.h"
 #include "general/spanset.h"
-#include "general/timestampset.h"
 #include "general/temporal_util.h"
 
 /*****************************************************************************/

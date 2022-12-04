@@ -982,6 +982,7 @@ span_ne(const Span *s1, const Span *s2)
 int
 span_cmp(const Span *s1, const Span *s2)
 {
+  assert(s1->spantype == s2->spantype);
   int cmp = datum_cmp2(s1->lower, s2->lower, s1->basetype, s2->basetype);
   if (cmp != 0)
     return cmp;
@@ -1075,8 +1076,8 @@ span_hash(const Span *s)
   uint32 type_hash = hash_uint32((int32) type);
 
   /* Apply the hash function to each bound */
-  uint32 lower_hash = pg_hashint8(s->lower);
-  uint32 upper_hash = pg_hashint8(s->upper);
+  uint32 lower_hash = datum_hash(s->lower, s->basetype);
+  uint32 upper_hash = datum_hash(s->upper, s->basetype);
 
   /* Merge hashes of flags, type, and bounds */
   uint32 result = DatumGetUInt32(hash_uint32((uint32) flags));

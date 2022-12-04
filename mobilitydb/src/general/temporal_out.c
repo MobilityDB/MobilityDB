@@ -38,9 +38,9 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/set.h"
 #include "general/temporal_out.h"
 #include "general/temporal_util.h"
-#include "general/timestampset.h"
 /* MobilityDB */
 #include "pg_general/temporal_util.h"
 #include "pg_point/postgis.h"

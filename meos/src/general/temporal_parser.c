@@ -334,7 +334,7 @@ timestamp_parse(const char **str)
  * @brief Parse a timestamp set value from the buffer.
  */
 OrderedSet *
-orderedset_parse(const char **str, mobdbType basetype)
+orderedset_parse(const char **str, mobdbType ostype)
 {
   if (!p_obrace(str))
     elog(ERROR, "Could not parse ordered set");
@@ -359,6 +359,7 @@ orderedset_parse(const char **str, mobdbType basetype)
     values[i] = TimestampTzGetDatum(timestamp_parse(str));
   }
   p_cbrace(str);
+  mobdbType basetype = settype_basetype(ostype);
   return orderedset_make_free(values, count, basetype);
 }
 

@@ -93,6 +93,19 @@ spansettype_cache_struct _spansettype_cache[] =
   {T_PERIODSET,     T_PERIOD},
 };
 
+/**
+ * Global array that keeps type information for the span types defined
+ * in MobilityDB.
+ */
+settype_cache_struct _settype_cache[] =
+{
+  /* spansettype    basetype */
+  {T_INTSET,        T_INT4},
+  {T_BIGINTSET,     T_INT8},
+  {T_FLOATSET,      T_FLOAT8},
+  {T_TIMESTAMPSET,  T_TIMESTAMPTZ},
+};
+
 /*****************************************************************************
  * Cache functions
  *****************************************************************************/
@@ -178,6 +191,38 @@ spantype_spansettype(mobdbType spantype)
   elog(ERROR, "type %u is not a span type", spantype);
 }
 
+/**
+ * Return the base type from the ordered set type
+ */
+mobdbType
+settype_basetype(mobdbType settype)
+{
+  int n = sizeof(_settype_cache) / sizeof(settype_cache_struct);
+  for (int i = 0; i < n; i++)
+  {
+    if (_settype_cache[i].settype == settype)
+      return _settype_cache[i].basetype;
+  }
+  /* We only arrive here on error */
+  elog(ERROR, "type %u is not an ordered set type", settype);
+}
+
+/**
+ * Return the base type from the set type
+ */
+mobdbType
+basetype_settype(mobdbType basetype)
+{
+  int n = sizeof(_settype_cache) / sizeof(settype_cache_struct);
+  for (int i = 0; i < n; i++)
+  {
+    if (_settype_cache[i].basetype == basetype)
+      return _settype_cache[i].settype;
+  }
+  /* We only arrive here on error */
+  elog(ERROR, "type %u is not a set type", basetype);
+}
+
 
 /*****************************************************************************
  * Catalog functions
@@ -209,7 +254,32 @@ ensure_time_type(mobdbType timetype)
 /*****************************************************************************/
 
 /**
- * Return true if the type is a time type
+ * Return true if the type is a set type
+ */
+bool
+set_basetype(mobdbType basetype)
+{
+  if (basetype == T_TIMESTAMPTZ || basetype == T_INT4 || basetype == T_INT8 ||
+      basetype == T_FLOAT8)
+    return true;
+  return false;
+}
+
+/**
+ * Ensure that the span base type is supported by MobilityDB
+ */
+void
+ensure_set_basetype(mobdbType basetype)
+{
+  if (! set_basetype(basetype))
+    elog(ERROR, "unknown set base type: %d", basetype);
+  return;
+}
+
+/*****************************************************************************/
+
+/**
+ * Return true if the type is a span type
  */
 bool
 span_type(mobdbType spantype)

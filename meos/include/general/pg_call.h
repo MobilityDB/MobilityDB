@@ -82,8 +82,10 @@ extern int pg_interval_cmp(const Interval *interval1,
 
 /* Functions adapted from hashfn.h and hashfn.c */
 
+extern uint32 hash_bytes_uint32(uint32 k);
 extern uint32 pg_hashint8(int64 val);
 extern uint32 pg_hashfloat8(float8 key);
+extern uint64 hash_bytes_uint32_extended(uint32 k, uint64 seed);
 extern uint64 pg_hashint8extended(int64 val, uint64 seed);
 extern uint64 pg_hashfloat8extended(float8 key, uint64 seed);
 extern uint32 pg_hashtext(text *key);

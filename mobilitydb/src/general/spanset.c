@@ -164,16 +164,15 @@ Span_to_spanset(PG_FUNCTION_ARGS)
  * to be detoasted, extract only the header and not the full object.
  */
 void
-spanset_span_slice(Datum ssdatum, Span *s)
+spanset_span_slice(Datum d, Span *s)
 {
   SpanSet *ss = NULL;
-  if (PG_DATUM_NEEDS_DETOAST((struct varlena *) ssdatum))
-    ss = (SpanSet *) PG_DETOAST_DATUM_SLICE(ssdatum, 0,
-      time_max_header_size());
+  if (PG_DATUM_NEEDS_DETOAST((struct varlena *) d))
+    ss = (SpanSet *) PG_DETOAST_DATUM_SLICE(d, 0, time_max_header_size());
   else
-    ss = (SpanSet *) ssdatum;
+    ss = (SpanSet *) d;
   memcpy(s, &ss->span, sizeof(Span));
-  PG_FREE_IF_COPY_P(ss, DatumGetPointer(ssdatum));
+  PG_FREE_IF_COPY_P(ss, DatumGetPointer(d));
   return;
 }
 
@@ -186,9 +185,9 @@ PG_FUNCTION_INFO_V1(Spanset_to_span);
 PGDLLEXPORT Datum
 Spanset_to_span(PG_FUNCTION_ARGS)
 {
-  Datum ssdatum = PG_GETARG_DATUM(0);
+  Datum d = PG_GETARG_DATUM(0);
   Span *result = palloc(sizeof(Span));
-  spanset_span_slice(ssdatum, result);
+  spanset_span_slice(d, result);
   PG_RETURN_POINTER(result);
 }
 

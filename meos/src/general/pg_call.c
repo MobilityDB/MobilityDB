@@ -1331,7 +1331,6 @@ pg_hashfloat8(float8 key)
   return DatumGetUInt32(hash_any((unsigned char *) &key, sizeof(key)));
 }
 
-#if 0 /* not used */
 /**
  * @brief Get the 64-bit hash value of a float64 value.
  * @note PostgreSQL function: Datum hashfloat8extended(PG_FUNCTION_ARGS)
@@ -1347,7 +1346,6 @@ pg_hashfloat8extended(float8 key, uint64 seed)
   return DatumGetUInt64(hash_any_extended((unsigned char *) &key, sizeof(key),
     seed));
 }
-#endif /* not used */
 
 /**
  * @brief Get the 32-bit hash value of an text value.
