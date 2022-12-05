@@ -8,11 +8,15 @@
     Alike 3.0 License: https://creativecommons.org/licenses/by-sa/3.0/
    ****************************************************************************
 -->
-<chapter id="span_time_types">
-	<title>Span and Time Types</title>
+<chapter id="set_span_types">
+	<title>Set and Span Types</title>
 
 	<para>
-		MobilityDB has three <emphasis>span</emphasis> types, namely <varname>intspan</varname>, <varname>floatspan</varname>, and <varname>period</varname>, for representing, respectively, ranges of <varname>integer</varname>, <varname>float</varname>, and <varname>timestamptz</varname> (timestamp with time zone) values. Furthermore, MobilityDB has the corresponding <emphasis>span set</emphasis> types, namely <varname>intspanset</varname>, <varname>floatspanset</varname>, and <varname>periodset</varname>, for representing, respectively, set of disjoint ranges of <varname>integer</varname>, <varname>float</varname>, and <varname>timestamptz</varname> values. Finally, MobilityDB has one additional time type, namely, <varname>timestampset</varname>.
+		MobilityDB has four <emphasis>set</emphasis> types, namely <varname>intset</varname>, <varname>bigintset</varname>, <varname>floatset</varname>, and <varname>timestampset</varname>, for representing, respectively, set of distinct <varname>integer</varname>, <varname>bigint</varname>, <varname>float</varname>, and <varname>timestamptz</varname> (timestamp with time zone) values. These set types enable efficient operations for manipulating set of distinct values.
+	</para>
+
+	<para>
+		MobilityDB has four <emphasis>span</emphasis> types, namely <varname>intspan</varname>, <varname>bigintspan</varname>, <varname>floatspan</varname>, and <varname>period</varname>, for representing, respectively, ranges of <varname>integer</varname>, <varname>bigint</varname>, <varname>float</varname>, and <varname>timestamptz</varname> (timestamp with time zone) values. Furthermore, MobilityDB has the corresponding <emphasis>span set</emphasis> types, namely <varname>intspanset</varname>, <varname>bigintspanset</varname>, <varname>floatspanset</varname>, and <varname>periodset</varname>, for representing set of disjoint spans.
 	</para>
 
 	<para>
@@ -20,30 +24,33 @@
 	</para>
 
 	<para>
-		In what follows, since span and span set types have similar functions and operators, when we speak about span types we mean both span and span set types, unless we explicitly refer to <emphasis>unit</emphasis> span types and span <emphasis>set</emphasis> types to distinguish them. Also, when we refer to time types we mean one of the following types: <varname>timestamptz</varname>, <varname>timestampset</varname>, <varname>period</varname>, or <varname>periodset</varname>.
+		In what follows, since span and span set types have similar functions and operators, when we speak about span types we mean both span and span set types, unless we explicitly refer to <emphasis>unit</emphasis> span types and span <emphasis>set</emphasis> types to distinguish them.
 	</para>
 
-	<sect1 id ="functions_operations_span_time_types">
-		<title>Functions and Operators for Span and Time Types</title>
+	<sect1 id ="functions_operations_set_span_types">
+		<title>Functions and Operators for Set and Span Types</title>
 
 		<para>
-			We present next the functions and operators for span and time types. These functions and operators are polymorphic, that is, their arguments may be of several types, and the result type may depend on the type of the arguments. To express this in the signature of the operators, we use the following notation:
+			We present next the functions and operators for set and span types. These functions and operators are polymorphic, that is, their arguments may be of several types, and the result type may depend on the type of the arguments. To express this in the signature of the operators, we use the following notation:
 		</para>
 		<itemizedlist>
 			<listitem>
-				<para><varname>span</varname> represents any span or span set type, that is, <varname>intspan</varname>, <varname>floatspan</varname>, or <varname>period</varname> and the corresponding span set types.</para>
+				<para><varname>set</varname> represents any set type, that is, <varname>intset</varname>, <varname>bigintset</varname>, <varname>floatset</varname>, or <varname>timestampset</varname>.</para>
 			</listitem>
 			<listitem>
-				<para><varname>spanset</varname> represents any span set type, that is, <varname>intspanset</varname>, <varname>floatspanset</varname>, or <varname>periodset</varname>.</para>
+				<para><varname>span</varname> represents any span or span set type, that is, <varname>intspan</varname>, <varname>bigintspan</varname>, <varname>floatspan</varname>, or <varname>period</varname> and the corresponding span set types.</para>
 			</listitem>
 			<listitem>
-				<para><varname>numspan</varname> represents any numeric span type, that is, <varname>intspan</varname> or <varname>floatspan</varname> and the corresponding span set types.</para>
+				<para><varname>spanset</varname> represents any span set type, that is, <varname>intspanset</varname>, <varname>bigintspanset</varname>, <varname>floatspanset</varname>, or <varname>periodset</varname>.</para>
 			</listitem>
 			<listitem>
-				<para><varname>base</varname> represents any base type of a span type, that is, <varname>integer</varname>, <varname>float</varname>, or <varname>timestamptz</varname>.</para>
+				<para><varname>numspan</varname> represents any numeric span type, that is, <varname>intspan</varname>, <varname>bigintspan</varname>, or <varname>floatspan</varname> and the corresponding span set types.</para>
 			</listitem>
 			<listitem>
-				<para><varname>number</varname> represents any base type of a numeric span type, that is, <varname>integer</varname> or <varname>float</varname>,</para>
+				<para><varname>base</varname> represents any base type of a set or span type, that is, <varname>integer</varname>, <varname>bigint</varname>, <varname>float</varname>, or <varname>timestamptz</varname>.</para>
+			</listitem>
+			<listitem>
+				<para><varname>number</varname> represents any base type of a numeric span type, that is, <varname>integer</varname>, <varname>bigint</varname>, or <varname>float</varname>,</para>
 			</listitem>
 			<listitem>
 				<para><varname>time</varname> represents any time type, that is, <varname>timestamptz</varname>, <varname>period</varname>, <varname>timestampset</varname>, or <varname>periodset</varname>,</para>

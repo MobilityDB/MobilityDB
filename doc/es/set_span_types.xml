@@ -8,11 +8,15 @@
     Alike 3.0 License: https://creativecommons.org/licenses/by-sa/3.0/
    ****************************************************************************
 -->
-<chapter id="time_span_types">
-	<title>Tipos de rango y de tiempo</title>
+<chapter id="set_span_types">
+	<title>Tipos de conjunto y de rango</title>
 
 	<para>
-		MobilityDB tiene tres tipos de <emphasis>rango</emphasis>, a saber, <varname>intspan</varname>, <varname>floatspan</varname> y <varname>period</varname>, para representar, respectivamente, rangos de <varname>integer</varname> , <varname>float</varname> y <varname>timestamptz</varname> (marca de tiempo con zona horaria). Además, MobilityDB tiene los tipos <emphasis>conjuntos de rango</emphasis> correspondientes, a saber, <varname>intspanset</varname>, <varname>floatspanset</varname> y <varname>periodset</varname>, para representar, respectivamente , conjunto de rangos disjuntos de valores <varname>integer</varname>, <varname>float</varname> y <varname>timestamptz</varname>. Finalmente, MobilityDB tiene un tipo de tiempo adicional, a saber, <varname>timestampset</varname>.
+		MobilityDB tiene cuatro tipos de conjuntos, a saber, <varname>intset</varname>, <varname>bigintset</varname>, <varname>floatset</varname> y <varname>timestampset</varname> , para representar, respectivamente, un conjunto de valores distintos de <varname>integer</varname>, <varname>bigint</varname>, <varname>float</varname> y <varname>timestamptz</varname> (marca de tiempo con zona horaria ). Estos tipos de conjuntos permiten operaciones eficientes para manipular conjuntos de valores distintos.
+	</para>
+
+	<para>
+		MobilityDB tiene cuatro tipos de <emphasis>rango</emphasis>, a saber, <varname>intspan</varname>, <varname>bigintspan</varname>, <varname>floatspan</varname> y <varname>period</varname>, para representar, respectivamente, rangos de <varname>integer</varname>, <varname>bigint</varname>, <varname>float</varname> y <varname>timestamptz</varname> (marca de tiempo con zona horaria). Además, MobilityDB tiene los tipos <emphasis>conjunto de rangos</emphasis> correspondientes, a saber, <varname>intspanset</varname>, <varname>bigintspanset</varname>, <varname>floatspanset</varname> y <varname>periodset</varname>, para representar conjuntos de rangos disjuntos.
 	</para>
 
 	<para>
@@ -23,27 +27,30 @@
 		A continuación, dado que los tipos de rango y conjunto de rangos tienen funciones y operadores similares, cuando hablamos de tipos rango nos referimos a los tipos de rango y conjuntos de rangos, a menos que nos refiramos explícitamente a los tipos de rango <emphasis>unitarios</emphasis> y a los tipos de <emphasis>conjunto</emphasis> de rangos para distinguirlos. Además, cuando nos referimos a tipos de tiempo, nos referimos a uno de los siguientes tipos: <varname>timestamptz</varname>, <varname>timestampset</varname>, <varname>period</varname> o <varname>periodset</varname>.
 	</para>
 
-	<sect1 id ="functions_operations_time_types">
-		<title>Funciones y operadores para tipos de rango y de tiempo</title>
+	<sect1 id ="functions_operations_set_span_types">
+		<title>Funciones y operadores para tipos de conjunto y de rango</title>
 
 		<para>
-			A continuación presentamos las funciones y operadores para tipos de rango y de tiempo. Estas funciones y operadores son polimórficos, es decir, sus argumentos pueden ser de varios tipos y el tipo de resultado puede depender del tipo de los argumentos. Para expresar esto en la firma de los operadores, utilizamos la siguiente notación:
+			A continuación presentamos las funciones y operadores para tipos de conjunto y de rango. Estas funciones y operadores son polimórficos, es decir, sus argumentos pueden ser de varios tipos y el tipo de resultado puede depender del tipo de los argumentos. Para expresar esto en la firma de los operadores, utilizamos la siguiente notación:
 		</para>
 		<itemizedlist>
 			<listitem>
-				<para><varname>span</varname> representa cualquier tipo de rango, es decir, <varname>intspan</varname>, <varname>floatspan</varname> o <varname>period</varname> y los tipos de conjuntos de rangos correspondientes.</para>
+				<para><varname>set</varname> representa cualquier tipo de conjunto, es decir, <varname>intset</varname>, <varname>bigintset</varname>, <varname>floatset</varname> o <varname>timestampset</varname>.</para>
 			</listitem>
 			<listitem>
-				<para><varname>spanset</varname> representa cualquier tipo de conjunto de rangos, es decir, <varname>intspanset</varname>, <varname>floatspanset</varname> o <varname>periodset</varname>.</para>
+				<para><varname>span</varname> representa cualquier tipo de rango, es decir, <varname>intspan</varname>, <varname>bigintspan</varname>, <varname>floatspan</varname> o <varname>period</varname> y los tipos de conjuntos de rangos correspondientes.</para>
 			</listitem>
 			<listitem>
-				<para><varname>numspan</varname> representa cualquier tipo de rango numérico, es decir, <varname>intspan</varname> o <varname>floatspan</varname> y los tipos de conjuntos de rangos correspondientes.</para>
+				<para><varname>spanset</varname> representa cualquier tipo de conjunto de rangos, es decir, <varname>intspanset</varname>, <varname>bigintspanset</varname>, <varname>floatspanset</varname> o <varname>periodset</varname>.</para>
 			</listitem>
 			<listitem>
-				<para><varname>base</varname> representa cualquier tipo de base de un tipo de rango, es decir, <varname>integer</varname>, <varname>float</varname>, o <varname>timestamptz</varname>.</para>
+				<para><varname>numspan</varname> representa cualquier tipo de rango numérico, es decir, <varname>intspan</varname>, <varname>bigintspan</varname> o <varname>floatspan</varname> y los tipos de conjuntos de rangos correspondientes.</para>
 			</listitem>
 			<listitem>
-				<para><varname>number</varname> representa cualquier tipo de base de un tipo de rango numérico, es decir, <varname>integer</varname> o <varname>float</varname>,</para>
+				<para><varname>base</varname> representa cualquier tipo de base de un tipo de rango, es decir, <varname>integer</varname>, <varname>bigint</varname>, <varname>float</varname>, o <varname>timestamptz</varname>.</para>
+			</listitem>
+			<listitem>
+				<para><varname>number</varname> representa cualquier tipo de base de un tipo de rango numérico, es decir, <varname>integer</varname>, <varname>bigint</varname> o <varname>float</varname>,</para>
 			</listitem>
 			<listitem>
 				<para><varname>time</varname> representa cualquier tipo de tiempo, es decir, <varname>timestamptz</varname>, <varname>period</varname>, <varname>timestampset</varname> o <varname>periodset</varname>,</para>
