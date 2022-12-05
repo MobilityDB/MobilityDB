@@ -200,61 +200,28 @@ CREATE FUNCTION timestampsetFromHexWKB(text)
   AS 'MODULE_PATHNAME', 'Orderedset_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asBinary(intset)
+CREATE FUNCTION asBinary(intset, endianenconding text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Orderedset_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asBinary(intset, endianenconding text)
+CREATE FUNCTION asBinary(bigintset, endianenconding text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Orderedset_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION asBinary(bigintset)
+CREATE FUNCTION asBinary(floatset, endianenconding text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Orderedset_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asBinary(bigintset, endianenconding text)
-  RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Orderedset_as_wkb'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION asBinary(floatset)
-  RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Orderedset_as_wkb'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asBinary(floatset, endianenconding text)
+CREATE FUNCTION asBinary(timestampset, endianenconding text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Orderedset_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asBinary(timestampset)
-  RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Orderedset_as_wkb'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asBinary(timestampset, endianenconding text)
-  RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Orderedset_as_wkb'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION asHexWKB(intset)
+CREATE FUNCTION asHexWKB(intset, endianenconding text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Orderedset_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asHexWKB(intset, endianenconding text)
-  RETURNS text
-  AS 'MODULE_PATHNAME', 'Orderedset_as_hexwkb'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION asHexWKB(bigintset)
-  RETURNS text
-  AS 'MODULE_PATHNAME', 'Orderedset_as_hexwkb'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asHexWKB(bigintset, endianenconding text)
-  RETURNS text
-  AS 'MODULE_PATHNAME', 'Orderedset_as_hexwkb'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION asHexWKB(floatset)
+CREATE FUNCTION asHexWKB(bigintset, endianenconding text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Orderedset_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -262,12 +229,7 @@ CREATE FUNCTION asHexWKB(floatset, endianenconding text)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Orderedset_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION asHexWKB(timestampset)
-  RETURNS text
-  AS 'MODULE_PATHNAME', 'Orderedset_as_hexwkb'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asHexWKB(timestampset, endianenconding text)
+CREATE FUNCTION asHexWKB(timestampset, endianenconding text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Orderedset_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

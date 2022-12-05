@@ -101,20 +101,12 @@ CREATE FUNCTION asText(tnpoint[], maxdecimaldigits int4 DEFAULT 15)
   AS 'MODULE_PATHNAME', 'Temporalarr_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asBinary(tnpoint)
-  RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Temporal_as_wkb'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asBinary(tnpoint, endianenconding text)
+CREATE FUNCTION asBinary(tnpoint, endianenconding text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Temporal_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asHexWKB(tnpoint)
-  RETURNS text
-  AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asHexWKB(tnpoint, endianenconding text)
+CREATE FUNCTION asHexWKB(tnpoint, endianenconding text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

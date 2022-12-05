@@ -42,6 +42,7 @@
 #include "general/temporal_out.h"
 #include "general/temporal_util.h"
 /* MobilityDB */
+#include "pg_general/temporal_catalog.h"
 #include "pg_general/temporal_util.h"
 #include "pg_point/postgis.h"
 
@@ -192,6 +193,7 @@ get_endian_variant(const text *txt)
 {
   uint8_t variant = 0;
   char *endian = text2cstring(txt);
+  /* When the endian is not given the default value is an empty text */
   if (strlen(endian) == 0)
     ;
   else if (strncasecmp(endian, "ndr", 3) != 0 && strncasecmp(endian, "xdr", 3) != 0)
@@ -213,7 +215,7 @@ datum_as_wkb_ext(FunctionCallInfo fcinfo, Datum value, mobdbType type,
 {
   uint8_t variant = 0;
   /* If user specified endianness, respect it */
-  if ((PG_NARGS() > 1) && (!PG_ARGISNULL(1)))
+  if (! PG_ARGISNULL(1))
   {
     text *txt = PG_GETARG_TEXT_P(1);
     variant = get_endian_variant(txt);
@@ -239,7 +241,7 @@ datum_as_hexwkb_ext(FunctionCallInfo fcinfo, Datum value, mobdbType type)
 {
   uint8_t variant = 0;
   /* If user specified endianness, respect it */
-  if ((PG_NARGS() > 1) && (! PG_ARGISNULL(1)))
+  if (! PG_ARGISNULL(1))
   {
     text *txt = PG_GETARG_TEXT_P(1);
     variant = get_endian_variant(txt);
@@ -297,8 +299,9 @@ Orderedset_as_wkb(PG_FUNCTION_ARGS)
 {
   /* Ensure that the value is detoasted if necessary */
   OrderedSet *os = PG_GETARG_ORDEREDSET_P(0);
-  bytea *result = datum_as_wkb_ext(fcinfo, PointerGetDatum(os),
-    T_TIMESTAMPSET, false);
+  mobdbType settype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  bytea *result = datum_as_wkb_ext(fcinfo, PointerGetDatum(os), settype,
+    false);
   PG_FREE_IF_COPY(os, 0);
   PG_RETURN_BYTEA_P(result);
 }
@@ -314,8 +317,8 @@ Orderedset_as_hexwkb(PG_FUNCTION_ARGS)
 {
   /* Ensure that the value is detoasted if necessary */
   OrderedSet *os = PG_GETARG_TIMESTAMPSET_P(0);
-  text *result = datum_as_hexwkb_ext(fcinfo, PointerGetDatum(os),
-    T_TIMESTAMPSET);
+  mobdbType settype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  text *result = datum_as_hexwkb_ext(fcinfo, PointerGetDatum(os), settype);
   PG_FREE_IF_COPY(os, 0);
   PG_RETURN_TEXT_P(result);
 }
