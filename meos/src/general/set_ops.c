@@ -351,7 +351,7 @@ overleft_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
 {
   Datum d1 = orderedset_val_n(os1, os1->count - 1);
   Datum d2 = orderedset_val_n(os2, os2->count - 1);
-  return datum_ge2(d1, d2, os1->span.basetype, os2->span.basetype);
+  return datum_le2(d1, d2, os1->span.basetype, os2->span.basetype);
 }
 
 /*****************************************************************************
