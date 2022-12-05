@@ -468,19 +468,19 @@ CREATE OPERATOR >> (
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR #>> (
-  PROCEDURE = set_left,
+  PROCEDURE = set_right,
   LEFTARG = timestamptz, RIGHTARG = timestampset,
   COMMUTATOR = <<#,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR #>> (
-  PROCEDURE = set_left,
+  PROCEDURE = set_right,
   LEFTARG = timestampset, RIGHTARG = timestamptz,
   COMMUTATOR = <<#,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR #>> (
-  PROCEDURE = set_left,
+  PROCEDURE = set_right,
   LEFTARG = timestampset, RIGHTARG = timestampset,
   COMMUTATOR = <<#,
   RESTRICT = period_sel, JOIN = span_joinsel

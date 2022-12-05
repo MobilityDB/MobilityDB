@@ -181,33 +181,14 @@ Span_as_text(PG_FUNCTION_ARGS)
  * Constructor functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Span_constructor2);
-/**
- * @ingroup mobilitydb_spantime_constructor
- * @brief Construct a span from the two arguments
- * @sqlfunc intspan(), floatspan(), period()
- */
-PGDLLEXPORT Datum
-Span_constructor2(PG_FUNCTION_ARGS)
-{
-  Datum lower = PG_GETARG_DATUM(0);
-  Datum upper = PG_GETARG_DATUM(1);
-  mobdbType spantype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
-  mobdbType basetype = spantype_basetype(spantype);
-  Span *span;
-  span = span_make(lower, upper, true, false, basetype);
-  PG_RETURN_SPAN_P(span);
-}
-
-
-PG_FUNCTION_INFO_V1(Span_constructor4);
+PG_FUNCTION_INFO_V1(Span_constructor);
 /**
  * @ingroup mobilitydb_spantime_constructor
  * @brief Construct a span from the four arguments
- * @sqlfunc intspan(), floatspan(), period()
+ * @sqlfunc intspan(), bigintspan(), floatspan(), period()
  */
 PGDLLEXPORT Datum
-Span_constructor4(PG_FUNCTION_ARGS)
+Span_constructor(PG_FUNCTION_ARGS)
 {
   Datum lower = PG_GETARG_DATUM(0);
   Datum upper = PG_GETARG_DATUM(1);

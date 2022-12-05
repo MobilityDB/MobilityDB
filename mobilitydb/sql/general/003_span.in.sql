@@ -253,38 +253,21 @@ CREATE FUNCTION asHexWKB(period, endianenconding text DEFAULT '')
  * Constructors
  ******************************************************************************/
 
-CREATE FUNCTION intspan(int, int)
+CREATE FUNCTION intspan(int, int, boolean DEFAULT true, boolean DEFAULT false)
   RETURNS intspan
-  AS 'MODULE_PATHNAME', 'Span_constructor2'
+  AS 'MODULE_PATHNAME', 'Span_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION bigintspan(bigint, bigint)
+CREATE FUNCTION bigintspan(bigint, bigint, boolean DEFAULT true, boolean DEFAULT false)
   RETURNS bigintspan
-  AS 'MODULE_PATHNAME', 'Span_constructor2'
+  AS 'MODULE_PATHNAME', 'Span_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION floatspan(float, float)
+CREATE FUNCTION floatspan(float, float, boolean DEFAULT true, boolean DEFAULT false)
   RETURNS floatspan
-  AS 'MODULE_PATHNAME', 'Span_constructor2'
+  AS 'MODULE_PATHNAME', 'Span_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION period(timestamptz, timestamptz)
+CREATE FUNCTION period(timestamptz, timestamptz, boolean DEFAULT true, boolean DEFAULT false)
   RETURNS period
-  AS 'MODULE_PATHNAME', 'Span_constructor2'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION intspan(int, int, boolean, boolean)
-  RETURNS intspan
-  AS 'MODULE_PATHNAME', 'Span_constructor4'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION bigintspan(bigint, bigint, boolean, boolean)
-  RETURNS bigintspan
-  AS 'MODULE_PATHNAME', 'Span_constructor4'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION floatspan(float, float, boolean, boolean)
-  RETURNS floatspan
-  AS 'MODULE_PATHNAME', 'Span_constructor4'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION period(timestamptz, timestamptz, boolean, boolean)
-  RETURNS period
-  AS 'MODULE_PATHNAME', 'Span_constructor4'
+  AS 'MODULE_PATHNAME', 'Span_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
