@@ -4770,7 +4770,7 @@ tcontseq_minus_timestampset1(const TSequence *seq, const TimestampSet *ts,
   if (seq->count == 1)
   {
     inst = tsequence_inst_n(seq, 0);
-    if (! contains_orderedset_value(ts, TimestampTzGetDatum(inst->t),
+    if (contains_orderedset_value(ts, TimestampTzGetDatum(inst->t),
         ts->span.basetype))
       return 0;
     result[0] = tsequence_copy(seq);

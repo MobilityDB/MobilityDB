@@ -62,11 +62,11 @@ CREATE FUNCTION set_contains(floatset, floatset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_contains(timestampset, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contains_timestampset_timestamp'
+  AS 'MODULE_PATHNAME', 'Contains_orderedset_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_contains(timestampset, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contains_timestampset_timestampset'
+  AS 'MODULE_PATHNAME', 'Contains_orderedset_orderedset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
@@ -144,11 +144,11 @@ CREATE FUNCTION set_contained(floatset, floatset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_contained(timestamptz, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contained_timestamp_timestampset'
+  AS 'MODULE_PATHNAME', 'Contained_value_orderedset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_contained(timestampset, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contained_timestampset_timestampset'
+  AS 'MODULE_PATHNAME', 'Contained_orderedset_orderedset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
@@ -214,7 +214,7 @@ CREATE FUNCTION set_overlaps(floatset, floatset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_overlaps(timestampset, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_timestampset_timestampset'
+  AS 'MODULE_PATHNAME', 'Overlaps_orderedset_orderedset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
@@ -278,17 +278,17 @@ CREATE FUNCTION set_left(floatset, floatset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_orderedset_orderedset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_before(timestamptz, timestampset)
+CREATE FUNCTION set_left(timestamptz, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Before_timestamp_timestampset'
+  AS 'MODULE_PATHNAME', 'Left_value_orderedset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_before(timestampset, timestamptz)
+CREATE FUNCTION set_left(timestampset, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Before_timestampset_timestamp'
+  AS 'MODULE_PATHNAME', 'Left_orderedset_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_before(timestampset, timestampset)
+CREATE FUNCTION set_left(timestampset, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Before_timestampset_timestampset'
+  AS 'MODULE_PATHNAME', 'Left_orderedset_orderedset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -346,19 +346,19 @@ CREATE OPERATOR << (
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <<# (
-  PROCEDURE = set_before,
+  PROCEDURE = set_left,
   LEFTARG = timestamptz, RIGHTARG = timestampset,
   COMMUTATOR = #>>,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <<# (
-  PROCEDURE = set_before,
+  PROCEDURE = set_left,
   LEFTARG = timestampset, RIGHTARG = timestamptz,
   COMMUTATOR = #>>,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <<# (
-  PROCEDURE = set_before,
+  PROCEDURE = set_left,
   LEFTARG = timestampset, RIGHTARG = timestampset,
   COMMUTATOR = #>>,
   RESTRICT = period_sel, JOIN = span_joinsel
@@ -400,15 +400,15 @@ CREATE FUNCTION set_right(floatset, floatset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_orderedset_orderedset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_after(timestamptz, timestampset)
+CREATE FUNCTION set_right(timestamptz, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_value_orderedset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_after(timestampset, timestamptz)
+CREATE FUNCTION set_right(timestampset, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_orderedset_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_after(timestampset, timestampset)
+CREATE FUNCTION set_right(timestampset, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_orderedset_orderedset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -468,19 +468,19 @@ CREATE OPERATOR >> (
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR #>> (
-  PROCEDURE = set_after,
+  PROCEDURE = set_left,
   LEFTARG = timestamptz, RIGHTARG = timestampset,
   COMMUTATOR = <<#,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR #>> (
-  PROCEDURE = set_after,
+  PROCEDURE = set_left,
   LEFTARG = timestampset, RIGHTARG = timestamptz,
   COMMUTATOR = <<#,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR #>> (
-  PROCEDURE = set_after,
+  PROCEDURE = set_left,
   LEFTARG = timestampset, RIGHTARG = timestampset,
   COMMUTATOR = <<#,
   RESTRICT = period_sel, JOIN = span_joinsel
@@ -522,17 +522,17 @@ CREATE FUNCTION set_overleft(floatset, floatset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_orderedset_orderedset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_overbefore(timestamptz, timestampset)
+CREATE FUNCTION set_overleft(timestamptz, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overbefore_timestamp_timestampset'
+  AS 'MODULE_PATHNAME', 'Overleft_value_orderedset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_overbefore(timestampset, timestamptz)
+CREATE FUNCTION set_overleft(timestampset, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overbefore_timestampset_timestamp'
+  AS 'MODULE_PATHNAME', 'Overleft_orderedset_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_overbefore(timestampset, timestampset)
+CREATE FUNCTION set_overleft(timestampset, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overbefore_timestampset_timestampset'
+  AS 'MODULE_PATHNAME', 'Overleft_orderedset_orderedset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR &< (
@@ -581,17 +581,17 @@ CREATE OPERATOR &< (
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR &<# (
-  PROCEDURE = set_overbefore,
+  PROCEDURE = set_Overleft,
   LEFTARG = timestamptz, RIGHTARG = timestampset,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR &<# (
-  PROCEDURE = set_overbefore,
+  PROCEDURE = set_Overleft,
   LEFTARG = timestampset, RIGHTARG = timestamptz,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR &<# (
-  PROCEDURE = set_overbefore,
+  PROCEDURE = set_Overleft,
   LEFTARG = timestampset, RIGHTARG = timestampset,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
@@ -632,17 +632,17 @@ CREATE FUNCTION set_overright(floatset, floatset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_orderedset_orderedset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_overafter(timestamptz, timestampset)
+CREATE FUNCTION set_overright(timestamptz, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overafter_timestamp_timestampset'
+  AS 'MODULE_PATHNAME', 'Overright_value_orderedset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_overafter(timestampset, timestamptz)
+CREATE FUNCTION set_overright(timestampset, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overafter_timestampset_timestamp'
+  AS 'MODULE_PATHNAME', 'Overright_orderedset_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_overafter(timestampset, timestampset)
+CREATE FUNCTION set_overright(timestampset, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overafter_timestampset_timestampset'
+  AS 'MODULE_PATHNAME', 'Overright_orderedset_orderedset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR &> (
@@ -691,17 +691,17 @@ CREATE OPERATOR &> (
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR #&> (
-  PROCEDURE = set_overafter,
+  PROCEDURE = set_overright,
   LEFTARG = timestamptz, RIGHTARG = timestampset,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR #&> (
-  PROCEDURE = set_overafter,
+  PROCEDURE = set_overright,
   LEFTARG = timestampset, RIGHTARG = timestamptz,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR #&> (
-  PROCEDURE = set_overafter,
+  PROCEDURE = set_overright,
   LEFTARG = timestampset, RIGHTARG = timestampset,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
@@ -734,11 +734,11 @@ CREATE FUNCTION set_union(float, floatset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_union(timestamptz, timestamptz)
   RETURNS timestampset
-  AS 'MODULE_PATHNAME', 'Union_timestamp_timestamp'
+  AS 'MODULE_PATHNAME', 'Union_value_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_union(timestamptz, timestampset)
   RETURNS timestampset
-  AS 'MODULE_PATHNAME', 'Union_timestamp_timestampset'
+  AS 'MODULE_PATHNAME', 'Union_value_orderedset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR + (
@@ -808,11 +808,11 @@ CREATE FUNCTION set_union(bigintset, bigintset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_union(timestampset, timestamptz)
   RETURNS timestampset
-  AS 'MODULE_PATHNAME', 'Union_timestampset_timestamp'
+  AS 'MODULE_PATHNAME', 'Union_orderedset_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_union(timestampset, timestampset)
   RETURNS timestampset
-  AS 'MODULE_PATHNAME', 'Union_timestampset_timestampset'
+  AS 'MODULE_PATHNAME', 'Union_orderedset_orderedset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR + (
@@ -884,11 +884,11 @@ CREATE FUNCTION set_minus(float, floatset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_minus(timestamptz, timestamptz)
   RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'Minus_timestamp_timestamp'
+  AS 'MODULE_PATHNAME', 'Minus_value_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_minus(timestamptz, timestampset)
   RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'Minus_timestamp_timestampset'
+  AS 'MODULE_PATHNAME', 'Minus_value_orderedset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR - (
@@ -950,11 +950,11 @@ CREATE FUNCTION set_minus(floatset, floatset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_minus(timestampset, timestamptz)
   RETURNS timestampset
-  AS 'MODULE_PATHNAME', 'Minus_timestampset_timestamp'
+  AS 'MODULE_PATHNAME', 'Minus_orderedset_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_minus(timestampset, timestampset)
   RETURNS timestampset
-  AS 'MODULE_PATHNAME', 'Minus_timestampset_timestampset'
+  AS 'MODULE_PATHNAME', 'Minus_orderedset_orderedset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR - (
@@ -1019,11 +1019,11 @@ CREATE FUNCTION set_intersection(float, floatset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_intersection(timestamptz, timestamptz)
   RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'Intersection_timestamp_timestamp'
+  AS 'MODULE_PATHNAME', 'Intersection_value_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_intersection(timestamptz, timestampset)
   RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'Intersection_timestamp_timestampset'
+  AS 'MODULE_PATHNAME', 'Intersection_value_orderedset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR * (
@@ -1093,11 +1093,11 @@ CREATE FUNCTION set_intersection(floatset, floatset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_intersection(timestampset, timestamptz)
   RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'Intersection_timestampset_timestamp'
+  AS 'MODULE_PATHNAME', 'Intersection_orderedset_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_intersection(timestampset, timestampset)
   RETURNS timestampset
-  AS 'MODULE_PATHNAME', 'Intersection_timestampset_timestampset'
+  AS 'MODULE_PATHNAME', 'Intersection_orderedset_orderedset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR * (

@@ -49,6 +49,7 @@
  * Generic operations
  *****************************************************************************/
 
+#if MEOS
 /**
  * Return the union, intersection or difference of two timestamp sets
  */
@@ -118,6 +119,7 @@ setop_timestampset_timestampset(const TimestampSet *ts1,
   }
   return orderedset_make_free(values, k, basetype);
 }
+#endif /* MEOS */
 
 /**
  * Return the intersection or the difference of a timestamp set and a period
@@ -302,6 +304,7 @@ contains_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
  * Contained
  *****************************************************************************/
 
+#if MEOS
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a timestamp is contained by a timestamp set
@@ -312,6 +315,7 @@ contained_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 {
   return contains_orderedset_value(ts, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_spantime_topo
@@ -584,6 +588,7 @@ adjacent_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
  * Strictly before of
  *****************************************************************************/
 
+#if MEOS
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a timestamp is strictly before the second one.
@@ -595,6 +600,7 @@ before_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
   TimestampTz t1 = DatumGetTimestampTz(orderedset_val_n(ts, 0));
   return (t < t1);
 }
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_spantime_pos
@@ -720,6 +726,7 @@ before_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
  * Strictly after of
  *****************************************************************************/
 
+#if MEOS
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a timestamp is strictly after a timestamp set.
@@ -731,6 +738,7 @@ after_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
   TimestampTz t1 = DatumGetTimestampTz(orderedset_val_n(ts, ts->count - 1));
   return (t > t1);
 }
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_spantime_pos
@@ -857,6 +865,7 @@ after_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
  * Does not extend to right of
  *****************************************************************************/
 
+#if MEOS
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a timestamp is not after a timestamp set.
@@ -868,6 +877,7 @@ overbefore_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
   TimestampTz t1 = DatumGetTimestampTz(orderedset_val_n(ts, ts->count - 1));
   return (t <= t1);
 }
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_spantime_pos
@@ -994,6 +1004,7 @@ overbefore_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
  * Does not extend to left of
  *****************************************************************************/
 
+#if MEOS
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a timestamp is not before a timestamp set.
@@ -1005,6 +1016,7 @@ overafter_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
   TimestampTz t1 = DatumGetTimestampTz(orderedset_val_n(ts, 0));
   return (t >= t1);
 }
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_spantime_pos
@@ -1131,6 +1143,7 @@ overafter_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
  * Set union
  *****************************************************************************/
 
+#if MEOS
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the union of the timestamps
@@ -1195,6 +1208,7 @@ union_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
     values[k++] = v;
   return orderedset_make_free(values, k, T_TIMESTAMPTZ);
 }
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_spantime_set
@@ -1220,6 +1234,7 @@ union_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 
 /*****************************************************************************/
 
+#if MEOS
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the union of a timestamp set and a timestamp
@@ -1242,6 +1257,7 @@ union_timestampset_timestampset(const TimestampSet *ts1,
 {
   return setop_timestampset_timestampset(ts1, ts2, UNION);
 }
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_spantime_set
@@ -1398,6 +1414,7 @@ intersection_timestamp_periodset(TimestampTz t, const PeriodSet *ss,
 
 /*****************************************************************************/
 
+#if MEOS
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the intersection of a timestamp set and a timestamp
@@ -1425,6 +1442,7 @@ intersection_timestampset_timestampset(const TimestampSet *ts1,
 {
   return setop_timestampset_timestampset(ts1, ts2, INTER);
 }
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_spantime_set
@@ -1533,7 +1551,7 @@ bool
 minus_timestamp_timestampset(TimestampTz t, const TimestampSet *ts,
   TimestampTz *result)
 {
-  if (! contains_orderedset_value(ts, TimestampTzGetDatum(t),
+  if (contains_orderedset_value(ts, TimestampTzGetDatum(t),
       ts->span.basetype))
     return false;
   *result = t;
@@ -1573,6 +1591,7 @@ minus_timestamp_periodset(TimestampTz t, const PeriodSet *ps,
 
 /*****************************************************************************/
 
+#if MEOS
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the difference of a timestamp set and a timestamp.
@@ -1608,6 +1627,7 @@ minus_timestampset_timestampset(const TimestampSet *ts1,
 {
   return setop_timestampset_timestampset(ts1, ts2, MINUS);
 }
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_spantime_set

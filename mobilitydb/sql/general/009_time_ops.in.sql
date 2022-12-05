@@ -560,10 +560,6 @@ CREATE OPERATOR -|- (
 
 /*****************************************************************************/
 
-CREATE FUNCTION time_union(timestamptz, timestamptz)
-  RETURNS timestampset
-  AS 'MODULE_PATHNAME', 'Union_timestamp_timestamp'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_union(timestamptz, period)
   RETURNS periodset
   AS 'MODULE_PATHNAME', 'Union_timestamp_period'
@@ -646,10 +642,6 @@ CREATE OPERATOR + (
 
 /*****************************************************************************/
 
-CREATE FUNCTION time_minus(timestamptz, timestamptz)
-  RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'Minus_timestamp_timestamp'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_minus(timestamptz, period)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Minus_timestamp_period'
@@ -724,10 +716,6 @@ CREATE OPERATOR - (
 
 /*****************************************************************************/
 
-CREATE FUNCTION time_intersection(timestamptz, timestamptz)
-  RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'Intersection_timestamp_timestamp'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_intersection(timestamptz, period)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Intersection_timestamp_period'

@@ -242,7 +242,7 @@ overlaps_orderedset_orderedset(const OrderedSet *os1,
 bool
 left_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os)
 {
-  Datum d1 = orderedset_val_n(os, os->count - 1);
+  Datum d1 = orderedset_val_n(os, 0);
   return datum_lt2(d, d1, os->span.basetype, basetype);
 }
 
@@ -306,8 +306,7 @@ right_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
  * @sqlop @s #>>
  */
 bool
-right_orderedset_orderedset(const OrderedSet *os1,
-  const OrderedSet *os2)
+right_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
 {
   Datum d1 = orderedset_val_n(os1, 0);
   Datum d2 = orderedset_val_n(os2, os2->count - 1);
@@ -327,7 +326,7 @@ bool
 overleft_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os)
 {
   Datum d1 = orderedset_val_n(os, os->count - 1);
-  return datum_ge2(d, d1, basetype, os->span.basetype);
+  return datum_le2(d, d1, basetype, os->span.basetype);
 }
 
 /**
@@ -339,7 +338,7 @@ bool
 overleft_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
 {
   Datum d1 = orderedset_val_n(os, os->count - 1);
-  return datum_ge2(d1, d, os->span.basetype, basetype);
+  return datum_le2(d1, d, os->span.basetype, basetype);
 }
 
 /**
@@ -348,8 +347,7 @@ overleft_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
  * @sqlop @s &<#
  */
 bool
-overleft_orderedset_orderedset(const OrderedSet *os1,
-  const OrderedSet *os2)
+overleft_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
 {
   Datum d1 = orderedset_val_n(os1, os1->count - 1);
   Datum d2 = orderedset_val_n(os2, os2->count - 1);
@@ -390,8 +388,7 @@ overright_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
  * @sqlop @s #&>
  */
 bool
-overright_orderedset_orderedset(const OrderedSet *os1,
-  const OrderedSet *os2)
+overright_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
 {
   Datum d1 = orderedset_val_n(os1, 0);
   Datum d2 = orderedset_val_n(os2, 0);
@@ -483,8 +480,7 @@ union_orderedset_value(const OrderedSet *os, const Datum d, mobdbType basetype)
  * @sqlop @s +
  */
 OrderedSet *
-union_orderedset_orderedset(const OrderedSet *os1,
-  const OrderedSet *os2)
+union_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
 {
   return setop_orderedset_orderedset(os1, os2, UNION);
 }
@@ -547,8 +543,7 @@ intersection_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype,
  * @sqlop @s *
  */
 OrderedSet *
-intersection_orderedset_orderedset(const OrderedSet *os1,
-  const OrderedSet *os2)
+intersection_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
 {
   return setop_orderedset_orderedset(os1, os2, INTER);
 }
@@ -618,8 +613,7 @@ minus_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
  * @sqlop @s -
  */
 OrderedSet *
-minus_orderedset_orderedset(const OrderedSet *os1,
-  const OrderedSet *os2)
+minus_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
 {
   return setop_orderedset_orderedset(os1, os2, MINUS);
 }
@@ -657,8 +651,7 @@ distance_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
  * @sqlop @s <->
  */
 double
-distance_orderedset_orderedset(const OrderedSet *os1,
-  const OrderedSet *os2)
+distance_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
 {
   return distance_span_span(&os1->span, &os2->span);
 }

@@ -1138,14 +1138,14 @@ SELECT periodset '{[2000-01-05, 2000-01-07], [2000-01-08, 2000-01-09], [2000-01-
  {[2000-01-05 00:00:00+00, 2000-01-12 00:00:00+00]}
 (1 row)
 
-SELECT time_minus(timestamptz '2000-01-01', timestamptz '2000-01-01');
- time_minus 
-------------
+SELECT set_minus(timestamptz '2000-01-01', timestamptz '2000-01-01');
+ set_minus 
+-----------
  
 (1 row)
 
-SELECT time_minus(timestamptz '2000-01-01', timestamptz '2000-01-02');
-       time_minus       
+SELECT set_minus(timestamptz '2000-01-01', timestamptz '2000-01-02');
+       set_minus        
 ------------------------
  2000-01-01 00:00:00+00
 (1 row)

@@ -46,41 +46,6 @@
 /*****************************************************************************/
 /* contains? */
 
-PG_FUNCTION_INFO_V1(Contains_timestampset_timestamp);
-/**
- * @ingroup mobilitydb_spantime_topo
- * @brief Return true if a timestamp set contains a timestamp
- * @sqlfunc time_contains()
- * @sqlop @p @>
- */
-PGDLLEXPORT Datum
-Contains_timestampset_timestamp(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  Datum t = PG_GETARG_DATUM(1);
-  bool result = contains_orderedset_value(ts, t, T_TIMESTAMPTZ);
-  PG_FREE_IF_COPY(ts, 0);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(Contains_timestampset_timestampset);
-/**
- * @ingroup mobilitydb_spantime_topo
- * @brief Return true if the first timestamp set contains the second one
- * @sqlfunc time_contains()
- * @sqlop @p @>
- */
-PGDLLEXPORT Datum
-Contains_timestampset_timestampset(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
-  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = contains_orderedset_orderedset(ts1, ts2);
-  PG_FREE_IF_COPY(ts1, 0);
-  PG_FREE_IF_COPY(ts2, 1);
-  PG_RETURN_BOOL(result);
-}
-
 PG_FUNCTION_INFO_V1(Contains_period_timestamp);
 /**
  * @ingroup mobilitydb_spantime_topo
@@ -151,23 +116,6 @@ Contains_periodset_timestampset(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 /* contained? */
 
-PG_FUNCTION_INFO_V1(Contained_timestamp_timestampset);
-/**
- * @ingroup mobilitydb_spantime_topo
- * @brief Return true if a timestamp is contained by a timestamp set
- * @sqlfunc time_contained()
- * @sqlop @p <@
- */
-PGDLLEXPORT Datum
-Contained_timestamp_timestampset(PG_FUNCTION_ARGS)
-{
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = contained_timestamp_timestampset(t, ts);
-  PG_FREE_IF_COPY(ts, 1);
-  PG_RETURN_BOOL(result);
-}
-
 PG_FUNCTION_INFO_V1(Contained_timestamp_period);
 /**
  * @ingroup mobilitydb_spantime_topo
@@ -197,24 +145,6 @@ Contained_timestamp_periodset(PG_FUNCTION_ARGS)
   PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   bool result = contained_timestamp_periodset(t, ps);
   PG_FREE_IF_COPY(ps, 1);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(Contained_timestampset_timestampset);
-/**
- * @ingroup mobilitydb_spantime_topo
- * @brief Return true if the first timestamp set is contained by the second one
- * @sqlfunc time_contained()
- * @sqlop @p <@
- */
-PGDLLEXPORT Datum
-Contained_timestampset_timestampset(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
-  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = contained_orderedset_orderedset(ts1, ts2);
-  PG_FREE_IF_COPY(ts1, 0);
-  PG_FREE_IF_COPY(ts2, 1);
   PG_RETURN_BOOL(result);
 }
 
@@ -255,24 +185,6 @@ Contained_timestampset_periodset(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 /* overlaps? */
-
-PG_FUNCTION_INFO_V1(Overlaps_timestampset_timestampset);
-/**
- * @ingroup mobilitydb_spantime_topo
- * @brief Return true if the timestamp sets overlap
- * @sqlfunc time_overlaps()
- * @sqlop @p &&
- */
-PGDLLEXPORT Datum
-Overlaps_timestampset_timestampset(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
-  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = overlaps_orderedset_orderedset(ts1, ts2);
-  PG_FREE_IF_COPY(ts1, 0);
-  PG_FREE_IF_COPY(ts2, 1);
-  PG_RETURN_BOOL(result);
-}
 
 PG_FUNCTION_INFO_V1(Overlaps_timestampset_period);
 /**
@@ -484,23 +396,6 @@ Adjacent_periodset_timestampset(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 /* strictly before of? */
 
-PG_FUNCTION_INFO_V1(Before_timestamp_timestampset);
-/**
- * @ingroup mobilitydb_spantime_pos
- * @brief Return true if a timestamp is strictly before a timestamp set
- * @sqlfunc time_before()
- * @sqlop @p <<#
- */
-PGDLLEXPORT Datum
-Before_timestamp_timestampset(PG_FUNCTION_ARGS)
-{
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = before_timestamp_timestampset(t, ts);
-  PG_FREE_IF_COPY(ts, 1);
-  PG_RETURN_BOOL(result);
-}
-
 PG_FUNCTION_INFO_V1(Before_timestamp_period);
 /**
  * @ingroup mobilitydb_spantime_pos
@@ -530,41 +425,6 @@ Before_timestamp_periodset(PG_FUNCTION_ARGS)
   PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   bool result = before_timestamp_periodset(t, ps);
   PG_FREE_IF_COPY(ps, 1);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(Before_timestampset_timestamp);
-/**
- * @ingroup mobilitydb_spantime_pos
- * @brief Return true if a timestamp set is strictly before a timestamp
- * @sqlfunc time_before()
- * @sqlop @p <<#
- */
-PGDLLEXPORT Datum
-Before_timestampset_timestamp(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  bool result = before_timestampset_timestamp(ts, t);
-  PG_FREE_IF_COPY(ts, 0);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(Before_timestampset_timestampset);
-/**
- * @ingroup mobilitydb_spantime_pos
- * @brief Return true if the first timestamp set is strictly before the second one
- * @sqlfunc time_before()
- * @sqlop @p <<#
- */
-PGDLLEXPORT Datum
-Before_timestampset_timestampset(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
-  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = left_orderedset_orderedset(ts1, ts2);
-  PG_FREE_IF_COPY(ts1, 0);
-  PG_FREE_IF_COPY(ts2, 1);
   PG_RETURN_BOOL(result);
 }
 
@@ -705,41 +565,6 @@ After_timestamp_periodset(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(After_timestampset_timestamp);
-/**
- * @ingroup mobilitydb_spantime_pos
- * @brief Return true if a timestamp set is strictly after a timestamp
- * @sqlfunc time_after()
- * @sqlop @p #>>
- */
-PGDLLEXPORT Datum
-After_timestampset_timestamp(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  bool result = after_timestampset_timestamp(ts, t);
-  PG_FREE_IF_COPY(ts, 0);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(After_orderedset_orderedset);
-/**
- * @ingroup mobilitydb_spantime_pos
- * @brief Return true if the first timestamp set is strictly after the second one
- * @sqlfunc time_after()
- * @sqlop @p #>>
- */
-PGDLLEXPORT Datum
-After_orderedset_orderedset(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
-  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = right_orderedset_orderedset(ts1, ts2);
-  PG_FREE_IF_COPY(ts1, 0);
-  PG_FREE_IF_COPY(ts2, 1);
-  PG_RETURN_BOOL(result);
-}
-
 PG_FUNCTION_INFO_V1(After_timestampset_period);
 /**
  * @ingroup mobilitydb_spantime_pos
@@ -845,23 +670,6 @@ After_periodset_timestampset(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 /* does not extend to right of? */
 
-PG_FUNCTION_INFO_V1(Overbefore_timestamp_timestampset);
-/**
- * @ingroup mobilitydb_spantime_pos
- * @brief Return true if a timestamp is not after a timestamp set
- * @sqlfunc time_overbefore()
- * @sqlop @p &<#
- */
-PGDLLEXPORT Datum
-Overbefore_timestamp_timestampset(PG_FUNCTION_ARGS)
-{
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = overbefore_timestamp_timestampset(t, ts);
-  PG_FREE_IF_COPY(ts, 1);
-  PG_RETURN_BOOL(result);
-}
-
 PG_FUNCTION_INFO_V1(Overbefore_timestamp_period);
 /**
  * @ingroup mobilitydb_spantime_pos
@@ -891,41 +699,6 @@ Overbefore_timestamp_periodset(PG_FUNCTION_ARGS)
   PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   bool result = overbefore_timestamp_periodset(t, ps);
   PG_FREE_IF_COPY(ps, 1);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(Overbefore_timestampset_timestamp);
-/**
- * @ingroup mobilitydb_spantime_pos
- * @brief Return true if a timestamp is not after a timestamp
- * @sqlfunc time_overbefore()
- * @sqlop @p &<#
- */
-PGDLLEXPORT Datum
-Overbefore_timestampset_timestamp(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  bool result = overbefore_timestampset_timestamp(ts, t);
-  PG_FREE_IF_COPY(ts, 0);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(Overbefore_timestampset_timestampset);
-/**
- * @ingroup mobilitydb_spantime_pos
- * @brief Return true if the first timestamp set is not after the second one
- * @sqlfunc time_overbefore()
- * @sqlop @p &<#
- */
-PGDLLEXPORT Datum
-Overbefore_timestampset_timestampset(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
-  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = overleft_orderedset_orderedset(ts1, ts2);
-  PG_FREE_IF_COPY(ts1, 0);
-  PG_FREE_IF_COPY(ts2, 1);
   PG_RETURN_BOOL(result);
 }
 
@@ -1034,23 +807,6 @@ Overbefore_periodset_timestampset(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 /* does not extend to left of? */
 
-PG_FUNCTION_INFO_V1(Overafter_timestamp_timestampset);
-/**
- * @ingroup mobilitydb_spantime_pos
- * @brief Return true if a timestamp is not before a timestamp set
- * @sqlfunc time_overafter()
- * @sqlop @p
- */
-PGDLLEXPORT Datum
-Overafter_timestamp_timestampset(PG_FUNCTION_ARGS)
-{
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = overafter_timestamp_timestampset(t, ts);
-  PG_FREE_IF_COPY(ts, 1);
-  PG_RETURN_BOOL(result);
-}
-
 PG_FUNCTION_INFO_V1(Overafter_timestamp_period);
 /**
  * @ingroup mobilitydb_spantime_pos
@@ -1080,41 +836,6 @@ Overafter_timestamp_periodset(PG_FUNCTION_ARGS)
   PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   bool result = overafter_timestamp_periodset(t, ps);
   PG_FREE_IF_COPY(ps, 1);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(Overafter_timestampset_timestamp);
-/**
- * @ingroup mobilitydb_spantime_pos
- * @brief Return true if a timestamp set is not before a timestamp
- * @sqlfunc time_overafter()
- * @sqlop @p #&>
- */
-PGDLLEXPORT Datum
-Overafter_timestampset_timestamp(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  bool result = overafter_timestampset_timestamp(ts, t);
-  PG_FREE_IF_COPY(ts, 0);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(Overafter_timestampset_timestampset);
-/**
- * @ingroup mobilitydb_spantime_pos
- * @brief Return true if the first timestamp set is not before the second one
- * @sqlfunc time_overafter()
- * @sqlop @p #&>
- */
-PGDLLEXPORT Datum
-Overafter_timestampset_timestampset(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
-  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = overright_orderedset_orderedset(ts1, ts2);
-  PG_FREE_IF_COPY(ts1, 0);
-  PG_FREE_IF_COPY(ts2, 1);
   PG_RETURN_BOOL(result);
 }
 
@@ -1224,39 +945,6 @@ Overafter_periodset_timestampset(PG_FUNCTION_ARGS)
  * Set union
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Union_timestamp_timestamp);
-/**
- * @ingroup mobilitydb_spantime_set
- * @brief Return the union of the timestamps
- * @sqlfunc time_union()
- * @sqlop @p +
- */
-PGDLLEXPORT Datum
-Union_timestamp_timestamp(PG_FUNCTION_ARGS)
-{
-  TimestampTz t1 = PG_GETARG_TIMESTAMPTZ(0);
-  TimestampTz t2 = PG_GETARG_TIMESTAMPTZ(1);
-  TimestampSet *result = union_timestamp_timestamp(t1, t2);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Union_timestamp_timestampset);
-/**
- * @ingroup mobilitydb_spantime_set
- * @brief Return the union of a timestamp and a timestamp set
- * @sqlfunc time_union()
- * @sqlop @p +
- */
-PGDLLEXPORT Datum
-Union_timestamp_timestampset(PG_FUNCTION_ARGS)
-{
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  TimestampSet *result = union_timestamp_timestampset(t, ts);
-  PG_FREE_IF_COPY(ts, 1);
-  PG_RETURN_POINTER(result);
-}
-
 PG_FUNCTION_INFO_V1(Union_timestamp_period);
 /**
  * @ingroup mobilitydb_spantime_set
@@ -1291,41 +979,6 @@ Union_timestamp_periodset(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************/
-
-PG_FUNCTION_INFO_V1(Union_timestampset_timestamp);
-/**
- * @ingroup mobilitydb_spantime_set
- * @brief Return the union of a timestamp set and a timestamp
- * @sqlfunc time_union()
- * @sqlop @p +
- */
-PGDLLEXPORT Datum
-Union_timestampset_timestamp(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  TimestampSet *result = union_timestampset_timestamp(ts, t);
-  PG_FREE_IF_COPY(ts, 0);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Union_timestampset_timestampset);
-/**
- * @ingroup mobilitydb_spantime_set
- * @brief Return the union of the timestamp sets
- * @sqlfunc time_union()
- * @sqlop @p +
- */
-PGDLLEXPORT Datum
-Union_timestampset_timestampset(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
-  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  TimestampSet *result = union_orderedset_orderedset(ts1, ts2);
-  PG_FREE_IF_COPY(ts1, 0);
-  PG_FREE_IF_COPY(ts2, 1);
-  PG_RETURN_POINTER(result);
-}
 
 PG_FUNCTION_INFO_V1(Union_timestampset_period);
 /**
@@ -1438,45 +1091,6 @@ Union_periodset_timestampset(PG_FUNCTION_ARGS)
  * Set intersection
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Intersection_timestamp_timestamp);
-/**
- * @ingroup mobilitydb_spantime_set
- * @brief Return the intersection of the timestamps
- * @sqlfunc time_intersection()
- * @sqlop @p *
- */
-PGDLLEXPORT Datum
-Intersection_timestamp_timestamp(PG_FUNCTION_ARGS)
-{
-  TimestampTz t1 = PG_GETARG_TIMESTAMPTZ(0);
-  TimestampTz t2 = PG_GETARG_TIMESTAMPTZ(1);
-  TimestampTz result;
-  bool found = intersection_timestamp_timestamp(t1, t2, &result);
-  if (! found)
-    PG_RETURN_NULL();
-  PG_RETURN_TIMESTAMPTZ(result);
-}
-
-PG_FUNCTION_INFO_V1(Intersection_timestamp_timestampset);
-/**
- * @ingroup mobilitydb_spantime_set
- * @brief Return the intersection of a timestamp and a timestamp set
- * @sqlfunc time_intersection()
- * @sqlop @p *
- */
-PGDLLEXPORT Datum
-Intersection_timestamp_timestampset(PG_FUNCTION_ARGS)
-{
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  TimestampTz result;
-  bool found = intersection_timestamp_timestampset(t, ts, &result);
-  PG_FREE_IF_COPY(ts, 1);
-  if (! found)
-    PG_RETURN_NULL();
-  PG_RETURN_TIMESTAMPTZ(result);
-}
-
 PG_FUNCTION_INFO_V1(Intersection_timestamp_period);
 /**
  * @ingroup mobilitydb_spantime_set
@@ -1514,46 +1128,6 @@ Intersection_timestamp_periodset(PG_FUNCTION_ARGS)
   if (! found)
     PG_RETURN_NULL();
   PG_RETURN_TIMESTAMPTZ(result);
-}
-
-PG_FUNCTION_INFO_V1(Intersection_timestampset_timestamp);
-/**
- * @ingroup mobilitydb_spantime_set
- * @brief Return the intersection of a timestamp set and a timestamp
- * @sqlfunc time_intersection()
- * @sqlop @p *
- */
-PGDLLEXPORT Datum
-Intersection_timestampset_timestamp(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  TimestampTz result;
-  bool found = intersection_timestampset_timestamp(ts, t, &result);
-  PG_FREE_IF_COPY(ts, 0);
-  if (! found)
-    PG_RETURN_NULL();
-  PG_RETURN_TIMESTAMPTZ(result);
-}
-
-PG_FUNCTION_INFO_V1(Intersection_timestampset_timestampset);
-/**
- * @ingroup mobilitydb_spantime_set
- * @brief Return the intersection of the timestamp sets
- * @sqlfunc time_intersection()
- * @sqlop @p *
- */
-PGDLLEXPORT Datum
-Intersection_timestampset_timestampset(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
-  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  TimestampSet *result = intersection_orderedset_orderedset(ts1, ts2);
-  PG_FREE_IF_COPY(ts1, 0);
-  PG_FREE_IF_COPY(ts2, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
 }
 
 PG_FUNCTION_INFO_V1(Intersection_timestampset_period);
@@ -1683,44 +1257,6 @@ Intersection_periodset_timestampset(PG_FUNCTION_ARGS)
  * The functions produce new results that must be freed after
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Minus_timestamp_timestamp);
-/**
- * @ingroup mobilitydb_spantime_set
- * @brief Return the difference of the timestamps
- * @sqlfunc time_minus()
- * @sqlop @p -
- */
-PGDLLEXPORT Datum
-Minus_timestamp_timestamp(PG_FUNCTION_ARGS)
-{
-  TimestampTz t1 = PG_GETARG_TIMESTAMPTZ(0);
-  TimestampTz t2 = PG_GETARG_TIMESTAMPTZ(1);
-  TimestampTz result;
-  if (! minus_timestamp_timestamp(t1, t2, &result))
-    PG_RETURN_NULL();
-  PG_RETURN_TIMESTAMPTZ(result);
-}
-
-PG_FUNCTION_INFO_V1(Minus_timestamp_timestampset);
-/**
- * @ingroup mobilitydb_spantime_set
- * @brief Return the difference of a timestamp and a a timestamp set
- * @sqlfunc time_minus()
- * @sqlop @p -
- */
-PGDLLEXPORT Datum
-Minus_timestamp_timestampset(PG_FUNCTION_ARGS)
-{
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  TimestampTz result;
-  bool found = minus_timestamp_timestampset(t, ts, &result);
-  PG_FREE_IF_COPY(ts, 1);
-  if (! found)
-    PG_RETURN_NULL();
-  PG_RETURN_TIMESTAMPTZ(result);
-}
-
 PG_FUNCTION_INFO_V1(Minus_timestamp_period);
 /**
  * @ingroup mobilitydb_spantime_set
@@ -1761,45 +1297,6 @@ Minus_timestamp_periodset(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************/
-
-PG_FUNCTION_INFO_V1(Minus_timestampset_timestamp);
-/**
- * @ingroup mobilitydb_spantime_set
- * @brief Return the difference of a timestamp set and a timestamp
- * @sqlfunc time_minus()
- * @sqlop @p -
- */
-PGDLLEXPORT Datum
-Minus_timestampset_timestamp(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  TimestampSet *result = minus_timestampset_timestamp(ts, t);
-  PG_FREE_IF_COPY(ts, 0);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Minus_timestampset_timestampset);
-/**
- * @ingroup mobilitydb_spantime_set
- * @brief Return the difference of the timestamp sets
- * @sqlfunc time_minus()
- * @sqlop @p -
- */
-PGDLLEXPORT Datum
-Minus_timestampset_timestampset(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
-  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  TimestampSet *result = minus_orderedset_orderedset(ts1, ts2);
-  PG_FREE_IF_COPY(ts1, 0);
-  PG_FREE_IF_COPY(ts2, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
-}
 
 PG_FUNCTION_INFO_V1(Minus_timestampset_period);
 /**
