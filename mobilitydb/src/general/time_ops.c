@@ -37,23 +37,11 @@
 #include <utils/timestamp.h>
 /* MobilityDB */
 #include <meos.h>
+#include <meos_internal.h>
 #include "general/periodset.h"
 #include "general/set.h"
 #include "general/spanset.h"
 #include "general/temporal_util.h"
-
-/*****************************************************************************/
-
-/**
- * @brief Return the size in bytes to read from toast to get the basic information
- * from a variable-length time type: Time struct (i.e., TimestampSet
- * or PeriodSet) and bounding box size
-*/
-uint32_t
-time_max_header_size(void)
-{
-  return double_pad(Max(sizeof(TimestampSet), sizeof(PeriodSet)));
-}
 
 /*****************************************************************************/
 /* contains? */
@@ -69,8 +57,8 @@ PGDLLEXPORT Datum
 Contains_timestampset_timestamp(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  bool result = contains_timestampset_timestamp(ts, t);
+  Datum t = PG_GETARG_DATUM(1);
+  bool result = contains_orderedset_value(ts, t, T_TIMESTAMPTZ);
   PG_FREE_IF_COPY(ts, 0);
   PG_RETURN_BOOL(result);
 }
@@ -87,7 +75,7 @@ Contains_timestampset_timestampset(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
   TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = contains_timestampset_timestampset(ts1, ts2);
+  bool result = contains_orderedset_orderedset(ts1, ts2);
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);
   PG_RETURN_BOOL(result);
@@ -224,7 +212,7 @@ Contained_timestampset_timestampset(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
   TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = contained_timestampset_timestampset(ts1, ts2);
+  bool result = contained_orderedset_orderedset(ts1, ts2);
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);
   PG_RETURN_BOOL(result);
@@ -280,7 +268,7 @@ Overlaps_timestampset_timestampset(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
   TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = overlaps_timestampset_timestampset(ts1, ts2);
+  bool result = overlaps_orderedset_orderedset(ts1, ts2);
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);
   PG_RETURN_BOOL(result);
@@ -574,7 +562,7 @@ Before_timestampset_timestampset(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
   TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = before_timestampset_timestampset(ts1, ts2);
+  bool result = left_orderedset_orderedset(ts1, ts2);
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);
   PG_RETURN_BOOL(result);
@@ -685,23 +673,6 @@ Before_periodset_timestampset(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 /* strictly after of? */
 
-PG_FUNCTION_INFO_V1(After_timestamp_timestampset);
-/**
- * @ingroup mobilitydb_spantime_pos
- * @brief Return true if a timestamp is strictly after a timestamp set
- * @sqlfunc time_after()
- * @sqlop @p #>>
- */
-PGDLLEXPORT Datum
-After_timestamp_timestampset(PG_FUNCTION_ARGS)
-{
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = after_timestamp_timestampset(t, ts);
-  PG_FREE_IF_COPY(ts, 1);
-  PG_RETURN_BOOL(result);
-}
-
 PG_FUNCTION_INFO_V1(After_timestamp_period);
 /**
  * @ingroup mobilitydb_spantime_pos
@@ -751,7 +722,7 @@ After_timestampset_timestamp(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(After_timestampset_timestampset);
+PG_FUNCTION_INFO_V1(After_orderedset_orderedset);
 /**
  * @ingroup mobilitydb_spantime_pos
  * @brief Return true if the first timestamp set is strictly after the second one
@@ -759,11 +730,11 @@ PG_FUNCTION_INFO_V1(After_timestampset_timestampset);
  * @sqlop @p #>>
  */
 PGDLLEXPORT Datum
-After_timestampset_timestampset(PG_FUNCTION_ARGS)
+After_orderedset_orderedset(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
   TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = after_timestampset_timestampset(ts1, ts2);
+  bool result = right_orderedset_orderedset(ts1, ts2);
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);
   PG_RETURN_BOOL(result);
@@ -952,7 +923,7 @@ Overbefore_timestampset_timestampset(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
   TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = overbefore_timestampset_timestampset(ts1, ts2);
+  bool result = overleft_orderedset_orderedset(ts1, ts2);
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);
   PG_RETURN_BOOL(result);
@@ -1141,7 +1112,7 @@ Overafter_timestampset_timestampset(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
   TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = overafter_timestampset_timestampset(ts1, ts2);
+  bool result = overright_orderedset_orderedset(ts1, ts2);
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);
   PG_RETURN_BOOL(result);
@@ -1350,7 +1321,7 @@ Union_timestampset_timestampset(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
   TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  TimestampSet *result = union_timestampset_timestampset(ts1, ts2);
+  TimestampSet *result = union_orderedset_orderedset(ts1, ts2);
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);
   PG_RETURN_POINTER(result);
@@ -1577,7 +1548,7 @@ Intersection_timestampset_timestampset(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
   TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  TimestampSet *result = intersection_timestampset_timestampset(ts1, ts2);
+  TimestampSet *result = intersection_orderedset_orderedset(ts1, ts2);
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);
   if (! result)
@@ -1822,7 +1793,7 @@ Minus_timestampset_timestampset(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
   TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  TimestampSet *result = minus_timestampset_timestampset(ts1, ts2);
+  TimestampSet *result = minus_orderedset_orderedset(ts1, ts2);
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);
   if (! result)

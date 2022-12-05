@@ -463,7 +463,7 @@ extern bool contained_timestamp_periodset(TimestampTz t, const PeriodSet *ps);
 extern bool contained_timestamp_timestampset(TimestampTz t, const TimestampSet *ts);
 extern bool contained_timestampset_period(const TimestampSet *ts, const Period *p);
 extern bool contained_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps);
-extern bool contained_timestampset_timestampset(const TimestampSet *ts1, const TimestampSet *ts2);
+extern bool contained_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2);
 extern bool contains_floatspan_float(const Span *s, double d);
 extern bool contains_intspan_int(const Span *s, int i);
 extern bool contains_span_spanset(const Period *p, const PeriodSet *ps);
@@ -477,7 +477,7 @@ extern bool contains_periodset_timestamp(const PeriodSet *ps, TimestampTz t);
 extern bool contains_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts);
 extern bool contains_span_span(const Span *s1, const Span *s2);
 extern bool contains_timestampset_timestamp(const TimestampSet *ts, TimestampTz t);
-extern bool contains_timestampset_timestampset(const TimestampSet *ts1, const TimestampSet *ts2);
+extern bool contains_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2);
 extern bool overlaps_span_spanset(const Period *p, const PeriodSet *ps);
 extern bool overlaps_period_timestampset(const Period *p, const TimestampSet *ts);
 extern bool overlaps_spanset_span(const PeriodSet *ps, const Period *p);
@@ -486,7 +486,7 @@ extern bool overlaps_periodset_timestampset(const PeriodSet *ps, const Timestamp
 extern bool overlaps_span_span(const Span *s1, const Span *s2);
 extern bool overlaps_timestampset_period(const TimestampSet *ts, const Period *p);
 extern bool overlaps_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps);
-extern bool overlaps_timestampset_timestampset(const TimestampSet *ts1, const TimestampSet *ts2);
+extern bool overlaps_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2);
 
 /*****************************************************************************/
 
@@ -505,7 +505,8 @@ extern bool after_timestamp_timestampset(TimestampTz t, const TimestampSet *ts);
 extern bool after_timestampset_period(const TimestampSet *ts, const Period *p);
 extern bool after_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps);
 extern bool after_timestampset_timestamp(const TimestampSet *ts, TimestampTz t);
-extern bool after_timestampset_timestampset(const TimestampSet *ts1, const TimestampSet *ts2);
+extern bool right_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2);
+extern bool left_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2);
 extern bool left_span_spanset(const Period *p, const PeriodSet *ps);
 extern bool before_period_timestamp(const Period *p, TimestampTz t);
 extern bool before_period_timestampset(const Period *p, const TimestampSet *ts);
@@ -519,7 +520,6 @@ extern bool before_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 extern bool before_timestampset_period(const TimestampSet *ts, const Period *p);
 extern bool before_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps);
 extern bool before_timestampset_timestamp(const TimestampSet *ts, TimestampTz t);
-extern bool before_timestampset_timestampset(const TimestampSet *ts1, const TimestampSet *ts2);
 extern bool left_float_floatspan(double d, const Span *s);
 extern bool left_floatspan_float(const Span *s, double d);
 extern bool left_int_intspan(int i, const Span *s);
@@ -538,7 +538,7 @@ extern bool overafter_timestamp_timestampset(TimestampTz t, const TimestampSet *
 extern bool overafter_timestampset_period(const TimestampSet *ts, const Period *p);
 extern bool overafter_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps);
 extern bool overafter_timestampset_timestamp(const TimestampSet *ts, TimestampTz t);
-extern bool overafter_timestampset_timestampset(const TimestampSet *ts1, const TimestampSet *ts2);
+extern bool overright_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2);
 extern bool overleft_span_spanset(const Period *p, const PeriodSet *ps);
 extern bool overbefore_period_timestamp(const Period *p, TimestampTz t);
 extern bool overbefore_period_timestampset(const Period *p, const TimestampSet *ts);
@@ -552,7 +552,7 @@ extern bool overbefore_timestamp_timestampset(TimestampTz t, const TimestampSet 
 extern bool overbefore_timestampset_period(const TimestampSet *ts, const Period *p);
 extern bool overbefore_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps);
 extern bool overbefore_timestampset_timestamp(const TimestampSet *ts, TimestampTz t);
-extern bool overbefore_timestampset_timestampset(const TimestampSet *ts1, const TimestampSet *ts2);
+extern bool overleft_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2);
 extern bool overleft_float_floatspan(double d, const Span *s);
 extern bool overleft_floatspan_float(const Span *s, double d);
 extern bool overleft_int_intspan(int i, const Span *s);
@@ -589,7 +589,7 @@ extern bool intersection_timestamp_timestampset(TimestampTz t, const TimestampSe
 extern TimestampSet *intersection_timestampset_period(const TimestampSet *ts, const Period *p);
 extern TimestampSet *intersection_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps);
 extern bool intersection_timestampset_timestamp(const TimestampSet *ts, const TimestampTz t, TimestampTz *result);
-extern TimestampSet *intersection_timestampset_timestampset(const TimestampSet *ts1, const TimestampSet *ts2);
+extern TimestampSet *intersection_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2);
 extern SpanSet *minus_span_span(const Span *s1, const Span *s2);
 extern SpanSet *minus_span_spanset(const Span *s, const SpanSet *ss);
 extern PeriodSet *minus_period_timestamp(const Period *p, TimestampTz t);
@@ -606,7 +606,7 @@ extern bool minus_timestamp_timestampset(TimestampTz t, const TimestampSet *ts, 
 extern TimestampSet *minus_timestampset_period(const TimestampSet *ts, const Period *p);
 extern TimestampSet *minus_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps);
 extern TimestampSet *minus_timestampset_timestamp(const TimestampSet *ts, TimestampTz t);
-extern TimestampSet *minus_timestampset_timestampset(const TimestampSet *ts1, const TimestampSet *ts2);
+extern TimestampSet *minus_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2);
 extern SpanSet *union_span_span(const Span *s1, const Span *s2);
 extern SpanSet *union_span_spanset(const Span *s, const SpanSet *ss);
 extern PeriodSet *union_period_timestamp(const Period *p, TimestampTz t);
@@ -623,7 +623,7 @@ extern TimestampSet *union_timestamp_timestampset(TimestampTz t, const Timestamp
 extern PeriodSet *union_timestampset_period(const TimestampSet *ts, const Period *p);
 extern PeriodSet *union_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps);
 extern TimestampSet *union_timestampset_timestamp(const TimestampSet *ts, const TimestampTz t);
-extern TimestampSet *union_timestampset_timestampset(const TimestampSet *ts1, const TimestampSet *ts2);
+extern TimestampSet *union_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2);
 
 /*****************************************************************************/
 
@@ -649,7 +649,7 @@ extern double distance_timestamp_timestampset(TimestampTz t, const TimestampSet 
 extern double distance_timestampset_period(const TimestampSet *ts, const Period *p);
 extern double distance_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps);
 extern double distance_timestampset_timestamp(const TimestampSet *ts, TimestampTz t);
-extern double distance_timestampset_timestampset(const TimestampSet *ts1, const TimestampSet *ts2);
+extern double distance_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2);
 
 /*****************************************************************************/
 

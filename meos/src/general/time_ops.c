@@ -206,6 +206,7 @@ setop_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps,
  * Contains
  *****************************************************************************/
 
+#if MEOS
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a timestamp set contains a timestamp.
@@ -214,12 +215,7 @@ setop_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps,
 bool
 contains_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 {
-  /* Bounding box test */
-  if (! contains_period_timestamp(&ts->span, t))
-    return false;
-
-  int loc;
-  return timestampset_find_timestamp(ts, t, &loc);
+  return contains_orderedset_value(ts, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 
 /**
@@ -231,27 +227,9 @@ bool
 contains_timestampset_timestampset(const TimestampSet *ts1,
   const TimestampSet *ts2)
 {
-  /* Bounding box test */
-  if (! contains_span_span(&ts1->span, &ts2->span))
-    return false;
-
-  int i = 0, j = 0;
-  while (j < ts2->count)
-  {
-    TimestampTz t1 = DatumGetTimestampTz(orderedset_val_n(ts1, i));
-    TimestampTz t2 = DatumGetTimestampTz(orderedset_val_n(ts2, j));
-    int cmp = timestamptz_cmp_internal(t1, t2);
-    if (cmp == 0)
-    {
-      i++; j++;
-    }
-    else if (cmp < 0)
-      i++;
-    else
-      return false;
-  }
-  return true;
+  return contains_orderedset_orderedset(ts1, ts2);
 }
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_spantime_topo
@@ -332,7 +310,7 @@ contains_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 bool
 contained_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 {
-  return contains_timestampset_timestamp(ts, t);
+  return contains_orderedset_value(ts, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 
 /**
@@ -366,7 +344,7 @@ bool
 contained_timestampset_timestampset(const TimestampSet *ts1,
   const TimestampSet *ts2)
 {
-  return contains_timestampset_timestampset(ts2, ts1);
+  return contains_orderedset_orderedset(ts2, ts1);
 }
 
 /**
@@ -1379,7 +1357,8 @@ bool
 intersection_timestamp_timestampset(TimestampTz t, const TimestampSet *ts,
   TimestampTz *result)
 {
-  if (! contains_timestampset_timestamp(ts, t))
+  if (! contains_orderedset_value(ts, TimestampTzGetDatum(t),
+      ts->span.basetype))
     return false;
   *result  = t;
   return true;
@@ -1428,7 +1407,8 @@ bool
 intersection_timestampset_timestamp(const TimestampSet *ts, const TimestampTz t,
   TimestampTz *result)
 {
-  if (! contains_timestampset_timestamp(ts, t))
+  if (! contains_orderedset_value(ts, TimestampTzGetDatum(t),
+      ts->span.basetype))
     return false;
   *result  = t;
   return true;
@@ -1553,7 +1533,8 @@ bool
 minus_timestamp_timestampset(TimestampTz t, const TimestampSet *ts,
   TimestampTz *result)
 {
-  if (contains_timestampset_timestamp(ts, t))
+  if (! contains_orderedset_value(ts, TimestampTzGetDatum(t),
+      ts->span.basetype))
     return false;
   *result = t;
   return true;

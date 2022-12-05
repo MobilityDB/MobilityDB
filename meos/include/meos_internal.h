@@ -113,29 +113,46 @@ extern bool adjacent_value_span(Datum d, mobdbType basetype, const Span *s);
 extern bool adjacent_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss);
 extern bool contains_span_value(const Span *s, Datum d, mobdbType basetype);
 extern bool contains_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype);
+extern bool contains_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype);
+extern bool contains_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2);
 extern bool contained_value_span(Datum d, mobdbType basetype, const Span *s);
+extern bool contained_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os);
+extern bool contained_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2);
 extern bool contained_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss);
 extern bool overlaps_value_span(Datum d, mobdbType basetype, const Span *s);
 extern bool overlaps_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss);
 extern bool overlaps_span_value(const Span *s, Datum d, mobdbType basetype);
 extern bool overlaps_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype);
+extern bool overlaps_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2);
 
 /*****************************************************************************/
 
 /* Position functions for span and time types */
 
-extern bool left_value_span(Datum d, mobdbType basetype, const Span *s);
-extern bool left_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss);
+extern bool left_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2);
+extern bool left_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype);
 extern bool left_span_value(const Span *s, Datum d, mobdbType basetype);
 extern bool left_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype);
+extern bool left_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os);
+extern bool left_value_span(Datum d, mobdbType basetype, const Span *s);
+extern bool left_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss);
+extern bool right_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os);
+extern bool right_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype);
+extern bool right_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2);
 extern bool right_value_span(Datum d, mobdbType basetype, const Span *s);
 extern bool right_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss);
 extern bool right_span_value(const Span *s, Datum d, mobdbType basetype);
 extern bool right_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype);
+extern bool overleft_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os);
+extern bool overleft_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype);
+extern bool overleft_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2);
 extern bool overleft_value_span(Datum d, mobdbType basetype, const Span *s);
 extern bool overleft_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss);
 extern bool overleft_span_value(const Span *s, Datum d, mobdbType basetype);
 extern bool overleft_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype);
+extern bool overright_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os);
+extern bool overright_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype);
+extern bool overright_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2);
 extern bool overright_value_span(Datum d, mobdbType basetype, const Span *s);
 extern bool overright_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss);
 extern bool overright_span_value(const Span *s, Datum d, mobdbType basetype);
@@ -159,6 +176,20 @@ extern SpanSet *minus_spanset_value(const SpanSet *ss, Datum d, mobdbType basety
 extern bool minus_value_span(Datum d, mobdbType basetype, const Span *s, Datum *result);
 extern bool minus_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss, Datum *result);
 
+extern OrderedSet *union_value_value(Datum d1, mobdbType basetype1, Datum d2, mobdbType basetype2);
+extern OrderedSet *union_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os);
+extern OrderedSet *union_orderedset_value(const OrderedSet *os, const Datum d, mobdbType basetype);
+extern OrderedSet *union_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2);
+extern bool intersection_value_value(Datum d1, mobdbType basetype1, Datum d2, mobdbType basetype2, Datum *result);
+
+extern bool intersection_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os, Datum *result);
+extern bool intersection_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype, Datum *result);
+extern OrderedSet *intersection_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2);
+extern bool minus_value_value(Datum d1, mobdbType basetype1, Datum d2, mobdbType basetype2, Datum *result);
+extern bool minus_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os, Datum *result);
+extern OrderedSet *minus_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype);
+extern OrderedSet * minus_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2);
+
 /*****************************************************************************/
 
 /* Distance functions for span and time types */
@@ -166,6 +197,9 @@ extern bool minus_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss, 
 extern double distance_value_value(Datum l, Datum r, mobdbType typel, mobdbType typer);
 extern double distance_span_value(const Span *s, Datum d, mobdbType basetype);
 extern double distance_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype);
+extern double distance_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os);
+extern double distance_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype);
+extern double distance_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2);
 
 /*****************************************************************************/
 

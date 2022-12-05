@@ -4713,7 +4713,8 @@ tcontseq_at_timestampset(const TSequence *seq, const TimestampSet *ts)
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    if (! contains_timestampset_timestamp(ts, inst->t))
+    if (! contains_orderedset_value(ts, TimestampTzGetDatum(inst->t),
+        ts->span.basetype))
       return NULL;
     return tinstant_to_tsequence((const TInstant *) inst, DISCRETE);
   }
@@ -4721,7 +4722,7 @@ tcontseq_at_timestampset(const TSequence *seq, const TimestampSet *ts)
   /* General case */
   TimestampTz t = Max(seq->period.lower, ts->span.lower);
   int loc;
-  timestampset_find_timestamp(ts, t, &loc);
+  orderedset_find_value(ts, TimestampTzGetDatum(t), &loc);
   TInstant **instants = palloc(sizeof(TInstant *) * (ts->count - loc));
   int k = 0;
   for (int i = loc; i < ts->count; i++)
@@ -4769,7 +4770,8 @@ tcontseq_minus_timestampset1(const TSequence *seq, const TimestampSet *ts,
   if (seq->count == 1)
   {
     inst = tsequence_inst_n(seq, 0);
-    if (contains_timestampset_timestamp(ts,inst->t))
+    if (! contains_orderedset_value(ts, TimestampTzGetDatum(inst->t),
+        ts->span.basetype))
       return 0;
     result[0] = tsequence_copy(seq);
     return 1;
@@ -5310,7 +5312,8 @@ tcontseq_delete_timestampset(const TSequence *seq, const TimestampSet *ts)
   if (seq->count == 1)
   {
     inst = tsequence_inst_n(seq, 0);
-    if (contains_timestampset_timestamp(ts,inst->t))
+    if (! contains_orderedset_value(ts, TimestampTzGetDatum(inst->t),
+        ts->span.basetype))
       return NULL;
     return tsequence_copy(seq);
   }

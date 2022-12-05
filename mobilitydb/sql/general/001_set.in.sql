@@ -449,6 +449,10 @@ CREATE FUNCTION shiftTscale(timestampset, interval, interval)
  * Selectivity functions
  *****************************************************************************/
 
+CREATE FUNCTION span_sel(internal, oid, internal, integer)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Span_sel'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION period_sel(internal, oid, internal, integer)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Period_sel'
@@ -636,19 +640,19 @@ CREATE OPERATOR < (
   LEFTARG = intset, RIGHTARG = intset,
   PROCEDURE = intset_lt,
   COMMUTATOR = >, NEGATOR = >=,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR < (
   LEFTARG = bigintset, RIGHTARG = bigintset,
   PROCEDURE = bigintset_lt,
   COMMUTATOR = >, NEGATOR = >=,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR < (
   LEFTARG = floatset, RIGHTARG = floatset,
   PROCEDURE = floatset_lt,
   COMMUTATOR = >, NEGATOR = >=,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR < (
   LEFTARG = timestampset, RIGHTARG = timestampset,
@@ -661,19 +665,19 @@ CREATE OPERATOR <= (
   LEFTARG = intset, RIGHTARG = intset,
   PROCEDURE = intset_le,
   COMMUTATOR = >=, NEGATOR = >,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = bigintset, RIGHTARG = bigintset,
   PROCEDURE = bigintset_le,
   COMMUTATOR = >=, NEGATOR = >,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = floatset, RIGHTARG = floatset,
   PROCEDURE = floatset_le,
   COMMUTATOR = >=, NEGATOR = >,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = timestampset, RIGHTARG = timestampset,
@@ -686,19 +690,19 @@ CREATE OPERATOR >= (
   LEFTARG = intset, RIGHTARG = intset,
   PROCEDURE = intset_ge,
   COMMUTATOR = <=, NEGATOR = <,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = bigintset, RIGHTARG = bigintset,
   PROCEDURE = bigintset_ge,
   COMMUTATOR = <=, NEGATOR = <,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = floatset, RIGHTARG = floatset,
   PROCEDURE = floatset_ge,
   COMMUTATOR = <=, NEGATOR = <,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = timestampset, RIGHTARG = timestampset,
@@ -711,19 +715,19 @@ CREATE OPERATOR > (
   LEFTARG = intset, RIGHTARG = intset,
   PROCEDURE = intset_gt,
   COMMUTATOR = <, NEGATOR = <=,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR > (
   LEFTARG = bigintset, RIGHTARG = bigintset,
   PROCEDURE = bigintset_gt,
   COMMUTATOR = <, NEGATOR = <=,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR > (
   LEFTARG = floatset, RIGHTARG = floatset,
   PROCEDURE = floatset_gt,
   COMMUTATOR = <, NEGATOR = <=,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR > (
   LEFTARG = timestampset, RIGHTARG = timestampset,

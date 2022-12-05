@@ -168,8 +168,7 @@ orderedset_span_slice(Datum d, Span *p)
 {
   OrderedSet *os = NULL;
   if (PG_DATUM_NEEDS_DETOAST((struct varlena *) d))
-    os = (OrderedSet *) PG_DETOAST_DATUM_SLICE(d, 0,
-      time_max_header_size());
+    os = (OrderedSet *) PG_DETOAST_DATUM_SLICE(d, 0, time_max_header_size());
   else
     os = (OrderedSet *) d;
   memcpy(p, &os->span, sizeof(Span));

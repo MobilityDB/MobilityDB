@@ -1,5 +1,6 @@
 SET(LOCAL_FILES
   001_set
+  002_set_ops
   003_span
   005_spanset
   007_span_ops

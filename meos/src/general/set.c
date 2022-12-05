@@ -75,29 +75,29 @@ orderedset_val_n(const OrderedSet *os, int index)
  * @code
  *            0       1        2
  *            |       |        |
- * 1)    t^                            => loc = 0
- * 2)        t^                        => loc = 0
- * 3)            t^                    => loc = 1
- * 4)                    t^            => loc = 2
- * 5)                            t^    => loc = 3
+ * 1)    d^                            => loc = 0
+ * 2)        d^                        => loc = 0
+ * 3)            d^                    => loc = 1
+ * 4)                    d^            => loc = 2
+ * 5)                            d^    => loc = 3
  * @endcode
  *
- * @param[in] ts Timestamp set
- * @param[in] t Timestamp
+ * @param[in] os Ordered set
+ * @param[in] d Value
  * @param[out] loc Location
- * @result Return true if the timestamp is contained in the timestamp set
+ * @result Return true if the value is contained in the set
  */
 bool
-timestampset_find_timestamp(const TimestampSet *ts, TimestampTz t, int *loc)
+orderedset_find_value(const OrderedSet *os, Datum d, int *loc)
 {
   int first = 0;
-  int last = ts->count - 1;
+  int last = os->count - 1;
   int middle = 0; /* make compiler quiet */
   while (first <= last)
   {
     middle = (first + last)/2;
-    TimestampTz t1 = DatumGetTimestampTz(orderedset_val_n(ts, middle));
-    int cmp = timestamptz_cmp_internal(t, t1);
+    Datum d1 = orderedset_val_n(os, middle);
+    int cmp = datum_cmp(d, d1, os->span.basetype);
     if (cmp == 0)
     {
       *loc = middle;
@@ -108,7 +108,7 @@ timestampset_find_timestamp(const TimestampSet *ts, TimestampTz t, int *loc)
     else
       first = middle + 1;
   }
-  if (middle == ts->count)
+  if (middle == os->count)
     middle++;
   *loc = middle;
   return false;

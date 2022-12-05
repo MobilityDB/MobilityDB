@@ -28,38 +28,23 @@
  *****************************************************************************/
 
 /**
- * @brief Basic functions for set of (distinct) timestamps.
+ * @brief Operators for set types.
  */
 
-#ifndef __TIMESTAMPSET_H__
-#define __TIMESTAMPSET_H__
-
-/*****************************************************************************/
-
-/*
- * fmgr macros for ordered set types
- */
+#ifndef __SET_OPS_H__
+#define __SET_OPS_H__
 
 /* PostgreSQL */
 #include <postgres.h>
 /* MobilityDB */
+#include "general/temporal_catalog.h"
 #include "general/timetypes.h"
-
-#if MEOS
-  #define DatumGetOrderedSetP(X)      ((OrderedSet *) DatumGetPointer(X))
-#else
-  #define DatumGetOrderedSetP(X)      ((OrderedSet *) PG_DETOAST_DATUM(X))
-#endif /* MEOS */
-#define OrderedSetPGetDatum(X)        PointerGetDatum(X)
-#define PG_GETARG_ORDEREDSET_P(X)     ((OrderedSet *) PG_GETARG_VARLENA_P(X))
-#define PG_RETURN_ORDEREDSET_P(X)     PG_RETURN_POINTER(X)
 
 /*****************************************************************************/
 
-/* General functions */
+/* Miscellaneous */
 
-extern void orderedset_span_slice(Datum d, Span *s);
-extern bool orderedset_find_value(const OrderedSet *os, Datum, int *loc);
+extern uint32_t time_max_header_size(void);
 
 /*****************************************************************************/
 

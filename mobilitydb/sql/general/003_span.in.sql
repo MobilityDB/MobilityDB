@@ -484,13 +484,8 @@ CREATE FUNCTION duration(period)
  * Selectivity functions
  *****************************************************************************/
 
-CREATE FUNCTION span_sel(internal, oid, internal, integer)
-  RETURNS float
-  AS 'MODULE_PATHNAME', 'Span_sel'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
--- Functions period_sel and span_joinsel are defined in the file defining the
--- timestampset type
+-- Functions span_sel, period_sel and span_joinsel are defined in the file
+-- defining the set type
 
 -- Functions for debugging the selectivity code
 

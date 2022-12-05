@@ -3,6 +3,7 @@ add_library(pg_general OBJECT
   geo_constructors.c
   periodset.c
   set.c
+  set_ops.c
   skiplist.c
   span.c
   span_aggfuncs.c
