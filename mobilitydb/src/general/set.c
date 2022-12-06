@@ -161,18 +161,18 @@ Value_to_orderedset(PG_FUNCTION_ARGS)
 
 /**
  * @ingroup mobilitydb_spantime_cast
- * @brief Peak into a timestamp set datum to find the bounding box. If the datum needs
- * to be detoasted, extract only the header and not the full object.
+ * @brief Peak into an ordered set datum to find the bounding box. If the datum
+ * needs to be detoasted, extract only the header and not the full object.
  */
 void
-orderedset_span_slice(Datum d, Span *p)
+orderedset_span_slice(Datum d, Span *s)
 {
   OrderedSet *os = NULL;
   if (PG_DATUM_NEEDS_DETOAST((struct varlena *) d))
     os = (OrderedSet *) PG_DETOAST_DATUM_SLICE(d, 0, sizeof(OrderedSet));
   else
     os = (OrderedSet *) d;
-  memcpy(p, &os->span, sizeof(Span));
+  memcpy(s, &os->span, sizeof(Span));
   PG_FREE_IF_COPY_P(os, DatumGetPointer(d));
   return;
 }

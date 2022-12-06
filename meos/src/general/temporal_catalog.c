@@ -71,6 +71,19 @@ temptype_cache_struct _temptype_cache[] =
  * Global array that keeps type information for the span types defined
  * in MobilityDB.
  */
+settype_cache_struct _settype_cache[] =
+{
+  /* settype        basetype */
+  {T_INTSET,        T_INT4},
+  {T_BIGINTSET,     T_INT8},
+  {T_FLOATSET,      T_FLOAT8},
+  {T_TIMESTAMPSET,  T_TIMESTAMPTZ},
+};
+
+/**
+ * Global array that keeps type information for the span types defined
+ * in MobilityDB.
+ */
 spantype_cache_struct _spantype_cache[] =
 {
   /* spantype       basetype */
@@ -91,19 +104,6 @@ spansettype_cache_struct _spansettype_cache[] =
   {T_BIGINTSPANSET, T_BIGINTSPAN},
   {T_FLOATSPANSET,  T_FLOATSPAN},
   {T_PERIODSET,     T_PERIOD},
-};
-
-/**
- * Global array that keeps type information for the span types defined
- * in MobilityDB.
- */
-settype_cache_struct _settype_cache[] =
-{
-  /* spansettype    basetype */
-  {T_INTSET,        T_INT4},
-  {T_BIGINTSET,     T_INT8},
-  {T_FLOATSET,      T_FLOAT8},
-  {T_TIMESTAMPSET,  T_TIMESTAMPTZ},
 };
 
 /*****************************************************************************

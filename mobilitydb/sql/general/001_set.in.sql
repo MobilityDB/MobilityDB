@@ -225,7 +225,7 @@ CREATE FUNCTION asHexWKB(bigintset, endianenconding text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Orderedset_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asHexWKB(floatset, endianenconding text)
+CREATE FUNCTION asHexWKB(floatset, endianenconding text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Orderedset_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

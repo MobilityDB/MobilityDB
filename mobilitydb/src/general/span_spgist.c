@@ -123,6 +123,11 @@ spannode_init(SpanNode *nodebox, mobdbType spantype, mobdbType basetype)
     min = Int32GetDatum(PG_INT32_MIN);
     max = Int32GetDatum(PG_INT32_MAX);
   }
+  else if (spantype == T_BIGINTSPAN)
+  {
+    min = Int64GetDatum(PG_INT64_MIN);
+    max = Int64GetDatum(PG_INT64_MAX);
+  }
   else /* spantype == T_FLOATSPAN */
   {
     min = Float8GetDatum(-1 * DBL_MAX);
@@ -376,20 +381,22 @@ static bool
 span_spgist_get_span(const ScanKeyData *scankey, Span *result)
 {
   mobdbType type = oid_type(scankey->sk_subtype);
-  if (type == T_INT4 || type == T_FLOAT8 || type == T_TIMESTAMPTZ)
+  if (type == T_INT4 || type == T_INT8 || type == T_FLOAT8 ||
+    type == T_TIMESTAMPTZ)
   {
     Datum d = scankey->sk_argument;
     span_set(d, d, true, true, type, result);
+  }
+  else if (type == T_INTSET || type == T_BIGINTSET || type == T_FLOATSET ||
+    type == T_TIMESTAMPSET)
+  {
+    orderedset_span_slice(scankey->sk_argument, result);
   }
   else if (type == T_INTSPAN || type == T_BIGINTSPAN || type == T_FLOATSPAN ||
     type == T_PERIOD)
   {
     Span *s = DatumGetSpanP(scankey->sk_argument);
     memcpy(result, s, sizeof(Span));
-  }
-  else if (type == T_TIMESTAMPSET)
-  {
-    orderedset_span_slice(scankey->sk_argument, result);
   }
   else if (type == T_INTSPANSET || type == T_BIGINTSPANSET ||
     type == T_FLOATSPANSET || type == T_PERIODSET)
@@ -421,6 +428,22 @@ Intspan_spgist_config(PG_FUNCTION_ARGS)
   cfg->prefixType = type_oid(T_INTSPAN);  /* A type represented by its bounding box */
   cfg->labelType = VOIDOID;  /* We don't need node labels. */
   cfg->leafType = type_oid(T_INTSPAN);
+  cfg->canReturnData = false;
+  cfg->longValuesOK = false;
+  PG_RETURN_VOID();
+}
+
+PG_FUNCTION_INFO_V1(Bigintspan_spgist_config);
+/**
+ * SP-GiST config function for span types
+ */
+PGDLLEXPORT Datum
+Bigintspan_spgist_config(PG_FUNCTION_ARGS)
+{
+  spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
+  cfg->prefixType = type_oid(T_BIGINTSPAN);  /* A type represented by its bounding box */
+  cfg->labelType = VOIDOID;  /* We don't need node labels. */
+  cfg->leafType = type_oid(T_BIGINTSPAN);
   cfg->canReturnData = false;
   cfg->longValuesOK = false;
   PG_RETURN_VOID();
@@ -980,16 +1003,16 @@ Span_spgist_leaf_consistent(PG_FUNCTION_ARGS)
  * SP-GiST compress functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Timestampset_spgist_compress);
+PG_FUNCTION_INFO_V1(Orderedset_spgist_compress);
 /**
  * SP-GiST compress function for timestamp sets
  */
 PGDLLEXPORT Datum
-Timestampset_spgist_compress(PG_FUNCTION_ARGS)
+Orderedset_spgist_compress(PG_FUNCTION_ARGS)
 {
-  Datum tsdatum = PG_GETARG_DATUM(0);
-  Period *result = palloc(sizeof(Period));
-  orderedset_span_slice(tsdatum, result);
+  Datum osdatum = PG_GETARG_DATUM(0);
+  Span *result = palloc(sizeof(Span));
+  orderedset_span_slice(osdatum, result);
   PG_RETURN_SPAN_P(result);
 }
 

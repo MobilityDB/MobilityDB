@@ -73,21 +73,6 @@ ensure_end_input(const char **str, bool end, const char *type)
 }
 
 /**
- * Input an @ from the buffer
- */
-bool
-p_at(const char **str)
-{
-  p_whitespace(str);
-  if (**str == '@')
-  {
-    *str += 1;
-    return true;
-  }
-  return false;
-}
-
-/**
  * Input an opening brace from the buffer
  */
 bool
@@ -228,8 +213,7 @@ basetype_parse(const char **str, mobdbType basetype)
   }
   else
   {
-  while ((*str)[delim] != '@' && (*str)[delim] != ',' && (*str)[delim] != '}' &&
-        (*str)[delim] != '\0')
+    while ((*str)[delim] != '@' && (*str)[delim] != '\0')
       delim++;
   }
   if ((*str)[delim] == '\0')
@@ -240,7 +224,8 @@ basetype_parse(const char **str, mobdbType basetype)
   str1[delim] = '\0';
   Datum result = basetype_input(str1, basetype, false);
   pfree(str1);
-  *str += delim;
+  /* since there's an @ here, let's take it with us */
+  *str += delim + 1;
   return result;
 }
 
@@ -345,6 +330,29 @@ timestamp_parse(const char **str)
   return result;
 }
 
+/*****************************************************************************/
+/* Set and Span Types */
+
+/**
+ * Parse a element value from the buffer.
+ */
+Datum
+elem_parse(const char **str, mobdbType basetype)
+{
+  p_whitespace(str);
+  int delim = 0;
+  while ((*str)[delim] != ',' && (*str)[delim] != ']' &&
+    (*str)[delim] != '}' && (*str)[delim] != ')' &&  (*str)[delim] != '\0')
+    delim++;
+  char *str1 = palloc(sizeof(char) * (delim + 1));
+  strncpy(str1, *str, delim);
+  str1[delim] = '\0';
+  Datum result = basetype_input(str1, basetype, false);
+  pfree(str1);
+  *str += delim;
+  return result;
+}
+
 /**
  * @brief Parse a timestamp set value from the buffer.
  */
@@ -355,14 +363,14 @@ orderedset_parse(const char **str, mobdbType ostype)
     elog(ERROR, "Could not parse ordered set");
 
   /* First parsing */
-  const char *bak = *str;
   mobdbType basetype = settype_basetype(ostype);
-  basetype_parse(str, basetype);
+  const char *bak = *str;
+  elem_parse(str, basetype);
   int count = 1;
   while (p_comma(str))
   {
     count++;
-    basetype_parse(str, basetype);
+    elem_parse(str, basetype);
   }
   if (!p_cbrace(str))
     elog(ERROR, "Could not parse ordered set");
@@ -372,67 +380,10 @@ orderedset_parse(const char **str, mobdbType ostype)
   for (int i = 0; i < count; i++)
   {
     p_comma(str);
-    values[i] = basetype_parse(str, basetype);
+    values[i] = elem_parse(str, basetype);
   }
   p_cbrace(str);
   return orderedset_make_free(values, count, basetype);
-}
-
-/**
- * @brief Parse a period set value from the buffer.
- */
-PeriodSet *
-periodset_parse(const char **str)
-{
-  if (!p_obrace(str))
-    elog(ERROR, "Could not parse period set");
-
-  /* First parsing */
-  const char *bak = *str;
-  span_parse(str, T_PERIOD, false, false);
-  int count = 1;
-  while (p_comma(str))
-  {
-    count++;
-    span_parse(str, T_PERIOD, false, false);
-  }
-  if (!p_cbrace(str))
-    elog(ERROR, "Could not parse period set");
-
-  /* Second parsing */
-  *str = bak;
-  Period **periods = palloc(sizeof(Period *) * count);
-  for (int i = 0; i < count; i++)
-  {
-    p_comma(str);
-    periods[i] = span_parse(str, T_PERIOD, false, true);
-  }
-  p_cbrace(str);
-  PeriodSet *result = spanset_make_free(periods, count, NORMALIZE);
-  return result;
-}
-
-/*****************************************************************************/
-/* Span Types */
-
-/**
- * Parse a value from the buffer.
- */
-Datum
-elem_parse(const char **str, mobdbType basetype)
-{
-  p_whitespace(str);
-  int delim = 0;
-  while ((*str)[delim] != ',' && (*str)[delim] != ']' &&
-    (*str)[delim] != ')' &&  (*str)[delim] != '\0')
-    delim++;
-  char *str1 = palloc(sizeof(char) * (delim + 1));
-  strncpy(str1, *str, delim);
-  str1[delim] = '\0';
-  Datum result = basetype_input(str1, basetype, false);
-  pfree(str1);
-  *str += delim;
-  return result;
 }
 
 /**
@@ -524,7 +475,6 @@ tinstant_parse(const char **str, mobdbType temptype, bool end, bool make)
   mobdbType basetype = temptype_basetype(temptype);
   /* The next two instructions will throw an exception if they fail */
   Datum elem = basetype_parse(str, basetype);
-  p_at(str);
   TimestampTz t = timestamp_parse(str);
   /* Ensure there is no more input */
   ensure_end_input(str, end, "temporal");

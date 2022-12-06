@@ -29,7 +29,7 @@
 
 /*
  * span_gist.sql
- * R-tree GiST and Quad-tree SP-GiST indexes for span types
+ * R-tree GiST, Quad-tree SP-GiST, and Kd-tree SP-GiST indexes for span types
  */
 
 /******************************************************************************
