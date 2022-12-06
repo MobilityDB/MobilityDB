@@ -94,6 +94,60 @@ CREATE OPERATOR CLASS intspanset_rtree_ops
 
 /******************************************************************************/
 
+CREATE FUNCTION span_gist_consistent(internal, bigintspanset, smallint, oid, internal)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Span_gist_consistent'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR CLASS bigintspanset_rtree_ops
+  DEFAULT FOR TYPE bigintspanset USING gist AS
+  STORAGE bigintspan,
+  -- strictly left
+  OPERATOR  1     << (bigintspanset, bigint),
+  OPERATOR  1     << (bigintspanset, bigintspan),
+  OPERATOR  1     << (bigintspanset, bigintspanset),
+  -- overlaps or left
+  OPERATOR  2     &< (bigintspanset, bigint),
+  OPERATOR  2     &< (bigintspanset, bigintspan),
+  OPERATOR  2     &< (bigintspanset, bigintspanset),
+  -- overlaps
+  OPERATOR  3     && (bigintspanset, bigintspan),
+  OPERATOR  3     && (bigintspanset, bigintspanset),
+  -- overlaps or right
+  OPERATOR  4     &> (bigintspanset, bigint),
+  OPERATOR  4     &> (bigintspanset, bigintspan),
+  OPERATOR  4     &> (bigintspanset, bigintspanset),
+  -- strictly right
+  OPERATOR  5     >> (bigintspanset, bigint),
+  OPERATOR  5     >> (bigintspanset, bigintspan),
+  OPERATOR  5     >> (bigintspanset, bigintspanset),
+  -- contains
+  OPERATOR  7     @> (bigintspanset, bigint),
+  OPERATOR  7     @> (bigintspanset, bigintspan),
+  OPERATOR  7     @> (bigintspanset, bigintspanset),
+  -- contained by
+  OPERATOR  8     <@ (bigintspanset, bigintspan),
+  OPERATOR  8     <@ (bigintspanset, bigintspanset),
+  -- adjacent
+  OPERATOR  17    -|- (bigintspanset, bigintspan),
+  OPERATOR  17    -|- (bigintspanset, bigintspanset),
+  -- equals
+  OPERATOR  18    = (bigintspanset, bigintspanset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (bigintspanset, bigint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (bigintspanset, bigintspan) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (bigintspanset, bigintspanset) FOR ORDER BY pg_catalog.float_ops,
+  -- functions
+  FUNCTION  1  span_gist_consistent(internal, bigintspanset, smallint, oid, internal),
+  FUNCTION  2  span_gist_union(internal, internal),
+  FUNCTION  3  spanset_gist_compress(internal),
+  FUNCTION  5  span_gist_penalty(internal, internal, internal),
+  FUNCTION  6  span_gist_picksplit(internal, internal),
+  FUNCTION  7  span_gist_same(bigintspan, bigintspan, internal),
+  FUNCTION  8  span_gist_distance(internal, bigintspan, smallint, oid, internal);
+
+/******************************************************************************/
+
 CREATE FUNCTION span_gist_consistent(internal, floatspanset, smallint, oid, internal)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Span_gist_consistent'
@@ -147,7 +201,7 @@ CREATE OPERATOR CLASS floatspanset_rtree_ops
   FUNCTION  8  span_gist_distance(internal, floatspan, smallint, oid, internal);
 
 /******************************************************************************
- * Quad-tree SP-GiST GiST indexes
+ * Quad-tree SP-GiST indexes
  ******************************************************************************/
 
 CREATE FUNCTION spanset_spgist_compress(internal)
@@ -204,48 +258,48 @@ CREATE OPERATOR CLASS intspanset_quadtree_ops
 
 /******************************************************************************/
 
-CREATE OPERATOR CLASS intspanset_kdtree_ops
-  FOR TYPE intspanset USING spgist AS
+CREATE OPERATOR CLASS bigintspanset_quadtree_ops
+  DEFAULT FOR TYPE bigintspanset USING spgist AS
   -- strictly left
-  OPERATOR  1     << (intspanset, int),
-  OPERATOR  1     << (intspanset, intspan),
-  OPERATOR  1     << (intspanset, intspanset),
+  OPERATOR  1     << (bigintspanset, bigint),
+  OPERATOR  1     << (bigintspanset, bigintspan),
+  OPERATOR  1     << (bigintspanset, bigintspanset),
   -- overlaps or left
-  OPERATOR  2     &< (intspanset, int),
-  OPERATOR  2     &< (intspanset, intspan),
-  OPERATOR  2     &< (intspanset, intspanset),
+  OPERATOR  2     &< (bigintspanset, bigint),
+  OPERATOR  2     &< (bigintspanset, bigintspan),
+  OPERATOR  2     &< (bigintspanset, bigintspanset),
   -- overlaps
-  OPERATOR  3     && (intspanset, intspan),
-  OPERATOR  3     && (intspanset, intspanset),
+  OPERATOR  3     && (bigintspanset, bigintspan),
+  OPERATOR  3     && (bigintspanset, bigintspanset),
   -- overlaps or right
-  OPERATOR  4     &> (intspanset, int),
-  OPERATOR  4     &> (intspanset, intspan),
-  OPERATOR  4     &> (intspanset, intspanset),
+  OPERATOR  4     &> (bigintspanset, bigint),
+  OPERATOR  4     &> (bigintspanset, bigintspan),
+  OPERATOR  4     &> (bigintspanset, bigintspanset),
   -- strictly right
-  OPERATOR  5     >> (intspanset, int),
-  OPERATOR  5     >> (intspanset, intspan),
-  OPERATOR  5     >> (intspanset, intspanset),
+  OPERATOR  5     >> (bigintspanset, bigint),
+  OPERATOR  5     >> (bigintspanset, bigintspan),
+  OPERATOR  5     >> (bigintspanset, bigintspanset),
   -- contains
-  OPERATOR  7     @> (intspanset, int),
-  OPERATOR  7     @> (intspanset, intspan),
-  OPERATOR  7     @> (intspanset, intspanset),
+  OPERATOR  7     @> (bigintspanset, bigint),
+  OPERATOR  7     @> (bigintspanset, bigintspan),
+  OPERATOR  7     @> (bigintspanset, bigintspanset),
   -- contained by
-  OPERATOR  8     <@ (intspanset, intspan),
-  OPERATOR  8     <@ (intspanset, intspanset),
+  OPERATOR  8     <@ (bigintspanset, bigintspan),
+  OPERATOR  8     <@ (bigintspanset, bigintspanset),
   -- adjacent
-  OPERATOR  17    -|- (intspanset, intspan),
-  OPERATOR  17    -|- (intspanset, intspanset),
+  OPERATOR  17    -|- (bigintspanset, bigintspan),
+  OPERATOR  17    -|- (bigintspanset, bigintspanset),
   -- equals
-  OPERATOR  18    = (intspanset, intspanset),
+  OPERATOR  18    = (bigintspanset, bigintspanset),
   -- nearest approach distance
-  OPERATOR  25    <-> (intspanset, int) FOR ORDER BY pg_catalog.float_ops,
-  OPERATOR  25    <-> (intspanset, intspan) FOR ORDER BY pg_catalog.float_ops,
-  OPERATOR  25    <-> (intspanset, intspanset) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (bigintspanset, bigint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (bigintspanset, bigintspan) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (bigintspanset, bigintspanset) FOR ORDER BY pg_catalog.float_ops,
   -- functions
   FUNCTION  1  intspan_spgist_config(internal, internal),
-  FUNCTION  2  span_kdtree_choose(internal, internal),
-  FUNCTION  3  span_kdtree_picksplit(internal, internal),
-  FUNCTION  4  span_kdtree_inner_consistent(internal, internal),
+  FUNCTION  2  span_quadtree_choose(internal, internal),
+  FUNCTION  3  span_quadtree_picksplit(internal, internal),
+  FUNCTION  4  span_quadtree_inner_consistent(internal, internal),
   FUNCTION  5  span_spgist_leaf_consistent(internal, internal),
   FUNCTION  6  spanset_spgist_compress(internal);
 
@@ -293,6 +347,102 @@ CREATE OPERATOR CLASS floatspanset_quadtree_ops
   FUNCTION  2  span_quadtree_choose(internal, internal),
   FUNCTION  3  span_quadtree_picksplit(internal, internal),
   FUNCTION  4  span_quadtree_inner_consistent(internal, internal),
+  FUNCTION  5  span_spgist_leaf_consistent(internal, internal),
+  FUNCTION  6  spanset_spgist_compress(internal);
+
+/******************************************************************************
+ * Kd-tree SP-GiST indexes
+ ******************************************************************************/
+
+CREATE OPERATOR CLASS intspanset_kdtree_ops
+  FOR TYPE intspanset USING spgist AS
+  -- strictly left
+  OPERATOR  1     << (intspanset, int),
+  OPERATOR  1     << (intspanset, intspan),
+  OPERATOR  1     << (intspanset, intspanset),
+  -- overlaps or left
+  OPERATOR  2     &< (intspanset, int),
+  OPERATOR  2     &< (intspanset, intspan),
+  OPERATOR  2     &< (intspanset, intspanset),
+  -- overlaps
+  OPERATOR  3     && (intspanset, intspan),
+  OPERATOR  3     && (intspanset, intspanset),
+  -- overlaps or right
+  OPERATOR  4     &> (intspanset, int),
+  OPERATOR  4     &> (intspanset, intspan),
+  OPERATOR  4     &> (intspanset, intspanset),
+  -- strictly right
+  OPERATOR  5     >> (intspanset, int),
+  OPERATOR  5     >> (intspanset, intspan),
+  OPERATOR  5     >> (intspanset, intspanset),
+  -- contains
+  OPERATOR  7     @> (intspanset, int),
+  OPERATOR  7     @> (intspanset, intspan),
+  OPERATOR  7     @> (intspanset, intspanset),
+  -- contained by
+  OPERATOR  8     <@ (intspanset, intspan),
+  OPERATOR  8     <@ (intspanset, intspanset),
+  -- adjacent
+  OPERATOR  17    -|- (intspanset, intspan),
+  OPERATOR  17    -|- (intspanset, intspanset),
+  -- equals
+  OPERATOR  18    = (intspanset, intspanset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (intspanset, int) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (intspanset, intspan) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (intspanset, intspanset) FOR ORDER BY pg_catalog.float_ops,
+  -- functions
+  FUNCTION  1  intspan_spgist_config(internal, internal),
+  FUNCTION  2  span_kdtree_choose(internal, internal),
+  FUNCTION  3  span_kdtree_picksplit(internal, internal),
+  FUNCTION  4  span_kdtree_inner_consistent(internal, internal),
+  FUNCTION  5  span_spgist_leaf_consistent(internal, internal),
+  FUNCTION  6  spanset_spgist_compress(internal);
+
+/******************************************************************************/
+
+CREATE OPERATOR CLASS bigintspanset_kdtree_ops
+  FOR TYPE bigintspanset USING spgist AS
+  -- strictly left
+  OPERATOR  1     << (bigintspanset, bigint),
+  OPERATOR  1     << (bigintspanset, bigintspan),
+  OPERATOR  1     << (bigintspanset, bigintspanset),
+  -- overlaps or left
+  OPERATOR  2     &< (bigintspanset, bigint),
+  OPERATOR  2     &< (bigintspanset, bigintspan),
+  OPERATOR  2     &< (bigintspanset, bigintspanset),
+  -- overlaps
+  OPERATOR  3     && (bigintspanset, bigintspan),
+  OPERATOR  3     && (bigintspanset, bigintspanset),
+  -- overlaps or right
+  OPERATOR  4     &> (bigintspanset, bigint),
+  OPERATOR  4     &> (bigintspanset, bigintspan),
+  OPERATOR  4     &> (bigintspanset, bigintspanset),
+  -- strictly right
+  OPERATOR  5     >> (bigintspanset, bigint),
+  OPERATOR  5     >> (bigintspanset, bigintspan),
+  OPERATOR  5     >> (bigintspanset, bigintspanset),
+  -- contains
+  OPERATOR  7     @> (bigintspanset, bigint),
+  OPERATOR  7     @> (bigintspanset, bigintspan),
+  OPERATOR  7     @> (bigintspanset, bigintspanset),
+  -- contained by
+  OPERATOR  8     <@ (bigintspanset, bigintspan),
+  OPERATOR  8     <@ (bigintspanset, bigintspanset),
+  -- adjacent
+  OPERATOR  17    -|- (bigintspanset, bigintspan),
+  OPERATOR  17    -|- (bigintspanset, bigintspanset),
+  -- equals
+  OPERATOR  18    = (bigintspanset, bigintspanset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (bigintspanset, bigint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (bigintspanset, bigintspan) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (bigintspanset, bigintspanset) FOR ORDER BY pg_catalog.float_ops,
+  -- functions
+  FUNCTION  1  intspan_spgist_config(internal, internal),
+  FUNCTION  2  span_kdtree_choose(internal, internal),
+  FUNCTION  3  span_kdtree_picksplit(internal, internal),
+  FUNCTION  4  span_kdtree_inner_consistent(internal, internal),
   FUNCTION  5  span_spgist_leaf_consistent(internal, internal),
   FUNCTION  6  spanset_spgist_compress(internal);
 

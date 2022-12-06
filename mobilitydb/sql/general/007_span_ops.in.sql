@@ -58,6 +58,28 @@ CREATE OPERATOR @> (
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 
+CREATE FUNCTION span_contains(bigintspan, bigint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contains_span_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_contains(bigintspan, bigintspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contains_span_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR @> (
+  PROCEDURE = span_contains,
+  LEFTARG = bigintspan, RIGHTARG = bigint,
+  COMMUTATOR = <@,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR @> (
+  PROCEDURE = span_contains,
+  LEFTARG = bigintspan, RIGHTARG = bigintspan,
+  COMMUTATOR = <@,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+
 CREATE FUNCTION span_contains(floatspan, float)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_span_value'
@@ -116,6 +138,28 @@ CREATE OPERATOR <@ (
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 
+CREATE FUNCTION span_contained(bigint, bigintspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contained_value_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_contained(bigintspan, bigintspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contained_span_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR <@ (
+  PROCEDURE = span_contained,
+  LEFTARG = bigint, RIGHTARG = bigintspan,
+  COMMUTATOR = @>,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR <@ (
+  PROCEDURE = span_contained,
+  LEFTARG = bigintspan, RIGHTARG = bigintspan,
+  COMMUTATOR = @>,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+
 CREATE FUNCTION span_contained(float, floatspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_value_span'
@@ -156,10 +200,6 @@ CREATE FUNCTION span_overlaps(intspan, intspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_span_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_overlaps(floatspan, floatspan)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_span_span'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
   PROCEDURE = span_overlaps,
@@ -167,6 +207,24 @@ CREATE OPERATOR && (
   COMMUTATOR = &&,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
+
+CREATE FUNCTION span_overlaps(bigintspan, bigintspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overlaps_span_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR && (
+  PROCEDURE = span_overlaps,
+  LEFTARG = bigintspan, RIGHTARG = bigintspan,
+  COMMUTATOR = &&,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+
+CREATE FUNCTION span_overlaps(floatspan, floatspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overlaps_span_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR && (
   PROCEDURE = span_overlaps,
   LEFTARG = floatspan, RIGHTARG = floatspan,
@@ -216,6 +274,38 @@ CREATE OPERATOR << (
 CREATE OPERATOR << (
   PROCEDURE = span_left,
   LEFTARG = intspan, RIGHTARG = intspan,
+  COMMUTATOR = >>,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+
+CREATE FUNCTION span_left(bigint, bigintspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Left_value_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_left(bigintspan, bigint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Left_span_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_left(bigintspan, bigintspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Left_span_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR << (
+  PROCEDURE = span_left,
+  LEFTARG = bigint, RIGHTARG = bigintspan,
+  COMMUTATOR = >>,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR << (
+  PROCEDURE = span_left,
+  LEFTARG = bigintspan, RIGHTARG = bigint,
+  COMMUTATOR = >>,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR << (
+  PROCEDURE = span_left,
+  LEFTARG = bigintspan, RIGHTARG = bigintspan,
   COMMUTATOR = >>,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
@@ -298,6 +388,38 @@ CREATE OPERATOR >> (
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 
+CREATE FUNCTION span_right(bigint, bigintspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Right_value_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_right(bigintspan, bigint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Right_span_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_right(bigintspan, bigintspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Right_span_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR >> (
+  PROCEDURE = span_right,
+  LEFTARG = bigint, RIGHTARG = bigintspan,
+  COMMUTATOR = <<,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR >> (
+  PROCEDURE = span_right,
+  LEFTARG = bigintspan, RIGHTARG = bigint,
+  COMMUTATOR = <<,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR >> (
+  PROCEDURE = span_right,
+  LEFTARG = bigintspan, RIGHTARG = bigintspan,
+  COMMUTATOR = <<,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+
 CREATE FUNCTION span_right(float, floatspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_value_span'
@@ -373,6 +495,35 @@ CREATE OPERATOR &< (
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 
+CREATE FUNCTION span_overleft(bigint, bigintspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overleft_value_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_overleft(bigintspan, bigint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overleft_span_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_overleft(bigintspan, bigintspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overleft_span_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR &< (
+  PROCEDURE = span_overleft,
+  LEFTARG = bigint, RIGHTARG = bigintspan,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR &< (
+  PROCEDURE = span_overleft,
+  LEFTARG = bigintspan, RIGHTARG = bigint,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR &< (
+  PROCEDURE = span_overleft,
+  LEFTARG = bigintspan, RIGHTARG = bigintspan,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+
 CREATE FUNCTION span_overleft(float, floatspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_value_span'
@@ -441,6 +592,35 @@ CREATE OPERATOR &> (
 CREATE OPERATOR &> (
   PROCEDURE = span_overright,
   LEFTARG = intspan, RIGHTARG = intspan,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+
+CREATE FUNCTION span_overright(bigint, bigintspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overright_value_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_overright(bigintspan, bigint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overright_span_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_overright(bigintspan, bigintspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overright_span_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR &> (
+  PROCEDURE = span_overright,
+  LEFTARG = bigint, RIGHTARG = bigintspan,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR &> (
+  PROCEDURE = span_overright,
+  LEFTARG = bigintspan, RIGHTARG = bigint,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR &> (
+  PROCEDURE = span_overright,
+  LEFTARG = bigintspan, RIGHTARG = bigintspan,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 
@@ -518,6 +698,38 @@ CREATE OPERATOR -|- (
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 
+CREATE FUNCTION span_adjacent(bigint, bigintspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adjacent_value_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_adjacent(bigintspan, bigint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adjacent_span_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_adjacent(bigintspan, bigintspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adjacent_span_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR -|- (
+  PROCEDURE = span_adjacent,
+  LEFTARG = bigint, RIGHTARG = bigintspan,
+  COMMUTATOR = -|-,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR -|- (
+  PROCEDURE = span_adjacent,
+  LEFTARG = bigintspan, RIGHTARG = bigint,
+  COMMUTATOR = -|-,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR -|- (
+  PROCEDURE = span_adjacent,
+  LEFTARG = bigintspan, RIGHTARG = bigintspan,
+  COMMUTATOR = -|-,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+
 CREATE FUNCTION span_adjacent(float, floatspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_value_span'
@@ -570,6 +782,10 @@ CREATE FUNCTION span_union(intspan, intspan)
   RETURNS intspanset
   AS 'MODULE_PATHNAME', 'Union_span_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_union(bigintspan, bigintspan)
+  RETURNS bigintspanset
+  AS 'MODULE_PATHNAME', 'Union_span_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_union(floatspan, floatspan)
   RETURNS floatspanset
   AS 'MODULE_PATHNAME', 'Union_span_span'
@@ -586,6 +802,11 @@ CREATE OPERATOR + (
 );
 CREATE OPERATOR + (
   PROCEDURE = span_union,
+  LEFTARG = bigintspan, RIGHTARG = bigintspan,
+  COMMUTATOR = +
+);
+CREATE OPERATOR + (
+  PROCEDURE = span_union,
   LEFTARG = floatspan, RIGHTARG = floatspan,
   COMMUTATOR = +
 );
@@ -597,6 +818,10 @@ CREATE OPERATOR + (
 
 CREATE FUNCTION span_intersection(intspan, intspan)
   RETURNS intspan
+  AS 'MODULE_PATHNAME', 'Intersection_span_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_intersection(bigintspan, bigintspan)
+  RETURNS bigintspan
   AS 'MODULE_PATHNAME', 'Intersection_span_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_intersection(floatspan, floatspan)
@@ -615,6 +840,11 @@ CREATE OPERATOR * (
 );
 CREATE OPERATOR * (
   PROCEDURE = span_intersection,
+  LEFTARG = bigintspan, RIGHTARG = bigintspan,
+  COMMUTATOR = *
+);
+CREATE OPERATOR * (
+  PROCEDURE = span_intersection,
   LEFTARG = floatspan, RIGHTARG = floatspan,
   COMMUTATOR = *
 );
@@ -626,6 +856,10 @@ CREATE OPERATOR * (
 
 CREATE FUNCTION span_minus(intspan, intspan)
   RETURNS intspanset
+  AS 'MODULE_PATHNAME', 'Minus_span_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_minus(bigintspan, bigintspan)
+  RETURNS bigintspanset
   AS 'MODULE_PATHNAME', 'Minus_span_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_minus(floatspan, floatspan)
@@ -640,6 +874,10 @@ CREATE FUNCTION span_minus(period, period)
 CREATE OPERATOR - (
   PROCEDURE = span_minus,
   LEFTARG = intspan, RIGHTARG = intspan
+);
+CREATE OPERATOR - (
+  PROCEDURE = span_minus,
+  LEFTARG = bigintspan, RIGHTARG = bigintspan
 );
 CREATE OPERATOR - (
   PROCEDURE = span_minus,
@@ -680,6 +918,35 @@ CREATE OPERATOR <-> (
 CREATE OPERATOR <-> (
   PROCEDURE = span_distance,
   LEFTARG = intspan, RIGHTARG = intspan,
+  COMMUTATOR = <->
+);
+
+CREATE FUNCTION span_distance(bigint, bigintspan)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Distance_value_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_distance(bigintspan, bigint)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Distance_span_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_distance(bigintspan, bigintspan)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Distance_span_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR <-> (
+  PROCEDURE = span_distance,
+  LEFTARG = bigint, RIGHTARG = bigintspan,
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = span_distance,
+  LEFTARG = bigintspan, RIGHTARG = bigint,
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = span_distance,
+  LEFTARG = bigintspan, RIGHTARG = bigintspan,
   COMMUTATOR = <->
 );
 

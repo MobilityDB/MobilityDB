@@ -570,6 +570,10 @@ CREATE FUNCTION intspanset_eq(intspanset, intspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION bigintspanset_eq(bigintspanset, bigintspanset)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Spanset_eq'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION floatspanset_eq(floatspanset, floatspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_eq'
@@ -580,6 +584,10 @@ CREATE FUNCTION periodset_eq(periodset, periodset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION intspanset_ne(intspanset, intspanset)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Spanset_ne'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION bigintspanset_ne(bigintspanset, bigintspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -596,6 +604,10 @@ CREATE FUNCTION intspanset_lt(intspanset, intspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION bigintspanset_lt(bigintspanset, bigintspanset)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Spanset_lt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION floatspanset_lt(floatspanset, floatspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_lt'
@@ -606,6 +618,10 @@ CREATE FUNCTION periodset_lt(periodset, periodset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION intspanset_le(intspanset, intspanset)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Spanset_le'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION bigintspanset_le(bigintspanset, bigintspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -622,6 +638,10 @@ CREATE FUNCTION intspanset_ge(intspanset, intspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION bigintspanset_ge(bigintspanset, bigintspanset)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Spanset_ge'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION floatspanset_ge(floatspanset, floatspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_ge'
@@ -632,6 +652,10 @@ CREATE FUNCTION periodset_ge(periodset, periodset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION intspanset_gt(intspanset, intspanset)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Spanset_gt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION bigintspanset_gt(bigintspanset, bigintspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -648,6 +672,10 @@ CREATE FUNCTION intspanset_cmp(intspanset, intspanset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Spanset_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION bigintspanset_cmp(bigintspanset, bigintspanset)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Spanset_cmp'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION floatspanset_cmp(floatspanset, floatspanset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Spanset_cmp'
@@ -660,6 +688,12 @@ CREATE FUNCTION periodset_cmp(periodset, periodset)
 CREATE OPERATOR = (
   LEFTARG = intspanset, RIGHTARG = intspanset,
   PROCEDURE = intspanset_eq,
+  COMMUTATOR = =, NEGATOR = <>,
+  RESTRICT = eqsel, JOIN = eqjoinsel
+);
+CREATE OPERATOR = (
+  LEFTARG = bigintspanset, RIGHTARG = bigintspanset,
+  PROCEDURE = bigintspanset_eq,
   COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = eqsel, JOIN = eqjoinsel
 );
@@ -683,6 +717,12 @@ CREATE OPERATOR <> (
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
 CREATE OPERATOR <> (
+  LEFTARG = bigintspanset, RIGHTARG = bigintspanset,
+  PROCEDURE = bigintspanset_ne,
+  COMMUTATOR = <>, NEGATOR = =,
+  RESTRICT = neqsel, JOIN = neqjoinsel
+);
+CREATE OPERATOR <> (
   LEFTARG = floatspanset, RIGHTARG = floatspanset,
   PROCEDURE = floatspanset_ne,
   COMMUTATOR = <>, NEGATOR = =,
@@ -698,6 +738,12 @@ CREATE OPERATOR <> (
 CREATE OPERATOR < (
   LEFTARG = intspanset, RIGHTARG = intspanset,
   PROCEDURE = intspanset_lt,
+  COMMUTATOR = >, NEGATOR = >=,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR < (
+  LEFTARG = bigintspanset, RIGHTARG = bigintspanset,
+  PROCEDURE = bigintspanset_lt,
   COMMUTATOR = >, NEGATOR = >=,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
@@ -721,6 +767,12 @@ CREATE OPERATOR <= (
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <= (
+  LEFTARG = bigintspanset, RIGHTARG = bigintspanset,
+  PROCEDURE = bigintspanset_le,
+  COMMUTATOR = >=, NEGATOR = >,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR <= (
   LEFTARG = floatspanset, RIGHTARG = floatspanset,
   PROCEDURE = floatspanset_le,
   COMMUTATOR = >=, NEGATOR = >,
@@ -740,6 +792,12 @@ CREATE OPERATOR >= (
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR >= (
+  LEFTARG = bigintspanset, RIGHTARG = bigintspanset,
+  PROCEDURE = bigintspanset_ge,
+  COMMUTATOR = <=, NEGATOR = <,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR >= (
   LEFTARG = floatspanset, RIGHTARG = floatspanset,
   PROCEDURE = floatspanset_ge,
   COMMUTATOR = <=, NEGATOR = <,
@@ -755,6 +813,12 @@ CREATE OPERATOR >= (
 CREATE OPERATOR > (
   LEFTARG = intspanset, RIGHTARG = intspanset,
   PROCEDURE = intspanset_gt,
+  COMMUTATOR = <, NEGATOR = <=,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR > (
+  LEFTARG = bigintspanset, RIGHTARG = bigintspanset,
+  PROCEDURE = bigintspanset_gt,
   COMMUTATOR = <, NEGATOR = <=,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
@@ -779,6 +843,14 @@ CREATE OPERATOR CLASS intspanset_ops
     OPERATOR  4  >=,
     OPERATOR  5  >,
     FUNCTION  1  intspanset_cmp(intspanset, intspanset);
+CREATE OPERATOR CLASS bigintspanset_ops
+  DEFAULT FOR TYPE bigintspanset USING btree AS
+    OPERATOR  1  <,
+    OPERATOR  2  <=,
+    OPERATOR  3  =,
+    OPERATOR  4  >=,
+    OPERATOR  5  >,
+    FUNCTION  1  bigintspanset_cmp(bigintspanset, bigintspanset);
 CREATE OPERATOR CLASS floatspanset_ops
   DEFAULT FOR TYPE floatspanset USING btree AS
     OPERATOR  1  <,
@@ -802,6 +874,10 @@ CREATE FUNCTION intspanset_hash(intspanset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Spanset_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION bigintspanset_hash(bigintspanset)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Spanset_hash'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION floatspanset_hash(floatspanset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Spanset_hash'
@@ -812,6 +888,10 @@ CREATE FUNCTION periodset_hash(periodset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION intspanset_hash_extended(intspanset, bigint)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'Spanset_hash_extended'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION bigintspanset_hash_extended(bigintspanset, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Spanset_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -829,6 +909,11 @@ CREATE OPERATOR CLASS intspanset_hash_ops
     OPERATOR    1   = ,
     FUNCTION    1   intspanset_hash(intspanset),
     FUNCTION    2   intspanset_hash_extended(intspanset, bigint);
+CREATE OPERATOR CLASS bigintspanset_hash_ops
+  DEFAULT FOR TYPE bigintspanset USING hash AS
+    OPERATOR    1   = ,
+    FUNCTION    1   bigintspanset_hash(bigintspanset),
+    FUNCTION    2   bigintspanset_hash_extended(bigintspanset, bigint);
 CREATE OPERATOR CLASS floatspanset_hash_ops
   DEFAULT FOR TYPE floatspanset USING hash AS
     OPERATOR    1   = ,
