@@ -40,7 +40,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-// #include "general/time_ops.h"
+#include "general/time_ops.h"
 #include "general/temporal_out.h"
 #include "general/temporal_util.h"
 /* MobilityDB */
@@ -169,7 +169,7 @@ orderedset_span_slice(Datum d, Span *s)
 {
   OrderedSet *os = NULL;
   if (PG_DATUM_NEEDS_DETOAST((struct varlena *) d))
-    os = (OrderedSet *) PG_DETOAST_DATUM_SLICE(d, 0, sizeof(OrderedSet));
+    os = (OrderedSet *) PG_DETOAST_DATUM_SLICE(d, 0, time_max_header_size());
   else
     os = (OrderedSet *) d;
   memcpy(s, &os->span, sizeof(Span));

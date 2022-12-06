@@ -221,10 +221,6 @@ CREATE FUNCTION period_spgist_config(internal, internal)
   RETURNS void
   AS 'MODULE_PATHNAME', 'Period_spgist_config'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION orderedset_spgist_compress(internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'Orderedset_spgist_compress'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR CLASS timestampset_quadtree_ops
   DEFAULT FOR TYPE timestampset USING spgist AS
