@@ -142,17 +142,17 @@ timestampset_in(const char *str)
 
 /**
  * @ingroup libmeos_spantime_in_out
- * @brief Return the Well-Known Text (WKT) representation of a timestamp set.
+ * @brief Return the Well-Known Text (WKT) representation of an ordered set.
  */
 char *
-orderedset_out(const OrderedSet *os)
+orderedset_out(const OrderedSet *os, Datum maxdd)
 {
   char **strings = palloc(sizeof(char *) * os->count);
   size_t outlen = 0;
   for (int i = 0; i < os->count; i++)
   {
-    TimestampTz t = DatumGetTimestampTz(orderedset_val_n(os, i));
-    strings[i] = pg_timestamptz_out(t);
+    Datum d = orderedset_val_n(os, i);
+    strings[i] = basetype_output(os->span.basetype, d, maxdd);
     outlen += strlen(strings[i]) + 2;
   }
   return stringarr_to_string(strings, os->count, outlen, "", '{', '}');
@@ -192,7 +192,7 @@ orderedset_make(const Datum *values, int count, mobdbType basetype)
   }
   /* Notice that the first timestamp is already declared in the struct */
   size_t memsize = double_pad(sizeof(OrderedSet)) +
-    sizeof(TimestampTz) * (count - 1);
+    sizeof(Datum) * (count - 1);
   /* Create the OrderedSet */
   OrderedSet *result = palloc0(memsize);
   SET_VARSIZE(result, memsize);

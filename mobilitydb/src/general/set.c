@@ -40,7 +40,8 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/time_ops.h"
+// #include "general/time_ops.h"
+#include "general/temporal_out.h"
 #include "general/temporal_util.h"
 /* MobilityDB */
 #include "pg_general/temporal.h"
@@ -76,7 +77,7 @@ PGDLLEXPORT Datum
 Orderedset_out(PG_FUNCTION_ARGS)
 {
   OrderedSet *os = PG_GETARG_ORDEREDSET_P(0);
-  char *result = orderedset_out(os);
+  char *result = orderedset_out(os, Int32GetDatum(OUT_DEFAULT_DECIMAL_DIGITS));
   PG_FREE_IF_COPY(os, 0);
   PG_RETURN_CSTRING(result);
 }
@@ -168,7 +169,7 @@ orderedset_span_slice(Datum d, Span *p)
 {
   OrderedSet *os = NULL;
   if (PG_DATUM_NEEDS_DETOAST((struct varlena *) d))
-    os = (OrderedSet *) PG_DETOAST_DATUM_SLICE(d, 0, time_max_header_size());
+    os = (OrderedSet *) PG_DETOAST_DATUM_SLICE(d, 0, sizeof(OrderedSet));
   else
     os = (OrderedSet *) d;
   memcpy(p, &os->span, sizeof(Span));

@@ -163,8 +163,32 @@ SELECT k, random_tstzrange_array('2001-01-01', '2001-12-31', 10, 5, 10)
 FROM generate_series(perc+1, size) AS k;
 
 -------------------------------------------------------------------------------
--- Time types
+-- Set and time types
 -------------------------------------------------------------------------------
+
+DROP TABLE IF EXISTS tbl_intset;
+CREATE TABLE tbl_intset AS
+/* Add perc NULL values */
+SELECT k, NULL AS ts
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_intset(1, 100, 10, 5, 10)
+FROM generate_series(perc+1, size) AS k;
+
+DROP TABLE IF EXISTS tbl_bigintset;
+CREATE TABLE tbl_bigintset AS
+/* Add perc NULL values */
+SELECT k, NULL AS ts
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_bigintset(1, 100, 10, 5, 10)
+FROM generate_series(perc+1, size) AS k;
+
+DROP TABLE IF EXISTS tbl_floatset;
+CREATE TABLE tbl_floatset AS
+/* Add perc NULL values */
+SELECT k, NULL AS ts
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_floatset(1, 100, 10, 5, 10)
+FROM generate_series(perc+1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_timestampset;
 CREATE TABLE tbl_timestampset AS

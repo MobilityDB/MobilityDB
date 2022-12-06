@@ -46,19 +46,6 @@
 #include "pg_general/temporal_catalog.h"
 
 /*****************************************************************************/
-
-/**
- * @brief Return the size in bytes to read from toast to get the basic information
- * from a variable-length time type: Time struct (i.e., OrderedSet
- * or PeriodSet) and bounding box size
-*/
-uint32_t
-time_max_header_size(void)
-{
-  return double_pad(Max(sizeof(OrderedSet), sizeof(PeriodSet)));
-}
-
-/*****************************************************************************/
 /* contains? */
 
 PG_FUNCTION_INFO_V1(Contains_orderedset_value);

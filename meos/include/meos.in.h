@@ -332,7 +332,9 @@ extern uint8_t *orderedset_as_wkb(const TimestampSet *ts, uint8_t variant, size_
 extern TimestampSet *timestampset_from_hexwkb(const char *hexwkb);
 extern TimestampSet *timestampset_from_wkb(const uint8_t *wkb, int size);
 extern TimestampSet *timestampset_in(const char *str);
-extern char *orderedset_out(const OrderedSet *os);
+extern char *intset_out(const OrderedSet *os);
+extern char *bigintset_out(const OrderedSet *os);
+extern char *floatset_out(const OrderedSet *os, int maxdd);
 
 /*****************************************************************************/
 

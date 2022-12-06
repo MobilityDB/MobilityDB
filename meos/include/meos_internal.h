@@ -62,6 +62,7 @@ extern OrderedSet *orderedset_in(const char *str, mobdbType basetype);
 
 extern OrderedSet *orderedset_from_hexwkb(const char *hexwkb);
 extern OrderedSet *orderedset_from_wkb(const uint8_t *wkb, int size);
+extern char *orderedset_out(const OrderedSet *os, Datum maxdd);
 
 /*****************************************************************************/
 

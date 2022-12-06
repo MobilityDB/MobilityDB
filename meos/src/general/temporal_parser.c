@@ -73,6 +73,21 @@ ensure_end_input(const char **str, bool end, const char *type)
 }
 
 /**
+ * Input an @ from the buffer
+ */
+bool
+p_at(const char **str)
+{
+  p_whitespace(str);
+  if (**str == '@')
+  {
+    *str += 1;
+    return true;
+  }
+  return false;
+}
+
+/**
  * Input an opening brace from the buffer
  */
 bool
@@ -213,7 +228,8 @@ basetype_parse(const char **str, mobdbType basetype)
   }
   else
   {
-    while ((*str)[delim] != '@' && (*str)[delim] != '\0')
+  while ((*str)[delim] != '@' && (*str)[delim] != ',' && (*str)[delim] != '}' &&
+        (*str)[delim] != '\0')
       delim++;
   }
   if ((*str)[delim] == '\0')
@@ -224,8 +240,7 @@ basetype_parse(const char **str, mobdbType basetype)
   str1[delim] = '\0';
   Datum result = basetype_input(str1, basetype, false);
   pfree(str1);
-  /* since there's an @ here, let's take it with us */
-  *str += delim + 1;
+  *str += delim;
   return result;
 }
 
@@ -341,12 +356,13 @@ orderedset_parse(const char **str, mobdbType ostype)
 
   /* First parsing */
   const char *bak = *str;
-  timestamp_parse(str);
+  mobdbType basetype = settype_basetype(ostype);
+  basetype_parse(str, basetype);
   int count = 1;
   while (p_comma(str))
   {
     count++;
-    timestamp_parse(str);
+    basetype_parse(str, basetype);
   }
   if (!p_cbrace(str))
     elog(ERROR, "Could not parse ordered set");
@@ -356,10 +372,9 @@ orderedset_parse(const char **str, mobdbType ostype)
   for (int i = 0; i < count; i++)
   {
     p_comma(str);
-    values[i] = TimestampTzGetDatum(timestamp_parse(str));
+    values[i] = basetype_parse(str, basetype);
   }
   p_cbrace(str);
-  mobdbType basetype = settype_basetype(ostype);
   return orderedset_make_free(values, count, basetype);
 }
 
@@ -401,7 +416,7 @@ periodset_parse(const char **str)
 /* Span Types */
 
 /**
- * Parse a timestamp value from the buffer.
+ * Parse a value from the buffer.
  */
 Datum
 elem_parse(const char **str, mobdbType basetype)
@@ -509,6 +524,7 @@ tinstant_parse(const char **str, mobdbType temptype, bool end, bool make)
   mobdbType basetype = temptype_basetype(temptype);
   /* The next two instructions will throw an exception if they fail */
   Datum elem = basetype_parse(str, basetype);
+  p_at(str);
   TimestampTz t = timestamp_parse(str);
   /* Ensure there is no more input */
   ensure_end_input(str, end, "temporal");

@@ -984,9 +984,11 @@ pg_get_nd_stats(const Oid tableid, AttrNumber att_num, int mode, bool only_paren
   if ( only_parent || ! stats_tuple )
     stats_tuple = SearchSysCache3(STATRELATTINH, ObjectIdGetDatum(tableid), Int16GetDatum(att_num), BoolGetDatum(false));
   if ( stats_tuple )
+  {
     nd_stats = pg_nd_stats_from_tuple(stats_tuple, mode);
+    ReleaseSysCache(stats_tuple);
+  }
 
-  ReleaseSysCache(stats_tuple);
   return nd_stats;
 }
 
