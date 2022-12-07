@@ -4,8 +4,7 @@ SET(LOCAL_FILES
   003_span
   005_spanset
   007_span_ops
-  008_spanset_ops
-  009_time_ops
+  009_spanset_ops
   011_span_indexes
   012_spanset_indexes
   013_set_indexes
