@@ -365,6 +365,24 @@ spanset_copy(const SpanSet *ps)
 
 /**
  * @ingroup libmeos_spantime_cast
+ * @brief Cast an ordered set as a span set.
+ * @sqlop @p ::
+ */
+SpanSet *
+orderedset_to_spanset(const OrderedSet *os)
+{
+  Span **spans = palloc(sizeof(Span *) * os->count);
+  for (int i = 0; i < os->count; i++)
+  {
+    Datum d = orderedset_val_n(os, i);
+    spans[i] = span_make(d, d, true, true, os->span.basetype);
+  }
+  SpanSet *result = spanset_make_free(spans, os->count, NORMALIZE_NO);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_spantime_cast
  * @brief Cast a period as a period set.
  * @sqlop @p ::
  */

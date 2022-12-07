@@ -45,6 +45,8 @@ CREATE FUNCTION spanset_gist_compress(internal)
   AS 'MODULE_PATHNAME', 'Spanset_gist_compress'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+/******************************************************************************/
+
 CREATE OPERATOR CLASS intspanset_rtree_ops
   DEFAULT FOR TYPE intspanset USING gist AS
   STORAGE intspan,
@@ -98,6 +100,8 @@ CREATE FUNCTION span_gist_consistent(internal, bigintspanset, smallint, oid, int
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Span_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************/
 
 CREATE OPERATOR CLASS bigintspanset_rtree_ops
   DEFAULT FOR TYPE bigintspanset USING gist AS
@@ -153,6 +157,8 @@ CREATE FUNCTION span_gist_consistent(internal, floatspanset, smallint, oid, inte
   AS 'MODULE_PATHNAME', 'Span_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+/******************************************************************************/
+
 CREATE OPERATOR CLASS floatspanset_rtree_ops
   DEFAULT FOR TYPE floatspanset USING gist AS
   STORAGE floatspan,
@@ -199,6 +205,68 @@ CREATE OPERATOR CLASS floatspanset_rtree_ops
   FUNCTION  6  span_gist_picksplit(internal, internal),
   FUNCTION  7  span_gist_same(floatspan, floatspan, internal),
   FUNCTION  8  span_gist_distance(internal, floatspan, smallint, oid, internal);
+
+/******************************************************************************/
+
+CREATE FUNCTION span_gist_consistent(internal, periodset, smallint, oid, internal)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Span_gist_consistent'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************/
+
+CREATE OPERATOR CLASS periodset_rtree_ops
+  DEFAULT FOR TYPE periodset USING gist AS
+  STORAGE period,
+  -- overlaps
+  OPERATOR  3    && (periodset, timestampset),
+  OPERATOR  3    && (periodset, period),
+  OPERATOR  3    && (periodset, periodset),
+  -- contains
+  OPERATOR  7    @> (periodset, timestamptz),
+  OPERATOR  7    @> (periodset, timestampset),
+  OPERATOR  7    @> (periodset, period),
+  OPERATOR  7    @> (periodset, periodset),
+  -- contained by
+  OPERATOR  8    <@ (periodset, period),
+  OPERATOR  8    <@ (periodset, periodset),
+  -- adjacent
+  OPERATOR  17    -|- (periodset, period),
+  OPERATOR  17    -|- (periodset, periodset),
+  -- equals
+  OPERATOR  18    = (periodset, periodset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (periodset, timestamptz) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (periodset, timestampset) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (periodset, period) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (periodset, periodset) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (periodset, timestamptz),
+  OPERATOR  28    &<# (periodset, timestampset),
+  OPERATOR  28    &<# (periodset, period),
+  OPERATOR  28    &<# (periodset, periodset),
+  -- strictly before
+  OPERATOR  29    <<# (periodset, timestamptz),
+  OPERATOR  29    <<# (periodset, timestampset),
+  OPERATOR  29    <<# (periodset, period),
+  OPERATOR  29    <<# (periodset, periodset),
+  -- strictly after
+  OPERATOR  30    #>> (periodset, timestamptz),
+  OPERATOR  30    #>> (periodset, timestampset),
+  OPERATOR  30    #>> (periodset, period),
+  OPERATOR  30    #>> (periodset, periodset),
+  -- overlaps or after
+  OPERATOR  31    #&> (periodset, timestamptz),
+  OPERATOR  31    #&> (periodset, timestampset),
+  OPERATOR  31    #&> (periodset, period),
+  OPERATOR  31    #&> (periodset, periodset),
+  -- functions
+  FUNCTION  1  span_gist_consistent(internal, periodset, smallint, oid, internal),
+  FUNCTION  2  span_gist_union(internal, internal),
+  FUNCTION  3  spanset_gist_compress(internal),
+  FUNCTION  5  span_gist_penalty(internal, internal, internal),
+  FUNCTION  6  span_gist_picksplit(internal, internal),
+  FUNCTION  7  span_gist_same(period, period, internal);
 
 /******************************************************************************
  * Quad-tree SP-GiST indexes
@@ -350,6 +418,60 @@ CREATE OPERATOR CLASS floatspanset_quadtree_ops
   FUNCTION  5  span_spgist_leaf_consistent(internal, internal),
   FUNCTION  6  spanset_spgist_compress(internal);
 
+/******************************************************************************/
+
+CREATE OPERATOR CLASS periodset_quadtree_ops
+  DEFAULT FOR TYPE periodset USING spgist AS
+  -- overlaps
+  OPERATOR  3    && (periodset, timestampset),
+  OPERATOR  3    && (periodset, period),
+  OPERATOR  3    && (periodset, periodset),
+  -- contains
+  OPERATOR  7    @> (periodset, timestamptz),
+  OPERATOR  7    @> (periodset, timestampset),
+  OPERATOR  7    @> (periodset, period),
+  OPERATOR  7    @> (periodset, periodset),
+  -- contained by
+  OPERATOR  8    <@ (periodset, period),
+  OPERATOR  8    <@ (periodset, periodset),
+  -- adjacent
+  OPERATOR  17    -|- (periodset, period),
+  OPERATOR  17    -|- (periodset, periodset),
+-- equals
+  OPERATOR  18    = (periodset, periodset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (periodset, timestamptz) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (periodset, timestampset) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (periodset, period) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (periodset, periodset) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (periodset, timestamptz),
+  OPERATOR  28    &<# (periodset, timestampset),
+  OPERATOR  28    &<# (periodset, period),
+  OPERATOR  28    &<# (periodset, periodset),
+  -- strictly before
+  OPERATOR  29    <<# (periodset, timestamptz),
+  OPERATOR  29    <<# (periodset, timestampset),
+  OPERATOR  29    <<# (periodset, period),
+  OPERATOR  29    <<# (periodset, periodset),
+  -- strictly after
+  OPERATOR  30    #>> (periodset, timestamptz),
+  OPERATOR  30    #>> (periodset, timestampset),
+  OPERATOR  30    #>> (periodset, period),
+  OPERATOR  30    #>> (periodset, periodset),
+  -- overlaps or after
+  OPERATOR  31    #&> (periodset, timestamptz),
+  OPERATOR  31    #&> (periodset, timestampset),
+  OPERATOR  31    #&> (periodset, period),
+  OPERATOR  31    #&> (periodset, periodset),
+  -- functions
+  FUNCTION  1  period_spgist_config(internal, internal),
+  FUNCTION  2  span_quadtree_choose(internal, internal),
+  FUNCTION  3  span_quadtree_picksplit(internal, internal),
+  FUNCTION  4  span_quadtree_inner_consistent(internal, internal),
+  FUNCTION  5  span_spgist_leaf_consistent(internal, internal),
+  FUNCTION  6  spanset_spgist_compress(internal);
+
 /******************************************************************************
  * Kd-tree SP-GiST indexes
  ******************************************************************************/
@@ -487,6 +609,60 @@ CREATE OPERATOR CLASS floatspanset_kdtree_ops
   OPERATOR  25    <-> (floatspanset, floatspanset) FOR ORDER BY pg_catalog.float_ops,
   -- functions
   FUNCTION  1  floatspan_spgist_config(internal, internal),
+  FUNCTION  2  span_kdtree_choose(internal, internal),
+  FUNCTION  3  span_kdtree_picksplit(internal, internal),
+  FUNCTION  4  span_kdtree_inner_consistent(internal, internal),
+  FUNCTION  5  span_spgist_leaf_consistent(internal, internal),
+  FUNCTION  6  spanset_spgist_compress(internal);
+
+/******************************************************************************/
+
+CREATE OPERATOR CLASS periodset_kdtree_ops
+  FOR TYPE periodset USING spgist AS
+  -- overlaps
+  OPERATOR  3    && (periodset, timestampset),
+  OPERATOR  3    && (periodset, period),
+  OPERATOR  3    && (periodset, periodset),
+  -- contains
+  OPERATOR  7    @> (periodset, timestamptz),
+  OPERATOR  7    @> (periodset, timestampset),
+  OPERATOR  7    @> (periodset, period),
+  OPERATOR  7    @> (periodset, periodset),
+  -- contained by
+  OPERATOR  8    <@ (periodset, period),
+  OPERATOR  8    <@ (periodset, periodset),
+  -- adjacent
+  OPERATOR  17    -|- (periodset, period),
+  OPERATOR  17    -|- (periodset, periodset),
+-- equals
+  OPERATOR  18    = (periodset, periodset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (periodset, timestamptz) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (periodset, timestampset) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (periodset, period) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (periodset, periodset) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (periodset, timestamptz),
+  OPERATOR  28    &<# (periodset, timestampset),
+  OPERATOR  28    &<# (periodset, period),
+  OPERATOR  28    &<# (periodset, periodset),
+  -- strictly before
+  OPERATOR  29    <<# (periodset, timestamptz),
+  OPERATOR  29    <<# (periodset, timestampset),
+  OPERATOR  29    <<# (periodset, period),
+  OPERATOR  29    <<# (periodset, periodset),
+  -- strictly after
+  OPERATOR  30    #>> (periodset, timestamptz),
+  OPERATOR  30    #>> (periodset, timestampset),
+  OPERATOR  30    #>> (periodset, period),
+  OPERATOR  30    #>> (periodset, periodset),
+  -- overlaps or after
+  OPERATOR  31    #&> (periodset, timestamptz),
+  OPERATOR  31    #&> (periodset, timestampset),
+  OPERATOR  31    #&> (periodset, period),
+  OPERATOR  31    #&> (periodset, periodset),
+  -- functions
+  FUNCTION  1  period_spgist_config(internal, internal),
   FUNCTION  2  span_kdtree_choose(internal, internal),
   FUNCTION  3  span_kdtree_picksplit(internal, internal),
   FUNCTION  4  span_kdtree_inner_consistent(internal, internal),

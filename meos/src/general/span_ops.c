@@ -42,7 +42,32 @@
 #include <meos_internal.h>
 #include "general/temporal_util.h"
 
-/*****************************************************************************/
+/*****************************************************************************
+ * Generic functions
+ *****************************************************************************/
+
+/**
+ * Return the intersection or the difference of an ordered set and a span
+ */
+OrderedSet *
+setop_orderedset_span(const OrderedSet *os, const Span *s, SetOper setop)
+{
+  assert(setop == INTER || setop == MINUS);
+  /* Bounding box test */
+  if (! overlaps_span_span(&os->span, s))
+    return (setop == INTER) ? NULL : orderedset_copy(os);
+
+  Datum *values = palloc(sizeof(Datum) * os->count);
+  int k = 0;
+  for (int i = 0; i < os->count; i++)
+  {
+    Datum v = orderedset_val_n(os, i);
+    if (((setop == INTER) && contains_span_value(s, v, os->span.basetype)) ||
+      ((setop == MINUS) && ! contains_span_value(s, v, os->span.basetype)))
+      values[k++] = v;
+  }
+  return orderedset_make_free(values, k, os->span.basetype);
+}
 
 /**
  * Return the minimum value of the two span base values
@@ -124,8 +149,22 @@ contains_floatspan_float(const Span *s, double d)
 
 /**
  * @ingroup libmeos_spantime_topo
+ * @brief Return true if a span contains an ordered set.
+ * @sqlop @p @>
+ */
+bool
+contains_span_orderedset(const Span *s, const OrderedSet *os)
+{
+  /* It is sufficient to do a bounding box test */
+  if (! contains_span_span(s, &os->span))
+    return false;
+  return true;
+}
+
+/**
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the first span contains the second one.
- * @sqlop @p \@>
+ * @sqlop @p @>
  */
 bool
 contains_span_span(const Span *s1, const Span *s2)
@@ -181,6 +220,17 @@ contained_float_floatspan(double d, const Span *s)
 
 /**
  * @ingroup libmeos_spantime_topo
+ * @brief Return true if an ordered set is contained by a span
+ * @sqlop @p <@
+ */
+bool
+contained_orderedset_span(const OrderedSet *os, const Span *s)
+{
+  return contains_span_orderedset(s, os);
+}
+
+/**
+ * @ingroup libmeos_spantime_topo
  * @brief Return true if the first span is contained by the second one
  * @sqlop @p <@
  */
@@ -193,6 +243,38 @@ contained_span_span(const Span *s1, const Span *s2)
 /*****************************************************************************
  * Overlaps
  *****************************************************************************/
+
+/**
+ * @ingroup libmeos_spantime_topo
+ * @brief Return true if an ordered set and a span overlap.
+ * @sqlop @p &&
+ */
+bool
+overlaps_orderedset_span(const OrderedSet *os, const Span *s)
+{
+  /* Bounding box test */
+  if (! overlaps_span_span(s, &os->span))
+    return false;
+
+  for (int i = 0; i < os->count; i++)
+  {
+    Datum d = orderedset_val_n(os, i);
+    if (contains_span_value(s, d, os->span.basetype))
+      return true;
+  }
+  return false;
+}
+
+/**
+ * @ingroup libmeos_spantime_topo
+ * @brief Return true if a span and an ordered set overlap
+ * @sqlop @p &&
+ */
+bool
+overlaps_span_orderedset(const Span *s, const OrderedSet *os)
+{
+  return overlaps_orderedset_span(os, s);
+}
 
 /**
  * @ingroup libmeos_spantime_topo
@@ -217,21 +299,6 @@ overlaps_span_span(const Span *s1, const Span *s2)
 /*****************************************************************************
  * Adjacent to (but not overlapping)
  *****************************************************************************/
-
-/**
- * @ingroup libmeos_int_spantime_topo
- * @brief Return true if a span and a value are adjacent
- */
-bool
-adjacent_span_value(const Span *s, Datum d, mobdbType basetype)
-{
-  /*
-   * A timestamp A and a span C..D are adjacent if and only if
-   * A is adjacent to C, or D is adjacent to A.
-   */
-  return (datum_eq2(d, s->lower, basetype, s->basetype) && ! s->lower_inc) ||
-    (datum_eq2(s->upper, d, s->basetype, basetype) && ! s->upper_inc);
-}
 
 /**
  * @ingroup libmeos_int_spantime_topo
@@ -267,6 +334,50 @@ adjacent_floatspan_float(const Span *s, double d)
   return adjacent_span_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 #endif /* MEOS */
+
+/**
+ * @ingroup libmeos_int_spantime_topo
+ * @brief Return true if a span and a value are adjacent
+ */
+bool
+adjacent_span_value(const Span *s, Datum d, mobdbType basetype)
+{
+  /*
+   * A timestamp A and a span C..D are adjacent if and only if
+   * A is adjacent to C, or D is adjacent to A.
+   */
+  return (datum_eq2(d, s->lower, basetype, s->basetype) && ! s->lower_inc) ||
+    (datum_eq2(s->upper, d, s->basetype, basetype) && ! s->upper_inc);
+}
+
+/**
+ * @ingroup libmeos_spantime_topo
+ * @brief Return true if an ordered set and a span are adjacent.
+ * @sqlop @p -|-
+ */
+bool
+adjacent_orderedset_span(const OrderedSet *os, const Span *s)
+{
+  /*
+   * A span set A..B and a span C are adjacent if and only if
+   * B is adjacent to C, or C is adjacent to A.
+   */
+  Datum d1 = orderedset_val_n(os, 0);
+  Datum d2 = orderedset_val_n(os, os->count - 1);
+  return (datum_eq(d2, s->lower, os->span.basetype) && ! s->lower_inc) ||
+         (datum_eq(s->upper, d1, os->span.basetype) && ! s->upper_inc);
+}
+
+/**
+ * @ingroup libmeos_spantime_topo
+ * @brief Return true if a span and an ordered set are adjacent
+ * @sqlop @p -|-
+ */
+bool
+adjacent_span_orderedset(const Span *s, const OrderedSet *os)
+{
+  return adjacent_orderedset_span(os, s);
+}
 
 /**
  * @ingroup libmeos_spantime_topo
@@ -365,6 +476,30 @@ left_floatspan_float(const Span *s, double d)
 
 /**
  * @ingroup libmeos_spantime_pos
+ * @brief Return true if an ordered set is strictly left a span.
+ * @sqlop @s <<#
+ */
+bool
+left_orderedset_span(const OrderedSet *os, const Span *s)
+{
+  Datum v = orderedset_val_n(os, os->count - 1);
+  return left_value_span(v, os->span.basetype, s);
+}
+
+/**
+ * @ingroup libmeos_spantime_pos
+ * @brief Return true if a span is strictly to the left of an ordered set
+ * @sqlop @p <<#
+ */
+bool
+left_span_orderedset(const Span *s, const OrderedSet *os)
+{
+  Datum v = orderedset_val_n(os, 0);
+  return left_span_value(s, v, os->span.basetype);
+}
+
+/**
+ * @ingroup libmeos_spantime_pos
  * @brief Return true if the first span is strictly to the left of the second one.
  * @sqlop @p <<
  */
@@ -416,6 +551,18 @@ right_float_floatspan(double d, const Span *s)
 #endif /* MEOS */
 
 /**
+ * @ingroup libmeos_spantime_pos
+ * @brief Return true if an ordered set is strictly right a span.
+ * @sqlop @s #>>
+ */
+bool
+right_orderedset_span(const OrderedSet *os, const Span *s)
+{
+  Datum v = orderedset_val_n(os, 0);
+  return right_value_span(v, os->span.basetype, s);
+}
+
+/**
  * @ingroup libmeos_int_spantime_pos
  * @brief Return true if a span is strictly to the right of a value
  */
@@ -449,6 +596,18 @@ right_floatspan_float(const Span *s, double d)
   return right_span_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 #endif /* MEOS */
+
+/**
+ * @ingroup libmeos_spantime_pos
+ * @brief Return true if a span is strictly right of an ordered set.
+ * @sqlop @p #>>
+ */
+bool
+right_span_orderedset(const Span *s, const OrderedSet *os)
+{
+  Datum v = orderedset_val_n(os, os->count - 1);
+  return right_span_value(s, v, os->span.basetype);
+}
 
 /**
  * @ingroup libmeos_spantime_pos
@@ -501,6 +660,18 @@ overleft_float_floatspan(double d, const Span *s)
 #endif /* MEOS */
 
 /**
+ * @ingroup libmeos_spantime_pos
+ * @brief Return true if an ordered set is not right a span.
+ * @sqlop @s &<#
+ */
+bool
+overleft_orderedset_span(const OrderedSet *os, const Span *s)
+{
+  Datum v = orderedset_val_n(os, os->count - 1);
+  return overleft_value_span(v, os->span.basetype, s);
+}
+
+/**
  * @ingroup libmeos_int_spantime_pos
  * @brief Return true if a span is not to the right of a value.
  */
@@ -537,6 +708,18 @@ overleft_floatspan_float(const Span *s, double d)
   return overleft_span_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 #endif /* MEOS */
+
+/**
+ * @ingroup libmeos_spantime_pos
+ * @brief Return true if a span is not to the right of an ordered set.
+ * @sqlop @p &<#
+ */
+bool
+overleft_span_orderedset(const Span *s, const OrderedSet *os)
+{
+  Datum v = orderedset_val_n(os, os->count - 1);
+  return overleft_span_value(s, v, os->span.basetype);
+}
 
 /**
  * @ingroup libmeos_spantime_pos
@@ -591,6 +774,30 @@ overright_float_floatspan(double d, const Span *s)
 #endif /* MEOS */
 
 /**
+ * @ingroup libmeos_spantime_pos
+ * @brief Return true if an ordered set is not left a span.
+ * @sqlop @s #&>
+ */
+bool
+overright_orderedset_span(const OrderedSet *os, const Span *s)
+{
+  Datum v = orderedset_val_n(os, 0);
+  return overright_value_span(v, os->span.basetype, s);
+}
+
+/**
+ * @ingroup libmeos_spantime_pos
+ * @brief Return true if an ordered set is not left a span set.
+ * @sqlop @s #&>
+ */
+bool
+overright_orderedset_spanset(const OrderedSet *os, const SpanSet *ss)
+{
+  Datum v = orderedset_val_n(os, 0);
+  const Span *s = spanset_sp_n(ss, 0);
+  return overright_value_span(v, os->span.basetype, s);
+}
+/**
  * @ingroup libmeos_int_spantime_pos
  * @brief Return true if a span is not to the left of a value.
  */
@@ -624,6 +831,17 @@ overright_floatspan_float(const Span *s, double d)
 }
 #endif /* MEOS */
 
+/**
+ * @ingroup libmeos_spantime_pos
+ * @brief Return true if a span is not to the left of an ordered set.
+ * @sqlop @p #&>
+ */
+bool
+overright_span_orderedset(const Span *s, const OrderedSet *os)
+{
+  Datum v = orderedset_val_n(os, 0);
+  return overright_span_value(s, v, os->span.basetype);
+}
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if the first span is not to the left of the second one.
@@ -662,6 +880,31 @@ bbox_union_span_span(const Span *s1, const Span *s2, bool strict)
 
 /**
  * @ingroup libmeos_spantime_set
+ * @brief Return the union of a timestamp and a period
+ * @sqlop @p +
+ */
+SpanSet *
+union_value_span(Datum d, mobdbType basetype, const Span *s)
+{
+  return union_span_value(s, d, basetype);
+}
+
+/**
+ * @ingroup libmeos_spantime_set
+ * @brief Return the union of an ordered set and a span
+ * @sqlop @p +
+ */
+PeriodSet *
+union_orderedset_span(const OrderedSet *os, const Span *s)
+{
+  SpanSet *ss = orderedset_to_spanset(os);
+  SpanSet *result = union_span_spanset(s, ss);
+  pfree(ss);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_spantime_set
  * @brief Return the union of a period and a timestamp
  * @sqlop @p +
  */
@@ -676,13 +919,16 @@ union_span_value(const Span *s, Datum d, mobdbType basetype)
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the union of a timestamp and a period
+ * @brief Return the union of a span and an ordered set
  * @sqlop @p +
  */
 SpanSet *
-union_value_span(Datum d, mobdbType basetype, const Span *s)
+union_span_orderedset(const Span *s, const OrderedSet *os)
 {
-  return union_span_value(s, d, basetype);
+  SpanSet *ss = orderedset_to_spanset(os);
+  SpanSet *result = union_span_spanset(s, ss);
+  pfree(ss);
+  return result;
 }
 
 /**
@@ -726,6 +972,29 @@ union_span_span(const Span *s1, const Span *s2)
 
 /**
  * @ingroup libmeos_spantime_set
+ * @brief Return the intersection of a value and a span
+ * @sqlop @p *
+ */
+bool
+intersection_value_span(Datum d, mobdbType basetype, const Span *s,
+  Datum *result)
+{
+  return intersection_span_value(s, d, basetype, result);
+}
+
+/**
+ * @ingroup libmeos_spantime_set
+ * @brief Return the intersection of an ordered set and a span.
+ * @sqlop @p *
+ */
+OrderedSet *
+intersection_orderedset_span(const OrderedSet *os, const Span *s)
+{
+  return setop_orderedset_span(os, s, INTER);
+}
+
+/**
+ * @ingroup libmeos_spantime_set
  * @brief Return the intersection of a period and a timestamp
  * @sqlop @p *
  */
@@ -741,14 +1010,13 @@ intersection_span_value(const Span *s, Datum d, mobdbType basetype,
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the intersection of a value and a span
+ * @brief Return the intersection of a span and an ordered set
  * @sqlop @p *
  */
-bool
-intersection_value_span(Datum d, mobdbType basetype, const Span *s,
-  Datum *result)
+OrderedSet *
+intersection_span_orderedset(const Span *s, const OrderedSet *os)
 {
-  return intersection_span_value(s, d, basetype, result);
+  return setop_orderedset_span(os, s, INTER);
 }
 
 /**
@@ -796,6 +1064,32 @@ intersection_span_span(const Span *s1, const Span *s2)
 /*****************************************************************************
  * Set difference
  *****************************************************************************/
+
+/**
+ * @ingroup libmeos_spantime_set
+ * @brief Return the difference of a value and a span
+ * @sqlop @p -
+ */
+bool
+minus_value_span(Datum d, mobdbType basetype, const Span *s,
+  Datum *result)
+{
+  if (contains_span_value(s, d, basetype))
+    return false;
+  *result = d;
+  return true;
+}
+
+/**
+ * @ingroup libmeos_spantime_set
+ * @brief Return the difference of an ordered set and a span.
+ * @sqlop @p -
+ */
+OrderedSet *
+minus_orderedset_span(const OrderedSet *os, const Span *s)
+{
+  return setop_orderedset_span(os, s, MINUS);
+}
 
 /**
  * @brief Return the difference of a span and a value.
@@ -852,17 +1146,22 @@ minus_span_value(const Span *s, Datum d, mobdbType basetype)
 
 /**
  * @ingroup libmeos_spantime_set
- * @brief Return the difference of a value and a span
+ * @brief Return the difference of a span and a timestamp set.
  * @sqlop @p -
  */
-bool
-minus_value_span(Datum d, mobdbType basetype, const Span *s,
-  Datum *result)
+SpanSet *
+minus_span_orderedset(const Span *s, const OrderedSet *os)
 {
-  if (contains_span_value(s, d, basetype))
-    return false;
-  *result = d;
-  return true;
+  /* Transform the span into a span set */
+  SpanSet *ss = span_to_spanset(s);
+  /* Bounding box test */
+  if (! overlaps_span_span(s, &os->span))
+    return ss;
+
+  /* Call the function for the span set */
+  SpanSet *result = minus_spanset_orderedset(ss, os);
+  pfree(ss);
+  return result;
 }
 
 /**
@@ -921,6 +1220,92 @@ bbox_minus_span_span(const Span *s1, const Span *s2)
   else /* cmp_l1l2 >= 0 && cmp_u1u2 >= 0 */
     return span_make(s2->upper, s1->upper, !(s2->upper_inc), s1->upper_inc,
       s1->basetype);
+}
+
+/**
+ * @brief Return the difference of the two spans.
+ * @note This function generalizes the function minus_span_span by enabling
+ * the result to be two spans
+ */
+int
+minus_span_span1(const Span *s1, const Span *s2, Span **result)
+{
+  SpanBound lower1, lower2, upper1, upper2;
+  span_deserialize((const Span *) s1, &lower1, &upper1);
+  span_deserialize((const Span *) s2, &lower2, &upper2);
+
+  int cmp_l1l2 = span_bound_cmp(&lower1, &lower2);
+  int cmp_l1u2 = span_bound_cmp(&lower1, &upper2);
+  int cmp_u1l2 = span_bound_cmp(&upper1, &lower2);
+  int cmp_u1u2 = span_bound_cmp(&upper1, &upper2);
+
+  /* Result is empty
+   * s1         |----|
+   * s2      |----------|
+   */
+  if (cmp_l1l2 >= 0 && cmp_u1u2 <= 0)
+    return 0;
+
+  /* Result is a span set
+   * s1      |----------|
+   * s2         |----|
+   * result  |--|    |--|
+   */
+  if (cmp_l1l2 < 0 && cmp_u1u2 > 0)
+  {
+    result[0] = span_make(s1->lower, s2->lower, s1->lower_inc,
+      !(s2->lower_inc), s1->basetype);
+    result[1] = span_make(s2->upper, s1->upper, !(s2->upper_inc),
+      s1->upper_inc, s1->basetype);
+    return 2;
+  }
+
+  /* Result is a span */
+  /*
+   * s1         |----|
+   * s2  |----|
+   * s2                 |----|
+   * result      |----|
+   */
+  if (cmp_l1u2 > 0 || cmp_u1l2 < 0)
+    result[0] = span_copy(s1);
+
+  /*
+   * s1           |-----|
+   * s2               |----|
+   * result       |---|
+   */
+  else if (cmp_l1l2 <= 0 && cmp_u1u2 <= 0)
+    result[0] = span_make(s1->lower, s2->lower, s1->lower_inc,
+      !(s2->lower_inc), s1->basetype);
+  /*
+   * s1         |-----|
+   * s2      |----|
+   * result       |---|
+   */
+  else if (cmp_l1l2 >= 0 && cmp_u1u2 >= 0)
+    result[0] = span_make(s2->upper, s1->upper, !(s2->upper_inc),
+      s1->upper_inc, s1->basetype);
+  return 1;
+}
+
+/**
+ * @ingroup libmeos_spantime_set
+ * @brief Return the difference of the spans.
+ * @sqlop @p -
+ */
+SpanSet *
+minus_span_span(const Span *s1, const Span *s2)
+{
+  Span *spans[2];
+  int count = minus_span_span1(s1, s2, spans);
+  if (count == 0)
+    return NULL;
+  SpanSet *result = spanset_make((const Span **) spans, count,
+    NORMALIZE_NO);
+  for (int i = 0; i < count; i++)
+    pfree(spans[i]);
+  return result;
 }
 
 /******************************************************************************
