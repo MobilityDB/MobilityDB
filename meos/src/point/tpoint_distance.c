@@ -153,7 +153,7 @@ lw_distance_fraction(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
  *
  * @param[in] start,end Instants defining the first segment
  * @param[in] point Base point
- * @param[in] basetype Base point
+ * @param[in] basetype Base type
  * @param[out] value Projected value at turning point
  * @param[out] t Timestamp at turning point
  * @pre The segment is not constant.

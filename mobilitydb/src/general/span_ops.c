@@ -69,8 +69,8 @@ PG_FUNCTION_INFO_V1(Contains_span_orderedset);
 /**
  * @ingroup mobilitydb_spantime_topo
  * @brief Return true if a span contains an ordered set
- * @pqlfunc span_contains()
- * @pqlop @p @>
+ * @sqlfunc span_contains()
+ * @sqlop @p @>
  */
 PGDLLEXPORT Datum
 Contains_span_orderedset(PG_FUNCTION_ARGS)
@@ -121,8 +121,8 @@ PG_FUNCTION_INFO_V1(Contained_orderedset_span);
 /**
  * @ingroup mobilitydb_spantime_topo
  * @brief Return true if an ordered set is contained by a span
- * @pqlfunc time_contained()
- * @pqlop @p <@
+ * @sqlfunc time_contained()
+ * @sqlop @p <@
  */
 PGDLLEXPORT Datum
 Contained_orderedset_span(PG_FUNCTION_ARGS)
@@ -192,8 +192,8 @@ PG_FUNCTION_INFO_V1(Adjacent_orderedset_span);
 /**
  * @ingroup mobilitydb_spantime_topo
  * @brief Return true if an ordered set and a span are adjacent
- * @pqlfunc time_adjacent()
- * @pqlop @p -|-
+ * @sqlfunc time_adjacent()
+ * @sqlop @p -|-
  */
 PGDLLEXPORT Datum
 Adjacent_orderedset_span(PG_FUNCTION_ARGS)
@@ -225,8 +225,8 @@ PG_FUNCTION_INFO_V1(Adjacent_span_orderedset);
 /**
  * @ingroup mobilitydb_spantime_topo
  * @brief Return true if a span and an ordered set are adjacent
- * @pqlfunc time_adjacent()
- * @pqlop @p -|-
+ * @sqlfunc time_adjacent()
+ * @sqlop @p -|-
  */
 PGDLLEXPORT Datum
 Adjacent_span_orderedset(PG_FUNCTION_ARGS)
@@ -277,8 +277,8 @@ PG_FUNCTION_INFO_V1(Left_orderedset_span);
 /**
  * @ingroup mobilitydb_spantime_pos
  * @brief Return true if an ordered set is strictly before a span
- * @pqlfunc time_before()
- * @pqlop @p <<#
+ * @sqlfunc time_before()
+ * @sqlop @p <<#
  */
 PGDLLEXPORT Datum
 Left_orderedset_span(PG_FUNCTION_ARGS)
@@ -310,8 +310,8 @@ PG_FUNCTION_INFO_V1(Left_span_orderedset);
 /**
  * @ingroup mobilitydb_spantime_pos
  * @brief Return true if a span is strictly before an ordered set
- * @pqlfunc time_before()
- * @pqlop @p <<#
+ * @sqlfunc time_before()
+ * @sqlop @p <<#
  */
 PGDLLEXPORT Datum
 Left_span_orderedset(PG_FUNCTION_ARGS)
@@ -394,8 +394,8 @@ PG_FUNCTION_INFO_V1(Right_span_orderedset);
 /**
  * @ingroup mobilitydb_spantime_pos
  * @brief Return true if a span is strictly after an ordered set
- * @pqlfunc time_after()
- * @pqlop @p #>>
+ * @sqlfunc time_after()
+ * @sqlop @p #>>
  */
 PGDLLEXPORT Datum
 Right_span_orderedset(PG_FUNCTION_ARGS)
@@ -446,8 +446,8 @@ PG_FUNCTION_INFO_V1(Overleft_orderedset_span);
 /**
  * @ingroup mobilitydb_spantime_pos
  * @brief Return true if an ordered set is not after a span
- * @pqlfunc time_overleft()
- * @pqlop @p &<#
+ * @sqlfunc time_overleft()
+ * @sqlop @p &<#
  */
 PGDLLEXPORT Datum
 Overleft_orderedset_span(PG_FUNCTION_ARGS)
@@ -479,8 +479,8 @@ PG_FUNCTION_INFO_V1(Overleft_span_orderedset);
 /**
  * @ingroup mobilitydb_spantime_pos
  * @brief Return true if a span is not after an ordered set
- * @pqlfunc time_overleft()
- * @pqlop @p &<#
+ * @sqlfunc time_overleft()
+ * @sqlop @p &<#
  */
 PGDLLEXPORT Datum
 Overleft_span_orderedset(PG_FUNCTION_ARGS)
@@ -531,8 +531,8 @@ PG_FUNCTION_INFO_V1(Overright_orderedset_span);
 /**
  * @ingroup mobilitydb_spantime_pos
  * @brief Return true if an ordered set is not left a span
- * @pqlfunc time_overafter()
- * @pqlop @p #&>
+ * @sqlfunc time_overafter()
+ * @sqlop @p #&>
  */
 PGDLLEXPORT Datum
 Overright_orderedset_span(PG_FUNCTION_ARGS)
@@ -564,8 +564,8 @@ PG_FUNCTION_INFO_V1(Overright_span_orderedset);
 /**
  * @ingroup mobilitydb_spantime_pos
  * @brief Return true if a span is not left an ordered set
- * @pqlfunc time_overafter()
- * @pqlop @p #&>
+ * @sqlfunc time_overafter()
+ * @sqlop @p #&>
  */
 PGDLLEXPORT Datum
 Overright_span_orderedset(PG_FUNCTION_ARGS)
@@ -617,8 +617,8 @@ PG_FUNCTION_INFO_V1(Union_orderedset_span);
 /**
  * @ingroup mobilitydb_spantime_set
  * @brief Return the union of an ordered set and a span
- * @pqlfunc time_union()
- * @pqlop @p +
+ * @sqlfunc time_union()
+ * @sqlop @p +
  */
 PGDLLEXPORT Datum
 Union_orderedset_span(PG_FUNCTION_ARGS)
@@ -630,12 +630,29 @@ Union_orderedset_span(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PG_FUNCTION_INFO_V1(Union_span_value);
+/**
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the union of a value and a span
+ * @sqlfunc time_union()
+ * @sqlop @p +
+ */
+PGDLLEXPORT Datum
+Union_span_value(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  Datum d = PG_GETARG_DATUM(1);
+  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  SpanSet *result = union_value_span(d, basetype, s);
+  PG_RETURN_POINTER(result);
+}
+
 PG_FUNCTION_INFO_V1(Union_span_orderedset);
 /**
  * @ingroup mobilitydb_spantime_set
  * @brief Return the union of a span and an ordered set
- * @pqlfunc time_union()
- * @pqlop @p +
+ * @sqlfunc time_union()
+ * @sqlop @p +
  */
 PGDLLEXPORT Datum
 Union_span_orderedset(PG_FUNCTION_ARGS)
@@ -666,12 +683,32 @@ Union_span_span(PG_FUNCTION_ARGS)
  * Set intersection
  *****************************************************************************/
 
+PG_FUNCTION_INFO_V1(Intersection_value_span);
+/**
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the intersection of a value and a span
+ * @sqlfunc span_intersection()
+ * @sqlop @p *
+ */
+PGDLLEXPORT Datum
+Intersection_value_span(PG_FUNCTION_ARGS)
+{
+  Datum d = PG_GETARG_DATUM(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  Datum result;
+  bool found = intersection_value_span(d, basetype, s, &result);
+  if (! found)
+    PG_RETURN_NULL();
+  PG_RETURN_DATUM(result);
+}
+
 PG_FUNCTION_INFO_V1(Intersection_orderedset_span);
 /**
  * @ingroup mobilitydb_spantime_set
  * @brief Return the intersection of an ordered set and a span.
- * @pqlfunc time_intersection()
- * @pqlop @p *
+ * @sqlfunc time_intersection()
+ * @sqlop @p *
  */
 PGDLLEXPORT Datum
 Intersection_orderedset_span(PG_FUNCTION_ARGS)
@@ -685,12 +722,32 @@ Intersection_orderedset_span(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PG_FUNCTION_INFO_V1(Intersection_span_value);
+/**
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the intersection of a value and a span
+ * @sqlfunc span_intersection()
+ * @sqlop @p *
+ */
+PGDLLEXPORT Datum
+Intersection_span_value(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  Datum d = PG_GETARG_DATUM(1);
+  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  Datum result;
+  bool found = intersection_value_span(d, basetype, s, &result);
+  if (! found)
+    PG_RETURN_NULL();
+  PG_RETURN_DATUM(result);
+}
+
 PG_FUNCTION_INFO_V1(Intersection_span_orderedset);
 /**
  * @ingroup mobilitydb_spantime_set
  * @brief Return the intersection of a span and an ordered set
- * @pqlfunc time_intersection()
- * @pqlop @p *
+ * @sqlfunc time_intersection()
+ * @sqlop @p *
  */
 PGDLLEXPORT Datum
 Intersection_span_orderedset(PG_FUNCTION_ARGS)
@@ -726,12 +783,32 @@ Intersection_span_span(PG_FUNCTION_ARGS)
  * Set difference
  *****************************************************************************/
 
+PG_FUNCTION_INFO_V1(Minus_value_span);
+/**
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the difference of a value and a span
+ * @sqlfunc span_intersection()
+ * @sqlop @p *
+ */
+PGDLLEXPORT Datum
+Minus_value_span(PG_FUNCTION_ARGS)
+{
+  Datum d = PG_GETARG_DATUM(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  Datum result;
+  bool found = minus_value_span(d, basetype, s, &result);
+  if (! found)
+    PG_RETURN_NULL();
+  PG_RETURN_DATUM(result);
+}
+
 PG_FUNCTION_INFO_V1(Minus_orderedset_span);
 /**
  * @ingroup mobilitydb_spantime_set
  * @brief Return the difference of an ordered set and period
- * @pqlfunc time_minus()
- * @pqlop @p -
+ * @sqlfunc time_minus()
+ * @sqlop @p -
  */
 PGDLLEXPORT Datum
 Minus_orderedset_span(PG_FUNCTION_ARGS)
@@ -745,12 +822,31 @@ Minus_orderedset_span(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PG_FUNCTION_INFO_V1(Minus_span_value);
+/**
+ * @ingroup mobilitydb_spantime_set
+ * @brief Return the difference of a span and a value
+ * @sqlfunc span_intersection()
+ * @sqlop @p *
+ */
+PGDLLEXPORT Datum
+Minus_span_value(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  Datum d = PG_GETARG_DATUM(1);
+  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  SpanSet *result = minus_span_value(s, d, basetype);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
 PG_FUNCTION_INFO_V1(Minus_span_orderedset);
 /**
  * @ingroup mobilitydb_spantime_set
  * @brief Return the difference of a span and an ordered set
- * @pqlfunc time_minus()
- * @pqlop @p -
+ * @sqlfunc time_minus()
+ * @sqlop @p -
  */
 PGDLLEXPORT Datum
 Minus_span_orderedset(PG_FUNCTION_ARGS)
@@ -827,8 +923,8 @@ PG_FUNCTION_INFO_V1(Distance_orderedset_span);
 /**
  * @ingroup mobilitydb_spantime_dist
  * @brief Return the distance in seconds between an ordered set and a span
- * @pqlfunc time_distance()
- * @pqlop @p <->
+ * @sqlfunc time_distance()
+ * @sqlop @p <->
  */
 PGDLLEXPORT Datum
 Distance_orderedset_span(PG_FUNCTION_ARGS)
@@ -862,8 +958,8 @@ PG_FUNCTION_INFO_V1(Distance_span_orderedset);
 /**
  * @ingroup mobilitydb_spantime_dist
  * @brief Return the distance in seconds between a span and an ordered set
- * @pqlfunc time_distance()
- * @pqlop @p <->
+ * @sqlfunc time_distance()
+ * @sqlop @p <->
  */
 PGDLLEXPORT Datum
 Distance_span_orderedset(PG_FUNCTION_ARGS)

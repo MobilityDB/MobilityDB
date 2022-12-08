@@ -126,7 +126,7 @@ setop_orderedset_orderedset(const OrderedSet *os1,
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a set contains a value.
- * @sqlop @s \@>
+ * @sqlop @p @>
  */
 bool
 contains_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
@@ -143,7 +143,7 @@ contains_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if the first set contains the second one.
- * @sqlop @s \@>
+ * @sqlop @p @>
  */
 bool
 contains_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
@@ -177,7 +177,7 @@ contains_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a value is contained by a set
- * @sqlop @s <@
+ * @sqlop @p <@
  */
 bool
 contained_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os)
@@ -188,7 +188,7 @@ contained_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os)
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if a set is contained by the second one
- * @sqlop @s <@
+ * @sqlop @p <@
  */
 bool
 contained_orderedset_orderedset(const OrderedSet *os1,
@@ -204,7 +204,7 @@ contained_orderedset_orderedset(const OrderedSet *os1,
 /**
  * @ingroup libmeos_spantime_topo
  * @brief Return true if the sets overlap.
- * @sqlop @s &&
+ * @sqlop @p &&
  */
 bool
 overlaps_orderedset_orderedset(const OrderedSet *os1,
@@ -237,7 +237,7 @@ overlaps_orderedset_orderedset(const OrderedSet *os1,
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a value is strictly right a set.
- * @sqlop @s #>>
+ * @sqlop @p #>>
  */
 bool
 left_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os)
@@ -249,7 +249,7 @@ left_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a set is strictly left a set.
- * @sqlop @s <<#
+ * @sqlop @p <<#
  */
 bool
 left_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
@@ -261,7 +261,7 @@ left_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a set is strictly left the second one.
- * @sqlop @s <<#
+ * @sqlop @p <<#
  */
 bool
 left_orderedset_orderedset(const OrderedSet *os1,
@@ -279,7 +279,7 @@ left_orderedset_orderedset(const OrderedSet *os1,
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a value is strictly right a set.
- * @sqlop @s #>>
+ * @sqlop @p #>>
  */
 bool
 right_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os)
@@ -291,7 +291,7 @@ right_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a set is strictly right a value.
- * @sqlop @s #>>
+ * @sqlop @p #>>
  */
 bool
 right_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
@@ -303,7 +303,7 @@ right_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if the first set is strictly right the second one.
- * @sqlop @s #>>
+ * @sqlop @p #>>
  */
 bool
 right_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
@@ -320,7 +320,7 @@ right_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a value is not right a set.
- * @sqlop @s &<#
+ * @sqlop @p &<#
  */
 bool
 overleft_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os)
@@ -332,7 +332,7 @@ overleft_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a set is not right a value.
- * @sqlop @s &<#
+ * @sqlop @p &<#
  */
 bool
 overleft_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
@@ -344,7 +344,7 @@ overleft_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if the first set is not right the second one.
- * @sqlop @s &<#
+ * @sqlop @p &<#
  */
 bool
 overleft_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
@@ -361,7 +361,7 @@ overleft_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a value is not left a set.
- * @sqlop @s #&>
+ * @sqlop @p #&>
  */
 bool
 overright_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os)
@@ -373,7 +373,7 @@ overright_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if a set is not left a value.
- * @sqlop @s #&>
+ * @sqlop @p #&>
  */
 bool
 overright_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
@@ -385,7 +385,7 @@ overright_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if the first set is not left the second one.
- * @sqlop @s #&>
+ * @sqlop @p #&>
  */
 bool
 overright_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
@@ -402,7 +402,7 @@ overright_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the union of the timestamps
- * @sqlop @s +
+ * @sqlop @p +
  */
 OrderedSet *
 union_value_value(Datum d1, mobdbType basetype1, Datum d2, mobdbType basetype2)
@@ -433,7 +433,7 @@ union_value_value(Datum d1, mobdbType basetype1, Datum d2, mobdbType basetype2)
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the union of a value and a set.
- * @sqlop @s +
+ * @sqlop @p +
  */
 OrderedSet *
 union_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os)
@@ -466,7 +466,7 @@ union_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os)
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the union of a set and a value
- * @sqlop @s +
+ * @sqlop @p +
  */
 OrderedSet *
 union_orderedset_value(const OrderedSet *os, const Datum d, mobdbType basetype)
@@ -477,7 +477,7 @@ union_orderedset_value(const OrderedSet *os, const Datum d, mobdbType basetype)
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the union of the sets.
- * @sqlop @s +
+ * @sqlop @p +
  */
 OrderedSet *
 union_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
@@ -492,7 +492,7 @@ union_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the intersection of the timestamps
- * @sqlop @s *
+ * @sqlop @p *
  */
 bool
 intersection_value_value(Datum d1, mobdbType basetype1, Datum d2, mobdbType basetype2,
@@ -508,7 +508,7 @@ intersection_value_value(Datum d1, mobdbType basetype1, Datum d2, mobdbType base
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the intersection of a value and a set
- * @sqlop @s *
+ * @sqlop @p *
  */
 bool
 intersection_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os,
@@ -524,7 +524,7 @@ intersection_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os,
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the intersection of a set and a value
- * @sqlop @s *
+ * @sqlop @p *
  */
 bool
 intersection_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype,
@@ -540,7 +540,7 @@ intersection_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype,
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the intersection of the sets.
- * @sqlop @s *
+ * @sqlop @p *
  */
 OrderedSet *
 intersection_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
@@ -556,7 +556,7 @@ intersection_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the difference of the timestamps
- * @sqlop @s -
+ * @sqlop @p -
  */
 bool
 minus_value_value(Datum d1, mobdbType basetype1, Datum d2, mobdbType basetype2,
@@ -571,7 +571,7 @@ minus_value_value(Datum d1, mobdbType basetype1, Datum d2, mobdbType basetype2,
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the difference of a value and a set
- * @sqlop @s -
+ * @sqlop @p -
  */
 bool
 minus_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os,
@@ -586,7 +586,7 @@ minus_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os,
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the difference of a set and a value.
- * @sqlop @s -
+ * @sqlop @p -
  */
 OrderedSet *
 minus_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
@@ -610,7 +610,7 @@ minus_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
 /**
  * @ingroup libmeos_spantime_set
  * @brief Return the difference of the sets.
- * @sqlop @s -
+ * @sqlop @p -
  */
 OrderedSet *
 minus_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
@@ -625,7 +625,7 @@ minus_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance between a value and a set.
- * @sqlop @s <->
+ * @sqlop @p <->
  */
 double
 distance_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os)
@@ -637,7 +637,7 @@ distance_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os)
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance between a set and a value
- * @sqlop @s <->
+ * @sqlop @p <->
  */
 double
 distance_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
@@ -648,7 +648,7 @@ distance_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
 /**
  * @ingroup libmeos_spantime_dist
  * @brief Return the distance between the sets
- * @sqlop @s <->
+ * @sqlop @p <->
  */
 double
 distance_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)

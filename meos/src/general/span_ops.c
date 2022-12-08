@@ -477,7 +477,7 @@ left_floatspan_float(const Span *s, double d)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if an ordered set is strictly left a span.
- * @sqlop @s <<#
+ * @sqlop @p <<#
  */
 bool
 left_orderedset_span(const OrderedSet *os, const Span *s)
@@ -553,7 +553,7 @@ right_float_floatspan(double d, const Span *s)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if an ordered set is strictly right a span.
- * @sqlop @s #>>
+ * @sqlop @p #>>
  */
 bool
 right_orderedset_span(const OrderedSet *os, const Span *s)
@@ -662,7 +662,7 @@ overleft_float_floatspan(double d, const Span *s)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if an ordered set is not right a span.
- * @sqlop @s &<#
+ * @sqlop @p &<#
  */
 bool
 overleft_orderedset_span(const OrderedSet *os, const Span *s)
@@ -776,7 +776,7 @@ overright_float_floatspan(double d, const Span *s)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if an ordered set is not left a span.
- * @sqlop @s #&>
+ * @sqlop @p #&>
  */
 bool
 overright_orderedset_span(const OrderedSet *os, const Span *s)
@@ -788,7 +788,7 @@ overright_orderedset_span(const OrderedSet *os, const Span *s)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if an ordered set is not left a span set.
- * @sqlop @s #&>
+ * @sqlop @p #&>
  */
 bool
 overright_orderedset_spanset(const OrderedSet *os, const SpanSet *ss)

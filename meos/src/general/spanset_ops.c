@@ -529,7 +529,7 @@ left_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if an ordered set is strictly left a span set.
- * @sqlop @s <<#
+ * @sqlop @p <<#
  */
 bool
 left_orderedset_spanset(const OrderedSet *os, const SpanSet *ss)
@@ -620,7 +620,7 @@ right_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if an ordered set is strictly right a span set.
- * @sqlop @s #>>
+ * @sqlop @p #>>
  */
 bool
 right_orderedset_spanset(const OrderedSet *os, const SpanSet *ss)
@@ -723,7 +723,7 @@ overleft_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss)
 /**
  * @ingroup libmeos_spantime_pos
  * @brief Return true if an ordered set is not right a span set.
- * @sqlop @s &<#
+ * @sqlop @p &<#
  */
 bool
 overleft_orderedset_spanset(const OrderedSet *os, const SpanSet *ss)

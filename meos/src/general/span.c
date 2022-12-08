@@ -81,35 +81,6 @@ span_deserialize(const Span *s, SpanBound *lower, SpanBound *upper)
   }
 }
 
-#if MEOS
-/*
- * @brief Construct a span value from the bounds
- *
- * This does not force canonicalization of the span value.  In most cases,
- * external callers should only be canonicalization functions.
- */
-Span *
-span_serialize(SpanBound *lower, SpanBound *upper)
-{
-  assert(lower->basetype == upper->basetype);
-
-  /* If lower bound value is above upper, it's wrong */
-  int cmp = datum_cmp2(lower->val, upper->val, lower->basetype,
-    upper->basetype);
-
-  if (cmp > 0)
-    elog(ERROR, "span lower bound must be less than or equal to span upper bound");
-
-  /* If bounds are equal, and not both inclusive, span is empty */
-  if (cmp == 0 && ! (lower->inclusive && upper->inclusive))
-    elog(ERROR, "a span cannot be empty");
-
-  Span *result = span_make(lower->val, upper->val, lower->inclusive,
-    upper->inclusive, lower->basetype);
-  return result;
-}
-#endif
-
 /*****************************************************************************/
 
 /**

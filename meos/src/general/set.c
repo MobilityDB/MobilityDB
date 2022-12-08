@@ -178,6 +178,7 @@ orderedset_out(const OrderedSet *os, Datum maxdd)
  *
  * @param[in] values Array of values
  * @param[in] count Number of elements in the array
+ * @param[in] basetype Base type
  * @sqlfunc timestampset()
  * @pymeosfunc TimestampSet()
  */
@@ -213,6 +214,7 @@ orderedset_make(const Datum *values, int count, mobdbType basetype)
  *
  * @param[in] values Array of values
  * @param[in] count Number of elements in the array
+ * @param[in] basetype Base type
  * @see timestampset_make
  * @sqlfunc timestampset()
  * @pymeosfunc TimestampSet()
