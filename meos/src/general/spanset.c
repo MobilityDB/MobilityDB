@@ -52,7 +52,7 @@
  *****************************************************************************/
 
 /**
- * Return the location of the value in the span set using binary search
+ * Return the location of a value in a span set using binary search
  *
  * If the value is found, the index of the span is returned in the output
  * parameter. Otherwise, return a number encoding whether the value is before
@@ -68,10 +68,10 @@
  * 4)                            v^                => loc = 2
  * 5)                                        v^    => loc = 3
  * @endcode
- * @param[in] ss Span set value
+ * @param[in] ss Span set
  * @param[in] v Value
  * @param[out] loc Location
- * @result Return true if the timestamp is contained in the period set
+ * @result Return true if the value is contained in the span set
  */
 bool
 spanset_find_value(const SpanSet *ss, Datum v, int *loc)
@@ -100,11 +100,13 @@ spanset_find_value(const SpanSet *ss, Datum v, int *loc)
   return false;
 }
 
+#if MEOS
 bool
 periodset_find_timestamp(const PeriodSet *ps, TimestampTz t, int *loc)
 {
   return spanset_find_value(ps, TimestampTzGetDatum(t), loc);
 }
+#endif /* MEOS */
 
 /*****************************************************************************
  * Input/output functions
@@ -133,7 +135,7 @@ intspanset_in(const char *str)
 
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Return an integer span from its Well-Known Text (WKT) representation.
+ * @brief Return a big integer span from its Well-Known Text (WKT) representation.
  */
 SpanSet *
 bigintspanset_in(const char *str)

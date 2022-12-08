@@ -28,7 +28,7 @@
  *****************************************************************************/
 
 /**
- * @brief Operators for time types.
+ * @brief Operators for span types.
  */
 
 /* C */
@@ -70,7 +70,7 @@ setop_orderedset_span(const OrderedSet *os, const Span *s, SetOper setop)
 }
 
 /**
- * Return the minimum value of the two span base values
+ * Return the minimum value of two span base values
  */
 Datum
 span_value_min(Datum l, Datum r, mobdbType type)
@@ -86,7 +86,7 @@ span_value_min(Datum l, Datum r, mobdbType type)
 }
 
 /**
- * Return the minimum value of the two span base values
+ * Return the minimum value of two span base values
  */
 Datum
 span_value_max(Datum l, Datum r, mobdbType type)
@@ -626,7 +626,7 @@ right_span_span(const Span *s1, const Span *s2)
 
 /**
  * @ingroup libmeos_internal_setspan_pos
- * @brief Return true if a value is not to the right of a span.
+ * @brief Return true if a value does not extend to the right of a span.
  */
 bool
 overleft_value_span(Datum d, mobdbType basetype, const Span *s)
@@ -638,7 +638,7 @@ overleft_value_span(Datum d, mobdbType basetype, const Span *s)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if an integer is not to the right of an integer span.
+ * @brief Return true if an integer does not extend to the right of an integer span.
  * @sqlop @p &<
  */
 bool
@@ -649,7 +649,7 @@ overleft_int_intspan(int i, const Span *s)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a float is not to the right of a float span.
+ * @brief Return true if a float does not extend to the right of a float span.
  * @sqlop @p &<
  */
 bool
@@ -661,7 +661,7 @@ overleft_float_floatspan(double d, const Span *s)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if an ordered set is not right a span.
+ * @brief Return true if an ordered set does not extend to the right of a span.
  * @sqlop @p &<#
  */
 bool
@@ -673,7 +673,7 @@ overleft_orderedset_span(const OrderedSet *os, const Span *s)
 
 /**
  * @ingroup libmeos_internal_setspan_pos
- * @brief Return true if a span is not to the right of a value.
+ * @brief Return true if a span does not extend to the right of a value.
  */
 bool
 overleft_span_value(const Span *s, Datum d, mobdbType basetype)
@@ -688,7 +688,7 @@ overleft_span_value(const Span *s, Datum d, mobdbType basetype)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if an integer span is not to the right of an integer.
+ * @brief Return true if an integer span does not extend to the right of an integer.
  * @sqlop @p &<
  */
 bool
@@ -699,7 +699,7 @@ overleft_intspan_int(const Span *s, int i)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a float span is not to the right of a float.
+ * @brief Return true if a float span does not extend to the right of a float.
  * @sqlop @p &<
  */
 bool
@@ -711,7 +711,7 @@ overleft_floatspan_float(const Span *s, double d)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a span is not to the right of an ordered set.
+ * @brief Return true if a span does not extend to the right of an ordered set.
  * @sqlop @p &<#
  */
 bool
@@ -723,7 +723,7 @@ overleft_span_orderedset(const Span *s, const OrderedSet *os)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if the first span is not to the right of the second one.
+ * @brief Return true if the first span does not extend to the right of the second one.
  * @sqlop @p &<
  */
 bool
@@ -740,7 +740,7 @@ overleft_span_span(const Span *s1, const Span *s2)
 
 /**
  * @ingroup libmeos_internal_setspan_pos
- * @brief Return true if a value is not the left of a span.
+ * @brief Return true if a value does not extend to the left of a span.
  */
 bool
 overright_value_span(Datum d, mobdbType basetype, const Span *s)
@@ -752,7 +752,7 @@ overright_value_span(Datum d, mobdbType basetype, const Span *s)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if an integer is not the left of an integer span.
+ * @brief Return true if an integer does not extend to the left of an integer span.
  * @sqlop @p &>
  */
 bool
@@ -763,7 +763,7 @@ overright_int_intspan(int i, const Span *s)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a float is not the left of a float span.
+ * @brief Return true if a float does not extend to the left of a float span.
  * @sqlop @p &>
  */
 bool
@@ -775,7 +775,7 @@ overright_float_floatspan(double d, const Span *s)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if an ordered set is not left a span.
+ * @brief Return true if an ordered set does not extend to the left of a span.
  * @sqlop @p #&>
  */
 bool
@@ -787,7 +787,7 @@ overright_orderedset_span(const OrderedSet *os, const Span *s)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if an ordered set is not left a span set.
+ * @brief Return true if an ordered set does not extend to the left of a span set.
  * @sqlop @p #&>
  */
 bool
@@ -799,7 +799,7 @@ overright_orderedset_spanset(const OrderedSet *os, const SpanSet *ss)
 }
 /**
  * @ingroup libmeos_internal_setspan_pos
- * @brief Return true if a span is not to the left of a value.
+ * @brief Return true if a span does not extend to the left of a value.
  */
 bool
 overright_span_value(const Span *s, Datum d, mobdbType basetype)
@@ -810,7 +810,7 @@ overright_span_value(const Span *s, Datum d, mobdbType basetype)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if an integer span is not to the left of an integer.
+ * @brief Return true if an integer span does not extend to the left of an integer.
  * @sqlop @p &>
  */
 bool
@@ -821,7 +821,7 @@ overright_intspan_int(const Span *s, int i)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a float span is not to the left of a float.
+ * @brief Return true if a float span does not extend to the left of a float.
  * @sqlop @p &>
  */
 bool
@@ -833,7 +833,7 @@ overright_floatspan_float(const Span *s, double d)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a span is not to the left of an ordered set.
+ * @brief Return true if a span does not extend to the left of an ordered set.
  * @sqlop @p #&>
  */
 bool
@@ -844,7 +844,7 @@ overright_span_orderedset(const Span *s, const OrderedSet *os)
 }
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if the first span is not to the left of the second one.
+ * @brief Return true if the first span does not extend to the left of the second one.
  * @sqlop @p &>
  */
 bool
@@ -880,7 +880,7 @@ bbox_union_span_span(const Span *s1, const Span *s2, bool strict)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the union of a timestamp and a period
+ * @brief Return the union of a value and a span
  * @sqlop @p +
  */
 SpanSet *
@@ -905,7 +905,7 @@ union_orderedset_span(const OrderedSet *os, const Span *s)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the union of a period and a timestamp
+ * @brief Return the union of a span and a value
  * @sqlop @p +
  */
 SpanSet *
@@ -933,7 +933,7 @@ union_span_orderedset(const Span *s, const OrderedSet *os)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the union of the spans.
+ * @brief Return the union of two spans.
  * @sqlop @p +
  */
 SpanSet *
@@ -995,7 +995,7 @@ intersection_orderedset_span(const OrderedSet *os, const Span *s)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the intersection of a period and a timestamp
+ * @brief Return the intersection of a span and a value
  * @sqlop @p *
  */
 bool
@@ -1021,8 +1021,8 @@ intersection_span_orderedset(const Span *s, const OrderedSet *os)
 
 /**
  * @ingroup libmeos_internal_setspan_set
- * @brief Set a span with the result of the intersection of the first two spans
- * @note This function is equivalent to @ref intersection_span_span without
+ * @brief Set a span with the result of the intersection of two spans
+ * @note This function is equivalent to @ref `intersection_span_span` without
  * memory allocation
  */
 bool
@@ -1046,7 +1046,7 @@ inter_span_span(const Span *s1, const Span *s2, Span *result)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the intersection of the spans.
+ * @brief Return the intersection of two spans.
  * @sqlop @p *
  */
 Span *
@@ -1146,7 +1146,7 @@ minus_span_value(const Span *s, Datum d, mobdbType basetype)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the difference of a span and a timestamp set.
+ * @brief Return the difference of a span and an ordered set.
  * @sqlop @p -
  */
 SpanSet *
@@ -1166,7 +1166,7 @@ minus_span_orderedset(const Span *s, const OrderedSet *os)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the difference of the spans.
+ * @brief Return the difference of two spans.
  * @sqlop @p -
  */
 Span *
@@ -1224,8 +1224,8 @@ bbox_minus_span_span(const Span *s1, const Span *s2)
 
 /**
  * @brief Return the difference of the two spans.
- * @note This function generalizes the function minus_span_span by enabling
- * the result to be two spans
+ * @note This function generalizes the function @ref `minus_span_span` by
+ * enabling the result to be two spans
  */
 int
 minus_span_span1(const Span *s1, const Span *s2, Span **result)
@@ -1291,7 +1291,7 @@ minus_span_span1(const Span *s1, const Span *s2, Span **result)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the difference of the spans.
+ * @brief Return the difference of two spans.
  * @sqlop @p -
  */
 SpanSet *
@@ -1385,7 +1385,7 @@ distance_floatspan_float(const Span *s, double d)
 
 /**
  * @ingroup libmeos_setspan_dist
- * @brief Return the distance between the spans.
+ * @brief Return the distance between two spans.
  * @sqlop @p <->
  */
 double

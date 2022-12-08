@@ -52,6 +52,7 @@
 #include "general/periodset.h"
 #include "general/pg_call.h"
 #include "general/set.h"
+#include "general/spanset.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_boxops.h"
 #include "general/temporal_parser.h"
@@ -5053,7 +5054,7 @@ tcontseq_at_periodset1(const TSequence *seq, const PeriodSet *ps,
 
   /* General case */
   int loc;
-  periodset_find_timestamp(ps, seq->period.lower, &loc);
+  spanset_find_value(ps, seq->period.lower, &loc);
   int k = 0;
   for (int i = loc; i < ps->count; i++)
   {

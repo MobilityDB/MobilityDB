@@ -44,6 +44,7 @@
 #include "general/pg_call.h"
 #include "general/periodset.h"
 #include "general/set.h"
+#include "general/spanset.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
 #include "general/temporal_parser.h"
@@ -2007,9 +2008,10 @@ tsequenceset_restrict_periodset(const TSequenceSet *ss, const PeriodSet *ps,
   int i = 0, j = 0, k = 0;
   if (atfunc)
   {
-    TimestampTz t = Max(ss->period.lower, ps->span.lower);
+    TimestampTz t = Max(DatumGetTimestampTz(ss->period.lower),
+      DatumGetTimestampTz(ps->span.lower));
     tsequenceset_find_timestamp(ss, t, &i);
-    periodset_find_timestamp(ps, t, &j);
+    spanset_find_value(ps, DatumGetTimestampTz(t), &j);
     sequences = palloc(sizeof(TSequence *) * (ss->count + ps->count - i - j));
   }
   else

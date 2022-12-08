@@ -144,10 +144,10 @@ span_bound_qsort_cmp(const void *a1, const void *a2)
 }
 
 /**
- * Compare the lower bound of two spans, returning <0, 0, or >0 according to
- * whether a's bound is less than, equal to, or greater than b's bound.
+ * Compare the lower bounds of two spans, returning <0, 0, or >0 according to
+ * whether the first bound is less than, equal to, or greater than the second one.
  *
- * @note This function does the same as span_bound_cmp but avoids
+ * @note The function is equivalent to `span_bound_cmp` but avoids
  * deserializing the spans into lower and upper bounds
  */
 int
@@ -170,10 +170,10 @@ span_lower_cmp(const Span *a, const Span *b)
 }
 
 /**
- * Compare the upper bound of two spans, returning <0, 0, or >0 according to
- * whether a's bound is less than, equal to, or greater than b's bound.
+ * Compare the upper bounds of two spans, returning <0, 0, or >0 according to
+ * whether the first bound is less than, equal to, or greater than the second one.
  *
- * @note This function does the same as span_bound_cmp but avoids
+ * @note The function is equivalent to `span_bound_cmp` but avoids
  * deserializing the spans into lower and upper bounds
  */
 int
@@ -422,7 +422,7 @@ intspan_make(int lower, int upper, bool lower_inc, bool upper_inc)
 /**
  * @ingroup libmeos_setspan_constructor
  * @brief Construct an integer span from the bounds.
- * @sqlfunc intspan()
+ * @sqlfunc bigintspan()
  */
 Span *
 bigintspan_make(int64 lower, int64 upper, bool lower_inc, bool upper_inc)
