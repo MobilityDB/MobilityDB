@@ -122,9 +122,8 @@ setop_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2,
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup libmeos_internal_setspan_topo
  * @brief Return true if an ordered set contains a value.
- * @sqlop @p \@>
  */
 bool
 contains_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
@@ -137,6 +136,41 @@ contains_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
   int loc;
   return orderedset_find_value(os, d, &loc);
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_setspan_topo
+ * @brief Return true if an ordered set contains a value.
+ * @sqlop @p \@>
+ */
+bool
+contains_intset_int(const OrderedSet *os, int i)
+{
+  return contains_orderedset_value(os, Int32GetDatum(i), T_INT4);
+}
+
+/**
+ * @ingroup libmeos_setspan_topo
+ * @brief Return true if an ordered set contains a value.
+ * @sqlop @p \@>
+ */
+bool
+contains_bigintset_bigint(const OrderedSet *os, int64 i)
+{
+  return contains_orderedset_value(os, Int64GetDatum(i), T_INT8);
+}
+
+/**
+ * @ingroup libmeos_setspan_topo
+ * @brief Return true if an ordered set contains a value.
+ * @sqlop @p \@>
+ */
+bool
+contains_floatset_float(const OrderedSet *os, double d)
+{
+  return contains_orderedset_value(os, Float8GetDatum(d), T_FLOAT8);
+}
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_topo
@@ -173,15 +207,49 @@ contains_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup libmeos_internal_setspan_topo
  * @brief Return true if a value is contained by an ordered set
- * @sqlop @p <@
  */
 bool
 contained_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os)
 {
   return contains_orderedset_value(os, d, basetype);
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_setspan_topo
+ * @brief Return true if a value is contained by an ordered set
+ * @sqlop @p <@
+ */
+bool
+contained_int_intset(int i, const OrderedSet *os)
+{
+  return contained_value_orderedset(Int32GetDatum(i), T_INT4, os);
+}
+
+/**
+ * @ingroup libmeos_setspan_topo
+ * @brief Return true if a value is contained by an ordered set
+ * @sqlop @p <@
+ */
+bool
+contained_bigint_bigintset(int64 i, const OrderedSet *os)
+{
+  return contained_value_orderedset(Int64GetDatum(i), T_INT8, os);
+}
+
+/**
+ * @ingroup libmeos_setspan_topo
+ * @brief Return true if a value is contained by an ordered set
+ * @sqlop @p <@
+ */
+bool
+contained_float_floatset(double d, const OrderedSet *os)
+{
+  return contained_value_orderedset(Float8GetDatum(d), T_FLOAT8, os);
+}
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_topo
@@ -229,13 +297,12 @@ overlaps_orderedset_orderedset(const OrderedSet *os1,
 }
 
 /*****************************************************************************
- * Strictly left of
+ * Strictly to the left of
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libmeos_internal_setspan_pos
  * @brief Return true if a value is strictly to the left of an ordered set.
- * @sqlop @p <<, <<#
  */
 bool
 left_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os)
@@ -244,10 +311,44 @@ left_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os)
   return datum_lt2(d, d1, os->span.basetype, basetype);
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_setspan_pos
+ * @brief Return true if a value is strictly to the left of a span set.
+ * @sqlop @p <<, @p <<#
+ */
+bool
+left_int_intset(int i, const OrderedSet *os)
+{
+  return left_value_orderedset(Int32GetDatum(i), T_INT4, os);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a value is strictly to the left of a span set.
+ * @sqlop @p <<, @p <<#
+ */
+bool
+left_bigint_bigintset(int64 i, const OrderedSet *os)
+{
+  return left_value_orderedset(Int64GetDatum(i), T_INT8, os);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a value is strictly to the left of a span set.
+ * @sqlop @p <<, @p <<#
+ */
+bool
+left_float_floatset(double d, const OrderedSet *os)
+{
+  return left_value_orderedset(Float8GetDatum(d), T_FLOAT8, os);
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup libmeos_internal_setspan_pos
  * @brief Return true if an ordered set is strictly to the left of a value.
- * @sqlop @p <<, <<#
  */
 bool
 left_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
@@ -255,6 +356,41 @@ left_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
   Datum d1 = orderedset_val_n(os, os->count - 1);
   return datum_lt2(d1, d, os->span.basetype, basetype);
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if an ordered set is strictly to the left of a value.
+ * @sqlop @p <<, @p <<#
+ */
+bool
+left_intset_int(const OrderedSet *os, int i)
+{
+  return left_orderedset_value(os, Int32GetDatum(i), T_INT4);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if an ordered set is strictly to the left of a value.
+ * @sqlop @p <<, @p <<#
+ */
+bool
+left_bigintset_bigint(const OrderedSet *os, int64 i)
+{
+  return left_orderedset_value(os, Int64GetDatum(i), T_INT8);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if an ordered set is strictly to the left of a value.
+ * @sqlop @p <<, @p <<#
+ */
+bool
+left_floatset_float(const OrderedSet *os, double d)
+{
+  return left_orderedset_value(os, Float8GetDatum(d), T_FLOAT8);
+}
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_pos
@@ -276,9 +412,8 @@ left_orderedset_orderedset(const OrderedSet *os1,
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libmeos_internal_setspan_pos
  * @brief Return true if a value is strictly to the right of an ordered set.
- * @sqlop @p >>, #>>
  */
 bool
 right_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os)
@@ -287,10 +422,45 @@ right_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os)
   return datum_gt2(d, d1, os->span.basetype, basetype);
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_setspan_pos
+ * @brief Return true if a value is strictly to the right of a span set.
+ * @sqlop @p >>, @p #>>
+ */
+bool
+right_int_intset(int i, const OrderedSet *os)
+{
+  return right_value_orderedset(Int32GetDatum(i), T_INT4, os);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a value is strictly to the right of a span set.
+ * @sqlop @p >>, @p #>>
+ */
+bool
+right_bigint_bigintset(int64 i, const OrderedSet *os)
+{
+  return right_value_orderedset(Int64GetDatum(i), T_INT8, os);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a value is strictly to the right of a span set.
+ * @sqlop @p >>, @p #>>
+ */
+bool
+right_float_floatset(double d, const OrderedSet *os)
+{
+  return right_value_orderedset(Float8GetDatum(d), T_FLOAT8, os);
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup libmeos_internal_setspan_pos
  * @brief Return true if an ordered set is strictly to the right of a value.
- * @sqlop @p >>, #>>
+ * @sqlop @p >>, @p #>>
  */
 bool
 right_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
@@ -299,11 +469,46 @@ right_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
   return datum_gt2(d1, d, os->span.basetype, basetype);
 }
 
+#if MEOS
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if an ordered set is strictly to the right of a value.
+ * @sqlop @p >>, @p #>>
+ */
+bool
+right_intset_int(const OrderedSet *os, int i)
+{
+  return right_orderedset_value(os, Int32GetDatum(i), T_INT4);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if an ordered set is strictly to the right of a value.
+ * @sqlop @p >>, @p #>>
+ */
+bool
+right_bigintset_bigint(const OrderedSet *os, int64 i)
+{
+  return right_orderedset_value(os, Int64GetDatum(i), T_INT8);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if an ordered set is strictly to the right of a value.
+ * @sqlop @p >>, @p #>>
+ */
+bool
+right_floatset_float(const OrderedSet *os, double d)
+{
+  return right_orderedset_value(os, Float8GetDatum(d), T_FLOAT8);
+}
+#endif /* MEOS */
+
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if the first ordered set is strictly to the right of the
  * second one.
- * @sqlop @p >>, #>>
+ * @sqlop @p >>, @p #>>
  */
 bool
 right_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
@@ -314,13 +519,12 @@ right_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
 }
 
 /*****************************************************************************
- * Does not extend to right of
+ * Does not extend to the right of
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libmeos_internal_setspan_pos
  * @brief Return true if a value does not extend to the right of an ordered set.
- * @sqlop @p &<, &<#
  */
 bool
 overleft_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os)
@@ -329,10 +533,45 @@ overleft_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os)
   return datum_le2(d, d1, basetype, os->span.basetype);
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_setspan_pos
+ * @brief Return true if a value does not extend to the right of an ordered set.
+ * @sqlop @p &<, @p &<#
+ */
+bool
+overleft_int_intset(int i, const OrderedSet *os)
+{
+  return overleft_value_orderedset(Int32GetDatum(i), T_INT4, os);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a value does not extend to the right of an ordered set.
+ * @sqlop @p &<, @p &<#
+ */
+bool
+overleft_bigint_bigintset(int64 i, const OrderedSet *os)
+{
+  return overleft_value_orderedset(Int64GetDatum(i), T_INT8, os);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a value does not extend to the right of an ordered set.
+ * @sqlop @p &<, @p &<#
+ */
+bool
+overleft_float_floatset(double d, const OrderedSet *os)
+{
+  return overleft_value_orderedset(Float8GetDatum(d), T_FLOAT8, os);
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup libmeos_internal_setspan_pos
  * @brief Return true if an ordered set does not extend to the right of a value.
- * @sqlop @p &<, &<#
+ * @sqlop @p &<, @p &<#
  */
 bool
 overleft_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
@@ -340,6 +579,10 @@ overleft_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
   Datum d1 = orderedset_val_n(os, os->count - 1);
   return datum_le2(d1, d, os->span.basetype, basetype);
 }
+
+#if MEOS
+// TO DO
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_pos
@@ -356,13 +599,12 @@ overleft_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
 }
 
 /*****************************************************************************
- * Does not extend to left of
+ * Does not extend to the left of
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libmeos_internal_setspan_pos
  * @brief Return true if a value does not extend to the the left of an ordered set.
- * @sqlop @p &>, #&>
  */
 bool
 overright_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os)
@@ -371,10 +613,44 @@ overright_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os)
   return datum_ge2(d, d1, basetype, os->span.basetype);
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_setspan_pos
+ * @brief Return true if a value does not extend to the the left of an ordered set.
+ * @sqlop @p &>, @p #&>
+ */
+bool
+overright_int_intset(int i, const OrderedSet *os)
+{
+  return overright_value_orderedset(Int32GetDatum(i), T_INT4, os);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a value does not extend to the the left of an ordered set.
+ * @sqlop @p &>, @p #&>
+ */
+bool
+overright_bigint_bigintset(int64 i, const OrderedSet *os)
+{
+  return overright_value_orderedset(Int64GetDatum(i), T_INT8, os);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a value does not extend to the the left of an ordered set.
+ * @sqlop @p &>, @p #&>
+ */
+bool
+overright_float_floatset(double d, const OrderedSet *os)
+{
+  return overright_value_orderedset(Float8GetDatum(d), T_FLOAT8, os);
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup libmeos_internal_setspan_pos
  * @brief Return true if an ordered set does not extend to the left of a value.
- * @sqlop @p &>, #&>
  */
 bool
 overright_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
@@ -383,11 +659,46 @@ overright_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
   return datum_ge2(d1, d, os->span.basetype, basetype);
 }
 
+#if MEOS
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if an ordered set does not extend to the left of a value.
+ * @sqlop @p &>, @p #&>
+ */
+bool
+overright_intset_int(const OrderedSet *os, int i)
+{
+  return overright_orderedset_value(os, Int32GetDatum(i), T_INT4);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if an ordered set does not extend to the left of a value.
+ * @sqlop @p &>, @p #&>
+ */
+bool
+overright_bigintset_bigint(const OrderedSet *os, int64 i)
+{
+  return overright_orderedset_value(os, Int64GetDatum(i), T_INT8);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if an ordered set does not extend to the left of a value.
+ * @sqlop @p &>, @p #&>
+ */
+bool
+overright_floatset_float(const OrderedSet *os, double d)
+{
+  return overright_orderedset_value(os, Float8GetDatum(d), T_FLOAT8);
+}
+#endif /* MEOS */
+
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if the first ordered set does not extend to the left of
  * the second one.
- * @sqlop @p &>, #&>
+ * @sqlop @p &>, @p #&>
  */
 bool
 overright_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
@@ -402,18 +713,16 @@ overright_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup libmeos_internal_setspan_set
  * @brief Return the union of two values
- * @sqlop @p +
  */
 OrderedSet *
-union_value_value(Datum d1, mobdbType basetype1, Datum d2, mobdbType basetype2)
+union_value_value(Datum d1, Datum d2, mobdbType basetype)
 {
-  assert(basetype1 == basetype2);
   OrderedSet *result;
-  int cmp = datum_cmp(d1, d2, basetype1);
+  int cmp = datum_cmp(d1, d2, basetype);
   if (cmp == 0)
-    result = orderedset_make(&d1, 1, basetype1);
+    result = orderedset_make(&d1, 1, basetype);
   else
   {
     Datum values[2];
@@ -427,15 +736,61 @@ union_value_value(Datum d1, mobdbType basetype1, Datum d2, mobdbType basetype2)
       values[0] = d2;
       values[1] = d1;
     }
-    result = orderedset_make(values, 2, basetype1);
+    result = orderedset_make(values, 2, basetype);
   }
   return result;
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the union of a value and an ordered set.
+ * @brief Return the union of two values
  * @sqlop @p +
+ */
+OrderedSet *
+union_int_int(int i1, int i2)
+{
+  return union_value_value(Int32GetDatum(i1), Int32GetDatum(i2), T_INT4);
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the union of two values
+ * @sqlop @p +
+ */
+OrderedSet *
+union_bigint_bigint(int64 i1, int64 i2)
+{
+  return union_value_value(Int64GetDatum(i1), Int64GetDatum(i2), T_INT8);
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the union of two values
+ * @sqlop @p +
+ */
+OrderedSet *
+union_float_float(double d1, double d2)
+{
+  return union_value_value(Float8GetDatum(d1), Float8GetDatum(d2), T_FLOAT8);
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the union of the timestamps
+ * @sqlop @p +
+ */
+TimestampSet *
+union_timestamp_timestamp(TimestampTz t1, TimestampTz t2)
+{
+  return union_value_value(TimestampTzGetDatum(t1), TimestampTzGetDatum(t2),
+    T_TIMESTAMPTZ);
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup libmeos_internal_setspan_set
+ * @brief Return the union of a value and an ordered set.
  */
 OrderedSet *
 union_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os)
@@ -465,8 +820,54 @@ union_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os)
   return orderedset_make_free(values, k, basetype);
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_setspan_set
+ * @brief Return the union of a value and an ordered set
+ * @sqlop @p +
+ */
+OrderedSet *
+union_int_intset(int i, const OrderedSet *os)
+{
+  return union_value_orderedset(Int32GetDatum(i), T_INT4, os);
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the union of a value and an ordered set
+ * @sqlop @p +
+ */
+OrderedSet *
+union_bigint_bigintset(int64 i, const OrderedSet *os)
+{
+  return union_value_orderedset(Int64GetDatum(i), T_INT8, os);
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the union of a value and an ordered set
+ * @sqlop @p +
+ */
+OrderedSet *
+union_float_floatset(double d, const OrderedSet *os)
+{
+  return union_value_orderedset(Float8GetDatum(d), T_FLOAT8, os);
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the union of a timestamp and a timestamp set.
+ * @sqlop @p +
+ */
+TimestampSet *
+union_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
+{
+  return union_value_orderedset(TimestampTzGetDatum(t), T_TIMESTAMPTZ, ts);
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup libmeos_internal_setspan_set
  * @brief Return the union of an ordered set and a value
  * @sqlop @p +
  */
@@ -475,6 +876,52 @@ union_orderedset_value(const OrderedSet *os, const Datum d, mobdbType basetype)
 {
   return union_value_orderedset(d, basetype, os);
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the union of an ordered set and a value
+ * @sqlop @p +
+ */
+bool
+union_intset_int(const OrderedSet *os, int i)
+{
+  return union_orderedset_value(os, Int32GetDatum(i), T_INT4);
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the union of an ordered set and a value
+ * @sqlop @p +
+ */
+bool
+union_bigintset_bigint(const OrderedSet *os, int64 i)
+{
+  return union_orderedset_value(os, Int64GetDatum(i), T_INT8);
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the union of an ordered set and a value
+ * @sqlop @p +
+ */
+bool
+union_floatset_float(const OrderedSet *os, double d)
+{
+  return union_orderedset_value(os, Float8GetDatum(d), T_FLOAT8);
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the union of a timestamp set and a timestamp
+ * @sqlop @p +
+ */
+TimestampSet *
+union_timestampset_timestamp(const TimestampSet *ts, const TimestampTz t)
+{
+  return union_timestamp_timestampset(t, ts);
+}
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_set
@@ -487,9 +934,51 @@ union_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
   return setop_orderedset_orderedset(os1, os2, UNION);
 }
 
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the union of the timestamp sets.
+ * @sqlop @p +
+ */
+TimestampSet *
+union_timestampset_timestampset(const TimestampSet *ts1,
+  const TimestampSet *ts2)
+{
+  return setop_orderedset_orderedset(ts1, ts2, UNION);
+}
+
 /*****************************************************************************
  * Set intersection
  *****************************************************************************/
+
+/**
+ * @ingroup libmeos_internal_setspan_set
+ * @brief Return the intersection of two values
+ */
+bool
+intersection_value_value(Datum d1, Datum d2, mobdbType basetype,
+  Datum *result)
+{
+  if (datum_ne(d1, d2, basetype))
+    return false;
+  *result  = d1;
+  return true;
+}
+
+#if MEOS
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the intersection of two values
+ * @sqlop @p *
+ */
+bool
+intersection_int_int(int i1, int i2, int *result)
+{
+  Datum v;
+  bool found = intersection_value_value(Int32GetDatum(i1), Int32GetDatum(i2),
+    T_INT4, &v);
+  *result = DatumGetInt32(v);
+  return found;
+}
 
 /**
  * @ingroup libmeos_setspan_set
@@ -497,20 +986,49 @@ union_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
  * @sqlop @p *
  */
 bool
-intersection_value_value(Datum d1, mobdbType basetype1, Datum d2, mobdbType basetype2,
-  Datum *result)
+intersection_bigint_bigint(int64 i1, int64 i2, int64 *result)
 {
-  assert(basetype1 == basetype2);
-  if (datum_ne(d1, d2, basetype1))
-    return false;
-  *result  = d1;
-  return true;
+  Datum v;
+  bool found = intersection_value_value(Int64GetDatum(i1), Int64GetDatum(i2),
+    T_INT8, &v);
+  *result = DatumGetInt64(v);
+  return found;
 }
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the intersection of a value and an ordered set
+ * @brief Return the intersection of two values
  * @sqlop @p *
+ */
+bool
+intersection_float_float(double d1, double d2, double *result)
+{
+  Datum v;
+  bool found = intersection_value_value(Float8GetDatum(d1), Float8GetDatum(d2),
+    T_FLOAT8, &v);
+  *result = DatumGetFloat8(v);
+  return found;
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the intersection of the timestamps
+ * @sqlop @p *
+ */
+bool
+intersection_timestamp_timestamp(TimestampTz t1, TimestampTz t2,
+  TimestampTz *result)
+{
+  if (t1 != t2)
+    return false;
+  *result  = t1;
+  return true;
+}
+
+/**
+ * @ingroup libmeos_internal_setspan_set
+ * @brief Return the intersection of a value and an ordered set
  */
 bool
 intersection_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os,
@@ -523,21 +1041,136 @@ intersection_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os,
   return true;
 }
 
+#if MEOS
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the intersection of a value and a span set
+ * @sqlop @p *
+ */
+bool
+intersection_int_intset(int i, const OrderedSet *os, int *result)
+{
+  Datum v;
+  bool found = intersection_value_orderedset(Int32GetDatum(i), T_INT4, os, &v);
+  *result = DatumGetInt32(v);
+  return found;
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the intersection of a value and a span set
+ * @sqlop @p *
+ */
+bool
+intersection_bigint_bigintset(int64 i, const OrderedSet *os, int64 *result)
+{
+  Datum v;
+  bool found = intersection_value_orderedset(Int64GetDatum(i), T_INT8, os, &v);
+  *result = DatumGetInt64(v);
+  return found;
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the intersection of a value and a span set
+ * @sqlop @p *
+ */
+bool
+intersection_float_floatset(double d, const OrderedSet *os, double *result)
+{
+  Datum v;
+  bool found = intersection_value_orderedset(Float8GetDatum(d), T_FLOAT8, os, &v);
+  *result = DatumGetFloat8(v);
+  return found;
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the intersection of a timestamp and a timestamp set
+ * @sqlop @p *
+ */
+bool
+intersection_timestamp_timestampset(TimestampTz t, const TimestampSet *ts,
+  TimestampTz *result)
+{
+  if (! contains_orderedset_value(ts, TimestampTzGetDatum(t),
+      ts->span.basetype))
+    return false;
+  *result  = t;
+  return true;
+}
+
+/**
+ * @ingroup libmeos_internal_setspan_set
+ * @brief Return the intersection of an ordered set and a value
+ */
+bool
+intersection_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype,
+  Datum *result)
+{
+  return intersection_value_orderedset(d, basetype, os, result);
+}
+
+#if MEOS
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the intersection of an ordered set and a value
  * @sqlop @p *
  */
 bool
-intersection_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype,
-  Datum *result)
+intersection_intset_int(const OrderedSet *os, int i, int *result)
 {
-  assert(basetype == os->span.basetype);
-  if (! contains_orderedset_value(os, d, basetype))
+  Datum v;
+  bool found = intersection_orderedset_value(os, Int32GetDatum(i), T_INT4, &v);
+  *result = DatumGetInt32(v);
+  return found;
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the intersection of an ordered set and a value
+ * @sqlop @p *
+ */
+bool
+intersection_bigintset_bigint(const OrderedSet *os, int64 i, int64 *result)
+{
+  Datum v;
+  bool found = intersection_orderedset_value(os, Int64GetDatum(i), T_INT8, &v);
+  *result = DatumGetInt32(v);
+  return found;
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the intersection of an ordered set and a value
+ * @sqlop @p *
+ */
+bool
+intersection_floatset_float(const OrderedSet *os, double d, double *result)
+{
+  Datum v;
+  bool found = intersection_orderedset_value(os, Float8GetDatum(d), T_FLOAT8, &v);
+  *result = DatumGetInt32(v);
+  return found;
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the intersection of a timestamp set and a timestamp
+ * @sqlop @p *
+ */
+bool
+intersection_timestampset_timestamp(const TimestampSet *ts, const TimestampTz t,
+  TimestampTz *result)
+{
+  if (! contains_orderedset_value(ts, TimestampTzGetDatum(t),
+      ts->span.basetype))
     return false;
-  *result  = d;
+  *result  = t;
   return true;
 }
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_set
@@ -550,10 +1183,53 @@ intersection_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
   return setop_orderedset_orderedset(os1, os2, INTER);
 }
 
+#if MEOS
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the intersection of the timestamp sets.
+ * @sqlop @p *
+ */
+TimestampSet *
+intersection_timestampset_timestampset(const TimestampSet *ts1,
+  const TimestampSet *ts2)
+{
+  return setop_orderedset_orderedset(ts1, ts2, INTER);
+}
+#endif /* MEOS */
+
 /*****************************************************************************
  * Set difference
  * The functions produce new results that must be freed
  *****************************************************************************/
+
+/**
+ * @ingroup libmeos_internal_setspan_set
+ * @brief Return the difference of two values
+ */
+bool
+minus_value_value(Datum d1, Datum d2, mobdbType basetype, Datum *result)
+{
+  if (datum_eq(d1, d2, basetype))
+    return false;
+  *result = d1;
+  return true;
+}
+
+#if MEOS
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the difference of two values
+ * @sqlop @p -
+ */
+bool
+minus_int_int(int i1, int i2, int *result)
+{
+  Datum v;
+  bool found = minus_value_value(Int32GetDatum(i1), Int32GetDatum(i2),
+    T_INT4, &v);
+  *result = DatumGetInt32(v);
+  return found;
+}
 
 /**
  * @ingroup libmeos_setspan_set
@@ -561,17 +1237,47 @@ intersection_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
  * @sqlop @p -
  */
 bool
-minus_value_value(Datum d1, mobdbType basetype1, Datum d2, mobdbType basetype2,
-  Datum *result)
+minus_bigint_bigint(int64 i1, int64 i2, int64 *result)
 {
-  if (datum_eq2(d1, d2, basetype1, basetype2))
-    return false;
-  *result = d1;
-  return true;
+  Datum v;
+  bool found = minus_value_value(Int64GetDatum(i1), Int64GetDatum(i2),
+    T_INT8, &v);
+  *result = DatumGetInt64(v);
+  return found;
 }
 
 /**
  * @ingroup libmeos_setspan_set
+ * @brief Return the intersection of two values
+ * @sqlop @p -
+ */
+bool
+minus_float_float(double d1, double d2, double *result)
+{
+  Datum v;
+  bool found = minus_value_value(Float8GetDatum(d1), Float8GetDatum(d2),
+    T_FLOAT8, &v);
+  *result = DatumGetFloat8(v);
+  return found;
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the difference of the timestamps
+ * @sqlop @p -
+ */
+bool
+minus_timestamp_timestamp(TimestampTz t1, TimestampTz t2, TimestampTz *result)
+{
+  if (t1 == t2)
+    return false;
+  *result = t1;
+  return true;
+}
+
+/**
+ * @ingroup libmeos_internal_setspan_set
  * @brief Return the difference of a value and an ordered set
  * @sqlop @p -
  */
@@ -585,10 +1291,69 @@ minus_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os,
   return true;
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the difference of an ordered set and a value.
+ * @brief Return the difference of a value and an ordered set
  * @sqlop @p -
+ */
+bool
+minus_int_intset(int i, const OrderedSet *os, int *result)
+{
+  Datum v;
+  bool found = intersection_value_orderedset(Int32GetDatum(i), T_INT4, os, &v);
+  *result = DatumGetInt32(v);
+  return found;
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the difference of a value and an ordered set
+ * @sqlop @p -
+ */
+bool
+minus_bigint_bigintset(int64 i, const OrderedSet *os, int64 *result)
+{
+  Datum v;
+  bool found = intersection_value_orderedset(Int64GetDatum(i), T_INT8, os, &v);
+  *result = DatumGetInt64(v);
+  return found;
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the intersection of a value and a span set
+ * @sqlop @p -
+ */
+bool
+minus_float_floatset(double d, const OrderedSet *os, double *result)
+{
+  Datum v;
+  bool found = intersection_value_orderedset(Float8GetDatum(d), T_FLOAT8, os, &v);
+  *result = DatumGetFloat8(v);
+  return found;
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the difference of a timestamp and a timestamp set
+ * @sqlop @p -
+ */
+bool
+minus_timestamp_timestampset(TimestampTz t, const TimestampSet *ts,
+  TimestampTz *result)
+{
+  if (contains_orderedset_value(ts, TimestampTzGetDatum(t),
+      ts->span.basetype))
+    return false;
+  *result = t;
+  return true;
+}
+
+/**
+ * @ingroup libmeos_internal_setspan_set
+ * @brief Return the difference of an ordered set and a value.
  */
 OrderedSet *
 minus_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
@@ -609,6 +1374,65 @@ minus_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
   return orderedset_make_free(values, k, basetype);
 }
 
+#if MEOS
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the difference of an ordered set and a value.
+ * @sqlop @p -
+ */
+OrderedSet *
+minus_intset_int(const OrderedSet *os, int i)
+{
+  return minus_orderedset_value(os, Int32GetDatum(i), T_INT4);
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the difference of an ordered set and a value.
+ * @sqlop @p -
+ */
+OrderedSet *
+minus_bigintset_bigint(const OrderedSet *os, int64 i)
+{
+  return minus_orderedset_value(os, Int64GetDatum(i), T_INT8);
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the difference of an ordered set and a value.
+ * @sqlop @p -
+ */
+OrderedSet *
+minus_floatset_float(const OrderedSet *os, double d)
+{
+  return minus_orderedset_value(os, Float8GetDatum(d), T_FLOAT8);
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the difference of a timestamp set and a timestamp.
+ * @sqlop @p -
+ */
+TimestampSet *
+minus_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
+{
+  /* Bounding box test */
+  if (! contains_period_timestamp(&ts->span, t))
+    return orderedset_copy(ts);
+
+  Datum *values = palloc(sizeof(TimestampTz) * ts->count);
+  int k = 0;
+  Datum v = TimestampTzGetDatum(t);
+  for (int i = 0; i < ts->count; i++)
+  {
+    Datum v1 = orderedset_val_n(ts, i);
+    if (datum_ne(v, v1, T_TIMESTAMPTZ))
+      values[k++] = v1;
+  }
+  return orderedset_make_free(values, k, T_TIMESTAMPTZ);
+}
+#endif /* MEOS */
+
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the difference of two ordered sets.
@@ -620,14 +1444,27 @@ minus_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
   return setop_orderedset_orderedset(os1, os2, MINUS);
 }
 
+#if MEOS
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the difference of the timestamp sets.
+ * @sqlop @p -
+ */
+TimestampSet *
+minus_timestampset_timestampset(const TimestampSet *ts1,
+  const TimestampSet *ts2)
+{
+  return setop_orderedset_orderedset(ts1, ts2, MINUS);
+}
+#endif /* MEOS */
+
 /******************************************************************************
  * Distance functions returning a double
  ******************************************************************************/
 
 /**
- * @ingroup libmeos_setspan_dist
+ * @ingroup libmeos_internal_setspan_dist
  * @brief Return the distance between a value and an ordered set.
- * @sqlop @p <->
  */
 double
 distance_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os)
@@ -636,16 +1473,85 @@ distance_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os)
   return result;
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_setspan_dist
- * @brief Return the distance between an ordered set and a value
+ * @brief Return the distance between a value and an ordered set.
  * @sqlop @p <->
+ */
+double
+distance_int_intspanset(int i, const OrderedSet *os)
+{
+  return distance_orderedset_value(os, Int32GetDatum(i), T_INT4);
+}
+
+/**
+ * @ingroup libmeos_setspan_dist
+ * @brief Return the distance between a value and an ordered set.
+ * @sqlop @p <->
+ */
+double
+distance_bigint_bigintspanset(int64 i, const OrderedSet *os)
+{
+  return distance_orderedset_value(os, Int64GetDatum(i), T_INT8);
+}
+
+/**
+ * @ingroup libmeos_setspan_dist
+ * @brief Return the distance between a value and an ordered set.
+ * @sqlop @p <->
+ */
+double
+distance_float_floatspanset(double d, const OrderedSet *os)
+{
+  return distance_orderedset_value(os, Float8GetDatum(d), T_FLOAT8);
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup libmeos_internal_setspan_dist
+ * @brief Return the distance between an ordered set and a value
  */
 double
 distance_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
 {
   return distance_span_value(&os->span, d, basetype);
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_setspan_dist
+ * @brief Return the distance between an ordered set and a value
+ * @sqlop @p <->
+ */
+double
+distance_intset_int(const OrderedSet *os, int i)
+{
+  return distance_orderedset_value(os, Int32GetDatum(i), T_INT4);
+}
+
+/**
+ * @ingroup libmeos_setspan_dist
+ * @brief Return the distance between an ordered set and a value
+ * @sqlop @p <->
+ */
+double
+distance_bigintset_bigint(const OrderedSet *os, int64 i)
+{
+  return distance_orderedset_value(os, Int64GetDatum(i), T_INT8);
+}
+
+/**
+ * @ingroup libmeos_setspan_dist
+ * @brief Return the distance between an ordered set and a value
+ * @sqlop @p <->
+ */
+double
+distance_floatset_float(const OrderedSet *os, double d)
+{
+  return distance_orderedset_value(os, Float8GetDatum(d), T_FLOAT8);
+}
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_dist

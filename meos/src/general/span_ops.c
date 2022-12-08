@@ -1118,7 +1118,6 @@ bbox_union_span_span(const Span *s1, const Span *s2, bool strict)
 /**
  * @ingroup libmeos_internal_setspan_set
  * @brief Return the union of a value and a span
- * @sqlop @p +
  */
 SpanSet *
 union_value_span(Datum d, mobdbType basetype, const Span *s)
@@ -1127,8 +1126,50 @@ union_value_span(Datum d, mobdbType basetype, const Span *s)
 }
 
 #if MEOS
-// TO DO
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the union of a value and a span
+ * @sqlop @p +
+ */
+SpanSet *
+union_int_intspan(int i, const Span *s)
+{
+  return union_value_span(Int32GetDatum(i), T_INT4, s);
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the union of a value and a span
+ * @sqlop @p +
+ */
+SpanSet *
+union_bigint_bigintspan(int64 i, const Span *s)
+{
+  return union_value_span(Int64GetDatum(i), T_INT8, s);
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the union of a value and a span
+ * @sqlop @p +
+ */
+SpanSet *
+union_float_floatspan(double d, const Span *s)
+{
+  return union_value_span(Float8GetDatum(d), T_FLOAT8, s);
+}
 #endif /* MEOS */
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the union of a timestamp and a period
+ * @sqlop @p +
+ */
+PeriodSet *
+union_timestamp_period(TimestampTz t, const Period *p)
+{
+  return union_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p);
+}
 
 /**
  * @ingroup libmeos_setspan_set
@@ -1142,6 +1183,17 @@ union_orderedset_span(const OrderedSet *os, const Span *s)
   SpanSet *result = union_span_spanset(s, ss);
   pfree(ss);
   return result;
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the union of a timestamp set and a period
+ * @sqlop @p +
+ */
+PeriodSet *
+union_timestampset_period(const TimestampSet *ts, const Period *p)
+{
+  return union_orderedset_span(ts, p);
 }
 
 /**
@@ -1159,8 +1211,50 @@ union_span_value(const Span *s, Datum d, mobdbType basetype)
 }
 
 #if MEOS
-// TO DO
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the union of a span and a value.
+ * @sqlop @p +
+ */
+bool
+union_intspan_int(const Span *s, int i)
+{
+  return union_span_value(s, Int32GetDatum(i), T_INT4);
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the union of a span and a value.
+ * @sqlop @p +
+ */
+bool
+union_bigintspan_bigint(const Span *s, int64 i)
+{
+  return union_span_value(s, Int64GetDatum(i), T_INT8);
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the union of a span and a value.
+ * @sqlop @p +
+ */
+bool
+union_floatspan_float(const Span *s, double d)
+{
+  return union_span_value(s, Float8GetDatum(d), T_FLOAT8);
+}
 #endif /* MEOS */
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the union of a period and a timestamp
+ * @sqlop @p +
+ */
+PeriodSet *
+union_period_timestamp(const Period *p, TimestampTz t)
+{
+  return union_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+}
 
 /**
  * @ingroup libmeos_setspan_set
@@ -1218,7 +1312,6 @@ union_span_span(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_internal_setspan_set
  * @brief Return the intersection of a value and a span
- * @sqlop @p *
  */
 bool
 intersection_value_span(Datum d, mobdbType basetype, const Span *s,
@@ -1228,8 +1321,64 @@ intersection_value_span(Datum d, mobdbType basetype, const Span *s,
 }
 
 #if MEOS
-// TO DO
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the intersection of a value and a span
+ * @sqlop @p *
+ */
+bool
+intersection_int_intspan(int i, const Span *s, int *result)
+{
+  Datum v;
+  bool found = intersection_value_span(Int32GetDatum(i), T_INT4, s, &v);
+  *result = DatumGetInt32(v);
+  return found;
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the intersection of a value and a span
+ * @sqlop @p *
+ */
+bool
+intersection_bigint_bigintspan(int64 i, const Span *s, int64 *result)
+{
+  Datum v;
+  bool found = intersection_value_span(Int64GetDatum(i), T_INT8, s, &v);
+  *result = DatumGetInt64(v);
+  return found;
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the intersection of a value and a span
+ * @sqlop @p *
+ */
+bool
+intersection_float_floatspan(double d, const Span *s, double *result)
+{
+  Datum v;
+  bool found = intersection_value_span(Float8GetDatum(d), T_FLOAT8, s, &v);
+  *result = DatumGetFloat8(v);
+  return found;
+}
 #endif /* MEOS */
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the intersection of a timestamp and a period
+ * @sqlop @p *
+ */
+bool
+intersection_timestamp_period(TimestampTz t, const Period *p,
+  TimestampTz *result)
+{
+  Datum v;
+  bool found = intersection_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p,
+    &v);
+  *result = DatumGetTimestampTz(v);
+  return found;
+}
 
 /**
  * @ingroup libmeos_setspan_set
@@ -1243,9 +1392,19 @@ intersection_orderedset_span(const OrderedSet *os, const Span *s)
 }
 
 /**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the intersection of a timestamp set and a period.
+ * @sqlop @p *
+ */
+TimestampSet *
+intersection_timestampset_period(const TimestampSet *ts, const Period *p)
+{
+  return setop_orderedset_span(ts, p, INTER);
+}
+
+/**
  * @ingroup libmeos_internal_setspan_set
  * @brief Return the intersection of a span and a value
- * @sqlop @p *
  */
 bool
 intersection_span_value(const Span *s, Datum d, mobdbType basetype,
@@ -1258,8 +1417,55 @@ intersection_span_value(const Span *s, Datum d, mobdbType basetype,
 }
 
 #if MEOS
-// TO DO
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the intersection of a span and a value
+ * @sqlop @p *
+ */
+bool
+intersection_intspan_int(const Span *s, int i, int *result)
+{
+  return intersection_int_intspan(i, s, result);
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the intersection of a span and a value
+ * @sqlop @p *
+ */
+bool
+intersection_bigintspan_bigint(const Span *s, int64 i, int64 *result)
+{
+  return intersection_bigint_bigintspan(i, s, result);
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the intersection of a span and a value
+ * @sqlop @p *
+ */
+bool
+intersection_floatspan_float(const Span *s, double d, double *result)
+{
+  return intersection_float_floatspan(d, s, result);
+}
 #endif /* MEOS */
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the intersection of a period and a timestamp
+ * @sqlop @p *
+ */
+bool
+intersection_period_timestamp(const Period *p, TimestampTz t,
+  TimestampTz *result)
+{
+  Datum v;
+  bool res = intersection_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p,
+    &v);
+  *result = DatumGetTimestampTz(v);
+  return res;
+}
 
 /**
  * @ingroup libmeos_setspan_set
@@ -1270,6 +1476,17 @@ OrderedSet *
 intersection_span_orderedset(const Span *s, const OrderedSet *os)
 {
   return setop_orderedset_span(os, s, INTER);
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the intersection of a period and a timestamp set
+ * @sqlop @p *
+ */
+TimestampSet *
+intersection_period_timestampset(const Period *ps, const TimestampSet *ts)
+{
+  return intersection_timestampset_period(ts, ps);
 }
 
 /**
@@ -1321,7 +1538,6 @@ intersection_span_span(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_internal_setspan_set
  * @brief Return the difference of a value and a span
- * @sqlop @p -
  */
 bool
 minus_value_span(Datum d, mobdbType basetype, const Span *s,
@@ -1334,8 +1550,62 @@ minus_value_span(Datum d, mobdbType basetype, const Span *s,
 }
 
 #if MEOS
-// TO DO
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the difference of a value and a span
+ * @sqlop @p -
+ */
+bool
+minus_int_intspan(int i, const Span *s, int *result)
+{
+  Datum v;
+  bool found = minus_value_span(Int32GetDatum(i), T_INT4, s, &v);
+  *result = DatumGetInt32(v);
+  return found;
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the difference of a value and a span
+ * @sqlop @p -
+ */
+bool
+minus_bigint_bigintspan(int64 i, const Span *s, int64 *result)
+{
+  Datum v;
+  bool found = minus_value_span(Int64GetDatum(i), T_INT8, s, &v);
+  *result = DatumGetInt64(v);
+  return found;
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the difference of a value and a span
+ * @sqlop @p -
+ */
+bool
+minus_float_floatspan(double d, const Span *s, double *result)
+{
+  Datum v;
+  bool found = minus_value_span(Float8GetDatum(d), T_FLOAT8, s, &v);
+  *result = DatumGetFloat8(v);
+  return found;
+}
 #endif /* MEOS */
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the difference of a timestamp and a period
+ * @sqlop @p -
+ */
+bool
+minus_timestamp_period(TimestampTz t, const Period *p, TimestampTz *result)
+{
+  Datum v;
+  bool res = minus_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p, &v);
+  *result = DatumGetTimestampTz(v);
+  return res;
+}
 
 /**
  * @ingroup libmeos_setspan_set
@@ -1346,6 +1616,17 @@ OrderedSet *
 minus_orderedset_span(const OrderedSet *os, const Span *s)
 {
   return setop_orderedset_span(os, s, MINUS);
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the difference of a timestamp set and a period.
+ * @sqlop @p -
+ */
+TimestampSet *
+minus_timestampset_period(const TimestampSet *ts, const Period *p)
+{
+  return setop_orderedset_span(ts, p, MINUS);
 }
 
 /**
@@ -1385,7 +1666,6 @@ minus_span_value1(const Span *s, Datum d, mobdbType basetype, Span **result)
 /**
  * @ingroup libmeos_internal_setspan_set
  * @brief Return the difference of a span and a value.
- * @sqlop @p -
  */
 SpanSet *
 minus_span_value(const Span *s, Datum d, mobdbType basetype)
@@ -1402,8 +1682,50 @@ minus_span_value(const Span *s, Datum d, mobdbType basetype)
 }
 
 #if MEOS
-// TO DO
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the difference of a span and a value.
+ * @sqlop @p -
+ */
+SpanSet *
+minus_intspan_int(const Span *s, int i)
+{
+  return minus_span_value(s, Int32GetDatum(i), T_INT4);
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the difference of a span and a value.
+ * @sqlop @p -
+ */
+SpanSet *
+minus_bigintspan_bigint(const Span *s, int64 i)
+{
+  return minus_span_value(s, Int64GetDatum(i), T_INT8);
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the difference of a span and a value.
+ * @sqlop @p -
+ */
+SpanSet *
+minus_floatspan_float(const Span *s, double d)
+{
+  return minus_span_value(s, Float8GetDatum(d), T_FLOAT8);
+}
 #endif /* MEOS */
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the difference of a period and a timestamp.
+ * @sqlop @p -
+ */
+SpanSet *
+minus_period_timestamp(const Period *p, TimestampTz t)
+{
+  return minus_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+}
 
 /**
  * @ingroup libmeos_setspan_set
@@ -1423,6 +1745,17 @@ minus_span_orderedset(const Span *s, const OrderedSet *os)
   SpanSet *result = minus_spanset_orderedset(ss, os);
   pfree(ss);
   return result;
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the difference of a period and a timestamp set.
+ * @sqlop @p -
+ */
+PeriodSet *
+minus_period_timestampset(const Period *p, const TimestampSet *ts)
+{
+  return minus_span_orderedset(p, ts);
 }
 
 /**

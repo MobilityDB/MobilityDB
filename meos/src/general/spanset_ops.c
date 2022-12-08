@@ -1294,7 +1294,7 @@ union_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss)
  * @brief Return the union of a value and a span set
  * @sqlop @p +
  */
-bool
+SpanSet *
 union_int_intspanset(int i, const SpanSet *ss)
 {
   return union_value_spanset(Int32GetDatum(i), T_INT4, ss);
@@ -1305,7 +1305,7 @@ union_int_intspanset(int i, const SpanSet *ss)
  * @brief Return the union of a value and a span set
  * @sqlop @p +
  */
-bool
+SpanSet *
 union_bigint_bigintspanset(int64 i, const SpanSet *ss)
 {
   return union_value_spanset(Int64GetDatum(i), T_INT8, ss);
@@ -1316,12 +1316,23 @@ union_bigint_bigintspanset(int64 i, const SpanSet *ss)
  * @brief Return the union of a value and a span set
  * @sqlop @p +
  */
-bool
+SpanSet *
 union_float_floatspanset(double d, const SpanSet *ss)
 {
   return union_value_spanset(Float8GetDatum(d), T_FLOAT8, ss);
 }
 #endif /* MEOS */
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the union of a timestamp and a period set
+ * @sqlop @p +
+ */
+PeriodSet *
+union_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
+{
+  return union_value_spanset(TimestampTzGetDatum(t), T_TIMESTAMPTZ, ps);
+}
 
 /**
  * @ingroup libmeos_setspan_set
@@ -1335,6 +1346,17 @@ union_orderedset_spanset(const OrderedSet *os, const SpanSet *ss)
   SpanSet *result = union_spanset_spanset(ss1, ss);
   pfree(ss1);
   return result;
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the union of a timestamp set and a period set
+ * @sqlop @p +
+ */
+PeriodSet *
+union_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
+{
+  return union_orderedset_spanset(ts, ps);
 }
 
 /**
@@ -1403,6 +1425,17 @@ union_floatspanset_float(const SpanSet *ss, double d)
 
 /**
  * @ingroup libmeos_setspan_set
+ * @brief Return the union of a period set and a timestamp.
+ * @sqlop @p +
+ */
+PeriodSet *
+union_periodset_timestamp(PeriodSet *ps, TimestampTz t)
+{
+  return union_spanset_value(ps, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+}
+
+/**
+ * @ingroup libmeos_setspan_set
  * @brief Return the union of a span set and an ordered set.
  * @sqlop @p +
  */
@@ -1413,6 +1446,17 @@ union_spanset_orderedset(const SpanSet *ss, const OrderedSet *os)
   SpanSet *result = union_spanset_spanset(ss, ss1);
   pfree(ss1);
   return result;
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the union of a period set and a timestamp set.
+ * @sqlop @p +
+ */
+PeriodSet *
+union_periodset_timestampset(PeriodSet *ps, TimestampSet *ts)
+{
+  return union_spanset_orderedset(ps, ts);
 }
 
 /**
@@ -1590,6 +1634,22 @@ intersection_float_floatspanset(double d, const SpanSet *ss, double *result)
 
 /**
  * @ingroup libmeos_setspan_set
+ * @brief Return the intersection of a timestamp and a period set
+ * @sqlop @p *
+ */
+bool
+intersection_timestamp_periodset(TimestampTz t, const PeriodSet *ss,
+  TimestampTz *result)
+{
+  Datum dresult;
+  bool res = intersection_value_spanset(TimestampTzGetDatum(t), T_TIMESTAMPTZ,
+    ss, &dresult);
+  *result = DatumGetTimestampTz(dresult);
+  return res;
+}
+
+/**
+ * @ingroup libmeos_setspan_set
  * @brief Return the intersection of an ordered set and a span set.
  * @sqlop @p *
  */
@@ -1597,6 +1657,17 @@ OrderedSet *
 intersection_orderedset_spanset(const OrderedSet *os, const SpanSet *ss)
 {
   return setop_orderedset_spanset(os, ss, INTER);
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the intersection of a timestamp set and a period set.
+ * @sqlop @p *
+ */
+TimestampSet *
+intersection_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
+{
+  return setop_orderedset_spanset(ts, ps, INTER);
 }
 
 /**
@@ -1684,6 +1755,21 @@ intersection_floatspanset_float(const SpanSet *ss, double d, double *result)
 
 /**
  * @ingroup libmeos_setspan_set
+ * @brief Return the intersection of a period set and a timestamp
+ * @sqlop @p *
+ */
+bool
+intersection_periodset_timestamp(const PeriodSet *ps, TimestampTz t,
+  TimestampTz *result)
+{
+  if (! contains_periodset_timestamp(ps, t))
+    return false;
+  *result = t;
+  return true;
+}
+
+/**
+ * @ingroup libmeos_setspan_set
  * @brief Return the intersection of a span set and an ordered set
  * @sqlop @p *
  */
@@ -1691,6 +1777,17 @@ OrderedSet *
 intersection_spanset_orderedset(const SpanSet *ss, const OrderedSet *os)
 {
   return setop_orderedset_spanset(os, ss, INTER);
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the intersection of a period set and a timestamp set
+ * @sqlop @p *
+ */
+TimestampSet *
+intersection_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
+{
+  return setop_orderedset_spanset(ts, ps, INTER);
 }
 
 /**
@@ -1751,7 +1848,7 @@ intersection_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 
 /**
  * @ingroup libmeos_internal_setspan_set
- * @brief Return the difference of a timestamp and a period set
+ * @brief Return the difference of a value and a span set
  */
 bool
 minus_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss,
@@ -1766,7 +1863,7 @@ minus_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss,
 #if MEOS
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the difference of a timestamp and a period set
+ * @brief Return the difference of a value and a span set
  * @sqlop @p -
  */
 bool
@@ -1780,7 +1877,7 @@ minus_int_intspanset(int i, const SpanSet *ss, int *result)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the difference of a timestamp and a period set
+ * @brief Return the difference of a value and a span set
  * @sqlop @p -
  */
 bool
@@ -1794,7 +1891,7 @@ minus_bigint_bigintspanset(int64 i, const SpanSet *ss, int64 *result)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the difference of a timestamp and a period set
+ * @brief Return the difference of a value and a span set
  * @sqlop @p -
  */
 bool
@@ -1809,6 +1906,22 @@ minus_float_floatspanset(double d, const SpanSet *ss, double *result)
 
 /**
  * @ingroup libmeos_setspan_set
+ * @brief Return the difference of a timestamp and a period set
+ * @sqlop @p -
+ */
+bool
+minus_timestamp_periodset(TimestampTz t, const PeriodSet *ps,
+  TimestampTz *result)
+{
+  Datum v;
+  bool res = minus_value_spanset(TimestampTzGetDatum(t), T_TIMESTAMPTZ, ps,
+    &v);
+  *result = DatumGetTimestampTz(v);
+  return res;
+}
+
+/**
+ * @ingroup libmeos_setspan_set
  * @brief Return the difference of an ordered set and a span set.
  * @sqlop @p -
  */
@@ -1816,6 +1929,17 @@ OrderedSet *
 minus_orderedset_spanset(const OrderedSet *os, const SpanSet *ss)
 {
   return setop_orderedset_spanset(os, ss, MINUS);
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the difference of a timestamp set and a period set.
+ * @sqlop @p -
+ */
+TimestampSet *
+minus_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
+{
+  return setop_orderedset_spanset(ts, ps, MINUS);
 }
 
 /**
@@ -1939,6 +2063,17 @@ minus_floatspanset_float(const SpanSet *ss, double d)
 
 /**
  * @ingroup libmeos_setspan_set
+ * @brief Return the difference of a period set and a timestamp.
+ * @sqlop @p -
+ */
+SpanSet *
+minus_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
+{
+  return minus_spanset_value(ps, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+}
+
+/**
+ * @ingroup libmeos_setspan_set
  * @brief Return the difference of a span set and an ordered set.
  * @sqlop @p -
  */
@@ -2047,6 +2182,17 @@ minus_spanset_orderedset(const SpanSet *ss, const OrderedSet *os)
   SpanSet *result = spanset_make((const Span **) spans, k, NORMALIZE_NO);
   pfree_array((void **) spans, i);
   return result;
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the difference of a period set and a timestamp set.
+ * @sqlop @p -
+ */
+PeriodSet *
+minus_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
+{
+  return minus_spanset_orderedset(ps, ts);
 }
 
 /**

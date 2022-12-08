@@ -388,9 +388,8 @@ Union_value_value(PG_FUNCTION_ARGS)
 {
   Datum d1 = PG_GETARG_DATUM(0);
   Datum d2 = PG_GETARG_DATUM(1);
-  mobdbType basetype1 = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  mobdbType basetype2 = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  OrderedSet *result = union_value_value(d1, basetype1, d2, basetype2);
+  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  OrderedSet *result = union_value_value(d1,d2, basetype);
   PG_RETURN_POINTER(result);
 }
 
@@ -466,10 +465,9 @@ Intersection_value_value(PG_FUNCTION_ARGS)
 {
   Datum d1 = PG_GETARG_DATUM(0);
   Datum d2 = PG_GETARG_DATUM(1);
-  mobdbType basetype1 = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  mobdbType basetype2 = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   Datum result;
-  bool found = intersection_value_value(d1, basetype1, d2, basetype2, &result);
+  bool found = intersection_value_value(d1, d2, basetype, &result);
   if (! found)
     PG_RETURN_NULL();
   PG_RETURN_DATUM(result);
@@ -555,9 +553,8 @@ Minus_value_value(PG_FUNCTION_ARGS)
   Datum d1 = PG_GETARG_DATUM(0);
   Datum d2 = PG_GETARG_DATUM(1);
   Datum result;
-  mobdbType basetype1 = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  mobdbType basetype2 = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  if (! minus_value_value(d1, basetype1, d2, basetype2, &result))
+  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  if (! minus_value_value(d1, d2, basetype, &result))
     PG_RETURN_NULL();
   PG_RETURN_DATUM(result);
 }
