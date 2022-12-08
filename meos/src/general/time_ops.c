@@ -235,18 +235,6 @@ contains_timestampset_timestampset(const TimestampSet *ts1,
 
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if a period contains a timestamp.
- * @sqlop @p \@>
- * @pymeosfunc contains_timestamp()
- */
-bool
-contains_period_timestamp(const Period *p, TimestampTz t)
-{
-  return contains_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
-}
-
-/**
- * @ingroup libmeos_setspan_topo
  * @brief Return true if a period contains a timestamp set.
  * @sqlop @p \@>
  */
@@ -316,17 +304,6 @@ contained_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
   return contains_orderedset_value(ts, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
-
-/**
- * @ingroup libmeos_setspan_topo
- * @brief Return true if a timestamp is contained by a period
- * @sqlop @p <@
- */
-bool
-contained_timestamp_period(TimestampTz t, const Period *p)
-{
-  return contains_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
-}
 
 /**
  * @ingroup libmeos_setspan_topo
@@ -542,17 +519,6 @@ adjacent_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if a period and a timestamp are adjacent
- * @sqlop @p -|-
- */
-bool
-adjacent_period_timestamp(const Period *p, TimestampTz t)
-{
-  return adjacent_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
-}
-
-/**
- * @ingroup libmeos_setspan_topo
  * @brief Return true if a period and a timestamp set are adjacent
  * @sqlop @p -|-
  */
@@ -601,17 +567,6 @@ before_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
   return (t < t1);
 }
 #endif /* MEOS */
-
-/**
- * @ingroup libmeos_setspan_pos
- * @brief Return true if a timestamp is strictly before a period.
- * @sqlop @p <<#
- */
-bool
-before_timestamp_period(TimestampTz t, const Period *p)
-{
-  return left_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p);
-}
 
 /**
  * @ingroup libmeos_setspan_pos
@@ -677,17 +632,6 @@ before_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a period is strictly before a timestamp.
- * @sqlop @p <<#
- */
-bool
-before_period_timestamp(const Period *p, TimestampTz t)
-{
-  return left_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
-}
-
-/**
- * @ingroup libmeos_setspan_pos
  * @brief Return true if a period is strictly before a timestamp set
  * @sqlop @p <<#
  */
@@ -739,17 +683,6 @@ after_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
   return (t > t1);
 }
 #endif /* MEOS */
-
-/**
- * @ingroup libmeos_setspan_pos
- * @brief Return true if a timestamp is strictly after a period.
- * @sqlop @p #>>
- */
-bool
-after_timestamp_period(TimestampTz t, const Period *p)
-{
-  return right_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p);
-}
 
 /**
  * @ingroup libmeos_setspan_pos
@@ -815,17 +748,6 @@ after_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a period is strictly after a timestamp.
- * @sqlop @p #>>
- */
-bool
-after_period_timestamp(const Period *p, TimestampTz t)
-{
-  return right_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
-}
-
-/**
- * @ingroup libmeos_setspan_pos
  * @brief Return true if a period is strictly after a timestamp set.
  * @sqlop @p #>>
  */
@@ -878,17 +800,6 @@ overbefore_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
   return (t <= t1);
 }
 #endif /* MEOS */
-
-/**
- * @ingroup libmeos_setspan_pos
- * @brief Return true if a timestamp is not after a period.
- * @sqlop @p &<#
- */
-bool
-overbefore_timestamp_period(TimestampTz t, const Period *p)
-{
-  return overleft_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p);
-}
 
 /**
  * @ingroup libmeos_setspan_pos
@@ -954,17 +865,6 @@ overbefore_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a period is not after a timestamp.
- * @sqlop @p &<#
- */
-bool
-overbefore_period_timestamp(const Period *p, TimestampTz t)
-{
-  return overleft_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
-}
-
-/**
- * @ingroup libmeos_setspan_pos
  * @brief Return true if a period is not after a timestamp set.
  * @sqlop @p &<#
  */
@@ -1017,17 +917,6 @@ overafter_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
   return (t >= t1);
 }
 #endif /* MEOS */
-
-/**
- * @ingroup libmeos_setspan_pos
- * @brief Return true if a timestamp is not before a period.
- * @sqlop @p #&>
- */
-bool
-overafter_timestamp_period(TimestampTz t, const Period *p)
-{
-  return overright_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p);
-}
 
 /**
  * @ingroup libmeos_setspan_pos
@@ -1089,17 +978,6 @@ overafter_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
   TimestampTz t = DatumGetTimestampTz(orderedset_val_n(ts, 0));
   const Period *p = spanset_sp_n(ps, 0);
   return overright_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p);
-}
-
-/**
- * @ingroup libmeos_setspan_pos
- * @brief Return true if a period is not before a timestamp.
- * @sqlop @p #&>
- */
-bool
-overafter_period_timestamp(const Period *p, TimestampTz t)
-{
-  return overright_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 
 /**

@@ -137,6 +137,17 @@ contains_intspan_int(const Span *s, int i)
 
 /**
  * @ingroup libmeos_setspan_topo
+ * @brief Return true if an integer span contains an integer.
+ * @sqlop @p \@>
+ */
+bool
+contains_bigintspan_bigint(const Span *s, int64 i)
+{
+  return contains_span_value(s, Int64GetDatum(i), T_INT8);
+}
+
+/**
+ * @ingroup libmeos_setspan_topo
  * @brief Return true if a float span contains a float.
  * @sqlop @p \@>
  */
@@ -146,6 +157,18 @@ contains_floatspan_float(const Span *s, double d)
   return contains_span_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 #endif /* MEOS */
+
+/**
+ * @ingroup libmeos_setspan_topo
+ * @brief Return true if a period contains a timestamp.
+ * @sqlop @p \@>
+ * @pymeosfunc contains_timestamp()
+ */
+bool
+contains_period_timestamp(const Period *p, TimestampTz t)
+{
+  return contains_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+}
 
 /**
  * @ingroup libmeos_setspan_topo
@@ -208,6 +231,17 @@ contained_int_intspan(int i, const Span *s)
 
 /**
  * @ingroup libmeos_setspan_topo
+ * @brief Return true if an integer is contained by an integer span
+ * @sqlop @p <@
+ */
+bool
+contained_bigint_bigintspan(int64 i, const Span *s)
+{
+  return contains_span_value(s, Int64GetDatum(i), T_INT8);
+}
+
+/**
+ * @ingroup libmeos_setspan_topo
  * @brief Return true if a float is contained by a float span
  * @sqlop @p <@
  */
@@ -217,6 +251,17 @@ contained_float_floatspan(double d, const Span *s)
   return contains_span_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 #endif /* MEOS */
+
+/**
+ * @ingroup libmeos_setspan_topo
+ * @brief Return true if a timestamp is contained by a period
+ * @sqlop @p <@
+ */
+bool
+contained_timestamp_period(TimestampTz t, const Period *p)
+{
+  return contains_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+}
 
 /**
  * @ingroup libmeos_setspan_topo
@@ -310,7 +355,6 @@ adjacent_value_span(Datum d, mobdbType basetype, const Span *s)
   return adjacent_span_value(s, d, basetype);
 }
 
-
 #if MEOS
 /**
  * @ingroup libmeos_setspan_topo
@@ -325,6 +369,17 @@ adjacent_intspan_int(const Span *s, int i)
 
 /**
  * @ingroup libmeos_setspan_topo
+ * @brief Return true if an integer span and an integer are adjacent
+ * @sqlop @p -|-
+ */
+bool
+adjacent_bigintspan_bigint(const Span *s, int64 i)
+{
+  return adjacent_span_value(s, Int64GetDatum(i), T_INT8);
+}
+
+/**
+ * @ingroup libmeos_setspan_topo
  * @brief Return true if a float span and a float are adjacent
  * @sqlop @p -|-
  */
@@ -334,6 +389,17 @@ adjacent_floatspan_float(const Span *s, double d)
   return adjacent_span_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 #endif /* MEOS */
+
+/**
+ * @ingroup libmeos_setspan_topo
+ * @brief Return true if a period and a timestamp are adjacent
+ * @sqlop @p -|-
+ */
+bool
+adjacent_period_timestamp(const Period *p, TimestampTz t)
+{
+  return adjacent_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+}
 
 /**
  * @ingroup libmeos_internal_setspan_topo
@@ -428,6 +494,17 @@ left_int_intspan(int i, const Span *s)
 
 /**
  * @ingroup libmeos_setspan_pos
+ * @brief Return true if a big integer is strictly to the left of a big integer span.
+ * @sqlop @p <<
+ */
+bool
+left_bigint_bigintspan(int64 i, const Span *s)
+{
+  return left_value_span(Int64GetDatum(i), T_INT8, s);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
  * @brief Return true if a float is strictly to the left of a float span.
  * @sqlop @p <<
  */
@@ -437,6 +514,17 @@ left_float_floatspan(double d, const Span *s)
   return left_value_span(Float8GetDatum(d), T_FLOAT8, s);
 }
 #endif /* MEOS */
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a timestamp is strictly before a period.
+ * @sqlop @p <<#
+ */
+bool
+before_timestamp_period(TimestampTz t, const Period *p)
+{
+  return left_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p);
+}
 
 /**
  * @ingroup libmeos_internal_setspan_pos
@@ -464,6 +552,17 @@ left_intspan_int(const Span *s, int i)
 
 /**
  * @ingroup libmeos_setspan_pos
+ * @brief Return true if an integer span is strictly to the left of an integer.
+ * @sqlop @p <<
+ */
+bool
+left_bigintspan_bigint(const Span *s, int64 i)
+{
+  return left_span_value(s, Int64GetDatum(i), T_INT8);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
  * @brief Return true if a float span is strictly to the left of a float.
  * @sqlop @p <<
  */
@@ -473,6 +572,17 @@ left_floatspan_float(const Span *s, double d)
   return left_span_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 #endif /* MEOS */
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a period is strictly before a timestamp.
+ * @sqlop @p <<#
+ */
+bool
+before_period_timestamp(const Period *p, TimestampTz t)
+{
+  return left_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+}
 
 /**
  * @ingroup libmeos_setspan_pos
@@ -540,6 +650,17 @@ right_int_intspan(int i, const Span *s)
 
 /**
  * @ingroup libmeos_setspan_pos
+ * @brief Return true if an integer is strictly to the right of an integer span.
+ * @sqlop @p >>
+ */
+bool
+right_bigint_bigintspan(int64 i, const Span *s)
+{
+  return right_value_span(Int64GetDatum(i), T_INT8, s);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
  * @brief Return true if a float is strictly to the right of a float span.
  * @sqlop @p >>
  */
@@ -549,6 +670,17 @@ right_float_floatspan(double d, const Span *s)
   return right_value_span(Float8GetDatum(d), T_FLOAT8, s);
 }
 #endif /* MEOS */
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a timestamp is strictly after a period.
+ * @sqlop @p #>>
+ */
+bool
+after_timestamp_period(TimestampTz t, const Period *p)
+{
+  return right_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p);
+}
 
 /**
  * @ingroup libmeos_setspan_pos
@@ -587,6 +719,17 @@ right_intspan_int(const Span *s, int i)
 
 /**
  * @ingroup libmeos_setspan_pos
+ * @brief Return true if an integer span is strictly to the right of an integer
+ * @sqlop @p >>
+ */
+bool
+right_bigintspan_bigint(const Span *s, int64 i)
+{
+  return right_span_value(s, Int64GetDatum(i), T_INT8);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
  * @brief Return true if a float span is strictly to the right of a float
  * @sqlop @p >>
  */
@@ -596,6 +739,17 @@ right_floatspan_float(const Span *s, double d)
   return right_span_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 #endif /* MEOS */
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a period is strictly after a timestamp.
+ * @sqlop @p #>>
+ */
+bool
+after_period_timestamp(const Period *p, TimestampTz t)
+{
+  return right_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+}
 
 /**
  * @ingroup libmeos_setspan_pos
@@ -649,6 +803,17 @@ overleft_int_intspan(int i, const Span *s)
 
 /**
  * @ingroup libmeos_setspan_pos
+ * @brief Return true if an integer does not extend to the right of an integer span.
+ * @sqlop @p &<
+ */
+bool
+overleft_bigint_bigintspan(int64 i, const Span *s)
+{
+  return overleft_value_span(Int64GetDatum(i), T_INT8, s);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
  * @brief Return true if a float does not extend to the right of a float span.
  * @sqlop @p &<
  */
@@ -658,6 +823,17 @@ overleft_float_floatspan(double d, const Span *s)
   return overleft_value_span(Float8GetDatum(d), T_INT4, s);
 }
 #endif /* MEOS */
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a timestamp is not after a period.
+ * @sqlop @p &<#
+ */
+bool
+overbefore_timestamp_period(TimestampTz t, const Period *p)
+{
+  return overleft_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p);
+}
 
 /**
  * @ingroup libmeos_setspan_pos
@@ -699,6 +875,17 @@ overleft_intspan_int(const Span *s, int i)
 
 /**
  * @ingroup libmeos_setspan_pos
+ * @brief Return true if an integer span does not extend to the right of an integer.
+ * @sqlop @p &<
+ */
+bool
+overleft_bigintspan_bigint(const Span *s, int64 i)
+{
+  return overleft_span_value(s, Int64GetDatum(i), T_INT8);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
  * @brief Return true if a float span does not extend to the right of a float.
  * @sqlop @p &<
  */
@@ -708,6 +895,17 @@ overleft_floatspan_float(const Span *s, double d)
   return overleft_span_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 #endif /* MEOS */
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a period is not after a timestamp.
+ * @sqlop @p &<#
+ */
+bool
+overbefore_period_timestamp(const Period *p, TimestampTz t)
+{
+  return overleft_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+}
 
 /**
  * @ingroup libmeos_setspan_pos
@@ -763,6 +961,17 @@ overright_int_intspan(int i, const Span *s)
 
 /**
  * @ingroup libmeos_setspan_pos
+ * @brief Return true if an integer does not extend to the left of an integer span.
+ * @sqlop @p &>
+ */
+bool
+overright_bigint_bigintspan(int64 i, const Span *s)
+{
+  return overright_value_span(Int64GetDatum(i), T_INT8, s);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
  * @brief Return true if a float does not extend to the left of a float span.
  * @sqlop @p &>
  */
@@ -772,6 +981,17 @@ overright_float_floatspan(double d, const Span *s)
   return overright_value_span(Float8GetDatum(d), T_FLOAT8, s);
 }
 #endif /* MEOS */
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a timestamp is not before a period.
+ * @sqlop @p #&>
+ */
+bool
+overafter_timestamp_period(TimestampTz t, const Period *p)
+{
+  return overright_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p);
+}
 
 /**
  * @ingroup libmeos_setspan_pos
@@ -819,6 +1039,12 @@ overright_intspan_int(const Span *s, int i)
   return overright_span_value(s, Int32GetDatum(i), T_INT4);
 }
 
+bool
+overright_bigintspan_bigint(const Span *s, int64 i)
+{
+  return overright_span_value(s, Int64GetDatum(i), T_INT8);
+}
+
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a float span does not extend to the left of a float.
@@ -830,6 +1056,17 @@ overright_floatspan_float(const Span *s, double d)
   return overright_span_value(s, Float8GetDatum(d), T_FLOAT8);
 }
 #endif /* MEOS */
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a period is not before a timestamp.
+ * @sqlop @p #&>
+ */
+bool
+overafter_period_timestamp(const Period *p, TimestampTz t)
+{
+  return overright_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+}
 
 /**
  * @ingroup libmeos_setspan_pos
@@ -879,7 +1116,7 @@ bbox_union_span_span(const Span *s1, const Span *s2, bool strict)
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup libmeos_internal_setspan_set
  * @brief Return the union of a value and a span
  * @sqlop @p +
  */
@@ -888,6 +1125,10 @@ union_value_span(Datum d, mobdbType basetype, const Span *s)
 {
   return union_span_value(s, d, basetype);
 }
+
+#if MEOS
+// TO DO
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_set
@@ -904,7 +1145,7 @@ union_orderedset_span(const OrderedSet *os, const Span *s)
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup libmeos_internal_setspan_set
  * @brief Return the union of a span and a value
  * @sqlop @p +
  */
@@ -916,6 +1157,10 @@ union_span_value(const Span *s, Datum d, mobdbType basetype)
   SpanSet *result = union_span_span(s, &s1);
   return result;
 }
+
+#if MEOS
+// TO DO
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_set
@@ -971,7 +1216,7 @@ union_span_span(const Span *s1, const Span *s2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup libmeos_internal_setspan_set
  * @brief Return the intersection of a value and a span
  * @sqlop @p *
  */
@@ -981,6 +1226,10 @@ intersection_value_span(Datum d, mobdbType basetype, const Span *s,
 {
   return intersection_span_value(s, d, basetype, result);
 }
+
+#if MEOS
+// TO DO
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_set
@@ -994,7 +1243,7 @@ intersection_orderedset_span(const OrderedSet *os, const Span *s)
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup libmeos_internal_setspan_set
  * @brief Return the intersection of a span and a value
  * @sqlop @p *
  */
@@ -1007,6 +1256,10 @@ intersection_span_value(const Span *s, Datum d, mobdbType basetype,
   *result  = d;
   return true;
 }
+
+#if MEOS
+// TO DO
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_set
@@ -1022,7 +1275,7 @@ intersection_span_orderedset(const Span *s, const OrderedSet *os)
 /**
  * @ingroup libmeos_internal_setspan_set
  * @brief Set a span with the result of the intersection of two spans
- * @note This function is equivalent to @ref `intersection_span_span` without
+ * @note This function is equivalent to @ref intersection_span_span without
  * memory allocation
  */
 bool
@@ -1066,7 +1319,7 @@ intersection_span_span(const Span *s1, const Span *s2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup libmeos_internal_setspan_set
  * @brief Return the difference of a value and a span
  * @sqlop @p -
  */
@@ -1079,6 +1332,10 @@ minus_value_span(Datum d, mobdbType basetype, const Span *s,
   *result = d;
   return true;
 }
+
+#if MEOS
+// TO DO
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_set
@@ -1126,7 +1383,7 @@ minus_span_value1(const Span *s, Datum d, mobdbType basetype, Span **result)
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup libmeos_internal_setspan_set
  * @brief Return the difference of a span and a value.
  * @sqlop @p -
  */
@@ -1143,6 +1400,10 @@ minus_span_value(const Span *s, Datum d, mobdbType basetype)
     pfree(spans[i]);
   return result;
 }
+
+#if MEOS
+// TO DO
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_set
@@ -1224,7 +1485,7 @@ bbox_minus_span_span(const Span *s1, const Span *s2)
 
 /**
  * @brief Return the difference of the two spans.
- * @note This function generalizes the function @ref `minus_span_span` by
+ * @note This function generalizes the function @ref minus_span_span by
  * enabling the result to be two spans
  */
 int
@@ -1369,6 +1630,17 @@ double
 distance_intspan_int(const Span *s, int i)
 {
   return distance_span_value(s, Int32GetDatum(i), T_INT4);
+}
+
+/**
+ * @ingroup libmeos_setspan_dist
+ * @brief Return the distance between an integer span and an integer.
+ * @sqlop @p <->
+ */
+double
+distance_bigintspan_bigint(const Span *s, int64 i)
+{
+  return distance_span_value(s, Int64GetDatum(i), T_INT8);
 }
 
 /**
