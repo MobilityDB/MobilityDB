@@ -126,7 +126,7 @@ int main(void)
   printf("Using %s points\n", GEODETIC ? "geodetic" : "geometric");
 
   /* Finalize MEOS */
-  meos_finish();
+  meos_finalize();
 
   return 0;
 }

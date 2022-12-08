@@ -112,7 +112,7 @@ int main(void)
   printf("Accumulating the instants and constructing the sequence at the end\n");
 
   /* Finalize MEOS */
-  meos_finish();
+  meos_finalize();
 
   return 0;
 }

@@ -215,7 +215,7 @@ int main(void)
   printf("The program took %f seconds to execute\n", time_taken);
 
   /* Finalize MEOS */
-  meos_finish();
+  meos_finalize();
 
   return 0;
 }

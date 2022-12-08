@@ -335,7 +335,7 @@ PG_FUNCTION_INFO_V1(Contained_geo_tpoint);
  * @brief Return true if the spatiotemporal box of a geometry/geography is
  * contained in the one of a temporal point
  * @sqlfunc contained_bbox()
- * @sqlop @p @>
+ * @sqlop @p \@>
  */
 PGDLLEXPORT Datum
 Contained_geo_tpoint(PG_FUNCTION_ARGS)
@@ -349,7 +349,7 @@ PG_FUNCTION_INFO_V1(Contained_stbox_tpoint);
  * @brief Return true if a spatiotemporal box is contained in the spatiotemporal
  * box of a temporal point
  * @sqlfunc contained_bbox()
- * @sqlop @p @>
+ * @sqlop @p \@>
  */
 PGDLLEXPORT Datum
 Contained_stbox_tpoint(PG_FUNCTION_ARGS)
@@ -363,7 +363,7 @@ PG_FUNCTION_INFO_V1(Contained_tpoint_geo);
  * @brief Return true if the spatiotemporal box of a temporal point is contained
  * in the one of a geometry/geography
  * @sqlfunc contained_bbox()
- * @sqlop @p @>
+ * @sqlop @p \@>
  */
 PGDLLEXPORT Datum
 Contained_tpoint_geo(PG_FUNCTION_ARGS)
@@ -377,7 +377,7 @@ PG_FUNCTION_INFO_V1(Contained_tpoint_stbox);
  * @brief Return true if the spatiotemporal box of a temporal point is contained
  * in the spatiotemporal box
  * @sqlfunc contained_bbox()
- * @sqlop @p @>
+ * @sqlop @p \@>
  */
 PGDLLEXPORT Datum
 Contained_tpoint_stbox(PG_FUNCTION_ARGS)
@@ -391,7 +391,7 @@ PG_FUNCTION_INFO_V1(Contained_tpoint_tpoint);
  * @brief Return true if the spatiotemporal box of the first temporal point is
  * contained in the one of the second temporal point
  * @sqlfunc contained_bbox()
- * @sqlop @p @>
+ * @sqlop @p \@>
  */
 PGDLLEXPORT Datum
 Contained_tpoint_tpoint(PG_FUNCTION_ARGS)

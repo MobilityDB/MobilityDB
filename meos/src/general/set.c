@@ -52,7 +52,7 @@
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_int_spantime_accessor
+ * @ingroup libmeos_internal_setspan_accessor
  * @brief Return the n-th timestamp of a timestamp set
  * @pre The argument @p index is less than or equal to the number of timestamps
  * in the timestamp set
@@ -119,7 +119,7 @@ orderedset_find_value(const OrderedSet *os, Datum d, int *loc)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_spantime_in_out
+ * @ingroup libmeos_setspan_inout
  * @brief Return an ordered set from its Well-Known Text (WKT) representation.
  */
 OrderedSet *
@@ -130,7 +130,7 @@ orderedset_in(const char *str, mobdbType ostype)
 
 #if MEOS
 /**
- * @ingroup libmeos_spantime_in_out
+ * @ingroup libmeos_setspan_inout
  * @brief Return a timestampset from its Well-Known Text (WKT) representation.
  */
 TimestampSet *
@@ -141,7 +141,7 @@ timestampset_in(const char *str)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_spantime_in_out
+ * @ingroup libmeos_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of an ordered set.
  */
 char *
@@ -163,7 +163,7 @@ orderedset_out(const OrderedSet *os, Datum maxdd)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_spantime_constructor
+ * @ingroup libmeos_internal_setspan_constructor
  * @brief Construct a timestamp set from an array of timestamps.
  *
  * For example, the memory structure of a timestamp set with 3
@@ -208,7 +208,7 @@ orderedset_make(const Datum *values, int count, mobdbType basetype)
 }
 
 /**
- * @ingroup libmeos_spantime_constructor
+ * @ingroup libmeos_internal_setspan_constructor
  * @brief Construct a timestamp set from the array of timestamps and free the
  * array after the creation.
  *
@@ -233,7 +233,7 @@ orderedset_make_free(Datum *values, int count, mobdbType basetype)
 }
 
 /**
- * @ingroup libmeos_spantime_constructor
+ * @ingroup libmeos_setspan_constructor
  * @brief Return a copy of a timestamp set.
  */
 TimestampSet *
@@ -249,7 +249,7 @@ orderedset_copy(const TimestampSet *ts)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_spantime_cast
+ * @ingroup libmeos_internal_setspan_cast
  * @brief Cast a timestamp as a timestamp set
  * @sqlop @p ::
  */
@@ -262,7 +262,7 @@ value_to_orderedset(Datum d, mobdbType basetype)
 
 #if MEOS
 /**
- * @ingroup libmeos_spantime_cast
+ * @ingroup libmeos_setspan_cast
  * @brief Cast a timestamp as a timestamp set
  * @sqlop @p ::
  */
@@ -275,7 +275,7 @@ int_to_intset(int i)
 }
 
 /**
- * @ingroup libmeos_spantime_cast
+ * @ingroup libmeos_setspan_cast
  * @brief Cast a timestamp as a timestamp set
  * @sqlop @p ::
  */
@@ -288,7 +288,7 @@ bigint_to_bigintset(int64 i)
 }
 
 /**
- * @ingroup libmeos_spantime_cast
+ * @ingroup libmeos_setspan_cast
  * @brief Cast a timestamp as a timestamp set
  * @sqlop @p ::
  */
@@ -301,7 +301,7 @@ float_to_floatset(double d)
 }
 
 /**
- * @ingroup libmeos_spantime_cast
+ * @ingroup libmeos_setspan_cast
  * @brief Cast a timestamp as a timestamp set
  * @sqlop @p ::
  */
@@ -315,7 +315,7 @@ timestamp_to_timestampset(TimestampTz t)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the timespan of a timestamp set.
  * @sqlfunc timespan()
  * @pymeosfunc timespan()
@@ -392,7 +392,7 @@ timestampset_to_period(const TimestampSet *ts)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the timespan of a timestamp set.
  * @sqlfunc timespan()
  * @pymeosfunc timespan()
@@ -412,7 +412,7 @@ timestampset_to_timespan(const TimestampSet *ts)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the size in bytes of a timestamp set.
  * @sqlfunc memSize()
  */
@@ -423,7 +423,7 @@ orderedset_mem_size(const OrderedSet *os)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the number of timestamps of a timestamp set.
  * @sqlfunc numTimestamps()
  * @pymeosfunc numTimestamps()
@@ -435,7 +435,7 @@ orderedset_num_values(const OrderedSet *os)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the start timestamp of a timestamp set.
  * @sqlfunc startTimestamp()
  * @pymeosfunc startTimestamp()
@@ -448,7 +448,7 @@ orderedset_start_value(const OrderedSet *os)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the end timestamp of a timestamp set.
  * @sqlfunc endTimestamp()
  * @pymeosfunc endTimestamp()
@@ -461,7 +461,7 @@ orderedset_end_value(const OrderedSet *os)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the n-th timestamp of a timestamp set.
  *
  * @param[in] os Timestamp set
@@ -482,7 +482,7 @@ orderedset_value_n(const OrderedSet *os, int n, Datum *result)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the array of timestamps of a timestamp set.
  * @sqlfunc timestamps()
  * @pymeosfunc timestamps()
@@ -498,7 +498,7 @@ orderedset_values(const OrderedSet *os)
 
 #if MEOS
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the number of values of an integer set.
  * @sqlfunc numValues()
  * @pymeosfunc numValues()
@@ -510,7 +510,7 @@ intset_num_values(const OrderedSet *os)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the number of values of a big integer set.
  * @sqlfunc numValues()
  * @pymeosfunc numValues()
@@ -522,7 +522,7 @@ bigintset_num_values(const OrderedSet *os)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the number of values of a float set.
  * @sqlfunc numValues()
  * @pymeosfunc numValues()
@@ -534,7 +534,7 @@ floatset_num_values(const OrderedSet *os)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the number of timestamps of a timestamp set.
  * @sqlfunc numTimestamps()
  * @pymeosfunc numTimestamps()
@@ -546,7 +546,7 @@ intset_num_values(const OrderedSet *os)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the number of timestamps of a timestamp set.
  * @sqlfunc numTimestamps()
  * @pymeosfunc numTimestamps()
@@ -558,7 +558,7 @@ timestampset_num_timestamps(const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the start value of an integer set.
  * @sqlfunc startValue()
  * @pymeosfunc startValue()
@@ -571,7 +571,7 @@ intset_start_value(const OrderedSet *os)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the start value of a big integer set.
  * @sqlfunc startValue()
  * @pymeosfunc startValue()
@@ -584,7 +584,7 @@ bigintset_start_value(const OrderedSet *os)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the start value of a float set.
  * @sqlfunc startValue()
  * @pymeosfunc startValue()
@@ -597,7 +597,7 @@ floatset_start_value(const OrderedSet *os)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the start timestamp of a timestamp set.
  * @sqlfunc startTimestamp()
  * @pymeosfunc startTimestamp()
@@ -610,7 +610,7 @@ timestampset_start_timestamp(const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the end value of an integer set.
  * @sqlfunc endValue()
  * @pymeosfunc endValue()
@@ -623,7 +623,7 @@ intset_end_value(const OrderedSet *os)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the end value of a big integer set.
  * @sqlfunc endValue()
  * @pymeosfunc endValue()
@@ -636,7 +636,7 @@ bigintset_end_value(const OrderedSet *os)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the end value of a float set.
  * @sqlfunc endValue()
  * @pymeosfunc endValue()
@@ -649,7 +649,7 @@ floatset_end_value(const OrderedSet *os)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the end timestamp of a timestamp set.
  * @sqlfunc endTimestamp()
  * @pymeosfunc endTimestamp()
@@ -662,7 +662,7 @@ timestampset_end_timestamp(const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the n-th value of an integer set.
  *
  * @param[in] os Integer set
@@ -683,7 +683,7 @@ intset_value_n(const OrderedSet *os, int n, int *result)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the n-th value of a big integer set.
  *
  * @param[in] os Integer set
@@ -704,7 +704,7 @@ bigintset_value_n(const OrderedSet *os, int n, int64 *result)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the n-th value of a float set.
  *
  * @param[in] os Float set
@@ -725,7 +725,7 @@ floatset_value_n(const OrderedSet *os, int n, double *result)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the n-th timestamp of a timestamp set.
  *
  * @param[in] ts Timestamp set
@@ -747,7 +747,7 @@ timestampset_timestamp_n(const TimestampSet *ts, int n, TimestampTz *result)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the array of values of an integer set.
  * @sqlfunc values()
  * @pymeosfunc values()
@@ -762,7 +762,7 @@ intset_values(const OrderedSet *os)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the array of values of a big integer set.
  * @sqlfunc values()
  * @pymeosfunc values()
@@ -777,7 +777,7 @@ bigintset_values(const OrderedSet *os)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the array of values of a float set.
  * @sqlfunc values()
  * @pymeosfunc values()
@@ -792,7 +792,7 @@ floatset_values(const OrderedSet *os)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the array of timestamps of a timestamp set.
  * @sqlfunc timestamps()
  * @pymeosfunc timestamps()
@@ -812,7 +812,7 @@ timestampset_timestamps(const TimestampSet *ts)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_spantime_transf
+ * @ingroup libmeos_setspan_transf
  * @brief Return a timestamp set shifted and/or scaled by the intervals
  * @sqlfunc shift(), tscale(), shiftTscale()
  * @pymeosfunc shift()
@@ -860,7 +860,7 @@ timestampset_shift_tscale(const TimestampSet *ts, const Interval *shift,
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return true if the first timestamp set is equal to the second one.
  * @note The internal B-tree comparator is not used to increase efficiency
  * @sqlop @p =
@@ -885,7 +885,7 @@ orderedset_eq(const OrderedSet *os1, const OrderedSet *os2)
 }
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return true if the first timestamp set is different from the
  * second one.
  * @note The internal B-tree comparator is not used to increase efficiency
@@ -898,7 +898,7 @@ orderedset_ne(const OrderedSet *os1, const OrderedSet *os2)
 }
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return -1, 0, or 1 depending on whether the first timestamp set
  * value is less than, equal, or greater than the second temporal value.
  * @note Function used for B-tree comparison
@@ -932,7 +932,7 @@ orderedset_cmp(const OrderedSet *os1, const OrderedSet *os2)
 }
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return true if the first timestamp set is less than the second one
  * @sqlop @p <
  */
@@ -944,7 +944,7 @@ orderedset_lt(const OrderedSet *os1, const OrderedSet *os2)
 }
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return true if the first timestamp set is less than
  * or equal to the second one
  * @sqlop @p <=
@@ -957,7 +957,7 @@ orderedset_le(const OrderedSet *os1, const OrderedSet *os2)
 }
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return true if the first timestamp set is greater than
  * or equal to the second one
  * @sqlop @p >=
@@ -970,7 +970,7 @@ orderedset_ge(const OrderedSet *os1, const OrderedSet *os2)
 }
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return true if the first timestamp set is greater than the second one
  * @sqlop @p >
  */
@@ -983,7 +983,7 @@ orderedset_gt(const OrderedSet *os1, const OrderedSet *os2)
 
 #if MEOS
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return true if the first integer set is equal to the second one.
  * @note The internal B-tree comparator is not used to increase efficiency
  * @sqlop @p =
@@ -996,7 +996,7 @@ intset_eq(const OrderedSet *os1, const OrderedSet *os2)
 }
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return true if the first integer set is equal to the second one.
  * @note The internal B-tree comparator is not used to increase efficiency
  * @sqlop @p =
@@ -1009,7 +1009,7 @@ bigintset_eq(const OrderedSet *os1, const OrderedSet *os2)
 }
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return true if the first float set is equal to the second one.
  * @note The internal B-tree comparator is not used to increase efficiency
  * @sqlop @p =
@@ -1022,7 +1022,7 @@ floatset_eq(const OrderedSet *os1, const OrderedSet *os2)
 }
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return true if the first timestamp set is equal to the second one.
  * @note The internal B-tree comparator is not used to increase efficiency
  * @sqlop @p =
@@ -1035,7 +1035,7 @@ timestampset_eq(const TimestampSet *ts1, const TimestampSet *ts2)
 }
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return true if the first integer set is different from the
  * second one.
  * @note The internal B-tree comparator is not used to increase efficiency
@@ -1048,7 +1048,7 @@ intset_ne(const OrderedSet *os1, const OrderedSet *os2)
 }
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return true if the first integer set is different from the
  * second one.
  * @note The internal B-tree comparator is not used to increase efficiency
@@ -1061,7 +1061,7 @@ bigintset_ne(const OrderedSet *os1, const OrderedSet *os2)
 }
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return true if the first float set is different from the
  * second one.
  * @note The internal B-tree comparator is not used to increase efficiency
@@ -1074,7 +1074,7 @@ floatset_ne(const OrderedSet *os1, const OrderedSet *os2)
 }
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return true if the first timestamp set is different from the
  * second one.
  * @note The internal B-tree comparator is not used to increase efficiency
@@ -1087,7 +1087,7 @@ timestampset_ne(const TimestampSet *ts1, const TimestampSet *ts2)
 }
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return -1, 0, or 1 depending on whether the first integer set
  * value is less than, equal, or greater than the second temporal value.
  * @note Function used for B-tree comparison
@@ -1100,7 +1100,7 @@ intset_cmp(const OrderedSet *os1, const OrderedSet *os2)
 }
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return -1, 0, or 1 depending on whether the first integer set
  * value is less than, equal, or greater than the second temporal value.
  * @note Function used for B-tree comparison
@@ -1113,7 +1113,7 @@ bigintset_cmp(const OrderedSet *os1, const OrderedSet *os2)
 }
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return -1, 0, or 1 depending on whether the first float set
  * value is less than, equal, or greater than the second temporal value.
  * @note Function used for B-tree comparison
@@ -1126,7 +1126,7 @@ floatset_cmp(const OrderedSet *os1, const OrderedSet *os2)
 }
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return -1, 0, or 1 depending on whether the first timestamp set
  * value is less than, equal, or greater than the second temporal value.
  * @note Function used for B-tree comparison
@@ -1139,7 +1139,7 @@ timestampset_cmp(const TimestampSet *ts1, const TimestampSet *ts2)
 }
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return true if the first integer set is less than the second one
  * @sqlop @p <
  */
@@ -1150,7 +1150,7 @@ intset_lt(const OrderedSet *os1, const OrderedSet *os2)
 }
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return true if the first integer set is less than the second one
  * @sqlop @p <
  */
@@ -1161,7 +1161,7 @@ bigintset_lt(const OrderedSet *os1, const OrderedSet *os2)
 }
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return true if the first float set is less than the second one
  * @sqlop @p <
  */
@@ -1172,7 +1172,7 @@ floatset_lt(const OrderedSet *os1, const OrderedSet *os2)
 }
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return true if the first timestamp set is less than the second one
  * @sqlop @p <
  */
@@ -1183,7 +1183,7 @@ timestampset_lt(const TimestampSet *ts1, const TimestampSet *ts2)
 }
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return true if the first integer set is less than
  * or equal to the second one
  * @sqlop @p <=
@@ -1195,7 +1195,7 @@ intset_le(const OrderedSet *os1, const OrderedSet *os2)
 }
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return true if the first integer set is less than
  * or equal to the second one
  * @sqlop @p <=
@@ -1207,7 +1207,7 @@ bigintset_le(const OrderedSet *os1, const OrderedSet *os2)
 }
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return true if the first float set is less than
  * or equal to the second one
  * @sqlop @p <=
@@ -1219,7 +1219,7 @@ floatset_le(const OrderedSet *os1, const OrderedSet *os2)
 }
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return true if the first timestamp set is less than
  * or equal to the second one
  * @sqlop @p <=
@@ -1231,7 +1231,7 @@ timestampset_le(const TimestampSet *ts1, const TimestampSet *ts2)
 }
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return true if the first integer set is greater than
  * or equal to the second one
  * @sqlop @p >=
@@ -1243,7 +1243,7 @@ intset_ge(const OrderedSet *os1, const OrderedSet *os2)
 }
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return true if the first integer set is greater than
  * or equal to the second one
  * @sqlop @p >=
@@ -1255,7 +1255,7 @@ bigintset_ge(const OrderedSet *os1, const OrderedSet *os2)
 }
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return true if the first float set is greater than
  * or equal to the second one
  * @sqlop @p >=
@@ -1267,7 +1267,7 @@ floatset_ge(const OrderedSet *os1, const OrderedSet *os2)
 }
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return true if the first timestamp set is greater than
  * or equal to the second one
  * @sqlop @p >=
@@ -1279,7 +1279,7 @@ timestampset_ge(const TimestampSet *ts1, const TimestampSet *ts2)
 }
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return true if the first integer set is greater than the second one
  * @sqlop @p >
  */
@@ -1290,7 +1290,7 @@ intset_gt(const OrderedSet *os1, const OrderedSet *os2)
 }
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return true if the first integer set is greater than the second one
  * @sqlop @p >
  */
@@ -1301,7 +1301,7 @@ bigintset_gt(const OrderedSet *os1, const OrderedSet *os2)
 }
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return true if the first float set is greater than the second one
  * @sqlop @p >
  */
@@ -1312,7 +1312,7 @@ floatset_gt(const OrderedSet *os1, const OrderedSet *os2)
 }
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return true if the first timestamp set is greater than the second one
  * @sqlop @p >
  */
@@ -1330,7 +1330,7 @@ timestampset_gt(const TimestampSet *ts1, const TimestampSet *ts2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_internal_setspan_accessor
  * @brief Return the 32-bit hash value of a datum.
  */
 uint32
@@ -1354,7 +1354,7 @@ datum_hash(Datum d, mobdbType basetype)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the 32-bit hash value of a set.
  * @sqlfunc timestampset_hash()
  */
@@ -1372,7 +1372,7 @@ orderedset_hash(const OrderedSet *os)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_internal_setspan_accessor
  * @brief Return the 32-bit hash value of a datum.
  */
 uint64
@@ -1396,7 +1396,7 @@ datum_hash_extended(Datum d, mobdbType basetype, uint64 seed)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the 64-bit hash value of a timestamp set using a seed.
  * @sqlfunc timestampset_hash_extended()
  */

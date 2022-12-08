@@ -98,7 +98,7 @@ int main(void)
   free(seq);
 
   /* Finalize MEOS */
-  meos_finish();
+  meos_finalize();
 
   return 0;
 }

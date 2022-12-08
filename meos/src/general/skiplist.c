@@ -43,8 +43,6 @@
 #else
   #include <utils/memutils.h>
 #endif /* MEOS */
-// #include <libpq/pqformat.h>
-// #include <utils/timestamp.h>
 /* GSL */
 #include <gsl/gsl_rng.h>
 /* MobilityDB */
@@ -55,7 +53,6 @@
 #include "general/temporal_aggfuncs.h"
 #include "general/time_aggfuncs.h"
 #include "general/time_ops.h"
-// #include "pg_general/temporal_util.h"
 
 #if ! MEOS
   extern FunctionCallInfo fetch_fcinfo();

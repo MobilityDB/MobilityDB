@@ -52,7 +52,7 @@
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_spantime_cast
+ * @ingroup libmeos_setspan_cast
  * @brief Cast a timestamp as a period set.
  * @sqlop @p ::
  */
@@ -67,7 +67,7 @@ timestamp_to_periodset(TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_spantime_cast
+ * @ingroup libmeos_setspan_cast
  * @brief Cast a timestamp set as a period set.
  * @sqlop @p ::
  */
@@ -89,7 +89,7 @@ timestampset_to_periodset(const TimestampSet *ts)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the timespan of a period set
  * @sqlfunc timespan()
  * @pymeosfunc timespan()
@@ -104,7 +104,7 @@ periodset_timespan(const PeriodSet *ps)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the duration of a period set
  * @sqlfunc duration()
  * @pymeosfunc duration()
@@ -126,7 +126,7 @@ periodset_duration(const PeriodSet *ps)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the number of timestamps of a period set
  * @sqlfunc numTimestamps()
  * @pymeosfunc numTimestamps()
@@ -163,7 +163,7 @@ periodset_num_timestamps(const PeriodSet *ps)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the start timestamp of a period set.
  * @sqlfunc startTimestamp()
  * @pymeosfunc startTimestamp()
@@ -176,7 +176,7 @@ periodset_start_timestamp(const PeriodSet *ps)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the end timestamp of a period set.
  * @sqlfunc endTimestamp()
  * @pymeosfunc endTimestamp()
@@ -189,7 +189,7 @@ periodset_end_timestamp(const PeriodSet *ps)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the n-th timestamp of a period set.
  *
  * @param[in] ps Period set
@@ -245,7 +245,7 @@ periodset_timestamp_n(const PeriodSet *ps, int n, TimestampTz *result)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the timestamps of a period set
  * @sqlfunc timestamps()
  * @pymeosfunc timestamps()
@@ -276,7 +276,7 @@ periodset_timestamps(const PeriodSet *ps, int *count)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_spantime_transf
+ * @ingroup libmeos_setspan_transf
  * @brief Return a period set shifted and/or scaled by the intervals.
  * @sqlfunc shift(), tscale(), shiftTscale()
  * @pymeosfunc shift()

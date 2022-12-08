@@ -54,7 +54,7 @@
 
 PG_FUNCTION_INFO_V1(Timestamp_to_periodset);
 /**
- * @ingroup mobilitydb_spantime_cast
+ * @ingroup mobilitydb_setspan_cast
  * @brief Cast the timestamp value as a period set
  * @sqlfunc periodset()
  */
@@ -68,7 +68,7 @@ Timestamp_to_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_to_periodset);
 /**
- * @ingroup mobilitydb_spantime_cast
+ * @ingroup mobilitydb_setspan_cast
  * @brief Cast the timestamp set value as a period set
  * @sqlfunc periodset()
  */
@@ -86,7 +86,7 @@ Timestampset_to_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_timespan);
 /**
- * @ingroup mobilitydb_spantime_accessor
+ * @ingroup mobilitydb_setspan_accessor
  * @brief Return the timespan of a period set
  * @sqlfunc timespan()
  */
@@ -101,7 +101,7 @@ Periodset_timespan(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_duration);
 /**
- * @ingroup mobilitydb_spantime_accessor
+ * @ingroup mobilitydb_setspan_accessor
  * @brief Return the timespan of a period set
  * @sqlfunc duration()
  */
@@ -116,7 +116,7 @@ Periodset_duration(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_num_timestamps);
 /**
- * @ingroup mobilitydb_spantime_accessor
+ * @ingroup mobilitydb_setspan_accessor
  * @brief Return the number of timestamps of a period set
  * @sqlfunc numTimestamps()
  */
@@ -131,7 +131,7 @@ Periodset_num_timestamps(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_start_timestamp);
 /**
- * @ingroup mobilitydb_spantime_accessor
+ * @ingroup mobilitydb_setspan_accessor
  * @brief Return the start timestamp of a period set
  * @sqlfunc startTimestamp()
  */
@@ -147,7 +147,7 @@ Periodset_start_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_end_timestamp);
 /**
- * @ingroup mobilitydb_spantime_accessor
+ * @ingroup mobilitydb_setspan_accessor
  * @brief Return the end timestamp of a period set
  * @sqlfunc endTimestamp()
  */
@@ -163,7 +163,7 @@ Periodset_end_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_timestamp_n);
 /**
- * @ingroup mobilitydb_spantime_accessor
+ * @ingroup mobilitydb_setspan_accessor
  * @brief Return the n-th timestamp of a period set
  * @sqlfunc timestampN()
  */
@@ -181,7 +181,7 @@ Periodset_timestamp_n(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_timestamps);
 /**
- * @ingroup mobilitydb_spantime_accessor
+ * @ingroup mobilitydb_setspan_accessor
  * @brief Return the timestamps of a period set
  * @sqlfunc timestamps()
  */
@@ -203,7 +203,7 @@ Periodset_timestamps(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_shift);
 /**
- * @ingroup mobilitydb_spantime_transf
+ * @ingroup mobilitydb_setspan_transf
  * @brief Shift a period set by an interval
  * @sqlfunc shift()
  */
@@ -219,7 +219,7 @@ Periodset_shift(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_tscale);
 /**
- * @ingroup mobilitydb_spantime_transf
+ * @ingroup mobilitydb_setspan_transf
  * @brief Shift a period set by an interval
  * @sqlfunc tscale()
  */
@@ -235,7 +235,7 @@ Periodset_tscale(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_shift_tscale);
 /**
- * @ingroup mobilitydb_spantime_transf
+ * @ingroup mobilitydb_setspan_transf
  * @brief Shift a period set by an interval
  * @sqlfunc shiftTscale()
  */

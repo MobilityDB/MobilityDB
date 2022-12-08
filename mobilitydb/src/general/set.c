@@ -54,7 +54,7 @@
 
 PG_FUNCTION_INFO_V1(Orderedset_in);
 /**
- * @ingroup mobilitydb_spantime_in_out
+ * @ingroup mobilitydb_setspan_inout
  * @brief Input function for timestamp sets
  * @sqlfunc intset_in(), bigintset_in(), floatset_in(), timestampset_in()
  */
@@ -69,7 +69,7 @@ Orderedset_in(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Orderedset_out);
 /**
- * @ingroup mobilitydb_spantime_in_out
+ * @ingroup mobilitydb_setspan_inout
  * @brief Output function for timestamp sets
  * @sqlfunc intset_out(), bigintset_out(), floatset_out(), timestampset_out()
  */
@@ -84,7 +84,7 @@ Orderedset_out(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Orderedset_recv);
 /**
- * @ingroup mobilitydb_spantime_in_out
+ * @ingroup mobilitydb_setspan_inout
  * @brief Receive function for timestamp set
  * @sqlfunc intset_recv(), bigintset_recv(), floatset_recv(), timestampset_recv()
  */
@@ -100,7 +100,7 @@ Orderedset_recv(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Orderedset_send);
 /**
- * @ingroup mobilitydb_spantime_in_out
+ * @ingroup mobilitydb_setspan_inout
  * @brief Send function for timestamp set
  * @sqlfunc intset_send(), bigintset_send(), floatset_send(), timestampset_send()
  */
@@ -122,7 +122,7 @@ Orderedset_send(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Orderedset_constructor);
 /**
- * @ingroup mobilitydb_spantime_constructor
+ * @ingroup mobilitydb_setspan_constructor
  * @brief Construct an ordered set from an array of values
  * @sqlfunc intset(), bigintset(), floatset(), timestampset()
  */
@@ -146,7 +146,7 @@ Orderedset_constructor(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Value_to_orderedset);
 /**
- * @ingroup mobilitydb_spantime_cast
+ * @ingroup mobilitydb_setspan_cast
  * @brief Cast a timestamp as a timestamp set
  * @sqlfunc timestampset()
  */
@@ -160,7 +160,7 @@ Value_to_orderedset(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup mobilitydb_spantime_cast
+ * @ingroup mobilitydb_setspan_cast
  * @brief Peak into an ordered set datum to find the bounding box. If the datum
  * needs to be detoasted, extract only the header and not the full object.
  */
@@ -179,7 +179,7 @@ orderedset_span_slice(Datum d, Span *s)
 
 PG_FUNCTION_INFO_V1(Orderedset_to_span);
 /**
- * @ingroup mobilitydb_spantime_accessor
+ * @ingroup mobilitydb_setspan_accessor
  * @brief Return the span of an ordered set
  * @sqlfunc timespan()
  */
@@ -194,7 +194,7 @@ Orderedset_to_span(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_to_timespan);
 /**
- * @ingroup mobilitydb_spantime_accessor
+ * @ingroup mobilitydb_setspan_accessor
  * @brief Return the timespan of a timestamp set
  * @sqlfunc timespan()
  */
@@ -213,7 +213,7 @@ Timestampset_to_timespan(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Orderedset_mem_size);
 /**
- * @ingroup mobilitydb_spantime_accessor
+ * @ingroup mobilitydb_setspan_accessor
  * @brief Return the size in bytes of a timestamp set
  * @sqlfunc memSize()
  */
@@ -228,7 +228,7 @@ Orderedset_mem_size(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_timespan);
 /**
- * @ingroup mobilitydb_spantime_accessor
+ * @ingroup mobilitydb_setspan_accessor
  * @brief Return the timespan of a timestamp set
  * @sqlfunc timespan()
  */
@@ -243,7 +243,7 @@ Timestampset_timespan(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Orderedset_num_values);
 /**
- * @ingroup mobilitydb_spantime_accessor
+ * @ingroup mobilitydb_setspan_accessor
  * @brief Return the number of timestamps of a timestamp set
  * @sqlfunc numTimestamp()
  */
@@ -258,7 +258,7 @@ Orderedset_num_values(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Orderedset_start_value);
 /**
- * @ingroup mobilitydb_spantime_accessor
+ * @ingroup mobilitydb_setspan_accessor
  * @brief Return the start timestamp of a timestamp set
  * @sqlfunc startTimestamp()
  */
@@ -273,7 +273,7 @@ Orderedset_start_value(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Orderedset_end_value);
 /**
- * @ingroup mobilitydb_spantime_accessor
+ * @ingroup mobilitydb_setspan_accessor
  * @brief Return the end timestamp of a timestamp set
  * @sqlfunc endTimestamp()
  */
@@ -288,7 +288,7 @@ Orderedset_end_value(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Orderedset_value_n);
 /**
- * @ingroup mobilitydb_spantime_accessor
+ * @ingroup mobilitydb_setspan_accessor
  * @brief Return the n-th timestamp of a timestamp set
  * @sqlfunc timestampN()
  */
@@ -307,7 +307,7 @@ Orderedset_value_n(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Orderedset_values);
 /**
- * @ingroup mobilitydb_spantime_accessor
+ * @ingroup mobilitydb_setspan_accessor
  * @brief Return the timestamps of a timestamp set
  * @sqlfunc timestamps()
  */
@@ -328,7 +328,7 @@ Orderedset_values(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_shift);
 /**
- * @ingroup mobilitydb_spantime_transf
+ * @ingroup mobilitydb_setspan_transf
  * @brief Shift a timestamp set by an interval
  * @sqlfunc shift()
  */
@@ -344,7 +344,7 @@ Timestampset_shift(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_tscale);
 /**
- * @ingroup mobilitydb_spantime_transf
+ * @ingroup mobilitydb_setspan_transf
  * @brief Scale a timestamp set by an interval
  * @sqlfunc tscale()
  */
@@ -361,7 +361,7 @@ Timestampset_tscale(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestampset_shift_tscale);
 /**
- * @ingroup mobilitydb_spantime_transf
+ * @ingroup mobilitydb_setspan_transf
  * @brief Shift and scale a timestamp set by the intervals
  * @sqlfunc shiftTscale()
  */
@@ -382,7 +382,7 @@ Timestampset_shift_tscale(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Orderedset_cmp);
 /**
- * @ingroup mobilitydb_spantime_comp
+ * @ingroup mobilitydb_setspan_comp
  * @brief Return -1, 0, or 1 depending on whether the first timestamp set
  * is less than, equal, or greater than the second temporal value
  * @sqlfunc timestampset_cmp()
@@ -400,7 +400,7 @@ Orderedset_cmp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Orderedset_eq);
 /**
- * @ingroup mobilitydb_spantime_comp
+ * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first timestamp set is equal to the second one
  * @sqlfunc timestampset_eq()
  * @sqlop @p =
@@ -418,7 +418,7 @@ Orderedset_eq(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Orderedset_ne);
 /**
- * @ingroup mobilitydb_spantime_comp
+ * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first timestamp set is different from the second one
  * @sqlfunc timestampset_ne()
  * @sqlop @p <>
@@ -436,7 +436,7 @@ Orderedset_ne(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Orderedset_lt);
 /**
- * @ingroup mobilitydb_spantime_comp
+ * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first timestamp set is less than the second one
  * @sqlfunc timestampset_lt()
  * @sqlop @p <
@@ -454,7 +454,7 @@ Orderedset_lt(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Orderedset_le);
 /**
- * @ingroup mobilitydb_spantime_comp
+ * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first timestamp set is less than
  * or equal to the second one
  * @sqlfunc timestampset_le()
@@ -473,7 +473,7 @@ Orderedset_le(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Orderedset_ge);
 /**
- * @ingroup mobilitydb_spantime_comp
+ * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first timestamp set is greater than
  * or equal to the second one
  * @sqlfunc timestampset_ge()
@@ -492,7 +492,7 @@ Orderedset_ge(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Orderedset_gt);
 /**
- * @ingroup mobilitydb_spantime_comp
+ * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first timestamp set is greater than the second one
  * @sqlfunc timestampset_gt()
  * @sqlop @p >
@@ -514,7 +514,7 @@ Orderedset_gt(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Orderedset_hash);
 /**
- * @ingroup mobilitydb_spantime_accessor
+ * @ingroup mobilitydb_setspan_accessor
  * @brief Return the 32-bit hash value of a timestamp set
  * @sqlfunc timestampset_hash()
  */
@@ -528,7 +528,7 @@ Orderedset_hash(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Orderedset_hash_extended);
 /**
- * @ingroup mobilitydb_spantime_accessor
+ * @ingroup mobilitydb_setspan_accessor
  * @brief Return the 64-bit hash value of a timestamp set using a seed
  * @sqlfunc timestampset_hash_extended()
  */

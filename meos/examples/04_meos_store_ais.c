@@ -252,7 +252,7 @@ main(int argc, char **argv)
   fclose(file);
 
   /* Finalize MEOS */
-  meos_finish();
+  meos_finalize();
 
   /* Close the connection to the database and cleanup */
   PQfinish(conn);

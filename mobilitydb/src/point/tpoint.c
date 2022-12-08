@@ -217,7 +217,7 @@ tpoint_valid_typmod(Temporal *temp, int32_t typmod)
 
 PG_FUNCTION_INFO_V1(Tpoint_in);
 /**
- * @ingroup mobilitydb_temporal_in_out
+ * @ingroup mobilitydb_temporal_inout
  * @brief Generic input function for temporal points
  * @note Examples of input for the various temporal types:
  * @code

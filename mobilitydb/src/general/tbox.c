@@ -55,7 +55,7 @@
 
 PG_FUNCTION_INFO_V1(Tbox_in);
 /**
- * @ingroup mobilitydb_box_in_out
+ * @ingroup mobilitydb_box_inout
  * @brief Input function for temporal boxes.
  *
  * Examples of input:
@@ -76,7 +76,7 @@ Tbox_in(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tbox_out);
 /**
- * @ingroup mobilitydb_box_in_out
+ * @ingroup mobilitydb_box_inout
  * @brief Output function for temporal boxes.
  * @sqlfunc tbox_out()
  */
@@ -89,7 +89,7 @@ Tbox_out(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tbox_recv);
 /**
- * @ingroup mobilitydb_box_in_out
+ * @ingroup mobilitydb_box_inout
  * @brief Receive function for TBox
  * @sqlfunc tbox_recv()
  */
@@ -105,7 +105,7 @@ Tbox_recv(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tbox_send);
 /**
- * @ingroup mobilitydb_box_in_out
+ * @ingroup mobilitydb_box_inout
  * @brief Send function for TBox
  * @sqlfunc tbox_send()
  */
@@ -127,7 +127,7 @@ Tbox_send(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tbox_as_text);
 /**
- * @ingroup mobilitydb_box_in_out
+ * @ingroup mobilitydb_box_inout
  * @brief Output function for temporal boxes.
  * @sqlfunc asText()
  */

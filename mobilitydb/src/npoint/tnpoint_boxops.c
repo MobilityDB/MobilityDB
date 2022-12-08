@@ -395,7 +395,7 @@ PG_FUNCTION_INFO_V1(Contains_bbox_geo_tnpoint);
  * @brief Return true if the spatiotemporal box of the geometry contains the one of
  * the temporal network point
  * @sqlfunc contains_bbox()
- * @sqlop @p @>
+ * @sqlop @p \@>
  */
 PGDLLEXPORT Datum
 Contains_bbox_geo_tnpoint(PG_FUNCTION_ARGS)
@@ -409,7 +409,7 @@ PG_FUNCTION_INFO_V1(Contains_stbox_tnpoint);
  * @brief Return true if the spatiotemporal box contains the one of the temporal
  * network point
  * @sqlfunc contains_bbox()
- * @sqlop @p @>
+ * @sqlop @p \@>
  */
 PGDLLEXPORT Datum
 Contains_stbox_tnpoint(PG_FUNCTION_ARGS)
@@ -423,7 +423,7 @@ PG_FUNCTION_INFO_V1(Contains_npoint_tnpoint);
  * @brief Return true if the spatiotemporal box of the network point contains the one
  * of the temporal network point
  * @sqlfunc contains_bbox()
- * @sqlop @p @>
+ * @sqlop @p \@>
  */
 PGDLLEXPORT Datum
 Contains_npoint_tnpoint(PG_FUNCTION_ARGS)
@@ -439,7 +439,7 @@ PG_FUNCTION_INFO_V1(Contains_tnpoint_geo);
  * @brief Return true if the spatiotemporal box of the temporal network point
  * contain the one of the geometry
  * @sqlfunc contains_bbox()
- * @sqlop @p @>
+ * @sqlop @p \@>
  */
 PGDLLEXPORT Datum
 Contains_tnpoint_geo(PG_FUNCTION_ARGS)
@@ -453,7 +453,7 @@ PG_FUNCTION_INFO_V1(Contains_tnpoint_stbox);
  * @brief Return true if the spatiotemporal box of the temporal network point
  * contain the spatiotemporal box
  * @sqlfunc contains_bbox()
- * @sqlop @p @>
+ * @sqlop @p \@>
  */
 PGDLLEXPORT Datum
 Contains_tnpoint_stbox(PG_FUNCTION_ARGS)
@@ -467,7 +467,7 @@ PG_FUNCTION_INFO_V1(Contains_tnpoint_npoint);
  * @brief Return true if the spatiotemporal box of the temporal network point
  * contain the one of the network point
  * @sqlfunc contains_bbox()
- * @sqlop @p @>
+ * @sqlop @p \@>
  */
 PGDLLEXPORT Datum
 Contains_tnpoint_npoint(PG_FUNCTION_ARGS)
@@ -481,7 +481,7 @@ PG_FUNCTION_INFO_V1(Contains_tnpoint_tnpoint);
  * @brief Return true if the spatiotemporal box of the first temporal network point
  * contain the one of the second temporal network point
  * @sqlfunc contains_bbox()
- * @sqlop @p @>
+ * @sqlop @p \@>
  */
 PGDLLEXPORT Datum
 Contains_tnpoint_tnpoint(PG_FUNCTION_ARGS)

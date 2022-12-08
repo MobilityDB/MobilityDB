@@ -1393,7 +1393,7 @@ tnumberseqset_value_split(const TSequenceSet *ss, Datum start_bucket,
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_int_temporal_tile
+ * @ingroup libmeos_internal_temporal_tile
  * @brief Split a temporal number into an array of fragments according to value
  * buckets.
  */

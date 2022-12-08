@@ -419,7 +419,7 @@ meos_initialize(const char *tz_str)
  * Initialize timezone library
  */
 void
-meos_finish(void)
+meos_finalize(void)
 {
   if (session_timezone)
 #ifdef NO_HSEARCH_R

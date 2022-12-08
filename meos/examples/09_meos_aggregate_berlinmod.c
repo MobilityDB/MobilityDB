@@ -158,7 +158,7 @@ int main(void)
   fclose(file);
 
   /* Finalize MEOS */
-  meos_finish();
+  meos_finalize();
 
   return 0;
 }

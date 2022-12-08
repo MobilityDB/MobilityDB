@@ -316,7 +316,7 @@ tfloat_radians(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_int_temporal_math
+ * @ingroup libmeos_internal_temporal_math
  * @brief Return the derivative of a temporal sequence number.
  * @sqlfunc derivative()
  */
@@ -356,7 +356,7 @@ tfloatseq_derivative(const TSequence *seq)
 }
 
 /**
- * @ingroup libmeos_int_temporal_math
+ * @ingroup libmeos_internal_temporal_math
  * @brief Return the derivative of a temporal sequence set number
  * @sqlfunc derivative()
  */

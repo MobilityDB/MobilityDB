@@ -56,7 +56,7 @@
 
 PG_FUNCTION_INFO_V1(Spanset_in);
 /**
- * @ingroup mobilitydb_spantime_in_out
+ * @ingroup mobilitydb_setspan_inout
  * @brief Return a span set from its string representation
  * @sqlfunc spanset_in()
  */
@@ -71,7 +71,7 @@ Spanset_in(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Spanset_out);
 /**
- * @ingroup mobilitydb_spantime_in_out
+ * @ingroup mobilitydb_setspan_inout
  * @brief Return the string representation of a span set
  * @sqlfunc spanset_out()
  */
@@ -86,7 +86,7 @@ Spanset_out(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Spanset_recv);
 /**
- * @ingroup mobilitydb_spantime_in_out
+ * @ingroup mobilitydb_setspan_inout
  * @brief Receive function for span set
  * @sqlfunc spanset_recv()
  */
@@ -102,7 +102,7 @@ Spanset_recv(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Spanset_send);
 /**
- * @ingroup mobilitydb_spantime_in_out
+ * @ingroup mobilitydb_setspan_inout
  * @brief Send function for span set
  * @sqlfunc spanset_send()
  */
@@ -124,7 +124,7 @@ Spanset_send(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Spanset_constructor);
 /**
- * @ingroup mobilitydb_spantime_constructor
+ * @ingroup mobilitydb_setspan_constructor
  * @brief Construct a span set from an array of span values
  * @sqlfunc spanset()
  */
@@ -147,7 +147,7 @@ Spanset_constructor(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Span_to_spanset);
 /**
- * @ingroup mobilitydb_spantime_cast
+ * @ingroup mobilitydb_setspan_cast
  * @brief Cast the span value as a span set
  * @sqlfunc instspanset(), floatspanset(), periodset()
  */
@@ -178,7 +178,7 @@ spanset_span_slice(Datum d, Span *s)
 
 PG_FUNCTION_INFO_V1(Spanset_to_span);
 /**
- * @ingroup mobilitydb_spantime_cast
+ * @ingroup mobilitydb_setspan_cast
  * @brief Return the bounding span on which a span set is defined
  * @sqlfunc instspan(), floatspan(), period()
  */
@@ -194,7 +194,7 @@ Spanset_to_span(PG_FUNCTION_ARGS)
 #if POSTGRESQL_VERSION_NUMBER >= 140000
 PG_FUNCTION_INFO_V1(Spanset_to_multirange);
 /**
- * @ingroup mobilitydb_spantime_cast
+ * @ingroup mobilitydb_setspan_cast
  * @brief Convert the integer span as a integer range value
  * @sqlfunc int4range(), tstzrange()
  * @sqlop @p ::
@@ -213,7 +213,7 @@ Spanset_to_multirange(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Multirange_to_spanset);
 /**
- * @ingroup mobilitydb_spantime_cast
+ * @ingroup mobilitydb_setspan_cast
  * @brief Convert the multi range value as a span set
  * @sqlfunc intspanset(), periodset()
  * @sqlop @p ::
@@ -245,7 +245,7 @@ Multirange_to_spanset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Spanset_mem_size);
 /**
- * @ingroup mobilitydb_spantime_accessor
+ * @ingroup mobilitydb_setspan_accessor
  * @brief Return the size in bytes of a span set
  * @sqlfunc memSize()
  */
@@ -260,7 +260,7 @@ Spanset_mem_size(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Spanset_lower);
 /**
- * @ingroup mobilitydb_spantime_accessor
+ * @ingroup mobilitydb_setspan_accessor
  * @brief Return the lower bound value
  * @sqlfunc lower()
  */
@@ -273,7 +273,7 @@ Spanset_lower(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Spanset_upper);
 /**
- * @ingroup mobilitydb_spantime_accessor
+ * @ingroup mobilitydb_setspan_accessor
  * @brief Return the upper bound value
  * @sqlfunc upper()
  */
@@ -288,7 +288,7 @@ Spanset_upper(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Spanset_lower_inc);
 /**
- * @ingroup mobilitydb_spantime_accessor
+ * @ingroup mobilitydb_setspan_accessor
  * @brief Return true if the lower bound value is inclusive
  * @sqlfunc lower_inc()
  */
@@ -301,7 +301,7 @@ Spanset_lower_inc(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Spanset_upper_inc);
 /**
- * @ingroup mobilitydb_spantime_accessor
+ * @ingroup mobilitydb_setspan_accessor
  * @brief Return true if the upper bound value is inclusive
  * @sqlfunc lower_inc()
  */
@@ -314,7 +314,7 @@ Spanset_upper_inc(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Spanset_width);
 /**
- * @ingroup mobilitydb_spantime_accessor
+ * @ingroup mobilitydb_setspan_accessor
  * @brief Return the width of a numeric span set
  * @sqlfunc width()
  */
@@ -328,7 +328,7 @@ Spanset_width(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Spanset_num_spans);
 /**
- * @ingroup mobilitydb_spantime_accessor
+ * @ingroup mobilitydb_setspan_accessor
  * @brief Return the number of spans of a span set
  * @sqlfunc numSpans(), numPeriods()
  */
@@ -343,7 +343,7 @@ Spanset_num_spans(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Spanset_start_span);
 /**
- * @ingroup mobilitydb_spantime_accessor
+ * @ingroup mobilitydb_setspan_accessor
  * @brief Return the start span of a span set
  * @sqlfunc startSpan(), startPeriod()
  */
@@ -358,7 +358,7 @@ Spanset_start_span(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Spanset_end_span);
 /**
- * @ingroup mobilitydb_spantime_accessor
+ * @ingroup mobilitydb_setspan_accessor
  * @brief Return the end span of a span set
  * @sqlfunc endSpan(), endPeriod()
  */
@@ -373,7 +373,7 @@ Spanset_end_span(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Spanset_span_n);
 /**
- * @ingroup mobilitydb_spantime_accessor
+ * @ingroup mobilitydb_setspan_accessor
  * @brief Return the n-th span of a span set
  * @sqlfunc spanN()
  */
@@ -391,7 +391,7 @@ Spanset_span_n(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Spanset_spans);
 /**
- * @ingroup mobilitydb_spantime_accessor
+ * @ingroup mobilitydb_setspan_accessor
  * @brief Return the spans of a span set
  * @sqlfunc spans()
  */
@@ -430,7 +430,7 @@ floatspanset_round(SpanSet *ss, Datum size)
 
 PG_FUNCTION_INFO_V1(Floatspanset_round);
 /**
- * @ingroup mobilitydb_spantime_transf
+ * @ingroup mobilitydb_setspan_transf
  * @brief Set the precision of the float span set to the number of decimal places
  * @sqlfunc round()
  */
@@ -449,7 +449,7 @@ Floatspanset_round(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Spanset_cmp);
 /**
- * @ingroup mobilitydb_spantime_comp
+ * @ingroup mobilitydb_setspan_comp
  * @brief Return -1, 0, or 1 depending on whether the first period set
  * is less than, equal, or greater than the second one
  * @sqlfunc spanset_cmp()
@@ -467,7 +467,7 @@ Spanset_cmp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Spanset_eq);
 /**
- * @ingroup mobilitydb_spantime_comp
+ * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first period set is equal to the second one
  * @sqlfunc spanset_eq()
  * @sqlop @p =
@@ -485,7 +485,7 @@ Spanset_eq(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Spanset_ne);
 /**
- * @ingroup mobilitydb_spantime_comp
+ * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first period set is different from the second one
  * @sqlfunc spanset_ne()
  * @sqlop @p <>
@@ -505,7 +505,7 @@ Spanset_ne(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Spanset_lt);
 /**
- * @ingroup mobilitydb_spantime_comp
+ * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first period set is less than the second one
  * @sqlfunc spanset_lt()
  * @sqlop @p <
@@ -523,7 +523,7 @@ Spanset_lt(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Spanset_le);
 /**
- * @ingroup mobilitydb_spantime_comp
+ * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first period set is less than or equal to
  * the second one
  * @sqlfunc spanset_le()
@@ -542,7 +542,7 @@ Spanset_le(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Spanset_ge);
 /**
- * @ingroup mobilitydb_spantime_comp
+ * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first period set is greater than or equal to
  * the second one
  * @sqlfunc spanset_ge()
@@ -561,7 +561,7 @@ Spanset_ge(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Spanset_gt);
 /**
- * @ingroup mobilitydb_spantime_comp
+ * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first period set is greater than the second one
  * @sqlfunc spanset_gt()
  * @sqlop @p >
@@ -585,7 +585,7 @@ Spanset_gt(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Spanset_hash);
 /**
- * @ingroup mobilitydb_spantime_accessor
+ * @ingroup mobilitydb_setspan_accessor
  * @brief Return the 32-bit hash value of a period set
  * @sqlfunc spanset_hash()
  */
@@ -599,7 +599,7 @@ Spanset_hash(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Spanset_hash_extended);
 /**
- * @ingroup mobilitydb_spantime_accessor
+ * @ingroup mobilitydb_setspan_accessor
  * @brief Return the 64-bit hash value of a period set using a seed
  * @sqlfunc spanset_hash_extended()
  */

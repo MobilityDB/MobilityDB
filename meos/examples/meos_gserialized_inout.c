@@ -167,7 +167,7 @@ int main()
   free(polygon_text); free(polygon_geojson); free(polygon_hexwkb);
 
   /* Finalize MEOS */
-  meos_finish();
+  meos_finalize();
 
   /* Return */
   return 0;

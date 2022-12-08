@@ -49,64 +49,63 @@
 #define DatumGetTimestampTz(X)((TimestampTz) DatumGetInt64(X))
 
 /*****************************************************************************
- * Functions for span and time types
+ * Functions for set and span types
  *****************************************************************************/
 
-/* Input/output functions for span and time types */
+/* Input/output functions for set and span types */
 
+extern OrderedSet *orderedset_in(const char *str, mobdbType basetype);
+extern char *orderedset_out(const OrderedSet *os, Datum maxdd);
 extern Span *span_in(const char *str, mobdbType spantype);
-
+extern char *span_out(const Span *s, Datum maxdd);
 extern SpanSet *spanset_in(const char *str, mobdbType spantype);
 extern char *spanset_out(const SpanSet *ss, Datum maxdd);
-extern OrderedSet *orderedset_in(const char *str, mobdbType basetype);
-
-extern OrderedSet *orderedset_from_hexwkb(const char *hexwkb);
-extern OrderedSet *orderedset_from_wkb(const uint8_t *wkb, int size);
-extern char *orderedset_out(const OrderedSet *os, Datum maxdd);
 
 /*****************************************************************************/
 
-/* Constructor functions for span and time types */
+/* Constructor functions for set and span types */
 
-extern Span *span_make(Datum lower, Datum upper, bool lower_inc, bool upper_inc, mobdbType basetype);
-extern void span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc, mobdbType basetype, Span *s);
-extern OrderedSet *orderedset_copy(const TimestampSet *os);
 extern OrderedSet *orderedset_make(const Datum *values, int count, mobdbType basetype);
 extern OrderedSet *orderedset_make_free(Datum *values, int count, mobdbType basetype);
+extern OrderedSet *orderedset_copy(const TimestampSet *os);
+extern Span *span_make(Datum lower, Datum upper, bool lower_inc, bool upper_inc, mobdbType basetype);
+extern void span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc, mobdbType basetype, Span *s);
 
 /*****************************************************************************/
 
-/* Cast functions for span and time types */
+/* Cast functions for set and span types */
 
-extern Span *value_to_span(Datum d, mobdbType basetype);
 extern OrderedSet *value_to_orderedset(Datum d, mobdbType basetype);
+extern Span *value_to_span(Datum d, mobdbType basetype);
 
 /*****************************************************************************/
 
-/* Accessor functions for span and time types */
+/* Accessor functions for set and span types */
 
-extern const Span *spanset_sp_n(const SpanSet *ss, int index);
-extern void timestampset_set_period(const TimestampSet *ts, Period *p);
+extern uint32 datum_hash(Datum d, mobdbType basetype);
+extern uint64 datum_hash_extended(Datum d, mobdbType basetype, uint64 seed);
 extern Datum orderedset_val_n(const TimestampSet *ts, int index);
 extern int orderedset_num_values(const OrderedSet *os);
 extern Datum orderedset_start_value(const OrderedSet *os);
 extern Datum orderedset_end_value(const OrderedSet *os);
 extern bool orderedset_value_n(const OrderedSet *os, int n, Datum *result);
 extern Datum *orderedset_values(const OrderedSet *os);
+extern const Span *spanset_sp_n(const SpanSet *ss, int index);
+extern void timestampset_set_period(const TimestampSet *ts, Period *p);
 
 /*****************************************************************************/
 
-/* Transformation functions for span and time types */
+/* Transformation functions for set and span types */
 
 extern void span_shift(Datum value, mobdbType basetype, Span *result);
 extern void spanset_shift(Datum value, mobdbType basetype, SpanSet *result);
 extern void lower_upper_shift_tscale(const Interval *shift, const Interval *duration, TimestampTz *lower, TimestampTz *upper);
 
 /*****************************************************************************
- * Bounding box functions for span and time types
+ * Bounding box functions for set and span types
  *****************************************************************************/
 
-/* Topological functions for span and time types */
+/* Topological functions for set and span types */
 
 extern bool adjacent_span_value(const Span *s, Datum d, mobdbType basetype);
 extern bool adjacent_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype);
@@ -128,7 +127,7 @@ extern bool overlaps_orderedset_orderedset(const OrderedSet *os1, const OrderedS
 
 /*****************************************************************************/
 
-/* Position functions for span and time types */
+/* Position functions for set and span types */
 
 extern bool left_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2);
 extern bool left_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype);
@@ -161,7 +160,7 @@ extern bool overright_spanset_value(const SpanSet *ss, Datum d, mobdbType basety
 
 /*****************************************************************************/
 
-/* Set functions for span and time types */
+/* Set functions for set and span types */
 
 extern bool inter_span_span(const Span *s1, const Span *s2, Span *result);
 extern bool intersection_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype, Datum *result);
@@ -192,7 +191,7 @@ extern OrderedSet *union_value_value(Datum d1, mobdbType basetype1, Datum d2, mo
 
 /*****************************************************************************/
 
-/* Distance functions for span and time types */
+/* Distance functions for set and span types */
 
 extern double distance_value_value(Datum l, Datum r, mobdbType typel, mobdbType typer);
 extern double distance_span_value(const Span *s, Datum d, mobdbType basetype);
@@ -203,7 +202,7 @@ extern double distance_orderedset_orderedset(const OrderedSet *os1, const Ordere
 
 /*****************************************************************************/
 
-/* Hash functions for span and time types */
+/* Hash functions for set and span types */
 
 extern uint32 datum_hash(Datum d, mobdbType basetype);
 extern uint64 datum_hash_extended(Datum d, mobdbType basetype, uint64 seed);

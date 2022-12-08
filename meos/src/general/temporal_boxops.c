@@ -219,7 +219,7 @@ temporal_bbox_size(mobdbType temptype)
 }
 
 /**
- * @ingroup libmeos_int_temporal_accessor
+ * @ingroup libmeos_internal_temporal_accessor
  * @brief Set the second argument to the bounding box of a temporal instant
  *
  * @param[in] box Bounding box

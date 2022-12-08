@@ -130,7 +130,7 @@ int main()
   free(ss_step); free(ss_step_mfjson);
 
   /* Finalize MEOS */
-  meos_finish();
+  meos_finalize();
 
   /* Return */
   return 0;

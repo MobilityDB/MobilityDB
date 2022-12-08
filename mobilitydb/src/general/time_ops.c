@@ -62,7 +62,7 @@ time_max_header_size(void)
 
 PG_FUNCTION_INFO_V1(Distance_timestamp_timestamp);
 /**
- * @ingroup mobilitydb_spantime_dist
+ * @ingroup mobilitydb_setspan_dist
  * @brief Return the distance in seconds between the timestamps
  * @sqlfunc time_distance()
  * @sqlop @p <->
@@ -78,7 +78,7 @@ Distance_timestamp_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_timestamp_timestampset);
 /**
- * @ingroup mobilitydb_spantime_dist
+ * @ingroup mobilitydb_setspan_dist
  * @brief Return the distance in seconds between a timestamp and a timestamp set
  * @sqlfunc time_distance()
  * @sqlop @p <->
@@ -96,7 +96,7 @@ Distance_timestamp_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_timestamp_period);
 /**
- * @ingroup mobilitydb_spantime_dist
+ * @ingroup mobilitydb_setspan_dist
  * @brief Return the distance in seconds between a timestamp and a period
  * @sqlfunc time_distance()
  * @sqlop @p <->
@@ -112,7 +112,7 @@ Distance_timestamp_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_timestamp_periodset);
 /**
- * @ingroup mobilitydb_spantime_dist
+ * @ingroup mobilitydb_setspan_dist
  * @brief Return the distance in seconds between a timestamp and a period set
  * @sqlfunc time_distance()
  * @sqlop @p <->
@@ -130,7 +130,7 @@ Distance_timestamp_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_timestampset_timestamp);
 /**
- * @ingroup mobilitydb_spantime_dist
+ * @ingroup mobilitydb_setspan_dist
  * @brief Return the distance in seconds between a timestamp set and a timestamp
  * @sqlfunc time_distance()
  * @sqlop @p <->
@@ -148,7 +148,7 @@ Distance_timestampset_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_timestampset_timestampset);
 /**
- * @ingroup mobilitydb_spantime_dist
+ * @ingroup mobilitydb_setspan_dist
  * @brief Return the distance in seconds between the timestamp sets
  * @sqlfunc time_distance()
  * @sqlop @p <->
@@ -167,7 +167,7 @@ Distance_timestampset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_timestampset_period);
 /**
- * @ingroup mobilitydb_spantime_dist
+ * @ingroup mobilitydb_setspan_dist
  * @brief Return the distance in seconds between a timestamp set and a period
  * @sqlfunc time_distance()
  * @sqlop @p <->
@@ -185,7 +185,7 @@ Distance_timestampset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_timestampset_periodset);
 /**
- * @ingroup mobilitydb_spantime_dist
+ * @ingroup mobilitydb_setspan_dist
  * @brief Return the distance in seconds between a timestamp set and a period set
  * @sqlfunc time_distance()
  * @sqlop @p <->
@@ -204,7 +204,7 @@ Distance_timestampset_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_period_timestamp);
 /**
- * @ingroup mobilitydb_spantime_dist
+ * @ingroup mobilitydb_setspan_dist
  * @brief Return the distance in seconds between a period and a timestamp
  * @sqlfunc time_distance()
  * @sqlop @p <->
@@ -220,7 +220,7 @@ Distance_period_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_period_timestampset);
 /**
- * @ingroup mobilitydb_spantime_dist
+ * @ingroup mobilitydb_setspan_dist
  * @brief Return the distance in seconds between a period and a timestamp set
  * @sqlfunc time_distance()
  * @sqlop @p <->
@@ -238,7 +238,7 @@ Distance_period_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_period_period);
 /**
- * @ingroup mobilitydb_spantime_dist
+ * @ingroup mobilitydb_setspan_dist
  * @brief Return the distance in seconds between the periods
  * @sqlfunc time_distance()
  * @sqlop @p <->
@@ -254,7 +254,7 @@ Distance_period_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_period_periodset);
 /**
- * @ingroup mobilitydb_spantime_dist
+ * @ingroup mobilitydb_setspan_dist
  * @brief Return the distance in seconds between a period and a period set
  * @sqlfunc time_distance()
  * @sqlop @p <->
@@ -272,7 +272,7 @@ Distance_period_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_periodset_timestamp);
 /**
- * @ingroup mobilitydb_spantime_dist
+ * @ingroup mobilitydb_setspan_dist
  * @brief Return the distance in seconds between a period set and a timestamp
  * @sqlfunc time_distance()
  * @sqlop @p <->
@@ -290,7 +290,7 @@ Distance_periodset_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_periodset_timestampset);
 /**
- * @ingroup mobilitydb_spantime_dist
+ * @ingroup mobilitydb_setspan_dist
  * @brief Return the distance in seconds between a period set and a timestamp set
  * @sqlfunc time_distance()
  * @sqlop @p <->
@@ -309,7 +309,7 @@ Distance_periodset_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_periodset_period);
 /**
- * @ingroup mobilitydb_spantime_dist
+ * @ingroup mobilitydb_setspan_dist
  * @brief Return the distance in seconds between a period set and a period
  * @sqlfunc time_distance()
  * @sqlop @p <->
@@ -327,7 +327,7 @@ Distance_periodset_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_periodset_periodset);
 /**
- * @ingroup mobilitydb_spantime_dist
+ * @ingroup mobilitydb_setspan_dist
  * @brief Return the distance in seconds between the period sets
  * @sqlfunc time_distance()
  * @sqlop @p <->

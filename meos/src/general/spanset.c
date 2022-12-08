@@ -111,7 +111,7 @@ periodset_find_timestamp(const PeriodSet *ps, TimestampTz t, int *loc)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_spantime_in_out
+ * @ingroup libmeos_setspan_inout
  * @brief Return a span set from its Well-Known Text (WKT) representation.
  */
 SpanSet *
@@ -122,7 +122,7 @@ spanset_in(const char *str, mobdbType spansettype)
 
 #if MEOS
 /**
- * @ingroup libmeos_spantime_in_out
+ * @ingroup libmeos_setspan_inout
  * @brief Return an integer span from its Well-Known Text (WKT) representation.
  */
 SpanSet *
@@ -132,7 +132,7 @@ intspanset_in(const char *str)
 }
 
 /**
- * @ingroup libmeos_spantime_in_out
+ * @ingroup libmeos_setspan_inout
  * @brief Return an integer span from its Well-Known Text (WKT) representation.
  */
 SpanSet *
@@ -142,7 +142,7 @@ bigintspanset_in(const char *str)
 }
 
 /**
- * @ingroup libmeos_spantime_in_out
+ * @ingroup libmeos_setspan_inout
  * @brief Return an integer span from its Well-Known Text (WKT) representation.
  */
 SpanSet *
@@ -152,7 +152,7 @@ bigintspanset_in(const char *str)
 }
 
 /**
- * @ingroup libmeos_spantime_in_out
+ * @ingroup libmeos_setspan_inout
  * @brief Return a float span from its Well-Known Text (WKT) representation.
  */
 SpanSet *
@@ -162,7 +162,7 @@ floatspanset_in(const char *str)
 }
 
 /**
- * @ingroup libmeos_spantime_in_out
+ * @ingroup libmeos_setspan_inout
  * @brief Return a period set from its Well-Known Text (WKT) representation.
  */
 PeriodSet *
@@ -173,7 +173,7 @@ periodset_in(const char *str)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_spantime_in_out
+ * @ingroup libmeos_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a span set.
  */
 char *
@@ -193,7 +193,7 @@ spanset_out(const SpanSet *ss, Datum maxdd)
 
 #if MEOS
 /**
- * @ingroup libmeos_spantime_in_out
+ * @ingroup libmeos_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a span set.
  */
 char *
@@ -203,7 +203,7 @@ intspanset_out(const SpanSet *ss)
 }
 
 /**
- * @ingroup libmeos_spantime_in_out
+ * @ingroup libmeos_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a span set.
  */
 char *
@@ -213,7 +213,7 @@ bigintspanset_out(const SpanSet *ss)
 }
 
 /**
- * @ingroup libmeos_spantime_in_out
+ * @ingroup libmeos_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a span set.
  */
 char *
@@ -223,7 +223,7 @@ bigintspanset_out(const SpanSet *ss)
 }
 
 /**
- * @ingroup libmeos_spantime_in_out
+ * @ingroup libmeos_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a span set.
  */
 char *
@@ -233,7 +233,7 @@ floatspanset_out(const SpanSet *ss, int maxdd)
 }
 
 /**
- * @ingroup libmeos_spantime_in_out
+ * @ingroup libmeos_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a span set.
  */
 char *
@@ -248,7 +248,7 @@ periodset_out(const SpanSet *ss)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_int_spantime_accessor
+ * @ingroup libmeos_internal_setspan_accessor
  * @brief Return the n-th span of a span set.
  * @pre The argument @p index is less than the number of spans in the span set
  * @note This is the internal function equivalent to `spanset_span_n`.
@@ -265,7 +265,7 @@ spanset_sp_n(const SpanSet *ss, int index)
  ****************************************************************************/
 
 /**
- * @ingroup libmeos_spantime_constructor
+ * @ingroup libmeos_setspan_constructor
  * @brief Construct a span set from an array of disjoint span.
  *
  * For example, the memory structure of a SpanSet with 3 span is as
@@ -324,7 +324,7 @@ spanset_make(const Span **spans, int count, bool normalize)
 }
 
 /**
- * @ingroup libmeos_spantime_constructor
+ * @ingroup libmeos_setspan_constructor
  * @brief Construct a span set from an array of spans and free the array
  * and the spans after the creation.
  *
@@ -348,7 +348,7 @@ spanset_make_free(Span **spans, int count, bool normalize)
 }
 
 /**
- * @ingroup libmeos_spantime_constructor
+ * @ingroup libmeos_setspan_constructor
  * @brief Return a copy of a span set.
  */
 SpanSet *
@@ -364,7 +364,7 @@ spanset_copy(const SpanSet *ps)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_spantime_cast
+ * @ingroup libmeos_setspan_cast
  * @brief Cast an ordered set as a span set.
  * @sqlop @p ::
  */
@@ -382,7 +382,7 @@ orderedset_to_spanset(const OrderedSet *os)
 }
 
 /**
- * @ingroup libmeos_spantime_cast
+ * @ingroup libmeos_setspan_cast
  * @brief Cast a period as a period set.
  * @sqlop @p ::
  */
@@ -412,7 +412,7 @@ spanset_to_span(const SpanSet *ss)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_spantime_transf
+ * @ingroup libmeos_setspan_transf
  * @brief Shift a span set by a value.
  * @sqlfunc shift()
  * @pymeosfunc shift()
@@ -434,7 +434,7 @@ spanset_shift(Datum value, mobdbType basetype, SpanSet *result)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the size in bytes of a period set
  * @sqlfunc memSize()
  */
@@ -446,7 +446,7 @@ spanset_mem_size(const SpanSet *ss)
 
 #if MEOS
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the lower bound of an integer span set
  * @sqlfunc lower()
  */
@@ -457,7 +457,7 @@ intspanset_lower(const SpanSet *ss)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the lower bound of an integer span set
  * @sqlfunc lower()
  */
@@ -468,7 +468,7 @@ bigintspanset_lower(const SpanSet *ss)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the lower bound of a float span set
  * @sqlfunc lower()
  */
@@ -479,7 +479,7 @@ floatspanset_lower(const SpanSet *ss)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the lower bound of a period
  * @sqlfunc lower()
  * @pymeosfunc lower()
@@ -491,7 +491,7 @@ periodset_lower(const PeriodSet *ps)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the upper bound of an integer span set
  * @sqlfunc upper()
  */
@@ -502,7 +502,7 @@ intspanset_upper(const SpanSet *ss)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the upper bound of an integer span set
  * @sqlfunc upper()
  */
@@ -513,7 +513,7 @@ bigintspanset_upper(const SpanSet *ss)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the upper bound of a float span set
  * @sqlfunc upper()
  */
@@ -524,7 +524,7 @@ floatspanset_upper(const SpanSet *ss)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the upper bound of a period
  * @sqlfunc upper()
  * @pymeosfunc upper()
@@ -537,7 +537,7 @@ periodset_upper(const PeriodSet *ps)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return true if the lower bound of a span set is inclusive
  * @sqlfunc lower_inc()
  * @pymeosfunc lower_inc()
@@ -549,7 +549,7 @@ spanset_lower_inc(const SpanSet *ss)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return true if the upper bound of a span set is inclusive
  * @sqlfunc upper_inc()
  * @pymeosfunc upper_inc()
@@ -561,7 +561,7 @@ spanset_upper_inc(const SpanSet *ss)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the width of a span set as a double.
  * @sqlfunc width()
  */
@@ -578,7 +578,7 @@ spanset_width(const SpanSet *ss)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the number of spans of a span set
  * @sqlfunc numSpans()
  * @pymeosfunc numSpans()
@@ -590,7 +590,7 @@ spanset_num_spans(const SpanSet *ss)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the start span of a span set
  * @sqlfunc startSpan()
  * @pymeosfunc startSpan()
@@ -603,7 +603,7 @@ spanset_start_span(const SpanSet *ss)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the end span of a span set
  * @sqlfunc endSpan()
  * @pymeosfunc endSpan()
@@ -616,7 +616,7 @@ spanset_end_span(const SpanSet *ss)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the n-th span of a span set
  * @sqlfunc spanN()
  * @pymeosfunc spanN()
@@ -631,7 +631,7 @@ spanset_span_n(const SpanSet *ss, int i)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the spans of a span set.
  * @post The output parameter @p count is equal to the number of spans of
  * the input span set
@@ -653,7 +653,7 @@ spanset_spans(const SpanSet *ss, int *count)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return true if the first span set is equal to the second one.
  * @note The internal B-tree comparator is not used to increase efficiency
  * @sqlop @p =
@@ -678,7 +678,7 @@ spanset_eq(const SpanSet *ss1, const SpanSet *ss2)
 }
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return true if the first span set is different from the
  * second one.
  * @sqlop @p <>
@@ -689,7 +689,7 @@ spanset_ne(const SpanSet *ss1, const SpanSet *ss2)
   return ! spanset_eq(ss1, ss2);
 }
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return -1, 0, or 1 depending on whether the first span set
  * is less than, equal, or greater than the second one.
  * @note Function used for B-tree comparison
@@ -725,7 +725,7 @@ spanset_cmp(const SpanSet *ss1, const SpanSet *ss2)
 }
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return true if the first span set is less than the second one
  * @sqlop @p <
  */
@@ -737,7 +737,7 @@ spanset_lt(const SpanSet *ss1, const SpanSet *ss2)
 }
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return true if the first span set is less than or equal to
  * the second one
  * @sqlop @p <=
@@ -750,7 +750,7 @@ spanset_le(const SpanSet *ss1, const SpanSet *ss2)
 }
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return true if the first span set is greater than or equal to
  * the second one
  * @sqlop @p >=
@@ -763,7 +763,7 @@ spanset_ge(const SpanSet *ss1, const SpanSet *ss2)
 }
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return true if the first span set is greater than the second one
  * @sqlop @p >
  */
@@ -781,7 +781,7 @@ spanset_gt(const SpanSet *ss1, const SpanSet *ss2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the 32-bit hash value of a span set.
  * @sqlfunc spanset_hash()
  */
@@ -799,7 +799,7 @@ spanset_hash(const SpanSet *ps)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the 64-bit hash value of a span set using a seed
  * @sqlfunc spanset_hash_extended()
  */

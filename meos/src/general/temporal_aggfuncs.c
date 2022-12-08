@@ -1096,6 +1096,7 @@ tsequence_tavg_finalfn(TSequence **sequences, int count)
 }
 
 /**
+ * @ingroup libmeos_temporal_agg
  * @brief Final function for temporal average aggregation
  */
 Temporal *

@@ -89,7 +89,7 @@ ewkt_out(mobdbType basetype __attribute__((unused)), Datum value, Datum maxdd)
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_temporal_inout
  * @brief Return the Well-Known Text (WKT) representation of a temporal point.
  * @sqlfunc asText()
  */
@@ -111,7 +111,7 @@ tpoint_as_text(const Temporal *temp, int maxdd)
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_temporal_inout
  * @brief Return the Extended Well-Known Text (EWKT) representation a temporal
  * point.
  * @sqlfunc asEWKT()
@@ -137,7 +137,7 @@ tpoint_as_ewkt(const Temporal *temp, int maxdd)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_int_temporal_in_out
+ * @ingroup libmeos_internal_temporal_inout
  * @brief Return the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT)
  * representation of a geometry/geography array.
  *
@@ -160,7 +160,7 @@ geoarr_as_text(const Datum *geoarr, int count, int maxdd, bool extended)
 }
 
 /**
- * @ingroup libmeos_int_temporal_in_out
+ * @ingroup libmeos_internal_temporal_inout
  * @brief Return the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT)
  * representation of a temporal point array
  * @sqlfunc asText(), asEWKT()

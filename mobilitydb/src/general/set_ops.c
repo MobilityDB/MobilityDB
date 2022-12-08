@@ -50,10 +50,10 @@
 
 PG_FUNCTION_INFO_V1(Contains_orderedset_value);
 /**
- * @ingroup mobilitydb_spantime_topo
- * @brief Return true if a timestamp set contains a timestamp
+ * @ingroup mobilitydb_setspan_topo
+ * @brief Return true if an ordered set contains a value
  * @sqlfunc time_contains()
- * @sqlop @p @>
+ * @sqlop @p \@>
  */
 PGDLLEXPORT Datum
 Contains_orderedset_value(PG_FUNCTION_ARGS)
@@ -68,10 +68,10 @@ Contains_orderedset_value(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contains_orderedset_orderedset);
 /**
- * @ingroup mobilitydb_spantime_topo
+ * @ingroup mobilitydb_setspan_topo
  * @brief Return true if the first timestamp set contains the second one
  * @sqlfunc time_contains()
- * @sqlop @p @>
+ * @sqlop @p \@>
  */
 PGDLLEXPORT Datum
 Contains_orderedset_orderedset(PG_FUNCTION_ARGS)
@@ -89,7 +89,7 @@ Contains_orderedset_orderedset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contained_value_orderedset);
 /**
- * @ingroup mobilitydb_spantime_topo
+ * @ingroup mobilitydb_setspan_topo
  * @brief Return true if a timestamp is contained by a timestamp set
  * @sqlfunc time_contained()
  * @sqlop @p <@
@@ -107,7 +107,7 @@ Contained_value_orderedset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Contained_orderedset_orderedset);
 /**
- * @ingroup mobilitydb_spantime_topo
+ * @ingroup mobilitydb_setspan_topo
  * @brief Return true if the first timestamp set is contained by the second one
  * @sqlfunc time_contained()
  * @sqlop @p <@
@@ -128,7 +128,7 @@ Contained_orderedset_orderedset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overlaps_orderedset_orderedset);
 /**
- * @ingroup mobilitydb_spantime_topo
+ * @ingroup mobilitydb_setspan_topo
  * @brief Return true if the timestamp sets overlap
  * @sqlfunc time_overlaps()
  * @sqlop @p &&
@@ -149,7 +149,7 @@ Overlaps_orderedset_orderedset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Left_value_orderedset);
 /**
- * @ingroup mobilitydb_spantime_pos
+ * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a timestamp is strictly left a timestamp set
  * @sqlfunc time_left()
  * @sqlop @p <<#
@@ -167,7 +167,7 @@ Left_value_orderedset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Left_orderedset_value);
 /**
- * @ingroup mobilitydb_spantime_pos
+ * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a timestamp set is strictly left a timestamp
  * @sqlfunc time_left()
  * @sqlop @p <<#
@@ -185,7 +185,7 @@ Left_orderedset_value(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Left_orderedset_orderedset);
 /**
- * @ingroup mobilitydb_spantime_pos
+ * @ingroup mobilitydb_setspan_pos
  * @brief Return true if the first timestamp set is strictly left the second one
  * @sqlfunc time_left()
  * @sqlop @p <<#
@@ -206,7 +206,7 @@ Left_orderedset_orderedset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Right_value_orderedset);
 /**
- * @ingroup mobilitydb_spantime_pos
+ * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a timestamp is strictly right a timestamp set
  * @sqlfunc time_right()
  * @sqlop @p #>>
@@ -224,7 +224,7 @@ Right_value_orderedset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Right_orderedset_value);
 /**
- * @ingroup mobilitydb_spantime_pos
+ * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a timestamp set is strictly right a timestamp
  * @sqlfunc time_right()
  * @sqlop @p #>>
@@ -242,7 +242,7 @@ Right_orderedset_value(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Right_orderedset_orderedset);
 /**
- * @ingroup mobilitydb_spantime_pos
+ * @ingroup mobilitydb_setspan_pos
  * @brief Return true if the first timestamp set is strictly right the second one
  * @sqlfunc time_right()
  * @sqlop @p #>>
@@ -263,7 +263,7 @@ Right_orderedset_orderedset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overleft_value_orderedset);
 /**
- * @ingroup mobilitydb_spantime_pos
+ * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a timestamp is not right a timestamp set
  * @sqlfunc time_overleft()
  * @sqlop @p &<#
@@ -281,7 +281,7 @@ Overleft_value_orderedset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overleft_orderedset_value);
 /**
- * @ingroup mobilitydb_spantime_pos
+ * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a timestamp is not right a timestamp
  * @sqlfunc time_overleft()
  * @sqlop @p &<#
@@ -299,7 +299,7 @@ Overleft_orderedset_value(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overleft_orderedset_orderedset);
 /**
- * @ingroup mobilitydb_spantime_pos
+ * @ingroup mobilitydb_setspan_pos
  * @brief Return true if the first timestamp set is not right the second one
  * @sqlfunc time_overleft()
  * @sqlop @p &<#
@@ -320,7 +320,7 @@ Overleft_orderedset_orderedset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overright_value_orderedset);
 /**
- * @ingroup mobilitydb_spantime_pos
+ * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a timestamp is not left a timestamp set
  * @sqlfunc time_overright()
  * @sqlop @p
@@ -338,7 +338,7 @@ Overright_value_orderedset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overright_orderedset_value);
 /**
- * @ingroup mobilitydb_spantime_pos
+ * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a timestamp set is not left a timestamp
  * @sqlfunc time_overright()
  * @sqlop @p #&>
@@ -356,7 +356,7 @@ Overright_orderedset_value(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overright_orderedset_orderedset);
 /**
- * @ingroup mobilitydb_spantime_pos
+ * @ingroup mobilitydb_setspan_pos
  * @brief Return true if the first timestamp set is not left the second one
  * @sqlfunc time_overright()
  * @sqlop @p #&>
@@ -378,7 +378,7 @@ Overright_orderedset_orderedset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Union_value_value);
 /**
- * @ingroup mobilitydb_spantime_set
+ * @ingroup mobilitydb_setspan_set
  * @brief Return the union of the timestamps
  * @sqlfunc time_union()
  * @sqlop @p +
@@ -396,7 +396,7 @@ Union_value_value(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Union_value_orderedset);
 /**
- * @ingroup mobilitydb_spantime_set
+ * @ingroup mobilitydb_setspan_set
  * @brief Return the union of a timestamp and a timestamp set
  * @sqlfunc time_union()
  * @sqlop @p +
@@ -416,7 +416,7 @@ Union_value_orderedset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Union_orderedset_value);
 /**
- * @ingroup mobilitydb_spantime_set
+ * @ingroup mobilitydb_setspan_set
  * @brief Return the union of a timestamp set and a timestamp
  * @sqlfunc time_union()
  * @sqlop @p +
@@ -434,7 +434,7 @@ Union_orderedset_value(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Union_orderedset_orderedset);
 /**
- * @ingroup mobilitydb_spantime_set
+ * @ingroup mobilitydb_setspan_set
  * @brief Return the union of the timestamp sets
  * @sqlfunc time_union()
  * @sqlop @p +
@@ -456,7 +456,7 @@ Union_orderedset_orderedset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersection_value_value);
 /**
- * @ingroup mobilitydb_spantime_set
+ * @ingroup mobilitydb_setspan_set
  * @brief Return the intersection of the timestamps
  * @sqlfunc time_intersection()
  * @sqlop @p *
@@ -477,7 +477,7 @@ Intersection_value_value(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersection_value_orderedset);
 /**
- * @ingroup mobilitydb_spantime_set
+ * @ingroup mobilitydb_setspan_set
  * @brief Return the intersection of a timestamp and a timestamp set
  * @sqlfunc time_intersection()
  * @sqlop @p *
@@ -498,7 +498,7 @@ Intersection_value_orderedset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersection_orderedset_value);
 /**
- * @ingroup mobilitydb_spantime_set
+ * @ingroup mobilitydb_setspan_set
  * @brief Return the intersection of a timestamp set and a timestamp
  * @sqlfunc time_intersection()
  * @sqlop @p *
@@ -519,7 +519,7 @@ Intersection_orderedset_value(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Intersection_orderedset_orderedset);
 /**
- * @ingroup mobilitydb_spantime_set
+ * @ingroup mobilitydb_setspan_set
  * @brief Return the intersection of the timestamp sets
  * @sqlfunc time_intersection()
  * @sqlop @p *
@@ -544,7 +544,7 @@ Intersection_orderedset_orderedset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Minus_value_value);
 /**
- * @ingroup mobilitydb_spantime_set
+ * @ingroup mobilitydb_setspan_set
  * @brief Return the difference of the timestamps
  * @sqlfunc time_minus()
  * @sqlop @p -
@@ -564,7 +564,7 @@ Minus_value_value(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Minus_value_orderedset);
 /**
- * @ingroup mobilitydb_spantime_set
+ * @ingroup mobilitydb_setspan_set
  * @brief Return the difference of a timestamp and a a timestamp set
  * @sqlfunc time_minus()
  * @sqlop @p -
@@ -587,7 +587,7 @@ Minus_value_orderedset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Minus_orderedset_value);
 /**
- * @ingroup mobilitydb_spantime_set
+ * @ingroup mobilitydb_setspan_set
  * @brief Return the difference of a timestamp set and a timestamp
  * @sqlfunc time_minus()
  * @sqlop @p -
@@ -607,7 +607,7 @@ Minus_orderedset_value(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Minus_orderedset_orderedset);
 /**
- * @ingroup mobilitydb_spantime_set
+ * @ingroup mobilitydb_setspan_set
  * @brief Return the difference of the timestamp sets
  * @sqlfunc time_minus()
  * @sqlop @p -
@@ -631,7 +631,7 @@ Minus_orderedset_orderedset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_value_orderedset);
 /**
- * @ingroup mobilitydb_spantime_dist
+ * @ingroup mobilitydb_setspan_dist
  * @brief Return the distance in seconds between a timestamp and a timestamp set
  * @sqlfunc time_distance()
  * @sqlop @p <->
@@ -650,7 +650,7 @@ Distance_value_orderedset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_orderedset_value);
 /**
- * @ingroup mobilitydb_spantime_dist
+ * @ingroup mobilitydb_setspan_dist
  * @brief Return the distance in seconds between a timestamp set and a timestamp
  * @sqlfunc time_distance()
  * @sqlop @p <->
@@ -669,7 +669,7 @@ Distance_orderedset_value(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Distance_orderedset_orderedset);
 /**
- * @ingroup mobilitydb_spantime_dist
+ * @ingroup mobilitydb_setspan_dist
  * @brief Return the distance in seconds between the timestamp sets
  * @sqlfunc time_distance()
  * @sqlop @p <->

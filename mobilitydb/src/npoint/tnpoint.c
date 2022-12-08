@@ -87,7 +87,7 @@ nsegmentarr_array(Nsegment **nsegmentarr, int count)
 
 PG_FUNCTION_INFO_V1(Tnpoint_in);
 /**
- * @ingroup mobilitydb_temporal_in_out
+ * @ingroup mobilitydb_temporal_inout
  * @brief Input function for temporal network points
  * @sqlfunc tnpoint_in()
  */

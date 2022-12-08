@@ -676,7 +676,7 @@ point_on_segment(Datum start, Datum end, Datum point)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_int_temporal_ever
+ * @ingroup libmeos_internal_temporal_ever
  * @brief Return true if a temporal instant point is ever equal to a point
  * @pre The validity of the parameters is verified in function @ref tpoint_ever_eq
  * @sqlop @p ?=
@@ -689,7 +689,7 @@ tpointinst_ever_eq(const TInstant *inst, Datum value)
 }
 
 /**
- * @ingroup libmeos_int_temporal_ever
+ * @ingroup libmeos_internal_temporal_ever
  * @brief Return true if a temporal sequence point is ever equal to a point
  * @pre The validity of the parameters is verified in function @ref tpoint_ever_eq
  * @sqlop @p ?=
@@ -747,7 +747,7 @@ tpointseq_ever_eq(const TSequence *seq, Datum value)
 }
 
 /**
- * @ingroup libmeos_int_temporal_ever
+ * @ingroup libmeos_internal_temporal_ever
  * @brief Return true if a temporal sequence set point is ever equal to a point
  * @pre The validity of the parameters is verified in function @ref tpoint_ever_eq
  * @sqlop @p ?=
@@ -769,7 +769,7 @@ tpointseqset_ever_eq(const TSequenceSet *ss, Datum value)
 }
 
 /**
- * @ingroup libmeos_int_temporal_ever
+ * @ingroup libmeos_internal_temporal_ever
  * @brief Return true if a temporal point is ever equal to a point.
  * @see tpointinst_ever_eq
  * @see tpointseq_ever_eq
@@ -822,7 +822,7 @@ bool tgeogpoint_ever_eq(const Temporal *temp, GSERIALIZED *gs)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_int_temporal_ever
+ * @ingroup libmeos_internal_temporal_ever
  * @brief Return true if a temporal instant point is always equal to a point.
  * @pre The validity of the parameters is verified in function @ref tpoint_always_eq
  * @sqlop @p %=
@@ -834,7 +834,7 @@ tpointinst_always_eq(const TInstant *inst, Datum value)
 }
 
 /**
- * @ingroup libmeos_int_temporal_ever
+ * @ingroup libmeos_internal_temporal_ever
  * @brief Return true if a temporal sequence point is always equal to a point.
  * @pre The validity of the parameters is verified in function @ref tpoint_always_eq
  * @sqlop @p %=
@@ -852,7 +852,7 @@ tpointseq_always_eq(const TSequence *seq, Datum value)
 }
 
 /**
- * @ingroup libmeos_int_temporal_ever
+ * @ingroup libmeos_internal_temporal_ever
  * @brief Return true if a temporal sequence set point is always equal to a point.
  * @pre The validity of the parameters is verified in function @ref tpoint_always_eq
  * @sqlop @p %=
@@ -1631,7 +1631,7 @@ lwline_make(Datum value1, Datum value2)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_int_temporal_spatial_accessor
+ * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Compute the trajectory of a temporal discrete sequence point
  *
  * @param[in] seq Temporal value
@@ -1662,7 +1662,7 @@ tpointdiscseq_trajectory(const TSequence *seq)
 }
 
 /**
- * @ingroup libmeos_int_temporal_spatial_accessor
+ * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the trajectory of a temporal sequence point
  *
  * @param[in] seq Temporal sequence
@@ -1703,7 +1703,7 @@ tpointcontseq_trajectory(const TSequence *seq)
 }
 
 /**
- * @ingroup libmeos_int_temporal_spatial_accessor
+ * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the trajectory of a temporal point with sequence set type
  * @note The function does not remove duplicates point/linestring components.
  * @sqlfunc trajectory()
@@ -1803,7 +1803,7 @@ tpoint_trajectory(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_int_temporal_spatial_accessor
+ * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the SRID of a temporal instant point.
  * @sqlfunc SRID()
  */
@@ -1815,7 +1815,7 @@ tpointinst_srid(const TInstant *inst)
 }
 
 /**
- * @ingroup libmeos_int_temporal_spatial_accessor
+ * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the SRID of a temporal sequence point.
  * @sqlfunc SRID()
  */
@@ -1827,7 +1827,7 @@ tpointseq_srid(const TSequence *seq)
 }
 
 /**
- * @ingroup libmeos_int_temporal_spatial_accessor
+ * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the SRID of a temporal sequence set point.
  * @sqlfunc SRID()
  */
@@ -1860,7 +1860,7 @@ tpoint_srid(const Temporal *temp)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_int_temporal_spatial_transf
+ * @ingroup libmeos_internal_temporal_spatial_transf
  * @brief Set the SRID of a temporal instant point
  * @sqlfunc setSRID()
  */
@@ -1874,7 +1874,7 @@ tpointinst_set_srid(const TInstant *inst, int32 srid)
 }
 
 /**
- * @ingroup libmeos_int_temporal_spatial_transf
+ * @ingroup libmeos_internal_temporal_spatial_transf
  * @brief Set the SRID of a temporal sequence point
  * @sqlfunc setSRID()
  */
@@ -1896,7 +1896,7 @@ tpointseq_set_srid(const TSequence *seq, int32 srid)
 }
 
 /**
- * @ingroup libmeos_int_temporal_spatial_transf
+ * @ingroup libmeos_internal_temporal_spatial_transf
  * @brief Set the SRID of a temporal sequence set point
  * @sqlfunc setSRID()
  */
@@ -1956,7 +1956,7 @@ tpoint_set_srid(const Temporal *temp, int32 srid)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_int_temporal_spatial_transf
+ * @ingroup libmeos_internal_temporal_spatial_transf
  * @brief Convert a temporal point from/to a geometry/geography point
  *
  * @param[in] inst Temporal instant point
@@ -1978,7 +1978,7 @@ tgeompointinst_tgeogpointinst(const TInstant *inst, bool oper)
 }
 
 /**
- * @ingroup libmeos_int_temporal_spatial_transf
+ * @ingroup libmeos_internal_temporal_spatial_transf
  * @brief Convert a temporal point from/to a geometry/geography point
  *
  * @param[in] seq Temporal sequence point
@@ -2026,7 +2026,7 @@ tgeompointseq_tgeogpointseq(const TSequence *seq, bool oper)
 }
 
 /**
- * @ingroup libmeos_int_temporal_spatial_transf
+ * @ingroup libmeos_internal_temporal_spatial_transf
  * @brief Convert a temporal point from/to a geometry/geography point
  *
  * @param[in] ss Temporal sequence set point
@@ -2193,7 +2193,7 @@ tpointseq_length_3d(const TSequence *seq)
 }
 
 /**
- * @ingroup libmeos_int_temporal_spatial_accessor
+ * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the length traversed by a temporal sequence point.
  * @sqlfunc length()
  */
@@ -2220,7 +2220,7 @@ tpointseq_length(const TSequence *seq)
 }
 
 /**
- * @ingroup libmeos_int_temporal_spatial_accessor
+ * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the length traversed by a temporal sequence set point.
  * @sqlfunc length()
  */
@@ -2256,7 +2256,7 @@ tpoint_length(const Temporal *temp)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_int_temporal_spatial_accessor
+ * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the cumulative length traversed by a temporal point.
  * @pre The sequence has linear interpolation
  * @sqlfunc cumulativeLength()
@@ -2299,7 +2299,7 @@ tpointseq_cumulative_length(const TSequence *seq, double prevlength)
 }
 
 /**
- * @ingroup libmeos_int_temporal_spatial_accessor
+ * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the cumulative length traversed by a temporal point.
  * @sqlfunc cumulativeLength()
  */
@@ -2344,7 +2344,7 @@ tpoint_cumulative_length(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_int_temporal_spatial_accessor
+ * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the speed of a temporal point.
  * @pre The temporal point has linear interpolation
  * @sqlfunc speed()
@@ -2385,7 +2385,7 @@ tpointseq_speed(const TSequence *seq)
 }
 
 /**
- * @ingroup libmeos_int_temporal_spatial_accessor
+ * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the speed of a temporal point
  * @sqlfunc speed()
  */
@@ -2461,7 +2461,7 @@ tpointseq_twcentroid1(const TSequence *seq, bool hasz, interpType interp,
 }
 
 /**
- * @ingroup libmeos_int_temporal_agg
+ * @ingroup libmeos_internal_temporal_agg
  * @brief Return the time-weighed centroid of a temporal geometry point.
  * @sqlfunc twCentroid()
  */
@@ -2489,7 +2489,7 @@ tpointseq_twcentroid(const TSequence *seq)
 }
 
 /**
- * @ingroup libmeos_int_temporal_agg
+ * @ingroup libmeos_internal_temporal_agg
  * @brief Return the time-weighed centroid of a temporal geometry point.
  * @sqlfunc twCentroid()
  */
@@ -2644,7 +2644,7 @@ tpointseq_azimuth1(const TSequence *seq, TSequence **result)
 }
 
 /**
- * @ingroup libmeos_int_temporal_spatial_accessor
+ * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the temporal azimuth of a temporal geometry point.
  * @sqlfunc azimuth()
  */
@@ -2658,7 +2658,7 @@ tpointseq_azimuth(const TSequence *seq)
 }
 
 /**
- * @ingroup libmeos_int_temporal_spatial_accessor
+ * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the temporal azimuth of a temporal geometry point.
  * @sqlfunc azimuth()
  */
@@ -3299,7 +3299,7 @@ tpointseq_discstep_is_simple(const TSequence *seq, int count)
 }
 
 /**
- * @ingroup libmeos_int_temporal_spatial_accessor
+ * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return true if a temporal point does not self-intersect.
  *
  * @param[in] seq Temporal point
@@ -3321,7 +3321,7 @@ tpointseq_is_simple(const TSequence *seq)
 }
 
 /**
- * @ingroup libmeos_int_temporal_spatial_accessor
+ * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return true if a temporal point does not self-intersect.
  *
  * @param[in] ss Temporal point
@@ -3461,7 +3461,7 @@ tpointcontseq_split(const TSequence *seq, bool *splits, int count)
 }
 
 /**
- * @ingroup libmeos_int_temporal_spatial_transf
+ * @ingroup libmeos_internal_temporal_spatial_transf
  * @brief Split a temporal sequence point into an array of non
  * self-intersecting pieces.
  *
@@ -3507,7 +3507,7 @@ tpointseq_make_simple(const TSequence *seq, int *count)
 }
 
 /**
- * @ingroup libmeos_int_temporal_spatial_transf
+ * @ingroup libmeos_internal_temporal_spatial_transf
  * @brief Split a temporal sequence set point into an array of non
  * self-intersecting pieces.
  *
@@ -3572,7 +3572,7 @@ tpoint_make_simple(const Temporal *temp, int *count)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_int_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal point instant to (the complement of) a geometry.
  *
  * @param[in] inst Temporal instant point
@@ -3594,7 +3594,7 @@ tpointinst_restrict_geometry(const TInstant *inst, const GSERIALIZED *gs,
 }
 
 /**
- * @ingroup libmeos_int_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal point discrete sequence to (the complement of) a
  * geometry.
  *
@@ -4109,7 +4109,7 @@ tpointseq_minus_geometry(const TSequence *seq, const GSERIALIZED *gs,
 }
 
 /**
- * @ingroup libmeos_int_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal point sequence to (the complement of a) geometry.
  *
  * @param[in] seq Temporal sequence point
@@ -4138,7 +4138,7 @@ tpointseq_restrict_geometry(const TSequence *seq, const GSERIALIZED *gs,
 }
 
 /**
- * @ingroup libmeos_int_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal point sequence set to (the complement of) a
  * geometry.
  *
@@ -4203,7 +4203,7 @@ tpointseqset_restrict_geometry(const TSequenceSet *ss, const GSERIALIZED *gs,
 }
 
 /**
- * @ingroup libmeos_int_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal point to (the complement of) a geometry.
  *
  *
@@ -4473,7 +4473,7 @@ tpoint_minus_stbox1(const Temporal *temp, const STBox *box)
 }
 
 /**
- * @ingroup libmeos_int_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal point to (the complement of) a spatiotemporal
  * box.
  *

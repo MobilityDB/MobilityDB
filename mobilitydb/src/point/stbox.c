@@ -58,7 +58,7 @@
 
 PG_FUNCTION_INFO_V1(Stbox_in);
 /**
- * @ingroup mobilitydb_box_in_out
+ * @ingroup mobilitydb_box_inout
  * @brief Input function for spatiotemporal boxes.
  * @sqlfunc stbox_in()
  */
@@ -71,7 +71,7 @@ Stbox_in(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Stbox_out);
 /**
- * @ingroup mobilitydb_box_in_out
+ * @ingroup mobilitydb_box_inout
  * @brief Output function for spatiotemporal boxes.
  * @sqlfunc stbox_out()
  */
@@ -84,7 +84,7 @@ Stbox_out(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Stbox_recv);
 /**
- * @ingroup mobilitydb_box_in_out
+ * @ingroup mobilitydb_box_inout
  * @brief Receive function for STBox
  * @sqlfunc stbox_recv()
  */
@@ -100,7 +100,7 @@ Stbox_recv(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Stbox_send);
 /**
- * @ingroup mobilitydb_box_in_out
+ * @ingroup mobilitydb_box_inout
  * @brief Send function for STBox
  * @sqlfunc stbox_send()
  */
@@ -122,7 +122,7 @@ Stbox_send(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Stbox_as_text);
 /**
- * @ingroup mobilitydb_box_in_out
+ * @ingroup mobilitydb_box_inout
  * @brief Output function for spatiotemporal boxes.
  * @sqlfunc asText()
  */
@@ -830,7 +830,7 @@ PG_FUNCTION_INFO_V1(Contains_stbox_stbox);
  * @ingroup mobilitydb_box_topo
  * @brief Return true if the first spatiotemporal box contains the second one
  * @sqlfunc stbox_contains()
- * @sqlop @p @>
+ * @sqlop @p \@>
  */
 PGDLLEXPORT Datum
 Contains_stbox_stbox(PG_FUNCTION_ARGS)

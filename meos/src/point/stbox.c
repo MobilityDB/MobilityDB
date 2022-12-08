@@ -131,7 +131,7 @@ ensure_has_T_stbox(const STBox *box)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_box_in_out
+ * @ingroup libmeos_box_inout
  * @brief Return a spatiotemporal box from its Well-Known Text (WKT) representation.
  *
  * Examples of input:
@@ -157,7 +157,7 @@ stbox_in(const char *str)
 }
 
 /**
- * @ingroup libmeos_box_in_out
+ * @ingroup libmeos_box_inout
  * @brief Return the Well-Known Text (WKT) representation of a spatiotemporal box.
  */
 char *
@@ -314,7 +314,7 @@ stbox_copy(const STBox *box)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_int_box_cast
+ * @ingroup libmeos_internal_box_cast
  * @brief Set a PostGIS GBOX from a spatiotemporal box.
  * @sqlop @p ::
  */
@@ -341,7 +341,7 @@ stbox_set_gbox(const STBox *box, GBOX *gbox)
 }
 
 /**
- * @ingroup libmeos_int_box_cast
+ * @ingroup libmeos_internal_box_cast
  * @brief Set a PostGIS BOX3D from a spatiotemporal box
  * @sqlop @p ::
  */
@@ -414,7 +414,7 @@ stbox_to_period(const STBox *box)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_int_box_cast
+ * @ingroup libmeos_internal_box_cast
  * @brief Set a spatiotemporal box from a geometry/geography.
  */
 bool
@@ -500,7 +500,7 @@ geo_to_stbox(const GSERIALIZED *gs)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_int_box_cast
+ * @ingroup libmeos_internal_box_cast
  * @brief Set a spatiotemporal box from a timestamp.
  */
 void
@@ -533,7 +533,7 @@ timestamp_to_stbox(TimestampTz t)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_int_box_cast
+ * @ingroup libmeos_internal_box_cast
  * @brief Set a spatiotemporal box from a timestamp set.
  */
 void
@@ -563,7 +563,7 @@ timestampset_to_stbox(const TimestampSet *ts)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_int_box_cast
+ * @ingroup libmeos_internal_box_cast
  * @brief Set a spatiotemporal box from a period.
  */
 void
@@ -593,7 +593,7 @@ period_to_stbox(const Period *p)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_int_box_cast
+ * @ingroup libmeos_internal_box_cast
  * @brief Set a spatiotemporal box from a period set.
  */
 void

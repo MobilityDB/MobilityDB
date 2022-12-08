@@ -189,7 +189,7 @@ time_agg_combinefn(SkipList *state1, SkipList *state2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_spantime_agg
+ * @ingroup libmeos_setspan_agg
  * @brief Transition function for extent aggregate of timestamp set values
  */
 Period *
@@ -208,7 +208,7 @@ timestamp_extent_transfn(Period *p, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_spantime_agg
+ * @ingroup libmeos_setspan_agg
  * @brief Transition function for extent aggregate of timestamp set values
  */
 Period *
@@ -229,7 +229,7 @@ timestampset_extent_transfn(Period *p, const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_spantime_agg
+ * @ingroup libmeos_setspan_agg
  * @brief Transition function for extent aggregate of span values
  */
 Span *
@@ -250,7 +250,7 @@ span_extent_transfn(Span *s1, const Span *s2)
 }
 
 /**
- * @ingroup libmeos_spantime_agg
+ * @ingroup libmeos_setspan_agg
  * @brief Transition function for extent aggregate of span set values
  */
 Span *
@@ -275,7 +275,7 @@ spanset_extent_transfn(Span *s, const SpanSet *ss)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_spantime_agg
+ * @ingroup libmeos_setspan_agg
  * @brief Transition function for tunion aggregate of timestamps
  *
  * @param[in,out] state Timestamp array containing the state
@@ -297,7 +297,7 @@ timestamp_tunion_transfn(SkipList *state, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_spantime_agg
+ * @ingroup libmeos_setspan_agg
  * @brief Transition function for aggregating timestamp sets
  *
  * @param[in,out] state Timestamp array containing the state
@@ -321,7 +321,7 @@ timestampset_tunion_transfn(SkipList *state, const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_spantime_agg
+ * @ingroup libmeos_setspan_agg
  * @brief Generic transition function for aggregating period values
  *
  * @param[in,out] state Skiplist containing the state
@@ -343,7 +343,7 @@ period_tunion_transfn(SkipList *state, const Period *p)
 }
 
 /**
- * @ingroup libmeos_spantime_agg
+ * @ingroup libmeos_setspan_agg
  * @brief Generic transition function for aggregating period set values
  *
  * @param[in,out] state Skiplist containing the state
@@ -371,7 +371,8 @@ periodset_tunion_transfn(SkipList *state, const PeriodSet *ps)
 /*****************************************************************************/
 
 /**
- * Final function for union aggregation of timestamp set values
+ * @ingroup libmeos_setspan_agg
+ * @brief Final function for union aggregation of timestamp set values
  */
 TimestampSet *
 timestamp_tunion_finalfn(SkipList *state)
@@ -388,7 +389,8 @@ timestamp_tunion_finalfn(SkipList *state)
 }
 
 /**
- * Final function for union aggregation of period (set) values
+ * @ingroup libmeos_setspan_agg
+ * @brief Final function for union aggregation of period (set) values
  */
 PeriodSet *
 period_tunion_finalfn(SkipList *state)
@@ -521,7 +523,7 @@ ensure_same_timetype_skiplist(SkipList *state, uint8 subtype)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_spantime_agg
+ * @ingroup libmeos_setspan_agg
  * @brief Transition function for temporal count aggregate of timestamps
  */
 SkipList *
@@ -545,7 +547,7 @@ timestamp_tcount_transfn(SkipList *state, TimestampTz t,
 }
 
 /**
- * @ingroup libmeos_spantime_agg
+ * @ingroup libmeos_setspan_agg
  * @brief Transition function for temporal count aggregate of timestamp sets
  */
 SkipList *
@@ -573,7 +575,7 @@ timestampset_tcount_transfn(SkipList *state, const TimestampSet *ts,
 }
 
 /**
- * @ingroup libmeos_spantime_agg
+ * @ingroup libmeos_setspan_agg
  * @brief Transition function for temporal count aggregate of periods
  */
 SkipList *
@@ -597,7 +599,7 @@ period_tcount_transfn(SkipList *state, const Period *p,
 }
 
 /**
- * @ingroup libmeos_spantime_agg
+ * @ingroup libmeos_setspan_agg
  * @brief Transition function for temporal count aggregate of period sets
  */
 SkipList *

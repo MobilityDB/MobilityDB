@@ -140,7 +140,7 @@ int main(void)
   printf("Using %s structures\n", EXPAND ? "expandable" : "static");
 
   /* Finalize MEOS */
-  meos_finish();
+  meos_finalize();
 
   return 0;
 }

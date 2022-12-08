@@ -532,7 +532,7 @@ mobilitydb_full_version(void)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_int_temporal_in_out
+ * @ingroup libmeos_internal_temporal_inout
  * @brief Return a temporal value from its Well-Known Text (WKT) representation.
  *
  * @param[in] str String
@@ -546,7 +546,7 @@ temporal_in(const char *str, mobdbType temptype)
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_temporal_inout
  * @brief Return a temporal boolean from its Well-Known Text (WKT)
  * representation.
  */
@@ -557,7 +557,7 @@ tbool_in(const char *str)
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_temporal_inout
  * @brief Return a temporal integer from its Well-Known Text (WKT)
  * representation.
  */
@@ -568,7 +568,7 @@ tint_in(const char *str)
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_temporal_inout
  * @brief Return a temporal float from its Well-Known Text (WKT) representation.
  */
 Temporal *
@@ -578,7 +578,7 @@ tfloat_in(const char *str)
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_temporal_inout
  * @brief Return a temporal text from its Well-Known Text (WKT) representation.
  */
 Temporal *
@@ -588,7 +588,7 @@ ttext_in(const char *str)
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_temporal_inout
  * @brief Return a temporal geometric point from its Well-Known Text (WKT)
  * representation.
  */
@@ -598,7 +598,7 @@ tgeompoint_in(const char *str)
   return temporal_parse(&str, T_TGEOMPOINT);
 }
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_temporal_inout
  * @brief Return a temporal geographic point from its Well-Known Text (WKT)
  * representation.
  */
@@ -610,7 +610,7 @@ tgeogpoint_in(const char *str)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_int_temporal_in_out
+ * @ingroup libmeos_internal_temporal_inout
  * @brief Return the Well-Known Text (WKT) representation of a temporal value.
  */
 char *
@@ -629,7 +629,7 @@ temporal_out(const Temporal *temp, Datum maxdd)
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_temporal_inout
  * @brief Return a temporal boolean from its Well-Known Text (WKT)
  * representation.
  */
@@ -640,7 +640,7 @@ tbool_out(const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_temporal_inout
  * @brief Return a temporal integer from its Well-Known Text (WKT)
  * representation.
  */
@@ -651,7 +651,7 @@ tint_out(const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_temporal_inout
  * @brief Return a temporal float from its Well-Known Text (WKT) representation.
  */
 char *
@@ -661,7 +661,7 @@ tfloat_out(const Temporal *temp, int maxdd)
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_temporal_inout
  * @brief Return a temporal text from its Well-Known Text (WKT) representation.
  */
 char *
@@ -671,7 +671,7 @@ ttext_out(const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_temporal_inout
  * @brief Return a temporal geometric/geographic point from its Well-Known Text
  * (WKT) representation.
  */
@@ -699,7 +699,7 @@ temporal_copy(const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_int_temporal_constructor
+ * @ingroup libmeos_internal_temporal_constructor
  * @brief Construct a temporal value from a base value and the time frame of
  * another temporal value.
  */
@@ -1082,7 +1082,7 @@ tfloat_to_tint(const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_int_temporal_cast
+ * @ingroup libmeos_internal_temporal_cast
  * @brief Set a period to the bounding period of a temporal value.
  */
 void
@@ -1116,7 +1116,7 @@ temporal_to_period(const Temporal *temp)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_int_temporal_cast
+ * @ingroup libmeos_internal_temporal_cast
  * @brief Set a span with value span of a temporal number .
  */
 void
@@ -1385,7 +1385,7 @@ temporal_interpolation(const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_int_temporal_accessor
+ * @ingroup libmeos_internal_temporal_accessor
  * @brief Set the second argument to the bounding box of a temporal value
  * @note For temporal instants the bounding box must be computed.
  * For the other subtypes a copy of the precomputed bounding box is made.
@@ -1406,7 +1406,7 @@ temporal_set_bbox(const Temporal *temp, void *box)
 }
 
 /**
- * @ingroup libmeos_int_temporal_accessor
+ * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the array of base values of a temporal value.
  * @sqlfunc values()
  */
@@ -1552,7 +1552,7 @@ temporal_time(const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_int_temporal_accessor
+ * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the start base value of a temporal value
  * @sqlfunc startValue()
  * @pymeosfunc startValue()
@@ -1637,7 +1637,7 @@ tpoint_start_value(const Temporal *temp)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_int_temporal_accessor
+ * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the end base value of a temporal value
  */
 Datum
@@ -1722,7 +1722,7 @@ tpoint_end_value(const Temporal *temp)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_int_temporal_accessor
+ * @ingroup libmeos_internal_temporal_accessor
  * @brief Return a copy of the minimum base value of a temporal value
  */
 Datum
@@ -1779,7 +1779,7 @@ ttext_min_value(const Temporal *temp)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_int_temporal_accessor
+ * @ingroup libmeos_internal_temporal_accessor
  * @brief Return a copy of the maximum base value of a temporal value.
  * @sqlfunc maxValue()
  * @pymeosfunc maxValue()
@@ -2349,7 +2349,7 @@ temporal_bbox_ev_al_lt_le(const Temporal *temp, Datum value, bool ever)
 }
 
 /**
- * @ingroup libmeos_int_temporal_ever
+ * @ingroup libmeos_internal_temporal_ever
  * @brief Return true if a temporal value is ever equal to a base value.
  */
 bool
@@ -2409,7 +2409,7 @@ bool ttext_ever_eq(const Temporal *temp, text *txt)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_int_temporal_ever
+ * @ingroup libmeos_internal_temporal_ever
  * @brief Return true if a temporal value is always equal to a base value.
  */
 bool
@@ -2469,7 +2469,7 @@ bool ttext_always_eq(const Temporal *temp, text *txt)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_int_temporal_ever
+ * @ingroup libmeos_internal_temporal_ever
  * @brief Return true if a temporal value is ever less than a base value.
  */
 bool
@@ -2519,7 +2519,7 @@ bool ttext_ever_lt(const Temporal *temp, text *txt)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_int_temporal_ever
+ * @ingroup libmeos_internal_temporal_ever
  * @brief Return true if a temporal value is always less than a base value.
  */
 bool
@@ -2569,7 +2569,7 @@ bool ttext_always_lt(const Temporal *temp, text *txt)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_int_temporal_ever
+ * @ingroup libmeos_internal_temporal_ever
  * @brief Return true if a temporal value is ever less than or equal to a
  * base value.
  */
@@ -2621,7 +2621,7 @@ bool ttext_ever_le(const Temporal *temp, text *txt)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_int_temporal_ever
+ * @ingroup libmeos_internal_temporal_ever
  * @brief Return true if a temporal value is always less than or equal to a
  * base value.
  */
@@ -2801,7 +2801,7 @@ tnumber_bbox_restrict_span(const Temporal *temp, const Span *span)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_int_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) a base value.
  *
  * @note This function does a bounding box test for the temporal types
@@ -2842,7 +2842,7 @@ temporal_restrict_value(const Temporal *temp, Datum value, bool atfunc)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_int_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) an array of base
  * values.
  * @sqlfunc atValues(), minusValues()
@@ -2887,7 +2887,7 @@ temporal_restrict_values(const Temporal *temp, Datum *values, int count,
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_int_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) a span of base values.
  * @sqlfunc atSpan(), minusSpan()
  */
@@ -2926,7 +2926,7 @@ tnumber_restrict_span(const Temporal *temp, const Span *span, bool atfunc)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_int_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) a span set.
  * @sqlfunc atSpanset(), minusSpanset()
  */
@@ -2969,7 +2969,7 @@ tnumber_restrict_spanset(const Temporal *temp, const SpanSet *ss, bool atfunc)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_int_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) a minimum base value
  * @sqlfunc atMin(), atMax(), minusMin(), minusMax()
  */
@@ -2993,7 +2993,7 @@ temporal_restrict_minmax(const Temporal *temp, bool min, bool atfunc)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_int_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal value to a timestamp.
  * @sqlfunc atTime(), minusTime()
  */
@@ -3024,7 +3024,7 @@ temporal_restrict_timestamp(const Temporal *temp, TimestampTz t, bool atfunc)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_int_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Return the base value of a temporal value at the timestamp
  * @sqlfunc valueAtTimestamp()
  * @pymeosfunc valueAtTimestamp()
@@ -3050,7 +3050,7 @@ temporal_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_int_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) a timestamp set
  * @sqlfunc atTime(), minusTime()
  */
@@ -3082,7 +3082,7 @@ temporal_restrict_timestampset(const Temporal *temp, const TimestampSet *ts,
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_int_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) a period.
  * @sqlfunc atTime(), minusTime()
  */
@@ -3114,7 +3114,7 @@ temporal_restrict_period(const Temporal *temp, const Period *p, bool atfunc)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_int_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) a period set.
  * @sqlfunc atTime(), minusTime()
  */

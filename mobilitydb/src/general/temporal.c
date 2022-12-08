@@ -382,7 +382,7 @@ Mobilitydb_full_version(PG_FUNCTION_ARGS __attribute__((unused)))
 
 PG_FUNCTION_INFO_V1(Temporal_in);
 /**
- * @ingroup mobilitydb_temporal_in_out
+ * @ingroup mobilitydb_temporal_inout
  * @brief Generic input function for temporal types
  * @sqlfunc tbool_in(), tint_in(), tfloat_in(), ttext_in(),
  */
@@ -402,7 +402,7 @@ Temporal_in(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_out);
 /**
- * @ingroup mobilitydb_temporal_in_out
+ * @ingroup mobilitydb_temporal_inout
  * @brief Generic output function for temporal types
  * @sqlfunc tbool_out(), tint_out(), tfloat_out(), ttext_out(),
  */
@@ -455,7 +455,7 @@ temporal_write(const Temporal *temp, StringInfo buf)
 
 PG_FUNCTION_INFO_V1(Temporal_recv);
 /**
- * @ingroup mobilitydb_temporal_in_out
+ * @ingroup mobilitydb_temporal_inout
  * @brief Generic receive function for temporal types
  * @sqlfunc tbool_recv(), tint_recv(), tfloat_recv(), ttext_recv(),
  */
@@ -471,7 +471,7 @@ Temporal_recv(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_send);
 /*
- * @ingroup mobilitydb_temporal_in_out
+ * @ingroup mobilitydb_temporal_inout
  * @brief Generic send function for temporal types
  * @sqlfunc tbool_send(), tint_send(), tfloat_send(), ttext_send(),
  */

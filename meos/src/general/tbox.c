@@ -89,7 +89,7 @@ ensure_same_dimensionality_tbox(const TBox *box1, const TBox *box2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_box_in_out
+ * @ingroup libmeos_box_inout
  * @brief Return a temporal box from its Well-Known Text (WKT) representation.
  */
 TBox *
@@ -99,7 +99,7 @@ tbox_in(const char *str)
 }
 
 /**
- * @ingroup libmeos_box_in_out
+ * @ingroup libmeos_box_inout
  * @brief Return the Well-Known Text (WKT) representation of a temporal box.
  */
 char *
@@ -195,7 +195,7 @@ tbox_copy(const TBox *box)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_int_box_cast
+ * @ingroup libmeos_internal_box_cast
  * @brief Set a temporal box from a number.
  */
 void
@@ -216,7 +216,7 @@ number_set_tbox(Datum value, mobdbType basetype, TBox *box)
 }
 
 /**
- * @ingroup libmeos_int_box_cast
+ * @ingroup libmeos_internal_box_cast
  * @brief Set a temporal box from an integer.
  */
 void
@@ -248,7 +248,7 @@ int_to_tbox(int i)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_int_box_cast
+ * @ingroup libmeos_internal_box_cast
  * @brief Set a temporal box from a float.
  */
 void
@@ -280,7 +280,7 @@ float_to_tbox(double d)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_int_box_cast
+ * @ingroup libmeos_internal_box_cast
  * @brief Set a temporal box from a span.
  */
 void
@@ -299,7 +299,7 @@ span_set_tbox(const Span *span, TBox *box)
 }
 
 /**
- * @ingroup libmeos_int_box_cast
+ * @ingroup libmeos_internal_box_cast
  * @brief Set a temporal box from a span set.
  */
 void
@@ -334,7 +334,7 @@ span_to_tbox(const Span *span)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_int_box_cast
+ * @ingroup libmeos_internal_box_cast
  * @brief Set a temporal box from a timestamp.
  */
 void
@@ -366,7 +366,7 @@ timestamp_to_tbox(TimestampTz t)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_int_box_cast
+ * @ingroup libmeos_internal_box_cast
  * @brief Set a temporal box from a period set.
  */
 void
@@ -397,7 +397,7 @@ timestampset_to_tbox(const TimestampSet *ts)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_int_box_cast
+ * @ingroup libmeos_internal_box_cast
  * @brief Set a temporal box from a period.
  */
 void
@@ -428,7 +428,7 @@ period_to_tbox(const Period *p)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_int_box_cast
+ * @ingroup libmeos_internal_box_cast
  * @brief Set a temporal box from a period set.
  */
 void
@@ -812,7 +812,7 @@ contains_tbox_tbox(const TBox *box1, const TBox *box2)
 /**
  * @ingroup libmeos_box_topo
  * @brief Return true if the first temporal box is contained by the second one.
- * @sqlop @p @<
+ * @sqlop @p <@
  */
 bool
 contained_tbox_tbox(const TBox *box1, const TBox *box2)

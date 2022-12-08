@@ -54,7 +54,7 @@ PG_FUNCTION_INFO_V1(Contains_spanset_value);
  * @ingroup mobilitydb_spantime_topo
  * @brief Return true if a span contains a value
  * @sqlfunc span_contains()
- * @sqlop @p @>
+ * @sqlop @p \@>
  */
 PGDLLEXPORT Datum
 Contains_spanset_value(PG_FUNCTION_ARGS)
@@ -72,7 +72,7 @@ PG_FUNCTION_INFO_V1(Contains_spanset_orderedset);
  * @ingroup mobilitydb_spantime_topo
  * @brief Return true if a span set contains an ordered set
  * @sqlfunc time_contains()
- * @sqlop @p @>
+ * @sqlop @p \@>
  */
 PGDLLEXPORT Datum
 Contains_spanset_orderedset(PG_FUNCTION_ARGS)
@@ -90,7 +90,7 @@ PG_FUNCTION_INFO_V1(Contains_spanset_span);
  * @ingroup mobilitydb_spantime_topo
  * @brief Return true if a span set contains a span set
  * @sqlfunc time_contains()
- * @sqlop @p @>
+ * @sqlop @p \@>
  */
 PGDLLEXPORT Datum
 Contains_spanset_span(PG_FUNCTION_ARGS)
@@ -107,7 +107,7 @@ PG_FUNCTION_INFO_V1(Contains_span_spanset);
  * @ingroup mobilitydb_spantime_topo
  * @brief Return true if a span contains a span set
  * @sqlfunc time_contains()
- * @sqlop @p @>
+ * @sqlop @p \@>
  */
 PGDLLEXPORT Datum
 Contains_span_spanset(PG_FUNCTION_ARGS)
@@ -124,7 +124,7 @@ PG_FUNCTION_INFO_V1(Contains_spanset_spanset);
  * @ingroup mobilitydb_spantime_topo
  * @brief Return true if the first span set contains the second one
  * @sqlfunc time_contains()
- * @sqlop @p @>
+ * @sqlop @p \@>
  */
 PGDLLEXPORT Datum
 Contains_spanset_spanset(PG_FUNCTION_ARGS)

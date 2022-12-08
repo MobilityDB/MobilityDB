@@ -75,7 +75,7 @@ number_distance(Datum l, Datum r, mobdbType typel, mobdbType typer)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_int_temporal_dist
+ * @ingroup libmeos_internal_temporal_dist
  * @brief Return the temporal distance between a temporal number and a number.
  *
  * @param[in] temp Temporal number
@@ -201,7 +201,7 @@ distance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_int_temporal_dist
+ * @ingroup libmeos_internal_temporal_dist
  * @brief Return the nearest approach distance between a temporal number
  * and a number.
  */

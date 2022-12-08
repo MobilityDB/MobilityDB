@@ -80,7 +80,7 @@ int main()
   free(seq3); free(seq3_wkt);
 
   /* Finalize MEOS */
-  meos_finish();
+  meos_finalize();
 
   /* Return */
   return 0;

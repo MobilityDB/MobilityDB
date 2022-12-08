@@ -254,7 +254,7 @@ spanarr_normalize(Span **spans, int count, bool sort, int *newcount)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_int_spantime_in_out
+ * @ingroup libmeos_internal_setspan_inout
  * @brief Return a span from its Well-Known Text (WKT) representation.
  */
 Span *
@@ -265,7 +265,7 @@ span_in(const char *str, mobdbType spantype)
 
 #if MEOS
 /**
- * @ingroup libmeos_spantime_in_out
+ * @ingroup libmeos_setspan_inout
  * @brief Return an integer span from its Well-Known Text (WKT) representation.
  */
 Span *
@@ -275,7 +275,7 @@ intspan_in(const char *str)
 }
 
 /**
- * @ingroup libmeos_spantime_in_out
+ * @ingroup libmeos_setspan_inout
  * @brief Return an integer span from its Well-Known Text (WKT) representation.
  */
 Span *
@@ -285,7 +285,7 @@ bigintspan_in(const char *str)
 }
 
 /**
- * @ingroup libmeos_spantime_in_out
+ * @ingroup libmeos_setspan_inout
  * @brief Return a float span from its Well-Known Text (WKT) representation.
  */
 Span *
@@ -295,7 +295,7 @@ floatspan_in(const char *str)
 }
 
 /**
- * @ingroup libmeos_spantime_in_out
+ * @ingroup libmeos_setspan_inout
  * @brief Return a period from its Well-Known Text (WKT) representation.
  */
 Period *
@@ -327,7 +327,7 @@ unquote(char *str)
 }
 
 /**
- * @ingroup libmeos_int_spantime_in_out
+ * @ingroup libmeos_internal_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a span.
  */
 char *
@@ -345,7 +345,7 @@ span_out(const Span *s, Datum maxdd)
 
 #if MEOS
 /**
- * @ingroup libmeos_spantime_in_out
+ * @ingroup libmeos_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a span.
  */
 char *
@@ -355,7 +355,7 @@ floatspan_out(const Span *s, int maxdd)
 }
 
 /**
- * @ingroup libmeos_spantime_in_out
+ * @ingroup libmeos_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a span.
  */
 char *
@@ -365,7 +365,7 @@ intspan_out(const Span *s)
 }
 
 /**
- * @ingroup libmeos_spantime_in_out
+ * @ingroup libmeos_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a span.
  */
 char *
@@ -375,7 +375,7 @@ bigintspan_out(const Span *s)
 }
 
 /**
- * @ingroup libmeos_spantime_in_out
+ * @ingroup libmeos_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a span.
  */
 char *
@@ -390,7 +390,7 @@ period_out(const Span *s)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_int_spantime_constructor
+ * @ingroup libmeos_internal_setspan_constructor
  * @brief Construct a span from the bounds.
  */
 Span *
@@ -405,7 +405,7 @@ span_make(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
 
 #if MEOS
 /**
- * @ingroup libmeos_spantime_constructor
+ * @ingroup libmeos_setspan_constructor
  * @brief Construct an integer span from the bounds.
  * @sqlfunc intspan()
  */
@@ -420,7 +420,7 @@ intspan_make(int lower, int upper, bool lower_inc, bool upper_inc)
 }
 
 /**
- * @ingroup libmeos_spantime_constructor
+ * @ingroup libmeos_setspan_constructor
  * @brief Construct an integer span from the bounds.
  * @sqlfunc intspan()
  */
@@ -435,7 +435,7 @@ bigintspan_make(int64 lower, int64 upper, bool lower_inc, bool upper_inc)
 }
 
 /**
- * @ingroup libmeos_spantime_constructor
+ * @ingroup libmeos_setspan_constructor
  * @brief Construct an integer span from the bounds.
  * @sqlfunc intspan()
  */
@@ -450,7 +450,7 @@ bigintspan_make(int64 lower, int64 upper, bool lower_inc, bool upper_inc)
 }
 
 /**
- * @ingroup libmeos_spantime_constructor
+ * @ingroup libmeos_setspan_constructor
  * @brief Construct a span from the bounds.
  * @sqlfunc floatspan()
  */
@@ -465,7 +465,7 @@ floatspan_make(double lower, double upper, bool lower_inc, bool upper_inc)
 }
 
 /**
- * @ingroup libmeos_spantime_constructor
+ * @ingroup libmeos_setspan_constructor
  * @brief Construct a period from the bounds.
  * @sqlfunc period()
  */
@@ -482,7 +482,7 @@ period_make(TimestampTz lower, TimestampTz upper, bool lower_inc,
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_int_spantime_constructor
+ * @ingroup libmeos_internal_setspan_constructor
  * @brief Set a span from the arguments.
  * @see span_make()
  */
@@ -543,7 +543,7 @@ span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
 }
 
 /**
- * @ingroup libmeos_spantime_constructor
+ * @ingroup libmeos_setspan_constructor
  * @brief Return a copy of a span.
  */
 Span *
@@ -559,7 +559,7 @@ span_copy(const Span *s)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_int_spantime_cast
+ * @ingroup libmeos_internal_setspan_cast
  * @brief Cast an element as a span
  */
 Span *
@@ -572,7 +572,7 @@ value_to_span(Datum d, mobdbType basetype)
 
 #if MEOS
 /**
- * @ingroup libmeos_spantime_cast
+ * @ingroup libmeos_setspan_cast
  * @brief Cast an element as a span
  * @sqlop @p ::
  */
@@ -585,7 +585,7 @@ int_to_intspan(int i)
 }
 
 /**
- * @ingroup libmeos_spantime_cast
+ * @ingroup libmeos_setspan_cast
  * @brief Cast an element as a span
  * @sqlop @p ::
  */
@@ -598,7 +598,7 @@ bigint_to_intspan(int i)
 }
 
 /**
- * @ingroup libmeos_spantime_cast
+ * @ingroup libmeos_setspan_cast
  * @brief Cast an element as a span
  * @sqlop @p ::
  */
@@ -612,7 +612,7 @@ float_to_floaspan(double d)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_spantime_cast
+ * @ingroup libmeos_setspan_cast
  * @brief Cast a timestamp as a period
  * @sqlop @p ::
  */
@@ -630,7 +630,7 @@ timestamp_to_period(TimestampTz t)
 
 #if MEOS
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the lower bound of an integer span
  * @sqlfunc lower()
  */
@@ -641,7 +641,7 @@ intspan_lower(const Span *s)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the lower bound of an integer span
  * @sqlfunc lower()
  */
@@ -652,7 +652,7 @@ bigintspan_lower(const Span *s)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the lower bound of a float span
  * @sqlfunc lower()
  */
@@ -663,7 +663,7 @@ floatspan_lower(const Span *s)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the lower bound of a period
  * @sqlfunc lower()
  * @pymeosfunc lower()
@@ -675,7 +675,7 @@ period_lower(const Period *p)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the upper bound of an integer span
  * @sqlfunc upper()
  */
@@ -686,7 +686,7 @@ intspan_upper(const Span *s)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the upper bound of an integer span
  * @sqlfunc upper()
  */
@@ -697,7 +697,7 @@ bigintspan_upper(const Span *s)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the upper bound of a float span
  * @sqlfunc upper()
  */
@@ -708,7 +708,7 @@ floatspan_upper(const Span *s)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the upper bound of a period
  * @sqlfunc upper()
  * @pymeosfunc upper()
@@ -720,7 +720,7 @@ period_upper(const Period *p)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return true if the lower bound of a span is inclusive
  * @sqlfunc lower_inc()
  * @pymeosfunc lower_inc()
@@ -732,7 +732,7 @@ span_lower_inc(const Span *s)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return true if the upper bound of a span is inclusive
  * @sqlfunc upper_inc()
  * @pymeosfunc upper_inc()
@@ -745,7 +745,7 @@ span_upper_inc(const Span *s)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the width of a span as a double.
  * @sqlfunc width()
  */
@@ -756,7 +756,7 @@ span_width(const Span *s)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the duration of a period as an interval.
  * @sqlfunc duration()
  * @pymeosfunc duration()
@@ -772,7 +772,7 @@ period_duration(const Span *s)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_spantime_transf
+ * @ingroup libmeos_setspan_transf
  * @brief Set the second span with the first one transformed to floatspan
  */
 void
@@ -786,7 +786,7 @@ intspan_set_floatspan(const Span *s1, Span *s2)
 }
 
 /**
- * @ingroup libmeos_spantime_transf
+ * @ingroup libmeos_setspan_transf
  * @brief Set the second span with the first one transformed to floatspan
  */
 void
@@ -800,7 +800,7 @@ bigintspan_set_floatspan(const Span *s1, Span *s2)
 }
 
 /**
- * @ingroup libmeos_spantime_transf
+ * @ingroup libmeos_setspan_transf
  * @brief Set the second span with the first one transformed to intspan
  */
 void
@@ -814,7 +814,7 @@ floatspan_set_intspan(const Span *s1, Span *s2)
 }
 
 /**
- * @ingroup libmeos_spantime_transf
+ * @ingroup libmeos_setspan_transf
  * @brief Set the second span with the first one transformed to intspan
  */
 void
@@ -828,7 +828,7 @@ floatspan_set_bigintspan(const Span *s1, Span *s2)
 }
 
 /**
- * @ingroup libmeos_spantime_transf
+ * @ingroup libmeos_setspan_transf
  * @brief Expand the second span with the first one
  */
 void
@@ -847,7 +847,7 @@ span_expand(const Span *s1, Span *s2)
 }
 
 /**
- * @ingroup libmeos_int_spantime_transf
+ * @ingroup libmeos_internal_setspan_transf
  * @brief Shift and/or scale period bounds by the intervals.
  * @param[in] shift Interval to shift the bounds
  * @param[in] duration Interval for the duration of the result
@@ -876,7 +876,7 @@ lower_upper_shift_tscale(const Interval *shift, const Interval *duration,
 }
 
 /**
- * @ingroup libmeos_spantime_transf
+ * @ingroup libmeos_internal_setspan_transf
  * @brief Shift a span by a value.
  * @sqlfunc shift()
  * @pymeosfunc shift()
@@ -891,7 +891,7 @@ span_shift(Datum value, mobdbType basetype, Span *result)
 }
 
 /**
- * @ingroup libmeos_spantime_transf
+ * @ingroup libmeos_setspan_transf
  * @brief Shift and/or scale a period by the intervals.
  * @sqlfunc shift(), tscale(), shiftTscale()
  * @pymeosfunc shift()
@@ -913,7 +913,7 @@ period_shift_tscale(const Interval *shift, const Interval *duration,
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return true if the first span is equal to the second one.
  * @note The internal B-tree comparator is not used to increase efficiency
  * @sqlop @p =
@@ -930,7 +930,7 @@ span_eq(const Span *s1, const Span *s2)
 }
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return true if the first span is different from the second one.
  * @sqlop @p <>
  */
@@ -943,7 +943,7 @@ span_ne(const Span *s1, const Span *s2)
 /* B-tree comparator */
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return -1, 0, or 1 depending on whether the first span
  * is less than, equal, or greater than the second one.
  * @note Function used for B-tree comparison
@@ -970,7 +970,7 @@ span_cmp(const Span *s1, const Span *s2)
 /* Inequality operators using the span_cmp function */
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return true if the first span is less than the second one.
  * @sqlop @p <
  * @pymeosfunc __lt__()
@@ -983,7 +983,7 @@ span_lt(const Span *s1, const Span *s2)
 }
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return true if the first span is less than or equal to the
  * second one.
  * @sqlop @p <=
@@ -997,7 +997,7 @@ span_le(const Span *s1, const Span *s2)
 }
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return true if the first span is greater than or equal to the
  * second one.
  * @sqlop @p >=
@@ -1011,7 +1011,7 @@ span_ge(const Span *s1, const Span *s2)
 }
 
 /**
- * @ingroup libmeos_spantime_comp
+ * @ingroup libmeos_setspan_comp
  * @brief Return true if the first span is greater than the second one.
  * @sqlop @p >
  * @pymeosfunc __gt__()
@@ -1028,7 +1028,7 @@ span_gt(const Span *s1, const Span *s2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the 32-bit hash value of a span.
  * @sqlfunc intspan_hash(), bigintspan_hash(), floatspan_hash(), period_hash()
  */
@@ -1062,7 +1062,7 @@ span_hash(const Span *s)
 }
 
 /**
- * @ingroup libmeos_spantime_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the 64-bit hash value of a span using a seed
  * @sqlfunc intspan_hash_extended(), floatspan_hash_extended(),
  * period_hash_extended()

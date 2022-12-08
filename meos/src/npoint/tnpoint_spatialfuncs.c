@@ -412,7 +412,7 @@ tnpoint_length(const Temporal *temp)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_int_temporal_spatial_accessor
+ * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the cumulative length traversed by a temporal point.
  * @pre The sequence has linear interpolation
  * @sqlfunc cumulativeLength()
