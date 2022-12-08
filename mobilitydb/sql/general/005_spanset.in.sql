@@ -280,6 +280,11 @@ CREATE FUNCTION periodset(period)
   AS 'MODULE_PATHNAME', 'Span_to_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE CAST (intspan AS intspanset) WITH FUNCTION intspanset(intspan);
+CREATE CAST (bigintspan AS bigintspanset) WITH FUNCTION bigintspanset(bigintspan);
+CREATE CAST (floatspan AS floatspanset) WITH FUNCTION floatspanset(floatspan);
+CREATE CAST (period AS periodset) WITH FUNCTION periodset(period);
+
 CREATE FUNCTION intspan(intspanset)
   RETURNS intspan
   AS 'MODULE_PATHNAME', 'Spanset_to_span'
@@ -297,26 +302,53 @@ CREATE FUNCTION period(periodset)
   AS 'MODULE_PATHNAME', 'Spanset_to_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE CAST (intspan AS intspanset) WITH FUNCTION intspanset(intspan);
-CREATE CAST (bigintspan AS bigintspanset) WITH FUNCTION bigintspanset(bigintspan);
-CREATE CAST (floatspan AS floatspanset) WITH FUNCTION floatspanset(floatspan);
-CREATE CAST (period AS periodset) WITH FUNCTION periodset(period);
-
 CREATE CAST (intspanset AS intspan) WITH FUNCTION intspan(intspanset);
 CREATE CAST (bigintspanset AS bigintspan) WITH FUNCTION bigintspan(bigintspanset);
 CREATE CAST (floatspanset AS floatspan) WITH FUNCTION floatspan(floatspanset);
 CREATE CAST (periodset AS period) WITH FUNCTION period(periodset);
 
+CREATE FUNCTION intspanset(int)
+  RETURNS intspanset
+  AS 'MODULE_PATHNAME', 'Value_to_spanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION bigintspanset(bigint)
+  RETURNS bigintspanset
+  AS 'MODULE_PATHNAME', 'Value_to_spanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION floatspanset(float)
+  RETURNS floatspanset
+  AS 'MODULE_PATHNAME', 'Value_to_spanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION periodset(timestamptz)
   RETURNS periodset
-  AS 'MODULE_PATHNAME', 'Timestamp_to_periodset'
+  AS 'MODULE_PATHNAME', 'Value_to_spanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE CAST (int AS intspanset) WITH FUNCTION intspanset(int);
+CREATE CAST (bigint AS bigintspanset) WITH FUNCTION bigintspanset(bigint);
+CREATE CAST (float AS floatspanset) WITH FUNCTION floatspanset(float);
+CREATE CAST (timestamptz AS periodset) WITH FUNCTION periodset(timestamptz);
+
+CREATE FUNCTION intspanset(intset)
+  RETURNS intspanset
+  AS 'MODULE_PATHNAME', 'Orderedset_to_spanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION bigintspanset(bigintset)
+  RETURNS bigintspanset
+  AS 'MODULE_PATHNAME', 'Orderedset_to_spanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION floatspanset(floatset)
+  RETURNS floatspanset
+  AS 'MODULE_PATHNAME', 'Orderedset_to_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION periodset(timestampset)
   RETURNS periodset
-  AS 'MODULE_PATHNAME', 'Timestampset_to_periodset'
+  AS 'MODULE_PATHNAME', 'Orderedset_to_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE CAST (timestamptz AS periodset) WITH FUNCTION periodset(timestamptz);
+CREATE CAST (intset AS intspanset) WITH FUNCTION intspanset(intset);
+CREATE CAST (bigintset AS bigintspanset) WITH FUNCTION bigintspanset(bigintset);
+CREATE CAST (floatset AS floatspanset) WITH FUNCTION floatspanset(floatset);
 CREATE CAST (timestampset AS periodset) WITH FUNCTION periodset(timestampset);
 
 #if POSTGRESQL_VERSION_NUMBER >= 140000

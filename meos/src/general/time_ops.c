@@ -1267,7 +1267,7 @@ union_timestampset_timestampset(const TimestampSet *ts1,
 PeriodSet *
 union_timestampset_period(const TimestampSet *ts, const Period *p)
 {
-  PeriodSet *ps = timestampset_to_periodset(ts);
+  PeriodSet *ps = orderedset_to_spanset(ts);
   PeriodSet *result = union_span_spanset(p, ps);
   pfree(ps);
   return result;
@@ -1281,7 +1281,7 @@ union_timestampset_period(const TimestampSet *ts, const Period *p)
 PeriodSet *
 union_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 {
-  PeriodSet *ps1 = timestampset_to_periodset(ts);
+  PeriodSet *ps1 = orderedset_to_spanset(ts);
   PeriodSet *result = union_spanset_spanset(ps, ps1);
   pfree(ps1);
   return result;
@@ -1308,7 +1308,7 @@ union_period_timestamp(const Period *p, TimestampTz t)
 PeriodSet *
 union_period_timestampset(const Period *p, const TimestampSet *ts)
 {
-  PeriodSet *ps = timestampset_to_periodset(ts);
+  PeriodSet *ps = orderedset_to_spanset(ts);
   PeriodSet *result = union_span_spanset(p, ps);
   pfree(ps);
   return result;
@@ -1339,7 +1339,7 @@ union_periodset_timestamp(PeriodSet *ps, TimestampTz t)
 PeriodSet *
 union_periodset_timestampset(PeriodSet *ps, TimestampSet *ts)
 {
-  PeriodSet *ps1 = timestampset_to_periodset(ts);
+  PeriodSet *ps1 = orderedset_to_spanset(ts);
   PeriodSet *result = union_spanset_spanset(ps, ps1);
   pfree(ps1);
   return result;

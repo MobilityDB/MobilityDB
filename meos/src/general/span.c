@@ -590,7 +590,7 @@ int_to_intspan(int i)
  * @sqlop @p ::
  */
 Span *
-bigint_to_intspan(int i)
+bigint_to_bigintspan(int i)
 {
   Span *result = span_make(Int64GetDatum(i), Int64GetDatum(i), true, true,
     T_INT8);

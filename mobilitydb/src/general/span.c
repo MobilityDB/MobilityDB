@@ -208,8 +208,8 @@ Span_constructor(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Value_to_span);
 /**
  * @ingroup mobilitydb_setspan_cast
- * @brief Cast the timestamp value as a span
- * @sqlfunc intspan(), floatspan(), period()
+ * @brief Cast a value as a span
+ * @sqlfunc intspan(), bigintspan(), floatspan(), period()
  * @sqlop @p ::
  */
 PGDLLEXPORT Datum
@@ -224,7 +224,7 @@ Value_to_span(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Span_to_range);
 /**
  * @ingroup mobilitydb_setspan_cast
- * @brief Convert the integer span as a integer range value
+ * @brief Convert a span as a range value
  * @sqlfunc int4range(), tstzrange()
  * @sqlop @p ::
  */

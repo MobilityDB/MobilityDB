@@ -364,6 +364,67 @@ spanset_copy(const SpanSet *ps)
  *****************************************************************************/
 
 /**
+ * @ingroup libmeos_internal_setspan_cast
+ * @brief Cast an element as a span set
+ */
+SpanSet *
+value_to_spanset(Datum d, mobdbType basetype)
+{
+  ensure_span_basetype(basetype);
+  Span s;
+  Span *s1 = &s;
+  span_set(d, d, true, true, basetype, &s);
+  SpanSet *result = spanset_make((const Span **) &s1, 1, NORMALIZE_NO);
+  return result;
+}
+
+#if MEOS
+/**
+ * @ingroup libmeos_setspan_cast
+ * @brief Cast an element as a span set
+ * @sqlop @p ::
+ */
+Span *
+int_to_intspanset(int i)
+{
+  return value_to_spanset(i, T_INT4);
+}
+
+/**
+ * @ingroup libmeos_setspan_cast
+ * @brief Cast an element as a span set
+ * @sqlop @p ::
+ */
+Span *
+bigint_to_bigintspanset(int i)
+{
+  return value_to_spanset(i, T_INT8);
+}
+
+/**
+ * @ingroup libmeos_setspan_cast
+ * @brief Cast an element as a span set
+ * @sqlop @p ::
+ */
+Span *
+float_to_floaspanset(double d)
+{
+  return value_to_spanset(i, T_FLOAT8);
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup libmeos_setspan_cast
+ * @brief Cast a timestamp as a period set
+ * @sqlop @p ::
+ */
+PeriodSet *
+timestamp_to_periodset(TimestampTz t)
+{
+  return value_to_spanset(t, T_TIMESTAMPTZ);
+}
+
+/**
  * @ingroup libmeos_setspan_cast
  * @brief Cast an ordered set as a span set.
  * @sqlop @p ::
@@ -427,6 +488,52 @@ spanset_shift(Datum value, mobdbType basetype, SpanSet *result)
     span_shift(value, basetype, s);
   }
   return;
+}
+
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Return a period set shifted and/or scaled by the intervals.
+ * @sqlfunc shift(), tscale(), shiftTscale()
+ * @pymeosfunc shift()
+ */
+PeriodSet *
+periodset_shift_tscale(const PeriodSet *ps, const Interval *shift,
+  const Interval *duration)
+{
+  assert(shift != NULL || duration != NULL);
+  if (duration != NULL)
+    ensure_valid_duration(duration);
+  bool instant = (ps->span.lower == ps->span.upper);
+
+  /* Copy the input period set to the output period set */
+  PeriodSet *result = spanset_copy(ps);
+  /* Shift and/or scale the bounding period */
+  period_shift_tscale(shift, duration, &result->span);
+  /* Shift and/or scale the periods of the period set */
+  TimestampTz delta;
+  if (shift != NULL)
+    delta = result->span.lower - ps->span.lower;
+  /* If the periodset is instantaneous we cannot scale */
+  double scale;
+  if (duration != NULL && ! instant)
+    scale = (double) (result->span.upper - result->span.lower) /
+      (double) (ps->span.upper - ps->span.lower);
+  for (int i = 0; i < ps->count; i++)
+  {
+    if (shift != NULL)
+    {
+      result->elems[i].lower += delta;
+      result->elems[i].upper += delta;
+    }
+    if (duration != NULL && ! instant)
+    {
+      result->elems[i].lower = result->span.lower +
+        (result->elems[i].lower - result->span.lower) * scale;
+      result->elems[i].upper = result->span.lower +
+        (result->elems[i].upper - result->span.lower) * scale;
+    }
+  }
+  return result;
 }
 
 /*****************************************************************************
@@ -574,6 +681,189 @@ spanset_width(const SpanSet *ss)
     const Span *s = spanset_sp_n(ss, i);
     result += span_width(s);
   }
+  return result;
+}
+
+/**
+ * @ingroup libmeos_setspan_accessor
+ * @brief Return the timespan of a period set
+ * @sqlfunc timespan()
+ * @pymeosfunc timespan()
+ */
+Interval *
+periodset_timespan(const PeriodSet *ps)
+{
+  const Period *p1 = spanset_sp_n(ps, 0);
+  const Period *p2 = spanset_sp_n(ps, ps->count - 1);
+  Interval *result = pg_timestamp_mi(p2->upper, p1->lower);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_setspan_accessor
+ * @brief Return the duration of a period set
+ * @sqlfunc duration()
+ * @pymeosfunc duration()
+ */
+Interval *
+periodset_duration(const PeriodSet *ps)
+{
+  const Period *p = spanset_sp_n(ps, 0);
+  Interval *result = pg_timestamp_mi(p->upper, p->lower);
+  for (int i = 1; i < ps->count; i++)
+  {
+    p = spanset_sp_n(ps, i);
+    Interval *interval1 = pg_timestamp_mi(p->upper, p->lower);
+    Interval *interval2 = pg_interval_pl(result, interval1);
+    pfree(result); pfree(interval1);
+    result = interval2;
+  }
+  return result;
+}
+
+/**
+ * @ingroup libmeos_setspan_accessor
+ * @brief Return the number of timestamps of a period set
+ * @sqlfunc numTimestamps()
+ * @pymeosfunc numTimestamps()
+ */
+int
+periodset_num_timestamps(const PeriodSet *ps)
+{
+  const Period *p = spanset_sp_n(ps, 0);
+  TimestampTz prev = p->lower;
+  bool start = false;
+  int result = 1;
+  TimestampTz d;
+  int i = 1;
+  while (i < ps->count || !start)
+  {
+    if (start)
+    {
+      p = spanset_sp_n(ps, i++);
+      d = p->lower;
+      start = !start;
+    }
+    else
+    {
+      d = p->upper;
+      start = !start;
+    }
+    if (prev != d)
+    {
+      result++;
+      prev = d;
+    }
+  }
+  return result;
+}
+
+/**
+ * @ingroup libmeos_setspan_accessor
+ * @brief Return the start timestamp of a period set.
+ * @sqlfunc startTimestamp()
+ * @pymeosfunc startTimestamp()
+ */
+TimestampTz
+periodset_start_timestamp(const PeriodSet *ps)
+{
+  const Period *p = spanset_sp_n(ps, 0);
+  return p->lower;
+}
+
+/**
+ * @ingroup libmeos_setspan_accessor
+ * @brief Return the end timestamp of a period set.
+ * @sqlfunc endTimestamp()
+ * @pymeosfunc endTimestamp()
+ */
+TimestampTz
+periodset_end_timestamp(const PeriodSet *ps)
+{
+  const Period *p = spanset_sp_n(ps, ps->count - 1);
+  return p->upper;
+}
+
+/**
+ * @ingroup libmeos_setspan_accessor
+ * @brief Return the n-th timestamp of a period set.
+ *
+ * @param[in] ps Period set
+ * @param[in] n Number
+ * @param[out] result Timestamp
+ * @result Return true if the timestamp is found
+ * @note It is assumed that n is 1-based
+ * @sqlfunc timestampN()
+ * @pymeosfunc timestampN()
+ */
+bool
+periodset_timestamp_n(const PeriodSet *ps, int n, TimestampTz *result)
+{
+  int pernum = 0;
+  const Period *p = spanset_sp_n(ps, pernum);
+  TimestampTz d = p->lower;
+  if (n == 1)
+  {
+    *result = d;
+    return true;
+  }
+
+  bool start = false;
+  int i = 1;
+  TimestampTz prev = d;
+  while (i < n)
+  {
+    if (start)
+    {
+      pernum++;
+      if (pernum == ps->count)
+        break;
+
+      p = spanset_sp_n(ps, pernum);
+      d = p->lower;
+      start = !start;
+    }
+    else
+    {
+      d = p->upper;
+      start = !start;
+    }
+    if (prev != d)
+    {
+      i++;
+      prev = d;
+    }
+  }
+  if (i != n)
+    return false;
+  *result = d;
+  return true;
+}
+
+/**
+ * @ingroup libmeos_setspan_accessor
+ * @brief Return the timestamps of a period set
+ * @sqlfunc timestamps()
+ * @pymeosfunc timestamps()
+ */
+TimestampTz *
+periodset_timestamps(const PeriodSet *ps, int *count)
+{
+  TimestampTz *result = palloc(sizeof(TimestampTz) * 2 * ps->count);
+  const Period *p = spanset_sp_n(ps, 0);
+  result[0] = p->lower;
+  int k = 1;
+  if (p->lower != p->upper)
+    result[k++] = p->upper;
+  for (int i = 1; i < ps->count; i++)
+  {
+    p = spanset_sp_n(ps, i);
+    if (result[k - 1] != (TimestampTz) p->lower)
+      result[k++] = p->lower;
+    if (result[k - 1] != (TimestampTz) p->upper)
+      result[k++] = p->upper;
+  }
+  *count = k;
   return result;
 }
 

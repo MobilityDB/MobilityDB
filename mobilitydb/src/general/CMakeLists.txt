@@ -1,7 +1,6 @@
 add_library(pg_general OBJECT
   doublen.c
   geo_constructors.c
-  periodset.c
   set.c
   set_ops.c
   skiplist.c

@@ -309,6 +309,9 @@ CREATE FUNCTION period(tstzrange)
   AS 'MODULE_PATHNAME', 'Range_to_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE CAST (integer AS intspan) WITH FUNCTION intspan(integer);
+CREATE CAST (bigint AS bigintspan) WITH FUNCTION bigintspan(bigint);
+CREATE CAST (float AS floatspan) WITH FUNCTION floatspan(float);
 CREATE CAST (timestamptz AS period) WITH FUNCTION period(timestamptz);
 CREATE CAST (int4range AS intspan) WITH FUNCTION intspan(int4range);
 CREATE CAST (intspan AS int4range) WITH FUNCTION int4range(intspan);

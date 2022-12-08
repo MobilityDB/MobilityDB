@@ -77,6 +77,7 @@ extern void span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc, m
 
 extern OrderedSet *value_to_orderedset(Datum d, mobdbType basetype);
 extern Span *value_to_span(Datum d, mobdbType basetype);
+extern SpanSet *value_to_spanset(Datum d, mobdbType basetype);
 
 /*****************************************************************************/
 
