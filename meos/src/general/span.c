@@ -327,14 +327,14 @@ unquote(char *str)
 }
 
 /**
- * @ingroup libmeos_internal_setspan_inout
+ * @ingroup libmeos_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a span.
  */
 char *
-span_out(const Span *s, Datum maxdd)
+span_out(const Span *s, int maxdd)
 {
-  char *lower = unquote(basetype_output(s->basetype, s->lower, maxdd));
-  char *upper = unquote(basetype_output(s->basetype, s->upper, maxdd));
+  char *lower = unquote(basetype_output(s->lower, s->basetype, maxdd));
+  char *upper = unquote(basetype_output(s->upper, s->basetype, maxdd));
   char open = s->lower_inc ? (char) '[' : (char) '(';
   char close = s->upper_inc ? (char) ']' : (char) ')';
   char *result = palloc(strlen(lower) + strlen(upper) + 5);
@@ -351,7 +351,7 @@ span_out(const Span *s, Datum maxdd)
 char *
 floatspan_out(const Span *s, int maxdd)
 {
-  return span_out(s, Int32GetDatum(maxdd));
+  return span_out(s, maxdd);
 }
 
 /**
@@ -361,7 +361,7 @@ floatspan_out(const Span *s, int maxdd)
 char *
 intspan_out(const Span *s)
 {
-  return span_out(s, Int32GetDatum(0));
+  return span_out(s, 0);
 }
 
 /**
@@ -371,7 +371,7 @@ intspan_out(const Span *s)
 char *
 bigintspan_out(const Span *s)
 {
-  return span_out(s, Int64GetDatum(0));
+  return span_out(s, 0);
 }
 
 /**
@@ -381,7 +381,7 @@ bigintspan_out(const Span *s)
 char *
 period_out(const Span *s)
 {
-  return span_out(s, Int32GetDatum(0));
+  return span_out(s, 0);
 }
 #endif /* MEOS */
 
@@ -416,21 +416,6 @@ intspan_make(int lower, int upper, bool lower_inc, bool upper_inc)
   Span *s = palloc(sizeof(Span));
   span_set(Int32GetDatum(lower), Int32GetDatum(upper), lower_inc, upper_inc,
     T_INT4, s);
-  return s;
-}
-
-/**
- * @ingroup libmeos_setspan_constructor
- * @brief Construct an integer span from the bounds.
- * @sqlfunc intspan()
- */
-Span *
-bigintspan_make(int64 lower, int64 upper, bool lower_inc, bool upper_inc)
-{
-  /* Note: zero-fill is done in the span_set function */
-  Span *s = palloc(sizeof(Span));
-  span_set(Int64GetDatum(lower), Int64GetDatum(upper), lower_inc, upper_inc,
-    T_INT8, s);
   return s;
 }
 

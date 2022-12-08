@@ -51,17 +51,16 @@
  *****************************************************************************/
 
 /**
- * Output a geometry in Well-Known Text (WKT) format.
- *
- * @note The parameter type is not needed for temporal points
+ * @brief Output a geometry in Well-Known Text (WKT) format.
+ * @note The parameter `type` is not needed for temporal points
  */
 static char *
-wkt_out(mobdbType basetype __attribute__((unused)), Datum value, Datum maxdd)
+wkt_out(Datum value, mobdbType type __attribute__((unused)), int maxdd)
 {
   GSERIALIZED *gs = DatumGetGserializedP(value);
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   size_t len;
-  char *wkt = lwgeom_to_wkt(geom, WKT_ISO, DatumGetInt32(maxdd), &len);
+  char *wkt = lwgeom_to_wkt(geom, WKT_ISO, maxdd, &len);
   char *result = palloc(len);
   strcpy(result, wkt);
   lwgeom_free(geom);
@@ -72,15 +71,15 @@ wkt_out(mobdbType basetype __attribute__((unused)), Datum value, Datum maxdd)
 /**
  * @brief Output a geometry in Extended Well-Known Text (EWKT) format, that is,
  * in WKT format prefixed with the SRID.
- * @note The parameter basetype is not needed for temporal points
+ * @note The parameter `type` is not needed for temporal points
  */
 char *
-ewkt_out(mobdbType basetype __attribute__((unused)), Datum value, Datum maxdd)
+ewkt_out(Datum value, mobdbType type __attribute__((unused)), int maxdd)
 {
   GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value);
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   size_t len;
-  char *wkt = lwgeom_to_wkt(geom, WKT_EXTENDED, DatumGetInt32(maxdd), &len);
+  char *wkt = lwgeom_to_wkt(geom, WKT_EXTENDED, maxdd, &len);
   char *result = palloc(len);
   strcpy(result, wkt);
   lwgeom_free(geom);
@@ -99,14 +98,11 @@ tpoint_as_text(const Temporal *temp, int maxdd)
   char *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
-    result = tinstant_to_string((TInstant *) temp, Int32GetDatum(maxdd),
-      &wkt_out);
+    result = tinstant_to_string((TInstant *) temp, maxdd, &wkt_out);
   else if (temp->subtype == TSEQUENCE)
-    result = tsequence_to_string((TSequence *) temp, Int32GetDatum(maxdd),
-      false, &wkt_out);
+    result = tsequence_to_string((TSequence *) temp, maxdd, false, &wkt_out);
   else /* temp->subtype == TSEQUENCESET */
-    result = tsequenceset_to_string((TSequenceSet *) temp, Int32GetDatum(maxdd),
-      &wkt_out);
+    result = tsequenceset_to_string((TSequenceSet *) temp, maxdd, &wkt_out);
   return result;
 }
 
@@ -151,11 +147,10 @@ char **
 geoarr_as_text(const Datum *geoarr, int count, int maxdd, bool extended)
 {
   char **result = palloc(sizeof(char *) * count);
-  Datum d_maxdd = Int32GetDatum(maxdd);
   for (int i = 0; i < count; i++)
     /* The wkt_out and ewkt_out functions do not use the first argument */
     result[i] = extended ?
-      ewkt_out(0, geoarr[i], d_maxdd) : wkt_out(0, geoarr[i], d_maxdd);
+      ewkt_out(0, geoarr[i], maxdd) : wkt_out(0, geoarr[i], maxdd);
   return result;
 }
 

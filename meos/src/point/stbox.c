@@ -181,7 +181,7 @@ stbox_out(const STBox *box, int maxdd)
   char *boxtype = geodetic ? "GEODSTBOX" : "STBOX";
   if (hast)
     /* The second argument is not used for periods */
-    period = span_out(&box->period, Int32GetDatum(maxdd));
+    period = span_out(&box->period, maxdd);
 
   if (hasx && hast)
   {

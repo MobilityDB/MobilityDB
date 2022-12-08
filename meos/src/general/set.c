@@ -28,8 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief General functions for `timestampset` values composed of an ordered
- * list of distinct `timestamptz` values.
+ * @brief General functions for set values composed of an ordered list of
+ * distinct values.
  */
 
 #include "general/set.h"
@@ -133,6 +133,36 @@ orderedset_in(const char *str, mobdbType ostype)
  * @ingroup libmeos_setspan_inout
  * @brief Return a timestampset from its Well-Known Text (WKT) representation.
  */
+OrderedSet *
+intset_in(const char *str)
+{
+  return orderedset_parse(&str, T_INT4);
+}
+
+/**
+ * @ingroup libmeos_setspan_inout
+ * @brief Return a timestampset from its Well-Known Text (WKT) representation.
+ */
+OrderedSet *
+bigintset_in(const char *str)
+{
+  return orderedset_parse(&str, T_INT8);
+}
+
+/**
+ * @ingroup libmeos_setspan_inout
+ * @brief Return a timestampset from its Well-Known Text (WKT) representation.
+ */
+OrderedSet *
+floatset_in(const char *str)
+{
+  return orderedset_parse(&str, T_FLOAT4);
+}
+
+/**
+ * @ingroup libmeos_setspan_inout
+ * @brief Return a timestampset from its Well-Known Text (WKT) representation.
+ */
 TimestampSet *
 timestampset_in(const char *str)
 {
@@ -145,14 +175,14 @@ timestampset_in(const char *str)
  * @brief Return the Well-Known Text (WKT) representation of an ordered set.
  */
 char *
-orderedset_out(const OrderedSet *os, Datum maxdd)
+orderedset_out(const OrderedSet *os, int maxdd)
 {
   char **strings = palloc(sizeof(char *) * os->count);
   size_t outlen = 0;
   for (int i = 0; i < os->count; i++)
   {
     Datum d = orderedset_val_n(os, i);
-    strings[i] = basetype_output(os->span.basetype, d, maxdd);
+    strings[i] = basetype_output(d, os->span.basetype, maxdd);
     outlen += strlen(strings[i]) + 2;
   }
   return stringarr_to_string(strings, os->count, outlen, "", '{', '}');
@@ -540,18 +570,6 @@ floatset_num_values(const OrderedSet *os)
  * @pymeosfunc numTimestamps()
  */
 int
-intset_num_values(const OrderedSet *os)
-{
-  return os->count;
-}
-
-/**
- * @ingroup libmeos_setspan_accessor
- * @brief Return the number of timestamps of a timestamp set.
- * @sqlfunc numTimestamps()
- * @pymeosfunc numTimestamps()
- */
-int
 timestampset_num_timestamps(const TimestampSet *ts)
 {
   return ts->count;
@@ -657,7 +675,7 @@ floatset_end_value(const OrderedSet *os)
 TimestampTz
 timestampset_end_timestamp(const TimestampSet *ts)
 {
-  TimestampTz result = DatumGetTimestampTz(orderedset_val_n(ts, ts->count - 1)à;
+  TimestampTz result = DatumGetTimestampTz(orderedset_val_n(ts, ts->count - 1));
   return result;
 }
 

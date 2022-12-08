@@ -143,16 +143,6 @@ bigintspanset_in(const char *str)
 
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Return an integer span from its Well-Known Text (WKT) representation.
- */
-SpanSet *
-bigintspanset_in(const char *str)
-{
-  return spanset_parse(&str, T_BIGINTSPANSET);
-}
-
-/**
- * @ingroup libmeos_setspan_inout
  * @brief Return a float span from its Well-Known Text (WKT) representation.
  */
 SpanSet *
@@ -177,7 +167,7 @@ periodset_in(const char *str)
  * @brief Return the Well-Known Text (WKT) representation of a span set.
  */
 char *
-spanset_out(const SpanSet *ss, Datum maxdd)
+spanset_out(const SpanSet *ss, int maxdd)
 {
   char **strings = palloc(sizeof(char *) * ss->count);
   size_t outlen = 0;
@@ -200,16 +190,6 @@ char *
 intspanset_out(const SpanSet *ss)
 {
   return spanset_out(ss, Int32GetDatum(0));
-}
-
-/**
- * @ingroup libmeos_setspan_inout
- * @brief Return the Well-Known Text (WKT) representation of a span set.
- */
-char *
-bigintspanset_out(const SpanSet *ss)
-{
-  return spanset_out(ss, Int64GetDatum(0));
 }
 
 /**
@@ -384,7 +364,7 @@ value_to_spanset(Datum d, mobdbType basetype)
  * @brief Cast an element as a span set
  * @sqlop @p ::
  */
-Span *
+SpanSet *
 int_to_intspanset(int i)
 {
   return value_to_spanset(i, T_INT4);
@@ -395,7 +375,7 @@ int_to_intspanset(int i)
  * @brief Cast an element as a span set
  * @sqlop @p ::
  */
-Span *
+SpanSet *
 bigint_to_bigintspanset(int i)
 {
   return value_to_spanset(i, T_INT8);
@@ -406,10 +386,10 @@ bigint_to_bigintspanset(int i)
  * @brief Cast an element as a span set
  * @sqlop @p ::
  */
-Span *
+SpanSet *
 float_to_floaspanset(double d)
 {
-  return value_to_spanset(i, T_FLOAT8);
+  return value_to_spanset(d, T_FLOAT8);
 }
 #endif /* MEOS */
 

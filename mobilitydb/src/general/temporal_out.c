@@ -63,7 +63,7 @@ Temporal_as_text(PG_FUNCTION_ARGS)
   int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
     dbl_dig_for_wkt = PG_GETARG_INT32(1);
-  char *str = temporal_out(temp, Int32GetDatum(dbl_dig_for_wkt));
+  char *str = temporal_out(temp, dbl_dig_for_wkt);
   text *result = cstring2text(str);
   pfree(str);
   PG_FREE_IF_COPY(temp, 0);

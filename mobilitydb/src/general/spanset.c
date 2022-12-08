@@ -31,8 +31,6 @@
  * @brief General functions for set of disjoint spans.
  */
 
-// #include "general/spanset.h"
-
 /* C */
 #include <assert.h>
 /* PostgreSQL */

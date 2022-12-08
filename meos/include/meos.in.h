@@ -308,14 +308,17 @@ extern bool gserialized_same(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
 
 /* Input/output functions for set and span types */
 
+extern OrderedSet *bigintset_in(const char *str);
 extern Span *bigintspan_in(const char *str);
 extern char *bigintspan_out(const Span *s);
 extern SpanSet *bigintspanset_in(const char *str);
 extern char *bigintspanset_out(const SpanSet *ss);
+extern OrderedSet *floatset_in(const char *str);
 extern Span *floatspan_in(const char *str);
 extern char *floatspan_out(const Span *s, int maxdd);
 extern SpanSet *floatspanset_in(const char *str);
 extern char *floatspanset_out(const SpanSet *ss, int maxdd);
+extern OrderedSet *intset_in(const char *str);
 extern Span *intspan_in(const char *str);
 extern char *intspan_out(const Span *s);
 extern SpanSet *intspanset_in(const char *str);
@@ -323,7 +326,7 @@ extern char *intspanset_out(const SpanSet *ss);
 extern uint8_t *orderedset_as_wkb(const OrderedSet *os, uint8_t variant, size_t *size_out);
 extern OrderedSet *orderedset_from_hexwkb(const char *hexwkb);
 extern OrderedSet *orderedset_from_wkb(const uint8_t *wkb, int size);
-extern char *orderedset_out(const OrderedSet *os, Datum maxdd);
+extern char *orderedset_out(const OrderedSet *os, int maxdd);
 extern Period *period_in(const char *str);
 extern char *period_out(const Span *s);
 extern PeriodSet *periodset_in(const char *str);
@@ -331,10 +334,11 @@ extern char *periodset_out(const SpanSet *ss);
 extern uint8_t *span_as_wkb(const Span *s, uint8_t variant, size_t *size_out);
 extern Span *span_from_hexwkb(const char *hexwkb);
 extern Span *span_from_wkb(const uint8_t *wkb, int size);
+extern char *span_out(const Span *s, int maxdd);
 extern uint8_t *spanset_as_wkb(const SpanSet *ss, uint8_t variant, size_t *size_out);
 extern PeriodSet *spanset_from_hexwkb(const char *hexwkb);
 extern PeriodSet *spanset_from_wkb(const uint8_t *wkb, int size);
-extern char *spanset_out(const SpanSet *ss, Datum maxdd);
+extern char *spanset_out(const SpanSet *ss, int maxdd);
 extern TimestampSet *timestampset_in(const char *str);
 
 /*****************************************************************************/

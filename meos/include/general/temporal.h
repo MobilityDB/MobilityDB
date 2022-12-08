@@ -368,6 +368,9 @@ typedef struct
  * Miscellaneous
  *****************************************************************************/
 
+/* Definition of output function */
+typedef char *(*outfunc)(Datum value, mobdbType type, int maxdd);
+
 /* Definition of qsort comparator for integers */
 typedef int (*qsort_comparator) (const void *a, const void *b);
 

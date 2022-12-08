@@ -1023,7 +1023,7 @@ temporal_as_mfjson(const Temporal *temp, bool with_bbox, int flags,
  * temporal values
  */
 char **
-temporalarr_out(const Temporal **temparr, int count, Datum maxdd)
+temporalarr_out(const Temporal **temparr, int count, int maxdd)
 {
   char **result = palloc(sizeof(text *) * count);
   for (int i = 0; i < count; i++)

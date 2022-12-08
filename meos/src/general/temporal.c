@@ -614,7 +614,7 @@ tgeogpoint_in(const char *str)
  * @brief Return the Well-Known Text (WKT) representation of a temporal value.
  */
 char *
-temporal_out(const Temporal *temp, Datum maxdd)
+temporal_out(const Temporal *temp, int maxdd)
 {
   char *result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -636,7 +636,7 @@ temporal_out(const Temporal *temp, Datum maxdd)
 char *
 tbool_out(const Temporal *temp)
 {
-  return temporal_out(temp, Int32GetDatum(0));
+  return temporal_out(temp, 0);
 }
 
 /**
@@ -647,7 +647,7 @@ tbool_out(const Temporal *temp)
 char *
 tint_out(const Temporal *temp)
 {
-  return temporal_out(temp, Int32GetDatum(0));
+  return temporal_out(temp, 0);
 }
 
 /**
@@ -657,7 +657,7 @@ tint_out(const Temporal *temp)
 char *
 tfloat_out(const Temporal *temp, int maxdd)
 {
-  return temporal_out(temp, Int32GetDatum(maxdd));
+  return temporal_out(temp, maxdd);
 }
 
 /**
@@ -667,7 +667,7 @@ tfloat_out(const Temporal *temp, int maxdd)
 char *
 ttext_out(const Temporal *temp)
 {
-  return temporal_out(temp, Int32GetDatum(0));
+  return temporal_out(temp, 0);
 }
 
 /**
@@ -678,7 +678,7 @@ ttext_out(const Temporal *temp)
 char *
 tpoint_out(const Temporal *temp, int maxdd)
 {
-  return temporal_out(temp, Int32GetDatum(maxdd));
+  return temporal_out(temp, maxdd);
 }
 #endif /* MEOS */
 

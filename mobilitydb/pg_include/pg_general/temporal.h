@@ -49,7 +49,6 @@
 #include <c.h>
 #include <utils/palloc.h>
 #include <utils/elog.h>
-// #include <catalog/pg_type.h>
 #include <utils/array.h>
 #include <utils/lsyscache.h>
 #include <catalog/pg_type_d.h> /* for TIMESTAMPTZOID and similar */

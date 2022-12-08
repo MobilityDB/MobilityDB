@@ -37,11 +37,9 @@
 #include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
-// #include <utils/timestamp.h>
 /* MobilityDB */
 #include <meos.h>
 #include <meos_internal.h>
-// #include "general/periodset.h"
 #include "general/set.h"
 #include "general/temporal_util.h"
 

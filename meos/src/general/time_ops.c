@@ -1888,7 +1888,7 @@ double
 distance_timestampset_timestampset(const TimestampSet *ts1,
   const TimestampSet *ts2)
 {
-  return distance_span_span(&ts1->period, &ts2->period);
+  return distance_span_span(&ts1->span, &ts2->span);
 }
 
 /**

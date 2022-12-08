@@ -90,8 +90,8 @@ extern bool intersection_tinstant_tsequence(const TInstant *inst,
 
 /* Input/output functions */
 
-extern char *tsequence_to_string(const TSequence *seq, Datum arg,
-  bool component, char *(*value_out)(mobdbType, Datum, Datum));
+extern char *tsequence_to_string(const TSequence *seq, int maxdd,
+  bool component, outfunc value_out);
 
 /* Transformation functions */
 

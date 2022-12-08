@@ -38,7 +38,6 @@
 /* PostgreSQL */
 #include <postgres.h>
 /* MobilityDB */
-// #include <meos.h>
 #include "general/temporal_catalog.h"
 
 /*
@@ -46,7 +45,7 @@
  */
 
 /*****************************************************************************
- * Definitions taken from the file liblwgeom_internal.h 
+ * Definitions taken from the file liblwgeom_internal.h
  *****************************************************************************/
 
 /* Any (absolute) values outside this range will be printed in scientific

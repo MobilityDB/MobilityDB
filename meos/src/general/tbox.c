@@ -114,10 +114,10 @@ tbox_out(const TBox *box, int maxdd)
 
   /* Generate the strings for the span and/or the period */
   if (hasx)
-    span = span_out(&box->span, Int32GetDatum(maxdd));
+    span = span_out(&box->span, maxdd);
   if (hast)
     /* The second argument is not used for periods */
-    period = span_out(&box->period, Int32GetDatum(maxdd));
+    period = span_out(&box->period, maxdd);
 
   /* Print the box */
   if (hasx && hast)

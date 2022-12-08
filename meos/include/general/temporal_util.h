@@ -52,7 +52,7 @@ extern bytea *bstring2bytea(const uint8_t *wkb, size_t size);
 /* Input/output functions */
 
 extern Datum basetype_input(const char *str, mobdbType type, bool end);
-extern char *basetype_output(mobdbType type, Datum value, Datum arg);
+extern char *basetype_output(Datum value, mobdbType type, int maxdd);
 
 /* Array functions */
 

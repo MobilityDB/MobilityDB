@@ -36,7 +36,6 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-// #include <catalog/pg_type.h>
 /* PostgreSQL */
 #include "general/temporal.h"
 #include "npoint/tnpoint.h"

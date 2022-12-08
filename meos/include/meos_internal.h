@@ -37,7 +37,6 @@
 /* JSON-C */
 #include <json-c/json.h>
 /* PostgreSQL */
-// #include "postgres.h"
 /* MobilityDB */
 #include "general/temporal_catalog.h" /* For mobdbType */
 
@@ -55,11 +54,8 @@
 /* Input/output functions for set and span types */
 
 extern OrderedSet *orderedset_in(const char *str, mobdbType basetype);
-extern char *orderedset_out(const OrderedSet *os, Datum maxdd);
 extern Span *span_in(const char *str, mobdbType spantype);
-extern char *span_out(const Span *s, Datum maxdd);
 extern SpanSet *spanset_in(const char *str, mobdbType spantype);
-extern char *spanset_out(const SpanSet *ss, Datum maxdd);
 
 /*****************************************************************************/
 
@@ -292,8 +288,8 @@ extern char *tboolseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox);
 extern TSequenceSet *tboolseqset_from_mfjson(json_object *mfjson);
 extern TSequenceSet *tboolseqset_in(const char *str);
 extern Temporal *temporal_in(const char *str, mobdbType temptype);
-extern char *temporal_out(const Temporal *temp, Datum arg);
-extern char **temporalarr_out(const Temporal **temparr, int count, Datum arg);
+extern char *temporal_out(const Temporal *temp, int maxdd);
+extern char **temporalarr_out(const Temporal **temparr, int count, int maxdd);
 extern char *tfloatinst_as_mfjson(const TInstant *inst, bool with_bbox, int precision);
 extern TInstant *tfloatinst_from_mfjson(json_object *mfjson);
 extern TInstant *tfloatinst_in(const char *str);
@@ -324,7 +320,7 @@ extern TSequenceSet *tgeompointseqset_in(const char *str);
 extern char *tinstant_as_mfjson(const TInstant *inst, int precision, bool with_bbox, char *srs);
 extern TInstant *tinstant_from_mfjson(json_object *mfjson, bool isgeo, int srid, mobdbType temptype);
 extern TInstant *tinstant_in(const char *str, mobdbType temptype);
-extern char *tinstant_out(const TInstant *inst, Datum arg);
+extern char *tinstant_out(const TInstant *inst, int maxdd);
 extern TSequence *tdiscseq_in(const char *str, mobdbType temptype);
 extern char *tintinst_as_mfjson(const TInstant *inst, bool with_bbox);
 extern TInstant *tintinst_from_mfjson(json_object *mfjson);
@@ -339,11 +335,11 @@ extern char **tpointarr_as_text(const Temporal **temparr, int count, int maxdd, 
 extern char *tsequence_as_mfjson(const TSequence *seq, int precision, bool with_bbox, char *srs);
 extern TSequence *tsequence_from_mfjson(json_object *mfjson, bool isgeo, int srid, mobdbType temptype, interpType interp);
 extern TSequence *tsequence_in(const char *str, mobdbType temptype, interpType interp);
-extern char *tsequence_out(const TSequence *seq, Datum arg);
+extern char *tsequence_out(const TSequence *seq, int maxdd);
 extern char *tsequenceset_as_mfjson(const TSequenceSet *ss, int precision, bool with_bbox, char *srs);
 extern TSequenceSet *tsequenceset_from_mfjson(json_object *mfjson, bool isgeo, int srid, mobdbType temptype, interpType interp);
 extern TSequenceSet *tsequenceset_in(const char *str, mobdbType temptype, interpType interp);
-extern char *tsequenceset_out(const TSequenceSet *ss, Datum arg);
+extern char *tsequenceset_out(const TSequenceSet *ss, int maxdd);
 extern char *ttextinst_as_mfjson(const TInstant *inst, bool with_bbox);
 extern TInstant *ttextinst_from_mfjson(json_object *mfjson);
 extern TInstant *ttextinst_in(const char *str);

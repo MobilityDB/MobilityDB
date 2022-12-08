@@ -41,10 +41,6 @@
 #include <catalog/pg_type.h>
 /* PostGIS */
 #include <liblwgeom.h>
-/* MobilityDB */
-// #include "general/temporal.h"
-// #include "general/temporal_util.h"
-// #include "point/stbox.h"
 
 /*****************************************************************************/
 

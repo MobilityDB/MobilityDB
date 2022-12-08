@@ -1626,8 +1626,8 @@ tgeogpointseq_in(const char *str, interpType interp __attribute__((unused)))
  * @param[in] value_out Function called to output the base value
  */
 char *
-tsequence_to_string(const TSequence *seq, Datum maxdd, bool component,
-  char *(*value_out)(mobdbType, Datum, Datum))
+tsequence_to_string(const TSequence *seq, int maxdd, bool component,
+  outfunc value_out)
 {
   char **strings = palloc(sizeof(char *) * seq->count);
   size_t outlen = 0;
@@ -1664,7 +1664,7 @@ tsequence_to_string(const TSequence *seq, Datum maxdd, bool component,
  * @brief Return the Well-Known Text (WKT) representation of a temporal sequence.
  */
 char *
-tsequence_out(const TSequence *seq, Datum maxdd)
+tsequence_out(const TSequence *seq, int maxdd)
 {
   return tsequence_to_string(seq, maxdd, false, &basetype_output);
 }
