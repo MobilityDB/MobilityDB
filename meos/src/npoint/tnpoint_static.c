@@ -119,7 +119,7 @@ npointarr_geom(Npoint **points, int count)
     result = geo_serialize(lwgeom);
     pfree(newgeoms);
   }
-  pfree_array((void **) geoms, count);  
+  pfree_array((void **) geoms, count);
   return result;
 }
 
@@ -515,7 +515,7 @@ route_geom(int64 rid)
 int64
 rid_from_geom(Datum geom)
 {
-  char *geomstr = ewkt_out(0, geom, OUT_DEFAULT_DECIMAL_DIGITS);
+  char *geomstr = ewkt_out(geom, 0, OUT_DEFAULT_DECIMAL_DIGITS);
   char sql[128];
   sprintf(sql, "SELECT gid FROM public.ways WHERE ST_DWithin(the_geom, '%s', %lf) "
     "ORDER BY ST_Distance(the_geom, '%s') LIMIT 1", geomstr, DIST_EPSILON, geomstr);
@@ -563,7 +563,7 @@ geom_npoint(const GSERIALIZED *gs)
   int32_t srid_ways = get_srid_ways();
   ensure_same_srid(srid_geom, srid_ways);
 
-  char *geomstr = ewkt_out(0, PointerGetDatum(gs), OUT_DEFAULT_DECIMAL_DIGITS);
+  char *geomstr = ewkt_out(PointerGetDatum(gs), 0, OUT_DEFAULT_DECIMAL_DIGITS);
   char sql[512];
   sprintf(sql, "SELECT npoint(gid, ST_LineLocatePoint(the_geom, '%s')) "
     "FROM public.ways WHERE ST_DWithin(the_geom, '%s', %lf) "
