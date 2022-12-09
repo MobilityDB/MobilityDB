@@ -2470,31 +2470,31 @@ CREATE OPERATOR <-> (
 
 CREATE FUNCTION time_distance(timestamptz, periodset)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_timestamp_periodset'
+  AS 'MODULE_PATHNAME', 'Distance_value_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_distance(timestampset, periodset)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_timestampset_periodset'
+  AS 'MODULE_PATHNAME', 'Distance_orderedset_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_distance(period, periodset)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_period_periodset'
+  AS 'MODULE_PATHNAME', 'Distance_span_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_distance(periodset, timestamptz)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_periodset_timestamp'
+  AS 'MODULE_PATHNAME', 'Distance_spanset_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_distance(periodset, timestampset)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_periodset_timestampset'
+  AS 'MODULE_PATHNAME', 'Distance_spanset_orderedset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_distance(periodset, period)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_periodset_period'
+  AS 'MODULE_PATHNAME', 'Distance_spanset_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_distance(periodset, periodset)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_periodset_periodset'
+  AS 'MODULE_PATHNAME', 'Distance_spanset_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <-> (

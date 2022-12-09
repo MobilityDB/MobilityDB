@@ -1169,11 +1169,11 @@ CREATE FUNCTION set_distance(float, floatset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_distance(timestamptz, timestamptz)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_timestamp_timestamp'
+  AS 'MODULE_PATHNAME', 'Distance_value_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_distance(timestamptz, timestampset)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_timestamp_timestampset'
+  AS 'MODULE_PATHNAME', 'Distance_value_orderedset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <-> (
@@ -1243,11 +1243,11 @@ CREATE FUNCTION set_distance(floatset, floatset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_distance(timestampset, timestamptz)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_timestampset_timestamp'
+  AS 'MODULE_PATHNAME', 'Distance_orderedset_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_distance(timestampset, timestampset)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_timestampset_timestampset'
+  AS 'MODULE_PATHNAME', 'Distance_orderedset_orderedset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <-> (

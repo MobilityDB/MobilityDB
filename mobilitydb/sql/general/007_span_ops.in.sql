@@ -1587,27 +1587,27 @@ CREATE OPERATOR <-> (
 
 CREATE FUNCTION time_distance(timestamptz, timestamptz)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_timestamp_timestamp'
+  AS 'MODULE_PATHNAME', 'Distance_value_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_distance(timestamptz, period)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_timestamp_period'
+  AS 'MODULE_PATHNAME', 'Distance_value_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_distance(timestampset, period)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_timestampset_period'
+  AS 'MODULE_PATHNAME', 'Distance_orderedset_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_distance(period, timestamptz)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_period_timestamp'
+  AS 'MODULE_PATHNAME', 'Distance_span_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_distance(period, timestampset)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_period_timestampset'
+  AS 'MODULE_PATHNAME', 'Distance_span_orderedset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_distance(period, period)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_period_period'
+  AS 'MODULE_PATHNAME', 'Distance_span_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <-> (

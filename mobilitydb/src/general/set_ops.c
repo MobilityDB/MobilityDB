@@ -637,7 +637,7 @@ Distance_value_orderedset(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
   Datum os = PG_GETARG_DATUM(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   Span s;
   orderedset_span_slice(os, &s);
   double result = distance_span_value(&s, d, basetype);

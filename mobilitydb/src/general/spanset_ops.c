@@ -1536,7 +1536,7 @@ Distance_spanset_spanset(PG_FUNCTION_ARGS)
   SpanSet *ss2 = PG_GETARG_SPANSET_P(1);
   double result = distance_spanset_spanset(ss1, ss2);
   PG_FREE_IF_COPY(ss1, 0);
-  PG_FREE_IF_COPY(ss2, 0);
+  PG_FREE_IF_COPY(ss2, 1);
   PG_RETURN_FLOAT8(result);
 }
 
