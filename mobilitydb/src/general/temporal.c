@@ -84,6 +84,21 @@ _PG_init(void)
 }
 
 /*****************************************************************************
+ * Miscellaneous
+ *****************************************************************************/
+
+/**
+ * @brief Return the size in bytes to read from toast to get the basic
+ * information from a variable-length time type: Time struct (i.e., OrderedSet
+ * or PeriodSet) and bounding box size
+*/
+uint32_t
+time_max_header_size(void)
+{
+  return double_pad(Max(sizeof(OrderedSet), sizeof(PeriodSet)));
+}
+
+/*****************************************************************************
  * PostgreSQL cache functions
  *****************************************************************************/
 

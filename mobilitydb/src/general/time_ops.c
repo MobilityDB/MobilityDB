@@ -31,30 +31,15 @@
  * @brief Operators for time types.
  */
 
-#include "general/time_ops.h"
-
 /* PostgreSQL */
+#include <postgres.h>
 #include <utils/timestamp.h>
 /* MobilityDB */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/periodset.h"
 #include "general/set.h"
 #include "general/spanset.h"
 #include "general/temporal_util.h"
-
-/*****************************************************************************/
-
-/**
- * @brief Return the size in bytes to read from toast to get the basic information
- * from a variable-length time type: Time struct (i.e., OrderedSet
- * or PeriodSet) and bounding box size
-*/
-uint32_t
-time_max_header_size(void)
-{
-  return double_pad(Max(sizeof(OrderedSet), sizeof(PeriodSet)));
-}
 
 /******************************************************************************
  * Distance functions returning a double representing the number of seconds
@@ -70,9 +55,9 @@ PG_FUNCTION_INFO_V1(Distance_timestamp_timestamp);
 PGDLLEXPORT Datum
 Distance_timestamp_timestamp(PG_FUNCTION_ARGS)
 {
-  TimestampTz t1 = PG_GETARG_TIMESTAMPTZ(0);
-  TimestampTz t2 = PG_GETARG_TIMESTAMPTZ(1);
-  double result = distance_timestamp_timestamp(t1, t2);
+  Datum t1 = PG_GETARG_DATUM(0);
+  Datum t2 = PG_GETARG_DATUM(1);
+  double result = distance_value_value(t1, t2, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
   PG_RETURN_FLOAT8(result);
 }
 
@@ -86,11 +71,11 @@ PG_FUNCTION_INFO_V1(Distance_timestamp_timestampset);
 PGDLLEXPORT Datum
 Distance_timestamp_timestampset(PG_FUNCTION_ARGS)
 {
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
+  Datum t = PG_GETARG_DATUM(0);
   Datum ts = PG_GETARG_DATUM(1);
   Period p;
   orderedset_span_slice(ts, &p);
-  double result = distance_period_timestamp(&p, t);
+  double result = distance_span_value(&p, t, T_TIMESTAMPTZ);
   PG_RETURN_FLOAT8(result);
 }
 
@@ -104,9 +89,9 @@ PG_FUNCTION_INFO_V1(Distance_timestamp_period);
 PGDLLEXPORT Datum
 Distance_timestamp_period(PG_FUNCTION_ARGS)
 {
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
+  TimestampTz t = PG_GETARG_DATUM(0);
   Period *p = PG_GETARG_SPAN_P(1);
-  double result = distance_period_timestamp(p, t);
+  double result = distance_span_value(p, t, T_TIMESTAMPTZ);
   PG_RETURN_FLOAT8(result);
 }
 
@@ -120,11 +105,11 @@ PG_FUNCTION_INFO_V1(Distance_timestamp_periodset);
 PGDLLEXPORT Datum
 Distance_timestamp_periodset(PG_FUNCTION_ARGS)
 {
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
+  Datum t = PG_GETARG_DATUM(0);
   Datum ps = PG_GETARG_DATUM(1);
   Period p;
   spanset_span_slice(ps, &p);
-  double result = distance_period_timestamp(&p, t);
+  double result = distance_span_value(&p, t, T_TIMESTAMPTZ);
   PG_RETURN_FLOAT8(result);
 }
 
@@ -139,10 +124,10 @@ PGDLLEXPORT Datum
 Distance_timestampset_timestamp(PG_FUNCTION_ARGS)
 {
   Datum ts = PG_GETARG_DATUM(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
+  Datum t = PG_GETARG_DATUM(1);
   Period p;
   orderedset_span_slice(ts, &p);
-  double result = distance_period_timestamp(&p, t);
+  double result = distance_span_value(&p, t, T_TIMESTAMPTZ);
   PG_RETURN_FLOAT8(result);
 }
 
@@ -213,8 +198,8 @@ PGDLLEXPORT Datum
 Distance_period_timestamp(PG_FUNCTION_ARGS)
 {
   Period *p = PG_GETARG_SPAN_P(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  double result = distance_period_timestamp(p, t);
+  Datum t = PG_GETARG_DATUM(1);
+  double result = distance_span_value(p, t, T_TIMESTAMPTZ);
   PG_RETURN_FLOAT8(result);
 }
 
@@ -281,10 +266,10 @@ PGDLLEXPORT Datum
 Distance_periodset_timestamp(PG_FUNCTION_ARGS)
 {
   Datum ps = PG_GETARG_DATUM(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
+  Datum t = PG_GETARG_DATUM(1);
   Period p;
   spanset_span_slice(ps, &p);
-  double result = distance_period_timestamp(&p, t);
+  double result = distance_span_value(&p, t, T_TIMESTAMPTZ);
   PG_RETURN_FLOAT8(result);
 }
 

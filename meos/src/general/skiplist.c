@@ -52,7 +52,6 @@
 #include "general/span.h"
 #include "general/temporal_aggfuncs.h"
 #include "general/time_aggfuncs.h"
-#include "general/time_ops.h"
 
 #if ! MEOS
   extern FunctionCallInfo fetch_fcinfo();

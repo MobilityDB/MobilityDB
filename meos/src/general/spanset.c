@@ -44,7 +44,6 @@
 #include "general/pg_call.h"
 #include "general/span.h"
 #include "general/temporal_util.h"
-#include "general/time_ops.h"
 #include "general/temporal_parser.h"
 
 /*****************************************************************************

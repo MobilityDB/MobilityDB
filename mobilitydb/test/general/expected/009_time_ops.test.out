@@ -1855,7 +1855,7 @@ SELECT timestamptz '2000-01-01' <-> period '[2000-01-01, 2000-01-03]';
 SELECT timestamptz '2000-01-01' <-> period '(2000-01-01, 2000-01-03]';
  ?column? 
 ----------
-  -172800
+        0
 (1 row)
 
 SELECT timestamptz '2000-01-02' <-> period '[2000-01-01, 2000-01-03]';

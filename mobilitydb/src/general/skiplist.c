@@ -49,7 +49,6 @@
 #include "general/pg_call.h"
 #include "general/span.h"
 #include "general/temporal_aggfuncs.h"
-#include "general/time_ops.h"
 /* MobilityDB */
 #include "pg_general/span.h"
 #include "pg_general/temporal.h"

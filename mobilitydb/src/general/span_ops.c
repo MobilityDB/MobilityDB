@@ -609,7 +609,7 @@ Union_value_span(PG_FUNCTION_ARGS)
   Datum d = PG_GETARG_DATUM(0);
   Span *s = PG_GETARG_SPAN_P(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  SpanSet *result = union_value_span(d, basetype, s);
+  SpanSet *result = union_span_value(s, d, basetype);
   PG_RETURN_POINTER(result);
 }
 
@@ -625,7 +625,7 @@ Union_orderedset_span(PG_FUNCTION_ARGS)
 {
   OrderedSet *os = PG_GETARG_ORDEREDSET_P(0);
   Span *s = PG_GETARG_SPAN_P(1);
-  SpanSet *result = union_orderedset_span(os, s);
+  SpanSet *result = union_span_orderedset(s, os);
   PG_FREE_IF_COPY(os, 0);
   PG_RETURN_POINTER(result);
 }
@@ -643,7 +643,7 @@ Union_span_value(PG_FUNCTION_ARGS)
   Span *s = PG_GETARG_SPAN_P(0);
   Datum d = PG_GETARG_DATUM(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  SpanSet *result = union_value_span(d, basetype, s);
+  SpanSet *result = union_span_value(s, d, basetype);
   PG_RETURN_POINTER(result);
 }
 
@@ -697,7 +697,7 @@ Intersection_value_span(PG_FUNCTION_ARGS)
   Span *s = PG_GETARG_SPAN_P(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   Datum result;
-  bool found = intersection_value_span(d, basetype, s, &result);
+  bool found = intersection_span_value(s, d, basetype, &result);
   if (! found)
     PG_RETURN_NULL();
   PG_RETURN_DATUM(result);
@@ -715,7 +715,7 @@ Intersection_orderedset_span(PG_FUNCTION_ARGS)
 {
   OrderedSet *os = PG_GETARG_ORDEREDSET_P(0);
   Span *s = PG_GETARG_SPAN_P(1);
-  TimestampSet *result = intersection_orderedset_span(os, s);
+  TimestampSet *result = intersection_span_orderedset(s, os);
   PG_FREE_IF_COPY(os, 0);
   if (! result)
     PG_RETURN_NULL();
@@ -736,7 +736,7 @@ Intersection_span_value(PG_FUNCTION_ARGS)
   Datum d = PG_GETARG_DATUM(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   Datum result;
-  bool found = intersection_value_span(d, basetype, s, &result);
+  bool found = intersection_span_value(s, d, basetype, &result);
   if (! found)
     PG_RETURN_NULL();
   PG_RETURN_DATUM(result);

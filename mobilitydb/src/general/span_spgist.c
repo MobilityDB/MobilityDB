@@ -43,7 +43,6 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/periodset.h"
 #include "general/set.h"
 #include "general/spanset.h"
 #include "general/temporal.h"

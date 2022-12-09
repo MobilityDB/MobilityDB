@@ -38,7 +38,6 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/periodset.h"
 #include "general/set.h"
 #include "general/spanset.h"
 #include "general/temporal_util.h"
@@ -406,7 +405,7 @@ Union_value_orderedset(PG_FUNCTION_ARGS)
   Datum d = PG_GETARG_DATUM(0);
   OrderedSet *os = PG_GETARG_ORDEREDSET_P(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  OrderedSet *result = union_value_orderedset(d, basetype, os);
+  OrderedSet *result = union_orderedset_value(os, d, basetype);
   PG_FREE_IF_COPY(os, 1);
   PG_RETURN_POINTER(result);
 }
@@ -487,7 +486,7 @@ Intersection_value_orderedset(PG_FUNCTION_ARGS)
   OrderedSet *os = PG_GETARG_ORDEREDSET_P(1);
   Datum result;
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  bool found = intersection_value_orderedset(d, basetype, os, &result);
+  bool found = intersection_orderedset_value(os, d, basetype, &result);
   PG_FREE_IF_COPY(os, 1);
   if (! found)
     PG_RETURN_NULL();

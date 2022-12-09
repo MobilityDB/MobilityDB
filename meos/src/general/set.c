@@ -43,7 +43,6 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/pg_call.h"
-#include "general/time_ops.h"
 #include "general/temporal_parser.h"
 #include "general/temporal_util.h"
 

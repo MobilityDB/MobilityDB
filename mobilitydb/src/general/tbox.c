@@ -40,9 +40,9 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/temporal.h"
 #include "general/temporal_out.h"
 #include "general/temporal_util.h"
-#include "general/time_ops.h"
 #include "general/tnumber_mathfuncs.h"
 /* MobilityDB */
 #include "pg_general/temporal.h"

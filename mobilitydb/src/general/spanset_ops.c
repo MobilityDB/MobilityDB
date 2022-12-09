@@ -31,14 +31,12 @@
  * @brief Operators for time types.
  */
 
-#include "general/time_ops.h"
-
 /* PostgreSQL */
+#include <postgres.h>
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/periodset.h"
 #include "general/set.h"
 #include "general/spanset.h"
 #include "general/temporal_util.h"
@@ -1012,7 +1010,7 @@ Union_value_spanset(PG_FUNCTION_ARGS)
   Datum d = PG_GETARG_DATUM(0);
   SpanSet *ss = PG_GETARG_SPANSET_P(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  PeriodSet *result = union_value_spanset(d, basetype, ss);
+  PeriodSet *result = union_spanset_value(ss, d, basetype);
   PG_FREE_IF_COPY(ss, 1);
   PG_RETURN_POINTER(result);
 }
@@ -1029,7 +1027,7 @@ Union_orderedset_spanset(PG_FUNCTION_ARGS)
 {
   OrderedSet *os = PG_GETARG_ORDEREDSET_P(0);
   SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  SpanSet *result = union_orderedset_spanset(os, ss);
+  SpanSet *result = union_spanset_orderedset(ss, os);
   PG_FREE_IF_COPY(os, 0);
   PG_FREE_IF_COPY(ss, 1);
   PG_RETURN_POINTER(result);
@@ -1047,7 +1045,7 @@ Union_span_spanset(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  SpanSet *result = union_span_spanset(s, ss);
+  SpanSet *result = union_spanset_span(ss, s);
   PG_FREE_IF_COPY(ss, 1);
   PG_RETURN_POINTER(result);
 }
@@ -1141,7 +1139,7 @@ Intersection_value_spanset(PG_FUNCTION_ARGS)
   SpanSet *ss = PG_GETARG_SPANSET_P(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   Datum result;
-  bool found = intersection_value_spanset(d, basetype, ss, &result);
+  bool found = intersection_spanset_value(ss, d, basetype, &result);
   PG_FREE_IF_COPY(ss, 1);
   if (! found)
     PG_RETURN_NULL();
@@ -1160,7 +1158,7 @@ Intersection_orderedset_spanset(PG_FUNCTION_ARGS)
 {
   OrderedSet *os = PG_GETARG_ORDEREDSET_P(0);
   SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  OrderedSet *result = intersection_orderedset_spanset(os, ss);
+  OrderedSet *result = intersection_spanset_orderedset(ss, os);
   PG_FREE_IF_COPY(os, 0);
   PG_FREE_IF_COPY(ss, 1);
   if (! result)
@@ -1180,7 +1178,7 @@ Intersection_span_spanset(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  SpanSet *result = intersection_span_spanset(s, ss);
+  SpanSet *result = intersection_spanset_span(ss, s);
   PG_FREE_IF_COPY(ss, 1);
   if (! result)
     PG_RETURN_NULL();

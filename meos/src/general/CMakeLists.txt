@@ -29,7 +29,6 @@ add_library(general OBJECT
   temporal_tile.c
   temporal_util.c
   time_aggfuncs.c
-  time_ops.c
   tinstant.c
   tnumber_distance.c
   tnumber_mathfuncs.c
