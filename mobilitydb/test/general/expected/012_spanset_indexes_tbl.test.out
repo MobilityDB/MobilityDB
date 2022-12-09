@@ -187,7 +187,7 @@ SELECT COUNT(*) FROM tbl_floatspanset WHERE ss &< floatspan '[15, 25]';
 SELECT COUNT(*) FROM tbl_floatspanset WHERE ss >> floatspan '[85, 95]';
  count 
 -------
-    13
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_floatspanset WHERE ss &> floatspan '[85, 95]';
@@ -389,7 +389,7 @@ SELECT COUNT(*) FROM tbl_floatspanset WHERE ss &< floatspan '[15, 25]';
 SELECT COUNT(*) FROM tbl_floatspanset WHERE ss >> floatspan '[85, 95]';
  count 
 -------
-    13
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_floatspanset WHERE ss &> floatspan '[85, 95]';

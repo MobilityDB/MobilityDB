@@ -335,7 +335,7 @@ SELECT COUNT(*) FROM tbl_periodset_big WHERE ps &<# period '[2001-01-01, 2001-02
 SELECT COUNT(*) FROM tbl_periodset_big WHERE ps #>> period '[2001-01-01, 2001-02-01]';
  count 
 -------
- 10849
+ 10848
 (1 row)
 
 SELECT COUNT(*) FROM tbl_periodset_big WHERE ps #&> period '[2001-01-01, 2001-02-01]';

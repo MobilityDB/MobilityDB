@@ -400,9 +400,9 @@ skiplist_make(void **values, int count, SkipListElemType elemtype)
 static RelativeTimePos
 pos_period_timestamp(const Period *p, TimestampTz t)
 {
-  if (before_period_timestamp(p, t))
+  if (left_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ))
     return BEFORE;
-  if (after_period_timestamp(p, t))
+  if (right_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ))
     return AFTER;
   return DURING;
 }

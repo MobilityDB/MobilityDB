@@ -200,7 +200,7 @@ Adjacent_orderedset_span(PG_FUNCTION_ARGS)
 {
   OrderedSet *os = PG_GETARG_ORDEREDSET_P(0);
   Span *s = PG_GETARG_SPAN_P(1);
-  bool result = adjacent_orderedset_span(os, s);
+  bool result = adjacent_span_orderedset(s, os);
   PG_FREE_IF_COPY(os, 0);
   PG_RETURN_BOOL(result);
 }

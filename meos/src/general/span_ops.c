@@ -339,27 +339,6 @@ overlaps_span_span(const Span *s1, const Span *s2)
  * @brief Return true if a span and a value are adjacent
  */
 bool
-adjacent_value_span(Datum d, mobdbType basetype, const Span *s)
-{
-  return adjacent_span_value(s, d, basetype);
-}
-
-/**
- * @ingroup libmeos_setspan_topo
- * @brief Return true if a timestamp and a period are adjacent.
- * @sqlop @p -|-
- */
-bool
-adjacent_timestamp_period(TimestampTz t, const Period *p)
-{
-  return adjacent_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
-}
-
-/**
- * @ingroup libmeos_internal_setspan_topo
- * @brief Return true if a span and a value are adjacent
- */
-bool
 adjacent_span_value(const Span *s, Datum d, mobdbType basetype)
 {
   /*
@@ -403,11 +382,10 @@ adjacent_floatspan_float(const Span *s, double d)
 {
   return adjacent_span_value(s, Float8GetDatum(d), T_FLOAT8);
 }
-#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if a period and a timestamp are adjacent
+ * @brief Return true if a float span and a float are adjacent
  * @sqlop @p -|-
  */
 bool
@@ -415,35 +393,7 @@ adjacent_period_timestamp(const Period *p, TimestampTz t)
 {
   return adjacent_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
-
-/**
- * @ingroup libmeos_setspan_topo
- * @brief Return true if an ordered set and a span are adjacent.
- * @sqlop @p -|-
- */
-bool
-adjacent_orderedset_span(const OrderedSet *os, const Span *s)
-{
-  /*
-   * A span set A..B and a span C are adjacent if and only if
-   * B is adjacent to C, or C is adjacent to A.
-   */
-  Datum d1 = orderedset_val_n(os, 0);
-  Datum d2 = orderedset_val_n(os, os->count - 1);
-  return (datum_eq(d2, s->lower, os->span.basetype) && ! s->lower_inc) ||
-         (datum_eq(s->upper, d1, os->span.basetype) && ! s->upper_inc);
-}
-
-/**
- * @ingroup libmeos_setspan_topo
- * @brief Return true if a timestamp set and a period are adjacent.
- * @sqlop @p -|-
- */
-bool
-adjacent_timestampset_period(const TimestampSet *ts, const Period *p)
-{
-  return adjacent_orderedset_span(ts, p);
-}
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_topo
@@ -453,18 +403,14 @@ adjacent_timestampset_period(const TimestampSet *ts, const Period *p)
 bool
 adjacent_span_orderedset(const Span *s, const OrderedSet *os)
 {
-  return adjacent_orderedset_span(os, s);
-}
-
-/**
- * @ingroup libmeos_setspan_topo
- * @brief Return true if a period and a timestamp set are adjacent
- * @sqlop @p -|-
- */
-bool
-adjacent_period_timestampset(const Period *p, const TimestampSet *ts)
-{
-  return adjacent_orderedset_span(ts, p);
+  /*
+   * A span set A..B and a span C are adjacent if and only if
+   * B is adjacent to C, or C is adjacent to A.
+   */
+  Datum d1 = orderedset_val_n(os, 0);
+  Datum d2 = orderedset_val_n(os, os->count - 1);
+  return (datum_eq(d2, s->lower, os->span.basetype) && ! s->lower_inc) ||
+         (datum_eq(s->upper, d1, os->span.basetype) && ! s->upper_inc);
 }
 
 /**
@@ -535,18 +481,18 @@ left_float_floatspan(double d, const Span *s)
 {
   return left_value_span(Float8GetDatum(d), T_FLOAT8, s);
 }
-#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a timestamp is strictly before a period.
- * @sqlop @p <<#
+ * @sqlop @p <<
  */
 bool
 before_timestamp_period(TimestampTz t, const Period *p)
 {
   return left_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p);
 }
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_internal_setspan_pos
@@ -593,18 +539,18 @@ left_floatspan_float(const Span *s, double d)
 {
   return left_span_value(s, Float8GetDatum(d), T_FLOAT8);
 }
-#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a period is strictly before a timestamp.
- * @sqlop @p <<#
+ * @brief Return true if a float is strictly to the left of a float span.
+ * @sqlop @p <<
  */
 bool
 before_period_timestamp(const Period *p, TimestampTz t)
 {
   return left_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_pos
@@ -620,17 +566,6 @@ left_orderedset_span(const OrderedSet *os, const Span *s)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a timestamp set is strictly before a period.
- * @sqlop @p <<#
- */
-bool
-before_timestampset_period(const TimestampSet *ts, const Period *p)
-{
-  return left_orderedset_span(ts, p);
-}
-
-/**
- * @ingroup libmeos_setspan_pos
  * @brief Return true if a span is strictly to the left of an ordered set
  * @sqlop @p <<#
  */
@@ -639,17 +574,6 @@ left_span_orderedset(const Span *s, const OrderedSet *os)
 {
   Datum v = orderedset_val_n(os, 0);
   return left_span_value(s, v, os->span.basetype);
-}
-
-/**
- * @ingroup libmeos_setspan_pos
- * @brief Return true if a period is strictly before a timestamp set
- * @sqlop @p <<#
- */
-bool
-before_period_timestampset(const Period *p, const TimestampSet *ts)
-{
-  return left_span_orderedset(p, ts);
 }
 
 /**
@@ -676,8 +600,7 @@ left_span_span(const Span *s1, const Span *s2)
 bool
 right_value_span(Datum d, mobdbType basetype, const Span *s)
 {
-  int cmp = datum_cmp2(d, s->upper, basetype, s->basetype);
-  return (cmp > 0 || (cmp == 0 && ! s->upper_inc));
+  return left_span_value(s, d, basetype);
 }
 
 #if MEOS
@@ -689,7 +612,7 @@ right_value_span(Datum d, mobdbType basetype, const Span *s)
 bool
 right_int_intspan(int i, const Span *s)
 {
-  return right_value_span(Int32GetDatum(i), T_INT4, s);
+  return left_intspan_int(s, i);
 }
 
 /**
@@ -700,7 +623,7 @@ right_int_intspan(int i, const Span *s)
 bool
 right_bigint_bigintspan(int64 i, const Span *s)
 {
-  return right_value_span(Int64GetDatum(i), T_INT8, s);
+  return left_bigintspan_bigint(s, i);
 }
 
 /**
@@ -711,20 +634,20 @@ right_bigint_bigintspan(int64 i, const Span *s)
 bool
 right_float_floatspan(double d, const Span *s)
 {
-  return right_value_span(Float8GetDatum(d), T_FLOAT8, s);
+  return left_floatspan_float(s, d);
 }
-#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a timestamp is strictly after a period.
+ * @brief Return true if a timestamp is strictly before a period.
  * @sqlop @p #>>
  */
 bool
 after_timestamp_period(TimestampTz t, const Period *p)
 {
-  return right_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p);
+  return before_period_timestamp(p, t);
 }
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_pos
@@ -734,19 +657,7 @@ after_timestamp_period(TimestampTz t, const Period *p)
 bool
 right_orderedset_span(const OrderedSet *os, const Span *s)
 {
-  Datum v = orderedset_val_n(os, 0);
-  return right_value_span(v, os->span.basetype, s);
-}
-
-/**
- * @ingroup libmeos_setspan_pos
- * @brief Return true if a timestamp set is strictly after a period.
- * @sqlop @p #>>
- */
-bool
-after_timestampset_period(const TimestampSet *ts, const Period *p)
-{
-  return right_orderedset_span(ts, p);
+  return left_span_orderedset(s, os);
 }
 
 /**
@@ -756,8 +667,7 @@ after_timestampset_period(const TimestampSet *ts, const Period *p)
 bool
 right_span_value(const Span *s, Datum d, mobdbType basetype)
 {
-  int cmp = datum_cmp2(d, s->lower, basetype, s->basetype);
-  return (cmp < 0 || (cmp == 0 && ! s->lower_inc));
+  return left_value_span(d, basetype, s);
 }
 
 #if MEOS
@@ -769,7 +679,7 @@ right_span_value(const Span *s, Datum d, mobdbType basetype)
 bool
 right_intspan_int(const Span *s, int i)
 {
-  return right_span_value(s, Int32GetDatum(i), T_INT4);
+  return left_int_intspan(i, s);
 }
 
 /**
@@ -780,31 +690,31 @@ right_intspan_int(const Span *s, int i)
 bool
 right_bigintspan_bigint(const Span *s, int64 i)
 {
-  return right_span_value(s, Int64GetDatum(i), T_INT8);
+  return left_bigint_bigintspan(i, s);
 }
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a float span is strictly to the right of a float
+ * @brief Return true if a float is strictly to the right of a float span.
  * @sqlop @p >>
  */
 bool
 right_floatspan_float(const Span *s, double d)
 {
-  return right_span_value(s, Float8GetDatum(d), T_FLOAT8);
+  return left_float_floatspan(d, s);
 }
-#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a period is strictly after a timestamp.
+ * @brief Return true if a timestamp is strictly after a period.
  * @sqlop @p #>>
  */
 bool
-after_period_timestamp(const Period *p, TimestampTz t)
+after_float_floatspan(TimestampTz t, const Period *p)
 {
-  return right_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  return before_period_timestamp(p, t);
 }
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_pos
@@ -814,19 +724,7 @@ after_period_timestamp(const Period *p, TimestampTz t)
 bool
 right_span_orderedset(const Span *s, const OrderedSet *os)
 {
-  Datum v = orderedset_val_n(os, os->count - 1);
-  return right_span_value(s, v, os->span.basetype);
-}
-
-/**
- * @ingroup libmeos_setspan_pos
- * @brief Return true if a period is strictly after a timestamp set.
- * @sqlop @p #>>
- */
-bool
-after_period_timestampset(const Period *p, const TimestampSet *ts)
-{
-  return right_span_orderedset(p, ts);
+  return left_orderedset_span(os, s);
 }
 
 /**

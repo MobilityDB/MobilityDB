@@ -106,8 +106,6 @@ extern void lower_upper_shift_tscale(const Interval *shift, const Interval *dura
 
 extern bool adjacent_span_value(const Span *s, Datum d, mobdbType basetype);
 extern bool adjacent_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype);
-extern bool adjacent_value_span(Datum d, mobdbType basetype, const Span *s);
-extern bool adjacent_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss);
 extern bool contains_span_value(const Span *s, Datum d, mobdbType basetype);
 extern bool contains_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype);
 extern bool contains_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype);

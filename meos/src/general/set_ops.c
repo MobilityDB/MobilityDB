@@ -212,20 +212,6 @@ contains_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
   return true;
 }
 
-#if MEOS
-/**
- * @ingroup libmeos_setspan_topo
- * @brief Return true if the first timestamp set contains the second one.
- * @sqlop @p \@>
- */
-bool
-contains_timestampset_timestampset(const TimestampSet *ts1,
-  const TimestampSet *ts2)
-{
-  return contains_orderedset_orderedset(ts1, ts2);
-}
-#endif /* MEOS */
-
 /*****************************************************************************
  * Contained
  *****************************************************************************/
@@ -298,18 +284,6 @@ contained_orderedset_orderedset(const OrderedSet *os1,
   return contains_orderedset_orderedset(os2, os1);
 }
 
-/**
- * @ingroup libmeos_setspan_topo
- * @brief Return true if a timestamp set is contained by the second one
- * @sqlop @p <@
- */
-bool
-contained_timestampset_timestampset(const TimestampSet *ts1,
-  const TimestampSet *ts2)
-{
-  return contains_orderedset_orderedset(ts2, ts1);
-}
-
 /*****************************************************************************
  * Overlaps
  *****************************************************************************/
@@ -341,18 +315,6 @@ overlaps_orderedset_orderedset(const OrderedSet *os1,
       j++;
   }
   return false;
-}
-
-/**
- * @ingroup libmeos_setspan_topo
- * @brief Return true if the timestamp sets overlap.
- * @sqlop @p &&
- */
-bool
-overlaps_timestampset_timestampset(const TimestampSet *ts1,
-  const TimestampSet *ts2)
-{
-  return overlaps_orderedset_orderedset(ts1, ts2);
 }
 
 /*****************************************************************************
@@ -460,18 +422,18 @@ left_floatset_float(const OrderedSet *os, double d)
 {
   return left_orderedset_value(os, Float8GetDatum(d), T_FLOAT8);
 }
-#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a timestamp set is strictly before a timestamp set.
- * @sqlop @p <<#
+ * @brief Return true if an ordered set is strictly to the left of a value.
+ * @sqlop @p <<, @p <<#
  */
 bool
-before_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
+before_timestampset_timestamp(const OrderedSet *os, TimestampTz t)
 {
-  return left_orderedset_value(ts, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  return left_orderedset_value(os, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_pos
@@ -488,18 +450,6 @@ left_orderedset_orderedset(const OrderedSet *os1,
   return (datum_lt2(d1, d2, os1->span.basetype, os2->span.basetype));
 }
 
-/**
- * @ingroup libmeos_setspan_pos
- * @brief Return true if a timestamp set is strictly before the second one.
- * @sqlop @p <<#
- */
-bool
-before_timestampset_timestampset(const TimestampSet *ts1,
-  const TimestampSet *ts2)
-{
-  return left_orderedset_orderedset(ts1, ts2);
-}
-
 /*****************************************************************************
  * Strictly right of
  *****************************************************************************/
@@ -511,8 +461,7 @@ before_timestampset_timestampset(const TimestampSet *ts1,
 bool
 right_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os)
 {
-  Datum d1 = orderedset_val_n(os, os->count - 1);
-  return datum_gt2(d, d1, os->span.basetype, basetype);
+  return left_orderedset_value(os, d, basetype);
 }
 
 #if MEOS
@@ -524,7 +473,7 @@ right_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os)
 bool
 right_int_intset(int i, const OrderedSet *os)
 {
-  return right_value_orderedset(Int32GetDatum(i), T_INT4, os);
+  return left_intset_int(os, i);
 }
 
 /**
@@ -535,7 +484,7 @@ right_int_intset(int i, const OrderedSet *os)
 bool
 right_bigint_bigintset(int64 i, const OrderedSet *os)
 {
-  return right_value_orderedset(Int64GetDatum(i), T_INT8, os);
+  return left_bigintset_bigint(os, i);
 }
 
 /**
@@ -546,7 +495,7 @@ right_bigint_bigintset(int64 i, const OrderedSet *os)
 bool
 right_float_floatset(double d, const OrderedSet *os)
 {
-  return right_value_orderedset(Float8GetDatum(d), T_FLOAT8, os);
+  return left_floatset_float(os, d);
 }
 
 /**
@@ -557,7 +506,7 @@ right_float_floatset(double d, const OrderedSet *os)
 bool
 after_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 {
-  return right_value_orderedset(TimestampTzGetDatum(t), T_TIMESTAMPTZ, ts);
+  return before_timestampset_timestamp(ts, t);
 }
 #endif /* MEOS */
 
@@ -569,8 +518,7 @@ after_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 bool
 right_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
 {
-  Datum d1 = orderedset_val_n(os, 0);
-  return datum_gt2(d1, d, os->span.basetype, basetype);
+  return left_value_orderedset(d, basetype, os);
 }
 
 #if MEOS
@@ -610,17 +558,6 @@ right_floatset_float(const OrderedSet *os, double d)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a timestamp set is strictly after a timestamp.
- * @sqlop @p #>>
- */
-bool
-after_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
-{
-  return right_orderedset_value(ts, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
-}
-
-/**
- * @ingroup libmeos_setspan_pos
  * @brief Return true if the first ordered set is strictly to the right of the
  * second one.
  * @sqlop @p >>, @p #>>
@@ -628,21 +565,7 @@ after_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 bool
 right_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
 {
-  Datum d1 = orderedset_val_n(os1, 0);
-  Datum d2 = orderedset_val_n(os2, os2->count - 1);
-  return datum_gt2(d1, d2, os1->span.basetype, os2->span.basetype);
-}
-
-/**
- * @ingroup libmeos_setspan_pos
- * @brief Return true if the first timestamp set is strictly after the second one.
- * @sqlop @p #>>
- */
-bool
-after_timestampset_timestampset(const TimestampSet *ts1,
-  const TimestampSet *ts2)
-{
-  return right_orderedset_orderedset(ts1, ts2);
+  return left_orderedset_orderedset(os2, os1);
 }
 
 /*****************************************************************************
@@ -745,17 +668,6 @@ overleft_floatset_float(const OrderedSet *os, double d)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a timestamp set is not after a timestamp.
- * @sqlop @p &<#
- */
-bool
-overbefore_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
-{
-  return overleft_orderedset_value(ts, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
-}
-
-/**
- * @ingroup libmeos_setspan_pos
  * @brief Return true if the first ordered set does not extend to the right of
  * the second one.
  * @sqlop @p &<, &<#
@@ -766,18 +678,6 @@ overleft_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
   Datum d1 = orderedset_val_n(os1, os1->count - 1);
   Datum d2 = orderedset_val_n(os2, os2->count - 1);
   return datum_le2(d1, d2, os1->span.basetype, os2->span.basetype);
-}
-
-/**
- * @ingroup libmeos_setspan_pos
- * @brief Return true if the first timestamp set is not after the second one.
- * @sqlop @p &<#
- */
-bool
-overbefore_timestampset_timestampset(const TimestampSet *ts1,
-  const TimestampSet *ts2)
-{
-  return overleft_orderedset_orderedset(ts1, ts2);
 }
 
 /*****************************************************************************
@@ -889,17 +789,6 @@ overright_floatset_float(const OrderedSet *os, double d)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a timestamp set is not before a timestamp.
- * @sqlop @p #&>
- */
-bool
-overafter_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
-{
-  return overright_orderedset_value(ts, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
-}
-
-/**
- * @ingroup libmeos_setspan_pos
  * @brief Return true if the first ordered set does not extend to the left of
  * the second one.
  * @sqlop @p &>, @p #&>
@@ -911,20 +800,6 @@ overright_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
   Datum d2 = orderedset_val_n(os2, 0);
   return datum_ge2(d1, d2, os1->span.basetype, os2->span.basetype);
 }
-
-#if MEOS
-/**
- * @ingroup libmeos_setspan_pos
- * @brief Return true if the first timestamp set is not before the second one.
- * @sqlop @p #&>
- */
-bool
-overafter_timestampset_timestampset(const TimestampSet *ts1,
-  const TimestampSet *ts2)
-{
-  return overright_orderedset_orderedset(ts1, ts2);
-}
-#endif /* MEOS */
 
 /*****************************************************************************
  * Set union
@@ -1264,20 +1139,6 @@ minus_float_float(double d1, double d2, double *result)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_setspan_set
- * @brief Return the difference of the timestamps
- * @sqlop @p -
- */
-bool
-minus_timestamp_timestamp(TimestampTz t1, TimestampTz t2, TimestampTz *result)
-{
-  if (t1 == t2)
-    return false;
-  *result = t1;
-  return true;
-}
-
-/**
  * @ingroup libmeos_internal_setspan_set
  * @brief Return the difference of a value and an ordered set
  * @sqlop @p -
@@ -1335,22 +1196,6 @@ minus_float_floatset(double d, const OrderedSet *os, double *result)
   return found;
 }
 #endif /* MEOS */
-
-/**
- * @ingroup libmeos_setspan_set
- * @brief Return the difference of a timestamp and a timestamp set
- * @sqlop @p -
- */
-bool
-minus_timestamp_timestampset(TimestampTz t, const TimestampSet *ts,
-  TimestampTz *result)
-{
-  Datum v;
-  bool found = minus_value_orderedset(TimestampTzGetDatum(t), T_TIMESTAMPTZ,
-    ts, &v);
-  *result = DatumGetTimestampTz(v);
-  return found;
-}
 
 /**
  * @ingroup libmeos_internal_setspan_set
@@ -1444,20 +1289,6 @@ minus_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
 {
   return setop_orderedset_orderedset(os1, os2, MINUS);
 }
-
-#if MEOS
-/**
- * @ingroup libmeos_setspan_set
- * @brief Return the difference of the timestamp sets.
- * @sqlop @p -
- */
-TimestampSet *
-minus_timestampset_timestampset(const TimestampSet *ts1,
-  const TimestampSet *ts2)
-{
-  return setop_orderedset_orderedset(ts1, ts2, MINUS);
-}
-#endif /* MEOS */
 
 /******************************************************************************
  * Distance functions returning a double

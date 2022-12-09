@@ -370,7 +370,7 @@ Adjacent_value_spanset(PG_FUNCTION_ARGS)
   Datum d = PG_GETARG_DATUM(0);
   SpanSet *ss = PG_GETARG_SPANSET_P(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  bool result = adjacent_value_spanset(d, basetype, ss);
+  bool result = adjacent_spanset_value(ss, d, basetype);
   PG_FREE_IF_COPY(ss, 1);
   PG_RETURN_BOOL(result);
 }
@@ -387,7 +387,7 @@ Adjacent_orderedset_spanset(PG_FUNCTION_ARGS)
 {
   OrderedSet *os = PG_GETARG_ORDEREDSET_P(0);
   SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  bool result = adjacent_orderedset_spanset(os, ss);
+  bool result = adjacent_spanset_orderedset(ss, os);
   PG_FREE_IF_COPY(os, 0);
   PG_FREE_IF_COPY(ss, 1);
   PG_RETURN_BOOL(result);
@@ -441,7 +441,7 @@ Adjacent_span_spanset(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  bool result = adjacent_span_spanset(s, ss);
+  bool result = adjacent_spanset_span(ss, s);
   PG_FREE_IF_COPY(ss, 1);
   PG_RETURN_BOOL(result);
 }
