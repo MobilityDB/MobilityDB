@@ -406,7 +406,7 @@ contained_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
  * @sqlop @p &&
  */
 bool
-overlaps_orderedset_spanset(const OrderedSet *os, const SpanSet *ss)
+overlaps_spanset_orderedset(const SpanSet *ss, const OrderedSet *os)
 {
   /* Bounding box test */
   if (! overlaps_span_span(&ss->span, &os->span))
@@ -429,22 +429,11 @@ overlaps_orderedset_spanset(const OrderedSet *os, const SpanSet *ss)
 
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if a timestamp set and a period set overlap.
- * @sqlop @p &&
- */
-bool
-overlaps_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
-{
-  return overlaps_orderedset_spanset(ts, ps);
-}
-
-/**
- * @ingroup libmeos_setspan_topo
  * @brief Return true if a span and a span set overlap.
  * @sqlop @p &&
  */
 bool
-overlaps_span_spanset(const Span *s, const SpanSet *ss)
+overlaps_spanset_span(const SpanSet *ss, const Span *s)
 {
   /* Bounding box test */
   if (! overlaps_span_span(s, &ss->span))
@@ -462,39 +451,6 @@ overlaps_span_spanset(const Span *s, const SpanSet *ss)
       break;
   }
   return false;
-}
-
-/**
- * @ingroup libmeos_setspan_topo
- * @brief Return true if a span set and an ordered set overlap
- * @sqlop @p &&
- */
-bool
-overlaps_spanset_orderedset(const SpanSet *ss, const OrderedSet *os)
-{
-  return overlaps_orderedset_spanset(os, ss);
-}
-
-/**
- * @ingroup libmeos_setspan_topo
- * @brief Return true if a period set and a timestamp set overlap
- * @sqlop @p &&
- */
-bool
-overlaps_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
-{
-  return overlaps_orderedset_spanset(ts, ps);
-}
-
-/**
- * @ingroup libmeos_setspan_topo
- * @brief Return true if a span set and a span overlap
- * @sqlop @p &&
- */
-bool
-overlaps_spanset_span(const SpanSet *ss, const Span *s)
-{
-  return overlaps_span_spanset(s, ss);
 }
 
 /**

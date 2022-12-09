@@ -243,7 +243,7 @@ Overlaps_orderedset_span(PG_FUNCTION_ARGS)
 {
   OrderedSet *os = PG_GETARG_ORDEREDSET_P(0);
   Span *s = PG_GETARG_SPAN_P(1);
-  bool result = overlaps_orderedset_span(os, s);
+  bool result = overlaps_span_orderedset(s, os);
   PG_FREE_IF_COPY(os, 0);
   PG_RETURN_BOOL(result);
 }
@@ -260,7 +260,7 @@ Overlaps_orderedset_spanset(PG_FUNCTION_ARGS)
 {
   OrderedSet *os = PG_GETARG_ORDEREDSET_P(0);
   SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  bool result = overlaps_orderedset_spanset(os, ss);
+  bool result = overlaps_spanset_orderedset(ss, os);
   PG_FREE_IF_COPY(os, 0);
   PG_FREE_IF_COPY(ss, 1);
   PG_RETURN_BOOL(result);
@@ -295,7 +295,7 @@ Overlaps_span_spanset(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  bool result = overlaps_span_spanset(s, ss);
+  bool result = overlaps_spanset_span(ss, s);
   PG_FREE_IF_COPY(ss, 1);
   PG_RETURN_BOOL(result);
 }
