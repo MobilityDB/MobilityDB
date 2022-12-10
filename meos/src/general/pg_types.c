@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief MobilityDB functions pg_func(...) corresponding to external
+ * @brief Functions for base and time types borrowed from PostgreSQL.
+ * @note The MobilityDB functions pg_func(...) correspond to external
  * PostgreSQL functions func(PG_FUNCTION_ARGS). This avoids bypassing the
  * function manager fmgr.c.
  */

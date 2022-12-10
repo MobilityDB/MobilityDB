@@ -2,7 +2,7 @@ add_library(general OBJECT
   basetype_inout.c
   doublen.c
   lifting.c
-  pg_call.c
+  pg_types.c
   skiplist.c
   set.c
   set_ops.c
