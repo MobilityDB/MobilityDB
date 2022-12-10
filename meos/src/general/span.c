@@ -29,7 +29,7 @@
 
 /**
  * @brief General functions for spans (a.k.a. ranges) composed of two `Datum`
- * values and two Boolean values stating whether the bounds are inclusive.
+ * values and two `Boolean` values stating whether the bounds are inclusive.
  */
 
 #include "general/span.h"
@@ -55,7 +55,7 @@
  *****************************************************************************/
 
 /**
- * Deconstruct a span
+ * @brief Deconstruct a span
  *
  * @param[in] s Span value
  * @param[out] lower,upper Bounds
@@ -84,8 +84,8 @@ span_deserialize(const Span *s, SpanBound *lower, SpanBound *upper)
 /*****************************************************************************/
 
 /**
- * Compare two span boundary points, returning <0, 0, or >0 according to
- * whether b1 is less than, equal to, or greater than b2.
+ * @brief Compare two span boundary points, returning <0, 0, or >0 according to
+ * whether the first one is less than, equal to, or greater than the second one.
  *
  * The boundaries can be any combination of upper and lower; so it's useful
  * for a variety of operators.
@@ -468,7 +468,7 @@ period_make(TimestampTz lower, TimestampTz upper, bool lower_inc,
 
 /**
  * @ingroup libmeos_internal_setspan_constructor
- * @brief Set a span from the arguments.
+ * @brief Set a span from the bounds.
  * @see span_make()
  */
 void
@@ -545,7 +545,7 @@ span_copy(const Span *s)
 
 /**
  * @ingroup libmeos_internal_setspan_cast
- * @brief Cast an element as a span
+ * @brief Cast a value as a span
  */
 Span *
 value_to_span(Datum d, mobdbType basetype)
@@ -558,7 +558,7 @@ value_to_span(Datum d, mobdbType basetype)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_cast
- * @brief Cast an element as a span
+ * @brief Cast a value as a span
  * @sqlop @p ::
  */
 Span *
@@ -571,7 +571,7 @@ int_to_intspan(int i)
 
 /**
  * @ingroup libmeos_setspan_cast
- * @brief Cast an element as a span
+ * @brief Cast a value as a span
  * @sqlop @p ::
  */
 Span *
@@ -584,7 +584,7 @@ bigint_to_bigintspan(int i)
 
 /**
  * @ingroup libmeos_setspan_cast
- * @brief Cast an element as a span
+ * @brief Cast a value as a span
  * @sqlop @p ::
  */
 Span *
@@ -839,8 +839,8 @@ span_expand(const Span *s1, Span *s2)
  * @param[in,out] lower,upper Bounds of the period
  */
 void
-lower_upper_shift_tscale(const Interval *shift, const Interval *duration,
-  TimestampTz *lower, TimestampTz *upper)
+lower_upper_shift_tscale(TimestampTz *lower, TimestampTz *upper,
+  const Interval *shift, const Interval *duration)
 {
   assert(shift != NULL || duration != NULL);
   if (duration != NULL)
@@ -867,11 +867,11 @@ lower_upper_shift_tscale(const Interval *shift, const Interval *duration,
  * @pymeosfunc shift()
  */
 void
-span_shift(Datum value, mobdbType basetype, Span *result)
+span_shift(Span *s, Datum value, mobdbType basetype)
 {
-  assert(basetype == result->basetype);
-  result->lower = datum_add(result->lower, value, basetype, basetype);
-  result->upper = datum_add(result->lower, value, basetype, basetype);
+  assert(basetype == s->basetype);
+  s->lower = datum_add(s->lower, value, basetype, basetype);
+  s->upper = datum_add(s->lower, value, basetype, basetype);
   return;
 }
 
@@ -882,14 +882,13 @@ span_shift(Datum value, mobdbType basetype, Span *result)
  * @pymeosfunc shift()
  */
 void
-period_shift_tscale(const Interval *shift, const Interval *duration,
-  Period *result)
+period_shift_tscale(Period *p, const Interval *shift, const Interval *duration)
 {
-  TimestampTz lower = DatumGetTimestampTz(result->lower);
-  TimestampTz upper = DatumGetTimestampTz(result->upper);
-  lower_upper_shift_tscale(shift, duration, &lower, &upper);
-  result->lower = TimestampTzGetDatum(lower);
-  result->upper = TimestampTzGetDatum(upper);
+  TimestampTz lower = DatumGetTimestampTz(p->lower);
+  TimestampTz upper = DatumGetTimestampTz(p->upper);
+  lower_upper_shift_tscale(&lower, &upper, shift, duration);
+  p->lower = TimestampTzGetDatum(lower);
+  p->upper = TimestampTzGetDatum(upper);
   return;
 }
 
@@ -963,8 +962,7 @@ span_cmp(const Span *s1, const Span *s2)
 bool
 span_lt(const Span *s1, const Span *s2)
 {
-  int cmp = span_cmp(s1, s2);
-  return (cmp < 0);
+  return span_cmp(s1, s2) < 0;
 }
 
 /**
@@ -977,8 +975,7 @@ span_lt(const Span *s1, const Span *s2)
 bool
 span_le(const Span *s1, const Span *s2)
 {
-  int cmp = span_cmp(s1, s2);
-  return (cmp <= 0);
+  return span_cmp(s1, s2) <= 0;
 }
 
 /**
@@ -991,8 +988,7 @@ span_le(const Span *s1, const Span *s2)
 bool
 span_ge(const Span *s1, const Span *s2)
 {
-  int cmp = span_cmp(s1, s2);
-  return (cmp >= 0);
+  return span_cmp(s1, s2) >= 0;
 }
 
 /**
@@ -1004,8 +1000,7 @@ span_ge(const Span *s1, const Span *s2)
 bool
 span_gt(const Span *s1, const Span *s2)
 {
-  int cmp = span_cmp(s1, s2);
-  return (cmp > 0);
+  return span_cmp(s1, s2) > 0;
 }
 
 /*****************************************************************************
@@ -1014,7 +1009,7 @@ span_gt(const Span *s1, const Span *s2)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the 32-bit hash value of a span.
+ * @brief Return the 32-bit hash of a span.
  * @sqlfunc intspan_hash(), bigintspan_hash(), floatspan_hash(), period_hash()
  */
 uint32
@@ -1048,7 +1043,7 @@ span_hash(const Span *s)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the 64-bit hash value of a span using a seed
+ * @brief Return the 64-bit hash of a span using a seed
  * @sqlfunc intspan_hash_extended(), floatspan_hash_extended(),
  * period_hash_extended()
  */

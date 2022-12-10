@@ -51,7 +51,8 @@
  *****************************************************************************/
 
 /**
- * Return the location of a value in a span set using binary search
+ * @ingroup libmeos_internal_setspan_accessor
+ * @brief Return the location of a value in a span set using binary search.
  *
  * If the value is found, the index of the span is returned in the output
  * parameter. Otherwise, return a number encoding whether the value is before
@@ -112,7 +113,7 @@ periodset_find_timestamp(const PeriodSet *ps, TimestampTz t, int *loc)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_setspan_inout
+ * @ingroup libmeos_internal_setspan_inout
  * @brief Return a span set from its Well-Known Text (WKT) representation.
  */
 SpanSet *
@@ -190,7 +191,7 @@ spanset_out(const SpanSet *ss, int maxdd)
 char *
 intspanset_out(const SpanSet *ss)
 {
-  return spanset_out(ss, Int32GetDatum(0));
+  return spanset_out(ss, 0);
 }
 
 /**
@@ -200,7 +201,7 @@ intspanset_out(const SpanSet *ss)
 char *
 bigintspanset_out(const SpanSet *ss)
 {
-  return spanset_out(ss, Int64GetDatum(0));
+  return spanset_out(ss, 0);
 }
 
 /**
@@ -210,7 +211,7 @@ bigintspanset_out(const SpanSet *ss)
 char *
 floatspanset_out(const SpanSet *ss, int maxdd)
 {
-  return spanset_out(ss, Int32GetDatum(maxdd));
+  return spanset_out(ss, maxdd);
 }
 
 /**
@@ -220,7 +221,7 @@ floatspanset_out(const SpanSet *ss, int maxdd)
 char *
 periodset_out(const SpanSet *ss)
 {
-  return spanset_out(ss, Int32GetDatum(0));
+  return spanset_out(ss, 0);
 }
 #endif /* MEOS */
 
@@ -435,7 +436,7 @@ span_to_spanset(const Span *s)
 }
 
 /**
- * @ingroup libmeos_temporal_cast
+ * @ingroup libmeos_setspan_cast
  * @brief Return the bounding span of a span set.
  * @sqlfunc intspan(), floatspan(), period()
  * @sqlop @p ::
@@ -454,19 +455,19 @@ spanset_to_span(const SpanSet *ss)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_setspan_transf
+ * @ingroup libmeos_internal_setspan_transf
  * @brief Shift a span set by a value.
  * @sqlfunc shift()
  * @pymeosfunc shift()
  */
 void
-spanset_shift(Datum value, mobdbType basetype, SpanSet *result)
+spanset_shift(SpanSet *ss, Datum value, mobdbType basetype)
 {
-  assert(basetype == result->basetype);
-  for (int i = 0; i < result->count; i++)
+  assert(basetype == ss->basetype);
+  for (int i = 0; i < ss->count; i++)
   {
-    Span *s = (Span *) spanset_sp_n(result, i);
-    span_shift(value, basetype, s);
+    Span *s = (Span *) spanset_sp_n(ss, i);
+    span_shift(s, value, basetype);
   }
   return;
 }
@@ -489,7 +490,7 @@ periodset_shift_tscale(const PeriodSet *ps, const Interval *shift,
   /* Copy the input period set to the output period set */
   PeriodSet *result = spanset_copy(ps);
   /* Shift and/or scale the bounding period */
-  period_shift_tscale(shift, duration, &result->span);
+  period_shift_tscale(&result->span, shift, duration);
   /* Shift and/or scale the periods of the period set */
   TimestampTz delta;
   if (shift != NULL)
@@ -959,6 +960,7 @@ spanset_ne(const SpanSet *ss1, const SpanSet *ss2)
 {
   return ! spanset_eq(ss1, ss2);
 }
+
 /**
  * @ingroup libmeos_setspan_comp
  * @brief Return -1, 0, or 1 depending on whether the first span set
@@ -1003,8 +1005,7 @@ spanset_cmp(const SpanSet *ss1, const SpanSet *ss2)
 bool
 spanset_lt(const SpanSet *ss1, const SpanSet *ss2)
 {
-  int cmp = spanset_cmp(ss1, ss2);
-  return cmp < 0;
+  return spanset_cmp(ss1, ss2) < 0;
 }
 
 /**
@@ -1016,8 +1017,7 @@ spanset_lt(const SpanSet *ss1, const SpanSet *ss2)
 bool
 spanset_le(const SpanSet *ss1, const SpanSet *ss2)
 {
-  int cmp = spanset_cmp(ss1, ss2);
-  return cmp <= 0;
+  return spanset_cmp(ss1, ss2) <= 0;
 }
 
 /**
@@ -1029,8 +1029,7 @@ spanset_le(const SpanSet *ss1, const SpanSet *ss2)
 bool
 spanset_ge(const SpanSet *ss1, const SpanSet *ss2)
 {
-  int cmp = spanset_cmp(ss1, ss2);
-  return cmp >= 0;
+  return spanset_cmp(ss1, ss2) >= 0;
 }
 
 /**
@@ -1041,8 +1040,7 @@ spanset_ge(const SpanSet *ss1, const SpanSet *ss2)
 bool
 spanset_gt(const SpanSet *ss1, const SpanSet *ss2)
 {
-  int cmp = spanset_cmp(ss1, ss2);
-  return cmp > 0;
+  return spanset_cmp(ss1, ss2) > 0;
 }
 
 /*****************************************************************************

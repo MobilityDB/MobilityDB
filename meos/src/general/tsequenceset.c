@@ -1413,7 +1413,7 @@ tsequenceset_shift_tscale(const TSequenceSet *ss, const Interval *shift,
   span_set(TimestampTzGetDatum(inst1->t), TimestampTzGetDatum(inst2->t),
     seq1->period.lower_inc, seq2->period.upper_inc, T_TIMESTAMPTZ, &p1);
   span_set(p1.lower, p1.upper, p1.lower_inc, p1.upper_inc, T_TIMESTAMPTZ, &p2);
-  period_shift_tscale(shift, duration, &p2);
+  period_shift_tscale(&p2, shift, duration);
   TimestampTz delta;
   if (shift != NULL)
     delta = p2.lower - p1.lower;

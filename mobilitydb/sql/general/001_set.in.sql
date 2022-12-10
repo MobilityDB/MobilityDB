@@ -302,11 +302,6 @@ CREATE FUNCTION memSize(timestampset)
   AS 'MODULE_PATHNAME', 'Orderedset_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION timespan(timestampset)
-  RETURNS interval
-  AS 'MODULE_PATHNAME', 'Timestampset_timespan'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE FUNCTION numValues(intset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Orderedset_num_values'

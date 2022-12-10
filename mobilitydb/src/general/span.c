@@ -418,7 +418,7 @@ Span_shift(PG_FUNCTION_ARGS)
   Datum shift = PG_GETARG_DATUM(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   Span *result = span_copy(s);
-  span_shift(shift, basetype, result);
+  span_shift(result, shift, basetype);
   PG_RETURN_POINTER(result);
 }
 
@@ -434,7 +434,7 @@ Period_shift(PG_FUNCTION_ARGS)
   Period *p = PG_GETARG_SPAN_P(0);
   Interval *shift = PG_GETARG_INTERVAL_P(1);
   Period *result = span_copy(p);
-  period_shift_tscale(shift, NULL, result);
+  period_shift_tscale(result, shift, NULL);
   PG_RETURN_POINTER(result);
 }
 
@@ -450,7 +450,7 @@ Period_tscale(PG_FUNCTION_ARGS)
   Period *p = PG_GETARG_SPAN_P(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
   Period *result = span_copy(p);
-  period_shift_tscale(NULL, duration, result);
+  period_shift_tscale(result, NULL, duration);
   PG_RETURN_POINTER(result);
 }
 
@@ -467,7 +467,7 @@ Period_shift_tscale(PG_FUNCTION_ARGS)
   Interval *shift = PG_GETARG_INTERVAL_P(1);
   Interval *duration = PG_GETARG_INTERVAL_P(2);
   Period *result = span_copy(p);
-  period_shift_tscale(shift, duration, result);
+  period_shift_tscale(result, shift, duration);
   PG_RETURN_POINTER(result);
 }
 

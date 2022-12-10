@@ -717,9 +717,9 @@ tbox_expand(const TBox *box1, TBox *box2)
  * @sqlfunc shift(), tscale(), shiftTscale()
  */
 void
-tbox_shift_tscale(const Interval *shift, const Interval *duration, TBox *box)
+tbox_shift_tscale(TBox *box, const Interval *shift, const Interval *duration)
 {
-  period_shift_tscale(shift, duration, &box->period);
+  period_shift_tscale(&box->period, shift, duration);
   return;
 }
 

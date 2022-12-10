@@ -710,7 +710,7 @@ right_floatspan_float(const Span *s, double d)
  * @sqlop @p #>>
  */
 bool
-after_float_floatspan(TimestampTz t, const Period *p)
+after_timestamp_period(TimestampTz t, const Period *p)
 {
   return before_period_timestamp(p, t);
 }

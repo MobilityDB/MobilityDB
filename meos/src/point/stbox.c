@@ -92,9 +92,9 @@ stbox_expand(const STBox *box1, STBox *box2)
  * @sqlfunc shift(), tscale(), shiftTscale()
  */
 void
-stbox_shift_tscale(const Interval *shift, const Interval *duration, STBox *box)
+stbox_shift_tscale(STBox *box, const Interval *shift, const Interval *duration)
 {
-  period_shift_tscale(shift, duration, &box->period);
+  period_shift_tscale(&box->period, shift, duration);
   return;
 }
 

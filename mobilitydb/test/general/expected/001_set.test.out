@@ -1,10 +1,10 @@
 /* Errors */
 SELECT timestampset '2000-01-01, 2000-01-02';
-ERROR:  Could not parse timestamp set
+ERROR:  Could not parse ordered set
 LINE 2: SELECT timestampset '2000-01-01, 2000-01-02';
                             ^
 SELECT timestampset '{2000-01-01, 2000-01-02';
-ERROR:  Could not parse timestamp set
+ERROR:  Could not parse ordered set
 LINE 1: SELECT timestampset '{2000-01-01, 2000-01-02';
                             ^
 SELECT timestampset(ARRAY [timestamptz '2000-01-01', '2000-01-02', '2000-01-03']);
@@ -15,7 +15,7 @@ SELECT timestampset(ARRAY [timestamptz '2000-01-01', '2000-01-02', '2000-01-03']
 
 /* Errors */
 SELECT timestampset(ARRAY [timestamptz '2000-01-01', '2000-01-01', '2000-01-03']);
-ERROR:  Invalid value for timestamp set
+ERROR:  Invalid value for ordered set
 SELECT timestampset('{}'::timestamptz[]);
 ERROR:  The input array cannot be empty
 SELECT timestampset(timestamptz '2000-01-01');
@@ -52,18 +52,6 @@ SELECT period(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
                       period                      
 --------------------------------------------------
  [2000-01-01 00:00:00+00, 2000-01-03 00:00:00+00]
-(1 row)
-
-SELECT timespan(timestampset '{2000-01-01}');
- timespan 
-----------
- 00:00:00
-(1 row)
-
-SELECT timespan(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
- timespan 
-----------
- 2 days
 (1 row)
 
 SELECT numTimestamps(timestampset '{2000-01-01}');

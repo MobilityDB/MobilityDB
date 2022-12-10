@@ -312,7 +312,7 @@ extern OrderedSet *bigintset_in(const char *str);
 extern Span *bigintspan_in(const char *str);
 extern char *bigintspan_out(const Span *s);
 extern SpanSet *bigintspanset_in(const char *str);
-extern char *bigintspanset_out(const SpanSet *ss);
+extern char *bigintspanset_outbigintspanset_out(const SpanSet *ss);
 extern OrderedSet *floatset_in(const char *str);
 extern Span *floatspan_in(const char *str);
 extern char *floatspan_out(const Span *s, int maxdd);
@@ -442,10 +442,9 @@ extern double spanset_width(const SpanSet *ss);
 extern TimestampTz timestampset_end_timestamp(const TimestampSet *ts);
 extern int timestampset_num_timestamps(const TimestampSet *ts);
 extern TimestampTz timestampset_start_timestamp(const TimestampSet *ts);
-extern Interval *timestampset_timespan(const TimestampSet *ts);
 extern bool timestampset_timestamp_n(const TimestampSet *ts, int n, TimestampTz *result);
 extern TimestampTz *timestampset_timestamps(const TimestampSet *ts);
-extern Interval *timestampset_to_timespan(const TimestampSet *ts);
+extern Interval *timestampset_to_interval(const TimestampSet *ts);
 
 /*****************************************************************************/
 
@@ -455,7 +454,7 @@ extern void bigintspan_set_floatspan(const Span *s1, Span *s2);
 extern void floatspan_set_bigintspan(const Span *s1, Span *s2);
 extern void floatspan_set_intspan(const Span *s1, Span *s2);
 extern void intspan_set_floatspan(const Span *s1, Span *s2);
-extern void period_shift_tscale(const Interval *shift, const Interval *duration, Period *result);
+extern void period_shift_tscale(Period *p, const Interval *shift, const Interval *duration);
 extern PeriodSet *periodset_shift_tscale(const PeriodSet *ps, const Interval *shift, const Interval *duration);
 extern void span_expand(const Span *s1, Span *s2);
 extern TimestampSet *timestampset_shift_tscale(const TimestampSet *ts, const Interval *shift, const Interval *duration);
@@ -466,6 +465,8 @@ extern TimestampSet *timestampset_shift_tscale(const TimestampSet *ts, const Int
 
 /* Topological functions for set and span types */
 
+extern bool adjacent_bigintspan_bigint(const Span *s, int64 i);
+extern bool adjacent_bigintspanset_bigint(const SpanSet *ss, int64 i);
 extern bool adjacent_floatspan_float(const Span *s, double d);
 extern bool adjacent_intspan_int(const Span *s, int i);
 extern bool adjacent_orderedset_span(const OrderedSet *os, const Span *s);
@@ -477,7 +478,14 @@ extern bool adjacent_span_spanset(const Span *s, const SpanSet *ss);
 extern bool adjacent_spanset_orderedset(const SpanSet *ss, const OrderedSet *os);
 extern bool adjacent_spanset_span(const SpanSet *ss, const Span *s);
 extern bool adjacent_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2);
+extern bool contained_bigint_bigintset(int64 i, const OrderedSet *os);
+extern bool contained_bigint_bigintspan(int64 i, const Span *s);
+extern bool contained_bigint_bigintspanset(int64 i, const SpanSet *ss);
+extern bool contained_float_floatset(double d, const OrderedSet *os);
 extern bool contained_float_floatspan(double d, const Span *s);
+extern bool contained_float_floatspanset(double d, const SpanSet *ss);
+extern bool contained_int_intset(int i, const OrderedSet *os);
+extern bool contained_int_intspanset (int i, const SpanSet *ss);
 extern bool contained_int_intspan(int i, const Span *s);
 extern bool contained_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2);
 extern bool contained_orderedset_span(const OrderedSet *os, const Span *s);
@@ -830,11 +838,11 @@ extern int32 stbox_srid(const STBox *box);
 /* Transformation functions for box types */
 
 extern void tbox_expand(const TBox *box1, TBox *box2);
-extern void tbox_shift_tscale(const Interval *start, const Interval *duration, TBox *box);
+extern void tbox_shift_tscale(TBox *box, const Interval *start, const Interval *duration);
 extern TBox *tbox_expand_value(const TBox *box, const double d);
 extern TBox *tbox_expand_temporal(const TBox *box, const Interval *interval);
 extern void stbox_expand(const STBox *box1, STBox *box2);
-extern void stbox_shift_tscale(const Interval *start, const Interval *duration, STBox *box);
+extern void stbox_shift_tscale(STBox *box, const Interval *start, const Interval *duration);
 extern STBox *stbox_set_srid(const STBox *box, int32 srid);
 extern STBox *stbox_expand_spatial(const STBox *box, double d);
 extern STBox *stbox_expand_temporal(const STBox *box, const Interval *interval);

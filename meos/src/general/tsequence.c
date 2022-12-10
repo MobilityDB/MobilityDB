@@ -2333,7 +2333,7 @@ tsequence_shift_tscale(const TSequence *seq, const Interval *shift,
   TSequence *result = tsequence_copy(seq);
 
   /* Shift and/or scale the bounding period */
-  period_shift_tscale(shift, duration, &result->period);
+  period_shift_tscale(&result->period, shift, duration);
   TimestampTz delta;
   if (shift != NULL)
     delta = result->period.lower - seq->period.lower;
@@ -2367,7 +2367,7 @@ tsequence_shift_tscale(const TSequence *seq, const Interval *shift,
   }
   /* Shift and/or scale bounding box */
   void *bbox = TSEQUENCE_BBOX_PTR(result);
-  temporal_bbox_shift_tscale(shift, duration, seq->temptype, bbox);
+  temporal_bbox_shift_tscale(bbox, seq->temptype, shift, duration);
   return result;
 }
 
