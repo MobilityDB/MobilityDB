@@ -276,6 +276,29 @@ ensure_set_basetype(mobdbType basetype)
   return;
 }
 
+/**
+ * Return true if the type is a set type
+ */
+bool
+set_type(mobdbType settype)
+{
+  if (settype == T_TIMESTAMPSET || settype == T_INTSET ||
+      settype == T_BIGINTSET || settype == T_FLOATSET)
+    return true;
+  return false;
+}
+
+/**
+ * Ensure that the type is a set type
+ */
+void
+ensure_set_type(mobdbType settype)
+{
+  if (! set_type(settype))
+    elog(ERROR, "unknown set type: %d", settype);
+  return;
+}
+
 /*****************************************************************************/
 
 /**
@@ -291,7 +314,7 @@ span_type(mobdbType spantype)
 }
 
 /**
- * Ensure that the type corresponds to a span type
+ * Ensure that the type is a span type
  */
 void
 ensure_span_type(mobdbType spantype)
@@ -302,7 +325,7 @@ ensure_span_type(mobdbType spantype)
 }
 
 /**
- * Return true if the type is a time type
+ * Return true if the type is a set base type
  */
 bool
 span_basetype(mobdbType basetype)
@@ -314,7 +337,7 @@ span_basetype(mobdbType basetype)
 }
 
 /**
- * Ensure that the span base type is supported by MobilityDB
+ * Ensure that the type is a span base type
  */
 void
 ensure_span_basetype(mobdbType basetype)
@@ -325,7 +348,7 @@ ensure_span_basetype(mobdbType basetype)
 }
 
 /**
- * Return true if the type is a time type
+ * Return true if the type is a base type of a numeric span type
  */
 bool
 numspan_basetype(mobdbType basetype)
@@ -336,7 +359,7 @@ numspan_basetype(mobdbType basetype)
 }
 
 /**
- * Ensure that the span base type is supported by MobilityDB
+ * Ensure that the type is a base type of a numeric span type
  */
 void
 ensure_numspan_basetype(mobdbType basetype)

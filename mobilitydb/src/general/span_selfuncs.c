@@ -817,20 +817,27 @@ span_const_to_span(Node *other, Span *span)
 {
   Oid consttype = ((Const *) other)->consttype;
   mobdbType type = oid_type(consttype);
-  const Span *s;
-  assert(span_basetype(type) || span_type(type));
-  if (span_basetype(type))
+  assert(set_type(type) || set_basetype(type) || span_type(type) ||
+    span_basetype(type));
+  if (set_basetype(type) || span_basetype(type))
   {
-    /* The right argument is a span base constant. We convert it into
+    /* The right argument is a set or span base constant. We convert it into
      * a singleton span */
     Datum value = ((Const *) other)->constvalue;
     span_set(value, value, true, true, type, span);
   }
+  else if (set_type(type))
+  {
+    /* The right argument is a set constant. We convert it into
+     * its bounding span. */
+    const OrderedSet *s = DatumGetOrderedSetP(((Const *) other)->constvalue);
+    memcpy(span, &s->span, sizeof(Span));
+  }
   else /* span_type(type) */
   {
     /* The right argument is a span constant. We convert it into
-     * its bounding period. */
-    s = DatumGetSpanP(((Const *) other)->constvalue);
+     * its bounding span. */
+    const Span *s = DatumGetSpanP(((Const *) other)->constvalue);
     memcpy(span, s, sizeof(Span));
   }
   return;

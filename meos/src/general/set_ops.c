@@ -98,7 +98,7 @@ setop_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2,
     }
     else
     {
-      if (setop == UNION || setop == MINUS)
+      if (setop == UNION)
         values[k++] = d2;
       j++;
       if (j == os2->count)
@@ -107,10 +107,13 @@ setop_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2,
         d2 = orderedset_val_n(os2, j);
     }
   }
-  if (setop == UNION)
+  if (setop == UNION || setop == MINUS)
   {
     while (i < os1->count)
       values[k++] = orderedset_val_n(os1, i++);
+  }
+  if (setop == UNION)
+  {
     while (j < os2->count)
       values[k++] = orderedset_val_n(os2, j++);
   }

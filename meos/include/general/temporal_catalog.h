@@ -153,10 +153,13 @@ extern mobdbType basetype_settype(mobdbType basetype);
 
 extern bool time_type(mobdbType timetype);
 extern void ensure_time_type(mobdbType timetype);
+extern bool set_basetype(mobdbType basetype);
+extern void ensure_set_basetype(mobdbType basetype);
+extern bool set_type(mobdbType settype);
+extern void ensure_set_type(mobdbType settype);
 extern bool span_type(mobdbType spantype);
 extern void ensure_span_type(mobdbType spantype);
 extern bool span_basetype(mobdbType basetype);
-extern void ensure_set_basetype(mobdbType basetype);
 extern void ensure_span_basetype(mobdbType basetype);
 extern bool numspan_basetype(mobdbType basetype);
 extern void ensure_numspan_basetype(mobdbType basetype);

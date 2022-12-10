@@ -37,6 +37,12 @@ CREATE TYPE bigintspan;
 CREATE TYPE floatspan;
 CREATE TYPE period;
 
+/* Forward reference of the types needed for the result of set operations */
+CREATE TYPE intspanset;
+CREATE TYPE bigintspanset;
+CREATE TYPE floatspanset;
+CREATE TYPE periodset;
+
 CREATE FUNCTION intspan_in(cstring)
   RETURNS intspan
   AS 'MODULE_PATHNAME', 'Span_in'

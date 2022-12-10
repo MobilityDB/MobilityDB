@@ -66,6 +66,14 @@ FROM generate_series(1, perc) AS k UNION
 SELECT k, random_int(0, 100)
 FROM generate_series(perc+1, size) AS k;
 
+DROP TABLE IF EXISTS tbl_bigint;
+CREATE TABLE tbl_bigint AS
+/* Add perc NULL values */
+SELECT k, NULL AS i
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_bigint(0, 100)
+FROM generate_series(perc+1, size) AS k;
+
 DROP TABLE IF EXISTS tbl_float;
 CREATE TABLE tbl_float AS
 /* Add perc NULL values */
@@ -115,7 +123,7 @@ SELECT k, random_int4range(0, 100, 10)
 FROM generate_series(perc+1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_intspan;
-CREATE TABLE tbl_int4range AS
+CREATE TABLE tbl_intspan AS
 /* Add perc NULL values */
 SELECT k, NULL AS i
 FROM generate_series(1, perc) AS k UNION
@@ -128,6 +136,22 @@ CREATE TABLE tbl_intspanset AS
 SELECT k, NULL AS ss
 FROM generate_series(1, perc) AS k UNION
 SELECT k, random_intspanset(0, 100, 5, 5, 10)
+FROM generate_series(perc+1, size) AS k;
+
+DROP TABLE IF EXISTS tbl_bigintspan;
+CREATE TABLE tbl_bigintspan AS
+/* Add perc NULL values */
+SELECT k, NULL AS i
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_bigintspan(0, 100, 10)
+FROM generate_series(perc+1, size) AS k;
+
+DROP TABLE IF EXISTS tbl_bigintspanset;
+CREATE TABLE tbl_bigintspanset AS
+/* Add perc NULL values */
+SELECT k, NULL AS ss
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_bigintspanset(0, 100, 5, 5, 10)
 FROM generate_series(perc+1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_floatspan;
@@ -169,7 +193,7 @@ FROM generate_series(perc+1, size) AS k;
 DROP TABLE IF EXISTS tbl_intset;
 CREATE TABLE tbl_intset AS
 /* Add perc NULL values */
-SELECT k, NULL AS ts
+SELECT k, NULL AS i
 FROM generate_series(1, perc) AS k UNION
 SELECT k, random_intset(1, 100, 10, 5, 10)
 FROM generate_series(perc+1, size) AS k;
@@ -177,7 +201,7 @@ FROM generate_series(perc+1, size) AS k;
 DROP TABLE IF EXISTS tbl_bigintset;
 CREATE TABLE tbl_bigintset AS
 /* Add perc NULL values */
-SELECT k, NULL AS ts
+SELECT k, NULL AS b
 FROM generate_series(1, perc) AS k UNION
 SELECT k, random_bigintset(1, 100, 10, 5, 10)
 FROM generate_series(perc+1, size) AS k;
@@ -185,7 +209,7 @@ FROM generate_series(perc+1, size) AS k;
 DROP TABLE IF EXISTS tbl_floatset;
 CREATE TABLE tbl_floatset AS
 /* Add perc NULL values */
-SELECT k, NULL AS ts
+SELECT k, NULL AS f
 FROM generate_series(1, perc) AS k UNION
 SELECT k, random_floatset(1, 100, 10, 5, 10)
 FROM generate_series(perc+1, size) AS k;
@@ -193,9 +217,35 @@ FROM generate_series(perc+1, size) AS k;
 DROP TABLE IF EXISTS tbl_timestampset;
 CREATE TABLE tbl_timestampset AS
 /* Add perc NULL values */
-SELECT k, NULL AS ts
+SELECT k, NULL AS t
 FROM generate_series(1, perc) AS k UNION
 SELECT k, random_timestampset('2001-01-01', '2001-12-31', 10, 5, 10)
+FROM generate_series(perc+1, size) AS k;
+
+-------------------------------------------------------------------------------
+
+DROP TABLE IF EXISTS tbl_intspan;
+CREATE TABLE tbl_intspan AS
+/* Add perc NULL values */
+SELECT k, NULL AS i
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_intspan(1, 100, 10, 5)
+FROM generate_series(perc+1, size) AS k;
+
+DROP TABLE IF EXISTS tbl_bigintspan;
+CREATE TABLE tbl_bigintspan AS
+/* Add perc NULL values */
+SELECT k, NULL AS b
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_bigintspan(1, 100, 10, 5)
+FROM generate_series(perc+1, size) AS k;
+
+DROP TABLE IF EXISTS tbl_floatspan;
+CREATE TABLE tbl_floatspan AS
+/* Add perc NULL values */
+SELECT k, NULL AS f
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_floatspan(1, 100, 10, 5)
 FROM generate_series(perc+1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_period;
@@ -204,6 +254,32 @@ CREATE TABLE tbl_period AS
 SELECT k, NULL AS p
 FROM generate_series(1, perc) AS k UNION
 SELECT k, random_period('2001-01-01', '2001-12-31', 10)
+FROM generate_series(perc+1, size) AS k;
+
+-------------------------------------------------------------------------------
+
+DROP TABLE IF EXISTS tbl_intspanset;
+CREATE TABLE tbl_intspanset AS
+/* Add perc NULL values */
+SELECT k, NULL AS i
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_intspanset(1, 100, 10, 5, 10)
+FROM generate_series(perc+1, size) AS k;
+
+DROP TABLE IF EXISTS tbl_bigintspanset;
+CREATE TABLE tbl_bigintspanset AS
+/* Add perc NULL values */
+SELECT k, NULL AS b
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_bigintspanset(1, 100, 10, 5, 10)
+FROM generate_series(perc+1, size) AS k;
+
+DROP TABLE IF EXISTS tbl_floatspanset;
+CREATE TABLE tbl_floatspanset AS
+/* Add perc NULL values */
+SELECT k, NULL AS f
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_floatspanset(1, 100, 10, 5, 10)
 FROM generate_series(perc+1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_periodset;
