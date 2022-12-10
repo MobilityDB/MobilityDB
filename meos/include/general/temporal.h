@@ -61,7 +61,7 @@ extern char *text_to_cstring(const text *t);
 /**
  * Floating point precision
  */
-#define MOBDB_EPSILON   1.0e-05
+#define MOBDB_EPSILON   1.0e-06
 #define MOBDB_FP_EQ(A, B) (fabs((A)-(B)) <= MOBDB_EPSILON)
 #define MOBDB_FP_NE(A, B) (fabs((A)-(B)) > MOBDB_EPSILON)
 #define MOBDB_FP_LT(A, B) (((A) + MOBDB_EPSILON) < (B))
