@@ -34,7 +34,7 @@
  * function manager fmgr.c.
  */
 
-#include "general/pg_call.h"
+#include "general/pg_types.h"
 
 /* C */
 #include <float.h>

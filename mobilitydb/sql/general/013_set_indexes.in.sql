@@ -603,5 +603,93 @@ CREATE OPERATOR CLASS timestampset_kdtree_ops
   FUNCTION  5  span_spgist_leaf_consistent(internal, internal),
   FUNCTION  6  orderedset_spgist_compress(internal);
 
+/******************************************************************************
+ * Kd-tree SP-GiST indexes
+ ******************************************************************************/
+
+CREATE FUNCTION set_gin_extract_value(int, internal)
+RETURNS internal
+AS 'MODULE_PATHNAME', 'Set_gin_extract_value'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION set_gin_extract_query(int, internal, int2, internal, internal, internal, internal)
+RETURNS internal
+AS 'MODULE_PATHNAME', 'Set_gin_extract_query'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION set_gin_consistent(internal, int2, int, int4, internal, internal, internal, internal)
+RETURNS bool
+AS 'MODULE_PATHNAME', 'Set_gin_consistent'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION set_gin_triconsistent(internal, int2, int, int4, internal, internal, internal)
+RETURNS char
+AS 'MODULE_PATHNAME', 'Set_gin_triconsistent'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************/
+
+CREATE OPERATOR CLASS intset_gin_ops
+  DEFAULT FOR TYPE intset USING gin AS
+  STORAGE int,
+  -- overlaps
+  OPERATOR  3    && (intset, intset),
+    -- same
+  OPERATOR  6    = (intset, intset),
+  -- contains
+  OPERATOR  7    @> (intset, int),
+  OPERATOR  7    @> (intset, intset),
+  -- contained
+  OPERATOR  8    <@ (int, intset),
+  OPERATOR  8    <@ (intset, intset),
+  -- functions
+  FUNCTION   2    set_gin_extract_value(int, internal),
+  FUNCTION   3    set_gin_extract_query(int, internal, int2, internal, internal, internal, internal),
+  FUNCTION   4    set_gin_consistent(internal, int2, int, int4, internal, internal, internal, internal),
+  FUNCTION   6    set_gin_triconsistent(internal, int2, int, int4, internal, internal, internal);
+
+/******************************************************************************/
+
+CREATE FUNCTION set_gin_extract_value(bigint, internal)
+RETURNS internal
+AS 'MODULE_PATHNAME', 'Set_gin_extract_value'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION set_gin_extract_query(bigint, internal, int2, internal, internal, internal, internal)
+RETURNS internal
+AS 'MODULE_PATHNAME', 'Set_gin_extract_query'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION set_gin_consistent(internal, int2, bigint, int4, internal, internal, internal, internal)
+RETURNS bool
+AS 'MODULE_PATHNAME', 'Set_gin_consistent'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION set_gin_triconsistent(internal, int2, bigint, int4, internal, internal, internal)
+RETURNS char
+AS 'MODULE_PATHNAME', 'Set_gin_triconsistent'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************/
+
+CREATE OPERATOR CLASS bigintset_gin_ops
+  DEFAULT FOR TYPE bigintset USING gin AS
+  STORAGE bigint,
+  -- overlaps
+  OPERATOR  3    && (bigintset, bigintset),
+    -- same
+  OPERATOR  6    = (bigintset, bigintset),
+  -- contains
+  OPERATOR  7    @> (bigintset, bigint),
+  OPERATOR  7    @> (bigintset, bigintset),
+  -- contained
+  OPERATOR  8    <@ (bigint, bigintset),
+  OPERATOR  8    <@ (bigintset, bigintset),
+  -- functions
+  FUNCTION   2    set_gin_extract_value(bigint, internal),
+  FUNCTION   3    set_gin_extract_query(bigint, internal, int2, internal, internal, internal, internal),
+  FUNCTION   4    set_gin_consistent(internal, int2, bigint, int4, internal, internal, internal, internal),
+  FUNCTION   6    set_gin_triconsistent(internal, int2, bigint, int4, internal, internal, internal);
+
 /******************************************************************************/
 

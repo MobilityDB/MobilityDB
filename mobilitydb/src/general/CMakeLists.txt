@@ -2,6 +2,7 @@ add_library(pg_general OBJECT
   doublen.c
   geo_constructors.c
   set.c
+  set_gin.c
   set_ops.c
   skiplist.c
   span.c

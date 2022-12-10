@@ -49,7 +49,7 @@
 #include <meos_internal.h>
 #include "general/temporal_out.h"
 #include "general/temporal_util.h"
-#include "general/pg_call.h"
+#include "general/pg_types.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_boxops.h"
 /* MobilityDB */

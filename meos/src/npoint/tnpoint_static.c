@@ -46,7 +46,7 @@
 #include <liblwgeom.h>
 /* MEOS */
 #include <meos.h>
-#include "general/pg_call.h"
+#include "general/pg_types.h"
 #include "general/temporal_out.h"
 #include "general/temporal_util.h"
 #include "general/tnumber_mathfuncs.h"

@@ -370,15 +370,15 @@ CREATE FUNCTION timestampN(timestampset, integer)
   AS 'MODULE_PATHNAME', 'Orderedset_value_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION getValues(intset, integer)
+CREATE FUNCTION getValues(intset)
   RETURNS integer[]
   AS 'MODULE_PATHNAME', 'Orderedset_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION getValues(bigintset, integer)
+CREATE FUNCTION getValues(bigintset)
   RETURNS bigint[]
   AS 'MODULE_PATHNAME', 'Orderedset_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION getValues(floatset, integer)
+CREATE FUNCTION getValues(floatset)
   RETURNS float[]
   AS 'MODULE_PATHNAME', 'Orderedset_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

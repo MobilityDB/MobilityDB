@@ -43,7 +43,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/temporal.h"
-#include "general/pg_call.h"
+#include "general/pg_types.h"
 #include "general/doublen.h"
 #include "general/temporal_parser.h"
 #include "point/pgis_call.h"

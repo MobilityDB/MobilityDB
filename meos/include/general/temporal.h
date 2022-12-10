@@ -72,7 +72,7 @@ extern char *text_to_cstring(const text *t);
 /**
  * Precision for distance operations
  */
-#define DIST_EPSILON    1.0e-05
+#define DIST_EPSILON    1.0e-06
 
 /** Symbolic constants for lifting */
 #define DISCONTINUOUS   true
