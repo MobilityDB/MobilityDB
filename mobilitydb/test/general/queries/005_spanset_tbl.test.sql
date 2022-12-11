@@ -93,6 +93,10 @@ SELECT MAX(memorySize(i)) FROM tbl_intspanset;
 SELECT MAX(memorySize(f)) FROM tbl_floatspanset;
 SELECT MAX(memorySize(ps)) FROM tbl_periodset;
 
+SELECT MAX(storageSize(i)) FROM tbl_intspanset;
+SELECT MAX(storageSize(f)) FROM tbl_floatspanset;
+SELECT MAX(storageSize(ps)) FROM tbl_periodset;
+
 SELECT MAX(lower(i)) FROM tbl_intspanset;
 SELECT round(MAX(lower(f))::numeric, 6) FROM tbl_floatspanset;
 SELECT MAX(lower(ps)) FROM tbl_periodset;

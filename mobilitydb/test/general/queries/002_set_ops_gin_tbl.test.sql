@@ -49,19 +49,34 @@ CREATE TABLE test_setops(
 -------------------------------------------------------------------------------
 
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'intset', 'intset', COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i && t2.i;
+SELECT '&&', 'intset', 'intset', COUNT(*) FROM tbl_intset WHERE i && intset '{25, 35}';
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'bigintset', 'bigintset', COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b && t2.b;
+SELECT '&&', 'bigintset', 'bigintset', COUNT(*) FROM tbl_bigintset WHERE b && bigintset '{25, 35}';
 
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'intset', 'intset', COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i <@ t2.i;
+SELECT '&&', 'intset', 'int', COUNT(*) FROM tbl_intset WHERE i @> 25;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'bigintset', 'bigintset', COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b <@ t2.b;
+SELECT '&&', 'bigintset', 'bigint', COUNT(*) FROM tbl_bigintset WHERE b @> 25;
 
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'intset', 'intset', COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i @> t2.i;
+SELECT '@>', 'intset', 'intset', COUNT(*) FROM tbl_intset WHERE i @> intset '{25, 35}';
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'bigintset', 'bigintset', COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b @> t2.b;
+SELECT '@>', 'bigintset', 'bigintset', COUNT(*) FROM tbl_bigintset WHERE b @> bigintset '{25, 35}';
+
+INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'int', 'intset', COUNT(*) FROM tbl_intset WHERE 25 <@ i;
+INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'bigint', 'bigintset', COUNT(*) FROM tbl_bigintset WHERE 25 <@ b;
+
+INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'intset', 'intset', COUNT(*) FROM tbl_intset WHERE intset '{25, 35}' <@ i;
+INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'bigintset', 'bigintset', COUNT(*) FROM tbl_bigintset WHERE bigintset '{25, 35}' <@ b;
+
+INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
+SELECT '=', 'intset', 'intset', COUNT(*) FROM tbl_intset WHERE i = intset '{25, 35}';
+INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
+SELECT '=', 'bigintset', 'bigintset', COUNT(*) FROM tbl_bigintset WHERE b = bigintset '{25, 35}';
 
 -------------------------------------------------------------------------------
 
@@ -71,31 +86,51 @@ CREATE INDEX tbl_bigintset_gin_idx ON tbl_bigintset USING GIN(b);
 -------------------------------------------------------------------------------
 
 UPDATE test_setops
-SET gin_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i && t2.i )
+SET gin_idx = ( SELECT COUNT(*) FROM tbl_intset WHERE i && intset '{25, 35}' )
 WHERE op = '&&' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_setops
-SET gin_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b && t2.b )
+SET gin_idx = ( SELECT COUNT(*) FROM tbl_bigintset WHERE b && bigintset '{25, 35}' )
 WHERE op = '&&' AND leftarg = 'bigintset' AND rightarg = 'bigintset';
 
 UPDATE test_setops
-SET gin_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i <@ t2.i )
+SET gin_idx = ( SELECT COUNT(*) FROM tbl_intset WHERE i @> 25 )
+WHERE op = '&&' AND leftarg = 'intset' AND rightarg = 'int';
+UPDATE test_setops
+SET gin_idx = ( SELECT COUNT(*) FROM tbl_bigintset WHERE b @> 25 )
+WHERE op = '&&' AND leftarg = 'bigintset' AND rightarg = 'bigint';
+
+UPDATE test_setops
+SET gin_idx = ( SELECT COUNT(*) FROM tbl_intset WHERE i @> intset '{25, 35}' )
+WHERE op = '@>' AND leftarg = 'intset' AND rightarg = 'intset';
+UPDATE test_setops
+SET gin_idx = ( SELECT COUNT(*) FROM tbl_bigintset WHERE b @> bigintset '{25, 35}' )
+WHERE op = '@>' AND leftarg = 'bigintset' AND rightarg = 'bigintset';
+
+UPDATE test_setops
+SET gin_idx = ( SELECT COUNT(*) FROM tbl_intset WHERE 25 <@ i )
+WHERE op = '<@' AND leftarg = 'int' AND rightarg = 'intset';
+UPDATE test_setops
+SET gin_idx = ( SELECT COUNT(*) FROM tbl_bigintset WHERE 25 <@ b )
+WHERE op = '<@' AND leftarg = 'bigint' AND rightarg = 'bigintset';
+
+UPDATE test_setops
+SET gin_idx = ( SELECT COUNT(*) FROM tbl_intset WHERE intset '{25, 35}' <@ i )
 WHERE op = '<@' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_setops
-SET gin_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b <@ t2.b )
+SET gin_idx = ( SELECT COUNT(*) FROM tbl_bigintset WHERE bigintset '{25, 35}' <@ b )
 WHERE op = '<@' AND leftarg = 'bigintset' AND rightarg = 'bigintset';
 
 UPDATE test_setops
-SET gin_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i @> t2.i )
-WHERE op = '@>' AND leftarg = 'intset' AND rightarg = 'intset';
+SET gin_idx = ( SELECT COUNT(*) FROM tbl_intset WHERE i = intset '{25, 35}' )
+WHERE op = '=' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_setops
-SET gin_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b @> t2.b )
-WHERE op = '@>' AND leftarg = 'bigintset' AND rightarg = 'bigintset';
+SET gin_idx = ( SELECT COUNT(*) FROM tbl_bigintset WHERE b = bigintset '{25, 35}' )
+WHERE op = '=' AND leftarg = 'bigintset' AND rightarg = 'bigintset';
 
 -------------------------------------------------------------------------------
 
 DROP INDEX tbl_intset_gin_idx;
 DROP INDEX tbl_bigintset_gin_idx;
-
 
 -------------------------------------------------------------------------------
 

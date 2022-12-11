@@ -36,6 +36,13 @@
 #include <meos_internal.h>
 #include "general/set.h"
 
+#define GinOverlapStrategy          1
+#define GinContainsStrategyValue    2
+#define GinContainsStrategySet      3
+#define GinContainedStrategyValue   4
+#define GinContainedStrategySet     5
+#define GinEqualStrategy            6
+
 PG_FUNCTION_INFO_V1(Set_gin_extract_value);
 /*
  * extractValue support function
@@ -60,29 +67,36 @@ PG_FUNCTION_INFO_V1(Set_gin_extract_query);
 Datum
 Set_gin_extract_query(PG_FUNCTION_ARGS)
 {
-  OrderedSet *os = PG_GETARG_ORDEREDSET_P(0);
   int32 *nkeys = (int32 *) PG_GETARG_POINTER(1);
   StrategyNumber strategy = PG_GETARG_UINT16(2);
   bool **nullFlags = (bool **) PG_GETARG_POINTER(5);
   int32 *searchMode = (int32 *) PG_GETARG_POINTER(6);
-  Datum *elems = orderedset_values(os);
-  *nkeys = os->count;
+  OrderedSet *os;
+  Datum *elems;
   *nullFlags = NULL;
+  *searchMode = GIN_SEARCH_MODE_DEFAULT;
 
   switch (strategy)
   {
-    case RTOverlapStrategyNumber:
-    case RTContainsStrategyNumber:
-    case RTContainedByStrategyNumber:
-    case RTSameStrategyNumber:
-      *searchMode = GIN_SEARCH_MODE_DEFAULT;
+    case GinContainsStrategyValue:
+    case GinContainedStrategyValue:
+      elems = palloc(sizeof(Datum));
+      elems[0] = PG_GETARG_DATUM(0);
+      *nkeys = 1;
+      break;
+    case GinOverlapStrategy:
+    case GinContainsStrategySet:
+    case GinContainedStrategySet:
+    case GinEqualStrategy:
+      os = PG_GETARG_ORDEREDSET_P(0);
+      elems = orderedset_values(os);
+      *nkeys = os->count;
+      PG_FREE_IF_COPY(os, 0);
       break;
     default:
       elog(ERROR, "Set_gin_extract_query: unknown strategy number: %d",
          strategy);
   }
-
-  PG_FREE_IF_COPY(os, 0);
   PG_RETURN_POINTER(elems);
 }
 
@@ -103,7 +117,7 @@ Set_gin_consistent(PG_FUNCTION_ARGS)
 
   switch (strategy)
   {
-    case RTOverlapStrategyNumber:
+    case GinOverlapStrategy:
       /* result is not lossy */
       *recheck = false;
       /* must have a match for at least one non-null element */
@@ -117,7 +131,8 @@ Set_gin_consistent(PG_FUNCTION_ARGS)
         }
       }
       break;
-    case RTContainsStrategyNumber:
+    case GinContainsStrategyValue:
+    case GinContainsStrategySet:
       /* result is not lossy */
       *recheck = false;
       /* must have all elements in check[] true, and no nulls */
@@ -131,13 +146,14 @@ Set_gin_consistent(PG_FUNCTION_ARGS)
         }
       }
       break;
-    case RTContainedByStrategyNumber:
+    case GinContainedStrategyValue:
+    case GinContainedStrategySet:
       /* we will need recheck */
       *recheck = true;
       /* can't do anything else useful here */
       res = true;
       break;
-    case RTSameStrategyNumber:
+    case GinEqualStrategy:
       /* we will need recheck */
       *recheck = true;
 
@@ -161,7 +177,6 @@ Set_gin_consistent(PG_FUNCTION_ARGS)
          strategy);
       res = false;
   }
-
   PG_RETURN_BOOL(res);
 }
 
@@ -181,7 +196,7 @@ Set_gin_triconsistent(PG_FUNCTION_ARGS)
 
   switch (strategy)
   {
-    case RTOverlapStrategyNumber:
+    case GinOverlapStrategy:
       /* must have a match for at least one non-null element */
       res = GIN_FALSE;
       for (i = 0; i < nkeys; i++)
@@ -200,7 +215,8 @@ Set_gin_triconsistent(PG_FUNCTION_ARGS)
         }
       }
       break;
-    case RTContainsStrategyNumber:
+    case GinContainsStrategyValue:
+    case GinContainsStrategySet:
       /* must have all elements in check[] true, and no nulls */
       res = GIN_TRUE;
       for (i = 0; i < nkeys; i++)
@@ -216,11 +232,12 @@ Set_gin_triconsistent(PG_FUNCTION_ARGS)
         }
       }
       break;
-    case RTContainedByStrategyNumber:
+    case GinContainedStrategyValue:
+    case GinContainedStrategySet:
       /* can't do anything else useful here */
       res = GIN_MAYBE;
       break;
-    case RTSameStrategyNumber:
+    case GinEqualStrategy:
 
       /*
        * Must have all elements in check[] true; no discrimination
