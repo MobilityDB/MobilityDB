@@ -49,7 +49,7 @@ SELECT COUNT(*) FROM tbl_timestampset WHERE timestampsetFromHexWKB(asHexWKB(ts))
 -------------------------------------------------------------------------------
 -- Constructor
 
-SELECT timestampset(array_agg(DISTINCT t ORDER BY t)) FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10;
+SELECT memorySize(timestampset(array_agg(DISTINCT t ORDER BY t))) FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10;
 
 -------------------------------------------------------------------------------
 -- Cast
@@ -60,15 +60,17 @@ SELECT COUNT(*) FROM tbl_timestamptz WHERE t::timestampset IS NOT NULL;
 -- Functions
 
 SELECT MAX(memorySize(ts)) FROM tbl_timestampset;
-SELECT period(ts) FROM tbl_timestampset;
+SELECT MAX(storageSize(ts)) FROM tbl_timestampset;
 
-SELECT numTimestamps(ts) FROM tbl_timestampset;
-SELECT startTimestamp(ts) FROM tbl_timestampset;
-SELECT endTimestamp(ts) FROM tbl_timestampset;
-SELECT timestampN(ts, 0) FROM tbl_timestampset;
-SELECT timestamps(ts) FROM tbl_timestampset;
+SELECT MIN(lower(period(ts))) FROM tbl_timestampset;
 
-SELECT shift(ts, '5 min') FROM tbl_timestampset;
+SELECT MIN(numTimestamps(ts)) FROM tbl_timestampset;
+SELECT MIN(startTimestamp(ts)) FROM tbl_timestampset;
+SELECT MIN(endTimestamp(ts)) FROM tbl_timestampset;
+SELECT MIN(timestampN(ts, 1)) FROM tbl_timestampset;
+SELECT MIN(array_length(timestamps(ts), 1)) FROM tbl_timestampset;
+
+SELECT MIN(startTimestamp(shift(ts, '5 min'))) FROM tbl_timestampset;
 
 SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE timestampset_cmp(t1.ts, t2.ts) = -1;
 SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts = t2.ts;

@@ -886,7 +886,6 @@ BEGIN
   END IF;
   card = random_int(mincard, maxcard);
   v = random_int(lowvalue, highvalue - maxdelta * card);
-  RAISE NOTICE 'card: %', card;
   FOR i IN 1..card
   LOOP
     iarr[i] = v;

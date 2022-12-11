@@ -255,6 +255,12 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
   /* If the function is being called for the first time */
   if (SRF_IS_FIRSTCALL())
   {
+    /* Initialize the FuncCallContext */
+    funcctx = SRF_FIRSTCALL_INIT();
+    /* Switch to memory context appropriate for multiple function calls */
+    MemoryContext oldcontext =
+      MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+
     /* Get input parameters */
     Temporal *temp = PG_GETARG_TEMPORAL_P(0);
     double size = PG_GETARG_FLOAT8(1);
@@ -304,12 +310,6 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
       pt.x = p2d->x;
       pt.y = p2d->y;
     }
-
-    /* Initialize the FuncCallContext */
-    funcctx = SRF_FIRSTCALL_INIT();
-    /* Switch to memory context appropriate for multiple function calls */
-    MemoryContext oldcontext =
-      MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
 
     /* Create function state */
     STboxGridState *state = stbox_tile_state_make(temp, &bounds, size, tunits,

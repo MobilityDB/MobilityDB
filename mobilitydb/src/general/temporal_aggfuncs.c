@@ -69,7 +69,7 @@ static Datum
 Temporal_tagg_transfn(FunctionCallInfo fcinfo, datum_func2 func, bool crossings)
 {
   SkipList *state;
-  INPUT_AGG_TRANS_STATE(state);
+  INPUT_AGG_TRANS_STATE(fcinfo, state);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   store_fcinfo(fcinfo);
   SkipList *result = temporal_tagg_transfn(state, temp, func, crossings);
@@ -88,7 +88,7 @@ static Datum
 Temporal_tagg_combinefn(FunctionCallInfo fcinfo, datum_func2 func, bool crossings)
 {
   SkipList *state1, *state2;
-  INPUT_AGG_COMB_STATE(state1, state2);
+  INPUT_AGG_COMB_STATE(fcinfo, state1, state2);
   store_fcinfo(fcinfo);
   SkipList *result = temporal_tagg_combinefn(state1, state2, func,
     crossings);
@@ -125,7 +125,7 @@ Temporal_tagg_transform_transfn(FunctionCallInfo fcinfo, datum_func2 func,
   bool crossings, TInstant *(*transform)(const TInstant *))
 {
   SkipList *state;
-  INPUT_AGG_TRANS_STATE(state);
+  INPUT_AGG_TRANS_STATE(fcinfo, state);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   store_fcinfo(fcinfo);
   state = temporal_tagg_transform_transfn(state, temp, func, crossings,
@@ -145,7 +145,7 @@ PGDLLEXPORT Datum
 Temporal_tcount_transfn_ext(FunctionCallInfo fcinfo, bool bucket)
 {
   SkipList *state;
-  INPUT_AGG_TRANS_STATE(state);
+  INPUT_AGG_TRANS_STATE(fcinfo, state);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Interval *interval = NULL;
   TimestampTz origin = 0;

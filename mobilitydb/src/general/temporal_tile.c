@@ -391,6 +391,12 @@ Temporal_value_time_split_ext(FunctionCallInfo fcinfo, bool valuesplit,
   /* If the function is being called for the first time */
   if (SRF_IS_FIRSTCALL())
   {
+    /* Initialize the FuncCallContext */
+    funcctx = SRF_FIRSTCALL_INIT();
+    /* Switch to memory context appropriate for multiple function calls */
+    MemoryContext oldcontext =
+      MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+
     /* Get input parameters */
     Temporal *temp = PG_GETARG_TEMPORAL_P(0);
     Datum size = 0, vorigin = 0; /* make compiler quiet */
@@ -405,12 +411,6 @@ Temporal_value_time_split_ext(FunctionCallInfo fcinfo, bool valuesplit,
       vorigin = PG_GETARG_DATUM(i++);
     if (timesplit)
       torigin = PG_GETARG_TIMESTAMPTZ(i++);
-
-    /* Initialize the FuncCallContext */
-    funcctx = SRF_FIRSTCALL_INIT();
-    /* Switch to memory context appropriate for multiple function calls */
-    MemoryContext oldcontext =
-      MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
 
     Datum *value_buckets = NULL;
     TimestampTz *time_buckets = NULL;

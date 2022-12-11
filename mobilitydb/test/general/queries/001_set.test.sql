@@ -59,6 +59,9 @@ SELECT timestamptz '2000-01-01'::timestampset;
 SELECT memorySize(timestampset '{2000-01-01}');
 SELECT memorySize(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
 
+SELECT storageSize(timestampset '{2000-01-01}');
+SELECT storageSize(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
+
 SELECT period(timestampset '{2000-01-01}');
 SELECT period(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
 

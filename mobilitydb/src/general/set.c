@@ -197,21 +197,6 @@ Orderedset_to_span(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Timestampset_to_interval);
-/**
- * @ingroup mobilitydb_setspan_accessor
- * @brief Return the timespan of a timestamp set
- * @sqlfunc timespan()
- */
-PGDLLEXPORT Datum
-Timestampset_to_interval(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  Interval *result = timestampset_to_interval(ts);
-  PG_FREE_IF_COPY(ts, 0);
-  PG_RETURN_POINTER(result);
-}
-
 /*****************************************************************************
  * Accessor functions
  *****************************************************************************/

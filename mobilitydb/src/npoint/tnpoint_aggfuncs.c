@@ -60,7 +60,7 @@ PGDLLEXPORT Datum
 Tnpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
 {
   SkipList *state;
-  INPUT_AGG_TRANS_STATE(state);
+  INPUT_AGG_TRANS_STATE(fcinfo, state);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   store_fcinfo(fcinfo);
   state = tnpoint_tcentroid_transfn(state, temp);

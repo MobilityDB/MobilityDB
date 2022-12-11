@@ -41,6 +41,7 @@
 #include "general/temporal_aggfuncs.h"
 #include "general/time_aggfuncs.h"
 /* MobilityDB */
+#include "pg_general/skiplist.h"
 #include "pg_general/temporal.h"
 
 /*****************************************************************************
@@ -50,8 +51,9 @@
 /**
  * Helper macro to input the current aggregate state
  */
-#define INPUT_AGG_TRANS_STATE_ARG(state)  \
+#define INPUT_AGG_TRANS_STATE_ARG(fcinfo, state)  \
   do {  \
+    MemoryContext ctx = set_aggregation_context(fcinfo); \
     state = PG_ARGISNULL(0) ?  \
       NULL : (SkipList *) PG_GETARG_POINTER(0);  \
     if (PG_ARGISNULL(1) || PG_ARGISNULL(2))  \
@@ -61,6 +63,7 @@
       else  \
         PG_RETURN_NULL();  \
     }  \
+    unset_aggregation_context(ctx); \
   } while (0)
 
 /**
@@ -594,7 +597,7 @@ temporal_wagg_transfn(FunctionCallInfo fcinfo, datum_func2 func, bool min,
   bool crossings)
 {
   SkipList *state;
-  INPUT_AGG_TRANS_STATE_ARG(state);
+  INPUT_AGG_TRANS_STATE_ARG(fcinfo, state);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Interval *interval = PG_GETARG_INTERVAL_P(2);
   if ( temp->subtype != TINSTANT && ! MOBDB_FLAGS_GET_DISCRETE(temp->flags) &&
@@ -619,7 +622,7 @@ temporal_wagg_transform_transfn(FunctionCallInfo fcinfo, datum_func2 func,
   TSequence ** (*transform)(const Temporal *, const Interval *, int *))
 {
   SkipList *state;
-  INPUT_AGG_TRANS_STATE_ARG(state);
+  INPUT_AGG_TRANS_STATE_ARG(fcinfo, state);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Interval *interval = PG_GETARG_INTERVAL_P(2);
   store_fcinfo(fcinfo);

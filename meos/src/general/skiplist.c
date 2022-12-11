@@ -56,6 +56,8 @@
 #if ! MEOS
   extern FunctionCallInfo fetch_fcinfo();
   extern void store_fcinfo(FunctionCallInfo fcinfo);
+  extern MemoryContext set_aggregation_context(FunctionCallInfo fcinfo);
+  extern void unset_aggregation_context(MemoryContext ctx);
 #endif /* ! MEOS */
 
 /*****************************************************************************/
@@ -77,31 +79,6 @@ typedef enum
 /* Global variable for skip lists which require the gsl random generator */
 
 gsl_rng *_aggregation_rng = NULL;
-
-#if ! MEOS
-/**
- * Switch to the memory context for aggregation
- */
-static MemoryContext
-set_aggregation_context(FunctionCallInfo fcinfo)
-{
-  MemoryContext ctx;
-  if (! AggCheckCallContext(fcinfo, &ctx))
-    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-      errmsg("Operation not supported")));
-  return MemoryContextSwitchTo(ctx);
-}
-
-/**
- * Switch to the given memory context
- */
-static void
-unset_aggregation_context(MemoryContext ctx)
-{
-  MemoryContextSwitchTo(ctx);
-  return;
-}
-#endif /* ! MEOS */
 
 #ifdef NO_FFSL
 static int
