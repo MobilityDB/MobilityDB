@@ -35,12 +35,6 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/set.h"
-/* MobilityDB */
-
-#define GinOverlapStrategy     1
-#define GinContainsStrategy    2
-#define GinContainedStrategy   3
-#define GinEqualStrategy       4
 
 PG_FUNCTION_INFO_V1(Set_gin_extract_value);
 /*
@@ -77,10 +71,10 @@ Set_gin_extract_query(PG_FUNCTION_ARGS)
 
   switch (strategy)
   {
-    case GinOverlapStrategy:
-    case GinContainsStrategy:
-    case GinContainedStrategy:
-    case GinEqualStrategy:
+    case RTOverlapStrategyNumber:
+    case RTContainsStrategyNumber:
+    case RTContainedByStrategyNumber:
+    case RTSameStrategyNumber:
       *searchMode = GIN_SEARCH_MODE_DEFAULT;
       break;
     default:
@@ -109,7 +103,7 @@ Set_gin_consistent(PG_FUNCTION_ARGS)
 
   switch (strategy)
   {
-    case GinOverlapStrategy:
+    case RTOverlapStrategyNumber:
       /* result is not lossy */
       *recheck = false;
       /* must have a match for at least one non-null element */
@@ -123,7 +117,7 @@ Set_gin_consistent(PG_FUNCTION_ARGS)
         }
       }
       break;
-    case GinContainsStrategy:
+    case RTContainsStrategyNumber:
       /* result is not lossy */
       *recheck = false;
       /* must have all elements in check[] true, and no nulls */
@@ -137,13 +131,13 @@ Set_gin_consistent(PG_FUNCTION_ARGS)
         }
       }
       break;
-    case GinContainedStrategy:
+    case RTContainedByStrategyNumber:
       /* we will need recheck */
       *recheck = true;
       /* can't do anything else useful here */
       res = true;
       break;
-    case GinEqualStrategy:
+    case RTSameStrategyNumber:
       /* we will need recheck */
       *recheck = true;
 
@@ -187,7 +181,7 @@ Set_gin_triconsistent(PG_FUNCTION_ARGS)
 
   switch (strategy)
   {
-    case GinOverlapStrategy:
+    case RTOverlapStrategyNumber:
       /* must have a match for at least one non-null element */
       res = GIN_FALSE;
       for (i = 0; i < nkeys; i++)
@@ -206,7 +200,7 @@ Set_gin_triconsistent(PG_FUNCTION_ARGS)
         }
       }
       break;
-    case GinContainsStrategy:
+    case RTContainsStrategyNumber:
       /* must have all elements in check[] true, and no nulls */
       res = GIN_TRUE;
       for (i = 0; i < nkeys; i++)
@@ -222,11 +216,11 @@ Set_gin_triconsistent(PG_FUNCTION_ARGS)
         }
       }
       break;
-    case GinContainedStrategy:
+    case RTContainedByStrategyNumber:
       /* can't do anything else useful here */
       res = GIN_MAYBE;
       break;
-    case GinEqualStrategy:
+    case RTSameStrategyNumber:
 
       /*
        * Must have all elements in check[] true; no discrimination
