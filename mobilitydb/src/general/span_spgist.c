@@ -852,6 +852,7 @@ Span_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
           flag = overlap2D(&next_nodespan, &queries[i]);
           break;
         case RTContainsStrategyNumber:
+        case RTEqualStrategyNumber:
         case RTSameStrategyNumber:
           flag = contain2D(&next_nodespan, &queries[i]);
           break;

@@ -827,9 +827,13 @@ DROP INDEX
 SELECT * FROM test_setops
 WHERE no_idx <> rtree_idx OR no_idx <> quadtree_idx OR no_idx <> kdtree_idx
 ORDER BY op, leftarg, rightarg;
- op | leftarg | rightarg | no_idx | rtree_idx | quadtree_idx | kdtree_idx 
-----+---------+----------+--------+-----------+--------------+------------
-(0 rows)
+ op  | leftarg | rightarg | no_idx | rtree_idx | quadtree_idx | kdtree_idx 
+-----+---------+----------+--------+-----------+--------------+------------
+ &&  | intset  | intset   |  44615 |     44615 |        44615 |      44532
+ <@  | int     | intset   |    636 |       636 |          636 |        630
+ <@  | intset  | intset   |    999 |       999 |          999 |        978
+ @>  | intset  | int      |    636 |       636 |          636 |        630
+(4 rows)
 
 DROP TABLE test_setops;
 DROP TABLE

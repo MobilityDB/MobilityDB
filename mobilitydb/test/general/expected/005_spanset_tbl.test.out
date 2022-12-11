@@ -145,6 +145,24 @@ SELECT MAX(memorySize(ps)) FROM tbl_periodset;
  256
 (1 row)
 
+SELECT MAX(storageSize(i)) FROM tbl_intspanset;
+ max 
+-----
+ 280
+(1 row)
+
+SELECT MAX(storageSize(f)) FROM tbl_floatspanset;
+ max 
+-----
+ 280
+(1 row)
+
+SELECT MAX(storageSize(ps)) FROM tbl_periodset;
+ max 
+-----
+ 256
+(1 row)
+
 SELECT MAX(lower(i)) FROM tbl_intspanset;
  max 
 -----
