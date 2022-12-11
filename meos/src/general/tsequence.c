@@ -1666,7 +1666,7 @@ tsequence_to_string(const TSequence *seq, int maxdd, bool component,
 char *
 tsequence_out(const TSequence *seq, int maxdd)
 {
-  return tsequence_to_string(seq, maxdd, false, &basetype_output);
+  return tsequence_to_string(seq, maxdd, false, &basetype_out);
 }
 
 /*****************************************************************************

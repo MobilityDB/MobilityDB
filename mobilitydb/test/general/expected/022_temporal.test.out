@@ -2612,112 +2612,112 @@ SELECT interpolation(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[C
  Stepwise
 (1 row)
 
-SELECT memSize(tbool 't@2000-01-01');
- memsize 
----------
-      24
+SELECT memorySize(tbool 't@2000-01-01');
+ memorysize 
+------------
+         24
 (1 row)
 
-SELECT memSize(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
- memsize 
----------
-     144
+SELECT memorySize(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
+ memorysize 
+------------
+        144
 (1 row)
 
-SELECT memSize(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
- memsize 
----------
-     144
+SELECT memorySize(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
+ memorysize 
+------------
+        144
 (1 row)
 
-SELECT memSize(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
- memsize 
----------
-     320
+SELECT memorySize(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
+ memorysize 
+------------
+        320
 (1 row)
 
-SELECT memSize(tint '1@2000-01-01');
- memsize 
----------
-      24
+SELECT memorySize(tint '1@2000-01-01');
+ memorysize 
+------------
+         24
 (1 row)
 
-SELECT memSize(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
- memsize 
----------
-     176
+SELECT memorySize(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
+ memorysize 
+------------
+        176
 (1 row)
 
-SELECT memSize(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
- memsize 
----------
-     176
+SELECT memorySize(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
+ memorysize 
+------------
+        176
 (1 row)
 
-SELECT memSize(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
- memsize 
----------
-     416
+SELECT memorySize(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
+ memorysize 
+------------
+        416
 (1 row)
 
-SELECT memSize(tfloat '1.5@2000-01-01');
- memsize 
----------
-      24
+SELECT memorySize(tfloat '1.5@2000-01-01');
+ memorysize 
+------------
+         24
 (1 row)
 
-SELECT memSize(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
- memsize 
----------
-     176
+SELECT memorySize(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
+ memorysize 
+------------
+        176
 (1 row)
 
-SELECT memSize(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
- memsize 
----------
-     176
+SELECT memorySize(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
+ memorysize 
+------------
+        176
 (1 row)
 
-SELECT memSize(tfloat 'Interp=Stepwise;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
- memsize 
----------
-     176
+SELECT memorySize(tfloat 'Interp=Stepwise;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
+ memorysize 
+------------
+        176
 (1 row)
 
-SELECT memSize(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
- memsize 
----------
-     416
+SELECT memorySize(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
+ memorysize 
+------------
+        416
 (1 row)
 
-SELECT memSize(tfloat 'Interp=Stepwise;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
- memsize 
----------
-     416
+SELECT memorySize(tfloat 'Interp=Stepwise;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
+ memorysize 
+------------
+        416
 (1 row)
 
-SELECT memSize(ttext 'AAA@2000-01-01');
- memsize 
----------
-      24
+SELECT memorySize(ttext 'AAA@2000-01-01');
+ memorysize 
+------------
+         24
 (1 row)
 
-SELECT memSize(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
- memsize 
----------
-     144
+SELECT memorySize(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
+ memorysize 
+------------
+        144
 (1 row)
 
-SELECT memSize(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
- memsize 
----------
-     144
+SELECT memorySize(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
+ memorysize 
+------------
+        144
 (1 row)
 
-SELECT memSize(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
- memsize 
----------
-     320
+SELECT memorySize(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
+ memorysize 
+------------
+        320
 (1 row)
 
 /*

@@ -158,6 +158,22 @@ SELECT MAX(numSequences) FROM temp;
 
 DROP TABLE tbl_tfloatinst_test;
 DROP TABLE
+DROP TABLE IF EXISTS tbl_ttextinst_test;
+NOTICE:  table "tbl_ttextinst_test" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_ttextinst_test AS SELECT k, unnest(instants(seq)) AS inst FROM tbl_ttext_seq;
+SELECT 495
+WITH temp AS (
+  SELECT numSequences(ttext_seqset_gaps(array_agg(inst ORDER BY getTime(inst)), '5 minutes'::interval))
+  FROM tbl_ttextinst_test GROUP BY k )
+SELECT MAX(numSequences) FROM temp;
+ max 
+-----
+   7
+(1 row)
+
+DROP TABLE tbl_ttextinst_test;
+DROP TABLE
 SELECT DISTINCT tempSubtype(tbool_inst(inst)) FROM tbl_tbool_inst;
  tempsubtype 
 -------------
@@ -634,28 +650,28 @@ SELECT DISTINCT tempSubtype(temp) FROM tbl_ttext ORDER BY 1;
  
 (4 rows)
 
-SELECT MAX(memSize(temp)) FROM tbl_tbool;
+SELECT MAX(memorySize(temp)) FROM tbl_tbool;
  max  
 ------
- 1832
+ 2216
 (1 row)
 
-SELECT MAX(memSize(temp)) FROM tbl_tint;
+SELECT MAX(memorySize(temp)) FROM tbl_tint;
  max  
 ------
- 1848
+ 2312
 (1 row)
 
-SELECT MAX(memSize(temp)) FROM tbl_tfloat;
+SELECT MAX(memorySize(temp)) FROM tbl_tfloat;
  max  
 ------
- 1880
+ 2472
 (1 row)
 
-SELECT MAX(memSize(temp)) FROM tbl_ttext;
+SELECT MAX(memorySize(temp)) FROM tbl_ttext;
  max  
 ------
- 2000
+ 2712
 (1 row)
 
 /*
@@ -1424,6 +1440,18 @@ SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_ttext;
  max 
 -----
   59
+(1 row)
+
+SELECT COUNT(*) FROM (SELECT k, unnest(temp) AS rec FROM tbl_tint) AS T;
+ count 
+-------
+   683
+(1 row)
+
+SELECT COUNT(*) FROM (SELECT k, unnest(temp) AS rec FROM tbl_ttext) AS T;
+ count 
+-------
+   878
 (1 row)
 
 SELECT COUNT(shift(temp, i)) FROM tbl_tbool, tbl_interval;

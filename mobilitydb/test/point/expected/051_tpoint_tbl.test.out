@@ -460,25 +460,25 @@ SELECT DISTINCT tempSubtype(temp) FROM tbl_tgeogpoint3D ORDER BY 1;
  SequenceSet
 (3 rows)
 
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE memSize(temp) > 0;
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE memorySize(temp) > 0;
  count 
 -------
    100
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE memSize(temp) > 0;
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE memorySize(temp) > 0;
  count 
 -------
    100
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE memSize(temp) > 0;
+SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE memorySize(temp) > 0;
  count 
 -------
    100
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE memSize(temp) > 0;
+SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE memorySize(temp) > 0;
  count 
 -------
    100

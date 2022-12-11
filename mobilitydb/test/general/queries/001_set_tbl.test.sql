@@ -59,7 +59,7 @@ SELECT COUNT(*) FROM tbl_timestamptz WHERE t::timestampset IS NOT NULL;
 -------------------------------------------------------------------------------
 -- Functions
 
-SELECT MAX(memSize(ts)) FROM tbl_timestampset;
+SELECT MAX(memorySize(ts)) FROM tbl_timestampset;
 SELECT period(ts) FROM tbl_timestampset;
 
 SELECT numTimestamps(ts) FROM tbl_timestampset;

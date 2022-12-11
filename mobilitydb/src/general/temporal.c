@@ -878,11 +878,24 @@ Temporal_interpolation(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Temporal_memory_size);
 /**
  * @ingroup mobilitydb_temporal_accessor
- * @brief Return the size in bytes of a temporal value
- * @sqlfunc memSize()
+ * @brief Return the memory size in bytes of a temporal value
+ * @sqlfunc memorySize()
  */
 PGDLLEXPORT Datum
 Temporal_memory_size(PG_FUNCTION_ARGS)
+{
+  Datum result = toast_raw_datum_size(PG_GETARG_DATUM(0));
+  PG_RETURN_DATUM(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_storage_size);
+/**
+ * @ingroup mobilitydb_temporal_accessor
+ * @brief Return the storage (compressed) size in bytes of a temporal value
+ * @sqlfunc storageSize()
+ */
+PGDLLEXPORT Datum
+Temporal_storage_size(PG_FUNCTION_ARGS)
 {
   Datum result = toast_datum_size(PG_GETARG_DATUM(0));
   PG_RETURN_DATUM(result);
@@ -1419,14 +1432,14 @@ Temporal_unnest(PG_FUNCTION_ARGS)
   /* If the function is being called for the first time */
   if (SRF_IS_FIRSTCALL())
   {
-    /* Get input parameters */
-    Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-    ensure_nonlinear_interpolation(temp->flags);
     /* Initialize the FuncCallContext */
     funcctx = SRF_FIRSTCALL_INIT();
     /* Switch to memory context appropriate for multiple function calls */
     MemoryContext oldcontext =
       MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+    /* Get input parameters */
+    Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+    ensure_nonlinear_interpolation(temp->flags);
     /* Create function state */
     int count;
     Datum *values = temporal_values(temp, &count);

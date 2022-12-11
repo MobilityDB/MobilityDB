@@ -94,9 +94,9 @@ SELECT MAX(lower(round(ss, 6))) FROM tbl_floatspanset;
 -- Accessor Functions
 -------------------------------------------------------------------------------
 
-SELECT MAX(memSize(ss)) FROM tbl_intspanset;
-SELECT MAX(memSize(ss)) FROM tbl_floatspanset;
-SELECT MAX(memSize(ps)) FROM tbl_periodset;
+SELECT MAX(memorySize(ss)) FROM tbl_intspanset;
+SELECT MAX(memorySize(ss)) FROM tbl_floatspanset;
+SELECT MAX(memorySize(ps)) FROM tbl_periodset;
 
 SELECT MAX(lower(ss)) FROM tbl_intspanset;
 SELECT round(MAX(lower(ss))::numeric, 6) FROM tbl_floatspanset;

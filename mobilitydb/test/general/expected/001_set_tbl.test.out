@@ -39,7 +39,7 @@ SELECT COUNT(*) FROM tbl_timestamptz WHERE t::timestampset IS NOT NULL;
     99
 (1 row)
 
-SELECT MAX(memSize(ts)) FROM tbl_timestampset;
+SELECT MAX(memorySize(ts)) FROM tbl_timestampset;
  max 
 -----
  104

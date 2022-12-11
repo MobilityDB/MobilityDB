@@ -2515,7 +2515,7 @@ tsequenceset_to_string(const TSequenceSet *ss, int maxdd, outfunc value_out)
 char *
 tsequenceset_out(const TSequenceSet *ss, int maxdd)
 {
-  return tsequenceset_to_string(ss, maxdd, &basetype_output);
+  return tsequenceset_to_string(ss, maxdd, &basetype_out);
 }
 
 /*****************************************************************************

@@ -86,7 +86,11 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="time_memSize"><varname>memSize</varname></link>: Obtener el tamaño de la memoria en bytes</para>
+					<para><link linkend="setspan_memorySize"><varname>memorySize</varname></link>: Obtener el tamaño de la memoria en bytes</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="setspan_memorySize"><varname>storageSize</varname></link>: Obtener el tamaño de almacenamiento (comprimido) en bytes</para>
 				</listitem>
 
 				<listitem>
@@ -110,11 +114,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_duration"><varname>duration</varname></link>: Obtener el intervalo de tiempo</para>
+					<para><link linkend="setspan_duration"><varname>duration</varname></link>: Obtener el intervalo de tiempo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_timespan"><varname>timespan</varname></link>: Obtener el intervalo de tiempo ignorando las posibles brechas de tiempo</para>
+					<para><link linkend="setspan_timespan"><varname>timespan</varname></link>: Obtener el intervalo de tiempo ignorando las posibles brechas de tiempo</para>
 				</listitem>
 
 				<listitem>
@@ -122,23 +126,23 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_numTimestamps"><varname>numTimestamps</varname></link>: Obtener el número de marcas de tiempo diferentes</para>
+					<para><link linkend="setspan_numTimestamps"><varname>numTimestamps</varname></link>: Obtener el número de marcas de tiempo diferentes</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_startTimestamp"><varname>startTimestamp</varname></link>: Obtener la marca de tiempo inicial</para>
+					<para><link linkend="setspan_startTimestamp"><varname>startTimestamp</varname></link>: Obtener la marca de tiempo inicial</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_endTimestamp"><varname>endTimestamp</varname></link>: Obtener la marca de tiempo final</para>
+					<para><link linkend="setspan_endTimestamp"><varname>endTimestamp</varname></link>: Obtener la marca de tiempo final</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_timestampN"><varname>timestampN</varname></link>: Obtener la enésima marca de tiempo diferente</para>
+					<para><link linkend="setspan_timestampN"><varname>timestampN</varname></link>: Obtener la enésima marca de tiempo diferente</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_timestamps"><varname>timestamps</varname></link>: Obtener las marcas de tiempo diferentes</para>
+					<para><link linkend="setspan_timestamps"><varname>timestamps</varname></link>: Obtener las marcas de tiempo diferentes</para>
 				</listitem>
 
 				<listitem>
@@ -168,15 +172,15 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="time_shift"><varname>shift</varname></link>: Desplazar el valor de tiempo con un intervalo</para>
+					<para><link linkend="setspan_shift"><varname>shift</varname></link>: Desplazar el valor de tiempo con un intervalo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_tscale"><varname>tscale</varname></link>: Escalar el valor de tiempo a un intervalo</para>
+					<para><link linkend="setspan_tscale"><varname>tscale</varname></link>: Escalar el valor de tiempo a un intervalo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_shiftTscale"><varname>shiftTscale</varname></link>: Desplazar y escalar el valor de tiempo con los intervalos</para>
+					<para><link linkend="setspan_shiftTscale"><varname>shiftTscale</varname></link>: Desplazar y escalar el valor de tiempo con los intervalos</para>
 				</listitem>
 
 				<listitem>
@@ -190,27 +194,27 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="time_eq"><varname>=</varname></link>: ¿Son iguales los valores?</para>
+					<para><link linkend="setspan_eq"><varname>=</varname></link>: ¿Son iguales los valores?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_ne"><varname>&lt;&gt;</varname></link>: ¿Son diferentes los valores?</para>
+					<para><link linkend="setspan_ne"><varname>&lt;&gt;</varname></link>: ¿Son diferentes los valores?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_lt"><varname>&lt;</varname></link>: ¿Es el primer valor menor que el segundo?</para>
+					<para><link linkend="setspan_lt"><varname>&lt;</varname></link>: ¿Es el primer valor menor que el segundo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_gt"><varname>&gt;</varname></link>: ¿Es el primer valor mayor que el segundo?</para>
+					<para><link linkend="setspan_gt"><varname>&gt;</varname></link>: ¿Es el primer valor mayor que el segundo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_le"><varname>&lt;=</varname></link>: ¿Es el primer valor menor o igual que el segundo?</para>
+					<para><link linkend="setspan_le"><varname>&lt;=</varname></link>: ¿Es el primer valor menor o igual que el segundo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_ge"><varname>&gt;=</varname></link>: ¿Es el primer valor mayor o igual que el segundo?</para>
+					<para><link linkend="setspan_ge"><varname>&gt;=</varname></link>: ¿Es el primer valor mayor o igual que el segundo?</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -220,15 +224,15 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="time_union"><varname>+</varname></link>: Unión de valores</para>
+					<para><link linkend="setspan_union"><varname>+</varname></link>: Unión de valores</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_difference"><varname>-</varname></link>: Diferencia de valores</para>
+					<para><link linkend="setspan_difference"><varname>-</varname></link>: Diferencia de valores</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_intersection"><varname>*</varname></link>: Intersección de valores</para>
+					<para><link linkend="setspan_intersection"><varname>*</varname></link>: Intersección de valores</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -238,19 +242,19 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="time_overlaps"><varname>&amp;&amp;</varname></link>: ¿Se superponen los valores (tienen valores en común)?</para>
+					<para><link linkend="setspan_overlaps"><varname>&amp;&amp;</varname></link>: ¿Se superponen los valores (tienen valores en común)?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_contains"><varname>@&gt;</varname></link>: ¿Contiene el primer valor el segundo?</para>
+					<para><link linkend="setspan_contains"><varname>@&gt;</varname></link>: ¿Contiene el primer valor el segundo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_containedby"><varname>&lt;@</varname></link>: ¿Está el primer valor contenido en el segundo?</para>
+					<para><link linkend="setspan_containedby"><varname>&lt;@</varname></link>: ¿Está el primer valor contenido en el segundo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_adjacent"><varname>-|-</varname></link>: ¿Es el primer valor adyacente al segundo?</para>
+					<para><link linkend="setspan_adjacent"><varname>-|-</varname></link>: ¿Es el primer valor adyacente al segundo?</para>
 				</listitem>
 
 				<listitem>
@@ -270,19 +274,19 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_before"><varname>&lt;&lt;#</varname></link>: ¿Es el primer valor estrictamente anterior al segundo?</para>
+					<para><link linkend="setspan_before"><varname>&lt;&lt;#</varname></link>: ¿Es el primer valor estrictamente anterior al segundo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_after"><varname>#&gt;&gt;</varname></link>: ¿Es el primer valor estrictamente posterior al segundo?</para>
+					<para><link linkend="setspan_after"><varname>#&gt;&gt;</varname></link>: ¿Es el primer valor estrictamente posterior al segundo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_overbefore"><varname>&amp;&lt;#</varname></link>: ¿No es el primer valor posterior al segundo?</para>
+					<para><link linkend="setspan_overbefore"><varname>&amp;&lt;#</varname></link>: ¿No es el primer valor posterior al segundo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_overafter"><varname>#&amp;&gt;</varname></link>: ¿No es el primer valor anterior al segundo?</para>
+					<para><link linkend="setspan_overafter"><varname>#&amp;&gt;</varname></link>: ¿No es el primer valor anterior al segundo?</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -302,11 +306,11 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="time_tcount"><varname>tcount</varname></link>: Conteo temporal</para>
+					<para><link linkend="setspan_tcount"><varname>tcount</varname></link>: Conteo temporal</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_extent"><varname>extent</varname></link>: rango o período delimitador</para>
+					<para><link linkend="setspan_extent"><varname>extent</varname></link>: rango o período delimitador</para>
 				</listitem>
 
 				<listitem>
@@ -713,7 +717,7 @@
 			<title>Funciones de accesor</title>
 			<itemizedlist>
 				<listitem>
-				<para><link linkend="ttype_memSize"><varname>memSize</varname></link>: Obtener el tamaño de la memoria en bytes</para>
+				<para><link linkend="ttype_memorySize"><varname>memorySize</varname></link>: Obtener el tamaño de la memoria en bytes</para>
 				</listitem>
 
 				<listitem>

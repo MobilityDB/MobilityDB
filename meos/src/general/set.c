@@ -181,7 +181,7 @@ orderedset_out(const OrderedSet *os, int maxdd)
   for (int i = 0; i < os->count; i++)
   {
     Datum d = orderedset_val_n(os, i);
-    strings[i] = basetype_output(d, os->span.basetype, maxdd);
+    strings[i] = basetype_out(d, os->span.basetype, maxdd);
     outlen += strlen(strings[i]) + 2;
   }
   return stringarr_to_string(strings, os->count, outlen, "", '{', '}');
@@ -372,10 +372,10 @@ timestampset_to_interval(const TimestampSet *ts)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the size in bytes of an ordered set.
- * @sqlfunc memSize()
+ * @sqlfunc memorySize()
  */
 int
-orderedset_mem_size(const OrderedSet *os)
+orderedset_memory_size(const OrderedSet *os)
 {
   return (int) VARSIZE(DatumGetPointer(os));
 }

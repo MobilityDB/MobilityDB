@@ -1334,10 +1334,10 @@ temporal_tscale(const Temporal *temp, const Interval *duration)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the size in bytes of a temporal value
- * @sqlfunc memSize()
+ * @sqlfunc memorySize()
  */
 size_t
-temporal_size(const Temporal *temp)
+temporal_memory_size(const Temporal *temp)
 {
   return VARSIZE(temp);
 }

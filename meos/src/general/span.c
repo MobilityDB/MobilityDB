@@ -333,8 +333,8 @@ unquote(char *str)
 char *
 span_out(const Span *s, int maxdd)
 {
-  char *lower = unquote(basetype_output(s->lower, s->basetype, maxdd));
-  char *upper = unquote(basetype_output(s->upper, s->basetype, maxdd));
+  char *lower = unquote(basetype_out(s->lower, s->basetype, maxdd));
+  char *upper = unquote(basetype_out(s->upper, s->basetype, maxdd));
   char open = s->lower_inc ? (char) '[' : (char) '(';
   char close = s->upper_inc ? (char) ']' : (char) ')';
   char *result = palloc(strlen(lower) + strlen(upper) + 5);

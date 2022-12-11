@@ -35,6 +35,12 @@
 #include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
+#if POSTGRESQL_VERSION_NUMBER >= 130000
+  #include <access/heaptoast.h>
+  #include <access/detoast.h>
+#else
+  #include <access/tuptoaster.h>
+#endif
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
@@ -270,18 +276,29 @@ Multirange_to_spanset(PG_FUNCTION_ARGS)
  * Accessor functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Spanset_mem_size);
+PG_FUNCTION_INFO_V1(Spanset_memory_size);
 /**
  * @ingroup mobilitydb_setspan_accessor
- * @brief Return the size in bytes of a span set
- * @sqlfunc memSize()
+ * @brief Return the memory size in bytes of a span set
+ * @sqlfunc memorySize()
  */
 PGDLLEXPORT Datum
-Spanset_mem_size(PG_FUNCTION_ARGS)
+Spanset_memory_size(PG_FUNCTION_ARGS)
 {
-  SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Datum result = spanset_mem_size(ss);
-  PG_FREE_IF_COPY(ss, 0);
+  Datum result = toast_raw_datum_size(PG_GETARG_DATUM(0));
+  PG_RETURN_DATUM(result);
+}
+
+PG_FUNCTION_INFO_V1(Spanset_storage_size);
+/**
+ * @ingroup mobilitydb_setspan_accessor
+ * @brief Return the storage (compressed) size in bytes of a span set
+ * @sqlfunc storageSize()
+ */
+PGDLLEXPORT Datum
+Spanset_storage_size(PG_FUNCTION_ARGS)
+{
+  Datum result = toast_datum_size(PG_GETARG_DATUM(0));
   PG_RETURN_DATUM(result);
 }
 

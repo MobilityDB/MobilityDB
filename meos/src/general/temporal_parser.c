@@ -222,7 +222,7 @@ basetype_parse(const char **str, mobdbType basetype)
   char *str1 = palloc(sizeof(char) * (delim + 1));
   strncpy(str1, *str, delim);
   str1[delim] = '\0';
-  Datum result = basetype_input(str1, basetype, false);
+  Datum result = basetype_in(str1, basetype, false);
   pfree(str1);
   /* since there's an @ here, let's take it with us */
   *str += delim + 1;
@@ -347,7 +347,7 @@ elem_parse(const char **str, mobdbType basetype)
   char *str1 = palloc(sizeof(char) * (delim + 1));
   strncpy(str1, *str, delim);
   str1[delim] = '\0';
-  Datum result = basetype_input(str1, basetype, false);
+  Datum result = basetype_in(str1, basetype, false);
   pfree(str1);
   *str += delim;
   return result;

@@ -30,16 +30,16 @@ SELECT timestamptz '2000-01-01'::timestampset;
  {2000-01-01 00:00:00+00}
 (1 row)
 
-SELECT memSize(timestampset '{2000-01-01}');
- memsize 
----------
-      40
+SELECT memorySize(timestampset '{2000-01-01}');
+ memorysize 
+------------
+         40
 (1 row)
 
-SELECT memSize(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
- memsize 
----------
-      56
+SELECT memorySize(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
+ memorysize 
+------------
+         56
 (1 row)
 
 SELECT period(timestampset '{2000-01-01}');

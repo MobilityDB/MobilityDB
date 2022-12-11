@@ -983,9 +983,9 @@ hypot4d(double x, double y, double z, double m)
  */
 Datum
 #if NPOINT
-basetype_input(const char *str, mobdbType basetype, bool end)
+basetype_in(const char *str, mobdbType basetype, bool end)
 #else
-basetype_input(const char *str, mobdbType basetype, bool end __attribute__((unused)))
+basetype_in(const char *str, mobdbType basetype, bool end __attribute__((unused)))
 #endif
 {
   ensure_temporal_basetype(basetype);
@@ -1021,7 +1021,7 @@ basetype_input(const char *str, mobdbType basetype, bool end __attribute__((unus
  * Call output function of the base type
  */
 char *
-basetype_output(Datum value, mobdbType basetype, int maxdd)
+basetype_out(Datum value, mobdbType basetype, int maxdd)
 {
   ensure_temporal_basetype(basetype);
   switch (basetype)

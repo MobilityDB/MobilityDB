@@ -36,6 +36,12 @@
 
 /* PostgreSQL */
 #include <postgres.h>
+#if POSTGRESQL_VERSION_NUMBER >= 130000
+  #include <access/heaptoast.h>
+  #include <access/detoast.h>
+#else
+  #include <access/tuptoaster.h>
+#endif
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
@@ -146,7 +152,7 @@ Orderedset_constructor(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Value_to_orderedset);
 /**
  * @ingroup mobilitydb_setspan_cast
- * @brief Cast a timestamp as a timestamp set
+ * @brief Cast a value as an ordered set
  * @sqlfunc timestampset()
  */
 PGDLLEXPORT Datum
@@ -210,25 +216,36 @@ Timestampset_to_interval(PG_FUNCTION_ARGS)
  * Accessor functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Orderedset_mem_size);
+PG_FUNCTION_INFO_V1(Orderedset_memory_size);
 /**
  * @ingroup mobilitydb_setspan_accessor
- * @brief Return the size in bytes of a timestamp set
- * @sqlfunc memSize()
+ * @brief Return the memory size in bytes of an ordered set
+ * @sqlfunc memorySize()
  */
 PGDLLEXPORT Datum
-Orderedset_mem_size(PG_FUNCTION_ARGS)
+Orderedset_memory_size(PG_FUNCTION_ARGS)
 {
-  OrderedSet *os = PG_GETARG_ORDEREDSET_P(0);
-  Datum result = orderedset_mem_size(os);
-  PG_FREE_IF_COPY(os, 0);
+  Datum result = toast_raw_datum_size(PG_GETARG_DATUM(0));
+  PG_RETURN_DATUM(result);
+}
+
+PG_FUNCTION_INFO_V1(Orderedset_storage_size);
+/**
+ * @ingroup mobilitydb_setspan_accessor
+ * @brief Return the storage (compressed) size in bytes of an ordered set
+ * @sqlfunc storageSize()
+ */
+PGDLLEXPORT Datum
+Orderedset_storage_size(PG_FUNCTION_ARGS)
+{
+  Datum result = toast_datum_size(PG_GETARG_DATUM(0));
   PG_RETURN_DATUM(result);
 }
 
 PG_FUNCTION_INFO_V1(Orderedset_num_values);
 /**
  * @ingroup mobilitydb_setspan_accessor
- * @brief Return the number of timestamps of a timestamp set
+ * @brief Return the number of values of an ordered set
  * @sqlfunc numTimestamp()
  */
 PGDLLEXPORT Datum
@@ -243,7 +260,7 @@ Orderedset_num_values(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Orderedset_start_value);
 /**
  * @ingroup mobilitydb_setspan_accessor
- * @brief Return the start timestamp of a timestamp set
+ * @brief Return the start value of an ordered set
  * @sqlfunc startTimestamp()
  */
 PGDLLEXPORT Datum
@@ -258,7 +275,7 @@ Orderedset_start_value(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Orderedset_end_value);
 /**
  * @ingroup mobilitydb_setspan_accessor
- * @brief Return the end timestamp of a timestamp set
+ * @brief Return the end value of an ordered set
  * @sqlfunc endTimestamp()
  */
 PGDLLEXPORT Datum
@@ -273,7 +290,7 @@ Orderedset_end_value(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Orderedset_value_n);
 /**
  * @ingroup mobilitydb_setspan_accessor
- * @brief Return the n-th timestamp of a timestamp set
+ * @brief Return the n-th value of an ordered set
  * @sqlfunc timestampN()
  */
 PGDLLEXPORT Datum
@@ -292,7 +309,7 @@ Orderedset_value_n(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Orderedset_values);
 /**
  * @ingroup mobilitydb_setspan_accessor
- * @brief Return the timestamps of a timestamp set
+ * @brief Return the values of an ordered set
  * @sqlfunc timestamps()
  */
 PGDLLEXPORT Datum
@@ -499,7 +516,7 @@ Orderedset_gt(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Orderedset_hash);
 /**
  * @ingroup mobilitydb_setspan_accessor
- * @brief Return the 32-bit hash value of a timestamp set
+ * @brief Return the 32-bit hash of an ordered set
  * @sqlfunc timestampset_hash()
  */
 PGDLLEXPORT Datum
@@ -513,7 +530,7 @@ Orderedset_hash(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Orderedset_hash_extended);
 /**
  * @ingroup mobilitydb_setspan_accessor
- * @brief Return the 64-bit hash value of a timestamp set using a seed
+ * @brief Return the 64-bit hash of an ordered set using a seed
  * @sqlfunc timestampset_hash_extended()
  */
 PGDLLEXPORT Datum

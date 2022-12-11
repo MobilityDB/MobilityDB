@@ -285,21 +285,38 @@ CREATE CAST (timestamptz AS timestampset) WITH FUNCTION timestampset(timestamptz
  * Functions
  ******************************************************************************/
 
-CREATE FUNCTION memSize(intset)
+CREATE FUNCTION memorySize(intset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Orderedset_mem_size'
+  AS 'MODULE_PATHNAME', 'Orderedset_memory_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION memSize(bigintset)
+CREATE FUNCTION memorySize(bigintset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Orderedset_mem_size'
+  AS 'MODULE_PATHNAME', 'Orderedset_memory_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION memSize(floatset)
+CREATE FUNCTION memorySize(floatset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Orderedset_mem_size'
+  AS 'MODULE_PATHNAME', 'Orderedset_memory_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION memSize(timestampset)
+CREATE FUNCTION memorySize(timestampset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Orderedset_mem_size'
+  AS 'MODULE_PATHNAME', 'Orderedset_memory_size'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION storageSize(intset)
+  RETURNS int
+  AS 'MODULE_PATHNAME', 'Orderedset_storage_size'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION storageSize(bigintset)
+  RETURNS int
+  AS 'MODULE_PATHNAME', 'Orderedset_storage_size'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION storageSize(floatset)
+  RETURNS int
+  AS 'MODULE_PATHNAME', 'Orderedset_storage_size'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION storageSize(timestampset)
+  RETURNS int
+  AS 'MODULE_PATHNAME', 'Orderedset_storage_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION numValues(intset)

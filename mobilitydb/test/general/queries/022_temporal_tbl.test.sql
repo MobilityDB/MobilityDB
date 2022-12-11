@@ -98,6 +98,14 @@ WITH temp AS (
 SELECT MAX(numSequences) FROM temp;
 DROP TABLE tbl_tfloatinst_test;
 
+DROP TABLE IF EXISTS tbl_ttextinst_test;
+CREATE TABLE tbl_ttextinst_test AS SELECT k, unnest(instants(seq)) AS inst FROM tbl_ttext_seq;
+WITH temp AS (
+  SELECT numSequences(ttext_seqset_gaps(array_agg(inst ORDER BY getTime(inst)), '5 minutes'::interval))
+  FROM tbl_ttextinst_test GROUP BY k )
+SELECT MAX(numSequences) FROM temp;
+DROP TABLE tbl_ttextinst_test;
+
 -------------------------------------------------------------------------------
 -- Transformation functions
 -------------------------------------------------------------------------------
@@ -204,10 +212,10 @@ SELECT DISTINCT tempSubtype(temp) FROM tbl_tint ORDER BY 1;
 SELECT DISTINCT tempSubtype(temp) FROM tbl_tfloat ORDER BY 1;
 SELECT DISTINCT tempSubtype(temp) FROM tbl_ttext ORDER BY 1;
 
-SELECT MAX(memSize(temp)) FROM tbl_tbool;
-SELECT MAX(memSize(temp)) FROM tbl_tint;
-SELECT MAX(memSize(temp)) FROM tbl_tfloat;
-SELECT MAX(memSize(temp)) FROM tbl_ttext;
+SELECT MAX(memorySize(temp)) FROM tbl_tbool;
+SELECT MAX(memorySize(temp)) FROM tbl_tint;
+SELECT MAX(memorySize(temp)) FROM tbl_tfloat;
+SELECT MAX(memorySize(temp)) FROM tbl_ttext;
 
 /*
 SELECT period(temp) FROM tbl_tbool;
@@ -373,6 +381,13 @@ SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tbool;
 SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tint;
 SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tfloat;
 SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_ttext;
+
+-------------------------------------------------------------------------------
+-- Unnest functions
+-------------------------------------------------------------------------------
+
+SELECT COUNT(*) FROM (SELECT k, unnest(temp) AS rec FROM tbl_tint) AS T;
+SELECT COUNT(*) FROM (SELECT k, unnest(temp) AS rec FROM tbl_ttext) AS T;
 
 -------------------------------------------------------------------------------
 -- Shift and tscale functions

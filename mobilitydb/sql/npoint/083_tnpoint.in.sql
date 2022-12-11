@@ -237,9 +237,14 @@ CREATE FUNCTION interpolation(tnpoint)
   AS 'MODULE_PATHNAME', 'Temporal_interpolation'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION memSize(tnpoint)
+CREATE FUNCTION memorySize(tnpoint)
   RETURNS int
   AS 'MODULE_PATHNAME', 'Temporal_memory_size'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION storageSize(tnpoint)
+  RETURNS int
+  AS 'MODULE_PATHNAME', 'Temporal_storage_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- value is a reserved word in SQL

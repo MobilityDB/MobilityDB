@@ -702,12 +702,22 @@ SELECT asText(geometry 'GEOMETRYCOLLECTION M (LINESTRING M (0 0 978307200,1 1 97
 		<title>Funciones de accesor</title>
 		<itemizedlist>
 
-			<listitem id="ttype_memSize">
-				<indexterm><primary><varname>memSize</varname></primary></indexterm>
+			<listitem id="ttype_memorySize">
+				<indexterm><primary><varname>memorySize</varname></primary></indexterm>
 				<para>Obtener el tamaño de la memoria en bytes</para>
-				<para><varname>memSize(ttype): integer</varname></para>
+				<para><varname>memorySize(ttype): integer</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT memSize(tint '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03}');
+SELECT memorySize(tint '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03}');
+-- 280
+</programlisting>
+			</listitem>
+
+			<listitem id="ttype_storageSize">
+				<indexterm><primary><varname>storageSize</varname></primary></indexterm>
+				<para>Obtener el tamaño de almacenamiento (comprimido) en bytes</para>
+				<para><varname>storageSize(ttype): integer</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT storageSize(tint '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03}');
 -- 280
 </programlisting>
 			</listitem>
@@ -1780,7 +1790,7 @@ SELECT asText(minusGeometry(minusPeriod(temp, box::period), box::geometry)) FROM
 		<sect2>
 			<title>Operadores de comparación tradicionales</title>
 
-			<para>Los operadores de comparación tradicionales (<varname>=</varname>, <varname>&lt;</varname>, etc.) requieren que los operandos izquierdo y derecho sean del mismo tipo base. Excepto la igualdad y la no igualdad, los otros operadores de comparación no son útiles en el mundo real pero permiten que los índices de árbol B se construyan sobre tipos temporales. Estos operadores comparan los períodos delimitadores (ver la <xref linkend="time_comp_operators" />), después los cuadros delimitadores (ver la <xref linkend="comparison_box_types" />) y si son iguales, entonces la comparación depende del subtipo. Para los valores de instante, primero comparan las marcas de tiempo y, si son iguales, comparan los valores. Para los valores de secuencia, comparan los primeros N instantes, donde N es el mínimo del número de instantes que componen ambos valores. Finalmente, para los valores de conjuntos de secuencias, comparan los primeros N valores de secuencia, donde N es el mínimo del número de secuencias que componen ambos valores.</para>
+			<para>Los operadores de comparación tradicionales (<varname>=</varname>, <varname>&lt;</varname>, etc.) requieren que los operandos izquierdo y derecho sean del mismo tipo base. Excepto la igualdad y la no igualdad, los otros operadores de comparación no son útiles en el mundo real pero permiten que los índices de árbol B se construyan sobre tipos temporales. Estos operadores comparan los períodos delimitadores (ver la <xref linkend="setspan_comp_operators" />), después los cuadros delimitadores (ver la <xref linkend="comparison_box_types" />) y si son iguales, entonces la comparación depende del subtipo. Para los valores de instante, primero comparan las marcas de tiempo y, si son iguales, comparan los valores. Para los valores de secuencia, comparan los primeros N instantes, donde N es el mínimo del número de instantes que componen ambos valores. Finalmente, para los valores de conjuntos de secuencias, comparan los primeros N valores de secuencia, donde N es el mínimo del número de secuencias que componen ambos valores.</para>
 
 			<para>Los operadores de igualdad y no igualdad consideran la representación equivalente para diferentes subtipos como se muestra a continuación.
 				<programlisting language="sql" xml:space="preserve">

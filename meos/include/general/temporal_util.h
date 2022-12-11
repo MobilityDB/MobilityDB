@@ -51,8 +51,8 @@ extern bytea *bstring2bytea(const uint8_t *wkb, size_t size);
 
 /* Input/output functions */
 
-extern Datum basetype_input(const char *str, mobdbType type, bool end);
-extern char *basetype_output(Datum value, mobdbType type, int maxdd);
+extern Datum basetype_in(const char *str, mobdbType type, bool end);
+extern char *basetype_out(Datum value, mobdbType type, int maxdd);
 
 /* Array functions */
 

@@ -343,7 +343,7 @@ CREATE FUNCTION ttext_seqset(ttext[])
   AS 'MODULE_PATHNAME', 'Tsequenceset_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tbool_seqset_gaps(tint[], maxt interval DEFAULT '0 minutes')
+CREATE FUNCTION tbool_seqset_gaps(tbool[], maxt interval DEFAULT '0 minutes')
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Tscalarseqset_constructor_gaps'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -463,21 +463,38 @@ CREATE FUNCTION interpolation(ttext)
   AS 'MODULE_PATHNAME', 'Temporal_interpolation'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION memSize(tbool)
+CREATE FUNCTION memorySize(tbool)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_memory_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION memSize(tint)
+CREATE FUNCTION memorySize(tint)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_memory_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION memSize(tfloat)
+CREATE FUNCTION memorySize(tfloat)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_memory_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION memSize(ttext)
+CREATE FUNCTION memorySize(ttext)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_memory_size'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION storageSize(tbool)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Temporal_storage_size'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION storageSize(tint)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Temporal_storage_size'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION storageSize(tfloat)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Temporal_storage_size'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION storageSize(ttext)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Temporal_storage_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- values is a reserved word in SQL

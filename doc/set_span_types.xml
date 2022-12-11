@@ -405,16 +405,29 @@ SELECT tstzmultirange '{[2000-01-01,2000-01-02],[2000-01-04,2000-01-05]}'::perio
 			<title>Accessor Functions</title>
 
 			<itemizedlist>
-				<listitem id="time_memSize">
-					<indexterm><primary><varname>memSize</varname></primary></indexterm>
+				<listitem id="setspan_memorySize">
+					<indexterm><primary><varname>memorySize</varname></primary></indexterm>
 					<para>Get the memory size in bytes</para>
-					<para><varname>memSize({spanset,timestampset}): integer</varname></para>
+					<para><varname>memorySize({spanset,timestampset}): integer</varname></para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT memSize(timestampset '{2001-01-01, 2001-01-02, 2001-01-03}');
+SELECT memorySize(timestampset '{2001-01-01, 2001-01-02, 2001-01-03}');
 -- 104
-SELECT memSize(periodset '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04],
+SELECT memorySize(periodset '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04],
   [2001-01-05, 2001-01-06]}');
 -- 136
+</programlisting>
+				</listitem>
+
+				<listitem id="setspan_storageSize">
+					<indexterm><primary><varname>storageSize</varname></primary></indexterm>
+					<para>Get the storage (compressed) size in bytes</para>
+					<para><varname>storageSize({spanset,timestampset}): integer</varname></para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT storageSize(timestampset '{2001-01-01, 2001-01-02, 2001-01-03}');
+-- 56
+SELECT storageSize(periodset '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04],
+  [2001-01-05, 2001-01-06]}');
+-- 112
 </programlisting>
 				</listitem>
 
@@ -488,7 +501,7 @@ SELECT width(intspanset '{[1,2],[4,5]}');
 </programlisting>
 				</listitem>
 
-				<listitem id="time_duration">
+				<listitem id="setspan_duration">
 					<indexterm><primary><varname>duration</varname></primary></indexterm>
 					<para>Get the duration</para>
 					<para><varname>duration({period,periodset}): interval</varname></para>
@@ -500,7 +513,7 @@ SELECT duration(periodset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-05)}'
 </programlisting>
 				</listitem>
 
-				<listitem id="time_timespan">
+				<listitem id="setspan_timespan">
 					<indexterm><primary><varname>timespan</varname></primary></indexterm>
 					<para>Get the timespan ignoring the potential time gaps</para>
 					<para><varname>timespan({timestampset,periodset}): interval</varname></para>
@@ -512,7 +525,7 @@ SELECT timespan(periodset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-05)}'
 </programlisting>
 				</listitem>
 
-				<listitem id="time_period">
+				<listitem id="setspan_period">
 					<indexterm><primary><varname>period</varname></primary></indexterm>
 					<para>Get the period on which the timestamp set or period set is defined ignoring the potential time gaps</para>
 					<para><varname>period({timestampset,periodset}): period</varname></para>
@@ -524,7 +537,7 @@ SELECT period(periodset '{[2001-01-01, 2001-01-02), [2001-01-03, 2001-01-04)}');
 </programlisting>
 				</listitem>
 
-				<listitem id="time_numTimestamps">
+				<listitem id="setspan_numTimestamps">
 					<indexterm><primary><varname>numTimestamps</varname></primary></indexterm>
 					<para>Get the number of different timestamps</para>
 					<para><varname>numTimestamps({timestampset,periodset}): integer</varname></para>
@@ -536,7 +549,7 @@ SELECT numTimestamps(periodset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-
 </programlisting>
 				</listitem>
 
-				<listitem id="time_startTimestamp">
+				<listitem id="setspan_startTimestamp">
 					<indexterm><primary><varname>startTimestamp</varname></primary></indexterm>
 					<para>Get the start timestamp</para>
 					<para><varname>startTimestamp({timestampset,periodset}): timestamptz</varname></para>
@@ -547,7 +560,7 @@ SELECT startTimestamp(periodset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01
 </programlisting>
 				</listitem>
 
-				<listitem id="time_endTimestamp">
+				<listitem id="setspan_endTimestamp">
 					<indexterm><primary><varname>endTimestamp</varname></primary></indexterm>
 					<para>Get the end timestamp</para>
 					<para><varname>endTimestamp({timestampset,periodset}): timestamptz</varname></para>
@@ -558,7 +571,7 @@ SELECT endTimestamp(periodset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-0
 </programlisting>
 				</listitem>
 
-				<listitem id="time_timestampN">
+				<listitem id="setspan_timestampN">
 					<indexterm><primary><varname>timestampN</varname></primary></indexterm>
 					<para>Get the n-th different timestamp</para>
 					<para><varname>timestampN({timestampset,periodset},integer): timestamptz</varname></para>
@@ -569,7 +582,7 @@ SELECT timestampN(periodset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)
 </programlisting>
 				</listitem>
 
-				<listitem id="time_timestamps">
+				<listitem id="setspan_timestamps">
 					<indexterm><primary><varname>timestamps</varname></primary></indexterm>
 					<para>Get the different timestamps</para>
 					<para><varname>timestamps({timestampset,periodset}): timestampset</varname></para>
@@ -661,7 +674,7 @@ SELECT periods(periodset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-04],
 			<title>Modification Functions</title>
 
 			<itemizedlist>
-				<listitem id="time_shift">
+				<listitem id="setspan_shift">
 					<indexterm><primary><varname>shift</varname></primary></indexterm>
 					<para>Shift the time value by an interval</para>
 					<para><varname>shift({timestampset,period,periodset},interval): {timestampset,period,periodset}</varname></para>
@@ -676,7 +689,7 @@ SELECT shift(periodset '{[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}',
 </programlisting>
 				</listitem>
 
-			<listitem id="time_tscale">
+			<listitem id="setspan_tscale">
 				<indexterm><primary><varname>tscale</varname></primary></indexterm>
 				<para>Scale the time value to an interval. If the time span of the time value is zero (for example, for a singleton timestamp set), the result is the time value. The given interval must be strictly greater than zero.</para>
 				<para><varname>tscale({timestampset,period,periodset},interval): {timestampset,period,periodset}</varname></para>
@@ -695,9 +708,9 @@ SELECT tscale(timestampset '{2001-01-01}', '-1 day');
 </programlisting>
 			</listitem>
 
-			<listitem id="time_shiftTscale">
+			<listitem id="setspan_shiftTscale">
 				<indexterm><primary><varname>shiftTscale</varname></primary></indexterm>
-				<para>Shift and scale the time value to the two intervals. This function combines in a single step the functions <link linkend="time_shift"><varname>shift</varname></link> and <link linkend="time_tscale"><varname>tscale</varname></link>.</para>
+				<para>Shift and scale the time value to the two intervals. This function combines in a single step the functions <link linkend="setspan_shift"><varname>shift</varname></link> and <link linkend="setspan_tscale"><varname>tscale</varname></link>.</para>
 				<para><varname>shiftTscale({timestampset,period,periodset},interval,interval):</varname></para>
 				<para><varname>  {timestampset,period,periodset}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
@@ -730,7 +743,7 @@ SELECT round(floatspanset '{[1.123456789, 2.123456789],[3.123456789,4.123456789]
 			</itemizedlist>
 		</sect2>
 
-		<sect2 id="time_comp_operators">
+		<sect2 id="setspan_comp_operators">
 			<title>Comparison Operators</title>
 
 			<para>The comparison operators (<varname>=</varname>, <varname>&lt;</varname>, and so on) require that the left and right arguments be of the same type. Excepted equality and inequality, the other comparison operators are not useful in the real world but allow B-tree indexes to be constructed on span and time types. For span values, the operators compare first the lower bound, then the upper bound. For timestamp set and period set values, the operators compare first the bounding periods, and if those are equal, they compare the first N instants or periods, where N is the minimum of the number of composing instants or periods of both values.</para>
@@ -738,7 +751,7 @@ SELECT round(floatspanset '{[1.123456789, 2.123456789],[3.123456789,4.123456789]
 			<para>The comparison operators available for the span and time types are given next. Recall that integer spans are always represented by their canonical form.</para>
 
 			<itemizedlist>
-				<listitem id="time_eq">
+				<listitem id="setspan_eq">
 					<indexterm><primary><varname>=</varname></primary></indexterm>
 					<para>Are the values equal?</para>
 					<para><varname>{span,timestampset} = {span,timestampset}: boolean</varname></para>
@@ -754,7 +767,7 @@ SELECT timestampset '{2001-01-01, 2001-01-02}' = timestampset '{2001-01-01, 2001
 </programlisting>
 				</listitem>
 
-				<listitem id="time_ne">
+				<listitem id="setspan_ne">
 					<indexterm><primary><varname>&lt;&gt;</varname></primary></indexterm>
 					<para>Are the values different?</para>
 					<para><varname>{span,timestampset} &lt;&gt; {span,timestampset}: boolean</varname></para>
@@ -766,7 +779,7 @@ SELECT timestampset '{2001-01-01, 2001-01-04}' &lt;&gt; timestampset '{2001-01-0
 </programlisting>
 				</listitem>
 
-				<listitem id="time_lt">
+				<listitem id="setspan_lt">
 					<indexterm><primary><varname>&lt;</varname></primary></indexterm>
 					<para>Is the first value less than the second one?</para>
 					<para><varname>{span,timestampset} &lt; {span,timestampset}: boolean</varname></para>
@@ -782,7 +795,7 @@ SELECT timestampset '{2001-01-01, 2001-01-04}' &lt; timestampset '{2001-01-01, 2
 </programlisting>
 				</listitem>
 
-				<listitem id="time_gt">
+				<listitem id="setspan_gt">
 					<indexterm><primary><varname>&gt;</varname></primary></indexterm>
 					<para>Is the first value greater than the second one?</para>
 					<para><varname>{span,timestampset} &gt; {span,timestampset}: boolean</varname></para>
@@ -794,7 +807,7 @@ SELECT period '[2001-01-03, 2001-01-04)' &gt; period '[2001-01-02, 2001-01-05)';
 </programlisting>
 				</listitem>
 
-				<listitem id="time_le">
+				<listitem id="setspan_le">
 					<indexterm><primary><varname>&lt;=</varname></primary></indexterm>
 					<para>Is the first value less than or equal to the second one?</para>
 					<para><varname>{span,timestampset} &lt;= {span,timestampset}: boolean</varname></para>
@@ -807,7 +820,7 @@ SELECT periodset '{[2001-01-01, 2001-01-04)}' &lt;=
 </programlisting>
 				</listitem>
 
-				<listitem id="time_ge">
+				<listitem id="setspan_ge">
 					<indexterm><primary><varname>&gt;=</varname></primary></indexterm>
 					<para>Is the first value greater than or equal to the second one?</para>
 					<para><varname>{span,timestampset} &gt;= {span,timestampset}: boolean</varname></para>
@@ -821,13 +834,13 @@ SELECT period '[2001-01-03, 2001-01-05)' &gt;= period '[2001-01-03, 2001-01-04)'
 			</itemizedlist>
 		</sect2>
 
-		<sect2 id="time_set_operators">
+		<sect2 id="setspan_set_operators">
 			<title>Set Operators</title>
 
 			<para>The span and time types have associated set operators, namely union, difference, and intersection, which are represented, respectively by <varname>+</varname>, <varname>-</varname>, and <varname>*</varname>. The set operators for the span and time types are given next.</para>
 
 			<itemizedlist>
-				<listitem id="time_union">
+				<listitem id="setspan_union">
 					<indexterm><primary><varname>+</varname></primary></indexterm>
 					<para>Union of span or time values</para>
 					<para><varname>{span,timestampset} + {span,timestampset}: {span,timestampset}</varname></para>
@@ -847,7 +860,7 @@ SELECT periodset '{[2011-01-01, 2011-01-03), [2011-01-04, 2011-01-05)}' +
 </programlisting>
 				</listitem>
 
-				<listitem id="time_difference">
+				<listitem id="setspan_difference">
 					<indexterm><primary><varname>-</varname></primary></indexterm>
 					<para>Difference of span or time values</para>
 					<para><varname>{span,timestampset} - {span,timestampset}: {span,timestampset}</varname></para>
@@ -868,7 +881,7 @@ SELECT periodset '{[2011-01-01, 2011-01-06], [2011-01-07, 2011-01-10]}' -
 </programlisting>
 				</listitem>
 
-				<listitem id="time_intersection">
+				<listitem id="setspan_intersection">
 					<indexterm><primary><varname>*</varname></primary></indexterm>
 					<para>Intersection of span or time values</para>
 					<para><varname>{span,timestampset} * {span,timestampset}: {span,timestampset}</varname></para>
@@ -886,12 +899,12 @@ SELECT period '[2011-01-01, 2011-01-05)' * period '[2011-01-03, 2011-01-07)';
 			</itemizedlist>
 		</sect2>
 
-		<sect2 id="time_topo_operators">
+		<sect2 id="setspan_topo_operators">
 			<title>Topological Operators</title>
 			<para>The topological operators available for the span and time types are given next.</para>
 
 			<itemizedlist>
-				<listitem id="time_overlaps">
+				<listitem id="setspan_overlaps">
 					<indexterm><primary><varname>&amp;&amp;</varname></primary></indexterm>
 					<para>Do the values overlap (have values in common)?</para>
 					<para><varname>numspan &amp;&amp; numspan: boolean</varname></para>
@@ -908,7 +921,7 @@ SELECT period '[2011-01-01, 2011-01-05)' &amp;&amp; period '[2011-01-02, 2011-01
 </programlisting>
 				</listitem>
 
-				<listitem id="time_contains">
+				<listitem id="setspan_contains">
 					<indexterm><primary><varname>@&gt;</varname></primary></indexterm>
 					<para>Does the first value contain the second one?</para>
 					<para><varname>numspan @&gt; {numspan,number}: boolean</varname></para>
@@ -923,7 +936,7 @@ SELECT period '[2011-01-01, 2011-05-01)' @&gt; timestamptz '2011-02-01';
 </programlisting>
 				</listitem>
 
-				<listitem id="time_containedby">
+				<listitem id="setspan_containedby">
 					<indexterm><primary><varname>&lt;@</varname></primary></indexterm>
 					<para>Is the first value contained by the second one?</para>
 					<para><varname>{numspan,number} &lt;@ numspan: boolean</varname></para>
@@ -940,7 +953,7 @@ SELECT timestamptz '2011-01-10' &lt;@ period '[2011-01-01, 2011-05-01)';
 </programlisting>
 				</listitem>
 
-				<listitem id="time_adjacent">
+				<listitem id="setspan_adjacent">
 					<indexterm><primary><varname>-|-</varname></primary></indexterm>
 					<para>Is the first value adjacent to the second one?</para>
 					<para><varname>{numspan,number} -|- {numspan,number}: boolean</varname></para>
@@ -961,7 +974,7 @@ SELECT periodset '{[2001-01-01, 2001-01-02]}' -|- period '[2001-01-02, 2001-01-0
 			</itemizedlist>
 		</sect2>
 
-		<sect2 id="time_relpos_operators">
+		<sect2 id="setspan_relpos_operators">
 			<title>Relative Position Operators</title>
 			<para>The relative position operators available for span and time types are given next. Notice that the operators for time types have an additional `<varname>#</varname>' to distinguish them from the operators for number types.</para>
 
@@ -1076,11 +1089,11 @@ SELECT timestampset '{2001-01-01, 2001-01-03, 2001-01-05}' &lt;-&gt;
 				<listitem><para>Function <varname>extent</varname> returns a bounding span or period that encloses a set of span or time values.</para></listitem>
 			</itemizedlist>
 
-			<para>Union is a very useful operation for time types. As we have seen in <xref linkend="time_set_operators" />, we can compute the union of two time values using the <varname>+</varname> operator. However, it is also very useful to have an aggregate version of the union operator for combining an arbitrary number of values. Function <varname>tunion</varname> can be used for this purpose.
+			<para>Union is a very useful operation for time types. As we have seen in <xref linkend="setspan_set_operators" />, we can compute the union of two time values using the <varname>+</varname> operator. However, it is also very useful to have an aggregate version of the union operator for combining an arbitrary number of values. Function <varname>tunion</varname> can be used for this purpose.
 			</para>
 
 			<itemizedlist>
-				<listitem id="time_tcount">
+				<listitem id="setspan_tcount">
 					<indexterm><primary><varname>tcount</varname></primary></indexterm>
 					<para>Temporal count</para>
 					<para><varname>tcount(time): {tint_seq,tint_seqset}</varname></para>
@@ -1110,7 +1123,7 @@ SELECT tcount(ps, '2 days', '2000-01-01') FROM periods;
 </programlisting>
 				</listitem>
 
-				<listitem id="time_extent">
+				<listitem id="setspan_extent">
 					<indexterm><primary><varname>extent</varname></primary></indexterm>
 					<para>Bounding span or period</para>
 					<para><varname>extent({span,timestampset}): span</varname></para>

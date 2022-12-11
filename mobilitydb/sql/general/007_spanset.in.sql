@@ -399,21 +399,46 @@ CREATE FUNCTION shiftTscale(periodset, interval, interval)
  * Accessor Functions
  ******************************************************************************/
 
-CREATE FUNCTION memSize(intspanset)
+CREATE FUNCTION memorySize(intspanset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Spanset_mem_size'
+  AS 'MODULE_PATHNAME', 'Spanset_memory_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION memSize(floatspanset)
+CREATE FUNCTION memorySize(bigintspanset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Spanset_mem_size'
+  AS 'MODULE_PATHNAME', 'Spanset_memory_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION memSize(periodset)
+CREATE FUNCTION memorySize(floatspanset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Spanset_mem_size'
+  AS 'MODULE_PATHNAME', 'Spanset_memory_size'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION memorySize(periodset)
+  RETURNS int
+  AS 'MODULE_PATHNAME', 'Spanset_memory_size'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION storageSize(intspanset)
+  RETURNS int
+  AS 'MODULE_PATHNAME', 'Spanset_storage_size'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION storageSize(bigintspanset)
+  RETURNS int
+  AS 'MODULE_PATHNAME', 'Spanset_storage_size'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION storageSize(floatspanset)
+  RETURNS int
+  AS 'MODULE_PATHNAME', 'Spanset_storage_size'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION storageSize(periodset)
+  RETURNS int
+  AS 'MODULE_PATHNAME', 'Spanset_storage_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION lower(intspanset)
   RETURNS int
+  AS 'MODULE_PATHNAME', 'Spanset_lower'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION lower(bigintspanset)
+  RETURNS bigint
   AS 'MODULE_PATHNAME', 'Spanset_lower'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION lower(floatspanset)
@@ -429,6 +454,10 @@ CREATE FUNCTION upper(intspanset)
   RETURNS int
   AS 'MODULE_PATHNAME', 'Spanset_upper'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION upper(bigintspanset)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'Spanset_upper'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION upper(floatspanset)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Spanset_upper'
@@ -439,6 +468,10 @@ CREATE FUNCTION upper(periodset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION lower_inc(intspanset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Spanset_lower_inc'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION lower_inc(bigintspanset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_lower_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -455,6 +488,10 @@ CREATE FUNCTION upper_inc(intspanset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_upper_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION upper_inc(bigintspanset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Spanset_upper_inc'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION upper_inc(floatspanset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_upper_inc'
@@ -465,6 +502,10 @@ CREATE FUNCTION upper_inc(periodset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION width(intspanset)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Spanset_width'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION width(bigintspanset)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Spanset_width'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -484,6 +525,10 @@ CREATE FUNCTION duration(periodset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION numSpans(intspanset)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Spanset_num_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION numSpans(bigintspanset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Spanset_num_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

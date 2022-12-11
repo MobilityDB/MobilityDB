@@ -525,10 +525,10 @@ periodset_shift_tscale(const PeriodSet *ps, const Interval *shift,
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the size in bytes of a period set
- * @sqlfunc memSize()
+ * @sqlfunc memorySize()
  */
 int
-spanset_mem_size(const SpanSet *ss)
+spanset_memory_size(const SpanSet *ss)
 {
   return (int) VARSIZE(DatumGetPointer(ss));
 }

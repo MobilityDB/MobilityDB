@@ -254,7 +254,7 @@ tinstant_to_string(const TInstant *inst, int maxdd, outfunc value_out)
 char *
 tinstant_out(const TInstant *inst, int maxdd)
 {
-  return tinstant_to_string(inst, maxdd, &basetype_output);
+  return tinstant_to_string(inst, maxdd, &basetype_out);
 }
 
 /*****************************************************************************

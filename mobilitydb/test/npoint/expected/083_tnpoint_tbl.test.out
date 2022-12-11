@@ -183,10 +183,10 @@ SELECT DISTINCT tempSubtype(temp) FROM tbl_tnpoint ORDER BY 1;
  SequenceSet
 (3 rows)
 
-SELECT MAX(memSize(temp)) FROM tbl_tnpoint;
+SELECT MAX(memorySize(temp)) FROM tbl_tnpoint;
  max  
 ------
- 1904
+ 3240
 (1 row)
 
 /*
