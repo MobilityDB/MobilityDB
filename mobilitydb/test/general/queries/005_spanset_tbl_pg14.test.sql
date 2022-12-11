@@ -36,7 +36,7 @@
 -- Casting
 -------------------------------------------------------------------------------
 
-SELECT COUNT(*) FROM tbl_intspanset WHERE ss <> (ss::int4multirange)::intspanset;
+SELECT COUNT(*) FROM tbl_intspanset WHERE i <> (i::int4multirange)::intspanset;
 SELECT COUNT(*) FROM tbl_periodset WHERE ps <> (ps::tstzmultirange)::periodset;
 
 -------------------------------------------------------------------------------

@@ -1848,14 +1848,14 @@ SELECT COUNT(*) FROM tbl_tfloat, tbl_floatspan WHERE temp != merge(atSpan(temp, 
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint, tbl_intspanset
-WHERE temp != merge(atSpanset(temp, ss), minusSpanset(temp, ss));
+WHERE temp != merge(atSpanset(temp, i), minusSpanset(temp, i));
  count 
 -------
      0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat, tbl_floatspanset
-WHERE temp != merge(atSpanset(temp, ss), minusSpanset(temp, ss));
+WHERE temp != merge(atSpanset(temp, f), minusSpanset(temp, f));
  count 
 -------
      0

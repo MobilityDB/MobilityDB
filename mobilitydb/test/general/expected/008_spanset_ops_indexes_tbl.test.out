@@ -1,6 +1,9 @@
 DROP INDEX IF EXISTS tbl_intspanset_rtree_idx;
 NOTICE:  index "tbl_intspanset_rtree_idx" does not exist, skipping
 DROP INDEX
+DROP INDEX IF EXISTS tbl_bigintspanset_rtree_idx;
+NOTICE:  index "tbl_bigintspanset_rtree_idx" does not exist, skipping
+DROP INDEX
 DROP INDEX IF EXISTS tbl_floatspanset_rtree_idx;
 NOTICE:  index "tbl_floatspanset_rtree_idx" does not exist, skipping
 DROP INDEX
@@ -10,6 +13,9 @@ DROP INDEX
 DROP INDEX IF EXISTS tbl_intspanset_quadtree_idx;
 NOTICE:  index "tbl_intspanset_quadtree_idx" does not exist, skipping
 DROP INDEX
+DROP INDEX IF EXISTS tbl_bigintspanset_quadtree_idx;
+NOTICE:  index "tbl_bigintspanset_quadtree_idx" does not exist, skipping
+DROP INDEX
 DROP INDEX IF EXISTS tbl_floatspanset_quadtree_idx;
 NOTICE:  index "tbl_floatspanset_quadtree_idx" does not exist, skipping
 DROP INDEX
@@ -18,6 +24,9 @@ NOTICE:  index "tbl_periodset_quadtree_idx" does not exist, skipping
 DROP INDEX
 DROP INDEX IF EXISTS tbl_intspanset_kdtree_idx;
 NOTICE:  index "tbl_intspanset_kdtree_idx" does not exist, skipping
+DROP INDEX
+DROP INDEX IF EXISTS tbl_bigintspanset_kdtree_idx;
+NOTICE:  index "tbl_bigintspanset_kdtree_idx" does not exist, skipping
 DROP INDEX
 DROP INDEX IF EXISTS tbl_floatspanset_kdtree_idx;
 NOTICE:  index "tbl_floatspanset_kdtree_idx" does not exist, skipping
@@ -39,16 +48,16 @@ CREATE TABLE test_spansetops(
 );
 CREATE TABLE
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'intspanset', 'int', COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.ss @> t2.i;
+SELECT '@>', 'intspanset', 'int', COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.i @> t2.i;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'intspanset', 'intspanset', COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.ss @> t2.ss;
+SELECT '@>', 'intspanset', 'intspanset', COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i @> t2.i;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'floatspanset', 'float', COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.ss @> t2.f;
+SELECT '@>', 'floatspanset', 'float', COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.f @> t2.f;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'floatspanset', 'floatspanset', COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss @> t2.ss;
+SELECT '@>', 'floatspanset', 'floatspanset', COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f @> t2.f;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
 SELECT '@>', 'period', 'periodset', COUNT(*) FROM tbl_period, tbl_periodset WHERE p @> ps;
@@ -66,16 +75,16 @@ INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
 SELECT '@>', 'periodset', 'periodset', COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps @> t2.ps;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'int', 'intspanset', COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i <@ t2.ss;
+SELECT '<@', 'int', 'intspanset', COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i <@ t2.i;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'intspanset', 'intspanset', COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.ss <@ t2.ss;
+SELECT '<@', 'intspanset', 'intspanset', COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i <@ t2.i;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'float', 'floatspanset', COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f <@ t2.ss;
+SELECT '<@', 'float', 'floatspanset', COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f <@ t2.f;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'floatspanset', 'floatspanset', COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss <@ t2.ss;
+SELECT '<@', 'floatspanset', 'floatspanset', COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f <@ t2.f;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
 SELECT '<@', 'timestampset', 'periodset', COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts <@ ps;
@@ -90,10 +99,10 @@ INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
 SELECT '<@', 'periodset', 'periodset', COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps <@ t2.ps;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'intspanset', 'intspanset', COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss <@ t2.ss;
+SELECT '&&', 'intspanset', 'intspanset', COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i <@ t2.i;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'floatspanset', 'floatspanset', COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss && t2.ss;
+SELECT '&&', 'floatspanset', 'floatspanset', COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f && t2.f;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'timestampset', 'periodset', COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts && ps;
@@ -111,22 +120,22 @@ INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'periodset', 'periodset', COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps && t2.ps;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'int', 'intspanset', COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i -|- t2.ss;
+SELECT '-|-', 'int', 'intspanset', COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i -|- t2.i;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'intspanset', 'int', COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.ss -|- t2.i;
+SELECT '-|-', 'intspanset', 'int', COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.i -|- t2.i;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'intspanset', 'intspanset', COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.ss -|- t2.ss;
+SELECT '-|-', 'intspanset', 'intspanset', COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i -|- t2.i;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'float', 'floatspanset', COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f -|- t2.ss;
+SELECT '-|-', 'float', 'floatspanset', COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f -|- t2.f;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'floatspanset', 'float', COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.ss -|- t2.f;
+SELECT '-|-', 'floatspanset', 'float', COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.f -|- t2.f;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'floatspanset', 'floatspanset', COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss -|- t2.ss;
+SELECT '-|-', 'floatspanset', 'floatspanset', COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f -|- t2.f;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
 SELECT '-|-', 'timestamptz', 'periodset', COUNT(*) FROM tbl_timestamptz, tbl_periodset WHERE t -|- ps;
@@ -150,22 +159,22 @@ INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
 SELECT '-|-', 'periodset', 'periodset', COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps -|- t2.ps;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '<<', 'int', 'intspanset', COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i << t2.ss;
+SELECT '<<', 'int', 'intspanset', COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i << t2.i;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '<<', 'intspanset', 'int', COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.ss << t2.i;
+SELECT '<<', 'intspanset', 'int', COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.i << t2.i;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '<<', 'intspanset', 'intspanset', COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.ss << t2.ss;
+SELECT '<<', 'intspanset', 'intspanset', COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i << t2.i;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '<<', 'float', 'floatspanset', COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f << t2.ss;
+SELECT '<<', 'float', 'floatspanset', COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f << t2.f;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '<<', 'floatspanset', 'float', COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.ss << t2.f;
+SELECT '<<', 'floatspanset', 'float', COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.f << t2.f;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '<<', 'floatspanset', 'floatspanset', COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss << t2.ss;
+SELECT '<<', 'floatspanset', 'floatspanset', COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f << t2.f;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
 SELECT '<<#', 'timestamptz', 'periodset', COUNT(*) FROM tbl_timestamptz, tbl_periodset WHERE t <<# ps;
@@ -189,22 +198,22 @@ INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
 SELECT '<<#', 'periodset', 'periodset', COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps <<# t2.ps;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '&<', 'int', 'intspanset', COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i &< t2.ss;
+SELECT '&<', 'int', 'intspanset', COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i &< t2.i;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '&<', 'intspanset', 'int', COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.ss &< t2.i;
+SELECT '&<', 'intspanset', 'int', COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.i &< t2.i;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '&<', 'intspanset', 'intspanset', COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.ss &< t2.ss;
+SELECT '&<', 'intspanset', 'intspanset', COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i &< t2.i;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '&<', 'float', 'floatspanset', COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f &< t2.ss;
+SELECT '&<', 'float', 'floatspanset', COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f &< t2.f;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '&<', 'floatspanset', 'float', COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.ss &< t2.f;
+SELECT '&<', 'floatspanset', 'float', COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.f &< t2.f;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '&<', 'floatspanset', 'floatspanset', COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss &< t2.ss;
+SELECT '&<', 'floatspanset', 'floatspanset', COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f &< t2.f;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
 SELECT '&<#', 'timestamptz', 'periodset', COUNT(*) FROM tbl_timestamptz, tbl_periodset WHERE t &<# ps;
@@ -228,22 +237,22 @@ INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
 SELECT '&<#', 'periodset', 'periodset', COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps &<# t2.ps;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '>>', 'int', 'intspanset', COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i >> t2.ss;
+SELECT '>>', 'int', 'intspanset', COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i >> t2.i;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '>>', 'intspanset', 'int', COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.ss >> t2.i;
+SELECT '>>', 'intspanset', 'int', COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.i >> t2.i;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '>>', 'intspanset', 'intspanset', COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.ss >> t2.ss;
+SELECT '>>', 'intspanset', 'intspanset', COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i >> t2.i;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '>>', 'float', 'floatspanset', COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f >> t2.ss;
+SELECT '>>', 'float', 'floatspanset', COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f >> t2.f;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '>>', 'floatspanset', 'float', COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.ss >> t2.f;
+SELECT '>>', 'floatspanset', 'float', COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.f >> t2.f;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '>>', 'floatspanset', 'floatspanset', COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss >> t2.ss;
+SELECT '>>', 'floatspanset', 'floatspanset', COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f >> t2.f;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
 SELECT '#>>', 'timestamptz', 'periodset', COUNT(*) FROM tbl_timestamptz, tbl_periodset WHERE t #>> ps;
@@ -267,22 +276,22 @@ INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
 SELECT '#>>', 'periodset', 'periodset', COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps #>> t2.ps;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '&>', 'int', 'intspanset', COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i &> t2.ss;
+SELECT '&>', 'int', 'intspanset', COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i &> t2.i;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '&>', 'intspanset', 'int', COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.ss &> t2.i;
+SELECT '&>', 'intspanset', 'int', COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.i &> t2.i;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '&>', 'intspanset', 'intspanset', COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.ss &> t2.ss;
+SELECT '&>', 'intspanset', 'intspanset', COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i &> t2.i;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '&>', 'float', 'floatspanset', COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f &> t2.ss;
+SELECT '&>', 'float', 'floatspanset', COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f &> t2.f;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '&>', 'floatspanset', 'float', COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.ss &> t2.f;
+SELECT '&>', 'floatspanset', 'float', COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.f &> t2.f;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '&>', 'floatspanset', 'floatspanset', COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss &> t2.ss;
+SELECT '&>', 'floatspanset', 'floatspanset', COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f &> t2.f;
 INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
 SELECT '#&>', 'timestamptz', 'periodset', COUNT(*) FROM tbl_timestamptz, tbl_periodset WHERE t #&> ps;
@@ -305,26 +314,40 @@ INSERT 0 1
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
 SELECT '#&>', 'periodset', 'periodset', COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps #&> t2.ps;
 INSERT 0 1
-CREATE INDEX tbl_intspanset_rtree_idx ON tbl_intspanset USING GIST(ss);
+INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
+SELECT '=', 'intset', 'intset', COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i = t2.i;
+INSERT 0 1
+INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
+SELECT '=', 'bigintset', 'bigintset', COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b = t2.b;
+INSERT 0 1
+INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
+SELECT '=', 'floatset', 'floatset', COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f = t2.f;
+INSERT 0 1
+INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
+SELECT '=', 'periodset', 'periodset', COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps = t2.ps;
+INSERT 0 1
+CREATE INDEX tbl_intspanset_rtree_idx ON tbl_intspanset USING GIST(i);
 CREATE INDEX
-CREATE INDEX tbl_floatspanset_rtree_idx ON tbl_floatspanset USING GIST(ss);
+CREATE INDEX tbl_bigintspanset_rtree_idx ON tbl_bigintspanset USING GIST(b);
+CREATE INDEX
+CREATE INDEX tbl_floatspanset_rtree_idx ON tbl_floatspanset USING GIST(f);
 CREATE INDEX
 CREATE INDEX tbl_periodset_rtree_idx ON tbl_periodset USING GIST(ps);
 CREATE INDEX
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.ss @> t2.i )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.i @> t2.i )
 WHERE op = '@>' AND leftarg = 'intspanset' AND rightarg = 'int';
 UPDATE 1
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.ss @> t2.ss )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i @> t2.i )
 WHERE op = '@>' AND leftarg = 'intspanset' AND rightarg = 'intspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.ss @> t2.f )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.f @> t2.f )
 WHERE op = '@>' AND leftarg = 'floatspanset' AND rightarg = 'float';
 UPDATE 1
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss @> t2.ss )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f @> t2.f )
 WHERE op = '@>' AND leftarg = 'floatspanset' AND rightarg = 'floatspanset';
 UPDATE 1
 UPDATE test_spansetops
@@ -348,19 +371,19 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE 
 WHERE op = '@>' AND leftarg = 'periodset' AND rightarg = 'periodset';
 UPDATE 1
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i <@ t2.ss )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i <@ t2.i )
 WHERE op = '<@' AND leftarg = 'int' AND rightarg = 'intspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.ss <@ t2.ss )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i <@ t2.i )
 WHERE op = '<@' AND leftarg = 'intspanset' AND rightarg = 'intspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f <@ t2.ss )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f <@ t2.f )
 WHERE op = '<@' AND leftarg = 'float' AND rightarg = 'floatspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss <@ t2.ss )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f <@ t2.f )
 WHERE op = '<@' AND leftarg = 'floatspanset' AND rightarg = 'floatspanset';
 UPDATE 1
 UPDATE test_spansetops
@@ -380,11 +403,11 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE 
 WHERE op = '<@' AND leftarg = 'periodset' AND rightarg = 'periodset';
 UPDATE 1
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss <@ t2.ss )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i <@ t2.i )
 WHERE op = '&&' AND leftarg = 'intspanset' AND rightarg = 'intspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss && t2.ss )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f && t2.f )
 WHERE op = '&&' AND leftarg = 'floatspanset' AND rightarg = 'floatspanset';
 UPDATE 1
 UPDATE test_spansetops
@@ -408,27 +431,27 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE 
 WHERE op = '&&' AND leftarg = 'periodset' AND rightarg = 'periodset';
 UPDATE 1
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i -|- t2.ss )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i -|- t2.i )
 WHERE op = '-|-' AND leftarg = 'int' AND rightarg = 'intspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.ss -|- t2.i )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.i -|- t2.i )
 WHERE op = '-|-' AND leftarg = 'intspanset' AND rightarg = 'int';
 UPDATE 1
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.ss -|- t2.ss )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i -|- t2.i )
 WHERE op = '-|-' AND leftarg = 'intspanset' AND rightarg = 'intspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f -|- t2.ss )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f -|- t2.f )
 WHERE op = '-|-' AND leftarg = 'float' AND rightarg = 'floatspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.ss -|- t2.f )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.f -|- t2.f )
 WHERE op = '-|-' AND leftarg = 'floatspanset' AND rightarg = 'float';
 UPDATE 1
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss -|- t2.ss )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f -|- t2.f )
 WHERE op = '-|-' AND leftarg = 'floatspanset' AND rightarg = 'floatspanset';
 UPDATE 1
 UPDATE test_spansetops
@@ -460,27 +483,27 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE 
 WHERE op = '-|-' AND leftarg = 'periodset' AND rightarg = 'periodset';
 UPDATE 1
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i << t2.ss )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i << t2.i )
 WHERE op = '<<' AND leftarg = 'int' AND rightarg = 'intspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.ss << t2.i )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.i << t2.i )
 WHERE op = '<<' AND leftarg = 'intspanset' AND rightarg = 'int';
 UPDATE 1
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.ss << t2.ss )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i << t2.i )
 WHERE op = '<<' AND leftarg = 'intspanset' AND rightarg = 'intspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f << t2.ss )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f << t2.f )
 WHERE op = '<<' AND leftarg = 'float' AND rightarg = 'floatspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.ss << t2.f )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.f << t2.f )
 WHERE op = '<<' AND leftarg = 'floatspanset' AND rightarg = 'float';
 UPDATE 1
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss << t2.ss )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f << t2.f )
 WHERE op = '<<' AND leftarg = 'floatspanset' AND rightarg = 'floatspanset';
 UPDATE 1
 UPDATE test_spansetops
@@ -512,27 +535,27 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE 
 WHERE op = '<<#' AND leftarg = 'periodset' AND rightarg = 'periodset';
 UPDATE 1
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i &< t2.ss )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i &< t2.i )
 WHERE op = '&<' AND leftarg = 'int' AND rightarg = 'intspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.ss &< t2.i )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.i &< t2.i )
 WHERE op = '&<' AND leftarg = 'intspanset' AND rightarg = 'int';
 UPDATE 1
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.ss &< t2.ss )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i &< t2.i )
 WHERE op = '&<' AND leftarg = 'intspanset' AND rightarg = 'intspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f &< t2.ss )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f &< t2.f )
 WHERE op = '&<' AND leftarg = 'float' AND rightarg = 'floatspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.ss &< t2.f )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.f &< t2.f )
 WHERE op = '&<' AND leftarg = 'floatspanset' AND rightarg = 'float';
 UPDATE 1
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss &< t2.ss )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f &< t2.f )
 WHERE op = '&<' AND leftarg = 'floatspanset' AND rightarg = 'floatspanset';
 UPDATE 1
 UPDATE test_spansetops
@@ -564,27 +587,27 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE 
 WHERE op = '&<#' AND leftarg = 'periodset' AND rightarg = 'periodset';
 UPDATE 1
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i >> t2.ss )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i >> t2.i )
 WHERE op = '>>' AND leftarg = 'int' AND rightarg = 'intspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.ss >> t2.i )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.i >> t2.i )
 WHERE op = '>>' AND leftarg = 'intspanset' AND rightarg = 'int';
 UPDATE 1
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.ss >> t2.ss )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i >> t2.i )
 WHERE op = '>>' AND leftarg = 'intspanset' AND rightarg = 'intspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f >> t2.ss )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f >> t2.f )
 WHERE op = '>>' AND leftarg = 'float' AND rightarg = 'floatspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.ss >> t2.f )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.f >> t2.f )
 WHERE op = '>>' AND leftarg = 'floatspanset' AND rightarg = 'float';
 UPDATE 1
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss >> t2.ss )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f >> t2.f )
 WHERE op = '>>' AND leftarg = 'floatspanset' AND rightarg = 'floatspanset';
 UPDATE 1
 UPDATE test_spansetops
@@ -616,27 +639,27 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE 
 WHERE op = '#>>' AND leftarg = 'periodset' AND rightarg = 'periodset';
 UPDATE 1
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i &> t2.ss )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i &> t2.i )
 WHERE op = '&>' AND leftarg = 'int' AND rightarg = 'intspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.ss &> t2.i )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.i &> t2.i )
 WHERE op =  '&>' AND leftarg = 'intspanset' AND rightarg = 'int';
 UPDATE 1
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.ss &> t2.ss )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i &> t2.i )
 WHERE op = '&>' AND leftarg = 'intspanset' AND rightarg = 'intspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f &> t2.ss )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f &> t2.f )
 WHERE op = '&>' AND leftarg = 'float' AND rightarg = 'floatspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.ss &> t2.f )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.f &> t2.f )
 WHERE op =  '&>' AND leftarg = 'floatspanset' AND rightarg = 'float';
 UPDATE 1
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss &> t2.ss )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f &> t2.f )
 WHERE op = '&>' AND leftarg = 'floatspanset' AND rightarg = 'floatspanset';
 UPDATE 1
 UPDATE test_spansetops
@@ -667,30 +690,52 @@ UPDATE test_spansetops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps #&> t2.ps )
 WHERE op = '#&>' AND leftarg = 'periodset' AND rightarg = 'periodset';
 UPDATE 1
+UPDATE test_spansetops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i = t2.i )
+WHERE op = '=' AND leftarg = 'intset' AND rightarg = 'intset';
+UPDATE 1
+UPDATE test_spansetops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b = t2.b )
+WHERE op = '=' AND leftarg = 'bigintset' AND rightarg = 'bigintset';
+UPDATE 1
+UPDATE test_spansetops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f = t2.f )
+WHERE op = '=' AND leftarg = 'floatset' AND rightarg = 'floatset';
+UPDATE 1
+UPDATE test_spansetops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps = t2.ps )
+WHERE op = '=' AND leftarg = 'periodset' AND rightarg = 'periodset';
+UPDATE 1
 DROP INDEX tbl_intspanset_rtree_idx;
+DROP INDEX
+DROP INDEX tbl_bigintspanset_rtree_idx;
 DROP INDEX
 DROP INDEX tbl_floatspanset_rtree_idx;
 DROP INDEX
 DROP INDEX tbl_periodset_rtree_idx;
 DROP INDEX
-CREATE INDEX tbl_intspanset_quadtree_idx ON tbl_intspanset USING SPGIST(ss);
+CREATE INDEX tbl_intspanset_quadtree_idx ON tbl_intspanset USING SPGIST(i);
 CREATE INDEX
-CREATE INDEX tbl_floatspanset_quadtree_idx ON tbl_floatspanset USING SPGIST(ss);
+CREATE INDEX tbl_bigintspanset_quadtree_idx ON tbl_bigintspanset USING SPGIST(b);
+CREATE INDEX
+CREATE INDEX tbl_floatspanset_quadtree_idx ON tbl_floatspanset USING SPGIST(f);
+CREATE INDEX
+CREATE INDEX tbl_periodset_quadtree_idx ON tbl_periodset USING SPGIST(ps);
 CREATE INDEX
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.ss @> t2.i )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.i @> t2.i )
 WHERE op = '@>' AND leftarg = 'intspanset' AND rightarg = 'int';
 UPDATE 1
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.ss @> t2.ss )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i @> t2.i )
 WHERE op = '@>' AND leftarg = 'intspanset' AND rightarg = 'intspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.ss @> t2.f )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.f @> t2.f )
 WHERE op = '@>' AND leftarg = 'floatspanset' AND rightarg = 'float';
 UPDATE 1
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss @> t2.ss )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f @> t2.f )
 WHERE op = '@>' AND leftarg = 'floatspanset' AND rightarg = 'floatspanset';
 UPDATE 1
 UPDATE test_spansetops
@@ -714,19 +759,19 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHE
 WHERE op = '@>' AND leftarg = 'periodset' AND rightarg = 'periodset';
 UPDATE 1
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i <@ t2.ss )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i <@ t2.i )
 WHERE op = '<@' AND leftarg = 'int' AND rightarg = 'intspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.ss <@ t2.ss )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i <@ t2.i )
 WHERE op = '<@' AND leftarg = 'intspanset' AND rightarg = 'intspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f <@ t2.ss )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f <@ t2.f )
 WHERE op = '<@' AND leftarg = 'float' AND rightarg = 'floatspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss <@ t2.ss )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f <@ t2.f )
 WHERE op = '<@' AND leftarg = 'floatspanset' AND rightarg = 'floatspanset';
 UPDATE 1
 UPDATE test_spansetops
@@ -746,11 +791,11 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHE
 WHERE op = '<@' AND leftarg = 'periodset' AND rightarg = 'periodset';
 UPDATE 1
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss <@ t2.ss )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i <@ t2.i )
 WHERE op = '&&' AND leftarg = 'intspanset' AND rightarg = 'intspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss && t2.ss )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f && t2.f )
 WHERE op = '&&' AND leftarg = 'floatspanset' AND rightarg = 'floatspanset';
 UPDATE 1
 UPDATE test_spansetops
@@ -774,27 +819,27 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHE
 WHERE op = '&&' AND leftarg = 'periodset' AND rightarg = 'periodset';
 UPDATE 1
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i -|- t2.ss )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i -|- t2.i )
 WHERE op = '-|-' AND leftarg = 'int' AND rightarg = 'intspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.ss -|- t2.i )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.i -|- t2.i )
 WHERE op = '-|-' AND leftarg = 'intspanset' AND rightarg = 'int';
 UPDATE 1
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.ss -|- t2.ss )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i -|- t2.i )
 WHERE op = '-|-' AND leftarg = 'intspanset' AND rightarg = 'intspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f -|- t2.ss )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f -|- t2.f )
 WHERE op = '-|-' AND leftarg = 'float' AND rightarg = 'floatspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.ss -|- t2.f )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.f -|- t2.f )
 WHERE op = '-|-' AND leftarg = 'floatspanset' AND rightarg = 'float';
 UPDATE 1
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss -|- t2.ss )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f -|- t2.f )
 WHERE op = '-|-' AND leftarg = 'floatspanset' AND rightarg = 'floatspanset';
 UPDATE 1
 UPDATE test_spansetops
@@ -826,27 +871,27 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHE
 WHERE op = '-|-' AND leftarg = 'periodset' AND rightarg = 'periodset';
 UPDATE 1
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i << t2.ss )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i << t2.i )
 WHERE op = '<<' AND leftarg = 'int' AND rightarg = 'intspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.ss << t2.i )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.i << t2.i )
 WHERE op = '<<' AND leftarg = 'intspanset' AND rightarg = 'int';
 UPDATE 1
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.ss << t2.ss )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i << t2.i )
 WHERE op = '<<' AND leftarg = 'intspanset' AND rightarg = 'intspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f << t2.ss )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f << t2.f )
 WHERE op = '<<' AND leftarg = 'float' AND rightarg = 'floatspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.ss << t2.f )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.f << t2.f )
 WHERE op = '<<' AND leftarg = 'floatspanset' AND rightarg = 'float';
 UPDATE 1
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss << t2.ss )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f << t2.f )
 WHERE op = '<<' AND leftarg = 'floatspanset' AND rightarg = 'floatspanset';
 UPDATE 1
 UPDATE test_spansetops
@@ -878,27 +923,27 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHE
 WHERE op = '<<#' AND leftarg = 'periodset' AND rightarg = 'periodset';
 UPDATE 1
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i &< t2.ss )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i &< t2.i )
 WHERE op = '&<' AND leftarg = 'int' AND rightarg = 'intspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.ss &< t2.i )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.i &< t2.i )
 WHERE op = '&<' AND leftarg = 'intspanset' AND rightarg = 'int';
 UPDATE 1
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.ss &< t2.ss )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i &< t2.i )
 WHERE op = '&<' AND leftarg = 'intspanset' AND rightarg = 'intspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f &< t2.ss )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f &< t2.f )
 WHERE op = '&<' AND leftarg = 'float' AND rightarg = 'floatspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.ss &< t2.f )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.f &< t2.f )
 WHERE op = '&<' AND leftarg = 'floatspanset' AND rightarg = 'float';
 UPDATE 1
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss &< t2.ss )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f &< t2.f )
 WHERE op = '&<' AND leftarg = 'floatspanset' AND rightarg = 'floatspanset';
 UPDATE 1
 UPDATE test_spansetops
@@ -930,27 +975,27 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHE
 WHERE op = '&<#' AND leftarg = 'periodset' AND rightarg = 'periodset';
 UPDATE 1
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i >> t2.ss )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i >> t2.i )
 WHERE op = '>>' AND leftarg = 'int' AND rightarg = 'intspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.ss >> t2.i )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.i >> t2.i )
 WHERE op = '>>' AND leftarg = 'intspanset' AND rightarg = 'int';
 UPDATE 1
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.ss >> t2.ss )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i >> t2.i )
 WHERE op = '>>' AND leftarg = 'intspanset' AND rightarg = 'intspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f >> t2.ss )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f >> t2.f )
 WHERE op = '>>' AND leftarg = 'float' AND rightarg = 'floatspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.ss >> t2.f )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.f >> t2.f )
 WHERE op = '>>' AND leftarg = 'floatspanset' AND rightarg = 'float';
 UPDATE 1
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss >> t2.ss )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f >> t2.f )
 WHERE op = '>>' AND leftarg = 'floatspanset' AND rightarg = 'floatspanset';
 UPDATE 1
 UPDATE test_spansetops
@@ -982,27 +1027,27 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHE
 WHERE op = '#>>' AND leftarg = 'periodset' AND rightarg = 'periodset';
 UPDATE 1
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i &> t2.ss )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i &> t2.i )
 WHERE op = '&>' AND leftarg = 'int' AND rightarg = 'intspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.ss &> t2.i )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.i &> t2.i )
 WHERE op =  '&>' AND leftarg = 'intspanset' AND rightarg = 'int';
 UPDATE 1
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.ss &> t2.ss )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i &> t2.i )
 WHERE op = '&>' AND leftarg = 'intspanset' AND rightarg = 'intspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f &> t2.ss )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f &> t2.f )
 WHERE op = '&>' AND leftarg = 'float' AND rightarg = 'floatspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.ss &> t2.f )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.f &> t2.f )
 WHERE op =  '&>' AND leftarg = 'floatspanset' AND rightarg = 'float';
 UPDATE 1
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss &> t2.ss )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f &> t2.f )
 WHERE op = '&>' AND leftarg = 'floatspanset' AND rightarg = 'floatspanset';
 UPDATE 1
 UPDATE test_spansetops
@@ -1033,32 +1078,52 @@ UPDATE test_spansetops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps #&> t2.ps )
 WHERE op = '#&>' AND leftarg = 'periodset' AND rightarg = 'periodset';
 UPDATE 1
+UPDATE test_spansetops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i = t2.i )
+WHERE op = '=' AND leftarg = 'intset' AND rightarg = 'intset';
+UPDATE 1
+UPDATE test_spansetops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b = t2.b )
+WHERE op = '=' AND leftarg = 'bigintset' AND rightarg = 'bigintset';
+UPDATE 1
+UPDATE test_spansetops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f = t2.f )
+WHERE op = '=' AND leftarg = 'floatset' AND rightarg = 'floatset';
+UPDATE 1
+UPDATE test_spansetops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps = t2.ps )
+WHERE op = '=' AND leftarg = 'periodset' AND rightarg = 'periodset';
+UPDATE 1
 DROP INDEX tbl_intspanset_quadtree_idx;
+DROP INDEX
+DROP INDEX tbl_bigintspanset_quadtree_idx;
 DROP INDEX
 DROP INDEX tbl_floatspanset_quadtree_idx;
 DROP INDEX
 DROP INDEX tbl_periodset_quadtree_idx;
-ERROR:  index "tbl_periodset_quadtree_idx" does not exist
-CREATE INDEX tbl_intspanset_kdtree_idx ON tbl_intspanset USING SPGIST(ss intspanset_kdtree_ops);
+DROP INDEX
+CREATE INDEX tbl_intspanset_kdtree_idx ON tbl_intspanset USING SPGIST(i intspanset_kdtree_ops);
 CREATE INDEX
-CREATE INDEX tbl_floatspanset_kdtree_idx ON tbl_floatspanset USING SPGIST(ss floatspanset_kdtree_ops);
+CREATE INDEX tbl_bigintspanset_kdtree_idx ON tbl_bigintspanset USING SPGIST(b bigintspanset_kdtree_ops);
+CREATE INDEX
+CREATE INDEX tbl_floatspanset_kdtree_idx ON tbl_floatspanset USING SPGIST(f floatspanset_kdtree_ops);
 CREATE INDEX
 CREATE INDEX tbl_periodset_kdtree_idx ON tbl_periodset USING SPGIST(ps periodset_kdtree_ops);
 CREATE INDEX
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.ss @> t2.i )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.i @> t2.i )
 WHERE op = '@>' AND leftarg = 'intspanset' AND rightarg = 'int';
 UPDATE 1
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.ss @> t2.ss )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i @> t2.i )
 WHERE op = '@>' AND leftarg = 'intspanset' AND rightarg = 'intspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.ss @> t2.f )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.f @> t2.f )
 WHERE op = '@>' AND leftarg = 'floatspanset' AND rightarg = 'float';
 UPDATE 1
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss @> t2.ss )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f @> t2.f )
 WHERE op = '@>' AND leftarg = 'floatspanset' AND rightarg = 'floatspanset';
 UPDATE 1
 UPDATE test_spansetops
@@ -1082,19 +1147,19 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE
 WHERE op = '@>' AND leftarg = 'periodset' AND rightarg = 'periodset';
 UPDATE 1
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i <@ t2.ss )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i <@ t2.i )
 WHERE op = '<@' AND leftarg = 'int' AND rightarg = 'intspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.ss <@ t2.ss )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i <@ t2.i )
 WHERE op = '<@' AND leftarg = 'intspanset' AND rightarg = 'intspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f <@ t2.ss )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f <@ t2.f )
 WHERE op = '<@' AND leftarg = 'float' AND rightarg = 'floatspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss <@ t2.ss )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f <@ t2.f )
 WHERE op = '<@' AND leftarg = 'floatspanset' AND rightarg = 'floatspanset';
 UPDATE 1
 UPDATE test_spansetops
@@ -1114,11 +1179,11 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE
 WHERE op = '<@' AND leftarg = 'periodset' AND rightarg = 'periodset';
 UPDATE 1
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss <@ t2.ss )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i <@ t2.i )
 WHERE op = '&&' AND leftarg = 'intspanset' AND rightarg = 'intspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss && t2.ss )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f && t2.f )
 WHERE op = '&&' AND leftarg = 'floatspanset' AND rightarg = 'floatspanset';
 UPDATE 1
 UPDATE test_spansetops
@@ -1142,27 +1207,27 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE
 WHERE op = '&&' AND leftarg = 'periodset' AND rightarg = 'periodset';
 UPDATE 1
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i -|- t2.ss )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i -|- t2.i )
 WHERE op = '-|-' AND leftarg = 'int' AND rightarg = 'intspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.ss -|- t2.i )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.i -|- t2.i )
 WHERE op = '-|-' AND leftarg = 'intspanset' AND rightarg = 'int';
 UPDATE 1
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.ss -|- t2.ss )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i -|- t2.i )
 WHERE op = '-|-' AND leftarg = 'intspanset' AND rightarg = 'intspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f -|- t2.ss )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f -|- t2.f )
 WHERE op = '-|-' AND leftarg = 'float' AND rightarg = 'floatspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.ss -|- t2.f )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.f -|- t2.f )
 WHERE op = '-|-' AND leftarg = 'floatspanset' AND rightarg = 'float';
 UPDATE 1
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss -|- t2.ss )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f -|- t2.f )
 WHERE op = '-|-' AND leftarg = 'floatspanset' AND rightarg = 'floatspanset';
 UPDATE 1
 UPDATE test_spansetops
@@ -1194,27 +1259,27 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE
 WHERE op = '-|-' AND leftarg = 'periodset' AND rightarg = 'periodset';
 UPDATE 1
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i << t2.ss )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i << t2.i )
 WHERE op = '<<' AND leftarg = 'int' AND rightarg = 'intspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.ss << t2.i )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.i << t2.i )
 WHERE op = '<<' AND leftarg = 'intspanset' AND rightarg = 'int';
 UPDATE 1
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.ss << t2.ss )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i << t2.i )
 WHERE op = '<<' AND leftarg = 'intspanset' AND rightarg = 'intspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f << t2.ss )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f << t2.f )
 WHERE op = '<<' AND leftarg = 'float' AND rightarg = 'floatspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.ss << t2.f )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.f << t2.f )
 WHERE op = '<<' AND leftarg = 'floatspanset' AND rightarg = 'float';
 UPDATE 1
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss << t2.ss )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f << t2.f )
 WHERE op = '<<' AND leftarg = 'floatspanset' AND rightarg = 'floatspanset';
 UPDATE 1
 UPDATE test_spansetops
@@ -1246,27 +1311,27 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE
 WHERE op = '<<#' AND leftarg = 'periodset' AND rightarg = 'periodset';
 UPDATE 1
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i &< t2.ss )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i &< t2.i )
 WHERE op = '&<' AND leftarg = 'int' AND rightarg = 'intspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.ss &< t2.i )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.i &< t2.i )
 WHERE op = '&<' AND leftarg = 'intspanset' AND rightarg = 'int';
 UPDATE 1
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.ss &< t2.ss )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i &< t2.i )
 WHERE op = '&<' AND leftarg = 'intspanset' AND rightarg = 'intspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f &< t2.ss )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f &< t2.f )
 WHERE op = '&<' AND leftarg = 'float' AND rightarg = 'floatspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.ss &< t2.f )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.f &< t2.f )
 WHERE op = '&<' AND leftarg = 'floatspanset' AND rightarg = 'float';
 UPDATE 1
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss &< t2.ss )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f &< t2.f )
 WHERE op = '&<' AND leftarg = 'floatspanset' AND rightarg = 'floatspanset';
 UPDATE 1
 UPDATE test_spansetops
@@ -1298,27 +1363,27 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE
 WHERE op = '&<#' AND leftarg = 'periodset' AND rightarg = 'periodset';
 UPDATE 1
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i >> t2.ss )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i >> t2.i )
 WHERE op = '>>' AND leftarg = 'int' AND rightarg = 'intspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.ss >> t2.i )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.i >> t2.i )
 WHERE op = '>>' AND leftarg = 'intspanset' AND rightarg = 'int';
 UPDATE 1
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.ss >> t2.ss )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i >> t2.i )
 WHERE op = '>>' AND leftarg = 'intspanset' AND rightarg = 'intspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f >> t2.ss )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f >> t2.f )
 WHERE op = '>>' AND leftarg = 'float' AND rightarg = 'floatspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.ss >> t2.f )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.f >> t2.f )
 WHERE op = '>>' AND leftarg = 'floatspanset' AND rightarg = 'float';
 UPDATE 1
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss >> t2.ss )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f >> t2.f )
 WHERE op = '>>' AND leftarg = 'floatspanset' AND rightarg = 'floatspanset';
 UPDATE 1
 UPDATE test_spansetops
@@ -1350,27 +1415,27 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE
 WHERE op = '#>>' AND leftarg = 'periodset' AND rightarg = 'periodset';
 UPDATE 1
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i &> t2.ss )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i &> t2.i )
 WHERE op = '&>' AND leftarg = 'int' AND rightarg = 'intspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.ss &> t2.i )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.i &> t2.i )
 WHERE op =  '&>' AND leftarg = 'intspanset' AND rightarg = 'int';
 UPDATE 1
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.ss &> t2.ss )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i &> t2.i )
 WHERE op = '&>' AND leftarg = 'intspanset' AND rightarg = 'intspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f &> t2.ss )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f &> t2.f )
 WHERE op = '&>' AND leftarg = 'float' AND rightarg = 'floatspanset';
 UPDATE 1
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.ss &> t2.f )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.f &> t2.f )
 WHERE op =  '&>' AND leftarg = 'floatspanset' AND rightarg = 'float';
 UPDATE 1
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss &> t2.ss )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f &> t2.f )
 WHERE op = '&>' AND leftarg = 'floatspanset' AND rightarg = 'floatspanset';
 UPDATE 1
 UPDATE test_spansetops
@@ -1401,7 +1466,25 @@ UPDATE test_spansetops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps #&> t2.ps )
 WHERE op = '#&>' AND leftarg = 'periodset' AND rightarg = 'periodset';
 UPDATE 1
+UPDATE test_spansetops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i = t2.i )
+WHERE op = '=' AND leftarg = 'intset' AND rightarg = 'intset';
+UPDATE 1
+UPDATE test_spansetops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset t2 WHERE t1.b = t2.b )
+WHERE op = '=' AND leftarg = 'bigintset' AND rightarg = 'bigintset';
+UPDATE 1
+UPDATE test_spansetops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f = t2.f )
+WHERE op = '=' AND leftarg = 'floatset' AND rightarg = 'floatset';
+UPDATE 1
+UPDATE test_spansetops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps = t2.ps )
+WHERE op = '=' AND leftarg = 'periodset' AND rightarg = 'periodset';
+UPDATE 1
 DROP INDEX tbl_intspanset_kdtree_idx;
+DROP INDEX
+DROP INDEX tbl_bigintspanset_kdtree_idx;
 DROP INDEX
 DROP INDEX tbl_floatspanset_kdtree_idx;
 DROP INDEX

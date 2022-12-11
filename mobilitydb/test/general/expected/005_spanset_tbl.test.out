@@ -25,13 +25,13 @@ COPY tbl_floatspanset_tmp FROM '/tmp/tbl_floatspanset' (FORMAT BINARY);
 COPY 100
 COPY tbl_periodset_tmp FROM '/tmp/tbl_periodset' (FORMAT BINARY);
 COPY 100
-SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset_tmp t2 WHERE t1.k = t2.k AND t1.ss <> t2.ss;
+SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset_tmp t2 WHERE t1.k = t2.k AND t1.i <> t2.i;
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset_tmp t2 WHERE t1.k = t2.k AND t1.ss <> t2.ss;
+SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset_tmp t2 WHERE t1.k = t2.k AND t1.f <> t2.f;
  count 
 -------
      0
@@ -49,13 +49,13 @@ DROP TABLE tbl_floatspanset_tmp;
 DROP TABLE
 DROP TABLE tbl_periodset_tmp;
 DROP TABLE
-SELECT COUNT(*) FROM tbl_intspanset WHERE intspansetFromBinary(asBinary(ss)) <> ss;
+SELECT COUNT(*) FROM tbl_intspanset WHERE intspansetFromBinary(asBinary(i)) <> i;
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_floatspanset WHERE floatspansetFromBinary(asBinary(ss)) <> ss;
+SELECT COUNT(*) FROM tbl_floatspanset WHERE floatspansetFromBinary(asBinary(f)) <> f;
  count 
 -------
      0
@@ -67,13 +67,13 @@ SELECT COUNT(*) FROM tbl_periodset WHERE periodsetFromBinary(asBinary(ps)) <> ps
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_intspanset WHERE intspansetFromHexWKB(asHexWKB(ss)) <> ss;
+SELECT COUNT(*) FROM tbl_intspanset WHERE intspansetFromHexWKB(asHexWKB(i)) <> i;
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_floatspanset WHERE floatspansetFromHexWKB(asHexWKB(ss)) <> ss;
+SELECT COUNT(*) FROM tbl_floatspanset WHERE floatspansetFromHexWKB(asHexWKB(f)) <> f;
  count 
 -------
      0
@@ -103,13 +103,13 @@ SELECT MAX(lower(periodset(p))) FROM tbl_period;
  2001-12-29 20:53:00+00
 (1 row)
 
-SELECT MAX(lower(intspan(ss))) FROM tbl_intspanset;
+SELECT MAX(lower(intspan(i))) FROM tbl_intspanset;
  max 
 -----
   55
 (1 row)
 
-SELECT MAX(lower(floatspan(ss))) FROM tbl_floatspanset;
+SELECT MAX(lower(floatspan(f))) FROM tbl_floatspanset;
         max         
 --------------------
  47.333306414151025
@@ -121,19 +121,19 @@ SELECT MAX(lower(period(ps))) FROM tbl_periodset;
  2001-12-30 12:01:00+00
 (1 row)
 
-SELECT MAX(lower(round(ss, 6))) FROM tbl_floatspanset;
+SELECT MAX(lower(round(f, 6))) FROM tbl_floatspanset;
     max    
 -----------
  47.333306
 (1 row)
 
-SELECT MAX(memorySize(ss)) FROM tbl_intspanset;
+SELECT MAX(memorySize(i)) FROM tbl_intspanset;
  max 
 -----
  280
 (1 row)
 
-SELECT MAX(memorySize(ss)) FROM tbl_floatspanset;
+SELECT MAX(memorySize(f)) FROM tbl_floatspanset;
  max 
 -----
  280
@@ -145,13 +145,13 @@ SELECT MAX(memorySize(ps)) FROM tbl_periodset;
  256
 (1 row)
 
-SELECT MAX(lower(ss)) FROM tbl_intspanset;
+SELECT MAX(lower(i)) FROM tbl_intspanset;
  max 
 -----
   55
 (1 row)
 
-SELECT round(MAX(lower(ss))::numeric, 6) FROM tbl_floatspanset;
+SELECT round(MAX(lower(f))::numeric, 6) FROM tbl_floatspanset;
    round   
 -----------
  47.333306
@@ -163,13 +163,13 @@ SELECT MAX(lower(ps)) FROM tbl_periodset;
  2001-12-30 12:01:00+00
 (1 row)
 
-SELECT MAX(upper(ss)) FROM tbl_intspanset;
+SELECT MAX(upper(i)) FROM tbl_intspanset;
  max 
 -----
  100
 (1 row)
 
-SELECT round(MAX(upper(ss))::numeric, 6) FROM tbl_floatspanset;
+SELECT round(MAX(upper(f))::numeric, 6) FROM tbl_floatspanset;
    round    
 ------------
  101.049424
@@ -181,14 +181,14 @@ SELECT MAX(upper(ps)) FROM tbl_periodset;
  2001-12-30 12:25:00+00
 (1 row)
 
-SELECT DISTINCT lower_inc(ss) FROM tbl_intspanset;
+SELECT DISTINCT lower_inc(i) FROM tbl_intspanset;
  lower_inc 
 -----------
  
  t
 (2 rows)
 
-SELECT DISTINCT lower_inc(ss) FROM tbl_floatspanset;
+SELECT DISTINCT lower_inc(f) FROM tbl_floatspanset;
  lower_inc 
 -----------
  
@@ -203,14 +203,14 @@ SELECT DISTINCT lower_inc(ps) FROM tbl_periodset;
  t
 (3 rows)
 
-SELECT DISTINCT upper_inc(ss) FROM tbl_intspanset;
+SELECT DISTINCT upper_inc(i) FROM tbl_intspanset;
  upper_inc 
 -----------
  f
  
 (2 rows)
 
-SELECT DISTINCT upper_inc(ss) FROM tbl_floatspanset;
+SELECT DISTINCT upper_inc(f) FROM tbl_floatspanset;
  upper_inc 
 -----------
  f
@@ -225,13 +225,13 @@ SELECT DISTINCT upper_inc(ps) FROM tbl_periodset;
  t
 (3 rows)
 
-SELECT MAX(width(ss)) FROM tbl_intspanset;
+SELECT MAX(width(i)) FROM tbl_intspanset;
  max 
 -----
   36
 (1 row)
 
-SELECT MAX(width(ss)) FROM tbl_floatspanset;
+SELECT MAX(width(f)) FROM tbl_floatspanset;
         max         
 --------------------
  35.939052925331154
@@ -249,61 +249,61 @@ SELECT MAX(timespan(ps)) FROM tbl_periodset;
  01:45:00
 (1 row)
 
-SELECT MAX(numSpans(ss)) FROM tbl_intspanset;
+SELECT MAX(numSpans(i)) FROM tbl_intspanset;
  max 
 -----
   10
 (1 row)
 
-SELECT MAX(lower(startSpan(ss))) FROM tbl_intspanset;
+SELECT MAX(lower(startSpan(i))) FROM tbl_intspanset;
  max 
 -----
   55
 (1 row)
 
-SELECT MAX(lower(endSpan(ss))) FROM tbl_intspanset;
+SELECT MAX(lower(endSpan(i))) FROM tbl_intspanset;
  max 
 -----
   95
 (1 row)
 
-SELECT MAX(lower(spanN(ss, 1))) FROM tbl_intspanset;
+SELECT MAX(lower(spanN(i, 1))) FROM tbl_intspanset;
  max 
 -----
   55
 (1 row)
 
-SELECT MAX(array_length(spans(ss),1)) FROM tbl_intspanset;
+SELECT MAX(array_length(spans(i),1)) FROM tbl_intspanset;
  max 
 -----
   10
 (1 row)
 
-SELECT MAX(numSpans(ss)) FROM tbl_floatspanset;
+SELECT MAX(numSpans(f)) FROM tbl_floatspanset;
  max 
 -----
   10
 (1 row)
 
-SELECT MAX(lower(startSpan(ss))) FROM tbl_floatspanset;
+SELECT MAX(lower(startSpan(f))) FROM tbl_floatspanset;
         max         
 --------------------
  47.333306414151025
 (1 row)
 
-SELECT MAX(lower(endSpan(ss))) FROM tbl_floatspanset;
+SELECT MAX(lower(endSpan(f))) FROM tbl_floatspanset;
         max        
 -------------------
  99.28665091494118
 (1 row)
 
-SELECT MAX(lower(spanN(ss, 1))) FROM tbl_floatspanset;
+SELECT MAX(lower(spanN(f, 1))) FROM tbl_floatspanset;
         max         
 --------------------
  47.333306414151025
 (1 row)
 
-SELECT MAX(array_length(spans(ss),1)) FROM tbl_floatspanset;
+SELECT MAX(array_length(spans(f),1)) FROM tbl_floatspanset;
  max 
 -----
   10
@@ -375,85 +375,85 @@ SELECT MAX(startTimestamp(shift(ps, '5 min'))) FROM tbl_periodset;
  2001-12-30 12:06:00+00
 (1 row)
 
-SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE intspanset_cmp(t1.ss, t2.ss) = -1;
+SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE intspanset_cmp(t1.i, t2.i) = -1;
  count 
 -------
   4851
 (1 row)
 
-SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.ss = t2.ss;
+SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i = t2.i;
  count 
 -------
     99
 (1 row)
 
-SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.ss <> t2.ss;
+SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i <> t2.i;
  count 
 -------
   9702
 (1 row)
 
-SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.ss < t2.ss;
+SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i < t2.i;
  count 
 -------
   4851
 (1 row)
 
-SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.ss <= t2.ss;
+SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i <= t2.i;
  count 
 -------
   4950
 (1 row)
 
-SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.ss > t2.ss;
+SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i > t2.i;
  count 
 -------
   4851
 (1 row)
 
-SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.ss >= t2.ss;
+SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i >= t2.i;
  count 
 -------
   4950
 (1 row)
 
-SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE floatspanset_cmp(t1.ss, t2.ss) = -1;
+SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE floatspanset_cmp(t1.f, t2.f) = -1;
  count 
 -------
   4851
 (1 row)
 
-SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss = t2.ss;
+SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f = t2.f;
  count 
 -------
     99
 (1 row)
 
-SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss <> t2.ss;
+SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f <> t2.f;
  count 
 -------
   9702
 (1 row)
 
-SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss < t2.ss;
+SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f < t2.f;
  count 
 -------
   4851
 (1 row)
 
-SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss <= t2.ss;
+SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f <= t2.f;
  count 
 -------
   4950
 (1 row)
 
-SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss > t2.ss;
+SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f > t2.f;
  count 
 -------
   4851
 (1 row)
 
-SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.ss >= t2.ss;
+SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f >= t2.f;
  count 
 -------
   4950

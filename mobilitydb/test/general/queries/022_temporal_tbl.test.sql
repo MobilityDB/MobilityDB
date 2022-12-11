@@ -489,9 +489,9 @@ SELECT COUNT(*) FROM tbl_tint, tbl_intspan WHERE temp != merge(atSpan(temp, i), 
 SELECT COUNT(*) FROM tbl_tfloat, tbl_floatspan WHERE temp != merge(atSpan(temp, f), minusSpan(temp, f));
 
 SELECT COUNT(*) FROM tbl_tint, tbl_intspanset
-WHERE temp != merge(atSpanset(temp, ss), minusSpanset(temp, ss));
+WHERE temp != merge(atSpanset(temp, i), minusSpanset(temp, i));
 SELECT COUNT(*) FROM tbl_tfloat, tbl_floatspanset
-WHERE temp != merge(atSpanset(temp, ss), minusSpanset(temp, ss));
+WHERE temp != merge(atSpanset(temp, f), minusSpanset(temp, f));
 
 SELECT COUNT(*) FROM tbl_tint WHERE temp != merge(atMin(temp), minusMin(temp));
 SELECT COUNT(*) FROM tbl_tfloat WHERE temp != merge(atMin(temp), minusMin(temp));
