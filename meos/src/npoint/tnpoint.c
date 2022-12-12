@@ -393,7 +393,7 @@ tnpointinst_route(const TInstant *inst)
 }
 
 /**
- * @brief Return the route of a temporal network point.
+ * @brief Return the single route of a temporal network point.
  */
 int64
 tnpoint_route(const Temporal *temp)
@@ -408,7 +408,7 @@ tnpoint_route(const Temporal *temp)
 }
 
 /**
- * @brief Return the array of routes of a temporal network point
+ * @brief Return the routes of a temporal network point
  */
 int64 *
 tnpointinst_routes(const TInstant *inst)
@@ -420,7 +420,7 @@ tnpointinst_routes(const TInstant *inst)
 }
 
 /**
- * @brief Return the array of routes of a temporal network point
+ * @brief Return the routes of a temporal network point
  */
 int64 *
 tnpointdiscseq_routes(const TSequence *seq)
@@ -436,7 +436,7 @@ tnpointdiscseq_routes(const TSequence *seq)
 }
 
 /**
- * @brief Return the array of routes of a temporal network point
+ * @brief Return the routes of a temporal network point
  */
 int64 *
 tnpointcontseq_routes(const TSequence *seq)
@@ -449,7 +449,7 @@ tnpointcontseq_routes(const TSequence *seq)
 }
 
 /**
- * @brief Return the array of routes of a temporal network point
+ * @brief Return the routes of a temporal network point
  */
 int64 *
 tnpointseqset_routes(const TSequenceSet *ss)

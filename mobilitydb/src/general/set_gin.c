@@ -35,12 +35,8 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/set.h"
-
-#define GinOverlapStrategy          1
-#define GinContainsStrategyValue    2
-#define GinContainsStrategySet      3
-#define GinContainedStrategy        4
-#define GinEqualStrategy            5
+/* MobilityDB */
+#include "pg_general/temporal.h"
 
 PG_FUNCTION_INFO_V1(Set_gin_extract_value);
 /*

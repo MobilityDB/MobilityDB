@@ -87,6 +87,16 @@ extern Datum float8_numeric(PG_FUNCTION_ARGS);
 #define RTOverBackStrategyNumber      35    /* for /&> */
 
 /*****************************************************************************
+ * Operator strategy numbers used in the GIN set and tnpoint opclasses
+ *****************************************************************************/
+
+#define GinOverlapStrategy             1    /* for && */
+#define GinContainsStrategyValue       2    /* for @> */
+#define GinContainsStrategySet         3    /* for @> */
+#define GinContainedStrategy           4    /* for <@ */
+#define GinEqualStrategy               5    /* for = */
+
+/*****************************************************************************
  * Struct definitions for the unnest operation
  *****************************************************************************/
 

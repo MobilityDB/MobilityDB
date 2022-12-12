@@ -44,35 +44,24 @@ RETURNS internal
 AS 'MODULE_PATHNAME', 'Tnpoint_gin_extract_query'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tnpoint_gin_consistent(internal, int2, bigint, int4, internal, internal, internal, internal)
-RETURNS bool
-AS 'MODULE_PATHNAME', 'Tnpoint_gin_consistent'
-LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION tnpoint_gin_triconsistent(internal, int2, bigint, int4, internal, internal, internal)
-RETURNS "char"
-AS 'MODULE_PATHNAME', 'Tnpoint_gin_triconsistent'
-LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 /******************************************************************************/
 
 CREATE OPERATOR CLASS tnpoint_gin_ops
   DEFAULT FOR TYPE tnpoint USING gin AS
   STORAGE bigint,
   -- overlaps
-  OPERATOR  3    @@ (tnpoint, tnpoint),
-    -- same
-  OPERATOR  6    = (tnpoint, tnpoint),
-  -- contains
-  -- OPERATOR  7    @> (tnpoint, bigint),
-  OPERATOR  7    @> (tnpoint, tnpoint),
-  -- contained by
-  -- OPERATOR  8    <@ (bigint, tnpoint),
-  OPERATOR  8    <@ (tnpoint, tnpoint),
+  OPERATOR  1    @@ (tnpoint, tnpoint),
+  -- contains value
+  OPERATOR  2    @? (tnpoint, bigint),
+  -- contains set
+  OPERATOR  3    @? (tnpoint, tnpoint),
+  -- contained
+  OPERATOR  4    ?@ (tnpoint, tnpoint),
+  -- equal
+  OPERATOR  5    @= (tnpoint, tnpoint),
   -- functions
   FUNCTION   2    tnpoint_gin_extract_value(bigint, internal),
   FUNCTION   3    tnpoint_gin_extract_query(bigint, internal, int2, internal, internal, internal, internal),
-  FUNCTION   4    tnpoint_gin_consistent(internal, int2, bigint, int4, internal, internal, internal, internal),
-  FUNCTION   6    tnpoint_gin_triconsistent(internal, int2, bigint, int4, internal, internal, internal);
+  FUNCTION   6    set_gin_triconsistent(internal, int2, bigint, int4, internal, internal, internal);
 
 /******************************************************************************/
