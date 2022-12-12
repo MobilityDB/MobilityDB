@@ -483,7 +483,6 @@ span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
       lower = Int32GetDatum(DatumGetInt32(lower) + 1);
       lower_inc = true;
     }
-
     if (upper_inc)
     {
       upper = Int32GetDatum(DatumGetInt32(upper) + 1);
@@ -497,7 +496,6 @@ span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
       lower = Int64GetDatum(DatumGetInt64(lower) + 1);
       lower_inc = true;
     }
-
     if (upper_inc)
     {
       upper = Int64GetDatum(DatumGetInt64(upper) + 1);

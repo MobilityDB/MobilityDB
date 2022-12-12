@@ -325,8 +325,8 @@ tsequence_tagg1(const TSequence *seq1, const TSequence *seq2,
     return 1;
   }
   int count;
-  TSequence **normseqs = tseqarr_normalize(
-    (const TSequence **) sequences, k, &count);
+  TSequence **normseqs = tseqarr_normalize((const TSequence **) sequences, k,
+    &count);
   for (int i = 0; i < count; i++)
     result[i] = normseqs[i];
   pfree(normseqs);

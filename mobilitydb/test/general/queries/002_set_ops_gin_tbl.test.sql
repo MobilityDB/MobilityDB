@@ -64,14 +64,9 @@ INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
 SELECT '@>', 'bigintset', 'bigintset', COUNT(*) FROM tbl_bigintset WHERE b @> bigintset '{25, 35}';
 
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'int', 'intset', COUNT(*) FROM tbl_intset WHERE 25 <@ i;
+SELECT '<@', 'intset', 'intset', COUNT(*) FROM tbl_intset WHERE i <@ intset '{25, 35}';
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'bigint', 'bigintset', COUNT(*) FROM tbl_bigintset WHERE 25 <@ b;
-
-INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'intset', 'intset', COUNT(*) FROM tbl_intset WHERE intset '{25, 35}' <@ i;
-INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'bigintset', 'bigintset', COUNT(*) FROM tbl_bigintset WHERE bigintset '{25, 35}' <@ b;
+SELECT '<@', 'bigintset', 'bigintset', COUNT(*) FROM tbl_bigintset WHERE b <@ bigintset '{25, 35}';
 
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
 SELECT '=', 'intset', 'intset', COUNT(*) FROM tbl_intset WHERE i = intset '{25, 35}';
@@ -107,17 +102,10 @@ SET gin_idx = ( SELECT COUNT(*) FROM tbl_bigintset WHERE b @> bigintset '{25, 35
 WHERE op = '@>' AND leftarg = 'bigintset' AND rightarg = 'bigintset';
 
 UPDATE test_setops
-SET gin_idx = ( SELECT COUNT(*) FROM tbl_intset WHERE 25 <@ i )
-WHERE op = '<@' AND leftarg = 'int' AND rightarg = 'intset';
-UPDATE test_setops
-SET gin_idx = ( SELECT COUNT(*) FROM tbl_bigintset WHERE 25 <@ b )
-WHERE op = '<@' AND leftarg = 'bigint' AND rightarg = 'bigintset';
-
-UPDATE test_setops
-SET gin_idx = ( SELECT COUNT(*) FROM tbl_intset WHERE intset '{25, 35}' <@ i )
+SET gin_idx = ( SELECT COUNT(*) FROM tbl_intset WHERE i <@ intset '{25, 35}' )
 WHERE op = '<@' AND leftarg = 'intset' AND rightarg = 'intset';
 UPDATE test_setops
-SET gin_idx = ( SELECT COUNT(*) FROM tbl_bigintset WHERE bigintset '{25, 35}' <@ b )
+SET gin_idx = ( SELECT COUNT(*) FROM tbl_bigintset WHERE b <@ bigintset '{25, 35}' )
 WHERE op = '<@' AND leftarg = 'bigintset' AND rightarg = 'bigintset';
 
 UPDATE test_setops

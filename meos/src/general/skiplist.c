@@ -616,6 +616,8 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
       height = rheight;
   }
 
+  if (spliced_count != 0 && list->elemtype != TIMESTAMPTZ)
+    pfree_array((void **) values, count);
   return;
 }
 

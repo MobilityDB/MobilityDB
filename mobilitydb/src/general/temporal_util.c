@@ -196,15 +196,6 @@ datumarr_extract(ArrayType *array, int *count)
 }
 
 /**
- * Extract a C array from a PostgreSQL array containing timestamps
- */
-TimestampTz *
-timestamparr_extract(ArrayType *array, int *count)
-{
-  return (TimestampTz *) datumarr_extract(array, count);
-}
-
-/**
  * Extract a C array from a PostgreSQL array containing spans
  */
 Span **
@@ -269,18 +260,6 @@ timestamparr_to_array(const TimestampTz *times, int count)
   assert(count > 0);
   ArrayType *result = construct_array((Datum *) times, count, TIMESTAMPTZOID,
     8, true, 'd');
-  return result;
-}
-
-/**
- * Convert a C array of periods into a PostgreSQL array
- */
-ArrayType *
-periodarr_to_array(const Period **periods, int count)
-{
-  assert(count > 0);
-  ArrayType *result = construct_array((Datum *) periods, count,
-    type_oid(T_PERIOD), sizeof(Period), false, 'd');
   return result;
 }
 

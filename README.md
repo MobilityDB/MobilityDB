@@ -78,7 +78,7 @@ Branches
 Status
 ------
 
-The extension is under development. We are planning to release the first version in 2021.
+The current version is 1.0. We are planning to release version 1.1 in the beginning of 2023.
 
 Requirements
 ------------

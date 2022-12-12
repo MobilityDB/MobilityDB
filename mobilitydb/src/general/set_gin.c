@@ -39,9 +39,8 @@
 #define GinOverlapStrategy          1
 #define GinContainsStrategyValue    2
 #define GinContainsStrategySet      3
-#define GinContainedStrategyValue   4
-#define GinContainedStrategySet     5
-#define GinEqualStrategy            6
+#define GinContainedStrategy        4
+#define GinEqualStrategy            5
 
 PG_FUNCTION_INFO_V1(Set_gin_extract_value);
 /*
@@ -79,14 +78,13 @@ Set_gin_extract_query(PG_FUNCTION_ARGS)
   switch (strategy)
   {
     case GinContainsStrategyValue:
-    case GinContainedStrategyValue:
       elems = palloc(sizeof(Datum));
       elems[0] = PG_GETARG_DATUM(0);
       *nkeys = 1;
       break;
     case GinOverlapStrategy:
     case GinContainsStrategySet:
-    case GinContainedStrategySet:
+    case GinContainedStrategy:
     case GinEqualStrategy:
       os = PG_GETARG_ORDEREDSET_P(0);
       elems = orderedset_values(os);
@@ -98,86 +96,6 @@ Set_gin_extract_query(PG_FUNCTION_ARGS)
          strategy);
   }
   PG_RETURN_POINTER(elems);
-}
-
-PG_FUNCTION_INFO_V1(Set_gin_consistent);
-/*
- * consistent support function
- */
-Datum
-Set_gin_consistent(PG_FUNCTION_ARGS)
-{
-  bool *check = (bool *) PG_GETARG_POINTER(0);
-  StrategyNumber strategy = PG_GETARG_UINT16(1);
-  int32 nkeys = PG_GETARG_INT32(3);
-  bool *recheck = (bool *) PG_GETARG_POINTER(5);
-  bool *nullFlags = (bool *) PG_GETARG_POINTER(7);
-  bool res;
-  int32 i;
-
-  switch (strategy)
-  {
-    case GinOverlapStrategy:
-      /* result is not lossy */
-      *recheck = false;
-      /* must have a match for at least one non-null element */
-      res = false;
-      for (i = 0; i < nkeys; i++)
-      {
-        if (check[i] && !nullFlags[i])
-        {
-          res = true;
-          break;
-        }
-      }
-      break;
-    case GinContainsStrategyValue:
-    case GinContainsStrategySet:
-      /* result is not lossy */
-      *recheck = false;
-      /* must have all elements in check[] true, and no nulls */
-      res = true;
-      for (i = 0; i < nkeys; i++)
-      {
-        if (!check[i] || nullFlags[i])
-        {
-          res = false;
-          break;
-        }
-      }
-      break;
-    case GinContainedStrategyValue:
-    case GinContainedStrategySet:
-      /* we will need recheck */
-      *recheck = true;
-      /* can't do anything else useful here */
-      res = true;
-      break;
-    case GinEqualStrategy:
-      /* we will need recheck */
-      *recheck = true;
-
-      /*
-       * Must have all elements in check[] true; no discrimination
-       * against nulls here.  This is because array_contain_compare and
-       * array_eq handle nulls differently ...
-       */
-      res = true;
-      for (i = 0; i < nkeys; i++)
-      {
-        if (! check[i])
-        {
-          res = false;
-          break;
-        }
-      }
-      break;
-    default:
-      elog(ERROR, "Set_gin_consistent: unknown strategy number: %d",
-         strategy);
-      res = false;
-  }
-  PG_RETURN_BOOL(res);
 }
 
 PG_FUNCTION_INFO_V1(Set_gin_triconsistent);
@@ -232,8 +150,7 @@ Set_gin_triconsistent(PG_FUNCTION_ARGS)
         }
       }
       break;
-    case GinContainedStrategyValue:
-    case GinContainedStrategySet:
+    case GinContainedStrategy:
       /* can't do anything else useful here */
       res = GIN_MAYBE;
       break;

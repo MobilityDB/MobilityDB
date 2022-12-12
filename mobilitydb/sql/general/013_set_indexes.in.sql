@@ -617,11 +617,6 @@ RETURNS internal
 AS 'MODULE_PATHNAME', 'Set_gin_extract_query'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION set_gin_consistent(internal, int2, int, int4, internal, internal, internal, internal)
-RETURNS bool
-AS 'MODULE_PATHNAME', 'Set_gin_consistent'
-LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE FUNCTION set_gin_triconsistent(internal, int2, int, int4, internal, internal, internal)
 RETURNS char
 AS 'MODULE_PATHNAME', 'Set_gin_triconsistent'
@@ -638,16 +633,13 @@ CREATE OPERATOR CLASS intset_gin_ops
   OPERATOR  2    @> (intset, int),
   -- contains set
   OPERATOR  3    @> (intset, intset),
-  -- contained value
-  OPERATOR  4    <@ (int, intset),
-  -- contained set
-  OPERATOR  5    <@ (intset, intset),
+  -- contained
+  OPERATOR  4    <@ (intset, intset),
     -- same
-  OPERATOR  6    = (intset, intset),
+  OPERATOR  5    = (intset, intset),
   -- functions
   FUNCTION   2    set_gin_extract_value(int, internal),
   FUNCTION   3    set_gin_extract_query(int, internal, int2, internal, internal, internal, internal),
-  FUNCTION   4    set_gin_consistent(internal, int2, int, int4, internal, internal, internal, internal),
   FUNCTION   6    set_gin_triconsistent(internal, int2, int, int4, internal, internal, internal);
 
 /******************************************************************************/
@@ -660,11 +652,6 @@ LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_gin_extract_query(bigint, internal, int2, internal, internal, internal, internal)
 RETURNS internal
 AS 'MODULE_PATHNAME', 'Set_gin_extract_query'
-LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION set_gin_consistent(internal, int2, bigint, int4, internal, internal, internal, internal)
-RETURNS bool
-AS 'MODULE_PATHNAME', 'Set_gin_consistent'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION set_gin_triconsistent(internal, int2, bigint, int4, internal, internal, internal)
@@ -683,16 +670,13 @@ CREATE OPERATOR CLASS bigintset_gin_ops
   OPERATOR  2    @> (bigintset, bigint),
   -- contains set
   OPERATOR  3    @> (bigintset, bigintset),
-  -- contained value
-  OPERATOR  4    <@ (bigint, bigintset),
-  -- contained set
-  OPERATOR  5    <@ (bigintset, bigintset),
+  -- contained
+  OPERATOR  4    <@ (bigintset, bigintset),
   -- equal
-  OPERATOR  6    = (bigintset, bigintset),
+  OPERATOR  5    = (bigintset, bigintset),
   -- functions
   FUNCTION   2    set_gin_extract_value(bigint, internal),
   FUNCTION   3    set_gin_extract_query(bigint, internal, int2, internal, internal, internal, internal),
-  FUNCTION   4    set_gin_consistent(internal, int2, bigint, int4, internal, internal, internal, internal),
   FUNCTION   6    set_gin_triconsistent(internal, int2, bigint, int4, internal, internal, internal);
 
 /******************************************************************************/

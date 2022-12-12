@@ -58,8 +58,7 @@ extern void unset_aggregation_context(MemoryContext ctx);
 #define INPUT_AGG_TRANS_STATE(fcinfo, state)  \
   do {  \
     MemoryContext ctx = set_aggregation_context(fcinfo); \
-    state = PG_ARGISNULL(0) ? NULL :  \
-     (SkipList *) PG_GETARG_POINTER(0);  \
+    state = PG_ARGISNULL(0) ? NULL : (SkipList *) PG_GETARG_POINTER(0);  \
     if (PG_ARGISNULL(1))  \
     {  \
       if (state)  \
@@ -73,10 +72,8 @@ extern void unset_aggregation_context(MemoryContext ctx);
 #define INPUT_AGG_COMB_STATE(fcinfo, state1, state2)  \
   do {  \
     MemoryContext ctx = set_aggregation_context(fcinfo); \
-    state1 = PG_ARGISNULL(0) ? NULL :  \
-      (SkipList *) PG_GETARG_POINTER(0);  \
-    state2 = PG_ARGISNULL(1) ? NULL :  \
-      (SkipList *) PG_GETARG_POINTER(1);  \
+    state1 = PG_ARGISNULL(0) ? NULL : (SkipList *) PG_GETARG_POINTER(0);  \
+    state2 = PG_ARGISNULL(1) ? NULL : (SkipList *) PG_GETARG_POINTER(1);  \
     if (state1 == NULL && state2 == NULL)  \
       PG_RETURN_NULL();  \
     unset_aggregation_context(ctx); \
