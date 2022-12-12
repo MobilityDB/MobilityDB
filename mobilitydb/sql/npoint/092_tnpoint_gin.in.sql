@@ -49,7 +49,7 @@ LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE OPERATOR CLASS tnpoint_gin_ops
   DEFAULT FOR TYPE tnpoint USING gin AS
   STORAGE bigint,
-  -- overlaps
+  -- overlap
   OPERATOR  1    @@ (tnpoint, tnpoint),
   -- contains value
   OPERATOR  2    @? (tnpoint, bigint),

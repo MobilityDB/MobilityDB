@@ -49,14 +49,13 @@ Tnpoint_gin_extract_value(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int32 *nkeys = (int32 *) PG_GETARG_POINTER(1);
   bool **nullFlags = (bool **) PG_GETARG_POINTER(2);
-  int count;
-  int64 *routes = tnpoint_routes(temp, &count);
+  OrderedSet *routes = tnpoint_routes(temp);
   /* Transform the routes into Datums */
-  Datum *elems = palloc(sizeof(Datum) * count);
-  for (int i = 0; i < count; i++)
-    elems[i] = Int64GetDatum(routes[i]);
+  Datum *elems = palloc(sizeof(Datum) * routes->count);
+  for (int i = 0; i < routes->count; i++)
+    elems[i] = Int64GetDatum(orderedset_val_n(routes, i));
   pfree(routes);
-  *nkeys = count;
+  *nkeys = routes->count;
   *nullFlags = NULL;
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(elems);
@@ -74,9 +73,8 @@ Tnpoint_gin_extract_query(PG_FUNCTION_ARGS)
   bool **nullFlags = (bool **) PG_GETARG_POINTER(5);
   int32 *searchMode = (int32 *) PG_GETARG_POINTER(6);
   Temporal *temp;
-  int count;
   Datum *elems;
-  int64 *routes;
+  OrderedSet *routes;
   *nullFlags = NULL;
   *searchMode = GIN_SEARCH_MODE_DEFAULT;
 
@@ -92,20 +90,20 @@ Tnpoint_gin_extract_query(PG_FUNCTION_ARGS)
     case GinContainedStrategy:
     case GinEqualStrategy:
       temp = PG_GETARG_TEMPORAL_P(0);
-      routes = tnpoint_routes(temp, &count);
+      routes = tnpoint_routes(temp);
       /* Transform the routes into Datums */
-      elems = palloc(sizeof(Datum) * count);
-      for (int i = 0; i < count; i++)
-        elems[i] = Int64GetDatum(routes[i]);
+      elems = palloc(sizeof(Datum) * routes->count);
+      for (int i = 0; i < routes->count; i++)
+        elems[i] = Int64GetDatum(orderedset_val_n(routes, i));
       pfree(routes);
-      *nkeys = count;
+      *nkeys = routes->count;
       *searchMode = GIN_SEARCH_MODE_DEFAULT;
+      PG_FREE_IF_COPY(temp, 0);
       break;
     default:
       elog(ERROR, "Tnpoint_gin_extract_query: unknown strategy number: %d",
          strategy);
   }
 
-  PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(elems);
 }

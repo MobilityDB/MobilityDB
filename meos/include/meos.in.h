@@ -444,7 +444,6 @@ extern int timestampset_num_timestamps(const TimestampSet *ts);
 extern TimestampTz timestampset_start_timestamp(const TimestampSet *ts);
 extern bool timestampset_timestamp_n(const TimestampSet *ts, int n, TimestampTz *result);
 extern TimestampTz *timestampset_timestamps(const TimestampSet *ts);
-extern Interval *timestampset_to_interval(const TimestampSet *ts);
 
 /*****************************************************************************/
 

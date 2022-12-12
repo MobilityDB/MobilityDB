@@ -130,7 +130,7 @@ SELECT MAX(array_length(positions(temp), 1)) FROM tbl_tnpoint;
 
 SELECT MAX(route(inst)) FROM tbl_tnpoint_inst;
 
-SELECT MAX(array_length(routes(temp), 1)) FROM tbl_tnpoint;
+SELECT MAX(numValues(routes(temp))) FROM tbl_tnpoint;
 
 SELECT MAX(timespan(getTime(temp))) FROM tbl_tnpoint;
 

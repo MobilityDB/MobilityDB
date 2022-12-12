@@ -82,7 +82,6 @@ extern SpanSet *value_to_spanset(Datum d, mobdbType basetype);
 extern uint32 datum_hash(Datum d, mobdbType basetype);
 extern uint64 datum_hash_extended(Datum d, mobdbType basetype, uint64 seed);
 extern Datum orderedset_val_n(const TimestampSet *ts, int index);
-extern int orderedset_num_values(const OrderedSet *os);
 extern Datum orderedset_start_value(const OrderedSet *os);
 extern Datum orderedset_end_value(const OrderedSet *os);
 extern bool orderedset_value_n(const OrderedSet *os, int n, Datum *result);

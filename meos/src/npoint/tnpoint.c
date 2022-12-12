@@ -38,6 +38,7 @@
 /* MobilityDB */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/set.h"
 #include "general/temporal_parser.h"
 #include "general/temporal_util.h"
 #include "general/lifting.h"
@@ -410,92 +411,77 @@ tnpoint_route(const Temporal *temp)
 /**
  * @brief Return the routes of a temporal network point
  */
-int64 *
+OrderedSet *
 tnpointinst_routes(const TInstant *inst)
 {
   Npoint *np = DatumGetNpointP(tinstant_value(inst));
-  int64 *result = palloc(sizeof(int64));
-  result[0]= np->rid;
-  return result;
+  Datum value = Int64GetDatum(np->rid);
+  return orderedset_make(&value, 1, T_INT8);
 }
 
 /**
  * @brief Return the routes of a temporal network point
  */
-int64 *
+OrderedSet *
 tnpointdiscseq_routes(const TSequence *seq)
 {
-  int64 *result = palloc(sizeof(int64) * seq->count);
+  Datum *values = palloc(sizeof(Datum) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = tsequence_inst_n(seq, i);
     Npoint *np = DatumGetNpointP(tinstant_value(inst));
-    result[i] = np->rid;
+    values[i] = Int64GetDatum(np->rid);
   }
-  return result;
+  datumarr_sort(values, seq->count, T_INT8);
+  int count = datumarr_remove_duplicates(values, seq->count, T_INT8);
+  return orderedset_make(values, count, T_INT8);
 }
 
 /**
  * @brief Return the routes of a temporal network point
  */
-int64 *
+OrderedSet *
 tnpointcontseq_routes(const TSequence *seq)
 {
   const TInstant *inst = tsequence_inst_n(seq, 0);
   Npoint *np = DatumGetNpointP(tinstant_value(inst));
-  int64 *result = palloc(sizeof(int64));
-  result[0]= np->rid;
-  return result;
+  Datum value = Int64GetDatum(np->rid);
+  return orderedset_make(&value, 1, T_INT8);
 }
 
 /**
  * @brief Return the routes of a temporal network point
  */
-int64 *
+OrderedSet *
 tnpointseqset_routes(const TSequenceSet *ss)
 {
-  int64 *result = palloc(sizeof(int64) * ss->count);
+  Datum *values = palloc(sizeof(int64) * ss->count);
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
     const TInstant *inst = tsequence_inst_n(seq, 0);
     Npoint *np = DatumGetNpointP(tinstant_value(inst));
-    result[i] = np->rid;
+    values[i] = np->rid;
   }
-  return result;
+  datumarr_sort(values, ss->count, T_INT8);
+  int count = datumarr_remove_duplicates(values, ss->count, T_INT8);
+  return orderedset_make(values, count, T_INT8);
 }
 
 /**
  * @brief Return the array of routes of a temporal network point
  */
-int64 *
-tnpoint_routes(const Temporal *temp, int *count)
+OrderedSet *
+tnpoint_routes(const Temporal *temp)
 {
-  int64 *result;
+  OrderedSet *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
-  {
     result = tnpointinst_routes((TInstant *) temp);
-    *count = 1;
-  }
   else if (temp->subtype == TSEQUENCE)
-  {
-    if (MOBDB_FLAGS_GET_DISCRETE(temp->flags))
-    {
-      result = tnpointdiscseq_routes((TSequence *) temp);
-      *count = ((TSequence *) temp)->count;
-    }
-    else
-    {
-      result = tnpointcontseq_routes((TSequence *) temp);
-      *count = 1;
-    }
-  }
+    result = tnpointdiscseq_routes((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
-  {
     result = tnpointseqset_routes((TSequenceSet *) temp);
-    *count = ((TSequenceSet *) temp)->count;
-  }
   return result;
 }
 

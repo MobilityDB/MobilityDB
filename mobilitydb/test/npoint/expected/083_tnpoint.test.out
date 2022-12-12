@@ -703,9 +703,9 @@ SELECT routes(tnpoint 'Npoint(1, 0.5)@2000-01-01');
 (1 row)
 
 SELECT routes(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
- routes  
----------
- {1,1,1}
+ routes 
+--------
+ {1}
 (1 row)
 
 SELECT routes(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
@@ -717,7 +717,7 @@ SELECT routes(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Np
 SELECT routes(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
  routes 
 --------
- {1,2}
+ {1, 2}
 (1 row)
 
 SELECT getTime(tnpoint 'Npoint(1, 0.5)@2000-01-01');

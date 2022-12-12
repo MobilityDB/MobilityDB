@@ -112,7 +112,7 @@ CREATE OR REPLACE FUNCTION random_tnpoint_inst(lown integer, highn integer,
   lowtime timestamptz, hightime timestamptz)
   RETURNS tnpoint AS $$
 BEGIN
-  RETURN tnpoint_inst(random_npoint(lown, highn), random_timestamptz(lowtime, hightime));
+  RETURN tnpoint(random_npoint(lown, highn), random_timestamptz(lowtime, hightime));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -145,7 +145,7 @@ BEGIN
   t = random_timestamptz(lowtime, hightime);
   FOR i IN 1..card
   LOOP
-    result[i] = tnpoint_inst(random_npoint(lown, highn), t);
+    result[i] = tnpoint(random_npoint(lown, highn), t);
     t = t + random_minutes(1, maxminutes);
   END LOOP;
   RETURN tnpoint_discseq(result);
@@ -198,16 +198,16 @@ BEGIN
   rid = random_int(lown, highn);
   FOR i IN 1..card - 1
   LOOP
-    result[i] = tnpoint_inst(npoint(rid, random()), tsarr[i]);
+    result[i] = tnpoint(npoint(rid, random()), tsarr[i]);
   END LOOP;
   -- Sequences with step interpolation and exclusive upper bound must have
   -- the same value in the last two instants
   IF card <> 1 AND NOT upper_inc AND NOT linear THEN
-    result[card] = tnpoint_inst(getValue(result[card - 1]), tsarr[card]);
+    result[card] = tnpoint(getValue(result[card - 1]), tsarr[card]);
   ELSE
-    result[card] = tnpoint_inst(npoint(rid, random()), tsarr[card]);
+    result[card] = tnpoint(npoint(rid, random()), tsarr[card]);
   END IF;
-  RETURN tnpoint_seq(result, lower_inc, upper_inc, linear);
+  RETURN tnpoint_contseq(result, lower_inc, upper_inc, linear);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -263,9 +263,9 @@ BEGIN
     FOR j IN 1..cardseq
     LOOP
       t1 = t1 + random_minutes(1, maxminutes);
-      instants[j] = tnpoint_inst(npoint(rid, random()), t1);
+      instants[j] = tnpoint(npoint(rid, random()), t1);
     END LOOP;
-    result[i] = tnpoint_seq(instants, lower_inc, upper_inc);
+    result[i] = tnpoint_contseq(instants, lower_inc, upper_inc);
     instants = NULL;
     t1 = t1 + random_minutes(1, maxminutes);
   END LOOP;

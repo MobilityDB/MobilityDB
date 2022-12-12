@@ -335,6 +335,7 @@ timestamp_to_timestampset(TimestampTz t)
 }
 #endif /* MEOS */
 
+#if MEOS
 /**
  * @ingroup libmeos_setspan_cast
  * @brief Return the bounding span of an ordered set.
@@ -349,26 +350,13 @@ orderedset_to_span(const OrderedSet *os)
   memcpy(result, &os->span, sizeof(Span));
   return result;
 }
-
-/**
- * @ingroup libmeos_setspan_accessor
- * @brief Return the interval of an ordered set.
- * @sqlfunc timespan()
- * @pymeosfunc timespan()
- */
-Interval *
-timestampset_to_interval(const TimestampSet *ts)
-{
-  TimestampTz start = DatumGetTimestampTz(orderedset_val_n(ts, 0));
-  TimestampTz end = DatumGetTimestampTz(orderedset_val_n(ts, ts->count - 1));
-  Interval *result = pg_timestamp_mi(end, start);
-  return result;
-}
+#endif /* MEOS */
 
 /*****************************************************************************
  * Accessor functions
  *****************************************************************************/
 
+#if MEOS
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the size in bytes of an ordered set.
@@ -379,6 +367,7 @@ orderedset_memory_size(const OrderedSet *os)
 {
   return (int) VARSIZE(DatumGetPointer(os));
 }
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_accessor
