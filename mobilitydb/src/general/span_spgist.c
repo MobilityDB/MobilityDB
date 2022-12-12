@@ -584,7 +584,7 @@ span_level_cmp(Span *centroid, Span *query, int level)
 
 PG_FUNCTION_INFO_V1(Span_kdtree_choose);
 /**
- * K-d tree choose function for time types
+ * K-d tree choose function for span types
  */
 PGDLLEXPORT Datum
 Span_kdtree_choose(PG_FUNCTION_ARGS)
@@ -673,7 +673,7 @@ Span_quadtree_picksplit(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Span_kdtree_picksplit);
 /**
- * K-d tree pick-split function for time types
+ * K-d tree pick-split function for span types
  */
 PGDLLEXPORT Datum
 Span_kdtree_picksplit(PG_FUNCTION_ARGS)
@@ -725,7 +725,7 @@ Span_kdtree_picksplit(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Generic SP-GiST inner consistent function for time types
+ * Generic SP-GiST inner consistent function for span types
  */
 Datum
 Span_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
@@ -918,7 +918,7 @@ Span_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
 
 PG_FUNCTION_INFO_V1(Span_quadtree_inner_consistent);
 /**
- * Quad-tree inner consistent function for time types
+ * Quad-tree inner consistent function for span types
  */
 PGDLLEXPORT Datum
 Span_quadtree_inner_consistent(PG_FUNCTION_ARGS)
@@ -928,7 +928,7 @@ Span_quadtree_inner_consistent(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Span_kdtree_inner_consistent);
 /**
- * K-d tree inner consistent function for time types
+ * K-d tree inner consistent function for span types
  */
 PGDLLEXPORT Datum
 Span_kdtree_inner_consistent(PG_FUNCTION_ARGS)

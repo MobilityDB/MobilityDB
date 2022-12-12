@@ -99,7 +99,7 @@ span_index_consistent_leaf(const Span *key, const Span *query,
 }
 
 /**
- * GiST internal-page consistency for time types
+ * GiST internal-page consistency for span types
  *
  * @param[in] key Element in the index
  * @param[in] query Value being looked up in the index
@@ -295,7 +295,7 @@ Spanset_gist_compress(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * GiST penalty method for time types
+ * GiST penalty method for span types
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(Span_gist_penalty);
@@ -334,7 +334,7 @@ Span_gist_penalty(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * GiST picksplit method for time types
+ * GiST picksplit method for span types
  *****************************************************************************/
 
 /* Helper macros to place an entry in the left or right group during split */
@@ -819,7 +819,7 @@ span_gist_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 
 PG_FUNCTION_INFO_V1(Span_gist_picksplit);
 /**
- * GiST picksplit method for time types
+ * GiST picksplit method for span types
  *
  * It splits a list of spans into quadrants by choosing a central 4D
  * point as the median of the coordinates of the spans.
@@ -903,7 +903,7 @@ Span_gist_distance(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Span_gist_fetch);
 /**
- * GiST fetch method for time types (result in a span)
+ * GiST fetch method for span types (result in a span)
  */
 PGDLLEXPORT Datum
 Span_gist_fetch(PG_FUNCTION_ARGS)

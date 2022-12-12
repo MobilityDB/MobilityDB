@@ -22,17 +22,17 @@ DROP INDEX
 DROP INDEX IF EXISTS tbl_timestampset_quadtree_idx;
 NOTICE:  index "tbl_timestampset_quadtree_idx" does not exist, skipping
 DROP INDEX
-DROP INDEX IF EXISTS tbl_bigintset_ktree_idx;
-NOTICE:  index "tbl_bigintset_ktree_idx" does not exist, skipping
+DROP INDEX IF EXISTS tbl_bigintset_kdtree_idx;
+NOTICE:  index "tbl_bigintset_kdtree_idx" does not exist, skipping
 DROP INDEX
-DROP INDEX IF EXISTS tbl_intset_ktree_idx;
-NOTICE:  index "tbl_intset_ktree_idx" does not exist, skipping
+DROP INDEX IF EXISTS tbl_intset_kdtree_idx;
+NOTICE:  index "tbl_intset_kdtree_idx" does not exist, skipping
 DROP INDEX
 DROP INDEX IF EXISTS tbl_floatset_kdtree_idx;
 NOTICE:  index "tbl_floatset_kdtree_idx" does not exist, skipping
 DROP INDEX
-DROP INDEX IF EXISTS tbl_timestampset_ktree_idx;
-NOTICE:  index "tbl_timestampset_ktree_idx" does not exist, skipping
+DROP INDEX IF EXISTS tbl_timestampset_kdtree_idx;
+NOTICE:  index "tbl_timestampset_kdtree_idx" does not exist, skipping
 DROP INDEX
 DROP TABLE IF EXISTS test_setops;
 NOTICE:  table "test_setops" does not exist, skipping

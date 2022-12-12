@@ -42,10 +42,10 @@ DROP INDEX IF EXISTS tbl_bigintset_quadtree_idx;
 DROP INDEX IF EXISTS tbl_floatset_quadtree_idx;
 DROP INDEX IF EXISTS tbl_timestampset_quadtree_idx;
 
-DROP INDEX IF EXISTS tbl_bigintset_ktree_idx;
-DROP INDEX IF EXISTS tbl_intset_ktree_idx;
+DROP INDEX IF EXISTS tbl_bigintset_kdtree_idx;
+DROP INDEX IF EXISTS tbl_intset_kdtree_idx;
 DROP INDEX IF EXISTS tbl_floatset_kdtree_idx;
-DROP INDEX IF EXISTS tbl_timestampset_ktree_idx;
+DROP INDEX IF EXISTS tbl_timestampset_kdtree_idx;
 
 -------------------------------------------------------------------------------
 
