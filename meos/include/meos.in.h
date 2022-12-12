@@ -98,9 +98,9 @@ typedef OrderedSet TimestampSet;
  */
 typedef struct
 {
-  Period      period; /**< time span */
-  Span        span;   /**< value span */
-  int16       flags;  /**< flags */
+  Period period;        /**< time span */
+  Span span;            /**< value span */
+  int16 flags;          /**< flags */
 } TBox;
 
 /**
@@ -108,15 +108,15 @@ typedef struct
  */
 typedef struct
 {
-  Period      period; /**< time span */
-  double      xmin;   /**< minimum x value */
-  double      xmax;   /**< maximum x value */
-  double      ymin;   /**< minimum y value */
-  double      ymax;   /**< maximum y value */
-  double      zmin;   /**< minimum z value */
-  double      zmax;   /**< maximum z value */
-  int32       srid;   /**< SRID */
-  int16       flags;  /**< flags */
+  Period period;        /**< time span */
+  double xmin;          /**< minimum x value */
+  double xmax;          /**< maximum x value */
+  double ymin;          /**< minimum y value */
+  double ymax;          /**< maximum y value */
+  double zmin;          /**< minimum z value */
+  double zmax;          /**< maximum z value */
+  int32  srid;          /**< SRID */
+  int16  flags;         /**< flags */
 } STBox;
 
 /**
@@ -137,10 +137,10 @@ typedef enum
  */
 typedef struct
 {
-  int32         vl_len_;      /**< Varlena header (do not touch directly!) */
-  uint8         temptype;     /**< Temporal type */
-  uint8         subtype;      /**< Temporal subtype */
-  int16         flags;        /**< Flags */
+  int32 vl_len_;        /**< Varlena header (do not touch directly!) */
+  uint8 temptype;       /**< Temporal type */
+  uint8 subtype;        /**< Temporal subtype */
+  int16 flags;          /**< Flags */
   /* variable-length data follows */
 } Temporal;
 
@@ -149,15 +149,15 @@ typedef struct
  */
 typedef struct
 {
-  int32         vl_len_;      /**< Varlena header (do not touch directly!) */
-  uint8         temptype;     /**< Temporal type */
-  uint8         subtype;      /**< Temporal subtype */
-  int16         flags;        /**< Flags */
-  TimestampTz   t;            /**< Timestamp (8 bytes) */
-  Datum         value;        /**< Base value for types passed by value,
-                                   first 8 bytes of the base value for values
-                                   passed by reference. The extra bytes
-                                   needed are added upon creation. */
+  int32 vl_len_;        /**< Varlena header (do not touch directly!) */
+  uint8 temptype;       /**< Temporal type */
+  uint8 subtype;        /**< Temporal subtype */
+  int16 flags;          /**< Flags */
+  TimestampTz t;        /**< Timestamp (8 bytes) */
+  Datum value;          /**< Base value for types passed by value,
+                             first 8 bytes of the base value for values
+                             passed by reference. The extra bytes
+                             needed are added upon creation. */
   /* variable-length data follows */
 } TInstant;
 
@@ -166,17 +166,17 @@ typedef struct
  */
 typedef struct
 {
-  int32         vl_len_;      /**< Varlena header (do not touch directly!) */
-  uint8         temptype;     /**< Temporal type */
-  uint8         subtype;      /**< Temporal subtype */
-  int16         flags;        /**< Flags */
-  int32         count;        /**< Number of TInstant elements */
-  int32         maxcount;     /**< Maximum number of TInstant elements */
-  int16         bboxsize;     /**< Size of the bounding box */
-  Period        period;       /**< Time span (24 bytes). All bounding boxes
-                                   start with a period so actually it is also
-                                   the begining of the bounding box. The extra
-                                   bytes needed are added upon creation. */
+  int32 vl_len_;        /**< Varlena header (do not touch directly!) */
+  uint8 temptype;       /**< Temporal type */
+  uint8 subtype;        /**< Temporal subtype */
+  int16 flags;          /**< Flags */
+  int32 count;          /**< Number of TInstant elements */
+  int32 maxcount;       /**< Maximum number of TInstant elements */
+  int16 bboxsize;       /**< Size of the bounding box */
+  Period period;        /**< Time span (24 bytes). All bounding boxes
+                             start with a period so actually it is also
+                             the begining of the bounding box. The extra
+                             bytes needed are added upon creation. */
   /* variable-length data follows */
 } TSequence;
 
@@ -187,19 +187,19 @@ typedef struct
  */
 typedef struct
 {
-  int32         vl_len_;      /**< Varlena header (do not touch directly!) */
-  uint8         temptype;     /**< Temporal type */
-  uint8         subtype;      /**< Temporal subtype */
-  int16         flags;        /**< Flags */
-  int32         count;        /**< Number of TSequence elements */
-  int32         totalcount;   /**< Total number of TInstant elements in all
-                                   composing TSequence elements */
-  int32         maxcount;     /**< Maximum number of TSequence elements */
-  int16         bboxsize;     /**< Size of the bounding box */
-  Period        period;       /**< Time span (24 bytes). All bounding boxes
-                                   start with a period so actually it is also
-                                   the begining of the bounding box. The extra
-                                   bytes needed are added upon creation. */
+  int32 vl_len_;        /**< Varlena header (do not touch directly!) */
+  uint8 temptype;       /**< Temporal type */
+  uint8 subtype;        /**< Temporal subtype */
+  int16 flags;          /**< Flags */
+  int32 count;          /**< Number of TSequence elements */
+  int32 totalcount;     /**< Total number of TInstant elements in all
+                             composing TSequence elements */
+  int32 maxcount;       /**< Maximum number of TSequence elements */
+  int16 bboxsize;       /**< Size of the bounding box */
+  Period period;        /**< Time span (24 bytes). All bounding boxes
+                             start with a period so actually it is also
+                             the begining of the bounding box. The extra
+                             bytes needed are added upon creation. */
   /* variable-length data follows */
 } TSequenceSet;
 
@@ -771,10 +771,10 @@ extern char *stbox_out(const STBox *box, int maxdd);
 extern TBox *tbox_make(const Period *p, const Span *s);
 extern void tbox_set(const Period *p, const Span *s, TBox *box);
 extern TBox *tbox_copy(const TBox *box);
-extern STBox * stbox_make(const Period *p, bool hasx, bool hasz, bool geodetic, int32 srid,
-  double xmin, double xmax, double ymin, double ymax, double zmin, double zmax);
-extern void stbox_set(const Period *p, bool hasx, bool hasz, bool geodetic, int32 srid, double xmin, double xmax,
-  double ymin, double ymax, double zmin, double zmax, STBox *box);
+extern STBox * stbox_make(bool hasx, bool hasz, bool geodetic, int32 srid,
+  double xmin, double xmax, double ymin, double ymax, double zmin, double zmax, const Period *p);
+extern void stbox_set(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin, double xmax,
+  double ymin, double ymax, double zmin, double zmax, const Period *p, STBox *box);
 extern STBox *stbox_copy(const STBox *box);
 
 /*****************************************************************************/

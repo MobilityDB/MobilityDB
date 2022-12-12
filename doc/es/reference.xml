@@ -26,11 +26,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="spantime_FromBinary"><varname>intspanFromBinary</varname>, <varname>intspanSetFromBinary</varname>, <varname>floatspanFromBinary</varname>, <varname>floatspanSetFromBinary</varname>, <varname>periodFromBinary</varname>, <varname>periodSetFromBinary</varname>, <varname>timestampSetFromBinary</varname></link>: Entrar un rango o un tipo de tiempo en la representación binaria conocida (WKB)</para>
+					<para><link linkend="spantime_FromBinary"><varname>intspanFromBinary</varname>, <varname>intspansetFromBinary</varname>, <varname>floatspanFromBinary</varname>, <varname>floatspansetFromBinary</varname>, <varname>periodFromBinary</varname>, <varname>periodsetFromBinary</varname>, <varname>timestampsetFromBinary</varname></link>: Entrar un rango o un tipo de tiempo en la representación binaria conocida (WKB)</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="spantime_FromHexWKB"><varname>intspanFromHexWKB</varname>, <varname>intspanSetFromHexWKB</varname>, <varname>floatspanFromHexWKB</varname>, <varname>floatspanSetFromHexWKB</varname>, <varname>periodFromHexWKB</varname>, <varname>periodSetFromHexWKB</varname>, <varname>timestampSetFromHexWKB</varname></link>: Entrar un rango o un tipo de tiempo en la representación hexadecimal binaria conocida (HexWKB)</para>
+					<para><link linkend="spantime_FromHexWKB"><varname>intspanFromHexWKB</varname>, <varname>intspansetFromHexWKB</varname>, <varname>floatspanFromHexWKB</varname>, <varname>floatspansetFromHexWKB</varname>, <varname>periodFromHexWKB</varname>, <varname>periodsetFromHexWKB</varname>, <varname>timestampsetFromHexWKB</varname></link>: Entrar un rango o un tipo de tiempo en la representación hexadecimal binaria conocida (HexWKB)</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1743,6 +1743,10 @@
 
 					<listitem>
 						<para><link linkend="tnpoint_getValues"><varname>getValues</varname></link>: Obtener los valores</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="routes"><varname>routes</varname></link>: Obtener los identificadores de ruta</para>
 					</listitem>
 
 					<listitem>

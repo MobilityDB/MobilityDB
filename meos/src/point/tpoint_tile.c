@@ -416,8 +416,8 @@ stbox_tile_set(double x, double y, double z, TimestampTz t, double size,
     span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t + tunits), true,
       false, T_TIMESTAMPTZ, &p);
   }
-  return stbox_set(hast ? &p : NULL, true, hasz, false, srid, xmin, xmax,
-    ymin, ymax, zmin, zmax, result);
+  return stbox_set(true, hasz, false, srid, xmin, xmax, ymin, ymax, zmin, zmax,
+    hast ? &p : NULL, result);
 }
 
 /**

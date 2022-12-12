@@ -64,7 +64,7 @@ extern void periodset_stbox_slice(Datum psdatum, STBox *box);
 
 /* SRID functions */
 
-extern STBox * stbox_set_srid(const STBox *box, int32 srid);
+extern STBox *stbox_set_srid(const STBox *box, int32 srid);
 
 /*****************************************************************************/
 

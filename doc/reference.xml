@@ -26,11 +26,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="spantime_FromBinary"><varname>intspanFromBinary</varname>, <varname>intspanSetFromBinary</varname>, <varname>floatspanFromBinary</varname>, <varname>floatspanSetFromBinary</varname>, <varname>periodFromBinary</varname>, <varname>periodSetFromBinary</varname>, <varname>timestampSetFromBinary</varname></link>: Input a span or time type from a Well-Known Binary (WKB) representation</para>
+					<para><link linkend="spantime_FromBinary"><varname>intspanFromBinary</varname>, <varname>intspansetFromBinary</varname>, <varname>floatspanFromBinary</varname>, <varname>floatspansetFromBinary</varname>, <varname>periodFromBinary</varname>, <varname>periodsetFromBinary</varname>, <varname>timestampsetFromBinary</varname></link>: Input a span or time type from a Well-Known Binary (WKB) representation</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="spantime_FromHexWKB"><varname>intspanFromHexWKB</varname>, <varname>intspanSetFromHexWKB</varname>, <varname>floatspanFromHexWKB</varname>, <varname>floatspanSetFromHexWKB</varname>, <varname>periodFromHexWKB</varname>, <varname>periodSetFromHexWKB</varname>, <varname>timestampSetFromHexWKB</varname></link>: Input a span or time type from an Hexadecimal Well-Known Binary (HexWKB) representation</para>
+					<para><link linkend="spantime_FromHexWKB"><varname>intspanFromHexWKB</varname>, <varname>intspansetFromHexWKB</varname>, <varname>floatspanFromHexWKB</varname>, <varname>floatspansetFromHexWKB</varname>, <varname>periodFromHexWKB</varname>, <varname>periodsetFromHexWKB</varname>, <varname>timestampsetFromHexWKB</varname></link>: Input a span or time type from an Hexadecimal Well-Known Binary (HexWKB) representation</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1363,26 +1363,26 @@
 			</sect3>
 
 			<sect3>
-				<title>Possible Spatial Relationships</title>
+				<title>Ever Spatial Relationships</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="contains"><varname>contains</varname></link>: May contain</para>
+						<para><link linkend="contains"><varname>contains</varname></link>: Ever contains</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="disjoint"><varname>disjoint</varname></link>: May be disjoint</para>
+						<para><link linkend="disjoint"><varname>disjoint</varname></link>: Is ever disjoint</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="dwithin"><varname>dwithin</varname></link>: May be at distance within</para>
+						<para><link linkend="dwithin"><varname>dwithin</varname></link>: Is ever at distance within</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="intersects"><varname>intersects</varname></link>: May intersect</para>
+						<para><link linkend="intersects"><varname>intersects</varname></link>: Ever intersects</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="touches"><varname>touches</varname></link>: May touch</para>
+						<para><link linkend="touches"><varname>touches</varname></link>: Ever touches</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1733,6 +1733,10 @@
 
 					<listitem>
 						<para><link linkend="tnpoint_getValues"><varname>getValues</varname></link>: Get the values</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="routes"><varname>routes</varname></link>: Get the road identifiers</para>
 					</listitem>
 
 					<listitem>

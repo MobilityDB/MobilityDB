@@ -1070,8 +1070,8 @@ BEGIN
   END IF;
   xmin = random_float(lowvalue, highvalue - maxdelta);
   tmin = random_timestamptz(lowtime, hightime - interval '1 minute' * maxminutes);
-  RETURN tbox(xmin, tmin, xmin + random_float(1, maxdelta),
-    tmin + random_minutes(1, maxminutes));
+  RETURN tbox(floatspan(xmin, xmin + random_float(1, maxdelta)),
+    period(tmin, tmin + random_minutes(1, maxminutes)));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -1097,7 +1097,7 @@ BEGIN
     RAISE EXCEPTION 'lowtime must be less than or equal to hightime: %, %',
       lowtime, hightime;
   END IF;
-  RETURN tbool_inst(random_bool(), random_timestamptz(lowtime, hightime));
+  RETURN tbool(random_bool(), random_timestamptz(lowtime, hightime));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -1127,7 +1127,7 @@ BEGIN
     RAISE EXCEPTION 'lowtime must be less than or equal to hightime: %, %',
       lowtime, hightime;
   END IF;
-  RETURN tint_inst(random_int(lowvalue, highvalue),
+  RETURN tint(random_int(lowvalue, highvalue),
     random_timestamptz(lowtime, hightime));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
@@ -1158,7 +1158,7 @@ BEGIN
     RAISE EXCEPTION 'lowtime must be less than or equal to hightime: %, %',
       lowtime, hightime;
   END IF;
-  RETURN tfloat_inst(random_float(lowvalue, highvalue),
+  RETURN tfloat(random_float(lowvalue, highvalue),
     random_timestamptz(lowtime, hightime));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
@@ -1185,7 +1185,7 @@ BEGIN
     RAISE EXCEPTION 'lowtime must be less than or equal to hightime: %, %',
       lowtime, hightime;
   END IF;
-  RETURN ttext_inst(random_text(maxlength), random_timestamptz(lowtime, hightime));
+  RETURN ttext(random_text(maxlength), random_timestamptz(lowtime, hightime));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -1219,7 +1219,7 @@ BEGIN
   card = array_length(tsarr, 1);
   FOR i IN 1..card
   LOOP
-    result[i] = tbool_inst(random_bool(), tsarr[i]);
+    result[i] = tbool(random_bool(), tsarr[i]);
   END LOOP;
   RETURN tbool_discseq(result);
 END;
@@ -1257,7 +1257,7 @@ BEGIN
   INTO tsarr;
   FOR i IN 1..card
   LOOP
-    result[i] = tint_inst(intarr[i], tsarr[i]);
+    result[i] = tint(intarr[i], tsarr[i]);
   END LOOP;
   RETURN tint_discseq(result);
 END;
@@ -1297,7 +1297,7 @@ BEGIN
   INTO tsarr;
   FOR i IN 1..card
   LOOP
-    result[i] = tfloat_inst(floatarr[i], tsarr[i]);
+    result[i] = tfloat(floatarr[i], tsarr[i]);
   END LOOP;
   RETURN tfloat_discseq(result);
 END;
@@ -1332,7 +1332,7 @@ BEGIN
   card = array_length(tsarr, 1);
   FOR i IN 1..card
   LOOP
-    result[i] = ttext_inst(random_text(maxlength), tsarr[i]);
+    result[i] = ttext(random_text(maxlength), tsarr[i]);
   END LOOP;
   RETURN ttext_discseq(result);
 END;
@@ -1381,7 +1381,7 @@ BEGIN
   v = random_bool();
   FOR i IN 1..card - 1
   LOOP
-    result[i] = tbool_inst(v, tsarr[i]);
+    result[i] = tbool(v, tsarr[i]);
     v = NOT v;
   END LOOP;
   -- Sequences with step interpolation and exclusive upper bound must have
@@ -1389,8 +1389,8 @@ BEGIN
   IF card <> 1 AND NOT upper_inc THEN
     v = NOT v;
   END IF;
-  result[card] = tbool_inst(v, tsarr[card]);
-  RETURN tbool_seq(result, lower_inc, upper_inc);
+  result[card] = tbool(v, tsarr[card]);
+  RETURN tbool_contseq(result, lower_inc, upper_inc);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -1439,16 +1439,16 @@ BEGIN
   END IF;
   FOR i IN 1..card - 1
   LOOP
-    result[i] = tint_inst(intarr[i], tsarr[i]);
+    result[i] = tint(intarr[i], tsarr[i]);
   END LOOP;
   -- Sequences with step interpolation and exclusive upper bound must have
   -- the same value in the last two instants
   IF card <> 1 AND NOT upper_inc THEN
-    result[card] = tint_inst(intarr[card - 1], tsarr[card]);
+    result[card] = tint(intarr[card - 1], tsarr[card]);
   ELSE
-    result[card] = tint_inst(intarr[card], tsarr[card]);
+    result[card] = tint(intarr[card], tsarr[card]);
   END IF;
-  RETURN tint_seq(result, lower_inc, upper_inc);
+  RETURN tint_contseq(result, lower_inc, upper_inc);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -1497,16 +1497,16 @@ BEGIN
   END IF;
   FOR i IN 1..card - 1
   LOOP
-    result[i] = tfloat_inst(floatarr[i], tsarr[i]);
+    result[i] = tfloat(floatarr[i], tsarr[i]);
   END LOOP;
   -- Sequences with step interpolation and exclusive upper bound must have
   -- the same value in the last two instants
   IF card <> 1 AND NOT upper_inc AND NOT linear THEN
-    result[card] = tfloat_inst(floatarr[card - 1], tsarr[card]);
+    result[card] = tfloat(floatarr[card - 1], tsarr[card]);
   ELSE
-    result[card] = tfloat_inst(floatarr[card], tsarr[card]);
+    result[card] = tfloat(floatarr[card], tsarr[card]);
   END IF;
-  RETURN tfloat_seq(result, lower_inc, upper_inc, linear);
+  RETURN tfloat_contseq(result, lower_inc, upper_inc, linear);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -1553,15 +1553,15 @@ BEGIN
   FOR i IN 1..card - 1
   LOOP
     v = random_text(maxlength);
-    result[i] = ttext_inst(v, tsarr[i]);
+    result[i] = ttext(v, tsarr[i]);
   END LOOP;
   -- Sequences with step interpolation and exclusive upper bound must have
   -- the same value in the last two instants
   IF card = 1 OR upper_inc THEN
     v = random_text(maxlength);
   END IF;
-  result[card] = ttext_inst(v, tsarr[card]);
-  RETURN ttext_seq(result, lower_inc, upper_inc);
+  result[card] = ttext(v, tsarr[card]);
+  RETURN ttext_contseq(result, lower_inc, upper_inc);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 

@@ -531,14 +531,14 @@ WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 		</para>
 
 		<para>
-			La creación de una tabla <varname>tbl_tfloat_seq</varname> que contiene valores aleatorios <varname>tfloat</varname> valores de subtipo secuencia que tienen entre 5 y 10 marcas de tiempo donde the float valores están en el rango [0, 100], las marcas de tiempo están en el rango [2001-01-01, 2001-12-31], la máxima diferencia entre dos valores consecutivos es 10 y el máximo intervalo entre dos instantes consecutivos es 10 minutos se da a continuación.
+			La creación de una tabla <varname>tbl_tfloat_seq</varname> que contiene valores aleatorios <varname>tfloat</varname> valores de subtipo secuencia que tienen entre 5 y 10 marcas de tiempo donde los valores <varname>float</varname> están en el rango [0, 100], las marcas de tiempo están en el rango [2001-01-01, 2001-12-31], la máxima diferencia entre dos valores consecutivos es 10 y el máximo intervalo entre dos instantes consecutivos es 10 minutos se da a continuación.
 		</para>
 		<programlisting language="sql" xml:space="preserve">
 CREATE TABLE tbl_tfloat_seq AS
 /* Add perc NULL valores */
 SELECT k, NULL AS seq
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_tfloat_seq(0, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10) AS seq
+SELECT k, random_tfloat_contseq(0, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10) AS seq
 FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
 UPDATE tbl_tfloat_seq t1

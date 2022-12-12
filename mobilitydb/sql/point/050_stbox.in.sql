@@ -113,14 +113,14 @@ CREATE FUNCTION stbox_z(float8, float8, float8, float8, float8, float8,
   AS 'MODULE_PATHNAME', 'Stbox_constructor_z'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION stbox_t(period, float8, float8, float8, float8,
+CREATE FUNCTION stbox_t(float8, float8, float8, float8, period,
     srid int DEFAULT 0)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_constructor_t'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION stbox_zt(period, float8, float8, float8, float8, float8,
-    float8, srid int DEFAULT 0)
+CREATE FUNCTION stbox_zt(float8, float8, float8, float8, float8, float8,
+    period, srid int DEFAULT 0)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_constructor_zt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -138,8 +138,8 @@ CREATE FUNCTION geodstbox_z(float8, float8, float8, float8, float8, float8,
   AS 'MODULE_PATHNAME', 'Geodstbox_constructor_z'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION geodstbox_zt(period, float8, float8, float8, float8,
-    float8, float8, srid int DEFAULT 4326)
+CREATE FUNCTION geodstbox_zt(float8, float8, float8, float8, float8, float8,
+    period, srid int DEFAULT 4326)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Geodstbox_constructor_zt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

@@ -530,7 +530,7 @@ WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 		</para>
 
 		<para>
-			The creation of a table <varname>tbl_tfloat_seq</varname> containing random <varname>tfloat</varname> values of sequence subtype having between 5 and 10 timestamps where the float values are in the range [0, 100], the timestamps are in the range [2001-01-01, 2001-12-31], the maximum difference between two consecutive values is 10, and the maximum interval between two consecutive instants is 10 minutes is given next.
+			The creation of a table <varname>tbl_tfloat_seq</varname> containing random <varname>tfloat</varname> values of sequence subtype having between 5 and 10 timestamps where the <varname>float</varname> values are in the range [0, 100], the timestamps are in the range [2001-01-01, 2001-12-31], the maximum difference between two consecutive values is 10, and the maximum interval between two consecutive instants is 10 minutes is given next.
 		</para>
 		<programlisting language="sql" xml:space="preserve">
 CREATE TABLE tbl_tfloat_seq AS

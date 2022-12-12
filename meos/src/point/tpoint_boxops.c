@@ -141,8 +141,9 @@ tgeogpointseq_expand_stbox(TSequence *seq, const TInstant *inst)
   Period period;
   span_set(last->t, inst->t, true, true, T_TIMESTAMPTZ, &period);
   STBox box;
-  stbox_set(&period, true, hasz, true, srid, edge_gbox.xmin, edge_gbox.xmax,
-    edge_gbox.ymin, edge_gbox.ymax, edge_gbox.zmin, edge_gbox.zmax, &box);
+  stbox_set(true, hasz, true, srid, edge_gbox.xmin, edge_gbox.xmax,
+    edge_gbox.ymin, edge_gbox.ymax, edge_gbox.zmin, edge_gbox.zmax,
+    &period, &box);
   /* Expand the bounding box of the sequence with the last edge */
   stbox_expand(&box, (STBox *) TSEQUENCE_BBOX_PTR(seq));
   return;
@@ -235,8 +236,8 @@ tgeogpointinstarr_set_stbox(const TInstant **instants, int count,
   Period period;
   span_set(instants[0]->t, instants[count - 1]->t, true, true, T_TIMESTAMPTZ,
     &period);
-  stbox_set(&period, true, hasz, true, srid, gbox.xmin, gbox.xmax,
-    gbox.ymin, gbox.ymax, gbox.zmin, gbox.zmax, box);
+  stbox_set(true, hasz, true, srid, gbox.xmin, gbox.xmax,
+    gbox.ymin, gbox.ymax, gbox.zmin, gbox.zmax, &period, box);
   return;
 }
 
@@ -264,8 +265,8 @@ tgeogpointseq_set_stbox(const TSequence *seq, STBox *box)
   span_set(tsequence_inst_n(seq, 0)->t,
     tsequence_inst_n(seq, seq->count - 1)->t, true, true, T_TIMESTAMPTZ,
     &period);
-  stbox_set(&period, true, hasz, true, srid, gbox.xmin, gbox.xmax,
-    gbox.ymin, gbox.ymax, gbox.zmin, gbox.zmax, box);
+  stbox_set(true, hasz, true, srid, gbox.xmin, gbox.xmax, gbox.ymin,
+    gbox.ymax, gbox.zmin, gbox.zmax, &period, box);
   return;
 }
 #endif /* MEOS */

@@ -243,13 +243,13 @@ stbox_out(const STBox *box, int maxdd)
  * @sqlfunc stbox()
  */
 STBox *
-stbox_make(const Period *p, bool hasx, bool hasz, bool geodetic, int32 srid,
-  double xmin, double xmax, double ymin, double ymax, double zmin,
-  double zmax)
+stbox_make(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin,
+  double xmax, double ymin, double ymax, double zmin, double zmax,
+  const Period *p)
 {
   /* Note: zero-fill is done in function stbox_set */
   STBox *result = palloc(sizeof(STBox));
-  stbox_set(p, hasx, hasz, geodetic, srid, xmin, xmax, ymin, ymax, zmin, zmax,
+  stbox_set(hasx, hasz, geodetic, srid, xmin, xmax, ymin, ymax, zmin, zmax, p,
     result);
   return result;
 }
@@ -261,9 +261,9 @@ stbox_make(const Period *p, bool hasx, bool hasz, bool geodetic, int32 srid,
  * allocation
  */
 void
-stbox_set(const Period *p, bool hasx, bool hasz, bool geodetic, int32 srid,
-  double xmin, double xmax, double ymin, double ymax, double zmin, double zmax,
-  STBox *box)
+stbox_set(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin,
+  double xmax, double ymin, double ymax, double zmin, double zmax,
+  const Period *p, STBox *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBox));
@@ -1420,8 +1420,8 @@ inter_stbox_stbox(const STBox *box1, const STBox *box2, STBox *result)
   if (hast)
     inter_span_span(&box1->period, &box2->period, &period);
 
-  stbox_set(hast ? &period : NULL, hasx, hasz, geodetic, box1->srid, xmin,
-    xmax, ymin, ymax, zmin, zmax, result);
+  stbox_set(hasx, hasz, geodetic, box1->srid, xmin, xmax, ymin, ymax,
+     zmin, zmax, hast ? &period : NULL, result);
   return true;
 }
 

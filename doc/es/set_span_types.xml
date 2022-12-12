@@ -186,20 +186,20 @@ SELECT asHexWKB(timestampset '{2001-01-01, 2001-01-03}');
 
 				<listitem id="spantime_FromBinary">
 					<indexterm><primary><varname>intspanFromBinary</varname></primary></indexterm>
-					<indexterm><primary><varname>intspanSetFromBinary</varname></primary></indexterm>
+					<indexterm><primary><varname>intspansetFromBinary</varname></primary></indexterm>
 					<indexterm><primary><varname>floatspanFromBinary</varname></primary></indexterm>
-					<indexterm><primary><varname>floatspanSetFromBinary</varname></primary></indexterm>
+					<indexterm><primary><varname>floatspansetFromBinary</varname></primary></indexterm>
 					<indexterm><primary><varname>periodFromBinary</varname></primary></indexterm>
-					<indexterm><primary><varname>periodSetFromBinary</varname></primary></indexterm>
-					<indexterm><primary><varname>timestampSetFromBinary</varname></primary></indexterm>
+					<indexterm><primary><varname>periodsetFromBinary</varname></primary></indexterm>
+					<indexterm><primary><varname>timestampsetFromBinary</varname></primary></indexterm>
 					<para>Entrar un rango o un tipo de tiempo en la representación binaria conocida (WKB)</para>
 					<para><varname>intspanFromBinary(bytea): intspan</varname></para>
-					<para><varname>intspanSetFromBinary(bytea): intspanset</varname></para>
+					<para><varname>intspansetFromBinary(bytea): intspanset</varname></para>
 					<para><varname>floatspanFromBinary(bytea): floatspan</varname></para>
-					<para><varname>floatspanSetFromBinary(bytea): floatspanset</varname></para>
+					<para><varname>floatspansetFromBinary(bytea): floatspanset</varname></para>
 					<para><varname>periodFromBinary(bytea): period</varname></para>
-					<para><varname>periodSetFromBinary(bytea): periodset</varname></para>
-					<para><varname>timestampSetFromBinary(bytea): timestampset</varname></para>
+					<para><varname>periodsetFromBinary(bytea): periodset</varname></para>
+					<para><varname>timestampsetFromBinary(bytea): timestampset</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT intspanFromBinary('\x010800010100000003000000');
 -- [1, 3)
@@ -213,20 +213,20 @@ SELECT timestampsetFromBinary('\x01020000000fce0136a58010000bc8f4f92580100');
 
 				<listitem id="spantime_FromHexWKB">
 					<indexterm><primary><varname>intspanFromHexWKB</varname></primary></indexterm>
-					<indexterm><primary><varname>intspanSetFromHexWKB</varname></primary></indexterm>
+					<indexterm><primary><varname>intspansetFromHexWKB</varname></primary></indexterm>
 					<indexterm><primary><varname>floatspanFromHexWKB</varname></primary></indexterm>
-					<indexterm><primary><varname>floatspanSetFromHexWKB</varname></primary></indexterm>
+					<indexterm><primary><varname>floatspansetFromHexWKB</varname></primary></indexterm>
 					<indexterm><primary><varname>periodFromHexWKB</varname></primary></indexterm>
-					<indexterm><primary><varname>periodSetFromHexWKB</varname></primary></indexterm>
-					<indexterm><primary><varname>timestampSetFromHexWKB</varname></primary></indexterm>
+					<indexterm><primary><varname>periodsetFromHexWKB</varname></primary></indexterm>
+					<indexterm><primary><varname>timestampsetFromHexWKB</varname></primary></indexterm>
 					<para>Entrar un rango o un tipo de tiempo en la representación hexadecimal binaria conocida (HexWKB)</para>
 					<para><varname>intspanFromHexWKB(text): intspan</varname></para>
-					<para><varname>intspanSetFromHexWKB(text): intspanset</varname></para>
+					<para><varname>intspansetFromHexWKB(text): intspanset</varname></para>
 					<para><varname>floatspanFromHexWKB(text): floatspan</varname></para>
-					<para><varname>floatspanSetFromHexWKB(text): floatspanset</varname></para>
+					<para><varname>floatspansetFromHexWKB(text): floatspanset</varname></para>
 					<para><varname>periodFromHexWKB(text): period</varname></para>
-					<para><varname>periodSetFromHexWKB(text): periodset</varname></para>
-					<para><varname>timestampSetFromHexWKB(text): timestampset</varname></para>
+					<para><varname>periodsetFromHexWKB(text): periodset</varname></para>
+					<para><varname>timestampsetFromHexWKB(text): timestampset</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT intspanFromHexWKB('010800010100000003000000');
 -- [1, 3)

@@ -154,12 +154,6 @@ stbox_constructor_ext(FunctionCallInfo fcinfo, bool hasx, bool hasz,
   Span *period = NULL;
 
   int i = 0;
-  if (hast)
-  {
-    period = PG_GETARG_SPAN_P(0);
-    i++;
-  }
-
   if (hasx)
   {
     if (! hasz && ! geodetic)
@@ -168,7 +162,6 @@ stbox_constructor_ext(FunctionCallInfo fcinfo, bool hasx, bool hasz,
       ymin = PG_GETARG_FLOAT8(i++);
       xmax = PG_GETARG_FLOAT8(i++);
       ymax = PG_GETARG_FLOAT8(i++);
-      srid = PG_GETARG_INT32(i++);
     }
     else /* hasz || geodetic */
     {
@@ -178,13 +171,18 @@ stbox_constructor_ext(FunctionCallInfo fcinfo, bool hasx, bool hasz,
       xmax = PG_GETARG_FLOAT8(i++);
       ymax = PG_GETARG_FLOAT8(i++);
       zmax = PG_GETARG_FLOAT8(i++);
-      srid = PG_GETARG_INT32(i++);
     }
   }
+  if (hast)
+  {
+    period = PG_GETARG_SPAN_P(i++);
+  }
+  if (hasx)
+    srid = PG_GETARG_INT32(i++);
 
   /* Construct the box */
-  STBox *result = stbox_make(period, hasx, hasz, geodetic, srid, xmin, xmax,
-    ymin, ymax, zmin, zmax);
+  STBox *result = stbox_make(hasx, hasz, geodetic, srid, xmin, xmax,
+    ymin, ymax, zmin, zmax, period);
   PG_RETURN_POINTER(result);
 }
 

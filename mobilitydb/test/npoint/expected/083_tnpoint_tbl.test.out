@@ -216,7 +216,7 @@ SELECT MAX(route(inst)) FROM tbl_tnpoint_inst;
   99
 (1 row)
 
-SELECT MAX(array_length(routes(temp), 1)) FROM tbl_tnpoint;
+SELECT MAX(numValues(routes(temp))) FROM tbl_tnpoint;
  max 
 -----
    9

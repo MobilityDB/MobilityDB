@@ -198,8 +198,8 @@ stbox_parse(const char **str)
   /* Ensure there is no more input */
   ensure_end_input(str, true, "spatiotemporal box");
 
-  STBox *result = stbox_make(period, hasx, hasz, geodetic, srid, xmin, xmax,
-    ymin, ymax, zmin, zmax);
+  STBox *result = stbox_make(hasx, hasz, geodetic, srid, xmin, xmax, ymin,
+    ymax, zmin, zmax, period);
   if (period)
     pfree(period);
   return result;

@@ -1363,8 +1363,8 @@ stbox_from_wkb_state(wkb_parse_state *s)
       zmax = double_from_wkb_state(s);
     }
   }
-  STBox *result = stbox_make(period, s->hasx, s->hasz, s->geodetic, s->srid,
-    xmin, xmax, ymin, ymax, zmin, zmax);
+  STBox *result = stbox_make(s->hasx, s->hasz, s->geodetic, s->srid,
+    xmin, xmax, ymin, ymax, zmin, zmax, period);
   if (s->hast)
     pfree(period);
   return result;
