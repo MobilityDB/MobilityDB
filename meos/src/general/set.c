@@ -635,6 +635,7 @@ orderedset_values(const OrderedSet *os)
   return result;
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the array of values of an integer set.
@@ -679,6 +680,7 @@ floatset_values(const OrderedSet *os)
     result[i] = DatumGetFloat8(orderedset_val_n(os, i));
   return result;
 }
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_accessor

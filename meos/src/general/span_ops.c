@@ -786,7 +786,6 @@ overleft_float_floatspan(double d, const Span *s)
 {
   return overleft_value_span(Float8GetDatum(d), T_INT4, s);
 }
-#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_pos
@@ -798,6 +797,7 @@ overbefore_timestamp_period(TimestampTz t, const Period *p)
 {
   return overleft_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p);
 }
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_pos
@@ -811,16 +811,6 @@ overleft_orderedset_span(const OrderedSet *os, const Span *s)
   return overleft_value_span(v, os->span.basetype, s);
 }
 
-/**
- * @ingroup libmeos_setspan_pos
- * @brief Return true if a timestamp set is not after a period.
- * @sqlop @p &<#
- */
-bool
-overbefore_timestampset_period(const TimestampSet *ts, const Period *p)
-{
-  return overleft_orderedset_span(ts, p);
-}
 
 /**
  * @ingroup libmeos_internal_setspan_pos
@@ -869,7 +859,6 @@ overleft_floatspan_float(const Span *s, double d)
 {
   return overleft_span_value(s, Float8GetDatum(d), T_FLOAT8);
 }
-#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_pos
@@ -881,6 +870,7 @@ overbefore_period_timestamp(const Period *p, TimestampTz t)
 {
   return overleft_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_pos
@@ -892,17 +882,6 @@ overleft_span_orderedset(const Span *s, const OrderedSet *os)
 {
   Datum v = orderedset_val_n(os, os->count - 1);
   return overleft_span_value(s, v, os->span.basetype);
-}
-
-/**
- * @ingroup libmeos_setspan_pos
- * @brief Return true if a period is not after a timestamp set.
- * @sqlop @p &<#
- */
-bool
-overbefore_period_timestampset(const Period *p, const TimestampSet *ts)
-{
-  return overleft_span_orderedset(p, ts);
 }
 
 /**
@@ -966,7 +945,6 @@ overright_float_floatspan(double d, const Span *s)
 {
   return overright_value_span(Float8GetDatum(d), T_FLOAT8, s);
 }
-#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_pos
@@ -978,6 +956,7 @@ overafter_timestamp_period(TimestampTz t, const Period *p)
 {
   return overright_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p);
 }
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_pos
@@ -990,19 +969,6 @@ overright_orderedset_span(const OrderedSet *os, const Span *s)
   Datum v = orderedset_val_n(os, 0);
   return overright_value_span(v, os->span.basetype, s);
 }
-
-#if MEOS
-/**
- * @ingroup libmeos_setspan_pos
- * @brief Return true if a timestamp set is not before a period.
- * @sqlop @p #&>
- */
-bool
-overafter_timestampset_period(const TimestampSet *ts, const Period *p)
-{
-  return overright_orderedset_span(ts, p);
-}
-#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_pos
@@ -1054,7 +1020,6 @@ overright_floatspan_float(const Span *s, double d)
 {
   return overright_span_value(s, Float8GetDatum(d), T_FLOAT8);
 }
-#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_pos
@@ -1066,6 +1031,7 @@ overafter_period_timestamp(const Period *p, TimestampTz t)
 {
   return overright_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_pos
@@ -1078,19 +1044,6 @@ overright_span_orderedset(const Span *s, const OrderedSet *os)
   Datum v = orderedset_val_n(os, 0);
   return overright_span_value(s, v, os->span.basetype);
 }
-
-#if MEOS
-/**
- * @ingroup libmeos_setspan_pos
- * @brief Return true if a period is not before a timestamp set.
- * @sqlop @p #&>
- */
-bool
-overafter_period_timestampset(const Period *p, const TimestampSet *ts)
-{
-  return overright_span_orderedset(p, ts);
-}
-#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_pos
