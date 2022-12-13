@@ -1430,8 +1430,17 @@ minus_span_value1(const Span *s, Datum d, mobdbType basetype, Span **result)
     return 1;
   }
 
+  /* Account for canonicalized spans */
+  Datum upper1;
+  if (basetype == T_INT4)
+    upper1 = Int32GetDatum(DatumGetInt32(s->upper) - (int32) 1);
+  else if (basetype == T_INT8)
+    upper1 = Int64GetDatum(DatumGetInt64(s->upper) - (int64) 1);
+  else
+    upper1 = s->upper;
+
   bool eqlower = datum_eq(s->lower, d, basetype);
-  bool equpper = datum_eq(s->upper, d, basetype);
+  bool equpper = datum_eq(upper1, d, basetype);
   if (eqlower && equpper)
     return 0;
 
@@ -1443,7 +1452,10 @@ minus_span_value1(const Span *s, Datum d, mobdbType basetype, Span **result)
 
   if (equpper)
   {
-    result[0] = span_make(s->lower, s->upper, s->lower_inc, false, basetype);
+    if (basetype == T_INT4 || basetype == T_INT8)
+      result[0] = span_make(s->lower, upper1, true, false, basetype);
+    else
+      result[0] = span_make(s->lower, s->upper, s->lower_inc, false, basetype);
     return 1;
   }
 

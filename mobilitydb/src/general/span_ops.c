@@ -153,6 +153,40 @@ Contained_span_span(PG_FUNCTION_ARGS)
  * Overlaps
  *****************************************************************************/
 
+PG_FUNCTION_INFO_V1(Overlaps_orderedset_span);
+/**
+ * @ingroup mobilitydb_spantime_topo
+ * @brief Return true if an ordered set and a span overlap
+ * @sqlfunc span_overlaps()
+ * @sqlop @p &&
+ */
+PGDLLEXPORT Datum
+Overlaps_orderedset_span(PG_FUNCTION_ARGS)
+{
+  OrderedSet *os = PG_GETARG_ORDEREDSET_P(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  bool result = overlaps_span_orderedset(s, os);
+  PG_FREE_IF_COPY(os, 0);
+  PG_RETURN_BOOL(result);
+}
+
+PG_FUNCTION_INFO_V1(Overlaps_span_orderedset);
+/**
+ * @ingroup mobilitydb_setspan_topo
+ * @brief Return true if a span and an ordered set overlap
+ * @sqlfunc span_overlaps()
+ * @sqlop @p &&
+ */
+PGDLLEXPORT Datum
+Overlaps_span_orderedset(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  OrderedSet *os = PG_GETARG_ORDEREDSET_P(1);
+  bool result = overlaps_span_orderedset(s, os);
+  PG_FREE_IF_COPY(os, 1);
+  PG_RETURN_BOOL(result);
+}
+
 PG_FUNCTION_INFO_V1(Overlaps_span_span);
 /**
  * @ingroup mobilitydb_setspan_topo

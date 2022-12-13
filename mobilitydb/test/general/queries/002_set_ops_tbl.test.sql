@@ -80,24 +80,20 @@ SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts * t2.t
 
 -------------------------------------------------------------------------------
 
-SELECT MIN(t1.t <-> t2.t) FROM tbl_timestamptz t1, tbl_timestamptz t2;
-SELECT MIN(t <-> ts) FROM tbl_timestamptz, tbl_timestampset;
-SELECT MIN(t <-> p) FROM tbl_timestamptz, tbl_period;
-SELECT MIN(t <-> ps) FROM tbl_timestamptz, tbl_periodset;
+SELECT MIN(t1.i <-> t2.i) FROM tbl_int t1, tbl_intset t2;
+SELECT MIN(t1.i <-> t2.i) FROM tbl_intset t1, tbl_int t2;
+SELECT MIN(t1.i <-> t2.i) FROM tbl_intset t1, tbl_intset t2;
 
-SELECT MIN(ts <-> t) FROM tbl_timestampset, tbl_timestamptz;
+SELECT MIN(t1.b <-> t2.b) FROM tbl_bigint t1, tbl_bigintset t2;
+SELECT MIN(t1.b <-> t2.b) FROM tbl_bigintset t1, tbl_bigint t2;
+SELECT MIN(t1.b <-> t2.b) FROM tbl_bigintset t1, tbl_bigintset t2;
+
+SELECT MIN(t1.f <-> t2.f) FROM tbl_float t1, tbl_floatset t2;
+SELECT MIN(t1.f <-> t2.f) FROM tbl_floatset t1, tbl_float t2;
+SELECT MIN(t1.f <-> t2.f) FROM tbl_floatset t1, tbl_floatset t2;
+
+SELECT MIN(t1.t <-> t2.ts) FROM tbl_timestamptz t1, tbl_timestampset t2;
+SELECT MIN(t1.ts <-> t2.t) FROM tbl_timestampset t1, tbl_timestamptz t2;
 SELECT MIN(t1.ts <-> t2.ts) FROM tbl_timestampset t1, tbl_timestampset t2;
-SELECT MIN(ts <-> p) FROM tbl_timestampset, tbl_period;
-SELECT MIN(ts <-> ps) FROM tbl_timestampset, tbl_periodset;
-
-SELECT MIN(p <-> t) FROM tbl_period, tbl_timestamptz;
-SELECT MIN(p <-> ts) FROM tbl_period, tbl_timestampset;
-SELECT MIN(t1.p <-> t2.p) FROM tbl_period t1, tbl_period t2;
-SELECT MIN(p <-> ps) FROM tbl_period, tbl_periodset;
-
-SELECT MIN(ps <-> t) FROM tbl_periodset, tbl_timestamptz;
-SELECT MIN(ps <-> ts) FROM tbl_periodset, tbl_timestampset;
-SELECT MIN(ps <-> p) FROM tbl_periodset, tbl_period;
-SELECT MIN(t1.ps <-> t2.ps) FROM tbl_periodset t1, tbl_periodset t2;
 
 -------------------------------------------------------------------------------

@@ -107,8 +107,6 @@ orderedset_find_value(const OrderedSet *os, Datum d, int *loc)
     else
       first = middle + 1;
   }
-  if (middle == os->count)
-    middle++;
   *loc = middle;
   return false;
 }

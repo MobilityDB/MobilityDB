@@ -80,7 +80,14 @@ SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts <= t2.
 SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts > t2.ts;
 SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts >= t2.ts;
 
+SELECT MAX(intset_hash(i)) FROM tbl_intset;
+SELECT MAX(bigintset_hash(b)) FROM tbl_bigintset;
+SELECT MAX(floatset_hash(f)) FROM tbl_floatset;
 SELECT MAX(timestampset_hash(ts)) FROM tbl_timestampset;
+
+SELECT MAX(intset_hash_extended(i, 1)) FROM tbl_intset;
+SELECT MAX(bigintset_hash_extended(b, 1)) FROM tbl_bigintset;
+SELECT MAX(floatset_hash_extended(f, 1)) FROM tbl_floatset;
 SELECT MAX(timestampset_hash_extended(ts, 1)) FROM tbl_timestampset;
 
 -------------------------------------------------------------------------------

@@ -312,6 +312,10 @@ CREATE FUNCTION intspan_spgist_config(internal, internal)
   RETURNS void
   AS 'MODULE_PATHNAME', 'Intspan_spgist_config'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION bigintspan_spgist_config(internal, internal)
+  RETURNS void
+  AS 'MODULE_PATHNAME', 'Bigintspan_spgist_config'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION floatspan_spgist_config(internal, internal)
   RETURNS void
   AS 'MODULE_PATHNAME', 'Floatspan_spgist_config'
@@ -419,7 +423,7 @@ CREATE OPERATOR CLASS bigintspan_quadtree_ops
   OPERATOR  25    <-> (bigintspan, bigintspan) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    <-> (bigintspan, bigintspanset) FOR ORDER BY pg_catalog.float_ops,
   -- functions
-  FUNCTION  1  intspan_spgist_config(internal, internal),
+  FUNCTION  1  bigintspan_spgist_config(internal, internal),
   FUNCTION  2  span_quadtree_choose(internal, internal),
   FUNCTION  3  span_quadtree_picksplit(internal, internal),
   FUNCTION  4  span_quadtree_inner_consistent(internal, internal),
@@ -634,7 +638,7 @@ CREATE OPERATOR CLASS bigintspan_kdtree_ops
   OPERATOR  25    <-> (bigintspan, bigintspan) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    <-> (bigintspan, bigintspanset) FOR ORDER BY pg_catalog.float_ops,
   -- functions
-  FUNCTION  1  intspan_spgist_config(internal, internal),
+  FUNCTION  1  bigintspan_spgist_config(internal, internal),
   FUNCTION  2  span_kdtree_choose(internal, internal),
   FUNCTION  3  span_kdtree_picksplit(internal, internal),
   FUNCTION  4  span_kdtree_inner_consistent(internal, internal),

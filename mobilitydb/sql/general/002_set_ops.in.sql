@@ -1147,33 +1147,17 @@ CREATE FUNCTION set_distance(integer, integer)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_value_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_distance(integer, intset)
-  RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_value_orderedset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_distance(bigint, bigint)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_value_value'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_distance(bigint, bigintset)
-  RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_value_orderedset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_distance(float, float)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_value_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_distance(float, floatset)
-  RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_value_orderedset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_distance(timestamptz, timestamptz)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_value_value'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_distance(timestamptz, timestampset)
-  RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_value_orderedset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <-> (
@@ -1183,17 +1167,7 @@ CREATE OPERATOR <-> (
 );
 CREATE OPERATOR <-> (
   PROCEDURE = set_distance,
-  LEFTARG = integer, RIGHTARG = intset,
-  COMMUTATOR = <->
-);
-CREATE OPERATOR <-> (
-  PROCEDURE = set_distance,
   LEFTARG = bigint, RIGHTARG = bigint,
-  COMMUTATOR = <->
-);
-CREATE OPERATOR <-> (
-  PROCEDURE = set_distance,
-  LEFTARG = bigint, RIGHTARG = bigintset,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
@@ -1203,12 +1177,40 @@ CREATE OPERATOR <-> (
 );
 CREATE OPERATOR <-> (
   PROCEDURE = set_distance,
-  LEFTARG = float, RIGHTARG = floatset,
+  LEFTARG = timestamptz, RIGHTARG = timestamptz,
+  COMMUTATOR = <->
+);
+
+CREATE FUNCTION set_distance(integer, intset)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Distance_value_orderedset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_distance(bigint, bigintset)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Distance_value_orderedset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_distance(float, floatset)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Distance_value_orderedset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_distance(timestamptz, timestampset)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Distance_value_orderedset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR <-> (
+  PROCEDURE = set_distance,
+  LEFTARG = integer, RIGHTARG = intset,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
   PROCEDURE = set_distance,
-  LEFTARG = timestamptz, RIGHTARG = timestamptz,
+  LEFTARG = bigint, RIGHTARG = bigintset,
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = set_distance,
+  LEFTARG = float, RIGHTARG = floatset,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (

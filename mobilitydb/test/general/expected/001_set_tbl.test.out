@@ -135,10 +135,46 @@ SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts >= t2.
   4950
 (1 row)
 
+SELECT MAX(intset_hash(i)) FROM tbl_intset;
+    max     
+------------
+ 2141239878
+(1 row)
+
+SELECT MAX(bigintset_hash(b)) FROM tbl_bigintset;
+    max     
+------------
+ 2140877551
+(1 row)
+
+SELECT MAX(floatset_hash(f)) FROM tbl_floatset;
+    max     
+------------
+ 1978644117
+(1 row)
+
 SELECT MAX(timestampset_hash(ts)) FROM tbl_timestampset;
     max     
 ------------
  2092387697
+(1 row)
+
+SELECT MAX(intset_hash_extended(i, 1)) FROM tbl_intset;
+         max         
+---------------------
+ 9215683723210280632
+(1 row)
+
+SELECT MAX(bigintset_hash_extended(b, 1)) FROM tbl_bigintset;
+         max         
+---------------------
+ 9180839711525586122
+(1 row)
+
+SELECT MAX(floatset_hash_extended(f, 1)) FROM tbl_floatset;
+         max         
+---------------------
+ 9019753321429055805
 (1 row)
 
 SELECT MAX(timestampset_hash_extended(ts, 1)) FROM tbl_timestampset;
