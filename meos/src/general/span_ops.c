@@ -81,6 +81,8 @@ span_value_min(Datum l, Datum r, mobdbType type)
       DatumGetTimestampTz(r)));
   else if (type == T_INT4)
     return Int32GetDatum(Min(DatumGetInt32(l), DatumGetInt32(r)));
+  else if (type == T_INT8)
+    return Int64GetDatum(Min(DatumGetInt64(l), DatumGetInt64(r)));
   else /* type == T_FLOAT8 */
     return Float8GetDatum(Min(DatumGetFloat8(l), DatumGetFloat8(r)));
 }
@@ -97,6 +99,8 @@ span_value_max(Datum l, Datum r, mobdbType type)
       DatumGetTimestampTz(r)));
   else if (type == T_INT4)
     return Int32GetDatum(Max(DatumGetInt32(l), DatumGetInt32(r)));
+  else if (type == T_INT8)
+    return Int64GetDatum(Max(DatumGetInt64(l), DatumGetInt64(r)));
   else /* type == T_FLOAT8 */
     return Float8GetDatum(Max(DatumGetFloat8(l), DatumGetFloat8(r)));
 }
@@ -1718,17 +1722,21 @@ distance_value_value(Datum l, Datum r, mobdbType typel, mobdbType typer)
   if (typel != typer)
     ensure_span_basetype(typer);
   if (typel == T_INT4 && typer == T_INT4)
-    return fabs((double) DatumGetInt32(l) - (double) DatumGetInt32(r));
+    return (double) abs(DatumGetInt32(l) - DatumGetInt32(r));
+  if (typel == T_INT8 && typer == T_INT8)
+    return (double) labs(DatumGetInt64(l) - DatumGetInt64(r));
+  if (typel == T_FLOAT8 && typer == T_FLOAT8)
+    return fabs(DatumGetFloat8(l) - DatumGetFloat8(r));
+  if (typel == T_TIMESTAMPTZ && typer == T_TIMESTAMPTZ)
+    /* Distance in seconds if the base type is TimestampTz */
+    return (double) (labs((DatumGetTimestampTz(l) - DatumGetTimestampTz(r)))) /
+      USECS_PER_SEC;
   if (typel == T_INT4 && typer == T_FLOAT8)
     return fabs((double) DatumGetInt32(l) - DatumGetFloat8(r));
   if (typel == T_FLOAT8 && typer == T_INT4)
     return fabs(DatumGetFloat8(l) - (double) DatumGetInt32(r));
-  if (typel == T_FLOAT8 && typer == T_FLOAT8)
-    return fabs(DatumGetFloat8(l) - DatumGetFloat8(r));
-  /* Distance in seconds if the base type is TimestampTz */
-  else /* typel == T_TIMESTAMPTZ && typer == T_TIMESTAMPTZ */
-    return (double) labs((DatumGetTimestampTz(l) - DatumGetTimestampTz(r))) /
-      USECS_PER_SEC;
+  else
+    elog(ERROR, "Unknown types for distance between values");
 }
 
 /**

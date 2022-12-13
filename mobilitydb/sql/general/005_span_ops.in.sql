@@ -1632,23 +1632,23 @@ CREATE OPERATOR + (
 /******************************************************************************/
 
 CREATE FUNCTION span_intersection(int, intspan)
-  RETURNS intspanset
+  RETURNS int
   AS 'MODULE_PATHNAME', 'Intersection_value_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_intersection(intset, intspan)
-  RETURNS intspanset
+  RETURNS intset
   AS 'MODULE_PATHNAME', 'Intersection_orderedset_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_intersection(intspan, int)
-  RETURNS intspanset
+  RETURNS int
   AS 'MODULE_PATHNAME', 'Intersection_span_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_intersection(intspan, intset)
-  RETURNS intspanset
+  RETURNS intset
   AS 'MODULE_PATHNAME', 'Intersection_span_orderedset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_intersection(intspan, intspan)
-  RETURNS intspanset
+  RETURNS intspan
   AS 'MODULE_PATHNAME', 'Intersection_span_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -1679,23 +1679,23 @@ CREATE OPERATOR * (
 );
 
 CREATE FUNCTION span_intersection(bigint, bigintspan)
-  RETURNS bigintspanset
+  RETURNS bigint
   AS 'MODULE_PATHNAME', 'Intersection_value_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_intersection(bigintset, bigintspan)
-  RETURNS bigintspanset
+  RETURNS bigintset
   AS 'MODULE_PATHNAME', 'Intersection_orderedset_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_intersection(bigintspan, bigint)
-  RETURNS bigintspanset
+  RETURNS bigint
   AS 'MODULE_PATHNAME', 'Intersection_span_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_intersection(bigintspan, bigintset)
-  RETURNS bigintspanset
+  RETURNS bigintset
   AS 'MODULE_PATHNAME', 'Intersection_span_orderedset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_intersection(bigintspan, bigintspan)
-  RETURNS bigintspanset
+  RETURNS bigintspan
   AS 'MODULE_PATHNAME', 'Intersection_span_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -1727,23 +1727,23 @@ CREATE OPERATOR * (
 );
 
 CREATE FUNCTION span_intersection(float, floatspan)
-  RETURNS floatspanset
+  RETURNS float
   AS 'MODULE_PATHNAME', 'Intersection_value_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_intersection(floatset, floatspan)
-  RETURNS floatspanset
+  RETURNS floatset
   AS 'MODULE_PATHNAME', 'Intersection_orderedset_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_intersection(floatspan, float)
-  RETURNS floatspanset
+  RETURNS float
   AS 'MODULE_PATHNAME', 'Intersection_span_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_intersection(floatspan, floatset)
-  RETURNS floatspanset
+  RETURNS floatset
   AS 'MODULE_PATHNAME', 'Intersection_span_orderedset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_intersection(floatspan, floatspan)
-  RETURNS floatspanset
+  RETURNS floatspan
   AS 'MODULE_PATHNAME', 'Intersection_span_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -1823,11 +1823,11 @@ CREATE OPERATOR * (
 /******************************************************************************/
 
 CREATE FUNCTION span_minus(int, intspan)
-  RETURNS intspanset
+  RETURNS int
   AS 'MODULE_PATHNAME', 'Minus_value_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_minus(intset, intspan)
-  RETURNS intspanset
+  RETURNS intset
   AS 'MODULE_PATHNAME', 'Minus_orderedset_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_minus(intspan, int)
@@ -1870,11 +1870,11 @@ CREATE OPERATOR - (
 );
 
 CREATE FUNCTION span_minus(bigint, bigintspan)
-  RETURNS bigintspanset
+  RETURNS bigint
   AS 'MODULE_PATHNAME', 'Minus_value_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_minus(bigintset, bigintspan)
-  RETURNS bigintspanset
+  RETURNS bigintset
   AS 'MODULE_PATHNAME', 'Minus_orderedset_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_minus(bigintspan, bigint)
@@ -1918,11 +1918,11 @@ CREATE OPERATOR - (
 );
 
 CREATE FUNCTION span_minus(float, floatspan)
-  RETURNS floatspanset
+  RETURNS float
   AS 'MODULE_PATHNAME', 'Minus_value_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_minus(floatset, floatspan)
-  RETURNS floatspanset
+  RETURNS floatset
   AS 'MODULE_PATHNAME', 'Minus_orderedset_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_minus(floatspan, float)
