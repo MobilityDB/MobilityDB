@@ -49,24 +49,24 @@
 /**
  * @brief Return the intersection or the difference of an ordered set and a span
  */
-OrderedSet *
-setop_orderedset_span(const OrderedSet *os, const Span *s, SetOper setop)
+Set *
+setop_set_span(const Set *os, const Span *s, SetOper setop)
 {
   assert(setop == INTER || setop == MINUS);
   /* Bounding box test */
   if (! overlaps_span_span(&os->span, s))
-    return (setop == INTER) ? NULL : orderedset_copy(os);
+    return (setop == INTER) ? NULL : set_copy(os);
 
   Datum *values = palloc(sizeof(Datum) * os->count);
   int k = 0;
   for (int i = 0; i < os->count; i++)
   {
-    Datum v = orderedset_val_n(os, i);
+    Datum v = set_val_n(os, i);
     if (((setop == INTER) && contains_span_value(s, v, os->span.basetype)) ||
       ((setop == MINUS) && ! contains_span_value(s, v, os->span.basetype)))
       values[k++] = v;
   }
-  return orderedset_make_free(values, k, os->span.basetype);
+  return set_make_free(values, k, os->span.basetype);
 }
 
 /**
@@ -180,7 +180,7 @@ contains_period_timestamp(const Period *p, TimestampTz t)
  * @sqlop @p \@>
  */
 bool
-contains_span_orderedset(const Span *s, const OrderedSet *os)
+contains_span_set(const Span *s, const Set *os)
 {
   /* It is sufficient to do a bounding box test */
   if (! contains_span_span(s, &os->span))
@@ -273,9 +273,9 @@ contained_timestamp_period(TimestampTz t, const Period *p)
  * @sqlop @p <@
  */
 bool
-contained_orderedset_span(const OrderedSet *os, const Span *s)
+contained_set_span(const Set *os, const Span *s)
 {
-  return contains_span_orderedset(s, os);
+  return contains_span_set(s, os);
 }
 
 /**
@@ -299,7 +299,7 @@ contained_span_span(const Span *s1, const Span *s2)
  * @sqlop @p &&
  */
 bool
-overlaps_span_orderedset(const Span *s, const OrderedSet *os)
+overlaps_span_set(const Span *s, const Set *os)
 {
   /* Bounding box test */
   if (! overlaps_span_span(s, &os->span))
@@ -307,7 +307,7 @@ overlaps_span_orderedset(const Span *s, const OrderedSet *os)
 
   for (int i = 0; i < os->count; i++)
   {
-    Datum d = orderedset_val_n(os, i);
+    Datum d = set_val_n(os, i);
     if (contains_span_value(s, d, os->span.basetype))
       return true;
   }
@@ -405,14 +405,14 @@ adjacent_period_timestamp(const Period *p, TimestampTz t)
  * @sqlop @p -|-
  */
 bool
-adjacent_span_orderedset(const Span *s, const OrderedSet *os)
+adjacent_span_set(const Span *s, const Set *os)
 {
   /*
    * A span set A..B and a span C are adjacent if and only if
    * B is adjacent to C, or C is adjacent to A.
    */
-  Datum d1 = orderedset_val_n(os, 0);
-  Datum d2 = orderedset_val_n(os, os->count - 1);
+  Datum d1 = set_val_n(os, 0);
+  Datum d2 = set_val_n(os, os->count - 1);
   return (datum_eq(d2, s->lower, os->span.basetype) && ! s->lower_inc) ||
          (datum_eq(s->upper, d1, os->span.basetype) && ! s->upper_inc);
 }
@@ -562,9 +562,9 @@ before_period_timestamp(const Period *p, TimestampTz t)
  * @sqlop @p <<#
  */
 bool
-left_orderedset_span(const OrderedSet *os, const Span *s)
+left_set_span(const Set *os, const Span *s)
 {
-  Datum v = orderedset_val_n(os, os->count - 1);
+  Datum v = set_val_n(os, os->count - 1);
   return left_value_span(v, os->span.basetype, s);
 }
 
@@ -574,9 +574,9 @@ left_orderedset_span(const OrderedSet *os, const Span *s)
  * @sqlop @p <<#
  */
 bool
-left_span_orderedset(const Span *s, const OrderedSet *os)
+left_span_set(const Span *s, const Set *os)
 {
-  Datum v = orderedset_val_n(os, 0);
+  Datum v = set_val_n(os, 0);
   return left_span_value(s, v, os->span.basetype);
 }
 
@@ -659,9 +659,9 @@ after_timestamp_period(TimestampTz t, const Period *p)
  * @sqlop @p #>>
  */
 bool
-right_orderedset_span(const OrderedSet *os, const Span *s)
+right_set_span(const Set *os, const Span *s)
 {
-  return left_span_orderedset(s, os);
+  return left_span_set(s, os);
 }
 
 /**
@@ -726,9 +726,9 @@ after_timestamp_period(TimestampTz t, const Period *p)
  * @sqlop @p #>>
  */
 bool
-right_span_orderedset(const Span *s, const OrderedSet *os)
+right_span_set(const Span *s, const Set *os)
 {
-  return left_orderedset_span(os, s);
+  return left_set_span(os, s);
 }
 
 /**
@@ -809,9 +809,9 @@ overbefore_timestamp_period(TimestampTz t, const Period *p)
  * @sqlop @p &<#
  */
 bool
-overleft_orderedset_span(const OrderedSet *os, const Span *s)
+overleft_set_span(const Set *os, const Span *s)
 {
-  Datum v = orderedset_val_n(os, os->count - 1);
+  Datum v = set_val_n(os, os->count - 1);
   return overleft_value_span(v, os->span.basetype, s);
 }
 
@@ -882,9 +882,9 @@ overbefore_period_timestamp(const Period *p, TimestampTz t)
  * @sqlop @p &<#
  */
 bool
-overleft_span_orderedset(const Span *s, const OrderedSet *os)
+overleft_span_set(const Span *s, const Set *os)
 {
-  Datum v = orderedset_val_n(os, os->count - 1);
+  Datum v = set_val_n(os, os->count - 1);
   return overleft_span_value(s, v, os->span.basetype);
 }
 
@@ -968,9 +968,9 @@ overafter_timestamp_period(TimestampTz t, const Period *p)
  * @sqlop @p #&>
  */
 bool
-overright_orderedset_span(const OrderedSet *os, const Span *s)
+overright_set_span(const Set *os, const Span *s)
 {
-  Datum v = orderedset_val_n(os, 0);
+  Datum v = set_val_n(os, 0);
   return overright_value_span(v, os->span.basetype, s);
 }
 
@@ -980,9 +980,9 @@ overright_orderedset_span(const OrderedSet *os, const Span *s)
  * @sqlop @p #&>
  */
 bool
-overright_orderedset_spanset(const OrderedSet *os, const SpanSet *ss)
+overright_set_spanset(const Set *os, const SpanSet *ss)
 {
-  Datum v = orderedset_val_n(os, 0);
+  Datum v = set_val_n(os, 0);
   const Span *s = spanset_sp_n(ss, 0);
   return overright_value_span(v, os->span.basetype, s);
 }
@@ -1043,9 +1043,9 @@ overafter_period_timestamp(const Period *p, TimestampTz t)
  * @sqlop @p #&>
  */
 bool
-overright_span_orderedset(const Span *s, const OrderedSet *os)
+overright_span_set(const Span *s, const Set *os)
 {
-  Datum v = orderedset_val_n(os, 0);
+  Datum v = set_val_n(os, 0);
   return overright_span_value(s, v, os->span.basetype);
 }
 
@@ -1151,9 +1151,9 @@ union_period_timestamp(const Period *p, TimestampTz t)
  * @sqlop @p +
  */
 SpanSet *
-union_span_orderedset(const Span *s, const OrderedSet *os)
+union_span_set(const Span *s, const Set *os)
 {
-  SpanSet *ss = orderedset_to_spanset(os);
+  SpanSet *ss = set_to_spanset(os);
   SpanSet *result = union_spanset_span(ss, s);
   pfree(ss);
   return result;
@@ -1276,10 +1276,10 @@ intersection_period_timestamp(const Period *p, TimestampTz t,
  * @brief Return the intersection of a span and an ordered set
  * @sqlop @p *
  */
-OrderedSet *
-intersection_span_orderedset(const Span *s, const OrderedSet *os)
+Set *
+intersection_span_set(const Span *s, const Set *os)
 {
-  return setop_orderedset_span(os, s, INTER);
+  return setop_set_span(os, s, INTER);
 }
 
 /**
@@ -1405,10 +1405,10 @@ minus_timestamp_period(TimestampTz t, const Period *p, TimestampTz *result)
  * @brief Return the difference of an ordered set and a span.
  * @sqlop @p -
  */
-OrderedSet *
-minus_orderedset_span(const OrderedSet *os, const Span *s)
+Set *
+minus_set_span(const Set *os, const Span *s)
 {
-  return setop_orderedset_span(os, s, MINUS);
+  return setop_set_span(os, s, MINUS);
 }
 
 /**
@@ -1527,7 +1527,7 @@ minus_period_timestamp(const Period *p, TimestampTz t)
  * @sqlop @p -
  */
 SpanSet *
-minus_span_orderedset(const Span *s, const OrderedSet *os)
+minus_span_set(const Span *s, const Set *os)
 {
   /* Transform the span into a span set */
   SpanSet *ss = span_to_spanset(s);
@@ -1536,7 +1536,7 @@ minus_span_orderedset(const Span *s, const OrderedSet *os)
     return ss;
 
   /* Call the function for the span set */
-  SpanSet *result = minus_spanset_orderedset(ss, os);
+  SpanSet *result = minus_spanset_set(ss, os);
   pfree(ss);
   return result;
 }
@@ -1734,7 +1734,7 @@ distance_period_timestamp(const Period *p, TimestampTz t)
  * @sqlop @p <->
  */
 double
-distance_span_orderedset(const Period *p, const OrderedSet *os)
+distance_span_set(const Period *p, const Set *os)
 {
   return distance_span_span(p, &os->span);
 }

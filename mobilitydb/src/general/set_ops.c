@@ -47,7 +47,7 @@
 /*****************************************************************************/
 /* contains? */
 
-PG_FUNCTION_INFO_V1(Contains_orderedset_value);
+PG_FUNCTION_INFO_V1(Contains_set_value);
 /**
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if an ordered set contains a value
@@ -55,17 +55,17 @@ PG_FUNCTION_INFO_V1(Contains_orderedset_value);
  * @sqlop @p \@>
  */
 PGDLLEXPORT Datum
-Contains_orderedset_value(PG_FUNCTION_ARGS)
+Contains_set_value(PG_FUNCTION_ARGS)
 {
-  OrderedSet *os = PG_GETARG_ORDEREDSET_P(0);
+  Set *os = PG_GETARG_SET_P(0);
   Datum d = PG_GETARG_DATUM(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  bool result = contains_orderedset_value(os, d, basetype);
+  bool result = contains_set_value(os, d, basetype);
   PG_FREE_IF_COPY(os, 0);
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(Contains_orderedset_orderedset);
+PG_FUNCTION_INFO_V1(Contains_set_set);
 /**
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if the first timestamp set contains the second one
@@ -73,11 +73,11 @@ PG_FUNCTION_INFO_V1(Contains_orderedset_orderedset);
  * @sqlop @p \@>
  */
 PGDLLEXPORT Datum
-Contains_orderedset_orderedset(PG_FUNCTION_ARGS)
+Contains_set_set(PG_FUNCTION_ARGS)
 {
-  OrderedSet *os1 = PG_GETARG_ORDEREDSET_P(0);
-  OrderedSet *os2 = PG_GETARG_ORDEREDSET_P(1);
-  bool result = contains_orderedset_orderedset(os1, os2);
+  Set *os1 = PG_GETARG_SET_P(0);
+  Set *os2 = PG_GETARG_SET_P(1);
+  bool result = contains_set_set(os1, os2);
   PG_FREE_IF_COPY(os1, 0);
   PG_FREE_IF_COPY(os2, 1);
   PG_RETURN_BOOL(result);
@@ -86,7 +86,7 @@ Contains_orderedset_orderedset(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 /* contained? */
 
-PG_FUNCTION_INFO_V1(Contained_value_orderedset);
+PG_FUNCTION_INFO_V1(Contained_value_set);
 /**
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if a timestamp is contained by a timestamp set
@@ -94,17 +94,17 @@ PG_FUNCTION_INFO_V1(Contained_value_orderedset);
  * @sqlop @p <@
  */
 PGDLLEXPORT Datum
-Contained_value_orderedset(PG_FUNCTION_ARGS)
+Contained_value_set(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
-  OrderedSet *os = PG_GETARG_ORDEREDSET_P(1);
+  Set *os = PG_GETARG_SET_P(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  bool result = contained_value_orderedset(d, basetype, os);
+  bool result = contained_value_set(d, basetype, os);
   PG_FREE_IF_COPY(os, 1);
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(Contained_orderedset_orderedset);
+PG_FUNCTION_INFO_V1(Contained_set_set);
 /**
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if the first timestamp set is contained by the second one
@@ -112,11 +112,11 @@ PG_FUNCTION_INFO_V1(Contained_orderedset_orderedset);
  * @sqlop @p <@
  */
 PGDLLEXPORT Datum
-Contained_orderedset_orderedset(PG_FUNCTION_ARGS)
+Contained_set_set(PG_FUNCTION_ARGS)
 {
-  OrderedSet *os1 = PG_GETARG_ORDEREDSET_P(0);
-  OrderedSet *os2 = PG_GETARG_ORDEREDSET_P(1);
-  bool result = contained_orderedset_orderedset(os1, os2);
+  Set *os1 = PG_GETARG_SET_P(0);
+  Set *os2 = PG_GETARG_SET_P(1);
+  bool result = contained_set_set(os1, os2);
   PG_FREE_IF_COPY(os1, 0);
   PG_FREE_IF_COPY(os2, 1);
   PG_RETURN_BOOL(result);
@@ -125,7 +125,7 @@ Contained_orderedset_orderedset(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 /* overlaps? */
 
-PG_FUNCTION_INFO_V1(Overlaps_orderedset_orderedset);
+PG_FUNCTION_INFO_V1(Overlaps_set_set);
 /**
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if the timestamp sets overlap
@@ -133,11 +133,11 @@ PG_FUNCTION_INFO_V1(Overlaps_orderedset_orderedset);
  * @sqlop @p &&
  */
 PGDLLEXPORT Datum
-Overlaps_orderedset_orderedset(PG_FUNCTION_ARGS)
+Overlaps_set_set(PG_FUNCTION_ARGS)
 {
-  OrderedSet *os1 = PG_GETARG_ORDEREDSET_P(0);
-  OrderedSet *os2 = PG_GETARG_ORDEREDSET_P(1);
-  bool result = overlaps_orderedset_orderedset(os1, os2);
+  Set *os1 = PG_GETARG_SET_P(0);
+  Set *os2 = PG_GETARG_SET_P(1);
+  bool result = overlaps_set_set(os1, os2);
   PG_FREE_IF_COPY(os1, 0);
   PG_FREE_IF_COPY(os2, 1);
   PG_RETURN_BOOL(result);
@@ -146,7 +146,7 @@ Overlaps_orderedset_orderedset(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 /* strictly left of? */
 
-PG_FUNCTION_INFO_V1(Left_value_orderedset);
+PG_FUNCTION_INFO_V1(Left_value_set);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a timestamp is strictly left a timestamp set
@@ -154,17 +154,17 @@ PG_FUNCTION_INFO_V1(Left_value_orderedset);
  * @sqlop @p <<#
  */
 PGDLLEXPORT Datum
-Left_value_orderedset(PG_FUNCTION_ARGS)
+Left_value_set(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
-  OrderedSet *os = PG_GETARG_ORDEREDSET_P(1);
+  Set *os = PG_GETARG_SET_P(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  bool result = left_value_orderedset(d, basetype, os);
+  bool result = left_value_set(d, basetype, os);
   PG_FREE_IF_COPY(os, 1);
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(Left_orderedset_value);
+PG_FUNCTION_INFO_V1(Left_set_value);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a timestamp set is strictly left a timestamp
@@ -172,17 +172,17 @@ PG_FUNCTION_INFO_V1(Left_orderedset_value);
  * @sqlop @p <<#
  */
 PGDLLEXPORT Datum
-Left_orderedset_value(PG_FUNCTION_ARGS)
+Left_set_value(PG_FUNCTION_ARGS)
 {
-  OrderedSet *os = PG_GETARG_ORDEREDSET_P(0);
+  Set *os = PG_GETARG_SET_P(0);
   Datum d = PG_GETARG_DATUM(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  bool result = left_orderedset_value(os, d, basetype);
+  bool result = left_set_value(os, d, basetype);
   PG_FREE_IF_COPY(os, 0);
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(Left_orderedset_orderedset);
+PG_FUNCTION_INFO_V1(Left_set_set);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if the first timestamp set is strictly left the second one
@@ -190,11 +190,11 @@ PG_FUNCTION_INFO_V1(Left_orderedset_orderedset);
  * @sqlop @p <<#
  */
 PGDLLEXPORT Datum
-Left_orderedset_orderedset(PG_FUNCTION_ARGS)
+Left_set_set(PG_FUNCTION_ARGS)
 {
-  OrderedSet *os1 = PG_GETARG_ORDEREDSET_P(0);
-  OrderedSet *os2 = PG_GETARG_ORDEREDSET_P(1);
-  bool result = left_orderedset_orderedset(os1, os2);
+  Set *os1 = PG_GETARG_SET_P(0);
+  Set *os2 = PG_GETARG_SET_P(1);
+  bool result = left_set_set(os1, os2);
   PG_FREE_IF_COPY(os1, 0);
   PG_FREE_IF_COPY(os2, 1);
   PG_RETURN_BOOL(result);
@@ -203,7 +203,7 @@ Left_orderedset_orderedset(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 /* strictly right of? */
 
-PG_FUNCTION_INFO_V1(Right_value_orderedset);
+PG_FUNCTION_INFO_V1(Right_value_set);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a timestamp is strictly right a timestamp set
@@ -211,17 +211,17 @@ PG_FUNCTION_INFO_V1(Right_value_orderedset);
  * @sqlop @p #>>
  */
 PGDLLEXPORT Datum
-Right_value_orderedset(PG_FUNCTION_ARGS)
+Right_value_set(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
-  OrderedSet *os = PG_GETARG_ORDEREDSET_P(1);
+  Set *os = PG_GETARG_SET_P(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  bool result = right_value_orderedset(d, basetype, os);
+  bool result = right_value_set(d, basetype, os);
   PG_FREE_IF_COPY(os, 1);
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(Right_orderedset_value);
+PG_FUNCTION_INFO_V1(Right_set_value);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a timestamp set is strictly right a timestamp
@@ -229,17 +229,17 @@ PG_FUNCTION_INFO_V1(Right_orderedset_value);
  * @sqlop @p #>>
  */
 PGDLLEXPORT Datum
-Right_orderedset_value(PG_FUNCTION_ARGS)
+Right_set_value(PG_FUNCTION_ARGS)
 {
-  OrderedSet *os = PG_GETARG_ORDEREDSET_P(0);
+  Set *os = PG_GETARG_SET_P(0);
   Datum d = PG_GETARG_DATUM(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  bool result = right_orderedset_value(os, d, basetype);
+  bool result = right_set_value(os, d, basetype);
   PG_FREE_IF_COPY(os, 0);
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(Right_orderedset_orderedset);
+PG_FUNCTION_INFO_V1(Right_set_set);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if the first timestamp set is strictly right the second one
@@ -247,11 +247,11 @@ PG_FUNCTION_INFO_V1(Right_orderedset_orderedset);
  * @sqlop @p #>>
  */
 PGDLLEXPORT Datum
-Right_orderedset_orderedset(PG_FUNCTION_ARGS)
+Right_set_set(PG_FUNCTION_ARGS)
 {
-  OrderedSet *os1 = PG_GETARG_ORDEREDSET_P(0);
-  OrderedSet *os2 = PG_GETARG_ORDEREDSET_P(1);
-  bool result = right_orderedset_orderedset(os1, os2);
+  Set *os1 = PG_GETARG_SET_P(0);
+  Set *os2 = PG_GETARG_SET_P(1);
+  bool result = right_set_set(os1, os2);
   PG_FREE_IF_COPY(os1, 0);
   PG_FREE_IF_COPY(os2, 1);
   PG_RETURN_BOOL(result);
@@ -260,7 +260,7 @@ Right_orderedset_orderedset(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 /* does not extend to right of? */
 
-PG_FUNCTION_INFO_V1(Overleft_value_orderedset);
+PG_FUNCTION_INFO_V1(Overleft_value_set);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a timestamp is not right a timestamp set
@@ -268,17 +268,17 @@ PG_FUNCTION_INFO_V1(Overleft_value_orderedset);
  * @sqlop @p &<#
  */
 PGDLLEXPORT Datum
-Overleft_value_orderedset(PG_FUNCTION_ARGS)
+Overleft_value_set(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
-  OrderedSet *os = PG_GETARG_ORDEREDSET_P(1);
+  Set *os = PG_GETARG_SET_P(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  bool result = overleft_value_orderedset(d, basetype, os);
+  bool result = overleft_value_set(d, basetype, os);
   PG_FREE_IF_COPY(os, 1);
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(Overleft_orderedset_value);
+PG_FUNCTION_INFO_V1(Overleft_set_value);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a timestamp is not right a timestamp
@@ -286,17 +286,17 @@ PG_FUNCTION_INFO_V1(Overleft_orderedset_value);
  * @sqlop @p &<#
  */
 PGDLLEXPORT Datum
-Overleft_orderedset_value(PG_FUNCTION_ARGS)
+Overleft_set_value(PG_FUNCTION_ARGS)
 {
-  OrderedSet *os = PG_GETARG_ORDEREDSET_P(0);
+  Set *os = PG_GETARG_SET_P(0);
   Datum d = PG_GETARG_DATUM(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  bool result = overleft_orderedset_value(os, d, basetype);
+  bool result = overleft_set_value(os, d, basetype);
   PG_FREE_IF_COPY(os, 0);
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(Overleft_orderedset_orderedset);
+PG_FUNCTION_INFO_V1(Overleft_set_set);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if the first timestamp set is not right the second one
@@ -304,11 +304,11 @@ PG_FUNCTION_INFO_V1(Overleft_orderedset_orderedset);
  * @sqlop @p &<#
  */
 PGDLLEXPORT Datum
-Overleft_orderedset_orderedset(PG_FUNCTION_ARGS)
+Overleft_set_set(PG_FUNCTION_ARGS)
 {
-  OrderedSet *os1 = PG_GETARG_ORDEREDSET_P(0);
-  OrderedSet *os2 = PG_GETARG_ORDEREDSET_P(1);
-  bool result = overleft_orderedset_orderedset(os1, os2);
+  Set *os1 = PG_GETARG_SET_P(0);
+  Set *os2 = PG_GETARG_SET_P(1);
+  bool result = overleft_set_set(os1, os2);
   PG_FREE_IF_COPY(os1, 0);
   PG_FREE_IF_COPY(os2, 1);
   PG_RETURN_BOOL(result);
@@ -317,7 +317,7 @@ Overleft_orderedset_orderedset(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 /* does not extend to left of? */
 
-PG_FUNCTION_INFO_V1(Overright_value_orderedset);
+PG_FUNCTION_INFO_V1(Overright_value_set);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a timestamp is not left a timestamp set
@@ -325,17 +325,17 @@ PG_FUNCTION_INFO_V1(Overright_value_orderedset);
  * @sqlop @p
  */
 PGDLLEXPORT Datum
-Overright_value_orderedset(PG_FUNCTION_ARGS)
+Overright_value_set(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
-  OrderedSet *os = PG_GETARG_ORDEREDSET_P(1);
+  Set *os = PG_GETARG_SET_P(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  bool result = overright_value_orderedset(d, basetype, os);
+  bool result = overright_value_set(d, basetype, os);
   PG_FREE_IF_COPY(os, 1);
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(Overright_orderedset_value);
+PG_FUNCTION_INFO_V1(Overright_set_value);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if a timestamp set is not left a timestamp
@@ -343,17 +343,17 @@ PG_FUNCTION_INFO_V1(Overright_orderedset_value);
  * @sqlop @p #&>
  */
 PGDLLEXPORT Datum
-Overright_orderedset_value(PG_FUNCTION_ARGS)
+Overright_set_value(PG_FUNCTION_ARGS)
 {
-  OrderedSet *os = PG_GETARG_ORDEREDSET_P(0);
+  Set *os = PG_GETARG_SET_P(0);
   Datum d = PG_GETARG_DATUM(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  bool result = overright_orderedset_value(os, d, basetype);
+  bool result = overright_set_value(os, d, basetype);
   PG_FREE_IF_COPY(os, 0);
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(Overright_orderedset_orderedset);
+PG_FUNCTION_INFO_V1(Overright_set_set);
 /**
  * @ingroup mobilitydb_setspan_pos
  * @brief Return true if the first timestamp set is not left the second one
@@ -361,11 +361,11 @@ PG_FUNCTION_INFO_V1(Overright_orderedset_orderedset);
  * @sqlop @p #&>
  */
 PGDLLEXPORT Datum
-Overright_orderedset_orderedset(PG_FUNCTION_ARGS)
+Overright_set_set(PG_FUNCTION_ARGS)
 {
-  OrderedSet *os1 = PG_GETARG_ORDEREDSET_P(0);
-  OrderedSet *os2 = PG_GETARG_ORDEREDSET_P(1);
-  bool result = overright_orderedset_orderedset(os1, os2);
+  Set *os1 = PG_GETARG_SET_P(0);
+  Set *os2 = PG_GETARG_SET_P(1);
+  bool result = overright_set_set(os1, os2);
   PG_FREE_IF_COPY(os1, 0);
   PG_FREE_IF_COPY(os2, 1);
   PG_RETURN_BOOL(result);
@@ -388,11 +388,11 @@ Union_value_value(PG_FUNCTION_ARGS)
   Datum d1 = PG_GETARG_DATUM(0);
   Datum d2 = PG_GETARG_DATUM(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  OrderedSet *result = union_value_value(d1,d2, basetype);
+  Set *result = union_value_value(d1,d2, basetype);
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Union_value_orderedset);
+PG_FUNCTION_INFO_V1(Union_value_set);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the union of a timestamp and a timestamp set
@@ -400,19 +400,19 @@ PG_FUNCTION_INFO_V1(Union_value_orderedset);
  * @sqlop @p +
  */
 PGDLLEXPORT Datum
-Union_value_orderedset(PG_FUNCTION_ARGS)
+Union_value_set(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
-  OrderedSet *os = PG_GETARG_ORDEREDSET_P(1);
+  Set *os = PG_GETARG_SET_P(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  OrderedSet *result = union_orderedset_value(os, d, basetype);
+  Set *result = union_set_value(os, d, basetype);
   PG_FREE_IF_COPY(os, 1);
   PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Union_orderedset_value);
+PG_FUNCTION_INFO_V1(Union_set_value);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the union of a timestamp set and a timestamp
@@ -420,17 +420,17 @@ PG_FUNCTION_INFO_V1(Union_orderedset_value);
  * @sqlop @p +
  */
 PGDLLEXPORT Datum
-Union_orderedset_value(PG_FUNCTION_ARGS)
+Union_set_value(PG_FUNCTION_ARGS)
 {
-  OrderedSet *os = PG_GETARG_ORDEREDSET_P(0);
+  Set *os = PG_GETARG_SET_P(0);
   Datum d = PG_GETARG_DATUM(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  OrderedSet *result = union_orderedset_value(os, d, basetype);
+  Set *result = union_set_value(os, d, basetype);
   PG_FREE_IF_COPY(os, 0);
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Union_orderedset_orderedset);
+PG_FUNCTION_INFO_V1(Union_set_set);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the union of the timestamp sets
@@ -438,11 +438,11 @@ PG_FUNCTION_INFO_V1(Union_orderedset_orderedset);
  * @sqlop @p +
  */
 PGDLLEXPORT Datum
-Union_orderedset_orderedset(PG_FUNCTION_ARGS)
+Union_set_set(PG_FUNCTION_ARGS)
 {
-  OrderedSet *os1 = PG_GETARG_ORDEREDSET_P(0);
-  OrderedSet *os2 = PG_GETARG_ORDEREDSET_P(1);
-  OrderedSet *result = union_orderedset_orderedset(os1, os2);
+  Set *os1 = PG_GETARG_SET_P(0);
+  Set *os2 = PG_GETARG_SET_P(1);
+  Set *result = union_set_set(os1, os2);
   PG_FREE_IF_COPY(os1, 0);
   PG_FREE_IF_COPY(os2, 1);
   PG_RETURN_POINTER(result);
@@ -472,7 +472,7 @@ Intersection_value_value(PG_FUNCTION_ARGS)
   PG_RETURN_DATUM(result);
 }
 
-PG_FUNCTION_INFO_V1(Intersection_value_orderedset);
+PG_FUNCTION_INFO_V1(Intersection_value_set);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the intersection of a timestamp and a timestamp set
@@ -480,20 +480,20 @@ PG_FUNCTION_INFO_V1(Intersection_value_orderedset);
  * @sqlop @p *
  */
 PGDLLEXPORT Datum
-Intersection_value_orderedset(PG_FUNCTION_ARGS)
+Intersection_value_set(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
-  OrderedSet *os = PG_GETARG_ORDEREDSET_P(1);
+  Set *os = PG_GETARG_SET_P(1);
   Datum result;
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  bool found = intersection_orderedset_value(os, d, basetype, &result);
+  bool found = intersection_set_value(os, d, basetype, &result);
   PG_FREE_IF_COPY(os, 1);
   if (! found)
     PG_RETURN_NULL();
   PG_RETURN_DATUM(result);
 }
 
-PG_FUNCTION_INFO_V1(Intersection_orderedset_value);
+PG_FUNCTION_INFO_V1(Intersection_set_value);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the intersection of a timestamp set and a timestamp
@@ -501,20 +501,20 @@ PG_FUNCTION_INFO_V1(Intersection_orderedset_value);
  * @sqlop @p *
  */
 PGDLLEXPORT Datum
-Intersection_orderedset_value(PG_FUNCTION_ARGS)
+Intersection_set_value(PG_FUNCTION_ARGS)
 {
-  OrderedSet *os = PG_GETARG_ORDEREDSET_P(0);
+  Set *os = PG_GETARG_SET_P(0);
   Datum d = PG_GETARG_DATUM(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   Datum result;
-  bool found = intersection_orderedset_value(os, d, basetype, &result);
+  bool found = intersection_set_value(os, d, basetype, &result);
   PG_FREE_IF_COPY(os, 0);
   if (! found)
     PG_RETURN_NULL();
   PG_RETURN_DATUM(result);
 }
 
-PG_FUNCTION_INFO_V1(Intersection_orderedset_orderedset);
+PG_FUNCTION_INFO_V1(Intersection_set_set);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the intersection of the timestamp sets
@@ -522,11 +522,11 @@ PG_FUNCTION_INFO_V1(Intersection_orderedset_orderedset);
  * @sqlop @p *
  */
 PGDLLEXPORT Datum
-Intersection_orderedset_orderedset(PG_FUNCTION_ARGS)
+Intersection_set_set(PG_FUNCTION_ARGS)
 {
-  OrderedSet *os1 = PG_GETARG_ORDEREDSET_P(0);
-  OrderedSet *os2 = PG_GETARG_ORDEREDSET_P(1);
-  OrderedSet *result = intersection_orderedset_orderedset(os1, os2);
+  Set *os1 = PG_GETARG_SET_P(0);
+  Set *os2 = PG_GETARG_SET_P(1);
+  Set *result = intersection_set_set(os1, os2);
   PG_FREE_IF_COPY(os1, 0);
   PG_FREE_IF_COPY(os2, 1);
   if (! result)
@@ -558,7 +558,7 @@ Minus_value_value(PG_FUNCTION_ARGS)
   PG_RETURN_DATUM(result);
 }
 
-PG_FUNCTION_INFO_V1(Minus_value_orderedset);
+PG_FUNCTION_INFO_V1(Minus_value_set);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the difference of a timestamp and a a timestamp set
@@ -566,13 +566,13 @@ PG_FUNCTION_INFO_V1(Minus_value_orderedset);
  * @sqlop @p -
  */
 PGDLLEXPORT Datum
-Minus_value_orderedset(PG_FUNCTION_ARGS)
+Minus_value_set(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
-  OrderedSet *os = PG_GETARG_ORDEREDSET_P(1);
+  Set *os = PG_GETARG_SET_P(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   Datum result;
-  bool found = minus_value_orderedset(d, basetype, os, &result);
+  bool found = minus_value_set(d, basetype, os, &result);
   PG_FREE_IF_COPY(os, 1);
   if (! found)
     PG_RETURN_NULL();
@@ -581,7 +581,7 @@ Minus_value_orderedset(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Minus_orderedset_value);
+PG_FUNCTION_INFO_V1(Minus_set_value);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the difference of a timestamp set and a timestamp
@@ -589,19 +589,19 @@ PG_FUNCTION_INFO_V1(Minus_orderedset_value);
  * @sqlop @p -
  */
 PGDLLEXPORT Datum
-Minus_orderedset_value(PG_FUNCTION_ARGS)
+Minus_set_value(PG_FUNCTION_ARGS)
 {
-  OrderedSet *os = PG_GETARG_ORDEREDSET_P(0);
+  Set *os = PG_GETARG_SET_P(0);
   Datum d = PG_GETARG_DATUM(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  OrderedSet *result = minus_orderedset_value(os, d, basetype);
+  Set *result = minus_set_value(os, d, basetype);
   PG_FREE_IF_COPY(os, 0);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Minus_orderedset_orderedset);
+PG_FUNCTION_INFO_V1(Minus_set_set);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the difference of the timestamp sets
@@ -609,11 +609,11 @@ PG_FUNCTION_INFO_V1(Minus_orderedset_orderedset);
  * @sqlop @p -
  */
 PGDLLEXPORT Datum
-Minus_orderedset_orderedset(PG_FUNCTION_ARGS)
+Minus_set_set(PG_FUNCTION_ARGS)
 {
-  OrderedSet *os1 = PG_GETARG_ORDEREDSET_P(0);
-  OrderedSet *os2 = PG_GETARG_ORDEREDSET_P(1);
-  OrderedSet *result = minus_orderedset_orderedset(os1, os2);
+  Set *os1 = PG_GETARG_SET_P(0);
+  Set *os2 = PG_GETARG_SET_P(1);
+  Set *result = minus_set_set(os1, os2);
   PG_FREE_IF_COPY(os1, 0);
   PG_FREE_IF_COPY(os2, 1);
   if (! result)
@@ -625,7 +625,7 @@ Minus_orderedset_orderedset(PG_FUNCTION_ARGS)
  * Distance functions returning a double representing the number of seconds
  ******************************************************************************/
 
-PG_FUNCTION_INFO_V1(Distance_value_orderedset);
+PG_FUNCTION_INFO_V1(Distance_value_set);
 /**
  * @ingroup mobilitydb_setspan_dist
  * @brief Return the distance in seconds between a timestamp and a timestamp set
@@ -633,18 +633,18 @@ PG_FUNCTION_INFO_V1(Distance_value_orderedset);
  * @sqlop @p <->
  */
 PGDLLEXPORT Datum
-Distance_value_orderedset(PG_FUNCTION_ARGS)
+Distance_value_set(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
   Datum os = PG_GETARG_DATUM(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   Span s;
-  orderedset_span_slice(os, &s);
+  set_span_slice(os, &s);
   double result = distance_span_value(&s, d, basetype);
   PG_RETURN_FLOAT8(result);
 }
 
-PG_FUNCTION_INFO_V1(Distance_orderedset_value);
+PG_FUNCTION_INFO_V1(Distance_set_value);
 /**
  * @ingroup mobilitydb_setspan_dist
  * @brief Return the distance in seconds between a timestamp set and a timestamp
@@ -652,18 +652,18 @@ PG_FUNCTION_INFO_V1(Distance_orderedset_value);
  * @sqlop @p <->
  */
 PGDLLEXPORT Datum
-Distance_orderedset_value(PG_FUNCTION_ARGS)
+Distance_set_value(PG_FUNCTION_ARGS)
 {
   Datum os = PG_GETARG_DATUM(0);
   Datum d = PG_GETARG_DATUM(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   Span s;
-  orderedset_span_slice(os, &s);
+  set_span_slice(os, &s);
   double result = distance_span_value(&s, d, basetype);
   PG_RETURN_FLOAT8(result);
 }
 
-PG_FUNCTION_INFO_V1(Distance_orderedset_orderedset);
+PG_FUNCTION_INFO_V1(Distance_set_set);
 /**
  * @ingroup mobilitydb_setspan_dist
  * @brief Return the distance in seconds between the timestamp sets
@@ -671,13 +671,13 @@ PG_FUNCTION_INFO_V1(Distance_orderedset_orderedset);
  * @sqlop @p <->
  */
 PGDLLEXPORT Datum
-Distance_orderedset_orderedset(PG_FUNCTION_ARGS)
+Distance_set_set(PG_FUNCTION_ARGS)
 {
   Datum os1 = PG_GETARG_DATUM(0);
   Datum os2 = PG_GETARG_DATUM(1);
   Span s1, s2;
-  orderedset_span_slice(os1, &s1);
-  orderedset_span_slice(os2, &s2);
+  set_span_slice(os1, &s1);
+  set_span_slice(os2, &s2);
   double result = distance_span_span(&s1, &s2);
   PG_RETURN_FLOAT8(result);
 }

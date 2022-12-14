@@ -65,8 +65,8 @@ bool
 contains_rid_tnpoint_bigint(const Temporal *temp, int64 rid,
   bool invert __attribute__((unused)))
 {
-  OrderedSet *routes = tnpoint_routes(temp);
-  return contains_orderedset_value(routes, Int64GetDatum(rid), T_INT8);
+  Set *routes = tnpoint_routes(temp);
+  return contains_set_value(routes, Int64GetDatum(rid), T_INT8);
 }
 
 /**
@@ -88,9 +88,9 @@ bool
 same_rid_tnpoint_bigint(const Temporal *temp, int64 rid,
   bool invert __attribute__((unused)))
 {
-  OrderedSet *routes = tnpoint_routes(temp);
+  Set *routes = tnpoint_routes(temp);
   return (routes->count == 1) &&
-    (DatumGetInt64(orderedset_val_n(routes, 0)) == rid);
+    (DatumGetInt64(set_val_n(routes, 0)) == rid);
 }
 
 /*****************************************************************************/
@@ -100,11 +100,11 @@ same_rid_tnpoint_bigint(const Temporal *temp, int64 rid,
  * satisfy the function
  */
 bool
-overlaps_rid_tnpoint_bigintset(const Temporal *temp, const OrderedSet *os,
+overlaps_rid_tnpoint_bigintset(const Temporal *temp, const Set *os,
   bool invert __attribute__((unused)))
 {
-  OrderedSet *routes = tnpoint_routes(temp);
-  return overlaps_orderedset_orderedset(routes, os);
+  Set *routes = tnpoint_routes(temp);
+  return overlaps_set_set(routes, os);
 }
 
 /**
@@ -112,13 +112,13 @@ overlaps_rid_tnpoint_bigintset(const Temporal *temp, const OrderedSet *os,
  * satisfy the function
  */
 bool
-contains_rid_tnpoint_bigintset(const Temporal *temp, const OrderedSet *os,
+contains_rid_tnpoint_bigintset(const Temporal *temp, const Set *os,
   bool invert)
 {
-  OrderedSet *routes = tnpoint_routes(temp);
+  Set *routes = tnpoint_routes(temp);
   return invert ?
-    contains_orderedset_orderedset(os, routes) :
-    contains_orderedset_orderedset(routes, os);
+    contains_set_set(os, routes) :
+    contains_set_set(routes, os);
 }
 
 /**
@@ -126,7 +126,7 @@ contains_rid_tnpoint_bigintset(const Temporal *temp, const OrderedSet *os,
  * satisfy the function
  */
 bool
-contained_rid_tnpoint_bigintset(const Temporal *temp, const OrderedSet *os,
+contained_rid_tnpoint_bigintset(const Temporal *temp, const Set *os,
   bool invert)
 {
   return contains_rid_tnpoint_bigintset(temp, os, ! invert);
@@ -137,11 +137,11 @@ contained_rid_tnpoint_bigintset(const Temporal *temp, const OrderedSet *os,
  * satisfy the function
  */
 bool
-same_rid_tnpoint_bigintset(const Temporal *temp, const OrderedSet *os,
+same_rid_tnpoint_bigintset(const Temporal *temp, const Set *os,
   bool invert __attribute__((unused)))
 {
-  OrderedSet *routes = tnpoint_routes(temp);
-  return orderedset_eq(routes, os);
+  Set *routes = tnpoint_routes(temp);
+  return set_eq(routes, os);
 }
 
 /*****************************************************************************/
@@ -154,8 +154,8 @@ bool
 contains_rid_tnpoint_npoint(const Temporal *temp, const Npoint *np,
   bool invert __attribute__((unused)))
 {
-  OrderedSet *routes = tnpoint_routes(temp);
-  bool result = contains_orderedset_value(routes, Int64GetDatum(np->rid),
+  Set *routes = tnpoint_routes(temp);
+  bool result = contains_set_value(routes, Int64GetDatum(np->rid),
     T_INT8);
   return result;
 }
@@ -179,9 +179,9 @@ bool
 same_rid_tnpoint_npoint(const Temporal *temp, const Npoint *np,
   bool invert __attribute__((unused)))
 {
-  OrderedSet *routes = tnpoint_routes(temp);
+  Set *routes = tnpoint_routes(temp);
   return (routes->count == 1) &&
-    (DatumGetInt64(orderedset_val_n(routes, 0)) == np->rid);
+    (DatumGetInt64(set_val_n(routes, 0)) == np->rid);
 }
 
 /*****************************************************************************/
@@ -192,9 +192,9 @@ same_rid_tnpoint_npoint(const Temporal *temp, const Npoint *np,
 bool
 overlaps_rid_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 {
-  OrderedSet *routes1 = tnpoint_routes(temp1);
-  OrderedSet *routes2 = tnpoint_routes(temp2);
-  return overlaps_orderedset_orderedset(routes1, routes2);
+  Set *routes1 = tnpoint_routes(temp1);
+  Set *routes2 = tnpoint_routes(temp2);
+  return overlaps_set_set(routes1, routes2);
 }
 
 /**
@@ -203,9 +203,9 @@ overlaps_rid_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 bool
 contains_rid_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 {
-  OrderedSet *routes1 = tnpoint_routes(temp1);
-  OrderedSet *routes2 = tnpoint_routes(temp2);
-  return contains_orderedset_orderedset(routes1, routes2);
+  Set *routes1 = tnpoint_routes(temp1);
+  Set *routes2 = tnpoint_routes(temp2);
+  return contains_set_set(routes1, routes2);
 }
 
 /**
@@ -214,9 +214,9 @@ contains_rid_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 bool
 contained_rid_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 {
-  OrderedSet *routes1 = tnpoint_routes(temp1);
-  OrderedSet *routes2 = tnpoint_routes(temp2);
-  return contains_orderedset_orderedset(routes2, routes1);
+  Set *routes1 = tnpoint_routes(temp1);
+  Set *routes2 = tnpoint_routes(temp2);
+  return contains_set_set(routes2, routes1);
 }
 
 /**
@@ -225,9 +225,9 @@ contained_rid_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 bool
 same_rid_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 {
-  OrderedSet *routes1 = tnpoint_routes(temp1);
-  OrderedSet *routes2 = tnpoint_routes(temp2);
-  return orderedset_eq(routes1, routes2);
+  Set *routes1 = tnpoint_routes(temp1);
+  Set *routes2 = tnpoint_routes(temp2);
+  return set_eq(routes1, routes2);
 }
 
 /*****************************************************************************/
@@ -274,9 +274,9 @@ routeop_tnpoint_bigint_ext(FunctionCallInfo fcinfo,
  */
 Datum
 routeop_bigintset_tnpoint_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const Temporal *, const OrderedSet *, bool))
+  bool (*func)(const Temporal *, const Set *, bool))
 {
-  OrderedSet *os = PG_GETARG_ORDEREDSET_P(0);
+  Set *os = PG_GETARG_SET_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   bool result = func(temp, os, INVERT);
   PG_FREE_IF_COPY(os, 0);
@@ -292,10 +292,10 @@ routeop_bigintset_tnpoint_ext(FunctionCallInfo fcinfo,
  */
 Datum
 routeop_tnpoint_bigintset_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const Temporal *, const OrderedSet *, bool))
+  bool (*func)(const Temporal *, const Set *, bool))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  OrderedSet *os = PG_GETARG_ORDEREDSET_P(1);
+  Set *os = PG_GETARG_SET_P(1);
   bool result = func(temp, os, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(os, 1);

@@ -326,19 +326,19 @@ CREATE CAST (timestamptz AS periodset) WITH FUNCTION periodset(timestamptz);
 
 CREATE FUNCTION intspanset(intset)
   RETURNS intspanset
-  AS 'MODULE_PATHNAME', 'Orderedset_to_spanset'
+  AS 'MODULE_PATHNAME', 'Set_to_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION bigintspanset(bigintset)
   RETURNS bigintspanset
-  AS 'MODULE_PATHNAME', 'Orderedset_to_spanset'
+  AS 'MODULE_PATHNAME', 'Set_to_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION floatspanset(floatset)
   RETURNS floatspanset
-  AS 'MODULE_PATHNAME', 'Orderedset_to_spanset'
+  AS 'MODULE_PATHNAME', 'Set_to_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION periodset(timestampset)
   RETURNS periodset
-  AS 'MODULE_PATHNAME', 'Orderedset_to_spanset'
+  AS 'MODULE_PATHNAME', 'Set_to_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (intset AS intspanset) WITH FUNCTION intspanset(intset);

@@ -109,11 +109,11 @@ extern Nsegment **tnpointseqset_positions(const TSequenceSet *ss, int *count);
 extern Nsegment **tnpoint_positions(const Temporal *temp, int *count);
 extern int64 tnpointinst_route(const TInstant *inst);
 extern int64 tnpoint_route(const Temporal *temp);
-extern OrderedSet *tnpointinst_routes(const TInstant *inst);
-extern OrderedSet *tnpointdiscseq_routes(const TSequence *is);
-extern OrderedSet *tnpointcontseq_routes(const TSequence *seq);
-extern OrderedSet *tnpointseqset_routes(const TSequenceSet *ss);
-extern OrderedSet *tnpoint_routes(const Temporal *temp);
+extern Set *tnpointinst_routes(const TInstant *inst);
+extern Set *tnpointdiscseq_routes(const TSequence *is);
+extern Set *tnpointcontseq_routes(const TSequence *seq);
+extern Set *tnpointseqset_routes(const TSequenceSet *ss);
+extern Set *tnpoint_routes(const Temporal *temp);
 
 extern Nsegment *tnpointseq_linear_positions(const TSequence *seq);
 

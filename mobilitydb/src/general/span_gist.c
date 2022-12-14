@@ -171,7 +171,7 @@ span_gist_get_span(FunctionCallInfo fcinfo, Span *result, Oid typid)
     type == T_TIMESTAMPSET)
   {
     Datum osdatum = PG_GETARG_DATUM(1);
-    orderedset_span_slice(osdatum, result);
+    set_span_slice(osdatum, result);
   }
   else if (type == T_INTSPAN || type == T_BIGINTSPAN || type == T_FLOATSPAN ||
     type == T_PERIOD)
@@ -254,19 +254,19 @@ Span_gist_union(PG_FUNCTION_ARGS)
  * GiST compress methods
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Orderedset_gist_compress);
+PG_FUNCTION_INFO_V1(Set_gist_compress);
 /**
  * GiST compress method for timestamp sets
  */
 PGDLLEXPORT Datum
-Orderedset_gist_compress(PG_FUNCTION_ARGS)
+Set_gist_compress(PG_FUNCTION_ARGS)
 {
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
   if (entry->leafkey)
   {
     GISTENTRY *retval = palloc(sizeof(GISTENTRY));
     Span *span = palloc(sizeof(Span));
-    orderedset_span_slice(entry->key, span);
+    set_span_slice(entry->key, span);
     gistentryinit(*retval, PointerGetDatum(span), entry->rel, entry->page,
       entry->offset, false);
     PG_RETURN_POINTER(retval);

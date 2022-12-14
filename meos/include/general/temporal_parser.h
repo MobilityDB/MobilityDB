@@ -55,7 +55,7 @@ extern bool p_comma(const char **str);
 extern Datum basetype_parse(const char **str, mobdbType basetypid);
 extern double double_parse(const char **str);
 extern Datum elem_parse(const char **str, mobdbType basetype);
-extern OrderedSet *orderedset_parse(const char **str, mobdbType basetype);
+extern Set *set_parse(const char **str, mobdbType basetype);
 extern Span *span_parse(const char **str, mobdbType spantype, bool end, bool make);
 extern SpanSet *spanset_parse(const char **str, mobdbType spantype);
 extern TBox *tbox_parse(const char **str);

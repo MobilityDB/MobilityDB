@@ -411,18 +411,18 @@ tnpoint_route(const Temporal *temp)
 /**
  * @brief Return the routes of a temporal network point
  */
-OrderedSet *
+Set *
 tnpointinst_routes(const TInstant *inst)
 {
   Npoint *np = DatumGetNpointP(tinstant_value(inst));
   Datum value = Int64GetDatum(np->rid);
-  return orderedset_make(&value, 1, T_INT8);
+  return set_make(&value, 1, T_INT8);
 }
 
 /**
  * @brief Return the routes of a temporal network point
  */
-OrderedSet *
+Set *
 tnpointdiscseq_routes(const TSequence *seq)
 {
   Datum *values = palloc(sizeof(Datum) * seq->count);
@@ -434,25 +434,25 @@ tnpointdiscseq_routes(const TSequence *seq)
   }
   datumarr_sort(values, seq->count, T_INT8);
   int count = datumarr_remove_duplicates(values, seq->count, T_INT8);
-  return orderedset_make(values, count, T_INT8);
+  return set_make(values, count, T_INT8);
 }
 
 /**
  * @brief Return the routes of a temporal network point
  */
-OrderedSet *
+Set *
 tnpointcontseq_routes(const TSequence *seq)
 {
   const TInstant *inst = tsequence_inst_n(seq, 0);
   Npoint *np = DatumGetNpointP(tinstant_value(inst));
   Datum value = Int64GetDatum(np->rid);
-  return orderedset_make(&value, 1, T_INT8);
+  return set_make(&value, 1, T_INT8);
 }
 
 /**
  * @brief Return the routes of a temporal network point
  */
-OrderedSet *
+Set *
 tnpointseqset_routes(const TSequenceSet *ss)
 {
   Datum *values = palloc(sizeof(int64) * ss->count);
@@ -465,16 +465,16 @@ tnpointseqset_routes(const TSequenceSet *ss)
   }
   datumarr_sort(values, ss->count, T_INT8);
   int count = datumarr_remove_duplicates(values, ss->count, T_INT8);
-  return orderedset_make(values, count, T_INT8);
+  return set_make(values, count, T_INT8);
 }
 
 /**
  * @brief Return the array of routes of a temporal network point
  */
-OrderedSet *
+Set *
 tnpoint_routes(const Temporal *temp)
 {
-  OrderedSet *result;
+  Set *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = tnpointinst_routes((TInstant *) temp);

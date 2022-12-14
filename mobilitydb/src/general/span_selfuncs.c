@@ -830,7 +830,7 @@ span_const_to_span(Node *other, Span *span)
   {
     /* The right argument is a set constant. We convert it into
      * its bounding span. */
-    const OrderedSet *s = DatumGetOrderedSetP(((Const *) other)->constvalue);
+    const Set *s = DatumGetSetP(((Const *) other)->constvalue);
     memcpy(span, &s->span, sizeof(Span));
   }
   else /* span_type(type) */

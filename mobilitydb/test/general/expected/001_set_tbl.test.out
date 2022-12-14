@@ -66,7 +66,43 @@ SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset_tmp t2 WHERE t1.k = t
 
 DROP TABLE tbl_timestampset_tmp;
 DROP TABLE
+SELECT COUNT(*) FROM tbl_intset WHERE intsetFromBinary(asBinary(i)) <> i;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_bigintset WHERE bigintsetFromBinary(asBinary(b)) <> b;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatset WHERE floatsetFromBinary(asBinary(f)) <> f;
+ count 
+-------
+     0
+(1 row)
+
 SELECT COUNT(*) FROM tbl_timestampset WHERE timestampsetFromBinary(asBinary(ts)) <> ts;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intset WHERE intsetFromHexWKB(asHexWKB(i)) <> i;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_bigintset WHERE bigintsetFromHexWKB(asHexWKB(b)) <> b;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatset WHERE floatsetFromHexWKB(asHexWKB(f)) <> f;
  count 
 -------
      0
@@ -88,6 +124,32 @@ SELECT COUNT(*) FROM tbl_timestamptz WHERE t::timestampset IS NOT NULL;
  count 
 -------
     99
+(1 row)
+
+SELECT MIN(startValue(round(f, 5))) FROM tbl_floatset;
+   min   
+---------
+ 3.88624
+(1 row)
+
+SELECT MIN(startValue(shift(i, 5))) FROM tbl_intset;
+    min     
+------------
+ -741518123
+(1 row)
+
+SELECT MIN(startValue(shift(b, 5))) FROM tbl_bigintset;
+         min         
+---------------------
+ 4632346214833935573
+(1 row)
+
+SELECT MIN(startValue(shift(f, 5))) FROM tbl_floatset;
+ERROR:  invalid memory alloc request size 1075052547
+SELECT MIN(startTimestamp(shift(ts, '5 min'))) FROM tbl_timestampset;
+          min           
+------------------------
+ 2001-01-02 01:53:00+00
 (1 row)
 
 SELECT MAX(memorySize(ts)) FROM tbl_timestampset;
@@ -136,12 +198,6 @@ SELECT MIN(array_length(timestamps(ts), 1)) FROM tbl_timestampset;
  min 
 -----
    1
-(1 row)
-
-SELECT MIN(startTimestamp(shift(ts, '5 min'))) FROM tbl_timestampset;
-          min           
-------------------------
- 2001-01-02 01:53:00+00
 (1 row)
 
 SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE timestampset_cmp(t1.ts, t2.ts) = -1;

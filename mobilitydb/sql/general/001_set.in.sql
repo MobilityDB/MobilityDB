@@ -43,70 +43,70 @@ CREATE TYPE timestampset;
 
 CREATE FUNCTION intset_in(cstring)
   RETURNS intset
-  AS 'MODULE_PATHNAME', 'Orderedset_in'
+  AS 'MODULE_PATHNAME', 'Set_in'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION intset_out(intset)
   RETURNS cstring
-  AS 'MODULE_PATHNAME', 'Orderedset_out'
+  AS 'MODULE_PATHNAME', 'Set_out'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION intset_recv(internal)
   RETURNS intset
-  AS 'MODULE_PATHNAME', 'Orderedset_recv'
+  AS 'MODULE_PATHNAME', 'Set_recv'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION intset_send(intset)
   RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Orderedset_send'
+  AS 'MODULE_PATHNAME', 'Set_send'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION bigintset_in(cstring)
   RETURNS bigintset
-  AS 'MODULE_PATHNAME', 'Orderedset_in'
+  AS 'MODULE_PATHNAME', 'Set_in'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION bigintset_out(bigintset)
   RETURNS cstring
-  AS 'MODULE_PATHNAME', 'Orderedset_out'
+  AS 'MODULE_PATHNAME', 'Set_out'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION bigintset_recv(internal)
   RETURNS bigintset
-  AS 'MODULE_PATHNAME', 'Orderedset_recv'
+  AS 'MODULE_PATHNAME', 'Set_recv'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION bigintset_send(bigintset)
   RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Orderedset_send'
+  AS 'MODULE_PATHNAME', 'Set_send'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION floatset_in(cstring)
   RETURNS floatset
-  AS 'MODULE_PATHNAME', 'Orderedset_in'
+  AS 'MODULE_PATHNAME', 'Set_in'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION floatset_out(floatset)
   RETURNS cstring
-  AS 'MODULE_PATHNAME', 'Orderedset_out'
+  AS 'MODULE_PATHNAME', 'Set_out'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION floatset_recv(internal)
   RETURNS floatset
-  AS 'MODULE_PATHNAME', 'Orderedset_recv'
+  AS 'MODULE_PATHNAME', 'Set_recv'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION floatset_send(floatset)
   RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Orderedset_send'
+  AS 'MODULE_PATHNAME', 'Set_send'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION timestampset_in(cstring)
   RETURNS timestampset
-  AS 'MODULE_PATHNAME', 'Orderedset_in'
+  AS 'MODULE_PATHNAME', 'Set_in'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestampset_out(timestampset)
   RETURNS cstring
-  AS 'MODULE_PATHNAME', 'Orderedset_out'
+  AS 'MODULE_PATHNAME', 'Set_out'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestampset_recv(internal)
   RETURNS timestampset
-  AS 'MODULE_PATHNAME', 'Orderedset_recv'
+  AS 'MODULE_PATHNAME', 'Set_recv'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestampset_send(timestampset)
   RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Orderedset_send'
+  AS 'MODULE_PATHNAME', 'Set_send'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION intset_analyze(internal)
@@ -178,72 +178,72 @@ CREATE TYPE timestampset (
 
 CREATE FUNCTION intsetFromBinary(bytea)
   RETURNS intset
-  AS 'MODULE_PATHNAME', 'Orderedset_from_wkb'
+  AS 'MODULE_PATHNAME', 'Set_from_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION intsetFromHexWKB(text)
   RETURNS intset
-  AS 'MODULE_PATHNAME', 'Orderedset_from_hexwkb'
+  AS 'MODULE_PATHNAME', 'Set_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION bigintsetFromBinary(bytea)
   RETURNS bigintset
-  AS 'MODULE_PATHNAME', 'Orderedset_from_wkb'
+  AS 'MODULE_PATHNAME', 'Set_from_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION bigintsetFromHexWKB(text)
   RETURNS bigintset
-  AS 'MODULE_PATHNAME', 'Orderedset_from_hexwkb'
+  AS 'MODULE_PATHNAME', 'Set_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION floatsetFromBinary(bytea)
   RETURNS floatset
-  AS 'MODULE_PATHNAME', 'Orderedset_from_wkb'
+  AS 'MODULE_PATHNAME', 'Set_from_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION floatsetFromHexWKB(text)
   RETURNS floatset
-  AS 'MODULE_PATHNAME', 'Orderedset_from_hexwkb'
+  AS 'MODULE_PATHNAME', 'Set_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION timestampsetFromBinary(bytea)
   RETURNS timestampset
-  AS 'MODULE_PATHNAME', 'Orderedset_from_wkb'
+  AS 'MODULE_PATHNAME', 'Set_from_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestampsetFromHexWKB(text)
   RETURNS timestampset
-  AS 'MODULE_PATHNAME', 'Orderedset_from_hexwkb'
+  AS 'MODULE_PATHNAME', 'Set_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asBinary(intset, endianenconding text DEFAULT '')
   RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Orderedset_as_wkb'
+  AS 'MODULE_PATHNAME', 'Set_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asBinary(bigintset, endianenconding text DEFAULT '')
   RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Orderedset_as_wkb'
+  AS 'MODULE_PATHNAME', 'Set_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asBinary(floatset, endianenconding text DEFAULT '')
   RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Orderedset_as_wkb'
+  AS 'MODULE_PATHNAME', 'Set_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asBinary(timestampset, endianenconding text DEFAULT '')
   RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Orderedset_as_wkb'
+  AS 'MODULE_PATHNAME', 'Set_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asHexWKB(intset, endianenconding text DEFAULT '')
   RETURNS text
-  AS 'MODULE_PATHNAME', 'Orderedset_as_hexwkb'
+  AS 'MODULE_PATHNAME', 'Set_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asHexWKB(bigintset, endianenconding text DEFAULT '')
   RETURNS text
-  AS 'MODULE_PATHNAME', 'Orderedset_as_hexwkb'
+  AS 'MODULE_PATHNAME', 'Set_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asHexWKB(floatset, endianenconding text DEFAULT '')
   RETURNS text
-  AS 'MODULE_PATHNAME', 'Orderedset_as_hexwkb'
+  AS 'MODULE_PATHNAME', 'Set_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asHexWKB(timestampset, endianenconding text DEFAULT '')
   RETURNS text
-  AS 'MODULE_PATHNAME', 'Orderedset_as_hexwkb'
+  AS 'MODULE_PATHNAME', 'Set_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
@@ -252,19 +252,19 @@ CREATE FUNCTION asHexWKB(timestampset, endianenconding text DEFAULT '')
 
 CREATE FUNCTION intset(int[])
   RETURNS intset
-  AS 'MODULE_PATHNAME', 'Orderedset_constructor'
+  AS 'MODULE_PATHNAME', 'Set_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION bigintset(bigint[])
   RETURNS bigintset
-  AS 'MODULE_PATHNAME', 'Orderedset_constructor'
+  AS 'MODULE_PATHNAME', 'Set_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION floatset(float[])
   RETURNS floatset
-  AS 'MODULE_PATHNAME', 'Orderedset_constructor'
+  AS 'MODULE_PATHNAME', 'Set_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestampset(timestamptz[])
   RETURNS timestampset
-  AS 'MODULE_PATHNAME', 'Orderedset_constructor'
+  AS 'MODULE_PATHNAME', 'Set_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
@@ -273,19 +273,19 @@ CREATE FUNCTION timestampset(timestamptz[])
 
 CREATE FUNCTION intset(integer)
   RETURNS intset
-  AS 'MODULE_PATHNAME', 'Value_to_orderedset'
+  AS 'MODULE_PATHNAME', 'Value_to_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION bigintset(bigint)
   RETURNS bigintset
-  AS 'MODULE_PATHNAME', 'Value_to_orderedset'
+  AS 'MODULE_PATHNAME', 'Value_to_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION floatset(float)
   RETURNS floatset
-  AS 'MODULE_PATHNAME', 'Value_to_orderedset'
+  AS 'MODULE_PATHNAME', 'Value_to_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestampset(timestamptz)
   RETURNS timestampset
-  AS 'MODULE_PATHNAME', 'Value_to_orderedset'
+  AS 'MODULE_PATHNAME', 'Value_to_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (int AS intset) WITH FUNCTION intset(int);
@@ -336,121 +336,121 @@ CREATE FUNCTION shiftTscale(timestampset, interval, interval)
 
 CREATE FUNCTION memorySize(intset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Orderedset_memory_size'
+  AS 'MODULE_PATHNAME', 'Set_memory_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION memorySize(bigintset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Orderedset_memory_size'
+  AS 'MODULE_PATHNAME', 'Set_memory_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION memorySize(floatset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Orderedset_memory_size'
+  AS 'MODULE_PATHNAME', 'Set_memory_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION memorySize(timestampset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Orderedset_memory_size'
+  AS 'MODULE_PATHNAME', 'Set_memory_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION storageSize(intset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Orderedset_storage_size'
+  AS 'MODULE_PATHNAME', 'Set_storage_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION storageSize(bigintset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Orderedset_storage_size'
+  AS 'MODULE_PATHNAME', 'Set_storage_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION storageSize(floatset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Orderedset_storage_size'
+  AS 'MODULE_PATHNAME', 'Set_storage_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION storageSize(timestampset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Orderedset_storage_size'
+  AS 'MODULE_PATHNAME', 'Set_storage_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION numValues(intset)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Orderedset_num_values'
+  AS 'MODULE_PATHNAME', 'Set_num_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION numValues(bigintset)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Orderedset_num_values'
+  AS 'MODULE_PATHNAME', 'Set_num_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION numValues(floatset)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Orderedset_num_values'
+  AS 'MODULE_PATHNAME', 'Set_num_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION numTimestamps(timestampset)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Orderedset_num_values'
+  AS 'MODULE_PATHNAME', 'Set_num_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION startValue(intset)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Orderedset_start_value'
+  AS 'MODULE_PATHNAME', 'Set_start_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION startValue(bigintset)
   RETURNS bigint
-  AS 'MODULE_PATHNAME', 'Orderedset_start_value'
+  AS 'MODULE_PATHNAME', 'Set_start_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION startValue(floatset)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Orderedset_start_value'
+  AS 'MODULE_PATHNAME', 'Set_start_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION startTimestamp(timestampset)
   RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'Orderedset_start_value'
+  AS 'MODULE_PATHNAME', 'Set_start_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION endValue(intset)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Orderedset_start_value'
+  AS 'MODULE_PATHNAME', 'Set_start_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION endValue(bigintset)
   RETURNS bigint
-  AS 'MODULE_PATHNAME', 'Orderedset_start_value'
+  AS 'MODULE_PATHNAME', 'Set_start_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION endValue(floatset)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Orderedset_start_value'
+  AS 'MODULE_PATHNAME', 'Set_start_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION endTimestamp(timestampset)
   RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'Orderedset_end_value'
+  AS 'MODULE_PATHNAME', 'Set_end_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION valueN(intset, integer)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Orderedset_value_n'
+  AS 'MODULE_PATHNAME', 'Set_value_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION valueN(bigintset, integer)
   RETURNS bigint
-  AS 'MODULE_PATHNAME', 'Orderedset_value_n'
+  AS 'MODULE_PATHNAME', 'Set_value_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION valueN(floatset, integer)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Orderedset_value_n'
+  AS 'MODULE_PATHNAME', 'Set_value_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestampN(timestampset, integer)
   RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'Orderedset_value_n'
+  AS 'MODULE_PATHNAME', 'Set_value_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION getValues(intset)
   RETURNS integer[]
-  AS 'MODULE_PATHNAME', 'Orderedset_values'
+  AS 'MODULE_PATHNAME', 'Set_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION getValues(bigintset)
   RETURNS bigint[]
-  AS 'MODULE_PATHNAME', 'Orderedset_values'
+  AS 'MODULE_PATHNAME', 'Set_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION getValues(floatset)
   RETURNS float[]
-  AS 'MODULE_PATHNAME', 'Orderedset_values'
+  AS 'MODULE_PATHNAME', 'Set_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestamps(timestampset)
   RETURNS timestamptz[]
-  AS 'MODULE_PATHNAME', 'Orderedset_values'
+  AS 'MODULE_PATHNAME', 'Set_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
@@ -477,121 +477,121 @@ CREATE FUNCTION span_joinsel(internal, oid, internal, smallint, internal)
 
 CREATE FUNCTION intset_eq(intset, intset)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'Orderedset_eq'
+  AS 'MODULE_PATHNAME', 'Set_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION bigintset_eq(bigintset, bigintset)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'Orderedset_eq'
+  AS 'MODULE_PATHNAME', 'Set_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION floatset_eq(floatset, floatset)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'Orderedset_eq'
+  AS 'MODULE_PATHNAME', 'Set_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestampset_eq(timestampset, timestampset)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'Orderedset_eq'
+  AS 'MODULE_PATHNAME', 'Set_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION intset_ne(intset, intset)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'Orderedset_ne'
+  AS 'MODULE_PATHNAME', 'Set_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION bigintset_ne(bigintset, bigintset)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'Orderedset_ne'
+  AS 'MODULE_PATHNAME', 'Set_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION floatset_ne(floatset, floatset)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'Orderedset_ne'
+  AS 'MODULE_PATHNAME', 'Set_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestampset_ne(timestampset, timestampset)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'Orderedset_ne'
+  AS 'MODULE_PATHNAME', 'Set_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION intset_lt(intset, intset)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'Orderedset_lt'
+  AS 'MODULE_PATHNAME', 'Set_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION bigintset_lt(bigintset, bigintset)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'Orderedset_lt'
+  AS 'MODULE_PATHNAME', 'Set_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION floatset_lt(floatset, floatset)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'Orderedset_lt'
+  AS 'MODULE_PATHNAME', 'Set_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestampset_lt(timestampset, timestampset)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'Orderedset_lt'
+  AS 'MODULE_PATHNAME', 'Set_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION intset_le(intset, intset)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'Orderedset_le'
+  AS 'MODULE_PATHNAME', 'Set_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION bigintset_le(bigintset, bigintset)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'Orderedset_le'
+  AS 'MODULE_PATHNAME', 'Set_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION floatset_le(floatset, floatset)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'Orderedset_le'
+  AS 'MODULE_PATHNAME', 'Set_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestampset_le(timestampset, timestampset)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'Orderedset_le'
+  AS 'MODULE_PATHNAME', 'Set_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION intset_ge(intset, intset)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'Orderedset_ge'
+  AS 'MODULE_PATHNAME', 'Set_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION bigintset_ge(bigintset, bigintset)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'Orderedset_ge'
+  AS 'MODULE_PATHNAME', 'Set_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION floatset_ge(floatset, floatset)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'Orderedset_ge'
+  AS 'MODULE_PATHNAME', 'Set_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestampset_ge(timestampset, timestampset)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'Orderedset_ge'
+  AS 'MODULE_PATHNAME', 'Set_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION intset_gt(intset, intset)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'Orderedset_gt'
+  AS 'MODULE_PATHNAME', 'Set_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION bigintset_gt(bigintset, bigintset)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'Orderedset_gt'
+  AS 'MODULE_PATHNAME', 'Set_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION floatset_gt(floatset, floatset)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'Orderedset_gt'
+  AS 'MODULE_PATHNAME', 'Set_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestampset_gt(timestampset, timestampset)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'Orderedset_gt'
+  AS 'MODULE_PATHNAME', 'Set_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION intset_cmp(intset, intset)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Orderedset_cmp'
+  AS 'MODULE_PATHNAME', 'Set_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION bigintset_cmp(bigintset, bigintset)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Orderedset_cmp'
+  AS 'MODULE_PATHNAME', 'Set_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION floatset_cmp(floatset, floatset)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Orderedset_cmp'
+  AS 'MODULE_PATHNAME', 'Set_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestampset_cmp(timestampset, timestampset)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Orderedset_cmp'
+  AS 'MODULE_PATHNAME', 'Set_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR = (
@@ -781,36 +781,36 @@ CREATE OPERATOR CLASS timestampset_ops
 
 CREATE FUNCTION intset_hash(intset)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Orderedset_hash'
+  AS 'MODULE_PATHNAME', 'Set_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION bigintset_hash(bigintset)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Orderedset_hash'
+  AS 'MODULE_PATHNAME', 'Set_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION floatset_hash(floatset)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Orderedset_hash'
+  AS 'MODULE_PATHNAME', 'Set_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestampset_hash(timestampset)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Orderedset_hash'
+  AS 'MODULE_PATHNAME', 'Set_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION intset_hash_extended(intset, bigint)
   RETURNS bigint
-  AS 'MODULE_PATHNAME', 'Orderedset_hash_extended'
+  AS 'MODULE_PATHNAME', 'Set_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION bigintset_hash_extended(bigintset, bigint)
   RETURNS bigint
-  AS 'MODULE_PATHNAME', 'Orderedset_hash_extended'
+  AS 'MODULE_PATHNAME', 'Set_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION floatset_hash_extended(floatset, bigint)
   RETURNS bigint
-  AS 'MODULE_PATHNAME', 'Orderedset_hash_extended'
+  AS 'MODULE_PATHNAME', 'Set_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestampset_hash_extended(timestampset, bigint)
   RETURNS bigint
-  AS 'MODULE_PATHNAME', 'Orderedset_hash_extended'
+  AS 'MODULE_PATHNAME', 'Set_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR CLASS intset_hash_ops

@@ -1054,7 +1054,7 @@ temporalarr_out(const Temporal **temparr, int count, int maxdd)
  * set type.
  */
 static size_t
-orderedset_basetype_to_wkb_size(const OrderedSet *os)
+set_basetype_to_wkb_size(const Set *os)
 {
   size_t result = 0;
   ensure_span_basetype(os->span.basetype);
@@ -1081,11 +1081,11 @@ orderedset_basetype_to_wkb_size(const OrderedSet *os)
  * (WKB) format
  */
 static size_t
-orderedset_to_wkb_size(const OrderedSet *os)
+set_to_wkb_size(const Set *os)
 {
   /* Endian flag + settype + count + basetype values * count */
   size_t size = MOBDB_WKB_BYTE_SIZE + MOBDB_WKB_INT2_SIZE +
-    MOBDB_WKB_INT4_SIZE + orderedset_basetype_to_wkb_size(os) * os->count;
+    MOBDB_WKB_INT4_SIZE + set_basetype_to_wkb_size(os) * os->count;
   return size;
 }
 
@@ -1386,7 +1386,7 @@ datum_to_wkb_size(Datum value, mobdbType type, uint8_t variant)
     case T_BIGINTSET:
     case T_FLOATSET:
     case T_TIMESTAMPSET:
-      result = orderedset_to_wkb_size((OrderedSet *) DatumGetPointer(value));
+      result = set_to_wkb_size((Set *) DatumGetPointer(value));
       break;
     case T_INTSPAN:
     case T_BIGINTSPAN:
@@ -1655,29 +1655,29 @@ npoint_to_wkb_buf(const Npoint *np, uint8_t *buf, uint8_t variant)
  * Write into the buffer the ordered set type
  */
 static uint8_t *
-orderedset_settype_to_wkb_buf(const OrderedSet *os, uint8_t *buf,
+set_settype_to_wkb_buf(const Set *os, uint8_t *buf,
   uint8_t variant)
 {
-  uint16_t wkb_orderedsettype;
-  /* The OrderedSet struct does not store its type but it can be deduced from
+  uint16_t wkb_settype;
+  /* The Set struct does not store its type but it can be deduced from
    * the type of its bounding span */
   ensure_span_basetype(os->span.basetype);
   switch (os->span.basetype)
   {
     case T_INT4:
-      wkb_orderedsettype = MOBDB_WKB_T_INTSET;
+      wkb_settype = MOBDB_WKB_T_INTSET;
       break;
     case T_INT8:
-      wkb_orderedsettype = MOBDB_WKB_T_BIGINTSET;
+      wkb_settype = MOBDB_WKB_T_BIGINTSET;
       break;
     case T_FLOAT8:
-      wkb_orderedsettype = MOBDB_WKB_T_FLOATSET;
+      wkb_settype = MOBDB_WKB_T_FLOATSET;
       break;
     case T_TIMESTAMPTZ:
-      wkb_orderedsettype = MOBDB_WKB_T_TIMESTAMPSET;
+      wkb_settype = MOBDB_WKB_T_TIMESTAMPSET;
       break;
   }
-  return int16_to_wkb_buf(wkb_orderedsettype, buf, variant);
+  return int16_to_wkb_buf(wkb_settype, buf, variant);
 }
 
 /**
@@ -1687,7 +1687,7 @@ orderedset_settype_to_wkb_buf(const OrderedSet *os, uint8_t *buf,
  * - timestamp
  */
 static uint8_t *
-orderedset_value_to_wkb_buf(Datum value, mobdbType basetype, uint8_t *buf,
+set_value_to_wkb_buf(Datum value, mobdbType basetype, uint8_t *buf,
   uint8_t variant)
 {
   ensure_span_basetype(basetype);
@@ -1711,17 +1711,17 @@ orderedset_value_to_wkb_buf(Datum value, mobdbType basetype, uint8_t *buf,
  * - Values
  */
 static uint8_t *
-orderedset_to_wkb_buf(const OrderedSet *os, uint8_t *buf, uint8_t variant)
+set_to_wkb_buf(const Set *os, uint8_t *buf, uint8_t variant)
 {
   /* Write the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
   /* Write the ordered set type */
-  buf = orderedset_settype_to_wkb_buf(os, buf, variant);
+  buf = set_settype_to_wkb_buf(os, buf, variant);
   /* Write the count */
   buf = int32_to_wkb_buf(os->count, buf, variant);
   /* Write the values */
   for (int i = 0; i < os->count; i++)
-    buf = orderedset_value_to_wkb_buf(os->elems[i], os->span.basetype, buf,
+    buf = set_value_to_wkb_buf(os->elems[i], os->span.basetype, buf,
       variant);
   return buf;
 }
@@ -2301,7 +2301,7 @@ datum_to_wkb_buf(Datum value, mobdbType type, uint8_t *buf, uint8_t variant)
     case T_BIGINTSET:
     case T_FLOATSET:
     case T_TIMESTAMPSET:
-      buf = orderedset_to_wkb_buf((OrderedSet *) DatumGetPointer(value),
+      buf = set_to_wkb_buf((Set *) DatumGetPointer(value),
         buf, variant);
       break;
     case T_INTSPAN:
@@ -2476,7 +2476,7 @@ span_as_hexwkb(const Span *s, uint8_t variant, size_t *size_out)
  * @sqlfunc asBinary()
  */
 uint8_t *
-orderedset_as_wkb(const OrderedSet *os, uint8_t variant, size_t *size_out)
+set_as_wkb(const Set *os, uint8_t variant, size_t *size_out)
 {
   mobdbType orderedsettype = basetype_settype(os->span.basetype);
   uint8_t *result = datum_as_wkb(PointerGetDatum(os), orderedsettype,
@@ -2491,7 +2491,7 @@ orderedset_as_wkb(const OrderedSet *os, uint8_t variant, size_t *size_out)
  * @sqlfunc asHexWKB()
  */
 char *
-orderedset_as_hexwkb(const TimestampSet *ts, uint8_t variant,
+set_as_hexwkb(const TimestampSet *ts, uint8_t variant,
   size_t *size_out)
 {
   mobdbType orderedsettype = basetype_settype(os->span.basetype);

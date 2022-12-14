@@ -381,7 +381,7 @@ timestamp_tunion_finalfn(SkipList *state)
   assert(state->elemtype == TIMESTAMPTZ);
   Datum *values = (Datum *) skiplist_values(state);
 
-  OrderedSet *result = orderedset_make(values, state->length, T_TIMESTAMPTZ);
+  Set *result = set_make(values, state->length, T_TIMESTAMPTZ);
   pfree(values);
   return (TimestampSet *) result;
 }
@@ -431,13 +431,13 @@ timestampset_transform_tcount(const TimestampSet *ts, const Interval *interval,
 {
   TInstant **result = palloc(sizeof(TInstant *) * ts->count);
 
-  TimestampTz t = DatumGetTimestampTz(orderedset_val_n(ts, 0));
+  TimestampTz t = DatumGetTimestampTz(set_val_n(ts, 0));
   if (interval)
     t = timestamptz_bucket(t, interval, origin);
   int k = 0, count = 1;
   for (int i = 1; i < ts->count; i++)
   {
-    TimestampTz t1 = DatumGetTimestampTz(orderedset_val_n(ts, i));
+    TimestampTz t1 = DatumGetTimestampTz(set_val_n(ts, i));
     if (interval)
       t1 = timestamptz_bucket(t1, interval, origin);
     if (timestamptz_cmp_internal(t, t1) == 0)

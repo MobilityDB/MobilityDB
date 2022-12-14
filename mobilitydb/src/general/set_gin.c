@@ -45,10 +45,10 @@ PG_FUNCTION_INFO_V1(Set_gin_extract_value);
 Datum
 Set_gin_extract_value(PG_FUNCTION_ARGS)
 {
-  OrderedSet *os = PG_GETARG_ORDEREDSET_P(0);
+  Set *os = PG_GETARG_SET_P(0);
   int32 *nkeys = (int32 *) PG_GETARG_POINTER(1);
   bool **nullFlags = (bool **) PG_GETARG_POINTER(2);
-  Datum *elems = orderedset_values(os);
+  Datum *elems = set_values(os);
   *nkeys = os->count;
   *nullFlags = NULL;
   PG_FREE_IF_COPY(os, 0);
@@ -66,7 +66,7 @@ Set_gin_extract_query(PG_FUNCTION_ARGS)
   StrategyNumber strategy = PG_GETARG_UINT16(2);
   bool **nullFlags = (bool **) PG_GETARG_POINTER(5);
   int32 *searchMode = (int32 *) PG_GETARG_POINTER(6);
-  OrderedSet *os;
+  Set *os;
   Datum *elems;
   *nullFlags = NULL;
   *searchMode = GIN_SEARCH_MODE_DEFAULT;
@@ -82,8 +82,8 @@ Set_gin_extract_query(PG_FUNCTION_ARGS)
     case GinContainsStrategySet:
     case GinContainedStrategy:
     case GinEqualStrategy:
-      os = PG_GETARG_ORDEREDSET_P(0);
-      elems = orderedset_values(os);
+      os = PG_GETARG_SET_P(0);
+      elems = set_values(os);
       *nkeys = os->count;
       PG_FREE_IF_COPY(os, 0);
       break;

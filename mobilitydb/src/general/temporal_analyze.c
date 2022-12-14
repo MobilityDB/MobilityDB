@@ -351,7 +351,7 @@ tnumber_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
  * @param[in] func Analyze function for temporal values
  */
 Datum
-generic_analyze(FunctionCallInfo fcinfo,
+temporal_analyze(FunctionCallInfo fcinfo,
   void (*func)(VacAttrStats *, AnalyzeAttrFetchFunc, int, double))
 {
   VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
@@ -386,7 +386,7 @@ PG_FUNCTION_INFO_V1(Temporal_analyze);
 PGDLLEXPORT Datum
 Temporal_analyze(PG_FUNCTION_ARGS)
 {
-  return generic_analyze(fcinfo, &temporal_compute_stats);
+  return temporal_analyze(fcinfo, &temporal_compute_stats);
 }
 
 PG_FUNCTION_INFO_V1(Tnumber_analyze);
@@ -396,7 +396,7 @@ PG_FUNCTION_INFO_V1(Tnumber_analyze);
 PGDLLEXPORT Datum
 Tnumber_analyze(PG_FUNCTION_ARGS)
 {
-  return generic_analyze(fcinfo, &tnumber_compute_stats);
+  return temporal_analyze(fcinfo, &tnumber_compute_stats);
 }
 
 /*****************************************************************************/

@@ -288,17 +288,17 @@ Span_as_hexwkb(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Orderedset_as_wkb);
+PG_FUNCTION_INFO_V1(Set_as_wkb);
 /**
  * @ingroup mobilitydb_temporal_inout
  * @brief Output a timestamp set in WKB format.
  * @sqlfunc asBinary()
  */
 PGDLLEXPORT Datum
-Orderedset_as_wkb(PG_FUNCTION_ARGS)
+Set_as_wkb(PG_FUNCTION_ARGS)
 {
   /* Ensure that the value is detoasted if necessary */
-  OrderedSet *os = PG_GETARG_ORDEREDSET_P(0);
+  Set *os = PG_GETARG_SET_P(0);
   mobdbType settype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   bytea *result = datum_as_wkb_ext(fcinfo, PointerGetDatum(os), settype,
     false);
@@ -306,17 +306,17 @@ Orderedset_as_wkb(PG_FUNCTION_ARGS)
   PG_RETURN_BYTEA_P(result);
 }
 
-PG_FUNCTION_INFO_V1(Orderedset_as_hexwkb);
+PG_FUNCTION_INFO_V1(Set_as_hexwkb);
 /**
  * @ingroup mobilitydb_temporal_inout
  * @brief Output the timestamp set in HexWKB format.
  * @sqlfunc asHexWKB()
  */
 PGDLLEXPORT Datum
-Orderedset_as_hexwkb(PG_FUNCTION_ARGS)
+Set_as_hexwkb(PG_FUNCTION_ARGS)
 {
   /* Ensure that the value is detoasted if necessary */
-  OrderedSet *os = PG_GETARG_TIMESTAMPSET_P(0);
+  Set *os = PG_GETARG_TIMESTAMPSET_P(0);
   mobdbType settype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   text *result = datum_as_hexwkb_ext(fcinfo, PointerGetDatum(os), settype);
   PG_FREE_IF_COPY(os, 0);

@@ -178,17 +178,17 @@ Span_to_spanset(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Orderedset_to_spanset);
+PG_FUNCTION_INFO_V1(Set_to_spanset);
 /**
  * @ingroup mobilitydb_setspan_cast
  * @brief Cast the timestamp set value as a period set
  * @sqlfunc intspanset(), bigintspanset(), floatspanset(), periodset()
  */
 PGDLLEXPORT Datum
-Orderedset_to_spanset(PG_FUNCTION_ARGS)
+Set_to_spanset(PG_FUNCTION_ARGS)
 {
-  OrderedSet *os = PG_GETARG_ORDEREDSET_P(0);
-  PeriodSet *result = orderedset_to_spanset(os);
+  Set *os = PG_GETARG_SET_P(0);
+  PeriodSet *result = set_to_spanset(os);
   PG_RETURN_POINTER(result);
 }
 

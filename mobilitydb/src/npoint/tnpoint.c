@@ -224,7 +224,7 @@ PGDLLEXPORT Datum
 Tnpoint_routes(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  OrderedSet *result = tnpoint_routes(temp);
+  Set *result = tnpoint_routes(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

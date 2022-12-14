@@ -50,15 +50,14 @@
 /**
  * Return the union, intersection, or difference of two ordered sets
  */
-static OrderedSet *
-setop_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2,
-  SetOper setop)
+static Set *
+setop_set_set(const Set *os1, const Set *os2, SetOper setop)
 {
   if (setop == INTER || setop == MINUS)
   {
     /* Bounding box test */
     if (! overlaps_span_span(&os1->span, &os2->span))
-      return setop == INTER ? NULL : orderedset_copy(os1);
+      return setop == INTER ? NULL : set_copy(os1);
   }
 
   int count;
@@ -70,8 +69,8 @@ setop_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2,
     count = os1->count;
   Datum *values = palloc(sizeof(Datum) * count);
   int i = 0, j = 0, k = 0;
-  Datum d1 = orderedset_val_n(os1, 0);
-  Datum d2 = orderedset_val_n(os2, 0);
+  Datum d1 = set_val_n(os1, 0);
+  Datum d2 = set_val_n(os2, 0);
   mobdbType basetype = os1->span.basetype;
   while (i < os1->count && j < os2->count)
   {
@@ -83,8 +82,8 @@ setop_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2,
       i++; j++;
       if (i == os1->count || j == os2->count)
         break;
-      d1 = orderedset_val_n(os1, i);
-      d2 = orderedset_val_n(os2, j);
+      d1 = set_val_n(os1, i);
+      d2 = set_val_n(os2, j);
     }
     else if (cmp < 0)
     {
@@ -94,7 +93,7 @@ setop_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2,
       if (i == os1->count)
         break;
       else
-        d1 = orderedset_val_n(os1, i);
+        d1 = set_val_n(os1, i);
     }
     else
     {
@@ -104,20 +103,20 @@ setop_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2,
       if (j == os2->count)
         break;
       else
-        d2 = orderedset_val_n(os2, j);
+        d2 = set_val_n(os2, j);
     }
   }
   if (setop == UNION || setop == MINUS)
   {
     while (i < os1->count)
-      values[k++] = orderedset_val_n(os1, i++);
+      values[k++] = set_val_n(os1, i++);
   }
   if (setop == UNION)
   {
     while (j < os2->count)
-      values[k++] = orderedset_val_n(os2, j++);
+      values[k++] = set_val_n(os2, j++);
   }
-  return orderedset_make_free(values, k, basetype);
+  return set_make_free(values, k, basetype);
 }
 
 /*****************************************************************************
@@ -129,14 +128,14 @@ setop_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2,
  * @brief Return true if an ordered set contains a value.
  */
 bool
-contains_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
+contains_set_value(const Set *os, Datum d, mobdbType basetype)
 {
   /* Bounding box test */
   if (! contains_span_value(&os->span, d, basetype))
     return false;
 
   int loc;
-  return orderedset_find_value(os, d, &loc);
+  return set_find_value(os, d, &loc);
 }
 
 #if MEOS
@@ -146,9 +145,9 @@ contains_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
  * @sqlop @p \@>
  */
 bool
-contains_intset_int(const OrderedSet *os, int i)
+contains_intset_int(const Set *os, int i)
 {
-  return contains_orderedset_value(os, Int32GetDatum(i), T_INT4);
+  return contains_set_value(os, Int32GetDatum(i), T_INT4);
 }
 
 /**
@@ -157,9 +156,9 @@ contains_intset_int(const OrderedSet *os, int i)
  * @sqlop @p \@>
  */
 bool
-contains_bigintset_bigint(const OrderedSet *os, int64 i)
+contains_bigintset_bigint(const Set *os, int64 i)
 {
-  return contains_orderedset_value(os, Int64GetDatum(i), T_INT8);
+  return contains_set_value(os, Int64GetDatum(i), T_INT8);
 }
 
 /**
@@ -168,9 +167,9 @@ contains_bigintset_bigint(const OrderedSet *os, int64 i)
  * @sqlop @p \@>
  */
 bool
-contains_floatset_float(const OrderedSet *os, double d)
+contains_floatset_float(const Set *os, double d)
 {
-  return contains_orderedset_value(os, Float8GetDatum(d), T_FLOAT8);
+  return contains_set_value(os, Float8GetDatum(d), T_FLOAT8);
 }
 
 /**
@@ -181,7 +180,7 @@ contains_floatset_float(const OrderedSet *os, double d)
 bool
 contains_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 {
-  return contains_orderedset_value(ts, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  return contains_set_value(ts, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
 
@@ -191,7 +190,7 @@ contains_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
  * @sqlop @p \@>
  */
 bool
-contains_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
+contains_set_set(const Set *os1, const Set *os2)
 {
   /* Bounding box test */
   if (! contains_span_span(&os1->span, &os2->span))
@@ -200,8 +199,8 @@ contains_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
   int i = 0, j = 0;
   while (j < os2->count)
   {
-    Datum d1 = orderedset_val_n(os1, i);
-    Datum d2 = orderedset_val_n(os2, j);
+    Datum d1 = set_val_n(os1, i);
+    Datum d2 = set_val_n(os2, j);
     int cmp = datum_cmp(d1, d2, os1->span.basetype);
     if (cmp == 0)
     {
@@ -224,9 +223,9 @@ contains_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
  * @brief Return true if a value is contained by an ordered set
  */
 bool
-contained_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os)
+contained_value_set(Datum d, mobdbType basetype, const Set *os)
 {
-  return contains_orderedset_value(os, d, basetype);
+  return contains_set_value(os, d, basetype);
 }
 
 #if MEOS
@@ -236,9 +235,9 @@ contained_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os)
  * @sqlop @p <@
  */
 bool
-contained_int_intset(int i, const OrderedSet *os)
+contained_int_intset(int i, const Set *os)
 {
-  return contained_value_orderedset(Int32GetDatum(i), T_INT4, os);
+  return contained_value_set(Int32GetDatum(i), T_INT4, os);
 }
 
 /**
@@ -247,9 +246,9 @@ contained_int_intset(int i, const OrderedSet *os)
  * @sqlop @p <@
  */
 bool
-contained_bigint_bigintset(int64 i, const OrderedSet *os)
+contained_bigint_bigintset(int64 i, const Set *os)
 {
-  return contained_value_orderedset(Int64GetDatum(i), T_INT8, os);
+  return contained_value_set(Int64GetDatum(i), T_INT8, os);
 }
 
 /**
@@ -258,9 +257,9 @@ contained_bigint_bigintset(int64 i, const OrderedSet *os)
  * @sqlop @p <@
  */
 bool
-contained_float_floatset(double d, const OrderedSet *os)
+contained_float_floatset(double d, const Set *os)
 {
-  return contained_value_orderedset(Float8GetDatum(d), T_FLOAT8, os);
+  return contained_value_set(Float8GetDatum(d), T_FLOAT8, os);
 }
 
 /**
@@ -271,7 +270,7 @@ contained_float_floatset(double d, const OrderedSet *os)
 bool
 contained_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 {
-  return contains_orderedset_value(ts, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  return contains_set_value(ts, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
 
@@ -281,10 +280,10 @@ contained_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
  * @sqlop @p <@
  */
 bool
-contained_orderedset_orderedset(const OrderedSet *os1,
-  const OrderedSet *os2)
+contained_set_set(const Set *os1,
+  const Set *os2)
 {
-  return contains_orderedset_orderedset(os2, os1);
+  return contains_set_set(os2, os1);
 }
 
 /*****************************************************************************
@@ -297,8 +296,8 @@ contained_orderedset_orderedset(const OrderedSet *os1,
  * @sqlop @p &&
  */
 bool
-overlaps_orderedset_orderedset(const OrderedSet *os1,
-  const OrderedSet *os2)
+overlaps_set_set(const Set *os1,
+  const Set *os2)
 {
   /* Bounding box test */
   if (! overlaps_span_span(&os1->span, &os2->span))
@@ -307,8 +306,8 @@ overlaps_orderedset_orderedset(const OrderedSet *os1,
   int i = 0, j = 0;
   while (i < os1->count && j < os2->count)
   {
-    Datum d1 = orderedset_val_n(os1, i);
-    Datum d2 = orderedset_val_n(os2, j);
+    Datum d1 = set_val_n(os1, i);
+    Datum d2 = set_val_n(os2, j);
     int cmp = datum_cmp(d1, d2, os1->span.basetype);
     if (cmp == 0)
       return true;
@@ -329,9 +328,9 @@ overlaps_orderedset_orderedset(const OrderedSet *os1,
  * @brief Return true if a value is strictly to the left of an ordered set.
  */
 bool
-left_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os)
+left_value_set(Datum d, mobdbType basetype, const Set *os)
 {
-  Datum d1 = orderedset_val_n(os, 0);
+  Datum d1 = set_val_n(os, 0);
   return datum_lt2(d, d1, os->span.basetype, basetype);
 }
 
@@ -342,9 +341,9 @@ left_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os)
  * @sqlop @p <<, @p <<#
  */
 bool
-left_int_intset(int i, const OrderedSet *os)
+left_int_intset(int i, const Set *os)
 {
-  return left_value_orderedset(Int32GetDatum(i), T_INT4, os);
+  return left_value_set(Int32GetDatum(i), T_INT4, os);
 }
 
 /**
@@ -353,9 +352,9 @@ left_int_intset(int i, const OrderedSet *os)
  * @sqlop @p <<, @p <<#
  */
 bool
-left_bigint_bigintset(int64 i, const OrderedSet *os)
+left_bigint_bigintset(int64 i, const Set *os)
 {
-  return left_value_orderedset(Int64GetDatum(i), T_INT8, os);
+  return left_value_set(Int64GetDatum(i), T_INT8, os);
 }
 
 /**
@@ -364,9 +363,9 @@ left_bigint_bigintset(int64 i, const OrderedSet *os)
  * @sqlop @p <<, @p <<#
  */
 bool
-left_float_floatset(double d, const OrderedSet *os)
+left_float_floatset(double d, const Set *os)
 {
-  return left_value_orderedset(Float8GetDatum(d), T_FLOAT8, os);
+  return left_value_set(Float8GetDatum(d), T_FLOAT8, os);
 }
 
 /**
@@ -377,7 +376,7 @@ left_float_floatset(double d, const OrderedSet *os)
 bool
 before_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 {
-  return left_value_orderedset(TimestampTzGetDatum(t), T_TIMESTAMPTZ, ts);
+  return left_value_set(TimestampTzGetDatum(t), T_TIMESTAMPTZ, ts);
 }
 #endif /* MEOS */
 
@@ -386,9 +385,9 @@ before_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
  * @brief Return true if an ordered set is strictly to the left of a value.
  */
 bool
-left_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
+left_set_value(const Set *os, Datum d, mobdbType basetype)
 {
-  Datum d1 = orderedset_val_n(os, os->count - 1);
+  Datum d1 = set_val_n(os, os->count - 1);
   return datum_lt2(d1, d, os->span.basetype, basetype);
 }
 
@@ -399,9 +398,9 @@ left_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
  * @sqlop @p <<, @p <<#
  */
 bool
-left_intset_int(const OrderedSet *os, int i)
+left_intset_int(const Set *os, int i)
 {
-  return left_orderedset_value(os, Int32GetDatum(i), T_INT4);
+  return left_set_value(os, Int32GetDatum(i), T_INT4);
 }
 
 /**
@@ -410,9 +409,9 @@ left_intset_int(const OrderedSet *os, int i)
  * @sqlop @p <<, @p <<#
  */
 bool
-left_bigintset_bigint(const OrderedSet *os, int64 i)
+left_bigintset_bigint(const Set *os, int64 i)
 {
-  return left_orderedset_value(os, Int64GetDatum(i), T_INT8);
+  return left_set_value(os, Int64GetDatum(i), T_INT8);
 }
 
 /**
@@ -421,9 +420,9 @@ left_bigintset_bigint(const OrderedSet *os, int64 i)
  * @sqlop @p <<, @p <<#
  */
 bool
-left_floatset_float(const OrderedSet *os, double d)
+left_floatset_float(const Set *os, double d)
 {
-  return left_orderedset_value(os, Float8GetDatum(d), T_FLOAT8);
+  return left_set_value(os, Float8GetDatum(d), T_FLOAT8);
 }
 
 /**
@@ -432,9 +431,9 @@ left_floatset_float(const OrderedSet *os, double d)
  * @sqlop @p <<, @p <<#
  */
 bool
-before_timestampset_timestamp(const OrderedSet *os, TimestampTz t)
+before_timestampset_timestamp(const Set *os, TimestampTz t)
 {
-  return left_orderedset_value(os, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  return left_set_value(os, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
 
@@ -445,11 +444,11 @@ before_timestampset_timestamp(const OrderedSet *os, TimestampTz t)
  * @sqlop @p <<, <<#
  */
 bool
-left_orderedset_orderedset(const OrderedSet *os1,
-  const OrderedSet *os2)
+left_set_set(const Set *os1,
+  const Set *os2)
 {
-  Datum d1 = orderedset_val_n(os1, os1->count - 1);
-  Datum d2 = orderedset_val_n(os2, 0);
+  Datum d1 = set_val_n(os1, os1->count - 1);
+  Datum d2 = set_val_n(os2, 0);
   return (datum_lt2(d1, d2, os1->span.basetype, os2->span.basetype));
 }
 
@@ -462,9 +461,9 @@ left_orderedset_orderedset(const OrderedSet *os1,
  * @brief Return true if a value is strictly to the right of an ordered set.
  */
 bool
-right_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os)
+right_value_set(Datum d, mobdbType basetype, const Set *os)
 {
-  return left_orderedset_value(os, d, basetype);
+  return left_set_value(os, d, basetype);
 }
 
 #if MEOS
@@ -474,7 +473,7 @@ right_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os)
  * @sqlop @p >>, @p #>>
  */
 bool
-right_int_intset(int i, const OrderedSet *os)
+right_int_intset(int i, const Set *os)
 {
   return left_intset_int(os, i);
 }
@@ -485,7 +484,7 @@ right_int_intset(int i, const OrderedSet *os)
  * @sqlop @p >>, @p #>>
  */
 bool
-right_bigint_bigintset(int64 i, const OrderedSet *os)
+right_bigint_bigintset(int64 i, const Set *os)
 {
   return left_bigintset_bigint(os, i);
 }
@@ -496,7 +495,7 @@ right_bigint_bigintset(int64 i, const OrderedSet *os)
  * @sqlop @p >>, @p #>>
  */
 bool
-right_float_floatset(double d, const OrderedSet *os)
+right_float_floatset(double d, const Set *os)
 {
   return left_floatset_float(os, d);
 }
@@ -519,9 +518,9 @@ after_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
  * @sqlop @p >>, @p #>>
  */
 bool
-right_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
+right_set_value(const Set *os, Datum d, mobdbType basetype)
 {
-  return left_value_orderedset(d, basetype, os);
+  return left_value_set(d, basetype, os);
 }
 
 #if MEOS
@@ -531,9 +530,9 @@ right_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
  * @sqlop @p >>, @p #>>
  */
 bool
-right_intset_int(const OrderedSet *os, int i)
+right_intset_int(const Set *os, int i)
 {
-  return right_orderedset_value(os, Int32GetDatum(i), T_INT4);
+  return right_set_value(os, Int32GetDatum(i), T_INT4);
 }
 
 /**
@@ -542,9 +541,9 @@ right_intset_int(const OrderedSet *os, int i)
  * @sqlop @p >>, @p #>>
  */
 bool
-right_bigintset_bigint(const OrderedSet *os, int64 i)
+right_bigintset_bigint(const Set *os, int64 i)
 {
-  return right_orderedset_value(os, Int64GetDatum(i), T_INT8);
+  return right_set_value(os, Int64GetDatum(i), T_INT8);
 }
 
 /**
@@ -553,9 +552,9 @@ right_bigintset_bigint(const OrderedSet *os, int64 i)
  * @sqlop @p >>, @p #>>
  */
 bool
-right_floatset_float(const OrderedSet *os, double d)
+right_floatset_float(const Set *os, double d)
 {
-  return right_orderedset_value(os, Float8GetDatum(d), T_FLOAT8);
+  return right_set_value(os, Float8GetDatum(d), T_FLOAT8);
 }
 #endif /* MEOS */
 
@@ -566,9 +565,9 @@ right_floatset_float(const OrderedSet *os, double d)
  * @sqlop @p >>, @p #>>
  */
 bool
-right_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
+right_set_set(const Set *os1, const Set *os2)
 {
-  return left_orderedset_orderedset(os2, os1);
+  return left_set_set(os2, os1);
 }
 
 /*****************************************************************************
@@ -580,9 +579,9 @@ right_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
  * @brief Return true if a value does not extend to the right of an ordered set.
  */
 bool
-overleft_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os)
+overleft_value_set(Datum d, mobdbType basetype, const Set *os)
 {
-  Datum d1 = orderedset_val_n(os, os->count - 1);
+  Datum d1 = set_val_n(os, os->count - 1);
   return datum_le2(d, d1, basetype, os->span.basetype);
 }
 
@@ -593,9 +592,9 @@ overleft_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os)
  * @sqlop @p &<, @p &<#
  */
 bool
-overleft_int_intset(int i, const OrderedSet *os)
+overleft_int_intset(int i, const Set *os)
 {
-  return overleft_value_orderedset(Int32GetDatum(i), T_INT4, os);
+  return overleft_value_set(Int32GetDatum(i), T_INT4, os);
 }
 
 /**
@@ -604,9 +603,9 @@ overleft_int_intset(int i, const OrderedSet *os)
  * @sqlop @p &<, @p &<#
  */
 bool
-overleft_bigint_bigintset(int64 i, const OrderedSet *os)
+overleft_bigint_bigintset(int64 i, const Set *os)
 {
-  return overleft_value_orderedset(Int64GetDatum(i), T_INT8, os);
+  return overleft_value_set(Int64GetDatum(i), T_INT8, os);
 }
 
 /**
@@ -615,9 +614,9 @@ overleft_bigint_bigintset(int64 i, const OrderedSet *os)
  * @sqlop @p &<, @p &<#
  */
 bool
-overleft_float_floatset(double d, const OrderedSet *os)
+overleft_float_floatset(double d, const Set *os)
 {
-  return overleft_value_orderedset(Float8GetDatum(d), T_FLOAT8, os);
+  return overleft_value_set(Float8GetDatum(d), T_FLOAT8, os);
 }
 
 /**
@@ -628,7 +627,7 @@ overleft_float_floatset(double d, const OrderedSet *os)
 bool
 overbefore_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 {
-  return overleft_value_orderedset(TimestampTzGetDatum(t), T_TIMESTAMPTZ, ts);
+  return overleft_value_set(TimestampTzGetDatum(t), T_TIMESTAMPTZ, ts);
 }
 #endif /* MEOS */
 
@@ -638,9 +637,9 @@ overbefore_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
  * @sqlop @p &<, @p &<#
  */
 bool
-overleft_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
+overleft_set_value(const Set *os, Datum d, mobdbType basetype)
 {
-  Datum d1 = orderedset_val_n(os, os->count - 1);
+  Datum d1 = set_val_n(os, os->count - 1);
   return datum_le2(d1, d, os->span.basetype, basetype);
 }
 
@@ -651,21 +650,21 @@ overleft_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
  * @sqlop @p &<#
  */
 bool
-overleft_intset_int(const OrderedSet *os, int i)
+overleft_intset_int(const Set *os, int i)
 {
-  return overleft_orderedset_value(os, Int32GetDatum(i), T_INT4);
+  return overleft_set_value(os, Int32GetDatum(i), T_INT4);
 }
 
 bool
-overleft_bigintset_bigint(const OrderedSet *os, int64 i)
+overleft_bigintset_bigint(const Set *os, int64 i)
 {
-  return overleft_orderedset_value(os, Int64GetDatum(i), T_INT8);
+  return overleft_set_value(os, Int64GetDatum(i), T_INT8);
 }
 
 bool
-overleft_floatset_float(const OrderedSet *os, double d)
+overleft_floatset_float(const Set *os, double d)
 {
-  return overleft_orderedset_value(os, Float8GetDatum(d), T_FLOAT8);
+  return overleft_set_value(os, Float8GetDatum(d), T_FLOAT8);
 }
 #endif /* MEOS */
 
@@ -676,10 +675,10 @@ overleft_floatset_float(const OrderedSet *os, double d)
  * @sqlop @p &<, &<#
  */
 bool
-overleft_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
+overleft_set_set(const Set *os1, const Set *os2)
 {
-  Datum d1 = orderedset_val_n(os1, os1->count - 1);
-  Datum d2 = orderedset_val_n(os2, os2->count - 1);
+  Datum d1 = set_val_n(os1, os1->count - 1);
+  Datum d2 = set_val_n(os2, os2->count - 1);
   return datum_le2(d1, d2, os1->span.basetype, os2->span.basetype);
 }
 
@@ -692,9 +691,9 @@ overleft_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
  * @brief Return true if a value does not extend to the the left of an ordered set.
  */
 bool
-overright_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os)
+overright_value_set(Datum d, mobdbType basetype, const Set *os)
 {
-  Datum d1 = orderedset_val_n(os, 0);
+  Datum d1 = set_val_n(os, 0);
   return datum_ge2(d, d1, basetype, os->span.basetype);
 }
 
@@ -705,9 +704,9 @@ overright_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os)
  * @sqlop @p &>, @p #&>
  */
 bool
-overright_int_intset(int i, const OrderedSet *os)
+overright_int_intset(int i, const Set *os)
 {
-  return overright_value_orderedset(Int32GetDatum(i), T_INT4, os);
+  return overright_value_set(Int32GetDatum(i), T_INT4, os);
 }
 
 /**
@@ -716,9 +715,9 @@ overright_int_intset(int i, const OrderedSet *os)
  * @sqlop @p &>, @p #&>
  */
 bool
-overright_bigint_bigintset(int64 i, const OrderedSet *os)
+overright_bigint_bigintset(int64 i, const Set *os)
 {
-  return overright_value_orderedset(Int64GetDatum(i), T_INT8, os);
+  return overright_value_set(Int64GetDatum(i), T_INT8, os);
 }
 
 /**
@@ -727,9 +726,9 @@ overright_bigint_bigintset(int64 i, const OrderedSet *os)
  * @sqlop @p &>, @p #&>
  */
 bool
-overright_float_floatset(double d, const OrderedSet *os)
+overright_float_floatset(double d, const Set *os)
 {
-  return overright_value_orderedset(Float8GetDatum(d), T_FLOAT8, os);
+  return overright_value_set(Float8GetDatum(d), T_FLOAT8, os);
 }
 
 /**
@@ -740,7 +739,7 @@ overright_float_floatset(double d, const OrderedSet *os)
 bool
 overafter_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 {
-  return overright_value_orderedset(TimestampTzGetDatum(t), T_TIMESTAMPTZ, ts);
+  return overright_value_set(TimestampTzGetDatum(t), T_TIMESTAMPTZ, ts);
 }
 #endif /* MEOS */
 
@@ -749,9 +748,9 @@ overafter_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
  * @brief Return true if an ordered set does not extend to the left of a value.
  */
 bool
-overright_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
+overright_set_value(const Set *os, Datum d, mobdbType basetype)
 {
-  Datum d1 = orderedset_val_n(os, 0);
+  Datum d1 = set_val_n(os, 0);
   return datum_ge2(d1, d, os->span.basetype, basetype);
 }
 
@@ -762,9 +761,9 @@ overright_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
  * @sqlop @p &>, @p #&>
  */
 bool
-overright_intset_int(const OrderedSet *os, int i)
+overright_intset_int(const Set *os, int i)
 {
-  return overright_orderedset_value(os, Int32GetDatum(i), T_INT4);
+  return overright_set_value(os, Int32GetDatum(i), T_INT4);
 }
 
 /**
@@ -773,9 +772,9 @@ overright_intset_int(const OrderedSet *os, int i)
  * @sqlop @p &>, @p #&>
  */
 bool
-overright_bigintset_bigint(const OrderedSet *os, int64 i)
+overright_bigintset_bigint(const Set *os, int64 i)
 {
-  return overright_orderedset_value(os, Int64GetDatum(i), T_INT8);
+  return overright_set_value(os, Int64GetDatum(i), T_INT8);
 }
 
 /**
@@ -784,9 +783,9 @@ overright_bigintset_bigint(const OrderedSet *os, int64 i)
  * @sqlop @p &>, @p #&>
  */
 bool
-overright_floatset_float(const OrderedSet *os, double d)
+overright_floatset_float(const Set *os, double d)
 {
-  return overright_orderedset_value(os, Float8GetDatum(d), T_FLOAT8);
+  return overright_set_value(os, Float8GetDatum(d), T_FLOAT8);
 }
 #endif /* MEOS */
 
@@ -797,10 +796,10 @@ overright_floatset_float(const OrderedSet *os, double d)
  * @sqlop @p &>, @p #&>
  */
 bool
-overright_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
+overright_set_set(const Set *os1, const Set *os2)
 {
-  Datum d1 = orderedset_val_n(os1, 0);
-  Datum d2 = orderedset_val_n(os2, 0);
+  Datum d1 = set_val_n(os1, 0);
+  Datum d2 = set_val_n(os2, 0);
   return datum_ge2(d1, d2, os1->span.basetype, os2->span.basetype);
 }
 
@@ -812,13 +811,13 @@ overright_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
  * @ingroup libmeos_internal_setspan_set
  * @brief Return the union of two values
  */
-OrderedSet *
+Set *
 union_value_value(Datum d1, Datum d2, mobdbType basetype)
 {
-  OrderedSet *result;
+  Set *result;
   int cmp = datum_cmp(d1, d2, basetype);
   if (cmp == 0)
-    result = orderedset_make(&d1, 1, basetype);
+    result = set_make(&d1, 1, basetype);
   else
   {
     Datum values[2];
@@ -832,7 +831,7 @@ union_value_value(Datum d1, Datum d2, mobdbType basetype)
       values[0] = d2;
       values[1] = d1;
     }
-    result = orderedset_make(values, 2, basetype);
+    result = set_make(values, 2, basetype);
   }
   return result;
 }
@@ -843,7 +842,7 @@ union_value_value(Datum d1, Datum d2, mobdbType basetype)
  * @brief Return the union of two values
  * @sqlop @p +
  */
-OrderedSet *
+Set *
 union_int_int(int i1, int i2)
 {
   return union_value_value(Int32GetDatum(i1), Int32GetDatum(i2), T_INT4);
@@ -854,7 +853,7 @@ union_int_int(int i1, int i2)
  * @brief Return the union of two values
  * @sqlop @p +
  */
-OrderedSet *
+Set *
 union_bigint_bigint(int64 i1, int64 i2)
 {
   return union_value_value(Int64GetDatum(i1), Int64GetDatum(i2), T_INT8);
@@ -865,7 +864,7 @@ union_bigint_bigint(int64 i1, int64 i2)
  * @brief Return the union of two values
  * @sqlop @p +
  */
-OrderedSet *
+Set *
 union_float_float(double d1, double d2)
 {
   return union_value_value(Float8GetDatum(d1), Float8GetDatum(d2), T_FLOAT8);
@@ -888,8 +887,8 @@ union_timestamp_timestamp(TimestampTz t1, TimestampTz t2)
  * @ingroup libmeos_internal_setspan_set
  * @brief Return the union of a value and an ordered set.
  */
-OrderedSet *
-union_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
+Set *
+union_set_value(const Set *os, Datum d, mobdbType basetype)
 {
   assert(basetype == os->span.basetype);
   Datum *values = palloc(sizeof(TimestampTz) * (os->count + 1));
@@ -897,7 +896,7 @@ union_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
   bool found = false;
   for (int i = 0; i < os->count; i++)
   {
-    Datum d1 = orderedset_val_n(os, i);
+    Datum d1 = set_val_n(os, i);
     if (! found)
     {
       int cmp = datum_cmp(d, d1, basetype);
@@ -913,7 +912,7 @@ union_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
   }
   if (! found)
     values[k++] = d;
-  return orderedset_make_free(values, k, basetype);
+  return set_make_free(values, k, basetype);
 }
 
 #if MEOS
@@ -923,9 +922,9 @@ union_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
  * @sqlop @p +
  */
 bool
-union_intset_int(const OrderedSet *os, int i)
+union_intset_int(const Set *os, int i)
 {
-  return union_orderedset_value(os, Int32GetDatum(i), T_INT4);
+  return union_set_value(os, Int32GetDatum(i), T_INT4);
 }
 
 /**
@@ -934,9 +933,9 @@ union_intset_int(const OrderedSet *os, int i)
  * @sqlop @p +
  */
 bool
-union_bigintset_bigint(const OrderedSet *os, int64 i)
+union_bigintset_bigint(const Set *os, int64 i)
 {
-  return union_orderedset_value(os, Int64GetDatum(i), T_INT8);
+  return union_set_value(os, Int64GetDatum(i), T_INT8);
 }
 
 /**
@@ -945,9 +944,9 @@ union_bigintset_bigint(const OrderedSet *os, int64 i)
  * @sqlop @p +
  */
 bool
-union_floatset_float(const OrderedSet *os, double d)
+union_floatset_float(const Set *os, double d)
 {
-  return union_orderedset_value(os, Float8GetDatum(d), T_FLOAT8);
+  return union_set_value(os, Float8GetDatum(d), T_FLOAT8);
 }
 
 /**
@@ -967,10 +966,10 @@ union_timestampset_timestamp(const TimestampSet *ts, const TimestampTz t)
  * @brief Return the union of two ordered sets.
  * @sqlop @p +
  */
-OrderedSet *
-union_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
+Set *
+union_set_set(const Set *os1, const Set *os2)
 {
-  return setop_orderedset_orderedset(os1, os2, UNION);
+  return setop_set_set(os1, os2, UNION);
 }
 
 /*****************************************************************************
@@ -995,11 +994,11 @@ intersection_value_value(Datum d1, Datum d2, mobdbType basetype, Datum *result)
  * @brief Return the intersection of an ordered set and a value
  */
 bool
-intersection_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype,
+intersection_set_value(const Set *os, Datum d, mobdbType basetype,
   Datum *result)
 {
   assert(basetype == os->span.basetype);
-  if (! contains_orderedset_value(os, d, basetype))
+  if (! contains_set_value(os, d, basetype))
     return false;
   *result  = d;
   return true;
@@ -1012,10 +1011,10 @@ intersection_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype,
  * @sqlop @p *
  */
 bool
-intersection_intset_int(const OrderedSet *os, int i, int *result)
+intersection_intset_int(const Set *os, int i, int *result)
 {
   Datum v;
-  bool found = intersection_orderedset_value(os, Int32GetDatum(i), T_INT4, &v);
+  bool found = intersection_set_value(os, Int32GetDatum(i), T_INT4, &v);
   *result = DatumGetInt32(v);
   return found;
 }
@@ -1026,10 +1025,10 @@ intersection_intset_int(const OrderedSet *os, int i, int *result)
  * @sqlop @p *
  */
 bool
-intersection_bigintset_bigint(const OrderedSet *os, int64 i, int64 *result)
+intersection_bigintset_bigint(const Set *os, int64 i, int64 *result)
 {
   Datum v;
-  bool found = intersection_orderedset_value(os, Int64GetDatum(i), T_INT8, &v);
+  bool found = intersection_set_value(os, Int64GetDatum(i), T_INT8, &v);
   *result = DatumGetInt32(v);
   return found;
 }
@@ -1040,10 +1039,10 @@ intersection_bigintset_bigint(const OrderedSet *os, int64 i, int64 *result)
  * @sqlop @p *
  */
 bool
-intersection_floatset_float(const OrderedSet *os, double d, double *result)
+intersection_floatset_float(const Set *os, double d, double *result)
 {
   Datum v;
-  bool found = intersection_orderedset_value(os, Float8GetDatum(d), T_FLOAT8, &v);
+  bool found = intersection_set_value(os, Float8GetDatum(d), T_FLOAT8, &v);
   *result = DatumGetInt32(v);
   return found;
 }
@@ -1057,7 +1056,7 @@ bool
 intersection_timestampset_timestamp(const TimestampSet *ts, const TimestampTz t,
   TimestampTz *result)
 {
-  if (! contains_orderedset_value(ts, TimestampTzGetDatum(t),
+  if (! contains_set_value(ts, TimestampTzGetDatum(t),
       ts->span.basetype))
     return false;
   *result  = t;
@@ -1070,10 +1069,10 @@ intersection_timestampset_timestamp(const TimestampSet *ts, const TimestampTz t,
  * @brief Return the intersection of two ordered sets.
  * @sqlop @p *
  */
-OrderedSet *
-intersection_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
+Set *
+intersection_set_set(const Set *os1, const Set *os2)
 {
-  return setop_orderedset_orderedset(os1, os2, INTER);
+  return setop_set_set(os1, os2, INTER);
 }
 
 /*****************************************************************************
@@ -1147,10 +1146,10 @@ minus_float_float(double d1, double d2, double *result)
  * @sqlop @p -
  */
 bool
-minus_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os,
+minus_value_set(Datum d, mobdbType basetype, const Set *os,
   Datum *result)
 {
-  if (contains_orderedset_value(os, d, basetype))
+  if (contains_set_value(os, d, basetype))
     return false;
   *result = d;
   return true;
@@ -1163,10 +1162,10 @@ minus_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os,
  * @sqlop @p -
  */
 bool
-minus_int_intset(int i, const OrderedSet *os, int *result)
+minus_int_intset(int i, const Set *os, int *result)
 {
   Datum v;
-  bool found = minus_value_orderedset(Int32GetDatum(i), T_INT4, os, &v);
+  bool found = minus_value_set(Int32GetDatum(i), T_INT4, os, &v);
   *result = DatumGetInt32(v);
   return found;
 }
@@ -1177,10 +1176,10 @@ minus_int_intset(int i, const OrderedSet *os, int *result)
  * @sqlop @p -
  */
 bool
-minus_bigint_bigintset(int64 i, const OrderedSet *os, int64 *result)
+minus_bigint_bigintset(int64 i, const Set *os, int64 *result)
 {
   Datum v;
-  bool found = minus_value_orderedset(Int64GetDatum(i), T_INT8, os, &v);
+  bool found = minus_value_set(Int64GetDatum(i), T_INT8, os, &v);
   *result = DatumGetInt64(v);
   return found;
 }
@@ -1191,10 +1190,10 @@ minus_bigint_bigintset(int64 i, const OrderedSet *os, int64 *result)
  * @sqlop @p -
  */
 bool
-minus_float_floatset(double d, const OrderedSet *os, double *result)
+minus_float_floatset(double d, const Set *os, double *result)
 {
   Datum v;
-  bool found = minus_value_orderedset(Float8GetDatum(d), T_FLOAT8, os, &v);
+  bool found = minus_value_set(Float8GetDatum(d), T_FLOAT8, os, &v);
   *result = DatumGetFloat8(v);
   return found;
 }
@@ -1204,23 +1203,23 @@ minus_float_floatset(double d, const OrderedSet *os, double *result)
  * @ingroup libmeos_internal_setspan_set
  * @brief Return the difference of an ordered set and a value.
  */
-OrderedSet *
-minus_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
+Set *
+minus_set_value(const Set *os, Datum d, mobdbType basetype)
 {
   /* Bounding box test */
   if (! contains_span_value(&os->span, d, basetype))
-    return orderedset_copy(os);
+    return set_copy(os);
 
   Datum *values = palloc(sizeof(TimestampTz) * os->count);
   int k = 0;
   Datum v = d;
   for (int i = 0; i < os->count; i++)
   {
-    Datum v1 = orderedset_val_n(os, i);
+    Datum v1 = set_val_n(os, i);
     if (datum_ne(v, v1, basetype))
       values[k++] = v1;
   }
-  return orderedset_make_free(values, k, basetype);
+  return set_make_free(values, k, basetype);
 }
 
 #if MEOS
@@ -1229,10 +1228,10 @@ minus_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
  * @brief Return the difference of an ordered set and a value.
  * @sqlop @p -
  */
-OrderedSet *
-minus_intset_int(const OrderedSet *os, int i)
+Set *
+minus_intset_int(const Set *os, int i)
 {
-  return minus_orderedset_value(os, Int32GetDatum(i), T_INT4);
+  return minus_set_value(os, Int32GetDatum(i), T_INT4);
 }
 
 /**
@@ -1240,10 +1239,10 @@ minus_intset_int(const OrderedSet *os, int i)
  * @brief Return the difference of an ordered set and a value.
  * @sqlop @p -
  */
-OrderedSet *
-minus_bigintset_bigint(const OrderedSet *os, int64 i)
+Set *
+minus_bigintset_bigint(const Set *os, int64 i)
 {
-  return minus_orderedset_value(os, Int64GetDatum(i), T_INT8);
+  return minus_set_value(os, Int64GetDatum(i), T_INT8);
 }
 
 /**
@@ -1251,10 +1250,10 @@ minus_bigintset_bigint(const OrderedSet *os, int64 i)
  * @brief Return the difference of an ordered set and a value.
  * @sqlop @p -
  */
-OrderedSet *
-minus_floatset_float(const OrderedSet *os, double d)
+Set *
+minus_floatset_float(const Set *os, double d)
 {
-  return minus_orderedset_value(os, Float8GetDatum(d), T_FLOAT8);
+  return minus_set_value(os, Float8GetDatum(d), T_FLOAT8);
 }
 
 /**
@@ -1267,18 +1266,18 @@ minus_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 {
   /* Bounding box test */
   if (! contains_period_timestamp(&ts->span, t))
-    return orderedset_copy(ts);
+    return set_copy(ts);
 
   Datum *values = palloc(sizeof(TimestampTz) * ts->count);
   int k = 0;
   Datum v = TimestampTzGetDatum(t);
   for (int i = 0; i < ts->count; i++)
   {
-    Datum v1 = orderedset_val_n(ts, i);
+    Datum v1 = set_val_n(ts, i);
     if (datum_ne(v, v1, T_TIMESTAMPTZ))
       values[k++] = v1;
   }
-  return orderedset_make_free(values, k, T_TIMESTAMPTZ);
+  return set_make_free(values, k, T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
 
@@ -1287,10 +1286,10 @@ minus_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
  * @brief Return the difference of two ordered sets.
  * @sqlop @p -
  */
-OrderedSet *
-minus_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
+Set *
+minus_set_set(const Set *os1, const Set *os2)
 {
-  return setop_orderedset_orderedset(os1, os2, MINUS);
+  return setop_set_set(os1, os2, MINUS);
 }
 
 /******************************************************************************
@@ -1303,7 +1302,7 @@ minus_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
  * @brief Return the distance between an ordered set and a value
  */
 double
-distance_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
+distance_set_value(const Set *os, Datum d, mobdbType basetype)
 {
   return distance_span_value(&os->span, d, basetype);
 }
@@ -1314,9 +1313,9 @@ distance_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
  * @sqlop @p <->
  */
 double
-distance_intset_int(const OrderedSet *os, int i)
+distance_intset_int(const Set *os, int i)
 {
-  return distance_orderedset_value(os, Int32GetDatum(i), T_INT4);
+  return distance_set_value(os, Int32GetDatum(i), T_INT4);
 }
 
 /**
@@ -1325,9 +1324,9 @@ distance_intset_int(const OrderedSet *os, int i)
  * @sqlop @p <->
  */
 double
-distance_bigintset_bigint(const OrderedSet *os, int64 i)
+distance_bigintset_bigint(const Set *os, int64 i)
 {
-  return distance_orderedset_value(os, Int64GetDatum(i), T_INT8);
+  return distance_set_value(os, Int64GetDatum(i), T_INT8);
 }
 
 /**
@@ -1336,9 +1335,9 @@ distance_bigintset_bigint(const OrderedSet *os, int64 i)
  * @sqlop @p <->
  */
 double
-distance_floatset_float(const OrderedSet *os, double d)
+distance_floatset_float(const Set *os, double d)
 {
-  return distance_orderedset_value(os, Float8GetDatum(d), T_FLOAT8);
+  return distance_set_value(os, Float8GetDatum(d), T_FLOAT8);
 }
 
 /**
@@ -1349,7 +1348,7 @@ distance_floatset_float(const OrderedSet *os, double d)
 double
 distance_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 {
-  return distance_orderedset_value(ts, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  return distance_set_value(ts, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 
 /**
@@ -1358,7 +1357,7 @@ distance_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
  * @sqlop @p <->
  */
 double
-distance_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
+distance_set_set(const Set *os1, const Set *os2)
 {
   return distance_span_span(&os1->span, &os2->span);
 }

@@ -53,7 +53,7 @@
 
 /* Input/output functions for set and span types */
 
-extern OrderedSet *orderedset_in(const char *str, mobdbType basetype);
+extern Set *set_in(const char *str, mobdbType basetype);
 extern Span *span_in(const char *str, mobdbType spantype);
 extern SpanSet *spanset_in(const char *str, mobdbType spantype);
 
@@ -61,9 +61,9 @@ extern SpanSet *spanset_in(const char *str, mobdbType spantype);
 
 /* Constructor functions for set and span types */
 
-extern OrderedSet *orderedset_make(const Datum *values, int count, mobdbType basetype);
-extern OrderedSet *orderedset_make_free(Datum *values, int count, mobdbType basetype);
-extern OrderedSet *orderedset_copy(const TimestampSet *os);
+extern Set *set_make(const Datum *values, int count, mobdbType basetype);
+extern Set *set_make_free(Datum *values, int count, mobdbType basetype);
+extern Set *set_copy(const TimestampSet *os);
 extern Span *span_make(Datum lower, Datum upper, bool lower_inc, bool upper_inc, mobdbType basetype);
 extern void span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc, mobdbType basetype, Span *s);
 
@@ -71,7 +71,7 @@ extern void span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc, m
 
 /* Cast functions for set and span types */
 
-extern OrderedSet *value_to_orderedset(Datum d, mobdbType basetype);
+extern Set *value_to_set(Datum d, mobdbType basetype);
 extern Span *value_to_span(Datum d, mobdbType basetype);
 extern SpanSet *value_to_spanset(Datum d, mobdbType basetype);
 
@@ -81,11 +81,11 @@ extern SpanSet *value_to_spanset(Datum d, mobdbType basetype);
 
 extern uint32 datum_hash(Datum d, mobdbType basetype);
 extern uint64 datum_hash_extended(Datum d, mobdbType basetype, uint64 seed);
-extern Datum orderedset_val_n(const TimestampSet *ts, int index);
-extern Datum orderedset_start_value(const OrderedSet *os);
-extern Datum orderedset_end_value(const OrderedSet *os);
-extern bool orderedset_value_n(const OrderedSet *os, int n, Datum *result);
-extern Datum *orderedset_values(const OrderedSet *os);
+extern Datum set_val_n(const TimestampSet *ts, int index);
+extern Datum set_start_value(const Set *os);
+extern Datum set_end_value(const Set *os);
+extern bool set_value_n(const Set *os, int n, Datum *result);
+extern Datum *set_values(const Set *os);
 extern const Span *spanset_sp_n(const SpanSet *ss, int index);
 extern void timestampset_set_period(const TimestampSet *ts, Period *p);
 
@@ -107,46 +107,46 @@ extern bool adjacent_span_value(const Span *s, Datum d, mobdbType basetype);
 extern bool adjacent_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype);
 extern bool contains_span_value(const Span *s, Datum d, mobdbType basetype);
 extern bool contains_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype);
-extern bool contains_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype);
-extern bool contains_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2);
+extern bool contains_set_value(const Set *os, Datum d, mobdbType basetype);
+extern bool contains_set_set(const Set *os1, const Set *os2);
 extern bool contained_value_span(Datum d, mobdbType basetype, const Span *s);
-extern bool contained_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os);
-extern bool contained_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2);
+extern bool contained_value_set(Datum d, mobdbType basetype, const Set *os);
+extern bool contained_set_set(const Set *os1, const Set *os2);
 extern bool contained_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss);
 extern bool overlaps_value_span(Datum d, mobdbType basetype, const Span *s);
 extern bool overlaps_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss);
 extern bool overlaps_span_value(const Span *s, Datum d, mobdbType basetype);
 extern bool overlaps_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype);
-extern bool overlaps_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2);
+extern bool overlaps_set_set(const Set *os1, const Set *os2);
 
 /*****************************************************************************/
 
 /* Position functions for set and span types */
 
-extern bool left_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2);
-extern bool left_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype);
+extern bool left_set_set(const Set *os1, const Set *os2);
+extern bool left_set_value(const Set *os, Datum d, mobdbType basetype);
 extern bool left_span_value(const Span *s, Datum d, mobdbType basetype);
 extern bool left_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype);
-extern bool left_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os);
+extern bool left_value_set(Datum d, mobdbType basetype, const Set *os);
 extern bool left_value_span(Datum d, mobdbType basetype, const Span *s);
 extern bool left_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss);
-extern bool right_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os);
-extern bool right_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype);
-extern bool right_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2);
+extern bool right_value_set(Datum d, mobdbType basetype, const Set *os);
+extern bool right_set_value(const Set *os, Datum d, mobdbType basetype);
+extern bool right_set_set(const Set *os1, const Set *os2);
 extern bool right_value_span(Datum d, mobdbType basetype, const Span *s);
 extern bool right_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss);
 extern bool right_span_value(const Span *s, Datum d, mobdbType basetype);
 extern bool right_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype);
-extern bool overleft_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os);
-extern bool overleft_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype);
-extern bool overleft_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2);
+extern bool overleft_value_set(Datum d, mobdbType basetype, const Set *os);
+extern bool overleft_set_value(const Set *os, Datum d, mobdbType basetype);
+extern bool overleft_set_set(const Set *os1, const Set *os2);
 extern bool overleft_value_span(Datum d, mobdbType basetype, const Span *s);
 extern bool overleft_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss);
 extern bool overleft_span_value(const Span *s, Datum d, mobdbType basetype);
 extern bool overleft_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype);
-extern bool overright_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os);
-extern bool overright_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype);
-extern bool overright_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2);
+extern bool overright_value_set(Datum d, mobdbType basetype, const Set *os);
+extern bool overright_set_value(const Set *os, Datum d, mobdbType basetype);
+extern bool overright_set_set(const Set *os1, const Set *os2);
 extern bool overright_value_span(Datum d, mobdbType basetype, const Span *s);
 extern bool overright_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss);
 extern bool overright_span_value(const Span *s, Datum d, mobdbType basetype);
@@ -157,25 +157,25 @@ extern bool overright_spanset_value(const SpanSet *ss, Datum d, mobdbType basety
 /* Set functions for set and span types */
 
 extern bool inter_span_span(const Span *s1, const Span *s2, Span *result);
-extern bool intersection_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype, Datum *result);
+extern bool intersection_set_value(const Set *os, Datum d, mobdbType basetype, Datum *result);
 extern bool intersection_span_value(const Span *s, Datum d, mobdbType basetype, Datum *result);
 extern bool intersection_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype, Datum *result);
 extern bool intersection_value_value(Datum d1, Datum d2, mobdbType basetype, Datum *result);
 
-extern OrderedSet *minus_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype);
+extern Set *minus_set_value(const Set *os, Datum d, mobdbType basetype);
 extern int minus_span_span1(const Span *s1, const Span *s2, Span **result);
 extern int minus_span_value1(const Span *s, Datum d, mobdbType basetype, Span **result);
 extern SpanSet *minus_span_value(const Span *s, Datum d, mobdbType basetype);
 extern SpanSet *minus_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype);
-extern bool minus_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os, Datum *result);
+extern bool minus_value_set(Datum d, mobdbType basetype, const Set *os, Datum *result);
 extern bool minus_value_span(Datum d, mobdbType basetype, const Span *s, Datum *result);
 extern bool minus_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss, Datum *result);
 extern bool minus_value_value(Datum d1, Datum d2, mobdbType basetype, Datum *result);
 
-extern OrderedSet *union_orderedset_value(const OrderedSet *os, const Datum d, mobdbType basetype);
+extern Set *union_set_value(const Set *os, const Datum d, mobdbType basetype);
 extern SpanSet *union_span_value(const Span *s, Datum v, mobdbType basetype);
 extern SpanSet *union_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype);
-extern OrderedSet *union_value_value(Datum d1, Datum d2, mobdbType basetype);
+extern Set *union_value_value(Datum d1, Datum d2, mobdbType basetype);
 
 /*****************************************************************************/
 
@@ -184,9 +184,9 @@ extern OrderedSet *union_value_value(Datum d1, Datum d2, mobdbType basetype);
 extern double distance_value_value(Datum l, Datum r, mobdbType typel, mobdbType typer);
 extern double distance_span_value(const Span *s, Datum d, mobdbType basetype);
 extern double distance_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype);
-extern double distance_value_orderedset(Datum d, mobdbType basetype, const OrderedSet *os);
-extern double distance_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype);
-extern double distance_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2);
+extern double distance_value_set(Datum d, mobdbType basetype, const Set *os);
+extern double distance_set_value(const Set *os, Datum d, mobdbType basetype);
+extern double distance_set_set(const Set *os1, const Set *os2);
 
 /*****************************************************************************/
 

@@ -46,20 +46,20 @@
 #include "general/timetypes.h"
 
 #if MEOS
-  #define DatumGetOrderedSetP(X)      ((OrderedSet *) DatumGetPointer(X))
+  #define DatumGetSetP(X)      ((Set *) DatumGetPointer(X))
 #else
-  #define DatumGetOrderedSetP(X)      ((OrderedSet *) PG_DETOAST_DATUM(X))
+  #define DatumGetSetP(X)      ((Set *) PG_DETOAST_DATUM(X))
 #endif /* MEOS */
-#define OrderedSetPGetDatum(X)        PointerGetDatum(X)
-#define PG_GETARG_ORDEREDSET_P(X)     ((OrderedSet *) PG_GETARG_VARLENA_P(X))
-#define PG_RETURN_ORDEREDSET_P(X)     PG_RETURN_POINTER(X)
+#define SetPGetDatum(X)        PointerGetDatum(X)
+#define PG_GETARG_SET_P(X)     ((Set *) PG_GETARG_VARLENA_P(X))
+#define PG_RETURN_SET_P(X)     PG_RETURN_POINTER(X)
 
 /*****************************************************************************/
 
 /* General functions */
 
-extern void orderedset_span_slice(Datum d, Span *s);
-extern bool orderedset_find_value(const OrderedSet *os, Datum, int *loc);
+extern void set_span_slice(Datum d, Span *s);
+extern bool set_find_value(const Set *os, Datum, int *loc);
 
 /*****************************************************************************/
 

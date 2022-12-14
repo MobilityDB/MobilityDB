@@ -1238,7 +1238,7 @@ spanset_from_wkb_state(wkb_parse_state *s)
  * as an extended WKB span type number.
  */
 void
-orderedset_settype_from_wkb_state(wkb_parse_state *s, uint16_t wkb_settype)
+set_settype_from_wkb_state(wkb_parse_state *s, uint16_t wkb_settype)
 {
   switch (wkb_settype)
   {
@@ -1266,7 +1266,7 @@ orderedset_settype_from_wkb_state(wkb_parse_state *s, uint16_t wkb_settype)
  * Return a value from its WKB representation.
  */
 static Datum
-orderedset_basevalue_from_wkb_state(wkb_parse_state *s)
+set_basevalue_from_wkb_state(wkb_parse_state *s)
 {
   Datum result;
   ensure_set_type(s->orderedsettype);
@@ -1294,20 +1294,20 @@ orderedset_basevalue_from_wkb_state(wkb_parse_state *s)
 /**
  * Return an ordered set from its WKB representation
  */
-static OrderedSet *
-orderedset_from_wkb_state(wkb_parse_state *s)
+static Set *
+set_from_wkb_state(wkb_parse_state *s)
 {
   /* Read the ordered set type */
   uint16_t wkb_settype = (uint16_t) int16_from_wkb_state(s);
-  orderedset_settype_from_wkb_state(s, wkb_settype);
+  set_settype_from_wkb_state(s, wkb_settype);
   /* Read the number of values and allocate space for them */
   int count = int32_from_wkb_state(s);
   Datum *values = palloc(sizeof(Datum) * count);
 
   /* Read and create the ordered set */
   for (int i = 0; i < count; i++)
-    values[i] = orderedset_basevalue_from_wkb_state(s);
-  OrderedSet *result = orderedset_make_free(values, count, s->basetype);
+    values[i] = set_basevalue_from_wkb_state(s);
+  Set *result = set_make_free(values, count, s->basetype);
   return result;
 }
 
@@ -1709,7 +1709,7 @@ datum_from_wkb(const uint8_t *wkb, int size, mobdbType type)
     case T_BIGINTSET:
     case T_FLOATSET:
     case T_TIMESTAMPSET:
-      result = PointerGetDatum(orderedset_from_wkb_state(&s));
+      result = PointerGetDatum(set_from_wkb_state(&s));
       break;
     case T_INTSPAN:
     case T_BIGINTSPAN:
@@ -1770,12 +1770,12 @@ datum_from_hexwkb(const char *hexwkb, int size, mobdbType type)
  * representation.
  * @sqlfunc timestampsetFromBinary()
  */
-OrderedSet *
-orderedset_from_wkb(const uint8_t *wkb, int size)
+Set *
+set_from_wkb(const uint8_t *wkb, int size)
 {
   /* We pass ANY set type to the dispatch function but the actual set type
    * will be read from the byte string */
-  return DatumGetOrderedSetP(datum_from_wkb(wkb, size, T_TIMESTAMPSET));
+  return DatumGetSetP(datum_from_wkb(wkb, size, T_TIMESTAMPSET));
 }
 
 /**
@@ -1784,8 +1784,8 @@ orderedset_from_wkb(const uint8_t *wkb, int size)
  * ASCII.
  * @sqlfunc timestampsetFromHexWKB()
  */
-OrderedSet *
-orderedset_from_hexwkb(const char *hexwkb)
+Set *
+set_from_hexwkb(const char *hexwkb)
 {
   int size = strlen(hexwkb);
   return DatumGetTimestampSetP(datum_from_hexwkb(hexwkb, size, T_TIMESTAMPSET));

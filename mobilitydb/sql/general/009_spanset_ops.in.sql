@@ -46,7 +46,7 @@ CREATE FUNCTION span_contains(intspanset, int)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_contains(intspanset, intset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contains_spanset_orderedset'
+  AS 'MODULE_PATHNAME', 'Contains_spanset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_contains(intspanset, intspan)
   RETURNS boolean
@@ -98,7 +98,7 @@ CREATE FUNCTION span_contains(bigintspanset, bigint)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_contains(bigintspanset, bigintset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contains_spanset_orderedset'
+  AS 'MODULE_PATHNAME', 'Contains_spanset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_contains(bigintspanset, bigintspan)
   RETURNS boolean
@@ -150,7 +150,7 @@ CREATE FUNCTION span_contains(floatspanset, float)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_contains(floatspanset, floatset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contains_spanset_orderedset'
+  AS 'MODULE_PATHNAME', 'Contains_spanset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_contains(floatspanset, floatspan)
   RETURNS boolean
@@ -202,7 +202,7 @@ CREATE FUNCTION span_contains(periodset, timestamptz)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_contains(periodset, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contains_spanset_orderedset'
+  AS 'MODULE_PATHNAME', 'Contains_spanset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_contains(periodset, period)
   RETURNS boolean
@@ -252,7 +252,7 @@ CREATE FUNCTION span_contained(int, intspanset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_contained(intset, intspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contained_orderedset_spanset'
+  AS 'MODULE_PATHNAME', 'Contained_set_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_contained(intspan, intspanset)
   RETURNS boolean
@@ -304,7 +304,7 @@ CREATE FUNCTION span_contained(bigint, bigintspanset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_contained(bigintset, bigintspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contained_orderedset_spanset'
+  AS 'MODULE_PATHNAME', 'Contained_set_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_contained(bigintspan, bigintspanset)
   RETURNS boolean
@@ -356,7 +356,7 @@ CREATE FUNCTION span_contained(float, floatspanset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_contained(floatset, floatspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contained_orderedset_spanset'
+  AS 'MODULE_PATHNAME', 'Contained_set_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_contained(floatspan, floatspanset)
   RETURNS boolean
@@ -408,7 +408,7 @@ CREATE FUNCTION span_contained(timestamptz, periodset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_contained(timestampset, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contained_orderedset_spanset'
+  AS 'MODULE_PATHNAME', 'Contained_set_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_contained(period, periodset)
   RETURNS boolean
@@ -458,7 +458,7 @@ CREATE OPERATOR <@ (
 
 CREATE FUNCTION span_overlaps(intset, intspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_orderedset_spanset'
+  AS 'MODULE_PATHNAME', 'Overlaps_set_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overlaps(intspan, intspanset)
   RETURNS boolean
@@ -466,7 +466,7 @@ CREATE FUNCTION span_overlaps(intspan, intspanset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overlaps(intspanset, intset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_spanset_orderedset'
+  AS 'MODULE_PATHNAME', 'Overlaps_spanset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overlaps(intspanset, intspan)
   RETURNS boolean
@@ -510,7 +510,7 @@ CREATE OPERATOR && (
 
 CREATE FUNCTION span_overlaps(bigintset, bigintspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_orderedset_spanset'
+  AS 'MODULE_PATHNAME', 'Overlaps_set_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overlaps(bigintspan, bigintspanset)
   RETURNS boolean
@@ -518,7 +518,7 @@ CREATE FUNCTION span_overlaps(bigintspan, bigintspanset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overlaps(bigintspanset, bigintset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_spanset_orderedset'
+  AS 'MODULE_PATHNAME', 'Overlaps_spanset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overlaps(bigintspanset, bigintspan)
   RETURNS boolean
@@ -562,7 +562,7 @@ CREATE OPERATOR && (
 
 CREATE FUNCTION span_overlaps(floatset, floatspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_orderedset_spanset'
+  AS 'MODULE_PATHNAME', 'Overlaps_set_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overlaps(floatspan, floatspanset)
   RETURNS boolean
@@ -570,7 +570,7 @@ CREATE FUNCTION span_overlaps(floatspan, floatspanset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overlaps(floatspanset, floatset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_spanset_orderedset'
+  AS 'MODULE_PATHNAME', 'Overlaps_spanset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overlaps(floatspanset, floatspan)
   RETURNS boolean
@@ -614,7 +614,7 @@ CREATE OPERATOR && (
 
 CREATE FUNCTION span_overlaps(timestampset, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_orderedset_spanset'
+  AS 'MODULE_PATHNAME', 'Overlaps_set_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overlaps(period, periodset)
   RETURNS boolean
@@ -622,7 +622,7 @@ CREATE FUNCTION span_overlaps(period, periodset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overlaps(periodset, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_spanset_orderedset'
+  AS 'MODULE_PATHNAME', 'Overlaps_spanset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overlaps(periodset, period)
   RETURNS boolean
@@ -672,7 +672,7 @@ CREATE FUNCTION span_left(int, intspanset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_left(intset, intspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Left_orderedset_spanset'
+  AS 'MODULE_PATHNAME', 'Left_set_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_left(intspan, intspanset)
   RETURNS boolean
@@ -684,7 +684,7 @@ CREATE FUNCTION span_left(intspanset, int)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_left(intspanset, intset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Left_spanset_orderedset'
+  AS 'MODULE_PATHNAME', 'Left_spanset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_left(intspanset, intspan)
   RETURNS boolean
@@ -744,7 +744,7 @@ CREATE FUNCTION span_left(bigint, bigintspanset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_left(bigintset, bigintspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Left_orderedset_spanset'
+  AS 'MODULE_PATHNAME', 'Left_set_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_left(bigintspan, bigintspanset)
   RETURNS boolean
@@ -756,7 +756,7 @@ CREATE FUNCTION span_left(bigintspanset, bigint)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_left(bigintspanset, bigintset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Left_spanset_orderedset'
+  AS 'MODULE_PATHNAME', 'Left_spanset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_left(bigintspanset, bigintspan)
   RETURNS boolean
@@ -816,7 +816,7 @@ CREATE FUNCTION span_left(float, floatspanset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_left(floatset, floatspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Left_orderedset_spanset'
+  AS 'MODULE_PATHNAME', 'Left_set_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_left(floatspan, floatspanset)
   RETURNS boolean
@@ -828,7 +828,7 @@ CREATE FUNCTION span_left(floatspanset, float)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_left(floatspanset, floatset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Left_spanset_orderedset'
+  AS 'MODULE_PATHNAME', 'Left_spanset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_left(floatspanset, floatspan)
   RETURNS boolean
@@ -888,7 +888,7 @@ CREATE FUNCTION span_left(timestamptz, periodset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_left(timestampset, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Left_orderedset_spanset'
+  AS 'MODULE_PATHNAME', 'Left_set_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_left(period, periodset)
   RETURNS boolean
@@ -900,7 +900,7 @@ CREATE FUNCTION span_left(periodset, timestamptz)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_left(periodset, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Left_spanset_orderedset'
+  AS 'MODULE_PATHNAME', 'Left_spanset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_left(periodset, period)
   RETURNS boolean
@@ -962,7 +962,7 @@ CREATE FUNCTION span_right(int, intspanset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_right(intset, intspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Right_orderedset_spanset'
+  AS 'MODULE_PATHNAME', 'Right_set_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_right(intspan, intspanset)
   RETURNS boolean
@@ -974,7 +974,7 @@ CREATE FUNCTION span_right(intspanset, int)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_right(intspanset, intset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Right_spanset_orderedset'
+  AS 'MODULE_PATHNAME', 'Right_spanset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_right(intspanset, intspan)
   RETURNS boolean
@@ -1034,7 +1034,7 @@ CREATE FUNCTION span_right(bigint, bigintspanset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_right(bigintset, bigintspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Right_orderedset_spanset'
+  AS 'MODULE_PATHNAME', 'Right_set_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_right(bigintspan, bigintspanset)
   RETURNS boolean
@@ -1046,7 +1046,7 @@ CREATE FUNCTION span_right(bigintspanset, bigint)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_right(bigintspanset, bigintset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Right_spanset_orderedset'
+  AS 'MODULE_PATHNAME', 'Right_spanset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_right(bigintspanset, bigintspan)
   RETURNS boolean
@@ -1106,7 +1106,7 @@ CREATE FUNCTION span_right(float, floatspanset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_right(floatset, floatspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Right_orderedset_spanset'
+  AS 'MODULE_PATHNAME', 'Right_set_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_right(floatspan, floatspanset)
   RETURNS boolean
@@ -1118,7 +1118,7 @@ CREATE FUNCTION span_right(floatspanset, float)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_right(floatspanset, floatset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Right_spanset_orderedset'
+  AS 'MODULE_PATHNAME', 'Right_spanset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_right(floatspanset, floatspan)
   RETURNS boolean
@@ -1178,7 +1178,7 @@ CREATE FUNCTION span_right(timestamptz, periodset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_right(timestampset, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Right_orderedset_spanset'
+  AS 'MODULE_PATHNAME', 'Right_set_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_right(period, periodset)
   RETURNS boolean
@@ -1190,7 +1190,7 @@ CREATE FUNCTION span_right(periodset, timestamptz)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_right(periodset, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Right_spanset_orderedset'
+  AS 'MODULE_PATHNAME', 'Right_spanset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_right(periodset, period)
   RETURNS boolean
@@ -1252,7 +1252,7 @@ CREATE FUNCTION span_overleft(int, intspanset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overleft(intset, intspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overleft_orderedset_spanset'
+  AS 'MODULE_PATHNAME', 'Overleft_set_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overleft(intspan, intspanset)
   RETURNS boolean
@@ -1264,7 +1264,7 @@ CREATE FUNCTION span_overleft(intspanset, int)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overleft(intspanset, intset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overleft_spanset_orderedset'
+  AS 'MODULE_PATHNAME', 'Overleft_spanset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overleft(intspanset, intspan)
   RETURNS boolean
@@ -1317,7 +1317,7 @@ CREATE FUNCTION span_overleft(bigint, bigintspanset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overleft(bigintset, bigintspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overleft_orderedset_spanset'
+  AS 'MODULE_PATHNAME', 'Overleft_set_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overleft(bigintspan, bigintspanset)
   RETURNS boolean
@@ -1329,7 +1329,7 @@ CREATE FUNCTION span_overleft(bigintspanset, bigint)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overleft(bigintspanset, bigintset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overleft_spanset_orderedset'
+  AS 'MODULE_PATHNAME', 'Overleft_spanset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overleft(bigintspanset, bigintspan)
   RETURNS boolean
@@ -1382,7 +1382,7 @@ CREATE FUNCTION span_overleft(float, floatspanset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overleft(floatset, floatspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overleft_orderedset_spanset'
+  AS 'MODULE_PATHNAME', 'Overleft_set_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overleft(floatspan, floatspanset)
   RETURNS boolean
@@ -1394,7 +1394,7 @@ CREATE FUNCTION span_overleft(floatspanset, float)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overleft(floatspanset, floatset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overleft_spanset_orderedset'
+  AS 'MODULE_PATHNAME', 'Overleft_spanset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overleft(floatspanset, floatspan)
   RETURNS boolean
@@ -1447,7 +1447,7 @@ CREATE FUNCTION span_overleft(timestamptz, periodset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overleft(timestampset, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overleft_orderedset_spanset'
+  AS 'MODULE_PATHNAME', 'Overleft_set_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overleft(period, periodset)
   RETURNS boolean
@@ -1459,7 +1459,7 @@ CREATE FUNCTION span_overleft(periodset, timestamptz)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overleft(periodset, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overleft_spanset_orderedset'
+  AS 'MODULE_PATHNAME', 'Overleft_spanset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overleft(periodset, period)
   RETURNS boolean
@@ -1514,7 +1514,7 @@ CREATE FUNCTION span_overright(int, intspanset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overright(intset, intspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overright_orderedset_spanset'
+  AS 'MODULE_PATHNAME', 'Overright_set_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overright(intspan, intspanset)
   RETURNS boolean
@@ -1526,7 +1526,7 @@ CREATE FUNCTION span_overright(intspanset, int)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overright(intspanset, intset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overright_spanset_orderedset'
+  AS 'MODULE_PATHNAME', 'Overright_spanset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overright(intspanset, intspan)
   RETURNS boolean
@@ -1579,7 +1579,7 @@ CREATE FUNCTION span_overright(bigint, bigintspanset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overright(bigintset, bigintspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overright_orderedset_spanset'
+  AS 'MODULE_PATHNAME', 'Overright_set_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overright(bigintspan, bigintspanset)
   RETURNS boolean
@@ -1591,7 +1591,7 @@ CREATE FUNCTION span_overright(bigintspanset, bigint)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overright(bigintspanset, bigintset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overright_spanset_orderedset'
+  AS 'MODULE_PATHNAME', 'Overright_spanset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overright(bigintspanset, bigintspan)
   RETURNS boolean
@@ -1644,7 +1644,7 @@ CREATE FUNCTION span_overright(float, floatspanset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overright(floatset, floatspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overright_orderedset_spanset'
+  AS 'MODULE_PATHNAME', 'Overright_set_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overright(floatspan, floatspanset)
   RETURNS boolean
@@ -1656,7 +1656,7 @@ CREATE FUNCTION span_overright(floatspanset, float)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overright(floatspanset, floatset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overright_spanset_orderedset'
+  AS 'MODULE_PATHNAME', 'Overright_spanset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overright(floatspanset, floatspan)
   RETURNS boolean
@@ -1709,7 +1709,7 @@ CREATE FUNCTION span_overright(timestamptz, periodset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overright(timestampset, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overright_orderedset_spanset'
+  AS 'MODULE_PATHNAME', 'Overright_set_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overright(period, periodset)
   RETURNS boolean
@@ -1721,7 +1721,7 @@ CREATE FUNCTION span_overright(periodset, timestamptz)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overright(periodset, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overright_spanset_orderedset'
+  AS 'MODULE_PATHNAME', 'Overright_spanset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_overright(periodset, period)
   RETURNS boolean
@@ -1776,7 +1776,7 @@ CREATE FUNCTION span_adjacent(int, intspanset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_adjacent(intset, intspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Adjacent_orderedset_spanset'
+  AS 'MODULE_PATHNAME', 'Adjacent_set_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_adjacent(intspan, intspanset)
   RETURNS boolean
@@ -1788,7 +1788,7 @@ CREATE FUNCTION span_adjacent(intspanset, int)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_adjacent(intspanset, intset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Adjacent_spanset_orderedset'
+  AS 'MODULE_PATHNAME', 'Adjacent_spanset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_adjacent(intspanset, intspan)
   RETURNS boolean
@@ -1848,7 +1848,7 @@ CREATE FUNCTION span_adjacent(bigint, bigintspanset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_adjacent(bigintset, bigintspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Adjacent_orderedset_spanset'
+  AS 'MODULE_PATHNAME', 'Adjacent_set_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_adjacent(bigintspan, bigintspanset)
   RETURNS boolean
@@ -1860,7 +1860,7 @@ CREATE FUNCTION span_adjacent(bigintspanset, bigint)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_adjacent(bigintspanset, bigintset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Adjacent_spanset_orderedset'
+  AS 'MODULE_PATHNAME', 'Adjacent_spanset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_adjacent(bigintspanset, bigintspan)
   RETURNS boolean
@@ -1920,7 +1920,7 @@ CREATE FUNCTION span_adjacent(float, floatspanset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_adjacent(floatset, floatspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Adjacent_orderedset_spanset'
+  AS 'MODULE_PATHNAME', 'Adjacent_set_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_adjacent(floatspan, floatspanset)
   RETURNS boolean
@@ -1932,7 +1932,7 @@ CREATE FUNCTION span_adjacent(floatspanset, float)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_adjacent(floatspanset, floatset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Adjacent_spanset_orderedset'
+  AS 'MODULE_PATHNAME', 'Adjacent_spanset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_adjacent(floatspanset, floatspan)
   RETURNS boolean
@@ -1992,7 +1992,7 @@ CREATE FUNCTION span_adjacent(timestamptz, periodset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_adjacent(timestampset, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Adjacent_orderedset_spanset'
+  AS 'MODULE_PATHNAME', 'Adjacent_set_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_adjacent(period, periodset)
   RETURNS boolean
@@ -2004,7 +2004,7 @@ CREATE FUNCTION span_adjacent(periodset, timestamptz)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_adjacent(periodset, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Adjacent_spanset_orderedset'
+  AS 'MODULE_PATHNAME', 'Adjacent_spanset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_adjacent(periodset, period)
   RETURNS boolean
@@ -2153,7 +2153,7 @@ CREATE FUNCTION span_union(timestamptz, periodset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_union(timestampset, periodset)
   RETURNS periodset
-  AS 'MODULE_PATHNAME', 'Union_orderedset_spanset'
+  AS 'MODULE_PATHNAME', 'Union_set_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_union(period, periodset)
   RETURNS periodset
@@ -2165,7 +2165,7 @@ CREATE FUNCTION span_union(periodset, timestamptz)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_union(periodset, timestampset)
   RETURNS periodset
-  AS 'MODULE_PATHNAME', 'Union_spanset_orderedset'
+  AS 'MODULE_PATHNAME', 'Union_spanset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_union(periodset, period)
   RETURNS periodset
@@ -2297,7 +2297,7 @@ CREATE FUNCTION span_minus(timestamptz, periodset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_minus(timestampset, periodset)
   RETURNS timestampset
-  AS 'MODULE_PATHNAME', 'Minus_orderedset_spanset'
+  AS 'MODULE_PATHNAME', 'Minus_set_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_minus(period, periodset)
   RETURNS periodset
@@ -2309,7 +2309,7 @@ CREATE FUNCTION span_minus(periodset, timestamptz)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_minus(periodset, timestampset)
   RETURNS periodset
-  AS 'MODULE_PATHNAME', 'Minus_spanset_orderedset'
+  AS 'MODULE_PATHNAME', 'Minus_spanset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_minus(periodset, period)
   RETURNS periodset
@@ -2444,7 +2444,7 @@ CREATE FUNCTION span_intersection(timestamptz, periodset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_intersection(timestampset, periodset)
   RETURNS timestampset
-  AS 'MODULE_PATHNAME', 'Intersection_orderedset_spanset'
+  AS 'MODULE_PATHNAME', 'Intersection_set_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_intersection(period, periodset)
   RETURNS periodset
@@ -2456,7 +2456,7 @@ CREATE FUNCTION span_intersection(periodset, timestamptz)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_intersection(periodset, timestampset)
   RETURNS timestampset
-  AS 'MODULE_PATHNAME', 'Intersection_spanset_orderedset'
+  AS 'MODULE_PATHNAME', 'Intersection_spanset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_intersection(periodset, period)
   RETURNS periodset
@@ -2654,7 +2654,7 @@ CREATE FUNCTION time_distance(timestamptz, periodset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_distance(timestampset, periodset)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_orderedset_spanset'
+  AS 'MODULE_PATHNAME', 'Distance_set_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_distance(period, periodset)
   RETURNS float
@@ -2666,7 +2666,7 @@ CREATE FUNCTION time_distance(periodset, timestamptz)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_distance(periodset, timestampset)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_spanset_orderedset'
+  AS 'MODULE_PATHNAME', 'Distance_spanset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_distance(periodset, period)
   RETURNS float

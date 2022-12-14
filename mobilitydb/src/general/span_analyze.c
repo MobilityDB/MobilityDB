@@ -271,7 +271,7 @@ span_compute_stats_generic(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     SpanBound lower, upper;
     if (set_type(type))
     {
-      const OrderedSet *os = DatumGetOrderedSetP(value);
+      const Set *os = DatumGetSetP(value);
       span = &os->span;
       span_deserialize(span, &lower, &upper);
       /* Adjust the size */

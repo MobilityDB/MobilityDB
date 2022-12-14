@@ -326,19 +326,19 @@ CREATE CAST (period AS tstzrange) WITH FUNCTION tstzrange(period);
 
 CREATE FUNCTION intspan(intset)
   RETURNS intspan
-  AS 'MODULE_PATHNAME', 'Orderedset_to_span'
+  AS 'MODULE_PATHNAME', 'Set_to_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION bigintspan(bigintset)
   RETURNS bigintspan
-  AS 'MODULE_PATHNAME', 'Orderedset_to_span'
+  AS 'MODULE_PATHNAME', 'Set_to_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION floatspan(floatset)
   RETURNS floatspan
-  AS 'MODULE_PATHNAME', 'Orderedset_to_span'
+  AS 'MODULE_PATHNAME', 'Set_to_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION period(timestampset)
   RETURNS period
-  AS 'MODULE_PATHNAME', 'Orderedset_to_span'
+  AS 'MODULE_PATHNAME', 'Set_to_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (intset AS intspan) WITH FUNCTION intspan(intset);

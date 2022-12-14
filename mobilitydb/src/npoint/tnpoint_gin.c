@@ -49,11 +49,11 @@ Tnpoint_gin_extract_value(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int32 *nkeys = (int32 *) PG_GETARG_POINTER(1);
   bool **nullFlags = (bool **) PG_GETARG_POINTER(2);
-  OrderedSet *routes = tnpoint_routes(temp);
+  Set *routes = tnpoint_routes(temp);
   /* Transform the routes into Datums */
   Datum *elems = palloc(sizeof(Datum) * routes->count);
   for (int i = 0; i < routes->count; i++)
-    elems[i] = Int64GetDatum(orderedset_val_n(routes, i));
+    elems[i] = Int64GetDatum(set_val_n(routes, i));
   pfree(routes);
   *nkeys = routes->count;
   *nullFlags = NULL;
@@ -74,7 +74,7 @@ Tnpoint_gin_extract_query(PG_FUNCTION_ARGS)
   int32 *searchMode = (int32 *) PG_GETARG_POINTER(6);
   Temporal *temp;
   Datum *elems;
-  OrderedSet *routes;
+  Set *routes;
   *nullFlags = NULL;
   *searchMode = GIN_SEARCH_MODE_DEFAULT;
 
@@ -94,7 +94,7 @@ Tnpoint_gin_extract_query(PG_FUNCTION_ARGS)
       /* Transform the routes into Datums */
       elems = palloc(sizeof(Datum) * routes->count);
       for (int i = 0; i < routes->count; i++)
-        elems[i] = Int64GetDatum(orderedset_val_n(routes, i));
+        elems[i] = Int64GetDatum(set_val_n(routes, i));
       pfree(routes);
       *nkeys = routes->count;
       *searchMode = GIN_SEARCH_MODE_DEFAULT;

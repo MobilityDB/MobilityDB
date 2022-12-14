@@ -389,7 +389,7 @@ span_spgist_get_span(const ScanKeyData *scankey, Span *result)
   else if (type == T_INTSET || type == T_BIGINTSET || type == T_FLOATSET ||
     type == T_TIMESTAMPSET)
   {
-    orderedset_span_slice(scankey->sk_argument, result);
+    set_span_slice(scankey->sk_argument, result);
   }
   else if (type == T_INTSPAN || type == T_BIGINTSPAN || type == T_FLOATSPAN ||
     type == T_PERIOD)
@@ -1003,16 +1003,16 @@ Span_spgist_leaf_consistent(PG_FUNCTION_ARGS)
  * SP-GiST compress functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Orderedset_spgist_compress);
+PG_FUNCTION_INFO_V1(Set_spgist_compress);
 /**
  * SP-GiST compress function for timestamp sets
  */
 PGDLLEXPORT Datum
-Orderedset_spgist_compress(PG_FUNCTION_ARGS)
+Set_spgist_compress(PG_FUNCTION_ARGS)
 {
   Datum osdatum = PG_GETARG_DATUM(0);
   Span *result = palloc(sizeof(Span));
-  orderedset_span_slice(osdatum, result);
+  set_span_slice(osdatum, result);
   PG_RETURN_SPAN_P(result);
 }
 

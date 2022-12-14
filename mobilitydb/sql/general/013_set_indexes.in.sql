@@ -48,9 +48,9 @@ CREATE FUNCTION span_gist_distance(internal, intset, smallint, oid, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Span_gist_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION orderedset_gist_compress(internal)
+CREATE FUNCTION set_gist_compress(internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'Orderedset_gist_compress'
+  AS 'MODULE_PATHNAME', 'Set_gist_compress'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************/
@@ -85,7 +85,7 @@ CREATE OPERATOR CLASS intset_rtree_ops
   -- functions
   FUNCTION  1  span_gist_consistent(internal, intset, smallint, oid, internal),
   FUNCTION  2  span_gist_union(internal, internal),
-  FUNCTION  3  orderedset_gist_compress(internal),
+  FUNCTION  3  set_gist_compress(internal),
   FUNCTION  5  span_gist_penalty(internal, internal, internal),
   FUNCTION  6  span_gist_picksplit(internal, internal),
   FUNCTION  7  span_gist_same(intset, intset, internal),
@@ -138,7 +138,7 @@ CREATE OPERATOR CLASS bigintset_rtree_ops
   -- functions
   FUNCTION  1  span_gist_consistent(internal, bigintset, smallint, oid, internal),
   FUNCTION  2  span_gist_union(internal, internal),
-  FUNCTION  3  orderedset_gist_compress(internal),
+  FUNCTION  3  set_gist_compress(internal),
   FUNCTION  5  span_gist_penalty(internal, internal, internal),
   FUNCTION  6  span_gist_picksplit(internal, internal),
   FUNCTION  7  span_gist_same(bigintset, bigintset, internal),
@@ -191,7 +191,7 @@ CREATE OPERATOR CLASS floatset_rtree_ops
   -- functions
   FUNCTION  1  span_gist_consistent(internal, floatset, smallint, oid, internal),
   FUNCTION  2  span_gist_union(internal, internal),
-  FUNCTION  3  orderedset_gist_compress(internal),
+  FUNCTION  3  set_gist_compress(internal),
   FUNCTION  5  span_gist_penalty(internal, internal, internal),
   FUNCTION  6  span_gist_picksplit(internal, internal),
   FUNCTION  7  span_gist_same(floatset, floatset, internal),
@@ -253,7 +253,7 @@ CREATE OPERATOR CLASS timestampset_rtree_ops
   -- functions
   FUNCTION  1  span_gist_consistent(internal, timestampset, smallint, oid, internal),
   FUNCTION  2  span_gist_union(internal, internal),
-  FUNCTION  3  orderedset_gist_compress(internal),
+  FUNCTION  3  set_gist_compress(internal),
   FUNCTION  5  span_gist_penalty(internal, internal, internal),
   FUNCTION  6  span_gist_picksplit(internal, internal),
   FUNCTION  7  span_gist_same(period, period, internal);
@@ -274,9 +274,9 @@ CREATE FUNCTION floatset_spgist_config(internal, internal)
   RETURNS void
   AS 'MODULE_PATHNAME', 'Floatspan_spgist_config'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION orderedset_spgist_compress(internal)
+CREATE FUNCTION set_spgist_compress(internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'Orderedset_spgist_compress'
+  AS 'MODULE_PATHNAME', 'Set_spgist_compress'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************/
@@ -313,7 +313,7 @@ CREATE OPERATOR CLASS intset_quadtree_ops
   FUNCTION  3  span_quadtree_picksplit(internal, internal),
   FUNCTION  4  span_quadtree_inner_consistent(internal, internal),
   FUNCTION  5  span_spgist_leaf_consistent(internal, internal),
-  FUNCTION  6  orderedset_spgist_compress(internal);
+  FUNCTION  6  set_spgist_compress(internal);
 
 /******************************************************************************/
 
@@ -349,7 +349,7 @@ CREATE OPERATOR CLASS bigintset_quadtree_ops
   FUNCTION  3  span_quadtree_picksplit(internal, internal),
   FUNCTION  4  span_quadtree_inner_consistent(internal, internal),
   FUNCTION  5  span_spgist_leaf_consistent(internal, internal),
-  FUNCTION  6  orderedset_spgist_compress(internal);
+  FUNCTION  6  set_spgist_compress(internal);
 
 /******************************************************************************/
 
@@ -385,7 +385,7 @@ CREATE OPERATOR CLASS floatset_quadtree_ops
   FUNCTION  3  span_quadtree_picksplit(internal, internal),
   FUNCTION  4  span_quadtree_inner_consistent(internal, internal),
   FUNCTION  5  span_spgist_leaf_consistent(internal, internal),
-  FUNCTION  6  orderedset_spgist_compress(internal);
+  FUNCTION  6  set_spgist_compress(internal);
 
 /******************************************************************************/
 
@@ -438,7 +438,7 @@ CREATE OPERATOR CLASS timestampset_quadtree_ops
   FUNCTION  3  span_quadtree_picksplit(internal, internal),
   FUNCTION  4  span_quadtree_inner_consistent(internal, internal),
   FUNCTION  5  span_spgist_leaf_consistent(internal, internal),
-  FUNCTION  6  orderedset_spgist_compress(internal);
+  FUNCTION  6  set_spgist_compress(internal);
 
 /******************************************************************************
  * Kd-tree SP-GiST indexes
@@ -476,7 +476,7 @@ CREATE OPERATOR CLASS intset_kdtree_ops
   FUNCTION  3  span_kdtree_picksplit(internal, internal),
   FUNCTION  4  span_kdtree_inner_consistent(internal, internal),
   FUNCTION  5  span_spgist_leaf_consistent(internal, internal),
-  FUNCTION  6  orderedset_spgist_compress(internal);
+  FUNCTION  6  set_spgist_compress(internal);
 
 /******************************************************************************/
 
@@ -512,7 +512,7 @@ CREATE OPERATOR CLASS bigintset_kdtree_ops
   FUNCTION  3  span_kdtree_picksplit(internal, internal),
   FUNCTION  4  span_kdtree_inner_consistent(internal, internal),
   FUNCTION  5  span_spgist_leaf_consistent(internal, internal),
-  FUNCTION  6  orderedset_spgist_compress(internal);
+  FUNCTION  6  set_spgist_compress(internal);
 
 /******************************************************************************/
 
@@ -548,7 +548,7 @@ CREATE OPERATOR CLASS floatset_kdtree_ops
   FUNCTION  3  span_kdtree_picksplit(internal, internal),
   FUNCTION  4  span_kdtree_inner_consistent(internal, internal),
   FUNCTION  5  span_spgist_leaf_consistent(internal, internal),
-  FUNCTION  6  orderedset_spgist_compress(internal);
+  FUNCTION  6  set_spgist_compress(internal);
 
 /******************************************************************************/
 
@@ -601,7 +601,7 @@ CREATE OPERATOR CLASS timestampset_kdtree_ops
   FUNCTION  3  span_kdtree_picksplit(internal, internal),
   FUNCTION  4  span_kdtree_inner_consistent(internal, internal),
   FUNCTION  5  span_spgist_leaf_consistent(internal, internal),
-  FUNCTION  6  orderedset_spgist_compress(internal);
+  FUNCTION  6  set_spgist_compress(internal);
 
 /******************************************************************************
  * Kd-tree SP-GiST indexes

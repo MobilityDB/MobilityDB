@@ -1064,7 +1064,7 @@ PG_FUNCTION_INFO_V1(Tpoint_analyze);
 PGDLLEXPORT Datum
 Tpoint_analyze(PG_FUNCTION_ARGS)
 {
-  return generic_analyze(fcinfo, &tpoint_compute_stats);
+  return temporal_analyze(fcinfo, &tpoint_compute_stats);
 }
 
 /*****************************************************************************/
