@@ -444,7 +444,7 @@ tnumber_spgist_get_tbox(const ScanKeyData *scankey, TBox *result)
   }
   else if (type == T_TIMESTAMPSET)
   {
-    timestampset_tbox_slice(scankey->sk_argument, result);
+    set_tbox_slice(scankey->sk_argument, result);
   }
   else if (type == T_PERIOD)
   {

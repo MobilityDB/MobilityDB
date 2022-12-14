@@ -279,60 +279,6 @@ float_to_tbox(double d)
 
 /**
  * @ingroup libmeos_internal_box_cast
- * @brief Set a temporal box from a span.
- */
-void
-span_set_tbox(const Span *span, TBox *box)
-{
-  ensure_tnumber_spantype(span->spantype);
-  /* Note: zero-fill is required here, just as in heap tuples */
-  memset(box, 0, sizeof(TBox));
-  if (span->basetype == T_INT4)
-    intspan_set_floatspan(span, &box->span);
-  else
-    memcpy(&box->span, span, sizeof(Span));
-  MOBDB_FLAGS_SET_X(box->flags, true);
-  MOBDB_FLAGS_SET_T(box->flags, false);
-  return;
-}
-
-/**
- * @ingroup libmeos_internal_box_cast
- * @brief Set a temporal box from a span set.
- */
-void
-spanset_set_tbox(const SpanSet *ss, TBox *box)
-{
-  ensure_tnumber_spansettype(ss->spantype);
-  /* Note: zero-fill is required here, just as in heap tuples */
-  memset(box, 0, sizeof(TBox));
-  if (ss->basetype == T_INT4)
-    intspan_set_floatspan(&ss->span, &box->span);
-  else
-    memcpy(&box->span, &ss->span, sizeof(Span));
-  MOBDB_FLAGS_SET_X(box->flags, true);
-  MOBDB_FLAGS_SET_T(box->flags, false);
-  return;
-}
-
-#if MEOS
-/**
- * @ingroup libmeos_box_cast
- * @brief Cast a span to a temporal box.
- * @sqlfunc tbox()
- * @sqlop @p ::
- */
-TBox *
-span_to_tbox(const Span *span)
-{
-  TBox *result = palloc(sizeof(TBox));
-  span_set_tbox(span, result);
-  return result;
-}
-#endif /* MEOS */
-
-/**
- * @ingroup libmeos_internal_box_cast
  * @brief Set a temporal box from a timestamp.
  */
 void
@@ -365,31 +311,35 @@ timestamp_to_tbox(TimestampTz t)
 
 /**
  * @ingroup libmeos_internal_box_cast
- * @brief Set a temporal box from a period set.
+ * @brief Set a temporal box from a span.
  */
 void
-timestampset_set_tbox(const TimestampSet *ts, TBox *box)
+span_set_tbox(const Span *span, TBox *box)
 {
+  ensure_tnumber_spantype(span->spantype);
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBox));
-  memcpy(&box->period, &ts->span, sizeof(Span));
-  MOBDB_FLAGS_SET_X(box->flags, false);
-  MOBDB_FLAGS_SET_T(box->flags, true);
+  if (span->basetype == T_INT4)
+    intspan_set_floatspan(span, &box->span);
+  else
+    memcpy(&box->span, span, sizeof(Span));
+  MOBDB_FLAGS_SET_X(box->flags, true);
+  MOBDB_FLAGS_SET_T(box->flags, false);
   return;
 }
 
 #if MEOS
 /**
  * @ingroup libmeos_box_cast
- * @brief Cast a timestamp set to a temporal box.
+ * @brief Cast a span to a temporal box.
  * @sqlfunc tbox()
  * @sqlop @p ::
  */
 TBox *
-timestampset_to_tbox(const TimestampSet *ts)
+span_to_tbox(const Span *s)
 {
   TBox *result = palloc(sizeof(TBox));
-  timestampset_set_tbox(ts, result);
+  span_set_tbox(s, result);
   return result;
 }
 #endif /* MEOS */
@@ -427,16 +377,39 @@ period_to_tbox(const Period *p)
 
 /**
  * @ingroup libmeos_internal_box_cast
+ * @brief Set a temporal box from a span set.
+ */
+void
+spanset_set_tbox(const SpanSet *ss, TBox *box)
+{
+  span_set_tbox(&ss->span, box);
+  return;
+}
+
+#if MEOS
+/**
+ * @ingroup libmeos_box_cast
+ * @brief Cast a span set to a temporal box.
+ * @sqlfunc tbox()
+ * @sqlop @p ::
+ */
+TBox *
+spanset_to_tbox(const SpanSet *ss)
+{
+  TBox *result = palloc(sizeof(TBox));
+  spanset_set_tbox(ss, result);
+  return result;
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup libmeos_internal_box_cast
  * @brief Set a temporal box from a period set.
  */
 void
 periodset_set_tbox(const PeriodSet *ps, TBox *box)
 {
-  /* Note: zero-fill is required here, just as in heap tuples */
-  memset(box, 0, sizeof(TBox));
-  memcpy(&box->period, &ps->span, sizeof(Span));
-  MOBDB_FLAGS_SET_X(box->flags, false);
-  MOBDB_FLAGS_SET_T(box->flags, true);
+  period_set_tbox(&ps->span, box);
   return;
 }
 
@@ -452,6 +425,36 @@ periodset_to_tbox(const PeriodSet *ps)
 {
   TBox *result = palloc(sizeof(TBox));
   periodset_set_tbox(ps, result);
+  return result;
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup libmeos_internal_box_cast
+ * @brief Set a temporal box from a set.
+ */
+void
+set_set_tbox(const Set *s, TBox *box)
+{
+  if (numspan_basetype(s->span.basetype))
+    span_set_tbox(&s->span, box);
+  else
+    period_set_tbox(&s->span, box);
+  return;
+}
+
+#if MEOS
+/**
+ * @ingroup libmeos_box_cast
+ * @brief Cast a set to a temporal box.
+ * @sqlfunc tbox()
+ * @sqlop @p ::
+ */
+TBox *
+set_to_tbox(const Set *s)
+{
+  TBox *result = palloc(sizeof(TBox));
+  set_set_tbox(s, result);
   return result;
 }
 #endif /* MEOS */

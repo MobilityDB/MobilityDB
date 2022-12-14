@@ -115,10 +115,10 @@ CREATE FUNCTION intspan_analyze(internal)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Intspan_analyze'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
--- CREATE FUNCTION bigintspan_analyze(internal)
-  -- RETURNS boolean
-  -- AS 'MODULE_PATHNAME', 'Bigintspan_analyze'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION bigintspan_analyze(internal)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Bigintspan_analyze'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION floatspan_analyze(internal)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Floatspan_analyze'
@@ -144,8 +144,8 @@ CREATE TYPE bigintspan (
   output = bigintspan_out,
   receive = bigintspan_recv,
   send = bigintspan_send,
-  alignment = double
-  -- , analyze = intspan_analyze
+  alignment = double,
+  analyze = bigintspan_analyze
 );
 
 CREATE TYPE floatspan (

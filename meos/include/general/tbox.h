@@ -58,7 +58,7 @@ extern void ensure_same_dimensionality_tbox(const TBox *box1, const TBox *box2);
 
 /* Casting */
 
-extern void timestampset_tbox_slice(Datum tsdatum, TBox *box);
+extern void set_tbox_slice(Datum sdatum, TBox *box);
 extern void periodset_tbox_slice(Datum psdatum, TBox *box);
 
 /*****************************************************************************/

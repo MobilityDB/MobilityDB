@@ -89,7 +89,15 @@ SELECT tbox 'TBOX T((2000-01-01,2000-01-02))'::period;
 
 SELECT 1::tbox;
 SELECT 1.5::tbox;
+SELECT intset '{1,2}'::tbox;
+SELECT floatset '{1,2}'::tbox;
+SELECT timestampset '{2000-01-01,2000-01-02}'::tbox;
+SELECT intspan '[1,2]'::tbox;
 SELECT floatspan '[1,2]'::tbox;
+SELECT period '[2000-01-01,2000-01-02]'::tbox;
+SELECT intspanset '{[1,2]}'::tbox;
+SELECT floatspanset '{[1,2]}'::tbox;
+SELECT periodset '{[2000-01-01,2000-01-02]}'::tbox;
 
 -------------------------------------------------------------------------------
 

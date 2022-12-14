@@ -108,6 +108,10 @@ CREATE FUNCTION intspanset_analyze(internal)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Intspanset_analyze'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION bigintspanset_analyze(internal)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Bigintspanset_analyze'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION floatspanset_analyze(internal)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Floatspanset_analyze'
@@ -136,8 +140,8 @@ CREATE TYPE bigintspanset (
   send = bigintspanset_send,
   alignment = double,
 -- The following line makes NULL if size < 128
-  storage = extended
-  -- , analyze = bigintspanset_analyze
+  storage = extended,
+  analyze = bigintspanset_analyze
 );
 CREATE TYPE floatspanset (
   internallength = variable,

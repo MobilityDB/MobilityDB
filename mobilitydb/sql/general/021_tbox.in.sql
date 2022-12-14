@@ -95,43 +95,6 @@ CREATE FUNCTION asHexWKB(tbox, endianenconding text DEFAULT '')
  * Constructors
  ******************************************************************************/
 
-CREATE FUNCTION tbox(integer)
-  RETURNS tbox
-  AS 'MODULE_PATHNAME', 'Int_to_tbox'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox(float)
-  RETURNS tbox
-  AS 'MODULE_PATHNAME', 'Float_to_tbox'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox(numeric)
-  RETURNS tbox
-  AS 'MODULE_PATHNAME', 'Numeric_to_tbox'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox(intspan)
-  RETURNS tbox
-  AS 'MODULE_PATHNAME', 'Span_to_tbox'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox(floatspan)
-  RETURNS tbox
-  AS 'MODULE_PATHNAME', 'Span_to_tbox'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox(timestamptz)
-  RETURNS tbox
-  AS 'MODULE_PATHNAME', 'Timestamp_to_tbox'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox(period)
-  RETURNS tbox
-  AS 'MODULE_PATHNAME', 'Period_to_tbox'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE CAST (integer AS tbox) WITH FUNCTION tbox(integer);
-CREATE CAST (float AS tbox) WITH FUNCTION tbox(float);
-CREATE CAST (numeric AS tbox) WITH FUNCTION tbox(numeric);
-CREATE CAST (timestamptz AS tbox) WITH FUNCTION tbox(timestamptz);
-CREATE CAST (period AS tbox) WITH FUNCTION tbox(period);
-CREATE CAST (intspan AS tbox) WITH FUNCTION tbox(intspan);
-CREATE CAST (floatspan AS tbox) WITH FUNCTION tbox(floatspan);
-
 CREATE FUNCTION tbox(integer, timestamptz)
   RETURNS tbox
   AS 'MODULE_PATHNAME', 'Int_timestamp_to_tbox'
@@ -169,16 +132,77 @@ CREATE FUNCTION tbox(floatspan, period)
  * Casting
  *****************************************************************************/
 
+CREATE FUNCTION tbox(integer)
+  RETURNS tbox
+  AS 'MODULE_PATHNAME', 'Int_to_tbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tbox(float)
+  RETURNS tbox
+  AS 'MODULE_PATHNAME', 'Float_to_tbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tbox(numeric)
+  RETURNS tbox
+  AS 'MODULE_PATHNAME', 'Numeric_to_tbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tbox(timestamptz)
+  RETURNS tbox
+  AS 'MODULE_PATHNAME', 'Timestamp_to_tbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tbox(intset)
+  RETURNS tbox
+  AS 'MODULE_PATHNAME', 'Set_to_tbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tbox(floatset)
+  RETURNS tbox
+  AS 'MODULE_PATHNAME', 'Set_to_tbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox(timestampset)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'Timestampset_to_tbox'
+  AS 'MODULE_PATHNAME', 'Set_to_tbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tbox(intspan)
+  RETURNS tbox
+  AS 'MODULE_PATHNAME', 'Span_to_tbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tbox(floatspan)
+  RETURNS tbox
+  AS 'MODULE_PATHNAME', 'Span_to_tbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tbox(period)
+  RETURNS tbox
+  AS 'MODULE_PATHNAME', 'Period_to_tbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tbox(intspanset)
+  RETURNS tbox
+  AS 'MODULE_PATHNAME', 'Spanset_to_tbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tbox(floatspanset)
+  RETURNS tbox
+  AS 'MODULE_PATHNAME', 'Spanset_to_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox(periodset)
   RETURNS tbox
   AS 'MODULE_PATHNAME', 'Periodset_to_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE CAST (integer AS tbox) WITH FUNCTION tbox(integer);
+CREATE CAST (float AS tbox) WITH FUNCTION tbox(float);
+CREATE CAST (numeric AS tbox) WITH FUNCTION tbox(numeric);
+CREATE CAST (timestamptz AS tbox) WITH FUNCTION tbox(timestamptz);
+
+CREATE CAST (intset AS tbox) WITH FUNCTION tbox(intset);
+CREATE CAST (floatset AS tbox) WITH FUNCTION tbox(floatset);
 CREATE CAST (timestampset AS tbox) WITH FUNCTION tbox(timestampset);
+
+CREATE CAST (intspan AS tbox) WITH FUNCTION tbox(intspan);
+CREATE CAST (floatspan AS tbox) WITH FUNCTION tbox(floatspan);
+CREATE CAST (period AS tbox) WITH FUNCTION tbox(period);
+
+CREATE CAST (intspanset AS tbox) WITH FUNCTION tbox(intspanset);
+CREATE CAST (floatspanset AS tbox) WITH FUNCTION tbox(floatspanset);
 CREATE CAST (periodset AS tbox) WITH FUNCTION tbox(periodset);
 
 /*****************************************************************************/
