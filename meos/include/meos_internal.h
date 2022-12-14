@@ -93,8 +93,8 @@ extern void timestampset_set_period(const TimestampSet *ts, Period *p);
 
 /* Transformation functions for set and span types */
 
-extern void span_shift(Span *s, Datum value, mobdbType basetype);
-extern void spanset_shift(SpanSet *s, Datum value, mobdbType basetype);
+extern void span_shift(Span *s, Datum value);
+extern void spanset_shift(SpanSet *s, Datum value);
 extern void lower_upper_shift_tscale(TimestampTz *lower, TimestampTz *upper, const Interval *shift, const Interval *duration);
 
 /*****************************************************************************

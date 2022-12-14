@@ -600,6 +600,24 @@ Floatspanset_round(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PG_FUNCTION_INFO_V1(Spanset_shift);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Shift a span set by a value
+ * @sqlfunc shift()
+ */
+PGDLLEXPORT Datum
+Spanset_shift(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  Datum shift = PG_GETARG_DATUM(1);
+  SpanSet *result = spanset_copy(ss);
+  spanset_shift(result, shift);
+  PG_FREE_IF_COPY(ss, 0);
+  PG_RETURN_POINTER(result);
+}
+
+
 PG_FUNCTION_INFO_V1(Periodset_shift);
 /**
  * @ingroup mobilitydb_setspan_transf

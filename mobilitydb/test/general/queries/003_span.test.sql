@@ -79,7 +79,31 @@ SELECT tstzrange '[,2000-01-01]'::period;
 SELECT tstzrange 'empty'::period;
 
 -------------------------------------------------------------------------------
--- Functions
+-- Transformation functions
+-------------------------------------------------------------------------------
+
+SELECT shift(intspan '[1,2)', 2);
+
+SELECT shift(period '[2000-01-01,2000-01-01]', '5 min');
+SELECT shift(period '[2000-01-01,2000-01-02]', '5 min');
+SELECT shift(period '(2000-01-01,2000-01-02]', '5 min');
+SELECT shift(period '[2000-01-01,2000-01-02)', '5 min');
+SELECT shift(period '(2000-01-01,2000-01-02)', '5 min');
+
+SELECT tscale(period '[2000-01-01,2000-01-01]', '1 hour');
+SELECT tscale(period '[2000-01-01,2000-01-02]', '1 hour');
+SELECT tscale(period '(2000-01-01,2000-01-02]', '1 hour');
+SELECT tscale(period '[2000-01-01,2000-01-02)', '1 hour');
+SELECT tscale(period '(2000-01-01,2000-01-02)', '1 hour');
+
+SELECT shiftTscale(period '[2000-01-01,2000-01-01]', '5 min', '1 hour');
+SELECT shiftTscale(period '[2000-01-01,2000-01-02]', '5 min', '1 hour');
+SELECT shiftTscale(period '(2000-01-01,2000-01-02]', '5 min', '1 hour');
+SELECT shiftTscale(period '[2000-01-01,2000-01-02)', '5 min', '1 hour');
+SELECT shiftTscale(period '(2000-01-01,2000-01-02)', '5 min', '1 hour');
+
+-------------------------------------------------------------------------------
+-- Accessor functions
 -------------------------------------------------------------------------------
 
 SELECT lower(period '[2000-01-01,2000-01-01]');
@@ -111,24 +135,6 @@ SELECT duration(period '[2000-01-01,2000-01-02]');
 SELECT duration(period '(2000-01-01,2000-01-02]');
 SELECT duration(period '[2000-01-01,2000-01-02)');
 SELECT duration(period '(2000-01-01,2000-01-02)');
-
-SELECT shift(period '[2000-01-01,2000-01-01]', '5 min');
-SELECT shift(period '[2000-01-01,2000-01-02]', '5 min');
-SELECT shift(period '(2000-01-01,2000-01-02]', '5 min');
-SELECT shift(period '[2000-01-01,2000-01-02)', '5 min');
-SELECT shift(period '(2000-01-01,2000-01-02)', '5 min');
-
-SELECT tscale(period '[2000-01-01,2000-01-01]', '1 hour');
-SELECT tscale(period '[2000-01-01,2000-01-02]', '1 hour');
-SELECT tscale(period '(2000-01-01,2000-01-02]', '1 hour');
-SELECT tscale(period '[2000-01-01,2000-01-02)', '1 hour');
-SELECT tscale(period '(2000-01-01,2000-01-02)', '1 hour');
-
-SELECT shiftTscale(period '[2000-01-01,2000-01-01]', '5 min', '1 hour');
-SELECT shiftTscale(period '[2000-01-01,2000-01-02]', '5 min', '1 hour');
-SELECT shiftTscale(period '(2000-01-01,2000-01-02]', '5 min', '1 hour');
-SELECT shiftTscale(period '[2000-01-01,2000-01-02)', '5 min', '1 hour');
-SELECT shiftTscale(period '(2000-01-01,2000-01-02)', '5 min', '1 hour');
 
 SELECT period_cmp('[2000-01-01,2000-01-01]', '(2000-01-01,2000-01-02)');
 SELECT period_cmp('[2000-01-01, 2000-01-02]', '[2000-01-01, 2000-01-02)');

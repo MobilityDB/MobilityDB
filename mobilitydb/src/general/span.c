@@ -416,9 +416,8 @@ Span_shift(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   Datum shift = PG_GETARG_DATUM(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   Span *result = span_copy(s);
-  span_shift(result, shift, basetype);
+  span_shift(result, shift);
   PG_RETURN_POINTER(result);
 }
 

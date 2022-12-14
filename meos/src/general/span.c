@@ -770,20 +770,6 @@ intspan_set_floatspan(const Span *s1, Span *s2)
 
 /**
  * @ingroup libmeos_setspan_transf
- * @brief Set the second span with the first one transformed to floatspan
- */
-void
-bigintspan_set_floatspan(const Span *s1, Span *s2)
-{
-  memset(s2, 0, sizeof(Span));
-  Datum lower = Float8GetDatum((double) DatumGetInt64(s1->lower));
-  Datum upper = Float8GetDatum((double) (DatumGetInt64(s1->upper) - 1));
-  span_set(lower, upper, true, true, T_FLOAT8, s2);
-  return;
-}
-
-/**
- * @ingroup libmeos_setspan_transf
  * @brief Set the second span with the first one transformed to intspan
  */
 void
@@ -793,20 +779,6 @@ floatspan_set_intspan(const Span *s1, Span *s2)
   Datum lower = Int32GetDatum((int) DatumGetFloat8(s1->lower));
   Datum upper = Int32GetDatum((int) (DatumGetFloat8(s1->upper)) + 1);
   span_set(lower, upper, true, false, T_INT4, s2);
-  return;
-}
-
-/**
- * @ingroup libmeos_setspan_transf
- * @brief Set the second span with the first one transformed to intspan
- */
-void
-floatspan_set_bigintspan(const Span *s1, Span *s2)
-{
-  memset(s2, 0, sizeof(Span));
-  Datum lower = Int64GetDatum((int64) DatumGetFloat8(s1->lower));
-  Datum upper = Int64GetDatum((int64) (DatumGetFloat8(s1->upper)) + 1);
-  span_set(lower, upper, true, false, T_INT8, s2);
   return;
 }
 
@@ -861,15 +833,15 @@ lower_upper_shift_tscale(TimestampTz *lower, TimestampTz *upper,
 /**
  * @ingroup libmeos_internal_setspan_transf
  * @brief Shift a span by a value.
+ * @pre The value is of the same type as the span base type
  * @sqlfunc shift()
  * @pymeosfunc shift()
  */
 void
-span_shift(Span *s, Datum value, mobdbType basetype)
+span_shift(Span *s, Datum shift)
 {
-  assert(basetype == s->basetype);
-  s->lower = datum_add(s->lower, value, basetype, basetype);
-  s->upper = datum_add(s->lower, value, basetype, basetype);
+  s->lower = datum_add(s->lower, shift, s->basetype, s->basetype);
+  s->upper = datum_add(s->lower, shift, s->basetype, s->basetype);
   return;
 }
 

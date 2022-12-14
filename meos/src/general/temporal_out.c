@@ -1040,7 +1040,7 @@ temporalarr_out(const Temporal **temparr, int count, int maxdd)
  * In addition, additional flags are needed such for interporation, etc.
  *
  * - For box types, the format depends on the existing dimensions (X, Z, T).
- * - For span types, the format depends on the base type (int4, float8, ...).
+ * - For set and span types, the format depends on the base type (int4, float8, ...).
  * - For temporal types, the binary format depends on the subtype
  *   (instant, sequence, ...) and the basetype (int4, float8, text, ...).
  *****************************************************************************/
@@ -1050,10 +1050,52 @@ temporalarr_out(const Temporal **temparr, int count, int maxdd)
  *****************************************************************************/
 
 /**
- * Return the size of the WKB representation of a span base value.
+ * Return the size of the WKB representation of the base value of an ordered
+ * set type.
  */
 static size_t
-span_basevalue_to_wkb_size(const Span *s)
+orderedset_basetype_to_wkb_size(const OrderedSet *os)
+{
+  size_t result = 0;
+  ensure_span_basetype(os->span.basetype);
+  switch (os->span.basetype)
+  {
+    case T_INT4:
+      result = MOBDB_WKB_INT4_SIZE;
+      break;
+    case T_INT8:
+      result = MOBDB_WKB_INT8_SIZE;
+      break;
+    case T_FLOAT8:
+      result = MOBDB_WKB_DOUBLE_SIZE;
+      break;
+    case T_TIMESTAMPTZ:
+      result = MOBDB_WKB_TIMESTAMP_SIZE;
+      break;
+  }
+  return result;
+}
+
+/**
+ * Return the size in bytes of an ordered set represented in Well-Known Binary
+ * (WKB) format
+ */
+static size_t
+orderedset_to_wkb_size(const OrderedSet *os)
+{
+  /* Endian flag + settype + count + basetype values * count */
+  size_t size = MOBDB_WKB_BYTE_SIZE + MOBDB_WKB_INT2_SIZE +
+    MOBDB_WKB_INT4_SIZE + orderedset_basetype_to_wkb_size(os) * os->count;
+  return size;
+}
+
+/*****************************************************************************/
+
+/**
+ * Return the size of the WKB representation of the base value of a span type.
+ */
+static size_t
+span_basetype_to_wkb_size(const Span *s)
 {
   size_t result = 0;
   ensure_span_basetype(s->basetype);
@@ -1061,6 +1103,9 @@ span_basevalue_to_wkb_size(const Span *s)
   {
     case T_INT4:
       result = MOBDB_WKB_INT4_SIZE;
+      break;
+    case T_INT8:
+      result = MOBDB_WKB_INT8_SIZE;
       break;
     case T_FLOAT8:
       result = MOBDB_WKB_DOUBLE_SIZE;
@@ -1081,7 +1126,7 @@ span_to_wkb_size_int(const Span *s)
 {
   /* bounds flag + spantype + basetype values */
   size_t size = MOBDB_WKB_BYTE_SIZE + MOBDB_WKB_INT2_SIZE +
-    span_basevalue_to_wkb_size(s) * 2;
+    span_basetype_to_wkb_size(s) * 2;
   return size;
 }
 
@@ -1100,21 +1145,6 @@ span_to_wkb_size(const Span *s)
 /*****************************************************************************/
 
 /**
- * Return the size in bytes of a timestamp set represented in Well-Known Binary
- * (WKB) format
- */
-static size_t
-timestampset_to_wkb_size(const TimestampSet *ts)
-{
-  /* Endian flag + count + timestamps */
-  size_t size = MOBDB_WKB_BYTE_SIZE + MOBDB_WKB_INT4_SIZE +
-    MOBDB_WKB_TIMESTAMP_SIZE * ts->count;
-  return size;
-}
-
-/*****************************************************************************/
-
-/**
  * @brief Return the size in bytes of a span set represented in Well-Known
  * Binary (WKB) format
  * @note The size of the elements is smaller than a full span since it does not
@@ -1123,7 +1153,7 @@ timestampset_to_wkb_size(const TimestampSet *ts)
 static size_t
 spanset_to_wkb_size(const SpanSet *ss)
 {
-  size_t sizebase = span_basevalue_to_wkb_size(&ss->elems[0]);
+  size_t sizebase = span_basetype_to_wkb_size(&ss->elems[0]);
   /* Endian flag + spansettype + count + (bound flag + 2 values) * count */
   size_t size = MOBDB_WKB_BYTE_SIZE + MOBDB_WKB_INT2_SIZE +
     MOBDB_WKB_INT4_SIZE + (MOBDB_WKB_BYTE_SIZE + sizebase * 2) * ss->count;
@@ -1196,7 +1226,7 @@ stbox_to_wkb_size(const STBox *box, uint8_t variant)
  * Return the size of the WKB representation of a base value.
  */
 static size_t
-temporal_basevalue_to_wkb_size(Datum value, mobdbType basetype, int16 flags)
+temporal_basetype_to_wkb_size(Datum value, mobdbType basetype, int16 flags)
 {
   switch (basetype)
   {
@@ -1204,10 +1234,6 @@ temporal_basevalue_to_wkb_size(Datum value, mobdbType basetype, int16 flags)
       return MOBDB_WKB_BYTE_SIZE;
     case T_INT4:
       return MOBDB_WKB_INT4_SIZE;
-  #if 0 /* not used */
-    case T_INT8:
-      return MOBDB_WKB_INT8_SIZE;
-  #endif /* not used */
     case T_FLOAT8:
       return MOBDB_WKB_DOUBLE_SIZE;
     case T_TEXT:
@@ -1223,7 +1249,7 @@ temporal_basevalue_to_wkb_size(Datum value, mobdbType basetype, int16 flags)
       return MOBDB_WKB_INT8_SIZE + MOBDB_WKB_DOUBLE_SIZE;
 #endif /* NPOINT */
     default: /* Error! */
-      elog(ERROR, "Unknown base type: %d", basetype);
+      elog(ERROR, "Unknown temporal base type: %d", basetype);
   }
 }
 
@@ -1239,7 +1265,7 @@ tinstarr_to_wkb_size(const TInstant **instants, int count)
   for (int i = 0; i < count; i++)
   {
     Datum value = tinstant_value(instants[i]);
-    result += temporal_basevalue_to_wkb_size(value, basetype,
+    result += temporal_basetype_to_wkb_size(value, basetype,
       instants[i]->flags);
   }
   /* size of the TInstant array */
@@ -1356,15 +1382,20 @@ datum_to_wkb_size(Datum value, mobdbType type, uint8_t variant)
   size_t result;
   switch (type)
   {
+    case T_INTSET:
+    case T_BIGINTSET:
+    case T_FLOATSET:
+    case T_TIMESTAMPSET:
+      result = orderedset_to_wkb_size((OrderedSet *) DatumGetPointer(value));
+      break;
     case T_INTSPAN:
+    case T_BIGINTSPAN:
     case T_FLOATSPAN:
     case T_PERIOD:
       result = span_to_wkb_size((Span *) DatumGetPointer(value));
       break;
-    case T_TIMESTAMPSET:
-      result = timestampset_to_wkb_size((TimestampSet *) DatumGetPointer(value));
-      break;
     case T_INTSPANSET:
+    case T_BIGINTSPANSET:
     case T_FLOATSPANSET:
     case T_PERIODSET:
       result = spanset_to_wkb_size((SpanSet *) DatumGetPointer(value));
@@ -1621,6 +1652,83 @@ npoint_to_wkb_buf(const Npoint *np, uint8_t *buf, uint8_t variant)
 /*****************************************************************************/
 
 /**
+ * Write into the buffer the ordered set type
+ */
+static uint8_t *
+orderedset_settype_to_wkb_buf(const OrderedSet *os, uint8_t *buf,
+  uint8_t variant)
+{
+  uint16_t wkb_orderedsettype;
+  /* The OrderedSet struct does not store its type but it can be deduced from
+   * the type of its bounding span */
+  ensure_span_basetype(os->span.basetype);
+  switch (os->span.basetype)
+  {
+    case T_INT4:
+      wkb_orderedsettype = MOBDB_WKB_T_INTSET;
+      break;
+    case T_INT8:
+      wkb_orderedsettype = MOBDB_WKB_T_BIGINTSET;
+      break;
+    case T_FLOAT8:
+      wkb_orderedsettype = MOBDB_WKB_T_FLOATSET;
+      break;
+    case T_TIMESTAMPTZ:
+      wkb_orderedsettype = MOBDB_WKB_T_TIMESTAMPSET;
+      break;
+  }
+  return int16_to_wkb_buf(wkb_orderedsettype, buf, variant);
+}
+
+/**
+ * Write into the buffer a temporal instant represented in Well-Known Binary
+ * (WKB) format as follows
+ * - base value
+ * - timestamp
+ */
+static uint8_t *
+orderedset_value_to_wkb_buf(Datum value, mobdbType basetype, uint8_t *buf,
+  uint8_t variant)
+{
+  ensure_span_basetype(basetype);
+  if (basetype == T_BOOL)
+    buf = bool_to_wkb_buf(DatumGetBool(value), buf, variant);
+  else if (basetype == T_INT4)
+    buf = int32_to_wkb_buf(DatumGetInt32(value), buf, variant);
+  else if (basetype == T_INT8)
+    buf = int64_to_wkb_buf(DatumGetInt64(value), buf, variant);
+  else /* basetype == T_FLOAT8 */
+    buf = double_to_wkb_buf(DatumGetFloat8(value), buf, variant);
+  return buf;
+}
+
+/**
+ * Write into the buffer an ordered set represented in Well-Known Binary (WKB)
+ * format as follows
+ * - Endian byte
+ * - Ordered set type: int16
+ * - Number of values: int32
+ * - Values
+ */
+static uint8_t *
+orderedset_to_wkb_buf(const OrderedSet *os, uint8_t *buf, uint8_t variant)
+{
+  /* Write the endian flag */
+  buf = endian_to_wkb_buf(buf, variant);
+  /* Write the ordered set type */
+  buf = orderedset_settype_to_wkb_buf(os, buf, variant);
+  /* Write the count */
+  buf = int32_to_wkb_buf(os->count, buf, variant);
+  /* Write the values */
+  for (int i = 0; i < os->count; i++)
+    buf = orderedset_value_to_wkb_buf(os->elems[i], os->span.basetype, buf,
+      variant);
+  return buf;
+}
+
+/*****************************************************************************/
+
+/**
  * Write into the buffer the span type
  */
 static uint8_t *
@@ -1631,6 +1739,9 @@ span_spantype_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant)
   {
     case T_INTSPAN:
       wkb_spantype = MOBDB_WKB_T_INTSPAN;
+      break;
+    case T_BIGINTSPAN:
+      wkb_spantype = MOBDB_WKB_T_BIGINTSPAN;
       break;
     case T_FLOATSPAN:
       wkb_spantype = MOBDB_WKB_T_FLOATSPAN;
@@ -1746,29 +1857,6 @@ span_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant)
   buf = endian_to_wkb_buf(buf, variant);
   /* Write the span  */
   buf = span_to_wkb_buf_int(s, buf, variant);
-  return buf;
-}
-
-/*****************************************************************************/
-
-/**
- * Write into the buffer a timestamp set represented in Well-Known Binary (WKB)
- * format as follows
- * - Endian byte
- * - int32 stating the number of timestamps
- * - Timestamps
- */
-static uint8_t *
-timestampset_to_wkb_buf(const TimestampSet *ts, uint8_t *buf, uint8_t variant)
-{
-  /* Write the endian flag */
-  buf = endian_to_wkb_buf(buf, variant);
-  /* Write the count */
-  buf = int32_to_wkb_buf(ts->count, buf, variant);
-  /* Write the timestamps */
-  for (int i = 0; i < ts->count; i++)
-    buf = timestamp_to_wkb_buf(ts->elems[i], buf, variant);
-  /* Write the temporal dimension if any */
   return buf;
 }
 
@@ -2051,11 +2139,6 @@ tinstant_basevalue_time_to_wkb_buf(const TInstant *inst, uint8_t *buf,
     case T_INT4:
       buf = int32_to_wkb_buf(DatumGetInt32(value), buf, variant);
       break;
-  #if 0 /* not used */
-    case T_INT8:
-      buf = int64_to_wkb_buf(DatumGetInt64(value), buf, variant);
-      break;
-  #endif /* not used */
     case T_FLOAT8:
       buf = double_to_wkb_buf(DatumGetFloat8(value), buf, variant);
       break;
@@ -2214,19 +2297,24 @@ datum_to_wkb_buf(Datum value, mobdbType type, uint8_t *buf, uint8_t variant)
 {
   switch (type)
   {
+    case T_INTSET:
+    case T_BIGINTSET:
+    case T_FLOATSET:
+    case T_TIMESTAMPSET:
+      buf = orderedset_to_wkb_buf((OrderedSet *) DatumGetPointer(value),
+        buf, variant);
+      break;
     case T_INTSPAN:
+    case T_BIGINTSPAN:
     case T_FLOATSPAN:
     case T_PERIOD:
       buf = span_to_wkb_buf((Span *) DatumGetPointer(value), buf, variant);
       break;
-    case T_TIMESTAMPSET:
-      buf = timestampset_to_wkb_buf((TimestampSet *) DatumGetPointer(value),
-        buf, variant);
-      break;
     case T_INTSPANSET:
+    case T_BIGINTSPANSET:
     case T_FLOATSPANSET:
     case T_PERIODSET:
-      buf = spanset_to_wkb_buf((PeriodSet *) DatumGetPointer(value), buf,
+      buf = spanset_to_wkb_buf((SpanSet *) DatumGetPointer(value), buf,
         variant);
       break;
     case T_TBOX:
@@ -2384,28 +2472,30 @@ span_as_hexwkb(const Span *s, uint8_t variant, size_t *size_out)
 
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Return the WKB representation of a timestamp set.
+ * @brief Return the WKB representation of an ordered set.
  * @sqlfunc asBinary()
  */
 uint8_t *
 orderedset_as_wkb(const OrderedSet *os, uint8_t variant, size_t *size_out)
 {
-  uint8_t *result = datum_as_wkb(PointerGetDatum(os), T_TIMESTAMPSET, variant,
-    size_out);
+  mobdbType orderedsettype = basetype_settype(os->span.basetype);
+  uint8_t *result = datum_as_wkb(PointerGetDatum(os), orderedsettype,
+    variant, size_out);
   return result;
 }
 
 #if MEOS
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Return the WKB representation of a timestamp set in hex-encoded ASCII.
+ * @brief Return the WKB representation of an ordered set in hex-encoded ASCII.
  * @sqlfunc asHexWKB()
  */
 char *
-timestampset_as_hexwkb(const TimestampSet *ts, uint8_t variant,
+orderedset_as_hexwkb(const TimestampSet *ts, uint8_t variant,
   size_t *size_out)
 {
-  char *result = (char *) datum_as_wkb(PointerGetDatum(ts), T_TIMESTAMPSET,
+  mobdbType orderedsettype = basetype_settype(os->span.basetype);
+  char *result = (char *) datum_as_wkb(PointerGetDatum(ts), orderedsettype,
     variant | (uint8_t) WKB_HEX, size_out);
   return result;
 }

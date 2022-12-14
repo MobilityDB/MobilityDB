@@ -380,6 +380,18 @@ CREATE FUNCTION round(floatspanset, integer DEFAULT 0)
   AS 'MODULE_PATHNAME', 'Floatspanset_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION shift(intspanset, int)
+  RETURNS intspanset
+  AS 'MODULE_PATHNAME', 'Spanset_shift'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shift(bigintspanset, bigint)
+  RETURNS bigintspanset
+  AS 'MODULE_PATHNAME', 'Spanset_shift'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shift(floatspanset, float)
+  RETURNS floatspanset
+  AS 'MODULE_PATHNAME', 'Spanset_shift'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shift(periodset, interval)
   RETURNS periodset
   AS 'MODULE_PATHNAME', 'Periodset_shift'

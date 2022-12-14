@@ -109,6 +109,18 @@ CREATE FUNCTION timestampset_send(timestampset)
   AS 'MODULE_PATHNAME', 'Orderedset_send'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION intset_analyze(internal)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Intset_analyze'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION bigintset_analyze(internal)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Bigintset_analyze'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION floatset_analyze(internal)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Floatset_analyze'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestampset_analyze(internal)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Timestampset_analyze'
@@ -122,8 +134,8 @@ CREATE TYPE intset (
   send = intset_send,
   alignment = double,
 -- The following line makes NULL if size < 128
-  storage = extended
-  -- , analyze = intset_analyze
+  storage = extended,
+  analyze = intset_analyze
 );
 
 CREATE TYPE bigintset (
@@ -134,8 +146,8 @@ CREATE TYPE bigintset (
   send = bigintset_send,
   alignment = double,
 -- The following line makes NULL if size < 128
-  storage = extended
-  -- , analyze = bigintset_analyze
+  storage = extended,
+  analyze = bigintset_analyze
 );
 
 CREATE TYPE floatset (
@@ -146,8 +158,8 @@ CREATE TYPE floatset (
   send = floatset_send,
   alignment = double,
 -- The following line makes NULL if size < 128
-  storage = extended
-  -- , analyze = floatset_analyze
+  storage = extended,
+  analyze = floatset_analyze
 );
 
 CREATE TYPE timestampset (
@@ -281,8 +293,45 @@ CREATE CAST (bigint AS bigintset) WITH FUNCTION bigintset(bigint);
 CREATE CAST (float AS floatset) WITH FUNCTION floatset(float);
 CREATE CAST (timestamptz AS timestampset) WITH FUNCTION timestampset(timestamptz);
 
+/*****************************************************************************
+ * Transformation functions
+ *****************************************************************************/
+
+CREATE FUNCTION round(floatset, integer DEFAULT 0)
+  RETURNS floatset
+  AS 'MODULE_PATHNAME', 'Floatset_round'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION shift(intset, int)
+  RETURNS intset
+  AS 'MODULE_PATHNAME', 'Span_shift'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shift(bigintset, bigint)
+  RETURNS bigintset
+  AS 'MODULE_PATHNAME', 'Span_shift'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shift(floatset, float)
+  RETURNS floatset
+  AS 'MODULE_PATHNAME', 'Span_shift'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shift(timestampset, interval)
+  RETURNS timestampset
+  AS 'MODULE_PATHNAME', 'Timestampset_shift'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tscale(timestampset, interval)
+  RETURNS timestampset
+  AS 'MODULE_PATHNAME', 'Timestampset_tscale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION shiftTscale(timestampset, interval, interval)
+  RETURNS timestampset
+  AS 'MODULE_PATHNAME', 'Timestampset_shift_tscale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+
 /******************************************************************************
- * Functions
+ * Accessor functions
  ******************************************************************************/
 
 CREATE FUNCTION memorySize(intset)
@@ -402,21 +451,6 @@ CREATE FUNCTION getValues(floatset)
 CREATE FUNCTION timestamps(timestampset)
   RETURNS timestamptz[]
   AS 'MODULE_PATHNAME', 'Orderedset_values'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION shift(timestampset, interval)
-  RETURNS timestampset
-  AS 'MODULE_PATHNAME', 'Timestampset_shift'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION tscale(timestampset, interval)
-  RETURNS timestampset
-  AS 'MODULE_PATHNAME', 'Timestampset_tscale'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION shiftTscale(timestampset, interval, interval)
-  RETURNS timestampset
-  AS 'MODULE_PATHNAME', 'Timestampset_shift_tscale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************

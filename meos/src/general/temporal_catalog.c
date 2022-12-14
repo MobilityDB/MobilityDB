@@ -372,6 +372,76 @@ ensure_numspan_basetype(mobdbType basetype)
 /*****************************************************************************/
 
 /**
+ * Return true if the type is a span set type
+ */
+bool
+spanset_type(mobdbType spansettype)
+{
+  if (spansettype == T_PERIODSET || spansettype == T_INTSPANSET ||
+      spansettype == T_BIGINTSPANSET || spansettype == T_FLOATSPANSET)
+    return true;
+  return false;
+}
+
+/**
+ * Ensure that the type is a span set type
+ */
+void
+ensure_spanset_type(mobdbType spansettype)
+{
+  if (! spanset_type(spansettype))
+    elog(ERROR, "unknown span set type: %d", spansettype);
+  return;
+}
+
+/**
+ * Return true if the type is a set base type
+ */
+bool
+spanset_basetype(mobdbType basetype)
+{
+  if (basetype == T_TIMESTAMPTZ || basetype == T_INT4 || basetype == T_INT8 ||
+      basetype == T_FLOAT8)
+    return true;
+  return false;
+}
+
+/**
+ * Ensure that the type is a span set base type
+ */
+void
+ensure_spanset_basetype(mobdbType basetype)
+{
+  if (! spanset_basetype(basetype))
+    elog(ERROR, "unknown span set base type: %d", basetype);
+  return;
+}
+
+/**
+ * Return true if the type is a base type of a numeric span set type
+ */
+bool
+numspanset_basetype(mobdbType basetype)
+{
+  if (basetype == T_INT4 || basetype == T_INT8 || basetype == T_FLOAT8)
+    return true;
+  return false;
+}
+
+/**
+ * Ensure that the type is a base type of a numeric span set type
+ */
+void
+ensure_numspanset_basetype(mobdbType basetype)
+{
+  if (! numspanset_basetype(basetype))
+    elog(ERROR, "unknown numeric span set base type: %d", basetype);
+  return;
+}
+
+/*****************************************************************************/
+
+/**
  * @brief Return true if the temporal type is an EXTERNAL temporal type
  *
  * @note Function used in particular in the indexes

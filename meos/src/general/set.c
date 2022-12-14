@@ -160,7 +160,7 @@ floatset_in(const char *str)
  * @ingroup libmeos_setspan_inout
  * @brief Return an ordered set from its Well-Known Text (WKT) representation.
  */
-TimestampSet *
+OrderedSet *
 timestampset_in(const char *str)
 {
   return orderedset_parse(&str, T_TIMESTAMPSET);
@@ -260,11 +260,11 @@ orderedset_make_free(Datum *values, int count, mobdbType basetype)
  * @ingroup libmeos_setspan_constructor
  * @brief Return a copy of an ordered set.
  */
-TimestampSet *
-orderedset_copy(const TimestampSet *ts)
+OrderedSet *
+orderedset_copy(const OrderedSet *os)
 {
-  TimestampSet *result = palloc(VARSIZE(ts));
-  memcpy(result, ts, VARSIZE(ts));
+  TimestampSet *result = palloc(VARSIZE(os));
+  memcpy(result, os, VARSIZE(os));
   return result;
 }
 
@@ -325,7 +325,7 @@ float_to_floatset(double d)
  * @brief Cast a value as an ordered set
  * @sqlop @p ::
  */
-TimestampSet *
+OrderedSet *
 timestamp_to_timestampset(TimestampTz t)
 {
   Datum v = TimestampTzGetDatum(t);
@@ -700,8 +700,21 @@ timestampset_timestamps(const TimestampSet *ts)
  *****************************************************************************/
 
 /**
+ * @brief Set the precision of the float set to the number of decimal places.
+ */
+OrderedSet *
+orderedset_shift(const OrderedSet *os, Datum shift)
+{
+  OrderedSet *result = orderedset_copy(os);
+  for (int i = 0; i < os->count; i++)
+    result->elems[i] = datum_add(result->elems[i], shift, os->span.basetype,
+      os->span.basetype);
+  return result;
+}
+
+/**
  * @ingroup libmeos_setspan_transf
- * @brief Return a timestamp set shifted and/or scaled by the intervals
+ * @brief Return a timestamp set uned and/or scaled by the intervals
  * @sqlfunc shift(), tscale(), shiftTscale()
  * @pymeosfunc shift()
  */
@@ -879,20 +892,14 @@ uint32
 datum_hash(Datum d, mobdbType basetype)
 {
   ensure_set_basetype(basetype);
-  switch (basetype)
-  {
-    case T_TIMESTAMPTZ:
-      return pg_hashint8(TimestampTzGetDatum(d));
-    case T_INT4:
-      return DatumGetInt32(hash_bytes_uint32(d));
-    case T_INT8:
-      return pg_hashint8(Int64GetDatum(d));
-    case T_FLOAT8:
-      return pg_hashfloat8(Float8GetDatum(d));
-    default: /* Error! */
-      elog(ERROR, "Unknown base type: %d", basetype);
-      break;
-  }
+  if (basetype == T_TIMESTAMPTZ)
+    return pg_hashint8(TimestampTzGetDatum(d));
+  else if (basetype == T_INT4)
+    return DatumGetInt32(hash_bytes_uint32(d));
+  else if (basetype == T_INT8)
+    return pg_hashint8(Int64GetDatum(d));
+  else /* basetype == T_FLOAT8 */
+    return pg_hashfloat8(Float8GetDatum(d));
 }
 
 /**
@@ -921,20 +928,14 @@ uint64
 datum_hash_extended(Datum d, mobdbType basetype, uint64 seed)
 {
   ensure_set_basetype(basetype);
-  switch (basetype)
-  {
-    case T_TIMESTAMPTZ:
-      return pg_hashint8extended(TimestampTzGetDatum(d), seed);
-    case T_INT4:
-      return hash_bytes_uint32_extended(DatumGetInt32(d), seed);
-    case T_INT8:
-      return pg_hashint8extended(Int64GetDatum(d), seed);
-    case T_FLOAT8:
-      return pg_hashfloat8extended(Float8GetDatum(d), seed);
-    default: /* Error! */
-      elog(ERROR, "Unknown base type: %d", basetype);
-      break;
-  }
+  if (basetype == T_TIMESTAMPTZ)
+    return pg_hashint8extended(TimestampTzGetDatum(d), seed);
+  else if (basetype == T_INT4)
+    return hash_bytes_uint32_extended(DatumGetInt32(d), seed);
+  else if (basetype == T_INT8)
+    return pg_hashint8extended(Int64GetDatum(d), seed);
+  else /* basetype == T_FLOAT8 */
+    return pg_hashfloat8extended(Float8GetDatum(d), seed);
 }
 
 /**

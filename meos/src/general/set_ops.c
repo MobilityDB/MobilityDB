@@ -1297,6 +1297,7 @@ minus_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
  * Distance functions returning a double
  ******************************************************************************/
 
+#if MEOS
 /**
  * @ingroup libmeos_internal_setspan_dist
  * @brief Return the distance between an ordered set and a value
@@ -1307,7 +1308,6 @@ distance_orderedset_value(const OrderedSet *os, Datum d, mobdbType basetype)
   return distance_span_value(&os->span, d, basetype);
 }
 
-#if MEOS
 /**
  * @ingroup libmeos_setspan_dist
  * @brief Return the distance between an ordered set and a value
@@ -1351,7 +1351,6 @@ distance_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 {
   return distance_orderedset_value(ts, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
-#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_dist
@@ -1363,5 +1362,6 @@ distance_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2)
 {
   return distance_span_span(&os1->span, &os2->span);
 }
+#endif /* MEOS */
 
 /******************************************************************************/

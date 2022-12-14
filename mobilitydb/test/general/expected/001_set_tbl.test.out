@@ -1,3 +1,54 @@
+COPY tbl_intset TO '/tmp/tbl_intset' (FORMAT BINARY);
+COPY 1000
+DROP TABLE IF EXISTS tbl_intset_tmp;
+NOTICE:  table "tbl_intset_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_intset_tmp AS TABLE tbl_intset WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_intset_tmp FROM '/tmp/tbl_intset' (FORMAT BINARY);
+COPY 1000
+SELECT COUNT(*) FROM tbl_intset t1, tbl_intset_tmp t2 WHERE t1.k = t2.k AND t1.i <> t2.i;
+ count 
+-------
+     0
+(1 row)
+
+DROP TABLE tbl_intset_tmp;
+DROP TABLE
+COPY tbl_bigintset TO '/tmp/tbl_bigintset' (FORMAT BINARY);
+COPY 1000
+DROP TABLE IF EXISTS tbl_bigintset_tmp;
+NOTICE:  table "tbl_bigintset_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_bigintset_tmp AS TABLE tbl_bigintset WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_bigintset_tmp FROM '/tmp/tbl_bigintset' (FORMAT BINARY);
+COPY 1000
+SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset_tmp t2 WHERE t1.k = t2.k AND t1.b <> t2.b;
+ count 
+-------
+     0
+(1 row)
+
+DROP TABLE tbl_bigintset_tmp;
+DROP TABLE
+COPY tbl_floatset TO '/tmp/tbl_floatset' (FORMAT BINARY);
+COPY 100
+DROP TABLE IF EXISTS tbl_floatset_tmp;
+NOTICE:  table "tbl_floatset_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_floatset_tmp AS TABLE tbl_floatset WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_floatset_tmp FROM '/tmp/tbl_floatset' (FORMAT BINARY);
+COPY 100
+SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatset_tmp t2 WHERE t1.k = t2.k AND t1.f <> t2.f;
+ count 
+-------
+     0
+(1 row)
+
+DROP TABLE tbl_floatset_tmp;
+DROP TABLE
 COPY tbl_timestampset TO '/tmp/tbl_timestampset' (FORMAT BINARY);
 COPY 100
 DROP TABLE IF EXISTS tbl_timestampset_tmp;

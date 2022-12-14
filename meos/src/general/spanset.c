@@ -435,6 +435,7 @@ span_to_spanset(const Span *s)
   return spanset_make((const Span **) &s, 1, NORMALIZE_NO);
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_setspan_cast
  * @brief Return the bounding span of a span set.
@@ -449,6 +450,7 @@ spanset_to_span(const SpanSet *ss)
   memcpy(result, &ss->span, sizeof(Span));
   return result;
 }
+#endif /* MEOS */
 
 /*****************************************************************************
  * Transformation functions
@@ -457,17 +459,17 @@ spanset_to_span(const SpanSet *ss)
 /**
  * @ingroup libmeos_internal_setspan_transf
  * @brief Shift a span set by a value.
+ * @pre The value is of the same type as the span base type
  * @sqlfunc shift()
  * @pymeosfunc shift()
  */
 void
-spanset_shift(SpanSet *ss, Datum value, mobdbType basetype)
+spanset_shift(SpanSet *ss, Datum shift)
 {
-  assert(basetype == ss->basetype);
   for (int i = 0; i < ss->count; i++)
   {
     Span *s = (Span *) spanset_sp_n(ss, i);
-    span_shift(s, value, basetype);
+    span_shift(s, shift);
   }
   return;
 }

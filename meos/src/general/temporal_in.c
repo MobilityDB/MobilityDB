@@ -40,6 +40,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/pg_types.h"
+#include "general/set.h"
 #include "general/tbox.h"
 #include "general/temporal_util.h"
 #include "general/temporal_parser.h"
@@ -56,22 +57,23 @@
  */
 typedef struct
 {
-  const uint8_t *wkb;  /**< Points to start of WKB */
-  size_t wkb_size;     /**< Expected size of WKB */
-  bool swap_bytes;     /**< Do an endian flip? */
-  uint8_t temptype;    /**< Current temporal type we are handling */
-  uint8_t subtype;     /**< Current temporal subtype we are handling */
-  uint8_t spansettype; /**< Current span set type we are handling */
-  uint8_t spantype;    /**< Current span type we are handling */
-  uint8_t basetype;    /**< Current base type we are handling */
-  int32_t srid;        /**< Current SRID we are handling */
-  bool hasx;           /**< X? */
-  bool hasz;           /**< Z? */
-  bool hast;           /**< T? */
-  bool geodetic;       /**< Geodetic? */
-  bool has_srid;       /**< SRID? */
-  interpType interp;   /**< Interpolation */
-  const uint8_t *pos;  /**< Current parse position */
+  const uint8_t *wkb;     /**< Points to start of WKB */
+  size_t wkb_size;        /**< Expected size of WKB */
+  bool swap_bytes;        /**< Do an endian flip? */
+  uint8_t orderedsettype; /**< Current span type we are handling */
+  uint8_t spantype;       /**< Current span type we are handling */
+  uint8_t spansettype;    /**< Current span set type we are handling */
+  uint8_t basetype;       /**< Current base type we are handling */
+  uint8_t temptype;       /**< Current temporal type we are handling */
+  uint8_t subtype;        /**< Current temporal subtype we are handling */
+  int32_t srid;           /**< Current SRID we are handling */
+  bool hasx;              /**< X? */
+  bool hasz;              /**< Z? */
+  bool hast;              /**< T? */
+  bool geodetic;          /**< Geodetic? */
+  bool has_srid;          /**< SRID? */
+  interpType interp;      /**< Interpolation */
+  const uint8_t *pos;     /**< Current parse position */
 } wkb_parse_state;
 
 /*****************************************************************************
@@ -1052,6 +1054,9 @@ span_spantype_from_wkb_state(wkb_parse_state *s, uint16_t wkb_spantype)
     case MOBDB_WKB_T_INTSPAN:
       s->spantype = T_INTSPAN;
       break;
+    case MOBDB_WKB_T_BIGINTSPAN:
+      s->spantype = T_BIGINTSPAN;
+      break;
     case MOBDB_WKB_T_FLOATSPAN:
       s->spantype = T_FLOATSPAN;
       break;
@@ -1079,6 +1084,9 @@ span_basevalue_from_wkb_size(wkb_parse_state *s)
     case T_INT4:
       result = sizeof(int);
       break;
+    case T_INT8:
+      result = sizeof(int64);
+      break;
     case T_FLOAT8:
       result = sizeof(double);
       break;
@@ -1088,7 +1096,6 @@ span_basevalue_from_wkb_size(wkb_parse_state *s)
   }
   return result;
 }
-
 
 /**
  * Return a value from its WKB representation.
@@ -1102,6 +1109,9 @@ span_basevalue_from_wkb_state(wkb_parse_state *s)
   {
     case T_INTSPAN:
       result = Int32GetDatum(int32_from_wkb_state(s));
+      break;
+    case T_BIGINTSPAN:
+      result = Int64GetDatum(int64_from_wkb_state(s));
       break;
     case T_FLOATSPAN:
       result = Float8GetDatum(double_from_wkb_state(s));
@@ -1171,49 +1181,6 @@ span_from_wkb_state(wkb_parse_state *s)
 /*****************************************************************************/
 
 /**
- * Return a timestamp set from its WKB representation
- */
-static OrderedSet *
-orderedset_from_wkb_state(wkb_parse_state *s)
-{
-  /* Read the number of timestamps and allocate space for them */
-  int count = int32_from_wkb_state(s);
-  Datum *values = palloc(sizeof(TimestampTz) * count);
-
-  /* Read and create the timestamp set */
-  for (int i = 0; i < count; i++)
-    values[i] = TimestampTzGetDatum(timestamp_from_wkb_state(s));
-  OrderedSet *result = orderedset_make_free(values, count, T_TIMESTAMPTZ);
-  return result;
-}
-
-/*****************************************************************************/
-
-// /**
- // * Optimized version of span_from_wkb_state for reading the periods in a period
- // * set. The endian byte and the basetype int16 are not read from the buffer.
- // */
-// static Period *
-// period_from_wkb_state(wkb_parse_state *s)
-// {
-  // /* Read the span bounds */
-  // uint8_t wkb_bounds = (uint8_t) byte_from_wkb_state(s);
-  // bool lower_inc, upper_inc;
-  // bounds_from_wkb_state(wkb_bounds, &lower_inc, &upper_inc);
-
-  // /* Does the data we want to read exist? */
-  // wkb_parse_state_check(s, 2 * MOBDB_WKB_TIMESTAMP_SIZE);
-
-  // /* Read the values and create the span */
-  // Datum lower = TimestampTzGetDatum(timestamp_from_wkb_state(s));
-  // Datum upper = TimestampTzGetDatum(timestamp_from_wkb_state(s));
-  // Span *result = span_make(lower, upper, lower_inc, upper_inc, s->basetype);
-  // return result;
-// }
-
-/*****************************************************************************/
-
-/**
  * Take in an unknown span set type of WKB type number and ensure it comes out
  * as an extended WKB span set type number.
  */
@@ -1224,6 +1191,9 @@ spanset_spansettype_from_wkb_state(wkb_parse_state *s, uint16_t wkb_spansettype)
   {
     case MOBDB_WKB_T_INTSPANSET:
       s->spansettype = T_INTSPANSET;
+      break;
+    case MOBDB_WKB_T_BIGINTSPANSET:
+      s->spansettype = T_BIGINTSPANSET;
       break;
     case MOBDB_WKB_T_FLOATSPANSET:
       s->spansettype = T_FLOATSPANSET;
@@ -1258,6 +1228,86 @@ spanset_from_wkb_state(wkb_parse_state *s)
   for (int i = 0; i < count; i++)
     spans[i] = (Span *) span_from_wkb_state1(s);
   SpanSet *result = spanset_make_free(spans, count, NORMALIZE);
+  return result;
+}
+
+/*****************************************************************************/
+
+/**
+ * Take in an unknown span type of WKB type number and ensure it comes out
+ * as an extended WKB span type number.
+ */
+void
+orderedset_settype_from_wkb_state(wkb_parse_state *s, uint16_t wkb_settype)
+{
+  switch (wkb_settype)
+  {
+    case MOBDB_WKB_T_INTSET:
+      s->orderedsettype = T_INTSET;
+      break;
+    case MOBDB_WKB_T_BIGINTSET:
+      s->orderedsettype = T_BIGINTSET;
+      break;
+    case MOBDB_WKB_T_FLOATSET:
+      s->orderedsettype = T_FLOATSET;
+      break;
+    case MOBDB_WKB_T_TIMESTAMPSET:
+      s->orderedsettype = T_TIMESTAMPSET;
+      break;
+    default: /* Error! */
+      elog(ERROR, "Unknown WKB ordered set type: %d", wkb_settype);
+      break;
+  }
+  s->basetype = settype_basetype(s->orderedsettype);
+  return;
+}
+
+/**
+ * Return a value from its WKB representation.
+ */
+static Datum
+orderedset_basevalue_from_wkb_state(wkb_parse_state *s)
+{
+  Datum result;
+  ensure_set_type(s->orderedsettype);
+  switch (s->orderedsettype)
+  {
+    case T_INTSET:
+      result = Int32GetDatum(int32_from_wkb_state(s));
+      break;
+    case T_BIGINTSET:
+      result = Int64GetDatum(int64_from_wkb_state(s));
+      break;
+    case T_FLOATSET:
+      result = Float8GetDatum(double_from_wkb_state(s));
+      break;
+    case T_TIMESTAMPSET:
+      result = TimestampTzGetDatum(timestamp_from_wkb_state(s));
+      break;
+    default: /* Error! */
+      elog(ERROR, "Unknown ordered set type: %d", s->orderedsettype);
+      break;
+  }
+  return result;
+}
+
+/**
+ * Return an ordered set from its WKB representation
+ */
+static OrderedSet *
+orderedset_from_wkb_state(wkb_parse_state *s)
+{
+  /* Read the ordered set type */
+  uint16_t wkb_settype = (uint16_t) int16_from_wkb_state(s);
+  orderedset_settype_from_wkb_state(s, wkb_settype);
+  /* Read the number of values and allocate space for them */
+  int count = int32_from_wkb_state(s);
+  Datum *values = palloc(sizeof(Datum) * count);
+
+  /* Read and create the ordered set */
+  for (int i = 0; i < count; i++)
+    values[i] = orderedset_basevalue_from_wkb_state(s);
+  OrderedSet *result = orderedset_make_free(values, count, s->basetype);
   return result;
 }
 
@@ -1655,15 +1705,20 @@ datum_from_wkb(const uint8_t *wkb, int size, mobdbType type)
   Datum result;
   switch (type)
   {
+    case T_INTSET:
+    case T_BIGINTSET:
+    case T_FLOATSET:
+    case T_TIMESTAMPSET:
+      result = PointerGetDatum(orderedset_from_wkb_state(&s));
+      break;
     case T_INTSPAN:
+    case T_BIGINTSPAN:
     case T_FLOATSPAN:
     case T_PERIOD:
       result = PointerGetDatum(span_from_wkb_state(&s));
       break;
-    case T_TIMESTAMPSET:
-      result = PointerGetDatum(orderedset_from_wkb_state(&s));
-      break;
     case T_INTSPANSET:
+    case T_BIGINTSPANSET:
     case T_FLOATSPANSET:
     case T_PERIODSET:
       result = PointerGetDatum(spanset_from_wkb_state(&s));
@@ -1711,6 +1766,35 @@ datum_from_hexwkb(const char *hexwkb, int size, mobdbType type)
 
 /**
  * @ingroup libmeos_setspan_inout
+ * @brief Return an ordered set from its Well-Known Binary (WKB)
+ * representation.
+ * @sqlfunc timestampsetFromBinary()
+ */
+OrderedSet *
+orderedset_from_wkb(const uint8_t *wkb, int size)
+{
+  /* We pass ANY set type to the dispatch function but the actual set type
+   * will be read from the byte string */
+  return DatumGetOrderedSetP(datum_from_wkb(wkb, size, T_TIMESTAMPSET));
+}
+
+/**
+ * @ingroup libmeos_setspan_inout
+ * @brief Return an ordered set from its WKB representation in hex-encoded
+ * ASCII.
+ * @sqlfunc timestampsetFromHexWKB()
+ */
+OrderedSet *
+orderedset_from_hexwkb(const char *hexwkb)
+{
+  int size = strlen(hexwkb);
+  return DatumGetTimestampSetP(datum_from_hexwkb(hexwkb, size, T_TIMESTAMPSET));
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup libmeos_setspan_inout
  * @brief Return a span from its Well-Known Binary (WKB)
  * representation.
  * @sqlfunc intspanFromBinary(), floatspanFromBinary(), periodFromBinary(),
@@ -1735,33 +1819,6 @@ span_from_hexwkb(const char *hexwkb)
   /* We pass ANY span type to the dispatch function but the actual span type
    * will be read from the byte string */
   return DatumGetSpanP(datum_from_hexwkb(hexwkb, size, T_INTSPAN));
-}
-
-/*****************************************************************************/
-
-/**
- * @ingroup libmeos_setspan_inout
- * @brief Return a timestamp set from its Well-Known Binary (WKB)
- * representation.
- * @sqlfunc timestampsetFromBinary()
- */
-OrderedSet *
-orderedset_from_wkb(const uint8_t *wkb, int size)
-{
-  return DatumGetTimestampSetP(datum_from_wkb(wkb, size, T_TIMESTAMPSET));
-}
-
-/**
- * @ingroup libmeos_setspan_inout
- * @brief Return a timestamp set from its WKB representation in hex-encoded
- * ASCII.
- * @sqlfunc timestampsetFromHexWKB()
- */
-OrderedSet *
-orderedset_from_hexwkb(const char *hexwkb)
-{
-  int size = strlen(hexwkb);
-  return DatumGetTimestampSetP(datum_from_hexwkb(hexwkb, size, T_TIMESTAMPSET));
 }
 
 /*****************************************************************************/
