@@ -62,98 +62,101 @@ CREATE TABLE test_spanops(
 -------------------------------------------------------------------------------
 
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'intspan', 'intspan', COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i @> t2.i;
-INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'bigintspan', 'bigintspan', COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b @> t2.b;
-INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'floatspan', 'floatspan', COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f @> t2.f;
-INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'period', 'period', COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p @> t2.p;
-
-INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '@>', 'intspan', 'int', COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i @> t2.i;
-INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'bigintspan', 'bigint', COUNT(*) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t1.b @> t2.b;
-INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'floatspan', 'float', COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f @> t2.f;
-INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'period', 'timestamptz', COUNT(*) FROM tbl_period, tbl_timestamptz WHERE p @> t;
-
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '@>', 'intspan', 'intset', COUNT(*) FROM tbl_intspan t1, tbl_intset t2 WHERE t1.i @> t2.i;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'intspan', 'intspan', COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i @> t2.i;
+
+INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'bigintspan', 'bigint', COUNT(*) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t1.b @> t2.b;
+INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '@>', 'bigintspan', 'bigintset', COUNT(*) FROM tbl_bigintspan t1, tbl_bigintset t2 WHERE t1.b @> t2.b;
+INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'bigintspan', 'bigintspan', COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b @> t2.b;
+
+INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'floatspan', 'float', COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f @> t2.f;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '@>', 'floatspan', 'floatset', COUNT(*) FROM tbl_floatspan t1, tbl_floatset t2 WHERE t1.f @> t2.f;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'floatspan', 'floatspan', COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f @> t2.f;
+
+INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'period', 'timestamptz', COUNT(*) FROM tbl_period, tbl_timestamptz WHERE p @> t;
+INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '@>', 'period', 'timestampset', COUNT(*) FROM tbl_period, tbl_timestampset WHERE p @> ts;
+INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
+SELECT '@>', 'period', 'period', COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p @> t2.p;
 
 -------------------------------------------------------------------------------
-
-INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'intspan', 'intspan', COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i <@ t2.i;
-INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'bigintspan', 'bigintspan', COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b <@ t2.b;
-INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'floatspan', 'floatspan', COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f <@ t2.f;
-INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'period', 'period', COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p <@ t2.p;
 
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '<@', 'int', 'intspan', COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i <@ t2.i;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'bigint', 'bigintspan', COUNT(*) FROM tbl_bigint t1, tbl_bigintspan t2 WHERE t1.b <@ t2.b;
+SELECT '<@', 'intset', 'intspan', COUNT(*) FROM tbl_intset t1, tbl_intspan t2 WHERE t1.i <@ t2.i;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'float', 'floatspan', COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f <@ t2.f;
-INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'timestamptz', 'period', COUNT(*) FROM tbl_timestamptz, tbl_period WHERE t <@ p;
+SELECT '<@', 'intspan', 'intspan', COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i <@ t2.i;
 
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'intset', 'intspan', COUNT(*) FROM tbl_intset t1, tbl_intspan t2 WHERE t1.i <@ t2.i;
+SELECT '<@', 'bigint', 'bigintspan', COUNT(*) FROM tbl_bigint t1, tbl_bigintspan t2 WHERE t1.b <@ t2.b;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '<@', 'bigintset', 'bigintspan', COUNT(*) FROM tbl_bigintset t1, tbl_bigintspan t2 WHERE t1.b <@ t2.b;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'bigintspan', 'bigintspan', COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b <@ t2.b;
+
+INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'float', 'floatspan', COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f <@ t2.f;
+INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '<@', 'floatset', 'floatspan', COUNT(*) FROM tbl_floatset t1, tbl_floatspan t2 WHERE t1.f <@ t2.f;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'floatspan', 'floatspan', COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f <@ t2.f;
+
+INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'timestamptz', 'period', COUNT(*) FROM tbl_timestamptz, tbl_period WHERE t <@ p;
+INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '<@', 'timestampset', 'period', COUNT(*) FROM tbl_timestampset, tbl_period WHERE ts <@ p;
+INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
+SELECT '<@', 'period', 'period', COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p <@ t2.p;
 
--------------------------------------------------------------------------------
-
-INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'intspan', 'intspan', COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i && t2.i;
-INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'bigintspan', 'bigintspan', COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b && t2.b;
-INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'floatspan', 'floatspan', COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f && t2.f;
-INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'period', 'period', COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p && t2.p;
+------------------------------------------------------------------------------
 
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'intset', 'intspan', COUNT(*) FROM tbl_intset t1, tbl_intspan t2 WHERE t1.i && t2.i;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'bigintset', 'bigintspan', COUNT(*) FROM tbl_bigintset t1, tbl_bigintspan t2 WHERE t1.b && t2.b;
+SELECT '&&', 'intspan', 'intset', COUNT(*) FROM tbl_intspan t1, tbl_intset t2 WHERE t1.i && t2.i;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'floatset', 'floatspan', COUNT(*) FROM tbl_floatset t1, tbl_floatspan t2 WHERE t1.f && t2.f;
-INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'timestampset', 'period', COUNT(*) FROM tbl_timestampset, tbl_period WHERE ts && p;
+SELECT '&&', 'intspan', 'intspan', COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i && t2.i;
 
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'intspan', 'intset', COUNT(*) FROM tbl_intspan t1, tbl_intset t2 WHERE t1.i && t2.i;
+SELECT '&&', 'bigintset', 'bigintspan', COUNT(*) FROM tbl_bigintset t1, tbl_bigintspan t2 WHERE t1.b && t2.b;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'bigintspan', 'bigintset', COUNT(*) FROM tbl_bigintspan t1, tbl_bigintset t2 WHERE t1.b && t2.b;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'bigintspan', 'bigintspan', COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b && t2.b;
+
+INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'floatset', 'floatspan', COUNT(*) FROM tbl_floatset t1, tbl_floatspan t2 WHERE t1.f && t2.f;
+INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'floatspan', 'floatset', COUNT(*) FROM tbl_floatspan t1, tbl_floatset t2 WHERE t1.f && t2.f;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'floatspan', 'floatspan', COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f && t2.f;
+
+INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'timestampset', 'period', COUNT(*) FROM tbl_timestampset, tbl_period WHERE ts && p;
+INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'period', 'timestampset', COUNT(*) FROM tbl_period, tbl_timestampset WHERE p && ts;
+INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'period', 'period', COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p && t2.p;
 
 -------------------------------------------------------------------------------
 
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '-|-', 'int', 'intspan', COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i -|- t2.i;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'intspan', 'int', COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i -|- t2.i;
-INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '-|-', 'intset', 'intspan', COUNT(*) FROM tbl_intset t1, tbl_intspan t2 WHERE t1.i -|- t2.i;
+INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
+SELECT '-|-', 'intspan', 'int', COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i -|- t2.i;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '-|-', 'intspan', 'intset', COUNT(*) FROM tbl_intspan t1, tbl_intset t2 WHERE t1.i -|- t2.i;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
@@ -162,9 +165,9 @@ SELECT '-|-', 'intspan', 'intspan', COUNT(*) FROM tbl_intspan t1, tbl_intspan t2
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '-|-', 'bigint', 'bigintspan', COUNT(*) FROM tbl_bigint t1, tbl_bigintspan t2 WHERE t1.b -|- t2.b;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'bigintspan', 'bigint', COUNT(*) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t1.b -|- t2.b;
-INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '-|-', 'bigintset', 'bigintspan', COUNT(*) FROM tbl_bigintset t1, tbl_bigintspan t2 WHERE t1.b -|- t2.b;
+INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
+SELECT '-|-', 'bigintspan', 'bigint', COUNT(*) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t1.b -|- t2.b;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '-|-', 'bigintspan', 'bigintset', COUNT(*) FROM tbl_bigintspan t1, tbl_bigintset t2 WHERE t1.b -|- t2.b;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
@@ -197,9 +200,9 @@ SELECT '-|-', 'period', 'period', COUNT(*) FROM tbl_period t1, tbl_period t2 WHE
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '<<', 'int', 'intspan', COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i << t2.i;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '<<', 'intspan', 'int', COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i << t2.i;
-INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '<<', 'intset', 'intspan', COUNT(*) FROM tbl_intset t1, tbl_intspan t2 WHERE t1.i << t2.i;
+INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
+SELECT '<<', 'intspan', 'int', COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i << t2.i;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '<<', 'intspan', 'intset', COUNT(*) FROM tbl_intspan t1, tbl_intset t2 WHERE t1.i << t2.i;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
@@ -208,9 +211,9 @@ SELECT '<<', 'intspan', 'intspan', COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '<<', 'bigint', 'bigintspan', COUNT(*) FROM tbl_bigint t1, tbl_bigintspan t2 WHERE t1.b << t2.b;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '<<', 'bigintspan', 'bigint', COUNT(*) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t1.b << t2.b;
-INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '<<', 'bigintset', 'bigintspan', COUNT(*) FROM tbl_bigintset t1, tbl_bigintspan t2 WHERE t1.b << t2.b;
+INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
+SELECT '<<', 'bigintspan', 'bigint', COUNT(*) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t1.b << t2.b;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '<<', 'bigintspan', 'bigintset', COUNT(*) FROM tbl_bigintspan t1, tbl_bigintset t2 WHERE t1.b << t2.b;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
@@ -219,9 +222,9 @@ SELECT '<<', 'bigintspan', 'bigintspan', COUNT(*) FROM tbl_bigintspan t1, tbl_bi
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '<<', 'float', 'floatspan', COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f << t2.f;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '<<', 'floatspan', 'float', COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f << t2.f;
-INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '<<', 'floatset', 'floatspan', COUNT(*) FROM tbl_floatset t1, tbl_floatspan t2 WHERE t1.f << t2.f;
+INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
+SELECT '<<', 'floatspan', 'float', COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f << t2.f;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '<<', 'floatspan', 'floatset', COUNT(*) FROM tbl_floatspan t1, tbl_floatset t2 WHERE t1.f << t2.f;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
@@ -243,9 +246,9 @@ SELECT '<<#', 'period', 'period', COUNT(*) FROM tbl_period t1, tbl_period t2 WHE
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '&<', 'int', 'intspan', COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i &< t2.i;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '&<', 'intspan', 'int', COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i &< t2.i;
-INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '&<', 'intset', 'intspan', COUNT(*) FROM tbl_intset t1, tbl_intspan t2 WHERE t1.i &< t2.i;
+INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
+SELECT '&<', 'intspan', 'int', COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i &< t2.i;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '&<', 'intspan', 'intset', COUNT(*) FROM tbl_intspan t1, tbl_intset t2 WHERE t1.i &< t2.i;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
@@ -254,9 +257,9 @@ SELECT '&<', 'intspan', 'intspan', COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '&<', 'bigint', 'bigintspan', COUNT(*) FROM tbl_bigint t1, tbl_bigintspan t2 WHERE t1.b &< t2.b;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '&<', 'bigintspan', 'bigint', COUNT(*) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t1.b &< t2.b;
-INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '&<', 'bigintset', 'bigintspan', COUNT(*) FROM tbl_bigintset t1, tbl_bigintspan t2 WHERE t1.b &< t2.b;
+INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
+SELECT '&<', 'bigintspan', 'bigint', COUNT(*) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t1.b &< t2.b;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '&<', 'bigintspan', 'bigintset', COUNT(*) FROM tbl_bigintspan t1, tbl_bigintset t2 WHERE t1.b &< t2.b;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
@@ -265,9 +268,9 @@ SELECT '&<', 'bigintspan', 'bigintspan', COUNT(*) FROM tbl_bigintspan t1, tbl_bi
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '&<', 'float', 'floatspan', COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f &< t2.f;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '&<', 'floatspan', 'float', COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f &< t2.f;
-INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '&<', 'floatset', 'floatspan', COUNT(*) FROM tbl_floatset t1, tbl_floatspan t2 WHERE t1.f &< t2.f;
+INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
+SELECT '&<', 'floatspan', 'float', COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f &< t2.f;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '&<', 'floatspan', 'floatset', COUNT(*) FROM tbl_floatspan t1, tbl_floatset t2 WHERE t1.f &< t2.f;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
@@ -289,9 +292,9 @@ SELECT '&<#', 'period', 'period', COUNT(*) FROM tbl_period t1, tbl_period t2 WHE
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '>>', 'int', 'intspan', COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i >> t2.i;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '>>', 'intspan', 'int', COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i >> t2.i;
-INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '>>', 'intset', 'intspan', COUNT(*) FROM tbl_intset t1, tbl_intspan t2 WHERE t1.i >> t2.i;
+INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
+SELECT '>>', 'intspan', 'int', COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i >> t2.i;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '>>', 'intspan', 'intset', COUNT(*) FROM tbl_intspan t1, tbl_intset t2 WHERE t1.i >> t2.i;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
@@ -300,9 +303,9 @@ SELECT '>>', 'intspan', 'intspan', COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '>>', 'bigint', 'bigintspan', COUNT(*) FROM tbl_bigint t1, tbl_bigintspan t2 WHERE t1.b >> t2.b;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '>>', 'bigintspan', 'bigint', COUNT(*) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t1.b >> t2.b;
-INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '>>', 'bigintset', 'bigintspan', COUNT(*) FROM tbl_bigintset t1, tbl_bigintspan t2 WHERE t1.b >> t2.b;
+INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
+SELECT '>>', 'bigintspan', 'bigint', COUNT(*) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t1.b >> t2.b;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '>>', 'bigintspan', 'bigintset', COUNT(*) FROM tbl_bigintspan t1, tbl_bigintset t2 WHERE t1.b >> t2.b;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
@@ -311,9 +314,9 @@ SELECT '>>', 'bigintspan', 'bigintspan', COUNT(*) FROM tbl_bigintspan t1, tbl_bi
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '>>', 'float', 'floatspan', COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f >> t2.f;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '>>', 'floatspan', 'float', COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f >> t2.f;
-INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '>>', 'floatset', 'floatspan', COUNT(*) FROM tbl_floatset t1, tbl_floatspan t2 WHERE t1.f >> t2.f;
+INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
+SELECT '>>', 'floatspan', 'float', COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f >> t2.f;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '>>', 'floatspan', 'floatset', COUNT(*) FROM tbl_floatspan t1, tbl_floatset t2 WHERE t1.f >> t2.f;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
@@ -335,9 +338,9 @@ SELECT '#>>', 'period', 'period', COUNT(*) FROM tbl_period t1, tbl_period t2 WHE
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '&>', 'int', 'intspan', COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i &> t2.i;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '&>', 'intspan', 'int', COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i &> t2.i;
-INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '&>', 'intset', 'intspan', COUNT(*) FROM tbl_intset t1, tbl_intspan t2 WHERE t1.i &> t2.i;
+INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
+SELECT '&>', 'intspan', 'int', COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i &> t2.i;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '&>', 'intspan', 'intset', COUNT(*) FROM tbl_intspan t1, tbl_intset t2 WHERE t1.i &> t2.i;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
@@ -346,9 +349,9 @@ SELECT '&>', 'intspan', 'intspan', COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '&>', 'bigint', 'bigintspan', COUNT(*) FROM tbl_bigint t1, tbl_bigintspan t2 WHERE t1.b &> t2.b;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '&>', 'bigintspan', 'bigint', COUNT(*) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t1.b &> t2.b;
-INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '&>', 'bigintset', 'bigintspan', COUNT(*) FROM tbl_bigintset t1, tbl_bigintspan t2 WHERE t1.b &> t2.b;
+INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
+SELECT '&>', 'bigintspan', 'bigint', COUNT(*) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t1.b &> t2.b;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '&>', 'bigintspan', 'bigintset', COUNT(*) FROM tbl_bigintspan t1, tbl_bigintset t2 WHERE t1.b &> t2.b;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
@@ -357,9 +360,9 @@ SELECT '&>', 'bigintspan', 'bigintspan', COUNT(*) FROM tbl_bigintspan t1, tbl_bi
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '&>', 'float', 'floatspan', COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f &> t2.f;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '&>', 'floatspan', 'float', COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f &> t2.f;
-INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '&>', 'floatset', 'floatspan', COUNT(*) FROM tbl_floatset t1, tbl_floatspan t2 WHERE t1.f &> t2.f;
+INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
+SELECT '&>', 'floatspan', 'float', COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f &> t2.f;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '&>', 'floatspan', 'floatset', COUNT(*) FROM tbl_floatspan t1, tbl_floatset t2 WHERE t1.f &> t2.f;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
@@ -458,6 +461,9 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE 
 WHERE op = '<@' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
 
 UPDATE test_spanops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_period WHERE t <@ p )
+WHERE op = '<@' AND leftarg = 'timestamptz' AND rightarg = 'period';
+UPDATE test_spanops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_period WHERE ts <@ p )
 WHERE op = '<@' AND leftarg = 'timestampset' AND rightarg = 'period';
 UPDATE test_spanops
@@ -478,6 +484,16 @@ WHERE op = '&&' AND leftarg = 'intspan' AND rightarg = 'intset';
 UPDATE test_spanops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i && t2.i )
 WHERE op = '&&' AND leftarg = 'intspan' AND rightarg = 'intspan';
+
+UPDATE test_spanops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintspan t2 WHERE t1.b && t2.b )
+WHERE op = '&&' AND leftarg = 'bigintset' AND rightarg = 'bigintspan';
+UPDATE test_spanops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintset t2 WHERE t1.b && t2.b )
+WHERE op = '&&' AND leftarg = 'bigintspan' AND rightarg = 'bigintset';
+UPDATE test_spanops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b && t2.b )
+WHERE op = '&&' AND leftarg = 'bigintspan' AND rightarg = 'bigintspan';
 
 UPDATE test_spanops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatspan t2 WHERE t1.f && t2.f )
@@ -801,11 +817,17 @@ UPDATE test_spanops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f &> t2.f )
 WHERE op = '&>' AND leftarg = 'float' AND rightarg = 'floatspan';
 UPDATE test_spanops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatspan t2 WHERE t1.f &> t2.f )
+WHERE op = '&>' AND leftarg = 'floatset' AND rightarg = 'floatspan';
+UPDATE test_spanops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f &> t2.f )
 WHERE op =  '&>' AND leftarg = 'floatspan' AND rightarg = 'float';
 UPDATE test_spanops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatset t2 WHERE t1.f &> t2.f )
+WHERE op =  '&>' AND leftarg = 'floatspan' AND rightarg = 'floatset';
+UPDATE test_spanops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f &> t2.f )
-WHERE op = '&>' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
+WHERE op =  '&>' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
 
 UPDATE test_spanops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_period WHERE t #&> p )
@@ -912,6 +934,9 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHE
 WHERE op = '<@' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
 
 UPDATE test_spanops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_period WHERE t <@ p )
+WHERE op = '<@' AND leftarg = 'timestamptz' AND rightarg = 'period';
+UPDATE test_spanops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_period WHERE ts <@ p )
 WHERE op = '<@' AND leftarg = 'timestampset' AND rightarg = 'period';
 UPDATE test_spanops
@@ -932,6 +957,16 @@ WHERE op = '&&' AND leftarg = 'intspan' AND rightarg = 'intset';
 UPDATE test_spanops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i && t2.i )
 WHERE op = '&&' AND leftarg = 'intspan' AND rightarg = 'intspan';
+
+UPDATE test_spanops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintspan t2 WHERE t1.b && t2.b )
+WHERE op = '&&' AND leftarg = 'bigintset' AND rightarg = 'bigintspan';
+UPDATE test_spanops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintset t2 WHERE t1.b && t2.b )
+WHERE op = '&&' AND leftarg = 'bigintspan' AND rightarg = 'bigintset';
+UPDATE test_spanops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b && t2.b )
+WHERE op = '&&' AND leftarg = 'bigintspan' AND rightarg = 'bigintspan';
 
 UPDATE test_spanops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatspan t2 WHERE t1.f && t2.f )
@@ -1255,8 +1290,14 @@ UPDATE test_spanops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f &> t2.f )
 WHERE op = '&>' AND leftarg = 'float' AND rightarg = 'floatspan';
 UPDATE test_spanops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatspan t2 WHERE t1.f &> t2.f )
+WHERE op = '&>' AND leftarg = 'floatset' AND rightarg = 'floatspan';
+UPDATE test_spanops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f &> t2.f )
 WHERE op =  '&>' AND leftarg = 'floatspan' AND rightarg = 'float';
+UPDATE test_spanops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatset t2 WHERE t1.f &> t2.f )
+WHERE op =  '&>' AND leftarg = 'floatspan' AND rightarg = 'floatset';
 UPDATE test_spanops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f &> t2.f )
 WHERE op = '&>' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
@@ -1366,6 +1407,9 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE
 WHERE op = '<@' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
 
 UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_period WHERE t <@ p )
+WHERE op = '<@' AND leftarg = 'timestamptz' AND rightarg = 'period';
+UPDATE test_spanops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_period WHERE ts <@ p )
 WHERE op = '<@' AND leftarg = 'timestampset' AND rightarg = 'period';
 UPDATE test_spanops
@@ -1386,6 +1430,16 @@ WHERE op = '&&' AND leftarg = 'intspan' AND rightarg = 'intset';
 UPDATE test_spanops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i && t2.i )
 WHERE op = '&&' AND leftarg = 'intspan' AND rightarg = 'intspan';
+
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintspan t2 WHERE t1.b && t2.b )
+WHERE op = '&&' AND leftarg = 'bigintset' AND rightarg = 'bigintspan';
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintset t2 WHERE t1.b && t2.b )
+WHERE op = '&&' AND leftarg = 'bigintspan' AND rightarg = 'bigintset';
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b && t2.b )
+WHERE op = '&&' AND leftarg = 'bigintspan' AND rightarg = 'bigintspan';
 
 UPDATE test_spanops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatspan t2 WHERE t1.f && t2.f )
@@ -1709,8 +1763,14 @@ UPDATE test_spanops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f &> t2.f )
 WHERE op = '&>' AND leftarg = 'float' AND rightarg = 'floatspan';
 UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatspan t2 WHERE t1.f &> t2.f )
+WHERE op = '&>' AND leftarg = 'floatset' AND rightarg = 'floatspan';
+UPDATE test_spanops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f &> t2.f )
 WHERE op =  '&>' AND leftarg = 'floatspan' AND rightarg = 'float';
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatset t2 WHERE t1.f &> t2.f )
+WHERE op =  '&>' AND leftarg = 'floatspan' AND rightarg = 'floatset';
 UPDATE test_spanops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f &> t2.f )
 WHERE op = '&>' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
@@ -1740,7 +1800,8 @@ DROP INDEX tbl_period_kdtree_idx;
 -------------------------------------------------------------------------------
 
 SELECT * FROM test_spanops
-WHERE no_idx <> rtree_idx OR no_idx <> quadtree_idx OR no_idx <> kdtree_idx
+WHERE no_idx <> rtree_idx OR no_idx <> quadtree_idx OR no_idx <> kdtree_idx OR
+  no_idx IS NULL OR rtree_idx IS NULL OR quadtree_idx IS NULL OR kdtree_idx IS NULL
 ORDER BY op, leftarg, rightarg;
 
 DROP TABLE test_spanops;

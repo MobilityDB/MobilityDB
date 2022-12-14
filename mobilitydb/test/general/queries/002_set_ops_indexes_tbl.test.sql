@@ -786,7 +786,8 @@ DROP INDEX tbl_timestampset_kdtree_idx;
 -------------------------------------------------------------------------------
 
 SELECT * FROM test_setops
-WHERE no_idx <> rtree_idx OR no_idx <> quadtree_idx OR no_idx <> kdtree_idx
+WHERE no_idx <> rtree_idx OR no_idx <> quadtree_idx OR no_idx <> kdtree_idx OR
+   no_idx IS NULL OR rtree_idx IS NULL OR quadtree_idx IS NULL OR kdtree_idx IS NULL
 ORDER BY op, leftarg, rightarg;
 
 DROP TABLE test_setops;

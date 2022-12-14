@@ -1384,7 +1384,6 @@ minus_float_floatspan(double d, const Span *s, double *result)
   *result = DatumGetFloat8(v);
   return found;
 }
-#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_set
@@ -1399,6 +1398,7 @@ minus_timestamp_period(TimestampTz t, const Period *p, TimestampTz *result)
   *result = DatumGetTimestampTz(v);
   return res;
 }
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_set
@@ -1409,17 +1409,6 @@ OrderedSet *
 minus_orderedset_span(const OrderedSet *os, const Span *s)
 {
   return setop_orderedset_span(os, s, MINUS);
-}
-
-/**
- * @ingroup libmeos_setspan_set
- * @brief Return the difference of a timestamp set and a period.
- * @sqlop @p -
- */
-TimestampSet *
-minus_timestampset_period(const TimestampSet *ts, const Period *p)
-{
-  return setop_orderedset_span(ts, p, MINUS);
 }
 
 /**
@@ -1519,7 +1508,6 @@ minus_floatspan_float(const Span *s, double d)
 {
   return minus_span_value(s, Float8GetDatum(d), T_FLOAT8);
 }
-#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_set
@@ -1531,6 +1519,7 @@ minus_period_timestamp(const Period *p, TimestampTz t)
 {
   return minus_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_set
@@ -1550,75 +1539,6 @@ minus_span_orderedset(const Span *s, const OrderedSet *os)
   SpanSet *result = minus_spanset_orderedset(ss, os);
   pfree(ss);
   return result;
-}
-
-/**
- * @ingroup libmeos_setspan_set
- * @brief Return the difference of a period and a timestamp set.
- * @sqlop @p -
- */
-PeriodSet *
-minus_period_timestampset(const Period *p, const TimestampSet *ts)
-{
-  return minus_span_orderedset(p, ts);
-}
-
-/**
- * @ingroup libmeos_setspan_set
- * @brief Return the difference of two spans.
- * @sqlop @p -
- */
-Span *
-bbox_minus_span_span(const Span *s1, const Span *s2)
-{
-  assert(s1->spantype == s2->spantype);
-  /* Deserialize the spans */
-  SpanBound lower1, lower2, upper1, upper2;
-  span_deserialize(s1, &lower1, &upper1);
-  span_deserialize(s2, &lower2, &upper2);
-
-  /* Compare all bounds */
-  int cmp_l1l2 = span_bound_cmp(&lower1, &lower2);
-  int cmp_l1u2 = span_bound_cmp(&lower1, &upper2);
-  int cmp_u1l2 = span_bound_cmp(&upper1, &lower2);
-  int cmp_u1u2 = span_bound_cmp(&upper1, &upper2);
-
-  if (cmp_l1l2 < 0 && cmp_u1u2 > 0)
-    elog(ERROR, "The result of span difference would not be contiguous");
-
-  /* Result is empty
-   * s1         |----|
-   * s2      |----------|
-   */
-  if (cmp_l1l2 >= 0 && cmp_u1u2 <= 0)
-    return NULL;
-
-  /* Result is a span */
-  /*
-   * s1         |----|
-   * s2  |----|
-   * s2                 |----|
-   * result     |----|
-   */
-  if (cmp_l1u2 > 0 || cmp_u1l2 < 0)
-    return span_copy(s1);
-
-  /*
-   * s1           |-----|
-   * s2               |----|
-   * result       |---|
-   */
-  else if (cmp_l1l2 <= 0 && cmp_u1u2 <= 0)
-    return span_make(s1->lower, s2->lower, s1->lower_inc, !(s2->lower_inc),
-      s1->basetype);
-  /*
-   * s1         |-----|
-   * s2      |----|
-   * result       |---|
-   */
-  else /* cmp_l1l2 >= 0 && cmp_u1u2 >= 0 */
-    return span_make(s2->upper, s1->upper, !(s2->upper_inc), s1->upper_inc,
-      s1->basetype);
 }
 
 /**

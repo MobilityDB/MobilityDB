@@ -1,0 +1,466 @@
+SELECT COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i + t2.i IS NOT NULL;
+ count 
+-------
+  9801
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intset t1, tbl_intspan t2 WHERE t1.i + t2.i IS NOT NULL;
+ count 
+-------
+ 98901
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i + t2.i IS NOT NULL;
+ count 
+-------
+  9801
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intspan t1, tbl_intset t2 WHERE t1.i + t2.i IS NOT NULL;
+ count 
+-------
+ 98901
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i + t2.i IS NOT NULL;
+ count 
+-------
+  9801
+(1 row)
+
+SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintspan t2 WHERE t1.b + t2.b IS NOT NULL;
+ count 
+-------
+  9801
+(1 row)
+
+SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintspan t2 WHERE t1.b + t2.b IS NOT NULL;
+ count 
+-------
+ 98901
+(1 row)
+
+SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t1.b + t2.b IS NOT NULL;
+ count 
+-------
+  9801
+(1 row)
+
+SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b + t2.b IS NOT NULL;
+ count 
+-------
+  9801
+(1 row)
+
+SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b + t2.b IS NOT NULL;
+ count 
+-------
+  9801
+(1 row)
+
+SELECT COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f + t2.f IS NOT NULL;
+ count 
+-------
+  9801
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatspan t2 WHERE t1.f + t2.f IS NOT NULL;
+ count 
+-------
+  9801
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f + t2.f IS NOT NULL;
+ count 
+-------
+  9801
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatset t2 WHERE t1.f + t2.f IS NOT NULL;
+ count 
+-------
+  9801
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f + t2.f IS NOT NULL;
+ count 
+-------
+  9801
+(1 row)
+
+SELECT COUNT(*) FROM tbl_timestamptz t1, tbl_period t2 WHERE t1.t + t2.p IS NOT NULL;
+ count 
+-------
+  9801
+(1 row)
+
+SELECT COUNT(*) FROM tbl_timestampset t1, tbl_period t2 WHERE t1.ts + t2.p IS NOT NULL;
+ count 
+-------
+  9801
+(1 row)
+
+SELECT COUNT(*) FROM tbl_period t1, tbl_timestamptz t2 WHERE t1.p + t2.t IS NOT NULL;
+ count 
+-------
+  9801
+(1 row)
+
+SELECT COUNT(*) FROM tbl_period t1, tbl_timestampset t2 WHERE t1.p + t2.ts IS NOT NULL;
+ count 
+-------
+  9801
+(1 row)
+
+SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p + t2.p IS NOT NULL;
+ count 
+-------
+  9801
+(1 row)
+
+SELECT COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i - t2.i IS NOT NULL;
+ count 
+-------
+  9294
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intset t1, tbl_intspan t2 WHERE t1.i - t2.i IS NOT NULL;
+ count 
+-------
+ 98901
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i - t2.i IS NOT NULL;
+ count 
+-------
+  9790
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intspan t1, tbl_intset t2 WHERE t1.i - t2.i IS NOT NULL;
+ERROR:  Span cannot be empty
+SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i - t2.i IS NOT NULL;
+ count 
+-------
+  9523
+(1 row)
+
+SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintspan t2 WHERE t1.b - t2.b IS NOT NULL;
+ count 
+-------
+  9324
+(1 row)
+
+SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintspan t2 WHERE t1.b - t2.b IS NOT NULL;
+ count 
+-------
+ 98901
+(1 row)
+
+SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t1.b - t2.b IS NOT NULL;
+ count 
+-------
+  9789
+(1 row)
+
+SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b - t2.b IS NOT NULL;
+ count 
+-------
+  9458
+(1 row)
+
+SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b - t2.b IS NOT NULL;
+ count 
+-------
+  9458
+(1 row)
+
+SELECT COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f - t2.f IS NOT NULL;
+ count 
+-------
+  9294
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatspan t2 WHERE t1.f - t2.f IS NOT NULL;
+ count 
+-------
+  9801
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f - t2.f IS NOT NULL;
+ count 
+-------
+  9801
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatset t2 WHERE t1.f - t2.f IS NOT NULL;
+ count 
+-------
+  9801
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f - t2.f IS NOT NULL;
+ count 
+-------
+  9528
+(1 row)
+
+SELECT COUNT(*) FROM tbl_timestamptz t1, tbl_period t2 WHERE t1.t - t2.p IS NOT NULL;
+ count 
+-------
+  9801
+(1 row)
+
+SELECT COUNT(*) FROM tbl_timestampset t1, tbl_period t2 WHERE t1.ts - t2.p IS NOT NULL;
+ count 
+-------
+  9801
+(1 row)
+
+SELECT COUNT(*) FROM tbl_period t1, tbl_timestamptz t2 WHERE t1.p - t2.t IS NOT NULL;
+ count 
+-------
+  9801
+(1 row)
+
+SELECT COUNT(*) FROM tbl_period t1, tbl_timestampset t2 WHERE t1.p - t2.ts IS NOT NULL;
+ count 
+-------
+  9801
+(1 row)
+
+SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p - t2.p IS NOT NULL;
+ count 
+-------
+  9702
+(1 row)
+
+SELECT COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i * t2.i IS NOT NULL;
+ count 
+-------
+   507
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intset t1, tbl_intspan t2 WHERE t1.i * t2.i IS NOT NULL;
+ count 
+-------
+  2546
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i * t2.i IS NOT NULL;
+ count 
+-------
+   507
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intspan t1, tbl_intset t2 WHERE t1.i * t2.i IS NOT NULL;
+ count 
+-------
+  2546
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i * t2.i IS NOT NULL;
+ count 
+-------
+   941
+(1 row)
+
+SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintspan t2 WHERE t1.b * t2.b IS NOT NULL;
+ count 
+-------
+   477
+(1 row)
+
+SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintspan t2 WHERE t1.b * t2.b IS NOT NULL;
+ count 
+-------
+  2797
+(1 row)
+
+SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t1.b * t2.b IS NOT NULL;
+ count 
+-------
+   477
+(1 row)
+
+SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b * t2.b IS NOT NULL;
+ count 
+-------
+  1105
+(1 row)
+
+SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b * t2.b IS NOT NULL;
+ count 
+-------
+  1105
+(1 row)
+
+SELECT COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f * t2.f IS NOT NULL;
+ count 
+-------
+   507
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatspan t2 WHERE t1.f * t2.f IS NOT NULL;
+ count 
+-------
+  2200
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f * t2.f IS NOT NULL;
+ count 
+-------
+   507
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatset t2 WHERE t1.f * t2.f IS NOT NULL;
+ count 
+-------
+  2200
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f * t2.f IS NOT NULL;
+ count 
+-------
+  1125
+(1 row)
+
+SELECT COUNT(*) FROM tbl_timestamptz t1, tbl_period t2 WHERE t1.t * t2.p IS NOT NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_timestampset t1, tbl_period t2 WHERE t1.ts * t2.p IS NOT NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_period t1, tbl_timestamptz t2 WHERE t1.p * t2.t IS NOT NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_period t1, tbl_timestampset t2 WHERE t1.p * t2.ts IS NOT NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p * t2.p IS NOT NULL;
+ count 
+-------
+    99
+(1 row)
+
+SELECT MIN(t1.i <-> t2.i) FROM tbl_int t1, tbl_intspan t2;
+ min 
+-----
+   0
+(1 row)
+
+SELECT MIN(t1.i <-> t2.i) FROM tbl_intset t1, tbl_intspan t2;
+ min 
+-----
+   0
+(1 row)
+
+SELECT MIN(t1.i <-> t2.i) FROM tbl_intspan t1, tbl_int t2;
+ min 
+-----
+   0
+(1 row)
+
+SELECT MIN(t1.i <-> t2.i) FROM tbl_intspan t1, tbl_intset t2;
+ min 
+-----
+   0
+(1 row)
+
+SELECT MIN(t1.i <-> t2.i) FROM tbl_intspan t1, tbl_intspan t2;
+ min 
+-----
+   0
+(1 row)
+
+SELECT MIN(t1.b <-> t2.b) FROM tbl_bigint t1, tbl_bigintspan t2;
+ min 
+-----
+   0
+(1 row)
+
+SELECT MIN(t1.b <-> t2.b) FROM tbl_bigintset t1, tbl_bigintspan t2;
+ min 
+-----
+   0
+(1 row)
+
+SELECT MIN(t1.b <-> t2.b) FROM tbl_bigintspan t1, tbl_bigint t2;
+ min 
+-----
+   0
+(1 row)
+
+SELECT MIN(t1.b <-> t2.b) FROM tbl_bigintspan t1, tbl_bigintset t2;
+ min 
+-----
+   0
+(1 row)
+
+SELECT MIN(t1.b <-> t2.b) FROM tbl_bigintspan t1, tbl_bigintspan t2;
+ min 
+-----
+   0
+(1 row)
+
+SELECT MIN(t1.f <-> t2.f) FROM tbl_float t1, tbl_floatspan t2;
+ min 
+-----
+   0
+(1 row)
+
+SELECT MIN(t1.f <-> t2.f) FROM tbl_floatset t1, tbl_floatspan t2;
+ min 
+-----
+   0
+(1 row)
+
+SELECT MIN(t1.f <-> t2.f) FROM tbl_floatspan t1, tbl_float t2;
+ min 
+-----
+   0
+(1 row)
+
+SELECT MIN(t1.f <-> t2.f) FROM tbl_floatspan t1, tbl_floatset t2;
+ min 
+-----
+   0
+(1 row)
+
+SELECT MIN(t1.f <-> t2.f) FROM tbl_floatspan t1, tbl_floatspan t2;
+ min 
+-----
+   0
+(1 row)
+
+SELECT MIN(t1.t <-> t2.p) FROM tbl_timestamptz t1, period t2;
+ERROR:  relation "period" does not exist
+LINE 1: ...ELECT MIN(t1.t <-> t2.p) FROM tbl_timestamptz t1, period t2;
+                                                             ^
+SELECT MIN(t1.ts <-> t2.p) FROM tbl_timestampset t1, period t2;
+ERROR:  relation "period" does not exist
+LINE 1: ...ECT MIN(t1.ts <-> t2.p) FROM tbl_timestampset t1, period t2;
+                                                             ^
+SELECT MIN(t1.p <-> t2.t) FROM period t1, tbl_timestamptz t2;
+ERROR:  relation "period" does not exist
+LINE 1: SELECT MIN(t1.p <-> t2.t) FROM period t1, tbl_timestamptz t2...
+                                       ^
+SELECT MIN(t1.p <-> t2.ts) FROM period t1, tbl_timestampset t2;
+ERROR:  relation "period" does not exist
+LINE 1: SELECT MIN(t1.p <-> t2.ts) FROM period t1, tbl_timestampset ...
+                                        ^
+SELECT MIN(t1.p <-> t2.p) FROM period t1, period t2;
+ERROR:  relation "period" does not exist
+LINE 1: SELECT MIN(t1.p <-> t2.p) FROM period t1, period t2;
+                                       ^

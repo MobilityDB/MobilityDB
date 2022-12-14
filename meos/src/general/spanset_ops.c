@@ -1871,7 +1871,7 @@ minus_spanset_orderedset(const SpanSet *ss, const OrderedSet *os)
   if (! overlaps_span_span(&ss->span, &os->span))
     return spanset_copy(ss);
 
-  /* Each timestamp will split at most one composing span into two */
+  /* Each value will split at most one composing span into two */
   Span **spans = palloc(sizeof(Span *) * (ss->count + os->count + 1));
   int i = 0, j = 0, k = 0;
   Span *curr = span_copy(spanset_sp_n(ss, 0));

@@ -150,7 +150,7 @@ CREATE FUNCTION span_contains(floatspanset, float)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_contains(floatspanset, floatset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contains_spanset_value'
+  AS 'MODULE_PATHNAME', 'Contains_spanset_orderedset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_contains(floatspanset, floatspan)
   RETURNS boolean
@@ -252,7 +252,7 @@ CREATE FUNCTION span_contained(int, intspanset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_contained(intset, intspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contained_value_spanset'
+  AS 'MODULE_PATHNAME', 'Contained_orderedset_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_contained(intspan, intspanset)
   RETURNS boolean
@@ -304,7 +304,7 @@ CREATE FUNCTION span_contained(bigint, bigintspanset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_contained(bigintset, bigintspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contained_value_spanset'
+  AS 'MODULE_PATHNAME', 'Contained_orderedset_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_contained(bigintspan, bigintspanset)
   RETURNS boolean
@@ -356,7 +356,7 @@ CREATE FUNCTION span_contained(float, floatspanset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_contained(floatset, floatspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contained_value_spanset'
+  AS 'MODULE_PATHNAME', 'Contained_orderedset_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_contained(floatspan, floatspanset)
   RETURNS boolean
@@ -1118,7 +1118,7 @@ CREATE FUNCTION span_right(floatspanset, float)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_right(floatspanset, floatset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Right_orderedset_spanset'
+  AS 'MODULE_PATHNAME', 'Right_spanset_orderedset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_right(floatspanset, floatspan)
   RETURNS boolean
@@ -1280,7 +1280,7 @@ CREATE OPERATOR &< (
   LEFTARG = int, RIGHTARG = intspanset,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
-CREATE OPERATOR <& (
+CREATE OPERATOR &< (
   PROCEDURE = span_overleft,
   LEFTARG = intset, RIGHTARG = intspanset,
   RESTRICT = span_sel, JOIN = span_joinsel
@@ -1295,7 +1295,7 @@ CREATE OPERATOR &< (
   LEFTARG = intspanset, RIGHTARG = int,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
-CREATE OPERATOR <& (
+CREATE OPERATOR &< (
   PROCEDURE = span_overleft,
   LEFTARG = intspanset, RIGHTARG = intset,
   RESTRICT = span_sel, JOIN = span_joinsel
@@ -1345,7 +1345,7 @@ CREATE OPERATOR &< (
   LEFTARG = bigint, RIGHTARG = bigintspanset,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
-CREATE OPERATOR <& (
+CREATE OPERATOR &< (
   PROCEDURE = span_overleft,
   LEFTARG = bigintset, RIGHTARG = bigintspanset,
   RESTRICT = span_sel, JOIN = span_joinsel
@@ -1360,7 +1360,7 @@ CREATE OPERATOR &< (
   LEFTARG = bigintspanset, RIGHTARG = bigint,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
-CREATE OPERATOR <& (
+CREATE OPERATOR &< (
   PROCEDURE = span_overleft,
   LEFTARG = bigintspanset, RIGHTARG = bigintset,
   RESTRICT = span_sel, JOIN = span_joinsel
@@ -1410,7 +1410,7 @@ CREATE OPERATOR &< (
   LEFTARG = float, RIGHTARG = floatspanset,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
-CREATE OPERATOR <& (
+CREATE OPERATOR &< (
   PROCEDURE = span_overleft,
   LEFTARG = floatset, RIGHTARG = floatspanset,
   RESTRICT = span_sel, JOIN = span_joinsel
@@ -1425,7 +1425,7 @@ CREATE OPERATOR &< (
   LEFTARG = floatspanset, RIGHTARG = float,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
-CREATE OPERATOR <& (
+CREATE OPERATOR &< (
   PROCEDURE = span_overleft,
   LEFTARG = floatspanset, RIGHTARG = floatset,
   RESTRICT = span_sel, JOIN = span_joinsel
@@ -1774,6 +1774,10 @@ CREATE FUNCTION span_adjacent(int, intspanset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_value_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_adjacent(intset, intspanset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adjacent_orderedset_spanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_adjacent(intspan, intspanset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_span_spanset'
@@ -1781,6 +1785,10 @@ CREATE FUNCTION span_adjacent(intspan, intspanset)
 CREATE FUNCTION span_adjacent(intspanset, int)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_spanset_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_adjacent(intspanset, intset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adjacent_spanset_orderedset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_adjacent(intspanset, intspan)
   RETURNS boolean
@@ -1799,6 +1807,12 @@ CREATE OPERATOR -|- (
 );
 CREATE OPERATOR -|- (
   PROCEDURE = span_adjacent,
+  LEFTARG = intset, RIGHTARG = intspanset,
+  COMMUTATOR = -|-,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR -|- (
+  PROCEDURE = span_adjacent,
   LEFTARG = intspan, RIGHTARG = intspanset,
   COMMUTATOR = -|-,
   RESTRICT = span_sel, JOIN = span_joinsel
@@ -1806,6 +1820,12 @@ CREATE OPERATOR -|- (
 CREATE OPERATOR -|- (
   PROCEDURE = span_adjacent,
   LEFTARG = intspanset, RIGHTARG = int,
+  COMMUTATOR = -|-,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR -|- (
+  PROCEDURE = span_adjacent,
+  LEFTARG = intspanset, RIGHTARG = intset,
   COMMUTATOR = -|-,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
@@ -1826,6 +1846,10 @@ CREATE FUNCTION span_adjacent(bigint, bigintspanset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_value_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_adjacent(bigintset, bigintspanset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adjacent_orderedset_spanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_adjacent(bigintspan, bigintspanset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_span_spanset'
@@ -1833,6 +1857,10 @@ CREATE FUNCTION span_adjacent(bigintspan, bigintspanset)
 CREATE FUNCTION span_adjacent(bigintspanset, bigint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_spanset_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_adjacent(bigintspanset, bigintset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adjacent_spanset_orderedset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_adjacent(bigintspanset, bigintspan)
   RETURNS boolean
@@ -1851,6 +1879,12 @@ CREATE OPERATOR -|- (
 );
 CREATE OPERATOR -|- (
   PROCEDURE = span_adjacent,
+  LEFTARG = bigintset, RIGHTARG = bigintspanset,
+  COMMUTATOR = -|-,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR -|- (
+  PROCEDURE = span_adjacent,
   LEFTARG = bigintspan, RIGHTARG = bigintspanset,
   COMMUTATOR = -|-,
   RESTRICT = span_sel, JOIN = span_joinsel
@@ -1858,6 +1892,12 @@ CREATE OPERATOR -|- (
 CREATE OPERATOR -|- (
   PROCEDURE = span_adjacent,
   LEFTARG = bigintspanset, RIGHTARG = bigint,
+  COMMUTATOR = -|-,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR -|- (
+  PROCEDURE = span_adjacent,
+  LEFTARG = bigintspanset, RIGHTARG = bigintset,
   COMMUTATOR = -|-,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
@@ -1878,6 +1918,10 @@ CREATE FUNCTION span_adjacent(float, floatspanset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_value_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_adjacent(floatset, floatspanset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adjacent_orderedset_spanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_adjacent(floatspan, floatspanset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_span_spanset'
@@ -1885,6 +1929,10 @@ CREATE FUNCTION span_adjacent(floatspan, floatspanset)
 CREATE FUNCTION span_adjacent(floatspanset, float)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_spanset_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_adjacent(floatspanset, floatset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adjacent_spanset_orderedset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_adjacent(floatspanset, floatspan)
   RETURNS boolean
@@ -1903,6 +1951,12 @@ CREATE OPERATOR -|- (
 );
 CREATE OPERATOR -|- (
   PROCEDURE = span_adjacent,
+  LEFTARG = floatset, RIGHTARG = floatspanset,
+  COMMUTATOR = -|-,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR -|- (
+  PROCEDURE = span_adjacent,
   LEFTARG = floatspan, RIGHTARG = floatspanset,
   COMMUTATOR = -|-,
   RESTRICT = span_sel, JOIN = span_joinsel
@@ -1910,6 +1964,12 @@ CREATE OPERATOR -|- (
 CREATE OPERATOR -|- (
   PROCEDURE = span_adjacent,
   LEFTARG = floatspanset, RIGHTARG = float,
+  COMMUTATOR = -|-,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR -|- (
+  PROCEDURE = span_adjacent,
+  LEFTARG = floatspanset, RIGHTARG = floatset,
   COMMUTATOR = -|-,
   RESTRICT = span_sel, JOIN = span_joinsel
 );

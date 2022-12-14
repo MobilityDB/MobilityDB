@@ -591,7 +591,6 @@ extern bool right_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2);
 
 /* Set functions for set and span types */
 
-extern Span *bbox_minus_span_span(const Span *s1, const Span *s2);
 extern Span *bbox_union_span_span(const Span *s1, const Span *s2, bool strict);
 extern OrderedSet *intersection_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2);
 extern bool intersection_period_timestamp(const Period *p, TimestampTz t, TimestampTz *result);
@@ -610,7 +609,6 @@ extern OrderedSet *minus_orderedset_orderedset(const OrderedSet *os1, const Orde
 extern OrderedSet *minus_orderedset_span(const OrderedSet *os, const Span *s);
 extern OrderedSet *minus_orderedset_spanset(const OrderedSet *os, const SpanSet *ss);
 extern SpanSet *minus_period_timestamp(const Period *p, TimestampTz t);
-extern PeriodSet *minus_period_timestampset(const Period *p, const TimestampSet *ts);
 extern SpanSet *minus_periodset_timestamp(const PeriodSet *ps, TimestampTz t);
 extern SpanSet *minus_span_orderedset(const Span *s, const OrderedSet *os);
 extern SpanSet *minus_span_span(const Span *s1, const Span *s2);
@@ -620,7 +618,6 @@ extern SpanSet *minus_spanset_span(const SpanSet *ss, const Span *s);
 extern SpanSet *minus_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2);
 extern bool minus_timestamp_period(TimestampTz t, const Period *p, TimestampTz *result);
 extern bool minus_timestamp_periodset(TimestampTz t, const PeriodSet *ps, TimestampTz *result);
-extern TimestampSet *minus_timestampset_period(const TimestampSet *ts, const Period *p);
 extern TimestampSet *minus_timestampset_timestamp(const TimestampSet *ts, TimestampTz t);
 extern TimestampSet *minus_timestampset_timestampset(const TimestampSet *ts1, const TimestampSet *ts2);
 extern OrderedSet *union_orderedset_orderedset(const OrderedSet *os1, const OrderedSet *os2);

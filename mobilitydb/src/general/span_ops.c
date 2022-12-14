@@ -885,10 +885,9 @@ PG_FUNCTION_INFO_V1(Minus_span_orderedset);
 PGDLLEXPORT Datum
 Minus_span_orderedset(PG_FUNCTION_ARGS)
 {
-  Span *ss = PG_GETARG_SPAN_P(0);
+  Span *s = PG_GETARG_SPAN_P(0);
   OrderedSet *os = PG_GETARG_ORDEREDSET_P(1);
-  PeriodSet *result = minus_span_orderedset(ss, os);
-  PG_FREE_IF_COPY(ss, 0);
+  PeriodSet *result = minus_span_orderedset(s, os);
   PG_FREE_IF_COPY(os, 1);
   if (! result)
     PG_RETURN_NULL();

@@ -2071,7 +2071,7 @@ CREATE FUNCTION span_distance(bigintspan, bigint)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_distance(bigintspan, bigintset)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_span_value'
+  AS 'MODULE_PATHNAME', 'Distance_span_orderedset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_distance(bigintspan, bigintspan)
   RETURNS float
