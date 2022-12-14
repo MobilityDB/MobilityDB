@@ -86,22 +86,6 @@ Timestampset_extent_transfn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(p);
 }
 
-PG_FUNCTION_INFO_V1(Periodset_extent_transfn);
-/**
- * Transition function for extent aggregation of period set values
- */
-PGDLLEXPORT Datum
-Periodset_extent_transfn(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
-  PeriodSet *ps = PG_ARGISNULL(1) ? NULL : PG_GETARG_PERIODSET_P(1);
-  p = periodset_extent_transfn(p, ps);
-  PG_FREE_IF_COPY(ps, 1);
-  if (! p)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(p);
-}
-
 /*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(Timestamp_tunion_transfn);
@@ -112,7 +96,7 @@ PGDLLEXPORT Datum
 Timestamp_tunion_transfn(PG_FUNCTION_ARGS)
 {
   SkipList *state;
-  INPUT_AGG_TRANS_STATE(state);
+  INPUT_AGG_TRANS_STATE(fcinfo, state);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   store_fcinfo(fcinfo);
   SkipList *result = timestamp_tunion_transfn(state, t);
@@ -127,7 +111,7 @@ PGDLLEXPORT Datum
 Timestampset_tunion_transfn(PG_FUNCTION_ARGS)
 {
   SkipList *state;
-  INPUT_AGG_TRANS_STATE(state);
+  INPUT_AGG_TRANS_STATE(fcinfo, state);
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   store_fcinfo(fcinfo);
   SkipList *result = timestampset_tunion_transfn(state, ts);
@@ -143,7 +127,7 @@ PGDLLEXPORT Datum
 Period_tunion_transfn(PG_FUNCTION_ARGS)
 {
   SkipList *state;
-  INPUT_AGG_TRANS_STATE(state);
+  INPUT_AGG_TRANS_STATE(fcinfo, state);
   Period *p = PG_GETARG_SPAN_P(1);
   store_fcinfo(fcinfo);
   SkipList *result = period_tunion_transfn(state, p);
@@ -158,7 +142,7 @@ PGDLLEXPORT Datum
 Periodset_tunion_transfn(PG_FUNCTION_ARGS)
 {
   SkipList *state;
-  INPUT_AGG_TRANS_STATE(state);
+  INPUT_AGG_TRANS_STATE(fcinfo, state);
   PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   store_fcinfo(fcinfo);
   SkipList *result = periodset_tunion_transfn(state, ps);
@@ -175,7 +159,7 @@ Datum
 Timestamp_tcount_transfn_ext(FunctionCallInfo fcinfo, bool bucket)
 {
   SkipList *state;
-  INPUT_AGG_TRANS_STATE(state);
+  INPUT_AGG_TRANS_STATE(fcinfo, state);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   Interval *interval = NULL;
   TimestampTz origin = 0;
@@ -217,7 +201,7 @@ Datum
 Timestampset_tcount_transfn_ext(FunctionCallInfo fcinfo, bool bucket)
 {
   SkipList *state;
-  INPUT_AGG_TRANS_STATE(state);
+  INPUT_AGG_TRANS_STATE(fcinfo, state);
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   Interval *interval = NULL;
   TimestampTz origin = 0;
@@ -260,7 +244,7 @@ Datum
 Period_tcount_transfn_ext(FunctionCallInfo fcinfo, bool bucket)
 {
   SkipList *state;
-  INPUT_AGG_TRANS_STATE(state);
+  INPUT_AGG_TRANS_STATE(fcinfo, state);
   Period *p = PG_GETARG_SPAN_P(1);
   Interval *interval = NULL;
   TimestampTz origin = 0;
@@ -302,7 +286,7 @@ Datum
 Periodset_tcount_transfn_ext(FunctionCallInfo fcinfo, bool bucket)
 {
   SkipList *state;
-  INPUT_AGG_TRANS_STATE(state);
+  INPUT_AGG_TRANS_STATE(fcinfo, state);
   PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   Interval *interval = NULL;
   TimestampTz origin = 0;
@@ -350,7 +334,7 @@ PGDLLEXPORT Datum
 Time_tunion_combinefn(PG_FUNCTION_ARGS)
 {
   SkipList *state1, *state2;
-  INPUT_AGG_COMB_STATE(state1, state2);
+  INPUT_AGG_COMB_STATE(fcinfo, state1, state2);
   store_fcinfo(fcinfo);
   SkipList *result = time_agg_combinefn(state1, state2);
   PG_RETURN_POINTER(result);

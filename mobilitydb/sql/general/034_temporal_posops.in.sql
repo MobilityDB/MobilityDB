@@ -1082,6 +1082,182 @@ CREATE OPERATOR &> (
 );
 
 /*****************************************************************************
+ * intspanset
+ *****************************************************************************/
+/* intspanset op tint */
+
+CREATE FUNCTION temporal_left(intspanset, tint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Left_spanset_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overleft(intspanset, tint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overleft_spanset_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_right(intspanset, tint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Right_spanset_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overright(intspanset, tint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overright_spanset_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR << (
+  LEFTARG = intspanset, RIGHTARG = tint,
+  PROCEDURE = temporal_left,
+  COMMUTATOR = >>,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR &< (
+  LEFTARG = intspanset, RIGHTARG = tint,
+  PROCEDURE = temporal_overleft,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR >> (
+  LEFTARG = intspanset, RIGHTARG = tint,
+  PROCEDURE = temporal_right,
+  COMMUTATOR = <<,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR &> (
+  LEFTARG = intspanset, RIGHTARG = tint,
+  PROCEDURE = temporal_overright,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+
+/*****************************************************************************/
+/* intspanset op tfloat */
+
+CREATE FUNCTION temporal_left(intspanset, tfloat)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Left_spanset_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overleft(intspanset, tfloat)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overleft_spanset_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_right(intspanset, tfloat)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Right_spanset_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overright(intspanset, tfloat)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overright_spanset_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR << (
+  LEFTARG = intspanset, RIGHTARG = tfloat,
+  PROCEDURE = temporal_left,
+  COMMUTATOR = >>,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR &< (
+  LEFTARG = intspanset, RIGHTARG = tfloat,
+  PROCEDURE = temporal_overleft,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR >> (
+  LEFTARG = intspanset, RIGHTARG = tfloat,
+  PROCEDURE = temporal_right,
+  COMMUTATOR = <<,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR &> (
+  LEFTARG = intspanset, RIGHTARG = tfloat,
+  PROCEDURE = temporal_overright,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+
+/*****************************************************************************
+ * floatspanset
+ *****************************************************************************/
+/* floatspanset op tint */
+
+CREATE FUNCTION temporal_left(floatspanset, tint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Left_spanset_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overleft(floatspanset, tint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overleft_spanset_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_right(floatspanset, tint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Right_spanset_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overright(floatspanset, tint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overright_spanset_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR << (
+  LEFTARG = floatspanset, RIGHTARG = tint,
+  PROCEDURE = temporal_left,
+  COMMUTATOR = >>,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR &< (
+  LEFTARG = floatspanset, RIGHTARG = tint,
+  PROCEDURE = temporal_overleft,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR >> (
+  LEFTARG = floatspanset, RIGHTARG = tint,
+  PROCEDURE = temporal_right,
+  COMMUTATOR = <<,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR &> (
+  LEFTARG = floatspanset, RIGHTARG = tint,
+  PROCEDURE = temporal_overright,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+
+/*****************************************************************************/
+/* floatspanset op tfloat */
+
+CREATE FUNCTION temporal_left(floatspanset, tfloat)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Left_spanset_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overleft(floatspanset, tfloat)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overleft_spanset_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_right(floatspanset, tfloat)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Right_spanset_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overright(floatspanset, tfloat)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overright_spanset_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR << (
+  LEFTARG = floatspanset, RIGHTARG = tfloat,
+  PROCEDURE = temporal_left,
+  COMMUTATOR = >>,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR &< (
+  LEFTARG = floatspanset, RIGHTARG = tfloat,
+  PROCEDURE = temporal_overleft,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR >> (
+  LEFTARG = floatspanset, RIGHTARG = tfloat,
+  PROCEDURE = temporal_right,
+  COMMUTATOR = <<,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR &> (
+  LEFTARG = floatspanset, RIGHTARG = tfloat,
+  PROCEDURE = temporal_overright,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+
+/*****************************************************************************
  * tbox
  *****************************************************************************/
 /* tbox op tint */
@@ -1768,6 +1944,49 @@ CREATE OPERATOR &> (
 );
 
 /*****************************************************************************/
+/* tint op intspanset */
+
+CREATE FUNCTION temporal_left(tint, intspanset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Left_tnumber_spanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overleft(tint, intspanset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overleft_tnumber_spanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_right(tint, intspanset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Right_tnumber_spanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overright(tint, intspanset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overright_tnumber_spanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR << (
+  LEFTARG = tint, RIGHTARG = intspanset,
+  PROCEDURE = temporal_left,
+  COMMUTATOR = >>,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR &< (
+  LEFTARG = tint, RIGHTARG = intspanset,
+  PROCEDURE = temporal_overleft,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR >> (
+  LEFTARG = tint, RIGHTARG = intspanset,
+  PROCEDURE = temporal_right,
+  COMMUTATOR = <<,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR &> (
+  LEFTARG = tint, RIGHTARG = intspanset,
+  PROCEDURE = temporal_overright,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+
+/*****************************************************************************/
 /* tint op tbox */
 
 CREATE FUNCTION temporal_left(tint, tbox)
@@ -2310,6 +2529,49 @@ CREATE OPERATOR >> (
 );
 CREATE OPERATOR &> (
   LEFTARG = tfloat, RIGHTARG = floatspan,
+  PROCEDURE = temporal_overright,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+
+/*****************************************************************************/
+/* tfloat op floatspanset */
+
+CREATE FUNCTION temporal_left(tfloat, floatspanset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Left_tnumber_spanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overleft(tfloat, floatspanset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overleft_tnumber_spanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_right(tfloat, floatspanset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Right_tnumber_spanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overright(tfloat, floatspanset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overright_tnumber_spanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR << (
+  LEFTARG = tfloat, RIGHTARG = floatspanset,
+  PROCEDURE = temporal_left,
+  COMMUTATOR = >>,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR &< (
+  LEFTARG = tfloat, RIGHTARG = floatspanset,
+  PROCEDURE = temporal_overleft,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR >> (
+  LEFTARG = tfloat, RIGHTARG = floatspanset,
+  PROCEDURE = temporal_right,
+  COMMUTATOR = <<,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR &> (
+  LEFTARG = tfloat, RIGHTARG = floatspanset,
   PROCEDURE = temporal_overright,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );

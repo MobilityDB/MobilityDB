@@ -40,7 +40,8 @@
 /**
  * Generate a random fraction between in the range [0,1]
  */
-CREATE OR REPLACE FUNCTION random_fraction()
+DROP FUNCTION IF EXISTS random_fraction;
+CREATE FUNCTION random_fraction()
   RETURNS float AS $$
 BEGIN
   RETURN random();
@@ -58,7 +59,8 @@ FROM generate_series(1,10) k;
  * @param[in] lown, highn Inclusive bounds of the range for the identifier of
  * the network point
  */
-CREATE OR REPLACE FUNCTION random_npoint(lown integer, highn integer)
+DROP FUNCTION IF EXISTS random_npoint;
+CREATE FUNCTION random_npoint(lown integer, highn integer)
   RETURNS npoint AS $$
 BEGIN
   RETURN npoint(random_int(lown, highn), random_fraction());
@@ -66,7 +68,7 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, random_npoint(1, 1000) AS g
+SELECT k, random_npoint(1, 100) AS g
 FROM generate_series(1,10) k;
 */
 
@@ -76,7 +78,8 @@ FROM generate_series(1,10) k;
  * @param[in] lown, highn Inclusive bounds of the range for the identifier of
  * the network point
  */
-CREATE OR REPLACE FUNCTION random_nsegment(lown integer, highn integer)
+DROP FUNCTION IF EXISTS random_nsegment;
+CREATE FUNCTION random_nsegment(lown integer, highn integer)
   RETURNS nsegment AS $$
 DECLARE
   random1 float;
@@ -95,7 +98,7 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, random_nsegment(1, 1000) AS g
+SELECT k, random_nsegment(1, 100) AS g
 FROM generate_series(1,10) k;
 */
 
@@ -108,16 +111,17 @@ FROM generate_series(1,10) k;
  * the network point
  * @param[in] lowtime, hightime Inclusive bounds of the period
  */
-CREATE OR REPLACE FUNCTION random_tnpoint_inst(lown integer, highn integer,
+DROP FUNCTION IF EXISTS random_tnpoint_inst;
+CREATE FUNCTION random_tnpoint_inst(lown integer, highn integer,
   lowtime timestamptz, hightime timestamptz)
   RETURNS tnpoint AS $$
 BEGIN
-  RETURN tnpoint_inst(random_npoint(lown, highn), random_timestamptz(lowtime, hightime));
+  RETURN tnpoint(random_npoint(lown, highn), random_timestamptz(lowtime, hightime));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, random_tnpoint_inst(0, 1000, '2001-01-01', '2001-12-31') AS inst
+SELECT k, random_tnpoint_inst(0, 100, '2001-01-01', '2001-12-31') AS inst
 FROM generate_series(1,10) k;
 */
 
@@ -132,7 +136,8 @@ FROM generate_series(1,10) k;
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
  * @param[in] mincard, maxcard Inclusive bounds of the number of instants
  */
-CREATE OR REPLACE FUNCTION random_tnpoint_discseq(lown integer, highn integer,
+DROP FUNCTION IF EXISTS random_tnpoint_discseq;
+CREATE FUNCTION random_tnpoint_discseq(lown integer, highn integer,
   lowtime timestamptz, hightime timestamptz, maxminutes int, mincard int,
   maxcard int)
   RETURNS tnpoint AS $$
@@ -145,7 +150,7 @@ BEGIN
   t = random_timestamptz(lowtime, hightime);
   FOR i IN 1..card
   LOOP
-    result[i] = tnpoint_inst(random_npoint(lown, highn), t);
+    result[i] = tnpoint(random_npoint(lown, highn), t);
     t = t + random_minutes(1, maxminutes);
   END LOOP;
   RETURN tnpoint_discseq(result);
@@ -153,7 +158,7 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, random_tnpoint_discseq(0, 1000, '2001-01-01', '2001-12-31', 10, 10) AS ti
+SELECT k, random_tnpoint_discseq(0, 100, '2001-01-01', '2001-12-31', 10, 10, 10) AS ti
 FROM generate_series(1,10) k;
 */
 
@@ -171,7 +176,8 @@ FROM generate_series(1,10) k;
  * @param[in] fixstart True when this function is called for generating a
  *    sequence set value and in this case the start timestamp is already fixed
  */
-CREATE OR REPLACE FUNCTION random_tnpoint_seq(lown integer, highn integer,
+DROP FUNCTION IF EXISTS random_tnpoint_contseq;
+CREATE FUNCTION random_tnpoint_contseq(lown integer, highn integer,
   lowtime timestamptz, hightime timestamptz, maxminutes int,
   mincard int, maxcard int,
   linear bool DEFAULT true, fixstart bool DEFAULT false)
@@ -198,21 +204,21 @@ BEGIN
   rid = random_int(lown, highn);
   FOR i IN 1..card - 1
   LOOP
-    result[i] = tnpoint_inst(npoint(rid, random()), tsarr[i]);
+    result[i] = tnpoint(npoint(rid, random()), tsarr[i]);
   END LOOP;
   -- Sequences with step interpolation and exclusive upper bound must have
   -- the same value in the last two instants
   IF card <> 1 AND NOT upper_inc AND NOT linear THEN
-    result[card] = tnpoint_inst(getValue(result[card - 1]), tsarr[card]);
+    result[card] = tnpoint(getValue(result[card - 1]), tsarr[card]);
   ELSE
-    result[card] = tnpoint_inst(npoint(rid, random()), tsarr[card]);
+    result[card] = tnpoint(npoint(rid, random()), tsarr[card]);
   END IF;
-  RETURN tnpoint_seq(result, lower_inc, upper_inc, linear);
+  RETURN tnpoint_contseq(result, lower_inc, upper_inc, linear);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, random_tnpoint_seq(0, 1000, '2001-01-01', '2001-12-31', 10, 10)
+SELECT k, random_tnpoint_contseq(0, 100, '2001-01-01', '2001-12-31', 10, 10, 10)
 FROM generate_series (1, 15) AS k;
 */
 
@@ -230,7 +236,8 @@ FROM generate_series (1, 15) AS k;
  * @param[in] mincard, maxcard Inclusive bounds of the number of sequences
  * @param[in] linear True when the sequence set has linear interpolation
  */
-CREATE OR REPLACE FUNCTION random_tnpoint_seqset(lown integer, highn integer,
+DROP FUNCTION IF EXISTS random_tnpoint_seqset;
+CREATE FUNCTION random_tnpoint_seqset(lown integer, highn integer,
   lowtime timestamptz, hightime timestamptz, maxminutes int,
   mincardseq int, maxcardseq int, mincard int, maxcard int,
   linear bool DEFAULT true)
@@ -263,9 +270,9 @@ BEGIN
     FOR j IN 1..cardseq
     LOOP
       t1 = t1 + random_minutes(1, maxminutes);
-      instants[j] = tnpoint_inst(npoint(rid, random()), t1);
+      instants[j] = tnpoint(npoint(rid, random()), t1);
     END LOOP;
-    result[i] = tnpoint_seq(instants, lower_inc, upper_inc);
+    result[i] = tnpoint_contseq(instants, lower_inc, upper_inc);
     instants = NULL;
     t1 = t1 + random_minutes(1, maxminutes);
   END LOOP;
@@ -274,7 +281,7 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, random_tnpoints(0, 1000, '2001-01-01', '2001-12-31', 10, 10, 10) AS ts
+SELECT k, random_tnpoint_seqset(0, 100, '2001-01-01', '2001-12-31', 10, 10, 10, 10, 10) AS ts
 FROM generate_series (1, 15) AS k;
 */
 

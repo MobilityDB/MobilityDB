@@ -54,11 +54,9 @@ SELECT tint '[10@2018-01-01 08:00:00]';
 
 	<para>
 		The value of a temporal sequence is interpreted by assuming that the period of time defined by every pair of consecutive values <varname>v1@t1</varname> and <varname>v2@t2</varname> is lower inclusive and upper exclusive, unless they are the first or the last instants of the sequence and in that case the bounds of the whole sequence apply. Furthermore, the value taken by the temporal sequence between two consecutive instants depends on whether the interpolation is stepwise or linear. For example, the temporal sequence above represents that the value is <varname>10</varname> during <varname>(2018-01-01 08:00:00, 2018-01-01 08:05:00)</varname>, <varname>20</varname> during <varname>[2018-01-01 08:05:00, 2018-01-01 08:10:00)</varname>, and <varname>15</varname> at the end instant <varname>2018-01-01 08:10:00</varname>. On the other hand, the following temporal sequence
-	</para>
 	<programlisting language="sql" xml:space="preserve">
 SELECT tfloat '(10@2018-01-01 08:00:00, 20@2018-01-01 08:05:00, 15@2018-01-01 08:10:00]';
 </programlisting>
-	<para>
 		represents that the value evolves linearly from <varname>10</varname> to <varname>20</varname> during <varname>(2018-01-01 08:00:00, 2018-01-01 08:05:00)</varname> and evolves from <varname>20</varname> to <varname>15</varname> during <varname>[2018-01-01 08:05:00, 2018-01-01 08:10:00]</varname>.
 	</para>
 
@@ -150,7 +148,7 @@ CREATE TABLE Flight(FlightNo integer, Route tgeogpoint(Sequence, PointZ, 4326));
 	</itemizedlist>
 
 	<para>
-		A rich set of functions and operators is available to perform various operations on temporal types. They are explained in <xref linkend="manipulating_temporal_types" />. Some of these operations, in particular those related to indexes, manipulate bounding boxes for efficiency reasons.
+		A rich set of functions and operators is available to perform various operations on temporal types. They are explained in <xref linkend="manipulating_temporal_types_p1" /> and <xref linkend="manipulating_temporal_types_p2" />. Some of these operations, in particular those related to indexes, manipulate bounding boxes for efficiency reasons.
 	</para>
 
 	<sect1 id="examples_temporal_types">
@@ -179,7 +177,7 @@ FROM Department;
 -- 20 | NULL
 
 -- Restriction to a period
-SELECT DeptNo, atPeriod(NoEmps, '[2001-01-01, 2001-04-01]')
+SELECT DeptNo, atTime(NoEmps, period '[2001-01-01, 2001-04-01]')
 FROM Department;
 -- 10 | [10@2001-01-01, 12@2001-04-01]
 -- 20 | [4@2001-02-01, 4@2001-04-01]
@@ -218,7 +216,7 @@ FROM Trips;
 -- 20 | NULL
 
 -- Restriction to a period
-SELECT CarId, asText(atPeriod(Trip, '[2001-01-01 08:05:00,2001-01-01 08:10:00]'))
+SELECT CarId, asText(atTime(Trip, period '[2001-01-01 08:05:00,2001-01-01 08:10:00]'))
 FROM Trips;
 -- 10 | {[POINT(1 0)@2001-01-01 08:05:00+00, POINT(2 0)@2001-01-01 08:10:00+00]}
 -- 20 | {[POINT(0 0)@2001-01-01 08:05:00+00, POINT(1 1)@2001-01-01 08:10:00+00]}

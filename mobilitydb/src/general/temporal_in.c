@@ -46,7 +46,7 @@
 
 PG_FUNCTION_INFO_V1(Temporal_from_mfjson);
 /**
- * @ingroup mobilitydb_temporal_in_out
+ * @ingroup mobilitydb_temporal_inout
  * @brief Input a temporal value from its MF-JSON representation.
  * @sqlfunc tboolFromMFJSON(), tintFromMFJSON(), tfloatFromMFJSON(),
  * ttextFromMFJSON(), tgeompointFromMFJSON(), tgeogpointFromMFJSON()
@@ -67,10 +67,10 @@ Temporal_from_mfjson(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Span_from_wkb);
 /**
- * @ingroup mobilitydb_temporal_in_out
+ * @ingroup mobilitydb_temporal_inout
  * @brief Input a span from its WKB representation
  * @sqlfunc intspanFromBinary(), floatspanFromBinary(), periodFromBinary
- * 
+ *
  */
 PGDLLEXPORT Datum
 Span_from_wkb(PG_FUNCTION_ARGS)
@@ -84,7 +84,7 @@ Span_from_wkb(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Span_from_hexwkb);
 /**
- * @ingroup mobilitydb_temporal_in_out
+ * @ingroup mobilitydb_temporal_inout
  * @brief Input a span from its HEXWKB representation
  * @sqlfunc intspanFromHexWKB(), floatspanFromHexWKB(), periodFromHexWKB
  */
@@ -101,80 +101,81 @@ Span_from_hexwkb(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Timestampset_from_wkb);
+PG_FUNCTION_INFO_V1(Set_from_wkb);
 /**
- * @ingroup mobilitydb_temporal_in_out
+ * @ingroup mobilitydb_temporal_inout
  * @brief Input a timestamp set from its WKB representation
  * @sqlfunc timestampsetFromBinary()
- * 
+ *
  */
 PGDLLEXPORT Datum
-Timestampset_from_wkb(PG_FUNCTION_ARGS)
+Set_from_wkb(PG_FUNCTION_ARGS)
 {
   bytea *bytea_wkb = PG_GETARG_BYTEA_P(0);
   uint8_t *wkb = (uint8_t *) VARDATA(bytea_wkb);
-  TimestampSet *ts = timestampset_from_wkb(wkb, VARSIZE(bytea_wkb) - VARHDRSZ);
+  Set *os = set_from_wkb(wkb, VARSIZE(bytea_wkb) - VARHDRSZ);
   PG_FREE_IF_COPY(bytea_wkb, 0);
-  PG_RETURN_POINTER(ts);
+  PG_RETURN_POINTER(os);
 }
 
-PG_FUNCTION_INFO_V1(Timestampset_from_hexwkb);
+PG_FUNCTION_INFO_V1(Set_from_hexwkb);
 /**
- * @ingroup mobilitydb_temporal_in_out
+ * @ingroup mobilitydb_temporal_inout
  * @brief Input a timestamp set from its HexWKB representation
  * @sqlfunc timestampsetFromHexWKB()
  */
 PGDLLEXPORT Datum
-Timestampset_from_hexwkb(PG_FUNCTION_ARGS)
+Set_from_hexwkb(PG_FUNCTION_ARGS)
 {
   text *hexwkb_text = PG_GETARG_TEXT_P(0);
   char *hexwkb = text2cstring(hexwkb_text);
-  TimestampSet *ts = timestampset_from_hexwkb(hexwkb);
+  Set *os = set_from_hexwkb(hexwkb);
   pfree(hexwkb);
   PG_FREE_IF_COPY(hexwkb_text, 0);
-  PG_RETURN_POINTER(ts);
+  PG_RETURN_POINTER(os);
 }
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Periodset_from_wkb);
+PG_FUNCTION_INFO_V1(Spanset_from_wkb);
 /**
- * @ingroup mobilitydb_temporal_in_out
- * @brief Input a timestamp set from its WKB representation
- * @sqlfunc periodsetFromBinary()
+ * @ingroup mobilitydb_temporal_inout
+ * @brief Input a span set from its WKB representation
+ * @sqlfunc instspansetFromBinary(), floatspansetFromBinary(),
+ * periodsetFromBinary()
  */
 PGDLLEXPORT Datum
-Periodset_from_wkb(PG_FUNCTION_ARGS)
+Spanset_from_wkb(PG_FUNCTION_ARGS)
 {
   bytea *bytea_wkb = PG_GETARG_BYTEA_P(0);
   uint8_t *wkb = (uint8_t *) VARDATA(bytea_wkb);
-  PeriodSet *ps = periodset_from_wkb(wkb, VARSIZE(bytea_wkb) - VARHDRSZ);
+  SpanSet *ss = spanset_from_wkb(wkb, VARSIZE(bytea_wkb) - VARHDRSZ);
   PG_FREE_IF_COPY(bytea_wkb, 0);
-  PG_RETURN_POINTER(ps);
+  PG_RETURN_POINTER(ss);
 }
 
-PG_FUNCTION_INFO_V1(Periodset_from_hexwkb);
+PG_FUNCTION_INFO_V1(Spanset_from_hexwkb);
 /**
- * @ingroup mobilitydb_temporal_in_out
+ * @ingroup mobilitydb_temporal_inout
  * @brief Input a period set from its HexWKB representation
  * @sqlfunc periodsetFromHexWKB()
  */
 PGDLLEXPORT Datum
-Periodset_from_hexwkb(PG_FUNCTION_ARGS)
+Spanset_from_hexwkb(PG_FUNCTION_ARGS)
 {
   text *hexwkb_text = PG_GETARG_TEXT_P(0);
   char *hexwkb = text2cstring(hexwkb_text);
-  PeriodSet *ps = periodset_from_hexwkb(hexwkb);
+  SpanSet *ss = spanset_from_hexwkb(hexwkb);
   pfree(hexwkb);
   PG_FREE_IF_COPY(hexwkb_text, 0);
-  PG_RETURN_POINTER(ps);
+  PG_RETURN_POINTER(ss);
 }
 
 /*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(Tbox_from_wkb);
 /**
- * @ingroup mobilitydb_temporal_in_out
+ * @ingroup mobilitydb_temporal_inout
  * @brief Input a temporal box from its WKB representation
  * @sqlfunc tboxFromBinary()
  */
@@ -183,14 +184,14 @@ Tbox_from_wkb(PG_FUNCTION_ARGS)
 {
   bytea *bytea_wkb = PG_GETARG_BYTEA_P(0);
   uint8_t *wkb = (uint8_t *) VARDATA(bytea_wkb);
-  TBOX *box = tbox_from_wkb(wkb, VARSIZE(bytea_wkb) - VARHDRSZ);
+  TBox *box = tbox_from_wkb(wkb, VARSIZE(bytea_wkb) - VARHDRSZ);
   PG_FREE_IF_COPY(bytea_wkb, 0);
   PG_RETURN_POINTER(box);
 }
 
 PG_FUNCTION_INFO_V1(Tbox_from_hexwkb);
 /**
- * @ingroup mobilitydb_temporal_in_out
+ * @ingroup mobilitydb_temporal_inout
  * @brief Input a temporal box from its HexWKB representation
  * @sqlfunc tboxFromHexWKB()
  */
@@ -199,7 +200,7 @@ Tbox_from_hexwkb(PG_FUNCTION_ARGS)
 {
   text *hexwkb_text = PG_GETARG_TEXT_P(0);
   char *hexwkb = text2cstring(hexwkb_text);
-  TBOX *box = tbox_from_hexwkb(hexwkb);
+  TBox *box = tbox_from_hexwkb(hexwkb);
   pfree(hexwkb);
   PG_FREE_IF_COPY(hexwkb_text, 0);
   PG_RETURN_POINTER(box);
@@ -209,7 +210,7 @@ Tbox_from_hexwkb(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Stbox_from_wkb);
 /**
- * @ingroup mobilitydb_temporal_in_out
+ * @ingroup mobilitydb_temporal_inout
  * @brief Input a temporal box from its WKB representation
  * @sqlfunc stboxFromBinary()
  */
@@ -218,14 +219,14 @@ Stbox_from_wkb(PG_FUNCTION_ARGS)
 {
   bytea *bytea_wkb = PG_GETARG_BYTEA_P(0);
   uint8_t *wkb = (uint8_t *) VARDATA(bytea_wkb);
-  STBOX *box = stbox_from_wkb(wkb, VARSIZE(bytea_wkb) - VARHDRSZ);
+  STBox *box = stbox_from_wkb(wkb, VARSIZE(bytea_wkb) - VARHDRSZ);
   PG_FREE_IF_COPY(bytea_wkb, 0);
   PG_RETURN_POINTER(box);
 }
 
 PG_FUNCTION_INFO_V1(Stbox_from_hexwkb);
 /**
- * @ingroup mobilitydb_temporal_in_out
+ * @ingroup mobilitydb_temporal_inout
  * @brief Input a spatiotemporal box from its HexWKB representation
  * @sqlfunc stboxFromHexWKB()
  */
@@ -234,7 +235,7 @@ Stbox_from_hexwkb(PG_FUNCTION_ARGS)
 {
   text *hexwkb_text = PG_GETARG_TEXT_P(0);
   char *hexwkb = text2cstring(hexwkb_text);
-  STBOX *box = stbox_from_hexwkb(hexwkb);
+  STBox *box = stbox_from_hexwkb(hexwkb);
   pfree(hexwkb);
   PG_FREE_IF_COPY(hexwkb_text, 0);
   PG_RETURN_POINTER(box);
@@ -244,7 +245,7 @@ Stbox_from_hexwkb(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_from_wkb);
 /**
- * @ingroup mobilitydb_temporal_in_out
+ * @ingroup mobilitydb_temporal_inout
  * @brief Input a temporal type from its WKB representation
  * @sqlfunc tboolFromBinary(), tintFromBinary(), tfloatFromBinary(),
  * ttextFromBinary(), tgeompointFromBinary(), tgeogpointFromBinary()
@@ -261,7 +262,7 @@ Temporal_from_wkb(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_from_hexwkb);
 /**
- * @ingroup mobilitydb_temporal_in_out
+ * @ingroup mobilitydb_temporal_inout
  * @brief Input a temporal value from its HexWKB representation
  * @sqlfunc tboolFromHexWKB(), tintFromHexWKB(), tfloatFromHexWKB(),
  * ttextFromHexWKB(), tgeompointFromHexWKB(), tgeogpointFromHexWKB()

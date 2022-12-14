@@ -643,7 +643,7 @@ geo_to_tpointdiscseq(const GSERIALIZED *geo)
     instants[i] = trajpoint_to_tpointinst((LWPOINT *) lwcoll->geoms[i]);
   lwgeom_free(lwgeom);
 
-  return tsequence_make_free(instants, npoints, npoints, true, true, DISCRETE,
+  return tsequence_make_free(instants, npoints, true, true, DISCRETE,
     NORMALIZE_NO);
 }
 
@@ -695,8 +695,7 @@ geo_to_tpointseq(const GSERIALIZED *geo)
   }
   lwgeom_free(lwgeom);
   /* The resulting sequence assumes linear interpolation */
-  return tsequence_make_free(instants, npoints, npoints, true, true, LINEAR,
-    NORMALIZE);
+  return tsequence_make_free(instants, npoints, true, true, LINEAR, NORMALIZE);
 }
 
 /**
@@ -1089,8 +1088,8 @@ tsequence_simplify(const TSequence *seq, double eps_dist, bool synchronized,
   const TInstant **instants = palloc(sizeof(TInstant *) * outn);
   for (i = 0; i < outn; i++)
     instants[i] = tsequence_inst_n(seq, outlist[i]);
-  TSequence *result = tsequence_make(instants, outn, outn,
-    seq->period.lower_inc, seq->period.upper_inc, LINEAR, NORMALIZE);
+  TSequence *result = tsequence_make(instants, outn, seq->period.lower_inc,
+    seq->period.upper_inc, LINEAR, NORMALIZE);
   pfree(instants);
 
   /* Only free if arrays are on heap */
@@ -1209,7 +1208,7 @@ tpointseq_remove_repeated_points(const TSequence *seq, double tolerance,
     last = pt;
   }
   /* Construct the result */
-  TSequence *result = tsequence_make(instants, k, k, seq->period.lower_inc,
+  TSequence *result = tsequence_make(instants, k, seq->period.lower_inc,
     seq->period.upper_inc, MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
   pfree(instants);
   return result;
@@ -1352,9 +1351,8 @@ tpointseq_affine(const TSequence *seq, const AFFINE *a)
     tpointinst_affine1(inst, a, srid, hasz, &instants[i]);
   }
   /* Construct the result */
-  return tsequence_make_free(instants, seq->count, seq->count,
-    seq->period.lower_inc, seq->period.upper_inc,
-    MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
+  return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
+    seq->period.upper_inc, MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
 }
 
 /**
@@ -1469,7 +1467,7 @@ tpointseq_grid(const TSequence *seq, const gridspec *grid, bool filter_pts)
   }
 
   /* Construct the result */
-  return tsequence_make_free(instants, k, k, k > 1 ? seq->period.lower_inc : true,
+  return tsequence_make_free(instants, k, k > 1 ? seq->period.lower_inc : true,
     k > 1 ? seq->period.upper_inc : true, MOBDB_FLAGS_GET_INTERP(seq->flags),
     NORMALIZE);
 }
@@ -1525,7 +1523,7 @@ tpoint_grid(const Temporal *temp, const gridspec *grid, bool filter_pts)
  * @param[in] clip_geom True if temporal point should be clipped
  */
 static Temporal *
-tpoint_mvt(const Temporal *tpoint, const STBOX *box, uint32_t extent,
+tpoint_mvt(const Temporal *tpoint, const STBox *box, uint32_t extent,
   uint32_t buffer, bool clip_geom)
 {
   AFFINE affine = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -1566,8 +1564,8 @@ tpoint_mvt(const Temporal *tpoint, const STBOX *box, uint32_t extent,
   double max = (double) extent + (double) buffer;
   double min = -(double) buffer;
   int srid = tpoint_srid(tpoint);
-  STBOX clip_box;
-  stbox_set(NULL, true, false, false, srid, min, max, min, max, 0, 0,
+  STBox clip_box;
+  stbox_set(true, false, false, srid, min, max, min, max, 0, 0, NULL,
     &clip_box);
   Temporal *tpoint5 = tpoint_at_stbox1(tpoint4, &clip_box, UPPER_INC);
   pfree(tpoint4);
@@ -1721,7 +1719,7 @@ tpoint_decouple(const Temporal *temp, int64 **timesarr, int *count)
  * @sqlfunc AsMVTGeom()
  */
 bool
-tpoint_AsMVTGeom(const Temporal *temp, const STBOX *bounds, int32_t extent,
+tpoint_AsMVTGeom(const Temporal *temp, const STBox *bounds, int32_t extent,
   int32_t buffer, bool clip_geom, GSERIALIZED **geom, int64 **timesarr,
   int *count)
 {
@@ -1735,7 +1733,7 @@ tpoint_AsMVTGeom(const Temporal *temp, const STBOX *bounds, int32_t extent,
    * PostGIS filtering adapted to MobilityDB would be as follows.
 
   / * Bounding box test to drop geometries smaller than the resolution * /
-  STBOX box;
+  STBox box;
   temporal_set_bbox(temp, &box);
   double tpoint_width = box.xmax - box.xmin;
   double tpoint_height = box.ymax - box.ymin;

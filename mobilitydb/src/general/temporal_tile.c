@@ -110,8 +110,8 @@ Span_bucket_list_ext(FunctionCallInfo fcinfo, bool valuelist)
     {
       size = PG_GETARG_DATUM(1);
       origin = PG_GETARG_DATUM(2);
-      mobdbType type = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-      ensure_positive_datum(size, type);
+      mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+      ensure_positive_datum(size, basetype);
     }
     else
     {
@@ -240,7 +240,7 @@ Tbox_tile_list(PG_FUNCTION_ARGS)
   if (SRF_IS_FIRSTCALL())
   {
     /* Get input parameters */
-    TBOX *bounds = PG_GETARG_TBOX_P(0);
+    TBox *bounds = PG_GETARG_TBOX_P(0);
     double xsize = PG_GETARG_FLOAT8(1);
     Interval *duration = PG_GETARG_INTERVAL_P(2);
     double xorigin = PG_GETARG_FLOAT8(3);
@@ -280,7 +280,7 @@ Tbox_tile_list(PG_FUNCTION_ARGS)
   }
 
   /* Allocate box */
-  TBOX *box = palloc(sizeof(STBOX));
+  TBox *box = palloc(sizeof(STBox));
   /* Store tile value and time */
   tuple_arr[0] = Int32GetDatum(state->i);
   /* Generate box */
@@ -314,7 +314,7 @@ Tbox_tile(PG_FUNCTION_ARGS)
   TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(5);
   double value_bucket = float_bucket(value, xsize, xorigin);
   TimestampTz time_bucket = timestamptz_bucket(t, duration, torigin);
-  TBOX *result = palloc(sizeof(TBOX));
+  TBox *result = palloc(sizeof(TBox));
   tbox_tile_get(value_bucket, time_bucket, xsize, tunits, result);
   PG_RETURN_POINTER(result);
 }
@@ -391,9 +391,15 @@ Temporal_value_time_split_ext(FunctionCallInfo fcinfo, bool valuesplit,
   /* If the function is being called for the first time */
   if (SRF_IS_FIRSTCALL())
   {
+    /* Initialize the FuncCallContext */
+    funcctx = SRF_FIRSTCALL_INIT();
+    /* Switch to memory context appropriate for multiple function calls */
+    MemoryContext oldcontext =
+      MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+
     /* Get input parameters */
     Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-    Datum size, vorigin;
+    Datum size = 0, vorigin = 0; /* make compiler quiet */
     Interval *duration = NULL;
     TimestampTz torigin = 0;
     int i = 1;
@@ -405,12 +411,6 @@ Temporal_value_time_split_ext(FunctionCallInfo fcinfo, bool valuesplit,
       vorigin = PG_GETARG_DATUM(i++);
     if (timesplit)
       torigin = PG_GETARG_TIMESTAMPTZ(i++);
-
-    /* Initialize the FuncCallContext */
-    funcctx = SRF_FIRSTCALL_INIT();
-    /* Switch to memory context appropriate for multiple function calls */
-    MemoryContext oldcontext =
-      MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
 
     Datum *value_buckets = NULL;
     TimestampTz *time_buckets = NULL;

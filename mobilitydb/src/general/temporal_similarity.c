@@ -147,17 +147,18 @@ temporal_similarity_path_ext(FunctionCallInfo fcinfo, SimFunc simfunc)
   /* If the function is being called for the first time */
   if (SRF_IS_FIRSTCALL())
   {
+    /* Initialize the FuncCallContext */
+    funcctx = SRF_FIRSTCALL_INIT();
+    /* Switch to memory context appropriate for multiple function calls */
+    MemoryContext oldcontext =
+      MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+
     /* Get input parameters */
     Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
     Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
     /* Store fcinfo into a global variable for temporal geographic points */
     if (temp1->temptype == T_TGEOGPOINT)
       store_fcinfo(fcinfo);
-    /* Initialize the FuncCallContext */
-    funcctx = SRF_FIRSTCALL_INIT();
-    /* Switch to memory context appropriate for multiple function calls */
-    MemoryContext oldcontext =
-      MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
     /* Compute the path */
     int count;
     Match *path = temporal_similarity_path(temp1, temp2, &count,

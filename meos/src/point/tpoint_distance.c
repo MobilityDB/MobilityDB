@@ -153,7 +153,7 @@ lw_distance_fraction(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
  *
  * @param[in] start,end Instants defining the first segment
  * @param[in] point Base point
- * @param[in] basetype Base point
+ * @param[in] basetype Base type
  * @param[out] value Projected value at turning point
  * @param[out] t Timestamp at turning point
  * @pre The segment is not constant.
@@ -747,7 +747,7 @@ nad_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @sqlop @p |=|
  */
 double
-nad_stbox_geo(const STBOX *box, const GSERIALIZED *gs)
+nad_stbox_geo(const STBox *box, const GSERIALIZED *gs)
 {
   if (gserialized_is_empty(gs))
     return -1;
@@ -767,7 +767,7 @@ nad_stbox_geo(const STBOX *box, const GSERIALIZED *gs)
  * @sqlop @p |=|
  */
 double
-nad_stbox_stbox(const STBOX *box1, const STBOX *box2)
+nad_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Test the validity of the arguments */
   ensure_has_X_stbox(box1); ensure_has_X_stbox(box2);
@@ -802,7 +802,7 @@ nad_stbox_stbox(const STBOX *box1, const STBOX *box2)
  * @sqlop @p |=|
  */
 double
-nad_tpoint_stbox(const Temporal *temp, const STBOX *box)
+nad_tpoint_stbox(const Temporal *temp, const STBox *box)
 {
   /* Test the validity of the arguments */
   ensure_has_X_stbox(box);

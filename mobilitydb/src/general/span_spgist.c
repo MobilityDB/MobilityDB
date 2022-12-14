@@ -43,8 +43,8 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/timestampset.h"
-#include "general/periodset.h"
+#include "general/set.h"
+#include "general/spanset.h"
 #include "general/temporal.h"
 /* MobilityDB */
 #include "pg_general/span_gist.h"
@@ -65,9 +65,40 @@ typedef struct
   Span right;
 } SpanNode;
 
+/**
+ * Structure to sort a set of spans of an inner node
+ */
+typedef struct SortedSpan
+{
+  Span s;
+  int i;
+} SortedSpan;
+
 /*****************************************************************************
  * General functions
  *****************************************************************************/
+
+/**
+ * Comparator to sort spans on their lower bound
+ */
+static int
+span_lower_qsort_cmp(const void *a, const void *b)
+{
+  Span *pa = (Span *) a;
+  Span *pb = (Span *) b;
+  return span_lower_cmp(pa, pb);
+}
+
+/**
+ * Comparator to sort spans on their upper bound
+ */
+static int
+span_upper_qsort_cmp(const void *a, const void *b)
+{
+  Span *pa = (Span *) a;
+  Span *pb = (Span *) b;
+  return span_upper_cmp(pa, pb);
+}
 
 /**
  * Initialize the traversal value
@@ -90,6 +121,11 @@ spannode_init(SpanNode *nodebox, mobdbType spantype, mobdbType basetype)
   {
     min = Int32GetDatum(PG_INT32_MIN);
     max = Int32GetDatum(PG_INT32_MAX);
+  }
+  else if (spantype == T_BIGINTSPAN)
+  {
+    min = Int64GetDatum(PG_INT64_MIN);
+    max = Int64GetDatum(PG_INT64_MAX);
   }
   else /* spantype == T_FLOATSPAN */
   {
@@ -152,6 +188,58 @@ spannode_quadtree_next(const SpanNode *nodebox, const Span *centroid,
   {
     next_nodespan->right.upper = centroid->upper;
     next_nodespan->right.upper_inc = centroid->upper_inc;
+  }
+  return;
+}
+
+/**
+ * Compute the next traversal value for a k-d tree given the bounding box and
+ * the centroid of the current node, the half number (0 or 1) and the level.
+ *
+ * For example, given the bounding box of the root node (level 0) and
+ * the centroid as follows
+ *     nodebox = (-infinity, -infinity)(infinity, infinity)
+ *     centroid = (2001-06-19 09:07:00, 2001-06-19 09:13:00]
+ * the halves are as follows
+ *     0 = (-infinity, -infinity)(2001-06-19 09:07:00+02, infinity)
+ *     1 = [2001-06-19 09:07:00+02, -infinity)(infinity, infinity)
+ */
+static void
+spannode_kdtree_next(const SpanNode *nodebox, const Span *centroid,
+  uint8 node, int level, SpanNode *next_nodespan)
+{
+  memcpy(next_nodespan, nodebox, sizeof(SpanNode));
+  if (level % 2)
+  {
+    /* Split the bounding box by lower bound  */
+    if (node == 0)
+    {
+      next_nodespan->right.lower = centroid->lower;
+      next_nodespan->right.lower_inc = false;
+    }
+    else
+    {
+      /* The inclusive flag must be set to true so that the bounds with the
+       * same timestamp are in one of the two children */
+      next_nodespan->left.lower = centroid->lower;
+      next_nodespan->left.lower_inc = true;
+    }
+  }
+  else
+  {
+    /* Split the bounding box by upper bound */
+    if (node == 0)
+    {
+      next_nodespan->right.upper = centroid->upper;
+      next_nodespan->right.upper_inc = false;
+    }
+    else
+    {
+      /* The inclusive flag must be negated so that the bounds with the
+       * same timestamp are in one of the two childs */
+      next_nodespan->left.upper = centroid->upper;
+      next_nodespan->left.upper_inc = true;
+    }
   }
   return;
 }
@@ -292,23 +380,27 @@ static bool
 span_spgist_get_span(const ScanKeyData *scankey, Span *result)
 {
   mobdbType type = oid_type(scankey->sk_subtype);
-  if (type == T_INT4 || type == T_FLOAT8 || type == T_TIMESTAMPTZ)
+  if (type == T_INT4 || type == T_INT8 || type == T_FLOAT8 ||
+    type == T_TIMESTAMPTZ)
   {
     Datum d = scankey->sk_argument;
     span_set(d, d, true, true, type, result);
   }
-  else if (type == T_INTSPAN || type == T_FLOATSPAN || type == T_PERIOD)
+  else if (type == T_INTSET || type == T_BIGINTSET || type == T_FLOATSET ||
+    type == T_TIMESTAMPSET)
+  {
+    set_span_slice(scankey->sk_argument, result);
+  }
+  else if (type == T_INTSPAN || type == T_BIGINTSPAN || type == T_FLOATSPAN ||
+    type == T_PERIOD)
   {
     Span *s = DatumGetSpanP(scankey->sk_argument);
     memcpy(result, s, sizeof(Span));
   }
-  else if (type == T_TIMESTAMPSET)
+  else if (type == T_INTSPANSET || type == T_BIGINTSPANSET ||
+    type == T_FLOATSPANSET || type == T_PERIODSET)
   {
-    timestampset_period_slice(scankey->sk_argument, result);
-  }
-  else if (type == T_PERIODSET)
-  {
-    periodset_period_slice(scankey->sk_argument, result);
+    spanset_span_slice(scankey->sk_argument, result);
   }
   /* For temporal types whose bounding box is a period */
   else if (temporal_type(type))
@@ -335,6 +427,22 @@ Intspan_spgist_config(PG_FUNCTION_ARGS)
   cfg->prefixType = type_oid(T_INTSPAN);  /* A type represented by its bounding box */
   cfg->labelType = VOIDOID;  /* We don't need node labels. */
   cfg->leafType = type_oid(T_INTSPAN);
+  cfg->canReturnData = false;
+  cfg->longValuesOK = false;
+  PG_RETURN_VOID();
+}
+
+PG_FUNCTION_INFO_V1(Bigintspan_spgist_config);
+/**
+ * SP-GiST config function for span types
+ */
+PGDLLEXPORT Datum
+Bigintspan_spgist_config(PG_FUNCTION_ARGS)
+{
+  spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
+  cfg->prefixType = type_oid(T_BIGINTSPAN);  /* A type represented by its bounding box */
+  cfg->labelType = VOIDOID;  /* We don't need node labels. */
+  cfg->leafType = type_oid(T_BIGINTSPAN);
   cfg->canReturnData = false;
   cfg->longValuesOK = false;
   PG_RETURN_VOID();
@@ -373,8 +481,28 @@ Period_spgist_config(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * SP-GiST choose functions
+ * Quad-tree choose functions
  *****************************************************************************/
+
+/**
+ * Determine which quadrant a 2D-mapped span falls into, relative to the
+ * centroid.
+ *
+ * Quadrants are numbered as follows:
+ * @code
+ *  3  |  0
+ * ----+----
+ *  2  |  1
+ * @endcode
+ * where the lower bound of span is the horizontal axis and upper bound the
+ * vertical axis.
+ *
+ * Periods on one of the axes are taken to lie in the quadrant with higher value
+ * along perpendicular axis. That is, a value on the horizontal axis is taken
+ * to belong to quadrant 0 or 3, and a value on the vertical axis is taken to
+ * belong to quadrant 0 or 1. A span equal to centroid is taken to lie in
+ * quadrant 0.
+ */
 
 PG_FUNCTION_INFO_V1(Span_quadtree_choose);
 /**
@@ -388,13 +516,90 @@ Span_quadtree_choose(PG_FUNCTION_ARGS)
   Span *centroid = DatumGetSpanP(in->prefixDatum),
     *span = DatumGetSpanP(in->leafDatum);
 
+  if (in->allTheSame)
+  {
+    out->resultType = spgMatchNode;
+    /* nodeN will be set by core */
+    out->result.matchNode.levelAdd = 0;
+    out->result.matchNode.restDatum = SpanPGetDatum(span);
+    PG_RETURN_VOID();
+  }
+
+  /* Get quadrant number */
+  assert(in->hasPrefix);
+  int8 quadrant = get_quadrant2D(centroid, span);
+  assert(quadrant < in->nNodes);
+
+  /* Select node matching to quadrant number */
   out->resultType = spgMatchNode;
-  out->result.matchNode.restDatum = PointerGetDatum(span);
+  out->result.matchNode.nodeN = quadrant;
+  out->result.matchNode.levelAdd = 1;
+  out->result.matchNode.restDatum = SpanPGetDatum(span);
 
-  /* nodeN will be set by core, when allTheSame. */
-  if (!in->allTheSame)
-    out->result.matchNode.nodeN = get_quadrant2D(centroid, span);
+  PG_RETURN_VOID();
+}
 
+/*****************************************************************************
+ * K-d tree choose function
+ *****************************************************************************/
+
+/**
+ * Determine which half a 2D-mapped span falls into, relative to the
+ * centroid and the level number.
+ *
+ * Halves are numbered 0 and 1, and depending on whether the level number is
+ * even or odd, respectively, they will be as follows:
+ * @code
+ * ----+----
+ *  0  |  1
+ * ----+----
+ * @endcode
+ * or
+ * @code
+ * ---------
+ *    1
+ * ---------
+ *    0
+ * ---------
+ * @endcode
+ * where the lower bound of the span is the horizontal axis and the upper
+ * bound is the vertical axis.
+ *
+ * Periods whose lower/upper bound is equal to the centroid bound (including
+ * their inclusive flag) may get classified into either node depending on
+ * where they happen to fall in the sorted list. This is okay as long as the
+ * inner_consistent function descends into both sides for such cases. This is
+ * better than the alternative of trying to have an exact boundary, because
+ * it keeps the tree balanced even when we have many instances of the same
+ * span value. In this way, we should never trigger the allTheSame logic.
+ */
+static int
+span_level_cmp(Span *centroid, Span *query, int level)
+{
+  if (level % 2)
+    return span_lower_cmp(query, centroid);
+  else
+    return span_upper_cmp(query, centroid);
+}
+
+PG_FUNCTION_INFO_V1(Span_kdtree_choose);
+/**
+ * K-d tree choose function for span types
+ */
+PGDLLEXPORT Datum
+Span_kdtree_choose(PG_FUNCTION_ARGS)
+{
+  spgChooseIn *in = (spgChooseIn *) PG_GETARG_POINTER(0);
+  spgChooseOut *out = (spgChooseOut *) PG_GETARG_POINTER(1);
+  Span *query = DatumGetSpanP(in->leafDatum), *centroid;
+  assert(in->hasPrefix);
+  centroid = DatumGetSpanP(in->prefixDatum);
+  assert(in->nNodes == 2);
+  out->resultType = spgMatchNode;
+  out->result.matchNode.nodeN =
+    (span_level_cmp(centroid, query, in->level) < 0) ? 0 : 1;
+  out->result.matchNode.levelAdd = 1;
+  out->result.matchNode.restDatum = SpanPGetDatum(query);
   PG_RETURN_VOID();
 }
 
@@ -416,6 +621,7 @@ Span_quadtree_picksplit(PG_FUNCTION_ARGS)
   spgPickSplitOut *out = (spgPickSplitOut *) PG_GETARG_POINTER(1);
   Span *centroid;
   int median, i;
+
   /* Use the median values of lower and upper bounds as the centroid span */
   SpanBound *lowerBounds = palloc(sizeof(SpanBound) * in->nTuples);
   SpanBound *upperBounds = palloc(sizeof(SpanBound) * in->nTuples);
@@ -430,7 +636,7 @@ Span_quadtree_picksplit(PG_FUNCTION_ARGS)
   qsort(upperBounds, (size_t) in->nTuples, sizeof(SpanBound),
     span_bound_qsort_cmp);
 
-  median = in->nTuples / 2;
+  median = in->nTuples >> 1;
 
   centroid = span_make(lowerBounds[median].val, upperBounds[median].val,
     lowerBounds[median].inclusive, upperBounds[median].inclusive,
@@ -462,15 +668,67 @@ Span_quadtree_picksplit(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * K-d tree pick-split function
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Span_kdtree_picksplit);
+/**
+ * K-d tree pick-split function for span types
+ */
+PGDLLEXPORT Datum
+Span_kdtree_picksplit(PG_FUNCTION_ARGS)
+{
+  spgPickSplitIn *in = (spgPickSplitIn *) PG_GETARG_POINTER(0);
+  spgPickSplitOut *out = (spgPickSplitOut *) PG_GETARG_POINTER(1);
+  int median = in->nTuples >> 1, i;
+
+  /* Sort the spans and determine the centroid */
+  SortedSpan *sorted = palloc(sizeof(SortedSpan) * in->nTuples);
+  for (i = 0; i < in->nTuples; i++)
+  {
+    memcpy(&sorted[i].s, DatumGetSpanP(in->datums[i]), sizeof(Span));
+    sorted[i].i = i;
+  }
+  qsort(sorted, (size_t) in->nTuples, sizeof(SortedSpan),
+    (in->level % 2) ? span_lower_qsort_cmp : span_upper_qsort_cmp);
+  Span *centroid = span_copy(&sorted[median].s);
+
+  /* Fill the output data structure */
+  out->hasPrefix = true;
+  out->prefixDatum = SpanPGetDatum(centroid);
+  out->nNodes = 2;
+  out->nodeLabels = NULL;    /* we don't need node labels */
+  out->mapTuplesToNodes = palloc(sizeof(int) * in->nTuples);
+  out->leafTupleDatums = palloc(sizeof(Datum) * in->nTuples);
+  /*
+   * Note: points that have coordinates exactly equal to centroid may get
+   * classified into either node, depending on where they happen to fall in
+   * the sorted list.  This is okay as long as the inner_consistent function
+   * descends into both sides for such cases.  This is better than the
+   * alternative of trying to have an exact boundary, because it keeps the
+   * tree balanced even when we have many instances of the same point value.
+   * So we should never trigger the allTheSame logic.
+   */
+  for (i = 0; i < in->nTuples; i++)
+  {
+    Span *s = &sorted[i].s;
+    int n = sorted[i].i;
+    out->mapTuplesToNodes[n] = (i < median) ? 0 : 1;
+    out->leafTupleDatums[n] = SpanPGetDatum(s);
+  }
+  pfree(sorted);
+  PG_RETURN_VOID();
+}
+
+/*****************************************************************************
  * SP-GiST inner consistent functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Span_quadtree_inner_consistent);
 /**
- * SP-GiST inner consistent function function for span types
+ * Generic SP-GiST inner consistent function for span types
  */
-PGDLLEXPORT Datum
-Span_quadtree_inner_consistent(PG_FUNCTION_ARGS)
+Datum
+Span_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
 {
   spgInnerConsistentIn *in = (spgInnerConsistentIn *) PG_GETARG_POINTER(0);
   spgInnerConsistentOut *out = (spgInnerConsistentOut *) PG_GETARG_POINTER(1);
@@ -511,30 +769,44 @@ Span_quadtree_inner_consistent(PG_FUNCTION_ARGS)
 
   if (in->allTheSame)
   {
-    /* Report that all nodes should be visited */
-    out->nNodes = in->nNodes;
-    out->nodeNumbers = palloc(sizeof(int) * in->nNodes);
-    for (i = 0; i < in->nNodes; i++)
+    if (idxtype == SPGIST_QUADTREE)
     {
-      out->nodeNumbers[i] = i;
-      if (in->norderbys > 0)
+      /* Report that all nodes should be visited */
+      out->nNodes = in->nNodes;
+      out->nodeNumbers = palloc(sizeof(int) * in->nNodes);
+      for (i = 0; i < in->nNodes; i++)
       {
-        /* Use parent quadrant nodebox as traversalValue */
-        old_ctx = MemoryContextSwitchTo(in->traversalMemoryContext);
-        out->traversalValues[i] = spannode_copy(nodebox);
-        MemoryContextSwitchTo(old_ctx);
+        out->nodeNumbers[i] = i;
+        if (in->norderbys > 0 && in->nNodes > 0)
+        {
+          /* Use parent quadrant nodebox as traversalValue */
+          old_ctx = MemoryContextSwitchTo(in->traversalMemoryContext);
+          out->traversalValues[i] = spannode_copy(nodebox);
+          MemoryContextSwitchTo(old_ctx);
 
-        /* Compute the distances */
-        double *distances = palloc(sizeof(double) * in->norderbys);
-        out->distances[i] = distances;
-        for (int j = 0; j < in->norderbys; j++)
-          distances[j] = distance_span_nodespan(&orderbys[j], nodebox);
+          /* Compute the distances */
+          double *distances = palloc(sizeof(double) * in->norderbys);
+          out->distances[i] = distances;
+          for (int j = 0; j < in->norderbys; j++)
+            distances[j] = distance_span_nodespan(&orderbys[j], nodebox);
 
-        pfree(orderbys);
+          out->distances = palloc(sizeof(double *) * in->nNodes);
+          out->distances[0] = distances;
+
+          for (i = 1; i < in->nNodes; i++)
+          {
+            out->distances[i] = palloc(sizeof(double) * in->norderbys);
+            memcpy(out->distances[i], distances, sizeof(double) * in->norderbys);
+          }
+        }
       }
-    }
 
-    PG_RETURN_VOID();
+      // pfree(orderbys);
+
+      PG_RETURN_VOID();
+    }
+    else
+      elog(ERROR, "allTheSame should not occur for k-d trees");
   }
 
   /* Transform the queries into spans */
@@ -552,11 +824,22 @@ Span_quadtree_inner_consistent(PG_FUNCTION_ARGS)
   if (in->norderbys > 0)
     out->distances = palloc(sizeof(double *) * in->nNodes);
 
+  /*
+   * Switch memory context to allocate memory for new traversal values
+   * (next_nodespan) and pass these pieces of memory to further calls
+   * of this function.
+   */
+  old_ctx = MemoryContextSwitchTo(in->traversalMemoryContext);
+
   /* Loop for each child */
   for (node = 0; node < in->nNodes; node++)
   {
-    /* Compute the bounding box of the child node */
-    spannode_quadtree_next(nodebox, centroid, node, &next_nodespan);
+    /* Compute the bounding box of the child */
+    if (idxtype == SPGIST_QUADTREE)
+      spannode_quadtree_next(nodebox, centroid, node, &next_nodespan);
+    else
+      spannode_kdtree_next(nodebox, centroid, node, (in->level) + 1,
+        &next_nodespan);
     bool flag = true;
     for (i = 0; i < in->nkeys; i++)
     {
@@ -569,6 +852,7 @@ Span_quadtree_inner_consistent(PG_FUNCTION_ARGS)
           flag = overlap2D(&next_nodespan, &queries[i]);
           break;
         case RTContainsStrategyNumber:
+        case RTEqualStrategyNumber:
         case RTSameStrategyNumber:
           flag = contain2D(&next_nodespan, &queries[i]);
           break;
@@ -607,9 +891,7 @@ Span_quadtree_inner_consistent(PG_FUNCTION_ARGS)
     if (flag)
     {
       /* Pass traversalValue and node */
-      old_ctx = MemoryContextSwitchTo(in->traversalMemoryContext);
       out->traversalValues[out->nNodes] = spannode_copy(&next_nodespan);
-      MemoryContextSwitchTo(old_ctx);
       out->nodeNumbers[out->nNodes] = node;
       /* Pass distances */
       if (in->norderbys > 0)
@@ -623,12 +905,35 @@ Span_quadtree_inner_consistent(PG_FUNCTION_ARGS)
     }
   } /* Loop for every child */
 
+  /* Switch back to initial memory context */
+  MemoryContextSwitchTo(old_ctx);
+
   if (in->nkeys > 0)
     pfree(queries);
   if (in->norderbys > 0)
     pfree(orderbys);
 
   PG_RETURN_VOID();
+}
+
+PG_FUNCTION_INFO_V1(Span_quadtree_inner_consistent);
+/**
+ * Quad-tree inner consistent function for span types
+ */
+PGDLLEXPORT Datum
+Span_quadtree_inner_consistent(PG_FUNCTION_ARGS)
+{
+  return Span_spgist_inner_consistent(fcinfo, SPGIST_QUADTREE);
+}
+
+PG_FUNCTION_INFO_V1(Span_kdtree_inner_consistent);
+/**
+ * K-d tree inner consistent function for span types
+ */
+PGDLLEXPORT Datum
+Span_kdtree_inner_consistent(PG_FUNCTION_ARGS)
+{
+  return Span_spgist_inner_consistent(fcinfo, SPGIST_KDTREE);
 }
 
 /*****************************************************************************
@@ -664,10 +969,11 @@ Span_spgist_leaf_consistent(PG_FUNCTION_ARGS)
 
     /* Cast the query to a span and perform the test */
     span_spgist_get_span(&in->scankeys[i], &span);
-    result = span_index_consistent_leaf(key, &span, strategy);
     /* All tests are lossy for temporal types */
     if (temporal_type(in->scankeys[i].sk_subtype))
       out->recheck = true;
+
+    result = span_index_consistent_leaf(key, &span, strategy);
 
     /* If any check is failed, we have found our answer. */
     if (! result)
@@ -697,29 +1003,29 @@ Span_spgist_leaf_consistent(PG_FUNCTION_ARGS)
  * SP-GiST compress functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Timestampset_spgist_compress);
+PG_FUNCTION_INFO_V1(Set_spgist_compress);
 /**
  * SP-GiST compress function for timestamp sets
  */
 PGDLLEXPORT Datum
-Timestampset_spgist_compress(PG_FUNCTION_ARGS)
+Set_spgist_compress(PG_FUNCTION_ARGS)
 {
-  Datum tsdatum = PG_GETARG_DATUM(0);
-  Period *result = palloc(sizeof(Period));
-  timestampset_period_slice(tsdatum, result);
+  Datum osdatum = PG_GETARG_DATUM(0);
+  Span *result = palloc(sizeof(Span));
+  set_span_slice(osdatum, result);
   PG_RETURN_SPAN_P(result);
 }
 
-PG_FUNCTION_INFO_V1(Periodset_spgist_compress);
+PG_FUNCTION_INFO_V1(Spanset_spgist_compress);
 /**
  * SP-GiST compress function for period sets
  */
 PGDLLEXPORT Datum
-Periodset_spgist_compress(PG_FUNCTION_ARGS)
+Spanset_spgist_compress(PG_FUNCTION_ARGS)
 {
   Datum psdatum = PG_GETARG_DATUM(0);
-  Period *result = palloc(sizeof(Period));
-  periodset_period_slice(psdatum, result);
+  Span *result = palloc(sizeof(Span));
+  spanset_span_slice(psdatum, result);
   PG_RETURN_SPAN_P(result);
 }
 

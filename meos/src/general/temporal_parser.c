@@ -41,7 +41,7 @@
 /* MobilityDB */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/pg_call.h"
+#include "general/pg_types.h"
 #include "general/temporal_util.h"
 
 /*****************************************************************************/
@@ -222,7 +222,7 @@ basetype_parse(const char **str, mobdbType basetype)
   char *str1 = palloc(sizeof(char) * (delim + 1));
   strncpy(str1, *str, delim);
   str1[delim] = '\0';
-  Datum result = basetype_input(str1, basetype, false);
+  Datum result = basetype_in(str1, basetype, false);
   pfree(str1);
   /* since there's an @ here, let's take it with us */
   *str += delim + 1;
@@ -234,7 +234,7 @@ basetype_parse(const char **str, mobdbType basetype)
 /**
  * @brief Parse a temporal box value from the buffer.
  */
-TBOX *
+TBox *
 tbox_parse(const char **str)
 {
   bool hasx = false, hast = false;
@@ -297,7 +297,7 @@ tbox_parse(const char **str)
   /* Ensure there is no more input */
   ensure_end_input(str, true, "temporal box");
 
-  TBOX *result = tbox_make(period, span);
+  TBox *result = tbox_make(period, span);
   if (hast)
     pfree(period);
   if (hasx)
@@ -330,77 +330,11 @@ timestamp_parse(const char **str)
   return result;
 }
 
-/**
- * @brief Parse a timestamp set value from the buffer.
- */
-TimestampSet *
-timestampset_parse(const char **str)
-{
-  if (!p_obrace(str))
-    elog(ERROR, "Could not parse timestamp set");
-
-  /* First parsing */
-  const char *bak = *str;
-  timestamp_parse(str);
-  int count = 1;
-  while (p_comma(str))
-  {
-    count++;
-    timestamp_parse(str);
-  }
-  if (!p_cbrace(str))
-    elog(ERROR, "Could not parse timestamp set");
-
-  *str = bak;
-  TimestampTz *times = palloc(sizeof(TimestampTz) * count);
-  for (int i = 0; i < count; i++)
-  {
-    p_comma(str);
-    times[i] = timestamp_parse(str);
-  }
-  p_cbrace(str);
-  return timestampset_make_free(times, count);
-}
-
-/**
- * @brief Parse a period set value from the buffer.
- */
-PeriodSet *
-periodset_parse(const char **str)
-{
-  if (!p_obrace(str))
-    elog(ERROR, "Could not parse period set");
-
-  /* First parsing */
-  const char *bak = *str;
-  span_parse(str, T_PERIOD, false, false);
-  int count = 1;
-  while (p_comma(str))
-  {
-    count++;
-    span_parse(str, T_PERIOD, false, false);
-  }
-  if (!p_cbrace(str))
-    elog(ERROR, "Could not parse period set");
-
-  /* Second parsing */
-  *str = bak;
-  Period **periods = palloc(sizeof(Period *) * count);
-  for (int i = 0; i < count; i++)
-  {
-    p_comma(str);
-    periods[i] = span_parse(str, T_PERIOD, false, true);
-  }
-  p_cbrace(str);
-  PeriodSet *result = periodset_make_free(periods, count, NORMALIZE);
-  return result;
-}
-
 /*****************************************************************************/
-/* Span Types */
+/* Set and Span Types */
 
 /**
- * Parse a timestamp value from the buffer.
+ * Parse a element value from the buffer.
  */
 Datum
 elem_parse(const char **str, mobdbType basetype)
@@ -408,15 +342,48 @@ elem_parse(const char **str, mobdbType basetype)
   p_whitespace(str);
   int delim = 0;
   while ((*str)[delim] != ',' && (*str)[delim] != ']' &&
-    (*str)[delim] != ')' &&  (*str)[delim] != '\0')
+    (*str)[delim] != '}' && (*str)[delim] != ')' &&  (*str)[delim] != '\0')
     delim++;
   char *str1 = palloc(sizeof(char) * (delim + 1));
   strncpy(str1, *str, delim);
   str1[delim] = '\0';
-  Datum result = basetype_input(str1, basetype, false);
+  Datum result = basetype_in(str1, basetype, false);
   pfree(str1);
   *str += delim;
   return result;
+}
+
+/**
+ * @brief Parse a timestamp set value from the buffer.
+ */
+Set *
+set_parse(const char **str, mobdbType ostype)
+{
+  if (!p_obrace(str))
+    elog(ERROR, "Could not parse ordered set");
+
+  /* First parsing */
+  mobdbType basetype = settype_basetype(ostype);
+  const char *bak = *str;
+  elem_parse(str, basetype);
+  int count = 1;
+  while (p_comma(str))
+  {
+    count++;
+    elem_parse(str, basetype);
+  }
+  if (!p_cbrace(str))
+    elog(ERROR, "Could not parse ordered set");
+
+  *str = bak;
+  Datum *values = palloc(sizeof(Datum) * count);
+  for (int i = 0; i < count; i++)
+  {
+    p_comma(str);
+    values[i] = elem_parse(str, basetype);
+  }
+  p_cbrace(str);
+  return set_make_free(values, count, basetype);
 }
 
 /**
@@ -452,6 +419,41 @@ span_parse(const char **str, mobdbType spantype, bool end, bool make)
   if (! make)
     return NULL;
   return span_make(lower, upper, lower_inc, upper_inc, basetype);
+}
+
+/**
+ * @brief Parse a span set value from the buffer.
+ */
+SpanSet *
+spanset_parse(const char **str, mobdbType spansettype)
+{
+  if (!p_obrace(str))
+    elog(ERROR, "Could not parse span set");
+
+  mobdbType spantype = spansettype_spantype(spansettype);
+  /* First parsing */
+  const char *bak = *str;
+  span_parse(str, spantype, false, false);
+  int count = 1;
+  while (p_comma(str))
+  {
+    count++;
+    span_parse(str, spantype, false, false);
+  }
+  if (!p_cbrace(str))
+    elog(ERROR, "Could not parse span set");
+
+  /* Second parsing */
+  *str = bak;
+  Span **spans = palloc(sizeof(Span *) * count);
+  for (int i = 0; i < count; i++)
+  {
+    p_comma(str);
+    spans[i] = span_parse(str, spantype, false, true);
+  }
+  p_cbrace(str);
+  SpanSet *result = spanset_make_free(spans, count, NORMALIZE);
+  return result;
 }
 
 /*****************************************************************************/
@@ -518,7 +520,7 @@ tdiscseq_parse(const char **str, mobdbType temptype)
     instants[i] = tinstant_parse(str, temptype, false, true);
   }
   p_cbrace(str);
-  return tsequence_make_free(instants, count, count, true, true, DISCRETE,
+  return tsequence_make_free(instants, count, true, true, DISCRETE,
     NORMALIZE_NO);
 }
 
@@ -575,8 +577,8 @@ tcontseq_parse(const char **str, mobdbType temptype, interpType interp, bool end
   }
   p_cbracket(str);
   p_cparen(str);
-  return tsequence_make_free(instants, count, count, lower_inc, upper_inc,
-    interp, NORMALIZE);
+  return tsequence_make_free(instants, count, lower_inc, upper_inc, interp,
+    NORMALIZE);
 }
 
 /**

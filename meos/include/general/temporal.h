@@ -61,7 +61,7 @@ extern char *text_to_cstring(const text *t);
 /**
  * Floating point precision
  */
-#define MOBDB_EPSILON   1.e-05
+#define MOBDB_EPSILON   1.0e-06
 #define MOBDB_FP_EQ(A, B) (fabs((A)-(B)) <= MOBDB_EPSILON)
 #define MOBDB_FP_NE(A, B) (fabs((A)-(B)) > MOBDB_EPSILON)
 #define MOBDB_FP_LT(A, B) (((A) + MOBDB_EPSILON) < (B))
@@ -72,7 +72,7 @@ extern char *text_to_cstring(const text *t);
 /**
  * Precision for distance operations
  */
-#define DIST_EPSILON    1.0e-05
+#define DIST_EPSILON    1.0e-06
 
 /** Symbolic constants for lifting */
 #define DISCONTINUOUS   true
@@ -141,6 +141,14 @@ typedef enum
   TNPOINTTYPE,
 } TemporalFamily;
 
+/** Enumeration for the set operations of span and temporal types */
+typedef enum
+{
+  UNION,
+  INTER,
+  MINUS
+} SetOper;
+
 /*****************************************************************************
  * Concrete subtype of temporal types
  *****************************************************************************/
@@ -154,25 +162,17 @@ typedef enum
 #define TSEQUENCESET    3
 
 /*****************************************************************************
- * Interpolation functions
- *****************************************************************************/
-
-/**
- * Enumeration for the interpolation functions for temporal types
- */
-// #define INTERP_NONE     0
-// #define DISCRETE        1
-// #define STEPWISE        2
-// #define LINEAR          3
-
-/*****************************************************************************
  * Macros for manipulating the 'flags' element where the less significant
  * bits are GTZXIICB, where
  *   G: coordinates are geodetic
  *   T: has T coordinate,
  *   Z: has Z coordinate
  *   X: has value or X coordinate
- *   II: interpolation
+ *   II: interpolation, whose values are
+ *   - 00: INTERP_NONE (undetermined) for TInstant
+ *   - 01: DISCRETE
+ *   - 10: STEPWISE
+ *   - 11: LINEAR
  *   C: continuous base type
  *   B: base type passed by value
  * Notice that formally speaking the interpolation flags are only needed
@@ -183,7 +183,7 @@ typedef enum
 #define MOBDB_FLAG_BYVAL      0x0001  // 1
 #define MOBDB_FLAG_CONTINUOUS 0x0002  // 2
 /* The following two interpolation flags are only used for TSequence and TSequenceSet */
-#define MOBDB_FLAGS_INTERP    0x000C  // 4 or 8
+#define MOBDB_FLAGS_INTERP    0x000C  // 4 / 8
 /* The following two flags are used for both bounding boxes and temporal types */
 #define MOBDB_FLAG_X          0x0010  // 16
 #define MOBDB_FLAG_Z          0x0020  // 32
@@ -237,31 +237,38 @@ enum MOBDB_WKB_TYPE
   MOBDB_WKB_T_DOUBLE3 =        3,   /**< double3 type */
   MOBDB_WKB_T_DOUBLE4 =        4,   /**< double4 type */
   MOBDB_WKB_T_FLOAT8 =         5,   /**< float8 type */
-  MOBDB_WKB_T_FLOATSPAN =      6,   /**< float8 span type */
-  MOBDB_WKB_T_INT4 =           7,   /**< int4 type */
-  MOBDB_WKB_T_INTSPAN =        8,   /**< int4 span type */
-  MOBDB_WKB_T_INT8 =           9,   /**< int8 type */
-  MOBDB_WKB_T_PERIOD =         10,  /**< period type */
-  MOBDB_WKB_T_PERIODSET =      11,  /**< period set type */
-  MOBDB_WKB_T_STBOX =          12,  /**< spatiotemporal box type */
-  MOBDB_WKB_T_TBOOL =          13,  /**< temporal boolean type */
-  MOBDB_WKB_T_TBOX =           14,  /**< temporal box type */
-  MOBDB_WKB_T_TDOUBLE2 =       15,  /**< temporal double2 type */
-  MOBDB_WKB_T_TDOUBLE3 =       16,  /**< temporal double3 type */
-  MOBDB_WKB_T_TDOUBLE4 =       17,  /**< temporal double4 type */
-  MOBDB_WKB_T_TEXT =           18,  /**< text type */
-  MOBDB_WKB_T_TFLOAT =         19,  /**< temporal float type */
-  MOBDB_WKB_T_TIMESTAMPSET =   20,  /**< timestamp set type */
-  MOBDB_WKB_T_TIMESTAMPTZ =    21,  /**< timestamp with time zone type */
-  MOBDB_WKB_T_TINT =           22,  /**< temporal integer type */
-  MOBDB_WKB_T_TTEXT =          23,  /**< temporal text type */
-  MOBDB_WKB_T_GEOMETRY =       24,  /**< geometry type */
-  MOBDB_WKB_T_GEOGRAPHY =      25,  /**< geography type */
-  MOBDB_WKB_T_TGEOMPOINT =     26,  /**< temporal geometry point type */
-  MOBDB_WKB_T_TGEOGPOINT =     27,  /**< temporal geography point type */
-  MOBDB_WKB_T_NPOINT =         28,  /**< network point type */
-  MOBDB_WKB_T_NSEGMENT =       29,  /**< network segment type */
-  MOBDB_WKB_T_TNPOINT =        30,  /**< temporal network point type */
+  MOBDB_WKB_T_FLOATSET =       6,   /**< float8 span type */
+  MOBDB_WKB_T_FLOATSPAN =      7,   /**< float8 span type */
+  MOBDB_WKB_T_FLOATSPANSET =   8,   /**< float8 span type */
+  MOBDB_WKB_T_INT4 =           9,   /**< int4 type */
+  MOBDB_WKB_T_INTSET =         10,   /**< int4 span type */
+  MOBDB_WKB_T_INTSPAN =        11,   /**< int4 span type */
+  MOBDB_WKB_T_INTSPANSET =     12,  /**< int4 span type */
+  MOBDB_WKB_T_INT8 =           13,  /**< int8 type */
+  MOBDB_WKB_T_BIGINTSET =      14,   /**< int4 span type */
+  MOBDB_WKB_T_BIGINTSPAN =     15,   /**< int4 span type */
+  MOBDB_WKB_T_BIGINTSPANSET =  16,  /**< int4 span type */
+  MOBDB_WKB_T_PERIOD =         18,  /**< period type */
+  MOBDB_WKB_T_PERIODSET =      19,  /**< period set type */
+  MOBDB_WKB_T_STBOX =          20,  /**< spatiotemporal box type */
+  MOBDB_WKB_T_TBOOL =          21,  /**< temporal boolean type */
+  MOBDB_WKB_T_TBOX =           22,  /**< temporal box type */
+  MOBDB_WKB_T_TDOUBLE2 =       23,  /**< temporal double2 type */
+  MOBDB_WKB_T_TDOUBLE3 =       24,  /**< temporal double3 type */
+  MOBDB_WKB_T_TDOUBLE4 =       25,  /**< temporal double4 type */
+  MOBDB_WKB_T_TEXT =           26,  /**< text type */
+  MOBDB_WKB_T_TFLOAT =         27,  /**< temporal float type */
+  MOBDB_WKB_T_TIMESTAMPSET =   28,  /**< timestamp set type */
+  MOBDB_WKB_T_TIMESTAMPTZ =    29,  /**< timestamp with time zone type */
+  MOBDB_WKB_T_TINT =           30,  /**< temporal integer type */
+  MOBDB_WKB_T_TTEXT =          31,  /**< temporal text type */
+  MOBDB_WKB_T_GEOMETRY =       32,  /**< geometry type */
+  MOBDB_WKB_T_GEOGRAPHY =      33,  /**< geography type */
+  MOBDB_WKB_T_TGEOMPOINT =     34,  /**< temporal geometry point type */
+  MOBDB_WKB_T_TGEOGPOINT =     35,  /**< temporal geography point type */
+  MOBDB_WKB_T_NPOINT =         36,  /**< network point type */
+  MOBDB_WKB_T_NSEGMENT =       37,  /**< network segment type */
+  MOBDB_WKB_T_TNPOINT =        38,  /**< temporal network point type */
 };
 
 /* Temporal subtype */
@@ -311,6 +318,7 @@ enum MOBDB_WKB_TSUBTYPE
 #define DEFAULT_TIME_ORIGIN (JAN_3_2000)
 #define DEFAULT_FLOATSPAN_ORIGIN (0.0)
 #define DEFAULT_INTSPAN_ORIGIN (0)
+#define DEFAULT_BIGINTSPAN_ORIGIN (0)
 
 /*****************************************************************************
  * Additional struct definitions for temporal types
@@ -322,8 +330,8 @@ enum MOBDB_WKB_TSUBTYPE
 typedef union bboxunion
 {
   Period    p;      /**< Period */
-  TBOX      b;      /**< Temporal box */
-  STBOX     g;      /**< Spatiotemporal box */
+  TBox      b;      /**< Temporal box */
+  STBox     g;      /**< Spatiotemporal box */
 } bboxunion;
 
 /**
@@ -362,6 +370,9 @@ typedef struct
 /*****************************************************************************
  * Miscellaneous
  *****************************************************************************/
+
+/* Definition of output function */
+typedef char *(*outfunc)(Datum value, mobdbType type, int maxdd);
 
 /* Definition of qsort comparator for integers */
 typedef int (*qsort_comparator) (const void *a, const void *b);
@@ -441,7 +452,7 @@ extern void ensure_valid_tempsubtype(int16 type);
 extern void ensure_valid_tempsubtype_all(int16 type);
 extern void ensure_continuous(const Temporal *temp);
 extern void ensure_tinstarr(const TInstant **instants, int count);
-extern void ensure_linear_interpolation(int16 flags);
+extern void ensure_nonlinear_interpolation(int16 flags);
 extern void ensure_common_dimension(int16 flags1, int16 flags2);
 extern void ensure_same_temptype(const Temporal *temp1,
   const Temporal *temp2);
@@ -483,8 +494,6 @@ extern bool temporal_bbox_ev_al_lt_le(const Temporal *temp, Datum value,
 extern bool temporal_bbox_restrict_value(const Temporal *temp, Datum value);
 extern Datum *temporal_bbox_restrict_values(const Temporal *temp,
   const Datum *values, int count, int *newcount);
-extern Span **tnumber_bbox_restrict_spans(const Temporal *temp,
-  Span **spans, int count, int *newcount);
 extern Temporal *temporal_restrict_minmax(const Temporal *temp, bool min,
   bool atfunc);
 

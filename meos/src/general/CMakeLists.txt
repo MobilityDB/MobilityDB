@@ -2,11 +2,14 @@ add_library(general OBJECT
   basetype_inout.c
   doublen.c
   lifting.c
-  periodset.c
-  pg_call.c
+  pg_types.c
   skiplist.c
+  set.c
+  set_ops.c
   span.c
+  spanset.c
   span_ops.c
+  spanset_ops.c
   tbool_boolops.c
   tbool_boolops_meos.c
   tbox.c
@@ -26,8 +29,6 @@ add_library(general OBJECT
   temporal_tile.c
   temporal_util.c
   time_aggfuncs.c
-  time_ops.c
-  timestampset.c
   tinstant.c
   tnumber_distance.c
   tnumber_mathfuncs.c

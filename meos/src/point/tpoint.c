@@ -69,10 +69,10 @@ gserialized_copy(const GSERIALIZED *g)
  * @sqlfunc stbox()
  * @sqlop @p ::
  */
-STBOX *
+STBox *
 tpoint_to_stbox(const Temporal *temp)
 {
-  STBOX *result = palloc(sizeof(STBOX));
+  STBox *result = palloc(sizeof(STBox));
   temporal_set_bbox(temp, result);
   return result;
 }
@@ -87,14 +87,14 @@ tpoint_to_stbox(const Temporal *temp)
  * spatial dimension
  * @sqlfunc expandSpatial()
  */
-STBOX *
+STBox *
 geo_expand_spatial(const GSERIALIZED *gs, double d)
 {
   if (gserialized_is_empty(gs))
     return NULL;
-  STBOX box;
+  STBox box;
   geo_set_stbox(gs, &box);
-  STBOX *result = stbox_expand_spatial(&box, d);
+  STBox *result = stbox_expand_spatial(&box, d);
   return result;
 }
 
@@ -104,12 +104,12 @@ geo_expand_spatial(const GSERIALIZED *gs, double d)
  * spatial dimension
  * @sqlfunc expandSpatial()
  */
-STBOX *
+STBox *
 tpoint_expand_spatial(const Temporal *temp, double d)
 {
-  STBOX box;
+  STBox box;
   temporal_set_bbox(temp, &box);
-  STBOX *result = stbox_expand_spatial(&box, d);
+  STBox *result = stbox_expand_spatial(&box, d);
   return result;
 }
 

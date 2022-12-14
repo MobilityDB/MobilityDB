@@ -80,4 +80,36 @@ CREATE AGGREGATE extent(period) (
   PARALLEL = safe
 );
 
+CREATE FUNCTION intspanset_extent_transfn(intspan, intspanset)
+  RETURNS intspan
+  AS 'MODULE_PATHNAME', 'Spanset_extent_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION floatspanset_extent_transfn(floatspan, floatspanset)
+  RETURNS floatspan
+  AS 'MODULE_PATHNAME', 'Spanset_extent_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION periodset_extent_transfn(period, periodset)
+  RETURNS period
+  AS 'MODULE_PATHNAME', 'Spanset_extent_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+CREATE AGGREGATE extent(intspanset) (
+  SFUNC = intspanset_extent_transfn,
+  STYPE = intspan,
+  COMBINEFUNC = span_extent_combinefn,
+  PARALLEL = safe
+);
+CREATE AGGREGATE extent(floatspanset) (
+  SFUNC = floatspanset_extent_transfn,
+  STYPE = floatspan,
+  COMBINEFUNC = span_extent_combinefn,
+  PARALLEL = safe
+);
+CREATE AGGREGATE extent(periodset) (
+  SFUNC = periodset_extent_transfn,
+  STYPE = period,
+  COMBINEFUNC = span_extent_combinefn,
+  PARALLEL = safe
+);
+
 /*****************************************************************************/

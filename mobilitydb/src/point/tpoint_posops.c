@@ -40,7 +40,7 @@
  * `overbefore`,  `after`, `overafter`. For both temporal geometry and
  * geography points the same operators are derived from the basic temporal
  * types. In this file they are defined when one of the arguments is an
- * `STBOX`.
+ * `STBox`.
  */
 
 /* PostgreSQL */

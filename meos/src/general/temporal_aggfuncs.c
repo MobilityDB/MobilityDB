@@ -39,9 +39,6 @@
 #include <string.h>
 /* PostgreSQL */
 #include <postgres.h>
-// #include <catalog/pg_collation.h>
-// #include <libpq/pqformat.h>
-// #include <utils/memutils.h>
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
@@ -301,8 +298,7 @@ tsequence_tagg1(const TSequence *seq1, const TSequence *seq2,
       inst1->t);
   }
   sequences[k++] = tsequence_make_free(instants, syncseq1->count,
-    syncseq1->count, lower_inc, upper_inc, MOBDB_FLAGS_GET_INTERP(seq1->flags),
-    NORMALIZE);
+    lower_inc, upper_inc, MOBDB_FLAGS_GET_INTERP(seq1->flags), NORMALIZE);
   pfree(syncseq1); pfree(syncseq2);
 
   /* Compute the aggregation on the period after the intersection
@@ -329,8 +325,8 @@ tsequence_tagg1(const TSequence *seq1, const TSequence *seq2,
     return 1;
   }
   int count;
-  TSequence **normseqs = tseqarr_normalize(
-    (const TSequence **) sequences, k, &count);
+  TSequence **normseqs = tseqarr_normalize((const TSequence **) sequences, k,
+    &count);
   for (int i = 0; i < count; i++)
     result[i] = normseqs[i];
   pfree(normseqs);
@@ -357,7 +353,6 @@ tsequence_tagg(TSequence **sequences1, int count1, TSequence **sequences2,
    * Each sequence can be split 3 times, there may be count - 1 holes between
    * sequences for both sequences1 and sequences2, and there may be
    * 2 sequences before and after.
-   * TODO Verify this formula
    */
   int seqcount = (count1 * 3) + count1 + count2 + 1;
   TSequence **sequences = palloc(sizeof(TSequence *) * seqcount);
@@ -617,7 +612,7 @@ temporal_tagg_finalfn(SkipList *state)
   assert(values[0]->subtype == TINSTANT || values[0]->subtype == TSEQUENCE);
   if (values[0]->subtype == TINSTANT)
     result = (Temporal *) tsequence_make((const TInstant **) values,
-      state->length, state->length, true, true, DISCRETE, NORMALIZE_NO);
+      state->length, true, true, DISCRETE, NORMALIZE_NO);
   else /* values[0]->subtype == TSEQUENCE */
     result = (Temporal *) tsequenceset_make((const TSequence **) values,
       state->length, NORMALIZE);
@@ -786,9 +781,8 @@ tcontseq_transform_tagg(const TSequence *seq,
     const TInstant *inst = tsequence_inst_n(seq, i);
     instants[i] = func(inst);
   }
-  return tsequence_make_free(instants, seq->count, seq->count,
-    seq->period.lower_inc, seq->period.upper_inc,
-    MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
+  return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
+    seq->period.upper_inc, MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
 }
 
 /**
@@ -947,7 +941,7 @@ tcontseq_transform_tcount(const TSequence *seq, const Interval *interval,
     t = timestamptz_bucket(t, interval, origin) + size;
   }
   instants[1] = tinstant_make(datum_one, T_TINT, t);
-  result = tsequence_make((const TInstant **) instants, 2, 2,
+  result = tsequence_make((const TInstant **) instants, 2,
     seq->period.lower_inc, seq->period.upper_inc, STEPWISE, NORMALIZE_NO);
   pfree(instants[0]); pfree(instants[1]);
   return result;
@@ -1069,7 +1063,7 @@ tinstant_tavg_finalfn(TInstant **instants, int count)
     double tavg = value->a / value->b;
     newinstants[i] = tinstant_make(Float8GetDatum(tavg), T_TFLOAT, inst->t);
   }
-  return tsequence_make_free(newinstants, count, count, true, true, DISCRETE,
+  return tsequence_make_free(newinstants, count, true, true, DISCRETE,
     NORMALIZE_NO);
 }
 
@@ -1091,7 +1085,7 @@ tsequence_tavg_finalfn(TSequence **sequences, int count)
       double value = value2->a / value2->b;
       instants[j] = tinstant_make(Float8GetDatum(value), T_TFLOAT, inst->t);
     }
-    newsequences[i] = tsequence_make_free(instants, seq->count, seq->count,
+    newsequences[i] = tsequence_make_free(instants, seq->count,
       seq->period.lower_inc, seq->period.upper_inc,
       MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
   }
@@ -1099,6 +1093,7 @@ tsequence_tavg_finalfn(TSequence **sequences, int count)
 }
 
 /**
+ * @ingroup libmeos_temporal_agg
  * @brief Final function for temporal average aggregation
  */
 Temporal *
@@ -1150,20 +1145,20 @@ temporal_extent_transfn(Period *p, Temporal *temp)
 
   Period p1;
   temporal_set_period(temp, &p1);
-  result = union_span_span(p, &p1, false);
+  result = bbox_union_span_span(p, &p1, false);
   return result;
 }
 
 /**
  * Transition function for temporal extent aggregation for temporal numbers
  */
-TBOX *
-tnumber_extent_transfn(TBOX *box, Temporal *temp)
+TBox *
+tnumber_extent_transfn(TBox *box, Temporal *temp)
 {
   /* Can't do anything with null inputs */
   if (!box && !temp)
     return NULL;
-  TBOX *result = palloc0(sizeof(TBOX));
+  TBox *result = palloc0(sizeof(TBox));
   /* Null box and non-null temporal, return the bbox of the temporal */
   if (! box)
   {
@@ -1173,7 +1168,7 @@ tnumber_extent_transfn(TBOX *box, Temporal *temp)
   /* Non-null box and null temporal, return the box */
   if (! temp)
   {
-    memcpy(result, box, sizeof(TBOX));
+    memcpy(result, box, sizeof(TBox));
     return result;
   }
   /* Both box and temporal are not null */

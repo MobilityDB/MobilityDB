@@ -61,13 +61,13 @@ PG_FUNCTION_INFO_V1(Tpoint_extent_transfn);
 PGDLLEXPORT Datum
 Tpoint_extent_transfn(PG_FUNCTION_ARGS)
 {
-  STBOX *box = PG_ARGISNULL(0) ? NULL : PG_GETARG_STBOX_P(0);
+  STBox *box = PG_ARGISNULL(0) ? NULL : PG_GETARG_STBOX_P(0);
   Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL_P(1);
 
   /* Can't do anything with null inputs */
   if (! box && ! temp)
     PG_RETURN_NULL();
-  STBOX *result = palloc0(sizeof(STBOX));
+  STBox *result = palloc0(sizeof(STBox));
   /* Null box and non-null temporal, return the bbox of the temporal */
   if (temp && ! box )
   {
@@ -77,7 +77,7 @@ Tpoint_extent_transfn(PG_FUNCTION_ARGS)
   /* Non-null box and null temporal, return the box */
   if (box && ! temp)
   {
-    memcpy(result, box, sizeof(STBOX));
+    memcpy(result, box, sizeof(STBox));
     PG_RETURN_POINTER(result);
   }
 
@@ -103,7 +103,7 @@ PGDLLEXPORT Datum
 Tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
 {
   SkipList *state;
-  INPUT_AGG_TRANS_STATE(state);
+  INPUT_AGG_TRANS_STATE(fcinfo, state);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
 
   geoaggstate_check_temp(state, temp);

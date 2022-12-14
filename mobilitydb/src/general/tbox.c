@@ -40,9 +40,9 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/temporal.h"
 #include "general/temporal_out.h"
 #include "general/temporal_util.h"
-#include "general/time_ops.h"
 #include "general/tnumber_mathfuncs.h"
 /* MobilityDB */
 #include "pg_general/temporal.h"
@@ -55,7 +55,7 @@
 
 PG_FUNCTION_INFO_V1(Tbox_in);
 /**
- * @ingroup mobilitydb_box_in_out
+ * @ingroup mobilitydb_box_inout
  * @brief Input function for temporal boxes.
  *
  * Examples of input:
@@ -76,28 +76,28 @@ Tbox_in(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tbox_out);
 /**
- * @ingroup mobilitydb_box_in_out
+ * @ingroup mobilitydb_box_inout
  * @brief Output function for temporal boxes.
  * @sqlfunc tbox_out()
  */
 PGDLLEXPORT Datum
 Tbox_out(PG_FUNCTION_ARGS)
 {
-  TBOX *box = PG_GETARG_TBOX_P(0);
+  TBox *box = PG_GETARG_TBOX_P(0);
   PG_RETURN_CSTRING(tbox_out(box, OUT_DEFAULT_DECIMAL_DIGITS));
 }
 
 PG_FUNCTION_INFO_V1(Tbox_recv);
 /**
- * @ingroup mobilitydb_box_in_out
- * @brief Receive function for TBOX
+ * @ingroup mobilitydb_box_inout
+ * @brief Receive function for TBox
  * @sqlfunc tbox_recv()
  */
 PGDLLEXPORT Datum
 Tbox_recv(PG_FUNCTION_ARGS)
 {
   StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
-  TBOX *result = tbox_from_wkb((uint8_t *) buf->data, buf->len);
+  TBox *result = tbox_from_wkb((uint8_t *) buf->data, buf->len);
   /* Set cursor to the end of buffer (so the backend is happy) */
   buf->cursor = buf->len;
   PG_RETURN_POINTER(result);
@@ -105,14 +105,14 @@ Tbox_recv(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tbox_send);
 /**
- * @ingroup mobilitydb_box_in_out
- * @brief Send function for TBOX
+ * @ingroup mobilitydb_box_inout
+ * @brief Send function for TBox
  * @sqlfunc tbox_send()
  */
 PGDLLEXPORT Datum
 Tbox_send(PG_FUNCTION_ARGS)
 {
-  TBOX *box = PG_GETARG_TBOX_P(0);
+  TBox *box = PG_GETARG_TBOX_P(0);
   uint8_t variant = 0;
   size_t wkb_size;
   uint8_t *wkb = tbox_as_wkb(box, variant, &wkb_size);
@@ -127,14 +127,14 @@ Tbox_send(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tbox_as_text);
 /**
- * @ingroup mobilitydb_box_in_out
+ * @ingroup mobilitydb_box_inout
  * @brief Output function for temporal boxes.
  * @sqlfunc asText()
  */
 PGDLLEXPORT Datum
 Tbox_as_text(PG_FUNCTION_ARGS)
 {
-  TBOX *box = PG_GETARG_TBOX_P(0);
+  TBox *box = PG_GETARG_TBOX_P(0);
   int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
     dbl_dig_for_wkt = PG_GETARG_INT32(1);
@@ -158,7 +158,7 @@ PGDLLEXPORT Datum
 Int_to_tbox(PG_FUNCTION_ARGS)
 {
   int i = PG_GETARG_INT32(0);
-  TBOX *result = palloc(sizeof(TBOX));
+  TBox *result = palloc(sizeof(TBox));
   int_set_tbox(i, result);
   PG_RETURN_POINTER(result);
 }
@@ -173,7 +173,7 @@ PGDLLEXPORT Datum
 Float_to_tbox(PG_FUNCTION_ARGS)
 {
   double d = PG_GETARG_FLOAT8(0);
-  TBOX *result = palloc(sizeof(TBOX));
+  TBox *result = palloc(sizeof(TBox));
   float_set_tbox(d, result);
   PG_RETURN_POINTER(result);
 }
@@ -189,7 +189,7 @@ Numeric_to_tbox(PG_FUNCTION_ARGS)
 {
   Datum num = PG_GETARG_DATUM(0);
   double d = DatumGetFloat8(call_function1(numeric_float8, num));
-  TBOX *result = palloc(sizeof(TBOX));
+  TBox *result = palloc(sizeof(TBox));
   float_set_tbox(d, result);
   PG_RETURN_POINTER(result);
 }
@@ -204,8 +204,23 @@ PGDLLEXPORT Datum
 Span_to_tbox(PG_FUNCTION_ARGS)
 {
   Span *span = PG_GETARG_SPAN_P(0);
-  TBOX *result = palloc(sizeof(TBOX));
+  TBox *result = palloc(sizeof(TBox));
   span_set_tbox(span, result);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Spanset_to_tbox);
+/**
+ * @ingroup mobilitydb_box_cast
+ * @brief Transform the span set to a temporal box
+ * @sqlfunc tbox()
+ */
+PGDLLEXPORT Datum
+Spanset_to_tbox(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  TBox *result = palloc(sizeof(TBox));
+  spanset_set_tbox(ss, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -219,7 +234,7 @@ PGDLLEXPORT Datum
 Timestamp_to_tbox(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  TBOX *result = palloc(sizeof(TBOX));
+  TBox *result = palloc(sizeof(TBox));
   timestamp_set_tbox(t, result);
   PG_RETURN_POINTER(result);
 }
@@ -234,7 +249,7 @@ PGDLLEXPORT Datum
 Period_to_tbox(PG_FUNCTION_ARGS)
 {
   Period *p = PG_GETARG_SPAN_P(0);
-  TBOX *result = palloc(sizeof(TBOX));
+  TBox *result = palloc(sizeof(TBox));
   period_set_tbox(p, result);
   PG_RETURN_POINTER(result);
 }
@@ -252,7 +267,7 @@ Int_timestamp_to_tbox(PG_FUNCTION_ARGS)
 {
   int i = PG_GETARG_INT32(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  TBOX *result = int_timestamp_to_tbox(i, t);
+  TBox *result = int_timestamp_to_tbox(i, t);
   PG_RETURN_POINTER(result);
 }
 
@@ -267,7 +282,7 @@ Float_timestamp_to_tbox(PG_FUNCTION_ARGS)
 {
   double d = PG_GETARG_FLOAT8(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  TBOX *result = float_timestamp_to_tbox(d, t);
+  TBox *result = float_timestamp_to_tbox(d, t);
   PG_RETURN_POINTER(result);
 }
 
@@ -282,7 +297,7 @@ Int_period_to_tbox(PG_FUNCTION_ARGS)
 {
   int i = PG_GETARG_INT32(0);
   Period *p = PG_GETARG_SPAN_P(1);
-  TBOX *result = int_period_to_tbox(i, p);
+  TBox *result = int_period_to_tbox(i, p);
   PG_RETURN_POINTER(result);
 }
 
@@ -297,7 +312,7 @@ Float_period_to_tbox(PG_FUNCTION_ARGS)
 {
   double d = PG_GETARG_FLOAT8(0);
   Period *p = PG_GETARG_SPAN_P(1);
-  TBOX *result = float_period_to_tbox(d, p);
+  TBox *result = float_period_to_tbox(d, p);
   PG_RETURN_POINTER(result);
 }
 
@@ -312,7 +327,7 @@ Span_timestamp_to_tbox(PG_FUNCTION_ARGS)
 {
   Span *span = PG_GETARG_SPAN_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  TBOX *result = span_timestamp_to_tbox(span, t);
+  TBox *result = span_timestamp_to_tbox(span, t);
   PG_RETURN_POINTER(result);
 }
 
@@ -327,7 +342,7 @@ Span_period_to_tbox(PG_FUNCTION_ARGS)
 {
   Span *span = PG_GETARG_SPAN_P(0);
   Period *p = PG_GETARG_SPAN_P(1);
-  TBOX *result = span_period_to_tbox(span, p);
+  TBox *result = span_period_to_tbox(span, p);
   PG_RETURN_POINTER(result);
 }
 
@@ -340,7 +355,7 @@ Span_period_to_tbox(PG_FUNCTION_ARGS)
  * to be detoasted, extract only the header and not the full object.
  */
 void
-timestampset_tbox_slice(Datum tsdatum, TBOX *box)
+timestampset_tbox_slice(Datum tsdatum, TBox *box)
 {
   TimestampSet *ts = NULL;
   if (PG_DATUM_NEEDS_DETOAST((struct varlena *) tsdatum))
@@ -363,7 +378,7 @@ PGDLLEXPORT Datum
 Timestampset_to_tbox(PG_FUNCTION_ARGS)
 {
   Datum tsdatum = PG_GETARG_DATUM(0);
-  TBOX *result = palloc(sizeof(TBOX));
+  TBox *result = palloc(sizeof(TBox));
   timestampset_tbox_slice(tsdatum, result);
   PG_RETURN_POINTER(result);
 }
@@ -373,7 +388,7 @@ Timestampset_to_tbox(PG_FUNCTION_ARGS)
  * to be detoasted, extract only the header and not the full object.
  */
 void
-periodset_tbox_slice(Datum psdatum, TBOX *box)
+periodset_tbox_slice(Datum psdatum, TBox *box)
 {
   PeriodSet *ps = NULL;
   if (PG_DATUM_NEEDS_DETOAST((struct varlena *) psdatum))
@@ -396,7 +411,7 @@ PGDLLEXPORT Datum
 Periodset_to_tbox(PG_FUNCTION_ARGS)
 {
   Datum psdatum = PG_GETARG_DATUM(0);
-  TBOX *result = palloc(sizeof(TBOX));
+  TBox *result = palloc(sizeof(TBox));
   periodset_tbox_slice(psdatum, result);
   PG_RETURN_POINTER(result);
 }
@@ -412,7 +427,7 @@ PG_FUNCTION_INFO_V1(Tbox_to_floatspan);
 PGDLLEXPORT Datum
 Tbox_to_floatspan(PG_FUNCTION_ARGS)
 {
-  TBOX *box = PG_GETARG_TBOX_P(0);
+  TBox *box = PG_GETARG_TBOX_P(0);
   Span *result = tbox_to_floatspan(box);
   if (! result)
     PG_RETURN_NULL();
@@ -428,7 +443,7 @@ PG_FUNCTION_INFO_V1(Tbox_to_period);
 PGDLLEXPORT Datum
 Tbox_to_period(PG_FUNCTION_ARGS)
 {
-  TBOX *box = PG_GETARG_TBOX_P(0);
+  TBox *box = PG_GETARG_TBOX_P(0);
   Period *result = tbox_to_period(box);
   if (! result)
     PG_RETURN_NULL();
@@ -448,7 +463,7 @@ PG_FUNCTION_INFO_V1(Tbox_hasx);
 PGDLLEXPORT Datum
 Tbox_hasx(PG_FUNCTION_ARGS)
 {
-  TBOX *box = PG_GETARG_TBOX_P(0);
+  TBox *box = PG_GETARG_TBOX_P(0);
   PG_RETURN_BOOL(tbox_hasx(box));
 }
 
@@ -461,7 +476,7 @@ PG_FUNCTION_INFO_V1(Tbox_hast);
 PGDLLEXPORT Datum
 Tbox_hast(PG_FUNCTION_ARGS)
 {
-  TBOX *box = PG_GETARG_TBOX_P(0);
+  TBox *box = PG_GETARG_TBOX_P(0);
   PG_RETURN_BOOL(tbox_hast(box));
 }
 
@@ -474,7 +489,7 @@ PG_FUNCTION_INFO_V1(Tbox_xmin);
 PGDLLEXPORT Datum
 Tbox_xmin(PG_FUNCTION_ARGS)
 {
-  TBOX *box = PG_GETARG_TBOX_P(0);
+  TBox *box = PG_GETARG_TBOX_P(0);
   double result;
   if (! tbox_xmin(box, &result))
     PG_RETURN_NULL();
@@ -490,7 +505,7 @@ PG_FUNCTION_INFO_V1(Tbox_xmax);
 PGDLLEXPORT Datum
 Tbox_xmax(PG_FUNCTION_ARGS)
 {
-  TBOX *box = PG_GETARG_TBOX_P(0);
+  TBox *box = PG_GETARG_TBOX_P(0);
   double result;
   if (! tbox_xmax(box, &result))
     PG_RETURN_NULL();
@@ -506,7 +521,7 @@ PG_FUNCTION_INFO_V1(Tbox_tmin);
 PGDLLEXPORT Datum
 Tbox_tmin(PG_FUNCTION_ARGS)
 {
-  TBOX *box = PG_GETARG_TBOX_P(0);
+  TBox *box = PG_GETARG_TBOX_P(0);
   TimestampTz result;
   if (! tbox_tmin(box, &result))
     PG_RETURN_NULL();
@@ -522,7 +537,7 @@ PG_FUNCTION_INFO_V1(Tbox_tmax);
 PGDLLEXPORT Datum
 Tbox_tmax(PG_FUNCTION_ARGS)
 {
-  TBOX *box = PG_GETARG_TBOX_P(0);
+  TBox *box = PG_GETARG_TBOX_P(0);
   TimestampTz result;
   if (! tbox_tmax(box, &result))
     PG_RETURN_NULL();
@@ -542,7 +557,7 @@ PG_FUNCTION_INFO_V1(Tbox_expand_value);
 PGDLLEXPORT Datum
 Tbox_expand_value(PG_FUNCTION_ARGS)
 {
-  TBOX *box = PG_GETARG_TBOX_P(0);
+  TBox *box = PG_GETARG_TBOX_P(0);
   double d = PG_GETARG_FLOAT8(1);
   PG_RETURN_POINTER(tbox_expand_value(box, d));
 }
@@ -556,7 +571,7 @@ PG_FUNCTION_INFO_V1(Tbox_expand_temporal);
 PGDLLEXPORT Datum
 Tbox_expand_temporal(PG_FUNCTION_ARGS)
 {
-  TBOX *box = PG_GETARG_TBOX_P(0);
+  TBox *box = PG_GETARG_TBOX_P(0);
   Interval *interval = PG_GETARG_INTERVAL_P(1);
   PG_RETURN_POINTER(tbox_expand_temporal(box, interval));
 }
@@ -565,11 +580,11 @@ Tbox_expand_temporal(PG_FUNCTION_ARGS)
  * @brief Set the precision of the value dimension of the temporal box to
  * the number of decimal places.
  */
-static TBOX *
-tbox_round(const TBOX *box, int size)
+static TBox *
+tbox_round(const TBox *box, int size)
 {
   ensure_has_X_tbox(box);
-  TBOX *result = tbox_copy(box);
+  TBox *result = tbox_copy(box);
   result->span.lower = datum_round_float(box->span.lower, size);
   result->span.upper = datum_round_float(box->span.upper, size);
   return result;
@@ -585,7 +600,7 @@ PG_FUNCTION_INFO_V1(Tbox_round);
 PGDLLEXPORT Datum
 Tbox_round(PG_FUNCTION_ARGS)
 {
-  TBOX *box = PG_GETARG_TBOX_P(0);
+  TBox *box = PG_GETARG_TBOX_P(0);
   int size = PG_GETARG_INT32(1);
   PG_RETURN_POINTER(tbox_round(box, size));
 }
@@ -603,8 +618,8 @@ PG_FUNCTION_INFO_V1(Contains_tbox_tbox);
 PGDLLEXPORT Datum
 Contains_tbox_tbox(PG_FUNCTION_ARGS)
 {
-  TBOX *box1 = PG_GETARG_TBOX_P(0);
-  TBOX *box2 = PG_GETARG_TBOX_P(1);
+  TBox *box1 = PG_GETARG_TBOX_P(0);
+  TBox *box2 = PG_GETARG_TBOX_P(1);
   PG_RETURN_BOOL(contains_tbox_tbox(box1, box2));
 }
 
@@ -617,8 +632,8 @@ PG_FUNCTION_INFO_V1(Contained_tbox_tbox);
 PGDLLEXPORT Datum
 Contained_tbox_tbox(PG_FUNCTION_ARGS)
 {
-  TBOX *box1 = PG_GETARG_TBOX_P(0);
-  TBOX *box2 = PG_GETARG_TBOX_P(1);
+  TBox *box1 = PG_GETARG_TBOX_P(0);
+  TBox *box2 = PG_GETARG_TBOX_P(1);
   PG_RETURN_BOOL(contained_tbox_tbox(box1, box2));
 }
 
@@ -631,8 +646,8 @@ PG_FUNCTION_INFO_V1(Overlaps_tbox_tbox);
 PGDLLEXPORT Datum
 Overlaps_tbox_tbox(PG_FUNCTION_ARGS)
 {
-  TBOX *box1 = PG_GETARG_TBOX_P(0);
-  TBOX *box2 = PG_GETARG_TBOX_P(1);
+  TBox *box1 = PG_GETARG_TBOX_P(0);
+  TBox *box2 = PG_GETARG_TBOX_P(1);
   PG_RETURN_BOOL(overlaps_tbox_tbox(box1, box2));
 }
 
@@ -645,8 +660,8 @@ PG_FUNCTION_INFO_V1(Same_tbox_tbox);
 PGDLLEXPORT Datum
 Same_tbox_tbox(PG_FUNCTION_ARGS)
 {
-  TBOX *box1 = PG_GETARG_TBOX_P(0);
-  TBOX *box2 = PG_GETARG_TBOX_P(1);
+  TBox *box1 = PG_GETARG_TBOX_P(0);
+  TBox *box2 = PG_GETARG_TBOX_P(1);
   PG_RETURN_BOOL(same_tbox_tbox(box1, box2));
 }
 
@@ -659,8 +674,8 @@ PG_FUNCTION_INFO_V1(Adjacent_tbox_tbox);
 PGDLLEXPORT Datum
 Adjacent_tbox_tbox(PG_FUNCTION_ARGS)
 {
-  TBOX *box1 = PG_GETARG_TBOX_P(0);
-  TBOX *box2 = PG_GETARG_TBOX_P(1);
+  TBox *box1 = PG_GETARG_TBOX_P(0);
+  TBox *box2 = PG_GETARG_TBOX_P(1);
   PG_RETURN_BOOL(adjacent_tbox_tbox(box1, box2));
 }
 
@@ -677,8 +692,8 @@ PG_FUNCTION_INFO_V1(Left_tbox_tbox);
 PGDLLEXPORT Datum
 Left_tbox_tbox(PG_FUNCTION_ARGS)
 {
-  TBOX *box1 = PG_GETARG_TBOX_P(0);
-  TBOX *box2 = PG_GETARG_TBOX_P(1);
+  TBox *box1 = PG_GETARG_TBOX_P(0);
+  TBox *box2 = PG_GETARG_TBOX_P(1);
   PG_RETURN_BOOL(left_tbox_tbox(box1, box2));
 }
 
@@ -691,8 +706,8 @@ PG_FUNCTION_INFO_V1(Overleft_tbox_tbox);
 PGDLLEXPORT Datum
 Overleft_tbox_tbox(PG_FUNCTION_ARGS)
 {
-  TBOX *box1 = PG_GETARG_TBOX_P(0);
-  TBOX *box2 = PG_GETARG_TBOX_P(1);
+  TBox *box1 = PG_GETARG_TBOX_P(0);
+  TBox *box2 = PG_GETARG_TBOX_P(1);
   PG_RETURN_BOOL(overleft_tbox_tbox(box1, box2));
 }
 
@@ -705,8 +720,8 @@ PG_FUNCTION_INFO_V1(Right_tbox_tbox);
 PGDLLEXPORT Datum
 Right_tbox_tbox(PG_FUNCTION_ARGS)
 {
-  TBOX *box1 = PG_GETARG_TBOX_P(0);
-  TBOX *box2 = PG_GETARG_TBOX_P(1);
+  TBox *box1 = PG_GETARG_TBOX_P(0);
+  TBox *box2 = PG_GETARG_TBOX_P(1);
   PG_RETURN_BOOL(right_tbox_tbox(box1, box2));
 }
 
@@ -719,8 +734,8 @@ PG_FUNCTION_INFO_V1(Overright_tbox_tbox);
 PGDLLEXPORT Datum
 Overright_tbox_tbox(PG_FUNCTION_ARGS)
 {
-  TBOX *box1 = PG_GETARG_TBOX_P(0);
-  TBOX *box2 = PG_GETARG_TBOX_P(1);
+  TBox *box1 = PG_GETARG_TBOX_P(0);
+  TBox *box2 = PG_GETARG_TBOX_P(1);
   PG_RETURN_BOOL(overright_tbox_tbox(box1, box2));
 }
 
@@ -733,8 +748,8 @@ PG_FUNCTION_INFO_V1(Before_tbox_tbox);
 PGDLLEXPORT Datum
 Before_tbox_tbox(PG_FUNCTION_ARGS)
 {
-  TBOX *box1 = PG_GETARG_TBOX_P(0);
-  TBOX *box2 = PG_GETARG_TBOX_P(1);
+  TBox *box1 = PG_GETARG_TBOX_P(0);
+  TBox *box2 = PG_GETARG_TBOX_P(1);
   PG_RETURN_BOOL(before_tbox_tbox(box1, box2));
 }
 
@@ -747,8 +762,8 @@ PG_FUNCTION_INFO_V1(Overbefore_tbox_tbox);
 PGDLLEXPORT Datum
 Overbefore_tbox_tbox(PG_FUNCTION_ARGS)
 {
-  TBOX *box1 = PG_GETARG_TBOX_P(0);
-  TBOX *box2 = PG_GETARG_TBOX_P(1);
+  TBox *box1 = PG_GETARG_TBOX_P(0);
+  TBox *box2 = PG_GETARG_TBOX_P(1);
   PG_RETURN_BOOL(overbefore_tbox_tbox(box1, box2));
 }
 
@@ -761,8 +776,8 @@ PG_FUNCTION_INFO_V1(After_tbox_tbox);
 PGDLLEXPORT Datum
 After_tbox_tbox(PG_FUNCTION_ARGS)
 {
-  TBOX *box1 = PG_GETARG_TBOX_P(0);
-  TBOX *box2 = PG_GETARG_TBOX_P(1);
+  TBox *box1 = PG_GETARG_TBOX_P(0);
+  TBox *box2 = PG_GETARG_TBOX_P(1);
   PG_RETURN_BOOL(after_tbox_tbox(box1, box2));
 }
 
@@ -775,8 +790,8 @@ PG_FUNCTION_INFO_V1(Overafter_tbox_tbox);
 PGDLLEXPORT Datum
 Overafter_tbox_tbox(PG_FUNCTION_ARGS)
 {
-  TBOX *box1 = PG_GETARG_TBOX_P(0);
-  TBOX *box2 = PG_GETARG_TBOX_P(1);
+  TBox *box1 = PG_GETARG_TBOX_P(0);
+  TBox *box2 = PG_GETARG_TBOX_P(1);
   PG_RETURN_BOOL(overafter_tbox_tbox(box1, box2));
 }
 
@@ -794,9 +809,9 @@ PG_FUNCTION_INFO_V1(Union_tbox_tbox);
 PGDLLEXPORT Datum
 Union_tbox_tbox(PG_FUNCTION_ARGS)
 {
-  TBOX *box1 = PG_GETARG_TBOX_P(0);
-  TBOX *box2 = PG_GETARG_TBOX_P(1);
-  TBOX *result = union_tbox_tbox(box1, box2);
+  TBox *box1 = PG_GETARG_TBOX_P(0);
+  TBox *box2 = PG_GETARG_TBOX_P(1);
+  TBox *result = union_tbox_tbox(box1, box2);
   PG_RETURN_POINTER(result);
 }
 
@@ -810,9 +825,9 @@ PG_FUNCTION_INFO_V1(Intersection_tbox_tbox);
 PGDLLEXPORT Datum
 Intersection_tbox_tbox(PG_FUNCTION_ARGS)
 {
-  TBOX *box1 = PG_GETARG_TBOX_P(0);
-  TBOX *box2 = PG_GETARG_TBOX_P(1);
-  TBOX *result = intersection_tbox_tbox(box1, box2);
+  TBox *box1 = PG_GETARG_TBOX_P(0);
+  TBox *box2 = PG_GETARG_TBOX_P(1);
+  TBox *result = intersection_tbox_tbox(box1, box2);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
@@ -829,27 +844,27 @@ PG_FUNCTION_INFO_V1(Tbox_extent_transfn);
 PGDLLEXPORT Datum
 Tbox_extent_transfn(PG_FUNCTION_ARGS)
 {
-  TBOX *box1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_TBOX_P(0);
-  TBOX *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_TBOX_P(1);
+  TBox *box1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_TBOX_P(0);
+  TBox *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_TBOX_P(1);
 
   /* Can't do anything with null inputs */
   if (! box1 && ! box2)
     PG_RETURN_NULL();
-  TBOX *result = palloc(sizeof(TBOX));
+  TBox *result = palloc(sizeof(TBox));
   /* One of the boxes is null, return the other one */
   if (! box1)
   {
-    memcpy(result, box2, sizeof(TBOX));
+    memcpy(result, box2, sizeof(TBox));
     PG_RETURN_POINTER(result);
   }
   if (! box2)
   {
-    memcpy(result, box1, sizeof(TBOX));
+    memcpy(result, box1, sizeof(TBox));
     PG_RETURN_POINTER(result);
   }
 
   /* Both boxes are not null */
-  memcpy(result, box1, sizeof(TBOX));
+  memcpy(result, box1, sizeof(TBox));
   tbox_expand(box2, result);
   PG_RETURN_POINTER(result);
 }
@@ -861,8 +876,8 @@ PG_FUNCTION_INFO_V1(Tbox_extent_combinefn);
 PGDLLEXPORT Datum
 Tbox_extent_combinefn(PG_FUNCTION_ARGS)
 {
-  TBOX *box1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_TBOX_P(0);
-  TBOX *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_TBOX_P(1);
+  TBox *box1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_TBOX_P(0);
+  TBox *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_TBOX_P(1);
   if (!box1 && !box2)
     PG_RETURN_NULL();
   if (box1 && !box2)
@@ -871,7 +886,7 @@ Tbox_extent_combinefn(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(box2);
   /* Both boxes are not null */
   ensure_same_dimensionality_tbox(box1, box2);
-  TBOX *result = tbox_copy(box1);
+  TBox *result = tbox_copy(box1);
   tbox_expand(box2, result);
   PG_RETURN_POINTER(result);
 }
@@ -892,8 +907,8 @@ PG_FUNCTION_INFO_V1(Tbox_cmp);
 PGDLLEXPORT Datum
 Tbox_cmp(PG_FUNCTION_ARGS)
 {
-  TBOX *box1 = PG_GETARG_TBOX_P(0);
-  TBOX *box2 = PG_GETARG_TBOX_P(1);
+  TBox *box1 = PG_GETARG_TBOX_P(0);
+  TBox *box2 = PG_GETARG_TBOX_P(1);
   PG_RETURN_INT32(tbox_cmp(box1, box2));
 }
 
@@ -907,8 +922,8 @@ PG_FUNCTION_INFO_V1(Tbox_lt);
 PGDLLEXPORT Datum
 Tbox_lt(PG_FUNCTION_ARGS)
 {
-  TBOX *box1 = PG_GETARG_TBOX_P(0);
-  TBOX *box2 = PG_GETARG_TBOX_P(1);
+  TBox *box1 = PG_GETARG_TBOX_P(0);
+  TBox *box2 = PG_GETARG_TBOX_P(1);
   PG_RETURN_BOOL(tbox_lt(box1, box2));
 }
 
@@ -923,8 +938,8 @@ PG_FUNCTION_INFO_V1(Tbox_le);
 PGDLLEXPORT Datum
 Tbox_le(PG_FUNCTION_ARGS)
 {
-  TBOX *box1 = PG_GETARG_TBOX_P(0);
-  TBOX *box2 = PG_GETARG_TBOX_P(1);
+  TBox *box1 = PG_GETARG_TBOX_P(0);
+  TBox *box2 = PG_GETARG_TBOX_P(1);
   PG_RETURN_BOOL(tbox_le(box1, box2));
 }
 
@@ -939,8 +954,8 @@ PG_FUNCTION_INFO_V1(Tbox_ge);
 PGDLLEXPORT Datum
 Tbox_ge(PG_FUNCTION_ARGS)
 {
-  TBOX *box1 = PG_GETARG_TBOX_P(0);
-  TBOX *box2 = PG_GETARG_TBOX_P(1);
+  TBox *box1 = PG_GETARG_TBOX_P(0);
+  TBox *box2 = PG_GETARG_TBOX_P(1);
   PG_RETURN_BOOL(tbox_ge(box1, box2));
 }
 
@@ -954,8 +969,8 @@ PG_FUNCTION_INFO_V1(Tbox_gt);
 PGDLLEXPORT Datum
 Tbox_gt(PG_FUNCTION_ARGS)
 {
-  TBOX *box1 = PG_GETARG_TBOX_P(0);
-  TBOX *box2 = PG_GETARG_TBOX_P(1);
+  TBox *box1 = PG_GETARG_TBOX_P(0);
+  TBox *box2 = PG_GETARG_TBOX_P(1);
   PG_RETURN_BOOL(tbox_gt(box1, box2));
 }
 
@@ -969,8 +984,8 @@ PG_FUNCTION_INFO_V1(Tbox_eq);
 PGDLLEXPORT Datum
 Tbox_eq(PG_FUNCTION_ARGS)
 {
-  TBOX *box1 = PG_GETARG_TBOX_P(0);
-  TBOX *box2 = PG_GETARG_TBOX_P(1);
+  TBox *box1 = PG_GETARG_TBOX_P(0);
+  TBox *box2 = PG_GETARG_TBOX_P(1);
   PG_RETURN_BOOL(tbox_eq(box1, box2));
 }
 
@@ -984,8 +999,8 @@ PG_FUNCTION_INFO_V1(Tbox_ne);
 PGDLLEXPORT Datum
 Tbox_ne(PG_FUNCTION_ARGS)
 {
-  TBOX *box1 = PG_GETARG_TBOX_P(0);
-  TBOX *box2 = PG_GETARG_TBOX_P(1);
+  TBox *box1 = PG_GETARG_TBOX_P(0);
+  TBox *box2 = PG_GETARG_TBOX_P(1);
   PG_RETURN_BOOL(tbox_ne(box1, box2));
 }
 

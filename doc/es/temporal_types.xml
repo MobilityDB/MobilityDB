@@ -33,7 +33,7 @@ SELECT tfloat '17@2018-01-01 08:00:00';
 		Un valor temporal de subtipo <emphasis>secuencia</emphasis> (brevemente, un <emphasis>valor de secuencia</emphasis>) representa la evolución del valor durante una secuencia de instantes de tiempo, donde los valores entre estos instantes se interpolan usando una función discreta, escalonada, o lineal (ver arriba). Un ejemplo es el siguiente:
 	</para>
 	<programlisting language="sql" xml:space="preserve">
--- Interpolación discreta 
+-- Interpolación discreta
 SELECT tfloat '{17@2018-01-01 08:00:00, 17.5@2018-01-01 08:05:00, 18@2018-01-01 08:10:00}'
 -- Interpolación escalonada
 SELECT tfloat 'Interp=Stepwise;(10@2018-01-01 08:00:00, 20@2018-01-01 08:05:00,
@@ -54,11 +54,9 @@ SELECT tint '[10@2018-01-01 08:00:00]';
 
 	<para>
 		El valor de una secuencia temporal se interpreta asumiendo que el período de tiempo definido por cada par de valores consecutivos <varname>v1@t1</varname> y <varname>v2@t2</varname> es inferior inclusivo y superior exclusivo, a menos que sean el primer o el último instantes de la secuencia y, en ese caso, se aplican los límites de toda la secuencia. Además, el valor que toma la secuencia temporal entre dos instantes consecutivos depende de si la interpolación es escalonada o lineal. Por ejemplo, la secuencia temporal anterior representa que el valor es <varname>10</varname> durante<varname>(2018-01-01 08:00:00, 2018-01-01 08:05:00)</varname>, <varname>20</varname> durante <varname>[2018-01-01 08:05:00, 2018-01-01 08:10:00)</varname> y <varname>15</varname> en el instante final <varname>2018-01-01 08:10:00</varname>. Por otro lado, la siguiente secuencia temporal
-	</para>
 	<programlisting language="sql" xml:space="preserve">
 SELECT tfloat '(10@2018-01-01 08:00:00, 20@2018-01-01 08:05:00, 15@2018-01-01 08:10:00]';
 </programlisting>
-	<para>
 		representa que el valor evoluciona linealmente de <varname>10</varname> a <varname>20</varname> durante <varname>(2018-01-01 08:00:00, 2018-01-01 08:05:00)</varname> y evoluciona de <varname>20</varname> a <varname>15</varname> durante <varname>[2018-01-01 08:05:00, 2018-01-01 08:10:00]</varname>.
 	</para>
 
@@ -150,7 +148,7 @@ CREATE TABLE Flight(FlightNo integer, Route tgeogpoint(Sequence, PointZ, 4326));
 	</itemizedlist>
 
 	<para>
-		Un amplio conjunto de funciones y operadores son disponibles para realizar varias operaciones en los tipos temporales. Estos se explican en el <xref linkend="manipulating_temporal_types"/>. Algunas de estas operaciones, en particular las relacionadas con índices, manipulan cuadros delimitadores por razones de eficiencia.
+		Un amplio conjunto de funciones y operadores son disponibles para realizar varias operaciones en los tipos temporales. Estos se explican en el <xref linkend="manipulating_temporal_types_p1"/> y el <xref linkend="manipulating_temporal_types_p2"/>. Algunas de estas operaciones, en particular las relacionadas con índices, manipulan cuadros delimitadores por razones de eficiencia.
 	</para>
 
 	<sect1 id="examples_temporal_types">
@@ -168,7 +166,7 @@ INSERT INTO Temperature VALUES
 -- Valor en una marca de tiempo
 SELECT RoomNo, valueAtTimestamp(Temp, '2001-01-01 08:10:00')
 FROM temperature;
--- 1001 | 
+-- 1001 |
 -- 2001 | 22.5
 
 -- Restricción a un valor
@@ -178,7 +176,7 @@ FROM Department;
 -- 20 | NULL
 
 -- Restricción a un período
-SELECT DeptNo, atPeriod(NoEmps, '[2001-01-01, 2001-04-01]')
+SELECT DeptNo, atTime(NoEmps, period '[2001-01-01, 2001-04-01]')
 FROM Department;
 -- 10 | [10@2001-01-01 00:00:00+00, 12@2001-04-01 00:00:00+00]
 -- 20 | [4@2001-02-01 00:00:00+00, 4@2001-04-01 00:00:00+00]
@@ -208,7 +206,7 @@ SELECT CarId, ST_AsText(valueAtTimestamp(Trip, timestamptz '2001-01-01 08:10:00'
 FROM Trips;
 -- 10 | POINT(2 0)
 -- 20 | POINT(1 1)
-   
+
 -- Restricción a un valor
 SELECT CarId, asText(atValue(Trip, 'Point(2 0)'))
 FROM Trips;
@@ -216,7 +214,7 @@ FROM Trips;
 -- 20 | NULL
 
 -- Restricción a un período
-SELECT CarId, asText(atPeriod(Trip, '[2001-01-01 08:05:00,2001-01-01 08:10:00]'))
+SELECT CarId, asText(atTime(Trip, period '[2001-01-01 08:05:00,2001-01-01 08:10:00]'))
 FROM Trips;
 -- 10 | {[POINT(1 0)@2001-01-01 08:05:00+00, POINT(2 0)@2001-01-01 08:10:00+00]}
 -- 20 | {[POINT(0 0)@2001-01-01 08:05:00+00, POINT(1 1)@2001-01-01 08:10:00+00]}

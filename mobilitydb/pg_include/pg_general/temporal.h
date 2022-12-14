@@ -49,7 +49,6 @@
 #include <c.h>
 #include <utils/palloc.h>
 #include <utils/elog.h>
-// #include <catalog/pg_type.h>
 #include <utils/array.h>
 #include <utils/lsyscache.h>
 #include <catalog/pg_type_d.h> /* for TIMESTAMPTZOID and similar */
@@ -86,6 +85,33 @@ extern Datum float8_numeric(PG_FUNCTION_ARGS);
 #define RTFrontStrategyNumber         33    /* for <</ */
 #define RTBackStrategyNumber          34    /* for />> */
 #define RTOverBackStrategyNumber      35    /* for /&> */
+
+/*****************************************************************************
+ * Operator strategy numbers used in the GIN set and tnpoint opclasses
+ *****************************************************************************/
+
+#define GinOverlapStrategy             1    /* for && */
+#define GinContainsStrategyValue       2    /* for @> */
+#define GinContainsStrategySet         3    /* for @> */
+#define GinContainedStrategy           4    /* for <@ */
+#define GinEqualStrategy               5    /* for = */
+
+/*****************************************************************************
+ * Struct definitions for the unnest operation
+ *****************************************************************************/
+
+/**
+ * Structure to represent information about an entry that can be placed
+ * to either group without affecting overlap over selected axis ("common entry").
+ */
+typedef struct
+{
+  bool done;
+  int i;
+  int count;
+  Temporal *temp;  /* Temporal value to unnest */
+  Datum *values;   /* Values obtained by getValues(temp) */
+} UnnestState;
 
 /*****************************************************************************
  * Struct definitions for GisT indexes copied from PostgreSQL
@@ -129,6 +155,17 @@ typedef struct
 #define FLOAT8_MIN(a,b)  (FLOAT8_LT(a, b) ? (a) : (b))
 
 /*****************************************************************************
+ * Struct definitions for SP-GiST indexes
+ *****************************************************************************/
+
+/** Enumeration for the types of SP-GiST indexes */
+typedef enum
+{
+  SPGIST_QUADTREE,
+  SPGIST_KDTREE,
+} SPGistIndexType;
+
+/*****************************************************************************
  * Typmod definitions
  *****************************************************************************/
 
@@ -150,6 +187,10 @@ struct tempsubtype_struct
 /* Initialization function */
 
 extern void _PG_init(void);
+
+/* Miscellaneous */
+
+extern uint32_t time_max_header_size(void);
 
 /* PostgreSQL cache functions */
 

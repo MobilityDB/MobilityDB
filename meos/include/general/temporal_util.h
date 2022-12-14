@@ -48,13 +48,11 @@ extern size_t double_pad(size_t size);
 extern Datum datum_copy(Datum value, mobdbType typid);
 extern double datum_double(Datum d, mobdbType basetype);
 extern bytea *bstring2bytea(const uint8_t *wkb, size_t size);
-extern text *cstring2text(const char *cstring);
-extern char *text2cstring(const text *textptr);
 
 /* Input/output functions */
 
-extern Datum basetype_input(const char *str, mobdbType type, bool end);
-extern char *basetype_output(mobdbType type, Datum value, Datum arg);
+extern Datum basetype_in(const char *str, mobdbType type, bool end);
+extern char *basetype_out(Datum value, mobdbType type, int maxdd);
 
 /* Array functions */
 

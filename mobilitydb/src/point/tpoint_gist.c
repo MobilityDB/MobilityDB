@@ -71,7 +71,7 @@
  * @note This function is used for both GiST and SP-GiST indexes
  */
 bool
-stbox_index_consistent_leaf(const STBOX *key, const STBOX *query,
+stbox_index_consistent_leaf(const STBox *key, const STBox *query,
   StrategyNumber strategy)
 {
   bool retval;
@@ -161,7 +161,7 @@ stbox_index_consistent_leaf(const STBOX *key, const STBOX *query,
  * @param[in] strategy Operator of the operator class being applied
  */
 static bool
-stbox_gist_consistent(const STBOX *key, const STBOX *query,
+stbox_gist_consistent(const STBox *key, const STBox *query,
   StrategyNumber strategy)
 {
   bool retval;
@@ -271,7 +271,7 @@ tpoint_index_recheck(StrategyNumber strategy)
  * must not be taken into account by the operators to infinity.
  */
 static bool
-tpoint_gist_get_stbox(FunctionCallInfo fcinfo, STBOX *result,
+tpoint_gist_get_stbox(FunctionCallInfo fcinfo, STBox *result,
   mobdbType type)
 {
   if (tgeo_basetype(type))
@@ -303,10 +303,10 @@ tpoint_gist_get_stbox(FunctionCallInfo fcinfo, STBOX *result,
   }
   else if (type == T_STBOX)
   {
-    STBOX *box = PG_GETARG_STBOX_P(1);
+    STBox *box = PG_GETARG_STBOX_P(1);
     if (box == NULL)
       return false;
-    memcpy(result, box, sizeof(STBOX));
+    memcpy(result, box, sizeof(STBox));
   }
   else if (tspatial_type(type))
   {
@@ -331,7 +331,7 @@ Stbox_gist_consistent(PG_FUNCTION_ARGS)
   StrategyNumber strategy = (StrategyNumber) PG_GETARG_UINT16(2);
   Oid typid = PG_GETARG_OID(3);
   bool *recheck = (bool *) PG_GETARG_POINTER(4), result;
-  STBOX *key = DatumGetSTboxP(entry->key), query;
+  STBox *key = DatumGetSTboxP(entry->key), query;
 
   /* Determine whether the index is lossy depending on the strategy */
   *recheck = tpoint_index_recheck(strategy);
@@ -361,8 +361,8 @@ Stbox_gist_consistent(PG_FUNCTION_ARGS)
 void
 stbox_adjust(void *bbox1, void *bbox2)
 {
-  STBOX *box1 = (STBOX *) bbox1;
-  STBOX *box2 = (STBOX *) bbox2;
+  STBox *box1 = (STBox *) bbox1;
+  STBox *box2 = (STBox *) bbox2;
   box1->xmin = FLOAT8_MIN(box1->xmin, box2->xmin);
   box1->xmax = FLOAT8_MAX(box1->xmax, box2->xmax);
   box1->ymin = FLOAT8_MIN(box1->ymin, box2->ymin);
@@ -389,7 +389,7 @@ Stbox_gist_union(PG_FUNCTION_ARGS)
 {
   GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
   GISTENTRY *ent = entryvec->vector;
-  STBOX *result = stbox_copy(DatumGetSTboxP(ent[0].key));
+  STBox *result = stbox_copy(DatumGetSTboxP(ent[0].key));
   for (int i = 1; i < entryvec->n; i++)
     stbox_adjust(result, DatumGetSTboxP(ent[i].key));
   PG_RETURN_SPAN_P(result);
@@ -410,7 +410,7 @@ Tpoint_gist_compress(PG_FUNCTION_ARGS)
   if (entry->leafkey)
   {
     GISTENTRY *retval = palloc(sizeof(GISTENTRY));
-    STBOX *box = palloc(sizeof(STBOX));
+    STBox *box = palloc(sizeof(STBox));
     temporal_bbox_slice(entry->key, box);
     gistentryinit(*retval, PointerGetDatum(box), entry->rel, entry->page,
       entry->offset, false);
@@ -430,9 +430,9 @@ Tpoint_gist_compress(PG_FUNCTION_ARGS)
  * @param[out] new Resulting box
  */
 static void
-stbox_union_rt(const STBOX *a, const STBOX *b, STBOX *new)
+stbox_union_rt(const STBox *a, const STBox *b, STBox *new)
 {
-  memset(new, 0, sizeof(STBOX));
+  memset(new, 0, sizeof(STBox));
   new->xmin = FLOAT8_MIN(a->xmin, b->xmin);
   new->xmax = FLOAT8_MAX(a->xmax, b->xmax);
   new->ymin = FLOAT8_MIN(a->ymin, b->ymin);
@@ -453,7 +453,7 @@ stbox_union_rt(const STBOX *a, const STBOX *b, STBOX *new)
  * The result can be +Infinity, but not NaN.
  */
 static double
-stbox_size(const STBOX *box)
+stbox_size(const STBox *box)
 {
   /*
    * Check for zero-width cases.  Note that we define the size of a zero-
@@ -481,14 +481,14 @@ stbox_size(const STBOX *box)
 
 /**
  * Return the amount by which the union of the two boxes is larger than
- * the original STBOX's volume.  The result can be +Infinity, but not NaN.
+ * the original STBox's volume.  The result can be +Infinity, but not NaN.
  */
 double
 stbox_penalty(void *bbox1, void *bbox2)
 {
-  const STBOX *original = (STBOX *) bbox1;
-  const STBOX *new = (STBOX *) bbox2;
-  STBOX unionbox;
+  const STBox *original = (STBox *) bbox1;
+  const STBox *new = (STBox *) bbox2;
+  STBox unionbox;
   stbox_union_rt(original, new, &unionbox);
   return stbox_size(&unionbox) - stbox_size(original);
 }
@@ -504,8 +504,8 @@ Stbox_gist_penalty(PG_FUNCTION_ARGS)
   GISTENTRY *origentry = (GISTENTRY *) PG_GETARG_POINTER(0);
   GISTENTRY *newentry = (GISTENTRY *) PG_GETARG_POINTER(1);
   float *result = (float *) PG_GETARG_POINTER(2);
-  void *origstbox = (STBOX *) DatumGetPointer(origentry->key);
-  void *newbox = (STBOX *) DatumGetPointer(newentry->key);
+  void *origstbox = (STBox *) DatumGetPointer(origentry->key);
+  void *newbox = (STBox *) DatumGetPointer(newentry->key);
   *result = (float) stbox_penalty(origstbox, newbox);
   PG_RETURN_POINTER(result);
 }
@@ -559,8 +559,8 @@ PG_FUNCTION_INFO_V1(Stbox_gist_same);
 PGDLLEXPORT Datum
 Stbox_gist_same(PG_FUNCTION_ARGS)
 {
-  STBOX *b1 = PG_GETARG_STBOX_P(0);
-  STBOX *b2 = PG_GETARG_STBOX_P(1);
+  STBox *b1 = PG_GETARG_STBOX_P(0);
+  STBox *b2 = PG_GETARG_STBOX_P(1);
   bool *result = (bool *) PG_GETARG_POINTER(2);
   if (b1 && b2)
     *result = (FLOAT8_EQ(b1->xmin, b2->xmin) && FLOAT8_EQ(b1->ymin, b2->ymin) &&
@@ -589,8 +589,8 @@ Stbox_gist_distance(PG_FUNCTION_ARGS)
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
   Oid typid = PG_GETARG_OID(3);
   bool *recheck = (bool *) PG_GETARG_POINTER(4);
-  STBOX *key = (STBOX *) DatumGetPointer(entry->key);
-  STBOX query;
+  STBox *key = (STBox *) DatumGetPointer(entry->key);
+  STBox query;
   double distance;
 
   /* The index is lossy for leaf levels */

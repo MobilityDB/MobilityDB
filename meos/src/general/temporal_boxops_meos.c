@@ -32,7 +32,7 @@
  *
  * The bounding box of temporal values are
  * - a `Period` for temporal Booleans
- * - a `TBOX` for temporal integers and floats, where the *x* coordinate is for
+ * - a `TBox` for temporal integers and floats, where the *x* coordinate is for
  *   the value dimension and the *t* coordinate is for the time dimension.
  * The following operators are defined: `overlaps`, `contains`, `contained`,
  * `same`, and `adjacent`.
@@ -684,12 +684,36 @@ contains_tnumber_span(const Temporal *tnumber, const Span *span)
 
 /**
  * @ingroup libmeos_temporal_topo
+ * @brief Return true if a span contains the bounding box of a temporal
+ * number
+ * @sqlop @p \@>
+ */
+bool
+contains_spanset_tnumber(const SpanSet *ss, const Temporal *tnumber)
+{
+  return boxop_tnumber_spanset(tnumber, ss, &contains_tbox_tbox, INVERT);
+}
+
+/**
+ * @ingroup libmeos_temporal_topo
+ * @brief Return true if the bounding box of a temporal number contains a
+ * span
+ * @sqlop @p \@>
+ */
+bool
+contains_tnumber_spanset(const Temporal *tnumber, const SpanSet *ss)
+{
+  return boxop_tnumber_spanset(tnumber, ss, &contains_tbox_tbox, INVERT_NO);
+}
+
+/**
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if a temporal box contains the bounding box of a
  * temporal number
  * @sqlop @p \@>
  */
 bool
-contains_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
+contains_tbox_tnumber(const TBox *tbox, const Temporal *tnumber)
 {
   return boxop_tnumber_tbox(tnumber, tbox, &contains_tbox_tbox, INVERT);
 }
@@ -701,7 +725,7 @@ contains_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
  * @sqlop @p \@>
  */
 bool
-contains_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
+contains_tnumber_tbox(const Temporal *tnumber, const TBox *tbox)
 {
   return boxop_tnumber_tbox(tnumber, tbox, &contains_tbox_tbox, INVERT_NO);
 }
@@ -798,12 +822,36 @@ contained_tnumber_span(const Temporal *tnumber, const Span *span)
 
 /**
  * @ingroup libmeos_temporal_topo
+ * @brief Return true if a span set is contained in the bounding box of a
+ * temporal number
+ * @sqlop @p <@
+ */
+bool
+contained_spanset_tnumber(const SpanSet *ss, const Temporal *tnumber)
+{
+  return boxop_tnumber_spanset(tnumber, ss, &contained_tbox_tbox, INVERT);
+}
+
+/**
+ * @ingroup libmeos_temporal_topo
+ * @brief Return true if the bounding box of a temporal number is contained
+ * in a span
+ * @sqlop @p <@
+ */
+bool
+contained_tnumber_spanset(const Temporal *tnumber, const SpanSet *ss)
+{
+  return boxop_tnumber_spanset(tnumber, ss, &contained_tbox_tbox, INVERT_NO);
+}
+
+/**
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if a temporal box is contained in the bounding box of
  * a temporal number
  * @sqlop @p <@
  */
 bool
-contained_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
+contained_tbox_tnumber(const TBox *tbox, const Temporal *tnumber)
 {
   return boxop_tnumber_tbox(tnumber, tbox, &contained_tbox_tbox, INVERT);
 }
@@ -815,7 +863,7 @@ contained_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
  * @sqlop @p <@
  */
 bool
-contained_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
+contained_tnumber_tbox(const Temporal *tnumber, const TBox *tbox)
 {
   return boxop_tnumber_tbox(tnumber, tbox, &contained_tbox_tbox, INVERT_NO);
 }
@@ -911,12 +959,36 @@ overlaps_tnumber_span(const Temporal *tnumber, const Span *span)
 
 /**
  * @ingroup libmeos_temporal_topo
+ * @brief Return true if a span set and the bounding box of a temporal number
+ * overlap
+ * @sqlop @p &&
+ */
+bool
+overlaps_spanset_tnumber(const SpanSet *ss, const Temporal *tnumber)
+{
+  return boxop_tnumber_spanset(tnumber, ss, &overlaps_tbox_tbox, INVERT);
+}
+
+/**
+ * @ingroup libmeos_temporal_topo
+ * @brief Return true if the bounding box of a temporal number and a span set
+ * overlap
+ * @sqlop @p &&
+ */
+bool
+overlaps_tnumber_spanset(const Temporal *tnumber, const SpanSet *ss)
+{
+  return boxop_tnumber_spanset(tnumber, ss, &overlaps_tbox_tbox, INVERT_NO);
+}
+
+/**
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if a temporal box and the bounding box
  * of a temporal number overlap
  * @sqlop @p &&
  */
 bool
-overlaps_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
+overlaps_tbox_tnumber(const TBox *tbox, const Temporal *tnumber)
 {
   return boxop_tnumber_tbox(tnumber, tbox, &overlaps_tbox_tbox, INVERT);
 }
@@ -928,7 +1000,7 @@ overlaps_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
  * @sqlop @p &&
  */
 bool
-overlaps_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
+overlaps_tnumber_tbox(const Temporal *tnumber, const TBox *tbox)
 {
   return boxop_tnumber_tbox(tnumber, tbox, &overlaps_tbox_tbox, INVERT_NO);
 }
@@ -1024,12 +1096,36 @@ same_tnumber_span(const Temporal *tnumber, const Span *span)
 
 /**
  * @ingroup libmeos_temporal_topo
+ * @brief Return true if a span and the bounding box of a temporal number
+ * are equal on the common dimensions
+ * @sqlop @p ~=
+ */
+bool
+same_spanset_tnumber(const SpanSet *ss, const Temporal *tnumber)
+{
+  return boxop_tnumber_spanset(tnumber, ss, &same_tbox_tbox, INVERT);
+}
+
+/**
+ * @ingroup libmeos_temporal_topo
+ * @brief Return true if the bounding box of a temporal number and a span
+ * are equal on the common dimensions
+ * @sqlop @p ~=
+ */
+bool
+same_tnumber_spanset(const Temporal *tnumber, const SpanSet *ss)
+{
+  return boxop_tnumber_spanset(tnumber, ss, &same_tbox_tbox, INVERT_NO);
+}
+
+/**
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if a temporal box and the bounding box
  * of a temporal number are equal in the common dimensions
  * @sqlop @p ~=
  */
 bool
-same_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
+same_tbox_tnumber(const TBox *tbox, const Temporal *tnumber)
 {
   return boxop_tnumber_tbox(tnumber, tbox, &same_tbox_tbox, INVERT);
 }
@@ -1041,7 +1137,7 @@ same_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
  * @sqlop @p ~=
  */
 bool
-same_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
+same_tnumber_tbox(const Temporal *tnumber, const TBox *tbox)
 {
   return boxop_tnumber_tbox(tnumber, tbox, &same_tbox_tbox, INVERT_NO);
 }
@@ -1138,12 +1234,36 @@ adjacent_tnumber_span(const Temporal *tnumber, const Span *span)
 
 /**
  * @ingroup libmeos_temporal_topo
+ * @brief Return true if a span set and the bounding box of a temporal number
+ * are adjacent
+ * @sqlop @p -|-
+ */
+bool
+adjacent_spanset_tnumber(const SpanSet *ss, const Temporal *tnumber)
+{
+  return boxop_tnumber_spanset(tnumber, ss, &adjacent_tbox_tbox, INVERT);
+}
+
+/**
+ * @ingroup libmeos_temporal_topo
+ * @brief Return true if the bounding box of a temporal number and the
+ * a span set are adjacent
+ * @sqlop @p -|-
+ */
+bool
+adjacent_tnumber_spanset(const Temporal *tnumber, const SpanSet *ss)
+{
+  return boxop_tnumber_spanset(tnumber, ss, &adjacent_tbox_tbox, INVERT_NO);
+}
+
+/**
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if a temporal box and the bounding box of a
  * temporal number are adjacent
  * @sqlop @p -|-
  */
 bool
-adjacent_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
+adjacent_tbox_tnumber(const TBox *tbox, const Temporal *tnumber)
 {
   return boxop_tnumber_tbox(tnumber, tbox, &adjacent_tbox_tbox, INVERT);
 }
@@ -1155,7 +1275,7 @@ adjacent_tbox_tnumber(const TBOX *tbox, const Temporal *tnumber)
  * @sqlop @p -|-
  */
 bool
-adjacent_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
+adjacent_tnumber_tbox(const Temporal *tnumber, const TBox *tbox)
 {
   return boxop_tnumber_tbox(tnumber, tbox, &adjacent_tbox_tbox, INVERT_NO);
 }

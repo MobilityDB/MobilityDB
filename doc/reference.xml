@@ -12,29 +12,42 @@
 	<title>MobilityDB Reference</title>
 
 	<sect1>
-		<title>Functions and Operators for Time Types and Span Types</title>
+		<title>Functions and Operators for Span and Time Types</title>
+
+		<sect2>
+			<title>Input/Output Functions</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="spantime_asBinary"><varname>asBinary</varname></link>: Get the Well-Known Binary (WKB) representation of a span or time type</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="spantime_asHexWKB"><varname>asHexWKB</varname></link>: Get the Hexadecimal Well-Known Binary (HexWKB) representation as text of a span or time type</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="spantime_FromBinary"><varname>intspanFromBinary</varname>, <varname>intspansetFromBinary</varname>, <varname>floatspanFromBinary</varname>, <varname>floatspansetFromBinary</varname>, <varname>periodFromBinary</varname>, <varname>periodsetFromBinary</varname>, <varname>timestampsetFromBinary</varname></link>: Input a span or time type from a Well-Known Binary (WKB) representation</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="spantime_FromHexWKB"><varname>intspanFromHexWKB</varname>, <varname>intspansetFromHexWKB</varname>, <varname>floatspanFromHexWKB</varname>, <varname>floatspansetFromHexWKB</varname>, <varname>periodFromHexWKB</varname>, <varname>periodsetFromHexWKB</varname>, <varname>timestampsetFromHexWKB</varname></link>: Input a span or time type from an Hexadecimal Well-Known Binary (HexWKB) representation</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
 
 		<sect2>
 			<title>Constructor Functions</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="period"><varname>intspan</varname></link>: Constructor for <varname>intspan</varname></para>
+					<para><link linkend="span"><varname>intspan</varname>, <varname>floatspan</varname>, <varname>period</varname></link>: Constructor for span values</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="period"><varname>floatspan</varname></link>: Constructor for <varname>floatspan</varname></para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="period"><varname>period</varname></link>: Constructor for <varname>period</varname></para>
+					<para><link linkend="spanset"><varname>intspanset</varname>, <varname>floatspanset</varname>, <varname>periodset</varname></link>: Constructor for span set values</para>
 				</listitem>
 
 				<listitem>
 					<para><link linkend="timestampset"><varname>timestampset</varname></link>: Constructor for <varname>timestampset</varname></para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="periodset"><varname>periodset</varname></link>: Constructor for <varname>periodset</varname></para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -43,27 +56,23 @@
 			<title>Casting</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="timestamptz_cast"><varname>timestamptz::time</varname></link>: Cast a <varname>timestamptz</varname> to another time type</para>
+					<para><link linkend="timestamptz_cast"><varname>timestamptz::time</varname></link>: Cast a <varname>timestamptz</varname> value to another time type</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="timestampset_cast"><varname>timestampset::periodset</varname></link>: Cast a <varname>timestampset</varname> to a <varname>periodset</varname></para>
+					<para><link linkend="timestampset_cast"><varname>timestampset::periodset</varname></link>: Cast a <varname>timestampset</varname> value to a <varname>periodset</varname> value</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="period_cast"><varname>period::type</varname></link>: Cast a <varname>period</varname> to another time type</para>
+					<para><link linkend="span_cast"><varname>span::spanset</varname></link>: Cast a span value to span set value</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="intspan_cast"><varname>instspan::int4range</varname></link>: Cast an <varname>instspan</varname> to an <varname>int4range</varname></para>
+					<para><link linkend="span_cast_range"><varname>span::range</varname></link>: Cast a span value to a PostgreSQL range value</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tstzrange_cast"><varname>tstzrange::period</varname></link>: Cast a <varname>tstzrange</varname> to a <varname>period</varname></para>
-
-				<listitem>
-					<para><link linkend="int4range_cast"><varname>int4range::instspan</varname></link>: Cast an <varname>int4range</varname> to an <varname>instspan</varname></para>
-				</listitem>
+					<para><link linkend="range_cast_span"><varname>range::span</varname></link>: Cast a PostgreSQL range value to a span value</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -73,7 +82,11 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="time_memSize"><varname>memSize</varname></link>: Get the memory size in bytes</para>
+					<para><link linkend="setspan_memorySize"><varname>memorySize</varname></link>: Get the memory size in bytes</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="setspan_storageSize"><varname>storageSize</varname></link>: Get the storage (compressed) size in bytes</para>
 				</listitem>
 
 				<listitem>
@@ -93,11 +106,15 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_duration"><varname>duration</varname></link>: Get the duration</para>
+					<para><link linkend="width"><varname>width</varname></link>: Get the width of the span as a float</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_timespan"><varname>timespan</varname></link>: Get the timespan ignoring the potential time gaps</para>
+					<para><link linkend="setspan_duration"><varname>duration</varname></link>: Get the duration</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="setspan_timespan"><varname>timespan</varname></link>: Get the timespan ignoring the potential time gaps</para>
 				</listitem>
 
 				<listitem>
@@ -105,43 +122,43 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_numTimestamps"><varname>numTimestamps</varname></link>: Get the number of different timestamps</para>
+					<para><link linkend="setspan_numTimestamps"><varname>numTimestamps</varname></link>: Get the number of different timestamps</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_startTimestamp"><varname>startTimestamp</varname></link>: Get the start timestamp</para>
+					<para><link linkend="setspan_startTimestamp"><varname>startTimestamp</varname></link>: Get the start timestamp</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_endTimestamp"><varname>endTimestamp</varname></link>: Get the end timestamp</para>
+					<para><link linkend="setspan_endTimestamp"><varname>endTimestamp</varname></link>: Get the end timestamp</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_timestampN"><varname>timestampN</varname></link>: Get the n-th different timestamp</para>
+					<para><link linkend="setspan_timestampN"><varname>timestampN</varname></link>: Get the n-th different timestamp</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_timestamps"><varname>timestamps</varname></link>: Get the different timestamps</para>
+					<para><link linkend="setspan_timestamps"><varname>timestamps</varname></link>: Get the different timestamps</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="numPeriods"><varname>numPeriods</varname></link>: Get the number of periods</para>
+					<para><link linkend="numSpans"><varname>numSpans</varname>, <varname>numPeriods</varname></link>: Get the number of composing spans or periods</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="startPeriod"><varname>startPeriod</varname></link>: Get the start period</para>
+					<para><link linkend="startSpan"><varname>startSpan</varname>, <varname>startPeriod</varname></link>: Get the start span or period</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="endPeriod"><varname>endPeriod</varname></link>: Get the end period</para>
+					<para><link linkend="endSpan"><varname>endSpan</varname>, <varname>endPeriod</varname></link>: Get the end span or period</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="periodN"><varname>periodN</varname></link>: Get the n-th period</para>
+					<para><link linkend="spanN"><varname>spanN</varname>, <varname>periodN</varname></link>: Get the n-th span or period</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="periods"><varname>periods</varname></link>: Get the periods</para>
+					<para><link linkend="spans"><varname>spans</varname>, <varname>periods</varname></link>: Get the spans or periods</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -151,15 +168,15 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="time_shift"><varname>shift</varname></link>: Shift the time value by an interval</para>
+					<para><link linkend="setspan_shift"><varname>shift</varname></link>: Shift the time value by an interval</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_tscale"><varname>tscale</varname></link>: Scale the time value to an interval</para>
+					<para><link linkend="setspan_tscale"><varname>tscale</varname></link>: Scale the time value to an interval</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_shiftTscale"><varname>shiftTscale</varname></link>: Shift and scale the time value with the intervals</para>
+					<para><link linkend="setspan_shiftTscale"><varname>shiftTscale</varname></link>: Shift and scale the time value with the intervals</para>
 				</listitem>
 
 				<listitem>
@@ -173,27 +190,27 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="time_eq"><varname>=</varname></link>: Are the values equal?</para>
+					<para><link linkend="setspan_eq"><varname>=</varname></link>: Are the values equal?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_ne"><varname>&lt;&gt;</varname></link>: Are the values different?</para>
+					<para><link linkend="setspan_ne"><varname>&lt;&gt;</varname></link>: Are the values different?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_lt"><varname>&lt;</varname></link>: Is the first value less than the second one?</para>
+					<para><link linkend="setspan_lt"><varname>&lt;</varname></link>: Is the first value less than the second one?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_gt"><varname>&gt;</varname></link>: Is the first value greater than the second one?</para>
+					<para><link linkend="setspan_gt"><varname>&gt;</varname></link>: Is the first value greater than the second one?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_le"><varname>&lt;=</varname></link>: Is the first value less than or equal to the second one?</para>
+					<para><link linkend="setspan_le"><varname>&lt;=</varname></link>: Is the first value less than or equal to the second one?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_ge"><varname>&gt;=</varname></link>: Is the first value greater than or equal to the second one?</para>
+					<para><link linkend="setspan_ge"><varname>&gt;=</varname></link>: Is the first value greater than or equal to the second one?</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -203,15 +220,15 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="time_union"><varname>+</varname></link>: Union of values</para>
+					<para><link linkend="setspan_union"><varname>+</varname></link>: Union of values</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_difference"><varname>-</varname></link>: Difference of values</para>
+					<para><link linkend="setspan_difference"><varname>-</varname></link>: Difference of values</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_intersection"><varname>*</varname></link>: Intersection of values</para>
+					<para><link linkend="setspan_intersection"><varname>*</varname></link>: Intersection of values</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -221,19 +238,19 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="time_overlaps"><varname>&amp;&amp;</varname></link>: Do the values overlap (have values in common)?</para>
+					<para><link linkend="setspan_overlaps"><varname>&amp;&amp;</varname></link>: Do the values overlap (have values in common)?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_contains"><varname>@&gt;</varname></link>: Does the first value contain the second one?</para>
+					<para><link linkend="setspan_contains"><varname>@&gt;</varname></link>: Does the first value contain the second one?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_containedby"><varname>&lt;@</varname></link>: Is the first value contained by the second one?</para>
+					<para><link linkend="setspan_containedby"><varname>&lt;@</varname></link>: Is the first value contained by the second one?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_adjacent"><varname>-|-</varname></link>: Is the first value adjacent to the second one?</para>
+					<para><link linkend="setspan_adjacent"><varname>-|-</varname></link>: Is the first value adjacent to the second one?</para>
 				</listitem>
 
 				<listitem>
@@ -253,19 +270,19 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_before"><varname>&lt;&lt;#</varname></link>: Is the first value scritly before the second one?</para>
+					<para><link linkend="setspan_before"><varname>&lt;&lt;#</varname></link>: Is the first value scritly before the second one?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_after"><varname>#&gt;&gt;</varname></link>: Is the first value strictly after the second one?</para>
+					<para><link linkend="setspan_after"><varname>#&gt;&gt;</varname></link>: Is the first value strictly after the second one?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_overbefore"><varname>&amp;&lt;#</varname></link>: Is the first value not after the second one?</para>
+					<para><link linkend="setspan_overbefore"><varname>&amp;&lt;#</varname></link>: Is the first value not after the second one?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_overafter"><varname>#&amp;&gt;</varname></link>: Is the first value not before the second one?</para>
+					<para><link linkend="setspan_overafter"><varname>#&amp;&gt;</varname></link>: Is the first value not before the second one?</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -285,11 +302,11 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="time_tcount"><varname>tcount</varname></link>: Temporal count</para>
+					<para><link linkend="setspan_tcount"><varname>tcount</varname></link>: Temporal count</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_extent"><varname>extent</varname></link>: Bounding span or period</para>
+					<para><link linkend="setspan_extent"><varname>extent</varname></link>: Bounding span or period</para>
 				</listitem>
 
 				<listitem>
@@ -602,15 +619,15 @@
 			<title>Constructor Functions</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="ttype_inst"><varname>ttype_inst</varname></link>: Constructor for temporal types of instant subtype</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="ttype_seq"><varname>ttype_seq</varname></link>: Constructor for temporal types of sequence subtype</para>
+					<para><link linkend="ttype_const"><varname>ttype</varname></link>: Constructor for temporal types from a base value and a time value</para>
 				</listitem>
 
 				<listitem>
 					<para><link linkend="ttype_discseq"><varname>ttype_discseq</varname></link>: Constructor for temporal types of sequence subtype and discrete interpolation</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="ttype_contseq"><varname>ttype_seq</varname></link>: Constructor for temporal types of sequence subtype and continuous interpolation</para>
 				</listitem>
 
 				<listitem>
@@ -624,43 +641,20 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="temporal_period"><varname>ttype::period</varname></link>: Cast a temporal value to a period</para>
+					<para><link linkend="ttype_bbox"><varname>ttype::period</varname>, <varname>tnumber::{numspan,tbox}</varname>, <varname>tpoint::stbox</varname></link>: Cast a temporal value to a bounding box</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tnumber_span"><varname>tnumber::span</varname></link>: Cast a temporal number to a span</para>
+					<para><link linkend="tint_tfloat"><varname>tint::tfloat</varname>, <varname>tfloat::tint</varname></link>: Cast between a temporal integer and a temporal float</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tnumber_tbox"><varname>tnumber::tbox</varname></link>: Cast a temporal number to a <varname>tbox</varname></para>
+					<para><link linkend="tgeompoint_tgeogpoint"><varname>tgeompoint::tgeogpoint</varname>, <varname>tgeogpoint::tgeompoint</varname></link>: Cast between a temporal geometry point and a temporal geography point</para>
 				</listitem>
 
-				<listitem>
-					<para><link linkend="tpoint_stbox"><varname>ttype::period</varname></link>: Cast a temporal point to an <varname>stbox</varname></para>
-				</listitem>
 
 				<listitem>
-					<para><link linkend="tint_tfloat"><varname>tint::tfloat</varname></link>: Cast a temporal integer to a temporal float</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tfloat_tint"><varname>tfloat::tint</varname></link>: Cast a temporal float to a temporal integer</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tgeompoint_tgeogpoint"><varname>tgeompoint::tgeogpoint</varname></link>: Cast a temporal geometry point to a temporal geography point</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tgeogpoint_tgeompoint"><varname>tgeogpoint::tgeompoint</varname></link>: Cast a temporal geography point to a temporal geometry point</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tgeompoint_geometry"><varname>tgeompoint::geometry, tgeogpoint::geography</varname></link>: Cast a temporal point to a PostGIS trajectory</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="geometry_tgeompoint"><varname>geometry::tgeompoint, geography::tgeogpoint</varname></link>: Cast a PostGIS trajectory to a temporal point</para>
+					<para><link linkend="tgeompoint_geometry"><varname>tgeompoint::geometry, tgeogpoint::geography</varname>, <varname>geometry::tgeompoint, geography::tgeogpoint</varname></link>: Cast between a temporal point and a PostGIS trajectory</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -669,7 +663,11 @@
 			<title>Accessor Functions</title>
 			<itemizedlist>
 				<listitem>
-				<para><link linkend="ttype_memSize"><varname>memSize</varname></link>: Get the memory size in bytes</para>
+				<para><link linkend="ttype_memorySize"><varname>memorySize</varname></link>: Get the memory size in bytes</para>
+				</listitem>
+
+				<listitem>
+				<para><link linkend="ttype_storageSize"><varname>storageSize</varname></link>: Get the storage (compressed) size in bytes</para>
 				</listitem>
 
 				<listitem>
@@ -805,6 +803,32 @@
 				</listitem>
 
 				<listitem>
+					<para><link linkend="overlapsTime"><varname>overlapsTime</varname></link>: Does the temporal value overlap the time value?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="integral"><varname>integral</varname></link>: Get the area under the curve</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="twAvg"><varname>twAvg</varname></link>: Get the time-weighted average</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Transformation Functions</title>
+
+			<itemizedlist>
+				<listitem>
+				<para><link linkend="ttype_transform"><varname>ttype_inst, ttype_seq, ttype_discseq, ttype_seqset</varname></link>: Transform a temporal value to another subtype</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="toLinear"><varname>toLinear</varname></link>: Transform a temporal value with continuous base type from stepwise to linear interpolation</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="shift"><varname>shift</varname></link>: Shift the time span of the temporal value by an interval</para>
 				</listitem>
 
@@ -817,24 +841,9 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="intersectsTimestamp"><varname>intersectsTimestamp</varname></link>: Does the temporal value intersect the timestamp?</para>
+					<para><link linkend="unnest"><varname>unnest</varname></link>: Transform a nonlinear temporal value into a set of rows, each one containing a base value and a period set during which the temporal value has the base value.</para>
 				</listitem>
 
-				<listitem>
-					<para><link linkend="intersectsTimestampSet"><varname>intersectsTimestampSet</varname></link>: Does the temporal value intersect the timestamp set?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="intersectsPeriod"><varname>intersectsPeriod</varname></link>: Does the temporal value intersect the period?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="intersectsPeriodSet"><varname>intersectsPeriodSet</varname></link>: Does the temporal value intersect the period set?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="twAvg"><varname>twAvg</varname></link>: Get the time-weighted average</para>
-				</listitem>
 			</itemizedlist>
 		</sect2>
 
@@ -843,11 +852,15 @@
 
 			<itemizedlist>
 				<listitem>
-				<para><link linkend="ttype_transform"><varname>ttype_inst, ttype_seq, ttype_discseq, ttype_seqset</varname></link>: Transform a temporal value to another subtype</para>
+				<para><link linkend="insert"><varname>insert</varname></link>: Insert a temporal value into another one</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="toLinear"><varname>toLinear</varname></link>: Transform a temporal value with continuous base type from stepwise to linear interpolation</para>
+				<para><link linkend="update"><varname>update</varname></link>: Update a temporal value with another one</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="deleteTime"><varname>deleteTime</varname></link>: Delete the instants of a temporal value that intersect a time value</para>
 				</listitem>
 
 				<listitem>
@@ -881,7 +894,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="atSpans"><varname>atSpans</varname></link>: Restrict to an array of spans</para>
+						<para><link linkend="atSpanset"><varname>atSpanset</varname></link>: Restrict to a span set</para>
 					</listitem>
 
 					<listitem>
@@ -897,19 +910,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="atTimestamp"><varname>atTimestamp</varname></link>: Restrict to a timestamp</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="atTimestampSet"><varname>atTimestampSet</varname></link>: Restrict to a timestamp set</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="atPeriod"><varname>atPeriod</varname></link>: Restrict to a period</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="atPeriodSet"><varname>atPeriodSet</varname></link>: Restrict to a period set</para>
+						<para><link linkend="atTime"><varname>atTime</varname></link>: Restrict to a time value</para>
 					</listitem>
 
 					<listitem>
@@ -939,7 +940,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="minusSpans"><varname>minusSpans</varname></link>: Difference with an array of spans</para>
+						<para><link linkend="minusSpanset"><varname>minusSpanset</varname></link>: Difference with a span set</para>
 					</listitem>
 
 					<listitem>
@@ -955,19 +956,7 @@
 				</listitem>
 
 					<listitem>
-						<para><link linkend="minusTimestamp"><varname>minusTimestamp</varname></link>: Difference with a timestamp</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="minusTimestampSet"><varname>minusTimestampSet</varname></link>: Difference with a timestamp set</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="minusPeriod"><varname>minusPeriod</varname></link>: Difference with period</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="minusPeriodSet"><varname>minusPeriodSet</varname></link>: Difference with a period set</para>
+						<para><link linkend="minusTime"><varname>minusTime</varname></link>: Difference with a time value</para>
 					</listitem>
 
 					<listitem>
@@ -1374,26 +1363,26 @@
 			</sect3>
 
 			<sect3>
-				<title>Possible Spatial Relationships</title>
+				<title>Ever Spatial Relationships</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="contains"><varname>contains</varname></link>: May contain</para>
+						<para><link linkend="contains"><varname>contains</varname></link>: Ever contains</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="disjoint"><varname>disjoint</varname></link>: May be disjoint</para>
+						<para><link linkend="disjoint"><varname>disjoint</varname></link>: Is ever disjoint</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="dwithin"><varname>dwithin</varname></link>: May be at distance within</para>
+						<para><link linkend="dwithin"><varname>dwithin</varname></link>: Is ever at distance within</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="intersects"><varname>intersects</varname></link>: May intersect</para>
+						<para><link linkend="intersects"><varname>intersects</varname></link>: Ever intersects</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="touches"><varname>touches</varname></link>: May touch</para>
+						<para><link linkend="touches"><varname>touches</varname></link>: Ever touches</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1701,15 +1690,15 @@
 				<title>Constructors</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tnpoint_inst"><varname>tnpoint_inst</varname></link>: Constructor for temporal network points of instant subtype</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tnpoint_seq"><varname>tnpoint_seq</varname></link>: Constructor for temporal network points of sequence subtype</para>
+						<para><link linkend="tnpoint"><varname>tnpoint</varname></link>: Constructor for temporal network points from a base value and a time value</para>
 					</listitem>
 
 					<listitem>
 						<para><link linkend="tnpoint_discseq"><varname>tnpoint_discseq</varname></link>: Constructors for temporal network points of sequence subtype and discrete interpolation</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_contseq"><varname>tnpoint_contseq</varname></link>: Constructor for temporal network points of sequence subtype and continuous interpolation, that is, linear or stepwise interpolation</para>
 					</listitem>
 
 					<listitem>
@@ -1735,7 +1724,7 @@
 				<title>Functions and Operators</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tnpoint_transform"><varname>tnpoint_inst, tnpoint_discseq, tnpoint_seq, tnpoint_seqset</varname></link>: Transform a temporal network to another subtype</para>
+						<para><link linkend="tnpoint_transform"><varname>tnpoint_inst, tnpoint_discseq, tnpoint_contseq, tnpoint_seqset</varname></link>: Transform a temporal network to another subtype</para>
 					</listitem>
 
 					<listitem>
@@ -1744,6 +1733,10 @@
 
 					<listitem>
 						<para><link linkend="tnpoint_getValues"><varname>getValues</varname></link>: Get the values</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="routes"><varname>routes</varname></link>: Get the road identifiers</para>
 					</listitem>
 
 					<listitem>

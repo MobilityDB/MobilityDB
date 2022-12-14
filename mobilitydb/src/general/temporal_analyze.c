@@ -118,7 +118,7 @@ TemporalAnalyzeExtraData *temporal_extra_data;
  * @param[in] stats Structure storing statistics information
  * @param[in] fetchfunc Fetch function
  * @param[in] samplerows Number of sample rows
- * @param[in] tnumber True when collecting statistics for temporal numbers. 
+ * @param[in] tnumber True when collecting statistics for temporal numbers.
  * Otherwise, statistics are collected only for the temporal dimension, that
  * is, for temporal boolean and temporal text.
  * @note Function derived from compute_span_stats of file spantypes_typanalyze.c
@@ -197,7 +197,7 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     span_deserialize((Span *) &period, &period_lower, &period_upper);
     time_lowers[non_null_cnt] = period_lower;
     time_uppers[non_null_cnt] = period_upper;
-    time_lengths[non_null_cnt] = distance_elem_elem(period_upper.val,
+    time_lengths[non_null_cnt] = distance_value_value(period_upper.val,
       period_lower.val, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 
     non_null_cnt++;
@@ -351,7 +351,7 @@ tnumber_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
  * @param[in] func Analyze function for temporal values
  */
 Datum
-generic_analyze(FunctionCallInfo fcinfo,
+temporal_analyze(FunctionCallInfo fcinfo,
   void (*func)(VacAttrStats *, AnalyzeAttrFetchFunc, int, double))
 {
   VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
@@ -386,7 +386,7 @@ PG_FUNCTION_INFO_V1(Temporal_analyze);
 PGDLLEXPORT Datum
 Temporal_analyze(PG_FUNCTION_ARGS)
 {
-  return generic_analyze(fcinfo, &temporal_compute_stats);
+  return temporal_analyze(fcinfo, &temporal_compute_stats);
 }
 
 PG_FUNCTION_INFO_V1(Tnumber_analyze);
@@ -396,7 +396,7 @@ PG_FUNCTION_INFO_V1(Tnumber_analyze);
 PGDLLEXPORT Datum
 Tnumber_analyze(PG_FUNCTION_ARGS)
 {
-  return generic_analyze(fcinfo, &tnumber_compute_stats);
+  return temporal_analyze(fcinfo, &tnumber_compute_stats);
 }
 
 /*****************************************************************************/

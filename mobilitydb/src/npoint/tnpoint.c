@@ -87,7 +87,7 @@ nsegmentarr_array(Nsegment **nsegmentarr, int count)
 
 PG_FUNCTION_INFO_V1(Tnpoint_in);
 /**
- * @ingroup mobilitydb_temporal_in_out
+ * @ingroup mobilitydb_temporal_inout
  * @brief Input function for temporal network points
  * @sqlfunc tnpoint_in()
  */
@@ -224,10 +224,7 @@ PGDLLEXPORT Datum
 Tnpoint_routes(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  int count;
-  int64 *routes = tnpoint_routes(temp, &count);
-  ArrayType *result = int64arr_array(routes, count);
-  pfree(routes);
+  Set *result = tnpoint_routes(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

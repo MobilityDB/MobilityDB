@@ -14,10 +14,11 @@
 <!ENTITY last_release_version "1.1">
 
 <!ENTITY introduction SYSTEM "introduction.xml">
-<!ENTITY span_time_types SYSTEM "span_time_types.xml">
+<!ENTITY set_span_types SYSTEM "set_span_types.xml">
 <!ENTITY temporal_types SYSTEM "temporal_types.xml">
 <!ENTITY manipulating_box_types SYSTEM "manipulating_box_types.xml">
-<!ENTITY manipulating_temporal_types SYSTEM "manipulating_temporal_types.xml">
+<!ENTITY manipulating_temporal_types_p1 SYSTEM "manipulating_temporal_types_p1.xml">
+<!ENTITY manipulating_temporal_types_p2 SYSTEM "manipulating_temporal_types_p2.xml">
 <!ENTITY spatial_functions SYSTEM "spatial_functions.xml">
 <!ENTITY temporal_network_points SYSTEM "temporal_network_points.xml">
 <!ENTITY reference SYSTEM "reference.xml">
@@ -108,10 +109,11 @@
 	</bookinfo>
 
 	&introduction;
-	&span_time_types;
+	&set_span_types;
 	&temporal_types;
 	&manipulating_box_types;
-	&manipulating_temporal_types;
+	&manipulating_temporal_types_p1;
+	&manipulating_temporal_types_p2;
 	&temporal_network_points;
 	&reference;
 	&data_generator;

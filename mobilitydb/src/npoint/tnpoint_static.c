@@ -162,7 +162,7 @@ nsegment_round(const Nsegment *ns, Datum size)
 
 PG_FUNCTION_INFO_V1(Npoint_in);
 /**
- * @ingroup mobilitydb_temporal_in_out
+ * @ingroup mobilitydb_temporal_inout
  * @brief Input function for network points
  * Example of input:
  *    (1, 0.5)
@@ -177,7 +177,7 @@ Npoint_in(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Npoint_out);
 /**
- * @ingroup mobilitydb_temporal_in_out
+ * @ingroup mobilitydb_temporal_inout
  * @brief Output function for network points
  * @sqlfunc npoint_out()
  */
@@ -190,7 +190,7 @@ Npoint_out(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Npoint_recv);
 /**
- * @ingroup mobilitydb_temporal_in_out
+ * @ingroup mobilitydb_temporal_inout
  * @brief Receive function for network points
  * @sqlfunc npoint_recv()
  */
@@ -203,7 +203,7 @@ Npoint_recv(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Npoint_send);
 /**
- * @ingroup mobilitydb_temporal_in_out
+ * @ingroup mobilitydb_temporal_inout
  * @brief Send function for network points
  * @sqlfunc npoint_send()
  */
@@ -220,7 +220,7 @@ Npoint_send(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Nsegment_in);
 /**
- * @ingroup mobilitydb_temporal_in_out
+ * @ingroup mobilitydb_temporal_inout
  * @brief Input function for network segments
  * Example of input:
  *    (1, 0.5, 0.6)
@@ -235,7 +235,7 @@ Nsegment_in(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Nsegment_out);
 /**
- * @ingroup mobilitydb_temporal_in_out
+ * @ingroup mobilitydb_temporal_inout
  * @brief Output function for network segments
  * @sqlfunc nsegment_out()
  */
@@ -248,7 +248,7 @@ Nsegment_out(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Nsegment_recv);
 /**
- * @ingroup mobilitydb_temporal_in_out
+ * @ingroup mobilitydb_temporal_inout
  * @brief Receive function for network segments
  * @sqlfunc nsegment_recv()
  */
@@ -261,7 +261,7 @@ Nsegment_recv(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Nsegment_send);
 /**
- * @ingroup mobilitydb_temporal_in_out
+ * @ingroup mobilitydb_temporal_inout
  * @brief Send function for network segments
  * @sqlfunc nsegment_sent()
  */

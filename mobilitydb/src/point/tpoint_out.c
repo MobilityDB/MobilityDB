@@ -55,7 +55,7 @@
  *****************************************************************************/
 
 /**
- * @ingroup mobilitydb_temporal_in_out
+ * @ingroup mobilitydb_temporal_inout
  * @brief Output a temporal point in Well-Known Text (WKT) format
  * @sqlfunc asText()
  */
@@ -77,7 +77,7 @@ Tpoint_as_text_ext(FunctionCallInfo fcinfo, bool extended)
 
 PG_FUNCTION_INFO_V1(Tpoint_as_text);
 /**
- * @ingroup mobilitydb_temporal_in_out
+ * @ingroup mobilitydb_temporal_inout
  * @brief Output a temporal point in Well-Known Text (WKT) format
  * @sqlfunc asText()
  */
@@ -89,7 +89,7 @@ Tpoint_as_text(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tpoint_as_ewkt);
 /**
- * @ingroup mobilitydb_temporal_in_out
+ * @ingroup mobilitydb_temporal_inout
  * @brief Output a temporal point in Extended Well-Known Text (EWKT) format,
  * that is, in WKT format prefixed with the SRID
  * @sqlfunc asEWKT()
@@ -143,7 +143,7 @@ geoarr_as_text_ext(FunctionCallInfo fcinfo, bool temparr, bool extended)
 
 PG_FUNCTION_INFO_V1(Geoarr_as_text);
 /**
- * @ingroup mobilitydb_temporal_in_out
+ * @ingroup mobilitydb_temporal_inout
  * @brief Output a geometry/geography array in Well-Known Text (WKT) format
  * @sqlfunc asText()
  */
@@ -155,7 +155,7 @@ Geoarr_as_text(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Geoarr_as_ewkt);
 /**
- * @ingroup mobilitydb_temporal_in_out
+ * @ingroup mobilitydb_temporal_inout
  * @brief Output a geometry/geography array in Extended Well-Known Text (EWKT) format,
  * that is, in WKT format prefixed with the SRID
  * @sqlfunc asEWKT()
@@ -168,7 +168,7 @@ Geoarr_as_ewkt(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tpointarr_as_text);
 /**
- * @ingroup mobilitydb_temporal_in_out
+ * @ingroup mobilitydb_temporal_inout
  * @brief Output a temporal point array in Well-Known Text (WKT) format
  * @sqlfunc asText()
  */
@@ -180,7 +180,7 @@ Tpointarr_as_text(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tpointarr_as_ewkt);
 /**
- * @ingroup mobilitydb_temporal_in_out
+ * @ingroup mobilitydb_temporal_inout
  * @brief Output a temporal point array in Extended Well-Known Text (EWKT) format,
  * that is, in WKT format prefixed with the SRID
  * @sqlfunc asEWKT()

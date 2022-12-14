@@ -79,11 +79,23 @@ const char *_type_names[] =
   [T_DOUBLE3] = "double3",
   [T_DOUBLE4] = "double4",
   [T_FLOAT8] = "float8",
+  [T_FLOATSET] = "floatset",
   [T_FLOATSPAN] = "floatspan",
+  [T_FLOATSPANSET] = "floatspanset",
   [T_INT4] = "int4",
+#if ! MEOS
   [T_INT4RANGE] = "int4range",
+#if POSTGRESQL_VERSION_NUMBER >= 140000
+  [T_INT4MULTIRANGE] = "int4multirange",
+#endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
+#endif /* ! MEOS */
+  [T_INTSET] = "intset",
   [T_INTSPAN] = "intspan",
+  [T_INTSPANSET] = "intspanset",
   [T_INT8] = "int8",
+  [T_BIGINTSET] = "bigintset",
+  [T_BIGINTSPAN] = "bigintspan",
+  [T_BIGINTSPANSET] = "bigintspanset",
   [T_PERIOD] = "period",
   [T_PERIODSET] = "periodset",
   [T_STBOX] = "stbox",
@@ -97,7 +109,12 @@ const char *_type_names[] =
   [T_TIMESTAMPSET] = "timestampset",
   [T_TIMESTAMPTZ] = "timestamptz",
   [T_TINT] = "tint",
+#if ! MEOS
   [T_TSTZRANGE] = "tstzrange",
+#if POSTGRESQL_VERSION_NUMBER >= 140000
+  [T_TSTZMULTIRANGE] = "tstzmultirange",
+#endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
+#endif /* ! MEOS */
   [T_TTEXT] = "ttext",
   [T_GEOMETRY] = "geometry",
   [T_GEOGRAPHY] = "geography",

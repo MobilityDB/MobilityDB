@@ -450,12 +450,12 @@ nd_box_ratio_position(const ND_BOX *b1, const ND_BOX *b2, CachedOp op)
  *****************************************************************************/
 
 /**
- * Transform the constant into an STBOX
+ * Transform the constant into an STBox
  *
  * @note This function is also used for temporal network points
  */
 static bool
-tpoint_const_stbox(Node *other, STBOX *box)
+tpoint_const_stbox(Node *other, STBox *box)
 {
   Oid consttypid = ((Const *) other)->consttype;
   mobdbType type = oid_type(consttypid);
@@ -471,7 +471,7 @@ tpoint_const_stbox(Node *other, STBOX *box)
   else if (type == T_PERIODSET)
     periodset_stbox_slice(((Const *) other)->constvalue, box);
   else if (type == T_STBOX)
-    memcpy(box, DatumGetSTboxP(((Const *) other)->constvalue), sizeof(STBOX));
+    memcpy(box, DatumGetSTboxP(((Const *) other)->constvalue), sizeof(STBox));
   else if (tspatial_type(type))
     temporal_set_bbox(DatumGetTemporalP(((Const *) other)->constvalue), box);
   else
@@ -523,12 +523,12 @@ tpoint_cachedop(Oid operid, CachedOp *cachedOp)
 }
 
 /**
- * Set the values of an ND_BOX from an STBOX
+ * Set the values of an ND_BOX from an STBox
  * The function only takes into account the x, y, and z dimensions of the box?
  * and assumes that they exist. This is to be ensured by the calling function.
  */
 static void
-nd_box_from_stbox(const STBOX *box, ND_BOX *nd_box)
+nd_box_from_stbox(const STBox *box, ND_BOX *nd_box)
 {
   int d = 0;
 
@@ -562,7 +562,7 @@ nd_box_from_stbox(const STBOX *box, ND_BOX *nd_box)
  * gserialized_estimate.c
  */
 static float8
-geo_sel(VariableStatData *vardata, const STBOX *box, CachedOp op)
+geo_sel(VariableStatData *vardata, const STBox *box, CachedOp op)
 {
   ND_STATS *nd_stats;
   AttStatsSlot sslot;
@@ -831,7 +831,7 @@ tpoint_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
   Node *other;
   bool varonleft;
   Selectivity selec;
-  STBOX box;
+  STBox box;
   Period period;
 
   /* Get enumeration value associated to the operator */
@@ -884,7 +884,7 @@ tpoint_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
   }
 
   /*
-   * Transform the constant into an STBOX
+   * Transform the constant into an STBox
    */
   if (! tpoint_const_stbox(other, &box))
     /* In the case of unknown constant */
@@ -914,7 +914,7 @@ tpoint_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
    */
   if (MOBDB_FLAGS_GET_T(box.flags))
   {
-    /* Transform the STBOX into a Period */
+    /* Transform the STBox into a Period */
     memcpy(&period, &box.period, sizeof(Span));
 
     /* Compute the selectivity */
@@ -975,7 +975,7 @@ static ND_STATS *
 pg_get_nd_stats(const Oid tableid, AttrNumber att_num, int mode, bool only_parent)
 {
   HeapTuple stats_tuple = NULL;
-  ND_STATS *nd_stats;
+  ND_STATS *nd_stats = NULL;
 
   /* First pull the stats tuple for the whole tree */
   if ( ! only_parent )
@@ -983,11 +983,12 @@ pg_get_nd_stats(const Oid tableid, AttrNumber att_num, int mode, bool only_paren
   /* Fall-back to main table stats only, if not found for whole tree or explicitly ignored */
   if ( only_parent || ! stats_tuple )
     stats_tuple = SearchSysCache3(STATRELATTINH, ObjectIdGetDatum(tableid), Int16GetDatum(att_num), BoolGetDatum(false));
-  if ( ! stats_tuple )
-    return NULL;
+  if ( stats_tuple )
+  {
+    nd_stats = pg_nd_stats_from_tuple(stats_tuple, mode);
+    ReleaseSysCache(stats_tuple);
+  }
 
-  nd_stats = pg_nd_stats_from_tuple(stats_tuple, mode);
-  ReleaseSysCache(stats_tuple);
   return nd_stats;
 }
 

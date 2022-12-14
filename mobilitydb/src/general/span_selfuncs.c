@@ -49,8 +49,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/timestampset.h"
-#include "general/periodset.h"
+#include "general/set.h"
 /* MobilityDB */
 #include "pg_general/span_analyze.h"
 #include "pg_general/temporal_catalog.h"
@@ -88,19 +87,37 @@ value_cachedop(Oid operid, CachedOp *cachedOp)
   for (int i = EQ_OP; i <= OVERAFTER_OP; i++)
   {
     if (operid == oper_oid((CachedOp) i, T_INT4, T_INTSPAN) ||
+        operid == oper_oid((CachedOp) i, T_INT4, T_INTSPANSET) ||
         operid == oper_oid((CachedOp) i, T_FLOAT8, T_INTSPAN) ||
+        operid == oper_oid((CachedOp) i, T_FLOAT8, T_INTSPANSET) ||
         operid == oper_oid((CachedOp) i, T_TBOX, T_INTSPAN) ||
+        operid == oper_oid((CachedOp) i, T_TBOX, T_INTSPANSET) ||
         operid == oper_oid((CachedOp) i, T_INTSPAN, T_INT4) ||
+        operid == oper_oid((CachedOp) i, T_INTSPANSET, T_INT4) ||
         operid == oper_oid((CachedOp) i, T_INTSPAN, T_FLOAT8) ||
+        operid == oper_oid((CachedOp) i, T_INTSPANSET, T_FLOAT8) ||
         operid == oper_oid((CachedOp) i, T_INTSPAN, T_TBOX) ||
+        operid == oper_oid((CachedOp) i, T_INTSPANSET, T_TBOX) ||
         operid == oper_oid((CachedOp) i, T_INTSPAN, T_INTSPAN) ||
+        operid == oper_oid((CachedOp) i, T_INTSPANSET, T_INTSPAN) ||
+        operid == oper_oid((CachedOp) i, T_INTSPAN, T_INTSPANSET) ||
+        operid == oper_oid((CachedOp) i, T_INTSPANSET, T_INTSPANSET) ||
         operid == oper_oid((CachedOp) i, T_INT4, T_FLOATSPAN) ||
+        operid == oper_oid((CachedOp) i, T_INT4, T_FLOATSPANSET) ||
         operid == oper_oid((CachedOp) i, T_FLOAT8, T_FLOATSPAN) ||
+        operid == oper_oid((CachedOp) i, T_FLOAT8, T_FLOATSPANSET) ||
         operid == oper_oid((CachedOp) i, T_TBOX, T_FLOATSPAN) ||
+        operid == oper_oid((CachedOp) i, T_TBOX, T_FLOATSPANSET) ||
         operid == oper_oid((CachedOp) i, T_FLOATSPAN, T_INT4) ||
+        operid == oper_oid((CachedOp) i, T_FLOATSPANSET, T_INT4) ||
         operid == oper_oid((CachedOp) i, T_FLOATSPAN, T_FLOAT8) ||
+        operid == oper_oid((CachedOp) i, T_FLOATSPANSET, T_FLOAT8) ||
         operid == oper_oid((CachedOp) i, T_FLOATSPAN, T_TBOX) ||
-        operid == oper_oid((CachedOp) i, T_FLOATSPAN, T_FLOATSPAN))
+        operid == oper_oid((CachedOp) i, T_FLOATSPANSET, T_TBOX) ||
+        operid == oper_oid((CachedOp) i, T_FLOATSPAN, T_FLOATSPAN) ||
+        operid == oper_oid((CachedOp) i, T_FLOATSPANSET, T_FLOATSPAN) ||
+        operid == oper_oid((CachedOp) i, T_FLOATSPAN, T_FLOATSPANSET) ||
+        operid == oper_oid((CachedOp) i, T_FLOATSPANSET, T_FLOATSPANSET))
       {
         *cachedOp = (CachedOp) i;
         return true;
@@ -175,7 +192,7 @@ span_bound_bsearch(const SpanBound *value, const SpanBound *hist,
 static float8
 span_bound_distance(const SpanBound *bound1, const SpanBound *bound2)
 {
-  return distance_elem_elem(bound2->val, bound1->val, bound2->basetype,
+  return distance_value_value(bound2->val, bound1->val, bound2->basetype,
     bound1->basetype);
 }
 
@@ -800,20 +817,27 @@ span_const_to_span(Node *other, Span *span)
 {
   Oid consttype = ((Const *) other)->consttype;
   mobdbType type = oid_type(consttype);
-  const Span *s;
-  assert(span_basetype(type) || span_type(type));
-  if (span_basetype(type))
+  assert(set_type(type) || set_basetype(type) || span_type(type) ||
+    span_basetype(type));
+  if (set_basetype(type) || span_basetype(type))
   {
-    /* The right argument is a span base constant. We convert it into
+    /* The right argument is a set or span base constant. We convert it into
      * a singleton span */
     Datum value = ((Const *) other)->constvalue;
     span_set(value, value, true, true, type, span);
   }
+  else if (set_type(type))
+  {
+    /* The right argument is a set constant. We convert it into
+     * its bounding span. */
+    const Set *s = DatumGetSetP(((Const *) other)->constvalue);
+    memcpy(span, &s->span, sizeof(Span));
+  }
   else /* span_type(type) */
   {
     /* The right argument is a span constant. We convert it into
-     * its bounding period. */
-    s = DatumGetSpanP(((Const *) other)->constvalue);
+     * its bounding span. */
+    const Span *s = DatumGetSpanP(((Const *) other)->constvalue);
     memcpy(span, s, sizeof(Span));
   }
   return;
@@ -841,7 +865,7 @@ time_const_to_period(Node *other, Period *period)
     /* The right argument is a TimestampSet constant. We convert it into
      * its bounding period. */
     const TimestampSet *ts = DatumGetTimestampSetP(((Const *) other)->constvalue);
-    memcpy(period, &ts->period, sizeof(Period));
+    memcpy(period, &ts->span, sizeof(Period));
   }
   else if (timetype == T_PERIOD)
   {
@@ -854,7 +878,7 @@ time_const_to_period(Node *other, Period *period)
     /* The right argument is a PeriodSet constant. We convert it into
      * its bounding period. */
     const PeriodSet *ps = DatumGetPeriodSetP(((Const *) other)->constvalue);
-    memcpy(period, &ps->period, sizeof(Period));
+    memcpy(period, &ps->span, sizeof(Period));
   }
   return;
 }
@@ -936,8 +960,11 @@ span_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
   bool found = (spansel == SPANSEL) ?
     value_cachedop(operid, &cachedOp) : time_cachedop(operid, &cachedOp);
   if (! found)
+  {
     /* Unknown operator */
+    ReleaseVariableStats(vardata);
     return span_sel_default(operid);
+  }
 
   /*
    * Estimate using statistics. Note that span_sel need not handle

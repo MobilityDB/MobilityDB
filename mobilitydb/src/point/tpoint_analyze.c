@@ -582,7 +582,7 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   {
     Datum datum;
     Temporal *temp;
-    STBOX box;
+    STBox box;
     GBOX gbox;
     ND_BOX *nd_box;
     bool is_null;
@@ -1005,7 +1005,7 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     span_deserialize((Span *) &period, &period_lower, &period_upper);
     time_lowers[notnull_cnt] = period_lower;
     time_uppers[notnull_cnt] = period_upper;
-    time_lengths[notnull_cnt] = distance_elem_elem(period_upper.val,
+    time_lengths[notnull_cnt] = distance_value_value(period_upper.val,
       period_lower.val, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 
     /* Increment our "good feature" count */
@@ -1064,7 +1064,7 @@ PG_FUNCTION_INFO_V1(Tpoint_analyze);
 PGDLLEXPORT Datum
 Tpoint_analyze(PG_FUNCTION_ARGS)
 {
-  return generic_analyze(fcinfo, &tpoint_compute_stats);
+  return temporal_analyze(fcinfo, &tpoint_compute_stats);
 }
 
 /*****************************************************************************/

@@ -41,6 +41,9 @@
 #include <lib/stringinfo.h>
 #include <utils/array.h>
 #include <utils/rangetypes.h>
+#if POSTGRESQL_VERSION_NUMBER >= 140000
+  #include <utils/multirangetypes.h>
+#endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
 /* MobilityDB */
 #include "general/temporal.h"
 #include "general/span.h"
@@ -71,6 +74,9 @@ extern Datum CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo,
 
 extern RangeType *range_make(Datum from, Datum to, bool lower_inc,
   bool upper_inc, mobdbType basetype);
+#if POSTGRESQL_VERSION_NUMBER >= 140000
+  extern MultirangeType *multirange_make(const SpanSet *ss);
+#endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
 
 /* Array functions */
 
@@ -84,10 +90,10 @@ extern ArrayType *datumarr_to_array(Datum *values, int count, mobdbType type);
 extern ArrayType *int64arr_to_array(const int64 *longints, int count);
 extern ArrayType *timestamparr_to_array(const TimestampTz *times, int count);
 extern ArrayType *periodarr_to_array(const Period **periods, int count);
-extern ArrayType *spanarr_to_array(Span **spans, int count);
+extern ArrayType *spanarr_to_array(const Span **spans, int count);
 extern ArrayType *strarr_to_textarray(char **strarr, int count);
 extern ArrayType *temporalarr_to_array(const Temporal **temporal, int count);
-extern ArrayType *stboxarr_to_array(STBOX *boxarr, int count);
+extern ArrayType *stboxarr_to_array(STBox *boxarr, int count);
 
 /*****************************************************************************/
 

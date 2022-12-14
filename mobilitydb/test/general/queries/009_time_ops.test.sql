@@ -287,10 +287,10 @@ SELECT periodset '{[2000-01-05, 2000-01-07], [2000-01-08, 2000-01-09], [2000-01-
 
 -------------------------------------------------------------------------------
 
--- temporal_minus should be used otherwise it calls the PostgreSQL - between
+-- set_minus should be used otherwise it calls the PostgreSQL - between
 -- timestamps that yields an interval
-SELECT time_minus(timestamptz '2000-01-01', timestamptz '2000-01-01');
-SELECT time_minus(timestamptz '2000-01-01', timestamptz '2000-01-02');
+SELECT set_minus(timestamptz '2000-01-01', timestamptz '2000-01-01');
+SELECT set_minus(timestamptz '2000-01-01', timestamptz '2000-01-02');
 SELECT timestamptz '2000-01-01' - timestampset '{2000-01-02, 2000-01-03, 2000-01-05}';
 SELECT timestamptz '2000-01-01' - timestampset '{2000-01-01, 2000-01-03, 2000-01-05}';
 SELECT timestamptz '2000-01-05' - timestampset '{2000-01-01, 2000-01-03, 2000-01-05}';

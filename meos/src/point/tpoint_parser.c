@@ -44,7 +44,7 @@
 /**
  * @brief Parse a spatiotemporal box from the buffer.
  */
-STBOX *
+STBox *
 stbox_parse(const char **str)
 {
   /* make compiler quiet */
@@ -71,7 +71,7 @@ stbox_parse(const char **str)
     *str += delim + 1;
     hassrid = true;
   }
-  if (strncasecmp(*str, "STBOX", 5) == 0)
+  if (strncasecmp(*str, "STBox", 5) == 0)
   {
     *str += 5;
     p_whitespace(str);
@@ -198,8 +198,8 @@ stbox_parse(const char **str)
   /* Ensure there is no more input */
   ensure_end_input(str, true, "spatiotemporal box");
 
-  STBOX *result = stbox_make(period, hasx, hasz, geodetic, srid, xmin, xmax,
-    ymin, ymax, zmin, zmax);
+  STBox *result = stbox_make(hasx, hasz, geodetic, srid, xmin, xmax, ymin,
+    ymax, zmin, zmax, period);
   if (period)
     pfree(period);
   return result;
@@ -287,7 +287,7 @@ tpointdiscseq_parse(const char **str, mobdbType temptype, int *tpoint_srid)
     instants[i] = tpointinst_parse(str, temptype, false, true, tpoint_srid);
   }
   p_cbrace(str);
-  return tsequence_make_free(instants, count, count, true, true, DISCRETE,
+  return tsequence_make_free(instants, count, true, true, DISCRETE,
     NORMALIZE_NO);
 }
 
@@ -345,7 +345,7 @@ tpointseq_parse(const char **str, mobdbType temptype, interpType interp,
   }
   p_cbracket(str);
   p_cparen(str);
-  return tsequence_make_free(instants, count, count, lower_inc, upper_inc,
+  return tsequence_make_free(instants, count, lower_inc, upper_inc,
     interp, NORMALIZE);
 }
 

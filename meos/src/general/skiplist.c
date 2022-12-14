@@ -43,23 +43,21 @@
 #else
   #include <utils/memutils.h>
 #endif /* MEOS */
-// #include <libpq/pqformat.h>
-// #include <utils/timestamp.h>
 /* GSL */
 #include <gsl/gsl_rng.h>
 /* MobilityDB */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/pg_call.h"
+#include "general/pg_types.h"
 #include "general/span.h"
 #include "general/temporal_aggfuncs.h"
 #include "general/time_aggfuncs.h"
-#include "general/time_ops.h"
-// #include "pg_general/temporal_util.h"
 
 #if ! MEOS
   extern FunctionCallInfo fetch_fcinfo();
   extern void store_fcinfo(FunctionCallInfo fcinfo);
+  extern MemoryContext set_aggregation_context(FunctionCallInfo fcinfo);
+  extern void unset_aggregation_context(MemoryContext ctx);
 #endif /* ! MEOS */
 
 /*****************************************************************************/
@@ -81,31 +79,6 @@ typedef enum
 /* Global variable for skip lists which require the gsl random generator */
 
 gsl_rng *_aggregation_rng = NULL;
-
-#if ! MEOS
-/**
- * Switch to the memory context for aggregation
- */
-static MemoryContext
-set_aggregation_context(FunctionCallInfo fcinfo)
-{
-  MemoryContext ctx;
-  if (! AggCheckCallContext(fcinfo, &ctx))
-    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-      errmsg("Operation not supported")));
-  return MemoryContextSwitchTo(ctx);
-}
-
-/**
- * Switch to the given memory context
- */
-static void
-unset_aggregation_context(MemoryContext ctx)
-{
-  MemoryContextSwitchTo(ctx);
-  return;
-}
-#endif /* ! MEOS */
 
 #ifdef NO_FFSL
 static int
@@ -217,6 +190,7 @@ skiplist_delete(SkipList *list, int cur)
   return;
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_spantime_agg
  * @brief Free the skiplist
@@ -225,9 +199,6 @@ void
 skiplist_free(SkipList *list)
 {
   assert(list);
-#if ! MEOS
-  MemoryContext ctx = set_aggregation_context(fetch_fcinfo());
-#endif /* ! MEOS */
   if (list->extra)
     pfree(list->extra);
   if (list->freed)
@@ -242,11 +213,9 @@ skiplist_free(SkipList *list)
     pfree(list->elems);
   }
   pfree(list);
-#if ! MEOS
-  unset_aggregation_context(ctx);
-#endif /* ! MEOS */
   return;
 }
+#endif /* MEOS */
 
 /**
  * Output the skiplist in graphviz dot format for visualisation and debugging purposes
@@ -408,9 +377,9 @@ skiplist_make(void **values, int count, SkipListElemType elemtype)
 static RelativeTimePos
 pos_period_timestamp(const Period *p, TimestampTz t)
 {
-  if (before_period_timestamp(p, t))
+  if (left_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ))
     return BEFORE;
-  if (after_period_timestamp(p, t))
+  if (right_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ))
     return AFTER;
   return DURING;
 }
@@ -647,6 +616,8 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
       height = rheight;
   }
 
+  if (spliced_count != 0 && list->elemtype != TIMESTAMPTZ)
+    pfree_array((void **) values, count);
   return;
 }
 

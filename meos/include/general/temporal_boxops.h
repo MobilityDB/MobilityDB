@@ -56,15 +56,16 @@ extern bool temporal_bbox_eq(const void *box1, const void *box2,
   mobdbType temptype);
 extern int temporal_bbox_cmp(const void *box1, const void *box2,
   mobdbType temptype);
-extern void temporal_bbox_shift_tscale(const Interval *start,
-  const Interval *duration, mobdbType temptype, void *box);
+extern void temporal_bbox_shift_tscale(void *box, mobdbType temptype,
+  const Interval *start, const Interval *duration);
 
 /* Compute the bounding box at the creation of temporal values */
 
 extern size_t temporal_bbox_size(mobdbType tempype);
 extern void tinstant_set_bbox(const TInstant *inst, void *bbox);
-extern void tsequence_compute_bbox(const TInstant **instants, int count,
+extern void tinstarr_compute_bbox(const TInstant **instants, int count,
   bool lower_inc, bool upper_inc, interpType interp, void *bbox);
+extern void tsequence_compute_bbox(const TSequence *seq, void *box);
 extern void tsequenceset_compute_bbox(const TSequence **seqs, int count,
   void *bbox);
 
@@ -83,13 +84,15 @@ extern bool boxop_temporal_temporal(const Temporal *temp1,
   const Temporal *temp2, bool (*func)(const Period *, const Period *));
 
 extern bool boxop_tnumber_number(const Temporal *temp, Datum value,
-  mobdbType basetype, bool (*func)(const TBOX *, const TBOX *), bool invert);
+  mobdbType basetype, bool (*func)(const TBox *, const TBox *), bool invert);
 extern bool boxop_tnumber_span(const Temporal *temp, const Span *span,
-  bool (*func)(const TBOX *, const TBOX *), bool invert);
-extern bool boxop_tnumber_tbox(const Temporal *temp, const TBOX *box,
-  bool (*func)(const TBOX *, const TBOX *), bool invert);
+  bool (*func)(const TBox *, const TBox *), bool invert);
+extern bool boxop_tnumber_spanset(const Temporal *temp, const SpanSet *ss,
+  bool (*func)(const TBox *, const TBox *), bool invert);
+extern bool boxop_tnumber_tbox(const Temporal *temp, const TBox *box,
+  bool (*func)(const TBox *, const TBox *), bool invert);
 extern bool boxop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
-  bool (*func)(const TBOX *, const TBOX *));
+  bool (*func)(const TBox *, const TBox *));
 
 /*****************************************************************************/
 

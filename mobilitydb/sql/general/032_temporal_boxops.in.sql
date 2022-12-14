@@ -616,6 +616,14 @@ CREATE FUNCTION overlaps_bbox(tint, intspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tnumber_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION overlaps_bbox(intspanset, tint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overlaps_spanset_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION overlaps_bbox(tint, intspanset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overlaps_tnumber_spanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tbox, tint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tbox_tnumber'
@@ -666,6 +674,18 @@ CREATE OPERATOR && (
 CREATE OPERATOR && (
   PROCEDURE = overlaps_bbox,
   LEFTARG = tint, RIGHTARG = intspan,
+  COMMUTATOR = &&,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR && (
+  PROCEDURE = overlaps_bbox,
+  LEFTARG = intspanset, RIGHTARG = tint,
+  COMMUTATOR = &&,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR && (
+  PROCEDURE = overlaps_bbox,
+  LEFTARG = tint, RIGHTARG = intspanset,
   COMMUTATOR = &&,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
@@ -804,6 +824,14 @@ CREATE FUNCTION contains_bbox(tint, intspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tnumber_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION contains_bbox(intspanset, tint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contains_spanset_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION contains_bbox(tint, intspanset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contains_tnumber_spanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tbox, tint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tbox_tnumber'
@@ -854,6 +882,18 @@ CREATE OPERATOR @> (
 CREATE OPERATOR @> (
   PROCEDURE = contains_bbox,
   LEFTARG = tint, RIGHTARG = intspan,
+  COMMUTATOR = <@,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR @> (
+  PROCEDURE = contains_bbox,
+  LEFTARG = intspanset, RIGHTARG = tint,
+  COMMUTATOR = <@,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR @> (
+  PROCEDURE = contains_bbox,
+  LEFTARG = tint, RIGHTARG = intspanset,
   COMMUTATOR = <@,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
@@ -992,6 +1032,14 @@ CREATE FUNCTION contained_bbox(tint, intspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tnumber_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION contained_bbox(intspanset, tint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contained_spanset_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION contained_bbox(tint, intspanset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contained_tnumber_spanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tbox, tint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tbox_tnumber'
@@ -1042,6 +1090,18 @@ CREATE OPERATOR <@ (
 CREATE OPERATOR <@ (
   PROCEDURE = contained_bbox,
   LEFTARG = tint, RIGHTARG = intspan,
+  COMMUTATOR = @>,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR <@ (
+  PROCEDURE = contained_bbox,
+  LEFTARG = intspanset, RIGHTARG = tint,
+  COMMUTATOR = @>,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR <@ (
+  PROCEDURE = contained_bbox,
+  LEFTARG = tint, RIGHTARG = intspanset,
   COMMUTATOR = @>,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
@@ -1180,6 +1240,14 @@ CREATE FUNCTION same_bbox(tint, intspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tnumber_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION same_bbox(intspanset, tint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Same_spanset_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION same_bbox(tint, intspanset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Same_tnumber_spanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tbox, tint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tbox_tnumber'
@@ -1230,6 +1298,18 @@ CREATE OPERATOR ~= (
 CREATE OPERATOR ~= (
   PROCEDURE = same_bbox,
   LEFTARG = tint, RIGHTARG = intspan,
+  COMMUTATOR = ~=,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR ~= (
+  PROCEDURE = same_bbox,
+  LEFTARG = intspanset, RIGHTARG = tint,
+  COMMUTATOR = ~=,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR ~= (
+  PROCEDURE = same_bbox,
+  LEFTARG = tint, RIGHTARG = intspanset,
   COMMUTATOR = ~=,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
@@ -1368,6 +1448,14 @@ CREATE FUNCTION adjacent_bbox(tint, intspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tnumber_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION adjacent_bbox(intspanset, tint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adjacent_spanset_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION adjacent_bbox(tint, intspanset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adjacent_tnumber_spanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tbox, tint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tbox_tnumber'
@@ -1418,6 +1506,18 @@ CREATE OPERATOR -|- (
 CREATE OPERATOR -|- (
   PROCEDURE = adjacent_bbox,
   LEFTARG = tint, RIGHTARG = intspan,
+  COMMUTATOR = -|-,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR -|- (
+  PROCEDURE = adjacent_bbox,
+  LEFTARG = intspanset, RIGHTARG = tint,
+  COMMUTATOR = -|-,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR -|- (
+  PROCEDURE = adjacent_bbox,
+  LEFTARG = tint, RIGHTARG = intspanset,
   COMMUTATOR = -|-,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
@@ -1558,6 +1658,14 @@ CREATE FUNCTION overlaps_bbox(tfloat, floatspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tnumber_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION overlaps_bbox(floatspanset, tfloat)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overlaps_spanset_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION overlaps_bbox(tfloat, floatspanset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overlaps_tnumber_spanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION overlaps_bbox(tbox, tfloat)
   RETURNS boolean
@@ -1609,6 +1717,18 @@ CREATE OPERATOR && (
 CREATE OPERATOR && (
   PROCEDURE = overlaps_bbox,
   LEFTARG = tfloat, RIGHTARG = floatspan,
+  COMMUTATOR = &&,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR && (
+  PROCEDURE = overlaps_bbox,
+  LEFTARG = floatspanset, RIGHTARG = tfloat,
+  COMMUTATOR = &&,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR && (
+  PROCEDURE = overlaps_bbox,
+  LEFTARG = tfloat, RIGHTARG = floatspanset,
   COMMUTATOR = &&,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
@@ -1747,6 +1867,14 @@ CREATE FUNCTION contains_bbox(tfloat, floatspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tnumber_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION contains_bbox(floatspanset, tfloat)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contains_spanset_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION contains_bbox(tfloat, floatspanset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contains_tnumber_spanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tbox, tfloat)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tbox_tnumber'
@@ -1797,6 +1925,18 @@ CREATE OPERATOR @> (
 CREATE OPERATOR @> (
   PROCEDURE = contains_bbox,
   LEFTARG = tfloat, RIGHTARG = floatspan,
+  COMMUTATOR = <@,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR @> (
+  PROCEDURE = contains_bbox,
+  LEFTARG = floatspanset, RIGHTARG = tfloat,
+  COMMUTATOR = <@,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR @> (
+  PROCEDURE = contains_bbox,
+  LEFTARG = tfloat, RIGHTARG = floatspanset,
   COMMUTATOR = <@,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
@@ -1935,6 +2075,14 @@ CREATE FUNCTION contained_bbox(tfloat, floatspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tnumber_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION contained_bbox(floatspanset, tfloat)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contained_spanset_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION contained_bbox(tfloat, floatspanset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contained_tnumber_spanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tbox, tfloat)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tbox_tnumber'
@@ -1985,6 +2133,18 @@ CREATE OPERATOR <@ (
 CREATE OPERATOR <@ (
   PROCEDURE = contained_bbox,
   LEFTARG = tfloat, RIGHTARG = floatspan,
+  COMMUTATOR = @>,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR <@ (
+  PROCEDURE = contained_bbox,
+  LEFTARG = floatspanset, RIGHTARG = tfloat,
+  COMMUTATOR = @>,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR <@ (
+  PROCEDURE = contained_bbox,
+  LEFTARG = tfloat, RIGHTARG = floatspanset,
   COMMUTATOR = @>,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
@@ -2123,6 +2283,14 @@ CREATE FUNCTION same_bbox(tfloat, floatspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tnumber_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION same_bbox(floatspanset, tfloat)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Same_spanset_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION same_bbox(tfloat, floatspanset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Same_tnumber_spanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tbox, tfloat)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tbox_tnumber'
@@ -2173,6 +2341,18 @@ CREATE OPERATOR ~= (
 CREATE OPERATOR ~= (
   PROCEDURE = same_bbox,
   LEFTARG = tfloat, RIGHTARG = floatspan,
+  COMMUTATOR = ~=,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR ~= (
+  PROCEDURE = same_bbox,
+  LEFTARG = floatspanset, RIGHTARG = tfloat,
+  COMMUTATOR = ~=,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR ~= (
+  PROCEDURE = same_bbox,
+  LEFTARG = tfloat, RIGHTARG = floatspanset,
   COMMUTATOR = ~=,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
@@ -2311,6 +2491,14 @@ CREATE FUNCTION adjacent_bbox(tfloat, floatspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tnumber_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION adjacent_bbox(floatspanset, tfloat)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adjacent_spanset_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION adjacent_bbox(tfloat, floatspanset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adjacent_tnumber_spanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tbox, tfloat)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tbox_tnumber'
@@ -2361,6 +2549,18 @@ CREATE OPERATOR -|- (
 CREATE OPERATOR -|- (
   PROCEDURE = adjacent_bbox,
   LEFTARG = tfloat, RIGHTARG = floatspan,
+  COMMUTATOR = -|-,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR -|- (
+  PROCEDURE = adjacent_bbox,
+  LEFTARG = floatspanset, RIGHTARG = tfloat,
+  COMMUTATOR = -|-,
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+);
+CREATE OPERATOR -|- (
+  PROCEDURE = adjacent_bbox,
+  LEFTARG = tfloat, RIGHTARG = floatspanset,
   COMMUTATOR = -|-,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );

@@ -1,7 +1,9 @@
 add_library(pg_general OBJECT
   doublen.c
   geo_constructors.c
-  periodset.c
+  set.c
+  set_gin.c
+  set_ops.c
   skiplist.c
   span.c
   span_aggfuncs.c
@@ -10,6 +12,8 @@ add_library(pg_general OBJECT
   span_spgist.c
   span_ops.c
   span_selfuncs.c
+  spanset.c
+  spanset_ops.c
   tbool_boolops.c
   tbox.c
   temporal.c
@@ -30,8 +34,6 @@ add_library(pg_general OBJECT
   temporal_in.c
   temporal_out.c
   time_aggfuncs.c
-  time_ops.c
-  timestampset.c
   tinstant.c
   tnumber_distance.c
   tnumber_gist.c

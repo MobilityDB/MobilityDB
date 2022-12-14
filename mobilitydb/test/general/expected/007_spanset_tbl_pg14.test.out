@@ -1,0 +1,12 @@
+SELECT COUNT(*) FROM tbl_intspanset WHERE i <> (i::int4multirange)::intspanset;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_periodset WHERE ps <> (ps::tstzmultirange)::periodset;
+ count 
+-------
+     0
+(1 row)
+

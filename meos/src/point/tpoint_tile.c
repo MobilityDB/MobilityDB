@@ -398,7 +398,7 @@ bresenham_bm(BitMatrix *bm, int *coords1, int *coords2, int numdims)
  */
 void
 stbox_tile_set(double x, double y, double z, TimestampTz t, double size,
-  int64 tunits, bool hasz, bool hast, int32 srid, STBOX *result)
+  int64 tunits, bool hasz, bool hast, int32 srid, STBox *result)
 {
   double xmin = x;
   double xmax = xmin + size;
@@ -416,8 +416,8 @@ stbox_tile_set(double x, double y, double z, TimestampTz t, double size,
     span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t + tunits), true,
       false, T_TIMESTAMPTZ, &p);
   }
-  return stbox_set(hast ? &p : NULL, true, hasz, false, srid, xmin, xmax,
-    ymin, ymax, zmin, zmax, result);
+  return stbox_set(true, hasz, false, srid, xmin, xmax, ymin, ymax, zmin, zmax,
+    hast ? &p : NULL, result);
 }
 
 /**
@@ -435,8 +435,8 @@ stbox_tile_set(double x, double y, double z, TimestampTz t, double size,
  * dimension is tiled.
  */
 STboxGridState *
-stbox_tile_state_make(Temporal *temp, STBOX *box, double size, int64 tunits,
-  POINT3DZ sorigin, TimestampTz torigin)
+stbox_tile_state_make(const Temporal *temp, const STBox *box, double size,
+  int64 tunits, POINT3DZ sorigin, TimestampTz torigin)
 {
   assert(size > 0);
   /* palloc0 to initialize the missing dimensions to 0 */
@@ -562,7 +562,7 @@ stbox_tile_state_next(STboxGridState *state)
  * @param[out] box Current tile
  */
 bool
-stbox_tile_state_get(STboxGridState *state, STBOX *box)
+stbox_tile_state_get(STboxGridState *state, STBox *box)
 {
   if (!state || state->done)
     return false;
@@ -591,8 +591,8 @@ stbox_tile_state_get(STboxGridState *state, STBOX *box)
  * @brief Generate a multidimensional grid for temporal points.
  * @sqlfunc multidimGrid()
  */
-STBOX *
-stbox_tile_list(STBOX *bounds, double size, const Interval *duration,
+STBox *
+stbox_tile_list(STBox *bounds, double size, const Interval *duration,
   GSERIALIZED *sorigin, TimestampTz torigin, int **no_cells)
 {
   /* Get input parameters */
@@ -610,7 +610,7 @@ stbox_tile_list(STBOX *bounds, double size, const Interval *duration,
   ensure_non_empty(sorigin);
   ensure_point_type(sorigin);
   /* Since we pass by default Point(0 0 0) as origin independently of the input
-   * STBOX, we test the same spatial dimensionality only for STBOX Z */
+   * STBox, we test the same spatial dimensionality only for STBox Z */
   if (MOBDB_FLAGS_GET_Z(bounds->flags))
     ensure_same_spatial_dimensionality_stbox_gs(bounds, sorigin);
   int32 srid = bounds->srid;
@@ -648,7 +648,7 @@ stbox_tile_list(STBOX *bounds, double size, const Interval *duration,
       DatumGetTimestampTz(state->box.period.lower)) / state->tunits) + 1;
     count *= cellcount[3];
   }
-  STBOX *result = palloc0(sizeof(STBOX) * count);
+  STBox *result = palloc0(sizeof(STBox) * count);
   /* Stop when we've used up all the grid tiles */
   for (int i = 0; i < count; i++)
   {

@@ -92,7 +92,7 @@ extern SkipList *temporal_tcount_transfn(SkipList *state, Temporal *temp,
   Interval *interval, TimestampTz origin);
 
 extern Period *temporal_extent_transfn(Period *p, Temporal *temp);
-extern TBOX *tnumber_extent_transfn(TBOX *box, Temporal *temp);
+extern TBox *tnumber_extent_transfn(TBox *box, Temporal *temp);
 
 /*****************************************************************************/
 

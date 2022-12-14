@@ -45,8 +45,8 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/timestampset.h"
-#include "general/periodset.h"
+#include "general/set.h"
+#include "general/spanset.h"
 /* MobilityDB */
 #include "pg_general/span_selfuncs.h"
 #include "pg_general/temporal_analyze.h"
@@ -125,9 +125,9 @@ tnumber_const_to_span_period(const Node *other, Span **s, Period **p,
   if (tnumber_basetype(type))
   {
     Datum value = ((Const *) other)->constvalue;
-    *s = elem_to_span(value, type);
+    *s = value_to_span(value, type);
   }
-  else if (type == T_INTSPAN || type == T_FLOATSPAN)
+  else if (type == T_INTSPAN || type == T_BIGINTSPAN || type == T_FLOATSPAN)
   {
     Span *span = DatumGetSpanP(((Const *) other)->constvalue);
     *s = span_copy(span);
@@ -140,7 +140,7 @@ tnumber_const_to_span_period(const Node *other, Span **s, Period **p,
   else if (type == T_TIMESTAMPSET)
   {
     *p = palloc(sizeof(Period));
-    timestampset_period_slice(((Const *) other)->constvalue, *p);
+    set_span_slice(((Const *) other)->constvalue, *p);
   }
   else if (type == T_PERIOD)
   {
@@ -150,11 +150,11 @@ tnumber_const_to_span_period(const Node *other, Span **s, Period **p,
   else if (type == T_PERIODSET)
   {
     *p = palloc(sizeof(Period));
-    periodset_period_slice(((Const *) other)->constvalue, *p);
+    spanset_span_slice(((Const *) other)->constvalue, *p);
   }
   else if (type == T_TBOX)
   {
-    const TBOX *box = DatumGetTboxP(((Const *) other)->constvalue);
+    const TBox *box = DatumGetTboxP(((Const *) other)->constvalue);
     ensure_span_basetype(basetype);
     *s = tbox_to_floatspan(box);
     *p = tbox_to_period(box);
@@ -162,7 +162,7 @@ tnumber_const_to_span_period(const Node *other, Span **s, Period **p,
   else if (tnumber_type(type))
   {
     const Temporal *temp = DatumGetTemporalP(((Const *) other)->constvalue);
-    TBOX box;
+    TBox box;
     temporal_set_bbox(temp, &box);
     *s = tbox_to_floatspan(&box);
     *p = tbox_to_period(&box);

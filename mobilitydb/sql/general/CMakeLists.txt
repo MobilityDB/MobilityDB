@@ -1,11 +1,13 @@
 SET(LOCAL_FILES
-  001_span
-  003_timestampset
-  005_periodset
-  007_span_ops
-  009_time_ops
+  001_set
+  002_set_ops
+  003_span
+  005_span_ops
+  007_spanset
+  009_spanset_ops
   011_span_indexes
-  013_time_indexes
+  012_spanset_indexes
+  013_set_indexes
   015_span_aggfuncs
   017_time_aggfuncs
   019_geo_constructors

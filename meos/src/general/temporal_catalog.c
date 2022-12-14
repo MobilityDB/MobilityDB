@@ -71,12 +71,39 @@ temptype_cache_struct _temptype_cache[] =
  * Global array that keeps type information for the span types defined
  * in MobilityDB.
  */
+settype_cache_struct _settype_cache[] =
+{
+  /* settype        basetype */
+  {T_INTSET,        T_INT4},
+  {T_BIGINTSET,     T_INT8},
+  {T_FLOATSET,      T_FLOAT8},
+  {T_TIMESTAMPSET,  T_TIMESTAMPTZ},
+};
+
+/**
+ * Global array that keeps type information for the span types defined
+ * in MobilityDB.
+ */
 spantype_cache_struct _spantype_cache[] =
 {
   /* spantype       basetype */
   {T_INTSPAN,       T_INT4},
+  {T_BIGINTSPAN,    T_INT8},
   {T_FLOATSPAN,     T_FLOAT8},
   {T_PERIOD,        T_TIMESTAMPTZ},
+};
+
+/**
+ * Global array that keeps type information for the span types defined
+ * in MobilityDB.
+ */
+spansettype_cache_struct _spansettype_cache[] =
+{
+  /* spansettype    spantype */
+  {T_INTSPANSET,    T_INTSPAN},
+  {T_BIGINTSPANSET, T_BIGINTSPAN},
+  {T_FLOATSPANSET,  T_FLOATSPAN},
+  {T_PERIODSET,     T_PERIOD},
 };
 
 /*****************************************************************************
@@ -117,6 +144,22 @@ spantype_basetype(mobdbType spantype)
 }
 
 /**
+ * Return the span type from the span set type
+ */
+mobdbType
+spansettype_spantype(mobdbType spansettype)
+{
+  int n = sizeof(_spansettype_cache) / sizeof(spansettype_cache_struct);
+  for (int i = 0; i < n; i++)
+  {
+    if (_spansettype_cache[i].spansettype == spansettype)
+      return _spansettype_cache[i].spantype;
+  }
+  /* We only arrive here on error */
+  elog(ERROR, "type %u is not a span set type", spansettype);
+}
+
+/**
  * Return the base type from the span type
  */
 mobdbType
@@ -131,6 +174,55 @@ basetype_spantype(mobdbType basetype)
   /* We only arrive here on error */
   elog(ERROR, "type %u is not a span type", basetype);
 }
+
+/**
+ * Return the span type from the span set type
+ */
+mobdbType
+spantype_spansettype(mobdbType spantype)
+{
+  int n = sizeof(_spansettype_cache) / sizeof(spansettype_cache_struct);
+  for (int i = 0; i < n; i++)
+  {
+    if (_spansettype_cache[i].spantype == spantype)
+      return _spansettype_cache[i].spansettype;
+  }
+  /* We only arrive here on error */
+  elog(ERROR, "type %u is not a span type", spantype);
+}
+
+/**
+ * Return the base type from the ordered set type
+ */
+mobdbType
+settype_basetype(mobdbType settype)
+{
+  int n = sizeof(_settype_cache) / sizeof(settype_cache_struct);
+  for (int i = 0; i < n; i++)
+  {
+    if (_settype_cache[i].settype == settype)
+      return _settype_cache[i].basetype;
+  }
+  /* We only arrive here on error */
+  elog(ERROR, "type %u is not an ordered set type", settype);
+}
+
+/**
+ * Return the base type from the set type
+ */
+mobdbType
+basetype_settype(mobdbType basetype)
+{
+  int n = sizeof(_settype_cache) / sizeof(settype_cache_struct);
+  for (int i = 0; i < n; i++)
+  {
+    if (_settype_cache[i].basetype == basetype)
+      return _settype_cache[i].settype;
+  }
+  /* We only arrive here on error */
+  elog(ERROR, "type %u is not a set type", basetype);
+}
+
 
 /*****************************************************************************
  * Catalog functions
@@ -162,18 +254,67 @@ ensure_time_type(mobdbType timetype)
 /*****************************************************************************/
 
 /**
- * Return true if the type is a time type
+ * Return true if the type is a set type
  */
 bool
-span_type(mobdbType spantype)
+set_basetype(mobdbType basetype)
 {
-  if (spantype == T_PERIOD || spantype == T_INTSPAN || spantype == T_FLOATSPAN)
+  if (basetype == T_TIMESTAMPTZ || basetype == T_INT4 || basetype == T_INT8 ||
+      basetype == T_FLOAT8)
     return true;
   return false;
 }
 
 /**
- * Ensure that the type corresponds to a span type
+ * Ensure that the span base type is supported by MobilityDB
+ */
+void
+ensure_set_basetype(mobdbType basetype)
+{
+  if (! set_basetype(basetype))
+    elog(ERROR, "unknown set base type: %d", basetype);
+  return;
+}
+
+/**
+ * Return true if the type is a set type
+ */
+bool
+set_type(mobdbType settype)
+{
+  if (settype == T_TIMESTAMPSET || settype == T_INTSET ||
+      settype == T_BIGINTSET || settype == T_FLOATSET)
+    return true;
+  return false;
+}
+
+/**
+ * Ensure that the type is a set type
+ */
+void
+ensure_set_type(mobdbType settype)
+{
+  if (! set_type(settype))
+    elog(ERROR, "unknown set type: %d", settype);
+  return;
+}
+
+/*****************************************************************************/
+
+/**
+ * Return true if the type is a span type
+ */
+bool
+span_type(mobdbType spantype)
+{
+  if (spantype == T_PERIOD || spantype == T_INTSPAN ||
+      spantype == T_BIGINTSPAN || spantype == T_FLOATSPAN)
+    return true;
+  return false;
+}
+
+/**
+ * Ensure that the type is a span type
  */
 void
 ensure_span_type(mobdbType spantype)
@@ -184,18 +325,19 @@ ensure_span_type(mobdbType spantype)
 }
 
 /**
- * Return true if the type is a time type
+ * Return true if the type is a set base type
  */
 bool
 span_basetype(mobdbType basetype)
 {
-  if (basetype == T_TIMESTAMPTZ || basetype == T_INT4 || basetype == T_FLOAT8)
+  if (basetype == T_TIMESTAMPTZ || basetype == T_INT4 || basetype == T_INT8 ||
+      basetype == T_FLOAT8)
     return true;
   return false;
 }
 
 /**
- * Ensure that the span base type is supported by MobilityDB
+ * Ensure that the type is a span base type
  */
 void
 ensure_span_basetype(mobdbType basetype)
@@ -206,24 +348,94 @@ ensure_span_basetype(mobdbType basetype)
 }
 
 /**
- * Return true if the type is a time type
+ * Return true if the type is a base type of a numeric span type
  */
 bool
 numspan_basetype(mobdbType basetype)
 {
-  if (basetype == T_INT4 || basetype == T_FLOAT8)
+  if (basetype == T_INT4 || basetype == T_INT8 || basetype == T_FLOAT8)
     return true;
   return false;
 }
 
 /**
- * Ensure that the span base type is supported by MobilityDB
+ * Ensure that the type is a base type of a numeric span type
  */
 void
 ensure_numspan_basetype(mobdbType basetype)
 {
   if (! numspan_basetype(basetype))
     elog(ERROR, "unknown numeric span base type: %d", basetype);
+  return;
+}
+
+/*****************************************************************************/
+
+/**
+ * Return true if the type is a span set type
+ */
+bool
+spanset_type(mobdbType spansettype)
+{
+  if (spansettype == T_PERIODSET || spansettype == T_INTSPANSET ||
+      spansettype == T_BIGINTSPANSET || spansettype == T_FLOATSPANSET)
+    return true;
+  return false;
+}
+
+/**
+ * Ensure that the type is a span set type
+ */
+void
+ensure_spanset_type(mobdbType spansettype)
+{
+  if (! spanset_type(spansettype))
+    elog(ERROR, "unknown span set type: %d", spansettype);
+  return;
+}
+
+/**
+ * Return true if the type is a set base type
+ */
+bool
+spanset_basetype(mobdbType basetype)
+{
+  if (basetype == T_TIMESTAMPTZ || basetype == T_INT4 || basetype == T_INT8 ||
+      basetype == T_FLOAT8)
+    return true;
+  return false;
+}
+
+/**
+ * Ensure that the type is a span set base type
+ */
+void
+ensure_spanset_basetype(mobdbType basetype)
+{
+  if (! spanset_basetype(basetype))
+    elog(ERROR, "unknown span set base type: %d", basetype);
+  return;
+}
+
+/**
+ * Return true if the type is a base type of a numeric span set type
+ */
+bool
+numspanset_basetype(mobdbType basetype)
+{
+  if (basetype == T_INT4 || basetype == T_INT8 || basetype == T_FLOAT8)
+    return true;
+  return false;
+}
+
+/**
+ * Ensure that the type is a base type of a numeric span set type
+ */
+void
+ensure_numspanset_basetype(mobdbType basetype)
+{
+  if (! numspanset_basetype(basetype))
+    elog(ERROR, "unknown numeric span set base type: %d", basetype);
   return;
 }
 
@@ -318,7 +530,8 @@ bool
 basetype_byvalue(mobdbType basetype)
 {
   ensure_temporal_basetype(basetype);
-  if (basetype == T_BOOL || basetype == T_INT4 || basetype == T_FLOAT8)
+  if (basetype == T_BOOL || basetype == T_INT4 || basetype == T_INT8 ||
+      basetype == T_FLOAT8)
     return true;
   return false;
 }
@@ -431,11 +644,37 @@ ensure_tnumber_spantype(mobdbType spantype)
   return;
 }
 
+
+
+/**
+ * Return true if the type is a span number type
+ *
+ * @note Function used in particular in the indexes
+ */
+bool
+tnumber_spansettype(mobdbType spansettype)
+{
+  if (spansettype == T_INTSPANSET || spansettype == T_FLOATSPANSET)
+    return true;
+  return false;
+}
+
+/**
+ * Ensure that the type is a span type
+ */
+void
+ensure_tnumber_spansettype(mobdbType spansettype)
+{
+  if (! tnumber_spansettype(spansettype))
+    elog(ERROR, "unknown number span set type: %d", spansettype);
+  return;
+}
+
 /**
  * Return true if the type is a spatiotemporal type
  *
  * @note This function is used for features common to all spatiotemporal types,
- * in particular, all of them use the same bounding box STBOX. Therefore it is
+ * in particular, all of them use the same bounding box STBox. Therefore it is
  * used for the indexes and selectivity functions
  */
 bool
@@ -454,7 +693,7 @@ tspatial_type(mobdbType temptype)
  * Return true if the type is a spatiotemporal type
  *
  * @note This function is used for features common to all spatiotemporal types,
- * in particular, all of them use the same bounding box STBOX
+ * in particular, all of them use the same bounding box STBox
  */
 bool
 tspatial_basetype(mobdbType basetype)

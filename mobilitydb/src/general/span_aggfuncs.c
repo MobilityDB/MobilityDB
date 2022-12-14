@@ -71,8 +71,24 @@ Span_extent_combinefn(PG_FUNCTION_ARGS)
   if (s2 && ! s1)
     PG_RETURN_POINTER(s2);
   /* Non-strict union */
-  Span *result = union_span_span(s1, s2, false);
+  Span *result = bbox_union_span_span(s1, s2, false);
   PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Spanset_extent_transfn);
+/**
+ * Transition function for extent aggregation of span set values
+ */
+PGDLLEXPORT Datum
+Spanset_extent_transfn(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
+  SpanSet *ss = PG_ARGISNULL(1) ? NULL : PG_GETARG_SPANSET_P(1);
+  s = spanset_extent_transfn(s, ss);
+  PG_FREE_IF_COPY(ss, 1);
+  if (! s)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(s);
 }
 
 /*****************************************************************************/

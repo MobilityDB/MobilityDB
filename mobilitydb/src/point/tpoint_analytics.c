@@ -154,7 +154,7 @@ PGDLLEXPORT Datum
 Tpoint_AsMVTGeom(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  STBOX *bounds = PG_GETARG_STBOX_P(1);
+  STBox *bounds = PG_GETARG_STBOX_P(1);
   int32_t extent = PG_GETARG_INT32(2);
   int32_t buffer = PG_GETARG_INT32(3);
   bool clip_geom = PG_GETARG_BOOL(4);

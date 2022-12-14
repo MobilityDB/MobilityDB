@@ -36,7 +36,6 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-// #include <catalog/pg_type.h>
 /* MobilityDB */
 #include "general/temporal.h"
 #include "npoint/tnpoint_static.h"
@@ -46,7 +45,7 @@
 /* Parameter tests */
 
 extern void ensure_same_srid_tnpoint_stbox(const Temporal *temp,
-  const STBOX *box);
+  const STBox *box);
 extern void ensure_same_rid_tnpointinst(const TInstant *inst1,
   const TInstant *inst2);
 

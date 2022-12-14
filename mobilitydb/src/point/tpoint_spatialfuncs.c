@@ -238,8 +238,8 @@ tpointseq_transform(const TSequence *seq, int srid)
   pfree(DatumGetPointer(transf)); pfree(DatumGetPointer(multipoint));
   lwmpoint_free(lwmpoint);
 
-  return tsequence_make_free(instants, seq->count, seq->count, true, true,
-    interp, NORMALIZE_NO);
+  return tsequence_make_free(instants, seq->count, true, true, interp,
+    NORMALIZE_NO);
 }
 
 /**
@@ -299,8 +299,7 @@ tpointseqset_transform(const TSequenceSet *ss, int srid)
       pfree(DatumGetPointer(point));
     }
     sequences[i] = tsequence_make((const TInstant **) instants, seq->count,
-      seq->count, seq->period.lower_inc, seq->period.upper_inc, interp,
-      NORMALIZE_NO);
+      seq->period.lower_inc, seq->period.upper_inc, interp, NORMALIZE_NO);
     for (int j = 0; j < seq->count; j++)
       pfree(instants[j]);
   }
@@ -1103,7 +1102,7 @@ PGDLLEXPORT Datum
 Tpoint_at_stbox(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  STBOX *box = PG_GETARG_STBOX_P(1);
+  STBox *box = PG_GETARG_STBOX_P(1);
   Temporal *result = tpoint_restrict_stbox(temp, box, REST_AT);
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
@@ -1121,7 +1120,7 @@ PGDLLEXPORT Datum
 Tpoint_minus_stbox(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  STBOX *box = PG_GETARG_STBOX_P(1);
+  STBox *box = PG_GETARG_STBOX_P(1);
   Temporal *result = tpoint_restrict_stbox(temp, box, REST_MINUS);
   PG_FREE_IF_COPY(temp, 0);
   if (! result)

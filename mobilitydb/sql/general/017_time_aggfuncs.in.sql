@@ -57,11 +57,6 @@ CREATE FUNCTION timestampset_extent_transfn(period, timestampset)
   AS 'MODULE_PATHNAME', 'Timestampset_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION periodset_extent_transfn(period, periodset)
-  RETURNS period
-  AS 'MODULE_PATHNAME', 'Periodset_extent_transfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-
 CREATE AGGREGATE extent(timestamptz) (
   SFUNC = timestamp_extent_transfn,
   STYPE = period,
@@ -74,13 +69,6 @@ CREATE AGGREGATE extent(timestampset) (
   COMBINEFUNC = span_extent_combinefn,
   PARALLEL = safe
 );
-CREATE AGGREGATE extent(periodset) (
-  SFUNC = periodset_extent_transfn,
-  STYPE = period,
-  COMBINEFUNC = span_extent_combinefn,
-  PARALLEL = safe
-);
-
 
 /*****************************************************************************/
 

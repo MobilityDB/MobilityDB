@@ -54,15 +54,12 @@ extern bool p_cparen(const char **str);
 extern bool p_comma(const char **str);
 extern Datum basetype_parse(const char **str, mobdbType basetypid);
 extern double double_parse(const char **str);
-extern TimestampTz timestamp_parse(const char **str);
-
-extern TBOX *tbox_parse(const char **str);
-extern TimestampSet *timestampset_parse(const char **str);
-extern Period *period_parse(const char **str, bool make);
-extern PeriodSet *periodset_parse(const char **str);
 extern Datum elem_parse(const char **str, mobdbType basetype);
+extern Set *set_parse(const char **str, mobdbType basetype);
 extern Span *span_parse(const char **str, mobdbType spantype, bool end, bool make);
-
+extern SpanSet *spanset_parse(const char **str, mobdbType spantype);
+extern TBox *tbox_parse(const char **str);
+extern TimestampTz timestamp_parse(const char **str);
 extern TInstant *tinstant_parse(const char **str, mobdbType temptype, bool end,
   bool make);
 extern TSequence *tdiscseq_parse(const char **str, mobdbType temptype);

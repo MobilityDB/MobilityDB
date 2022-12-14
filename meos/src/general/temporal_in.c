@@ -39,7 +39,8 @@
 /* MobilityDB */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/pg_call.h"
+#include "general/pg_types.h"
+#include "general/set.h"
 #include "general/tbox.h"
 #include "general/temporal_util.h"
 #include "general/temporal_parser.h"
@@ -56,20 +57,23 @@
  */
 typedef struct
 {
-  const uint8_t *wkb;  /**< Points to start of WKB */
-  size_t wkb_size;     /**< Expected size of WKB */
-  bool swap_bytes;     /**< Do an endian flip? */
-  uint8_t temptype;    /**< Current temporal type we are handling */
-  uint8_t basetype;    /**< Current base type we are handling */
-  uint8_t subtype;     /**< Current subtype we are handling */
-  int32_t srid;        /**< Current SRID we are handling */
-  bool hasx;           /**< X? */
-  bool hasz;           /**< Z? */
-  bool hast;           /**< T? */
-  bool geodetic;       /**< Geodetic? */
-  bool has_srid;       /**< SRID? */
-  interpType interp;   /**< Interpolation */
-  const uint8_t *pos;  /**< Current parse position */
+  const uint8_t *wkb;     /**< Points to start of WKB */
+  size_t wkb_size;        /**< Expected size of WKB */
+  bool swap_bytes;        /**< Do an endian flip? */
+  uint8_t orderedsettype; /**< Current span type we are handling */
+  uint8_t spantype;       /**< Current span type we are handling */
+  uint8_t spansettype;    /**< Current span set type we are handling */
+  uint8_t basetype;       /**< Current base type we are handling */
+  uint8_t temptype;       /**< Current temporal type we are handling */
+  uint8_t subtype;        /**< Current temporal subtype we are handling */
+  int32_t srid;           /**< Current SRID we are handling */
+  bool hasx;              /**< X? */
+  bool hasz;              /**< Z? */
+  bool hast;              /**< T? */
+  bool geodetic;          /**< Geodetic? */
+  bool has_srid;          /**< SRID? */
+  interpType interp;      /**< Interpolation */
+  const uint8_t *pos;     /**< Current parse position */
 } wkb_parse_state;
 
 /*****************************************************************************
@@ -285,7 +289,7 @@ parse_mfjson_datetimes(json_object *mfjson, int *count)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_int_temporal_in_out
+ * @ingroup libmeos_internal_temporal_inout
  * @brief Return a temporal instant from its MF-JSON representation.
  */
 TInstant *
@@ -360,7 +364,7 @@ tinstant_from_mfjson(json_object *mfjson, bool isgeo, int srid,
 
 #if MEOS
 /**
- * @ingroup libmeos_int_temporal_in_out
+ * @ingroup libmeos_internal_temporal_inout
  * @brief Return a temporal instant boolean from its MF-JSON representation.
  * @sqlfunc tboolFromMFJSON()
  */
@@ -371,7 +375,7 @@ tboolinst_from_mfjson(json_object *mfjson)
 }
 
 /**
- * @ingroup libmeos_int_temporal_in_out
+ * @ingroup libmeos_internal_temporal_inout
  * @brief Return a temporal instant integer from its MF-JSON representation.
  * @sqlfunc tintFromMFJSON()
  */
@@ -382,7 +386,7 @@ tintinst_from_mfjson(json_object *mfjson)
 }
 
 /**
- * @ingroup libmeos_int_temporal_in_out
+ * @ingroup libmeos_internal_temporal_inout
  * @brief Return a temporal instant float from its MF-JSON representation.
  * @sqlfunc tfloatFromMFJSON()
  */
@@ -393,7 +397,7 @@ tfloatinst_from_mfjson(json_object *mfjson)
 }
 
 /**
- * @ingroup libmeos_int_temporal_in_out
+ * @ingroup libmeos_internal_temporal_inout
  * @brief Return a temporal instant text from its MF-JSON representation.
  * @sqlfunc ttextFromMFJSON()
  */
@@ -404,7 +408,7 @@ ttextinst_from_mfjson(json_object *mfjson)
 }
 
 /**
- * @ingroup libmeos_int_temporal_in_out
+ * @ingroup libmeos_internal_temporal_inout
  * @brief Return a temporal instant geometric point from its MF-JSON
  * representation.
  * @sqlfunc tgeompointFromMFJSON()
@@ -416,7 +420,7 @@ tgeompointinst_from_mfjson(json_object *mfjson, int srid)
 }
 
 /**
- * @ingroup libmeos_int_temporal_in_out
+ * @ingroup libmeos_internal_temporal_inout
  * @brief Return a temporal instant geographic point from its MF-JSON
  * representation.
  * @sqlfunc tgeogpointFromMFJSON()
@@ -465,7 +469,7 @@ tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int srid,
 }
 
 /**
- * @ingroup libmeos_int_temporal_in_out
+ * @ingroup libmeos_internal_temporal_inout
  * @brief Return a temporal sequence point from its MF-JSON representation.
  */
 TSequence *
@@ -492,13 +496,13 @@ tsequence_from_mfjson(json_object *mfjson, bool isgeo, int srid,
   bool upper_inc = (bool) json_object_get_boolean(upperinc);
 
   /* Construct the temporal point */
-  return tsequence_make_free(instants, count, count, lower_inc, upper_inc,
-    interp, NORMALIZE);
+  return tsequence_make_free(instants, count, lower_inc, upper_inc, interp,
+    NORMALIZE);
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_int_temporal_in_out
+ * @ingroup libmeos_internal_temporal_inout
  * @brief Return a temporal sequence boolean from its MF-JSON representation.
  * @sqlfunc tboolFromMFJSON()
  */
@@ -509,7 +513,7 @@ tboolseq_from_mfjson(json_object *mfjson)
 }
 
 /**
- * @ingroup libmeos_int_temporal_in_out
+ * @ingroup libmeos_internal_temporal_inout
  * @brief Return a temporal sequence integer from its MF-JSON representation.
  * @sqlfunc  tintFromMFJSON()
  */
@@ -520,7 +524,7 @@ tintseq_from_mfjson(json_object *mfjson)
 }
 
 /**
- * @ingroup libmeos_int_temporal_in_out
+ * @ingroup libmeos_internal_temporal_inout
  * @brief Return a temporal sequence float from its MF-JSON representation.
  * @sqlfunc tfloattFromMFJSON()
  */
@@ -531,7 +535,7 @@ tfloatseq_from_mfjson(json_object *mfjson, interpType interp)
 }
 
 /**
- * @ingroup libmeos_int_temporal_in_out
+ * @ingroup libmeos_internal_temporal_inout
  * @brief Return a temporal sequence text from its MF-JSON representation.
  * @sqlfunc ttextFromMFJSON()
  */
@@ -542,7 +546,7 @@ ttextseq_from_mfjson(json_object *mfjson)
 }
 
 /**
- * @ingroup libmeos_int_temporal_in_out
+ * @ingroup libmeos_internal_temporal_inout
  * @brief Return a temporal sequence geometric point from its MF-JSON
  * representation.
  * @sqlfunc tgeompointFromMFJSON()
@@ -554,7 +558,7 @@ tgeompointseq_from_mfjson(json_object *mfjson, int srid, interpType interp)
 }
 
 /**
- * @ingroup libmeos_int_temporal_in_out
+ * @ingroup libmeos_internal_temporal_inout
  * @brief Return a temporal sequence geographic point from its MF-JSON
  * representation.
  * @sqlfunc tgeogpointFromMFJSON()
@@ -567,7 +571,7 @@ tgeogpointseq_from_mfjson(json_object *mfjson, int srid, interpType interp)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_int_temporal_in_out
+ * @ingroup libmeos_internal_temporal_inout
  * @brief Return a temporal sequence set point from its MF-JSON representation.
  */
 TSequenceSet *
@@ -598,7 +602,7 @@ tsequenceset_from_mfjson(json_object *mfjson, bool isgeo, int srid,
 
 #if MEOS
 /**
- * @ingroup libmeos_int_temporal_in_out
+ * @ingroup libmeos_internal_temporal_inout
  * @brief Return a temporal sequence set boolean from its MF-JSON
  * representation.
  * @sqlfunc tboolFromMFJSON()
@@ -610,7 +614,7 @@ tboolseqset_from_mfjson(json_object *mfjson)
 }
 
 /**
- * @ingroup libmeos_int_temporal_in_out
+ * @ingroup libmeos_internal_temporal_inout
  * @brief Return a temporal sequence set integer from its MF-JSON representation.
  * @sqlfunc tintFromMFJSON()
  */
@@ -621,7 +625,7 @@ tintseqset_from_mfjson(json_object *mfjson)
 }
 
 /**
- * @ingroup libmeos_int_temporal_in_out
+ * @ingroup libmeos_internal_temporal_inout
  * @brief Return a temporal sequence set float from its MF-JSON representation.
  * @sqlfunc tfloatFromMFJSON()
  */
@@ -632,7 +636,7 @@ tfloatseqset_from_mfjson(json_object *mfjson, interpType interp)
 }
 
 /**
- * @ingroup libmeos_int_temporal_in_out
+ * @ingroup libmeos_internal_temporal_inout
  * @brief Return a temporal sequence set text from its MF-JSON representation.
  * @sqlfunc ttextFromMFJSON()
  */
@@ -643,7 +647,7 @@ ttextseqset_from_mfjson(json_object *mfjson)
 }
 
 /**
- * @ingroup libmeos_int_temporal_in_out
+ * @ingroup libmeos_internal_temporal_inout
  * @brief Return a temporal sequence set geometric point from its MF-JSON
  * representation.
  * @sqlfunc tgeompointFromMFJSON()
@@ -655,7 +659,7 @@ tgeompointseqset_from_mfjson(json_object *mfjson, int srid, interpType interp)
 }
 
 /**
- * @ingroup libmeos_int_temporal_in_out
+ * @ingroup libmeos_internal_temporal_inout
  * @brief Return a temporal sequence set geographic point from its MF-JSON
  * representation.
  * @sqlfunc tgeogpointFromMFJSON()
@@ -679,7 +683,7 @@ ensure_temptype_mfjson(const char *typestr)
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_temporal_inout
  * @brief Return a temporal point from its MF-JSON representation
  */
 Temporal *
@@ -1048,19 +1052,22 @@ span_spantype_from_wkb_state(wkb_parse_state *s, uint16_t wkb_spantype)
   switch (wkb_spantype)
   {
     case MOBDB_WKB_T_INTSPAN:
-      s->temptype = T_INTSPAN;
+      s->spantype = T_INTSPAN;
+      break;
+    case MOBDB_WKB_T_BIGINTSPAN:
+      s->spantype = T_BIGINTSPAN;
       break;
     case MOBDB_WKB_T_FLOATSPAN:
-      s->temptype = T_FLOATSPAN;
+      s->spantype = T_FLOATSPAN;
       break;
     case MOBDB_WKB_T_PERIOD:
-      s->temptype = T_PERIOD;
+      s->spantype = T_PERIOD;
       break;
     default: /* Error! */
       elog(ERROR, "Unknown WKB span type: %d", wkb_spantype);
       break;
   }
-  s->basetype = spantype_basetype(s->temptype);
+  s->basetype = spantype_basetype(s->spantype);
   return;
 }
 
@@ -1077,6 +1084,9 @@ span_basevalue_from_wkb_size(wkb_parse_state *s)
     case T_INT4:
       result = sizeof(int);
       break;
+    case T_INT8:
+      result = sizeof(int64);
+      break;
     case T_FLOAT8:
       result = sizeof(double);
       break;
@@ -1087,7 +1097,6 @@ span_basevalue_from_wkb_size(wkb_parse_state *s)
   return result;
 }
 
-
 /**
  * Return a value from its WKB representation.
  */
@@ -1095,11 +1104,14 @@ static Datum
 span_basevalue_from_wkb_state(wkb_parse_state *s)
 {
   Datum result;
-  ensure_span_type(s->temptype);
-  switch (s->temptype)
+  ensure_span_type(s->spantype);
+  switch (s->spantype)
   {
     case T_INTSPAN:
       result = Int32GetDatum(int32_from_wkb_state(s));
+      break;
+    case T_BIGINTSPAN:
+      result = Int64GetDatum(int64_from_wkb_state(s));
       break;
     case T_FLOATSPAN:
       result = Float8GetDatum(double_from_wkb_state(s));
@@ -1108,8 +1120,7 @@ span_basevalue_from_wkb_state(wkb_parse_state *s)
       result = TimestampTzGetDatum(timestamp_from_wkb_state(s));
       break;
     default: /* Error! */
-      elog(ERROR, "Unknown span type: %d",
-        s->temptype);
+      elog(ERROR, "Unknown span type: %d", s->spantype);
       break;
   }
   return result;
@@ -1133,15 +1144,12 @@ bounds_from_wkb_state(uint8_t wkb_bounds, bool *lower_inc, bool *upper_inc)
 }
 
 /**
- * Return a span from its WKB representation
+ * Return a span from its WKB representation when reading components spans
+ * in a span set (which does not repeat the spantype for every component
  */
-Span *
-span_from_wkb_state(wkb_parse_state *s)
+static Span *
+span_from_wkb_state1(wkb_parse_state *s)
 {
-  /* Read the span type */
-  uint16_t wkb_spantype = (uint16_t) int16_from_wkb_state(s);
-  span_spantype_from_wkb_state(s, wkb_spantype);
-
   /* Read the span bounds */
   uint8_t wkb_bounds = (uint8_t) byte_from_wkb_state(s);
   bool lower_inc, upper_inc;
@@ -1158,66 +1166,148 @@ span_from_wkb_state(wkb_parse_state *s)
   return result;
 }
 
+/**
+ * Return a span from its WKB representation
+ */
+Span *
+span_from_wkb_state(wkb_parse_state *s)
+{
+  /* Read the span type */
+  uint16_t wkb_spantype = (uint16_t) int16_from_wkb_state(s);
+  span_spantype_from_wkb_state(s, wkb_spantype);
+  return span_from_wkb_state1(s);
+}
+
 /*****************************************************************************/
 
 /**
- * Return a timestamp set from its WKB representation
+ * Take in an unknown span set type of WKB type number and ensure it comes out
+ * as an extended WKB span set type number.
  */
-static TimestampSet *
-timestampset_from_wkb_state(wkb_parse_state *s)
+void
+spanset_spansettype_from_wkb_state(wkb_parse_state *s, uint16_t wkb_spansettype)
 {
-  /* Read the number of timestamps and allocate space for them */
-  int count = int32_from_wkb_state(s);
-  TimestampTz *times = palloc(sizeof(TimestampTz) * count);
+  switch (wkb_spansettype)
+  {
+    case MOBDB_WKB_T_INTSPANSET:
+      s->spansettype = T_INTSPANSET;
+      break;
+    case MOBDB_WKB_T_BIGINTSPANSET:
+      s->spansettype = T_BIGINTSPANSET;
+      break;
+    case MOBDB_WKB_T_FLOATSPANSET:
+      s->spansettype = T_FLOATSPANSET;
+      break;
+    case MOBDB_WKB_T_PERIODSET:
+      s->spansettype = T_PERIODSET;
+      break;
+    default: /* Error! */
+      elog(ERROR, "Unknown WKB span set type: %d", wkb_spansettype);
+      break;
+  }
+  s->spantype = spansettype_spantype(s->spansettype);
+  s->basetype = spantype_basetype(s->spantype);
+  return;
+}
 
-  /* Read and create the timestamp set */
+/**
+ * Return a span set from its WKB representation
+ */
+static SpanSet *
+spanset_from_wkb_state(wkb_parse_state *s)
+{
+  /* Read the span type */
+  uint16_t wkb_spansettype = (uint16_t) int16_from_wkb_state(s);
+  spanset_spansettype_from_wkb_state(s, wkb_spansettype);
+
+  /* Read the number of spans and allocate space for them */
+  int count = int32_from_wkb_state(s);
+  Span **spans = palloc(sizeof(Span *) * count);
+
+  /* Read and create the span set */
   for (int i = 0; i < count; i++)
-    times[i] = timestamp_from_wkb_state(s);
-  TimestampSet *result = timestampset_make_free(times, count);
+    spans[i] = (Span *) span_from_wkb_state1(s);
+  SpanSet *result = spanset_make_free(spans, count, NORMALIZE);
   return result;
 }
 
 /*****************************************************************************/
 
 /**
- * Optimized version of span_from_wkb_state for reading the periods in a period
- * set. The endian byte and the basetype int16 are not read from the buffer.
+ * Take in an unknown span type of WKB type number and ensure it comes out
+ * as an extended WKB span type number.
  */
-static Period *
-period_from_wkb_state(wkb_parse_state *s)
+void
+set_settype_from_wkb_state(wkb_parse_state *s, uint16_t wkb_settype)
 {
-  /* Read the span bounds */
-  uint8_t wkb_bounds = (uint8_t) byte_from_wkb_state(s);
-  bool lower_inc, upper_inc;
-  bounds_from_wkb_state(wkb_bounds, &lower_inc, &upper_inc);
+  switch (wkb_settype)
+  {
+    case MOBDB_WKB_T_INTSET:
+      s->orderedsettype = T_INTSET;
+      break;
+    case MOBDB_WKB_T_BIGINTSET:
+      s->orderedsettype = T_BIGINTSET;
+      break;
+    case MOBDB_WKB_T_FLOATSET:
+      s->orderedsettype = T_FLOATSET;
+      break;
+    case MOBDB_WKB_T_TIMESTAMPSET:
+      s->orderedsettype = T_TIMESTAMPSET;
+      break;
+    default: /* Error! */
+      elog(ERROR, "Unknown WKB ordered set type: %d", wkb_settype);
+      break;
+  }
+  s->basetype = settype_basetype(s->orderedsettype);
+  return;
+}
 
-  /* Does the data we want to read exist? */
-  wkb_parse_state_check(s, 2 * MOBDB_WKB_TIMESTAMP_SIZE);
-
-  /* Read the values and create the span */
-  Datum lower = TimestampTzGetDatum(timestamp_from_wkb_state(s));
-  Datum upper = TimestampTzGetDatum(timestamp_from_wkb_state(s));
-  Span *result = span_make(lower, upper, lower_inc, upper_inc, s->basetype);
+/**
+ * Return a value from its WKB representation.
+ */
+static Datum
+set_basevalue_from_wkb_state(wkb_parse_state *s)
+{
+  Datum result;
+  ensure_set_type(s->orderedsettype);
+  switch (s->orderedsettype)
+  {
+    case T_INTSET:
+      result = Int32GetDatum(int32_from_wkb_state(s));
+      break;
+    case T_BIGINTSET:
+      result = Int64GetDatum(int64_from_wkb_state(s));
+      break;
+    case T_FLOATSET:
+      result = Float8GetDatum(double_from_wkb_state(s));
+      break;
+    case T_TIMESTAMPSET:
+      result = TimestampTzGetDatum(timestamp_from_wkb_state(s));
+      break;
+    default: /* Error! */
+      elog(ERROR, "Unknown ordered set type: %d", s->orderedsettype);
+      break;
+  }
   return result;
 }
 
 /**
- * Return a period set from its WKB representation
+ * Return an ordered set from its WKB representation
  */
-static PeriodSet *
-periodset_from_wkb_state(wkb_parse_state *s)
+static Set *
+set_from_wkb_state(wkb_parse_state *s)
 {
-  /* Read the number of periods and allocate space for them */
+  /* Read the ordered set type */
+  uint16_t wkb_settype = (uint16_t) int16_from_wkb_state(s);
+  set_settype_from_wkb_state(s, wkb_settype);
+  /* Read the number of values and allocate space for them */
   int count = int32_from_wkb_state(s);
-  Period **periods = palloc(sizeof(Period *) * count);
+  Datum *values = palloc(sizeof(Datum) * count);
 
-  /* Set the state basetype to TimestampTz */
-  s->basetype = T_TIMESTAMPTZ;
-
-  /* Read and create the period set */
+  /* Read and create the ordered set */
   for (int i = 0; i < count; i++)
-    periods[i] = (Period *) period_from_wkb_state(s);
-  PeriodSet *result = periodset_make_free(periods, count, NORMALIZE);
+    values[i] = set_basevalue_from_wkb_state(s);
+  Set *result = set_make_free(values, count, s->basetype);
   return result;
 }
 
@@ -1242,7 +1332,7 @@ tbox_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
 /**
  * Return a temporal box from its WKB representation
  */
-static TBOX *
+static TBox *
 tbox_from_wkb_state(wkb_parse_state *s)
 {
   /* Read the temporal flags */
@@ -1259,7 +1349,7 @@ tbox_from_wkb_state(wkb_parse_state *s)
   if (s->hasx)
     span = span_from_wkb_state(s);
   /* Create the temporal box */
-  TBOX *result = tbox_make(period, span);
+  TBox *result = tbox_make(period, span);
   return result;
 }
 
@@ -1293,7 +1383,7 @@ stbox_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
 /**
  * Return a spatiotemporal box from its WKB representation
  */
-static STBOX *
+static STBox *
 stbox_from_wkb_state(wkb_parse_state *s)
 {
   /* Read the temporal flags */
@@ -1323,8 +1413,8 @@ stbox_from_wkb_state(wkb_parse_state *s)
       zmax = double_from_wkb_state(s);
     }
   }
-  STBOX *result = stbox_make(period, s->hasx, s->hasz, s->geodetic, s->srid,
-    xmin, xmax, ymin, ymax, zmin, zmax);
+  STBox *result = stbox_make(s->hasx, s->hasz, s->geodetic, s->srid,
+    xmin, xmax, ymin, ymax, zmin, zmax, period);
   if (s->hast)
     pfree(period);
   return result;
@@ -1454,8 +1544,7 @@ temporal_basevalue_from_wkb_state(wkb_parse_state *s)
       break;
 #endif /* NPOINT */
     default: /* Error! */
-      elog(ERROR, "Unknown temporal type: %d",
-        s->temptype);
+      elog(ERROR, "Unknown temporal type: %d", s->temptype);
       break;
   }
   return result;
@@ -1515,8 +1604,8 @@ tsequence_from_wkb_state(wkb_parse_state *s)
   bounds_from_wkb_state(wkb_bounds, &lower_inc, &upper_inc);
   /* Parse the instants */
   TInstant **instants = tinstarr_from_wkb_state(s, count);
-  return tsequence_make_free(instants, count, count, lower_inc, upper_inc,
-    s->interp, NORMALIZE);
+  return tsequence_make_free(instants, count, lower_inc, upper_inc, s->interp,
+    NORMALIZE);
 }
 
 /**
@@ -1549,8 +1638,8 @@ tsequenceset_from_wkb_state(wkb_parse_state *s)
       if (! basetype_byvalue(s->basetype))
         pfree(DatumGetPointer(value));
     }
-    sequences[i] = tsequence_make_free(instants, countinst, countinst,
-      lower_inc, upper_inc, s->interp, NORMALIZE);
+    sequences[i] = tsequence_make_free(instants, countinst, lower_inc,
+      upper_inc, s->interp, NORMALIZE);
   }
   return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
@@ -1616,16 +1705,23 @@ datum_from_wkb(const uint8_t *wkb, int size, mobdbType type)
   Datum result;
   switch (type)
   {
+    case T_INTSET:
+    case T_BIGINTSET:
+    case T_FLOATSET:
+    case T_TIMESTAMPSET:
+      result = PointerGetDatum(set_from_wkb_state(&s));
+      break;
     case T_INTSPAN:
+    case T_BIGINTSPAN:
     case T_FLOATSPAN:
     case T_PERIOD:
       result = PointerGetDatum(span_from_wkb_state(&s));
       break;
-    case T_TIMESTAMPSET:
-      result = PointerGetDatum(timestampset_from_wkb_state(&s));
-      break;
+    case T_INTSPANSET:
+    case T_BIGINTSPANSET:
+    case T_FLOATSPANSET:
     case T_PERIODSET:
-      result = PointerGetDatum(periodset_from_wkb_state(&s));
+      result = PointerGetDatum(spanset_from_wkb_state(&s));
       break;
     case T_TBOX:
       result = PointerGetDatum(tbox_from_wkb_state(&s));
@@ -1669,7 +1765,36 @@ datum_from_hexwkb(const char *hexwkb, int size, mobdbType type)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_spantime_in_out
+ * @ingroup libmeos_setspan_inout
+ * @brief Return an ordered set from its Well-Known Binary (WKB)
+ * representation.
+ * @sqlfunc timestampsetFromBinary()
+ */
+Set *
+set_from_wkb(const uint8_t *wkb, int size)
+{
+  /* We pass ANY set type to the dispatch function but the actual set type
+   * will be read from the byte string */
+  return DatumGetSetP(datum_from_wkb(wkb, size, T_TIMESTAMPSET));
+}
+
+/**
+ * @ingroup libmeos_setspan_inout
+ * @brief Return an ordered set from its WKB representation in hex-encoded
+ * ASCII.
+ * @sqlfunc timestampsetFromHexWKB()
+ */
+Set *
+set_from_hexwkb(const char *hexwkb)
+{
+  int size = strlen(hexwkb);
+  return DatumGetTimestampSetP(datum_from_hexwkb(hexwkb, size, T_TIMESTAMPSET));
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup libmeos_setspan_inout
  * @brief Return a span from its Well-Known Binary (WKB)
  * representation.
  * @sqlfunc intspanFromBinary(), floatspanFromBinary(), periodFromBinary(),
@@ -1683,7 +1808,7 @@ span_from_wkb(const uint8_t *wkb, int size)
 }
 
 /**
- * @ingroup libmeos_spantime_in_out
+ * @ingroup libmeos_setspan_inout
  * @brief Return a span from its WKB representation in hex-encoded ASCII.
  * @sqlfunc intspanFromHexWKB(), floatspanFromHexWKB(), periodFromHexWKB(),
  */
@@ -1699,52 +1824,29 @@ span_from_hexwkb(const char *hexwkb)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_spantime_in_out
- * @brief Return a timestamp set from its Well-Known Binary (WKB)
- * representation.
- * @sqlfunc timestampsetFromBinary()
- */
-TimestampSet *
-timestampset_from_wkb(const uint8_t *wkb, int size)
-{
-  return DatumGetTimestampSetP(datum_from_wkb(wkb, size, T_TIMESTAMPSET));
-}
-
-/**
- * @ingroup libmeos_spantime_in_out
- * @brief Return a timestamp set from its WKB representation in hex-encoded
- * ASCII.
- * @sqlfunc timestampsetFromHexWKB()
- */
-TimestampSet *
-timestampset_from_hexwkb(const char *hexwkb)
-{
-  int size = strlen(hexwkb);
-  return DatumGetTimestampSetP(datum_from_hexwkb(hexwkb, size, T_TIMESTAMPSET));
-}
-
-/*****************************************************************************/
-
-/**
- * @ingroup libmeos_spantime_in_out
+ * @ingroup libmeos_setspan_inout
  * @brief Return a period set from its Well-Known Binary (WKB)
  * representation.
  * @sqlfunc periodsetFromBinary()
  */
 PeriodSet *
-periodset_from_wkb(const uint8_t *wkb, int size)
+spanset_from_wkb(const uint8_t *wkb, int size)
 {
-  return DatumGetPeriodSetP(datum_from_wkb(wkb, size, T_PERIODSET));
+  /* We pass ANY span type to the dispatch function but the actual span type
+   * will be read from the byte string */
+  return DatumGetSpanSetP(datum_from_wkb(wkb, size, T_PERIODSET));
 }
 
 /**
- * @ingroup libmeos_spantime_in_out
+ * @ingroup libmeos_setspan_inout
  * @brief Return a period set from its WKB representation in hex-encoded ASCII
  * @sqlfunc periodsetFromHexWKB()
  */
 PeriodSet *
-periodset_from_hexwkb(const char *hexwkb)
+spanset_from_hexwkb(const char *hexwkb)
 {
+  /* We pass ANY span type to the dispatch function but the actual span type
+   * will be read from the byte string */
   int size = strlen(hexwkb);
   return DatumGetPeriodSetP(datum_from_hexwkb(hexwkb, size, T_PERIODSET));
 }
@@ -1752,23 +1854,23 @@ periodset_from_hexwkb(const char *hexwkb)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_box_in_out
+ * @ingroup libmeos_box_inout
  * @brief Return a temporal box from its Well-Known Binary (WKB)
  * representation.
  * @sqlfunc tboxFromBinary()
  */
-TBOX *
+TBox *
 tbox_from_wkb(const uint8_t *wkb, int size)
 {
   return DatumGetTboxP(datum_from_wkb(wkb, size, T_TBOX));
 }
 
 /**
- * @ingroup libmeos_box_in_out
+ * @ingroup libmeos_box_inout
  * @brief Return a temporal box from its WKB representation in hex-encoded ASCII
  * @sqlfunc tboxFromHexWKB()
  */
-TBOX *
+TBox *
 tbox_from_hexwkb(const char *hexwkb)
 {
   int size = strlen(hexwkb);
@@ -1778,24 +1880,24 @@ tbox_from_hexwkb(const char *hexwkb)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_box_in_out
+ * @ingroup libmeos_box_inout
  * @brief Return a spatiotemporal box from its Well-Known Binary (WKB)
  * representation.
  * @sqlfunc stboxFromBinary()
  */
-STBOX *
+STBox *
 stbox_from_wkb(const uint8_t *wkb, int size)
 {
   return DatumGetSTboxP(datum_from_wkb(wkb, size, T_STBOX));
 }
 
 /**
- * @ingroup libmeos_box_in_out
+ * @ingroup libmeos_box_inout
  * @brief Return a spatiotemporal box from its WKB representation in
  * hex-encoded ASCII
  * @sqlfunc stboxFromWKB()
  */
-STBOX *
+STBox *
 stbox_from_hexwkb(const char *hexwkb)
 {
   int size = strlen(hexwkb);
@@ -1805,7 +1907,7 @@ stbox_from_hexwkb(const char *hexwkb)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_temporal_inout
  * @brief Return a temporal value from its Well-Known Binary (WKB)
  * representation.
  * @sqlfunc tboolFromBinary(), tintFromBinary(), tfloatFromBinary(),
@@ -1820,7 +1922,7 @@ temporal_from_wkb(const uint8_t *wkb, int size)
 }
 
 /**
- * @ingroup libmeos_temporal_in_out
+ * @ingroup libmeos_temporal_inout
  * @brief Return a temporal value from its HexEWKB representation
  * @sqlfunc tboolFromHexWKB(), tintFromHexWKB(), tfloatFromHexWKB(),
  * ttextFromHexWKB(), etc.

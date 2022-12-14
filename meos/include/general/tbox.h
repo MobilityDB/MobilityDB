@@ -43,7 +43,7 @@
 
 /* fmgr macros temporal types */
 
-#define DatumGetTboxP(X)    ((TBOX *) DatumGetPointer(X))
+#define DatumGetTboxP(X)    ((TBox *) DatumGetPointer(X))
 #define TboxPGetDatum(X)    PointerGetDatum(X)
 #define PG_GETARG_TBOX_P(n) DatumGetTboxP(PG_GETARG_DATUM(n))
 #define PG_RETURN_TBOX_P(x) return TboxPGetDatum(x)
@@ -52,14 +52,14 @@
 
 /* Parameter tests */
 
-extern void ensure_has_X_tbox(const TBOX *box);
-extern void ensure_has_T_tbox(const TBOX *box);
-extern void ensure_same_dimensionality_tbox(const TBOX *box1, const TBOX *box2);
+extern void ensure_has_X_tbox(const TBox *box);
+extern void ensure_has_T_tbox(const TBox *box);
+extern void ensure_same_dimensionality_tbox(const TBox *box1, const TBox *box2);
 
 /* Casting */
 
-extern void timestampset_tbox_slice(Datum tsdatum, TBOX *box);
-extern void periodset_tbox_slice(Datum psdatum, TBOX *box);
+extern void timestampset_tbox_slice(Datum tsdatum, TBox *box);
+extern void periodset_tbox_slice(Datum psdatum, TBox *box);
 
 /*****************************************************************************/
 

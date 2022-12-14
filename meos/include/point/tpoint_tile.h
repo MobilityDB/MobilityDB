@@ -57,19 +57,19 @@ typedef struct
  */
 typedef struct STboxGridState
 {
-  bool done;           /**< True when all tiles have been processed */
-  int i;               /**< Number of current tile */
-  double size;         /**< Size of the x, y, and z dimension */
-  int64 tunits;        /**< Size of the time dimension */
-  STBOX box;           /**< Bounding box of the grid */
-  Temporal *temp;      /**< Optional temporal point to be split */
-  BitMatrix *bm;       /**< Optional bit matrix for speeding up
-                            the computation of the split functions */
-  double x;            /**< Minimum x value of the current tile */
-  double y;            /**< Minimum y value of the current tile */
-  double z;            /**< Minimum z value of the current tile */
-  TimestampTz t;       /**< Minimum t value of the current tile */
-  int coords[MAXDIMS]; /**< Coordinates of the current tile */
+  bool done;             /**< True when all tiles have been processed */
+  int i;                 /**< Number of current tile */
+  double size;           /**< Size of the x, y, and z dimension */
+  int64 tunits;          /**< Size of the time dimension */
+  STBox box;             /**< Bounding box of the grid */
+  const Temporal *temp;  /**< Optional temporal point to be split */
+  BitMatrix *bm;         /**< Optional bit matrix for speeding up
+                              the computation of the split functions */
+  double x;              /**< Minimum x value of the current tile */
+  double y;              /**< Minimum y value of the current tile */
+  double z;              /**< Minimum z value of the current tile */
+  TimestampTz t;         /**< Minimum t value of the current tile */
+  int coords[MAXDIMS];   /**< Coordinates of the current tile */
 } STboxGridState;
 
 /*****************************************************************************/
@@ -77,13 +77,14 @@ typedef struct STboxGridState
 extern BitMatrix *bitmatrix_make(int *count, int numdims);
 extern void tpoint_set_tiles(const Temporal *temp, const STboxGridState *state,
   BitMatrix *bm);
-  
+
 extern void stbox_tile_set(double x, double y, double z, TimestampTz t,
-  double size, int64 tunits, bool hasz, bool hast, int32 srid, STBOX *result);
-extern STboxGridState *stbox_tile_state_make(Temporal *temp, STBOX *box,
-  double size, int64 tunits, POINT3DZ sorigin, TimestampTz torigin);
+  double size, int64 tunits, bool hasz, bool hast, int32 srid, STBox *result);
+extern STboxGridState *stbox_tile_state_make(const Temporal *temp,
+  const STBox *box, double size, int64 tunits, POINT3DZ sorigin,
+  TimestampTz torigin);
 extern void stbox_tile_state_next(STboxGridState *state);
-extern bool stbox_tile_state_get(STboxGridState *state, STBOX *box);
+extern bool stbox_tile_state_get(STboxGridState *state, STBox *box);
 
 /*****************************************************************************/
 

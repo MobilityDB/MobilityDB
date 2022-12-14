@@ -31,7 +31,7 @@
  * @brief Bounding box operators for temporal points.
  *
  * These operators test the bounding boxes of temporal points, which are an
- * `STBOX`, where the *x*, *y*, and optional *z* coordinates are for the space
+ * `STBox`, where the *x*, *y*, and optional *z* coordinates are for the space
  * (value) dimension and the *t* coordinate is for the time dimension.
  * The following operators are defined: `overlaps`, `contains`, `contained`,
  * `same`.
@@ -73,7 +73,7 @@ Tpoint_stboxes(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int count;
-  STBOX *boxes = tpoint_stboxes(temp, &count);
+  STBox *boxes = tpoint_stboxes(temp, &count);
   PG_FREE_IF_COPY(temp, 0);
   if (! boxes)
     PG_RETURN_NULL();
@@ -94,7 +94,7 @@ Tpoint_stboxes(PG_FUNCTION_ARGS)
  */
 Datum
 boxop_geo_tpoint_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const STBOX *, const STBOX *))
+  bool (*func)(const STBox *, const STBox *))
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
@@ -114,7 +114,7 @@ boxop_geo_tpoint_ext(FunctionCallInfo fcinfo,
  */
 Datum
 boxop_tpoint_geo_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const STBOX *, const STBOX *))
+  bool (*func)(const STBox *, const STBox *))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
@@ -134,9 +134,9 @@ boxop_tpoint_geo_ext(FunctionCallInfo fcinfo,
  */
 Datum
 boxop_stbox_tpoint_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const STBOX *, const STBOX *))
+  bool (*func)(const STBox *, const STBox *))
 {
-  STBOX *box = PG_GETARG_STBOX_P(0);
+  STBox *box = PG_GETARG_STBOX_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   bool result = boxop_tpoint_stbox(temp, box, func, INVERT);
   PG_FREE_IF_COPY(temp, 1);
@@ -151,10 +151,10 @@ boxop_stbox_tpoint_ext(FunctionCallInfo fcinfo,
  */
 Datum
 boxop_tpoint_stbox_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const STBOX *, const STBOX *))
+  bool (*func)(const STBox *, const STBox *))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  STBOX *box = PG_GETARG_STBOX_P(1);
+  STBox *box = PG_GETARG_STBOX_P(1);
   bool result = boxop_tpoint_stbox(temp, box, func, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);
@@ -168,7 +168,7 @@ boxop_tpoint_stbox_ext(FunctionCallInfo fcinfo,
  */
 Datum
 boxop_tpoint_tpoint_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const STBOX *, const STBOX *))
+  bool (*func)(const STBox *, const STBox *))
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
@@ -335,7 +335,7 @@ PG_FUNCTION_INFO_V1(Contained_geo_tpoint);
  * @brief Return true if the spatiotemporal box of a geometry/geography is
  * contained in the one of a temporal point
  * @sqlfunc contained_bbox()
- * @sqlop @p @>
+ * @sqlop @p \@>
  */
 PGDLLEXPORT Datum
 Contained_geo_tpoint(PG_FUNCTION_ARGS)
@@ -349,7 +349,7 @@ PG_FUNCTION_INFO_V1(Contained_stbox_tpoint);
  * @brief Return true if a spatiotemporal box is contained in the spatiotemporal
  * box of a temporal point
  * @sqlfunc contained_bbox()
- * @sqlop @p @>
+ * @sqlop @p \@>
  */
 PGDLLEXPORT Datum
 Contained_stbox_tpoint(PG_FUNCTION_ARGS)
@@ -363,7 +363,7 @@ PG_FUNCTION_INFO_V1(Contained_tpoint_geo);
  * @brief Return true if the spatiotemporal box of a temporal point is contained
  * in the one of a geometry/geography
  * @sqlfunc contained_bbox()
- * @sqlop @p @>
+ * @sqlop @p \@>
  */
 PGDLLEXPORT Datum
 Contained_tpoint_geo(PG_FUNCTION_ARGS)
@@ -377,7 +377,7 @@ PG_FUNCTION_INFO_V1(Contained_tpoint_stbox);
  * @brief Return true if the spatiotemporal box of a temporal point is contained
  * in the spatiotemporal box
  * @sqlfunc contained_bbox()
- * @sqlop @p @>
+ * @sqlop @p \@>
  */
 PGDLLEXPORT Datum
 Contained_tpoint_stbox(PG_FUNCTION_ARGS)
@@ -391,7 +391,7 @@ PG_FUNCTION_INFO_V1(Contained_tpoint_tpoint);
  * @brief Return true if the spatiotemporal box of the first temporal point is
  * contained in the one of the second temporal point
  * @sqlfunc contained_bbox()
- * @sqlop @p @>
+ * @sqlop @p \@>
  */
 PGDLLEXPORT Datum
 Contained_tpoint_tpoint(PG_FUNCTION_ARGS)

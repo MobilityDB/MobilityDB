@@ -379,42 +379,43 @@ SELECT tnpoint '[Npoint(1, 0.2)@2001-01-01 09:00:00, Npoint(2, 0.2)@2001-01-01 0
 		<title>Constructors for Temporal Network Points</title>
 
 			<itemizedlist>
-				<listitem id="tnpoint_inst">
+				<listitem id="tnpoint">
 					<indexterm><primary><varname>=</varname></primary></indexterm>
-					<para>Constructor for temporal network points of instant subtype</para>
-					<para><varname>tnpoint_inst(val npoint,t timestamptz):tnpoint_inst</varname></para>
+					<para>Constructor for temporal network points from a base value and a time value</para>
+					<para><varname>tnpoint(npoint,time,linear bool=true):tnpoint</varname></para>
+					<para>When the second argument is a period or a period set, an optional Boolean argument states whether the resulting value has linear interpolation. If the argument is not given it assumed true by default.</para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT tnpoint_inst('Npoint(1, 0.5)', '2000-01-01');
+SELECT tnpoint('Npoint(1, 0.5)', timestamptz '2000-01-01');
 -- NPoint(1,0.5)@2000-01-01
+SELECT tnpoint('Npoint(1, 0.3)', timestampset '{2000-01-01, 2000-01-03, 2000-01-05}');
+-- {NPoint(1,0.3)@2000-01-01, NPoint(1,0.3)@2000-01-03, NPoint(1,0.3)@2000-01-05}
+SELECT tnpoint('Npoint(1, 0.5)', period '[2000-01-01, 2000-01-02]');
+-- [NPoint(1,0.5)@2000-01-01, NPoint(1,0.5)@2000-01-02]
+SELECT tnpoint('Npoint(1, 0.2)', periodset '{[2000-01-01, 2000-01-03]}', false);
+-- Interp=Stepwise;{[NPoint(1,0.2)@2000-01-01, NPoint(1,0.2)@2000-01-03]}
 </programlisting>
 				</listitem>
 
 				<listitem id="tnpoint_discseq">
 					<indexterm><primary><varname>=</varname></primary></indexterm>
-					<para>Constructors for temporal network points of sequence subtype and discrete interpolation</para>
+					<para>Constructor for temporal network points of sequence subtype and discrete interpolation</para>
 					<para><varname>tnpoint_discseq(tnpoint[]):tnpoint_discseq</varname></para>
-					<para><varname>tnpoint_discseq(npoint,timestampset):tnpoint_discseq</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT tnpoint_discseq(ARRAY[tnpoint 'Npoint(1, 0.3)@2000-01-01',
   'Npoint(1, 0.5)@2000-01-02', 'Npoint(1, 0.5)@2000-01-03']);
 -- {NPoint(1,0.3)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.5)@2000-01-03}
-SELECT tnpoint_discseq('Npoint(1, 0.3)', '{2000-01-01, 2000-01-03, 2000-01-05}');
--- {NPoint(1,0.3)@2000-01-01, NPoint(1,0.3)@2000-01-03, NPoint(1,0.3)@2000-01-05}
 </programlisting>
 				</listitem>
 
-				<listitem id="tnpoint_seq">
+				<listitem id="tnpoint_contseq">
 					<indexterm><primary><varname>=</varname></primary></indexterm>
 					<para>Constructor for temporal network points of sequence subtype and linear or stepwise interpolation</para>
-					<para><varname>tnpoint_seq(tnpoint[],lower_inc boolean=true,upper_inc boolean=true,</varname></para>
+					<para><varname>tnpoint_contseq(tnpoint[],lower_inc boolean=true,upper_inc boolean=true,</varname></para>
 					<para><varname>  linear boolean=true):tnpoint_seq</varname></para>
-					<para><varname>tnpoint_seq(npoint,period,linear boolean=true):tnpoint_seq</varname></para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT tnpoint_seq(ARRAY[tnpoint 'Npoint(1, 0.2)@2000-01-01', 'Npoint(1, 0.4)@2000-01-02',
+SELECT tnpoint_contseq(ARRAY[tnpoint 'Npoint(1, 0.2)@2000-01-01', 'Npoint(1, 0.4)@2000-01-02',
   'Npoint(1, 0.5)@2000-01-03']);
 -- [NPoint(1,0.2)@2000-01-01, NPoint(1,0.4)@2000-01-02, NPoint(1,0.5)@2000-01-03]
-SELECT tnpoint_seq(npoint 'Npoint(1, 0.2)', '[2000-01-01, 2000-01-03]', false);
--- Interp=Stepwise;[NPoint(1,0.2)@2000-01-01, NPoint(1,0.2)@2000-01-03]
 </programlisting>
 				</listitem>
 
@@ -422,7 +423,6 @@ SELECT tnpoint_seq(npoint 'Npoint(1, 0.2)', '[2000-01-01, 2000-01-03]', false);
 					<indexterm><primary><varname>=</varname></primary></indexterm>
 					<para>Constructor for temporal network points of sequence set subtype</para>
 					<para><varname>tnpoint_seqset(tnpoint[]):tnpoint_seqset</varname></para>
-					<para><varname>tnpoint_seqset(npoint,periodset,boolean=true):tnpoint_seqset</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT tnpoint_seqset(ARRAY[tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02,
   Npoint(1, 0.5)@2000-01-03]', '[Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]']);
@@ -470,20 +470,24 @@ SELECT tgeompoint '[POINT(23.057077727326 28.7666335767956)@2001-01-01,
 	<sect1 id="functions_temporal_network_points">
 		<title>Functions and Operators for Temporal Network Points</title>
 
-		<para>All functions for temporal types described in <xref linkend="manipulating_temporal_types" /> can be applied for temporal network point types. Therefore, in the signatures of the functions, the notation <varname>base</varname> also represents an <varname>npoint</varname> and the notations <varname>ttype</varname>, <varname>tpoint</varname>, and <varname>tgeompoint</varname> also represent a <varname>tnpoint</varname>. Furthermore, the functions that have an argument of type <varname>geometry</varname> accept in addition an argument of type <varname>npoint</varname>. To avoid redundancy, we only present next some examples of these functions and operators for temporal network points.</para>
+		<para>All functions for temporal types described in <xref linkend="manipulating_temporal_types_p1" /> and <xref linkend="manipulating_temporal_types_p2" /> can be applied for temporal network point types. Therefore, in the signatures of the functions, the notation <varname>base</varname> also represents an <varname>npoint</varname> and the notations <varname>ttype</varname>, <varname>tpoint</varname>, and <varname>tgeompoint</varname> also represent a <varname>tnpoint</varname>. Furthermore, the functions that have an argument of type <varname>geometry</varname> accept in addition an argument of type <varname>npoint</varname>. To avoid redundancy, we only present next some examples of these functions and operators for temporal network points.</para>
 
 		<itemizedlist>
 			<listitem id="tnpoint_transform">
 				<indexterm><primary><varname>tnpoint_inst</varname></primary></indexterm>
 				<indexterm><primary><varname>tnpoint_discseq</varname></primary></indexterm>
-				<indexterm><primary><varname>tnpoint_seq</varname></primary></indexterm>
+				<indexterm><primary><varname>tnpoint_contseq</varname></primary></indexterm>
 				<indexterm><primary><varname>tnpoint_seqset</varname></primary></indexterm>
 				<para>Transform a temporal network point to another subtype</para>
 				<para><varname>tnpoint_inst(tnpoint): tnpoint_inst</varname></para>
 				<para><varname>tnpoint_discseq(tnpoint): tnpoint_discseq</varname></para>
-				<para><varname>tnpoint_seq(tnpoint): tnpoint_seq</varname></para>
+				<para><varname>tnpoint_contseq(tnpoint): tnpoint_contseq</varname></para>
 				<para><varname>tnpoint_seqset(tnpoint): tnpoint_seqset</varname></para>
 				<programlisting language="sql" xml:space="preserve">
+SELECT tnpoint_discseq(tnpoint 'NPoint(1, 0.5)@2001-01-01');
+-- {NPoint(1,0.5)@2001-01-01}
+SELECT tnpoint_contseq(tnpoint 'NPoint(1, 0.5)@2001-01-01');
+-- [NPoint(1,0.5)@2001-01-01]
 SELECT tnpoint_seqset(tnpoint 'NPoint(1, 0.5)@2001-01-01');
 -- {[NPoint(1,0.5)@2001-01-01]}
 </programlisting>
@@ -508,6 +512,16 @@ SELECT getValues(tnpoint '{[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-02
 -- {"NPoint(1,0.3)","NPoint(1,0.5)"}
 SELECT getValues(tnpoint '{[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.3)@2001-01-02)}');
 -- {"NPoint(1,0.3)"}
+</programlisting>
+			</listitem>
+
+			<listitem id="routes">
+				<indexterm><primary><varname>routes</varname></primary></indexterm>
+				<para>Get the road identifiers</para>
+				<para><varname>routes(tnpoint): bigintset</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT routes(tnpoint '{NPoint(3, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-02}');
+-- {1, 3}
 </programlisting>
 			</listitem>
 
@@ -547,7 +561,7 @@ SELECT cumulativeLength(tnpoint '{[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@200
 			<listitem id="tnpoint_speed">
 				<indexterm><primary><varname>speed</varname></primary></indexterm>
 				<para>Get the speed of the temporal network point in units per second</para>
-				<para><varname>speed({tnpoint_seq, tpoint_seqset}): tfloat_seqset</varname></para>
+				<para><varname>speed({tnpoint_seq, tnpoint_seqset}): tfloat_seqset</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT speed(tnpoint '[NPoint(1, 0.1)@2000-01-01, NPoint(1, 0.4)@2000-01-02,
   NPoint(1, 0.6)@2000-01-03]') * 3600 * 24;
@@ -834,7 +848,7 @@ SELECT tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-03]' &lt;-&gt
 				<indexterm><primary><varname>intersects</varname></primary></indexterm>
 				<indexterm><primary><varname>touches</varname></primary></indexterm>
 				<indexterm><primary><varname>dwithin</varname></primary></indexterm>
-				<para>Possible spatial relationships</para>
+				<para>Ever spatial relationships</para>
 				<para><varname>contains(geometry,tnpoint): boolean</varname></para>
 				<para><varname>disjoint({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}): boolean</varname></para>
 				<para><varname>intersects({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}): boolean</varname></para>

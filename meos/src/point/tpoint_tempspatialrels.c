@@ -168,8 +168,8 @@ tinterrel_tpointdiscseq_geom(const TSequence *seq, Datum geom, bool tinter,
       result = ! result;
     instants[i] = tinstant_make(BoolGetDatum(result), T_TBOOL, inst->t);
   }
-  TSequence *result = tsequence_make(instants, seq->count, seq->count,
-    true, true, DISCRETE, NORMALIZE_NO);
+  TSequence *result = tsequence_make(instants, seq->count, true, true,
+    DISCRETE, NORMALIZE_NO);
   pfree_array((void **) instants, seq->count);
   return result;
 }
@@ -212,7 +212,7 @@ tinterrel_tpointseq_step_geom(const TSequence *seq, Datum geom, bool tinter,
       instants[l++] = tinstant_make(datum_res, T_TBOOL, inst2->t);
     else
       upper_inc1 = true;
-    result[k++] = tsequence_make((const TInstant **) instants, l, l,
+    result[k++] = tsequence_make((const TInstant **) instants, l,
       lower_inc1, upper_inc1, STEPWISE, NORMALIZE_NO);
     pfree(instants[0]);
     if (inst2 != NULL)
@@ -235,8 +235,8 @@ tinterrel_tpointseq_step_geom(const TSequence *seq, Datum geom, bool tinter,
  * @pre The temporal point is simple, that is, non self-intersecting
  */
 static TSequence **
-tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom, const STBOX *box,
-  bool tinter, int *count)
+tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom,
+  const STBox *box, bool tinter, int *count)
 {
   /* The temporal sequence has at least 2 instants since
    * (1) the instantaneous full sequence test is done in the calling function
@@ -249,7 +249,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom, const STBOX *b
   Datum datum_no = tinter ? BoolGetDatum(false) : BoolGetDatum(true);
 
   /* Bounding box test */
-  STBOX *box1 = TSEQUENCE_BBOX_PTR(seq);
+  STBox *box1 = TSEQUENCE_BBOX_PTR(seq);
   if (! overlaps_stbox_stbox(box1, box))
   {
     result = palloc(sizeof(TSequence *));
@@ -302,13 +302,13 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom, const STBOX *b
   }
   PeriodSet *ps;
   if (countper == 1)
-    ps = minus_period_period(&seq->period, periods[0]);
+    ps = minus_span_span(&seq->period, periods[0]);
   else
   {
     /* It is necessary to sort the periods */
     spanarr_sort(periods, countper);
-    PeriodSet *ps1 = periodset_make((const Period **) periods, countper, NORMALIZE);
-    ps = minus_period_periodset(&seq->period, ps1);
+    PeriodSet *ps1 = spanset_make((const Period **) periods, countper, NORMALIZE);
+    ps = minus_span_spanset(&seq->period, ps1);
     pfree(ps1);
   }
   int newcount = countper;
@@ -322,7 +322,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom, const STBOX *b
   {
     for (int i = 0; i < ps->count; i++)
     {
-      const Period *p = periodset_per_n(ps, i);
+      const Period *p = spanset_sp_n(ps, i);
       result[i + countper] = tsequence_from_base_time(datum_no, T_TBOOL, p,
         STEPWISE);
     }
@@ -348,7 +348,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom, const STBOX *b
  * @param[out] count Number of elements in the output array
  */
 static TSequence **
-tinterrel_tpointcontseq_geom1(const TSequence *seq, Datum geom, const STBOX *box,
+tinterrel_tpointcontseq_geom1(const TSequence *seq, Datum geom, const STBox *box,
   bool tinter, Datum (*func)(Datum, Datum), int *count)
 {
   /* Instantaneous sequence */
@@ -399,7 +399,7 @@ tinterrel_tpointcontseq_geom1(const TSequence *seq, Datum geom, const STBOX *box
  * @param[in] tinter True when computing tintersects, false for tdisjoint
  */
 TSequenceSet *
-tinterrel_tpointcontseq_geom(const TSequence *seq, Datum geom, const STBOX *box,
+tinterrel_tpointcontseq_geom(const TSequence *seq, Datum geom, const STBox *box,
   bool tinter, Datum (*func)(Datum, Datum))
 {
   /* Split the temporal point in an array of non self-intersecting
@@ -421,7 +421,7 @@ tinterrel_tpointcontseq_geom(const TSequence *seq, Datum geom, const STBOX *box,
  */
 TSequenceSet *
 tinterrel_tpointseqset_geom(const TSequenceSet *ss, Datum geom,
-  const STBOX *box, bool tinter, Datum (*func)(Datum, Datum))
+  const STBox *box, bool tinter, Datum (*func)(Datum, Datum))
 {
   /* Singleton sequence set */
   if (ss->count == 1)
@@ -469,7 +469,7 @@ tinterrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
   Datum datum_no = tinter ? BoolGetDatum(false) : BoolGetDatum(true);
 
   /* Bounding box test */
-  STBOX box1, box2;
+  STBox box1, box2;
   temporal_set_bbox(temp, &box1);
   /* Non-empty geometries have a bounding box */
   geo_set_stbox(gs, &box2);
@@ -767,7 +767,7 @@ tdwithin_add_solutions(int solutions, TimestampTz lower, TimestampTz upper,
   {
     tinstant_set(instants[0], datum_false, lower);
     tinstant_set(instants[1], datum_false, upper);
-    result[k++] = tsequence_make((const TInstant **) instants, 2, 2,
+    result[k++] = tsequence_make((const TInstant **) instants, 2,
       lower_inc, upper_inc1, STEPWISE, NORMALIZE_NO);
   }
   /*
@@ -787,13 +787,13 @@ tdwithin_add_solutions(int solutions, TimestampTz lower, TimestampTz upper,
     tinstant_set(instants[j++], datum_true, t1);
     if (solutions == 2 && t1 != t2)
       tinstant_set(instants[j++], datum_true, t2);
-    result[k++] = tsequence_make((const TInstant **) instants, j, j,
+    result[k++] = tsequence_make((const TInstant **) instants, j,
       lower_inc, (t2 != upper) ? true : upper_inc1, STEPWISE, NORMALIZE_NO);
     if (t2 != upper)
     {
       tinstant_set(instants[0], datum_false, t2);
       tinstant_set(instants[1], datum_false, upper);
-      result[k++] = tsequence_make((const TInstant **) instants, 2, 2, false,
+      result[k++] = tsequence_make((const TInstant **) instants, 2, false,
         upper_inc1, STEPWISE, NORMALIZE_NO);
     }
   }
@@ -866,7 +866,7 @@ tdwithin_tpointseq_tpointseq2(const TSequence *seq1, const TSequence *seq2,
       }
       else
         tinstant_set(instants[1], value, upper);
-      result[k++] = tsequence_make((const TInstant **) instants, 2, 2,
+      result[k++] = tsequence_make((const TInstant **) instants, 2,
         lower_inc, upper_inc, STEPWISE, NORMALIZE_NO);
     }
     /* General case */
@@ -1010,7 +1010,7 @@ tdwithin_tpointseq_point1(const TSequence *seq, Datum point, Datum dist,
       }
       else
         tinstant_set(instants[1], value, upper);
-      result[k++] = tsequence_make((const TInstant **) instants, 2, 2,
+      result[k++] = tsequence_make((const TInstant **) instants, 2,
         lower_inc, upper_inc, STEPWISE, NORMALIZE_NO);
     }
     /* General case */

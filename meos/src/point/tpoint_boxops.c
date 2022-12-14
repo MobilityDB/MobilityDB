@@ -31,7 +31,7 @@
  * @brief Bounding box operators for temporal points.
  *
  * These operators test the bounding boxes of temporal points, which are an
- * `STBOX`, where the *x*, *y*, and optional *z* coordinates are for the space
+ * `STBox`, where the *x*, *y*, and optional *z* coordinates are for the space
  * (value) dimension and the *t* coordinate is for the time dimension.
  * The following operators are defined: `overlaps`, `contains`, `contained`,
  * `same`.
@@ -66,7 +66,7 @@ extern int edge_calculate_gbox(const POINT3D *A1, const POINT3D *A2, GBOX *gbox)
  * Set the spatiotemporal box from a temporal instant point
  */
 void
-tpointinst_set_stbox(const TInstant *inst, STBOX *box)
+tpointinst_set_stbox(const TInstant *inst, STBox *box)
 {
   GSERIALIZED *gs = DatumGetGserializedP(tinstant_value(inst));
   /* Non-empty geometries have a bounding box
@@ -86,17 +86,69 @@ tpointinst_set_stbox(const TInstant *inst, STBOX *box)
  * @note Temporal instant values do not have a precomputed bounding box
  */
 void
-tgeompointinstarr_set_stbox(const TInstant **instants, int count, STBOX *box)
+tgeompointinstarr_set_stbox(const TInstant **instants, int count, STBox *box)
 {
   tpointinst_set_stbox(instants[0], box);
   for (int i = 1; i < count; i++)
   {
-    STBOX box1;
+    STBox box1;
     tpointinst_set_stbox(instants[i], &box1);
     stbox_expand(&box1, box);
   }
   return;
 }
+
+#if MEOS
+/**
+ * Expand the bounding box of a temporal geometric point sequence with an instant
+ *
+ * @param[in] seq Temporal sequence
+ * @param[in] inst Temporal instant
+ */
+void
+tgeompointseq_expand_stbox(TSequence *seq, const TInstant *inst)
+{
+  STBox box;
+  tpointinst_set_stbox(inst, &box);
+  stbox_expand(&box, (STBox *) TSEQUENCE_BBOX_PTR(seq));
+  return;
+}
+
+/**
+ * Expand the bounding box of a temporal geographic point sequence with an instant
+ *
+ * @param[in] seq Temporal sequence
+ * @param[in] inst Temporal instant
+ */
+void
+tgeogpointseq_expand_stbox(TSequence *seq, const TInstant *inst)
+{
+  /* Compute the bounding box of the end point of the sequence and the instant */
+  POINT3D A1, A2;
+  GBOX edge_gbox;
+  gbox_init(&edge_gbox);
+  FLAGS_SET_Z(edge_gbox.flags, 1);
+  FLAGS_SET_M(edge_gbox.flags, 0);
+  FLAGS_SET_GEODETIC(edge_gbox.flags, 1);
+  const TInstant *last = tsequence_inst_n(seq, seq->count - 1);
+  const POINT2D *p1 = datum_point2d_p(tinstant_value(last));
+  const POINT2D *p2 = datum_point2d_p(tinstant_value(inst));
+  ll2cart(p1, &A1);
+  ll2cart(p2, &A2);
+  edge_calculate_gbox(&A1, &A2, &edge_gbox);
+  bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
+  int32 srid = tpointseq_srid(seq);
+  Period period;
+  span_set(last->t, inst->t, true, true, T_TIMESTAMPTZ, &period);
+  STBox box;
+  stbox_set(true, hasz, true, srid, edge_gbox.xmin, edge_gbox.xmax,
+    edge_gbox.ymin, edge_gbox.ymax, edge_gbox.zmin, edge_gbox.zmax,
+    &period, &box);
+  /* Expand the bounding box of the sequence with the last edge */
+  stbox_expand(&box, (STBox *) TSEQUENCE_BBOX_PTR(seq));
+  return;
+}
+#endif /* MEOS */
 
 /**
  * Set the GBOX bounding box from an array of temporal geographic point instants
@@ -125,6 +177,34 @@ tgeogpointinstarr_set_gbox(const TInstant **instants, int count,
   return;
 }
 
+#if MEOS
+/**
+ * Set the GBOX bounding box from a temporal geographic point sequence
+ *
+ * @param[in] seq Temporal point
+ * @param[out] box Resulting bounding box
+ */
+static void
+tgeogpointseq_set_gbox(const TSequence *seq, GBOX *box)
+{
+  interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
+  LWPOINT **points = palloc(sizeof(LWPOINT *) * seq->count);
+  for (int i = 0; i < seq->count; i++)
+  {
+    const TInstant *inst = tsequence_inst_n(seq, i);
+    GSERIALIZED *gs = DatumGetGserializedP(tinstant_value(inst));
+    points[i] = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
+  }
+  LWGEOM *lwgeom = lwpointarr_make_trajectory((LWGEOM **) points, seq->count,
+    interp);
+  lwgeom_calculate_gbox_geodetic(lwgeom, box);
+
+  lwgeom_free(lwgeom);
+  /* We cannot pfree(points); */
+  return;
+}
+#endif /* MEOS */
+
 /**
  * Set the spatiotemporal box from an array of temporal instant geography point
  *
@@ -143,7 +223,7 @@ tgeogpointinstarr_set_gbox(const TInstant **instants, int count,
  */
 void
 tgeogpointinstarr_set_stbox(const TInstant **instants, int count,
-  interpType interp, STBOX *box)
+  interpType interp, STBox *box)
 {
   GBOX gbox;
   gbox_init(&gbox);
@@ -156,10 +236,40 @@ tgeogpointinstarr_set_stbox(const TInstant **instants, int count,
   Period period;
   span_set(instants[0]->t, instants[count - 1]->t, true, true, T_TIMESTAMPTZ,
     &period);
-  stbox_set(&period, true, hasz, true, srid, gbox.xmin, gbox.xmax,
-    gbox.ymin, gbox.ymax, gbox.zmin, gbox.zmax, box);
+  stbox_set(true, hasz, true, srid, gbox.xmin, gbox.xmax,
+    gbox.ymin, gbox.ymax, gbox.zmin, gbox.zmax, &period, box);
   return;
 }
+
+#if MEOS
+/**
+ * Set the spatiotemporal box from an array of temporal instant geography point
+ *
+ * @param[in] seq Temporal point
+ * @param[out] box Spatiotemporal box
+ * @note In the current PostGIS version the difference when computing the
+ * gbox for a MultiPoint and a Linestring is around 2e-7
+ */
+void
+tgeogpointseq_set_stbox(const TSequence *seq, STBox *box)
+{
+  GBOX gbox;
+  gbox_init(&gbox);
+  FLAGS_SET_Z(gbox.flags, 1);
+  FLAGS_SET_M(gbox.flags, 0);
+  FLAGS_SET_GEODETIC(gbox.flags, 1);
+  tgeogpointseq_set_gbox(seq, &gbox);
+  bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
+  int32 srid = tpointseq_srid(seq);
+  Period period;
+  span_set(tsequence_inst_n(seq, 0)->t,
+    tsequence_inst_n(seq, seq->count - 1)->t, true, true, T_TIMESTAMPTZ,
+    &period);
+  stbox_set(true, hasz, true, srid, gbox.xmin, gbox.xmax, gbox.ymin,
+    gbox.ymax, gbox.zmin, gbox.zmax, &period, box);
+  return;
+}
+#endif /* MEOS */
 
 /**
  * Set the spatiotemporal box from an array of temporal sequence points
@@ -169,12 +279,12 @@ tgeogpointinstarr_set_stbox(const TInstant **instants, int count,
  * @param[out] box Spatiotemporal box
  */
 void
-tpointseqarr_set_stbox(const TSequence **sequences, int count, STBOX *box)
+tpointseqarr_set_stbox(const TSequence **sequences, int count, STBox *box)
 {
-  memcpy(box, TSEQUENCE_BBOX_PTR(sequences[0]), sizeof(STBOX));
+  memcpy(box, TSEQUENCE_BBOX_PTR(sequences[0]), sizeof(STBox));
   for (int i = 1; i < count; i++)
   {
-    const STBOX *box1 = TSEQUENCE_BBOX_PTR(sequences[i]);
+    const STBox *box1 = TSEQUENCE_BBOX_PTR(sequences[i]);
     stbox_expand(box1, box);
   }
   return;
@@ -195,7 +305,7 @@ tpointseqarr_set_stbox(const TSequence **sequences, int count, STBOX *box)
  * @return Number of elements in the array
  */
 static int
-tpointseq_stboxes1(const TSequence *seq, STBOX *result)
+tpointseq_stboxes1(const TSequence *seq, STBox *result)
 {
   assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
   const TInstant *inst1;
@@ -214,7 +324,7 @@ tpointseq_stboxes1(const TSequence *seq, STBOX *result)
   {
     tpointinst_set_stbox(inst1, &result[i]);
     const TInstant *inst2 = tsequence_inst_n(seq, i + 1);
-    STBOX box;
+    STBox box;
     tpointinst_set_stbox(inst2, &box);
     stbox_expand(&box, &result[i]);
     inst1 = inst2;
@@ -223,37 +333,37 @@ tpointseq_stboxes1(const TSequence *seq, STBOX *result)
 }
 
 /**
- * @ingroup libmeos_int_temporal_spatial_accessor
+ * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return an array of spatiotemporal boxes from the segments of a
  * temporal sequence point.
  *
  * @param[in] seq Temporal value
  * @param[out] count Number of elements in the output array
  */
-STBOX *
+STBox *
 tpointseq_stboxes(const TSequence *seq, int *count)
 {
   assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
   int newcount = seq->count == 1 ? 1 : seq->count - 1;
-  STBOX *result = palloc(sizeof(STBOX) * newcount);
+  STBox *result = palloc(sizeof(STBox) * newcount);
   tpointseq_stboxes1(seq, result);
   *count = newcount;
   return result;
 }
 
 /**
- * @ingroup libmeos_int_temporal_spatial_accessor
+ * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return an array of spatiotemporal boxes from the segments of a
  * temporal sequence set point.
  *
  * @param[in] ss Temporal value
  * @param[out] count Number of elements in the output array
  */
-STBOX *
+STBox *
 tpointseqset_stboxes(const TSequenceSet *ss, int *count)
 {
   assert(MOBDB_FLAGS_GET_LINEAR(ss->flags));
-  STBOX *result = palloc(sizeof(STBOX) * ss->totalcount);
+  STBox *result = palloc(sizeof(STBox) * ss->totalcount);
   int k = 0;
   for (int i = 0; i < ss->count; i++)
   {
@@ -269,10 +379,10 @@ tpointseqset_stboxes(const TSequenceSet *ss, int *count)
  * @brief Return an array of spatiotemporal boxes from a temporal point
  * @sqlfunc stboxes()
  */
-STBOX *
+STBox *
 tpoint_stboxes(const Temporal *temp, int *count)
 {
-  STBOX *result = NULL;
+  STBox *result = NULL;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT || MOBDB_FLAGS_GET_DISCRETE(temp->flags))
     ;
@@ -298,11 +408,11 @@ tpoint_stboxes(const Temporal *temp, int *count)
  */
 int
 boxop_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
-  bool (*func)(const STBOX *, const STBOX *), bool invert)
+  bool (*func)(const STBox *, const STBox *), bool invert)
 {
   if (gserialized_is_empty(gs))
     return -1;
-  STBOX box1, box2;
+  STBox box1, box2;
   temporal_set_bbox(temp, &box1);
   geo_set_stbox(gs, &box2);
   bool result = invert ? func(&box2, &box1) : func(&box1, &box2);
@@ -319,10 +429,10 @@ boxop_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
  * @param[in] invert True if the geometry is the first argument of the
  */
 Datum
-boxop_tpoint_stbox(const Temporal *temp, const STBOX *box,
-  bool (*func)(const STBOX *, const STBOX *), bool invert)
+boxop_tpoint_stbox(const Temporal *temp, const STBox *box,
+  bool (*func)(const STBox *, const STBox *), bool invert)
 {
-  STBOX box1;
+  STBox box1;
   temporal_set_bbox(temp, &box1);
   bool result = invert ? func(box, &box1) : func(&box1, box);
   return result;
@@ -336,9 +446,9 @@ boxop_tpoint_stbox(const Temporal *temp, const STBOX *box,
  */
 bool
 boxop_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
-  bool (*func)(const STBOX *, const STBOX *))
+  bool (*func)(const STBox *, const STBox *))
 {
-  STBOX box1, box2;
+  STBox box1, box2;
   temporal_set_bbox(temp1, &box1);
   temporal_set_bbox(temp2, &box2);
   bool result = func(&box1, &box2);

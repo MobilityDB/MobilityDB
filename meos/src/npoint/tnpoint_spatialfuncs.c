@@ -53,10 +53,10 @@
  *****************************************************************************/
 
 /**
- * Ensure that a temporal network point and a STBOX have the same SRID
+ * Ensure that a temporal network point and a STBox have the same SRID
  */
 void
-ensure_same_srid_tnpoint_stbox(const Temporal *temp, const STBOX *box)
+ensure_same_srid_tnpoint_stbox(const Temporal *temp, const STBox *box)
 {
   if (MOBDB_FLAGS_GET_X(box->flags) &&
     tnpoint_srid(temp) != box->srid)
@@ -412,7 +412,7 @@ tnpoint_length(const Temporal *temp)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_int_temporal_spatial_accessor
+ * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the cumulative length traversed by a temporal point.
  * @pre The sequence has linear interpolation
  * @sqlfunc cumulativeLength()
@@ -449,8 +449,8 @@ tnpointseq_cumulative_length(const TSequence *seq, double prevlength)
     instants[i] = tinstant_make(Float8GetDatum(length), T_TFLOAT, inst2->t);
     np1 = np2;
   }
-  return tsequence_make_free(instants, seq->count, seq->count,
-    seq->period.lower_inc, seq->period.upper_inc, LINEAR, NORMALIZE);
+  return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
+    seq->period.upper_inc, LINEAR, NORMALIZE);
 }
 
 /**
@@ -536,7 +536,7 @@ tnpointseq_speed(const TSequence *seq)
       inst2->t);
   }
   /* The resulting sequence has stepwise interpolation */
-  TSequence *result = tsequence_make_free(instants, seq->count, seq->count,
+  TSequence *result = tsequence_make_free(instants, seq->count,
     seq->period.lower_inc, seq->period.upper_inc, STEPWISE, true);
   return result;
 }
@@ -662,7 +662,7 @@ tsequence_assemble_instants(TInstant ***instants, int *countinsts,
   Datum last_value = tinstant_value(allinstants[n - 1]);
   allinstants[n++] = tinstant_make(last_value, T_TFLOAT, last_time);
   /* Resulting sequence has stepwise interpolation */
-  return tsequence_make_free(allinstants, n, n, lower_inc, true, STEPWISE, true);
+  return tsequence_make_free(allinstants, n, lower_inc, true, STEPWISE, true);
 }
 
 /**

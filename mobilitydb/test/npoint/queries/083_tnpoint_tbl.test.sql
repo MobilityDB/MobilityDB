@@ -42,14 +42,14 @@ DROP TABLE tbl_tnpoint_tmp;
 --  Constructors
 -------------------------------------------------------------------------------
 
-SELECT MAX(getPosition(startValue(tnpoint_inst(t1.np, t2.t)))) FROM tbl_npoint t1, tbl_timestamptz t2;
+SELECT MAX(getPosition(startValue(tnpoint(t1.np, t2.t)))) FROM tbl_npoint t1, tbl_timestamptz t2;
 
 WITH test(temp) as (
 SELECT tnpoint_discseq(array_agg(t.inst ORDER BY getTimestamp(t.inst))) FROM tbl_tnpoint_inst t GROUP BY k%10 )
 SELECT MAX(getPosition(startValue(temp))) FROM test;
 
 WITH test(temp) as (
-SELECT tnpoint_seq(array_agg(t.inst ORDER BY getTimestamp(t.inst))) FROM tbl_tnpoint_inst t GROUP BY route(t.inst) )
+SELECT tnpoint_contseq(array_agg(t.inst ORDER BY getTimestamp(t.inst))) FROM tbl_tnpoint_inst t GROUP BY route(t.inst) )
 SELECT MAX(getPosition(startValue(temp))) FROM test;
 
 WITH test(temp) as (
@@ -70,30 +70,30 @@ DROP TABLE tbl_tnpointinst_test;
 --  Transformation functions
 -------------------------------------------------------------------------------
 
-SELECT DISTINCT tempSubtype(tnpoint_inst(inst)) FROM tbl_tnpoint_inst;
+SELECT DISTINCT tempSubtype(tnpoint(inst)) FROM tbl_tnpoint_inst;
 SELECT DISTINCT tempSubtype(tnpoint_discseq(inst)) FROM tbl_tnpoint_inst;
-SELECT DISTINCT tempSubtype(tnpoint_seq(inst)) FROM tbl_tnpoint_inst;
+SELECT DISTINCT tempSubtype(tnpoint_contseq(inst)) FROM tbl_tnpoint_inst;
 SELECT DISTINCT tempSubtype(tnpoint_seqset(inst)) FROM tbl_tnpoint_inst;
 
 -------------------------------------------------------------------------------
 
-SELECT DISTINCT tempSubtype(tnpoint_inst(ti)) FROM tbl_tnpoint_discseq WHERE numInstants(ti) = 1;
+SELECT DISTINCT tempSubtype(tnpoint(ti)) FROM tbl_tnpoint_discseq WHERE numInstants(ti) = 1;
 SELECT DISTINCT tempSubtype(tnpoint_discseq(ti)) FROM tbl_tnpoint_discseq;
-SELECT DISTINCT tempSubtype(tnpoint_seq(ti)) FROM tbl_tnpoint_discseq WHERE numInstants(ti) = 1;
+SELECT DISTINCT tempSubtype(tnpoint_contseq(ti)) FROM tbl_tnpoint_discseq WHERE numInstants(ti) = 1;
 SELECT DISTINCT tempSubtype(tnpoint_seqset(ti)) FROM tbl_tnpoint_discseq;
 
 -------------------------------------------------------------------------------
 
-SELECT DISTINCT tempSubtype(tnpoint_inst(seq)) FROM tbl_tnpoint_seq WHERE numInstants(seq) = 1;
+SELECT DISTINCT tempSubtype(tnpoint(seq)) FROM tbl_tnpoint_seq WHERE numInstants(seq) = 1;
 SELECT DISTINCT tempSubtype(tnpoint_discseq(seq)) FROM tbl_tnpoint_seq WHERE numInstants(seq) = 1;
-SELECT DISTINCT tempSubtype(tnpoint_seq(seq)) FROM tbl_tnpoint_seq;
+SELECT DISTINCT tempSubtype(tnpoint_contseq(seq)) FROM tbl_tnpoint_seq;
 SELECT DISTINCT tempSubtype(tnpoint_seqset(seq)) FROM tbl_tnpoint_seq;
 
 -------------------------------------------------------------------------------
 
-SELECT DISTINCT tempSubtype(tnpoint_inst(ts)) FROM tbl_tnpoint_seqset WHERE numInstants(ts) = 1;
+SELECT DISTINCT tempSubtype(tnpoint(ts)) FROM tbl_tnpoint_seqset WHERE numInstants(ts) = 1;
 SELECT DISTINCT tempSubtype(tnpoint_discseq(ts)) FROM tbl_tnpoint_seqset WHERE duration(ts) = '00:00:00';
-SELECT DISTINCT tempSubtype(tnpoint_seq(ts)) FROM tbl_tnpoint_seqset WHERE numSequences(ts) = 1;
+SELECT DISTINCT tempSubtype(tnpoint_contseq(ts)) FROM tbl_tnpoint_seqset WHERE numSequences(ts) = 1;
 SELECT DISTINCT tempSubtype(tnpoint_seqset(ts)) FROM tbl_tnpoint_seqset;
 
 -------------------------------------------------------------------------------
@@ -116,7 +116,7 @@ SELECT COUNT(*) FROM tbl_tnpoint WHERE round(temp, 7) = round((temp::tgeompoint)
 
 SELECT DISTINCT tempSubtype(temp) FROM tbl_tnpoint ORDER BY 1;
 
-SELECT MAX(memSize(temp)) FROM tbl_tnpoint;
+SELECT MAX(memorySize(temp)) FROM tbl_tnpoint;
 
 /*
 SELECT stbox(temp) FROM tbl_tnpoint;
@@ -130,7 +130,7 @@ SELECT MAX(array_length(positions(temp), 1)) FROM tbl_tnpoint;
 
 SELECT MAX(route(inst)) FROM tbl_tnpoint_inst;
 
-SELECT MAX(array_length(routes(temp), 1)) FROM tbl_tnpoint;
+SELECT MAX(numValues(routes(temp))) FROM tbl_tnpoint;
 
 SELECT MAX(timespan(getTime(temp))) FROM tbl_tnpoint;
 
@@ -201,43 +201,50 @@ SELECT COUNT(*) FROM tbl_tnpoint,
 WHERE minusValues(temp, valuearr) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz
-WHERE atTimestamp(temp, t) IS NOT NULL;
+WHERE atTime(temp, t) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz
-WHERE minusTimestamp(temp, t) IS NOT NULL;
+WHERE minusTime(temp, t) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz
 WHERE valueAtTimestamp(temp, t) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestampset
-WHERE atTimestampSet(temp, ts) IS NOT NULL;
+WHERE atTime(temp, ts) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestampset
-WHERE minusTimestampSet(temp, ts) IS NOT NULL;
+WHERE minusTime(temp, ts) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_period
-WHERE atPeriod(temp, p) IS NOT NULL;
+WHERE atTime(temp, p) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_period
-WHERE minusPeriod(temp, p) IS NOT NULL;
+WHERE minusTime(temp, p) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_periodset
-WHERE atPeriodSet(temp, ps) IS NOT NULL;
+WHERE atTime(temp, ps) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_periodset
-WHERE minusPeriodSet(temp, ps) IS NOT NULL;
+WHERE minusTime(temp, ps) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz
-WHERE intersectsTimestamp(temp, t) IS NOT NULL;
+WHERE overlapsTime(temp, t) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestampset
-WHERE intersectsTimestampSet(temp, ts) IS NOT NULL;
+WHERE overlapsTime(temp, ts) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_period
-WHERE intersectsPeriod(temp, p) IS NOT NULL;
+WHERE overlapsTime(temp, p) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_periodset
-WHERE intersectsPeriodSet(temp, ps) IS NOT NULL;
+WHERE overlapsTime(temp, ps) IS NOT NULL;
+
+-------------------------------------------------------------------------------
+-- Modification functions
+-------------------------------------------------------------------------------
+
+-- Update calls the insert function after calling the minusTime function
+-- SELECT SUM(numInstants(update(t1.temp, t2.temp))) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.k < t2.k;
 
 -------------------------------------------------------------------------------
 --  Comparison functions and B-tree indexing
@@ -273,13 +280,13 @@ CREATE INDEX tbl_tnpoint_rtree_idx ON tbl_tnpoint USING gist(temp);
 
 -- SELECT COUNT(*) FROM tbl_tnpoint WHERE temp %= 'NPoint(1, 0.1)';
 
-SELECT COUNT(*) FROM tbl_tnpoint WHERE intersectsTimestamp(temp, '2001-06-01');
+SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, timestamptz '2001-06-01');
 
-SELECT COUNT(*) FROM tbl_tnpoint WHERE intersectsTimestampSet(temp, '{2001-06-01, 2001-07-01}');
+SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, timestampset '{2001-06-01, 2001-07-01}');
 
-SELECT COUNT(*) FROM tbl_tnpoint WHERE intersectsPeriod(temp, '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, period '[2001-06-01, 2001-07-01]');
 
-SELECT COUNT(*) FROM tbl_tnpoint WHERE intersectsPeriodSet(temp, '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
 
 DROP INDEX tbl_tnpoint_rtree_idx;
 
@@ -293,13 +300,13 @@ CREATE INDEX tbl_tnpoint_quadtree_idx ON tbl_tnpoint USING spgist(temp);
 
 -- SELECT COUNT(*) FROM tbl_tnpoint WHERE temp %= 'NPoint(1, 0.1)';
 
-SELECT COUNT(*) FROM tbl_tnpoint WHERE intersectsTimestamp(temp, '2001-06-01');
+SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, timestamptz '2001-06-01');
 
-SELECT COUNT(*) FROM tbl_tnpoint WHERE intersectsTimestampSet(temp, '{2001-06-01, 2001-07-01}');
+SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, timestampset '{2001-06-01, 2001-07-01}');
 
-SELECT COUNT(*) FROM tbl_tnpoint WHERE intersectsPeriod(temp, '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, period '[2001-06-01, 2001-07-01]');
 
-SELECT COUNT(*) FROM tbl_tnpoint WHERE intersectsPeriodSet(temp, '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
 
 DROP INDEX tbl_tnpoint_quadtree_idx;
 

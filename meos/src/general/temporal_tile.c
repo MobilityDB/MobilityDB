@@ -59,6 +59,7 @@
  * @param[in] lower Start value of the bucket
  * @param[in] size Size of the buckets
  * @param[in] basetype Type of the arguments
+ * @param[out] span Output span
  */
 void
 span_bucket_set(Datum lower, Datum size, mobdbType basetype, Span *span)
@@ -88,7 +89,6 @@ span_bucket_get(Datum lower, Datum size, mobdbType basetype)
 /**
  * Create the initial state that persists across multiple calls of the function
  *
- * @param[in] temp Temporal number to split
  * @param[in] s Bounds for generating the bucket list
  * @param[in] size Size of the buckets
  * @param[in] origin Origin of the buckets
@@ -196,7 +196,7 @@ int_bucket(int value, int size, int origin)
  *
  * @param[in] value Input value
  * @param[in] size Size of the buckets
- * @param[in] offset Origin of the buckets
+ * @param[in] origin Origin of the buckets
  */
 double
 float_bucket(double value, double size, double origin)
@@ -236,7 +236,7 @@ interval_units(const Interval *interval)
 /**
  * Return the initial timestamp of the bucket in which a timestamp falls.
  *
- * @param[in] timestamp Input timestamp
+ * @param[in] t Input timestamp
  * @param[in] size Size of the time buckets in PostgreSQL time units
  * @param[in] origin Origin of the buckets
  */
@@ -283,7 +283,7 @@ timestamptz_bucket1(TimestampTz t, int64 size, TimestampTz origin)
  * @ingroup libmeos_temporal_tiling
  * @brief Return the initial timestamp of the bucket in which a timestamp falls.
  *
- * @param[in] timestamp Input timestamp
+ * @param[in] t Input timestamp
  * @param[in] duration Interval defining the size of the buckets
  * @param[in] origin Origin of the buckets
  */
@@ -330,7 +330,7 @@ datum_bucket(Datum value, Datum size, Datum origin, mobdbType basetype)
  * @param[in] bounds Input span to split
  * @param[in] size Bucket size
  * @param[in] origin Origin of the buckets
- * @param[out] newcount Number of elements in the output array
+ * @param[out] count Number of elements in the output array
  */
 
 Span *
@@ -406,7 +406,7 @@ period_bucket_list(const Span *bounds, const Interval *duration,
 #endif /* MEOS */
 
 /*****************************************************************************
- * TBOX tile functions
+ * TBox tile functions
  *****************************************************************************/
 
 /**
@@ -416,10 +416,11 @@ period_bucket_list(const Span *bounds, const Interval *duration,
  * @param[in] t Start timestamp of the tile to output
  * @param[in] xsize Value size of the tiles
  * @param[in] tunits Time size of the tiles in PostgreSQL time units
+ * @param[out] box Output box
  */
 void
 tbox_tile_get(double value, TimestampTz t, double xsize, int64 tunits,
-  TBOX *box)
+  TBox *box)
 {
   Datum xmin = Float8GetDatum(value);
   Datum xmax = Float8GetDatum(value + xsize);
@@ -438,14 +439,14 @@ tbox_tile_get(double value, TimestampTz t, double xsize, int64 tunits,
  *
  * @param[in] box Bounds of the multidimensional grid
  * @param[in] xsize Value size of the tiles
- * @param[in] tunits Time size of the tiles in PostgreSQL time units
+ * @param[in] duration Interval defining the time size of the tile
  * @param[in] xorigin Value origin of the tiles
  * @param[in] torigin Time origin of the tiles
  *
  * @pre Both xsize and tunits must be greater than 0.
  */
 TboxGridState *
-tbox_tile_state_make(const TBOX *box, double xsize, const Interval *duration,
+tbox_tile_state_make(const TBox *box, double xsize, const Interval *duration,
   double xorigin, TimestampTz torigin)
 {
   int64 tunits = interval_units(duration);
@@ -461,8 +462,11 @@ tbox_tile_state_make(const TBOX *box, double xsize, const Interval *duration,
   {
     state->box.span.lower = Float8GetDatum(float_bucket(
       DatumGetFloat8(box->span.lower), xsize, xorigin));
-    state->box.span.upper = Float8GetDatum(float_bucket(
-      DatumGetFloat8(box->span.upper), xsize, xorigin));
+    double upper = DatumGetFloat8(box->span.upper);
+    double upper_bucket = float_bucket(upper, xsize, xorigin);
+    if (upper == upper_bucket && ! box->span.upper_inc)
+      upper_bucket -= xsize;
+    state->box.span.upper = Float8GetDatum(upper_bucket);
   }
   if (tunits)
   {
@@ -508,16 +512,18 @@ tbox_tile_state_next(TboxGridState *state)
 
 #if MEOS
 /**
- * @brief Return the bucket list from a span.
+ * @brief Return the tile list from a TBox.
  *
  * @param[in] bounds Input span to split
- * @param[in] size Bucket size
- * @param[in] origin Origin of the buckets
- * @param[out] newcount Number of elements in the output array
+ * @param[in] xsize Value size of the tiles
+ * @param[in] duration Interval defining the temporal size of the tiles
+ * @param[in] xorigin Value origin of the tiles
+ * @param[in] torigin Time origin of the tile
+ * @param[out] rows,columns Number of rows and columns in the output array
  */
 
-TBOX *
-tbox_tile_list(const TBOX *bounds, double xsize, const Interval *duration,
+TBox *
+tbox_tile_list(const TBox *bounds, double xsize, const Interval *duration,
   double xorigin, TimestampTz torigin, int *rows, int *columns)
 {
   // TODO: generalize for intspan
@@ -530,7 +536,7 @@ tbox_tile_list(const TBOX *bounds, double xsize, const Interval *duration,
     DatumGetFloat8(bounds->span.lower)) / xsize);
   int no_cols = ceil((DatumGetTimestampTz(bounds->period.upper) -
     DatumGetTimestampTz(bounds->period.lower)) / tsize);
-  TBOX *result = palloc0(sizeof(TBOX) * no_rows * no_cols);
+  TBox *result = palloc0(sizeof(TBox) * no_rows * no_cols);
   for (int i = 0; i < no_rows * no_cols; i++)
   {
     tbox_tile_get(state->value, state->t, state->xsize, state->tunits,
@@ -547,12 +553,14 @@ tbox_tile_list(const TBOX *bounds, double xsize, const Interval *duration,
  * @brief Return the grid list from a span and a period.
  *
  * @param[in] bounds Input value span to split
+ * @param[in] xsize Value size of the tiles
  * @param[in] duration Interval defining the size of the buckets
- * @param[in] origin Origin of the buckets
- * @param[out] newcount Number of elements in the output array
+ * @param[in] xorigin Value origin of the tiles
+ * @param[in] torigin Time origin of the tiles
+ * @param[out] rows,columns Number of rows and columns in the output array
  */
-TBOX *
-floatspan_period_tile_list(const TBOX *bounds, double xsize,
+TBox *
+floatspan_period_tile_list(const TBox *bounds, double xsize,
   const Interval *duration, double xorigin, TimestampTz torigin, int *rows,
   int *columns)
 {
@@ -624,7 +632,7 @@ tnumberseq_disc_time_split(const TSequence *seq, TimestampTz start,
       if (k > 0)
       {
         times[l] = lower;
-        result[l++] = tsequence_make(instants, k, k, true, true, DISCRETE,
+        result[l++] = tsequence_make(instants, k, true, true, DISCRETE,
           NORMALIZE_NO);
         k = 0;
       }
@@ -635,7 +643,7 @@ tnumberseq_disc_time_split(const TSequence *seq, TimestampTz start,
   if (k > 0)
   {
     times[l] = lower;
-    result[l++] = tsequence_make(instants, k, k, true, true, DISCRETE,
+    result[l++] = tsequence_make(instants, k, true, true, DISCRETE,
       NORMALIZE_NO);
   }
   pfree(instants);
@@ -713,7 +721,7 @@ tsequence_time_split1(const TSequence *seq, TimestampTz start, TimestampTz end,
       }
       lower_inc1 = (m == 0) ? seq->period.lower_inc : true;
       times[m] = lower;
-      result[m++] = tsequence_make(instants, k, k, lower_inc1,
+      result[m++] = tsequence_make(instants, k, lower_inc1,
          (k > 1) ? false : true, linear ? LINEAR : STEPWISE, NORMALIZE);
       k = 0;
       lower = upper;
@@ -731,7 +739,7 @@ tsequence_time_split1(const TSequence *seq, TimestampTz start, TimestampTz end,
   {
     lower_inc1 = (m == 0) ? seq->period.lower_inc : true;
     times[m] = lower;
-    result[m++] = tsequence_make(instants, k, k, lower_inc1,
+    result[m++] = tsequence_make(instants, k, lower_inc1,
       seq->period.upper_inc, linear ? LINEAR : STEPWISE, NORMALIZE);
   }
   pfree_array((void **) tofree, l);
@@ -1012,7 +1020,7 @@ tnumberseq_disc_value_split(const TSequence *seq, Datum start_bucket,
     if (numinsts[i] > 0)
     {
       result[k] = tsequence_make(&instants[i * seq->count], numinsts[i],
-        numinsts[i], true, true, DISCRETE, NORMALIZE_NO);
+        true, true, DISCRETE, NORMALIZE_NO);
       values[k++] = bucket_value;
     }
     bucket_value = datum_add(bucket_value, size, basetype, basetype);
@@ -1079,7 +1087,7 @@ for (int i = 1; i < seq->count; i++)
       k++;
     }
     result[bucket_no * numcols + seq_no] = tsequence_make((const TInstant **) bounds,
-      k, k, lower_inc1, false, STEPWISE, NORMALIZE);
+      k, lower_inc1, false, STEPWISE, NORMALIZE);
     bounds[0] = bounds[1];
     inst1 = inst2;
     lower_inc1 = true;
@@ -1248,7 +1256,7 @@ tnumberseq_linear_value_split(const TSequence *seq, Datum start_bucket,
         break;
       seq_no = numseqs[j]++;
       result[j * numcols + seq_no] = tsequence_make((const TInstant **) bounds,
-        k, k, (k > 1) ? lower_inc1 : true, (k > 1) ? upper_inc1 : true,
+        k, (k > 1) ? lower_inc1 : true, (k > 1) ? upper_inc1 : true,
         LINEAR, NORMALIZE_NO);
       bounds[first] = bounds[last];
       bucket_lower = bucket_upper;
@@ -1385,7 +1393,7 @@ tnumberseqset_value_split(const TSequenceSet *ss, Datum start_bucket,
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_int_temporal_tile
+ * @ingroup libmeos_internal_temporal_tile
  * @brief Split a temporal number into an array of fragments according to value
  * buckets.
  */
@@ -1573,7 +1581,7 @@ tfloat_value_split(Temporal *temp, double size, double origin, int *newcount)
  * @brief Split a temporal value into fragments with respect to period buckets
  *
  * @param[in] temp Temporal value
- * @param[in] interval Size of the time buckets
+ * @param[in] duration Size of the time buckets
  * @param[in] torigin Time origin of the buckets
  * @param[out] newcount Number of values in the output array
  * @sqlfunc timeSplit()
@@ -1594,7 +1602,7 @@ temporal_time_split(Temporal *temp, Interval *duration, TimestampTz torigin,
  *
  * @param[in] temp Temporal value
  * @param[in] size Size of the value buckets
- * @param[in] interval Size of the time buckets
+ * @param[in] duration Size of the time buckets
  * @param[in] vorigin Time origin of the buckets
  * @param[in] torigin Time origin of the buckets
  * @param[out] newcount Number of values in the output array
@@ -1618,7 +1626,7 @@ tint_value_time_split(Temporal *temp, int size, int vorigin,
  *
  * @param[in] temp Temporal value
  * @param[in] size Size of the value buckets
- * @param[in] interval Size of the time buckets
+ * @param[in] duration Size of the time buckets
  * @param[in] vorigin Time origin of the buckets
  * @param[in] torigin Time origin of the buckets
  * @param[out] newcount Number of values in the output array
