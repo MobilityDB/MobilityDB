@@ -1726,7 +1726,6 @@ distance_period_timestamp(const Period *p, TimestampTz t)
 {
   return distance_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
-#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_dist
@@ -1738,6 +1737,7 @@ distance_span_set(const Period *p, const Set *os)
 {
   return distance_span_span(p, &os->span);
 }
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_dist
