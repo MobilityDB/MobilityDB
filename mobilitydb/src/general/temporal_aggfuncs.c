@@ -102,7 +102,9 @@ PG_FUNCTION_INFO_V1(Temporal_tagg_finalfn);
 PGDLLEXPORT Datum
 Temporal_tagg_finalfn(PG_FUNCTION_ARGS)
 {
+  MemoryContext ctx = set_aggregation_context(fcinfo);
   SkipList *state = (SkipList *) PG_GETARG_POINTER(0);
+  unset_aggregation_context(ctx);
   Temporal *result = temporal_tagg_finalfn(state);
   if (! result)
     PG_RETURN_NULL();
