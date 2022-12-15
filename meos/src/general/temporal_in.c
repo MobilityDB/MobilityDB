@@ -1146,6 +1146,7 @@ span_from_wkb_state(wkb_parse_state *s)
   /* Read the span type */
   uint16_t wkb_spantype = (uint16_t) int16_from_wkb_state(s);
   s->spantype = wkb_spantype;
+  s->basetype = spantype_basetype(wkb_spantype);
   return span_from_wkb_state1(s);
 }
 
