@@ -1415,7 +1415,7 @@ union_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
        *       |---------|  |-----|
        *            j          j
        */
-      Span *q = bbox_union_span_span(s1, s2, false);
+      Span *q = bbox_union_span_span(s1, s2);
       while (i < ss1->count && j < ss2->count)
       {
         s1 = spanset_sp_n(ss1, i);
@@ -2106,7 +2106,6 @@ distance_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 {
   return distance_spanset_value(ps, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
-#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_dist
@@ -2118,6 +2117,7 @@ distance_spanset_set(const SpanSet *ss, const Set *os)
 {
   return distance_span_span(&ss->span, &os->span);
 }
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_dist

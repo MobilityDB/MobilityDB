@@ -32,7 +32,7 @@
  * span types in global arrays.
  */
 
-#include "general/temporal_catalog.h"
+#include "general/mobdb_catalog.h"
 
 /* PostgreSQL */
 /* MobilityDB */
@@ -299,6 +299,30 @@ ensure_set_type(mobdbType settype)
   return;
 }
 
+#if 0 /* not used */
+/**
+ * Return true if the type is a base type of a numeric set type
+ */
+bool
+numset_basetype(mobdbType basetype)
+{
+  if (basetype == T_INT4 || basetype == T_INT8 || basetype == T_FLOAT8)
+    return true;
+  return false;
+}
+
+/**
+ * Ensure that the type is a base type of a numeric set type
+ */
+void
+ensure_numset_basetype(mobdbType basetype)
+{
+  if (! numspan_basetype(basetype))
+    elog(ERROR, "unknown numeric set base type: %d", basetype);
+  return;
+}
+#endif /* not used */
+
 /*****************************************************************************/
 
 /**
@@ -358,6 +382,7 @@ numspan_basetype(mobdbType basetype)
   return false;
 }
 
+#if 0 /* not used */
 /**
  * Ensure that the type is a base type of a numeric span type
  */
@@ -368,6 +393,7 @@ ensure_numspan_basetype(mobdbType basetype)
     elog(ERROR, "unknown numeric span base type: %d", basetype);
   return;
 }
+#endif /* not used */
 
 /*****************************************************************************/
 
@@ -383,6 +409,7 @@ spanset_type(mobdbType spansettype)
   return false;
 }
 
+#if 0 /* not used */
 /**
  * Ensure that the type is a span set type
  */
@@ -438,6 +465,7 @@ ensure_numspanset_basetype(mobdbType basetype)
     elog(ERROR, "unknown numeric span set base type: %d", basetype);
   return;
 }
+#endif /* not used */
 
 /*****************************************************************************/
 

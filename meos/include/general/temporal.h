@@ -37,8 +37,8 @@
 /* PostgreSQL */
 #include <postgres.h>
 /* MEOS */
+#include "general/mobdb_catalog.h"
 #include "general/span.h"
-#include "general/temporal_catalog.h"
 #include "general/timetypes.h"
 #include "general/tbox.h"
 #include "point/stbox.h"
@@ -228,48 +228,6 @@ typedef enum
 #define MOBDB_WKB_INT4_SIZE        4
 #define MOBDB_WKB_INT8_SIZE        8
 #define MOBDB_WKB_BYTE_SIZE        1
-
-/* MobilityDB Types */
-enum MOBDB_WKB_TYPE
-{
-  MOBDB_WKB_T_BOOL =           1,   /**< boolean type */
-  MOBDB_WKB_T_DOUBLE2 =        2,   /**< double2 type */
-  MOBDB_WKB_T_DOUBLE3 =        3,   /**< double3 type */
-  MOBDB_WKB_T_DOUBLE4 =        4,   /**< double4 type */
-  MOBDB_WKB_T_FLOAT8 =         5,   /**< float8 type */
-  MOBDB_WKB_T_FLOATSET =       6,   /**< float8 span type */
-  MOBDB_WKB_T_FLOATSPAN =      7,   /**< float8 span type */
-  MOBDB_WKB_T_FLOATSPANSET =   8,   /**< float8 span type */
-  MOBDB_WKB_T_INT4 =           9,   /**< int4 type */
-  MOBDB_WKB_T_INTSET =         10,   /**< int4 span type */
-  MOBDB_WKB_T_INTSPAN =        11,   /**< int4 span type */
-  MOBDB_WKB_T_INTSPANSET =     12,  /**< int4 span type */
-  MOBDB_WKB_T_INT8 =           13,  /**< int8 type */
-  MOBDB_WKB_T_BIGINTSET =      14,   /**< int4 span type */
-  MOBDB_WKB_T_BIGINTSPAN =     15,   /**< int4 span type */
-  MOBDB_WKB_T_BIGINTSPANSET =  16,  /**< int4 span type */
-  MOBDB_WKB_T_PERIOD =         18,  /**< period type */
-  MOBDB_WKB_T_PERIODSET =      19,  /**< period set type */
-  MOBDB_WKB_T_STBOX =          20,  /**< spatiotemporal box type */
-  MOBDB_WKB_T_TBOOL =          21,  /**< temporal boolean type */
-  MOBDB_WKB_T_TBOX =           22,  /**< temporal box type */
-  MOBDB_WKB_T_TDOUBLE2 =       23,  /**< temporal double2 type */
-  MOBDB_WKB_T_TDOUBLE3 =       24,  /**< temporal double3 type */
-  MOBDB_WKB_T_TDOUBLE4 =       25,  /**< temporal double4 type */
-  MOBDB_WKB_T_TEXT =           26,  /**< text type */
-  MOBDB_WKB_T_TFLOAT =         27,  /**< temporal float type */
-  MOBDB_WKB_T_TIMESTAMPSET =   28,  /**< timestamp set type */
-  MOBDB_WKB_T_TIMESTAMPTZ =    29,  /**< timestamp with time zone type */
-  MOBDB_WKB_T_TINT =           30,  /**< temporal integer type */
-  MOBDB_WKB_T_TTEXT =          31,  /**< temporal text type */
-  MOBDB_WKB_T_GEOMETRY =       32,  /**< geometry type */
-  MOBDB_WKB_T_GEOGRAPHY =      33,  /**< geography type */
-  MOBDB_WKB_T_TGEOMPOINT =     34,  /**< temporal geometry point type */
-  MOBDB_WKB_T_TGEOGPOINT =     35,  /**< temporal geography point type */
-  MOBDB_WKB_T_NPOINT =         36,  /**< network point type */
-  MOBDB_WKB_T_NSEGMENT =       37,  /**< network segment type */
-  MOBDB_WKB_T_TNPOINT =        38,  /**< temporal network point type */
-};
 
 /* Temporal subtype */
 enum MOBDB_WKB_TSUBTYPE

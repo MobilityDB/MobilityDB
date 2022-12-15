@@ -44,7 +44,7 @@
 #include "general/temporaltypes.h"
 #include "general/lifting.h"
 /* MobilityDB */
-#include "pg_general/temporal_catalog.h"
+#include "pg_general/mobdb_catalog.h"
 
 /*****************************************************************************
  * Temporal distance

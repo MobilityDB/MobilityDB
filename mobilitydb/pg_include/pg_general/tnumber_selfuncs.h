@@ -38,10 +38,10 @@
 #include <postgres.h>
 #include <utils/selfuncs.h>
 /* MEOS */
+#include "general/mobdb_catalog.h"
 #include "general/temporal.h"
-#include "general/temporal_catalog.h"
 /* MobilityDB */
-#include "pg_general/temporal_catalog.h"
+#include "pg_general/mobdb_catalog.h"
 
 /*****************************************************************************/
 

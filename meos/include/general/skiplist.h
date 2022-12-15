@@ -59,6 +59,7 @@ extern void *skiplist_headval(SkipList *list);
 extern void skiplist_splice(SkipList *list, void **values, int count,
   datum_func2 func, bool crossings);
 extern void **skiplist_values(SkipList *list);
+extern void skiplist_free(SkipList *list);
 
 /*****************************************************************************/
 

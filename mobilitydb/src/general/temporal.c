@@ -54,7 +54,7 @@
 #include "general/temporal_boxops.h"
 /* MobilityDB */
 #include "pg_general/doxygen_mobilitydb_api.h"
-#include "pg_general/temporal_catalog.h"
+#include "pg_general/mobdb_catalog.h"
 #include "pg_general/temporal_util.h"
 #include "pg_general/tinstant.h"
 #include "pg_general/tsequence.h"

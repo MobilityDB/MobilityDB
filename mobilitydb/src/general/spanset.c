@@ -49,8 +49,8 @@
 #include "general/temporal_out.h"
 #include "general/temporal_util.h"
 /* MobilityDB */
+#include "pg_general/mobdb_catalog.h"
 #include "pg_general/span.h"
-#include "pg_general/temporal_catalog.h"
 #include "pg_general/temporal.h"
 #include "pg_general/temporal_util.h"
 
@@ -425,8 +425,7 @@ PGDLLEXPORT Datum
 Periodset_start_timestamp(PG_FUNCTION_ARGS)
 {
   PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  const Period *p = spanset_sp_n(ps, 0);
-  TimestampTz result = p->lower;
+  TimestampTz result = periodset_start_timestamp(ps);
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_TIMESTAMPTZ(result);
 }
@@ -441,8 +440,7 @@ PGDLLEXPORT Datum
 Periodset_end_timestamp(PG_FUNCTION_ARGS)
 {
   PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  const Period *p = spanset_sp_n(ps, ps->count - 1);
-  TimestampTz result = p->upper;
+  TimestampTz result = periodset_end_timestamp(ps);
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_TIMESTAMPTZ(result);
 }

@@ -48,8 +48,8 @@
 #include <general/temporal_boxops.h>
 #include <general/temporal_util.h>
 /* MobilityDB */
+#include "pg_general/mobdb_catalog.h"
 #include "pg_general/temporal.h"
-#include "pg_general/temporal_catalog.h"
 #include "pg_general/time_gist.h"
 
 /*****************************************************************************
@@ -218,7 +218,7 @@ tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBox *result, Oid typid)
   else if (type == T_TIMESTAMPSET)
   {
     Datum tsdatum = PG_GETARG_DATUM(1);
-    timestampset_tbox_slice(tsdatum, result);
+    set_tbox_slice(tsdatum, result);
   }
   else if (type == T_PERIOD)
   {

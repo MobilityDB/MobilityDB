@@ -45,8 +45,8 @@
 #include "point/tpoint_boxops.h"
 #include "point/tpoint_spatialfuncs.h"
 /* MobilityDB */
+#include "pg_general/mobdb_catalog.h"
 #include "pg_general/temporal.h"
-#include "pg_general/temporal_catalog.h"
 #include "pg_point/postgis.h"
 
 /* PostgreSQL removed pg_atoi in version 15 */

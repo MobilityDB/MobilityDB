@@ -39,7 +39,7 @@
 #include <catalog/pg_statistic.h>
 #include <utils/selfuncs.h>
 /* MobilityDB */
-#include "general/temporal_catalog.h"
+#include "general/mobdb_catalog.h"
 #include "point/tpoint.h"
 #include "pg_point/tpoint_analyze.h"
 

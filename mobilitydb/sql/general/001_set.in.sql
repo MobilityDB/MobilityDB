@@ -304,15 +304,15 @@ CREATE FUNCTION round(floatset, integer DEFAULT 0)
 
 CREATE FUNCTION shift(intset, int)
   RETURNS intset
-  AS 'MODULE_PATHNAME', 'Span_shift'
+  AS 'MODULE_PATHNAME', 'Set_shift'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shift(bigintset, bigint)
   RETURNS bigintset
-  AS 'MODULE_PATHNAME', 'Span_shift'
+  AS 'MODULE_PATHNAME', 'Set_shift'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shift(floatset, float)
   RETURNS floatset
-  AS 'MODULE_PATHNAME', 'Span_shift'
+  AS 'MODULE_PATHNAME', 'Set_shift'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shift(timestampset, interval)
   RETURNS timestampset

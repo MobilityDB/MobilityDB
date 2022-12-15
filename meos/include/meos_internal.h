@@ -38,7 +38,7 @@
 #include <json-c/json.h>
 /* PostgreSQL */
 /* MobilityDB */
-#include "general/temporal_catalog.h" /* For mobdbType */
+#include "general/mobdb_catalog.h" /* For mobdbType */
 
 /*****************************************************************************
  * Miscellaneous functions
@@ -216,7 +216,7 @@ extern void float_set_tbox(double d, TBox *box);
 extern void span_set_tbox(const Span *span, TBox *box);
 extern void spanset_set_tbox(const SpanSet *ss, TBox *box);
 extern void timestamp_set_tbox(TimestampTz t, TBox *box);
-extern void timestampset_set_tbox(const TimestampSet *ss, TBox *box);
+extern void set_set_tbox(const Set *s, TBox *box);
 extern void period_set_tbox(const Period *p, TBox *box);
 extern void periodset_set_tbox(const PeriodSet *ps, TBox *box);
 extern bool geo_set_stbox(const GSERIALIZED *gs, STBox *box);

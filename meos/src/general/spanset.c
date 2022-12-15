@@ -524,6 +524,7 @@ periodset_shift_tscale(const PeriodSet *ps, const Interval *shift,
  * Accessor functions
  *****************************************************************************/
 
+#if MEOS
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the size in bytes of a period set
@@ -535,7 +536,6 @@ spanset_memory_size(const SpanSet *ss)
   return (int) VARSIZE(DatumGetPointer(ss));
 }
 
-#if MEOS
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the lower bound of an integer span set

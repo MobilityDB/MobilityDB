@@ -35,7 +35,7 @@
 #include "general/temporal_util.h"
 #include "point/tpoint_parser.h"
 /* MobilityDB */
-#include "pg_general/temporal_catalog.h"
+#include "pg_general/mobdb_catalog.h"
 
 /*****************************************************************************
  * Input in EWKT format

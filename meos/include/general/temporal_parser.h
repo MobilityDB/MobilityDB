@@ -35,9 +35,9 @@
 #define __TEMPORAL_PARSER_H__
 
 /* MobilityDB */
-#include "general/temporal_catalog.h"
-#include "general/timetypes.h"
+#include "general/mobdb_catalog.h"
 #include "general/span.h"
+#include "general/timetypes.h"
 #include "general/temporal.h"
 
 /*****************************************************************************/

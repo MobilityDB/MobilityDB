@@ -86,10 +86,10 @@
 #include <meos.h>
 #include <meos_internal.h>
 /* MobilityDB */
+#include "pg_general/mobdb_catalog.h"
 #include "pg_general/span_analyze.h"
 #include "pg_general/temporal.h"
 #include "pg_general/temporal_analyze.h"
-#include "pg_general/temporal_catalog.h"
 
 /*
  * To avoid consuming too much memory, IO and CPU load during analysis, and/or

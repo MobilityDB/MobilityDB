@@ -48,9 +48,9 @@
 #include "general/set.h"
 #include "general/spanset.h"
 /* MobilityDB */
+#include "pg_general/mobdb_catalog.h"
 #include "pg_general/span_selfuncs.h"
 #include "pg_general/temporal_analyze.h"
-#include "pg_general/temporal_catalog.h"
 #include "pg_general/temporal_selfuncs.h"
 
 /*****************************************************************************

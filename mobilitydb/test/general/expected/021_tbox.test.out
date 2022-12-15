@@ -176,10 +176,58 @@ SELECT 1.5::tbox;
  TBOX X([1.5, 1.5])
 (1 row)
 
+SELECT intset '{1,2}'::tbox;
+      tbox      
+----------------
+ TBOX X([1, 2])
+(1 row)
+
+SELECT floatset '{1,2}'::tbox;
+      tbox      
+----------------
+ TBOX X([1, 2])
+(1 row)
+
+SELECT timestampset '{2000-01-01,2000-01-02}'::tbox;
+                           tbox                           
+----------------------------------------------------------
+ TBOX T([2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00])
+(1 row)
+
+SELECT intspan '[1,2]'::tbox;
+      tbox      
+----------------
+ TBOX X([1, 2])
+(1 row)
+
 SELECT floatspan '[1,2]'::tbox;
       tbox      
 ----------------
  TBOX X([1, 2])
+(1 row)
+
+SELECT period '[2000-01-01,2000-01-02]'::tbox;
+                           tbox                           
+----------------------------------------------------------
+ TBOX T([2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00])
+(1 row)
+
+SELECT intspanset '{[1,2]}'::tbox;
+      tbox      
+----------------
+ TBOX X([1, 2])
+(1 row)
+
+SELECT floatspanset '{[1,2]}'::tbox;
+      tbox      
+----------------
+ TBOX X([1, 2])
+(1 row)
+
+SELECT periodset '{[2000-01-01,2000-01-02]}'::tbox;
+                           tbox                           
+----------------------------------------------------------
+ TBOX T([2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00])
 (1 row)
 
 SELECT ROUND(MAX(upper(b::floatspan) - lower(b::floatspan))::numeric, 6) FROM tbl_tbox;

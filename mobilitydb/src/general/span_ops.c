@@ -43,7 +43,7 @@
 #include "general/set.h"
 #include "general/temporal_util.h"
 /* MobilityDB */
-#include "pg_general/temporal_catalog.h"
+#include "pg_general/mobdb_catalog.h"
 
 /*****************************************************************************
  * Contains

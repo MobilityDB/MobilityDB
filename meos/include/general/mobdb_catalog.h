@@ -31,8 +31,8 @@
  * @brief Functions for building a cache of temporal types and operators.
  */
 
-#ifndef __TEMPORAL_CATALOG_H__
-#define __TEMPORAL_CATALOG_H__
+#ifndef __MOBDB_CATALOG_H__
+#define __MOBDB_CATALOG_H__
 
 /* PostgreSQL */
 #include <postgres.h>
@@ -47,58 +47,48 @@
  */
 typedef enum
 {
-  // T_UNKNOWN = 0,
-  T_BOOL,           /**< boolean type */
-  T_DOUBLE2,        /**< double2 type */
-  T_DOUBLE3,        /**< double3 type */
-  T_DOUBLE4,        /**< double4 type */
-  T_FLOAT8,         /**< float8 type */
-  T_FLOATSET,       /**< float8 set type */
-  T_FLOATSPAN,      /**< float8 span type */
-  T_FLOATSPANSET,   /**< float8 span set type */
-  T_INT4,           /**< int4 type */
-#if ! MEOS
-  T_INT4RANGE,      /**< PostgreSQL int4 range type */
-#if POSTGRESQL_VERSION_NUMBER >= 140000
-  T_INT4MULTIRANGE, /**< PostgreSQL int4 multirange type */
-#endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
-#endif /* ! MEOS */
-  T_INTSET,         /**< int4 set type */
-  T_INTSPAN,        /**< int4 span type */
-  T_INTSPANSET,     /**< int4 span set type */
-  T_INT8,           /**< int8 type */
-  T_BIGINTSET,      /**< int8 set type */
-  T_BIGINTSPAN,     /**< int8 span type */
-  T_BIGINTSPANSET,  /**< int8 span set type */
-  T_PERIOD,         /**< period type */
-  T_PERIODSET,      /**< period set type */
-  T_STBOX,          /**< spatiotemporal box type */
-  T_TBOOL,          /**< temporal boolean type */
-  T_TBOX,           /**< temporal box type */
-  T_TDOUBLE2,       /**< temporal double2 type */
-  T_TDOUBLE3,       /**< temporal double3 type */
-  T_TDOUBLE4,       /**< temporal double4 type */
-  T_TEXT,           /**< text type */
-  T_TFLOAT,         /**< temporal float type */
-  T_TIMESTAMPSET,   /**< timestamp set type */
-  T_TIMESTAMPTZ,    /**< timestamp with time zone type */
-  T_TINT,           /**< temporal integer type */
-#if ! MEOS
-  T_TSTZRANGE,      /**< PostgreSQL timestamp with time zone range type */
-#if POSTGRESQL_VERSION_NUMBER >= 140000
-  T_TSTZMULTIRANGE, /**< PostgreSQL timestamp with time zone multirange type */
-#endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
-#endif /* ! MEOS */
-  T_TTEXT,          /**< temporal text type */
-  T_GEOMETRY,       /**< geometry type */
-  T_GEOGRAPHY,      /**< geography type */
-  T_TGEOMPOINT,     /**< temporal geometry point type */
-  T_TGEOGPOINT,     /**< temporal geography point type */
-#if NPOINT
-  T_NPOINT,         /**< network point type */
-  T_NSEGMENT,       /**< network segment type */
-  T_TNPOINT,        /**< temporal network point type */
-#endif
+  T_UNKNOWN        = 0,   /**< unknown type */
+  T_BOOL           = 1,   /**< boolean type */
+  T_DOUBLE2        = 2,   /**< double2 type */
+  T_DOUBLE3        = 3,   /**< double3 type */
+  T_DOUBLE4        = 4,   /**< double4 type */
+  T_FLOAT8         = 5,   /**< float8 type */
+  T_FLOATSET       = 6,   /**< float8 set type */
+  T_FLOATSPAN      = 7,   /**< float8 span type */
+  T_FLOATSPANSET   = 8,   /**< float8 span set type */
+  T_INT4           = 9,   /**< int4 type */
+  T_INT4RANGE      = 10,  /**< PostgreSQL int4 range type */
+  T_INT4MULTIRANGE = 11,  /**< PostgreSQL int4 multirange type */
+  T_INTSET         = 12,  /**< int4 set type */
+  T_INTSPAN        = 13,  /**< int4 span type */
+  T_INTSPANSET     = 14,  /**< int4 span set type */
+  T_INT8           = 15,  /**< int8 type */
+  T_BIGINTSET      = 16,  /**< int8 set type */
+  T_BIGINTSPAN     = 17,  /**< int8 span type */
+  T_BIGINTSPANSET  = 18,  /**< int8 span set type */
+  T_PERIOD         = 19,  /**< period type */
+  T_PERIODSET      = 20,  /**< period set type */
+  T_STBOX          = 21,  /**< spatiotemporal box type */
+  T_TBOOL          = 22,  /**< temporal boolean type */
+  T_TBOX           = 23,  /**< temporal box type */
+  T_TDOUBLE2       = 24,  /**< temporal double2 type */
+  T_TDOUBLE3       = 25,  /**< temporal double3 type */
+  T_TDOUBLE4       = 26,  /**< temporal double4 type */
+  T_TEXT           = 27,  /**< text type */
+  T_TFLOAT         = 28,  /**< temporal float type */
+  T_TIMESTAMPSET   = 29,  /**< timestamp set type */
+  T_TIMESTAMPTZ    = 30,  /**< timestamp with time zone type */
+  T_TINT           = 31,  /**< temporal integer type */
+  T_TSTZRANGE      = 32,  /**< PostgreSQL timestamp with time zone range type */
+  T_TSTZMULTIRANGE = 33,  /**< PostgreSQL timestamp with time zone multirange type */
+  T_TTEXT          = 34,  /**< temporal text type */
+  T_GEOMETRY       = 35,  /**< geometry type */
+  T_GEOGRAPHY      = 36,  /**< geography type */
+  T_TGEOMPOINT     = 37,  /**< temporal geometry point type */
+  T_TGEOGPOINT     = 38,  /**< temporal geography point type */
+  T_NPOINT         = 39,  /**< network point type */
+  T_NSEGMENT       = 40,  /**< network segment type */
+  T_TNPOINT        = 41,  /**< temporal network point type */
 } mobdbType;
 
 /**
@@ -193,5 +183,5 @@ extern void ensure_tgeo_type(mobdbType basetype);
 
 /*****************************************************************************/
 
-#endif /* __TEMPORAL_CATALOG_H__ */
+#endif /* __MOBDB_CATALOG_H__ */
 

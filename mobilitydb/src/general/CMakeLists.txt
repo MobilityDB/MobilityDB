@@ -1,6 +1,7 @@
 add_library(pg_general OBJECT
   doublen.c
   geo_constructors.c
+  mobdb_catalog.c
   set.c
   set_gin.c
   set_ops.c
@@ -20,7 +21,6 @@ add_library(pg_general OBJECT
   temporal_aggfuncs.c
   temporal_analyze.c
   temporal_boxops.c
-  temporal_catalog.c
   temporal_compops.c
   temporal_gist.c
   temporal_posops.c

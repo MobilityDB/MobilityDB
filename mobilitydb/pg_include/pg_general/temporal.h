@@ -38,8 +38,8 @@
 #include <postgres.h>
 #include <lib/stringinfo.h>
 /* MobilityDB */
+#include "general/mobdb_catalog.h"
 #include "general/span.h"
-#include "general/temporal_catalog.h"
 #include "general/timetypes.h"
 #include "general/tbox.h"
 #include "point/stbox.h"

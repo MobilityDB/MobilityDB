@@ -190,7 +190,6 @@ skiplist_delete(SkipList *list, int cur)
   return;
 }
 
-#if MEOS
 /**
  * @ingroup libmeos_spantime_agg
  * @brief Free the skiplist
@@ -206,16 +205,15 @@ skiplist_free(SkipList *list)
   if (list->elems)
   {
     /* Free the element values of the skiplist if they are not NULL */
-    for (int i = 0; i < list->length; i ++)
-      if (list->elems[i].value)
-        pfree(list->elems[i].value);
+    // for (int i = 0; i < list->length; i ++)
+      // if (list->elems[i].value)
+        // pfree(list->elems[i].value);
     /* Free the element list */
     pfree(list->elems);
   }
   pfree(list);
   return;
 }
-#endif /* MEOS */
 
 /**
  * Output the skiplist in graphviz dot format for visualisation and debugging purposes

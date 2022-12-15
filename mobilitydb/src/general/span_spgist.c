@@ -47,9 +47,9 @@
 #include "general/spanset.h"
 #include "general/temporal.h"
 /* MobilityDB */
+#include "pg_general/mobdb_catalog.h"
 #include "pg_general/span_gist.h"
 #include "pg_general/temporal.h"
-#include "pg_general/temporal_catalog.h"
 
 /*****************************************************************************
  * Data structures
