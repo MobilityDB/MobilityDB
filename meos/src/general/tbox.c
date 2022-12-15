@@ -382,6 +382,7 @@ period_to_tbox(const Period *p)
 void
 spanset_set_tbox(const SpanSet *ss, TBox *box)
 {
+  ensure_tnumber_spansettype(ss->spansettype);
   span_set_tbox(&ss->span, box);
   return;
 }
