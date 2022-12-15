@@ -48,8 +48,8 @@
 #include "general/temporal_out.h"
 #include "general/temporal_util.h"
 /* MobilityDB */
+#include "pg_general/mobdb_catalog.h"
 #include "pg_general/span.h"
-#include "pg_general/temporal_catalog.h"
 #include "pg_general/temporal_util.h"
 #include "pg_general/tnumber_mathfuncs.h"
 

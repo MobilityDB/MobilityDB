@@ -55,9 +55,9 @@
 #include <utils/numeric.h>
 #include <utils/syscache.h>
 /* MEOS */
-#include "general/temporal_catalog.h"
+#include "general/mobdb_catalog.h"
 /* MobilityDB */
-#include "pg_general/temporal_catalog.h"
+#include "pg_general/mobdb_catalog.h"
 #include "pg_general/temporal_selfuncs.h"
 #include "pg_general/tnumber_selfuncs.h"
 #include "pg_point/tpoint_selfuncs.h"

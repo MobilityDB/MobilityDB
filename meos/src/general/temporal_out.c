@@ -1655,8 +1655,7 @@ npoint_to_wkb_buf(const Npoint *np, uint8_t *buf, uint8_t variant)
  * Write into the buffer the ordered set type
  */
 static uint8_t *
-set_settype_to_wkb_buf(const Set *os, uint8_t *buf,
-  uint8_t variant)
+set_settype_to_wkb_buf(const Set *os, uint8_t *buf, uint8_t variant)
 {
   uint16_t wkb_settype;
   /* The Set struct does not store its type but it can be deduced from
@@ -1665,16 +1664,16 @@ set_settype_to_wkb_buf(const Set *os, uint8_t *buf,
   switch (os->span.basetype)
   {
     case T_INT4:
-      wkb_settype = MOBDB_WKB_T_INTSET;
+      wkb_settype = T_INTSET;
       break;
     case T_INT8:
-      wkb_settype = MOBDB_WKB_T_BIGINTSET;
+      wkb_settype = T_BIGINTSET;
       break;
     case T_FLOAT8:
-      wkb_settype = MOBDB_WKB_T_FLOATSET;
+      wkb_settype = T_FLOATSET;
       break;
     case T_TIMESTAMPTZ:
-      wkb_settype = MOBDB_WKB_T_TIMESTAMPSET;
+      wkb_settype = T_TIMESTAMPSET;
       break;
   }
   return int16_to_wkb_buf(wkb_settype, buf, variant);
@@ -1727,34 +1726,6 @@ set_to_wkb_buf(const Set *os, uint8_t *buf, uint8_t variant)
 }
 
 /*****************************************************************************/
-
-/**
- * Write into the buffer the span type
- */
-static uint8_t *
-span_spantype_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant)
-{
-  uint16_t wkb_spantype;
-  switch (s->spantype)
-  {
-    case T_INTSPAN:
-      wkb_spantype = MOBDB_WKB_T_INTSPAN;
-      break;
-    case T_BIGINTSPAN:
-      wkb_spantype = MOBDB_WKB_T_BIGINTSPAN;
-      break;
-    case T_FLOATSPAN:
-      wkb_spantype = MOBDB_WKB_T_FLOATSPAN;
-      break;
-    case T_PERIOD:
-      wkb_spantype = MOBDB_WKB_T_PERIOD;
-      break;
-    default: /* Error! */
-      elog(ERROR, "Unknown span type: %d", s->spantype);
-      break;
-  }
-  return int16_to_wkb_buf(wkb_spantype, buf, variant);
-}
 
 /**
  * Write into the buffer the flag containing the bounds represented
@@ -1836,7 +1807,7 @@ uint8_t *
 span_to_wkb_buf_int(const Span *s, uint8_t *buf, uint8_t variant)
 {
   /* Write the span type */
-  buf = span_spantype_to_wkb_buf(s, buf, variant);
+  buf = int16_to_wkb_buf(s->spantype, buf, variant);
   /* Write the span bounds and values */
   buf = span_to_wkb_buf_int1(s, buf, variant);
   return buf;
@@ -1879,31 +1850,6 @@ period_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant)
 /*****************************************************************************/
 
 /**
- * Write into the buffer the span set type
- */
-static uint8_t *
-spanset_spansettype_to_wkb_buf(const SpanSet *ss, uint8_t *buf, uint8_t variant)
-{
-  uint16_t wkb_spansettype;
-  switch (ss->spansettype)
-  {
-    case T_INTSPANSET:
-      wkb_spansettype = MOBDB_WKB_T_INTSPANSET;
-      break;
-    case T_FLOATSPANSET:
-      wkb_spansettype = MOBDB_WKB_T_FLOATSPANSET;
-      break;
-    case T_PERIODSET:
-      wkb_spansettype = MOBDB_WKB_T_PERIODSET;
-      break;
-    default: /* Error! */
-      elog(ERROR, "Unknown span type: %d", ss->spansettype);
-      break;
-  }
-  return int16_to_wkb_buf(wkb_spansettype, buf, variant);
-}
-
-/**
  * Write into the buffer a span set represented in Well-Known Binary (WKB)
  * format as follows
  * - Endian byte
@@ -1917,7 +1863,7 @@ spanset_to_wkb_buf(const SpanSet *ss, uint8_t *buf, uint8_t variant)
   /* Write the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
   /* Write the span type */
-  buf = spanset_spansettype_to_wkb_buf(ss, buf, variant);
+  buf = int16_to_wkb_buf(ss->spansettype, buf, variant);
   /* Write the count */
   buf = int32_to_wkb_buf(ss->count, buf, variant);
   /* Write the periods */
@@ -2050,46 +1996,6 @@ stbox_to_wkb_buf(const STBox *box, uint8_t *buf, uint8_t variant)
 /*****************************************************************************/
 
 /**
- * Write into the buffer the temporal type
- */
-static uint8_t *
-temporal_temptype_to_wkb_buf(const Temporal *temp, uint8_t *buf,
-  uint8_t variant)
-{
-  uint8_t wkb_temptype;
-  switch (temp->temptype)
-  {
-    case T_TBOOL:
-      wkb_temptype = MOBDB_WKB_T_TBOOL;
-      break;
-    case T_TINT:
-      wkb_temptype = MOBDB_WKB_T_TINT;
-      break;
-    case T_TFLOAT:
-      wkb_temptype = MOBDB_WKB_T_TFLOAT;
-      break;
-    case T_TTEXT:
-      wkb_temptype = MOBDB_WKB_T_TTEXT;
-      break;
-    case T_TGEOMPOINT:
-      wkb_temptype = MOBDB_WKB_T_TGEOMPOINT;
-      break;
-    case T_TGEOGPOINT:
-      wkb_temptype = MOBDB_WKB_T_TGEOGPOINT;
-      break;
-#if NPOINT
-    case T_TNPOINT:
-      wkb_temptype = MOBDB_WKB_T_TNPOINT;
-      break;
-#endif /* NPOINT */
-    default: /* Error! */
-      elog(ERROR, "Unknown temporal type (%d)!", temp->temptype);
-      break;
-  }
-  return int16_to_wkb_buf(wkb_temptype, buf, variant);
-}
-
-/**
  * Write into the buffer the flag containing the temporal type and
  * other characteristics represented in Well-Known Binary (WKB) format.
  * In binary format it is a byte as follows
@@ -2177,7 +2083,7 @@ tinstant_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
   /* Write the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
   /* Write the temporal type */
-  buf = temporal_temptype_to_wkb_buf((Temporal *) inst, buf, variant);
+  buf = int16_to_wkb_buf(inst->temptype, buf, variant);
   /* Write the temporal flags */
   buf = temporal_flags_to_wkb_buf((Temporal *) inst, buf, variant);
   /* Write the optional SRID for extended variant */
@@ -2204,7 +2110,7 @@ tsequence_to_wkb_buf(const TSequence *seq, uint8_t *buf, uint8_t variant)
   /* Write the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
   /* Write the temporal type */
-  buf = temporal_temptype_to_wkb_buf((Temporal *) seq, buf, variant);
+  buf = int16_to_wkb_buf(seq->temptype, buf, variant);
   /* Write the temporal flags and interpolation */
   buf = temporal_flags_to_wkb_buf((Temporal *) seq, buf, variant);
   /* Write the optional SRID for extended variant */
@@ -2244,7 +2150,7 @@ tsequenceset_to_wkb_buf(const TSequenceSet *ss, uint8_t *buf, uint8_t variant)
   /* Write the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
   /* Write the temporal type */
-  buf = temporal_temptype_to_wkb_buf((Temporal *) ss, buf, variant);
+  buf = int16_to_wkb_buf(ss->temptype, buf, variant);
   /* Write the temporal and interpolation flags */
   buf = temporal_flags_to_wkb_buf((Temporal *) ss, buf, variant);
   /* Write the optional SRID for extended variant */

@@ -2,6 +2,7 @@ add_library(general OBJECT
   basetype_inout.c
   doublen.c
   lifting.c
+  mobdb_catalog.c
   pg_types.c
   skiplist.c
   set.c
@@ -17,7 +18,6 @@ add_library(general OBJECT
   temporal_aggfuncs.c
   temporal_boxops.c
   temporal_boxops_meos.c
-  temporal_catalog.c
   temporal_compops.c
   temporal_compops_meos.c
   temporal_in.c

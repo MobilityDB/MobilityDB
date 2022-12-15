@@ -1069,17 +1069,14 @@ overright_span_span(const Span *s1, const Span *s2)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Return the union of the spans.
+ * @note The result of the function is always a span even if the spans do not
+ * overlap
  * @sqlop @p +
  */
 Span *
-bbox_union_span_span(const Span *s1, const Span *s2, bool strict)
+bbox_union_span_span(const Span *s1, const Span *s2)
 {
   assert(s1->spantype == s2->spantype);
-  /* If the spans do not overlap */
-  if (strict && ! overlaps_span_span(s1, s2) && ! adjacent_span_span(s1, s2))
-    elog(ERROR, "The result of span union would not be contiguous");
-
-  /* Compute the union of the overlapping spans */
   Span *result = span_copy(s1);
   span_expand(s2, result);
   return result;
@@ -1656,7 +1653,8 @@ distance_value_value(Datum l, Datum r, mobdbType typel, mobdbType typer)
   if (typel == T_FLOAT8 && typer == T_INT4)
     return fabs(DatumGetFloat8(l) - (double) DatumGetInt32(r));
   else
-    elog(ERROR, "Unknown types for distance between values");
+    elog(ERROR, "Unknown types for distance between values: %d, %d",
+      typel, typer);
 }
 
 /**

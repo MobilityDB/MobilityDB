@@ -35,8 +35,8 @@
 
 /* PostgreSQL */
 /* MobilityDB */
+#include "general/mobdb_catalog.h"
 #include "general/temporaltypes.h"
-#include "general/temporal_catalog.h"
 #include "general/temporal_util.h"
 #include "general/lifting.h"
 #include "general/temporal_compops.h"

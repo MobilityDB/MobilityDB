@@ -43,9 +43,9 @@
 /* PostGIS */
 #include <liblwgeom.h>
 /* MobilityDB */
-#include "general/temporal.h"
+#include "general/mobdb_catalog.h"
 #include "general/span.h"
-#include "general/temporal_catalog.h"
+#include "general/temporal.h"
 
 /* Functions adapted from lwgeom_box.c */
 

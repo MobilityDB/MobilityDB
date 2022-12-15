@@ -44,8 +44,8 @@
 #include <meos.h>
 #include <meos_internal.h>
 /* MobilityDB */
+#include "general/mobdb_catalog.h"
 #include "pg_general/span_selfuncs.h"
-#include "pg_general/temporal_catalog.h"
 #include "pg_general/temporal_selfuncs.h"
 #include "pg_point/tpoint_analyze.h"
 #include "pg_npoint/tnpoint_selfuncs.h"

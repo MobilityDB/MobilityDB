@@ -31,9 +31,8 @@
  * @brief Operators for set types.
  */
 
-#include "general/set_ops.h"
-
 /* PostgreSQL */
+#include <postgres.h>
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
@@ -42,7 +41,7 @@
 #include "general/spanset.h"
 #include "general/temporal_util.h"
 /* MobilityDB */
-#include "pg_general/temporal_catalog.h"
+#include "pg_general/mobdb_catalog.h"
 
 /*****************************************************************************/
 /* contains? */

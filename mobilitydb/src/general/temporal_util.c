@@ -49,8 +49,8 @@
 #include <meos.h>
 #include <meos_internal.h>
 /* MobilityDB */
+#include "pg_general/mobdb_catalog.h"
 #include "pg_general/doublen.h"
-#include "pg_general/temporal_catalog.h"
 
 /*****************************************************************************
  * Call PostgreSQL functions

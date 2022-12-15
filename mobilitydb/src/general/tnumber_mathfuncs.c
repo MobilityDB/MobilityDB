@@ -39,6 +39,7 @@
 #include <assert.h>
 #include <math.h>
 /* PostgreSQL */
+#include <postgres.h>
 #include <utils/float.h>
 /* MEOS */
 #include <meos.h>
@@ -47,8 +48,8 @@
 #include "general/temporal_util.h"
 #include "general/tnumber_mathfuncs.h"
 /* MobilityDB */
+#include "pg_general/mobdb_catalog.h"
 #include "pg_general/temporal.h"
-#include "pg_general/temporal_catalog.h"
 #include "pg_general/temporal_util.h"
 
 /*****************************************************************************

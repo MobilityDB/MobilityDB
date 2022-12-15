@@ -38,7 +38,7 @@
 #include <json-c/json.h>
 /* PostgreSQL */
 /* MobilityDB */
-#include "general/temporal_catalog.h" /* For mobdbType */
+#include "general/mobdb_catalog.h" /* For mobdbType */
 
 /*****************************************************************************
  * Miscellaneous functions

@@ -42,11 +42,11 @@
 #include <utils/selfuncs.h>
 #include <utils/typcache.h>
 /* MEOS */
-#include "meos.h"
+#include <meos.h>
+#include "general/mobdb_catalog.h"
 #include "general/temporal.h"
-#include "general/temporal_catalog.h"
 /* MobilityDB */
-#include "pg_general/temporal_catalog.h"
+#include "pg_general/mobdb_catalog.h"
 
 #define BTREE_AM_OID   403
 

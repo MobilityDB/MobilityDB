@@ -35,8 +35,8 @@
 #define __TBOX_H__
 
 /* MobilityDB */
+#include "general/mobdb_catalog.h"
 #include "general/span.h"
-#include "general/temporal_catalog.h"
 #include "general/timetypes.h"
 
 /*****************************************************************************/

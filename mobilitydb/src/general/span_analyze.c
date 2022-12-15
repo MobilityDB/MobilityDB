@@ -53,7 +53,7 @@
 #include <meos_internal.h>
 #include "general/set.h"
 /* MobilityDB */
-#include "pg_general/temporal_catalog.h"
+#include "pg_general/mobdb_catalog.h"
 
 /*****************************************************************************/
 
@@ -531,8 +531,9 @@ periodset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 /**
  * Generic function to compute statistics for types represented by spans
  */
-bool
-Span_analyze_ext(FunctionCallInfo fcinfo, mobdbType type)
+static bool
+Span_analyze_ext(FunctionCallInfo fcinfo,
+  void (*func)(VacAttrStats *, AnalyzeAttrFetchFunc, int, double))
 {
   VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
   Form_pg_attribute attr = stats->attr;
@@ -540,48 +541,7 @@ Span_analyze_ext(FunctionCallInfo fcinfo, mobdbType type)
   if (attr->attstattarget < 0)
     attr->attstattarget = default_statistics_target;
 
-  switch (type)
-  {
-    case T_INTSET:
-      stats->compute_stats = intset_compute_stats;
-      break;
-    case T_BIGINTSET:
-      stats->compute_stats = bigintset_compute_stats;
-      break;
-    case T_FLOATSET:
-      stats->compute_stats = floatset_compute_stats;
-      break;
-    case T_TIMESTAMPSET:
-      stats->compute_stats = timestampset_compute_stats;
-      break;
-    case T_INTSPAN:
-      stats->compute_stats = intspan_compute_stats;
-      break;
-    case T_BIGINTSPAN:
-      stats->compute_stats = bigintspan_compute_stats;
-      break;
-    case T_FLOATSPAN:
-      stats->compute_stats = floatspan_compute_stats;
-      break;
-    case T_PERIOD:
-      stats->compute_stats = period_compute_stats;
-      break;
-    case T_INTSPANSET:
-      stats->compute_stats = intspanset_compute_stats;
-      break;
-    case T_BIGINTSPANSET:
-      stats->compute_stats = bigintspanset_compute_stats;
-      break;
-    case T_FLOATSPANSET:
-      stats->compute_stats = floatspanset_compute_stats;
-      break;
-    case T_PERIODSET:
-      stats->compute_stats = periodset_compute_stats;
-      break;
-    default:
-      elog(ERROR, "unknown type for span analyze: %d", type);
-      break;
-  }
+  stats->compute_stats = func;
 
   /* same as in std_typanalyze */
   stats->minrows = 300 * attr->attstattarget;
@@ -598,7 +558,7 @@ PG_FUNCTION_INFO_V1(Intset_analyze);
 PGDLLEXPORT Datum
 Intset_analyze(PG_FUNCTION_ARGS)
 {
-  return Span_analyze_ext(fcinfo, T_INTSET);
+  return Span_analyze_ext(fcinfo, &intset_compute_stats);
 }
 
 PG_FUNCTION_INFO_V1(Bigintset_analyze);
@@ -608,7 +568,7 @@ PG_FUNCTION_INFO_V1(Bigintset_analyze);
 PGDLLEXPORT Datum
 Bigintset_analyze(PG_FUNCTION_ARGS)
 {
-  return Span_analyze_ext(fcinfo, T_BIGINTSET);
+  return Span_analyze_ext(fcinfo, &bigintset_compute_stats);
 }
 
 PG_FUNCTION_INFO_V1(Floatset_analyze);
@@ -618,7 +578,7 @@ PG_FUNCTION_INFO_V1(Floatset_analyze);
 PGDLLEXPORT Datum
 Floatset_analyze(PG_FUNCTION_ARGS)
 {
-  return Span_analyze_ext(fcinfo, T_FLOATSET);
+  return Span_analyze_ext(fcinfo, &floatset_compute_stats);
 }
 
 PG_FUNCTION_INFO_V1(Timestampset_analyze);
@@ -628,7 +588,7 @@ PG_FUNCTION_INFO_V1(Timestampset_analyze);
 PGDLLEXPORT Datum
 Timestampset_analyze(PG_FUNCTION_ARGS)
 {
-  return Span_analyze_ext(fcinfo, T_TIMESTAMPSET);
+  return Span_analyze_ext(fcinfo, &timestampset_compute_stats);
 }
 
 /*****************************************************************************/
@@ -640,7 +600,7 @@ PG_FUNCTION_INFO_V1(Intspan_analyze);
 PGDLLEXPORT Datum
 Intspan_analyze(PG_FUNCTION_ARGS)
 {
-  return Span_analyze_ext(fcinfo, T_INTSPAN);
+  return Span_analyze_ext(fcinfo, &intspan_compute_stats);
 }
 
 PG_FUNCTION_INFO_V1(Bigintspan_analyze);
@@ -650,7 +610,7 @@ PG_FUNCTION_INFO_V1(Bigintspan_analyze);
 PGDLLEXPORT Datum
 Bigintspan_analyze(PG_FUNCTION_ARGS)
 {
-  return Span_analyze_ext(fcinfo, T_BIGINTSPAN);
+  return Span_analyze_ext(fcinfo, &bigintspan_compute_stats);
 }
 
 PG_FUNCTION_INFO_V1(Floatspan_analyze);
@@ -660,7 +620,7 @@ PG_FUNCTION_INFO_V1(Floatspan_analyze);
 PGDLLEXPORT Datum
 Floatspan_analyze(PG_FUNCTION_ARGS)
 {
-  return Span_analyze_ext(fcinfo, T_FLOATSPAN);
+  return Span_analyze_ext(fcinfo, &floatspan_compute_stats);
 }
 
 PG_FUNCTION_INFO_V1(Period_analyze);
@@ -670,7 +630,7 @@ PG_FUNCTION_INFO_V1(Period_analyze);
 PGDLLEXPORT Datum
 Period_analyze(PG_FUNCTION_ARGS)
 {
-  return Span_analyze_ext(fcinfo, T_PERIOD);
+  return Span_analyze_ext(fcinfo, &period_compute_stats);
 }
 
 /*****************************************************************************/
@@ -682,7 +642,7 @@ PG_FUNCTION_INFO_V1(Intspanset_analyze);
 PGDLLEXPORT Datum
 Intspanset_analyze(PG_FUNCTION_ARGS)
 {
-  return Span_analyze_ext(fcinfo, T_INTSPANSET);
+  return Span_analyze_ext(fcinfo, &intspanset_compute_stats);
 }
 
 PG_FUNCTION_INFO_V1(Bigintspanset_analyze);
@@ -692,7 +652,7 @@ PG_FUNCTION_INFO_V1(Bigintspanset_analyze);
 PGDLLEXPORT Datum
 Bigintspanset_analyze(PG_FUNCTION_ARGS)
 {
-  return Span_analyze_ext(fcinfo, T_BIGINTSPANSET);
+  return Span_analyze_ext(fcinfo, &bigintspanset_compute_stats);
 }
 
 PG_FUNCTION_INFO_V1(Floatspanset_analyze);
@@ -702,7 +662,7 @@ PG_FUNCTION_INFO_V1(Floatspanset_analyze);
 PGDLLEXPORT Datum
 Floatspanset_analyze(PG_FUNCTION_ARGS)
 {
-  return Span_analyze_ext(fcinfo, T_FLOATSPANSET);
+  return Span_analyze_ext(fcinfo, &floatspanset_compute_stats);
 }
 
 PG_FUNCTION_INFO_V1(Periodset_analyze);
@@ -712,7 +672,7 @@ PG_FUNCTION_INFO_V1(Periodset_analyze);
 PGDLLEXPORT Datum
 Periodset_analyze(PG_FUNCTION_ARGS)
 {
-  return Span_analyze_ext(fcinfo, T_PERIODSET);
+  return Span_analyze_ext(fcinfo, &periodset_compute_stats);
 }
 
 /*****************************************************************************/

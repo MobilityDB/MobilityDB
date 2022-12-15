@@ -60,7 +60,7 @@ typedef struct
   const uint8_t *wkb;     /**< Points to start of WKB */
   size_t wkb_size;        /**< Expected size of WKB */
   bool swap_bytes;        /**< Do an endian flip? */
-  uint8_t orderedsettype; /**< Current span type we are handling */
+  uint8_t settype;        /**< Current span type we are handling */
   uint8_t spantype;       /**< Current span type we are handling */
   uint8_t spansettype;    /**< Current span set type we are handling */
   uint8_t basetype;       /**< Current base type we are handling */
@@ -1043,35 +1043,6 @@ npoint_from_wkb_state(wkb_parse_state *s)
 /*****************************************************************************/
 
 /**
- * Take in an unknown span type of WKB type number and ensure it comes out
- * as an extended WKB span type number.
- */
-void
-span_spantype_from_wkb_state(wkb_parse_state *s, uint16_t wkb_spantype)
-{
-  switch (wkb_spantype)
-  {
-    case MOBDB_WKB_T_INTSPAN:
-      s->spantype = T_INTSPAN;
-      break;
-    case MOBDB_WKB_T_BIGINTSPAN:
-      s->spantype = T_BIGINTSPAN;
-      break;
-    case MOBDB_WKB_T_FLOATSPAN:
-      s->spantype = T_FLOATSPAN;
-      break;
-    case MOBDB_WKB_T_PERIOD:
-      s->spantype = T_PERIOD;
-      break;
-    default: /* Error! */
-      elog(ERROR, "Unknown WKB span type: %d", wkb_spantype);
-      break;
-  }
-  s->basetype = spantype_basetype(s->spantype);
-  return;
-}
-
-/**
  * Return the size of a span base value from its WKB representation.
  */
 static size_t
@@ -1174,41 +1145,11 @@ span_from_wkb_state(wkb_parse_state *s)
 {
   /* Read the span type */
   uint16_t wkb_spantype = (uint16_t) int16_from_wkb_state(s);
-  span_spantype_from_wkb_state(s, wkb_spantype);
+  s->spantype = wkb_spantype;
   return span_from_wkb_state1(s);
 }
 
 /*****************************************************************************/
-
-/**
- * Take in an unknown span set type of WKB type number and ensure it comes out
- * as an extended WKB span set type number.
- */
-void
-spanset_spansettype_from_wkb_state(wkb_parse_state *s, uint16_t wkb_spansettype)
-{
-  switch (wkb_spansettype)
-  {
-    case MOBDB_WKB_T_INTSPANSET:
-      s->spansettype = T_INTSPANSET;
-      break;
-    case MOBDB_WKB_T_BIGINTSPANSET:
-      s->spansettype = T_BIGINTSPANSET;
-      break;
-    case MOBDB_WKB_T_FLOATSPANSET:
-      s->spansettype = T_FLOATSPANSET;
-      break;
-    case MOBDB_WKB_T_PERIODSET:
-      s->spansettype = T_PERIODSET;
-      break;
-    default: /* Error! */
-      elog(ERROR, "Unknown WKB span set type: %d", wkb_spansettype);
-      break;
-  }
-  s->spantype = spansettype_spantype(s->spansettype);
-  s->basetype = spantype_basetype(s->spantype);
-  return;
-}
 
 /**
  * Return a span set from its WKB representation
@@ -1218,7 +1159,9 @@ spanset_from_wkb_state(wkb_parse_state *s)
 {
   /* Read the span type */
   uint16_t wkb_spansettype = (uint16_t) int16_from_wkb_state(s);
-  spanset_spansettype_from_wkb_state(s, wkb_spansettype);
+  s->spansettype = wkb_spansettype;
+  s->spantype = spansettype_spantype(s->spansettype);
+  s->basetype = spantype_basetype(s->spantype);
 
   /* Read the number of spans and allocate space for them */
   int count = int32_from_wkb_state(s);
@@ -1234,43 +1177,14 @@ spanset_from_wkb_state(wkb_parse_state *s)
 /*****************************************************************************/
 
 /**
- * Take in an unknown span type of WKB type number and ensure it comes out
- * as an extended WKB span type number.
- */
-void
-set_settype_from_wkb_state(wkb_parse_state *s, uint16_t wkb_settype)
-{
-  switch (wkb_settype)
-  {
-    case MOBDB_WKB_T_INTSET:
-      s->orderedsettype = T_INTSET;
-      break;
-    case MOBDB_WKB_T_BIGINTSET:
-      s->orderedsettype = T_BIGINTSET;
-      break;
-    case MOBDB_WKB_T_FLOATSET:
-      s->orderedsettype = T_FLOATSET;
-      break;
-    case MOBDB_WKB_T_TIMESTAMPSET:
-      s->orderedsettype = T_TIMESTAMPSET;
-      break;
-    default: /* Error! */
-      elog(ERROR, "Unknown WKB ordered set type: %d", wkb_settype);
-      break;
-  }
-  s->basetype = settype_basetype(s->orderedsettype);
-  return;
-}
-
-/**
  * Return a value from its WKB representation.
  */
 static Datum
 set_basevalue_from_wkb_state(wkb_parse_state *s)
 {
   Datum result;
-  ensure_set_type(s->orderedsettype);
-  switch (s->orderedsettype)
+  ensure_set_type(s->settype);
+  switch (s->settype)
   {
     case T_INTSET:
       result = Int32GetDatum(int32_from_wkb_state(s));
@@ -1285,7 +1199,7 @@ set_basevalue_from_wkb_state(wkb_parse_state *s)
       result = TimestampTzGetDatum(timestamp_from_wkb_state(s));
       break;
     default: /* Error! */
-      elog(ERROR, "Unknown ordered set type: %d", s->orderedsettype);
+      elog(ERROR, "Unknown ordered set type: %d", s->settype);
       break;
   }
   return result;
@@ -1299,7 +1213,8 @@ set_from_wkb_state(wkb_parse_state *s)
 {
   /* Read the ordered set type */
   uint16_t wkb_settype = (uint16_t) int16_from_wkb_state(s);
-  set_settype_from_wkb_state(s, wkb_settype);
+  s->settype = wkb_settype;
+  s->basetype = settype_basetype(s->settype);
   /* Read the number of values and allocate space for them */
   int count = int32_from_wkb_state(s);
   Datum *values = palloc(sizeof(Datum) * count);
@@ -1421,46 +1336,6 @@ stbox_from_wkb_state(wkb_parse_state *s)
 }
 
 /*****************************************************************************/
-
-/**
- * Take in an unknown temporal type of WKB type number and ensure it comes out
- * as an extended WKB temporal type number.
- */
-void
-temporal_temptype_from_wkb_state(wkb_parse_state *s, uint16_t wkb_temptype)
-{
-  switch (wkb_temptype)
-  {
-    case MOBDB_WKB_T_TBOOL:
-      s->temptype = T_TBOOL;
-      break;
-    case MOBDB_WKB_T_TINT:
-      s->temptype = T_TINT;
-      break;
-    case MOBDB_WKB_T_TFLOAT:
-      s->temptype = T_TFLOAT;
-      break;
-    case MOBDB_WKB_T_TTEXT:
-      s->temptype = T_TTEXT;
-      break;
-    case MOBDB_WKB_T_TGEOMPOINT:
-      s->temptype = T_TGEOMPOINT;
-      break;
-    case MOBDB_WKB_T_TGEOGPOINT:
-      s->temptype = T_TGEOGPOINT;
-      break;
-#if NPOINT
-    case MOBDB_WKB_T_TNPOINT:
-      s->temptype = T_TNPOINT;
-      break;
-#endif /* NPOINT */
-    default: /* Error! */
-      elog(ERROR, "Unknown WKB temporal type: %d", wkb_temptype);
-      break;
-  }
-  s->basetype = temptype_basetype(s->temptype);
-  return;
-}
 
 /**
  * Take in an unknown kind of WKB type number and ensure it comes out as an
@@ -1652,7 +1527,8 @@ temporal_from_wkb_state(wkb_parse_state *s)
 {
   /* Read the temporal type */
   uint16_t wkb_temptype = (uint16_t) int16_from_wkb_state(s);
-  temporal_temptype_from_wkb_state(s, wkb_temptype);
+  s->temptype = wkb_temptype;
+  s->basetype = temptype_basetype(s->temptype);
 
   /* Read the temporal and interpolation flags */
   uint8_t wkb_flags = (uint8_t) byte_from_wkb_state(s);

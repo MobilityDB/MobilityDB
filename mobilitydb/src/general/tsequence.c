@@ -34,6 +34,7 @@
 #include "general/tsequence.h"
 
 /* PostgreSQL */
+#include <postgres.h>
 #include <libpq/pqformat.h>
 /* MEOS */
 #include <meos.h>

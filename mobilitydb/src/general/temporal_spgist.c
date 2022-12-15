@@ -39,11 +39,11 @@
 #include <postgres.h>
 #include <access/spgist.h>
 /* MEOS */
-#include "general/timetypes.h"
-#include "general/temporal.h"
-#include "general/temporal_catalog.h"
+#include "general/mobdb_catalog.h"
 #include "general/span.h"
+#include "general/temporal.h"
 #include "general/temporaltypes.h"
+#include "general/timetypes.h"
 /* MobilityDB */
 #include "pg_general/time_gist.h"
 

@@ -48,8 +48,8 @@
 #include "general/spanset.h"
 #include "general/temporal.h"
 /* MobilityDB */
+#include "pg_general/mobdb_catalog.h"
 #include "pg_general/temporal.h"
-#include "pg_general/temporal_catalog.h"
 
 /*****************************************************************************
  * GiST consistent methods
@@ -342,7 +342,7 @@ Span_gist_penalty(PG_FUNCTION_ARGS)
 #define PLACE_LEFT(span, off)          \
   do {                    \
     if (v->spl_nleft > 0)          \
-      left_span = bbox_union_span_span(left_span, span, false); \
+      left_span = bbox_union_span_span(left_span, span); \
     else                  \
       left_span = (span);        \
     v->spl_left[v->spl_nleft++] = (off);  \
@@ -351,7 +351,7 @@ Span_gist_penalty(PG_FUNCTION_ARGS)
 #define PLACE_RIGHT(span, off)        \
   do {                    \
     if (v->spl_nright > 0)          \
-      right_span = bbox_union_span_span(right_span, span, false); \
+      right_span = bbox_union_span_span(right_span, span); \
     else                  \
       right_span = (span);      \
     v->spl_right[v->spl_nright++] = (off);  \

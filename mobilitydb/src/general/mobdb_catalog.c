@@ -39,14 +39,14 @@
  * integer, timestamptz, box, geometry, ...) or a newly defined type (such as
  * period, tint, ...), currently 33.
  *
- * There are currently 3,392 operators, each of which is identified by an Oid.
+ * There are currently 4K+ operators, each of which is identified by an Oid.
  * To avoid enumerating all of these operators in the Oid cache, we use a
  * two-dimensional array containing all possible combinations of
- * operator/left argument/right argument (currently 23 * 40 * 40 = 36,800 cells).
+ * operator/left argument/right argument.
  * The invalid combinations will be initialized to 0.
  */
 
-#include "general/temporal_catalog.h"
+#include "pg_general/mobdb_catalog.h"
 
 /* PostgreSQL */
 #include <postgres.h>
@@ -60,8 +60,8 @@
 #if NPOINT
   #include "npoint/tnpoint_static.h"
 #endif
-/* MobilityDB */
-#include "pg_general/temporal_catalog.h"
+#include "general/mobdb_catalog.h"
+
 
 /*****************************************************************************
  * Global variables
@@ -83,12 +83,8 @@ const char *_type_names[] =
   [T_FLOATSPAN] = "floatspan",
   [T_FLOATSPANSET] = "floatspanset",
   [T_INT4] = "int4",
-#if ! MEOS
   [T_INT4RANGE] = "int4range",
-#if POSTGRESQL_VERSION_NUMBER >= 140000
   [T_INT4MULTIRANGE] = "int4multirange",
-#endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
-#endif /* ! MEOS */
   [T_INTSET] = "intset",
   [T_INTSPAN] = "intspan",
   [T_INTSPANSET] = "intspanset",
@@ -109,12 +105,8 @@ const char *_type_names[] =
   [T_TIMESTAMPSET] = "timestampset",
   [T_TIMESTAMPTZ] = "timestamptz",
   [T_TINT] = "tint",
-#if ! MEOS
   [T_TSTZRANGE] = "tstzrange",
-#if POSTGRESQL_VERSION_NUMBER >= 140000
   [T_TSTZMULTIRANGE] = "tstzmultirange",
-#endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
-#endif /* ! MEOS */
   [T_TTEXT] = "ttext",
   [T_GEOMETRY] = "geometry",
   [T_GEOGRAPHY] = "geography",
@@ -210,13 +202,10 @@ populate_typeoid_cache()
   int n = sizeof(_type_names) / sizeof(char *);
   for (int i = 0; i < n; i++)
   {
-    if (! internal_type(_type_names[i]))
-    {
+    /* Depending on the PG version some types may not exist (e.g.,
+     * multirangetype) and in this case _type_names[i] will be equal to 0 */
+    if (_type_names[i] && ! internal_type(_type_names[i]))
       _type_oids[i] = TypenameGetTypid(_type_names[i]);
-      if (!_type_oids[i])
-        ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-          errmsg("No Oid for type %s", _type_names[i])));
-    }
   }
   return;
 }

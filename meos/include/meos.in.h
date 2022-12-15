@@ -592,7 +592,7 @@ extern bool right_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2);
 
 /* Set functions for set and span types */
 
-extern Span *bbox_union_span_span(const Span *s1, const Span *s2, bool strict);
+extern Span *bbox_union_span_span(const Span *s1, const Span *s2);
 extern Set *intersection_set_set(const Set *os1, const Set *os2);
 extern bool intersection_period_timestamp(const Period *p, TimestampTz t, TimestampTz *result);
 extern bool intersection_periodset_timestamp(const PeriodSet *ps, TimestampTz t, TimestampTz *result);

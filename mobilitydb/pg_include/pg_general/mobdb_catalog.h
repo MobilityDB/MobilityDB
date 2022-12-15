@@ -31,16 +31,14 @@
  * @brief Functions for building a cache of type and operator Oids.
  */
 
-#ifndef __PG_TEMPORAL_CATALOG_H__
-#define __PG_TEMPORAL_CATALOG_H__
+#ifndef __PG_MOBDB_CATALOG_H__
+#define __PG_MOBDB_CATALOG_H__
 
 /* PostgreSQL */
 #include <postgres.h>
 /* MEOS */
-#include "meos.h"
-#include "general/temporal_catalog.h"
-/* MobilityDB */
-#include "pg_general/temporal_catalog.h"
+#include <meos.h>
+#include "general/mobdb_catalog.h"
 
 /*****************************************************************************/
 
@@ -93,5 +91,5 @@ extern mobdbType oid_type(Oid typid);
 
 /*****************************************************************************/
 
-#endif /* __PG_TEMPORAL_CATALOG_H__ */
+#endif /* __PG_MOBDB_CATALOG_H__ */
 

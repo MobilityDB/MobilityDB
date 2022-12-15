@@ -32,7 +32,7 @@
  * span types in global arrays.
  */
 
-#include "general/temporal_catalog.h"
+#include "general/mobdb_catalog.h"
 
 /* PostgreSQL */
 /* MobilityDB */

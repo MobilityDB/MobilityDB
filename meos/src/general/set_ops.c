@@ -31,8 +31,6 @@
  * @brief Operators for set types.
  */
 
-#include "general/set_ops.h"
-
 /* C */
 #include <assert.h>
 /* PostgreSQL */

@@ -48,8 +48,8 @@
 /* C */
 #include <assert.h>
 /* MobilityDB */
+#include "general/mobdb_catalog.h"
 #include "general/temporaltypes.h"
-#include "general/temporal_catalog.h"
 #include "general/temporal_util.h"
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
