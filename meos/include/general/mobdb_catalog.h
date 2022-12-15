@@ -47,7 +47,8 @@
  */
 typedef enum
 {
-  // T_UNKNOWN = 0,
+  T_UNKNOWN        = 0,   /**< unknown type, used for template classes such as
+                               set, span, spanset, and temporal */
   T_BOOL           = 1,   /**< boolean type */
   T_DOUBLE2        = 2,   /**< double2 type */
   T_DOUBLE3        = 3,   /**< double3 type */

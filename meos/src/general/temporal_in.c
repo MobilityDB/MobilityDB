@@ -60,9 +60,8 @@ typedef struct
   const uint8_t *wkb;     /**< Points to start of WKB */
   size_t wkb_size;        /**< Expected size of WKB */
   bool swap_bytes;        /**< Do an endian flip? */
-  uint8_t settype;        /**< Current span type we are handling */
+  uint8_t type;           /**< Current type we are handling */
   uint8_t spantype;       /**< Current span type we are handling */
-  uint8_t spansettype;    /**< Current span set type we are handling */
   uint8_t basetype;       /**< Current base type we are handling */
   uint8_t temptype;       /**< Current temporal type we are handling */
   uint8_t subtype;        /**< Current temporal subtype we are handling */
@@ -1160,8 +1159,9 @@ spanset_from_wkb_state(wkb_parse_state *s)
 {
   /* Read the span type */
   uint16_t wkb_spansettype = (uint16_t) int16_from_wkb_state(s);
-  s->spansettype = wkb_spansettype;
-  s->spantype = spansettype_spantype(s->spansettype);
+  /* For template classes it is necessary to store the specific type */
+  s->type = wkb_spansettype;
+  s->spantype = spansettype_spantype(s->type);
   s->basetype = spantype_basetype(s->spantype);
 
   /* Read the number of spans and allocate space for them */
@@ -1184,8 +1184,8 @@ static Datum
 set_basevalue_from_wkb_state(wkb_parse_state *s)
 {
   Datum result;
-  ensure_set_type(s->settype);
-  switch (s->settype)
+  ensure_set_type(s->type);
+  switch (s->type)
   {
     case T_INTSET:
       result = Int32GetDatum(int32_from_wkb_state(s));
@@ -1200,7 +1200,7 @@ set_basevalue_from_wkb_state(wkb_parse_state *s)
       result = TimestampTzGetDatum(timestamp_from_wkb_state(s));
       break;
     default: /* Error! */
-      elog(ERROR, "Unknown ordered set type: %d", s->settype);
+      elog(ERROR, "Unknown ordered set type: %d", s->type);
       break;
   }
   return result;
@@ -1214,8 +1214,9 @@ set_from_wkb_state(wkb_parse_state *s)
 {
   /* Read the ordered set type */
   uint16_t wkb_settype = (uint16_t) int16_from_wkb_state(s);
-  s->settype = wkb_settype;
-  s->basetype = settype_basetype(s->settype);
+  /* For template classes it is necessary to store the specific type */
+  s->type = wkb_settype;;
+  s->basetype = settype_basetype(s->type);
   /* Read the number of values and allocate space for them */
   int count = int32_from_wkb_state(s);
   Datum *values = palloc(sizeof(Datum) * count);
@@ -1579,6 +1580,7 @@ datum_from_wkb(const uint8_t *wkb, int size, mobdbType type)
     s.swap_bytes = true;
 
   /* Call the type-specific function */
+  s.type = type;
   Datum result;
   switch (type)
   {
@@ -1650,9 +1652,8 @@ datum_from_hexwkb(const char *hexwkb, int size, mobdbType type)
 Set *
 set_from_wkb(const uint8_t *wkb, int size)
 {
-  /* We pass ANY set type to the dispatch function but the actual set type
-   * will be read from the byte string */
-  return DatumGetSetP(datum_from_wkb(wkb, size, T_TIMESTAMPSET));
+  /* We pass ANY set type, the actual type is read from the byte string */
+  return DatumGetSetP(datum_from_wkb(wkb, size, T_INTSET));
 }
 
 /**
@@ -1665,7 +1666,8 @@ Set *
 set_from_hexwkb(const char *hexwkb)
 {
   int size = strlen(hexwkb);
-  return DatumGetTimestampSetP(datum_from_hexwkb(hexwkb, size, T_TIMESTAMPSET));
+  /* We pass ANY set type, the actual type is read from the byte string */
+  return DatumGetSetP(datum_from_hexwkb(hexwkb, size, T_INTSET));
 }
 
 /*****************************************************************************/
@@ -1679,8 +1681,7 @@ set_from_hexwkb(const char *hexwkb)
 Span *
 span_from_wkb(const uint8_t *wkb, int size)
 {
-  /* We pass ANY span type to the dispatch function but the actual span type
-   * will be read from the byte string */
+  /* We pass ANY span type, the actual type is read from the byte string */
   return DatumGetSpanP(datum_from_wkb(wkb, size, T_INTSPAN));
 }
 
@@ -1693,8 +1694,7 @@ Span *
 span_from_hexwkb(const char *hexwkb)
 {
   int size = strlen(hexwkb);
-  /* We pass ANY span type to the dispatch function but the actual span type
-   * will be read from the byte string */
+  /* We pass ANY span type, the actual type is read from the byte string */
   return DatumGetSpanP(datum_from_hexwkb(hexwkb, size, T_INTSPAN));
 }
 
@@ -1709,9 +1709,8 @@ span_from_hexwkb(const char *hexwkb)
 PeriodSet *
 spanset_from_wkb(const uint8_t *wkb, int size)
 {
-  /* We pass ANY span type to the dispatch function but the actual span type
-   * will be read from the byte string */
-  return DatumGetSpanSetP(datum_from_wkb(wkb, size, T_PERIODSET));
+  /* We pass ANY span set type, the actual type is read from the byte string */
+  return DatumGetSpanSetP(datum_from_wkb(wkb, size, T_INTSPANSET));
 }
 
 /**
@@ -1722,10 +1721,9 @@ spanset_from_wkb(const uint8_t *wkb, int size)
 PeriodSet *
 spanset_from_hexwkb(const char *hexwkb)
 {
-  /* We pass ANY span type to the dispatch function but the actual span type
-   * will be read from the byte string */
   int size = strlen(hexwkb);
-  return DatumGetPeriodSetP(datum_from_hexwkb(hexwkb, size, T_PERIODSET));
+  /* We pass ANY span set type, the actual type is read from the byte string */
+  return DatumGetPeriodSetP(datum_from_hexwkb(hexwkb, size, T_INTSPANSET));
 }
 
 /*****************************************************************************/
@@ -1793,8 +1791,7 @@ stbox_from_hexwkb(const char *hexwkb)
 Temporal *
 temporal_from_wkb(const uint8_t *wkb, int size)
 {
-  /* We pass ANY temporal type to the dispatch function but the actual temporal
-   * type will be read from the byte string */
+  /* We pass ANY temporal type, the actual type is read from the byte string */
   return DatumGetTemporalP(datum_from_wkb(wkb, size, T_TINT));
 }
 
@@ -1808,8 +1805,7 @@ Temporal *
 temporal_from_hexwkb(const char *hexwkb)
 {
   int size = strlen(hexwkb);
-  /* We pass ANY temporal type to the dispatch function but the actual temporal
-   * type will be read from the byte string */
+  /* We pass ANY temporal type, the actual type is read from the byte string */
   return DatumGetTemporalP(datum_from_hexwkb(hexwkb, size, T_TINT));
 }
 
