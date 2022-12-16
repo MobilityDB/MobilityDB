@@ -360,7 +360,7 @@ Set *
 set_parse(const char **str, mobdbType ostype)
 {
   if (!p_obrace(str))
-    elog(ERROR, "Could not parse ordered set");
+    elog(ERROR, "Could not parse the set");
 
   /* First parsing */
   mobdbType basetype = settype_basetype(ostype);
@@ -373,7 +373,7 @@ set_parse(const char **str, mobdbType ostype)
     elem_parse(str, basetype);
   }
   if (!p_cbrace(str))
-    elog(ERROR, "Could not parse ordered set");
+    elog(ERROR, "Could not parse the set");
 
   *str = bak;
   Datum *values = palloc(sizeof(Datum) * count);

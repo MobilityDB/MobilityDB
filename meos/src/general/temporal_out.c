@@ -1077,7 +1077,7 @@ set_basetype_to_wkb_size(const Set *os)
 }
 
 /**
- * Return the size in bytes of an ordered set represented in Well-Known Binary
+ * Return the size in bytes of a set represented in Well-Known Binary
  * (WKB) format
  */
 static size_t
@@ -1652,7 +1652,7 @@ npoint_to_wkb_buf(const Npoint *np, uint8_t *buf, uint8_t variant)
 /*****************************************************************************/
 
 /**
- * Write into the buffer the ordered set type
+ * Write into the buffer the set type
  */
 static uint8_t *
 set_settype_to_wkb_buf(const Set *os, uint8_t *buf, uint8_t variant)
@@ -1702,7 +1702,7 @@ set_value_to_wkb_buf(Datum value, mobdbType basetype, uint8_t *buf,
 }
 
 /**
- * Write into the buffer an ordered set represented in Well-Known Binary (WKB)
+ * Write into the buffer a set represented in Well-Known Binary (WKB)
  * format as follows
  * - Endian byte
  * - Ordered set type: int16
@@ -1714,7 +1714,7 @@ set_to_wkb_buf(const Set *os, uint8_t *buf, uint8_t variant)
 {
   /* Write the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
-  /* Write the ordered set type */
+  /* Write the set type */
   buf = set_settype_to_wkb_buf(os, buf, variant);
   /* Write the count */
   buf = int32_to_wkb_buf(os->count, buf, variant);
@@ -2383,30 +2383,30 @@ span_as_hexwkb(const Span *s, uint8_t variant, size_t *size_out)
 
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Return the WKB representation of an ordered set.
+ * @brief Return the WKB representation of a set.
  * @sqlfunc asBinary()
  */
 uint8_t *
 set_as_wkb(const Set *os, uint8_t variant, size_t *size_out)
 {
-  mobdbType orderedsettype = basetype_settype(os->span.basetype);
-  uint8_t *result = datum_as_wkb(PointerGetDatum(os), orderedsettype,
-    variant, size_out);
+  mobdbType settype = basetype_settype(os->span.basetype);
+  uint8_t *result = datum_as_wkb(PointerGetDatum(os), settype, variant,
+    size_out);
   return result;
 }
 
 #if MEOS
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Return the WKB representation of an ordered set in hex-encoded ASCII.
+ * @brief Return the WKB representation of a set in hex-encoded ASCII.
  * @sqlfunc asHexWKB()
  */
 char *
 set_as_hexwkb(const TimestampSet *ts, uint8_t variant,
   size_t *size_out)
 {
-  mobdbType orderedsettype = basetype_settype(os->span.basetype);
-  char *result = (char *) datum_as_wkb(PointerGetDatum(ts), orderedsettype,
+  mobdbType settype = basetype_settype(os->span.basetype);
+  char *result = (char *) datum_as_wkb(PointerGetDatum(ts), settype,
     variant | (uint8_t) WKB_HEX, size_out);
   return result;
 }

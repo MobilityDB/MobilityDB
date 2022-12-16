@@ -68,7 +68,7 @@ Contains_span_value(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Contains_span_set);
 /**
  * @ingroup mobilitydb_setspan_topo
- * @brief Return true if a span contains an ordered set
+ * @brief Return true if a span contains a set
  * @sqlfunc span_contains()
  * @sqlop @p \@>
  */
@@ -120,7 +120,7 @@ Contained_value_span(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Contained_set_span);
 /**
  * @ingroup mobilitydb_setspan_topo
- * @brief Return true if an ordered set is contained by a span
+ * @brief Return true if a set is contained by a span
  * @sqlfunc time_contained()
  * @sqlop @p <@
  */
@@ -156,7 +156,7 @@ Contained_span_span(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Overlaps_set_span);
 /**
  * @ingroup mobilitydb_spantime_topo
- * @brief Return true if an ordered set and a span overlap
+ * @brief Return true if a set and a span overlap
  * @sqlfunc span_overlaps()
  * @sqlop @p &&
  */
@@ -173,7 +173,7 @@ Overlaps_set_span(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Overlaps_span_set);
 /**
  * @ingroup mobilitydb_setspan_topo
- * @brief Return true if a span and an ordered set overlap
+ * @brief Return true if a span and a set overlap
  * @sqlfunc span_overlaps()
  * @sqlop @p &&
  */
@@ -225,7 +225,7 @@ Adjacent_value_span(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Adjacent_set_span);
 /**
  * @ingroup mobilitydb_setspan_topo
- * @brief Return true if an ordered set and a span are adjacent
+ * @brief Return true if a set and a span are adjacent
  * @sqlfunc time_adjacent()
  * @sqlop @p -|-
  */
@@ -258,7 +258,7 @@ Adjacent_span_value(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Adjacent_span_set);
 /**
  * @ingroup mobilitydb_setspan_topo
- * @brief Return true if a span and an ordered set are adjacent
+ * @brief Return true if a span and a set are adjacent
  * @sqlfunc time_adjacent()
  * @sqlop @p -|-
  */
@@ -310,7 +310,7 @@ Left_value_span(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Left_set_span);
 /**
  * @ingroup mobilitydb_setspan_pos
- * @brief Return true if an ordered set is strictly before a span
+ * @brief Return true if a set is strictly before a span
  * @sqlfunc time_before()
  * @sqlop @p <<#
  */
@@ -343,7 +343,7 @@ Left_span_value(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Left_span_set);
 /**
  * @ingroup mobilitydb_setspan_pos
- * @brief Return true if a span is strictly before an ordered set
+ * @brief Return true if a span is strictly before a set
  * @sqlfunc time_before()
  * @sqlop @p <<#
  */
@@ -395,7 +395,7 @@ Right_value_span(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Right_set_span);
 /**
  * @ingroup mobilitydb_setspan_pos
- * @brief Return true if an ordered set is strictly to the right of a span
+ * @brief Return true if a set is strictly to the right of a span
  * @sqlfunc time_after()
  * @sqlop @p #>>
  */
@@ -427,7 +427,7 @@ Right_span_value(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Right_span_set);
 /**
  * @ingroup mobilitydb_setspan_pos
- * @brief Return true if a span is strictly after an ordered set
+ * @brief Return true if a span is strictly after a set
  * @sqlfunc time_after()
  * @sqlop @p #>>
  */
@@ -479,7 +479,7 @@ Overleft_value_span(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Overleft_set_span);
 /**
  * @ingroup mobilitydb_setspan_pos
- * @brief Return true if an ordered set is not after a span
+ * @brief Return true if a set is not after a span
  * @sqlfunc time_overleft()
  * @sqlop @p &<#
  */
@@ -512,7 +512,7 @@ Overleft_span_value(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Overleft_span_set);
 /**
  * @ingroup mobilitydb_setspan_pos
- * @brief Return true if a span is not after an ordered set
+ * @brief Return true if a span is not after a set
  * @sqlfunc time_overleft()
  * @sqlop @p &<#
  */
@@ -564,7 +564,7 @@ Overright_value_span(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Overright_set_span);
 /**
  * @ingroup mobilitydb_setspan_pos
- * @brief Return true if an ordered set is not left a span
+ * @brief Return true if a set is not left a span
  * @sqlfunc time_overafter()
  * @sqlop @p #&>
  */
@@ -597,7 +597,7 @@ Overright_span_value(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Overright_span_set);
 /**
  * @ingroup mobilitydb_setspan_pos
- * @brief Return true if a span is not left an ordered set
+ * @brief Return true if a span is not left a set
  * @sqlfunc time_overafter()
  * @sqlop @p #&>
  */
@@ -650,7 +650,7 @@ Union_value_span(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Union_set_span);
 /**
  * @ingroup mobilitydb_setspan_set
- * @brief Return the union of an ordered set and a span
+ * @brief Return the union of a set and a span
  * @sqlfunc time_union()
  * @sqlop @p +
  */
@@ -684,7 +684,7 @@ Union_span_value(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Union_span_set);
 /**
  * @ingroup mobilitydb_setspan_set
- * @brief Return the union of a span and an ordered set
+ * @brief Return the union of a span and a set
  * @sqlfunc time_union()
  * @sqlop @p +
  */
@@ -740,7 +740,7 @@ Intersection_value_span(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Intersection_set_span);
 /**
  * @ingroup mobilitydb_setspan_set
- * @brief Return the intersection of an ordered set and a span.
+ * @brief Return the intersection of a set and a span.
  * @sqlfunc time_intersection()
  * @sqlop @p *
  */
@@ -779,7 +779,7 @@ Intersection_span_value(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Intersection_span_set);
 /**
  * @ingroup mobilitydb_setspan_set
- * @brief Return the intersection of a span and an ordered set
+ * @brief Return the intersection of a span and a set
  * @sqlfunc time_intersection()
  * @sqlop @p *
  */
@@ -840,7 +840,7 @@ Minus_value_span(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Minus_set_span);
 /**
  * @ingroup mobilitydb_setspan_set
- * @brief Return the difference of an ordered set and period
+ * @brief Return the difference of a set and period
  * @sqlfunc time_minus()
  * @sqlop @p -
  */
@@ -878,7 +878,7 @@ Minus_span_value(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Minus_span_set);
 /**
  * @ingroup mobilitydb_setspan_set
- * @brief Return the difference of a span and an ordered set
+ * @brief Return the difference of a span and a set
  * @sqlfunc time_minus()
  * @sqlop @p -
  */
@@ -955,7 +955,7 @@ Distance_value_span(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Distance_set_span);
 /**
  * @ingroup mobilitydb_setspan_dist
- * @brief Return the distance in seconds between an ordered set and a span
+ * @brief Return the distance in seconds between a set and a span
  * @sqlfunc time_distance()
  * @sqlop @p <->
  */
@@ -990,7 +990,7 @@ Distance_span_value(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Distance_span_set);
 /**
  * @ingroup mobilitydb_setspan_dist
- * @brief Return the distance in seconds between a span and an ordered set
+ * @brief Return the distance in seconds between a span and a set
  * @sqlfunc time_distance()
  * @sqlop @p <->
  */

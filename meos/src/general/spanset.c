@@ -408,7 +408,7 @@ timestamp_to_periodset(TimestampTz t)
 
 /**
  * @ingroup libmeos_setspan_cast
- * @brief Cast an ordered set as a span set.
+ * @brief Cast a set as a span set.
  * @sqlop @p ::
  */
 SpanSet *

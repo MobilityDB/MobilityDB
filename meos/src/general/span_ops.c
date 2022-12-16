@@ -47,7 +47,7 @@
  *****************************************************************************/
 
 /**
- * @brief Return the intersection or the difference of an ordered set and a span
+ * @brief Return the intersection or the difference of a set and a span
  */
 Set *
 setop_set_span(const Set *os, const Span *s, SetOper setop)
@@ -176,7 +176,7 @@ contains_period_timestamp(const Period *p, TimestampTz t)
 
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if a span contains an ordered set.
+ * @brief Return true if a span contains a set.
  * @sqlop @p \@>
  */
 bool
@@ -269,7 +269,7 @@ contained_timestamp_period(TimestampTz t, const Period *p)
 
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if an ordered set is contained by a span
+ * @brief Return true if a set is contained by a span
  * @sqlop @p <@
  */
 bool
@@ -295,7 +295,7 @@ contained_span_span(const Span *s1, const Span *s2)
 
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if an ordered set and a span overlap.
+ * @brief Return true if a set and a span overlap.
  * @sqlop @p &&
  */
 bool
@@ -401,7 +401,7 @@ adjacent_period_timestamp(const Period *p, TimestampTz t)
 
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if a span and an ordered set are adjacent
+ * @brief Return true if a span and a set are adjacent
  * @sqlop @p -|-
  */
 bool
@@ -558,7 +558,7 @@ before_period_timestamp(const Period *p, TimestampTz t)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if an ordered set is strictly left a span.
+ * @brief Return true if a set is strictly left a span.
  * @sqlop @p <<#
  */
 bool
@@ -570,7 +570,7 @@ left_set_span(const Set *os, const Span *s)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a span is strictly to the left of an ordered set
+ * @brief Return true if a span is strictly to the left of a set
  * @sqlop @p <<#
  */
 bool
@@ -655,7 +655,7 @@ after_timestamp_period(TimestampTz t, const Period *p)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if an ordered set is strictly right a span.
+ * @brief Return true if a set is strictly right a span.
  * @sqlop @p #>>
  */
 bool
@@ -722,7 +722,7 @@ after_timestamp_period(TimestampTz t, const Period *p)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a span is strictly right of an ordered set.
+ * @brief Return true if a span is strictly right of a set.
  * @sqlop @p #>>
  */
 bool
@@ -788,7 +788,7 @@ overleft_bigint_bigintspan(int64 i, const Span *s)
 bool
 overleft_float_floatspan(double d, const Span *s)
 {
-  return overleft_value_span(Float8GetDatum(d), T_INT4, s);
+  return overleft_value_span(Float8GetDatum(d), T_FLOAT8, s);
 }
 
 /**
@@ -805,7 +805,7 @@ overbefore_timestamp_period(TimestampTz t, const Period *p)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if an ordered set does not extend to the right of a span.
+ * @brief Return true if a set does not extend to the right of a span.
  * @sqlop @p &<#
  */
 bool
@@ -878,7 +878,7 @@ overbefore_period_timestamp(const Period *p, TimestampTz t)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a span does not extend to the right of an ordered set.
+ * @brief Return true if a span does not extend to the right of a set.
  * @sqlop @p &<#
  */
 bool
@@ -964,7 +964,7 @@ overafter_timestamp_period(TimestampTz t, const Period *p)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if an ordered set does not extend to the left of a span.
+ * @brief Return true if a set does not extend to the left of a span.
  * @sqlop @p #&>
  */
 bool
@@ -976,7 +976,7 @@ overright_set_span(const Set *os, const Span *s)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if an ordered set does not extend to the left of a span set.
+ * @brief Return true if a set does not extend to the left of a span set.
  * @sqlop @p #&>
  */
 bool
@@ -1039,7 +1039,7 @@ overafter_period_timestamp(const Period *p, TimestampTz t)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a span does not extend to the left of an ordered set.
+ * @brief Return true if a span does not extend to the left of a set.
  * @sqlop @p #&>
  */
 bool
@@ -1144,7 +1144,7 @@ union_period_timestamp(const Period *p, TimestampTz t)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the union of a span and an ordered set
+ * @brief Return the union of a span and a set
  * @sqlop @p +
  */
 SpanSet *
@@ -1270,7 +1270,7 @@ intersection_period_timestamp(const Period *p, TimestampTz t,
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the intersection of a span and an ordered set
+ * @brief Return the intersection of a span and a set
  * @sqlop @p *
  */
 Set *
@@ -1399,7 +1399,7 @@ minus_timestamp_period(TimestampTz t, const Period *p, TimestampTz *result)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the difference of an ordered set and a span.
+ * @brief Return the difference of a set and a span.
  * @sqlop @p -
  */
 Set *
@@ -1520,7 +1520,7 @@ minus_period_timestamp(const Period *p, TimestampTz t)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the difference of a span and an ordered set.
+ * @brief Return the difference of a span and a set.
  * @sqlop @p -
  */
 SpanSet *
@@ -1727,7 +1727,7 @@ distance_period_timestamp(const Period *p, TimestampTz t)
 
 /**
  * @ingroup libmeos_setspan_dist
- * @brief Return the distance between a span and an ordered set
+ * @brief Return the distance between a span and a set
  * @sqlop @p <->
  */
 double

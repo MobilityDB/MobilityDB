@@ -28,7 +28,7 @@
  *****************************************************************************/
 
 /**
- * @brief General functions for ordered set values composed of an ordered
+ * @brief General functions for set values composed of an ordered
  * list of distinct values.
  */
 
@@ -129,7 +129,7 @@ Set_send(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Set_constructor);
 /**
  * @ingroup mobilitydb_setspan_constructor
- * @brief Construct an ordered set from an array of values
+ * @brief Construct a set from an array of values
  * @sqlfunc intset(), bigintset(), floatset(), timestampset()
  */
 PGDLLEXPORT Datum
@@ -153,7 +153,7 @@ Set_constructor(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Value_to_set);
 /**
  * @ingroup mobilitydb_setspan_cast
- * @brief Cast a value as an ordered set
+ * @brief Cast a value as a set
  * @sqlfunc timestampset()
  */
 PGDLLEXPORT Datum
@@ -167,7 +167,7 @@ Value_to_set(PG_FUNCTION_ARGS)
 
 /**
  * @ingroup mobilitydb_setspan_cast
- * @brief Peak into an ordered set datum to find the bounding box. If the datum
+ * @brief Peak into a set datum to find the bounding box. If the datum
  * needs to be detoasted, extract only the header and not the full object.
  */
 void
@@ -186,7 +186,7 @@ set_span_slice(Datum d, Span *s)
 PG_FUNCTION_INFO_V1(Set_to_span);
 /**
  * @ingroup mobilitydb_setspan_accessor
- * @brief Return the span of an ordered set
+ * @brief Return the span of a set
  * @sqlfunc timespan()
  */
 PGDLLEXPORT Datum
@@ -205,7 +205,7 @@ Set_to_span(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Set_memory_size);
 /**
  * @ingroup mobilitydb_setspan_accessor
- * @brief Return the memory size in bytes of an ordered set
+ * @brief Return the memory size in bytes of a set
  * @sqlfunc memorySize()
  */
 PGDLLEXPORT Datum
@@ -218,7 +218,7 @@ Set_memory_size(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Set_storage_size);
 /**
  * @ingroup mobilitydb_setspan_accessor
- * @brief Return the storage (compressed) size in bytes of an ordered set
+ * @brief Return the storage (compressed) size in bytes of a set
  * @sqlfunc storageSize()
  */
 PGDLLEXPORT Datum
@@ -231,7 +231,7 @@ Set_storage_size(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Set_num_values);
 /**
  * @ingroup mobilitydb_setspan_accessor
- * @brief Return the number of values of an ordered set
+ * @brief Return the number of values of a set
  * @sqlfunc numTimestamp()
  */
 PGDLLEXPORT Datum
@@ -246,7 +246,7 @@ Set_num_values(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Set_start_value);
 /**
  * @ingroup mobilitydb_setspan_accessor
- * @brief Return the start value of an ordered set
+ * @brief Return the start value of a set
  * @sqlfunc startTimestamp()
  */
 PGDLLEXPORT Datum
@@ -261,7 +261,7 @@ Set_start_value(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Set_end_value);
 /**
  * @ingroup mobilitydb_setspan_accessor
- * @brief Return the end value of an ordered set
+ * @brief Return the end value of a set
  * @sqlfunc endTimestamp()
  */
 PGDLLEXPORT Datum
@@ -276,7 +276,7 @@ Set_end_value(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Set_value_n);
 /**
  * @ingroup mobilitydb_setspan_accessor
- * @brief Return the n-th value of an ordered set
+ * @brief Return the n-th value of a set
  * @sqlfunc timestampN()
  */
 PGDLLEXPORT Datum
@@ -295,7 +295,7 @@ Set_value_n(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Set_values);
 /**
  * @ingroup mobilitydb_setspan_accessor
- * @brief Return the values of an ordered set
+ * @brief Return the values of a set
  * @sqlfunc timestamps()
  */
 PGDLLEXPORT Datum
@@ -414,7 +414,7 @@ Timestampset_shift_tscale(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Set_cmp);
 /**
  * @ingroup mobilitydb_setspan_comp
- * @brief Return -1, 0, or 1 depending on whether the first ordered set
+ * @brief Return -1, 0, or 1 depending on whether the first set
  * is less than, equal, or greater than the second temporal value
  * @sqlfunc timestampset_cmp()
  */
@@ -432,7 +432,7 @@ Set_cmp(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Set_eq);
 /**
  * @ingroup mobilitydb_setspan_comp
- * @brief Return true if the first ordered set is equal to the second one
+ * @brief Return true if the first set is equal to the second one
  * @sqlfunc timestampset_eq()
  * @sqlop @p =
  */
@@ -450,7 +450,7 @@ Set_eq(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Set_ne);
 /**
  * @ingroup mobilitydb_setspan_comp
- * @brief Return true if the first ordered set is different from the second one
+ * @brief Return true if the first set is different from the second one
  * @sqlfunc timestampset_ne()
  * @sqlop @p <>
  */
@@ -468,7 +468,7 @@ Set_ne(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Set_lt);
 /**
  * @ingroup mobilitydb_setspan_comp
- * @brief Return true if the first ordered set is less than the second one
+ * @brief Return true if the first set is less than the second one
  * @sqlfunc timestampset_lt()
  * @sqlop @p <
  */
@@ -486,7 +486,7 @@ Set_lt(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Set_le);
 /**
  * @ingroup mobilitydb_setspan_comp
- * @brief Return true if the first ordered set is less than
+ * @brief Return true if the first set is less than
  * or equal to the second one
  * @sqlfunc timestampset_le()
  * @sqlop @p <=
@@ -505,7 +505,7 @@ Set_le(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Set_ge);
 /**
  * @ingroup mobilitydb_setspan_comp
- * @brief Return true if the first ordered set is greater than
+ * @brief Return true if the first set is greater than
  * or equal to the second one
  * @sqlfunc timestampset_ge()
  * @sqlop @p >=
@@ -524,7 +524,7 @@ Set_ge(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Set_gt);
 /**
  * @ingroup mobilitydb_setspan_comp
- * @brief Return true if the first ordered set is greater than the second one
+ * @brief Return true if the first set is greater than the second one
  * @sqlfunc timestampset_gt()
  * @sqlop @p >
  */
@@ -546,7 +546,7 @@ Set_gt(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Set_hash);
 /**
  * @ingroup mobilitydb_setspan_accessor
- * @brief Return the 32-bit hash of an ordered set
+ * @brief Return the 32-bit hash of a set
  * @sqlfunc timestampset_hash()
  */
 PGDLLEXPORT Datum
@@ -560,7 +560,7 @@ Set_hash(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Set_hash_extended);
 /**
  * @ingroup mobilitydb_setspan_accessor
- * @brief Return the 64-bit hash of an ordered set using a seed
+ * @brief Return the 64-bit hash of a set using a seed
  * @sqlfunc timestampset_hash_extended()
  */
 PGDLLEXPORT Datum

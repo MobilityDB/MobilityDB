@@ -168,7 +168,7 @@ SELECT numSequences(tcount(seq)) FROM tbl_tnpoint_seq;
 SELECT numSequences(tcount(seq, '12 hours')) FROM tbl_tnpoint_seq;
  numsequences 
 --------------
-           92
+           90
 (1 row)
 
 SELECT numSequences(tcount(seq, '12 hours', '2020-01-01')) FROM tbl_tnpoint_seq;

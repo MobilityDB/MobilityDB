@@ -192,7 +192,7 @@ spantype_spansettype(mobdbType spantype)
 }
 
 /**
- * Return the base type from the ordered set type
+ * Return the base type from a set type
  */
 mobdbType
 settype_basetype(mobdbType settype)
@@ -204,7 +204,7 @@ settype_basetype(mobdbType settype)
       return _settype_cache[i].basetype;
   }
   /* We only arrive here on error */
-  elog(ERROR, "type %u is not an ordered set type", settype);
+  elog(ERROR, "type %u is not a set type", settype);
 }
 
 /**

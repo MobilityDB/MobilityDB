@@ -49,7 +49,7 @@
 PG_FUNCTION_INFO_V1(Contains_set_value);
 /**
  * @ingroup mobilitydb_setspan_topo
- * @brief Return true if an ordered set contains a value
+ * @brief Return true if a set contains a value
  * @sqlfunc time_contains()
  * @sqlop @p \@>
  */
