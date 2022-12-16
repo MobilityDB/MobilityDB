@@ -1124,8 +1124,8 @@ span_basetype_to_wkb_size(const Span *s)
 size_t
 span_to_wkb_size_int(const Span *s)
 {
-  /* bounds flag + spantype + basetype values */
-  size_t size = MOBDB_WKB_BYTE_SIZE + MOBDB_WKB_INT2_SIZE +
+  /* spantype + bounds flag + basetype values */
+  size_t size = MOBDB_WKB_INT2_SIZE + MOBDB_WKB_BYTE_SIZE +
     span_basetype_to_wkb_size(s) * 2;
   return size;
 }
@@ -1137,7 +1137,7 @@ span_to_wkb_size_int(const Span *s)
 size_t
 span_to_wkb_size(const Span *s)
 {
-  /* Endian flag + bounds flag + spantype + basetype values */
+  /* Endian flag + size of a component span */
   size_t size = MOBDB_WKB_BYTE_SIZE + span_to_wkb_size_int(s);
   return size;
 }
@@ -1768,6 +1768,10 @@ lower_upper_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant)
       buf = int32_to_wkb_buf(DatumGetInt32(s->lower), buf, variant);
       buf = int32_to_wkb_buf(DatumGetInt32(s->upper), buf, variant);
       break;
+    case T_INT8:
+      buf = int64_to_wkb_buf(DatumGetInt64(s->lower), buf, variant);
+      buf = int64_to_wkb_buf(DatumGetInt64(s->upper), buf, variant);
+      break;
     case T_FLOAT8:
       buf = double_to_wkb_buf(DatumGetFloat8(s->lower), buf, variant);
       buf = double_to_wkb_buf(DatumGetFloat8(s->upper), buf, variant);
@@ -1800,6 +1804,7 @@ span_to_wkb_buf_int1(const Span *s, uint8_t *buf, uint8_t variant)
 /**
  * Write into the buffer a span that is a component of another type
  * represented in Well-Known Binary (WKB) format as follows
+ * - Span type
  * - Bounds byte stating whether the bounds are inclusive
  * - Two base type values
  */
@@ -1826,7 +1831,7 @@ span_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant)
 {
   /* Write the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
-  /* Write the span  */
+  /* Write the span */
   buf = span_to_wkb_buf_int(s, buf, variant);
   return buf;
 }

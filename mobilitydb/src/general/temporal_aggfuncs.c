@@ -153,12 +153,13 @@ Temporal_tcount_transfn_ext(FunctionCallInfo fcinfo, bool bucket)
   INPUT_AGG_TRANS_STATE(fcinfo, state);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Interval *interval = NULL;
-  TimestampTz origin = 0;
+  TimestampTz origin = pg_timestamptz_in("2000-01-03", -1);
   if (bucket)
   {
     if (PG_NARGS() > 1 && ! PG_ARGISNULL(2))
       interval = PG_GETARG_INTERVAL_P(2);
-    origin = PG_GETARG_TIMESTAMPTZ(3);
+    if (PG_NARGS() > 2 && ! PG_ARGISNULL(3))
+      origin = PG_GETARG_TIMESTAMPTZ(3);
   }
   store_fcinfo(fcinfo);
   state = temporal_tcount_transfn(state, temp, interval, origin);

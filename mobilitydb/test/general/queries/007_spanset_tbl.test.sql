@@ -34,36 +34,42 @@
 -- Send/receive functions
 
 COPY tbl_intspanset TO '/tmp/tbl_intspanset' (FORMAT BINARY);
-COPY tbl_floatspanset TO '/tmp/tbl_floatspanset' (FORMAT BINARY);
-COPY tbl_periodset TO '/tmp/tbl_periodset' (FORMAT BINARY);
-
 DROP TABLE IF EXISTS tbl_intspanset_tmp;
-DROP TABLE IF EXISTS tbl_floatspanset_tmp;
-DROP TABLE IF EXISTS tbl_periodset_tmp;
-
 CREATE TABLE tbl_intspanset_tmp AS TABLE tbl_intspanset WITH NO DATA;
-CREATE TABLE tbl_floatspanset_tmp AS TABLE tbl_floatspanset WITH NO DATA;
-CREATE TABLE tbl_periodset_tmp AS TABLE tbl_periodset WITH NO DATA;
-
 COPY tbl_intspanset_tmp FROM '/tmp/tbl_intspanset' (FORMAT BINARY);
-COPY tbl_floatspanset_tmp FROM '/tmp/tbl_floatspanset' (FORMAT BINARY);
-COPY tbl_periodset_tmp FROM '/tmp/tbl_periodset' (FORMAT BINARY);
-
 SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset_tmp t2 WHERE t1.k = t2.k AND t1.i <> t2.i;
-SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset_tmp t2 WHERE t1.k = t2.k AND t1.f <> t2.f;
-SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset_tmp t2 WHERE t1.k = t2.k AND t1.ps <> t2.ps;
-
 DROP TABLE tbl_intspanset_tmp;
+
+COPY tbl_bigintspanset TO '/tmp/tbl_bigintspanset' (FORMAT BINARY);
+DROP TABLE IF EXISTS tbl_bigintspanset_tmp;
+CREATE TABLE tbl_bigintspanset_tmp AS TABLE tbl_bigintspanset WITH NO DATA;
+COPY tbl_bigintspanset_tmp FROM '/tmp/tbl_bigintspanset' (FORMAT BINARY);
+SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset_tmp t2 WHERE t1.k = t2.k AND t1.b <> t2.b;
+DROP TABLE tbl_bigintspanset_tmp;
+
+COPY tbl_floatspanset TO '/tmp/tbl_floatspanset' (FORMAT BINARY);
+DROP TABLE IF EXISTS tbl_floatspanset_tmp;
+CREATE TABLE tbl_floatspanset_tmp AS TABLE tbl_floatspanset WITH NO DATA;
+COPY tbl_floatspanset_tmp FROM '/tmp/tbl_floatspanset' (FORMAT BINARY);
+SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset_tmp t2 WHERE t1.k = t2.k AND t1.f <> t2.f;
 DROP TABLE tbl_floatspanset_tmp;
+
+COPY tbl_periodset TO '/tmp/tbl_periodset' (FORMAT BINARY);
+DROP TABLE IF EXISTS tbl_periodset_tmp;
+CREATE TABLE tbl_periodset_tmp AS TABLE tbl_periodset WITH NO DATA;
+COPY tbl_periodset_tmp FROM '/tmp/tbl_periodset' (FORMAT BINARY);
+SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset_tmp t2 WHERE t1.k = t2.k AND t1.ps <> t2.ps;
 DROP TABLE tbl_periodset_tmp;
 
 -- Input/output from/to WKB and HexWKB
 
 SELECT COUNT(*) FROM tbl_intspanset WHERE intspansetFromBinary(asBinary(i)) <> i;
+SELECT COUNT(*) FROM tbl_bigintspanset WHERE bigintspansetFromBinary(asBinary(b)) <> b;
 SELECT COUNT(*) FROM tbl_floatspanset WHERE floatspansetFromBinary(asBinary(f)) <> f;
 SELECT COUNT(*) FROM tbl_periodset WHERE periodsetFromBinary(asBinary(ps)) <> ps;
 
 SELECT COUNT(*) FROM tbl_intspanset WHERE intspansetFromHexWKB(asHexWKB(i)) <> i;
+SELECT COUNT(*) FROM tbl_bigintspanset WHERE bigintspansetFromHexWKB(asHexWKB(b)) <> b;
 SELECT COUNT(*) FROM tbl_floatspanset WHERE floatspansetFromHexWKB(asHexWKB(f)) <> f;
 SELECT COUNT(*) FROM tbl_periodset WHERE periodsetFromHexWKB(asHexWKB(ps)) <> ps;
 

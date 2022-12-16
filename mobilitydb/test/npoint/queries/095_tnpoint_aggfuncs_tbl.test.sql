@@ -45,6 +45,8 @@ SELECT asText(round(tcentroid(temp), 6)) FROM ( VALUES
 -------------------------------------------------------------------------------
 
 SELECT numInstants(tcount(inst)) FROM tbl_tnpoint_inst;
+SELECT numInstants(tcount(inst, '12 hours')) FROM tbl_tnpoint_inst;
+SELECT numInstants(tcount(inst, '12 hours', '2020-01-01')) FROM tbl_tnpoint_inst;
 SELECT numInstants(wcount(inst, '1 hour')) FROM tbl_tnpoint_inst;
 SELECT numInstants(tcentroid(inst)) FROM tbl_tnpoint_inst;
 SELECT k%10, numInstants(tcount(inst)) FROM tbl_tnpoint_inst GROUP BY k%10 ORDER BY k%10;
@@ -59,6 +61,8 @@ SELECT k%10, numInstants(tcount(ti)) FROM tbl_tnpoint_discseq GROUP BY k%10 ORDE
 SELECT k%10, numInstants(tcentroid(ti)) FROM tbl_tnpoint_discseq GROUP BY k%10 ORDER BY k%10;
 
 SELECT numSequences(tcount(seq)) FROM tbl_tnpoint_seq;
+SELECT numSequences(tcount(seq, '12 hours')) FROM tbl_tnpoint_seq;
+SELECT numSequences(tcount(seq, '12 hours', '2020-01-01')) FROM tbl_tnpoint_seq;
 SELECT numSequences(wcount(seq, '1 hour')) FROM tbl_tnpoint_seq;
 SELECT numSequences(tcentroid(seq)) FROM tbl_tnpoint_seq;
 SELECT k%10, numSequences(tcount(seq)) FROM tbl_tnpoint_seq GROUP BY k%10 ORDER BY k%10;

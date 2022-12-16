@@ -136,6 +136,18 @@ SELECT numInstants(tcount(inst)) FROM tbl_tgeompoint_inst;
           96
 (1 row)
 
+SELECT numInstants(tcount(inst, '12 hours')) FROM tbl_tgeompoint_inst;
+ numinstants 
+-------------
+          90
+(1 row)
+
+SELECT numInstants(tcount(inst, '12 hours', '2020-01-01')) FROM tbl_tgeompoint_inst;
+ numinstants 
+-------------
+          90
+(1 row)
+
 SELECT k%10, numInstants(tcentroid(inst)) FROM tbl_tgeompoint_inst GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
@@ -218,6 +230,18 @@ SELECT numSequences(tcount(seq)) FROM tbl_tgeompoint_seq;
  numsequences 
 --------------
            95
+(1 row)
+
+SELECT numSequences(tcount(seq, '12 hours')) FROM tbl_tgeompoint_seq;
+ numsequences 
+--------------
+           84
+(1 row)
+
+SELECT numSequences(tcount(seq, '12 hours', '2020-01-01')) FROM tbl_tgeompoint_seq;
+ numsequences 
+--------------
+           84
 (1 row)
 
 SELECT k%10, numSequences(tcentroid(seq)) FROM tbl_tgeompoint_seq GROUP BY k%10 ORDER BY k%10;
@@ -466,6 +490,18 @@ SELECT numInstants(tcount(inst)) FROM tbl_tgeogpoint_inst;
           96
 (1 row)
 
+SELECT numInstants(tcount(inst, '12 hours')) FROM tbl_tgeogpoint_inst;
+ numinstants 
+-------------
+          91
+(1 row)
+
+SELECT numInstants(tcount(inst, '12 hours', '2020-01-01')) FROM tbl_tgeogpoint_inst;
+ numinstants 
+-------------
+          91
+(1 row)
+
 SELECT k%10, numInstants(tcount(inst)) FROM tbl_tgeogpoint_inst GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
@@ -506,6 +542,18 @@ SELECT numSequences(tcount(seq)) FROM tbl_tgeogpoint_seq;
  numsequences 
 --------------
            95
+(1 row)
+
+SELECT numSequences(tcount(seq, '12 hours')) FROM tbl_tgeogpoint_seq;
+ numsequences 
+--------------
+           81
+(1 row)
+
+SELECT numSequences(tcount(seq, '12 hours', '2020-01-01')) FROM tbl_tgeogpoint_seq;
+ numsequences 
+--------------
+           81
 (1 row)
 
 SELECT k%10, numSequences(tcount(seq)) FROM tbl_tgeogpoint_seq GROUP BY k%10 ORDER BY k%10;

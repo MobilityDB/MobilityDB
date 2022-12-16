@@ -1180,51 +1180,6 @@ tsequenceset_value_at_timestamp(const TSequenceSet *ss, TimestampTz t,
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_temporal_accessor
- * @brief Cast a temporal sequence set float to a float span.
- * @sqlop @p ::
- */
-Span *
-tfloatseqset_span(const TSequenceSet *ss)
-{
-  /* Singleton sequence set */
-  if (ss->count == 1)
-    return tfloatseq_span(tsequenceset_seq_n(ss, 0));
-
-  /* General case */
-  TBox *box = TSEQUENCESET_BBOX_PTR(ss);
-  Datum min = box->span.lower;
-  Datum max = box->span.upper;
-  /* Step interpolation */
-  if(! MOBDB_FLAGS_GET_LINEAR(ss->flags))
-    return span_make(min, max, true, true, T_FLOAT8);
-
-  /* Linear interpolation */
-  Span **spans = palloc(sizeof(Span *) * ss->count);
-  for (int i = 0; i < ss->count; i++)
-  {
-    const TSequence *seq = tsequenceset_seq_n(ss, i);
-    spans[i] = tfloatseq_span(seq);
-  }
-  /* Normalize the spans */
-  int newcount;
-  Span **normspans = spanarr_normalize(spans, ss->count, SORT, &newcount);
-  Span *result;
-  if (newcount == 1)
-    result = span_copy(normspans[0]);
-  else
-  {
-    Span *start = normspans[0];
-    Span *end = normspans[newcount - 1];
-    result = span_make(start->lower, end->upper, start->lower_inc,
-      end->upper_inc, T_FLOAT8);
-  }
-  pfree_array((void **) normspans, newcount);
-  pfree_array((void **) spans, ss->count);
-  return result;
-}
-
-/**
  * @ingroup libmeos_internal_temporal_cast
  * @brief Cast a temporal sequence set integer to a temporal sequence set float.
  * @sqlop @p ::
