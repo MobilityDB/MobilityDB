@@ -172,18 +172,6 @@ SELECT numInstants(tavg(inst)) FROM tbl_tint_inst;
           97
 (1 row)
 
-SELECT numInstants(tcount(inst, '12 hours')) FROM tbl_tint_inst;
- numinstants 
--------------
-          93
-(1 row)
-
-SELECT numInstants(tcount(inst, '12 hours', '2020-01-01')) FROM tbl_tint_inst;
- numinstants 
--------------
-          93
-(1 row)
-
 SELECT numInstants(tmin(inst)) FROM tbl_tfloat_inst;
  numinstants 
 -------------
@@ -214,18 +202,6 @@ SELECT numInstants(tavg(inst)) FROM tbl_tfloat_inst;
           97
 (1 row)
 
-SELECT numInstants(tcount(inst, '12 hours')) FROM tbl_tfloat_inst;
- numinstants 
--------------
-          90
-(1 row)
-
-SELECT numInstants(tcount(inst, '12 hours', '2020-01-01')) FROM tbl_tfloat_inst;
- numinstants 
--------------
-          90
-(1 row)
-
 SELECT numInstants(tmin(inst)) FROM tbl_ttext_inst;
  numinstants 
 -------------
@@ -242,18 +218,6 @@ SELECT numInstants(tcount(inst)) FROM tbl_ttext_inst;
  numinstants 
 -------------
           97
-(1 row)
-
-SELECT numInstants(tcount(inst, '12 hours')) FROM tbl_ttext_inst;
- numinstants 
--------------
-          92
-(1 row)
-
-SELECT numInstants(tcount(inst, '12 hours', '2020-01-01')) FROM tbl_ttext_inst;
- numinstants 
--------------
-          92
 (1 row)
 
 SELECT k%10, numInstants(tand(inst)) FROM tbl_tbool_inst GROUP BY k%10 ORDER BY k%10;
@@ -880,18 +844,6 @@ SELECT numSequences(tavg(seq)) FROM tbl_tint_seq;
            97
 (1 row)
 
-SELECT numSequences(tcount(seq, '12 hours')) FROM tbl_tint_seq;
- numsequences 
---------------
-           89
-(1 row)
-
-SELECT numSequences(tcount(seq, '12 hours', '2020-01-01')) FROM tbl_tint_seq;
- numsequences 
---------------
-           89
-(1 row)
-
 SELECT numSequences(tmin(seq)) FROM tbl_tfloat_seq;
  numsequences 
 --------------
@@ -922,18 +874,6 @@ SELECT numSequences(tavg(seq)) FROM tbl_tfloat_seq;
            99
 (1 row)
 
-SELECT numSequences(tcount(seq, '12 hours')) FROM tbl_tfloat_seq;
- numsequences 
---------------
-           85
-(1 row)
-
-SELECT numSequences(tcount(seq, '12 hours', '2020-01-01')) FROM tbl_tfloat_seq;
- numsequences 
---------------
-           85
-(1 row)
-
 SELECT numSequences(tmin(seq)) FROM tbl_ttext_seq;
  numsequences 
 --------------
@@ -950,18 +890,6 @@ SELECT numSequences(tcount(seq)) FROM tbl_ttext_seq;
  numsequences 
 --------------
            95
-(1 row)
-
-SELECT numSequences(tcount(seq, '12 hours')) FROM tbl_ttext_seq;
- numsequences 
---------------
-           90
-(1 row)
-
-SELECT numSequences(tcount(seq, '12 hours', '2020-01-01')) FROM tbl_ttext_seq;
- numsequences 
---------------
-           90
 (1 row)
 
 SELECT k%10, numSequences(tand(seq)) FROM tbl_tbool_seq GROUP BY k%10 ORDER BY k%10;

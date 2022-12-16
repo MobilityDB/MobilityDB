@@ -24,7 +24,7 @@ jobs:
           os: [ubuntu-latest]
           coverage: [0]
           include:
-            - psql: 14
+            - psql: 15
               postgis: 3
               os: ubuntu-latest
               coverage: 1

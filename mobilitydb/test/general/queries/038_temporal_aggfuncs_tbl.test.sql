@@ -76,8 +76,8 @@ SELECT numInstants(tcount(inst)) FROM tbl_tint_inst;
 SELECT numInstants(tsum(inst)) FROM tbl_tint_inst;
 SELECT numInstants(tavg(inst)) FROM tbl_tint_inst;
 
-SELECT numInstants(tcount(inst, '12 hours')) FROM tbl_tint_inst;
-SELECT numInstants(tcount(inst, '12 hours', '2020-01-01')) FROM tbl_tint_inst;
+-- SELECT numInstants(tcount(inst, '12 hours')) FROM tbl_tint_inst;
+-- SELECT numInstants(tcount(inst, '12 hours', '2020-01-01')) FROM tbl_tint_inst;
 
 SELECT numInstants(tmin(inst)) FROM tbl_tfloat_inst;
 SELECT numInstants(tmax(inst)) FROM tbl_tfloat_inst;
@@ -85,15 +85,15 @@ SELECT numInstants(tcount(inst)) FROM tbl_tfloat_inst;
 SELECT numInstants(tsum(inst)) FROM tbl_tfloat_inst;
 SELECT numInstants(tavg(inst)) FROM tbl_tfloat_inst;
 
-SELECT numInstants(tcount(inst, '12 hours')) FROM tbl_tfloat_inst;
-SELECT numInstants(tcount(inst, '12 hours', '2020-01-01')) FROM tbl_tfloat_inst;
+-- SELECT numInstants(tcount(inst, '12 hours')) FROM tbl_tfloat_inst;
+-- SELECT numInstants(tcount(inst, '12 hours', '2020-01-01')) FROM tbl_tfloat_inst;
 
 SELECT numInstants(tmin(inst)) FROM tbl_ttext_inst;
 SELECT numInstants(tmax(inst)) FROM tbl_ttext_inst;
 SELECT numInstants(tcount(inst)) FROM tbl_ttext_inst;
 
-SELECT numInstants(tcount(inst, '12 hours')) FROM tbl_ttext_inst;
-SELECT numInstants(tcount(inst, '12 hours', '2020-01-01')) FROM tbl_ttext_inst;
+-- SELECT numInstants(tcount(inst, '12 hours')) FROM tbl_ttext_inst;
+-- SELECT numInstants(tcount(inst, '12 hours', '2020-01-01')) FROM tbl_ttext_inst;
 
 SELECT k%10, numInstants(tand(inst)) FROM tbl_tbool_inst GROUP BY k%10 ORDER BY k%10;
 SELECT k%10, numInstants(tor(inst)) FROM tbl_tbool_inst GROUP BY k%10 ORDER BY k%10;
@@ -173,8 +173,8 @@ SELECT numSequences(tcount(seq)) FROM tbl_tint_seq;
 SELECT numSequences(tsum(seq)) FROM tbl_tint_seq;
 SELECT numSequences(tavg(seq)) FROM tbl_tint_seq;
 
-SELECT numSequences(tcount(seq, '12 hours')) FROM tbl_tint_seq;
-SELECT numSequences(tcount(seq, '12 hours', '2020-01-01')) FROM tbl_tint_seq;
+-- SELECT numSequences(tcount(seq, '12 hours')) FROM tbl_tint_seq;
+-- SELECT numSequences(tcount(seq, '12 hours', '2020-01-01')) FROM tbl_tint_seq;
 
 SELECT numSequences(tmin(seq)) FROM tbl_tfloat_seq;
 SELECT numSequences(tmax(seq)) FROM tbl_tfloat_seq;
@@ -182,15 +182,15 @@ SELECT numSequences(tcount(seq)) FROM tbl_tfloat_seq;
 SELECT numSequences(tsum(seq)) FROM tbl_tfloat_seq;
 SELECT numSequences(tavg(seq)) FROM tbl_tfloat_seq;
 
-SELECT numSequences(tcount(seq, '12 hours')) FROM tbl_tfloat_seq;
-SELECT numSequences(tcount(seq, '12 hours', '2020-01-01')) FROM tbl_tfloat_seq;
+-- SELECT numSequences(tcount(seq, '12 hours')) FROM tbl_tfloat_seq;
+-- SELECT numSequences(tcount(seq, '12 hours', '2020-01-01')) FROM tbl_tfloat_seq;
 
 SELECT numSequences(tmin(seq)) FROM tbl_ttext_seq;
 SELECT numSequences(tmax(seq)) FROM tbl_ttext_seq;
 SELECT numSequences(tcount(seq)) FROM tbl_ttext_seq;
 
-SELECT numSequences(tcount(seq, '12 hours')) FROM tbl_ttext_seq;
-SELECT numSequences(tcount(seq, '12 hours', '2020-01-01')) FROM tbl_ttext_seq;
+-- SELECT numSequences(tcount(seq, '12 hours')) FROM tbl_ttext_seq;
+-- SELECT numSequences(tcount(seq, '12 hours', '2020-01-01')) FROM tbl_ttext_seq;
 
 SELECT k%10, numSequences(tand(seq)) FROM tbl_tbool_seq GROUP BY k%10 ORDER BY k%10;
 SELECT k%10, numSequences(tor(seq)) FROM tbl_tbool_seq GROUP BY k%10 ORDER BY k%10;
