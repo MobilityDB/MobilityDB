@@ -192,8 +192,11 @@ tsequenceset_make_valid(const TSequence **sequences, int count)
  * sets before applying an operation to them.
  */
 static TSequenceSet *
-tsequenceset_make1(const TSequence **sequences, int count, bool normalize)
+tsequenceset_make1_exp(const TSequence **sequences, int count, int maxcount,
+  bool normalize)
 {
+  assert(maxcount >= count);
+
   /* Test the validity of the sequences */
   assert(count > 0);
   ensure_valid_tseqarr(sequences, count);
@@ -205,23 +208,34 @@ tsequenceset_make1(const TSequence **sequences, int count, bool normalize)
 
   /* Get the bounding box size */
   size_t bboxsize = temporal_bbox_size(sequences[0]->temptype);
+  /* The period component of the bbox is already declared in the struct */
+  size_t bboxsize_extra = (bboxsize == 0) ? 0 : bboxsize - sizeof(Period);
 
   /* Compute the size of the temporal sequence set */
-  /* The period component of the bbox is already declared in the struct */
-  size_t memsize = bboxsize - sizeof(Period);
-  /* Size of composing sequences */
+  size_t seqs_size = 0;
   int totalcount = 0;
   for (int i = 0; i < newcount; i++)
   {
     totalcount += normseqs[i]->count;
-    memsize += double_pad(VARSIZE(normseqs[i]));
+    seqs_size += double_pad(VARSIZE(normseqs[i]));
   }
+  /* Compute the total size for maxcount sequences as a proportion of the size
+   * of the count sequences provided. Note that this is only an initial
+   * estimation. The functions adding sequences to a sequence set must verify
+   * both the maximum number of sequences and the remaining space for adding an
+   * additional variable-length sequences of arbitrary size */
+  if (count != maxcount)
+    seqs_size *= (double) maxcount / count;
+  else
+    maxcount = newcount;
   /* Size of the struct and the offset array */
-  memsize += double_pad(sizeof(TSequenceSet)) + newcount * sizeof(size_t);
+  size_t memsize = double_pad(sizeof(TSequenceSet)) + bboxsize_extra +
+    maxcount * sizeof(size_t) + seqs_size;
   /* Create the temporal sequence set */
   TSequenceSet *result = palloc0(memsize);
   SET_VARSIZE(result, memsize);
   result->count = newcount;
+  result->maxcount = maxcount;
   result->totalcount = totalcount;
   result->temptype = sequences[0]->temptype;
   result->subtype = TSEQUENCESET;
@@ -264,6 +278,12 @@ tsequenceset_make1(const TSequence **sequences, int count, bool normalize)
   if (normalize && count > 1)
     pfree_array((void **) normseqs, newcount);
   return result;
+}
+
+static TSequenceSet *
+tsequenceset_make1(const TSequence **sequences, int count, bool normalize)
+{
+  return tsequenceset_make1_exp(sequences, count, count, normalize);
 }
 
 /**

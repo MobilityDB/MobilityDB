@@ -27,18 +27,6 @@ SELECT numInstants(tcount(inst)) FROM tbl_tnpoint_inst;
          100
 (1 row)
 
-SELECT numInstants(tcount(inst, '12 hours')) FROM tbl_tnpoint_inst;
- numinstants 
--------------
-          93
-(1 row)
-
-SELECT numInstants(tcount(inst, '12 hours', '2020-01-01')) FROM tbl_tnpoint_inst;
- numinstants 
--------------
-          93
-(1 row)
-
 SELECT numInstants(wcount(inst, '1 hour')) FROM tbl_tnpoint_inst;
  numinstants 
 -------------
@@ -163,18 +151,6 @@ SELECT numSequences(tcount(seq)) FROM tbl_tnpoint_seq;
  numsequences 
 --------------
           100
-(1 row)
-
-SELECT numSequences(tcount(seq, '12 hours')) FROM tbl_tnpoint_seq;
- numsequences 
---------------
-           90
-(1 row)
-
-SELECT numSequences(tcount(seq, '12 hours', '2020-01-01')) FROM tbl_tnpoint_seq;
- numsequences 
---------------
-           93
 (1 row)
 
 SELECT numSequences(wcount(seq, '1 hour')) FROM tbl_tnpoint_seq;
