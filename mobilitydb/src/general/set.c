@@ -28,8 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief General functions for set values composed of an ordered
- * list of distinct values.
+ * @brief General functions for set values composed of an ordered list of
+ * distinct values.
  */
 
 #include "general/set.h"

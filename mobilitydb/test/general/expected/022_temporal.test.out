@@ -1390,10 +1390,10 @@ SELECT tbool_contseq(tbool 't@2000-01-01');
  [t@2000-01-01 00:00:00+00]
 (1 row)
 
-SELECT tbool_contseq(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
-                                 tbool_contseq                                  
---------------------------------------------------------------------------------
- {t@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00}
+SELECT tbool_contseq(tbool '{t@2000-01-01}');
+       tbool_contseq        
+----------------------------
+ [t@2000-01-01 00:00:00+00]
 (1 row)
 
 SELECT tbool_contseq(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
@@ -1434,9 +1434,11 @@ ERROR:  Cannot transform input to a temporal instant
 SELECT tbool_inst(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
 ERROR:  Cannot transform input to a temporal instant
 SELECT tbool_discseq(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
-ERROR:  Cannot transform input to a temporal discrete sequence
+ERROR:  Cannot transform input value to a temporal discrete sequence
 SELECT tbool_discseq(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
 ERROR:  Cannot transform input to a temporal discrete sequence
+SELECT tbool_contseq(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
+ERROR:  Cannot transform input value to a temporal continuous sequence
 SELECT tbool_contseq(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
 ERROR:  Cannot transform input to a temporal sequence
 SELECT tint_inst(tint '1@2000-01-01');
@@ -1463,10 +1465,10 @@ SELECT tint_contseq(tint '1@2000-01-01');
  [1@2000-01-01 00:00:00+00]
 (1 row)
 
-SELECT tint_contseq(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
-                                  tint_contseq                                  
---------------------------------------------------------------------------------
- {1@2000-01-01 00:00:00+00, 2@2000-01-02 00:00:00+00, 1@2000-01-03 00:00:00+00}
+SELECT tint_contseq(tint '{1@2000-01-01}');
+        tint_contseq        
+----------------------------
+ [1@2000-01-01 00:00:00+00]
 (1 row)
 
 SELECT tint_contseq(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
@@ -1507,9 +1509,11 @@ ERROR:  Cannot transform input to a temporal instant
 SELECT tint_inst(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
 ERROR:  Cannot transform input to a temporal instant
 SELECT tint_discseq(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
-ERROR:  Cannot transform input to a temporal discrete sequence
+ERROR:  Cannot transform input value to a temporal discrete sequence
 SELECT tint_discseq(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
 ERROR:  Cannot transform input to a temporal discrete sequence
+SELECT tint_contseq(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
+ERROR:  Cannot transform input value to a temporal continuous sequence
 SELECT tint_contseq(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
 ERROR:  Cannot transform input to a temporal sequence
 SELECT tfloat_inst(tfloat '1.5@2000-01-01');
@@ -1569,13 +1573,13 @@ SELECT tfloat_contseq(tfloat '1.5@2000-01-01');
 SELECT tfloat_contseq(tfloat '{1.5@2000-01-01}');
         tfloat_contseq        
 ------------------------------
- {1.5@2000-01-01 00:00:00+00}
+ [1.5@2000-01-01 00:00:00+00]
 (1 row)
 
-SELECT tfloat_contseq(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
-                                    tfloat_contseq                                    
---------------------------------------------------------------------------------------
- {1.5@2000-01-01 00:00:00+00, 2.5@2000-01-02 00:00:00+00, 1.5@2000-01-03 00:00:00+00}
+SELECT tfloat_contseq(tfloat '{1.5@2000-01-01}');
+        tfloat_contseq        
+------------------------------
+ [1.5@2000-01-01 00:00:00+00]
 (1 row)
 
 SELECT tfloat_contseq(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
@@ -1634,9 +1638,11 @@ ERROR:  Cannot transform input to a temporal instant
 SELECT tfloat_inst(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
 ERROR:  Cannot transform input to a temporal instant
 SELECT tfloat_discseq(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
-ERROR:  Cannot transform input to a temporal discrete sequence
+ERROR:  Cannot transform input value to a temporal discrete sequence
 SELECT tfloat_discseq(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
 ERROR:  Cannot transform input to a temporal discrete sequence
+SELECT tfloat_contseq(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
+ERROR:  Cannot transform input value to a temporal continuous sequence
 SELECT tfloat_contseq(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
 ERROR:  Cannot transform input to a temporal sequence
 SELECT ttext_inst(ttext 'AAA@2000-01-01');
@@ -1663,10 +1669,10 @@ SELECT ttext_contseq(ttext 'AAA@2000-01-01');
  ["AAA"@2000-01-01 00:00:00+00]
 (1 row)
 
-SELECT ttext_contseq(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
-                                       ttext_contseq                                        
---------------------------------------------------------------------------------------------
- {"AAA"@2000-01-01 00:00:00+00, "BBB"@2000-01-02 00:00:00+00, "AAA"@2000-01-03 00:00:00+00}
+SELECT ttext_contseq(ttext '{AAA@2000-01-01}');
+         ttext_contseq          
+--------------------------------
+ ["AAA"@2000-01-01 00:00:00+00]
 (1 row)
 
 SELECT ttext_contseq(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
@@ -1707,9 +1713,11 @@ ERROR:  Cannot transform input to a temporal instant
 SELECT ttext_inst(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
 ERROR:  Cannot transform input to a temporal instant
 SELECT ttext_discseq(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
-ERROR:  Cannot transform input to a temporal discrete sequence
+ERROR:  Cannot transform input value to a temporal discrete sequence
 SELECT ttext_discseq(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
 ERROR:  Cannot transform input to a temporal discrete sequence
+SELECT ttext_contseq(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
+ERROR:  Cannot transform input value to a temporal continuous sequence
 SELECT ttext_contseq(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
 ERROR:  Cannot transform input to a temporal sequence
 SELECT toLinear(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 2@2000-01-04]');

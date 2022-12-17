@@ -225,7 +225,7 @@ PG_FUNCTION_INFO_V1(Tpoint_in);
  * Point(0 0) @ 2012-01-01 08:00:00
  * // Discrete sequence
  * { Point(0 0) @ 2012-01-01 08:00:00 , Point(1 1) @ 2012-01-01 08:10:00 }
- * // Continous sequence
+ * // Continuous sequence
  * [ Point(0 0) @ 2012-01-01 08:00:00 , Point(1 1) @ 2012-01-01 08:10:00 )
  * // Sequence set
  * { [ Point(0 0) @ 2012-01-01 08:00:00 , Point(1 1) @ 2012-01-01 08:10:00 ) ,

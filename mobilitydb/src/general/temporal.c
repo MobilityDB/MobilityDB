@@ -1702,17 +1702,17 @@ Temporal_to_tdiscseq(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Temporal_to_tsequence);
+PG_FUNCTION_INFO_V1(Temporal_to_tcontseq);
 /**
  * @ingroup mobilitydb_temporal_transf
  * @brief Transform a temporal value into a temporal sequence
  * @sqlfunc tbool_seq(), tint_seq(), tfloat_seq(), ttext_seq()
  */
 PGDLLEXPORT Datum
-Temporal_to_tsequence(PG_FUNCTION_ARGS)
+Temporal_to_tcontseq(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = temporal_to_tsequence(temp);
+  Temporal *result = temporal_to_tcontseq(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

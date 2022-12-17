@@ -1265,6 +1265,7 @@ tfloatseqset_to_tintseqset(const TSequenceSet *ss)
 TSequenceSet *
 tinstant_to_tsequenceset(const TInstant *inst, interpType interp)
 {
+  assert(interp == STEPWISE || interp == LINEAR);
   TSequence *seq = tinstant_to_tsequence(inst, interp);
   TSequenceSet *result = tsequence_to_tsequenceset(seq);
   pfree(seq);
@@ -1280,6 +1281,7 @@ tinstant_to_tsequenceset(const TInstant *inst, interpType interp)
 TSequenceSet *
 tdiscseq_to_tsequenceset(const TSequence *seq, interpType interp)
 {
+  assert(interp == STEPWISE || interp == LINEAR);
   TSequence **sequences = palloc(sizeof(TSequence *) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
@@ -1347,11 +1349,11 @@ tsequence_to_tsequenceset(const TSequence *seq)
  * @sqlfunc toLinear()
  */
 TSequenceSet *
-tsequenceset_step_to_linear(const TSequenceSet *ss)
+tstepseqset_to_linear(const TSequenceSet *ss)
 {
   /* Singleton sequence set */
   if (ss->count == 1)
-    return tsequence_step_to_linear(tsequenceset_seq_n(ss, 0));
+    return tstepseq_to_linear(tsequenceset_seq_n(ss, 0));
 
   /* General case */
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->totalcount);
@@ -1359,7 +1361,7 @@ tsequenceset_step_to_linear(const TSequenceSet *ss)
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
-    k += tstepseq_tlinearseq1(seq, &sequences[k]);
+    k += tstepseq_to_linear1(seq, &sequences[k]);
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }

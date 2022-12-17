@@ -2196,20 +2196,6 @@ tinstant_to_tsequence(const TInstant *inst, interpType interp)
 
 /**
  * @ingroup libmeos_internal_temporal_transf
- * @brief Return a temporal sequence transformed from discrete interpolation to
- * linear or stepwise interpolation.
- * @sqlfunc tbool_seq(), tint_seq(), tfloat_seq(), ttext_seq(), etc.
- */
-TSequence *
-tdiscseq_to_tsequence(const TSequence *seq, interpType interp)
-{
-  if (seq->count != 1)
-    elog(ERROR, "Cannot transform input value to a temporal sequence");
-  return tinstant_to_tsequence(tsequence_inst_n(seq, 0), interp);
-}
-
-/**
- * @ingroup libmeos_internal_temporal_transf
  * @brief Return a temporal sequence transformed into discrete interpolation.
  * @return Return an error if a temporal sequence has more than one instant
  * @sqlfunc tbool_discseq(), tint_discseq(), tfloat_discseq(), ttext_discseq(),
@@ -2224,10 +2210,30 @@ tsequence_to_tdiscseq(const TSequence *seq)
 
   /* General case */
   if (seq->count != 1)
-    elog(ERROR, "Cannot transform input to a temporal discrete sequence");
+    elog(ERROR, "Cannot transform input value to a temporal discrete sequence");
 
   const TInstant *inst = tsequence_inst_n(seq, 0);
   return tinstant_to_tsequence(inst, DISCRETE);
+}
+
+/**
+ * @ingroup libmeos_internal_temporal_transf
+ * @brief Return a temporal sequence transformed to continuous interpolation.
+ * @sqlfunc tbool_seq(), tint_seq(), tfloat_seq(), ttext_seq(), etc.
+ */
+TSequence *
+tsequence_to_tcontseq(const TSequence *seq)
+{
+  if (MOBDB_FLAGS_GET_DISCRETE(seq->flags))
+  {
+   if (seq->count != 1)
+      elog(ERROR, "Cannot transform input value to a temporal continuous sequence");
+    return tinstant_to_tsequence(tsequence_inst_n(seq, 0),
+      MOBDB_FLAGS_GET_CONTINUOUS(seq->flags) ? LINEAR : STEPWISE);
+  }
+  else
+    /* The sequence has continuous interpolation return a copy */
+    return tsequence_copy(seq);
 }
 
 /**
@@ -2254,7 +2260,7 @@ tsequenceset_to_tsequence(const TSequenceSet *ss)
  * @return Number of resulting sequences returned
  */
 int
-tstepseq_tlinearseq1(const TSequence *seq, TSequence **result)
+tstepseq_to_linear1(const TSequence *seq, TSequence **result)
 {
   if (seq->count == 1)
   {
@@ -2306,10 +2312,10 @@ tstepseq_tlinearseq1(const TSequence *seq, TSequence **result)
  * @sqlfunc toLinear()
  */
 TSequenceSet *
-tsequence_step_to_linear(const TSequence *seq)
+tstepseq_to_linear(const TSequence *seq)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * seq->count);
-  int count = tstepseq_tlinearseq1(seq, sequences);
+  int count = tstepseq_to_linear1(seq, sequences);
   return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
 

@@ -1215,11 +1215,13 @@ temporal_to_tdiscseq(const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_transf
- * @brief Return a temporal value transformed into a temporal sequence.
- * @sqlfunc tbool_seq(), tint_seq(), tfloat_seq(), ttext_seq(), etc.
+ * @brief Return a temporal value transformed into a temporal sequence with
+ * continuous interpolation.
+ * @sqlfunc tbool_tcontseq(), tint_tcontseq(), tfloat_tcontseq(),
+ * ttext_contseq(), etc.
  */
 Temporal *
-temporal_to_tsequence(const Temporal *temp)
+temporal_to_tcontseq(const Temporal *temp)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -1227,7 +1229,7 @@ temporal_to_tsequence(const Temporal *temp)
     result = (Temporal *) tinstant_to_tsequence((TInstant *) temp,
       MOBDB_FLAGS_GET_CONTINUOUS(temp->flags) ? LINEAR : STEPWISE);
   else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tsequence_copy((TSequence *) temp);
+    result = (Temporal *) tsequence_to_tcontseq((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tsequenceset_to_tsequence((TSequenceSet *) temp);
   return result;
@@ -1270,9 +1272,9 @@ temporal_step_to_linear(const Temporal *temp)
 
   Temporal *result;
   if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tsequence_step_to_linear((TSequence *) temp);
+    result = (Temporal *) tstepseq_to_linear((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tsequenceset_step_to_linear((TSequenceSet *) temp);
+    result = (Temporal *) tstepseqset_to_linear((TSequenceSet *) temp);
   return result;
 }
 
