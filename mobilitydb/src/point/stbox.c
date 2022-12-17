@@ -250,8 +250,6 @@ PG_FUNCTION_INFO_V1(Geodstbox_constructor_t);
 PGDLLEXPORT Datum
 Geodstbox_constructor_t(PG_FUNCTION_ARGS)
 {
-  if (PG_NARGS() > 1)
-    return stbox_constructor_ext(fcinfo, true, false, true, true);
   return stbox_constructor_ext(fcinfo, false, false, true, true);
 }
 

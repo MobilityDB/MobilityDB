@@ -2553,7 +2553,7 @@ DROP INDEX tbl_periodset_kdtree_idx;
 
 SELECT * FROM test_spansetops
 WHERE no_idx <> rtree_idx OR no_idx <> quadtree_idx OR no_idx <> kdtree_idx OR
-   no_idx IS NULL OR rtree_idx IS NULL OR quadtree_idx IS NULL OR kdtree_idx IS NULL
+  no_idx IS NULL OR rtree_idx IS NULL OR quadtree_idx IS NULL OR kdtree_idx IS NULL
 ORDER BY op, leftarg, rightarg;
 
 DROP TABLE test_spansetops;

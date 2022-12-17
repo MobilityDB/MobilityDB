@@ -129,7 +129,7 @@ UPDATE 1
 DROP INDEX test_tnpoint_gin_idx;
 DROP INDEX
 SELECT * FROM test_tnpoint_routeops
-WHERE no_idx <> gin_idx
+WHERE no_idx <> gin_idx OR no_idx IS NULL OR gin_idx IS NULL
 ORDER BY op, leftarg, rightarg;
  op | leftarg | rightarg | no_idx | gin_idx 
 ----+---------+----------+--------+---------

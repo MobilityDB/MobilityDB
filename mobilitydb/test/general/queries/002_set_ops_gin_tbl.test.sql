@@ -123,7 +123,7 @@ DROP INDEX tbl_bigintset_gin_idx;
 -------------------------------------------------------------------------------
 
 SELECT * FROM test_setops
-WHERE no_idx <> gin_idx
+WHERE no_idx <> gin_idx OR no_idx IS NULL OR gin_idx IS NULL
 ORDER BY op, leftarg, rightarg;
 
 DROP TABLE test_setops;
