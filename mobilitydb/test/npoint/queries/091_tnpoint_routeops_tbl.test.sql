@@ -87,7 +87,7 @@ SELECT '@=', 'tnpoint', 'tnpoint', COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 
 
 -------------------------------------------------------------------------------
 
-CREATE INDEX test_tnpoint_gin_idx ON tbl_tnpoint USING GIST(temp);
+CREATE INDEX test_tnpoint_gin_idx ON tbl_tnpoint USING GIN(temp);
 
 -------------------------------------------------------------------------------
 -- <type> op tnpoint

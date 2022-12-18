@@ -46,10 +46,10 @@ SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t1.b + t2.b IS NOT N
   9801
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b + t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintset t2 WHERE t1.b + t2.b IS NOT NULL;
  count 
 -------
-  9801
+ 98901
 (1 row)
 
 SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b + t2.b IS NOT NULL;
@@ -162,12 +162,8 @@ SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t1.b - t2.b IS NOT N
   9789
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b - t2.b IS NOT NULL;
- count 
--------
-  9458
-(1 row)
-
+SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintset t2 WHERE t1.b - t2.b IS NOT NULL;
+ERROR:  Span cannot be empty
 SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b - t2.b IS NOT NULL;
  count 
 -------
@@ -282,10 +278,10 @@ SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t1.b * t2.b IS NOT N
    477
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b * t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintset t2 WHERE t1.b * t2.b IS NOT NULL;
  count 
 -------
-  1105
+  2797
 (1 row)
 
 SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b * t2.b IS NOT NULL;
@@ -444,23 +440,33 @@ SELECT MIN(t1.f <-> t2.f) FROM tbl_floatspan t1, tbl_floatspan t2;
    0
 (1 row)
 
-SELECT MIN(t1.t <-> t2.p) FROM tbl_timestamptz t1, period t2;
-ERROR:  relation "period" does not exist
-LINE 1: ...ELECT MIN(t1.t <-> t2.p) FROM tbl_timestamptz t1, period t2;
-                                                             ^
-SELECT MIN(t1.ts <-> t2.p) FROM tbl_timestampset t1, period t2;
-ERROR:  relation "period" does not exist
-LINE 1: ...ECT MIN(t1.ts <-> t2.p) FROM tbl_timestampset t1, period t2;
-                                                             ^
-SELECT MIN(t1.p <-> t2.t) FROM period t1, tbl_timestamptz t2;
-ERROR:  relation "period" does not exist
-LINE 1: SELECT MIN(t1.p <-> t2.t) FROM period t1, tbl_timestamptz t2...
-                                       ^
-SELECT MIN(t1.p <-> t2.ts) FROM period t1, tbl_timestampset t2;
-ERROR:  relation "period" does not exist
-LINE 1: SELECT MIN(t1.p <-> t2.ts) FROM period t1, tbl_timestampset ...
-                                        ^
-SELECT MIN(t1.p <-> t2.p) FROM period t1, period t2;
-ERROR:  relation "period" does not exist
-LINE 1: SELECT MIN(t1.p <-> t2.p) FROM period t1, period t2;
-                                       ^
+SELECT MIN(t1.t <-> t2.p) FROM tbl_timestamptz t1, tbl_period t2;
+ min  
+------
+ 2760
+(1 row)
+
+SELECT MIN(t1.ts <-> t2.p) FROM tbl_timestampset t1, tbl_period t2;
+ min 
+-----
+   0
+(1 row)
+
+SELECT MIN(t1.p <-> t2.t) FROM tbl_period t1, tbl_timestamptz t2;
+ min  
+------
+ 2760
+(1 row)
+
+SELECT MIN(t1.p <-> t2.ts) FROM tbl_period t1, tbl_timestampset t2;
+ min 
+-----
+   0
+(1 row)
+
+SELECT MIN(t1.p <-> t2.p) FROM tbl_period t1, tbl_period t2;
+ min 
+-----
+   0
+(1 row)
+

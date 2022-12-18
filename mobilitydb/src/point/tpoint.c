@@ -50,81 +50,12 @@
 #include "pg_point/postgis.h"
 
 /* PostgreSQL removed pg_atoi in version 15 */
-#if !MEOS && POSTGRESQL_VERSION_NUMBER >= 150000
-/*
- * pg_atoi: convert string to integer
- *
- * allows any number of leading or trailing whitespace characters.
- *
- * 'size' is the sizeof() the desired integral result (1, 2, or 4 bytes).
- *
- * c, if not 0, is a terminator character that may appear after the
- * integer (plus whitespace).  If 0, the string must end after the integer.
- *
- * Unlike plain atoi(), this will throw elog() upon bad input format or
- * overflow.
- */
-int32
-pg_atoi(const char *s, int size, int c)
-{
-  long    l;
-  char     *badp;
-
-  /*
-   * Some versions of strtol treat the empty string as an error, but some
-   * seem not to.  Make an explicit test to be sure we catch it.
-   */
-  if (s == NULL)
-    elog(ERROR, "NULL pointer");
-  if (*s == 0)
-    elog(ERROR, "invalid input syntax for type %s: \"%s\"", "integer", s);
-
-  errno = 0;
-  l = strtol(s, &badp, 10);
-
-  /* We made no progress parsing the string, so bail out */
-  if (s == badp)
-    elog(ERROR, "invalid input syntax for type %s: \"%s\"", "integer", s);
-
-  switch (size)
-  {
-    case sizeof(int32):
-      if (errno == ERANGE
-#if defined(HAVE_LONG_INT_64)
-      /* won't get ERANGE on these with 64-bit longs... */
-        || l < INT_MIN || l > INT_MAX
-#endif
-        )
-        elog(ERROR, "value \"%s\" is out of range for type %s", s, "integer");
-      break;
-    case sizeof(int16):
-      if (errno == ERANGE || l < SHRT_MIN || l > SHRT_MAX)
-        elog(ERROR, "value \"%s\" is out of range for type %s", s, "smallint");
-      break;
-    case sizeof(int8):
-      if (errno == ERANGE || l < SCHAR_MIN || l > SCHAR_MAX)
-        elog(ERROR, "value \"%s\" is out of range for 8-bit integer", s);
-      break;
-    default:
-      elog(ERROR, "unsupported result size: %d", size);
-  }
-
-  /*
-   * Skip any trailing whitespace; if anything but whitespace remains before
-   * the terminating character, bail out
-   */
-  while (*badp && *badp != c && isspace((unsigned char) *badp))
-    badp++;
-
-  if (*badp && *badp != c)
-    elog(ERROR, "invalid input syntax for type %s: \"%s\"", "integer", s);
-
-  return (int32) l;
-}
+#if POSTGRESQL_VERSION_NUMBER >= 150000
+  extern int32 pg_strtoint32(const char *s);
 #else
   /* To avoid including <utils/builtins.h> */
   extern int32 pg_atoi(const char *s, int size, int c);
-#endif
+#endif /* POSTGRESQL_VERSION_NUMBER >= 150000 */
 
 /*****************************************************************************
  * General functions
@@ -297,7 +228,11 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
     if (geometry_type_from_string(s[1], &geometry_type, &hasZ, &hasM) == LW_FAILURE)
       ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
         errmsg("Invalid geometry type modifier: %s", s[1])));
+#if POSTGRESQL_VERSION_NUMBER >= 150000
+    srid = pg_strtoint32(s[2]);
+#else
     srid = pg_atoi(s[2], sizeof(int32), '\0');
+#endif /* POSTGRESQL_VERSION_NUMBER >= 150000 */
     srid = clamp_srid(srid);
     has_geo = has_srid = true;
   }

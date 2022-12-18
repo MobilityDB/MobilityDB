@@ -27,6 +27,18 @@
  *
  *****************************************************************************/
 
+/*****************************************************************************
+ * Operator strategy numbers used in the GIN set and tnpoint opclasses
+ *****************************************************************************/
+
+#define GinOverlapStrategySetSet             10    /* for && */
+#define GinContainsStrategySetValue          20    /* for @> */
+#define GinContainsStrategySetSet            21    /* for @> */
+#define GinContainedStrategySetSet           30    /* for <@ */
+#define GinEqualStrategySetSet               40    /* for =  */
+
+/*****************************************************************************/
+
 /* PostgreSQL */
 #include "postgres.h"
 #include "access/gin.h"
@@ -73,15 +85,15 @@ Set_gin_extract_query(PG_FUNCTION_ARGS)
 
   switch (strategy)
   {
-    case GinContainsStrategyValue:
+    case GinContainsStrategySetValue:
       elems = palloc(sizeof(Datum));
       elems[0] = PG_GETARG_DATUM(0);
       *nkeys = 1;
       break;
-    case GinOverlapStrategy:
-    case GinContainsStrategySet:
-    case GinContainedStrategy:
-    case GinEqualStrategy:
+    case GinOverlapStrategySetSet:
+    case GinContainsStrategySetSet:
+    case GinContainedStrategySetSet:
+    case GinEqualStrategySetSet:
       os = PG_GETARG_SET_P(0);
       elems = set_values(os);
       *nkeys = os->count;
@@ -107,8 +119,10 @@ Set_gin_triconsistent(PG_FUNCTION_ARGS)
   bool *nullFlags = (bool *) PG_GETARG_POINTER(6);
   GinTernaryValue res;
   int32 i;
+  /* Use the generic strategy numbers independent of the argument types */
+  StrategyNumber ginstrategy = strategy / 10;
 
-  switch (strategy)
+  switch (ginstrategy)
   {
     case GinOverlapStrategy:
       /* must have a match for at least one non-null element */
@@ -129,8 +143,7 @@ Set_gin_triconsistent(PG_FUNCTION_ARGS)
         }
       }
       break;
-    case GinContainsStrategyValue:
-    case GinContainsStrategySet:
+    case GinContainsStrategy:
       /* must have all elements in check[] true, and no nulls */
       res = GIN_TRUE;
       for (i = 0; i < nkeys; i++)
