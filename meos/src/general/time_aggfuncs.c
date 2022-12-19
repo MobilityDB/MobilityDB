@@ -217,12 +217,14 @@ timestampset_extent_transfn(Period *p, const TimestampSet *ts)
     return NULL;
   /* Null period and non-null timestampset, return the bbox of the timestampset */
   if (! p)
-    return span_copy(&ts->span);
+    return set_to_span(ts);
   /* Non-null period and null timestampset, return the period */
   if (! ts)
     return span_copy(p);
 
-  span_expand(&ts->span, p);
+  Span s;
+  set_set_span(ts, &s);
+  span_expand(&s, p);
   return p;
 }
 

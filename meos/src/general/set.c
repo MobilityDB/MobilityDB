@@ -52,24 +52,24 @@
 
 /**
  * @ingroup libmeos_internal_setspan_accessor
- * @brief Return the n-th value of an ordered set
+ * @brief Return the n-th value of a set
  * @pre The argument @p index is less than or equal to the number of values
- * in the ordered set
+ * in the set
  */
 Datum
-set_val_n(const Set *os, int index)
+set_val_n(const Set *s, int index)
 {
-  return os->elems[index];
+  return s->elems[index];
 }
 
 /**
  * @ingroup libmeos_internal_setspan_accessor
- * @brief Return the location of a value in an ordered set using binary search.
+ * @brief Return the location of a value in a set using binary search.
  *
  * If the value is found, the index of the value is returned in the output
  * parameter. Otherwise, return a number encoding whether it is before, between
- * two values, or after the ordered set.
- * For example, given an ordered set composed of 3 values and a parameter
+ * two values, or after the set.
+ * For example, given a set composed of 3 values and a parameter
  * value, the result of the function is as follows:
  * @code
  *            0       1        2
@@ -81,22 +81,22 @@ set_val_n(const Set *os, int index)
  * 5)                            d^    => loc = 3
  * @endcode
  *
- * @param[in] os Ordered set
+ * @param[in] s Set
  * @param[in] d Value
  * @param[out] loc Location
  * @result Return true if the value is contained in the set
  */
 bool
-set_find_value(const Set *os, Datum d, int *loc)
+set_find_value(const Set *s, Datum d, int *loc)
 {
   int first = 0;
-  int last = os->count - 1;
+  int last = s->count - 1;
   int middle = 0; /* make compiler quiet */
   while (first <= last)
   {
     middle = (first + last)/2;
-    Datum d1 = set_val_n(os, middle);
-    int cmp = datum_cmp(d, d1, os->span.basetype);
+    Datum d1 = set_val_n(s, middle);
+    int cmp = datum_cmp(d, d1, s->basetype);
     if (cmp == 0)
     {
       *loc = middle;
@@ -117,7 +117,7 @@ set_find_value(const Set *os, Datum d, int *loc)
 
 /**
  * @ingroup libmeos_internal_setspan_inout
- * @brief Return an ordered set from its Well-Known Text (WKT) representation.
+ * @brief Return a set from its Well-Known Text (WKT) representation.
  */
 Set *
 set_in(const char *str, mobdbType ostype)
@@ -128,7 +128,7 @@ set_in(const char *str, mobdbType ostype)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Return an ordered set from its Well-Known Text (WKT) representation.
+ * @brief Return a set from its Well-Known Text (WKT) representation.
  */
 Set *
 intset_in(const char *str)
@@ -138,7 +138,7 @@ intset_in(const char *str)
 
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Return an ordered set from its Well-Known Text (WKT) representation.
+ * @brief Return a set from its Well-Known Text (WKT) representation.
  */
 Set *
 bigintset_in(const char *str)
@@ -148,7 +148,7 @@ bigintset_in(const char *str)
 
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Return an ordered set from its Well-Known Text (WKT) representation.
+ * @brief Return a set from its Well-Known Text (WKT) representation.
  */
 Set *
 floatset_in(const char *str)
@@ -158,7 +158,7 @@ floatset_in(const char *str)
 
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Return an ordered set from its Well-Known Text (WKT) representation.
+ * @brief Return a set from its Well-Known Text (WKT) representation.
  */
 Set *
 timestampset_in(const char *str)
@@ -169,20 +169,20 @@ timestampset_in(const char *str)
 
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Return the Well-Known Text (WKT) representation of an ordered set.
+ * @brief Return the Well-Known Text (WKT) representation of a set.
  */
 char *
-set_out(const Set *os, int maxdd)
+set_out(const Set *s, int maxdd)
 {
-  char **strings = palloc(sizeof(char *) * os->count);
+  char **strings = palloc(sizeof(char *) * s->count);
   size_t outlen = 0;
-  for (int i = 0; i < os->count; i++)
+  for (int i = 0; i < s->count; i++)
   {
-    Datum d = set_val_n(os, i);
-    strings[i] = basetype_out(d, os->span.basetype, maxdd);
+    Datum d = set_val_n(s, i);
+    strings[i] = basetype_out(d, s->basetype, maxdd);
     outlen += strlen(strings[i]) + 2;
   }
-  return stringarr_to_string(strings, os->count, outlen, "", '{', '}');
+  return stringarr_to_string(strings, s->count, outlen, "", '{', '}');
 }
 
 /*****************************************************************************
@@ -191,9 +191,9 @@ set_out(const Set *os, int maxdd)
 
 /**
  * @ingroup libmeos_internal_setspan_constructor
- * @brief Construct an ordered set from an array of values.
+ * @brief Construct a set from an array of values.
  *
- * For example, the memory structure of an ordered set with 3 values is as
+ * For example, the memory structure of a set with 3 values is as
  * follows
  * @code
  * -------------------------------------------------------------
@@ -216,7 +216,7 @@ set_make(const Datum *values, int count, mobdbType basetype)
   for (int i = 0; i < count - 1; i++)
   {
     if (datum_ge(values[i], values[i + 1], basetype))
-      elog(ERROR, "Invalid value for ordered set");
+      elog(ERROR, "Invalid value for a set");
   }
   /* The first value is already declared in the struct */
   size_t memsize = double_pad(sizeof(Set)) +
@@ -225,9 +225,9 @@ set_make(const Datum *values, int count, mobdbType basetype)
   Set *result = palloc0(memsize);
   SET_VARSIZE(result, memsize);
   result->count = count;
+  result->settype = basetype_settype(basetype);
+  result->basetype = basetype;
 
-  /* Compute the bounding period */
-  span_set(values[0], values[count - 1], true, true, basetype, &result->span);
   /* Copy the array of values */
   for (int i = 0; i < count; i++)
     result->elems[i] = values[i];
@@ -236,7 +236,7 @@ set_make(const Datum *values, int count, mobdbType basetype)
 
 /**
  * @ingroup libmeos_internal_setspan_constructor
- * @brief Construct an ordered set from the array of values and free the
+ * @brief Construct a set from the array of values and free the
  * array after the creation.
  *
  * @param[in] values Array of values
@@ -258,13 +258,13 @@ set_make_free(Datum *values, int count, mobdbType basetype)
 
 /**
  * @ingroup libmeos_setspan_constructor
- * @brief Return a copy of an ordered set.
+ * @brief Return a copy of a set.
  */
 Set *
-set_copy(const Set *os)
+set_copy(const Set *s)
 {
-  TimestampSet *result = palloc(VARSIZE(os));
-  memcpy(result, os, VARSIZE(os));
+  TimestampSet *result = palloc(VARSIZE(s));
+  memcpy(result, s, VARSIZE(s));
   return result;
 }
 
@@ -274,7 +274,7 @@ set_copy(const Set *os)
 
 /**
  * @ingroup libmeos_internal_setspan_cast
- * @brief Cast a value as an ordered set
+ * @brief Cast a value as a set
  * @sqlop @p ::
  */
 Set *
@@ -286,7 +286,7 @@ value_to_set(Datum d, mobdbType basetype)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_cast
- * @brief Cast a value as an ordered set
+ * @brief Cast a value as a set
  * @sqlop @p ::
  */
 Set *
@@ -298,7 +298,7 @@ int_to_intset(int i)
 
 /**
  * @ingroup libmeos_setspan_cast
- * @brief Cast a value as an ordered set
+ * @brief Cast a value as a set
  * @sqlop @p ::
  */
 Set *
@@ -310,7 +310,7 @@ bigint_to_bigintset(int64 i)
 
 /**
  * @ingroup libmeos_setspan_cast
- * @brief Cast a value as an ordered set
+ * @brief Cast a value as a set
  * @sqlop @p ::
  */
 Set *
@@ -322,7 +322,7 @@ float_to_floatset(double d)
 
 /**
  * @ingroup libmeos_setspan_cast
- * @brief Cast a value as an ordered set
+ * @brief Cast a value as a set
  * @sqlop @p ::
  */
 Set *
@@ -333,22 +333,36 @@ timestamp_to_timestampset(TimestampTz t)
 }
 #endif /* MEOS */
 
-#if MEOS
+
 /**
  * @ingroup libmeos_setspan_cast
- * @brief Return the bounding span of an ordered set.
+ * @brief Return the bounding span of a set.
+ * @sqlfunc span()
+ * @sqlop @p ::
+ * @pymeosfunc span()
+ */
+void
+set_set_span(const Set *os, Span *s)
+{
+  span_set(os->elems[0], os->elems[os->count - 1], true, true, os->basetype, s);
+  return;
+}
+
+/**
+ * @ingroup libmeos_setspan_cast
+ * @brief Return the bounding span of a set.
  * @sqlfunc span()
  * @sqlop @p ::
  * @pymeosfunc span()
  */
 Span *
-set_to_span(const Set *os)
+set_to_span(const Set *s)
 {
   Span *result = palloc(sizeof(Span));
-  memcpy(result, &os->span, sizeof(Span));
+  span_set(s->elems[0], s->elems[s->count - 1], true, true, s->basetype,
+    result);
   return result;
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Accessor functions
@@ -357,38 +371,38 @@ set_to_span(const Set *os)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the size in bytes of an ordered set.
+ * @brief Return the size in bytes of a set.
  * @sqlfunc memorySize()
  */
 int
-set_memory_size(const Set *os)
+set_memory_size(const Set *s)
 {
-  return (int) VARSIZE(DatumGetPointer(os));
+  return (int) VARSIZE(DatumGetPointer(s));
 }
 #endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the number of values of an ordered set.
+ * @brief Return the number of values of a set.
  * @sqlfunc numTimestamps()
  * @pymeosfunc numTimestamps()
  */
 int
-set_num_values(const Set *os)
+set_num_values(const Set *s)
 {
-  return os->count;
+  return s->count;
 }
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the start value of an ordered set.
+ * @brief Return the start value of a set.
  * @sqlfunc startTimestamp()
  * @pymeosfunc startTimestamp()
  */
 Datum
-set_start_value(const Set *os)
+set_start_value(const Set *s)
 {
-  return set_val_n(os, 0);
+  return set_val_n(s, 0);
 }
 
 #if MEOS
@@ -399,9 +413,9 @@ set_start_value(const Set *os)
  * @pymeosfunc startValue()
  */
 int
-intset_start_value(const Set *os)
+intset_start_value(const Set *s)
 {
-  int result = DatumGetInt32(set_val_n(os, 0));
+  int result = DatumGetInt32(set_val_n(s, 0));
   return result;
 }
 
@@ -412,9 +426,9 @@ intset_start_value(const Set *os)
  * @pymeosfunc startValue()
  */
 int64
-bigintset_start_value(const Set *os)
+bigintset_start_value(const Set *s)
 {
-  int64 result = DatumGetInt64(set_val_n(os, 0));
+  int64 result = DatumGetInt64(set_val_n(s, 0));
   return result;
 }
 
@@ -425,15 +439,15 @@ bigintset_start_value(const Set *os)
  * @pymeosfunc startValue()
  */
 double
-floatset_start_value(const Set *os)
+floatset_start_value(const Set *s)
 {
-  double result = DatumGetFloat8(set_val_n(os, 0));
+  double result = DatumGetFloat8(set_val_n(s, 0));
   return result;
 }
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the start value of an ordered set.
+ * @brief Return the start value of a set.
  * @sqlfunc startTimestamp()
  * @pymeosfunc startTimestamp()
  */
@@ -447,14 +461,14 @@ timestampset_start_timestamp(const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the end value of an ordered set.
+ * @brief Return the end value of a set.
  * @sqlfunc endTimestamp()
  * @pymeosfunc endTimestamp()
  */
 Datum
-set_end_value(const Set *os)
+set_end_value(const Set *s)
 {
-  return set_val_n(os, os->count - 1);
+  return set_val_n(s, s->count - 1);
 }
 
 #if MEOS
@@ -465,9 +479,9 @@ set_end_value(const Set *os)
  * @pymeosfunc endValue()
  */
 int
-intset_end_value(const Set *os)
+intset_end_value(const Set *s)
 {
-  int result = DatumGetInt32(set_val_n(os, 0));
+  int result = DatumGetInt32(set_val_n(s, 0));
   return result;
 }
 
@@ -478,9 +492,9 @@ intset_end_value(const Set *os)
  * @pymeosfunc endValue()
  */
 int64
-bigintset_end_value(const Set *os)
+bigintset_end_value(const Set *s)
 {
-  int64 result = DatumGetInt64(set_val_n(os, 0));
+  int64 result = DatumGetInt64(set_val_n(s, 0));
   return result;
 }
 
@@ -491,15 +505,15 @@ bigintset_end_value(const Set *os)
  * @pymeosfunc endValue()
  */
 double
-floatset_end_value(const Set *os)
+floatset_end_value(const Set *s)
 {
-  double result = DatumGetFloat8(set_val_n(os, 0));
+  double result = DatumGetFloat8(set_val_n(s, 0));
   return result;
 }
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the end value of an ordered set.
+ * @brief Return the end value of a set.
  * @sqlfunc endTimestamp()
  * @pymeosfunc endTimestamp()
  */
@@ -513,9 +527,9 @@ timestampset_end_timestamp(const TimestampSet *ts)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the n-th value of an ordered set.
+ * @brief Return the n-th value of a set.
  *
- * @param[in] os Ordered set
+ * @param[in] s Set
  * @param[in] n Number
  * @param[out] result Timestamp
  * @result Return true if the value is found
@@ -524,11 +538,11 @@ timestampset_end_timestamp(const TimestampSet *ts)
  * @pymeosfunc timestampN()
  */
 bool
-set_value_n(const Set *os, int n, Datum *result)
+set_value_n(const Set *s, int n, Datum *result)
 {
-  if (n < 1 || n > os->count)
+  if (n < 1 || n > s->count)
     return false;
-  *result = set_val_n(os, n - 1);
+  *result = set_val_n(s, n - 1);
   return true;
 }
 
@@ -537,7 +551,7 @@ set_value_n(const Set *os, int n, Datum *result)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the n-th value of an integer set.
  *
- * @param[in] os Integer set
+ * @param[in] s Integer set
  * @param[in] n Number
  * @param[out] result Value
  * @result Return true if the value is found
@@ -546,11 +560,11 @@ set_value_n(const Set *os, int n, Datum *result)
  * @pymeosfunc valueN()
  */
 bool
-intset_value_n(const Set *os, int n, int *result)
+intset_value_n(const Set *s, int n, int *result)
 {
-  if (n < 1 || n > os->count)
+  if (n < 1 || n > s->count)
     return false;
-  *result = DatumGetInt32(set_val_n(os, n - 1));
+  *result = DatumGetInt32(set_val_n(s, n - 1));
   return true;
 }
 
@@ -558,7 +572,7 @@ intset_value_n(const Set *os, int n, int *result)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the n-th value of a big integer set.
  *
- * @param[in] os Integer set
+ * @param[in] s Integer set
  * @param[in] n Number
  * @param[out] result Value
  * @result Return true if the value is found
@@ -567,11 +581,11 @@ intset_value_n(const Set *os, int n, int *result)
  * @pymeosfunc valueN()
  */
 bool
-bigintset_value_n(const Set *os, int n, int64 *result)
+bigintset_value_n(const Set *s, int n, int64 *result)
 {
-  if (n < 1 || n > os->count)
+  if (n < 1 || n > s->count)
     return false;
-  *result = DatumGetInt64(set_val_n(os, n - 1));
+  *result = DatumGetInt64(set_val_n(s, n - 1));
   return true;
 }
 
@@ -579,7 +593,7 @@ bigintset_value_n(const Set *os, int n, int64 *result)
  * @ingroup libmeos_setspan_accessor
  * @brief Return the n-th value of a float set.
  *
- * @param[in] os Float set
+ * @param[in] s Float set
  * @param[in] n Number
  * @param[out] result Value
  * @result Return true if the value is found
@@ -588,17 +602,17 @@ bigintset_value_n(const Set *os, int n, int64 *result)
  * @pymeosfunc valueN()
  */
 bool
-floatset_value_n(const Set *os, int n, double *result)
+floatset_value_n(const Set *s, int n, double *result)
 {
-  if (n < 1 || n > os->count)
+  if (n < 1 || n > s->count)
     return false;
-  *result = DatumGetFloat8(set_val_n(os, n - 1));
+  *result = DatumGetFloat8(set_val_n(s, n - 1));
   return true;
 }
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the n-th value of an ordered set.
+ * @brief Return the n-th value of a set.
  *
  * @param[in] ts Timestamp set
  * @param[in] n Number
@@ -620,16 +634,16 @@ timestampset_timestamp_n(const TimestampSet *ts, int n, TimestampTz *result)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the array of values of an ordered set.
+ * @brief Return the array of values of a set.
  * @sqlfunc values(), timestamps()
  * @pymeosfunc timestamps()
  */
 Datum *
-set_values(const Set *os)
+set_values(const Set *s)
 {
-  Datum *result = palloc(sizeof(Datum) * os->count);
-  for (int i = 0; i < os->count; i++)
-    result[i] = set_val_n(os, i);
+  Datum *result = palloc(sizeof(Datum) * s->count);
+  for (int i = 0; i < s->count; i++)
+    result[i] = set_val_n(s, i);
   return result;
 }
 
@@ -641,11 +655,11 @@ set_values(const Set *os)
  * @pymeosfunc values()
  */
 int *
-intset_values(const Set *os)
+intset_values(const Set *s)
 {
-  int *result = palloc(sizeof(int) * os->count);
-  for (int i = 0; i < os->count; i++)
-    result[i] = DatumGetInt32(set_val_n(os, i));
+  int *result = palloc(sizeof(int) * s->count);
+  for (int i = 0; i < s->count; i++)
+    result[i] = DatumGetInt32(set_val_n(s, i));
   return result;
 }
 
@@ -656,11 +670,11 @@ intset_values(const Set *os)
  * @pymeosfunc values()
  */
 int64 *
-bigintset_values(const Set *os)
+bigintset_values(const Set *s)
 {
-  int64 *result = palloc(sizeof(int64) * os->count);
-  for (int i = 0; i < os->count; i++)
-    result[i] = DatumGetInt64(set_val_n(os, i));
+  int64 *result = palloc(sizeof(int64) * s->count);
+  for (int i = 0; i < s->count; i++)
+    result[i] = DatumGetInt64(set_val_n(s, i));
   return result;
 }
 
@@ -671,18 +685,18 @@ bigintset_values(const Set *os)
  * @pymeosfunc values()
  */
 double *
-floatset_values(const Set *os)
+floatset_values(const Set *s)
 {
-  double *result = palloc(sizeof(double) * os->count);
-  for (int i = 0; i < os->count; i++)
-    result[i] = DatumGetFloat8(set_val_n(os, i));
+  double *result = palloc(sizeof(double) * s->count);
+  for (int i = 0; i < s->count; i++)
+    result[i] = DatumGetFloat8(set_val_n(s, i));
   return result;
 }
 #endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the array of timestamps of an ordered set.
+ * @brief Return the array of timestamps of a set.
  * @sqlfunc timestamps()
  * @pymeosfunc timestamps()
  */
@@ -703,12 +717,12 @@ timestampset_timestamps(const TimestampSet *ts)
  * @brief Set the precision of the float set to the number of decimal places.
  */
 Set *
-set_shift(const Set *os, Datum shift)
+set_shift(const Set *s, Datum shift)
 {
-  Set *result = set_copy(os);
-  for (int i = 0; i < os->count; i++)
-    result->elems[i] = datum_add(result->elems[i], shift, os->span.basetype,
-      os->span.basetype);
+  Set *result = set_copy(s);
+  for (int i = 0; i < s->count; i++)
+    result->elems[i] = datum_add(result->elems[i], shift, s->basetype,
+      s->basetype);
   return result;
 }
 
@@ -727,31 +741,30 @@ timestampset_shift_tscale(const TimestampSet *ts, const Interval *shift,
     ensure_valid_duration(duration);
   TimestampSet *result = set_copy(ts);
 
-  /* Shift and/or scale the bounding period */
-  period_shift_tscale(&result->span, shift, duration);
-
-  /* Set the first instant */
-  result->elems[0] = result->span.lower;
+  /* Set the first and last instants */
+  TimestampTz lower, lower1, upper, upper1;
+  lower = lower1 = DatumGetTimestampTz(ts->elems[0]);
+  upper = upper1 = DatumGetTimestampTz(ts->elems[ts->count - 1]);
+  lower_upper_shift_tscale(&lower1, &upper1, shift, duration);
+  result->elems[0] = TimestampTzGetDatum(lower1);
+  result->elems[ts->count - 1] = TimestampTzGetDatum(upper1);
   if (ts->count > 1)
   {
     /* Shift and/or scale from the second to the penultimate instant */
     TimestampTz delta;
     if (shift != NULL)
-      delta = result->span.lower - ts->span.lower;
+      delta = lower1 - lower;
     double scale;
     if (duration != NULL)
-      scale = (double) (result->span.upper - result->span.lower) /
-        (double) (ts->span.upper - ts->span.lower);
+      scale = (double) (upper1 - lower1) / (double) (upper - lower);
     for (int i = 1; i < ts->count - 1; i++)
     {
       if (shift != NULL)
         result->elems[i] += delta;
       if (duration != NULL)
-        result->elems[i] = result->span.lower +
-          (result->elems[i] - result->span.lower) * scale;
+        result->elems[i] = lower1 +
+          (result->elems[i] - lower1) * scale;
     }
-    /* Set the last instant */
-    result->elems[ts->count - 1] = result->span.upper;
   }
   return result;
 }
@@ -762,69 +775,69 @@ timestampset_shift_tscale(const TimestampSet *ts, const Interval *shift,
 
 /**
  * @ingroup libmeos_setspan_comp
- * @brief Return true if the first ordered set is equal to the second one.
+ * @brief Return true if the first set is equal to the second one.
  * @note The internal B-tree comparator is not used to increase efficiency
  * @sqlop @p =
  * @pymeosfunc __eq__()
  */
 bool
-set_eq(const Set *os1, const Set *os2)
+set_eq(const Set *s1, const Set *s2)
 {
-  assert(os1->span.basetype == os2->span.basetype);
-  if (os1->count != os2->count)
+  assert(s1->settype == s2->settype);
+  if (s1->count != s2->count)
     return false;
-  /* os1 and os2 have the same number of values */
-  for (int i = 0; i < os1->count; i++)
+  /* s1 and s2 have the same number of values */
+  for (int i = 0; i < s1->count; i++)
   {
-    Datum v1 = set_val_n(os1, i);
-    Datum v2 = set_val_n(os2, i);
-    if (datum_ne(v1, v2, os1->span.basetype))
+    Datum v1 = set_val_n(s1, i);
+    Datum v2 = set_val_n(s2, i);
+    if (datum_ne(v1, v2, s1->basetype))
       return false;
   }
-  /* All values of the two ordered sets are equal */
+  /* All values of the two sets are equal */
   return true;
 }
 
 /**
  * @ingroup libmeos_setspan_comp
- * @brief Return true if the first ordered set is different from the
+ * @brief Return true if the first set is different from the
  * second one.
  * @note The internal B-tree comparator is not used to increase efficiency
  * @sqlop @p <>
  */
 bool
-set_ne(const Set *os1, const Set *os2)
+set_ne(const Set *s1, const Set *s2)
 {
-  return ! set_eq(os1, os2);
+  return ! set_eq(s1, s2);
 }
 
 /**
  * @ingroup libmeos_setspan_comp
- * @brief Return -1, 0, or 1 depending on whether the first ordered set is less
+ * @brief Return -1, 0, or 1 depending on whether the first set is less
  * than, equal, or greater than the second one.
  * @note Function used for B-tree comparison
  * @sqlfunc set_cmp()
  */
 int
-set_cmp(const Set *os1, const Set *os2)
+set_cmp(const Set *s1, const Set *s2)
 {
-  assert(os1->span.basetype == os2->span.basetype);
-  int count = Min(os1->count, os2->count);
+  assert(s1->settype == s2->settype);
+  int count = Min(s1->count, s2->count);
   int result = 0;
   for (int i = 0; i < count; i++)
   {
-    Datum v1 = set_val_n(os1, i);
-    Datum v2 = set_val_n(os2, i);
-    result = datum_cmp(v1, v2, os1->span.basetype);
+    Datum v1 = set_val_n(s1, i);
+    Datum v2 = set_val_n(s2, i);
+    result = datum_cmp(v1, v2, s1->basetype);
     if (result)
       break;
   }
   /* The first count times of the two Set are equal */
   if (! result)
   {
-    if (count < os1->count) /* os1 has more values than os2 */
+    if (count < s1->count) /* s1 has more values than s2 */
       result = 1;
-    else if (count < os2->count) /* os2 has more values than os1 */
+    else if (count < s2->count) /* s2 has more values than s1 */
       result = -1;
     else
       result = 0;
@@ -834,48 +847,48 @@ set_cmp(const Set *os1, const Set *os2)
 
 /**
  * @ingroup libmeos_setspan_comp
- * @brief Return true if the first ordered set is less than the second one
+ * @brief Return true if the first set is less than the second one
  * @sqlop @p <
  */
 bool
-set_lt(const Set *os1, const Set *os2)
+set_lt(const Set *s1, const Set *s2)
 {
-  return set_cmp(os1, os2) < 0;
+  return set_cmp(s1, s2) < 0;
 }
 
 /**
  * @ingroup libmeos_setspan_comp
- * @brief Return true if the first ordered set is less than or equal to the
+ * @brief Return true if the first set is less than or equal to the
  * second one
  * @sqlop @p <=
  */
 bool
-set_le(const Set *os1, const Set *os2)
+set_le(const Set *s1, const Set *s2)
 {
-  return set_cmp(os1, os2) <= 0;
+  return set_cmp(s1, s2) <= 0;
 }
 
 /**
  * @ingroup libmeos_setspan_comp
- * @brief Return true if the first ordered set is greater than or equal to
+ * @brief Return true if the first set is greater than or equal to
  * the second one
  * @sqlop @p >=
  */
 bool
-set_ge(const Set *os1, const Set *os2)
+set_ge(const Set *s1, const Set *s2)
 {
-  return set_cmp(os1, os2) >= 0;
+  return set_cmp(s1, s2) >= 0;
 }
 
 /**
  * @ingroup libmeos_setspan_comp
- * @brief Return true if the first ordered set is greater than the second one
+ * @brief Return true if the first set is greater than the second one
  * @sqlop @p >
  */
 bool
-set_gt(const Set *os1, const Set *os2)
+set_gt(const Set *s1, const Set *s2)
 {
-  return set_cmp(os1, os2) > 0;
+  return set_cmp(s1, s2) > 0;
 }
 
 /*****************************************************************************
@@ -904,17 +917,17 @@ datum_hash(Datum d, mobdbType basetype)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the 32-bit hash of an ordered set.
+ * @brief Return the 32-bit hash of a set.
  * @sqlfunc timestampset_hash()
  */
 uint32
-set_hash(const Set *os)
+set_hash(const Set *s)
 {
   uint32 result = 1;
-  for (int i = 0; i < os->count; i++)
+  for (int i = 0; i < s->count; i++)
   {
-    Datum d = set_val_n(os, i);
-    uint32 value_hash = datum_hash(d, os->span.basetype);
+    Datum d = set_val_n(s, i);
+    uint32 value_hash = datum_hash(d, s->basetype);
     result = (result << 5) - result + value_hash;
   }
   return result;
@@ -940,17 +953,17 @@ datum_hash_extended(Datum d, mobdbType basetype, uint64 seed)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the 64-bit hash of an ordered set using a seed.
+ * @brief Return the 64-bit hash of a set using a seed.
  * @sqlfunc timestampset_hash_extended()
  */
 uint64
-set_hash_extended(const Set *os, uint64 seed)
+set_hash_extended(const Set *s, uint64 seed)
 {
   uint64 result = 1;
-  for (int i = 0; i < os->count; i++)
+  for (int i = 0; i < s->count; i++)
   {
-    Datum d = set_val_n(os, i);
-    uint64 value_hash = datum_hash_extended(d, os->span.basetype, seed);
+    Datum d = set_val_n(s, i);
+    uint64 value_hash = datum_hash_extended(d, s->basetype, seed);
     result = (result << 5) - result + value_hash;
   }
   return result;

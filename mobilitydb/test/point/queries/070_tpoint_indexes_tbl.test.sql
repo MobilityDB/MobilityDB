@@ -226,8 +226,8 @@ DROP INDEX IF EXISTS tbl_tgeogpoint3D_big_quadtree_idx;
 
 -------------------------------------------------------------------------------
 
-CREATE INDEX tbl_tgeompoint3D_big_kdtree_idx ON tbl_tgeompoint3D_big USING SPGIST(temp tpoint_kdtree_ops);
-CREATE INDEX tbl_tgeogpoint3D_big_kdtree_idx ON tbl_tgeogpoint3D_big USING SPGIST(temp tpoint_kdtree_ops);
+CREATE INDEX tbl_tgeompoint3D_big_kdtree_idx ON tbl_tgeompoint3D_big USING SPGIST(temp tgeompoint_kdtree_ops);
+CREATE INDEX tbl_tgeogpoint3D_big_kdtree_idx ON tbl_tgeogpoint3D_big USING SPGIST(temp tgeogpoint_kdtree_ops);
 
 -------------------------------------------------------------------------------
 

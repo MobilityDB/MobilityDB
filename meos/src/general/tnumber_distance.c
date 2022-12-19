@@ -211,10 +211,7 @@ nad_tnumber_number(const Temporal *temp, Datum value, mobdbType basetype)
   ensure_tnumber_basetype(basetype);
   TBox box1, box2;
   temporal_set_bbox(temp, &box1);
-  if (basetype == T_INT4)
-    int_set_tbox(DatumGetInt32(value), &box2);
-  else /* basetype == T_FLOAT8 */
-    float_set_tbox(DatumGetFloat8(value), &box2);
+  number_set_tbox(value, basetype, &box2);
   return nad_tbox_tbox(&box1, &box2);
 }
 

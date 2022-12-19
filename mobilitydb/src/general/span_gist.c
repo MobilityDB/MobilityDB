@@ -170,8 +170,8 @@ span_gist_get_span(FunctionCallInfo fcinfo, Span *result, Oid typid)
   else if (type == T_INTSET || type == T_BIGINTSET || type == T_FLOATSET ||
     type == T_TIMESTAMPSET)
   {
-    Datum osdatum = PG_GETARG_DATUM(1);
-    set_span_slice(osdatum, result);
+    Set *s = PG_GETARG_SET_P(1);
+    set_set_span(s, result);
   }
   else if (type == T_INTSPAN || type == T_BIGINTSPAN || type == T_FLOATSPAN ||
     type == T_PERIOD)
@@ -266,7 +266,7 @@ Set_gist_compress(PG_FUNCTION_ARGS)
   {
     GISTENTRY *retval = palloc(sizeof(GISTENTRY));
     Span *span = palloc(sizeof(Span));
-    set_span_slice(entry->key, span);
+    set_set_span(DatumGetSetP(entry->key), span);
     gistentryinit(*retval, PointerGetDatum(span), entry->rel, entry->page,
       entry->offset, false);
     PG_RETURN_POINTER(retval);

@@ -610,19 +610,19 @@ CREATE FUNCTION overlaps_bbox(tint, float)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(intspan, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_span_tnumber'
+  AS 'MODULE_PATHNAME', 'Overlaps_numspan_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tint, intspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_tnumber_span'
+  AS 'MODULE_PATHNAME', 'Overlaps_tnumber_numspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(intspanset, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_spanset_tnumber'
+  AS 'MODULE_PATHNAME', 'Overlaps_numspanset_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tint, intspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_tnumber_spanset'
+  AS 'MODULE_PATHNAME', 'Overlaps_tnumber_numspanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tbox, tint)
   RETURNS boolean
@@ -818,19 +818,19 @@ CREATE FUNCTION contains_bbox(tint, float)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(intspan, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contains_span_tnumber'
+  AS 'MODULE_PATHNAME', 'Contains_numspan_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tint, intspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contains_tnumber_span'
+  AS 'MODULE_PATHNAME', 'Contains_tnumber_numspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(intspanset, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contains_spanset_tnumber'
+  AS 'MODULE_PATHNAME', 'Contains_numspanset_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tint, intspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contains_tnumber_spanset'
+  AS 'MODULE_PATHNAME', 'Contains_tnumber_numspanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tbox, tint)
   RETURNS boolean
@@ -1026,19 +1026,19 @@ CREATE FUNCTION contained_bbox(tint, float)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(intspan, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contained_span_tnumber'
+  AS 'MODULE_PATHNAME', 'Contained_numspan_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tint, intspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contained_tnumber_span'
+  AS 'MODULE_PATHNAME', 'Contained_tnumber_numspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(intspanset, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contained_spanset_tnumber'
+  AS 'MODULE_PATHNAME', 'Contained_numspanset_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tint, intspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contained_tnumber_spanset'
+  AS 'MODULE_PATHNAME', 'Contained_tnumber_numspanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tbox, tint)
   RETURNS boolean
@@ -1234,19 +1234,19 @@ CREATE FUNCTION same_bbox(tint, float)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(intspan, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Same_span_tnumber'
+  AS 'MODULE_PATHNAME', 'Same_numspan_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tint, intspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Same_tnumber_span'
+  AS 'MODULE_PATHNAME', 'Same_tnumber_numspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(intspanset, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Same_spanset_tnumber'
+  AS 'MODULE_PATHNAME', 'Same_numspanset_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tint, intspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Same_tnumber_spanset'
+  AS 'MODULE_PATHNAME', 'Same_tnumber_numspanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tbox, tint)
   RETURNS boolean
@@ -1442,19 +1442,19 @@ CREATE FUNCTION adjacent_bbox(tint, float)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(intspan, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Adjacent_span_tnumber'
+  AS 'MODULE_PATHNAME', 'Adjacent_numspan_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tint, intspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Adjacent_tnumber_span'
+  AS 'MODULE_PATHNAME', 'Adjacent_tnumber_numspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(intspanset, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Adjacent_spanset_tnumber'
+  AS 'MODULE_PATHNAME', 'Adjacent_numspanset_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tint, intspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Adjacent_tnumber_spanset'
+  AS 'MODULE_PATHNAME', 'Adjacent_tnumber_numspanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tbox, tint)
   RETURNS boolean
@@ -1652,19 +1652,19 @@ CREATE FUNCTION overlaps_bbox(tfloat, float)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(floatspan, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_span_tnumber'
+  AS 'MODULE_PATHNAME', 'Overlaps_numspan_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tfloat, floatspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_tnumber_span'
+  AS 'MODULE_PATHNAME', 'Overlaps_tnumber_numspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(floatspanset, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_spanset_tnumber'
+  AS 'MODULE_PATHNAME', 'Overlaps_numspanset_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tfloat, floatspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_tnumber_spanset'
+  AS 'MODULE_PATHNAME', 'Overlaps_tnumber_numspanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION overlaps_bbox(tbox, tfloat)
@@ -1861,19 +1861,19 @@ CREATE FUNCTION contains_bbox(tfloat, float)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(floatspan, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contains_span_tnumber'
+  AS 'MODULE_PATHNAME', 'Contains_numspan_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tfloat, floatspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contains_tnumber_span'
+  AS 'MODULE_PATHNAME', 'Contains_tnumber_numspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(floatspanset, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contains_spanset_tnumber'
+  AS 'MODULE_PATHNAME', 'Contains_numspanset_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tfloat, floatspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contains_tnumber_spanset'
+  AS 'MODULE_PATHNAME', 'Contains_tnumber_numspanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tbox, tfloat)
   RETURNS boolean
@@ -2069,19 +2069,19 @@ CREATE FUNCTION contained_bbox(tfloat, float)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(floatspan, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contained_span_tnumber'
+  AS 'MODULE_PATHNAME', 'Contained_numspan_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tfloat, floatspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contained_tnumber_span'
+  AS 'MODULE_PATHNAME', 'Contained_tnumber_numspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(floatspanset, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contained_spanset_tnumber'
+  AS 'MODULE_PATHNAME', 'Contained_numspanset_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tfloat, floatspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contained_tnumber_spanset'
+  AS 'MODULE_PATHNAME', 'Contained_tnumber_numspanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tbox, tfloat)
   RETURNS boolean
@@ -2277,19 +2277,19 @@ CREATE FUNCTION same_bbox(tfloat, float)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(floatspan, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Same_span_tnumber'
+  AS 'MODULE_PATHNAME', 'Same_numspan_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tfloat, floatspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Same_tnumber_span'
+  AS 'MODULE_PATHNAME', 'Same_tnumber_numspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(floatspanset, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Same_spanset_tnumber'
+  AS 'MODULE_PATHNAME', 'Same_numspanset_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tfloat, floatspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Same_tnumber_spanset'
+  AS 'MODULE_PATHNAME', 'Same_tnumber_numspanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tbox, tfloat)
   RETURNS boolean
@@ -2485,19 +2485,19 @@ CREATE FUNCTION adjacent_bbox(tfloat, float)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(floatspan, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Adjacent_span_tnumber'
+  AS 'MODULE_PATHNAME', 'Adjacent_numspan_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tfloat, floatspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Adjacent_tnumber_span'
+  AS 'MODULE_PATHNAME', 'Adjacent_tnumber_numspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(floatspanset, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Adjacent_spanset_tnumber'
+  AS 'MODULE_PATHNAME', 'Adjacent_numspanset_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tfloat, floatspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Adjacent_tnumber_spanset'
+  AS 'MODULE_PATHNAME', 'Adjacent_tnumber_numspanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tbox, tfloat)
   RETURNS boolean

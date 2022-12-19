@@ -105,6 +105,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <general/set.h>
 #include <general/temporal_util.h>
 /* MobilityDB */
 #include "pg_general/mobdb_catalog.h"
@@ -432,28 +433,34 @@ tnumber_spgist_get_tbox(const ScanKeyData *scankey, TBox *result)
     Datum value = scankey->sk_argument;
     number_set_tbox(value, type, result);
   }
-  else if (tnumber_spantype(type))
-  {
-    Span *span = DatumGetSpanP(scankey->sk_argument);
-    span_set_tbox(span, result);
-  }
   else if (type == T_TIMESTAMPTZ)
   {
     TimestampTz t = DatumGetTimestampTz(scankey->sk_argument);
     timestamp_set_tbox(t, result);
   }
+  else if (tnumber_settype(type))
+  {
+    Set *set = DatumGetSetP(scankey->sk_argument);
+    numset_set_tbox(set, result);
+  }
   else if (type == T_TIMESTAMPSET)
   {
-    set_tbox_slice(scankey->sk_argument, result);
+    Set *set = DatumGetSetP(scankey->sk_argument);
+    timestampset_set_tbox(set, result);
+  }
+  else if (tnumber_spantype(type))
+  {
+    Span *span = DatumGetSpanP(scankey->sk_argument);
+    numspan_set_tbox(span, result);
   }
   else if (type == T_PERIOD)
   {
     Period *p = DatumGetSpanP(scankey->sk_argument);
     period_set_tbox(p, result);
   }
-  else if (type == T_PERIODSET)
+  else if (tnumber_spansettype(type) || type == T_PERIODSET)
   {
-    periodset_tbox_slice(scankey->sk_argument, result);
+    spanset_tbox_slice(scankey->sk_argument, result);
   }
   else if (type == T_TBOX)
   {

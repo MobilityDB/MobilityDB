@@ -27,6 +27,22 @@
  *
  *****************************************************************************/
 
+/*****************************************************************************
+ * Operator strategy numbers used in the GIN set and tnpoint opclasses
+ *****************************************************************************/
+
+#define GinOverlapStrategyTnpointSet             10    /* for @@ */
+#define GinOverlapStrategyTnpointTnpoint         11    /* for @@ */
+#define GinContainsStrategyTnpointValue          20    /* for @? */
+#define GinContainsStrategyTnpointSet            21    /* for @? */
+#define GinContainsStrategyTnpointTnpoint        22    /* for @? */
+#define GinContainedStrategyTnpointSet           30    /* for ?@ */
+#define GinContainedStrategyTnpointTnpoint       31    /* for ?@ */
+#define GinEqualStrategyTnpointSet               40    /* for @=*/
+#define GinEqualStrategyTnpointTnpoint           41    /* for @=*/
+
+/*****************************************************************************/
+
 /* PostgreSQL */
 #include "postgres.h"
 #include "access/gin.h"
@@ -34,6 +50,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/set.h"
 #include "general/temporal.h"
 #include "npoint/tnpoint.h"
 /* MobilityDB */
@@ -74,21 +91,31 @@ Tnpoint_gin_extract_query(PG_FUNCTION_ARGS)
   int32 *searchMode = (int32 *) PG_GETARG_POINTER(6);
   Temporal *temp;
   Datum *elems;
-  Set *routes;
+  Set *s, *routes;
   *nullFlags = NULL;
   *searchMode = GIN_SEARCH_MODE_DEFAULT;
 
   switch (strategy)
   {
-    case GinContainsStrategyValue:
+    case GinContainsStrategyTnpointValue:
       elems = palloc(sizeof(Datum));
       elems[0] = PG_GETARG_DATUM(0);
       *nkeys = 1;
       break;
-    case GinOverlapStrategy:
-    case GinContainsStrategySet:
-    case GinContainedStrategy:
-    case GinEqualStrategy:
+    case GinOverlapStrategyTnpointSet:
+    case GinContainsStrategyTnpointSet:
+    case GinContainedStrategyTnpointSet:
+    case GinEqualStrategyTnpointSet:
+      s = PG_GETARG_SET_P(0);
+      elems = set_values(s);
+      *nkeys = s->count;
+      *searchMode = GIN_SEARCH_MODE_DEFAULT;
+      PG_FREE_IF_COPY(s, 0);
+      break;
+    case GinOverlapStrategyTnpointTnpoint:
+    case GinContainsStrategyTnpointTnpoint:
+    case GinContainedStrategyTnpointTnpoint:
+    case GinEqualStrategyTnpointTnpoint:
       temp = PG_GETARG_TEMPORAL_P(0);
       routes = tnpoint_routes(temp);
       /* Transform the routes into Datums */

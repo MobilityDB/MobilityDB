@@ -1054,11 +1054,11 @@ temporalarr_out(const Temporal **temparr, int count, int maxdd)
  * set type.
  */
 static size_t
-set_basetype_to_wkb_size(const Set *os)
+set_basetype_to_wkb_size(const Set *s)
 {
   size_t result = 0;
-  ensure_span_basetype(os->span.basetype);
-  switch (os->span.basetype)
+  ensure_span_basetype(s->basetype);
+  switch (s->basetype)
   {
     case T_INT4:
       result = MOBDB_WKB_INT4_SIZE;
@@ -1077,15 +1077,15 @@ set_basetype_to_wkb_size(const Set *os)
 }
 
 /**
- * Return the size in bytes of an ordered set represented in Well-Known Binary
+ * Return the size in bytes of a set represented in Well-Known Binary
  * (WKB) format
  */
 static size_t
-set_to_wkb_size(const Set *os)
+set_to_wkb_size(const Set *s)
 {
   /* Endian flag + settype + count + basetype values * count */
   size_t size = MOBDB_WKB_BYTE_SIZE + MOBDB_WKB_INT2_SIZE +
-    MOBDB_WKB_INT4_SIZE + set_basetype_to_wkb_size(os) * os->count;
+    MOBDB_WKB_INT4_SIZE + set_basetype_to_wkb_size(s) * s->count;
   return size;
 }
 
@@ -1124,8 +1124,8 @@ span_basetype_to_wkb_size(const Span *s)
 size_t
 span_to_wkb_size_int(const Span *s)
 {
-  /* bounds flag + spantype + basetype values */
-  size_t size = MOBDB_WKB_BYTE_SIZE + MOBDB_WKB_INT2_SIZE +
+  /* spantype + bounds flag + basetype values */
+  size_t size = MOBDB_WKB_INT2_SIZE + MOBDB_WKB_BYTE_SIZE +
     span_basetype_to_wkb_size(s) * 2;
   return size;
 }
@@ -1137,7 +1137,7 @@ span_to_wkb_size_int(const Span *s)
 size_t
 span_to_wkb_size(const Span *s)
 {
-  /* Endian flag + bounds flag + spantype + basetype values */
+  /* Endian flag + size of a component span */
   size_t size = MOBDB_WKB_BYTE_SIZE + span_to_wkb_size_int(s);
   return size;
 }
@@ -1652,16 +1652,16 @@ npoint_to_wkb_buf(const Npoint *np, uint8_t *buf, uint8_t variant)
 /*****************************************************************************/
 
 /**
- * Write into the buffer the ordered set type
+ * Write into the buffer the set type
  */
 static uint8_t *
-set_settype_to_wkb_buf(const Set *os, uint8_t *buf, uint8_t variant)
+set_settype_to_wkb_buf(const Set *s, uint8_t *buf, uint8_t variant)
 {
   uint16_t wkb_settype;
   /* The Set struct does not store its type but it can be deduced from
    * the type of its bounding span */
-  ensure_span_basetype(os->span.basetype);
-  switch (os->span.basetype)
+  ensure_span_basetype(s->basetype);
+  switch (s->basetype)
   {
     case T_INT4:
       wkb_settype = T_INTSET;
@@ -1702,7 +1702,7 @@ set_value_to_wkb_buf(Datum value, mobdbType basetype, uint8_t *buf,
 }
 
 /**
- * Write into the buffer an ordered set represented in Well-Known Binary (WKB)
+ * Write into the buffer a set represented in Well-Known Binary (WKB)
  * format as follows
  * - Endian byte
  * - Ordered set type: int16
@@ -1710,18 +1710,17 @@ set_value_to_wkb_buf(Datum value, mobdbType basetype, uint8_t *buf,
  * - Values
  */
 static uint8_t *
-set_to_wkb_buf(const Set *os, uint8_t *buf, uint8_t variant)
+set_to_wkb_buf(const Set *s, uint8_t *buf, uint8_t variant)
 {
   /* Write the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
-  /* Write the ordered set type */
-  buf = set_settype_to_wkb_buf(os, buf, variant);
+  /* Write the set type */
+  buf = set_settype_to_wkb_buf(s, buf, variant);
   /* Write the count */
-  buf = int32_to_wkb_buf(os->count, buf, variant);
+  buf = int32_to_wkb_buf(s->count, buf, variant);
   /* Write the values */
-  for (int i = 0; i < os->count; i++)
-    buf = set_value_to_wkb_buf(os->elems[i], os->span.basetype, buf,
-      variant);
+  for (int i = 0; i < s->count; i++)
+    buf = set_value_to_wkb_buf(s->elems[i], s->basetype, buf, variant);
   return buf;
 }
 
@@ -1768,6 +1767,10 @@ lower_upper_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant)
       buf = int32_to_wkb_buf(DatumGetInt32(s->lower), buf, variant);
       buf = int32_to_wkb_buf(DatumGetInt32(s->upper), buf, variant);
       break;
+    case T_INT8:
+      buf = int64_to_wkb_buf(DatumGetInt64(s->lower), buf, variant);
+      buf = int64_to_wkb_buf(DatumGetInt64(s->upper), buf, variant);
+      break;
     case T_FLOAT8:
       buf = double_to_wkb_buf(DatumGetFloat8(s->lower), buf, variant);
       buf = double_to_wkb_buf(DatumGetFloat8(s->upper), buf, variant);
@@ -1800,6 +1803,7 @@ span_to_wkb_buf_int1(const Span *s, uint8_t *buf, uint8_t variant)
 /**
  * Write into the buffer a span that is a component of another type
  * represented in Well-Known Binary (WKB) format as follows
+ * - Span type
  * - Bounds byte stating whether the bounds are inclusive
  * - Two base type values
  */
@@ -1826,7 +1830,7 @@ span_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant)
 {
   /* Write the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
-  /* Write the span  */
+  /* Write the span */
   buf = span_to_wkb_buf_int(s, buf, variant);
   return buf;
 }
@@ -2378,30 +2382,28 @@ span_as_hexwkb(const Span *s, uint8_t variant, size_t *size_out)
 
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Return the WKB representation of an ordered set.
+ * @brief Return the WKB representation of a set.
  * @sqlfunc asBinary()
  */
 uint8_t *
-set_as_wkb(const Set *os, uint8_t variant, size_t *size_out)
+set_as_wkb(const Set *s, uint8_t variant, size_t *size_out)
 {
-  mobdbType orderedsettype = basetype_settype(os->span.basetype);
-  uint8_t *result = datum_as_wkb(PointerGetDatum(os), orderedsettype,
-    variant, size_out);
+  uint8_t *result = datum_as_wkb(PointerGetDatum(s), s->settype, variant,
+    size_out);
   return result;
 }
 
 #if MEOS
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Return the WKB representation of an ordered set in hex-encoded ASCII.
+ * @brief Return the WKB representation of a set in hex-encoded ASCII.
  * @sqlfunc asHexWKB()
  */
 char *
 set_as_hexwkb(const TimestampSet *ts, uint8_t variant,
   size_t *size_out)
 {
-  mobdbType orderedsettype = basetype_settype(os->span.basetype);
-  char *result = (char *) datum_as_wkb(PointerGetDatum(ts), orderedsettype,
+  char *result = (char *) datum_as_wkb(PointerGetDatum(ts), s->settype,
     variant | (uint8_t) WKB_HEX, size_out);
   return result;
 }

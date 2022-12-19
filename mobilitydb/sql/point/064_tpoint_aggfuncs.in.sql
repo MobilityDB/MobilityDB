@@ -60,8 +60,12 @@ CREATE FUNCTION tcount_transfn(internal, tgeompoint)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tcount_bucket_transfn(internal, tgeompoint, interval DEFAULT NULL,
-    timestamptz DEFAULT '2000-01-03')
+CREATE FUNCTION tcount_bucket_transfn(internal, tgeompoint, interval)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Temporal_tcount_bucket_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION tcount_bucket_transfn(internal, tgeompoint, interval,
+    timestamptz)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_tcount_bucket_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -70,14 +74,27 @@ CREATE FUNCTION tcount_transfn(internal, tgeogpoint)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tcount_bucket_transfn(internal, tgeogpoint, interval DEFAULT NULL,
-    timestamptz DEFAULT '2000-01-03')
+CREATE FUNCTION tcount_bucket_transfn(internal, tgeogpoint, interval)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Temporal_tcount_bucket_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION tcount_bucket_transfn(internal, tgeogpoint, interval,
+    timestamptz)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_tcount_bucket_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE tcount(tgeompoint) (
   SFUNC = tcount_transfn,
+  STYPE = internal,
+  COMBINEFUNC = tcount_combinefn,
+  FINALFUNC = tint_tagg_finalfn,
+  SERIALFUNC = tagg_serialize,
+  DESERIALFUNC = tagg_deserialize,
+  PARALLEL = SAFE
+);
+CREATE AGGREGATE tcount(tgeompoint, interval) (
+  SFUNC = tcount_bucket_transfn,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
   FINALFUNC = tint_tagg_finalfn,
@@ -97,6 +114,15 @@ CREATE AGGREGATE tcount(tgeompoint, interval, timestamptz) (
 
 CREATE AGGREGATE tcount(tgeogpoint) (
   SFUNC = tcount_transfn,
+  STYPE = internal,
+  COMBINEFUNC = tcount_combinefn,
+  FINALFUNC = tint_tagg_finalfn,
+  SERIALFUNC = tagg_serialize,
+  DESERIALFUNC = tagg_deserialize,
+  PARALLEL = SAFE
+);
+CREATE AGGREGATE tcount(tgeogpoint, interval) (
+  SFUNC = tcount_bucket_transfn,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
   FINALFUNC = tint_tagg_finalfn,

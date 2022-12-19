@@ -42,7 +42,7 @@ SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i + t2.i IS NOT NUL
 SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintspan t2 WHERE t1.b + t2.b IS NOT NULL;
 SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintspan t2 WHERE t1.b + t2.b IS NOT NULL;
 SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t1.b + t2.b IS NOT NULL;
-SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b + t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintset t2 WHERE t1.b + t2.b IS NOT NULL;
 SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b + t2.b IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f + t2.f IS NOT NULL;
@@ -68,7 +68,7 @@ SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i - t2.i IS NOT NUL
 SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintspan t2 WHERE t1.b - t2.b IS NOT NULL;
 SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintspan t2 WHERE t1.b - t2.b IS NOT NULL;
 SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t1.b - t2.b IS NOT NULL;
-SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b - t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintset t2 WHERE t1.b - t2.b IS NOT NULL;
 SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b - t2.b IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f - t2.f IS NOT NULL;
@@ -94,7 +94,7 @@ SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i * t2.i IS NOT NUL
 SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintspan t2 WHERE t1.b * t2.b IS NOT NULL;
 SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintspan t2 WHERE t1.b * t2.b IS NOT NULL;
 SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t1.b * t2.b IS NOT NULL;
-SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b * t2.b IS NOT NULL;
+SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintset t2 WHERE t1.b * t2.b IS NOT NULL;
 SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b * t2.b IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f * t2.f IS NOT NULL;
@@ -129,10 +129,10 @@ SELECT MIN(t1.f <-> t2.f) FROM tbl_floatspan t1, tbl_float t2;
 SELECT MIN(t1.f <-> t2.f) FROM tbl_floatspan t1, tbl_floatset t2;
 SELECT MIN(t1.f <-> t2.f) FROM tbl_floatspan t1, tbl_floatspan t2;
 
-SELECT MIN(t1.t <-> t2.p) FROM tbl_timestamptz t1, period t2;
-SELECT MIN(t1.ts <-> t2.p) FROM tbl_timestampset t1, period t2;
-SELECT MIN(t1.p <-> t2.t) FROM period t1, tbl_timestamptz t2;
-SELECT MIN(t1.p <-> t2.ts) FROM period t1, tbl_timestampset t2;
-SELECT MIN(t1.p <-> t2.p) FROM period t1, period t2;
+SELECT MIN(t1.t <-> t2.p) FROM tbl_timestamptz t1, tbl_period t2;
+SELECT MIN(t1.ts <-> t2.p) FROM tbl_timestampset t1, tbl_period t2;
+SELECT MIN(t1.p <-> t2.t) FROM tbl_period t1, tbl_timestamptz t2;
+SELECT MIN(t1.p <-> t2.ts) FROM tbl_period t1, tbl_timestampset t2;
+SELECT MIN(t1.p <-> t2.p) FROM tbl_period t1, tbl_period t2;
 
 -------------------------------------------------------------------------------

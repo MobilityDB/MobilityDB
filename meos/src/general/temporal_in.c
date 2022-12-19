@@ -1200,19 +1200,19 @@ set_basevalue_from_wkb_state(wkb_parse_state *s)
       result = TimestampTzGetDatum(timestamp_from_wkb_state(s));
       break;
     default: /* Error! */
-      elog(ERROR, "Unknown ordered set type: %d", s->type);
+      elog(ERROR, "Unknown set type: %d", s->type);
       break;
   }
   return result;
 }
 
 /**
- * Return an ordered set from its WKB representation
+ * Return a set from its WKB representation
  */
 static Set *
 set_from_wkb_state(wkb_parse_state *s)
 {
-  /* Read the ordered set type */
+  /* Read the set type */
   uint16_t wkb_settype = (uint16_t) int16_from_wkb_state(s);
   /* For template classes it is necessary to store the specific type */
   s->type = wkb_settype;;
@@ -1221,7 +1221,7 @@ set_from_wkb_state(wkb_parse_state *s)
   int count = int32_from_wkb_state(s);
   Datum *values = palloc(sizeof(Datum) * count);
 
-  /* Read and create the ordered set */
+  /* Read and create the set */
   for (int i = 0; i < count; i++)
     values[i] = set_basevalue_from_wkb_state(s);
   Set *result = set_make_free(values, count, s->basetype);
@@ -1645,7 +1645,7 @@ datum_from_hexwkb(const char *hexwkb, int size, mobdbType type)
 
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Return an ordered set from its Well-Known Binary (WKB)
+ * @brief Return a set from its Well-Known Binary (WKB)
  * representation.
  * @sqlfunc timestampsetFromBinary()
  */
@@ -1658,7 +1658,7 @@ set_from_wkb(const uint8_t *wkb, int size)
 
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Return an ordered set from its WKB representation in hex-encoded
+ * @brief Return a set from its WKB representation in hex-encoded
  * ASCII.
  * @sqlfunc timestampsetFromHexWKB()
  */

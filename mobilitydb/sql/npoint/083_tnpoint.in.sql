@@ -189,7 +189,7 @@ CREATE FUNCTION tnpoint_discseq(tnpoint)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnpoint_contseq(tnpoint)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
+  AS 'MODULE_PATHNAME', 'Temporal_to_tcontseq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnpoint_seqset(tnpoint)
   RETURNS tnpoint

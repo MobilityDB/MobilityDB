@@ -540,7 +540,7 @@ timestampset_set_stbox(const TimestampSet *ts, STBox *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBox));
-  memcpy(&box->period, &ts->span, sizeof(Span));
+  set_set_span(ts, &box->period);
   MOBDB_FLAGS_SET_T(box->flags, true);
   return;
 }

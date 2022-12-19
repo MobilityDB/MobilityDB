@@ -87,7 +87,7 @@ SELECT '@=', 'tnpoint', 'tnpoint', COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 
 
 -------------------------------------------------------------------------------
 
-CREATE INDEX test_tnpoint_gin_idx ON tbl_tnpoint USING GIST(temp);
+CREATE INDEX test_tnpoint_gin_idx ON tbl_tnpoint USING GIN(temp);
 
 -------------------------------------------------------------------------------
 -- <type> op tnpoint
@@ -155,7 +155,7 @@ DROP INDEX test_tnpoint_gin_idx;
 -------------------------------------------------------------------------------
 
 SELECT * FROM test_tnpoint_routeops
-WHERE no_idx <> gin_idx
+WHERE no_idx <> gin_idx OR no_idx IS NULL OR gin_idx IS NULL
 ORDER BY op, leftarg, rightarg;
 
 -------------------------------------------------------------------------------

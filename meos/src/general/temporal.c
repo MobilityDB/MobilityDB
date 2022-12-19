@@ -258,7 +258,7 @@ ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
   Datum geom1 = 0; /* Used only for temporal network points */
 #endif
   datum_func2 point_distance = NULL;
-  if (basetype == T_GEOMETRY || basetype == T_GEOGRAPHY)
+  if (tgeo_basetype(basetype))
     point_distance = pt_distance_fn(instants[0]->flags);
 #if NPOINT
   else if (basetype == T_NPOINT)
@@ -280,7 +280,7 @@ ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
         dist = (basetype == T_INT4) ?
           (double) DatumGetInt32(number_distance(value1, value2, basetype, basetype)) :
           DatumGetFloat8(number_distance(value1, value2, basetype, basetype));
-      else if (basetype == T_GEOMETRY || basetype == T_GEOGRAPHY)
+      else if (tgeo_basetype(basetype))
         dist = DatumGetFloat8(point_distance(value1, value2));
 #if NPOINT
       else if (basetype == T_NPOINT)
@@ -1215,11 +1215,13 @@ temporal_to_tdiscseq(const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_transf
- * @brief Return a temporal value transformed into a temporal sequence.
- * @sqlfunc tbool_seq(), tint_seq(), tfloat_seq(), ttext_seq(), etc.
+ * @brief Return a temporal value transformed into a temporal sequence with
+ * continuous interpolation.
+ * @sqlfunc tbool_tcontseq(), tint_tcontseq(), tfloat_tcontseq(),
+ * ttext_contseq(), etc.
  */
 Temporal *
-temporal_to_tsequence(const Temporal *temp)
+temporal_to_tcontseq(const Temporal *temp)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -1227,7 +1229,7 @@ temporal_to_tsequence(const Temporal *temp)
     result = (Temporal *) tinstant_to_tsequence((TInstant *) temp,
       MOBDB_FLAGS_GET_CONTINUOUS(temp->flags) ? LINEAR : STEPWISE);
   else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tsequence_copy((TSequence *) temp);
+    result = (Temporal *) tsequence_to_tcontseq((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tsequenceset_to_tsequence((TSequenceSet *) temp);
   return result;
@@ -1270,9 +1272,9 @@ temporal_step_to_linear(const Temporal *temp)
 
   Temporal *result;
   if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tsequence_step_to_linear((TSequence *) temp);
+    result = (Temporal *) tstepseq_to_linear((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tsequenceset_step_to_linear((TSequenceSet *) temp);
+    result = (Temporal *) tstepseqset_to_linear((TSequenceSet *) temp);
   return result;
 }
 
@@ -2792,7 +2794,7 @@ tnumber_bbox_restrict_span(const Temporal *temp, const Span *span)
   assert(tnumber_type(temp->temptype));
   TBox box1, box2;
   temporal_set_bbox(temp, &box1);
-  span_set_tbox(span, &box2);
+  numspan_set_tbox(span, &box2);
   return overlaps_tbox_tbox(&box1, &box2);
 }
 

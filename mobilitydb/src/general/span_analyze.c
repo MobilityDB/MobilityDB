@@ -267,21 +267,21 @@ span_compute_stats_generic(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
     /* Get the (bounding) span and deserialize it for further analysis. */
     assert(set_type(type) || span_type(type) || spanset_type(type));
-    const Span *span;
+    Span *span;
     SpanBound lower, upper;
     if (set_type(type))
     {
-      const Set *os = DatumGetSetP(value);
-      span = &os->span;
-      span_deserialize(span, &lower, &upper);
+      const Set *s = DatumGetSetP(value);
+      Span sp;
+      set_set_span(s, &sp);
+      span_deserialize(&sp, &lower, &upper);
       /* Adjust the size */
-      total_width += VARSIZE(os);
+      total_width += VARSIZE(s);
     }
     else if (spanset_type(type))
     {
       const SpanSet *ss = DatumGetSpanSetP(value);
-      span = &ss->span;
-      span_deserialize(span, &lower, &upper);
+      span_deserialize(&ss->span, &lower, &upper);
       /* Adjust the size */
       total_width += VARSIZE(ss);
     }

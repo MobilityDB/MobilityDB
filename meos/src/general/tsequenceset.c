@@ -192,8 +192,11 @@ tsequenceset_make_valid(const TSequence **sequences, int count)
  * sets before applying an operation to them.
  */
 static TSequenceSet *
-tsequenceset_make1(const TSequence **sequences, int count, bool normalize)
+tsequenceset_make1_exp(const TSequence **sequences, int count, int maxcount,
+  bool normalize)
 {
+  assert(maxcount >= count);
+
   /* Test the validity of the sequences */
   assert(count > 0);
   ensure_valid_tseqarr(sequences, count);
@@ -205,23 +208,34 @@ tsequenceset_make1(const TSequence **sequences, int count, bool normalize)
 
   /* Get the bounding box size */
   size_t bboxsize = temporal_bbox_size(sequences[0]->temptype);
+  /* The period component of the bbox is already declared in the struct */
+  size_t bboxsize_extra = (bboxsize == 0) ? 0 : bboxsize - sizeof(Period);
 
   /* Compute the size of the temporal sequence set */
-  /* The period component of the bbox is already declared in the struct */
-  size_t memsize = bboxsize - sizeof(Period);
-  /* Size of composing sequences */
+  size_t seqs_size = 0;
   int totalcount = 0;
   for (int i = 0; i < newcount; i++)
   {
     totalcount += normseqs[i]->count;
-    memsize += double_pad(VARSIZE(normseqs[i]));
+    seqs_size += double_pad(VARSIZE(normseqs[i]));
   }
+  /* Compute the total size for maxcount sequences as a proportion of the size
+   * of the count sequences provided. Note that this is only an initial
+   * estimation. The functions adding sequences to a sequence set must verify
+   * both the maximum number of sequences and the remaining space for adding an
+   * additional variable-length sequences of arbitrary size */
+  if (count != maxcount)
+    seqs_size *= (double) maxcount / count;
+  else
+    maxcount = newcount;
   /* Size of the struct and the offset array */
-  memsize += double_pad(sizeof(TSequenceSet)) + newcount * sizeof(size_t);
+  size_t memsize = double_pad(sizeof(TSequenceSet)) + bboxsize_extra +
+    maxcount * sizeof(size_t) + seqs_size;
   /* Create the temporal sequence set */
   TSequenceSet *result = palloc0(memsize);
   SET_VARSIZE(result, memsize);
   result->count = newcount;
+  result->maxcount = maxcount;
   result->totalcount = totalcount;
   result->temptype = sequences[0]->temptype;
   result->subtype = TSEQUENCESET;
@@ -264,6 +278,12 @@ tsequenceset_make1(const TSequence **sequences, int count, bool normalize)
   if (normalize && count > 1)
     pfree_array((void **) normseqs, newcount);
   return result;
+}
+
+static TSequenceSet *
+tsequenceset_make1(const TSequence **sequences, int count, bool normalize)
+{
+  return tsequenceset_make1_exp(sequences, count, count, normalize);
 }
 
 /**
@@ -740,7 +760,7 @@ tsequenceset_max_instant(const TSequenceSet *ss)
 Datum
 tsequenceset_min_value(const TSequenceSet *ss)
 {
-  if (ss->temptype == T_TINT || ss->temptype == T_TFLOAT)
+  if (tnumber_type(ss->temptype))
   {
     TBox *box = TSEQUENCESET_BBOX_PTR(ss);
     Datum min = box->span.lower;
@@ -768,7 +788,7 @@ tsequenceset_min_value(const TSequenceSet *ss)
 Datum
 tsequenceset_max_value(const TSequenceSet *ss)
 {
-  if (ss->temptype == T_TINT || ss->temptype == T_TFLOAT)
+  if (tnumber_type(ss->temptype))
   {
     TBox *box = TSEQUENCESET_BBOX_PTR(ss);
     Datum max = box->span.upper;
@@ -1180,51 +1200,6 @@ tsequenceset_value_at_timestamp(const TSequenceSet *ss, TimestampTz t,
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_temporal_accessor
- * @brief Cast a temporal sequence set float to a float span.
- * @sqlop @p ::
- */
-Span *
-tfloatseqset_span(const TSequenceSet *ss)
-{
-  /* Singleton sequence set */
-  if (ss->count == 1)
-    return tfloatseq_span(tsequenceset_seq_n(ss, 0));
-
-  /* General case */
-  TBox *box = TSEQUENCESET_BBOX_PTR(ss);
-  Datum min = box->span.lower;
-  Datum max = box->span.upper;
-  /* Step interpolation */
-  if(! MOBDB_FLAGS_GET_LINEAR(ss->flags))
-    return span_make(min, max, true, true, T_FLOAT8);
-
-  /* Linear interpolation */
-  Span **spans = palloc(sizeof(Span *) * ss->count);
-  for (int i = 0; i < ss->count; i++)
-  {
-    const TSequence *seq = tsequenceset_seq_n(ss, i);
-    spans[i] = tfloatseq_span(seq);
-  }
-  /* Normalize the spans */
-  int newcount;
-  Span **normspans = spanarr_normalize(spans, ss->count, SORT, &newcount);
-  Span *result;
-  if (newcount == 1)
-    result = span_copy(normspans[0]);
-  else
-  {
-    Span *start = normspans[0];
-    Span *end = normspans[newcount - 1];
-    result = span_make(start->lower, end->upper, start->lower_inc,
-      end->upper_inc, T_FLOAT8);
-  }
-  pfree_array((void **) normspans, newcount);
-  pfree_array((void **) spans, ss->count);
-  return result;
-}
-
-/**
  * @ingroup libmeos_internal_temporal_cast
  * @brief Cast a temporal sequence set integer to a temporal sequence set float.
  * @sqlop @p ::
@@ -1290,6 +1265,7 @@ tfloatseqset_to_tintseqset(const TSequenceSet *ss)
 TSequenceSet *
 tinstant_to_tsequenceset(const TInstant *inst, interpType interp)
 {
+  assert(interp == STEPWISE || interp == LINEAR);
   TSequence *seq = tinstant_to_tsequence(inst, interp);
   TSequenceSet *result = tsequence_to_tsequenceset(seq);
   pfree(seq);
@@ -1305,6 +1281,7 @@ tinstant_to_tsequenceset(const TInstant *inst, interpType interp)
 TSequenceSet *
 tdiscseq_to_tsequenceset(const TSequence *seq, interpType interp)
 {
+  assert(interp == STEPWISE || interp == LINEAR);
   TSequence **sequences = palloc(sizeof(TSequence *) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
@@ -1372,11 +1349,11 @@ tsequence_to_tsequenceset(const TSequence *seq)
  * @sqlfunc toLinear()
  */
 TSequenceSet *
-tsequenceset_step_to_linear(const TSequenceSet *ss)
+tstepseqset_to_linear(const TSequenceSet *ss)
 {
   /* Singleton sequence set */
   if (ss->count == 1)
-    return tsequence_step_to_linear(tsequenceset_seq_n(ss, 0));
+    return tstepseq_to_linear(tsequenceset_seq_n(ss, 0));
 
   /* General case */
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->totalcount);
@@ -1384,7 +1361,7 @@ tsequenceset_step_to_linear(const TSequenceSet *ss)
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
-    k += tstepseq_tlinearseq1(seq, &sequences[k]);
+    k += tstepseq_to_linear1(seq, &sequences[k]);
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
@@ -1844,7 +1821,9 @@ tsequenceset_restrict_timestampset(const TSequenceSet *ss,
   }
 
   /* Bounding box test */
-  if (! overlaps_span_span(&ss->period, &ts->span))
+  Span s;
+  set_set_span(ts, &s);
+  if (! overlaps_span_span(&ss->period, &s))
     return atfunc ? NULL : (Temporal *) tsequenceset_copy(ss);
 
   /* Singleton sequence set */
@@ -2787,7 +2766,9 @@ tsequenceset_delete_timestampset(const TSequenceSet *ss,
       DatumGetTimestampTz(set_val_n(ts, 0)));
 
   /* Bounding box test */
-  if (! overlaps_span_span(&ss->period, &ts->span))
+  Span s;
+  set_set_span(ts, &s);
+  if (! overlaps_span_span(&ss->period, &s))
     return tsequenceset_copy(ss);
 
   TSequence *seq1;

@@ -582,7 +582,7 @@ overright_float_tfloat(double d, const Temporal *tnumber)
 bool
 left_span_tnumber(const Span *span, const Temporal *tnumber)
 {
-  return boxop_tnumber_span(tnumber, span, &left_tbox_tbox, INVERT);
+  return boxop_tnumber_numspan(tnumber, span, &left_tbox_tbox, INVERT);
 }
 
 /**
@@ -594,7 +594,7 @@ left_span_tnumber(const Span *span, const Temporal *tnumber)
 bool
 overleft_span_tnumber(const Span *span, const Temporal *tnumber)
 {
-  return boxop_tnumber_span(tnumber, span, &overleft_tbox_tbox, INVERT);
+  return boxop_tnumber_numspan(tnumber, span, &overleft_tbox_tbox, INVERT);
 }
 
 /**
@@ -606,7 +606,7 @@ overleft_span_tnumber(const Span *span, const Temporal *tnumber)
 bool
 right_span_tnumber(const Span *span, const Temporal *tnumber)
 {
-  return boxop_tnumber_span(tnumber, span, &right_tbox_tbox, INVERT);
+  return boxop_tnumber_numspan(tnumber, span, &right_tbox_tbox, INVERT);
 }
 
 /**
@@ -618,7 +618,7 @@ right_span_tnumber(const Span *span, const Temporal *tnumber)
 bool
 overright_span_tnumber(const Span *span, const Temporal *tnumber)
 {
-  return boxop_tnumber_span(tnumber, span, &overright_tbox_tbox, INVERT);
+  return boxop_tnumber_numspan(tnumber, span, &overright_tbox_tbox, INVERT);
 }
 
 /*****************************************************************************/
@@ -633,7 +633,7 @@ overright_span_tnumber(const Span *span, const Temporal *tnumber)
 bool
 left_spanset_tnumber(const SpanSet *ss, const Temporal *tnumber)
 {
-  return boxop_tnumber_spanset(tnumber, ss, &left_tbox_tbox, INVERT);
+  return boxop_tnumber_numspanset(tnumber, ss, &left_tbox_tbox, INVERT);
 }
 
 /**
@@ -645,7 +645,7 @@ left_spanset_tnumber(const SpanSet *ss, const Temporal *tnumber)
 bool
 overleft_spanset_tnumber(const SpanSet *ss, const Temporal *tnumber)
 {
-  return boxop_tnumber_spanset(tnumber, ss, &overleft_tbox_tbox, INVERT);
+  return boxop_tnumber_numspanset(tnumber, ss, &overleft_tbox_tbox, INVERT);
 }
 
 /**
@@ -657,7 +657,7 @@ overleft_spanset_tnumber(const SpanSet *ss, const Temporal *tnumber)
 bool
 right_spanset_tnumber(const SpanSet *ss, const Temporal *tnumber)
 {
-  return boxop_tnumber_spanset(tnumber, ss, &right_tbox_tbox, INVERT);
+  return boxop_tnumber_numspanset(tnumber, ss, &right_tbox_tbox, INVERT);
 }
 
 /**
@@ -669,7 +669,7 @@ right_spanset_tnumber(const SpanSet *ss, const Temporal *tnumber)
 bool
 overright_spanset_tnumber(const SpanSet *ss, const Temporal *tnumber)
 {
-  return boxop_tnumber_spanset(tnumber, ss, &overright_tbox_tbox, INVERT);
+  return boxop_tnumber_numspanset(tnumber, ss, &overright_tbox_tbox, INVERT);
 }
 
 /*****************************************************************************/
@@ -791,7 +791,7 @@ overright_tfloat_float(const Temporal *tnumber, double d)
 bool
 left_tnumber_span(const Temporal *tnumber, const Span *span)
 {
-  return boxop_tnumber_span(tnumber, span, &left_tbox_tbox, INVERT_NO);
+  return boxop_tnumber_numspan(tnumber, span, &left_tbox_tbox, INVERT_NO);
 }
 
 /**
@@ -803,7 +803,7 @@ left_tnumber_span(const Temporal *tnumber, const Span *span)
 bool
 overleft_tnumber_span(const Temporal *tnumber, const Span *span)
 {
-  return boxop_tnumber_span(tnumber, span, &overleft_tbox_tbox, INVERT_NO);
+  return boxop_tnumber_numspan(tnumber, span, &overleft_tbox_tbox, INVERT_NO);
 }
 
 /**
@@ -815,7 +815,7 @@ overleft_tnumber_span(const Temporal *tnumber, const Span *span)
 bool
 right_tnumber_span(const Temporal *tnumber, const Span *span)
 {
-  return boxop_tnumber_span(tnumber, span, &right_tbox_tbox, INVERT_NO);
+  return boxop_tnumber_numspan(tnumber, span, &right_tbox_tbox, INVERT_NO);
 }
 
 /**
@@ -827,7 +827,7 @@ right_tnumber_span(const Temporal *tnumber, const Span *span)
 bool
 overright_tnumber_span(const Temporal *tnumber, const Span *span)
 {
-  return boxop_tnumber_span(tnumber, span, &overright_tbox_tbox, INVERT_NO);
+  return boxop_tnumber_numspan(tnumber, span, &overright_tbox_tbox, INVERT_NO);
 }
 
 /*****************************************************************************/

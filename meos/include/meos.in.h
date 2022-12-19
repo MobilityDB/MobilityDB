@@ -47,6 +47,18 @@
  *****************************************************************************/
 
 /**
+ * Structure to represent ordered sets of values
+ */
+typedef struct
+{
+  int32 vl_len_;        /**< Varlena header (do not touch directly!) */
+  int32 count;          /**< Number of TimestampTz elements */
+  uint8 settype;        /**< set type */
+  uint8 basetype;       /**< span basetype */
+  Datum elems[1];       /**< Beginning of variable-length data */
+} Set;
+
+/**
  * Structure to represent spans (a.k.a. ranges)
  */
 typedef struct
@@ -74,24 +86,12 @@ typedef struct
 } SpanSet;
 
 /**
- * Make the Period and PeriodSet types as Span and SpanSet type for
- * facilitating the manipulation of the time dimension
+ * Make the Timestampset, Period, and PeriodSet types as Set, Span, and SpanSet
+ * type for facilitating the manipulation of the time dimension
  */
+typedef Set TimestampSet;
 typedef Span Period;
 typedef SpanSet PeriodSet;
-
-/**
- * Structure to represent timestamp sets
- */
-typedef struct
-{
-  int32 vl_len_;        /**< Varlena header (do not touch directly!) */
-  int32 count;          /**< Number of TimestampTz elements */
-  Span span;            /**< Bounding period */
-  Datum elems[1];       /**< Beginning of variable-length data */
-} Set;
-
-typedef Set TimestampSet;
 
 /**
  * Structure to represent temporal boxes
@@ -323,10 +323,10 @@ extern Span *intspan_in(const char *str);
 extern char *intspan_out(const Span *s);
 extern SpanSet *intspanset_in(const char *str);
 extern char *intspanset_out(const SpanSet *ss);
-extern uint8_t *set_as_wkb(const Set *os, uint8_t variant, size_t *size_out);
+extern uint8_t *set_as_wkb(const Set *s, uint8_t variant, size_t *size_out);
 extern Set *set_from_hexwkb(const char *hexwkb);
 extern Set *set_from_wkb(const uint8_t *wkb, int size);
-extern char *set_out(const Set *os, int maxdd);
+extern char *set_out(const Set *s, int maxdd);
 extern Period *period_in(const char *str);
 extern char *period_out(const Span *s);
 extern PeriodSet *periodset_in(const char *str);
@@ -365,7 +365,9 @@ extern Span *float_to_floaspan(double d);
 extern Set *float_to_floatset(double d);
 extern Set *int_to_intset(int i);
 extern Span *int_to_intspan(int i);
-extern SpanSet *set_to_spanset(const Set *os);
+extern void set_set_span(const Set *os, Span *s);
+extern Span *set_to_span(const Set *s);
+extern SpanSet *set_to_spanset(const Set *s);
 extern SpanSet *span_to_spanset(const Span *s);
 extern Period *timestamp_to_period(TimestampTz t);
 extern PeriodSet *timestamp_to_periodset(TimestampTz t);
@@ -376,41 +378,41 @@ extern PeriodSet *timestampset_to_periodset(const TimestampSet *ts);
 
 /* Accessor functions for set and span types */
 
-extern int64 bigintset_end_value(const Set *os);
-extern int bigintset_num_values(const Set *os);
-extern int64 bigintset_start_value(const Set *os);
-extern bool bigintset_value_n(const Set *os, int n, int64 *result);
-extern int64 *bigintset_values(const Set *os);
+extern int64 bigintset_end_value(const Set *s);
+extern int bigintset_num_values(const Set *s);
+extern int64 bigintset_start_value(const Set *s);
+extern bool bigintset_value_n(const Set *s, int n, int64 *result);
+extern int64 *bigintset_values(const Set *s);
 extern int bigintspan_lower(const Span *s);
 extern int bigintspan_upper(const Span *s);
 extern int bigintspanset_lower(const SpanSet *ss);
 extern int bigintspanset_upper(const SpanSet *ss);
-extern double floatset_end_value(const Set *os);
-extern int floatset_num_values(const Set *os);
-extern double floatset_start_value(const Set *os);
-extern bool floatset_value_n(const Set *os, int n, double *result);
-extern double *floatset_values(const Set *os);
+extern double floatset_end_value(const Set *s);
+extern int floatset_num_values(const Set *s);
+extern double floatset_start_value(const Set *s);
+extern bool floatset_value_n(const Set *s, int n, double *result);
+extern double *floatset_values(const Set *s);
 extern double floatspan_lower(const Span *s);
 extern double floatspan_upper(const Span *s);
 extern double floatspanset_lower(const SpanSet *ss);
 extern double floatspanset_upper(const SpanSet *ss);
-extern int intset_end_value(const Set *os);
-extern int intset_num_values(const Set *os);
-extern int intset_start_value(const Set *os);
-extern bool intset_value_n(const Set *os, int n, int *result);
-extern int *intset_values(const Set *os);
+extern int intset_end_value(const Set *s);
+extern int intset_num_values(const Set *s);
+extern int intset_start_value(const Set *s);
+extern bool intset_value_n(const Set *s, int n, int *result);
+extern int *intset_values(const Set *s);
 extern int intspan_lower(const Span *s);
 extern int intspan_upper(const Span *s);
 extern int intspanset_lower(const SpanSet *ss);
 extern int intspanset_upper(const SpanSet *ss);
-extern Datum set_end_value(const Set *os);
-extern uint32 set_hash(const Set *os);
-extern uint64 set_hash_extended(const Set *os, uint64 seed);
-extern int set_mem_size(const Set *os);
-extern int set_num_values(const Set *os);
-extern Datum set_start_value(const Set *os);
-extern bool set_value_n(const Set *os, int n, Datum *result);
-extern Datum *set_values(const Set *os);
+extern Datum set_end_value(const Set *s);
+extern uint32 set_hash(const Set *s);
+extern uint64 set_hash_extended(const Set *s, uint64 seed);
+extern int set_mem_size(const Set *s);
+extern int set_num_values(const Set *s);
+extern Datum set_start_value(const Set *s);
+extern bool set_value_n(const Set *s, int n, Datum *result);
+extern Datum *set_values(const Set *s);
 extern Interval *period_duration(const Span *s);
 extern TimestampTz period_lower(const Period *p);
 extern TimestampTz period_upper(const Period *p);
@@ -453,7 +455,7 @@ extern void bigintspan_set_floatspan(const Span *s1, Span *s2);
 extern void floatspan_set_bigintspan(const Span *s1, Span *s2);
 extern void floatspan_set_intspan(const Span *s1, Span *s2);
 extern void intspan_set_floatspan(const Span *s1, Span *s2);
-extern Set *set_shift(const Set *os, Datum shift);
+extern Set *set_shift(const Set *s, Datum shift);
 extern void period_shift_tscale(Period *p, const Interval *shift, const Interval *duration);
 extern PeriodSet *periodset_shift_tscale(const PeriodSet *ps, const Interval *shift, const Interval *duration);
 extern void span_expand(const Span *s1, Span *s2);
@@ -470,26 +472,26 @@ extern bool adjacent_bigintspanset_bigint(const SpanSet *ss, int64 i);
 extern bool adjacent_floatspan_float(const Span *s, double d);
 extern bool adjacent_intspan_int(const Span *s, int i);
 extern bool adjacent_set_span(const Set *os, const Span *s);
-extern bool adjacent_set_spanset(const Set *os, const SpanSet *ss);
+extern bool adjacent_set_spanset(const Set *s, const SpanSet *ss);
 extern bool adjacent_periodset_timestamp(const PeriodSet *ps, TimestampTz t);
 extern bool adjacent_span_set(const Span *s, const Set *os);
 extern bool adjacent_span_span(const Span *s1, const Span *s2);
 extern bool adjacent_span_spanset(const Span *s, const SpanSet *ss);
-extern bool adjacent_spanset_set(const SpanSet *ss, const Set *os);
+extern bool adjacent_spanset_set(const SpanSet *ss, const Set *s);
 extern bool adjacent_spanset_span(const SpanSet *ss, const Span *s);
 extern bool adjacent_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2);
-extern bool contained_bigint_bigintset(int64 i, const Set *os);
+extern bool contained_bigint_bigintset(int64 i, const Set *s);
 extern bool contained_bigint_bigintspan(int64 i, const Span *s);
 extern bool contained_bigint_bigintspanset(int64 i, const SpanSet *ss);
-extern bool contained_float_floatset(double d, const Set *os);
+extern bool contained_float_floatset(double d, const Set *s);
 extern bool contained_float_floatspan(double d, const Span *s);
 extern bool contained_float_floatspanset(double d, const SpanSet *ss);
-extern bool contained_int_intset(int i, const Set *os);
+extern bool contained_int_intset(int i, const Set *s);
 extern bool contained_int_intspanset (int i, const SpanSet *ss);
 extern bool contained_int_intspan(int i, const Span *s);
-extern bool contained_set_set(const Set *os1, const Set *os2);
+extern bool contained_set_set(const Set *s1, const Set *s2);
 extern bool contained_set_span(const Set *os, const Span *s);
-extern bool contained_set_spanset(const Set *os, const SpanSet *ss);
+extern bool contained_set_spanset(const Set *s, const SpanSet *ss);
 extern bool contained_span_span(const Span *s1, const Span *s2);
 extern bool contained_span_spanset(const Span *s, const SpanSet *ss);
 extern bool contained_spanset_span(const SpanSet *ss, const Span *s);
@@ -499,21 +501,21 @@ extern bool contained_timestamp_timestampset(TimestampTz t, const TimestampSet *
 extern bool contained_timestampset_timestampset(const TimestampSet *ts1, const TimestampSet *ts2);
 extern bool contains_floatspan_float(const Span *s, double d);
 extern bool contains_intspan_int(const Span *s, int i);
-extern bool contains_set_set(const Set *os1, const Set *os2);
+extern bool contains_set_set(const Set *s1, const Set *s2);
 extern bool contains_period_timestamp(const Period *p, TimestampTz t);
 extern bool contains_periodset_timestamp(const PeriodSet *ps, TimestampTz t);
 extern bool contains_span_set(const Span *s, const Set *os);
 extern bool contains_span_span(const Span *s1, const Span *s2);
 extern bool contains_span_spanset(const Span *s, const SpanSet *ss);
-extern bool contains_spanset_set(const SpanSet *ss, const Set *os);
+extern bool contains_spanset_set(const SpanSet *ss, const Set *s);
 extern bool contains_spanset_span(const SpanSet *ss, const Span *s);
 extern bool contains_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2);
 extern bool contains_timestampset_timestamp(const TimestampSet *ts, TimestampTz t);
 extern bool contains_timestampset_timestampset(const TimestampSet *ts1, const TimestampSet *ts2);
-extern bool overlaps_set_set(const Set *os1, const Set *os2);
+extern bool overlaps_set_set(const Set *s1, const Set *s2);
 extern bool overlaps_span_set(const Span *s, const Set *os);
 extern bool overlaps_span_span(const Span *s1, const Span *s2);
-extern bool overlaps_spanset_set(const SpanSet *ss, const Set *os);
+extern bool overlaps_spanset_set(const SpanSet *ss, const Set *s);
 extern bool overlaps_spanset_span(const SpanSet *ss, const Span *s);
 extern bool overlaps_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2);
 extern bool overlaps_timestampset_period(const TimestampSet *ts, const Period *p);
@@ -529,13 +531,13 @@ extern bool left_float_floatspan(double d, const Span *s);
 extern bool left_floatspan_float(const Span *s, double d);
 extern bool left_int_intspan(int i, const Span *s);
 extern bool left_intspan_int(const Span *s, int i);
-extern bool left_set_set(const Set *os1, const Set *os2);
+extern bool left_set_set(const Set *s1, const Set *s2);
 extern bool left_set_span(const Set *os, const Span *s);
-extern bool left_set_spanset(const Set *os, const SpanSet *ss);
+extern bool left_set_spanset(const Set *s, const SpanSet *ss);
 extern bool left_span_set(const Span *s, const Set *os);
 extern bool left_span_span(const Span *s1, const Span *s2);
 extern bool left_span_spanset(const Span *s, const SpanSet *ss);
-extern bool left_spanset_set(const SpanSet *ss, const Set *os);
+extern bool left_spanset_set(const SpanSet *ss, const Set *s);
 extern bool left_spanset_span(const SpanSet *ss, const Span *s);
 extern bool left_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2);
 extern bool overafter_period_timestamp(const Period *p, TimestampTz t);
@@ -552,39 +554,39 @@ extern bool overleft_float_floatspan(double d, const Span *s);
 extern bool overleft_floatspan_float(const Span *s, double d);
 extern bool overleft_int_intspan(int i, const Span *s);
 extern bool overleft_intspan_int(const Span *s, int i);
-extern bool overleft_set_set(const Set *os1, const Set *os2);
+extern bool overleft_set_set(const Set *s1, const Set *s2);
 extern bool overleft_set_span(const Set *os, const Span *s);
-extern bool overleft_set_spanset(const Set *os, const SpanSet *ss);
+extern bool overleft_set_spanset(const Set *s, const SpanSet *ss);
 extern bool overleft_span_set(const Span *s, const Set *os);
 extern bool overleft_span_span(const Span *s1, const Span *s2);
 extern bool overleft_span_spanset(const Span *s, const SpanSet *ss);
-extern bool overleft_spanset_set(const SpanSet *ss, const Set *os);
+extern bool overleft_spanset_set(const SpanSet *ss, const Set *s);
 extern bool overleft_spanset_span(const SpanSet *ss, const Span *s);
 extern bool overleft_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2);
 extern bool overright_float_floatspan(double d, const Span *s);
 extern bool overright_floatspan_float(const Span *s, double d);
 extern bool overright_int_intspan(int i, const Span *s);
 extern bool overright_intspan_int(const Span *s, int i);
-extern bool overright_set_set(const Set *os1, const Set *os2);
+extern bool overright_set_set(const Set *s1, const Set *s2);
 extern bool overright_set_span(const Set *os, const Span *s);
-extern bool overright_set_spanset(const Set *os, const SpanSet *ss);
+extern bool overright_set_spanset(const Set *s, const SpanSet *ss);
 extern bool overright_span_set(const Span *s, const Set *os);
 extern bool overright_span_span(const Span *s1, const Span *s2);
 extern bool overright_span_spanset(const Span *s, const SpanSet *ss);
-extern bool overright_spanset_set(const SpanSet *ss, const Set *os);
+extern bool overright_spanset_set(const SpanSet *ss, const Set *s);
 extern bool overright_spanset_span(const SpanSet *ss, const Span *s);
 extern bool overright_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2);
 extern bool right_float_floatspan(double d, const Span *s);
 extern bool right_floatspan_float(const Span *s, double d);
 extern bool right_int_intspan(int i, const Span *s);
 extern bool right_intspan_int(const Span *s, int i);
-extern bool right_set_set(const Set *os1, const Set *os2);
+extern bool right_set_set(const Set *s1, const Set *s2);
 extern bool right_set_span(const Set *os, const Span *s);
-extern bool right_set_spanset(const Set *os, const SpanSet *ss);
+extern bool right_set_spanset(const Set *s, const SpanSet *ss);
 extern bool right_span_set(const Span *s, const Set *os);
 extern bool right_span_span(const Span *s1, const Span *s2);
 extern bool right_span_spanset(const Span *s, const SpanSet *ss);
-extern bool right_spanset_set(const SpanSet *ss, const Set *os);
+extern bool right_spanset_set(const SpanSet *ss, const Set *s);
 extern bool right_spanset_span(const SpanSet *ss, const Span *s);
 extern bool right_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2);
 
@@ -593,12 +595,12 @@ extern bool right_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2);
 /* Set functions for set and span types */
 
 extern Span *bbox_union_span_span(const Span *s1, const Span *s2);
-extern Set *intersection_set_set(const Set *os1, const Set *os2);
+extern Set *intersection_set_set(const Set *s1, const Set *s2);
 extern bool intersection_period_timestamp(const Period *p, TimestampTz t, TimestampTz *result);
 extern bool intersection_periodset_timestamp(const PeriodSet *ps, TimestampTz t, TimestampTz *result);
 extern Set *intersection_span_set(const Span *s, const Set *os);
 extern Span *intersection_span_span(const Span *s1, const Span *s2);
-extern Set *intersection_spanset_set(const SpanSet *ss, const Set *os);
+extern Set *intersection_spanset_set(const SpanSet *ss, const Set *s);
 extern SpanSet *intersection_spanset_span(const SpanSet *ss, const Span *s);
 extern SpanSet *intersection_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2);
 extern bool intersection_timestamp_period(TimestampTz t, const Period *p, TimestampTz *result);
@@ -606,28 +608,28 @@ extern TimestampSet *intersection_timestampset_period(const TimestampSet *ts, co
 extern TimestampSet *intersection_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps);
 extern bool intersection_timestampset_timestamp(const TimestampSet *ts, const TimestampTz t, TimestampTz *result);
 extern TimestampSet *intersection_timestampset_timestampset(const TimestampSet *ts1, const TimestampSet *ts2);
-extern Set *minus_set_set(const Set *os1, const Set *os2);
+extern Set *minus_set_set(const Set *s1, const Set *s2);
 extern Set *minus_set_span(const Set *os, const Span *s);
-extern Set *minus_set_spanset(const Set *os, const SpanSet *ss);
+extern Set *minus_set_spanset(const Set *s, const SpanSet *ss);
 extern SpanSet *minus_period_timestamp(const Period *p, TimestampTz t);
 extern SpanSet *minus_periodset_timestamp(const PeriodSet *ps, TimestampTz t);
 extern SpanSet *minus_span_set(const Span *s, const Set *os);
 extern SpanSet *minus_span_span(const Span *s1, const Span *s2);
 extern SpanSet *minus_span_spanset(const Span *s, const SpanSet *ss);
-extern SpanSet *minus_spanset_set(const SpanSet *ss, const Set *os);
+extern SpanSet *minus_spanset_set(const SpanSet *ss, const Set *s);
 extern SpanSet *minus_spanset_span(const SpanSet *ss, const Span *s);
 extern SpanSet *minus_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2);
 extern bool minus_timestamp_period(TimestampTz t, const Period *p, TimestampTz *result);
 extern bool minus_timestamp_periodset(TimestampTz t, const PeriodSet *ps, TimestampTz *result);
 extern TimestampSet *minus_timestampset_timestamp(const TimestampSet *ts, TimestampTz t);
 extern TimestampSet *minus_timestampset_timestampset(const TimestampSet *ts1, const TimestampSet *ts2);
-extern Set *union_set_set(const Set *os1, const Set *os2);
+extern Set *union_set_set(const Set *s1, const Set *s2);
 extern PeriodSet *union_period_timestamp(const Period *p, TimestampTz t);
 extern PeriodSet *union_period_timestampset(const Period *p, const TimestampSet *ts);
 extern PeriodSet *union_periodset_timestamp(PeriodSet *ps, TimestampTz t);
 extern SpanSet *union_span_set(const Span *s, const Set *os);
 extern SpanSet *union_span_span(const Span *s1, const Span *s2);
-extern SpanSet *union_spanset_set(const SpanSet *ss, const Set *os);
+extern SpanSet *union_spanset_set(const SpanSet *ss, const Set *s);
 extern SpanSet *union_spanset_span(const SpanSet *ss, const Span *s);
 extern SpanSet *union_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2);
 extern PeriodSet *union_timestamp_period(TimestampTz t, const Period *p);
@@ -642,7 +644,7 @@ extern TimestampSet *union_timestampset_timestamp(const TimestampSet *ts, const 
 
 extern double distance_floatspan_float(const Span *s, double d);
 extern double distance_intspan_int(const Span *s, int i);
-extern double distance_set_set(const Set *os1, const Set *os2);
+extern double distance_set_set(const Set *s1, const Set *s2);
 extern double distance_period_periodset(const Period *p, const PeriodSet *ps);
 extern double distance_period_timestamp(const Period *p, TimestampTz t);
 extern double distance_period_timestampset(const Period *p, const TimestampSet *ts);
@@ -686,34 +688,34 @@ extern SkipList *timestampset_tunion_transfn(SkipList *state, const TimestampSet
 
 /* Comparison functions for set and span types */
 
-extern int bigintset_cmp(const Set *os1, const Set *os2);
-extern bool bigintset_eq(const Set *os1, const Set *os2);
-extern bool bigintset_ge(const Set *os1, const Set *os2);
-extern bool bigintset_gt(const Set *os1, const Set *os2);
-extern bool bigintset_le(const Set *os1, const Set *os2);
-extern bool bigintset_lt(const Set *os1, const Set *os2);
-extern bool bigintset_ne(const Set *os1, const Set *os2);
-extern int floatset_cmp(const Set *os1, const Set *os2);
-extern bool floatset_eq(const Set *os1, const Set *os2);
-extern bool floatset_ge(const Set *os1, const Set *os2);
-extern bool floatset_gt(const Set *os1, const Set *os2);
-extern bool floatset_le(const Set *os1, const Set *os2);
-extern bool floatset_lt(const Set *os1, const Set *os2);
-extern bool floatset_ne(const Set *os1, const Set *os2);
-extern int intset_cmp(const Set *os1, const Set *os2);
-extern bool intset_eq(const Set *os1, const Set *os2);
-extern bool intset_ge(const Set *os1, const Set *os2);
-extern bool intset_gt(const Set *os1, const Set *os2);
-extern bool intset_le(const Set *os1, const Set *os2);
-extern bool intset_lt(const Set *os1, const Set *os2);
-extern bool intset_ne(const Set *os1, const Set *os2);
-extern int set_cmp(const Set *os1, const Set *os2);
-extern bool set_eq(const Set *os1, const Set *os2);
-extern bool set_ge(const Set *os1, const Set *os2);
-extern bool set_gt(const Set *os1, const Set *os2);
-extern bool set_le(const Set *os1, const Set *os2);
-extern bool set_lt(const Set *os1, const Set *os2);
-extern bool set_ne(const Set *os1, const Set *os2);
+extern int bigintset_cmp(const Set *s1, const Set *s2);
+extern bool bigintset_eq(const Set *s1, const Set *s2);
+extern bool bigintset_ge(const Set *s1, const Set *s2);
+extern bool bigintset_gt(const Set *s1, const Set *s2);
+extern bool bigintset_le(const Set *s1, const Set *s2);
+extern bool bigintset_lt(const Set *s1, const Set *s2);
+extern bool bigintset_ne(const Set *s1, const Set *s2);
+extern int floatset_cmp(const Set *s1, const Set *s2);
+extern bool floatset_eq(const Set *s1, const Set *s2);
+extern bool floatset_ge(const Set *s1, const Set *s2);
+extern bool floatset_gt(const Set *s1, const Set *s2);
+extern bool floatset_le(const Set *s1, const Set *s2);
+extern bool floatset_lt(const Set *s1, const Set *s2);
+extern bool floatset_ne(const Set *s1, const Set *s2);
+extern int intset_cmp(const Set *s1, const Set *s2);
+extern bool intset_eq(const Set *s1, const Set *s2);
+extern bool intset_ge(const Set *s1, const Set *s2);
+extern bool intset_gt(const Set *s1, const Set *s2);
+extern bool intset_le(const Set *s1, const Set *s2);
+extern bool intset_lt(const Set *s1, const Set *s2);
+extern bool intset_ne(const Set *s1, const Set *s2);
+extern int set_cmp(const Set *s1, const Set *s2);
+extern bool set_eq(const Set *s1, const Set *s2);
+extern bool set_ge(const Set *s1, const Set *s2);
+extern bool set_gt(const Set *s1, const Set *s2);
+extern bool set_le(const Set *s1, const Set *s2);
+extern bool set_lt(const Set *s1, const Set *s2);
+extern bool set_ne(const Set *s1, const Set *s2);
 extern int span_cmp(const Span *s1, const Span *s2);
 extern bool span_eq(const Span *s1, const Span *s2);
 extern bool span_ge(const Span *s1, const Span *s2);
@@ -1072,7 +1074,7 @@ extern Temporal *temporal_shift_tscale(const Temporal *temp, const Interval *shi
 extern Temporal *temporal_step_to_linear(const Temporal *temp);
 extern Temporal *temporal_to_tinstant(const Temporal *temp);
 extern Temporal *temporal_to_tdiscseq(const Temporal *temp);
-extern Temporal *temporal_to_tsequence(const Temporal *temp);
+extern Temporal *temporal_to_tcontseq(const Temporal *temp);
 extern Temporal *temporal_to_tsequenceset(const Temporal *temp);
 extern Temporal *temporal_tscale(const Temporal *temp, const Interval *duration);
 

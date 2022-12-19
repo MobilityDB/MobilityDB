@@ -217,6 +217,11 @@ SELECT MAX(memorySize(temp)) FROM tbl_tint;
 SELECT MAX(memorySize(temp)) FROM tbl_tfloat;
 SELECT MAX(memorySize(temp)) FROM tbl_ttext;
 
+SELECT MAX(storageSize(temp)) FROM tbl_tbool;
+SELECT MAX(storageSize(temp)) FROM tbl_tint;
+SELECT MAX(storageSize(temp)) FROM tbl_tfloat;
+SELECT MAX(storageSize(temp)) FROM tbl_ttext;
+
 /*
 SELECT period(temp) FROM tbl_tbool;
 SELECT box(temp) FROM tbl_tint;

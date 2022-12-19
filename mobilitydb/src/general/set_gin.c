@@ -27,6 +27,18 @@
  *
  *****************************************************************************/
 
+/*****************************************************************************
+ * Operator strategy numbers used in the GIN set and tnpoint opclasses
+ *****************************************************************************/
+
+#define GinOverlapStrategySetSet             10    /* for && */
+#define GinContainsStrategySetValue          20    /* for @> */
+#define GinContainsStrategySetSet            21    /* for @> */
+#define GinContainedStrategySetSet           30    /* for <@ */
+#define GinEqualStrategySetSet               40    /* for =  */
+
+/*****************************************************************************/
+
 /* PostgreSQL */
 #include "postgres.h"
 #include "access/gin.h"
@@ -45,13 +57,13 @@ PG_FUNCTION_INFO_V1(Set_gin_extract_value);
 Datum
 Set_gin_extract_value(PG_FUNCTION_ARGS)
 {
-  Set *os = PG_GETARG_SET_P(0);
+  Set *s = PG_GETARG_SET_P(0);
   int32 *nkeys = (int32 *) PG_GETARG_POINTER(1);
   bool **nullFlags = (bool **) PG_GETARG_POINTER(2);
-  Datum *elems = set_values(os);
-  *nkeys = os->count;
+  Datum *elems = set_values(s);
+  *nkeys = s->count;
   *nullFlags = NULL;
-  PG_FREE_IF_COPY(os, 0);
+  PG_FREE_IF_COPY(s, 0);
   PG_RETURN_POINTER(elems);
 }
 
@@ -66,26 +78,26 @@ Set_gin_extract_query(PG_FUNCTION_ARGS)
   StrategyNumber strategy = PG_GETARG_UINT16(2);
   bool **nullFlags = (bool **) PG_GETARG_POINTER(5);
   int32 *searchMode = (int32 *) PG_GETARG_POINTER(6);
-  Set *os;
+  Set *s;
   Datum *elems;
   *nullFlags = NULL;
   *searchMode = GIN_SEARCH_MODE_DEFAULT;
 
   switch (strategy)
   {
-    case GinContainsStrategyValue:
+    case GinContainsStrategySetValue:
       elems = palloc(sizeof(Datum));
       elems[0] = PG_GETARG_DATUM(0);
       *nkeys = 1;
       break;
-    case GinOverlapStrategy:
-    case GinContainsStrategySet:
-    case GinContainedStrategy:
-    case GinEqualStrategy:
-      os = PG_GETARG_SET_P(0);
-      elems = set_values(os);
-      *nkeys = os->count;
-      PG_FREE_IF_COPY(os, 0);
+    case GinOverlapStrategySetSet:
+    case GinContainsStrategySetSet:
+    case GinContainedStrategySetSet:
+    case GinEqualStrategySetSet:
+      s = PG_GETARG_SET_P(0);
+      elems = set_values(s);
+      *nkeys = s->count;
+      PG_FREE_IF_COPY(s, 0);
       break;
     default:
       elog(ERROR, "Set_gin_extract_query: unknown strategy number: %d",
@@ -107,8 +119,10 @@ Set_gin_triconsistent(PG_FUNCTION_ARGS)
   bool *nullFlags = (bool *) PG_GETARG_POINTER(6);
   GinTernaryValue res;
   int32 i;
+  /* Use the generic strategy numbers independent of the argument types */
+  StrategyNumber ginstrategy = strategy / 10;
 
-  switch (strategy)
+  switch (ginstrategy)
   {
     case GinOverlapStrategy:
       /* must have a match for at least one non-null element */
@@ -129,8 +143,7 @@ Set_gin_triconsistent(PG_FUNCTION_ARGS)
         }
       }
       break;
-    case GinContainsStrategyValue:
-    case GinContainsStrategySet:
+    case GinContainsStrategy:
       /* must have all elements in check[] true, and no nulls */
       res = GIN_TRUE;
       for (i = 0; i < nkeys; i++)

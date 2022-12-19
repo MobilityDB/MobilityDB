@@ -912,19 +912,19 @@ CREATE OPERATOR &> (
 
 CREATE FUNCTION temporal_left(intspan, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Left_span_tnumber'
+  AS 'MODULE_PATHNAME', 'Left_numspan_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overleft(intspan, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overleft_span_tnumber'
+  AS 'MODULE_PATHNAME', 'Overleft_numspan_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_right(intspan, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Right_span_tnumber'
+  AS 'MODULE_PATHNAME', 'Right_numspan_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overright(intspan, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overright_span_tnumber'
+  AS 'MODULE_PATHNAME', 'Overright_numspan_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -955,19 +955,19 @@ CREATE OPERATOR &> (
 
 CREATE FUNCTION temporal_left(intspan, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Left_span_tnumber'
+  AS 'MODULE_PATHNAME', 'Left_numspan_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overleft(intspan, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overleft_span_tnumber'
+  AS 'MODULE_PATHNAME', 'Overleft_numspan_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_right(intspan, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Right_span_tnumber'
+  AS 'MODULE_PATHNAME', 'Right_numspan_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overright(intspan, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overright_span_tnumber'
+  AS 'MODULE_PATHNAME', 'Overright_numspan_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -1000,19 +1000,19 @@ CREATE OPERATOR &> (
 
 CREATE FUNCTION temporal_left(floatspan, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Left_span_tnumber'
+  AS 'MODULE_PATHNAME', 'Left_numspan_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overleft(floatspan, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overleft_span_tnumber'
+  AS 'MODULE_PATHNAME', 'Overleft_numspan_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_right(floatspan, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Right_span_tnumber'
+  AS 'MODULE_PATHNAME', 'Right_numspan_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overright(floatspan, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overright_span_tnumber'
+  AS 'MODULE_PATHNAME', 'Overright_numspan_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -1043,19 +1043,19 @@ CREATE OPERATOR &> (
 
 CREATE FUNCTION temporal_left(floatspan, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Left_span_tnumber'
+  AS 'MODULE_PATHNAME', 'Left_numspan_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overleft(floatspan, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overleft_span_tnumber'
+  AS 'MODULE_PATHNAME', 'Overleft_numspan_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_right(floatspan, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Right_span_tnumber'
+  AS 'MODULE_PATHNAME', 'Right_numspan_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overright(floatspan, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overright_span_tnumber'
+  AS 'MODULE_PATHNAME', 'Overright_numspan_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -1088,19 +1088,19 @@ CREATE OPERATOR &> (
 
 CREATE FUNCTION temporal_left(intspanset, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Left_spanset_tnumber'
+  AS 'MODULE_PATHNAME', 'Left_numspanset_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overleft(intspanset, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overleft_spanset_tnumber'
+  AS 'MODULE_PATHNAME', 'Overleft_numspanset_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_right(intspanset, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Right_spanset_tnumber'
+  AS 'MODULE_PATHNAME', 'Right_numspanset_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overright(intspanset, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overright_spanset_tnumber'
+  AS 'MODULE_PATHNAME', 'Overright_numspanset_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -1131,19 +1131,19 @@ CREATE OPERATOR &> (
 
 CREATE FUNCTION temporal_left(intspanset, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Left_spanset_tnumber'
+  AS 'MODULE_PATHNAME', 'Left_numspanset_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overleft(intspanset, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overleft_spanset_tnumber'
+  AS 'MODULE_PATHNAME', 'Overleft_numspanset_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_right(intspanset, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Right_spanset_tnumber'
+  AS 'MODULE_PATHNAME', 'Right_numspanset_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overright(intspanset, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overright_spanset_tnumber'
+  AS 'MODULE_PATHNAME', 'Overright_numspanset_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -1176,19 +1176,19 @@ CREATE OPERATOR &> (
 
 CREATE FUNCTION temporal_left(floatspanset, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Left_spanset_tnumber'
+  AS 'MODULE_PATHNAME', 'Left_numspanset_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overleft(floatspanset, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overleft_spanset_tnumber'
+  AS 'MODULE_PATHNAME', 'Overleft_numspanset_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_right(floatspanset, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Right_spanset_tnumber'
+  AS 'MODULE_PATHNAME', 'Right_numspanset_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overright(floatspanset, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overright_spanset_tnumber'
+  AS 'MODULE_PATHNAME', 'Overright_numspanset_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -1219,19 +1219,19 @@ CREATE OPERATOR &> (
 
 CREATE FUNCTION temporal_left(floatspanset, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Left_spanset_tnumber'
+  AS 'MODULE_PATHNAME', 'Left_numspanset_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overleft(floatspanset, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overleft_spanset_tnumber'
+  AS 'MODULE_PATHNAME', 'Overleft_numspanset_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_right(floatspanset, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Right_spanset_tnumber'
+  AS 'MODULE_PATHNAME', 'Right_numspanset_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overright(floatspanset, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overright_spanset_tnumber'
+  AS 'MODULE_PATHNAME', 'Overright_numspanset_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -1905,19 +1905,19 @@ CREATE OPERATOR &> (
 
 CREATE FUNCTION temporal_left(tint, intspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Left_tnumber_span'
+  AS 'MODULE_PATHNAME', 'Left_tnumber_numspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overleft(tint, intspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overleft_tnumber_span'
+  AS 'MODULE_PATHNAME', 'Overleft_tnumber_numspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_right(tint, intspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Right_tnumber_span'
+  AS 'MODULE_PATHNAME', 'Right_tnumber_numspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overright(tint, intspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overright_tnumber_span'
+  AS 'MODULE_PATHNAME', 'Overright_tnumber_numspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -1948,19 +1948,19 @@ CREATE OPERATOR &> (
 
 CREATE FUNCTION temporal_left(tint, intspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Left_tnumber_spanset'
+  AS 'MODULE_PATHNAME', 'Left_tnumber_numspanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overleft(tint, intspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overleft_tnumber_spanset'
+  AS 'MODULE_PATHNAME', 'Overleft_tnumber_numspanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_right(tint, intspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Right_tnumber_spanset'
+  AS 'MODULE_PATHNAME', 'Right_tnumber_numspanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overright(tint, intspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overright_tnumber_spanset'
+  AS 'MODULE_PATHNAME', 'Overright_tnumber_numspanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -2495,19 +2495,19 @@ CREATE OPERATOR &> (
 
 CREATE FUNCTION temporal_left(tfloat, floatspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Left_tnumber_span'
+  AS 'MODULE_PATHNAME', 'Left_tnumber_numspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overleft(tfloat, floatspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overleft_tnumber_span'
+  AS 'MODULE_PATHNAME', 'Overleft_tnumber_numspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_right(tfloat, floatspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Right_tnumber_span'
+  AS 'MODULE_PATHNAME', 'Right_tnumber_numspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overright(tfloat, floatspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overright_tnumber_span'
+  AS 'MODULE_PATHNAME', 'Overright_tnumber_numspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -2538,19 +2538,19 @@ CREATE OPERATOR &> (
 
 CREATE FUNCTION temporal_left(tfloat, floatspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Left_tnumber_spanset'
+  AS 'MODULE_PATHNAME', 'Left_tnumber_numspanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overleft(tfloat, floatspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overleft_tnumber_spanset'
+  AS 'MODULE_PATHNAME', 'Overleft_tnumber_numspanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_right(tfloat, floatspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Right_tnumber_spanset'
+  AS 'MODULE_PATHNAME', 'Right_tnumber_numspanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overright(tfloat, floatspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overright_tnumber_spanset'
+  AS 'MODULE_PATHNAME', 'Overright_tnumber_numspanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (

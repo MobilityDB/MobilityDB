@@ -298,11 +298,11 @@ PGDLLEXPORT Datum
 Set_as_wkb(PG_FUNCTION_ARGS)
 {
   /* Ensure that the value is detoasted if necessary */
-  Set *os = PG_GETARG_SET_P(0);
+  Set *s = PG_GETARG_SET_P(0);
   mobdbType settype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  bytea *result = datum_as_wkb_ext(fcinfo, PointerGetDatum(os), settype,
+  bytea *result = datum_as_wkb_ext(fcinfo, PointerGetDatum(s), settype,
     false);
-  PG_FREE_IF_COPY(os, 0);
+  PG_FREE_IF_COPY(s, 0);
   PG_RETURN_BYTEA_P(result);
 }
 
@@ -316,10 +316,10 @@ PGDLLEXPORT Datum
 Set_as_hexwkb(PG_FUNCTION_ARGS)
 {
   /* Ensure that the value is detoasted if necessary */
-  Set *os = PG_GETARG_TIMESTAMPSET_P(0);
+  Set *s = PG_GETARG_TIMESTAMPSET_P(0);
   mobdbType settype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  text *result = datum_as_hexwkb_ext(fcinfo, PointerGetDatum(os), settype);
-  PG_FREE_IF_COPY(os, 0);
+  text *result = datum_as_hexwkb_ext(fcinfo, PointerGetDatum(s), settype);
+  PG_FREE_IF_COPY(s, 0);
   PG_RETURN_TEXT_P(result);
 }
 

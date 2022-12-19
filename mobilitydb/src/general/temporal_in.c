@@ -113,9 +113,9 @@ Set_from_wkb(PG_FUNCTION_ARGS)
 {
   bytea *bytea_wkb = PG_GETARG_BYTEA_P(0);
   uint8_t *wkb = (uint8_t *) VARDATA(bytea_wkb);
-  Set *os = set_from_wkb(wkb, VARSIZE(bytea_wkb) - VARHDRSZ);
+  Set *s = set_from_wkb(wkb, VARSIZE(bytea_wkb) - VARHDRSZ);
   PG_FREE_IF_COPY(bytea_wkb, 0);
-  PG_RETURN_POINTER(os);
+  PG_RETURN_POINTER(s);
 }
 
 PG_FUNCTION_INFO_V1(Set_from_hexwkb);
@@ -129,10 +129,10 @@ Set_from_hexwkb(PG_FUNCTION_ARGS)
 {
   text *hexwkb_text = PG_GETARG_TEXT_P(0);
   char *hexwkb = text2cstring(hexwkb_text);
-  Set *os = set_from_hexwkb(hexwkb);
+  Set *s = set_from_hexwkb(hexwkb);
   pfree(hexwkb);
   PG_FREE_IF_COPY(hexwkb_text, 0);
-  PG_RETURN_POINTER(os);
+  PG_RETURN_POINTER(s);
 }
 
 /*****************************************************************************/

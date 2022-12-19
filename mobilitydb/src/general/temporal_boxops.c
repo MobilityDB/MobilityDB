@@ -917,12 +917,12 @@ boxop_tnumber_number_ext(FunctionCallInfo fcinfo,
  * @param[in] func Bounding box function
  */
 Datum
-boxop_span_tnumber_ext(FunctionCallInfo fcinfo,
+boxop_numspan_tnumber_ext(FunctionCallInfo fcinfo,
   bool (*func)(const TBox *, const TBox *))
 {
   Span *span = PG_GETARG_SPAN_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  bool result = boxop_tnumber_span(temp, span, func, INVERT);
+  bool result = boxop_tnumber_numspan(temp, span, func, INVERT);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_BOOL(result);
 }
@@ -934,12 +934,12 @@ boxop_span_tnumber_ext(FunctionCallInfo fcinfo,
  * @param[in] func Bounding box function
  */
 Datum
-boxop_tnumber_span_ext(FunctionCallInfo fcinfo,
+boxop_tnumber_numspan_ext(FunctionCallInfo fcinfo,
   bool (*func)(const TBox *, const TBox *))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Span *span = PG_GETARG_SPAN_P(1);
-  bool result = boxop_tnumber_span(temp, span, func, INVERT_NO);
+  bool result = boxop_tnumber_numspan(temp, span, func, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);
 }
@@ -951,12 +951,12 @@ boxop_tnumber_span_ext(FunctionCallInfo fcinfo,
  * @param[in] func Bounding box function
  */
 Datum
-boxop_spanset_tnumber_ext(FunctionCallInfo fcinfo,
+boxop_numspanset_tnumber_ext(FunctionCallInfo fcinfo,
   bool (*func)(const TBox *, const TBox *))
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  bool result = boxop_tnumber_spanset(temp, ss, func, INVERT);
+  bool result = boxop_tnumber_numspanset(temp, ss, func, INVERT);
   PG_FREE_IF_COPY(ss, 0);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_BOOL(result);
@@ -969,12 +969,12 @@ boxop_spanset_tnumber_ext(FunctionCallInfo fcinfo,
  * @param[in] func Bounding box function
  */
 Datum
-boxop_tnumber_spanset_ext(FunctionCallInfo fcinfo,
+boxop_tnumber_numspanset_ext(FunctionCallInfo fcinfo,
   bool (*func)(const TBox *, const TBox *))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  bool result = boxop_tnumber_spanset(temp, ss, func, INVERT_NO);
+  bool result = boxop_tnumber_numspanset(temp, ss, func, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ss, 1);
   PG_RETURN_BOOL(result);
@@ -1063,7 +1063,7 @@ Contains_tnumber_number(PG_FUNCTION_ARGS)
   return boxop_tnumber_number_ext(fcinfo, &contains_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Contains_span_tnumber);
+PG_FUNCTION_INFO_V1(Contains_numspan_tnumber);
 /**
  * @ingroup mobilitydb_temporal_topo
  * @brief Return true if the span contains the bounding box of the temporal number
@@ -1071,12 +1071,12 @@ PG_FUNCTION_INFO_V1(Contains_span_tnumber);
  * @sqlop @p \@>
  */
 PGDLLEXPORT Datum
-Contains_span_tnumber(PG_FUNCTION_ARGS)
+Contains_numspan_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_span_tnumber_ext(fcinfo, &contains_tbox_tbox);
+  return boxop_numspan_tnumber_ext(fcinfo, &contains_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Contains_tnumber_span);
+PG_FUNCTION_INFO_V1(Contains_tnumber_numspan);
 /**
  * @ingroup mobilitydb_temporal_topo
  * @brief Return true if the bounding box of the temporal number contains the span
@@ -1084,12 +1084,12 @@ PG_FUNCTION_INFO_V1(Contains_tnumber_span);
  * @sqlop @p \@>
  */
 PGDLLEXPORT Datum
-Contains_tnumber_span(PG_FUNCTION_ARGS)
+Contains_tnumber_numspan(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_span_ext(fcinfo, &contains_tbox_tbox);
+  return boxop_tnumber_numspan_ext(fcinfo, &contains_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Contains_spanset_tnumber);
+PG_FUNCTION_INFO_V1(Contains_numspanset_tnumber);
 /**
  * @ingroup mobilitydb_temporal_topo
  * @brief Return true if the span set contains the bounding box of the temporal number
@@ -1097,12 +1097,12 @@ PG_FUNCTION_INFO_V1(Contains_spanset_tnumber);
  * @sqlop @p \@>
  */
 PGDLLEXPORT Datum
-Contains_spanset_tnumber(PG_FUNCTION_ARGS)
+Contains_numspanset_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_span_tnumber_ext(fcinfo, &contains_tbox_tbox);
+  return boxop_numspan_tnumber_ext(fcinfo, &contains_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Contains_tnumber_spanset);
+PG_FUNCTION_INFO_V1(Contains_tnumber_numspanset);
 /**
  * @ingroup mobilitydb_temporal_topo
  * @brief Return true if the bounding box of the temporal number contains the
@@ -1111,9 +1111,9 @@ PG_FUNCTION_INFO_V1(Contains_tnumber_spanset);
  * @sqlop @p \@>
  */
 PGDLLEXPORT Datum
-Contains_tnumber_spanset(PG_FUNCTION_ARGS)
+Contains_tnumber_numspanset(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_spanset_ext(fcinfo, &contains_tbox_tbox);
+  return boxop_tnumber_numspanset_ext(fcinfo, &contains_tbox_tbox);
 }
 
 PG_FUNCTION_INFO_V1(Contains_tbox_tnumber);
@@ -1188,7 +1188,7 @@ Contained_tnumber_number(PG_FUNCTION_ARGS)
   return boxop_tnumber_number_ext(fcinfo, &contained_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Contained_span_tnumber);
+PG_FUNCTION_INFO_V1(Contained_numspan_tnumber);
 /**
  * @ingroup mobilitydb_temporal_topo
  * @brief Return true if the span is contained in the bounding box of the temporal
@@ -1197,12 +1197,12 @@ PG_FUNCTION_INFO_V1(Contained_span_tnumber);
  * @sqlop @p <@
  */
 PGDLLEXPORT Datum
-Contained_span_tnumber(PG_FUNCTION_ARGS)
+Contained_numspan_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_span_tnumber_ext(fcinfo, &contained_tbox_tbox);
+  return boxop_numspan_tnumber_ext(fcinfo, &contained_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Contained_tnumber_span);
+PG_FUNCTION_INFO_V1(Contained_tnumber_numspan);
 /**
  * @ingroup mobilitydb_temporal_topo
  * @brief Return true if the bounding box of the temporal number is contained in
@@ -1211,12 +1211,12 @@ PG_FUNCTION_INFO_V1(Contained_tnumber_span);
  * @sqlop @p <@
  */
 PGDLLEXPORT Datum
-Contained_tnumber_span(PG_FUNCTION_ARGS)
+Contained_tnumber_numspan(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_span_ext(fcinfo, &contained_tbox_tbox);
+  return boxop_tnumber_numspan_ext(fcinfo, &contained_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Contained_spanset_tnumber);
+PG_FUNCTION_INFO_V1(Contained_numspanset_tnumber);
 /**
  * @ingroup mobilitydb_temporal_topo
  * @brief Return true if the span set is contained in the bounding box of the
@@ -1225,12 +1225,12 @@ PG_FUNCTION_INFO_V1(Contained_spanset_tnumber);
  * @sqlop @p <@
  */
 PGDLLEXPORT Datum
-Contained_spanset_tnumber(PG_FUNCTION_ARGS)
+Contained_numspanset_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_spanset_tnumber_ext(fcinfo, &contained_tbox_tbox);
+  return boxop_numspanset_tnumber_ext(fcinfo, &contained_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Contained_tnumber_spanset);
+PG_FUNCTION_INFO_V1(Contained_tnumber_numspanset);
 /**
  * @ingroup mobilitydb_temporal_topo
  * @brief Return true if the bounding box of the temporal number is contained
@@ -1239,9 +1239,9 @@ PG_FUNCTION_INFO_V1(Contained_tnumber_spanset);
  * @sqlop @p <@
  */
 PGDLLEXPORT Datum
-Contained_tnumber_spanset(PG_FUNCTION_ARGS)
+Contained_tnumber_numspanset(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_spanset_ext(fcinfo, &contained_tbox_tbox);
+  return boxop_tnumber_numspanset_ext(fcinfo, &contained_tbox_tbox);
 }
 
 PG_FUNCTION_INFO_V1(Contained_tbox_tnumber);
@@ -1316,7 +1316,7 @@ Overlaps_tnumber_number(PG_FUNCTION_ARGS)
   return boxop_tnumber_number_ext(fcinfo, &overlaps_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Overlaps_span_tnumber);
+PG_FUNCTION_INFO_V1(Overlaps_numspan_tnumber);
 /**
  * @ingroup mobilitydb_temporal_topo
  * @brief Return true if the span and the bounding box of the temporal number
@@ -1325,12 +1325,12 @@ PG_FUNCTION_INFO_V1(Overlaps_span_tnumber);
  * @sqlop @p &&
  */
 PGDLLEXPORT Datum
-Overlaps_span_tnumber(PG_FUNCTION_ARGS)
+Overlaps_numspan_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_span_tnumber_ext(fcinfo, &overlaps_tbox_tbox);
+  return boxop_numspan_tnumber_ext(fcinfo, &overlaps_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Overlaps_tnumber_span);
+PG_FUNCTION_INFO_V1(Overlaps_tnumber_numspan);
 /**
  * @ingroup mobilitydb_temporal_topo
  * @brief Return true if the bounding box of the temporal number and the span
@@ -1339,12 +1339,12 @@ PG_FUNCTION_INFO_V1(Overlaps_tnumber_span);
  * @sqlop @p &&
  */
 PGDLLEXPORT Datum
-Overlaps_tnumber_span(PG_FUNCTION_ARGS)
+Overlaps_tnumber_numspan(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_span_ext(fcinfo, &overlaps_tbox_tbox);
+  return boxop_tnumber_numspan_ext(fcinfo, &overlaps_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Overlaps_spanset_tnumber);
+PG_FUNCTION_INFO_V1(Overlaps_numspanset_tnumber);
 /**
  * @ingroup mobilitydb_temporal_topo
  * @brief Return true if the span set and the bounding box of the temporal
@@ -1353,12 +1353,12 @@ PG_FUNCTION_INFO_V1(Overlaps_spanset_tnumber);
  * @sqlop @p &&
  */
 PGDLLEXPORT Datum
-Overlaps_spanset_tnumber(PG_FUNCTION_ARGS)
+Overlaps_numspanset_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_spanset_tnumber_ext(fcinfo, &overlaps_tbox_tbox);
+  return boxop_numspanset_tnumber_ext(fcinfo, &overlaps_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Overlaps_tnumber_spanset);
+PG_FUNCTION_INFO_V1(Overlaps_tnumber_numspanset);
 /**
  * @ingroup mobilitydb_temporal_topo
  * @brief Return true if the bounding box of the temporal number and the span
@@ -1367,9 +1367,9 @@ PG_FUNCTION_INFO_V1(Overlaps_tnumber_spanset);
  * @sqlop @p &&
  */
 PGDLLEXPORT Datum
-Overlaps_tnumber_spanset(PG_FUNCTION_ARGS)
+Overlaps_tnumber_numspanset(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_spanset_ext(fcinfo, &overlaps_tbox_tbox);
+  return boxop_tnumber_numspanset_ext(fcinfo, &overlaps_tbox_tbox);
 }
 
 PG_FUNCTION_INFO_V1(Overlaps_tbox_tnumber);
@@ -1443,7 +1443,7 @@ Same_tnumber_number(PG_FUNCTION_ARGS)
   return boxop_tnumber_number_ext(fcinfo, &same_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Same_span_tnumber);
+PG_FUNCTION_INFO_V1(Same_numspan_tnumber);
 /**
  * @ingroup mobilitydb_temporal_topo
  * @brief Return true if the span and the bounding box of the temporal number are
@@ -1452,12 +1452,12 @@ PG_FUNCTION_INFO_V1(Same_span_tnumber);
  * @sqlop @p ~=
  */
 PGDLLEXPORT Datum
-Same_span_tnumber(PG_FUNCTION_ARGS)
+Same_numspan_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_span_tnumber_ext(fcinfo, &same_tbox_tbox);
+  return boxop_numspan_tnumber_ext(fcinfo, &same_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Same_tnumber_span);
+PG_FUNCTION_INFO_V1(Same_tnumber_numspan);
 /**
  * @ingroup mobilitydb_temporal_topo
  * @brief Return true if the bounding box of the temporal number and the span are
@@ -1466,12 +1466,12 @@ PG_FUNCTION_INFO_V1(Same_tnumber_span);
  * @sqlop @p ~=
  */
 PGDLLEXPORT Datum
-Same_tnumber_span(PG_FUNCTION_ARGS)
+Same_tnumber_numspan(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_span_ext(fcinfo, &same_tbox_tbox);
+  return boxop_tnumber_numspan_ext(fcinfo, &same_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Same_spanset_tnumber);
+PG_FUNCTION_INFO_V1(Same_numspanset_tnumber);
 /**
  * @ingroup mobilitydb_temporal_topo
  * @brief Return true if the span set and the bounding box of the temporal
@@ -1480,12 +1480,12 @@ PG_FUNCTION_INFO_V1(Same_spanset_tnumber);
  * @sqlop @p ~=
  */
 PGDLLEXPORT Datum
-Same_spanset_tnumber(PG_FUNCTION_ARGS)
+Same_numspanset_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_spanset_tnumber_ext(fcinfo, &same_tbox_tbox);
+  return boxop_numspanset_tnumber_ext(fcinfo, &same_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Same_tnumber_spanset);
+PG_FUNCTION_INFO_V1(Same_tnumber_numspanset);
 /**
  * @ingroup mobilitydb_temporal_topo
  * @brief Return true if the bounding box of the temporal number and the span
@@ -1494,9 +1494,9 @@ PG_FUNCTION_INFO_V1(Same_tnumber_spanset);
  * @sqlop @p ~=
  */
 PGDLLEXPORT Datum
-Same_tnumber_spanset(PG_FUNCTION_ARGS)
+Same_tnumber_numspanset(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_spanset_ext(fcinfo, &same_tbox_tbox);
+  return boxop_tnumber_numspanset_ext(fcinfo, &same_tbox_tbox);
 }
 
 PG_FUNCTION_INFO_V1(Same_tbox_tnumber);
@@ -1571,7 +1571,7 @@ Adjacent_tnumber_number(PG_FUNCTION_ARGS)
   return boxop_tnumber_number_ext(fcinfo, &adjacent_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Adjacent_span_tnumber);
+PG_FUNCTION_INFO_V1(Adjacent_numspan_tnumber);
 /**
  * @ingroup mobilitydb_temporal_topo
  * @brief Return true if the span and the bounding box of the temporal number are
@@ -1580,12 +1580,12 @@ PG_FUNCTION_INFO_V1(Adjacent_span_tnumber);
  * @sqlop @p -|-
  */
 PGDLLEXPORT Datum
-Adjacent_span_tnumber(PG_FUNCTION_ARGS)
+Adjacent_numspan_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_span_tnumber_ext(fcinfo, &adjacent_tbox_tbox);
+  return boxop_numspan_tnumber_ext(fcinfo, &adjacent_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Adjacent_tnumber_span);
+PG_FUNCTION_INFO_V1(Adjacent_tnumber_numspan);
 /**
  * @ingroup mobilitydb_temporal_topo
  * @brief Return true if the bounding box of the temporal number and the span are
@@ -1594,12 +1594,12 @@ PG_FUNCTION_INFO_V1(Adjacent_tnumber_span);
  * @sqlop @p -|-
  */
 PGDLLEXPORT Datum
-Adjacent_tnumber_span(PG_FUNCTION_ARGS)
+Adjacent_tnumber_numspan(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_span_ext(fcinfo, &adjacent_tbox_tbox);
+  return boxop_tnumber_numspan_ext(fcinfo, &adjacent_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Adjacent_spanset_tnumber);
+PG_FUNCTION_INFO_V1(Adjacent_numspanset_tnumber);
 /**
  * @ingroup mobilitydb_temporal_topo
  * @brief Return true if the span set and the bounding box of the temporal
@@ -1608,12 +1608,12 @@ PG_FUNCTION_INFO_V1(Adjacent_spanset_tnumber);
  * @sqlop @p -|-
  */
 PGDLLEXPORT Datum
-Adjacent_spanset_tnumber(PG_FUNCTION_ARGS)
+Adjacent_numspanset_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_spanset_tnumber_ext(fcinfo, &adjacent_tbox_tbox);
+  return boxop_numspanset_tnumber_ext(fcinfo, &adjacent_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(Adjacent_tnumber_spanset);
+PG_FUNCTION_INFO_V1(Adjacent_tnumber_numspanset);
 /**
  * @ingroup mobilitydb_temporal_topo
  * @brief Return true if the bounding box of the temporal number and the span
@@ -1622,9 +1622,9 @@ PG_FUNCTION_INFO_V1(Adjacent_tnumber_spanset);
  * @sqlop @p -|-
  */
 PGDLLEXPORT Datum
-Adjacent_tnumber_spanset(PG_FUNCTION_ARGS)
+Adjacent_tnumber_numspanset(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_spanset_ext(fcinfo, &adjacent_tbox_tbox);
+  return boxop_tnumber_numspanset_ext(fcinfo, &adjacent_tbox_tbox);
 }
 
 PG_FUNCTION_INFO_V1(Adjacent_tbox_tnumber);

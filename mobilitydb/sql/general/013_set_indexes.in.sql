@@ -628,15 +628,15 @@ CREATE OPERATOR CLASS intset_gin_ops
   DEFAULT FOR TYPE intset USING gin AS
   STORAGE int,
   -- overlaps
-  OPERATOR  1    && (intset, intset),
+  OPERATOR  10    && (intset, intset),
   -- contains value
-  OPERATOR  2    @> (intset, int),
+  OPERATOR  20    @> (intset, int),
   -- contains set
-  OPERATOR  3    @> (intset, intset),
+  OPERATOR  21    @> (intset, intset),
   -- contained
-  OPERATOR  4    <@ (intset, intset),
+  OPERATOR  30    <@ (intset, intset),
     -- same
-  OPERATOR  5    = (intset, intset),
+  OPERATOR  40    = (intset, intset),
   -- functions
   FUNCTION   2    set_gin_extract_value(int, internal),
   FUNCTION   3    set_gin_extract_query(int, internal, int2, internal, internal, internal, internal),
@@ -665,15 +665,15 @@ CREATE OPERATOR CLASS bigintset_gin_ops
   DEFAULT FOR TYPE bigintset USING gin AS
   STORAGE bigint,
   -- overlaps
-  OPERATOR  1    && (bigintset, bigintset),
+  OPERATOR  10    && (bigintset, bigintset),
   -- contains value
-  OPERATOR  2    @> (bigintset, bigint),
+  OPERATOR  20    @> (bigintset, bigint),
   -- contains set
-  OPERATOR  3    @> (bigintset, bigintset),
+  OPERATOR  21    @> (bigintset, bigintset),
   -- contained
-  OPERATOR  4    <@ (bigintset, bigintset),
+  OPERATOR  30    <@ (bigintset, bigintset),
   -- equal
-  OPERATOR  5    = (bigintset, bigintset),
+  OPERATOR  40    = (bigintset, bigintset),
   -- functions
   FUNCTION   2    set_gin_extract_value(bigint, internal),
   FUNCTION   3    set_gin_extract_query(bigint, internal, int2, internal, internal, internal, internal),

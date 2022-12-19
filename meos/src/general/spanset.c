@@ -287,15 +287,15 @@ spanset_make(const Span **spans, int count, bool normalize)
     double_pad(sizeof(Span)) * (newcount - 1);
   SpanSet *result = palloc0(memsize);
   SET_VARSIZE(result, memsize);
-  mobdbType spantype = spans[0]->spantype;
-  mobdbType basetype = spans[0]->basetype;
-  result->spansettype = spantype_spansettype(spantype);
+  result->spansettype = spantype_spansettype(spans[0]->spantype);
+  result->spantype = spans[0]->spantype;
+  result->basetype = spans[0]->basetype;
   result->count = newcount;
 
   /* Compute the bounding span */
   span_set(newspans[0]->lower, newspans[newcount - 1]->upper,
-    newspans[0]->lower_inc, newspans[newcount - 1]->upper_inc, basetype,
-    &result->span);
+    newspans[0]->lower_inc, newspans[newcount - 1]->upper_inc,
+    result->basetype, &result->span);
   /* Copy the span array */
   for (int i = 0; i < newcount; i++)
     memcpy(&result->elems[i], newspans[i], sizeof(Span));
@@ -408,19 +408,19 @@ timestamp_to_periodset(TimestampTz t)
 
 /**
  * @ingroup libmeos_setspan_cast
- * @brief Cast an ordered set as a span set.
+ * @brief Cast a set as a span set.
  * @sqlop @p ::
  */
 SpanSet *
-set_to_spanset(const Set *os)
+set_to_spanset(const Set *s)
 {
-  Span **spans = palloc(sizeof(Span *) * os->count);
-  for (int i = 0; i < os->count; i++)
+  Span **spans = palloc(sizeof(Span *) * s->count);
+  for (int i = 0; i < s->count; i++)
   {
-    Datum d = set_val_n(os, i);
-    spans[i] = span_make(d, d, true, true, os->span.basetype);
+    Datum d = set_val_n(s, i);
+    spans[i] = span_make(d, d, true, true, s->basetype);
   }
-  SpanSet *result = spanset_make_free(spans, os->count, NORMALIZE_NO);
+  SpanSet *result = spanset_make_free(spans, s->count, NORMALIZE_NO);
   return result;
 }
 

@@ -127,25 +127,37 @@ tnumber_const_to_span_period(const Node *other, Span **s, Period **p,
     Datum value = ((Const *) other)->constvalue;
     *s = value_to_span(value, type);
   }
-  else if (type == T_INTSPAN || type == T_BIGINTSPAN || type == T_FLOATSPAN)
-  {
-    Span *span = DatumGetSpanP(((Const *) other)->constvalue);
-    *s = span_copy(span);
-  }
   else if (type == T_TIMESTAMPTZ)
   {
     TimestampTz t = DatumGetTimestampTz(((Const *) other)->constvalue);
     *p = timestamp_to_period(t);
   }
+  else if (numset_type(type))
+  {
+    Set *os = DatumGetSetP(((Const *) other)->constvalue);
+    *s = palloc(sizeof(Span));
+    set_set_span(os, *s);
+  }
   else if (type == T_TIMESTAMPSET)
   {
+    Set *os = DatumGetSetP(((Const *) other)->constvalue);
     *p = palloc(sizeof(Period));
-    set_span_slice(((Const *) other)->constvalue, *p);
+    set_set_span(os, *p);
+  }
+  else if (numspan_type(type))
+  {
+    Span *span = DatumGetSpanP(((Const *) other)->constvalue);
+    *s = span_copy(span);
   }
   else if (type == T_PERIOD)
   {
     Period *period = DatumGetSpanP(((Const *) other)->constvalue);
     *p = span_copy(period);
+  }
+  else if (numspanset_type(type))
+  {
+    *s = palloc(sizeof(Span));
+    spanset_span_slice(((Const *) other)->constvalue, *s);
   }
   else if (type == T_PERIODSET)
   {

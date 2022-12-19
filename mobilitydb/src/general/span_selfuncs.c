@@ -831,7 +831,7 @@ span_const_to_span(Node *other, Span *span)
     /* The right argument is a set constant. We convert it into
      * its bounding span. */
     const Set *s = DatumGetSetP(((Const *) other)->constvalue);
-    memcpy(span, &s->span, sizeof(Span));
+    set_set_span(s, span);
   }
   else /* span_type(type) */
   {
@@ -865,7 +865,7 @@ time_const_to_period(Node *other, Period *period)
     /* The right argument is a TimestampSet constant. We convert it into
      * its bounding period. */
     const TimestampSet *ts = DatumGetTimestampSetP(((Const *) other)->constvalue);
-    memcpy(period, &ts->span, sizeof(Period));
+    set_set_span(ts, period);
   }
   else if (timetype == T_PERIOD)
   {

@@ -49,18 +49,18 @@
 PG_FUNCTION_INFO_V1(Contains_set_value);
 /**
  * @ingroup mobilitydb_setspan_topo
- * @brief Return true if an ordered set contains a value
+ * @brief Return true if a set contains a value
  * @sqlfunc time_contains()
  * @sqlop @p \@>
  */
 PGDLLEXPORT Datum
 Contains_set_value(PG_FUNCTION_ARGS)
 {
-  Set *os = PG_GETARG_SET_P(0);
+  Set *s = PG_GETARG_SET_P(0);
   Datum d = PG_GETARG_DATUM(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  bool result = contains_set_value(os, d, basetype);
-  PG_FREE_IF_COPY(os, 0);
+  bool result = contains_set_value(s, d, basetype);
+  PG_FREE_IF_COPY(s, 0);
   PG_RETURN_BOOL(result);
 }
 
@@ -74,11 +74,11 @@ PG_FUNCTION_INFO_V1(Contains_set_set);
 PGDLLEXPORT Datum
 Contains_set_set(PG_FUNCTION_ARGS)
 {
-  Set *os1 = PG_GETARG_SET_P(0);
-  Set *os2 = PG_GETARG_SET_P(1);
-  bool result = contains_set_set(os1, os2);
-  PG_FREE_IF_COPY(os1, 0);
-  PG_FREE_IF_COPY(os2, 1);
+  Set *s1 = PG_GETARG_SET_P(0);
+  Set *s2 = PG_GETARG_SET_P(1);
+  bool result = contains_set_set(s1, s2);
+  PG_FREE_IF_COPY(s1, 0);
+  PG_FREE_IF_COPY(s2, 1);
   PG_RETURN_BOOL(result);
 }
 
@@ -96,10 +96,10 @@ PGDLLEXPORT Datum
 Contained_value_set(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
-  Set *os = PG_GETARG_SET_P(1);
+  Set *s = PG_GETARG_SET_P(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  bool result = contained_value_set(d, basetype, os);
-  PG_FREE_IF_COPY(os, 1);
+  bool result = contained_value_set(d, basetype, s);
+  PG_FREE_IF_COPY(s, 1);
   PG_RETURN_BOOL(result);
 }
 
@@ -113,11 +113,11 @@ PG_FUNCTION_INFO_V1(Contained_set_set);
 PGDLLEXPORT Datum
 Contained_set_set(PG_FUNCTION_ARGS)
 {
-  Set *os1 = PG_GETARG_SET_P(0);
-  Set *os2 = PG_GETARG_SET_P(1);
-  bool result = contained_set_set(os1, os2);
-  PG_FREE_IF_COPY(os1, 0);
-  PG_FREE_IF_COPY(os2, 1);
+  Set *s1 = PG_GETARG_SET_P(0);
+  Set *s2 = PG_GETARG_SET_P(1);
+  bool result = contained_set_set(s1, s2);
+  PG_FREE_IF_COPY(s1, 0);
+  PG_FREE_IF_COPY(s2, 1);
   PG_RETURN_BOOL(result);
 }
 
@@ -134,11 +134,11 @@ PG_FUNCTION_INFO_V1(Overlaps_set_set);
 PGDLLEXPORT Datum
 Overlaps_set_set(PG_FUNCTION_ARGS)
 {
-  Set *os1 = PG_GETARG_SET_P(0);
-  Set *os2 = PG_GETARG_SET_P(1);
-  bool result = overlaps_set_set(os1, os2);
-  PG_FREE_IF_COPY(os1, 0);
-  PG_FREE_IF_COPY(os2, 1);
+  Set *s1 = PG_GETARG_SET_P(0);
+  Set *s2 = PG_GETARG_SET_P(1);
+  bool result = overlaps_set_set(s1, s2);
+  PG_FREE_IF_COPY(s1, 0);
+  PG_FREE_IF_COPY(s2, 1);
   PG_RETURN_BOOL(result);
 }
 
@@ -156,10 +156,10 @@ PGDLLEXPORT Datum
 Left_value_set(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
-  Set *os = PG_GETARG_SET_P(1);
+  Set *s = PG_GETARG_SET_P(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  bool result = left_value_set(d, basetype, os);
-  PG_FREE_IF_COPY(os, 1);
+  bool result = left_value_set(d, basetype, s);
+  PG_FREE_IF_COPY(s, 1);
   PG_RETURN_BOOL(result);
 }
 
@@ -173,11 +173,11 @@ PG_FUNCTION_INFO_V1(Left_set_value);
 PGDLLEXPORT Datum
 Left_set_value(PG_FUNCTION_ARGS)
 {
-  Set *os = PG_GETARG_SET_P(0);
+  Set *s = PG_GETARG_SET_P(0);
   Datum d = PG_GETARG_DATUM(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  bool result = left_set_value(os, d, basetype);
-  PG_FREE_IF_COPY(os, 0);
+  bool result = left_set_value(s, d, basetype);
+  PG_FREE_IF_COPY(s, 0);
   PG_RETURN_BOOL(result);
 }
 
@@ -191,11 +191,11 @@ PG_FUNCTION_INFO_V1(Left_set_set);
 PGDLLEXPORT Datum
 Left_set_set(PG_FUNCTION_ARGS)
 {
-  Set *os1 = PG_GETARG_SET_P(0);
-  Set *os2 = PG_GETARG_SET_P(1);
-  bool result = left_set_set(os1, os2);
-  PG_FREE_IF_COPY(os1, 0);
-  PG_FREE_IF_COPY(os2, 1);
+  Set *s1 = PG_GETARG_SET_P(0);
+  Set *s2 = PG_GETARG_SET_P(1);
+  bool result = left_set_set(s1, s2);
+  PG_FREE_IF_COPY(s1, 0);
+  PG_FREE_IF_COPY(s2, 1);
   PG_RETURN_BOOL(result);
 }
 
@@ -213,10 +213,10 @@ PGDLLEXPORT Datum
 Right_value_set(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
-  Set *os = PG_GETARG_SET_P(1);
+  Set *s = PG_GETARG_SET_P(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  bool result = right_value_set(d, basetype, os);
-  PG_FREE_IF_COPY(os, 1);
+  bool result = right_value_set(d, basetype, s);
+  PG_FREE_IF_COPY(s, 1);
   PG_RETURN_BOOL(result);
 }
 
@@ -230,11 +230,11 @@ PG_FUNCTION_INFO_V1(Right_set_value);
 PGDLLEXPORT Datum
 Right_set_value(PG_FUNCTION_ARGS)
 {
-  Set *os = PG_GETARG_SET_P(0);
+  Set *s = PG_GETARG_SET_P(0);
   Datum d = PG_GETARG_DATUM(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  bool result = right_set_value(os, d, basetype);
-  PG_FREE_IF_COPY(os, 0);
+  bool result = right_set_value(s, d, basetype);
+  PG_FREE_IF_COPY(s, 0);
   PG_RETURN_BOOL(result);
 }
 
@@ -248,11 +248,11 @@ PG_FUNCTION_INFO_V1(Right_set_set);
 PGDLLEXPORT Datum
 Right_set_set(PG_FUNCTION_ARGS)
 {
-  Set *os1 = PG_GETARG_SET_P(0);
-  Set *os2 = PG_GETARG_SET_P(1);
-  bool result = right_set_set(os1, os2);
-  PG_FREE_IF_COPY(os1, 0);
-  PG_FREE_IF_COPY(os2, 1);
+  Set *s1 = PG_GETARG_SET_P(0);
+  Set *s2 = PG_GETARG_SET_P(1);
+  bool result = right_set_set(s1, s2);
+  PG_FREE_IF_COPY(s1, 0);
+  PG_FREE_IF_COPY(s2, 1);
   PG_RETURN_BOOL(result);
 }
 
@@ -270,10 +270,10 @@ PGDLLEXPORT Datum
 Overleft_value_set(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
-  Set *os = PG_GETARG_SET_P(1);
+  Set *s = PG_GETARG_SET_P(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  bool result = overleft_value_set(d, basetype, os);
-  PG_FREE_IF_COPY(os, 1);
+  bool result = overleft_value_set(d, basetype, s);
+  PG_FREE_IF_COPY(s, 1);
   PG_RETURN_BOOL(result);
 }
 
@@ -287,11 +287,11 @@ PG_FUNCTION_INFO_V1(Overleft_set_value);
 PGDLLEXPORT Datum
 Overleft_set_value(PG_FUNCTION_ARGS)
 {
-  Set *os = PG_GETARG_SET_P(0);
+  Set *s = PG_GETARG_SET_P(0);
   Datum d = PG_GETARG_DATUM(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  bool result = overleft_set_value(os, d, basetype);
-  PG_FREE_IF_COPY(os, 0);
+  bool result = overleft_set_value(s, d, basetype);
+  PG_FREE_IF_COPY(s, 0);
   PG_RETURN_BOOL(result);
 }
 
@@ -305,11 +305,11 @@ PG_FUNCTION_INFO_V1(Overleft_set_set);
 PGDLLEXPORT Datum
 Overleft_set_set(PG_FUNCTION_ARGS)
 {
-  Set *os1 = PG_GETARG_SET_P(0);
-  Set *os2 = PG_GETARG_SET_P(1);
-  bool result = overleft_set_set(os1, os2);
-  PG_FREE_IF_COPY(os1, 0);
-  PG_FREE_IF_COPY(os2, 1);
+  Set *s1 = PG_GETARG_SET_P(0);
+  Set *s2 = PG_GETARG_SET_P(1);
+  bool result = overleft_set_set(s1, s2);
+  PG_FREE_IF_COPY(s1, 0);
+  PG_FREE_IF_COPY(s2, 1);
   PG_RETURN_BOOL(result);
 }
 
@@ -327,10 +327,10 @@ PGDLLEXPORT Datum
 Overright_value_set(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
-  Set *os = PG_GETARG_SET_P(1);
+  Set *s = PG_GETARG_SET_P(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  bool result = overright_value_set(d, basetype, os);
-  PG_FREE_IF_COPY(os, 1);
+  bool result = overright_value_set(d, basetype, s);
+  PG_FREE_IF_COPY(s, 1);
   PG_RETURN_BOOL(result);
 }
 
@@ -344,11 +344,11 @@ PG_FUNCTION_INFO_V1(Overright_set_value);
 PGDLLEXPORT Datum
 Overright_set_value(PG_FUNCTION_ARGS)
 {
-  Set *os = PG_GETARG_SET_P(0);
+  Set *s = PG_GETARG_SET_P(0);
   Datum d = PG_GETARG_DATUM(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  bool result = overright_set_value(os, d, basetype);
-  PG_FREE_IF_COPY(os, 0);
+  bool result = overright_set_value(s, d, basetype);
+  PG_FREE_IF_COPY(s, 0);
   PG_RETURN_BOOL(result);
 }
 
@@ -362,11 +362,11 @@ PG_FUNCTION_INFO_V1(Overright_set_set);
 PGDLLEXPORT Datum
 Overright_set_set(PG_FUNCTION_ARGS)
 {
-  Set *os1 = PG_GETARG_SET_P(0);
-  Set *os2 = PG_GETARG_SET_P(1);
-  bool result = overright_set_set(os1, os2);
-  PG_FREE_IF_COPY(os1, 0);
-  PG_FREE_IF_COPY(os2, 1);
+  Set *s1 = PG_GETARG_SET_P(0);
+  Set *s2 = PG_GETARG_SET_P(1);
+  bool result = overright_set_set(s1, s2);
+  PG_FREE_IF_COPY(s1, 0);
+  PG_FREE_IF_COPY(s2, 1);
   PG_RETURN_BOOL(result);
 }
 
@@ -402,10 +402,10 @@ PGDLLEXPORT Datum
 Union_value_set(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
-  Set *os = PG_GETARG_SET_P(1);
+  Set *s = PG_GETARG_SET_P(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  Set *result = union_set_value(os, d, basetype);
-  PG_FREE_IF_COPY(os, 1);
+  Set *result = union_set_value(s, d, basetype);
+  PG_FREE_IF_COPY(s, 1);
   PG_RETURN_POINTER(result);
 }
 
@@ -421,11 +421,11 @@ PG_FUNCTION_INFO_V1(Union_set_value);
 PGDLLEXPORT Datum
 Union_set_value(PG_FUNCTION_ARGS)
 {
-  Set *os = PG_GETARG_SET_P(0);
+  Set *s = PG_GETARG_SET_P(0);
   Datum d = PG_GETARG_DATUM(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  Set *result = union_set_value(os, d, basetype);
-  PG_FREE_IF_COPY(os, 0);
+  Set *result = union_set_value(s, d, basetype);
+  PG_FREE_IF_COPY(s, 0);
   PG_RETURN_POINTER(result);
 }
 
@@ -439,11 +439,11 @@ PG_FUNCTION_INFO_V1(Union_set_set);
 PGDLLEXPORT Datum
 Union_set_set(PG_FUNCTION_ARGS)
 {
-  Set *os1 = PG_GETARG_SET_P(0);
-  Set *os2 = PG_GETARG_SET_P(1);
-  Set *result = union_set_set(os1, os2);
-  PG_FREE_IF_COPY(os1, 0);
-  PG_FREE_IF_COPY(os2, 1);
+  Set *s1 = PG_GETARG_SET_P(0);
+  Set *s2 = PG_GETARG_SET_P(1);
+  Set *result = union_set_set(s1, s2);
+  PG_FREE_IF_COPY(s1, 0);
+  PG_FREE_IF_COPY(s2, 1);
   PG_RETURN_POINTER(result);
 }
 
@@ -482,11 +482,11 @@ PGDLLEXPORT Datum
 Intersection_value_set(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
-  Set *os = PG_GETARG_SET_P(1);
+  Set *s = PG_GETARG_SET_P(1);
   Datum result;
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  bool found = intersection_set_value(os, d, basetype, &result);
-  PG_FREE_IF_COPY(os, 1);
+  bool found = intersection_set_value(s, d, basetype, &result);
+  PG_FREE_IF_COPY(s, 1);
   if (! found)
     PG_RETURN_NULL();
   PG_RETURN_DATUM(result);
@@ -502,12 +502,12 @@ PG_FUNCTION_INFO_V1(Intersection_set_value);
 PGDLLEXPORT Datum
 Intersection_set_value(PG_FUNCTION_ARGS)
 {
-  Set *os = PG_GETARG_SET_P(0);
+  Set *s = PG_GETARG_SET_P(0);
   Datum d = PG_GETARG_DATUM(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   Datum result;
-  bool found = intersection_set_value(os, d, basetype, &result);
-  PG_FREE_IF_COPY(os, 0);
+  bool found = intersection_set_value(s, d, basetype, &result);
+  PG_FREE_IF_COPY(s, 0);
   if (! found)
     PG_RETURN_NULL();
   PG_RETURN_DATUM(result);
@@ -523,11 +523,11 @@ PG_FUNCTION_INFO_V1(Intersection_set_set);
 PGDLLEXPORT Datum
 Intersection_set_set(PG_FUNCTION_ARGS)
 {
-  Set *os1 = PG_GETARG_SET_P(0);
-  Set *os2 = PG_GETARG_SET_P(1);
-  Set *result = intersection_set_set(os1, os2);
-  PG_FREE_IF_COPY(os1, 0);
-  PG_FREE_IF_COPY(os2, 1);
+  Set *s1 = PG_GETARG_SET_P(0);
+  Set *s2 = PG_GETARG_SET_P(1);
+  Set *result = intersection_set_set(s1, s2);
+  PG_FREE_IF_COPY(s1, 0);
+  PG_FREE_IF_COPY(s2, 1);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
@@ -568,11 +568,11 @@ PGDLLEXPORT Datum
 Minus_value_set(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
-  Set *os = PG_GETARG_SET_P(1);
+  Set *s = PG_GETARG_SET_P(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   Datum result;
-  bool found = minus_value_set(d, basetype, os, &result);
-  PG_FREE_IF_COPY(os, 1);
+  bool found = minus_value_set(d, basetype, s, &result);
+  PG_FREE_IF_COPY(s, 1);
   if (! found)
     PG_RETURN_NULL();
   PG_RETURN_DATUM(result);
@@ -590,11 +590,11 @@ PG_FUNCTION_INFO_V1(Minus_set_value);
 PGDLLEXPORT Datum
 Minus_set_value(PG_FUNCTION_ARGS)
 {
-  Set *os = PG_GETARG_SET_P(0);
+  Set *s = PG_GETARG_SET_P(0);
   Datum d = PG_GETARG_DATUM(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  Set *result = minus_set_value(os, d, basetype);
-  PG_FREE_IF_COPY(os, 0);
+  Set *result = minus_set_value(s, d, basetype);
+  PG_FREE_IF_COPY(s, 0);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
@@ -610,11 +610,11 @@ PG_FUNCTION_INFO_V1(Minus_set_set);
 PGDLLEXPORT Datum
 Minus_set_set(PG_FUNCTION_ARGS)
 {
-  Set *os1 = PG_GETARG_SET_P(0);
-  Set *os2 = PG_GETARG_SET_P(1);
-  Set *result = minus_set_set(os1, os2);
-  PG_FREE_IF_COPY(os1, 0);
-  PG_FREE_IF_COPY(os2, 1);
+  Set *s1 = PG_GETARG_SET_P(0);
+  Set *s2 = PG_GETARG_SET_P(1);
+  Set *result = minus_set_set(s1, s2);
+  PG_FREE_IF_COPY(s1, 0);
+  PG_FREE_IF_COPY(s2, 1);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
@@ -635,11 +635,12 @@ PGDLLEXPORT Datum
 Distance_value_set(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
-  Datum os = PG_GETARG_DATUM(1);
+  Set *s = PG_GETARG_SET_P(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  Span s;
-  set_span_slice(os, &s);
-  double result = distance_span_value(&s, d, basetype);
+  Span s1;
+  set_set_span(s, &s1);
+  double result = distance_span_value(&s1, d, basetype);
+  PG_FREE_IF_COPY(s, 1);
   PG_RETURN_FLOAT8(result);
 }
 
@@ -653,12 +654,13 @@ PG_FUNCTION_INFO_V1(Distance_set_value);
 PGDLLEXPORT Datum
 Distance_set_value(PG_FUNCTION_ARGS)
 {
-  Datum os = PG_GETARG_DATUM(0);
+  Set *s = PG_GETARG_SET_P(0);
   Datum d = PG_GETARG_DATUM(1);
   mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  Span s;
-  set_span_slice(os, &s);
-  double result = distance_span_value(&s, d, basetype);
+  Span s1;
+  set_set_span(s, &s1);
+  double result = distance_span_value(&s1, d, basetype);
+  PG_FREE_IF_COPY(s, 0);
   PG_RETURN_FLOAT8(result);
 }
 
@@ -672,12 +674,14 @@ PG_FUNCTION_INFO_V1(Distance_set_set);
 PGDLLEXPORT Datum
 Distance_set_set(PG_FUNCTION_ARGS)
 {
-  Datum os1 = PG_GETARG_DATUM(0);
-  Datum os2 = PG_GETARG_DATUM(1);
+  Set *os1 = PG_GETARG_SET_P(0);
+  Set *os2 = PG_GETARG_SET_P(1);
   Span s1, s2;
-  set_span_slice(os1, &s1);
-  set_span_slice(os2, &s2);
+  set_set_span(os1, &s1);
+  set_set_span(os2, &s2);
   double result = distance_span_span(&s1, &s2);
+  PG_FREE_IF_COPY(os1, 0);
+  PG_FREE_IF_COPY(os2, 1);
   PG_RETURN_FLOAT8(result);
 }
 

@@ -204,6 +204,7 @@ tpoint_transform_tcentroid(const Temporal *temp, int *count)
  * Extent
  *****************************************************************************/
 
+#if MEOS
 /**
  * Transition function for temporal extent aggregation of temporal point values
  */
@@ -235,6 +236,7 @@ tpoint_extent_transfn(STBox *box, Temporal *temp)
   stbox_expand(box, result);
   return result;
 }
+#endif /* MEOS */
 
 /*****************************************************************************
  * Centroid

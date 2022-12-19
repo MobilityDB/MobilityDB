@@ -100,11 +100,11 @@ same_rid_tnpoint_bigint(const Temporal *temp, int64 rid,
  * satisfy the function
  */
 bool
-overlaps_rid_tnpoint_bigintset(const Temporal *temp, const Set *os,
+overlaps_rid_tnpoint_bigintset(const Temporal *temp, const Set *s,
   bool invert __attribute__((unused)))
 {
   Set *routes = tnpoint_routes(temp);
-  return overlaps_set_set(routes, os);
+  return overlaps_set_set(routes, s);
 }
 
 /**
@@ -112,13 +112,13 @@ overlaps_rid_tnpoint_bigintset(const Temporal *temp, const Set *os,
  * satisfy the function
  */
 bool
-contains_rid_tnpoint_bigintset(const Temporal *temp, const Set *os,
+contains_rid_tnpoint_bigintset(const Temporal *temp, const Set *s,
   bool invert)
 {
   Set *routes = tnpoint_routes(temp);
   return invert ?
-    contains_set_set(os, routes) :
-    contains_set_set(routes, os);
+    contains_set_set(s, routes) :
+    contains_set_set(routes, s);
 }
 
 /**
@@ -126,10 +126,10 @@ contains_rid_tnpoint_bigintset(const Temporal *temp, const Set *os,
  * satisfy the function
  */
 bool
-contained_rid_tnpoint_bigintset(const Temporal *temp, const Set *os,
+contained_rid_tnpoint_bigintset(const Temporal *temp, const Set *s,
   bool invert)
 {
-  return contains_rid_tnpoint_bigintset(temp, os, ! invert);
+  return contains_rid_tnpoint_bigintset(temp, s, ! invert);
 }
 
 /**
@@ -137,11 +137,11 @@ contained_rid_tnpoint_bigintset(const Temporal *temp, const Set *os,
  * satisfy the function
  */
 bool
-same_rid_tnpoint_bigintset(const Temporal *temp, const Set *os,
+same_rid_tnpoint_bigintset(const Temporal *temp, const Set *s,
   bool invert __attribute__((unused)))
 {
   Set *routes = tnpoint_routes(temp);
-  return set_eq(routes, os);
+  return set_eq(routes, s);
 }
 
 /*****************************************************************************/
@@ -276,10 +276,10 @@ Datum
 routeop_bigintset_tnpoint_ext(FunctionCallInfo fcinfo,
   bool (*func)(const Temporal *, const Set *, bool))
 {
-  Set *os = PG_GETARG_SET_P(0);
+  Set *s = PG_GETARG_SET_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  bool result = func(temp, os, INVERT);
-  PG_FREE_IF_COPY(os, 0);
+  bool result = func(temp, s, INVERT);
+  PG_FREE_IF_COPY(s, 0);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_BOOL(result);
 }
@@ -295,10 +295,10 @@ routeop_tnpoint_bigintset_ext(FunctionCallInfo fcinfo,
   bool (*func)(const Temporal *, const Set *, bool))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Set *os = PG_GETARG_SET_P(1);
-  bool result = func(temp, os, INVERT_NO);
+  Set *s = PG_GETARG_SET_P(1);
+  bool result = func(temp, s, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(os, 1);
+  PG_FREE_IF_COPY(s, 1);
   PG_RETURN_BOOL(result);
 }
 
