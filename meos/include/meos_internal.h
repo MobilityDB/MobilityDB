@@ -211,14 +211,19 @@ extern uint64 datum_hash_extended(Datum d, mobdbType basetype, uint64 seed);
 
 /* Cast functions for box types */
 
+extern void number_set_tbox(Datum d, mobdbType basetype, TBox *box);
 extern void int_set_tbox(int i, TBox *box);
 extern void float_set_tbox(double d, TBox *box);
-extern void span_set_tbox(const Span *span, TBox *box);
-extern void spanset_set_tbox(const SpanSet *ss, TBox *box);
 extern void timestamp_set_tbox(TimestampTz t, TBox *box);
-extern void set_set_tbox(const Set *s, TBox *box);
+extern void numset_set_tbox(const Set *s, TBox *box);
+extern void timestampset_set_tbox(const TimestampSet *ts, TBox *box);
+extern void numspan_set_tbox(const Span *span, TBox *box);
+extern void numspanset_set_tbox(const SpanSet *ss, TBox *box);
 extern void period_set_tbox(const Period *p, TBox *box);
 extern void periodset_set_tbox(const PeriodSet *ps, TBox *box);
+extern TBox *number_timestamp_to_tbox(Datum d, mobdbType basetype, TimestampTz t);
+extern TBox *number_period_to_tbox(Datum d, mobdbType basetype, const Period *p);
+
 extern bool geo_set_stbox(const GSERIALIZED *gs, STBox *box);
 extern void timestamp_set_stbox(TimestampTz t, STBox *box);
 extern void timestampset_set_stbox(const TimestampSet *ts, STBox *box);

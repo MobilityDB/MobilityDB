@@ -566,12 +566,12 @@ boxop_tnumber_number(const Temporal *temp, Datum number, mobdbType basetype,
  * @param[in] invert True if the span is the first argument of the function.
  */
 bool
-boxop_tnumber_span(const Temporal *temp, const Span *span,
+boxop_tnumber_numspan(const Temporal *temp, const Span *span,
   bool (*func)(const TBox *, const TBox *), bool invert)
 {
   TBox box1, box2;
   temporal_set_bbox(temp, &box1);
-  span_set_tbox(span, &box2);
+  numspan_set_tbox(span, &box2);
   bool result = invert ? func(&box2, &box1) : func(&box1, &box2);
   return (result);
 }
@@ -585,12 +585,12 @@ boxop_tnumber_span(const Temporal *temp, const Span *span,
  * @param[in] invert True if the span is the first argument of the function.
  */
 bool
-boxop_tnumber_spanset(const Temporal *temp, const SpanSet *ss,
+boxop_tnumber_numspanset(const Temporal *temp, const SpanSet *ss,
   bool (*func)(const TBox *, const TBox *), bool invert)
 {
   TBox box1, box2;
   temporal_set_bbox(temp, &box1);
-  spanset_set_tbox(ss, &box2);
+  numspanset_set_tbox(ss, &box2);
   bool result = invert ? func(&box2, &box1) : func(&box1, &box2);
   return (result);
 }

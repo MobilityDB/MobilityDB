@@ -299,6 +299,30 @@ ensure_set_type(mobdbType settype)
   return;
 }
 
+
+/**
+ * Return true if the type is a set type
+ */
+bool
+numset_type(mobdbType settype)
+{
+  if (settype == T_INTSET || settype == T_BIGINTSET || settype == T_FLOATSET)
+    return true;
+  return false;
+}
+
+/**
+ * Ensure that the type is a set type
+ */
+void
+ensure_numset_type(mobdbType settype)
+{
+  if (! numset_type(settype))
+    elog(ERROR, "unknown numeric set type: %d", settype);
+  return;
+}
+
+
 #if 0 /* not used */
 /**
  * Return true if the type is a base type of a numeric set type
@@ -345,6 +369,29 @@ ensure_span_type(mobdbType spantype)
 {
   if (! span_type(spantype))
     elog(ERROR, "unknown span type: %d", spantype);
+  return;
+}
+
+/**
+ * Return true if the type is a numeric span type
+ */
+bool
+numspan_type(mobdbType spantype)
+{
+  if (spantype == T_INTSPAN || spantype == T_BIGINTSPAN ||
+      spantype == T_FLOATSPAN)
+    return true;
+  return false;
+}
+
+/**
+ * Ensure that the type is a span type
+ */
+void
+ensure_numspan_type(mobdbType spantype)
+{
+  if (! numspan_type(spantype))
+    elog(ERROR, "unknown numeric span type: %d", spantype);
   return;
 }
 
@@ -409,9 +456,8 @@ spanset_type(mobdbType spansettype)
   return false;
 }
 
-#if 0 /* not used */
 /**
- * Ensure that the type is a span set type
+ * Ensure that the type is a span type
  */
 void
 ensure_spanset_type(mobdbType spansettype)
@@ -421,6 +467,30 @@ ensure_spanset_type(mobdbType spansettype)
   return;
 }
 
+/**
+ * Return true if the type is a numeric span type
+ */
+bool
+numspanset_type(mobdbType spansettype)
+{
+  if (spansettype == T_INTSPANSET || spansettype == T_BIGINTSPANSET ||
+      spansettype == T_FLOATSPANSET)
+    return true;
+  return false;
+}
+
+/**
+ * Ensure that the type is a span type
+ */
+void
+ensure_numspanset_type(mobdbType spansettype)
+{
+  if (! numspanset_type(spansettype))
+    elog(ERROR, "unknown numeric span set type: %d", spansettype);
+  return;
+}
+
+#if 0 /* not used */
 /**
  * Return true if the type is a set base type
  */
@@ -649,6 +719,30 @@ ensure_tnumber_basetype(mobdbType basetype)
 }
 
 /**
+ * Return true if the type is a set number type
+ *
+ * @note Function used in particular in the indexes
+ */
+bool
+tnumber_settype(mobdbType settype)
+{
+  if (settype == T_INTSET || settype == T_FLOATSET)
+    return true;
+  return false;
+}
+
+/**
+ * Ensure that the type is a span type
+ */
+void
+ensure_tnumber_settype(mobdbType settype)
+{
+  if (! tnumber_settype(settype))
+    elog(ERROR, "unknown number set type: %d", settype);
+  return;
+}
+
+/**
  * Return true if the type is a span number type
  *
  * @note Function used in particular in the indexes
@@ -671,8 +765,6 @@ ensure_tnumber_spantype(mobdbType spantype)
     elog(ERROR, "unknown number span type: %d", spantype);
   return;
 }
-
-
 
 /**
  * Return true if the type is a span number type

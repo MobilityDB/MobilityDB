@@ -52,10 +52,12 @@ CREATE OPERATOR CLASS intspanset_rtree_ops
   STORAGE intspan,
   -- strictly left
   OPERATOR  1     << (intspanset, int),
+  OPERATOR  1     << (intspanset, intset),
   OPERATOR  1     << (intspanset, intspan),
   OPERATOR  1     << (intspanset, intspanset),
   -- overlaps or left
   OPERATOR  2     &< (intspanset, int),
+  OPERATOR  2     &< (intspanset, intset),
   OPERATOR  2     &< (intspanset, intspan),
   OPERATOR  2     &< (intspanset, intspanset),
   -- overlaps
@@ -63,14 +65,17 @@ CREATE OPERATOR CLASS intspanset_rtree_ops
   OPERATOR  3     && (intspanset, intspanset),
   -- overlaps or right
   OPERATOR  4     &> (intspanset, int),
+  OPERATOR  4     &> (intspanset, intset),
   OPERATOR  4     &> (intspanset, intspan),
   OPERATOR  4     &> (intspanset, intspanset),
   -- strictly right
   OPERATOR  5     >> (intspanset, int),
+  OPERATOR  5     >> (intspanset, intset),
   OPERATOR  5     >> (intspanset, intspan),
   OPERATOR  5     >> (intspanset, intspanset),
   -- contains
   OPERATOR  7     @> (intspanset, int),
+  OPERATOR  7     @> (intspanset, intset),
   OPERATOR  7     @> (intspanset, intspan),
   OPERATOR  7     @> (intspanset, intspanset),
   -- contained by
@@ -83,6 +88,7 @@ CREATE OPERATOR CLASS intspanset_rtree_ops
   OPERATOR  18    = (intspanset, intspanset),
   -- nearest approach distance
   OPERATOR  25    <-> (intspanset, int) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (intspanset, intset) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    <-> (intspanset, intspan) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    <-> (intspanset, intspanset) FOR ORDER BY pg_catalog.float_ops,
   -- functions
@@ -108,10 +114,12 @@ CREATE OPERATOR CLASS bigintspanset_rtree_ops
   STORAGE bigintspan,
   -- strictly left
   OPERATOR  1     << (bigintspanset, bigint),
+  OPERATOR  1     << (bigintspanset, bigintset),
   OPERATOR  1     << (bigintspanset, bigintspan),
   OPERATOR  1     << (bigintspanset, bigintspanset),
   -- overlaps or left
   OPERATOR  2     &< (bigintspanset, bigint),
+  OPERATOR  2     &< (bigintspanset, bigintset),
   OPERATOR  2     &< (bigintspanset, bigintspan),
   OPERATOR  2     &< (bigintspanset, bigintspanset),
   -- overlaps
@@ -119,14 +127,17 @@ CREATE OPERATOR CLASS bigintspanset_rtree_ops
   OPERATOR  3     && (bigintspanset, bigintspanset),
   -- overlaps or right
   OPERATOR  4     &> (bigintspanset, bigint),
+  OPERATOR  4     &> (bigintspanset, bigintset),
   OPERATOR  4     &> (bigintspanset, bigintspan),
   OPERATOR  4     &> (bigintspanset, bigintspanset),
   -- strictly right
   OPERATOR  5     >> (bigintspanset, bigint),
+  OPERATOR  5     >> (bigintspanset, bigintset),
   OPERATOR  5     >> (bigintspanset, bigintspan),
   OPERATOR  5     >> (bigintspanset, bigintspanset),
   -- contains
   OPERATOR  7     @> (bigintspanset, bigint),
+  OPERATOR  7     @> (bigintspanset, bigintset),
   OPERATOR  7     @> (bigintspanset, bigintspan),
   OPERATOR  7     @> (bigintspanset, bigintspanset),
   -- contained by
@@ -139,6 +150,7 @@ CREATE OPERATOR CLASS bigintspanset_rtree_ops
   OPERATOR  18    = (bigintspanset, bigintspanset),
   -- nearest approach distance
   OPERATOR  25    <-> (bigintspanset, bigint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (bigintspanset, bigintset) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    <-> (bigintspanset, bigintspan) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    <-> (bigintspanset, bigintspanset) FOR ORDER BY pg_catalog.float_ops,
   -- functions
@@ -164,10 +176,12 @@ CREATE OPERATOR CLASS floatspanset_rtree_ops
   STORAGE floatspan,
   -- strictly left
   OPERATOR  1     << (floatspanset, float),
+  OPERATOR  1     << (floatspanset, floatset),
   OPERATOR  1     << (floatspanset, floatspan),
   OPERATOR  1     << (floatspanset, floatspanset),
   -- overlaps or left
   OPERATOR  2     &< (floatspanset, float),
+  OPERATOR  2     &< (floatspanset, floatset),
   OPERATOR  2     &< (floatspanset, floatspan),
   OPERATOR  2     &< (floatspanset, floatspanset),
   -- overlaps
@@ -175,14 +189,17 @@ CREATE OPERATOR CLASS floatspanset_rtree_ops
   OPERATOR  3     && (floatspanset, floatspanset),
   -- overlaps or right
   OPERATOR  4     &> (floatspanset, float),
+  OPERATOR  4     &> (floatspanset, floatset),
   OPERATOR  4     &> (floatspanset, floatspan),
   OPERATOR  4     &> (floatspanset, floatspanset),
   -- strictly right
   OPERATOR  5     >> (floatspanset, float),
+  OPERATOR  5     >> (floatspanset, floatset),
   OPERATOR  5     >> (floatspanset, floatspan),
   OPERATOR  5     >> (floatspanset, floatspanset),
   -- contains
   OPERATOR  7     @> (floatspanset, float),
+  OPERATOR  7     @> (floatspanset, floatset),
   OPERATOR  7     @> (floatspanset, floatspan),
   OPERATOR  7     @> (floatspanset, floatspanset),
   -- contained by
@@ -195,6 +212,7 @@ CREATE OPERATOR CLASS floatspanset_rtree_ops
   OPERATOR  18    = (floatspanset, floatspanset),
   -- nearest approach distance
   OPERATOR  25    <-> (floatspanset, float) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (floatspanset, floatset) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    <-> (floatspanset, floatspan) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    <-> (floatspanset, floatspanset) FOR ORDER BY pg_catalog.float_ops,
   -- functions
@@ -283,10 +301,12 @@ CREATE OPERATOR CLASS intspanset_quadtree_ops
   DEFAULT FOR TYPE intspanset USING spgist AS
   -- strictly left
   OPERATOR  1     << (intspanset, int),
+  OPERATOR  1     << (intspanset, intset),
   OPERATOR  1     << (intspanset, intspan),
   OPERATOR  1     << (intspanset, intspanset),
   -- overlaps or left
   OPERATOR  2     &< (intspanset, int),
+  OPERATOR  2     &< (intspanset, intset),
   OPERATOR  2     &< (intspanset, intspan),
   OPERATOR  2     &< (intspanset, intspanset),
   -- overlaps
@@ -294,14 +314,17 @@ CREATE OPERATOR CLASS intspanset_quadtree_ops
   OPERATOR  3     && (intspanset, intspanset),
   -- overlaps or right
   OPERATOR  4     &> (intspanset, int),
+  OPERATOR  4     &> (intspanset, intset),
   OPERATOR  4     &> (intspanset, intspan),
   OPERATOR  4     &> (intspanset, intspanset),
   -- strictly right
   OPERATOR  5     >> (intspanset, int),
+  OPERATOR  5     >> (intspanset, intset),
   OPERATOR  5     >> (intspanset, intspan),
   OPERATOR  5     >> (intspanset, intspanset),
   -- contains
   OPERATOR  7     @> (intspanset, int),
+  OPERATOR  7     @> (intspanset, intset),
   OPERATOR  7     @> (intspanset, intspan),
   OPERATOR  7     @> (intspanset, intspanset),
   -- contained by
@@ -314,6 +337,7 @@ CREATE OPERATOR CLASS intspanset_quadtree_ops
   OPERATOR  18    = (intspanset, intspanset),
   -- nearest approach distance
   OPERATOR  25    <-> (intspanset, int) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (intspanset, intset) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    <-> (intspanset, intspan) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    <-> (intspanset, intspanset) FOR ORDER BY pg_catalog.float_ops,
   -- functions
@@ -330,10 +354,12 @@ CREATE OPERATOR CLASS bigintspanset_quadtree_ops
   DEFAULT FOR TYPE bigintspanset USING spgist AS
   -- strictly left
   OPERATOR  1     << (bigintspanset, bigint),
+  OPERATOR  1     << (bigintspanset, bigintset),
   OPERATOR  1     << (bigintspanset, bigintspan),
   OPERATOR  1     << (bigintspanset, bigintspanset),
   -- overlaps or left
   OPERATOR  2     &< (bigintspanset, bigint),
+  OPERATOR  2     &< (bigintspanset, bigintset),
   OPERATOR  2     &< (bigintspanset, bigintspan),
   OPERATOR  2     &< (bigintspanset, bigintspanset),
   -- overlaps
@@ -341,14 +367,17 @@ CREATE OPERATOR CLASS bigintspanset_quadtree_ops
   OPERATOR  3     && (bigintspanset, bigintspanset),
   -- overlaps or right
   OPERATOR  4     &> (bigintspanset, bigint),
+  OPERATOR  4     &> (bigintspanset, bigintset),
   OPERATOR  4     &> (bigintspanset, bigintspan),
   OPERATOR  4     &> (bigintspanset, bigintspanset),
   -- strictly right
   OPERATOR  5     >> (bigintspanset, bigint),
+  OPERATOR  5     >> (bigintspanset, bigintset),
   OPERATOR  5     >> (bigintspanset, bigintspan),
   OPERATOR  5     >> (bigintspanset, bigintspanset),
   -- contains
   OPERATOR  7     @> (bigintspanset, bigint),
+  OPERATOR  7     @> (bigintspanset, bigintset),
   OPERATOR  7     @> (bigintspanset, bigintspan),
   OPERATOR  7     @> (bigintspanset, bigintspanset),
   -- contained by
@@ -361,6 +390,7 @@ CREATE OPERATOR CLASS bigintspanset_quadtree_ops
   OPERATOR  18    = (bigintspanset, bigintspanset),
   -- nearest approach distance
   OPERATOR  25    <-> (bigintspanset, bigint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (bigintspanset, bigintset) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    <-> (bigintspanset, bigintspan) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    <-> (bigintspanset, bigintspanset) FOR ORDER BY pg_catalog.float_ops,
   -- functions
@@ -377,10 +407,12 @@ CREATE OPERATOR CLASS floatspanset_quadtree_ops
   DEFAULT FOR TYPE floatspanset USING spgist AS
   -- strictly left
   OPERATOR  1     << (floatspanset, float),
+  OPERATOR  1     << (floatspanset, floatset),
   OPERATOR  1     << (floatspanset, floatspan),
   OPERATOR  1     << (floatspanset, floatspanset),
   -- overlaps or left
   OPERATOR  2     &< (floatspanset, float),
+  OPERATOR  2     &< (floatspanset, floatset),
   OPERATOR  2     &< (floatspanset, floatspan),
   OPERATOR  2     &< (floatspanset, floatspanset),
   -- overlaps
@@ -388,14 +420,17 @@ CREATE OPERATOR CLASS floatspanset_quadtree_ops
   OPERATOR  3     && (floatspanset, floatspanset),
   -- overlaps or right
   OPERATOR  4     &> (floatspanset, float),
+  OPERATOR  4     &> (floatspanset, floatset),
   OPERATOR  4     &> (floatspanset, floatspan),
   OPERATOR  4     &> (floatspanset, floatspanset),
   -- strictly right
   OPERATOR  5     >> (floatspanset, float),
+  OPERATOR  5     >> (floatspanset, floatset),
   OPERATOR  5     >> (floatspanset, floatspan),
   OPERATOR  5     >> (floatspanset, floatspanset),
   -- contains
   OPERATOR  7     @> (floatspanset, float),
+  OPERATOR  7     @> (floatspanset, floatset),
   OPERATOR  7     @> (floatspanset, floatspan),
   OPERATOR  7     @> (floatspanset, floatspanset),
   -- contained by
@@ -408,6 +443,7 @@ CREATE OPERATOR CLASS floatspanset_quadtree_ops
   OPERATOR  18    = (floatspanset, floatspanset),
   -- nearest approach distance
   OPERATOR  25    <-> (floatspanset, float) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (floatspanset, floatset) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    <-> (floatspanset, floatspan) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    <-> (floatspanset, floatspanset) FOR ORDER BY pg_catalog.float_ops,
   -- functions
@@ -480,10 +516,12 @@ CREATE OPERATOR CLASS intspanset_kdtree_ops
   FOR TYPE intspanset USING spgist AS
   -- strictly left
   OPERATOR  1     << (intspanset, int),
+  OPERATOR  1     << (intspanset, intset),
   OPERATOR  1     << (intspanset, intspan),
   OPERATOR  1     << (intspanset, intspanset),
   -- overlaps or left
   OPERATOR  2     &< (intspanset, int),
+  OPERATOR  2     &< (intspanset, intset),
   OPERATOR  2     &< (intspanset, intspan),
   OPERATOR  2     &< (intspanset, intspanset),
   -- overlaps
@@ -491,14 +529,17 @@ CREATE OPERATOR CLASS intspanset_kdtree_ops
   OPERATOR  3     && (intspanset, intspanset),
   -- overlaps or right
   OPERATOR  4     &> (intspanset, int),
+  OPERATOR  4     &> (intspanset, intset),
   OPERATOR  4     &> (intspanset, intspan),
   OPERATOR  4     &> (intspanset, intspanset),
   -- strictly right
   OPERATOR  5     >> (intspanset, int),
+  OPERATOR  5     >> (intspanset, intset),
   OPERATOR  5     >> (intspanset, intspan),
   OPERATOR  5     >> (intspanset, intspanset),
   -- contains
   OPERATOR  7     @> (intspanset, int),
+  OPERATOR  7     @> (intspanset, intset),
   OPERATOR  7     @> (intspanset, intspan),
   OPERATOR  7     @> (intspanset, intspanset),
   -- contained by
@@ -511,6 +552,7 @@ CREATE OPERATOR CLASS intspanset_kdtree_ops
   OPERATOR  18    = (intspanset, intspanset),
   -- nearest approach distance
   OPERATOR  25    <-> (intspanset, int) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (intspanset, intset) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    <-> (intspanset, intspan) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    <-> (intspanset, intspanset) FOR ORDER BY pg_catalog.float_ops,
   -- functions
@@ -527,10 +569,12 @@ CREATE OPERATOR CLASS bigintspanset_kdtree_ops
   FOR TYPE bigintspanset USING spgist AS
   -- strictly left
   OPERATOR  1     << (bigintspanset, bigint),
+  OPERATOR  1     << (bigintspanset, bigintset),
   OPERATOR  1     << (bigintspanset, bigintspan),
   OPERATOR  1     << (bigintspanset, bigintspanset),
   -- overlaps or left
   OPERATOR  2     &< (bigintspanset, bigint),
+  OPERATOR  2     &< (bigintspanset, bigintset),
   OPERATOR  2     &< (bigintspanset, bigintspan),
   OPERATOR  2     &< (bigintspanset, bigintspanset),
   -- overlaps
@@ -538,14 +582,17 @@ CREATE OPERATOR CLASS bigintspanset_kdtree_ops
   OPERATOR  3     && (bigintspanset, bigintspanset),
   -- overlaps or right
   OPERATOR  4     &> (bigintspanset, bigint),
+  OPERATOR  4     &> (bigintspanset, bigintset),
   OPERATOR  4     &> (bigintspanset, bigintspan),
   OPERATOR  4     &> (bigintspanset, bigintspanset),
   -- strictly right
   OPERATOR  5     >> (bigintspanset, bigint),
+  OPERATOR  5     >> (bigintspanset, bigintset),
   OPERATOR  5     >> (bigintspanset, bigintspan),
   OPERATOR  5     >> (bigintspanset, bigintspanset),
   -- contains
   OPERATOR  7     @> (bigintspanset, bigint),
+  OPERATOR  7     @> (bigintspanset, bigintset),
   OPERATOR  7     @> (bigintspanset, bigintspan),
   OPERATOR  7     @> (bigintspanset, bigintspanset),
   -- contained by
@@ -558,6 +605,7 @@ CREATE OPERATOR CLASS bigintspanset_kdtree_ops
   OPERATOR  18    = (bigintspanset, bigintspanset),
   -- nearest approach distance
   OPERATOR  25    <-> (bigintspanset, bigint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (bigintspanset, bigintset) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    <-> (bigintspanset, bigintspan) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    <-> (bigintspanset, bigintspanset) FOR ORDER BY pg_catalog.float_ops,
   -- functions
@@ -574,10 +622,12 @@ CREATE OPERATOR CLASS floatspanset_kdtree_ops
   FOR TYPE floatspanset USING spgist AS
   -- strictly left
   OPERATOR  1     << (floatspanset, float),
+  OPERATOR  1     << (floatspanset, floatset),
   OPERATOR  1     << (floatspanset, floatspan),
   OPERATOR  1     << (floatspanset, floatspanset),
   -- overlaps or left
   OPERATOR  2     &< (floatspanset, float),
+  OPERATOR  2     &< (floatspanset, floatset),
   OPERATOR  2     &< (floatspanset, floatspan),
   OPERATOR  2     &< (floatspanset, floatspanset),
   -- overlaps
@@ -585,14 +635,17 @@ CREATE OPERATOR CLASS floatspanset_kdtree_ops
   OPERATOR  3     && (floatspanset, floatspanset),
   -- overlaps or right
   OPERATOR  4     &> (floatspanset, float),
+  OPERATOR  4     &> (floatspanset, floatset),
   OPERATOR  4     &> (floatspanset, floatspan),
   OPERATOR  4     &> (floatspanset, floatspanset),
   -- strictly right
   OPERATOR  5     >> (floatspanset, float),
+  OPERATOR  5     >> (floatspanset, floatset),
   OPERATOR  5     >> (floatspanset, floatspan),
   OPERATOR  5     >> (floatspanset, floatspanset),
   -- contains
   OPERATOR  7     @> (floatspanset, float),
+  OPERATOR  7     @> (floatspanset, floatset),
   OPERATOR  7     @> (floatspanset, floatspan),
   OPERATOR  7     @> (floatspanset, floatspanset),
   -- contained by
@@ -605,6 +658,7 @@ CREATE OPERATOR CLASS floatspanset_kdtree_ops
   OPERATOR  18    = (floatspanset, floatspanset),
   -- nearest approach distance
   OPERATOR  25    <-> (floatspanset, float) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (floatspanset, floatset) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    <-> (floatspanset, floatspan) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    <-> (floatspanset, floatspanset) FOR ORDER BY pg_catalog.float_ops,
   -- functions

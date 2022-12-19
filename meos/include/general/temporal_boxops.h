@@ -85,9 +85,9 @@ extern bool boxop_temporal_temporal(const Temporal *temp1,
 
 extern bool boxop_tnumber_number(const Temporal *temp, Datum value,
   mobdbType basetype, bool (*func)(const TBox *, const TBox *), bool invert);
-extern bool boxop_tnumber_span(const Temporal *temp, const Span *span,
+extern bool boxop_tnumber_numspan(const Temporal *temp, const Span *span,
   bool (*func)(const TBox *, const TBox *), bool invert);
-extern bool boxop_tnumber_spanset(const Temporal *temp, const SpanSet *ss,
+extern bool boxop_tnumber_numspanset(const Temporal *temp, const SpanSet *ss,
   bool (*func)(const TBox *, const TBox *), bool invert);
 extern bool boxop_tnumber_tbox(const Temporal *temp, const TBox *box,
   bool (*func)(const TBox *, const TBox *), bool invert);

@@ -760,7 +760,7 @@ tsequenceset_max_instant(const TSequenceSet *ss)
 Datum
 tsequenceset_min_value(const TSequenceSet *ss)
 {
-  if (ss->temptype == T_TINT || ss->temptype == T_TFLOAT)
+  if (tnumber_type(ss->temptype))
   {
     TBox *box = TSEQUENCESET_BBOX_PTR(ss);
     Datum min = box->span.lower;
@@ -788,7 +788,7 @@ tsequenceset_min_value(const TSequenceSet *ss)
 Datum
 tsequenceset_max_value(const TSequenceSet *ss)
 {
-  if (ss->temptype == T_TINT || ss->temptype == T_TFLOAT)
+  if (tnumber_type(ss->temptype))
   {
     TBox *box = TSEQUENCESET_BBOX_PTR(ss);
     Datum max = box->span.upper;

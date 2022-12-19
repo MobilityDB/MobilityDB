@@ -4019,7 +4019,7 @@ tnumbercontseq_restrict_span2(const TSequence *seq, const Span *span,
   /* Bounding box test */
   TBox box1, box2;
   tsequence_set_bbox(seq, &box1);
-  span_set_tbox(span, &box2);
+  numspan_set_tbox(span, &box2);
   if (! overlaps_tbox_tbox(&box1, &box2))
   {
     if (atfunc)

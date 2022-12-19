@@ -258,7 +258,7 @@ ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
   Datum geom1 = 0; /* Used only for temporal network points */
 #endif
   datum_func2 point_distance = NULL;
-  if (basetype == T_GEOMETRY || basetype == T_GEOGRAPHY)
+  if (tgeo_basetype(basetype))
     point_distance = pt_distance_fn(instants[0]->flags);
 #if NPOINT
   else if (basetype == T_NPOINT)
@@ -280,7 +280,7 @@ ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
         dist = (basetype == T_INT4) ?
           (double) DatumGetInt32(number_distance(value1, value2, basetype, basetype)) :
           DatumGetFloat8(number_distance(value1, value2, basetype, basetype));
-      else if (basetype == T_GEOMETRY || basetype == T_GEOGRAPHY)
+      else if (tgeo_basetype(basetype))
         dist = DatumGetFloat8(point_distance(value1, value2));
 #if NPOINT
       else if (basetype == T_NPOINT)
@@ -2794,7 +2794,7 @@ tnumber_bbox_restrict_span(const Temporal *temp, const Span *span)
   assert(tnumber_type(temp->temptype));
   TBox box1, box2;
   temporal_set_bbox(temp, &box1);
-  span_set_tbox(span, &box2);
+  numspan_set_tbox(span, &box2);
   return overlaps_tbox_tbox(&box1, &box2);
 }
 
