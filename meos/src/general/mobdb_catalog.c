@@ -68,7 +68,7 @@ temptype_cache_struct _temptype_cache[] =
 };
 
 /**
- * Global array that keeps type information for the span types defined
+ * Global array that keeps type information for the set types defined
  * in MobilityDB.
  */
 settype_cache_struct _settype_cache[] =
@@ -78,6 +78,7 @@ settype_cache_struct _settype_cache[] =
   {T_BIGINTSET,     T_INT8},
   {T_FLOATSET,      T_FLOAT8},
   {T_TIMESTAMPSET,  T_TIMESTAMPTZ},
+  {T_TEXTSET,       T_TEXT},
 };
 
 /**
@@ -283,7 +284,7 @@ bool
 set_type(mobdbType settype)
 {
   if (settype == T_TIMESTAMPSET || settype == T_INTSET ||
-      settype == T_BIGINTSET || settype == T_FLOATSET)
+      settype == T_BIGINTSET || settype == T_FLOATSET || settype == T_TEXTSET)
     return true;
   return false;
 }
@@ -329,7 +330,8 @@ ensure_numset_type(mobdbType settype)
 bool
 numset_basetype(mobdbType basetype)
 {
-  if (basetype == T_INT4 || basetype == T_INT8 || basetype == T_FLOAT8)
+  if (basetype == T_INT4 || basetype == T_INT8 || basetype == T_FLOAT8 ||
+      basetype == T_TEXT)
     return true;
   return false;
 }
@@ -632,7 +634,7 @@ basetype_byvalue(mobdbType basetype)
 {
   ensure_temporal_basetype(basetype);
   if (basetype == T_BOOL || basetype == T_INT4 || basetype == T_INT8 ||
-      basetype == T_FLOAT8)
+      basetype == T_FLOAT8 || basetype == T_TIMESTAMPTZ)
     return true;
   return false;
 }

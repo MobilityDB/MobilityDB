@@ -218,12 +218,38 @@ set_make(const Datum *values, int count, mobdbType basetype)
     if (datum_ge(values[i], values[i + 1], basetype))
       elog(ERROR, "Invalid value for a set");
   }
-  /* The first value is already declared in the struct */
-  size_t memsize = double_pad(sizeof(Set)) +
-    sizeof(Datum) * (count - 1);
+
+  /* Determine whether the values are passed by value or by reference  */
+  int16 typlen;
+  bool typbyval = basetype_byvalue(basetype);
+  if (typbyval)
+    /* For base values passed by value */
+    typlen = double_pad(sizeof(Datum));
+  else
+  {
+    /* For base values passed by reference */
+    typlen = basetype_length(basetype);
+  }
+  /* Compute the size of the set for values passed by reference */
+  size_t values_size = 0;
+  if (! typbyval)
+  {
+    if (typlen == -1)
+    {
+      for (int i = 0; i < count; i++)
+        values_size += double_pad(VARSIZE(values[i]));
+    }
+    else
+      values_size = double_pad(typlen) * count;
+  }
+
+  /* The first Datum is already declared in the struct */
+  size_t memsize = double_pad(sizeof(Set)) + sizeof(Datum) * (count - 1) +
+    values_size;
   /* Create the Set */
   Set *result = palloc0(memsize);
   SET_VARSIZE(result, memsize);
+  MOBDB_FLAGS_SET_BYVAL(result->flags, typbyval);
   result->count = count;
   result->settype = basetype_settype(basetype);
   result->basetype = basetype;
