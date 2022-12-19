@@ -76,10 +76,10 @@ PGDLLEXPORT Datum
 Contains_spanset_set(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Set *os = PG_GETARG_SET_P(1);
-  bool result = contains_spanset_set(ss, os);
+  Set *s = PG_GETARG_SET_P(1);
+  bool result = contains_spanset_set(ss, s);
   PG_FREE_IF_COPY(ss, 0);
-  PG_FREE_IF_COPY(os, 1);
+  PG_FREE_IF_COPY(s, 1);
   PG_RETURN_BOOL(result);
 }
 
@@ -167,10 +167,10 @@ PG_FUNCTION_INFO_V1(Contained_set_spanset);
 PGDLLEXPORT Datum
 Contained_set_spanset(PG_FUNCTION_ARGS)
 {
-  Set *os = PG_GETARG_SET_P(0);
+  Set *s = PG_GETARG_SET_P(0);
   SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  bool result = contained_set_spanset(os, ss);
-  PG_FREE_IF_COPY(os, 0);
+  bool result = contained_set_spanset(s, ss);
+  PG_FREE_IF_COPY(s, 0);
   PG_FREE_IF_COPY(ss, 1);
   PG_RETURN_BOOL(result);
 }
@@ -241,10 +241,10 @@ PG_FUNCTION_INFO_V1(Overlaps_set_spanset);
 PGDLLEXPORT Datum
 Overlaps_set_spanset(PG_FUNCTION_ARGS)
 {
-  Set *os = PG_GETARG_SET_P(0);
+  Set *s = PG_GETARG_SET_P(0);
   SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  bool result = overlaps_spanset_set(ss, os);
-  PG_FREE_IF_COPY(os, 0);
+  bool result = overlaps_spanset_set(ss, s);
+  PG_FREE_IF_COPY(s, 0);
   PG_FREE_IF_COPY(ss, 1);
   PG_RETURN_BOOL(result);
 }
@@ -260,10 +260,10 @@ PGDLLEXPORT Datum
 Overlaps_spanset_set(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Set *os = PG_GETARG_SET_P(1);
-  bool result = overlaps_spanset_set(ss, os);
+  Set *s = PG_GETARG_SET_P(1);
+  bool result = overlaps_spanset_set(ss, s);
   PG_FREE_IF_COPY(ss, 0);
-  PG_FREE_IF_COPY(os, 1);
+  PG_FREE_IF_COPY(s, 1);
   PG_RETURN_BOOL(result);
 }
 
@@ -351,10 +351,10 @@ PG_FUNCTION_INFO_V1(Adjacent_set_spanset);
 PGDLLEXPORT Datum
 Adjacent_set_spanset(PG_FUNCTION_ARGS)
 {
-  Set *os = PG_GETARG_SET_P(0);
+  Set *s = PG_GETARG_SET_P(0);
   SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  bool result = adjacent_spanset_set(ss, os);
-  PG_FREE_IF_COPY(os, 0);
+  bool result = adjacent_spanset_set(ss, s);
+  PG_FREE_IF_COPY(s, 0);
   PG_FREE_IF_COPY(ss, 1);
   PG_RETURN_BOOL(result);
 }
@@ -388,10 +388,10 @@ PGDLLEXPORT Datum
 Adjacent_spanset_set(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Set *os = PG_GETARG_SET_P(1);
-  bool result = adjacent_spanset_set(ss, os);
+  Set *s = PG_GETARG_SET_P(1);
+  bool result = adjacent_spanset_set(ss, s);
   PG_FREE_IF_COPY(ss, 0);
-  PG_FREE_IF_COPY(os, 1);
+  PG_FREE_IF_COPY(s, 1);
   PG_RETURN_BOOL(result);
 }
 
@@ -479,10 +479,10 @@ PG_FUNCTION_INFO_V1(Left_set_spanset);
 PGDLLEXPORT Datum
 Left_set_spanset(PG_FUNCTION_ARGS)
 {
-  Set *os = PG_GETARG_SET_P(0);
+  Set *s = PG_GETARG_SET_P(0);
   SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  bool result = left_set_spanset(os, ss);
-  PG_FREE_IF_COPY(os, 0);
+  bool result = left_set_spanset(s, ss);
+  PG_FREE_IF_COPY(s, 0);
   PG_FREE_IF_COPY(ss, 1);
   PG_RETURN_BOOL(result);
 }
@@ -533,10 +533,10 @@ PGDLLEXPORT Datum
 Left_spanset_set(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Set *os = PG_GETARG_SET_P(1);
-  bool result = left_spanset_set(ss, os);
+  Set *s = PG_GETARG_SET_P(1);
+  bool result = left_spanset_set(ss, s);
   PG_FREE_IF_COPY(ss, 0);
-  PG_FREE_IF_COPY(os, 1);
+  PG_FREE_IF_COPY(s, 1);
   PG_RETURN_BOOL(result);
 }
 
@@ -607,10 +607,10 @@ PG_FUNCTION_INFO_V1(Right_set_spanset);
 PGDLLEXPORT Datum
 Right_set_spanset(PG_FUNCTION_ARGS)
 {
-  Set *os = PG_GETARG_SET_P(0);
+  Set *s = PG_GETARG_SET_P(0);
   SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  bool result = right_set_spanset(os, ss);
-  PG_FREE_IF_COPY(os, 0);
+  bool result = right_set_spanset(s, ss);
+  PG_FREE_IF_COPY(s, 0);
   PG_FREE_IF_COPY(ss, 1);
   PG_RETURN_BOOL(result);
 }
@@ -661,10 +661,10 @@ PGDLLEXPORT Datum
 Right_spanset_set(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Set *os = PG_GETARG_SET_P(1);
-  bool result = right_spanset_set(ss, os);
+  Set *s = PG_GETARG_SET_P(1);
+  bool result = right_spanset_set(ss, s);
   PG_FREE_IF_COPY(ss, 0);
-  PG_FREE_IF_COPY(os, 1);
+  PG_FREE_IF_COPY(s, 1);
   PG_RETURN_BOOL(result);
 }
 
@@ -735,10 +735,10 @@ PG_FUNCTION_INFO_V1(Overleft_set_spanset);
 PGDLLEXPORT Datum
 Overleft_set_spanset(PG_FUNCTION_ARGS)
 {
-  Set *os = PG_GETARG_SET_P(0);
+  Set *s = PG_GETARG_SET_P(0);
   SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  bool result = overleft_set_spanset(os, ss);
-  PG_FREE_IF_COPY(os, 0);
+  bool result = overleft_set_spanset(s, ss);
+  PG_FREE_IF_COPY(s, 0);
   PG_FREE_IF_COPY(ss, 1);
   PG_RETURN_BOOL(result);
 }
@@ -772,10 +772,10 @@ PGDLLEXPORT Datum
 Overleft_spanset_set(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Set *os = PG_GETARG_SET_P(1);
-  bool result = overleft_spanset_set(ss, os);
+  Set *s = PG_GETARG_SET_P(1);
+  bool result = overleft_spanset_set(ss, s);
   PG_FREE_IF_COPY(ss, 0);
-  PG_FREE_IF_COPY(os, 1);
+  PG_FREE_IF_COPY(s, 1);
   PG_RETURN_BOOL(result);
 }
 
@@ -863,10 +863,10 @@ PG_FUNCTION_INFO_V1(Overright_set_spanset);
 PGDLLEXPORT Datum
 Overright_set_spanset(PG_FUNCTION_ARGS)
 {
-  Set *os = PG_GETARG_SET_P(0);
+  Set *s = PG_GETARG_SET_P(0);
   SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  bool result = overright_set_spanset(os, ss);
-  PG_FREE_IF_COPY(os, 0);
+  bool result = overright_set_spanset(s, ss);
+  PG_FREE_IF_COPY(s, 0);
   PG_FREE_IF_COPY(ss, 1);
   PG_RETURN_BOOL(result);
 }
@@ -917,10 +917,10 @@ PGDLLEXPORT Datum
 Overright_spanset_set(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Set *os = PG_GETARG_SET_P(1);
-  bool result = overright_spanset_set(ss, os);
+  Set *s = PG_GETARG_SET_P(1);
+  bool result = overright_spanset_set(ss, s);
   PG_FREE_IF_COPY(ss, 0);
-  PG_FREE_IF_COPY(os, 1);
+  PG_FREE_IF_COPY(s, 1);
   PG_RETURN_BOOL(result);
 }
 
@@ -991,10 +991,10 @@ PG_FUNCTION_INFO_V1(Union_set_spanset);
 PGDLLEXPORT Datum
 Union_set_spanset(PG_FUNCTION_ARGS)
 {
-  Set *os = PG_GETARG_SET_P(0);
+  Set *s = PG_GETARG_SET_P(0);
   SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  SpanSet *result = union_spanset_set(ss, os);
-  PG_FREE_IF_COPY(os, 0);
+  SpanSet *result = union_spanset_set(ss, s);
+  PG_FREE_IF_COPY(s, 0);
   PG_FREE_IF_COPY(ss, 1);
   PG_RETURN_POINTER(result);
 }
@@ -1045,10 +1045,10 @@ PGDLLEXPORT Datum
 Union_spanset_set(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Set *os = PG_GETARG_SET_P(1);
-  SpanSet *result = union_spanset_set(ss, os);
+  Set *s = PG_GETARG_SET_P(1);
+  SpanSet *result = union_spanset_set(ss, s);
   PG_FREE_IF_COPY(ss, 0);
-  PG_FREE_IF_COPY(os, 1);
+  PG_FREE_IF_COPY(s, 1);
   PG_RETURN_POINTER(result);
 }
 
@@ -1122,10 +1122,10 @@ PG_FUNCTION_INFO_V1(Intersection_set_spanset);
 PGDLLEXPORT Datum
 Intersection_set_spanset(PG_FUNCTION_ARGS)
 {
-  Set *os = PG_GETARG_SET_P(0);
+  Set *s = PG_GETARG_SET_P(0);
   SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  Set *result = intersection_spanset_set(ss, os);
-  PG_FREE_IF_COPY(os, 0);
+  Set *result = intersection_spanset_set(ss, s);
+  PG_FREE_IF_COPY(s, 0);
   PG_FREE_IF_COPY(ss, 1);
   if (! result)
     PG_RETURN_NULL();
@@ -1183,10 +1183,10 @@ PGDLLEXPORT Datum
 Intersection_spanset_set(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Set *os = PG_GETARG_SET_P(1);
-  TimestampSet *result = intersection_spanset_set(ss, os);
+  Set *s = PG_GETARG_SET_P(1);
+  TimestampSet *result = intersection_spanset_set(ss, s);
   PG_FREE_IF_COPY(ss, 0);
-  PG_FREE_IF_COPY(os, 1);
+  PG_FREE_IF_COPY(s, 1);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
@@ -1267,10 +1267,10 @@ PG_FUNCTION_INFO_V1(Minus_set_spanset);
 PGDLLEXPORT Datum
 Minus_set_spanset(PG_FUNCTION_ARGS)
 {
-  Set *os = PG_GETARG_SET_P(0);
+  Set *s = PG_GETARG_SET_P(0);
   SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  TimestampSet *result = minus_set_spanset(os, ss);
-  PG_FREE_IF_COPY(os, 0);
+  TimestampSet *result = minus_set_spanset(s, ss);
+  PG_FREE_IF_COPY(s, 0);
   PG_FREE_IF_COPY(ss, 1);
   if (! result)
     PG_RETURN_NULL();
@@ -1327,10 +1327,10 @@ PGDLLEXPORT Datum
 Minus_spanset_set(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Set *os = PG_GETARG_SET_P(1);
-  SpanSet *result = minus_spanset_set(ss, os);
+  Set *s = PG_GETARG_SET_P(1);
+  SpanSet *result = minus_spanset_set(ss, s);
   PG_FREE_IF_COPY(ss, 0);
-  PG_FREE_IF_COPY(os, 1);
+  PG_FREE_IF_COPY(s, 1);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
@@ -1407,12 +1407,13 @@ PG_FUNCTION_INFO_V1(Distance_set_spanset);
 PGDLLEXPORT Datum
 Distance_set_spanset(PG_FUNCTION_ARGS)
 {
-  Datum os = PG_GETARG_DATUM(0);
+  Set *s = PG_GETARG_SET_P(0);
   Datum ss = PG_GETARG_DATUM(1);
-  Period p1, p2;
-  set_span_slice(os, &p1);
-  spanset_span_slice(ss, &p2);
-  double result = distance_span_span(&p1, &p2);
+  Span s1, s2;
+  set_set_span(s, &s1);
+  spanset_span_slice(ss, &s2);
+  double result = distance_span_span(&s1, &s2);
+  PG_FREE_IF_COPY(s, 0);
   PG_RETURN_FLOAT8(result);
 }
 
@@ -1463,11 +1464,12 @@ PGDLLEXPORT Datum
 Distance_spanset_set(PG_FUNCTION_ARGS)
 {
   Datum ss = PG_GETARG_DATUM(0);
-  Datum os = PG_GETARG_DATUM(1);
-  Period p1, p2;
-  spanset_span_slice(ss, &p1);
-  set_span_slice(os, &p2);
-  double result = distance_span_span(&p1, &p2);
+  Set *s = PG_GETARG_SET_P(1);
+  Span s1, s2;
+  spanset_span_slice(ss, &s1);
+  set_set_span(s, &s2);
+  double result = distance_span_span(&s1, &s2);
+  PG_FREE_IF_COPY(s, 1);
   PG_RETURN_FLOAT8(result);
 }
 

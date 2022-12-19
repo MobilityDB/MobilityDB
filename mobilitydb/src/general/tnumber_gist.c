@@ -45,6 +45,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <general/set.h>
 #include <general/temporal_boxops.h>
 #include <general/temporal_util.h>
 /* MobilityDB */
@@ -208,10 +209,19 @@ tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBox *result, Oid typid)
     TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
     timestamp_set_tbox(t, result);
   }
-  else if (tnumber_settype(type) || type == T_TIMESTAMPSET)
+  else if (tnumber_settype(type))
   {
-    Datum sdatum = PG_GETARG_DATUM(1);
-    set_tbox_slice(sdatum, result);
+    Set *set = PG_GETARG_SET_P(1);
+    if (set == NULL)
+      return false;
+    numset_set_tbox(set, result);
+  }
+  else if (type == T_TIMESTAMPSET)
+  {
+    Set *set = PG_GETARG_SET_P(1);
+    if (set == NULL)
+      return false;
+    timestampset_set_tbox(set, result);
   }
   else if (tnumber_spantype(type))
   {

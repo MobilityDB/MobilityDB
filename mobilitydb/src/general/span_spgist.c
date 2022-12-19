@@ -380,25 +380,22 @@ static bool
 span_spgist_get_span(const ScanKeyData *scankey, Span *result)
 {
   mobdbType type = oid_type(scankey->sk_subtype);
-  if (type == T_INT4 || type == T_INT8 || type == T_FLOAT8 ||
-    type == T_TIMESTAMPTZ)
+  if (span_basetype(type))
   {
     Datum d = scankey->sk_argument;
     span_set(d, d, true, true, type, result);
   }
-  else if (type == T_INTSET || type == T_BIGINTSET || type == T_FLOATSET ||
-    type == T_TIMESTAMPSET)
+  else if (set_type(type))
   {
-    set_span_slice(scankey->sk_argument, result);
+    Set *s = DatumGetSetP(scankey->sk_argument);
+    set_set_span(s, result);
   }
-  else if (type == T_INTSPAN || type == T_BIGINTSPAN || type == T_FLOATSPAN ||
-    type == T_PERIOD)
+  else if (span_type(type))
   {
     Span *s = DatumGetSpanP(scankey->sk_argument);
     memcpy(result, s, sizeof(Span));
   }
-  else if (type == T_INTSPANSET || type == T_BIGINTSPANSET ||
-    type == T_FLOATSPANSET || type == T_PERIODSET)
+  else if (spanset_type(type))
   {
     spanset_span_slice(scankey->sk_argument, result);
   }
@@ -1010,9 +1007,9 @@ PG_FUNCTION_INFO_V1(Set_spgist_compress);
 PGDLLEXPORT Datum
 Set_spgist_compress(PG_FUNCTION_ARGS)
 {
-  Datum osdatum = PG_GETARG_DATUM(0);
+  Set *s = PG_GETARG_SET_P(0);
   Span *result = palloc(sizeof(Span));
-  set_span_slice(osdatum, result);
+  set_set_span(s, result);
   PG_RETURN_SPAN_P(result);
 }
 

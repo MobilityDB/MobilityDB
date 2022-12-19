@@ -316,7 +316,12 @@ numset_set_tbox(const Set *s, TBox *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBox));
-  memcpy(&box->span, &s->span, sizeof(Span));
+  Span sp;
+  set_set_span(s, &sp);
+  if (s->basetype == T_INT4)
+    intspan_set_floatspan(&sp, &box->span);
+  else
+    memcpy(&box->span, &sp, sizeof(Span));
   MOBDB_FLAGS_SET_X(box->flags, true);
   MOBDB_FLAGS_SET_T(box->flags, false);
   return;
@@ -347,7 +352,7 @@ timestampset_set_tbox(const Set *s, TBox *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBox));
-  memcpy(&box->period, &s->span, sizeof(Span));
+  set_set_span(s, &box->period);
   MOBDB_FLAGS_SET_X(box->flags, false);
   MOBDB_FLAGS_SET_T(box->flags, true);
   return;

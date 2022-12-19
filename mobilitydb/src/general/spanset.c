@@ -187,8 +187,8 @@ PG_FUNCTION_INFO_V1(Set_to_spanset);
 PGDLLEXPORT Datum
 Set_to_spanset(PG_FUNCTION_ARGS)
 {
-  Set *os = PG_GETARG_SET_P(0);
-  PeriodSet *result = set_to_spanset(os);
+  Set *s = PG_GETARG_SET_P(0);
+  PeriodSet *result = set_to_spanset(s);
   PG_RETURN_POINTER(result);
 }
 

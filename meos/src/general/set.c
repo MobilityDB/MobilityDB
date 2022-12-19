@@ -96,7 +96,7 @@ set_find_value(const Set *s, Datum d, int *loc)
   {
     middle = (first + last)/2;
     Datum d1 = set_val_n(s, middle);
-    int cmp = datum_cmp(d, d1, s->span.basetype);
+    int cmp = datum_cmp(d, d1, s->basetype);
     if (cmp == 0)
     {
       *loc = middle;
@@ -179,7 +179,7 @@ set_out(const Set *s, int maxdd)
   for (int i = 0; i < s->count; i++)
   {
     Datum d = set_val_n(s, i);
-    strings[i] = basetype_out(d, s->span.basetype, maxdd);
+    strings[i] = basetype_out(d, s->basetype, maxdd);
     outlen += strlen(strings[i]) + 2;
   }
   return stringarr_to_string(strings, s->count, outlen, "", '{', '}');
@@ -225,9 +225,9 @@ set_make(const Datum *values, int count, mobdbType basetype)
   Set *result = palloc0(memsize);
   SET_VARSIZE(result, memsize);
   result->count = count;
+  result->settype = basetype_settype(basetype);
+  result->basetype = basetype;
 
-  /* Compute the bounding period */
-  span_set(values[0], values[count - 1], true, true, basetype, &result->span);
   /* Copy the array of values */
   for (int i = 0; i < count; i++)
     result->elems[i] = values[i];
@@ -333,7 +333,21 @@ timestamp_to_timestampset(TimestampTz t)
 }
 #endif /* MEOS */
 
-#if MEOS
+
+/**
+ * @ingroup libmeos_setspan_cast
+ * @brief Return the bounding span of a set.
+ * @sqlfunc span()
+ * @sqlop @p ::
+ * @pymeosfunc span()
+ */
+void
+set_set_span(const Set *os, Span *s)
+{
+  span_set(os->elems[0], os->elems[os->count - 1], true, true, os->basetype, s);
+  return;
+}
+
 /**
  * @ingroup libmeos_setspan_cast
  * @brief Return the bounding span of a set.
@@ -345,10 +359,10 @@ Span *
 set_to_span(const Set *s)
 {
   Span *result = palloc(sizeof(Span));
-  memcpy(result, &s->span, sizeof(Span));
+  span_set(s->elems[0], s->elems[s->count - 1], true, true, s->basetype,
+    result);
   return result;
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Accessor functions
@@ -707,8 +721,8 @@ set_shift(const Set *s, Datum shift)
 {
   Set *result = set_copy(s);
   for (int i = 0; i < s->count; i++)
-    result->elems[i] = datum_add(result->elems[i], shift, s->span.basetype,
-      s->span.basetype);
+    result->elems[i] = datum_add(result->elems[i], shift, s->basetype,
+      s->basetype);
   return result;
 }
 
@@ -727,31 +741,30 @@ timestampset_shift_tscale(const TimestampSet *ts, const Interval *shift,
     ensure_valid_duration(duration);
   TimestampSet *result = set_copy(ts);
 
-  /* Shift and/or scale the bounding period */
-  period_shift_tscale(&result->span, shift, duration);
-
-  /* Set the first instant */
-  result->elems[0] = result->span.lower;
+  /* Set the first and last instants */
+  TimestampTz lower, lower1, upper, upper1;
+  lower = lower1 = DatumGetTimestampTz(ts->elems[0]);
+  upper = upper1 = DatumGetTimestampTz(ts->elems[ts->count - 1]);
+  lower_upper_shift_tscale(&lower1, &upper1, shift, duration);
+  result->elems[0] = TimestampTzGetDatum(lower1);
+  result->elems[ts->count - 1] = TimestampTzGetDatum(upper1);
   if (ts->count > 1)
   {
     /* Shift and/or scale from the second to the penultimate instant */
     TimestampTz delta;
     if (shift != NULL)
-      delta = result->span.lower - ts->span.lower;
+      delta = lower1 - lower;
     double scale;
     if (duration != NULL)
-      scale = (double) (result->span.upper - result->span.lower) /
-        (double) (ts->span.upper - ts->span.lower);
+      scale = (double) (upper1 - lower1) / (double) (upper - lower);
     for (int i = 1; i < ts->count - 1; i++)
     {
       if (shift != NULL)
         result->elems[i] += delta;
       if (duration != NULL)
-        result->elems[i] = result->span.lower +
-          (result->elems[i] - result->span.lower) * scale;
+        result->elems[i] = lower1 +
+          (result->elems[i] - lower1) * scale;
     }
-    /* Set the last instant */
-    result->elems[ts->count - 1] = result->span.upper;
   }
   return result;
 }
@@ -768,17 +781,17 @@ timestampset_shift_tscale(const TimestampSet *ts, const Interval *shift,
  * @pymeosfunc __eq__()
  */
 bool
-set_eq(const Set *os1, const Set *os2)
+set_eq(const Set *s1, const Set *s2)
 {
-  assert(os1->span.basetype == os2->span.basetype);
-  if (os1->count != os2->count)
+  assert(s1->settype == s2->settype);
+  if (s1->count != s2->count)
     return false;
-  /* os1 and os2 have the same number of values */
-  for (int i = 0; i < os1->count; i++)
+  /* s1 and s2 have the same number of values */
+  for (int i = 0; i < s1->count; i++)
   {
-    Datum v1 = set_val_n(os1, i);
-    Datum v2 = set_val_n(os2, i);
-    if (datum_ne(v1, v2, os1->span.basetype))
+    Datum v1 = set_val_n(s1, i);
+    Datum v2 = set_val_n(s2, i);
+    if (datum_ne(v1, v2, s1->basetype))
       return false;
   }
   /* All values of the two sets are equal */
@@ -793,9 +806,9 @@ set_eq(const Set *os1, const Set *os2)
  * @sqlop @p <>
  */
 bool
-set_ne(const Set *os1, const Set *os2)
+set_ne(const Set *s1, const Set *s2)
 {
-  return ! set_eq(os1, os2);
+  return ! set_eq(s1, s2);
 }
 
 /**
@@ -806,25 +819,25 @@ set_ne(const Set *os1, const Set *os2)
  * @sqlfunc set_cmp()
  */
 int
-set_cmp(const Set *os1, const Set *os2)
+set_cmp(const Set *s1, const Set *s2)
 {
-  assert(os1->span.basetype == os2->span.basetype);
-  int count = Min(os1->count, os2->count);
+  assert(s1->settype == s2->settype);
+  int count = Min(s1->count, s2->count);
   int result = 0;
   for (int i = 0; i < count; i++)
   {
-    Datum v1 = set_val_n(os1, i);
-    Datum v2 = set_val_n(os2, i);
-    result = datum_cmp(v1, v2, os1->span.basetype);
+    Datum v1 = set_val_n(s1, i);
+    Datum v2 = set_val_n(s2, i);
+    result = datum_cmp(v1, v2, s1->basetype);
     if (result)
       break;
   }
   /* The first count times of the two Set are equal */
   if (! result)
   {
-    if (count < os1->count) /* os1 has more values than os2 */
+    if (count < s1->count) /* s1 has more values than s2 */
       result = 1;
-    else if (count < os2->count) /* os2 has more values than os1 */
+    else if (count < s2->count) /* s2 has more values than s1 */
       result = -1;
     else
       result = 0;
@@ -838,9 +851,9 @@ set_cmp(const Set *os1, const Set *os2)
  * @sqlop @p <
  */
 bool
-set_lt(const Set *os1, const Set *os2)
+set_lt(const Set *s1, const Set *s2)
 {
-  return set_cmp(os1, os2) < 0;
+  return set_cmp(s1, s2) < 0;
 }
 
 /**
@@ -850,9 +863,9 @@ set_lt(const Set *os1, const Set *os2)
  * @sqlop @p <=
  */
 bool
-set_le(const Set *os1, const Set *os2)
+set_le(const Set *s1, const Set *s2)
 {
-  return set_cmp(os1, os2) <= 0;
+  return set_cmp(s1, s2) <= 0;
 }
 
 /**
@@ -862,9 +875,9 @@ set_le(const Set *os1, const Set *os2)
  * @sqlop @p >=
  */
 bool
-set_ge(const Set *os1, const Set *os2)
+set_ge(const Set *s1, const Set *s2)
 {
-  return set_cmp(os1, os2) >= 0;
+  return set_cmp(s1, s2) >= 0;
 }
 
 /**
@@ -873,9 +886,9 @@ set_ge(const Set *os1, const Set *os2)
  * @sqlop @p >
  */
 bool
-set_gt(const Set *os1, const Set *os2)
+set_gt(const Set *s1, const Set *s2)
 {
-  return set_cmp(os1, os2) > 0;
+  return set_cmp(s1, s2) > 0;
 }
 
 /*****************************************************************************
@@ -914,7 +927,7 @@ set_hash(const Set *s)
   for (int i = 0; i < s->count; i++)
   {
     Datum d = set_val_n(s, i);
-    uint32 value_hash = datum_hash(d, s->span.basetype);
+    uint32 value_hash = datum_hash(d, s->basetype);
     result = (result << 5) - result + value_hash;
   }
   return result;
@@ -950,7 +963,7 @@ set_hash_extended(const Set *s, uint64 seed)
   for (int i = 0; i < s->count; i++)
   {
     Datum d = set_val_n(s, i);
-    uint64 value_hash = datum_hash_extended(d, s->span.basetype, seed);
+    uint64 value_hash = datum_hash_extended(d, s->basetype, seed);
     result = (result << 5) - result + value_hash;
   }
   return result;

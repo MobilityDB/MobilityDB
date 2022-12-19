@@ -1054,11 +1054,11 @@ temporalarr_out(const Temporal **temparr, int count, int maxdd)
  * set type.
  */
 static size_t
-set_basetype_to_wkb_size(const Set *os)
+set_basetype_to_wkb_size(const Set *s)
 {
   size_t result = 0;
-  ensure_span_basetype(os->span.basetype);
-  switch (os->span.basetype)
+  ensure_span_basetype(s->basetype);
+  switch (s->basetype)
   {
     case T_INT4:
       result = MOBDB_WKB_INT4_SIZE;
@@ -1081,11 +1081,11 @@ set_basetype_to_wkb_size(const Set *os)
  * (WKB) format
  */
 static size_t
-set_to_wkb_size(const Set *os)
+set_to_wkb_size(const Set *s)
 {
   /* Endian flag + settype + count + basetype values * count */
   size_t size = MOBDB_WKB_BYTE_SIZE + MOBDB_WKB_INT2_SIZE +
-    MOBDB_WKB_INT4_SIZE + set_basetype_to_wkb_size(os) * os->count;
+    MOBDB_WKB_INT4_SIZE + set_basetype_to_wkb_size(s) * s->count;
   return size;
 }
 
@@ -1655,13 +1655,13 @@ npoint_to_wkb_buf(const Npoint *np, uint8_t *buf, uint8_t variant)
  * Write into the buffer the set type
  */
 static uint8_t *
-set_settype_to_wkb_buf(const Set *os, uint8_t *buf, uint8_t variant)
+set_settype_to_wkb_buf(const Set *s, uint8_t *buf, uint8_t variant)
 {
   uint16_t wkb_settype;
   /* The Set struct does not store its type but it can be deduced from
    * the type of its bounding span */
-  ensure_span_basetype(os->span.basetype);
-  switch (os->span.basetype)
+  ensure_span_basetype(s->basetype);
+  switch (s->basetype)
   {
     case T_INT4:
       wkb_settype = T_INTSET;
@@ -1710,18 +1710,17 @@ set_value_to_wkb_buf(Datum value, mobdbType basetype, uint8_t *buf,
  * - Values
  */
 static uint8_t *
-set_to_wkb_buf(const Set *os, uint8_t *buf, uint8_t variant)
+set_to_wkb_buf(const Set *s, uint8_t *buf, uint8_t variant)
 {
   /* Write the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
   /* Write the set type */
-  buf = set_settype_to_wkb_buf(os, buf, variant);
+  buf = set_settype_to_wkb_buf(s, buf, variant);
   /* Write the count */
-  buf = int32_to_wkb_buf(os->count, buf, variant);
+  buf = int32_to_wkb_buf(s->count, buf, variant);
   /* Write the values */
-  for (int i = 0; i < os->count; i++)
-    buf = set_value_to_wkb_buf(os->elems[i], os->span.basetype, buf,
-      variant);
+  for (int i = 0; i < s->count; i++)
+    buf = set_value_to_wkb_buf(s->elems[i], s->basetype, buf, variant);
   return buf;
 }
 
@@ -2387,10 +2386,9 @@ span_as_hexwkb(const Span *s, uint8_t variant, size_t *size_out)
  * @sqlfunc asBinary()
  */
 uint8_t *
-set_as_wkb(const Set *os, uint8_t variant, size_t *size_out)
+set_as_wkb(const Set *s, uint8_t variant, size_t *size_out)
 {
-  mobdbType settype = basetype_settype(os->span.basetype);
-  uint8_t *result = datum_as_wkb(PointerGetDatum(os), settype, variant,
+  uint8_t *result = datum_as_wkb(PointerGetDatum(s), s->settype, variant,
     size_out);
   return result;
 }
@@ -2405,8 +2403,7 @@ char *
 set_as_hexwkb(const TimestampSet *ts, uint8_t variant,
   size_t *size_out)
 {
-  mobdbType settype = basetype_settype(os->span.basetype);
-  char *result = (char *) datum_as_wkb(PointerGetDatum(ts), settype,
+  char *result = (char *) datum_as_wkb(PointerGetDatum(ts), s->settype,
     variant | (uint8_t) WKB_HEX, size_out);
   return result;
 }

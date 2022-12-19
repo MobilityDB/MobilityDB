@@ -82,9 +82,9 @@ PG_FUNCTION_INFO_V1(Set_out);
 PGDLLEXPORT Datum
 Set_out(PG_FUNCTION_ARGS)
 {
-  Set *os = PG_GETARG_SET_P(0);
-  char *result = set_out(os, Int32GetDatum(OUT_DEFAULT_DECIMAL_DIGITS));
-  PG_FREE_IF_COPY(os, 0);
+  Set *s = PG_GETARG_SET_P(0);
+  char *result = set_out(s, Int32GetDatum(OUT_DEFAULT_DECIMAL_DIGITS));
+  PG_FREE_IF_COPY(s, 0);
   PG_RETURN_CSTRING(result);
 }
 
@@ -113,10 +113,10 @@ PG_FUNCTION_INFO_V1(Set_send);
 PGDLLEXPORT Datum
 Set_send(PG_FUNCTION_ARGS)
 {
-  Set *os = PG_GETARG_SET_P(0);
+  Set *s = PG_GETARG_SET_P(0);
   uint8_t variant = 0;
-  size_t wkb_size = VARSIZE_ANY_EXHDR(os);
-  uint8_t *wkb = set_as_wkb(os, variant, &wkb_size);
+  size_t wkb_size = VARSIZE_ANY_EXHDR(s);
+  uint8_t *wkb = set_as_wkb(s, variant, &wkb_size);
   bytea *result = bstring2bytea(wkb, wkb_size);
   pfree(wkb);
   PG_RETURN_BYTEA_P(result);
@@ -165,24 +165,6 @@ Value_to_set(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-/**
- * @ingroup mobilitydb_setspan_cast
- * @brief Peak into a set datum to find the bounding box. If the datum
- * needs to be detoasted, extract only the header and not the full object.
- */
-void
-set_span_slice(Datum d, Span *s)
-{
-  Set *os = NULL;
-  if (PG_DATUM_NEEDS_DETOAST((struct varlena *) d))
-    os = (Set *) PG_DETOAST_DATUM_SLICE(d, 0, time_max_header_size());
-  else
-    os = (Set *) d;
-  memcpy(s, &os->span, sizeof(Span));
-  PG_FREE_IF_COPY_P(os, DatumGetPointer(d));
-  return;
-}
-
 PG_FUNCTION_INFO_V1(Set_to_span);
 /**
  * @ingroup mobilitydb_setspan_accessor
@@ -192,9 +174,9 @@ PG_FUNCTION_INFO_V1(Set_to_span);
 PGDLLEXPORT Datum
 Set_to_span(PG_FUNCTION_ARGS)
 {
-  Datum d = PG_GETARG_DATUM(0);
+  Set *s = PG_GETARG_SET_P(0);
   Span *result = palloc(sizeof(Span));
-  set_span_slice(d, result);
+  set_set_span(s, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -301,11 +283,11 @@ PG_FUNCTION_INFO_V1(Set_values);
 PGDLLEXPORT Datum
 Set_values(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  Datum *values = set_values(ts);
-  ArrayType *result = datumarr_to_array(values, ts->count, ts->span.basetype);
+  Set *s = PG_GETARG_SET_P(0);
+  Datum *values = set_values(s);
+  ArrayType *result = datumarr_to_array(values, s->count, s->basetype);
   pfree(values);
-  PG_FREE_IF_COPY(ts, 0);
+  PG_FREE_IF_COPY(s, 0);
   PG_RETURN_ARRAYTYPE_P(result);
 }
 
@@ -317,10 +299,10 @@ Set_values(PG_FUNCTION_ARGS)
  * @brief Set the precision of the float set to the number of decimal places.
  */
 Set *
-floatset_round(const Set *os, Datum size)
+floatset_round(const Set *s, Datum size)
 {
-  Set *result = set_copy(os);
-  for (int i = 0; i < os->count; i++)
+  Set *result = set_copy(s);
+  for (int i = 0; i < s->count; i++)
     result->elems[i] = datum_round_float(result->elems[i], size);
   return result;
 }
@@ -334,9 +316,9 @@ PG_FUNCTION_INFO_V1(Floatset_round);
 PGDLLEXPORT Datum
 Floatset_round(PG_FUNCTION_ARGS)
 {
-  Set *os = PG_GETARG_SET_P(0);
+  Set *s = PG_GETARG_SET_P(0);
   Datum size = PG_GETARG_DATUM(1);
-  Set *result = floatset_round(os, size);
+  Set *result = floatset_round(s, size);
   PG_RETURN_POINTER(result);
 }
 
@@ -351,9 +333,9 @@ PG_FUNCTION_INFO_V1(Set_shift);
 PGDLLEXPORT Datum
 Set_shift(PG_FUNCTION_ARGS)
 {
-  Set *os = PG_GETARG_SET_P(0);
+  Set *s = PG_GETARG_SET_P(0);
   Datum shift = PG_GETARG_DATUM(1);
-  Set *result = set_shift(os, shift);
+  Set *result = set_shift(s, shift);
   PG_RETURN_POINTER(result);
 }
 
@@ -421,11 +403,11 @@ PG_FUNCTION_INFO_V1(Set_cmp);
 PGDLLEXPORT Datum
 Set_cmp(PG_FUNCTION_ARGS)
 {
-  Set *os1 = PG_GETARG_SET_P(0);
-  Set *os2 = PG_GETARG_SET_P(1);
-  int cmp = set_cmp(os1, os2);
-  PG_FREE_IF_COPY(os1, 0);
-  PG_FREE_IF_COPY(os2, 1);
+  Set *s1 = PG_GETARG_SET_P(0);
+  Set *s2 = PG_GETARG_SET_P(1);
+  int cmp = set_cmp(s1, s2);
+  PG_FREE_IF_COPY(s1, 0);
+  PG_FREE_IF_COPY(s2, 1);
   PG_RETURN_INT32(cmp);
 }
 
@@ -439,11 +421,11 @@ PG_FUNCTION_INFO_V1(Set_eq);
 PGDLLEXPORT Datum
 Set_eq(PG_FUNCTION_ARGS)
 {
-  Set *os1 = PG_GETARG_SET_P(0);
-  Set *os2 = PG_GETARG_SET_P(1);
-  bool result = set_eq(os1, os2);
-  PG_FREE_IF_COPY(os1, 0);
-  PG_FREE_IF_COPY(os2, 1);
+  Set *s1 = PG_GETARG_SET_P(0);
+  Set *s2 = PG_GETARG_SET_P(1);
+  bool result = set_eq(s1, s2);
+  PG_FREE_IF_COPY(s1, 0);
+  PG_FREE_IF_COPY(s2, 1);
   PG_RETURN_BOOL(result);
 }
 
@@ -457,11 +439,11 @@ PG_FUNCTION_INFO_V1(Set_ne);
 PGDLLEXPORT Datum
 Set_ne(PG_FUNCTION_ARGS)
 {
-  Set *os1 = PG_GETARG_SET_P(0);
-  Set *os2 = PG_GETARG_SET_P(1);
-  bool result = set_ne(os1, os2);
-  PG_FREE_IF_COPY(os1, 0);
-  PG_FREE_IF_COPY(os2, 1);
+  Set *s1 = PG_GETARG_SET_P(0);
+  Set *s2 = PG_GETARG_SET_P(1);
+  bool result = set_ne(s1, s2);
+  PG_FREE_IF_COPY(s1, 0);
+  PG_FREE_IF_COPY(s2, 1);
   PG_RETURN_BOOL(result);
 }
 
@@ -475,11 +457,11 @@ PG_FUNCTION_INFO_V1(Set_lt);
 PGDLLEXPORT Datum
 Set_lt(PG_FUNCTION_ARGS)
 {
-  Set *os1 = PG_GETARG_SET_P(0);
-  Set *os2 = PG_GETARG_SET_P(1);
-  bool result = set_lt(os1, os2);
-  PG_FREE_IF_COPY(os1, 0);
-  PG_FREE_IF_COPY(os2, 1);
+  Set *s1 = PG_GETARG_SET_P(0);
+  Set *s2 = PG_GETARG_SET_P(1);
+  bool result = set_lt(s1, s2);
+  PG_FREE_IF_COPY(s1, 0);
+  PG_FREE_IF_COPY(s2, 1);
   PG_RETURN_BOOL(result);
 }
 
@@ -494,11 +476,11 @@ PG_FUNCTION_INFO_V1(Set_le);
 PGDLLEXPORT Datum
 Set_le(PG_FUNCTION_ARGS)
 {
-  Set *os1 = PG_GETARG_SET_P(0);
-  Set *os2 = PG_GETARG_SET_P(1);
-  bool result = set_le(os1, os2);
-  PG_FREE_IF_COPY(os1, 0);
-  PG_FREE_IF_COPY(os2, 1);
+  Set *s1 = PG_GETARG_SET_P(0);
+  Set *s2 = PG_GETARG_SET_P(1);
+  bool result = set_le(s1, s2);
+  PG_FREE_IF_COPY(s1, 0);
+  PG_FREE_IF_COPY(s2, 1);
   PG_RETURN_BOOL(result);
 }
 
@@ -513,11 +495,11 @@ PG_FUNCTION_INFO_V1(Set_ge);
 PGDLLEXPORT Datum
 Set_ge(PG_FUNCTION_ARGS)
 {
-  Set *os1 = PG_GETARG_SET_P(0);
-  Set *os2 = PG_GETARG_SET_P(1);
-  bool result = set_ge(os1, os2);
-  PG_FREE_IF_COPY(os1, 0);
-  PG_FREE_IF_COPY(os2, 1);
+  Set *s1 = PG_GETARG_SET_P(0);
+  Set *s2 = PG_GETARG_SET_P(1);
+  bool result = set_ge(s1, s2);
+  PG_FREE_IF_COPY(s1, 0);
+  PG_FREE_IF_COPY(s2, 1);
   PG_RETURN_BOOL(result);
 }
 
@@ -531,11 +513,11 @@ PG_FUNCTION_INFO_V1(Set_gt);
 PGDLLEXPORT Datum
 Set_gt(PG_FUNCTION_ARGS)
 {
-  Set *os1 = PG_GETARG_SET_P(0);
-  Set *os2 = PG_GETARG_SET_P(1);
-  bool result = set_gt(os1, os2);
-  PG_FREE_IF_COPY(os1, 0);
-  PG_FREE_IF_COPY(os2, 1);
+  Set *s1 = PG_GETARG_SET_P(0);
+  Set *s2 = PG_GETARG_SET_P(1);
+  bool result = set_gt(s1, s2);
+  PG_FREE_IF_COPY(s1, 0);
+  PG_FREE_IF_COPY(s2, 1);
   PG_RETURN_BOOL(result);
 }
 
@@ -552,8 +534,8 @@ PG_FUNCTION_INFO_V1(Set_hash);
 PGDLLEXPORT Datum
 Set_hash(PG_FUNCTION_ARGS)
 {
-  Set *os = PG_GETARG_SET_P(0);
-  uint32 result = set_hash(os);
+  Set *s = PG_GETARG_SET_P(0);
+  uint32 result = set_hash(s);
   PG_RETURN_UINT32(result);
 }
 
@@ -566,9 +548,9 @@ PG_FUNCTION_INFO_V1(Set_hash_extended);
 PGDLLEXPORT Datum
 Set_hash_extended(PG_FUNCTION_ARGS)
 {
-  Set *os = PG_GETARG_SET_P(0);
+  Set *s = PG_GETARG_SET_P(0);
   uint64 seed = PG_GETARG_INT64(1);
-  uint64 result = set_hash_extended(os, seed);
+  uint64 result = set_hash_extended(s, seed);
   PG_RETURN_UINT64(result);
 }
 

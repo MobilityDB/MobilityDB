@@ -134,13 +134,15 @@ tnumber_const_to_span_period(const Node *other, Span **s, Period **p,
   }
   else if (numset_type(type))
   {
+    Set *os = DatumGetSetP(((Const *) other)->constvalue);
     *s = palloc(sizeof(Span));
-    set_span_slice(((Const *) other)->constvalue, *s);
+    set_set_span(os, *s);
   }
   else if (type == T_TIMESTAMPSET)
   {
+    Set *os = DatumGetSetP(((Const *) other)->constvalue);
     *p = palloc(sizeof(Period));
-    set_span_slice(((Const *) other)->constvalue, *p);
+    set_set_span(os, *p);
   }
   else if (numspan_type(type))
   {

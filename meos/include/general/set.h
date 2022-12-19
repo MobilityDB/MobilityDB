@@ -58,8 +58,7 @@
 
 /* General functions */
 
-extern void set_span_slice(Datum d, Span *s);
-extern bool set_find_value(const Set *os, Datum, int *loc);
+extern bool set_find_value(const Set *s, Datum, int *loc);
 
 /*****************************************************************************/
 

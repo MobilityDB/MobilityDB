@@ -471,9 +471,10 @@ Datum
 boxop_temporal_timestampset(const Temporal *temp, const TimestampSet *ts,
   bool (*func)(const Period *, const Period *), bool invert)
 {
-  Period p;
-  temporal_set_period(temp, &p);
-  bool result = invert ? func(&ts->span, &p) : func(&p, &ts->span);
+  Period p1, p2;
+  temporal_set_period(temp, &p1);
+  set_set_span(ts, &p2);
+  bool result = invert ? func(&p2, &p1) : func(&p1, &p2);
   return result;
 }
 

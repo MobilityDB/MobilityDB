@@ -1821,7 +1821,9 @@ tsequenceset_restrict_timestampset(const TSequenceSet *ss,
   }
 
   /* Bounding box test */
-  if (! overlaps_span_span(&ss->period, &ts->span))
+  Span s;
+  set_set_span(ts, &s);
+  if (! overlaps_span_span(&ss->period, &s))
     return atfunc ? NULL : (Temporal *) tsequenceset_copy(ss);
 
   /* Singleton sequence set */
@@ -2764,7 +2766,9 @@ tsequenceset_delete_timestampset(const TSequenceSet *ss,
       DatumGetTimestampTz(set_val_n(ts, 0)));
 
   /* Bounding box test */
-  if (! overlaps_span_span(&ss->period, &ts->span))
+  Span s;
+  set_set_span(ts, &s);
+  if (! overlaps_span_span(&ss->period, &s))
     return tsequenceset_copy(ss);
 
   TSequence *seq1;

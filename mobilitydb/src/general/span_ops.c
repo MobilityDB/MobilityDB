@@ -962,11 +962,12 @@ PG_FUNCTION_INFO_V1(Distance_set_span);
 PGDLLEXPORT Datum
 Distance_set_span(PG_FUNCTION_ARGS)
 {
-  Datum os = PG_GETARG_DATUM(0);
+  Set *os = PG_GETARG_SET_P(0);
   Span *s = PG_GETARG_SPAN_P(1);
-  Period p1;
-  set_span_slice(os, &p1);
-  double result = distance_span_span(&p1, s);
+  Span s1;
+  set_set_span(os, &s1);
+  double result = distance_span_span(&s1, s);
+  PG_FREE_IF_COPY(os, 0);
   PG_RETURN_FLOAT8(result);
 }
 
@@ -998,10 +999,11 @@ PGDLLEXPORT Datum
 Distance_span_set(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  Datum os = PG_GETARG_DATUM(1);
-  Period p1;
-  set_span_slice(os, &p1);
-  double result = distance_span_span(s, &p1);
+  Set *os = PG_GETARG_SET_P(1);
+  Span s1;
+  set_set_span(os, &s1);
+  double result = distance_span_span(s, &s1);
+  PG_FREE_IF_COPY(os, 1);
   PG_RETURN_FLOAT8(result);
 }
 

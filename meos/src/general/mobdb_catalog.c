@@ -311,6 +311,7 @@ numset_type(mobdbType settype)
   return false;
 }
 
+#if 0 /* not used */
 /**
  * Ensure that the type is a set type
  */
@@ -322,8 +323,6 @@ ensure_numset_type(mobdbType settype)
   return;
 }
 
-
-#if 0 /* not used */
 /**
  * Return true if the type is a base type of a numeric set type
  */
@@ -384,6 +383,7 @@ numspan_type(mobdbType spantype)
   return false;
 }
 
+#if 0 /* not used */
 /**
  * Ensure that the type is a span type
  */
@@ -394,6 +394,7 @@ ensure_numspan_type(mobdbType spantype)
     elog(ERROR, "unknown numeric span type: %d", spantype);
   return;
 }
+#endif /* not used */
 
 /**
  * Return true if the type is a set base type
@@ -456,6 +457,7 @@ spanset_type(mobdbType spansettype)
   return false;
 }
 
+#if 0 /* not used */
 /**
  * Ensure that the type is a span type
  */
@@ -466,6 +468,7 @@ ensure_spanset_type(mobdbType spansettype)
     elog(ERROR, "unknown span set type: %d", spansettype);
   return;
 }
+#endif /* not used */
 
 /**
  * Return true if the type is a numeric span type
@@ -479,6 +482,7 @@ numspanset_type(mobdbType spansettype)
   return false;
 }
 
+#if 0 /* not used */
 /**
  * Ensure that the type is a span type
  */
@@ -490,7 +494,6 @@ ensure_numspanset_type(mobdbType spansettype)
   return;
 }
 
-#if 0 /* not used */
 /**
  * Return true if the type is a set base type
  */

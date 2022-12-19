@@ -105,6 +105,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <general/set.h>
 #include <general/temporal_util.h>
 /* MobilityDB */
 #include "pg_general/mobdb_catalog.h"
@@ -437,9 +438,15 @@ tnumber_spgist_get_tbox(const ScanKeyData *scankey, TBox *result)
     TimestampTz t = DatumGetTimestampTz(scankey->sk_argument);
     timestamp_set_tbox(t, result);
   }
-  else if (tnumber_settype(type) || type == T_TIMESTAMPSET)
+  else if (tnumber_settype(type))
   {
-    set_tbox_slice(scankey->sk_argument, result);
+    Set *set = DatumGetSetP(scankey->sk_argument);
+    numset_set_tbox(set, result);
+  }
+  else if (type == T_TIMESTAMPSET)
+  {
+    Set *set = DatumGetSetP(scankey->sk_argument);
+    timestampset_set_tbox(set, result);
   }
   else if (tnumber_spantype(type))
   {
