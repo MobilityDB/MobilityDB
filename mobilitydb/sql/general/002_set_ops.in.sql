@@ -60,6 +60,14 @@ CREATE FUNCTION set_contains(floatset, floatset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_contains(textset, text)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contains_set_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_contains(textset, textset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contains_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_contains(timestampset, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_value'
@@ -107,6 +115,18 @@ CREATE OPERATOR @> (
 );
 CREATE OPERATOR @> (
   PROCEDURE = set_contains,
+  LEFTARG = textset, RIGHTARG = text,
+  COMMUTATOR = <@,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR @> (
+  PROCEDURE = set_contains,
+  LEFTARG = textset, RIGHTARG = textset,
+  COMMUTATOR = <@,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR @> (
+  PROCEDURE = set_contains,
   LEFTARG = timestampset, RIGHTARG = timestamptz,
   COMMUTATOR = <@,
   RESTRICT = period_sel, JOIN = span_joinsel
@@ -139,6 +159,14 @@ CREATE FUNCTION set_contained(float, floatset)
   AS 'MODULE_PATHNAME', 'Contained_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_contained(floatset, floatset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contained_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_contained(text, textset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contained_value_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_contained(textset, textset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -189,6 +217,18 @@ CREATE OPERATOR <@ (
 );
 CREATE OPERATOR <@ (
   PROCEDURE = set_contained,
+  LEFTARG = text, RIGHTARG = textset,
+  COMMUTATOR = @>,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR <@ (
+  PROCEDURE = set_contained,
+  LEFTARG = textset, RIGHTARG = textset,
+  COMMUTATOR = @>,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR <@ (
+  PROCEDURE = set_contained,
   LEFTARG = timestamptz, RIGHTARG = timestampset,
   COMMUTATOR = @>,
   RESTRICT = period_sel, JOIN = span_joinsel
@@ -212,6 +252,10 @@ CREATE FUNCTION set_overlaps(floatset, floatset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_overlaps(textset, textset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overlaps_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_overlaps(timestampset, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_set_set'
@@ -232,6 +276,12 @@ CREATE OPERATOR && (
 CREATE OPERATOR && (
   PROCEDURE = set_overlaps,
   LEFTARG = floatset, RIGHTARG = floatset,
+  COMMUTATOR = &&,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR && (
+  PROCEDURE = set_overlaps,
+  LEFTARG = textset, RIGHTARG = textset,
   COMMUTATOR = &&,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
@@ -275,6 +325,18 @@ CREATE FUNCTION set_left(floatset, float)
   AS 'MODULE_PATHNAME', 'Left_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_left(floatset, floatset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Left_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_left(text, textset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Left_value_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_left(textset, text)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Left_set_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_left(textset, textset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -345,6 +407,24 @@ CREATE OPERATOR << (
   COMMUTATOR = >>,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
+CREATE OPERATOR << (
+  PROCEDURE = set_left,
+  LEFTARG = text, RIGHTARG = textset,
+  COMMUTATOR = >>,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR << (
+  PROCEDURE = set_left,
+  LEFTARG = textset, RIGHTARG = text,
+  COMMUTATOR = >>,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR << (
+  PROCEDURE = set_left,
+  LEFTARG = textset, RIGHTARG = textset,
+  COMMUTATOR = >>,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
 CREATE OPERATOR <<# (
   PROCEDURE = set_left,
   LEFTARG = timestamptz, RIGHTARG = timestampset,
@@ -397,6 +477,18 @@ CREATE FUNCTION set_right(floatset, float)
   AS 'MODULE_PATHNAME', 'Right_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_right(floatset, floatset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Right_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_right(text, textset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Right_value_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_right(textset, text)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Right_set_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_right(textset, textset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -467,6 +559,24 @@ CREATE OPERATOR >> (
   COMMUTATOR = <<,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
+CREATE OPERATOR >> (
+  PROCEDURE = set_right,
+  LEFTARG = text, RIGHTARG = textset,
+  COMMUTATOR = <<,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR >> (
+  PROCEDURE = set_right,
+  LEFTARG = textset, RIGHTARG = text,
+  COMMUTATOR = <<,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR >> (
+  PROCEDURE = set_right,
+  LEFTARG = textset, RIGHTARG = textset,
+  COMMUTATOR = <<,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
 CREATE OPERATOR #>> (
   PROCEDURE = set_right,
   LEFTARG = timestamptz, RIGHTARG = timestampset,
@@ -519,6 +629,18 @@ CREATE FUNCTION set_overleft(floatset, float)
   AS 'MODULE_PATHNAME', 'Overleft_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_overleft(floatset, floatset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overleft_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_overleft(text, textset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overleft_value_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_overleft(textset, text)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overleft_set_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_overleft(textset, textset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -580,6 +702,21 @@ CREATE OPERATOR &< (
   LEFTARG = floatset, RIGHTARG = floatset,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
+CREATE OPERATOR &< (
+  PROCEDURE = set_overleft,
+  LEFTARG = text, RIGHTARG = textset,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR &< (
+  PROCEDURE = set_overleft,
+  LEFTARG = textset, RIGHTARG = text,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR &< (
+  PROCEDURE = set_overleft,
+  LEFTARG = textset, RIGHTARG = textset,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
 CREATE OPERATOR &<# (
   PROCEDURE = set_Overleft,
   LEFTARG = timestamptz, RIGHTARG = timestampset,
@@ -629,6 +766,18 @@ CREATE FUNCTION set_overright(floatset, float)
   AS 'MODULE_PATHNAME', 'Overright_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_overright(floatset, floatset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overright_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_overright(text, textset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overright_value_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_overright(textset, text)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overright_set_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_overright(textset, textset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -690,6 +839,21 @@ CREATE OPERATOR &> (
   LEFTARG = floatset, RIGHTARG = floatset,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
+CREATE OPERATOR &> (
+  PROCEDURE = set_overright,
+  LEFTARG = text, RIGHTARG = textset,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR &> (
+  PROCEDURE = set_overright,
+  LEFTARG = textset, RIGHTARG = text,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR &> (
+  PROCEDURE = set_overright,
+  LEFTARG = textset, RIGHTARG = textset,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
 CREATE OPERATOR #&> (
   PROCEDURE = set_overright,
   LEFTARG = timestamptz, RIGHTARG = timestampset,
@@ -716,6 +880,15 @@ CREATE FUNCTION set_union(integer, intset)
   RETURNS intset
   AS 'MODULE_PATHNAME', 'Union_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_union(intset, integer)
+  RETURNS intset
+  AS 'MODULE_PATHNAME', 'Union_set_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_union(intset, intset)
+  RETURNS intset
+  AS 'MODULE_PATHNAME', 'Union_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION set_union(bigint, bigint)
   RETURNS bigintset
   AS 'MODULE_PATHNAME', 'Union_value_value'
@@ -724,6 +897,15 @@ CREATE FUNCTION set_union(bigint, bigintset)
   RETURNS bigintset
   AS 'MODULE_PATHNAME', 'Union_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_union(bigintset, bigint)
+  RETURNS bigintset
+  AS 'MODULE_PATHNAME', 'Union_set_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_union(bigintset, bigintset)
+  RETURNS bigintset
+  AS 'MODULE_PATHNAME', 'Union_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION set_union(float, float)
   RETURNS floatset
   AS 'MODULE_PATHNAME', 'Union_value_value'
@@ -732,6 +914,32 @@ CREATE FUNCTION set_union(float, floatset)
   RETURNS floatset
   AS 'MODULE_PATHNAME', 'Union_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_union(floatset, float)
+  RETURNS floatset
+  AS 'MODULE_PATHNAME', 'Union_set_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_union(floatset, floatset)
+  RETURNS floatset
+  AS 'MODULE_PATHNAME', 'Union_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION set_union(text, text)
+  RETURNS textset
+  AS 'MODULE_PATHNAME', 'Union_value_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_union(text, textset)
+  RETURNS textset
+  AS 'MODULE_PATHNAME', 'Union_value_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_union(textset, text)
+  RETURNS textset
+  AS 'MODULE_PATHNAME', 'Union_set_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_union(textset, textset)
+  RETURNS floatset
+  AS 'MODULE_PATHNAME', 'Union_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION set_union(timestamptz, timestamptz)
   RETURNS timestampset
   AS 'MODULE_PATHNAME', 'Union_value_value'
@@ -739,6 +947,14 @@ CREATE FUNCTION set_union(timestamptz, timestamptz)
 CREATE FUNCTION set_union(timestamptz, timestampset)
   RETURNS timestampset
   AS 'MODULE_PATHNAME', 'Union_value_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_union(timestampset, timestamptz)
+  RETURNS timestampset
+  AS 'MODULE_PATHNAME', 'Union_set_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_union(timestampset, timestampset)
+  RETURNS timestampset
+  AS 'MODULE_PATHNAME', 'Union_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR + (
@@ -753,76 +969,23 @@ CREATE OPERATOR + (
 );
 CREATE OPERATOR + (
   PROCEDURE = set_union,
-  LEFTARG = bigint, RIGHTARG = bigint,
-  COMMUTATOR = +
-);
-CREATE OPERATOR + (
-  PROCEDURE = set_union,
-  LEFTARG = bigint, RIGHTARG = bigintset,
-  COMMUTATOR = +
-);
-CREATE OPERATOR + (
-  PROCEDURE = set_union,
-  LEFTARG = float, RIGHTARG = float,
-  COMMUTATOR = +
-);
-CREATE OPERATOR + (
-  PROCEDURE = set_union,
-  LEFTARG = float, RIGHTARG = floatset,
-  COMMUTATOR = +
-);
-CREATE FUNCTION set_union(floatset, float)
-  RETURNS floatset
-  AS 'MODULE_PATHNAME', 'Union_set_value'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_union(floatset, floatset)
-  RETURNS floatset
-  AS 'MODULE_PATHNAME', 'Union_set_set'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE OPERATOR + (
-  PROCEDURE = set_union,
-  LEFTARG = timestamptz, RIGHTARG = timestamptz,
-  COMMUTATOR = +
-);
-CREATE OPERATOR + (
-  PROCEDURE = set_union,
-  LEFTARG = timestamptz, RIGHTARG = timestampset,
-  COMMUTATOR = +
-);
-
-CREATE FUNCTION set_union(intset, integer)
-  RETURNS intset
-  AS 'MODULE_PATHNAME', 'Union_set_value'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_union(intset, intset)
-  RETURNS intset
-  AS 'MODULE_PATHNAME', 'Union_set_set'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_union(bigintset, bigint)
-  RETURNS bigintset
-  AS 'MODULE_PATHNAME', 'Union_set_value'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_union(bigintset, bigintset)
-  RETURNS bigintset
-  AS 'MODULE_PATHNAME', 'Union_set_set'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_union(timestampset, timestamptz)
-  RETURNS timestampset
-  AS 'MODULE_PATHNAME', 'Union_set_value'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_union(timestampset, timestampset)
-  RETURNS timestampset
-  AS 'MODULE_PATHNAME', 'Union_set_set'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR + (
-  PROCEDURE = set_union,
   LEFTARG = intset, RIGHTARG = integer,
   COMMUTATOR = +
 );
 CREATE OPERATOR + (
   PROCEDURE = set_union,
   LEFTARG = intset, RIGHTARG = intset,
+  COMMUTATOR = +
+);
+
+CREATE OPERATOR + (
+  PROCEDURE = set_union,
+  LEFTARG = bigint, RIGHTARG = bigint,
+  COMMUTATOR = +
+);
+CREATE OPERATOR + (
+  PROCEDURE = set_union,
+  LEFTARG = bigint, RIGHTARG = bigintset,
   COMMUTATOR = +
 );
 CREATE OPERATOR + (
@@ -835,6 +998,17 @@ CREATE OPERATOR + (
   LEFTARG = bigintset, RIGHTARG = bigintset,
   COMMUTATOR = +
 );
+
+CREATE OPERATOR + (
+  PROCEDURE = set_union,
+  LEFTARG = float, RIGHTARG = float,
+  COMMUTATOR = +
+);
+CREATE OPERATOR + (
+  PROCEDURE = set_union,
+  LEFTARG = float, RIGHTARG = floatset,
+  COMMUTATOR = +
+);
 CREATE OPERATOR + (
   PROCEDURE = set_union,
   LEFTARG = floatset, RIGHTARG = float,
@@ -843,6 +1017,38 @@ CREATE OPERATOR + (
 CREATE OPERATOR + (
   PROCEDURE = set_union,
   LEFTARG = floatset, RIGHTARG = floatset,
+  COMMUTATOR = +
+);
+
+CREATE OPERATOR + (
+  PROCEDURE = set_union,
+  LEFTARG = text, RIGHTARG = text,
+  COMMUTATOR = +
+);
+CREATE OPERATOR + (
+  PROCEDURE = set_union,
+  LEFTARG = text, RIGHTARG = textset,
+  COMMUTATOR = +
+);
+CREATE OPERATOR + (
+  PROCEDURE = set_union,
+  LEFTARG = textset, RIGHTARG = text,
+  COMMUTATOR = +
+);
+CREATE OPERATOR + (
+  PROCEDURE = set_union,
+  LEFTARG = textset, RIGHTARG = textset,
+  COMMUTATOR = +
+);
+
+CREATE OPERATOR + (
+  PROCEDURE = set_union,
+  LEFTARG = timestamptz, RIGHTARG = timestamptz,
+  COMMUTATOR = +
+);
+CREATE OPERATOR + (
+  PROCEDURE = set_union,
+  LEFTARG = timestamptz, RIGHTARG = timestampset,
   COMMUTATOR = +
 );
 CREATE OPERATOR + (
@@ -866,64 +1072,6 @@ CREATE FUNCTION set_minus(integer, intset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Minus_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_minus(bigint, bigint)
-  RETURNS bigint
-  AS 'MODULE_PATHNAME', 'Minus_value_value'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_minus(bigint, bigintset)
-  RETURNS bigint
-  AS 'MODULE_PATHNAME', 'Minus_value_set'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_minus(float, float)
-  RETURNS float
-  AS 'MODULE_PATHNAME', 'Minus_value_value'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_minus(float, floatset)
-  RETURNS float
-  AS 'MODULE_PATHNAME', 'Minus_value_set'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_minus(timestamptz, timestamptz)
-  RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'Minus_value_value'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_minus(timestamptz, timestampset)
-  RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'Minus_value_set'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR - (
-  PROCEDURE = set_minus,
-  LEFTARG = integer, RIGHTARG = integer
-);
-CREATE OPERATOR - (
-  PROCEDURE = set_minus,
-  LEFTARG = integer, RIGHTARG = intset
-);
-CREATE OPERATOR - (
-  PROCEDURE = set_minus,
-  LEFTARG = bigint, RIGHTARG = bigint
-);
-CREATE OPERATOR - (
-  PROCEDURE = set_minus,
-  LEFTARG = bigint, RIGHTARG = bigintset
-);
-CREATE OPERATOR - (
-  PROCEDURE = set_minus,
-  LEFTARG = float, RIGHTARG = float
-);
-CREATE OPERATOR - (
-  PROCEDURE = set_minus,
-  LEFTARG = float, RIGHTARG = floatset
-);
-CREATE OPERATOR - (
-  PROCEDURE = set_minus,
-  LEFTARG = timestamptz, RIGHTARG = timestamptz
-);
-CREATE OPERATOR - (
-  PROCEDURE = set_minus,
-  LEFTARG = timestamptz, RIGHTARG = timestampset
-);
-
 CREATE FUNCTION set_minus(intset, integer)
   RETURNS intset
   AS 'MODULE_PATHNAME', 'Minus_set_value'
@@ -931,6 +1079,15 @@ CREATE FUNCTION set_minus(intset, integer)
 CREATE FUNCTION set_minus(intset, intset)
   RETURNS intset
   AS 'MODULE_PATHNAME', 'Minus_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION set_minus(bigint, bigint)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'Minus_value_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_minus(bigint, bigintset)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'Minus_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_minus(bigintset, bigint)
   RETURNS bigintset
@@ -940,6 +1097,15 @@ CREATE FUNCTION set_minus(bigintset, bigintset)
   RETURNS bigintset
   AS 'MODULE_PATHNAME', 'Minus_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION set_minus(float, float)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Minus_value_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_minus(float, floatset)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Minus_value_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_minus(floatset, float)
   RETURNS floatset
   AS 'MODULE_PATHNAME', 'Minus_set_value'
@@ -947,6 +1113,32 @@ CREATE FUNCTION set_minus(floatset, float)
 CREATE FUNCTION set_minus(floatset, floatset)
   RETURNS floatset
   AS 'MODULE_PATHNAME', 'Minus_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION set_minus(text, text)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Minus_value_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_minus(text, textset)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Minus_value_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_minus(textset, text)
+  RETURNS textset
+  AS 'MODULE_PATHNAME', 'Minus_set_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_minus(textset, textset)
+  RETURNS textset
+  AS 'MODULE_PATHNAME', 'Minus_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION set_minus(timestamptz, timestamptz)
+  RETURNS timestamptz
+  AS 'MODULE_PATHNAME', 'Minus_value_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_minus(timestamptz, timestampset)
+  RETURNS timestamptz
+  AS 'MODULE_PATHNAME', 'Minus_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_minus(timestampset, timestamptz)
   RETURNS timestampset
@@ -959,6 +1151,48 @@ CREATE FUNCTION set_minus(timestampset, timestampset)
 
 CREATE OPERATOR - (
   PROCEDURE = set_minus,
+  LEFTARG = integer, RIGHTARG = integer
+);
+CREATE OPERATOR - (
+  PROCEDURE = set_minus,
+  LEFTARG = integer, RIGHTARG = intset
+);
+CREATE OPERATOR - (
+  PROCEDURE = set_minus,
+  LEFTARG = intset, RIGHTARG = integer
+);
+CREATE OPERATOR - (
+  PROCEDURE = set_minus,
+  LEFTARG = intset, RIGHTARG = intset
+);
+
+CREATE OPERATOR - (
+  PROCEDURE = set_minus,
+  LEFTARG = bigint, RIGHTARG = bigint
+);
+CREATE OPERATOR - (
+  PROCEDURE = set_minus,
+  LEFTARG = bigint, RIGHTARG = bigintset
+);
+CREATE OPERATOR - (
+  PROCEDURE = set_minus,
+  LEFTARG = bigintset, RIGHTARG = bigint
+);
+CREATE OPERATOR - (
+  PROCEDURE = set_minus,
+  LEFTARG = bigintset, RIGHTARG = bigintset
+);
+
+CREATE OPERATOR - (
+  PROCEDURE = set_minus,
+  LEFTARG = float, RIGHTARG = float
+);
+CREATE OPERATOR - (
+  PROCEDURE = set_minus,
+  LEFTARG = float, RIGHTARG = floatset
+);
+CREATE OPERATOR - (
+  PROCEDURE = set_minus,
   LEFTARG = floatset, RIGHTARG = float
 );
 CREATE OPERATOR - (
@@ -968,19 +1202,28 @@ CREATE OPERATOR - (
 
 CREATE OPERATOR - (
   PROCEDURE = set_minus,
-  LEFTARG = intset, RIGHTARG = integer
+  LEFTARG = text, RIGHTARG = text
 );
 CREATE OPERATOR - (
   PROCEDURE = set_minus,
-  LEFTARG = intset, RIGHTARG = intset
+  LEFTARG = text, RIGHTARG = textset
 );
 CREATE OPERATOR - (
   PROCEDURE = set_minus,
-  LEFTARG = bigintset, RIGHTARG = bigint
+  LEFTARG = textset, RIGHTARG = text
 );
 CREATE OPERATOR - (
   PROCEDURE = set_minus,
-  LEFTARG = bigintset, RIGHTARG = bigintset
+  LEFTARG = textset, RIGHTARG = textset
+);
+
+CREATE OPERATOR - (
+  PROCEDURE = set_minus,
+  LEFTARG = timestamptz, RIGHTARG = timestamptz
+);
+CREATE OPERATOR - (
+  PROCEDURE = set_minus,
+  LEFTARG = timestamptz, RIGHTARG = timestampset
 );
 CREATE OPERATOR - (
   PROCEDURE = set_minus,
@@ -1001,6 +1244,15 @@ CREATE FUNCTION set_intersection(integer, intset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Intersection_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_intersection(intset, integer)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Intersection_set_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_intersection(intset, intset)
+  RETURNS intset
+  AS 'MODULE_PATHNAME', 'Intersection_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION set_intersection(bigint, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Intersection_value_value'
@@ -1009,6 +1261,15 @@ CREATE FUNCTION set_intersection(bigint, bigintset)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Intersection_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_intersection(bigintset, bigint)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'Intersection_set_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_intersection(bigintset, bigintset)
+  RETURNS bigintset
+  AS 'MODULE_PATHNAME', 'Intersection_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION set_intersection(float, float)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Intersection_value_value'
@@ -1017,6 +1278,32 @@ CREATE FUNCTION set_intersection(float, floatset)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Intersection_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_intersection(floatset, float)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Intersection_set_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_intersection(floatset, floatset)
+  RETURNS floatset
+  AS 'MODULE_PATHNAME', 'Intersection_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION set_intersection(text, text)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Intersection_value_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_intersection(text, textset)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Intersection_value_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_intersection(textset, text)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Intersection_set_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_intersection(textset, textset)
+  RETURNS textset
+  AS 'MODULE_PATHNAME', 'Intersection_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION set_intersection(timestamptz, timestamptz)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Intersection_value_value'
@@ -1024,6 +1311,14 @@ CREATE FUNCTION set_intersection(timestamptz, timestamptz)
 CREATE FUNCTION set_intersection(timestamptz, timestampset)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Intersection_value_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_intersection(timestampset, timestamptz)
+  RETURNS timestamptz
+  AS 'MODULE_PATHNAME', 'Intersection_set_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_intersection(timestampset, timestampset)
+  RETURNS timestampset
+  AS 'MODULE_PATHNAME', 'Intersection_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR * (
@@ -1038,76 +1333,23 @@ CREATE OPERATOR * (
 );
 CREATE OPERATOR * (
   PROCEDURE = set_intersection,
-  LEFTARG = bigint, RIGHTARG = bigint,
-  COMMUTATOR = *
-);
-CREATE OPERATOR * (
-  PROCEDURE = set_intersection,
-  LEFTARG = bigint, RIGHTARG = bigintset,
-  COMMUTATOR = *
-);
-CREATE OPERATOR * (
-  PROCEDURE = set_intersection,
-  LEFTARG = float, RIGHTARG = float,
-  COMMUTATOR = *
-);
-CREATE OPERATOR * (
-  PROCEDURE = set_intersection,
-  LEFTARG = float, RIGHTARG = floatset,
-  COMMUTATOR = *
-);
-CREATE OPERATOR * (
-  PROCEDURE = set_intersection,
-  LEFTARG = timestamptz, RIGHTARG = timestamptz,
-  COMMUTATOR = *
-);
-CREATE OPERATOR * (
-  PROCEDURE = set_intersection,
-  LEFTARG = timestamptz, RIGHTARG = timestampset,
-  COMMUTATOR = *
-);
-
-CREATE FUNCTION set_intersection(intset, integer)
-  RETURNS integer
-  AS 'MODULE_PATHNAME', 'Intersection_set_value'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_intersection(intset, intset)
-  RETURNS intset
-  AS 'MODULE_PATHNAME', 'Intersection_set_set'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_intersection(bigintset, bigint)
-  RETURNS bigint
-  AS 'MODULE_PATHNAME', 'Intersection_set_value'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_intersection(bigintset, bigintset)
-  RETURNS bigintset
-  AS 'MODULE_PATHNAME', 'Intersection_set_set'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_intersection(floatset, float)
-  RETURNS float
-  AS 'MODULE_PATHNAME', 'Intersection_set_value'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_intersection(floatset, floatset)
-  RETURNS floatset
-  AS 'MODULE_PATHNAME', 'Intersection_set_set'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_intersection(timestampset, timestamptz)
-  RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'Intersection_set_value'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_intersection(timestampset, timestampset)
-  RETURNS timestampset
-  AS 'MODULE_PATHNAME', 'Intersection_set_set'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR * (
-  PROCEDURE = set_intersection,
   LEFTARG = intset, RIGHTARG = integer,
   COMMUTATOR = *
 );
 CREATE OPERATOR * (
   PROCEDURE = set_intersection,
   LEFTARG = intset, RIGHTARG = intset,
+  COMMUTATOR = *
+);
+
+CREATE OPERATOR * (
+  PROCEDURE = set_intersection,
+  LEFTARG = bigint, RIGHTARG = bigint,
+  COMMUTATOR = *
+);
+CREATE OPERATOR * (
+  PROCEDURE = set_intersection,
+  LEFTARG = bigint, RIGHTARG = bigintset,
   COMMUTATOR = *
 );
 CREATE OPERATOR * (
@@ -1120,6 +1362,17 @@ CREATE OPERATOR * (
   LEFTARG = bigintset, RIGHTARG = bigintset,
   COMMUTATOR = *
 );
+
+CREATE OPERATOR * (
+  PROCEDURE = set_intersection,
+  LEFTARG = float, RIGHTARG = float,
+  COMMUTATOR = *
+);
+CREATE OPERATOR * (
+  PROCEDURE = set_intersection,
+  LEFTARG = float, RIGHTARG = floatset,
+  COMMUTATOR = *
+);
 CREATE OPERATOR * (
   PROCEDURE = set_intersection,
   LEFTARG = floatset, RIGHTARG = float,
@@ -1128,6 +1381,38 @@ CREATE OPERATOR * (
 CREATE OPERATOR * (
   PROCEDURE = set_intersection,
   LEFTARG = floatset, RIGHTARG = floatset,
+  COMMUTATOR = *
+);
+
+CREATE OPERATOR * (
+  PROCEDURE = set_intersection,
+  LEFTARG = text, RIGHTARG = text,
+  COMMUTATOR = *
+);
+CREATE OPERATOR * (
+  PROCEDURE = set_intersection,
+  LEFTARG = text, RIGHTARG = textset,
+  COMMUTATOR = *
+);
+CREATE OPERATOR * (
+  PROCEDURE = set_intersection,
+  LEFTARG = textset, RIGHTARG = text,
+  COMMUTATOR = *
+);
+CREATE OPERATOR * (
+  PROCEDURE = set_intersection,
+  LEFTARG = textset, RIGHTARG = textset,
+  COMMUTATOR = *
+);
+
+CREATE OPERATOR * (
+  PROCEDURE = set_intersection,
+  LEFTARG = timestamptz, RIGHTARG = timestamptz,
+  COMMUTATOR = *
+);
+CREATE OPERATOR * (
+  PROCEDURE = set_intersection,
+  LEFTARG = timestamptz, RIGHTARG = timestampset,
   COMMUTATOR = *
 );
 CREATE OPERATOR * (
@@ -1147,78 +1432,10 @@ CREATE FUNCTION set_distance(integer, integer)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_value_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_distance(bigint, bigint)
-  RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_value_value'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_distance(float, float)
-  RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_value_value'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_distance(timestamptz, timestamptz)
-  RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_value_value'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR <-> (
-  PROCEDURE = set_distance,
-  LEFTARG = integer, RIGHTARG = integer,
-  COMMUTATOR = <->
-);
-CREATE OPERATOR <-> (
-  PROCEDURE = set_distance,
-  LEFTARG = bigint, RIGHTARG = bigint,
-  COMMUTATOR = <->
-);
-CREATE OPERATOR <-> (
-  PROCEDURE = set_distance,
-  LEFTARG = float, RIGHTARG = float,
-  COMMUTATOR = <->
-);
-CREATE OPERATOR <-> (
-  PROCEDURE = set_distance,
-  LEFTARG = timestamptz, RIGHTARG = timestamptz,
-  COMMUTATOR = <->
-);
-
 CREATE FUNCTION set_distance(integer, intset)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_distance(bigint, bigintset)
-  RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_value_set'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_distance(float, floatset)
-  RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_value_set'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_distance(timestamptz, timestampset)
-  RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_value_set'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR <-> (
-  PROCEDURE = set_distance,
-  LEFTARG = integer, RIGHTARG = intset,
-  COMMUTATOR = <->
-);
-CREATE OPERATOR <-> (
-  PROCEDURE = set_distance,
-  LEFTARG = bigint, RIGHTARG = bigintset,
-  COMMUTATOR = <->
-);
-CREATE OPERATOR <-> (
-  PROCEDURE = set_distance,
-  LEFTARG = float, RIGHTARG = floatset,
-  COMMUTATOR = <->
-);
-CREATE OPERATOR <-> (
-  PROCEDURE = set_distance,
-  LEFTARG = timestamptz, RIGHTARG = timestampset,
-  COMMUTATOR = <->
-);
-
 CREATE FUNCTION set_distance(intset, integer)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_set_value'
@@ -1226,6 +1443,15 @@ CREATE FUNCTION set_distance(intset, integer)
 CREATE FUNCTION set_distance(intset, intset)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION set_distance(bigint, bigint)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Distance_value_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_distance(bigint, bigintset)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Distance_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_distance(bigintset, bigint)
   RETURNS float
@@ -1235,6 +1461,15 @@ CREATE FUNCTION set_distance(bigintset, bigintset)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION set_distance(float, float)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Distance_value_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_distance(float, floatset)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Distance_value_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_distance(floatset, float)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_set_value'
@@ -1242,6 +1477,32 @@ CREATE FUNCTION set_distance(floatset, float)
 CREATE FUNCTION set_distance(floatset, floatset)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION set_distance(text, text)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Distance_value_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_distance(text, textset)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Distance_value_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_distance(textset, text)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Distance_set_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_distance(textset, textset)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Distance_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION set_distance(timestamptz, timestamptz)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Distance_value_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_distance(timestamptz, timestampset)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Distance_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_distance(timestampset, timestamptz)
   RETURNS float
@@ -1254,12 +1515,33 @@ CREATE FUNCTION set_distance(timestampset, timestampset)
 
 CREATE OPERATOR <-> (
   PROCEDURE = set_distance,
+  LEFTARG = integer, RIGHTARG = integer,
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = set_distance,
+  LEFTARG = integer, RIGHTARG = intset,
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = set_distance,
   LEFTARG = intset, RIGHTARG = integer,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
   PROCEDURE = set_distance,
   LEFTARG = intset, RIGHTARG = intset,
+  COMMUTATOR = <->
+);
+
+CREATE OPERATOR <-> (
+  PROCEDURE = set_distance,
+  LEFTARG = bigint, RIGHTARG = bigint,
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = set_distance,
+  LEFTARG = bigint, RIGHTARG = bigintset,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
@@ -1272,6 +1554,17 @@ CREATE OPERATOR <-> (
   LEFTARG = bigintset, RIGHTARG = bigintset,
   COMMUTATOR = <->
 );
+
+CREATE OPERATOR <-> (
+  PROCEDURE = set_distance,
+  LEFTARG = float, RIGHTARG = float,
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = set_distance,
+  LEFTARG = float, RIGHTARG = floatset,
+  COMMUTATOR = <->
+);
 CREATE OPERATOR <-> (
   PROCEDURE = set_distance,
   LEFTARG = floatset, RIGHTARG = float,
@@ -1280,6 +1573,17 @@ CREATE OPERATOR <-> (
 CREATE OPERATOR <-> (
   PROCEDURE = set_distance,
   LEFTARG = floatset, RIGHTARG = floatset,
+  COMMUTATOR = <->
+);
+
+CREATE OPERATOR <-> (
+  PROCEDURE = set_distance,
+  LEFTARG = timestamptz, RIGHTARG = timestamptz,
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = set_distance,
+  LEFTARG = timestamptz, RIGHTARG = timestampset,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (

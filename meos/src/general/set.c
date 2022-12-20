@@ -193,20 +193,31 @@ set_out(const Set *s, int maxdd)
  * @ingroup libmeos_internal_setspan_constructor
  * @brief Construct a set from an array of values.
  *
- * For example, the memory structure of a set with 3 values is as
- * follows
+ * The memory structure depends on whether the value is passed by value or
+ * by reference. For example, the memory structure of a set with 3 values
+ * passed by value is as follows
+ *
  * @code
- * -------------------------------------------------------------
- * ( Set )_X | ( bbox )_X | Value_0 | Value_1 | Value_2 |
- * -------------------------------------------------------------
+ * -----------------------------------------
+ * ( Set )_X | Value_0 | Value_1 | Value_2 |
+ * -----------------------------------------
  * @endcode
- * where the `X` are unused bytes added for double padding, and `bbox` is the
- * bounding box which is a span.
+ * where the `X` are unused bytes added for double padding. On the other hand,
+ * the memory structure of a set with 3 values passed by reference is as follows
+ *
+ * @code
+ * --------------------------------------------------------------------------
+ * ( Set )_X | offset_0 | offset_1 | offset_2 | Value_0 | Value_1 | Value_2 |
+ * --------------------------------------------------------------------------
+ * @endcode
+ * where the `X` are unused bytes added for double padding, `offset_i` are
+ * offsets for the corresponding values
+
  *
  * @param[in] values Array of values
  * @param[in] count Number of elements in the array
  * @param[in] basetype Base type
- * @sqlfunc intset(), bigintset(), floatset(), timestampset()
+ * @sqlfunc intset(), bigintset(), floatset(), textset(), timestampset()
  * @pymeosfunc TimestampSet()
  */
 Set *
@@ -226,10 +237,9 @@ set_make(const Datum *values, int count, mobdbType basetype)
     /* For base values passed by value */
     typlen = double_pad(sizeof(Datum));
   else
-  {
     /* For base values passed by reference */
     typlen = basetype_length(basetype);
-  }
+
   /* Compute the size of the set for values passed by reference */
   size_t values_size = 0;
   if (! typbyval)
@@ -246,6 +256,7 @@ set_make(const Datum *values, int count, mobdbType basetype)
   /* The first Datum is already declared in the struct */
   size_t memsize = double_pad(sizeof(Set)) + sizeof(Datum) * (count - 1) +
     values_size;
+
   /* Create the Set */
   Set *result = palloc0(memsize);
   SET_VARSIZE(result, memsize);
@@ -255,8 +266,24 @@ set_make(const Datum *values, int count, mobdbType basetype)
   result->basetype = basetype;
 
   /* Copy the array of values */
-  for (int i = 0; i < count; i++)
-    result->elems[i] = values[i];
+  if (typbyval)
+  {
+    for (int i = 0; i < count; i++)
+      result->elems[i] = values[i];
+  }
+  else
+  {
+    /* The first element is already defined in the struct */
+    size_t pdata = double_pad(sizeof(Set)) + (count - 1) * sizeof(size_t);
+    size_t pos = 0;
+    for (int i = 0; i < count; i++)
+    {
+      memcpy(((char *) result) + pdata + pos, DatumGetPointer(values[i]),
+        VARSIZE(values[i]));
+      result->elems[i] = pos;
+      pos += double_pad(VARSIZE(values[i]));
+    }
+  }
   return result;
 }
 

@@ -1210,7 +1210,7 @@ tsequence_make1_exp(const TInstant **instants, int count, int maxcount,
     insts_size *= (double) maxcount / count;
   else
     maxcount = newcount;
-  /* Total size of the struct, the offset array */
+  /* Total size of the struct */
   size_t memsize = double_pad(sizeof(TSequence)) + bboxsize_extra +
     maxcount * sizeof(size_t) + insts_size;
 

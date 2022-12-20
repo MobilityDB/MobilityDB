@@ -2123,7 +2123,9 @@ distance_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 double
 distance_spanset_set(const SpanSet *ss, const Set *s)
 {
-  return distance_span_span(&ss->span, &s->span);
+  Span sp;
+  set_set_span(s, &sp);
+  return distance_span_span(&ss->span, &sp);
 }
 #endif /* MEOS */
 

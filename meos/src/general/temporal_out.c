@@ -2400,10 +2400,9 @@ set_as_wkb(const Set *s, uint8_t variant, size_t *size_out)
  * @sqlfunc asHexWKB()
  */
 char *
-set_as_hexwkb(const TimestampSet *ts, uint8_t variant,
-  size_t *size_out)
+set_as_hexwkb(const TimestampSet *ts, uint8_t variant, size_t *size_out)
 {
-  char *result = (char *) datum_as_wkb(PointerGetDatum(ts), s->settype,
+  char *result = (char *) datum_as_wkb(PointerGetDatum(ts), ts->settype,
     variant | (uint8_t) WKB_HEX, size_out);
   return result;
 }

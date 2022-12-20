@@ -39,6 +39,7 @@
 CREATE TYPE intset;
 CREATE TYPE bigintset;
 CREATE TYPE floatset;
+CREATE TYPE textset;
 CREATE TYPE timestampset;
 
 CREATE FUNCTION intset_in(cstring)
@@ -92,6 +93,23 @@ CREATE FUNCTION floatset_send(floatset)
   AS 'MODULE_PATHNAME', 'Set_send'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION textset_in(cstring)
+  RETURNS textset
+  AS 'MODULE_PATHNAME', 'Set_in'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION textset_out(textset)
+  RETURNS cstring
+  AS 'MODULE_PATHNAME', 'Set_out'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION textset_recv(internal)
+  RETURNS textset
+  AS 'MODULE_PATHNAME', 'Set_recv'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION textset_send(textset)
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Set_send'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION timestampset_in(cstring)
   RETURNS timestampset
   AS 'MODULE_PATHNAME', 'Set_in'
@@ -125,6 +143,10 @@ CREATE FUNCTION timestampset_analyze(internal)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Timestampset_analyze'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- CREATE FUNCTION textset_analyze(internal)
+  -- RETURNS boolean
+  -- AS 'MODULE_PATHNAME', 'Textset_analyze'
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE TYPE intset (
   internallength = variable,
@@ -160,6 +182,18 @@ CREATE TYPE floatset (
 -- The following line makes NULL if size < 128
   storage = extended,
   analyze = floatset_analyze
+);
+
+CREATE TYPE textset (
+  internallength = variable,
+  input = textset_in,
+  output = textset_out,
+  receive = textset_recv,
+  send = textset_send,
+  alignment = double,
+-- The following line makes NULL if size < 128
+  storage = extended
+  -- , analyze = textset_analyze
 );
 
 CREATE TYPE timestampset (
@@ -262,6 +296,10 @@ CREATE FUNCTION floatset(float[])
   RETURNS floatset
   AS 'MODULE_PATHNAME', 'Set_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION textset(text[])
+  RETURNS textset
+  AS 'MODULE_PATHNAME', 'Set_constructor'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestampset(timestamptz[])
   RETURNS timestampset
   AS 'MODULE_PATHNAME', 'Set_constructor'
@@ -287,10 +325,15 @@ CREATE FUNCTION timestampset(timestamptz)
   RETURNS timestampset
   AS 'MODULE_PATHNAME', 'Value_to_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION textset(text)
+  RETURNS textset
+  AS 'MODULE_PATHNAME', 'Value_to_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (int AS intset) WITH FUNCTION intset(int);
 CREATE CAST (bigint AS bigintset) WITH FUNCTION bigintset(bigint);
 CREATE CAST (float AS floatset) WITH FUNCTION floatset(float);
+CREATE CAST (text AS textset) WITH FUNCTION textset(text);
 CREATE CAST (timestamptz AS timestampset) WITH FUNCTION timestampset(timestamptz);
 
 /*****************************************************************************
@@ -346,6 +389,10 @@ CREATE FUNCTION memorySize(floatset)
   RETURNS int
   AS 'MODULE_PATHNAME', 'Set_memory_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION memorySize(textset)
+  RETURNS int
+  AS 'MODULE_PATHNAME', 'Set_memory_size'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION memorySize(timestampset)
   RETURNS int
   AS 'MODULE_PATHNAME', 'Set_memory_size'
@@ -363,6 +410,10 @@ CREATE FUNCTION storageSize(floatset)
   RETURNS int
   AS 'MODULE_PATHNAME', 'Set_storage_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION storageSize(textset)
+  RETURNS int
+  AS 'MODULE_PATHNAME', 'Set_memory_size'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION storageSize(timestampset)
   RETURNS int
   AS 'MODULE_PATHNAME', 'Set_storage_size'
@@ -377,6 +428,10 @@ CREATE FUNCTION numValues(bigintset)
   AS 'MODULE_PATHNAME', 'Set_num_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION numValues(floatset)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Set_num_values'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION numValues(textset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_num_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -397,6 +452,10 @@ CREATE FUNCTION startValue(floatset)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Set_start_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION startValue(textset)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Set_start_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION startTimestamp(timestampset)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Set_start_value'
@@ -412,6 +471,10 @@ CREATE FUNCTION endValue(bigintset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION endValue(floatset)
   RETURNS float
+  AS 'MODULE_PATHNAME', 'Set_start_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION endValue(textset)
+  RETURNS text
   AS 'MODULE_PATHNAME', 'Set_start_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION endTimestamp(timestampset)
@@ -431,6 +494,10 @@ CREATE FUNCTION valueN(floatset, integer)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Set_value_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION valueN(textset, integer)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Set_value_n'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestampN(timestampset, integer)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Set_value_n'
@@ -446,6 +513,10 @@ CREATE FUNCTION getValues(bigintset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION getValues(floatset)
   RETURNS float[]
+  AS 'MODULE_PATHNAME', 'Set_values'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION getValues(textset)
+  RETURNS text[]
   AS 'MODULE_PATHNAME', 'Set_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestamps(timestampset)
@@ -487,6 +558,10 @@ CREATE FUNCTION floatset_eq(floatset, floatset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION textset_eq(textset, textset)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Set_eq'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestampset_eq(timestampset, timestampset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_eq'
@@ -501,6 +576,10 @@ CREATE FUNCTION bigintset_ne(bigintset, bigintset)
   AS 'MODULE_PATHNAME', 'Set_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION floatset_ne(floatset, floatset)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Set_ne'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION textset_ne(textset, textset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -521,6 +600,10 @@ CREATE FUNCTION floatset_lt(floatset, floatset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION textset_lt(textset, textset)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Set_lt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestampset_lt(timestampset, timestampset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_lt'
@@ -535,6 +618,10 @@ CREATE FUNCTION bigintset_le(bigintset, bigintset)
   AS 'MODULE_PATHNAME', 'Set_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION floatset_le(floatset, floatset)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Set_le'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION textset_le(textset, textset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -555,6 +642,10 @@ CREATE FUNCTION floatset_ge(floatset, floatset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION textset_ge(textset, textset)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Set_ge'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestampset_ge(timestampset, timestampset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_ge'
@@ -572,6 +663,10 @@ CREATE FUNCTION floatset_gt(floatset, floatset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION textset_gt(textset, textset)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Set_gt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestampset_gt(timestampset, timestampset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_gt'
@@ -586,6 +681,10 @@ CREATE FUNCTION bigintset_cmp(bigintset, bigintset)
   AS 'MODULE_PATHNAME', 'Set_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION floatset_cmp(floatset, floatset)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Set_cmp'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION textset_cmp(textset, textset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -609,6 +708,12 @@ CREATE OPERATOR = (
 CREATE OPERATOR = (
   LEFTARG = floatset, RIGHTARG = floatset,
   PROCEDURE = floatset_eq,
+  COMMUTATOR = =, NEGATOR = <>,
+  RESTRICT = eqsel, JOIN = eqjoinsel
+);
+CREATE OPERATOR = (
+  LEFTARG = textset, RIGHTARG = textset,
+  PROCEDURE = textset_eq,
   COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = eqsel, JOIN = eqjoinsel
 );
@@ -638,6 +743,12 @@ CREATE OPERATOR <> (
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
 CREATE OPERATOR <> (
+  LEFTARG = textset, RIGHTARG = textset,
+  PROCEDURE = textset_ne,
+  COMMUTATOR = <>, NEGATOR = =,
+  RESTRICT = neqsel, JOIN = neqjoinsel
+);
+CREATE OPERATOR <> (
   LEFTARG = timestampset, RIGHTARG = timestampset,
   PROCEDURE = timestampset_ne,
   COMMUTATOR = <>, NEGATOR = =,
@@ -659,6 +770,12 @@ CREATE OPERATOR < (
 CREATE OPERATOR < (
   LEFTARG = floatset, RIGHTARG = floatset,
   PROCEDURE = floatset_lt,
+  COMMUTATOR = >, NEGATOR = >=,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR < (
+  LEFTARG = textset, RIGHTARG = textset,
+  PROCEDURE = textset_lt,
   COMMUTATOR = >, NEGATOR = >=,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
@@ -688,6 +805,12 @@ CREATE OPERATOR <= (
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <= (
+  LEFTARG = textset, RIGHTARG = textset,
+  PROCEDURE = textset_le,
+  COMMUTATOR = >=, NEGATOR = >,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR <= (
   LEFTARG = timestampset, RIGHTARG = timestampset,
   PROCEDURE = timestampset_le,
   COMMUTATOR = >=, NEGATOR = >,
@@ -713,6 +836,12 @@ CREATE OPERATOR >= (
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR >= (
+  LEFTARG = textset, RIGHTARG = textset,
+  PROCEDURE = textset_ge,
+  COMMUTATOR = <=, NEGATOR = <,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR >= (
   LEFTARG = timestampset, RIGHTARG = timestampset,
   PROCEDURE = timestampset_ge,
   COMMUTATOR = <=, NEGATOR = <,
@@ -734,6 +863,12 @@ CREATE OPERATOR > (
 CREATE OPERATOR > (
   LEFTARG = floatset, RIGHTARG = floatset,
   PROCEDURE = floatset_gt,
+  COMMUTATOR = <, NEGATOR = <=,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR > (
+  LEFTARG = textset, RIGHTARG = textset,
+  PROCEDURE = textset_gt,
   COMMUTATOR = <, NEGATOR = <=,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
@@ -768,6 +903,14 @@ CREATE OPERATOR CLASS floatset_ops
     OPERATOR  4  >=,
     OPERATOR  5  >,
     FUNCTION  1  floatset_cmp(floatset, floatset);
+CREATE OPERATOR CLASS textset_ops
+  DEFAULT FOR TYPE textset USING btree AS
+    OPERATOR  1  <,
+    OPERATOR  2  <=,
+    OPERATOR  3  =,
+    OPERATOR  4  >=,
+    OPERATOR  5  >,
+    FUNCTION  1  textset_cmp(textset, textset);
 CREATE OPERATOR CLASS timestampset_ops
   DEFAULT FOR TYPE timestampset USING btree AS
     OPERATOR  1  <,
@@ -791,6 +934,10 @@ CREATE FUNCTION floatset_hash(floatset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION textset_hash(textset)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Set_hash'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestampset_hash(timestampset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_hash'
@@ -805,6 +952,10 @@ CREATE FUNCTION bigintset_hash_extended(bigintset, bigint)
   AS 'MODULE_PATHNAME', 'Set_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION floatset_hash_extended(floatset, bigint)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'Set_hash_extended'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION textset_hash_extended(textset, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Set_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -828,6 +979,11 @@ CREATE OPERATOR CLASS floatset_hash_ops
     OPERATOR    1   = ,
     FUNCTION    1   floatset_hash(floatset),
     FUNCTION    2   floatset_hash_extended(floatset, bigint);
+CREATE OPERATOR CLASS textset_hash_ops
+  DEFAULT FOR TYPE textset USING hash AS
+    OPERATOR    1   = ,
+    FUNCTION    1   textset_hash(textset),
+    FUNCTION    2   textset_hash_extended(textset, bigint);
 CREATE OPERATOR CLASS timestampset_hash_ops
   DEFAULT FOR TYPE timestampset USING hash AS
     OPERATOR    1   = ,

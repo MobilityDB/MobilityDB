@@ -138,9 +138,9 @@ datum_ge(Datum l, Datum r, mobdbType type)
 int
 datum_cmp2(Datum l, Datum r, mobdbType typel, mobdbType typer)
 {
-  ensure_span_basetype(typel);
+  ensure_set_basetype(typel);
   if (typel != typer)
-    ensure_span_basetype(typer);
+    ensure_set_basetype(typer);
   if (typel == T_TIMESTAMPTZ && typer == T_TIMESTAMPTZ)
     return timestamptz_cmp_internal(DatumGetTimestampTz(l),
       DatumGetTimestampTz(r));
@@ -156,7 +156,13 @@ datum_cmp2(Datum l, Datum r, mobdbType typel, mobdbType typer)
     return float8_cmp_internal((double) DatumGetInt32(l), DatumGetFloat8(r));
   if (typel == T_FLOAT8 && typer == T_INT4)
     return float8_cmp_internal(DatumGetFloat8(l), (double) DatumGetInt32(r));
-  elog(ERROR, "unknown span_value_cmp function for span base type: %d", typel);
+  if (typel == T_TEXT && typer == T_TEXT)
+    return text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID);
+  if (typel == typer)
+    elog(ERROR, "unknown compare function for base type: %d", typel);
+  else
+    elog(ERROR, "unknown compare function for base types: %d, %d", typel,
+      typer);
 }
 
 /**

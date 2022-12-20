@@ -255,13 +255,13 @@ ensure_time_type(mobdbType timetype)
 /*****************************************************************************/
 
 /**
- * Return true if the type is a set type
+ * Return true if the type is a base type of a set type
  */
 bool
 set_basetype(mobdbType basetype)
 {
   if (basetype == T_TIMESTAMPTZ || basetype == T_INT4 || basetype == T_INT8 ||
-      basetype == T_FLOAT8)
+      basetype == T_FLOAT8 || basetype == T_TEXT)
     return true;
   return false;
 }
