@@ -237,6 +237,15 @@ CREATE FUNCTION floatsetFromHexWKB(text)
   AS 'MODULE_PATHNAME', 'Set_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION textsetFromBinary(bytea)
+  RETURNS textset
+  AS 'MODULE_PATHNAME', 'Set_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION textsetFromHexWKB(text)
+  RETURNS textset
+  AS 'MODULE_PATHNAME', 'Set_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION timestampsetFromBinary(bytea)
   RETURNS timestampset
   AS 'MODULE_PATHNAME', 'Set_from_wkb'
@@ -258,6 +267,10 @@ CREATE FUNCTION asBinary(floatset, endianenconding text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Set_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asBinary(textset, endianenconding text DEFAULT '')
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Set_as_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asBinary(timestampset, endianenconding text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Set_as_wkb'
@@ -272,6 +285,10 @@ CREATE FUNCTION asHexWKB(bigintset, endianenconding text DEFAULT '')
   AS 'MODULE_PATHNAME', 'Set_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asHexWKB(floatset, endianenconding text DEFAULT '')
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Set_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asHexWKB(textset, endianenconding text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Set_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

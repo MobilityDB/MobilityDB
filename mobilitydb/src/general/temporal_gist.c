@@ -38,7 +38,6 @@
 #include <access/gist.h>
 /* MEOS */
 #include "general/mobdb_catalog.h"
-#include "general/timetypes.h"
 #include "general/temporal.h"
 /* MobilityDB */
 #include "pg_general/time_gist.h"

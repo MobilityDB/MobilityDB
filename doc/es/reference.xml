@@ -64,19 +64,15 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="period_cast"><varname>period::type</varname></link>: Convertir un <varname>period</varname> a otro tipo de tiempo</para>
+					<para><link linkend="setspan_cast"><varname>span::spanset</varname></link>: Convertir un <varname>period</varname> a otro tipo de tiempo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="intspan_cast"><varname>instspan::int4range</varname></link>: Convertir un <varname>instspan</varname> a un <varname>int4range</varname></para>
+					<para><link linkend="setspan_cast_range"><varname>span::range</varname></link>: Convertir un rango MobilityDB a un rango PostgreSQL</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tstzrange_cast"><varname>tstzrange::period</varname></link>: Convertir un <varname>tstzrange</varname> a un <varname>period</varname></para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="int4range_cast"><varname>int4range::instspan</varname></link>: Convertir un <varname>int4range</varname> a un <varname>instspan</varname></para>
+					<para><link linkend="range_cast_span"><varname>range::span</varname></link>: Convertir un rango PostgreSQL a un rango MobilityDB</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -122,7 +118,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="period"><varname>period</varname></link>: Obtener el período en el que se define el conjunto de marcas de tiempo o el conjunto de períodos ignorando las posibles brechas de tiempo</para>
+					<para><link linkend="setspan_period"><varname>period</varname></link>: Obtener el período en el que se define el conjunto de marcas de tiempo o el conjunto de períodos ignorando las posibles brechas de tiempo</para>
 				</listitem>
 
 				<listitem>
@@ -258,35 +254,19 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="span_left"><varname>&lt;&lt;</varname></link>: ¿Está el primer valor estrictamente a la izquierda del segundo?</para>
+					<para><link linkend="setspan_left"><varname>&lt;&lt;</varname>, <varname>&lt;&lt;#</varname></link>: ¿Está el primer valor estrictamente a la izquierda del segundo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="span_right"><varname>&gt;&gt;</varname></link>: ¿Está el primer valor de rango estrictamente a la izquierda del segundo?</para>
+					<para><link linkend="setspan_right"><varname>&gt;&gt;</varname>, <varname>#&gt;&gt;</varname></link>: ¿Está el primer valor de rango estrictamente a la izquierda del segundo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="span_overleft"><varname>&amp;&lt;</varname></link>: ¿No está el primer valor a la derecha del segundo?</para>
+					<para><link linkend="setspan_overleft"><varname>&amp;&lt;</varname>, <varname>&amp;&lt;#</varname></link>: ¿No está el primer valor a la derecha del segundo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="span_overright"><varname>&amp;&gt;</varname></link>: ¿No está el primer valor a la izquierda del segundo?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="setspan_before"><varname>&lt;&lt;#</varname></link>: ¿Es el primer valor estrictamente anterior al segundo?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="setspan_after"><varname>#&gt;&gt;</varname></link>: ¿Es el primer valor estrictamente posterior al segundo?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="setspan_overbefore"><varname>&amp;&lt;#</varname></link>: ¿No es el primer valor posterior al segundo?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="setspan_overafter"><varname>#&amp;&gt;</varname></link>: ¿No es el primer valor anterior al segundo?</para>
+					<para><link linkend="setspan_overright"><varname>&amp;&gt;</varname>, <varname>#&amp;&gt;</varname></link>: ¿No está el primer valor a la izquierda del segundo?</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -623,7 +603,7 @@
 			<title>Funciones de constructor</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="ttype_inst"><varname>ttype_inst</varname></link>: Constructor para tipos temporales de subtipo instante</para>
+					<para><link linkend="ttype_const"><varname>ttype</varname></link>: Constructor de tipos temporales a partir de un valor base y un valor de tiempo</para>
 				</listitem>
 
 				<listitem>
@@ -667,7 +647,7 @@
 
 			<itemizedlist>
 				<listitem>
-				<para><link linkend="ttype_transform"><varname>ttype_inst, ttype_seq, ttype_discseq, ttype_seqset</varname></link>: Transformar un valor temporal en otro subtipo</para>
+				<para><link linkend="ttype_transform"><varname>ttype_inst, ttype_discseq, ttype_contseq, ttype_seqset</varname></link>: Transformar un valor temporal en otro subtipo</para>
 				</listitem>
 
 				<listitem>
@@ -698,7 +678,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="delete"><varname>delete</varname></link>: Eliminar de un valor temporal los instantes que intersectan un valor de tiempo</para>
+					<para><link linkend="deleteTime"><varname>deleteTime</varname></link>: Eliminar de un valor temporal los instantes que intersectan un valor de tiempo</para>
 				</listitem>
 
 				<listitem>
@@ -1746,7 +1726,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="routes"><varname>routes</varname></link>: Obtener los identificadores de ruta</para>
+						<para><link linkend="tnpoint_routes"><varname>routes</varname></link>: Obtener los identificadores de ruta</para>
 					</listitem>
 
 					<listitem>

@@ -42,8 +42,6 @@
 #include "general/mobdb_catalog.h"
 #include "general/span.h"
 #include "general/temporal.h"
-#include "general/temporaltypes.h"
-#include "general/timetypes.h"
 /* MobilityDB */
 #include "pg_general/time_gist.h"
 

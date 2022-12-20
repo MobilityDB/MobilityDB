@@ -600,13 +600,39 @@ DECLARE
   textarr text[];
 BEGIN
   SELECT array_agg(random_text(maxlength)) INTO textarr
-  FROM generate_series(mincard, random_int(mincard, maxcard)) AS t;
+  FROM generate_series(mincard, mincard + random_int(mincard, maxcard)) AS t;
   RETURN textarr;
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_text_array(20, 5, 10) AS text
+FROM generate_series(1, 15) AS k;
+*/
+
+-------------------------------------------------------------------------------
+
+/**
+ * Generate a set of random text values
+ *
+ * @param[in] maxlength Maximum length of the text value
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
+ */
+DROP FUNCTION IF EXISTS random_textset;
+CREATE FUNCTION random_textset(maxlength int, mincard int, maxcard int)
+  RETURNS textset AS $$
+DECLARE
+  textarr text[];
+BEGIN
+  textarr := '{}'::text[];
+  SELECT array_agg(DISTINCT random_text(maxlength)) INTO textarr
+  FROM generate_series(mincard, mincard + random_int(mincard, maxcard)) AS t;
+  RETURN textset(textarr);
+END;
+$$ LANGUAGE PLPGSQL STRICT;
+
+/*
+SELECT k, random_textset(20, 5, 10) AS text
 FROM generate_series(1, 15) AS k;
 */
 

@@ -220,7 +220,7 @@ CREATE EXTENSION mobilitydb CASCADE;
 				Para poder compilar MobilityDB, asegúrese de que se cumplan las siguientes dependencias:
 			</para>
 			<itemizedlist>
-				<listitem>Sistema de compilación multiplataforma <filename>CMake</filename>.</listitem>
+				<listitem><para>Sistema de compilación multiplataforma <filename>CMake</filename>.</para></listitem>
 				<listitem><para>Compilador C <filename>gcc</filename> o <filename>clang</filename>. Se pueden usar otros compiladores ANSI C, pero pueden causar problemas al compilar algunas dependencias.</para></listitem>
 				<listitem><para>GNU Make (<filename>gmake</filename> o <filename>make</filename>) versión 3.1 o superior. Para muchos sistemas, GNU make es la versión predeterminada de make. Verifique la versión invocando <filename>make -v</filename>.</para></listitem>
 				<listitem><para>PostgreSQL versión 12 o superior. PostgreSQL está disponible en <ulink url="http://www.postgresql.org">http://www.postgresql.org</ulink>.</para></listitem>

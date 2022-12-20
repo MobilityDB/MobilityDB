@@ -90,6 +90,14 @@ FROM generate_series(1, perc) AS k UNION
 SELECT k, random_text(10)
 FROM generate_series(perc+1, size) AS k;
 
+DROP TABLE IF EXISTS tbl_textset;
+CREATE TABLE tbl_textset AS
+/* Add perc NULL values */
+SELECT k, NULL AS t
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_textset(10, 1, 10)
+FROM generate_series(perc+1, size) AS k;
+
 DROP TABLE IF EXISTS tbl_tbox;
 CREATE TABLE tbl_tbox AS
 /* Add perc NULL values */

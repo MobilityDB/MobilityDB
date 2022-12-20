@@ -55,6 +55,13 @@ COPY tbl_floatset_tmp FROM '/tmp/tbl_floatset' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatset_tmp t2 WHERE t1.k = t2.k AND t1.f <> t2.f;
 DROP TABLE tbl_floatset_tmp;
 
+COPY tbl_textset TO '/tmp/tbl_textset' (FORMAT BINARY);
+DROP TABLE IF EXISTS tbl_textset_tmp;
+CREATE TABLE tbl_textset_tmp AS TABLE tbl_textset WITH NO DATA;
+COPY tbl_textset_tmp FROM '/tmp/tbl_textset' (FORMAT BINARY);
+SELECT COUNT(*) FROM tbl_textset t1, tbl_textset_tmp t2 WHERE t1.k = t2.k AND t1.t <> t2.t;
+DROP TABLE tbl_textset_tmp;
+
 COPY tbl_timestampset TO '/tmp/tbl_timestampset' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_timestampset_tmp;
 CREATE TABLE tbl_timestampset_tmp AS TABLE tbl_timestampset WITH NO DATA;
@@ -67,6 +74,7 @@ DROP TABLE tbl_timestampset_tmp;
 SELECT COUNT(*) FROM tbl_intset WHERE intsetFromBinary(asBinary(i)) <> i;
 SELECT COUNT(*) FROM tbl_bigintset WHERE bigintsetFromBinary(asBinary(b)) <> b;
 SELECT COUNT(*) FROM tbl_floatset WHERE floatsetFromBinary(asBinary(f)) <> f;
+SELECT COUNT(*) FROM tbl_textset WHERE textsetFromBinary(asBinary(t)) <> t;
 SELECT COUNT(*) FROM tbl_timestampset WHERE timestampsetFromBinary(asBinary(ts)) <> ts;
 
 SELECT COUNT(*) FROM tbl_intset WHERE intsetFromHexWKB(asHexWKB(i)) <> i;

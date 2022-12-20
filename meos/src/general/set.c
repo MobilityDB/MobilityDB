@@ -53,13 +53,21 @@
 /**
  * @ingroup libmeos_internal_setspan_accessor
  * @brief Return the n-th value of a set
- * @pre The argument @p index is less than or equal to the number of values
- * in the set
+ * @pre The argument @p index is less than the number of values in the set
  */
 Datum
 set_val_n(const Set *s, int index)
 {
-  return s->elems[index];
+  assert(index >= 0);
+  /* For base types passed by value */
+  if (MOBDB_FLAGS_GET_BYVAL(s->flags))
+    return s->elems[index];
+  /* For base types passed by reference */
+  return PointerGetDatum(
+    /* start of data */
+    ((char *)s) + double_pad(sizeof(Set)) + (s->count - 1) * sizeof(size_t) +
+      /* offset */
+      s->elems[index]);
 }
 
 /**

@@ -522,7 +522,7 @@ SELECT tor(NoEmps #&gt; 6) FROM Department;
 			<listitem id="tmin">
 				<indexterm><primary><varname>tmin</varname></primary></indexterm>
 				<para>Mínimo temporal</para>
-				<para><varname>tmin(ttype): {ttype_seq,ttype_seqset}</varname></para>
+				<para><varname>tmin(ttype): tmin(ttype)</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tmin(NoEmps) FROM Department;
 -- {[10@2001-01-01, 4@2001-02-01, 6@2001-06-01, 6@2001-10-01)}
@@ -532,7 +532,7 @@ SELECT tmin(NoEmps) FROM Department;
 			<listitem id="tmax">
 				<indexterm><primary><varname>tmax</varname></primary></indexterm>
 				<para>Máximo temporal</para>
-				<para><varname>tmax(ttype): {ttype_seq,ttype_seqset}</varname></para>
+				<para><varname>tmax(ttype): tmin(ttype)</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tmax(NoEmps) FROM Department;
 -- {[10@2001-01-01, 12@2001-04-01, 6@2001-08-01, 6@2001-10-01)}

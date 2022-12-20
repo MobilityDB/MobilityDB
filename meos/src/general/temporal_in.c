@@ -1196,6 +1196,9 @@ set_basevalue_from_wkb_state(wkb_parse_state *s)
     case T_FLOATSET:
       result = Float8GetDatum(double_from_wkb_state(s));
       break;
+    case T_TEXTSET:
+      result = PointerGetDatum(text_from_wkb_state(s));
+      break;
     case T_TIMESTAMPSET:
       result = TimestampTzGetDatum(timestamp_from_wkb_state(s));
       break;
@@ -1582,47 +1585,20 @@ datum_from_wkb(const uint8_t *wkb, int size, mobdbType type)
   /* Call the type-specific function */
   s.type = type;
   Datum result;
-  switch (type)
-  {
-    case T_INTSET:
-    case T_BIGINTSET:
-    case T_FLOATSET:
-    case T_TIMESTAMPSET:
-      result = PointerGetDatum(set_from_wkb_state(&s));
-      break;
-    case T_INTSPAN:
-    case T_BIGINTSPAN:
-    case T_FLOATSPAN:
-    case T_PERIOD:
-      result = PointerGetDatum(span_from_wkb_state(&s));
-      break;
-    case T_INTSPANSET:
-    case T_BIGINTSPANSET:
-    case T_FLOATSPANSET:
-    case T_PERIODSET:
-      result = PointerGetDatum(spanset_from_wkb_state(&s));
-      break;
-    case T_TBOX:
-      result = PointerGetDatum(tbox_from_wkb_state(&s));
-      break;
-    case T_STBOX:
-      result = PointerGetDatum(stbox_from_wkb_state(&s));
-      break;
-    case T_TBOOL:
-    case T_TINT:
-    case T_TFLOAT:
-    case T_TTEXT:
-    case T_TGEOMPOINT:
-    case T_TGEOGPOINT:
-#if NPOINT
-    case T_TNPOINT:
-#endif /* NPOINT */
-      result = PointerGetDatum(temporal_from_wkb_state(&s));
-      break;
-    default: /* Error! */
-      elog(ERROR, "Unknown WKB type: %d", type);
-      break;
-  }
+  if (set_type(type))
+    result = PointerGetDatum(set_from_wkb_state(&s));
+  else if (span_type(type))
+    result = PointerGetDatum(span_from_wkb_state(&s));
+  else if (spanset_type(type))
+    result = PointerGetDatum(spanset_from_wkb_state(&s));
+  else if (type == T_TBOX)
+    result = PointerGetDatum(tbox_from_wkb_state(&s));
+  else if (type == T_STBOX)
+    result = PointerGetDatum(stbox_from_wkb_state(&s));
+  else if (temporal_type(type))
+    result = PointerGetDatum(temporal_from_wkb_state(&s));
+  else /* Error! */
+    elog(ERROR, "Unknown WKB type: %d", type);
 
   return result;
 }
