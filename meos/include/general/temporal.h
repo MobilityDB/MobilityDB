@@ -55,7 +55,7 @@ extern char *text_to_cstring(const text *t);
 #if MEOS
   /* To avoid including fmgr.h However this implies that the text values must
    * be ALWAYS detoasted */
-  #define DatumGetTextP(X)			((text *) DatumGetPointer(X)) // PG_DETOAST_DATUM(X))
+  #define DatumGetTextP(X)      ((text *) DatumGetPointer(X)) // PG_DETOAST_DATUM(X))
 #endif
 
 /**

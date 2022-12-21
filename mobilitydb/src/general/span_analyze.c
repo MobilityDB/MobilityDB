@@ -394,6 +394,22 @@ timestampset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   return;
 }
 
+/**
+ * Compute statistics for timestampset columns (callback function)
+ *
+ * @param[in] stats Structure storing statistics information
+ * @param[in] fetchfunc Fetch function
+ * @param[in] samplerows Number of sample rows
+ * @param[in] totalrows Total number of rows
+ */
+static void
+textset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
+  int samplerows, double totalrows __attribute__((unused)))
+{
+  span_compute_stats_generic(stats, fetchfunc, samplerows, T_TEXTSET);
+  return;
+}
+
 /*****************************************************************************/
 
 /**
@@ -589,6 +605,16 @@ PGDLLEXPORT Datum
 Timestampset_analyze(PG_FUNCTION_ARGS)
 {
   return Span_analyze_ext(fcinfo, &timestampset_compute_stats);
+}
+
+PG_FUNCTION_INFO_V1(Textset_analyze);
+/**
+ * Compute statistics for text set columns
+ */
+PGDLLEXPORT Datum
+Textset_analyze(PG_FUNCTION_ARGS)
+{
+  return Span_analyze_ext(fcinfo, &textset_compute_stats);
 }
 
 /*****************************************************************************/

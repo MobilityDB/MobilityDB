@@ -51,7 +51,8 @@
 static Set *
 setop_set_set(const Set *s1, const Set *s2, SetOper setop)
 {
-  if (setop == INTER || setop == MINUS)
+  assert(s1->settype == s2->settype);
+  if (MOBDB_FLAGS_GET_BYVAL(s1->flags) && (setop == INTER || setop == MINUS))
   {
     /* Bounding box test */
     Span sp1, sp2;
@@ -132,10 +133,13 @@ bool
 contains_set_value(const Set *s, Datum d, mobdbType basetype)
 {
   /* Bounding box test */
-  Span s1;
-  set_set_span(s, &s1);
-  if (! contains_span_value(&s1, d, basetype))
-    return false;
+  if (MOBDB_FLAGS_GET_BYVAL(s->flags))
+  {
+    Span sp;
+    set_set_span(s, &sp);
+    if (! contains_span_value(&sp, d, basetype))
+      return false;
+  }
 
   int loc;
   return set_find_value(s, d, &loc);
@@ -177,6 +181,17 @@ contains_floatset_float(const Set *s, double d)
 
 /**
  * @ingroup libmeos_setspan_topo
+ * @brief Return true if a set contains a value.
+ * @sqlop @p \@>
+ */
+bool
+contains_textset_text(const Set *s, text *t)
+{
+  return contains_set_value(s, TextPGetDatum(t), T_TEXT);
+}
+
+/**
+ * @ingroup libmeos_setspan_topo
  * @brief Return true if a timestamp set contains a timestamp.
  * @sqlop @p \@>
  */
@@ -196,11 +211,14 @@ bool
 contains_set_set(const Set *s1, const Set *s2)
 {
   /* Bounding box test */
-  Span sp1, sp2;
-  set_set_span(s1, &sp1);
-  set_set_span(s2, &sp2);
-  if (! contains_span_span(&sp1, &sp2))
-    return false;
+  if (MOBDB_FLAGS_GET_BYVAL(s1->flags))
+  {
+    Span sp1, sp2;
+    set_set_span(s1, &sp1);
+    set_set_span(s2, &sp2);
+    if (! contains_span_span(&sp1, &sp2))
+      return false;
+  }
 
   int i = 0, j = 0;
   while (j < s2->count)
@@ -270,6 +288,17 @@ contained_float_floatset(double d, const Set *s)
 
 /**
  * @ingroup libmeos_setspan_topo
+ * @brief Return true if a value is contained by a set
+ * @sqlop @p <@
+ */
+bool
+contained_text_textset(text *txt, const Set *s)
+{
+  return contained_value_set(TextPGetDatum(txt), T_TEXT, s);
+}
+
+/**
+ * @ingroup libmeos_setspan_topo
  * @brief Return true if a timestamp is contained by a timestamp set
  * @sqlop @p <@
  */
@@ -304,12 +333,15 @@ contained_set_set(const Set *s1,
 bool
 overlaps_set_set(const Set *s1, const Set *s2)
 {
-  /* Bounding box test */
-  Span sp1, sp2;
-  set_set_span(s1, &sp1);
-  set_set_span(s2, &sp2);
-  if (! overlaps_span_span(&sp1, &sp2))
-    return false;
+  if (MOBDB_FLAGS_GET_BYVAL(s1->flags))
+  {
+    /* Bounding box test */
+    Span sp1, sp2;
+    set_set_span(s1, &sp1);
+    set_set_span(s2, &sp2);
+    if (! overlaps_span_span(&sp1, &sp2))
+      return false;
+  }
 
   int i = 0, j = 0;
   while (i < s1->count && j < s2->count)
@@ -378,6 +410,17 @@ left_float_floatset(double d, const Set *s)
 
 /**
  * @ingroup libmeos_setspan_pos
+ * @brief Return true if a value is strictly to the left of a span set.
+ * @sqlop @p <<, @p <<#
+ */
+bool
+left_text_textset(text *txt, const Set *s)
+{
+  return left_value_set(TextPGetDatum(txt), T_TEXT, s);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
  * @brief Return true if a timestamp is strictly before the second one.
  * @sqlop @p <<#
  */
@@ -431,6 +474,17 @@ bool
 left_floatset_float(const Set *s, double d)
 {
   return left_set_value(s, Float8GetDatum(d), T_FLOAT8);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a set is strictly to the left of a value.
+ * @sqlop @p <<, @p <<#
+ */
+bool
+left_textset_text(const Set *s, text *txt)
+{
+  return left_set_value(s, TextPGetDatum(txt), T_TEXT);
 }
 
 /**
@@ -509,6 +563,17 @@ right_float_floatset(double d, const Set *s)
 
 /**
  * @ingroup libmeos_setspan_pos
+ * @brief Return true if a value is strictly to the right of a span set.
+ * @sqlop @p >>, @p #>>
+ */
+bool
+right_text_textset(text *txt, const Set *s)
+{
+  return left_textset_text(s, txt);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
  * @brief Return true if a timestamp is strictly after a timestamp set.
  * @sqlop @p #>>
  */
@@ -562,6 +627,28 @@ bool
 right_floatset_float(const Set *s, double d)
 {
   return right_set_value(s, Float8GetDatum(d), T_FLOAT8);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a set is strictly to the right of a value.
+ * @sqlop @p >>, @p #>>
+ */
+bool
+right_textset_text(const Set *s, text *txt)
+{
+  return right_set_value(s, TextPGetDatum(txt), T_TEXT);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a set is strictly to the right of a value.
+ * @sqlop @p >>, @p #>>
+ */
+bool
+after_timestampset_timestamptz(const Set *s, TimestampTz t)
+{
+  return right_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
 
@@ -628,6 +715,17 @@ overleft_float_floatset(double d, const Set *s)
 
 /**
  * @ingroup libmeos_setspan_pos
+ * @brief Return true if a value does not extend to the right of a set.
+ * @sqlop @p &<, @p &<#
+ */
+bool
+overleft_text_textset(text *txt, const Set *s)
+{
+  return overleft_value_set(TextPGetDatum(txt), T_TEXT, s);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
  * @brief Return true if a timestamp is not after a timestamp set.
  * @sqlop @p &<#
  */
@@ -654,7 +752,7 @@ overleft_set_value(const Set *s, Datum d, mobdbType basetype)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a set does not extend to the right of a value.
- * @sqlop @p &<#
+ * @sqlop @p &<
  */
 bool
 overleft_intset_int(const Set *s, int i)
@@ -665,7 +763,7 @@ overleft_intset_int(const Set *s, int i)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a set does not extend to the right of a value.
- * @sqlop @p &<#
+ * @sqlop @p &<
  */
 bool
 overleft_bigintset_bigint(const Set *s, int64 i)
@@ -676,12 +774,34 @@ overleft_bigintset_bigint(const Set *s, int64 i)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a set does not extend to the right of a value.
- * @sqlop @p &<#
+ * @sqlop @p &<
  */
 bool
 overleft_floatset_float(const Set *s, double d)
 {
   return overleft_set_value(s, Float8GetDatum(d), T_FLOAT8);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a set does not extend to the right of a value.
+ * @sqlop @p &<#
+ */
+bool
+overleft_textset_text(const Set *s, text *txt)
+{
+  return overleft_set_value(s, TextPGetDatum(txt), T_TEXT);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a set does not extend to the right of a value.
+ * @sqlop @p &<#
+ */
+bool
+overbefore_timestampset_timestamp(const Set *s, TimestampTz t)
+{
+  return overleft_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
 
@@ -718,7 +838,7 @@ overright_value_set(Datum d, mobdbType basetype, const Set *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a value does not extend to the the left of a set.
- * @sqlop @p &>, @p #&>
+ * @sqlop @p &>
  */
 bool
 overright_int_intset(int i, const Set *s)
@@ -729,7 +849,7 @@ overright_int_intset(int i, const Set *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a value does not extend to the the left of a set.
- * @sqlop @p &>, @p #&>
+ * @sqlop @p &>
  */
 bool
 overright_bigint_bigintset(int64 i, const Set *s)
@@ -740,7 +860,7 @@ overright_bigint_bigintset(int64 i, const Set *s)
 /**
  * @ingroup libmeos_setspan_pos
  * @brief Return true if a value does not extend to the the left of a set.
- * @sqlop @p &>, @p #&>
+ * @sqlop @p &>
  */
 bool
 overright_float_floatset(double d, const Set *s)
@@ -803,6 +923,28 @@ bool
 overright_floatset_float(const Set *s, double d)
 {
   return overright_set_value(s, Float8GetDatum(d), T_FLOAT8);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a set does not extend to the left of a value.
+ * @sqlop @p &>, @p #&>
+ */
+bool
+overright_textset_text(const Set *s, text *txt)
+{
+  return overright_set_value(s, TextPGetDatum(txt), T_TEXT);
+}
+
+/**
+ * @ingroup libmeos_setspan_pos
+ * @brief Return true if a set does not extend to the left of a value.
+ * @sqlop @p &>, @p #&>
+ */
+bool
+overafter_timestampset_timestamp(const Set *s, TimestampTz t)
+{
+  return overright_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
 
@@ -889,6 +1031,17 @@ union_float_float(double d1, double d2)
 
 /**
  * @ingroup libmeos_setspan_set
+ * @brief Return the union of two values
+ * @sqlop @p +
+ */
+Set *
+union_text_text(text *txt1, text *txt2)
+{
+  return union_value_value(TextPGetDatum(txt1), TextPGetDatum(txt2), T_TEXT);
+}
+
+/**
+ * @ingroup libmeos_setspan_set
  * @brief Return the union of the timestamps
  * @sqlop @p +
  */
@@ -964,6 +1117,17 @@ bool
 union_floatset_float(const Set *s, double d)
 {
   return union_set_value(s, Float8GetDatum(d), T_FLOAT8);
+}
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the union of a set and a value
+ * @sqlop @p +
+ */
+bool
+union_textset_text(const Set *s, text *txt)
+{
+  return union_set_value(s, TextPGetDatum(txt), T_TEXT);
 }
 
 /**
@@ -1066,17 +1230,32 @@ intersection_floatset_float(const Set *s, double d, double *result)
 
 /**
  * @ingroup libmeos_setspan_set
+ * @brief Return the intersection of a set and a value
+ * @sqlop @p *
+ */
+bool
+intersection_textset_text(const Set *s, const text *txt, text **result)
+{
+  Datum v;
+  bool found = intersection_set_value(s, TextPGetDatum(txt), T_TEXT, &v);
+  *result = DatumGetTextP(v);
+  return found;
+}
+
+/**
+ * @ingroup libmeos_setspan_set
  * @brief Return the intersection of a timestamp set and a timestamp
  * @sqlop @p *
  */
 bool
-intersection_timestampset_timestamp(const TimestampSet *ts, const TimestampTz t,
+intersection_timestampset_timestamp(const TimestampSet *ts, TimestampTz t,
   TimestampTz *result)
 {
-  if (! contains_set_value(ts, TimestampTzGetDatum(t), ts->basetype))
-    return false;
-  *result  = t;
-  return true;
+  Datum v;
+  bool found = intersection_set_value(ts, TimestampTzGetDatum(t), T_TIMESTAMPTZ,
+    &v);
+  *result = DatumGetTimestampTz(v);
+  return found;
 }
 #endif /* MEOS */
 
@@ -1154,6 +1333,21 @@ minus_float_float(double d1, double d2, double *result)
   *result = DatumGetFloat8(v);
   return found;
 }
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the intersection of two values
+ * @sqlop @p -
+ */
+bool
+minus_text_text(const text *txt1, const text *txt2, text **result)
+{
+  Datum v;
+  bool found = minus_value_value(TextPGetDatum(txt1), TextPGetDatum(txt2),
+    T_TEXT, &v);
+  *result = DatumGetTextP(v);
+  return found;
+}
 #endif /* MEOS */
 
 /**
@@ -1213,6 +1407,20 @@ minus_float_floatset(double d, const Set *s, double *result)
   *result = DatumGetFloat8(v);
   return found;
 }
+
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the intersection of a value and a span set
+ * @sqlop @p -
+ */
+bool
+minus_text_textset(const text *txt, const Set *s, text **result)
+{
+  Datum v;
+  bool found = minus_value_set(TextPGetDatum(txt), T_TEXT, s, &v);
+  *result = DatumGetTextP(v);
+  return found;
+}
 #endif /* MEOS */
 
 /**
@@ -1222,11 +1430,14 @@ minus_float_floatset(double d, const Set *s, double *result)
 Set *
 minus_set_value(const Set *s, Datum d, mobdbType basetype)
 {
-  /* Bounding box test */
-  Span s1;
-  set_set_span(s, &s1);
-  if (! contains_span_value(&s1, d, basetype))
-    return set_copy(s);
+  if (MOBDB_FLAGS_GET_BYVAL(s->flags))
+  {
+    /* Bounding box test */
+    Span sp;
+    set_set_span(s, &sp);
+    if (! contains_span_value(&sp, d, basetype))
+      return set_copy(s);
+  }
 
   Datum *values = palloc(sizeof(TimestampTz) * s->count);
   int k = 0;
@@ -1276,17 +1487,31 @@ minus_floatset_float(const Set *s, double d)
 
 /**
  * @ingroup libmeos_setspan_set
+ * @brief Return the difference of a set and a value.
+ * @sqlop @p -
+ */
+Set *
+minus_textset_text(const Set *s, const text *txt)
+{
+  return minus_set_value(s, TextPGetDatum(txt), T_TEXT);
+}
+
+/**
+ * @ingroup libmeos_setspan_set
  * @brief Return the difference of a timestamp set and a timestamp.
  * @sqlop @p -
  */
 TimestampSet *
 minus_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 {
-  /* Bounding box test */
-  Span s;
-  set_set_span(ts, &s);
-  if (! contains_period_timestamp(&s, t))
-    return set_copy(ts);
+  if (MOBDB_FLAGS_GET_BYVAL(s1->flags))
+  {
+    /* Bounding box test */
+    Span s;
+    set_set_span(ts, &s);
+    if (! contains_period_timestamp(&s, t))
+      return set_copy(ts);
+  }
 
   Datum *values = palloc(sizeof(TimestampTz) * ts->count);
   int k = 0;
@@ -1324,7 +1549,9 @@ minus_set_set(const Set *s1, const Set *s2)
 double
 distance_set_value(const Set *s, Datum d, mobdbType basetype)
 {
-  return distance_span_value(&s->span, d, basetype);
+  Span sp;
+  set_set_span(s, &sp);
+  return distance_span_value(&sp, d, basetype);
 }
 
 /**
@@ -1362,6 +1589,17 @@ distance_floatset_float(const Set *s, double d)
 
 /**
  * @ingroup libmeos_setspan_dist
+ * @brief Return the distance between a set and a value
+ * @sqlop @p <->
+ */
+double
+distance_textset_text(const Set *s, const text *txt)
+{
+  return distance_set_value(s, TextPGetDatum(txt), T_TEXT);
+}
+
+/**
+ * @ingroup libmeos_setspan_dist
  * @brief Return the distance in seconds between a timestamp set and a timestamp
  * @sqlop @p <->
  */
@@ -1379,7 +1617,10 @@ distance_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 double
 distance_set_set(const Set *s1, const Set *s2)
 {
-  return distance_span_span(&s1->span, &s2->span);
+  Span sp1, sp2;
+  set_set_span(s1, &sp1);
+  set_set_span(s2, &sp2);
+  return distance_span_span(&sp1, &sp2);
 }
 #endif /* MEOS */
 

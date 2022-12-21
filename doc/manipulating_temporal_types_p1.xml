@@ -46,11 +46,11 @@
 		</listitem>
 
 		<listitem>
-			<para><varname>ttype_seq</varname> represents any temporal type with sequence subtype,</para>
+			<para><varname>ttype_discseq</varname> represents any temporal type with sequence subtype and discrete interpolation,</para>
 		</listitem>
 
 		<listitem>
-			<para><varname>ttype_discseq</varname> represents any temporal type with sequence subtype and discrete interpolation,</para>
+			<para><varname>ttype_contseq</varname> represents any temporal type with sequence subtype and continuous interpolation,</para>
 		</listitem>
 
 		<listitem>
@@ -514,7 +514,7 @@ SELECT tgeogpoint_contseq(ARRAY[tgeogpoint 'Point(0 0)@2001-01-01 08:00:00',
 			<listitem id="ttype_seqset">
 				<indexterm><primary><varname>ttype_seqset</varname></primary></indexterm>
 				<para>Constructors for temporal types of sequence set subtype</para>
-				<para><varname>ttype_seqset(ttype_seq[]): ttype_seqset</varname></para>
+				<para><varname>ttype_seqset(ttype_contseq[]): ttype_seqset</varname></para>
 				<para><varname>tscalar_seqset_gaps(tint_inst[],maxt='0 minutes'): tscalar_seqset</varname></para>
 				<para><varname>tdisc_seqset_gaps(tint_inst[],maxdist=0.0,maxt='0 minutes'): tdisc_seqset</varname></para>
 				<para><varname>tcont_seqset_gaps(tcont_inst[],linear=true,maxdist=0.0,maxt='0 minutes'):</varname></para>
@@ -1030,7 +1030,7 @@ SELECT timestamps(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 5@2001-0
 			<listitem id="numSequences">
 				<indexterm><primary><varname>numSequences</varname></primary></indexterm>
 				<para>Get the number of sequences</para>
-				<para><varname>numSequences({ttype_seq,ttype_seqset}): integer</varname></para>
+				<para><varname>numSequences({ttype_contseq,ttype_seqset}): integer</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT numSequences(tfloat '{[1@2001-01-01, 2@2001-01-03),
   [3@2001-01-03, 5@2001-01-05)}');
@@ -1041,7 +1041,7 @@ SELECT numSequences(tfloat '{[1@2001-01-01, 2@2001-01-03),
 			<listitem id="startSequence">
 				<indexterm><primary><varname>startSequence</varname></primary></indexterm>
 				<para>Get the start sequence</para>
-				<para><varname>startSequence({ttype_seq,ttype_seqset}): ttype_seq</varname></para>
+				<para><varname>startSequence({ttype_contseq,ttype_seqset}): ttype_contseq</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT startSequence(tfloat '{[1@2001-01-01, 2@2001-01-03),
   [3@2001-01-03, 5@2001-01-05)}');
@@ -1052,7 +1052,7 @@ SELECT startSequence(tfloat '{[1@2001-01-01, 2@2001-01-03),
 			<listitem id="endSequence">
 				<indexterm><primary><varname>endSequence</varname></primary></indexterm>
 				<para>Get the end sequence</para>
-				<para><varname>endSequence({ttype_seq,ttype_seqset}): ttype_seq</varname></para>
+				<para><varname>endSequence({ttype_contseq,ttype_seqset}): ttype_contseq</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT endSequence(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 5@2001-01-05)}');
 -- [3@2001-01-03, 5@2001-01-05)
@@ -1062,7 +1062,7 @@ SELECT endSequence(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 5@2001-
 			<listitem id="sequenceN">
 				<indexterm><primary><varname>sequenceN</varname></primary></indexterm>
 				<para>Get the n-th sequence</para>
-				<para><varname>sequenceN({ttype_seq,ttype_seqset},integer): ttype_seq</varname></para>
+				<para><varname>sequenceN({ttype_contseq,ttype_seqset},integer): ttype_contseq</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT sequenceN(tfloat '{[1@2001-01-01, 2@2001-01-03),
   [3@2001-01-03, 5@2001-01-05)}', 2);
@@ -1073,7 +1073,7 @@ SELECT sequenceN(tfloat '{[1@2001-01-01, 2@2001-01-03),
 			<listitem id="sequences">
 				<indexterm><primary><varname>sequences</varname></primary></indexterm>
 				<para>Get the sequences</para>
-				<para><varname>sequences({ttype_seq,ttype_seqset}): ttype_seq[]</varname></para>
+				<para><varname>sequences({ttype_contseq,ttype_seqset}): ttype_contseq[]</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT sequences(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 5@2001-01-05)}');
 -- {"[1@2001-01-01, 2@2001-01-03)", "[3@2001-01-03, 5@2001-01-05)"}
@@ -1083,7 +1083,7 @@ SELECT sequences(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 5@2001-01
 			<listitem id="segments">
 				<indexterm><primary><varname>segments</varname></primary></indexterm>
 				<para>Get the segments</para>
-				<para><varname>segments({ttype_seq,ttype_seqset}): ttype_seq[]</varname></para>
+				<para><varname>segments({ttype_contseq,ttype_seqset}): ttype_contseq[]</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT segments(tint '{[1@2001-01-01, 3@2001-01-02, 2@2001-01-03],
   (3@2001-01-03, 5@2001-01-05]}');
@@ -1151,7 +1151,7 @@ SELECT twAvg(tfloat '{[1@2001-01-01, 2@2001-01-03), [2@2001-01-04, 2@2001-01-06)
 				<para>Transform a temporal value to another subtype</para>
 				<para><varname>ttype_inst(ttype): ttype_inst</varname></para>
 				<para><varname>ttype_discseq(ttype): ttype_discseq</varname></para>
-				<para><varname>ttype_contseq(ttype): ttype_seq</varname></para>
+				<para><varname>ttype_contseq(ttype): ttype_contseq</varname></para>
 				<para><varname>ttype_seqset(ttype): ttype_seqset</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbool_inst(tbool '{[true@2001-01-01]}');
@@ -1320,14 +1320,16 @@ FROM (SELECT unnest(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01,
 
 		<figure id="modif_sql_fig" float="start">
 			<title>Modification operations for temporal tables in SQL.</title>
-			<inlinemediaobject>
+			<mediaobject>
 				<imageobject><imagedata format="PDF" scale='100' fileref="images/modif_sql.pdf"/></imageobject>
 				<imageobject><imagedata format="SVG" scale='100' fileref="images/modif_sql.svg"/></imageobject>
 				<imageobject><imagedata format="PNG" scale='100' fileref="images/modif_sql.png"/></imageobject>
-			</inlinemediaobject>
+			</mediaobject>
 		</figure>
 
-<xref linkend="modif_sql_fig" /> shows the equivalent modification operations for temporal tables in the SQL standard. Intuitively, these figures are obtained by rotating 90 degrees clockwise the corresponding figures for temporal values (<xref linkend="insert_fig" />, <xref linkend="update_fig" />, and <xref linkend="deleteTime_fig" />). This follows the fact that in SQL consecutive tuples ordered by time are typically connected through the <varname>LEAD</varname> and <varname>LAG</varname> window functions.
+		<para>
+			<xref linkend="modif_sql_fig" /> shows the equivalent modification operations for temporal tables in the SQL standard. Intuitively, these figures are obtained by rotating 90 degrees clockwise the corresponding figures for temporal values (<xref linkend="insert_fig" />, <xref linkend="update_fig" />, and <xref linkend="deleteTime_fig" />). This follows the fact that in SQL consecutive tuples ordered by time are typically connected through the <varname>LEAD</varname> and <varname>LAG</varname> window functions.
+		</para>
 
 		<itemizedlist>
 			<listitem id="insert">

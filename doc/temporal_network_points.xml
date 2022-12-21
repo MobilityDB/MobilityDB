@@ -515,7 +515,7 @@ SELECT getValues(tnpoint '{[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.3)@2001-01-02
 </programlisting>
 			</listitem>
 
-			<listitem id="routes">
+			<listitem id="tnpoint_routes">
 				<indexterm><primary><varname>routes</varname></primary></indexterm>
 				<para>Get the road identifiers</para>
 				<para><varname>routes(tnpoint): bigintset</varname></para>

@@ -49,6 +49,23 @@ SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatset_tmp t2 WHERE t1.k = t2.k AND 
 
 DROP TABLE tbl_floatset_tmp;
 DROP TABLE
+COPY tbl_textset TO '/tmp/tbl_textset' (FORMAT BINARY);
+COPY 100
+DROP TABLE IF EXISTS tbl_textset_tmp;
+NOTICE:  table "tbl_textset_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_textset_tmp AS TABLE tbl_textset WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_textset_tmp FROM '/tmp/tbl_textset' (FORMAT BINARY);
+COPY 100
+SELECT COUNT(*) FROM tbl_textset t1, tbl_textset_tmp t2 WHERE t1.k = t2.k AND t1.t <> t2.t;
+ count 
+-------
+     0
+(1 row)
+
+DROP TABLE tbl_textset_tmp;
+DROP TABLE
 COPY tbl_timestampset TO '/tmp/tbl_timestampset' (FORMAT BINARY);
 COPY 100
 DROP TABLE IF EXISTS tbl_timestampset_tmp;
@@ -79,6 +96,12 @@ SELECT COUNT(*) FROM tbl_bigintset WHERE bigintsetFromBinary(asBinary(b)) <> b;
 (1 row)
 
 SELECT COUNT(*) FROM tbl_floatset WHERE floatsetFromBinary(asBinary(f)) <> f;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_textset WHERE textsetFromBinary(asBinary(t)) <> t;
  count 
 -------
      0

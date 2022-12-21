@@ -75,20 +75,21 @@ typedef enum
   T_TDOUBLE3       = 25,  /**< temporal double3 type */
   T_TDOUBLE4       = 26,  /**< temporal double4 type */
   T_TEXT           = 27,  /**< text type */
-  T_TFLOAT         = 28,  /**< temporal float type */
-  T_TIMESTAMPSET   = 29,  /**< timestamp set type */
-  T_TIMESTAMPTZ    = 30,  /**< timestamp with time zone type */
-  T_TINT           = 31,  /**< temporal integer type */
-  T_TSTZRANGE      = 32,  /**< PostgreSQL timestamp with time zone range type */
-  T_TSTZMULTIRANGE = 33,  /**< PostgreSQL timestamp with time zone multirange type */
-  T_TTEXT          = 34,  /**< temporal text type */
-  T_GEOMETRY       = 35,  /**< geometry type */
-  T_GEOGRAPHY      = 36,  /**< geography type */
-  T_TGEOMPOINT     = 37,  /**< temporal geometry point type */
-  T_TGEOGPOINT     = 38,  /**< temporal geography point type */
-  T_NPOINT         = 39,  /**< network point type */
-  T_NSEGMENT       = 40,  /**< network segment type */
-  T_TNPOINT        = 41,  /**< temporal network point type */
+  T_TEXTSET        = 28,  /**< text type */
+  T_TFLOAT         = 29,  /**< temporal float type */
+  T_TIMESTAMPSET   = 30,  /**< timestamp set type */
+  T_TIMESTAMPTZ    = 31,  /**< timestamp with time zone type */
+  T_TINT           = 32,  /**< temporal integer type */
+  T_TSTZRANGE      = 33,  /**< PostgreSQL timestamp with time zone range type */
+  T_TSTZMULTIRANGE = 34,  /**< PostgreSQL timestamp with time zone multirange type */
+  T_TTEXT          = 35,  /**< temporal text type */
+  T_GEOMETRY       = 36,  /**< geometry type */
+  T_GEOGRAPHY      = 37,  /**< geography type */
+  T_TGEOMPOINT     = 38,  /**< temporal geometry point type */
+  T_TGEOGPOINT     = 39,  /**< temporal geography point type */
+  T_NPOINT         = 40,  /**< network point type */
+  T_NSEGMENT       = 41,  /**< network segment type */
+  T_TNPOINT        = 42,  /**< temporal network point type */
 } mobdbType;
 
 /**

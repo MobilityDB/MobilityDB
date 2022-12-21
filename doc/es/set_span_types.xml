@@ -341,7 +341,7 @@ SELECT CAST(timestampset '{2001-01-01 08:00:00, 2001-01-01 08:15:00,
    [2001-01-01 08:25:00+01, 2001-01-01 08:25:00+01]} */
 </programlisting>
 				</listitem>
-				<listitem id="span_cast">
+				<listitem id="setspan_cast">
 					<indexterm><primary><varname>::</varname></primary></indexterm>
 					<para>Convertir un valor de rango a un valor de conjunto de rangos</para>
 					<para><varname>intspan::intspanset</varname></para>
@@ -357,7 +357,7 @@ SELECT period '[2001-01-01 08:00:00, 2001-01-01 08:30:00)'::periodset;
 </programlisting>
 				</listitem>
 
-				<listitem id="span_cast_range">
+				<listitem id="setspan_cast_range">
 					<indexterm><primary><varname>::</varname></primary></indexterm>
 					<para>Convertir un valor de rango en MobilityDB en un valor de rango de PostgreSQL</para>
 					<para><varname>intspan::int4range</varname></para>
@@ -980,8 +980,9 @@ SELECT periodset '{[2001-01-01, 2001-01-02]}' -|- period '[2001-01-02, 2001-01-0
 			<para>Los operadores de posición relativa disponibles para los tipos de rango y de tiempo se dan a continuación. Observe que los operadores para tipos de tiempo tienen un `<varname>#</varname>' adicional para distinguirlos de los operadores para tipos de números.</para>
 
 			<itemizedlist>
-				<listitem id="span_left">
+				<listitem id="setspan_left">
 					<indexterm><primary><varname>&lt;&lt;</varname></primary></indexterm>
+					<indexterm><primary><varname>&lt;&lt;#</varname></primary></indexterm>
 					<para>¿Está el primer valor estrictamente a la izquierda del segundo?</para>
 					<para><varname>{number,span} &lt;&lt; {number,span}: boolean</varname></para>
 					<para><varname>time &lt;&lt;# time: boolean</varname></para>
@@ -997,8 +998,9 @@ SELECT period '[2011-01-01, 2011-01-03)' &lt;&lt;# timestampset '{2011-01-03, 20
 </programlisting>
 				</listitem>
 
-				<listitem id="span_right">
+				<listitem id="setspan_right">
 					<indexterm><primary><varname>&gt;&gt;</varname></primary></indexterm>
+					<indexterm><primary><varname>#&gt;&gt;</varname></primary></indexterm>
 					<para>¿Está el primer valor estrictamente a la derecha del segundo?</para>
 					<para><varname>{number,span} &gt;&gt; {number,span}: boolean</varname></para>
 					<para><varname>time #&gt;&gt; time: boolean</varname></para>
@@ -1015,8 +1017,9 @@ SELECT period '[2011-01-04, 2011-01-05)' #&gt;&gt;
 </programlisting>
 				</listitem>
 
-				<listitem id="span_overleft">
+				<listitem id="setspan_overleft">
 					<indexterm><primary><varname>&amp;&lt;</varname></primary></indexterm>
+					<indexterm><primary><varname>&amp;&lt;#</varname></primary></indexterm>
 					<para>¿No está el primer valor a la derecha del segundo?</para>
 					<para><varname>{number,span} &amp;&lt; {number,span}: boolean</varname></para>
 					<para><varname>time &amp;&lt;# time: boolean</varname></para>
@@ -1032,8 +1035,9 @@ SELECT timestampset '{2011-01-02, 2011-01-05}' &amp;&lt;# period '[2011-01-01, 2
 </programlisting>
 				</listitem>
 
-				<listitem id="span_overright">
+				<listitem id="setspan_overright">
 					<indexterm><primary><varname>&amp;&gt;</varname></primary></indexterm>
+					<indexterm><primary><varname>#&amp;&gt;</varname></primary></indexterm>
 					<para>¿No está el primer valor a la izquierda del segundo?</para>
 					<para><varname>{number,span} &amp;&gt; {number,span}: boolean</varname></para>
 					<para><varname>time #&amp;&gt; time: boolean</varname></para>

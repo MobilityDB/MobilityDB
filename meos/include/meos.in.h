@@ -52,9 +52,10 @@
 typedef struct
 {
   int32 vl_len_;        /**< Varlena header (do not touch directly!) */
-  int32 count;          /**< Number of TimestampTz elements */
   uint8 settype;        /**< set type */
   uint8 basetype;       /**< span basetype */
+  int16 flags;          /**< flags */
+  int32 count;          /**< Number of TimestampTz elements */
   Datum elems[1];       /**< Beginning of variable-length data */
 } Set;
 

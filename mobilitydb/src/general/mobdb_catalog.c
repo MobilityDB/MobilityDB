@@ -101,6 +101,7 @@ const char *_type_names[] =
   [T_TDOUBLE3] = "tdouble3",
   [T_TDOUBLE4] = "tdouble4",
   [T_TEXT] = "text",
+  [T_TEXTSET] = "textset",
   [T_TFLOAT] = "tfloat",
   [T_TIMESTAMPSET] = "timestampset",
   [T_TIMESTAMPTZ] = "timestamptz",

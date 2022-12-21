@@ -220,7 +220,7 @@ CREATE EXTENSION mobilitydb CASCADE;
 				To be able to compile MobilityDB, make sure that the following dependencies are met:
 			</para>
 			<itemizedlist>
-				<listitem><filename>CMake</filename> cross-platform build system.</listitem>
+				<listitem><para><filename>CMake</filename> cross-platform build system.</para></listitem>
 				<listitem><para>C compiler <filename>gcc</filename> or <filename>clang</filename>. Other ANSI C compilers can be used but may cause problems compiling some dependencies.</para></listitem>
 				<listitem><para>GNU Make (<filename>gmake</filename> or <filename>make</filename>) version 3.1 or higher. For many systems, GNU make is the default version of make. Check the version by invoking <filename>make -v</filename>.</para></listitem>
 				<listitem><para>PostgreSQL version 12 or higher. PostgreSQL is available from <ulink url="http://www.postgresql.org">http://www.postgresql.org</ulink>.</para></listitem>

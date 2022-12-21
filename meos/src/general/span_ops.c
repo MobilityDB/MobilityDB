@@ -720,9 +720,9 @@ right_floatspan_float(const Span *s, double d)
  * @sqlop @p #>>
  */
 bool
-after_timestamp_period(TimestampTz t, const Period *p)
+after_period_timestamp(const Period *p, TimestampTz t)
 {
-  return before_period_timestamp(p, t);
+  return before_timestamp_period(t, p);
 }
 #endif /* MEOS */
 
@@ -1737,9 +1737,11 @@ distance_period_timestamp(const Period *p, TimestampTz t)
  * @sqlop @p <->
  */
 double
-distance_span_set(const Period *p, const Set *os)
+distance_span_set(const Period *p, const Set *s)
 {
-  return distance_span_span(p, &os->span);
+  Span sp;
+  set_set_span(s, &sp);
+  return distance_span_span(p, &sp);
 }
 #endif /* MEOS */
 

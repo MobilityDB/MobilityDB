@@ -64,11 +64,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="span_cast"><varname>span::spanset</varname></link>: Cast a span value to span set value</para>
+					<para><link linkend="setspan_cast"><varname>span::spanset</varname></link>: Cast a span value to a span set value</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="span_cast_range"><varname>span::range</varname></link>: Cast a span value to a PostgreSQL range value</para>
+					<para><link linkend="setspan_cast_range"><varname>span::range</varname></link>: Cast a span value to a PostgreSQL range value</para>
 				</listitem>
 
 				<listitem>
@@ -118,7 +118,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="period"><varname>period</varname></link>: Get the period on which the timestamp set or period set is defined ignoring the potential time gaps</para>
+					<para><link linkend="setspan_period"><varname>period</varname></link>: Get the period on which the timestamp set or period set is defined ignoring the potential time gaps</para>
 				</listitem>
 
 				<listitem>
@@ -254,35 +254,19 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="span_left"><varname>&lt;&lt;</varname></link>: Is the first value scritly left of the second one?</para>
+					<para><link linkend="setspan_left"><varname>&lt;&lt;</varname>, <varname>#&lt;&lt;</varname></link>: Is the first value scritly to the left of the second one?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="span_right"><varname>&gt;&gt;</varname></link>: Is the first value strictly right of the second one?</para>
+					<para><link linkend="setspan_right"><varname>&gt;&gt;</varname>, <varname>&gt;&gt;#</varname></link>: Is the first value strictly to the right of the second one?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="span_overleft"><varname>&amp;&lt;</varname></link>: Is the first value not to the right of the second one?</para>
+					<para><link linkend="setspan_overleft"><varname>&amp;&lt;</varname>, <varname>#&amp;&lt;</varname></link>: Is the first value not to the right of the second one?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="span_overright"><varname>&amp;&gt;</varname></link>: Is the first value not to the left of the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="setspan_before"><varname>&lt;&lt;#</varname></link>: Is the first value scritly before the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="setspan_after"><varname>#&gt;&gt;</varname></link>: Is the first value strictly after the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="setspan_overbefore"><varname>&amp;&lt;#</varname></link>: Is the first value not after the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="setspan_overafter"><varname>#&amp;&gt;</varname></link>: Is the first value not before the second one?</para>
+					<para><link linkend="setspan_overright"><varname>&amp;&gt;</varname>, <varname>&amp;&gt;#</varname></link>: Is the first value not to the left of the second one?</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -627,7 +611,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_contseq"><varname>ttype_seq</varname></link>: Constructor for temporal types of sequence subtype and continuous interpolation</para>
+					<para><link linkend="ttype_contseq"><varname>ttype_contseq</varname></link>: Constructor for temporal types of sequence subtype and continuous interpolation</para>
 				</listitem>
 
 				<listitem>
@@ -821,7 +805,7 @@
 
 			<itemizedlist>
 				<listitem>
-				<para><link linkend="ttype_transform"><varname>ttype_inst, ttype_seq, ttype_discseq, ttype_seqset</varname></link>: Transform a temporal value to another subtype</para>
+				<para><link linkend="ttype_transform"><varname>ttype_inst, ttype_discseq, ttype_contseq, ttype_seqset</varname></link>: Transform a temporal value to another subtype</para>
 				</listitem>
 
 				<listitem>
@@ -1736,7 +1720,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="routes"><varname>routes</varname></link>: Get the road identifiers</para>
+						<para><link linkend="tnpoint_routes"><varname>routes</varname></link>: Get the road identifiers</para>
 					</listitem>
 
 					<listitem>

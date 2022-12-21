@@ -1054,25 +1054,22 @@ temporalarr_out(const Temporal **temparr, int count, int maxdd)
  * set type.
  */
 static size_t
-set_basetype_to_wkb_size(const Set *s)
+set_basetype_to_wkb_size(Datum value, mobdbType basetype)
 {
   size_t result = 0;
-  ensure_span_basetype(s->basetype);
-  switch (s->basetype)
-  {
-    case T_INT4:
-      result = MOBDB_WKB_INT4_SIZE;
-      break;
-    case T_INT8:
-      result = MOBDB_WKB_INT8_SIZE;
-      break;
-    case T_FLOAT8:
-      result = MOBDB_WKB_DOUBLE_SIZE;
-      break;
-    case T_TIMESTAMPTZ:
-      result = MOBDB_WKB_TIMESTAMP_SIZE;
-      break;
-  }
+  ensure_set_basetype(basetype);
+  if (basetype == T_INT4)
+    result = MOBDB_WKB_INT4_SIZE;
+  else if (basetype == T_INT8)
+    result = MOBDB_WKB_INT8_SIZE;
+  else if (basetype == T_FLOAT8)
+    result = MOBDB_WKB_DOUBLE_SIZE;
+  else if (basetype == T_TEXT)
+    result = MOBDB_WKB_INT8_SIZE + VARSIZE_ANY_EXHDR(DatumGetTextP(value)) + 1;
+  else if (basetype == T_TIMESTAMPTZ)
+    result = MOBDB_WKB_TIMESTAMP_SIZE;
+  else
+    elog(ERROR, "Unknown base type %d", basetype);
   return result;
 }
 
@@ -1083,10 +1080,18 @@ set_basetype_to_wkb_size(const Set *s)
 static size_t
 set_to_wkb_size(const Set *s)
 {
-  /* Endian flag + settype + count + basetype values * count */
-  size_t size = MOBDB_WKB_BYTE_SIZE + MOBDB_WKB_INT2_SIZE +
-    MOBDB_WKB_INT4_SIZE + set_basetype_to_wkb_size(s) * s->count;
-  return size;
+  size_t result = 0;
+  mobdbType basetype = settype_basetype(s->settype);
+  /* Compute the size of the values which may be of variable length*/
+  for (int i = 0; i < s->count; i++)
+  {
+    Datum value = set_val_n(s, i);
+    result += set_basetype_to_wkb_size(value, basetype);
+  }
+  /* Endian flag + settype + count + values */
+  result += MOBDB_WKB_BYTE_SIZE + MOBDB_WKB_INT2_SIZE +
+    MOBDB_WKB_INT4_SIZE;
+  return result;
 }
 
 /*****************************************************************************/
@@ -1380,48 +1385,22 @@ static size_t
 datum_to_wkb_size(Datum value, mobdbType type, uint8_t variant)
 {
   size_t result;
-  switch (type)
-  {
-    case T_INTSET:
-    case T_BIGINTSET:
-    case T_FLOATSET:
-    case T_TIMESTAMPSET:
-      result = set_to_wkb_size((Set *) DatumGetPointer(value));
-      break;
-    case T_INTSPAN:
-    case T_BIGINTSPAN:
-    case T_FLOATSPAN:
-    case T_PERIOD:
-      result = span_to_wkb_size((Span *) DatumGetPointer(value));
-      break;
-    case T_INTSPANSET:
-    case T_BIGINTSPANSET:
-    case T_FLOATSPANSET:
-    case T_PERIODSET:
-      result = spanset_to_wkb_size((SpanSet *) DatumGetPointer(value));
-      break;
-    case T_TBOX:
-      result = tbox_to_wkb_size((TBox *) DatumGetPointer(value));
-      break;
-    case T_STBOX:
-      result = stbox_to_wkb_size((STBox *) DatumGetPointer(value), variant);
-      break;
-    case T_TBOOL:
-    case T_TINT:
-    case T_TFLOAT:
-    case T_TTEXT:
-    case T_TGEOMPOINT:
-    case T_TGEOGPOINT:
-#if NPOINT
-    case T_TNPOINT:
-#endif /* NPOINT */
-      result = temporal_to_wkb_size((Temporal *) DatumGetPointer(value),
-        variant);
-      break;
-    default: /* Error! */
-      elog(ERROR, "Unknown WKB type: %d", type);
-      break;
-  }
+  if (set_type(type))
+    result = set_to_wkb_size((Set *) DatumGetPointer(value));
+  else if (span_type(type))
+    result = span_to_wkb_size((Span *) DatumGetPointer(value));
+  else if (spanset_type(type))
+    result = spanset_to_wkb_size((SpanSet *) DatumGetPointer(value));
+  else if (type == T_TBOX)
+    result = tbox_to_wkb_size((TBox *) DatumGetPointer(value));
+  else if (type == T_STBOX)
+    result = stbox_to_wkb_size((STBox *) DatumGetPointer(value), variant);
+  else if (temporal_type(type))
+    result = temporal_to_wkb_size((Temporal *) DatumGetPointer(value),
+      variant);
+  else /* Error! */
+    elog(ERROR, "Unknown WKB type: %d", type);
+
   return result;
 }
 
@@ -1652,34 +1631,6 @@ npoint_to_wkb_buf(const Npoint *np, uint8_t *buf, uint8_t variant)
 /*****************************************************************************/
 
 /**
- * Write into the buffer the set type
- */
-static uint8_t *
-set_settype_to_wkb_buf(const Set *s, uint8_t *buf, uint8_t variant)
-{
-  uint16_t wkb_settype;
-  /* The Set struct does not store its type but it can be deduced from
-   * the type of its bounding span */
-  ensure_span_basetype(s->basetype);
-  switch (s->basetype)
-  {
-    case T_INT4:
-      wkb_settype = T_INTSET;
-      break;
-    case T_INT8:
-      wkb_settype = T_BIGINTSET;
-      break;
-    case T_FLOAT8:
-      wkb_settype = T_FLOATSET;
-      break;
-    case T_TIMESTAMPTZ:
-      wkb_settype = T_TIMESTAMPSET;
-      break;
-  }
-  return int16_to_wkb_buf(wkb_settype, buf, variant);
-}
-
-/**
  * Write into the buffer a temporal instant represented in Well-Known Binary
  * (WKB) format as follows
  * - base value
@@ -1689,15 +1640,17 @@ static uint8_t *
 set_value_to_wkb_buf(Datum value, mobdbType basetype, uint8_t *buf,
   uint8_t variant)
 {
-  ensure_span_basetype(basetype);
+  ensure_set_basetype(basetype);
   if (basetype == T_BOOL)
     buf = bool_to_wkb_buf(DatumGetBool(value), buf, variant);
   else if (basetype == T_INT4)
     buf = int32_to_wkb_buf(DatumGetInt32(value), buf, variant);
-  else if (basetype == T_INT8)
+  else if (basetype == T_INT8 || basetype == T_TIMESTAMPTZ)
     buf = int64_to_wkb_buf(DatumGetInt64(value), buf, variant);
-  else /* basetype == T_FLOAT8 */
+  else if (basetype == T_FLOAT8)
     buf = double_to_wkb_buf(DatumGetFloat8(value), buf, variant);
+  else /* basetype == T_TEXT */
+    buf = text_to_wkb_buf(DatumGetTextP(value), buf, variant);
   return buf;
 }
 
@@ -1715,12 +1668,12 @@ set_to_wkb_buf(const Set *s, uint8_t *buf, uint8_t variant)
   /* Write the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
   /* Write the set type */
-  buf = set_settype_to_wkb_buf(s, buf, variant);
+  buf = int16_to_wkb_buf(s->settype, buf, variant);
   /* Write the count */
   buf = int32_to_wkb_buf(s->count, buf, variant);
   /* Write the values */
   for (int i = 0; i < s->count; i++)
-    buf = set_value_to_wkb_buf(s->elems[i], s->basetype, buf, variant);
+    buf = set_value_to_wkb_buf(set_val_n(s, i), s->basetype, buf, variant);
   return buf;
 }
 
@@ -2205,50 +2158,22 @@ temporal_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
 static uint8_t *
 datum_to_wkb_buf(Datum value, mobdbType type, uint8_t *buf, uint8_t variant)
 {
-  switch (type)
-  {
-    case T_INTSET:
-    case T_BIGINTSET:
-    case T_FLOATSET:
-    case T_TIMESTAMPSET:
-      buf = set_to_wkb_buf((Set *) DatumGetPointer(value),
-        buf, variant);
-      break;
-    case T_INTSPAN:
-    case T_BIGINTSPAN:
-    case T_FLOATSPAN:
-    case T_PERIOD:
-      buf = span_to_wkb_buf((Span *) DatumGetPointer(value), buf, variant);
-      break;
-    case T_INTSPANSET:
-    case T_BIGINTSPANSET:
-    case T_FLOATSPANSET:
-    case T_PERIODSET:
-      buf = spanset_to_wkb_buf((SpanSet *) DatumGetPointer(value), buf,
-        variant);
-      break;
-    case T_TBOX:
-      buf = tbox_to_wkb_buf((TBox *) DatumGetPointer(value), buf, variant);
-      break;
-    case T_STBOX:
-      buf = stbox_to_wkb_buf((STBox *) DatumGetPointer(value), buf, variant);
-      break;
-    case T_TBOOL:
-    case T_TINT:
-    case T_TFLOAT:
-    case T_TTEXT:
-    case T_TGEOMPOINT:
-    case T_TGEOGPOINT:
-#if NPOINT
-    case T_TNPOINT:
-#endif /* NPOINT */
-      buf = temporal_to_wkb_buf((Temporal *) DatumGetPointer(value), buf,
-        variant);
-      break;
-    default: /* Error! */
-      elog(ERROR, "Unknown WKB type: %d", type);
-      break;
-  }
+  if (set_type(type))
+    buf = set_to_wkb_buf((Set *) DatumGetPointer(value), buf, variant);
+  else if (span_type(type))
+    buf = span_to_wkb_buf((Span *) DatumGetPointer(value), buf, variant);
+  else if (spanset_type(type))
+    buf = spanset_to_wkb_buf((SpanSet *) DatumGetPointer(value), buf, variant);
+  else if (type == T_TBOX)
+    buf = tbox_to_wkb_buf((TBox *) DatumGetPointer(value), buf, variant);
+  else if (type == T_STBOX)
+    buf = stbox_to_wkb_buf((STBox *) DatumGetPointer(value), buf, variant);
+  else if (temporal_type(type))
+    buf = temporal_to_wkb_buf((Temporal *) DatumGetPointer(value), buf,
+      variant);
+  else /* Error! */
+    elog(ERROR, "Unknown WKB type: %d", type);
+
   return buf;
 }
 
@@ -2400,10 +2325,9 @@ set_as_wkb(const Set *s, uint8_t variant, size_t *size_out)
  * @sqlfunc asHexWKB()
  */
 char *
-set_as_hexwkb(const TimestampSet *ts, uint8_t variant,
-  size_t *size_out)
+set_as_hexwkb(const TimestampSet *ts, uint8_t variant, size_t *size_out)
 {
-  char *result = (char *) datum_as_wkb(PointerGetDatum(ts), s->settype,
+  char *result = (char *) datum_as_wkb(PointerGetDatum(ts), ts->settype,
     variant | (uint8_t) WKB_HEX, size_out);
   return result;
 }
