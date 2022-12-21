@@ -179,7 +179,6 @@ SELECT '&>', 'floatset', 'floatset', COUNT(*) FROM tbl_floatset t1, tbl_floatset
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
 SELECT '#&>', 'timestampset', 'timestampset', COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts #&> t2.ts;
 
-
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)
 SELECT '=', 'intset', 'intset', COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i = t2.i;
 INSERT INTO test_setops(op, leftarg, rightarg, no_idx)

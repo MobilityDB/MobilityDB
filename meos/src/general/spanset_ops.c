@@ -101,7 +101,7 @@ setop_set_spanset(const Set *s, const SpanSet *ss, SetOper setop)
     for (int l = i; l < s->count; l++)
       values[k++] = set_val_n(s, l);
   }
-  return set_make_free(values, k, s->basetype);
+  return set_make_free(values, k, s->basetype, ORDERED);
 }
 
 /*****************************************************************************

@@ -383,7 +383,7 @@ timestamp_tunion_finalfn(SkipList *state)
   assert(state->elemtype == TIMESTAMPTZ);
   Datum *values = (Datum *) skiplist_values(state);
 
-  Set *result = set_make(values, state->length, T_TIMESTAMPTZ);
+  Set *result = set_make(values, state->length, T_TIMESTAMPTZ, ORDERED);
   pfree(values);
   return (TimestampSet *) result;
 }

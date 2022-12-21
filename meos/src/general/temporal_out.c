@@ -1069,7 +1069,7 @@ set_basetype_to_wkb_size(Datum value, mobdbType basetype)
   else if (basetype == T_TIMESTAMPTZ)
     result = MOBDB_WKB_TIMESTAMP_SIZE;
   else
-    elog(ERROR, "Unknown base type %d", basetype);
+    elog(ERROR, "Unknown base type for set: %d", basetype);
   return result;
 }
 
@@ -1641,16 +1641,16 @@ set_value_to_wkb_buf(Datum value, mobdbType basetype, uint8_t *buf,
   uint8_t variant)
 {
   ensure_set_basetype(basetype);
-  if (basetype == T_BOOL)
-    buf = bool_to_wkb_buf(DatumGetBool(value), buf, variant);
-  else if (basetype == T_INT4)
+  if (basetype == T_INT4)
     buf = int32_to_wkb_buf(DatumGetInt32(value), buf, variant);
   else if (basetype == T_INT8 || basetype == T_TIMESTAMPTZ)
     buf = int64_to_wkb_buf(DatumGetInt64(value), buf, variant);
   else if (basetype == T_FLOAT8)
     buf = double_to_wkb_buf(DatumGetFloat8(value), buf, variant);
-  else /* basetype == T_TEXT */
+  else if (basetype == T_TEXT)
     buf = text_to_wkb_buf(DatumGetTextP(value), buf, variant);
+  else /* error */
+    elog(ERROR, "Unknown base type for set: %d", basetype);
   return buf;
 }
 
@@ -1785,22 +1785,6 @@ span_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant)
   buf = endian_to_wkb_buf(buf, variant);
   /* Write the span */
   buf = span_to_wkb_buf_int(s, buf, variant);
-  return buf;
-}
-
-/*****************************************************************************/
-
-/**
- * Optimized version of span_to_wkb_buf for writing the periods in a period set.
- * The endian byte and the basetype int16 are not written into the buffer.
- */
-uint8_t *
-period_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant)
-{
-  /* Write the span bounds */
-  buf = bounds_to_wkb_buf(s->lower_inc, s->upper_inc, buf, variant);
-  /* Write the base values */
-  buf = lower_upper_to_wkb_buf(s, buf, variant);
   return buf;
 }
 

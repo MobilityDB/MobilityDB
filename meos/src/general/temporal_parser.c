@@ -383,7 +383,7 @@ set_parse(const char **str, mobdbType ostype)
     values[i] = elem_parse(str, basetype);
   }
   p_cbrace(str);
-  return set_make_free(values, count, basetype);
+  return set_make_free(values, count, basetype, ORDERED);
 }
 
 /**

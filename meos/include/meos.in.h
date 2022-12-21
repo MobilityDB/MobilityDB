@@ -56,6 +56,8 @@ typedef struct
   uint8 basetype;       /**< span basetype */
   int16 flags;          /**< flags */
   int32 count;          /**< Number of TimestampTz elements */
+  int32 minvalidx;      /**< Index of the minimum value */
+  int32 maxvalidx;      /**< Index of the maximum value */
   Datum elems[1];       /**< Beginning of variable-length data */
 } Set;
 

@@ -141,7 +141,7 @@ Set_constructor(PG_FUNCTION_ARGS)
   int count;
   Datum *values = datumarr_extract(array, &count);
   mobdbType basetype = settype_basetype(settype);
-  Set *result = set_make_free(values, count, basetype);
+  Set *result = set_make_free(values, count, basetype, ORDERED);
   PG_FREE_IF_COPY(array, 0);
   PG_RETURN_POINTER(result);
 }

@@ -150,7 +150,7 @@ geoarr_as_text(const Datum *geoarr, int count, int maxdd, bool extended)
   for (int i = 0; i < count; i++)
     /* The wkt_out and ewkt_out functions do not use the second argument */
     result[i] = extended ?
-      ewkt_out(geoarr[i], 0, maxdd) : wkt_out(0, geoarr[i], maxdd);
+      ewkt_out(geoarr[i], 0, maxdd) : wkt_out(geoarr[i], 0, maxdd);
   return result;
 }
 

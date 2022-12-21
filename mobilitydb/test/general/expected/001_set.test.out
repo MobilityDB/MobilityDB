@@ -33,25 +33,25 @@ SELECT timestamptz '2000-01-01'::timestampset;
 SELECT memorySize(timestampset '{2000-01-01}');
  memorysize 
 ------------
-         24
+         32
 (1 row)
 
 SELECT memorySize(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
  memorysize 
 ------------
-         40
+         48
 (1 row)
 
 SELECT storageSize(timestampset '{2000-01-01}');
  storagesize 
 -------------
-          24
+          32
 (1 row)
 
 SELECT storageSize(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
  storagesize 
 -------------
-          40
+          48
 (1 row)
 
 SELECT period(timestampset '{2000-01-01}');

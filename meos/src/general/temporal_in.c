@@ -1227,7 +1227,7 @@ set_from_wkb_state(wkb_parse_state *s)
   /* Read and create the set */
   for (int i = 0; i < count; i++)
     values[i] = set_basevalue_from_wkb_state(s);
-  Set *result = set_make_free(values, count, s->basetype);
+  Set *result = set_make_free(values, count, s->basetype, ORDERED);
   return result;
 }
 

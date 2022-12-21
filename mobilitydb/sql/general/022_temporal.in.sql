@@ -1660,7 +1660,7 @@ CREATE FUNCTION minusValue(ttext, text)
   AS 'MODULE_PATHNAME', 'Temporal_minus_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION atValues(tint, integer[])
+CREATE FUNCTION atValues(tint, int[])
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Temporal_at_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -1673,7 +1673,7 @@ CREATE FUNCTION atValues(ttext, text[])
   AS 'MODULE_PATHNAME', 'Temporal_at_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION minusValues(tint, integer[])
+CREATE FUNCTION minusValues(tint, int[])
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Temporal_minus_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

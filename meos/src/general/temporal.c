@@ -2886,6 +2886,7 @@ temporal_restrict_values(const Temporal *temp, Datum *values, int count,
   return result;
 }
 
+
 /*****************************************************************************/
 
 /**

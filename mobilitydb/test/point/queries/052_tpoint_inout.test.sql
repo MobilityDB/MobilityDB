@@ -146,6 +146,7 @@ SELECT asText(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@20
 
 SELECT asText('{}'::tgeompoint[]);
 SELECT asText(ARRAY[tgeompoint 'Point(1 1)@2000-01-01']);
+SELECT asText(ARRAY[geometry 'Point(1 1)', 'Point(2 2)']);
 
 SELECT asEWKT(tgeompoint 'Point(1 1)@2000-01-01');
 SELECT asEWKT(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
@@ -167,6 +168,7 @@ SELECT asEWKT(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@20
 
 SELECT asEWKT('{}'::tgeompoint[]);
 SELECT asEWKT(ARRAY[tgeompoint 'Point(1 1)@2000-01-01']);
+SELECT asEWKT(ARRAY[geometry 'Point(1 1)', 'Point(2 2)']);
 
 SELECT asMFJSON(tgeompoint 'Point(1 1)@2000-01-01');
 SELECT asMFJSON(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');

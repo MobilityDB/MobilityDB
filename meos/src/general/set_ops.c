@@ -46,19 +46,65 @@
  *****************************************************************************/
 
 /**
+ * Return true if the bounding boxes of the sets overlap
+ */
+bool
+bbox_overlaps_set_set(const Set *s1, const Set *s2)
+{
+  assert(s1->settype == s2->settype);
+  Datum min1 = set_val_n(s1, s1->minvalidx);
+  Datum min2 = set_val_n(s2, s2->minvalidx);
+  Datum max1 = set_val_n(s1, s1->maxvalidx);
+  Datum max2 = set_val_n(s2, s2->maxvalidx);
+  if (datum_le(min1, max2, s1->basetype) && datum_le(min2, max1, s1->basetype))
+    return true;
+  return false;
+}
+
+/**
+ * Return true if the bounding box of the first set contains the bounding box
+ * of the second
+ */
+bool
+bbox_contains_set_set(const Set *s1, const Set *s2)
+{
+  assert(s1->settype == s2->settype);
+  Datum min1 = set_val_n(s1, s1->minvalidx);
+  Datum min2 = set_val_n(s2, s2->minvalidx);
+  Datum max1 = set_val_n(s1, s1->maxvalidx);
+  Datum max2 = set_val_n(s2, s2->maxvalidx);
+  if (datum_le(min1, min2, s1->basetype) && datum_le(max2, max1, s1->basetype))
+    return true;
+  return false;
+}
+
+/**
+ * Return true if the bounding box of the first set contains the value
+ */
+bool
+bbox_contains_set_value(const Set *s, Datum d, mobdbType basetype)
+{
+  assert(s->basetype == basetype);
+  Datum min = set_val_n(s, s->minvalidx);
+  Datum max = set_val_n(s, s->maxvalidx);
+  if (datum_le(min, d, basetype) && datum_le(d, max, basetype))
+    return true;
+  return false;
+}
+
+/*****************************************************************************/
+
+/**
  * Return the union, intersection, or difference of two sets
  */
 static Set *
 setop_set_set(const Set *s1, const Set *s2, SetOper setop)
 {
   assert(s1->settype == s2->settype);
-  if (MOBDB_FLAGS_GET_BYVAL(s1->flags) && (setop == INTER || setop == MINUS))
+  if (setop == INTER || setop == MINUS)
   {
     /* Bounding box test */
-    Span sp1, sp2;
-    set_set_span(s1, &sp1);
-    set_set_span(s2, &sp2);
-    if (! overlaps_span_span(&sp1, &sp2))
+    if (! bbox_overlaps_set_set(s1, s2))
       return setop == INTER ? NULL : set_copy(s1);
   }
 
@@ -118,7 +164,7 @@ setop_set_set(const Set *s1, const Set *s2, SetOper setop)
     while (j < s2->count)
       values[k++] = set_val_n(s2, j++);
   }
-  return set_make_free(values, k, basetype);
+  return set_make_free(values, k, basetype, ORDERED);
 }
 
 /*****************************************************************************
@@ -133,14 +179,8 @@ bool
 contains_set_value(const Set *s, Datum d, mobdbType basetype)
 {
   /* Bounding box test */
-  if (MOBDB_FLAGS_GET_BYVAL(s->flags))
-  {
-    Span sp;
-    set_set_span(s, &sp);
-    if (! contains_span_value(&sp, d, basetype))
-      return false;
-  }
-
+  if (! bbox_contains_set_value(s, d, basetype))
+    return false;
   int loc;
   return set_find_value(s, d, &loc);
 }
@@ -211,14 +251,8 @@ bool
 contains_set_set(const Set *s1, const Set *s2)
 {
   /* Bounding box test */
-  if (MOBDB_FLAGS_GET_BYVAL(s1->flags))
-  {
-    Span sp1, sp2;
-    set_set_span(s1, &sp1);
-    set_set_span(s2, &sp2);
-    if (! contains_span_span(&sp1, &sp2))
-      return false;
-  }
+  if (! bbox_contains_set_set(s1, s2))
+    return false;
 
   int i = 0, j = 0;
   while (j < s2->count)
@@ -333,15 +367,9 @@ contained_set_set(const Set *s1,
 bool
 overlaps_set_set(const Set *s1, const Set *s2)
 {
-  if (MOBDB_FLAGS_GET_BYVAL(s1->flags))
-  {
-    /* Bounding box test */
-    Span sp1, sp2;
-    set_set_span(s1, &sp1);
-    set_set_span(s2, &sp2);
-    if (! overlaps_span_span(&sp1, &sp2))
-      return false;
-  }
+  /* Bounding box test */
+  if (! bbox_overlaps_set_set(s1, s2))
+    return false;
 
   int i = 0, j = 0;
   while (i < s1->count && j < s2->count)
@@ -370,7 +398,7 @@ overlaps_set_set(const Set *s1, const Set *s2)
 bool
 left_value_set(Datum d, mobdbType basetype, const Set *s)
 {
-  Datum d1 = set_val_n(s, 0);
+  Datum d1 = set_val_n(s, s->minvalidx);
   return datum_lt2(d, d1, s->basetype, basetype);
 }
 
@@ -438,7 +466,7 @@ before_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 bool
 left_set_value(const Set *s, Datum d, mobdbType basetype)
 {
-  Datum d1 = set_val_n(s, s->count - 1);
+  Datum d1 = set_val_n(s, s->maxvalidx);
   return datum_lt2(d1, d, s->basetype, basetype);
 }
 
@@ -675,7 +703,7 @@ right_set_set(const Set *s1, const Set *s2)
 bool
 overleft_value_set(Datum d, mobdbType basetype, const Set *s)
 {
-  Datum d1 = set_val_n(s, s->count - 1);
+  Datum d1 = set_val_n(s, s->maxvalidx);
   return datum_le2(d, d1, basetype, s->basetype);
 }
 
@@ -744,7 +772,7 @@ overbefore_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 bool
 overleft_set_value(const Set *s, Datum d, mobdbType basetype)
 {
-  Datum d1 = set_val_n(s, s->count - 1);
+  Datum d1 = set_val_n(s, s->maxvalidx);
   return datum_le2(d1, d, s->basetype, basetype);
 }
 
@@ -830,7 +858,7 @@ overleft_set_set(const Set *s1, const Set *s2)
 bool
 overright_value_set(Datum d, mobdbType basetype, const Set *s)
 {
-  Datum d1 = set_val_n(s, 0);
+  Datum d1 = set_val_n(s, s->minvalidx);
   return datum_ge2(d, d1, basetype, s->basetype);
 }
 
@@ -887,7 +915,7 @@ overafter_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 bool
 overright_set_value(const Set *s, Datum d, mobdbType basetype)
 {
-  Datum d1 = set_val_n(s, 0);
+  Datum d1 = set_val_n(s, s->minvalidx);
   return datum_ge2(d1, d, s->basetype, basetype);
 }
 
@@ -976,7 +1004,7 @@ union_value_value(Datum d1, Datum d2, mobdbType basetype)
   Set *result;
   int cmp = datum_cmp(d1, d2, basetype);
   if (cmp == 0)
-    result = set_make(&d1, 1, basetype);
+    result = set_make(&d1, 1, basetype, ORDERED);
   else
   {
     Datum values[2];
@@ -990,7 +1018,7 @@ union_value_value(Datum d1, Datum d2, mobdbType basetype)
       values[0] = d2;
       values[1] = d1;
     }
-    result = set_make(values, 2, basetype);
+    result = set_make(values, 2, basetype, ORDERED);
   }
   return result;
 }
@@ -1082,7 +1110,7 @@ union_set_value(const Set *s, Datum d, mobdbType basetype)
   }
   if (! found)
     values[k++] = d;
-  return set_make_free(values, k, basetype);
+  return set_make_free(values, k, basetype, ORDERED);
 }
 
 #if MEOS
@@ -1430,14 +1458,9 @@ minus_text_textset(const text *txt, const Set *s, text **result)
 Set *
 minus_set_value(const Set *s, Datum d, mobdbType basetype)
 {
-  if (MOBDB_FLAGS_GET_BYVAL(s->flags))
-  {
-    /* Bounding box test */
-    Span sp;
-    set_set_span(s, &sp);
-    if (! contains_span_value(&sp, d, basetype))
-      return set_copy(s);
-  }
+  /* Bounding box test */
+  if (! bbox_contains_set_value(s, d, basetype))
+    return set_copy(s);
 
   Datum *values = palloc(sizeof(TimestampTz) * s->count);
   int k = 0;
@@ -1448,7 +1471,7 @@ minus_set_value(const Set *s, Datum d, mobdbType basetype)
     if (datum_ne(v, v1, basetype))
       values[k++] = v1;
   }
-  return set_make_free(values, k, basetype);
+  return set_make_free(values, k, basetype, ORDERED);
 }
 
 #if MEOS
@@ -1504,14 +1527,11 @@ minus_textset_text(const Set *s, const text *txt)
 TimestampSet *
 minus_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 {
-  if (MOBDB_FLAGS_GET_BYVAL(s1->flags))
-  {
-    /* Bounding box test */
-    Span s;
-    set_set_span(ts, &s);
-    if (! contains_period_timestamp(&s, t))
-      return set_copy(ts);
-  }
+  /* Bounding box test */
+  Span s;
+  set_set_span(ts, &s);
+  if (! contains_period_timestamp(&s, t))
+    return set_copy(ts);
 
   Datum *values = palloc(sizeof(TimestampTz) * ts->count);
   int k = 0;
@@ -1522,7 +1542,7 @@ minus_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
     if (datum_ne(v, v1, T_TIMESTAMPTZ))
       values[k++] = v1;
   }
-  return set_make_free(values, k, T_TIMESTAMPTZ);
+  return set_make_free(values, k, T_TIMESTAMPTZ, ORDERED);
 }
 #endif /* MEOS */
 

@@ -1,3 +1,87 @@
+SELECT COUNT(*) FROM tbl_textset t1, tbl_textset t2 WHERE t1.t && t2.t;
+ count 
+-------
+   191
+(1 row)
+
+SELECT COUNT(*) FROM tbl_textset t1, tbl_text t2 WHERE t1.t @> t2.t;
+ count 
+-------
+     6
+(1 row)
+
+SELECT COUNT(*) FROM tbl_textset t1, tbl_textset t2 WHERE t1.t @> t2.t;
+ count 
+-------
+    99
+(1 row)
+
+SELECT COUNT(*) FROM tbl_text t1, tbl_textset t2 WHERE t1.t <@ t2.t;
+ count 
+-------
+     6
+(1 row)
+
+SELECT COUNT(*) FROM tbl_textset t1, tbl_textset t2 WHERE t1.t <@ t2.t;
+ count 
+-------
+    99
+(1 row)
+
+SELECT COUNT(*) FROM tbl_textset t1, tbl_text t2 WHERE t1.t << t2.t;
+ count 
+-------
+  1193
+(1 row)
+
+SELECT COUNT(*) FROM tbl_textset t1, tbl_textset t2 WHERE t1.t << t2.t;
+ count 
+-------
+    89
+(1 row)
+
+SELECT COUNT(*) FROM tbl_textset t1, tbl_text t2 WHERE t1.t &< t2.t;
+ count 
+-------
+  1193
+(1 row)
+
+SELECT COUNT(*) FROM tbl_textset t1, tbl_textset t2 WHERE t1.t &< t2.t;
+ count 
+-------
+  4952
+(1 row)
+
+SELECT COUNT(*) FROM tbl_textset t1, tbl_text t2 WHERE t1.t >> t2.t;
+ count 
+-------
+  2202
+(1 row)
+
+SELECT COUNT(*) FROM tbl_textset t1, tbl_textset t2 WHERE t1.t >> t2.t;
+ count 
+-------
+    89
+(1 row)
+
+SELECT COUNT(*) FROM tbl_textset t1, tbl_text t2 WHERE t1.t &> t2.t;
+ count 
+-------
+  2204
+(1 row)
+
+SELECT COUNT(*) FROM tbl_textset t1, tbl_textset t2  WHERE t1.t &> t2.t;
+ count 
+-------
+  4955
+(1 row)
+
+SELECT COUNT(*) FROM tbl_textset t1, tbl_textset t2 WHERE t1.t = t2.t;
+ count 
+-------
+    99
+(1 row)
+
 SELECT COUNT(*) FROM tbl_intset t1, tbl_int t2 WHERE t1.i + t2.i IS NOT NULL;
  count 
 -------

@@ -352,24 +352,6 @@ Timestamp_to_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-/**
- * Peak into a timestamp set datum to find the bounding box. If the datum needs
- * to be detoasted, extract only the header and not the full object.
- */
-void
-timestampset_stbox_slice(Datum tsdatum, STBox *box)
-{
-  TimestampSet *ts = NULL;
-  if (PG_DATUM_NEEDS_DETOAST((struct varlena *) tsdatum))
-    ts = (TimestampSet *) PG_DETOAST_DATUM_SLICE(tsdatum, 0,
-      time_max_header_size());
-  else
-    ts = (TimestampSet *) tsdatum;
-  timestampset_set_stbox(ts, box);
-  PG_FREE_IF_COPY_P(ts, DatumGetPointer(tsdatum));
-  return;
-}
-
 PG_FUNCTION_INFO_V1(Timestampset_to_stbox);
 /**
  * @ingroup mobilitydb_box_cast
@@ -380,9 +362,9 @@ PG_FUNCTION_INFO_V1(Timestampset_to_stbox);
 PGDLLEXPORT Datum
 Timestampset_to_stbox(PG_FUNCTION_ARGS)
 {
-  Datum tsdatum = PG_GETARG_DATUM(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
   STBox *result = palloc(sizeof(STBox));
-  timestampset_stbox_slice(tsdatum, result);
+  timestampset_set_stbox(ts, result);
   PG_RETURN_POINTER(result);
 }
 

@@ -78,6 +78,10 @@ extern char *text_to_cstring(const text *t);
 #define DISCONTINUOUS   true
 #define CONTINUOUS      false
 
+/** Symbolic constants for sets */
+#define ORDERED         true
+#define ORDERED_NO      false
+
 /** Symbolic constants for lifting */
 #define INVERT          true
 #define INVERT_NO       false
@@ -173,14 +177,17 @@ typedef enum
  *   - 01: DISCRETE
  *   - 10: STEPWISE
  *   - 11: LINEAR
- *   C: continuous base type
+ *   C: continuous base type / Ordered collection
  *   B: base type passed by value
  * Notice that formally speaking the interpolation flags are only needed
  * for sequence and sequence set subtypes.
  *****************************************************************************/
 
-/* The following flag is only used for TInstant */
+/* The following flag is only used for Collection and TInstant */
 #define MOBDB_FLAG_BYVAL      0x0001  // 1
+/* The following flag is only used for Collection */
+#define MOBDB_FLAG_ORDERED    0x0002  // 2
+/* The following flag is only used for Temporal */
 #define MOBDB_FLAG_CONTINUOUS 0x0002  // 2
 /* The following two interpolation flags are only used for TSequence and TSequenceSet */
 #define MOBDB_FLAGS_INTERP    0x000C  // 4 / 8
@@ -191,6 +198,7 @@ typedef enum
 #define MOBDB_FLAG_GEODETIC   0x0080  // 128
 
 #define MOBDB_FLAGS_GET_BYVAL(flags)      ((bool) (((flags) & MOBDB_FLAG_BYVAL)))
+#define MOBDB_FLAGS_GET_ORDERED(flags)    ((bool) (((flags) & MOBDB_FLAG_ORDERED)>>1))
 #define MOBDB_FLAGS_GET_CONTINUOUS(flags) ((bool) (((flags) & MOBDB_FLAG_CONTINUOUS)>>1))
 #define MOBDB_FLAGS_GET_X(flags)          ((bool) (((flags) & MOBDB_FLAG_X)>>4))
 #define MOBDB_FLAGS_GET_Z(flags)          ((bool) (((flags) & MOBDB_FLAG_Z)>>5))
@@ -199,6 +207,8 @@ typedef enum
 
 #define MOBDB_FLAGS_SET_BYVAL(flags, value) \
   ((flags) = (value) ? ((flags) | MOBDB_FLAG_BYVAL) : ((flags) & ~MOBDB_FLAG_BYVAL))
+#define MOBDB_FLAGS_SET_ORDERED(flags, value) \
+  ((flags) = (value) ? ((flags) | MOBDB_FLAG_ORDERED) : ((flags) & ~MOBDB_FLAG_ORDERED))
 #define MOBDB_FLAGS_SET_CONTINUOUS(flags, value) \
   ((flags) = (value) ? ((flags) | MOBDB_FLAG_CONTINUOUS) : ((flags) & ~MOBDB_FLAG_CONTINUOUS))
 #define MOBDB_FLAGS_SET_X(flags, value) \

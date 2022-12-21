@@ -61,8 +61,8 @@ extern SpanSet *spanset_in(const char *str, mobdbType spantype);
 
 /* Constructor functions for set and span types */
 
-extern Set *set_make(const Datum *values, int count, mobdbType basetype);
-extern Set *set_make_free(Datum *values, int count, mobdbType basetype);
+extern Set *set_make(const Datum *values, int count, mobdbType basetype, bool ordered);
+extern Set *set_make_free(Datum *values, int count, mobdbType basetype, bool ordered);
 extern Set *set_copy(const TimestampSet *s);
 extern Span *span_make(Datum lower, Datum upper, bool lower_inc, bool upper_inc, mobdbType basetype);
 extern void span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc, mobdbType basetype, Span *s);

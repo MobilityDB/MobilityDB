@@ -68,7 +68,7 @@ setop_set_span(const Set *os, const Span *s, SetOper setop)
       ((setop == MINUS) && ! contains_span_value(s, v, os->basetype)))
       values[k++] = v;
   }
-  return set_make_free(values, k, os->basetype);
+  return set_make_free(values, k, os->basetype, ORDERED);
 }
 
 /**
