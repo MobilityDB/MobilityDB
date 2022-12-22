@@ -185,6 +185,7 @@ skiplist_delete(SkipList *list, int cur)
 #endif /* ! MEOS */
   }
   /* Mark the element as free */
+  list->elems[cur].value = NULL;
   list->freed[list->freecount ++] = cur;
   list->length --;
   return;
@@ -205,9 +206,9 @@ skiplist_free(SkipList *list)
   if (list->elems)
   {
     /* Free the element values of the skiplist if they are not NULL */
-    // for (int i = 0; i < list->length; i ++)
-      // if (list->elems[i].value)
-        // pfree(list->elems[i].value);
+    for (int i = 0; i < list->length; i ++)
+      if (list->elems[i].value)
+        pfree(list->elems[i].value);
     /* Free the element list */
     pfree(list->elems);
   }
@@ -434,6 +435,10 @@ void
 skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
   bool crossings)
 {
+#if ! MEOS
+  MemoryContext oldctx;
+#endif /* ! MEOS */
+
   /*
    * O(count*log(n)) average (unless I'm mistaken)
    * O(n+count*log(n)) worst case (when period spans the whole list so
@@ -546,14 +551,11 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
     {
       newvalues = (void **) timestamp_agg((TimestampTz *) spliced,
         spliced_count, (TimestampTz *) values, count, &newcount);
-      pfree(spliced);
     }
     else if (list->elemtype == PERIOD)
     {
       newvalues = (void **) period_agg((Period **) spliced, spliced_count,
         (Period **) values, count, &newcount);
-      /* Delete the spliced-out period values */
-      pfree_array(spliced, spliced_count);
     }
     else /* list->elemtype == TEMPORAL */
     {
@@ -564,9 +566,21 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
         newvalues = (void **) tsequence_tagg((TSequence **) spliced,
           spliced_count, (TSequence **) values, count, func, crossings,
           &newcount);
-      /* We need to delete the spliced-out temporal values */
-      pfree_array(spliced, spliced_count);
     }
+
+    /* Delete the spliced-out values */
+    if (list->elemtype != TIMESTAMPTZ)
+    {
+#if ! MEOS
+      oldctx = set_aggregation_context(fetch_fcinfo());
+#endif /* ! MEOS */
+      for (int i = 0; i < spliced_count; i++)
+        pfree(spliced[i]);
+#if ! MEOS
+      unset_aggregation_context(oldctx);
+#endif /* ! MEOS */
+    }
+    pfree(spliced);
     values = newvalues;
     count = newcount;
   }
@@ -590,7 +604,7 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
     int new = skiplist_alloc(list);
     SkipListElem *newelm = &list->elems[new];
 #if ! MEOS
-    MemoryContext ctx = set_aggregation_context(fetch_fcinfo());
+    oldctx = set_aggregation_context(fetch_fcinfo());
 #endif /* ! MEOS */
     if (list->elemtype == TIMESTAMPTZ)
       newelm->value = values[i];
@@ -599,7 +613,7 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
     else /* list->elemtype == TEMPORAL */
       newelm->value = temporal_copy(values[i]);
 #if ! MEOS
-    unset_aggregation_context(ctx);
+    unset_aggregation_context(oldctx);
 #endif /* ! MEOS */
     newelm->height = rheight;
 

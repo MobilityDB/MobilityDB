@@ -881,7 +881,7 @@ tsequenceset_set_period(const TSequenceSet *ss, Period *p)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Return the array of pointers to the sequences of a temporal sequence
+ * @brief Return an array of pointers to the sequences of a temporal sequence
  * set.
  */
 const TSequence **

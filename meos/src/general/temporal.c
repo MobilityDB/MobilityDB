@@ -35,6 +35,8 @@
 
 /* C */
 #include <assert.h>
+/* GEOS */
+#include <geos_c.h>
 /* MobilityDB */
 #include <meos.h>
 #include <meos_internal.h>
@@ -502,14 +504,14 @@ intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
  * Version functions
  *****************************************************************************/
 
-#define MOBDB_VERSION_STR_MAXLEN 128
+#define MOBDB_VERSION_STR_MAXLEN 256
 /**
  * Version of the MobilityDB extension
  */
 char *
 mobilitydb_version(void)
 {
-  char *result = MOBILITYDB_VERSION_STR;
+  char *result = MOBILITYDB_VERSION_STRING;
   return result;
 }
 
@@ -519,9 +521,18 @@ mobilitydb_version(void)
 char *
 mobilitydb_full_version(void)
 {
+#if POSTGIS_PROJ_VERSION < 61
+  const char *ver = pj_get_release();
+#else
+  PJ_INFO pji = proj_info();
+#endif
+  const char* geos_version = GEOSversion();
+
   char *result = palloc(sizeof(char) * MOBDB_VERSION_STR_MAXLEN);
-  int len = snprintf(result, MOBDB_VERSION_STR_MAXLEN, "%s, %s, %s",
-    MOBILITYDB_VERSION_STR, POSTGRESQL_VERSION_STRING, POSTGIS_VERSION_STR);
+  int len = snprintf(result, MOBDB_VERSION_STR_MAXLEN,
+    "%s, %s, %s, GEOS %s, PROJ %s",
+    MOBILITYDB_VERSION_STRING, POSTGRESQL_VERSION_STRING,
+    POSTGIS_VERSION_STRING, geos_version, pji.version);
   result[len] = '\0';
   return result;
 }

@@ -57,7 +57,7 @@ find_package(POSTGIS REQUIRED)
 # PostGIS definitions for PostgreSQL and PostGIS version-dependent code
 math(EXPR POSTGIS_PGSQL_VERSION "${POSTGRESQL_VERSION_MAJOR} * 10 +
   ${POSTGRESQL_VERSION_MINOR}")
-add_definitions(-DPOSTGIS_VERSION_STR="${POSTGIS_VERSION_STR}")
+add_definitions(-DPOSTGIS_VERSION_STRING="${POSTGIS_VERSION_STR}")
 add_definitions(-DPOSTGIS_VERSION_NUMBER=${POSTGIS_VERSION_NUMBER})
 
 #--------------------------------
@@ -73,6 +73,7 @@ find_package(PROJ REQUIRED)
 include_directories(SYSTEM ${PROJ_INCLUDE_DIRS})
 math(EXPR POSTGIS_PROJ_VERSION "${PROJ_VERSION_MAJOR} * 10 + ${PROJ_VERSION_MINOR}")
 message(STATUS "POSTGIS_PROJ_VERSION: ${POSTGIS_PROJ_VERSION}")
+add_definitions(-DPROJ_VERSION_STRING="${POSTGIS_PROJ_VERSION}")
 
 # GEOS geometry library
 find_package(GEOS REQUIRED)

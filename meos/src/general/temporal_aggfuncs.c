@@ -171,9 +171,17 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
     int cmp = timestamptz_cmp_internal(inst1->t, inst2->t);
     if (cmp == 0)
     {
-      result[count++] = tinstant_make(
-        func(tinstant_value(inst1), tinstant_value(inst2)), inst1->temptype,
-        inst1->t);
+      if (func != NULL)
+        result[count++] = tinstant_make(
+          func(tinstant_value(inst1), tinstant_value(inst2)), inst1->temptype,
+          inst1->t);
+      else
+      {
+        if (tinstant_eq(inst1, inst2))
+          result[count++] = tinstant_copy(inst1);
+        else
+          elog(ERROR, "Unable to merge values");
+      }
       i++;
       j++;
     }
@@ -266,8 +274,8 @@ tsequence_tagg1(const TSequence *seq1, const TSequence *seq2,
   TSequence *sequences[3];
   int k = 0;
 
-  /* Compute the aggregation on the period before the
-   * intersection of the intervals */
+  /* Compute the aggregation on the period before the intersection of the
+   * intervals */
   int cmp1 = timestamptz_cmp_internal(lower1, lower);
   int cmp2 = timestamptz_cmp_internal(lower2, lower);
   if (cmp1 < 0 || (lower1_inc && !lower_inc && cmp1 == 0))
@@ -293,16 +301,24 @@ tsequence_tagg1(const TSequence *seq1, const TSequence *seq2,
   {
     const TInstant *inst1 = tsequence_inst_n(syncseq1, i);
     const TInstant *inst2 = tsequence_inst_n(syncseq2, i);
-    instants[i] = tinstant_make(
-      func(tinstant_value(inst1), tinstant_value(inst2)), seq1->temptype,
-      inst1->t);
+    if (func != NULL)
+      instants[i] = tinstant_make(
+        func(tinstant_value(inst1), tinstant_value(inst2)), seq1->temptype,
+        inst1->t);
+    else
+    {
+      if (tinstant_eq(inst1, inst2))
+        instants[i] = tinstant_copy(inst1);
+      else
+        elog(ERROR, "Unable to merge values");
+    }
   }
   sequences[k++] = tsequence_make_free(instants, syncseq1->count,
     lower_inc, upper_inc, MOBDB_FLAGS_GET_INTERP(seq1->flags), NORMALIZE);
   pfree(syncseq1); pfree(syncseq2);
 
-  /* Compute the aggregation on the period after the intersection
-   * of the intervals */
+  /* Compute the aggregation on the period after the intersection of the
+   * intervals */
   cmp1 = timestamptz_cmp_internal(upper, upper1);
   cmp2 = timestamptz_cmp_internal(upper, upper2);
   if (cmp1 < 0 || (!upper_inc && upper1_inc && cmp1 == 0))
@@ -608,7 +624,7 @@ temporal_tagg_finalfn(SkipList *state)
     return NULL;
 
   Temporal **values = (Temporal **) skiplist_values(state);
-  Temporal *result;
+  Temporal *result = NULL;
   assert(values[0]->subtype == TINSTANT || values[0]->subtype == TSEQUENCE);
   if (values[0]->subtype == TINSTANT)
     result = (Temporal *) tsequence_make((const TInstant **) values,
