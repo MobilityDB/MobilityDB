@@ -29,6 +29,8 @@
 
 /**
  * @brief Functions manipulating skiplists.
+ * @note See the description of skip lists in Wikipedia
+ * https://en.wikipedia.org/wiki/Skip_list
  */
 
 #include "general/skiplist.h"
@@ -62,6 +64,12 @@
 
 /*****************************************************************************/
 
+/* Constants defining the behaviour of skip lists */
+
+#define SKIPLIST_INITIAL_CAPACITY 1024
+#define SKIPLIST_GROW 1       /**< double the capacity to expand the skiplist */
+#define SKIPLIST_INITIAL_FREELIST 32
+
 /**
  * Enumeration for the relative position of a given element into a skiplist
  */
@@ -87,7 +95,7 @@ ffsl(long int i)
   int result = 1;
   while(! (i & 1))
   {
-    result ++;
+    result++;
     i >>= 1;
   }
   return result;
@@ -113,13 +121,19 @@ random_level()
 }
 
 /**
- * Allocate memory for the skiplist
+ * @brief Return the position to store an additional element in the skiplist
  */
 static int
 skiplist_alloc(SkipList *list)
 {
-  list->length ++;
-  if (! list->freecount)
+  list->length++;
+  /* If there is unused space left by a previously deleted element, use it */
+  if (list->freecount)
+  {
+    list->freecount --;
+    return list->freed[list->freecount];
+  }
+  else
   {
     /* No free list, give first available entry */
     if (list->next >= list->capacity)
@@ -144,20 +158,15 @@ skiplist_alloc(SkipList *list)
       unset_aggregation_context(ctx);
 #endif /* ! MEOS */
     }
-    list->next ++;
+    list->next++;
     return list->next - 1;
-  }
-  else
-  {
-    list->freecount --;
-    return list->freed[list->freecount];
   }
 }
 
 /**
- * @brief Delete element of the skiplist
- * @note It is the responsibility of the calling function to delete the
- * value pointed by the skiplist element
+ * @brief Delete an element from the skiplist
+ * @note The calling function is responsible to delete the value pointed by the
+ * skiplist element. This function simply sets the pointer to NULL.
  */
 static void
 skiplist_delete(SkipList *list, int cur)
@@ -186,7 +195,7 @@ skiplist_delete(SkipList *list, int cur)
   }
   /* Mark the element as free */
   list->elems[cur].value = NULL;
-  list->freed[list->freecount ++] = cur;
+  list->freed[list->freecount++] = cur;
   list->length --;
   return;
 }
@@ -206,7 +215,7 @@ skiplist_free(SkipList *list)
   if (list->elems)
   {
     /* Free the element values of the skiplist if they are not NULL */
-    for (int i = 0; i < list->length; i ++)
+    for (int i = 0; i < list->length; i++)
       if (list->elems[i].value)
         pfree(list->elems[i].value);
     /* Free the element list */
@@ -259,7 +268,7 @@ skiplist_print(const SkipList *list)
     }
     if (e->next[0] != -1)
     {
-      for (int l = 0; l < e->height; l ++)
+      for (int l = 0; l < e->height; l++)
       {
         int next = e->next[l];
         len += sprintf(buf+len, "\telm%d:p%d -> elm%d:p%d ", cur, l, next, l);
@@ -292,8 +301,7 @@ void *
 skiplist_tailval(SkipList *list)
 {
   /* Despite the look, this is pretty much O(1) */
-  int cur = 0;
-  SkipListElem *e = &list->elems[cur];
+  SkipListElem *e = &list->elems[0];
   int height = e->height;
   while (e->next[height - 1] != list->tail)
     e = &list->elems[e->next[height - 1]];
@@ -346,7 +354,7 @@ skiplist_make(void **values, int count, SkipListElemType elemtype)
   result->tail = count - 1;
 
   /* Link the list in a balanced fashion */
-  for (int level = 0; level < height; level ++)
+  for (int level = 0; level < height; level++)
   {
     int step = 1 << level;
     for (int i = 0; i < count; i += step)
@@ -371,7 +379,7 @@ skiplist_make(void **values, int count, SkipListElemType elemtype)
 }
 
 /**
- * Determine the relative position of the two timestamps
+ * Determine the relative position of a period and a timestamp
  */
 static RelativeTimePos
 pos_period_timestamp(const Period *p, TimestampTz t)
@@ -384,7 +392,7 @@ pos_period_timestamp(const Period *p, TimestampTz t)
 }
 
 /**
- * Determine the relative position of a period and a timestamp
+ * Determine the relative position of two periods
  */
 static RelativeTimePos
 pos_period_period(const Period *p1, const Period *p2)
@@ -416,7 +424,7 @@ skiplist_elempos(const SkipList *list, Period *p, int cur)
     Temporal *temp = (Temporal *) list->elems[cur].value;
     if (temp->subtype == TINSTANT)
       return pos_period_timestamp(p, ((TInstant *) temp)->t);
-    else /* temp->subtype == SEQUENCE */
+    else /* temp->subtype == TSEQUENCE */
       return pos_period_period(p, &((TSequence *) temp)->period);
   }
 }
@@ -483,9 +491,9 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
   /* Find the list values that are strictly before the span of new values */
   int update[SKIPLIST_MAXLEVEL];
   memset(update, 0, sizeof(update));
+  int height = list->elems[0].height;
+  SkipListElem *e = &list->elems[0];
   int cur = 0;
-  int height = list->elems[cur].height;
-  SkipListElem *e = &list->elems[cur];
   for (int level = height - 1; level >= 0; level --)
   {
     while (e->next[level] != -1 &&
@@ -519,7 +527,7 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
     spliced_count = 0;
     while (cur != upper && cur != -1)
     {
-      for (int level = 0; level < height; level ++)
+      for (int level = 0; level < height; level++)
       {
         SkipListElem *prev = &list->elems[update[level]];
         if (prev->next[level] != cur)
@@ -591,7 +599,7 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
     int rheight = random_level();
     if (rheight > height)
     {
-      for (int l = height; l < rheight; l ++)
+      for (int l = height; l < rheight; l++)
         update[l] = 0;
       /* Head & tail must be updated since a repalloc may have been done in
          the last call to skiplist_alloc */
@@ -601,6 +609,7 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
       head->height = rheight;
       tail->height = rheight;
     }
+    /* Get the location for the new element and store it */
     int new = skiplist_alloc(list);
     SkipListElem *newelm = &list->elems[new];
 #if ! MEOS
@@ -617,7 +626,7 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
 #endif /* ! MEOS */
     newelm->height = rheight;
 
-    for (int level = 0; level < rheight; level ++)
+    for (int level = 0; level < rheight; level++)
     {
       newelm->next[level] = list->elems[update[level]].next[level];
       list->elems[update[level]].next[level] = new;

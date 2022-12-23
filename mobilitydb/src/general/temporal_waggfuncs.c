@@ -575,10 +575,10 @@ temporal_wagg_transfn1(SkipList *state, Temporal *temp, Interval *interval,
 {
   int count;
   TSequence **sequences = temporal_extend(temp, interval, min, &count);
-  SkipList *result = tsequence_tagg_transfn(state, sequences[0],
+  SkipList *result = tcontseq_tagg_transfn(state, sequences[0],
     func, crossings);
   for (int i = 1; i < count; i++)
-    result = tsequence_tagg_transfn(result, sequences[i],
+    result = tcontseq_tagg_transfn(result, sequences[i],
       func, crossings);
   pfree_array((void **) sequences, count);
   return result;
@@ -628,11 +628,9 @@ temporal_wagg_transform_transfn(FunctionCallInfo fcinfo, datum_func2 func,
   store_fcinfo(fcinfo);
   int count;
   TSequence **sequences = transform(temp, interval, &count);
-  SkipList *result = tsequence_tagg_transfn(state, sequences[0],
-    func, false);
+  SkipList *result = tcontseq_tagg_transfn(state, sequences[0], func, false);
   for (int i = 1; i < count; i++)
-    result = tsequence_tagg_transfn(result, sequences[i],
-      func, false);
+    result = tcontseq_tagg_transfn(result, sequences[i], func, false);
   pfree_array((void **) sequences, count);
   PG_FREE_IF_COPY(temp, 1);
   PG_FREE_IF_COPY(interval, 2);

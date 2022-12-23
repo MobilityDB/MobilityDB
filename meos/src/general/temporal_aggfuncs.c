@@ -445,7 +445,7 @@ tsequence_tagg(TSequence **sequences1, int count1, TSequence **sequences2,
  * point are the same
  */
 void
-ensure_same_tempsubtype_skiplist(SkipList *state, Temporal *temp)
+ensure_same_tempsubtype_skiplist(SkipList *state, const Temporal *temp)
 {
   Temporal *head = (Temporal *) skiplist_headval(state);
   if (state->elemtype != TEMPORAL || head->subtype != temp->subtype)
@@ -468,14 +468,17 @@ SkipList *
 tinstant_tagg_transfn(SkipList *state, const TInstant *inst, datum_func2 func)
 {
   SkipList *result;
+  const TInstant **instants = palloc(sizeof(TInstant *));
+  instants[0] = inst;
   if (! state)
-    result = skiplist_make((void **) &inst, 1, TEMPORAL);
+    result = skiplist_make((void **) instants, 1, TEMPORAL);
   else
   {
     ensure_same_tempsubtype_skiplist(state, (Temporal *) inst);
-    skiplist_splice(state, (void **) &inst, 1, func, false);
+    skiplist_splice(state, (void **) instants, 1, func, false);
     result = state;
   }
+  pfree(instants);
   return result;
 }
 
@@ -514,8 +517,8 @@ tdiscseq_tagg_transfn(SkipList *state, const TSequence *seq, datum_func2 func)
  * @param[in] crossings True if turning points are added in the segments
  */
 SkipList *
-tsequence_tagg_transfn(SkipList *state,
-  TSequence *seq, datum_func2 func, bool crossings)
+tcontseq_tagg_transfn(SkipList *state, const TSequence *seq,
+  datum_func2 func, bool crossings)
 {
   SkipList *result;
   if (! state)
@@ -545,7 +548,7 @@ tsequenceset_tagg_transfn(SkipList *state, const TSequenceSet *ss,
   const TSequence **sequences = tsequenceset_sequences_p(ss);
   SkipList *result;
   if (! state)
-    result = skiplist_make((void **)sequences, ss->count, TEMPORAL);
+    result = skiplist_make((void **) sequences, ss->count, TEMPORAL);
   else
   {
     ensure_same_tempsubtype_skiplist(state, (Temporal *) sequences[0]);
@@ -567,7 +570,7 @@ tsequenceset_tagg_transfn(SkipList *state, const TSequenceSet *ss,
  * @param[in] crossings True if turning points are added in the segments
  */
 SkipList *
-temporal_tagg_transfn(SkipList *state, Temporal *temp, datum_func2 func,
+temporal_tagg_transfn(SkipList *state, const Temporal *temp, datum_func2 func,
   bool crossings)
 {
   ensure_valid_tempsubtype(temp->subtype);
@@ -577,7 +580,7 @@ temporal_tagg_transfn(SkipList *state, Temporal *temp, datum_func2 func,
   else if (temp->subtype == TSEQUENCE)
     result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
       tdiscseq_tagg_transfn(state, (TSequence *) temp, func) :
-      tsequence_tagg_transfn(state, (TSequence *) temp, func, crossings);
+      tcontseq_tagg_transfn(state, (TSequence *) temp, func, crossings);
   else /* temp->subtype == TSEQUENCESET */
     result = tsequenceset_tagg_transfn(state, (TSequenceSet *) temp,
       func, crossings);
@@ -868,19 +871,17 @@ temporal_transform_tagg(const Temporal *temp, int *count,
  * @param[in] transform Transform function
  */
 SkipList *
-temporal_tagg_transform_transfn(SkipList *state, Temporal *temp,
+temporal_tagg_transform_transfn(SkipList *state, const Temporal *temp,
   datum_func2 func, bool crossings, TInstant *(*transform)(const TInstant *))
 {
   int count;
   Temporal **temparr = temporal_transform_tagg(temp, &count, transform);
-  if (state)
+  if (! state)
+    state = skiplist_make((void **) temparr, count, TEMPORAL);
+  else
   {
     ensure_same_tempsubtype_skiplist(state, temparr[0]);
     skiplist_splice(state, (void **) temparr, count, func, crossings);
-  }
-  else
-  {
-    state = skiplist_make((void **) temparr, count, TEMPORAL);
   }
 
   pfree_array((void **) temparr, count);
@@ -985,7 +986,7 @@ tsequenceset_transform_tcount(const TSequenceSet *ss, const Interval *interval,
  * performing temporal count aggregation (dispatch function)
  */
 Temporal **
-temporal_transform_tcount(const Temporal *temp, Interval *interval,
+temporal_transform_tcount(const Temporal *temp, const Interval *interval,
   TimestampTz origin, int *count)
 {
   Temporal **result;
@@ -1027,20 +1028,18 @@ temporal_transform_tcount(const Temporal *temp, Interval *interval,
  * @brief Generic transition function for temporal aggregation
  */
 SkipList *
-temporal_tcount_transfn(SkipList *state, Temporal *temp, Interval *interval,
-  TimestampTz origin)
+temporal_tcount_transfn(SkipList *state, const Temporal *temp,
+  const Interval *interval, TimestampTz origin)
 {
   int count;
   Temporal **temparr = temporal_transform_tcount(temp, interval, origin, &count);
-  if (state)
+  if (! state)
+    state = skiplist_make((void **) temparr, count, TEMPORAL);
+  else
   {
     ensure_same_tempsubtype_skiplist(state, temparr[0]);
     skiplist_splice(state, (void **) temparr, count, &datum_sum_int32,
       false);
-  }
-  else
-  {
-    state = skiplist_make((void **) temparr, count, TEMPORAL);
   }
   pfree_array((void **) temparr, count);
   return state;
