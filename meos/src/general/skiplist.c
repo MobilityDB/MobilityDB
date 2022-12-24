@@ -31,6 +31,9 @@
  * @brief Functions manipulating skiplists.
  * @note See the description of skip lists in Wikipedia
  * https://en.wikipedia.org/wiki/Skip_list
+ * Note also that according to
+ * https://github.com/postgres/postgres/blob/master/src/backend/utils/mmgr/README#L99
+ * pfree/repalloc Do Not Depend On CurrentMemoryContext
  */
 
 #include "general/skiplist.h"
@@ -126,41 +129,36 @@ random_level()
 static int
 skiplist_alloc(SkipList *list)
 {
+  /* Increase the number of values stored in the skip list */
   list->length++;
-  /* If there is unused space left by a previously deleted element, use it */
+
+  /* If there is unused space left by a previously deleted element, reuse it */
   if (list->freecount)
   {
-    list->freecount --;
+    list->freecount--;
     return list->freed[list->freecount];
   }
-  else
+
+  /* If there is no more available space expand */
+  if (list->next >= list->capacity)
   {
-    /* No free list, give first available entry */
-    if (list->next >= list->capacity)
-    {
-      /* No more capacity, let's expand. Postgres has a limit of MaxAllocSize =
-       * 1 gigabyte - 1. Normally, the skip list doubles the size when expanded.
-       * If doubling the size goes beyond MaxAllocSize, we allocate the maximum
-       * number of elements that we can fit within MaxAllocSize. If we have
-       * previously reached this maximum and more capacity is required, an
-       * error is generated. */
-      if (list->capacity == floor(MaxAllocSize / sizeof(SkipListElem)))
-        elog(ERROR, "No more memory available to compute the aggregation");
-      if (sizeof(SkipListElem) * (list->capacity << 2) > MaxAllocSize)
-        list->capacity = floor(MaxAllocSize / sizeof(SkipListElem));
-      else
-        list->capacity <<= SKIPLIST_GROW;
-#if ! MEOS
-      MemoryContext ctx = set_aggregation_context(fetch_fcinfo());
-#endif /* ! MEOS */
-      list->elems = repalloc(list->elems, sizeof(SkipListElem) * list->capacity);
-#if ! MEOS
-      unset_aggregation_context(ctx);
-#endif /* ! MEOS */
-    }
-    list->next++;
-    return list->next - 1;
+    /* PostgreSQL has a limit of MaxAllocSize = 1 gigabyte - 1. Normally,
+     * the skip list doubles the size when expanded. If doubling the size goes
+     * beyond MaxAllocSize, we allocate the maximum number of elements that
+     * fit within MaxAllocSize. If this maximum has been previously reached
+     * and more capacity is required, an error is generated. */
+    if (list->capacity == floor(MaxAllocSize / sizeof(SkipListElem)))
+      elog(ERROR, "No more memory available to compute the aggregation");
+    if (sizeof(SkipListElem) * (list->capacity << 2) > MaxAllocSize)
+      list->capacity = floor(MaxAllocSize / sizeof(SkipListElem));
+    else
+      list->capacity <<= SKIPLIST_GROW;
+    list->elems = repalloc(list->elems, sizeof(SkipListElem) * list->capacity);
   }
+
+  /* Return the first available entry */
+  list->next++;
+  return list->next - 1;
 }
 
 /**
@@ -171,6 +169,7 @@ skiplist_alloc(SkipList *list)
 static void
 skiplist_delete(SkipList *list, int cur)
 {
+  /* If the free list has not been yet created */
   if (! list->freed)
   {
     list->freecap = SKIPLIST_INITIAL_FREELIST;
@@ -182,21 +181,16 @@ skiplist_delete(SkipList *list, int cur)
     unset_aggregation_context(ctx);
 #endif /* ! MEOS */
   }
+  /* If there is no more avaialable space in the free list */
   else if (list->freecount == list->freecap)
   {
     list->freecap <<= 1;
-#if ! MEOS
-    MemoryContext ctx = set_aggregation_context(fetch_fcinfo());
-#endif /* ! MEOS */
     list->freed = repalloc(list->freed, sizeof(int) * list->freecap);
-#if ! MEOS
-    unset_aggregation_context(ctx);
-#endif /* ! MEOS */
   }
   /* Mark the element as free */
   list->elems[cur].value = NULL;
   list->freed[list->freecount++] = cur;
-  list->length --;
+  list->length--;
   return;
 }
 
@@ -242,7 +236,7 @@ skiplist_print(const SkipList *list)
   {
     SkipListElem *e = &list->elems[cur];
     len += sprintf(buf+len, "\telm%d [label=\"", cur);
-    for (int l = e->height - 1; l > 0; l --)
+    for (int l = e->height - 1; l > 0; l--)
     {
       len += sprintf(buf+len, "<p%d>|", l);
     }
@@ -320,7 +314,6 @@ SkipList *
 skiplist_make(void **values, int count, SkipListElemType elemtype)
 {
   assert(count > 0);
-  //FIXME: tail should be a constant (e.g. 1) but is not, for ease of construction
 
 #if ! MEOS
   MemoryContext oldctx = set_aggregation_context(fetch_fcinfo());
@@ -340,7 +333,7 @@ skiplist_make(void **values, int count, SkipListElemType elemtype)
   result->extrasize = 0;
 
   /* Fill values first */
-  result->elems[0].value = NULL;
+  result->elems[0].value = NULL; /* set head value to NULL */
   for (int i = 0; i < count - 2; i++)
   {
     if (elemtype == TIMESTAMPTZ)
@@ -350,28 +343,23 @@ skiplist_make(void **values, int count, SkipListElemType elemtype)
     else /* state->elemtype == TEMPORAL */
       result->elems[i + 1].value = temporal_copy((Temporal *) values[i]);
   }
-  result->elems[count - 1].value = NULL;
+  result->elems[count - 1].value = NULL; /* set tail value to NULL */
   result->tail = count - 1;
 
   /* Link the list in a balanced fashion */
   for (int level = 0; level < height; level++)
   {
     int step = 1 << level;
-    for (int i = 0; i < count; i += step)
+    for (int i = 0; i < count - 1; i += step)
     {
       int next = i + step < count ? i + step : count - 1;
-      if (i != count - 1)
-      {
-        result->elems[i].next[level] = next;
-        result->elems[i].height = level + 1;
-      }
-      else
-      {
-        result->elems[i].next[level] = - 1;
-        result->elems[i].height = height;
-      }
+      result->elems[i].next[level] = next;
+      result->elems[i].height = level + 1;
     }
+    result->elems[count - 1].next[level] = - 1;
+    result->elems[count - 1].height = height;
   }
+
 #if ! MEOS
   unset_aggregation_context(oldctx);
 #endif /* ! MEOS */
@@ -412,21 +400,19 @@ skiplist_elempos(const SkipList *list, Period *p, int cur)
 {
   if (cur == 0)
     return AFTER; /* Head is -inf */
-  else if (cur == -1 || cur == list->tail)
+  if (cur == -1 || cur == list->tail)
     return BEFORE; /* Tail is +inf */
-  else
-  {
-    if (list->elemtype == TIMESTAMPTZ)
-      return pos_period_timestamp(p, (TimestampTz) list->elems[cur].value);
-    if (list->elemtype == PERIOD)
-      return pos_period_period(p, (Period *) list->elems[cur].value);
-    /* list->elemtype == TEMPORAL */
-    Temporal *temp = (Temporal *) list->elems[cur].value;
-    if (temp->subtype == TINSTANT)
-      return pos_period_timestamp(p, ((TInstant *) temp)->t);
-    else /* temp->subtype == TSEQUENCE */
-      return pos_period_period(p, &((TSequence *) temp)->period);
-  }
+
+  if (list->elemtype == TIMESTAMPTZ)
+    return pos_period_timestamp(p, (TimestampTz) list->elems[cur].value);
+  if (list->elemtype == PERIOD)
+    return pos_period_period(p, (Period *) list->elems[cur].value);
+  /* list->elemtype == TEMPORAL */
+  Temporal *temp = (Temporal *) list->elems[cur].value;
+  if (temp->subtype == TINSTANT)
+    return pos_period_timestamp(p, ((TInstant *) temp)->t);
+  else /* temp->subtype == TSEQUENCE */
+    return pos_period_period(p, &((TSequence *) temp)->period);
 }
 
 /**
@@ -494,7 +480,7 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
   int height = list->elems[0].height;
   SkipListElem *e = &list->elems[0];
   int cur = 0;
-  for (int level = height - 1; level >= 0; level --)
+  for (int level = height - 1; level >= 0; level--)
   {
     while (e->next[level] != -1 &&
       skiplist_elempos(list, &p, e->next[level]) == AFTER)
@@ -579,14 +565,8 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
     /* Delete the spliced-out values */
     if (list->elemtype != TIMESTAMPTZ)
     {
-#if ! MEOS
-      oldctx = set_aggregation_context(fetch_fcinfo());
-#endif /* ! MEOS */
       for (int i = 0; i < spliced_count; i++)
         pfree(spliced[i]);
-#if ! MEOS
-      unset_aggregation_context(oldctx);
-#endif /* ! MEOS */
     }
     pfree(spliced);
     values = newvalues;
