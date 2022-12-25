@@ -120,7 +120,9 @@ CREATE FUNCTION tbool_tagg_finalfn(internal)
 CREATE AGGREGATE tcount(tbool) (
   SFUNC = tcount_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = tcount_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
   SERIALFUNC = tagg_serialize,
   DESERIALFUNC = tagg_deserialize,
@@ -129,7 +131,9 @@ CREATE AGGREGATE tcount(tbool) (
 CREATE AGGREGATE tcount(tbool, interval, timestamptz) (
   SFUNC = tcount_bucket_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = tcount_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
   SERIALFUNC = tagg_serialize,
   DESERIALFUNC = tagg_deserialize,
@@ -139,7 +143,9 @@ CREATE AGGREGATE tcount(tbool, interval, timestamptz) (
 CREATE AGGREGATE tand(tbool) (
   SFUNC = tbool_tand_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = tbool_tand_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tbool_tagg_finalfn,
   SERIALFUNC = tagg_serialize,
   DESERIALFUNC = tagg_deserialize,
@@ -148,7 +154,9 @@ CREATE AGGREGATE tand(tbool) (
 CREATE AGGREGATE tor(tbool) (
   SFUNC = tbool_tor_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = tbool_tor_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tbool_tagg_finalfn,
   SERIALFUNC = tagg_serialize,
   DESERIALFUNC = tagg_deserialize,
@@ -211,7 +219,9 @@ CREATE FUNCTION tavg_finalfn(internal)
 CREATE AGGREGATE tcount(tint) (
   SFUNC = tcount_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = tcount_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
   SERIALFUNC = tagg_serialize,
   DESERIALFUNC = tagg_deserialize,
@@ -220,7 +230,9 @@ CREATE AGGREGATE tcount(tint) (
 CREATE AGGREGATE tcount(tint, interval) (
   SFUNC = tcount_bucket_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = tcount_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
   SERIALFUNC = tagg_serialize,
   DESERIALFUNC = tagg_deserialize,
@@ -229,7 +241,9 @@ CREATE AGGREGATE tcount(tint, interval) (
 CREATE AGGREGATE tcount(tint, interval, timestamptz) (
   SFUNC = tcount_bucket_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = tcount_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
   SERIALFUNC = tagg_serialize,
   DESERIALFUNC = tagg_deserialize,
@@ -239,7 +253,9 @@ CREATE AGGREGATE tcount(tint, interval, timestamptz) (
 CREATE AGGREGATE tmin(tint) (
   SFUNC = tint_tmin_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = tint_tmin_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
   SERIALFUNC = tagg_serialize,
   DESERIALFUNC = tagg_deserialize,
@@ -248,7 +264,9 @@ CREATE AGGREGATE tmin(tint) (
 CREATE AGGREGATE tmax(tint) (
   SFUNC = tint_tmax_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = tint_tmax_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
   SERIALFUNC = tagg_serialize,
   DESERIALFUNC = tagg_deserialize,
@@ -257,7 +275,9 @@ CREATE AGGREGATE tmax(tint) (
 CREATE AGGREGATE tsum(tint) (
   SFUNC = tint_tsum_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = tint_tsum_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
   SERIALFUNC = tagg_serialize,
   DESERIALFUNC = tagg_deserialize,
@@ -266,7 +286,9 @@ CREATE AGGREGATE tsum(tint) (
 CREATE AGGREGATE tavg(tint) (
   SFUNC = tavg_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = tavg_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tavg_finalfn,
   SERIALFUNC = tagg_serialize,
   DESERIALFUNC = tagg_deserialize,
@@ -323,7 +345,9 @@ CREATE FUNCTION tavg_transfn(internal, tfloat)
 CREATE AGGREGATE tcount(tfloat) (
   SFUNC = tcount_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = tcount_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
   SERIALFUNC = tagg_serialize,
   DESERIALFUNC = tagg_deserialize,
@@ -332,7 +356,9 @@ CREATE AGGREGATE tcount(tfloat) (
 CREATE AGGREGATE tcount(tfloat, interval) (
   SFUNC = tcount_bucket_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = tcount_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
   SERIALFUNC = tagg_serialize,
   DESERIALFUNC = tagg_deserialize,
@@ -341,7 +367,9 @@ CREATE AGGREGATE tcount(tfloat, interval) (
 CREATE AGGREGATE tcount(tfloat, interval, timestamptz) (
   SFUNC = tcount_bucket_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = tcount_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
   SERIALFUNC = tagg_serialize,
   DESERIALFUNC = tagg_deserialize,
@@ -351,7 +379,9 @@ CREATE AGGREGATE tcount(tfloat, interval, timestamptz) (
 CREATE AGGREGATE tmin(tfloat) (
   SFUNC = tfloat_tmin_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = tfloat_tmin_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tfloat_tagg_finalfn,
   SERIALFUNC = tagg_serialize,
   DESERIALFUNC = tagg_deserialize,
@@ -360,7 +390,9 @@ CREATE AGGREGATE tmin(tfloat) (
 CREATE AGGREGATE tmax(tfloat) (
   SFUNC = tfloat_tmax_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = tfloat_tmax_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tfloat_tagg_finalfn,
   SERIALFUNC = tagg_serialize,
   DESERIALFUNC = tagg_deserialize,
@@ -369,7 +401,9 @@ CREATE AGGREGATE tmax(tfloat) (
 CREATE AGGREGATE tsum(tfloat) (
   SFUNC = tfloat_tsum_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = tfloat_tsum_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tfloat_tagg_finalfn,
   SERIALFUNC = tagg_serialize,
   DESERIALFUNC = tagg_deserialize,
@@ -378,7 +412,9 @@ CREATE AGGREGATE tsum(tfloat) (
 CREATE AGGREGATE tavg(tfloat) (
   SFUNC = tavg_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = tavg_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tavg_finalfn,
   SERIALFUNC = tagg_serialize,
   DESERIALFUNC = tagg_deserialize,
@@ -424,7 +460,9 @@ CREATE FUNCTION ttext_tagg_finalfn(internal)
 CREATE AGGREGATE tcount(ttext) (
   SFUNC = tcount_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = tcount_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
   SERIALFUNC = tagg_serialize,
   DESERIALFUNC = tagg_deserialize,
@@ -433,7 +471,9 @@ CREATE AGGREGATE tcount(ttext) (
 CREATE AGGREGATE tcount(ttext, interval) (
   SFUNC = tcount_bucket_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = tcount_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
   SERIALFUNC = tagg_serialize,
   DESERIALFUNC = tagg_deserialize,
@@ -442,7 +482,9 @@ CREATE AGGREGATE tcount(ttext, interval) (
 CREATE AGGREGATE tcount(ttext, interval, timestamptz) (
   SFUNC = tcount_bucket_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = tcount_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
   SERIALFUNC = tagg_serialize,
   DESERIALFUNC = tagg_deserialize,
@@ -452,7 +494,9 @@ CREATE AGGREGATE tcount(ttext, interval, timestamptz) (
 CREATE AGGREGATE tmin(ttext) (
   SFUNC = ttext_tmin_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = ttext_tmin_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = ttext_tagg_finalfn,
   SERIALFUNC = tagg_serialize,
   DESERIALFUNC = tagg_deserialize,
@@ -461,7 +505,9 @@ CREATE AGGREGATE tmin(ttext) (
 CREATE AGGREGATE tmax(ttext) (
   SFUNC = ttext_tmax_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = ttext_tmax_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = ttext_tagg_finalfn,
   SERIALFUNC = tagg_serialize,
   DESERIALFUNC = tagg_deserialize,

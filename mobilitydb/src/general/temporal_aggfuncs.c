@@ -90,8 +90,7 @@ Temporal_tagg_combinefn(FunctionCallInfo fcinfo, datum_func2 func, bool crossing
   SkipList *state1, *state2;
   INPUT_AGG_COMB_STATE(fcinfo, state1, state2);
   store_fcinfo(fcinfo);
-  SkipList *result = temporal_tagg_combinefn(state1, state2, func,
-    crossings);
+  SkipList *result = temporal_tagg_combinefn(state1, state2, func, crossings);
   PG_RETURN_POINTER(result);
 }
 
@@ -106,9 +105,6 @@ Temporal_tagg_finalfn(PG_FUNCTION_ARGS)
   SkipList *state = (SkipList *) PG_GETARG_POINTER(0);
   unset_aggregation_context(ctx);
   Temporal *result = temporal_tagg_finalfn(state);
-  // ctx = set_aggregation_context(fcinfo);
-  // skiplist_free(state);
-  // unset_aggregation_context(ctx);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);

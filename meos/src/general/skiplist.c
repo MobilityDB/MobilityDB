@@ -139,10 +139,10 @@ skiplist_alloc(SkipList *list)
     return list->freed[list->freecount];
   }
 
-  /* If there is no more available space expand */
+  /* If there is no more available space expand the list */
   if (list->next >= list->capacity)
   {
-    /* PostgreSQL has a limit of MaxAllocSize = 1 gigabyte - 1. Normally,
+    /* PostgreSQL has a limit of MaxAllocSize = 1 gigabyte - 1. By default,
      * the skip list doubles the size when expanded. If doubling the size goes
      * beyond MaxAllocSize, we allocate the maximum number of elements that
      * fit within MaxAllocSize. If this maximum has been previously reached
@@ -181,7 +181,7 @@ skiplist_delete(SkipList *list, int cur)
     unset_aggregation_context(ctx);
 #endif /* ! MEOS */
   }
-  /* If there is no more avaialable space in the free list */
+  /* If there is no more available space in the free list, expand it*/
   else if (list->freecount == list->freecap)
   {
     list->freecap <<= 1;
@@ -209,9 +209,16 @@ skiplist_free(SkipList *list)
   if (list->elems)
   {
     /* Free the element values of the skiplist if they are not NULL */
-    for (int i = 0; i < list->length; i++)
-      if (list->elems[i].value)
-        pfree(list->elems[i].value);
+    int cur = 0;
+    /* True when the value is passed by reference and thus it must be freed */
+    bool freeval = (list->elemtype != TIMESTAMPTZ);
+    while (cur != -1)
+    {
+      SkipListElem *e = &list->elems[cur];
+      if (e->value && freeval)
+        pfree(e->value);
+      cur = e->next[0];
+    }
     /* Free the element list */
     pfree(list->elems);
   }
@@ -237,9 +244,7 @@ skiplist_print(const SkipList *list)
     SkipListElem *e = &list->elems[cur];
     len += sprintf(buf+len, "\telm%d [label=\"", cur);
     for (int l = e->height - 1; l > 0; l--)
-    {
       len += sprintf(buf+len, "<p%d>|", l);
-    }
     if (! e->value)
       len += sprintf(buf+len, "<p0>\"];\n");
     else
@@ -248,13 +253,13 @@ skiplist_print(const SkipList *list)
       if (list->elemtype == TIMESTAMPTZ)
         val = pg_timestamptz_out((TimestampTz) e->value);
       else if (list->elemtype == PERIOD)
-        /* The second argument of span_out is not used for periods */
+        /* The second argument of span_out is not used for spans */
         val = span_out(e->value, Int32GetDatum(0));
       else /* list->elemtype == TEMPORAL */
       {
         Period p;
         temporal_set_period(e->value, &p);
-        /* The second argument of span_out is not used for periods */
+        /* The second argument of span_out is not used for spans */
         val = span_out(&p, Int32GetDatum(0));
       }
       len +=  sprintf(buf+len, "<p0>%s\"];\n", val);
@@ -490,8 +495,8 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
     }
     update[level] = cur;
   }
-  int lower = e->next[0];
-  cur = lower;
+  int lower, upper;
+  cur = lower = e->next[0];
   e = &list->elems[cur];
 
   /* Count the number of elements that will be merged with the new values */
@@ -502,7 +507,7 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
     e = &list->elems[cur];
     spliced_count++;
   }
-  int upper = cur;
+  upper = cur;
 
   /* Delete spliced-out elements (if any) but remember their values for later */
   void **spliced = NULL;

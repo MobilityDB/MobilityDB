@@ -610,7 +610,7 @@ temporal_tagg_combinefn(SkipList *state1, SkipList *state2,
   int count2 = state2->length;
   void **values2 = skiplist_values(state2);
   skiplist_splice(state1, values2, count2, func, crossings);
-  pfree_array(values2, count2);
+  pfree(values2);
   return state1;
 }
 
