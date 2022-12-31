@@ -236,15 +236,15 @@ set_out(const Set *s, int maxdd)
  * passed by value and passed by reference are, respectively, as follows
  *
  * @code
- * ------------------------------------------------------------
- * Header | count | minvalidx | maxvalidx | Value_0 | Value_1 |
- * ------------------------------------------------------------
+ * ------------------------------------------------------
+ * Header | count | minidx | maxidx | Value_0 | Value_1 |
+ * ------------------------------------------------------
  * @endcode
  *
  * @code
- * --------------------------------------------------------------------
- * | Header | count | minvalidx | maxvalidx |offset_0 | offset_1 | ...
- * ---------------------------------------------------------------------
+ * --------------------------------------------------------------
+ * | Header | count | minidx | maxidx |offset_0 | offset_1 | ...
+ * ---------------------------------------------------------------
  * -------------------------
  * ... | Value_0 | Value_1 |
  * -------------------------
@@ -252,7 +252,7 @@ set_out(const Set *s, int maxdd)
  * where
  * - `Header` contains internal information (size, type identifiers, flags)
  * - `count` contains the number of values
- * - `minvalidx` and `maxvalidx` contains the index of the minimum and maximum
+ * - `minidx` and `maxidx` contains the index of the minimum and maximum
  * values. These values are needed for unordered sets (a.k.a. vectors)
  * - `offset_i` are offsets from the begining of the struct for the values.
 
@@ -266,7 +266,7 @@ set_out(const Set *s, int maxdd)
 Set *
 set_make(const Datum *values, int count, mobdbType basetype, bool ordered)
 {
-  int minvalidx, maxvalidx;
+  int minidx, maxidx;
   if (ordered)
   {
     /* Test the validity of the values */
@@ -275,21 +275,21 @@ set_make(const Datum *values, int count, mobdbType basetype, bool ordered)
       if (datum_ge(values[i], values[i + 1], basetype))
         elog(ERROR, "Invalid value for a set");
     }
-    minvalidx = 0;
-    maxvalidx = count - 1;
+    minidx = 0;
+    maxidx = count - 1;
   }
 #if 0 /* not used */
   else
   {
     /* Find the location of the minimum and maximum values */
-    minvalidx = maxvalidx = 0;
+    minidx = maxidx = 0;
     for (int i = 1; i < count - 1; i++)
     {
-      int cmp = datum_cmp(values[i], values[minvalidx], basetype);
+      int cmp = datum_cmp(values[i], values[minidx], basetype);
       if (cmp < 1)
-        minvalidx = i;
+        minidx = i;
       else if (cmp > 1)
-        maxvalidx = i;
+        maxidx = i;
     }
   }
 #endif /* not used */
@@ -326,8 +326,8 @@ set_make(const Datum *values, int count, mobdbType basetype, bool ordered)
   SET_VARSIZE(result, memsize);
   MOBDB_FLAGS_SET_BYVAL(result->flags, typbyval);
   MOBDB_FLAGS_SET_ORDERED(result->flags, ordered);
-  result->minvalidx = minvalidx;
-  result->maxvalidx = maxvalidx;
+  result->minidx = minidx;
+  result->maxidx = maxidx;
   result->count = count;
   result->settype = basetype_settype(basetype);
   result->basetype = basetype;
@@ -465,7 +465,7 @@ timestamp_to_timestampset(TimestampTz t)
 void
 set_set_span(const Set *os, Span *s)
 {
-  span_set(os->elems[os->minvalidx], os->elems[os->maxvalidx], true, true,
+  span_set(os->elems[os->minidx], os->elems[os->maxidx], true, true,
     os->basetype, s);
   return;
 }

@@ -56,8 +56,9 @@ typedef struct
   uint8 basetype;       /**< span basetype */
   int16 flags;          /**< flags */
   int32 count;          /**< Number of TimestampTz elements */
-  int32 minvalidx;      /**< Index of the minimum value */
-  int32 maxvalidx;      /**< Index of the maximum value */
+  int32 bboxsize;       /**< Size of the bouding box, to be used in the future */
+  int32 minidx;         /**< Index of the minimum value */
+  int32 maxidx;         /**< Index of the maximum value */
   Datum elems[1];       /**< Beginning of variable-length data */
 } Set;
 
@@ -66,12 +67,12 @@ typedef struct
  */
 typedef struct
 {
-  Datum lower;          /**< lower bound value */
-  Datum upper;          /**< upper bound value */
-  bool lower_inc;       /**< lower bound is inclusive (vs exclusive) */
-  bool upper_inc;       /**< upper bound is inclusive (vs exclusive) */
   uint8 spantype;       /**< span type */
   uint8 basetype;       /**< span basetype */
+  bool lower_inc;       /**< lower bound is inclusive (vs exclusive) */
+  bool upper_inc;       /**< upper bound is inclusive (vs exclusive) */
+  Datum lower;          /**< lower bound value */
+  Datum upper;          /**< upper bound value */
 } Span;
 
 /**
@@ -80,10 +81,10 @@ typedef struct
 typedef struct
 {
   int32 vl_len_;        /**< Varlena header (do not touch directly!) */
-  int32 count;          /**< Number of Span elements */
   uint8 spansettype;    /**< span set type */
   uint8 spantype;       /**< span type */
   uint8 basetype;       /**< span basetype */
+  int32 count;          /**< Number of Span elements */
   Span span;            /**< Bounding span */
   Span elems[1];        /**< Beginning of variable-length data */
 } SpanSet;

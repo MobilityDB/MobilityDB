@@ -158,11 +158,7 @@ datum_cmp2(Datum l, Datum r, mobdbType typel, mobdbType typer)
     return float8_cmp_internal(DatumGetFloat8(l), (double) DatumGetInt32(r));
   if (typel == T_TEXT && typer == T_TEXT)
     return text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID);
-  if (typel == typer)
-    elog(ERROR, "unknown compare function for base type: %d", typel);
-  else
-    elog(ERROR, "unknown compare function for base types: %d, %d", typel,
-      typer);
+  elog(ERROR, "unknown compare function for base type: %d", typel);
 }
 
 /**

@@ -52,10 +52,10 @@ bool
 bbox_overlaps_set_set(const Set *s1, const Set *s2)
 {
   assert(s1->settype == s2->settype);
-  Datum min1 = set_val_n(s1, s1->minvalidx);
-  Datum min2 = set_val_n(s2, s2->minvalidx);
-  Datum max1 = set_val_n(s1, s1->maxvalidx);
-  Datum max2 = set_val_n(s2, s2->maxvalidx);
+  Datum min1 = set_val_n(s1, s1->minidx);
+  Datum min2 = set_val_n(s2, s2->minidx);
+  Datum max1 = set_val_n(s1, s1->maxidx);
+  Datum max2 = set_val_n(s2, s2->maxidx);
   if (datum_le(min1, max2, s1->basetype) && datum_le(min2, max1, s1->basetype))
     return true;
   return false;
@@ -69,10 +69,10 @@ bool
 bbox_contains_set_set(const Set *s1, const Set *s2)
 {
   assert(s1->settype == s2->settype);
-  Datum min1 = set_val_n(s1, s1->minvalidx);
-  Datum min2 = set_val_n(s2, s2->minvalidx);
-  Datum max1 = set_val_n(s1, s1->maxvalidx);
-  Datum max2 = set_val_n(s2, s2->maxvalidx);
+  Datum min1 = set_val_n(s1, s1->minidx);
+  Datum min2 = set_val_n(s2, s2->minidx);
+  Datum max1 = set_val_n(s1, s1->maxidx);
+  Datum max2 = set_val_n(s2, s2->maxidx);
   if (datum_le(min1, min2, s1->basetype) && datum_le(max2, max1, s1->basetype))
     return true;
   return false;
@@ -85,8 +85,8 @@ bool
 bbox_contains_set_value(const Set *s, Datum d, mobdbType basetype)
 {
   assert(s->basetype == basetype);
-  Datum min = set_val_n(s, s->minvalidx);
-  Datum max = set_val_n(s, s->maxvalidx);
+  Datum min = set_val_n(s, s->minidx);
+  Datum max = set_val_n(s, s->maxidx);
   if (datum_le(min, d, basetype) && datum_le(d, max, basetype))
     return true;
   return false;
@@ -227,7 +227,7 @@ contains_floatset_float(const Set *s, double d)
 bool
 contains_textset_text(const Set *s, text *t)
 {
-  return contains_set_value(s, TextPGetDatum(t), T_TEXT);
+  return contains_set_value(s, PointerGetDatum(t), T_TEXT);
 }
 
 /**
@@ -328,7 +328,7 @@ contained_float_floatset(double d, const Set *s)
 bool
 contained_text_textset(text *txt, const Set *s)
 {
-  return contained_value_set(TextPGetDatum(txt), T_TEXT, s);
+  return contained_value_set(PointerGetDatum(txt), T_TEXT, s);
 }
 
 /**
@@ -398,7 +398,7 @@ overlaps_set_set(const Set *s1, const Set *s2)
 bool
 left_value_set(Datum d, mobdbType basetype, const Set *s)
 {
-  Datum d1 = set_val_n(s, s->minvalidx);
+  Datum d1 = set_val_n(s, s->minidx);
   return datum_lt2(d, d1, s->basetype, basetype);
 }
 
@@ -444,7 +444,7 @@ left_float_floatset(double d, const Set *s)
 bool
 left_text_textset(text *txt, const Set *s)
 {
-  return left_value_set(TextPGetDatum(txt), T_TEXT, s);
+  return left_value_set(PointerGetDatum(txt), T_TEXT, s);
 }
 
 /**
@@ -466,7 +466,7 @@ before_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 bool
 left_set_value(const Set *s, Datum d, mobdbType basetype)
 {
-  Datum d1 = set_val_n(s, s->maxvalidx);
+  Datum d1 = set_val_n(s, s->maxidx);
   return datum_lt2(d1, d, s->basetype, basetype);
 }
 
@@ -512,7 +512,7 @@ left_floatset_float(const Set *s, double d)
 bool
 left_textset_text(const Set *s, text *txt)
 {
-  return left_set_value(s, TextPGetDatum(txt), T_TEXT);
+  return left_set_value(s, PointerGetDatum(txt), T_TEXT);
 }
 
 /**
@@ -665,7 +665,7 @@ right_floatset_float(const Set *s, double d)
 bool
 right_textset_text(const Set *s, text *txt)
 {
-  return right_set_value(s, TextPGetDatum(txt), T_TEXT);
+  return right_set_value(s, PointerGetDatum(txt), T_TEXT);
 }
 
 /**
@@ -703,7 +703,7 @@ right_set_set(const Set *s1, const Set *s2)
 bool
 overleft_value_set(Datum d, mobdbType basetype, const Set *s)
 {
-  Datum d1 = set_val_n(s, s->maxvalidx);
+  Datum d1 = set_val_n(s, s->maxidx);
   return datum_le2(d, d1, basetype, s->basetype);
 }
 
@@ -749,7 +749,7 @@ overleft_float_floatset(double d, const Set *s)
 bool
 overleft_text_textset(text *txt, const Set *s)
 {
-  return overleft_value_set(TextPGetDatum(txt), T_TEXT, s);
+  return overleft_value_set(PointerGetDatum(txt), T_TEXT, s);
 }
 
 /**
@@ -772,7 +772,7 @@ overbefore_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 bool
 overleft_set_value(const Set *s, Datum d, mobdbType basetype)
 {
-  Datum d1 = set_val_n(s, s->maxvalidx);
+  Datum d1 = set_val_n(s, s->maxidx);
   return datum_le2(d1, d, s->basetype, basetype);
 }
 
@@ -818,7 +818,7 @@ overleft_floatset_float(const Set *s, double d)
 bool
 overleft_textset_text(const Set *s, text *txt)
 {
-  return overleft_set_value(s, TextPGetDatum(txt), T_TEXT);
+  return overleft_set_value(s, PointerGetDatum(txt), T_TEXT);
 }
 
 /**
@@ -858,7 +858,7 @@ overleft_set_set(const Set *s1, const Set *s2)
 bool
 overright_value_set(Datum d, mobdbType basetype, const Set *s)
 {
-  Datum d1 = set_val_n(s, s->minvalidx);
+  Datum d1 = set_val_n(s, s->minidx);
   return datum_ge2(d, d1, basetype, s->basetype);
 }
 
@@ -915,7 +915,7 @@ overafter_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 bool
 overright_set_value(const Set *s, Datum d, mobdbType basetype)
 {
-  Datum d1 = set_val_n(s, s->minvalidx);
+  Datum d1 = set_val_n(s, s->minidx);
   return datum_ge2(d1, d, s->basetype, basetype);
 }
 
@@ -961,7 +961,7 @@ overright_floatset_float(const Set *s, double d)
 bool
 overright_textset_text(const Set *s, text *txt)
 {
-  return overright_set_value(s, TextPGetDatum(txt), T_TEXT);
+  return overright_set_value(s, PointerGetDatum(txt), T_TEXT);
 }
 
 /**
@@ -1065,7 +1065,7 @@ union_float_float(double d1, double d2)
 Set *
 union_text_text(text *txt1, text *txt2)
 {
-  return union_value_value(TextPGetDatum(txt1), TextPGetDatum(txt2), T_TEXT);
+  return union_value_value(PointerGetDatum(txt1), PointerGetDatum(txt2), T_TEXT);
 }
 
 /**
@@ -1155,7 +1155,7 @@ union_floatset_float(const Set *s, double d)
 bool
 union_textset_text(const Set *s, text *txt)
 {
-  return union_set_value(s, TextPGetDatum(txt), T_TEXT);
+  return union_set_value(s, PointerGetDatum(txt), T_TEXT);
 }
 
 /**
@@ -1265,7 +1265,7 @@ bool
 intersection_textset_text(const Set *s, const text *txt, text **result)
 {
   Datum v;
-  bool found = intersection_set_value(s, TextPGetDatum(txt), T_TEXT, &v);
+  bool found = intersection_set_value(s, PointerGetDatum(txt), T_TEXT, &v);
   *result = DatumGetTextP(v);
   return found;
 }
@@ -1371,7 +1371,7 @@ bool
 minus_text_text(const text *txt1, const text *txt2, text **result)
 {
   Datum v;
-  bool found = minus_value_value(TextPGetDatum(txt1), TextPGetDatum(txt2),
+  bool found = minus_value_value(PointerGetDatum(txt1), PointerGetDatum(txt2),
     T_TEXT, &v);
   *result = DatumGetTextP(v);
   return found;
@@ -1445,7 +1445,7 @@ bool
 minus_text_textset(const text *txt, const Set *s, text **result)
 {
   Datum v;
-  bool found = minus_value_set(TextPGetDatum(txt), T_TEXT, s, &v);
+  bool found = minus_value_set(PointerGetDatum(txt), T_TEXT, s, &v);
   *result = DatumGetTextP(v);
   return found;
 }
@@ -1516,7 +1516,7 @@ minus_floatset_float(const Set *s, double d)
 Set *
 minus_textset_text(const Set *s, const text *txt)
 {
-  return minus_set_value(s, TextPGetDatum(txt), T_TEXT);
+  return minus_set_value(s, PointerGetDatum(txt), T_TEXT);
 }
 
 /**
@@ -1615,7 +1615,7 @@ distance_floatset_float(const Set *s, double d)
 double
 distance_textset_text(const Set *s, const text *txt)
 {
-  return distance_set_value(s, TextPGetDatum(txt), T_TEXT);
+  return distance_set_value(s, PointerGetDatum(txt), T_TEXT);
 }
 
 /**

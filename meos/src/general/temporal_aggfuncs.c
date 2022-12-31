@@ -646,7 +646,7 @@ temporal_tagg_finalfn(SkipList *state)
  * @sqlfunc tand()
  */
 SkipList *
-tbool_tand_transfn(SkipList *state, Temporal *temp)
+tbool_tand_transfn(SkipList *state, const Temporal *temp)
 {
   return temporal_tagg_transfn(state, temp, &datum_and, CROSSINGS_NO);
 }
@@ -657,7 +657,7 @@ tbool_tand_transfn(SkipList *state, Temporal *temp)
  * @sqlfunc tor()
  */
 SkipList *
-tbool_tor_transfn(SkipList *state, Temporal *temp)
+tbool_tor_transfn(SkipList *state, const Temporal *temp)
 {
   return temporal_tagg_transfn(state, temp, &datum_or, CROSSINGS_NO);
 }
@@ -668,7 +668,7 @@ tbool_tor_transfn(SkipList *state, Temporal *temp)
  * @sqlfunc tmin()
  */
 SkipList *
-tint_tmin_transfn(SkipList *state, Temporal *temp)
+tint_tmin_transfn(SkipList *state, const Temporal *temp)
 {
   return temporal_tagg_transfn(state, temp, &datum_min_int32, CROSSINGS_NO);
 }
@@ -679,7 +679,7 @@ tint_tmin_transfn(SkipList *state, Temporal *temp)
  * @sqlfunc tmin()
  */
 SkipList *
-tfloat_tmin_transfn(SkipList *state, Temporal *temp)
+tfloat_tmin_transfn(SkipList *state, const Temporal *temp)
 {
   return temporal_tagg_transfn(state, temp, &datum_min_float8, CROSSINGS);
 }
@@ -690,7 +690,7 @@ tfloat_tmin_transfn(SkipList *state, Temporal *temp)
  * @sqlfunc tmax()
  */
 SkipList *
-tint_tmax_transfn(SkipList *state, Temporal *temp)
+tint_tmax_transfn(SkipList *state, const Temporal *temp)
 {
   return temporal_tagg_transfn(state, temp, &datum_max_int32, CROSSINGS_NO);
 }
@@ -701,7 +701,7 @@ tint_tmax_transfn(SkipList *state, Temporal *temp)
  * @sqlfunc tmax()
  */
 SkipList *
-tfloat_tmax_transfn(SkipList *state, Temporal *temp)
+tfloat_tmax_transfn(SkipList *state, const Temporal *temp)
 {
   return temporal_tagg_transfn(state, temp, &datum_max_float8, CROSSINGS);
 }
@@ -712,7 +712,7 @@ tfloat_tmax_transfn(SkipList *state, Temporal *temp)
  * @sqlfunc tsum()
  */
 SkipList *
-tint_tsum_transfn(SkipList *state, Temporal *temp)
+tint_tsum_transfn(SkipList *state, const Temporal *temp)
 {
   return temporal_tagg_transfn(state, temp, &datum_sum_int32, CROSSINGS_NO);
 }
@@ -723,7 +723,7 @@ tint_tsum_transfn(SkipList *state, Temporal *temp)
  * @sqlfunc tsum()
  */
 SkipList *
-tfloat_tsum_transfn(SkipList *state, Temporal *temp)
+tfloat_tsum_transfn(SkipList *state, const Temporal *temp)
 {
   return temporal_tagg_transfn(state, temp, &datum_sum_float8, CROSSINGS_NO);
 }
@@ -734,7 +734,7 @@ tfloat_tsum_transfn(SkipList *state, Temporal *temp)
  * @sqlfunc tavg()
  */
 SkipList *
-tnumber_tavg_transfn(SkipList *state, Temporal *temp)
+tnumber_tavg_transfn(SkipList *state, const Temporal *temp)
 {
   return temporal_tagg_transform_transfn(state, temp, &datum_sum_double2,
     CROSSINGS_NO, &tnumberinst_transform_tavg);
@@ -746,7 +746,7 @@ tnumber_tavg_transfn(SkipList *state, Temporal *temp)
  * @sqlfunc tmin()
  */
 SkipList *
-ttext_tmin_transfn(SkipList *state, Temporal *temp)
+ttext_tmin_transfn(SkipList *state, const Temporal *temp)
 {
   return temporal_tagg_transfn(state, temp, &datum_min_text, CROSSINGS_NO);
 }
@@ -757,7 +757,7 @@ ttext_tmin_transfn(SkipList *state, Temporal *temp)
  * @sqlfunc tmax()
  */
 SkipList *
-ttext_tmax_transfn(SkipList *state, Temporal *temp)
+ttext_tmax_transfn(SkipList *state, const Temporal *temp)
 {
   return temporal_tagg_transfn(state, temp, &datum_max_text, CROSSINGS_NO);
 }
