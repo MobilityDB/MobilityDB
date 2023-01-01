@@ -1,5 +1,5 @@
 #-------------------------------------
-# MobilityDB Main CMake file
+# MobilityDB CMake file
 #-------------------------------------
 
 message(STATUS "-------------------")

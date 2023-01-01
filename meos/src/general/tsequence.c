@@ -5351,7 +5351,7 @@ tcontseq_delete_timestampset(const TSequence *seq, const TimestampSet *ts)
       if (i == 0)
         lower_inc1 = true;
       else if (i == seq->count - 1)
-        upper_inc1 = false;
+        upper_inc1 = true;
       i++; /* advance instants */
       j++; /* advance timestamps */
       l++; /* advance number of instants removed */

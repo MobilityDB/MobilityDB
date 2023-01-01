@@ -278,7 +278,6 @@ set_make(const Datum *values, int count, mobdbType basetype, bool ordered)
     minidx = 0;
     maxidx = count - 1;
   }
-#if 0 /* not used */
   else
   {
     /* Find the location of the minimum and maximum values */
@@ -292,7 +291,6 @@ set_make(const Datum *values, int count, mobdbType basetype, bool ordered)
         maxidx = i;
     }
   }
-#endif /* not used */
 
   /* Determine whether the values are passed by value or by reference  */
   int16 typlen;

@@ -1,5 +1,5 @@
 #-------------------------------------
-# MobilityDB Main CMake file
+# MobilityDB/MEOS Main CMake file
 #-------------------------------------
 
 # Minimum Cmake version supporting fixtures

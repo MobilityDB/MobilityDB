@@ -521,10 +521,12 @@ mobilitydb_version(void)
 char *
 mobilitydb_full_version(void)
 {
+  const char *proj_ver;
 #if POSTGIS_PROJ_VERSION < 61
-  const char *ver = pj_get_release();
+  proj_ver = pj_get_release();
 #else
   PJ_INFO pji = proj_info();
+  proj_ver = pji.version;
 #endif
   const char* geos_version = GEOSversion();
 
@@ -532,7 +534,7 @@ mobilitydb_full_version(void)
   int len = snprintf(result, MOBDB_VERSION_STR_MAXLEN,
     "%s, %s, %s, GEOS %s, PROJ %s",
     MOBILITYDB_VERSION_STRING, POSTGRESQL_VERSION_STRING,
-    POSTGIS_VERSION_STRING, geos_version, pji.version);
+    POSTGIS_VERSION_STRING, geos_version, proj_ver);
   result[len] = '\0';
   return result;
 }
