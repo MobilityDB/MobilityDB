@@ -1265,7 +1265,8 @@ FROM (SELECT unnest(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01,
 	<sect1 id="modification_functions">
 		<title>Funciones de modificación</title>
 		<para>A continuación, explicamos la semántica de las operaciones de modificación (es decir, <varname>insert</varname>, <varname>update</varname> y <varname>delete</varname>) para tipos temporales. Estas operaciones tienen una semántica similar a las operaciones correspondientes para tablas temporales de tiempo de aplicación (<emphasis>application-time temporal tables</emphasis>) introducidas en el estándar <ulink url="https://en.wikipedia.org/wiki/SQL:2011">SQL:2011</ulink>. La principal diferencia es que SQL usa marcas de tiempo de tuplas (donde las marcas de tiempo se adjuntan a las tuplas), mientras que los valores temporales en MobilityDB usan marcas de tiempo de atributos (donde las marcas de tiempo se adjuntan a los valores de los atributos).</para>
-<para>La operación <varname>insert</varname> agrega a un valor temporal los instantes de otro sin modificar los instantes existentes, como se ilustra en <xref linkend="insert_fig" />.</para>
+
+		<para>La operación <varname>insert</varname> agrega a un valor temporal los instantes de otro sin modificar los instantes existentes, como se ilustra en <xref linkend="insert_fig" />.</para>
 
 		<figure id="insert_fig" float="start">
 			<title>Operación de inserción para valores temporales.</title>
@@ -1276,7 +1277,7 @@ FROM (SELECT unnest(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01,
 			</mediaobject>
 		</figure>
 
-		<para>Como se muestra en la figura, los valores temporales solo pueden intersectarse en su límite y, en ese caso, deben tener el mismo valor de base en sus marcas de tiempo comunes; de lo contrario, se genera un error. El resultado de la operación es la unión de los instantes para ambos valores temporales, como se muestra en el primer resultado de la figura. Esto es equivalente a una operación <varname>merge</varname> que se explica a continuación. Alternativamente, como se muestra en el segundo resultado de la figura, los fragmentos insertados que son disjuntos con el valor original se conectan al último instante anterior y al primer instante posterior al fragmento. Este comportamiento se especifica estableciendo un parámetro booleano adicional de la operación. Tenga en cuenta que esto solo se aplica a valores temporales continuos.</para>
+		<para>Como se muestra en la figura, los valores temporales solo pueden intersectarse en su límite y, en ese caso, deben tener el mismo valor de base en sus marcas de tiempo comunes; de lo contrario, se genera un error. El resultado de la operación es la unión de los instantes para ambos valores temporales, como se muestra en el primer resultado de la figura. Esto es equivalente a una operación <varname>merge</varname> que se explica a continuación. Alternativamente, como se muestra en el segundo resultado de la figura, los fragmentos insertados que son disjuntos con el valor original se conectan al último instante anterior y al primer instante posterior al fragmento. Se utiliza un parámetro booleano <varname>connect</varname> para elegir entre los dos resultados, y el parámetro es verdadero por defecto. Nótese que esto solo se aplica a valores temporales continuos.</para>
 
 		<para>La operación <varname>update</varname> reemplaza los instantes en un primer valor temporal con los de un segundo valor como se ilustra en la <xref linkend="update_fig" />.</para>
 
@@ -1308,7 +1309,7 @@ FROM (SELECT unnest(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01,
 			</listitem>
 
 			<listitem>
-				<para>El segundo caso, que se muestra como el resultado inferior de la figura, se usa para eliminar valores erróneos (por ejemplo, detectados como valores atípicos) sin introducir una brecha de tiempo, o para eliminar una brecha de tiempo. En este caso, los valores en el fragmento del valor temporal se eliminan y el último instante anterior y el primer instante posterior a une fragmento suprimido se conectan. Este comportamiento se especifica estableciendo un parámetro booleano adicional de la operación. Tenga en cuenta que esto solo se aplica a valores temporales continuos.</para>
+				<para>El segundo caso, que se muestra como el resultado inferior de la figura, se usa para eliminar valores erróneos (por ejemplo, detectados como valores atípicos) sin introducir una brecha de tiempo, o para eliminar una brecha de tiempo. En este caso, los valores en el fragmento del valor temporal se eliminan y el último instante anterior y el primer instante posterior a une fragmento suprimido se conectan. Este comportamiento se especifica estableciendo un parámetro booleano adicional de la operación. Nótese que esto solo se aplica a valores temporales continuos.</para>
 			</listitem>
 		</orderedlist>
 
@@ -1542,7 +1543,7 @@ SELECT atMax(ttext '{(AA@2001-01-01, AA@2001-01-03), (BB@2001-01-03, AA@2001-01-
 					<indexterm><primary><varname>atGeometry</varname></primary></indexterm>
 					<para>Restringir a una geometría</para>
 					<para><varname>atGeometry(tgeompoint,geometry): tgeompoint</varname></para>
-					<para>Tenga en cuenta que está permitido mezclar geometrías 2D/3D, pero el cálculo sólo se realiza en 2D.</para>
+					<para>Nótese que está permitido mezclar geometrías 2D/3D, pero el cálculo sólo se realiza en 2D.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT asText(atGeometry(tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-04)',
   geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))'));
@@ -1689,7 +1690,7 @@ SELECT minusMax(tfloat '{[1@2001-01-01, 3@2001-01-03), (3@2001-01-03, 1@2001-01-
 					<indexterm><primary><varname>minusGeometry</varname></primary></indexterm>
 					<para>Diferencia con una geometría</para>
 					<para><varname>minusGeometry(tgeompoint,geometry): tgeompoint</varname></para>
-					<para>Tenga en cuenta que está permitido mezclar geometrías 2D/3D, pero el cálculo sólo se realiza en 2D.</para>
+					<para>Nótese que está permitido mezclar geometrías 2D/3D, pero el cálculo sólo se realiza en 2D.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT asText(minusGeometry(tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-04)',
   geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))'));

@@ -1478,6 +1478,30 @@ SELECT COUNT(*) FROM (SELECT k, unnest(temp) AS rec FROM tbl_ttext) AS T;
    878
 (1 row)
 
+WITH test1(k, value, time) AS (
+  SELECT k, (rec).value, (rec).time
+  FROM (SELECT k, unnest(temp) AS rec FROM tbl_tint) AS T ),
+test2(k, temp) AS (
+  SELECT k, merge(tint(value, time)) FROM test1
+  GROUP BY k )
+SELECT COUNT(*) FROM tbl_tint t1, test2 t2 WHERE t1.k = t2.k AND t1.temp <> t2.temp;
+ count 
+-------
+     0
+(1 row)
+
+WITH test1(k, value, time) AS (
+  SELECT k, (rec).value, (rec).time
+  FROM (SELECT k, unnest(temp) AS rec FROM tbl_ttext) AS T ),
+test2(k, temp) AS (
+  SELECT k, merge(ttext(value, time)) FROM test1
+  GROUP BY k )
+SELECT COUNT(*) FROM tbl_ttext t1, test2 t2 WHERE t1.k = t2.k AND t1.temp <> t2.temp;
+ count 
+-------
+     0
+(1 row)
+
 SELECT COUNT(shift(temp, i)) FROM tbl_tbool, tbl_interval;
  count 
 -------
@@ -2149,6 +2173,30 @@ SELECT SUM(numInstants(deleteTime(t1.temp, t2.t))) FROM tbl_ttext t1, tbl_timest
  94941
 (1 row)
 
+SELECT SUM(numInstants(deleteTime(t1.temp, t2.t, false))) FROM tbl_tbool t1, tbl_timestamptz t2;
+  sum  
+-------
+ 85635
+(1 row)
+
+SELECT SUM(numInstants(deleteTime(t1.temp, t2.t, false))) FROM tbl_tint t1, tbl_timestamptz t2;
+  sum  
+-------
+ 78309
+(1 row)
+
+SELECT SUM(numInstants(deleteTime(t1.temp, t2.t, false))) FROM tbl_tfloat t1, tbl_timestamptz t2;
+  sum  
+-------
+ 94941
+(1 row)
+
+SELECT SUM(numInstants(deleteTime(t1.temp, t2.t, false))) FROM tbl_ttext t1, tbl_timestamptz t2;
+  sum  
+-------
+ 94941
+(1 row)
+
 SELECT SUM(numInstants(deleteTime(t1.temp, t2.ts))) FROM tbl_tbool t1, tbl_timestampset t2;
   sum  
 -------
@@ -2164,6 +2212,30 @@ SELECT SUM(numInstants(deleteTime(t1.temp, t2.ts))) FROM tbl_tfloat t1, tbl_time
 (1 row)
 
 SELECT SUM(numInstants(deleteTime(t1.temp, t2.ts))) FROM tbl_ttext t1, tbl_timestampset t2;
+  sum  
+-------
+ 94941
+(1 row)
+
+SELECT SUM(numInstants(deleteTime(t1.temp, t2.ts, false))) FROM tbl_tbool t1, tbl_timestampset t2;
+  sum  
+-------
+ 85636
+(1 row)
+
+SELECT SUM(numInstants(deleteTime(t1.temp, t2.ts, false))) FROM tbl_tint t1, tbl_timestampset t2;
+  sum  
+-------
+ 78313
+(1 row)
+
+SELECT SUM(numInstants(deleteTime(t1.temp, t2.ts, false))) FROM tbl_tfloat t1, tbl_timestampset t2;
+  sum  
+-------
+ 94941
+(1 row)
+
+SELECT SUM(numInstants(deleteTime(t1.temp, t2.ts, false))) FROM tbl_ttext t1, tbl_timestampset t2;
   sum  
 -------
  94941
@@ -2193,6 +2265,30 @@ SELECT SUM(numInstants(deleteTime(t1.temp, t2.p))) FROM tbl_ttext t1, tbl_period
  94941
 (1 row)
 
+SELECT SUM(numInstants(deleteTime(t1.temp, t2.p, false))) FROM tbl_tbool t1, tbl_period t2;
+  sum  
+-------
+ 85635
+(1 row)
+
+SELECT SUM(numInstants(deleteTime(t1.temp, t2.p, false))) FROM tbl_tint t1, tbl_period t2;
+  sum  
+-------
+ 78314
+(1 row)
+
+SELECT SUM(numInstants(deleteTime(t1.temp, t2.p, false))) FROM tbl_tfloat t1, tbl_period t2;
+  sum  
+-------
+ 94941
+(1 row)
+
+SELECT SUM(numInstants(deleteTime(t1.temp, t2.p, false))) FROM tbl_ttext t1, tbl_period t2;
+  sum  
+-------
+ 94941
+(1 row)
+
 SELECT SUM(numInstants(deleteTime(t1.temp, t2.ps))) FROM tbl_tbool t1, tbl_periodset t2;
   sum  
 -------
@@ -2212,6 +2308,30 @@ SELECT SUM(numInstants(deleteTime(t1.temp, t2.ps))) FROM tbl_tfloat t1, tbl_peri
 (1 row)
 
 SELECT SUM(numInstants(deleteTime(t1.temp, t2.ps))) FROM tbl_ttext t1, tbl_periodset t2;
+  sum  
+-------
+ 94941
+(1 row)
+
+SELECT SUM(numInstants(deleteTime(t1.temp, t2.ps, false))) FROM tbl_tbool t1, tbl_periodset t2;
+  sum  
+-------
+ 85635
+(1 row)
+
+SELECT SUM(numInstants(deleteTime(t1.temp, t2.ps, false))) FROM tbl_tint t1, tbl_periodset t2;
+  sum  
+-------
+ 78306
+(1 row)
+
+SELECT SUM(numInstants(deleteTime(t1.temp, t2.ps, false))) FROM tbl_tfloat t1, tbl_periodset t2;
+  sum  
+-------
+ 94940
+(1 row)
+
+SELECT SUM(numInstants(deleteTime(t1.temp, t2.ps, false))) FROM tbl_ttext t1, tbl_periodset t2;
   sum  
 -------
  94941
@@ -2239,6 +2359,30 @@ SELECT SUM(numInstants(update(t1.temp, t2.temp))) FROM tbl_ttext t1, tbl_ttext t
   sum  
 -------
  90962
+(1 row)
+
+SELECT SUM(numInstants(update(t1.temp, t2.temp, false))) FROM tbl_tbool t1, tbl_tbool t2 WHERE t1.k < t2.k;
+  sum  
+-------
+ 81599
+(1 row)
+
+SELECT SUM(numInstants(update(t1.temp, t2.temp, false))) FROM tbl_tint t1, tbl_tint t2 WHERE t1.k < t2.k;
+  sum  
+-------
+ 75067
+(1 row)
+
+SELECT SUM(numInstants(update(t1.temp, t2.temp, false))) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.k < t2.k;
+  sum  
+-------
+ 90956
+(1 row)
+
+SELECT SUM(numInstants(update(t1.temp, t2.temp, false))) FROM tbl_ttext t1, tbl_ttext t2 WHERE t1.k < t2.k;
+  sum  
+-------
+ 90923
 (1 row)
 
 SELECT round(sum(integral(temp))::numeric, 6) FROM tbl_tint;

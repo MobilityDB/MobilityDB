@@ -443,7 +443,7 @@ SELECT round(degrees(bearing(tgeompoint '[Point(2 1)@2001-01-01, Point(0 1)@2001
   tgeompoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]')), 3);
 -- [243.435@2001-01-01, 116.565@2001-01-03]
 </programlisting>
-					<para>Tenga en cuenta que esta función actualmente no acepta dos puntos geográficos temporales.</para>
+					<para>Nótese que esta función actualmente no acepta dos puntos geográficos temporales.</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

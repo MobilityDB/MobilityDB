@@ -1346,6 +1346,7 @@ temporal_tscale(const Temporal *temp, const Interval *duration)
 #define MOBDB_SUBTYPE_STR_MAXLEN 12
 #define MOBDB_INTERPOLATION_STR_MAXLEN 12
 
+#if MEOS
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the size in bytes of a temporal value
@@ -1356,6 +1357,7 @@ temporal_memory_size(const Temporal *temp)
 {
   return VARSIZE(temp);
 }
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_temporal_accessor

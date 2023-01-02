@@ -20,7 +20,7 @@
 	</para>
 
 	<para>
-		Los tipos de rango y conjunto de rangos en MobilityDB corresponden a los tipos de rango y multirango en PostgreSQL,<footnote><para>Tenga en cuenta que los tipos de multirangos requieren la versión 14 o superior de PostgreSQL.</para></footnote> donde los tipos <varname>intspan</varname>, <varname>intspanset</varname>, <varname>period</varname> y <varname>periodset</varname> corresponden, respectivamente, a los tipos <varname>int4range</varname>, <varname>int4multirange</varname>, <varname>tstzrange</varname> y <varname>tstzmultirange</varname>. Sin embargo, los tipos de rango y conjunto de rangos en MobilityDB tienen una implementación más eficiente que los tipos de rango y multirango en PostgreSQL. En particular, los tipos de rango en MobilityDB son de longitud fija mientras que los tipos de rango en PostgreSQL son de longitud variable. Además, se permiten rangos vacíos y límites infinitos en valores de rango en PostgreSQL, mientras que esto no está permitido para valores de rango en MobilityDB.
+		Los tipos de rango y conjunto de rangos en MobilityDB corresponden a los tipos de rango y multirango en PostgreSQL,<footnote><para>Nótese que los tipos de multirangos requieren la versión 14 o superior de PostgreSQL.</para></footnote> donde los tipos <varname>intspan</varname>, <varname>intspanset</varname>, <varname>period</varname> y <varname>periodset</varname> corresponden, respectivamente, a los tipos <varname>int4range</varname>, <varname>int4multirange</varname>, <varname>tstzrange</varname> y <varname>tstzmultirange</varname>. Sin embargo, los tipos de rango y conjunto de rangos en MobilityDB tienen una implementación más eficiente que los tipos de rango y multirango en PostgreSQL. En particular, los tipos de rango en MobilityDB son de longitud fija mientras que los tipos de rango en PostgreSQL son de longitud variable. Además, se permiten rangos vacíos y límites infinitos en valores de rango en PostgreSQL, mientras que esto no está permitido para valores de rango en MobilityDB.
 	</para>
 
 	<para>
@@ -382,7 +382,7 @@ SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-04,2000-01-05]}'::tstzmultir
 					<para><varname>int4multirange::intspanset</varname></para>
 					<para><varname>tstzrange::period</varname></para>
 					<para><varname>tstzmultirange::period</varname></para>
-					<para>Tenga en cuenta que los valores de rango en PostgreSQL aceptan rangos vacíos y rangos con límites infinitos, que no están permitidos como valores de rango en MobilityDB</para>
+					<para>Nótese que los valores de rango en PostgreSQL aceptan rangos vacíos y rangos con límites infinitos, que no están permitidos como valores de rango en MobilityDB</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT int4range '[10, 20)'::intspan;
 -- [10,20)

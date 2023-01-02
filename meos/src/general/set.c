@@ -278,6 +278,7 @@ set_make(const Datum *values, int count, mobdbType basetype, bool ordered)
     minidx = 0;
     maxidx = count - 1;
   }
+#if 0 /* not used */
   else
   {
     /* Find the location of the minimum and maximum values */
@@ -291,6 +292,7 @@ set_make(const Datum *values, int count, mobdbType basetype, bool ordered)
         maxidx = i;
     }
   }
+#endif /* not used */
 
   /* Determine whether the values are passed by value or by reference  */
   int16 typlen;
@@ -311,8 +313,10 @@ set_make(const Datum *values, int count, mobdbType basetype, bool ordered)
       for (int i = 0; i < count; i++)
         values_size += double_pad(VARSIZE(values[i]));
     }
+#if 0 /* not used */
     else
       values_size = double_pad(typlen) * count;
+#endif /* not used */
   }
 
   /* The first Datum is already declared in the struct */
