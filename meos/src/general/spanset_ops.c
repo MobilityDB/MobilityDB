@@ -1907,6 +1907,14 @@ minus_spanset_set(const SpanSet *ss, const Set *s)
     {
       if (contains_span_value(curr, d, ss->span.basetype))
       {
+        /* Account for canonicalized spans */
+        Datum upper1;
+        if (ss->span.basetype == T_INT4)
+          upper1 = Int32GetDatum(DatumGetInt32(curr->upper) - (int32) 1);
+        else if (ss->span.basetype == T_INT8)
+          upper1 = Int64GetDatum(DatumGetInt64(curr->upper) - (int64) 1);
+        else
+          upper1 = curr->upper;
         if (curr->lower == curr->upper)
         {
           pfree(curr);
@@ -1923,10 +1931,12 @@ minus_spanset_set(const SpanSet *ss, const Set *s)
           pfree(curr);
           curr = curr1;
         }
-        else if (datum_eq(curr->upper, d, ss->span.basetype))
+        /* Integer spans are canonicalized and thus their upper bound is
+         * exclusive. Therefore, we need to check with upper1 */
+        else if (datum_eq(upper1, d, ss->span.basetype))
         {
-          spans[k++] = span_make(curr->lower, curr->upper, curr->lower_inc,
-            false, ss->span.basetype);
+          spans[k++] = span_make(curr->lower, upper1, curr->lower_inc, false,
+            ss->span.basetype);
           pfree(curr);
           i++;
           if (i == ss->count)

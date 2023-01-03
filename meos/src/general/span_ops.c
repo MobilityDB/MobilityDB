@@ -1532,10 +1532,13 @@ minus_period_timestamp(const Period *p, TimestampTz t)
 SpanSet *
 minus_span_set(const Span *s, const Set *os)
 {
+  /* Get the bounding span of the set */
+  Span s1;
+  set_set_span(os, &s1);
   /* Transform the span into a span set */
   SpanSet *ss = span_to_spanset(s);
   /* Bounding box test */
-  if (! overlaps_span_span(s, &ss->span))
+  if (! overlaps_span_span(s, &s1))
     return ss;
 
   /* Call the function for the span set */

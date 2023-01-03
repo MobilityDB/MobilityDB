@@ -2086,6 +2086,83 @@ tsequenceset_append_tinstant(TSequenceSet *ss, const TInstant *inst, bool expand
 
 /**
  * @ingroup libmeos_internal_temporal_transf
+ * @brief Append a sequence to a temporal sequence set.
+ * @param[in,out] ss Temporal sequence set
+ * @param[in] seq Temporal sequence
+ * @param[in] expand True when reserving space for additional sequences
+ * @sqlfunc appendSequence()
+ * @note It is the responsibility of the calling function to free the memory,
+ * that is, delete the old value of ss when it cannot be expanded and a new
+ * sequence set is created.
+ */
+TSequenceSet *
+tsequenceset_append_tsequence(TSequenceSet *ss, const TSequence *seq,
+  bool expand)
+{
+  /* Ensure validity of the arguments */
+  assert(ss->temptype == seq->temptype);
+  const TSequence *seq1 = tsequenceset_seq_n(ss, ss->count - 1);
+  const TInstant *inst1 = tsequence_inst_n(seq1, seq1->count - 1);
+  const TInstant *inst2 = tsequence_inst_n(seq, 0);
+  /* We cannot call ensure_increasing_timestamps since we must take into
+   * account inclusive/exclusive bounds */
+  char *t1;
+  if (inst1->t > inst2->t)
+  {
+    t1 = pg_timestamptz_out(inst1->t);
+    char *t2 = pg_timestamptz_out(inst2->t);
+    elog(ERROR, "Timestamps for temporal value must be increasing: %s, %s",
+      t1, t2);
+  }
+  else if (inst1->t == inst2->t && ss->period.upper_inc &&
+    seq->period.lower_inc)
+  {
+    mobdbType basetype = temptype_basetype(ss->temptype);
+    Datum value1 = tinstant_value(inst1);
+    Datum value2 = tinstant_value(inst2);
+    if (! datum_eq(value1, value2, basetype))
+    {
+      t1 = pg_timestamptz_out(inst1->t);
+      elog(ERROR, "The temporal values have different value at their common timestamp %s", t1);
+    }
+  }
+
+  /* TODO Account for expandable structures */
+
+  /* This is the first time we use an expandable structure or there is no more
+   * free space */
+  TSequence *newseq;
+  bool join = tsequence_join_test(seq1, seq, &newseq);
+  int count = ss->count;
+  if (! join)
+    count++;
+  const TSequence **sequences = palloc(sizeof(TSequence *) * count);
+  int k = 0;
+  for (int i = 0; i < ss->count - 1; i++)
+    sequences[k++] = tsequenceset_seq_n(ss, i);
+  if (join)
+    sequences[k++] = newseq;
+  else
+  {
+    sequences[k++] = tsequenceset_seq_n(ss, ss->count - 1);
+    sequences[k++] = seq;
+  }
+  int maxcount = count;
+  if (expand && count > ss->maxcount)
+  {
+    maxcount = ss->maxcount * 2;
+#ifdef DEBUG_BUILD
+    printf(" -> %d\n", maxcount);
+#endif /* DEBUG_BUILD */
+  }
+  TSequenceSet *result = tsequenceset_make1_exp(sequences, count, maxcount,
+    NORMALIZE_NO);
+  pfree(sequences);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_internal_temporal_transf
  * @brief Merge two temporal sequence sets
  * @sqlfunc merge()
  */

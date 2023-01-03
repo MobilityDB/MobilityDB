@@ -614,6 +614,30 @@ SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) F
   59
 (1 row)
 
+select MAX(numinstants(appendSequence(temp, tbool_contseq(shift(endinstant(temp), '5 min'))))) from tbl_tbool;
+ max 
+-----
+  53
+(1 row)
+
+SELECT MAX(numInstants(appendSequence(temp, tint_contseq(shift(endInstant(temp), '5 min'))))) FROM tbl_tint;
+ max 
+-----
+  46
+(1 row)
+
+SELECT MAX(numInstants(appendSequence(temp, tfloat_contseq(shift(endInstant(temp), '5 min'))))) FROM tbl_tfloat;
+ max 
+-----
+  53
+(1 row)
+
+SELECT MAX(numInstants(appendSequence(temp, ttext_contseq(shift(endInstant(temp), '5 min'))))) FROM tbl_ttext;
+ max 
+-----
+  60
+(1 row)
+
 SELECT DISTINCT tempSubtype(temp) FROM tbl_tbool ORDER BY 1;
  tempsubtype 
 -------------

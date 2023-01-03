@@ -1806,7 +1806,7 @@ Temporal_shift_tscale(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Temporal_append_tinstant);
 /**
  * @ingroup mobilitydb_temporal_transf
- * @brief Append an instant to the end of a temporal value
+ * @brief Append an instant at the end of a temporal value
  * @sqlfunc appendInstant()
  */
 PGDLLEXPORT Datum
@@ -1814,9 +1814,26 @@ Temporal_append_tinstant(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TInstant *inst = PG_GETARG_TINSTANT_P(1);
-  Temporal *result = temporal_append_tinstant(temp, (TInstant *) inst, false);
+  Temporal *result = temporal_append_tinstant(temp, inst, false);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(inst, 1);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_append_tsequence);
+/**
+ * @ingroup mobilitydb_temporal_transf
+ * @brief Append a sequence at the end of a temporal value
+ * @sqlfunc appendSequence()
+ */
+PGDLLEXPORT Datum
+Temporal_append_tsequence(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  TSequence *seq = PG_GETARG_TSEQUENCE_P(1);
+  Temporal *result = temporal_append_tsequence(temp, seq, false);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(seq, 1);
   PG_RETURN_POINTER(result);
 }
 

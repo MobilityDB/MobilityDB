@@ -152,6 +152,8 @@ ensure_same_interpolation(const Temporal *temp1, const Temporal *temp2)
 {
   interpType interp1 = MOBDB_FLAGS_GET_INTERP(temp1->flags);
   interpType interp2 = MOBDB_FLAGS_GET_INTERP(temp2->flags);
+  // /* A temporal instant (with INTERP_NONE) can match any interpolation */
+  // if (interp1 != INTERP_NONE && interp2 != INTERP_NONE && interp1 != interp2)
   if ((interp1 == STEPWISE && interp2 == LINEAR) ||
       (interp2 == STEPWISE && interp1 == LINEAR))
     elog(ERROR, "The temporal values must have the same continuous interpolation");
@@ -840,10 +842,64 @@ temporal_append_tinstant(Temporal *temp, const TInstant *inst, bool expand)
 }
 
 /**
+ * @ingroup libmeos_temporal_transf
+ * @brief Append a sequence at the end of a temporal value.
+ * @param[in,out] temp Temporal value
+ * @param[in] seq Temporal sequence
+ * @param[in] expand True when reserving space for additional sequences
+ * @sqlfunc appendSequence()
+ */
+Temporal *
+temporal_append_tsequence(Temporal *temp, const TSequence *seq, bool expand)
+{
+  /* Validity tests */
+  if (seq->subtype != TSEQUENCE)
+    elog(ERROR, "The second argument must be of sequence subtype");
+  ensure_same_temptype(temp, (Temporal *) seq);
+  ensure_same_interpolation(temp, (Temporal *) seq);
+  /* The test to ensure the increasing timestamps must be done in the
+   * subtype function since the inclusive/exclusive bounds must be
+   * taken into account for temporal sequences and sequence sets */
+  ensure_spatial_validity(temp, (Temporal *) seq);
+
+  interpType interp2 = MOBDB_FLAGS_GET_INTERP(seq->flags);
+  Temporal *result;
+  if (temp->subtype == TINSTANT)
+  {
+    TSequence *seq1 = tinstant_to_tsequence((TInstant *) temp, interp2);
+    result = (Temporal *) tsequence_append_tsequence((TSequence *) seq1,
+      (TSequence *) seq, expand);
+    pfree(seq1);
+  }
+  else if (temp->subtype == TSEQUENCE)
+  {
+    interpType interp1 = MOBDB_FLAGS_GET_INTERP(temp->flags);
+    if (interp1 == interp2 && (interp1 == LINEAR || interp1 == STEPWISE))
+      result = (Temporal *) tsequence_append_tsequence((TSequence *) temp,
+        seq, expand);
+    else
+    {
+      const TSequenceSet *seqsets[2];
+      seqsets[0] = tsequence_to_tsequenceset((TSequence *) temp);
+      seqsets[1] = tsequence_to_tsequenceset(seq);
+      result = (Temporal *) tsequenceset_merge_array(seqsets, 2);
+      pfree((void *) seqsets[0]); pfree((void *) seqsets[1]);
+    }
+  }
+  else /* temp->subtype == TSEQUENCESET */
+    result = (Temporal *) tsequenceset_append_tsequence((TSequenceSet *) temp,
+      seq, expand);
+  return result;
+}
+
+/**
  * Convert two temporal values into a common subtype
  *
  * @param[in] temp1,temp2 Input values
  * @param[out] out1,out2 Output values
+ * @note Each of the output values may be equal to the input values to avoid
+ * unnecessary calls to palloc(). The calling function must test whether
+ * (tempx == outx) to determine if a pfree is needed.
  */
 static void
 temporal_convert_same_subtype(const Temporal *temp1, const Temporal *temp2,
@@ -860,8 +916,8 @@ temporal_convert_same_subtype(const Temporal *temp1, const Temporal *temp2,
     bool discrete2 = MOBDB_FLAGS_GET_DISCRETE(temp2->flags);
     if (discrete1 == discrete2)
     {
-      *out1 = temporal_copy(temp1);
-      *out2 = temporal_copy(temp2);
+      *out1 = (Temporal *) temp1;
+      *out2 = (Temporal *) temp2;
     }
     else
     {
@@ -899,13 +955,13 @@ temporal_convert_same_subtype(const Temporal *temp1, const Temporal *temp2,
     new = (Temporal *) tsequence_to_tsequenceset((TSequence *) new1);
   if (swap)
   {
-    *out1 = temporal_copy(temp1);
+    *out1 = (Temporal *) temp1;
     *out2 = new;
   }
   else
   {
     *out1 = new;
-    *out2 = temporal_copy(temp2);
+    *out2 = (Temporal *) temp2;
   }
   return;
 }

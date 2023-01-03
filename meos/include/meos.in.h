@@ -1071,6 +1071,7 @@ extern text **ttext_values(const Temporal *temp, int *count);
 
 extern TSequence *tsequence_compact(const TSequence *seq);
 extern Temporal *temporal_append_tinstant(Temporal *temp, const TInstant *inst, bool expand);
+extern Temporal *temporal_append_tsequence(Temporal *temp, const TSequence *seq, bool expand);
 extern Temporal *temporal_merge(const Temporal *temp1, const Temporal *temp2);
 extern Temporal *temporal_merge_array(Temporal **temparr, int count);
 extern Temporal *temporal_shift(const Temporal *temp, const Interval *shift);

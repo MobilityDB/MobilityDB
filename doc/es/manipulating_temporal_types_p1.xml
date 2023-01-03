@@ -1392,11 +1392,30 @@ SELECT asText(deleteTime(tgeompoint '{[Point(1 1 1)@2000-01-01,
 				<programlisting language="sql" xml:space="preserve">
 SELECT appendInstant(tint '1@2000-01-01', tint '1@2000-01-02');
 -- {1@2000-01-01, 1@2000-01-02}
-SELECT appendInstant(tint_contseq(tint '1@2000-01-01'), tint '1@2000-01-02');
+SELECT appendInstant(tint '[1@2000-01-01]', tint '1@2000-01-02');
 -- [1@2000-01-01, 1@2000-01-02]
 SELECT asText(appendInstant(tgeompoint '{[Point(1 1 1)@2000-01-01,
   Point(2 2 2)@2000-01-02], [Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',
   tgeompoint 'Point(1 1 1)@2000-01-06'));
+/* {[POINT Z (1 1 1)@2000-01-01, POINT Z (2 2 2)@2000-01-02],
+   [POINT Z (3 3 3)@2000-01-04, POINT Z (3 3 3)@2000-01-05,
+   POINT Z (1 1 1)@2000-01-06]} */
+</programlisting>
+			</listitem>
+
+			<listitem id="appendSequence">
+				<indexterm><primary><varname>appendSequence</varname></primary></indexterm>
+				<para>Anexar una secuencia temporal a un valor temporal</para>
+				<para><varname>appendSequence(ttype,ttype_seq): {ttype_seq, ttype_seqset}</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT appendSequence(tint '1@2000-01-01', tint '{2@2000-01-02, 3@2000-01-03}');
+-- {1@2000-01-01, 2@2000-01-02, 3@2000-01-03}
+SELECT appendSequence(tint '[1@2000-01-01, 2@2000-01-02]',
+  tint '[2@2000-01-02, 3@2000-01-03]');
+-- [1@2000-01-01, 2@2000-01-02, 3@2000-01-03]
+SELECT asText(appendSequence(tgeompoint '{[Point(1 1 1)@2000-01-01,
+  Point(2 2 2)@2000-01-02], [Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',
+  tgeompoint '[Point(3 3 3)@2000-01-05, Point(1 1 1)@2000-01-06]'));
 /* {[POINT Z (1 1 1)@2000-01-01, POINT Z (2 2 2)@2000-01-02],
    [POINT Z (3 3 3)@2000-01-04, POINT Z (3 3 3)@2000-01-05,
    POINT Z (1 1 1)@2000-01-06]} */

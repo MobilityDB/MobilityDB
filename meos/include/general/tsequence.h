@@ -55,6 +55,8 @@ extern TSequence **tseqarr2_to_tseqarr(TSequence ***sequences,
 
 /* Append and merge functions */
 
+extern bool tsequence_join_test(const TSequence *seq1, const TSequence *seq2,
+  TSequence **newseq);
 extern TSequence **tseqarr_normalize(const TSequence **sequences,
   int count, int *newcount);
 extern TSequence **tsequence_merge_array1(const TSequence **sequences,
