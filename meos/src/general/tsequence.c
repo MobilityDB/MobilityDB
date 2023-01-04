@@ -325,7 +325,7 @@ tinstarr_normalize(const TInstant **instants, interpType interp, int count,
  * @note The function is called when normalizing an array of sequences
  * and thus, all validity tests have been already made
  */
-static TSequence *
+TSequence *
 tsequence_join(const TSequence *seq1, const TSequence *seq2,
   bool removelast, bool removefirst)
 {
@@ -1808,7 +1808,8 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, bool expand)
   }
 
 #if MEOS
-  /* A while is used instead of an if to enable to break the loop if there is
+  /* Account for expandable structures
+   * A while is used instead of an if to enable to break the loop if there is
    * no more available space */
   while (expand && count <= seq->maxcount)
   {
@@ -1907,14 +1908,16 @@ tsequence_append_tsequence(TSequence *seq1, const TSequence *seq2,
     ensure_same_rid_tnpointinst(inst1, inst2);
 #endif
 
+  bool removelast, removefirst;
+  bool join = tsequence_join_test(seq1, seq2, &removelast, &removefirst);
+
   /* TODO Account for expandable structures */
 
   /* This is the first time we use an expandable structure or there is no more
    * free space */
-  TSequence *newseq;
-  if (tsequence_join_test(seq1, seq2, &newseq))
+  if (join)
     /* Result is a continuous sequence */
-    return (Temporal *) newseq;
+    return (Temporal *) tsequence_join(seq1, seq2, removelast, removefirst);
 
   /* Result is a discrete sequence or a sequence set */
   Temporal *result;
@@ -1984,13 +1987,14 @@ tdiscseq_merge_array(const TSequence **sequences, int count)
  *  sequences.
  *
  * @param[in] seq1,seq2 Input sequences
- * @param[out] newseq Join of the two sequences if they can be joined
+ * @param[out] removelast,removefirst State the instants to remove if the
+ * sequences can be joined
  * @result True when the input sequences can be joined
  * @pre Both sequences are normalized
  */
 bool
 tsequence_join_test(const TSequence *seq1, const TSequence *seq2,
-  TSequence **newseq)
+  bool *removelast, bool *removefirst)
 {
   assert(seq1->temptype == seq2->temptype);
   mobdbType basetype = temptype_basetype(seq1->temptype);
@@ -2039,7 +2043,8 @@ tsequence_join_test(const TSequence *seq1, const TSequence *seq2,
     ))
   {
     /* Remove the last and first instants of the sequences */
-    *newseq = tsequence_join(seq1, seq2, true, true);
+    *removelast = true;
+    *removefirst = true;
     result = true;
   }
   /* If step sequences and the first one has an exclusive upper bound,
@@ -2050,7 +2055,8 @@ tsequence_join_test(const TSequence *seq1, const TSequence *seq2,
   else if (adjacent && interp == STEPWISE && ! seq1->period.upper_inc)
   {
     /* Remove the last instant of the first sequence */
-    *newseq = tsequence_join(seq1, seq2, true, false);
+    *removelast = true;
+    *removefirst = false;
     result = true;
   }
   /* If they are adjacent and have equal last/first value respectively
@@ -2066,7 +2072,8 @@ tsequence_join_test(const TSequence *seq1, const TSequence *seq2,
   else if (adjacent && datum_eq(last1value, first1value, basetype))
   {
     /* Remove the first instant of the second sequence */
-    *newseq = tsequence_join(seq1, seq2, false, true);
+    *removelast = false;
+    *removefirst = true;
     result = true;
   }
   return result;
@@ -2097,17 +2104,18 @@ tseqarr_normalize(const TSequence **sequences, int count, int *newcount)
   /* seq1 is the sequence to which we try to join subsequent seq2 */
   TSequence *seq1 = (TSequence *) sequences[0];
   /* newseq is the result of joining seq1 and seq2 */
-  TSequence *newseq;
   bool isnew = false;
   int k = 0;
   for (int i = 1; i < count; i++)
   {
     TSequence *seq2 = (TSequence *) sequences[i];
-    if (tsequence_join_test(seq1, seq2, &newseq))
+    bool removelast, removefirst;
+    if (tsequence_join_test(seq1, seq2, &removelast, &removefirst))
     {
+      TSequence *newseq1 = tsequence_join(seq1, seq2, removelast, removefirst);
       if (isnew)
         pfree(seq1);
-      seq1 = newseq;
+      seq1 = newseq1;
       isnew = true;
     }
     else
@@ -2254,14 +2262,12 @@ tfloatseq_to_tintseq(const TSequence *seq)
 /**
  * @ingroup libmeos_internal_temporal_transf
  * @brief Return a copy of a temporal sequence with no additional free space.
+ * @note We cannot simply test whether seq->count == seq->maxcount since there
+ * could be extra space allocated for the (variable-length) instants
  */
 TSequence *
 tsequence_compact(const TSequence *seq)
 {
-  /* Return a copy of the input sequence is there is not extra space */
-  if (seq->count == seq->maxcount)
-    return tsequence_copy(seq);
-
   /* Compute the new total size of the sequence and allocate memory for it */
   size_t bboxsize_extra = (seq->bboxsize == 0) ? 0 :
     seq->bboxsize - sizeof(Period);

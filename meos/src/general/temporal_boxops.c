@@ -331,7 +331,7 @@ tinstarr_compute_bbox(const TInstant **instants, int count, bool lower_inc,
 /**
  * Expand the bounding box of a temporal number sequence with an instant
  *
- * @param[in] seq Temporal sequence
+ * @param[inout] seq Temporal sequence
  * @param[in] inst Temporal instant
  */
 static void
@@ -346,8 +346,8 @@ tnumberseq_expand_tbox(TSequence *seq, const TInstant *inst)
 /**
  * Expand the bounding box of a temporal sequence with an additional instant
  *
- * @param[in] seq Temporal sequence
- * @param[out] inst Temporal instant
+ * @param[inout] seq Temporal sequence
+ * @param[in] inst Temporal instant
  */
 void
 tsequence_expand_bbox(TSequence *seq, const TInstant *inst)
@@ -356,8 +356,7 @@ tsequence_expand_bbox(TSequence *seq, const TInstant *inst)
   ensure_temporal_type(seq->temptype);
   if (talpha_type(seq->temptype))
     span_set(TimestampTzGetDatum(tsequence_inst_n(seq, 0)->t),
-      TimestampTzGetDatum(tsequence_inst_n(seq, seq->count - 1)->t),
-      seq->period.lower_inc, true, T_TIMESTAMPTZ,
+      TimestampTzGetDatum(inst->t), seq->period.lower_inc, true, T_TIMESTAMPTZ,
       (Span *) TSEQUENCE_BBOX_PTR(seq));
   else if (tnumber_type(seq->temptype))
     tnumberseq_expand_tbox(seq, inst);
@@ -372,6 +371,36 @@ tsequence_expand_bbox(TSequence *seq, const TInstant *inst)
   else
     elog(ERROR, "unknown bounding box function for temporal type: %d",
       seq->temptype);
+  return;
+}
+
+/**
+ * Expand the bounding box of a temporal sequence set with an additional sequence
+ *
+ * @param[inout] ss Temporal sequence set
+ * @param[in] seq Temporal sequence
+ */
+void
+tsequenceset_expand_bbox(TSequenceSet *ss, const TSequence *seq)
+{
+  /* Only external types have bounding box */
+  ensure_temporal_type(ss->temptype);
+  if (talpha_type(ss->temptype))
+    span_expand(&seq->period, &ss->period);
+  else if (tnumber_type(ss->temptype))
+    tbox_expand((TBox *) TSEQUENCE_BBOX_PTR(seq),
+      (TBox *) TSEQUENCE_BBOX_PTR(ss));
+  // TODO Generalize as for tgeogpointseq_expand_stbox
+  else if (ss->temptype == T_TGEOMPOINT || ss->temptype == T_TGEOGPOINT)
+    stbox_expand((STBox *) TSEQUENCE_BBOX_PTR(seq),
+      (STBox *) TSEQUENCE_BBOX_PTR(ss));
+#if NPOINT
+  else if (ss->temptype == T_TNPOINT)
+    tnpointseqset_expand_stbox(ss, (STBox *) TSEQUENCE_BBOX_PTR(seq));
+#endif
+  else
+    elog(ERROR, "unknown bounding box function for temporal type: %d",
+      ss->temptype);
   return;
 }
 #endif /* MEOS */

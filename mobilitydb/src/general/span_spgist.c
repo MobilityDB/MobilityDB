@@ -215,7 +215,7 @@ spannode_kdtree_next(const SpanNode *nodebox, const Span *centroid,
     if (node == 0)
     {
       next_nodespan->right.lower = centroid->lower;
-      next_nodespan->right.lower_inc = false;
+      next_nodespan->right.lower_inc = true;
     }
     else
     {
@@ -231,7 +231,7 @@ spannode_kdtree_next(const SpanNode *nodebox, const Span *centroid,
     if (node == 0)
     {
       next_nodespan->right.upper = centroid->upper;
-      next_nodespan->right.upper_inc = false;
+      next_nodespan->right.upper_inc = true;
     }
     else
     {

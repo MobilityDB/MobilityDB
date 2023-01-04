@@ -354,10 +354,12 @@ extern Temporal *temporal_from_base(Datum value, mobdbType temptype, const Tempo
 extern TInstant *tinstant_copy(const TInstant *inst);
 extern TInstant *tinstant_make(Datum value, mobdbType temptype, TimestampTz t);
 extern TSequence *tdiscseq_from_base_time(Datum value, mobdbType temptype, const TimestampSet *ss);
+extern TSequence *tsequence_compact(const TSequence *seq);
 extern TSequence *tsequence_copy(const TSequence *seq);
 extern TSequence *tsequence_from_base(Datum value, mobdbType temptype, const TSequence *seq, interpType interp);
 extern TSequence *tsequence_from_base_time(Datum value, mobdbType temptype, const Period *p, interpType interp);
-extern TSequenceSet *tsequenceset_copy (const TSequenceSet *ss);
+extern TSequenceSet *tsequenceset_compact(const TSequenceSet *ss);
+extern TSequenceSet *tsequenceset_copy(const TSequenceSet *ss);
 extern TSequenceSet *tsequenceset_from_base(Datum value, mobdbType temptype, const TSequenceSet *ss, interpType interp);
 extern TSequenceSet *tsequenceset_from_base_time(Datum value, mobdbType temptype, const PeriodSet *ps, interpType interp);
 
@@ -419,6 +421,7 @@ extern const TSequence *tsequenceset_seq_n(const TSequenceSet *ss, int index);
 extern TSequence **tsequence_sequences(const TSequence *seq, int *count);
 extern void tsequence_set_bbox(const TSequence *seq, void *box);
 extern void tsequence_expand_bbox(TSequence *seq, const TInstant *inst);
+extern void tsequenceset_expand_bbox(TSequenceSet *ss, const TSequence *seq);
 extern TimestampTz tsequence_start_timestamp(const TSequence *seq);
 extern PeriodSet *tsequence_time(const TSequence *seq);
 extern TimestampTz *tsequence_timestamps(const TSequence *seq, int *count);
