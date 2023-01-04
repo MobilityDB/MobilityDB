@@ -57,8 +57,6 @@ typedef struct
   int16 flags;          /**< flags */
   int32 count;          /**< Number of TimestampTz elements */
   int32 bboxsize;       /**< Size of the bouding box, to be used in the future */
-  int32 minidx;         /**< Index of the minimum value */
-  int32 maxidx;         /**< Index of the maximum value */
   Datum elems[1];       /**< Beginning of variable-length data */
 } Set;
 

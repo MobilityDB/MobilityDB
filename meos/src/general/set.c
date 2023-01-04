@@ -43,6 +43,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/pg_types.h"
+#include "general/temporal_out.h"
 #include "general/temporal_parser.h"
 #include "general/temporal_util.h"
 
@@ -236,24 +237,19 @@ set_out(const Set *s, int maxdd)
  * passed by value and passed by reference are, respectively, as follows
  *
  * @code
- * ------------------------------------------------------
- * Header | count | minidx | maxidx | Value_0 | Value_1 |
- * ------------------------------------------------------
+ * ------------------------------------
+ * Header | count | Value_0 | Value_1 |
+ * ------------------------------------
  * @endcode
  *
  * @code
- * --------------------------------------------------------------
- * | Header | count | minidx | maxidx |offset_0 | offset_1 | ...
- * ---------------------------------------------------------------
- * -------------------------
- * ... | Value_0 | Value_1 |
- * -------------------------
+ * ------------------------------------------------------------
+ * | Header | count | offset_0 | offset_1 | Value_0 | Value_1 |
+ * ------------------------------------------------------------
  * @endcode
  * where
  * - `Header` contains internal information (size, type identifiers, flags)
  * - `count` contains the number of values
- * - `minidx` and `maxidx` contains the index of the minimum and maximum
- * values. These values are needed for unordered sets (a.k.a. vectors)
  * - `offset_i` are offsets from the begining of the struct for the values.
 
  *
@@ -266,33 +262,21 @@ set_out(const Set *s, int maxdd)
 Set *
 set_make(const Datum *values, int count, mobdbType basetype, bool ordered)
 {
-  int minidx, maxidx;
   if (ordered)
   {
     /* Test the validity of the values */
     for (int i = 0; i < count - 1; i++)
     {
       if (datum_ge(values[i], values[i + 1], basetype))
-        elog(ERROR, "Invalid value for a set");
-    }
-    minidx = 0;
-    maxidx = count - 1;
-  }
-#if 0 /* not used */
-  else
-  {
-    /* Find the location of the minimum and maximum values */
-    minidx = maxidx = 0;
-    for (int i = 1; i < count - 1; i++)
-    {
-      int cmp = datum_cmp(values[i], values[minidx], basetype);
-      if (cmp < 1)
-        minidx = i;
-      else if (cmp > 1)
-        maxidx = i;
+      {
+        char *str1 = basetype_out(values[i], basetype, OUT_DEFAULT_DECIMAL_DIGITS);
+        char *str2 = basetype_out(values[i + 1], basetype, OUT_DEFAULT_DECIMAL_DIGITS);
+        elog(ERROR, "The values of an ordered set must be increasing: %s %s",
+          str1, str2);
+        pfree(str1); pfree(str2);
+      }
     }
   }
-#endif /* not used */
 
   /* Determine whether the values are passed by value or by reference  */
   int16 typlen;
@@ -328,8 +312,10 @@ set_make(const Datum *values, int count, mobdbType basetype, bool ordered)
   SET_VARSIZE(result, memsize);
   MOBDB_FLAGS_SET_BYVAL(result->flags, typbyval);
   MOBDB_FLAGS_SET_ORDERED(result->flags, ordered);
+#if 0 /* not used */
   result->minidx = minidx;
   result->maxidx = maxidx;
+#endif /* not used */
   result->count = count;
   result->settype = basetype_settype(basetype);
   result->basetype = basetype;
@@ -467,7 +453,7 @@ timestamp_to_timestampset(TimestampTz t)
 void
 set_set_span(const Set *os, Span *s)
 {
-  span_set(os->elems[os->minidx], os->elems[os->maxidx], true, true,
+  span_set(os->elems[MINIDX], os->elems[os->MAXIDX], true, true,
     os->basetype, s);
   return;
 }

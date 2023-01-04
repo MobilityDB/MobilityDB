@@ -52,10 +52,10 @@ bool
 bbox_overlaps_set_set(const Set *s1, const Set *s2)
 {
   assert(s1->settype == s2->settype);
-  Datum min1 = set_val_n(s1, s1->minidx);
-  Datum min2 = set_val_n(s2, s2->minidx);
-  Datum max1 = set_val_n(s1, s1->maxidx);
-  Datum max2 = set_val_n(s2, s2->maxidx);
+  Datum min1 = set_val_n(s1, MINIDX);
+  Datum min2 = set_val_n(s2, MINIDX);
+  Datum max1 = set_val_n(s1, s1->MAXIDX);
+  Datum max2 = set_val_n(s2, s2->MAXIDX);
   if (datum_le(min1, max2, s1->basetype) && datum_le(min2, max1, s1->basetype))
     return true;
   return false;
@@ -69,10 +69,10 @@ bool
 bbox_contains_set_set(const Set *s1, const Set *s2)
 {
   assert(s1->settype == s2->settype);
-  Datum min1 = set_val_n(s1, s1->minidx);
-  Datum min2 = set_val_n(s2, s2->minidx);
-  Datum max1 = set_val_n(s1, s1->maxidx);
-  Datum max2 = set_val_n(s2, s2->maxidx);
+  Datum min1 = set_val_n(s1, MINIDX);
+  Datum min2 = set_val_n(s2, MINIDX);
+  Datum max1 = set_val_n(s1, s1->MAXIDX);
+  Datum max2 = set_val_n(s2, s2->MAXIDX);
   if (datum_le(min1, min2, s1->basetype) && datum_le(max2, max1, s1->basetype))
     return true;
   return false;
@@ -85,8 +85,8 @@ bool
 bbox_contains_set_value(const Set *s, Datum d, mobdbType basetype)
 {
   assert(s->basetype == basetype);
-  Datum min = set_val_n(s, s->minidx);
-  Datum max = set_val_n(s, s->maxidx);
+  Datum min = set_val_n(s, MINIDX);
+  Datum max = set_val_n(s, s->MAXIDX);
   if (datum_le(min, d, basetype) && datum_le(d, max, basetype))
     return true;
   return false;
@@ -398,7 +398,7 @@ overlaps_set_set(const Set *s1, const Set *s2)
 bool
 left_value_set(Datum d, mobdbType basetype, const Set *s)
 {
-  Datum d1 = set_val_n(s, s->minidx);
+  Datum d1 = set_val_n(s, MINIDX);
   return datum_lt2(d, d1, s->basetype, basetype);
 }
 
@@ -466,7 +466,7 @@ before_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 bool
 left_set_value(const Set *s, Datum d, mobdbType basetype)
 {
-  Datum d1 = set_val_n(s, s->maxidx);
+  Datum d1 = set_val_n(s, s->MAXIDX);
   return datum_lt2(d1, d, s->basetype, basetype);
 }
 
@@ -703,7 +703,7 @@ right_set_set(const Set *s1, const Set *s2)
 bool
 overleft_value_set(Datum d, mobdbType basetype, const Set *s)
 {
-  Datum d1 = set_val_n(s, s->maxidx);
+  Datum d1 = set_val_n(s, s->MAXIDX);
   return datum_le2(d, d1, basetype, s->basetype);
 }
 
@@ -772,7 +772,7 @@ overbefore_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 bool
 overleft_set_value(const Set *s, Datum d, mobdbType basetype)
 {
-  Datum d1 = set_val_n(s, s->maxidx);
+  Datum d1 = set_val_n(s, s->MAXIDX);
   return datum_le2(d1, d, s->basetype, basetype);
 }
 
@@ -858,7 +858,7 @@ overleft_set_set(const Set *s1, const Set *s2)
 bool
 overright_value_set(Datum d, mobdbType basetype, const Set *s)
 {
-  Datum d1 = set_val_n(s, s->minidx);
+  Datum d1 = set_val_n(s, MINIDX);
   return datum_ge2(d, d1, basetype, s->basetype);
 }
 
@@ -915,7 +915,7 @@ overafter_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 bool
 overright_set_value(const Set *s, Datum d, mobdbType basetype)
 {
-  Datum d1 = set_val_n(s, s->minidx);
+  Datum d1 = set_val_n(s, MINIDX);
   return datum_ge2(d1, d, s->basetype, basetype);
 }
 

@@ -54,6 +54,9 @@
 #define PG_GETARG_SET_P(X)     ((Set *) PG_GETARG_VARLENA_P(X))
 #define PG_RETURN_SET_P(X)     PG_RETURN_POINTER(X)
 
+#define MINIDX 0
+#define MAXIDX count - 1
+
 /*****************************************************************************/
 
 /* General functions */
