@@ -129,7 +129,7 @@ tcontseq_extend(const TSequence *seq, const Interval *interval, bool min,
   Datum value1 = tinstant_value(inst1);
   interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
   bool lower_inc = seq->period.lower_inc;
-  mobdbType basetype = temptype_basetype(seq->temptype);
+  meosType basetype = temptype_basetype(seq->temptype);
   for (int i = 0; i < seq->count - 1; i++)
   {
     TInstant *inst2 = (TInstant *) tsequence_inst_n(seq, i + 1);

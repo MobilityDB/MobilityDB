@@ -66,7 +66,7 @@ extern int varstr_cmp(const char *arg1, int len1, const char *arg2, int len2, Oi
  * Return true if the first value is less than the second one
  */
 int
-datum_cmp(Datum l, Datum r, mobdbType type)
+datum_cmp(Datum l, Datum r, meosType type)
 {
   return datum_cmp2(l, r, type, type);
 }
@@ -75,7 +75,7 @@ datum_cmp(Datum l, Datum r, mobdbType type)
  * Return true if the values are equal
  */
 bool
-datum_eq(Datum l, Datum r, mobdbType type)
+datum_eq(Datum l, Datum r, meosType type)
 {
   return datum_eq2(l, r, type, type);
 }
@@ -84,7 +84,7 @@ datum_eq(Datum l, Datum r, mobdbType type)
  * Return true if the values are different
  */
 bool
-datum_ne(Datum l, Datum r, mobdbType type)
+datum_ne(Datum l, Datum r, meosType type)
 {
   return ! datum_eq2(l, r, type, type);
 }
@@ -93,7 +93,7 @@ datum_ne(Datum l, Datum r, mobdbType type)
  * Return true if the first value is less than the second one
  */
 bool
-datum_lt(Datum l, Datum r, mobdbType type)
+datum_lt(Datum l, Datum r, meosType type)
 {
   return datum_lt2(l, r, type, type);
 }
@@ -102,7 +102,7 @@ datum_lt(Datum l, Datum r, mobdbType type)
  * Return true if the first value is less than or equal to the second one
  */
 bool
-datum_le(Datum l, Datum r, mobdbType type)
+datum_le(Datum l, Datum r, meosType type)
 {
   return datum_eq2(l, r, type, type) || datum_lt2(l, r, type, type);
 }
@@ -111,7 +111,7 @@ datum_le(Datum l, Datum r, mobdbType type)
  * Return true if the first value is greater than the second one
  */
 bool
-datum_gt(Datum l, Datum r, mobdbType type)
+datum_gt(Datum l, Datum r, meosType type)
 {
   return datum_lt2(r, l, type, type);
 }
@@ -120,7 +120,7 @@ datum_gt(Datum l, Datum r, mobdbType type)
  * Return true if the first value is greater than or equal to the second one
  */
 bool
-datum_ge(Datum l, Datum r, mobdbType type)
+datum_ge(Datum l, Datum r, meosType type)
 {
   return datum_eq2(l, r, type, type) || datum_lt2(r, l, type, type);
 }
@@ -136,7 +136,7 @@ datum_ge(Datum l, Datum r, mobdbType type)
  * Return true if the first value is less than the second one
  */
 int
-datum_cmp2(Datum l, Datum r, mobdbType typel, mobdbType typer)
+datum_cmp2(Datum l, Datum r, meosType typel, meosType typer)
 {
   ensure_set_basetype(typel);
   if (typel != typer)
@@ -165,7 +165,7 @@ datum_cmp2(Datum l, Datum r, mobdbType typel, mobdbType typer)
  * Return true if the values are equal even if their type is not the same
  */
 bool
-datum_eq2(Datum l, Datum r, mobdbType typel, mobdbType typer)
+datum_eq2(Datum l, Datum r, meosType typel, meosType typer)
 {
   ensure_temporal_basetype(typel);
   if (typel != typer)
@@ -204,7 +204,7 @@ datum_eq2(Datum l, Datum r, mobdbType typel, mobdbType typer)
  * Return true if the values are different
  */
 bool
-datum_ne2(Datum l, Datum r, mobdbType typel, mobdbType typer)
+datum_ne2(Datum l, Datum r, meosType typel, meosType typer)
 {
   return ! datum_eq2(l, r, typel, typer);
 }
@@ -213,7 +213,7 @@ datum_ne2(Datum l, Datum r, mobdbType typel, mobdbType typer)
  * Return true if the first value is less than the second one
  */
 bool
-datum_lt2(Datum l, Datum r, mobdbType typel, mobdbType typer)
+datum_lt2(Datum l, Datum r, meosType typel, meosType typer)
 {
   ensure_temporal_basetype(typel);
   if (typel != typer)
@@ -253,7 +253,7 @@ datum_lt2(Datum l, Datum r, mobdbType typel, mobdbType typer)
  * Return true if the first value is less than or equal to the second one
  */
 bool
-datum_le2(Datum l, Datum r, mobdbType typel, mobdbType typer)
+datum_le2(Datum l, Datum r, meosType typel, meosType typer)
 {
   return datum_eq2(l, r, typel, typer) || datum_lt2(l, r, typel, typer);
 }
@@ -262,7 +262,7 @@ datum_le2(Datum l, Datum r, mobdbType typel, mobdbType typer)
  * Return true if the first value is greater than the second one
  */
 bool
-datum_gt2(Datum l, Datum r, mobdbType typel, mobdbType typer)
+datum_gt2(Datum l, Datum r, meosType typel, meosType typer)
 {
   return datum_lt2(r, l, typer, typel);
 }
@@ -271,7 +271,7 @@ datum_gt2(Datum l, Datum r, mobdbType typel, mobdbType typer)
  * Return true if the first value is greater than or equal to the second one
  */
 bool
-datum_ge2(Datum l, Datum r, mobdbType typel, mobdbType typer)
+datum_ge2(Datum l, Datum r, meosType typel, meosType typer)
 {
   return datum_eq2(l, r, typel, typer) || datum_gt2(l, r, typel, typer);
 }
@@ -282,7 +282,7 @@ datum_ge2(Datum l, Datum r, mobdbType typel, mobdbType typer)
  * Return a Datum true if the values are equal
  */
 Datum
-datum2_eq2(Datum l, Datum r, mobdbType typel, mobdbType typer)
+datum2_eq2(Datum l, Datum r, meosType typel, meosType typer)
 {
   return BoolGetDatum(datum_eq2(l, r, typel, typer));
 }
@@ -291,7 +291,7 @@ datum2_eq2(Datum l, Datum r, mobdbType typel, mobdbType typer)
  * Return a Datum true if the values are different
  */
 Datum
-datum2_ne2(Datum l, Datum r, mobdbType typel, mobdbType typer)
+datum2_ne2(Datum l, Datum r, meosType typel, meosType typer)
 {
   return BoolGetDatum(datum_ne2(l, r, typel, typer));
 }
@@ -300,7 +300,7 @@ datum2_ne2(Datum l, Datum r, mobdbType typel, mobdbType typer)
  * Return a Datum true if the first value is less than the second one
  */
 Datum
-datum2_lt2(Datum l, Datum r, mobdbType typel, mobdbType typer)
+datum2_lt2(Datum l, Datum r, meosType typel, meosType typer)
 {
   return BoolGetDatum(datum_lt2(l, r, typel, typer));
 }
@@ -309,7 +309,7 @@ datum2_lt2(Datum l, Datum r, mobdbType typel, mobdbType typer)
  * Return a Datum true if the first value is less than or equal to the second one
  */
 Datum
-datum2_le2(Datum l, Datum r, mobdbType typel, mobdbType typer)
+datum2_le2(Datum l, Datum r, meosType typel, meosType typer)
 {
   return BoolGetDatum(datum_le2(l, r, typel, typer));
 }
@@ -318,7 +318,7 @@ datum2_le2(Datum l, Datum r, mobdbType typel, mobdbType typer)
  * Return a Datum true if the first value is greater than the second one
  */
 Datum
-datum2_gt2(Datum l, Datum r, mobdbType typel, mobdbType typer)
+datum2_gt2(Datum l, Datum r, meosType typel, meosType typer)
 {
   return BoolGetDatum(datum_gt2(l, r, typel, typer));
 }
@@ -327,7 +327,7 @@ datum2_gt2(Datum l, Datum r, mobdbType typel, mobdbType typer)
  * Return a Datum true if the first value is greater than or equal to the second one
  */
 Datum
-datum2_ge2(Datum l, Datum r, mobdbType typel, mobdbType typer)
+datum2_ge2(Datum l, Datum r, meosType typel, meosType typer)
 {
   return BoolGetDatum(datum_ge2(l, r, typel, typer));
 }
@@ -341,7 +341,7 @@ datum2_ge2(Datum l, Datum r, mobdbType typel, mobdbType typer)
  * Return the addition of the two numbers
  */
 Datum
-datum_add(Datum l, Datum r, mobdbType typel, mobdbType typer)
+datum_add(Datum l, Datum r, meosType typel, meosType typer)
 {
   Datum result = 0;
   if (typel == T_INT4)
@@ -378,7 +378,7 @@ datum_add(Datum l, Datum r, mobdbType typel, mobdbType typer)
  * Return the subtraction of the two numbers
  */
 Datum
-datum_sub(Datum l, Datum r, mobdbType typel, mobdbType typer)
+datum_sub(Datum l, Datum r, meosType typel, meosType typer)
 {
   Datum result = 0;
   if (typel == T_INT4)
@@ -415,7 +415,7 @@ datum_sub(Datum l, Datum r, mobdbType typel, mobdbType typer)
  * Return the multiplication of the two numbers
  */
 Datum
-datum_mult(Datum l, Datum r, mobdbType typel, mobdbType typer)
+datum_mult(Datum l, Datum r, meosType typel, meosType typer)
 {
   Datum result = 0;
   if (typel == T_INT4)
@@ -452,7 +452,7 @@ datum_mult(Datum l, Datum r, mobdbType typel, mobdbType typer)
  * Return the division of the two numbers
  */
 Datum
-datum_div(Datum l, Datum r, mobdbType typel, mobdbType typer)
+datum_div(Datum l, Datum r, meosType typel, meosType typer)
 {
   Datum result;
   if (typel == T_INT4)
@@ -504,7 +504,7 @@ double_pad(size_t size)
  * Copy a Datum if it is passed by reference
  */
 Datum
-datum_copy(Datum value, mobdbType basetype)
+datum_copy(Datum value, meosType basetype)
 {
   /* For types passed by value */
   if (basetype_byvalue(basetype))
@@ -521,7 +521,7 @@ datum_copy(Datum value, mobdbType basetype)
  * Convert a number to a double
  */
 double
-datum_double(Datum d, mobdbType basetype)
+datum_double(Datum d, meosType basetype)
 {
   ensure_tnumber_basetype(basetype);
   if (basetype == T_INT4)
@@ -540,11 +540,11 @@ datum_double(Datum d, mobdbType basetype)
  * Comparator function for datums
  */
 static int
-datum_sort_cmp(const Datum *l, const Datum *r, const mobdbType *type)
+datum_sort_cmp(const Datum *l, const Datum *r, const meosType *type)
 {
   Datum x = *l;
   Datum y = *r;
-  mobdbType t = *type;
+  meosType t = *type;
   if (datum_eq(x, y, t))
     return 0;
   else if (datum_lt(x, y, t))
@@ -599,7 +599,7 @@ tseqarr_sort_cmp(TSequence **l, TSequence **r)
  * Sort function for datums
  */
 void
-datumarr_sort(Datum *values, int count, mobdbType type)
+datumarr_sort(Datum *values, int count, meosType type)
 {
   qsort_arg(values, (size_t) count, sizeof(Datum),
     (qsort_arg_comparator) &datum_sort_cmp, &type);
@@ -674,7 +674,7 @@ tseqarr_sort(TSequence **sequences, int count)
  * Remove duplicates from an array of datums
  */
 int
-datumarr_remove_duplicates(Datum *values, int count, mobdbType type)
+datumarr_remove_duplicates(Datum *values, int count, meosType type)
 {
   assert (count > 0);
   int newcount = 0;
@@ -985,9 +985,9 @@ hypot4d(double x, double y, double z, double m)
  */
 Datum
 #if NPOINT
-basetype_in(const char *str, mobdbType basetype, bool end)
+basetype_in(const char *str, meosType basetype, bool end)
 #else
-basetype_in(const char *str, mobdbType basetype, bool end __attribute__((unused)))
+basetype_in(const char *str, meosType basetype, bool end __attribute__((unused)))
 #endif
 {
   ensure_temporal_basetype(basetype);
@@ -1023,7 +1023,7 @@ basetype_in(const char *str, mobdbType basetype, bool end __attribute__((unused)
  * Call output function of the base type
  */
 char *
-basetype_out(Datum value, mobdbType basetype, int maxdd)
+basetype_out(Datum value, meosType basetype, int maxdd)
 {
   ensure_temporal_basetype(basetype);
   switch (basetype)

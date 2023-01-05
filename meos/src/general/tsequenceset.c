@@ -450,7 +450,7 @@ tsequenceset_copy(const TSequenceSet *ss)
  * @param[in] interp Interpolation
  */
 TSequenceSet *
-tsequenceset_from_base(Datum value, mobdbType temptype, const TSequenceSet *ss,
+tsequenceset_from_base(Datum value, meosType temptype, const TSequenceSet *ss,
   interpType interp)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
@@ -545,7 +545,7 @@ tgeogpointseqset_from_base(const GSERIALIZED *gs, const TSequenceSet *ss,
  * @param[in] interp Interpolation
  */
 TSequenceSet *
-tsequenceset_from_base_time(Datum value, mobdbType temptype,
+tsequenceset_from_base_time(Datum value, meosType temptype,
   const PeriodSet *ps, interpType interp)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ps->count);
@@ -654,7 +654,7 @@ tsequenceset_values(const TSequenceSet *ss, int *count)
   }
   if (k > 1)
   {
-    mobdbType basetype = temptype_basetype(ss->temptype);
+    meosType basetype = temptype_basetype(ss->temptype);
     datumarr_sort(result, k, basetype);
     k = datumarr_remove_duplicates(result, k, basetype);
   }
@@ -701,7 +701,7 @@ tsequenceset_min_instant(const TSequenceSet *ss)
   const TSequence *seq = tsequenceset_seq_n(ss, 0);
   const TInstant *result = tsequence_inst_n(seq, 0);
   Datum min = tinstant_value(result);
-  mobdbType basetype = temptype_basetype(seq->temptype);
+  meosType basetype = temptype_basetype(seq->temptype);
   for (int i = 0; i < ss->count; i++)
   {
     seq = tsequenceset_seq_n(ss, i);
@@ -734,7 +734,7 @@ tsequenceset_max_instant(const TSequenceSet *ss)
   const TSequence *seq = tsequenceset_seq_n(ss, 0);
   const TInstant *result = tsequence_inst_n(seq, 0);
   Datum max = tinstant_value(result);
-  mobdbType basetype = temptype_basetype(seq->temptype);
+  meosType basetype = temptype_basetype(seq->temptype);
   for (int i = 0; i < ss->count; i++)
   {
     seq = tsequenceset_seq_n(ss, i);
@@ -769,7 +769,7 @@ tsequenceset_min_value(const TSequenceSet *ss)
     return min;
   }
 
-  mobdbType basetype = temptype_basetype(ss->temptype);
+  meosType basetype = temptype_basetype(ss->temptype);
   Datum result = tsequence_min_value(tsequenceset_seq_n(ss, 0));
   for (int i = 1; i < ss->count; i++)
   {
@@ -798,7 +798,7 @@ tsequenceset_max_value(const TSequenceSet *ss)
     return max;
   }
 
-  mobdbType basetype = temptype_basetype(ss->temptype);
+  meosType basetype = temptype_basetype(ss->temptype);
   Datum result = tsequence_max_value(tsequenceset_seq_n(ss, 0));
   for (int i = 1; i < ss->count; i++)
   {
@@ -2088,6 +2088,7 @@ tsequenceset_append_tinstant(TSequenceSet *ss, const TInstant *inst, bool expand
   assert(ss->temptype == inst->temptype);
   TSequence *seq = (TSequence *) tsequenceset_seq_n(ss, ss->count - 1);
   Temporal *temp = tsequence_append_tinstant(seq, inst, expand);
+  TSequenceSet *ss1;
 
 #if MEOS
   /* Account for expandable structures
@@ -2100,7 +2101,6 @@ tsequenceset_append_tinstant(TSequenceSet *ss, const TInstant *inst, bool expand
     /* Append the new sequence(s) if there is enough space: only one if the
      * instant was appended to the last sequence, or the two sequences
      * composing the sequence set that results from appending the instant */
-    TSequenceSet *ss1;
     const TSequence *newseq1, *newseq2 = NULL;
     if (count == ss->count)
       size += double_pad(VARSIZE(temp));
@@ -2162,7 +2162,7 @@ tsequenceset_append_tinstant(TSequenceSet *ss, const TInstant *inst, bool expand
     sequences[k++] = (const TSequence *) temp;
   else /* temp->subtype == TSEQUENCESET */
   {
-    TSequenceSet *ss1 = (TSequenceSet *) temp;
+    ss1 = (TSequenceSet *) temp;
     sequences[k++] = tsequenceset_seq_n(ss1, 0);
     sequences[k++] = tsequenceset_seq_n(ss1, 1);
   }
@@ -2205,7 +2205,7 @@ tsequenceset_append_tsequence(TSequenceSet *ss, const TSequence *seq,
   else if (inst1->t == inst2->t && ss->period.upper_inc &&
     seq->period.lower_inc)
   {
-    mobdbType basetype = temptype_basetype(ss->temptype);
+    meosType basetype = temptype_basetype(ss->temptype);
     Datum value1 = tinstant_value(inst1);
     Datum value2 = tinstant_value(inst2);
     if (! datum_eq(value1, value2, basetype))
@@ -2589,7 +2589,7 @@ intersection_tsequence_tsequenceset(const TSequence *seq, const TSequenceSet *ss
  * @param[in] interp Interpolation
  */
 TSequenceSet *
-tsequenceset_in(const char *str, mobdbType temptype, interpType interp)
+tsequenceset_in(const char *str, meosType temptype, interpType interp)
 {
   return tsequenceset_parse(&str, temptype, interp);
 }
@@ -2779,10 +2779,9 @@ tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2)
   const TSequence **sequences = palloc(sizeof(TSequence *) * count);
   TSequence **tofree = palloc(sizeof(TSequence *) *
     Min(ss1->count, ss2->count) * 2);
-  mobdbType basetype = temptype_basetype(ss1->temptype);
+  meosType basetype = temptype_basetype(ss1->temptype);
   /* Add the first sequence of ss1 to the result */
   sequences[0] = tsequenceset_seq_n(ss1, 0);
-  int cmp1, cmp2; /* used for timestamp comparison */
   int i = 1, /* counter for the first sequence */
     j = 0,   /* counter for the second sequence */
     k = 1,   /* counter for the sequences in the result */
@@ -2791,9 +2790,9 @@ tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2)
   {
     seq1 = tsequenceset_seq_n(ss1, i);
     seq2 = tsequenceset_seq_n(ss2, j);
-    cmp1 = timestamptz_cmp_internal(sequences[k - 1]->period.upper,
+    int cmp1 = timestamptz_cmp_internal(sequences[k - 1]->period.upper,
       seq2->period.lower);
-    cmp2 = timestamptz_cmp_internal(seq2->period.upper, seq1->period.lower);
+    int cmp2 = timestamptz_cmp_internal(seq2->period.upper, seq1->period.lower);
     /* If seq2 is between the last sequence added and seq1 */
     if (cmp1 <= 0 && cmp2 <= 0)
     {

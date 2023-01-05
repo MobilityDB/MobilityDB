@@ -172,7 +172,7 @@ npoint_collinear(Npoint *np1, Npoint *np2, Npoint *np3, double ratio)
  * @param[in] t1,t2,t3 Input timestamps
  */
 static bool
-datum_collinear(Datum value1, Datum value2, Datum value3, mobdbType basetype,
+datum_collinear(Datum value1, Datum value2, Datum value3, meosType basetype,
   TimestampTz t1, TimestampTz t2, TimestampTz t3)
 {
   double duration1 = (double) (t2 - t1);
@@ -256,7 +256,7 @@ tsequence_inst_n(const TSequence *seq, int index)
  * ones during normalization
  */
 bool
-tsequence_norm_test(Datum value1, Datum value2, Datum value3, mobdbType basetype,
+tsequence_norm_test(Datum value1, Datum value2, Datum value3, meosType basetype,
   interpType interp, TimestampTz t1, TimestampTz t2, TimestampTz t3)
 {
   bool v1v2eq = datum_eq(value1, value2, basetype);
@@ -300,7 +300,7 @@ tinstarr_normalize(const TInstant **instants, interpType interp, int count,
   int *newcount)
 {
   assert(count > 1);
-  mobdbType basetype = temptype_basetype(instants[0]->temptype);
+  meosType basetype = temptype_basetype(instants[0]->temptype);
   TInstant **result = palloc(sizeof(TInstant *) * count);
   /* Remove redundant instants */
   TInstant *inst1 = (TInstant *) instants[0];
@@ -348,7 +348,7 @@ tsequence_join_test(const TSequence *seq1, const TSequence *seq2,
   bool *removelast, bool *removefirst)
 {
   assert(seq1->temptype == seq2->temptype);
-  mobdbType basetype = temptype_basetype(seq1->temptype);
+  meosType basetype = temptype_basetype(seq1->temptype);
   interpType interp = MOBDB_FLAGS_GET_INTERP(seq1->flags);
   bool result = false;
   TInstant *last2 = (seq1->count == 1 || interp == DISCRETE) ? NULL :
@@ -652,8 +652,8 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
   TInstant **instants1 = palloc(sizeof(TInstant *) * count);
   TInstant **instants2 = palloc(sizeof(TInstant *) * count);
   TInstant **tofree = palloc(sizeof(TInstant *) * count * 2);
-  mobdbType basetype1 = temptype_basetype(seq1->temptype);
-  mobdbType basetype2 = temptype_basetype(seq2->temptype);
+  meosType basetype1 = temptype_basetype(seq1->temptype);
+  meosType basetype2 = temptype_basetype(seq2->temptype);
   while (i < seq1->count && j < seq2->count &&
     (inst1->t <= (TimestampTz) inter.upper ||
      inst2->t <= (TimestampTz) inter.upper))
@@ -856,7 +856,7 @@ intersection_tdiscseq_tcontseq(const TSequence *seq1, const TSequence *seq2,
  */
 static bool
 tfloatsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
-  Datum value, mobdbType basetype, TimestampTz *t)
+  Datum value, meosType basetype, TimestampTz *t)
 {
   assert(inst1->temptype == T_TFLOAT);
   double dvalue1 = DatumGetFloat8(tinstant_value(inst1));
@@ -898,7 +898,7 @@ tfloatsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
  */
 bool
 tlinearsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
-  Datum value, mobdbType basetype, Datum *inter, TimestampTz *t)
+  Datum value, meosType basetype, Datum *inter, TimestampTz *t)
 {
   Datum value1 = tinstant_value(inst1);
   Datum value2 = tinstant_value(inst2);
@@ -1009,8 +1009,8 @@ tsegment_intersection(const TInstant *start1, const TInstant *end1,
 {
   bool result = false; /* Make compiler quiet */
   Datum value;
-  mobdbType basetype1 = temptype_basetype(start1->temptype);
-  mobdbType basetype2 = temptype_basetype(start2->temptype);
+  meosType basetype1 = temptype_basetype(start1->temptype);
+  meosType basetype2 = temptype_basetype(start2->temptype);
   if (! linear1)
   {
     value = tinstant_value(start1);
@@ -1094,7 +1094,7 @@ intersection_tinstant_tsequence(const TInstant *inst, const TSequence *seq,
  * @param[in] interp Interpolation
  */
 TSequence *
-tsequence_in(const char *str, mobdbType temptype, interpType interp)
+tsequence_in(const char *str, meosType temptype, interpType interp)
 {
   if (interp == DISCRETE)
     return tdiscseq_parse(&str, temptype);
@@ -1257,7 +1257,7 @@ tsequence_make_valid1(const TInstant **instants, int count, bool lower_inc,
   ensure_tinstarr(instants, count);
   if (count == 1 && (!lower_inc || !upper_inc))
     elog(ERROR, "Instant sequence must have inclusive bounds");
-  mobdbType basetype = temptype_basetype(instants[0]->temptype);
+  meosType basetype = temptype_basetype(instants[0]->temptype);
   if (interp == STEPWISE && count > 1 && ! upper_inc &&
     datum_ne(tinstant_value(instants[count - 1]),
       tinstant_value(instants[count - 2]), basetype))
@@ -1539,7 +1539,7 @@ tsequence_copy(const TSequence *seq)
  * etc.
  */
 TSequence *
-tdiscseq_from_base(Datum value, mobdbType temptype, const TSequence *seq)
+tdiscseq_from_base(Datum value, meosType temptype, const TSequence *seq)
 {
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
@@ -1556,7 +1556,7 @@ tdiscseq_from_base(Datum value, mobdbType temptype, const TSequence *seq)
  * etc.
  */
 TSequence *
-tdiscseq_from_base_time(Datum value, mobdbType temptype,
+tdiscseq_from_base_time(Datum value, meosType temptype,
   const TimestampSet *ts)
 {
   TInstant **instants = palloc(sizeof(TInstant *) * ts->count);
@@ -1648,7 +1648,7 @@ tgeogpointdiscseq_from_base_time(const GSERIALIZED *gs, const TimestampSet *ts)
  * @param[in] interp Interpolation
  */
 TSequence *
-tsequence_from_base(Datum value, mobdbType temptype, const TSequence *seq,
+tsequence_from_base(Datum value, meosType temptype, const TSequence *seq,
   interpType interp)
 {
   return MOBDB_FLAGS_GET_DISCRETE(seq->flags) ?
@@ -1738,7 +1738,7 @@ tgeogpointseq_from_base(const GSERIALIZED *gs, const TSequence *seq,
  * @param[in] interp Interpolation
  */
 TSequence *
-tsequence_from_base_time(Datum value, mobdbType temptype, const Period *p,
+tsequence_from_base_time(Datum value, meosType temptype, const Period *p,
   interpType interp)
 {
   int count = 1;
@@ -1844,7 +1844,7 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, bool expand)
   /* Ensure validity of the arguments */
   assert(seq->temptype == inst->temptype);
   interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
-  mobdbType basetype = temptype_basetype(seq->temptype);
+  meosType basetype = temptype_basetype(seq->temptype);
   const TInstant *penult, *last;
   last = tsequence_inst_n(seq, seq->count - 1);
 #if NPOINT
@@ -1994,7 +1994,7 @@ tsequence_append_tsequence(TSequence *seq1, const TSequence *seq2,
   else if (inst1->t == inst2->t && seq1->period.upper_inc &&
     seq2->period.lower_inc)
   {
-    mobdbType basetype = temptype_basetype(seq1->temptype);
+    meosType basetype = temptype_basetype(seq1->temptype);
     Datum value1 = tinstant_value(inst1);
     Datum value2 = tinstant_value(inst2);
     if (! datum_eq(value1, value2, basetype))
@@ -2146,7 +2146,7 @@ tsequence_merge_array1(const TSequence **sequences, int count, int *totalcount)
     tseqarr_sort((TSequence **) sequences, count);
   /* Test the validity of the composing sequences */
   const TSequence *seq1 = sequences[0];
-  mobdbType basetype = temptype_basetype(seq1->temptype);
+  meosType basetype = temptype_basetype(seq1->temptype);
   for (int i = 1; i < count; i++)
   {
     const TInstant *inst1 = tsequence_inst_n(seq1, seq1->count - 1);
@@ -2382,7 +2382,7 @@ tstepseq_to_linear1(const TSequence *seq, TSequence **result)
   Datum value2;
   bool lower_inc = seq->period.lower_inc;
   int k = 0;
-  mobdbType basetype = temptype_basetype(seq->temptype);
+  meosType basetype = temptype_basetype(seq->temptype);
   for (int i = 1; i < seq->count; i++)
   {
     inst2 = tsequence_inst_n(seq, i);
@@ -2502,7 +2502,7 @@ tsequence_values(const TSequence *seq, int *count)
     result[i] = tinstant_value(tsequence_inst_n(seq, i));
   if (seq->count > 1)
   {
-    mobdbType basetype = temptype_basetype(seq->temptype);
+    meosType basetype = temptype_basetype(seq->temptype);
     datumarr_sort(result, seq->count, basetype);
     *count = datumarr_remove_duplicates(result, seq->count, basetype);
   }
@@ -2647,7 +2647,7 @@ tsequence_min_instant(const TSequence *seq)
 {
   Datum min = tinstant_value(tsequence_inst_n(seq, 0));
   int k = 0;
-  mobdbType basetype = temptype_basetype(seq->temptype);
+  meosType basetype = temptype_basetype(seq->temptype);
   for (int i = 1; i < seq->count; i++)
   {
     Datum value = tinstant_value(tsequence_inst_n(seq, i));
@@ -2674,7 +2674,7 @@ tsequence_max_instant(const TSequence *seq)
 {
   Datum max = tinstant_value(tsequence_inst_n(seq, 0));
   int k = 0;
-  mobdbType basetype = temptype_basetype(seq->temptype);
+  meosType basetype = temptype_basetype(seq->temptype);
   for (int i = 1; i < seq->count; i++)
   {
     Datum value = tinstant_value(tsequence_inst_n(seq, i));
@@ -2704,7 +2704,7 @@ tsequence_min_value(const TSequence *seq)
     return min;
   }
 
-  mobdbType basetype = temptype_basetype(seq->temptype);
+  meosType basetype = temptype_basetype(seq->temptype);
   Datum result = tinstant_value(tsequence_inst_n(seq, 0));
   for (int i = 1; i < seq->count; i++)
   {
@@ -2733,7 +2733,7 @@ tsequence_max_value(const TSequence *seq)
     return max;
   }
 
-  mobdbType basetype = temptype_basetype(seq->temptype);
+  meosType basetype = temptype_basetype(seq->temptype);
   Datum result = tinstant_value(tsequence_inst_n(seq, 0));
   for (int i = 1; i < seq->count; i++)
   {
@@ -2818,7 +2818,7 @@ tsequence_segments1(const TSequence *seq, TSequence **result)
   bool lower_inc = seq->period.lower_inc;
   TInstant *inst1, *inst2;
   int k = 0;
-  mobdbType basetype = temptype_basetype(seq->temptype);
+  meosType basetype = temptype_basetype(seq->temptype);
   for (int i = 1; i < seq->count; i++)
   {
     inst1 = (TInstant *) tsequence_inst_n(seq, i - 1);
@@ -3089,7 +3089,7 @@ tsequence_ever_eq(const TSequence *seq, Datum value)
 {
   int i;
   Datum value1;
-  mobdbType basetype = temptype_basetype(seq->temptype);
+  meosType basetype = temptype_basetype(seq->temptype);
 
   /* Bounding box test */
   if (! temporal_bbox_ev_al_eq((Temporal *) seq, value, EVER))
@@ -3157,7 +3157,7 @@ tsequence_always_eq(const TSequence *seq, Datum value)
   if (tnumber_type(seq->temptype))
     return true;
 
-  mobdbType basetype = temptype_basetype(seq->temptype);
+  meosType basetype = temptype_basetype(seq->temptype);
   for (int i = 0; i < seq->count; i++)
   {
     Datum valueinst = tinstant_value(tsequence_inst_n(seq, i));
@@ -3179,7 +3179,7 @@ tsequence_always_eq(const TSequence *seq, Datum value)
  * @param[in] value Base value
  */
 static bool
-tlinearseq_ever_le1(Datum value1, Datum value2, mobdbType basetype,
+tlinearseq_ever_le1(Datum value1, Datum value2, meosType basetype,
   bool lower_inc, bool upper_inc, Datum value)
 {
   /* Constant segment */
@@ -3204,7 +3204,7 @@ tlinearseq_ever_le1(Datum value1, Datum value2, mobdbType basetype,
  * @param[in] value Base value
  */
 static bool
-tlinearseq_always_lt1(Datum value1, Datum value2, mobdbType basetype,
+tlinearseq_always_lt1(Datum value1, Datum value2, meosType basetype,
   bool lower_inc, bool upper_inc, Datum value)
 {
   /* Constant segment */
@@ -3233,7 +3233,7 @@ tsequence_ever_lt(const TSequence *seq, Datum value)
   if (! temporal_bbox_ev_al_lt_le((Temporal *) seq, value, EVER))
     return false;
 
-  mobdbType basetype = temptype_basetype(seq->temptype);
+  meosType basetype = temptype_basetype(seq->temptype);
   for (int i = 0; i < seq->count; i++)
   {
     Datum valueinst = tinstant_value(tsequence_inst_n(seq, i));
@@ -3258,7 +3258,7 @@ tsequence_ever_le(const TSequence *seq, Datum value)
 
   Datum value1;
   int i;
-  mobdbType basetype = temptype_basetype(seq->temptype);
+  meosType basetype = temptype_basetype(seq->temptype);
 
   /* Stepwise interpolation or instantaneous sequence */
   if (! MOBDB_FLAGS_GET_LINEAR(seq->flags) || seq->count == 1)
@@ -3302,7 +3302,7 @@ tsequence_always_lt(const TSequence *seq, Datum value)
 
   Datum value1;
   int i;
-  mobdbType basetype = temptype_basetype(seq->temptype);
+  meosType basetype = temptype_basetype(seq->temptype);
 
   /* Stepwise interpolation or instantaneous sequence */
   if (! MOBDB_FLAGS_GET_LINEAR(seq->flags) || seq->count == 1)
@@ -3354,7 +3354,7 @@ tsequence_always_le(const TSequence *seq, Datum value)
    * there are currenty no other continuous base type besides tfloat
    * to which the always <= comparison applies */
   assert(! MOBDB_FLAGS_GET_LINEAR(seq->flags));
-  mobdbType basetype = temptype_basetype(seq->temptype);
+  meosType basetype = temptype_basetype(seq->temptype);
   for (int i = 0; i < seq->count; i++)
   {
     Datum valueinst = tinstant_value(tsequence_inst_n(seq, i));
@@ -3383,7 +3383,7 @@ tsequence_always_le(const TSequence *seq, Datum value)
 TSequence *
 tdiscseq_restrict_value(const TSequence *seq, Datum value, bool atfunc)
 {
-  mobdbType basetype = temptype_basetype(seq->temptype);
+  meosType basetype = temptype_basetype(seq->temptype);
 
   /* Instantaneous sequence */
   if (seq->count == 1)
@@ -3476,7 +3476,7 @@ tsegment_restrict_value(const TInstant *inst1, const TInstant *inst2,
   assert(interp != DISCRETE);
   Datum value1 = tinstant_value(inst1);
   Datum value2 = tinstant_value(inst2);
-  mobdbType basetype = temptype_basetype(inst1->temptype);
+  meosType basetype = temptype_basetype(inst1->temptype);
   TInstant *instants[2];
   /* Is the segment constant? */
   bool isconst = datum_eq(value1, value2, basetype);
@@ -3880,7 +3880,7 @@ tnumbersegm_restrict_span(const TInstant *inst1, const TInstant *inst2,
 {
   Datum value1 = tinstant_value(inst1);
   Datum value2 = tinstant_value(inst2);
-  mobdbType basetype = temptype_basetype(inst1->temptype);
+  meosType basetype = temptype_basetype(inst1->temptype);
   interpType interp = linear ? LINEAR : STEPWISE;
   TInstant *instants[2];
   bool contains;
@@ -5317,7 +5317,7 @@ tcontseq_insert(const TSequence *seq1, const TSequence *seq2)
   }
   else /* overlap on the boundary*/
   {
-    mobdbType basetype = temptype_basetype(seq1->temptype);
+    meosType basetype = temptype_basetype(seq1->temptype);
     if (! datum_eq(tinstant_value(instants[0]), tinstant_value(instants[1]),
       basetype))
     {
@@ -5712,7 +5712,7 @@ tnumberseq_integral(const TSequence *seq)
 double
 tnumberdiscseq_twavg(const TSequence *seq)
 {
-  mobdbType basetype = temptype_basetype(seq->temptype);
+  meosType basetype = temptype_basetype(seq->temptype);
   double result = 0.0;
   for (int i = 0; i < seq->count; i++)
   {

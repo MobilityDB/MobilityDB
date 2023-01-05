@@ -2012,7 +2012,7 @@ tgeompointseq_tgeogpointseq(const TSequence *seq, bool oper)
   /* Construct the resulting tpoint from the multipoint geometry/geography */
   LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  mobdbType restype = (oper == GEOM_TO_GEOG) ?  T_TGEOGPOINT : T_TGEOMPOINT;
+  meosType restype = (oper == GEOM_TO_GEOG) ?  T_TGEOGPOINT : T_TGEOMPOINT;
   for (int i = 0; i < seq->count; i++)
   {
     inst = tsequence_inst_n(seq, i);
@@ -2804,7 +2804,7 @@ get_bearing_fn(int16 flags)
  */
 static bool
 tpoint_geo_min_bearing_at_timestamp(const TInstant *start, const TInstant *end,
-  Datum point, mobdbType basetypid __attribute__((unused)), Datum *value,
+  Datum point, meosType basetypid __attribute__((unused)), Datum *value,
   TimestampTz *t)
 {
   Datum dstart = tinstant_value(start);

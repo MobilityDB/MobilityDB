@@ -51,7 +51,7 @@
 #include <meos_internal.h>
 #include "general/set.h"
 /* MobilityDB */
-#include "pg_general/mobdb_catalog.h"
+#include "pg_general/meos_catalog.h"
 #include "pg_general/span_analyze.h"
 
 /*****************************************************************************/
@@ -816,7 +816,7 @@ void
 span_const_to_span(Node *other, Span *span)
 {
   Oid consttype = ((Const *) other)->consttype;
-  mobdbType type = oid_type(consttype);
+  meosType type = oid_type(consttype);
   assert(set_type(type) || set_basetype(type) || span_type(type) ||
     span_basetype(type));
   if (set_basetype(type) || span_basetype(type))
@@ -850,7 +850,7 @@ void
 time_const_to_period(Node *other, Period *period)
 {
   Oid consttype = ((Const *) other)->consttype;
-  mobdbType timetype = oid_type(consttype);
+  meosType timetype = oid_type(consttype);
   const Period *p;
   ensure_time_type(timetype);
   if (timetype == T_TIMESTAMPTZ)
@@ -1593,7 +1593,7 @@ _mobdb_span_joinsel(PG_FUNCTION_ARGS)
     elog(ERROR, "attribute name is null");
 
   /* Get the attribute type */
-  mobdbType atttype1 = oid_type(get_atttype(table1_oid, att1_num));
+  meosType atttype1 = oid_type(get_atttype(table1_oid, att1_num));
 
   char *table2_name = get_rel_name(table2_oid);
   if (table2_name == NULL)
@@ -1613,7 +1613,7 @@ _mobdb_span_joinsel(PG_FUNCTION_ARGS)
     elog(ERROR, "attribute name is null");
 
   /* Get the attribute type */
-  mobdbType atttype2 = oid_type(get_atttype(table1_oid, att1_num));
+  meosType atttype2 = oid_type(get_atttype(table1_oid, att1_num));
 
   /* Determine whether we target the value or the time dimension */
   bool value = (atttype1 != T_PERIOD && atttype2 != T_PERIOD);

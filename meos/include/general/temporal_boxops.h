@@ -36,8 +36,8 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-/* MobilityDB */
-#include "general/mobdb_catalog.h"
+/* MEOS */
+#include "general/meos_catalog.h"
 #include "general/temporal.h"
 #include "general/span.h"
 #include "general/tbox.h"
@@ -47,21 +47,21 @@
 
 /* Functions on generic bounding boxes of temporal types */
 
-extern bool bbox_type(mobdbType bboxtype);
-extern void ensure_bbox_type(mobdbType bboxtype);
-extern size_t bbox_get_size(mobdbType bboxtype);
-extern int bbox_max_dims(mobdbType bboxtype);
+extern bool bbox_type(meosType bboxtype);
+extern void ensure_bbox_type(meosType bboxtype);
+extern size_t bbox_get_size(meosType bboxtype);
+extern int bbox_max_dims(meosType bboxtype);
 extern uint32_t temporal_max_header_size(void);
 extern bool temporal_bbox_eq(const void *box1, const void *box2,
-  mobdbType temptype);
+  meosType temptype);
 extern int temporal_bbox_cmp(const void *box1, const void *box2,
-  mobdbType temptype);
-extern void temporal_bbox_shift_tscale(void *box, mobdbType temptype,
+  meosType temptype);
+extern void temporal_bbox_shift_tscale(void *box, meosType temptype,
   const Interval *start, const Interval *duration);
 
 /* Compute the bounding box at the creation of temporal values */
 
-extern size_t temporal_bbox_size(mobdbType tempype);
+extern size_t temporal_bbox_size(meosType tempype);
 extern void tinstant_set_bbox(const TInstant *inst, void *bbox);
 extern void tinstarr_compute_bbox(const TInstant **instants, int count,
   bool lower_inc, bool upper_inc, interpType interp, void *bbox);
@@ -84,7 +84,7 @@ extern bool boxop_temporal_temporal(const Temporal *temp1,
   const Temporal *temp2, bool (*func)(const Period *, const Period *));
 
 extern bool boxop_tnumber_number(const Temporal *temp, Datum value,
-  mobdbType basetype, bool (*func)(const TBox *, const TBox *), bool invert);
+  meosType basetype, bool (*func)(const TBox *, const TBox *), bool invert);
 extern bool boxop_tnumber_numspan(const Temporal *temp, const Span *span,
   bool (*func)(const TBox *, const TBox *), bool invert);
 extern bool boxop_tnumber_numspanset(const Temporal *temp, const SpanSet *ss,

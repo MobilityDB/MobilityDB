@@ -44,7 +44,7 @@
 #include "general/temporaltypes.h"
 #include "general/lifting.h"
 /* MobilityDB */
-#include "pg_general/mobdb_catalog.h"
+#include "pg_general/meos_catalog.h"
 
 /*****************************************************************************
  * Temporal distance
@@ -221,7 +221,7 @@ NAD_tnumber_tnumber(PG_FUNCTION_ARGS)
   ensure_tnumber_type(temp1->temptype);
   ensure_tnumber_type(temp2->temptype);
   /* Result of the distance function is a tint iff both arguments are tint */
-  mobdbType restype = (temp1->temptype == T_TINT && temp2->temptype == T_TINT) ?
+  meosType restype = (temp1->temptype == T_TINT && temp2->temptype == T_TINT) ?
     T_TINT : T_TFLOAT;
   Temporal *dist = distance_tnumber_tnumber1(temp1, temp2, restype);
   if (dist == NULL)

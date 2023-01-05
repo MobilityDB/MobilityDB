@@ -47,8 +47,8 @@
 
 /* C */
 #include <assert.h>
-/* MobilityDB */
-#include "general/mobdb_catalog.h"
+/* MEOS */
+#include "general/meos_catalog.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
 #include "point/tpoint.h"

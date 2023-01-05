@@ -82,7 +82,7 @@ bbox_contains_set_set(const Set *s1, const Set *s2)
  * Return true if the bounding box of the first set contains the value
  */
 bool
-bbox_contains_set_value(const Set *s, Datum d, mobdbType basetype)
+bbox_contains_set_value(const Set *s, Datum d, meosType basetype)
 {
   assert(s->basetype == basetype);
   Datum min = set_val_n(s, MINIDX);
@@ -119,7 +119,7 @@ setop_set_set(const Set *s1, const Set *s2, SetOper setop)
   int i = 0, j = 0, k = 0;
   Datum d1 = set_val_n(s1, 0);
   Datum d2 = set_val_n(s2, 0);
-  mobdbType basetype = s1->basetype;
+  meosType basetype = s1->basetype;
   while (i < s1->count && j < s2->count)
   {
     int cmp = datum_cmp(d1, d2, basetype);
@@ -176,7 +176,7 @@ setop_set_set(const Set *s1, const Set *s2, SetOper setop)
  * @brief Return true if a set contains a value.
  */
 bool
-contains_set_value(const Set *s, Datum d, mobdbType basetype)
+contains_set_value(const Set *s, Datum d, meosType basetype)
 {
   /* Bounding box test */
   if (! bbox_contains_set_value(s, d, basetype))
@@ -281,7 +281,7 @@ contains_set_set(const Set *s1, const Set *s2)
  * @brief Return true if a value is contained by a set
  */
 bool
-contained_value_set(Datum d, mobdbType basetype, const Set *s)
+contained_value_set(Datum d, meosType basetype, const Set *s)
 {
   return contains_set_value(s, d, basetype);
 }
@@ -396,7 +396,7 @@ overlaps_set_set(const Set *s1, const Set *s2)
  * @brief Return true if a value is strictly to the left of a set.
  */
 bool
-left_value_set(Datum d, mobdbType basetype, const Set *s)
+left_value_set(Datum d, meosType basetype, const Set *s)
 {
   Datum d1 = set_val_n(s, MINIDX);
   return datum_lt2(d, d1, s->basetype, basetype);
@@ -464,7 +464,7 @@ before_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
  * @brief Return true if a set is strictly to the left of a value.
  */
 bool
-left_set_value(const Set *s, Datum d, mobdbType basetype)
+left_set_value(const Set *s, Datum d, meosType basetype)
 {
   Datum d1 = set_val_n(s, s->MAXIDX);
   return datum_lt2(d1, d, s->basetype, basetype);
@@ -550,7 +550,7 @@ left_set_set(const Set *s1, const Set *s2)
  * @brief Return true if a value is strictly to the right of a set.
  */
 bool
-right_value_set(Datum d, mobdbType basetype, const Set *s)
+right_value_set(Datum d, meosType basetype, const Set *s)
 {
   return left_set_value(s, d, basetype);
 }
@@ -618,7 +618,7 @@ after_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
  * @sqlop @p >>, @p #>>
  */
 bool
-right_set_value(const Set *s, Datum d, mobdbType basetype)
+right_set_value(const Set *s, Datum d, meosType basetype)
 {
   return left_value_set(d, basetype, s);
 }
@@ -701,7 +701,7 @@ right_set_set(const Set *s1, const Set *s2)
  * @brief Return true if a value does not extend to the right of a set.
  */
 bool
-overleft_value_set(Datum d, mobdbType basetype, const Set *s)
+overleft_value_set(Datum d, meosType basetype, const Set *s)
 {
   Datum d1 = set_val_n(s, s->MAXIDX);
   return datum_le2(d, d1, basetype, s->basetype);
@@ -770,7 +770,7 @@ overbefore_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
  * @sqlop @p &<, @p &<#
  */
 bool
-overleft_set_value(const Set *s, Datum d, mobdbType basetype)
+overleft_set_value(const Set *s, Datum d, meosType basetype)
 {
   Datum d1 = set_val_n(s, s->MAXIDX);
   return datum_le2(d1, d, s->basetype, basetype);
@@ -856,7 +856,7 @@ overleft_set_set(const Set *s1, const Set *s2)
  * @brief Return true if a value does not extend to the the left of a set.
  */
 bool
-overright_value_set(Datum d, mobdbType basetype, const Set *s)
+overright_value_set(Datum d, meosType basetype, const Set *s)
 {
   Datum d1 = set_val_n(s, MINIDX);
   return datum_ge2(d, d1, basetype, s->basetype);
@@ -913,7 +913,7 @@ overafter_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
  * @brief Return true if a set does not extend to the left of a value.
  */
 bool
-overright_set_value(const Set *s, Datum d, mobdbType basetype)
+overright_set_value(const Set *s, Datum d, meosType basetype)
 {
   Datum d1 = set_val_n(s, MINIDX);
   return datum_ge2(d1, d, s->basetype, basetype);
@@ -999,7 +999,7 @@ overright_set_set(const Set *s1, const Set *s2)
  * @brief Return the union of two values
  */
 Set *
-union_value_value(Datum d1, Datum d2, mobdbType basetype)
+union_value_value(Datum d1, Datum d2, meosType basetype)
 {
   Set *result;
   int cmp = datum_cmp(d1, d2, basetype);
@@ -1086,7 +1086,7 @@ union_timestamp_timestamp(TimestampTz t1, TimestampTz t2)
  * @brief Return the union of a value and a set.
  */
 Set *
-union_set_value(const Set *s, Datum d, mobdbType basetype)
+union_set_value(const Set *s, Datum d, meosType basetype)
 {
   assert(basetype == s->basetype);
   Datum *values = palloc(sizeof(TimestampTz) * (s->count + 1));
@@ -1190,7 +1190,7 @@ union_set_set(const Set *s1, const Set *s2)
  * @brief Return the intersection of two values
  */
 bool
-intersection_value_value(Datum d1, Datum d2, mobdbType basetype, Datum *result)
+intersection_value_value(Datum d1, Datum d2, meosType basetype, Datum *result)
 {
   if (datum_ne(d1, d2, basetype))
     return false;
@@ -1203,7 +1203,7 @@ intersection_value_value(Datum d1, Datum d2, mobdbType basetype, Datum *result)
  * @brief Return the intersection of a set and a value
  */
 bool
-intersection_set_value(const Set *s, Datum d, mobdbType basetype,
+intersection_set_value(const Set *s, Datum d, meosType basetype,
   Datum *result)
 {
   assert(basetype == s->basetype);
@@ -1308,7 +1308,7 @@ intersection_set_set(const Set *s1, const Set *s2)
  * @brief Return the difference of two values
  */
 bool
-minus_value_value(Datum d1, Datum d2, mobdbType basetype, Datum *result)
+minus_value_value(Datum d1, Datum d2, meosType basetype, Datum *result)
 {
   if (datum_eq(d1, d2, basetype))
     return false;
@@ -1384,7 +1384,7 @@ minus_text_text(const text *txt1, const text *txt2, text **result)
  * @sqlop @p -
  */
 bool
-minus_value_set(Datum d, mobdbType basetype, const Set *s,
+minus_value_set(Datum d, meosType basetype, const Set *s,
   Datum *result)
 {
   if (contains_set_value(s, d, basetype))
@@ -1456,7 +1456,7 @@ minus_text_textset(const text *txt, const Set *s, text **result)
  * @brief Return the difference of a set and a value.
  */
 Set *
-minus_set_value(const Set *s, Datum d, mobdbType basetype)
+minus_set_value(const Set *s, Datum d, meosType basetype)
 {
   /* Bounding box test */
   if (! bbox_contains_set_value(s, d, basetype))
@@ -1567,7 +1567,7 @@ minus_set_set(const Set *s1, const Set *s2)
  * @brief Return the distance between a set and a value
  */
 double
-distance_set_value(const Set *s, Datum d, mobdbType basetype)
+distance_set_value(const Set *s, Datum d, meosType basetype)
 {
   Span sp;
   set_set_span(s, &sp);

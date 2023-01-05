@@ -54,7 +54,7 @@
 #include "general/temporal_boxops.h"
 /* MobilityDB */
 #include "pg_general/doxygen_mobilitydb_api.h"
-#include "pg_general/mobdb_catalog.h"
+#include "pg_general/meos_catalog.h"
 #include "pg_general/temporal_util.h"
 #include "pg_general/tinstant.h"
 #include "pg_general/tsequence.h"
@@ -518,7 +518,7 @@ Tinstant_constructor(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  mobdbType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
+  meosType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
   Temporal *result = (Temporal *) tinstant_make(value, temptype, t);
   PG_RETURN_POINTER(result);
 }
@@ -702,7 +702,7 @@ Tdiscseq_from_base_time(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  mobdbType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
+  meosType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
   TSequence *result = tdiscseq_from_base_time(value, temptype, ts);
   PG_FREE_IF_COPY(ts, 1);
   PG_RETURN_POINTER(result);
@@ -719,7 +719,7 @@ Tsequence_from_base_time(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   Period *p = PG_GETARG_SPAN_P(1);
-  mobdbType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
+  meosType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
   interpType interp = temptype_continuous(temptype) ? LINEAR : STEPWISE;
   if (PG_NARGS() > 2)
     interp = PG_GETARG_BOOL(2) ? LINEAR : STEPWISE;
@@ -739,7 +739,7 @@ Tsequenceset_from_base_time(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  mobdbType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
+  meosType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
   interpType interp = temptype_continuous(temptype) ? LINEAR : STEPWISE;
   if (PG_NARGS() > 2)
     interp = PG_GETARG_BOOL(2) ? LINEAR : STEPWISE;
@@ -1889,7 +1889,7 @@ temporal_restrict_value_ext(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_ANYDATUM(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   Temporal *result = temporal_restrict_value(temp, value, atfunc);
   PG_FREE_IF_COPY(temp, 0);
   DATUM_FREE_IF_COPY(value, basetype, 1);

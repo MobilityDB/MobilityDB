@@ -49,7 +49,7 @@
 #include <general/temporal_boxops.h>
 #include <general/temporal_util.h>
 /* MobilityDB */
-#include "pg_general/mobdb_catalog.h"
+#include "pg_general/meos_catalog.h"
 #include "pg_general/temporal.h"
 #include "pg_general/time_gist.h"
 
@@ -198,7 +198,7 @@ tnumber_gist_consistent(const TBox *key, const TBox *query,
 static bool
 tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBox *result, Oid typid)
 {
-  mobdbType type = oid_type(typid);
+  meosType type = oid_type(typid);
   if (tnumber_basetype(type))
   {
     Datum value = PG_GETARG_DATUM(1);
@@ -503,7 +503,7 @@ non_negative(float val)
  */
 inline void
 bbox_gist_consider_split(ConsiderSplitContext *context, int dimNum,
-  mobdbType bboxtype, double rightLower, int minLeftCount, double leftUpper,
+  meosType bboxtype, double rightLower, int minLeftCount, double leftUpper,
   int maxLeftCount)
 {
   int leftCount, rightCount;
@@ -648,7 +648,7 @@ bbox_gist_consider_split(ConsiderSplitContext *context, int dimNum,
  */
 void
 bbox_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v,
-  mobdbType bboxtype, void (*bbox_adjust)(void *, void *))
+  meosType bboxtype, void (*bbox_adjust)(void *, void *))
 {
   OffsetNumber i;
   OffsetNumber maxoff = (OffsetNumber) (entryvec->n - 1);
@@ -705,7 +705,7 @@ bbox_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v,
  * http://syrcose.ispras.ru/2011/files/SYRCoSE2011_Proceedings.pdf#page=36
  */
 Datum
-bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, mobdbType bboxtype,
+bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, meosType bboxtype,
   void (*bbox_adjust)(void *, void *), double (*bbox_penalty)(void *, void *))
 {
   GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);

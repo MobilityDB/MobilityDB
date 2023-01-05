@@ -255,7 +255,7 @@ int *
 ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
   interpType interp, double maxdist, Interval *maxt, int *countsplits)
 {
-  mobdbType basetype = temptype_basetype(instants[0]->temptype);
+  meosType basetype = temptype_basetype(instants[0]->temptype);
   int *result = palloc(sizeof(int) * count);
   Datum value1 = tinstant_value(instants[0]);
 #if NPOINT
@@ -349,7 +349,7 @@ ensure_valid_tseqarr(const TSequence **sequences, int count)
  * Ensure that the number is positive
  */
 void
-ensure_positive_datum(Datum size, mobdbType basetype)
+ensure_positive_datum(Datum size, meosType basetype)
 {
   ensure_span_basetype(basetype);
   if (basetype == T_INT4)
@@ -554,7 +554,7 @@ mobilitydb_full_version(void)
  * @param[in] temptype Temporal type
  */
 Temporal *
-temporal_in(const char *str, mobdbType temptype)
+temporal_in(const char *str, meosType temptype)
 {
   return temporal_parse(&str, temptype);
 }
@@ -719,7 +719,7 @@ temporal_copy(const Temporal *temp)
  * another temporal value.
  */
 Temporal *
-temporal_from_base(Datum value, mobdbType temptype, const Temporal *temp,
+temporal_from_base(Datum value, meosType temptype, const Temporal *temp,
   interpType interp)
 {
   Temporal *result;
@@ -1196,7 +1196,7 @@ tnumber_set_span(const Temporal *temp, Span *s)
   if (temp->subtype == TINSTANT)
   {
     Datum value = tinstant_value((TInstant *) temp);
-    mobdbType basetype = temptype_basetype(temp->temptype);
+    meosType basetype = temptype_basetype(temp->temptype);
     span_set(value, value, true, true, basetype, s);
   }
   else
@@ -1802,7 +1802,7 @@ Datum
 temporal_min_value(const Temporal *temp)
 {
   Datum result;
-  mobdbType basetype = temptype_basetype(temp->temptype);
+  meosType basetype = temptype_basetype(temp->temptype);
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = tinstant_value_copy((TInstant *) temp);
@@ -1861,7 +1861,7 @@ Datum
 temporal_max_value(const Temporal *temp)
 {
   Datum result;
-  mobdbType basetype = temptype_basetype(temp->temptype);
+  meosType basetype = temptype_basetype(temp->temptype);
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = tinstant_value_copy((TInstant *) temp);
@@ -2798,7 +2798,7 @@ temporal_bbox_restrict_values(const Temporal *temp, const Datum *values,
 {
   Datum *newvalues = palloc(sizeof(Datum) * count);
   int k = 0;
-  mobdbType basetype = temptype_basetype(temp->temptype);
+  meosType basetype = temptype_basetype(temp->temptype);
 
   /* Bounding box test */
   if (tnumber_type(temp->temptype))

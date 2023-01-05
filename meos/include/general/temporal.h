@@ -37,7 +37,7 @@
 /* PostgreSQL */
 #include <postgres.h>
 /* MEOS */
-#include "general/mobdb_catalog.h"
+#include "general/meos_catalog.h"
 #include "general/span.h"
 #include "general/timetypes.h"
 #include "general/tbox.h"
@@ -340,7 +340,7 @@ typedef struct
  *****************************************************************************/
 
 /* Definition of output function */
-typedef char *(*outfunc)(Datum value, mobdbType type, int maxdd);
+typedef char *(*outfunc)(Datum value, meosType type, int maxdd);
 
 /* Definition of qsort comparator for integers */
 typedef int (*qsort_comparator) (const void *a, const void *b);
@@ -434,7 +434,7 @@ extern int *ensure_valid_tinstarr_gaps(const TInstant **instants, int count,
   bool merge, interpType interp, double maxdist, Interval *maxt, int *countsplits);
 extern void ensure_valid_tseqarr(const TSequence **sequences, int count);
 
-extern void ensure_positive_datum(Datum size, mobdbType basetype);
+extern void ensure_positive_datum(Datum size, meosType basetype);
 extern void ensure_valid_duration(const Interval *duration);
 
 /* General functions */

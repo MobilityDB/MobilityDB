@@ -45,7 +45,7 @@
 /* MobilityDB */
 #include "pg_general/skiplist.h"
 #include "pg_general/temporal.h"
-#include "pg_general/mobdb_catalog.h"
+#include "pg_general/meos_catalog.h"
 
 /*****************************************************************************
  * Aggregate transition functions for set types
@@ -62,7 +62,7 @@ Set_agg_transfn(PG_FUNCTION_ARGS)
   if (PG_ARGISNULL(1))
     PG_RETURN_NULL();
   Datum d = PG_GETARG_DATUM(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   void *value = NULL;
   if (! basetype_byvalue(basetype) &&
       PG_DATUM_NEEDS_DETOAST((struct varlena *) d))

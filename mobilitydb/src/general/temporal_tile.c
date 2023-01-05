@@ -49,7 +49,7 @@
 #include "general/temporal_tile.h"
 #include "general/temporal_util.h"
 /* MobilityDB */
-#include "pg_general/mobdb_catalog.h"
+#include "pg_general/meos_catalog.h"
 
 /*****************************************************************************
  * Number bucket functions
@@ -65,7 +65,7 @@ Number_bucket(PG_FUNCTION_ARGS)
   Datum value = PG_GETARG_DATUM(0);
   Datum size = PG_GETARG_DATUM(1);
   Datum origin = PG_GETARG_DATUM(2);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   Datum result = datum_bucket(value, size, origin, basetype);
   PG_RETURN_DATUM(result);
 }
@@ -110,7 +110,7 @@ Span_bucket_list_ext(FunctionCallInfo fcinfo, bool valuelist)
     {
       size = PG_GETARG_DATUM(1);
       origin = PG_GETARG_DATUM(2);
-      mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+      meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
       ensure_positive_datum(size, basetype);
     }
     else
@@ -197,7 +197,7 @@ Span_bucket(PG_FUNCTION_ARGS)
   Datum value = PG_GETARG_DATUM(0);
   Datum size = PG_GETARG_DATUM(1);
   Datum origin = PG_GETARG_DATUM(2);
-  mobdbType type = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  meosType type = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   Datum value_bucket = datum_bucket(value, size, origin, type);
   Span *result = span_bucket_get(value_bucket, size, type);
   PG_RETURN_POINTER(result);

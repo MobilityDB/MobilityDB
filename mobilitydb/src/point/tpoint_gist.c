@@ -47,7 +47,7 @@
 #include "general/set.h"
 #include "general/temporal_util.h"
 /* MobilityDB */
-#include "pg_general/mobdb_catalog.h"
+#include "pg_general/meos_catalog.h"
 #include "pg_general/temporal.h"
 #include "pg_general/time_gist.h"
 #include "pg_general/tnumber_gist.h"
@@ -273,7 +273,7 @@ tpoint_index_recheck(StrategyNumber strategy)
  */
 static bool
 tpoint_gist_get_stbox(FunctionCallInfo fcinfo, STBox *result,
-  mobdbType type)
+  meosType type)
 {
   if (tgeo_basetype(type))
   {

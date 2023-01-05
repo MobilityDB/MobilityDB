@@ -55,7 +55,7 @@
  * @note The parameter `type` is not needed for temporal points
  */
 static char *
-wkt_out(Datum value, mobdbType type __attribute__((unused)), int maxdd)
+wkt_out(Datum value, meosType type __attribute__((unused)), int maxdd)
 {
   GSERIALIZED *gs = DatumGetGserializedP(value);
   LWGEOM *geom = lwgeom_from_gserialized(gs);
@@ -74,7 +74,7 @@ wkt_out(Datum value, mobdbType type __attribute__((unused)), int maxdd)
  * @note The parameter `type` is not needed for temporal points
  */
 char *
-ewkt_out(Datum value, mobdbType type __attribute__((unused)), int maxdd)
+ewkt_out(Datum value, meosType type __attribute__((unused)), int maxdd)
 {
   GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value);
   LWGEOM *geom = lwgeom_from_gserialized(gs);

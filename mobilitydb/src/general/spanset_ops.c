@@ -41,7 +41,7 @@
 #include "general/spanset.h"
 #include "general/temporal_util.h"
 /* MobilityDB */
-#include "pg_general/mobdb_catalog.h"
+#include "pg_general/meos_catalog.h"
 
 /*****************************************************************************
  * Contains
@@ -59,7 +59,7 @@ Contains_spanset_value(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
   Datum d = PG_GETARG_DATUM(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   bool result = contains_spanset_value(ss, d, basetype);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_BOOL(result);
@@ -151,7 +151,7 @@ Contained_value_spanset(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
   SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   bool result = contained_value_spanset(d, basetype, ss);
   PG_FREE_IF_COPY(ss, 1);
   PG_RETURN_BOOL(result);
@@ -335,7 +335,7 @@ Adjacent_value_spanset(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
   SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   bool result = adjacent_spanset_value(ss, d, basetype);
   PG_FREE_IF_COPY(ss, 1);
   PG_RETURN_BOOL(result);
@@ -371,7 +371,7 @@ Adjacent_spanset_value(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
   Datum d = PG_GETARG_DATUM(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   bool result = adjacent_spanset_value(ss, d, basetype);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_BOOL(result);
@@ -463,7 +463,7 @@ Left_value_spanset(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
   SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   bool result = left_value_spanset(d, basetype, ss);
   PG_FREE_IF_COPY(ss, 1);
   PG_RETURN_BOOL(result);
@@ -516,7 +516,7 @@ Left_spanset_value(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
   Datum d = PG_GETARG_DATUM(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   bool result = left_spanset_value(ss, d, basetype);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_BOOL(result);
@@ -591,7 +591,7 @@ Right_value_spanset(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
   SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   bool result = right_value_spanset(d, basetype, ss);
   PG_FREE_IF_COPY(ss, 1);
   PG_RETURN_BOOL(result);
@@ -644,7 +644,7 @@ Right_spanset_value(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
   Datum d = PG_GETARG_DATUM(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   bool result = right_spanset_value(ss, d, basetype);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_BOOL(result);
@@ -719,7 +719,7 @@ Overleft_value_spanset(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
   SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   bool result = overleft_value_spanset(d, basetype, ss);
   PG_FREE_IF_COPY(ss, 1);
   PG_RETURN_BOOL(result);
@@ -755,7 +755,7 @@ Overleft_spanset_value(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
   Datum d = PG_GETARG_DATUM(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   bool result = overleft_spanset_value(ss, d, basetype);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_BOOL(result);
@@ -847,7 +847,7 @@ Overright_value_spanset(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
   SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   bool result = overright_value_spanset(d, basetype, ss);
   PG_FREE_IF_COPY(ss, 1);
   PG_RETURN_BOOL(result);
@@ -883,7 +883,7 @@ Overright_spanset_value(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
   Datum d = PG_GETARG_DATUM(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   bool result = overright_spanset_value(ss, d, basetype);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_BOOL(result);
@@ -975,7 +975,7 @@ Union_value_spanset(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
   SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   PeriodSet *result = union_spanset_value(ss, d, basetype);
   PG_FREE_IF_COPY(ss, 1);
   PG_RETURN_POINTER(result);
@@ -1028,7 +1028,7 @@ Union_spanset_value(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
   Datum d = PG_GETARG_DATUM(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   PeriodSet *result = union_spanset_value(ss, d, basetype);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_POINTER(result);
@@ -1103,7 +1103,7 @@ Intersection_value_spanset(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
   SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   Datum result;
   bool found = intersection_spanset_value(ss, d, basetype, &result);
   PG_FREE_IF_COPY(ss, 1);
@@ -1163,7 +1163,7 @@ Intersection_spanset_value(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
   Datum d = PG_GETARG_DATUM(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   Datum result;
   bool found = intersection_spanset_value(ss, d, basetype, &result);
   PG_FREE_IF_COPY(ss, 0);
@@ -1248,7 +1248,7 @@ Minus_value_spanset(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
   SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   Datum result;
   bool found = minus_value_spanset(d, basetype, ss, &result);
   PG_FREE_IF_COPY(ss, 1);
@@ -1308,7 +1308,7 @@ Minus_spanset_value(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
   Datum d = PG_GETARG_DATUM(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   PeriodSet *result = minus_spanset_value(ss, d, basetype);
   PG_FREE_IF_COPY(ss, 0);
   if (! result)
@@ -1391,7 +1391,7 @@ Distance_value_spanset(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
   SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   double result = distance_spanset_value(ss, d, basetype);
   PG_FREE_IF_COPY(ss, 1);
   PG_RETURN_FLOAT8(result);
@@ -1447,7 +1447,7 @@ Distance_spanset_value(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
   Datum d = PG_GETARG_DATUM(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   double result = distance_spanset_value(ss, d, basetype);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_FLOAT8(result);

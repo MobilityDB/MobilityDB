@@ -48,7 +48,7 @@
 #include "general/temporal_util.h"
 #include "general/tnumber_mathfuncs.h"
 /* MobilityDB */
-#include "pg_general/mobdb_catalog.h"
+#include "pg_general/meos_catalog.h"
 #include "pg_general/temporal.h"
 #include "pg_general/temporal_util.h"
 
@@ -65,11 +65,11 @@
  */
 static Datum
 arithop_number_tnumber_ext(FunctionCallInfo fcinfo, TArithmetic oper,
-  Datum (*func)(Datum, Datum, mobdbType, mobdbType))
+  Datum (*func)(Datum, Datum, meosType, meosType))
 {
   Datum value = PG_GETARG_DATUM(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   Temporal *result = arithop_tnumber_number(temp, value, basetype, oper,
     func, INVERT);
   PG_FREE_IF_COPY(temp, 1);
@@ -85,11 +85,11 @@ arithop_number_tnumber_ext(FunctionCallInfo fcinfo, TArithmetic oper,
  */
 static Datum
 arithop_tnumber_number_ext(FunctionCallInfo fcinfo, TArithmetic oper,
-  Datum (*func)(Datum, Datum, mobdbType, mobdbType))
+  Datum (*func)(Datum, Datum, meosType, meosType))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_DATUM(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   Temporal *result = arithop_tnumber_number(temp, value, basetype, oper,
     func, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
@@ -106,7 +106,7 @@ arithop_tnumber_number_ext(FunctionCallInfo fcinfo, TArithmetic oper,
  */
 static Datum
 arithop_tnumber_tnumber_ext(FunctionCallInfo fcinfo, TArithmetic oper,
-  Datum (*func)(Datum, Datum, mobdbType, mobdbType),
+  Datum (*func)(Datum, Datum, meosType, meosType),
   bool (*tpfunc)(const TInstant *, const TInstant *, const TInstant *,
     const TInstant *, Datum *, TimestampTz *))
 {

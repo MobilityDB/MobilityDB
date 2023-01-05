@@ -197,7 +197,7 @@ tbox_copy(const TBox *box)
  * @brief Set a temporal box from a number.
  */
 void
-number_set_tbox(Datum value, mobdbType basetype, TBox *box)
+number_set_tbox(Datum value, meosType basetype, TBox *box)
 {
   ensure_tnumber_basetype(basetype);
   /* Note: zero-fill is required here, just as in heap tuples */
@@ -502,7 +502,7 @@ periodset_to_tbox(const PeriodSet *ps)
  * @sqlfunc tbox()
  */
 TBox *
-number_timestamp_to_tbox(Datum d, mobdbType basetype, TimestampTz t)
+number_timestamp_to_tbox(Datum d, meosType basetype, TimestampTz t)
 {
   TBox *result = palloc(sizeof(TBox));
   number_set_tbox(d, basetype, result);
@@ -552,7 +552,7 @@ float_timestamp_to_tbox(double d, TimestampTz t)
  * @sqlfunc tbox()
  */
 TBox *
-number_period_to_tbox(Datum d, mobdbType basetype, const Period *p)
+number_period_to_tbox(Datum d, meosType basetype, const Period *p)
 {
   TBox *result = palloc(sizeof(TBox));
   number_set_tbox(d, basetype, result);

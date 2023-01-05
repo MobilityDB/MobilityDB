@@ -54,8 +54,8 @@
 
 extern Datum call_input(Oid typid, char *str, bool end);
 extern char *call_output(Oid typid, Datum value);
-extern Datum call_recv(mobdbType type, StringInfo buf);
-extern bytea *call_send(mobdbType type, Datum value);
+extern Datum call_recv(meosType type, StringInfo buf);
+extern bytea *call_send(meosType type, Datum value);
 
 extern Datum call_function1(PGFunction func, Datum arg1);
 extern Datum call_function2(PGFunction func, Datum arg1, Datum arg2);
@@ -73,7 +73,7 @@ extern Datum CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo,
 /* Range functions */
 
 extern RangeType *range_make(Datum from, Datum to, bool lower_inc,
-  bool upper_inc, mobdbType basetype);
+  bool upper_inc, meosType basetype);
 #if POSTGRESQL_VERSION_NUMBER >= 140000
   extern MultirangeType *multirange_make(const SpanSet *ss);
 #endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
@@ -86,7 +86,7 @@ extern Period **periodarr_extract(ArrayType *array, int *count);
 extern Span **spanarr_extract(ArrayType *array, int *count);
 extern Temporal **temporalarr_extract(ArrayType *array, int *count);
 
-extern ArrayType *datumarr_to_array(Datum *values, int count, mobdbType type);
+extern ArrayType *datumarr_to_array(Datum *values, int count, meosType type);
 extern ArrayType *int64arr_to_array(const int64 *longints, int count);
 extern ArrayType *timestamparr_to_array(const TimestampTz *times, int count);
 extern ArrayType *periodarr_to_array(const Period **periods, int count);

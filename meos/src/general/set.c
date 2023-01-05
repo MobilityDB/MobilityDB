@@ -159,9 +159,9 @@ rset_find_value(const Set *s, Datum d, int *loc)
  * @brief Return a set from its Well-Known Text (WKT) representation.
  */
 Set *
-set_in(const char *str, mobdbType ostype)
+set_in(const char *str, meosType settype)
 {
-  return set_parse(&str, ostype);
+  return set_parse(&str, settype);
 }
 
 #if MEOS
@@ -260,7 +260,7 @@ set_out(const Set *s, int maxdd)
  * @pymeosfunc TimestampSet()
  */
 Set *
-set_make(const Datum *values, int count, mobdbType basetype, bool ordered)
+set_make(const Datum *values, int count, meosType basetype, bool ordered)
 {
   if (ordered)
   {
@@ -353,7 +353,7 @@ set_make(const Datum *values, int count, mobdbType basetype, bool ordered)
  * @param[in] ordered True when the values are stored ordered
  */
 Set *
-set_make_free(Datum *values, int count, mobdbType basetype, bool ordered)
+set_make_free(Datum *values, int count, meosType basetype, bool ordered)
 {
   if (count == 0)
   {
@@ -387,7 +387,7 @@ set_copy(const Set *s)
  * @sqlop @p ::
  */
 Set *
-value_to_set(Datum d, mobdbType basetype)
+value_to_set(Datum d, meosType basetype)
 {
   return set_make(&d, 1, basetype, ORDERED);
 }
@@ -1011,7 +1011,7 @@ set_gt(const Set *s1, const Set *s2)
  * @brief Return the 32-bit hash of a value.
  */
 uint32
-datum_hash(Datum d, mobdbType basetype)
+datum_hash(Datum d, meosType basetype)
 {
   ensure_set_basetype(basetype);
   if (basetype == T_TIMESTAMPTZ)
@@ -1047,7 +1047,7 @@ set_hash(const Set *s)
  * @brief Return the 64-bit hash of a value using a seed.
  */
 uint64
-datum_hash_extended(Datum d, mobdbType basetype, uint64 seed)
+datum_hash_extended(Datum d, meosType basetype, uint64 seed)
 {
   ensure_set_basetype(basetype);
   if (basetype == T_TIMESTAMPTZ)

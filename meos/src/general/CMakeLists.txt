@@ -2,7 +2,7 @@ add_library(general OBJECT
   basetype_inout.c
   doublen.c
   lifting.c
-  mobdb_catalog.c
+  meos_catalog.c
   pg_types.c
   skiplist.c
   set.c

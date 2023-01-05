@@ -73,7 +73,7 @@ extern bool synchronize_tsequence_tsequence(const TSequence *seq1,
 /* Intersection functions */
 
 extern bool tlinearsegm_intersection_value(const TInstant *inst1,
-  const TInstant *inst2, Datum value, mobdbType basetype, Datum *inter,
+  const TInstant *inst2, Datum value, meosType basetype, Datum *inter,
   TimestampTz *t);
 extern bool tsegment_intersection(const TInstant *start1,
   const TInstant *end1, bool linear1, const TInstant *start2,

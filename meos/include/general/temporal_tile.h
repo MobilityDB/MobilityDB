@@ -45,7 +45,7 @@ typedef struct SpanBucketState
 {
   bool done;
   int i;
-  mobdbType basetype;
+  meosType basetype;
   Temporal *temp; /* NULL when generating bucket list, used for splitting */
   Datum size;
   Datum origin;
@@ -89,9 +89,9 @@ typedef struct ValueTimeSplitState
 
 /*****************************************************************************/
 
-extern void span_bucket_set(Datum lower, Datum size, mobdbType basetype,
+extern void span_bucket_set(Datum lower, Datum size, meosType basetype,
   Span *span);
-extern Span *span_bucket_get(Datum lower, Datum size, mobdbType basetype);
+extern Span *span_bucket_get(Datum lower, Datum size, meosType basetype);
 extern SpanBucketState *span_bucket_state_make(const Span *s, Datum size,
   Datum origin);
 extern void span_bucket_state_next(SpanBucketState *state);
@@ -108,7 +108,7 @@ extern int64 interval_units(const Interval *interval);
 extern TimestampTz timestamptz_bucket1(TimestampTz timestamp, int64 tunits,
   TimestampTz torigin);
 extern Datum datum_bucket(Datum value, Datum size, Datum offset,
-  mobdbType basetype);
+  meosType basetype);
 
 extern Temporal **temporal_time_split1(const Temporal *temp, TimestampTz start,
   TimestampTz end, int64 tunits, TimestampTz torigin, int count,

@@ -1,7 +1,7 @@
 add_library(pg_general OBJECT
   doublen.c
   geo_constructors.c
-  mobdb_catalog.c
+  meos_catalog.c
   set.c
   set_gin.c
   set_aggfuncs.c

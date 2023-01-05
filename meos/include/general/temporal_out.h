@@ -37,8 +37,8 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-/* MobilityDB */
-#include "general/mobdb_catalog.h"
+/* MEOS */
+#include "general/meos_catalog.h"
 
 /*
  * Export functions
@@ -66,9 +66,9 @@
 
 /*****************************************************************************/
 
-extern uint8_t *datum_as_wkb(Datum value, mobdbType type, uint8_t variant,
+extern uint8_t *datum_as_wkb(Datum value, meosType type, uint8_t variant,
   size_t *size_out);
-extern char *datum_as_hexwkb(Datum value, mobdbType type, uint8_t variant,
+extern char *datum_as_hexwkb(Datum value, meosType type, uint8_t variant,
   size_t *size);
 
 /*****************************************************************************/

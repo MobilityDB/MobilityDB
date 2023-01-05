@@ -45,14 +45,14 @@
 /* Miscellaneous functions */
 
 extern size_t double_pad(size_t size);
-extern Datum datum_copy(Datum value, mobdbType typid);
-extern double datum_double(Datum d, mobdbType basetype);
+extern Datum datum_copy(Datum value, meosType typid);
+extern double datum_double(Datum d, meosType basetype);
 extern bytea *bstring2bytea(const uint8_t *wkb, size_t size);
 
 /* Input/output functions */
 
-extern Datum basetype_in(const char *str, mobdbType type, bool end);
-extern char *basetype_out(Datum value, mobdbType type, int maxdd);
+extern Datum basetype_in(const char *str, meosType type, bool end);
+extern char *basetype_out(Datum value, meosType type, int maxdd);
 
 /* Array functions */
 
@@ -63,7 +63,7 @@ extern char *stringarr_to_string(char **strings, int count, int outlen,
 
 /* Sort functions */
 
-extern void datumarr_sort(Datum *values, int count, mobdbType basetype);
+extern void datumarr_sort(Datum *values, int count, meosType basetype);
 extern void timestamparr_sort(TimestampTz *times, int count);
 extern void double2arr_sort(double2 *doubles, int count);
 extern void double3arr_sort(double3 *triples, int count);
@@ -74,7 +74,7 @@ extern void tseqarr_sort(TSequence **sequences, int count);
 /* Remove duplicate functions */
 
 extern int datumarr_remove_duplicates(Datum *values, int count,
-  mobdbType basetype);
+  meosType basetype);
 extern int timestamparr_remove_duplicates(TimestampTz *values, int count);
 extern int tinstarr_remove_duplicates(const TInstant **instants, int count);
 
@@ -84,35 +84,35 @@ extern int text_cmp(text *arg1, text *arg2, Oid collid);
 
 /* Arithmetic functions */
 
-extern Datum datum_add(Datum l, Datum r, mobdbType typel, mobdbType typer);
-extern Datum datum_sub(Datum l, Datum r, mobdbType typel, mobdbType typer);
-extern Datum datum_mult(Datum l, Datum r, mobdbType typel, mobdbType typer);
-extern Datum datum_div(Datum l, Datum r, mobdbType typel, mobdbType typer);
+extern Datum datum_add(Datum l, Datum r, meosType typel, meosType typer);
+extern Datum datum_sub(Datum l, Datum r, meosType typel, meosType typer);
+extern Datum datum_mult(Datum l, Datum r, meosType typel, meosType typer);
+extern Datum datum_div(Datum l, Datum r, meosType typel, meosType typer);
 
 /* Comparison functions on datums */
 
-extern int datum_cmp(Datum l, Datum r, mobdbType type);
-extern bool datum_eq(Datum l, Datum r, mobdbType type);
-extern bool datum_ne(Datum l, Datum r, mobdbType type);
-extern bool datum_lt(Datum l, Datum r, mobdbType type);
-extern bool datum_le(Datum l, Datum r, mobdbType type);
-extern bool datum_gt(Datum l, Datum r, mobdbType type);
-extern bool datum_ge(Datum l, Datum r, mobdbType type);
+extern int datum_cmp(Datum l, Datum r, meosType type);
+extern bool datum_eq(Datum l, Datum r, meosType type);
+extern bool datum_ne(Datum l, Datum r, meosType type);
+extern bool datum_lt(Datum l, Datum r, meosType type);
+extern bool datum_le(Datum l, Datum r, meosType type);
+extern bool datum_gt(Datum l, Datum r, meosType type);
+extern bool datum_ge(Datum l, Datum r, meosType type);
 
-extern int datum_cmp2(Datum l, Datum r, mobdbType typel, mobdbType typer);
-extern bool datum_eq2(Datum l, Datum r, mobdbType typel, mobdbType typer);
-extern bool datum_ne2(Datum l, Datum r, mobdbType typel, mobdbType typer);
-extern bool datum_lt2(Datum l, Datum r, mobdbType typel, mobdbType typer);
-extern bool datum_le2(Datum l, Datum r, mobdbType typel, mobdbType typer);
-extern bool datum_gt2(Datum l, Datum r, mobdbType typel, mobdbType typer);
-extern bool datum_ge2(Datum l, Datum r, mobdbType typel, mobdbType typer);
+extern int datum_cmp2(Datum l, Datum r, meosType typel, meosType typer);
+extern bool datum_eq2(Datum l, Datum r, meosType typel, meosType typer);
+extern bool datum_ne2(Datum l, Datum r, meosType typel, meosType typer);
+extern bool datum_lt2(Datum l, Datum r, meosType typel, meosType typer);
+extern bool datum_le2(Datum l, Datum r, meosType typel, meosType typer);
+extern bool datum_gt2(Datum l, Datum r, meosType typel, meosType typer);
+extern bool datum_ge2(Datum l, Datum r, meosType typel, meosType typer);
 
-extern Datum datum2_eq2(Datum l, Datum r, mobdbType typel, mobdbType typer);
-extern Datum datum2_ne2(Datum l, Datum r, mobdbType typel, mobdbType typer);
-extern Datum datum2_lt2(Datum l, Datum r, mobdbType typel, mobdbType typer);
-extern Datum datum2_le2(Datum l, Datum r, mobdbType typel, mobdbType typer);
-extern Datum datum2_gt2(Datum l, Datum r, mobdbType typel, mobdbType typer);
-extern Datum datum2_ge2(Datum l, Datum r, mobdbType typel, mobdbType typer);
+extern Datum datum2_eq2(Datum l, Datum r, meosType typel, meosType typer);
+extern Datum datum2_ne2(Datum l, Datum r, meosType typel, meosType typer);
+extern Datum datum2_lt2(Datum l, Datum r, meosType typel, meosType typer);
+extern Datum datum2_le2(Datum l, Datum r, meosType typel, meosType typer);
+extern Datum datum2_gt2(Datum l, Datum r, meosType typel, meosType typer);
+extern Datum datum2_ge2(Datum l, Datum r, meosType typel, meosType typer);
 
 /* Hypothenuse functions */
 

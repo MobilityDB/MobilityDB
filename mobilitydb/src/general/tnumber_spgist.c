@@ -108,7 +108,7 @@
 #include <general/set.h>
 #include <general/temporal_util.h>
 /* MobilityDB */
-#include "pg_general/mobdb_catalog.h"
+#include "pg_general/meos_catalog.h"
 #include "pg_general/temporal.h"
 #include "pg_general/tnumber_gist.h"
 
@@ -427,7 +427,7 @@ distance_tbox_nodebox(const TBox *query, const TboxNode *nodebox)
 static bool
 tnumber_spgist_get_tbox(const ScanKeyData *scankey, TBox *result)
 {
-  mobdbType type = oid_type(scankey->sk_subtype);
+  meosType type = oid_type(scankey->sk_subtype);
   if (tnumber_basetype(type))
   {
     Datum value = scankey->sk_argument;

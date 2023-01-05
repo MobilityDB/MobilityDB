@@ -32,10 +32,10 @@
  * span types in global arrays.
  */
 
-#include "general/mobdb_catalog.h"
+#include "general/meos_catalog.h"
 
 /* PostgreSQL */
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include "general/temporaltypes.h"
 #if NPOINT
@@ -115,8 +115,8 @@ spansettype_cache_struct _spansettype_cache[] =
  * Return the base type from the temporal type
  * @note this function is defined again for MobilityDB below
  */
-mobdbType
-temptype_basetype(mobdbType temptype)
+meosType
+temptype_basetype(meosType temptype)
 {
   int n = sizeof(_temptype_cache) / sizeof(temptype_cache_struct);
   for (int i = 0; i < n; i++)
@@ -131,8 +131,8 @@ temptype_basetype(mobdbType temptype)
 /**
  * Return the base type from the span type
  */
-mobdbType
-spantype_basetype(mobdbType spantype)
+meosType
+spantype_basetype(meosType spantype)
 {
   int n = sizeof(_spantype_cache) / sizeof(spantype_cache_struct);
   for (int i = 0; i < n; i++)
@@ -147,8 +147,8 @@ spantype_basetype(mobdbType spantype)
 /**
  * Return the span type from the span set type
  */
-mobdbType
-spansettype_spantype(mobdbType spansettype)
+meosType
+spansettype_spantype(meosType spansettype)
 {
   int n = sizeof(_spansettype_cache) / sizeof(spansettype_cache_struct);
   for (int i = 0; i < n; i++)
@@ -163,8 +163,8 @@ spansettype_spantype(mobdbType spansettype)
 /**
  * Return the base type from the span type
  */
-mobdbType
-basetype_spantype(mobdbType basetype)
+meosType
+basetype_spantype(meosType basetype)
 {
   int n = sizeof(_spantype_cache) / sizeof(spantype_cache_struct);
   for (int i = 0; i < n; i++)
@@ -179,8 +179,8 @@ basetype_spantype(mobdbType basetype)
 /**
  * Return the span type from the span set type
  */
-mobdbType
-spantype_spansettype(mobdbType spantype)
+meosType
+spantype_spansettype(meosType spantype)
 {
   int n = sizeof(_spansettype_cache) / sizeof(spansettype_cache_struct);
   for (int i = 0; i < n; i++)
@@ -195,8 +195,8 @@ spantype_spansettype(mobdbType spantype)
 /**
  * Return the base type from a set type
  */
-mobdbType
-settype_basetype(mobdbType settype)
+meosType
+settype_basetype(meosType settype)
 {
   int n = sizeof(_settype_cache) / sizeof(settype_cache_struct);
   for (int i = 0; i < n; i++)
@@ -211,8 +211,8 @@ settype_basetype(mobdbType settype)
 /**
  * Return the base type from the set type
  */
-mobdbType
-basetype_settype(mobdbType basetype)
+meosType
+basetype_settype(meosType basetype)
 {
   int n = sizeof(_settype_cache) / sizeof(settype_cache_struct);
   for (int i = 0; i < n; i++)
@@ -233,7 +233,7 @@ basetype_settype(mobdbType basetype)
  * Return true if the type is a time type
  */
 bool
-time_type(mobdbType timetype)
+time_type(meosType timetype)
 {
   if (timetype == T_TIMESTAMPTZ || timetype == T_TIMESTAMPSET ||
     timetype == T_PERIOD || timetype == T_PERIODSET)
@@ -245,7 +245,7 @@ time_type(mobdbType timetype)
  * Ensure that the type corresponds to a time type
  */
 void
-ensure_time_type(mobdbType timetype)
+ensure_time_type(meosType timetype)
 {
   if (! time_type(timetype))
     elog(ERROR, "unknown time type: %d", timetype);
@@ -258,7 +258,7 @@ ensure_time_type(mobdbType timetype)
  * Return true if the type is a base type of a set type
  */
 bool
-set_basetype(mobdbType basetype)
+set_basetype(meosType basetype)
 {
   if (basetype == T_TIMESTAMPTZ || basetype == T_INT4 || basetype == T_INT8 ||
       basetype == T_FLOAT8 || basetype == T_TEXT)
@@ -270,7 +270,7 @@ set_basetype(mobdbType basetype)
  * Ensure that the span base type is supported by MobilityDB
  */
 void
-ensure_set_basetype(mobdbType basetype)
+ensure_set_basetype(meosType basetype)
 {
   if (! set_basetype(basetype))
     elog(ERROR, "unknown set base type: %d", basetype);
@@ -281,7 +281,7 @@ ensure_set_basetype(mobdbType basetype)
  * Return true if the type is a set type
  */
 bool
-set_type(mobdbType settype)
+set_type(meosType settype)
 {
   if (settype == T_TIMESTAMPSET || settype == T_INTSET ||
       settype == T_BIGINTSET || settype == T_FLOATSET || settype == T_TEXTSET)
@@ -293,7 +293,7 @@ set_type(mobdbType settype)
  * Ensure that the type is a set type
  */
 void
-ensure_set_type(mobdbType settype)
+ensure_set_type(meosType settype)
 {
   if (! set_type(settype))
     elog(ERROR, "unknown set type: %d", settype);
@@ -305,7 +305,7 @@ ensure_set_type(mobdbType settype)
  * Return true if the type is a set type
  */
 bool
-numset_type(mobdbType settype)
+numset_type(meosType settype)
 {
   if (settype == T_INTSET || settype == T_BIGINTSET || settype == T_FLOATSET)
     return true;
@@ -317,7 +317,7 @@ numset_type(mobdbType settype)
  * Ensure that the type is a set type
  */
 void
-ensure_numset_type(mobdbType settype)
+ensure_numset_type(meosType settype)
 {
   if (! numset_type(settype))
     elog(ERROR, "unknown numeric set type: %d", settype);
@@ -328,7 +328,7 @@ ensure_numset_type(mobdbType settype)
  * Return true if the type is a base type of a numeric set type
  */
 bool
-numset_basetype(mobdbType basetype)
+numset_basetype(meosType basetype)
 {
   if (basetype == T_INT4 || basetype == T_INT8 || basetype == T_FLOAT8 ||
       basetype == T_TEXT)
@@ -340,7 +340,7 @@ numset_basetype(mobdbType basetype)
  * Ensure that the type is a base type of a numeric set type
  */
 void
-ensure_numset_basetype(mobdbType basetype)
+ensure_numset_basetype(meosType basetype)
 {
   if (! numspan_basetype(basetype))
     elog(ERROR, "unknown numeric set base type: %d", basetype);
@@ -354,7 +354,7 @@ ensure_numset_basetype(mobdbType basetype)
  * Return true if the type is a span type
  */
 bool
-span_type(mobdbType spantype)
+span_type(meosType spantype)
 {
   if (spantype == T_PERIOD || spantype == T_INTSPAN ||
       spantype == T_BIGINTSPAN || spantype == T_FLOATSPAN)
@@ -366,7 +366,7 @@ span_type(mobdbType spantype)
  * Ensure that the type is a span type
  */
 void
-ensure_span_type(mobdbType spantype)
+ensure_span_type(meosType spantype)
 {
   if (! span_type(spantype))
     elog(ERROR, "unknown span type: %d", spantype);
@@ -377,7 +377,7 @@ ensure_span_type(mobdbType spantype)
  * Return true if the type is a numeric span type
  */
 bool
-numspan_type(mobdbType spantype)
+numspan_type(meosType spantype)
 {
   if (spantype == T_INTSPAN || spantype == T_BIGINTSPAN ||
       spantype == T_FLOATSPAN)
@@ -390,7 +390,7 @@ numspan_type(mobdbType spantype)
  * Ensure that the type is a span type
  */
 void
-ensure_numspan_type(mobdbType spantype)
+ensure_numspan_type(meosType spantype)
 {
   if (! numspan_type(spantype))
     elog(ERROR, "unknown numeric span type: %d", spantype);
@@ -402,7 +402,7 @@ ensure_numspan_type(mobdbType spantype)
  * Return true if the type is a set base type
  */
 bool
-span_basetype(mobdbType basetype)
+span_basetype(meosType basetype)
 {
   if (basetype == T_TIMESTAMPTZ || basetype == T_INT4 || basetype == T_INT8 ||
       basetype == T_FLOAT8)
@@ -414,7 +414,7 @@ span_basetype(mobdbType basetype)
  * Ensure that the type is a span base type
  */
 void
-ensure_span_basetype(mobdbType basetype)
+ensure_span_basetype(meosType basetype)
 {
   if (! span_basetype(basetype))
     elog(ERROR, "unknown span base type: %d", basetype);
@@ -425,7 +425,7 @@ ensure_span_basetype(mobdbType basetype)
  * Return true if the type is a base type of a numeric span type
  */
 bool
-numspan_basetype(mobdbType basetype)
+numspan_basetype(meosType basetype)
 {
   if (basetype == T_INT4 || basetype == T_INT8 || basetype == T_FLOAT8)
     return true;
@@ -437,7 +437,7 @@ numspan_basetype(mobdbType basetype)
  * Ensure that the type is a base type of a numeric span type
  */
 void
-ensure_numspan_basetype(mobdbType basetype)
+ensure_numspan_basetype(meosType basetype)
 {
   if (! numspan_basetype(basetype))
     elog(ERROR, "unknown numeric span base type: %d", basetype);
@@ -451,7 +451,7 @@ ensure_numspan_basetype(mobdbType basetype)
  * Return true if the type is a span set type
  */
 bool
-spanset_type(mobdbType spansettype)
+spanset_type(meosType spansettype)
 {
   if (spansettype == T_PERIODSET || spansettype == T_INTSPANSET ||
       spansettype == T_BIGINTSPANSET || spansettype == T_FLOATSPANSET)
@@ -464,7 +464,7 @@ spanset_type(mobdbType spansettype)
  * Ensure that the type is a span type
  */
 void
-ensure_spanset_type(mobdbType spansettype)
+ensure_spanset_type(meosType spansettype)
 {
   if (! spanset_type(spansettype))
     elog(ERROR, "unknown span set type: %d", spansettype);
@@ -476,7 +476,7 @@ ensure_spanset_type(mobdbType spansettype)
  * Return true if the type is a numeric span type
  */
 bool
-numspanset_type(mobdbType spansettype)
+numspanset_type(meosType spansettype)
 {
   if (spansettype == T_INTSPANSET || spansettype == T_BIGINTSPANSET ||
       spansettype == T_FLOATSPANSET)
@@ -489,7 +489,7 @@ numspanset_type(mobdbType spansettype)
  * Ensure that the type is a span type
  */
 void
-ensure_numspanset_type(mobdbType spansettype)
+ensure_numspanset_type(meosType spansettype)
 {
   if (! numspanset_type(spansettype))
     elog(ERROR, "unknown numeric span set type: %d", spansettype);
@@ -500,7 +500,7 @@ ensure_numspanset_type(mobdbType spansettype)
  * Return true if the type is a set base type
  */
 bool
-spanset_basetype(mobdbType basetype)
+spanset_basetype(meosType basetype)
 {
   if (basetype == T_TIMESTAMPTZ || basetype == T_INT4 || basetype == T_INT8 ||
       basetype == T_FLOAT8)
@@ -512,7 +512,7 @@ spanset_basetype(mobdbType basetype)
  * Ensure that the type is a span set base type
  */
 void
-ensure_spanset_basetype(mobdbType basetype)
+ensure_spanset_basetype(meosType basetype)
 {
   if (! spanset_basetype(basetype))
     elog(ERROR, "unknown span set base type: %d", basetype);
@@ -523,7 +523,7 @@ ensure_spanset_basetype(mobdbType basetype)
  * Return true if the type is a base type of a numeric span set type
  */
 bool
-numspanset_basetype(mobdbType basetype)
+numspanset_basetype(meosType basetype)
 {
   if (basetype == T_INT4 || basetype == T_INT8 || basetype == T_FLOAT8)
     return true;
@@ -534,7 +534,7 @@ numspanset_basetype(mobdbType basetype)
  * Ensure that the type is a base type of a numeric span set type
  */
 void
-ensure_numspanset_basetype(mobdbType basetype)
+ensure_numspanset_basetype(meosType basetype)
 {
   if (! numspanset_basetype(basetype))
     elog(ERROR, "unknown numeric span set base type: %d", basetype);
@@ -550,7 +550,7 @@ ensure_numspanset_basetype(mobdbType basetype)
  * @note Function used in particular in the indexes
  */
 bool
-temporal_type(mobdbType temptype)
+temporal_type(meosType temptype)
 {
   if (temptype == T_TBOOL || temptype == T_TINT || temptype == T_TFLOAT ||
     temptype == T_TTEXT || temptype == T_TGEOMPOINT || temptype == T_TGEOGPOINT
@@ -566,7 +566,7 @@ temporal_type(mobdbType temptype)
  * Ensure that the base type is supported by MobilityDB
  */
 void
-ensure_temporal_type(mobdbType temptype)
+ensure_temporal_type(meosType temptype)
 {
   if (! temporal_type(temptype))
     elog(ERROR, "unknown temporal type: %d", temptype);
@@ -579,7 +579,7 @@ ensure_temporal_type(mobdbType temptype)
  * Also, the int8 type is added to cope with the rid in network points.
  */
 void
-ensure_temporal_basetype(mobdbType basetype)
+ensure_temporal_basetype(meosType basetype)
 {
   if (basetype != T_TIMESTAMPTZ &&
     basetype != T_BOOL && basetype != T_INT4 && basetype != T_INT8 &&
@@ -598,7 +598,7 @@ ensure_temporal_basetype(mobdbType basetype)
  * Return true if the temporal type is continuous
  */
 bool
-temptype_continuous(mobdbType temptype)
+temptype_continuous(meosType temptype)
 {
   if (temptype == T_TFLOAT || temptype == T_TDOUBLE2 ||
     temptype == T_TDOUBLE3 || temptype == T_TDOUBLE4 ||
@@ -615,7 +615,7 @@ temptype_continuous(mobdbType temptype)
  * Ensure that the temporal type is continuous
  */
 void
-ensure_temptype_continuous(mobdbType temptype)
+ensure_temptype_continuous(meosType temptype)
 {
   if (! temptype_continuous(temptype))
     elog(ERROR, "unknown continuous temporal type: %d", temptype);
@@ -630,7 +630,7 @@ ensure_temptype_continuous(mobdbType temptype)
  * call), the known base types are explicitly enumerated.
  */
 bool
-basetype_byvalue(mobdbType basetype)
+basetype_byvalue(meosType basetype)
 {
   ensure_temporal_basetype(basetype);
   if (basetype == T_BOOL || basetype == T_INT4 || basetype == T_INT8 ||
@@ -647,7 +647,7 @@ basetype_byvalue(mobdbType basetype)
  * (which makes a lookup call), the known base types are explicitly enumerated.
  */
 int16
-basetype_length(mobdbType basetype)
+basetype_length(meosType basetype)
 {
   ensure_temporal_basetype(basetype);
   if (basetype == T_DOUBLE2)
@@ -672,7 +672,7 @@ basetype_length(mobdbType basetype)
  * bounding box is a period) supported by MobilityDB
  */
 bool
-talpha_type(mobdbType temptype)
+talpha_type(meosType temptype)
 {
   if (temptype == T_TBOOL || temptype == T_TTEXT)
     return true;
@@ -683,7 +683,7 @@ talpha_type(mobdbType temptype)
  * Return true if the type is a temporal number type
  */
 bool
-tnumber_type(mobdbType temptype)
+tnumber_type(meosType temptype)
 {
   if (temptype == T_TINT || temptype == T_TFLOAT)
     return true;
@@ -694,7 +694,7 @@ tnumber_type(mobdbType temptype)
  * Return true if the type is a number base type supported by MobilityDB
  */
 void
-ensure_tnumber_type(mobdbType temptype)
+ensure_tnumber_type(meosType temptype)
 {
   if (! tnumber_type(temptype))
     elog(ERROR, "unknown temporal number type: %d", temptype);
@@ -705,7 +705,7 @@ ensure_tnumber_type(mobdbType temptype)
  * Test whether the type is a number base type supported by MobilityDB
  */
 bool
-tnumber_basetype(mobdbType basetype)
+tnumber_basetype(meosType basetype)
 {
   if (basetype == T_INT4 || basetype == T_FLOAT8)
     return true;
@@ -716,7 +716,7 @@ tnumber_basetype(mobdbType basetype)
  * Return true if the type is a number base type supported by MobilityDB
  */
 void
-ensure_tnumber_basetype(mobdbType basetype)
+ensure_tnumber_basetype(meosType basetype)
 {
   if (! tnumber_basetype(basetype))
     elog(ERROR, "unknown number base type: %d", basetype);
@@ -729,7 +729,7 @@ ensure_tnumber_basetype(mobdbType basetype)
  * @note Function used in particular in the indexes
  */
 bool
-tnumber_settype(mobdbType settype)
+tnumber_settype(meosType settype)
 {
   if (settype == T_INTSET || settype == T_FLOATSET)
     return true;
@@ -740,7 +740,7 @@ tnumber_settype(mobdbType settype)
  * Ensure that the type is a span type
  */
 void
-ensure_tnumber_settype(mobdbType settype)
+ensure_tnumber_settype(meosType settype)
 {
   if (! tnumber_settype(settype))
     elog(ERROR, "unknown number set type: %d", settype);
@@ -753,7 +753,7 @@ ensure_tnumber_settype(mobdbType settype)
  * @note Function used in particular in the indexes
  */
 bool
-tnumber_spantype(mobdbType spantype)
+tnumber_spantype(meosType spantype)
 {
   if (spantype == T_INTSPAN || spantype == T_FLOATSPAN)
     return true;
@@ -764,7 +764,7 @@ tnumber_spantype(mobdbType spantype)
  * Ensure that the type is a span type
  */
 void
-ensure_tnumber_spantype(mobdbType spantype)
+ensure_tnumber_spantype(meosType spantype)
 {
   if (! tnumber_spantype(spantype))
     elog(ERROR, "unknown number span type: %d", spantype);
@@ -777,7 +777,7 @@ ensure_tnumber_spantype(mobdbType spantype)
  * @note Function used in particular in the indexes
  */
 bool
-tnumber_spansettype(mobdbType spansettype)
+tnumber_spansettype(meosType spansettype)
 {
   if (spansettype == T_INTSPANSET || spansettype == T_FLOATSPANSET)
     return true;
@@ -788,7 +788,7 @@ tnumber_spansettype(mobdbType spansettype)
  * Ensure that the type is a span type
  */
 void
-ensure_tnumber_spansettype(mobdbType spansettype)
+ensure_tnumber_spansettype(meosType spansettype)
 {
   if (! tnumber_spansettype(spansettype))
     elog(ERROR, "unknown number span set type: %d", spansettype);
@@ -803,7 +803,7 @@ ensure_tnumber_spansettype(mobdbType spansettype)
  * used for the indexes and selectivity functions
  */
 bool
-tspatial_type(mobdbType temptype)
+tspatial_type(meosType temptype)
 {
   if (temptype == T_TGEOMPOINT || temptype == T_TGEOGPOINT
 #if NPOINT
@@ -821,7 +821,7 @@ tspatial_type(mobdbType temptype)
  * in particular, all of them use the same bounding box STBox
  */
 bool
-tspatial_basetype(mobdbType basetype)
+tspatial_basetype(meosType basetype)
 {
   if (basetype == T_GEOMETRY || basetype == T_GEOGRAPHY
 #if NPOINT
@@ -836,7 +836,7 @@ tspatial_basetype(mobdbType basetype)
  * Return true if the type is a point base type supported by MobilityDB
  */
 bool
-tgeo_basetype(mobdbType basetype)
+tgeo_basetype(meosType basetype)
 {
   if (basetype == T_GEOMETRY || basetype == T_GEOGRAPHY)
     return true;
@@ -847,7 +847,7 @@ tgeo_basetype(mobdbType basetype)
  * Return true if the type is a temporal point type supported by MobilityDB
  */
 bool
-tgeo_type(mobdbType temptype)
+tgeo_type(meosType temptype)
 {
   if (temptype == T_TGEOMPOINT || temptype == T_TGEOGPOINT)
     return true;
@@ -858,7 +858,7 @@ tgeo_type(mobdbType temptype)
  * Ensure that the type is a point base type supported by MobilityDB
  */
 void
-ensure_tgeo_type(mobdbType temptype)
+ensure_tgeo_type(meosType temptype)
 {
   if (! tgeo_type(temptype))
     elog(ERROR, "unknown geospatial temporal type: %d", temptype);

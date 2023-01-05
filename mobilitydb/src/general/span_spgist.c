@@ -47,7 +47,7 @@
 #include "general/spanset.h"
 #include "general/temporal.h"
 /* MobilityDB */
-#include "pg_general/mobdb_catalog.h"
+#include "pg_general/meos_catalog.h"
 #include "pg_general/span_gist.h"
 #include "pg_general/temporal.h"
 
@@ -107,7 +107,7 @@ span_upper_qsort_cmp(const void *a, const void *b)
  * initialize the struct to cover the whole 2D space.
  */
 static void
-spannode_init(SpanNode *nodebox, mobdbType spantype, mobdbType basetype)
+spannode_init(SpanNode *nodebox, meosType spantype, meosType basetype)
 {
   memset(nodebox, 0, sizeof(SpanNode));
   Datum min, max;
@@ -379,7 +379,7 @@ distance_span_nodespan(Span *query, SpanNode *nodebox)
 static bool
 span_spgist_get_span(const ScanKeyData *scankey, Span *result)
 {
-  mobdbType type = oid_type(scankey->sk_subtype);
+  meosType type = oid_type(scankey->sk_subtype);
   if (span_basetype(type))
   {
     Datum d = scankey->sk_argument;

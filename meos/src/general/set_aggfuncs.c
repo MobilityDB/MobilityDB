@@ -49,7 +49,7 @@
  * @brief Transition function for set aggregate of values
  */
 Set *
-set_agg_transfn(Set *state, Datum d, mobdbType basetype)
+set_agg_transfn(Set *state, Datum d, meosType basetype)
 {
   /* Null set: create a new set with the value */
   if (! state)

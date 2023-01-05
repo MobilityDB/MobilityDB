@@ -67,14 +67,14 @@ typedef struct
 
 /* The following functions are also called by tpoint_gist.c */
 extern void bbox_gist_fallback_split(GistEntryVector *entryvec,
-  GIST_SPLITVEC *v, mobdbType bboxtype, void (*bbox_adjust)(void *, void *));
+  GIST_SPLITVEC *v, meosType bboxtype, void (*bbox_adjust)(void *, void *));
 extern int interval_cmp_lower(const void *i1, const void *i2);
 extern int interval_cmp_upper(const void *i1, const void *i2);
 extern float non_negative(float val);
 extern void bbox_gist_consider_split(ConsiderSplitContext *context, int dimNum,
-  mobdbType bboxtype, double rightLower, int minLeftCount, double leftUpper,
+  meosType bboxtype, double rightLower, int minLeftCount, double leftUpper,
   int maxLeftCount);
-extern Datum bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, mobdbType bboxtype,
+extern Datum bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, meosType bboxtype,
   void (*bbox_adjust)(void *, void *), double (*bbox_penalty)(void *, void *));
 
 /* The following functions are also called by tnumber_spgist.c */

@@ -117,7 +117,7 @@ text_mfjson_buf(char *output, text *txt)
  * Write into the buffer a base value represented in MF-JSON format.
  */
 static size_t
-temporal_basevalue_mfjson_size(Datum value, mobdbType temptype, int precision)
+temporal_basevalue_mfjson_size(Datum value, meosType temptype, int precision)
 {
   switch (temptype)
   {
@@ -139,7 +139,7 @@ temporal_basevalue_mfjson_size(Datum value, mobdbType temptype, int precision)
  * Write into the buffer a base value represented in MF-JSON format.
  */
 static size_t
-temporal_basevalue_mfjson_buf(char *output, Datum value, mobdbType temptype,
+temporal_basevalue_mfjson_buf(char *output, Datum value, meosType temptype,
   int precision)
 {
   switch (temptype)
@@ -389,7 +389,7 @@ stbox_mfjson_buf(char *output, const STBox *bbox, bool hasz, int precision)
  * to the temporal type represented in MF-JSON format
  */
 static size_t
-bbox_mfjson_size(mobdbType temptype, bool hasz, int precision)
+bbox_mfjson_size(meosType temptype, bool hasz, int precision)
 {
   size_t size;
   switch (temptype)
@@ -417,7 +417,7 @@ bbox_mfjson_size(mobdbType temptype, bool hasz, int precision)
  * represented in MF-JSON format
  */
 static size_t
-bbox_mfjson_buf(mobdbType temptype, char *output, const bboxunion *bbox,
+bbox_mfjson_buf(meosType temptype, char *output, const bboxunion *bbox,
   bool hasz, int precision)
 {
   switch (temptype)
@@ -441,7 +441,7 @@ bbox_mfjson_buf(mobdbType temptype, char *output, const bboxunion *bbox,
  * MF-JSON format
  */
 static size_t
-temptype_mfjson_size(mobdbType temptype)
+temptype_mfjson_size(meosType temptype)
 {
   size_t size;
   ensure_temporal_type(temptype);
@@ -476,7 +476,7 @@ temptype_mfjson_size(mobdbType temptype)
  * Write into the buffer the temporal type represented in MF-JSON format
  */
 static size_t
-temptype_mfjson_buf(char *output, mobdbType temptype)
+temptype_mfjson_buf(char *output, meosType temptype)
 {
   char *ptr = output;
   ensure_temporal_type(temptype);
@@ -1054,7 +1054,7 @@ temporalarr_out(const Temporal **temparr, int count, int maxdd)
  * set type.
  */
 static size_t
-set_basetype_to_wkb_size(Datum value, mobdbType basetype)
+set_basetype_to_wkb_size(Datum value, meosType basetype)
 {
   size_t result = 0;
   ensure_set_basetype(basetype);
@@ -1081,7 +1081,7 @@ static size_t
 set_to_wkb_size(const Set *s)
 {
   size_t result = 0;
-  mobdbType basetype = settype_basetype(s->settype);
+  meosType basetype = settype_basetype(s->settype);
   /* Compute the size of the values which may be of variable length*/
   for (int i = 0; i < s->count; i++)
   {
@@ -1231,7 +1231,7 @@ stbox_to_wkb_size(const STBox *box, uint8_t variant)
  * Return the size of the WKB representation of a base value.
  */
 static size_t
-temporal_basetype_to_wkb_size(Datum value, mobdbType basetype, int16 flags)
+temporal_basetype_to_wkb_size(Datum value, meosType basetype, int16 flags)
 {
   switch (basetype)
   {
@@ -1266,7 +1266,7 @@ static size_t
 tinstarr_to_wkb_size(const TInstant **instants, int count)
 {
   size_t result = 0;
-  mobdbType basetype = temptype_basetype(instants[0]->temptype);
+  meosType basetype = temptype_basetype(instants[0]->temptype);
   for (int i = 0; i < count; i++)
   {
     Datum value = tinstant_value(instants[i]);
@@ -1382,7 +1382,7 @@ temporal_to_wkb_size(const Temporal *temp, uint8_t variant)
  * Return the size of the WKB representation of a value.
  */
 static size_t
-datum_to_wkb_size(Datum value, mobdbType type, uint8_t variant)
+datum_to_wkb_size(Datum value, meosType type, uint8_t variant)
 {
   size_t result;
   if (set_type(type))
@@ -1637,7 +1637,7 @@ npoint_to_wkb_buf(const Npoint *np, uint8_t *buf, uint8_t variant)
  * - timestamp
  */
 static uint8_t *
-set_value_to_wkb_buf(Datum value, mobdbType basetype, uint8_t *buf,
+set_value_to_wkb_buf(Datum value, meosType basetype, uint8_t *buf,
   uint8_t variant)
 {
   ensure_set_basetype(basetype);
@@ -1976,7 +1976,7 @@ tinstant_basevalue_time_to_wkb_buf(const TInstant *inst, uint8_t *buf,
   uint8_t variant)
 {
   Datum value = tinstant_value(inst);
-  mobdbType basetype = temptype_basetype(inst->temptype);
+  meosType basetype = temptype_basetype(inst->temptype);
   ensure_temporal_basetype(basetype);
   switch (basetype)
   {
@@ -2140,7 +2140,7 @@ temporal_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
  * Write into the buffer the WKB representation of a value.
  */
 static uint8_t *
-datum_to_wkb_buf(Datum value, mobdbType type, uint8_t *buf, uint8_t variant)
+datum_to_wkb_buf(Datum value, meosType type, uint8_t *buf, uint8_t variant)
 {
   if (set_type(type))
     buf = set_to_wkb_buf((Set *) DatumGetPointer(value), buf, variant);
@@ -2176,7 +2176,7 @@ datum_to_wkb_buf(Datum value, mobdbType type, uint8_t *buf, uint8_t variant)
  * @note Caller is responsible for freeing the returned array.
  */
 uint8_t *
-datum_as_wkb(Datum value, mobdbType type, uint8_t variant, size_t *size_out)
+datum_as_wkb(Datum value, meosType type, uint8_t variant, size_t *size_out)
 {
   size_t buf_size;
   uint8_t *buf = NULL;
@@ -2247,7 +2247,7 @@ datum_as_wkb(Datum value, mobdbType type, uint8_t variant, size_t *size_out)
  * @brief Return the HexWKB representation of a datum value.
  */
 char *
-datum_as_hexwkb(Datum value, mobdbType type, uint8_t variant, size_t *size)
+datum_as_hexwkb(Datum value, meosType type, uint8_t variant, size_t *size)
 {
   /* Create WKB hex string */
   char *result = (char *) datum_as_wkb(value, type,

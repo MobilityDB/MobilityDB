@@ -43,7 +43,7 @@
 #include "npoint/tnpoint_static.h"
 #include "npoint/tnpoint_parser.h"
 /* MobilityDB */
-#include "pg_general/mobdb_catalog.h"
+#include "pg_general/meos_catalog.h"
 #include "pg_npoint/tnpoint_static.h"
 
 /*****************************************************************************

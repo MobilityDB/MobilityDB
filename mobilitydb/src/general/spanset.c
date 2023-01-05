@@ -49,7 +49,7 @@
 #include "general/temporal_out.h"
 #include "general/temporal_util.h"
 /* MobilityDB */
-#include "pg_general/mobdb_catalog.h"
+#include "pg_general/meos_catalog.h"
 #include "pg_general/span.h"
 #include "pg_general/temporal.h"
 #include "pg_general/temporal_util.h"
@@ -159,7 +159,7 @@ PGDLLEXPORT Datum
 Value_to_spanset(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   SpanSet *result = value_to_spanset(d, basetype);
   PG_RETURN_POINTER(result);
 }
