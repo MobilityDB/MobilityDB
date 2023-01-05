@@ -227,6 +227,86 @@ SELECT MIN(array_length(timestamps(ts), 1)) FROM tbl_timestampset;
    1
 (1 row)
 
+SELECT numValues(set_agg(i)) FROM tbl_int;
+ numvalues 
+-----------
+        60
+(1 row)
+
+SELECT numValues(set_agg(b)) FROM tbl_bigint;
+ numvalues 
+-----------
+        62
+(1 row)
+
+SELECT numValues(set_agg(f)) FROM tbl_float;
+ numvalues 
+-----------
+        99
+(1 row)
+
+SELECT numTimestamps(set_agg(t)) FROM tbl_timestamptz;
+ numtimestamps 
+---------------
+            88
+(1 row)
+
+SELECT numValues(set_agg(t)) FROM tbl_text;
+ numvalues 
+-----------
+        99
+(1 row)
+
+WITH test1(k, i) AS (
+  SELECT k, unnest(i) FROM tbl_intset ),
+test2 (k, i) AS (
+  SELECT k, set_agg(i) FROM test1 GROUP BY k )
+SELECT COUNT(*) FROM test2 t1, tbl_intset t2 WHERE t1.k = t2.k AND t1.i <> t2.i;
+ count 
+-------
+     0
+(1 row)
+
+WITH test1(k, b) AS (
+  SELECT k, unnest(b) FROM tbl_bigintset ),
+test2 (k, b) AS (
+  SELECT k, set_agg(b) FROM test1 GROUP BY k )
+SELECT COUNT(*) FROM test2 t1, tbl_bigintset t2 WHERE t1.k = t2.k AND t1.b <> t2.b;
+ count 
+-------
+     0
+(1 row)
+
+WITH test1(k, f) AS (
+  SELECT k, unnest(f) FROM tbl_floatset ),
+test2 (k, f) AS (
+  SELECT k, set_agg(f) FROM test1 GROUP BY k )
+SELECT COUNT(*) FROM test2 t1, tbl_floatset t2 WHERE t1.k = t2.k AND t1.f <> t2.f;
+ count 
+-------
+     0
+(1 row)
+
+WITH test1(k, ts) AS (
+  SELECT k, unnest(ts) FROM tbl_timestampset ),
+test2 (k, ts) AS (
+  SELECT k, set_agg(ts) FROM test1 GROUP BY k )
+SELECT COUNT(*) FROM test2 t1, tbl_timestampset t2 WHERE t1.k = t2.k AND t1.ts <> t2.ts;
+ count 
+-------
+     0
+(1 row)
+
+WITH test1(k, t) AS (
+  SELECT k, unnest(t) FROM tbl_textset ),
+test2 (k, t) AS (
+  SELECT k, set_agg(t) FROM test1 GROUP BY k )
+SELECT COUNT(*) FROM test2 t1, tbl_textset t2 WHERE t1.k = t2.k AND t1.t <> t2.t;
+ count 
+-------
+     0
+(1 row)
+
 SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE timestampset_cmp(t1.ts, t2.ts) = -1;
  count 
 -------

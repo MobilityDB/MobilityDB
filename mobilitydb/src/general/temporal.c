@@ -1385,10 +1385,10 @@ Temporal_timestamps(PG_FUNCTION_ARGS)
  * @param[in] values Array of values appearing in the temporal value
  * @param[in] count Number of elements in the input array
  */
-UnnestState *
+TempUnnestState *
 temporal_unnest_state_make(const Temporal *temp, Datum *values, int count)
 {
-  UnnestState *state = palloc0(sizeof(UnnestState));
+  TempUnnestState *state = palloc0(sizeof(TempUnnestState));
   /* Fill in state */
   state->done = false;
   state->i = 0;
@@ -1404,7 +1404,7 @@ temporal_unnest_state_make(const Temporal *temp, Datum *values, int count)
  * @param[in] state State to increment
  */
 void
-temporal_unnest_state_next(UnnestState *state)
+temporal_unnest_state_next(TempUnnestState *state)
 {
   if (!state || state->done)
     return;
@@ -1423,7 +1423,7 @@ PGDLLEXPORT Datum
 Temporal_unnest(PG_FUNCTION_ARGS)
 {
   FuncCallContext *funcctx;
-  UnnestState *state;
+  TempUnnestState *state;
   bool isnull[2] = {0,0}; /* needed to say no value is null */
   Datum tuple_arr[2]; /* used to construct the composite return value */
   HeapTuple tuple;

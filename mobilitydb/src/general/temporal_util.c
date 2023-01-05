@@ -36,6 +36,7 @@
 /* C */
 #include <assert.h>
 /* PostgreSQL */
+#include <postgres.h>
 #include <utils/lsyscache.h>
 #include <catalog/pg_collation_d.h>
 #include <catalog/pg_type_d.h>

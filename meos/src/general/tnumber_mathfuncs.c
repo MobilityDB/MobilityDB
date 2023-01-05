@@ -39,8 +39,9 @@
 #include <assert.h>
 #include <math.h>
 /* PostgreSQL */
+#include <postgres.h>
 #include <utils/float.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/pg_types.h"

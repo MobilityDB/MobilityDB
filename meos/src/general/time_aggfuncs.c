@@ -69,7 +69,7 @@ datum_sum_int32(Datum l, Datum r)
  * @note Return new timestamps that must be freed by the calling function.
  */
 TimestampTz *
-timestamp_agg(TimestampTz *times1, int count1, TimestampTz *times2,
+timestamp_tagg(TimestampTz *times1, int count1, TimestampTz *times2,
   int count2, int *newcount)
 {
   TimestampTz *result = palloc(sizeof(TimestampTz) * (count1 + count2));
@@ -117,7 +117,7 @@ timestamp_agg(TimestampTz *times1, int count1, TimestampTz *times2,
  * @note Return new periods that must be freed by the calling function.
  */
 Period **
-period_agg(Period **periods1, int count1, Period **periods2, int count2,
+period_tagg(Period **periods1, int count1, Period **periods2, int count2,
   int *newcount)
 {
   Period **periods = palloc(sizeof(Period *) * (count1 + count2));
@@ -149,12 +149,12 @@ period_agg(Period **periods1, int count1, Period **periods2, int count2,
  *****************************************************************************/
 
 /**
- * Generic combine function for aggregating time values
+ * Generic combine function for temporal aggregate of time values
  *
  * @param[in] state1, state2 State values
  */
 SkipList *
-time_agg_combinefn(SkipList *state1, SkipList *state2)
+time_tagg_combinefn(SkipList *state1, SkipList *state2)
 {
   if (! state1)
     return state2;

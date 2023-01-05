@@ -2112,7 +2112,7 @@ tsequenceset_append_tinstant(TSequenceSet *ss, const TInstant *inst, bool expand
       size += double_pad(VARSIZE(newseq1));
       size += double_pad(VARSIZE(newseq2));
     }
-    /* Remove the size of the previous last sequence */
+    /* Remove the size of the current last sequence */
     TSequence *last = (TSequence *) tsequenceset_seq_n(ss, ss->count - 1);
     size_t avail_size = ((char *) ss + VARSIZE(ss)) -
       ((char *) last + double_pad(VARSIZE(last)));
@@ -2188,8 +2188,9 @@ tsequenceset_append_tsequence(TSequenceSet *ss, const TSequence *seq,
 {
   /* Ensure validity of the arguments */
   assert(ss->temptype == seq->temptype);
-  const TSequence *seq1 = tsequenceset_seq_n(ss, ss->count - 1);
-  const TInstant *inst1 = tsequence_inst_n(seq1, seq1->count - 1);
+  /* The last sequence below may be modified with expandable structures */
+  TSequence *last = (TSequence *) tsequenceset_seq_n(ss, ss->count - 1);
+  const TInstant *inst1 = tsequence_inst_n(last, last->count - 1);
   const TInstant *inst2 = tsequence_inst_n(seq, 0);
   /* We cannot call ensure_increasing_timestamps since we must take into
    * account inclusive/exclusive bounds */
@@ -2214,21 +2215,66 @@ tsequenceset_append_tsequence(TSequenceSet *ss, const TSequence *seq,
     }
   }
 
-  /* TODO Account for expandable structures */
-
-  /* This is the first time we use an expandable structure or there is no more
-   * free space */
   bool removelast, removefirst;
-  bool join = tsequence_join_test(seq1, seq, &removelast, &removefirst);
-  int count = ss->count;
-  if (! join)
-    count++;
+  bool join = tsequence_join_test(last, seq, &removelast, &removefirst);
+  /* We are sure that the result will be a SINGLE sequence */
+  TSequence *newseq = (! join) ? NULL :
+    (TSequence *) tsequence_append_tsequence(last, seq, expand);
+  int count = (join) ? ss->count : ss->count + 1;
+
+#if MEOS
+  /* Account for expandable structures
+   * A while is used instead of an if to be able to break the loop if there is
+   * not enough available space to append the new sequence */
+  while (expand && count <= ss->maxcount)
+  {
+    /* Determine whether there is enough available space */
+    size_t size = 0;
+    if (join)
+      size += double_pad(VARSIZE(newseq)) - double_pad(VARSIZE(last));
+    else
+      size += double_pad(VARSIZE(seq));
+    /* Remove the size of the current last sequence */
+    size_t avail_size = ((char *) ss + VARSIZE(ss)) -
+      ((char *) last + double_pad(VARSIZE(last)));
+    if (size > avail_size)
+      /* There is not enough available space */
+      break;
+
+    /* There is enough space to add the new sequence */
+    if (! join)
+    {
+      /* Update the offsets array and the counts when adding one sequence */
+      (tsequenceset_offsets_ptr(ss))[count - 1] =
+        (tsequenceset_offsets_ptr(ss))[count - 2] + double_pad(VARSIZE(last));
+      ss->count++;
+      ss->totalcount += seq->count;
+    }
+    if (join)
+    {
+      /* Set to 0 in case the new sequence is smaller than the current one */
+      memset(last, 0, VARSIZE(last));
+      memcpy(last, newseq, VARSIZE(newseq));
+    }
+    else
+    {
+      last = (TSequence *) ((char *) last + double_pad(VARSIZE(last)));
+      memcpy(last, newseq, VARSIZE(newseq));
+    }
+    /* Expand the bounding box and return */
+    tsequenceset_expand_bbox(ss, seq);
+    return ss;
+  }
+#endif /* MEOS */
+
+  /* This is the first time we use an expandable structure or there is not
+   * enough available space */
   const TSequence **sequences = palloc(sizeof(TSequence *) * count);
   int k = 0;
   for (int i = 0; i < ss->count - 1; i++)
     sequences[k++] = tsequenceset_seq_n(ss, i);
   if (join)
-    sequences[k++] = tsequence_join(seq1, seq, removelast, removefirst);
+    sequences[k++] = newseq;
   else
   {
     sequences[k++] = tsequenceset_seq_n(ss, ss->count - 1);
@@ -2239,7 +2285,7 @@ tsequenceset_append_tsequence(TSequenceSet *ss, const TSequence *seq,
   {
     maxcount = ss->maxcount * 2;
 #ifdef DEBUG_BUILD
-    printf(" -> %d\n", maxcount);
+    printf(" seqset -> %d\n", maxcount);
 #endif /* DEBUG_BUILD */
   }
   TSequenceSet *result = tsequenceset_make1_exp(sequences, count, maxcount,

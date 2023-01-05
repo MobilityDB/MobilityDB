@@ -56,6 +56,7 @@
 #include "general/pg_types.h"
 #include "general/span.h"
 #include "general/temporal_aggfuncs.h"
+#include "general/temporal_util.h"
 #include "general/time_aggfuncs.h"
 
 #if ! MEOS
@@ -548,12 +549,12 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
     void **newvalues;
     if (list->elemtype == TIMESTAMPTZ)
     {
-      newvalues = (void **) timestamp_agg((TimestampTz *) spliced,
+      newvalues = (void **) timestamp_tagg((TimestampTz *) spliced,
         spliced_count, (TimestampTz *) values, count, &newcount);
     }
     else if (list->elemtype == PERIOD)
     {
-      newvalues = (void **) period_agg((Period **) spliced, spliced_count,
+      newvalues = (void **) period_tagg((Period **) spliced, spliced_count,
         (Period **) values, count, &newcount);
     }
     else /* list->elemtype == TEMPORAL */

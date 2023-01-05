@@ -671,17 +671,23 @@ extern double distance_timestampset_timestampset(const TimestampSet *ts1, const 
 
 /* Aggregate functions for set and span types */
 
+extern Set *bigintset_agg_transfn(Set *s, int64 i);
+extern Set *intset_agg_transfn(Set *s, int i);
+extern Set *floatset_agg_transfn(Set *s, double d);
 extern SkipList *period_tcount_transfn(SkipList *state, const Period *p, const Interval *interval, TimestampTz origin);
 extern SkipList *period_tunion_transfn(SkipList *state, const Period *p);
 extern PeriodSet *period_tunion_finalfn(SkipList *state);
 extern SkipList *periodset_tcount_transfn(SkipList *state, const PeriodSet *ps, const Interval *interval, TimestampTz origin);
 extern SkipList *periodset_tunion_transfn(SkipList *state, const PeriodSet *ps);
+extern Set *set_agg_combinefn(Set *s1, Set *s2);
 extern Span *span_extent_transfn(Span *s1, const Span *s2);
 extern Span *spanset_extent_transfn(Span *s, const SpanSet *ss);
+extern Set *textset_agg_transfn(Set *s, const text *txt);
 extern Period *timestamp_extent_transfn(Period *p, TimestampTz t);
 extern SkipList *timestamp_tcount_transfn(SkipList *state, TimestampTz t, const Interval *interval, TimestampTz origin);
 extern SkipList *timestamp_tunion_transfn(SkipList *state, TimestampTz t);
 extern TimestampSet *timestamp_tunion_finalfn(SkipList *state);
+extern Set *timestampset_agg_transfn(Set *s, TimestampTz t);
 extern Period *timestampset_extent_transfn(Period *p, const TimestampSet *ts);
 extern SkipList *timestampset_tcount_transfn(SkipList *state, const TimestampSet *ts, const Interval *interval, TimestampTz origin);
 extern SkipList *timestampset_tunion_transfn(SkipList *state, const TimestampSet *ts);

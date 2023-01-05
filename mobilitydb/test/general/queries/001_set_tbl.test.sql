@@ -28,7 +28,7 @@
 -------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------
--- Tests for the ordered set data type.
+-- Tests for the set data type
 -- File set.c
 -------------------------------------------------------------------------------
 
@@ -115,6 +115,44 @@ SELECT MIN(startTimestamp(ts)) FROM tbl_timestampset;
 SELECT MIN(endTimestamp(ts)) FROM tbl_timestampset;
 SELECT MIN(timestampN(ts, 1)) FROM tbl_timestampset;
 SELECT MIN(array_length(timestamps(ts), 1)) FROM tbl_timestampset;
+
+-------------------------------------------------------------------------------
+-- Set_agg and unnest functions
+
+SELECT numValues(set_agg(i)) FROM tbl_int;
+SELECT numValues(set_agg(b)) FROM tbl_bigint;
+SELECT numValues(set_agg(f)) FROM tbl_float;
+SELECT numTimestamps(set_agg(t)) FROM tbl_timestamptz;
+SELECT numValues(set_agg(t)) FROM tbl_text;
+
+WITH test1(k, i) AS (
+  SELECT k, unnest(i) FROM tbl_intset ),
+test2 (k, i) AS (
+  SELECT k, set_agg(i) FROM test1 GROUP BY k )
+SELECT COUNT(*) FROM test2 t1, tbl_intset t2 WHERE t1.k = t2.k AND t1.i <> t2.i;
+WITH test1(k, b) AS (
+  SELECT k, unnest(b) FROM tbl_bigintset ),
+test2 (k, b) AS (
+  SELECT k, set_agg(b) FROM test1 GROUP BY k )
+SELECT COUNT(*) FROM test2 t1, tbl_bigintset t2 WHERE t1.k = t2.k AND t1.b <> t2.b;
+WITH test1(k, f) AS (
+  SELECT k, unnest(f) FROM tbl_floatset ),
+test2 (k, f) AS (
+  SELECT k, set_agg(f) FROM test1 GROUP BY k )
+SELECT COUNT(*) FROM test2 t1, tbl_floatset t2 WHERE t1.k = t2.k AND t1.f <> t2.f;
+WITH test1(k, ts) AS (
+  SELECT k, unnest(ts) FROM tbl_timestampset ),
+test2 (k, ts) AS (
+  SELECT k, set_agg(ts) FROM test1 GROUP BY k )
+SELECT COUNT(*) FROM test2 t1, tbl_timestampset t2 WHERE t1.k = t2.k AND t1.ts <> t2.ts;
+WITH test1(k, t) AS (
+  SELECT k, unnest(t) FROM tbl_textset ),
+test2 (k, t) AS (
+  SELECT k, set_agg(t) FROM test1 GROUP BY k )
+SELECT COUNT(*) FROM test2 t1, tbl_textset t2 WHERE t1.k = t2.k AND t1.t <> t2.t;
+
+-------------------------------------------------------------------------------
+-- Comparison functions
 
 SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE timestampset_cmp(t1.ts, t2.ts) = -1;
 SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts = t2.ts;

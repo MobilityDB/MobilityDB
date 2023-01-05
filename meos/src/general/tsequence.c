@@ -167,12 +167,12 @@ npoint_collinear(Npoint *np1, Npoint *np2, Npoint *np3, double ratio)
 /**
  * Return true if the three values are collinear
  *
- * @param[in] basetype Base type
  * @param[in] value1,value2,value3 Input values
+ * @param[in] basetype Base type
  * @param[in] t1,t2,t3 Input timestamps
  */
 static bool
-datum_collinear(mobdbType basetype, Datum value1, Datum value2, Datum value3,
+datum_collinear(Datum value1, Datum value2, Datum value3, mobdbType basetype,
   TimestampTz t1, TimestampTz t2, TimestampTz t3)
 {
   double duration1 = (double) (t2 - t1);
@@ -252,6 +252,38 @@ tsequence_inst_n(const TSequence *seq, int index)
 }
 
 /**
+ * @brief Test whether we can remove the middle instant among 3 consecutive
+ * ones during normalization
+ */
+bool
+tsequence_norm_test(Datum value1, Datum value2, Datum value3, mobdbType basetype,
+  interpType interp, TimestampTz t1, TimestampTz t2, TimestampTz t3)
+{
+  bool v1v2eq = datum_eq(value1, value2, basetype);
+  bool v2v3eq = datum_eq(value2, value3, basetype);
+  if (
+    /* step sequences and 2 consecutive instants that have the same value
+      ... 1@t1, 1@t2, 2@t3, ... -> ... 1@t1, 2@t3, ...
+    */
+    (interp == STEPWISE && v1v2eq)
+    ||
+    /* 3 consecutive linear instants that have the same value
+      ... 1@t1, 1@t2, 1@t3, ... -> ... 1@t1, 1@t3, ...
+    */
+    (interp == LINEAR && v1v2eq && v2v3eq)
+    ||
+    /* collinear linear instants
+      ... 1@t1, 2@t2, 3@t3, ... -> ... 1@t1, 3@t3, ...
+    */
+    (interp == LINEAR && datum_collinear(value1, value2, value3, basetype,
+      t1, t2, t3))
+    )
+    return true;
+  else
+    return false;
+}
+
+/**
  * Normalize the array of temporal instants
  *
  * @param[in] instants Array of input instants
@@ -281,25 +313,8 @@ tinstarr_normalize(const TInstant **instants, interpType interp, int count,
   {
     TInstant *inst3 = (TInstant *) instants[i];
     Datum value3 = tinstant_value(inst3);
-    bool v1v2eq = datum_eq(value1, value2, basetype);
-    bool v2v3eq = datum_eq(value2, value3, basetype);
-    if (
-      /* step sequences and 2 consecutive instants that have the same value
-        ... 1@t1, 1@t2, 2@t3, ... -> ... 1@t1, 2@t3, ...
-      */
-      (interp == STEPWISE && v1v2eq)
-      ||
-      /* 3 consecutive linear instants that have the same value
-        ... 1@t1, 1@t2, 1@t3, ... -> ... 1@t1, 1@t3, ...
-      */
-      (interp == LINEAR && v1v2eq && v2v3eq)
-      ||
-      /* collinear linear instants
-        ... 1@t1, 2@t2, 3@t3, ... -> ... 1@t1, 3@t3, ...
-      */
-      (interp == LINEAR && datum_collinear(basetype, value1, value2, value3,
-        inst1->t, inst2->t, inst3->t))
-      )
+    if (tsequence_norm_test(value1, value2, value3, basetype, interp, inst1->t,
+      inst2->t, inst3->t))
     {
       inst2 = inst3; value2 = value3;
     }
@@ -312,6 +327,107 @@ tinstarr_normalize(const TInstant **instants, interpType interp, int count,
   }
   result[k++] = inst2;
   *newcount = k;
+  return result;
+}
+
+/**
+ * @brief Test whether two sequences can be joined during normalization
+ *
+ * The input sequences must ordered and either (1) are non-overlapping, or
+ * (2) share the same last/first instant in the case we are merging temporal
+ *  sequences.
+ *
+ * @param[in] seq1,seq2 Input sequences
+ * @param[out] removelast,removefirst State the instants to remove if the
+ * sequences can be joined
+ * @result True when the input sequences can be joined
+ * @pre Both sequences are normalized
+ */
+bool
+tsequence_join_test(const TSequence *seq1, const TSequence *seq2,
+  bool *removelast, bool *removefirst)
+{
+  assert(seq1->temptype == seq2->temptype);
+  mobdbType basetype = temptype_basetype(seq1->temptype);
+  interpType interp = MOBDB_FLAGS_GET_INTERP(seq1->flags);
+  bool result = false;
+  TInstant *last2 = (seq1->count == 1 || interp == DISCRETE) ? NULL :
+    (TInstant *) tsequence_inst_n(seq1, seq1->count - 2);
+  Datum last2value = (seq1->count == 1 || interp == DISCRETE) ? 0 :
+    tinstant_value(last2);
+  TInstant *last1 = (TInstant *) tsequence_inst_n(seq1, seq1->count - 1);
+  Datum last1value = tinstant_value(last1);
+  TInstant *first1 = (TInstant *) tsequence_inst_n(seq2, 0);
+  Datum first1value = tinstant_value(first1);
+  TInstant *first2 = (seq2->count == 1 || interp == DISCRETE) ? NULL :
+    (TInstant *) tsequence_inst_n(seq2, 1);
+  Datum first2value = (seq2->count == 1 || interp == DISCRETE) ? 0 :
+    tinstant_value(first2);
+  bool eq_last2_last1 = (last2 == NULL) ? false :
+    datum_eq(last2value, last1value, basetype);
+  bool eq_last1_first1 = datum_eq(last1value, first1value, basetype);
+  bool eq_first1_first2 = (first2 == NULL) ? false :
+    datum_eq(first1value, first2value, basetype);
+
+  bool adjacent = seq1->period.upper == seq2->period.lower &&
+    (seq1->period.upper_inc || seq2->period.lower_inc);
+  /* If they are adjacent and not instantaneous */
+  if (adjacent && last2 != NULL && first2 != NULL &&
+    (
+    /* If step and the last segment of the first sequence is constant
+       ..., 1@t1, 1@t2) [1@t2, 1@t3, ... -> ..., 1@t1, 2@t3, ...
+       ..., 1@t1, 1@t2) [1@t2, 2@t3, ... -> ..., 1@t1, 2@t3, ...
+       ..., 1@t1, 1@t2] (1@t2, 2@t3, ... -> ..., 1@t1, 2@t3, ...
+     */
+    (interp == STEPWISE && eq_last2_last1 && eq_last1_first1)
+    ||
+    /* If the last/first segments are constant and equal
+       ..., 1@t1, 1@t2] (1@t2, 1@t3, ... -> ..., 1@t1, 1@t3, ...
+     */
+    (eq_last2_last1 && eq_last1_first1 && eq_first1_first2)
+    ||
+    /* If float/point sequences and collinear last/first segments having the same duration
+       ..., 1@t1, 2@t2) [2@t2, 3@t3, ... -> ..., 1@t1, 3@t3, ...
+    */
+    (temptype_continuous(seq1->temptype) && eq_last1_first1 &&
+      datum_collinear(last2value, first1value, first2value, basetype,
+        last2->t, first1->t, first2->t))
+    ))
+  {
+    /* Remove the last and first instants of the sequences */
+    *removelast = true;
+    *removefirst = true;
+    result = true;
+  }
+  /* If step sequences and the first one has an exclusive upper bound,
+     by definition the first sequence has the last segment constant
+     ..., 1@t1, 1@t2) [2@t2, 3@t3, ... -> ..., 1@t1, 2@t2, 3@t3, ...
+     ..., 1@t1, 1@t2) [2@t2] -> ..., 1@t1, 2@t2]
+   */
+  else if (adjacent && interp == STEPWISE && ! seq1->period.upper_inc)
+  {
+    /* Remove the last instant of the first sequence */
+    *removelast = true;
+    *removefirst = false;
+    result = true;
+  }
+  /* If they are adjacent and have equal last/first value respectively
+    Stepwise
+    ... 1@t1, 2@t2], (2@t2, 1@t3, ... -> ..., 1@t1, 2@t2, 1@t3, ...
+    [1@t1], (1@t1, 2@t2, ... -> ..., 1@t1, 2@t2
+    Linear
+    ..., 1@t1, 2@t2), [2@t2, 1@t3, ... -> ..., 1@t1, 2@t2, 1@t3, ...
+    ..., 1@t1, 2@t2], (2@t2, 1@t3, ... -> ..., 1@t1, 2@t2, 1@t3, ...
+    ..., 1@t1, 2@t2), [2@t2] -> ..., 1@t1, 2@t2]
+    [1@t1],(1@t1, 2@t2, ... -> [1@t1, 2@t2, ...
+  */
+  else if (adjacent && eq_last1_first1)
+  {
+    /* Remove the first instant of the second sequence */
+    *removelast = false;
+    *removefirst = true;
+    result = true;
+  }
   return result;
 }
 
@@ -1729,32 +1845,32 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, bool expand)
   assert(seq->temptype == inst->temptype);
   interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
   mobdbType basetype = temptype_basetype(seq->temptype);
-  const TInstant *inst1 = tsequence_inst_n(seq, seq->count - 1);
+  const TInstant *penult, *last;
+  last = tsequence_inst_n(seq, seq->count - 1);
 #if NPOINT
-  if (inst1->temptype == T_TNPOINT && interp != DISCRETE)
-    ensure_same_rid_tnpointinst(inst, inst1);
+  if (last->temptype == T_TNPOINT && interp != DISCRETE)
+    ensure_same_rid_tnpointinst(inst, last);
 #endif
-
   /* We cannot call ensure_increasing_timestamps since we must take into
    * account inclusive/exclusive bounds */
-  if (inst1->t > inst->t)
+  if (last->t > inst->t)
   {
-    char *t1 = pg_timestamptz_out(inst1->t);
+    char *t1 = pg_timestamptz_out(last->t);
     char *t = pg_timestamptz_out(inst->t);
     elog(ERROR, "Timestamps for temporal value must be increasing: %s, %s",
       t1, t);
   }
 
-  Datum value1 = tinstant_value(inst1);
+  Datum value1 = tinstant_value(last);
   Datum value = tinstant_value(inst);
   bool eqv1v = datum_eq(value1, value, basetype);
-  if (inst1->t == inst->t)
+  if (last->t == inst->t)
   {
     if (seq->period.upper_inc)
     {
       if (! eqv1v)
       {
-        char *t1 = pg_timestamptz_out(inst1->t);
+        char *t1 = pg_timestamptz_out(last->t);
         elog(ERROR, "The temporal values have different value at their common timestamp %s", t1);
       }
       /* Do not add the new instant if sequence is discrete and new instant is
@@ -1780,27 +1896,10 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, bool expand)
   /* Normalize the result */
   if (interp != DISCRETE && seq->count > 1)
   {
-    const TInstant *inst2 = tsequence_inst_n(seq, seq->count - 2);
-    Datum value2 = tinstant_value(inst2);
-    bool eqv2v1 = datum_eq(value2, value1, basetype);
-    bool eqv1v = datum_eq(value1, value, basetype);
-    if (
-      /* step sequences and 2 consecutive instants that have the same value
-        ... 1@t1, 1@t2, 2@t3, ... -> ... 1@t1, 2@t3, ...
-      */
-      (interp == STEPWISE && eqv2v1)
-      ||
-      /* 3 consecutive float/point instants that have the same value
-        ... 1@t1, 1@t2, 1@t3, ... -> ... 1@t1, 1@t3, ...
-      */
-      (interp == LINEAR && eqv2v1 && eqv1v)
-      ||
-      /* collinear float/point instants that have the same duration
-        ... 1@t1, 2@t2, 3@t3, ... -> ... 1@t1, 3@t3, ...
-      */
-      (interp == LINEAR && datum_collinear(basetype, value2, value1, value,
-        inst2->t, inst1->t, inst->t))
-      )
+    penult = tsequence_inst_n(seq, seq->count - 2);
+    Datum value2 = tinstant_value(penult);
+    if (tsequence_norm_test(value2, value1, value, basetype, interp,
+      penult->t, last->t, inst->t))
     {
       /* The new instant replaces the last instant of the sequence */
       count--;
@@ -1813,24 +1912,25 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, bool expand)
    * no more available space */
   while (expand && count <= seq->maxcount)
   {
-    /* Append the new instant if there is enough space */
+    /* Determine whether there is enough available space */
     size_t size = double_pad(VARSIZE(inst));
     /* Get the last instant to keep. It is either the last instant or the
      * penultimate one if the last one is redundant through normalization */
-    TInstant *last = (TInstant *) tsequence_inst_n(seq, count - 2);
+    penult = (TInstant *) tsequence_inst_n(seq, count - 2);
     size_t avail_size = ((char *) seq + VARSIZE(seq)) -
-      ((char *) last + double_pad(VARSIZE(last)));
+      ((char *) penult + double_pad(VARSIZE(penult)));
     if (size > avail_size)
+      /* There is not enough available space */
       break;
-    /* Update the offsets array and the count if not replacing the last instant */
+
+    /* There is enough space to add the new instant */
     if (count != seq->count)
     {
+      /* Update the offsets array and the count when adding one instant */
       (tsequence_offsets_ptr(seq))[count - 1] =
         (tsequence_offsets_ptr(seq))[count - 2] + size;
       seq->count++;
     }
-    /* There is enough space to add the new instant */
-    last = (TInstant *) tsequence_inst_n(seq, count - 1);
     memcpy(last, inst, size);
     /* Expand the bounding box and return */
     tsequence_expand_bbox(seq, inst);
@@ -1850,7 +1950,7 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, bool expand)
   {
     maxcount = seq->maxcount * 2;
 #ifdef DEBUG_BUILD
-    printf(" -> %d\n", maxcount);
+    printf(" seq -> %d\n", maxcount);
 #endif /* DEBUG_BUILD */
   }
   TSequence *result = tsequence_make1_exp(instants, count, maxcount,
@@ -1976,106 +2076,6 @@ tdiscseq_merge_array(const TSequence **sequences, int count)
   /* Create the result */
   Temporal *result = tinstant_merge_array(instants, totalcount);
   pfree(instants);
-  return result;
-}
-
-/**
- * @brief Test whether two sequences can be joined during normalization
- *
- * The input sequences must ordered and either (1) are non-overlapping, or
- * (2) share the same last/first instant in the case we are merging temporal
- *  sequences.
- *
- * @param[in] seq1,seq2 Input sequences
- * @param[out] removelast,removefirst State the instants to remove if the
- * sequences can be joined
- * @result True when the input sequences can be joined
- * @pre Both sequences are normalized
- */
-bool
-tsequence_join_test(const TSequence *seq1, const TSequence *seq2,
-  bool *removelast, bool *removefirst)
-{
-  assert(seq1->temptype == seq2->temptype);
-  mobdbType basetype = temptype_basetype(seq1->temptype);
-  interpType interp = MOBDB_FLAGS_GET_INTERP(seq1->flags);
-  bool result = false;
-  TInstant *last2 = (seq1->count == 1 || interp == DISCRETE) ? NULL :
-    (TInstant *) tsequence_inst_n(seq1, seq1->count - 2);
-  Datum last2value = (seq1->count == 1 || interp == DISCRETE) ? 0 :
-    tinstant_value(last2);
-  TInstant *last1 = (TInstant *) tsequence_inst_n(seq1, seq1->count - 1);
-  Datum last1value = tinstant_value(last1);
-  TInstant *first1 = (TInstant *) tsequence_inst_n(seq2, 0);
-  Datum first1value = tinstant_value(first1);
-  TInstant *first2 = (seq2->count == 1 || interp == DISCRETE) ? NULL :
-    (TInstant *) tsequence_inst_n(seq2, 1);
-  Datum first2value = (seq2->count == 1 || interp == DISCRETE) ? 0 :
-    tinstant_value(first2);
-  bool adjacent = seq1->period.upper == seq2->period.lower &&
-    (seq1->period.upper_inc || seq2->period.lower_inc);
-  /* If they are adjacent and not instantaneous */
-  if (adjacent && last2 != NULL && first2 != NULL &&
-    (
-    /* If step and the last segment of the first sequence is constant
-       ..., 1@t1, 1@t2) [1@t2, 1@t3, ... -> ..., 1@t1, 2@t3, ...
-       ..., 1@t1, 1@t2) [1@t2, 2@t3, ... -> ..., 1@t1, 2@t3, ...
-       ..., 1@t1, 1@t2] (1@t2, 2@t3, ... -> ..., 1@t1, 2@t3, ...
-     */
-    (interp == STEPWISE &&
-    datum_eq(last2value, last1value, basetype) &&
-    datum_eq(last1value, first1value, basetype))
-    ||
-    /* If the last/first segments are constant and equal
-       ..., 1@t1, 1@t2] (1@t2, 1@t3, ... -> ..., 1@t1, 1@t3, ...
-     */
-    (datum_eq(last2value, last1value, basetype) &&
-    datum_eq(last1value, first1value, basetype) &&
-    datum_eq(first1value, first2value, basetype))
-    ||
-    /* If float/point sequences and collinear last/first segments having the same duration
-       ..., 1@t1, 2@t2) [2@t2, 3@t3, ... -> ..., 1@t1, 3@t3, ...
-    */
-    (temptype_continuous(seq1->temptype) &&
-      datum_eq(last1value, first1value, basetype) &&
-      datum_collinear(basetype, last2value, first1value, first2value,
-        last2->t, first1->t, first2->t))
-    ))
-  {
-    /* Remove the last and first instants of the sequences */
-    *removelast = true;
-    *removefirst = true;
-    result = true;
-  }
-  /* If step sequences and the first one has an exclusive upper bound,
-     by definition the first sequence has the last segment constant
-     ..., 1@t1, 1@t2) [2@t2, 3@t3, ... -> ..., 1@t1, 2@t2, 3@t3, ...
-     ..., 1@t1, 1@t2) [2@t2] -> ..., 1@t1, 2@t2]
-   */
-  else if (adjacent && interp == STEPWISE && ! seq1->period.upper_inc)
-  {
-    /* Remove the last instant of the first sequence */
-    *removelast = true;
-    *removefirst = false;
-    result = true;
-  }
-  /* If they are adjacent and have equal last/first value respectively
-    Stepwise
-    ... 1@t1, 2@t2], (2@t2, 1@t3, ... -> ..., 1@t1, 2@t2, 1@t3, ...
-    [1@t1], (1@t1, 2@t2, ... -> ..., 1@t1, 2@t2
-    Linear
-    ..., 1@t1, 2@t2), [2@t2, 1@t3, ... -> ..., 1@t1, 2@t2, 1@t3, ...
-    ..., 1@t1, 2@t2], (2@t2, 1@t3, ... -> ..., 1@t1, 2@t2, 1@t3, ...
-    ..., 1@t1, 2@t2), [2@t2] -> ..., 1@t1, 2@t2]
-    [1@t1],(1@t1, 2@t2, ... -> [1@t1, 2@t2, ...
-  */
-  else if (adjacent && datum_eq(last1value, first1value, basetype))
-  {
-    /* Remove the first instant of the second sequence */
-    *removelast = false;
-    *removefirst = true;
-    result = true;
-  }
   return result;
 }
 

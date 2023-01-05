@@ -28,59 +28,71 @@
  *****************************************************************************/
 
 /**
- * @brief Basic functions for set of (distinct) timestamps.
+ * @brief Aggregate functions for set types.
  */
 
-#ifndef __TIMESTAMPSET_H__
-#define __TIMESTAMPSET_H__
-
-/*****************************************************************************/
-
-/*
- * fmgr macros for ordered set types
- */
+// #include "general/time_aggfuncs.h"
 
 /* PostgreSQL */
 #include <postgres.h>
+#include <utils/memutils.h>
+#include <utils/timestamp.h>
+/* MEOS */
+#include <meos.h>
+#include <meos_internal.h>
+#include "general/set.h"
+#include "general/skiplist.h"
 /* MobilityDB */
-#include "general/timetypes.h"
-
-#if MEOS
-  #define DatumGetSetP(X)      ((Set *) DatumGetPointer(X))
-#else
-  #define DatumGetSetP(X)      ((Set *) PG_DETOAST_DATUM(X))
-#endif /* MEOS */
-#define SetPGetDatum(X)        PointerGetDatum(X)
-#define PG_GETARG_SET_P(X)     ((Set *) PG_GETARG_VARLENA_P(X))
-#define PG_RETURN_SET_P(X)     PG_RETURN_POINTER(X)
-
-#define MINIDX 0
-#define MAXIDX count - 1
+#include "pg_general/skiplist.h"
+#include "pg_general/temporal.h"
+#include "pg_general/mobdb_catalog.h"
 
 /*****************************************************************************
- * Struct definition for the unnest operation
+ * Aggregate transition functions for set types
  *****************************************************************************/
 
+PG_FUNCTION_INFO_V1(Set_agg_transfn);
 /**
- * Structure to represent information about an entry that can be placed
- * to either group without affecting overlap over selected axis ("common entry").
+ * Transition function for set aggregation of values
  */
-typedef struct
+PGDLLEXPORT Datum
+Set_agg_transfn(PG_FUNCTION_ARGS)
 {
-  bool done;
-  int i;
-  int count;
-  Set *set;  /* Set to unnest */
-  Datum *values;   /* Values obtained by getValues(temp) */
-} SetUnnestState;
+  Set *state = PG_ARGISNULL(0) ? NULL : PG_GETARG_SET_P(0);
+  if (PG_ARGISNULL(1))
+    PG_RETURN_NULL();
+  Datum d = PG_GETARG_DATUM(1);
+  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  void *value = NULL;
+  if (! basetype_byvalue(basetype) &&
+      PG_DATUM_NEEDS_DETOAST((struct varlena *) d))
+    value = PG_DETOAST_DATUM(d);
+  state = set_agg_transfn(state, value ? PointerGetDatum(value) : d, basetype);
+  if (! state)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(state);
+}
 
+/*****************************************************************************
+ * Aggregate combine functions for set types
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Set_agg_combinefn);
+/**
+ * Combine function for set aggregate of set types
+ */
+PGDLLEXPORT Datum
+Set_agg_combinefn(PG_FUNCTION_ARGS)
+{
+  MemoryContext ctx = set_aggregation_context(fcinfo);
+  Set *state1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_SET_P(0);
+  Set *state2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_SET_P(1);
+  if (state1 == NULL && state2 == NULL)
+    PG_RETURN_NULL();
+  unset_aggregation_context(ctx);
+  store_fcinfo(fcinfo);
+  Set *result = set_agg_combinefn(state1, state2);
+  PG_RETURN_POINTER(result);
+}
 
 /*****************************************************************************/
-
-/* General functions */
-
-extern bool set_find_value(const Set *s, Datum, int *loc);
-
-/*****************************************************************************/
-
-#endif

@@ -7,6 +7,7 @@ add_library(general OBJECT
   skiplist.c
   set.c
   set_ops.c
+  set_aggfuncs.c
   span.c
   spanset.c
   span_ops.c

@@ -97,6 +97,12 @@ extern void span_shift(Span *s, Datum value);
 extern void spanset_shift(SpanSet *s, Datum value);
 extern void lower_upper_shift_tscale(TimestampTz *lower, TimestampTz *upper, const Interval *shift, const Interval *duration);
 
+/*****************************************************************************/
+
+/* Aggregate functions for set and span types */
+
+extern Set *set_agg_transfn(Set *s, Datum d, mobdbType basetype);
+
 /*****************************************************************************
  * Bounding box functions for set and span types
  *****************************************************************************/

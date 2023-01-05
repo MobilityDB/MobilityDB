@@ -123,7 +123,7 @@ set_find_value(const Set *s, Datum d, int *loc)
 #if 0 /* not used */
 /**
  * @ingroup libmeos_internal_setspan_accessor
- * @brief Return the location of a value in an unordered set (a.k.a. vector)
+ * @brief Return the location of a value in a ranked set (which is unordered)
  * using sequential search.
  * @note Contrary to function `set_find_value`, if the value is not found the
  * returned location is always 0.
@@ -134,7 +134,7 @@ set_find_value(const Set *s, Datum d, int *loc)
  * @result Return true if the value is contained in the vecctor
  */
 bool
-vect_find_value(const Set *s, Datum d, int *loc)
+rset_find_value(const Set *s, Datum d, int *loc)
 {
   for (int i = 0; i < s->count; i++)
   {

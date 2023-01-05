@@ -28,31 +28,52 @@
  *****************************************************************************/
 
 /**
- * @brief Aggregate functions for time types
+ * @brief Aggregate functions for set types.
  */
 
-#ifndef __TIME_AGGFUNCS_H__
-#define __TIME_AGGFUNCS_H__
-
+/* C */
+#include <assert.h>
+/* PostgreSQL */
+#include <postgres.h>
 /* MEOS */
-#include "general/span.h"
-#include "general/skiplist.h"
+#include <meos.h>
+#include <meos_internal.h>
+#include "general/temporal_util.h"
+
+/*****************************************************************************
+ * Aggregate functions for set types
+ *****************************************************************************/
+
+/**
+ * @ingroup libmeos_setspan_agg
+ * @brief Transition function for set aggregate of values
+ */
+Set *
+set_agg_transfn(Set *state, Datum d, mobdbType basetype)
+{
+  /* Null set: create a new set with the value */
+  if (! state)
+    return set_make(&d, 1, basetype, ORDERED);
+
+  return union_set_value(state, d, basetype);
+}
+
+/**
+ * @ingroup libmeos_setspan_agg
+ * @brief Combine function for tset aggregate of values
+ *
+ * @param[in] state1, state2 State values
+ */
+Set *
+set_agg_combinefn(Set *state1, Set *state2)
+{
+  if (! state1)
+    return state2;
+  if (! state2)
+    return state1;
+
+  assert(state1->settype == state2->settype);
+  return union_set_set(state1, state2);
+}
 
 /*****************************************************************************/
-
-extern Datum datum_sum_int32(Datum l, Datum r);
-extern TimestampTz *timestamp_tagg(TimestampTz *times1, int count1,
-  TimestampTz *times2, int count2, int *newcount);
-extern Period **period_tagg(Period **periods1, int count1, Period **periods2,
-  int count2, int *newcount);
-
-extern SkipList *timestampset_tagg_transfn(SkipList *state,
-  const TimestampSet *ts);
-extern SkipList *period_tagg_transfn(SkipList *state, const Period *p);
-extern SkipList *periodset_tagg_transfn(SkipList *state, const PeriodSet *ps);
-extern void ensure_same_timetype_skiplist(SkipList *state, uint8 subtype);
-extern SkipList *time_tagg_combinefn(SkipList *state1, SkipList *state2);
-
-/*****************************************************************************/
-
-#endif

@@ -38,6 +38,7 @@
 #include <math.h>
 #include <string.h>
 /* PostgreSQL */
+#include <postgres.h>
 #include <catalog/pg_collation.h>
 #include <libpq/pqformat.h>
 #include <utils/memutils.h>
