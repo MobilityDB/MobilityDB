@@ -465,7 +465,6 @@ numspanset_to_tbox(const SpanSet *ss)
   numspanset_set_tbox(ss, result);
   return result;
 }
-#endif /* MEOS */
 
 /**
  * @ingroup libmeos_internal_box_cast
@@ -478,7 +477,6 @@ periodset_set_tbox(const PeriodSet *ps, TBox *box)
   return;
 }
 
-#if MEOS
 /**
  * @ingroup libmeos_box_cast
  * @brief Cast a period set to a temporal box.

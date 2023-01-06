@@ -62,7 +62,6 @@
   #include "npoint/tnpoint_spatialfuncs.h"
 #endif
 
-
 /*****************************************************************************
  * Collinear functions
  * Are the three temporal instants collinear?
@@ -206,50 +205,8 @@ datum_collinear(Datum value1, Datum value2, Datum value3, meosType basetype,
 }
 
 /*****************************************************************************
- * General functions
+ * Normalization functions
  *****************************************************************************/
-
-/**
- * @ingroup libmeos_internal_temporal_accessor
- * @brief Set the second argument to the bounding box of a temporal sequence
- * @sqlfunc period(), tbox(), stbox()
- * @sqlop @p ::
- */
-void
-tsequence_set_bbox(const TSequence *seq, void *box)
-{
-  memset(box, 0, seq->bboxsize);
-  memcpy(box, TSEQUENCE_BBOX_PTR(seq), seq->bboxsize);
-  return;
-}
-
-/**
- * Return a pointer to the offsets array of a temporal sequence
- */
-size_t *
-tsequence_offsets_ptr(const TSequence *seq)
-{
-  return (size_t *)(((char *)seq) + double_pad(sizeof(TSequence)) +
-    ((seq->bboxsize == 0) ? 0 : double_pad(seq->bboxsize - sizeof(Period))));
-}
-
-/**
- * @ingroup libmeos_internal_temporal_accessor
- * @brief Return the n-th instant of a temporal sequence.
- * @pre The argument @p index is less than the number of instants in the
- * sequence
- */
-const TInstant *
-tsequence_inst_n(const TSequence *seq, int index)
-{
-  return (TInstant *)(
-    /* start of data */
-    ((char *)seq) + double_pad(sizeof(TSequence)) +
-      ((seq->bboxsize == 0) ? 0 : (seq->bboxsize - sizeof(Period))) +
-      seq->maxcount * sizeof(size_t) +
-      /* offset */
-      (tsequence_offsets_ptr(seq))[index]);
-}
 
 /**
  * @brief Test whether we can remove the middle instant among 3 consecutive
@@ -460,6 +417,10 @@ tsequence_join(const TSequence *seq1, const TSequence *seq2,
   return result;
 }
 
+/*****************************************************************************
+ * General functions
+ *****************************************************************************/
+
 /**
  * @brief Return the index of the segment of a temporal continuous sequence
  * containing a timestamp using binary search
@@ -551,12 +512,12 @@ tdiscseq_find_timestamp(const TSequence *seq, TimestampTz t)
 }
 
 /**
- * Convert an array of arrays of temporal sequences into an array of
+ * @brief Convert an array of arrays of temporal sequences into an array of
  * temporal sequences.
  *
- * This function is called by all the functions in which the number of
- * output sequences is not bounded, typically when each segment of the
- * input sequence can produce an arbitrary number of output sequences,
+ * This function is called by all the functions in which the number of output
+ * sequences cannot be determined in advance, typically when each segment
+ * of the input sequence can produce an arbitrary number of output sequences,
  * as in the case of atGeometry.
  *
  * @param[in] sequences Array of array of temporal sequences
@@ -566,8 +527,8 @@ tdiscseq_find_timestamp(const TSequence *seq, TimestampTz t)
  * @pre count and totalseqs are greater than 0
  */
 TSequence **
-tseqarr2_to_tseqarr(TSequence ***sequences, int *countseqs,
-  int count, int totalseqs)
+tseqarr2_to_tseqarr(TSequence ***sequences, int *countseqs, int count,
+  int totalseqs)
 {
   assert(count > 0);
   assert(totalseqs > 0);
@@ -582,502 +543,6 @@ tseqarr2_to_tseqarr(TSequence ***sequences, int *countseqs,
   }
   pfree(sequences); pfree(countseqs);
   return result;
-}
-
-/*****************************************************************************
- * Synchronization functions
- *****************************************************************************/
-
-/**
- * Synchronize two temporal sequences
- *
- * The resulting values are composed of denormalized sequences covering the
- * intersection of their time spans. The argument crossings determines
- * whether potential crossings between successive pair of instants are added.
- * Crossings are only added when at least one of the sequences has linear
- * interpolation.
- *
- * @param[in] seq1,seq2 Input values
- * @param[in] crossings True if turning points are added in the segments
- * @param[out] sync1,sync2 Output values
- * @result Return false if the input values do not overlap on time
- */
-bool
-synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
-  TSequence **sync1, TSequence **sync2, bool crossings)
-{
-  /* Test whether the bounding period of the two temporal values overlap */
-  Period inter;
-  if (! inter_span_span(&seq1->period, &seq2->period, &inter))
-    return false;
-
-  interpType interp1 = MOBDB_FLAGS_GET_INTERP(seq1->flags);
-  interpType interp2 = MOBDB_FLAGS_GET_INTERP(seq2->flags);
-  TInstant *inst1, *inst2;
-
-  /* If the two sequences intersect at an instant */
-  if (inter.lower == inter.upper)
-  {
-    inst1 = tsequence_at_timestamp(seq1, inter.lower);
-    inst2 = tsequence_at_timestamp(seq2, inter.lower);
-    *sync1 = tinstant_to_tsequence(inst1, interp1);
-    *sync2 = tinstant_to_tsequence(inst2, interp2);
-    pfree(inst1); pfree(inst2);
-    return true;
-  }
-
-  /*
-   * General case
-   * seq1 =  ... *     *   *   *      *>
-   * seq2 =       <*            *     * ...
-   * sync1 =      <X C * C * C X C X C *>
-   * sync2 =      <* C X C X C * C * C X>
-   * where X are values added for synchronization and C are values added
-   * for the crossings
-   */
-  inst1 = (TInstant *) tsequence_inst_n(seq1, 0);
-  inst2 = (TInstant *) tsequence_inst_n(seq2, 0);
-  int i = 0, j = 0, k = 0, l = 0;
-  if (inst1->t < (TimestampTz) inter.lower)
-  {
-    i = tcontseq_find_timestamp(seq1, inter.lower) + 1;
-    inst1 = (TInstant *) tsequence_inst_n(seq1, i);
-  }
-  else if (inst2->t < (TimestampTz) inter.lower)
-  {
-    j = tcontseq_find_timestamp(seq2, inter.lower) + 1;
-    inst2 = (TInstant *) tsequence_inst_n(seq2, j);
-  }
-  int count = (seq1->count - i + seq2->count - j) * 2;
-  TInstant **instants1 = palloc(sizeof(TInstant *) * count);
-  TInstant **instants2 = palloc(sizeof(TInstant *) * count);
-  TInstant **tofree = palloc(sizeof(TInstant *) * count * 2);
-  meosType basetype1 = temptype_basetype(seq1->temptype);
-  meosType basetype2 = temptype_basetype(seq2->temptype);
-  while (i < seq1->count && j < seq2->count &&
-    (inst1->t <= (TimestampTz) inter.upper ||
-     inst2->t <= (TimestampTz) inter.upper))
-  {
-    int cmp = timestamptz_cmp_internal(inst1->t, inst2->t);
-    if (cmp == 0)
-    {
-      i++; j++;
-    }
-    else if (cmp < 0)
-    {
-      i++;
-      inst2 = tsequence_at_timestamp(seq2, inst1->t);
-      tofree[l++] = inst2;
-    }
-    else
-    {
-      j++;
-      inst1 = tsequence_at_timestamp(seq1, inst2->t);
-      tofree[l++] = inst1;
-    }
-    /* If not the first instant add potential crossing before adding
-       the new instants */
-    if (crossings && (interp1 == LINEAR || interp2 == LINEAR) && k > 0)
-    {
-      TimestampTz crosstime;
-      Datum inter1, inter2;
-      if (tsegment_intersection(instants1[k - 1], inst1, (interp1 == LINEAR),
-        instants2[k - 1], inst2, (interp2 == LINEAR), &inter1, &inter2, &crosstime))
-      {
-        instants1[k] = tofree[l++] = tinstant_make(inter1, seq1->temptype,
-          crosstime);
-        instants2[k++] = tofree[l++] = tinstant_make(inter2, seq2->temptype,
-          crosstime);
-      }
-    }
-    instants1[k] = inst1; instants2[k++] = inst2;
-    if (i == seq1->count || j == seq2->count)
-      break;
-    inst1 = (TInstant *) tsequence_inst_n(seq1, i);
-    inst2 = (TInstant *) tsequence_inst_n(seq2, j);
-  }
-  /* We are sure that k != 0 due to the period intersection test above */
-  /* The last two values of sequences with step interpolation and
-     exclusive upper bound must be equal */
-  if (! inter.upper_inc && k > 1 && (interp1 != LINEAR) &&
-      datum_ne(tinstant_value(instants1[k - 2]),
-        tinstant_value(instants1[k - 1]), basetype1))
-  {
-    instants1[k - 1] = tinstant_make(tinstant_value(instants1[k - 2]),
-      instants1[k - 1]->temptype, instants1[k - 1]->t);
-    tofree[l++] = instants1[k - 1];
-  }
-  if (! inter.upper_inc && k > 1 && (interp2 != LINEAR) &&
-      datum_ne(tinstant_value(instants2[k - 2]),
-        tinstant_value(instants2[k - 1]), basetype2))
-  {
-    instants2[k - 1] = tinstant_make(tinstant_value(instants2[k - 2]),
-      instants2[k - 1]->temptype, instants2[k - 1]->t);
-    tofree[l++] = instants2[k - 1];
-  }
-  *sync1 = tsequence_make((const TInstant **) instants1, k, inter.lower_inc,
-    inter.upper_inc, interp1, NORMALIZE_NO);
-  *sync2 = tsequence_make((const TInstant **) instants2, k, inter.lower_inc,
-    inter.upper_inc, interp2, NORMALIZE_NO);
-
-  pfree_array((void **) tofree, l);
-  pfree(instants1); pfree(instants2);
-
-  return true;
-}
-
-/*****************************************************************************
- * Intersection functions
- *****************************************************************************/
-
-/**
- * Temporally intersect two temporal discrete sequences
- *
- * @param[in] seq1,seq2 Input values
- * @param[out] inter1, inter2 Output values
- * @result Return false if the input values do not overlap on time
- */
-bool
-intersection_tdiscseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
-  TSequence **inter1, TSequence **inter2)
-{
-  /* Bounding period test */
-  if (!overlaps_span_span(&seq1->period, &seq2->period))
-    return false;
-
-  int count = Min(seq1->count, seq2->count);
-  const TInstant **instants1 = palloc(sizeof(TInstant *) * count);
-  const TInstant **instants2 = palloc(sizeof(TInstant *) * count);
-  int i = 0, j = 0, k = 0;
-  const TInstant *inst1 = tsequence_inst_n(seq1, i);
-  const TInstant *inst2 = tsequence_inst_n(seq2, j);
-  while (i < seq1->count && j < seq2->count)
-  {
-    int cmp = timestamptz_cmp_internal(inst1->t, inst2->t);
-    if (cmp == 0)
-    {
-      instants1[k] = inst1;
-      instants2[k++] = inst2;
-      inst1 = tsequence_inst_n(seq1, ++i);
-      inst2 = tsequence_inst_n(seq2, ++j);
-    }
-    else if (cmp < 0)
-      inst1 = tsequence_inst_n(seq1, ++i);
-    else
-      inst2 = tsequence_inst_n(seq2, ++j);
-  }
-  if (k != 0)
-  {
-    *inter1 = tsequence_make(instants1, k, true, true, DISCRETE, NORMALIZE_NO);
-    *inter2 = tsequence_make(instants2, k, true, true, DISCRETE, NORMALIZE_NO);
-  }
-
-  pfree(instants1); pfree(instants2);
-  return k != 0;
-}
-
-/**
- * Temporally intersect two temporal sequences
- *
- * @param[in] seq1,seq2 Input values
- * @param[out] inter1, inter2 Output values
- * @result Return false if the input values do not overlap on time.
- */
-bool
-intersection_tcontseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
-  TSequence **inter1, TSequence **inter2)
-{
-  /* Test whether the bounding period of the two temporal values overlap */
-  if (! overlaps_span_span(&seq1->period, &seq2->period))
-    return false;
-
-  TInstant **instants1 = palloc(sizeof(TInstant *) * seq2->count);
-  const TInstant **instants2 = palloc(sizeof(TInstant *) * seq2->count);
-  int k = 0;
-  for (int i = 0; i < seq2->count; i++)
-  {
-    const TInstant *inst = tsequence_inst_n(seq2, i);
-    if (contains_period_timestamp(&seq1->period, inst->t))
-    {
-      instants1[k] = tsequence_at_timestamp(seq1, inst->t);
-      instants2[k++] = inst;
-    }
-    if ((TimestampTz) seq1->period.upper < inst->t)
-      break;
-  }
-  if (k == 0)
-  {
-    pfree(instants1); pfree(instants2);
-    return false;
-  }
-
-  *inter1 = tsequence_make_free(instants1, k, true, true, DISCRETE, MERGE_NO);
-  *inter2 = tsequence_make(instants2, k, true, true, DISCRETE, MERGE_NO);
-  pfree(instants2);
-  return true;
-}
-
-/**
- * Temporally intersect two temporal values
- *
- * @param[in] seq1,seq2 Temporal values
- * @param[out] inter1,inter2 Output values
- * @result Return false if the input values do not overlap on time.
- */
-bool
-intersection_tdiscseq_tcontseq(const TSequence *seq1, const TSequence *seq2,
-  TSequence **inter1, TSequence **inter2)
-{
-  return intersection_tcontseq_tdiscseq(seq2, seq1, inter2, inter1);
-}
-
-/*****************************************************************************/
-
-/**
- * Compute the intersection, if any, of a segment of a temporal sequence and
- * a value. The functions only return true when there is an intersection at
- * the middle of the segment, i.e., they return false if they intersect at a
- * bound. When they return true, they also return in the output parameter
- * the intersection timestampt t. The value taken by the segment and the
- * target value are equal up to the floating point precision.
- * There is no need to add functions for DoubleN, which are used for computing
- * avg and centroid aggregates, since these computations are based on sum and
- * thus they do not need to add intermediate points.
- */
-
-/**
- * Return true if the segment of a temporal number intersects
- * the base value at a timestamp
- *
- * @param[in] inst1,inst2 Temporal instants defining the segment
- * @param[in] value Base value
- * @param[in] basetype Base type
- * @param[out] t Timestamp
- */
-static bool
-tfloatsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
-  Datum value, meosType basetype, TimestampTz *t)
-{
-  assert(inst1->temptype == T_TFLOAT);
-  double dvalue1 = DatumGetFloat8(tinstant_value(inst1));
-  double dvalue2 = DatumGetFloat8(tinstant_value(inst2));
-  double dvalue = datum_double(value, basetype);
-  double min = Min(dvalue1, dvalue2);
-  double max = Max(dvalue1, dvalue2);
-  /* if value is to the left or to the right of the span */
-  if (dvalue < min || dvalue > max)
-    return false;
-
-  double span = (max - min);
-  double partial = (dvalue - min);
-  double fraction = dvalue1 < dvalue2 ? partial / span : 1 - partial / span;
-  if (fraction < -1 * MOBDB_EPSILON || 1.0 + MOBDB_EPSILON < fraction)
-    return false;
-
-  if (t != NULL)
-  {
-    double duration = (inst2->t - inst1->t);
-    /* Note that due to roundoff errors it may be the case that the
-     * resulting timestamp t may be equal to inst1->t or to inst2->t */
-    *t = inst1->t + (TimestampTz) (duration * fraction);
-  }
-  return true;
-}
-
-/**
- * Return true if the segment of a temporal sequence intersects
- * the base value at the timestamp
- *
- * @param[in] inst1,inst2 Temporal instants defining the segment
- * @param[in] value Base value
- * @param[in] basetype Base type
- * @param[out] inter Base value taken by the segment at the timestamp.
- * This value is equal to the input base value up to the floating
- * point precision.
- * @param[out] t Timestamp
- */
-bool
-tlinearsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
-  Datum value, meosType basetype, Datum *inter, TimestampTz *t)
-{
-  Datum value1 = tinstant_value(inst1);
-  Datum value2 = tinstant_value(inst2);
-  if (datum_eq2(value, value1, basetype, temptype_basetype(inst1->temptype)) ||
-      datum_eq2(value, value2, basetype, temptype_basetype(inst2->temptype)))
-    return false;
-
-  ensure_temptype_continuous(inst1->temptype);
-  bool result = false; /* make compiler quiet */
-  if (inst1->temptype == T_TFLOAT)
-    result = tfloatsegm_intersection_value(inst1, inst2, value, basetype, t);
-  else if (tgeo_type(inst1->temptype))
-    result = tpointsegm_intersection_value(inst1, inst2, value, t);
-#if NPOINT
-  else if (inst1->temptype == T_TNPOINT)
-    result = tnpointsegm_intersection_value(inst1, inst2, value, t);
-#endif
-  else
-    elog(ERROR, "unknown intersection function for continuous temporal type: %d",
-      inst1->temptype);
-
-  if (result && inter != NULL)
-    /* We are sure it is linear interpolation */
-    *inter = tsegment_value_at_timestamp(inst1, inst2, true, *t);
-  return result;
-}
-
-/*****************************************************************************/
-
-/**
- * Compute the intersection, if any, of two segments of temporal sequences.
- * These functions suppose that the instants are synchronized, i.e.,
- * `start1->t = start2->t` and `end1->t = end2->t`.
- * The functions return true if there is an intersection at the middle of
- * the segments, i.e., they return false if they intersect at a bound. If
- * they return true, they also return in the output parameter t the
- * intersection timestamp. The two values taken by the segments at the
- * intersection timestamp t are equal up to the floating point precision.
- * For the temporal point case we cannot use the PostGIS functions
- * `lw_dist2d_seg_seg` and `lw_dist3d_seg_seg` since they do not take time
- * into consideration and would return, e.g., that the two segments
- * `[Point(1 1)@t1, Point(3 3)@t2]` and `[Point(3 3)@t1, Point(1 1)@t2]`
- * intersect at `Point(1 1)`, instead of `Point(2 2)`.
- * These functions are used to add intermediate points when lifting
- * operators, in particular for temporal comparisons such as
- * `tfloat <comp> tfloat` where `<comp>` is `<`, `<=`, ... since the
- * comparison changes its value before/at/after the intersection point.
- */
-
-/**
- * Return true if two segments of two temporal numbers intersect at a timestamp
- *
- * @param[in] start1,end1 Temporal instants defining the first segment
- * @param[in] start2,end2 Temporal instants defining the second segment
- * @param[out] t Timestamp
- * @pre The instants are synchronized, i.e., start1->t = start2->t and
- * end1->t = end2->t
- */
-static bool
-tnumbersegm_intersection(const TInstant *start1, const TInstant *end1,
-  const TInstant *start2, const TInstant *end2, TimestampTz *t)
-{
-  double x1 = tnumberinst_double(start1);
-  double x2 = tnumberinst_double(end1);
-  double x3 = tnumberinst_double(start2);
-  double x4 = tnumberinst_double(end2);
-  /* Compute the instant t at which the linear functions of the two segments
-     are equal: at + b = ct + d that is t = (d - b) / (a - c).
-     To reduce problems related to floating point precision, t1 and t2
-     are shifted, respectively, to 0 and 1 before the computation */
-  long double denum = x2 - x1 - x4 + x3;
-  if (denum == 0)
-    /* Parallel segments */
-    return false;
-
-  long double fraction = ((long double) (x3 - x1)) / denum;
-  if (fraction < -1 * MOBDB_EPSILON || 1.0 + MOBDB_EPSILON < fraction )
-    /* Intersection occurs out of the period */
-    return false;
-
-  double duration = (end1->t - start1->t);
-  *t = start1->t + (TimestampTz) (duration * fraction);
-  /* Note that due to roundoff errors it may be the case that the
-   * resulting timestamp t may be equal to inst1->t or to inst2->t */
-  if (*t <= start1->t || *t >= end1->t)
-    return false;
-  return true;
-}
-
-/**
- * Return true if  two segments of a temporal sequence intersect at a
- * timestamp
- *
- * @param[in] start1,end1 Temporal instants defining the first segment
- * @param[in] linear1 True if the first segment has linear interpolation
- * @param[in] start2,end2 Temporal instants defining the second segment
- * @param[in] linear2 True if the second segment has linear interpolation
- * @param[out] inter1, inter2 Base values taken by the two segments
- * at the timestamp
- * @param[out] t Timestamp
- * @pre The instants are synchronized, i.e., start1->t = start2->t and
- * end1->t = end2->t
- */
-bool
-tsegment_intersection(const TInstant *start1, const TInstant *end1,
-  bool linear1, const TInstant *start2, const TInstant *end2, bool linear2,
-  Datum *inter1, Datum *inter2, TimestampTz *t)
-{
-  bool result = false; /* Make compiler quiet */
-  Datum value;
-  meosType basetype1 = temptype_basetype(start1->temptype);
-  meosType basetype2 = temptype_basetype(start2->temptype);
-  if (! linear1)
-  {
-    value = tinstant_value(start1);
-    if (inter1 != NULL)
-      *inter1 = value;
-    result = tlinearsegm_intersection_value(start2, end2, value, basetype1,
-      inter2, t);
-  }
-  else if (! linear2)
-  {
-    value = tinstant_value(start2);
-    if (inter2 != NULL)
-      *inter2 = value;
-    result = tlinearsegm_intersection_value(start1, end1, value, basetype2,
-      inter1, t);
-  }
-  else
-  {
-    /* Both segments have linear interpolation */
-    ensure_temporal_type(start1->temptype);
-    if (tnumber_type(start1->temptype))
-      result = tnumbersegm_intersection(start1, end1, start2, end2, t);
-    else if (start1->temptype == T_TGEOMPOINT)
-      result = tgeompointsegm_intersection(start1, end1, start2, end2, t);
-    else if (start1->temptype == T_TGEOGPOINT)
-      result = tgeogpointsegm_intersection(start1, end1, start2, end2, t);
-    /* We are sure it is linear interpolation */
-    if (result && inter1 != NULL)
-      *inter1 = tsegment_value_at_timestamp(start1, end1, true, *t);
-    if (result && inter2 != NULL)
-      *inter2 = tsegment_value_at_timestamp(start2, end2, true, *t);
-  }
-  return result;
-}
-
-/**
- * Temporally intersect two temporal sequences
- *
- * @param[in] seq,inst Input values
- * @param[out] inter1, inter2 Output values
- * @result Return false if the input values do not overlap on time.
- */
-bool
-intersection_tsequence_tinstant(const TSequence *seq, const TInstant *inst,
-  TInstant **inter1, TInstant **inter2)
-{
-  TInstant *inst1 = tsequence_at_timestamp(seq, inst->t);
-  if (inst1 == NULL)
-    return false;
-
-  *inter1 = inst1;
-  *inter2 = tinstant_copy(inst);
-  return true;
-}
-
-/**
- * Temporally intersect two temporal values
- *
- * @param[in] inst,seq Temporal values
- * @param[out] inter1, inter2 Output values
- * @result Return false if the input values do not overlap on time.
- */
-bool
-intersection_tinstant_tsequence(const TInstant *inst, const TSequence *seq,
-  TInstant **inter1, TInstant **inter2)
-{
-  return intersection_tsequence_tinstant(seq, inst, inter2, inter1);
 }
 
 /*****************************************************************************
@@ -1101,6 +566,7 @@ tsequence_in(const char *str, meosType temptype, interpType interp)
   else
     return tcontseq_parse(&str, temptype, interp, true, true);
 }
+
 /**
  * @ingroup libmeos_internal_temporal_inout
  * @brief Return a temporal sequence boolean from its Well-Known Text (WKT)
@@ -1278,6 +744,48 @@ tsequence_make_valid(const TInstant **instants, int count, bool lower_inc,
 }
 
 /**
+ * @ingroup libmeos_internal_temporal_accessor
+ * @brief Set the second argument to the bounding box of a temporal sequence
+ * @sqlfunc period(), tbox(), stbox()
+ * @sqlop @p ::
+ */
+void
+tsequence_set_bbox(const TSequence *seq, void *box)
+{
+  memset(box, 0, seq->bboxsize);
+  memcpy(box, TSEQUENCE_BBOX_PTR(seq), seq->bboxsize);
+  return;
+}
+
+/**
+ * Return a pointer to the offsets array of a temporal sequence
+ */
+size_t *
+tsequence_offsets_ptr(const TSequence *seq)
+{
+  return (size_t *)(((char *)seq) + double_pad(sizeof(TSequence)) +
+    ((seq->bboxsize == 0) ? 0 : double_pad(seq->bboxsize - sizeof(Period))));
+}
+
+/**
+ * @ingroup libmeos_internal_temporal_accessor
+ * @brief Return the n-th instant of a temporal sequence.
+ * @pre The argument @p index is less than the number of instants in the
+ * sequence
+ */
+const TInstant *
+tsequence_inst_n(const TSequence *seq, int index)
+{
+  return (TInstant *)(
+    /* start of data */
+    ((char *) seq) + double_pad(sizeof(TSequence)) +
+      ((seq->bboxsize == 0) ? 0 : (seq->bboxsize - sizeof(Period))) +
+      sizeof(size_t) * seq->maxcount +
+      /* offset */
+      (tsequence_offsets_ptr(seq))[index]);
+}
+
+/**
  * @brief Construct a temporal sequence from an array of temporal instants
  *
  * For example, the memory structure of a temporal sequence with two instants
@@ -1369,7 +877,7 @@ tsequence_make1_exp(const TInstant **instants, int count, int maxcount,
   }
   /* Store the composing instants */
   size_t pdata = double_pad(sizeof(TSequence)) + bboxsize_extra +
-    maxcount * sizeof(size_t);
+    sizeof(size_t) * maxcount;
   size_t pos = 0;
   for (int i = 0; i < newcount; i++)
   {
@@ -1845,8 +1353,8 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, bool expand)
   assert(seq->temptype == inst->temptype);
   interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
   meosType basetype = temptype_basetype(seq->temptype);
-  const TInstant *penult, *last;
-  last = tsequence_inst_n(seq, seq->count - 1);
+  TInstant *penult, *last;
+  last = (TInstant *) tsequence_inst_n(seq, seq->count - 1);
 #if NPOINT
   if (last->temptype == T_TNPOINT && interp != DISCRETE)
     ensure_same_rid_tnpointinst(inst, last);
@@ -1896,7 +1404,7 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, bool expand)
   /* Normalize the result */
   if (interp != DISCRETE && seq->count > 1)
   {
-    penult = tsequence_inst_n(seq, seq->count - 2);
+    penult = (TInstant *) tsequence_inst_n(seq, seq->count - 2);
     Datum value2 = tinstant_value(penult);
     if (tsequence_norm_test(value2, value1, value, basetype, interp,
       penult->t, last->t, inst->t))
@@ -3073,6 +2581,502 @@ tsequence_value_at_timestamp(const TSequence *seq, TimestampTz t, bool strict,
     *result = tsegment_value_at_timestamp(inst1, inst2, linear, t);
   }
   return true;
+}
+
+/*****************************************************************************
+ * Synchronization functions
+ *****************************************************************************/
+
+/**
+ * Synchronize two temporal sequences
+ *
+ * The resulting values are composed of denormalized sequences covering the
+ * intersection of their time spans. The argument crossings determines
+ * whether potential crossings between successive pair of instants are added.
+ * Crossings are only added when at least one of the sequences has linear
+ * interpolation.
+ *
+ * @param[in] seq1,seq2 Input values
+ * @param[in] crossings True if turning points are added in the segments
+ * @param[out] sync1,sync2 Output values
+ * @result Return false if the input values do not overlap on time
+ */
+bool
+synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
+  TSequence **sync1, TSequence **sync2, bool crossings)
+{
+  /* Test whether the bounding period of the two temporal values overlap */
+  Period inter;
+  if (! inter_span_span(&seq1->period, &seq2->period, &inter))
+    return false;
+
+  interpType interp1 = MOBDB_FLAGS_GET_INTERP(seq1->flags);
+  interpType interp2 = MOBDB_FLAGS_GET_INTERP(seq2->flags);
+  TInstant *inst1, *inst2;
+
+  /* If the two sequences intersect at an instant */
+  if (inter.lower == inter.upper)
+  {
+    inst1 = tsequence_at_timestamp(seq1, inter.lower);
+    inst2 = tsequence_at_timestamp(seq2, inter.lower);
+    *sync1 = tinstant_to_tsequence(inst1, interp1);
+    *sync2 = tinstant_to_tsequence(inst2, interp2);
+    pfree(inst1); pfree(inst2);
+    return true;
+  }
+
+  /*
+   * General case
+   * seq1 =  ... *     *   *   *      *>
+   * seq2 =       <*            *     * ...
+   * sync1 =      <X C * C * C X C X C *>
+   * sync2 =      <* C X C X C * C * C X>
+   * where X are values added for synchronization and C are values added
+   * for the crossings
+   */
+  inst1 = (TInstant *) tsequence_inst_n(seq1, 0);
+  inst2 = (TInstant *) tsequence_inst_n(seq2, 0);
+  int i = 0, j = 0, k = 0, l = 0;
+  if (inst1->t < (TimestampTz) inter.lower)
+  {
+    i = tcontseq_find_timestamp(seq1, inter.lower) + 1;
+    inst1 = (TInstant *) tsequence_inst_n(seq1, i);
+  }
+  else if (inst2->t < (TimestampTz) inter.lower)
+  {
+    j = tcontseq_find_timestamp(seq2, inter.lower) + 1;
+    inst2 = (TInstant *) tsequence_inst_n(seq2, j);
+  }
+  int count = (seq1->count - i + seq2->count - j) * 2;
+  TInstant **instants1 = palloc(sizeof(TInstant *) * count);
+  TInstant **instants2 = palloc(sizeof(TInstant *) * count);
+  TInstant **tofree = palloc(sizeof(TInstant *) * count * 2);
+  meosType basetype1 = temptype_basetype(seq1->temptype);
+  meosType basetype2 = temptype_basetype(seq2->temptype);
+  while (i < seq1->count && j < seq2->count &&
+    (inst1->t <= (TimestampTz) inter.upper ||
+     inst2->t <= (TimestampTz) inter.upper))
+  {
+    int cmp = timestamptz_cmp_internal(inst1->t, inst2->t);
+    if (cmp == 0)
+    {
+      i++; j++;
+    }
+    else if (cmp < 0)
+    {
+      i++;
+      inst2 = tsequence_at_timestamp(seq2, inst1->t);
+      tofree[l++] = inst2;
+    }
+    else
+    {
+      j++;
+      inst1 = tsequence_at_timestamp(seq1, inst2->t);
+      tofree[l++] = inst1;
+    }
+    /* If not the first instant add potential crossing before adding
+       the new instants */
+    if (crossings && (interp1 == LINEAR || interp2 == LINEAR) && k > 0)
+    {
+      TimestampTz crosstime;
+      Datum inter1, inter2;
+      if (tsegment_intersection(instants1[k - 1], inst1, (interp1 == LINEAR),
+        instants2[k - 1], inst2, (interp2 == LINEAR), &inter1, &inter2, &crosstime))
+      {
+        instants1[k] = tofree[l++] = tinstant_make(inter1, seq1->temptype,
+          crosstime);
+        instants2[k++] = tofree[l++] = tinstant_make(inter2, seq2->temptype,
+          crosstime);
+      }
+    }
+    instants1[k] = inst1; instants2[k++] = inst2;
+    if (i == seq1->count || j == seq2->count)
+      break;
+    inst1 = (TInstant *) tsequence_inst_n(seq1, i);
+    inst2 = (TInstant *) tsequence_inst_n(seq2, j);
+  }
+  /* We are sure that k != 0 due to the period intersection test above */
+  /* The last two values of sequences with step interpolation and
+     exclusive upper bound must be equal */
+  if (! inter.upper_inc && k > 1 && (interp1 != LINEAR) &&
+      datum_ne(tinstant_value(instants1[k - 2]),
+        tinstant_value(instants1[k - 1]), basetype1))
+  {
+    instants1[k - 1] = tinstant_make(tinstant_value(instants1[k - 2]),
+      instants1[k - 1]->temptype, instants1[k - 1]->t);
+    tofree[l++] = instants1[k - 1];
+  }
+  if (! inter.upper_inc && k > 1 && (interp2 != LINEAR) &&
+      datum_ne(tinstant_value(instants2[k - 2]),
+        tinstant_value(instants2[k - 1]), basetype2))
+  {
+    instants2[k - 1] = tinstant_make(tinstant_value(instants2[k - 2]),
+      instants2[k - 1]->temptype, instants2[k - 1]->t);
+    tofree[l++] = instants2[k - 1];
+  }
+  *sync1 = tsequence_make((const TInstant **) instants1, k, inter.lower_inc,
+    inter.upper_inc, interp1, NORMALIZE_NO);
+  *sync2 = tsequence_make((const TInstant **) instants2, k, inter.lower_inc,
+    inter.upper_inc, interp2, NORMALIZE_NO);
+
+  pfree_array((void **) tofree, l);
+  pfree(instants1); pfree(instants2);
+
+  return true;
+}
+
+/*****************************************************************************
+ * Intersection functions
+ *****************************************************************************/
+
+/**
+ * Temporally intersect two temporal discrete sequences
+ *
+ * @param[in] seq1,seq2 Input values
+ * @param[out] inter1, inter2 Output values
+ * @result Return false if the input values do not overlap on time
+ */
+bool
+intersection_tdiscseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
+  TSequence **inter1, TSequence **inter2)
+{
+  /* Bounding period test */
+  if (!overlaps_span_span(&seq1->period, &seq2->period))
+    return false;
+
+  int count = Min(seq1->count, seq2->count);
+  const TInstant **instants1 = palloc(sizeof(TInstant *) * count);
+  const TInstant **instants2 = palloc(sizeof(TInstant *) * count);
+  int i = 0, j = 0, k = 0;
+  const TInstant *inst1 = tsequence_inst_n(seq1, i);
+  const TInstant *inst2 = tsequence_inst_n(seq2, j);
+  while (i < seq1->count && j < seq2->count)
+  {
+    int cmp = timestamptz_cmp_internal(inst1->t, inst2->t);
+    if (cmp == 0)
+    {
+      instants1[k] = inst1;
+      instants2[k++] = inst2;
+      inst1 = tsequence_inst_n(seq1, ++i);
+      inst2 = tsequence_inst_n(seq2, ++j);
+    }
+    else if (cmp < 0)
+      inst1 = tsequence_inst_n(seq1, ++i);
+    else
+      inst2 = tsequence_inst_n(seq2, ++j);
+  }
+  if (k != 0)
+  {
+    *inter1 = tsequence_make(instants1, k, true, true, DISCRETE, NORMALIZE_NO);
+    *inter2 = tsequence_make(instants2, k, true, true, DISCRETE, NORMALIZE_NO);
+  }
+
+  pfree(instants1); pfree(instants2);
+  return k != 0;
+}
+
+/**
+ * Temporally intersect two temporal sequences
+ *
+ * @param[in] seq1,seq2 Input values
+ * @param[out] inter1, inter2 Output values
+ * @result Return false if the input values do not overlap on time.
+ */
+bool
+intersection_tcontseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
+  TSequence **inter1, TSequence **inter2)
+{
+  /* Test whether the bounding period of the two temporal values overlap */
+  if (! overlaps_span_span(&seq1->period, &seq2->period))
+    return false;
+
+  TInstant **instants1 = palloc(sizeof(TInstant *) * seq2->count);
+  const TInstant **instants2 = palloc(sizeof(TInstant *) * seq2->count);
+  int k = 0;
+  for (int i = 0; i < seq2->count; i++)
+  {
+    const TInstant *inst = tsequence_inst_n(seq2, i);
+    if (contains_period_timestamp(&seq1->period, inst->t))
+    {
+      instants1[k] = tsequence_at_timestamp(seq1, inst->t);
+      instants2[k++] = inst;
+    }
+    if ((TimestampTz) seq1->period.upper < inst->t)
+      break;
+  }
+  if (k == 0)
+  {
+    pfree(instants1); pfree(instants2);
+    return false;
+  }
+
+  *inter1 = tsequence_make_free(instants1, k, true, true, DISCRETE, MERGE_NO);
+  *inter2 = tsequence_make(instants2, k, true, true, DISCRETE, MERGE_NO);
+  pfree(instants2);
+  return true;
+}
+
+/**
+ * Temporally intersect two temporal values
+ *
+ * @param[in] seq1,seq2 Temporal values
+ * @param[out] inter1,inter2 Output values
+ * @result Return false if the input values do not overlap on time.
+ */
+bool
+intersection_tdiscseq_tcontseq(const TSequence *seq1, const TSequence *seq2,
+  TSequence **inter1, TSequence **inter2)
+{
+  return intersection_tcontseq_tdiscseq(seq2, seq1, inter2, inter1);
+}
+
+/*****************************************************************************/
+
+/**
+ * Compute the intersection, if any, of a segment of a temporal sequence and
+ * a value. The functions only return true when there is an intersection at
+ * the middle of the segment, i.e., they return false if they intersect at a
+ * bound. When they return true, they also return in the output parameter
+ * the intersection timestampt t. The value taken by the segment and the
+ * target value are equal up to the floating point precision.
+ * There is no need to add functions for DoubleN, which are used for computing
+ * avg and centroid aggregates, since these computations are based on sum and
+ * thus they do not need to add intermediate points.
+ */
+
+/**
+ * Return true if the segment of a temporal number intersects
+ * the base value at a timestamp
+ *
+ * @param[in] inst1,inst2 Temporal instants defining the segment
+ * @param[in] value Base value
+ * @param[in] basetype Base type
+ * @param[out] t Timestamp
+ */
+static bool
+tfloatsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
+  Datum value, meosType basetype, TimestampTz *t)
+{
+  assert(inst1->temptype == T_TFLOAT);
+  double dvalue1 = DatumGetFloat8(tinstant_value(inst1));
+  double dvalue2 = DatumGetFloat8(tinstant_value(inst2));
+  double dvalue = datum_double(value, basetype);
+  double min = Min(dvalue1, dvalue2);
+  double max = Max(dvalue1, dvalue2);
+  /* if value is to the left or to the right of the span */
+  if (dvalue < min || dvalue > max)
+    return false;
+
+  double span = (max - min);
+  double partial = (dvalue - min);
+  double fraction = dvalue1 < dvalue2 ? partial / span : 1 - partial / span;
+  if (fraction < -1 * MOBDB_EPSILON || 1.0 + MOBDB_EPSILON < fraction)
+    return false;
+
+  if (t != NULL)
+  {
+    double duration = (inst2->t - inst1->t);
+    /* Note that due to roundoff errors it may be the case that the
+     * resulting timestamp t may be equal to inst1->t or to inst2->t */
+    *t = inst1->t + (TimestampTz) (duration * fraction);
+  }
+  return true;
+}
+
+/**
+ * Return true if the segment of a temporal sequence intersects
+ * the base value at the timestamp
+ *
+ * @param[in] inst1,inst2 Temporal instants defining the segment
+ * @param[in] value Base value
+ * @param[in] basetype Base type
+ * @param[out] inter Base value taken by the segment at the timestamp.
+ * This value is equal to the input base value up to the floating
+ * point precision.
+ * @param[out] t Timestamp
+ */
+bool
+tlinearsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
+  Datum value, meosType basetype, Datum *inter, TimestampTz *t)
+{
+  Datum value1 = tinstant_value(inst1);
+  Datum value2 = tinstant_value(inst2);
+  if (datum_eq2(value, value1, basetype, temptype_basetype(inst1->temptype)) ||
+      datum_eq2(value, value2, basetype, temptype_basetype(inst2->temptype)))
+    return false;
+
+  ensure_temptype_continuous(inst1->temptype);
+  bool result = false; /* make compiler quiet */
+  if (inst1->temptype == T_TFLOAT)
+    result = tfloatsegm_intersection_value(inst1, inst2, value, basetype, t);
+  else if (tgeo_type(inst1->temptype))
+    result = tpointsegm_intersection_value(inst1, inst2, value, t);
+#if NPOINT
+  else if (inst1->temptype == T_TNPOINT)
+    result = tnpointsegm_intersection_value(inst1, inst2, value, t);
+#endif
+  else
+    elog(ERROR, "unknown intersection function for continuous temporal type: %d",
+      inst1->temptype);
+
+  if (result && inter != NULL)
+    /* We are sure it is linear interpolation */
+    *inter = tsegment_value_at_timestamp(inst1, inst2, true, *t);
+  return result;
+}
+
+/*****************************************************************************/
+
+/**
+ * Compute the intersection, if any, of two segments of temporal sequences.
+ * These functions suppose that the instants are synchronized, i.e.,
+ * `start1->t = start2->t` and `end1->t = end2->t`.
+ * The functions return true if there is an intersection at the middle of
+ * the segments, i.e., they return false if they intersect at a bound. If
+ * they return true, they also return in the output parameter t the
+ * intersection timestamp. The two values taken by the segments at the
+ * intersection timestamp t are equal up to the floating point precision.
+ * For the temporal point case we cannot use the PostGIS functions
+ * `lw_dist2d_seg_seg` and `lw_dist3d_seg_seg` since they do not take time
+ * into consideration and would return, e.g., that the two segments
+ * `[Point(1 1)@t1, Point(3 3)@t2]` and `[Point(3 3)@t1, Point(1 1)@t2]`
+ * intersect at `Point(1 1)`, instead of `Point(2 2)`.
+ * These functions are used to add intermediate points when lifting
+ * operators, in particular for temporal comparisons such as
+ * `tfloat <comp> tfloat` where `<comp>` is `<`, `<=`, ... since the
+ * comparison changes its value before/at/after the intersection point.
+ */
+
+/**
+ * Return true if two segments of two temporal numbers intersect at a timestamp
+ *
+ * @param[in] start1,end1 Temporal instants defining the first segment
+ * @param[in] start2,end2 Temporal instants defining the second segment
+ * @param[out] t Timestamp
+ * @pre The instants are synchronized, i.e., start1->t = start2->t and
+ * end1->t = end2->t
+ */
+static bool
+tnumbersegm_intersection(const TInstant *start1, const TInstant *end1,
+  const TInstant *start2, const TInstant *end2, TimestampTz *t)
+{
+  double x1 = tnumberinst_double(start1);
+  double x2 = tnumberinst_double(end1);
+  double x3 = tnumberinst_double(start2);
+  double x4 = tnumberinst_double(end2);
+  /* Compute the instant t at which the linear functions of the two segments
+     are equal: at + b = ct + d that is t = (d - b) / (a - c).
+     To reduce problems related to floating point precision, t1 and t2
+     are shifted, respectively, to 0 and 1 before the computation */
+  long double denum = x2 - x1 - x4 + x3;
+  if (denum == 0)
+    /* Parallel segments */
+    return false;
+
+  long double fraction = ((long double) (x3 - x1)) / denum;
+  if (fraction < -1 * MOBDB_EPSILON || 1.0 + MOBDB_EPSILON < fraction )
+    /* Intersection occurs out of the period */
+    return false;
+
+  double duration = (end1->t - start1->t);
+  *t = start1->t + (TimestampTz) (duration * fraction);
+  /* Note that due to roundoff errors it may be the case that the
+   * resulting timestamp t may be equal to inst1->t or to inst2->t */
+  if (*t <= start1->t || *t >= end1->t)
+    return false;
+  return true;
+}
+
+/**
+ * Return true if  two segments of a temporal sequence intersect at a
+ * timestamp
+ *
+ * @param[in] start1,end1 Temporal instants defining the first segment
+ * @param[in] linear1 True if the first segment has linear interpolation
+ * @param[in] start2,end2 Temporal instants defining the second segment
+ * @param[in] linear2 True if the second segment has linear interpolation
+ * @param[out] inter1, inter2 Base values taken by the two segments
+ * at the timestamp
+ * @param[out] t Timestamp
+ * @pre The instants are synchronized, i.e., start1->t = start2->t and
+ * end1->t = end2->t
+ */
+bool
+tsegment_intersection(const TInstant *start1, const TInstant *end1,
+  bool linear1, const TInstant *start2, const TInstant *end2, bool linear2,
+  Datum *inter1, Datum *inter2, TimestampTz *t)
+{
+  bool result = false; /* Make compiler quiet */
+  Datum value;
+  meosType basetype1 = temptype_basetype(start1->temptype);
+  meosType basetype2 = temptype_basetype(start2->temptype);
+  if (! linear1)
+  {
+    value = tinstant_value(start1);
+    if (inter1 != NULL)
+      *inter1 = value;
+    result = tlinearsegm_intersection_value(start2, end2, value, basetype1,
+      inter2, t);
+  }
+  else if (! linear2)
+  {
+    value = tinstant_value(start2);
+    if (inter2 != NULL)
+      *inter2 = value;
+    result = tlinearsegm_intersection_value(start1, end1, value, basetype2,
+      inter1, t);
+  }
+  else
+  {
+    /* Both segments have linear interpolation */
+    ensure_temporal_type(start1->temptype);
+    if (tnumber_type(start1->temptype))
+      result = tnumbersegm_intersection(start1, end1, start2, end2, t);
+    else if (start1->temptype == T_TGEOMPOINT)
+      result = tgeompointsegm_intersection(start1, end1, start2, end2, t);
+    else if (start1->temptype == T_TGEOGPOINT)
+      result = tgeogpointsegm_intersection(start1, end1, start2, end2, t);
+    /* We are sure it is linear interpolation */
+    if (result && inter1 != NULL)
+      *inter1 = tsegment_value_at_timestamp(start1, end1, true, *t);
+    if (result && inter2 != NULL)
+      *inter2 = tsegment_value_at_timestamp(start2, end2, true, *t);
+  }
+  return result;
+}
+
+/**
+ * Temporally intersect two temporal sequences
+ *
+ * @param[in] seq,inst Input values
+ * @param[out] inter1, inter2 Output values
+ * @result Return false if the input values do not overlap on time.
+ */
+bool
+intersection_tsequence_tinstant(const TSequence *seq, const TInstant *inst,
+  TInstant **inter1, TInstant **inter2)
+{
+  TInstant *inst1 = tsequence_at_timestamp(seq, inst->t);
+  if (inst1 == NULL)
+    return false;
+
+  *inter1 = inst1;
+  *inter2 = tinstant_copy(inst);
+  return true;
+}
+
+/**
+ * Temporally intersect two temporal values
+ *
+ * @param[in] inst,seq Temporal values
+ * @param[out] inter1, inter2 Output values
+ * @result Return false if the input values do not overlap on time.
+ */
+bool
+intersection_tinstant_tsequence(const TInstant *inst, const TSequence *seq,
+  TInstant **inter1, TInstant **inter2)
+{
+  return intersection_tsequence_tinstant(seq, inst, inter2, inter1);
 }
 
 /*****************************************************************************
@@ -4834,7 +4838,7 @@ tcontseq_at_timestampset(const TSequence *seq, const TimestampSet *ts)
 
   /* General case */
   TimestampTz t = Max(DatumGetTimestampTz(seq->period.lower),
-    DatumGetTimestampTz(ts->elems[0]));
+    DatumGetTimestampTz(set_val_n(ts, 0)));
   int loc;
   set_find_value(ts, TimestampTzGetDatum(t), &loc);
   TInstant **instants = palloc(sizeof(TInstant *) * (ts->count - loc));

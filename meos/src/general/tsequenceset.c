@@ -55,49 +55,6 @@
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_temporal_accessor
- * @brief Set the second argument to the bounding box of a temporal sequence set
- * @sqlfunc period(), tbox(), stbox()
- * @sqlop @p ::
- */
-void
-tsequenceset_set_bbox(const TSequenceSet *ss, void *box)
-{
-  memset(box, 0, ss->bboxsize);
-  memcpy(box, TSEQUENCESET_BBOX_PTR(ss), ss->bboxsize);
-  return;
-}
-
-/**
- * Return a pointer to the offsets array of a temporal sequence set
- */
-static size_t *
-tsequenceset_offsets_ptr(const TSequenceSet *ss)
-{
-  return (size_t *)(((char *)ss) + double_pad(sizeof(TSequenceSet)) +
-    /* The period component of the bbox is already declared in the struct */
-    double_pad(ss->bboxsize - sizeof(Period)));
-}
-
-/**
- * @ingroup libmeos_internal_temporal_accessor
- * @brief Return the n-th sequence of a temporal sequence set.
- * @pre The argument @p index is less than the number of sequences in the
- * sequence set
- */
-const TSequence *
-tsequenceset_seq_n(const TSequenceSet *ss, int index)
-{
-  return (TSequence *)(
-    /* start of data */
-    ((char *)ss) + double_pad(sizeof(TSequenceSet)) +
-      /* The period component of the bbox is already declared in the struct */
-      (ss->bboxsize - sizeof(Period)) + ss->count * sizeof(size_t) +
-      /* offset */
-      (tsequenceset_offsets_ptr(ss))[index]);
-}
-
-/**
  * Return the location of a timestamp in a temporal sequence set using
  * binary search
  *
@@ -167,6 +124,49 @@ tsequenceset_make_valid(const TSequence **sequences, int count)
       elog(ERROR, "Input sequences must have the same interpolation");
   }
   return;
+}
+
+/**
+ * @ingroup libmeos_internal_temporal_accessor
+ * @brief Set the second argument to the bounding box of a temporal sequence set
+ * @sqlfunc period(), tbox(), stbox()
+ * @sqlop @p ::
+ */
+void
+tsequenceset_set_bbox(const TSequenceSet *ss, void *box)
+{
+  memset(box, 0, ss->bboxsize);
+  memcpy(box, TSEQUENCESET_BBOX_PTR(ss), ss->bboxsize);
+  return;
+}
+
+/**
+ * Return a pointer to the offsets array of a temporal sequence set
+ */
+static size_t *
+tsequenceset_offsets_ptr(const TSequenceSet *ss)
+{
+  return (size_t *)(((char *)ss) + double_pad(sizeof(TSequenceSet)) +
+    /* The period component of the bbox is already declared in the struct */
+    double_pad(ss->bboxsize - sizeof(Period)));
+}
+
+/**
+ * @ingroup libmeos_internal_temporal_accessor
+ * @brief Return the n-th sequence of a temporal sequence set.
+ * @pre The argument @p index is less than the number of sequences in the
+ * sequence set
+ */
+const TSequence *
+tsequenceset_seq_n(const TSequenceSet *ss, int index)
+{
+  return (TSequence *)(
+    /* start of data */
+    ((char *)ss) + double_pad(sizeof(TSequenceSet)) +
+      /* The period component of the bbox is already declared in the struct */
+      (ss->bboxsize - sizeof(Period)) + ss->count * sizeof(size_t) +
+      /* offset */
+      (tsequenceset_offsets_ptr(ss))[index]);
 }
 
 /**

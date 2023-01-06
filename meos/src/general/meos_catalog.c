@@ -79,6 +79,8 @@ settype_cache_struct _settype_cache[] =
   {T_FLOATSET,      T_FLOAT8},
   {T_TIMESTAMPSET,  T_TIMESTAMPTZ},
   {T_TEXTSET,       T_TEXT},
+  {T_GEOMSET,       T_GEOMETRY},
+  {T_GEOGSET,       T_GEOGRAPHY},
 };
 
 /**
@@ -95,7 +97,7 @@ spantype_cache_struct _spantype_cache[] =
 };
 
 /**
- * Global array that keeps type information for the span types defined
+ * Global array that keeps type information for the span set types defined
  * in MobilityDB.
  */
 spansettype_cache_struct _spansettype_cache[] =
@@ -261,7 +263,8 @@ bool
 set_basetype(meosType basetype)
 {
   if (basetype == T_TIMESTAMPTZ || basetype == T_INT4 || basetype == T_INT8 ||
-      basetype == T_FLOAT8 || basetype == T_TEXT)
+      basetype == T_FLOAT8 || basetype == T_TEXT || basetype == T_GEOMETRY ||
+      basetype == T_GEOGRAPHY || basetype == T_NPOINT)
     return true;
   return false;
 }
@@ -284,7 +287,8 @@ bool
 set_type(meosType settype)
 {
   if (settype == T_TIMESTAMPSET || settype == T_INTSET ||
-      settype == T_BIGINTSET || settype == T_FLOATSET || settype == T_TEXTSET)
+      settype == T_BIGINTSET || settype == T_FLOATSET || settype == T_TEXTSET ||
+      settype == T_GEOMSET || settype == T_GEOGSET || settype == T_NPOINT)
     return true;
   return false;
 }
@@ -300,6 +304,17 @@ ensure_set_type(meosType settype)
   return;
 }
 
+/**
+ * Return true if the type is a set type
+ */
+bool
+alphanumset_type(meosType settype)
+{
+  if (settype == T_TIMESTAMPSET || settype == T_INTSET ||
+      settype == T_BIGINTSET || settype == T_FLOATSET || settype == T_TEXTSET)
+    return true;
+  return false;
+}
 
 /**
  * Return true if the type is a set type
@@ -347,6 +362,17 @@ ensure_numset_basetype(meosType basetype)
   return;
 }
 #endif /* not used */
+
+/**
+ * Return true if the type is a geo set type
+ */
+bool
+geoset_type(meosType settype)
+{
+  if (settype == T_GEOMSET || settype == T_GEOGSET || settype == T_NPOINTSET)
+    return true;
+  return false;
+}
 
 /*****************************************************************************/
 

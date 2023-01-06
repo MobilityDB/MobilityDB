@@ -499,6 +499,26 @@ geo_to_stbox(const GSERIALIZED *gs)
 #endif /* MEOS */
 
 /**
+ * Set the spatiotemporal box from an array of geometries/geographies
+ *
+ * @param[in] values Values
+ * @param[in] count Number of elements in the array
+ * @param[out] box Spatiotemporal box
+ */
+void
+geoarr_set_stbox(const Datum *values, int count, STBox *box)
+{
+  geo_set_stbox(DatumGetGserializedP(values[0]), box);
+  for (int i = 1; i < count; i++)
+  {
+    STBox box1;
+    geo_set_stbox(DatumGetGserializedP(values[i]), &box1);
+    stbox_expand(&box1, box);
+  }
+  return;
+}
+
+/**
  * @ingroup libmeos_internal_box_cast
  * @brief Set a spatiotemporal box from a timestamp.
  */

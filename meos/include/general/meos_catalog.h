@@ -84,12 +84,15 @@ typedef enum
   T_TSTZMULTIRANGE = 34,  /**< PostgreSQL timestamp with time zone multirange type */
   T_TTEXT          = 35,  /**< temporal text type */
   T_GEOMETRY       = 36,  /**< geometry type */
-  T_GEOGRAPHY      = 37,  /**< geography type */
-  T_TGEOMPOINT     = 38,  /**< temporal geometry point type */
-  T_TGEOGPOINT     = 39,  /**< temporal geography point type */
-  T_NPOINT         = 40,  /**< network point type */
-  T_NSEGMENT       = 41,  /**< network segment type */
-  T_TNPOINT        = 42,  /**< temporal network point type */
+  T_GEOMSET        = 37,  /**< geometry set type */
+  T_GEOGRAPHY      = 38,  /**< geography type */
+  T_GEOGSET        = 39,  /**< geography set type */
+  T_TGEOMPOINT     = 40,  /**< temporal geometry point type */
+  T_TGEOGPOINT     = 41,  /**< temporal geography point type */
+  T_NPOINT         = 42,  /**< network point type */
+  T_NPOINTSET      = 43,  /**< network point set type */
+  T_NSEGMENT       = 44,  /**< network segment type */
+  T_TNPOINT        = 45,  /**< temporal network point type */
 } meosType;
 
 /**
@@ -149,8 +152,10 @@ extern void ensure_set_basetype(meosType basetype);
 
 extern bool set_type(meosType settype);
 extern void ensure_set_type(meosType settype);
+extern bool alphanumset_type(meosType settype);
 extern bool numset_type(meosType settype);
 extern void ensure_numset_type(meosType settype);
+extern bool geoset_type(meosType settype);
 
 extern bool span_type(meosType spantype);
 extern void ensure_span_type(meosType spantype);

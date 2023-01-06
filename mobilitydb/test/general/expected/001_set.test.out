@@ -15,7 +15,7 @@ SELECT timestampset(ARRAY [timestamptz '2000-01-01', '2000-01-02', '2000-01-03']
 
 /* Errors */
 SELECT timestampset(ARRAY [timestamptz '2000-01-01', '2000-01-01', '2000-01-03']);
-ERROR:  The values of an ordered set must be increasing: 2000-01-01 00:00:00+00 2000-01-01 00:00:00+00
+ERROR:  The values of a set must be increasing: 2000-01-01 00:00:00+00 2000-01-01 00:00:00+00
 SELECT timestampset('{}'::timestamptz[]);
 ERROR:  The input array cannot be empty
 SELECT timestampset(timestamptz '2000-01-01');

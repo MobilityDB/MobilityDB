@@ -340,16 +340,29 @@ Datum
 elem_parse(const char **str, meosType basetype)
 {
   p_whitespace(str);
-  int delim = 0;
-  while ((*str)[delim] != ',' && (*str)[delim] != ']' &&
-    (*str)[delim] != '}' && (*str)[delim] != ')' &&  (*str)[delim] != '\0')
-    delim++;
+  int delim = 0, dquote = 0;
+  /* ttext and geometry/geography values must be enclosed between double quotes */
+  if (**str == '"')
+  {
+    /* Consume the double quote */
+    *str += 1;
+    while ( ( (*str)[delim] != '"' || (*str)[delim - 1] == '\\' )  &&
+      (*str)[delim] != '\0' )
+      delim++;
+    dquote = 1;
+  }
+  else
+  {
+    while ((*str)[delim] != ',' && (*str)[delim] != ']' &&
+      (*str)[delim] != '}' && (*str)[delim] != ')' && (*str)[delim] != '\0')
+      delim++;
+  }
   char *str1 = palloc(sizeof(char) * (delim + 1));
   strncpy(str1, *str, delim);
   str1[delim] = '\0';
   Datum result = basetype_in(str1, basetype, false);
   pfree(str1);
-  *str += delim;
+  *str += delim + dquote;
   return result;
 }
 
@@ -357,13 +370,13 @@ elem_parse(const char **str, meosType basetype)
  * @brief Parse a timestamp set value from the buffer.
  */
 Set *
-set_parse(const char **str, meosType ostype)
+set_parse(const char **str, meosType settype)
 {
   if (!p_obrace(str))
     elog(ERROR, "Could not parse the set");
 
   /* First parsing */
-  meosType basetype = settype_basetype(ostype);
+  meosType basetype = settype_basetype(settype);
   const char *bak = *str;
   elem_parse(str, basetype);
   int count = 1;
@@ -387,6 +400,26 @@ set_parse(const char **str, meosType ostype)
 }
 
 /**
+ * Parse a element value from the buffer.
+ */
+Datum
+bound_parse(const char **str, meosType basetype)
+{
+  p_whitespace(str);
+  int delim = 0;
+  while ((*str)[delim] != ',' && (*str)[delim] != ']' &&
+    (*str)[delim] != '}' && (*str)[delim] != ')' &&  (*str)[delim] != '\0')
+    delim++;
+  char *str1 = palloc(sizeof(char) * (delim + 1));
+  strncpy(str1, *str, delim);
+  str1[delim] = '\0';
+  Datum result = basetype_in(str1, basetype, false);
+  pfree(str1);
+  *str += delim;
+  return result;
+}
+
+/**
  * @brief Parse a span value from the buffer.
  */
 Span *
@@ -402,9 +435,9 @@ span_parse(const char **str, meosType spantype, bool end, bool make)
 
   meosType basetype = spantype_basetype(spantype);
   /* The next two instructions will throw an exception if they fail */
-  Datum lower = elem_parse(str, basetype);
+  Datum lower = bound_parse(str, basetype);
   p_comma(str);
-  Datum upper = elem_parse(str, basetype);
+  Datum upper = bound_parse(str, basetype);
 
   if (p_cbracket(str))
     upper_inc = true;

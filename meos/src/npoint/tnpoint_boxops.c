@@ -74,6 +74,25 @@ npoint_set_stbox(const Npoint *np, STBox *box)
 }
 
 /**
+ * Set the spatiotemporal box from an array of network point values
+ *
+ * @param[in] values Temporal network point values
+ * @param[in] count Number of elements in the array
+ * @param[out] box Spatiotemporal box
+ */
+void
+npointarr_set_stbox(const Datum *values, int count, STBox *box)
+{
+  npoint_set_stbox(DatumGetNpointP(values[0]), box);
+  for (int i = 1; i < count; i++)
+  {
+    STBox box1;
+    npoint_set_stbox(DatumGetNpointP(values[i]), &box1);
+    stbox_expand(&box1, box);
+  }
+  return;
+}
+/**
  * Set the spatiotemporal box from the network point value
  *
  * @param[in] inst Temporal network point

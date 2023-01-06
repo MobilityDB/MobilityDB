@@ -41,6 +41,8 @@ CREATE TYPE bigintset;
 CREATE TYPE floatset;
 CREATE TYPE textset;
 CREATE TYPE timestampset;
+CREATE TYPE geomset;
+CREATE TYPE geogset;
 
 CREATE FUNCTION intset_in(cstring)
   RETURNS intset
@@ -127,6 +129,40 @@ CREATE FUNCTION timestampset_send(timestampset)
   AS 'MODULE_PATHNAME', 'Set_send'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION geomset_in(cstring)
+  RETURNS geomset
+  AS 'MODULE_PATHNAME', 'Set_in'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geomset_out(geomset)
+  RETURNS cstring
+  AS 'MODULE_PATHNAME', 'Set_out'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geomset_recv(internal)
+  RETURNS geomset
+  AS 'MODULE_PATHNAME', 'Set_recv'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geomset_send(geomset)
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Set_send'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION geogset_in(cstring)
+  RETURNS geogset
+  AS 'MODULE_PATHNAME', 'Set_in'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geogset_out(geogset)
+  RETURNS cstring
+  AS 'MODULE_PATHNAME', 'Set_out'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geogset_recv(internal)
+  RETURNS geogset
+  AS 'MODULE_PATHNAME', 'Set_recv'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geogset_send(geogset)
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Set_send'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION intset_analyze(internal)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Intset_analyze'
@@ -147,6 +183,10 @@ CREATE FUNCTION timestampset_analyze(internal)
   -- RETURNS boolean
   -- AS 'MODULE_PATHNAME', 'Textset_analyze'
   -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- CREATE FUNCTION geoset_analyze(internal)
+  -- RETURNS boolean
+  -- AS 'MODULE_PATHNAME', 'Geoset_analyze'
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE TYPE intset (
   internallength = variable,
@@ -155,7 +195,6 @@ CREATE TYPE intset (
   receive = intset_recv,
   send = intset_send,
   alignment = double,
--- The following line makes NULL if size < 128
   storage = extended,
   analyze = intset_analyze
 );
@@ -167,7 +206,6 @@ CREATE TYPE bigintset (
   receive = bigintset_recv,
   send = bigintset_send,
   alignment = double,
--- The following line makes NULL if size < 128
   storage = extended,
   analyze = bigintset_analyze
 );
@@ -179,7 +217,6 @@ CREATE TYPE floatset (
   receive = floatset_recv,
   send = floatset_send,
   alignment = double,
--- The following line makes NULL if size < 128
   storage = extended,
   analyze = floatset_analyze
 );
@@ -191,7 +228,6 @@ CREATE TYPE textset (
   receive = textset_recv,
   send = textset_send,
   alignment = double,
--- The following line makes NULL if size < 128
   storage = extended
   -- , analyze = textset_analyze
 );
@@ -203,9 +239,30 @@ CREATE TYPE timestampset (
   receive = timestampset_recv,
   send = timestampset_send,
   alignment = double,
--- The following line makes NULL if size < 128
   storage = extended,
   analyze = timestampset_analyze
+);
+
+CREATE TYPE geomset (
+  internallength = variable,
+  input = geomset_in,
+  output = geomset_out,
+  receive = geomset_recv,
+  send = geomset_send,
+  alignment = double,
+  storage = extended
+  -- , analyze = geoset_analyze
+);
+
+CREATE TYPE geogset (
+  internallength = variable,
+  input = geogset_in,
+  output = geogset_out,
+  receive = geogset_recv,
+  send = geogset_send,
+  alignment = double,
+  storage = extended
+  -- , analyze = geoset_analyze
 );
 
 -- Input/output in WKB and HexWKB format
@@ -255,6 +312,24 @@ CREATE FUNCTION timestampsetFromHexWKB(text)
   AS 'MODULE_PATHNAME', 'Set_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION geomsetFromBinary(bytea)
+  RETURNS geomset
+  AS 'MODULE_PATHNAME', 'Set_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geomsetFromHexWKB(text)
+  RETURNS geomset
+  AS 'MODULE_PATHNAME', 'Set_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION geogsetFromBinary(bytea)
+  RETURNS geogset
+  AS 'MODULE_PATHNAME', 'Set_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geogsetFromHexWKB(text)
+  RETURNS geogset
+  AS 'MODULE_PATHNAME', 'Set_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION asBinary(intset, endianenconding text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Set_as_wkb'
@@ -272,6 +347,14 @@ CREATE FUNCTION asBinary(textset, endianenconding text DEFAULT '')
   AS 'MODULE_PATHNAME', 'Set_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asBinary(timestampset, endianenconding text DEFAULT '')
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Set_as_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asBinary(geomset, endianenconding text DEFAULT '')
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Set_as_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asBinary(geogset, endianenconding text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Set_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -293,6 +376,14 @@ CREATE FUNCTION asHexWKB(textset, endianenconding text DEFAULT '')
   AS 'MODULE_PATHNAME', 'Set_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asHexWKB(timestampset, endianenconding text DEFAULT '')
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Set_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asHexWKB(geomset, endianenconding text DEFAULT '')
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Set_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asHexWKB(geogset, endianenconding text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Set_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -321,6 +412,14 @@ CREATE FUNCTION timestampset(timestamptz[])
   RETURNS timestampset
   AS 'MODULE_PATHNAME', 'Set_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geomset(geometry[])
+  RETURNS geomset
+  AS 'MODULE_PATHNAME', 'Set_constructor'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geogset(geography[])
+  RETURNS geogset
+  AS 'MODULE_PATHNAME', 'Set_constructor'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
  * Casting
@@ -346,12 +445,22 @@ CREATE FUNCTION textset(text)
   RETURNS textset
   AS 'MODULE_PATHNAME', 'Value_to_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geomset(geometry)
+  RETURNS geomset
+  AS 'MODULE_PATHNAME', 'Value_to_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geogset(geography)
+  RETURNS geogset
+  AS 'MODULE_PATHNAME', 'Value_to_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (int AS intset) WITH FUNCTION intset(int);
 CREATE CAST (bigint AS bigintset) WITH FUNCTION bigintset(bigint);
 CREATE CAST (float AS floatset) WITH FUNCTION floatset(float);
 CREATE CAST (text AS textset) WITH FUNCTION textset(text);
 CREATE CAST (timestamptz AS timestampset) WITH FUNCTION timestampset(timestamptz);
+CREATE CAST (geometry AS geomset) WITH FUNCTION geomset(geometry);
+CREATE CAST (geography AS geogset) WITH FUNCTION geogset(geography);
 
 /*****************************************************************************
  * Transformation functions
@@ -360,6 +469,14 @@ CREATE CAST (timestamptz AS timestampset) WITH FUNCTION timestampset(timestamptz
 CREATE FUNCTION round(floatset, integer DEFAULT 0)
   RETURNS floatset
   AS 'MODULE_PATHNAME', 'Floatset_round'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION round(geomset, integer DEFAULT 0)
+  RETURNS geomset
+  AS 'MODULE_PATHNAME', 'Geoset_round'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION round(geogset, integer DEFAULT 0)
+  RETURNS geogset
+  AS 'MODULE_PATHNAME', 'Geoset_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION shift(intset, int)
@@ -413,6 +530,14 @@ CREATE FUNCTION memorySize(timestampset)
   RETURNS int
   AS 'MODULE_PATHNAME', 'Set_memory_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION memorySize(geomset)
+  RETURNS int
+  AS 'MODULE_PATHNAME', 'Set_memory_size'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION memorySize(geogset)
+  RETURNS int
+  AS 'MODULE_PATHNAME', 'Set_memory_size'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION storageSize(intset)
   RETURNS int
@@ -431,6 +556,14 @@ CREATE FUNCTION storageSize(textset)
   AS 'MODULE_PATHNAME', 'Set_memory_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION storageSize(timestampset)
+  RETURNS int
+  AS 'MODULE_PATHNAME', 'Set_storage_size'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION storageSize(geomset)
+  RETURNS int
+  AS 'MODULE_PATHNAME', 'Set_storage_size'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION storageSize(geogset)
   RETURNS int
   AS 'MODULE_PATHNAME', 'Set_storage_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -455,6 +588,14 @@ CREATE FUNCTION numTimestamps(timestampset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_num_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION numValues(geomset)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Set_num_values'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION numValues(geogset)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Set_num_values'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION startValue(intset)
   RETURNS integer
@@ -474,6 +615,14 @@ CREATE FUNCTION startValue(textset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION startTimestamp(timestampset)
   RETURNS timestamptz
+  AS 'MODULE_PATHNAME', 'Set_start_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION startValue(geomset)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Set_start_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION startValue(geogset)
+  RETURNS geography
   AS 'MODULE_PATHNAME', 'Set_start_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -497,6 +646,14 @@ CREATE FUNCTION endTimestamp(timestampset)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Set_end_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION endValue(geomset)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Set_start_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION endValue(geogset)
+  RETURNS geography
+  AS 'MODULE_PATHNAME', 'Set_start_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION valueN(intset, integer)
   RETURNS integer
@@ -518,6 +675,14 @@ CREATE FUNCTION timestampN(timestampset, integer)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Set_value_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION valueN(geomset, integer)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Set_value_n'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION valueN(geogset, integer)
+  RETURNS geography
+  AS 'MODULE_PATHNAME', 'Set_value_n'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION getValues(intset)
   RETURNS integer[]
@@ -537,6 +702,14 @@ CREATE FUNCTION getValues(textset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestamps(timestampset)
   RETURNS timestamptz[]
+  AS 'MODULE_PATHNAME', 'Set_values'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION getValues(geomset)
+  RETURNS geometry[]
+  AS 'MODULE_PATHNAME', 'Set_values'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION getValues(geogset)
+  RETURNS geography[]
   AS 'MODULE_PATHNAME', 'Set_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -564,6 +737,14 @@ CREATE FUNCTION unnest(textset)
   RETURNS SETOF text
   AS 'MODULE_PATHNAME', 'Set_unnest'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION unnest(geomset)
+  RETURNS SETOF geometry
+  AS 'MODULE_PATHNAME', 'Set_unnest'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION unnest(geogset)
+  RETURNS SETOF geography
+  AS 'MODULE_PATHNAME', 'Set_unnest'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 
@@ -588,6 +769,14 @@ CREATE FUNCTION set_agg_transfn(textset, text)
   RETURNS textset
   AS 'MODULE_PATHNAME', 'Set_agg_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION set_agg_transfn(geomset, geometry)
+  RETURNS geomset
+  AS 'MODULE_PATHNAME', 'Set_agg_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION set_agg_transfn(geogset, geography)
+  RETURNS geogset
+  AS 'MODULE_PATHNAME', 'Set_agg_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION set_agg_combinefn(intset, intset)
   RETURNS intset
@@ -607,6 +796,14 @@ CREATE FUNCTION set_agg_combinefn(timestampset, timestampset)
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION set_agg_combinefn(textset, textset)
   RETURNS textset
+  AS 'MODULE_PATHNAME', 'Set_agg_combinefn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION set_agg_combinefn(geomset, geomset)
+  RETURNS geomset
+  AS 'MODULE_PATHNAME', 'Set_agg_combinefn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION set_agg_combinefn(geogset, geogset)
+  RETURNS geogset
   AS 'MODULE_PATHNAME', 'Set_agg_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
@@ -640,6 +837,18 @@ CREATE AGGREGATE set_agg(text) (
   COMBINEFUNC = set_agg_combinefn,
   PARALLEL = safe
 );
+CREATE AGGREGATE set_agg(geometry) (
+  SFUNC = set_agg_transfn,
+  STYPE = geomset,
+  COMBINEFUNC = set_agg_combinefn,
+  PARALLEL = safe
+);
+CREATE AGGREGATE set_agg(geography) (
+  SFUNC = set_agg_transfn,
+  STYPE = geogset,
+  COMBINEFUNC = set_agg_combinefn,
+  PARALLEL = safe
+);
 
 /*****************************************************************************
  * Selectivity functions
@@ -657,6 +866,11 @@ CREATE FUNCTION span_joinsel(internal, oid, internal, smallint, internal)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Span_joinsel'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- CREATE FUNCTION geoset_sel(internal, oid, internal, integer)
+  -- RETURNS float
+  -- AS 'MODULE_PATHNAME', 'Geoset_sel'
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 
 /******************************************************************************
@@ -683,6 +897,14 @@ CREATE FUNCTION timestampset_eq(timestampset, timestampset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geomset_eq(geomset, geomset)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Set_eq'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geogset_eq(geogset, geogset)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Set_eq'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION intset_ne(intset, intset)
   RETURNS bool
@@ -701,6 +923,14 @@ CREATE FUNCTION textset_ne(textset, textset)
   AS 'MODULE_PATHNAME', 'Set_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestampset_ne(timestampset, timestampset)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Set_ne'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geomset_ne(geomset, geomset)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Set_ne'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geogset_ne(geogset, geogset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -725,6 +955,14 @@ CREATE FUNCTION timestampset_lt(timestampset, timestampset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geomset_lt(geomset, geomset)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Set_lt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geogset_lt(geogset, geogset)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Set_lt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION intset_le(intset, intset)
   RETURNS bool
@@ -743,6 +981,14 @@ CREATE FUNCTION textset_le(textset, textset)
   AS 'MODULE_PATHNAME', 'Set_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestampset_le(timestampset, timestampset)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Set_le'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geomset_le(geomset, geomset)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Set_le'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geogset_le(geogset, geogset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -767,6 +1013,14 @@ CREATE FUNCTION timestampset_ge(timestampset, timestampset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geomset_ge(geomset, geomset)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Set_ge'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geogset_ge(geogset, geogset)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Set_ge'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION intset_gt(intset, intset)
   RETURNS bool
@@ -788,6 +1042,14 @@ CREATE FUNCTION timestampset_gt(timestampset, timestampset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geomset_gt(geomset, geomset)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Set_gt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geogset_gt(geogset, geogset)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Set_gt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION intset_cmp(intset, intset)
   RETURNS integer
@@ -806,6 +1068,14 @@ CREATE FUNCTION textset_cmp(textset, textset)
   AS 'MODULE_PATHNAME', 'Set_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestampset_cmp(timestampset, timestampset)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Set_cmp'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geomset_cmp(geomset, geomset)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Set_cmp'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geogset_cmp(geogset, geogset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -840,6 +1110,18 @@ CREATE OPERATOR = (
   COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = eqsel, JOIN = eqjoinsel
 );
+CREATE OPERATOR = (
+  LEFTARG = geomset, RIGHTARG = geomset,
+  PROCEDURE = geomset_eq,
+  COMMUTATOR = =, NEGATOR = <>,
+  RESTRICT = eqsel, JOIN = eqjoinsel
+);
+CREATE OPERATOR = (
+  LEFTARG = geogset, RIGHTARG = geogset,
+  PROCEDURE = geogset_eq,
+  COMMUTATOR = =, NEGATOR = <>,
+  RESTRICT = eqsel, JOIN = eqjoinsel
+);
 
 CREATE OPERATOR <> (
   LEFTARG = intset, RIGHTARG = intset,
@@ -868,6 +1150,18 @@ CREATE OPERATOR <> (
 CREATE OPERATOR <> (
   LEFTARG = timestampset, RIGHTARG = timestampset,
   PROCEDURE = timestampset_ne,
+  COMMUTATOR = <>, NEGATOR = =,
+  RESTRICT = neqsel, JOIN = neqjoinsel
+);
+CREATE OPERATOR <> (
+  LEFTARG = geomset, RIGHTARG = geomset,
+  PROCEDURE = geomset_ne,
+  COMMUTATOR = <>, NEGATOR = =,
+  RESTRICT = neqsel, JOIN = neqjoinsel
+);
+CREATE OPERATOR <> (
+  LEFTARG = geogset, RIGHTARG = geogset,
+  PROCEDURE = geogset_ne,
   COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
@@ -902,6 +1196,18 @@ CREATE OPERATOR < (
   COMMUTATOR = >, NEGATOR = >=,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
+CREATE OPERATOR < (
+  LEFTARG = geomset, RIGHTARG = geomset,
+  PROCEDURE = geomset_lt,
+  COMMUTATOR = >, NEGATOR = >=
+  -- RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR < (
+  LEFTARG = geogset, RIGHTARG = geogset,
+  PROCEDURE = geogset_lt,
+  COMMUTATOR = >, NEGATOR = >=
+  -- RESTRICT = span_sel, JOIN = span_joinsel
+);
 
 CREATE OPERATOR <= (
   LEFTARG = intset, RIGHTARG = intset,
@@ -932,6 +1238,18 @@ CREATE OPERATOR <= (
   PROCEDURE = timestampset_le,
   COMMUTATOR = >=, NEGATOR = >,
   RESTRICT = period_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR <= (
+  LEFTARG = geomset, RIGHTARG = geomset,
+  PROCEDURE = geomset_le,
+  COMMUTATOR = >=, NEGATOR = >
+  -- RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR <= (
+  LEFTARG = geogset, RIGHTARG = geogset,
+  PROCEDURE = geogset_le,
+  COMMUTATOR = >=, NEGATOR = >
+  -- RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE OPERATOR >= (
@@ -964,6 +1282,18 @@ CREATE OPERATOR >= (
   COMMUTATOR = <=, NEGATOR = <,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
+CREATE OPERATOR >= (
+  LEFTARG = geomset, RIGHTARG = geomset,
+  PROCEDURE = geomset_ge,
+  COMMUTATOR = <=, NEGATOR = <
+  -- RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR >= (
+  LEFTARG = geogset, RIGHTARG = geogset,
+  PROCEDURE = geogset_ge,
+  COMMUTATOR = <=, NEGATOR = <
+  -- RESTRICT = span_sel, JOIN = span_joinsel
+);
 
 CREATE OPERATOR > (
   LEFTARG = intset, RIGHTARG = intset,
@@ -994,6 +1324,18 @@ CREATE OPERATOR > (
   PROCEDURE = timestampset_gt,
   COMMUTATOR = <, NEGATOR = <=,
   RESTRICT = period_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR > (
+  LEFTARG = geomset, RIGHTARG = geomset,
+  PROCEDURE = geomset_gt,
+  COMMUTATOR = <, NEGATOR = <=
+  -- RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR > (
+  LEFTARG = geogset, RIGHTARG = geogset,
+  PROCEDURE = geogset_gt,
+  COMMUTATOR = <, NEGATOR = <=
+  -- RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE OPERATOR CLASS intset_ops
@@ -1036,6 +1378,22 @@ CREATE OPERATOR CLASS timestampset_ops
     OPERATOR  4  >=,
     OPERATOR  5  >,
     FUNCTION  1  timestampset_cmp(timestampset, timestampset);
+CREATE OPERATOR CLASS geomset_ops
+  DEFAULT FOR TYPE geomset USING btree AS
+    OPERATOR  1  <,
+    OPERATOR  2  <=,
+    OPERATOR  3  =,
+    OPERATOR  4  >=,
+    OPERATOR  5  >,
+    FUNCTION  1  geomset_cmp(geomset, geomset);
+CREATE OPERATOR CLASS geogset_ops
+  DEFAULT FOR TYPE geogset USING btree AS
+    OPERATOR  1  <,
+    OPERATOR  2  <=,
+    OPERATOR  3  =,
+    OPERATOR  4  >=,
+    OPERATOR  5  >,
+    FUNCTION  1  geogset_cmp(geogset, geogset);
 
 /******************************************************************************/
 
@@ -1059,6 +1417,14 @@ CREATE FUNCTION timestampset_hash(timestampset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geomset_hash(geomset)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Set_hash'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geogset_hash(geogset)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Set_hash'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION intset_hash_extended(intset, bigint)
   RETURNS bigint
@@ -1077,6 +1443,14 @@ CREATE FUNCTION textset_hash_extended(textset, bigint)
   AS 'MODULE_PATHNAME', 'Set_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestampset_hash_extended(timestampset, bigint)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'Set_hash_extended'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geomset_hash_extended(geomset, bigint)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'Set_hash_extended'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geogset_hash_extended(geogset, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Set_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -1106,5 +1480,15 @@ CREATE OPERATOR CLASS timestampset_hash_ops
     OPERATOR    1   = ,
     FUNCTION    1   timestampset_hash(timestampset),
     FUNCTION    2   timestampset_hash_extended(timestampset, bigint);
+CREATE OPERATOR CLASS geomset_hash_ops
+  DEFAULT FOR TYPE geomset USING hash AS
+    OPERATOR    1   = ,
+    FUNCTION    1   geomset_hash(geomset),
+    FUNCTION    2   geomset_hash_extended(geomset, bigint);
+CREATE OPERATOR CLASS geogset_hash_ops
+  DEFAULT FOR TYPE geogset USING hash AS
+    OPERATOR    1   = ,
+    FUNCTION    1   geogset_hash(geogset),
+    FUNCTION    2   geogset_hash_extended(geogset, bigint);
 
 /******************************************************************************/

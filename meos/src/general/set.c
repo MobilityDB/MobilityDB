@@ -46,30 +46,11 @@
 #include "general/temporal_out.h"
 #include "general/temporal_parser.h"
 #include "general/temporal_util.h"
+#include "npoint/tnpoint_boxops.h"
 
 /*****************************************************************************
  * General functions
  *****************************************************************************/
-
-/**
- * @ingroup libmeos_internal_setspan_accessor
- * @brief Return the n-th value of a set
- * @pre The argument @p index is less than the number of values in the set
- */
-Datum
-set_val_n(const Set *s, int index)
-{
-  assert(index >= 0);
-  /* For base types passed by value */
-  if (MOBDB_FLAGS_GET_BYVAL(s->flags))
-    return s->elems[index];
-  /* For base types passed by reference */
-  return PointerGetDatum(
-    /* start of data */
-    ((char *)s) + double_pad(sizeof(Set)) + (s->count - 1) * sizeof(size_t) +
-      /* offset */
-      s->elems[index]);
-}
 
 /**
  * @ingroup libmeos_internal_setspan_accessor
@@ -229,6 +210,86 @@ set_out(const Set *s, int maxdd)
  *****************************************************************************/
 
 /**
+ * Return the size of a bounding box of a temporal type
+ */
+static size_t
+set_bbox_size(meosType settype)
+{
+  if (alphanumset_type(settype))
+    return 0;
+  if (geoset_type(settype))
+    return sizeof(STBox);
+  elog(ERROR, "unknown set_bbox_size function for set type: %d",
+    settype);
+}
+
+/**
+ * Set a bounding box from an array of set values
+ *
+ * @param[in] values Values
+ * @param[in] basetype Type of the values
+ * @param[in] count Number of elements in the array
+ * @param[out] box Bounding box
+ */
+void
+valuearr_compute_bbox(const Datum *values, meosType basetype, int count,
+  void *box)
+{
+  /* Currently, only geo set types have bounding box */
+  ensure_set_basetype(basetype);
+  if (talpha_type(basetype) || tnumber_type(basetype))
+    ;
+  else if (basetype == T_GEOMETRY || basetype == T_GEOGRAPHY)
+    geoarr_set_stbox(values, count, (STBox *) box);
+#if NPOINT
+  else if (basetype == T_NPOINT)
+   npointarr_set_stbox(values, count, (STBox *) box);
+#endif
+  else
+    elog(ERROR, "unknown bounding box function for set type: %d", basetype);
+  return;
+}
+
+/**
+ * Return a pointer to the bounding box of a temporal sequence
+ */
+void *
+set_bbox_ptr(const Set *s)
+{
+  return (void *)( ((char *) s) + double_pad(sizeof(Set)) );
+}
+
+/**
+ * Return a pointer to the offsets array of a set
+ */
+size_t *
+set_offsets_ptr(const Set *s)
+{
+  return (size_t *)( ((char *) s) + double_pad(sizeof(Set)) +
+    double_pad(s->bboxsize) );
+}
+
+/**
+ * @ingroup libmeos_internal_setspan_accessor
+ * @brief Return the n-th value of a set
+ * @pre The argument @p index is less than the number of values in the set
+ */
+Datum
+set_val_n(const Set *s, int index)
+{
+  assert(index >= 0);
+  /* For base types passed by value */
+  if (MOBDB_FLAGS_GET_BYVAL(s->flags))
+    return (set_offsets_ptr(s))[index];
+  /* For base types passed by reference */
+  return PointerGetDatum(
+    /* start of data : start address + size of struct + size of bbox + */
+    ((char *) s) + double_pad(sizeof(Set)) + double_pad(s->bboxsize) +
+      /* offset array + offset */
+      (sizeof(size_t) * s->count) + (set_offsets_ptr(s))[index] );
+}
+
+/**
  * @ingroup libmeos_internal_setspan_constructor
  * @brief Construct a set from an array of values.
  *
@@ -237,21 +298,26 @@ set_out(const Set *s, int maxdd)
  * passed by value and passed by reference are, respectively, as follows
  *
  * @code
- * ------------------------------------
- * Header | count | Value_0 | Value_1 |
- * ------------------------------------
+ * ------------------------------------------------------------
+ * Header | count | bboxsize | ( bbox )_X | Value_0 | Value_1 |
+ * ------------------------------------------------------------
  * @endcode
  *
  * @code
- * ------------------------------------------------------------
- * | Header | count | offset_0 | offset_1 | Value_0 | Value_1 |
- * ------------------------------------------------------------
+ * ---------------------------------------------------------------------
+ * | Header | count | bboxsize | ( bbox )_X | offset_0 | offset_1 | ...
+ * ---------------------------------------------------------------------
+ * --------------------------
+ *  ... | Value_0 | Value_1 |
+ * --------------------------
  * @endcode
  * where
  * - `Header` contains internal information (size, type identifiers, flags)
- * - `count` contains the number of values
- * - `offset_i` are offsets from the begining of the struct for the values.
-
+ * - `count` is the number of values
+ * - `bboxsize` is the size of the bounding box
+ * - `bbox` is the bounding box and `X` are unused bytes added for double
+ *   padding.
+ * - `offset_i` are offsets from the begining of the struct for the values
  *
  * @param[in] values Array of values
  * @param[in] count Number of elements in the array
@@ -271,12 +337,16 @@ set_make(const Datum *values, int count, meosType basetype, bool ordered)
       {
         char *str1 = basetype_out(values[i], basetype, OUT_DEFAULT_DECIMAL_DIGITS);
         char *str2 = basetype_out(values[i + 1], basetype, OUT_DEFAULT_DECIMAL_DIGITS);
-        elog(ERROR, "The values of an ordered set must be increasing: %s %s",
+        elog(ERROR, "The values of a set must be increasing: %s %s",
           str1, str2);
         pfree(str1); pfree(str2);
       }
     }
   }
+
+  /* Get the bounding box size */
+  meosType settype = basetype_settype(basetype);
+  size_t bboxsize = double_pad(set_bbox_size(settype));
 
   /* Determine whether the values are passed by value or by reference  */
   int16 typlen;
@@ -303,42 +373,45 @@ set_make(const Datum *values, int count, meosType basetype, bool ordered)
 #endif /* not used */
   }
 
-  /* The first Datum is already declared in the struct */
-  size_t memsize = double_pad(sizeof(Set)) + sizeof(Datum) * (count - 1) +
-    values_size;
+  /* Determine overall memory size */
+  size_t memsize = double_pad(sizeof(Set)) + double_pad(bboxsize) +
+    (sizeof(size_t) * count) + values_size;
 
   /* Create the Set */
   Set *result = palloc0(memsize);
   SET_VARSIZE(result, memsize);
   MOBDB_FLAGS_SET_BYVAL(result->flags, typbyval);
   MOBDB_FLAGS_SET_ORDERED(result->flags, ordered);
-#if 0 /* not used */
-  result->minidx = minidx;
-  result->maxidx = maxidx;
-#endif /* not used */
   result->count = count;
-  result->settype = basetype_settype(basetype);
+  result->settype = settype;
   result->basetype = basetype;
+  result->bboxsize = bboxsize;
 
   /* Copy the array of values */
   if (typbyval)
   {
     for (int i = 0; i < count; i++)
-      result->elems[i] = values[i];
+      (set_offsets_ptr(result))[i] = values[i];
   }
   else
   {
-    /* The first element is already defined in the struct */
-    size_t pdata = double_pad(sizeof(Set)) + (count - 1) * sizeof(size_t);
+    /* Store the composing values */
+    size_t pdata = double_pad(sizeof(Set)) + double_pad(bboxsize) +
+      sizeof(size_t) * count;
     size_t pos = 0;
     for (int i = 0; i < count; i++)
     {
       memcpy(((char *) result) + pdata + pos, DatumGetPointer(values[i]),
         VARSIZE(values[i]));
-      result->elems[i] = pos;
+      (set_offsets_ptr(result))[i] = pos;
       pos += double_pad(VARSIZE(values[i]));
     }
   }
+
+  /* Compute the bounding box */
+  if (bboxsize != 0)
+    valuearr_compute_bbox(values, basetype, count, set_bbox_ptr(result));
+
   return result;
 }
 
@@ -372,7 +445,7 @@ set_make_free(Datum *values, int count, meosType basetype, bool ordered)
 Set *
 set_copy(const Set *s)
 {
-  TimestampSet *result = palloc(VARSIZE(s));
+  Set *result = palloc(VARSIZE(s));
   memcpy(result, s, VARSIZE(s));
   return result;
 }
@@ -451,10 +524,10 @@ timestamp_to_timestampset(TimestampTz t)
  * @pymeosfunc span()
  */
 void
-set_set_span(const Set *os, Span *s)
+set_set_span(const Set *set, Span *s)
 {
-  span_set(os->elems[MINIDX], os->elems[os->MAXIDX], true, true,
-    os->basetype, s);
+  span_set(set_val_n(set, MINIDX), set_val_n(set, set->MAXIDX), true, true,
+    set->basetype, s);
   return;
 }
 
@@ -561,7 +634,7 @@ floatset_start_value(const Set *s)
  * @pymeosfunc startTimestamp()
  */
 TimestampTz
-timestampset_start_timestamp(const TimestampSet *ts)
+timestampset_start_timestamp(const Set *ts)
 {
   TimestampTz result = DatumGetTimestampTz(set_val_n(ts, 0));
   return result;
@@ -627,7 +700,7 @@ floatset_end_value(const Set *s)
  * @pymeosfunc endTimestamp()
  */
 TimestampTz
-timestampset_end_timestamp(const TimestampSet *ts)
+timestampset_end_timestamp(const Set *ts)
 {
   TimestampTz result = DatumGetTimestampTz(set_val_n(ts, ts->count - 1));
   return result;
@@ -732,7 +805,7 @@ floatset_value_n(const Set *s, int n, double *result)
  * @pymeosfunc timestampN()
  */
 bool
-timestampset_timestamp_n(const TimestampSet *ts, int n, TimestampTz *result)
+timestampset_timestamp_n(const Set *ts, int n, TimestampTz *result)
 {
   if (n < 1 || n > ts->count)
     return false;
@@ -810,7 +883,7 @@ floatset_values(const Set *s)
  * @pymeosfunc timestamps()
  */
 TimestampTz *
-timestampset_timestamps(const TimestampSet *ts)
+timestampset_timestamps(const Set *ts)
 {
   TimestampTz *result = palloc(sizeof(TimestampTz) * ts->count);
   for (int i = 0; i < ts->count; i++)
@@ -823,15 +896,16 @@ timestampset_timestamps(const TimestampSet *ts)
  *****************************************************************************/
 
 /**
- * @brief Set the precision of the float set to the number of decimal places.
+ * @brief Shift the values of set.
  */
 Set *
 set_shift(const Set *s, Datum shift)
 {
+  assert(MOBDB_FLAGS_GET_BYVAL(s->flags));
   Set *result = set_copy(s);
   for (int i = 0; i < s->count; i++)
-    result->elems[i] = datum_add(result->elems[i], shift, s->basetype,
-      s->basetype);
+    (set_offsets_ptr(result))[i] =
+      datum_add(set_val_n(s, i), shift, s->basetype, s->basetype);
   return result;
 }
 
@@ -841,23 +915,23 @@ set_shift(const Set *s, Datum shift)
  * @sqlfunc shift(), tscale(), shiftTscale()
  * @pymeosfunc shift()
  */
-TimestampSet *
-timestampset_shift_tscale(const TimestampSet *ts, const Interval *shift,
+Set *
+timestampset_shift_tscale(const Set *s, const Interval *shift,
   const Interval *duration)
 {
   assert(shift != NULL || duration != NULL);
   if (duration != NULL)
     ensure_valid_duration(duration);
-  TimestampSet *result = set_copy(ts);
+  Set *result = set_copy(s);
 
   /* Set the first and last instants */
   TimestampTz lower, lower1, upper, upper1;
-  lower = lower1 = DatumGetTimestampTz(ts->elems[0]);
-  upper = upper1 = DatumGetTimestampTz(ts->elems[ts->count - 1]);
+  lower = lower1 = DatumGetTimestampTz(set_val_n(s, 0));
+  upper = upper1 = DatumGetTimestampTz(set_val_n(s, s->count - 1));
   lower_upper_shift_tscale(&lower1, &upper1, shift, duration);
-  result->elems[0] = TimestampTzGetDatum(lower1);
-  result->elems[ts->count - 1] = TimestampTzGetDatum(upper1);
-  if (ts->count > 1)
+  (set_offsets_ptr(result))[0] = TimestampTzGetDatum(lower1);
+  (set_offsets_ptr(result))[s->count - 1] = TimestampTzGetDatum(upper1);
+  if (s->count > 1)
   {
     /* Shift and/or scale from the second to the penultimate instant */
     TimestampTz delta;
@@ -866,13 +940,13 @@ timestampset_shift_tscale(const TimestampSet *ts, const Interval *shift,
     double scale;
     if (duration != NULL)
       scale = (double) (upper1 - lower1) / (double) (upper - lower);
-    for (int i = 1; i < ts->count - 1; i++)
+    for (int i = 1; i < s->count - 1; i++)
     {
       if (shift != NULL)
-        result->elems[i] += delta;
+        (set_offsets_ptr(result))[i] += delta;
       if (duration != NULL)
-        result->elems[i] = lower1 +
-          (result->elems[i] - lower1) * scale;
+        (set_offsets_ptr(result))[i] = lower1 +
+          (set_val_n(result, i) - lower1) * scale;
     }
   }
   return result;

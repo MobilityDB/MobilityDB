@@ -61,6 +61,7 @@ extern SpanSet *spanset_in(const char *str, meosType spantype);
 
 /* Constructor functions for set and span types */
 
+extern size_t *set_offsets_ptr(const Set *s);
 extern Set *set_make(const Datum *values, int count, meosType basetype, bool ordered);
 extern Set *set_make_free(Datum *values, int count, meosType basetype, bool ordered);
 extern Set *set_copy(const TimestampSet *s);
@@ -231,6 +232,7 @@ extern TBox *number_timestamp_to_tbox(Datum d, meosType basetype, TimestampTz t)
 extern TBox *number_period_to_tbox(Datum d, meosType basetype, const Period *p);
 
 extern bool geo_set_stbox(const GSERIALIZED *gs, STBox *box);
+extern void geoarr_set_stbox(const Datum *values, int count, STBox *box);
 extern void timestamp_set_stbox(TimestampTz t, STBox *box);
 extern void timestampset_set_stbox(const TimestampSet *ts, STBox *box);
 extern void period_set_stbox(const Period *p, STBox *box);

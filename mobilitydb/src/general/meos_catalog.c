@@ -109,14 +109,15 @@ const char *_type_names[] =
   [T_TSTZMULTIRANGE] = "tstzmultirange",
   [T_TTEXT] = "ttext",
   [T_GEOMETRY] = "geometry",
+  [T_GEOMSET] = "geomset",
   [T_GEOGRAPHY] = "geography",
+  [T_GEOGSET] = "geogset",
   [T_TGEOMPOINT] = "tgeompoint",
   [T_TGEOGPOINT] = "tgeogpoint",
-#if NPOINT
   [T_NPOINT] = "npoint",
+  [T_NPOINTSET] = "npointset",
   [T_NSEGMENT] = "nsegment",
-  [T_TNPOINT] = "tnpoint"
-#endif
+  [T_TNPOINT] = "tnpoint",
 };
 
 /**

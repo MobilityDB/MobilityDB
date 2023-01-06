@@ -12,7 +12,7 @@
 	<title>Set and Span Types</title>
 
 	<para>
-		MobilityDB has four <emphasis>set</emphasis> types, namely <varname>intset</varname>, <varname>bigintset</varname>, <varname>floatset</varname>, and <varname>timestampset</varname>, for representing, respectively, set of distinct <varname>integer</varname>, <varname>bigint</varname>, <varname>float</varname>, and <varname>timestamptz</varname> (timestamp with time zone) values. These set types enable efficient operations for manipulating set of distinct values.
+		MobilityDB has five <emphasis>set</emphasis> types, namely <varname>intset</varname>, <varname>bigintset</varname>, <varname>floatset</varname>, <varname>timestampset</varname>, and <varname>textset</varname>, for representing, respectively, set of distinct <varname>integer</varname>, <varname>bigint</varname>, <varname>float</varname>, <varname>timestamptz</varname> (timestamp with time zone), and <varname>text</varname> values. These set types enable efficient operations for manipulating set of distinct values.
 	</para>
 
 	<para>

@@ -309,6 +309,10 @@
  * @ingroup libmeos_internal_spantime
  * @brief Distance functions for set and span types.
  *
+ * @defgroup libmeos_internal_setspan_agg Aggregate functions
+ * @ingroup libmeos_internal_spantime
+ * @brief Aggregate functions for set and span types.
+ *
  * @defgroup libmeos_internal_setspan_comp Comparison functions
  * @ingroup libmeos_internal_spantime
  * @brief Comparison functions for set and span types.
