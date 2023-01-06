@@ -69,7 +69,7 @@ find_package(GSL REQUIRED)
 include_directories(SYSTEM ${GSL_INCLUDE_DIRS})
 
 # Proj reprojection library
-find_package(PROJ CONFIG REQUIRED)
+find_package(PROJ REQUIRED)
 include_directories(SYSTEM ${PROJ_INCLUDE_DIRS})
 math(EXPR POSTGIS_PROJ_VERSION "${PROJ_VERSION_MAJOR} * 10 + ${PROJ_VERSION_MINOR}")
 message(STATUS "POSTGIS_PROJ_VERSION: ${POSTGIS_PROJ_VERSION}")
