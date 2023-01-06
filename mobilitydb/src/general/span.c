@@ -48,7 +48,7 @@
 #include "general/temporal_out.h"
 #include "general/temporal_util.h"
 /* MobilityDB */
-#include "pg_general/mobdb_catalog.h"
+#include "pg_general/meos_catalog.h"
 #include "pg_general/span.h"
 #include "pg_general/temporal_util.h"
 #include "pg_general/tnumber_mathfuncs.h"
@@ -194,8 +194,8 @@ Span_constructor(PG_FUNCTION_ARGS)
   Datum upper = PG_GETARG_DATUM(1);
   bool lower_inc = PG_GETARG_BOOL(2);
   bool upper_inc = PG_GETARG_BOOL(3);
-  mobdbType spantype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
-  mobdbType basetype = spantype_basetype(spantype);
+  meosType spantype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
+  meosType basetype = spantype_basetype(spantype);
   Span *span;
   span = span_make(lower, upper, lower_inc, upper_inc, basetype);
   PG_RETURN_SPAN_P(span);
@@ -216,7 +216,7 @@ PGDLLEXPORT Datum
 Value_to_span(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   Span *result = value_to_span(d, basetype);
   PG_RETURN_POINTER(result);
 }
@@ -256,7 +256,7 @@ range_to_span(RangeType *range, TypeCacheEntry *typcache)
   RangeBound lower, upper;
   bool empty;
   range_deserialize(typcache, range, &lower, &upper, &empty);
-  mobdbType basetype = (typcache->rngelemtype->type_id == INT4OID) ?
+  meosType basetype = (typcache->rngelemtype->type_id == INT4OID) ?
     T_INT4 : T_TIMESTAMPTZ;
   Span *result = span_make(lower.val, upper.val, lower.inclusive,
     upper.inclusive, basetype);

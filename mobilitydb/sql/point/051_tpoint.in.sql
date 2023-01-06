@@ -286,7 +286,16 @@ CREATE FUNCTION appendInstant(tgeogpoint, tgeogpoint)
   AS 'MODULE_PATHNAME', 'Temporal_append_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- Function is not strict
+CREATE FUNCTION appendSequence(tgeompoint, tgeompoint)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Temporal_append_tsequence'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION appendSequence(tgeogpoint, tgeogpoint)
+  RETURNS tgeogpoint
+  AS 'MODULE_PATHNAME', 'Temporal_append_tsequence'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- The function is not strict
 CREATE FUNCTION merge(tgeompoint, tgeompoint)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Temporal_merge'

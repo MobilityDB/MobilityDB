@@ -45,7 +45,7 @@
 #include "point/tpoint_boxops.h"
 #include "point/tpoint_spatialfuncs.h"
 /* MobilityDB */
-#include "pg_general/mobdb_catalog.h"
+#include "pg_general/meos_catalog.h"
 #include "pg_general/temporal.h"
 #include "pg_point/postgis.h"
 
@@ -412,7 +412,7 @@ Tpointinst_constructor(PG_FUNCTION_ARGS)
   ensure_non_empty(gs);
   ensure_has_not_M_gs(gs);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  mobdbType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
+  meosType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
   Temporal *result = (Temporal *) tinstant_make(PointerGetDatum(gs), temptype,
     t);
   PG_FREE_IF_COPY(gs, 0);
@@ -488,7 +488,7 @@ Tpoint_expand_spatial(PG_FUNCTION_ARGS)
  */
 static Datum
 tcomp_geo_tpoint_ext(FunctionCallInfo fcinfo,
-  Datum (*func)(Datum, Datum, mobdbType, mobdbType))
+  Datum (*func)(Datum, Datum, meosType, meosType))
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
@@ -505,7 +505,7 @@ tcomp_geo_tpoint_ext(FunctionCallInfo fcinfo,
  */
 static Datum
 tcomp_tpoint_point_ext(FunctionCallInfo fcinfo,
-  Datum (*func)(Datum, Datum, mobdbType, mobdbType))
+  Datum (*func)(Datum, Datum, meosType, meosType))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);

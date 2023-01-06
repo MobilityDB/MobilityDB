@@ -52,7 +52,7 @@
  * Return the distance between two numbers
  */
 Datum
-number_distance(Datum l, Datum r, mobdbType typel, mobdbType typer)
+number_distance(Datum l, Datum r, meosType typel, meosType typer)
 {
   Datum result = 0;
   if (typel == T_INT4)
@@ -84,8 +84,8 @@ number_distance(Datum l, Datum r, mobdbType typel, mobdbType typer)
  * @param[in] restype Type of the result
  */
 Temporal *
-distance_tnumber_number(const Temporal *temp, Datum value, mobdbType valuetype,
-  mobdbType restype)
+distance_tnumber_number(const Temporal *temp, Datum value, meosType valuetype,
+  meosType restype)
 {
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -159,7 +159,7 @@ tnumber_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
  */
 Temporal *
 distance_tnumber_tnumber1(const Temporal *temp1, const Temporal *temp2,
-  mobdbType restype)
+  meosType restype)
 {
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -187,7 +187,7 @@ distance_tnumber_tnumber1(const Temporal *temp1, const Temporal *temp2,
 Temporal *
 distance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 {
-  mobdbType restype;
+  meosType restype;
   if (temp1->subtype == T_TINT && temp2->subtype == T_TINT)
     restype = T_TINT;
   else
@@ -206,7 +206,7 @@ distance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
  * and a number.
  */
 double
-nad_tnumber_number(const Temporal *temp, Datum value, mobdbType basetype)
+nad_tnumber_number(const Temporal *temp, Datum value, meosType basetype)
 {
   ensure_tnumber_basetype(basetype);
   TBox box1, box2;

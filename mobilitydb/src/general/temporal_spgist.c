@@ -39,7 +39,7 @@
 #include <postgres.h>
 #include <access/spgist.h>
 /* MEOS */
-#include "general/mobdb_catalog.h"
+#include "general/meos_catalog.h"
 #include "general/span.h"
 #include "general/temporal.h"
 /* MobilityDB */

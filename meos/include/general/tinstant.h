@@ -36,8 +36,8 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-/* MobilityDB */
-#include "general/mobdb_catalog.h"
+/* MEOS */
+#include "general/meos_catalog.h"
 #include "general/temporal.h"
 #include "general/span.h"
 

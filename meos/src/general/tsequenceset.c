@@ -450,7 +450,7 @@ tsequenceset_copy(const TSequenceSet *ss)
  * @param[in] interp Interpolation
  */
 TSequenceSet *
-tsequenceset_from_base(Datum value, mobdbType temptype, const TSequenceSet *ss,
+tsequenceset_from_base(Datum value, meosType temptype, const TSequenceSet *ss,
   interpType interp)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
@@ -545,7 +545,7 @@ tgeogpointseqset_from_base(const GSERIALIZED *gs, const TSequenceSet *ss,
  * @param[in] interp Interpolation
  */
 TSequenceSet *
-tsequenceset_from_base_time(Datum value, mobdbType temptype,
+tsequenceset_from_base_time(Datum value, meosType temptype,
   const PeriodSet *ps, interpType interp)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ps->count);
@@ -654,7 +654,7 @@ tsequenceset_values(const TSequenceSet *ss, int *count)
   }
   if (k > 1)
   {
-    mobdbType basetype = temptype_basetype(ss->temptype);
+    meosType basetype = temptype_basetype(ss->temptype);
     datumarr_sort(result, k, basetype);
     k = datumarr_remove_duplicates(result, k, basetype);
   }
@@ -701,7 +701,7 @@ tsequenceset_min_instant(const TSequenceSet *ss)
   const TSequence *seq = tsequenceset_seq_n(ss, 0);
   const TInstant *result = tsequence_inst_n(seq, 0);
   Datum min = tinstant_value(result);
-  mobdbType basetype = temptype_basetype(seq->temptype);
+  meosType basetype = temptype_basetype(seq->temptype);
   for (int i = 0; i < ss->count; i++)
   {
     seq = tsequenceset_seq_n(ss, i);
@@ -734,7 +734,7 @@ tsequenceset_max_instant(const TSequenceSet *ss)
   const TSequence *seq = tsequenceset_seq_n(ss, 0);
   const TInstant *result = tsequence_inst_n(seq, 0);
   Datum max = tinstant_value(result);
-  mobdbType basetype = temptype_basetype(seq->temptype);
+  meosType basetype = temptype_basetype(seq->temptype);
   for (int i = 0; i < ss->count; i++)
   {
     seq = tsequenceset_seq_n(ss, i);
@@ -769,7 +769,7 @@ tsequenceset_min_value(const TSequenceSet *ss)
     return min;
   }
 
-  mobdbType basetype = temptype_basetype(ss->temptype);
+  meosType basetype = temptype_basetype(ss->temptype);
   Datum result = tsequence_min_value(tsequenceset_seq_n(ss, 0));
   for (int i = 1; i < ss->count; i++)
   {
@@ -798,7 +798,7 @@ tsequenceset_max_value(const TSequenceSet *ss)
     return max;
   }
 
-  mobdbType basetype = temptype_basetype(ss->temptype);
+  meosType basetype = temptype_basetype(ss->temptype);
   Datum result = tsequence_max_value(tsequenceset_seq_n(ss, 0));
   for (int i = 1; i < ss->count; i++)
   {
@@ -881,7 +881,7 @@ tsequenceset_set_period(const TSequenceSet *ss, Period *p)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Return the array of pointers to the sequences of a temporal sequence
+ * @brief Return an array of pointers to the sequences of a temporal sequence
  * set.
  */
 const TSequence **
@@ -1256,6 +1256,26 @@ tfloatseqset_to_tintseqset(const TSequenceSet *ss)
 /*****************************************************************************
  * Transformation functions
  *****************************************************************************/
+
+#if MEOS
+/**
+ * @ingroup libmeos_internal_temporal_constructor
+ * @brief Return a copy of a temporal sequence set without any extra space.
+ * @note We cannot simply test whether ss->count == ss->maxcount since there
+ * could be extra space allocated for the (variable-length) sequences
+ */
+TSequenceSet *
+tsequenceset_compact(const TSequenceSet *ss)
+{
+  TSequence **sequences = palloc0(sizeof(TSequence *) * ss->count);
+  for (int i = 0; i < ss->count; i++)
+  {
+    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    sequences[i] = tsequence_compact(seq);
+  }
+  return tsequenceset_make_free(sequences, ss->count, NORMALIZE_NO);
+}
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_internal_temporal_transf
@@ -2068,6 +2088,71 @@ tsequenceset_append_tinstant(TSequenceSet *ss, const TInstant *inst, bool expand
   assert(ss->temptype == inst->temptype);
   TSequence *seq = (TSequence *) tsequenceset_seq_n(ss, ss->count - 1);
   Temporal *temp = tsequence_append_tinstant(seq, inst, expand);
+  TSequenceSet *ss1;
+
+#if MEOS
+  /* Account for expandable structures
+   * A while is used instead of an if to enable to break the loop if there is
+   * no more available space */
+  int count = (temp->subtype == TSEQUENCE) ? ss->count : ss->count + 1;
+  while (expand && count <= ss->maxcount)
+  {
+    size_t size = 0;
+    /* Append the new sequence(s) if there is enough space: only one if the
+     * instant was appended to the last sequence, or the two sequences
+     * composing the sequence set that results from appending the instant */
+    const TSequence *newseq1, *newseq2 = NULL;
+    if (count == ss->count)
+      size += double_pad(VARSIZE(temp));
+    else /* temp->subtype == TSEQUENCESET */
+    {
+      ss1 = (TSequenceSet *) temp;
+      newseq1 = tsequenceset_seq_n(ss1, 0);
+      newseq2 = tsequenceset_seq_n(ss1, 1);
+      size += double_pad(VARSIZE(newseq1));
+      size += double_pad(VARSIZE(newseq2));
+    }
+    /* Remove the size of the current last sequence */
+    TSequence *last = (TSequence *) tsequenceset_seq_n(ss, ss->count - 1);
+    size_t avail_size = ((char *) ss + VARSIZE(ss)) -
+      ((char *) last + double_pad(VARSIZE(last)));
+    if (size > avail_size)
+      break;
+    /* Update the offsets array and the counts when adding two sequences */
+    if (count != ss->count)
+    {
+      (tsequenceset_offsets_ptr(ss))[count - 1] =
+        (tsequenceset_offsets_ptr(ss))[count - 2] + double_pad(VARSIZE(newseq1));
+      ss->count++;
+      ss->totalcount++;
+    }
+    /* There is enough space to add the new sequence(s) */
+    if (count == ss->count)
+    {
+      memset(last, 0, size);
+      memcpy(last, temp, VARSIZE(temp));
+    }
+    else /* temp->subtype == TSEQUENCESET */
+    {
+      memset(last, 0, size);
+      memcpy(last, newseq1, VARSIZE(newseq1));
+      last = (TSequence *) ((char *) last + double_pad(VARSIZE(newseq1)));
+      memcpy(last, newseq2, VARSIZE(newseq2));
+    }
+    /* Expand the bounding box and return */
+    if (count == ss->count)
+      tsequenceset_expand_bbox(ss, (TSequence *) temp);
+    else /* temp->subtype == TSEQUENCESET */
+    {
+      tsequenceset_expand_bbox(ss, newseq1);
+      tsequenceset_expand_bbox(ss, newseq2);
+    }
+    return ss;
+  }
+#endif /* MEOS */
+
+  /* This is the first time we use an expandable structure or there is no more
+   * free space */
   const TSequence **sequences = palloc(sizeof(TSequence *) * ss->count + 1);
   int k = 0;
   for (int i = 0; i < ss->count - 1; i++)
@@ -2077,11 +2162,136 @@ tsequenceset_append_tinstant(TSequenceSet *ss, const TInstant *inst, bool expand
     sequences[k++] = (const TSequence *) temp;
   else /* temp->subtype == TSEQUENCESET */
   {
-    TSequenceSet *ss1 = (TSequenceSet *) temp;
+    ss1 = (TSequenceSet *) temp;
     sequences[k++] = tsequenceset_seq_n(ss1, 0);
     sequences[k++] = tsequenceset_seq_n(ss1, 1);
   }
-  return tsequenceset_make(sequences, k, NORMALIZE_NO);
+  TSequenceSet *result = tsequenceset_make(sequences, k, NORMALIZE_NO);
+  pfree(sequences);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_internal_temporal_transf
+ * @brief Append a sequence to a temporal sequence set.
+ * @param[in,out] ss Temporal sequence set
+ * @param[in] seq Temporal sequence
+ * @param[in] expand True when reserving space for additional sequences
+ * @sqlfunc appendSequence()
+ * @note It is the responsibility of the calling function to free the memory,
+ * that is, delete the old value of ss when it cannot be expanded and a new
+ * sequence set is created.
+ */
+TSequenceSet *
+tsequenceset_append_tsequence(TSequenceSet *ss, const TSequence *seq,
+  bool expand)
+{
+  /* Ensure validity of the arguments */
+  assert(ss->temptype == seq->temptype);
+  /* The last sequence below may be modified with expandable structures */
+  TSequence *last = (TSequence *) tsequenceset_seq_n(ss, ss->count - 1);
+  const TInstant *inst1 = tsequence_inst_n(last, last->count - 1);
+  const TInstant *inst2 = tsequence_inst_n(seq, 0);
+  /* We cannot call ensure_increasing_timestamps since we must take into
+   * account inclusive/exclusive bounds */
+  char *t1;
+  if (inst1->t > inst2->t)
+  {
+    t1 = pg_timestamptz_out(inst1->t);
+    char *t2 = pg_timestamptz_out(inst2->t);
+    elog(ERROR, "Timestamps for temporal value must be increasing: %s, %s",
+      t1, t2);
+  }
+  else if (inst1->t == inst2->t && ss->period.upper_inc &&
+    seq->period.lower_inc)
+  {
+    meosType basetype = temptype_basetype(ss->temptype);
+    Datum value1 = tinstant_value(inst1);
+    Datum value2 = tinstant_value(inst2);
+    if (! datum_eq(value1, value2, basetype))
+    {
+      t1 = pg_timestamptz_out(inst1->t);
+      elog(ERROR, "The temporal values have different value at their common timestamp %s", t1);
+    }
+  }
+
+  bool removelast, removefirst;
+  bool join = tsequence_join_test(last, seq, &removelast, &removefirst);
+  /* We are sure that the result will be a SINGLE sequence */
+  TSequence *newseq = (! join) ? NULL :
+    (TSequence *) tsequence_append_tsequence(last, seq, expand);
+  int count = (join) ? ss->count : ss->count + 1;
+
+#if MEOS
+  /* Account for expandable structures
+   * A while is used instead of an if to be able to break the loop if there is
+   * not enough available space to append the new sequence */
+  while (expand && count <= ss->maxcount)
+  {
+    /* Determine whether there is enough available space */
+    size_t size = 0;
+    if (join)
+      size += double_pad(VARSIZE(newseq)) - double_pad(VARSIZE(last));
+    else
+      size += double_pad(VARSIZE(seq));
+    /* Remove the size of the current last sequence */
+    size_t avail_size = ((char *) ss + VARSIZE(ss)) -
+      ((char *) last + double_pad(VARSIZE(last)));
+    if (size > avail_size)
+      /* There is not enough available space */
+      break;
+
+    /* There is enough space to add the new sequence */
+    if (! join)
+    {
+      /* Update the offsets array and the counts when adding one sequence */
+      (tsequenceset_offsets_ptr(ss))[count - 1] =
+        (tsequenceset_offsets_ptr(ss))[count - 2] + double_pad(VARSIZE(last));
+      ss->count++;
+      ss->totalcount += seq->count;
+    }
+    if (join)
+    {
+      /* Set to 0 in case the new sequence is smaller than the current one */
+      memset(last, 0, VARSIZE(last));
+      memcpy(last, newseq, VARSIZE(newseq));
+    }
+    else
+    {
+      last = (TSequence *) ((char *) last + double_pad(VARSIZE(last)));
+      memcpy(last, newseq, VARSIZE(newseq));
+    }
+    /* Expand the bounding box and return */
+    tsequenceset_expand_bbox(ss, seq);
+    return ss;
+  }
+#endif /* MEOS */
+
+  /* This is the first time we use an expandable structure or there is not
+   * enough available space */
+  const TSequence **sequences = palloc(sizeof(TSequence *) * count);
+  int k = 0;
+  for (int i = 0; i < ss->count - 1; i++)
+    sequences[k++] = tsequenceset_seq_n(ss, i);
+  if (join)
+    sequences[k++] = newseq;
+  else
+  {
+    sequences[k++] = tsequenceset_seq_n(ss, ss->count - 1);
+    sequences[k++] = seq;
+  }
+  int maxcount = count;
+  if (expand && count > ss->maxcount)
+  {
+    maxcount = ss->maxcount * 2;
+#ifdef DEBUG_BUILD
+    printf(" seqset -> %d\n", maxcount);
+#endif /* DEBUG_BUILD */
+  }
+  TSequenceSet *result = tsequenceset_make1_exp(sequences, count, maxcount,
+    NORMALIZE_NO);
+  pfree(sequences);
+  return result;
 }
 
 /**
@@ -2379,7 +2589,7 @@ intersection_tsequence_tsequenceset(const TSequence *seq, const TSequenceSet *ss
  * @param[in] interp Interpolation
  */
 TSequenceSet *
-tsequenceset_in(const char *str, mobdbType temptype, interpType interp)
+tsequenceset_in(const char *str, meosType temptype, interpType interp)
 {
   return tsequenceset_parse(&str, temptype, interp);
 }
@@ -2566,45 +2776,50 @@ tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2)
    *           |--|   |--|   |--|   |--|
    */
   count = ss1->count + ss2->count + Min(ss1->count, ss2->count) * 2;
-  const TSequence **sequences = palloc(sizeof(TSequence *) * count);;
+  const TSequence **sequences = palloc(sizeof(TSequence *) * count);
   TSequence **tofree = palloc(sizeof(TSequence *) *
     Min(ss1->count, ss2->count) * 2);
-  mobdbType basetype = temptype_basetype(ss1->temptype);
-  seq1 = tsequenceset_seq_n(ss1, 0);
-  seq2 = tsequenceset_seq_n(ss2, 0);
-  sequences[0] = seq1;
-  if (ss1->count > 1)
-    seq1 = tsequenceset_seq_n(ss1, 1);
-  int i = 1, j = 0, k = 1, l = 0;
-  bool first = true; /* True when the last sequence added is from ss1 */
+  meosType basetype = temptype_basetype(ss1->temptype);
+  /* Add the first sequence of ss1 to the result */
+  sequences[0] = tsequenceset_seq_n(ss1, 0);
+  int i = 1, /* counter for the first sequence */
+    j = 0,   /* counter for the second sequence */
+    k = 1,   /* counter for the sequences in the result */
+    l = 0;   /* counter for the new sequences to be freed */
   while (i < ss1->count && j < ss2->count)
   {
-    if (left_span_span(&seq1->period, &seq2->period))
+    seq1 = tsequenceset_seq_n(ss1, i);
+    seq2 = tsequenceset_seq_n(ss2, j);
+    int cmp1 = timestamptz_cmp_internal(sequences[k - 1]->period.upper,
+      seq2->period.lower);
+    int cmp2 = timestamptz_cmp_internal(seq2->period.upper, seq1->period.lower);
+    /* If seq2 is between the last sequence added and seq1 */
+    if (cmp1 <= 0 && cmp2 <= 0)
     {
-      /* Fill the gap between the last sequence added and seq1 if at least one
-       * sequence from both sequence sets have been entered */
-      if (sequences[k - 1]->period.upper_inc && seq1->period.lower_inc)
+      /* Verify that the two sequences have the same value at common instants */
+      const TInstant *inst1, *inst2;
+      if (cmp1 == 0 && sequences[k - 1]->period.upper_inc &&
+          seq2->period.lower_inc)
       {
-        instants[0] = tsequence_inst_n(sequences[k - 1],
-          sequences[k - 1]->count - 1);
-        instants[1] = tsequence_inst_n(seq1, 0);
-        count = (timestamptz_cmp_internal(instants[0]->t, instants[1]->t) == 0) ?
-          1 : 2;
-        /* We put true so that it works with stepwise interpolation */
-        tofree[l] = tsequence_make(instants, count, true, true, interp,
-          NORMALIZE_NO);
-        sequences[k++] = (const TSequence *) tofree[l++];
+        inst1 = tsequence_inst_n(sequences[k - 1], sequences[k - 1]->count - 1);
+        inst2 = tsequence_inst_n(seq2, 0);
+        if (! datum_eq(tinstant_value(inst1), tinstant_value(inst2), basetype))
+        {
+          char *str = pg_timestamptz_out(inst1->t);
+          elog(ERROR, "The temporal values have different value at their common instant %s", str);
+        }
       }
-      sequences[k++] = seq1;
-      first = true;
-      i++;
-      if (i < ss1->count)
-        seq1 = tsequenceset_seq_n(ss1, i);
-    }
-    else if (left_span_span(&seq2->period, &seq1->period))
-    {
-      /* Fill the gap between the last sequence added and seq2 if at least one
-       * sequence from both sequence sets have been entered */
+      if (cmp2 == 0 && seq2->period.upper_inc && seq1->period.lower_inc)
+      {
+        inst1 = tsequence_inst_n(seq2, seq2->count - 1);
+        inst2 = tsequence_inst_n(seq1, 0);
+        if (! datum_eq(tinstant_value(inst1), tinstant_value(inst2), basetype))
+        {
+          char *str = pg_timestamptz_out(inst1->t);
+          elog(ERROR, "The temporal values have different value at their common instant %s", str);
+        }
+      }
+      /* Fill the gap between the last sequence added and seq2 */
       if (sequences[k - 1]->period.upper_inc && seq2->period.lower_inc)
       {
         instants[0] = tsequence_inst_n(sequences[k - 1],
@@ -2617,65 +2832,27 @@ tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2)
           NORMALIZE_NO);
         sequences[k++] = (const TSequence *) tofree[l++];
       }
+      /* Add seq2 */
       sequences[k++] = seq2;
-      first = false;
-      j++;
-      if (j < ss2->count)
-        seq2 = tsequenceset_seq_n(ss2, j);
-    }
-    else /* overlap on the boundary*/
-    {
-      /* Find the common instants */
-      if (datum_eq(seq1->period.upper, seq1->period.lower,
-        seq1->period.basetype))
+      /* Fill the gap between the seq2 and seq1 */
+      if (seq2->period.upper_inc && seq1->period.lower_inc)
       {
         instants[0] = tsequence_inst_n(seq2, seq2->count - 1);
         instants[1] = tsequence_inst_n(seq1, 0);
-        first = true;
+        count = (timestamptz_cmp_internal(instants[0]->t, instants[1]->t) == 0) ?
+          1 : 2;
+        /* We put true so that it works with stepwise interpolation */
+        tofree[l] = tsequence_make(instants, count, true, true, interp,
+          NORMALIZE_NO);
+        sequences[k++] = (const TSequence *) tofree[l++];
       }
-      else
-      {
-        instants[0] = tsequence_inst_n(seq1, seq1->count - 1);
-        instants[1] = tsequence_inst_n(seq2, 0);
-        first = false;
-      }
-      if (! datum_eq(tinstant_value(instants[0]), tinstant_value(instants[1]),
-        basetype))
-      {
-        char *str = pg_timestamptz_out(instants[0]->t);
-        elog(ERROR, "The temporal values have different value at their common instant %s", str);
-      }
-      sequences[k++] = first ? seq1 : seq2;
+      i++;
+      j++;
     }
-  }
-  /* If there are still sequences to be added, fill the last gap before adding
-    the sequences */
-  if (left_span_span(&seq1->period, &seq2->period))
-  {
-    if (sequences[k - 1]->period.upper_inc && seq2->period.lower_inc)
+    else /* consume seq1 and advance i */
     {
-      instants[0] = tsequence_inst_n(sequences[k - 1],
-        sequences[k - 1]->count - 1);
-      instants[1] = tsequence_inst_n(seq2, 0);
-      count = (timestamptz_cmp_internal(instants[0]->t, instants[1]->t) == 0) ?
-        1 : 2;
-      tofree[l] = tsequence_make(instants, count, true, true, interp,
-        NORMALIZE_NO);
-      sequences[k++] = (const TSequence *) tofree[l++];
-    }
-  }
-  else if (left_span_span(&seq2->period, &seq1->period))
-  {
-    if (sequences[k - 1]->period.upper_inc && seq1->period.lower_inc)
-    {
-      instants[0] = tsequence_inst_n(sequences[k - 1],
-        sequences[k - 1]->count - 1);
-      instants[1] = tsequence_inst_n(seq1, 0);
-      count = (timestamptz_cmp_internal(instants[0]->t, instants[1]->t) == 0) ?
-        1 : 2;
-      tofree[l] = tsequence_make(instants, count, true, true, interp,
-        NORMALIZE_NO);
-      sequences[k++] = (const TSequence *) tofree[l++];
+      sequences[k++] = seq1;
+      i++;
     }
   }
   /* Add the remaining sequences */

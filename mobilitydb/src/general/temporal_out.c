@@ -42,7 +42,7 @@
 #include "general/temporal_out.h"
 #include "general/temporal_util.h"
 /* MobilityDB */
-#include "pg_general/mobdb_catalog.h"
+#include "pg_general/meos_catalog.h"
 #include "pg_general/temporal_util.h"
 #include "pg_point/postgis.h"
 
@@ -210,7 +210,7 @@ get_endian_variant(const text *txt)
  * @brief Output a generic value in WKB or EWKB format
  */
 static bytea *
-datum_as_wkb_ext(FunctionCallInfo fcinfo, Datum value, mobdbType type,
+datum_as_wkb_ext(FunctionCallInfo fcinfo, Datum value, meosType type,
   bool extended)
 {
   uint8_t variant = 0;
@@ -237,7 +237,7 @@ datum_as_wkb_ext(FunctionCallInfo fcinfo, Datum value, mobdbType type,
  * @brief Output a generic value in WKB or EWKB format as hex-encoded ASCII
  */
 static text *
-datum_as_hexwkb_ext(FunctionCallInfo fcinfo, Datum value, mobdbType type)
+datum_as_hexwkb_ext(FunctionCallInfo fcinfo, Datum value, meosType type)
 {
   uint8_t variant = 0;
   /* If user specified endianness, respect it */
@@ -299,7 +299,7 @@ Set_as_wkb(PG_FUNCTION_ARGS)
 {
   /* Ensure that the value is detoasted if necessary */
   Set *s = PG_GETARG_SET_P(0);
-  mobdbType settype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  meosType settype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   bytea *result = datum_as_wkb_ext(fcinfo, PointerGetDatum(s), settype,
     false);
   PG_FREE_IF_COPY(s, 0);
@@ -317,7 +317,7 @@ Set_as_hexwkb(PG_FUNCTION_ARGS)
 {
   /* Ensure that the value is detoasted if necessary */
   Set *s = PG_GETARG_TIMESTAMPSET_P(0);
-  mobdbType settype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  meosType settype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   text *result = datum_as_hexwkb_ext(fcinfo, PointerGetDatum(s), settype);
   PG_FREE_IF_COPY(s, 0);
   PG_RETURN_TEXT_P(result);

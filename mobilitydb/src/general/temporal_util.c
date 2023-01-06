@@ -36,6 +36,7 @@
 /* C */
 #include <assert.h>
 /* PostgreSQL */
+#include <postgres.h>
 #include <utils/lsyscache.h>
 #include <catalog/pg_collation_d.h>
 #include <catalog/pg_type_d.h>
@@ -49,7 +50,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 /* MobilityDB */
-#include "pg_general/mobdb_catalog.h"
+#include "pg_general/meos_catalog.h"
 #include "pg_general/doublen.h"
 
 /*****************************************************************************
@@ -60,7 +61,7 @@
  * Call receive function of the base type
  */
 Datum
-call_recv(mobdbType type, StringInfo buf)
+call_recv(meosType type, StringInfo buf)
 {
   if (type == T_DOUBLE2)
     return PointerGetDatum(double2_recv(buf));
@@ -84,7 +85,7 @@ call_recv(mobdbType type, StringInfo buf)
  * Call send function of the base type
  */
 bytea *
-call_send(mobdbType type, Datum value)
+call_send(meosType type, Datum value)
 {
   if (type == T_DOUBLE2)
     return double2_send(DatumGetDouble2P(value));
@@ -223,7 +224,7 @@ temporalarr_extract(ArrayType *array, int *count)
  * Note that the values will be copied into the object even if pass-by-ref type
  */
 ArrayType *
-datumarr_to_array(Datum *values, int count, mobdbType type)
+datumarr_to_array(Datum *values, int count, meosType type)
 {
   int16 elmlen;
   bool elmbyval;
@@ -329,7 +330,7 @@ stboxarr_to_array(STBox *boxarr, int count)
  */
 RangeType *
 range_make(Datum from, Datum to, bool lower_inc, bool upper_inc,
-  mobdbType basetype)
+  meosType basetype)
 {
   Oid rangetypid = 0;
   assert (basetype == T_INT4 || basetype == T_TIMESTAMPTZ);

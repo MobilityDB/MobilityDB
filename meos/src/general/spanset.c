@@ -117,7 +117,7 @@ periodset_find_timestamp(const PeriodSet *ps, TimestampTz t, int *loc)
  * @brief Return a span set from its Well-Known Text (WKT) representation.
  */
 SpanSet *
-spanset_in(const char *str, mobdbType spansettype)
+spanset_in(const char *str, meosType spansettype)
 {
   return spanset_parse(&str, spansettype);
 }
@@ -350,7 +350,7 @@ spanset_copy(const SpanSet *ps)
  * @brief Cast an element as a span set
  */
 SpanSet *
-value_to_spanset(Datum d, mobdbType basetype)
+value_to_spanset(Datum d, meosType basetype)
 {
   ensure_span_basetype(basetype);
   Span s;

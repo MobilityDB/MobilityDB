@@ -389,7 +389,6 @@ CREATE FUNCTION shiftTscale(timestampset, interval, interval)
   AS 'MODULE_PATHNAME', 'Timestampset_shift_tscale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-
 /******************************************************************************
  * Accessor functions
  ******************************************************************************/
@@ -540,6 +539,107 @@ CREATE FUNCTION timestamps(timestampset)
   RETURNS timestamptz[]
   AS 'MODULE_PATHNAME', 'Set_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
+ * Transformation set of values <-> set
+ ******************************************************************************/
+
+CREATE FUNCTION unnest(intset)
+  RETURNS SETOF int
+  AS 'MODULE_PATHNAME', 'Set_unnest'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION unnest(bigintset)
+  RETURNS SETOF bigint
+  AS 'MODULE_PATHNAME', 'Set_unnest'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION unnest(floatset)
+  RETURNS SETOF float
+  AS 'MODULE_PATHNAME', 'Set_unnest'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION unnest(timestampset)
+  RETURNS SETOF timestamptz
+  AS 'MODULE_PATHNAME', 'Set_unnest'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION unnest(textset)
+  RETURNS SETOF text
+  AS 'MODULE_PATHNAME', 'Set_unnest'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************/
+
+-- The function is not STRICT
+CREATE FUNCTION set_agg_transfn(intset, int)
+  RETURNS intset
+  AS 'MODULE_PATHNAME', 'Set_agg_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION set_agg_transfn(bigintset, bigint)
+  RETURNS bigintset
+  AS 'MODULE_PATHNAME', 'Set_agg_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION set_agg_transfn(floatset, float)
+  RETURNS floatset
+  AS 'MODULE_PATHNAME', 'Set_agg_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION set_agg_transfn(timestampset, timestamptz)
+  RETURNS timestampset
+  AS 'MODULE_PATHNAME', 'Set_agg_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION set_agg_transfn(textset, text)
+  RETURNS textset
+  AS 'MODULE_PATHNAME', 'Set_agg_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+CREATE FUNCTION set_agg_combinefn(intset, intset)
+  RETURNS intset
+  AS 'MODULE_PATHNAME', 'Set_agg_combinefn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION set_agg_combinefn(bigintset, bigintset)
+  RETURNS bigintset
+  AS 'MODULE_PATHNAME', 'Set_agg_combinefn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION set_agg_combinefn(floatset, floatset)
+  RETURNS floatset
+  AS 'MODULE_PATHNAME', 'Set_agg_combinefn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION set_agg_combinefn(timestampset, timestampset)
+  RETURNS timestampset
+  AS 'MODULE_PATHNAME', 'Set_agg_combinefn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION set_agg_combinefn(textset, textset)
+  RETURNS textset
+  AS 'MODULE_PATHNAME', 'Set_agg_combinefn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+CREATE AGGREGATE set_agg(int) (
+  SFUNC = set_agg_transfn,
+  STYPE = intset,
+  COMBINEFUNC = set_agg_combinefn,
+  PARALLEL = safe
+);
+CREATE AGGREGATE set_agg(bigint) (
+  SFUNC = set_agg_transfn,
+  STYPE = bigintset,
+  COMBINEFUNC = set_agg_combinefn,
+  PARALLEL = safe
+);
+CREATE AGGREGATE set_agg(float) (
+  SFUNC = set_agg_transfn,
+  STYPE = floatset,
+  COMBINEFUNC = set_agg_combinefn,
+  PARALLEL = safe
+);
+CREATE AGGREGATE set_agg(timestamptz) (
+  SFUNC = set_agg_transfn,
+  STYPE = timestampset,
+  COMBINEFUNC = set_agg_combinefn,
+  PARALLEL = safe
+);
+CREATE AGGREGATE set_agg(text) (
+  SFUNC = set_agg_transfn,
+  STYPE = textset,
+  COMBINEFUNC = set_agg_combinefn,
+  PARALLEL = safe
+);
 
 /*****************************************************************************
  * Selectivity functions

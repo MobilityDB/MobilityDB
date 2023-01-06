@@ -31,14 +31,14 @@
  * @brief Functions for building a cache of type and operator Oids.
  */
 
-#ifndef __PG_MOBDB_CATALOG_H__
-#define __PG_MOBDB_CATALOG_H__
+#ifndef __PG_MEOS_CATALOG_H__
+#define __PG_MEOS_CATALOG_H__
 
 /* PostgreSQL */
 #include <postgres.h>
 /* MEOS */
 #include <meos.h>
-#include "general/mobdb_catalog.h"
+#include "general/meos_catalog.h"
 
 /*****************************************************************************/
 
@@ -85,11 +85,11 @@ typedef enum
 
 /* MobilityDB functions */
 
-extern Oid type_oid(mobdbType t);
-extern Oid oper_oid(CachedOp op, mobdbType lt, mobdbType rt);
-extern mobdbType oid_type(Oid typid);
+extern Oid type_oid(meosType t);
+extern Oid oper_oid(CachedOp op, meosType lt, meosType rt);
+extern meosType oid_type(Oid typid);
 
 /*****************************************************************************/
 
-#endif /* __PG_MOBDB_CATALOG_H__ */
+#endif /* __PG_MEOS_CATALOG_H__ */
 

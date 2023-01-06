@@ -68,14 +68,14 @@ setop_set_span(const Set *os, const Span *s, SetOper setop)
       ((setop == MINUS) && ! contains_span_value(s, v, os->basetype)))
       values[k++] = v;
   }
-  return set_make_free(values, k, os->basetype);
+  return set_make_free(values, k, os->basetype, ORDERED);
 }
 
 /**
  * @brief Return the minimum value of two span base values
  */
 Datum
-span_value_min(Datum l, Datum r, mobdbType type)
+span_value_min(Datum l, Datum r, meosType type)
 {
   ensure_span_basetype(type);
   if (type == T_TIMESTAMPTZ)
@@ -93,7 +93,7 @@ span_value_min(Datum l, Datum r, mobdbType type)
  * @brief Return the minimum value of two span base values
  */
 Datum
-span_value_max(Datum l, Datum r, mobdbType type)
+span_value_max(Datum l, Datum r, meosType type)
 {
   ensure_span_basetype(type);
   if (type == T_TIMESTAMPTZ)
@@ -116,7 +116,7 @@ span_value_max(Datum l, Datum r, mobdbType type)
  * @brief Return true if a span contains a value.
  */
 bool
-contains_span_value(const Span *s, Datum d, mobdbType basetype)
+contains_span_value(const Span *s, Datum d, meosType basetype)
 {
   int cmp = datum_cmp2(s->lower, d, s->basetype, basetype);
   if (cmp > 0 || (cmp == 0 && ! s->lower_inc))
@@ -220,7 +220,7 @@ contains_span_span(const Span *s1, const Span *s2)
  * @brief Return true if a value is contained by a span
  */
 bool
-contained_value_span(Datum d, mobdbType basetype, const Span *s)
+contained_value_span(Datum d, meosType basetype, const Span *s)
 {
   return contains_span_value(s, d, basetype);
 }
@@ -349,7 +349,7 @@ overlaps_span_span(const Span *s1, const Span *s2)
  * @brief Return true if a span and a value are adjacent
  */
 bool
-adjacent_span_value(const Span *s, Datum d, mobdbType basetype)
+adjacent_span_value(const Span *s, Datum d, meosType basetype)
 {
   /*
    * A timestamp A and a span C..D are adjacent if and only if
@@ -452,7 +452,7 @@ adjacent_span_span(const Span *s1, const Span *s2)
  * @brief Return true if a value is strictly to the left of a span.
  */
 bool
-left_value_span(Datum d, mobdbType basetype, const Span *s)
+left_value_span(Datum d, meosType basetype, const Span *s)
 {
   int cmp = datum_cmp2(d, s->lower, basetype, s->basetype);
   return (cmp < 0 || (cmp == 0 && ! s->lower_inc));
@@ -509,7 +509,7 @@ before_timestamp_period(TimestampTz t, const Period *p)
  * @brief Return true if a span is strictly to the left of a value.
  */
 bool
-left_span_value(const Span *s, Datum d, mobdbType basetype)
+left_span_value(const Span *s, Datum d, meosType basetype)
 {
 
   int cmp = datum_cmp2(s->upper, d, s->basetype, basetype);
@@ -608,7 +608,7 @@ left_span_span(const Span *s1, const Span *s2)
  * @brief Return true if a value is strictly to the right of a span.
  */
 bool
-right_value_span(Datum d, mobdbType basetype, const Span *s)
+right_value_span(Datum d, meosType basetype, const Span *s)
 {
   return left_span_value(s, d, basetype);
 }
@@ -675,7 +675,7 @@ right_set_span(const Set *os, const Span *s)
  * @brief Return true if a span is strictly to the right of a value
  */
 bool
-right_span_value(const Span *s, Datum d, mobdbType basetype)
+right_span_value(const Span *s, Datum d, meosType basetype)
 {
   return left_value_span(d, basetype, s);
 }
@@ -757,7 +757,7 @@ right_span_span(const Span *s1, const Span *s2)
  * @brief Return true if a value does not extend to the right of a span.
  */
 bool
-overleft_value_span(Datum d, mobdbType basetype, const Span *s)
+overleft_value_span(Datum d, meosType basetype, const Span *s)
 {
   int cmp = datum_cmp2(d, s->upper, basetype, s->basetype);
   return (cmp < 0 || (cmp == 0 && s->upper_inc));
@@ -827,7 +827,7 @@ overleft_set_span(const Set *os, const Span *s)
  * @brief Return true if a span does not extend to the right of a value.
  */
 bool
-overleft_span_value(const Span *s, Datum d, mobdbType basetype)
+overleft_span_value(const Span *s, Datum d, meosType basetype)
 {
   /* Integer spans are canonicalized and thus their upper bound is exclusive.
    * Therefore, we cannot simply check that s->upper <= d */
@@ -916,7 +916,7 @@ overleft_span_span(const Span *s1, const Span *s2)
  * @brief Return true if a value does not extend to the left of a span.
  */
 bool
-overright_value_span(Datum d, mobdbType basetype, const Span *s)
+overright_value_span(Datum d, meosType basetype, const Span *s)
 {
   int cmp = datum_cmp2(s->lower, d, s->basetype, basetype);
   return (cmp < 0 || (cmp == 0 && s->lower_inc));
@@ -997,7 +997,7 @@ overright_set_spanset(const Set *os, const SpanSet *ss)
  * @brief Return true if a span does not extend to the left of a value.
  */
 bool
-overright_span_value(const Span *s, Datum d, mobdbType basetype)
+overright_span_value(const Span *s, Datum d, meosType basetype)
 {
   return datum_le2(d, s->lower, basetype, s->basetype);
 }
@@ -1094,7 +1094,7 @@ bbox_union_span_span(const Span *s1, const Span *s2)
  * @sqlop @p +
  */
 SpanSet *
-union_span_value(const Span *s, Datum d, mobdbType basetype)
+union_span_value(const Span *s, Datum d, meosType basetype)
 {
   Span s1;
   span_set(d, d, true, true, basetype, &s1);
@@ -1206,7 +1206,7 @@ union_span_span(const Span *s1, const Span *s2)
  * @brief Return the intersection of a span and a value
  */
 bool
-intersection_span_value(const Span *s, Datum d, mobdbType basetype,
+intersection_span_value(const Span *s, Datum d, meosType basetype,
   Datum *result)
 {
   if (! contains_span_value(s, d, basetype))
@@ -1336,7 +1336,7 @@ intersection_span_span(const Span *s1, const Span *s2)
  * @brief Return the difference of a value and a span
  */
 bool
-minus_value_span(Datum d, mobdbType basetype, const Span *s,
+minus_value_span(Datum d, meosType basetype, const Span *s,
   Datum *result)
 {
   if (contains_span_value(s, d, basetype))
@@ -1418,7 +1418,7 @@ minus_set_span(const Set *os, const Span *s)
  * @brief Return the difference of a span and a value.
  */
 int
-minus_span_value1(const Span *s, Datum d, mobdbType basetype, Span **result)
+minus_span_value1(const Span *s, Datum d, meosType basetype, Span **result)
 {
   if (! contains_span_value(s, d, basetype))
   {
@@ -1465,7 +1465,7 @@ minus_span_value1(const Span *s, Datum d, mobdbType basetype, Span **result)
  * @brief Return the difference of a span and a value.
  */
 SpanSet *
-minus_span_value(const Span *s, Datum d, mobdbType basetype)
+minus_span_value(const Span *s, Datum d, meosType basetype)
 {
   Span *spans[2];
   int count = minus_span_value1(s, d, basetype, spans);
@@ -1532,10 +1532,13 @@ minus_period_timestamp(const Period *p, TimestampTz t)
 SpanSet *
 minus_span_set(const Span *s, const Set *os)
 {
+  /* Get the bounding span of the set */
+  Span s1;
+  set_set_span(os, &s1);
   /* Transform the span into a span set */
   SpanSet *ss = span_to_spanset(s);
   /* Bounding box test */
-  if (! overlaps_span_span(s, &ss->span))
+  if (! overlaps_span_span(s, &s1))
     return ss;
 
   /* Call the function for the span set */
@@ -1639,7 +1642,7 @@ minus_span_span(const Span *s1, const Span *s2)
  * @brief Return the distance between the values
  */
 double
-distance_value_value(Datum l, Datum r, mobdbType typel, mobdbType typer)
+distance_value_value(Datum l, Datum r, meosType typel, meosType typer)
 {
   ensure_span_basetype(typel);
   if (typel != typer)
@@ -1668,7 +1671,7 @@ distance_value_value(Datum l, Datum r, mobdbType typel, mobdbType typer)
  * @brief Return the distance between a span and a value.
  */
 double
-distance_span_value(const Span *s, Datum d, mobdbType basetype)
+distance_span_value(const Span *s, Datum d, meosType basetype)
 {
   /* If the span contains the value return 0 */
   if (contains_span_value(s, d, basetype))

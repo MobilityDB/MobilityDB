@@ -198,7 +198,7 @@ double_parse(const char **str)
  * Parse a base value from the buffer
  */
 Datum
-basetype_parse(const char **str, mobdbType basetype)
+basetype_parse(const char **str, meosType basetype)
 {
   p_whitespace(str);
   int delim = 0;
@@ -337,7 +337,7 @@ timestamp_parse(const char **str)
  * Parse a element value from the buffer.
  */
 Datum
-elem_parse(const char **str, mobdbType basetype)
+elem_parse(const char **str, meosType basetype)
 {
   p_whitespace(str);
   int delim = 0;
@@ -357,13 +357,13 @@ elem_parse(const char **str, mobdbType basetype)
  * @brief Parse a timestamp set value from the buffer.
  */
 Set *
-set_parse(const char **str, mobdbType ostype)
+set_parse(const char **str, meosType ostype)
 {
   if (!p_obrace(str))
     elog(ERROR, "Could not parse the set");
 
   /* First parsing */
-  mobdbType basetype = settype_basetype(ostype);
+  meosType basetype = settype_basetype(ostype);
   const char *bak = *str;
   elem_parse(str, basetype);
   int count = 1;
@@ -383,14 +383,14 @@ set_parse(const char **str, mobdbType ostype)
     values[i] = elem_parse(str, basetype);
   }
   p_cbrace(str);
-  return set_make_free(values, count, basetype);
+  return set_make_free(values, count, basetype, ORDERED);
 }
 
 /**
  * @brief Parse a span value from the buffer.
  */
 Span *
-span_parse(const char **str, mobdbType spantype, bool end, bool make)
+span_parse(const char **str, meosType spantype, bool end, bool make)
 {
   bool lower_inc = false, upper_inc = false;
   if (p_obracket(str))
@@ -400,7 +400,7 @@ span_parse(const char **str, mobdbType spantype, bool end, bool make)
   else
     elog(ERROR, "Could not parse span: Missing opening bracket/parenthesis");
 
-  mobdbType basetype = spantype_basetype(spantype);
+  meosType basetype = spantype_basetype(spantype);
   /* The next two instructions will throw an exception if they fail */
   Datum lower = elem_parse(str, basetype);
   p_comma(str);
@@ -425,12 +425,12 @@ span_parse(const char **str, mobdbType spantype, bool end, bool make)
  * @brief Parse a span set value from the buffer.
  */
 SpanSet *
-spanset_parse(const char **str, mobdbType spansettype)
+spanset_parse(const char **str, meosType spansettype)
 {
   if (!p_obrace(str))
     elog(ERROR, "Could not parse span set");
 
-  mobdbType spantype = spansettype_spantype(spansettype);
+  meosType spantype = spansettype_spantype(spansettype);
   /* First parsing */
   const char *bak = *str;
   span_parse(str, spantype, false, false);
@@ -469,10 +469,10 @@ spanset_parse(const char **str, mobdbType spansettype)
  * @param[in] make Set to false for the first pass to do not create the instant
  */
 TInstant *
-tinstant_parse(const char **str, mobdbType temptype, bool end, bool make)
+tinstant_parse(const char **str, meosType temptype, bool end, bool make)
 {
   p_whitespace(str);
-  mobdbType basetype = temptype_basetype(temptype);
+  meosType basetype = temptype_basetype(temptype);
   /* The next two instructions will throw an exception if they fail */
   Datum elem = basetype_parse(str, basetype);
   TimestampTz t = timestamp_parse(str);
@@ -490,7 +490,7 @@ tinstant_parse(const char **str, mobdbType temptype, bool end, bool make)
  * @param[in] temptype Base type
  */
 TSequence *
-tdiscseq_parse(const char **str, mobdbType temptype)
+tdiscseq_parse(const char **str, meosType temptype)
 {
   p_whitespace(str);
   /* We are sure to find an opening brace because that was the condition
@@ -535,7 +535,7 @@ tdiscseq_parse(const char **str, mobdbType temptype)
  * @param[in] make Set to false for the first pass to do not create the sequence
  */
 TSequence *
-tcontseq_parse(const char **str, mobdbType temptype, interpType interp, bool end,
+tcontseq_parse(const char **str, meosType temptype, interpType interp, bool end,
   bool make)
 {
   p_whitespace(str);
@@ -589,7 +589,7 @@ tcontseq_parse(const char **str, mobdbType temptype, interpType interp, bool end
  * @param[in] interp Interpolation
  */
 TSequenceSet *
-tsequenceset_parse(const char **str, mobdbType temptype, interpType interp)
+tsequenceset_parse(const char **str, meosType temptype, interpType interp)
 {
   p_whitespace(str);
   /* We are sure to find an opening brace because that was the condition
@@ -629,7 +629,7 @@ tsequenceset_parse(const char **str, mobdbType temptype, interpType interp)
  * @param[in] temptype Temporal type
  */
 Temporal *
-temporal_parse(const char **str, mobdbType temptype)
+temporal_parse(const char **str, meosType temptype)
 {
   p_whitespace(str);
   Temporal *result = NULL;  /* keep compiler quiet */

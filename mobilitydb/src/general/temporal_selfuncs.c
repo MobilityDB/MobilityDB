@@ -65,7 +65,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 /* MobilityDB */
-#include "pg_general/mobdb_catalog.h"
+#include "pg_general/meos_catalog.h"
 #include "pg_general/span_selfuncs.h"
 #include "pg_general/temporal_analyze.h"
 #include "pg_general/tnumber_selfuncs.h"
@@ -85,7 +85,7 @@ static bool
 temporal_const_to_period(Node *other, Period *period)
 {
   Oid consttype = ((Const *) other)->consttype;
-  mobdbType type = oid_type(consttype);
+  meosType type = oid_type(consttype);
   if (time_type(type))
     time_const_to_period(other, period);
   else if (type == T_TBOOL || type == T_TTEXT)
@@ -331,7 +331,7 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
   else /* tempfamily == TNUMBERTYPE */
   {
     /* Get the base type of the temporal column */
-    mobdbType basetype = temptype_basetype(oid_type(vardata.atttype));
+    meosType basetype = temptype_basetype(oid_type(vardata.atttype));
     /* Transform the constant into a span and/or a period */
     Span *s = NULL;
     Period *p = NULL;
@@ -429,8 +429,8 @@ temporal_joinsel(PlannerInfo *root, Oid operid, List *args,
   }
   else /* tempfamily == TNUMBERTYPE */
   {
-    mobdbType oprleft = oid_type(var1->vartype);
-    mobdbType oprright = oid_type(var2->vartype);
+    meosType oprleft = oid_type(var1->vartype);
+    meosType oprright = oid_type(var2->vartype);
     if (! tnumber_joinsel_components(cachedOp, oprleft, oprright,
       &value, &time))
       /* In the case of unknown arguments */

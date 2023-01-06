@@ -42,8 +42,8 @@
 #include <postgres.h>
 /* PostGIS */
 #include <liblwgeom.h>
-/* MobilityDB */
-#include "general/mobdb_catalog.h"
+/* MEOS */
+#include "general/meos_catalog.h"
 #include "general/span.h"
 #include "general/temporal.h"
 

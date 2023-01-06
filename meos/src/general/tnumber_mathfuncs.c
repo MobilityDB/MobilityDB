@@ -39,8 +39,9 @@
 #include <assert.h>
 #include <math.h>
 /* PostgreSQL */
+#include <postgres.h>
 #include <utils/float.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/pg_types.h"
@@ -176,9 +177,9 @@ tnumber_div_tp_at_timestamp(const TInstant *start1, const TInstant *end1,
  * function
  */
 Temporal *
-arithop_tnumber_number(const Temporal *temp, Datum value, mobdbType basetype,
+arithop_tnumber_number(const Temporal *temp, Datum value, meosType basetype,
   TArithmetic oper,
-  Datum (*func)(Datum, Datum, mobdbType, mobdbType), bool invert)
+  Datum (*func)(Datum, Datum, meosType, meosType), bool invert)
 {
   ensure_tnumber_basetype(basetype);
   /* If division test whether the denominator is zero */
@@ -225,7 +226,7 @@ arithop_tnumber_number(const Temporal *temp, Datum value, mobdbType basetype,
  */
 Temporal *
 arithop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
-  TArithmetic oper, Datum (*func)(Datum, Datum, mobdbType, mobdbType),
+  TArithmetic oper, Datum (*func)(Datum, Datum, meosType, meosType),
   bool (*tpfunc)(const TInstant *, const TInstant *, const TInstant *,
     const TInstant *, Datum *, TimestampTz *))
 {
@@ -334,7 +335,7 @@ tfloatseq_derivative(const TSequence *seq)
   const TInstant *inst1 = tsequence_inst_n(seq, 0);
   Datum value1 = tinstant_value(inst1);
   double derivative;
-  mobdbType basetype = temptype_basetype(seq->temptype);
+  meosType basetype = temptype_basetype(seq->temptype);
   for (int i = 0; i < seq->count - 1; i++)
   {
     const TInstant *inst2 = tsequence_inst_n(seq, i + 1);

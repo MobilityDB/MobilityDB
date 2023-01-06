@@ -34,8 +34,8 @@
 #ifndef __TBOX_H__
 #define __TBOX_H__
 
-/* MobilityDB */
-#include "general/mobdb_catalog.h"
+/* MEOS */
+#include "general/meos_catalog.h"
 #include "general/span.h"
 #include "general/timetypes.h"
 

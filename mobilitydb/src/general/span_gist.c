@@ -48,7 +48,7 @@
 #include "general/spanset.h"
 #include "general/temporal.h"
 /* MobilityDB */
-#include "pg_general/mobdb_catalog.h"
+#include "pg_general/meos_catalog.h"
 #include "pg_general/temporal.h"
 
 /*****************************************************************************
@@ -159,7 +159,7 @@ span_index_recheck(StrategyNumber strategy)
 static bool
 span_gist_get_span(FunctionCallInfo fcinfo, Span *result, Oid typid)
 {
-  mobdbType type = oid_type(typid);
+  meosType type = oid_type(typid);
   if (type == T_INT4 || type == T_INT8 || type == T_FLOAT8 ||
     type == T_TIMESTAMPTZ)
   {

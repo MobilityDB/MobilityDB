@@ -28,41 +28,52 @@
  *****************************************************************************/
 
 /**
- * @brief Input of temporal points in WKT, EWKT, , EWKB, and MF-JSON format.
+ * @brief Aggregate functions for set types.
  */
 
+/* C */
+#include <assert.h>
+/* PostgreSQL */
+#include <postgres.h>
 /* MEOS */
+#include <meos.h>
+#include <meos_internal.h>
 #include "general/temporal_util.h"
-#include "point/tpoint_parser.h"
-/* MobilityDB */
-#include "pg_general/meos_catalog.h"
 
 /*****************************************************************************
- * Input in EWKT format
+ * Aggregate functions for set types
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Tpoint_from_ewkt);
 /**
- * @ingroup mobilitydb_temporal_inout
- * @brief Input a temporal point from its Extended Well-Known Text (EWKT)
- * representation.
- * @note This just does the same thing as the _in function, except it has to handle
- * a 'text' input. First, unwrap the text into a cstring, then do as tpoint_in
- * @sqlfunc tgeompointFromText(), tgeogpointFromText(), tgeompointFromEWKT(),
- * tgeogpointFromEWKT()
+ * @ingroup libmeos_setspan_agg
+ * @brief Transition function for set aggregate of values
  */
-PGDLLEXPORT Datum
-Tpoint_from_ewkt(PG_FUNCTION_ARGS)
+Set *
+set_agg_transfn(Set *state, Datum d, meosType basetype)
 {
-  text *wkt_text = PG_GETARG_TEXT_P(0);
-  Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
-  char *wkt = text2cstring(wkt_text);
-  /* Copy the pointer since it will be advanced during parsing */
-  const char *wkt_ptr = wkt;
-  Temporal *result = tpoint_parse(&wkt_ptr, oid_type(temptypid));
-  pfree(wkt);
-  PG_FREE_IF_COPY(wkt_text, 0);
-  PG_RETURN_POINTER(result);
+  /* Null set: create a new set with the value */
+  if (! state)
+    return set_make(&d, 1, basetype, ORDERED);
+
+  return union_set_value(state, d, basetype);
+}
+
+/**
+ * @ingroup libmeos_setspan_agg
+ * @brief Combine function for tset aggregate of values
+ *
+ * @param[in] state1, state2 State values
+ */
+Set *
+set_agg_combinefn(Set *state1, Set *state2)
+{
+  if (! state1)
+    return state2;
+  if (! state2)
+    return state1;
+
+  assert(state1->settype == state2->settype);
+  return union_set_set(state1, state2);
 }
 
 /*****************************************************************************/

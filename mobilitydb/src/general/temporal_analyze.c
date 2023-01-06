@@ -86,7 +86,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 /* MobilityDB */
-#include "pg_general/mobdb_catalog.h"
+#include "pg_general/meos_catalog.h"
 #include "pg_general/span_analyze.h"
 #include "pg_general/temporal.h"
 #include "pg_general/temporal_analyze.h"
@@ -132,7 +132,7 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   SpanBound *value_lowers, *value_uppers;
   SpanBound *time_lowers, *time_uppers;
   double total_width = 0;
-  mobdbType spantype; /* make compiler quiet */
+  meosType spantype;
 
   temporal_extra_data = (TemporalAnalyzeExtraData *)stats->extra_data;
 
@@ -283,7 +283,7 @@ temporal_extra_info(VacAttrStats *stats)
   extra_data->hash = &typentry->hash_proc_finfo;
 
   /* Information about the value type */
-  mobdbType basetype = temptype_basetype(oid_type(stats->attrtypid));
+  meosType basetype = temptype_basetype(oid_type(stats->attrtypid));
   typentry = lookup_type_cache(type_oid(basetype),
     TYPECACHE_EQ_OPR | TYPECACHE_LT_OPR | TYPECACHE_CMP_PROC_FINFO |
     TYPECACHE_HASH_PROC_FINFO);

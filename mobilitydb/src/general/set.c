@@ -42,6 +42,7 @@
 #else
   #include <access/tuptoaster.h>
 #endif
+#include <funcapi.h>
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
@@ -49,7 +50,7 @@
 #include "general/temporal_out.h"
 #include "general/temporal_util.h"
 /* MobilityDB */
-#include "pg_general/mobdb_catalog.h"
+#include "pg_general/meos_catalog.h"
 #include "pg_general/temporal.h"
 #include "pg_general/temporal_util.h"
 #include "pg_general/tnumber_mathfuncs.h"
@@ -137,11 +138,11 @@ Set_constructor(PG_FUNCTION_ARGS)
 {
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
   ensure_non_empty_array(array);
-  mobdbType settype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
+  meosType settype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
   int count;
   Datum *values = datumarr_extract(array, &count);
-  mobdbType basetype = settype_basetype(settype);
-  Set *result = set_make_free(values, count, basetype);
+  meosType basetype = settype_basetype(settype);
+  Set *result = set_make_free(values, count, basetype, ORDERED);
   PG_FREE_IF_COPY(array, 0);
   PG_RETURN_POINTER(result);
 }
@@ -160,7 +161,7 @@ PGDLLEXPORT Datum
 Value_to_set(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   TimestampSet *result = value_to_set(d, basetype);
   PG_RETURN_POINTER(result);
 }
@@ -387,6 +388,98 @@ Timestampset_shift_tscale(PG_FUNCTION_ARGS)
   ensure_valid_duration(duration);
   TimestampSet *result = timestampset_shift_tscale(ts, shift, duration);
   PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Unnest function
+ *****************************************************************************/
+
+/**
+ * Create the initial state that persists across multiple calls of the function
+ *
+ * @param[in] set Set value
+ * @param[in] values Array of values appearing in the temporal value
+ * @param[in] count Number of elements in the input array
+ */
+SetUnnestState *
+set_unnest_state_make(const Set *set, Datum *values, int count)
+{
+  SetUnnestState *state = palloc0(sizeof(SetUnnestState));
+  /* Fill in state */
+  state->done = false;
+  state->i = 0;
+  state->count = count;
+  state->values = values;
+  state->set = set_copy(set);
+  return state;
+}
+
+/**
+ * Increment the current state to the next unnest value
+ *
+ * @param[in] state State to increment
+ */
+void
+set_unnest_state_next(SetUnnestState *state)
+{
+  if (!state || state->done)
+    return;
+  /* Move to the next bucket */
+  state->i++;
+  if (state->i == state->count)
+    state->done = true;
+  return;
+}
+
+PG_FUNCTION_INFO_V1(Set_unnest);
+/**
+ * Generate a list of values from a set.
+ */
+PGDLLEXPORT Datum
+Set_unnest(PG_FUNCTION_ARGS)
+{
+  FuncCallContext *funcctx;
+  SetUnnestState *state;
+
+  /* If the function is being called for the first time */
+  if (SRF_IS_FIRSTCALL())
+  {
+    /* Initialize the FuncCallContext */
+    funcctx = SRF_FIRSTCALL_INIT();
+    /* Switch to memory context appropriate for multiple function calls */
+    MemoryContext oldcontext =
+      MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+    /* Get input parameters */
+    Set *set = PG_GETARG_SET_P(0);
+    /* Create function state */
+    Datum *values = set_values(set);
+    funcctx->user_fctx = set_unnest_state_make(set, values, set->count);
+    MemoryContextSwitchTo(oldcontext);
+  }
+
+  /* Stuff done on every call of the function */
+  funcctx = SRF_PERCALL_SETUP();
+  /* Get state */
+  state = funcctx->user_fctx;
+  /* Stop when we've used up all buckets */
+  if (state->done)
+  {
+    /* Switch to memory context appropriate for multiple function calls */
+    MemoryContext oldcontext =
+      MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+    // pfree(state->values);
+    // pfree(state->set);
+    pfree(state);
+    MemoryContextSwitchTo(oldcontext);
+    SRF_RETURN_DONE(funcctx);
+  }
+
+  /* Get value */
+  Datum result = state->values[state->i];
+  /* Advance state */
+  set_unnest_state_next(state);
+  /* Return */
+  SRF_RETURN_NEXT(funcctx, result);
 }
 
 /*****************************************************************************

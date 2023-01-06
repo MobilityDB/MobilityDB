@@ -4,10 +4,11 @@ set parallel_setup_cost=0;
 SET
 set force_parallel_mode=regress;
 SET
-SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE contains(g, temp);
+SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint
+WHERE geometrytype(getvalues(temp)) <> 'GEOMETRYCOLLECTION' AND contains(g, temp);
  count 
 -------
-  3280
+  2897
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE disjoint(g, temp);

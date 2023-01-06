@@ -38,7 +38,7 @@
 #include <meos_internal.h>
 #include "general/temporal_util.h"
 /* MobilityDB */
-#include "pg_general/mobdb_catalog.h"
+#include "pg_general/meos_catalog.h"
 #include "pg_general/temporal.h"
 
 /*****************************************************************************
@@ -51,11 +51,11 @@
  */
 static Datum
 tcomp_base_temporal_ext(FunctionCallInfo fcinfo,
-  Datum (*func)(Datum, Datum, mobdbType, mobdbType))
+  Datum (*func)(Datum, Datum, meosType, meosType))
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   bool restr = false;
   Datum atvalue = (Datum) NULL;
   if (PG_NARGS() == 3)
@@ -84,11 +84,11 @@ tcomp_base_temporal_ext(FunctionCallInfo fcinfo,
  */
 Datum
 tcomp_temporal_base_ext(FunctionCallInfo fcinfo,
-  Datum (*func)(Datum, Datum, mobdbType, mobdbType))
+  Datum (*func)(Datum, Datum, meosType, meosType))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_ANYDATUM(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   bool restr = false;
   Datum atvalue = (Datum) NULL;
   if (PG_NARGS() == 3)
@@ -117,7 +117,7 @@ tcomp_temporal_base_ext(FunctionCallInfo fcinfo,
  */
 Datum
 tcomp_temporal_temporal_ext(FunctionCallInfo fcinfo,
-  Datum (*func)(Datum, Datum, mobdbType, mobdbType))
+  Datum (*func)(Datum, Datum, meosType, meosType))
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);

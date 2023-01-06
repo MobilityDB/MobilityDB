@@ -67,7 +67,7 @@ set_aggregation_context(FunctionCallInfo fcinfo)
   MemoryContext ctx;
   if (! AggCheckCallContext(fcinfo, &ctx))
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-      errmsg("Operation not supported")));
+      errmsg("Cannot switch to aggregation context")));
   return MemoryContextSwitchTo(ctx);
 }
 

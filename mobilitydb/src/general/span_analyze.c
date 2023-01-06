@@ -53,7 +53,7 @@
 #include <meos_internal.h>
 #include "general/set.h"
 /* MobilityDB */
-#include "pg_general/mobdb_catalog.h"
+#include "pg_general/meos_catalog.h"
 
 /*****************************************************************************/
 
@@ -86,7 +86,7 @@ float8_qsort_cmp(const void *a1, const void *a2)
  */
 void
 span_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
-  SpanBound *lowers, SpanBound *uppers, float8 *lengths, mobdbType spantype)
+  SpanBound *lowers, SpanBound *uppers, float8 *lengths, meosType spantype)
 {
   int num_hist, num_bins = stats->attr->attstattarget;
   Datum *bound_hist_values, *length_hist_values;
@@ -239,7 +239,7 @@ span_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
  */
 static void
 span_compute_stats_generic(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-  int samplerows, mobdbType type)
+  int samplerows, meosType type)
 {
   int null_cnt = 0, non_null_cnt = 0, slot_idx = 0;
   float8 *lengths;

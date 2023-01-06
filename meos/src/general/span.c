@@ -258,7 +258,7 @@ spanarr_normalize(Span **spans, int count, bool sort, int *newcount)
  * @brief Return a span from its Well-Known Text (WKT) representation.
  */
 Span *
-span_in(const char *str, mobdbType spantype)
+span_in(const char *str, meosType spantype)
 {
   return span_parse(&str, spantype, true, true);
 }
@@ -395,7 +395,7 @@ period_out(const Span *s)
  */
 Span *
 span_make(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
-  mobdbType basetype)
+  meosType basetype)
 {
   /* Note: zero-fill is done in the span_set function */
   Span *s = palloc(sizeof(Span));
@@ -473,7 +473,7 @@ period_make(TimestampTz lower, TimestampTz upper, bool lower_inc,
  */
 void
 span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
-  mobdbType basetype, Span *s)
+  meosType basetype, Span *s)
 {
   /* Canonicalize */
   if (basetype == T_INT4)
@@ -503,7 +503,7 @@ span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
     }
   }
 
-  mobdbType spantype = basetype_spantype(basetype);
+  meosType spantype = basetype_spantype(basetype);
   int cmp = datum_cmp2(lower, upper, basetype, basetype);
   /* error check: if lower bound value is above upper, it's wrong */
   if (cmp > 0)
@@ -546,7 +546,7 @@ span_copy(const Span *s)
  * @brief Cast a value as a span
  */
 Span *
-value_to_span(Datum d, mobdbType basetype)
+value_to_span(Datum d, meosType basetype)
 {
   ensure_span_basetype(basetype);
   Span *result = span_make(d, d, true, true, basetype);

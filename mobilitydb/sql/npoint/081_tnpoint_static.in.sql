@@ -256,13 +256,13 @@ CREATE OPERATOR <= (
   PROCEDURE = npoint_le,
   LEFTARG = npoint, RIGHTARG = npoint,
   COMMUTATOR = >=, NEGATOR = >,
-  RESTRICT = @SCALAR_LE@, JOIN = @JOIN_LE@
+  RESTRICT = scalarlesel, JOIN = scalarlejoinsel
 );
 CREATE OPERATOR >= (
   PROCEDURE = npoint_ge,
   LEFTARG = npoint, RIGHTARG = npoint,
   COMMUTATOR = <=, NEGATOR = <,
-  RESTRICT = @SCALAR_GE@, JOIN = @JOIN_GE@
+  RESTRICT = scalargesel, JOIN = scalargejoinsel
 );
 CREATE OPERATOR > (
   PROCEDURE = npoint_gt,
@@ -333,13 +333,13 @@ CREATE OPERATOR <= (
   PROCEDURE = nsegment_le,
   LEFTARG = nsegment, RIGHTARG = nsegment,
   COMMUTATOR = >=, NEGATOR = >,
-  RESTRICT = @SCALAR_LE@, JOIN = @JOIN_LE@
+  RESTRICT = scalarlesel, JOIN = scalarlejoinsel
 );
 CREATE OPERATOR >= (
   PROCEDURE = nsegment_ge,
   LEFTARG = nsegment, RIGHTARG = nsegment,
   COMMUTATOR = <=, NEGATOR = <,
-  RESTRICT = @SCALAR_GE@, JOIN = @JOIN_GE@
+  RESTRICT = scalargesel, JOIN = scalargejoinsel
 );
 CREATE OPERATOR > (
   PROCEDURE = nsegment_gt,

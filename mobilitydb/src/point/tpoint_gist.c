@@ -44,9 +44,10 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/set.h"
 #include "general/temporal_util.h"
 /* MobilityDB */
-#include "pg_general/mobdb_catalog.h"
+#include "pg_general/meos_catalog.h"
 #include "pg_general/temporal.h"
 #include "pg_general/time_gist.h"
 #include "pg_general/tnumber_gist.h"
@@ -272,7 +273,7 @@ tpoint_index_recheck(StrategyNumber strategy)
  */
 static bool
 tpoint_gist_get_stbox(FunctionCallInfo fcinfo, STBox *result,
-  mobdbType type)
+  meosType type)
 {
   if (tgeo_basetype(type))
   {
@@ -288,8 +289,10 @@ tpoint_gist_get_stbox(FunctionCallInfo fcinfo, STBox *result,
   }
   else if (type == T_TIMESTAMPSET)
   {
-    Datum tsdatum = PG_GETARG_DATUM(1);
-    timestampset_stbox_slice(tsdatum, result);
+    Set *set = PG_GETARG_SET_P(1);
+    if (set == NULL)
+      return false;
+    timestampset_set_stbox(set, result);
   }
   else if (type == T_PERIOD)
   {

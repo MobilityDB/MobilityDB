@@ -55,8 +55,12 @@ extern TSequence **tseqarr2_to_tseqarr(TSequence ***sequences,
 
 /* Append and merge functions */
 
-extern TSequence **tseqarr_normalize(const TSequence **sequences,
-  int count, int *newcount);
+extern bool tsequence_join_test(const TSequence *seq1, const TSequence *seq2,
+  bool *removelast, bool *removefirst);
+extern TSequence *tsequence_join(const TSequence *seq1, const TSequence *seq2,
+  bool removelast, bool removefirst);
+extern TSequence **tseqarr_normalize(const TSequence **sequences, int count,
+  int *newcount);
 extern TSequence **tsequence_merge_array1(const TSequence **sequences,
   int count, int *totalcount);
 
@@ -69,7 +73,7 @@ extern bool synchronize_tsequence_tsequence(const TSequence *seq1,
 /* Intersection functions */
 
 extern bool tlinearsegm_intersection_value(const TInstant *inst1,
-  const TInstant *inst2, Datum value, mobdbType basetype, Datum *inter,
+  const TInstant *inst2, Datum value, meosType basetype, Datum *inter,
   TimestampTz *t);
 extern bool tsegment_intersection(const TInstant *start1,
   const TInstant *end1, bool linear1, const TInstant *start2,

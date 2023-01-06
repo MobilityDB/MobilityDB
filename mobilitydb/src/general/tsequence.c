@@ -53,7 +53,7 @@
  * @param[in] temptype Temporal type
  */
 TSequence *
-tsequence_recv(StringInfo buf, mobdbType temptype)
+tsequence_recv(StringInfo buf, meosType temptype)
 {
   int count = (int) pq_getmsgint(buf, 4);
   bool lower_inc = (char) pq_getmsgbyte(buf);

@@ -34,8 +34,8 @@
 #ifndef __TEMPORAL_PARSER_H__
 #define __TEMPORAL_PARSER_H__
 
-/* MobilityDB */
-#include "general/mobdb_catalog.h"
+/* MEOS */
+#include "general/meos_catalog.h"
 #include "general/span.h"
 #include "general/timetypes.h"
 #include "general/temporal.h"
@@ -52,22 +52,22 @@ extern bool p_cbracket(const char **str);
 extern bool p_oparen(const char **str);
 extern bool p_cparen(const char **str);
 extern bool p_comma(const char **str);
-extern Datum basetype_parse(const char **str, mobdbType basetypid);
+extern Datum basetype_parse(const char **str, meosType basetypid);
 extern double double_parse(const char **str);
-extern Datum elem_parse(const char **str, mobdbType basetype);
-extern Set *set_parse(const char **str, mobdbType basetype);
-extern Span *span_parse(const char **str, mobdbType spantype, bool end, bool make);
-extern SpanSet *spanset_parse(const char **str, mobdbType spantype);
+extern Datum elem_parse(const char **str, meosType basetype);
+extern Set *set_parse(const char **str, meosType basetype);
+extern Span *span_parse(const char **str, meosType spantype, bool end, bool make);
+extern SpanSet *spanset_parse(const char **str, meosType spantype);
 extern TBox *tbox_parse(const char **str);
 extern TimestampTz timestamp_parse(const char **str);
-extern TInstant *tinstant_parse(const char **str, mobdbType temptype, bool end,
+extern TInstant *tinstant_parse(const char **str, meosType temptype, bool end,
   bool make);
-extern TSequence *tdiscseq_parse(const char **str, mobdbType temptype);
-extern TSequence *tcontseq_parse(const char **str, mobdbType temptype,
+extern TSequence *tdiscseq_parse(const char **str, meosType temptype);
+extern TSequence *tcontseq_parse(const char **str, meosType temptype,
   interpType interp, bool end, bool make);
-extern TSequenceSet *tsequenceset_parse(const char **str, mobdbType temptype,
+extern TSequenceSet *tsequenceset_parse(const char **str, meosType temptype,
   interpType interp);
-extern Temporal *temporal_parse(const char **str, mobdbType temptype);
+extern Temporal *temporal_parse(const char **str, meosType temptype);
 
 /*****************************************************************************/
 

@@ -62,7 +62,7 @@
  * @param[out] span Output span
  */
 void
-span_bucket_set(Datum lower, Datum size, mobdbType basetype, Span *span)
+span_bucket_set(Datum lower, Datum size, meosType basetype, Span *span)
 {
   Datum upper = (basetype == T_TIMESTAMPTZ) ?
     TimestampTzGetDatum(DatumGetTimestampTz(lower) + DatumGetInt64(size)) :
@@ -78,7 +78,7 @@ span_bucket_set(Datum lower, Datum size, mobdbType basetype, Span *span)
  * @param[in] basetype Type of the arguments
  */
 Span *
-span_bucket_get(Datum lower, Datum size, mobdbType basetype)
+span_bucket_get(Datum lower, Datum size, meosType basetype)
 {
   Span *result = palloc(sizeof(Span));
   span_bucket_set(lower, size, basetype, result);
@@ -304,7 +304,7 @@ timestamptz_bucket(TimestampTz t, const Interval *duration, TimestampTz origin)
  * @param[in] basetype Data type of the arguments
  */
 Datum
-datum_bucket(Datum value, Datum size, Datum origin, mobdbType basetype)
+datum_bucket(Datum value, Datum size, Datum origin, meosType basetype)
 {
   ensure_positive_datum(size, basetype);
   ensure_span_basetype(basetype);
@@ -927,7 +927,7 @@ temporal_time_split1(const Temporal *temp, TimestampTz start, TimestampTz end,
  * @param[in] type Type of the arguments
  */
 static int
-bucket_position(Datum value, Datum size, Datum origin, mobdbType type)
+bucket_position(Datum value, Datum size, Datum origin, meosType type)
 {
   ensure_tnumber_basetype(type);
   if (type == T_INT4)
@@ -954,7 +954,7 @@ tnumberinst_value_split(const TInstant *inst, Datum start_bucket, Datum size,
   Datum **buckets, int *newcount)
 {
   Datum value = tinstant_value(inst);
-  mobdbType basetype = temptype_basetype(inst->temptype);
+  meosType basetype = temptype_basetype(inst->temptype);
   TInstant **result = palloc(sizeof(TInstant *));
   Datum *values = palloc(sizeof(Datum));
   result[0] = tinstant_copy(inst);
@@ -980,7 +980,7 @@ static TSequence **
 tnumberseq_disc_value_split(const TSequence *seq, Datum start_bucket,
   Datum size, int count, Datum **buckets, int *newcount)
 {
-  mobdbType basetype = temptype_basetype(seq->temptype);
+  meosType basetype = temptype_basetype(seq->temptype);
   TSequence **result;
   Datum *values, value, bucket_value;
 
@@ -1051,7 +1051,7 @@ tnumberseq_step_value_split(const TSequence *seq, Datum start_bucket,
   Datum size, int count, TSequence **result, int *numseqs, int numcols)
 {
   assert(! MOBDB_FLAGS_GET_LINEAR(seq->flags));
-  mobdbType basetype = temptype_basetype(seq->temptype);
+  meosType basetype = temptype_basetype(seq->temptype);
   Datum value, bucket_value;
   int bucket_no, seq_no;
 
@@ -1125,7 +1125,7 @@ tnumberseq_linear_value_split(const TSequence *seq, Datum start_bucket,
   Datum size, int count, TSequence **result, int *numseqs, int numcols)
 {
   assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
-  mobdbType basetype = temptype_basetype(seq->temptype);
+  meosType basetype = temptype_basetype(seq->temptype);
   Datum value1, bucket_value1;
   int bucket_no1, seq_no;
   Span segspan;
@@ -1287,7 +1287,7 @@ static TSequenceSet **
 tnumberseq_value_split(const TSequence *seq, Datum start_bucket, Datum size,
   int count, Datum **buckets, int *newcount)
 {
-  mobdbType basetype = temptype_basetype(seq->temptype);
+  meosType basetype = temptype_basetype(seq->temptype);
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
@@ -1354,7 +1354,7 @@ tnumberseqset_value_split(const TSequenceSet *ss, Datum start_bucket,
       size, count, buckets, newcount);
 
   /* General case */
-  mobdbType basetype = temptype_basetype(ss->temptype);
+  meosType basetype = temptype_basetype(ss->temptype);
   TSequence **bucketseqs = palloc(sizeof(TSequence *) * ss->totalcount * count);
   /* palloc0 to initialize the counters to 0 */
   int *numseqs = palloc0(sizeof(int) * count);
@@ -1431,7 +1431,7 @@ temporal_value_time_split1(Temporal *temp, Datum size, Interval *duration,
   Datum vorigin, TimestampTz torigin, bool valuesplit, bool timesplit,
   Datum **value_buckets, TimestampTz **time_buckets, int *newcount)
 {
-  mobdbType basetype = temptype_basetype(temp->temptype);
+  meosType basetype = temptype_basetype(temp->temptype);
   int64 tunits = 0;
   if (valuesplit)
     ensure_positive_datum(size, basetype);

@@ -43,7 +43,7 @@
 #include "general/set.h"
 #include "general/temporal_util.h"
 /* MobilityDB */
-#include "pg_general/mobdb_catalog.h"
+#include "pg_general/meos_catalog.h"
 
 /*****************************************************************************
  * Contains
@@ -61,7 +61,7 @@ Contains_span_value(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   Datum d = PG_GETARG_DATUM(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   PG_RETURN_BOOL(contains_span_value(s, d, basetype));
 }
 
@@ -113,7 +113,7 @@ Contained_value_span(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
   Span *s = PG_GETARG_SPAN_P(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   PG_RETURN_BOOL(contained_value_span(d, basetype, s));
 }
 
@@ -218,7 +218,7 @@ Adjacent_value_span(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
   Span *s = PG_GETARG_SPAN_P(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   PG_RETURN_BOOL(adjacent_span_value(s, d, basetype));
 }
 
@@ -251,7 +251,7 @@ Adjacent_span_value(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   Datum d = PG_GETARG_DATUM(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   PG_RETURN_BOOL(adjacent_span_value(s, d, basetype));
 }
 
@@ -303,7 +303,7 @@ Left_value_span(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
   Span *s = PG_GETARG_SPAN_P(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   PG_RETURN_BOOL(left_value_span(d, basetype, s));
 }
 
@@ -336,7 +336,7 @@ Left_span_value(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   Datum d = PG_GETARG_DATUM(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   PG_RETURN_BOOL(left_span_value(s, d, basetype));
 }
 
@@ -388,7 +388,7 @@ Right_value_span(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
   Span *s = PG_GETARG_SPAN_P(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   PG_RETURN_BOOL(right_value_span(d, basetype, s));
 }
 
@@ -420,7 +420,7 @@ Right_span_value(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   Datum d = PG_GETARG_DATUM(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   PG_RETURN_BOOL(right_span_value(s, d, basetype));
 }
 
@@ -472,7 +472,7 @@ Overleft_value_span(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
   Span *s = PG_GETARG_SPAN_P(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   PG_RETURN_BOOL(overleft_value_span(d, basetype, s));
 }
 
@@ -505,7 +505,7 @@ Overleft_span_value(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   Datum d = PG_GETARG_DATUM(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   PG_RETURN_BOOL(overleft_span_value(s, d, basetype));
 }
 
@@ -557,7 +557,7 @@ Overright_value_span(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
   Span *s = PG_GETARG_SPAN_P(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   PG_RETURN_BOOL(overright_value_span(d, basetype, s));
 }
 
@@ -590,7 +590,7 @@ Overright_span_value(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   Datum d = PG_GETARG_DATUM(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   PG_RETURN_BOOL(overright_span_value(s, d, basetype));
 }
 
@@ -642,7 +642,7 @@ Union_value_span(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
   Span *s = PG_GETARG_SPAN_P(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   SpanSet *result = union_span_value(s, d, basetype);
   PG_RETURN_POINTER(result);
 }
@@ -676,7 +676,7 @@ Union_span_value(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   Datum d = PG_GETARG_DATUM(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   SpanSet *result = union_span_value(s, d, basetype);
   PG_RETURN_POINTER(result);
 }
@@ -729,7 +729,7 @@ Intersection_value_span(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
   Span *s = PG_GETARG_SPAN_P(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   Datum result;
   bool found = intersection_span_value(s, d, basetype, &result);
   if (! found)
@@ -768,7 +768,7 @@ Intersection_span_value(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   Datum d = PG_GETARG_DATUM(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   Datum result;
   bool found = intersection_span_value(s, d, basetype, &result);
   if (! found)
@@ -829,7 +829,7 @@ Minus_value_span(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
   Span *s = PG_GETARG_SPAN_P(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   Datum result;
   bool found = minus_value_span(d, basetype, s, &result);
   if (! found)
@@ -868,7 +868,7 @@ Minus_span_value(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   Datum d = PG_GETARG_DATUM(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   SpanSet *result = minus_span_value(s, d, basetype);
   if (! result)
     PG_RETURN_NULL();
@@ -929,8 +929,8 @@ Distance_value_value(PG_FUNCTION_ARGS)
 {
   Datum d1 = PG_GETARG_DATUM(0);
   Datum d2 = PG_GETARG_DATUM(1);
-  mobdbType basetype1 = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  mobdbType basetype2 = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  meosType basetype1 = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  meosType basetype2 = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   double result = distance_value_value(d1, d2, basetype1, basetype2);
   PG_RETURN_FLOAT8(result);
 }
@@ -947,7 +947,7 @@ Distance_value_span(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
   Span *s = PG_GETARG_SPAN_P(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   double result = distance_span_value(s, d, basetype);
   PG_RETURN_FLOAT8(result);
 }
@@ -983,7 +983,7 @@ Distance_span_value(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   Datum d = PG_GETARG_DATUM(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   double result = distance_span_value(s, d, basetype);
   PG_RETURN_FLOAT8(result);
 }

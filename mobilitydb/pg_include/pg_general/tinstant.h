@@ -36,8 +36,8 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-/* MobilityDB */
-#include "general/mobdb_catalog.h"
+/* MEOS */
+#include "general/meos_catalog.h"
 #include "general/span.h"
 #include "general/temporal.h"
 
@@ -45,7 +45,7 @@
 
 /* Send/receive functions */
 
-extern TInstant *tinstant_recv(StringInfo buf, mobdbType temptype);
+extern TInstant *tinstant_recv(StringInfo buf, meosType temptype);
 extern void tinstant_write(const TInstant *inst, StringInfo buf);
 
 /*****************************************************************************/

@@ -101,7 +101,7 @@ setop_set_spanset(const Set *s, const SpanSet *ss, SetOper setop)
     for (int l = i; l < s->count; l++)
       values[k++] = set_val_n(s, l);
   }
-  return set_make_free(values, k, s->basetype);
+  return set_make_free(values, k, s->basetype, ORDERED);
 }
 
 /*****************************************************************************
@@ -113,7 +113,7 @@ setop_set_spanset(const Set *s, const SpanSet *ss, SetOper setop)
  * @brief Return true if a span set contains a value.
  */
 bool
-contains_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype)
+contains_spanset_value(const SpanSet *ss, Datum d, meosType basetype)
 {
   /* Bounding box test */
   if (! contains_span_value(&ss->span, d, basetype))
@@ -283,7 +283,7 @@ contains_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
  * @brief Return true if a value is contained by a span
  */
 bool
-contained_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss)
+contained_value_spanset(Datum d, meosType basetype, const SpanSet *ss)
 {
   return contains_spanset_value(ss, d, basetype);
 }
@@ -467,7 +467,7 @@ overlaps_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
  * @brief Return true if a span set and a value are adjacent.
  */
 bool
-adjacent_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype)
+adjacent_spanset_value(const SpanSet *ss, Datum d, meosType basetype)
 {
   /*
    * A span set and a value are adjacent if and only if the first or the last
@@ -592,7 +592,7 @@ adjacent_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
  * @brief Return true if a value is strictly to the left of a span set.
  */
 bool
-left_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss)
+left_value_spanset(Datum d, meosType basetype, const SpanSet *ss)
 {
   const Span *s = spanset_sp_n(ss, 0);
   return left_value_span(d, basetype, s);
@@ -674,7 +674,7 @@ left_span_spanset(const Span *s, const SpanSet *ss)
  * @brief Return true if a span set is strictly to the left of a value.
  */
 bool
-left_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype)
+left_spanset_value(const SpanSet *ss, Datum d, meosType basetype)
 {
   const Span *s = spanset_sp_n(ss, ss->count - 1);
   return left_span_value(s, d, basetype);
@@ -773,7 +773,7 @@ left_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
  * @brief Return true if a value is strictly to the right of a span set.
  */
 bool
-right_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss)
+right_value_spanset(Datum d, meosType basetype, const SpanSet *ss)
 {
   return left_spanset_value(ss, d, basetype);
 }
@@ -851,7 +851,7 @@ right_span_spanset(const Span *s, const SpanSet *ss)
  * @brief Return true if a span set is strictly to the right of a value.
  */
 bool
-right_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype)
+right_spanset_value(const SpanSet *ss, Datum d, meosType basetype)
 {
   return left_value_spanset(d, basetype, ss);
 }
@@ -944,7 +944,7 @@ right_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
  * @brief Return true if a span set does not extend to the right of a value.
  */
 bool
-overleft_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype)
+overleft_spanset_value(const SpanSet *ss, Datum d, meosType basetype)
 {
   const Span *s = spanset_sp_n(ss, ss->count - 1);
   return overleft_span_value(s, d, basetype);
@@ -1001,7 +1001,7 @@ overbefore_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
  * @brief Return true if a value does not extend to the right of a span set.
  */
 bool
-overleft_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss)
+overleft_value_spanset(Datum d, meosType basetype, const SpanSet *ss)
 {
   const Span *s = spanset_sp_n(ss, ss->count - 1);
   return overleft_value_span(d, basetype, s);
@@ -1127,7 +1127,7 @@ overleft_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
  * @brief Return true if a value does not extend to the left of a span set.
  */
 bool
-overright_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss)
+overright_value_spanset(Datum d, meosType basetype, const SpanSet *ss)
 {
   const Span *s = spanset_sp_n(ss, 0);
   return overright_value_span(d, basetype, s);
@@ -1196,7 +1196,7 @@ overright_span_spanset(const Span *s, const SpanSet *ss)
  * @brief Return true if a span set does not extend to the left of a value.
  */
 bool
-overright_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype)
+overright_spanset_value(const SpanSet *ss, Datum d, meosType basetype)
 {
   const Span *s = spanset_sp_n(ss, 0);
   return overright_span_value(s, d, basetype);
@@ -1296,7 +1296,7 @@ overright_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
  * @brief Return the union of a span set and a value.
  */
 SpanSet *
-union_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype)
+union_spanset_value(const SpanSet *ss, Datum d, meosType basetype)
 {
   Span s;
   span_set(d, d, true, true, basetype, &s);
@@ -1492,7 +1492,7 @@ union_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
  * @brief Return the intersection of a span set and a value
  */
 bool
-intersection_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype,
+intersection_spanset_value(const SpanSet *ss, Datum d, meosType basetype,
   Datum *result)
 {
   if (! contains_spanset_value(ss, d, basetype))
@@ -1655,7 +1655,7 @@ intersection_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
  * @brief Return the difference of a value and a span set
  */
 bool
-minus_value_spanset(Datum d, mobdbType basetype, const SpanSet *ss,
+minus_value_spanset(Datum d, meosType basetype, const SpanSet *ss,
   Datum *result)
 {
   if (contains_spanset_value(ss, d, basetype))
@@ -1801,7 +1801,7 @@ minus_span_spanset(const Span *s, const SpanSet *ss)
  * @brief Return the difference of a span set and a value.
  */
 SpanSet *
-minus_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype)
+minus_spanset_value(const SpanSet *ss, Datum d, meosType basetype)
 {
   /* Bounding box test */
   if (! contains_span_value(&ss->span, d, basetype))
@@ -1907,6 +1907,14 @@ minus_spanset_set(const SpanSet *ss, const Set *s)
     {
       if (contains_span_value(curr, d, ss->span.basetype))
       {
+        /* Account for canonicalized spans */
+        Datum upper1;
+        if (ss->span.basetype == T_INT4)
+          upper1 = Int32GetDatum(DatumGetInt32(curr->upper) - (int32) 1);
+        else if (ss->span.basetype == T_INT8)
+          upper1 = Int64GetDatum(DatumGetInt64(curr->upper) - (int64) 1);
+        else
+          upper1 = curr->upper;
         if (curr->lower == curr->upper)
         {
           pfree(curr);
@@ -1923,10 +1931,12 @@ minus_spanset_set(const SpanSet *ss, const Set *s)
           pfree(curr);
           curr = curr1;
         }
-        else if (datum_eq(curr->upper, d, ss->span.basetype))
+        /* Integer spans are canonicalized and thus their upper bound is
+         * exclusive. Therefore, we need to check with upper1 */
+        else if (datum_eq(upper1, d, ss->span.basetype))
         {
-          spans[k++] = span_make(curr->lower, curr->upper, curr->lower_inc,
-            false, ss->span.basetype);
+          spans[k++] = span_make(curr->lower, upper1, curr->lower_inc, false,
+            ss->span.basetype);
           pfree(curr);
           i++;
           if (i == ss->count)
@@ -2065,7 +2075,7 @@ minus_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
  * @brief Return the distance between a timestamp and a span set
  */
 double
-distance_spanset_value(const SpanSet *ss, Datum d, mobdbType basetype)
+distance_spanset_value(const SpanSet *ss, Datum d, meosType basetype)
 {
   return distance_span_value(&ss->span, d, basetype);
 }

@@ -46,7 +46,7 @@
 #include "general/temporal_util.h"
 #include "general/tnumber_mathfuncs.h"
 /* MobilityDB */
-#include "pg_general/mobdb_catalog.h"
+#include "pg_general/meos_catalog.h"
 #include "pg_general/temporal.h"
 #include "pg_general/temporal_util.h"
 #include "pg_general/tnumber_mathfuncs.h"
@@ -163,7 +163,7 @@ Number_timestamp_to_tbox(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   TBox *result = number_timestamp_to_tbox(d, basetype, t);
   PG_RETURN_POINTER(result);
 }
@@ -179,7 +179,7 @@ Number_period_to_tbox(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
   Period *p = PG_GETARG_SPAN_P(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   TBox *result = number_period_to_tbox(d, basetype, p);
   PG_RETURN_POINTER(result);
 }
@@ -228,7 +228,7 @@ PGDLLEXPORT Datum
 Number_to_tbox(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   TBox *result = palloc(sizeof(TBox));
   number_set_tbox(d, basetype, result);
   PG_RETURN_POINTER(result);

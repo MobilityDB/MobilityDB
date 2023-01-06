@@ -61,7 +61,7 @@
  * Return true if the type is a bounding box type
  */
 bool
-bbox_type(mobdbType bboxtype)
+bbox_type(meosType bboxtype)
 {
   if (bboxtype == T_PERIOD || bboxtype == T_TBOX || bboxtype == T_STBOX)
     return true;
@@ -72,7 +72,7 @@ bbox_type(mobdbType bboxtype)
  * Ensure that the type corresponds to a bounding box type
  */
 void
-ensure_bbox_type(mobdbType bboxtype)
+ensure_bbox_type(meosType bboxtype)
 {
   if (! bbox_type(bboxtype))
     elog(ERROR, "unknown bounding box type: %d", bboxtype);
@@ -83,7 +83,7 @@ ensure_bbox_type(mobdbType bboxtype)
  * Return the size of a bounding box type
  */
 size_t
-bbox_get_size(mobdbType bboxtype)
+bbox_get_size(meosType bboxtype)
 {
   ensure_bbox_type(bboxtype);
   if (bboxtype == T_PERIOD)
@@ -98,7 +98,7 @@ bbox_get_size(mobdbType bboxtype)
  * Return the maximum number of dimensions of a bounding box type
  */
 int
-bbox_max_dims(mobdbType bboxtype)
+bbox_max_dims(meosType bboxtype)
 {
   ensure_bbox_type(bboxtype);
   if (bboxtype == T_PERIOD)
@@ -116,7 +116,7 @@ bbox_max_dims(mobdbType bboxtype)
  * @param[in] temptype Temporal type
  */
 bool
-temporal_bbox_eq(const void *box1, const void *box2, mobdbType temptype)
+temporal_bbox_eq(const void *box1, const void *box2, meosType temptype)
 {
   /* Only external types have bounding box */
   ensure_temporal_type(temptype);
@@ -143,7 +143,7 @@ temporal_bbox_eq(const void *box1, const void *box2, mobdbType temptype)
  * @param[in] temptype Temporal type
  */
 int
-temporal_bbox_cmp(const void *box1, const void *box2, mobdbType temptype)
+temporal_bbox_cmp(const void *box1, const void *box2, meosType temptype)
 {
   /* Only external types have bounding box */
   ensure_temporal_type(temptype);
@@ -165,7 +165,7 @@ temporal_bbox_cmp(const void *box1, const void *box2, mobdbType temptype)
  * @param[in] temptype Temporal type
  */
 void
-temporal_bbox_shift_tscale(void *box, mobdbType temptype, const Interval *shift,
+temporal_bbox_shift_tscale(void *box, meosType temptype, const Interval *shift,
   const Interval *duration)
 {
   ensure_temporal_type(temptype);
@@ -191,7 +191,7 @@ temporal_bbox_shift_tscale(void *box, mobdbType temptype, const Interval *shift,
  * Return true if a temporal type does not have bounding box
  */
 static bool
-temptype_without_bbox(mobdbType temptype)
+temptype_without_bbox(meosType temptype)
 {
   if (temptype == T_TDOUBLE2 || temptype == T_TDOUBLE3 ||
       temptype == T_TDOUBLE4)
@@ -203,7 +203,7 @@ temptype_without_bbox(mobdbType temptype)
  * Return the size of a bounding box of a temporal type
  */
 size_t
-temporal_bbox_size(mobdbType temptype)
+temporal_bbox_size(meosType temptype)
 {
   if (talpha_type(temptype))
     return sizeof(Period);
@@ -331,7 +331,7 @@ tinstarr_compute_bbox(const TInstant **instants, int count, bool lower_inc,
 /**
  * Expand the bounding box of a temporal number sequence with an instant
  *
- * @param[in] seq Temporal sequence
+ * @param[inout] seq Temporal sequence
  * @param[in] inst Temporal instant
  */
 static void
@@ -346,8 +346,8 @@ tnumberseq_expand_tbox(TSequence *seq, const TInstant *inst)
 /**
  * Expand the bounding box of a temporal sequence with an additional instant
  *
- * @param[in] seq Temporal sequence
- * @param[out] inst Temporal instant
+ * @param[inout] seq Temporal sequence
+ * @param[in] inst Temporal instant
  */
 void
 tsequence_expand_bbox(TSequence *seq, const TInstant *inst)
@@ -356,8 +356,7 @@ tsequence_expand_bbox(TSequence *seq, const TInstant *inst)
   ensure_temporal_type(seq->temptype);
   if (talpha_type(seq->temptype))
     span_set(TimestampTzGetDatum(tsequence_inst_n(seq, 0)->t),
-      TimestampTzGetDatum(tsequence_inst_n(seq, seq->count - 1)->t),
-      seq->period.lower_inc, true, T_TIMESTAMPTZ,
+      TimestampTzGetDatum(inst->t), seq->period.lower_inc, true, T_TIMESTAMPTZ,
       (Span *) TSEQUENCE_BBOX_PTR(seq));
   else if (tnumber_type(seq->temptype))
     tnumberseq_expand_tbox(seq, inst);
@@ -372,6 +371,36 @@ tsequence_expand_bbox(TSequence *seq, const TInstant *inst)
   else
     elog(ERROR, "unknown bounding box function for temporal type: %d",
       seq->temptype);
+  return;
+}
+
+/**
+ * Expand the bounding box of a temporal sequence set with an additional sequence
+ *
+ * @param[inout] ss Temporal sequence set
+ * @param[in] seq Temporal sequence
+ */
+void
+tsequenceset_expand_bbox(TSequenceSet *ss, const TSequence *seq)
+{
+  /* Only external types have bounding box */
+  ensure_temporal_type(ss->temptype);
+  if (talpha_type(ss->temptype))
+    span_expand(&seq->period, &ss->period);
+  else if (tnumber_type(ss->temptype))
+    tbox_expand((TBox *) TSEQUENCE_BBOX_PTR(seq),
+      (TBox *) TSEQUENCE_BBOX_PTR(ss));
+  // TODO Generalize as for tgeogpointseq_expand_stbox
+  else if (ss->temptype == T_TGEOMPOINT || ss->temptype == T_TGEOGPOINT)
+    stbox_expand((STBox *) TSEQUENCE_BBOX_PTR(seq),
+      (STBox *) TSEQUENCE_BBOX_PTR(ss));
+#if NPOINT
+  else if (ss->temptype == T_TNPOINT)
+    tnpointseqset_expand_stbox(ss, (STBox *) TSEQUENCE_BBOX_PTR(seq));
+#endif
+  else
+    elog(ERROR, "unknown bounding box function for temporal type: %d",
+      ss->temptype);
   return;
 }
 #endif /* MEOS */
@@ -548,7 +577,7 @@ boxop_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
  * function
  */
 bool
-boxop_tnumber_number(const Temporal *temp, Datum number, mobdbType basetype,
+boxop_tnumber_number(const Temporal *temp, Datum number, meosType basetype,
   bool (*func)(const TBox *, const TBox *), bool invert)
 {
   TBox box1, box2;

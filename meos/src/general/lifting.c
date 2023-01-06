@@ -354,7 +354,7 @@ tfunc_tlinearseq_base_turnpt(const TSequence *seq, Datum value,
   const TInstant *inst1 = tsequence_inst_n(seq, 0);
   Datum value1 = tinstant_value(inst1);
   interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
-  mobdbType resbasetype = temptype_basetype(lfinfo->restype);
+  meosType resbasetype = temptype_basetype(lfinfo->restype);
   for (int i = 1; i < seq->count; i++)
   {
     /* Each iteration of the loop adds between one and two instants */
@@ -424,8 +424,8 @@ tfunc_tlinearseq_base_discont(const TSequence *seq, Datum value,
    * segment of the result is computed */
   instants[0] = tinstant_make(startresult, lfinfo->restype, start->t);
   instants[1] = tinstant_make(startresult, lfinfo->restype, start->t);
-  mobdbType basetype = temptype_basetype(seq->temptype);
-  mobdbType resbasetype = temptype_basetype(lfinfo->restype);
+  meosType basetype = temptype_basetype(seq->temptype);
+  meosType resbasetype = temptype_basetype(lfinfo->restype);
   for (int i = 1; i < seq->count; i++)
   {
     /* Each iteration of the loop adds between one and three sequences */
@@ -634,7 +634,7 @@ static void
 lfinfo_invert(LiftedFunctionInfo *lfinfo)
 {
   lfinfo->invert = ! lfinfo->invert;
-  mobdbType temp = lfinfo->argtype[0];
+  meosType temp = lfinfo->argtype[0];
   lfinfo->argtype[0] = lfinfo->argtype[1];
   lfinfo->argtype[1] = temp;
 }
@@ -794,7 +794,7 @@ tfunc_tdiscseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
   int i = 0, j = 0, k = 0;
   const TInstant *inst1 = tsequence_inst_n(seq1, i);
   const TInstant *inst2 = tsequence_inst_n(seq2, j);
-  mobdbType resbasetype = temptype_basetype(lfinfo->restype);
+  meosType resbasetype = temptype_basetype(lfinfo->restype);
   while (i < seq1->count && j < seq2->count)
   {
     int cmp = timestamptz_cmp_internal(inst1->t, inst2->t);
@@ -830,8 +830,8 @@ tfunc_tcontseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
 {
   TInstant **instants = palloc(sizeof(TInstant *) * seq2->count);
   int k = 0;
-  mobdbType basetype = temptype_basetype(seq1->temptype);
-  mobdbType resbasetype = temptype_basetype(lfinfo->restype);
+  meosType basetype = temptype_basetype(seq1->temptype);
+  meosType resbasetype = temptype_basetype(lfinfo->restype);
   for (int i = 0; i < seq2->count; i++)
   {
     const TInstant *inst = tsequence_inst_n(seq2, i);
@@ -879,8 +879,8 @@ tfunc_tsequenceset_tdiscseq(const TSequenceSet *ss, const TSequence *seq,
 {
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   int i = 0, j = 0, k = 0;
-  mobdbType basetype = temptype_basetype(ss->temptype);
-  mobdbType resbasetype = temptype_basetype(lfinfo->restype);
+  meosType basetype = temptype_basetype(ss->temptype);
+  meosType resbasetype = temptype_basetype(lfinfo->restype);
   while (i < ss->count && j < seq->count)
   {
     const TSequence *seq1 = tsequenceset_seq_n(ss, i);
@@ -969,7 +969,7 @@ tfunc_tcontseq_tcontseq_single(const TSequence *seq1, const TSequence *seq2,
   TInstant **instants = palloc(sizeof(TInstant *) * count);
   TInstant **tofree = palloc(sizeof(TInstant *) * count);
   Datum value;
-  mobdbType resbasetype = temptype_basetype(lfinfo->restype);
+  meosType resbasetype = temptype_basetype(lfinfo->restype);
   while (i < seq1->count && j < seq2->count &&
     (inst1->t <= (TimestampTz) inter->upper ||
      inst2->t <= (TimestampTz) inter->upper))
@@ -1074,13 +1074,13 @@ tfunc_tcontseq_tcontseq_multi(const TSequence *seq1, const TSequence *seq2,
   bool linear2 = MOBDB_FLAGS_GET_LINEAR(seq2->flags);
   TInstant *instants[2];
   Datum startvalue1, startvalue2, startresult;
-  mobdbType basetype1, basetype2;
+  meosType basetype1, basetype2;
   if (discont)
   {
     basetype1 = temptype_basetype(seq1->temptype);
     basetype2 = temptype_basetype(seq2->temptype);
   }
-  mobdbType resbasetype = temptype_basetype(lfinfo->restype);
+  meosType resbasetype = temptype_basetype(lfinfo->restype);
   interpType interp = lfinfo->reslinear ? LINEAR : STEPWISE;
   /* Each iteration of the loop adds
    * - one sequence when the interpolations of the temporal values are different
@@ -1815,8 +1815,8 @@ efunc_tcontseq_tcontseq_discont(const TSequence *seq1,
   bool linear1 = MOBDB_FLAGS_GET_LINEAR(seq1->flags);
   bool linear2 = MOBDB_FLAGS_GET_LINEAR(seq2->flags);
   Datum startvalue1, startvalue2;
-  mobdbType basetype1 = temptype_basetype(seq1->temptype);
-  mobdbType basetype2 = temptype_basetype(seq2->temptype);
+  meosType basetype1 = temptype_basetype(seq1->temptype);
+  meosType basetype2 = temptype_basetype(seq2->temptype);
   while (i < seq1->count && j < seq2->count)
   {
     /* Compute the function at the start instant */

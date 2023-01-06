@@ -1,5 +1,5 @@
 #-------------------------------------
-# MEOS definitions
+# MEOS CMake file
 #-------------------------------------
 
 message(STATUS "-------------------------")
@@ -40,13 +40,13 @@ add_definitions(-DPOSTGRESQL_VERSION_NUMBER=${POSTGRESQL_VERSION_NUMBER})
 # Set default PostGIS Version for MEOS
 #--------------------------------------
 
-set(POSTGIS_VERSION_STR "PostGIS 3.2.1")
+set(POSTGIS_VERSION_STRING "PostGIS 3.2.1")
 set(POSTGIS_VERSION_NUMBER "30201")
 
 # PostGIS definitions for PostgreSQL and PostGIS version-dependent code
 math(EXPR POSTGIS_PGSQL_VERSION "${POSTGRESQL_VERSION_MAJOR} * 10 +
   ${POSTGRESQL_VERSION_MINOR}")
-add_definitions(-DPOSTGIS_VERSION_STR="${POSTGIS_VERSION_STR}")
+add_definitions(-DPOSTGIS_VERSION_STRING="${POSTGIS_VERSION_STRING}")
 add_definitions(-DPOSTGIS_VERSION_NUMBER=${POSTGIS_VERSION_NUMBER})
 
 #--------------------------------

@@ -34,24 +34,24 @@
 #ifndef __TIME_AGGFUNCS_H__
 #define __TIME_AGGFUNCS_H__
 
-/* MobilityDB */
+/* MEOS */
 #include "general/span.h"
 #include "general/skiplist.h"
 
 /*****************************************************************************/
 
 extern Datum datum_sum_int32(Datum l, Datum r);
-extern TimestampTz *timestamp_agg(TimestampTz *times1, int count1,
+extern TimestampTz *timestamp_tagg(TimestampTz *times1, int count1,
   TimestampTz *times2, int count2, int *newcount);
-extern Period **period_agg(Period **periods1, int count1, Period **periods2,
+extern Period **period_tagg(Period **periods1, int count1, Period **periods2,
   int count2, int *newcount);
 
-extern SkipList *timestampset_agg_transfn(SkipList *state,
+extern SkipList *timestampset_tagg_transfn(SkipList *state,
   const TimestampSet *ts);
-extern SkipList *period_agg_transfn(SkipList *state, const Period *p);
-extern SkipList *periodset_agg_transfn(SkipList *state, const PeriodSet *ps);
+extern SkipList *period_tagg_transfn(SkipList *state, const Period *p);
+extern SkipList *periodset_tagg_transfn(SkipList *state, const PeriodSet *ps);
 extern void ensure_same_timetype_skiplist(SkipList *state, uint8 subtype);
-extern SkipList *time_agg_combinefn(SkipList *state1, SkipList *state2);
+extern SkipList *time_tagg_combinefn(SkipList *state1, SkipList *state2);
 
 /*****************************************************************************/
 

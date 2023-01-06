@@ -53,7 +53,7 @@
  * @param[in] temptype Temporal type
  */
 TInstant *
-tinstant_recv(StringInfo buf, mobdbType temptype)
+tinstant_recv(StringInfo buf, meosType temptype)
 {
   TimestampTz t = call_recv(T_TIMESTAMPTZ, buf);
   int size = pq_getmsgint(buf, 4);
@@ -64,7 +64,7 @@ tinstant_recv(StringInfo buf, mobdbType temptype)
     .maxlen = size,
     .data = buf->data + buf->cursor
   };
-  mobdbType basetype = temptype_basetype(temptype);
+  meosType basetype = temptype_basetype(temptype);
   Datum value = call_recv(basetype, &buf2);
   buf->cursor += size;
   return tinstant_make(value, temptype, t);
@@ -80,7 +80,7 @@ tinstant_recv(StringInfo buf, mobdbType temptype)
 void
 tinstant_write(const TInstant *inst, StringInfo buf)
 {
-  mobdbType basetype = temptype_basetype(inst->temptype);
+  meosType basetype = temptype_basetype(inst->temptype);
   bytea *bt = call_send(T_TIMESTAMPTZ, TimestampTzGetDatum(inst->t));
   bytea *bv = call_send(basetype, tinstant_value(inst));
   pq_sendbytes(buf, VARDATA(bt), VARSIZE(bt) - VARHDRSZ);

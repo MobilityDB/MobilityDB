@@ -31,8 +31,8 @@
  * @brief Functions for building a cache of temporal types and operators.
  */
 
-#ifndef __MOBDB_CATALOG_H__
-#define __MOBDB_CATALOG_H__
+#ifndef __MEOS_CATALOG_H__
+#define __MEOS_CATALOG_H__
 
 /* PostgreSQL */
 #include <postgres.h>
@@ -90,15 +90,15 @@ typedef enum
   T_NPOINT         = 40,  /**< network point type */
   T_NSEGMENT       = 41,  /**< network segment type */
   T_TNPOINT        = 42,  /**< temporal network point type */
-} mobdbType;
+} meosType;
 
 /**
  * Structure to represent the temporal type cache array.
  */
 typedef struct
 {
-  mobdbType temptype;    /**< Enum value of the temporal type */
-  mobdbType basetype;    /**< Enum value of the base type */
+  meosType temptype;    /**< Enum value of the temporal type */
+  meosType basetype;    /**< Enum value of the base type */
 } temptype_cache_struct;
 
 /**
@@ -106,8 +106,8 @@ typedef struct
  */
 typedef struct
 {
-  mobdbType settype;     /**< Enum value of the set type */
-  mobdbType basetype;    /**< Enum value of the base type */
+  meosType settype;     /**< Enum value of the set type */
+  meosType basetype;    /**< Enum value of the base type */
 } settype_cache_struct;
 
 /**
@@ -115,8 +115,8 @@ typedef struct
  */
 typedef struct
 {
-  mobdbType spantype;    /**< Enum value of the span type */
-  mobdbType basetype;    /**< Enum value of the base type */
+  meosType spantype;    /**< Enum value of the span type */
+  meosType basetype;    /**< Enum value of the base type */
 } spantype_cache_struct;
 
 /**
@@ -124,75 +124,75 @@ typedef struct
  */
 typedef struct
 {
-  mobdbType spansettype;    /**< Enum value of the span type */
-  mobdbType spantype;       /**< Enum value of the base type */
+  meosType spansettype;    /**< Enum value of the span type */
+  meosType spantype;       /**< Enum value of the base type */
 } spansettype_cache_struct;
 
 /*****************************************************************************/
 
 /* Cache functions */
 
-extern mobdbType temptype_basetype(mobdbType temptype);
-extern mobdbType settype_basetype(mobdbType settype);
-extern mobdbType spantype_basetype(mobdbType spantype);
-extern mobdbType spantype_spansettype(mobdbType spantype);
-extern mobdbType spansettype_spantype(mobdbType spansettype);
-extern mobdbType basetype_spantype(mobdbType basetype);
-extern mobdbType basetype_settype(mobdbType basetype);
+extern meosType temptype_basetype(meosType temptype);
+extern meosType settype_basetype(meosType settype);
+extern meosType spantype_basetype(meosType spantype);
+extern meosType spantype_spansettype(meosType spantype);
+extern meosType spansettype_spantype(meosType spansettype);
+extern meosType basetype_spantype(meosType basetype);
+extern meosType basetype_settype(meosType basetype);
 
 /* Catalog functions */
 
-extern bool time_type(mobdbType timetype);
-extern void ensure_time_type(mobdbType timetype);
-extern bool set_basetype(mobdbType basetype);
-extern void ensure_set_basetype(mobdbType basetype);
+extern bool time_type(meosType timetype);
+extern void ensure_time_type(meosType timetype);
+extern bool set_basetype(meosType basetype);
+extern void ensure_set_basetype(meosType basetype);
 
-extern bool set_type(mobdbType settype);
-extern void ensure_set_type(mobdbType settype);
-extern bool numset_type(mobdbType settype);
-extern void ensure_numset_type(mobdbType settype);
+extern bool set_type(meosType settype);
+extern void ensure_set_type(meosType settype);
+extern bool numset_type(meosType settype);
+extern void ensure_numset_type(meosType settype);
 
-extern bool span_type(mobdbType spantype);
-extern void ensure_span_type(mobdbType spantype);
-extern bool numspan_type(mobdbType spantype);
-extern void ensure_numspan_type(mobdbType spantype);
-extern bool span_basetype(mobdbType basetype);
-extern void ensure_span_basetype(mobdbType basetype);
-extern bool numspan_basetype(mobdbType basetype);
-extern void ensure_numspan_basetype(mobdbType basetype);
-extern bool spanset_type(mobdbType spansettype);
-extern void ensure_spanset_type(mobdbType spansettype);
-extern bool numspanset_type(mobdbType spansettype);
-extern void ensure_numspanset_type(mobdbType spansettype);
-extern bool spanset_basetype(mobdbType basetype);
-extern void ensure_spanset_basetype(mobdbType basetype);
-extern bool numspanset_basetype(mobdbType basetype);
-extern void ensure_numspanset_basetype(mobdbType basetype);
-extern bool temporal_type(mobdbType temptype);
-extern void ensure_temporal_type(mobdbType temptype);
-extern void ensure_temporal_basetype(mobdbType basetype);
-extern bool temptype_continuous(mobdbType temptype);
-extern void ensure_temptype_continuous(mobdbType temptype);
-extern bool basetype_byvalue(mobdbType basetype);
-extern int16 basetype_length(mobdbType basetype);
-extern bool talpha_type(mobdbType temptype);
-extern bool tnumber_type(mobdbType temptype);
-extern void ensure_tnumber_type(mobdbType temptype);
-extern bool tnumber_basetype(mobdbType basetype);
-extern void ensure_tnumber_basetype(mobdbType basetype);
-extern bool tnumber_settype(mobdbType settype);
-extern void ensure_tnumber_settype(mobdbType settype);
-extern bool tnumber_spantype(mobdbType settype);
-extern void ensure_tnumber_spantype(mobdbType spantype);
-extern bool tnumber_spansettype(mobdbType spansettype);
-extern void ensure_tnumber_spansettype(mobdbType spansettype);
-extern bool tspatial_type(mobdbType temptype);
-extern bool tspatial_basetype(mobdbType basetype);
-extern bool tgeo_basetype(mobdbType basetype);
-extern bool tgeo_type(mobdbType basetype);
-extern void ensure_tgeo_type(mobdbType basetype);
+extern bool span_type(meosType spantype);
+extern void ensure_span_type(meosType spantype);
+extern bool numspan_type(meosType spantype);
+extern void ensure_numspan_type(meosType spantype);
+extern bool span_basetype(meosType basetype);
+extern void ensure_span_basetype(meosType basetype);
+extern bool numspan_basetype(meosType basetype);
+extern void ensure_numspan_basetype(meosType basetype);
+extern bool spanset_type(meosType spansettype);
+extern void ensure_spanset_type(meosType spansettype);
+extern bool numspanset_type(meosType spansettype);
+extern void ensure_numspanset_type(meosType spansettype);
+extern bool spanset_basetype(meosType basetype);
+extern void ensure_spanset_basetype(meosType basetype);
+extern bool numspanset_basetype(meosType basetype);
+extern void ensure_numspanset_basetype(meosType basetype);
+extern bool temporal_type(meosType temptype);
+extern void ensure_temporal_type(meosType temptype);
+extern void ensure_temporal_basetype(meosType basetype);
+extern bool temptype_continuous(meosType temptype);
+extern void ensure_temptype_continuous(meosType temptype);
+extern bool basetype_byvalue(meosType basetype);
+extern int16 basetype_length(meosType basetype);
+extern bool talpha_type(meosType temptype);
+extern bool tnumber_type(meosType temptype);
+extern void ensure_tnumber_type(meosType temptype);
+extern bool tnumber_basetype(meosType basetype);
+extern void ensure_tnumber_basetype(meosType basetype);
+extern bool tnumber_settype(meosType settype);
+extern void ensure_tnumber_settype(meosType settype);
+extern bool tnumber_spantype(meosType settype);
+extern void ensure_tnumber_spantype(meosType spantype);
+extern bool tnumber_spansettype(meosType spansettype);
+extern void ensure_tnumber_spansettype(meosType spansettype);
+extern bool tspatial_type(meosType temptype);
+extern bool tspatial_basetype(meosType basetype);
+extern bool tgeo_basetype(meosType basetype);
+extern bool tgeo_type(meosType basetype);
+extern void ensure_tgeo_type(meosType basetype);
 
 /*****************************************************************************/
 
-#endif /* __MOBDB_CATALOG_H__ */
+#endif /* __MEOS_CATALOG_H__ */
 

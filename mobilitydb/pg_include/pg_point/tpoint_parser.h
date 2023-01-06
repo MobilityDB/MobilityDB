@@ -42,7 +42,7 @@
 /*****************************************************************************/
 
 extern STBox *stbox_parse(char **str);
-extern Temporal *tpoint_parse(char **str, mobdbType temptype);
+extern Temporal *tpoint_parse(char **str, meosType temptype);
 
 /*****************************************************************************/
 

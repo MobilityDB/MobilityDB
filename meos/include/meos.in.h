@@ -56,6 +56,7 @@ typedef struct
   uint8 basetype;       /**< span basetype */
   int16 flags;          /**< flags */
   int32 count;          /**< Number of TimestampTz elements */
+  int32 bboxsize;       /**< Size of the bouding box, to be used in the future */
   Datum elems[1];       /**< Beginning of variable-length data */
 } Set;
 
@@ -64,12 +65,12 @@ typedef struct
  */
 typedef struct
 {
-  Datum lower;          /**< lower bound value */
-  Datum upper;          /**< upper bound value */
-  bool lower_inc;       /**< lower bound is inclusive (vs exclusive) */
-  bool upper_inc;       /**< upper bound is inclusive (vs exclusive) */
   uint8 spantype;       /**< span type */
   uint8 basetype;       /**< span basetype */
+  bool lower_inc;       /**< lower bound is inclusive (vs exclusive) */
+  bool upper_inc;       /**< upper bound is inclusive (vs exclusive) */
+  Datum lower;          /**< lower bound value */
+  Datum upper;          /**< upper bound value */
 } Span;
 
 /**
@@ -78,10 +79,10 @@ typedef struct
 typedef struct
 {
   int32 vl_len_;        /**< Varlena header (do not touch directly!) */
-  int32 count;          /**< Number of Span elements */
   uint8 spansettype;    /**< span set type */
   uint8 spantype;       /**< span type */
   uint8 basetype;       /**< span basetype */
+  int32 count;          /**< Number of Span elements */
   Span span;            /**< Bounding span */
   Span elems[1];        /**< Beginning of variable-length data */
 } SpanSet;
@@ -670,17 +671,23 @@ extern double distance_timestampset_timestampset(const TimestampSet *ts1, const 
 
 /* Aggregate functions for set and span types */
 
+extern Set *bigintset_agg_transfn(Set *s, int64 i);
+extern Set *intset_agg_transfn(Set *s, int i);
+extern Set *floatset_agg_transfn(Set *s, double d);
 extern SkipList *period_tcount_transfn(SkipList *state, const Period *p, const Interval *interval, TimestampTz origin);
 extern SkipList *period_tunion_transfn(SkipList *state, const Period *p);
 extern PeriodSet *period_tunion_finalfn(SkipList *state);
 extern SkipList *periodset_tcount_transfn(SkipList *state, const PeriodSet *ps, const Interval *interval, TimestampTz origin);
 extern SkipList *periodset_tunion_transfn(SkipList *state, const PeriodSet *ps);
+extern Set *set_agg_combinefn(Set *s1, Set *s2);
 extern Span *span_extent_transfn(Span *s1, const Span *s2);
 extern Span *spanset_extent_transfn(Span *s, const SpanSet *ss);
+extern Set *textset_agg_transfn(Set *s, const text *txt);
 extern Period *timestamp_extent_transfn(Period *p, TimestampTz t);
 extern SkipList *timestamp_tcount_transfn(SkipList *state, TimestampTz t, const Interval *interval, TimestampTz origin);
 extern SkipList *timestamp_tunion_transfn(SkipList *state, TimestampTz t);
 extern TimestampSet *timestamp_tunion_finalfn(SkipList *state);
+extern Set *timestampset_agg_transfn(Set *s, TimestampTz t);
 extern Period *timestampset_extent_transfn(Period *p, const TimestampSet *ts);
 extern SkipList *timestampset_tcount_transfn(SkipList *state, const TimestampSet *ts, const Interval *interval, TimestampTz origin);
 extern SkipList *timestampset_tunion_transfn(SkipList *state, const TimestampSet *ts);
@@ -1066,8 +1073,8 @@ extern text **ttext_values(const Temporal *temp, int *count);
 
 /* Transformation functions for temporal types */
 
-extern TSequence *tsequence_compact(const TSequence *seq);
 extern Temporal *temporal_append_tinstant(Temporal *temp, const TInstant *inst, bool expand);
+extern Temporal *temporal_append_tsequence(Temporal *temp, const TSequence *seq, bool expand);
 extern Temporal *temporal_merge(const Temporal *temp1, const Temporal *temp2);
 extern Temporal *temporal_merge_array(Temporal **temparr, int count);
 extern Temporal *temporal_shift(const Temporal *temp, const Interval *shift);
@@ -1660,23 +1667,25 @@ extern bool temporal_overlaps_timestampset(const Temporal *temp, const Timestamp
 
 /* Local and temporal aggregate functions for temporal types */
 
-extern SkipList *tbool_tand_transfn(SkipList *state, Temporal *temp);
-extern SkipList *tbool_tor_transfn(SkipList *state, Temporal *temp);
+extern SkipList *tbool_tand_transfn(SkipList *state, const Temporal *temp);
+extern SkipList *tbool_tor_transfn(SkipList *state, const Temporal *temp);
+extern Period *temporal_extent_transfn(Period *p, Temporal *temp);
 extern Temporal *temporal_tagg_finalfn(SkipList *state);
-extern SkipList *temporal_tcount_transfn(SkipList *state, Temporal *temp, Interval *interval, TimestampTz origin);
-extern SkipList *tfloat_tmax_transfn(SkipList *state, Temporal *temp);
-extern SkipList *tfloat_tmin_transfn(SkipList *state, Temporal *temp);
-extern SkipList *tfloat_tsum_transfn(SkipList *state, Temporal *temp);
-extern SkipList *tint_tmax_transfn(SkipList *state, Temporal *temp);
-extern SkipList *tint_tmin_transfn(SkipList *state, Temporal *temp);
-extern SkipList *tint_tsum_transfn(SkipList *state, Temporal *temp);
+extern SkipList *temporal_tcount_transfn(SkipList *state, const Temporal *temp, const Interval *interval, TimestampTz origin);
+extern SkipList *tfloat_tmax_transfn(SkipList *state, const Temporal *temp);
+extern SkipList *tfloat_tmin_transfn(SkipList *state, const Temporal *temp);
+extern SkipList *tfloat_tsum_transfn(SkipList *state, const Temporal *temp);
+extern SkipList *tint_tmax_transfn(SkipList *state, const Temporal *temp);
+extern SkipList *tint_tmin_transfn(SkipList *state, const Temporal *temp);
+extern SkipList *tint_tsum_transfn(SkipList *state, const Temporal *temp);
 extern double tnumber_integral(const Temporal *temp);
+extern TBox *tnumber_extent_transfn(TBox *box, Temporal *temp);
 extern Temporal *tnumber_tavg_finalfn(SkipList *state);
-extern SkipList *tnumber_tavg_transfn(SkipList *state, Temporal *temp);
+extern SkipList *tnumber_tavg_transfn(SkipList *state, const Temporal *temp);
 extern double tnumber_twavg(const Temporal *temp);
 extern GSERIALIZED *tpoint_twcentroid(const Temporal *temp);
-extern SkipList *ttext_tmax_transfn(SkipList *state, Temporal *temp);
-extern SkipList *ttext_tmin_transfn(SkipList *state, Temporal *temp);
+extern SkipList *ttext_tmax_transfn(SkipList *state, const Temporal *temp);
+extern SkipList *ttext_tmin_transfn(SkipList *state, const Temporal *temp);
 
 /*****************************************************************************/
 

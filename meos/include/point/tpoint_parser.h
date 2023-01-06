@@ -42,9 +42,9 @@
 /*****************************************************************************/
 
 extern STBox *stbox_parse(const char **str);
-extern TSequence *tpointseq_parse(const char **str, mobdbType temptype,
+extern TSequence *tpointseq_parse(const char **str, meosType temptype,
   interpType interp, bool end, bool make, int *tpoint_srid);
-extern Temporal *tpoint_parse(const char **str, mobdbType temptype);
+extern Temporal *tpoint_parse(const char **str, meosType temptype);
 
 /*****************************************************************************/
 

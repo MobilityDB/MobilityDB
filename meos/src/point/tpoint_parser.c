@@ -218,11 +218,11 @@ stbox_parse(const char **str)
  * @param[in,out] tpoint_srid SRID of the temporal point
  */
 TInstant *
-tpointinst_parse(const char **str, mobdbType temptype, bool end, bool make,
+tpointinst_parse(const char **str, meosType temptype, bool end, bool make,
   int *tpoint_srid)
 {
   p_whitespace(str);
-  mobdbType basetype = temptype_basetype(temptype);
+  meosType basetype = temptype_basetype(temptype);
   /* The next instruction will throw an exception if it fails */
   Datum geo = basetype_parse(str, basetype);
   GSERIALIZED *gs = DatumGetGserializedP(geo);
@@ -258,7 +258,7 @@ tpointinst_parse(const char **str, mobdbType temptype, bool end, bool make,
  * @param[in,out] tpoint_srid SRID of the temporal point
  */
 TSequence *
-tpointdiscseq_parse(const char **str, mobdbType temptype, int *tpoint_srid)
+tpointdiscseq_parse(const char **str, meosType temptype, int *tpoint_srid)
 {
   p_whitespace(str);
   /* We are sure to find an opening brace because that was the condition
@@ -303,7 +303,7 @@ tpointdiscseq_parse(const char **str, mobdbType temptype, int *tpoint_srid)
  * @param[in,out] tpoint_srid SRID of the temporal point
 */
 TSequence *
-tpointseq_parse(const char **str, mobdbType temptype, interpType interp,
+tpointseq_parse(const char **str, meosType temptype, interpType interp,
   bool end, bool make, int *tpoint_srid)
 {
   p_whitespace(str);
@@ -358,7 +358,7 @@ tpointseq_parse(const char **str, mobdbType temptype, interpType interp,
  * @param[in,out] tpoint_srid SRID of the temporal point
  */
 TSequenceSet *
-tpointseqset_parse(const char **str, mobdbType temptype, interpType interp,
+tpointseqset_parse(const char **str, meosType temptype, interpType interp,
   int *tpoint_srid)
 {
   p_whitespace(str);
@@ -399,7 +399,7 @@ tpointseqset_parse(const char **str, mobdbType temptype, interpType interp,
  * @param[in] temptype Temporal type
  */
 Temporal *
-tpoint_parse(const char **str, mobdbType temptype)
+tpoint_parse(const char **str, meosType temptype)
 {
   int tpoint_srid = 0;
   p_whitespace(str);

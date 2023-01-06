@@ -43,10 +43,10 @@
 #include <utils/typcache.h>
 /* MEOS */
 #include <meos.h>
-#include "general/mobdb_catalog.h"
+#include "general/meos_catalog.h"
 #include "general/temporal.h"
 /* MobilityDB */
-#include "pg_general/mobdb_catalog.h"
+#include "pg_general/meos_catalog.h"
 
 #define BTREE_AM_OID   403
 

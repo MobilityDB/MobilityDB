@@ -423,6 +423,12 @@ SELECT asText(ARRAY[tgeompoint 'Point(1 1)@2000-01-01']);
  {"POINT(1 1)@2000-01-01 00:00:00+00"}
 (1 row)
 
+SELECT asText(ARRAY[geometry 'Point(1 1)', 'Point(2 2)']);
+           astext            
+-----------------------------
+ {"POINT(1 1)","POINT(2 2)"}
+(1 row)
+
 SELECT asEWKT(tgeompoint 'Point(1 1)@2000-01-01');
               asewkt               
 -----------------------------------
@@ -529,6 +535,12 @@ SELECT asEWKT(ARRAY[tgeompoint 'Point(1 1)@2000-01-01']);
                 asewkt                 
 ---------------------------------------
  {"POINT(1 1)@2000-01-01 00:00:00+00"}
+(1 row)
+
+SELECT asEWKT(ARRAY[geometry 'Point(1 1)', 'Point(2 2)']);
+           asewkt            
+-----------------------------
+ {"POINT(1 1)","POINT(2 2)"}
 (1 row)
 
 SELECT asMFJSON(tgeompoint 'Point(1 1)@2000-01-01');

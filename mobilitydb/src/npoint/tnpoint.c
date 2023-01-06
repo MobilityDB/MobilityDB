@@ -43,13 +43,14 @@
 #include "npoint/tnpoint_static.h"
 #include "npoint/tnpoint_parser.h"
 /* MobilityDB */
-#include "pg_general/mobdb_catalog.h"
+#include "pg_general/meos_catalog.h"
 #include "pg_npoint/tnpoint_static.h"
 
 /*****************************************************************************
  * General functions
  *****************************************************************************/
 
+#if 0 /* not used */
 /**
  * @brief Convert a C array of int64 values into a PostgreSQL array
  */
@@ -59,7 +60,6 @@ int64arr_array(const int64 *int64arr, int count)
   return construct_array((Datum *)int64arr, count, INT8OID, 8, true, 'd');
 }
 
-#if 0 /* not used */
 /**
  * @brief Convert a C array of network point values into a PostgreSQL array
  */

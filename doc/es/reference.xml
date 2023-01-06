@@ -659,6 +659,10 @@
 				</listitem>
 
 				<listitem>
+				<para><link linkend="appendSequence"><varname>appendSequence</varname></link>: Anexar una secuencia temporal a un valor temporal</para>
+				</listitem>
+
+				<listitem>
 				<para><link linkend="merge"><varname>merge</varname></link>: Fusionar los valores temporales</para>
 				</listitem>
 

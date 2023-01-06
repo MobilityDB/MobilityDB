@@ -138,7 +138,7 @@ tnumberinst_double(const TInstant *inst)
  * @param[in] temptype Temporal type
  */
 TInstant *
-tinstant_in(const char *str, mobdbType temptype)
+tinstant_in(const char *str, meosType temptype)
 {
   return tinstant_parse(&str, temptype, true, true);
 }
@@ -229,7 +229,7 @@ char *
 tinstant_to_string(const TInstant *inst, int maxdd, outfunc value_out)
 {
   char *t = pg_timestamptz_out(inst->t);
-  mobdbType basetype = temptype_basetype(inst->temptype);
+  meosType basetype = temptype_basetype(inst->temptype);
   char *value = value_out(tinstant_value(inst), basetype, maxdd);
   char *result;
   if (inst->temptype == T_TTEXT)
@@ -282,14 +282,14 @@ tinstant_out(const TInstant *inst, int maxdd)
  * @sqlfunc tbool_inst(), tint_inst(), tfloat_inst(), ttext_inst(), etc.
  */
 TInstant *
-tinstant_make(Datum value, mobdbType temptype, TimestampTz t)
+tinstant_make(Datum value, meosType temptype, TimestampTz t)
 {
   size_t value_offset = sizeof(TInstant) - sizeof(Datum);
   size_t size = value_offset;
   /* Create the temporal instant */
   size_t value_size;
   void *value_from;
-  mobdbType basetype = temptype_basetype(temptype);
+  meosType basetype = temptype_basetype(temptype);
   bool typbyval = basetype_byvalue(basetype);
   /* Copy value */
   if (typbyval)
@@ -760,7 +760,7 @@ tnumberinst_restrict_span_test(const TInstant *inst, const Span *span,
   bool atfunc)
 {
   Datum d = tinstant_value(inst);
-  mobdbType basetype = temptype_basetype(inst->temptype);
+  meosType basetype = temptype_basetype(inst->temptype);
   bool contains = contains_span_value(span, d, basetype);
   return atfunc ? contains : ! contains;
 }
@@ -796,7 +796,7 @@ tnumberinst_restrict_spanset_test(const TInstant *inst, const SpanSet *ss,
   bool atfunc)
 {
   Datum d = tinstant_value(inst);
-  mobdbType basetype = temptype_basetype(inst->temptype);
+  meosType basetype = temptype_basetype(inst->temptype);
   for (int i = 0; i < ss->count; i++)
   {
     const Span *s = spanset_sp_n(ss, i);

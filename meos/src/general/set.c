@@ -43,6 +43,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/pg_types.h"
+#include "general/temporal_out.h"
 #include "general/temporal_parser.h"
 #include "general/temporal_util.h"
 
@@ -119,6 +120,36 @@ set_find_value(const Set *s, Datum d, int *loc)
   return false;
 }
 
+#if 0 /* not used */
+/**
+ * @ingroup libmeos_internal_setspan_accessor
+ * @brief Return the location of a value in a ranked set (which is unordered)
+ * using sequential search.
+ * @note Contrary to function `set_find_value`, if the value is not found the
+ * returned location is always 0.
+ *
+ * @param[in] s Set
+ * @param[in] d Value
+ * @param[out] loc Location of the value if found
+ * @result Return true if the value is contained in the vecctor
+ */
+bool
+rset_find_value(const Set *s, Datum d, int *loc)
+{
+  for (int i = 0; i < s->count; i++)
+  {
+    Datum d1 = set_val_n(s, i);
+    if (datum_eq(d, d1, s->basetype))
+    {
+      *loc = i;
+      return true;
+    }
+  }
+  *loc = 0;
+  return false;
+}
+#endif /* not used */
+
 /*****************************************************************************
  * Input/output functions in string format
  *****************************************************************************/
@@ -128,9 +159,9 @@ set_find_value(const Set *s, Datum d, int *loc)
  * @brief Return a set from its Well-Known Text (WKT) representation.
  */
 Set *
-set_in(const char *str, mobdbType ostype)
+set_in(const char *str, meosType settype)
 {
-  return set_parse(&str, ostype);
+  return set_parse(&str, settype);
 }
 
 #if MEOS
@@ -202,24 +233,24 @@ set_out(const Set *s, int maxdd)
  * @brief Construct a set from an array of values.
  *
  * The memory structure depends on whether the value is passed by value or
- * by reference. For example, the memory structure of a set with 3 values
- * passed by value is as follows
+ * by reference. For example, the memory structure of a set with 2 values
+ * passed by value and passed by reference are, respectively, as follows
  *
  * @code
- * -----------------------------------------
- * ( Set )_X | Value_0 | Value_1 | Value_2 |
- * -----------------------------------------
+ * ------------------------------------
+ * Header | count | Value_0 | Value_1 |
+ * ------------------------------------
  * @endcode
- * where the `X` are unused bytes added for double padding. On the other hand,
- * the memory structure of a set with 3 values passed by reference is as follows
  *
  * @code
- * --------------------------------------------------------------------------
- * ( Set )_X | offset_0 | offset_1 | offset_2 | Value_0 | Value_1 | Value_2 |
- * --------------------------------------------------------------------------
+ * ------------------------------------------------------------
+ * | Header | count | offset_0 | offset_1 | Value_0 | Value_1 |
+ * ------------------------------------------------------------
  * @endcode
- * where the `X` are unused bytes added for double padding, `offset_i` are
- * offsets for the corresponding values
+ * where
+ * - `Header` contains internal information (size, type identifiers, flags)
+ * - `count` contains the number of values
+ * - `offset_i` are offsets from the begining of the struct for the values.
 
  *
  * @param[in] values Array of values
@@ -229,13 +260,22 @@ set_out(const Set *s, int maxdd)
  * @pymeosfunc TimestampSet()
  */
 Set *
-set_make(const Datum *values, int count, mobdbType basetype)
+set_make(const Datum *values, int count, meosType basetype, bool ordered)
 {
-  /* Test the validity of the values */
-  for (int i = 0; i < count - 1; i++)
+  if (ordered)
   {
-    if (datum_ge(values[i], values[i + 1], basetype))
-      elog(ERROR, "Invalid value for a set");
+    /* Test the validity of the values */
+    for (int i = 0; i < count - 1; i++)
+    {
+      if (datum_ge(values[i], values[i + 1], basetype))
+      {
+        char *str1 = basetype_out(values[i], basetype, OUT_DEFAULT_DECIMAL_DIGITS);
+        char *str2 = basetype_out(values[i + 1], basetype, OUT_DEFAULT_DECIMAL_DIGITS);
+        elog(ERROR, "The values of an ordered set must be increasing: %s %s",
+          str1, str2);
+        pfree(str1); pfree(str2);
+      }
+    }
   }
 
   /* Determine whether the values are passed by value or by reference  */
@@ -257,8 +297,10 @@ set_make(const Datum *values, int count, mobdbType basetype)
       for (int i = 0; i < count; i++)
         values_size += double_pad(VARSIZE(values[i]));
     }
+#if 0 /* not used */
     else
       values_size = double_pad(typlen) * count;
+#endif /* not used */
   }
 
   /* The first Datum is already declared in the struct */
@@ -269,6 +311,11 @@ set_make(const Datum *values, int count, mobdbType basetype)
   Set *result = palloc0(memsize);
   SET_VARSIZE(result, memsize);
   MOBDB_FLAGS_SET_BYVAL(result->flags, typbyval);
+  MOBDB_FLAGS_SET_ORDERED(result->flags, ordered);
+#if 0 /* not used */
+  result->minidx = minidx;
+  result->maxidx = maxidx;
+#endif /* not used */
   result->count = count;
   result->settype = basetype_settype(basetype);
   result->basetype = basetype;
@@ -303,16 +350,17 @@ set_make(const Datum *values, int count, mobdbType basetype)
  * @param[in] values Array of values
  * @param[in] count Number of elements in the array
  * @param[in] basetype Base type
+ * @param[in] ordered True when the values are stored ordered
  */
 Set *
-set_make_free(Datum *values, int count, mobdbType basetype)
+set_make_free(Datum *values, int count, meosType basetype, bool ordered)
 {
   if (count == 0)
   {
     pfree(values);
     return NULL;
   }
-  Set *result = set_make(values, count, basetype);
+  Set *result = set_make(values, count, basetype, ordered);
   pfree(values);
   return result;
 }
@@ -339,9 +387,9 @@ set_copy(const Set *s)
  * @sqlop @p ::
  */
 Set *
-value_to_set(Datum d, mobdbType basetype)
+value_to_set(Datum d, meosType basetype)
 {
-  return set_make(&d, 1, basetype);
+  return set_make(&d, 1, basetype, ORDERED);
 }
 
 #if MEOS
@@ -354,7 +402,7 @@ Set *
 int_to_intset(int i)
 {
   Datum v = Int32GetDatum(i);
-  return set_make(&v, 1, T_INT4);
+  return set_make(&v, 1, T_INT4, ORDERED);
 }
 
 /**
@@ -366,7 +414,7 @@ Set *
 bigint_to_bigintset(int64 i)
 {
   Datum v = Int64GetDatum(i);
-  return set_make(&v, 1, T_INT8);
+  return set_make(&v, 1, T_INT8, ORDERED);
 }
 
 /**
@@ -378,7 +426,7 @@ Set *
 float_to_floatset(double d)
 {
   Datum v = Float8GetDatum(d);
-  return set_make(&v, 1, T_FLOAT8);
+  return set_make(&v, 1, T_FLOAT8, ORDERED);
 }
 
 /**
@@ -390,7 +438,7 @@ Set *
 timestamp_to_timestampset(TimestampTz t)
 {
   Datum v = TimestampTzGetDatum(t);
-  return set_make(&v, 1, T_TIMESTAMPTZ);
+  return set_make(&v, 1, T_TIMESTAMPTZ, ORDERED);
 }
 #endif /* MEOS */
 
@@ -405,7 +453,8 @@ timestamp_to_timestampset(TimestampTz t)
 void
 set_set_span(const Set *os, Span *s)
 {
-  span_set(os->elems[0], os->elems[os->count - 1], true, true, os->basetype, s);
+  span_set(os->elems[MINIDX], os->elems[os->MAXIDX], true, true,
+    os->basetype, s);
   return;
 }
 
@@ -420,8 +469,7 @@ Span *
 set_to_span(const Set *s)
 {
   Span *result = palloc(sizeof(Span));
-  span_set(s->elems[0], s->elems[s->count - 1], true, true, s->basetype,
-    result);
+  set_set_span(s, result);
   return result;
 }
 
@@ -963,7 +1011,7 @@ set_gt(const Set *s1, const Set *s2)
  * @brief Return the 32-bit hash of a value.
  */
 uint32
-datum_hash(Datum d, mobdbType basetype)
+datum_hash(Datum d, meosType basetype)
 {
   ensure_set_basetype(basetype);
   if (basetype == T_TIMESTAMPTZ)
@@ -999,7 +1047,7 @@ set_hash(const Set *s)
  * @brief Return the 64-bit hash of a value using a seed.
  */
 uint64
-datum_hash_extended(Datum d, mobdbType basetype, uint64 seed)
+datum_hash_extended(Datum d, meosType basetype, uint64 seed)
 {
   ensure_set_basetype(basetype);
   if (basetype == T_TIMESTAMPTZ)

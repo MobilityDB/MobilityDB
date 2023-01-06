@@ -403,7 +403,7 @@ SELECT k, random_geog_point3D(-10, 32, 35, 72, 0, 1000, 7844)
 FROM generate_series(2, size) k;
 </programlisting>
 		<para>
-			Tenga en cuenta que los valores de latitud y longitud se eligen para cubrir aproximadamente la Europa continental. Si no se proporciona el SRID, se establece de forma predeterminada en 4326.
+			Nótese que los valores de latitud y longitud se eligen para cubrir aproximadamente la Europa continental. Si no se proporciona el SRID, se establece de forma predeterminada en 4326.
 		</para>
 
 		<para>

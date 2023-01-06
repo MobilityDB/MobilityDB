@@ -87,7 +87,9 @@ CREATE FUNCTION tcount_bucket_transfn(internal, tgeogpoint, interval,
 CREATE AGGREGATE tcount(tgeompoint) (
   SFUNC = tcount_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = tcount_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
   SERIALFUNC = tagg_serialize,
   DESERIALFUNC = tagg_deserialize,
@@ -96,7 +98,9 @@ CREATE AGGREGATE tcount(tgeompoint) (
 CREATE AGGREGATE tcount(tgeompoint, interval) (
   SFUNC = tcount_bucket_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = tcount_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
   SERIALFUNC = tagg_serialize,
   DESERIALFUNC = tagg_deserialize,
@@ -105,7 +109,9 @@ CREATE AGGREGATE tcount(tgeompoint, interval) (
 CREATE AGGREGATE tcount(tgeompoint, interval, timestamptz) (
   SFUNC = tcount_bucket_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = tcount_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
   SERIALFUNC = tagg_serialize,
   DESERIALFUNC = tagg_deserialize,
@@ -115,7 +121,9 @@ CREATE AGGREGATE tcount(tgeompoint, interval, timestamptz) (
 CREATE AGGREGATE tcount(tgeogpoint) (
   SFUNC = tcount_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = tcount_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
   SERIALFUNC = tagg_serialize,
   DESERIALFUNC = tagg_deserialize,
@@ -124,7 +132,9 @@ CREATE AGGREGATE tcount(tgeogpoint) (
 CREATE AGGREGATE tcount(tgeogpoint, interval) (
   SFUNC = tcount_bucket_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = tcount_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
   SERIALFUNC = tagg_serialize,
   DESERIALFUNC = tagg_deserialize,
@@ -133,7 +143,9 @@ CREATE AGGREGATE tcount(tgeogpoint, interval) (
 CREATE AGGREGATE tcount(tgeogpoint, interval, timestamptz) (
   SFUNC = tcount_bucket_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = tcount_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
   SERIALFUNC = tagg_serialize,
   DESERIALFUNC = tagg_deserialize,
@@ -152,7 +164,9 @@ CREATE FUNCTION wcount_transfn(internal, tgeogpoint, interval)
 CREATE AGGREGATE wcount(tgeompoint, interval) (
   SFUNC = wcount_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = tint_tsum_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
   SERIALFUNC = tagg_serialize,
   DESERIALFUNC = tagg_deserialize,
@@ -161,7 +175,9 @@ CREATE AGGREGATE wcount(tgeompoint, interval) (
 CREATE AGGREGATE wcount(tgeogpoint, interval) (
   SFUNC = wcount_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = tint_tsum_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
   SERIALFUNC = tagg_serialize,
   DESERIALFUNC = tagg_deserialize,
@@ -184,7 +200,9 @@ CREATE FUNCTION tcentroid_finalfn(internal)
 CREATE AGGREGATE tcentroid(tgeompoint) (
   SFUNC = tcentroid_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = tcentroid_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tcentroid_finalfn,
   SERIALFUNC = tagg_serialize,
   DESERIALFUNC = tagg_deserialize,

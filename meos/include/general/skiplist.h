@@ -28,7 +28,7 @@
  *****************************************************************************/
 
 /**
- * @brief Skiplist data structure used for performing aggregates
+ * @brief Skiplist data structure used for performing temporal aggregates
  */
 
 #ifndef __SKIPLIST_H__
@@ -39,15 +39,6 @@
 /* MEOS */
 #include <meos.h>
 #include "general/temporal.h"
-
-/*****************************************************************************/
-
-/* Constants defining the behaviour of skip lists which are internal types
-   for computing aggregates */
-
-#define SKIPLIST_INITIAL_CAPACITY 1024
-#define SKIPLIST_GROW 1       /**< double the capacity to expand the skiplist */
-#define SKIPLIST_INITIAL_FREELIST 32
 
 /*****************************************************************************/
 

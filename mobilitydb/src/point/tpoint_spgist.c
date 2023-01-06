@@ -104,9 +104,10 @@
 /* MobilityDB */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/set.h"
 #include "point/tpoint_boxops.h"
 /* MobilityDB */
-#include "pg_general/mobdb_catalog.h"
+#include "pg_general/meos_catalog.h"
 #include "pg_general/temporal.h"
 #include "pg_general/tnumber_spgist.h"
 #include "pg_point/tpoint_gist.h"
@@ -687,7 +688,7 @@ distance_stbox_nodebox(const STBox *query, const STboxNode *nodebox)
 static bool
 tpoint_spgist_get_stbox(const ScanKeyData *scankey, STBox *result)
 {
-  mobdbType type = oid_type(scankey->sk_subtype);
+  meosType type = oid_type(scankey->sk_subtype);
   if (tgeo_basetype(type))
   {
     GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(scankey->sk_argument);
@@ -702,7 +703,8 @@ tpoint_spgist_get_stbox(const ScanKeyData *scankey, STBox *result)
   }
   else if (type == T_TIMESTAMPSET)
   {
-    timestampset_stbox_slice(scankey->sk_argument, result);
+    Set *set = DatumGetSetP(scankey->sk_argument);
+    timestampset_set_stbox(set, result);
   }
   else if (type == T_PERIOD)
   {

@@ -28,40 +28,70 @@
  *****************************************************************************/
 
 /**
- * @brief Input of temporal points in WKT, EWKT, , EWKB, and MF-JSON format.
+ * @brief Aggregate functions for set types.
  */
 
+// #include "general/time_aggfuncs.h"
+
+/* PostgreSQL */
+#include <postgres.h>
+#include <utils/memutils.h>
+#include <utils/timestamp.h>
 /* MEOS */
-#include "general/temporal_util.h"
-#include "point/tpoint_parser.h"
+#include <meos.h>
+#include <meos_internal.h>
+#include "general/set.h"
+#include "general/skiplist.h"
 /* MobilityDB */
+#include "pg_general/skiplist.h"
+#include "pg_general/temporal.h"
 #include "pg_general/meos_catalog.h"
 
 /*****************************************************************************
- * Input in EWKT format
+ * Aggregate transition functions for set types
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Tpoint_from_ewkt);
+PG_FUNCTION_INFO_V1(Set_agg_transfn);
 /**
- * @ingroup mobilitydb_temporal_inout
- * @brief Input a temporal point from its Extended Well-Known Text (EWKT)
- * representation.
- * @note This just does the same thing as the _in function, except it has to handle
- * a 'text' input. First, unwrap the text into a cstring, then do as tpoint_in
- * @sqlfunc tgeompointFromText(), tgeogpointFromText(), tgeompointFromEWKT(),
- * tgeogpointFromEWKT()
+ * Transition function for set aggregation of values
  */
 PGDLLEXPORT Datum
-Tpoint_from_ewkt(PG_FUNCTION_ARGS)
+Set_agg_transfn(PG_FUNCTION_ARGS)
 {
-  text *wkt_text = PG_GETARG_TEXT_P(0);
-  Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
-  char *wkt = text2cstring(wkt_text);
-  /* Copy the pointer since it will be advanced during parsing */
-  const char *wkt_ptr = wkt;
-  Temporal *result = tpoint_parse(&wkt_ptr, oid_type(temptypid));
-  pfree(wkt);
-  PG_FREE_IF_COPY(wkt_text, 0);
+  Set *state = PG_ARGISNULL(0) ? NULL : PG_GETARG_SET_P(0);
+  if (PG_ARGISNULL(1))
+    PG_RETURN_NULL();
+  Datum d = PG_GETARG_DATUM(1);
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  void *value = NULL;
+  if (! basetype_byvalue(basetype) &&
+      PG_DATUM_NEEDS_DETOAST((struct varlena *) d))
+    value = PG_DETOAST_DATUM(d);
+  state = set_agg_transfn(state, value ? PointerGetDatum(value) : d, basetype);
+  if (! state)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(state);
+}
+
+/*****************************************************************************
+ * Aggregate combine functions for set types
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Set_agg_combinefn);
+/**
+ * Combine function for set aggregate of set types
+ */
+PGDLLEXPORT Datum
+Set_agg_combinefn(PG_FUNCTION_ARGS)
+{
+  MemoryContext ctx = set_aggregation_context(fcinfo);
+  Set *state1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_SET_P(0);
+  Set *state2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_SET_P(1);
+  if (state1 == NULL && state2 == NULL)
+    PG_RETURN_NULL();
+  unset_aggregation_context(ctx);
+  store_fcinfo(fcinfo);
+  Set *result = set_agg_combinefn(state1, state2);
   PG_RETURN_POINTER(result);
 }
 

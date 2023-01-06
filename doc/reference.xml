@@ -852,6 +852,10 @@
 				</listitem>
 
 				<listitem>
+				<para><link linkend="appendSequence"><varname>appendSequence</varname></link>: Append a temporal sequence to a temporal value</para>
+				</listitem>
+
+				<listitem>
 				<para><link linkend="merge"><varname>merge</varname></link>: Merge temporal values</para>
 				</listitem>
 

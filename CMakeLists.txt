@@ -1,5 +1,5 @@
 #-------------------------------------
-# MobilityDB Main CMake file
+# MobilityDB/MEOS Main CMake file
 #-------------------------------------
 
 # Minimum Cmake version supporting fixtures
@@ -109,8 +109,8 @@ set(CMAKE_CTEST_ARGUMENTS "--output-on-failure")
 enable_testing()
 
 set(MOBILITYDB_VERSION "${PROJECT_VERSION}")
-set(MOBILITYDB_VERSION_STR "${CMAKE_PROJECT_NAME} ${PROJECT_VERSION}${PROJECT_VERSION_DEV}")
-add_definitions(-DMOBILITYDB_VERSION_STR="${MOBILITYDB_VERSION_STR}")
+set(MOBILITYDB_VERSION_STRING "${CMAKE_PROJECT_NAME} ${PROJECT_VERSION}${PROJECT_VERSION_DEV}")
+add_definitions(-DMOBILITYDB_VERSION_STRING="${MOBILITYDB_VERSION_STRING}")
 
 # Comment out code used for debugging purposes so it is not concerned by the coverage
 if(CMAKE_BUILD_TYPE MATCHES Debug)

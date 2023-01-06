@@ -46,7 +46,7 @@
  * The invalid combinations will be initialized to 0.
  */
 
-#include "pg_general/mobdb_catalog.h"
+#include "pg_general/meos_catalog.h"
 
 /* PostgreSQL */
 #include <postgres.h>
@@ -60,8 +60,7 @@
 #if NPOINT
   #include "npoint/tnpoint_static.h"
 #endif
-#include "general/mobdb_catalog.h"
-
+#include "general/meos_catalog.h"
 
 /*****************************************************************************
  * Global variables
@@ -320,7 +319,7 @@ fill_opcache(PG_FUNCTION_ARGS __attribute__((unused)))
  * @arg[in] type Enum value for the type
  */
 Oid
-type_oid(mobdbType type)
+type_oid(meosType type)
 {
   if (!_oid_cache_ready)
     populate_operoid_cache();
@@ -335,7 +334,7 @@ type_oid(mobdbType type)
  * @arg[in] rt Enum value for the right type
  */
 Oid
-oper_oid(CachedOp oper, mobdbType lt, mobdbType rt)
+oper_oid(CachedOp oper, meosType lt, meosType rt)
 {
   if (!_oid_cache_ready)
     populate_operoid_cache();
@@ -347,7 +346,7 @@ oper_oid(CachedOp oper, mobdbType lt, mobdbType rt)
  *
  * @arg[in] type Enum value for the type
  */
-mobdbType
+meosType
 oid_type(Oid typid)
 {
   if (!_oid_cache_ready)

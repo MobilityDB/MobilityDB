@@ -35,6 +35,8 @@
 
 /* C */
 #include <assert.h>
+/* GEOS */
+#include <geos_c.h>
 /* MobilityDB */
 #include <meos.h>
 #include <meos_internal.h>
@@ -150,6 +152,8 @@ ensure_same_interpolation(const Temporal *temp1, const Temporal *temp2)
 {
   interpType interp1 = MOBDB_FLAGS_GET_INTERP(temp1->flags);
   interpType interp2 = MOBDB_FLAGS_GET_INTERP(temp2->flags);
+  // /* A temporal instant (with INTERP_NONE) can match any interpolation */
+  // if (interp1 != INTERP_NONE && interp2 != INTERP_NONE && interp1 != interp2)
   if ((interp1 == STEPWISE && interp2 == LINEAR) ||
       (interp2 == STEPWISE && interp1 == LINEAR))
     elog(ERROR, "The temporal values must have the same continuous interpolation");
@@ -251,7 +255,7 @@ int *
 ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
   interpType interp, double maxdist, Interval *maxt, int *countsplits)
 {
-  mobdbType basetype = temptype_basetype(instants[0]->temptype);
+  meosType basetype = temptype_basetype(instants[0]->temptype);
   int *result = palloc(sizeof(int) * count);
   Datum value1 = tinstant_value(instants[0]);
 #if NPOINT
@@ -345,7 +349,7 @@ ensure_valid_tseqarr(const TSequence **sequences, int count)
  * Ensure that the number is positive
  */
 void
-ensure_positive_datum(Datum size, mobdbType basetype)
+ensure_positive_datum(Datum size, meosType basetype)
 {
   ensure_span_basetype(basetype);
   if (basetype == T_INT4)
@@ -502,14 +506,14 @@ intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
  * Version functions
  *****************************************************************************/
 
-#define MOBDB_VERSION_STR_MAXLEN 128
+#define MOBDB_VERSION_STR_MAXLEN 256
 /**
  * Version of the MobilityDB extension
  */
 char *
 mobilitydb_version(void)
 {
-  char *result = MOBILITYDB_VERSION_STR;
+  char *result = MOBILITYDB_VERSION_STRING;
   return result;
 }
 
@@ -519,9 +523,20 @@ mobilitydb_version(void)
 char *
 mobilitydb_full_version(void)
 {
+  const char *proj_ver;
+#if POSTGIS_PROJ_VERSION < 61
+  proj_ver = pj_get_release();
+#else
+  PJ_INFO pji = proj_info();
+  proj_ver = pji.version;
+#endif
+  const char* geos_version = GEOSversion();
+
   char *result = palloc(sizeof(char) * MOBDB_VERSION_STR_MAXLEN);
-  int len = snprintf(result, MOBDB_VERSION_STR_MAXLEN, "%s, %s, %s",
-    MOBILITYDB_VERSION_STR, POSTGRESQL_VERSION_STRING, POSTGIS_VERSION_STR);
+  int len = snprintf(result, MOBDB_VERSION_STR_MAXLEN,
+    "%s, %s, %s, GEOS %s, PROJ %s",
+    MOBILITYDB_VERSION_STRING, POSTGRESQL_VERSION_STRING,
+    POSTGIS_VERSION_STRING, geos_version, proj_ver);
   result[len] = '\0';
   return result;
 }
@@ -539,7 +554,7 @@ mobilitydb_full_version(void)
  * @param[in] temptype Temporal type
  */
 Temporal *
-temporal_in(const char *str, mobdbType temptype)
+temporal_in(const char *str, meosType temptype)
 {
   return temporal_parse(&str, temptype);
 }
@@ -704,7 +719,7 @@ temporal_copy(const Temporal *temp)
  * another temporal value.
  */
 Temporal *
-temporal_from_base(Datum value, mobdbType temptype, const Temporal *temp,
+temporal_from_base(Datum value, meosType temptype, const Temporal *temp,
   interpType interp)
 {
   Temporal *result;
@@ -827,10 +842,64 @@ temporal_append_tinstant(Temporal *temp, const TInstant *inst, bool expand)
 }
 
 /**
+ * @ingroup libmeos_temporal_transf
+ * @brief Append a sequence at the end of a temporal value.
+ * @param[in,out] temp Temporal value
+ * @param[in] seq Temporal sequence
+ * @param[in] expand True when reserving space for additional sequences
+ * @sqlfunc appendSequence()
+ */
+Temporal *
+temporal_append_tsequence(Temporal *temp, const TSequence *seq, bool expand)
+{
+  /* Validity tests */
+  if (seq->subtype != TSEQUENCE)
+    elog(ERROR, "The second argument must be of sequence subtype");
+  ensure_same_temptype(temp, (Temporal *) seq);
+  ensure_same_interpolation(temp, (Temporal *) seq);
+  /* The test to ensure the increasing timestamps must be done in the
+   * subtype function since the inclusive/exclusive bounds must be
+   * taken into account for temporal sequences and sequence sets */
+  ensure_spatial_validity(temp, (Temporal *) seq);
+
+  interpType interp2 = MOBDB_FLAGS_GET_INTERP(seq->flags);
+  Temporal *result;
+  if (temp->subtype == TINSTANT)
+  {
+    TSequence *seq1 = tinstant_to_tsequence((TInstant *) temp, interp2);
+    result = (Temporal *) tsequence_append_tsequence((TSequence *) seq1,
+      (TSequence *) seq, expand);
+    pfree(seq1);
+  }
+  else if (temp->subtype == TSEQUENCE)
+  {
+    interpType interp1 = MOBDB_FLAGS_GET_INTERP(temp->flags);
+    if (interp1 == interp2 && (interp1 == LINEAR || interp1 == STEPWISE))
+      result = (Temporal *) tsequence_append_tsequence((TSequence *) temp,
+        seq, expand);
+    else
+    {
+      const TSequenceSet *seqsets[2];
+      seqsets[0] = tsequence_to_tsequenceset((TSequence *) temp);
+      seqsets[1] = tsequence_to_tsequenceset(seq);
+      result = (Temporal *) tsequenceset_merge_array(seqsets, 2);
+      pfree((void *) seqsets[0]); pfree((void *) seqsets[1]);
+    }
+  }
+  else /* temp->subtype == TSEQUENCESET */
+    result = (Temporal *) tsequenceset_append_tsequence((TSequenceSet *) temp,
+      seq, expand);
+  return result;
+}
+
+/**
  * Convert two temporal values into a common subtype
  *
  * @param[in] temp1,temp2 Input values
  * @param[out] out1,out2 Output values
+ * @note Each of the output values may be equal to the input values to avoid
+ * unnecessary calls to palloc(). The calling function must test whether
+ * (tempx == outx) to determine if a pfree is needed.
  */
 static void
 temporal_convert_same_subtype(const Temporal *temp1, const Temporal *temp2,
@@ -847,8 +916,8 @@ temporal_convert_same_subtype(const Temporal *temp1, const Temporal *temp2,
     bool discrete2 = MOBDB_FLAGS_GET_DISCRETE(temp2->flags);
     if (discrete1 == discrete2)
     {
-      *out1 = temporal_copy(temp1);
-      *out2 = temporal_copy(temp2);
+      *out1 = (Temporal *) temp1;
+      *out2 = (Temporal *) temp2;
     }
     else
     {
@@ -886,13 +955,13 @@ temporal_convert_same_subtype(const Temporal *temp1, const Temporal *temp2,
     new = (Temporal *) tsequence_to_tsequenceset((TSequence *) new1);
   if (swap)
   {
-    *out1 = temporal_copy(temp1);
+    *out1 = (Temporal *) temp1;
     *out2 = new;
   }
   else
   {
     *out1 = new;
-    *out2 = temporal_copy(temp2);
+    *out2 = (Temporal *) temp2;
   }
   return;
 }
@@ -1127,7 +1196,7 @@ tnumber_set_span(const Temporal *temp, Span *s)
   if (temp->subtype == TINSTANT)
   {
     Datum value = tinstant_value((TInstant *) temp);
-    mobdbType basetype = temptype_basetype(temp->temptype);
+    meosType basetype = temptype_basetype(temp->temptype);
     span_set(value, value, true, true, basetype, s);
   }
   else
@@ -1333,6 +1402,7 @@ temporal_tscale(const Temporal *temp, const Interval *duration)
 #define MOBDB_SUBTYPE_STR_MAXLEN 12
 #define MOBDB_INTERPOLATION_STR_MAXLEN 12
 
+#if MEOS
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the size in bytes of a temporal value
@@ -1343,6 +1413,7 @@ temporal_memory_size(const Temporal *temp)
 {
   return VARSIZE(temp);
 }
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_temporal_accessor
@@ -1731,7 +1802,7 @@ Datum
 temporal_min_value(const Temporal *temp)
 {
   Datum result;
-  mobdbType basetype = temptype_basetype(temp->temptype);
+  meosType basetype = temptype_basetype(temp->temptype);
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = tinstant_value_copy((TInstant *) temp);
@@ -1790,7 +1861,7 @@ Datum
 temporal_max_value(const Temporal *temp)
 {
   Datum result;
-  mobdbType basetype = temptype_basetype(temp->temptype);
+  meosType basetype = temptype_basetype(temp->temptype);
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = tinstant_value_copy((TInstant *) temp);
@@ -2727,7 +2798,7 @@ temporal_bbox_restrict_values(const Temporal *temp, const Datum *values,
 {
   Datum *newvalues = palloc(sizeof(Datum) * count);
   int k = 0;
-  mobdbType basetype = temptype_basetype(temp->temptype);
+  meosType basetype = temptype_basetype(temp->temptype);
 
   /* Bounding box test */
   if (tnumber_type(temp->temptype))
@@ -2885,6 +2956,7 @@ temporal_restrict_values(const Temporal *temp, Datum *values, int count,
   pfree(newvalues);
   return result;
 }
+
 
 /*****************************************************************************/
 

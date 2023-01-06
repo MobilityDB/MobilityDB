@@ -36,7 +36,7 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-/* MobilityDB */
+/* MEOS */
 #include "general/skiplist.h"
 #include "general/temporal.h"
 #include "general/temporal_util.h"
@@ -61,8 +61,8 @@ extern TInstant **tinstant_tagg(TInstant **instants1, int count1,
 extern TSequence **tsequence_tagg(TSequence **sequences1, int count1,
   TSequence **sequences2, int count2, Datum (*func)(Datum, Datum),
   bool crossings, int *newcount);
-extern void ensure_same_tempsubtype_skiplist(SkipList *state, Temporal *temp);
-extern SkipList *tsequence_tagg_transfn(SkipList *state, TSequence *seq,
+extern void ensure_same_tempsubtype_skiplist(SkipList *state, const Temporal *temp);
+extern SkipList *tcontseq_tagg_transfn(SkipList *state, const TSequence *seq,
   datum_func2 func, bool interpoint);
 extern SkipList *temporal_tagg_combinefn1(SkipList *state1, SkipList *state2,
   datum_func2 func, bool crossings);
@@ -73,7 +73,7 @@ extern TSequence *tinstant_tavg_finalfn(TInstant **instants, int count);
 extern TSequenceSet *tsequence_tavg_finalfn(TSequence **sequences, int count);
 extern TInstant *tnumberinst_transform_tavg(const TInstant *inst);
 extern Temporal **temporal_transform_tcount(const Temporal *temp,
-  Interval *interval, TimestampTz origin, int *count);
+  const Interval *interval, TimestampTz origin, int *count);
 extern Temporal **temporal_transform_tagg(const Temporal *temp, int *count,
   TInstant *(*func)(const TInstant *));
 extern SkipList *tsequenceset_tagg_transfn(SkipList *state,
@@ -81,18 +81,13 @@ extern SkipList *tsequenceset_tagg_transfn(SkipList *state,
 extern SkipList *tdiscseq_tagg_transfn(SkipList *state, const TSequence *seq,
   datum_func2 func);
 
-extern SkipList *temporal_tagg_transfn(SkipList *state, Temporal *temp,
+extern SkipList *temporal_tagg_transfn(SkipList *state, const Temporal *temp,
   datum_func2, bool crossings);
 extern SkipList *temporal_tagg_combinefn(SkipList *state1, SkipList *state2,
   datum_func2 func, bool crossings);
 extern Temporal *temporal_tagg_finalfn(SkipList *state);
-extern SkipList *temporal_tagg_transform_transfn(SkipList *state, Temporal *temp,
+extern SkipList *temporal_tagg_transform_transfn(SkipList *state, const Temporal *temp,
   datum_func2 func, bool crossings, TInstant *(*transform)(const TInstant *));
-extern SkipList *temporal_tcount_transfn(SkipList *state, Temporal *temp,
-  Interval *interval, TimestampTz origin);
-
-extern Period *temporal_extent_transfn(Period *p, Temporal *temp);
-extern TBox *tnumber_extent_transfn(TBox *box, Temporal *temp);
 
 /*****************************************************************************/
 

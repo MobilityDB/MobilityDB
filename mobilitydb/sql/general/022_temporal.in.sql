@@ -1570,7 +1570,7 @@ CREATE FUNCTION shiftTscale(ttext, interval, interval)
 
 /******************************************************************************/
 
- CREATE FUNCTION appendInstant(tbool, tbool)
+CREATE FUNCTION appendInstant(tbool, tbool)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_append_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -1587,7 +1587,24 @@ CREATE FUNCTION appendInstant(ttext, ttext)
   AS 'MODULE_PATHNAME', 'Temporal_append_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- Function is not strict
+CREATE FUNCTION appendSequence(tbool, tbool)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Temporal_append_tsequence'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION appendSequence(tint, tint)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_append_tsequence'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION appendSequence(tfloat, tfloat)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Temporal_append_tsequence'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION appendSequence(ttext, ttext)
+  RETURNS ttext
+  AS 'MODULE_PATHNAME', 'Temporal_append_tsequence'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- The function is not strict
 CREATE FUNCTION merge(tbool, tbool)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_merge'
@@ -1660,7 +1677,7 @@ CREATE FUNCTION minusValue(ttext, text)
   AS 'MODULE_PATHNAME', 'Temporal_minus_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION atValues(tint, integer[])
+CREATE FUNCTION atValues(tint, int[])
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Temporal_at_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -1673,7 +1690,7 @@ CREATE FUNCTION atValues(ttext, text[])
   AS 'MODULE_PATHNAME', 'Temporal_at_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION minusValues(tint, integer[])
+CREATE FUNCTION minusValues(tint, int[])
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Temporal_minus_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

@@ -40,7 +40,7 @@
 /* PostGIS */
 #include <liblwgeom.h>
 /* MEOS */
-#include "general/mobdb_catalog.h"
+#include "general/meos_catalog.h"
 #include "general/temporaltypes.h"
 #include "general/lifting.h"
 #include "point/tpoint.h"

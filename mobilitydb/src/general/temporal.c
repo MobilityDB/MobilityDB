@@ -54,7 +54,7 @@
 #include "general/temporal_boxops.h"
 /* MobilityDB */
 #include "pg_general/doxygen_mobilitydb_api.h"
-#include "pg_general/mobdb_catalog.h"
+#include "pg_general/meos_catalog.h"
 #include "pg_general/temporal_util.h"
 #include "pg_general/tinstant.h"
 #include "pg_general/tsequence.h"
@@ -518,7 +518,7 @@ Tinstant_constructor(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  mobdbType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
+  meosType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
   Temporal *result = (Temporal *) tinstant_make(value, temptype, t);
   PG_RETURN_POINTER(result);
 }
@@ -702,7 +702,7 @@ Tdiscseq_from_base_time(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  mobdbType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
+  meosType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
   TSequence *result = tdiscseq_from_base_time(value, temptype, ts);
   PG_FREE_IF_COPY(ts, 1);
   PG_RETURN_POINTER(result);
@@ -719,7 +719,7 @@ Tsequence_from_base_time(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   Period *p = PG_GETARG_SPAN_P(1);
-  mobdbType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
+  meosType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
   interpType interp = temptype_continuous(temptype) ? LINEAR : STEPWISE;
   if (PG_NARGS() > 2)
     interp = PG_GETARG_BOOL(2) ? LINEAR : STEPWISE;
@@ -739,7 +739,7 @@ Tsequenceset_from_base_time(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  mobdbType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
+  meosType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
   interpType interp = temptype_continuous(temptype) ? LINEAR : STEPWISE;
   if (PG_NARGS() > 2)
     interp = PG_GETARG_BOOL(2) ? LINEAR : STEPWISE;
@@ -1385,10 +1385,10 @@ Temporal_timestamps(PG_FUNCTION_ARGS)
  * @param[in] values Array of values appearing in the temporal value
  * @param[in] count Number of elements in the input array
  */
-UnnestState *
+TempUnnestState *
 temporal_unnest_state_make(const Temporal *temp, Datum *values, int count)
 {
-  UnnestState *state = palloc0(sizeof(UnnestState));
+  TempUnnestState *state = palloc0(sizeof(TempUnnestState));
   /* Fill in state */
   state->done = false;
   state->i = 0;
@@ -1404,7 +1404,7 @@ temporal_unnest_state_make(const Temporal *temp, Datum *values, int count)
  * @param[in] state State to increment
  */
 void
-temporal_unnest_state_next(UnnestState *state)
+temporal_unnest_state_next(TempUnnestState *state)
 {
   if (!state || state->done)
     return;
@@ -1423,7 +1423,7 @@ PGDLLEXPORT Datum
 Temporal_unnest(PG_FUNCTION_ARGS)
 {
   FuncCallContext *funcctx;
-  UnnestState *state;
+  TempUnnestState *state;
   bool isnull[2] = {0,0}; /* needed to say no value is null */
   Datum tuple_arr[2]; /* used to construct the composite return value */
   HeapTuple tuple;
@@ -1806,7 +1806,7 @@ Temporal_shift_tscale(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Temporal_append_tinstant);
 /**
  * @ingroup mobilitydb_temporal_transf
- * @brief Append an instant to the end of a temporal value
+ * @brief Append an instant at the end of a temporal value
  * @sqlfunc appendInstant()
  */
 PGDLLEXPORT Datum
@@ -1814,9 +1814,26 @@ Temporal_append_tinstant(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TInstant *inst = PG_GETARG_TINSTANT_P(1);
-  Temporal *result = temporal_append_tinstant(temp, (TInstant *) inst, false);
+  Temporal *result = temporal_append_tinstant(temp, inst, false);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(inst, 1);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_append_tsequence);
+/**
+ * @ingroup mobilitydb_temporal_transf
+ * @brief Append a sequence at the end of a temporal value
+ * @sqlfunc appendSequence()
+ */
+PGDLLEXPORT Datum
+Temporal_append_tsequence(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  TSequence *seq = PG_GETARG_TSEQUENCE_P(1);
+  Temporal *result = temporal_append_tsequence(temp, seq, false);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(seq, 1);
   PG_RETURN_POINTER(result);
 }
 
@@ -1872,7 +1889,7 @@ temporal_restrict_value_ext(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_ANYDATUM(1);
-  mobdbType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   Temporal *result = temporal_restrict_value(temp, value, atfunc);
   PG_FREE_IF_COPY(temp, 0);
   DATUM_FREE_IF_COPY(value, basetype, 1);

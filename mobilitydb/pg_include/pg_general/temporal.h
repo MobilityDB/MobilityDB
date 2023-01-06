@@ -37,8 +37,8 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <lib/stringinfo.h>
-/* MobilityDB */
-#include "general/mobdb_catalog.h"
+/* MEOS */
+#include "general/meos_catalog.h"
 #include "general/span.h"
 #include "general/timetypes.h"
 #include "general/tbox.h"
@@ -100,8 +100,7 @@ extern Datum float8_numeric(PG_FUNCTION_ARGS);
  *****************************************************************************/
 
 /**
- * Structure to represent information about an entry that can be placed
- * to either group without affecting overlap over selected axis ("common entry").
+ * Structure to represent the state when unnesting a temporal type.
  */
 typedef struct
 {
@@ -110,7 +109,7 @@ typedef struct
   int count;
   Temporal *temp;  /* Temporal value to unnest */
   Datum *values;   /* Values obtained by getValues(temp) */
-} UnnestState;
+} TempUnnestState;
 
 /*****************************************************************************
  * Struct definitions for GisT indexes copied from PostgreSQL

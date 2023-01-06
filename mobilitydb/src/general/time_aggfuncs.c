@@ -33,21 +33,13 @@
 
 #include "general/time_aggfuncs.h"
 
-/* C */
-#include <assert.h>
 /* PostgreSQL */
-#include <libpq/pqformat.h>
-#include <utils/memutils.h>
+#include <postgres.h>
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
-#include <meos_internal.h>
-#include "general/skiplist.h"
-#include "general/temporal_util.h"
-#include "general/time_aggfuncs.h"
 /* MobilityDB */
 #include "pg_general/skiplist.h"
-#include "pg_general/temporal.h"
 
 /*****************************************************************************
  * Aggregate transition functions for time types
@@ -336,7 +328,7 @@ Time_tunion_combinefn(PG_FUNCTION_ARGS)
   SkipList *state1, *state2;
   INPUT_AGG_COMB_STATE(fcinfo, state1, state2);
   store_fcinfo(fcinfo);
-  SkipList *result = time_agg_combinefn(state1, state2);
+  SkipList *result = time_tagg_combinefn(state1, state2);
   PG_RETURN_POINTER(result);
 }
 

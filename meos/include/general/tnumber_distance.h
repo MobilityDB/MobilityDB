@@ -34,8 +34,8 @@
 #ifndef __TNUMBER_DISTANCE_H__
 #define __TNUMBER_DISTANCE_H__
 
-/* MobilityDB */
-#include "general/mobdb_catalog.h"
+/* MEOS */
+#include "general/meos_catalog.h"
 #include "general/temporal.h"
 
 /*****************************************************************************/
@@ -43,17 +43,17 @@
 /* Distance functions */
 
 extern Temporal *distance_tnumber_number(const Temporal *temp, Datum value,
-  mobdbType valuetype, mobdbType restype);
+  meosType valuetype, meosType restype);
 extern Temporal *distance_tnumber_tnumber1(const Temporal *temp1,
-  const Temporal *temp2, mobdbType restype);
+  const Temporal *temp2, meosType restype);
 
-extern Datum number_distance(Datum l, Datum r, mobdbType typel,
-  mobdbType typer);
+extern Datum number_distance(Datum l, Datum r, meosType typel,
+  meosType typer);
 
 /* Nearest approach distance */
 
 extern double nad_tnumber_number(const Temporal *temp, Datum value,
-  mobdbType basetype);
+  meosType basetype);
 extern double nad_tbox_tbox(const TBox *box1, const TBox *box2);
 extern double nad_tnumber_tbox(const Temporal *temp, const TBox *box);
 

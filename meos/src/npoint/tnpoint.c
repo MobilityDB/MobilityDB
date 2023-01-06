@@ -416,7 +416,7 @@ tnpointinst_routes(const TInstant *inst)
 {
   Npoint *np = DatumGetNpointP(tinstant_value(inst));
   Datum value = Int64GetDatum(np->rid);
-  return set_make(&value, 1, T_INT8);
+  return set_make(&value, 1, T_INT8, ORDERED);
 }
 
 /**
@@ -434,7 +434,7 @@ tnpointdiscseq_routes(const TSequence *seq)
   }
   datumarr_sort(values, seq->count, T_INT8);
   int count = datumarr_remove_duplicates(values, seq->count, T_INT8);
-  return set_make(values, count, T_INT8);
+  return set_make(values, count, T_INT8, ORDERED);
 }
 
 /**
@@ -446,7 +446,7 @@ tnpointcontseq_routes(const TSequence *seq)
   const TInstant *inst = tsequence_inst_n(seq, 0);
   Npoint *np = DatumGetNpointP(tinstant_value(inst));
   Datum value = Int64GetDatum(np->rid);
-  return set_make(&value, 1, T_INT8);
+  return set_make(&value, 1, T_INT8, ORDERED);
 }
 
 /**
@@ -465,7 +465,7 @@ tnpointseqset_routes(const TSequenceSet *ss)
   }
   datumarr_sort(values, ss->count, T_INT8);
   int count = datumarr_remove_duplicates(values, ss->count, T_INT8);
-  return set_make(values, count, T_INT8);
+  return set_make(values, count, T_INT8, ORDERED);
 }
 
 /**

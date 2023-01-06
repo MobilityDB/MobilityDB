@@ -55,9 +55,9 @@
 #include <utils/numeric.h>
 #include <utils/syscache.h>
 /* MEOS */
-#include "general/mobdb_catalog.h"
+#include "general/meos_catalog.h"
 /* MobilityDB */
-#include "pg_general/mobdb_catalog.h"
+#include "pg_general/meos_catalog.h"
 #include "pg_general/temporal_selfuncs.h"
 #include "pg_general/tnumber_selfuncs.h"
 #include "pg_point/tpoint_selfuncs.h"
@@ -173,7 +173,7 @@ static const IndexableFunction TNPointIndexableFunctions[] = {
 #endif /* NPOINT */
 
 static int16
-temporal_get_strategy_by_type(mobdbType temptype, uint16_t index)
+temporal_get_strategy_by_type(meosType temptype, uint16_t index)
 {
   if (talpha_type(temptype))
     return TemporalStrategies[index];
@@ -257,7 +257,7 @@ makeExpandExpr(Node *arg, Node *radiusarg, Oid argoid, Oid retoid,
   /* Expand function must be in same namespace as the caller */
   char *nspname = get_namespace_name(get_func_namespace(callingfunc));
   char *funcname;
-  mobdbType argtype = oid_type(argoid);
+  meosType argtype = oid_type(argoid);
   if (argtype == T_GEOMETRY || argtype == T_GEOGRAPHY || argtype == T_STBOX ||
       argtype == T_TGEOMPOINT || argtype == T_TGEOGPOINT
 #if NPOINT
@@ -311,8 +311,8 @@ temporal_supportfn_ext(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
     SupportRequestSelectivity *req = (SupportRequestSelectivity *) rawreq;
     leftoid = exprType(linitial(req->args));
     rightoid = exprType(lsecond(req->args));
-    mobdbType ltype = oid_type(leftoid);
-    mobdbType rtype = oid_type(rightoid);
+    meosType ltype = oid_type(leftoid);
+    meosType rtype = oid_type(rightoid);
     operid = oper_oid(OVERLAPS_OP, ltype, rtype);
     if (req->is_join)
     {
@@ -446,8 +446,8 @@ temporal_supportfn_ext(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
        */
       leftoid = exprType(leftarg);
       rightoid = exprType(rightarg);
-      mobdbType lefttype = oid_type(leftoid);
-      mobdbType righttype = oid_type(rightoid);
+      meosType lefttype = oid_type(leftoid);
+      meosType righttype = oid_type(rightoid);
 
       /*
        * Given the index operator family and the arguments and the desired

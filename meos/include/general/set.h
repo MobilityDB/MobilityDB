@@ -54,6 +54,27 @@
 #define PG_GETARG_SET_P(X)     ((Set *) PG_GETARG_VARLENA_P(X))
 #define PG_RETURN_SET_P(X)     PG_RETURN_POINTER(X)
 
+#define MINIDX 0
+#define MAXIDX count - 1
+
+/*****************************************************************************
+ * Struct definition for the unnest operation
+ *****************************************************************************/
+
+/**
+ * Structure to represent information about an entry that can be placed
+ * to either group without affecting overlap over selected axis ("common entry").
+ */
+typedef struct
+{
+  bool done;
+  int i;
+  int count;
+  Set *set;  /* Set to unnest */
+  Datum *values;   /* Values obtained by getValues(temp) */
+} SetUnnestState;
+
+
 /*****************************************************************************/
 
 /* General functions */
