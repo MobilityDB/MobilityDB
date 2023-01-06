@@ -40,7 +40,7 @@
 /* PostgreSQL */
 @POSTGRES_DEFS@
 /* PostGIS */
-#include <liblwgeom.h>
+@POSTGIS_DEFS@
 
 /*****************************************************************************
  * Type definitions
