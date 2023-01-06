@@ -12,15 +12,15 @@
 	<title>Tipos de conjunto y de rango</title>
 
 	<para>
-		MobilityDB tiene cuatro tipos de conjuntos, a saber, <varname>intset</varname>, <varname>bigintset</varname>, <varname>floatset</varname> y <varname>timestampset</varname> , para representar, respectivamente, un conjunto de valores distintos de <varname>integer</varname>, <varname>bigint</varname>, <varname>float</varname> y <varname>timestamptz</varname> (marca de tiempo con zona horaria ). Estos tipos de conjuntos permiten operaciones eficientes para manipular conjuntos de valores distintos.
+		MobilityDB proporciona los tipos de <emphasis>conjunto</emphasis>, <emphasis>rango</emphasis> y <emphasis>conjunto de rangos</emphasis> para representar conjuntos de valores de otro tipo, que se denomina <emphasis>tipo base</emphasis>. Los tipos de conjunto son similares a los tipos de matrices de PostgreSQL restringidos a una dimensión, pero imponen la restricción de que los conjuntos no tienen duplicados. Los tipos de rango y conjunto de rangos en MobilityDB corresponden a los tipos de rango y multirango en PostgreSQL,<footnote><para>Observe que los tipos multirango requieren PostgreSQL versión 14 o superior.</para></footnote> pero tienen restricciones adicionales. En particular, los tipos de rango en MobilityDB tienen una longitud fija y no permiten rangos vacíos ni límites infinitos.
 	</para>
 
 	<para>
-		MobilityDB tiene cuatro tipos de <emphasis>rango</emphasis>, a saber, <varname>intspan</varname>, <varname>bigintspan</varname>, <varname>floatspan</varname> y <varname>period</varname>, para representar, respectivamente, rangos de <varname>integer</varname>, <varname>bigint</varname>, <varname>float</varname> y <varname>timestamptz</varname> (marca de tiempo con zona horaria). Además, MobilityDB tiene los tipos <emphasis>conjunto de rangos</emphasis> correspondientes, a saber, <varname>intspanset</varname>, <varname>bigintspanset</varname>, <varname>floatspanset</varname> y <varname>periodset</varname>, para representar conjuntos de rangos disjuntos.
+		Los tipos de <emphasis>conjunto</emphasis> son <varname>intset</varname>, <varname>bigintset</varname>, <varname>floatset</varname>, <varname>timestampset</varname>, <varname>textset</varname>, <varname>geomset</varname> y <varname>geogset</varname> que representan, respectivamente, un conjunto de valores distintos de tipo <varname>integer</varname>, <varname>bigint</varname >, <varname>float</varname>, <varname>timestamptz</varname> (marca de tiempo con zona horaria), y <varname>text</varname>, así como los tipos PostGIS <varname>geometry</varname>, y <varname>geography</varname>.
 	</para>
 
 	<para>
-		Los tipos de rango y conjunto de rangos en MobilityDB corresponden a los tipos de rango y multirango en PostgreSQL,<footnote><para>Nótese que los tipos de multirangos requieren la versión 14 o superior de PostgreSQL.</para></footnote> donde los tipos <varname>intspan</varname>, <varname>intspanset</varname>, <varname>period</varname> y <varname>periodset</varname> corresponden, respectivamente, a los tipos <varname>int4range</varname>, <varname>int4multirange</varname>, <varname>tstzrange</varname> y <varname>tstzmultirange</varname>. Sin embargo, los tipos de rango y conjunto de rangos en MobilityDB tienen una implementación más eficiente que los tipos de rango y multirango en PostgreSQL. En particular, los tipos de rango en MobilityDB son de longitud fija mientras que los tipos de rango en PostgreSQL son de longitud variable. Además, se permiten rangos vacíos y límites infinitos en valores de rango en PostgreSQL, mientras que esto no está permitido para valores de rango en MobilityDB.
+		Los tipos de <emphasis>rango</emphasis> son <varname>intspan</varname>, <varname>bigintspan</varname>, <varname>floatspan</varname> y <varname>period</varname>, que representan, respectivamente, rangos de valores de tipo <varname>integer</varname>, <varname>bigint</varname>, <varname>float</varname> y <varname>timestamptz</varname> (marca de tiempo con zona horaria). Además, MobilityDB tiene los tipos conjunto de rangos correspondientes, a saber, <varname>intspanset</varname>, <varname>bigintspanset</varname>, <varname>floatspanset</varname> y <varname>periodset </varname>, que representan conjuntos de rangos disjuntos.
 	</para>
 
 	<para>
@@ -35,28 +35,28 @@
 		</para>
 		<itemizedlist>
 			<listitem>
-				<para><varname>set</varname> representa cualquier tipo de conjunto, es decir, <varname>intset</varname>, <varname>bigintset</varname>, <varname>floatset</varname> o <varname>timestampset</varname>.</para>
+				<para><varname>set</varname> representa cualquier tipo de conjunto, como <varname>intset</varname> o <varname>timestampset</varname>.</para>
 			</listitem>
 			<listitem>
-				<para><varname>span</varname> representa cualquier tipo de rango, es decir, <varname>intspan</varname>, <varname>bigintspan</varname>, <varname>floatspan</varname> o <varname>period</varname> y los tipos de conjuntos de rangos correspondientes.</para>
+				<para><varname>span</varname> representa cualquier tipo de rango, como <varname>intspan</varname> o <varname>periodset</varname>.</para>
 			</listitem>
 			<listitem>
-				<para><varname>spanset</varname> representa cualquier tipo de conjunto de rangos, es decir, <varname>intspanset</varname>, <varname>bigintspanset</varname>, <varname>floatspanset</varname> o <varname>periodset</varname>.</para>
+				<para><varname>spanset</varname> representa cualquier tipo de conjunto de rangos, como <varname>intspanset</varname> o <varname>periodset</varname>.</para>
 			</listitem>
 			<listitem>
-				<para><varname>numspan</varname> representa cualquier tipo de rango numérico, es decir, <varname>intspan</varname>, <varname>bigintspan</varname> o <varname>floatspan</varname> y los tipos de conjuntos de rangos correspondientes.</para>
+				<para><varname>numspan</varname> representa cualquier tipo de rango numérico, como <varname>intspan</varname> o <varname>floatspanset</varname>.</para>
 			</listitem>
 			<listitem>
-				<para><varname>base</varname> representa cualquier tipo de base de un tipo de rango, es decir, <varname>integer</varname>, <varname>bigint</varname>, <varname>float</varname>, o <varname>timestamptz</varname>.</para>
+				<para><varname>base</varname> representa cualquier tipo de base de un tipo de conjunto o de rango, como <varname>integer</varname> o <varname>timestamptz</varname>.</para>
 			</listitem>
 			<listitem>
-				<para><varname>number</varname> representa cualquier tipo de base de un tipo de rango numérico, es decir, <varname>integer</varname>, <varname>bigint</varname> o <varname>float</varname>,</para>
+				<para><varname>number</varname> representa cualquier tipo de base de un tipo de rango numérico, como <varname>integer</varname> o <varname>float</varname>,</para>
 			</listitem>
 			<listitem>
 				<para><varname>time</varname> representa cualquier tipo de tiempo, es decir, <varname>timestamptz</varname>, <varname>period</varname>, <varname>timestampset</varname> o <varname>periodset</varname>,</para>
 			</listitem>
 			<listitem>
-				<para>Un conjunto de tipos como <varname>{period,timestampset,periodset}</varname> representa cualquiera de los tipos enumerados,</para>
+				<para>Un conjunto de tipos como <varname>{set,span}</varname> representa cualquiera de los tipos enumerados,</para>
 			</listitem>
 			<listitem>
 				<para><varname>type[]</varname> representa una matriz de <varname>type</varname>.</para>
@@ -64,12 +64,15 @@
 		</itemizedlist>
 
 		<para>
-			Como ejemplo, las firmas del operador contiene (<varname>@&gt;</varname>) son como sigue:
+			Como ejemplo, la firma del operador contiene (<varname>@&gt;</varname>) es como sigue:
 		</para>
 		<programlisting language="sql" xml:space="preserve">
-numspan @&gt; {numspan,number}: boolean
-{timestampset,period,periodset} @&gt; time: boolean
+{set,span} @&gt; {set,span,element}: boolean
 </programlisting>
+		<para>
+			Observe que no todas las combinaciones en las firmas de las funciones son significativas. Usando el ejemplo anterior, los conjuntos no pueden contener los rangos, ya que estos últimos pueden contener un número infinito de valores. Por lo tanto, sólo las combinaciones significativas están definidas en MobilityDB.
+		</para>
+
 		<para>
 			A continuación, por concisión, la parte de tiempo de las marcas de tiempo se omite en los ejemplos. Recuerde que en ese caso PostgreSQL asume el tiempo <varname>00:00:00</varname>.
 		</para>
@@ -78,6 +81,22 @@ numspan @&gt; {numspan,number}: boolean
 			<title>Funciones de entrada/salida</title>
 			<para>
 				MobilityDB generaliza los formatos de entrada/salida Well-Known Text (<ulink url="https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry">WKT</ulink>) y Well-Known Binary (<ulink url="https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry">WKT</ulink>) del Open Geospatial Consortium (<ulink url="https://www.ogc.org/">OGC</ulink>) a para todos sus tipos. De esta forma, las aplicaciones pueden intercambiar datos entre ellas utilizando un formato de intercambio estandarizado. El formato WKT es legible por humanos, mientras que el formato WKB es más compacto y más eficiente que el formato WKT. El formato WKB se puede generar como una cadena binaria o como una cadena de caracteres codificada en ASCII hexadecimal.
+			</para>
+
+			<para>
+				Los tipos de conjunto representan un conjunto <emphasis>ordenado</emphasis> de valores <emphasis>diferentes</emphasis>. Un conjunto debe contener al menos un elemento. Ejemplos de valores de tipos de conjunto son como sigue:
+			</para>
+			<programlisting language="sql" xml:space="preserve">
+SELECT timestampset '{2001-01-01 08:00:00, 2001-01-03 09:30:00}';
+-- Conjunto unitario
+SELECT textset '{"AAA"}';
+-- Conjunto erróneo: elementos desordenados
+SELECT floatset '{3.5, 1.2}';
+-- Conjunto erróneo: elementos duplicados
+SELECT geomset '{"Point(1 1)", "Point(1 1)"}';
+</programlisting>
+			<para>
+				Nótese que los elementos de los conjuntos <varname>textset</varname>, <varname>geomset</varname> y <varname>geogset</varname> deben estar delimitados entre commillas dobles. Nótese también que las geometrías y las geografías utilizan el orden definido por PostGIS.
 			</para>
 
 			<para>
@@ -125,19 +144,6 @@ SELECT periodset '{[2001-01-01 08:00:00, 2001-01-01 08:10:00),
 </programlisting>
 
 			<para>
-				Finalmente, el tipo <varname>timestampset</varname> representa un conjunto ordenado de valores <varname>timestamptz</varname> diferentes. Un valor de <varname>timestampset</varname> debe contener al menos un elemento, en cuyo caso corresponde a un valor de <varname>timestamptz</varname>. Ejemplos de valores de <varname>timestampset</varname> son como sigue:
-			</para>
-			<programlisting language="sql" xml:space="preserve">
-SELECT timestampset '{2001-01-01 08:00:00, 2001-01-03 09:30:00}';
--- Conjunto unitario de marcas de tiempo
-SELECT timestampset '{2001-01-01 08:00:00}';
--- Conjunto de marcas de tiempo erróneo: elementos desordenados
-SELECT timestampset '{2001-01-01 08:10:00, 2001-01-01 08:00:00}';
--- Conjunto de marcas de tiempo erróneo: elementos duplicados
-SELECT timestampset '{2001-01-01 08:00:00, 2001-01-01 08:00:00}';
-</programlisting>
-
-			<para>
 				Damos a continuación las funciones de entrada/salida de tipos de rango y de tiempo en formato binario conocido.
 			</para>
 
@@ -145,7 +151,7 @@ SELECT timestampset '{2001-01-01 08:00:00, 2001-01-01 08:00:00}';
 				<listitem id="spantime_asBinary">
 					<indexterm><primary><varname>asBinary</varname></primary></indexterm>
 					<para>Obtener la representación binaria conocida (Well-Known Binary o WKB) de un rango o un tipo de tiempo</para>
-					<para><varname>asBinary({span,timestampset},endian text=''): bytea</varname></para>
+					<para><varname>asBinary({set,span},endian text=''): bytea</varname></para>
 					<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT asBinary(intspan '[1, 2]');
@@ -166,7 +172,7 @@ SELECT asBinary(timestampset '{2001-01-01, 2001-01-03}');
 				<listitem id="spantime_asHexWKB">
 					<indexterm><primary><varname>asHexWKB</varname></primary></indexterm>
 					<para>Obtener la representación hexadecimal binaria conocida (HexWKB) en formato texto de un rango o un tipo de tiempo</para>
-					<para><varname>asHexWKB({span,timestampset},endian text=''): text</varname></para>
+					<para><varname>asHexWKB({set,span},endian text=''): text</varname></para>
 					<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza NDR.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT asHexWKB(intspan '[1, 2]');
@@ -408,7 +414,7 @@ SELECT tstzmultirange '{[2000-01-01,2000-01-02],[2000-01-04,2000-01-05]}'::perio
 				<listitem id="setspan_memorySize">
 					<indexterm><primary><varname>memorySize</varname></primary></indexterm>
 					<para>Obtener el tamaño de la memoria en bytes</para>
-					<para><varname>memorySize({spanset,timestampset}): integer</varname></para>
+					<para><varname>memorySize({set,spanset}): integer</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT memorySize(timestampset '{2001-01-01, 2001-01-02, 2001-01-03}');
 -- 104
@@ -421,7 +427,7 @@ SELECT memorySize(periodset '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]
 				<listitem id="setspan_storageSize">
 					<indexterm><primary><varname>storageSize</varname></primary></indexterm>
 					<para>Obtener el tamaño de almacenamiento (comprimido) en bytes</para>
-					<para><varname>storageSize({spanset,timestampset}): integer</varname></para>
+					<para><varname>storageSize({set,spanset}): integer</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT storageSize(timestampset '{2001-01-01, 2001-01-02, 2001-01-03}');
 -- 56
@@ -754,7 +760,7 @@ SELECT round(floatspanset '{[1.123456789, 2.123456789],[3.123456789,4.123456789]
 				<listitem id="setspan_eq">
 					<indexterm><primary><varname>=</varname></primary></indexterm>
 					<para>¿Son iguales los valores?</para>
-					<para><varname>{span,timestampset} = {span,timestampset}: boolean</varname></para>
+					<para><varname>{set,span} = {set,span}: boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT intspan '[1,3]' = intspan '[1,4)';
 -- true
@@ -770,7 +776,7 @@ SELECT timestampset '{2001-01-01, 2001-01-02}' = timestampset '{2001-01-01, 2001
 				<listitem id="setspan_ne">
 					<indexterm><primary><varname>&lt;&gt;</varname></primary></indexterm>
 					<para>¿Son diferentes los valores?</para>
-					<para><varname>{span,timestampset} &lt;&gt; {span,timestampset}: boolean</varname></para>
+					<para><varname>{set,span} &lt;&gt; {set,span}: boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT period '[2001-01-01, 2001-01-04)' &lt;&gt; period '[2001-01-03, 2001-01-05)';
 -- true
@@ -782,7 +788,7 @@ SELECT timestampset '{2001-01-01, 2001-01-04}' &lt;&gt; timestampset '{2001-01-0
 				<listitem id="setspan_lt">
 					<indexterm><primary><varname>&lt;</varname></primary></indexterm>
 					<para>¿Es el primer valor menor que el segundo?</para>
-					<para><varname>{span,timestampset} &lt; {span,timestampset}: boolean</varname></para>
+					<para><varname>{set,span} &lt; {set,span}: boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT intspanset '{[1,2],[3,4]}' &lt; intspanset '{[3, 4]}';
 -- true
@@ -798,7 +804,7 @@ SELECT timestampset '{2001-01-01, 2001-01-04}' &lt; timestampset '{2001-01-01, 2
 				<listitem id="setspan_gt">
 					<indexterm><primary><varname>&gt;</varname></primary></indexterm>
 					<para>¿Es el primer valor mayor que el segundo?</para>
-					<para><varname>{span,timestampset} &gt; {span,timestampset}: boolean</varname></para>
+					<para><varname>{set,span} &gt; {set,span}: boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT floatspan '[3, 4]' &gt; floatspan '[3, 4)';
 -- true
@@ -810,7 +816,7 @@ SELECT period '[2001-01-03, 2001-01-04)' &gt; period '[2001-01-02, 2001-01-05)';
 				<listitem id="setspan_le">
 					<indexterm><primary><varname>&lt;=</varname></primary></indexterm>
 					<para>¿Es el primer valor menor o igual que el segundo?</para>
-					<para><varname>{span,timestampset} &lt;= {span,timestampset}: boolean</varname></para>
+					<para><varname>{set,span} &lt;= {set,span}: boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT floatspanset '{[1, 4)}' &lt;= floatspanset '{[1, 5), [6, 7)}';
 -- true
@@ -823,7 +829,7 @@ SELECT periodset '{[2001-01-01, 2001-01-04)}' &lt;=
 				<listitem id="setspan_ge">
 					<indexterm><primary><varname>&gt;=</varname></primary></indexterm>
 					<para>¿Es el primer valor mayor o igual que el segundo?</para>
-					<para><varname>{span,timestampset} &gt;= {span,timestampset}: boolean</varname></para>
+					<para><varname>{set,span} &gt;= {set,span}: boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT intspanset '{[1, 4)}' &gt;= intspanset '{[1, 5), [6, 7)}';
 -- false
@@ -843,7 +849,7 @@ SELECT period '[2001-01-03, 2001-01-05)' &gt;= period '[2001-01-03, 2001-01-04)'
 				<listitem id="setspan_union">
 					<indexterm><primary><varname>+</varname></primary></indexterm>
 					<para>Unión de valores de rango o de tiempo</para>
-					<para><varname>{span,timestampset} + {span,timestampset}: {span,timestampset}</varname></para>
+					<para><varname>{set,span} + {set,span}: {set,span}</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT intspan '[1, 3)' + intspan '[3, 5)';
 -- [1, 5)
@@ -863,7 +869,7 @@ SELECT periodset '{[2011-01-01, 2011-01-03), [2011-01-04, 2011-01-05)}' +
 				<listitem id="setspan_difference">
 					<indexterm><primary><varname>-</varname></primary></indexterm>
 					<para>Diferencia de valores de rango o de tiempo</para>
-					<para><varname>{span,timestampset} - {span,timestampset}: {span,timestampset}</varname></para>
+					<para><varname>{set,span} - {set,span}: {set,span}</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT intspan '[1, 5]' - intspan '[3, 6]';
 -- [1, 3)
@@ -884,7 +890,7 @@ SELECT periodset '{[2011-01-01, 2011-01-06], [2011-01-07, 2011-01-10]}' -
 				<listitem id="setspan_intersection">
 					<indexterm><primary><varname>*</varname></primary></indexterm>
 					<para>Intersección de valores de rango o de tiempo</para>
-					<para><varname>{span,timestampset} * {span,timestampset}: {span,timestampset}</varname></para>
+					<para><varname>{set,span} * {set,span}: {set,span}</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT intspan '[1, 5)' * intspan '[3, 6)';
 -- [3, 5)
@@ -1131,7 +1137,7 @@ SELECT tcount(ps, '2 days', '2000-01-01') FROM periods;
 				<listitem id="setspan_extent">
 					<indexterm><primary><varname>extent</varname></primary></indexterm>
 					<para>Rango o período delimitador</para>
-					<para><varname>extent({span,timestampset}): span</varname></para>
+					<para><varname>extent({set,span}): span</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 WITH spans(r) AS (
   SELECT floatspan '[1, 4)' UNION
