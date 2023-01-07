@@ -167,7 +167,7 @@
 					<para><varname>random_period_array</varname>: Generate a random array of <varname>period</varname> values</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_timestampset</varname>: Generate a random <varname>timestampset</varname></para>
+					<para><varname>random_tstzset</varname>: Generate a random <varname>tstzset</varname></para>
 				</listitem>
 				<listitem>
 					<para><varname>random_periodset</varname>: Generate a random <varname>periodset</varname></para>
@@ -357,14 +357,14 @@ FROM generate_series(perc+1, size) AS k;
 </programlisting>
 
 		<para>
-			The creation of a table <varname>tbl_timestampset</varname> containing random <varname>timestampset</varname> values having between 5 and 10 timestamps where the timestamps are in the range [2001-01-01, 2001-12-31] and the maximum interval between consecutive timestamps is 10 minutes is given next.
+			The creation of a table <varname>tbl_tstzset</varname> containing random <varname>tstzset</varname> values having between 5 and 10 timestamps where the timestamps are in the range [2001-01-01, 2001-12-31] and the maximum interval between consecutive timestamps is 10 minutes is given next.
 		</para>
 		<programlisting language="sql" xml:space="preserve">
-CREATE TABLE tbl_timestampset AS
+CREATE TABLE tbl_tstzset AS
 /* Add perc NULL values */
 SELECT k, NULL AS ts
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_timestampset('2001-01-01', '2001-12-31', 10, 5, 10)
+SELECT k, random_tstzset('2001-01-01', '2001-12-31', 10, 5, 10)
 FROM generate_series(perc+1, size) AS k;
 </programlisting>
 

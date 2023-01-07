@@ -1039,7 +1039,13 @@ basetype_out(Datum value, meosType basetype, int maxdd)
     case T_FLOAT8:
       return float8_out(DatumGetFloat8(value), maxdd);
     case T_TEXT:
-      return text2cstring(DatumGetTextP(value));
+    {
+      char *str = text2cstring(DatumGetTextP(value));
+      char *result = palloc(strlen(str) + 4);
+      sprintf(result, "\"%s\"", str);
+      pfree(str);
+      return result;
+    }
     case T_GEOMETRY:
     return gserialized_out(DatumGetGserializedP(value));
     case T_GEOGRAPHY:

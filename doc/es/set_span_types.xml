@@ -16,7 +16,7 @@
 	</para>
 
 	<para>
-		Los tipos de <emphasis>conjunto</emphasis> son <varname>intset</varname>, <varname>bigintset</varname>, <varname>floatset</varname>, <varname>timestampset</varname>, <varname>textset</varname>, <varname>geomset</varname> y <varname>geogset</varname> que representan, respectivamente, un conjunto de valores distintos de tipo <varname>integer</varname>, <varname>bigint</varname >, <varname>float</varname>, <varname>timestamptz</varname> (marca de tiempo con zona horaria), y <varname>text</varname>, así como los tipos PostGIS <varname>geometry</varname>, y <varname>geography</varname>.
+		Los tipos de <emphasis>conjunto</emphasis> son <varname>intset</varname>, <varname>bigintset</varname>, <varname>floatset</varname>, <varname>tstzset</varname>, <varname>textset</varname>, <varname>geomset</varname> y <varname>geogset</varname> que representan, respectivamente, un conjunto de valores distintos de tipo <varname>integer</varname>, <varname>bigint</varname >, <varname>float</varname>, <varname>timestamptz</varname> (marca de tiempo con zona horaria), y <varname>text</varname>, así como los tipos PostGIS <varname>geometry</varname> y <varname>geography</varname>.
 	</para>
 
 	<para>
@@ -24,7 +24,7 @@
 	</para>
 
 	<para>
-		A continuación, dado que los tipos de rango y conjunto de rangos tienen funciones y operadores similares, cuando hablamos de tipos rango nos referimos a los tipos de rango y conjuntos de rangos, a menos que nos refiramos explícitamente a los tipos de rango <emphasis>unitarios</emphasis> y a los tipos de <emphasis>conjunto</emphasis> de rangos para distinguirlos. Además, cuando nos referimos a tipos de tiempo, nos referimos a uno de los siguientes tipos: <varname>timestamptz</varname>, <varname>timestampset</varname>, <varname>period</varname> o <varname>periodset</varname>.
+		A continuación, dado que los tipos de rango y conjunto de rangos tienen funciones y operadores similares, cuando hablamos de tipos rango nos referimos a los tipos de rango y conjuntos de rangos, a menos que nos refiramos explícitamente a los tipos de rango <emphasis>unitarios</emphasis> y a los tipos de <emphasis>conjunto</emphasis> de rangos para distinguirlos. Además, cuando nos referimos a tipos de tiempo, nos referimos a uno de los siguientes tipos: <varname>timestamptz</varname>, <varname>tstzset</varname>, <varname>period</varname> o <varname>periodset</varname>.
 	</para>
 
 	<sect1 id ="functions_operations_set_span_types">
@@ -35,7 +35,7 @@
 		</para>
 		<itemizedlist>
 			<listitem>
-				<para><varname>set</varname> representa cualquier tipo de conjunto, como <varname>intset</varname> o <varname>timestampset</varname>.</para>
+				<para><varname>set</varname> representa cualquier tipo de conjunto, como <varname>intset</varname> o <varname>tstzset</varname>.</para>
 			</listitem>
 			<listitem>
 				<para><varname>span</varname> representa cualquier tipo de rango, como <varname>intspan</varname> o <varname>periodset</varname>.</para>
@@ -53,7 +53,7 @@
 				<para><varname>number</varname> representa cualquier tipo de base de un tipo de rango numérico, como <varname>integer</varname> o <varname>float</varname>,</para>
 			</listitem>
 			<listitem>
-				<para><varname>time</varname> representa cualquier tipo de tiempo, es decir, <varname>timestamptz</varname>, <varname>period</varname>, <varname>timestampset</varname> o <varname>periodset</varname>,</para>
+				<para><varname>time</varname> representa cualquier tipo de tiempo, es decir, <varname>timestamptz</varname>, <varname>period</varname>, <varname>tstzset</varname> o <varname>periodset</varname>,</para>
 			</listitem>
 			<listitem>
 				<para>Un conjunto de tipos como <varname>{set,span}</varname> representa cualquiera de los tipos enumerados,</para>
@@ -70,7 +70,7 @@
 {set,span} @&gt; {set,span,element}: boolean
 </programlisting>
 		<para>
-			Observe que no todas las combinaciones en las firmas de las funciones son significativas. Usando el ejemplo anterior, los conjuntos no pueden contener los rangos, ya que estos últimos pueden contener un número infinito de valores. Por lo tanto, sólo las combinaciones significativas están definidas en MobilityDB.
+			Observe que no todas las combinaciones en las firmas de las funciones son significativas. Usando el ejemplo anterior, los conjuntos no pueden contener los rangos, ya que estos últimos pueden contener un número infinito de valores. Por otro lado, los rangos pueden contener tanto los conjuntos como los rangos. Por lo tanto, sólo las combinaciones significativas están definidas en MobilityDB.
 		</para>
 
 		<para>
@@ -87,7 +87,7 @@
 				Los tipos de conjunto representan un conjunto <emphasis>ordenado</emphasis> de valores <emphasis>diferentes</emphasis>. Un conjunto debe contener al menos un elemento. Ejemplos de valores de tipos de conjunto son como sigue:
 			</para>
 			<programlisting language="sql" xml:space="preserve">
-SELECT timestampset '{2001-01-01 08:00:00, 2001-01-03 09:30:00}';
+SELECT tstzset '{2001-01-01 08:00:00, 2001-01-03 09:30:00}';
 -- Conjunto unitario
 SELECT textset '{"AAA"}';
 -- Conjunto erróneo: elementos desordenados
@@ -154,6 +154,8 @@ SELECT periodset '{[2001-01-01 08:00:00, 2001-01-01 08:10:00),
 					<para><varname>asBinary({set,span},endian text=''): bytea</varname></para>
 					<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</para>
 					<programlisting language="sql" xml:space="preserve">
+SELECT asBinary(tstzset '{2001-01-01, 2001-01-03}');
+-- \x0102000000009c57d3c11c0000005c060fea1c0000
 SELECT asBinary(intspan '[1, 2]');
 -- \x010900010100000003000000
 SELECT asBinary(intspanset '{[1, 2], [4, 5]}', 'XDR');
@@ -164,8 +166,6 @@ SELECT asBinary(period '[2001-01-01, 2001-01-03]');
 -- \x010c0003009c57d3c11c0000005c060fea1c0000
 SELECT asBinary(periodset '{[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}');
 -- \x010d000200000003009c57d3c11c0000005c060fea1c00000300bcdd2cfe1c0000001cb54a121d0000
-SELECT asBinary(timestampset '{2001-01-01, 2001-01-03}');
--- \x0102000000009c57d3c11c0000005c060fea1c0000
 </programlisting>
 				</listitem>
 
@@ -175,6 +175,8 @@ SELECT asBinary(timestampset '{2001-01-01, 2001-01-03}');
 					<para><varname>asHexWKB({set,span},endian text=''): text</varname></para>
 					<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza NDR.</para>
 					<programlisting language="sql" xml:space="preserve">
+SELECT asHexWKB(tstzset '{2001-01-01, 2001-01-03}');
+-- 0102000000009C57D3C11C0000005C060FEA1C0000
 SELECT asHexWKB(intspan '[1, 2]');
 -- 010900010100000003000000
 SELECT asHexWKB(intspanset '{[1, 2], [4, 5]}', 'XDR');
@@ -185,55 +187,67 @@ SELECT asHexWKB(period '[2001-01-01, 2001-01-03]');
 -- 010C0003009C57D3C11C0000005C060FEA1C0000
 SELECT asHexWKB(periodset '{[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}');
 -- 010D000200000003009C57D3C11C0000005C060FEA1C00000300BCDD2CFE1C0000001CB54A121D0000
-SELECT asHexWKB(timestampset '{2001-01-01, 2001-01-03}');
--- 0102000000009C57D3C11C0000005C060FEA1C0000
 </programlisting>
 				</listitem>
 
 				<listitem id="spantime_FromBinary">
+					<indexterm><primary><varname>intsetFromBinary</varname></primary></indexterm>
+					<indexterm><primary><varname>floatsetFromBinary</varname></primary></indexterm>
+					<indexterm><primary><varname>textsetFromBinary</varname></primary></indexterm>
+					<indexterm><primary><varname>tstzsetFromBinary</varname></primary></indexterm>
 					<indexterm><primary><varname>intspanFromBinary</varname></primary></indexterm>
 					<indexterm><primary><varname>intspansetFromBinary</varname></primary></indexterm>
 					<indexterm><primary><varname>floatspanFromBinary</varname></primary></indexterm>
 					<indexterm><primary><varname>floatspansetFromBinary</varname></primary></indexterm>
 					<indexterm><primary><varname>periodFromBinary</varname></primary></indexterm>
 					<indexterm><primary><varname>periodsetFromBinary</varname></primary></indexterm>
-					<indexterm><primary><varname>timestampsetFromBinary</varname></primary></indexterm>
 					<para>Entrar un rango o un tipo de tiempo en la representación binaria conocida (WKB)</para>
+					<para><varname>intsetFromBinary(bytea): intset</varname></para>
+					<para><varname>floatsetFromBinary(bytea): floatset</varname></para>
+					<para><varname>textsetFromBinary(bytea): textset</varname></para>
+					<para><varname>tstzsetFromBinary(bytea): tstzset</varname></para>
 					<para><varname>intspanFromBinary(bytea): intspan</varname></para>
 					<para><varname>intspansetFromBinary(bytea): intspanset</varname></para>
 					<para><varname>floatspanFromBinary(bytea): floatspan</varname></para>
 					<para><varname>floatspansetFromBinary(bytea): floatspanset</varname></para>
 					<para><varname>periodFromBinary(bytea): period</varname></para>
 					<para><varname>periodsetFromBinary(bytea): periodset</varname></para>
-					<para><varname>timestampsetFromBinary(bytea): timestampset</varname></para>
 					<programlisting language="sql" xml:space="preserve">
+SELECT tstzsetFromBinary('\x01020000000fce0136a58010000bc8f4f92580100');
+-- {2001-01-01, 2001-01-03}
 SELECT intspanFromBinary('\x010800010100000003000000');
 -- [1, 3)
 SELECT periodsetFromBinary(
   '\x01020000000300fce0136a58010000bc8f4f9258010003001c676da6580100007c3e8bba580100');
 -- {[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}
-SELECT timestampsetFromBinary('\x01020000000fce0136a58010000bc8f4f92580100');
--- {2001-01-01, 2001-01-03}
 </programlisting>
 				</listitem>
 
 				<listitem id="spantime_FromHexWKB">
+					<indexterm><primary><varname>intsetFromHexWKB</varname></primary></indexterm>
+					<indexterm><primary><varname>floatsetFromHexWKB</varname></primary></indexterm>
+					<indexterm><primary><varname>textsetFromHexWKB</varname></primary></indexterm>
+					<indexterm><primary><varname>tstzsetFromHexWKB</varname></primary></indexterm>
 					<indexterm><primary><varname>intspanFromHexWKB</varname></primary></indexterm>
 					<indexterm><primary><varname>intspansetFromHexWKB</varname></primary></indexterm>
 					<indexterm><primary><varname>floatspanFromHexWKB</varname></primary></indexterm>
 					<indexterm><primary><varname>floatspansetFromHexWKB</varname></primary></indexterm>
 					<indexterm><primary><varname>periodFromHexWKB</varname></primary></indexterm>
 					<indexterm><primary><varname>periodsetFromHexWKB</varname></primary></indexterm>
-					<indexterm><primary><varname>timestampsetFromHexWKB</varname></primary></indexterm>
 					<para>Entrar un rango o un tipo de tiempo en la representación hexadecimal binaria conocida (HexWKB)</para>
+					<para><varname>intsetFromHexWKB(text): intset</varname></para>
+					<para><varname>floatsetFromHexWKB(text): floatset</varname></para>
+					<para><varname>textsetFromHexWKB(text): textset</varname></para>
+					<para><varname>tstzsetFromHexWKB(text): tstzset</varname></para>
 					<para><varname>intspanFromHexWKB(text): intspan</varname></para>
 					<para><varname>intspansetFromHexWKB(text): intspanset</varname></para>
 					<para><varname>floatspanFromHexWKB(text): floatspan</varname></para>
 					<para><varname>floatspansetFromHexWKB(text): floatspanset</varname></para>
 					<para><varname>periodFromHexWKB(text): period</varname></para>
 					<para><varname>periodsetFromHexWKB(text): periodset</varname></para>
-					<para><varname>timestampsetFromHexWKB(text): timestampset</varname></para>
 					<programlisting language="sql" xml:space="preserve">
+SELECT tstzsetFromHexWKB('010200000000FCE0136A58010000BC8F4F92580100');
+-- {2001-01-01, 2001-01-03}
 SELECT intspanFromHexWKB('010800010100000003000000');
 -- [1, 3)
 SELECT floatspanFromHexWKB('01060001000000000000F83F0000000000000440');
@@ -243,8 +257,6 @@ SELECT periodFromHexWKB('010A000300FCE0136A58010000BC8F4F92580100');
 SELECT periodsetFromHexWKB(
   '01020000000300FCE0136A58010000BC8F4F9258010003001C676DA6580100007C3E8BBA580100');
 -- {[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}
-SELECT timestampsetFromHexWKB('010200000000FCE0136A58010000BC8F4F92580100');
--- {2001-01-01, 2001-01-03}
 </programlisting>
 				</listitem>
 			</itemizedlist>
@@ -253,7 +265,29 @@ SELECT timestampsetFromHexWKB('010200000000FCE0136A58010000BC8F4F92580100');
 		<sect2>
 			<title>Funciones de constructor</title>
 
-			<para>Los tipos de rango unitarios tienen una función constructora que acepta cuatro argumentos, donde los dos últimos son opcionales. Los primeros dos argumentos especifican, respectivamente, el límite inferior y el superior, y los dos últimos argumentos son valores booleanos que indican, respectivamente, si los límites inferior y el superior son inclusivos o no. Se supone que los dos últimos argumentos son, respectivamente, verdadero y falso si no se especifican. Nótese que los rangos de enteros siempre se transforman en <emphasis>normal form</emphasis>, es decir, con límite inferior inclusivo y límite superior exclusivo.
+			<para>La función constructora para los tipos de conjunto tiene un solo argumento que es una matriz de valores del tipo base correspondiente. Los valores deben estar ordenados y no pueden tener nulos ni duplicados.
+			</para>
+			<itemizedlist>
+				<listitem id="tstzset">
+					<indexterm><primary><varname>intset</varname></primary></indexterm>
+					<indexterm><primary><varname>floatset</varname></primary></indexterm>
+					<indexterm><primary><varname>textset</varname></primary></indexterm>
+					<indexterm><primary><varname>tstzset</varname></primary></indexterm>
+					<para>Constructor para tipos de conjunto</para>
+					<para><varname>intset(int[]): intset</varname></para>
+					<para><varname>floatset(float[]): floatset</varname></para>
+					<para><varname>textset(timestamptz[]): textset</varname></para>
+					<para><varname>tstzset(timestamptz[]): tstzset</varname></para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT textset (ARRAY['highway', 'primary', 'secondary']);
+--  {"highway", "primary", "secondary"}
+SELECT tstzset(ARRAY[timestamptz '2001-01-01 08:00:00', '2001-01-03 09:30:00']);
+-- {2001-01-01 08:00:00+00, 2001-01-03 09:30:00+00}
+</programlisting>
+				</listitem>
+			</itemizedlist>
+
+			<para>Los tipos de rango unitarios tienen una función constructora que acepta cuatro argumentos, donde los dos últimos son opcionales. Los primeros dos argumentos especifican, respectivamente, el límite inferior y el superior, y los dos últimos argumentos son valores booleanos que indican, respectivamente, si los límites inferior y el superior son inclusivos o no. Se supone que los dos últimos argumentos son, respectivamente, verdadero y falso si no se especifican. Nótese que los rangos de enteros siempre se transforman en <emphasis>forma normal</emphasis>, es decir, con límite inferior inclusivo y límite superior exclusivo.
 			</para>
 			<itemizedlist>
 				<listitem id="span">
@@ -300,34 +334,20 @@ SELECT periodset(ARRAY[period '[2001-01-01 08:00, 2001-01-01 08:10]',
 </programlisting>
 				</listitem>
 			</itemizedlist>
-
-			<para>La función constructora para el tipo <varname>timestampset</varname> tiene un solo argumento que es una matriz de valores de <varname>timestamptz</varname>.
-			</para>
-			<itemizedlist>
-				<listitem id="timestampset">
-					<indexterm><primary><varname>timestampset</varname></primary></indexterm>
-					<para>Constructor para <varname>timestampset</varname></para>
-					<para><varname>timestampset(timestamptz[]): timestampset</varname></para>
-					<programlisting language="sql" xml:space="preserve">
-SELECT timestampset(ARRAY[timestamptz '2001-01-01 08:00:00', '2001-01-03 09:30:00']);
--- {2001-01-01 08:00:00+00, 2001-01-03 09:30:00+00}
-</programlisting>
-				</listitem>
-			</itemizedlist>
 		</sect2>
 
 		<sect2>
 			<title>Conversión de tipos</title>
 			<para>
-				Los valores de los tipos de rango de MobilityDB, el tipo <varname>timestampset</varname> y los tipos de rango de PostgreSQL se pueden convertir entre sí usando la función <varname>CAST</varname> o usando la notación <varname>::</varname>.
+				Los valores de los tipos de rango de MobilityDB, el tipo <varname>tstzset</varname> y los tipos de rango de PostgreSQL se pueden convertir entre sí usando la función <varname>CAST</varname> o usando la notación <varname>::</varname>.
 			</para>
 			<itemizedlist>
 				<listitem id="timestamptz_cast">
 					<indexterm><primary><varname>::</varname></primary></indexterm>
 					<para>Convertir un valor de <varname>timestamptz</varname> en un valor de otro tipo</para>
-					<para><varname>timestamptz::{timestampset,period,periodset}</varname></para>
+					<para><varname>timestamptz::{tstzset,period,periodset}</varname></para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT CAST(timestamptz '2001-01-01 08:00:00' AS timestampset);
+SELECT CAST(timestamptz '2001-01-01 08:00:00' AS tstzset);
 -- {2001-01-01 08:00:00+01}
 SELECT CAST(timestamptz '2001-01-01 08:00:00' AS period);
 -- [2001-01-01 08:00:00+01, 2001-01-01 08:00:00+01]
@@ -335,12 +355,12 @@ SELECT CAST(timestamptz '2001-01-01 08:00:00' AS periodset);
 -- {[2001-01-01 08:00:00+01, 2001-01-01 08:00:00+01]}
 </programlisting>
 				</listitem>
-				<listitem id="timestampset_cast">
+				<listitem id="tstzset_cast">
 					<indexterm><primary><varname>::</varname></primary></indexterm>
-					<para>Convertir un valor de <varname>timestampset</varname> en un valor de <varname>periodset</varname></para>
-					<para><varname>timestampset::periodset</varname></para>
+					<para>Convertir un valor de <varname>tstzset</varname> en un valor de <varname>periodset</varname></para>
+					<para><varname>tstzset::periodset</varname></para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT CAST(timestampset '{2001-01-01 08:00:00, 2001-01-01 08:15:00,
+SELECT CAST(tstzset '{2001-01-01 08:00:00, 2001-01-01 08:15:00,
   2001-01-01 08:25:00}' AS periodset);
 /* {[2001-01-01 08:00:00+01, 2001-01-01 08:00:00+01],
    [2001-01-01 08:15:00+01, 2001-01-01 08:15:00+01],
@@ -416,7 +436,7 @@ SELECT tstzmultirange '{[2000-01-01,2000-01-02],[2000-01-04,2000-01-05]}'::perio
 					<para>Obtener el tamaño de la memoria en bytes</para>
 					<para><varname>memorySize({set,spanset}): integer</varname></para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT memorySize(timestampset '{2001-01-01, 2001-01-02, 2001-01-03}');
+SELECT memorySize(tstzset '{2001-01-01, 2001-01-02, 2001-01-03}');
 -- 104
 SELECT memorySize(periodset '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04],
   [2001-01-05, 2001-01-06]}');
@@ -429,7 +449,7 @@ SELECT memorySize(periodset '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]
 					<para>Obtener el tamaño de almacenamiento (comprimido) en bytes</para>
 					<para><varname>storageSize({set,spanset}): integer</varname></para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT storageSize(timestampset '{2001-01-01, 2001-01-02, 2001-01-03}');
+SELECT storageSize(tstzset '{2001-01-01, 2001-01-02, 2001-01-03}');
 -- 56
 SELECT storageSize(periodset '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04],
   [2001-01-05, 2001-01-06]}');
@@ -522,9 +542,9 @@ SELECT duration(periodset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-05)}'
 				<listitem id="setspan_timespan">
 					<indexterm><primary><varname>timespan</varname></primary></indexterm>
 					<para>Obtener el intervalo de tiempo ignorando las posibles brechas de tiempo</para>
-					<para><varname>timespan({timestampset,period,periodset}): interval</varname></para>
+					<para><varname>timespan({tstzset,period,periodset}): interval</varname></para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT timespan(timestampset '{2001-01-01, 2001-01-03}');
+SELECT timespan(tstzset '{2001-01-01, 2001-01-03}');
 -- 2 days
 SELECT timespan(periodset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-05)}');
 -- 4 days
@@ -534,9 +554,9 @@ SELECT timespan(periodset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-05)}'
 				<listitem id="setspan_period">
 					<indexterm><primary><varname>period</varname></primary></indexterm>
 					<para>Obtener el período en el que se define el conjunto de marcas de tiempo o el conjunto de períodos ignorando las posibles brechas de tiempo</para>
-					<para><varname>period({timestampset,periodset}): period</varname></para>
+					<para><varname>period({tstzset,periodset}): period</varname></para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT period(timestampset '{2001-01-01, 2001-01-03, 2001-01-05}');
+SELECT period(tstzset '{2001-01-01, 2001-01-03, 2001-01-05}');
 -- [2001-01-01, 2001-01-05]
 SELECT period(periodset '{[2001-01-01, 2001-01-02), [2001-01-03, 2001-01-04)}');
 -- [2001-01-01, 2001-01-04)
@@ -546,9 +566,9 @@ SELECT period(periodset '{[2001-01-01, 2001-01-02), [2001-01-03, 2001-01-04)}');
 				<listitem id="setspan_numTimestamps">
 					<indexterm><primary><varname>numTimestamps</varname></primary></indexterm>
 					<para>Obtener el número de marcas de tiempo diferentes</para>
-					<para><varname>numTimestamps({timestampset,periodset}): integer</varname></para>
+					<para><varname>numTimestamps({tstzset,periodset}): integer</varname></para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT numTimestamps(timestampset '{2001-01-01, 2001-01-03, 2001-01-04}');
+SELECT numTimestamps(tstzset '{2001-01-01, 2001-01-03, 2001-01-04}');
 -- 3
 SELECT numTimestamps(periodset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}');
 -- 3
@@ -558,7 +578,7 @@ SELECT numTimestamps(periodset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-
 				<listitem id="setspan_startTimestamp">
 					<indexterm><primary><varname>startTimestamp</varname></primary></indexterm>
 					<para>Obtener la marca de tiempo inicial</para>
-					<para><varname>startTimestamp({timestampset,periodset}): timestamptz</varname></para>
+					<para><varname>startTimestamp({tstzset,periodset}): timestamptz</varname></para>
 					<para>La función no tiene en cuenta si los límites son inclusivos o no.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT startTimestamp(periodset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}');
@@ -569,7 +589,7 @@ SELECT startTimestamp(periodset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01
 				<listitem id="setspan_endTimestamp">
 					<indexterm><primary><varname>endTimestamp</varname></primary></indexterm>
 					<para>Obtener la marca de tiempo final</para>
-					<para><varname>endTimestamp({timestampset,periodset}): timestamptz</varname></para>
+					<para><varname>endTimestamp({tstzset,periodset}): timestamptz</varname></para>
 					<para>La función no tiene en cuenta si los límites son inclusivos o no.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT endTimestamp(periodset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}');
@@ -580,7 +600,7 @@ SELECT endTimestamp(periodset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-0
 				<listitem id="setspan_timestampN">
 					<indexterm><primary><varname>timestampN</varname></primary></indexterm>
 					<para>Obtener la enésima marca de tiempo diferente</para>
-					<para><varname>timestampN({timestampset,periodset},integer): timestamptz</varname></para>
+					<para><varname>timestampN({tstzset,periodset},integer): timestamptz</varname></para>
 					<para>La función no tiene en cuenta si los límites son inclusivos o no.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT timestampN(periodset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}', 3);
@@ -591,7 +611,7 @@ SELECT timestampN(periodset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)
 				<listitem id="setspan_timestamps">
 					<indexterm><primary><varname>timestamps</varname></primary></indexterm>
 					<para>Obtener las marcas de tiempo diferentes</para>
-					<para><varname>timestamps({timestampset,periodset}): timestampset</varname></para>
+					<para><varname>timestamps({tstzset,periodset}): tstzset</varname></para>
 					<para>La función no tiene en cuenta si los límites son inclusivos o no.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT timestamps(periodset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}');
@@ -683,9 +703,9 @@ SELECT periods(periodset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-04],
 				<listitem id="setspan_shift">
 					<indexterm><primary><varname>shift</varname></primary></indexterm>
 					<para>Desplazar el valor de tiempo con un intervalo</para>
-					<para><varname>shift({timestampset,period,periodset},interval): {timestampset,period,periodset}</varname></para>
+					<para><varname>shift({tstzset,period,periodset},interval): {tstzset,period,periodset}</varname></para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT shift(timestampset '{2001-01-01, 2001-01-03, 2001-01-05}', '1 day'::interval);
+SELECT shift(tstzset '{2001-01-01, 2001-01-03, 2001-01-05}', '1 day'::interval);
 -- {2001-01-02, 2001-01-04, 2001-01-06}
 SELECT shift(period '[2001-01-01, 2001-01-03]', '1 day'::interval);
 -- [2001-01-02, 2001-01-04]
@@ -698,18 +718,18 @@ SELECT shift(periodset '{[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}',
 			<listitem id="setspan_tscale">
 				<indexterm><primary><varname>tscale</varname></primary></indexterm>
 				<para>Escalear el valor de tiempo con un intervalo. Si el lapso de tiempo del valor de tiempo es cero (por ejemplo, para un conjunto de marcas de tiempo único), el resultado es el valor de tiempo. El intervalo dado debe ser estrictamente mayor que cero.</para>
-				<para><varname>tscale({timestampset,period,periodset},interval): {timestampset,period,periodset}</varname></para>
+				<para><varname>tscale({tstzset,period,periodset},interval): {tstzset,period,periodset}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT tscale(timestampset '{2001-01-01}', '1 day');
+SELECT tscale(tstzset '{2001-01-01}', '1 day');
 -- {2001-01-01}
-SELECT tscale(timestampset '{2001-01-01, 2001-01-03, 2001-01-05}', '2 days');
+SELECT tscale(tstzset '{2001-01-01, 2001-01-03, 2001-01-05}', '2 days');
 -- {2001-01-01, 2001-01-02, 2001-01-03}
 SELECT tscale(period '[2001-01-01, 2001-01-03]', '1 day');
 -- [2001-01-01, 2001-01-02]
 SELECT tscale(periodset '{[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}', '1 day');
 -- {[2001-01-01 00:00:00, 2001-01-01 12:00:00],
   [2001-01-01 18:00:00, 2001-01-02 00:00:00]}
-SELECT tscale(timestampset '{2001-01-01}', '-1 day');
+SELECT tscale(tstzset '{2001-01-01}', '-1 day');
 -- ERROR:  The duration must be a positive interval: -1 days
 </programlisting>
 			</listitem>
@@ -717,12 +737,12 @@ SELECT tscale(timestampset '{2001-01-01}', '-1 day');
 			<listitem id="setspan_shiftTscale">
 				<indexterm><primary><varname>shiftTscale</varname></primary></indexterm>
 				<para>Desplazar y escalear el valor de tiempo con los dos intervalos. Esta función combina en un solo paso las funciones <link linkend="setspan_shift"><varname>shift</varname></link> y <link linkend="setspan_tscale"><varname>tscale</varname></link>.</para>
-				<para><varname>shiftTscale({timestampset,period,periodset},interval,interval):</varname></para>
-				<para><varname>  {timestampset,period,periodset}</varname></para>
+				<para><varname>shiftTscale({tstzset,period,periodset},interval,interval):</varname></para>
+				<para><varname>  {tstzset,period,periodset}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT shiftTscale(timestampset '{2001-01-01}', '1 day', '1 day');
+SELECT shiftTscale(tstzset '{2001-01-01}', '1 day', '1 day');
 -- {2001-01-02}
-SELECT shiftTscale(timestampset '{2001-01-01, 2001-01-03, 2001-01-05}', '1 day','2 days');
+SELECT shiftTscale(tstzset '{2001-01-01, 2001-01-03, 2001-01-05}', '1 day','2 days');
 -- {2001-01-02, 2001-01-03, 2001-01-04}
 SELECT shiftTscale(period '[2001-01-01, 2001-01-03]', '1 day', '1 day');
 -- [2001-01-02, 2001-01-03]
@@ -768,7 +788,7 @@ SELECT floatspanset '{[1, 2),[2,3)}' = floatspanset '{[1,3)}';
 -- true
 SELECT period '[2001-01-01, 2001-01-04)' = period '[2001-01-01, 2001-01-04)';
 -- true
-SELECT timestampset '{2001-01-01, 2001-01-02}' = timestampset '{2001-01-01, 2001-01-04}';
+SELECT tstzset '{2001-01-01, 2001-01-02}' = tstzset '{2001-01-01, 2001-01-04}';
 -- false
 </programlisting>
 				</listitem>
@@ -780,7 +800,7 @@ SELECT timestampset '{2001-01-01, 2001-01-02}' = timestampset '{2001-01-01, 2001
 					<programlisting language="sql" xml:space="preserve">
 SELECT period '[2001-01-01, 2001-01-04)' &lt;&gt; period '[2001-01-03, 2001-01-05)';
 -- true
-SELECT timestampset '{2001-01-01, 2001-01-04}' &lt;&gt; timestampset '{2001-01-01, 2001-01-05}';
+SELECT tstzset '{2001-01-01, 2001-01-04}' &lt;&gt; tstzset '{2001-01-01, 2001-01-05}';
 -- false
 </programlisting>
 				</listitem>
@@ -796,7 +816,7 @@ SELECT floatspan '[3, 4]' &lt; floatspan '(3, 4]';
 -- true
 SELECT period '[2001-01-01, 2001-01-04)' &lt; period '[2001-01-01, 2001-01-04]';
 -- true
-SELECT timestampset '{2001-01-01, 2001-01-04}' &lt; timestampset '{2001-01-01, 2001-01-05}';
+SELECT tstzset '{2001-01-01, 2001-01-04}' &lt; tstzset '{2001-01-01, 2001-01-05}';
 -- true
 </programlisting>
 				</listitem>
@@ -857,8 +877,8 @@ SELECT floatspan '[1, 3)' + floatspan '[4, 5)';
 -- {[1, 3), [4, 5)}
 SELECT period '[2011-01-01, 2011-01-03)' + period '[2011-01-04, 2011-01-05)';
 -- {[2011-01-01, 2011-01-03), [2011-01-04, 2011-01-05)}
-SELECT timestampset '{2011-01-01, 2011-01-03, 2011-01-05}' +
-  timestampset '{2011-01-03, 2011-01-06}';
+SELECT tstzset '{2011-01-01, 2011-01-03, 2011-01-05}' +
+  tstzset '{2011-01-03, 2011-01-06}';
 -- {2011-01-01, 2011-01-03, 2011-01-05, 2011-01-06}
 SELECT periodset '{[2011-01-01, 2011-01-03), [2011-01-04, 2011-01-05)}' +
   period '[2011-01-03, 2011-01-04)';
@@ -896,7 +916,7 @@ SELECT intspan '[1, 5)' * intspan '[3, 6)';
 -- [3, 5)
 SELECT floatspanset '{[1, 5),[6, 8)}' * floatspan '[1, 6)';
 -- {[3, 5)}
-SELECT timestampset '{2011-01-01, 2011-01-03}' * timestampset '{2011-01-03, 2011-01-05}';
+SELECT tstzset '{2011-01-01, 2011-01-03}' * tstzset '{2011-01-03, 2011-01-05}';
 -- {2011-01-03}
 SELECT period '[2011-01-01, 2011-01-05)' * period '[2011-01-03, 2011-01-07)';
 -- [2011-01-03, 2011-01-05)
@@ -914,7 +934,7 @@ SELECT period '[2011-01-01, 2011-01-05)' * period '[2011-01-03, 2011-01-07)';
 					<indexterm><primary><varname>&amp;&amp;</varname></primary></indexterm>
 					<para>¿Se superponen los valores (tienen valores en común)?</para>
 					<para><varname>numspan &amp;&amp; numspan: boolean</varname></para>
-					<para><varname>{timestampset,period,periodset} &amp;&amp; {timestampset,period,periodset}: boolean</varname></para>
+					<para><varname>{tstzset,period,periodset} &amp;&amp; {tstzset,period,periodset}: boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT intspan '[1, 3)' &amp;&amp; intspan '[2, 4)';
 -- true
@@ -931,7 +951,7 @@ SELECT period '[2011-01-01, 2011-01-05)' &amp;&amp; period '[2011-01-02, 2011-01
 					<indexterm><primary><varname>@&gt;</varname></primary></indexterm>
 					<para>¿Contiene el primer valor el segundo?</para>
 					<para><varname>numspan @&gt; {numspan,number}: boolean</varname></para>
-					<para><varname>{timestampset,period,periodset} @&gt; time: boolean</varname></para>
+					<para><varname>{tstzset,period,periodset} @&gt; time: boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT floatspan '[1, 5]' @&gt; floatspan '[2, 5)';
 -- true
@@ -946,7 +966,7 @@ SELECT period '[2011-01-01, 2011-05-01)' @&gt; timestamptz '2011-02-01';
 					<indexterm><primary><varname>&lt;@</varname></primary></indexterm>
 					<para>¿Está el primer valor contenido en el segundo?</para>
 					<para><varname> {numspan,number}&lt;@ numspan: boolean</varname></para>
-					<para><varname>time &lt;@ {timestampset,period,periodset}: boolean</varname></para>
+					<para><varname>time &lt;@ {tstzset,period,periodset}: boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT floatspan '[2, 5]' &lt;@ floatspan '[1, 5)';
 -- false
@@ -971,7 +991,7 @@ SELECT floatspan '[2, 5)' -|- floatspan '(5, 6)';
 -- false
 SELECT floatspanset '{[2, 3],[4, 5)}' -|- floatspan '(5, 6)';
 -- true
-SELECT period '[2011-01-01, 2011-01-05)' -|- timestampset '{2011-01-05, 2011-01-07}';
+SELECT period '[2011-01-01, 2011-01-05)' -|- tstzset '{2011-01-05, 2011-01-07}';
 -- true
 SELECT periodset '{[2001-01-01, 2001-01-02]}' -|- period '[2001-01-02, 2001-01-03)';
 -- false
@@ -999,7 +1019,7 @@ SELECT intspanset '{[15, 17],[18, 20)}' &lt;&lt; 20;
 -- true
 SELECT floatspan '[15, 20)' &lt;&lt; floatspan '(15, 20)';
 -- false
-SELECT period '[2011-01-01, 2011-01-03)' &lt;&lt;# timestampset '{2011-01-03, 2011-01-05}';
+SELECT period '[2011-01-01, 2011-01-03)' &lt;&lt;# tstzset '{2011-01-03, 2011-01-05}';
 -- true
 </programlisting>
 				</listitem>
@@ -1036,7 +1056,7 @@ SELECT intspanset '{[15, 16],[17, 18)}' &amp;&lt; 18;
 -- true
 SELECT floatspan '[15, 20)' &amp;&lt; floatspan '[10, 20]';
 -- true
-SELECT timestampset '{2011-01-02, 2011-01-05}' &amp;&lt;# period '[2011-01-01, 2011-01-05)';
+SELECT tstzset '{2011-01-02, 2011-01-05}' &amp;&lt;# period '[2011-01-01, 2011-01-05)';
 -- false
 </programlisting>
 				</listitem>
@@ -1081,8 +1101,8 @@ SELECT floatspan '[1, 3]' &lt;-&gt; floatspanset '{(5.5, 7],[8, 9]}';
 -- 2.5
 SELECT period '[2001-01-02, 2001-01-06)' &lt;-&gt; timestamptz '2001-01-07';
 -- 86400
-SELECT timestampset '{2001-01-01, 2001-01-03, 2001-01-05}' &lt;-&gt;
-  timestampset '{2001-01-02, 2001-01-04}';
+SELECT tstzset '{2001-01-01, 2001-01-03, 2001-01-05}' &lt;-&gt;
+  tstzset '{2001-01-02, 2001-01-04}';
 --  0
 </programlisting>
 				</listitem>
@@ -1111,9 +1131,9 @@ SELECT timestampset '{2001-01-01, 2001-01-03, 2001-01-05}' &lt;-&gt;
 					<para><varname>tcount(time, interval, timestamptz): {tint_seq,tint_seqset}</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 WITH times(ts) AS (
-  SELECT timestampset '{2000-01-01, 2000-01-03, 2000-01-05}' UNION
-  SELECT timestampset '{2000-01-02, 2000-01-04, 2000-01-06}' UNION
-  SELECT timestampset '{2000-01-01, 2000-01-02}'
+  SELECT tstzset '{2000-01-01, 2000-01-03, 2000-01-05}' UNION
+  SELECT tstzset '{2000-01-02, 2000-01-04, 2000-01-06}' UNION
+  SELECT tstzset '{2000-01-01, 2000-01-02}'
 )
 SELECT tcount(ts) FROM times;
 -- {2@2000-01-01, 2@2000-01-02, 1@2000-01-03, 1@2000-01-04, 1@2000-01-05, 1@2000-01-06}
@@ -1147,9 +1167,9 @@ WITH spans(r) AS (
 SELECT extent(r) FROM spans;
 -- [1,9)
 WITH times(ts) AS (
-  SELECT timestampset '{2000-01-01, 2000-01-03, 2000-01-05}' UNION
-  SELECT timestampset '{2000-01-02, 2000-01-04, 2000-01-06}' UNION
-  SELECT timestampset '{2000-01-01, 2000-01-02}'
+  SELECT tstzset '{2000-01-01, 2000-01-03, 2000-01-05}' UNION
+  SELECT tstzset '{2000-01-02, 2000-01-04, 2000-01-06}' UNION
+  SELECT tstzset '{2000-01-01, 2000-01-02}'
 )
 SELECT extent(ts) FROM times;
 -- [2000-01-01, 2000-01-06]
@@ -1166,12 +1186,12 @@ SELECT extent(ps) FROM periods;
 				<listitem id="tunion">
 					<indexterm><primary><varname>tunion</varname></primary></indexterm>
 					<para>Unión temporal</para>
-					<para><varname>tunion({timestampset,period,periodset}): {timestampset,periodset}</varname></para>
+					<para><varname>tunion({tstzset,period,periodset}): {tstzset,periodset}</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 WITH times(ts) AS (
-  SELECT timestampset '{2000-01-01, 2000-01-03, 2000-01-05}' UNION
-  SELECT timestampset '{2000-01-02, 2000-01-04, 2000-01-06}' UNION
-  SELECT timestampset '{2000-01-01, 2000-01-02}'
+  SELECT tstzset '{2000-01-01, 2000-01-03, 2000-01-05}' UNION
+  SELECT tstzset '{2000-01-02, 2000-01-04, 2000-01-06}' UNION
+  SELECT tstzset '{2000-01-01, 2000-01-02}'
 )
 SELECT tunion(ts) FROM times;
 -- {2000-01-01, 2000-01-02, 2000-01-03, 2000-01-04, 2000-01-05, 2000-01-06}

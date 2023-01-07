@@ -330,7 +330,7 @@ DECLARE
   StartTime TIMESTAMP;
   RandTimestamp TIMESTAMPTZ;
   RandPeriod period;
-  RandTimestampSet tstzset;
+  RandTstzSet tstzset;
   RandPeriodset periodset;
   k INT;
 BEGIN
@@ -374,11 +374,11 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandTimestampSet:= random_tstzset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzSet:= random_tstzset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_period
-  WHERE p @> RandTimestampSet
+  WHERE p @> RandTstzSet
   INTO J;
 
   StartTime := clock_timestamp();
@@ -490,11 +490,11 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandTimestampSet:= random_tstzset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzSet:= random_tstzset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzset
-  WHERE ps @> RandTimestampSet
+  WHERE ps @> RandTstzSet
   INTO J;
 
   StartTime := clock_timestamp();
@@ -530,11 +530,11 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandTimestampSet:= random_tstzset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzSet:= random_tstzset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_periodset
-  WHERE ps @> RandTimestampSet
+  WHERE ps @> RandTstzSet
   INTO J;
 
   StartTime := clock_timestamp();
@@ -668,11 +668,11 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandTimestampSet:= random_tstzset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzSet:= random_tstzset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzset
-  WHERE ps <@ RandTimestampSet
+  WHERE ps <@ RandTstzSet
   INTO J;
 
   StartTime := clock_timestamp();
@@ -805,11 +805,11 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandTimeStampset:= random_tstzset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzSet:= random_tstzset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_tstzset
-  WHERE ps && RandTimeStampset
+  WHERE ps && RandTstzSet
   INTO J;
 
   StartTime := clock_timestamp();
@@ -881,7 +881,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandTimestampSet:= random_tstzset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzSet:= random_tstzset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_period
@@ -919,11 +919,11 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandTimestampSet:= random_tstzset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzSet:= random_tstzset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_periodset
-  WHERE ps && RandTimestampSet
+  WHERE ps && RandTstzSet
   INTO J;
 
   StartTime := clock_timestamp();
@@ -1208,11 +1208,11 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandTimestampSet:= random_tstzset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzSet:= random_tstzset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_periodset
-  WHERE ps <<# RandTimestampSet
+  WHERE ps <<# RandTstzSet
   INTO J;
 
   StartTime := clock_timestamp();
@@ -1440,11 +1440,11 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandTimestampSet:= random_tstzset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzSet:= random_tstzset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_periodset
-  WHERE ps #>> RandTimestampSet
+  WHERE ps #>> RandTstzSet
   INTO J;
 
   StartTime := clock_timestamp();
@@ -1672,11 +1672,11 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..100 LOOP
-  RandTimestampSet:= random_tstzset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzSet:= random_tstzset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
   SELECT *
   FROM tbl_periodset
-  WHERE ps &<# RandTimestampSet
+  WHERE ps &<# RandTstzSet
   INTO J;
 
   StartTime := clock_timestamp();

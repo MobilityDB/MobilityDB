@@ -167,7 +167,7 @@
 					<para><varname>random_period_array</varname>: Generar una matriz de valores <varname>period</varname> aleatorios</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_timestampset</varname>: Generar un <varname>timestampset</varname> aleatorio</para>
+					<para><varname>random_tstzset</varname>: Generar un <varname>tstzset</varname> aleatorio</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_periodset</varname>: Generar un <varname>periodset</varname> aleatorio</para>
@@ -357,14 +357,14 @@ FROM generate_series(perc+1, size) AS k;
 </programlisting>
 
 		<para>
-			La creación de una tabla <varname>tbl_timestampset</varname> que contiene valores aleatorios <varname>timestampset</varname> que tienen entre 5 y 10 marcas de tiempo donde las marcas de tiempo están en el rango [2001-01-01, 2001-12-31] y el máximo intervalo entre marcas de tiempo consecutivas es 10 minutos se da a continuación.
+			La creación de una tabla <varname>tbl_tstzset</varname> que contiene valores aleatorios <varname>tstzset</varname> que tienen entre 5 y 10 marcas de tiempo donde las marcas de tiempo están en el rango [2001-01-01, 2001-12-31] y el máximo intervalo entre marcas de tiempo consecutivas es 10 minutos se da a continuación.
 		</para>
 		<programlisting language="sql" xml:space="preserve">
-CREATE TABLE tbl_timestampset AS
+CREATE TABLE tbl_tstzset AS
 /* Add perc NULL valores */
 SELECT k, NULL AS ts
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_timestampset('2001-01-01', '2001-12-31', 10, 5, 10)
+SELECT k, random_tstzset('2001-01-01', '2001-12-31', 10, 5, 10)
 FROM generate_series(perc+1, size) AS k;
 </programlisting>
 

@@ -222,12 +222,12 @@ FROM generate_series(1, perc) AS k UNION
 SELECT k, random_floatset(1, 100, 10, 5, 10)
 FROM generate_series(perc+1, size) AS k;
 
-DROP TABLE IF EXISTS tbl_timestampset;
-CREATE TABLE tbl_timestampset AS
+DROP TABLE IF EXISTS tbl_tstzset;
+CREATE TABLE tbl_tstzset AS
 /* Add perc NULL values */
 SELECT k, NULL AS t
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_timestampset('2001-01-01', '2001-12-31', 10, 5, 10)
+SELECT k, random_tstzset('2001-01-01', '2001-12-31', 10, 5, 10)
 FROM generate_series(perc+1, size) AS k;
 
 -------------------------------------------------------------------------------

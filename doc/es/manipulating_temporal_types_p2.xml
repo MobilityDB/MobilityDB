@@ -801,7 +801,7 @@ WHERE intersects(T.Trip, R.Geom);
 				</orderedlist>
 			</para>
 
-			<para>Las estadísticas recopiladas para columnas de los tipos de tiempo y de rango <varname>timestampset</varname>, <varname>period</varname>, <varname>periodset</varname>, <varname>intspan</varname> y <varname>floatspan</varname> replican las recopiladas por PostgreSQL para <varname>tstzrange</varname>. Esto es claro para los tipos de rango en MobilityDB, que son versiones más eficientes de los tipos de rango en PostgreSQL. Para los tipos <varname>timestampset</varname> y <varname>periodset</varname>, un valor se convierte en su período delimitador y luego se recopilan las estadísticas del tipo <varname>period</varname>.</para>
+			<para>Las estadísticas recopiladas para columnas de los tipos de tiempo y de rango <varname>tstzset</varname>, <varname>period</varname>, <varname>periodset</varname>, <varname>intspan</varname> y <varname>floatspan</varname> replican las recopiladas por PostgreSQL para <varname>tstzrange</varname>. Esto es claro para los tipos de rango en MobilityDB, que son versiones más eficientes de los tipos de rango en PostgreSQL. Para los tipos <varname>tstzset</varname> y <varname>periodset</varname>, un valor se convierte en su período delimitador y luego se recopilan las estadísticas del tipo <varname>period</varname>.</para>
 
 			<para>Las estadísticas recopiladas para columnas de los tipos temporales dependen del subtipo temporal y del tipo base. Además de las estadísticas (1)&#x2013;(3) que se recopilan para todos los tipos temporales, las estadísticas se recopilan para la dimensiónes de tiempo y de valor de forma independiente. Más precisamente, se recopilan las siguientes estadísticas para la dimensión de tiempo:
 				<itemizedlist>

@@ -800,7 +800,7 @@ WHERE intersects(T.Trip, R.Geom);
 				</orderedlist>
 			</para>
 
-			<para>The statistics collected for columns of the time and span types <varname>timestampset</varname>, <varname>period</varname>, <varname>periodset</varname>, <varname>intspan</varname>, and <varname>floatspan</varname> replicate those collected by PostgreSQL for the <varname>tstzrange</varname>. This is clear for the span types in MobilityDB, which are more efficient versions of the range types in PostgreSQL. For the <varname>timestampset</varname> and the <varname>periodset</varname> types, a value is converted into its bounding period, then the statistics for the <varname>period</varname> type are collected.</para>
+			<para>The statistics collected for columns of the time and span types <varname>tstzset</varname>, <varname>period</varname>, <varname>periodset</varname>, <varname>intspan</varname>, and <varname>floatspan</varname> replicate those collected by PostgreSQL for the <varname>tstzrange</varname>. This is clear for the span types in MobilityDB, which are more efficient versions of the range types in PostgreSQL. For the <varname>tstzset</varname> and the <varname>periodset</varname> types, a value is converted into its bounding period, then the statistics for the <varname>period</varname> type are collected.</para>
 
 			<para>The statistics collected for columns of temporal types depend on their subtype and their base type. In addition to statistics (1)&#x2013;(3) that are collected for all temporal types, statistics are collected for the time and the value dimensions independently. More precisely, the following statistics are collected for the time dimension:
 				<itemizedlist>

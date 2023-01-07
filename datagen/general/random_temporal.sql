@@ -1021,24 +1021,24 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random timestampset within a period
+ * Generate a random tstzset within a period
  *
  * @param[in] lowtime, hightime Inclusive bounds of the maximal period
  * @param[in] maxminutes Maximum number of minutes between two consecutive timestamps
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
  */
-DROP FUNCTION IF EXISTS random_timestampset;
-CREATE FUNCTION random_timestampset(lowtime timestamptz, hightime timestamptz,
+DROP FUNCTION IF EXISTS random_tstzset;
+CREATE FUNCTION random_tstzset(lowtime timestamptz, hightime timestamptz,
   maxminutes int, mincard int, maxcard int)
-  RETURNS timestampset AS $$
+  RETURNS tstzset AS $$
 BEGIN
-  RETURN timestampset(random_timestamptz_array(lowtime, hightime, maxminutes,
+  RETURN tstzset(random_timestamptz_array(lowtime, hightime, maxminutes,
     mincard, maxcard));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, random_timestampset('2001-01-01', '2002-01-01', 10, 5, 10) AS ps
+SELECT k, random_tstzset('2001-01-01', '2002-01-01', 10, 5, 10) AS ps
 FROM generate_series(1, 15) AS k;
 */
 
