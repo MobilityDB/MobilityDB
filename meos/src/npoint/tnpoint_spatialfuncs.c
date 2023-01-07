@@ -794,7 +794,7 @@ tnpoint_restrict_geometry(const Temporal *temp, const GSERIALIZED *geo,
   {
     /* We do not call the function tgeompoint_tnpoint to avoid
      * roundoff errors */
-    PeriodSet *ps = temporal_time(resultgeom);
+    SpanSet *ps = temporal_time(resultgeom);
     result = temporal_restrict_periodset(temp, ps, REST_AT);
     pfree(resultgeom);
     pfree(ps);

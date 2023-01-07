@@ -33,13 +33,11 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <utils/timestamp.h>
+#include <fmgr.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/set.h"
-#include "general/spanset.h"
-#include "general/temporal_util.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 
@@ -541,7 +539,7 @@ Intersection_set_set(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Minus_value_value);
 /**
  * @ingroup mobilitydb_setspan_set
- * @brief Return the difference of the timestamps
+ * @brief Return the difference of the values
  * @sqlfunc time_minus()
  * @sqlop @p -
  */
@@ -560,7 +558,7 @@ Minus_value_value(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Minus_value_set);
 /**
  * @ingroup mobilitydb_setspan_set
- * @brief Return the difference of a timestamp and a a timestamp set
+ * @brief Return the difference of a value and a set
  * @sqlfunc time_minus()
  * @sqlop @p -
  */
@@ -583,7 +581,7 @@ Minus_value_set(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Minus_set_value);
 /**
  * @ingroup mobilitydb_setspan_set
- * @brief Return the difference of a timestamp set and a timestamp
+ * @brief Return the difference of a set and a value
  * @sqlfunc time_minus()
  * @sqlop @p -
  */
@@ -603,7 +601,7 @@ Minus_set_value(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Minus_set_set);
 /**
  * @ingroup mobilitydb_setspan_set
- * @brief Return the difference of the timestamp sets
+ * @brief Return the difference of two sets
  * @sqlfunc time_minus()
  * @sqlop @p -
  */
@@ -627,7 +625,7 @@ Minus_set_set(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Distance_value_set);
 /**
  * @ingroup mobilitydb_setspan_dist
- * @brief Return the distance in seconds between a timestamp and a timestamp set
+ * @brief Return the distance in seconds between a value and a set
  * @sqlfunc time_distance()
  * @sqlop @p <->
  */
@@ -647,7 +645,7 @@ Distance_value_set(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Distance_set_value);
 /**
  * @ingroup mobilitydb_setspan_dist
- * @brief Return the distance in seconds between a timestamp set and a timestamp
+ * @brief Return the distance in seconds between a set and a value
  * @sqlfunc time_distance()
  * @sqlop @p <->
  */
@@ -667,7 +665,7 @@ Distance_set_value(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Distance_set_set);
 /**
  * @ingroup mobilitydb_setspan_dist
- * @brief Return the distance in seconds between the timestamp sets
+ * @brief Return the distance in seconds between two sets
  * @sqlfunc time_distance()
  * @sqlop @p <->
  */

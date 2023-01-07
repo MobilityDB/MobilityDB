@@ -31,7 +31,10 @@
  * @brief Input of temporal types in WKT, MF-JSON, WKB, EWKB, and HexWKB format.
  */
 
-/* MobilityDB */
+/* PostgreSQL */
+#include <postgres.h>
+#include <fmgr.h>
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/temporal_util.h"

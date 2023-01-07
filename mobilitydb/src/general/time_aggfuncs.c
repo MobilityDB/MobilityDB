@@ -70,7 +70,7 @@ PGDLLEXPORT Datum
 Timestampset_extent_transfn(PG_FUNCTION_ARGS)
 {
   Period *p = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
-  TimestampSet *ts = PG_ARGISNULL(1) ? NULL : PG_GETARG_TIMESTAMPSET_P(1);
+  Set *ts = PG_ARGISNULL(1) ? NULL : PG_GETARG_SET_P(1);
   p = timestampset_extent_transfn(p, ts);
   PG_FREE_IF_COPY(ts, 1);
   if (! p)
@@ -104,7 +104,7 @@ Timestampset_tunion_transfn(PG_FUNCTION_ARGS)
 {
   SkipList *state;
   INPUT_AGG_TRANS_STATE(fcinfo, state);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
+  Set *ts = PG_GETARG_SET_P(1);
   store_fcinfo(fcinfo);
   SkipList *result = timestampset_tunion_transfn(state, ts);
   PG_FREE_IF_COPY(ts, 1);
@@ -135,7 +135,7 @@ Periodset_tunion_transfn(PG_FUNCTION_ARGS)
 {
   SkipList *state;
   INPUT_AGG_TRANS_STATE(fcinfo, state);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
+  SpanSet *ps = PG_GETARG_SPANSET_P(1);
   store_fcinfo(fcinfo);
   SkipList *result = periodset_tunion_transfn(state, ps);
   PG_FREE_IF_COPY(ps, 1);
@@ -194,7 +194,7 @@ Timestampset_tcount_transfn_ext(FunctionCallInfo fcinfo, bool bucket)
 {
   SkipList *state;
   INPUT_AGG_TRANS_STATE(fcinfo, state);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
+  Set *ts = PG_GETARG_SET_P(1);
   Interval *interval = NULL;
   TimestampTz origin = 0;
   if (bucket)
@@ -279,7 +279,7 @@ Periodset_tcount_transfn_ext(FunctionCallInfo fcinfo, bool bucket)
 {
   SkipList *state;
   INPUT_AGG_TRANS_STATE(fcinfo, state);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
+  SpanSet *ps = PG_GETARG_SPANSET_P(1);
   Interval *interval = NULL;
   TimestampTz origin = 0;
   if (bucket)
@@ -345,7 +345,7 @@ Timestamp_tunion_finalfn(PG_FUNCTION_ARGS)
 {
   /* The final function is strict, we do not need to test for null values */
   SkipList *state = (SkipList *) PG_GETARG_POINTER(0);
-  TimestampSet *result = timestamp_tunion_finalfn(state);
+  Set *result = timestamp_tunion_finalfn(state);
   PG_RETURN_POINTER(result);
 }
 
@@ -358,7 +358,7 @@ Period_tunion_finalfn(PG_FUNCTION_ARGS)
 {
   /* The final function is strict, we do not need to test for null values */
   SkipList *state = (SkipList *) PG_GETARG_POINTER(0);
-  PeriodSet *result = period_tunion_finalfn(state);
+  SpanSet *result = period_tunion_finalfn(state);
   PG_RETURN_POINTER(result);
 }
 

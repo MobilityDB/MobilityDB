@@ -423,7 +423,7 @@ Overafter_temporal_period(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************/
-/* Temporal op PeriodSet */
+/* Temporal op SpanSet */
 
 PG_FUNCTION_INFO_V1(Before_temporal_periodset);
 /**

@@ -66,74 +66,74 @@ SELECT period(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
  [2000-01-01 00:00:00+00, 2000-01-03 00:00:00+00]
 (1 row)
 
-SELECT numTimestamps(timestampset '{2000-01-01}');
- numtimestamps 
----------------
-             1
+SELECT numValues(timestampset '{2000-01-01}');
+ numvalues 
+-----------
+         1
 (1 row)
 
-SELECT numTimestamps(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
- numtimestamps 
----------------
-             3
+SELECT numValues(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
+ numvalues 
+-----------
+         3
 (1 row)
 
-SELECT startTimestamp(timestampset '{2000-01-01}');
-     starttimestamp     
+SELECT startValue(timestampset '{2000-01-01}');
+       startvalue       
 ------------------------
  2000-01-01 00:00:00+00
 (1 row)
 
-SELECT startTimestamp(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
-     starttimestamp     
+SELECT startValue(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
+       startvalue       
 ------------------------
  2000-01-01 00:00:00+00
 (1 row)
 
-SELECT endTimestamp(timestampset '{2000-01-01}');
-      endtimestamp      
+SELECT endValue(timestampset '{2000-01-01}');
+        endvalue        
 ------------------------
  2000-01-01 00:00:00+00
 (1 row)
 
-SELECT endTimestamp(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
-      endtimestamp      
+SELECT endValue(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
+        endvalue        
 ------------------------
  2000-01-03 00:00:00+00
 (1 row)
 
-SELECT timestampN(timestampset '{2000-01-01}', 1);
-       timestampn       
+SELECT valueN(timestampset '{2000-01-01}', 1);
+         valuen         
 ------------------------
  2000-01-01 00:00:00+00
 (1 row)
 
-SELECT timestampN(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}', 1);
-       timestampn       
+SELECT valueN(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}', 1);
+         valuen         
 ------------------------
  2000-01-01 00:00:00+00
 (1 row)
 
-SELECT timestampN(timestampset '{2000-01-01}', 2);
- timestampn 
-------------
+SELECT valueN(timestampset '{2000-01-01}', 2);
+ valuen 
+--------
  
 (1 row)
 
-SELECT timestampN(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}', 4);
- timestampn 
-------------
+SELECT valueN(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}', 4);
+ valuen 
+--------
  
 (1 row)
 
-SELECT timestamps(timestampset '{2000-01-01}');
-         timestamps         
+SELECT getValues(timestampset '{2000-01-01}');
+         getvalues          
 ----------------------------
  {"2000-01-01 00:00:00+00"}
 (1 row)
 
-SELECT timestamps(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
-                                  timestamps                                  
+SELECT getValues(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
+                                  getvalues                                   
 ------------------------------------------------------------------------------
  {"2000-01-01 00:00:00+00","2000-01-02 00:00:00+00","2000-01-03 00:00:00+00"}
 (1 row)

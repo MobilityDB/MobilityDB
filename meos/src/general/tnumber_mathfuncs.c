@@ -237,7 +237,7 @@ arithop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
    * the common timespan */
   if (oper == DIV)
   {
-    PeriodSet *ps = temporal_time(temp1);
+    SpanSet *ps = temporal_time(temp1);
     Temporal *projtemp2 = temporal_restrict_periodset(temp2, ps, REST_AT);
     if (projtemp2 == NULL)
       return NULL;

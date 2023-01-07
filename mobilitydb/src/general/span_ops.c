@@ -693,7 +693,7 @@ Union_span_set(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   Set *os = PG_GETARG_SET_P(1);
-  PeriodSet *result = union_span_set(s, os);
+  SpanSet *result = union_span_set(s, os);
   PG_FREE_IF_COPY(os, 1);
   PG_RETURN_POINTER(result);
 }
@@ -749,7 +749,7 @@ Intersection_set_span(PG_FUNCTION_ARGS)
 {
   Set *os = PG_GETARG_SET_P(0);
   Span *s = PG_GETARG_SPAN_P(1);
-  TimestampSet *result = intersection_span_set(s, os);
+  Set *result = intersection_span_set(s, os);
   PG_FREE_IF_COPY(os, 0);
   if (! result)
     PG_RETURN_NULL();
@@ -847,10 +847,10 @@ PG_FUNCTION_INFO_V1(Minus_set_span);
 PGDLLEXPORT Datum
 Minus_set_span(PG_FUNCTION_ARGS)
 {
-  Set *os = PG_GETARG_SET_P(0);
+  Set *set = PG_GETARG_SET_P(0);
   Span *s = PG_GETARG_SPAN_P(1);
-  TimestampSet *result = minus_set_span(os, s);
-  PG_FREE_IF_COPY(os, 0);
+  Set *result = minus_set_span(set, s);
+  PG_FREE_IF_COPY(set, 0);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
@@ -887,7 +887,7 @@ Minus_span_set(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   Set *os = PG_GETARG_SET_P(1);
-  PeriodSet *result = minus_span_set(s, os);
+  SpanSet *result = minus_span_set(s, os);
   PG_FREE_IF_COPY(os, 1);
   if (! result)
     PG_RETURN_NULL();

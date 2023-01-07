@@ -367,10 +367,8 @@ set_make(const Datum *values, int count, meosType basetype, bool ordered)
       for (int i = 0; i < count; i++)
         values_size += double_pad(VARSIZE(values[i]));
     }
-#if 0 /* not used */
     else
       values_size = double_pad(typlen) * count;
-#endif /* not used */
   }
 
   /* Determine overall memory size */
@@ -401,10 +399,11 @@ set_make(const Datum *values, int count, meosType basetype, bool ordered)
     size_t pos = 0;
     for (int i = 0; i < count; i++)
     {
+      size_t size_elem = (typlen == -1) ? VARSIZE(values[i]) : (uint32) typlen;
       memcpy(((char *) result) + pdata + pos, DatumGetPointer(values[i]),
-        VARSIZE(values[i]));
+        size_elem);
       (set_offsets_ptr(result))[i] = pos;
-      pos += double_pad(VARSIZE(values[i]));
+      pos += double_pad(size_elem);
     }
   }
 

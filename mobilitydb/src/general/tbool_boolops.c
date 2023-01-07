@@ -33,6 +33,8 @@
 
 #include "general/tbool_boolops.h"
 
+/* PostgreSQL */
+#include <fmgr.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -188,7 +190,7 @@ PGDLLEXPORT Datum
 Tbool_when(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  PeriodSet *result = tbool_when_true(temp);
+  SpanSet *result = tbool_when_true(temp);
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();

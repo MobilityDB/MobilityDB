@@ -65,22 +65,22 @@ SELECT storageSize(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
 SELECT period(timestampset '{2000-01-01}');
 SELECT period(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
 
-SELECT numTimestamps(timestampset '{2000-01-01}');
-SELECT numTimestamps(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
+SELECT numValues(timestampset '{2000-01-01}');
+SELECT numValues(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
 
-SELECT startTimestamp(timestampset '{2000-01-01}');
-SELECT startTimestamp(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
+SELECT startValue(timestampset '{2000-01-01}');
+SELECT startValue(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
 
-SELECT endTimestamp(timestampset '{2000-01-01}');
-SELECT endTimestamp(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
+SELECT endValue(timestampset '{2000-01-01}');
+SELECT endValue(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
 
-SELECT timestampN(timestampset '{2000-01-01}', 1);
-SELECT timestampN(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}', 1);
-SELECT timestampN(timestampset '{2000-01-01}', 2);
-SELECT timestampN(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}', 4);
+SELECT valueN(timestampset '{2000-01-01}', 1);
+SELECT valueN(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}', 1);
+SELECT valueN(timestampset '{2000-01-01}', 2);
+SELECT valueN(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}', 4);
 
-SELECT timestamps(timestampset '{2000-01-01}');
-SELECT timestamps(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
+SELECT getValues(timestampset '{2000-01-01}');
+SELECT getValues(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
 
 SELECT shift(timestampset '{2000-01-01}', '5 min');
 SELECT shift(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}', '5 min');

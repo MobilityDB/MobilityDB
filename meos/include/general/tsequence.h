@@ -125,12 +125,12 @@ extern TInstant *tsegment_at_timestamp(const TInstant *inst1,
 extern int tcontseq_minus_timestamp1(const TSequence *seq, TimestampTz t,
   TSequence **result);
 extern int tcontseq_minus_timestampset1(const TSequence *seq,
-  const TimestampSet *ss, TSequence **result);
+  const Set *ss, TSequence **result);
 extern int tcontseq_minus_period1(const TSequence *seq, const Period *p,
   TSequence **result);
-extern int tcontseq_at_periodset1(const TSequence *seq, const PeriodSet *ps,
+extern int tcontseq_at_periodset1(const TSequence *seq, const SpanSet *ps,
   TSequence **result);
-extern int tcontseq_minus_periodset1(const TSequence *seq, const PeriodSet *ps,
+extern int tcontseq_minus_periodset1(const TSequence *seq, const SpanSet *ps,
   int from, TSequence **result);
 
 /*****************************************************************************/

@@ -39,7 +39,7 @@
 /* PostGIS */
 #include <liblwgeom.h>
 /* MobilityDB */
-#include "general/timetypes.h"
+#include "general/set.h"
 
 /*****************************************************************************
  * fmgr macros

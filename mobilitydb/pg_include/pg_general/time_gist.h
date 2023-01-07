@@ -37,8 +37,8 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <access/stratnum.h>
-/* MobilityDB */
-#include "general/timetypes.h"
+/* MEOS */
+#include "general/set.h"
 
 /*****************************************************************************/
 

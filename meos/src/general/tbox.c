@@ -471,7 +471,7 @@ numspanset_to_tbox(const SpanSet *ss)
  * @brief Set a temporal box from a period set.
  */
 void
-periodset_set_tbox(const PeriodSet *ps, TBox *box)
+periodset_set_tbox(const SpanSet *ps, TBox *box)
 {
   period_set_tbox(&ps->span, box);
   return;
@@ -484,7 +484,7 @@ periodset_set_tbox(const PeriodSet *ps, TBox *box)
  * @sqlop @p ::
  */
 TBox *
-periodset_to_tbox(const PeriodSet *ps)
+periodset_to_tbox(const SpanSet *ps)
 {
   TBox *result = palloc(sizeof(TBox));
   periodset_set_tbox(ps, result);

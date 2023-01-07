@@ -1610,10 +1610,10 @@ tfloat_spanset(const Temporal *temp)
  * @sqlfunc getTime()
  * @pymeosfunc getTime()
  */
-PeriodSet *
+SpanSet *
 temporal_time(const Temporal *temp)
 {
-  PeriodSet *result;
+  SpanSet *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = tinstant_time((TInstant *) temp);
@@ -3129,7 +3129,7 @@ temporal_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
  * @sqlfunc atTime(), minusTime()
  */
 Temporal *
-temporal_restrict_timestampset(const Temporal *temp, const TimestampSet *ts,
+temporal_restrict_timestampset(const Temporal *temp, const Set *ts,
   bool atfunc)
 {
   Temporal *result;
@@ -3193,7 +3193,7 @@ temporal_restrict_period(const Temporal *temp, const Period *p, bool atfunc)
  * @sqlfunc atTime(), minusTime()
  */
 Temporal *
-temporal_restrict_periodset(const Temporal *temp, const PeriodSet *ps,
+temporal_restrict_periodset(const Temporal *temp, const SpanSet *ps,
   bool atfunc)
 {
   Temporal *result;
@@ -3273,7 +3273,7 @@ tnumber_minus_tbox(const Temporal *temp, const TBox *box)
   Temporal *temp1 = tnumber_at_tbox(temp, box);
   if (temp1 != NULL)
   {
-    PeriodSet *ps = temporal_time(temp1);
+    SpanSet *ps = temporal_time(temp1);
     result = temporal_restrict_periodset(temp, ps, REST_MINUS);
     pfree(temp1); pfree(ps);
   }
@@ -3335,7 +3335,7 @@ temporal_insert(const Temporal *temp1, const Temporal *temp2, bool connect)
 Temporal *
 temporal_update(const Temporal *temp1, const Temporal *temp2, bool connect)
 {
-  PeriodSet *ps = temporal_time(temp2);
+  SpanSet *ps = temporal_time(temp2);
   Temporal *rest = temporal_restrict_periodset(temp1, ps, REST_MINUS);
   if (! rest)
     return (Temporal *) temp2;
@@ -3384,7 +3384,7 @@ temporal_delete_timestamp(const Temporal *temp, TimestampTz t, bool connect)
  * @sqlfunc deleteTime()
  */
 Temporal *
-temporal_delete_timestampset(const Temporal *temp, const TimestampSet *ts,
+temporal_delete_timestampset(const Temporal *temp, const Set *ts,
   bool connect)
 {
   Temporal *result;
@@ -3452,7 +3452,7 @@ temporal_delete_period(const Temporal *temp, const Period *p, bool connect)
  * @sqlfunc deleteTime()
  */
 Temporal *
-temporal_delete_periodset(const Temporal *temp, const PeriodSet *ps,
+temporal_delete_periodset(const Temporal *temp, const SpanSet *ps,
   bool connect)
 {
   Temporal *result;
@@ -3512,7 +3512,7 @@ temporal_overlaps_timestamp(const Temporal *temp, TimestampTz t)
  * @pymeosfunc overlapsTime()
  */
 bool
-temporal_overlaps_timestampset(const Temporal *temp, const TimestampSet *ts)
+temporal_overlaps_timestampset(const Temporal *temp, const Set *ts)
 {
   bool result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -3552,7 +3552,7 @@ temporal_overlaps_period(const Temporal *temp, const Period *p)
  * @pymeosfunc overlapsTime()
  */
 bool
-temporal_overlaps_periodset(const Temporal *temp, const PeriodSet *ps)
+temporal_overlaps_periodset(const Temporal *temp, const SpanSet *ps)
 {
   bool result;
   ensure_valid_tempsubtype(temp->subtype);

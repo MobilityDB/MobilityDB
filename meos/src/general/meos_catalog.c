@@ -81,6 +81,7 @@ settype_cache_struct _settype_cache[] =
   {T_TEXTSET,       T_TEXT},
   {T_GEOMSET,       T_GEOMETRY},
   {T_GEOGSET,       T_GEOGRAPHY},
+  {T_NPOINTSET,     T_NPOINT},
 };
 
 /**
@@ -288,7 +289,7 @@ set_type(meosType settype)
 {
   if (settype == T_TIMESTAMPSET || settype == T_INTSET ||
       settype == T_BIGINTSET || settype == T_FLOATSET || settype == T_TEXTSET ||
-      settype == T_GEOMSET || settype == T_GEOGSET || settype == T_NPOINT)
+      settype == T_GEOMSET || settype == T_GEOGSET || settype == T_NPOINTSET)
     return true;
   return false;
 }

@@ -448,10 +448,10 @@ tfloatinst_spanset(const TInstant *inst)
  * @brief Return the time frame of a temporal instant as a period set.
  * @sqlfunc getTime()
  */
-PeriodSet *
+SpanSet *
 tinstant_time(const TInstant *inst)
 {
-  PeriodSet *result = timestamp_to_periodset(inst->t);
+  SpanSet *result = timestamp_to_periodset(inst->t);
   return result;
 }
 
@@ -844,7 +844,7 @@ tinstant_restrict_timestamp(const TInstant *inst, TimestampTz t, bool atfunc)
  * discrete sequence.
  */
 bool
-tinstant_restrict_timestampset_test(const TInstant *inst, const TimestampSet *ts,
+tinstant_restrict_timestampset_test(const TInstant *inst, const Set *ts,
   bool atfunc)
 {
   for (int i = 0; i < ts->count; i++)
@@ -859,7 +859,7 @@ tinstant_restrict_timestampset_test(const TInstant *inst, const TimestampSet *ts
  * @sqlfunc atTimestampSet(), minusTimestampSet()
  */
 TInstant *
-tinstant_restrict_timestampset(const TInstant *inst, const TimestampSet *ts,
+tinstant_restrict_timestampset(const TInstant *inst, const Set *ts,
   bool atfunc)
 {
   if (tinstant_restrict_timestampset_test(inst, ts, atfunc))
@@ -889,7 +889,7 @@ tinstant_restrict_period(const TInstant *inst, const Period *period,
  * discrete sequence.
  */
 bool
-tinstant_restrict_periodset_test(const TInstant *inst, const PeriodSet *ps,
+tinstant_restrict_periodset_test(const TInstant *inst, const SpanSet *ps,
   bool atfunc)
 {
   for (int i = 0; i < ps->count; i++)
@@ -904,7 +904,7 @@ tinstant_restrict_periodset_test(const TInstant *inst, const PeriodSet *ps,
  * @sqlfunc atTime(), minusTime()
  */
 TInstant *
-tinstant_restrict_periodset(const TInstant *inst,const  PeriodSet *ps,
+tinstant_restrict_periodset(const TInstant *inst,const  SpanSet *ps,
   bool atfunc)
 {
   if (tinstant_restrict_periodset_test(inst, ps, atfunc))
@@ -998,7 +998,7 @@ tinstant_overlaps_timestamp(const TInstant *inst, TimestampTz t)
  * @sqlfunc intersectsTimestampSet()
  */
 bool
-tinstant_overlaps_timestampset(const TInstant *inst, const TimestampSet *ts)
+tinstant_overlaps_timestampset(const TInstant *inst, const Set *ts)
 {
   for (int i = 0; i < ts->count; i++)
     if (inst->t == DatumGetTimestampTz(set_val_n(ts, i)))
@@ -1023,7 +1023,7 @@ tinstant_overlaps_period(const TInstant *inst, const Period *p)
  * @sqlfunc intersectsPeriodSet()
  */
 bool
-tinstant_overlaps_periodset(const TInstant *inst, const PeriodSet *ps)
+tinstant_overlaps_periodset(const TInstant *inst, const SpanSet *ps)
 {
   for (int i = 0; i < ps->count; i++)
     if (contains_period_timestamp(spanset_sp_n(ps, i), inst->t))

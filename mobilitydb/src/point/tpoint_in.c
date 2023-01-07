@@ -31,6 +31,9 @@
  * @brief Input of temporal points in WKT, EWKT, , EWKB, and MF-JSON format.
  */
 
+/* PostgreSQL */
+#include <postgres.h>
+#include <fmgr.h>
 /* MEOS */
 #include "general/temporal_util.h"
 #include "point/tpoint_parser.h"

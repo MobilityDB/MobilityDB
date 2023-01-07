@@ -362,7 +362,7 @@ PG_FUNCTION_INFO_V1(Timestampset_to_stbox);
 PGDLLEXPORT Datum
 Timestampset_to_stbox(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  Set *ts = PG_GETARG_SET_P(0);
   STBox *result = palloc(sizeof(STBox));
   timestampset_set_stbox(ts, result);
   PG_RETURN_POINTER(result);
@@ -391,12 +391,12 @@ Period_to_stbox(PG_FUNCTION_ARGS)
 void
 periodset_stbox_slice(Datum psdatum, STBox *box)
 {
-  PeriodSet *ps = NULL;
+  SpanSet *ps = NULL;
   if (PG_DATUM_NEEDS_DETOAST((struct varlena *) psdatum))
-    ps = (PeriodSet *) PG_DETOAST_DATUM_SLICE(psdatum, 0,
+    ps = (SpanSet *) PG_DETOAST_DATUM_SLICE(psdatum, 0,
       time_max_header_size());
   else
-    ps = (PeriodSet *) psdatum;
+    ps = (SpanSet *) psdatum;
   periodset_set_stbox(ps, box);
   PG_FREE_IF_COPY_P(ps, DatumGetPointer(psdatum));
   return;

@@ -316,7 +316,7 @@ PGDLLEXPORT Datum
 Set_as_hexwkb(PG_FUNCTION_ARGS)
 {
   /* Ensure that the value is detoasted if necessary */
-  Set *s = PG_GETARG_TIMESTAMPSET_P(0);
+  Set *s = PG_GETARG_SET_P(0);
   meosType settype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   text *result = datum_as_hexwkb_ext(fcinfo, PointerGetDatum(s), settype);
   PG_FREE_IF_COPY(s, 0);

@@ -519,7 +519,7 @@ temporal_minus_timestamp(const Temporal *temp, TimestampTz t)
  * @sqlfunc atTime()
  */
 Temporal *
-temporal_at_timestampset(const Temporal *temp, const TimestampSet *ts)
+temporal_at_timestampset(const Temporal *temp, const Set *ts)
 {
   Temporal *result = temporal_restrict_timestampset(temp, ts, REST_AT);
   return result;
@@ -531,7 +531,7 @@ temporal_at_timestampset(const Temporal *temp, const TimestampSet *ts)
  * @sqlfunc minusTime()
  */
 Temporal *
-temporal_minus_timestampset(const Temporal *temp, const TimestampSet *ts)
+temporal_minus_timestampset(const Temporal *temp, const Set *ts)
 {
   Temporal *result = temporal_restrict_timestampset(temp, ts, REST_MINUS);
   return result;
@@ -567,7 +567,7 @@ temporal_minus_period(const Temporal *temp, const Period *p)
  * @sqlfunc atTime()
  */
 Temporal *
-temporal_at_periodset(const Temporal *temp, const PeriodSet *ps)
+temporal_at_periodset(const Temporal *temp, const SpanSet *ps)
 {
   Temporal *result = temporal_restrict_periodset(temp, ps, REST_AT);
   return result;
@@ -579,7 +579,7 @@ temporal_at_periodset(const Temporal *temp, const PeriodSet *ps)
  * @sqlfunc minusTime()
  */
 Temporal *
-temporal_minus_periodset(const Temporal *temp, const PeriodSet *ps)
+temporal_minus_periodset(const Temporal *temp, const SpanSet *ps)
 {
   Temporal *result = temporal_restrict_periodset(temp, ps, REST_MINUS);
   return result;

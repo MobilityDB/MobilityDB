@@ -188,7 +188,7 @@ PGDLLEXPORT Datum
 Set_to_spanset(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
-  PeriodSet *result = set_to_spanset(s);
+  SpanSet *result = set_to_spanset(s);
   PG_RETURN_POINTER(result);
 }
 
@@ -379,7 +379,7 @@ PG_FUNCTION_INFO_V1(Periodset_timespan);
 PGDLLEXPORT Datum
 Periodset_timespan(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
+  SpanSet *ps = PG_GETARG_SPANSET_P(0);
   Interval *result = periodset_timespan(ps);
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_POINTER(result);
@@ -394,7 +394,7 @@ PG_FUNCTION_INFO_V1(Periodset_duration);
 PGDLLEXPORT Datum
 Periodset_duration(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
+  SpanSet *ps = PG_GETARG_SPANSET_P(0);
   Interval *result = periodset_duration(ps);
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_POINTER(result);
@@ -409,7 +409,7 @@ PG_FUNCTION_INFO_V1(Periodset_num_timestamps);
 PGDLLEXPORT Datum
 Periodset_num_timestamps(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
+  SpanSet *ps = PG_GETARG_SPANSET_P(0);
   int result = periodset_num_timestamps(ps);
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_INT32(result);
@@ -424,7 +424,7 @@ PG_FUNCTION_INFO_V1(Periodset_start_timestamp);
 PGDLLEXPORT Datum
 Periodset_start_timestamp(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
+  SpanSet *ps = PG_GETARG_SPANSET_P(0);
   TimestampTz result = periodset_start_timestamp(ps);
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_TIMESTAMPTZ(result);
@@ -439,7 +439,7 @@ PG_FUNCTION_INFO_V1(Periodset_end_timestamp);
 PGDLLEXPORT Datum
 Periodset_end_timestamp(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
+  SpanSet *ps = PG_GETARG_SPANSET_P(0);
   TimestampTz result = periodset_end_timestamp(ps);
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_TIMESTAMPTZ(result);
@@ -454,7 +454,7 @@ PG_FUNCTION_INFO_V1(Periodset_timestamp_n);
 PGDLLEXPORT Datum
 Periodset_timestamp_n(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
+  SpanSet *ps = PG_GETARG_SPANSET_P(0);
   int n = PG_GETARG_INT32(1); /* Assume 1-based */
   TimestampTz result;
   bool found = periodset_timestamp_n(ps, n, &result);
@@ -472,7 +472,7 @@ PG_FUNCTION_INFO_V1(Periodset_timestamps);
 PGDLLEXPORT Datum
 Periodset_timestamps(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
+  SpanSet *ps = PG_GETARG_SPANSET_P(0);
   int count;
   TimestampTz *times = periodset_timestamps(ps, &count);
   ArrayType *result = timestamparr_to_array(times, count);
@@ -625,9 +625,9 @@ PG_FUNCTION_INFO_V1(Periodset_shift);
 PGDLLEXPORT Datum
 Periodset_shift(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
+  SpanSet *ps = PG_GETARG_SPANSET_P(0);
   Interval *shift = PG_GETARG_INTERVAL_P(1);
-  PeriodSet *result = periodset_shift_tscale(ps, shift, NULL);
+  SpanSet *result = periodset_shift_tscale(ps, shift, NULL);
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_POINTER(result);
 }
@@ -641,9 +641,9 @@ PG_FUNCTION_INFO_V1(Periodset_tscale);
 PGDLLEXPORT Datum
 Periodset_tscale(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
+  SpanSet *ps = PG_GETARG_SPANSET_P(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
-  PeriodSet *result = periodset_shift_tscale(ps, NULL, duration);
+  SpanSet *result = periodset_shift_tscale(ps, NULL, duration);
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_POINTER(result);
 }
@@ -657,10 +657,10 @@ PG_FUNCTION_INFO_V1(Periodset_shift_tscale);
 PGDLLEXPORT Datum
 Periodset_shift_tscale(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
+  SpanSet *ps = PG_GETARG_SPANSET_P(0);
   Interval *shift = PG_GETARG_INTERVAL_P(1);
   Interval *duration = PG_GETARG_INTERVAL_P(2);
-  PeriodSet *result = periodset_shift_tscale(ps, shift, duration);
+  SpanSet *result = periodset_shift_tscale(ps, shift, duration);
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_POINTER(result);
 }

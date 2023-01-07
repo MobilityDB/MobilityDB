@@ -93,10 +93,10 @@ set min_parallel_table_scan_size=0;
 SET
 set max_parallel_workers_per_gather=2;
 SET
-SELECT numTimestamps(tunion(ts)) from tbl_timestampset_big;
- numtimestamps 
----------------
-         55883
+SELECT numValues(tunion(ts)) from tbl_timestampset_big;
+ numvalues 
+-----------
+     55883
 (1 row)
 
 SELECT extent(temp::period) FROM tbl_tfloat_big;
@@ -334,22 +334,22 @@ WITH Temp(ts) AS (
   SELECT timestampset(array_agg(t))
   FROM generate_series(timestamp '2000-01-01 00:15', timestamp '2000-01-01 00:45', interval '1 sec') t
 )
-SELECT startTimestamp(tunion(ts)) FROM Temp;
-     starttimestamp     
+SELECT startValue(tunion(ts)) FROM Temp;
+       startvalue       
 ------------------------
  2000-01-01 00:00:00+00
 (1 row)
 
-SELECT numTimestamps(tunion(t)) FROM tbl_timestamptz;
- numtimestamps 
----------------
-            99
+SELECT numValues(tunion(t)) FROM tbl_timestamptz;
+ numvalues 
+-----------
+        99
 (1 row)
 
-SELECT numTimestamps(tunion(ts)) FROM tbl_timestampset;
- numtimestamps 
----------------
-           497
+SELECT numValues(tunion(ts)) FROM tbl_timestampset;
+ numvalues 
+-----------
+       497
 (1 row)
 
 SELECT numPeriods(tunion(p)) FROM tbl_period;

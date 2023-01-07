@@ -37,7 +37,7 @@
 /* PostgreSQL */
 #include <postgres.h>
 /* MobilityDB */
-#include "general/timetypes.h"
+#include "general/set.h"
 
 /*****************************************************************************/
 

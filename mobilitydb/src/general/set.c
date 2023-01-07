@@ -162,7 +162,7 @@ Value_to_set(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  TimestampSet *result = value_to_set(d, basetype);
+  Set *result = value_to_set(d, basetype);
   PG_RETURN_POINTER(result);
 }
 
@@ -220,7 +220,7 @@ PG_FUNCTION_INFO_V1(Set_num_values);
 PGDLLEXPORT Datum
 Set_num_values(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  Set *ts = PG_GETARG_SET_P(0);
   int result = set_num_values(ts);
   PG_FREE_IF_COPY(ts, 0);
   PG_RETURN_INT32(result);
@@ -235,7 +235,7 @@ PG_FUNCTION_INFO_V1(Set_start_value);
 PGDLLEXPORT Datum
 Set_start_value(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  Set *ts = PG_GETARG_SET_P(0);
   TimestampTz result = set_start_value(ts);
   PG_FREE_IF_COPY(ts, 0);
   PG_RETURN_TIMESTAMPTZ(result);
@@ -250,7 +250,7 @@ PG_FUNCTION_INFO_V1(Set_end_value);
 PGDLLEXPORT Datum
 Set_end_value(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  Set *ts = PG_GETARG_SET_P(0);
   TimestampTz result = set_end_value(ts);
   PG_FREE_IF_COPY(ts, 0);
   PG_RETURN_TIMESTAMPTZ(result);
@@ -265,7 +265,7 @@ PG_FUNCTION_INFO_V1(Set_value_n);
 PGDLLEXPORT Datum
 Set_value_n(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  Set *ts = PG_GETARG_SET_P(0);
   int n = PG_GETARG_INT32(1); /* Assume 1-based */
   Datum result;
   bool found = set_value_n(ts, n, &result);
@@ -350,9 +350,9 @@ PG_FUNCTION_INFO_V1(Timestampset_shift);
 PGDLLEXPORT Datum
 Timestampset_shift(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  Set *ts = PG_GETARG_SET_P(0);
   Interval *shift = PG_GETARG_INTERVAL_P(1);
-  TimestampSet *result = timestampset_shift_tscale(ts, shift, NULL);
+  Set *result = timestampset_shift_tscale(ts, shift, NULL);
   PG_FREE_IF_COPY(ts, 0);
   PG_RETURN_POINTER(result);
 }
@@ -366,10 +366,10 @@ PG_FUNCTION_INFO_V1(Timestampset_tscale);
 PGDLLEXPORT Datum
 Timestampset_tscale(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  Set *ts = PG_GETARG_SET_P(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
   ensure_valid_duration(duration);
-  TimestampSet *result = timestampset_shift_tscale(ts, NULL, duration);
+  Set *result = timestampset_shift_tscale(ts, NULL, duration);
   PG_FREE_IF_COPY(ts, 0);
   PG_RETURN_POINTER(result);
 }
@@ -383,11 +383,11 @@ PG_FUNCTION_INFO_V1(Timestampset_shift_tscale);
 PGDLLEXPORT Datum
 Timestampset_shift_tscale(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  Set *ts = PG_GETARG_SET_P(0);
   Interval *shift = PG_GETARG_INTERVAL_P(1);
   Interval *duration = PG_GETARG_INTERVAL_P(2);
   ensure_valid_duration(duration);
-  TimestampSet *result = timestampset_shift_tscale(ts, shift, duration);
+  Set *result = timestampset_shift_tscale(ts, shift, duration);
   PG_RETURN_POINTER(result);
 }
 

@@ -556,7 +556,7 @@ timestamp_to_stbox(TimestampTz t)
  * @brief Set a spatiotemporal box from a timestamp set.
  */
 void
-timestampset_set_stbox(const TimestampSet *ts, STBox *box)
+timestampset_set_stbox(const Set *ts, STBox *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBox));
@@ -573,7 +573,7 @@ timestampset_set_stbox(const TimestampSet *ts, STBox *box)
  * @sqlop @p ::
  */
 STBox *
-timestampset_to_stbox(const TimestampSet *ts)
+timestampset_to_stbox(const Set *ts)
 {
   STBox *result = palloc(sizeof(STBox));
   timestampset_set_stbox(ts, result);
@@ -616,7 +616,7 @@ period_to_stbox(const Period *p)
  * @brief Set a spatiotemporal box from a period set.
  */
 void
-periodset_set_stbox(const PeriodSet *ps, STBox *box)
+periodset_set_stbox(const SpanSet *ps, STBox *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBox));
@@ -633,7 +633,7 @@ periodset_set_stbox(const PeriodSet *ps, STBox *box)
  * @sqlop @p ::
  */
 STBox *
-periodset_to_stbox(const PeriodSet *ps)
+periodset_to_stbox(const SpanSet *ps)
 {
   STBox *result = palloc(sizeof(STBox));
   periodset_set_stbox(ps, result);

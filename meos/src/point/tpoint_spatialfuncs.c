@@ -4018,7 +4018,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
     /* It is necessary to sort the periods */
     spanarr_sort(allperiods, totalcount);
   }
-  PeriodSet *ps = spanset_make_free(allperiods, totalcount, NORMALIZE);
+  SpanSet *ps = spanset_make_free(allperiods, totalcount, NORMALIZE);
   TSequence **result = palloc(sizeof(TSequence *) * totalcount);
   *count = tcontseq_at_periodset1(seq, ps, result);
   pfree(ps);
@@ -4094,8 +4094,8 @@ tpointseq_minus_geometry(const TSequence *seq, const GSERIALIZED *gs,
   const Period **periods = palloc(sizeof(Period *) * countinter);
   for (int i = 0; i < countinter; i++)
     periods[i] = &sequences[i]->period;
-  PeriodSet *ps1 = spanset_make(periods, countinter, NORMALIZE_NO);
-  PeriodSet *ps2 = minus_span_spanset(&seq->period, ps1);
+  SpanSet *ps1 = spanset_make(periods, countinter, NORMALIZE_NO);
+  SpanSet *ps2 = minus_span_spanset(&seq->period, ps1);
   pfree(ps1); pfree(periods);
   if (ps2 == NULL)
   {
@@ -4459,9 +4459,9 @@ tpoint_minus_stbox1(const Temporal *temp, const STBox *box)
   Temporal *temp1 = tpoint_at_stbox1(temp, box, UPPER_INC);
   if (temp1 != NULL)
   {
-    PeriodSet *ps1 = temporal_time(temp);
-    PeriodSet *ps2 = temporal_time(temp1);
-    PeriodSet *ps = minus_spanset_spanset(ps1, ps2);
+    SpanSet *ps1 = temporal_time(temp);
+    SpanSet *ps2 = temporal_time(temp1);
+    SpanSet *ps = minus_spanset_spanset(ps1, ps2);
     if (ps != NULL)
     {
       result = temporal_restrict_periodset(temp, ps, REST_MINUS);

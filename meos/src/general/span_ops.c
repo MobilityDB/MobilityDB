@@ -1141,7 +1141,7 @@ union_floatspan_float(const Span *s, double d)
  * @brief Return the union of a period and a timestamp
  * @sqlop @p +
  */
-PeriodSet *
+SpanSet *
 union_period_timestamp(const Period *p, TimestampTz t)
 {
   return union_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);

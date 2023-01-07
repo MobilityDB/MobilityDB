@@ -37,7 +37,7 @@
 /* MEOS */
 #include "general/meos_catalog.h"
 #include "general/span.h"
-#include "general/timetypes.h"
+#include "general/set.h"
 #include "general/temporal.h"
 
 /*****************************************************************************/

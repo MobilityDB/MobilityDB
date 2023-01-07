@@ -102,7 +102,7 @@ spanset_find_value(const SpanSet *ss, Datum v, int *loc)
 
 #if MEOS
 bool
-periodset_find_timestamp(const PeriodSet *ps, TimestampTz t, int *loc)
+periodset_find_timestamp(const SpanSet *ps, TimestampTz t, int *loc)
 {
   return spanset_find_value(ps, TimestampTzGetDatum(t), loc);
 }
@@ -157,7 +157,7 @@ floatspanset_in(const char *str)
  * @ingroup libmeos_setspan_inout
  * @brief Return a period set from its Well-Known Text (WKT) representation.
  */
-PeriodSet *
+SpanSet *
 periodset_in(const char *str)
 {
   return spanset_parse(&str, T_PERIODSET);
@@ -400,7 +400,7 @@ float_to_floaspanset(double d)
  * @brief Cast a timestamp as a period set
  * @sqlop @p ::
  */
-PeriodSet *
+SpanSet *
 timestamp_to_periodset(TimestampTz t)
 {
   return value_to_spanset(t, T_TIMESTAMPTZ);
@@ -480,8 +480,8 @@ spanset_shift(SpanSet *ss, Datum shift)
  * @sqlfunc shift(), tscale(), shiftTscale()
  * @pymeosfunc shift()
  */
-PeriodSet *
-periodset_shift_tscale(const PeriodSet *ps, const Interval *shift,
+SpanSet *
+periodset_shift_tscale(const SpanSet *ps, const Interval *shift,
   const Interval *duration)
 {
   assert(shift != NULL || duration != NULL);
@@ -490,7 +490,7 @@ periodset_shift_tscale(const PeriodSet *ps, const Interval *shift,
   bool instant = (ps->span.lower == ps->span.upper);
 
   /* Copy the input period set to the output period set */
-  PeriodSet *result = spanset_copy(ps);
+  SpanSet *result = spanset_copy(ps);
   /* Shift and/or scale the bounding period */
   period_shift_tscale(&result->span, shift, duration);
   /* Shift and/or scale the periods of the period set */
@@ -576,7 +576,7 @@ floatspanset_lower(const SpanSet *ss)
  * @pymeosfunc lower()
  */
 TimestampTz
-periodset_lower(const PeriodSet *ps)
+periodset_lower(const SpanSet *ps)
 {
   return TimestampTzGetDatum(ps->elems[0].lower);
 }
@@ -621,7 +621,7 @@ floatspanset_upper(const SpanSet *ss)
  * @pymeosfunc upper()
  */
 TimestampTz
-periodset_upper(const PeriodSet *ps)
+periodset_upper(const SpanSet *ps)
 {
   return TimestampTzGetDatum(ps->elems[ps->count - 1].upper);
 }
@@ -675,7 +675,7 @@ spanset_width(const SpanSet *ss)
  * @pymeosfunc timespan()
  */
 Interval *
-periodset_timespan(const PeriodSet *ps)
+periodset_timespan(const SpanSet *ps)
 {
   const Period *p1 = spanset_sp_n(ps, 0);
   const Period *p2 = spanset_sp_n(ps, ps->count - 1);
@@ -690,7 +690,7 @@ periodset_timespan(const PeriodSet *ps)
  * @pymeosfunc duration()
  */
 Interval *
-periodset_duration(const PeriodSet *ps)
+periodset_duration(const SpanSet *ps)
 {
   const Period *p = spanset_sp_n(ps, 0);
   Interval *result = pg_timestamp_mi(p->upper, p->lower);
@@ -712,7 +712,7 @@ periodset_duration(const PeriodSet *ps)
  * @pymeosfunc numTimestamps()
  */
 int
-periodset_num_timestamps(const PeriodSet *ps)
+periodset_num_timestamps(const SpanSet *ps)
 {
   const Period *p = spanset_sp_n(ps, 0);
   TimestampTz prev = p->lower;
@@ -749,7 +749,7 @@ periodset_num_timestamps(const PeriodSet *ps)
  * @pymeosfunc startTimestamp()
  */
 TimestampTz
-periodset_start_timestamp(const PeriodSet *ps)
+periodset_start_timestamp(const SpanSet *ps)
 {
   const Period *p = spanset_sp_n(ps, 0);
   return p->lower;
@@ -762,7 +762,7 @@ periodset_start_timestamp(const PeriodSet *ps)
  * @pymeosfunc endTimestamp()
  */
 TimestampTz
-periodset_end_timestamp(const PeriodSet *ps)
+periodset_end_timestamp(const SpanSet *ps)
 {
   const Period *p = spanset_sp_n(ps, ps->count - 1);
   return p->upper;
@@ -781,7 +781,7 @@ periodset_end_timestamp(const PeriodSet *ps)
  * @pymeosfunc timestampN()
  */
 bool
-periodset_timestamp_n(const PeriodSet *ps, int n, TimestampTz *result)
+periodset_timestamp_n(const SpanSet *ps, int n, TimestampTz *result)
 {
   int pernum = 0;
   const Period *p = spanset_sp_n(ps, pernum);
@@ -831,7 +831,7 @@ periodset_timestamp_n(const PeriodSet *ps, int n, TimestampTz *result)
  * @pymeosfunc timestamps()
  */
 TimestampTz *
-periodset_timestamps(const PeriodSet *ps, int *count)
+periodset_timestamps(const SpanSet *ps, int *count)
 {
   TimestampTz *result = palloc(sizeof(TimestampTz) * 2 * ps->count);
   const Period *p = spanset_sp_n(ps, 0);

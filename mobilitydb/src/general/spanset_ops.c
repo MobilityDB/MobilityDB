@@ -976,7 +976,7 @@ Union_value_spanset(PG_FUNCTION_ARGS)
   Datum d = PG_GETARG_DATUM(0);
   SpanSet *ss = PG_GETARG_SPANSET_P(1);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  PeriodSet *result = union_spanset_value(ss, d, basetype);
+  SpanSet *result = union_spanset_value(ss, d, basetype);
   PG_FREE_IF_COPY(ss, 1);
   PG_RETURN_POINTER(result);
 }
@@ -1029,7 +1029,7 @@ Union_spanset_value(PG_FUNCTION_ARGS)
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
   Datum d = PG_GETARG_DATUM(1);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  PeriodSet *result = union_spanset_value(ss, d, basetype);
+  SpanSet *result = union_spanset_value(ss, d, basetype);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_POINTER(result);
 }
@@ -1184,7 +1184,7 @@ Intersection_spanset_set(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
   Set *s = PG_GETARG_SET_P(1);
-  TimestampSet *result = intersection_spanset_set(ss, s);
+  Set *result = intersection_spanset_set(ss, s);
   PG_FREE_IF_COPY(ss, 0);
   PG_FREE_IF_COPY(s, 1);
   if (! result)
@@ -1269,7 +1269,7 @@ Minus_set_spanset(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
   SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  TimestampSet *result = minus_set_spanset(s, ss);
+  Set *result = minus_set_spanset(s, ss);
   PG_FREE_IF_COPY(s, 0);
   PG_FREE_IF_COPY(ss, 1);
   if (! result)
@@ -1309,7 +1309,7 @@ Minus_spanset_value(PG_FUNCTION_ARGS)
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
   Datum d = PG_GETARG_DATUM(1);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  PeriodSet *result = minus_spanset_value(ss, d, basetype);
+  SpanSet *result = minus_spanset_value(ss, d, basetype);
   PG_FREE_IF_COPY(ss, 0);
   if (! result)
     PG_RETURN_NULL();

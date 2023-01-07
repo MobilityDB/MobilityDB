@@ -31,11 +31,13 @@
  * @brief Temporal text functions: `textcat`, `lower`, `upper`.
  */
 
-#include "general/ttext_textfuncs.h"
-
-/* MobilityDB */
+/* PostgreSQL */
+#include <postgres.h>
+#include <fmgr.h>
+/* MEOS */
 #include "general/temporal.h"
 #include "general/temporal_util.h"
+#include "general/ttext_textfuncs.h"
 
 /*****************************************************************************
  * Text concatenation

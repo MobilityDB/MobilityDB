@@ -36,6 +36,7 @@
 
 /* PostgreSQL */
 #include <postgres.h>
+#include <fmgr.h>
 #include <access/gist.h>
 #include <access/stratnum.h>
 /* MobilityDB */

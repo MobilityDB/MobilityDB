@@ -36,9 +36,10 @@
 
 /* PostgreSQL */
 #include <postgres.h>
+/* MEOS */
+#include "general/set.h"
 /* MobilityDB */
 #include "pg_general/temporal_selfuncs.h"
-#include "general/timetypes.h"
 
 /*****************************************************************************/
 

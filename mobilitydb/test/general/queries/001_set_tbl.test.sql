@@ -100,7 +100,7 @@ SELECT MIN(startValue(round(f, 5))) FROM tbl_floatset;
 SELECT MIN(startValue(shift(i, 5))) FROM tbl_intset;
 SELECT MIN(startValue(shift(b, 5))) FROM tbl_bigintset;
 SELECT MIN(startValue(shift(f, 5))) FROM tbl_floatset;
-SELECT MIN(startTimestamp(shift(ts, '5 min'))) FROM tbl_timestampset;
+SELECT MIN(startValue(shift(ts, '5 min'))) FROM tbl_timestampset;
 
 -------------------------------------------------------------------------------
 -- Accessor functions
@@ -110,11 +110,11 @@ SELECT MAX(storageSize(ts)) FROM tbl_timestampset;
 
 SELECT MIN(lower(period(ts))) FROM tbl_timestampset;
 
-SELECT MIN(numTimestamps(ts)) FROM tbl_timestampset;
-SELECT MIN(startTimestamp(ts)) FROM tbl_timestampset;
-SELECT MIN(endTimestamp(ts)) FROM tbl_timestampset;
-SELECT MIN(timestampN(ts, 1)) FROM tbl_timestampset;
-SELECT MIN(array_length(timestamps(ts), 1)) FROM tbl_timestampset;
+SELECT MIN(numValues(ts)) FROM tbl_timestampset;
+SELECT MIN(startValue(ts)) FROM tbl_timestampset;
+SELECT MIN(endValue(ts)) FROM tbl_timestampset;
+SELECT MIN(valueN(ts, 1)) FROM tbl_timestampset;
+SELECT MIN(array_length(getValues(ts), 1)) FROM tbl_timestampset;
 
 -------------------------------------------------------------------------------
 -- Set_agg and unnest functions
@@ -122,7 +122,7 @@ SELECT MIN(array_length(timestamps(ts), 1)) FROM tbl_timestampset;
 SELECT numValues(set_agg(i)) FROM tbl_int;
 SELECT numValues(set_agg(b)) FROM tbl_bigint;
 SELECT numValues(set_agg(f)) FROM tbl_float;
-SELECT numTimestamps(set_agg(t)) FROM tbl_timestamptz;
+SELECT numValues(set_agg(t)) FROM tbl_timestamptz;
 SELECT numValues(set_agg(t)) FROM tbl_text;
 
 WITH test1(k, i) AS (

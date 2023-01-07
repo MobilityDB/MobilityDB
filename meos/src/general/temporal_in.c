@@ -1682,7 +1682,7 @@ span_from_hexwkb(const char *hexwkb)
  * representation.
  * @sqlfunc periodsetFromBinary()
  */
-PeriodSet *
+SpanSet *
 spanset_from_wkb(const uint8_t *wkb, int size)
 {
   /* We pass ANY span set type, the actual type is read from the byte string */
@@ -1694,12 +1694,12 @@ spanset_from_wkb(const uint8_t *wkb, int size)
  * @brief Return a period set from its WKB representation in hex-encoded ASCII
  * @sqlfunc periodsetFromHexWKB()
  */
-PeriodSet *
+SpanSet *
 spanset_from_hexwkb(const char *hexwkb)
 {
   int size = strlen(hexwkb);
   /* We pass ANY span set type, the actual type is read from the byte string */
-  return DatumGetPeriodSetP(datum_from_hexwkb(hexwkb, size, T_INTSPANSET));
+  return DatumGetSpanSetP(datum_from_hexwkb(hexwkb, size, T_INTSPANSET));
 }
 
 /*****************************************************************************/

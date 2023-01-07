@@ -173,7 +173,7 @@ SELECT MIN(startValue(shift(f, 5))) FROM tbl_floatset;
  8.886242617199674
 (1 row)
 
-SELECT MIN(startTimestamp(shift(ts, '5 min'))) FROM tbl_timestampset;
+SELECT MIN(startValue(shift(ts, '5 min'))) FROM tbl_timestampset;
           min           
 ------------------------
  2001-01-02 01:53:00+00
@@ -197,31 +197,31 @@ SELECT MIN(lower(period(ts))) FROM tbl_timestampset;
  2001-01-02 01:48:00+00
 (1 row)
 
-SELECT MIN(numTimestamps(ts)) FROM tbl_timestampset;
+SELECT MIN(numValues(ts)) FROM tbl_timestampset;
  min 
 -----
    1
 (1 row)
 
-SELECT MIN(startTimestamp(ts)) FROM tbl_timestampset;
+SELECT MIN(startValue(ts)) FROM tbl_timestampset;
           min           
 ------------------------
  2001-01-02 01:48:00+00
 (1 row)
 
-SELECT MIN(endTimestamp(ts)) FROM tbl_timestampset;
+SELECT MIN(endValue(ts)) FROM tbl_timestampset;
           min           
 ------------------------
  2001-01-02 02:09:00+00
 (1 row)
 
-SELECT MIN(timestampN(ts, 1)) FROM tbl_timestampset;
+SELECT MIN(valueN(ts, 1)) FROM tbl_timestampset;
           min           
 ------------------------
  2001-01-02 01:48:00+00
 (1 row)
 
-SELECT MIN(array_length(timestamps(ts), 1)) FROM tbl_timestampset;
+SELECT MIN(array_length(getValues(ts), 1)) FROM tbl_timestampset;
  min 
 -----
    1
@@ -245,10 +245,10 @@ SELECT numValues(set_agg(f)) FROM tbl_float;
         99
 (1 row)
 
-SELECT numTimestamps(set_agg(t)) FROM tbl_timestamptz;
- numtimestamps 
----------------
-            88
+SELECT numValues(set_agg(t)) FROM tbl_timestamptz;
+ numvalues 
+-----------
+        88
 (1 row)
 
 SELECT numValues(set_agg(t)) FROM tbl_text;

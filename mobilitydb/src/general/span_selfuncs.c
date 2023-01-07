@@ -864,7 +864,7 @@ time_const_to_period(Node *other, Period *period)
   {
     /* The right argument is a TimestampSet constant. We convert it into
      * its bounding period. */
-    const TimestampSet *ts = DatumGetTimestampSetP(((Const *) other)->constvalue);
+    const Set *ts = DatumGetSetP(((Const *) other)->constvalue);
     set_set_span(ts, period);
   }
   else if (timetype == T_PERIOD)
@@ -877,7 +877,7 @@ time_const_to_period(Node *other, Period *period)
   {
     /* The right argument is a PeriodSet constant. We convert it into
      * its bounding period. */
-    const PeriodSet *ps = DatumGetPeriodSetP(((Const *) other)->constvalue);
+    const SpanSet *ps = DatumGetSpanSetP(((Const *) other)->constvalue);
     memcpy(period, &ps->span, sizeof(Period));
   }
   return;

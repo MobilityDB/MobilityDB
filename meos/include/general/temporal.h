@@ -39,7 +39,7 @@
 /* MEOS */
 #include "general/meos_catalog.h"
 #include "general/span.h"
-#include "general/timetypes.h"
+#include "general/set.h"
 #include "general/tbox.h"
 #include "point/stbox.h"
 
@@ -52,11 +52,11 @@ extern char *text_to_cstring(const text *t);
 #define C_COLLATION_OID 950
 #define POSIX_COLLATION_OID 951
 
-#if MEOS
+#ifndef FMGR_H
   /* To avoid including fmgr.h However this implies that the text values must
    * be ALWAYS detoasted */
   #define DatumGetTextP(X)      ((text *) DatumGetPointer(X)) // PG_DETOAST_DATUM(X))
-#endif
+#endif /* FMGR_H */
 
 /**
  * Floating point precision

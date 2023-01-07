@@ -90,12 +90,12 @@ _PG_init(void)
 /**
  * @brief Return the size in bytes to read from toast to get the basic
  * information from a variable-length time type: Time struct (i.e., Set
- * or PeriodSet) and bounding box size
+ * or SpanSet) and bounding box size
 */
 uint32_t
 time_max_header_size(void)
 {
-  return double_pad(Max(sizeof(Set), sizeof(PeriodSet)));
+  return double_pad(Max(sizeof(Set), sizeof(SpanSet)));
 }
 
 /*****************************************************************************
@@ -701,7 +701,7 @@ PGDLLEXPORT Datum
 Tdiscseq_from_base_time(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
+  Set *ts = PG_GETARG_SET_P(1);
   meosType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
   TSequence *result = tdiscseq_from_base_time(value, temptype, ts);
   PG_FREE_IF_COPY(ts, 1);
@@ -738,7 +738,7 @@ PGDLLEXPORT Datum
 Tsequenceset_from_base_time(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
+  SpanSet *ps = PG_GETARG_SPANSET_P(1);
   meosType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
   interpType interp = temptype_continuous(temptype) ? LINEAR : STEPWISE;
   if (PG_NARGS() > 2)
@@ -1075,7 +1075,7 @@ PGDLLEXPORT Datum
 Temporal_time(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  PeriodSet *result = temporal_time(temp);
+  SpanSet *result = temporal_time(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -2263,7 +2263,7 @@ PGDLLEXPORT Datum
 Temporal_at_timestampset(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
+  Set *ts = PG_GETARG_SET_P(1);
   Temporal *result = temporal_restrict_timestampset(temp, ts, REST_AT);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ts, 1);
@@ -2282,7 +2282,7 @@ PGDLLEXPORT Datum
 Temporal_minus_timestampset(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
+  Set *ts = PG_GETARG_SET_P(1);
   Temporal *result = temporal_restrict_timestampset(temp, ts, REST_MINUS);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ts, 1);
@@ -2341,7 +2341,7 @@ PGDLLEXPORT Datum
 Temporal_at_periodset(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
+  SpanSet *ps = PG_GETARG_SPANSET_P(1);
   Temporal *result = temporal_restrict_periodset(temp, ps, REST_AT);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ps, 1);
@@ -2360,7 +2360,7 @@ PGDLLEXPORT Datum
 Temporal_minus_periodset(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
+  SpanSet *ps = PG_GETARG_SPANSET_P(1);
   Temporal *result = temporal_restrict_periodset(temp, ps, REST_MINUS);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ps, 1);
@@ -2438,7 +2438,7 @@ PGDLLEXPORT Datum
 Temporal_delete_timestampset(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
+  Set *ts = PG_GETARG_SET_P(1);
   bool connect = PG_GETARG_BOOL(2);
   Temporal *result = temporal_delete_timestampset(temp, ts, connect);
   PG_FREE_IF_COPY(temp, 0);
@@ -2477,7 +2477,7 @@ PGDLLEXPORT Datum
 Temporal_delete_periodset(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
+  SpanSet *ps = PG_GETARG_SPANSET_P(1);
   bool connect = PG_GETARG_BOOL(2);
   Temporal *result = temporal_delete_periodset(temp, ps, connect);
   PG_FREE_IF_COPY(temp, 0);
@@ -2517,7 +2517,7 @@ PGDLLEXPORT Datum
 Temporal_overlaps_timestampset(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
+  Set *ts = PG_GETARG_SET_P(1);
   bool result = temporal_overlaps_timestampset(temp, ts);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ts, 1);
@@ -2550,7 +2550,7 @@ PGDLLEXPORT Datum
 Temporal_overlaps_periodset(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
+  SpanSet *ps = PG_GETARG_SPANSET_P(1);
   bool result = temporal_overlaps_periodset(temp, ps);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ps, 1);

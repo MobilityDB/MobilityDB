@@ -119,7 +119,7 @@ Datum
 boxop_timestampset_temporal_ext(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *))
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  Set *ts = PG_GETARG_SET_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   bool result = boxop_temporal_timestampset(temp, ts, func, true);
   PG_FREE_IF_COPY(ts, 0);
@@ -138,7 +138,7 @@ boxop_temporal_timestampset_ext(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
+  Set *ts = PG_GETARG_SET_P(1);
   bool result = boxop_temporal_timestampset(temp, ts, func, false);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ts, 1);
@@ -189,7 +189,7 @@ Datum
 boxop_periodset_temporal_ext(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *))
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
+  SpanSet *ps = PG_GETARG_SPANSET_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   bool result = boxop_temporal_periodset(temp, ps, func, true);
   PG_FREE_IF_COPY(ps, 0);
@@ -208,7 +208,7 @@ boxop_temporal_periodset_ext(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
+  SpanSet *ps = PG_GETARG_SPANSET_P(1);
   bool result = boxop_temporal_periodset(temp, ps, func, false);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ps, 1);

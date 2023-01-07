@@ -187,6 +187,10 @@ CREATE FUNCTION timestampset_analyze(internal)
   -- RETURNS boolean
   -- AS 'MODULE_PATHNAME', 'Geoset_analyze'
   -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- CREATE FUNCTION geoset_analyze(internal)
+  -- RETURNS boolean
+  -- AS 'MODULE_PATHNAME', 'Geoset_analyze'
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE TYPE intset (
   internallength = variable,
@@ -264,6 +268,8 @@ CREATE TYPE geogset (
   storage = extended
   -- , analyze = geoset_analyze
 );
+
+/******************************************************************************/
 
 -- Input/output in WKB and HexWKB format
 
@@ -584,7 +590,7 @@ CREATE FUNCTION numValues(textset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_num_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION numTimestamps(timestampset)
+CREATE FUNCTION numValues(timestampset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_num_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -613,7 +619,7 @@ CREATE FUNCTION startValue(textset)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Set_start_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION startTimestamp(timestampset)
+CREATE FUNCTION startValue(timestampset)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Set_start_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -642,7 +648,7 @@ CREATE FUNCTION endValue(textset)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Set_start_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION endTimestamp(timestampset)
+CREATE FUNCTION endValue(timestampset)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Set_end_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -671,7 +677,7 @@ CREATE FUNCTION valueN(textset, integer)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Set_value_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION timestampN(timestampset, integer)
+CREATE FUNCTION valueN(timestampset, integer)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Set_value_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -700,7 +706,7 @@ CREATE FUNCTION getValues(textset)
   RETURNS text[]
   AS 'MODULE_PATHNAME', 'Set_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION timestamps(timestampset)
+CREATE FUNCTION getValues(timestampset)
   RETURNS timestamptz[]
   AS 'MODULE_PATHNAME', 'Set_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

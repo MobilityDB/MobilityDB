@@ -31,8 +31,8 @@
  * @brief Basic functions for set of (distinct) timestamps.
  */
 
-#ifndef __TIMESTAMPSET_H__
-#define __TIMESTAMPSET_H__
+#ifndef __SET_H__
+#define __SET_H__
 
 /*****************************************************************************/
 
@@ -42,8 +42,8 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-/* MobilityDB */
-#include "general/timetypes.h"
+/* MEOS */
+#include <meos.h>
 
 #if MEOS
   #define DatumGetSetP(X)      ((Set *) DatumGetPointer(X))
@@ -83,4 +83,4 @@ extern bool set_find_value(const Set *s, Datum, int *loc);
 
 /*****************************************************************************/
 
-#endif
+#endif /* __SET_H__ */

@@ -88,6 +88,10 @@ CREATE FUNCTION set_contains(geogset, geography)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_contains(geogset, geogset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contains_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
   PROCEDURE = set_contains,
@@ -128,14 +132,14 @@ CREATE OPERATOR @> (
 CREATE OPERATOR @> (
   PROCEDURE = set_contains,
   LEFTARG = textset, RIGHTARG = text,
-  COMMUTATOR = <@,
-  RESTRICT = span_sel, JOIN = span_joinsel
+  COMMUTATOR = <@
+  -- RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR @> (
   PROCEDURE = set_contains,
   LEFTARG = textset, RIGHTARG = textset,
-  COMMUTATOR = <@,
-  RESTRICT = span_sel, JOIN = span_joinsel
+  COMMUTATOR = <@
+  -- RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR @> (
   PROCEDURE = set_contains,
@@ -152,15 +156,29 @@ CREATE OPERATOR @> (
 CREATE OPERATOR @> (
   PROCEDURE = set_contains,
   LEFTARG = geomset, RIGHTARG = geometry,
-  COMMUTATOR = <@,
-  RESTRICT = span_sel, JOIN = span_joinsel
+  COMMUTATOR = <@
+  -- RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR @> (
   PROCEDURE = set_contains,
   LEFTARG = geomset, RIGHTARG = geomset,
-  COMMUTATOR = <@,
-  RESTRICT = span_sel, JOIN = span_joinsel
+  COMMUTATOR = <@
+  -- RESTRICT = span_sel, JOIN = span_joinsel
 );
+CREATE OPERATOR @> (
+  PROCEDURE = set_contains,
+  LEFTARG = geogset, RIGHTARG = geography,
+  COMMUTATOR = <@
+  -- RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR @> (
+  PROCEDURE = set_contains,
+  LEFTARG = geogset, RIGHTARG = geogset,
+  COMMUTATOR = <@
+  -- RESTRICT = span_sel, JOIN = span_joinsel
+);
+
+/******************************************************************************/
 
 CREATE FUNCTION set_contained(integer, intset)
   RETURNS boolean
@@ -210,6 +228,14 @@ CREATE FUNCTION set_contained(geomset, geomset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_contained(geography, geogset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contained_value_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_contained(geogset, geogset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contained_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
   PROCEDURE = set_contained,
@@ -250,14 +276,14 @@ CREATE OPERATOR <@ (
 CREATE OPERATOR <@ (
   PROCEDURE = set_contained,
   LEFTARG = text, RIGHTARG = textset,
-  COMMUTATOR = @>,
-  RESTRICT = span_sel, JOIN = span_joinsel
+  COMMUTATOR = @>
+  -- RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <@ (
   PROCEDURE = set_contained,
   LEFTARG = textset, RIGHTARG = textset,
-  COMMUTATOR = @>,
-  RESTRICT = span_sel, JOIN = span_joinsel
+  COMMUTATOR = @>
+  -- RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <@ (
   PROCEDURE = set_contained,
@@ -274,15 +300,29 @@ CREATE OPERATOR <@ (
 CREATE OPERATOR <@ (
   PROCEDURE = set_contained,
   LEFTARG = geometry, RIGHTARG = geomset,
-  COMMUTATOR = @>,
-  RESTRICT = span_sel, JOIN = span_joinsel
+  COMMUTATOR = @>
+  -- RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <@ (
   PROCEDURE = set_contained,
   LEFTARG = geomset, RIGHTARG = geomset,
-  COMMUTATOR = @>,
-  RESTRICT = span_sel, JOIN = span_joinsel
+  COMMUTATOR = @>
+  -- RESTRICT = span_sel, JOIN = span_joinsel
 );
+CREATE OPERATOR <@ (
+  PROCEDURE = set_contained,
+  LEFTARG = geography, RIGHTARG = geogset,
+  COMMUTATOR = @>
+  -- RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR <@ (
+  PROCEDURE = set_contained,
+  LEFTARG = geogset, RIGHTARG = geogset,
+  COMMUTATOR = @>
+  -- RESTRICT = span_sel, JOIN = span_joinsel
+);
+
+/******************************************************************************/
 
 CREATE FUNCTION set_overlaps(intset, intset)
   RETURNS boolean
@@ -334,8 +374,8 @@ CREATE OPERATOR && (
 CREATE OPERATOR && (
   PROCEDURE = set_overlaps,
   LEFTARG = textset, RIGHTARG = textset,
-  COMMUTATOR = &&,
-  RESTRICT = span_sel, JOIN = span_joinsel
+  COMMUTATOR = &&
+  -- RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR && (
   PROCEDURE = set_overlaps,
@@ -346,15 +386,17 @@ CREATE OPERATOR && (
 CREATE OPERATOR && (
   PROCEDURE = set_overlaps,
   LEFTARG = geomset, RIGHTARG = geomset,
-  COMMUTATOR = &&,
-  RESTRICT = span_sel, JOIN = span_joinsel
+  COMMUTATOR = &&
+  -- RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR && (
   PROCEDURE = set_overlaps,
   LEFTARG = geogset, RIGHTARG = geogset,
-  COMMUTATOR = &&,
-  RESTRICT = span_sel, JOIN = span_joinsel
+  COMMUTATOR = &&
+  -- RESTRICT = span_sel, JOIN = span_joinsel
 );
+
+/******************************************************************************/
 
 CREATE FUNCTION set_left(integer, intset)
   RETURNS boolean
@@ -474,20 +516,20 @@ CREATE OPERATOR << (
 CREATE OPERATOR << (
   PROCEDURE = set_left,
   LEFTARG = text, RIGHTARG = textset,
-  COMMUTATOR = >>,
-  RESTRICT = span_sel, JOIN = span_joinsel
+  COMMUTATOR = >>
+  -- RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR << (
   PROCEDURE = set_left,
   LEFTARG = textset, RIGHTARG = text,
-  COMMUTATOR = >>,
-  RESTRICT = span_sel, JOIN = span_joinsel
+  COMMUTATOR = >>
+  -- RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR << (
   PROCEDURE = set_left,
   LEFTARG = textset, RIGHTARG = textset,
-  COMMUTATOR = >>,
-  RESTRICT = span_sel, JOIN = span_joinsel
+  COMMUTATOR = >>
+  -- RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <<# (
   PROCEDURE = set_left,
@@ -507,6 +549,8 @@ CREATE OPERATOR <<# (
   COMMUTATOR = #>>,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
+
+/******************************************************************************/
 
 CREATE FUNCTION set_right(integer, intset)
   RETURNS boolean
@@ -626,20 +670,20 @@ CREATE OPERATOR >> (
 CREATE OPERATOR >> (
   PROCEDURE = set_right,
   LEFTARG = text, RIGHTARG = textset,
-  COMMUTATOR = <<,
-  RESTRICT = span_sel, JOIN = span_joinsel
+  COMMUTATOR = <<
+  -- RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR >> (
   PROCEDURE = set_right,
   LEFTARG = textset, RIGHTARG = text,
-  COMMUTATOR = <<,
-  RESTRICT = span_sel, JOIN = span_joinsel
+  COMMUTATOR = <<
+  -- RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR >> (
   PROCEDURE = set_right,
   LEFTARG = textset, RIGHTARG = textset,
-  COMMUTATOR = <<,
-  RESTRICT = span_sel, JOIN = span_joinsel
+  COMMUTATOR = <<
+  -- RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR #>> (
   PROCEDURE = set_right,
@@ -659,6 +703,8 @@ CREATE OPERATOR #>> (
   COMMUTATOR = <<#,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
+
+/******************************************************************************/
 
 CREATE FUNCTION set_overleft(integer, intset)
   RETURNS boolean
@@ -768,34 +814,36 @@ CREATE OPERATOR &< (
 );
 CREATE OPERATOR &< (
   PROCEDURE = set_overleft,
-  LEFTARG = text, RIGHTARG = textset,
-  RESTRICT = span_sel, JOIN = span_joinsel
+  LEFTARG = text, RIGHTARG = textset
+  -- RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR &< (
   PROCEDURE = set_overleft,
-  LEFTARG = textset, RIGHTARG = text,
-  RESTRICT = span_sel, JOIN = span_joinsel
+  LEFTARG = textset, RIGHTARG = text
+  -- RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR &< (
   PROCEDURE = set_overleft,
-  LEFTARG = textset, RIGHTARG = textset,
-  RESTRICT = span_sel, JOIN = span_joinsel
+  LEFTARG = textset, RIGHTARG = textset
+  -- RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR &<# (
-  PROCEDURE = set_Overleft,
+  PROCEDURE = set_overleft,
   LEFTARG = timestamptz, RIGHTARG = timestampset,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR &<# (
-  PROCEDURE = set_Overleft,
+  PROCEDURE = set_overleft,
   LEFTARG = timestampset, RIGHTARG = timestamptz,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR &<# (
-  PROCEDURE = set_Overleft,
+  PROCEDURE = set_overleft,
   LEFTARG = timestampset, RIGHTARG = timestampset,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
+
+/******************************************************************************/
 
 CREATE FUNCTION set_overright(integer, intset)
   RETURNS boolean
@@ -905,18 +953,18 @@ CREATE OPERATOR &> (
 );
 CREATE OPERATOR &> (
   PROCEDURE = set_overright,
-  LEFTARG = text, RIGHTARG = textset,
-  RESTRICT = span_sel, JOIN = span_joinsel
+  LEFTARG = text, RIGHTARG = textset
+  -- RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR &> (
   PROCEDURE = set_overright,
-  LEFTARG = textset, RIGHTARG = text,
-  RESTRICT = span_sel, JOIN = span_joinsel
+  LEFTARG = textset, RIGHTARG = text
+  -- RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR &> (
   PROCEDURE = set_overright,
-  LEFTARG = textset, RIGHTARG = textset,
-  RESTRICT = span_sel, JOIN = span_joinsel
+  LEFTARG = textset, RIGHTARG = textset
+  -- RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR #&> (
   PROCEDURE = set_overright,
@@ -1797,10 +1845,6 @@ CREATE FUNCTION set_distance(timestampset, timestampset)
   AS 'MODULE_PATHNAME', 'Distance_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION set_distance(geometry, geometry)
-  RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_value_value'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_distance(geometry, geomset)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_value_set'
@@ -1814,10 +1858,6 @@ CREATE FUNCTION set_distance(geomset, geomset)
   AS 'MODULE_PATHNAME', 'Distance_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION set_distance(geography, geography)
-  RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_value_value'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_distance(geography, geogset)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_value_set'

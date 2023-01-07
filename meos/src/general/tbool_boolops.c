@@ -135,13 +135,13 @@ boolop_tbool_tbool(const Temporal *temp1, const Temporal *temp2,
  * @ingroup libmeos_temporal_bool
  * @brief Return the time when the temporal boolean has value true.
  */
-PeriodSet *
+SpanSet *
 tbool_when_true(const Temporal *temp)
 {
   Temporal *temp1 = temporal_restrict_value(temp, BoolGetDatum(true), REST_AT);
   if (! temp1)
     return NULL;
-  PeriodSet *result = temporal_time(temp1);
+  SpanSet *result = temporal_time(temp1);
   return result;
 }
 
