@@ -239,7 +239,7 @@ tbox_parse(const char **str)
 {
   bool hasx = false, hast = false;
   Span *span = NULL;
-  Period *period = NULL;
+  Span *period = NULL;
 
   p_whitespace(str);
   if (strncasecmp(*str, "TBOX", 4) == 0)

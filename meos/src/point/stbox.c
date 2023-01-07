@@ -245,7 +245,7 @@ stbox_out(const STBox *box, int maxdd)
 STBox *
 stbox_make(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin,
   double xmax, double ymin, double ymax, double zmin, double zmax,
-  const Period *p)
+  const Span *p)
 {
   /* Note: zero-fill is done in function stbox_set */
   STBox *result = palloc(sizeof(STBox));
@@ -263,7 +263,7 @@ stbox_make(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin,
 void
 stbox_set(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin,
   double xmax, double ymin, double ymax, double zmin, double zmax,
-  const Period *p, STBox *box)
+  const Span *p, STBox *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBox));
@@ -399,7 +399,7 @@ stbox_to_geo(const STBox *box)
  * @brief Cast a temporal box as a period
  * @sqlop @p ::
  */
-Period *
+Span *
 stbox_to_period(const STBox *box)
 {
   if (! MOBDB_FLAGS_GET_T(box->flags))
@@ -586,7 +586,7 @@ timestampset_to_stbox(const Set *ts)
  * @brief Set a spatiotemporal box from a period.
  */
 void
-period_set_stbox(const Period *p, STBox *box)
+period_set_stbox(const Span *p, STBox *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBox));
@@ -603,7 +603,7 @@ period_set_stbox(const Period *p, STBox *box)
  * @sqlop @p ::
  */
 STBox *
-period_to_stbox(const Period *p)
+period_to_stbox(const Span *p)
 {
   STBox *result = palloc(sizeof(STBox));
   period_set_stbox(p, result);
@@ -665,7 +665,7 @@ geo_timestamp_to_stbox(const GSERIALIZED *gs, TimestampTz t)
  * @sqlfunc stbox()
  */
 STBox *
-geo_period_to_stbox(const GSERIALIZED *gs, const Period *p)
+geo_period_to_stbox(const GSERIALIZED *gs, const Span *p)
 {
   if (gserialized_is_empty(gs))
     return NULL;
@@ -1423,7 +1423,7 @@ inter_stbox_stbox(const STBox *box1, const STBox *box2, STBox *result)
     return false;
 
   double xmin = 0, xmax = 0, ymin = 0, ymax = 0, zmin = 0, zmax = 0;
-  Period period;
+  Span period;
   if (hasx)
   {
     xmin = Max(box1->xmin, box2->xmin);

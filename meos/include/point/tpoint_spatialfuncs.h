@@ -173,7 +173,7 @@ extern TSequence **tpointseq_at_geometry(const TSequence *seq,
 extern Temporal *tpoint_at_stbox1(const Temporal *temp, const STBox *box,
   bool upper_inc);
 extern Temporal *tpoint_minus_stbox(const Temporal *temp, const STBox *box);
-extern Period **tpointseq_interperiods(const TSequence *seq,
+extern Span **tpointseq_interperiods(const TSequence *seq,
   GSERIALIZED *gsinter, int *count);
 
 /*****************************************************************************/

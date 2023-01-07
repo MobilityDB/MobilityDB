@@ -588,8 +588,8 @@ tinstarr_sort_cmp(const TInstant **l, const TInstant **r)
 static int
 tseqarr_sort_cmp(TSequence **l, TSequence **r)
 {
-  Period lp = (*l)->period;
-  Period rp = (*r)->period;
+  Span lp = (*l)->period;
+  Span rp = (*r)->period;
   return span_cmp(&lp, &rp);
 }
 

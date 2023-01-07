@@ -708,7 +708,7 @@ tpoint_spgist_get_stbox(const ScanKeyData *scankey, STBox *result)
   }
   else if (type == T_PERIOD)
   {
-    Period *p = DatumGetSpanP(scankey->sk_argument);
+    Span *p = DatumGetSpanP(scankey->sk_argument);
     period_set_stbox(p, result);
   }
   else if (type == T_PERIODSET)

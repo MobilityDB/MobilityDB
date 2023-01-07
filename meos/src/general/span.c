@@ -298,7 +298,7 @@ floatspan_in(const char *str)
  * @ingroup libmeos_setspan_inout
  * @brief Return a period from its Well-Known Text (WKT) representation.
  */
-Period *
+Span *
 period_in(const char *str)
 {
   return span_parse(&str, T_PERIOD, true, true);
@@ -454,7 +454,7 @@ floatspan_make(double lower, double upper, bool lower_inc, bool upper_inc)
  * @brief Construct a period from the bounds.
  * @sqlfunc period()
  */
-Period *
+Span *
 period_make(TimestampTz lower, TimestampTz upper, bool lower_inc,
   bool upper_inc)
 {
@@ -599,10 +599,10 @@ float_to_floaspan(double d)
  * @brief Cast a timestamp as a period
  * @sqlop @p ::
  */
-Period *
+Span *
 timestamp_to_period(TimestampTz t)
 {
-  Period *result = span_make(TimestampTzGetDatum(t), TimestampTzGetDatum(t),
+  Span *result = span_make(TimestampTzGetDatum(t), TimestampTzGetDatum(t),
     true, true, T_TIMESTAMPTZ);
   return result;
 }
@@ -652,7 +652,7 @@ floatspan_lower(const Span *s)
  * @pymeosfunc lower()
  */
 TimestampTz
-period_lower(const Period *p)
+period_lower(const Span *p)
 {
   return TimestampTzGetDatum(p->lower);
 }
@@ -697,7 +697,7 @@ floatspan_upper(const Span *s)
  * @pymeosfunc upper()
  */
 TimestampTz
-period_upper(const Period *p)
+period_upper(const Span *p)
 {
   return TimestampTzGetDatum(p->upper);
 }
@@ -852,7 +852,7 @@ span_shift(Span *s, Datum shift)
  * @pymeosfunc shift()
  */
 void
-period_shift_tscale(Period *p, const Interval *shift, const Interval *duration)
+period_shift_tscale(Span *p, const Interval *shift, const Interval *duration)
 {
   TimestampTz lower = DatumGetTimestampTz(p->lower);
   TimestampTz upper = DatumGetTimestampTz(p->upper);

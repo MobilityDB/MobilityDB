@@ -83,7 +83,7 @@ temporal_max_header_size(void)
  */
 Datum
 boxop_timestamp_temporal_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const Period *, const Period *))
+  bool (*func)(const Span *, const Span *))
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
@@ -100,7 +100,7 @@ boxop_timestamp_temporal_ext(FunctionCallInfo fcinfo,
  */
 Datum
 boxop_temporal_timestamp_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const Period *, const Period *))
+  bool (*func)(const Span *, const Span *))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
@@ -117,7 +117,7 @@ boxop_temporal_timestamp_ext(FunctionCallInfo fcinfo,
  */
 Datum
 boxop_timestampset_temporal_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const Period *, const Period *))
+  bool (*func)(const Span *, const Span *))
 {
   Set *ts = PG_GETARG_SET_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
@@ -135,7 +135,7 @@ boxop_timestampset_temporal_ext(FunctionCallInfo fcinfo,
  */
 Datum
 boxop_temporal_timestampset_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const Period *, const Period *))
+  bool (*func)(const Span *, const Span *))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Set *ts = PG_GETARG_SET_P(1);
@@ -153,9 +153,9 @@ boxop_temporal_timestampset_ext(FunctionCallInfo fcinfo,
  */
 Datum
 boxop_period_temporal_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const Period *, const Period *))
+  bool (*func)(const Span *, const Span *))
 {
-  Period *p = PG_GETARG_SPAN_P(0);
+  Span *p = PG_GETARG_SPAN_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   bool result = boxop_temporal_period(temp, p, func, true);
   PG_FREE_IF_COPY(temp, 1);
@@ -170,10 +170,10 @@ boxop_period_temporal_ext(FunctionCallInfo fcinfo,
  */
 Datum
 boxop_temporal_period_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const Period *, const Period *))
+  bool (*func)(const Span *, const Span *))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Period *p = PG_GETARG_SPAN_P(1);
+  Span *p = PG_GETARG_SPAN_P(1);
   bool result = boxop_temporal_period(temp, p, func, false);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);
@@ -187,7 +187,7 @@ boxop_temporal_period_ext(FunctionCallInfo fcinfo,
  */
 Datum
 boxop_periodset_temporal_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const Period *, const Period *))
+  bool (*func)(const Span *, const Span *))
 {
   SpanSet *ps = PG_GETARG_SPANSET_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
@@ -205,7 +205,7 @@ boxop_periodset_temporal_ext(FunctionCallInfo fcinfo,
  */
 Datum
 boxop_temporal_periodset_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const Period *, const Period *))
+  bool (*func)(const Span *, const Span *))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   SpanSet *ps = PG_GETARG_SPANSET_P(1);
@@ -223,7 +223,7 @@ boxop_temporal_periodset_ext(FunctionCallInfo fcinfo,
  */
 Datum
 boxop_temporal_temporal_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const Period *, const Period *))
+  bool (*func)(const Span *, const Span *))
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);

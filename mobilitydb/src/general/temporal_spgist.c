@@ -57,7 +57,7 @@ PGDLLEXPORT Datum
 Temporal_spgist_compress(PG_FUNCTION_ARGS)
 {
   Datum tempdatum = PG_GETARG_DATUM(0);
-  Period *result = palloc(sizeof(Period));
+  Span *result = palloc(sizeof(Span));
   temporal_bbox_slice(tempdatum, result);
   PG_RETURN_SPAN_P(result);
 }

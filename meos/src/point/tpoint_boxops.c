@@ -138,7 +138,7 @@ tgeogpointseq_expand_stbox(TSequence *seq, const TInstant *inst)
   edge_calculate_gbox(&A1, &A2, &edge_gbox);
   bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
   int32 srid = tpointseq_srid(seq);
-  Period period;
+  Span period;
   span_set(last->t, inst->t, true, true, T_TIMESTAMPTZ, &period);
   STBox box;
   stbox_set(true, hasz, true, srid, edge_gbox.xmin, edge_gbox.xmax,
@@ -233,7 +233,7 @@ tgeogpointinstarr_set_stbox(const TInstant **instants, int count,
   tgeogpointinstarr_set_gbox(instants, count, interp, &gbox);
   bool hasz = MOBDB_FLAGS_GET_Z(instants[0]->flags);
   int32 srid = tpointinst_srid(instants[0]);
-  Period period;
+  Span period;
   span_set(instants[0]->t, instants[count - 1]->t, true, true, T_TIMESTAMPTZ,
     &period);
   stbox_set(true, hasz, true, srid, gbox.xmin, gbox.xmax,
@@ -261,7 +261,7 @@ tgeogpointseq_set_stbox(const TSequence *seq, STBox *box)
   tgeogpointseq_set_gbox(seq, &gbox);
   bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
   int32 srid = tpointseq_srid(seq);
-  Period period;
+  Span period;
   span_set(tsequence_inst_n(seq, 0)->t,
     tsequence_inst_n(seq, seq->count - 1)->t, true, true, T_TIMESTAMPTZ,
     &period);

@@ -976,7 +976,7 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   {
     Datum value;
     Temporal *temp;
-    Period period;
+    Span period;
     SpanBound period_lower, period_upper;
     bool is_null, is_copy;
 

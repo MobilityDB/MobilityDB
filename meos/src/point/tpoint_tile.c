@@ -405,7 +405,7 @@ stbox_tile_set(double x, double y, double z, TimestampTz t, double size,
   double ymin = y;
   double ymax = ymin + size;
   double zmin = 0, zmax = 0;
-  Period p;
+  Span p;
   if (hasz)
   {
     zmin = z;

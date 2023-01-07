@@ -46,23 +46,23 @@
 /*****************************************************************************/
 
 extern Datum boxop_timestamp_temporal_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const Period *, const Period *));
+  bool (*func)(const Span *, const Span *));
 extern Datum boxop_temporal_timestamp_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const Period *, const Period *));
+  bool (*func)(const Span *, const Span *));
 extern Datum boxop_timestampset_temporal_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const Period *, const Period *));
+  bool (*func)(const Span *, const Span *));
 extern Datum boxop_temporal_timestampset_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const Period *, const Period *));
+  bool (*func)(const Span *, const Span *));
 extern Datum boxop_period_temporal_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const Period *, const Period *));
+  bool (*func)(const Span *, const Span *));
 extern Datum boxop_temporal_period_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const Period *, const Period *));
+  bool (*func)(const Span *, const Span *));
 extern Datum boxop_periodset_temporal_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const Period *, const Period *));
+  bool (*func)(const Span *, const Span *));
 extern Datum boxop_temporal_periodset_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const Period *, const Period *));
+  bool (*func)(const Span *, const Span *));
 extern Datum boxop_temporal_temporal_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const Period *, const Period *));
+  bool (*func)(const Span *, const Span *));
 
 extern Datum boxop_number_tnumber_ext(FunctionCallInfo fcinfo,
   bool (*func)(const TBox *, const TBox *));

@@ -49,7 +49,7 @@ stbox_parse(const char **str)
 {
   /* make compiler quiet */
   double xmin = 0, xmax = 0, ymin = 0, ymax = 0, zmin = 0, zmax = 0;
-  Period *period = NULL;
+  Span *period = NULL;
   bool hasx = false, hasz = false, hast = false, geodetic = false;
   int srid = 0;
   bool hassrid = false;

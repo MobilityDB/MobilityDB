@@ -82,7 +82,7 @@
  * Transform the constant into a period
  */
 static bool
-temporal_const_to_period(Node *other, Period *period)
+temporal_const_to_period(Node *other, Span *period)
 {
   Oid consttype = ((Const *) other)->consttype;
   meosType type = oid_type(consttype);
@@ -186,7 +186,7 @@ temporal_joinsel_default(Oid operid __attribute__((unused)))
  * respectively.
  */
 Selectivity
-temporal_sel_period(VariableStatData *vardata, Period *period,
+temporal_sel_period(VariableStatData *vardata, Span *period,
   CachedOp cachedOp)
 {
   float8 selec;
@@ -321,7 +321,7 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
   /* Transform the constant into a bounding box and compute the selectivity */
   if (tempfamily == TEMPORALTYPE)
   {
-    Period period;
+    Span period;
     if (! temporal_const_to_period(other, &period))
       /* In the case of unknown constant */
       return temporal_sel_default(cachedOp);
@@ -334,7 +334,7 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
     meosType basetype = temptype_basetype(oid_type(vardata.atttype));
     /* Transform the constant into a span and/or a period */
     Span *s = NULL;
-    Period *p = NULL;
+    Span *p = NULL;
     if (! tnumber_const_to_span_period(other, &s, &p, basetype))
       /* In the case of unknown constant */
       return tnumber_sel_default(cachedOp);

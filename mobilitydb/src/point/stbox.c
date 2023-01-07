@@ -307,7 +307,7 @@ PGDLLEXPORT Datum
 Stbox_to_period(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
-  Period *result = stbox_to_period(box);
+  Span *result = stbox_to_period(box);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
@@ -378,7 +378,7 @@ PG_FUNCTION_INFO_V1(Period_to_stbox);
 PGDLLEXPORT Datum
 Period_to_stbox(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_SPAN_P(0);
+  Span *p = PG_GETARG_SPAN_P(0);
   STBox *result = palloc(sizeof(STBox));
   period_set_stbox(p, result);
   PG_RETURN_POINTER(result);
@@ -449,7 +449,7 @@ PGDLLEXPORT Datum
 Geo_period_to_stbox(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  Period *p = PG_GETARG_SPAN_P(1);
+  Span *p = PG_GETARG_SPAN_P(1);
   STBox *result = geo_period_to_stbox(gs, p);
   PG_FREE_IF_COPY(gs, 0);
   if (! result)

@@ -178,7 +178,7 @@ PGDLLEXPORT Datum
 Number_period_to_tbox(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
-  Period *p = PG_GETARG_SPAN_P(1);
+  Span *p = PG_GETARG_SPAN_P(1);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   TBox *result = number_period_to_tbox(d, basetype, p);
   PG_RETURN_POINTER(result);
@@ -209,7 +209,7 @@ PGDLLEXPORT Datum
 Span_period_to_tbox(PG_FUNCTION_ARGS)
 {
   Span *span = PG_GETARG_SPAN_P(0);
-  Period *p = PG_GETARG_SPAN_P(1);
+  Span *p = PG_GETARG_SPAN_P(1);
   TBox *result = span_period_to_tbox(span, p);
   PG_RETURN_POINTER(result);
 }
@@ -366,7 +366,7 @@ PGDLLEXPORT Datum
 Tbox_to_period(PG_FUNCTION_ARGS)
 {
   TBox *box = PG_GETARG_TBOX_P(0);
-  Period *result = tbox_to_period(box);
+  Span *result = tbox_to_period(box);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);

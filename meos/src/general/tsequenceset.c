@@ -148,7 +148,7 @@ tsequenceset_offsets_ptr(const TSequenceSet *ss)
 {
   return (size_t *)(((char *)ss) + double_pad(sizeof(TSequenceSet)) +
     /* The period component of the bbox is already declared in the struct */
-    double_pad(ss->bboxsize - sizeof(Period)));
+    double_pad(ss->bboxsize - sizeof(Span)));
 }
 
 /**
@@ -164,7 +164,7 @@ tsequenceset_seq_n(const TSequenceSet *ss, int index)
     /* start of data */
     ((char *)ss) + double_pad(sizeof(TSequenceSet)) +
       /* The period component of the bbox is already declared in the struct */
-      (ss->bboxsize - sizeof(Period)) + ss->count * sizeof(size_t) +
+      (ss->bboxsize - sizeof(Span)) + ss->count * sizeof(size_t) +
       /* offset */
       (tsequenceset_offsets_ptr(ss))[index]);
 }
@@ -209,7 +209,7 @@ tsequenceset_make1_exp(const TSequence **sequences, int count, int maxcount,
   /* Get the bounding box size */
   size_t bboxsize = temporal_bbox_size(sequences[0]->temptype);
   /* The period component of the bbox is already declared in the struct */
-  size_t bboxsize_extra = (bboxsize == 0) ? 0 : bboxsize - sizeof(Period);
+  size_t bboxsize_extra = (bboxsize == 0) ? 0 : bboxsize - sizeof(Span);
 
   /* Compute the size of the temporal sequence set */
   size_t seqs_size = 0;
@@ -266,7 +266,7 @@ tsequenceset_make1_exp(const TSequence **sequences, int count, int maxcount,
   }
   /* Store the composing instants */
   size_t pdata = double_pad(sizeof(TSequenceSet)) +
-    double_pad(bboxsize - sizeof(Period)) + newcount * sizeof(size_t);
+    double_pad(bboxsize - sizeof(Span)) + newcount * sizeof(size_t);
   size_t pos = 0;
   for (int i = 0; i < newcount; i++)
   {
@@ -551,7 +551,7 @@ tsequenceset_from_base_time(Datum value, meosType temptype,
   TSequence **sequences = palloc(sizeof(TSequence *) * ps->count);
   for (int i = 0; i < ps->count; i++)
   {
-    const Period *p = spanset_sp_n(ps, i);
+    const Span *p = spanset_sp_n(ps, i);
     sequences[i] = tsequence_from_base_time(value, temptype, p, interp);
   }
   return tsequenceset_make_free(sequences, ps->count, NORMALIZE_NO);
@@ -817,7 +817,7 @@ tsequenceset_max_value(const TSequenceSet *ss)
 SpanSet *
 tsequenceset_time(const TSequenceSet *ss)
 {
-  const Period **periods = palloc(sizeof(Period *) * ss->count);
+  const Span **periods = palloc(sizeof(Span *) * ss->count);
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
@@ -870,7 +870,7 @@ tsequenceset_duration(const TSequenceSet *ss)
  * @sqlop @p ::
  */
 void
-tsequenceset_set_period(const TSequenceSet *ss, Period *p)
+tsequenceset_set_period(const TSequenceSet *ss, Span *p)
 {
   const TSequence *start = tsequenceset_seq_n(ss, 0);
   const TSequence *end = tsequenceset_seq_n(ss, ss->count - 1);
@@ -1402,7 +1402,7 @@ tsequenceset_shift_tscale(const TSequenceSet *ss, const Interval *shift,
   TSequenceSet *result = tsequenceset_copy(ss);
 
   /* Determine the shift and/or the scale values */
-  Period p1, p2;
+  Span p1, p2;
   const TSequence *seq1 = tsequenceset_seq_n(ss, 0);
   const TSequence *seq2 = tsequenceset_seq_n(ss, ss->count - 1);
   const TInstant *inst1 = tsequence_inst_n(seq1, 0);
@@ -1902,7 +1902,7 @@ tsequenceset_restrict_timestampset(const TSequenceSet *ss,
  * @sqlfunc atTime(), minusTime()
  */
 TSequenceSet *
-tsequenceset_restrict_period(const TSequenceSet *ss, const Period *p,
+tsequenceset_restrict_period(const TSequenceSet *ss, const Span *p,
   bool atfunc)
 {
   /* Bounding box test */
@@ -2017,7 +2017,7 @@ tsequenceset_restrict_periodset(const TSequenceSet *ss, const SpanSet *ps,
   while (i < ss->count && j < ps->count)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
-    const Period *p = spanset_sp_n(ps, j);
+    const Span *p = spanset_sp_n(ps, j);
     /* The sequence and the period do not overlap */
     if (left_span_span(&seq->period, p))
     {
@@ -2982,7 +2982,7 @@ tsequenceset_delete_timestampset(const TSequenceSet *ss,
  * @sqlfunc deleteTime()
  */
 TSequenceSet *
-tsequenceset_delete_period(const TSequenceSet *ss, const Period *p)
+tsequenceset_delete_period(const TSequenceSet *ss, const Span *p)
 {
   SpanSet *ps = span_to_spanset(p);
   TSequenceSet *result = tsequenceset_delete_periodset(ss, ps);
@@ -3025,7 +3025,7 @@ tsequenceset_delete_periodset(const TSequenceSet *ss, const SpanSet *ps)
   const TInstant *instants[2] = {0};
   interpType interp = MOBDB_FLAGS_GET_INTERP(ss->flags);
   sequences[0] = seq = (TSequence *) tsequenceset_seq_n(minus, 0);
-  const Period *p = spanset_sp_n(ps, 0);
+  const Span *p = spanset_sp_n(ps, 0);
   int i = 1, /* current composing sequence */
     j = 0,   /* current composing period */
     k = 1,   /* number of sequences in the currently constructed sequence */
@@ -3110,7 +3110,7 @@ tsequenceset_overlaps_timestampset(const TSequenceSet *ss,
  * @sqlfunc intersectsPeriod()
  */
 bool
-tsequenceset_overlaps_period(const TSequenceSet *ss, const Period *p)
+tsequenceset_overlaps_period(const TSequenceSet *ss, const Span *p)
 {
   /* Binary search of lower and upper bounds of period */
   int loc1, loc2;

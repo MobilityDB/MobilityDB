@@ -126,7 +126,7 @@ extern int tcontseq_minus_timestamp1(const TSequence *seq, TimestampTz t,
   TSequence **result);
 extern int tcontseq_minus_timestampset1(const TSequence *seq,
   const Set *ss, TSequence **result);
-extern int tcontseq_minus_period1(const TSequence *seq, const Period *p,
+extern int tcontseq_minus_period1(const TSequence *seq, const Span *p,
   TSequence **result);
 extern int tcontseq_at_periodset1(const TSequence *seq, const SpanSet *ps,
   TSequence **result);

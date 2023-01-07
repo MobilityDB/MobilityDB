@@ -232,7 +232,7 @@ tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBox *result, Oid typid)
   }
   else if (type == T_PERIOD)
   {
-    Period *p = PG_GETARG_SPAN_P(1);
+    Span *p = PG_GETARG_SPAN_P(1);
     period_set_tbox(p, result);
   }
   else if (tnumber_spansettype(type) || type == T_PERIODSET)

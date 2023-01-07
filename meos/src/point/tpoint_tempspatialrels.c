@@ -290,7 +290,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom,
 
   /* Get the periods at which the temporal point intersects the geometry */
   int countper;
-  Period **periods = tpointseq_interperiods(seq, gsinter, &countper);
+  Span **periods = tpointseq_interperiods(seq, gsinter, &countper);
   if (countper == 0)
   {
     result = palloc(sizeof(TSequence *));
@@ -307,7 +307,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom,
   {
     /* It is necessary to sort the periods */
     spanarr_sort(periods, countper);
-    SpanSet *ps1 = spanset_make((const Period **) periods, countper, NORMALIZE);
+    SpanSet *ps1 = spanset_make((const Span **) periods, countper, NORMALIZE);
     ps = minus_span_spanset(&seq->period, ps1);
     pfree(ps1);
   }
@@ -322,7 +322,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom,
   {
     for (int i = 0; i < ps->count; i++)
     {
-      const Period *p = spanset_sp_n(ps, i);
+      const Span *p = spanset_sp_n(ps, i);
       result[i + countper] = tsequence_from_base_time(datum_no, T_TBOOL, p,
         STEPWISE);
     }

@@ -677,8 +677,8 @@ spanset_width(const SpanSet *ss)
 Interval *
 periodset_timespan(const SpanSet *ps)
 {
-  const Period *p1 = spanset_sp_n(ps, 0);
-  const Period *p2 = spanset_sp_n(ps, ps->count - 1);
+  const Span *p1 = spanset_sp_n(ps, 0);
+  const Span *p2 = spanset_sp_n(ps, ps->count - 1);
   Interval *result = pg_timestamp_mi(p2->upper, p1->lower);
   return result;
 }
@@ -692,7 +692,7 @@ periodset_timespan(const SpanSet *ps)
 Interval *
 periodset_duration(const SpanSet *ps)
 {
-  const Period *p = spanset_sp_n(ps, 0);
+  const Span *p = spanset_sp_n(ps, 0);
   Interval *result = pg_timestamp_mi(p->upper, p->lower);
   for (int i = 1; i < ps->count; i++)
   {
@@ -714,7 +714,7 @@ periodset_duration(const SpanSet *ps)
 int
 periodset_num_timestamps(const SpanSet *ps)
 {
-  const Period *p = spanset_sp_n(ps, 0);
+  const Span *p = spanset_sp_n(ps, 0);
   TimestampTz prev = p->lower;
   bool start = false;
   int result = 1;
@@ -751,7 +751,7 @@ periodset_num_timestamps(const SpanSet *ps)
 TimestampTz
 periodset_start_timestamp(const SpanSet *ps)
 {
-  const Period *p = spanset_sp_n(ps, 0);
+  const Span *p = spanset_sp_n(ps, 0);
   return p->lower;
 }
 
@@ -764,7 +764,7 @@ periodset_start_timestamp(const SpanSet *ps)
 TimestampTz
 periodset_end_timestamp(const SpanSet *ps)
 {
-  const Period *p = spanset_sp_n(ps, ps->count - 1);
+  const Span *p = spanset_sp_n(ps, ps->count - 1);
   return p->upper;
 }
 
@@ -784,7 +784,7 @@ bool
 periodset_timestamp_n(const SpanSet *ps, int n, TimestampTz *result)
 {
   int pernum = 0;
-  const Period *p = spanset_sp_n(ps, pernum);
+  const Span *p = spanset_sp_n(ps, pernum);
   TimestampTz d = p->lower;
   if (n == 1)
   {
@@ -834,7 +834,7 @@ TimestampTz *
 periodset_timestamps(const SpanSet *ps, int *count)
 {
   TimestampTz *result = palloc(sizeof(TimestampTz) * 2 * ps->count);
-  const Period *p = spanset_sp_n(ps, 0);
+  const Span *p = spanset_sp_n(ps, 0);
   result[0] = p->lower;
   int k = 1;
   if (p->lower != p->upper)

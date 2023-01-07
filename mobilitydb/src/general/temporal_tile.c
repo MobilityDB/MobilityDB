@@ -215,7 +215,7 @@ Period_bucket(PG_FUNCTION_ARGS)
   TimestampTz origin = PG_GETARG_TIMESTAMPTZ(2);
   TimestampTz time_bucket = timestamptz_bucket(t, duration, origin);
   int64 tunits = interval_units(duration);
-  Period *result = span_bucket_get(TimestampTzGetDatum(time_bucket),
+  Span *result = span_bucket_get(TimestampTzGetDatum(time_bucket),
     Int64GetDatum(tunits), T_TIMESTAMPTZ);
   PG_RETURN_POINTER(result);
 }

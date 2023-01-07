@@ -47,7 +47,7 @@ extern void npointarr_set_stbox(const Datum *values, int count, STBox *box);
 extern bool nsegment_set_stbox(const Nsegment *ns, STBox *box);
 extern bool npoint_timestamp_set_stbox(const Npoint *np, TimestampTz t,
   STBox *box);
-extern bool npoint_period_set_stbox(const Npoint *np, const Period *p,
+extern bool npoint_period_set_stbox(const Npoint *np, const Span *p,
   STBox *box);
 
 extern void tnpointinst_set_stbox(const TInstant *inst, STBox *box);

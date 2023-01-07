@@ -326,7 +326,7 @@ overRight2D(const SpanNode *nodebox, const Span *query)
  * Can any period from nodebox be before the query?
  */
 static bool
-before2D(const SpanNode *nodebox, const Period *query)
+before2D(const SpanNode *nodebox, const Span *query)
 {
   return left_span_span(&nodebox->right, query);
 }
@@ -335,7 +335,7 @@ before2D(const SpanNode *nodebox, const Period *query)
  * Can any period from nodebox does not extend after the query?
  */
 static bool
-overBefore2D(const SpanNode *nodebox, const Period *query)
+overBefore2D(const SpanNode *nodebox, const Span *query)
 {
   return overleft_span_span(&nodebox->right, query);
 }
@@ -344,7 +344,7 @@ overBefore2D(const SpanNode *nodebox, const Period *query)
  * Can any period from nodebox be after the query?
  */
 static bool
-after2D(const SpanNode *nodebox, const Period *query)
+after2D(const SpanNode *nodebox, const Span *query)
 {
   return right_span_span(&nodebox->left, query);
 }
@@ -353,7 +353,7 @@ after2D(const SpanNode *nodebox, const Period *query)
  * Can any period from nodebox does not extend before the query?
  */
 static bool
-overAfter2D(const SpanNode *nodebox, const Period *query)
+overAfter2D(const SpanNode *nodebox, const Span *query)
 {
   return overright_span_span(&nodebox->left, query);
 }

@@ -258,7 +258,7 @@ skiplist_print(const SkipList *list)
         val = span_out(e->value, Int32GetDatum(0));
       else /* list->elemtype == TEMPORAL */
       {
-        Period p;
+        Span p;
         temporal_set_period(e->value, &p);
         /* The second argument of span_out is not used for spans */
         val = span_out(&p, Int32GetDatum(0));
@@ -376,7 +376,7 @@ skiplist_make(void **values, int count, SkipListElemType elemtype)
  * Determine the relative position of a period and a timestamp
  */
 static RelativeTimePos
-pos_period_timestamp(const Period *p, TimestampTz t)
+pos_period_timestamp(const Span *p, TimestampTz t)
 {
   if (left_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ))
     return BEFORE;
@@ -389,7 +389,7 @@ pos_period_timestamp(const Period *p, TimestampTz t)
  * Determine the relative position of two periods
  */
 static RelativeTimePos
-pos_period_period(const Period *p1, const Period *p2)
+pos_period_period(const Span *p1, const Span *p2)
 {
   if (left_span_span(p1, p2))
     return BEFORE;
@@ -402,7 +402,7 @@ pos_period_period(const Period *p1, const Period *p2)
  * Comparison function used for skiplists
  */
 static RelativeTimePos
-skiplist_elempos(const SkipList *list, Period *p, int cur)
+skiplist_elempos(const SkipList *list, Span *p, int cur)
 {
   if (cur == 0)
     return AFTER; /* Head is -inf */
@@ -412,7 +412,7 @@ skiplist_elempos(const SkipList *list, Period *p, int cur)
   if (list->elemtype == TIMESTAMPTZ)
     return pos_period_timestamp(p, (TimestampTz) list->elems[cur].value);
   if (list->elemtype == PERIOD)
-    return pos_period_period(p, (Period *) list->elems[cur].value);
+    return pos_period_period(p, (Span *) list->elems[cur].value);
   /* list->elemtype == TEMPORAL */
   Temporal *temp = (Temporal *) list->elems[cur].value;
   if (temp->subtype == TINSTANT)
@@ -447,7 +447,7 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
   assert(list->length > 0);
 
   /* Compute the span of the new values */
-  Period p;
+  Span p;
   uint8 subtype = 0;
   if (list->elemtype == TIMESTAMPTZ)
   {
@@ -554,8 +554,8 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
     }
     else if (list->elemtype == PERIOD)
     {
-      newvalues = (void **) period_tagg((Period **) spliced, spliced_count,
-        (Period **) values, count, &newcount);
+      newvalues = (void **) period_tagg((Span **) spliced, spliced_count,
+        (Span **) values, count, &newcount);
     }
     else /* list->elemtype == TEMPORAL */
     {

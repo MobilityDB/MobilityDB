@@ -64,7 +64,7 @@ extern Selectivity scalarineqsel(PlannerInfo *root, Oid operid, bool isgt,
   bool iseq, VariableStatData *vardata, Datum constval,
   Oid consttypid);
 extern Selectivity temporal_sel_period(VariableStatData *vardata,
-  Period *period, CachedOp cachedOp);
+  Span *period, CachedOp cachedOp);
 
 
 /*****************************************************************************

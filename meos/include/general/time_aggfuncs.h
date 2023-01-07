@@ -43,11 +43,11 @@
 extern Datum datum_sum_int32(Datum l, Datum r);
 extern TimestampTz *timestamp_tagg(TimestampTz *times1, int count1,
   TimestampTz *times2, int count2, int *newcount);
-extern Period **period_tagg(Period **periods1, int count1, Period **periods2,
+extern Span **period_tagg(Span **periods1, int count1, Span **periods2,
   int count2, int *newcount);
 
 extern SkipList *timestampset_tagg_transfn(SkipList *state, const Set *ts);
-extern SkipList *period_tagg_transfn(SkipList *state, const Period *p);
+extern SkipList *period_tagg_transfn(SkipList *state, const Span *p);
 extern SkipList *periodset_tagg_transfn(SkipList *state, const SpanSet *ps);
 extern void ensure_same_timetype_skiplist(SkipList *state, uint8 subtype);
 extern SkipList *time_tagg_combinefn(SkipList *state1, SkipList *state2);

@@ -1155,7 +1155,7 @@ tfloat_to_tint(const Temporal *temp)
  * @brief Set a period to the bounding period of a temporal value.
  */
 void
-temporal_set_period(const Temporal *temp, Period *p)
+temporal_set_period(const Temporal *temp, Span *p)
 {
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
@@ -1175,10 +1175,10 @@ temporal_set_period(const Temporal *temp, Period *p)
  * @sqlop @p ::
  * @pymeosfunc period()
  */
-Period *
+Span *
 temporal_to_period(const Temporal *temp)
 {
-  Period *result = palloc(sizeof(Period));
+  Span *result = palloc(sizeof(Span));
   temporal_set_period(temp, result);
   return result;
 }
@@ -3161,7 +3161,7 @@ temporal_restrict_timestampset(const Temporal *temp, const Set *ts,
  * @sqlfunc atTime(), minusTime()
  */
 Temporal *
-temporal_restrict_period(const Temporal *temp, const Period *p, bool atfunc)
+temporal_restrict_period(const Temporal *temp, const Span *p, bool atfunc)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -3419,7 +3419,7 @@ temporal_delete_timestampset(const Temporal *temp, const Set *ts,
  * @sqlfunc deleteTime()
  */
 Temporal *
-temporal_delete_period(const Temporal *temp, const Period *p, bool connect)
+temporal_delete_period(const Temporal *temp, const Span *p, bool connect)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -3532,7 +3532,7 @@ temporal_overlaps_timestampset(const Temporal *temp, const Set *ts)
  * @pymeosfunc overlapsTime()
  */
 bool
-temporal_overlaps_period(const Temporal *temp, const Period *p)
+temporal_overlaps_period(const Temporal *temp, const Span *p)
 {
   bool result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -3727,7 +3727,7 @@ temporal_cmp(const Temporal *temp1, const Temporal *temp2)
   /* Compare bounding period
    * We need to compare periods AND bounding boxes since the bounding boxes
    * do not distinguish between inclusive and exclusive bounds */
-  Period p1, p2;
+  Span p1, p2;
   temporal_set_period(temp1, &p1);
   temporal_set_period(temp2, &p2);
   int result = span_cmp(&p1, &p2);

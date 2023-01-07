@@ -462,7 +462,7 @@ tinstant_time(const TInstant *inst)
  * @sqlop @p ::
  */
 void
-tinstant_set_period(const TInstant *inst, Period *p)
+tinstant_set_period(const TInstant *inst, Span *p)
 {
   return span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
     true, true, T_TIMESTAMPTZ, p);
@@ -873,7 +873,7 @@ tinstant_restrict_timestampset(const TInstant *inst, const Set *ts,
  * @sqlfunc atPeriod(), minusPeriod()
  */
 TInstant *
-tinstant_restrict_period(const TInstant *inst, const Period *period,
+tinstant_restrict_period(const TInstant *inst, const Span *period,
   bool atfunc)
 {
   bool contains = contains_period_timestamp(period, inst->t);
@@ -1012,7 +1012,7 @@ tinstant_overlaps_timestampset(const TInstant *inst, const Set *ts)
  * @sqlfunc intersectsPeriod()
  */
 bool
-tinstant_overlaps_period(const TInstant *inst, const Period *p)
+tinstant_overlaps_period(const TInstant *inst, const Span *p)
 {
   return contains_period_timestamp(p, inst->t);
 }

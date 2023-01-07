@@ -252,7 +252,7 @@ npoint_timestamp_set_stbox(const Npoint *np, TimestampTz t, STBox *box)
  * @brief Transform a network point and a period to a spatiotemporal box
  */
 bool
-npoint_period_set_stbox(const Npoint *np, const Period *p, STBox *box)
+npoint_period_set_stbox(const Npoint *np, const Span *p, STBox *box)
 {
   npoint_set_stbox(np, box);
   memcpy(&box->period, p, sizeof(Span));

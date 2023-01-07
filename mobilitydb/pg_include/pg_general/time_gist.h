@@ -44,9 +44,9 @@
 
 extern int common_entry_cmp(const void *i1, const void *i2);
 
-extern bool period_index_consistent_leaf(const Period *key, const Period *query,
+extern bool period_index_consistent_leaf(const Span *key, const Span *query,
   StrategyNumber strategy);
-extern bool period_gist_consistent(const Period *key, const Period *query,
+extern bool period_gist_consistent(const Span *key, const Span *query,
   StrategyNumber strategy);
 extern bool period_index_recheck(StrategyNumber strategy);
 

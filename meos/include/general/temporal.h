@@ -247,7 +247,7 @@ enum MOBDB_WKB_TSUBTYPE
   MOBDB_WKB_TSEQUENCESET =     3,  /**< temporal sequence set subtype */
 };
 
-/* Period bounds */
+/* Span bounds */
 #define MOBDB_WKB_LOWER_INC        0x01
 #define MOBDB_WKB_UPPER_INC        0x02
 
@@ -297,7 +297,7 @@ enum MOBDB_WKB_TSUBTYPE
  */
 typedef union bboxunion
 {
-  Period    p;      /**< Period */
+  Span      p;      /**< Span */
   TBox      b;      /**< Temporal box */
   STBox     g;      /**< Spatiotemporal box */
 } bboxunion;

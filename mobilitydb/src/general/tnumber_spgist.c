@@ -455,7 +455,7 @@ tnumber_spgist_get_tbox(const ScanKeyData *scankey, TBox *result)
   }
   else if (type == T_PERIOD)
   {
-    Period *p = DatumGetSpanP(scankey->sk_argument);
+    Span *p = DatumGetSpanP(scankey->sk_argument);
     period_set_tbox(p, result);
   }
   else if (tnumber_spansettype(type) || type == T_PERIODSET)

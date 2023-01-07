@@ -811,7 +811,7 @@ nad_tpoint_stbox(const Temporal *temp, const STBox *box)
   ensure_same_srid_tpoint_stbox(temp, box);
   /* Project the temporal point to the timespan of the box */
   bool hast = MOBDB_FLAGS_GET_T(box->flags);
-  Period p, inter;
+  Span p, inter;
   if (hast)
   {
     temporal_set_period(temp, &p);

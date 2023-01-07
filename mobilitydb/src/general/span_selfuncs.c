@@ -847,11 +847,11 @@ span_const_to_span(Node *other, Span *span)
  * Transform the constant into a period
  */
 void
-time_const_to_period(Node *other, Period *period)
+time_const_to_period(Node *other, Span *period)
 {
   Oid consttype = ((Const *) other)->consttype;
   meosType timetype = oid_type(consttype);
-  const Period *p;
+  const Span *p;
   ensure_time_type(timetype);
   if (timetype == T_TIMESTAMPTZ)
   {
@@ -871,14 +871,14 @@ time_const_to_period(Node *other, Period *period)
   {
     /* Just copy the value */
     p = DatumGetSpanP(((Const *) other)->constvalue);
-    memcpy(period, p, sizeof(Period));
+    memcpy(period, p, sizeof(Span));
   }
   else /* timetype == T_PERIODSET */
   {
     /* The right argument is a PeriodSet constant. We convert it into
      * its bounding period. */
     const SpanSet *ps = DatumGetSpanSetP(((Const *) other)->constvalue);
-    memcpy(period, &ps->span, sizeof(Period));
+    memcpy(period, &ps->span, sizeof(Span));
   }
   return;
 }
@@ -894,8 +894,7 @@ span_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
   Node *other;
   bool varonleft;
   Selectivity selec;
-  Span span;
-  Period period;
+  Span span, period;
 
   /*
    * If expression is not (variable op something) or (something op

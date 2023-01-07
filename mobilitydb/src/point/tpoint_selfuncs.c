@@ -833,7 +833,7 @@ tpoint_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
   bool varonleft;
   Selectivity selec;
   STBox box;
-  Period period;
+  Span period;
 
   /* Get enumeration value associated to the operator */
   CachedOp cachedOp;

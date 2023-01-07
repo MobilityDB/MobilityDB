@@ -116,11 +116,11 @@ timestamp_tagg(TimestampTz *times1, int count1, TimestampTz *times2,
  * @param[out] newcount Number of elements in the result
  * @note Return new periods that must be freed by the calling function.
  */
-Period **
-period_tagg(Period **periods1, int count1, Period **periods2, int count2,
+Span **
+period_tagg(Span **periods1, int count1, Span **periods2, int count2,
   int *newcount)
 {
-  Period **periods = palloc(sizeof(Period *) * (count1 + count2));
+  Span **periods = palloc(sizeof(Span *) * (count1 + count2));
   int i = 0, j = 0, k = 0;
   while (i < count1 && j < count2)
   {
@@ -139,7 +139,7 @@ period_tagg(Period **periods1, int count1, Period **periods2, int count2,
     periods[k++] = periods1[i++];
   while (j < count2)
     periods[k++] = periods2[j++];
-  Period **result = spanarr_normalize(periods, k, SORT_NO, newcount);
+  Span **result = spanarr_normalize(periods, k, SORT_NO, newcount);
   pfree(periods);
   return result;
 }
@@ -190,15 +190,15 @@ time_tagg_combinefn(SkipList *state1, SkipList *state2)
  * @ingroup libmeos_setspan_agg
  * @brief Transition function for extent aggregate of timestamp set values
  */
-Period *
-timestamp_extent_transfn(Period *p, TimestampTz t)
+Span *
+timestamp_extent_transfn(Span *p, TimestampTz t)
 {
   /* Null period: return the period of the timestamp */
   if (! p)
     return span_make(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true,
       true, T_TIMESTAMPTZ);
 
-  Period p1;
+  Span p1;
   span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true,
       true, T_TIMESTAMPTZ, &p1);
   span_expand(&p1, p);
@@ -209,8 +209,8 @@ timestamp_extent_transfn(Period *p, TimestampTz t)
  * @ingroup libmeos_setspan_agg
  * @brief Transition function for extent aggregate of timestamp set values
  */
-Period *
-timestampset_extent_transfn(Period *p, const Set *ts)
+Span *
+timestampset_extent_transfn(Span *p, const Set *ts)
 {
   /* Can't do anything with null inputs */
   if (! p && ! ts)
@@ -328,7 +328,7 @@ timestampset_tunion_transfn(SkipList *state, const Set *ts)
  * @param[in] p Period
  */
 SkipList *
-period_tunion_transfn(SkipList *state, const Period *p)
+period_tunion_transfn(SkipList *state, const Span *p)
 {
   SkipList *result;
   if (! state)
@@ -353,7 +353,7 @@ SkipList *
 periodset_tunion_transfn(SkipList *state, const SpanSet *ps)
 {
   int count;
-  const Period **periods = spanset_spans(ps, &count);
+  const Span **periods = spanset_spans(ps, &count);
   SkipList *result;
   if (! state)
     /* Periods are copied while constructing the skiplist */
@@ -398,7 +398,7 @@ period_tunion_finalfn(SkipList *state)
   if (! state || state->length == 0)
 
   assert(state->elemtype == PERIOD);
-  const Period **values = (const Period **) skiplist_values(state);
+  const Span **values = (const Span **) skiplist_values(state);
   SpanSet *result = spanset_make(values, state->length, NORMALIZE);
   pfree(values);
   return result;
@@ -461,7 +461,7 @@ timestampset_transform_tcount(const Set *ts, const Interval *interval,
  * performing temporal count aggregation
  */
 static TSequence *
-period_transform_tcount(const Period *p, const Interval *interval,
+period_transform_tcount(const Span *p, const Interval *interval,
   TimestampTz origin)
 {
   TSequence *result;
@@ -505,7 +505,7 @@ periodset_transform_tcount(const SpanSet *ps, const Interval *interval,
   TSequence **result = palloc(sizeof(TSequence *) * ps->count);
   for (int i = 0; i < ps->count; i++)
   {
-    const Period *p = spanset_sp_n(ps, i);
+    const Span *p = spanset_sp_n(ps, i);
     result[i] = period_transform_tcount(p, interval, origin);
   }
   return result;
@@ -579,8 +579,8 @@ timestampset_tcount_transfn(SkipList *state, const Set *ts,
  * @brief Transition function for temporal count aggregate of periods
  */
 SkipList *
-period_tcount_transfn(SkipList *state, const Period *p,
-  const Interval *interval, TimestampTz origin)
+period_tcount_transfn(SkipList *state, const Span *p, const Interval *interval,
+  TimestampTz origin)
 {
   TSequence *seq = period_transform_tcount(p, interval, origin);
   if (! state)

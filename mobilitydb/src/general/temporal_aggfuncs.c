@@ -206,9 +206,9 @@ PG_FUNCTION_INFO_V1(Temporal_extent_transfn);
 PGDLLEXPORT Datum
 Temporal_extent_transfn(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
+  Span *p = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
   Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL_P(1);
-  Period *result = temporal_extent_transfn(p, temp);
+  Span *result = temporal_extent_transfn(p, temp);
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
     PG_RETURN_NULL();

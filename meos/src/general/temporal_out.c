@@ -277,7 +277,7 @@ period_mfjson_size(void)
  * Write into the buffer the period bounding box represented in MF-JSON format
  */
 static size_t
-period_mfjson_buf(char *output, const Period *p)
+period_mfjson_buf(char *output, const Span *p)
 {
   char *ptr = output;
   ptr += sprintf(ptr, "\"stBoundedBy\":{\"period\":{\"begin\":");
@@ -424,7 +424,7 @@ bbox_mfjson_buf(meosType temptype, char *output, const bboxunion *bbox,
   {
     case T_TBOOL:
     case T_TTEXT:
-      return period_mfjson_buf(output, (Period *) bbox);
+      return period_mfjson_buf(output, (Span *) bbox);
     case T_TINT:
     case T_TFLOAT:
       return tbox_mfjson_buf(output, (TBox *) bbox, precision);

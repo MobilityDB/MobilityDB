@@ -718,7 +718,7 @@ PGDLLEXPORT Datum
 Tsequence_from_base_time(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
-  Period *p = PG_GETARG_SPAN_P(1);
+  Span *p = PG_GETARG_SPAN_P(1);
   meosType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
   interpType interp = temptype_continuous(temptype) ? LINEAR : STEPWISE;
   if (PG_NARGS() > 2)
@@ -799,7 +799,7 @@ PGDLLEXPORT Datum
 Temporal_to_period(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Period *result = palloc(sizeof(Period));
+  Span *result = palloc(sizeof(Span));
   temporal_set_period(temp, result);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_SPAN_P(result);
@@ -2297,7 +2297,7 @@ static Datum
 temporal_restrict_period_ext(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Period *p = PG_GETARG_SPAN_P(1);
+  Span *p = PG_GETARG_SPAN_P(1);
   Temporal *result = temporal_restrict_period(temp, p, atfunc);
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
@@ -2458,7 +2458,7 @@ PGDLLEXPORT Datum
 Temporal_delete_period(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Period *p = PG_GETARG_SPAN_P(1);
+  Span *p = PG_GETARG_SPAN_P(1);
   bool connect = PG_GETARG_BOOL(2);
   Temporal *result = temporal_delete_period(temp, p, connect);
   PG_FREE_IF_COPY(temp, 0);
@@ -2534,7 +2534,7 @@ PGDLLEXPORT Datum
 Temporal_overlaps_period(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Period *p = PG_GETARG_SPAN_P(1);
+  Span *p = PG_GETARG_SPAN_P(1);
   bool result = temporal_overlaps_period(temp, p);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);

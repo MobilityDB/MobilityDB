@@ -43,7 +43,7 @@
 
 /* General functions */
 
-extern void spanset_span_slice(Datum psdatum, Period *p);
+extern void spanset_span_slice(Datum psdatum, Span *p);
 extern bool spanset_find_value(const SpanSet *ss, Datum v, int *loc);
 
 /*****************************************************************************/

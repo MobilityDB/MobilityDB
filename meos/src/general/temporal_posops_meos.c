@@ -140,7 +140,7 @@ overafter_timestampset_temporal(const Set *ts, const Temporal *temp)
  * @sqlop @p <<#
  */
 bool
-before_period_temporal(const Period *p, const Temporal *temp)
+before_period_temporal(const Span *p, const Temporal *temp)
 {
   return boxop_temporal_period(temp, p, &left_span_span, INVERT);
 }
@@ -151,7 +151,7 @@ before_period_temporal(const Period *p, const Temporal *temp)
  * @sqlop @p &<#
  */
 bool
-overbefore_period_temporal(const Period *p, const Temporal *temp)
+overbefore_period_temporal(const Span *p, const Temporal *temp)
 {
   return boxop_temporal_period(temp, p, &overleft_span_span, INVERT);
 }
@@ -162,7 +162,7 @@ overbefore_period_temporal(const Period *p, const Temporal *temp)
  * @sqlop @p #>>
  */
 bool
-after_period_temporal(const Period *p, const Temporal *temp)
+after_period_temporal(const Span *p, const Temporal *temp)
 {
   return boxop_temporal_period(temp, p, &right_span_span, INVERT);
 }
@@ -173,7 +173,7 @@ after_period_temporal(const Period *p, const Temporal *temp)
  * @sqlop @p #&>
  */
 bool
-overafter_period_temporal(const Period *p, const Temporal *temp)
+overafter_period_temporal(const Span *p, const Temporal *temp)
 {
   return boxop_temporal_period(temp, p, &overright_span_span, INVERT);
 }
@@ -319,7 +319,7 @@ overafter_temporal_timestampset(const Temporal *temp, const Set *ts)
 }
 
 /*****************************************************************************/
-/* Temporal op Period */
+/* Temporal op Span */
 
 /**
  * @ingroup libmeos_temporal_pos
@@ -327,7 +327,7 @@ overafter_temporal_timestampset(const Temporal *temp, const Set *ts)
  * @sqlop @p <<#
  */
 bool
-before_temporal_period(const Temporal *temp, const Period *p)
+before_temporal_period(const Temporal *temp, const Span *p)
 {
   return boxop_temporal_period(temp, p, &left_span_span, INVERT_NO);
 }
@@ -338,7 +338,7 @@ before_temporal_period(const Temporal *temp, const Period *p)
  * @sqlop @p &<#
  */
 bool
-overbefore_temporal_period(const Temporal *temp, const Period *p)
+overbefore_temporal_period(const Temporal *temp, const Span *p)
 {
   return boxop_temporal_period(temp, p, &overleft_span_span, INVERT_NO);
 }
@@ -349,7 +349,7 @@ overbefore_temporal_period(const Temporal *temp, const Period *p)
  * @sqlop @p #>>
  */
 bool
-after_temporal_period(const Temporal *temp, const Period *p)
+after_temporal_period(const Temporal *temp, const Span *p)
 {
   return boxop_temporal_period(temp, p, &right_span_span, INVERT_NO);
 }
@@ -360,7 +360,7 @@ after_temporal_period(const Temporal *temp, const Period *p)
  * @sqlop @p #&>
  */
 bool
-overafter_temporal_period(const Temporal *temp, const Period *p)
+overafter_temporal_period(const Temporal *temp, const Span *p)
 {
   return boxop_temporal_period(temp, p, &overright_span_span, INVERT_NO);
 }

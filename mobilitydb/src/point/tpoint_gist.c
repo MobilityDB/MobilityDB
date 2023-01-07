@@ -296,7 +296,7 @@ tpoint_gist_get_stbox(FunctionCallInfo fcinfo, STBox *result,
   }
   else if (type == T_PERIOD)
   {
-    Period *p = PG_GETARG_SPAN_P(1);
+    Span *p = PG_GETARG_SPAN_P(1);
     period_set_stbox(p, result);
   }
   else if (type == T_PERIODSET)

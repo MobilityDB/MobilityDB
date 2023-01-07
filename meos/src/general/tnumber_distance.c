@@ -283,7 +283,7 @@ nad_tnumber_tbox(const Temporal *temp, const TBox *box)
   /* Test the validity of the arguments */
   ensure_has_X_tbox(box);
   bool hast = MOBDB_FLAGS_GET_T(box->flags);
-  Period p, inter;
+  Span p, inter;
   if (hast)
   {
     temporal_set_period(temp, &p);

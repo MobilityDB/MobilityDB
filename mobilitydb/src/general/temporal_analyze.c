@@ -158,7 +158,7 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     Datum value;
     bool isnull;
     SpanBound span_lower, span_upper;
-    Period period;
+    Span period;
     SpanBound period_lower, period_upper;
     Temporal *temp;
 
@@ -305,7 +305,7 @@ temporal_extra_info(VacAttrStats *stats)
   extra_data->time_eq_opr = typentry->eq_opr;
   extra_data->time_lt_opr = typentry->lt_opr;
   extra_data->time_typbyval = false;
-  extra_data->time_typlen = sizeof(Period);
+  extra_data->time_typlen = sizeof(Span);
   extra_data->time_typalign = 'd';
   extra_data->time_cmp = &typentry->cmp_proc_finfo;
   extra_data->time_hash = &typentry->hash_proc_finfo;
