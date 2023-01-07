@@ -701,10 +701,10 @@ tpoint_spgist_get_stbox(const ScanKeyData *scankey, STBox *result)
     TimestampTz t = DatumGetTimestampTz(scankey->sk_argument);
     timestamp_set_stbox(t, result);
   }
-  else if (type == T_TIMESTAMPSET)
+  else if (type == T_TSTZSET)
   {
     Set *set = DatumGetSetP(scankey->sk_argument);
-    timestampset_set_stbox(set, result);
+    tstzset_set_stbox(set, result);
   }
   else if (type == T_PERIOD)
   {

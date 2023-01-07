@@ -340,7 +340,7 @@ CREATE FUNCTION floatspanset(floatset)
   RETURNS floatspanset
   AS 'MODULE_PATHNAME', 'Set_to_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION periodset(timestampset)
+CREATE FUNCTION periodset(tstzset)
   RETURNS periodset
   AS 'MODULE_PATHNAME', 'Set_to_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -348,7 +348,7 @@ CREATE FUNCTION periodset(timestampset)
 CREATE CAST (intset AS intspanset) WITH FUNCTION intspanset(intset);
 CREATE CAST (bigintset AS bigintspanset) WITH FUNCTION bigintspanset(bigintset);
 CREATE CAST (floatset AS floatspanset) WITH FUNCTION floatspanset(floatset);
-CREATE CAST (timestampset AS periodset) WITH FUNCTION periodset(timestampset);
+CREATE CAST (tstzset AS periodset) WITH FUNCTION periodset(tstzset);
 
 #if POSTGRESQL_VERSION_NUMBER >= 140000
 CREATE FUNCTION int4multirange(intspanset)

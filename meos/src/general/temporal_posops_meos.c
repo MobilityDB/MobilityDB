@@ -94,9 +94,9 @@ overafter_timestamp_temporal(TimestampTz t, const Temporal *temp)
  * @sqlop @p <<#
  */
 bool
-before_timestampset_temporal(const Set *ts, const Temporal *temp)
+before_tstzset_temporal(const Set *ts, const Temporal *temp)
 {
-  return boxop_temporal_timestampset(temp, ts, &left_span_span, INVERT);
+  return boxop_temporal_tstzset(temp, ts, &left_span_span, INVERT);
 }
 
 /**
@@ -105,9 +105,9 @@ before_timestampset_temporal(const Set *ts, const Temporal *temp)
  * @sqlop @p &<#
  */
 bool
-overbefore_timestampset_temporal(const Set *ts, const Temporal *temp)
+overbefore_tstzset_temporal(const Set *ts, const Temporal *temp)
 {
-  return boxop_temporal_timestampset(temp, ts, &overleft_span_span,
+  return boxop_temporal_tstzset(temp, ts, &overleft_span_span,
     INVERT);
 }
 
@@ -117,9 +117,9 @@ overbefore_timestampset_temporal(const Set *ts, const Temporal *temp)
  * @sqlop @p #>>
  */
 bool
-after_timestampset_temporal(const Set *ts, const Temporal *temp)
+after_tstzset_temporal(const Set *ts, const Temporal *temp)
 {
-  return boxop_temporal_timestampset(temp, ts, &right_span_span, INVERT);
+  return boxop_temporal_tstzset(temp, ts, &right_span_span, INVERT);
 }
 
 /**
@@ -128,9 +128,9 @@ after_timestampset_temporal(const Set *ts, const Temporal *temp)
  * @sqlop @p #&>
  */
 bool
-overafter_timestampset_temporal(const Set *ts, const Temporal *temp)
+overafter_tstzset_temporal(const Set *ts, const Temporal *temp)
 {
-  return boxop_temporal_timestampset(temp, ts, &overright_span_span,
+  return boxop_temporal_tstzset(temp, ts, &overright_span_span,
     INVERT);
 }
 
@@ -270,7 +270,7 @@ overafter_temporal_timestamp(const Temporal *temp, TimestampTz t)
 }
 
 /*****************************************************************************/
-/* Temporal op Timestampset */
+/* Temporal op Tstzset */
 
 /**
  * @ingroup libmeos_temporal_pos
@@ -278,9 +278,9 @@ overafter_temporal_timestamp(const Temporal *temp, TimestampTz t)
  * @sqlop @p <<#
  */
 bool
-before_temporal_timestampset(const Temporal *temp, const Set *ts)
+before_temporal_tstzset(const Temporal *temp, const Set *ts)
 {
-  return boxop_temporal_timestampset(temp, ts, &left_span_span, INVERT_NO);
+  return boxop_temporal_tstzset(temp, ts, &left_span_span, INVERT_NO);
 }
 
 /**
@@ -289,9 +289,9 @@ before_temporal_timestampset(const Temporal *temp, const Set *ts)
  * @sqlop @p &<#
  */
 bool
-overbefore_temporal_timestampset(const Temporal *temp, const Set *ts)
+overbefore_temporal_tstzset(const Temporal *temp, const Set *ts)
 {
-  return boxop_temporal_timestampset(temp, ts, &overleft_span_span,
+  return boxop_temporal_tstzset(temp, ts, &overleft_span_span,
     INVERT_NO);
 }
 
@@ -301,9 +301,9 @@ overbefore_temporal_timestampset(const Temporal *temp, const Set *ts)
  * @sqlop @p #>>
  */
 bool
-after_temporal_timestampset(const Temporal *temp, const Set *ts)
+after_temporal_tstzset(const Temporal *temp, const Set *ts)
 {
-  return boxop_temporal_timestampset(temp, ts, &right_span_span, INVERT_NO);
+  return boxop_temporal_tstzset(temp, ts, &right_span_span, INVERT_NO);
 }
 
 /**
@@ -312,9 +312,9 @@ after_temporal_timestampset(const Temporal *temp, const Set *ts)
  * @sqlop @p #&>
  */
 bool
-overafter_temporal_timestampset(const Temporal *temp, const Set *ts)
+overafter_temporal_tstzset(const Temporal *temp, const Set *ts)
 {
-  return boxop_temporal_timestampset(temp, ts, &overright_span_span,
+  return boxop_temporal_tstzset(temp, ts, &overright_span_span,
     INVERT_NO);
 }
 

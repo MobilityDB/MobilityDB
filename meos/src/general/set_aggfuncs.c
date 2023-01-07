@@ -94,7 +94,7 @@ floatset_agg_transfn(Set *state, double d)
  * @brief Transition function for set aggregate of values
  */
 Set *
-timestampset_agg_transfn(Set *state, TimestampTz t)
+tstzset_agg_transfn(Set *state, TimestampTz t)
 {
   return set_agg_transfn(state, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }

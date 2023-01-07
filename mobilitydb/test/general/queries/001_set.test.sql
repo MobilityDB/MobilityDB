@@ -33,77 +33,77 @@
 -------------------------------------------------------------------------------
 
 /* Errors */
-SELECT timestampset '2000-01-01, 2000-01-02';
-SELECT timestampset '{2000-01-01, 2000-01-02';
+SELECT tstzset '2000-01-01, 2000-01-02';
+SELECT tstzset '{2000-01-01, 2000-01-02';
 
 -------------------------------------------------------------------------------
 -- Constructor
 -------------------------------------------------------------------------------
 
-SELECT timestampset(ARRAY [timestamptz '2000-01-01', '2000-01-02', '2000-01-03']);
+SELECT tstzset(ARRAY [timestamptz '2000-01-01', '2000-01-02', '2000-01-03']);
 /* Errors */
-SELECT timestampset(ARRAY [timestamptz '2000-01-01', '2000-01-01', '2000-01-03']);
-SELECT timestampset('{}'::timestamptz[]);
+SELECT tstzset(ARRAY [timestamptz '2000-01-01', '2000-01-01', '2000-01-03']);
+SELECT tstzset('{}'::timestamptz[]);
 
 -------------------------------------------------------------------------------
 -- Casting
 -------------------------------------------------------------------------------
 
-SELECT timestampset(timestamptz '2000-01-01');
-SELECT timestamptz '2000-01-01'::timestampset;
+SELECT tstzset(timestamptz '2000-01-01');
+SELECT timestamptz '2000-01-01'::tstzset;
 
 -------------------------------------------------------------------------------
 -- Functions
 -------------------------------------------------------------------------------
 
-SELECT memorySize(timestampset '{2000-01-01}');
-SELECT memorySize(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
+SELECT memorySize(tstzset '{2000-01-01}');
+SELECT memorySize(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}');
 
-SELECT storageSize(timestampset '{2000-01-01}');
-SELECT storageSize(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
+SELECT storageSize(tstzset '{2000-01-01}');
+SELECT storageSize(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}');
 
-SELECT period(timestampset '{2000-01-01}');
-SELECT period(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
+SELECT period(tstzset '{2000-01-01}');
+SELECT period(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}');
 
-SELECT numValues(timestampset '{2000-01-01}');
-SELECT numValues(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
+SELECT numValues(tstzset '{2000-01-01}');
+SELECT numValues(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}');
 
-SELECT startValue(timestampset '{2000-01-01}');
-SELECT startValue(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
+SELECT startValue(tstzset '{2000-01-01}');
+SELECT startValue(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}');
 
-SELECT endValue(timestampset '{2000-01-01}');
-SELECT endValue(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
+SELECT endValue(tstzset '{2000-01-01}');
+SELECT endValue(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}');
 
-SELECT valueN(timestampset '{2000-01-01}', 1);
-SELECT valueN(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}', 1);
-SELECT valueN(timestampset '{2000-01-01}', 2);
-SELECT valueN(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}', 4);
+SELECT valueN(tstzset '{2000-01-01}', 1);
+SELECT valueN(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', 1);
+SELECT valueN(tstzset '{2000-01-01}', 2);
+SELECT valueN(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', 4);
 
-SELECT getValues(timestampset '{2000-01-01}');
-SELECT getValues(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
+SELECT getValues(tstzset '{2000-01-01}');
+SELECT getValues(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}');
 
-SELECT shift(timestampset '{2000-01-01}', '5 min');
-SELECT shift(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}', '5 min');
+SELECT shift(tstzset '{2000-01-01}', '5 min');
+SELECT shift(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', '5 min');
 
-SELECT tscale(timestampset '{2000-01-01}', '1 hour');
-SELECT tscale(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}', '1 hour');
+SELECT tscale(tstzset '{2000-01-01}', '1 hour');
+SELECT tscale(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', '1 hour');
 
-SELECT shiftTscale(timestampset '{2000-01-01}', '1 day', '1 hour');
-SELECT shiftTscale(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}', '1 day', '1 hour');
+SELECT shiftTscale(tstzset '{2000-01-01}', '1 day', '1 hour');
+SELECT shiftTscale(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', '1 day', '1 hour');
 
-SELECT timestampset_cmp(timestampset '{2000-01-01}', timestampset '{2000-01-01, 2000-01-02, 2000-01-03}') = -1;
-SELECT timestampset '{2000-01-01}' = timestampset '{2000-01-01, 2000-01-02, 2000-01-03}';
-SELECT timestampset '{2000-01-01}' <> timestampset '{2000-01-01, 2000-01-02, 2000-01-03}';
-SELECT timestampset '{2000-01-01}' < timestampset '{2000-01-01, 2000-01-02, 2000-01-03}';
-SELECT timestampset '{2000-01-01, 2000-01-02, 2000-01-03}' < timestampset '{2000-01-01}';
-SELECT timestampset '{2000-01-01}' <= timestampset '{2000-01-01, 2000-01-02, 2000-01-03}';
-SELECT timestampset '{2000-01-01}' > timestampset '{2000-01-01, 2000-01-02, 2000-01-03}';
-SELECT timestampset '{2000-01-01}' >= timestampset '{2000-01-01, 2000-01-02, 2000-01-03}';
+SELECT tstzset_cmp(tstzset '{2000-01-01}', tstzset '{2000-01-01, 2000-01-02, 2000-01-03}') = -1;
+SELECT tstzset '{2000-01-01}' = tstzset '{2000-01-01, 2000-01-02, 2000-01-03}';
+SELECT tstzset '{2000-01-01}' <> tstzset '{2000-01-01, 2000-01-02, 2000-01-03}';
+SELECT tstzset '{2000-01-01}' < tstzset '{2000-01-01, 2000-01-02, 2000-01-03}';
+SELECT tstzset '{2000-01-01, 2000-01-02, 2000-01-03}' < tstzset '{2000-01-01}';
+SELECT tstzset '{2000-01-01}' <= tstzset '{2000-01-01, 2000-01-02, 2000-01-03}';
+SELECT tstzset '{2000-01-01}' > tstzset '{2000-01-01, 2000-01-02, 2000-01-03}';
+SELECT tstzset '{2000-01-01}' >= tstzset '{2000-01-01, 2000-01-02, 2000-01-03}';
 
-SELECT timestampset_hash('{2000-01-01,2000-01-02}') = timestampset_hash('{2000-01-01,2000-01-02}');
-SELECT timestampset_hash('{2000-01-01,2000-01-02}') <> timestampset_hash('{2000-01-01,2000-01-02}');
+SELECT tstzset_hash('{2000-01-01,2000-01-02}') = tstzset_hash('{2000-01-01,2000-01-02}');
+SELECT tstzset_hash('{2000-01-01,2000-01-02}') <> tstzset_hash('{2000-01-01,2000-01-02}');
 
-SELECT timestampset_hash_extended('{2000-01-01,2000-01-02}', 1) = timestampset_hash_extended('{2000-01-01,2000-01-02}', 1);
-SELECT timestampset_hash_extended('{2000-01-01,2000-01-02}', 1) <> timestampset_hash_extended('{2000-01-01,2000-01-02}', 1);
+SELECT tstzset_hash_extended('{2000-01-01,2000-01-02}', 1) = tstzset_hash_extended('{2000-01-01,2000-01-02}', 1);
+SELECT tstzset_hash_extended('{2000-01-01,2000-01-02}', 1) <> tstzset_hash_extended('{2000-01-01,2000-01-02}', 1);
 
 -------------------------------------------------------------------------------

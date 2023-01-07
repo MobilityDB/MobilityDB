@@ -99,7 +99,7 @@ SELECT '@>', 'period', 'periodset', COUNT(*) FROM tbl_period, tbl_periodset WHER
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
 SELECT '@>', 'periodset', 'timestamptz', COUNT(*) FROM tbl_periodset, tbl_timestamptz WHERE ps @> t;
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'periodset', 'timestampset', COUNT(*) FROM tbl_periodset, tbl_timestampset WHERE ps @> ts;
+SELECT '@>', 'periodset', 'tstzset', COUNT(*) FROM tbl_periodset, tbl_tstzset WHERE ps @> ts;
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
 SELECT '@>', 'periodset', 'period', COUNT(*) FROM tbl_periodset, tbl_period WHERE ps @> p;
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
@@ -141,9 +141,9 @@ INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
 SELECT '<@', 'floatspanset', 'floatspanset', COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f <@ t2.f;
 
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'timestamptz', 'periodset', COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts <@ ps;
+SELECT '<@', 'timestamptz', 'periodset', COUNT(*) FROM tbl_tstzset, tbl_periodset WHERE ts <@ ps;
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'timestampset', 'periodset', COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts <@ ps;
+SELECT '<@', 'tstzset', 'periodset', COUNT(*) FROM tbl_tstzset, tbl_periodset WHERE ts <@ ps;
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
 SELECT '<@', 'period', 'periodset', COUNT(*) FROM tbl_period, tbl_periodset WHERE p <@ ps;
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
@@ -187,11 +187,11 @@ INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'floatspanset', 'floatspanset', COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f && t2.f;
 
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'timestampset', 'periodset', COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts && ps;
+SELECT '&&', 'tstzset', 'periodset', COUNT(*) FROM tbl_tstzset, tbl_periodset WHERE ts && ps;
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'period', 'periodset', COUNT(*) FROM tbl_period, tbl_periodset WHERE p && ps;
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'periodset', 'timestampset', COUNT(*) FROM tbl_periodset, tbl_timestampset WHERE ps && ts;
+SELECT '&&', 'periodset', 'tstzset', COUNT(*) FROM tbl_periodset, tbl_tstzset WHERE ps && ts;
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'periodset', 'period', COUNT(*) FROM tbl_periodset, tbl_period WHERE ps && p;
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
@@ -247,13 +247,13 @@ SELECT '-|-', 'floatspanset', 'floatspanset', COUNT(*) FROM tbl_floatspanset t1,
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
 SELECT '-|-', 'timestamptz', 'periodset', COUNT(*) FROM tbl_timestamptz, tbl_periodset WHERE t -|- ps;
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'timestampset', 'periodset', COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts -|- ps;
+SELECT '-|-', 'tstzset', 'periodset', COUNT(*) FROM tbl_tstzset, tbl_periodset WHERE ts -|- ps;
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
 SELECT '-|-', 'period', 'periodset', COUNT(*) FROM tbl_period, tbl_periodset WHERE p -|- ps;
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
 SELECT '-|-', 'periodset', 'timestamptz', COUNT(*) FROM tbl_periodset, tbl_timestamptz WHERE ps -|- t;
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'periodset', 'timestampset', COUNT(*) FROM tbl_periodset, tbl_timestampset WHERE ps -|- ts;
+SELECT '-|-', 'periodset', 'tstzset', COUNT(*) FROM tbl_periodset, tbl_tstzset WHERE ps -|- ts;
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
 SELECT '-|-', 'periodset', 'period', COUNT(*) FROM tbl_periodset, tbl_period WHERE ps -|- p;
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
@@ -309,13 +309,13 @@ SELECT '<<', 'floatspanset', 'floatspanset', COUNT(*) FROM tbl_floatspanset t1, 
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
 SELECT '<<#', 'timestamptz', 'periodset', COUNT(*) FROM tbl_timestamptz, tbl_periodset WHERE t <<# ps;
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '<<#', 'timestampset', 'periodset', COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts <<# ps;
+SELECT '<<#', 'tstzset', 'periodset', COUNT(*) FROM tbl_tstzset, tbl_periodset WHERE ts <<# ps;
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
 SELECT '<<#', 'period', 'periodset', COUNT(*) FROM tbl_period, tbl_periodset WHERE p <<# ps;
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
 SELECT '<<#', 'periodset', 'timestamptz', COUNT(*) FROM tbl_periodset, tbl_timestamptz WHERE ps <<# t;
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '<<#', 'periodset', 'timestampset', COUNT(*) FROM tbl_periodset, tbl_timestampset WHERE ps <<# ts;
+SELECT '<<#', 'periodset', 'tstzset', COUNT(*) FROM tbl_periodset, tbl_tstzset WHERE ps <<# ts;
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
 SELECT '<<#', 'periodset', 'period', COUNT(*) FROM tbl_periodset, tbl_period WHERE ps <<# p;
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
@@ -371,13 +371,13 @@ SELECT '&<', 'floatspanset', 'floatspanset', COUNT(*) FROM tbl_floatspanset t1, 
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
 SELECT '&<#', 'timestamptz', 'periodset', COUNT(*) FROM tbl_timestamptz, tbl_periodset WHERE t &<# ps;
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '&<#', 'timestampset', 'periodset', COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts &<# ps;
+SELECT '&<#', 'tstzset', 'periodset', COUNT(*) FROM tbl_tstzset, tbl_periodset WHERE ts &<# ps;
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
 SELECT '&<#', 'period', 'periodset', COUNT(*) FROM tbl_period, tbl_periodset WHERE p &<# ps;
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
 SELECT '&<#', 'periodset', 'timestamptz', COUNT(*) FROM tbl_periodset, tbl_timestamptz WHERE ps &<# t;
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '&<#', 'periodset', 'timestampset', COUNT(*) FROM tbl_periodset, tbl_timestampset WHERE ps &<# ts;
+SELECT '&<#', 'periodset', 'tstzset', COUNT(*) FROM tbl_periodset, tbl_tstzset WHERE ps &<# ts;
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
 SELECT '&<#', 'periodset', 'period', COUNT(*) FROM tbl_periodset, tbl_period WHERE ps &<# p;
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
@@ -433,13 +433,13 @@ SELECT '>>', 'floatspanset', 'floatspanset', COUNT(*) FROM tbl_floatspanset t1, 
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
 SELECT '#>>', 'timestamptz', 'periodset', COUNT(*) FROM tbl_timestamptz, tbl_periodset WHERE t #>> ps;
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '#>>', 'timestampset', 'periodset', COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts #>> ps;
+SELECT '#>>', 'tstzset', 'periodset', COUNT(*) FROM tbl_tstzset, tbl_periodset WHERE ts #>> ps;
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
 SELECT '#>>', 'period', 'periodset', COUNT(*) FROM tbl_period, tbl_periodset WHERE p #>> ps;
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
 SELECT '#>>', 'periodset', 'timestamptz', COUNT(*) FROM tbl_periodset, tbl_timestamptz WHERE ps #>> t;
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '#>>', 'periodset', 'timestampset', COUNT(*) FROM tbl_periodset, tbl_timestampset WHERE ps #>> ts;
+SELECT '#>>', 'periodset', 'tstzset', COUNT(*) FROM tbl_periodset, tbl_tstzset WHERE ps #>> ts;
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
 SELECT '#>>', 'periodset', 'period', COUNT(*) FROM tbl_periodset, tbl_period WHERE ps #>> p;
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
@@ -495,13 +495,13 @@ SELECT '&>', 'floatspanset', 'floatspanset', COUNT(*) FROM tbl_floatspanset t1, 
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
 SELECT '#&>', 'timestamptz', 'periodset', COUNT(*) FROM tbl_timestamptz, tbl_periodset WHERE t #&> ps;
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '#&>', 'timestampset', 'periodset', COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts #&> ps;
+SELECT '#&>', 'tstzset', 'periodset', COUNT(*) FROM tbl_tstzset, tbl_periodset WHERE ts #&> ps;
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
 SELECT '#&>', 'period', 'periodset', COUNT(*) FROM tbl_period, tbl_periodset WHERE p #&> ps;
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
 SELECT '#&>', 'periodset', 'timestamptz', COUNT(*) FROM tbl_periodset, tbl_timestamptz WHERE ps #&> t;
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
-SELECT '#&>', 'periodset', 'timestampset', COUNT(*) FROM tbl_periodset, tbl_timestampset WHERE ps #&> ts;
+SELECT '#&>', 'periodset', 'tstzset', COUNT(*) FROM tbl_periodset, tbl_tstzset WHERE ps #&> ts;
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
 SELECT '#&>', 'periodset', 'period', COUNT(*) FROM tbl_periodset, tbl_period WHERE ps #&> p;
 INSERT INTO test_spansetops(op, leftarg, rightarg, no_idx)
@@ -582,8 +582,8 @@ UPDATE test_spansetops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestamptz WHERE ps @> t )
 WHERE op = '@>' AND leftarg = 'periodset' AND rightarg = 'timestamptz';
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestampset WHERE ps @> ts )
-WHERE op = '@>' AND leftarg = 'periodset' AND rightarg = 'timestampset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tstzset WHERE ps @> ts )
+WHERE op = '@>' AND leftarg = 'periodset' AND rightarg = 'tstzset';
 UPDATE test_spansetops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_period WHERE ps @> p )
 WHERE op = '@>' AND leftarg = 'periodset' AND rightarg = 'period';
@@ -645,8 +645,8 @@ UPDATE test_spansetops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_periodset WHERE t <@ ps )
 WHERE op = '<@' AND leftarg = 'timestamptz' AND rightarg = 'periodset';
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts <@ ps )
-WHERE op = '<@' AND leftarg = 'timestampset' AND rightarg = 'periodset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_periodset WHERE ts <@ ps )
+WHERE op = '<@' AND leftarg = 'tstzset' AND rightarg = 'periodset';
 UPDATE test_spansetops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_periodset WHERE p <@ ps )
 WHERE op = '<@' AND leftarg = 'period' AND rightarg = 'periodset';
@@ -708,14 +708,14 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 
 WHERE op = '&&' AND leftarg = 'floatspanset' AND rightarg = 'floatspanset';
 
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts && ps )
-WHERE op = '&&' AND leftarg = 'timestampset' AND rightarg = 'periodset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_periodset WHERE ts && ps )
+WHERE op = '&&' AND leftarg = 'tstzset' AND rightarg = 'periodset';
 UPDATE test_spansetops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_periodset WHERE p && ps )
 WHERE op = '&&' AND leftarg = 'period' AND rightarg = 'periodset';
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestampset WHERE ps && ts )
-WHERE op = '&&' AND leftarg = 'periodset' AND rightarg = 'timestampset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tstzset WHERE ps && ts )
+WHERE op = '&&' AND leftarg = 'periodset' AND rightarg = 'tstzset';
 UPDATE test_spansetops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_period WHERE ps && p )
 WHERE op = '&&' AND leftarg = 'periodset' AND rightarg = 'period';
@@ -795,8 +795,8 @@ UPDATE test_spansetops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_periodset WHERE t -|- ps )
 WHERE op = '-|-' AND leftarg = 'timestamptz' AND rightarg = 'periodset';
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts -|- ps )
-WHERE op = '-|-' AND leftarg = 'timestampset' AND rightarg = 'periodset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_periodset WHERE ts -|- ps )
+WHERE op = '-|-' AND leftarg = 'tstzset' AND rightarg = 'periodset';
 UPDATE test_spansetops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_periodset WHERE p -|- ps )
 WHERE op = '-|-' AND leftarg = 'period' AND rightarg = 'periodset';
@@ -804,8 +804,8 @@ UPDATE test_spansetops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestamptz WHERE ps -|- t )
 WHERE op = '-|-' AND leftarg = 'periodset' AND rightarg = 'timestamptz';
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestampset WHERE ps -|- ts )
-WHERE op = '-|-' AND leftarg = 'periodset' AND rightarg = 'timestampset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tstzset WHERE ps -|- ts )
+WHERE op = '-|-' AND leftarg = 'periodset' AND rightarg = 'tstzset';
 UPDATE test_spansetops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_period WHERE ps -|- p )
 WHERE op = '-|-' AND leftarg = 'periodset' AND rightarg = 'period';
@@ -885,8 +885,8 @@ UPDATE test_spansetops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_periodset WHERE t <<# ps )
 WHERE op = '<<#' AND leftarg = 'timestamptz' AND rightarg = 'periodset';
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts <<# ps )
-WHERE op = '<<#' AND leftarg = 'timestampset' AND rightarg = 'periodset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_periodset WHERE ts <<# ps )
+WHERE op = '<<#' AND leftarg = 'tstzset' AND rightarg = 'periodset';
 UPDATE test_spansetops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_periodset WHERE p <<# ps )
 WHERE op = '<<#' AND leftarg = 'period' AND rightarg = 'periodset';
@@ -894,8 +894,8 @@ UPDATE test_spansetops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestamptz WHERE ps <<# t )
 WHERE op = '<<#' AND leftarg = 'periodset' AND rightarg = 'timestamptz';
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestampset WHERE ps <<# ts )
-WHERE op = '<<#' AND leftarg = 'periodset' AND rightarg = 'timestampset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tstzset WHERE ps <<# ts )
+WHERE op = '<<#' AND leftarg = 'periodset' AND rightarg = 'tstzset';
 UPDATE test_spansetops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_period WHERE ps <<# p )
 WHERE op = '<<#' AND leftarg = 'periodset' AND rightarg = 'period';
@@ -975,8 +975,8 @@ UPDATE test_spansetops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_periodset WHERE t &<# ps )
 WHERE op = '&<#' AND leftarg = 'timestamptz' AND rightarg = 'periodset';
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts &<# ps )
-WHERE op = '&<#' AND leftarg = 'timestampset' AND rightarg = 'periodset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_periodset WHERE ts &<# ps )
+WHERE op = '&<#' AND leftarg = 'tstzset' AND rightarg = 'periodset';
 UPDATE test_spansetops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_periodset WHERE p &<# ps )
 WHERE op = '&<#' AND leftarg = 'period' AND rightarg = 'periodset';
@@ -984,8 +984,8 @@ UPDATE test_spansetops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestamptz WHERE ps &<# t )
 WHERE op = '&<#' AND leftarg = 'periodset' AND rightarg = 'timestamptz';
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestampset WHERE ps &<# ts )
-WHERE op = '&<#' AND leftarg = 'periodset' AND rightarg = 'timestampset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tstzset WHERE ps &<# ts )
+WHERE op = '&<#' AND leftarg = 'periodset' AND rightarg = 'tstzset';
 UPDATE test_spansetops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_period WHERE ps &<# p )
 WHERE op = '&<#' AND leftarg = 'periodset' AND rightarg = 'period';
@@ -1065,8 +1065,8 @@ UPDATE test_spansetops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_periodset WHERE t #>> ps )
 WHERE op = '#>>' AND leftarg = 'timestamptz' AND rightarg = 'periodset';
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts #>> ps )
-WHERE op = '#>>' AND leftarg = 'timestampset' AND rightarg = 'periodset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_periodset WHERE ts #>> ps )
+WHERE op = '#>>' AND leftarg = 'tstzset' AND rightarg = 'periodset';
 UPDATE test_spansetops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_periodset WHERE p #>> ps )
 WHERE op = '#>>' AND leftarg = 'period' AND rightarg = 'periodset';
@@ -1074,8 +1074,8 @@ UPDATE test_spansetops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestamptz WHERE ps #>> t )
 WHERE op = '#>>' AND leftarg = 'periodset' AND rightarg = 'timestamptz';
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestampset WHERE ps #>> ts )
-WHERE op = '#>>' AND leftarg = 'periodset' AND rightarg = 'timestampset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tstzset WHERE ps #>> ts )
+WHERE op = '#>>' AND leftarg = 'periodset' AND rightarg = 'tstzset';
 UPDATE test_spansetops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_period WHERE ps #>> p )
 WHERE op = '#>>' AND leftarg = 'periodset' AND rightarg = 'period';
@@ -1155,8 +1155,8 @@ UPDATE test_spansetops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_periodset WHERE t #&> ps )
 WHERE op = '#&>' AND leftarg = 'timestamptz' AND rightarg = 'periodset';
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts #&> ps )
-WHERE op = '#&>' AND leftarg = 'timestampset' AND rightarg = 'periodset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_periodset WHERE ts #&> ps )
+WHERE op = '#&>' AND leftarg = 'tstzset' AND rightarg = 'periodset';
 UPDATE test_spansetops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_periodset WHERE p #&>ps )
 WHERE op = '#&>' AND leftarg = 'period' AND rightarg = 'periodset';
@@ -1164,8 +1164,8 @@ UPDATE test_spansetops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestamptz WHERE ps #&> t )
 WHERE op = '#&>' AND leftarg = 'periodset' AND rightarg = 'timestamptz';
 UPDATE test_spansetops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestampset WHERE ps #&> ts )
-WHERE op = '#&>' AND leftarg = 'periodset' AND rightarg = 'timestampset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tstzset WHERE ps #&> ts )
+WHERE op = '#&>' AND leftarg = 'periodset' AND rightarg = 'tstzset';
 UPDATE test_spansetops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_period WHERE ps #&> p )
 WHERE op = '#&>' AND leftarg = 'periodset' AND rightarg = 'period';
@@ -1259,8 +1259,8 @@ UPDATE test_spansetops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestamptz WHERE ps @> t )
 WHERE op = '@>' AND leftarg = 'periodset' AND rightarg = 'timestamptz';
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestampset WHERE ps @> ts )
-WHERE op = '@>' AND leftarg = 'periodset' AND rightarg = 'timestampset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tstzset WHERE ps @> ts )
+WHERE op = '@>' AND leftarg = 'periodset' AND rightarg = 'tstzset';
 UPDATE test_spansetops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_period WHERE ps @> p )
 WHERE op = '@>' AND leftarg = 'periodset' AND rightarg = 'period';
@@ -1322,8 +1322,8 @@ UPDATE test_spansetops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_periodset WHERE t <@ ps )
 WHERE op = '<@' AND leftarg = 'timestamptz' AND rightarg = 'periodset';
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts <@ ps )
-WHERE op = '<@' AND leftarg = 'timestampset' AND rightarg = 'periodset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_periodset WHERE ts <@ ps )
+WHERE op = '<@' AND leftarg = 'tstzset' AND rightarg = 'periodset';
 UPDATE test_spansetops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_periodset WHERE p <@ ps )
 WHERE op = '<@' AND leftarg = 'period' AND rightarg = 'periodset';
@@ -1385,14 +1385,14 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset 
 WHERE op = '&&' AND leftarg = 'floatspanset' AND rightarg = 'floatspanset';
 
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts && ps )
-WHERE op = '&&' AND leftarg = 'timestampset' AND rightarg = 'periodset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_periodset WHERE ts && ps )
+WHERE op = '&&' AND leftarg = 'tstzset' AND rightarg = 'periodset';
 UPDATE test_spansetops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_periodset WHERE p && ps )
 WHERE op = '&&' AND leftarg = 'period' AND rightarg = 'periodset';
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestampset WHERE ps && ts )
-WHERE op = '&&' AND leftarg = 'periodset' AND rightarg = 'timestampset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tstzset WHERE ps && ts )
+WHERE op = '&&' AND leftarg = 'periodset' AND rightarg = 'tstzset';
 UPDATE test_spansetops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_period WHERE ps && p )
 WHERE op = '&&' AND leftarg = 'periodset' AND rightarg = 'period';
@@ -1472,8 +1472,8 @@ UPDATE test_spansetops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_periodset WHERE t -|- ps )
 WHERE op = '-|-' AND leftarg = 'timestamptz' AND rightarg = 'periodset';
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts -|- ps )
-WHERE op = '-|-' AND leftarg = 'timestampset' AND rightarg = 'periodset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_periodset WHERE ts -|- ps )
+WHERE op = '-|-' AND leftarg = 'tstzset' AND rightarg = 'periodset';
 UPDATE test_spansetops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_periodset WHERE p -|- ps )
 WHERE op = '-|-' AND leftarg = 'period' AND rightarg = 'periodset';
@@ -1481,8 +1481,8 @@ UPDATE test_spansetops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestamptz WHERE ps -|- t )
 WHERE op = '-|-' AND leftarg = 'periodset' AND rightarg = 'timestamptz';
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestampset WHERE ps -|- ts )
-WHERE op = '-|-' AND leftarg = 'periodset' AND rightarg = 'timestampset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tstzset WHERE ps -|- ts )
+WHERE op = '-|-' AND leftarg = 'periodset' AND rightarg = 'tstzset';
 UPDATE test_spansetops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_period WHERE ps -|- p )
 WHERE op = '-|-' AND leftarg = 'periodset' AND rightarg = 'period';
@@ -1562,8 +1562,8 @@ UPDATE test_spansetops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_periodset WHERE t <<# ps )
 WHERE op = '<<#' AND leftarg = 'timestamptz' AND rightarg = 'periodset';
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts <<# ps )
-WHERE op = '<<#' AND leftarg = 'timestampset' AND rightarg = 'periodset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_periodset WHERE ts <<# ps )
+WHERE op = '<<#' AND leftarg = 'tstzset' AND rightarg = 'periodset';
 UPDATE test_spansetops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_periodset WHERE p <<# ps )
 WHERE op = '<<#' AND leftarg = 'period' AND rightarg = 'periodset';
@@ -1571,8 +1571,8 @@ UPDATE test_spansetops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestamptz WHERE ps <<# t )
 WHERE op = '<<#' AND leftarg = 'periodset' AND rightarg = 'timestamptz';
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestampset WHERE ps <<# ts )
-WHERE op = '<<#' AND leftarg = 'periodset' AND rightarg = 'timestampset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tstzset WHERE ps <<# ts )
+WHERE op = '<<#' AND leftarg = 'periodset' AND rightarg = 'tstzset';
 UPDATE test_spansetops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_period WHERE ps <<# p )
 WHERE op = '<<#' AND leftarg = 'periodset' AND rightarg = 'period';
@@ -1652,8 +1652,8 @@ UPDATE test_spansetops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_periodset WHERE t &<# ps )
 WHERE op = '&<#' AND leftarg = 'timestamptz' AND rightarg = 'periodset';
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts &<# ps )
-WHERE op = '&<#' AND leftarg = 'timestampset' AND rightarg = 'periodset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_periodset WHERE ts &<# ps )
+WHERE op = '&<#' AND leftarg = 'tstzset' AND rightarg = 'periodset';
 UPDATE test_spansetops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_periodset WHERE p &<# ps )
 WHERE op = '&<#' AND leftarg = 'period' AND rightarg = 'periodset';
@@ -1661,8 +1661,8 @@ UPDATE test_spansetops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestamptz WHERE ps &<# t )
 WHERE op = '&<#' AND leftarg = 'periodset' AND rightarg = 'timestamptz';
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestampset WHERE ps &<# ts )
-WHERE op = '&<#' AND leftarg = 'periodset' AND rightarg = 'timestampset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tstzset WHERE ps &<# ts )
+WHERE op = '&<#' AND leftarg = 'periodset' AND rightarg = 'tstzset';
 UPDATE test_spansetops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_period WHERE ps &<# p )
 WHERE op = '&<#' AND leftarg = 'periodset' AND rightarg = 'period';
@@ -1742,8 +1742,8 @@ UPDATE test_spansetops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_periodset WHERE t #>> ps )
 WHERE op = '#>>' AND leftarg = 'timestamptz' AND rightarg = 'periodset';
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts #>> ps )
-WHERE op = '#>>' AND leftarg = 'timestampset' AND rightarg = 'periodset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_periodset WHERE ts #>> ps )
+WHERE op = '#>>' AND leftarg = 'tstzset' AND rightarg = 'periodset';
 UPDATE test_spansetops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_periodset WHERE p #>> ps )
 WHERE op = '#>>' AND leftarg = 'period' AND rightarg = 'periodset';
@@ -1751,8 +1751,8 @@ UPDATE test_spansetops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestamptz WHERE ps #>> t )
 WHERE op = '#>>' AND leftarg = 'periodset' AND rightarg = 'timestamptz';
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestampset WHERE ps #>> ts )
-WHERE op = '#>>' AND leftarg = 'periodset' AND rightarg = 'timestampset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tstzset WHERE ps #>> ts )
+WHERE op = '#>>' AND leftarg = 'periodset' AND rightarg = 'tstzset';
 UPDATE test_spansetops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_period WHERE ps #>> p )
 WHERE op = '#>>' AND leftarg = 'periodset' AND rightarg = 'period';
@@ -1832,8 +1832,8 @@ UPDATE test_spansetops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_periodset WHERE t #&> ps )
 WHERE op = '#&>' AND leftarg = 'timestamptz' AND rightarg = 'periodset';
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts #&> ps )
-WHERE op = '#&>' AND leftarg = 'timestampset' AND rightarg = 'periodset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_periodset WHERE ts #&> ps )
+WHERE op = '#&>' AND leftarg = 'tstzset' AND rightarg = 'periodset';
 UPDATE test_spansetops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_periodset WHERE p #&>ps )
 WHERE op = '#&>' AND leftarg = 'period' AND rightarg = 'periodset';
@@ -1841,8 +1841,8 @@ UPDATE test_spansetops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestamptz WHERE ps #&> t )
 WHERE op = '#&>' AND leftarg = 'periodset' AND rightarg = 'timestamptz';
 UPDATE test_spansetops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestampset WHERE ps #&> ts )
-WHERE op = '#&>' AND leftarg = 'periodset' AND rightarg = 'timestampset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tstzset WHERE ps #&> ts )
+WHERE op = '#&>' AND leftarg = 'periodset' AND rightarg = 'tstzset';
 UPDATE test_spansetops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_period WHERE ps #&> p )
 WHERE op = '#&>' AND leftarg = 'periodset' AND rightarg = 'period';
@@ -1936,8 +1936,8 @@ UPDATE test_spansetops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestamptz WHERE ps @> t )
 WHERE op = '@>' AND leftarg = 'periodset' AND rightarg = 'timestamptz';
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestampset WHERE ps @> ts )
-WHERE op = '@>' AND leftarg = 'periodset' AND rightarg = 'timestampset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tstzset WHERE ps @> ts )
+WHERE op = '@>' AND leftarg = 'periodset' AND rightarg = 'tstzset';
 UPDATE test_spansetops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_period WHERE ps @> p )
 WHERE op = '@>' AND leftarg = 'periodset' AND rightarg = 'period';
@@ -1999,8 +1999,8 @@ UPDATE test_spansetops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_periodset WHERE t <@ ps )
 WHERE op = '<@' AND leftarg = 'timestamptz' AND rightarg = 'periodset';
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts <@ ps )
-WHERE op = '<@' AND leftarg = 'timestampset' AND rightarg = 'periodset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_periodset WHERE ts <@ ps )
+WHERE op = '<@' AND leftarg = 'tstzset' AND rightarg = 'periodset';
 UPDATE test_spansetops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_periodset WHERE p <@ ps )
 WHERE op = '<@' AND leftarg = 'period' AND rightarg = 'periodset';
@@ -2062,14 +2062,14 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2
 WHERE op = '&&' AND leftarg = 'floatspanset' AND rightarg = 'floatspanset';
 
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts && ps )
-WHERE op = '&&' AND leftarg = 'timestampset' AND rightarg = 'periodset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_periodset WHERE ts && ps )
+WHERE op = '&&' AND leftarg = 'tstzset' AND rightarg = 'periodset';
 UPDATE test_spansetops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_periodset WHERE p && ps )
 WHERE op = '&&' AND leftarg = 'period' AND rightarg = 'periodset';
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestampset WHERE ps && ts )
-WHERE op = '&&' AND leftarg = 'periodset' AND rightarg = 'timestampset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tstzset WHERE ps && ts )
+WHERE op = '&&' AND leftarg = 'periodset' AND rightarg = 'tstzset';
 UPDATE test_spansetops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_period WHERE ps && p )
 WHERE op = '&&' AND leftarg = 'periodset' AND rightarg = 'period';
@@ -2149,8 +2149,8 @@ UPDATE test_spansetops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_periodset WHERE t -|- ps )
 WHERE op = '-|-' AND leftarg = 'timestamptz' AND rightarg = 'periodset';
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts -|- ps )
-WHERE op = '-|-' AND leftarg = 'timestampset' AND rightarg = 'periodset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_periodset WHERE ts -|- ps )
+WHERE op = '-|-' AND leftarg = 'tstzset' AND rightarg = 'periodset';
 UPDATE test_spansetops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_periodset WHERE p -|- ps )
 WHERE op = '-|-' AND leftarg = 'period' AND rightarg = 'periodset';
@@ -2158,8 +2158,8 @@ UPDATE test_spansetops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestamptz WHERE ps -|- t )
 WHERE op = '-|-' AND leftarg = 'periodset' AND rightarg = 'timestamptz';
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestampset WHERE ps -|- ts )
-WHERE op = '-|-' AND leftarg = 'periodset' AND rightarg = 'timestampset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tstzset WHERE ps -|- ts )
+WHERE op = '-|-' AND leftarg = 'periodset' AND rightarg = 'tstzset';
 UPDATE test_spansetops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_period WHERE ps -|- p )
 WHERE op = '-|-' AND leftarg = 'periodset' AND rightarg = 'period';
@@ -2239,8 +2239,8 @@ UPDATE test_spansetops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_periodset WHERE t <<# ps )
 WHERE op = '<<#' AND leftarg = 'timestamptz' AND rightarg = 'periodset';
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts <<# ps )
-WHERE op = '<<#' AND leftarg = 'timestampset' AND rightarg = 'periodset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_periodset WHERE ts <<# ps )
+WHERE op = '<<#' AND leftarg = 'tstzset' AND rightarg = 'periodset';
 UPDATE test_spansetops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_periodset WHERE p <<# ps )
 WHERE op = '<<#' AND leftarg = 'period' AND rightarg = 'periodset';
@@ -2248,8 +2248,8 @@ UPDATE test_spansetops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestamptz WHERE ps <<# t )
 WHERE op = '<<#' AND leftarg = 'periodset' AND rightarg = 'timestamptz';
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestampset WHERE ps <<# ts )
-WHERE op = '<<#' AND leftarg = 'periodset' AND rightarg = 'timestampset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tstzset WHERE ps <<# ts )
+WHERE op = '<<#' AND leftarg = 'periodset' AND rightarg = 'tstzset';
 UPDATE test_spansetops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_period WHERE ps <<# p )
 WHERE op = '<<#' AND leftarg = 'periodset' AND rightarg = 'period';
@@ -2329,8 +2329,8 @@ UPDATE test_spansetops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_periodset WHERE t &<# ps )
 WHERE op = '&<#' AND leftarg = 'timestamptz' AND rightarg = 'periodset';
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts &<# ps )
-WHERE op = '&<#' AND leftarg = 'timestampset' AND rightarg = 'periodset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_periodset WHERE ts &<# ps )
+WHERE op = '&<#' AND leftarg = 'tstzset' AND rightarg = 'periodset';
 UPDATE test_spansetops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_periodset WHERE p &<# ps )
 WHERE op = '&<#' AND leftarg = 'period' AND rightarg = 'periodset';
@@ -2338,8 +2338,8 @@ UPDATE test_spansetops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestamptz WHERE ps &<# t )
 WHERE op = '&<#' AND leftarg = 'periodset' AND rightarg = 'timestamptz';
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestampset WHERE ps &<# ts )
-WHERE op = '&<#' AND leftarg = 'periodset' AND rightarg = 'timestampset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tstzset WHERE ps &<# ts )
+WHERE op = '&<#' AND leftarg = 'periodset' AND rightarg = 'tstzset';
 UPDATE test_spansetops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_period WHERE ps &<# p )
 WHERE op = '&<#' AND leftarg = 'periodset' AND rightarg = 'period';
@@ -2419,8 +2419,8 @@ UPDATE test_spansetops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_periodset WHERE t #>> ps )
 WHERE op = '#>>' AND leftarg = 'timestamptz' AND rightarg = 'periodset';
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts #>> ps )
-WHERE op = '#>>' AND leftarg = 'timestampset' AND rightarg = 'periodset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_periodset WHERE ts #>> ps )
+WHERE op = '#>>' AND leftarg = 'tstzset' AND rightarg = 'periodset';
 UPDATE test_spansetops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_periodset WHERE p #>> ps )
 WHERE op = '#>>' AND leftarg = 'period' AND rightarg = 'periodset';
@@ -2428,8 +2428,8 @@ UPDATE test_spansetops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestamptz WHERE ps #>> t )
 WHERE op = '#>>' AND leftarg = 'periodset' AND rightarg = 'timestamptz';
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestampset WHERE ps #>> ts )
-WHERE op = '#>>' AND leftarg = 'periodset' AND rightarg = 'timestampset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tstzset WHERE ps #>> ts )
+WHERE op = '#>>' AND leftarg = 'periodset' AND rightarg = 'tstzset';
 UPDATE test_spansetops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_period WHERE ps #>> p )
 WHERE op = '#>>' AND leftarg = 'periodset' AND rightarg = 'period';
@@ -2509,8 +2509,8 @@ UPDATE test_spansetops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_periodset WHERE t #&> ps )
 WHERE op = '#&>' AND leftarg = 'timestamptz' AND rightarg = 'periodset';
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_periodset WHERE ts #&> ps )
-WHERE op = '#&>' AND leftarg = 'timestampset' AND rightarg = 'periodset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_periodset WHERE ts #&> ps )
+WHERE op = '#&>' AND leftarg = 'tstzset' AND rightarg = 'periodset';
 UPDATE test_spansetops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_periodset WHERE p #&>ps )
 WHERE op = '#&>' AND leftarg = 'period' AND rightarg = 'periodset';
@@ -2518,8 +2518,8 @@ UPDATE test_spansetops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestamptz WHERE ps #&> t )
 WHERE op = '#&>' AND leftarg = 'periodset' AND rightarg = 'timestamptz';
 UPDATE test_spansetops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_timestampset WHERE ps #&> ts )
-WHERE op = '#&>' AND leftarg = 'periodset' AND rightarg = 'timestampset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tstzset WHERE ps #&> ts )
+WHERE op = '#&>' AND leftarg = 'periodset' AND rightarg = 'tstzset';
 UPDATE test_spansetops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_period WHERE ps #&> p )
 WHERE op = '#&>' AND leftarg = 'periodset' AND rightarg = 'period';

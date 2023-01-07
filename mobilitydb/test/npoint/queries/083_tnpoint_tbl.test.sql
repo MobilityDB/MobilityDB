@@ -209,10 +209,10 @@ WHERE minusTime(temp, t) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz
 WHERE valueAtTimestamp(temp, t) IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestampset
+SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset
 WHERE atTime(temp, ts) IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestampset
+SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset
 WHERE minusTime(temp, ts) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_period
@@ -230,7 +230,7 @@ WHERE minusTime(temp, ps) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz
 WHERE overlapsTime(temp, t) IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestampset
+SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset
 WHERE overlapsTime(temp, ts) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_period
@@ -282,7 +282,7 @@ CREATE INDEX tbl_tnpoint_rtree_idx ON tbl_tnpoint USING gist(temp);
 
 SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, timestamptz '2001-06-01');
 
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, timestampset '{2001-06-01, 2001-07-01}');
+SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, tstzset '{2001-06-01, 2001-07-01}');
 
 SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, period '[2001-06-01, 2001-07-01]');
 
@@ -302,7 +302,7 @@ CREATE INDEX tbl_tnpoint_quadtree_idx ON tbl_tnpoint USING spgist(temp);
 
 SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, timestamptz '2001-06-01');
 
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, timestampset '{2001-06-01, 2001-07-01}');
+SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, tstzset '{2001-06-01, 2001-07-01}');
 
 SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, period '[2001-06-01, 2001-07-01]');
 

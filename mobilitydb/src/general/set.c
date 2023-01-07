@@ -63,7 +63,7 @@ PG_FUNCTION_INFO_V1(Set_in);
 /**
  * @ingroup mobilitydb_setspan_inout
  * @brief Input function for timestamp sets
- * @sqlfunc intset_in(), bigintset_in(), floatset_in(), timestampset_in()
+ * @sqlfunc intset_in(), bigintset_in(), floatset_in(), tstzset_in()
  */
 PGDLLEXPORT Datum
 Set_in(PG_FUNCTION_ARGS)
@@ -78,7 +78,7 @@ PG_FUNCTION_INFO_V1(Set_out);
 /**
  * @ingroup mobilitydb_setspan_inout
  * @brief Output function for timestamp sets
- * @sqlfunc intset_out(), bigintset_out(), floatset_out(), timestampset_out()
+ * @sqlfunc intset_out(), bigintset_out(), floatset_out(), tstzset_out()
  */
 PGDLLEXPORT Datum
 Set_out(PG_FUNCTION_ARGS)
@@ -93,7 +93,7 @@ PG_FUNCTION_INFO_V1(Set_recv);
 /**
  * @ingroup mobilitydb_setspan_inout
  * @brief Receive function for timestamp set
- * @sqlfunc intset_recv(), bigintset_recv(), floatset_recv(), timestampset_recv()
+ * @sqlfunc intset_recv(), bigintset_recv(), floatset_recv(), tstzset_recv()
  */
 PGDLLEXPORT Datum
 Set_recv(PG_FUNCTION_ARGS)
@@ -109,7 +109,7 @@ PG_FUNCTION_INFO_V1(Set_send);
 /**
  * @ingroup mobilitydb_setspan_inout
  * @brief Send function for timestamp set
- * @sqlfunc intset_send(), bigintset_send(), floatset_send(), timestampset_send()
+ * @sqlfunc intset_send(), bigintset_send(), floatset_send(), tstzset_send()
  */
 PGDLLEXPORT Datum
 Set_send(PG_FUNCTION_ARGS)
@@ -131,7 +131,7 @@ PG_FUNCTION_INFO_V1(Set_constructor);
 /**
  * @ingroup mobilitydb_setspan_constructor
  * @brief Construct a set from an array of values
- * @sqlfunc intset(), bigintset(), floatset(), timestampset()
+ * @sqlfunc intset(), bigintset(), floatset(), tstzset()
  */
 PGDLLEXPORT Datum
 Set_constructor(PG_FUNCTION_ARGS)
@@ -155,7 +155,7 @@ PG_FUNCTION_INFO_V1(Value_to_set);
 /**
  * @ingroup mobilitydb_setspan_cast
  * @brief Cast a value as a set
- * @sqlfunc timestampset()
+ * @sqlfunc tstzset()
  */
 PGDLLEXPORT Datum
 Value_to_set(PG_FUNCTION_ARGS)
@@ -341,53 +341,53 @@ Set_shift(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Timestampset_shift);
+PG_FUNCTION_INFO_V1(Tstzset_shift);
 /**
  * @ingroup mobilitydb_setspan_transf
  * @brief Shift a timestamp set by an interval
  * @sqlfunc shift()
  */
 PGDLLEXPORT Datum
-Timestampset_shift(PG_FUNCTION_ARGS)
+Tstzset_shift(PG_FUNCTION_ARGS)
 {
   Set *ts = PG_GETARG_SET_P(0);
   Interval *shift = PG_GETARG_INTERVAL_P(1);
-  Set *result = timestampset_shift_tscale(ts, shift, NULL);
+  Set *result = tstzset_shift_tscale(ts, shift, NULL);
   PG_FREE_IF_COPY(ts, 0);
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Timestampset_tscale);
+PG_FUNCTION_INFO_V1(Tstzset_tscale);
 /**
  * @ingroup mobilitydb_setspan_transf
  * @brief Scale a timestamp set by an interval
  * @sqlfunc tscale()
  */
 PGDLLEXPORT Datum
-Timestampset_tscale(PG_FUNCTION_ARGS)
+Tstzset_tscale(PG_FUNCTION_ARGS)
 {
   Set *ts = PG_GETARG_SET_P(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
   ensure_valid_duration(duration);
-  Set *result = timestampset_shift_tscale(ts, NULL, duration);
+  Set *result = tstzset_shift_tscale(ts, NULL, duration);
   PG_FREE_IF_COPY(ts, 0);
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Timestampset_shift_tscale);
+PG_FUNCTION_INFO_V1(Tstzset_shift_tscale);
 /**
  * @ingroup mobilitydb_setspan_transf
  * @brief Shift and scale a timestamp set by the intervals
  * @sqlfunc shiftTscale()
  */
 PGDLLEXPORT Datum
-Timestampset_shift_tscale(PG_FUNCTION_ARGS)
+Tstzset_shift_tscale(PG_FUNCTION_ARGS)
 {
   Set *ts = PG_GETARG_SET_P(0);
   Interval *shift = PG_GETARG_INTERVAL_P(1);
   Interval *duration = PG_GETARG_INTERVAL_P(2);
   ensure_valid_duration(duration);
-  Set *result = timestampset_shift_tscale(ts, shift, duration);
+  Set *result = tstzset_shift_tscale(ts, shift, duration);
   PG_RETURN_POINTER(result);
 }
 
@@ -492,7 +492,7 @@ PG_FUNCTION_INFO_V1(Set_cmp);
  * @ingroup mobilitydb_setspan_comp
  * @brief Return -1, 0, or 1 depending on whether the first set
  * is less than, equal, or greater than the second temporal value
- * @sqlfunc timestampset_cmp()
+ * @sqlfunc tstzset_cmp()
  */
 PGDLLEXPORT Datum
 Set_cmp(PG_FUNCTION_ARGS)
@@ -509,7 +509,7 @@ PG_FUNCTION_INFO_V1(Set_eq);
 /**
  * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first set is equal to the second one
- * @sqlfunc timestampset_eq()
+ * @sqlfunc tstzset_eq()
  * @sqlop @p =
  */
 PGDLLEXPORT Datum
@@ -527,7 +527,7 @@ PG_FUNCTION_INFO_V1(Set_ne);
 /**
  * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first set is different from the second one
- * @sqlfunc timestampset_ne()
+ * @sqlfunc tstzset_ne()
  * @sqlop @p <>
  */
 PGDLLEXPORT Datum
@@ -545,7 +545,7 @@ PG_FUNCTION_INFO_V1(Set_lt);
 /**
  * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first set is less than the second one
- * @sqlfunc timestampset_lt()
+ * @sqlfunc tstzset_lt()
  * @sqlop @p <
  */
 PGDLLEXPORT Datum
@@ -564,7 +564,7 @@ PG_FUNCTION_INFO_V1(Set_le);
  * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first set is less than
  * or equal to the second one
- * @sqlfunc timestampset_le()
+ * @sqlfunc tstzset_le()
  * @sqlop @p <=
  */
 PGDLLEXPORT Datum
@@ -583,7 +583,7 @@ PG_FUNCTION_INFO_V1(Set_ge);
  * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first set is greater than
  * or equal to the second one
- * @sqlfunc timestampset_ge()
+ * @sqlfunc tstzset_ge()
  * @sqlop @p >=
  */
 PGDLLEXPORT Datum
@@ -601,7 +601,7 @@ PG_FUNCTION_INFO_V1(Set_gt);
 /**
  * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first set is greater than the second one
- * @sqlfunc timestampset_gt()
+ * @sqlfunc tstzset_gt()
  * @sqlop @p >
  */
 PGDLLEXPORT Datum
@@ -623,7 +623,7 @@ PG_FUNCTION_INFO_V1(Set_hash);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the 32-bit hash of a set
- * @sqlfunc timestampset_hash()
+ * @sqlfunc tstzset_hash()
  */
 PGDLLEXPORT Datum
 Set_hash(PG_FUNCTION_ARGS)
@@ -637,7 +637,7 @@ PG_FUNCTION_INFO_V1(Set_hash_extended);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the 64-bit hash of a set using a seed
- * @sqlfunc timestampset_hash_extended()
+ * @sqlfunc tstzset_hash_extended()
  */
 PGDLLEXPORT Datum
 Set_hash_extended(PG_FUNCTION_ARGS)

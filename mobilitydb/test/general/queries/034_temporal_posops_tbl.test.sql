@@ -315,13 +315,13 @@ INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '<<#', 'timestamptz', 'ttext', COUNT(*) FROM tbl_timestamptz, tbl_ttext WHERE t <<# temp;
 
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '<<#', 'timestampset', 'tbool', COUNT(*) FROM tbl_timestampset, tbl_tbool WHERE ts <<# temp;
+SELECT '<<#', 'tstzset', 'tbool', COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE ts <<# temp;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '<<#', 'timestampset', 'tint', COUNT(*) FROM tbl_timestampset, tbl_tint WHERE ts <<# temp;
+SELECT '<<#', 'tstzset', 'tint', COUNT(*) FROM tbl_tstzset, tbl_tint WHERE ts <<# temp;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '<<#', 'timestampset', 'tfloat', COUNT(*) FROM tbl_timestampset, tbl_tfloat WHERE ts <<# temp;
+SELECT '<<#', 'tstzset', 'tfloat', COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE ts <<# temp;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '<<#', 'timestampset', 'ttext', COUNT(*) FROM tbl_timestampset, tbl_ttext WHERE ts <<# temp;
+SELECT '<<#', 'tstzset', 'ttext', COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE ts <<# temp;
 
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '<<#', 'period', 'tbool', COUNT(*) FROM tbl_period, tbl_tbool WHERE p <<# temp;
@@ -351,7 +351,7 @@ SELECT '<<#', 'tbox', 'tfloat', COUNT(*) FROM tbl_tbox, tbl_tfloat WHERE b <<# t
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '<<#', 'tbool', 'timestamptz', COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE temp <<# t;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '<<#', 'tbool', 'timestampset', COUNT(*) FROM tbl_tbool, tbl_timestampset WHERE temp <<# ts;
+SELECT '<<#', 'tbool', 'tstzset', COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp <<# ts;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '<<#', 'tbool', 'period', COUNT(*) FROM tbl_tbool, tbl_period WHERE temp <<# p;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
@@ -362,7 +362,7 @@ SELECT '<<#', 'tbool', 'tbool', COUNT(*) FROM tbl_tbool t1, tbl_tbool t2 WHERE t
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '<<#', 'tint', 'timestamptz', COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE temp <<# t;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '<<#', 'tint', 'timestampset', COUNT(*) FROM tbl_tint, tbl_timestampset WHERE temp <<# ts;
+SELECT '<<#', 'tint', 'tstzset', COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp <<# ts;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '<<#', 'tint', 'period', COUNT(*) FROM tbl_tint, tbl_period WHERE temp <<# p;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
@@ -377,7 +377,7 @@ SELECT '<<#', 'tint', 'tfloat', COUNT(*) FROM tbl_tint t1, tbl_tfloat t2 WHERE t
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '<<#', 'tfloat', 'timestamptz', COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp <<# t;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '<<#', 'tfloat', 'timestampset', COUNT(*) FROM tbl_tfloat, tbl_timestampset WHERE temp <<# ts;
+SELECT '<<#', 'tfloat', 'tstzset', COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp <<# ts;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '<<#', 'tfloat', 'period', COUNT(*) FROM tbl_tfloat, tbl_period WHERE temp <<# p;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
@@ -392,7 +392,7 @@ SELECT '<<#', 'tfloat', 'tfloat', COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2 WHE
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '<<#', 'ttext', 'timestamptz', COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE temp <<# t;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '<<#', 'ttext', 'timestampset', COUNT(*) FROM tbl_ttext, tbl_timestampset WHERE temp <<# ts;
+SELECT '<<#', 'ttext', 'tstzset', COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp <<# ts;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '<<#', 'ttext', 'period', COUNT(*) FROM tbl_ttext, tbl_period WHERE temp <<# p;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
@@ -414,13 +414,13 @@ INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '&<#', 'timestamptz', 'ttext', COUNT(*) FROM tbl_timestamptz, tbl_ttext WHERE t &<# temp;
 
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '&<#', 'timestampset', 'tbool', COUNT(*) FROM tbl_timestampset, tbl_tbool WHERE ts &<# temp;
+SELECT '&<#', 'tstzset', 'tbool', COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE ts &<# temp;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '&<#', 'timestampset', 'tint', COUNT(*) FROM tbl_timestampset, tbl_tint WHERE ts &<# temp;
+SELECT '&<#', 'tstzset', 'tint', COUNT(*) FROM tbl_tstzset, tbl_tint WHERE ts &<# temp;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '&<#', 'timestampset', 'tfloat', COUNT(*) FROM tbl_timestampset, tbl_tfloat WHERE ts &<# temp;
+SELECT '&<#', 'tstzset', 'tfloat', COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE ts &<# temp;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '&<#', 'timestampset', 'ttext', COUNT(*) FROM tbl_timestampset, tbl_ttext WHERE ts &<# temp;
+SELECT '&<#', 'tstzset', 'ttext', COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE ts &<# temp;
 
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '&<#', 'period', 'tbool', COUNT(*) FROM tbl_period, tbl_tbool WHERE p &<# temp;
@@ -450,7 +450,7 @@ SELECT '&<#', 'tbox', 'tfloat', COUNT(*) FROM tbl_tbox, tbl_tfloat WHERE b &<# t
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '&<#', 'tbool', 'timestamptz', COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE temp &<# t;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '&<#', 'tbool', 'timestampset', COUNT(*) FROM tbl_tbool, tbl_timestampset WHERE temp &<# ts;
+SELECT '&<#', 'tbool', 'tstzset', COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp &<# ts;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '&<#', 'tbool', 'period', COUNT(*) FROM tbl_tbool, tbl_period WHERE temp &<# p;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
@@ -461,7 +461,7 @@ SELECT '&<#', 'tbool', 'tbool', COUNT(*) FROM tbl_tbool t1, tbl_tbool t2 WHERE t
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '&<#', 'tint', 'timestamptz', COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE temp &<# t;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '&<#', 'tint', 'timestampset', COUNT(*) FROM tbl_tint, tbl_timestampset WHERE temp &<# ts;
+SELECT '&<#', 'tint', 'tstzset', COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp &<# ts;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '&<#', 'tint', 'period', COUNT(*) FROM tbl_tint, tbl_period WHERE temp &<# p;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
@@ -476,7 +476,7 @@ SELECT '&<#', 'tint', 'tfloat', COUNT(*) FROM tbl_tint t1, tbl_tfloat t2 WHERE t
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '&<#', 'tfloat', 'timestamptz', COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp &<# t;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '&<#', 'tfloat', 'timestampset', COUNT(*) FROM tbl_tfloat, tbl_timestampset WHERE temp &<# ts;
+SELECT '&<#', 'tfloat', 'tstzset', COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp &<# ts;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '&<#', 'tfloat', 'period', COUNT(*) FROM tbl_tfloat, tbl_period WHERE temp &<# p;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
@@ -491,7 +491,7 @@ SELECT '&<#', 'tfloat', 'tfloat', COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2 WHE
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '&<#', 'ttext', 'timestamptz', COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE temp &<# t;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '&<#', 'ttext', 'timestampset', COUNT(*) FROM tbl_ttext, tbl_timestampset WHERE temp &<# ts;
+SELECT '&<#', 'ttext', 'tstzset', COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp &<# ts;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '&<#', 'ttext', 'period', COUNT(*) FROM tbl_ttext, tbl_period WHERE temp &<# p;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
@@ -513,13 +513,13 @@ INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '#>>', 'timestamptz', 'ttext', COUNT(*) FROM tbl_timestamptz, tbl_ttext WHERE t #>> temp;
 
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '#>>', 'timestampset', 'tbool', COUNT(*) FROM tbl_timestampset, tbl_tbool WHERE ts #>> temp;
+SELECT '#>>', 'tstzset', 'tbool', COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE ts #>> temp;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '#>>', 'timestampset', 'tint', COUNT(*) FROM tbl_timestampset, tbl_tint WHERE ts #>> temp;
+SELECT '#>>', 'tstzset', 'tint', COUNT(*) FROM tbl_tstzset, tbl_tint WHERE ts #>> temp;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '#>>', 'timestampset', 'tfloat', COUNT(*) FROM tbl_timestampset, tbl_tfloat WHERE ts #>> temp;
+SELECT '#>>', 'tstzset', 'tfloat', COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE ts #>> temp;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '#>>', 'timestampset', 'ttext', COUNT(*) FROM tbl_timestampset, tbl_ttext WHERE ts #>> temp;
+SELECT '#>>', 'tstzset', 'ttext', COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE ts #>> temp;
 
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '#>>', 'period', 'tbool', COUNT(*) FROM tbl_period, tbl_tbool WHERE p #>> temp;
@@ -549,7 +549,7 @@ SELECT '#>>', 'tbox', 'tfloat', COUNT(*) FROM tbl_tbox, tbl_tfloat WHERE b #>> t
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '#>>', 'tbool', 'timestamptz', COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE temp #>> t;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '#>>', 'tbool', 'timestampset', COUNT(*) FROM tbl_tbool, tbl_timestampset WHERE temp #>> ts;
+SELECT '#>>', 'tbool', 'tstzset', COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp #>> ts;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '#>>', 'tbool', 'period', COUNT(*) FROM tbl_tbool, tbl_period WHERE temp #>> p;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
@@ -560,7 +560,7 @@ SELECT '#>>', 'tbool', 'tbool', COUNT(*) FROM tbl_tbool t1, tbl_tbool t2 WHERE t
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '#>>', 'tint', 'timestamptz', COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE temp #>> t;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '#>>', 'tint', 'timestampset', COUNT(*) FROM tbl_tint, tbl_timestampset WHERE temp #>> ts;
+SELECT '#>>', 'tint', 'tstzset', COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp #>> ts;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '#>>', 'tint', 'period', COUNT(*) FROM tbl_tint, tbl_period WHERE temp #>> p;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
@@ -575,7 +575,7 @@ SELECT '#>>', 'tint', 'tfloat', COUNT(*) FROM tbl_tint t1, tbl_tfloat t2 WHERE t
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '#>>', 'tfloat', 'timestamptz', COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp #>> t;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '#>>', 'tfloat', 'timestampset', COUNT(*) FROM tbl_tfloat, tbl_timestampset WHERE temp #>> ts;
+SELECT '#>>', 'tfloat', 'tstzset', COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp #>> ts;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '#>>', 'tfloat', 'period', COUNT(*) FROM tbl_tfloat, tbl_period WHERE temp #>> p;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
@@ -590,7 +590,7 @@ SELECT '#>>', 'tfloat', 'tfloat', COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2 WHE
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '#>>', 'ttext', 'timestamptz', COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE temp #>> t;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '#>>', 'ttext', 'timestampset', COUNT(*) FROM tbl_ttext, tbl_timestampset WHERE temp #>> ts;
+SELECT '#>>', 'ttext', 'tstzset', COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp #>> ts;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '#>>', 'ttext', 'period', COUNT(*) FROM tbl_ttext, tbl_period WHERE temp #>> p;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
@@ -612,13 +612,13 @@ INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '#&>', 'timestamptz', 'ttext', COUNT(*) FROM tbl_timestamptz, tbl_ttext WHERE t #&> temp;
 
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '#&>', 'timestampset', 'tbool', COUNT(*) FROM tbl_timestampset, tbl_tbool WHERE ts #&> temp;
+SELECT '#&>', 'tstzset', 'tbool', COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE ts #&> temp;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '#&>', 'timestampset', 'tint', COUNT(*) FROM tbl_timestampset, tbl_tint WHERE ts #&> temp;
+SELECT '#&>', 'tstzset', 'tint', COUNT(*) FROM tbl_tstzset, tbl_tint WHERE ts #&> temp;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '#&>', 'timestampset', 'tfloat', COUNT(*) FROM tbl_timestampset, tbl_tfloat WHERE ts #&> temp;
+SELECT '#&>', 'tstzset', 'tfloat', COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE ts #&> temp;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '#&>', 'timestampset', 'ttext', COUNT(*) FROM tbl_timestampset, tbl_ttext WHERE ts #&> temp;
+SELECT '#&>', 'tstzset', 'ttext', COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE ts #&> temp;
 
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '#&>', 'period', 'tbool', COUNT(*) FROM tbl_period, tbl_tbool WHERE p #&> temp;
@@ -648,7 +648,7 @@ SELECT '#&>', 'tbox', 'tfloat', COUNT(*) FROM tbl_tbox, tbl_tfloat WHERE b #&> t
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '#&>', 'tbool', 'timestamptz', COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE temp #&> t;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '#&>', 'tbool', 'timestampset', COUNT(*) FROM tbl_tbool, tbl_timestampset WHERE temp #&> ts;
+SELECT '#&>', 'tbool', 'tstzset', COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp #&> ts;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '#&>', 'tbool', 'period', COUNT(*) FROM tbl_tbool, tbl_period WHERE temp #&> p;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
@@ -659,7 +659,7 @@ SELECT '#&>', 'tbool', 'tbool', COUNT(*) FROM tbl_tbool t1, tbl_tbool t2 WHERE t
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '#&>', 'tint', 'timestamptz', COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE temp #&> t;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '#&>', 'tint', 'timestampset', COUNT(*) FROM tbl_tint, tbl_timestampset WHERE temp #&> ts;
+SELECT '#&>', 'tint', 'tstzset', COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp #&> ts;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '#&>', 'tint', 'period', COUNT(*) FROM tbl_tint, tbl_period WHERE temp #&> p;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
@@ -674,7 +674,7 @@ SELECT '#&>', 'tint', 'tfloat', COUNT(*) FROM tbl_tint t1, tbl_tfloat t2 WHERE t
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '#&>', 'tfloat', 'timestamptz', COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp #&> t;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '#&>', 'tfloat', 'timestampset', COUNT(*) FROM tbl_tfloat, tbl_timestampset WHERE temp #&> ts;
+SELECT '#&>', 'tfloat', 'tstzset', COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp #&> ts;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '#&>', 'tfloat', 'period', COUNT(*) FROM tbl_tfloat, tbl_period WHERE temp #&> p;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
@@ -689,7 +689,7 @@ SELECT '#&>', 'tfloat', 'tfloat', COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2 WHE
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '#&>', 'ttext', 'timestamptz', COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE temp #&> t;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '#&>', 'ttext', 'timestampset', COUNT(*) FROM tbl_ttext, tbl_timestampset WHERE temp #&> ts;
+SELECT '#&>', 'ttext', 'tstzset', COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp #&> ts;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '#&>', 'ttext', 'period', COUNT(*) FROM tbl_ttext, tbl_period WHERE temp #&> p;
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
@@ -1062,17 +1062,17 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_ttext WHERE t <<# te
 WHERE op = '<<#' AND leftarg = 'timestamptz' AND rightarg = 'ttext';
 
 UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tbool WHERE ts <<# temp )
-WHERE op = '<<#' AND leftarg = 'timestampset' AND rightarg = 'tbool';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE ts <<# temp )
+WHERE op = '<<#' AND leftarg = 'tstzset' AND rightarg = 'tbool';
 UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tint WHERE ts <<# temp )
-WHERE op = '<<#' AND leftarg = 'timestampset' AND rightarg = 'tint';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tint WHERE ts <<# temp )
+WHERE op = '<<#' AND leftarg = 'tstzset' AND rightarg = 'tint';
 UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tfloat WHERE ts <<# temp )
-WHERE op = '<<#' AND leftarg = 'timestampset' AND rightarg = 'tfloat';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE ts <<# temp )
+WHERE op = '<<#' AND leftarg = 'tstzset' AND rightarg = 'tfloat';
 UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_ttext WHERE ts <<# temp )
-WHERE op = '<<#' AND leftarg = 'timestampset' AND rightarg = 'ttext';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE ts <<# temp )
+WHERE op = '<<#' AND leftarg = 'tstzset' AND rightarg = 'ttext';
 
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tbool WHERE p <<# temp )
@@ -1113,8 +1113,8 @@ UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE temp <<# t )
 WHERE op = '<<#' AND leftarg = 'tbool' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestampset WHERE temp <<# ts )
-WHERE op = '<<#' AND leftarg = 'tbool' AND rightarg = 'timestampset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp <<# ts )
+WHERE op = '<<#' AND leftarg = 'tbool' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_period WHERE temp <<# p )
 WHERE op = '<<#' AND leftarg = 'tbool' AND rightarg = 'period';
@@ -1129,8 +1129,8 @@ UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE temp <<# t )
 WHERE op = '<<#' AND leftarg = 'tint' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestampset WHERE temp <<# ts )
-WHERE op = '<<#' AND leftarg = 'tint' AND rightarg = 'timestampset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp <<# ts )
+WHERE op = '<<#' AND leftarg = 'tint' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_period WHERE temp <<# p )
 WHERE op = '<<#' AND leftarg = 'tint' AND rightarg = 'period';
@@ -1151,8 +1151,8 @@ UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp <<# t )
 WHERE op = '<<#' AND leftarg = 'tfloat' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestampset WHERE temp <<# ts )
-WHERE op = '<<#' AND leftarg = 'tfloat' AND rightarg = 'timestampset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp <<# ts )
+WHERE op = '<<#' AND leftarg = 'tfloat' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_period WHERE temp <<# p )
 WHERE op = '<<#' AND leftarg = 'tfloat' AND rightarg = 'period';
@@ -1173,8 +1173,8 @@ UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE temp <<# t )
 WHERE op = '<<#' AND leftarg = 'ttext' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestampset WHERE temp <<# ts )
-WHERE op = '<<#' AND leftarg = 'ttext' AND rightarg = 'timestampset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp <<# ts )
+WHERE op = '<<#' AND leftarg = 'ttext' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_period WHERE temp <<# p )
 WHERE op = '<<#' AND leftarg = 'ttext' AND rightarg = 'period';
@@ -1203,17 +1203,17 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_ttext WHERE t &<# te
 WHERE op = '&<#' AND leftarg = 'timestamptz' AND rightarg = 'ttext';
 
 UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tbool WHERE ts &<# temp )
-WHERE op = '&<#' AND leftarg = 'timestampset' AND rightarg = 'tbool';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE ts &<# temp )
+WHERE op = '&<#' AND leftarg = 'tstzset' AND rightarg = 'tbool';
 UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tint WHERE ts &<# temp )
-WHERE op = '&<#' AND leftarg = 'timestampset' AND rightarg = 'tint';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tint WHERE ts &<# temp )
+WHERE op = '&<#' AND leftarg = 'tstzset' AND rightarg = 'tint';
 UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tfloat WHERE ts &<# temp )
-WHERE op = '&<#' AND leftarg = 'timestampset' AND rightarg = 'tfloat';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE ts &<# temp )
+WHERE op = '&<#' AND leftarg = 'tstzset' AND rightarg = 'tfloat';
 UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_ttext WHERE ts &<# temp )
-WHERE op = '&<#' AND leftarg = 'timestampset' AND rightarg = 'ttext';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE ts &<# temp )
+WHERE op = '&<#' AND leftarg = 'tstzset' AND rightarg = 'ttext';
 
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tbool WHERE p &<# temp )
@@ -1255,8 +1255,8 @@ UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE temp &<# t )
 WHERE op = '&<#' AND leftarg = 'tbool' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestampset WHERE temp &<# ts )
-WHERE op = '&<#' AND leftarg = 'tbool' AND rightarg = 'timestampset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp &<# ts )
+WHERE op = '&<#' AND leftarg = 'tbool' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_period WHERE temp &<# p )
 WHERE op = '&<#' AND leftarg = 'tbool' AND rightarg = 'period';
@@ -1271,8 +1271,8 @@ UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE temp &<# t )
 WHERE op = '&<#' AND leftarg = 'tint' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestampset WHERE temp &<# ts )
-WHERE op = '&<#' AND leftarg = 'tint' AND rightarg = 'timestampset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp &<# ts )
+WHERE op = '&<#' AND leftarg = 'tint' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_period WHERE temp &<# p )
 WHERE op = '&<#' AND leftarg = 'tint' AND rightarg = 'period';
@@ -1293,8 +1293,8 @@ UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp &<# t )
 WHERE op = '&<#' AND leftarg = 'tfloat' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestampset WHERE temp &<# ts )
-WHERE op = '&<#' AND leftarg = 'tfloat' AND rightarg = 'timestampset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp &<# ts )
+WHERE op = '&<#' AND leftarg = 'tfloat' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_period WHERE temp &<# p )
 WHERE op = '&<#' AND leftarg = 'tfloat' AND rightarg = 'period';
@@ -1315,8 +1315,8 @@ UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE temp &<# t )
 WHERE op = '&<#' AND leftarg = 'ttext' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestampset WHERE temp &<# ts )
-WHERE op = '&<#' AND leftarg = 'ttext' AND rightarg = 'timestampset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp &<# ts )
+WHERE op = '&<#' AND leftarg = 'ttext' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_period WHERE temp &<# p )
 WHERE op = '&<#' AND leftarg = 'ttext' AND rightarg = 'period';
@@ -1345,17 +1345,17 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_ttext WHERE t #>> te
 WHERE op = '#>>' AND leftarg = 'timestamptz' AND rightarg = 'ttext';
 
 UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tbool WHERE ts #>> temp )
-WHERE op = '#>>' AND leftarg = 'timestampset' AND rightarg = 'tbool';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE ts #>> temp )
+WHERE op = '#>>' AND leftarg = 'tstzset' AND rightarg = 'tbool';
 UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tint WHERE ts #>> temp )
-WHERE op = '#>>' AND leftarg = 'timestampset' AND rightarg = 'tint';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tint WHERE ts #>> temp )
+WHERE op = '#>>' AND leftarg = 'tstzset' AND rightarg = 'tint';
 UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tfloat WHERE ts #>> temp )
-WHERE op = '#>>' AND leftarg = 'timestampset' AND rightarg = 'tfloat';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE ts #>> temp )
+WHERE op = '#>>' AND leftarg = 'tstzset' AND rightarg = 'tfloat';
 UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_ttext WHERE ts #>> temp )
-WHERE op = '#>>' AND leftarg = 'timestampset' AND rightarg = 'ttext';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE ts #>> temp )
+WHERE op = '#>>' AND leftarg = 'tstzset' AND rightarg = 'ttext';
 
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tbool WHERE p #>> temp )
@@ -1396,8 +1396,8 @@ UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE temp #>> t )
 WHERE op = '#>>' AND leftarg = 'tbool' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestampset WHERE temp #>> ts )
-WHERE op = '#>>' AND leftarg = 'tbool' AND rightarg = 'timestampset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp #>> ts )
+WHERE op = '#>>' AND leftarg = 'tbool' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_period WHERE temp #>> p )
 WHERE op = '#>>' AND leftarg = 'tbool' AND rightarg = 'period';
@@ -1412,8 +1412,8 @@ UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE temp #>> t )
 WHERE op = '#>>' AND leftarg = 'tint' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestampset WHERE temp #>> ts )
-WHERE op = '#>>' AND leftarg = 'tint' AND rightarg = 'timestampset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp #>> ts )
+WHERE op = '#>>' AND leftarg = 'tint' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_period WHERE temp #>> p )
 WHERE op = '#>>' AND leftarg = 'tint' AND rightarg = 'period';
@@ -1434,8 +1434,8 @@ UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp #>> t )
 WHERE op = '#>>' AND leftarg = 'tfloat' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestampset WHERE temp #>> ts )
-WHERE op = '#>>' AND leftarg = 'tfloat' AND rightarg = 'timestampset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp #>> ts )
+WHERE op = '#>>' AND leftarg = 'tfloat' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_period WHERE temp #>> p )
 WHERE op = '#>>' AND leftarg = 'tfloat' AND rightarg = 'period';
@@ -1456,8 +1456,8 @@ UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE temp #>> t )
 WHERE op = '#>>' AND leftarg = 'ttext' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestampset WHERE temp #>> ts )
-WHERE op = '#>>' AND leftarg = 'ttext' AND rightarg = 'timestampset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp #>> ts )
+WHERE op = '#>>' AND leftarg = 'ttext' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_period WHERE temp #>> p )
 WHERE op = '#>>' AND leftarg = 'ttext' AND rightarg = 'period';
@@ -1486,17 +1486,17 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_ttext WHERE t #&> te
 WHERE op = '#&>' AND leftarg = 'timestamptz' AND rightarg = 'ttext';
 
 UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tbool WHERE ts #&> temp )
-WHERE op = '#&>' AND leftarg = 'timestampset' AND rightarg = 'tbool';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE ts #&> temp )
+WHERE op = '#&>' AND leftarg = 'tstzset' AND rightarg = 'tbool';
 UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tint WHERE ts #&> temp )
-WHERE op = '#&>' AND leftarg = 'timestampset' AND rightarg = 'tint';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tint WHERE ts #&> temp )
+WHERE op = '#&>' AND leftarg = 'tstzset' AND rightarg = 'tint';
 UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tfloat WHERE ts #&> temp )
-WHERE op = '#&>' AND leftarg = 'timestampset' AND rightarg = 'tfloat';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE ts #&> temp )
+WHERE op = '#&>' AND leftarg = 'tstzset' AND rightarg = 'tfloat';
 UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_ttext WHERE ts #&> temp )
-WHERE op = '#&>' AND leftarg = 'timestampset' AND rightarg = 'ttext';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE ts #&> temp )
+WHERE op = '#&>' AND leftarg = 'tstzset' AND rightarg = 'ttext';
 
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tbool WHERE p #&> temp )
@@ -1537,8 +1537,8 @@ UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE temp #&> t )
 WHERE op = '#&>' AND leftarg = 'tbool' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestampset WHERE temp #&> ts )
-WHERE op = '#&>' AND leftarg = 'tbool' AND rightarg = 'timestampset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp #&> ts )
+WHERE op = '#&>' AND leftarg = 'tbool' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_period WHERE temp #&> p )
 WHERE op = '#&>' AND leftarg = 'tbool' AND rightarg = 'period';
@@ -1553,8 +1553,8 @@ UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE temp #&> t )
 WHERE op = '#&>' AND leftarg = 'tint' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestampset WHERE temp #&> ts )
-WHERE op = '#&>' AND leftarg = 'tint' AND rightarg = 'timestampset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp #&> ts )
+WHERE op = '#&>' AND leftarg = 'tint' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_period WHERE temp #&> p )
 WHERE op = '#&>' AND leftarg = 'tint' AND rightarg = 'period';
@@ -1575,8 +1575,8 @@ UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp #&> t )
 WHERE op = '#&>' AND leftarg = 'tfloat' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestampset WHERE temp #&> ts )
-WHERE op = '#&>' AND leftarg = 'tfloat' AND rightarg = 'timestampset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp #&> ts )
+WHERE op = '#&>' AND leftarg = 'tfloat' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_period WHERE temp #&> p )
 WHERE op = '#&>' AND leftarg = 'tfloat' AND rightarg = 'period';
@@ -1597,8 +1597,8 @@ UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE temp #&> t )
 WHERE op = '#&>' AND leftarg = 'ttext' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestampset WHERE temp #&> ts )
-WHERE op = '#&>' AND leftarg = 'ttext' AND rightarg = 'timestampset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp #&> ts )
+WHERE op = '#&>' AND leftarg = 'ttext' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_period WHERE temp #&> p )
 WHERE op = '#&>' AND leftarg = 'ttext' AND rightarg = 'period';
@@ -1981,17 +1981,17 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_ttext WHERE t <<#
 WHERE op = '<<#' AND leftarg = 'timestamptz' AND rightarg = 'ttext';
 
 UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tbool WHERE ts <<# temp )
-WHERE op = '<<#' AND leftarg = 'timestampset' AND rightarg = 'tbool';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE ts <<# temp )
+WHERE op = '<<#' AND leftarg = 'tstzset' AND rightarg = 'tbool';
 UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tint WHERE ts <<# temp )
-WHERE op = '<<#' AND leftarg = 'timestampset' AND rightarg = 'tint';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tint WHERE ts <<# temp )
+WHERE op = '<<#' AND leftarg = 'tstzset' AND rightarg = 'tint';
 UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tfloat WHERE ts <<# temp )
-WHERE op = '<<#' AND leftarg = 'timestampset' AND rightarg = 'tfloat';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE ts <<# temp )
+WHERE op = '<<#' AND leftarg = 'tstzset' AND rightarg = 'tfloat';
 UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_ttext WHERE ts <<# temp )
-WHERE op = '<<#' AND leftarg = 'timestampset' AND rightarg = 'ttext';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE ts <<# temp )
+WHERE op = '<<#' AND leftarg = 'tstzset' AND rightarg = 'ttext';
 
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tbool WHERE p <<# temp )
@@ -2032,8 +2032,8 @@ UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE temp <<# t )
 WHERE op = '<<#' AND leftarg = 'tbool' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestampset WHERE temp <<# ts )
-WHERE op = '<<#' AND leftarg = 'tbool' AND rightarg = 'timestampset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp <<# ts )
+WHERE op = '<<#' AND leftarg = 'tbool' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_period WHERE temp <<# p )
 WHERE op = '<<#' AND leftarg = 'tbool' AND rightarg = 'period';
@@ -2048,8 +2048,8 @@ UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE temp <<# t )
 WHERE op = '<<#' AND leftarg = 'tint' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestampset WHERE temp <<# ts )
-WHERE op = '<<#' AND leftarg = 'tint' AND rightarg = 'timestampset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp <<# ts )
+WHERE op = '<<#' AND leftarg = 'tint' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_period WHERE temp <<# p )
 WHERE op = '<<#' AND leftarg = 'tint' AND rightarg = 'period';
@@ -2070,8 +2070,8 @@ UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp <<# t )
 WHERE op = '<<#' AND leftarg = 'tfloat' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestampset WHERE temp <<# ts )
-WHERE op = '<<#' AND leftarg = 'tfloat' AND rightarg = 'timestampset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp <<# ts )
+WHERE op = '<<#' AND leftarg = 'tfloat' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_period WHERE temp <<# p )
 WHERE op = '<<#' AND leftarg = 'tfloat' AND rightarg = 'period';
@@ -2092,8 +2092,8 @@ UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE temp <<# t )
 WHERE op = '<<#' AND leftarg = 'ttext' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestampset WHERE temp <<# ts )
-WHERE op = '<<#' AND leftarg = 'ttext' AND rightarg = 'timestampset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp <<# ts )
+WHERE op = '<<#' AND leftarg = 'ttext' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_period WHERE temp <<# p )
 WHERE op = '<<#' AND leftarg = 'ttext' AND rightarg = 'period';
@@ -2122,17 +2122,17 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_ttext WHERE t &<#
 WHERE op = '&<#' AND leftarg = 'timestamptz' AND rightarg = 'ttext';
 
 UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tbool WHERE ts &<# temp )
-WHERE op = '&<#' AND leftarg = 'timestampset' AND rightarg = 'tbool';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE ts &<# temp )
+WHERE op = '&<#' AND leftarg = 'tstzset' AND rightarg = 'tbool';
 UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tint WHERE ts &<# temp )
-WHERE op = '&<#' AND leftarg = 'timestampset' AND rightarg = 'tint';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tint WHERE ts &<# temp )
+WHERE op = '&<#' AND leftarg = 'tstzset' AND rightarg = 'tint';
 UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tfloat WHERE ts &<# temp )
-WHERE op = '&<#' AND leftarg = 'timestampset' AND rightarg = 'tfloat';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE ts &<# temp )
+WHERE op = '&<#' AND leftarg = 'tstzset' AND rightarg = 'tfloat';
 UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_ttext WHERE ts &<# temp )
-WHERE op = '&<#' AND leftarg = 'timestampset' AND rightarg = 'ttext';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE ts &<# temp )
+WHERE op = '&<#' AND leftarg = 'tstzset' AND rightarg = 'ttext';
 
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tbool WHERE p &<# temp )
@@ -2174,8 +2174,8 @@ UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE temp &<# t )
 WHERE op = '&<#' AND leftarg = 'tbool' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestampset WHERE temp &<# ts )
-WHERE op = '&<#' AND leftarg = 'tbool' AND rightarg = 'timestampset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp &<# ts )
+WHERE op = '&<#' AND leftarg = 'tbool' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_period WHERE temp &<# p )
 WHERE op = '&<#' AND leftarg = 'tbool' AND rightarg = 'period';
@@ -2190,8 +2190,8 @@ UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE temp &<# t )
 WHERE op = '&<#' AND leftarg = 'tint' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestampset WHERE temp &<# ts )
-WHERE op = '&<#' AND leftarg = 'tint' AND rightarg = 'timestampset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp &<# ts )
+WHERE op = '&<#' AND leftarg = 'tint' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_period WHERE temp &<# p )
 WHERE op = '&<#' AND leftarg = 'tint' AND rightarg = 'period';
@@ -2212,8 +2212,8 @@ UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp &<# t )
 WHERE op = '&<#' AND leftarg = 'tfloat' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestampset WHERE temp &<# ts )
-WHERE op = '&<#' AND leftarg = 'tfloat' AND rightarg = 'timestampset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp &<# ts )
+WHERE op = '&<#' AND leftarg = 'tfloat' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_period WHERE temp &<# p )
 WHERE op = '&<#' AND leftarg = 'tfloat' AND rightarg = 'period';
@@ -2234,8 +2234,8 @@ UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE temp &<# t )
 WHERE op = '&<#' AND leftarg = 'ttext' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestampset WHERE temp &<# ts )
-WHERE op = '&<#' AND leftarg = 'ttext' AND rightarg = 'timestampset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp &<# ts )
+WHERE op = '&<#' AND leftarg = 'ttext' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_period WHERE temp &<# p )
 WHERE op = '&<#' AND leftarg = 'ttext' AND rightarg = 'period';
@@ -2264,17 +2264,17 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_ttext WHERE t #>>
 WHERE op = '#>>' AND leftarg = 'timestamptz' AND rightarg = 'ttext';
 
 UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tbool WHERE ts #>> temp )
-WHERE op = '#>>' AND leftarg = 'timestampset' AND rightarg = 'tbool';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE ts #>> temp )
+WHERE op = '#>>' AND leftarg = 'tstzset' AND rightarg = 'tbool';
 UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tint WHERE ts #>> temp )
-WHERE op = '#>>' AND leftarg = 'timestampset' AND rightarg = 'tint';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tint WHERE ts #>> temp )
+WHERE op = '#>>' AND leftarg = 'tstzset' AND rightarg = 'tint';
 UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tfloat WHERE ts #>> temp )
-WHERE op = '#>>' AND leftarg = 'timestampset' AND rightarg = 'tfloat';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE ts #>> temp )
+WHERE op = '#>>' AND leftarg = 'tstzset' AND rightarg = 'tfloat';
 UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_ttext WHERE ts #>> temp )
-WHERE op = '#>>' AND leftarg = 'timestampset' AND rightarg = 'ttext';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE ts #>> temp )
+WHERE op = '#>>' AND leftarg = 'tstzset' AND rightarg = 'ttext';
 
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tbool WHERE p #>> temp )
@@ -2315,8 +2315,8 @@ UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE temp #>> t )
 WHERE op = '#>>' AND leftarg = 'tbool' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestampset WHERE temp #>> ts )
-WHERE op = '#>>' AND leftarg = 'tbool' AND rightarg = 'timestampset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp #>> ts )
+WHERE op = '#>>' AND leftarg = 'tbool' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_period WHERE temp #>> p )
 WHERE op = '#>>' AND leftarg = 'tbool' AND rightarg = 'period';
@@ -2331,8 +2331,8 @@ UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE temp #>> t )
 WHERE op = '#>>' AND leftarg = 'tint' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestampset WHERE temp #>> ts )
-WHERE op = '#>>' AND leftarg = 'tint' AND rightarg = 'timestampset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp #>> ts )
+WHERE op = '#>>' AND leftarg = 'tint' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_period WHERE temp #>> p )
 WHERE op = '#>>' AND leftarg = 'tint' AND rightarg = 'period';
@@ -2353,8 +2353,8 @@ UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp #>> t )
 WHERE op = '#>>' AND leftarg = 'tfloat' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestampset WHERE temp #>> ts )
-WHERE op = '#>>' AND leftarg = 'tfloat' AND rightarg = 'timestampset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp #>> ts )
+WHERE op = '#>>' AND leftarg = 'tfloat' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_period WHERE temp #>> p )
 WHERE op = '#>>' AND leftarg = 'tfloat' AND rightarg = 'period';
@@ -2375,8 +2375,8 @@ UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE temp #>> t )
 WHERE op = '#>>' AND leftarg = 'ttext' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestampset WHERE temp #>> ts )
-WHERE op = '#>>' AND leftarg = 'ttext' AND rightarg = 'timestampset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp #>> ts )
+WHERE op = '#>>' AND leftarg = 'ttext' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_period WHERE temp #>> p )
 WHERE op = '#>>' AND leftarg = 'ttext' AND rightarg = 'period';
@@ -2405,17 +2405,17 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_ttext WHERE t #&>
 WHERE op = '#&>' AND leftarg = 'timestamptz' AND rightarg = 'ttext';
 
 UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tbool WHERE ts #&> temp )
-WHERE op = '#&>' AND leftarg = 'timestampset' AND rightarg = 'tbool';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE ts #&> temp )
+WHERE op = '#&>' AND leftarg = 'tstzset' AND rightarg = 'tbool';
 UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tint WHERE ts #&> temp )
-WHERE op = '#&>' AND leftarg = 'timestampset' AND rightarg = 'tint';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tint WHERE ts #&> temp )
+WHERE op = '#&>' AND leftarg = 'tstzset' AND rightarg = 'tint';
 UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tfloat WHERE ts #&> temp )
-WHERE op = '#&>' AND leftarg = 'timestampset' AND rightarg = 'tfloat';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE ts #&> temp )
+WHERE op = '#&>' AND leftarg = 'tstzset' AND rightarg = 'tfloat';
 UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_ttext WHERE ts #&> temp )
-WHERE op = '#&>' AND leftarg = 'timestampset' AND rightarg = 'ttext';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE ts #&> temp )
+WHERE op = '#&>' AND leftarg = 'tstzset' AND rightarg = 'ttext';
 
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tbool WHERE p #&> temp )
@@ -2456,8 +2456,8 @@ UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE temp #&> t )
 WHERE op = '#&>' AND leftarg = 'tbool' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestampset WHERE temp #&> ts )
-WHERE op = '#&>' AND leftarg = 'tbool' AND rightarg = 'timestampset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp #&> ts )
+WHERE op = '#&>' AND leftarg = 'tbool' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_period WHERE temp #&> p )
 WHERE op = '#&>' AND leftarg = 'tbool' AND rightarg = 'period';
@@ -2472,8 +2472,8 @@ UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE temp #&> t )
 WHERE op = '#&>' AND leftarg = 'tint' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestampset WHERE temp #&> ts )
-WHERE op = '#&>' AND leftarg = 'tint' AND rightarg = 'timestampset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp #&> ts )
+WHERE op = '#&>' AND leftarg = 'tint' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_period WHERE temp #&> p )
 WHERE op = '#&>' AND leftarg = 'tint' AND rightarg = 'period';
@@ -2494,8 +2494,8 @@ UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp #&> t )
 WHERE op = '#&>' AND leftarg = 'tfloat' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestampset WHERE temp #&> ts )
-WHERE op = '#&>' AND leftarg = 'tfloat' AND rightarg = 'timestampset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp #&> ts )
+WHERE op = '#&>' AND leftarg = 'tfloat' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_period WHERE temp #&> p )
 WHERE op = '#&>' AND leftarg = 'tfloat' AND rightarg = 'period';
@@ -2516,8 +2516,8 @@ UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE temp #&> t )
 WHERE op = '#&>' AND leftarg = 'ttext' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestampset WHERE temp #&> ts )
-WHERE op = '#&>' AND leftarg = 'ttext' AND rightarg = 'timestampset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp #&> ts )
+WHERE op = '#&>' AND leftarg = 'ttext' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_period WHERE temp #&> p )
 WHERE op = '#&>' AND leftarg = 'ttext' AND rightarg = 'period';
@@ -2900,17 +2900,17 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_ttext WHERE t <<# t
 WHERE op = '<<#' AND leftarg = 'timestamptz' AND rightarg = 'ttext';
 
 UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tbool WHERE ts <<# temp )
-WHERE op = '<<#' AND leftarg = 'timestampset' AND rightarg = 'tbool';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE ts <<# temp )
+WHERE op = '<<#' AND leftarg = 'tstzset' AND rightarg = 'tbool';
 UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tint WHERE ts <<# temp )
-WHERE op = '<<#' AND leftarg = 'timestampset' AND rightarg = 'tint';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tint WHERE ts <<# temp )
+WHERE op = '<<#' AND leftarg = 'tstzset' AND rightarg = 'tint';
 UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tfloat WHERE ts <<# temp )
-WHERE op = '<<#' AND leftarg = 'timestampset' AND rightarg = 'tfloat';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE ts <<# temp )
+WHERE op = '<<#' AND leftarg = 'tstzset' AND rightarg = 'tfloat';
 UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_ttext WHERE ts <<# temp )
-WHERE op = '<<#' AND leftarg = 'timestampset' AND rightarg = 'ttext';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE ts <<# temp )
+WHERE op = '<<#' AND leftarg = 'tstzset' AND rightarg = 'ttext';
 
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tbool WHERE p <<# temp )
@@ -2951,8 +2951,8 @@ UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE temp <<# t )
 WHERE op = '<<#' AND leftarg = 'tbool' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestampset WHERE temp <<# ts )
-WHERE op = '<<#' AND leftarg = 'tbool' AND rightarg = 'timestampset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp <<# ts )
+WHERE op = '<<#' AND leftarg = 'tbool' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_period WHERE temp <<# p )
 WHERE op = '<<#' AND leftarg = 'tbool' AND rightarg = 'period';
@@ -2967,8 +2967,8 @@ UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE temp <<# t )
 WHERE op = '<<#' AND leftarg = 'tint' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestampset WHERE temp <<# ts )
-WHERE op = '<<#' AND leftarg = 'tint' AND rightarg = 'timestampset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp <<# ts )
+WHERE op = '<<#' AND leftarg = 'tint' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_period WHERE temp <<# p )
 WHERE op = '<<#' AND leftarg = 'tint' AND rightarg = 'period';
@@ -2989,8 +2989,8 @@ UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp <<# t )
 WHERE op = '<<#' AND leftarg = 'tfloat' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestampset WHERE temp <<# ts )
-WHERE op = '<<#' AND leftarg = 'tfloat' AND rightarg = 'timestampset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp <<# ts )
+WHERE op = '<<#' AND leftarg = 'tfloat' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_period WHERE temp <<# p )
 WHERE op = '<<#' AND leftarg = 'tfloat' AND rightarg = 'period';
@@ -3011,8 +3011,8 @@ UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE temp <<# t )
 WHERE op = '<<#' AND leftarg = 'ttext' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestampset WHERE temp <<# ts )
-WHERE op = '<<#' AND leftarg = 'ttext' AND rightarg = 'timestampset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp <<# ts )
+WHERE op = '<<#' AND leftarg = 'ttext' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_period WHERE temp <<# p )
 WHERE op = '<<#' AND leftarg = 'ttext' AND rightarg = 'period';
@@ -3041,17 +3041,17 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_ttext WHERE t &<# t
 WHERE op = '&<#' AND leftarg = 'timestamptz' AND rightarg = 'ttext';
 
 UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tbool WHERE ts &<# temp )
-WHERE op = '&<#' AND leftarg = 'timestampset' AND rightarg = 'tbool';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE ts &<# temp )
+WHERE op = '&<#' AND leftarg = 'tstzset' AND rightarg = 'tbool';
 UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tint WHERE ts &<# temp )
-WHERE op = '&<#' AND leftarg = 'timestampset' AND rightarg = 'tint';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tint WHERE ts &<# temp )
+WHERE op = '&<#' AND leftarg = 'tstzset' AND rightarg = 'tint';
 UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tfloat WHERE ts &<# temp )
-WHERE op = '&<#' AND leftarg = 'timestampset' AND rightarg = 'tfloat';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE ts &<# temp )
+WHERE op = '&<#' AND leftarg = 'tstzset' AND rightarg = 'tfloat';
 UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_ttext WHERE ts &<# temp )
-WHERE op = '&<#' AND leftarg = 'timestampset' AND rightarg = 'ttext';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE ts &<# temp )
+WHERE op = '&<#' AND leftarg = 'tstzset' AND rightarg = 'ttext';
 
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tbool WHERE p &<# temp )
@@ -3093,8 +3093,8 @@ UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE temp &<# t )
 WHERE op = '&<#' AND leftarg = 'tbool' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestampset WHERE temp &<# ts )
-WHERE op = '&<#' AND leftarg = 'tbool' AND rightarg = 'timestampset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp &<# ts )
+WHERE op = '&<#' AND leftarg = 'tbool' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_period WHERE temp &<# p )
 WHERE op = '&<#' AND leftarg = 'tbool' AND rightarg = 'period';
@@ -3109,8 +3109,8 @@ UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE temp &<# t )
 WHERE op = '&<#' AND leftarg = 'tint' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestampset WHERE temp &<# ts )
-WHERE op = '&<#' AND leftarg = 'tint' AND rightarg = 'timestampset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp &<# ts )
+WHERE op = '&<#' AND leftarg = 'tint' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_period WHERE temp &<# p )
 WHERE op = '&<#' AND leftarg = 'tint' AND rightarg = 'period';
@@ -3131,8 +3131,8 @@ UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp &<# t )
 WHERE op = '&<#' AND leftarg = 'tfloat' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestampset WHERE temp &<# ts )
-WHERE op = '&<#' AND leftarg = 'tfloat' AND rightarg = 'timestampset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp &<# ts )
+WHERE op = '&<#' AND leftarg = 'tfloat' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_period WHERE temp &<# p )
 WHERE op = '&<#' AND leftarg = 'tfloat' AND rightarg = 'period';
@@ -3153,8 +3153,8 @@ UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE temp &<# t )
 WHERE op = '&<#' AND leftarg = 'ttext' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestampset WHERE temp &<# ts )
-WHERE op = '&<#' AND leftarg = 'ttext' AND rightarg = 'timestampset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp &<# ts )
+WHERE op = '&<#' AND leftarg = 'ttext' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_period WHERE temp &<# p )
 WHERE op = '&<#' AND leftarg = 'ttext' AND rightarg = 'period';
@@ -3183,17 +3183,17 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_ttext WHERE t #>> t
 WHERE op = '#>>' AND leftarg = 'timestamptz' AND rightarg = 'ttext';
 
 UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tbool WHERE ts #>> temp )
-WHERE op = '#>>' AND leftarg = 'timestampset' AND rightarg = 'tbool';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE ts #>> temp )
+WHERE op = '#>>' AND leftarg = 'tstzset' AND rightarg = 'tbool';
 UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tint WHERE ts #>> temp )
-WHERE op = '#>>' AND leftarg = 'timestampset' AND rightarg = 'tint';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tint WHERE ts #>> temp )
+WHERE op = '#>>' AND leftarg = 'tstzset' AND rightarg = 'tint';
 UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tfloat WHERE ts #>> temp )
-WHERE op = '#>>' AND leftarg = 'timestampset' AND rightarg = 'tfloat';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE ts #>> temp )
+WHERE op = '#>>' AND leftarg = 'tstzset' AND rightarg = 'tfloat';
 UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_ttext WHERE ts #>> temp )
-WHERE op = '#>>' AND leftarg = 'timestampset' AND rightarg = 'ttext';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE ts #>> temp )
+WHERE op = '#>>' AND leftarg = 'tstzset' AND rightarg = 'ttext';
 
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tbool WHERE p #>> temp )
@@ -3234,8 +3234,8 @@ UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE temp #>> t )
 WHERE op = '#>>' AND leftarg = 'tbool' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestampset WHERE temp #>> ts )
-WHERE op = '#>>' AND leftarg = 'tbool' AND rightarg = 'timestampset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp #>> ts )
+WHERE op = '#>>' AND leftarg = 'tbool' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_period WHERE temp #>> p )
 WHERE op = '#>>' AND leftarg = 'tbool' AND rightarg = 'period';
@@ -3250,8 +3250,8 @@ UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE temp #>> t )
 WHERE op = '#>>' AND leftarg = 'tint' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestampset WHERE temp #>> ts )
-WHERE op = '#>>' AND leftarg = 'tint' AND rightarg = 'timestampset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp #>> ts )
+WHERE op = '#>>' AND leftarg = 'tint' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_period WHERE temp #>> p )
 WHERE op = '#>>' AND leftarg = 'tint' AND rightarg = 'period';
@@ -3272,8 +3272,8 @@ UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp #>> t )
 WHERE op = '#>>' AND leftarg = 'tfloat' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestampset WHERE temp #>> ts )
-WHERE op = '#>>' AND leftarg = 'tfloat' AND rightarg = 'timestampset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp #>> ts )
+WHERE op = '#>>' AND leftarg = 'tfloat' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_period WHERE temp #>> p )
 WHERE op = '#>>' AND leftarg = 'tfloat' AND rightarg = 'period';
@@ -3294,8 +3294,8 @@ UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE temp #>> t )
 WHERE op = '#>>' AND leftarg = 'ttext' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestampset WHERE temp #>> ts )
-WHERE op = '#>>' AND leftarg = 'ttext' AND rightarg = 'timestampset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp #>> ts )
+WHERE op = '#>>' AND leftarg = 'ttext' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_period WHERE temp #>> p )
 WHERE op = '#>>' AND leftarg = 'ttext' AND rightarg = 'period';
@@ -3324,17 +3324,17 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_ttext WHERE t #&> t
 WHERE op = '#&>' AND leftarg = 'timestamptz' AND rightarg = 'ttext';
 
 UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tbool WHERE ts #&> temp )
-WHERE op = '#&>' AND leftarg = 'timestampset' AND rightarg = 'tbool';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE ts #&> temp )
+WHERE op = '#&>' AND leftarg = 'tstzset' AND rightarg = 'tbool';
 UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tint WHERE ts #&> temp )
-WHERE op = '#&>' AND leftarg = 'timestampset' AND rightarg = 'tint';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tint WHERE ts #&> temp )
+WHERE op = '#&>' AND leftarg = 'tstzset' AND rightarg = 'tint';
 UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tfloat WHERE ts #&> temp )
-WHERE op = '#&>' AND leftarg = 'timestampset' AND rightarg = 'tfloat';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE ts #&> temp )
+WHERE op = '#&>' AND leftarg = 'tstzset' AND rightarg = 'tfloat';
 UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_ttext WHERE ts #&> temp )
-WHERE op = '#&>' AND leftarg = 'timestampset' AND rightarg = 'ttext';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE ts #&> temp )
+WHERE op = '#&>' AND leftarg = 'tstzset' AND rightarg = 'ttext';
 
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tbool WHERE p #&> temp )
@@ -3375,8 +3375,8 @@ UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE temp #&> t )
 WHERE op = '#&>' AND leftarg = 'tbool' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestampset WHERE temp #&> ts )
-WHERE op = '#&>' AND leftarg = 'tbool' AND rightarg = 'timestampset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp #&> ts )
+WHERE op = '#&>' AND leftarg = 'tbool' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_period WHERE temp #&> p )
 WHERE op = '#&>' AND leftarg = 'tbool' AND rightarg = 'period';
@@ -3391,8 +3391,8 @@ UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE temp #&> t )
 WHERE op = '#&>' AND leftarg = 'tint' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestampset WHERE temp #&> ts )
-WHERE op = '#&>' AND leftarg = 'tint' AND rightarg = 'timestampset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp #&> ts )
+WHERE op = '#&>' AND leftarg = 'tint' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_period WHERE temp #&> p )
 WHERE op = '#&>' AND leftarg = 'tint' AND rightarg = 'period';
@@ -3413,8 +3413,8 @@ UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp #&> t )
 WHERE op = '#&>' AND leftarg = 'tfloat' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestampset WHERE temp #&> ts )
-WHERE op = '#&>' AND leftarg = 'tfloat' AND rightarg = 'timestampset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp #&> ts )
+WHERE op = '#&>' AND leftarg = 'tfloat' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_period WHERE temp #&> p )
 WHERE op = '#&>' AND leftarg = 'tfloat' AND rightarg = 'period';
@@ -3435,8 +3435,8 @@ UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE temp #&> t )
 WHERE op = '#&>' AND leftarg = 'ttext' AND rightarg = 'timestamptz';
 UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestampset WHERE temp #&> ts )
-WHERE op = '#&>' AND leftarg = 'ttext' AND rightarg = 'timestampset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp #&> ts )
+WHERE op = '#&>' AND leftarg = 'ttext' AND rightarg = 'tstzset';
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_period WHERE temp #&> p )
 WHERE op = '#&>' AND leftarg = 'ttext' AND rightarg = 'period';

@@ -352,7 +352,7 @@ Timestamp_to_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Timestampset_to_stbox);
+PG_FUNCTION_INFO_V1(Tstzset_to_stbox);
 /**
  * @ingroup mobilitydb_box_cast
  * @brief Transform a timestamp set to a spatiotemporal box
@@ -360,11 +360,11 @@ PG_FUNCTION_INFO_V1(Timestampset_to_stbox);
  * @sqlfunc @p ::
  */
 PGDLLEXPORT Datum
-Timestampset_to_stbox(PG_FUNCTION_ARGS)
+Tstzset_to_stbox(PG_FUNCTION_ARGS)
 {
   Set *ts = PG_GETARG_SET_P(0);
   STBox *result = palloc(sizeof(STBox));
-  timestampset_set_stbox(ts, result);
+  tstzset_set_stbox(ts, result);
   PG_RETURN_POINTER(result);
 }
 

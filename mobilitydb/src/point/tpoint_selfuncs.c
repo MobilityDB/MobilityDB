@@ -464,8 +464,8 @@ tpoint_const_stbox(Node *other, STBox *box)
       box);
   else if (type == T_TIMESTAMPTZ)
     timestamp_set_stbox(DatumGetTimestampTz(((Const *) other)->constvalue), box);
-  else if (type == T_TIMESTAMPSET)
-    timestampset_set_stbox(DatumGetSetP(((Const *) other)->constvalue),
+  else if (type == T_TSTZSET)
+    tstzset_set_stbox(DatumGetSetP(((Const *) other)->constvalue),
       box);
   else if (type == T_PERIOD)
     period_set_stbox(DatumGetSpanP(((Const *) other)->constvalue), box);
@@ -490,13 +490,13 @@ tpoint_cachedop(Oid operid, CachedOp *cachedOp)
   {
     if (operid == oper_oid((CachedOp) i, T_GEOMETRY, T_TGEOMPOINT) ||
         operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TGEOMPOINT) ||
-        operid == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TGEOMPOINT) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSET, T_TGEOMPOINT) ||
         operid == oper_oid((CachedOp) i, T_PERIOD, T_TGEOMPOINT) ||
         operid == oper_oid((CachedOp) i, T_PERIODSET, T_TGEOMPOINT) ||
         operid == oper_oid((CachedOp) i, T_STBOX, T_TGEOMPOINT) ||
         operid == oper_oid((CachedOp) i, T_TGEOMPOINT, T_GEOMETRY) ||
         operid == oper_oid((CachedOp) i, T_TGEOMPOINT, T_TIMESTAMPTZ) ||
-        operid == oper_oid((CachedOp) i, T_TGEOMPOINT, T_TIMESTAMPSET) ||
+        operid == oper_oid((CachedOp) i, T_TGEOMPOINT, T_TSTZSET) ||
         operid == oper_oid((CachedOp) i, T_TGEOMPOINT, T_PERIOD) ||
         operid == oper_oid((CachedOp) i, T_TGEOMPOINT, T_PERIODSET) ||
         operid == oper_oid((CachedOp) i, T_TGEOMPOINT, T_STBOX) ||
@@ -504,13 +504,13 @@ tpoint_cachedop(Oid operid, CachedOp *cachedOp)
 
         operid == oper_oid((CachedOp) i, T_GEOGRAPHY, T_TGEOGPOINT) ||
         operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TGEOGPOINT) ||
-        operid == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TGEOGPOINT) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSET, T_TGEOGPOINT) ||
         operid == oper_oid((CachedOp) i, T_PERIOD, T_TGEOGPOINT) ||
         operid == oper_oid((CachedOp) i, T_PERIODSET, T_TGEOGPOINT) ||
         operid == oper_oid((CachedOp) i, T_STBOX, T_TGEOGPOINT) ||
         operid == oper_oid((CachedOp) i, T_TGEOGPOINT, T_GEOGRAPHY) ||
         operid == oper_oid((CachedOp) i, T_TGEOGPOINT, T_TIMESTAMPTZ) ||
-        operid == oper_oid((CachedOp) i, T_TGEOGPOINT, T_TIMESTAMPSET) ||
+        operid == oper_oid((CachedOp) i, T_TGEOGPOINT, T_TSTZSET) ||
         operid == oper_oid((CachedOp) i, T_TGEOGPOINT, T_PERIOD) ||
         operid == oper_oid((CachedOp) i, T_TGEOGPOINT, T_PERIODSET) ||
         operid == oper_oid((CachedOp) i, T_TGEOGPOINT, T_STBOX) ||

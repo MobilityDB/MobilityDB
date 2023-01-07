@@ -77,11 +77,11 @@ typedef enum
   T_TEXT           = 27,  /**< text type */
   T_TEXTSET        = 28,  /**< text type */
   T_TFLOAT         = 29,  /**< temporal float type */
-  T_TIMESTAMPSET   = 30,  /**< timestamp set type */
-  T_TIMESTAMPTZ    = 31,  /**< timestamp with time zone type */
-  T_TINT           = 32,  /**< temporal integer type */
+  T_TIMESTAMPTZ    = 30,  /**< timestamp with time zone type */
+  T_TINT           = 31,  /**< temporal integer type */
+  T_TSTZMULTIRANGE = 32,  /**< PostgreSQL timestamp with time zone multirange type */
   T_TSTZRANGE      = 33,  /**< PostgreSQL timestamp with time zone range type */
-  T_TSTZMULTIRANGE = 34,  /**< PostgreSQL timestamp with time zone multirange type */
+  T_TSTZSET        = 34,  /**< timestamptz set type */
   T_TTEXT          = 35,  /**< temporal text type */
   T_GEOMETRY       = 36,  /**< geometry type */
   T_GEOMSET        = 37,  /**< geometry set type */

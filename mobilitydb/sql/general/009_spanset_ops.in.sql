@@ -200,7 +200,7 @@ CREATE FUNCTION span_contains(periodset, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_spanset_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_contains(periodset, timestampset)
+CREATE FUNCTION span_contains(periodset, tstzset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_spanset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -227,7 +227,7 @@ CREATE OPERATOR @> (
 );
 CREATE OPERATOR @> (
   PROCEDURE = span_contains,
-  LEFTARG = periodset, RIGHTARG = timestampset,
+  LEFTARG = periodset, RIGHTARG = tstzset,
   COMMUTATOR = <@,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
@@ -406,7 +406,7 @@ CREATE FUNCTION span_contained(timestamptz, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_value_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_contained(timestampset, periodset)
+CREATE FUNCTION span_contained(tstzset, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_set_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -431,7 +431,7 @@ CREATE OPERATOR <@ (
 );
 CREATE OPERATOR <@ (
   PROCEDURE = span_contained,
-  LEFTARG = timestampset, RIGHTARG = periodset,
+  LEFTARG = tstzset, RIGHTARG = periodset,
   COMMUTATOR = @>,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
@@ -612,7 +612,7 @@ CREATE OPERATOR && (
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 
-CREATE FUNCTION span_overlaps(timestampset, periodset)
+CREATE FUNCTION span_overlaps(tstzset, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_set_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -620,7 +620,7 @@ CREATE FUNCTION span_overlaps(period, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_span_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_overlaps(periodset, timestampset)
+CREATE FUNCTION span_overlaps(periodset, tstzset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_spanset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -635,7 +635,7 @@ CREATE FUNCTION span_overlaps(periodset, periodset)
 
 CREATE OPERATOR && (
   PROCEDURE = span_overlaps,
-  LEFTARG = timestampset, RIGHTARG = periodset,
+  LEFTARG = tstzset, RIGHTARG = periodset,
   COMMUTATOR = &&,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
@@ -647,7 +647,7 @@ CREATE OPERATOR && (
 );
 CREATE OPERATOR && (
   PROCEDURE = span_overlaps,
-  LEFTARG = periodset, RIGHTARG = timestampset,
+  LEFTARG = periodset, RIGHTARG = tstzset,
   COMMUTATOR = &&,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
@@ -886,7 +886,7 @@ CREATE FUNCTION span_left(timestamptz, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_value_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_left(timestampset, periodset)
+CREATE FUNCTION span_left(tstzset, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_set_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -898,7 +898,7 @@ CREATE FUNCTION span_left(periodset, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_spanset_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_left(periodset, timestampset)
+CREATE FUNCTION span_left(periodset, tstzset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_spanset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -919,7 +919,7 @@ CREATE OPERATOR <<# (
 );
 CREATE OPERATOR <<# (
   PROCEDURE = span_left,
-  LEFTARG = timestampset, RIGHTARG = periodset,
+  LEFTARG = tstzset, RIGHTARG = periodset,
   COMMUTATOR = #>>,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
@@ -937,7 +937,7 @@ CREATE OPERATOR <<# (
 );
 CREATE OPERATOR <<# (
   PROCEDURE = span_left,
-  LEFTARG = periodset, RIGHTARG = timestampset,
+  LEFTARG = periodset, RIGHTARG = tstzset,
   COMMUTATOR = #>>,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
@@ -1176,7 +1176,7 @@ CREATE FUNCTION span_right(timestamptz, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_value_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_right(timestampset, periodset)
+CREATE FUNCTION span_right(tstzset, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_set_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -1188,7 +1188,7 @@ CREATE FUNCTION span_right(periodset, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_spanset_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_right(periodset, timestampset)
+CREATE FUNCTION span_right(periodset, tstzset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_spanset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -1209,7 +1209,7 @@ CREATE OPERATOR #>> (
 );
 CREATE OPERATOR #>> (
   PROCEDURE = span_right,
-  LEFTARG = timestampset, RIGHTARG = periodset,
+  LEFTARG = tstzset, RIGHTARG = periodset,
   COMMUTATOR = <<#,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
@@ -1227,7 +1227,7 @@ CREATE OPERATOR #>> (
 );
 CREATE OPERATOR #>> (
   PROCEDURE = span_right,
-  LEFTARG = periodset, RIGHTARG = timestampset,
+  LEFTARG = periodset, RIGHTARG = tstzset,
   COMMUTATOR = <<#,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
@@ -1445,7 +1445,7 @@ CREATE FUNCTION span_overleft(timestamptz, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_value_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_overleft(timestampset, periodset)
+CREATE FUNCTION span_overleft(tstzset, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_set_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -1457,7 +1457,7 @@ CREATE FUNCTION span_overleft(periodset, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_spanset_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_overleft(periodset, timestampset)
+CREATE FUNCTION span_overleft(periodset, tstzset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_spanset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -1477,7 +1477,7 @@ CREATE OPERATOR &<# (
 );
 CREATE OPERATOR &<# (
   PROCEDURE = span_overleft,
-  LEFTARG = timestampset, RIGHTARG = periodset,
+  LEFTARG = tstzset, RIGHTARG = periodset,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR &<# (
@@ -1492,7 +1492,7 @@ CREATE OPERATOR &<# (
 );
 CREATE OPERATOR &<# (
   PROCEDURE = span_overleft,
-  LEFTARG = periodset, RIGHTARG = timestampset,
+  LEFTARG = periodset, RIGHTARG = tstzset,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR &<# (
@@ -1707,7 +1707,7 @@ CREATE FUNCTION span_overright(timestamptz, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_value_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_overright(timestampset, periodset)
+CREATE FUNCTION span_overright(tstzset, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_set_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -1719,7 +1719,7 @@ CREATE FUNCTION span_overright(periodset, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_spanset_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_overright(periodset, timestampset)
+CREATE FUNCTION span_overright(periodset, tstzset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_spanset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -1739,7 +1739,7 @@ CREATE OPERATOR #&> (
 );
 CREATE OPERATOR #&> (
   PROCEDURE = span_overright,
-  LEFTARG = timestampset, RIGHTARG = periodset,
+  LEFTARG = tstzset, RIGHTARG = periodset,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR #&> (
@@ -1754,7 +1754,7 @@ CREATE OPERATOR #&> (
 );
 CREATE OPERATOR #&> (
   PROCEDURE = span_overright,
-  LEFTARG = periodset, RIGHTARG = timestampset,
+  LEFTARG = periodset, RIGHTARG = tstzset,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR #&> (
@@ -1990,7 +1990,7 @@ CREATE FUNCTION span_adjacent(timestamptz, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_value_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_adjacent(timestampset, periodset)
+CREATE FUNCTION span_adjacent(tstzset, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_set_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -2002,7 +2002,7 @@ CREATE FUNCTION span_adjacent(periodset, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_spanset_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_adjacent(periodset, timestampset)
+CREATE FUNCTION span_adjacent(periodset, tstzset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_spanset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -2023,7 +2023,7 @@ CREATE OPERATOR -|- (
 );
 CREATE OPERATOR -|- (
   PROCEDURE = span_adjacent,
-  LEFTARG = timestampset, RIGHTARG = periodset,
+  LEFTARG = tstzset, RIGHTARG = periodset,
   COMMUTATOR = -|-,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
@@ -2041,7 +2041,7 @@ CREATE OPERATOR -|- (
 );
 CREATE OPERATOR -|- (
   PROCEDURE = span_adjacent,
-  LEFTARG = periodset, RIGHTARG = timestampset,
+  LEFTARG = periodset, RIGHTARG = tstzset,
   COMMUTATOR = -|-,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
@@ -2259,7 +2259,7 @@ CREATE FUNCTION span_union(timestamptz, periodset)
   RETURNS periodset
   AS 'MODULE_PATHNAME', 'Union_value_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_union(timestampset, periodset)
+CREATE FUNCTION span_union(tstzset, periodset)
   RETURNS periodset
   AS 'MODULE_PATHNAME', 'Union_set_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -2271,7 +2271,7 @@ CREATE FUNCTION span_union(periodset, timestamptz)
   RETURNS periodset
   AS 'MODULE_PATHNAME', 'Union_spanset_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_union(periodset, timestampset)
+CREATE FUNCTION span_union(periodset, tstzset)
   RETURNS periodset
   AS 'MODULE_PATHNAME', 'Union_spanset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -2291,7 +2291,7 @@ CREATE OPERATOR + (
 );
 CREATE OPERATOR + (
   PROCEDURE = span_union,
-  LEFTARG = timestampset, RIGHTARG = periodset,
+  LEFTARG = tstzset, RIGHTARG = periodset,
   COMMUTATOR = +
 );
 CREATE OPERATOR + (
@@ -2306,7 +2306,7 @@ CREATE OPERATOR + (
 );
 CREATE OPERATOR + (
   PROCEDURE = span_union,
-  LEFTARG = periodset, RIGHTARG = timestampset,
+  LEFTARG = periodset, RIGHTARG = tstzset,
   COMMUTATOR = +
 );
 CREATE OPERATOR + (
@@ -2500,8 +2500,8 @@ CREATE FUNCTION span_minus(timestamptz, periodset)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Minus_value_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_minus(timestampset, periodset)
-  RETURNS timestampset
+CREATE FUNCTION span_minus(tstzset, periodset)
+  RETURNS tstzset
   AS 'MODULE_PATHNAME', 'Minus_set_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_minus(period, periodset)
@@ -2512,7 +2512,7 @@ CREATE FUNCTION span_minus(periodset, timestamptz)
   RETURNS periodset
   AS 'MODULE_PATHNAME', 'Minus_spanset_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_minus(periodset, timestampset)
+CREATE FUNCTION span_minus(periodset, tstzset)
   RETURNS periodset
   AS 'MODULE_PATHNAME', 'Minus_spanset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -2531,7 +2531,7 @@ CREATE OPERATOR - (
 );
 CREATE OPERATOR - (
   PROCEDURE = span_minus,
-  LEFTARG = timestampset, RIGHTARG = periodset
+  LEFTARG = tstzset, RIGHTARG = periodset
 );
 CREATE OPERATOR - (
   PROCEDURE = span_minus,
@@ -2543,7 +2543,7 @@ CREATE OPERATOR - (
 );
 CREATE OPERATOR - (
   PROCEDURE = span_minus,
-  LEFTARG = periodset, RIGHTARG = timestampset
+  LEFTARG = periodset, RIGHTARG = tstzset
 );
 CREATE OPERATOR - (
   PROCEDURE = span_minus,
@@ -2755,8 +2755,8 @@ CREATE FUNCTION span_intersection(timestamptz, periodset)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Intersection_value_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_intersection(timestampset, periodset)
-  RETURNS timestampset
+CREATE FUNCTION span_intersection(tstzset, periodset)
+  RETURNS tstzset
   AS 'MODULE_PATHNAME', 'Intersection_set_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_intersection(period, periodset)
@@ -2767,8 +2767,8 @@ CREATE FUNCTION span_intersection(periodset, timestamptz)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Intersection_spanset_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_intersection(periodset, timestampset)
-  RETURNS timestampset
+CREATE FUNCTION span_intersection(periodset, tstzset)
+  RETURNS tstzset
   AS 'MODULE_PATHNAME', 'Intersection_spanset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_intersection(periodset, period)
@@ -2787,7 +2787,7 @@ CREATE OPERATOR * (
 );
 CREATE OPERATOR * (
   PROCEDURE = span_intersection,
-  LEFTARG = timestampset, RIGHTARG = periodset,
+  LEFTARG = tstzset, RIGHTARG = periodset,
   COMMUTATOR = *
 );
 CREATE OPERATOR * (
@@ -2802,7 +2802,7 @@ CREATE OPERATOR * (
 );
 CREATE OPERATOR * (
   PROCEDURE = span_intersection,
-  LEFTARG = periodset, RIGHTARG = timestampset,
+  LEFTARG = periodset, RIGHTARG = tstzset,
   COMMUTATOR = *
 );
 CREATE OPERATOR * (
@@ -3019,7 +3019,7 @@ CREATE FUNCTION time_distance(timestamptz, periodset)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_value_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_distance(timestampset, periodset)
+CREATE FUNCTION time_distance(tstzset, periodset)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_set_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -3031,7 +3031,7 @@ CREATE FUNCTION time_distance(periodset, timestamptz)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_spanset_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_distance(periodset, timestampset)
+CREATE FUNCTION time_distance(periodset, tstzset)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_spanset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -3051,7 +3051,7 @@ CREATE OPERATOR <-> (
 );
 CREATE OPERATOR <-> (
   PROCEDURE = time_distance,
-  LEFTARG = timestampset, RIGHTARG = periodset,
+  LEFTARG = tstzset, RIGHTARG = periodset,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
@@ -3066,7 +3066,7 @@ CREATE OPERATOR <-> (
 );
 CREATE OPERATOR <-> (
   PROCEDURE = time_distance,
-  LEFTARG = periodset, RIGHTARG = timestampset,
+  LEFTARG = periodset, RIGHTARG = tstzset,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (

@@ -1819,10 +1819,10 @@ tsequenceset_restrict_timestamp(const TSequenceSet *ss, TimestampTz t,
 /**
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal sequence set to (the complement of) a timestamp set.
- * @sqlfunc atTimestampSet(), minusTimestampSet()
+ * @sqlfunc atTstzSet(), minusTstzSet()
  */
 Temporal *
-tsequenceset_restrict_timestampset(const TSequenceSet *ss,
+tsequenceset_restrict_tstzset(const TSequenceSet *ss,
   const Set *ts, bool atfunc)
 {
   /* Singleton timestamp set */
@@ -1849,8 +1849,8 @@ tsequenceset_restrict_timestampset(const TSequenceSet *ss,
   /* Singleton sequence set */
   if (ss->count == 1)
     return atfunc ?
-      (Temporal *) tcontseq_at_timestampset(tsequenceset_seq_n(ss, 0), ts) :
-      (Temporal *) tcontseq_minus_timestampset(tsequenceset_seq_n(ss, 0), ts);
+      (Temporal *) tcontseq_at_tstzset(tsequenceset_seq_n(ss, 0), ts) :
+      (Temporal *) tcontseq_minus_tstzset(tsequenceset_seq_n(ss, 0), ts);
 
   /* General case */
   const TSequence *seq;
@@ -1889,7 +1889,7 @@ tsequenceset_restrict_timestampset(const TSequenceSet *ss,
     for (int i = 0; i < ss->count; i++)
     {
       seq = tsequenceset_seq_n(ss, i);
-      k += tcontseq_minus_timestampset1(seq, ts, &sequences[k]);
+      k += tcontseq_minus_tstzset1(seq, ts, &sequences[k]);
 
     }
     return (Temporal *) tsequenceset_make_free(sequences, k, NORMALIZE);
@@ -2934,7 +2934,7 @@ tsequenceset_delete_timestamp(const TSequenceSet *ss, TimestampTz t)
  * @sqlfunc atTime(), minusTime()
  */
 TSequenceSet *
-tsequenceset_delete_timestampset(const TSequenceSet *ss,
+tsequenceset_delete_tstzset(const TSequenceSet *ss,
   const Set *ts)
 {
   /* Singleton timestamp set */
@@ -2954,7 +2954,7 @@ tsequenceset_delete_timestampset(const TSequenceSet *ss,
   if (ss->count == 1)
   {
     TSequenceSet *result = NULL;
-    seq1 = tcontseq_delete_timestampset(tsequenceset_seq_n(ss, 0), ts);
+    seq1 = tcontseq_delete_tstzset(tsequenceset_seq_n(ss, 0), ts);
     if (seq1)
     {
       result = tsequence_to_tsequenceset(seq1);
@@ -2969,7 +2969,7 @@ tsequenceset_delete_timestampset(const TSequenceSet *ss,
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
-    seq1 = tcontseq_delete_timestampset(seq, ts);
+    seq1 = tcontseq_delete_tstzset(seq, ts);
     if (seq1)
       sequences[k++] = seq1;
   }
@@ -3091,10 +3091,10 @@ tsequenceset_overlaps_timestamp(const TSequenceSet *ss, TimestampTz t)
 /**
  * @ingroup libmeos_internal_temporal_time
  * @brief Return true if a temporal sequence set intersects a timestamp set.
- * @sqlfunc intersectsTimestampSet()
+ * @sqlfunc intersectsTstzSet()
  */
 bool
-tsequenceset_overlaps_timestampset(const TSequenceSet *ss,
+tsequenceset_overlaps_tstzset(const TSequenceSet *ss,
   const Set *ss1)
 {
   for (int i = 0; i < ss1->count; i++)

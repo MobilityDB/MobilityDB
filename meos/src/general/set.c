@@ -181,9 +181,9 @@ floatset_in(const char *str)
  * @brief Return a set from its Well-Known Text (WKT) representation.
  */
 Set *
-timestampset_in(const char *str)
+tstzset_in(const char *str)
 {
-  return set_parse(&str, T_TIMESTAMPSET);
+  return set_parse(&str, T_TSTZSET);
 }
 #endif /* MEOS */
 
@@ -322,8 +322,8 @@ set_val_n(const Set *s, int index)
  * @param[in] values Array of values
  * @param[in] count Number of elements in the array
  * @param[in] basetype Base type
- * @sqlfunc intset(), bigintset(), floatset(), textset(), timestampset()
- * @pymeosfunc TimestampSet()
+ * @sqlfunc intset(), bigintset(), floatset(), textset(), tstzset()
+ * @pymeosfunc TstzSet()
  */
 Set *
 set_make(const Datum *values, int count, meosType basetype, bool ordered)
@@ -507,7 +507,7 @@ float_to_floatset(double d)
  * @sqlop @p ::
  */
 Set *
-timestamp_to_timestampset(TimestampTz t)
+timestamp_to_tstzset(TimestampTz t)
 {
   Datum v = TimestampTzGetDatum(t);
   return set_make(&v, 1, T_TIMESTAMPTZ, ORDERED);
@@ -633,7 +633,7 @@ floatset_start_value(const Set *s)
  * @pymeosfunc startTimestamp()
  */
 TimestampTz
-timestampset_start_timestamp(const Set *ts)
+tstzset_start_timestamp(const Set *ts)
 {
   TimestampTz result = DatumGetTimestampTz(set_val_n(ts, 0));
   return result;
@@ -699,7 +699,7 @@ floatset_end_value(const Set *s)
  * @pymeosfunc endTimestamp()
  */
 TimestampTz
-timestampset_end_timestamp(const Set *ts)
+tstzset_end_timestamp(const Set *ts)
 {
   TimestampTz result = DatumGetTimestampTz(set_val_n(ts, ts->count - 1));
   return result;
@@ -804,7 +804,7 @@ floatset_value_n(const Set *s, int n, double *result)
  * @pymeosfunc timestampN()
  */
 bool
-timestampset_timestamp_n(const Set *ts, int n, TimestampTz *result)
+tstzset_timestamp_n(const Set *ts, int n, TimestampTz *result)
 {
   if (n < 1 || n > ts->count)
     return false;
@@ -882,7 +882,7 @@ floatset_values(const Set *s)
  * @pymeosfunc timestamps()
  */
 TimestampTz *
-timestampset_timestamps(const Set *ts)
+tstzset_timestamps(const Set *ts)
 {
   TimestampTz *result = palloc(sizeof(TimestampTz) * ts->count);
   for (int i = 0; i < ts->count; i++)
@@ -915,7 +915,7 @@ set_shift(const Set *s, Datum shift)
  * @pymeosfunc shift()
  */
 Set *
-timestampset_shift_tscale(const Set *s, const Interval *shift,
+tstzset_shift_tscale(const Set *s, const Interval *shift,
   const Interval *duration)
 {
   assert(shift != NULL || duration != NULL);
@@ -1100,7 +1100,7 @@ datum_hash(Datum d, meosType basetype)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the 32-bit hash of a set.
- * @sqlfunc timestampset_hash()
+ * @sqlfunc tstzset_hash()
  */
 uint32
 set_hash(const Set *s)
@@ -1136,7 +1136,7 @@ datum_hash_extended(Datum d, meosType basetype, uint64 seed)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the 64-bit hash of a set using a seed.
- * @sqlfunc timestampset_hash_extended()
+ * @sqlfunc tstzset_hash_extended()
  */
 uint64
 set_hash_extended(const Set *s, uint64 seed)

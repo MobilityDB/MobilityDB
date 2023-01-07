@@ -497,7 +497,7 @@ boxop_temporal_timestamp(const Temporal *temp, TimestampTz t,
  * function
  */
 Datum
-boxop_temporal_timestampset(const Temporal *temp, const Set *ts,
+boxop_temporal_tstzset(const Temporal *temp, const Set *ts,
   bool (*func)(const Span *, const Span *), bool invert)
 {
   Span p1, p2;

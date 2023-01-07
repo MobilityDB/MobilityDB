@@ -237,12 +237,12 @@ CREATE OPERATOR CLASS periodset_rtree_ops
   DEFAULT FOR TYPE periodset USING gist AS
   STORAGE period,
   -- overlaps
-  OPERATOR  3    && (periodset, timestampset),
+  OPERATOR  3    && (periodset, tstzset),
   OPERATOR  3    && (periodset, period),
   OPERATOR  3    && (periodset, periodset),
   -- contains
   OPERATOR  7    @> (periodset, timestamptz),
-  OPERATOR  7    @> (periodset, timestampset),
+  OPERATOR  7    @> (periodset, tstzset),
   OPERATOR  7    @> (periodset, period),
   OPERATOR  7    @> (periodset, periodset),
   -- contained by
@@ -255,27 +255,27 @@ CREATE OPERATOR CLASS periodset_rtree_ops
   OPERATOR  18    = (periodset, periodset),
   -- nearest approach distance
   OPERATOR  25    <-> (periodset, timestamptz) FOR ORDER BY pg_catalog.float_ops,
-  OPERATOR  25    <-> (periodset, timestampset) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (periodset, tstzset) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    <-> (periodset, period) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    <-> (periodset, periodset) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (periodset, timestamptz),
-  OPERATOR  28    &<# (periodset, timestampset),
+  OPERATOR  28    &<# (periodset, tstzset),
   OPERATOR  28    &<# (periodset, period),
   OPERATOR  28    &<# (periodset, periodset),
   -- strictly before
   OPERATOR  29    <<# (periodset, timestamptz),
-  OPERATOR  29    <<# (periodset, timestampset),
+  OPERATOR  29    <<# (periodset, tstzset),
   OPERATOR  29    <<# (periodset, period),
   OPERATOR  29    <<# (periodset, periodset),
   -- strictly after
   OPERATOR  30    #>> (periodset, timestamptz),
-  OPERATOR  30    #>> (periodset, timestampset),
+  OPERATOR  30    #>> (periodset, tstzset),
   OPERATOR  30    #>> (periodset, period),
   OPERATOR  30    #>> (periodset, periodset),
   -- overlaps or after
   OPERATOR  31    #&> (periodset, timestamptz),
-  OPERATOR  31    #&> (periodset, timestampset),
+  OPERATOR  31    #&> (periodset, tstzset),
   OPERATOR  31    #&> (periodset, period),
   OPERATOR  31    #&> (periodset, periodset),
   -- functions
@@ -459,12 +459,12 @@ CREATE OPERATOR CLASS floatspanset_quadtree_ops
 CREATE OPERATOR CLASS periodset_quadtree_ops
   DEFAULT FOR TYPE periodset USING spgist AS
   -- overlaps
-  OPERATOR  3    && (periodset, timestampset),
+  OPERATOR  3    && (periodset, tstzset),
   OPERATOR  3    && (periodset, period),
   OPERATOR  3    && (periodset, periodset),
   -- contains
   OPERATOR  7    @> (periodset, timestamptz),
-  OPERATOR  7    @> (periodset, timestampset),
+  OPERATOR  7    @> (periodset, tstzset),
   OPERATOR  7    @> (periodset, period),
   OPERATOR  7    @> (periodset, periodset),
   -- contained by
@@ -477,27 +477,27 @@ CREATE OPERATOR CLASS periodset_quadtree_ops
   OPERATOR  18    = (periodset, periodset),
   -- nearest approach distance
   OPERATOR  25    <-> (periodset, timestamptz) FOR ORDER BY pg_catalog.float_ops,
-  OPERATOR  25    <-> (periodset, timestampset) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (periodset, tstzset) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    <-> (periodset, period) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    <-> (periodset, periodset) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (periodset, timestamptz),
-  OPERATOR  28    &<# (periodset, timestampset),
+  OPERATOR  28    &<# (periodset, tstzset),
   OPERATOR  28    &<# (periodset, period),
   OPERATOR  28    &<# (periodset, periodset),
   -- strictly before
   OPERATOR  29    <<# (periodset, timestamptz),
-  OPERATOR  29    <<# (periodset, timestampset),
+  OPERATOR  29    <<# (periodset, tstzset),
   OPERATOR  29    <<# (periodset, period),
   OPERATOR  29    <<# (periodset, periodset),
   -- strictly after
   OPERATOR  30    #>> (periodset, timestamptz),
-  OPERATOR  30    #>> (periodset, timestampset),
+  OPERATOR  30    #>> (periodset, tstzset),
   OPERATOR  30    #>> (periodset, period),
   OPERATOR  30    #>> (periodset, periodset),
   -- overlaps or after
   OPERATOR  31    #&> (periodset, timestamptz),
-  OPERATOR  31    #&> (periodset, timestampset),
+  OPERATOR  31    #&> (periodset, tstzset),
   OPERATOR  31    #&> (periodset, period),
   OPERATOR  31    #&> (periodset, periodset),
   -- functions
@@ -674,12 +674,12 @@ CREATE OPERATOR CLASS floatspanset_kdtree_ops
 CREATE OPERATOR CLASS periodset_kdtree_ops
   FOR TYPE periodset USING spgist AS
   -- overlaps
-  OPERATOR  3    && (periodset, timestampset),
+  OPERATOR  3    && (periodset, tstzset),
   OPERATOR  3    && (periodset, period),
   OPERATOR  3    && (periodset, periodset),
   -- contains
   OPERATOR  7    @> (periodset, timestamptz),
-  OPERATOR  7    @> (periodset, timestampset),
+  OPERATOR  7    @> (periodset, tstzset),
   OPERATOR  7    @> (periodset, period),
   OPERATOR  7    @> (periodset, periodset),
   -- contained by
@@ -692,27 +692,27 @@ CREATE OPERATOR CLASS periodset_kdtree_ops
   OPERATOR  18    = (periodset, periodset),
   -- nearest approach distance
   OPERATOR  25    <-> (periodset, timestamptz) FOR ORDER BY pg_catalog.float_ops,
-  OPERATOR  25    <-> (periodset, timestampset) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (periodset, tstzset) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    <-> (periodset, period) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    <-> (periodset, periodset) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (periodset, timestamptz),
-  OPERATOR  28    &<# (periodset, timestampset),
+  OPERATOR  28    &<# (periodset, tstzset),
   OPERATOR  28    &<# (periodset, period),
   OPERATOR  28    &<# (periodset, periodset),
   -- strictly before
   OPERATOR  29    <<# (periodset, timestamptz),
-  OPERATOR  29    <<# (periodset, timestampset),
+  OPERATOR  29    <<# (periodset, tstzset),
   OPERATOR  29    <<# (periodset, period),
   OPERATOR  29    <<# (periodset, periodset),
   -- strictly after
   OPERATOR  30    #>> (periodset, timestamptz),
-  OPERATOR  30    #>> (periodset, timestampset),
+  OPERATOR  30    #>> (periodset, tstzset),
   OPERATOR  30    #>> (periodset, period),
   OPERATOR  30    #>> (periodset, periodset),
   -- overlaps or after
   OPERATOR  31    #&> (periodset, timestamptz),
-  OPERATOR  31    #&> (periodset, timestampset),
+  OPERATOR  31    #&> (periodset, tstzset),
   OPERATOR  31    #&> (periodset, period),
   OPERATOR  31    #&> (periodset, periodset),
   -- functions

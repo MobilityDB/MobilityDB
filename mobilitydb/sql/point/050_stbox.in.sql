@@ -160,9 +160,9 @@ CREATE FUNCTION stbox(timestamptz)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Timestamp_to_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stbox(timestampset)
+CREATE FUNCTION stbox(tstzset)
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Timestampset_to_stbox'
+  AS 'MODULE_PATHNAME', 'Tstzset_to_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stbox(period)
   RETURNS stbox
@@ -192,7 +192,7 @@ CREATE FUNCTION stbox(geography, period)
 CREATE CAST (geometry AS stbox) WITH FUNCTION stbox(geometry);
 CREATE CAST (geography AS stbox) WITH FUNCTION stbox(geography);
 CREATE CAST (timestamptz AS stbox) WITH FUNCTION stbox(timestamptz);
-CREATE CAST (timestampset AS stbox) WITH FUNCTION stbox(timestampset);
+CREATE CAST (tstzset AS stbox) WITH FUNCTION stbox(tstzset);
 CREATE CAST (period AS stbox) WITH FUNCTION stbox(period);
 CREATE CAST (periodset AS stbox) WITH FUNCTION stbox(periodset);
 

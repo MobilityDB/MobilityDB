@@ -443,10 +443,10 @@ tnumber_spgist_get_tbox(const ScanKeyData *scankey, TBox *result)
     Set *set = DatumGetSetP(scankey->sk_argument);
     numset_set_tbox(set, result);
   }
-  else if (type == T_TIMESTAMPSET)
+  else if (type == T_TSTZSET)
   {
     Set *set = DatumGetSetP(scankey->sk_argument);
-    timestampset_set_tbox(set, result);
+    tstzset_set_tbox(set, result);
   }
   else if (tnumber_spantype(type))
   {

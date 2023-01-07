@@ -3129,26 +3129,25 @@ temporal_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
  * @sqlfunc atTime(), minusTime()
  */
 Temporal *
-temporal_restrict_timestampset(const Temporal *temp, const Set *ts,
-  bool atfunc)
+temporal_restrict_tstzset(const Temporal *temp, const Set *ts, bool atfunc)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
-    result = (Temporal *) tinstant_restrict_timestampset(
+    result = (Temporal *) tinstant_restrict_tstzset(
       (TInstant *) temp, ts, atfunc);
   else if (temp->subtype == TSEQUENCE)
   {
     if (MOBDB_FLAGS_GET_DISCRETE(temp->flags))
-      result = (Temporal *) tdiscseq_restrict_timestampset((TSequence *) temp,
+      result = (Temporal *) tdiscseq_restrict_tstzset((TSequence *) temp,
         ts, atfunc);
     else
       result = atfunc ?
-        (Temporal *) tcontseq_at_timestampset((TSequence *) temp, ts) :
-        (Temporal *) tcontseq_minus_timestampset((TSequence *) temp, ts);
+        (Temporal *) tcontseq_at_tstzset((TSequence *) temp, ts) :
+        (Temporal *) tcontseq_minus_tstzset((TSequence *) temp, ts);
   }
   else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tsequenceset_restrict_timestampset(
+    result = (Temporal *) tsequenceset_restrict_tstzset(
       (TSequenceSet *) temp, ts, atfunc);
   return result;
 }
@@ -3384,29 +3383,29 @@ temporal_delete_timestamp(const Temporal *temp, TimestampTz t, bool connect)
  * @sqlfunc deleteTime()
  */
 Temporal *
-temporal_delete_timestampset(const Temporal *temp, const Set *ts,
+temporal_delete_tstzset(const Temporal *temp, const Set *ts,
   bool connect)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
-    result = (Temporal *) tinstant_restrict_timestampset((TInstant *) temp, ts,
+    result = (Temporal *) tinstant_restrict_tstzset((TInstant *) temp, ts,
       REST_MINUS);
   else if (temp->subtype == TSEQUENCE)
   {
     if (MOBDB_FLAGS_GET_DISCRETE(temp->flags))
-      result = (Temporal *) tdiscseq_restrict_timestampset((TSequence *) temp,
+      result = (Temporal *) tdiscseq_restrict_tstzset((TSequence *) temp,
         ts, REST_MINUS);
     else
       result = connect ?
-        (Temporal *) tcontseq_delete_timestampset((TSequence *) temp, ts) :
-        (Temporal *) tcontseq_minus_timestampset((TSequence *) temp, ts);
+        (Temporal *) tcontseq_delete_tstzset((TSequence *) temp, ts) :
+        (Temporal *) tcontseq_minus_tstzset((TSequence *) temp, ts);
   }
   else /* temp->subtype == TSEQUENCESET */
   {
     result = connect ?
-      (Temporal *) tsequenceset_delete_timestampset((TSequenceSet *) temp, ts) :
-      (Temporal *) tsequenceset_restrict_timestampset((TSequenceSet *) temp, ts,
+      (Temporal *) tsequenceset_delete_tstzset((TSequenceSet *) temp, ts) :
+      (Temporal *) tsequenceset_restrict_tstzset((TSequenceSet *) temp, ts,
         REST_MINUS);
   }
   return result;
@@ -3512,16 +3511,16 @@ temporal_overlaps_timestamp(const Temporal *temp, TimestampTz t)
  * @pymeosfunc overlapsTime()
  */
 bool
-temporal_overlaps_timestampset(const Temporal *temp, const Set *ts)
+temporal_overlaps_tstzset(const Temporal *temp, const Set *ts)
 {
   bool result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
-    result = tinstant_overlaps_timestampset((TInstant *) temp, ts);
+    result = tinstant_overlaps_tstzset((TInstant *) temp, ts);
   else if (temp->subtype == TSEQUENCE)
-    result = tsequence_overlaps_timestampset((TSequence *) temp, ts);
+    result = tsequence_overlaps_tstzset((TSequence *) temp, ts);
   else /* temp->subtype == TSEQUENCESET */
-    result = tsequenceset_overlaps_timestampset((TSequenceSet *) temp, ts);
+    result = tsequenceset_overlaps_tstzset((TSequenceSet *) temp, ts);
   return result;
 }
 

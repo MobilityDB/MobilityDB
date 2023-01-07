@@ -168,7 +168,7 @@ span_gist_get_span(FunctionCallInfo fcinfo, Span *result, Oid typid)
     span_set(d, d, true, true, type, result);
   }
   else if (type == T_INTSET || type == T_BIGINTSET || type == T_FLOATSET ||
-    type == T_TIMESTAMPSET)
+    type == T_TSTZSET)
   {
     Set *s = PG_GETARG_SET_P(1);
     set_set_span(s, result);

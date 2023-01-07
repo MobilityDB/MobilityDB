@@ -62,16 +62,16 @@ Timestamp_extent_transfn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(p);
 }
 
-PG_FUNCTION_INFO_V1(Timestampset_extent_transfn);
+PG_FUNCTION_INFO_V1(Tstzset_extent_transfn);
 /**
  * Transition function for extent aggregation of timestamp set values
  */
 PGDLLEXPORT Datum
-Timestampset_extent_transfn(PG_FUNCTION_ARGS)
+Tstzset_extent_transfn(PG_FUNCTION_ARGS)
 {
   Span *p = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
   Set *ts = PG_ARGISNULL(1) ? NULL : PG_GETARG_SET_P(1);
-  p = timestampset_extent_transfn(p, ts);
+  p = tstzset_extent_transfn(p, ts);
   PG_FREE_IF_COPY(ts, 1);
   if (! p)
     PG_RETURN_NULL();
@@ -95,18 +95,18 @@ Timestamp_tunion_transfn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Timestampset_tunion_transfn);
+PG_FUNCTION_INFO_V1(Tstzset_tunion_transfn);
 /**
  * Transition function for union aggregate of timestamp sets
  */
 PGDLLEXPORT Datum
-Timestampset_tunion_transfn(PG_FUNCTION_ARGS)
+Tstzset_tunion_transfn(PG_FUNCTION_ARGS)
 {
   SkipList *state;
   INPUT_AGG_TRANS_STATE(fcinfo, state);
   Set *ts = PG_GETARG_SET_P(1);
   store_fcinfo(fcinfo);
-  SkipList *result = timestampset_tunion_transfn(state, ts);
+  SkipList *result = tstzset_tunion_transfn(state, ts);
   PG_FREE_IF_COPY(ts, 1);
   PG_RETURN_POINTER(result);
 }
@@ -190,7 +190,7 @@ Timestamp_tcount_bucket_transfn(PG_FUNCTION_ARGS)
  * Transition function for temporal count aggregate of timestamp sets
  */
 Datum
-Timestampset_tcount_transfn_ext(FunctionCallInfo fcinfo, bool bucket)
+Tstzset_tcount_transfn_ext(FunctionCallInfo fcinfo, bool bucket)
 {
   SkipList *state;
   INPUT_AGG_TRANS_STATE(fcinfo, state);
@@ -204,29 +204,29 @@ Timestampset_tcount_transfn_ext(FunctionCallInfo fcinfo, bool bucket)
     origin = PG_GETARG_TIMESTAMPTZ(3);
   }
   store_fcinfo(fcinfo);
-  state = timestampset_tcount_transfn(state, ts, interval, origin);
+  state = tstzset_tcount_transfn(state, ts, interval, origin);
   PG_FREE_IF_COPY(ts, 1);
   PG_RETURN_POINTER(state);
 }
 
-PG_FUNCTION_INFO_V1(Timestampset_tcount_transfn);
+PG_FUNCTION_INFO_V1(Tstzset_tcount_transfn);
 /**
  * Transition function for temporal count aggregate of timestamp sets
  */
 PGDLLEXPORT Datum
-Timestampset_tcount_transfn(PG_FUNCTION_ARGS)
+Tstzset_tcount_transfn(PG_FUNCTION_ARGS)
 {
-  return Timestampset_tcount_transfn_ext(fcinfo, false);
+  return Tstzset_tcount_transfn_ext(fcinfo, false);
 }
 
-PG_FUNCTION_INFO_V1(Timestampset_tcount_bucket_transfn);
+PG_FUNCTION_INFO_V1(Tstzset_tcount_bucket_transfn);
 /**
  * Transition function for temporal count aggregate of timestamp sets
  */
 PGDLLEXPORT Datum
-Timestampset_tcount_bucket_transfn(PG_FUNCTION_ARGS)
+Tstzset_tcount_bucket_transfn(PG_FUNCTION_ARGS)
 {
-  return Timestampset_tcount_transfn_ext(fcinfo, true);
+  return Tstzset_tcount_transfn_ext(fcinfo, true);
 }
 
 /**

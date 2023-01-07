@@ -423,14 +423,14 @@ WHERE valueAtTimestamp(temp, t) IS NOT NULL;
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestampset
+SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset
 WHERE atTime(temp, ts) IS NOT NULL;
  count 
 -------
      1
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestampset
+SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset
 WHERE minusTime(temp, ts) IS NOT NULL;
  count 
 -------
@@ -472,7 +472,7 @@ WHERE overlapsTime(temp, t) IS NOT NULL;
   9900
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestampset
+SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset
 WHERE overlapsTime(temp, ts) IS NOT NULL;
  count 
 -------
@@ -549,7 +549,7 @@ SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, timestamptz '2001-06-0
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, timestampset '{2001-06-01, 2001-07-01}');
+SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, tstzset '{2001-06-01, 2001-07-01}');
  count 
 -------
      0
@@ -577,7 +577,7 @@ SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, timestamptz '2001-06-0
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, timestampset '{2001-06-01, 2001-07-01}');
+SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, tstzset '{2001-06-01, 2001-07-01}');
  count 
 -------
      0

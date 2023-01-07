@@ -77,7 +77,7 @@ settype_cache_struct _settype_cache[] =
   {T_INTSET,        T_INT4},
   {T_BIGINTSET,     T_INT8},
   {T_FLOATSET,      T_FLOAT8},
-  {T_TIMESTAMPSET,  T_TIMESTAMPTZ},
+  {T_TSTZSET,       T_TIMESTAMPTZ},
   {T_TEXTSET,       T_TEXT},
   {T_GEOMSET,       T_GEOMETRY},
   {T_GEOGSET,       T_GEOGRAPHY},
@@ -238,7 +238,7 @@ basetype_settype(meosType basetype)
 bool
 time_type(meosType timetype)
 {
-  if (timetype == T_TIMESTAMPTZ || timetype == T_TIMESTAMPSET ||
+  if (timetype == T_TIMESTAMPTZ || timetype == T_TSTZSET ||
     timetype == T_PERIOD || timetype == T_PERIODSET)
     return true;
   return false;
@@ -287,9 +287,9 @@ ensure_set_basetype(meosType basetype)
 bool
 set_type(meosType settype)
 {
-  if (settype == T_TIMESTAMPSET || settype == T_INTSET ||
-      settype == T_BIGINTSET || settype == T_FLOATSET || settype == T_TEXTSET ||
-      settype == T_GEOMSET || settype == T_GEOGSET || settype == T_NPOINTSET)
+  if (settype == T_TSTZSET || settype == T_INTSET || settype == T_BIGINTSET ||
+      settype == T_FLOATSET || settype == T_TEXTSET || settype == T_GEOMSET ||
+      settype == T_GEOGSET || settype == T_NPOINTSET)
     return true;
   return false;
 }
@@ -311,8 +311,8 @@ ensure_set_type(meosType settype)
 bool
 alphanumset_type(meosType settype)
 {
-  if (settype == T_TIMESTAMPSET || settype == T_INTSET ||
-      settype == T_BIGINTSET || settype == T_FLOATSET || settype == T_TEXTSET)
+  if (settype == T_TSTZSET || settype == T_INTSET || settype == T_BIGINTSET ||
+      settype == T_FLOATSET || settype == T_TEXTSET)
     return true;
   return false;
 }

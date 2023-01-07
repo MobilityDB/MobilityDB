@@ -216,12 +216,12 @@ tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBox *result, Oid typid)
       return false;
     numset_set_tbox(set, result);
   }
-  else if (type == T_TIMESTAMPSET)
+  else if (type == T_TSTZSET)
   {
     Set *set = PG_GETARG_SET_P(1);
     if (set == NULL)
       return false;
-    timestampset_set_tbox(set, result);
+    tstzset_set_tbox(set, result);
   }
   else if (tnumber_spantype(type))
   {

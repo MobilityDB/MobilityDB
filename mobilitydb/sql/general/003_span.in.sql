@@ -336,7 +336,7 @@ CREATE FUNCTION floatspan(floatset)
   RETURNS floatspan
   AS 'MODULE_PATHNAME', 'Set_to_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION period(timestampset)
+CREATE FUNCTION period(tstzset)
   RETURNS period
   AS 'MODULE_PATHNAME', 'Set_to_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -344,7 +344,7 @@ CREATE FUNCTION period(timestampset)
 CREATE CAST (intset AS intspan) WITH FUNCTION intspan(intset);
 CREATE CAST (bigintset AS bigintspan) WITH FUNCTION bigintspan(bigintset);
 CREATE CAST (floatset AS floatspan) WITH FUNCTION floatspan(floatset);
-CREATE CAST (timestampset AS period) WITH FUNCTION period(timestampset);
+CREATE CAST (tstzset AS period) WITH FUNCTION period(tstzset);
 
 /*****************************************************************************
  * Transformation functions

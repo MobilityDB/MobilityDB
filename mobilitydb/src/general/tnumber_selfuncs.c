@@ -71,8 +71,8 @@ tnumber_cachedop(Oid operid, CachedOp *cachedOp)
     if (/* Time types */
         operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TINT) ||
         operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TFLOAT) ||
-        operid == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TINT) ||
-        operid == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TFLOAT) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSET, T_TINT) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSET, T_TFLOAT) ||
         operid == oper_oid((CachedOp) i, T_PERIOD, T_TINT) ||
         operid == oper_oid((CachedOp) i, T_PERIOD, T_TFLOAT) ||
         operid == oper_oid((CachedOp) i, T_PERIODSET, T_TINT) ||
@@ -85,7 +85,7 @@ tnumber_cachedop(Oid operid, CachedOp *cachedOp)
         operid == oper_oid((CachedOp) i, T_TBOX, T_TFLOAT) ||
         /* Tint type */
         operid == oper_oid((CachedOp) i, T_TINT, T_TIMESTAMPTZ) ||
-        operid == oper_oid((CachedOp) i, T_TINT, T_TIMESTAMPSET) ||
+        operid == oper_oid((CachedOp) i, T_TINT, T_TSTZSET) ||
         operid == oper_oid((CachedOp) i, T_TINT, T_PERIOD) ||
         operid == oper_oid((CachedOp) i, T_TINT, T_PERIODSET) ||
         operid == oper_oid((CachedOp) i, T_TINT, T_INT4) ||
@@ -96,7 +96,7 @@ tnumber_cachedop(Oid operid, CachedOp *cachedOp)
         operid == oper_oid((CachedOp) i, T_TINT, T_TFLOAT) ||
         /* Tfloat type */
         operid == oper_oid((CachedOp) i, T_TFLOAT, T_TIMESTAMPTZ) ||
-        operid == oper_oid((CachedOp) i, T_TFLOAT, T_TIMESTAMPSET) ||
+        operid == oper_oid((CachedOp) i, T_TFLOAT, T_TSTZSET) ||
         operid == oper_oid((CachedOp) i, T_TFLOAT, T_PERIOD) ||
         operid == oper_oid((CachedOp) i, T_TFLOAT, T_PERIODSET) ||
         operid == oper_oid((CachedOp) i, T_TFLOAT, T_INT4) ||
@@ -138,7 +138,7 @@ tnumber_const_to_span_period(const Node *other, Span **s, Span **p,
     *s = palloc(sizeof(Span));
     set_set_span(os, *s);
   }
-  else if (type == T_TIMESTAMPSET)
+  else if (type == T_TSTZSET)
   {
     Set *os = DatumGetSetP(((Const *) other)->constvalue);
     *p = palloc(sizeof(Span));

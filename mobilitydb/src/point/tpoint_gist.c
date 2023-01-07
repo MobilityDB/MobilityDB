@@ -287,12 +287,12 @@ tpoint_gist_get_stbox(FunctionCallInfo fcinfo, STBox *result,
     TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
     timestamp_set_stbox(t, result);
   }
-  else if (type == T_TIMESTAMPSET)
+  else if (type == T_TSTZSET)
   {
     Set *set = PG_GETARG_SET_P(1);
     if (set == NULL)
       return false;
-    timestampset_set_stbox(set, result);
+    tstzset_set_stbox(set, result);
   }
   else if (type == T_PERIOD)
   {

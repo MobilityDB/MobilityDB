@@ -556,7 +556,7 @@ timestamp_to_stbox(TimestampTz t)
  * @brief Set a spatiotemporal box from a timestamp set.
  */
 void
-timestampset_set_stbox(const Set *ts, STBox *box)
+tstzset_set_stbox(const Set *ts, STBox *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBox));
@@ -573,10 +573,10 @@ timestampset_set_stbox(const Set *ts, STBox *box)
  * @sqlop @p ::
  */
 STBox *
-timestampset_to_stbox(const Set *ts)
+tstzset_to_stbox(const Set *ts)
 {
   STBox *result = palloc(sizeof(STBox));
-  timestampset_set_stbox(ts, result);
+  tstzset_set_stbox(ts, result);
   return result;
 }
 #endif /* MEOS */

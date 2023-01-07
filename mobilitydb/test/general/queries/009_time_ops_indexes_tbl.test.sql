@@ -32,23 +32,23 @@
 -- Tests of operators that do involve indexes for time types.
 -------------------------------------------------------------------------------
 
-DROP INDEX IF EXISTS tbl_timestampset_big_quadtree_idx;
+DROP INDEX IF EXISTS tbl_tstzset_big_quadtree_idx;
 DROP INDEX IF EXISTS tbl_periodset_big_quadtree_idx;
 DROP INDEX IF EXISTS tbl_period_big_quadtree_idx;
 
 -------------------------------------------------------------------------------
 
-CREATE INDEX tbl_timestampset_big_quadtree_idx ON tbl_timestampset_big USING SPGIST(ts);
+CREATE INDEX tbl_tstzset_big_quadtree_idx ON tbl_tstzset_big USING SPGIST(ts);
 CREATE INDEX tbl_period_big_quadtree_idx ON tbl_period_big USING SPGIST(p);
 CREATE INDEX tbl_periodset_big_quadtree_idx ON tbl_periodset_big USING SPGIST(ps);
 
-SELECT COUNT(*) FROM tbl_timestampset_big WHERE ts && period '[2001-01-01, 2001-02-01]';
-SELECT COUNT(*) FROM tbl_timestampset_big WHERE ts <@ period '[2001-01-01, 2001-02-01]';
-SELECT COUNT(*) FROM tbl_timestampset_big WHERE ts -|- period '[2001-01-01, 2001-02-01]';
-SELECT COUNT(*) FROM tbl_timestampset_big WHERE ts <<# period '[2001-01-01, 2001-02-01]';
-SELECT COUNT(*) FROM tbl_timestampset_big WHERE ts &<# period '[2001-01-01, 2001-02-01]';
-SELECT COUNT(*) FROM tbl_timestampset_big WHERE ts #>> period '[2001-01-01, 2001-02-01]';
-SELECT COUNT(*) FROM tbl_timestampset_big WHERE ts #&> period '[2001-01-01, 2001-02-01]';
+SELECT COUNT(*) FROM tbl_tstzset_big WHERE ts && period '[2001-01-01, 2001-02-01]';
+SELECT COUNT(*) FROM tbl_tstzset_big WHERE ts <@ period '[2001-01-01, 2001-02-01]';
+SELECT COUNT(*) FROM tbl_tstzset_big WHERE ts -|- period '[2001-01-01, 2001-02-01]';
+SELECT COUNT(*) FROM tbl_tstzset_big WHERE ts <<# period '[2001-01-01, 2001-02-01]';
+SELECT COUNT(*) FROM tbl_tstzset_big WHERE ts &<# period '[2001-01-01, 2001-02-01]';
+SELECT COUNT(*) FROM tbl_tstzset_big WHERE ts #>> period '[2001-01-01, 2001-02-01]';
+SELECT COUNT(*) FROM tbl_tstzset_big WHERE ts #&> period '[2001-01-01, 2001-02-01]';
 
 SELECT COUNT(*) FROM tbl_period_big WHERE p @> timestamptz '2001-01-01';
 SELECT COUNT(*) FROM tbl_period_big WHERE p -|- timestamptz '2001-01-01';
@@ -57,13 +57,13 @@ SELECT COUNT(*) FROM tbl_period_big WHERE p &<# timestamptz '2001-01-01';
 SELECT COUNT(*) FROM tbl_period_big WHERE p #>> timestamptz '2001-01-01';
 SELECT COUNT(*) FROM tbl_period_big WHERE p #&> timestamptz '2001-01-01';
 
-SELECT COUNT(*) FROM tbl_period_big WHERE p && timestampset '{2001-01-01, 2001-02-01}';
-SELECT COUNT(*) FROM tbl_period_big WHERE p @> timestampset '{2001-01-01, 2001-02-01}';
-SELECT COUNT(*) FROM tbl_period_big WHERE p -|- timestampset '{2001-01-01, 2001-02-01}';
-SELECT COUNT(*) FROM tbl_period_big WHERE p <<# timestampset '{2001-01-01, 2001-02-01}';
-SELECT COUNT(*) FROM tbl_period_big WHERE p &<# timestampset '{2001-01-01, 2001-02-01}';
-SELECT COUNT(*) FROM tbl_period_big WHERE p #>> timestampset '{2001-01-01, 2001-02-01}';
-SELECT COUNT(*) FROM tbl_period_big WHERE p #&> timestampset '{2001-01-01, 2001-02-01}';
+SELECT COUNT(*) FROM tbl_period_big WHERE p && tstzset '{2001-01-01, 2001-02-01}';
+SELECT COUNT(*) FROM tbl_period_big WHERE p @> tstzset '{2001-01-01, 2001-02-01}';
+SELECT COUNT(*) FROM tbl_period_big WHERE p -|- tstzset '{2001-01-01, 2001-02-01}';
+SELECT COUNT(*) FROM tbl_period_big WHERE p <<# tstzset '{2001-01-01, 2001-02-01}';
+SELECT COUNT(*) FROM tbl_period_big WHERE p &<# tstzset '{2001-01-01, 2001-02-01}';
+SELECT COUNT(*) FROM tbl_period_big WHERE p #>> tstzset '{2001-01-01, 2001-02-01}';
+SELECT COUNT(*) FROM tbl_period_big WHERE p #&> tstzset '{2001-01-01, 2001-02-01}';
 
 SELECT COUNT(*) FROM tbl_period_big WHERE p && period '[2001-06-01, 2001-07-01]';
 SELECT COUNT(*) FROM tbl_period_big WHERE p @> period '[2001-06-01, 2001-07-01]';
@@ -92,7 +92,7 @@ SELECT COUNT(*) FROM tbl_periodset_big WHERE ps &<# period '[2001-01-01, 2001-02
 SELECT COUNT(*) FROM tbl_periodset_big WHERE ps #>> period '[2001-01-01, 2001-02-01]';
 SELECT COUNT(*) FROM tbl_periodset_big WHERE ps #&> period '[2001-01-01, 2001-02-01]';
 
-DROP INDEX tbl_timestampset_big_quadtree_idx;
+DROP INDEX tbl_tstzset_big_quadtree_idx;
 DROP INDEX tbl_period_big_quadtree_idx;
 DROP INDEX tbl_periodset_big_quadtree_idx;
 

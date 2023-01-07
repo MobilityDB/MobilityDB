@@ -101,7 +101,7 @@ Overafter_timestamp_temporal(PG_FUNCTION_ARGS)
   return boxop_timestamp_temporal_ext(fcinfo, &overright_span_span);
 }
 
-PG_FUNCTION_INFO_V1(Before_timestampset_temporal);
+PG_FUNCTION_INFO_V1(Before_tstzset_temporal);
 /**
  * @ingroup mobilitydb_temporal_pos
  * @brief Return true if the period value is strictly before the temporal value
@@ -109,12 +109,12 @@ PG_FUNCTION_INFO_V1(Before_timestampset_temporal);
  * @sqlop @p <<#
  */
 PGDLLEXPORT Datum
-Before_timestampset_temporal(PG_FUNCTION_ARGS)
+Before_tstzset_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_timestampset_temporal_ext(fcinfo, &left_span_span);
+  return boxop_tstzset_temporal_ext(fcinfo, &left_span_span);
 }
 
-PG_FUNCTION_INFO_V1(Overbefore_timestampset_temporal);
+PG_FUNCTION_INFO_V1(Overbefore_tstzset_temporal);
 /**
  * @ingroup mobilitydb_temporal_pos
  * @brief Return true if the period value is not after the temporal value
@@ -122,12 +122,12 @@ PG_FUNCTION_INFO_V1(Overbefore_timestampset_temporal);
  * @sqlop @p &<#
  */
 PGDLLEXPORT Datum
-Overbefore_timestampset_temporal(PG_FUNCTION_ARGS)
+Overbefore_tstzset_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_timestampset_temporal_ext(fcinfo, &overleft_span_span);
+  return boxop_tstzset_temporal_ext(fcinfo, &overleft_span_span);
 }
 
-PG_FUNCTION_INFO_V1(After_timestampset_temporal);
+PG_FUNCTION_INFO_V1(After_tstzset_temporal);
 /**
  * @ingroup mobilitydb_temporal_pos
  * @brief Return true if the period value is strictly after the temporal value
@@ -135,12 +135,12 @@ PG_FUNCTION_INFO_V1(After_timestampset_temporal);
  * @sqlop @p #>>
  */
 PGDLLEXPORT Datum
-After_timestampset_temporal(PG_FUNCTION_ARGS)
+After_tstzset_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_timestampset_temporal_ext(fcinfo, &right_span_span);
+  return boxop_tstzset_temporal_ext(fcinfo, &right_span_span);
 }
 
-PG_FUNCTION_INFO_V1(Overafter_timestampset_temporal);
+PG_FUNCTION_INFO_V1(Overafter_tstzset_temporal);
 /**
  * @ingroup mobilitydb_temporal_pos
  * @brief Return true if the period value is not before the temporal value
@@ -148,9 +148,9 @@ PG_FUNCTION_INFO_V1(Overafter_timestampset_temporal);
  * @sqlop @p #&>
  */
 PGDLLEXPORT Datum
-Overafter_timestampset_temporal(PG_FUNCTION_ARGS)
+Overafter_tstzset_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_timestampset_temporal_ext(fcinfo, &overright_span_span);
+  return boxop_tstzset_temporal_ext(fcinfo, &overright_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Before_period_temporal);
@@ -313,58 +313,58 @@ Overafter_temporal_timestamp(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************/
-/* Temporal op Timestampset */
+/* Temporal op Tstzset */
 
-PG_FUNCTION_INFO_V1(Before_temporal_timestampset);
+PG_FUNCTION_INFO_V1(Before_temporal_tstzset);
 /**
  * @ingroup mobilitydb_temporal_pos
- * @brief Return true if the temporal value is strictly before the timestampset value
+ * @brief Return true if the temporal value is strictly before the tstzset value
  * @sqlfunc temporal_before()
  * @sqlop @p <<#
  */
 PGDLLEXPORT Datum
-Before_temporal_timestampset(PG_FUNCTION_ARGS)
+Before_temporal_tstzset(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_timestampset_ext(fcinfo, &left_span_span);
+  return boxop_temporal_tstzset_ext(fcinfo, &left_span_span);
 }
 
-PG_FUNCTION_INFO_V1(Overbefore_temporal_timestampset);
+PG_FUNCTION_INFO_V1(Overbefore_temporal_tstzset);
 /**
  * @ingroup mobilitydb_temporal_pos
- * @brief Return true if the temporal value is not after the timestampset value
+ * @brief Return true if the temporal value is not after the tstzset value
  * @sqlfunc temporal_overbefore()
  * @sqlop @p &<#
  */
 PGDLLEXPORT Datum
-Overbefore_temporal_timestampset(PG_FUNCTION_ARGS)
+Overbefore_temporal_tstzset(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_timestampset_ext(fcinfo, &overleft_span_span);
+  return boxop_temporal_tstzset_ext(fcinfo, &overleft_span_span);
 }
 
-PG_FUNCTION_INFO_V1(After_temporal_timestampset);
+PG_FUNCTION_INFO_V1(After_temporal_tstzset);
 /**
  * @ingroup mobilitydb_temporal_pos
- * @brief Return true if the temporal value is strictly after the timestampset value
+ * @brief Return true if the temporal value is strictly after the tstzset value
  * @sqlfunc temporal_after()
  * @sqlop @p #>>
  */
 PGDLLEXPORT Datum
-After_temporal_timestampset(PG_FUNCTION_ARGS)
+After_temporal_tstzset(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_timestampset_ext(fcinfo, &right_span_span);
+  return boxop_temporal_tstzset_ext(fcinfo, &right_span_span);
 }
 
-PG_FUNCTION_INFO_V1(Overafter_temporal_timestampset);
+PG_FUNCTION_INFO_V1(Overafter_temporal_tstzset);
 /**
  * @ingroup mobilitydb_temporal_pos
- * @brief Return true if the temporal value is not before the timestampset value
+ * @brief Return true if the temporal value is not before the tstzset value
  * @sqlfunc temporal_overafter()
  * @sqlop @p #&>
  */
 PGDLLEXPORT Datum
-Overafter_temporal_timestampset(PG_FUNCTION_ARGS)
+Overafter_temporal_tstzset(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_timestampset_ext(fcinfo, &overright_span_span);
+  return boxop_temporal_tstzset_ext(fcinfo, &overright_span_span);
 }
 
 /*****************************************************************************/

@@ -104,19 +104,19 @@ temporal_cachedop(Oid operid, CachedOp *cachedOp)
   for (int i = LT_OP; i <= OVERAFTER_OP; i++) {
     if (operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TBOOL) ||
         operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TTEXT) ||
-        operid == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TBOOL) ||
-        operid == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TTEXT) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSET, T_TBOOL) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSET, T_TTEXT) ||
         operid == oper_oid((CachedOp) i, T_PERIOD, T_TBOOL) ||
         operid == oper_oid((CachedOp) i, T_PERIOD, T_TTEXT) ||
         operid == oper_oid((CachedOp) i, T_PERIODSET, T_TBOOL) ||
         operid == oper_oid((CachedOp) i, T_PERIODSET, T_TTEXT) ||
         operid == oper_oid((CachedOp) i, T_TBOOL, T_TIMESTAMPTZ) ||
-        operid == oper_oid((CachedOp) i, T_TBOOL, T_TIMESTAMPSET) ||
+        operid == oper_oid((CachedOp) i, T_TBOOL, T_TSTZSET) ||
         operid == oper_oid((CachedOp) i, T_TBOOL, T_PERIOD) ||
         operid == oper_oid((CachedOp) i, T_TBOOL, T_PERIODSET) ||
         operid == oper_oid((CachedOp) i, T_TBOOL, T_TBOOL) ||
         operid == oper_oid((CachedOp) i, T_TTEXT, T_TIMESTAMPTZ) ||
-        operid == oper_oid((CachedOp) i, T_TTEXT, T_TIMESTAMPSET) ||
+        operid == oper_oid((CachedOp) i, T_TTEXT, T_TSTZSET) ||
         operid == oper_oid((CachedOp) i, T_TTEXT, T_PERIOD) ||
         operid == oper_oid((CachedOp) i, T_TTEXT, T_PERIODSET) ||
         operid == oper_oid((CachedOp) i, T_TTEXT, T_TTEXT))

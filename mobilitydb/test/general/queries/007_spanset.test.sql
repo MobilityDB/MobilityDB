@@ -61,11 +61,11 @@ SELECT intspanset '{[1,2),[3,4),[5,6)}'::intspan;
 SELECT floatspanset '{[1,2),[3,4),[5,6)}'::floatspan;
 
 SELECT periodset(timestamptz '2000-01-01');
-SELECT periodset(timestampset '{2000-01-01,2000-01-02}');
+SELECT periodset(tstzset '{2000-01-01,2000-01-02}');
 SELECT periodset(period '[2000-01-01,2000-01-02]');
 
 SELECT timestamptz '2000-01-01'::periodset;
-SELECT timestampset '{2000-01-01,2000-01-02}'::periodset;
+SELECT tstzset '{2000-01-01,2000-01-02}'::periodset;
 SELECT period '[2000-01-01,2000-01-02]'::periodset;
 
 -------------------------------------------------------------------------------

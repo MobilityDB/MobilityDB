@@ -108,7 +108,7 @@ PG_FUNCTION_INFO_V1(Set_from_wkb);
 /**
  * @ingroup mobilitydb_temporal_inout
  * @brief Input a timestamp set from its WKB representation
- * @sqlfunc timestampsetFromBinary()
+ * @sqlfunc tstzsetFromBinary()
  *
  */
 PGDLLEXPORT Datum
@@ -125,7 +125,7 @@ PG_FUNCTION_INFO_V1(Set_from_hexwkb);
 /**
  * @ingroup mobilitydb_temporal_inout
  * @brief Input a timestamp set from its HexWKB representation
- * @sqlfunc timestampsetFromHexWKB()
+ * @sqlfunc tstzsetFromHexWKB()
  */
 PGDLLEXPORT Datum
 Set_from_hexwkb(PG_FUNCTION_ARGS)

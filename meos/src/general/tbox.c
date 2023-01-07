@@ -348,7 +348,7 @@ numset_to_tbox(const Set *s)
  * @brief Set a temporal box from a timestamp set.
  */
 void
-timestampset_set_tbox(const Set *s, TBox *box)
+tstzset_set_tbox(const Set *s, TBox *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBox));
@@ -366,10 +366,10 @@ timestampset_set_tbox(const Set *s, TBox *box)
  * @sqlop @p ::
  */
 TBox *
-timestampset_to_tbox(const Set *s)
+tstzset_to_tbox(const Set *s)
 {
   TBox *result = palloc(sizeof(TBox));
-  timestampset_set_tbox(s, result);
+  tstzset_set_tbox(s, result);
   return result;
 }
 #endif /* MEOS */

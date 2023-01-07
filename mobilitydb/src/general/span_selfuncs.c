@@ -134,19 +134,19 @@ time_cachedop(Oid operid, CachedOp *cachedOp)
 {
   for (int i = EQ_OP; i <= OVERAFTER_OP; i++)
   {
-    if (operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TIMESTAMPSET) ||
+    if (operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TSTZSET) ||
         operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_PERIOD) ||
         operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_PERIODSET) ||
-        operid == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TIMESTAMPTZ) ||
-        operid == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TIMESTAMPSET) ||
-        operid == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_PERIOD) ||
-        operid == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_PERIODSET) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSET, T_TIMESTAMPTZ) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSET, T_TSTZSET) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSET, T_PERIOD) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSET, T_PERIODSET) ||
         operid == oper_oid((CachedOp) i, T_PERIOD, T_TIMESTAMPTZ) ||
-        operid == oper_oid((CachedOp) i, T_PERIOD, T_TIMESTAMPSET) ||
+        operid == oper_oid((CachedOp) i, T_PERIOD, T_TSTZSET) ||
         operid == oper_oid((CachedOp) i, T_PERIOD, T_PERIOD) ||
         operid == oper_oid((CachedOp) i, T_PERIOD, T_PERIODSET) ||
         operid == oper_oid((CachedOp) i, T_PERIODSET, T_TIMESTAMPTZ) ||
-        operid == oper_oid((CachedOp) i, T_PERIODSET, T_TIMESTAMPSET) ||
+        operid == oper_oid((CachedOp) i, T_PERIODSET, T_TSTZSET) ||
         operid == oper_oid((CachedOp) i, T_PERIODSET, T_PERIOD) ||
         operid == oper_oid((CachedOp) i, T_PERIODSET, T_PERIODSET))
       {
@@ -860,9 +860,9 @@ time_const_to_period(Node *other, Span *period)
     Datum t = ((Const *) other)->constvalue;
     span_set(t, t, true, true, T_TIMESTAMPTZ, period);
   }
-  else if (timetype == T_TIMESTAMPSET)
+  else if (timetype == T_TSTZSET)
   {
-    /* The right argument is a TimestampSet constant. We convert it into
+    /* The right argument is a TstzSet constant. We convert it into
      * its bounding period. */
     const Set *ts = DatumGetSetP(((Const *) other)->constvalue);
     set_set_span(ts, period);

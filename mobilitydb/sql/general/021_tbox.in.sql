@@ -157,7 +157,7 @@ CREATE FUNCTION tbox(floatset)
   RETURNS tbox
   AS 'MODULE_PATHNAME', 'Set_to_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox(timestampset)
+CREATE FUNCTION tbox(tstzset)
   RETURNS tbox
   AS 'MODULE_PATHNAME', 'Set_to_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -195,7 +195,7 @@ CREATE CAST (timestamptz AS tbox) WITH FUNCTION tbox(timestamptz);
 
 CREATE CAST (intset AS tbox) WITH FUNCTION tbox(intset);
 CREATE CAST (floatset AS tbox) WITH FUNCTION tbox(floatset);
-CREATE CAST (timestampset AS tbox) WITH FUNCTION tbox(timestampset);
+CREATE CAST (tstzset AS tbox) WITH FUNCTION tbox(tstzset);
 
 CREATE CAST (intspan AS tbox) WITH FUNCTION tbox(intspan);
 CREATE CAST (floatspan AS tbox) WITH FUNCTION tbox(floatspan);

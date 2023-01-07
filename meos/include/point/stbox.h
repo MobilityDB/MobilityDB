@@ -59,7 +59,7 @@ extern void ensure_has_T_stbox(const STBox *box);
 
 /* Set an STBox from a <Type> */
 
-extern void timestampset_stbox_slice(Datum tsdatum, STBox *box);
+extern void tstzset_stbox_slice(Datum tsdatum, STBox *box);
 extern void periodset_stbox_slice(Datum psdatum, STBox *box);
 
 /* SRID functions */

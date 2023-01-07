@@ -331,7 +331,7 @@ span_compute_stats_generic(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 /*****************************************************************************/
 
 /**
- * Compute statistics for timestampset columns (callback function)
+ * Compute statistics for tstzset columns (callback function)
  *
  * @param[in] stats Structure storing statistics information
  * @param[in] fetchfunc Fetch function
@@ -347,7 +347,7 @@ intset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 }
 
 /**
- * Compute statistics for timestampset columns (callback function)
+ * Compute statistics for tstzset columns (callback function)
  *
  * @param[in] stats Structure storing statistics information
  * @param[in] fetchfunc Fetch function
@@ -363,7 +363,7 @@ bigintset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 }
 
 /**
- * Compute statistics for timestampset columns (callback function)
+ * Compute statistics for tstzset columns (callback function)
  *
  * @param[in] stats Structure storing statistics information
  * @param[in] fetchfunc Fetch function
@@ -379,7 +379,7 @@ floatset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 }
 
 /**
- * Compute statistics for timestampset columns (callback function)
+ * Compute statistics for tstzset columns (callback function)
  *
  * @param[in] stats Structure storing statistics information
  * @param[in] fetchfunc Fetch function
@@ -387,15 +387,15 @@ floatset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
  * @param[in] totalrows Total number of rows
  */
 static void
-timestampset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
+tstzset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   int samplerows, double totalrows __attribute__((unused)))
 {
-  span_compute_stats_generic(stats, fetchfunc, samplerows, T_TIMESTAMPSET);
+  span_compute_stats_generic(stats, fetchfunc, samplerows, T_TSTZSET);
   return;
 }
 
 /**
- * Compute statistics for timestampset columns (callback function)
+ * Compute statistics for tstzset columns (callback function)
  *
  * @param[in] stats Structure storing statistics information
  * @param[in] fetchfunc Fetch function
@@ -597,14 +597,14 @@ Floatset_analyze(PG_FUNCTION_ARGS)
   return Span_analyze_ext(fcinfo, &floatset_compute_stats);
 }
 
-PG_FUNCTION_INFO_V1(Timestampset_analyze);
+PG_FUNCTION_INFO_V1(Tstzset_analyze);
 /**
  * Compute statistics for timestamp set columns
  */
 PGDLLEXPORT Datum
-Timestampset_analyze(PG_FUNCTION_ARGS)
+Tstzset_analyze(PG_FUNCTION_ARGS)
 {
-  return Span_analyze_ext(fcinfo, &timestampset_compute_stats);
+  return Span_analyze_ext(fcinfo, &tstzset_compute_stats);
 }
 
 PG_FUNCTION_INFO_V1(Textset_analyze);

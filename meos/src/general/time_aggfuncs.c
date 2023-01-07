@@ -210,15 +210,15 @@ timestamp_extent_transfn(Span *p, TimestampTz t)
  * @brief Transition function for extent aggregate of timestamp set values
  */
 Span *
-timestampset_extent_transfn(Span *p, const Set *ts)
+tstzset_extent_transfn(Span *p, const Set *ts)
 {
   /* Can't do anything with null inputs */
   if (! p && ! ts)
     return NULL;
-  /* Null period and non-null timestampset, return the bbox of the timestampset */
+  /* Null period and non-null timestamp set, return the bbox of the timestamp set */
   if (! p)
     return set_to_span(ts);
-  /* Non-null period and null timestampset, return the period */
+  /* Non-null period and null timestamp set, return the period */
   if (! ts)
     return span_copy(p);
 
@@ -304,9 +304,9 @@ timestamp_tunion_transfn(SkipList *state, TimestampTz t)
  * @param[in] ts Timestamp set value
  */
 SkipList *
-timestampset_tunion_transfn(SkipList *state, const Set *ts)
+tstzset_tunion_transfn(SkipList *state, const Set *ts)
 {
-  TimestampTz *times = timestampset_timestamps(ts);
+  TimestampTz *times = tstzset_timestamps(ts);
   SkipList *result;
   if (! state)
     result = skiplist_make((void **) times, ts->count, TIMESTAMPTZ);
@@ -428,7 +428,7 @@ timestamp_transform_tcount(TimestampTz t, const Interval *interval,
  * performing temporal count aggregation
  */
 static TInstant **
-timestampset_transform_tcount(const Set *ts, const Interval *interval,
+tstzset_transform_tcount(const Set *ts, const Interval *interval,
   TimestampTz origin, int *newcount)
 {
   TInstant **result = palloc(sizeof(TInstant *) * ts->count);
@@ -551,11 +551,11 @@ timestamp_tcount_transfn(SkipList *state, TimestampTz t,
  * @brief Transition function for temporal count aggregate of timestamp sets
  */
 SkipList *
-timestampset_tcount_transfn(SkipList *state, const Set *ts,
+tstzset_tcount_transfn(SkipList *state, const Set *ts,
   const Interval *interval, TimestampTz origin)
 {
   int count;
-  TInstant **instants = timestampset_transform_tcount(ts, interval, origin,
+  TInstant **instants = tstzset_transform_tcount(ts, interval, origin,
     &count);
   /* Due to the bucketing, it is possible that count < ts->count */
 

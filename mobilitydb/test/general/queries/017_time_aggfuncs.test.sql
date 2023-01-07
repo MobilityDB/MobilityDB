@@ -28,11 +28,11 @@
 -------------------------------------------------------------------------------
 
 SELECT extent(temp) FROM (VALUES
-(NULL::timestampset),(NULL::timestampset)) t(temp);
+(NULL::tstzset),(NULL::tstzset)) t(temp);
 SELECT extent(temp) FROM (VALUES
-(NULL::timestampset),('{2000-01-01}'::timestampset)) t(temp);
+(NULL::tstzset),('{2000-01-01}'::tstzset)) t(temp);
 SELECT extent(temp) FROM (VALUES
-('{2000-01-01}'::timestampset),(NULL::timestampset)) t(temp);
+('{2000-01-01}'::tstzset),(NULL::tstzset)) t(temp);
 
 SELECT extent(temp) FROM (VALUES
 (NULL::period),(NULL::period)) t(temp);
@@ -49,7 +49,7 @@ SELECT extent(temp) FROM (VALUES
 ('{[2000-01-01, 2000-01-02]}'::periodset),(NULL::periodset)) t(temp);
 
 SELECT extent(t) FROM tbl_timestamptz;
-SELECT extent(ts) FROM tbl_timestampset;
+SELECT extent(ts) FROM tbl_tstzset;
 SELECT extent(p) FROM tbl_period;
 SELECT extent(ps) FROM tbl_periodset;
 
@@ -59,7 +59,7 @@ set parallel_tuple_cost=0;
 set min_parallel_table_scan_size=0;
 set max_parallel_workers_per_gather=2;
 
-SELECT numValues(tunion(ts)) from tbl_timestampset_big;
+SELECT numValues(tunion(ts)) from tbl_tstzset_big;
 SELECT extent(temp::period) FROM tbl_tfloat_big;
 SELECT numPeriods(tunion(temp::period)) from tbl_tfloat_big;
 
@@ -72,11 +72,11 @@ reset max_parallel_workers_per_gather;
 -------------------------------------------------------------------------------
 
 SELECT tcount(temp) FROM (VALUES
-(NULL::timestampset),(NULL::timestampset)) t(temp);
+(NULL::tstzset),(NULL::tstzset)) t(temp);
 SELECT tcount(temp) FROM (VALUES
-(NULL::timestampset),('{2000-01-01}'::timestampset)) t(temp);
+(NULL::tstzset),('{2000-01-01}'::tstzset)) t(temp);
 SELECT tcount(temp) FROM (VALUES
-('{2000-01-01}'::timestampset),(NULL::timestampset)) t(temp);
+('{2000-01-01}'::tstzset),(NULL::tstzset)) t(temp);
 
 SELECT tcount(temp) FROM (VALUES
 (NULL::period),(NULL::period)) t(temp);
@@ -93,23 +93,23 @@ SELECT tcount(temp) FROM (VALUES
 ('{[2000-01-01, 2000-01-02]}'::periodset),(NULL::periodset)) t(temp);
 
 SELECT numInstants(tcount(t)) FROM tbl_timestamptz;
-SELECT numInstants(tcount(ts)) FROM tbl_timestampset;
+SELECT numInstants(tcount(ts)) FROM tbl_tstzset;
 SELECT numInstants(tcount(p)) FROM tbl_period;
 SELECT numInstants(tcount(ps)) FROM tbl_periodset;
 
 SELECT numInstants(tcount(t, '1 week', '2001-01-01')) FROM tbl_timestamptz;
-SELECT numInstants(tcount(ts, '1 week', '2001-01-01')) FROM tbl_timestampset;
+SELECT numInstants(tcount(ts, '1 week', '2001-01-01')) FROM tbl_tstzset;
 SELECT numInstants(tcount(p, '1 week', '2001-01-01')) FROM tbl_period;
 SELECT numInstants(tcount(ps, '1 week', '2001-01-01')) FROM tbl_periodset;
 
 -------------------------------------------------------------------------------
 
 SELECT tunion(temp) FROM (VALUES
-(NULL::timestampset),(NULL::timestampset)) t(temp);
+(NULL::tstzset),(NULL::tstzset)) t(temp);
 SELECT tunion(temp) FROM (VALUES
-(NULL::timestampset),('{2000-01-01}'::timestampset)) t(temp);
+(NULL::tstzset),('{2000-01-01}'::tstzset)) t(temp);
 SELECT tunion(temp) FROM (VALUES
-('{2000-01-01}'::timestampset),(NULL::timestampset)) t(temp);
+('{2000-01-01}'::tstzset),(NULL::tstzset)) t(temp);
 
 SELECT tunion(temp) FROM (VALUES
 (NULL::period),(NULL::period)) t(temp);
@@ -128,8 +128,8 @@ SELECT tunion(temp) FROM (VALUES
 -------------------------------------------------------------------------------
 
 SELECT tunion(temp) FROM (VALUES
-('{2000-01-01, 2000-01-03, 2000-01-05, 2000-01-07}'::timestampset),
-('{2000-01-02, 2000-01-06}'::timestampset)) t(temp);
+('{2000-01-01, 2000-01-03, 2000-01-05, 2000-01-07}'::tstzset),
+('{2000-01-02, 2000-01-06}'::tstzset)) t(temp);
 
 SELECT tunion(temp) FROM (VALUES
 ('[2000-01-01, 2000-01-03]'::period),
@@ -140,16 +140,16 @@ SELECT tunion(temp) FROM (VALUES
 ('{[2000-01-02, 2000-01-06]}'::periodset)) t(temp);
 
 WITH Temp(ts) AS (
-  SELECT timestampset '{2000-01-01}' UNION
-  SELECT timestampset '{2000-01-01, 2000-01-02, 2000-01-04}'
+  SELECT tstzset '{2000-01-01}' UNION
+  SELECT tstzset '{2000-01-01, 2000-01-02, 2000-01-04}'
 )
 SELECT tunion(ts) FROM Temp;
 
 WITH Temp(ts) AS (
-  SELECT timestampset(array_agg(t))
+  SELECT tstzset(array_agg(t))
   FROM generate_series(timestamp '2000-01-01 00:00', timestamp '2000-01-01 00:30', interval '1 sec') t
   UNION
-  SELECT timestampset(array_agg(t))
+  SELECT tstzset(array_agg(t))
   FROM generate_series(timestamp '2000-01-01 00:15', timestamp '2000-01-01 00:45', interval '1 sec') t
 )
 SELECT startValue(tunion(ts)) FROM Temp;
@@ -157,7 +157,7 @@ SELECT startValue(tunion(ts)) FROM Temp;
 -------------------------------------------------------------------------------
 
 SELECT numValues(tunion(t)) FROM tbl_timestamptz;
-SELECT numValues(tunion(ts)) FROM tbl_timestampset;
+SELECT numValues(tunion(ts)) FROM tbl_tstzset;
 SELECT numPeriods(tunion(p)) FROM tbl_period;
 SELECT numPeriods(tunion(ps)) FROM tbl_periodset;
 

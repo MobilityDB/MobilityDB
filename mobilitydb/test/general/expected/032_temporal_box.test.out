@@ -46,7 +46,7 @@ SELECT COUNT(*) FROM tbl_period WHERE p::tbox IS NOT NULL;
     99
 (1 row)
 
-SELECT COUNT(*) FROM tbl_timestampset WHERE ts::tbox IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tstzset WHERE ts::tbox IS NOT NULL;
  count 
 -------
     99

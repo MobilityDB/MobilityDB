@@ -1199,7 +1199,7 @@ set_basevalue_from_wkb_state(wkb_parse_state *s)
     case T_TEXTSET:
       result = PointerGetDatum(text_from_wkb_state(s));
       break;
-    case T_TIMESTAMPSET:
+    case T_TSTZSET:
       result = TimestampTzGetDatum(timestamp_from_wkb_state(s));
       break;
     default: /* Error! */
@@ -1623,7 +1623,7 @@ datum_from_hexwkb(const char *hexwkb, int size, meosType type)
  * @ingroup libmeos_setspan_inout
  * @brief Return a set from its Well-Known Binary (WKB)
  * representation.
- * @sqlfunc timestampsetFromBinary()
+ * @sqlfunc tstzsetFromBinary()
  */
 Set *
 set_from_wkb(const uint8_t *wkb, int size)
@@ -1636,7 +1636,7 @@ set_from_wkb(const uint8_t *wkb, int size)
  * @ingroup libmeos_setspan_inout
  * @brief Return a set from its WKB representation in hex-encoded
  * ASCII.
- * @sqlfunc timestampsetFromHexWKB()
+ * @sqlfunc tstzsetFromHexWKB()
  */
 Set *
 set_from_hexwkb(const char *hexwkb)

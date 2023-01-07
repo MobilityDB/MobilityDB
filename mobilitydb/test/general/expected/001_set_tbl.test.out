@@ -66,22 +66,22 @@ SELECT COUNT(*) FROM tbl_textset t1, tbl_textset_tmp t2 WHERE t1.k = t2.k AND t1
 
 DROP TABLE tbl_textset_tmp;
 DROP TABLE
-COPY tbl_timestampset TO '/tmp/tbl_timestampset' (FORMAT BINARY);
+COPY tbl_tstzset TO '/tmp/tbl_tstzset' (FORMAT BINARY);
 COPY 100
-DROP TABLE IF EXISTS tbl_timestampset_tmp;
-NOTICE:  table "tbl_timestampset_tmp" does not exist, skipping
+DROP TABLE IF EXISTS tbl_tstzset_tmp;
+NOTICE:  table "tbl_tstzset_tmp" does not exist, skipping
 DROP TABLE
-CREATE TABLE tbl_timestampset_tmp AS TABLE tbl_timestampset WITH NO DATA;
+CREATE TABLE tbl_tstzset_tmp AS TABLE tbl_tstzset WITH NO DATA;
 CREATE TABLE AS
-COPY tbl_timestampset_tmp FROM '/tmp/tbl_timestampset' (FORMAT BINARY);
+COPY tbl_tstzset_tmp FROM '/tmp/tbl_tstzset' (FORMAT BINARY);
 COPY 100
-SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset_tmp t2 WHERE t1.k = t2.k AND t1.ts <> t2.ts;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset_tmp t2 WHERE t1.k = t2.k AND t1.ts <> t2.ts;
  count 
 -------
      0
 (1 row)
 
-DROP TABLE tbl_timestampset_tmp;
+DROP TABLE tbl_tstzset_tmp;
 DROP TABLE
 SELECT COUNT(*) FROM tbl_intset WHERE intsetFromBinary(asBinary(i)) <> i;
  count 
@@ -107,7 +107,7 @@ SELECT COUNT(*) FROM tbl_textset WHERE textsetFromBinary(asBinary(t)) <> t;
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_timestampset WHERE timestampsetFromBinary(asBinary(ts)) <> ts;
+SELECT COUNT(*) FROM tbl_tstzset WHERE tstzsetFromBinary(asBinary(ts)) <> ts;
  count 
 -------
      0
@@ -131,19 +131,19 @@ SELECT COUNT(*) FROM tbl_floatset WHERE floatsetFromHexWKB(asHexWKB(f)) <> f;
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_timestampset WHERE timestampsetFromHexWKB(asHexWKB(ts)) <> ts;
+SELECT COUNT(*) FROM tbl_tstzset WHERE tstzsetFromHexWKB(asHexWKB(ts)) <> ts;
  count 
 -------
      0
 (1 row)
 
-SELECT memorySize(timestampset(array_agg(DISTINCT t ORDER BY t))) FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10;
+SELECT memorySize(tstzset(array_agg(DISTINCT t ORDER BY t))) FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10;
  memorysize 
 ------------
         808
 (1 row)
 
-SELECT COUNT(*) FROM tbl_timestamptz WHERE t::timestampset IS NOT NULL;
+SELECT COUNT(*) FROM tbl_timestamptz WHERE t::tstzset IS NOT NULL;
  count 
 -------
     99
@@ -173,55 +173,55 @@ SELECT MIN(startValue(shift(f, 5))) FROM tbl_floatset;
  8.886242617199674
 (1 row)
 
-SELECT MIN(startValue(shift(ts, '5 min'))) FROM tbl_timestampset;
+SELECT MIN(startValue(shift(ts, '5 min'))) FROM tbl_tstzset;
           min           
 ------------------------
  2001-01-02 01:53:00+00
 (1 row)
 
-SELECT MAX(memorySize(ts)) FROM tbl_timestampset;
+SELECT MAX(memorySize(ts)) FROM tbl_tstzset;
  max 
 -----
   88
 (1 row)
 
-SELECT MAX(storageSize(ts)) FROM tbl_timestampset;
+SELECT MAX(storageSize(ts)) FROM tbl_tstzset;
  max 
 -----
   85
 (1 row)
 
-SELECT MIN(lower(period(ts))) FROM tbl_timestampset;
+SELECT MIN(lower(period(ts))) FROM tbl_tstzset;
           min           
 ------------------------
  2001-01-02 01:48:00+00
 (1 row)
 
-SELECT MIN(numValues(ts)) FROM tbl_timestampset;
+SELECT MIN(numValues(ts)) FROM tbl_tstzset;
  min 
 -----
    1
 (1 row)
 
-SELECT MIN(startValue(ts)) FROM tbl_timestampset;
+SELECT MIN(startValue(ts)) FROM tbl_tstzset;
           min           
 ------------------------
  2001-01-02 01:48:00+00
 (1 row)
 
-SELECT MIN(endValue(ts)) FROM tbl_timestampset;
+SELECT MIN(endValue(ts)) FROM tbl_tstzset;
           min           
 ------------------------
  2001-01-02 02:09:00+00
 (1 row)
 
-SELECT MIN(valueN(ts, 1)) FROM tbl_timestampset;
+SELECT MIN(valueN(ts, 1)) FROM tbl_tstzset;
           min           
 ------------------------
  2001-01-02 01:48:00+00
 (1 row)
 
-SELECT MIN(array_length(getValues(ts), 1)) FROM tbl_timestampset;
+SELECT MIN(array_length(getValues(ts), 1)) FROM tbl_tstzset;
  min 
 -----
    1
@@ -288,10 +288,10 @@ SELECT COUNT(*) FROM test2 t1, tbl_floatset t2 WHERE t1.k = t2.k AND t1.f <> t2.
 (1 row)
 
 WITH test1(k, ts) AS (
-  SELECT k, unnest(ts) FROM tbl_timestampset ),
+  SELECT k, unnest(ts) FROM tbl_tstzset ),
 test2 (k, ts) AS (
   SELECT k, set_agg(ts) FROM test1 GROUP BY k )
-SELECT COUNT(*) FROM test2 t1, tbl_timestampset t2 WHERE t1.k = t2.k AND t1.ts <> t2.ts;
+SELECT COUNT(*) FROM test2 t1, tbl_tstzset t2 WHERE t1.k = t2.k AND t1.ts <> t2.ts;
  count 
 -------
      0
@@ -307,43 +307,43 @@ SELECT COUNT(*) FROM test2 t1, tbl_textset t2 WHERE t1.k = t2.k AND t1.t <> t2.t
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE timestampset_cmp(t1.ts, t2.ts) = -1;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE tstzset_cmp(t1.ts, t2.ts) = -1;
  count 
 -------
   4851
 (1 row)
 
-SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts = t2.ts;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.ts = t2.ts;
  count 
 -------
     99
 (1 row)
 
-SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts <> t2.ts;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.ts <> t2.ts;
  count 
 -------
   9702
 (1 row)
 
-SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts < t2.ts;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.ts < t2.ts;
  count 
 -------
   4851
 (1 row)
 
-SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts <= t2.ts;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.ts <= t2.ts;
  count 
 -------
   4950
 (1 row)
 
-SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts > t2.ts;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.ts > t2.ts;
  count 
 -------
   4851
 (1 row)
 
-SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts >= t2.ts;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.ts >= t2.ts;
  count 
 -------
   4950
@@ -367,7 +367,7 @@ SELECT MAX(floatset_hash(f)) FROM tbl_floatset;
  1978644117
 (1 row)
 
-SELECT MAX(timestampset_hash(ts)) FROM tbl_timestampset;
+SELECT MAX(tstzset_hash(ts)) FROM tbl_tstzset;
     max     
 ------------
  2092387697
@@ -391,7 +391,7 @@ SELECT MAX(floatset_hash_extended(f, 1)) FROM tbl_floatset;
  9019753321429055805
 (1 row)
 
-SELECT MAX(timestampset_hash_extended(ts, 1)) FROM tbl_timestampset;
+SELECT MAX(tstzset_hash_extended(ts, 1)) FROM tbl_tstzset;
          max         
 ---------------------
  9173177012091756054

@@ -119,7 +119,7 @@ CREATE FUNCTION tnpoint(npoint, timestamptz)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Tinstant_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tnpoint(npoint, timestampset)
+CREATE FUNCTION tnpoint(npoint, tstzset)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Tdiscseq_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -523,14 +523,14 @@ CREATE FUNCTION valueAtTimestamp(tnpoint, timestamptz)
   AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION atTime(tnpoint, timestampset)
+CREATE FUNCTION atTime(tnpoint, tstzset)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Temporal_at_timestampset'
+  AS 'MODULE_PATHNAME', 'Temporal_at_tstzset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION minusTime(tnpoint, timestampset)
+CREATE FUNCTION minusTime(tnpoint, tstzset)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Temporal_minus_timestampset'
+  AS 'MODULE_PATHNAME', 'Temporal_minus_tstzset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION atTime(tnpoint, period)
@@ -571,9 +571,9 @@ CREATE FUNCTION deleteTime(tnpoint, timestamptz, connect boolean DEFAULT TRUE)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_delete_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION deleteTime(tnpoint, timestampset, connect boolean DEFAULT TRUE)
+CREATE FUNCTION deleteTime(tnpoint, tstzset, connect boolean DEFAULT TRUE)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Temporal_delete_timestampset'
+  AS 'MODULE_PATHNAME', 'Temporal_delete_tstzset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION deleteTime(tnpoint, period, connect boolean DEFAULT TRUE)
   RETURNS tnpoint
@@ -594,9 +594,9 @@ CREATE FUNCTION overlapsTime(tnpoint, timestamptz)
   SUPPORT tnpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION overlapsTime(tnpoint, timestampset)
+CREATE FUNCTION overlapsTime(tnpoint, tstzset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_overlaps_timestampset'
+  AS 'MODULE_PATHNAME', 'Temporal_overlaps_tstzset'
   SUPPORT tnpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

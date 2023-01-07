@@ -279,7 +279,7 @@ Set_to_tbox(PG_FUNCTION_ARGS)
   if (numset_type(s->settype))
     numset_set_tbox(s, result);
   else
-    timestampset_set_tbox(s, result);
+    tstzset_set_tbox(s, result);
   PG_FREE_IF_COPY_P(s, 0);
   PG_RETURN_POINTER(result);
 }

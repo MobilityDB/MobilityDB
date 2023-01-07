@@ -73,7 +73,7 @@ extern void tsequenceset_compute_bbox(const TSequence **seqs, int count,
 
 extern Datum boxop_temporal_timestamp(const Temporal *temp, TimestampTz t,
   bool (*func)(const Span *, const Span *), bool invert);
-extern Datum boxop_temporal_timestampset(const Temporal *temp, const Set *ts,
+extern Datum boxop_temporal_tstzset(const Temporal *temp, const Set *ts,
   bool (*func)(const Span *, const Span *), bool invert);
 extern Datum boxop_temporal_period(const Temporal *temp, const Span *p,
   bool (*func)(const Span *, const Span *), bool invert);
