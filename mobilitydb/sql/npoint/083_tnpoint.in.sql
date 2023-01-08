@@ -123,11 +123,11 @@ CREATE FUNCTION tnpoint(npoint, tstzset)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Tdiscseq_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tnpoint(npoint, period, boolean DEFAULT true)
+CREATE FUNCTION tnpoint(npoint, tstzspan, boolean DEFAULT true)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Tsequence_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tnpoint(npoint, periodset, boolean DEFAULT true)
+CREATE FUNCTION tnpoint(npoint, tstzspanset, boolean DEFAULT true)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -166,14 +166,14 @@ CREATE FUNCTION tnpoint(tgeompoint)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Tgeompoint_to_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION period(tnpoint)
-  RETURNS period
+CREATE FUNCTION tstzspan(tnpoint)
+  RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Temporal_to_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tnpoint AS tgeompoint) WITH FUNCTION tgeompoint(tnpoint);
 CREATE CAST (tgeompoint AS tnpoint) WITH FUNCTION tnpoint(tgeompoint);
-CREATE CAST (tnpoint AS period) WITH FUNCTION period(tnpoint);
+CREATE CAST (tnpoint AS tstzspan) WITH FUNCTION tstzspan(tnpoint);
 
 /******************************************************************************
  * Transformation functions
@@ -280,7 +280,7 @@ CREATE FUNCTION routes(tnpoint)
 
 -- time is a reserved word in SQL
 CREATE FUNCTION getTime(tnpoint)
-  RETURNS periodset
+  RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Temporal_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -415,7 +415,7 @@ CREATE FUNCTION shiftTscale(tnpoint, interval, interval)
 
 CREATE TYPE npoint_periodset AS (
   value npoint,
-  time periodset
+  time tstzspanset
 );
 
 CREATE FUNCTION unnest(tnpoint)
@@ -533,22 +533,22 @@ CREATE FUNCTION minusTime(tnpoint, tstzset)
   AS 'MODULE_PATHNAME', 'Temporal_minus_tstzset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION atTime(tnpoint, period)
+CREATE FUNCTION atTime(tnpoint, tstzspan)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_at_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION minusTime(tnpoint, period)
+CREATE FUNCTION minusTime(tnpoint, tstzspan)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_minus_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION atTime(tnpoint, periodset)
+CREATE FUNCTION atTime(tnpoint, tstzspanset)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_at_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION minusTime(tnpoint, periodset)
+CREATE FUNCTION minusTime(tnpoint, tstzspanset)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_minus_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -575,11 +575,11 @@ CREATE FUNCTION deleteTime(tnpoint, tstzset, connect boolean DEFAULT TRUE)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_delete_tstzset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION deleteTime(tnpoint, period, connect boolean DEFAULT TRUE)
+CREATE FUNCTION deleteTime(tnpoint, tstzspan, connect boolean DEFAULT TRUE)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_delete_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION deleteTime(tnpoint, periodset, connect boolean DEFAULT TRUE)
+CREATE FUNCTION deleteTime(tnpoint, tstzspanset, connect boolean DEFAULT TRUE)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_delete_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -600,13 +600,13 @@ CREATE FUNCTION overlapsTime(tnpoint, tstzset)
   SUPPORT tnpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION overlapsTime(tnpoint, period)
+CREATE FUNCTION overlapsTime(tnpoint, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_overlaps_period'
   SUPPORT tnpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION overlapsTime(tnpoint, periodset)
+CREATE FUNCTION overlapsTime(tnpoint, tstzspanset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_overlaps_periodset'
   SUPPORT tnpoint_supportfn

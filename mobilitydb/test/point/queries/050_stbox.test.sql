@@ -107,12 +107,12 @@ SELECT geodstbox_zt(8,7,6,4,3,2,'[2001-01-01,2001-01-05]');
 -- Casting
 -------------------------------------------------------------------------------
 
-SELECT stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])'::period;
-SELECT stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])'::period;
-SELECT stbox 'STBOX T([2000-01-01, 2000-01-02])'::period;
+SELECT stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])'::tstzspan;
+SELECT stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])'::tstzspan;
+SELECT stbox 'STBOX T([2000-01-01, 2000-01-02])'::tstzspan;
 -- NULL
-SELECT stbox 'STBOX X(((1.0,2.0),(3.0,4.0)))'::period;
-SELECT stbox 'STBOX Z(((1.0,2.0,3.0),(4.0,5.0,6.0)))'::period;
+SELECT stbox 'STBOX X(((1.0,2.0),(3.0,4.0)))'::tstzspan;
+SELECT stbox 'STBOX Z(((1.0,2.0,3.0),(4.0,5.0,6.0)))'::tstzspan;
 
 SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX XT(((1,1),(5,5)),[2000-01-01,2000-01-05])'::geometry);
 SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX XT(((1,1),(1,5)),[2000-01-01,2000-01-05])'::geometry);
@@ -131,7 +131,7 @@ SELECT stbox 'STBOX T([2000-01-01, 2000-01-02])'::geometry;
 
 -------------------------------------------------------------------------------
 
-SELECT MAX(duration(b::period)) FROM tbl_stbox;
+SELECT MAX(duration(b::tstzspan)) FROM tbl_stbox;
 
 -------------------------------------------------------------------------------
 -- Accessor functions
@@ -218,7 +218,7 @@ SELECT stbox 'STBOX X(((1.0,1.0),(2.0,2.0)))' -|- stbox 'STBOX XT(((1.0,2.0),(1.
 SELECT stbox 'STBOX X(((1.0,1.0),(2.0,2.0)))' ~= stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])';
 SELECT stbox 'STBOX Z(((1.0,1.0,1.0),(2.0,2.0,2.0)))' ~= stbox 'STBOX Z(((1.0,1.0,1.0),(2.0,2.0,3.0)))';
 
-SELECT period '[2000-01-01, 2000-01-02]'::stbox -|- period '[2000-01-02, 2000-01-03]'::stbox;
+SELECT tstzspan '[2000-01-01, 2000-01-02]'::stbox -|- tstzspan '[2000-01-02, 2000-01-03]'::stbox;
 
 /* Errors */
 SELECT stbox 'STBOX X(((1.0,1.0),(2.0,2.0)))' && stbox 'GEODSTBOX Z(((1.0,2.0,3.0),(1.0,2.0,3.0)))';

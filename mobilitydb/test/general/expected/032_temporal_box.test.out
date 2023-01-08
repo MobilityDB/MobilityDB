@@ -1,10 +1,10 @@
-SELECT COUNT(*) FROM tbl_tbool WHERE temp::period IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tbool WHERE temp::tstzspan IS NOT NULL;
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp::period IS NOT NULL;
+SELECT COUNT(*) FROM tbl_ttext WHERE temp::tstzspan IS NOT NULL;
  count 
 -------
     96
@@ -40,7 +40,7 @@ SELECT COUNT(*) FROM tbl_timestamptz WHERE t::tbox IS NOT NULL;
     99
 (1 row)
 
-SELECT COUNT(*) FROM tbl_period WHERE p::tbox IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tstzspan WHERE p::tbox IS NOT NULL;
  count 
 -------
     99
@@ -52,7 +52,7 @@ SELECT COUNT(*) FROM tbl_tstzset WHERE ts::tbox IS NOT NULL;
     99
 (1 row)
 
-SELECT COUNT(*) FROM tbl_periodset WHERE ps::tbox IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tstzspanset WHERE ps::tbox IS NOT NULL;
  count 
 -------
     99
@@ -94,25 +94,25 @@ SELECT COUNT(*) FROM tbl_floatspan, tbl_timestamptz WHERE tbox(f, t) IS NOT NULL
   9801
 (1 row)
 
-SELECT COUNT(*) FROM tbl_int, tbl_period WHERE tbox(i, p) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_int, tbl_tstzspan WHERE tbox(i, p) IS NOT NULL;
  count 
 -------
   9801
 (1 row)
 
-SELECT COUNT(*) FROM tbl_intspan, tbl_period WHERE tbox(i, p) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_intspan, tbl_tstzspan WHERE tbox(i, p) IS NOT NULL;
  count 
 -------
   9801
 (1 row)
 
-SELECT COUNT(*) FROM tbl_float, tbl_period WHERE tbox(f, p) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_float, tbl_tstzspan WHERE tbox(f, p) IS NOT NULL;
  count 
 -------
   9801
 (1 row)
 
-SELECT COUNT(*) FROM tbl_floatspan, tbl_period WHERE tbox(f, p) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_floatspan, tbl_tstzspan WHERE tbox(f, p) IS NOT NULL;
  count 
 -------
   9801

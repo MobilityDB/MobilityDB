@@ -50,7 +50,7 @@
  *
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
- * @param[in] lowtime, hightime Inclusive bounds of the period
+ * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxdelta Maximum value between the bounds for the x,y,z coordinates
  * @param[in] maxminutes Maximum number of minutes between the bounds
  * @param[in] srid SRID of the coordinates
@@ -81,7 +81,7 @@ BEGIN
   ymin = random_float(lowy, highy - maxdelta);
   tmin = random_timestamptz(lowtime, hightime - interval '1 minute' * maxminutes);
   RETURN stbox_t(xmin, xmin + random_float(1, maxdelta), ymin,
-    ymin + random_float(1, maxdelta), period(tmin + random_minutes(1, maxminutes)), srid);
+    ymin + random_float(1, maxdelta), tstzspan(tmin + random_minutes(1, maxminutes)), srid);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -101,7 +101,7 @@ FROM generate_series(1,10) k;
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowz, highz Inclusive bounds of the range for the z coordinates
- * @param[in] lowtime, hightime Inclusive bounds of the period
+ * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxdelta Maximum value between the bounds for the x,y,z coordinates
  * @param[in] maxminutes Maximum number of minutes between the bounds
  * @param[in] geodetic True if the stbox is geodetic
@@ -144,16 +144,16 @@ BEGIN
     IF geodZ THEN
       RETURN geodstbox_zt(xmin, xmin + random_float(1, maxdelta), ymin,
         ymin + random_float(1, maxdelta), zmin, zmin + random_float(1, maxdelta),
-        period(tmin, tmin + random_minutes(1, maxminutes)), srid);
+        tstzspan(tmin, tmin + random_minutes(1, maxminutes)), srid);
     ELSE
       RETURN geodstbox_zt(xmin, xmin + random_float(1, maxdelta),ymin, zmin,
         ymin + random_float(1, maxdelta), zmin + random_float(1, maxdelta),
-         period(tmin, tmin + random_minutes(1, maxminutes)), srid);
+         tstzspan(tmin, tmin + random_minutes(1, maxminutes)), srid);
     END IF;
   ELSE
     RETURN stbox_zt(xmin, xmin + random_float(1, maxdelta), ymin,
       ymin + random_float(1, maxdelta), zmin, zmin + random_float(1, maxdelta),
-      period(tmin + random_minutes(1, maxminutes)), srid);
+      tstzspan(tmin + random_minutes(1, maxminutes)), srid);
   END IF;
 END;
 $$ LANGUAGE PLPGSQL STRICT;
@@ -174,7 +174,7 @@ FROM generate_series(1,10) k;
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowz, highz Inclusive bounds of the range for the z coordinates
- * @param[in] lowtime, hightime Inclusive bounds of the period
+ * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxdelta Maximum value between the bounds for the x,y,z coordinates
  * @param[in] maxminutes Maximum number of minutes between the bounds
  * @param[in] srid SRID of the coordinates
@@ -206,7 +206,7 @@ FROM generate_series(1,10) k;
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowz, highz Inclusive bounds of the range for the z coordinates
- * @param[in] lowtime, hightime Inclusive bounds of the period
+ * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxdelta Maximum value between the bounds for the x,y,z coordinates
  * @param[in] maxminutes Maximum number of minutes between the bounds
  * @param[in] srid SRID of the coordinates
@@ -1440,7 +1440,7 @@ FROM generate_series(1, 15) AS k;
  *
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
- * @param[in] lowtime, hightime Inclusive bounds of the period
+ * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] srid SRID of the coordinates
  */
 DROP FUNCTION IF EXISTS random_tgeompoint_inst;
@@ -1473,7 +1473,7 @@ FROM generate_series(1,10) k;
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowz, highz Inclusive bounds of the range for the z coordinates
- * @param[in] lowtime, hightime Inclusive bounds of the period
+ * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] srid SRID of the coordinates
  */
 DROP FUNCTION IF EXISTS random_tgeompoint3D_inst;
@@ -1506,7 +1506,7 @@ FROM generate_series(1,10) k;
  *
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
- * @param[in] lowtime, hightime Inclusive bounds of the period
+ * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] srid SRID of the coordinates
  */
 DROP FUNCTION IF EXISTS random_tgeogpoint_inst;
@@ -1539,7 +1539,7 @@ FROM generate_series(1,10) k;
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowz, highz Inclusive bounds of the range for the z coordinates
- * @param[in] lowtime, hightime Inclusive bounds of the period
+ * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] srid SRID of the coordinates
  */
 DROP FUNCTION IF EXISTS random_tgeogpoint3D_inst;
@@ -1574,7 +1574,7 @@ FROM generate_series(1,10) k;
  *
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
- * @param[in] lowtime, hightime Inclusive bounds of the period
+ * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxdelta Maximum value difference between consecutive instants
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the instant set
@@ -1624,7 +1624,7 @@ FROM generate_series(1,10) k;
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowz, highz Inclusive bounds of the range for the z coordinates
- * @param[in] lowtime, hightime Inclusive bounds of the period
+ * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxdelta Maximum value difference between consecutive instants
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the instant set
@@ -1674,7 +1674,7 @@ FROM generate_series(1,10) k;
  *
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
- * @param[in] lowtime, hightime Inclusive bounds of the period
+ * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxdelta Maximum value difference between consecutive instants
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the instant set
@@ -1724,7 +1724,7 @@ FROM generate_series(1,10) k;
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowz, highz Inclusive bounds of the range for the z coordinates
- * @param[in] lowtime, hightime Inclusive bounds of the period
+ * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxdelta Maximum value difference between consecutive instants
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the instant set
@@ -1776,7 +1776,7 @@ FROM generate_series(1,10) k;
  *
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
- * @param[in] lowtime, hightime Inclusive bounds of the period
+ * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxdelta Maximum value difference between consecutive instants
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the sequence
@@ -1846,7 +1846,7 @@ FROM generate_series(1, 15) AS k;
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowz, highz Inclusive bounds of the range for the z coordinates
- * @param[in] lowtime, hightime Inclusive bounds of the period
+ * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxdelta Maximum value difference between consecutive instants
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the sequence
@@ -1915,7 +1915,7 @@ FROM generate_series(1, 15) AS k;
  *
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
- * @param[in] lowtime, hightime Inclusive bounds of the period
+ * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxdelta Maximum value difference between consecutive instants
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the sequence
@@ -1985,7 +1985,7 @@ FROM generate_series(1, 15) AS k;
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowz, highz Inclusive bounds of the range for the z coordinates
- * @param[in] lowtime, hightime Inclusive bounds of the period
+ * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxdelta Maximum value difference between consecutive instants
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the sequence
@@ -2056,7 +2056,7 @@ FROM generate_series(1, 15) AS k;
  *
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
- * @param[in] lowtime, hightime Inclusive bounds of the period
+ * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxdelta Maximum value difference between consecutive instants
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
  * @param[in] mincardseq, maxcardseq Inclusive bounds of the cardinality of a sequence
@@ -2116,7 +2116,7 @@ FROM generate_series(1, 15) AS k;
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowz, highz Inclusive bounds of the range for the z coordinates
- * @param[in] lowtime, hightime Inclusive bounds of the period
+ * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxdelta Maximum value difference between consecutive instants
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
  * @param[in] mincardseq, maxcardseq Inclusive bounds of the cardinality of a sequence
@@ -2182,7 +2182,7 @@ FROM generate_series(1, 15) AS k;
  *
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
- * @param[in] lowtime, hightime Inclusive bounds of the period
+ * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxdelta Maximum value difference between consecutive instants
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
  * @param[in] mincardseq, maxcardseq Inclusive bounds of the cardinality of a sequence
@@ -2242,7 +2242,7 @@ FROM generate_series(1, 15) AS k;
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowz, highz Inclusive bounds of the range for the z coordinates
- * @param[in] lowtime, hightime Inclusive bounds of the period
+ * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxdelta Maximum value difference between consecutive instants
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
  * @param[in] mincardseq, maxcardseq Inclusive bounds of the cardinality of a sequence

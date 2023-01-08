@@ -706,12 +706,12 @@ tpoint_spgist_get_stbox(const ScanKeyData *scankey, STBox *result)
     Set *set = DatumGetSetP(scankey->sk_argument);
     tstzset_set_stbox(set, result);
   }
-  else if (type == T_PERIOD)
+  else if (type == T_TSTZSPAN)
   {
     Span *p = DatumGetSpanP(scankey->sk_argument);
     period_set_stbox(p, result);
   }
-  else if (type == T_PERIODSET)
+  else if (type == T_TSTZSPANSET)
   {
     periodset_stbox_slice(scankey->sk_argument, result);
   }

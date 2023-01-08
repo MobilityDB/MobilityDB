@@ -246,33 +246,33 @@ SELECT geodstbox_zt(8,7,6,4,3,2,'[2001-01-01,2001-01-05]');
  SRID=4326;GEODSTBOX ZT(((4,3,2),(8,7,6)),[2001-01-01 00:00:00+00, 2001-01-05 00:00:00+00])
 (1 row)
 
-SELECT stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])'::period;
-                      period                      
+SELECT stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])'::tstzspan;
+                     tstzspan                     
 --------------------------------------------------
  [2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00]
 (1 row)
 
-SELECT stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])'::period;
-                      period                      
+SELECT stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])'::tstzspan;
+                     tstzspan                     
 --------------------------------------------------
  [2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00]
 (1 row)
 
-SELECT stbox 'STBOX T([2000-01-01, 2000-01-02])'::period;
-                      period                      
+SELECT stbox 'STBOX T([2000-01-01, 2000-01-02])'::tstzspan;
+                     tstzspan                     
 --------------------------------------------------
  [2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00]
 (1 row)
 
-SELECT stbox 'STBOX X(((1.0,2.0),(3.0,4.0)))'::period;
- period 
---------
+SELECT stbox 'STBOX X(((1.0,2.0),(3.0,4.0)))'::tstzspan;
+ tstzspan 
+----------
  
 (1 row)
 
-SELECT stbox 'STBOX Z(((1.0,2.0,3.0),(4.0,5.0,6.0)))'::period;
- period 
---------
+SELECT stbox 'STBOX Z(((1.0,2.0,3.0),(4.0,5.0,6.0)))'::tstzspan;
+ tstzspan 
+----------
  
 (1 row)
 
@@ -351,7 +351,7 @@ SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(1,1,1)),[2000-01-01,2000-01
 /* Errors */
 SELECT stbox 'STBOX T([2000-01-01, 2000-01-02])'::geometry;
 ERROR:  The box must have XY(Z) dimension
-SELECT MAX(duration(b::period)) FROM tbl_stbox;
+SELECT MAX(duration(b::tstzspan)) FROM tbl_stbox;
    max    
 ----------
  00:10:00
@@ -740,7 +740,7 @@ SELECT stbox 'STBOX Z(((1.0,1.0,1.0),(2.0,2.0,2.0)))' ~= stbox 'STBOX Z(((1.0,1.
  f
 (1 row)
 
-SELECT period '[2000-01-01, 2000-01-02]'::stbox -|- period '[2000-01-02, 2000-01-03]'::stbox;
+SELECT tstzspan '[2000-01-01, 2000-01-02]'::stbox -|- tstzspan '[2000-01-02, 2000-01-03]'::stbox;
  ?column? 
 ----------
  t

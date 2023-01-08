@@ -221,7 +221,7 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     }
 
     span_compute_stats(stats, non_null_cnt, &slot_idx, time_lowers,
-      time_uppers, time_lengths, T_PERIOD);
+      time_uppers, time_lengths, T_TSTZSPAN);
   }
   else if (null_cnt > 0)
   {
@@ -297,7 +297,7 @@ temporal_extra_info(VacAttrStats *stats)
   extra_data->value_hash = &typentry->hash_proc_finfo;
 
   /* Information about the time type */
-  Oid per_typid = type_oid(T_PERIOD);
+  Oid per_typid = type_oid(T_TSTZSPAN);
   typentry = lookup_type_cache(per_typid,
     TYPECACHE_EQ_OPR | TYPECACHE_LT_OPR | TYPECACHE_CMP_PROC_FINFO |
     TYPECACHE_HASH_PROC_FINFO);

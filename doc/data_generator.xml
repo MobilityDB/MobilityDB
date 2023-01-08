@@ -161,16 +161,16 @@
 					<para><varname>random_floatspan</varname>: Generate a random float span</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_period</varname>: Generate a random <varname>period</varname></para>
+					<para><varname>random_tstzspan</varname>: Generate a random <varname>tstzspan</varname></para>
 				</listitem>
 				<listitem>
-					<para><varname>random_period_array</varname>: Generate a random array of <varname>period</varname> values</para>
+					<para><varname>random_tstzspan_array</varname>: Generate a random array of <varname>tstzspan</varname> values</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_tstzset</varname>: Generate a random <varname>tstzset</varname></para>
 				</listitem>
 				<listitem>
-					<para><varname>random_periodset</varname>: Generate a random <varname>periodset</varname></para>
+					<para><varname>random_tstzspanset</varname>: Generate a random <varname>tstzspanset</varname></para>
 				</listitem>
 				<listitem>
 					<para><varname>random_tbox</varname>: Generate a random <varname>tbox</varname></para>
@@ -369,14 +369,14 @@ FROM generate_series(perc+1, size) AS k;
 </programlisting>
 
 		<para>
-			The creation of a table <varname>tbl_period</varname> containing random <varname>period</varname> values where the timestamps are in the range [2001-01-01, 2001-12-31] and the maximum difference between the lower and the upper bounds is 10 minutes is given next.
+			The creation of a table <varname>tbl_tstzspan</varname> containing random <varname>tstzspan</varname> values where the timestamps are in the range [2001-01-01, 2001-12-31] and the maximum difference between the lower and the upper bounds is 10 minutes is given next.
 		</para>
 		<programlisting language="sql" xml:space="preserve">
-CREATE TABLE tbl_period AS
+CREATE TABLE tbl_tstzspan AS
 /* Add perc NULL values */
 SELECT k, NULL AS p
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_period('2001-01-01', '2001-12-31', 10)
+SELECT k, random_tstzspan('2001-01-01', '2001-12-31', 10)
 FROM generate_series(perc+1, size) AS k;
 </programlisting>
 

@@ -287,7 +287,7 @@ tbox_parse(const char **str)
   }
 
   if (hast)
-    period = span_parse(str, T_PERIOD, false, true);
+    period = span_parse(str, T_TSTZSPAN, false, true);
 
   p_whitespace(str);
   if (!p_cparen(str))

@@ -88,26 +88,26 @@ INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '~=', 'tstzset', 'tgeompoint', COUNT(*) FROM tbl_tstzset, tbl_tgeompoint WHERE ts ~= temp;
 
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'period', 'tgeompoint', COUNT(*) FROM tbl_period, tbl_tgeompoint WHERE p && temp;
+SELECT '&&', 'tstzspan', 'tgeompoint', COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint WHERE p && temp;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'period', 'tgeompoint', COUNT(*) FROM tbl_period, tbl_tgeompoint WHERE p @> temp;
+SELECT '@>', 'tstzspan', 'tgeompoint', COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint WHERE p @> temp;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'period', 'tgeompoint', COUNT(*) FROM tbl_period, tbl_tgeompoint WHERE p <@ temp;
+SELECT '<@', 'tstzspan', 'tgeompoint', COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint WHERE p <@ temp;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'period', 'tgeompoint', COUNT(*) FROM tbl_period, tbl_tgeompoint WHERE p -|- temp;
+SELECT '-|-', 'tstzspan', 'tgeompoint', COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint WHERE p -|- temp;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '~=', 'period', 'tgeompoint', COUNT(*) FROM tbl_period, tbl_tgeompoint WHERE p ~= temp;
+SELECT '~=', 'tstzspan', 'tgeompoint', COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint WHERE p ~= temp;
 
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'periodset', 'tgeompoint', COUNT(*) FROM tbl_periodset, tbl_tgeompoint WHERE ps && temp;
+SELECT '&&', 'tstzspanset', 'tgeompoint', COUNT(*) FROM tbl_tstzspanset, tbl_tgeompoint WHERE ps && temp;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'periodset', 'tgeompoint', COUNT(*) FROM tbl_periodset, tbl_tgeompoint WHERE ps @> temp;
+SELECT '@>', 'tstzspanset', 'tgeompoint', COUNT(*) FROM tbl_tstzspanset, tbl_tgeompoint WHERE ps @> temp;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'periodset', 'tgeompoint', COUNT(*) FROM tbl_periodset, tbl_tgeompoint WHERE ps <@ temp;
+SELECT '<@', 'tstzspanset', 'tgeompoint', COUNT(*) FROM tbl_tstzspanset, tbl_tgeompoint WHERE ps <@ temp;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'periodset', 'tgeompoint', COUNT(*) FROM tbl_periodset, tbl_tgeompoint WHERE ps -|- temp;
+SELECT '-|-', 'tstzspanset', 'tgeompoint', COUNT(*) FROM tbl_tstzspanset, tbl_tgeompoint WHERE ps -|- temp;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '~=', 'periodset', 'tgeompoint', COUNT(*) FROM tbl_periodset, tbl_tgeompoint WHERE ps ~= temp;
+SELECT '~=', 'tstzspanset', 'tgeompoint', COUNT(*) FROM tbl_tstzspanset, tbl_tgeompoint WHERE ps ~= temp;
 
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'stbox', 'tgeompoint', COUNT(*) FROM tbl_stbox, tbl_tgeompoint WHERE b && temp;
@@ -157,26 +157,26 @@ INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '~=', 'tstzset', 'tgeogpoint', COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint WHERE ts ~= temp;
 
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'period', 'tgeogpoint', COUNT(*) FROM tbl_period, tbl_tgeogpoint WHERE p && temp;
+SELECT '&&', 'tstzspan', 'tgeogpoint', COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint WHERE p && temp;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'period', 'tgeogpoint', COUNT(*) FROM tbl_period, tbl_tgeogpoint WHERE p @> temp;
+SELECT '@>', 'tstzspan', 'tgeogpoint', COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint WHERE p @> temp;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'period', 'tgeogpoint', COUNT(*) FROM tbl_period, tbl_tgeogpoint WHERE p <@ temp;
+SELECT '<@', 'tstzspan', 'tgeogpoint', COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint WHERE p <@ temp;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'period', 'tgeogpoint', COUNT(*) FROM tbl_period, tbl_tgeogpoint WHERE p -|- temp;
+SELECT '-|-', 'tstzspan', 'tgeogpoint', COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint WHERE p -|- temp;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '~=', 'period', 'tgeogpoint', COUNT(*) FROM tbl_period, tbl_tgeogpoint WHERE p ~= temp;
+SELECT '~=', 'tstzspan', 'tgeogpoint', COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint WHERE p ~= temp;
 
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'periodset', 'tgeogpoint', COUNT(*) FROM tbl_periodset, tbl_tgeogpoint WHERE ps && temp;
+SELECT '&&', 'tstzspanset', 'tgeogpoint', COUNT(*) FROM tbl_tstzspanset, tbl_tgeogpoint WHERE ps && temp;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'periodset', 'tgeogpoint', COUNT(*) FROM tbl_periodset, tbl_tgeogpoint WHERE ps @> temp;
+SELECT '@>', 'tstzspanset', 'tgeogpoint', COUNT(*) FROM tbl_tstzspanset, tbl_tgeogpoint WHERE ps @> temp;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'periodset', 'tgeogpoint', COUNT(*) FROM tbl_periodset, tbl_tgeogpoint WHERE ps <@ temp;
+SELECT '<@', 'tstzspanset', 'tgeogpoint', COUNT(*) FROM tbl_tstzspanset, tbl_tgeogpoint WHERE ps <@ temp;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'periodset', 'tgeogpoint', COUNT(*) FROM tbl_periodset, tbl_tgeogpoint WHERE ps -|- temp;
+SELECT '-|-', 'tstzspanset', 'tgeogpoint', COUNT(*) FROM tbl_tstzspanset, tbl_tgeogpoint WHERE ps -|- temp;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '~=', 'periodset', 'tgeogpoint', COUNT(*) FROM tbl_periodset, tbl_tgeogpoint WHERE ps ~= temp;
+SELECT '~=', 'tstzspanset', 'tgeogpoint', COUNT(*) FROM tbl_tstzspanset, tbl_tgeogpoint WHERE ps ~= temp;
 
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'stbox', 'tgeogpoint', COUNT(*) FROM tbl_geodstbox3d, tbl_tgeogpoint WHERE b && temp;
@@ -226,26 +226,26 @@ INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '~=', 'tgeompoint', 'tstzset', COUNT(*) FROM tbl_tgeompoint, tbl_tstzset WHERE temp ~= ts;
 
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'tgeompoint', 'period', COUNT(*) FROM tbl_tgeompoint, tbl_period WHERE temp && p;
+SELECT '&&', 'tgeompoint', 'tstzspan', COUNT(*) FROM tbl_tgeompoint, tbl_tstzspan WHERE temp && p;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'tgeompoint', 'period', COUNT(*) FROM tbl_tgeompoint, tbl_period WHERE temp @> p;
+SELECT '@>', 'tgeompoint', 'tstzspan', COUNT(*) FROM tbl_tgeompoint, tbl_tstzspan WHERE temp @> p;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'tgeompoint', 'period', COUNT(*) FROM tbl_tgeompoint, tbl_period WHERE temp <@ p;
+SELECT '<@', 'tgeompoint', 'tstzspan', COUNT(*) FROM tbl_tgeompoint, tbl_tstzspan WHERE temp <@ p;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'tgeompoint', 'period', COUNT(*) FROM tbl_tgeompoint, tbl_period WHERE temp -|- p;
+SELECT '-|-', 'tgeompoint', 'tstzspan', COUNT(*) FROM tbl_tgeompoint, tbl_tstzspan WHERE temp -|- p;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '~=', 'tgeompoint', 'period', COUNT(*) FROM tbl_tgeompoint, tbl_period WHERE temp ~= p;
+SELECT '~=', 'tgeompoint', 'tstzspan', COUNT(*) FROM tbl_tgeompoint, tbl_tstzspan WHERE temp ~= p;
 
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'tgeompoint', 'periodset', COUNT(*) FROM tbl_tgeompoint, tbl_periodset WHERE temp && ps;
+SELECT '&&', 'tgeompoint', 'tstzspanset', COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp && ps;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'tgeompoint', 'periodset', COUNT(*) FROM tbl_tgeompoint, tbl_periodset WHERE temp @> ps;
+SELECT '@>', 'tgeompoint', 'tstzspanset', COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp @> ps;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'tgeompoint', 'periodset', COUNT(*) FROM tbl_tgeompoint, tbl_periodset WHERE temp <@ ps;
+SELECT '<@', 'tgeompoint', 'tstzspanset', COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp <@ ps;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'tgeompoint', 'periodset', COUNT(*) FROM tbl_tgeompoint, tbl_periodset WHERE temp -|- ps;
+SELECT '-|-', 'tgeompoint', 'tstzspanset', COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp -|- ps;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '~=', 'tgeompoint', 'periodset', COUNT(*) FROM tbl_tgeompoint, tbl_periodset WHERE temp ~= ps;
+SELECT '~=', 'tgeompoint', 'tstzspanset', COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp ~= ps;
 
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'tgeompoint', 'stbox', COUNT(*) FROM tbl_tgeompoint, tbl_stbox WHERE temp && b;
@@ -306,26 +306,26 @@ INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '~=', 'tgeogpoint', 'tstzset', COUNT(*) FROM tbl_tgeogpoint, tbl_tstzset WHERE temp ~= ts;
 
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'tgeogpoint', 'period', COUNT(*) FROM tbl_tgeogpoint, tbl_period WHERE temp && p;
+SELECT '&&', 'tgeogpoint', 'tstzspan', COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspan WHERE temp && p;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'tgeogpoint', 'period', COUNT(*) FROM tbl_tgeogpoint, tbl_period WHERE temp @> p;
+SELECT '@>', 'tgeogpoint', 'tstzspan', COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspan WHERE temp @> p;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'tgeogpoint', 'period', COUNT(*) FROM tbl_tgeogpoint, tbl_period WHERE temp <@ p;
+SELECT '<@', 'tgeogpoint', 'tstzspan', COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspan WHERE temp <@ p;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'tgeogpoint', 'period', COUNT(*) FROM tbl_tgeogpoint, tbl_period WHERE temp -|- p;
+SELECT '-|-', 'tgeogpoint', 'tstzspan', COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspan WHERE temp -|- p;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '~=', 'tgeogpoint', 'period', COUNT(*) FROM tbl_tgeogpoint, tbl_period WHERE temp ~= p;
+SELECT '~=', 'tgeogpoint', 'tstzspan', COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspan WHERE temp ~= p;
 
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'tgeogpoint', 'periodset', COUNT(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp && ps;
+SELECT '&&', 'tgeogpoint', 'tstzspanset', COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp && ps;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'tgeogpoint', 'periodset', COUNT(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp @> ps;
+SELECT '@>', 'tgeogpoint', 'tstzspanset', COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp @> ps;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'tgeogpoint', 'periodset', COUNT(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp <@ ps;
+SELECT '<@', 'tgeogpoint', 'tstzspanset', COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp <@ ps;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'tgeogpoint', 'periodset', COUNT(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp -|- ps;
+SELECT '-|-', 'tgeogpoint', 'tstzspanset', COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp -|- ps;
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '~=', 'tgeogpoint', 'periodset', COUNT(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp ~= ps;
+SELECT '~=', 'tgeogpoint', 'tstzspanset', COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp ~= ps;
 
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'tgeogpoint', 'stbox', COUNT(*) FROM tbl_tgeogpoint, tbl_geodstbox3d WHERE temp && b;
@@ -406,36 +406,36 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeompoint WHERE ts ~= t
 WHERE op = '~=' AND leftarg = 'tstzset' AND rightarg = 'tgeompoint';
 
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeompoint WHERE p && temp )
-WHERE op = '&&' AND leftarg = 'period' AND rightarg = 'tgeompoint';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint WHERE p && temp )
+WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint';
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeompoint WHERE p @> temp )
-WHERE op = '@>' AND leftarg = 'period' AND rightarg = 'tgeompoint';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint WHERE p @> temp )
+WHERE op = '@>' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint';
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeompoint WHERE p <@ temp )
-WHERE op = '<@' AND leftarg = 'period' AND rightarg = 'tgeompoint';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint WHERE p <@ temp )
+WHERE op = '<@' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint';
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeompoint WHERE p -|- temp )
-WHERE op = '-|-' AND leftarg = 'period' AND rightarg = 'tgeompoint';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint WHERE p -|- temp )
+WHERE op = '-|-' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint';
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeompoint WHERE p ~= temp )
-WHERE op = '~=' AND leftarg = 'period' AND rightarg = 'tgeompoint';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint WHERE p ~= temp )
+WHERE op = '~=' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint';
 
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeompoint WHERE ps && temp )
-WHERE op = '&&' AND leftarg = 'periodset' AND rightarg = 'tgeompoint';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeompoint WHERE ps && temp )
+WHERE op = '&&' AND leftarg = 'tstzspanset' AND rightarg = 'tgeompoint';
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeompoint WHERE ps @> temp )
-WHERE op = '@>' AND leftarg = 'periodset' AND rightarg = 'tgeompoint';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeompoint WHERE ps @> temp )
+WHERE op = '@>' AND leftarg = 'tstzspanset' AND rightarg = 'tgeompoint';
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeompoint WHERE ps <@ temp )
-WHERE op = '<@' AND leftarg = 'periodset' AND rightarg = 'tgeompoint';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeompoint WHERE ps <@ temp )
+WHERE op = '<@' AND leftarg = 'tstzspanset' AND rightarg = 'tgeompoint';
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeompoint WHERE ps -|- temp )
-WHERE op = '-|-' AND leftarg = 'periodset' AND rightarg = 'tgeompoint';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeompoint WHERE ps -|- temp )
+WHERE op = '-|-' AND leftarg = 'tstzspanset' AND rightarg = 'tgeompoint';
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeompoint WHERE ps ~= temp )
-WHERE op = '~=' AND leftarg = 'periodset' AND rightarg = 'tgeompoint';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeompoint WHERE ps ~= temp )
+WHERE op = '~=' AND leftarg = 'tstzspanset' AND rightarg = 'tgeompoint';
 
 UPDATE test_topops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tgeompoint WHERE b && temp )
@@ -505,36 +505,36 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint WHERE ts ~= t
 WHERE op = '~=' AND leftarg = 'tstzset' AND rightarg = 'tgeogpoint';
 
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeogpoint WHERE p && temp )
-WHERE op = '&&' AND leftarg = 'period' AND rightarg = 'tgeogpoint';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint WHERE p && temp )
+WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint';
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeogpoint WHERE p @> temp )
-WHERE op = '@>' AND leftarg = 'period' AND rightarg = 'tgeogpoint';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint WHERE p @> temp )
+WHERE op = '@>' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint';
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeogpoint WHERE p <@ temp )
-WHERE op = '<@' AND leftarg = 'period' AND rightarg = 'tgeogpoint';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint WHERE p <@ temp )
+WHERE op = '<@' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint';
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeogpoint WHERE p -|- temp )
-WHERE op = '-|-' AND leftarg = 'period' AND rightarg = 'tgeogpoint';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint WHERE p -|- temp )
+WHERE op = '-|-' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint';
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeogpoint WHERE p ~= temp )
-WHERE op = '~=' AND leftarg = 'period' AND rightarg = 'tgeogpoint';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint WHERE p ~= temp )
+WHERE op = '~=' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint';
 
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeogpoint WHERE ps && temp )
-WHERE op = '&&' AND leftarg = 'periodset' AND rightarg = 'tgeogpoint';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeogpoint WHERE ps && temp )
+WHERE op = '&&' AND leftarg = 'tstzspanset' AND rightarg = 'tgeogpoint';
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeogpoint WHERE ps @> temp )
-WHERE op = '@>' AND leftarg = 'periodset' AND rightarg = 'tgeogpoint';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeogpoint WHERE ps @> temp )
+WHERE op = '@>' AND leftarg = 'tstzspanset' AND rightarg = 'tgeogpoint';
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeogpoint WHERE ps <@ temp )
-WHERE op = '<@' AND leftarg = 'periodset' AND rightarg = 'tgeogpoint';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeogpoint WHERE ps <@ temp )
+WHERE op = '<@' AND leftarg = 'tstzspanset' AND rightarg = 'tgeogpoint';
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeogpoint WHERE ps -|- temp )
-WHERE op = '-|-' AND leftarg = 'periodset' AND rightarg = 'tgeogpoint';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeogpoint WHERE ps -|- temp )
+WHERE op = '-|-' AND leftarg = 'tstzspanset' AND rightarg = 'tgeogpoint';
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeogpoint WHERE ps ~= temp )
-WHERE op = '~=' AND leftarg = 'periodset' AND rightarg = 'tgeogpoint';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeogpoint WHERE ps ~= temp )
+WHERE op = '~=' AND leftarg = 'tstzspanset' AND rightarg = 'tgeogpoint';
 
 UPDATE test_topops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox3d, tbl_tgeogpoint WHERE b && temp )
@@ -604,36 +604,36 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzset WHERE temp ~=
 WHERE op = '~=' AND leftarg = 'tgeompoint' AND rightarg = 'tstzset';
 
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_period WHERE temp && p )
-WHERE op = '&&' AND leftarg = 'tgeompoint' AND rightarg = 'period';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspan WHERE temp && p )
+WHERE op = '&&' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspan';
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_period WHERE temp @> p )
-WHERE op = '@>' AND leftarg = 'tgeompoint' AND rightarg = 'period';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspan WHERE temp @> p )
+WHERE op = '@>' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspan';
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_period WHERE temp <@ p )
-WHERE op = '<@' AND leftarg = 'tgeompoint' AND rightarg = 'period';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspan WHERE temp <@ p )
+WHERE op = '<@' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspan';
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_period WHERE temp -|- p )
-WHERE op = '-|-' AND leftarg = 'tgeompoint' AND rightarg = 'period';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspan WHERE temp -|- p )
+WHERE op = '-|-' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspan';
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_period WHERE temp ~= p )
-WHERE op = '~=' AND leftarg = 'tgeompoint' AND rightarg = 'period';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspan WHERE temp ~= p )
+WHERE op = '~=' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspan';
 
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_periodset WHERE temp && ps )
-WHERE op = '&&' AND leftarg = 'tgeompoint' AND rightarg = 'periodset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp && ps )
+WHERE op = '&&' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspanset';
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_periodset WHERE temp @> ps )
-WHERE op = '@>' AND leftarg = 'tgeompoint' AND rightarg = 'periodset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp @> ps )
+WHERE op = '@>' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspanset';
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_periodset WHERE temp <@ ps )
-WHERE op = '<@' AND leftarg = 'tgeompoint' AND rightarg = 'periodset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp <@ ps )
+WHERE op = '<@' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspanset';
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_periodset WHERE temp -|- ps )
-WHERE op = '-|-' AND leftarg = 'tgeompoint' AND rightarg = 'periodset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp -|- ps )
+WHERE op = '-|-' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspanset';
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_periodset WHERE temp ~= ps )
-WHERE op = '~=' AND leftarg = 'tgeompoint' AND rightarg = 'periodset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp ~= ps )
+WHERE op = '~=' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspanset';
 
 UPDATE test_topops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_stbox WHERE temp && b )
@@ -719,36 +719,36 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzset WHERE temp ~=
 WHERE op = '~=' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzset';
 
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_period WHERE temp && p )
-WHERE op = '&&' AND leftarg = 'tgeogpoint' AND rightarg = 'period';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspan WHERE temp && p )
+WHERE op = '&&' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspan';
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_period WHERE temp @> p )
-WHERE op = '@>' AND leftarg = 'tgeogpoint' AND rightarg = 'period';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspan WHERE temp @> p )
+WHERE op = '@>' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspan';
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_period WHERE temp <@ p )
-WHERE op = '<@' AND leftarg = 'tgeogpoint' AND rightarg = 'period';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspan WHERE temp <@ p )
+WHERE op = '<@' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspan';
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_period WHERE temp -|- p )
-WHERE op = '-|-' AND leftarg = 'tgeogpoint' AND rightarg = 'period';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspan WHERE temp -|- p )
+WHERE op = '-|-' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspan';
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_period WHERE temp ~= p )
-WHERE op = '~=' AND leftarg = 'tgeogpoint' AND rightarg = 'period';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspan WHERE temp ~= p )
+WHERE op = '~=' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspan';
 
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp && ps )
-WHERE op = '&&' AND leftarg = 'tgeogpoint' AND rightarg = 'periodset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp && ps )
+WHERE op = '&&' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspanset';
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp @> ps )
-WHERE op = '@>' AND leftarg = 'tgeogpoint' AND rightarg = 'periodset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp @> ps )
+WHERE op = '@>' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspanset';
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp <@ ps )
-WHERE op = '<@' AND leftarg = 'tgeogpoint' AND rightarg = 'periodset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp <@ ps )
+WHERE op = '<@' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspanset';
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp -|- ps )
-WHERE op = '-|-' AND leftarg = 'tgeogpoint' AND rightarg = 'periodset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp -|- ps )
+WHERE op = '-|-' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspanset';
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp ~= ps )
-WHERE op = '~=' AND leftarg = 'tgeogpoint' AND rightarg = 'periodset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp ~= ps )
+WHERE op = '~=' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspanset';
 
 UPDATE test_topops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geodstbox3d WHERE temp && b )
@@ -844,36 +844,36 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeompoint WHERE ts ~
 WHERE op = '~=' AND leftarg = 'tstzset' AND rightarg = 'tgeompoint';
 
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeompoint WHERE p && temp )
-WHERE op = '&&' AND leftarg = 'period' AND rightarg = 'tgeompoint';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint WHERE p && temp )
+WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint';
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeompoint WHERE p @> temp )
-WHERE op = '@>' AND leftarg = 'period' AND rightarg = 'tgeompoint';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint WHERE p @> temp )
+WHERE op = '@>' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint';
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeompoint WHERE p <@ temp )
-WHERE op = '<@' AND leftarg = 'period' AND rightarg = 'tgeompoint';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint WHERE p <@ temp )
+WHERE op = '<@' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint';
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeompoint WHERE p -|- temp )
-WHERE op = '-|-' AND leftarg = 'period' AND rightarg = 'tgeompoint';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint WHERE p -|- temp )
+WHERE op = '-|-' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint';
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeompoint WHERE p ~= temp )
-WHERE op = '~=' AND leftarg = 'period' AND rightarg = 'tgeompoint';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint WHERE p ~= temp )
+WHERE op = '~=' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint';
 
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeompoint WHERE ps && temp )
-WHERE op = '&&' AND leftarg = 'periodset' AND rightarg = 'tgeompoint';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeompoint WHERE ps && temp )
+WHERE op = '&&' AND leftarg = 'tstzspanset' AND rightarg = 'tgeompoint';
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeompoint WHERE ps @> temp )
-WHERE op = '@>' AND leftarg = 'periodset' AND rightarg = 'tgeompoint';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeompoint WHERE ps @> temp )
+WHERE op = '@>' AND leftarg = 'tstzspanset' AND rightarg = 'tgeompoint';
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeompoint WHERE ps <@ temp )
-WHERE op = '<@' AND leftarg = 'periodset' AND rightarg = 'tgeompoint';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeompoint WHERE ps <@ temp )
+WHERE op = '<@' AND leftarg = 'tstzspanset' AND rightarg = 'tgeompoint';
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeompoint WHERE ps -|- temp )
-WHERE op = '-|-' AND leftarg = 'periodset' AND rightarg = 'tgeompoint';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeompoint WHERE ps -|- temp )
+WHERE op = '-|-' AND leftarg = 'tstzspanset' AND rightarg = 'tgeompoint';
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeompoint WHERE ps ~= temp )
-WHERE op = '~=' AND leftarg = 'periodset' AND rightarg = 'tgeompoint';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeompoint WHERE ps ~= temp )
+WHERE op = '~=' AND leftarg = 'tstzspanset' AND rightarg = 'tgeompoint';
 
 UPDATE test_topops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tgeompoint WHERE b && temp )
@@ -943,36 +943,36 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint WHERE ts ~
 WHERE op = '~=' AND leftarg = 'tstzset' AND rightarg = 'tgeogpoint';
 
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeogpoint WHERE p && temp )
-WHERE op = '&&' AND leftarg = 'period' AND rightarg = 'tgeogpoint';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint WHERE p && temp )
+WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint';
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeogpoint WHERE p @> temp )
-WHERE op = '@>' AND leftarg = 'period' AND rightarg = 'tgeogpoint';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint WHERE p @> temp )
+WHERE op = '@>' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint';
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeogpoint WHERE p <@ temp )
-WHERE op = '<@' AND leftarg = 'period' AND rightarg = 'tgeogpoint';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint WHERE p <@ temp )
+WHERE op = '<@' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint';
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeogpoint WHERE p -|- temp )
-WHERE op = '-|-' AND leftarg = 'period' AND rightarg = 'tgeogpoint';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint WHERE p -|- temp )
+WHERE op = '-|-' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint';
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeogpoint WHERE p ~= temp )
-WHERE op = '~=' AND leftarg = 'period' AND rightarg = 'tgeogpoint';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint WHERE p ~= temp )
+WHERE op = '~=' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint';
 
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeogpoint WHERE ps && temp )
-WHERE op = '&&' AND leftarg = 'periodset' AND rightarg = 'tgeogpoint';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeogpoint WHERE ps && temp )
+WHERE op = '&&' AND leftarg = 'tstzspanset' AND rightarg = 'tgeogpoint';
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeogpoint WHERE ps @> temp )
-WHERE op = '@>' AND leftarg = 'periodset' AND rightarg = 'tgeogpoint';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeogpoint WHERE ps @> temp )
+WHERE op = '@>' AND leftarg = 'tstzspanset' AND rightarg = 'tgeogpoint';
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeogpoint WHERE ps <@ temp )
-WHERE op = '<@' AND leftarg = 'periodset' AND rightarg = 'tgeogpoint';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeogpoint WHERE ps <@ temp )
+WHERE op = '<@' AND leftarg = 'tstzspanset' AND rightarg = 'tgeogpoint';
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeogpoint WHERE ps -|- temp )
-WHERE op = '-|-' AND leftarg = 'periodset' AND rightarg = 'tgeogpoint';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeogpoint WHERE ps -|- temp )
+WHERE op = '-|-' AND leftarg = 'tstzspanset' AND rightarg = 'tgeogpoint';
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeogpoint WHERE ps ~= temp )
-WHERE op = '~=' AND leftarg = 'periodset' AND rightarg = 'tgeogpoint';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeogpoint WHERE ps ~= temp )
+WHERE op = '~=' AND leftarg = 'tstzspanset' AND rightarg = 'tgeogpoint';
 
 UPDATE test_topops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox3d, tbl_tgeogpoint WHERE b && temp )
@@ -1042,36 +1042,36 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzset WHERE temp
 WHERE op = '~=' AND leftarg = 'tgeompoint' AND rightarg = 'tstzset';
 
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_period WHERE temp && p )
-WHERE op = '&&' AND leftarg = 'tgeompoint' AND rightarg = 'period';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspan WHERE temp && p )
+WHERE op = '&&' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspan';
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_period WHERE temp @> p )
-WHERE op = '@>' AND leftarg = 'tgeompoint' AND rightarg = 'period';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspan WHERE temp @> p )
+WHERE op = '@>' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspan';
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_period WHERE temp <@ p )
-WHERE op = '<@' AND leftarg = 'tgeompoint' AND rightarg = 'period';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspan WHERE temp <@ p )
+WHERE op = '<@' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspan';
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_period WHERE temp -|- p )
-WHERE op = '-|-' AND leftarg = 'tgeompoint' AND rightarg = 'period';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspan WHERE temp -|- p )
+WHERE op = '-|-' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspan';
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_period WHERE temp ~= p )
-WHERE op = '~=' AND leftarg = 'tgeompoint' AND rightarg = 'period';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspan WHERE temp ~= p )
+WHERE op = '~=' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspan';
 
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_periodset WHERE temp && ps )
-WHERE op = '&&' AND leftarg = 'tgeompoint' AND rightarg = 'periodset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp && ps )
+WHERE op = '&&' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspanset';
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_periodset WHERE temp @> ps )
-WHERE op = '@>' AND leftarg = 'tgeompoint' AND rightarg = 'periodset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp @> ps )
+WHERE op = '@>' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspanset';
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_periodset WHERE temp <@ ps )
-WHERE op = '<@' AND leftarg = 'tgeompoint' AND rightarg = 'periodset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp <@ ps )
+WHERE op = '<@' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspanset';
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_periodset WHERE temp -|- ps )
-WHERE op = '-|-' AND leftarg = 'tgeompoint' AND rightarg = 'periodset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp -|- ps )
+WHERE op = '-|-' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspanset';
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_periodset WHERE temp ~= ps )
-WHERE op = '~=' AND leftarg = 'tgeompoint' AND rightarg = 'periodset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp ~= ps )
+WHERE op = '~=' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspanset';
 
 UPDATE test_topops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_stbox WHERE temp && b )
@@ -1157,36 +1157,36 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzset WHERE temp
 WHERE op = '~=' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzset';
 
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_period WHERE temp && p )
-WHERE op = '&&' AND leftarg = 'tgeogpoint' AND rightarg = 'period';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspan WHERE temp && p )
+WHERE op = '&&' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspan';
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_period WHERE temp @> p )
-WHERE op = '@>' AND leftarg = 'tgeogpoint' AND rightarg = 'period';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspan WHERE temp @> p )
+WHERE op = '@>' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspan';
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_period WHERE temp <@ p )
-WHERE op = '<@' AND leftarg = 'tgeogpoint' AND rightarg = 'period';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspan WHERE temp <@ p )
+WHERE op = '<@' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspan';
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_period WHERE temp -|- p )
-WHERE op = '-|-' AND leftarg = 'tgeogpoint' AND rightarg = 'period';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspan WHERE temp -|- p )
+WHERE op = '-|-' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspan';
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_period WHERE temp ~= p )
-WHERE op = '~=' AND leftarg = 'tgeogpoint' AND rightarg = 'period';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspan WHERE temp ~= p )
+WHERE op = '~=' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspan';
 
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp && ps )
-WHERE op = '&&' AND leftarg = 'tgeogpoint' AND rightarg = 'periodset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp && ps )
+WHERE op = '&&' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspanset';
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp @> ps )
-WHERE op = '@>' AND leftarg = 'tgeogpoint' AND rightarg = 'periodset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp @> ps )
+WHERE op = '@>' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspanset';
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp <@ ps )
-WHERE op = '<@' AND leftarg = 'tgeogpoint' AND rightarg = 'periodset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp <@ ps )
+WHERE op = '<@' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspanset';
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp -|- ps )
-WHERE op = '-|-' AND leftarg = 'tgeogpoint' AND rightarg = 'periodset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp -|- ps )
+WHERE op = '-|-' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspanset';
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp ~= ps )
-WHERE op = '~=' AND leftarg = 'tgeogpoint' AND rightarg = 'periodset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp ~= ps )
+WHERE op = '~=' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspanset';
 
 UPDATE test_topops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geodstbox3d WHERE temp && b )
@@ -1282,36 +1282,36 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeompoint WHERE ts ~= 
 WHERE op = '~=' AND leftarg = 'tstzset' AND rightarg = 'tgeompoint';
 
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeompoint WHERE p && temp )
-WHERE op = '&&' AND leftarg = 'period' AND rightarg = 'tgeompoint';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint WHERE p && temp )
+WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint';
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeompoint WHERE p @> temp )
-WHERE op = '@>' AND leftarg = 'period' AND rightarg = 'tgeompoint';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint WHERE p @> temp )
+WHERE op = '@>' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint';
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeompoint WHERE p <@ temp )
-WHERE op = '<@' AND leftarg = 'period' AND rightarg = 'tgeompoint';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint WHERE p <@ temp )
+WHERE op = '<@' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint';
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeompoint WHERE p -|- temp )
-WHERE op = '-|-' AND leftarg = 'period' AND rightarg = 'tgeompoint';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint WHERE p -|- temp )
+WHERE op = '-|-' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint';
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeompoint WHERE p ~= temp )
-WHERE op = '~=' AND leftarg = 'period' AND rightarg = 'tgeompoint';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint WHERE p ~= temp )
+WHERE op = '~=' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint';
 
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeompoint WHERE ps && temp )
-WHERE op = '&&' AND leftarg = 'periodset' AND rightarg = 'tgeompoint';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeompoint WHERE ps && temp )
+WHERE op = '&&' AND leftarg = 'tstzspanset' AND rightarg = 'tgeompoint';
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeompoint WHERE ps @> temp )
-WHERE op = '@>' AND leftarg = 'periodset' AND rightarg = 'tgeompoint';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeompoint WHERE ps @> temp )
+WHERE op = '@>' AND leftarg = 'tstzspanset' AND rightarg = 'tgeompoint';
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeompoint WHERE ps <@ temp )
-WHERE op = '<@' AND leftarg = 'periodset' AND rightarg = 'tgeompoint';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeompoint WHERE ps <@ temp )
+WHERE op = '<@' AND leftarg = 'tstzspanset' AND rightarg = 'tgeompoint';
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeompoint WHERE ps -|- temp )
-WHERE op = '-|-' AND leftarg = 'periodset' AND rightarg = 'tgeompoint';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeompoint WHERE ps -|- temp )
+WHERE op = '-|-' AND leftarg = 'tstzspanset' AND rightarg = 'tgeompoint';
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeompoint WHERE ps ~= temp )
-WHERE op = '~=' AND leftarg = 'periodset' AND rightarg = 'tgeompoint';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeompoint WHERE ps ~= temp )
+WHERE op = '~=' AND leftarg = 'tstzspanset' AND rightarg = 'tgeompoint';
 
 UPDATE test_topops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tgeompoint WHERE b && temp )
@@ -1381,36 +1381,36 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint WHERE ts ~= 
 WHERE op = '~=' AND leftarg = 'tstzset' AND rightarg = 'tgeogpoint';
 
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeogpoint WHERE p && temp )
-WHERE op = '&&' AND leftarg = 'period' AND rightarg = 'tgeogpoint';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint WHERE p && temp )
+WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint';
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeogpoint WHERE p @> temp )
-WHERE op = '@>' AND leftarg = 'period' AND rightarg = 'tgeogpoint';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint WHERE p @> temp )
+WHERE op = '@>' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint';
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeogpoint WHERE p <@ temp )
-WHERE op = '<@' AND leftarg = 'period' AND rightarg = 'tgeogpoint';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint WHERE p <@ temp )
+WHERE op = '<@' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint';
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeogpoint WHERE p -|- temp )
-WHERE op = '-|-' AND leftarg = 'period' AND rightarg = 'tgeogpoint';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint WHERE p -|- temp )
+WHERE op = '-|-' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint';
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tgeogpoint WHERE p ~= temp )
-WHERE op = '~=' AND leftarg = 'period' AND rightarg = 'tgeogpoint';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint WHERE p ~= temp )
+WHERE op = '~=' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint';
 
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeogpoint WHERE ps && temp )
-WHERE op = '&&' AND leftarg = 'periodset' AND rightarg = 'tgeogpoint';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeogpoint WHERE ps && temp )
+WHERE op = '&&' AND leftarg = 'tstzspanset' AND rightarg = 'tgeogpoint';
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeogpoint WHERE ps @> temp )
-WHERE op = '@>' AND leftarg = 'periodset' AND rightarg = 'tgeogpoint';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeogpoint WHERE ps @> temp )
+WHERE op = '@>' AND leftarg = 'tstzspanset' AND rightarg = 'tgeogpoint';
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeogpoint WHERE ps <@ temp )
-WHERE op = '<@' AND leftarg = 'periodset' AND rightarg = 'tgeogpoint';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeogpoint WHERE ps <@ temp )
+WHERE op = '<@' AND leftarg = 'tstzspanset' AND rightarg = 'tgeogpoint';
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeogpoint WHERE ps -|- temp )
-WHERE op = '-|-' AND leftarg = 'periodset' AND rightarg = 'tgeogpoint';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeogpoint WHERE ps -|- temp )
+WHERE op = '-|-' AND leftarg = 'tstzspanset' AND rightarg = 'tgeogpoint';
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tgeogpoint WHERE ps ~= temp )
-WHERE op = '~=' AND leftarg = 'periodset' AND rightarg = 'tgeogpoint';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeogpoint WHERE ps ~= temp )
+WHERE op = '~=' AND leftarg = 'tstzspanset' AND rightarg = 'tgeogpoint';
 
 UPDATE test_topops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geodstbox3d, tbl_tgeogpoint WHERE b && temp )
@@ -1480,36 +1480,36 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzset WHERE temp ~
 WHERE op = '~=' AND leftarg = 'tgeompoint' AND rightarg = 'tstzset';
 
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_period WHERE temp && p )
-WHERE op = '&&' AND leftarg = 'tgeompoint' AND rightarg = 'period';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspan WHERE temp && p )
+WHERE op = '&&' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspan';
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_period WHERE temp @> p )
-WHERE op = '@>' AND leftarg = 'tgeompoint' AND rightarg = 'period';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspan WHERE temp @> p )
+WHERE op = '@>' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspan';
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_period WHERE temp <@ p )
-WHERE op = '<@' AND leftarg = 'tgeompoint' AND rightarg = 'period';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspan WHERE temp <@ p )
+WHERE op = '<@' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspan';
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_period WHERE temp -|- p )
-WHERE op = '-|-' AND leftarg = 'tgeompoint' AND rightarg = 'period';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspan WHERE temp -|- p )
+WHERE op = '-|-' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspan';
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_period WHERE temp ~= p )
-WHERE op = '~=' AND leftarg = 'tgeompoint' AND rightarg = 'period';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspan WHERE temp ~= p )
+WHERE op = '~=' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspan';
 
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_periodset WHERE temp && ps )
-WHERE op = '&&' AND leftarg = 'tgeompoint' AND rightarg = 'periodset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp && ps )
+WHERE op = '&&' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspanset';
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_periodset WHERE temp @> ps )
-WHERE op = '@>' AND leftarg = 'tgeompoint' AND rightarg = 'periodset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp @> ps )
+WHERE op = '@>' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspanset';
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_periodset WHERE temp <@ ps )
-WHERE op = '<@' AND leftarg = 'tgeompoint' AND rightarg = 'periodset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp <@ ps )
+WHERE op = '<@' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspanset';
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_periodset WHERE temp -|- ps )
-WHERE op = '-|-' AND leftarg = 'tgeompoint' AND rightarg = 'periodset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp -|- ps )
+WHERE op = '-|-' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspanset';
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_periodset WHERE temp ~= ps )
-WHERE op = '~=' AND leftarg = 'tgeompoint' AND rightarg = 'periodset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp ~= ps )
+WHERE op = '~=' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspanset';
 
 UPDATE test_topops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_stbox WHERE temp && b )
@@ -1595,36 +1595,36 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzset WHERE temp ~
 WHERE op = '~=' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzset';
 
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_period WHERE temp && p )
-WHERE op = '&&' AND leftarg = 'tgeogpoint' AND rightarg = 'period';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspan WHERE temp && p )
+WHERE op = '&&' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspan';
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_period WHERE temp @> p )
-WHERE op = '@>' AND leftarg = 'tgeogpoint' AND rightarg = 'period';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspan WHERE temp @> p )
+WHERE op = '@>' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspan';
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_period WHERE temp <@ p )
-WHERE op = '<@' AND leftarg = 'tgeogpoint' AND rightarg = 'period';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspan WHERE temp <@ p )
+WHERE op = '<@' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspan';
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_period WHERE temp -|- p )
-WHERE op = '-|-' AND leftarg = 'tgeogpoint' AND rightarg = 'period';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspan WHERE temp -|- p )
+WHERE op = '-|-' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspan';
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_period WHERE temp ~= p )
-WHERE op = '~=' AND leftarg = 'tgeogpoint' AND rightarg = 'period';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspan WHERE temp ~= p )
+WHERE op = '~=' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspan';
 
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp && ps )
-WHERE op = '&&' AND leftarg = 'tgeogpoint' AND rightarg = 'periodset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp && ps )
+WHERE op = '&&' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspanset';
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp @> ps )
-WHERE op = '@>' AND leftarg = 'tgeogpoint' AND rightarg = 'periodset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp @> ps )
+WHERE op = '@>' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspanset';
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp <@ ps )
-WHERE op = '<@' AND leftarg = 'tgeogpoint' AND rightarg = 'periodset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp <@ ps )
+WHERE op = '<@' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspanset';
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp -|- ps )
-WHERE op = '-|-' AND leftarg = 'tgeogpoint' AND rightarg = 'periodset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp -|- ps )
+WHERE op = '-|-' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspanset';
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp ~= ps )
-WHERE op = '~=' AND leftarg = 'tgeogpoint' AND rightarg = 'periodset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp ~= ps )
+WHERE op = '~=' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspanset';
 
 UPDATE test_topops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geodstbox3d WHERE temp && b )

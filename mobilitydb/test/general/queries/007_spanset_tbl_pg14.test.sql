@@ -37,6 +37,6 @@
 -------------------------------------------------------------------------------
 
 SELECT COUNT(*) FROM tbl_intspanset WHERE i <> (i::int4multirange)::intspanset;
-SELECT COUNT(*) FROM tbl_periodset WHERE ps <> (ps::tstzmultirange)::periodset;
+SELECT COUNT(*) FROM tbl_tstzspanset WHERE ps <> (ps::tstzmultirange)::tstzspanset;
 
 -------------------------------------------------------------------------------

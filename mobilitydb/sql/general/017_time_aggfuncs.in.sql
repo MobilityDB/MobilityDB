@@ -48,24 +48,24 @@ CREATE FUNCTION tagg_deserialize(bytea, internal)
 
 -- extent for periods is already defined for span aggregate functions
 
-CREATE FUNCTION timestamp_extent_transfn(period, timestamptz)
-  RETURNS period
+CREATE FUNCTION timestamp_extent_transfn(tstzspan, timestamptz)
+  RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Timestamp_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tstzset_extent_transfn(period, tstzset)
-  RETURNS period
+CREATE FUNCTION tstzset_extent_transfn(tstzspan, tstzset)
+  RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Tstzset_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE extent(timestamptz) (
   SFUNC = timestamp_extent_transfn,
-  STYPE = period,
+  STYPE = tstzspan,
   COMBINEFUNC = span_extent_combinefn,
   PARALLEL = safe
 );
 CREATE AGGREGATE extent(tstzset) (
   SFUNC = tstzset_extent_transfn,
-  STYPE = period,
+  STYPE = tstzspan,
   COMBINEFUNC = span_extent_combinefn,
   PARALLEL = safe
 );
@@ -82,11 +82,11 @@ CREATE FUNCTION tcount_transfn(internal, tstzset)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tstzset_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tcount_transfn(internal, period)
+CREATE FUNCTION tcount_transfn(internal, tstzspan)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Period_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tcount_transfn(internal, periodset)
+CREATE FUNCTION tcount_transfn(internal, tstzspanset)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Periodset_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -101,12 +101,12 @@ CREATE FUNCTION tcount_bucket_transfn(internal, tstzset, interval DEFAULT NULL,
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tstzset_tcount_bucket_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tcount_bucket_transfn(internal, period, interval DEFAULT NULL,
+CREATE FUNCTION tcount_bucket_transfn(internal, tstzspan, interval DEFAULT NULL,
     timestamptz DEFAULT '2000-01-03')
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Period_tcount_bucket_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tcount_bucket_transfn(internal, periodset, interval DEFAULT NULL,
+CREATE FUNCTION tcount_bucket_transfn(internal, tstzspanset, interval DEFAULT NULL,
     timestamptz DEFAULT '2000-01-03')
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Periodset_tcount_bucket_transfn'
@@ -159,7 +159,7 @@ CREATE AGGREGATE tcount(tstzset, interval, timestamptz) (
   PARALLEL = SAFE
 );
 
-CREATE AGGREGATE tcount(period) (
+CREATE AGGREGATE tcount(tstzspan) (
   SFUNC = tcount_transfn,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
@@ -168,7 +168,7 @@ CREATE AGGREGATE tcount(period) (
   DESERIALFUNC = tagg_deserialize,
   PARALLEL = SAFE
 );
-CREATE AGGREGATE tcount(period, interval, timestamptz) (
+CREATE AGGREGATE tcount(tstzspan, interval, timestamptz) (
   SFUNC = tcount_bucket_transfn,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
@@ -178,7 +178,7 @@ CREATE AGGREGATE tcount(period, interval, timestamptz) (
   PARALLEL = SAFE
 );
 
-CREATE AGGREGATE tcount(periodset) (
+CREATE AGGREGATE tcount(tstzspanset) (
   SFUNC = tcount_transfn,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
@@ -187,7 +187,7 @@ CREATE AGGREGATE tcount(periodset) (
   DESERIALFUNC = tagg_deserialize,
   PARALLEL = SAFE
 );
-CREATE AGGREGATE tcount(periodset, interval, timestamptz) (
+CREATE AGGREGATE tcount(tstzspanset, interval, timestamptz) (
   SFUNC = tcount_bucket_transfn,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
@@ -207,11 +207,11 @@ CREATE FUNCTION tstzset_tunion_transfn(internal, tstzset)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tstzset_tunion_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION period_tunion_transfn(internal, period)
+CREATE FUNCTION period_tunion_transfn(internal, tstzspan)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Period_tunion_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION periodset_tunion_transfn(internal, periodset)
+CREATE FUNCTION periodset_tunion_transfn(internal, tstzspanset)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Periodset_tunion_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -226,7 +226,7 @@ CREATE FUNCTION timestamp_tunion_finalfn(internal)
   AS 'MODULE_PATHNAME', 'Timestamp_tunion_finalfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION period_tunion_finalfn(internal)
-  RETURNS periodset
+  RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Period_tunion_finalfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -250,7 +250,7 @@ CREATE AGGREGATE tunion(tstzset) (
   PARALLEL = SAFE
 );
 
-CREATE AGGREGATE tunion(period) (
+CREATE AGGREGATE tunion(tstzspan) (
   SFUNC = period_tunion_transfn,
   STYPE = internal,
   COMBINEFUNC = time_tunion_combinefn,
@@ -260,7 +260,7 @@ CREATE AGGREGATE tunion(period) (
   PARALLEL = SAFE
 );
 
-CREATE AGGREGATE tunion(periodset) (
+CREATE AGGREGATE tunion(tstzspanset) (
   SFUNC = periodset_tunion_transfn,
   STYPE = internal,
   COMBINEFUNC = time_tunion_combinefn,

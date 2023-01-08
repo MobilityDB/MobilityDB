@@ -230,12 +230,12 @@ tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBox *result, Oid typid)
       return false;
     numspan_set_tbox(span, result);
   }
-  else if (type == T_PERIOD)
+  else if (type == T_TSTZSPAN)
   {
     Span *p = PG_GETARG_SPAN_P(1);
     period_set_tbox(p, result);
   }
-  else if (tnumber_spansettype(type) || type == T_PERIODSET)
+  else if (tnumber_spansettype(type) || type == T_TSTZSPANSET)
   {
     Datum ssdatum = PG_GETARG_DATUM(1);
     spanset_tbox_slice(ssdatum, result);

@@ -472,7 +472,7 @@ static void
 period_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   int samplerows, double totalrows __attribute__((unused)))
 {
-  span_compute_stats_generic(stats, fetchfunc, samplerows, T_PERIOD);
+  span_compute_stats_generic(stats, fetchfunc, samplerows, T_TSTZSPAN);
   return;
 }
 
@@ -538,7 +538,7 @@ static void
 periodset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   int samplerows, double totalrows __attribute__((unused)))
 {
-  span_compute_stats_generic(stats, fetchfunc, samplerows, T_PERIODSET);
+  span_compute_stats_generic(stats, fetchfunc, samplerows, T_TSTZSPANSET);
   return;
 }
 

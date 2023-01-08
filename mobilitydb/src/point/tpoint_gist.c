@@ -294,12 +294,12 @@ tpoint_gist_get_stbox(FunctionCallInfo fcinfo, STBox *result,
       return false;
     tstzset_set_stbox(set, result);
   }
-  else if (type == T_PERIOD)
+  else if (type == T_TSTZSPAN)
   {
     Span *p = PG_GETARG_SPAN_P(1);
     period_set_stbox(p, result);
   }
-  else if (type == T_PERIODSET)
+  else if (type == T_TSTZSPANSET)
   {
     Datum psdatum = PG_GETARG_DATUM(1);
     periodset_stbox_slice(psdatum, result);

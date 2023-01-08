@@ -1038,7 +1038,7 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
     /* Compute statistics for time dimension */
     span_compute_stats(stats, notnull_cnt, &slot_idx, time_lowers, time_uppers,
-      time_lengths, T_PERIOD);
+      time_lengths, T_TSTZSPAN);
   }
   else if (null_cnt > 0)
   {

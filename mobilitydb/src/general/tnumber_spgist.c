@@ -453,12 +453,12 @@ tnumber_spgist_get_tbox(const ScanKeyData *scankey, TBox *result)
     Span *span = DatumGetSpanP(scankey->sk_argument);
     numspan_set_tbox(span, result);
   }
-  else if (type == T_PERIOD)
+  else if (type == T_TSTZSPAN)
   {
     Span *p = DatumGetSpanP(scankey->sk_argument);
     period_set_tbox(p, result);
   }
-  else if (tnumber_spansettype(type) || type == T_PERIODSET)
+  else if (tnumber_spansettype(type) || type == T_TSTZSPANSET)
   {
     spanset_tbox_slice(scankey->sk_argument, result);
   }

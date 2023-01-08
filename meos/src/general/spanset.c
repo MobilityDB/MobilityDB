@@ -160,7 +160,7 @@ floatspanset_in(const char *str)
 SpanSet *
 periodset_in(const char *str)
 {
-  return spanset_parse(&str, T_PERIODSET);
+  return spanset_parse(&str, T_TSTZSPANSET);
 }
 #endif /* MEOS */
 

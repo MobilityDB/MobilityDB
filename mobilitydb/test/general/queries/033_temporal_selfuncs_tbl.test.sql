@@ -58,9 +58,9 @@ DECLARE
   J XML;
   StartTime TIMESTAMP;
   RandTimestamp TIMESTAMPTZ;
-  RandPeriod period;
+  RandTstzspan tstzspan;
   RandTstzset tstzset;
-  RandPeriodset periodset;
+  RandTstzspanset tstzspanset;
 
   Randtintinst tint(Instant);
   Randtinti tint(Sequence);
@@ -225,11 +225,11 @@ END LOOP;
 --Q7
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tintinst
-  WHERE inst && RandPeriod
+  WHERE inst && RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -245,11 +245,11 @@ END LOOP;
 --Q8
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloatinst
-  WHERE inst && RandPeriod
+  WHERE inst && RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -265,11 +265,11 @@ END LOOP;
 --Q9
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointinst
-  WHERE inst && RandPeriod
+  WHERE inst && RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -285,11 +285,11 @@ END LOOP;
 --Q10
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tintinst
-  WHERE inst && RandPeriodset
+  WHERE inst && RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -305,11 +305,11 @@ END LOOP;
 --Q11
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloatinst
-  WHERE inst && RandPeriodset
+  WHERE inst && RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -325,11 +325,11 @@ END LOOP;
 --Q12
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointinst
-  WHERE inst && RandPeriodset
+  WHERE inst && RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -465,11 +465,11 @@ END LOOP;
 --Q19
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tinti
-  WHERE ti && RandPeriod
+  WHERE ti && RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -485,11 +485,11 @@ END LOOP;
 --Q20
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloati
-  WHERE ti && RandPeriod
+  WHERE ti && RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -505,11 +505,11 @@ END LOOP;
 --Q21
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointi
-  WHERE ti && RandPeriod
+  WHERE ti && RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -525,11 +525,11 @@ END LOOP;
 --Q22
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tinti
-  WHERE ti && RandPeriodset
+  WHERE ti && RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -545,11 +545,11 @@ END LOOP;
 --Q23
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloati
-  WHERE ti && RandPeriodset
+  WHERE ti && RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -565,11 +565,11 @@ END LOOP;
 --Q24
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointi
-  WHERE ti && RandPeriodset
+  WHERE ti && RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -705,11 +705,11 @@ END LOOP;
 --Q31
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tintseq
-  WHERE seq && RandPeriod
+  WHERE seq && RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -725,11 +725,11 @@ END LOOP;
 --Q32
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloatseq
-  WHERE seq && RandPeriod
+  WHERE seq && RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -745,11 +745,11 @@ END LOOP;
 --Q33
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointseq
-  WHERE seq && RandPeriod
+  WHERE seq && RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -765,11 +765,11 @@ END LOOP;
 --Q34
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tintseq
-  WHERE seq && RandPeriodset
+  WHERE seq && RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -785,11 +785,11 @@ END LOOP;
 --Q35
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloatseq
-  WHERE seq && RandPeriodset
+  WHERE seq && RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -805,11 +805,11 @@ END LOOP;
 --Q36
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointseq
-  WHERE seq && RandPeriodset
+  WHERE seq && RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -945,11 +945,11 @@ END LOOP;
 --Q43
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tints
-  WHERE ts && RandPeriod
+  WHERE ts && RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -965,11 +965,11 @@ END LOOP;
 --Q44
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloats
-  WHERE ts && RandPeriod
+  WHERE ts && RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -985,11 +985,11 @@ END LOOP;
 --Q45
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompoints
-  WHERE ts && RandPeriod
+  WHERE ts && RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -1005,11 +1005,11 @@ END LOOP;
 --Q46
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tints
-  WHERE ts && RandPeriodset
+  WHERE ts && RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -1025,11 +1025,11 @@ END LOOP;
 --Q47
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloats
-  WHERE ts && RandPeriodset
+  WHERE ts && RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -1045,11 +1045,11 @@ END LOOP;
 --Q48
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompoints
-  WHERE ts && RandPeriodset
+  WHERE ts && RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -1189,11 +1189,11 @@ END LOOP;
 --Q55
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tintinst
-  WHERE inst @> RandPeriod
+  WHERE inst @> RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -1209,11 +1209,11 @@ END LOOP;
 --Q56
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloatinst
-  WHERE inst @> RandPeriod
+  WHERE inst @> RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -1229,11 +1229,11 @@ END LOOP;
 --Q57
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointinst
-  WHERE inst @> RandPeriod
+  WHERE inst @> RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -1249,11 +1249,11 @@ END LOOP;
 --Q58
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tintinst
-  WHERE inst @> RandPeriodset
+  WHERE inst @> RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -1269,11 +1269,11 @@ END LOOP;
 --Q59
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloatinst
-  WHERE inst @> RandPeriodset
+  WHERE inst @> RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -1289,11 +1289,11 @@ END LOOP;
 --Q60
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointinst
-  WHERE inst @> RandPeriodset
+  WHERE inst @> RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -1429,11 +1429,11 @@ END LOOP;
 --Q67
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tinti
-  WHERE ti @> RandPeriod
+  WHERE ti @> RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -1449,11 +1449,11 @@ END LOOP;
 --Q68
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloati
-  WHERE ti @> RandPeriod
+  WHERE ti @> RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -1469,11 +1469,11 @@ END LOOP;
 --Q69
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointi
-  WHERE ti @> RandPeriod
+  WHERE ti @> RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -1489,11 +1489,11 @@ END LOOP;
 --Q70
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tinti
-  WHERE ti @> RandPeriodset
+  WHERE ti @> RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -1509,11 +1509,11 @@ END LOOP;
 --Q71
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloati
-  WHERE ti @> RandPeriodset
+  WHERE ti @> RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -1529,11 +1529,11 @@ END LOOP;
 --Q72
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointi
-  WHERE ti @> RandPeriodset
+  WHERE ti @> RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -1669,11 +1669,11 @@ END LOOP;
 --Q79
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tintseq
-  WHERE seq @> RandPeriod
+  WHERE seq @> RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -1689,11 +1689,11 @@ END LOOP;
 --Q80
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloatseq
-  WHERE seq @> RandPeriod
+  WHERE seq @> RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -1709,11 +1709,11 @@ END LOOP;
 --Q81
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointseq
-  WHERE seq @> RandPeriod
+  WHERE seq @> RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -1729,11 +1729,11 @@ END LOOP;
 --Q82
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tintseq
-  WHERE seq @> RandPeriodset
+  WHERE seq @> RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -1749,11 +1749,11 @@ END LOOP;
 --Q83
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloatseq
-  WHERE seq @> RandPeriodset
+  WHERE seq @> RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -1769,11 +1769,11 @@ END LOOP;
 --Q84
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointseq
-  WHERE seq @> RandPeriodset
+  WHERE seq @> RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -1909,11 +1909,11 @@ END LOOP;
 --Q91
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tints
-  WHERE ts @> RandPeriod
+  WHERE ts @> RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -1929,11 +1929,11 @@ END LOOP;
 --Q92
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloats
-  WHERE ts @> RandPeriod
+  WHERE ts @> RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -1949,11 +1949,11 @@ END LOOP;
 --Q93
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompoints
-  WHERE ts @> RandPeriod
+  WHERE ts @> RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -1969,11 +1969,11 @@ END LOOP;
 --Q94
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tints
-  WHERE ts @> RandPeriodset
+  WHERE ts @> RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -1989,11 +1989,11 @@ END LOOP;
 --Q95
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloats
-  WHERE ts @> RandPeriodset
+  WHERE ts @> RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -2009,11 +2009,11 @@ END LOOP;
 --Q96
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompoints
-  WHERE ts @> RandPeriodset
+  WHERE ts @> RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -2152,11 +2152,11 @@ END LOOP;
 --Q103
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tintinst
-  WHERE inst <@ RandPeriod
+  WHERE inst <@ RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -2172,11 +2172,11 @@ END LOOP;
 --Q104
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloatinst
-  WHERE inst <@ RandPeriod
+  WHERE inst <@ RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -2192,11 +2192,11 @@ END LOOP;
 --Q105
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointinst
-  WHERE inst <@ RandPeriod
+  WHERE inst <@ RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -2212,11 +2212,11 @@ END LOOP;
 --Q106
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tintinst
-  WHERE inst <@ RandPeriodset
+  WHERE inst <@ RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -2232,11 +2232,11 @@ END LOOP;
 --Q107
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloatinst
-  WHERE inst <@ RandPeriodset
+  WHERE inst <@ RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -2252,11 +2252,11 @@ END LOOP;
 --Q108
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointinst
-  WHERE inst <@ RandPeriodset
+  WHERE inst <@ RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -2392,11 +2392,11 @@ END LOOP;
 --Q115
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tinti
-  WHERE ti <@ RandPeriod
+  WHERE ti <@ RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -2412,11 +2412,11 @@ END LOOP;
 --Q116
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloati
-  WHERE ti <@ RandPeriod
+  WHERE ti <@ RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -2432,11 +2432,11 @@ END LOOP;
 --Q117
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointi
-  WHERE ti <@ RandPeriod
+  WHERE ti <@ RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -2452,11 +2452,11 @@ END LOOP;
 --Q118
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tinti
-  WHERE ti <@ RandPeriodset
+  WHERE ti <@ RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -2472,11 +2472,11 @@ END LOOP;
 --Q119
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloati
-  WHERE ti <@ RandPeriodset
+  WHERE ti <@ RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -2492,11 +2492,11 @@ END LOOP;
 --Q120
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointi
-  WHERE ti <@ RandPeriodset
+  WHERE ti <@ RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -2632,11 +2632,11 @@ END LOOP;
 --Q127
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tintseq
-  WHERE seq <@ RandPeriod
+  WHERE seq <@ RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -2652,11 +2652,11 @@ END LOOP;
 --Q128
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloatseq
-  WHERE seq <@ RandPeriod
+  WHERE seq <@ RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -2672,11 +2672,11 @@ END LOOP;
 --Q129
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointseq
-  WHERE seq <@ RandPeriod
+  WHERE seq <@ RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -2692,11 +2692,11 @@ END LOOP;
 --Q130
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tintseq
-  WHERE seq <@ RandPeriodset
+  WHERE seq <@ RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -2712,11 +2712,11 @@ END LOOP;
 --Q131
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloatseq
-  WHERE seq <@ RandPeriodset
+  WHERE seq <@ RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -2732,11 +2732,11 @@ END LOOP;
 --Q132
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointseq
-  WHERE seq <@ RandPeriodset
+  WHERE seq <@ RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -2872,11 +2872,11 @@ END LOOP;
 --Q139
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tints
-  WHERE ts <@ RandPeriod
+  WHERE ts <@ RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -2892,11 +2892,11 @@ END LOOP;
 --Q140
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloats
-  WHERE ts <@ RandPeriod
+  WHERE ts <@ RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -2912,11 +2912,11 @@ END LOOP;
 --Q141
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompoints
-  WHERE ts <@ RandPeriod
+  WHERE ts <@ RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -2932,11 +2932,11 @@ END LOOP;
 --Q142
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tints
-  WHERE ts <@ RandPeriodset
+  WHERE ts <@ RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -2952,11 +2952,11 @@ END LOOP;
 --Q143
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloats
-  WHERE ts <@ RandPeriodset
+  WHERE ts <@ RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -2972,11 +2972,11 @@ END LOOP;
 --Q144
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompoints
-  WHERE ts <@ RandPeriodset
+  WHERE ts <@ RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -3115,11 +3115,11 @@ END LOOP;
 --Q151
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tintinst
-  WHERE inst ~= RandPeriod
+  WHERE inst ~= RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -3135,11 +3135,11 @@ END LOOP;
 --Q152
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloatinst
-  WHERE inst ~= RandPeriod
+  WHERE inst ~= RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -3155,11 +3155,11 @@ END LOOP;
 --Q153
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointinst
-  WHERE inst ~= RandPeriod
+  WHERE inst ~= RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -3175,11 +3175,11 @@ END LOOP;
 --Q154
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tintinst
-  WHERE inst ~= RandPeriodset
+  WHERE inst ~= RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -3195,11 +3195,11 @@ END LOOP;
 --Q155
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloatinst
-  WHERE inst ~= RandPeriodset
+  WHERE inst ~= RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -3215,11 +3215,11 @@ END LOOP;
 --Q156
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointinst
-  WHERE inst ~= RandPeriodset
+  WHERE inst ~= RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -3355,11 +3355,11 @@ END LOOP;
 --Q163
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tinti
-  WHERE ti ~= RandPeriod
+  WHERE ti ~= RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -3375,11 +3375,11 @@ END LOOP;
 --Q164
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloati
-  WHERE ti ~= RandPeriod
+  WHERE ti ~= RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -3395,11 +3395,11 @@ END LOOP;
 --Q165
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointi
-  WHERE ti ~= RandPeriod
+  WHERE ti ~= RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -3415,11 +3415,11 @@ END LOOP;
 --Q166
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tinti
-  WHERE ti ~= RandPeriodset
+  WHERE ti ~= RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -3435,11 +3435,11 @@ END LOOP;
 --Q167
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloati
-  WHERE ti ~= RandPeriodset
+  WHERE ti ~= RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -3455,11 +3455,11 @@ END LOOP;
 --Q168
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointi
-  WHERE ti ~= RandPeriodset
+  WHERE ti ~= RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -3595,11 +3595,11 @@ END LOOP;
 --Q175
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tintseq
-  WHERE seq ~= RandPeriod
+  WHERE seq ~= RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -3615,11 +3615,11 @@ END LOOP;
 --Q176
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloatseq
-  WHERE seq ~= RandPeriod
+  WHERE seq ~= RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -3635,11 +3635,11 @@ END LOOP;
 --Q177
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointseq
-  WHERE seq ~= RandPeriod
+  WHERE seq ~= RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -3655,11 +3655,11 @@ END LOOP;
 --Q178
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tintseq
-  WHERE seq ~= RandPeriodset
+  WHERE seq ~= RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -3675,11 +3675,11 @@ END LOOP;
 --Q179
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloatseq
-  WHERE seq ~= RandPeriodset
+  WHERE seq ~= RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -3695,11 +3695,11 @@ END LOOP;
 --Q180
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointseq
-  WHERE seq ~= RandPeriodset
+  WHERE seq ~= RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -3835,11 +3835,11 @@ END LOOP;
 --Q187
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tints
-  WHERE ts ~= RandPeriod
+  WHERE ts ~= RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -3855,11 +3855,11 @@ END LOOP;
 --Q188
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloats
-  WHERE ts ~= RandPeriod
+  WHERE ts ~= RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -3875,11 +3875,11 @@ END LOOP;
 --Q189
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
+  RandTstzspan:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompoints
-  WHERE ts ~= RandPeriod
+  WHERE ts ~= RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -3895,11 +3895,11 @@ END LOOP;
 --Q190
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tints
-  WHERE ts ~= RandPeriodset
+  WHERE ts ~= RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -3915,11 +3915,11 @@ END LOOP;
 --Q191
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloats
-  WHERE ts ~= RandPeriodset
+  WHERE ts ~= RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -3935,11 +3935,11 @@ END LOOP;
 --Q192
 k:= k+1;
 FOR i IN 1..10 LOOP
-  RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
+  RandTstzspanset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompoints
-  WHERE ts ~= RandPeriodset
+  WHERE ts ~= RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();

@@ -383,15 +383,15 @@ SELECT tnpoint '[Npoint(1, 0.2)@2001-01-01 09:00:00, Npoint(2, 0.2)@2001-01-01 0
 					<indexterm><primary><varname>=</varname></primary></indexterm>
 					<para>Constructor for temporal network points from a base value and a time value</para>
 					<para><varname>tnpoint(npoint,time,linear bool=true):tnpoint</varname></para>
-					<para>When the second argument is a period or a period set, an optional Boolean argument states whether the resulting value has linear interpolation. If the argument is not given it assumed true by default.</para>
+					<para>When the second argument is a time span or span set, an optional Boolean argument states whether the resulting value has linear interpolation. If the argument is not given it assumed true by default.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT tnpoint('Npoint(1, 0.5)', timestamptz '2000-01-01');
 -- NPoint(1,0.5)@2000-01-01
 SELECT tnpoint('Npoint(1, 0.3)', tstzset '{2000-01-01, 2000-01-03, 2000-01-05}');
 -- {NPoint(1,0.3)@2000-01-01, NPoint(1,0.3)@2000-01-03, NPoint(1,0.3)@2000-01-05}
-SELECT tnpoint('Npoint(1, 0.5)', period '[2000-01-01, 2000-01-02]');
+SELECT tnpoint('Npoint(1, 0.5)', tstzspan '[2000-01-01, 2000-01-02]');
 -- [NPoint(1,0.5)@2000-01-01, NPoint(1,0.5)@2000-01-02]
-SELECT tnpoint('Npoint(1, 0.2)', periodset '{[2000-01-01, 2000-01-03]}', false);
+SELECT tnpoint('Npoint(1, 0.2)', tstzspanset '{[2000-01-01, 2000-01-03]}', false);
 -- Interp=Stepwise;{[NPoint(1,0.2)@2000-01-01, NPoint(1,0.2)@2000-01-03]}
 </programlisting>
 				</listitem>
@@ -574,13 +574,13 @@ SELECT speed(tnpoint '[NPoint(1, 0.1)@2000-01-01, NPoint(1, 0.4)@2000-01-02,
 				<indexterm><primary><varname>stbox</varname></primary></indexterm>
 				<para>Construct the bounding box from a npoint and, optionally, a timestamp or a period</para>
 				<para><varname>stbox(npoint): stbox</varname></para>
-				<para><varname>stbox(npoint,{timestamptz,period}): stbox</varname></para>
+				<para><varname>stbox(npoint,{timestamptz,tstzspan}): stbox</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT stbox(npoint 'NPoint(1,0.3)');
 -- STBOX X(((48.711754,20.92568),(48.711758,20.925682)))
 SELECT stbox(npoint 'NPoint(1,0.3)', timestamptz '2000-01-01');
 -- STBOX XT(((62.786633,80.143555),(62.786636,80.143562)),[2000-01-01,2000-01-01])
-SELECT stbox(npoint 'NPoint(1,0.3)', period '[2000-01-01,2000-01-02]');
+SELECT stbox(npoint 'NPoint(1,0.3)', tstzspan '[2000-01-01,2000-01-02]');
 -- STBOX XT(((62.786633,80.143555),(62.786636,80.143562)),[2000-01-01,2000-01-02])
 </programlisting>
 			</listitem>

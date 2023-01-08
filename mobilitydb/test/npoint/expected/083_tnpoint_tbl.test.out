@@ -437,28 +437,28 @@ WHERE minusTime(temp, ts) IS NOT NULL;
   9900
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_period
+SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspan
 WHERE atTime(temp, p) IS NOT NULL;
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_period
+SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspan
 WHERE minusTime(temp, p) IS NOT NULL;
  count 
 -------
   9900
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_periodset
+SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspanset
 WHERE atTime(temp, ps) IS NOT NULL;
  count 
 -------
      3
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_periodset
+SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspanset
 WHERE minusTime(temp, ps) IS NOT NULL;
  count 
 -------
@@ -479,14 +479,14 @@ WHERE overlapsTime(temp, ts) IS NOT NULL;
   9900
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_period
+SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspan
 WHERE overlapsTime(temp, p) IS NOT NULL;
  count 
 -------
   9900
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_periodset
+SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspanset
 WHERE overlapsTime(temp, ps) IS NOT NULL;
  count 
 -------
@@ -555,13 +555,13 @@ SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, tstzset '{2001-06-01, 
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, period '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, tstzspan '[2001-06-01, 2001-07-01]');
  count 
 -------
     11
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, tstzspanset '{[2001-06-01, 2001-07-01]}');
  count 
 -------
     11
@@ -583,13 +583,13 @@ SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, tstzset '{2001-06-01, 
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, period '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, tstzspan '[2001-06-01, 2001-07-01]');
  count 
 -------
     11
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, tstzspanset '{[2001-06-01, 2001-07-01]}');
  count 
 -------
     11

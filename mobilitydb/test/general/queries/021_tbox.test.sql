@@ -72,20 +72,20 @@ SELECT COUNT(*) FROM tbl_tbox WHERE tboxFromHexWKB(asHexWKB(b)) <> b;
 -- Constructors
 -------------------------------------------------------------------------------
 
-SELECT tbox(floatspan '[1,2]', period '[2000-01-01,2000-01-02]');
+SELECT tbox(floatspan '[1,2]', tstzspan '[2000-01-01,2000-01-02]');
 SELECT tbox(floatspan '[1,2]');
-SELECT tbox(period '[2000-01-01,2000-01-02]');
+SELECT tbox(tstzspan '[2000-01-01,2000-01-02]');
 
 -------------------------------------------------------------------------------
 -- Casting
 -------------------------------------------------------------------------------
 
 SELECT tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])'::floatspan;
-SELECT tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])'::period;
+SELECT tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])'::tstzspan;
 SELECT tbox 'TBOX X([1.0, 2.0])'::floatspan;
-SELECT tbox 'TBOX X([1.0, 2.0])'::period;
+SELECT tbox 'TBOX X([1.0, 2.0])'::tstzspan;
 SELECT tbox 'TBOX T((2000-01-01,2000-01-02))'::floatspan;
-SELECT tbox 'TBOX T((2000-01-01,2000-01-02))'::period;
+SELECT tbox 'TBOX T((2000-01-01,2000-01-02))'::tstzspan;
 
 SELECT 1::tbox;
 SELECT 1.5::tbox;
@@ -94,15 +94,15 @@ SELECT floatset '{1,2}'::tbox;
 SELECT tstzset '{2000-01-01,2000-01-02}'::tbox;
 SELECT intspan '[1,2]'::tbox;
 SELECT floatspan '[1,2]'::tbox;
-SELECT period '[2000-01-01,2000-01-02]'::tbox;
+SELECT tstzspan '[2000-01-01,2000-01-02]'::tbox;
 SELECT intspanset '{[1,2]}'::tbox;
 SELECT floatspanset '{[1,2]}'::tbox;
-SELECT periodset '{[2000-01-01,2000-01-02]}'::tbox;
+SELECT tstzspanset '{[2000-01-01,2000-01-02]}'::tbox;
 
 -------------------------------------------------------------------------------
 
 SELECT ROUND(MAX(upper(b::floatspan) - lower(b::floatspan))::numeric, 6) FROM tbl_tbox;
-SELECT MAX(duration(b::period)) FROM tbl_tbox;
+SELECT MAX(duration(b::tstzspan)) FROM tbl_tbox;
 
 -------------------------------------------------------------------------------
 -- Accessor functions
@@ -160,7 +160,7 @@ SELECT tbox 'TBOX XT([1.0, 2.0],[2000-01-02, 2000-02-01])' <@ tbox 'TBOX XT([1.0
 SELECT tbox 'TBOX XT([1.0, 2.0],[2000-01-02, 2000-02-01])' -|- tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])';
 SELECT tbox 'TBOX XT([1.0, 2.0],[2000-01-02, 2000-02-01])' ~= tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])';
 
-SELECT period '[2000-01-01,2000-01-02]'::tbox -|- period '[2000-01-02, 2000-01-03]'::tbox;
+SELECT tstzspan '[2000-01-01,2000-01-02]'::tbox -|- tstzspan '[2000-01-02, 2000-01-03]'::tbox;
 
 /* Errors */
 SELECT tbox 'TBOX X([1,2])' && tbox 'TBOX T([2000-01-01,2000-01-02])';

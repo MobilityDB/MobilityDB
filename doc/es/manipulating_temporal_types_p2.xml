@@ -131,11 +131,11 @@ SELECT dynamicTimeWarpPath(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-0
 			<itemizedlist>
 				<listitem id="bucketList">
 					<indexterm><primary><varname>bucketList</varname></primary></indexterm>
-					<para>Obtener un conjunto de parejas (índice, intervalo) que cubre el rango o el período con intervalos de la misma amplitud o duración alineados con el origen &SRF;.</para>
+					<para>Obtener un conjunto de parejas (índice, span) que cubre el rango o el período con intervalos de la misma amplitud o duración alineados con el origen &SRF;.</para>
 					<para>Si el origen no se especifica, su valor se establece por defecto en 0 para los rangos y en lunes 3 de enero de 2000 para los períodos. Los índices empiezan en 1. </para>
-					<para><varname>bucketList(bounds span,width number,origin number=0): setof index_span</varname></para>
-					<para><varname>bucketList(bounds period,duration interval,origin timestamptz='2000-01-03'):</varname></para>
-					<para><varname>  setof index_period</varname></para>
+					<para><varname>bucketList(bounds unitspan,width number,origin number=0): setof index_span</varname></para>
+					<para><varname>bucketList(bounds tstzspan,duration interval,origin timestamptz='2000-01-03'):</varname></para>
+					<para><varname>  setof index_span</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT (bl).index, (bl).span
 FROM (SELECT bucketList(tint '[15@2000-01-01, 25@2000-01-10]'::intspan, 2) AS bl) t;
@@ -148,13 +148,13 @@ SELECT bucketList(tfloat '[-1@2000-01-01, -10@2000-01-10]'::floatspan, 2, -7);
 -- (2,"[-9,-7)")
 -- (3,"[-7,-5)")
 -- ...
-SELECT (bl).index, (bl).period
-FROM (SELECT bucketList(tfloat '[1@2000-01-15, 10@2000-01-25]'::period,'2 days') AS bl) t;
+SELECT (bl).index, (bl).span
+FROM (SELECT bucketList(tfloat '[1@2000-01-15, 10@2000-01-25]'::tstzspan,'2 days') AS bl) t;
 -- 1 | [2000-01-15,2000-01-17)
 -- 2 | [2000-01-17,2000-01-19)
 -- 3 | [2000-01-19,2000-01-21)
 -- ...
-SELECT bucketList(tfloat '[1@2000-01-15, 10@2000-01-25]'::period, '2 days', '2000-01-02');
+SELECT bucketList(tfloat '[1@2000-01-15, 10@2000-01-25]'::tstzspan, '2 days', '2000-01-02');
 -- (1,"[2000-01-14,2000-01-16)")
 -- (2,"[2000-01-16,2000-01-18)")
 -- (3,"[2000-01-18,2000-01-20)")
@@ -467,7 +467,7 @@ FROM (SELECT spaceTimeSplit(tgeompoint '[Point(1 1 1)@2020-03-01,
 		<para>Las funciones agregadas temporales son las siguientes:</para>
 		<itemizedlist>
 			<listitem><para>Para todos los tipos temporales, la función <varname>tcount</varname> generaliza la función traditional <varname>count</varname>. El conteo temporal se puede utilizar para calcular en cada momento el número de objetos disponibles (por ejemplo, el número de coches en un área).</para></listitem>
-			<listitem><para>Para todos los tipos temporales, la función <varname>extent</varname> devuelve un cuadro delimitador que engloba un conjunto de valores temporales. Dependiendo del tipo de base, el resultado de esta función puede ser un <varname>period</varname>, un <varname>tbox</varname> o un <varname>stbox</varname>.</para></listitem>
+			<listitem><para>Para todos los tipos temporales, la función <varname>extent</varname> devuelve un cuadro delimitador que engloba un conjunto de valores temporales. Dependiendo del tipo de base, el resultado de esta función puede ser un <varname>tstzspan</varname>, un <varname>tbox</varname> o un <varname>stbox</varname>.</para></listitem>
 			<listitem><para>Para el tipo booleano temporal, las funciones <varname>tand</varname> y <varname>tor</varname> generalizan las funciones traditionales <varname>and</varname> y <varname>or</varname>.</para></listitem>
 			<listitem><para>Para los tipos numéricos temporales hay dos tipos de funciones agregadas temporales. Las funciones <varname>tmin</varname>, <varname>tmax</varname>, <varname>tsum</varname> y <varname>tavg</varname> generalizan las funciones traditionales <varname>min</varname>, <varname>max</varname>, <varname>sum</varname> y <varname>avg</varname>. Además, las funciones <varname>wmin</varname>, <varname>wmax</varname>, <varname>wcount</varname>, <varname>wsum</varname> y <varname>wavg</varname> son versiones de ventana (o acumulativas) de las funciones tradicionales que, dado un intervalo de tiempo w, calculan el valor de la función en un instante t considerando los valores durante el intervalo [t-w, t]. Todas las funciones agregadas de ventana están disponibles para enteros temporales, mientras que para flotantes temporales sólo son significativos el mínimo y el máximo de ventana.</para></listitem>
 			<listitem><para>Para el tipo texto temporal, las funciones <varname>tmin</varname> y <varname>tmax</varname> generalizan las funciones traditionales <varname>min</varname> y <varname>max</varname>.</para></listitem>
@@ -490,7 +490,7 @@ SELECT tcount(NoEmps) FROM Department;
 			<listitem id="extent">
 				<indexterm><primary><varname>extent</varname></primary></indexterm>
 				<para>Extensión del cuadro delimitador</para>
-				<para><varname>extent(temp): {period,tbox,stbox}</varname></para>
+				<para><varname>extent(temp): {tstzspan,tbox,stbox}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT extent(noEmps) FROM Department;
 -- TBOX XT((4,12),[2001-01-01,2001-10-01])
@@ -671,7 +671,7 @@ CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 		<para>Los índices GiST y SP-GiST almacenan el cuadro delimitador para los tipos temporales. Como se explica en el <xref linkend="temporal_types" />, estos son
 			<itemizedlist>
 				<listitem>
-					<para>el tipo <varname>period</varname> para los tipos <varname>tbool</varname> y <varname>ttext</varname>,</para>
+					<para>el tipo <varname>tstzspan</varname> para los tipos <varname>tbool</varname> y <varname>ttext</varname>,</para>
 				</listitem>
 
 				<listitem>
@@ -699,7 +699,7 @@ CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 				</listitem>
 
 				<listitem>
-					<para><varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>~=</varname> y <varname>|=|</varname>, que consideran tantas dimensiones como compartan la columna indexada y el argumento de consulta. Estos operadores trabajan en cuadros delimitadores (es decir, <varname>period</varname>, <varname>tbox</varname> o <varname>stbox</varname>), no los valores completos.</para>
+					<para><varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>~=</varname> y <varname>|=|</varname>, que consideran tantas dimensiones como compartan la columna indexada y el argumento de consulta. Estos operadores trabajan en cuadros delimitadores (es decir, <varname>tstzspan</varname>, <varname>tbox</varname> o <varname>stbox</varname>), no los valores completos.</para>
 				</listitem>
 			</itemizedlist>
 		</para>
@@ -709,9 +709,9 @@ CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 SELECT * FROM Department WHERE NoEmps &amp;&amp; 5;
 SELECT * FROM Department WHERE NoEmps &amp;&amp; intspan '[1, 5)';
 SELECT * FROM Department WHERE NoEmps &amp;&amp; timestamptz '2001-04-01';
-SELECT * FROM Department WHERE NoEmps &amp;&amp; period '[2001-04-01, 2001-05-01)';
+SELECT * FROM Department WHERE NoEmps &amp;&amp; tstzspan '[2001-04-01, 2001-05-01)';
 SELECT * FROM Department WHERE NoEmps &amp;&amp;
-  tbox(intspan '[1, 5)', period '[2001-04-01, 2001-05-01)');
+  tbox(intspan '[1, 5)', tstzspan '[2001-04-01, 2001-05-01)');
 SELECT * FROM Department WHERE NoEmps &amp;&amp;
   tfloat '{[1@2001-01-01, 1@2001-02-01), [5@2001-04-01, 5@2001-05-01)}';
 </programlisting>
@@ -721,9 +721,9 @@ SELECT * FROM Department WHERE NoEmps &amp;&amp;
 			<programlisting language="sql" xml:space="preserve">
 SELECT * FROM Trips WHERE Trip &amp;&amp; geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))';
 SELECT * FROM Trips WHERE Trip &amp;&amp; timestamptz '2001-01-01';
-SELECT * FROM Trips WHERE Trip &amp;&amp; period '[2001-01-01, 2001-01-05)';
+SELECT * FROM Trips WHERE Trip &amp;&amp; tstzspan '[2001-01-01, 2001-01-05)';
 SELECT * FROM Trips WHERE Trip &amp;&amp;
-  stbox(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))', period '[2001-01-01, 2001-01-05]');
+  stbox(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))', tstzspan '[2001-01-01, 2001-01-05]');
 SELECT * FROM Trips WHERE Trip &amp;&amp;
   tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02, Point(1 1)@2001-01-05)}';
 </programlisting>
@@ -733,10 +733,10 @@ SELECT * FROM Trips WHERE Trip &amp;&amp;
 
 		<para>Para acelerar varias de las funciones en el <xref linkend="manipulating_temporal_types_p1" /> y <xref linkend="manipulating_temporal_types_p2" />, se puede agregar en la cláusula <varname>WHERE</varname> de las consultas una comparación de cuadro delimitador que hace uso de los índices disponibles. Por ejemplo, este sería típicamente el caso de las funciones que proyectan los tipos temporales a las dimensiones de valor/espacio y/o tiempo. Esto filtrará las tuplas con un índice como se muestra en la siguiente consulta.
 			<programlisting language="sql" xml:space="preserve">
-SELECT atTime(T.Trip, period(2001-01-01, 2001-01-02))
+SELECT atTime(T.Trip, tstzspan(2001-01-01, 2001-01-02))
 FROM Trips T
 -- Filtro de índice con cuadro delimitador
-WHERE T.Trip &amp;&amp; period(2001-01-01, 2001-01-02)
+WHERE T.Trip &amp;&amp; tstzspan(2001-01-01, 2001-01-02)
 </programlisting>
 		</para>
 
@@ -801,7 +801,7 @@ WHERE intersects(T.Trip, R.Geom);
 				</orderedlist>
 			</para>
 
-			<para>Las estadísticas recopiladas para columnas de los tipos de tiempo y de rango <varname>tstzset</varname>, <varname>period</varname>, <varname>periodset</varname>, <varname>intspan</varname> y <varname>floatspan</varname> replican las recopiladas por PostgreSQL para <varname>tstzrange</varname>. Esto es claro para los tipos de rango en MobilityDB, que son versiones más eficientes de los tipos de rango en PostgreSQL. Para los tipos <varname>tstzset</varname> y <varname>periodset</varname>, un valor se convierte en su período delimitador y luego se recopilan las estadísticas del tipo <varname>period</varname>.</para>
+			<para>Las estadísticas recopiladas para columnas de los tipos de tiempo y de rango <varname>tstzset</varname>, <varname>tstzspan</varname>, <varname>tstzspanset</varname>, <varname>intspan</varname> y <varname>floatspan</varname> replican las recopiladas por PostgreSQL para <varname>tstzrange</varname>. Esto es claro para los tipos de rango en MobilityDB, que son versiones más eficientes de los tipos de rango en PostgreSQL. Para los tipos <varname>tstzset</varname> y <varname>tstzspanset</varname>, un valor se convierte en su período delimitador y luego se recopilan las estadísticas del tipo <varname>tstzspan</varname>.</para>
 
 			<para>Las estadísticas recopiladas para columnas de los tipos temporales dependen del subtipo temporal y del tipo base. Además de las estadísticas (1)&#x2013;(3) que se recopilan para todos los tipos temporales, las estadísticas se recopilan para la dimensiónes de tiempo y de valor de forma independiente. Más precisamente, se recopilan las siguientes estadísticas para la dimensión de tiempo:
 				<itemizedlist>
@@ -856,7 +856,7 @@ WHERE intersects(T.Trip, R.Geom);
 
 			<para>Los operadores booleanos en PostgreSQL se pueden asociar con dos funciones de selectividad, que calculan la probabilidad de que un valor de un tipo dado coincida con un criterio dado. Estas funciones de selectividad se basan en las estadísticas recopiladas. Hay dos tipos de funciones de selectividad. Las funciones de selectividad de <emphasis>restricción</emphasis> intentan estimar el porcentaje de filas en una tabla que satisfacen una condición en la cláusula <varname>WHERE</varname> de la forma <varname>column OP constant</varname>. Por otro lado, las funciones de selectividad de <emphasis>unión</emphasis> intentan estimar el porcentaje de filas en una tabla que satisfacen una condición en la cláusula <varname>WHERE</varname> de la forma <varname>table1.column1 OP table2.column2</varname>.</para>
 
-			<para>MobilityDB define 23 clases de operadores booleanos (como<varname>=</varname>, <varname>&lt;</varname>, <varname>&amp;&amp;</varname>, <varname>&lt;&lt;</varname>, etc.), cada uno de los cuales puede tener como argumentos izquierdo o derecho un tipo PostgreSQL (como <varname>integer</varname>, <varname>timestamptz</varname>, etc.) o un tipo MobilityDB (como <varname>period</varname>, <varname>tint</varname>, etc.). Como consecuencia, existe un número muy elevado de operadores con diferentes argumentos a considerar para las funciones de selectividad. El enfoque adoptado fue agrupar estas combinaciones en clases correspondientes a las dimensiones de valor o de tiempo. Las clases corresponden al tipo de estadísticas recopiladas como se explica en la sección anterior.</para>
+			<para>MobilityDB define 23 clases de operadores booleanos (como<varname>=</varname>, <varname>&lt;</varname>, <varname>&amp;&amp;</varname>, <varname>&lt;&lt;</varname>, etc.), cada uno de los cuales puede tener como argumentos izquierdo o derecho un tipo PostgreSQL (como <varname>integer</varname>, <varname>timestamptz</varname>, etc.) o un tipo MobilityDB (como <varname>tstzspan</varname>, <varname>tint</varname>, etc.). Como consecuencia, existe un número muy elevado de operadores con diferentes argumentos a considerar para las funciones de selectividad. El enfoque adoptado fue agrupar estas combinaciones en clases correspondientes a las dimensiones de valor o de tiempo. Las clases corresponden al tipo de estadísticas recopiladas como se explica en la sección anterior.</para>
 
 			<para>MobilityDB estima la selectividad de restricción y de combinación para tipos de tiempo, de rango y temporales.</para>
 		</sect2>

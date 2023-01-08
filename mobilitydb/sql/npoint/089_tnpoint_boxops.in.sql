@@ -63,7 +63,7 @@ CREATE FUNCTION stbox(npoint, timestamptz)
   AS 'MODULE_PATHNAME', 'Npoint_timestamp_to_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION stbox(npoint, period)
+CREATE FUNCTION stbox(npoint, tstzspan)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Npoint_period_to_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -104,19 +104,19 @@ CREATE FUNCTION contains_bbox(tnpoint, tstzset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_temporal_tstzset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contains_bbox(period, tnpoint)
+CREATE FUNCTION contains_bbox(tstzspan, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contains_bbox(tnpoint, period)
+CREATE FUNCTION contains_bbox(tnpoint, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contains_bbox(periodset, tnpoint)
+CREATE FUNCTION contains_bbox(tstzspanset, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contains_bbox(tnpoint, periodset)
+CREATE FUNCTION contains_bbox(tnpoint, tstzspanset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -147,25 +147,25 @@ CREATE OPERATOR @> (
 );
 CREATE OPERATOR @> (
   PROCEDURE = contains_bbox,
-  LEFTARG = period, RIGHTARG = tnpoint,
+  LEFTARG = tstzspan, RIGHTARG = tnpoint,
   COMMUTATOR = <@,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR @> (
   PROCEDURE = contains_bbox,
-  LEFTARG = tnpoint, RIGHTARG = period,
+  LEFTARG = tnpoint, RIGHTARG = tstzspan,
   COMMUTATOR = <@,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR @> (
   PROCEDURE = contains_bbox,
-  LEFTARG = periodset, RIGHTARG = tnpoint,
+  LEFTARG = tstzspanset, RIGHTARG = tnpoint,
   COMMUTATOR = <@,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR @> (
   PROCEDURE = contains_bbox,
-  LEFTARG = tnpoint, RIGHTARG = periodset,
+  LEFTARG = tnpoint, RIGHTARG = tstzspanset,
   COMMUTATOR = <@,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
@@ -266,19 +266,19 @@ CREATE FUNCTION contained_bbox(tnpoint, tstzset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_temporal_tstzset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contained_bbox(period, tnpoint)
+CREATE FUNCTION contained_bbox(tstzspan, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contained_bbox(tnpoint, period)
+CREATE FUNCTION contained_bbox(tnpoint, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contained_bbox(periodset, tnpoint)
+CREATE FUNCTION contained_bbox(tstzspanset, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contained_bbox(tnpoint, periodset)
+CREATE FUNCTION contained_bbox(tnpoint, tstzspanset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -309,25 +309,25 @@ CREATE OPERATOR <@ (
 );
 CREATE OPERATOR <@ (
   PROCEDURE = contained_bbox,
-  LEFTARG = period, RIGHTARG = tnpoint,
+  LEFTARG = tstzspan, RIGHTARG = tnpoint,
   COMMUTATOR = @>,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR <@ (
   PROCEDURE = contained_bbox,
-  LEFTARG = tnpoint, RIGHTARG = period,
+  LEFTARG = tnpoint, RIGHTARG = tstzspan,
   COMMUTATOR = @>,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR <@ (
   PROCEDURE = contained_bbox,
-  LEFTARG = periodset, RIGHTARG = tnpoint,
+  LEFTARG = tstzspanset, RIGHTARG = tnpoint,
   COMMUTATOR = @>,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR <@ (
   PROCEDURE = contained_bbox,
-  LEFTARG = tnpoint, RIGHTARG = periodset,
+  LEFTARG = tnpoint, RIGHTARG = tstzspanset,
   COMMUTATOR = @>,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
@@ -428,19 +428,19 @@ CREATE FUNCTION overlaps_bbox(tnpoint, tstzset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_temporal_tstzset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overlaps_bbox(period, tnpoint)
+CREATE FUNCTION overlaps_bbox(tstzspan, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overlaps_bbox(tnpoint, period)
+CREATE FUNCTION overlaps_bbox(tnpoint, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overlaps_bbox(periodset, tnpoint)
+CREATE FUNCTION overlaps_bbox(tstzspanset, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overlaps_bbox(tnpoint, periodset)
+CREATE FUNCTION overlaps_bbox(tnpoint, tstzspanset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -471,25 +471,25 @@ CREATE OPERATOR && (
 );
 CREATE OPERATOR && (
   PROCEDURE = overlaps_bbox,
-  LEFTARG = period, RIGHTARG = tnpoint,
+  LEFTARG = tstzspan, RIGHTARG = tnpoint,
   COMMUTATOR = &&,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR && (
   PROCEDURE = overlaps_bbox,
-  LEFTARG = tnpoint, RIGHTARG = period,
+  LEFTARG = tnpoint, RIGHTARG = tstzspan,
   COMMUTATOR = &&,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR && (
   PROCEDURE = overlaps_bbox,
-  LEFTARG = periodset, RIGHTARG = tnpoint,
+  LEFTARG = tstzspanset, RIGHTARG = tnpoint,
   COMMUTATOR = &&,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR && (
   PROCEDURE = overlaps_bbox,
-  LEFTARG = tnpoint, RIGHTARG = periodset,
+  LEFTARG = tnpoint, RIGHTARG = tstzspanset,
   COMMUTATOR = &&,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
@@ -590,19 +590,19 @@ CREATE FUNCTION same_bbox(tnpoint, tstzset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_temporal_tstzset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION same_bbox(period, tnpoint)
+CREATE FUNCTION same_bbox(tstzspan, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION same_bbox(tnpoint, period)
+CREATE FUNCTION same_bbox(tnpoint, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION same_bbox(periodset, tnpoint)
+CREATE FUNCTION same_bbox(tstzspanset, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION same_bbox(tnpoint, periodset)
+CREATE FUNCTION same_bbox(tnpoint, tstzspanset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -633,25 +633,25 @@ CREATE OPERATOR ~= (
 );
 CREATE OPERATOR ~= (
   PROCEDURE = same_bbox,
-  LEFTARG = period, RIGHTARG = tnpoint,
+  LEFTARG = tstzspan, RIGHTARG = tnpoint,
   COMMUTATOR = ~=,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR ~= (
   PROCEDURE = same_bbox,
-  LEFTARG = tnpoint, RIGHTARG = period,
+  LEFTARG = tnpoint, RIGHTARG = tstzspan,
   COMMUTATOR = ~=,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR ~= (
   PROCEDURE = same_bbox,
-  LEFTARG = periodset, RIGHTARG = tnpoint,
+  LEFTARG = tstzspanset, RIGHTARG = tnpoint,
   COMMUTATOR = ~=,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR ~= (
   PROCEDURE = same_bbox,
-  LEFTARG = tnpoint, RIGHTARG = periodset,
+  LEFTARG = tnpoint, RIGHTARG = tstzspanset,
   COMMUTATOR = ~=,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
@@ -752,19 +752,19 @@ CREATE FUNCTION adjacent_bbox(tnpoint, tstzset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_temporal_tstzset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION adjacent_bbox(period, tnpoint)
+CREATE FUNCTION adjacent_bbox(tstzspan, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION adjacent_bbox(tnpoint, period)
+CREATE FUNCTION adjacent_bbox(tnpoint, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION adjacent_bbox(periodset, tnpoint)
+CREATE FUNCTION adjacent_bbox(tstzspanset, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION adjacent_bbox(tnpoint, periodset)
+CREATE FUNCTION adjacent_bbox(tnpoint, tstzspanset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -795,25 +795,25 @@ CREATE OPERATOR -|- (
 );
 CREATE OPERATOR -|- (
   PROCEDURE = adjacent_bbox,
-  LEFTARG = period, RIGHTARG = tnpoint,
+  LEFTARG = tstzspan, RIGHTARG = tnpoint,
   COMMUTATOR = -|-,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR -|- (
   PROCEDURE = adjacent_bbox,
-  LEFTARG = tnpoint, RIGHTARG = period,
+  LEFTARG = tnpoint, RIGHTARG = tstzspan,
   COMMUTATOR = -|-,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR -|- (
   PROCEDURE = adjacent_bbox,
-  LEFTARG = periodset, RIGHTARG = tnpoint,
+  LEFTARG = tstzspanset, RIGHTARG = tnpoint,
   COMMUTATOR = -|-,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR -|- (
   PROCEDURE = adjacent_bbox,
-  LEFTARG = tnpoint, RIGHTARG = periodset,
+  LEFTARG = tnpoint, RIGHTARG = tstzspanset,
   COMMUTATOR = -|-,
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );

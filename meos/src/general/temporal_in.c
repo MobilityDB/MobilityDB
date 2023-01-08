@@ -1086,7 +1086,7 @@ span_basevalue_from_wkb_state(wkb_parse_state *s)
     case T_FLOATSPAN:
       result = Float8GetDatum(double_from_wkb_state(s));
       break;
-    case T_PERIOD:
+    case T_TSTZSPAN:
       result = TimestampTzGetDatum(timestamp_from_wkb_state(s));
       break;
     default: /* Error! */

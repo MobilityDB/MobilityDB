@@ -48,8 +48,8 @@ CREATE FUNCTION floatspanset_in(cstring)
   RETURNS floatspanset
   AS 'MODULE_PATHNAME', 'Spanset_in'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION periodset_in(cstring)
-  RETURNS periodset
+CREATE FUNCTION tstzspanset_in(cstring)
+  RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Spanset_in'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -65,7 +65,7 @@ CREATE FUNCTION floatspanset_out(floatspanset)
   RETURNS cstring
   AS 'MODULE_PATHNAME', 'Spanset_out'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION periodset_out(periodset)
+CREATE FUNCTION tstzspanset_out(tstzspanset)
   RETURNS cstring
   AS 'MODULE_PATHNAME', 'Spanset_out'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -82,8 +82,8 @@ CREATE FUNCTION floatspanset_recv(internal)
   RETURNS floatspanset
   AS 'MODULE_PATHNAME', 'Spanset_recv'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION periodset_recv(internal)
-  RETURNS periodset
+CREATE FUNCTION tstzspanset_recv(internal)
+  RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Spanset_recv'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -99,7 +99,7 @@ CREATE FUNCTION floatspanset_send(floatspanset)
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Spanset_send'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION periodset_send(periodset)
+CREATE FUNCTION tstzspanset_send(tstzspanset)
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Spanset_send'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -116,7 +116,7 @@ CREATE FUNCTION floatspanset_analyze(internal)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Floatspanset_analyze'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION periodset_analyze(internal)
+CREATE FUNCTION tstzspanset_analyze(internal)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Periodset_analyze'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -154,15 +154,15 @@ CREATE TYPE floatspanset (
   storage = extended,
   analyze = floatspanset_analyze
 );
-CREATE TYPE periodset (
+CREATE TYPE tstzspanset (
   internallength = variable,
-  input = periodset_in,
-  output = periodset_out,
-  receive = periodset_recv,
-  send = periodset_send,
+  input = tstzspanset_in,
+  output = tstzspanset_out,
+  receive = tstzspanset_recv,
+  send = tstzspanset_send,
   alignment = double,
   storage = extended,
-  analyze = periodset_analyze
+  analyze = tstzspanset_analyze
 );
 
 -- Input/output in WKB and HexWKB format
@@ -194,12 +194,12 @@ CREATE FUNCTION floatspansetFromHexWKB(text)
   AS 'MODULE_PATHNAME', 'Spanset_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION periodsetFromBinary(bytea)
-  RETURNS periodset
+CREATE FUNCTION tstzspansetFromBinary(bytea)
+  RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Spanset_from_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION periodsetFromHexWKB(text)
-  RETURNS periodset
+CREATE FUNCTION tstzspansetFromHexWKB(text)
+  RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Spanset_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -215,7 +215,7 @@ CREATE FUNCTION asBinary(floatspanset, endianenconding text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Spanset_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asBinary(periodset, endianenconding text DEFAULT '')
+CREATE FUNCTION asBinary(tstzspanset, endianenconding text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Spanset_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -232,7 +232,7 @@ CREATE FUNCTION asHexWKB(floatspanset, endianenconding text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Spanset_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asHexWKB(periodset, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexWKB(tstzspanset, endianenconding text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Spanset_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -253,8 +253,8 @@ CREATE FUNCTION floatspanset(floatspan[])
   RETURNS floatspanset
   AS 'MODULE_PATHNAME', 'Spanset_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION periodset(period[])
-  RETURNS periodset
+CREATE FUNCTION tstzspanset(tstzspan[])
+  RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Spanset_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -274,15 +274,15 @@ CREATE FUNCTION floatspanset(floatspan)
   RETURNS floatspanset
   AS 'MODULE_PATHNAME', 'Span_to_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION periodset(period)
-  RETURNS periodset
+CREATE FUNCTION tstzspanset(tstzspan)
+  RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Span_to_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (intspan AS intspanset) WITH FUNCTION intspanset(intspan);
 CREATE CAST (bigintspan AS bigintspanset) WITH FUNCTION bigintspanset(bigintspan);
 CREATE CAST (floatspan AS floatspanset) WITH FUNCTION floatspanset(floatspan);
-CREATE CAST (period AS periodset) WITH FUNCTION periodset(period);
+CREATE CAST (tstzspan AS tstzspanset) WITH FUNCTION tstzspanset(tstzspan);
 
 CREATE FUNCTION intspan(intspanset)
   RETURNS intspan
@@ -296,15 +296,15 @@ CREATE FUNCTION floatspan(floatspanset)
   RETURNS floatspan
   AS 'MODULE_PATHNAME', 'Spanset_to_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION period(periodset)
-  RETURNS period
+CREATE FUNCTION tstzspan(tstzspanset)
+  RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Spanset_to_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (intspanset AS intspan) WITH FUNCTION intspan(intspanset);
 CREATE CAST (bigintspanset AS bigintspan) WITH FUNCTION bigintspan(bigintspanset);
 CREATE CAST (floatspanset AS floatspan) WITH FUNCTION floatspan(floatspanset);
-CREATE CAST (periodset AS period) WITH FUNCTION period(periodset);
+CREATE CAST (tstzspanset AS tstzspan) WITH FUNCTION tstzspan(tstzspanset);
 
 CREATE FUNCTION intspanset(int)
   RETURNS intspanset
@@ -318,15 +318,15 @@ CREATE FUNCTION floatspanset(float)
   RETURNS floatspanset
   AS 'MODULE_PATHNAME', 'Value_to_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION periodset(timestamptz)
-  RETURNS periodset
+CREATE FUNCTION tstzspanset(timestamptz)
+  RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Value_to_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (int AS intspanset) WITH FUNCTION intspanset(int);
 CREATE CAST (bigint AS bigintspanset) WITH FUNCTION bigintspanset(bigint);
 CREATE CAST (float AS floatspanset) WITH FUNCTION floatspanset(float);
-CREATE CAST (timestamptz AS periodset) WITH FUNCTION periodset(timestamptz);
+CREATE CAST (timestamptz AS tstzspanset) WITH FUNCTION tstzspanset(timestamptz);
 
 CREATE FUNCTION intspanset(intset)
   RETURNS intspanset
@@ -340,22 +340,22 @@ CREATE FUNCTION floatspanset(floatset)
   RETURNS floatspanset
   AS 'MODULE_PATHNAME', 'Set_to_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION periodset(tstzset)
-  RETURNS periodset
+CREATE FUNCTION tstzspanset(tstzset)
+  RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Set_to_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (intset AS intspanset) WITH FUNCTION intspanset(intset);
 CREATE CAST (bigintset AS bigintspanset) WITH FUNCTION bigintspanset(bigintset);
 CREATE CAST (floatset AS floatspanset) WITH FUNCTION floatspanset(floatset);
-CREATE CAST (tstzset AS periodset) WITH FUNCTION periodset(tstzset);
+CREATE CAST (tstzset AS tstzspanset) WITH FUNCTION tstzspanset(tstzset);
 
 #if POSTGRESQL_VERSION_NUMBER >= 140000
 CREATE FUNCTION int4multirange(intspanset)
   RETURNS int4multirange
   AS 'MODULE_PATHNAME', 'Spanset_to_multirange'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tstzmultirange(periodset)
+CREATE FUNCTION tstzmultirange(tstzspanset)
   RETURNS tstzmultirange
   AS 'MODULE_PATHNAME', 'Spanset_to_multirange'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -364,15 +364,15 @@ CREATE FUNCTION intspanset(int4multirange)
   RETURNS intspanset
   AS 'MODULE_PATHNAME', 'Multirange_to_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION periodset(tstzmultirange)
-  RETURNS periodset
+CREATE FUNCTION tstzspanset(tstzmultirange)
+  RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Multirange_to_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (intspanset AS int4multirange) WITH FUNCTION int4multirange(intspanset);
-CREATE CAST (periodset AS tstzmultirange) WITH FUNCTION tstzmultirange(periodset);
+CREATE CAST (tstzspanset AS tstzmultirange) WITH FUNCTION tstzmultirange(tstzspanset);
 CREATE CAST (int4multirange AS intspanset) WITH FUNCTION intspanset(int4multirange);
-CREATE CAST (tstzmultirange AS periodset) WITH FUNCTION periodset(tstzmultirange);
+CREATE CAST (tstzmultirange AS tstzspanset) WITH FUNCTION tstzspanset(tstzmultirange);
 #endif //POSTGRESQL_VERSION_NUMBER >= 140000
 
 /*****************************************************************************
@@ -396,18 +396,18 @@ CREATE FUNCTION shift(floatspanset, float)
   RETURNS floatspanset
   AS 'MODULE_PATHNAME', 'Spanset_shift'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION shift(periodset, interval)
-  RETURNS periodset
+CREATE FUNCTION shift(tstzspanset, interval)
+  RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Periodset_shift'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tscale(periodset, interval)
-  RETURNS periodset
+CREATE FUNCTION tscale(tstzspanset, interval)
+  RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Periodset_tscale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION shiftTscale(periodset, interval, interval)
-  RETURNS periodset
+CREATE FUNCTION shiftTscale(tstzspanset, interval, interval)
+  RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Periodset_shift_tscale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -427,7 +427,7 @@ CREATE FUNCTION memorySize(floatspanset)
   RETURNS int
   AS 'MODULE_PATHNAME', 'Spanset_memory_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION memorySize(periodset)
+CREATE FUNCTION memorySize(tstzspanset)
   RETURNS int
   AS 'MODULE_PATHNAME', 'Spanset_memory_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -444,7 +444,7 @@ CREATE FUNCTION storageSize(floatspanset)
   RETURNS int
   AS 'MODULE_PATHNAME', 'Spanset_storage_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION storageSize(periodset)
+CREATE FUNCTION storageSize(tstzspanset)
   RETURNS int
   AS 'MODULE_PATHNAME', 'Spanset_storage_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -461,7 +461,7 @@ CREATE FUNCTION lower(floatspanset)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Spanset_lower'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION lower(periodset)
+CREATE FUNCTION lower(tstzspanset)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Spanset_lower'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -478,7 +478,7 @@ CREATE FUNCTION upper(floatspanset)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Spanset_upper'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION upper(periodset)
+CREATE FUNCTION upper(tstzspanset)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Spanset_upper'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -495,7 +495,7 @@ CREATE FUNCTION lower_inc(floatspanset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_lower_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION lower_inc(periodset)
+CREATE FUNCTION lower_inc(tstzspanset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_lower_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -512,7 +512,7 @@ CREATE FUNCTION upper_inc(floatspanset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_upper_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION upper_inc(periodset)
+CREATE FUNCTION upper_inc(tstzspanset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_upper_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -530,12 +530,12 @@ CREATE FUNCTION width(floatspanset)
   AS 'MODULE_PATHNAME', 'Spanset_width'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION timespan(periodset)
+CREATE FUNCTION timespan(tstzspanset)
   RETURNS interval
   AS 'MODULE_PATHNAME', 'Periodset_timespan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION duration(periodset)
+CREATE FUNCTION duration(tstzspanset)
   RETURNS interval
   AS 'MODULE_PATHNAME', 'Periodset_duration'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -552,7 +552,7 @@ CREATE FUNCTION numSpans(floatspanset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Spanset_num_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION numPeriods(periodset)
+CREATE FUNCTION numSpans(tstzspanset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Spanset_num_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -569,8 +569,8 @@ CREATE FUNCTION startSpan(floatspanset)
   RETURNS floatspan
   AS 'MODULE_PATHNAME', 'Spanset_start_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION startPeriod(periodset)
-  RETURNS period
+CREATE FUNCTION startSpan(tstzspanset)
+  RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Spanset_start_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -586,8 +586,8 @@ CREATE FUNCTION endSpan(floatspanset)
   RETURNS floatspan
   AS 'MODULE_PATHNAME', 'Spanset_end_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION endPeriod(periodset)
-  RETURNS period
+CREATE FUNCTION endSpan(tstzspanset)
+  RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Spanset_end_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -603,8 +603,8 @@ CREATE FUNCTION spanN(floatspanset, integer)
   RETURNS floatspan
   AS 'MODULE_PATHNAME', 'Spanset_span_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION periodN(periodset, integer)
-  RETURNS period
+CREATE FUNCTION spanN(tstzspanset, integer)
+  RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Spanset_span_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -620,32 +620,32 @@ CREATE FUNCTION spans(floatspanset)
   RETURNS floatspan[]
   AS 'MODULE_PATHNAME', 'Spanset_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION periods(periodset)
-  RETURNS period[]
+CREATE FUNCTION spans(tstzspanset)
+  RETURNS tstzspan[]
   AS 'MODULE_PATHNAME', 'Spanset_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION numTimestamps(periodset)
+CREATE FUNCTION numTimestamps(tstzspanset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Periodset_num_timestamps'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION startTimestamp(periodset)
+CREATE FUNCTION startTimestamp(tstzspanset)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Periodset_start_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION endTimestamp(periodset)
+CREATE FUNCTION endTimestamp(tstzspanset)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Periodset_end_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION timestampN(periodset, integer)
+CREATE FUNCTION timestampN(tstzspanset, integer)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Periodset_timestamp_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION timestamps(periodset)
+CREATE FUNCTION timestamps(tstzspanset)
   RETURNS timestamptz[]
   AS 'MODULE_PATHNAME', 'Periodset_timestamps'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -666,7 +666,7 @@ CREATE FUNCTION floatspanset_eq(floatspanset, floatspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION periodset_eq(periodset, periodset)
+CREATE FUNCTION tstzspanset_eq(tstzspanset, tstzspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -683,7 +683,7 @@ CREATE FUNCTION floatspanset_ne(floatspanset, floatspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION periodset_ne(periodset, periodset)
+CREATE FUNCTION tstzspanset_ne(tstzspanset, tstzspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -700,7 +700,7 @@ CREATE FUNCTION floatspanset_lt(floatspanset, floatspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION periodset_lt(periodset, periodset)
+CREATE FUNCTION tstzspanset_lt(tstzspanset, tstzspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -717,7 +717,7 @@ CREATE FUNCTION floatspanset_le(floatspanset, floatspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION periodset_le(periodset, periodset)
+CREATE FUNCTION tstzspanset_le(tstzspanset, tstzspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -734,7 +734,7 @@ CREATE FUNCTION floatspanset_ge(floatspanset, floatspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION periodset_ge(periodset, periodset)
+CREATE FUNCTION tstzspanset_ge(tstzspanset, tstzspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -751,7 +751,7 @@ CREATE FUNCTION floatspanset_gt(floatspanset, floatspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION periodset_gt(periodset, periodset)
+CREATE FUNCTION tstzspanset_gt(tstzspanset, tstzspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -768,7 +768,7 @@ CREATE FUNCTION floatspanset_cmp(floatspanset, floatspanset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Spanset_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION periodset_cmp(periodset, periodset)
+CREATE FUNCTION tstzspanset_cmp(tstzspanset, tstzspanset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Spanset_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -792,8 +792,8 @@ CREATE OPERATOR = (
   RESTRICT = eqsel, JOIN = eqjoinsel
 );
 CREATE OPERATOR = (
-  LEFTARG = periodset, RIGHTARG = periodset,
-  PROCEDURE = periodset_eq,
+  LEFTARG = tstzspanset, RIGHTARG = tstzspanset,
+  PROCEDURE = tstzspanset_eq,
   COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = eqsel, JOIN = eqjoinsel
 );
@@ -817,8 +817,8 @@ CREATE OPERATOR <> (
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
 CREATE OPERATOR <> (
-  LEFTARG = periodset, RIGHTARG = periodset,
-  PROCEDURE = periodset_ne,
+  LEFTARG = tstzspanset, RIGHTARG = tstzspanset,
+  PROCEDURE = tstzspanset_ne,
   COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
@@ -842,8 +842,8 @@ CREATE OPERATOR < (
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR < (
-  LEFTARG = periodset, RIGHTARG = periodset,
-  PROCEDURE = periodset_lt,
+  LEFTARG = tstzspanset, RIGHTARG = tstzspanset,
+  PROCEDURE = tstzspanset_lt,
   COMMUTATOR = >, NEGATOR = >=,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
@@ -867,8 +867,8 @@ CREATE OPERATOR <= (
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <= (
-  LEFTARG = periodset, RIGHTARG = periodset,
-  PROCEDURE = periodset_le,
+  LEFTARG = tstzspanset, RIGHTARG = tstzspanset,
+  PROCEDURE = tstzspanset_le,
   COMMUTATOR = >=, NEGATOR = >,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
@@ -892,8 +892,8 @@ CREATE OPERATOR >= (
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR >= (
-  LEFTARG = periodset, RIGHTARG = periodset,
-  PROCEDURE = periodset_ge,
+  LEFTARG = tstzspanset, RIGHTARG = tstzspanset,
+  PROCEDURE = tstzspanset_ge,
   COMMUTATOR = <=, NEGATOR = <,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
@@ -917,8 +917,8 @@ CREATE OPERATOR > (
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR > (
-  LEFTARG = periodset, RIGHTARG = periodset,
-  PROCEDURE = periodset_gt,
+  LEFTARG = tstzspanset, RIGHTARG = tstzspanset,
+  PROCEDURE = tstzspanset_gt,
   COMMUTATOR = <, NEGATOR = <=,
   RESTRICT = period_sel, JOIN = span_joinsel
 );
@@ -947,14 +947,14 @@ CREATE OPERATOR CLASS floatspanset_ops
     OPERATOR  4  >=,
     OPERATOR  5  >,
     FUNCTION  1  floatspanset_cmp(floatspanset, floatspanset);
-CREATE OPERATOR CLASS periodset_ops
-  DEFAULT FOR TYPE periodset USING btree AS
+CREATE OPERATOR CLASS tstzspanset_ops
+  DEFAULT FOR TYPE tstzspanset USING btree AS
     OPERATOR  1  <,
     OPERATOR  2  <=,
     OPERATOR  3  =,
     OPERATOR  4  >=,
     OPERATOR  5  >,
-    FUNCTION  1  periodset_cmp(periodset, periodset);
+    FUNCTION  1  tstzspanset_cmp(tstzspanset, tstzspanset);
 
 /******************************************************************************/
 
@@ -970,7 +970,7 @@ CREATE FUNCTION floatspanset_hash(floatspanset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Spanset_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION periodset_hash(periodset)
+CREATE FUNCTION tstzspanset_hash(tstzspanset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Spanset_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -987,7 +987,7 @@ CREATE FUNCTION floatspanset_hash_extended(floatspanset, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Spanset_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION periodset_hash_extended(periodset, bigint)
+CREATE FUNCTION tstzspanset_hash_extended(tstzspanset, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Spanset_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -1007,11 +1007,11 @@ CREATE OPERATOR CLASS floatspanset_hash_ops
     OPERATOR    1   = ,
     FUNCTION    1   floatspanset_hash(floatspanset),
     FUNCTION    2   floatspanset_hash_extended(floatspanset, bigint);
-CREATE OPERATOR CLASS periodset_hash_ops
-  DEFAULT FOR TYPE periodset USING hash AS
+CREATE OPERATOR CLASS tstzspanset_hash_ops
+  DEFAULT FOR TYPE tstzspanset USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   periodset_hash(periodset),
-    FUNCTION    2   periodset_hash_extended(periodset, bigint);
+    FUNCTION    1   tstzspanset_hash(tstzspanset),
+    FUNCTION    2   tstzspanset_hash_extended(tstzspanset, bigint);
 
 
 /******************************************************************************/

@@ -106,19 +106,19 @@ temporal_cachedop(Oid operid, CachedOp *cachedOp)
         operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TTEXT) ||
         operid == oper_oid((CachedOp) i, T_TSTZSET, T_TBOOL) ||
         operid == oper_oid((CachedOp) i, T_TSTZSET, T_TTEXT) ||
-        operid == oper_oid((CachedOp) i, T_PERIOD, T_TBOOL) ||
-        operid == oper_oid((CachedOp) i, T_PERIOD, T_TTEXT) ||
-        operid == oper_oid((CachedOp) i, T_PERIODSET, T_TBOOL) ||
-        operid == oper_oid((CachedOp) i, T_PERIODSET, T_TTEXT) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSPAN, T_TBOOL) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSPAN, T_TTEXT) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSPANSET, T_TBOOL) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSPANSET, T_TTEXT) ||
         operid == oper_oid((CachedOp) i, T_TBOOL, T_TIMESTAMPTZ) ||
         operid == oper_oid((CachedOp) i, T_TBOOL, T_TSTZSET) ||
-        operid == oper_oid((CachedOp) i, T_TBOOL, T_PERIOD) ||
-        operid == oper_oid((CachedOp) i, T_TBOOL, T_PERIODSET) ||
+        operid == oper_oid((CachedOp) i, T_TBOOL, T_TSTZSPAN) ||
+        operid == oper_oid((CachedOp) i, T_TBOOL, T_TSTZSPANSET) ||
         operid == oper_oid((CachedOp) i, T_TBOOL, T_TBOOL) ||
         operid == oper_oid((CachedOp) i, T_TTEXT, T_TIMESTAMPTZ) ||
         operid == oper_oid((CachedOp) i, T_TTEXT, T_TSTZSET) ||
-        operid == oper_oid((CachedOp) i, T_TTEXT, T_PERIOD) ||
-        operid == oper_oid((CachedOp) i, T_TTEXT, T_PERIODSET) ||
+        operid == oper_oid((CachedOp) i, T_TTEXT, T_TSTZSPAN) ||
+        operid == oper_oid((CachedOp) i, T_TTEXT, T_TSTZSPANSET) ||
         operid == oper_oid((CachedOp) i, T_TTEXT, T_TTEXT))
       {
         *cachedOp = (CachedOp) i;
@@ -197,7 +197,7 @@ temporal_sel_period(VariableStatData *vardata, Span *period,
    */
   if (cachedOp == SAME_OP)
   {
-    Oid operid = oper_oid(EQ_OP, T_PERIOD, T_PERIOD);
+    Oid operid = oper_oid(EQ_OP, T_TSTZSPAN, T_TSTZSPAN);
 #if POSTGRESQL_VERSION_NUMBER < 130000
     selec = var_eq_const(vardata, operid, SpanPGetDatum(period),
       false, false, false);

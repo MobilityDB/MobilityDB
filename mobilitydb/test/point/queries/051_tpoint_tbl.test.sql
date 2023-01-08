@@ -195,10 +195,10 @@ SELECT MAX(timespan(getTime(temp))) FROM tbl_tgeogpoint;
 SELECT MAX(timespan(getTime(temp))) FROM tbl_tgeompoint3D;
 SELECT MAX(timespan(getTime(temp))) FROM tbl_tgeogpoint3D;
 
-SELECT MAX(duration(period(temp))) FROM tbl_tgeompoint;
-SELECT MAX(duration(period(temp))) FROM tbl_tgeogpoint;
-SELECT MAX(duration(period(temp))) FROM tbl_tgeompoint3D;
-SELECT MAX(duration(period(temp))) FROM tbl_tgeogpoint3D;
+SELECT MAX(duration(tstzspan(temp))) FROM tbl_tgeompoint;
+SELECT MAX(duration(tstzspan(temp))) FROM tbl_tgeogpoint;
+SELECT MAX(duration(tstzspan(temp))) FROM tbl_tgeompoint3D;
+SELECT MAX(duration(tstzspan(temp))) FROM tbl_tgeogpoint3D;
 
 SELECT MAX(timespan(temp)) FROM tbl_tgeompoint;
 SELECT MAX(timespan(temp)) FROM tbl_tgeogpoint;
@@ -371,15 +371,15 @@ SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzset WHERE temp != merge(atTime(temp
 SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzset WHERE temp != merge(atTime(temp, ts), minusTime(temp, ts));
 SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzset WHERE temp != merge(atTime(temp, ts), minusTime(temp, ts));
 
-SELECT COUNT(*) FROM tbl_tgeompoint, tbl_period WHERE temp != merge(atTime(temp, p), minusTime(temp, p));
-SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_period WHERE temp != merge(atTime(temp, p), minusTime(temp, p));
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_period WHERE temp != merge(atTime(temp, p), minusTime(temp, p));
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_period WHERE temp != merge(atTime(temp, p), minusTime(temp, p));
+SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspan WHERE temp != merge(atTime(temp, p), minusTime(temp, p));
+SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspan WHERE temp != merge(atTime(temp, p), minusTime(temp, p));
+SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzspan WHERE temp != merge(atTime(temp, p), minusTime(temp, p));
+SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspan WHERE temp != merge(atTime(temp, p), minusTime(temp, p));
 
-SELECT COUNT(*) FROM tbl_tgeompoint, tbl_periodset WHERE temp != merge(atTime(temp, ps), minusTime(temp, ps));
-SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp != merge(atTime(temp, ps), minusTime(temp, ps));
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_periodset WHERE temp != merge(atTime(temp, ps), minusTime(temp, ps));
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_periodset WHERE temp != merge(atTime(temp, ps), minusTime(temp, ps));
+SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp != merge(atTime(temp, ps), minusTime(temp, ps));
+SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp != merge(atTime(temp, ps), minusTime(temp, ps));
+SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzspanset WHERE temp != merge(atTime(temp, ps), minusTime(temp, ps));
+SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspanset WHERE temp != merge(atTime(temp, ps), minusTime(temp, ps));
 
 -------------------------------------------------------------------------------
 -- Modification functions
@@ -411,22 +411,22 @@ WHERE overlapsTime(temp, ts) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzset
 WHERE overlapsTime(temp, ts) IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_tgeompoint, tbl_period
+SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspan
 WHERE overlapsTime(temp, p) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_period
+SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspan
 WHERE overlapsTime(temp, p) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_period
+SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzspan
 WHERE overlapsTime(temp, p) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_period
+SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspan
 WHERE overlapsTime(temp, p) IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_tgeompoint, tbl_periodset
+SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset
 WHERE overlapsTime(temp, ps) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_periodset
+SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset
 WHERE overlapsTime(temp, ps) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_periodset
+SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzspanset
 WHERE overlapsTime(temp, ps) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_periodset
+SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspanset
 WHERE overlapsTime(temp, ps) IS NOT NULL;
 
 SELECT MAX(st_memsize(twCentroid(temp))) FROM tbl_tgeompoint;
@@ -508,11 +508,11 @@ SELECT COUNT(*) FROM tbl_tgeogpoint WHERE overlapsTime(temp, timestamptz '2001-0
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE overlapsTime(temp, tstzset '{2001-06-01, 2001-07-01}');
 SELECT COUNT(*) FROM tbl_tgeogpoint WHERE overlapsTime(temp, tstzset '{2001-06-01, 2001-07-01}');
 
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE overlapsTime(temp, period '[2001-06-01, 2001-07-01]');
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE overlapsTime(temp, period '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE overlapsTime(temp, tstzspan '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE overlapsTime(temp, tstzspan '[2001-06-01, 2001-07-01]');
 
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE overlapsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE overlapsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE overlapsTime(temp, tstzspanset '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE overlapsTime(temp, tstzspanset '{[2001-06-01, 2001-07-01]}');
 
 DROP INDEX tbl_tgeompoint_rtree_idx;
 DROP INDEX tbl_tgeogpoint_rtree_idx;
@@ -537,11 +537,11 @@ SELECT COUNT(*) FROM tbl_tgeogpoint WHERE overlapsTime(temp, timestamptz '2001-0
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE overlapsTime(temp, tstzset '{2001-06-01, 2001-07-01}');
 SELECT COUNT(*) FROM tbl_tgeogpoint WHERE overlapsTime(temp, tstzset '{2001-06-01, 2001-07-01}');
 
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE overlapsTime(temp, period '[2001-06-01, 2001-07-01]');
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE overlapsTime(temp, period '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE overlapsTime(temp, tstzspan '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE overlapsTime(temp, tstzspan '[2001-06-01, 2001-07-01]');
 
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE overlapsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE overlapsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE overlapsTime(temp, tstzspanset '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE overlapsTime(temp, tstzspanset '{[2001-06-01, 2001-07-01]}');
 
 DROP INDEX tbl_tgeompoint_quadtree_idx;
 DROP INDEX tbl_tgeogpoint_quadtree_idx;

@@ -94,7 +94,7 @@ spantype_cache_struct _spantype_cache[] =
   {T_INTSPAN,       T_INT4},
   {T_BIGINTSPAN,    T_INT8},
   {T_FLOATSPAN,     T_FLOAT8},
-  {T_PERIOD,        T_TIMESTAMPTZ},
+  {T_TSTZSPAN,      T_TIMESTAMPTZ},
 };
 
 /**
@@ -107,7 +107,7 @@ spansettype_cache_struct _spansettype_cache[] =
   {T_INTSPANSET,    T_INTSPAN},
   {T_BIGINTSPANSET, T_BIGINTSPAN},
   {T_FLOATSPANSET,  T_FLOATSPAN},
-  {T_PERIODSET,     T_PERIOD},
+  {T_TSTZSPANSET,   T_TSTZSPAN},
 };
 
 /*****************************************************************************
@@ -239,7 +239,7 @@ bool
 time_type(meosType timetype)
 {
   if (timetype == T_TIMESTAMPTZ || timetype == T_TSTZSET ||
-    timetype == T_PERIOD || timetype == T_PERIODSET)
+    timetype == T_TSTZSPAN || timetype == T_TSTZSPANSET)
     return true;
   return false;
 }
@@ -383,7 +383,7 @@ geoset_type(meosType settype)
 bool
 span_type(meosType spantype)
 {
-  if (spantype == T_PERIOD || spantype == T_INTSPAN ||
+  if (spantype == T_TSTZSPAN || spantype == T_INTSPAN ||
       spantype == T_BIGINTSPAN || spantype == T_FLOATSPAN)
     return true;
   return false;
@@ -480,7 +480,7 @@ ensure_numspan_basetype(meosType basetype)
 bool
 spanset_type(meosType spansettype)
 {
-  if (spansettype == T_PERIODSET || spansettype == T_INTSPANSET ||
+  if (spansettype == T_TSTZSPANSET || spansettype == T_INTSPANSET ||
       spansettype == T_BIGINTSPANSET || spansettype == T_FLOATSPANSET)
     return true;
   return false;

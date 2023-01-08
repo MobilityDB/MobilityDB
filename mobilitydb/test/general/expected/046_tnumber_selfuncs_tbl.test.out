@@ -610,13 +610,13 @@ SELECT COUNT(*) FROM tbl_tbool WHERE temp && tstzset '{2001-06-01, 2001-07-07}';
     12
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp && period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp && tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
     11
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp && periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp && tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
     11
@@ -706,13 +706,13 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp && tstzset '{2001-06-01, 2001-07-07}';
      9
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp && period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp && tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
      9
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp && periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp && tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
      9
@@ -802,13 +802,13 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp && tstzset '{2001-06-01, 2001-07-07}'
      7
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp && period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp && tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
      6
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp && periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp && tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
      6
@@ -850,13 +850,13 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp && tstzset '{2001-06-01, 2001-07-07}';
      7
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp && period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp && tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
      4
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp && periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp && tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
      4
@@ -898,13 +898,13 @@ SELECT COUNT(*) FROM tbl_tbool WHERE temp @> tstzset '{2001-06-01, 2001-07-07}';
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp @> period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp @> tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp @> periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp @> tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
      0
@@ -994,13 +994,13 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp @> tstzset '{2001-06-01, 2001-07-07}';
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp @> period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp @> tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp @> periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp @> tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
      0
@@ -1090,13 +1090,13 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp @> tstzset '{2001-06-01, 2001-07-07}'
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp @> period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp @> tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp @> periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp @> tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
      0
@@ -1138,13 +1138,13 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp @> tstzset '{2001-06-01, 2001-07-07}';
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp @> period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp @> tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp @> periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp @> tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
      0
@@ -1186,13 +1186,13 @@ SELECT COUNT(*) FROM tbl_tbool WHERE temp <@ tstzset '{2001-06-01, 2001-07-07}';
     12
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp <@ period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp <@ tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
     11
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp <@ periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp <@ tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
     11
@@ -1282,13 +1282,13 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp <@ tstzset '{2001-06-01, 2001-07-07}';
      9
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <@ period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <@ tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
      9
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <@ periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <@ tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
      9
@@ -1378,13 +1378,13 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp <@ tstzset '{2001-06-01, 2001-07-07}'
      7
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <@ period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <@ tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
      6
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <@ periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <@ tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
      6
@@ -1426,13 +1426,13 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp <@ tstzset '{2001-06-01, 2001-07-07}';
      7
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp <@ period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp <@ tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
      4
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp <@ periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp <@ tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
      4
@@ -1474,13 +1474,13 @@ SELECT COUNT(*) FROM tbl_tbool WHERE temp ~= tstzset '{2001-06-01, 2001-07-07}';
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp ~= period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp ~= tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp ~= periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp ~= tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
      0
@@ -1570,13 +1570,13 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp ~= tstzset '{2001-06-01, 2001-07-07}';
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp ~= period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp ~= tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp ~= periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp ~= tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
      0
@@ -1666,13 +1666,13 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp ~= tstzset '{2001-06-01, 2001-07-07}'
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp ~= period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp ~= tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp ~= periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp ~= tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
      0
@@ -1714,13 +1714,13 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp ~= tstzset '{2001-06-01, 2001-07-07}';
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp ~= period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp ~= tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp ~= periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp ~= tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
      0
@@ -1762,13 +1762,13 @@ SELECT COUNT(*) FROM tbl_tbool WHERE temp -|- tstzset '{2001-06-01, 2001-07-07}'
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp -|- period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp -|- tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp -|- periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp -|- tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
      0
@@ -1858,13 +1858,13 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp -|- tstzset '{2001-06-01, 2001-07-07}';
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp -|- period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp -|- tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp -|- periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp -|- tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
      0
@@ -1954,13 +1954,13 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp -|- tstzset '{2001-06-01, 2001-07-07}
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp -|- period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp -|- tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp -|- periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp -|- tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
      0
@@ -2002,13 +2002,13 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp -|- tstzset '{2001-06-01, 2001-07-07}'
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp -|- period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp -|- tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp -|- periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp -|- tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
      0
@@ -2626,13 +2626,13 @@ SELECT COUNT(*) FROM tbl_tbool WHERE temp <<# tstzset '{2001-06-01, 2001-07-07}'
     43
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp <<# period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp <<# tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
     43
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp <<# periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp <<# tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
     43
@@ -2704,13 +2704,13 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp <<# tstzset '{2001-06-01, 2001-07-07}';
     40
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <<# period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <<# tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
     40
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <<# periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <<# tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
     40
@@ -2782,13 +2782,13 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp <<# tstzset '{2001-06-01, 2001-07-07}
     43
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <<# period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <<# tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
     43
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <<# periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <<# tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
     43
@@ -2830,13 +2830,13 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp <<# tstzset '{2001-06-01, 2001-07-07}'
     38
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp <<# period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp <<# tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
     38
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp <<# periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp <<# tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
     38
@@ -2890,13 +2890,13 @@ SELECT COUNT(*) FROM tbl_tbool WHERE temp &<# tstzset '{2001-06-01, 2001-07-07}'
     55
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp &<# period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp &<# tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
     54
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp &<# periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp &<# tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
     54
@@ -2968,13 +2968,13 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp &<# tstzset '{2001-06-01, 2001-07-07}';
     49
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp &<# period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp &<# tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
     49
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp &<# periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp &<# tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
     49
@@ -3046,13 +3046,13 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp &<# tstzset '{2001-06-01, 2001-07-07}
     50
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp &<# period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp &<# tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
     49
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp &<# periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp &<# tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
     49
@@ -3094,13 +3094,13 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp &<# tstzset '{2001-06-01, 2001-07-07}'
     45
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp &<# period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp &<# tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
     42
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp &<# periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp &<# tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
     42
@@ -3142,13 +3142,13 @@ SELECT COUNT(*) FROM tbl_tbool WHERE temp #>> tstzset '{2001-06-01, 2001-07-07}'
     41
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp #>> period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp #>> tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
     42
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp #>> periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp #>> tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
     42
@@ -3220,13 +3220,13 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp #>> tstzset '{2001-06-01, 2001-07-07}';
     47
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp #>> period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp #>> tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
     47
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp #>> periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp #>> tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
     47
@@ -3298,13 +3298,13 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp #>> tstzset '{2001-06-01, 2001-07-07}
     46
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp #>> period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp #>> tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
     47
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp #>> periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp #>> tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
     47
@@ -3346,13 +3346,13 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp #>> tstzset '{2001-06-01, 2001-07-07}'
     51
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp #>> period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp #>> tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
     54
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp #>> periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp #>> tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
     54
@@ -3394,13 +3394,13 @@ SELECT COUNT(*) FROM tbl_tbool WHERE temp #&> tstzset '{2001-06-01, 2001-07-07}'
     53
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp #&> period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp #&> tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
     53
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp #&> periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp #&> tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
     53
@@ -3472,13 +3472,13 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp #&> tstzset '{2001-06-01, 2001-07-07}';
     56
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp #&> period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp #&> tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
     56
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp #&> periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp #&> tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
     56
@@ -3550,13 +3550,13 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp #&> tstzset '{2001-06-01, 2001-07-07}
     53
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp #&> period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp #&> tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
     53
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp #&> periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp #&> tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
     53
@@ -3598,25 +3598,25 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp #&> tstzset '{2001-06-01, 2001-07-07}'
     58
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp #&> period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp #&> tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
     58
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp #&> periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp #&> tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
     58
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE period '[2001-01-01, 2001-06-01]' <<# temp;
+SELECT COUNT(*) FROM tbl_tbool WHERE tstzspan '[2001-01-01, 2001-06-01]' <<# temp;
  count 
 -------
     53
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE period '[2001-01-01, 2001-06-01]' <<# temp;
+SELECT COUNT(*) FROM tbl_ttext WHERE tstzspan '[2001-01-01, 2001-06-01]' <<# temp;
  count 
 -------
     58
@@ -4242,13 +4242,13 @@ SELECT COUNT(*) FROM tbl_tbool WHERE temp && tstzset '{2001-06-01, 2001-07-07}';
     12
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp && period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp && tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
     11
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp && periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp && tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
     11
@@ -4338,13 +4338,13 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp && tstzset '{2001-06-01, 2001-07-07}';
      9
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp && period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp && tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
      9
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp && periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp && tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
      9
@@ -4434,13 +4434,13 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp && tstzset '{2001-06-01, 2001-07-07}'
      7
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp && period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp && tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
      6
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp && periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp && tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
      6
@@ -4482,13 +4482,13 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp && tstzset '{2001-06-01, 2001-07-07}';
      7
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp && period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp && tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
      4
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp && periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp && tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
      4
@@ -4530,13 +4530,13 @@ SELECT COUNT(*) FROM tbl_tbool WHERE temp @> tstzset '{2001-06-01, 2001-07-07}';
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp @> period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp @> tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp @> periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp @> tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
      0
@@ -4626,13 +4626,13 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp @> tstzset '{2001-06-01, 2001-07-07}';
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp @> period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp @> tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp @> periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp @> tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
      0
@@ -4722,13 +4722,13 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp @> tstzset '{2001-06-01, 2001-07-07}'
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp @> period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp @> tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp @> periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp @> tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
      0
@@ -4770,13 +4770,13 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp @> tstzset '{2001-06-01, 2001-07-07}';
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp @> period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp @> tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp @> periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp @> tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
      0
@@ -4818,13 +4818,13 @@ SELECT COUNT(*) FROM tbl_tbool WHERE temp <@ tstzset '{2001-06-01, 2001-07-07}';
     12
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp <@ period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp <@ tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
     11
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp <@ periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp <@ tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
     11
@@ -4914,13 +4914,13 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp <@ tstzset '{2001-06-01, 2001-07-07}';
      9
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <@ period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <@ tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
      9
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <@ periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <@ tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
      9
@@ -5010,13 +5010,13 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp <@ tstzset '{2001-06-01, 2001-07-07}'
      7
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <@ period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <@ tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
      6
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <@ periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <@ tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
      6
@@ -5058,13 +5058,13 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp <@ tstzset '{2001-06-01, 2001-07-07}';
      7
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp <@ period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp <@ tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
      4
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp <@ periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp <@ tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
      4
@@ -5106,13 +5106,13 @@ SELECT COUNT(*) FROM tbl_tbool WHERE temp ~= tstzset '{2001-06-01, 2001-07-07}';
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp ~= period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp ~= tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp ~= periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp ~= tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
      0
@@ -5202,13 +5202,13 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp ~= tstzset '{2001-06-01, 2001-07-07}';
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp ~= period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp ~= tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp ~= periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp ~= tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
      0
@@ -5298,13 +5298,13 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp ~= tstzset '{2001-06-01, 2001-07-07}'
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp ~= period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp ~= tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp ~= periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp ~= tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
      0
@@ -5346,13 +5346,13 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp ~= tstzset '{2001-06-01, 2001-07-07}';
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp ~= period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp ~= tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp ~= periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp ~= tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
      0
@@ -5394,13 +5394,13 @@ SELECT COUNT(*) FROM tbl_tbool WHERE temp -|- tstzset '{2001-06-01, 2001-07-07}'
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp -|- period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp -|- tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp -|- periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp -|- tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
      0
@@ -5490,13 +5490,13 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp -|- tstzset '{2001-06-01, 2001-07-07}';
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp -|- period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp -|- tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp -|- periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp -|- tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
      0
@@ -5586,13 +5586,13 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp -|- tstzset '{2001-06-01, 2001-07-07}
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp -|- period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp -|- tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp -|- periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp -|- tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
      0
@@ -5634,13 +5634,13 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp -|- tstzset '{2001-06-01, 2001-07-07}'
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp -|- period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp -|- tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp -|- periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp -|- tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
      0
@@ -6258,13 +6258,13 @@ SELECT COUNT(*) FROM tbl_tbool WHERE temp <<# tstzset '{2001-06-01, 2001-07-07}'
     43
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp <<# period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp <<# tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
     43
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp <<# periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp <<# tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
     43
@@ -6336,13 +6336,13 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp <<# tstzset '{2001-06-01, 2001-07-07}';
     40
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <<# period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <<# tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
     40
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp <<# periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp <<# tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
     40
@@ -6414,13 +6414,13 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp <<# tstzset '{2001-06-01, 2001-07-07}
     43
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <<# period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <<# tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
     43
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp <<# periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp <<# tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
     43
@@ -6462,13 +6462,13 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp <<# tstzset '{2001-06-01, 2001-07-07}'
     38
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp <<# period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp <<# tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
     38
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp <<# periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp <<# tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
     38
@@ -6522,13 +6522,13 @@ SELECT COUNT(*) FROM tbl_tbool WHERE temp &<# tstzset '{2001-06-01, 2001-07-07}'
     55
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp &<# period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp &<# tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
     54
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp &<# periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp &<# tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
     54
@@ -6600,13 +6600,13 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp &<# tstzset '{2001-06-01, 2001-07-07}';
     49
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp &<# period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp &<# tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
     49
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp &<# periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp &<# tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
     49
@@ -6678,13 +6678,13 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp &<# tstzset '{2001-06-01, 2001-07-07}
     50
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp &<# period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp &<# tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
     49
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp &<# periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp &<# tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
     49
@@ -6726,13 +6726,13 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp &<# tstzset '{2001-06-01, 2001-07-07}'
     45
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp &<# period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp &<# tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
     42
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp &<# periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp &<# tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
     42
@@ -6774,13 +6774,13 @@ SELECT COUNT(*) FROM tbl_tbool WHERE temp #>> tstzset '{2001-06-01, 2001-07-07}'
     41
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp #>> period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp #>> tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
     42
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp #>> periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp #>> tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
     42
@@ -6852,13 +6852,13 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp #>> tstzset '{2001-06-01, 2001-07-07}';
     47
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp #>> period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp #>> tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
     47
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp #>> periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp #>> tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
     47
@@ -6930,13 +6930,13 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp #>> tstzset '{2001-06-01, 2001-07-07}
     46
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp #>> period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp #>> tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
     47
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp #>> periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp #>> tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
     47
@@ -6978,13 +6978,13 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp #>> tstzset '{2001-06-01, 2001-07-07}'
     51
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp #>> period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp #>> tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
     54
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp #>> periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp #>> tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
     54
@@ -7026,13 +7026,13 @@ SELECT COUNT(*) FROM tbl_tbool WHERE temp #&> tstzset '{2001-06-01, 2001-07-07}'
     53
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp #&> period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp #&> tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
     53
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp #&> periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tbool WHERE temp #&> tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
     53
@@ -7104,13 +7104,13 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp #&> tstzset '{2001-06-01, 2001-07-07}';
     56
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp #&> period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tint WHERE temp #&> tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
     56
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp #&> periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tint WHERE temp #&> tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
     56
@@ -7182,13 +7182,13 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE temp #&> tstzset '{2001-06-01, 2001-07-07}
     53
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp #&> period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp #&> tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
     53
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp #&> periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp #&> tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
     53
@@ -7230,25 +7230,25 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp #&> tstzset '{2001-06-01, 2001-07-07}'
     58
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp #&> period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp #&> tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
     58
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp #&> periodset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_ttext WHERE temp #&> tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
     58
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE period '[2001-01-01, 2001-06-01]' <<# temp;
+SELECT COUNT(*) FROM tbl_tbool WHERE tstzspan '[2001-01-01, 2001-06-01]' <<# temp;
  count 
 -------
     53
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE period '[2001-01-01, 2001-06-01]' <<# temp;
+SELECT COUNT(*) FROM tbl_ttext WHERE tstzspan '[2001-01-01, 2001-06-01]' <<# temp;
  count 
 -------
     58

@@ -135,20 +135,20 @@ time_cachedop(Oid operid, CachedOp *cachedOp)
   for (int i = EQ_OP; i <= OVERAFTER_OP; i++)
   {
     if (operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TSTZSET) ||
-        operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_PERIOD) ||
-        operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_PERIODSET) ||
+        operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TSTZSPAN) ||
+        operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TSTZSPANSET) ||
         operid == oper_oid((CachedOp) i, T_TSTZSET, T_TIMESTAMPTZ) ||
         operid == oper_oid((CachedOp) i, T_TSTZSET, T_TSTZSET) ||
-        operid == oper_oid((CachedOp) i, T_TSTZSET, T_PERIOD) ||
-        operid == oper_oid((CachedOp) i, T_TSTZSET, T_PERIODSET) ||
-        operid == oper_oid((CachedOp) i, T_PERIOD, T_TIMESTAMPTZ) ||
-        operid == oper_oid((CachedOp) i, T_PERIOD, T_TSTZSET) ||
-        operid == oper_oid((CachedOp) i, T_PERIOD, T_PERIOD) ||
-        operid == oper_oid((CachedOp) i, T_PERIOD, T_PERIODSET) ||
-        operid == oper_oid((CachedOp) i, T_PERIODSET, T_TIMESTAMPTZ) ||
-        operid == oper_oid((CachedOp) i, T_PERIODSET, T_TSTZSET) ||
-        operid == oper_oid((CachedOp) i, T_PERIODSET, T_PERIOD) ||
-        operid == oper_oid((CachedOp) i, T_PERIODSET, T_PERIODSET))
+        operid == oper_oid((CachedOp) i, T_TSTZSET, T_TSTZSPAN) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSET, T_TSTZSPANSET) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSPAN, T_TIMESTAMPTZ) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSPAN, T_TSTZSET) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSPAN, T_TSTZSPAN) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSPAN, T_TSTZSPANSET) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSPANSET, T_TIMESTAMPTZ) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSPANSET, T_TSTZSET) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSPANSET, T_TSTZSPAN) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSPANSET, T_TSTZSPANSET))
       {
         *cachedOp = (CachedOp) i;
         return true;
@@ -867,13 +867,13 @@ time_const_to_period(Node *other, Span *period)
     const Set *ts = DatumGetSetP(((Const *) other)->constvalue);
     set_set_span(ts, period);
   }
-  else if (timetype == T_PERIOD)
+  else if (timetype == T_TSTZSPAN)
   {
     /* Just copy the value */
     p = DatumGetSpanP(((Const *) other)->constvalue);
     memcpy(period, p, sizeof(Span));
   }
-  else /* timetype == T_PERIODSET */
+  else /* timetype == T_TSTZSPANSET */
   {
     /* The right argument is a PeriodSet constant. We convert it into
      * its bounding period. */
@@ -1615,7 +1615,7 @@ _mobdb_span_joinsel(PG_FUNCTION_ARGS)
   meosType atttype2 = oid_type(get_atttype(table1_oid, att1_num));
 
   /* Determine whether we target the value or the time dimension */
-  bool value = (atttype1 != T_PERIOD && atttype2 != T_PERIOD);
+  bool value = (atttype1 != T_TSTZSPAN && atttype2 != T_TSTZSPAN);
 
   CachedOp cachedOp;
   bool found = value ?

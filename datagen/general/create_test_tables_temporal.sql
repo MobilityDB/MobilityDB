@@ -256,8 +256,8 @@ FROM generate_series(1, perc) AS k UNION
 SELECT k, random_floatspan(1, 100, 10, 5)
 FROM generate_series(perc+1, size) AS k;
 
-DROP TABLE IF EXISTS tbl_period;
-CREATE TABLE tbl_period AS
+DROP TABLE IF EXISTS tbl_tstzspan;
+CREATE TABLE tbl_tstzspan AS
 /* Add perc NULL values */
 SELECT k, NULL AS p
 FROM generate_series(1, perc) AS k UNION
@@ -290,8 +290,8 @@ FROM generate_series(1, perc) AS k UNION
 SELECT k, random_floatspanset(1, 100, 10, 5, 10)
 FROM generate_series(perc+1, size) AS k;
 
-DROP TABLE IF EXISTS tbl_periodset;
-CREATE TABLE tbl_periodset AS
+DROP TABLE IF EXISTS tbl_tstzspanset;
+CREATE TABLE tbl_tstzspanset AS
 /* Add perc NULL values */
 SELECT k, NULL AS ps
 FROM generate_series(1, perc) AS k UNION

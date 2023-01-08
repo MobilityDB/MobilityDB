@@ -97,7 +97,7 @@ CREATE FUNCTION asHexWKB(stbox, endianenconding text DEFAULT '')
 
 /* The names of the SQL and C functions are different, otherwise there is
  * ambiguity and explicit casting of the arguments to timestamptz is needed */
-CREATE FUNCTION stbox_t(period)
+CREATE FUNCTION stbox_t(tstzspan)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_constructor_t'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -113,21 +113,21 @@ CREATE FUNCTION stbox_z(float8, float8, float8, float8, float8, float8,
   AS 'MODULE_PATHNAME', 'Stbox_constructor_z'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION stbox_t(float8, float8, float8, float8, period,
+CREATE FUNCTION stbox_t(float8, float8, float8, float8, tstzspan,
     srid int DEFAULT 0)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_constructor_t'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION stbox_zt(float8, float8, float8, float8, float8, float8,
-    period, srid int DEFAULT 0)
+    tstzspan, srid int DEFAULT 0)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_constructor_zt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /* The names of the SQL and C functions are different, otherwise there is
  * ambiguity and explicit casting of the arguments to ::timestamptz is needed */
-CREATE FUNCTION geodstbox_t(period)
+CREATE FUNCTION geodstbox_t(tstzspan)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Geodstbox_constructor_t'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -139,7 +139,7 @@ CREATE FUNCTION geodstbox_z(float8, float8, float8, float8, float8, float8,
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION geodstbox_zt(float8, float8, float8, float8, float8, float8,
-    period, srid int DEFAULT 4326)
+    tstzspan, srid int DEFAULT 4326)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Geodstbox_constructor_zt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -164,11 +164,11 @@ CREATE FUNCTION stbox(tstzset)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Tstzset_to_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stbox(period)
+CREATE FUNCTION stbox(tstzspan)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Period_to_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stbox(periodset)
+CREATE FUNCTION stbox(tstzspanset)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Periodset_to_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -180,11 +180,11 @@ CREATE FUNCTION stbox(geography, timestamptz)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Geo_timestamp_to_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stbox(geometry, period)
+CREATE FUNCTION stbox(geometry, tstzspan)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Geo_period_to_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stbox(geography, period)
+CREATE FUNCTION stbox(geography, tstzspan)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Geo_period_to_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -193,13 +193,13 @@ CREATE CAST (geometry AS stbox) WITH FUNCTION stbox(geometry);
 CREATE CAST (geography AS stbox) WITH FUNCTION stbox(geography);
 CREATE CAST (timestamptz AS stbox) WITH FUNCTION stbox(timestamptz);
 CREATE CAST (tstzset AS stbox) WITH FUNCTION stbox(tstzset);
-CREATE CAST (period AS stbox) WITH FUNCTION stbox(period);
-CREATE CAST (periodset AS stbox) WITH FUNCTION stbox(periodset);
+CREATE CAST (tstzspan AS stbox) WITH FUNCTION stbox(tstzspan);
+CREATE CAST (tstzspanset AS stbox) WITH FUNCTION stbox(tstzspanset);
 
 /*****************************************************************************/
 
-CREATE FUNCTION period(stbox)
-  RETURNS period
+CREATE FUNCTION tstzspan(stbox)
+  RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Stbox_to_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION geometry(stbox)
@@ -211,7 +211,7 @@ CREATE FUNCTION geography(stbox)
   AS 'MODULE_PATHNAME', 'Stbox_to_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE CAST (stbox AS period) WITH FUNCTION period(stbox);
+CREATE CAST (stbox AS tstzspan) WITH FUNCTION tstzspan(stbox);
 CREATE CAST (stbox AS geometry) WITH FUNCTION geometry(stbox);
 CREATE CAST (stbox AS geography) WITH FUNCTION geography(stbox);
 

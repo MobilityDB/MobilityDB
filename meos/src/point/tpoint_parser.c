@@ -188,7 +188,7 @@ stbox_parse(const char **str)
   }
 
   if (hast)
-    period = span_parse(str, T_PERIOD, false, true);
+    period = span_parse(str, T_TSTZSPAN, false, true);
 
   /* Parse closing parenthesis */
   p_whitespace(str);

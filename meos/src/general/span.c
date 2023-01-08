@@ -301,7 +301,7 @@ floatspan_in(const char *str)
 Span *
 period_in(const char *str)
 {
-  return span_parse(&str, T_PERIOD, true, true);
+  return span_parse(&str, T_TSTZSPAN, true, true);
 }
 #endif /* MEOS */
 

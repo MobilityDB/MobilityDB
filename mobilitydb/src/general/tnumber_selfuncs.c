@@ -73,10 +73,10 @@ tnumber_cachedop(Oid operid, CachedOp *cachedOp)
         operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TFLOAT) ||
         operid == oper_oid((CachedOp) i, T_TSTZSET, T_TINT) ||
         operid == oper_oid((CachedOp) i, T_TSTZSET, T_TFLOAT) ||
-        operid == oper_oid((CachedOp) i, T_PERIOD, T_TINT) ||
-        operid == oper_oid((CachedOp) i, T_PERIOD, T_TFLOAT) ||
-        operid == oper_oid((CachedOp) i, T_PERIODSET, T_TINT) ||
-        operid == oper_oid((CachedOp) i, T_PERIODSET, T_TFLOAT) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSPAN, T_TINT) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSPAN, T_TFLOAT) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSPANSET, T_TINT) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSPANSET, T_TFLOAT) ||
         /* Span types */
         operid == oper_oid((CachedOp) i, T_INTSPAN, T_TINT) ||
         operid == oper_oid((CachedOp) i, T_FLOATSPAN, T_TFLOAT) ||
@@ -86,8 +86,8 @@ tnumber_cachedop(Oid operid, CachedOp *cachedOp)
         /* Tint type */
         operid == oper_oid((CachedOp) i, T_TINT, T_TIMESTAMPTZ) ||
         operid == oper_oid((CachedOp) i, T_TINT, T_TSTZSET) ||
-        operid == oper_oid((CachedOp) i, T_TINT, T_PERIOD) ||
-        operid == oper_oid((CachedOp) i, T_TINT, T_PERIODSET) ||
+        operid == oper_oid((CachedOp) i, T_TINT, T_TSTZSPAN) ||
+        operid == oper_oid((CachedOp) i, T_TINT, T_TSTZSPANSET) ||
         operid == oper_oid((CachedOp) i, T_TINT, T_INT4) ||
         operid == oper_oid((CachedOp) i, T_TINT, T_FLOAT8) ||
         operid == oper_oid((CachedOp) i, T_TINT, T_INTSPAN) ||
@@ -97,8 +97,8 @@ tnumber_cachedop(Oid operid, CachedOp *cachedOp)
         /* Tfloat type */
         operid == oper_oid((CachedOp) i, T_TFLOAT, T_TIMESTAMPTZ) ||
         operid == oper_oid((CachedOp) i, T_TFLOAT, T_TSTZSET) ||
-        operid == oper_oid((CachedOp) i, T_TFLOAT, T_PERIOD) ||
-        operid == oper_oid((CachedOp) i, T_TFLOAT, T_PERIODSET) ||
+        operid == oper_oid((CachedOp) i, T_TFLOAT, T_TSTZSPAN) ||
+        operid == oper_oid((CachedOp) i, T_TFLOAT, T_TSTZSPANSET) ||
         operid == oper_oid((CachedOp) i, T_TFLOAT, T_INT4) ||
         operid == oper_oid((CachedOp) i, T_TFLOAT, T_FLOAT8) ||
         operid == oper_oid((CachedOp) i, T_TFLOAT, T_FLOATSPAN) ||
@@ -149,7 +149,7 @@ tnumber_const_to_span_period(const Node *other, Span **s, Span **p,
     Span *span = DatumGetSpanP(((Const *) other)->constvalue);
     *s = span_copy(span);
   }
-  else if (type == T_PERIOD)
+  else if (type == T_TSTZSPAN)
   {
     Span *period = DatumGetSpanP(((Const *) other)->constvalue);
     *p = span_copy(period);
@@ -159,7 +159,7 @@ tnumber_const_to_span_period(const Node *other, Span **s, Span **p,
     *s = palloc(sizeof(Span));
     spanset_span_slice(((Const *) other)->constvalue, *s);
   }
-  else if (type == T_PERIODSET)
+  else if (type == T_TSTZSPANSET)
   {
     *p = palloc(sizeof(Span));
     spanset_span_slice(((Const *) other)->constvalue, *p);
@@ -265,7 +265,7 @@ tnumber_sel_span_period(VariableStatData *vardata, Span *span, Span *period,
     /* Selectivity for the time dimension */
     if (period != NULL)
     {
-      period_oprid = oper_oid(EQ_OP, T_PERIOD, T_PERIOD);
+      period_oprid = oper_oid(EQ_OP, T_TSTZSPAN, T_TSTZSPAN);
 #if POSTGRESQL_VERSION_NUMBER < 130000
       selec *= var_eq_const(vardata, period_oprid, SpanPGetDatum(period),
         false, false, false);

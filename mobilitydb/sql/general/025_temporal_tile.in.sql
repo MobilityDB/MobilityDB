@@ -83,10 +83,10 @@ CREATE FUNCTION spanBucket(value float, size float,
 
 CREATE TYPE time_period AS (
   index integer,
-  period period
+  tstzspan tstzspan
 );
 
-CREATE FUNCTION bucketList(period, interval, timestamptz DEFAULT '2000-01-03')
+CREATE FUNCTION bucketList(tstzspan, interval, timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF time_period
   AS 'MODULE_PATHNAME', 'Period_bucket_list'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -108,7 +108,7 @@ CREATE FUNCTION timeBucket("time" timestamptz, duration interval,
 
 CREATE FUNCTION periodBucket(timestamptz, interval,
   timestamptz DEFAULT '2000-01-03')
-  RETURNS period
+  RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Period_bucket'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

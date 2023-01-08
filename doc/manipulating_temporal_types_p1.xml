@@ -14,7 +14,7 @@
 
 	<itemizedlist>
 		<listitem>
-			<para><varname>time</varname> represents any time type, that is, <varname>timestamptz</varname>, <varname>period</varname>, <varname>tstzset</varname>, or <varname>periodset</varname>,</para>
+			<para><varname>time</varname> represents any time type, that is, <varname>timestamptz</varname>, <varname>tstzspan</varname>, <varname>tstzset</varname>, or <varname>tstzspanset</varname>,</para>
 		</listitem>
 
 		<listitem>
@@ -431,7 +431,7 @@ SELECT ttextFromHexWKB('01170001040000000000000041414100009C57D3C11C0000');
 
 		<itemizedlist>
 			<listitem>
-				<para>A first set of functions have two arguments, a base type and a time type, where the latter is a <varname>timestamptz</varname>, a <varname>tstzset</varname>, a <varname>period</varname>, or a <varname>periodset</varname> value for constructing, respectively, an instant, a sequence with discrete interpolation, a sequence with linear or stepwise interpolation, or a sequence set value. The functions for sequence or sequence set values with continuous base type have in addition an optional third argument which is a Boolean for stating whether the resulting temporal value has linear or stepwise interpolation. By default this argument is true if it is not specified, that is, linear interpolation is assumed by default.</para>
+				<para>A first set of functions have two arguments, a base type and a time type, where the latter is a <varname>timestamptz</varname>, a <varname>tstzset</varname>, a <varname>tstzspan</varname>, or a <varname>tstzspanset</varname> value for constructing, respectively, an instant, a sequence with discrete interpolation, a sequence with linear or stepwise interpolation, or a sequence set value. The functions for sequence or sequence set values with continuous base type have in addition an optional third argument which is a Boolean for stating whether the resulting temporal value has linear or stepwise interpolation. By default this argument is true if it is not specified, that is, linear interpolation is assumed by default.</para>
 			</listitem>
 
 			<listitem>
@@ -459,15 +459,15 @@ SELECT ttextFromHexWKB('01170001040000000000000041414100009C57D3C11C0000');
 				<para>Constructor for temporal types from a base value and a time value</para>
 				<para><varname>ttype(base,timestamptz): ttype_inst</varname></para>
 				<para><varname>ttype(base,tstzset): ttype_discseq</varname></para>
-				<para><varname>ttype(base,period,linear=true): ttype_contseq</varname></para>
-				<para><varname>ttype(base,periodset,linear=true): ttype_seqset</varname></para>
+				<para><varname>ttype(base,tstzspan,linear=true): ttype_contseq</varname></para>
+				<para><varname>ttype(base,tstzspanset,linear=true): ttype_seqset</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbool(true, timestamptz '2001-01-01');
 SELECT tint(1, timestamptz '2001-01-01');
 SELECT tfloat(1.5, tstzset '{2001-01-01, 2001-01-02}');
 SELECT ttext('AAA', tstzset '{2001-01-01, 2001-01-02}');
-SELECT tgeompoint('Point(0 0)', period '[2001-01-01, 2001-01-02]');
-SELECT tgeogpoint('SRID=7844;Point(0 0)', periodset '{[2001-01-01, 2001-01-02],
+SELECT tgeompoint('Point(0 0)', tstzspan '[2001-01-01, 2001-01-02]');
+SELECT tgeogpoint('SRID=7844;Point(0 0)', tstzspanset '{[2001-01-01, 2001-01-02],
   [2001-01-03, 2001-01-04]}', false);
 </programlisting>
 			</listitem>
@@ -567,15 +567,15 @@ SELECT asText(tgeompoint_seqset_gaps(ARRAY[tgeompoint 'Point(1 1)@2000-01-01',
 			<listitem id="ttype_bbox">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
 				<para>Cast a temporal value to a bounding box</para>
-				<para><varname>ttype::period</varname></para>
+				<para><varname>ttype::tstzspan</varname></para>
 				<para><varname>tnumber::{numspan,tbox}</varname></para>
 				<para><varname>tpoint::stbox</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT tint '[1@2001-01-01, 2@2001-01-03]'::period;
+SELECT tint '[1@2001-01-01, 2@2001-01-03]'::tstzspan;
 -- [2001-01-01, 2001-01-03]
-SELECT ttext '(A@2000-01-01, B@2000-01-03, C@2000-01-05]'::period;
+SELECT ttext '(A@2000-01-01, B@2000-01-03, C@2000-01-05]'::tstzspan;
 -- (2000-01-01, 2000-01-05]
-SELECT tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]'::period;
+SELECT tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]'::tstzspan;
 -- [2001-01-01, 2001-01-03]
 </programlisting>
 
@@ -876,7 +876,7 @@ SELECT getTimestamp(tint '1@2001-01-01');
 			<listitem id="getTime">
 				<indexterm><primary><varname>getTime</varname></primary></indexterm>
 				<para>Get the time</para>
-				<para><varname>getTime(ttype): periodset</varname></para>
+				<para><varname>getTime(ttype): tstzspanset</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT getTime(tint '[1@2001-01-01, 1@2001-01-15)');
 -- {[2001-01-01, 2001-01-15)}
@@ -910,7 +910,7 @@ SELECT timespan(tfloat '{[1@2001-01-01, 2@2001-01-03), [2@2001-01-04, 2@2001-01-
 			<listitem id="ttype_period">
 				<indexterm><primary><varname>period</varname></primary></indexterm>
 				<para>Get the period on which the temporal value is defined ignoring the potential time gaps</para>
-				<para><varname>period(ttype): period</varname></para>
+				<para><varname>period(ttype): tstzspan</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT period(tint '{1@2001-01-01, 2@2001-01-03, 3@2001-01-05}');
 -- [2001-01-01, 2001-01-05]
@@ -1107,10 +1107,10 @@ SELECT overlapsTime(tint '[1@2001-01-01, 1@2001-01-15)',
   tstzset '{2001-01-01, 2001-01-03}');
 -- true
 SELECT overlapsTime(tint '[1@2001-01-01, 1@2001-01-04)',
-  period '[2001-01-01,2001-01-05)');
+  tstzspan '[2001-01-01,2001-01-05)');
 -- true
 SELECT overlapsTime(tbool '[t@2001-01-01, f@2001-01-15]',
-  periodset '{[2001-01-01, 2001-01-03), [2001-01-05, 2001-01-07)}');
+  tstzspanset '{[2001-01-01, 2001-01-03), [2001-01-05, 2001-01-07)}');
 -- true
 </programlisting>
 			</listitem>
@@ -1381,11 +1381,11 @@ SELECT deleteTime(tint '[1@2000-01-01, 1@2000-01-03]', timestamptz '2000-01-02',
 SELECT deleteTime(tint '[1@2000-01-01, 1@2000-01-03]', timestamptz '2000-01-02');
 -- [1@2000-01-01, 1@2000-01-03]
 SELECT deleteTime(tfloat '[1@2000-01-01, 4@2000-01-02, 2@2000-01-04, 5@2000-01-05]',
-  period '[2000-01-02, 2000-01-04]');
+  tstzspan '[2000-01-02, 2000-01-04]');
 -- [1@2000-01-01, 5@2000-01-05]
 SELECT asText(deleteTime(tgeompoint '{[Point(1 1 1)@2000-01-01,
   Point(2 2 2)@2000-01-02], [Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',
-  period '[2000-01-02, 2000-01-04]'));
+  tstzspan '[2000-01-02, 2000-01-04]'));
 /* {[POINT Z (1 1 1)@2000-01-01, POINT Z (2 2 2)@2000-01-02, POINT Z (3 3 3)@2000-01-04,
   POINT Z (3 3 3)@2000-01-05]} */
 </programlisting>
@@ -1590,10 +1590,10 @@ SELECT atTime(tint '[1@2001-01-01, 1@2001-01-15)',
   tstzset '{2001-01-01, 2001-01-03}');
 -- {1@2001-01-01, 1@2001-01-03}
 SELECT atTime(tfloat '{[1@2001-01-01, 3@2001-01-03), [3@2001-01-04, 1@2001-01-06)}',
-  period '[2001-01-02,2001-01-05)');
+  tstzspan '[2001-01-02,2001-01-05)');
 -- {[2@2001-01-02, 3@2001-01-03), [3@2001-01-04, 2@2001-01-05)}
 SELECT atTime(tint '[1@2001-01-01, 1@2001-01-15)',
-  periodset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-05)}');
+  tstzspanset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-05)}');
 -- {[1@2001-01-01, 1@2001-01-03),[1@2001-01-04, 1@2001-01-05)}
 </programlisting>
 				</listitem>
@@ -1743,7 +1743,7 @@ SELECT minusTime(tfloat '{[1@2001-01-01, 3@2001-01-03), [3@2001-01-04, 1@2001-01
   '[2001-01-02,2001-01-05)');
 -- {[1@2001-01-01, 2@2001-01-02), [2@2001-01-05, 1@2001-01-06)}
 SELECT minusTime(tint '[1@2001-01-01, 1@2001-01-15)',
-  periodset '{[2001-01-02, 2001-01-03), [2001-01-04, 2001-01-05)}');
+  tstzspanset '{[2001-01-02, 2001-01-03), [2001-01-04, 2001-01-05)}');
 /* {[1@2001-01-01, 1@2001-01-02), [1@2001-01-03, 1@2001-01-04),
    [1@2001-01-05, 1@2001-01-15)} */
 </programlisting>
@@ -1760,7 +1760,7 @@ SELECT minusTbox(tfloat '[1@2001-01-01, 4@2001-01-04)',
 -- {[1@2001-01-01, 3@2001-01-03)}
 WITH temp(temp, box) AS (SELECT tfloat '[1@2001-01-01, 4@2001-01-04)',
   'TBOX XT((1,2),[2001-01-03, 2001-01-04])' )
-SELECT minusSpan(minusPeriod(temp, box::period), box::floatspan) FROM temp;
+SELECT minusSpan(minusPeriod(temp, box::tstzspan), box::floatspan) FROM temp;
 -- {[1@2001-01-01], [2@2001-01-02, 3@2001-01-03)}
 </programlisting>
 				</listitem>
@@ -1777,7 +1777,7 @@ SELECT asText(minusStbox(tgeompoint '[Point(1 1)@2001-01-01, Point(4 4)@2001-01-
 WITH temp(temp, box) AS (SELECT
   tgeompoint '[Point(1 1)@2001-01-01, Point(4 4)@2001-01-04)',
   stbox 'STBOX XT(((1,1),(2,2)),[2001-01-03,2001-01-04])')
-SELECT asText(minusGeometry(minusPeriod(temp, box::period), box::geometry)) FROM temp;
+SELECT asText(minusGeometry(minusPeriod(temp, box::tstzspan), box::geometry)) FROM temp;
 -- {(POINT(2 2)@2001-01-02, POINT(3 3)@2001-01-03)}
 </programlisting>
 				</listitem>
@@ -2113,7 +2113,7 @@ SELECT 'AAA'::text #&gt; ttext '{[AAA@2001-01-01, AAA@2001-01-03),
 	<sect1>
 		<title>Bounding Box Operators</title>
 
-		<para>These operators test whether the bounding boxes of their arguments satisfy the predicate and result in a Boolean value. As stated in <xref linkend="temporal_types" />, the bounding box associated to a temporal type depends on the base type: It is the <varname>period</varname> type for the <varname>tbool</varname> and <varname>ttext</varname> types, the <varname>tbox</varname> type for the <varname>tint</varname> and <varname>tfloat</varname> types, and the <varname>stbox</varname> type for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types. Furthermore, as seen in <xref linkend="casting_box_types" />, many PostgreSQL, PostGIS, or MobilityDB types can be cast to the <varname>tbox</varname> and <varname>stbox</varname> types. For example, numeric and span types can be casted to type <varname>tbox</varname>, types <varname>geometry</varname> and <varname>geography</varname> can be casted to type <varname>stbox</varname>, and time types and temporal types can be casted to types <varname>tbox</varname> and <varname>stbox</varname>.</para>
+		<para>These operators test whether the bounding boxes of their arguments satisfy the predicate and result in a Boolean value. As stated in <xref linkend="temporal_types" />, the bounding box associated to a temporal type depends on the base type: It is the <varname>tstzspan</varname> type for the <varname>tbool</varname> and <varname>ttext</varname> types, the <varname>tbox</varname> type for the <varname>tint</varname> and <varname>tfloat</varname> types, and the <varname>stbox</varname> type for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types. Furthermore, as seen in <xref linkend="casting_box_types" />, many PostgreSQL, PostGIS, or MobilityDB types can be cast to the <varname>tbox</varname> and <varname>stbox</varname> types. For example, numeric and span types can be casted to type <varname>tbox</varname>, types <varname>geometry</varname> and <varname>geography</varname> can be casted to type <varname>stbox</varname>, and time types and temporal types can be casted to types <varname>tbox</varname> and <varname>stbox</varname>.</para>
 
 		<para>A first set of operators consider the topological relationships between the bounding boxes. There are five topological operators: overlaps (<varname>&amp;&amp;</varname>), contains (<varname>@&gt;</varname>), contained (<varname>&lt;@</varname>), same (<varname>~=</varname>), and adjacent (<varname>-|-</varname>). The arguments of these operators can be a base type, a box, or a temporal type and the operators verify the topological relationship taking into account the value and/or the time dimension depending on the type of the arguments.</para>
 
@@ -2275,7 +2275,7 @@ SELECT ~tbool '[true@2001-01-03, true@2001-01-05)';
 			<listitem id="whenTrue">
 				<indexterm><primary><varname>whenTrue</varname></primary></indexterm>
 				<para>Get the time when the temporal Boolean takes the value true</para>
-				<para><varname>whenTrue(tbool): periodset</varname></para>
+				<para><varname>whenTrue(tbool): tstzspanset</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT whenTrue(tfloat '[1@2000-01-01, 4@2000-01-04, 1@2000-01-07]' #> 2);
 -- {(2000-01-02, 2000-01-06)}

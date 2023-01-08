@@ -63,7 +63,7 @@
 bool
 bbox_type(meosType bboxtype)
 {
-  if (bboxtype == T_PERIOD || bboxtype == T_TBOX || bboxtype == T_STBOX)
+  if (bboxtype == T_TSTZSPAN || bboxtype == T_TBOX || bboxtype == T_STBOX)
     return true;
   return false;
 }
@@ -86,7 +86,7 @@ size_t
 bbox_get_size(meosType bboxtype)
 {
   ensure_bbox_type(bboxtype);
-  if (bboxtype == T_PERIOD)
+  if (bboxtype == T_TSTZSPAN)
     return sizeof(Span);
   if (bboxtype == T_TBOX)
     return sizeof(TBox);
@@ -101,7 +101,7 @@ int
 bbox_max_dims(meosType bboxtype)
 {
   ensure_bbox_type(bboxtype);
-  if (bboxtype == T_PERIOD)
+  if (bboxtype == T_TSTZSPAN)
     return 1;
   if (bboxtype == T_TBOX)
     return 2;

@@ -35,23 +35,23 @@ SELECT extent(temp) FROM (VALUES
 ('{2000-01-01}'::tstzset),(NULL::tstzset)) t(temp);
 
 SELECT extent(temp) FROM (VALUES
-(NULL::period),(NULL::period)) t(temp);
+(NULL::tstzspan),(NULL::tstzspan)) t(temp);
 SELECT extent(temp) FROM (VALUES
-(NULL::period),('[2000-01-01, 2000-01-02]'::period)) t(temp);
+(NULL::tstzspan),('[2000-01-01, 2000-01-02]'::tstzspan)) t(temp);
 SELECT extent(temp) FROM (VALUES
-('[2000-01-01, 2000-01-02]'::period),(NULL::period)) t(temp);
+('[2000-01-01, 2000-01-02]'::tstzspan),(NULL::tstzspan)) t(temp);
 
 SELECT extent(temp) FROM (VALUES
-(NULL::periodset),(NULL::periodset)) t(temp);
+(NULL::tstzspanset),(NULL::tstzspanset)) t(temp);
 SELECT extent(temp) FROM (VALUES
-(NULL::periodset),('{[2000-01-01, 2000-01-02]}'::periodset)) t(temp);
+(NULL::tstzspanset),('{[2000-01-01, 2000-01-02]}'::tstzspanset)) t(temp);
 SELECT extent(temp) FROM (VALUES
-('{[2000-01-01, 2000-01-02]}'::periodset),(NULL::periodset)) t(temp);
+('{[2000-01-01, 2000-01-02]}'::tstzspanset),(NULL::tstzspanset)) t(temp);
 
 SELECT extent(t) FROM tbl_timestamptz;
 SELECT extent(ts) FROM tbl_tstzset;
-SELECT extent(p) FROM tbl_period;
-SELECT extent(ps) FROM tbl_periodset;
+SELECT extent(p) FROM tbl_tstzspan;
+SELECT extent(ps) FROM tbl_tstzspanset;
 
 -- encourage use of parallel plans
 set parallel_setup_cost=0;
@@ -60,8 +60,8 @@ set min_parallel_table_scan_size=0;
 set max_parallel_workers_per_gather=2;
 
 SELECT numValues(tunion(ts)) from tbl_tstzset_big;
-SELECT extent(temp::period) FROM tbl_tfloat_big;
-SELECT numPeriods(tunion(temp::period)) from tbl_tfloat_big;
+SELECT extent(temp::tstzspan) FROM tbl_tfloat_big;
+SELECT numSpans(tunion(temp::tstzspan)) from tbl_tfloat_big;
 
 -- reset to default values
 reset parallel_setup_cost;
@@ -79,28 +79,28 @@ SELECT tcount(temp) FROM (VALUES
 ('{2000-01-01}'::tstzset),(NULL::tstzset)) t(temp);
 
 SELECT tcount(temp) FROM (VALUES
-(NULL::period),(NULL::period)) t(temp);
+(NULL::tstzspan),(NULL::tstzspan)) t(temp);
 SELECT tcount(temp) FROM (VALUES
-(NULL::period),('[2000-01-01, 2000-01-02]'::period)) t(temp);
+(NULL::tstzspan),('[2000-01-01, 2000-01-02]'::tstzspan)) t(temp);
 SELECT tcount(temp) FROM (VALUES
-('[2000-01-01, 2000-01-02]'::period),(NULL::period)) t(temp);
+('[2000-01-01, 2000-01-02]'::tstzspan),(NULL::tstzspan)) t(temp);
 
 SELECT tcount(temp) FROM (VALUES
-(NULL::periodset),(NULL::periodset)) t(temp);
+(NULL::tstzspanset),(NULL::tstzspanset)) t(temp);
 SELECT tcount(temp) FROM (VALUES
-(NULL::periodset),('{[2000-01-01, 2000-01-02]}'::periodset)) t(temp);
+(NULL::tstzspanset),('{[2000-01-01, 2000-01-02]}'::tstzspanset)) t(temp);
 SELECT tcount(temp) FROM (VALUES
-('{[2000-01-01, 2000-01-02]}'::periodset),(NULL::periodset)) t(temp);
+('{[2000-01-01, 2000-01-02]}'::tstzspanset),(NULL::tstzspanset)) t(temp);
 
 SELECT numInstants(tcount(t)) FROM tbl_timestamptz;
 SELECT numInstants(tcount(ts)) FROM tbl_tstzset;
-SELECT numInstants(tcount(p)) FROM tbl_period;
-SELECT numInstants(tcount(ps)) FROM tbl_periodset;
+SELECT numInstants(tcount(p)) FROM tbl_tstzspan;
+SELECT numInstants(tcount(ps)) FROM tbl_tstzspanset;
 
 SELECT numInstants(tcount(t, '1 week', '2001-01-01')) FROM tbl_timestamptz;
 SELECT numInstants(tcount(ts, '1 week', '2001-01-01')) FROM tbl_tstzset;
-SELECT numInstants(tcount(p, '1 week', '2001-01-01')) FROM tbl_period;
-SELECT numInstants(tcount(ps, '1 week', '2001-01-01')) FROM tbl_periodset;
+SELECT numInstants(tcount(p, '1 week', '2001-01-01')) FROM tbl_tstzspan;
+SELECT numInstants(tcount(ps, '1 week', '2001-01-01')) FROM tbl_tstzspanset;
 
 -------------------------------------------------------------------------------
 
@@ -112,18 +112,18 @@ SELECT tunion(temp) FROM (VALUES
 ('{2000-01-01}'::tstzset),(NULL::tstzset)) t(temp);
 
 SELECT tunion(temp) FROM (VALUES
-(NULL::period),(NULL::period)) t(temp);
+(NULL::tstzspan),(NULL::tstzspan)) t(temp);
 SELECT tunion(temp) FROM (VALUES
-(NULL::period),('[2000-01-01, 2000-01-02]'::period)) t(temp);
+(NULL::tstzspan),('[2000-01-01, 2000-01-02]'::tstzspan)) t(temp);
 SELECT tunion(temp) FROM (VALUES
-('[2000-01-01, 2000-01-02]'::period),(NULL::period)) t(temp);
+('[2000-01-01, 2000-01-02]'::tstzspan),(NULL::tstzspan)) t(temp);
 
 SELECT tunion(temp) FROM (VALUES
-(NULL::periodset),(NULL::periodset)) t(temp);
+(NULL::tstzspanset),(NULL::tstzspanset)) t(temp);
 SELECT tunion(temp) FROM (VALUES
-(NULL::periodset),('{[2000-01-01, 2000-01-02]}'::periodset)) t(temp);
+(NULL::tstzspanset),('{[2000-01-01, 2000-01-02]}'::tstzspanset)) t(temp);
 SELECT tunion(temp) FROM (VALUES
-('{[2000-01-01, 2000-01-02]}'::periodset),(NULL::periodset)) t(temp);
+('{[2000-01-01, 2000-01-02]}'::tstzspanset),(NULL::tstzspanset)) t(temp);
 
 -------------------------------------------------------------------------------
 
@@ -132,12 +132,12 @@ SELECT tunion(temp) FROM (VALUES
 ('{2000-01-02, 2000-01-06}'::tstzset)) t(temp);
 
 SELECT tunion(temp) FROM (VALUES
-('[2000-01-01, 2000-01-03]'::period),
-('[2000-01-02, 2000-01-06]'::period)) t(temp);
+('[2000-01-01, 2000-01-03]'::tstzspan),
+('[2000-01-02, 2000-01-06]'::tstzspan)) t(temp);
 
 SELECT tunion(temp) FROM (VALUES
-('{[2000-01-01, 2000-01-03]}'::periodset),
-('{[2000-01-02, 2000-01-06]}'::periodset)) t(temp);
+('{[2000-01-01, 2000-01-03]}'::tstzspanset),
+('{[2000-01-02, 2000-01-06]}'::tstzspanset)) t(temp);
 
 WITH Temp(ts) AS (
   SELECT tstzset '{2000-01-01}' UNION
@@ -158,7 +158,7 @@ SELECT startValue(tunion(ts)) FROM Temp;
 
 SELECT numValues(tunion(t)) FROM tbl_timestamptz;
 SELECT numValues(tunion(ts)) FROM tbl_tstzset;
-SELECT numPeriods(tunion(p)) FROM tbl_period;
-SELECT numPeriods(tunion(ps)) FROM tbl_periodset;
+SELECT numSpans(tunion(p)) FROM tbl_tstzspan;
+SELECT numSpans(tunion(ps)) FROM tbl_tstzspanset;
 
 -------------------------------------------------------------------------------

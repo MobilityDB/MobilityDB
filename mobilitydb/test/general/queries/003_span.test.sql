@@ -35,48 +35,48 @@
 /* Errors */
 SELECT intspan '[1,2] xxx';
 SELECT floatspan '[1,2] xxx';
-SELECT period '[2000-01-01,2000-01-02] xxx';
-SELECT period '2000-01-01, 2000-01-02';
-SELECT period '[2000-01-01, 2000-01-02';
+SELECT tstzspan '[2000-01-01,2000-01-02] xxx';
+SELECT tstzspan '2000-01-01, 2000-01-02';
+SELECT tstzspan '[2000-01-01, 2000-01-02';
 
 -- Output in WKT format
 
 SELECT asText(intspan '[1, 2]');
 SELECT asText(floatspan '[1.12345678, 2.123456789]', 6);
-SELECT asText(period '[2000-01-01, 2000-01-03]');
+SELECT asText(tstzspan '[2000-01-01, 2000-01-03]');
 
 -------------------------------------------------------------------------------
 -- Constructors
 -------------------------------------------------------------------------------
 
-SELECT period ('2000-01-01','2000-01-02');
-SELECT period ('2000-01-01','2000-01-01', true, true);
+SELECT tstzspan ('2000-01-01','2000-01-02');
+SELECT tstzspan ('2000-01-01','2000-01-01', true, true);
 /* Errors */
-SELECT period ('2000-01-01','2000-01-01');
-SELECT period ('2000-01-02','2000-01-01');
+SELECT tstzspan ('2000-01-01','2000-01-01');
+SELECT tstzspan ('2000-01-02','2000-01-01');
 
 -------------------------------------------------------------------------------
 -- Casting
 -------------------------------------------------------------------------------
 
-SELECT tstzrange(period '[2000-01-01,2000-01-01]');
-SELECT tstzrange(period '[2000-01-01,2000-01-02]');
-SELECT tstzrange(period '(2000-01-01,2000-01-02]');
-SELECT tstzrange(period '[2000-01-01,2000-01-02)');
-SELECT tstzrange(period '(2000-01-01,2000-01-02)');
+SELECT tstzrange(tstzspan '[2000-01-01,2000-01-01]');
+SELECT tstzrange(tstzspan '[2000-01-01,2000-01-02]');
+SELECT tstzrange(tstzspan '(2000-01-01,2000-01-02]');
+SELECT tstzrange(tstzspan '[2000-01-01,2000-01-02)');
+SELECT tstzrange(tstzspan '(2000-01-01,2000-01-02)');
 
-SELECT period(tstzrange '[2000-01-01,2000-01-01]');
-SELECT period(tstzrange '[2000-01-01,2000-01-02]');
-SELECT period(tstzrange '(2000-01-01,2000-01-02]');
-SELECT period(tstzrange '[2000-01-01,2000-01-02)');
-SELECT period(tstzrange'(2000-01-01,2000-01-02)');
+SELECT tstzspan(tstzrange '[2000-01-01,2000-01-01]');
+SELECT tstzspan(tstzrange '[2000-01-01,2000-01-02]');
+SELECT tstzspan(tstzrange '(2000-01-01,2000-01-02]');
+SELECT tstzspan(tstzrange '[2000-01-01,2000-01-02)');
+SELECT tstzspan(tstzrange'(2000-01-01,2000-01-02)');
 
-SELECT period(timestamptz '2000-01-01');
-SELECT timestamptz '2000-01-01'::period;
+SELECT tstzspan(timestamptz '2000-01-01');
+SELECT timestamptz '2000-01-01'::tstzspan;
 /* Errors */
-SELECT tstzrange '[2000-01-01,]'::period;
-SELECT tstzrange '[,2000-01-01]'::period;
-SELECT tstzrange 'empty'::period;
+SELECT tstzrange '[2000-01-01,]'::tstzspan;
+SELECT tstzrange '[,2000-01-01]'::tstzspan;
+SELECT tstzrange 'empty'::tstzspan;
 
 -------------------------------------------------------------------------------
 -- Transformation functions
@@ -84,67 +84,67 @@ SELECT tstzrange 'empty'::period;
 
 SELECT shift(intspan '[1,2)', 2);
 
-SELECT shift(period '[2000-01-01,2000-01-01]', '5 min');
-SELECT shift(period '[2000-01-01,2000-01-02]', '5 min');
-SELECT shift(period '(2000-01-01,2000-01-02]', '5 min');
-SELECT shift(period '[2000-01-01,2000-01-02)', '5 min');
-SELECT shift(period '(2000-01-01,2000-01-02)', '5 min');
+SELECT shift(tstzspan '[2000-01-01,2000-01-01]', '5 min');
+SELECT shift(tstzspan '[2000-01-01,2000-01-02]', '5 min');
+SELECT shift(tstzspan '(2000-01-01,2000-01-02]', '5 min');
+SELECT shift(tstzspan '[2000-01-01,2000-01-02)', '5 min');
+SELECT shift(tstzspan '(2000-01-01,2000-01-02)', '5 min');
 
-SELECT tscale(period '[2000-01-01,2000-01-01]', '1 hour');
-SELECT tscale(period '[2000-01-01,2000-01-02]', '1 hour');
-SELECT tscale(period '(2000-01-01,2000-01-02]', '1 hour');
-SELECT tscale(period '[2000-01-01,2000-01-02)', '1 hour');
-SELECT tscale(period '(2000-01-01,2000-01-02)', '1 hour');
+SELECT tscale(tstzspan '[2000-01-01,2000-01-01]', '1 hour');
+SELECT tscale(tstzspan '[2000-01-01,2000-01-02]', '1 hour');
+SELECT tscale(tstzspan '(2000-01-01,2000-01-02]', '1 hour');
+SELECT tscale(tstzspan '[2000-01-01,2000-01-02)', '1 hour');
+SELECT tscale(tstzspan '(2000-01-01,2000-01-02)', '1 hour');
 
-SELECT shiftTscale(period '[2000-01-01,2000-01-01]', '5 min', '1 hour');
-SELECT shiftTscale(period '[2000-01-01,2000-01-02]', '5 min', '1 hour');
-SELECT shiftTscale(period '(2000-01-01,2000-01-02]', '5 min', '1 hour');
-SELECT shiftTscale(period '[2000-01-01,2000-01-02)', '5 min', '1 hour');
-SELECT shiftTscale(period '(2000-01-01,2000-01-02)', '5 min', '1 hour');
+SELECT shiftTscale(tstzspan '[2000-01-01,2000-01-01]', '5 min', '1 hour');
+SELECT shiftTscale(tstzspan '[2000-01-01,2000-01-02]', '5 min', '1 hour');
+SELECT shiftTscale(tstzspan '(2000-01-01,2000-01-02]', '5 min', '1 hour');
+SELECT shiftTscale(tstzspan '[2000-01-01,2000-01-02)', '5 min', '1 hour');
+SELECT shiftTscale(tstzspan '(2000-01-01,2000-01-02)', '5 min', '1 hour');
 
 -------------------------------------------------------------------------------
 -- Accessor functions
 -------------------------------------------------------------------------------
 
-SELECT lower(period '[2000-01-01,2000-01-01]');
-SELECT lower(period '[2000-01-01,2000-01-02]');
-SELECT lower(period '(2000-01-01,2000-01-02]');
-SELECT lower(period '[2000-01-01,2000-01-02)');
-SELECT lower(period '(2000-01-01,2000-01-02)');
+SELECT lower(tstzspan '[2000-01-01,2000-01-01]');
+SELECT lower(tstzspan '[2000-01-01,2000-01-02]');
+SELECT lower(tstzspan '(2000-01-01,2000-01-02]');
+SELECT lower(tstzspan '[2000-01-01,2000-01-02)');
+SELECT lower(tstzspan '(2000-01-01,2000-01-02)');
 
-SELECT upper(period '[2000-01-01,2000-01-01]');
-SELECT upper(period '[2000-01-01,2000-01-02]');
-SELECT upper(period '(2000-01-01,2000-01-02]');
-SELECT upper(period '[2000-01-01,2000-01-02)');
-SELECT upper(period '(2000-01-01,2000-01-02)');
+SELECT upper(tstzspan '[2000-01-01,2000-01-01]');
+SELECT upper(tstzspan '[2000-01-01,2000-01-02]');
+SELECT upper(tstzspan '(2000-01-01,2000-01-02]');
+SELECT upper(tstzspan '[2000-01-01,2000-01-02)');
+SELECT upper(tstzspan '(2000-01-01,2000-01-02)');
 
-SELECT lower_inc(period '[2000-01-01,2000-01-01]');
-SELECT lower_inc(period '[2000-01-01,2000-01-02]');
-SELECT lower_inc(period '(2000-01-01,2000-01-02]');
-SELECT lower_inc(period '[2000-01-01,2000-01-02)');
-SELECT lower_inc(period '(2000-01-01,2000-01-02)');
+SELECT lower_inc(tstzspan '[2000-01-01,2000-01-01]');
+SELECT lower_inc(tstzspan '[2000-01-01,2000-01-02]');
+SELECT lower_inc(tstzspan '(2000-01-01,2000-01-02]');
+SELECT lower_inc(tstzspan '[2000-01-01,2000-01-02)');
+SELECT lower_inc(tstzspan '(2000-01-01,2000-01-02)');
 
-SELECT upper_inc(period '[2000-01-01,2000-01-01]');
-SELECT upper_inc(period '[2000-01-01,2000-01-02]');
-SELECT upper_inc(period '(2000-01-01,2000-01-02]');
-SELECT upper_inc(period '[2000-01-01,2000-01-02)');
-SELECT upper_inc(period '(2000-01-01,2000-01-02)');
+SELECT upper_inc(tstzspan '[2000-01-01,2000-01-01]');
+SELECT upper_inc(tstzspan '[2000-01-01,2000-01-02]');
+SELECT upper_inc(tstzspan '(2000-01-01,2000-01-02]');
+SELECT upper_inc(tstzspan '[2000-01-01,2000-01-02)');
+SELECT upper_inc(tstzspan '(2000-01-01,2000-01-02)');
 
-SELECT duration(period '[2000-01-01,2000-01-01]');
-SELECT duration(period '[2000-01-01,2000-01-02]');
-SELECT duration(period '(2000-01-01,2000-01-02]');
-SELECT duration(period '[2000-01-01,2000-01-02)');
-SELECT duration(period '(2000-01-01,2000-01-02)');
+SELECT duration(tstzspan '[2000-01-01,2000-01-01]');
+SELECT duration(tstzspan '[2000-01-01,2000-01-02]');
+SELECT duration(tstzspan '(2000-01-01,2000-01-02]');
+SELECT duration(tstzspan '[2000-01-01,2000-01-02)');
+SELECT duration(tstzspan '(2000-01-01,2000-01-02)');
 
 SELECT period_cmp('[2000-01-01,2000-01-01]', '(2000-01-01,2000-01-02)');
 SELECT period_cmp('[2000-01-01, 2000-01-02]', '[2000-01-01, 2000-01-02)');
-SELECT period '[2000-01-01,2000-01-01]' = period '(2000-01-01,2000-01-02)';
-SELECT period '[2000-01-01,2000-01-01]' <> period '(2000-01-01,2000-01-02)';
-SELECT period '[2000-01-01,2000-01-01]' < period '(2000-01-01,2000-01-02)';
-SELECT period '[2000-01-01,2000-01-01]' <= period '(2000-01-01,2000-01-02)';
-SELECT period '[2000-01-01,2000-01-01]' > period '(2000-01-01,2000-01-02)';
-SELECT period '[2000-01-01,2000-01-01]' >= period '(2000-01-01,2000-01-02)';
-SELECT period '[2000-01-01,2000-01-01]' = period '(2000-01-01,2000-01-02)';
+SELECT tstzspan '[2000-01-01,2000-01-01]' = tstzspan '(2000-01-01,2000-01-02)';
+SELECT tstzspan '[2000-01-01,2000-01-01]' <> tstzspan '(2000-01-01,2000-01-02)';
+SELECT tstzspan '[2000-01-01,2000-01-01]' < tstzspan '(2000-01-01,2000-01-02)';
+SELECT tstzspan '[2000-01-01,2000-01-01]' <= tstzspan '(2000-01-01,2000-01-02)';
+SELECT tstzspan '[2000-01-01,2000-01-01]' > tstzspan '(2000-01-01,2000-01-02)';
+SELECT tstzspan '[2000-01-01,2000-01-01]' >= tstzspan '(2000-01-01,2000-01-02)';
+SELECT tstzspan '[2000-01-01,2000-01-01]' = tstzspan '(2000-01-01,2000-01-02)';
 
 SELECT period_hash('[2000-01-01,2000-01-02]') = period_hash('[2000-01-01,2000-01-02]');
 SELECT period_hash('[2000-01-01,2000-01-02]') <> period_hash('[2000-01-02,2000-01-02]');

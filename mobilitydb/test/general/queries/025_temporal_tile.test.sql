@@ -63,8 +63,8 @@ SELECT spanBucket(3.5, 2.5, 1.5);
 
 -------------------------------------------------------------------------------
 
-SELECT bucketList(period '[2000-01-01, 2000-01-10]', '1 week') LIMIT 3;
-SELECT bucketList(period '[2000-01-01, 2000-01-10]', '1 week', '2020-06-15') LIMIT 3;
+SELECT bucketList(tstzspan '[2000-01-01, 2000-01-10]', '1 week') LIMIT 3;
+SELECT bucketList(tstzspan '[2000-01-01, 2000-01-10]', '1 week', '2020-06-15') LIMIT 3;
 
 SELECT timeBucket('2020-01-01', '1 week');
 SELECT timeBucket('2020-01-01', '1 week', timestamptz '2001-06-01');

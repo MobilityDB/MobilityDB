@@ -26,11 +26,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="spantime_FromBinary"><varname>intspanFromBinary</varname>, <varname>intspansetFromBinary</varname>, <varname>floatspanFromBinary</varname>, <varname>floatspansetFromBinary</varname>, <varname>periodFromBinary</varname>, <varname>periodsetFromBinary</varname>, <varname>tstzsetFromBinary</varname></link>: Input a span or time type from a Well-Known Binary (WKB) representation</para>
+					<para><link linkend="spantime_FromBinary"><varname>intspanFromBinary</varname>, <varname>intspansetFromBinary</varname>, <varname>floatspanFromBinary</varname>, <varname>floatspansetFromBinary</varname>, <varname>tstzspanFromBinary</varname>, <varname>tstzspansetFromBinary</varname>, <varname>tstzsetFromBinary</varname></link>: Input a span or time type from a Well-Known Binary (WKB) representation</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="spantime_FromHexWKB"><varname>intspanFromHexWKB</varname>, <varname>intspansetFromHexWKB</varname>, <varname>floatspanFromHexWKB</varname>, <varname>floatspansetFromHexWKB</varname>, <varname>periodFromHexWKB</varname>, <varname>periodsetFromHexWKB</varname>, <varname>tstzsetFromHexWKB</varname></link>: Input a span or time type from an Hexadecimal Well-Known Binary (HexWKB) representation</para>
+					<para><link linkend="spantime_FromHexWKB"><varname>intspanFromHexWKB</varname>, <varname>intspansetFromHexWKB</varname>, <varname>floatspanFromHexWKB</varname>, <varname>floatspansetFromHexWKB</varname>, <varname>tstzspanFromHexWKB</varname>, <varname>tstzspansetFromHexWKB</varname>, <varname>tstzsetFromHexWKB</varname></link>: Input a span or time type from an Hexadecimal Well-Known Binary (HexWKB) representation</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -39,11 +39,11 @@
 			<title>Constructor Functions</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="span"><varname>intspan</varname>, <varname>floatspan</varname>, <varname>period</varname></link>: Constructor for span values</para>
+					<para><link linkend="span"><varname>intspan</varname>, <varname>floatspan</varname>, <varname>tstzspan</varname></link>: Constructor for span values</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="spanset"><varname>intspanset</varname>, <varname>floatspanset</varname>, <varname>periodset</varname></link>: Constructor for span set values</para>
+					<para><link linkend="spanset"><varname>intspanset</varname>, <varname>floatspanset</varname>, <varname>tstzspanset</varname></link>: Constructor for span set values</para>
 				</listitem>
 
 				<listitem>
@@ -60,7 +60,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tstzset_cast"><varname>tstzset::periodset</varname></link>: Cast a <varname>tstzset</varname> value to a <varname>periodset</varname> value</para>
+					<para><link linkend="tstzset_cast"><varname>tstzset::tstzspanset</varname></link>: Cast a <varname>tstzset</varname> value to a <varname>tstzspanset</varname> value</para>
 				</listitem>
 
 				<listitem>
@@ -118,47 +118,47 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_period"><varname>period</varname></link>: Get the period on which the timestamp set or period set is defined ignoring the potential time gaps</para>
+					<para><link linkend="setspan_tstzspan"><varname>tstzspan</varname></link>: Get the bounding span of the <varname>tstzset</varname> or <varname>tstzspanset</varname> ignoring the potential time gaps</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_numTimestamps"><varname>numTimestamps</varname></link>: Get the number of different timestamps</para>
+					<para><link linkend="setspan_numValues"><varname>numValues</varname></link>: Get the number of different values</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_startTimestamp"><varname>startTimestamp</varname></link>: Get the start timestamp</para>
+					<para><link linkend="setspan_startValue"><varname>startValue</varname></link>: Get the start value</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_endTimestamp"><varname>endTimestamp</varname></link>: Get the end timestamp</para>
+					<para><link linkend="setspan_endValue"><varname>endValue</varname></link>: Get the end value</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_timestampN"><varname>timestampN</varname></link>: Get the n-th different timestamp</para>
+					<para><link linkend="setspan_valueN"><varname>valueN</varname></link>: Get the n-th value</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_timestamps"><varname>timestamps</varname></link>: Get the different timestamps</para>
+					<para><link linkend="setspan_values"><varname>values</varname></link>: Get the values</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="numSpans"><varname>numSpans</varname>, <varname>numPeriods</varname></link>: Get the number of composing spans or periods</para>
+					<para><link linkend="numSpans"><varname>numSpans</varname></link>: Get the number of composing spans</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="startSpan"><varname>startSpan</varname>, <varname>startPeriod</varname></link>: Get the start span or period</para>
+					<para><link linkend="startSpan"><varname>startSpan</varname></link>: Get the start span</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="endSpan"><varname>endSpan</varname>, <varname>endPeriod</varname></link>: Get the end span or period</para>
+					<para><link linkend="endSpan"><varname>endSpan</varname></link>: Get the end span</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="spanN"><varname>spanN</varname>, <varname>periodN</varname></link>: Get the n-th span or period</para>
+					<para><link linkend="spanN"><varname>spanN</varname></link>: Get the n-th span</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="spans"><varname>spans</varname>, <varname>periods</varname></link>: Get the spans or periods</para>
+					<para><link linkend="spans"><varname>spans</varname></link>: Get the spans</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -290,7 +290,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_extent"><varname>extent</varname></link>: Bounding span or period</para>
+					<para><link linkend="setspan_extent"><varname>extent</varname></link>: Bounding span</para>
 				</listitem>
 
 				<listitem>
@@ -625,7 +625,7 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="ttype_bbox"><varname>ttype::period</varname>, <varname>tnumber::{numspan,tbox}</varname>, <varname>tpoint::stbox</varname></link>: Cast a temporal value to a bounding box</para>
+					<para><link linkend="ttype_bbox"><varname>ttype::tstzspan</varname>, <varname>tnumber::{numspan,tbox}</varname>, <varname>tpoint::stbox</varname></link>: Cast a temporal value to a bounding box</para>
 				</listitem>
 
 				<listitem>

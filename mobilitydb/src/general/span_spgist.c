@@ -112,7 +112,7 @@ spannode_init(SpanNode *nodebox, meosType spantype, meosType basetype)
   memset(nodebox, 0, sizeof(SpanNode));
   Datum min, max;
   ensure_span_type(spantype);
-  if (spantype == T_PERIOD)
+  if (spantype == T_TSTZSPAN)
   {
     min = TimestampTzGetDatum(DT_NOBEGIN);
     max = TimestampTzGetDatum(DT_NOEND);
@@ -469,9 +469,9 @@ PGDLLEXPORT Datum
 Period_spgist_config(PG_FUNCTION_ARGS)
 {
   spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
-  cfg->prefixType = type_oid(T_PERIOD);  /* A type represented by its bounding box */
+  cfg->prefixType = type_oid(T_TSTZSPAN);  /* A type represented by its bounding box */
   cfg->labelType = VOIDOID;  /* We don't need node labels. */
-  cfg->leafType = type_oid(T_PERIOD);
+  cfg->leafType = type_oid(T_TSTZSPAN);
   cfg->canReturnData = false;
   cfg->longValuesOK = false;
   PG_RETURN_VOID();

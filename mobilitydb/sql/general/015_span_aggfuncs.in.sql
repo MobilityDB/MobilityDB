@@ -52,12 +52,12 @@ CREATE FUNCTION span_extent_combinefn(floatspan, floatspan)
   AS 'MODULE_PATHNAME', 'Span_extent_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION span_extent_transfn(period, period)
-  RETURNS period
+CREATE FUNCTION span_extent_transfn(tstzspan, tstzspan)
+  RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Span_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION span_extent_combinefn(period, period)
-  RETURNS period
+CREATE FUNCTION span_extent_combinefn(tstzspan, tstzspan)
+  RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Span_extent_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
@@ -73,9 +73,9 @@ CREATE AGGREGATE extent(floatspan) (
   COMBINEFUNC = span_extent_combinefn,
   PARALLEL = safe
 );
-CREATE AGGREGATE extent(period) (
+CREATE AGGREGATE extent(tstzspan) (
   SFUNC = span_extent_transfn,
-  STYPE = period,
+  STYPE = tstzspan,
   COMBINEFUNC = span_extent_combinefn,
   PARALLEL = safe
 );
@@ -88,8 +88,8 @@ CREATE FUNCTION floatspanset_extent_transfn(floatspan, floatspanset)
   RETURNS floatspan
   AS 'MODULE_PATHNAME', 'Spanset_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION periodset_extent_transfn(period, periodset)
-  RETURNS period
+CREATE FUNCTION periodset_extent_transfn(tstzspan, tstzspanset)
+  RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Spanset_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
@@ -105,9 +105,9 @@ CREATE AGGREGATE extent(floatspanset) (
   COMBINEFUNC = span_extent_combinefn,
   PARALLEL = safe
 );
-CREATE AGGREGATE extent(periodset) (
+CREATE AGGREGATE extent(tstzspanset) (
   SFUNC = periodset_extent_transfn,
-  STYPE = period,
+  STYPE = tstzspan,
   COMBINEFUNC = span_extent_combinefn,
   PARALLEL = safe
 );

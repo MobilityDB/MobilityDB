@@ -25,7 +25,7 @@
 				MobilityDB generalizes Open Geospatial Consortium's Well-Known Text (WKT) and Well-Known Binary (WKB) input/output format for all temporal types. We present next the functions for input and output box types.
 			</para>
 
-		<para>A <varname>tbox</varname> is composed of a numeric and/or time dimensions. For each dimension, a span given, that is,  a <varname>floatspan</varname> for the value dimension and a <varname>period</varname> for the time dimension. Examples of input of <varname>tbox</varname> values are as follows:
+		<para>A <varname>tbox</varname> is composed of a numeric and/or time dimensions. For each dimension, a span given, that is,  a <varname>floatspan</varname> for the value dimension and a <varname>tstzspan</varname> for the time dimension. Examples of input of <varname>tbox</varname> values are as follows:
 			<programlisting language="sql" xml:space="preserve">
 -- Both value and time dimensions
 SELECT tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])';
@@ -36,7 +36,7 @@ SELECT tbox 'TBOX XT((2000-01-01,2000-01-02))';
 </programlisting>
 		</para>
 
-		<para>An <varname>stbox</varname> is composed of a spatial and/or time dimensions, where the coordinates of the spatial dimension may be 2D or 3D. For the temporal dimension a <varname>period</varname> is given and for the spatial dimension minimum and maximum coordinate values are given, where the latter may be Cartesian (planar) or geodetic (spherical). The SRID of the coordinates may be specified; if it is not the case, a value of 0 (unknown) and 4326 (corresponding to WGS84) is assumed, respectively, for planar and geodetic boxes. Geodetic boxes always have a Z dimension to account for the curvature of the underlying sphere or spheroid. Examples of input of <varname>stbox</varname> values are as follows:
+		<para>An <varname>stbox</varname> is composed of a spatial and/or time dimensions, where the coordinates of the spatial dimension may be 2D or 3D. For the temporal dimension a <varname>tstzspan</varname> is given and for the spatial dimension minimum and maximum coordinate values are given, where the latter may be Cartesian (planar) or geodetic (spherical). The SRID of the coordinates may be specified; if it is not the case, a value of 0 (unknown) and 4326 (corresponding to WGS84) is assumed, respectively, for planar and geodetic boxes. Geodetic boxes always have a Z dimension to account for the curvature of the underlying sphere or spheroid. Examples of input of <varname>stbox</varname> values are as follows:
 			<programlisting language="sql" xml:space="preserve">
 -- Only value dimension with X and Y coordinates
 SELECT stbox 'STBOX X(((1.0,2.0),(1.0,2.0)))';
@@ -160,11 +160,11 @@ SELECT stboxFromHexWKB(
 				<programlisting language="sql" xml:space="preserve">
 -- Both value and time dimensions
 SELECT tbox(1.0, timestamptz '2001-01-01');
-SELECT tbox(floatspan '[1.0, 2.0)', period '[2001-01-01,2001-01-02)');
+SELECT tbox(floatspan '[1.0, 2.0)', tstzspan '[2001-01-01,2001-01-02)');
 -- Only value dimension
 SELECT tbox(floatspan '[1.0,2.0)');
 -- Only time dimension
-SELECT tbox(period '[2001-01-01,2001-01-02)');
+SELECT tbox(tstzspan '[2001-01-01,2001-01-02)');
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -179,11 +179,11 @@ SELECT tbox(period '[2001-01-01,2001-01-02)');
 				<para>Constructor for <varname>stbox</varname></para>
 				<para><varname>stbox(float,float,float,float,integer): stbox</varname></para>
 				<para><varname>stbox_z(float,float,float,float,float,float,integer): stbox</varname></para>
-				<para><varname>stbox_t({timestamptz,period},float,float,float,float,integer): stbox</varname></para>
-				<para><varname>stbox_zt({timestamptz,period},float,float,float,float,float,float,integer): stbox</varname></para>
+				<para><varname>stbox_t({timestamptz,tstzspan},float,float,float,float,integer): stbox</varname></para>
+				<para><varname>stbox_zt({timestamptz,tstzspan},float,float,float,float,float,float,integer): stbox</varname></para>
 				<para><varname>geodstbox_t(time): stbox</varname></para>
 				<para><varname>geodstbox_z(float,float,float,float,float,float,integer): stbox</varname></para>
-				<para><varname>geodstbox_zt({timestamptz,period},float,float,float,float,float,float,integer): stbox</varname></para>
+				<para><varname>geodstbox_zt({timestamptz,tstzspan},float,float,float,float,float,float,integer): stbox</varname></para>
 				<para><varname>stbox(geo): stbox</varname></para>
 				<para><varname>stbox_t(time): stbox</varname></para>
 				<para><varname>stbox(geo,time): stbox</varname></para>
@@ -207,9 +207,9 @@ SELECT geodstbox_zt(1.0,2.0,3.0, 1.0,2.0,3.0, '[2001-01-03,2001-01-04]');
 -- Only time dimension for geodetic box
 SELECT geodstbox_t('[2001-01-03,2001-01-03]');
 -- Geometry and time dimension
-SELECT stbox(geometry 'Linestring(1 1 1,2 2 2)', period '[2001-01-03,2001-01-05]');
+SELECT stbox(geometry 'Linestring(1 1 1,2 2 2)', tstzspan '[2001-01-03,2001-01-05]');
 -- Geography and time dimension
-SELECT stbox(geography 'Linestring(1 1 1,2 2 2)', period '[2001-01-03,2001-01-05]');
+SELECT stbox(geography 'Linestring(1 1 1,2 2 2)', tstzspan '[2001-01-03,2001-01-05]');
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -222,11 +222,11 @@ SELECT stbox(geography 'Linestring(1 1 1,2 2 2)', period '[2001-01-03,2001-01-05
 			<listitem id="tbox_cast_to">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
 				<para>Cast a <varname>tbox</varname> to another type</para>
-				<para><varname>tbox::{floatspan,period}</varname></para>
+				<para><varname>tbox::{floatspan,tstzspan}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbox 'TBOX XT((1,2),[2000-01-01,2000-01-02))'::floatspan;
 -- (1, 2)
-SELECT tbox 'TBOX XT((1,2),[2000-01-01,2000-01-02))'::period;
+SELECT tbox 'TBOX XT((1,2),[2000-01-01,2000-01-02))'::tstzspan;
 -- [2000-01-01, 2000-01-02)
 </programlisting>
 			</listitem>
@@ -238,7 +238,7 @@ SELECT tbox 'TBOX XT((1,2),[2000-01-01,2000-01-02))'::period;
 				<programlisting language="sql" xml:space="preserve">
 SELECT floatspan '(1.0,2.0)'::tbox;
 -- TBOX X((1, 2))
-SELECT periodset '{(2001-01-01,2001-01-02),(2001-01-03,2001-01-04)}'::tbox;
+SELECT tstzspanset '{(2001-01-01,2001-01-02),(2001-01-03,2001-01-04)}'::tbox;
 -- TBOX T((2001-01-01,2001-01-04))
 </programlisting>
 			</listitem>
@@ -246,9 +246,9 @@ SELECT periodset '{(2001-01-01,2001-01-02),(2001-01-03,2001-01-04)}'::tbox;
 			<listitem id="stbox_cast_to">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
 				<para>Cast an <varname>stbox</varname> to a another type</para>
-				<para><varname>stbox::{period,geometry}</varname></para>
+				<para><varname>stbox::{tstzspan,geometry}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-03])'::period;
+SELECT stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-03])'::tstzspan;
 -- [2000-01-01, 2000-01-03]
 SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX XT(((1,1),(5,5)),[2000-01-01,2000-01-05])'::geometry);
 -- SRID=4326;POLYGON((1 1,1 5,5 5,5 1,1 1))
@@ -272,7 +272,7 @@ SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(5,5,5)),[2000-01-01,2000-01
 				<programlisting language="sql" xml:space="preserve">
 SELECT geometry 'Linestring(1 1,2 2)'::stbox;
 -- STBOX X(((1,1),(2,2)))
-SELECT periodset '{(2001-01-01,2001-01-02),(2001-01-03,2001-01-04)}'::stbox;
+SELECT tstzspanset '{(2001-01-01,2001-01-02),(2001-01-03,2001-01-04)}'::stbox;
 -- STBOX T((2001-01-01,2001-01-04))
 </programlisting>
 			</listitem>

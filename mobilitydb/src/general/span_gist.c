@@ -174,7 +174,7 @@ span_gist_get_span(FunctionCallInfo fcinfo, Span *result, Oid typid)
     set_set_span(s, result);
   }
   else if (type == T_INTSPAN || type == T_BIGINTSPAN || type == T_FLOATSPAN ||
-    type == T_PERIOD)
+    type == T_TSTZSPAN)
   {
     Span *s = PG_GETARG_SPAN_P(1);
     if (s == NULL)
@@ -182,7 +182,7 @@ span_gist_get_span(FunctionCallInfo fcinfo, Span *result, Oid typid)
     memcpy(result, s, sizeof(Span));
   }
   else if (type == T_INTSPANSET || type == T_BIGINTSPANSET ||
-    type == T_FLOATSPANSET || type == T_PERIODSET)
+    type == T_FLOATSPANSET || type == T_TSTZSPANSET)
   {
     Datum psdatum = PG_GETARG_DATUM(1);
     spanset_span_slice(psdatum, result);

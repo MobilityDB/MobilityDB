@@ -191,7 +191,7 @@ SELECT MAX(storageSize(ts)) FROM tbl_tstzset;
   85
 (1 row)
 
-SELECT MIN(lower(period(ts))) FROM tbl_tstzset;
+SELECT MIN(lower(tstzspan(ts))) FROM tbl_tstzset;
           min           
 ------------------------
  2001-01-02 01:48:00+00

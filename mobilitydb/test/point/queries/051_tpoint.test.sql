@@ -407,21 +407,21 @@ SELECT asEWKT(tgeogpoint(ST_Point(1,1), tstzset '{2012-01-01, 2012-01-02, 2012-0
 SELECT asEWKT(tgeompoint(NULL, tstzset '{2012-01-01, 2012-01-02, 2012-01-03}'));
 SELECT asEWKT(tgeompoint(NULL, tstzset '{2012-01-01, 2012-01-02, 2012-01-03}'));
 
-SELECT asEWKT(tgeompoint(ST_Point(1,1), period '[2012-01-01, 2012-01-03]'));
-SELECT asEWKT(tgeogpoint(ST_Point(1,1), period '[2012-01-01, 2012-01-03]'));
-SELECT asEWKT(tgeompoint(ST_Point(1,1), period '[2012-01-01, 2012-01-03]', false));
-SELECT asEWKT(tgeogpoint(ST_Point(1,1), period '[2012-01-01, 2012-01-03]', false));
+SELECT asEWKT(tgeompoint(ST_Point(1,1), tstzspan '[2012-01-01, 2012-01-03]'));
+SELECT asEWKT(tgeogpoint(ST_Point(1,1), tstzspan '[2012-01-01, 2012-01-03]'));
+SELECT asEWKT(tgeompoint(ST_Point(1,1), tstzspan '[2012-01-01, 2012-01-03]', false));
+SELECT asEWKT(tgeogpoint(ST_Point(1,1), tstzspan '[2012-01-01, 2012-01-03]', false));
 -- NULL
-SELECT asEWKT(tgeompoint(NULL, period '[2012-01-01, 2012-01-03]'));
-SELECT asEWKT(tgeogpoint(NULL, period '[2012-01-01, 2012-01-03]'));
+SELECT asEWKT(tgeompoint(NULL, tstzspan '[2012-01-01, 2012-01-03]'));
+SELECT asEWKT(tgeogpoint(NULL, tstzspan '[2012-01-01, 2012-01-03]'));
 
-SELECT asEWKT(tgeompoint(ST_Point(1,1), periodset '{[2012-01-01, 2012-01-03]}'));
-SELECT asEWKT(tgeogpoint(ST_Point(1,1), periodset '{[2012-01-01, 2012-01-03]}'));
-SELECT asEWKT(tgeompoint(ST_Point(1,1), periodset '{[2012-01-01, 2012-01-03]}', false));
-SELECT asEWKT(tgeogpoint(ST_Point(1,1), periodset '{[2012-01-01, 2012-01-03]}', false));
+SELECT asEWKT(tgeompoint(ST_Point(1,1), tstzspanset '{[2012-01-01, 2012-01-03]}'));
+SELECT asEWKT(tgeogpoint(ST_Point(1,1), tstzspanset '{[2012-01-01, 2012-01-03]}'));
+SELECT asEWKT(tgeompoint(ST_Point(1,1), tstzspanset '{[2012-01-01, 2012-01-03]}', false));
+SELECT asEWKT(tgeogpoint(ST_Point(1,1), tstzspanset '{[2012-01-01, 2012-01-03]}', false));
 -- NULL
-SELECT asEWKT(tgeompoint(NULL, periodset '{[2012-01-01, 2012-01-03]}'));
-SELECT asEWKT(tgeompoint(NULL, periodset '{[2012-01-01, 2012-01-03]}'));
+SELECT asEWKT(tgeompoint(NULL, tstzspanset '{[2012-01-01, 2012-01-03]}'));
+SELECT asEWKT(tgeompoint(NULL, tstzspanset '{[2012-01-01, 2012-01-03]}'));
 
 
 -------------------------------------------------------------------------------
@@ -742,14 +742,14 @@ SELECT getTime(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02
 SELECT getTime(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
 SELECT getTime(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
 
-SELECT period(tgeompoint 'Point(1 1)@2000-01-01');
-SELECT period(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
-SELECT period(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
-SELECT period(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
-SELECT period(tgeogpoint 'Point(1.5 1.5)@2000-01-01');
-SELECT period(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
-SELECT period(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
-SELECT period(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
+SELECT tstzspan(tgeompoint 'Point(1 1)@2000-01-01');
+SELECT tstzspan(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+SELECT tstzspan(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+SELECT tstzspan(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+SELECT tstzspan(tgeogpoint 'Point(1.5 1.5)@2000-01-01');
+SELECT tstzspan(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
+SELECT tstzspan(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
+SELECT tstzspan(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
 
 SELECT timespan(tgeompoint 'Point(1 1)@2000-01-01');
 SELECT timespan(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
@@ -1186,41 +1186,41 @@ SELECT asText(minusTime(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2
 SELECT asText(minusTime(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tstzset '{2000-01-01}'));
 SELECT asText(minusTime(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tstzset '{2000-01-01}'));
 
-SELECT asText(atTime(tgeompoint 'Point(1 1)@2000-01-01', period '[2000-01-01,2000-01-02]'));
-SELECT asText(atTime(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', period '[2000-01-01,2000-01-02]'));
-SELECT asText(atTime(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', period '[2000-01-01,2000-01-02]'));
-SELECT asText(atTime(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', period '[2000-01-01,2000-01-02]'));
-SELECT asText(atTime(tgeogpoint 'Point(1.5 1.5)@2000-01-01', period '[2000-01-01,2000-01-02]'));
-SELECT asText(atTime(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', period '[2000-01-01,2000-01-02]'));
-SELECT asText(atTime(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', period '[2000-01-01,2000-01-02]'));
-SELECT asText(atTime(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', period '[2000-01-01,2000-01-02]'));
+SELECT asText(atTime(tgeompoint 'Point(1 1)@2000-01-01', tstzspan '[2000-01-01,2000-01-02]'));
+SELECT asText(atTime(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tstzspan '[2000-01-01,2000-01-02]'));
+SELECT asText(atTime(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tstzspan '[2000-01-01,2000-01-02]'));
+SELECT asText(atTime(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tstzspan '[2000-01-01,2000-01-02]'));
+SELECT asText(atTime(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tstzspan '[2000-01-01,2000-01-02]'));
+SELECT asText(atTime(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tstzspan '[2000-01-01,2000-01-02]'));
+SELECT asText(atTime(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tstzspan '[2000-01-01,2000-01-02]'));
+SELECT asText(atTime(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tstzspan '[2000-01-01,2000-01-02]'));
 
-SELECT asText(minusTime(tgeompoint 'Point(1 1)@2000-01-01', period '[2000-01-01,2000-01-02]'));
-SELECT asText(minusTime(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', period '[2000-01-01,2000-01-02]'));
-SELECT asText(minusTime(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', period '[2000-01-01,2000-01-02]'));
-SELECT asText(minusTime(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', period '[2000-01-01,2000-01-02]'));
-SELECT asText(minusTime(tgeogpoint 'Point(1.5 1.5)@2000-01-01', period '[2000-01-01,2000-01-02]'));
-SELECT asText(minusTime(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', period '[2000-01-01,2000-01-02]'));
-SELECT asText(minusTime(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', period '[2000-01-01,2000-01-02]'));
-SELECT asText(minusTime(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', period '[2000-01-01,2000-01-02]'));
+SELECT asText(minusTime(tgeompoint 'Point(1 1)@2000-01-01', tstzspan '[2000-01-01,2000-01-02]'));
+SELECT asText(minusTime(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tstzspan '[2000-01-01,2000-01-02]'));
+SELECT asText(minusTime(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tstzspan '[2000-01-01,2000-01-02]'));
+SELECT asText(minusTime(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tstzspan '[2000-01-01,2000-01-02]'));
+SELECT asText(minusTime(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tstzspan '[2000-01-01,2000-01-02]'));
+SELECT asText(minusTime(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tstzspan '[2000-01-01,2000-01-02]'));
+SELECT asText(minusTime(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tstzspan '[2000-01-01,2000-01-02]'));
+SELECT asText(minusTime(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tstzspan '[2000-01-01,2000-01-02]'));
 
-SELECT asText(atTime(tgeompoint 'Point(1 1)@2000-01-01', periodset '{[2000-01-01,2000-01-02]}'));
-SELECT asText(atTime(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', periodset '{[2000-01-01,2000-01-02]}'));
-SELECT asText(atTime(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', periodset '{[2000-01-01,2000-01-02]}'));
-SELECT asText(atTime(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', periodset '{[2000-01-01,2000-01-02]}'));
-SELECT asText(atTime(tgeogpoint 'Point(1.5 1.5)@2000-01-01', periodset '{[2000-01-01,2000-01-02]}'));
-SELECT asText(atTime(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', periodset '{[2000-01-01,2000-01-02]}'));
-SELECT asText(atTime(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', periodset '{[2000-01-01,2000-01-02]}'));
-SELECT asText(atTime(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', periodset '{[2000-01-01,2000-01-02]}'));
+SELECT asText(atTime(tgeompoint 'Point(1 1)@2000-01-01', tstzspanset '{[2000-01-01,2000-01-02]}'));
+SELECT asText(atTime(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tstzspanset '{[2000-01-01,2000-01-02]}'));
+SELECT asText(atTime(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tstzspanset '{[2000-01-01,2000-01-02]}'));
+SELECT asText(atTime(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tstzspanset '{[2000-01-01,2000-01-02]}'));
+SELECT asText(atTime(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tstzspanset '{[2000-01-01,2000-01-02]}'));
+SELECT asText(atTime(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tstzspanset '{[2000-01-01,2000-01-02]}'));
+SELECT asText(atTime(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tstzspanset '{[2000-01-01,2000-01-02]}'));
+SELECT asText(atTime(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tstzspanset '{[2000-01-01,2000-01-02]}'));
 
-SELECT asText(minusTime(tgeompoint 'Point(1 1)@2000-01-01', periodset '{[2000-01-01,2000-01-02]}'));
-SELECT asText(minusTime(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', periodset '{[2000-01-01,2000-01-02]}'));
-SELECT asText(minusTime(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', periodset '{[2000-01-01,2000-01-02]}'));
-SELECT asText(minusTime(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', periodset '{[2000-01-01,2000-01-02]}'));
-SELECT asText(minusTime(tgeogpoint 'Point(1.5 1.5)@2000-01-01', periodset '{[2000-01-01,2000-01-02]}'));
-SELECT asText(minusTime(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', periodset '{[2000-01-01,2000-01-02]}'));
-SELECT asText(minusTime(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', periodset '{[2000-01-01,2000-01-02]}'));
-SELECT asText(minusTime(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', periodset '{[2000-01-01,2000-01-02]}'));
+SELECT asText(minusTime(tgeompoint 'Point(1 1)@2000-01-01', tstzspanset '{[2000-01-01,2000-01-02]}'));
+SELECT asText(minusTime(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tstzspanset '{[2000-01-01,2000-01-02]}'));
+SELECT asText(minusTime(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tstzspanset '{[2000-01-01,2000-01-02]}'));
+SELECT asText(minusTime(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tstzspanset '{[2000-01-01,2000-01-02]}'));
+SELECT asText(minusTime(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tstzspanset '{[2000-01-01,2000-01-02]}'));
+SELECT asText(minusTime(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tstzspanset '{[2000-01-01,2000-01-02]}'));
+SELECT asText(minusTime(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tstzspanset '{[2000-01-01,2000-01-02]}'));
+SELECT asText(minusTime(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tstzspanset '{[2000-01-01,2000-01-02]}'));
 
 -------------------------------------------------------------------------------
 -- Modification functions
@@ -1244,23 +1244,23 @@ SELECT asText(deleteTime(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@
 SELECT asText(deleteTime(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tstzset '{2000-01-01}'));
 SELECT asText(deleteTime(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tstzset '{2000-01-01}'));
 
-SELECT asText(deleteTime(tgeompoint 'Point(1 1)@2000-01-01', period '[2000-01-01,2000-01-02]'));
-SELECT asText(deleteTime(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', period '[2000-01-01,2000-01-02]'));
-SELECT asText(deleteTime(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', period '[2000-01-01,2000-01-02]'));
-SELECT asText(deleteTime(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', period '[2000-01-01,2000-01-02]'));
-SELECT asText(deleteTime(tgeogpoint 'Point(1.5 1.5)@2000-01-01', period '[2000-01-01,2000-01-02]'));
-SELECT asText(deleteTime(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', period '[2000-01-01,2000-01-02]'));
-SELECT asText(deleteTime(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', period '[2000-01-01,2000-01-02]'));
-SELECT asText(deleteTime(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', period '[2000-01-01,2000-01-02]'));
+SELECT asText(deleteTime(tgeompoint 'Point(1 1)@2000-01-01', tstzspan '[2000-01-01,2000-01-02]'));
+SELECT asText(deleteTime(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tstzspan '[2000-01-01,2000-01-02]'));
+SELECT asText(deleteTime(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tstzspan '[2000-01-01,2000-01-02]'));
+SELECT asText(deleteTime(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tstzspan '[2000-01-01,2000-01-02]'));
+SELECT asText(deleteTime(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tstzspan '[2000-01-01,2000-01-02]'));
+SELECT asText(deleteTime(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tstzspan '[2000-01-01,2000-01-02]'));
+SELECT asText(deleteTime(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tstzspan '[2000-01-01,2000-01-02]'));
+SELECT asText(deleteTime(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tstzspan '[2000-01-01,2000-01-02]'));
 
-SELECT asText(deleteTime(tgeompoint 'Point(1 1)@2000-01-01', periodset '{[2000-01-01,2000-01-02]}'));
-SELECT asText(deleteTime(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', periodset '{[2000-01-01,2000-01-02]}'));
-SELECT asText(deleteTime(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', periodset '{[2000-01-01,2000-01-02]}'));
-SELECT asText(deleteTime(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', periodset '{[2000-01-01,2000-01-02]}'));
-SELECT asText(deleteTime(tgeogpoint 'Point(1.5 1.5)@2000-01-01', periodset '{[2000-01-01,2000-01-02]}'));
-SELECT asText(deleteTime(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', periodset '{[2000-01-01,2000-01-02]}'));
-SELECT asText(deleteTime(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', periodset '{[2000-01-01,2000-01-02]}'));
-SELECT asText(deleteTime(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', periodset '{[2000-01-01,2000-01-02]}'));
+SELECT asText(deleteTime(tgeompoint 'Point(1 1)@2000-01-01', tstzspanset '{[2000-01-01,2000-01-02]}'));
+SELECT asText(deleteTime(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tstzspanset '{[2000-01-01,2000-01-02]}'));
+SELECT asText(deleteTime(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tstzspanset '{[2000-01-01,2000-01-02]}'));
+SELECT asText(deleteTime(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tstzspanset '{[2000-01-01,2000-01-02]}'));
+SELECT asText(deleteTime(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tstzspanset '{[2000-01-01,2000-01-02]}'));
+SELECT asText(deleteTime(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tstzspanset '{[2000-01-01,2000-01-02]}'));
+SELECT asText(deleteTime(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tstzspanset '{[2000-01-01,2000-01-02]}'));
+SELECT asText(deleteTime(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tstzspanset '{[2000-01-01,2000-01-02]}'));
 
 -------------------------------------------------------------------------------
 -- Intersects functions
@@ -1284,23 +1284,23 @@ SELECT overlapsTime(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-
 SELECT overlapsTime(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tstzset '{2000-01-01}');
 SELECT overlapsTime(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tstzset '{2000-01-01}');
 
-SELECT overlapsTime(tgeompoint 'Point(1 1)@2000-01-01', period '[2000-01-01,2000-01-02]');
-SELECT overlapsTime(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', period '[2000-01-01,2000-01-02]');
-SELECT overlapsTime(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', period '[2000-01-01,2000-01-02]');
-SELECT overlapsTime(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', period '[2000-01-01,2000-01-02]');
-SELECT overlapsTime(tgeogpoint 'Point(1.5 1.5)@2000-01-01', period '[2000-01-01,2000-01-02]');
-SELECT overlapsTime(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', period '[2000-01-01,2000-01-02]');
-SELECT overlapsTime(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', period '[2000-01-01,2000-01-02]');
-SELECT overlapsTime(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', period '[2000-01-01,2000-01-02]');
+SELECT overlapsTime(tgeompoint 'Point(1 1)@2000-01-01', tstzspan '[2000-01-01,2000-01-02]');
+SELECT overlapsTime(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tstzspan '[2000-01-01,2000-01-02]');
+SELECT overlapsTime(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tstzspan '[2000-01-01,2000-01-02]');
+SELECT overlapsTime(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tstzspan '[2000-01-01,2000-01-02]');
+SELECT overlapsTime(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tstzspan '[2000-01-01,2000-01-02]');
+SELECT overlapsTime(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tstzspan '[2000-01-01,2000-01-02]');
+SELECT overlapsTime(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tstzspan '[2000-01-01,2000-01-02]');
+SELECT overlapsTime(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tstzspan '[2000-01-01,2000-01-02]');
 
-SELECT overlapsTime(tgeompoint 'Point(1 1)@2000-01-01', periodset '{[2000-01-01,2000-01-02]}');
-SELECT overlapsTime(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', periodset '{[2000-01-01,2000-01-02]}');
-SELECT overlapsTime(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', periodset '{[2000-01-01,2000-01-02]}');
-SELECT overlapsTime(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', periodset '{[2000-01-01,2000-01-02]}');
-SELECT overlapsTime(tgeogpoint 'Point(1.5 1.5)@2000-01-01', periodset '{[2000-01-01,2000-01-02]}');
-SELECT overlapsTime(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', periodset '{[2000-01-01,2000-01-02]}');
-SELECT overlapsTime(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', periodset '{[2000-01-01,2000-01-02]}');
-SELECT overlapsTime(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', periodset '{[2000-01-01,2000-01-02]}');
+SELECT overlapsTime(tgeompoint 'Point(1 1)@2000-01-01', tstzspanset '{[2000-01-01,2000-01-02]}');
+SELECT overlapsTime(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tstzspanset '{[2000-01-01,2000-01-02]}');
+SELECT overlapsTime(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tstzspanset '{[2000-01-01,2000-01-02]}');
+SELECT overlapsTime(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tstzspanset '{[2000-01-01,2000-01-02]}');
+SELECT overlapsTime(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tstzspanset '{[2000-01-01,2000-01-02]}');
+SELECT overlapsTime(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tstzspanset '{[2000-01-01,2000-01-02]}');
+SELECT overlapsTime(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tstzspanset '{[2000-01-01,2000-01-02]}');
+SELECT overlapsTime(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tstzspanset '{[2000-01-01,2000-01-02]}');
 
 -------------------------------------------------------------------------------
 -- Comparison functions and B-tree indexing
