@@ -36,8 +36,8 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <utils/palloc.h>
 #include <fmgr.h>
+#include <utils/palloc.h>
 /* MEOS */
 #include "general/temporal.h"
 /* MobilityDB */

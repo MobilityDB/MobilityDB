@@ -47,6 +47,7 @@
 #include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
+#include <fmgr.h>
 #include <catalog/pg_operator.h>
 /* MEOS */
 #include <meos.h>
