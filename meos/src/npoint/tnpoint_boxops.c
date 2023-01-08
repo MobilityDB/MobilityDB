@@ -6,7 +6,7 @@
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -242,8 +242,8 @@ bool
 npoint_timestamp_set_stbox(const Npoint *np, TimestampTz t, STBox *box)
 {
   npoint_set_stbox(np, box);
-  span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t),
-    true, true, T_TIMESTAMPTZ, &box->period);
+  span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
+    T_TIMESTAMPTZ, &box->period);
   MOBDB_FLAGS_SET_T(box->flags, true);
   return true;
 }
