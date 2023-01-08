@@ -435,7 +435,7 @@ extern SpanSet *tsequence_time(const TSequence *seq);
 extern TimestampTz *tsequence_timestamps(const TSequence *seq, int *count);
 extern bool tsequence_value_at_timestamp(const TSequence *seq, TimestampTz t, bool strict, Datum *result);
 extern Datum *tsequence_values(const TSequence *seq, int *count);
-extern Interval *tsequenceset_duration(const TSequenceSet *ss);
+extern Interval *tsequenceset_duration(const TSequenceSet *ss, bool boundspan);
 extern TimestampTz tsequenceset_end_timestamp(const TSequenceSet *ss);
 extern uint32 tsequenceset_hash(const TSequenceSet *ss);
 extern const TInstant *tsequenceset_inst_n(const TSequenceSet *ss, int n);

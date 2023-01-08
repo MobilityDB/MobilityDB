@@ -59,19 +59,19 @@ SELECT tstzspan ('2000-01-02','2000-01-01');
 -- Casting
 -------------------------------------------------------------------------------
 
-SELECT tstzrange(tstzspan '[2000-01-01,2000-01-01]');
-SELECT tstzrange(tstzspan '[2000-01-01,2000-01-02]');
-SELECT tstzrange(tstzspan '(2000-01-01,2000-01-02]');
-SELECT tstzrange(tstzspan '[2000-01-01,2000-01-02)');
-SELECT tstzrange(tstzspan '(2000-01-01,2000-01-02)');
+SELECT range(tstzspan '[2000-01-01,2000-01-01]');
+SELECT range(tstzspan '[2000-01-01,2000-01-02]');
+SELECT range(tstzspan '(2000-01-01,2000-01-02]');
+SELECT range(tstzspan '[2000-01-01,2000-01-02)');
+SELECT range(tstzspan '(2000-01-01,2000-01-02)');
 
-SELECT tstzspan(tstzrange '[2000-01-01,2000-01-01]');
-SELECT tstzspan(tstzrange '[2000-01-01,2000-01-02]');
-SELECT tstzspan(tstzrange '(2000-01-01,2000-01-02]');
-SELECT tstzspan(tstzrange '[2000-01-01,2000-01-02)');
-SELECT tstzspan(tstzrange'(2000-01-01,2000-01-02)');
+SELECT span(tstzrange '[2000-01-01,2000-01-01]');
+SELECT span(tstzrange '[2000-01-01,2000-01-02]');
+SELECT span(tstzrange '(2000-01-01,2000-01-02]');
+SELECT span(tstzrange '[2000-01-01,2000-01-02)');
+SELECT span(tstzrange'(2000-01-01,2000-01-02)');
 
-SELECT tstzspan(timestamptz '2000-01-01');
+SELECT span(timestamptz '2000-01-01');
 SELECT timestamptz '2000-01-01'::tstzspan;
 /* Errors */
 SELECT tstzrange '[2000-01-01,]'::tstzspan;

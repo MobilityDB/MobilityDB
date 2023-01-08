@@ -690,8 +690,11 @@ periodset_timespan(const SpanSet *ps)
  * @pymeosfunc duration()
  */
 Interval *
-periodset_duration(const SpanSet *ps)
+periodset_duration(const SpanSet *ps, bool boundspan)
 {
+  if (boundspan)
+    return pg_timestamp_mi(ps->span.upper, ps->span.lower);
+
   const Span *p = spanset_sp_n(ps, 0);
   Interval *result = pg_timestamp_mi(p->upper, p->lower);
   for (int i = 1; i < ps->count; i++)

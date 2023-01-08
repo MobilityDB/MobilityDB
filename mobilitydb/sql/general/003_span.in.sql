@@ -280,71 +280,71 @@ CREATE FUNCTION tstzspan(timestamptz, timestamptz, boolean DEFAULT true, boolean
  * Casting
  ******************************************************************************/
 
-CREATE FUNCTION intspan(integer)
+CREATE FUNCTION span(integer)
   RETURNS intspan
   AS 'MODULE_PATHNAME', 'Value_to_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION bigintspan(bigint)
+CREATE FUNCTION span(bigint)
   RETURNS bigintspan
   AS 'MODULE_PATHNAME', 'Value_to_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION floatspan(float)
+CREATE FUNCTION span(float)
   RETURNS floatspan
   AS 'MODULE_PATHNAME', 'Value_to_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tstzspan(timestamptz)
+CREATE FUNCTION span(timestamptz)
   RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Value_to_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION int4range(intspan)
+CREATE CAST (integer AS intspan) WITH FUNCTION span(integer);
+CREATE CAST (bigint AS bigintspan) WITH FUNCTION span(bigint);
+CREATE CAST (float AS floatspan) WITH FUNCTION span(float);
+CREATE CAST (timestamptz AS tstzspan) WITH FUNCTION span(timestamptz);
+
+CREATE FUNCTION span(intset)
+  RETURNS intspan
+  AS 'MODULE_PATHNAME', 'Set_to_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span(bigintset)
+  RETURNS bigintspan
+  AS 'MODULE_PATHNAME', 'Set_to_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span(floatset)
+  RETURNS floatspan
+  AS 'MODULE_PATHNAME', 'Set_to_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span(tstzset)
+  RETURNS tstzspan
+  AS 'MODULE_PATHNAME', 'Set_to_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE CAST (intset AS intspan) WITH FUNCTION span(intset);
+CREATE CAST (bigintset AS bigintspan) WITH FUNCTION span(bigintset);
+CREATE CAST (floatset AS floatspan) WITH FUNCTION span(floatset);
+CREATE CAST (tstzset AS tstzspan) WITH FUNCTION span(tstzset);
+
+CREATE FUNCTION span(int4range)
+  RETURNS intspan
+  AS 'MODULE_PATHNAME', 'Range_to_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span(tstzrange)
+  RETURNS tstzspan
+  AS 'MODULE_PATHNAME', 'Range_to_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION range(intspan)
   RETURNS int4range
   AS 'MODULE_PATHNAME', 'Span_to_range'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tstzrange(tstzspan)
+CREATE FUNCTION range(tstzspan)
   RETURNS tstzrange
   AS 'MODULE_PATHNAME', 'Span_to_range'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION intspan(int4range)
-  RETURNS intspan
-  AS 'MODULE_PATHNAME', 'Range_to_span'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tstzspan(tstzrange)
-  RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Range_to_span'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE CAST (integer AS intspan) WITH FUNCTION intspan(integer);
-CREATE CAST (bigint AS bigintspan) WITH FUNCTION bigintspan(bigint);
-CREATE CAST (float AS floatspan) WITH FUNCTION floatspan(float);
-CREATE CAST (timestamptz AS tstzspan) WITH FUNCTION tstzspan(timestamptz);
-CREATE CAST (int4range AS intspan) WITH FUNCTION intspan(int4range);
-CREATE CAST (intspan AS int4range) WITH FUNCTION int4range(intspan);
-CREATE CAST (tstzrange AS tstzspan) WITH FUNCTION tstzspan(tstzrange);
-CREATE CAST (tstzspan AS tstzrange) WITH FUNCTION tstzrange(tstzspan);
-
-CREATE FUNCTION intspan(intset)
-  RETURNS intspan
-  AS 'MODULE_PATHNAME', 'Set_to_span'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION bigintspan(bigintset)
-  RETURNS bigintspan
-  AS 'MODULE_PATHNAME', 'Set_to_span'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION floatspan(floatset)
-  RETURNS floatspan
-  AS 'MODULE_PATHNAME', 'Set_to_span'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tstzspan(tstzset)
-  RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Set_to_span'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE CAST (intset AS intspan) WITH FUNCTION intspan(intset);
-CREATE CAST (bigintset AS bigintspan) WITH FUNCTION bigintspan(bigintset);
-CREATE CAST (floatset AS floatspan) WITH FUNCTION floatspan(floatset);
-CREATE CAST (tstzset AS tstzspan) WITH FUNCTION tstzspan(tstzset);
+CREATE CAST (int4range AS intspan) WITH FUNCTION span(int4range);
+CREATE CAST (tstzrange AS tstzspan) WITH FUNCTION span(tstzrange);
+CREATE CAST (intspan AS int4range) WITH FUNCTION range(intspan);
+CREATE CAST (tstzspan AS tstzrange) WITH FUNCTION range(tstzspan);
 
 /*****************************************************************************
  * Transformation functions

@@ -305,7 +305,7 @@ SELECT floatspan(20.5, 25);
 -- Integer span defined with four arguments
 SELECT SELECT intspan (20, 25, false, true);
 -- [21, 26)
--- Period defined with four arguments
+-- Time span defined with four arguments
 SELECT tstzspan('2001-01-01 08:00:00', '2001-01-03 09:30:00', false, true);
 -- (2001-01-01 08:00:00+01, 2001-01-03 09:30:00+01]
 </programlisting>
@@ -531,23 +531,14 @@ SELECT width(intspanset '{[1,2],[4,5]}');
 				<listitem id="setspan_duration">
 					<indexterm><primary><varname>duration</varname></primary></indexterm>
 					<para>Get the duration</para>
-					<para><varname>duration({tstzspan,tstzspanset}): interval</varname></para>
+					<para><varname>duration({tstzspan,tstzspanset}, bool boundspan=FALSE): interval</varname></para>
+					<para>An additional parameter can be set to true to compute the duration of the bounding time span, thus ignoring the potential time gaps</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT duration(tstzspan '[2001-01-01, 2001-01-03)');
 -- 2 days
 SELECT duration(tstzspanset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-05)}');
 -- 3 days
-</programlisting>
-				</listitem>
-
-				<listitem id="setspan_timespan">
-					<indexterm><primary><varname>timespan</varname></primary></indexterm>
-					<para>Get the timespan ignoring the potential time gaps</para>
-					<para><varname>timespan({tstzset,tstzspanset}): interval</varname></para>
-					<programlisting language="sql" xml:space="preserve">
-SELECT timespan(tstzset '{2001-01-01, 2001-01-03}');
--- 2 days
-SELECT timespan(tstzspanset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-05)}');
+SELECT duration(tstzspanset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-05)}', true);
 -- 4 days
 </programlisting>
 				</listitem>
@@ -622,14 +613,12 @@ SELECT timestamps(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-0
 
 				<listitem id="numSpans">
 					<indexterm><primary><varname>numSpans</varname></primary></indexterm>
-					<indexterm><primary><varname>numPeriods</varname></primary></indexterm>
-					<para>Get the number of spans or tstzspans</para>
+					<para>Get the number of spans</para>
 					<para><varname>numSpans(spanset): integer</varname></para>
-					<para><varname>numPeriods(tstzspanset): integer</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT numSpans(intspanset '{[1,3),[4,4],[6,7)}');
 -- 3
-SELECT numPeriods(tstzspanset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-04],
+SELECT numSpans(tstzspanset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-04],
   [2001-01-05, 2001-01-06)}');
 -- 3
 </programlisting>

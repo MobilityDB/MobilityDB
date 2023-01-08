@@ -166,14 +166,14 @@ CREATE FUNCTION tnpoint(tgeompoint)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Tgeompoint_to_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tstzspan(tnpoint)
+CREATE FUNCTION timeSpan(tnpoint)
   RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Temporal_to_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tnpoint AS tgeompoint) WITH FUNCTION tgeompoint(tnpoint);
 CREATE CAST (tgeompoint AS tnpoint) WITH FUNCTION tnpoint(tgeompoint);
-CREATE CAST (tnpoint AS tstzspan) WITH FUNCTION tstzspan(tnpoint);
+CREATE CAST (tnpoint AS tstzspan) WITH FUNCTION timeSpan(tnpoint);
 
 /******************************************************************************
  * Transformation functions
@@ -300,12 +300,7 @@ CREATE FUNCTION endValue(tnpoint)
   AS 'MODULE_PATHNAME', 'Temporal_end_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION timespan(tnpoint)
-  RETURNS interval
-  AS 'MODULE_PATHNAME', 'Temporal_timespan'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION duration(tnpoint)
+CREATE FUNCTION duration(tnpoint, boundspan boolean DEFAULT FALSE)
   RETURNS interval
   AS 'MODULE_PATHNAME', 'Temporal_duration'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

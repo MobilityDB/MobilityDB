@@ -211,13 +211,13 @@ CREATE FUNCTION floatspan(tbox)
   RETURNS floatspan
   AS 'MODULE_PATHNAME', 'Tbox_to_floatspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tstzspan(tbox)
+CREATE FUNCTION timeSpan(tbox)
   RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Tbox_to_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tbox AS floatspan) WITH FUNCTION floatspan(tbox);
-CREATE CAST (tbox AS tstzspan) WITH FUNCTION tstzspan(tbox);
+CREATE CAST (tbox AS tstzspan) WITH FUNCTION timeSpan(tbox);
 
 
 /*****************************************************************************

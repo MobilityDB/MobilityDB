@@ -222,10 +222,10 @@ SELECT MAX(numValues(routes(temp))) FROM tbl_tnpoint;
    9
 (1 row)
 
-SELECT MAX(timespan(getTime(temp))) FROM tbl_tnpoint;
+SELECT MAX(duration(getTime(temp))) FROM tbl_tnpoint;
    max    
 ----------
- 05:17:00
+ 04:00:00
 (1 row)
 
 SELECT MAX(getTimestamp(inst)) FROM tbl_tnpoint_inst;
@@ -276,10 +276,10 @@ SELECT DISTINCT MAX(getPosition(endValue(temp))) FROM tbl_tnpoint;
  0.995935
 (1 row)
 
-SELECT MAX(timespan(temp)) FROM tbl_tnpoint;
+SELECT MAX(duration(temp)) FROM tbl_tnpoint;
    max    
 ----------
- 05:17:00
+ 04:00:00
 (1 row)
 
 SELECT MAX(numInstants(temp)) FROM tbl_tnpoint;
@@ -348,19 +348,19 @@ SELECT MAX(numSequences(ts)) FROM tbl_tnpoint_seqset;
    9
 (1 row)
 
-SELECT MAX(timespan(startSequence(ts))) FROM tbl_tnpoint_seqset;
+SELECT MAX(duration(startSequence(ts))) FROM tbl_tnpoint_seqset;
    max    
 ----------
  00:50:00
 (1 row)
 
-SELECT MAX(timespan(endSequence(ts))) FROM tbl_tnpoint_seqset;
+SELECT MAX(duration(endSequence(ts))) FROM tbl_tnpoint_seqset;
    max    
 ----------
  00:50:00
 (1 row)
 
-SELECT MAX(timespan(sequenceN(ts, numSequences(ts)))) FROM tbl_tnpoint_seqset;
+SELECT MAX(duration(sequenceN(ts, numSequences(ts)))) FROM tbl_tnpoint_seqset;
    max    
 ----------
  00:50:00

@@ -366,40 +366,40 @@ CREATE FUNCTION ttext_seqset_gaps(ttext[], maxt interval DEFAULT '0 minutes')
  * Casting
  ******************************************************************************/
 
-CREATE FUNCTION tstzspan(tbool)
+CREATE FUNCTION timeSpan(tbool)
   RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Temporal_to_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tstzspan(tint)
+CREATE FUNCTION timeSpan(tint)
   RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Temporal_to_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tstzspan(tfloat)
+CREATE FUNCTION timeSpan(tfloat)
   RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Temporal_to_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tstzspan(ttext)
+CREATE FUNCTION timeSpan(ttext)
   RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Temporal_to_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION span(tint)
+CREATE FUNCTION valueSpan(tint)
   RETURNS intspan
   AS 'MODULE_PATHNAME', 'Tnumber_to_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span(tfloat)
+CREATE FUNCTION valueSpan(tfloat)
   RETURNS floatspan
   AS 'MODULE_PATHNAME', 'Tnumber_to_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- Casting CANNOT be implicit to avoid ambiguity
-CREATE CAST (tbool AS tstzspan) WITH FUNCTION tstzspan(tbool);
-CREATE CAST (tint AS tstzspan) WITH FUNCTION tstzspan(tint);
-CREATE CAST (tfloat AS tstzspan) WITH FUNCTION tstzspan(tfloat);
-CREATE CAST (ttext AS tstzspan) WITH FUNCTION tstzspan(ttext);
+CREATE CAST (tbool AS tstzspan) WITH FUNCTION timeSpan(tbool);
+CREATE CAST (tint AS tstzspan) WITH FUNCTION timeSpan(tint);
+CREATE CAST (tfloat AS tstzspan) WITH FUNCTION timeSpan(tfloat);
+CREATE CAST (ttext AS tstzspan) WITH FUNCTION timeSpan(ttext);
 
-CREATE CAST (tint AS intspan) WITH FUNCTION span(tint);
-CREATE CAST (tfloat AS floatspan) WITH FUNCTION span(tfloat);
+CREATE CAST (tint AS intspan) WITH FUNCTION valueSpan(tint);
+CREATE CAST (tfloat AS floatspan) WITH FUNCTION valueSpan(tfloat);
 
 CREATE FUNCTION tfloat(tint)
   RETURNS tfloat
@@ -655,36 +655,19 @@ CREATE FUNCTION getTime(ttext)
   AS 'MODULE_PATHNAME', 'Temporal_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION timespan(tbool)
-  RETURNS interval
-  AS 'MODULE_PATHNAME', 'Temporal_timespan'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION timespan(tint)
-  RETURNS interval
-  AS 'MODULE_PATHNAME', 'Temporal_timespan'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION timespan(tfloat)
-  RETURNS interval
-  AS 'MODULE_PATHNAME', 'Temporal_timespan'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION timespan(ttext)
-  RETURNS interval
-  AS 'MODULE_PATHNAME', 'Temporal_timespan'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION duration(tbool)
+CREATE FUNCTION duration(tbool, boundspan boolean DEFAULT FALSE)
   RETURNS interval
   AS 'MODULE_PATHNAME', 'Temporal_duration'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION duration(tint)
+CREATE FUNCTION duration(tint, boundspan boolean DEFAULT FALSE)
   RETURNS interval
   AS 'MODULE_PATHNAME', 'Temporal_duration'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION duration(tfloat)
+CREATE FUNCTION duration(tfloat, boundspan boolean DEFAULT FALSE)
   RETURNS interval
   AS 'MODULE_PATHNAME', 'Temporal_duration'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION duration(ttext)
+CREATE FUNCTION duration(ttext, boundspan boolean DEFAULT FALSE)
   RETURNS interval
   AS 'MODULE_PATHNAME', 'Temporal_duration'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

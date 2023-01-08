@@ -217,18 +217,18 @@ CREATE FUNCTION tgeogpoint_seqset_gaps(tgeogpoint[], linear bool DEFAULT true,
  * Casting
  ******************************************************************************/
 
-CREATE FUNCTION tstzspan(tgeompoint)
+CREATE FUNCTION timeSpan(tgeompoint)
   RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Temporal_to_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tstzspan(tgeogpoint)
+CREATE FUNCTION timeSpan(tgeogpoint)
   RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Temporal_to_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- Casting CANNOT be implicit to avoid ambiguity
-CREATE CAST (tgeompoint AS tstzspan) WITH FUNCTION tstzspan(tgeompoint);
-CREATE CAST (tgeogpoint AS tstzspan) WITH FUNCTION tstzspan(tgeogpoint);
+CREATE CAST (tgeompoint AS tstzspan) WITH FUNCTION timeSpan(tgeompoint);
+CREATE CAST (tgeogpoint AS tstzspan) WITH FUNCTION timeSpan(tgeogpoint);
 
 /******************************************************************************
  * Transformations
@@ -410,20 +410,11 @@ CREATE FUNCTION endValue(tgeogpoint)
   AS 'MODULE_PATHNAME', 'Temporal_end_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION timespan(tgeompoint)
-  RETURNS interval
-  AS 'MODULE_PATHNAME', 'Temporal_timespan'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION timespan(tgeogpoint)
-  RETURNS interval
-  AS 'MODULE_PATHNAME', 'Temporal_timespan'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION duration(tgeompoint)
+CREATE FUNCTION duration(tgeompoint, boundspan boolean DEFAULT FALSE)
   RETURNS interval
   AS 'MODULE_PATHNAME', 'Temporal_duration'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION duration(tgeogpoint)
+CREATE FUNCTION duration(tgeogpoint, boundspan boolean DEFAULT FALSE)
   RETURNS interval
   AS 'MODULE_PATHNAME', 'Temporal_duration'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

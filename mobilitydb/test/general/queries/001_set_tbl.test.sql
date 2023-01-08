@@ -108,7 +108,7 @@ SELECT MIN(startValue(shift(ts, '5 min'))) FROM tbl_tstzset;
 SELECT MAX(memorySize(ts)) FROM tbl_tstzset;
 SELECT MAX(storageSize(ts)) FROM tbl_tstzset;
 
-SELECT MIN(lower(tstzspan(ts))) FROM tbl_tstzset;
+SELECT MIN(lower(span(ts))) FROM tbl_tstzset;
 
 SELECT MIN(numValues(ts)) FROM tbl_tstzset;
 SELECT MIN(startValue(ts)) FROM tbl_tstzset;

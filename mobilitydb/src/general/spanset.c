@@ -370,32 +370,18 @@ Spanset_width(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 }
 
-PG_FUNCTION_INFO_V1(Periodset_timespan);
-/**
- * @ingroup mobilitydb_setspan_accessor
- * @brief Return the timespan of a period set
- * @sqlfunc timespan()
- */
-PGDLLEXPORT Datum
-Periodset_timespan(PG_FUNCTION_ARGS)
-{
-  SpanSet *ps = PG_GETARG_SPANSET_P(0);
-  Interval *result = periodset_timespan(ps);
-  PG_FREE_IF_COPY(ps, 0);
-  PG_RETURN_POINTER(result);
-}
-
 PG_FUNCTION_INFO_V1(Periodset_duration);
 /**
  * @ingroup mobilitydb_setspan_accessor
- * @brief Return the timespan of a period set
+ * @brief Return the duration of a period set
  * @sqlfunc duration()
  */
 PGDLLEXPORT Datum
 Periodset_duration(PG_FUNCTION_ARGS)
 {
   SpanSet *ps = PG_GETARG_SPANSET_P(0);
-  Interval *result = periodset_duration(ps);
+  bool boundspan = PG_GETARG_BOOL(1);
+  Interval *result = periodset_duration(ps, boundspan);
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_POINTER(result);
 }

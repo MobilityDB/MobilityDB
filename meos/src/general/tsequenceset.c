@@ -830,26 +830,16 @@ tsequenceset_time(const TSequenceSet *ss)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Return the timespan of a temporal sequence set.
- * @sqlfunc timespan()
- */
-Interval *
-tsequenceset_timespan(const TSequenceSet *ss)
-{
-  const TSequence *seq1 = tsequenceset_seq_n(ss, 0);
-  const TSequence *seq2 = tsequenceset_seq_n(ss, ss->count - 1);
-  Interval *result = pg_timestamp_mi(seq2->period.upper, seq1->period.lower);
-  return result;
-}
-
-/**
- * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the duration of a temporal sequence set.
  * @sqlfunc duration()
  */
 Interval *
-tsequenceset_duration(const TSequenceSet *ss)
+tsequenceset_duration(const TSequenceSet *ss, bool boundspan)
 {
+  /* Compute the duration of the bounding period */
+  if (boundspan)
+    return pg_timestamp_mi(ss->period.upper, ss->period.lower);
+
   const TSequence *seq = tsequenceset_seq_n(ss, 0);
   Interval *result = pg_timestamp_mi(seq->period.upper, seq->period.lower);
   for (int i = 1; i < ss->count; i++)

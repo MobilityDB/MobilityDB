@@ -886,23 +886,19 @@ SELECT getTime(tint '[1@2001-01-01, 1@2001-01-15)');
 			<listitem id="ttype_duration">
 				<indexterm><primary><varname>duration</varname></primary></indexterm>
 				<para>Get the duration</para>
-				<para><varname>duration(ttype): interval</varname></para>
+				<para><varname>duration(ttype, bool boundspan=FALSE): interval</varname></para>
+				<para>An additional parameter can be set to true to compute the duration of the bounding time span, thus ignoring the potential time gaps</para>
 				<programlisting language="sql" xml:space="preserve">
+SELECT duration(tfloat '{1@2001-01-01, 2@2001-01-03, 2@2001-01-05}');
+-- 00:00:00
+SELECT duration(tfloat '{1@2001-01-01, 2@2001-01-03, 2@2001-01-05}', true);
+-- 4 days
 SELECT duration(tfloat '[1@2001-01-01, 2@2001-01-03, 2@2001-01-05)');
 -- 4 days
 SELECT duration(tfloat '{[1@2001-01-01, 2@2001-01-03), [2@2001-01-04, 2@2001-01-05)}');
 -- 3 days
-</programlisting>
-			</listitem>
-
-			<listitem id="ttype_timespan">
-				<indexterm><primary><varname>timespan</varname></primary></indexterm>
-				<para>Get the timespan ignoring the potential time gaps</para>
-				<para><varname>timespan(ttype): interval</varname></para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT timespan(tfloat '{1@2001-01-01, 2@2001-01-03, 2@2001-01-05}');
--- 4 days
-SELECT timespan(tfloat '{[1@2001-01-01, 2@2001-01-03), [2@2001-01-04, 2@2001-01-05)}');
+SELECT duration(tfloat '{[1@2001-01-01, 2@2001-01-03), [2@2001-01-04, 2@2001-01-05)}',
+  true);
 -- 4 days
 </programlisting>
 			</listitem>

@@ -305,7 +305,7 @@ SELECT floatspan(20.5, 25);
 -- Rango de enteros definido con cuatro argumentos
 SELECT SELECT intspan (20, 25, false, true);
 -- [21, 26)
--- Período definido con cuatro argumentos
+-- Rango de tiempo definido con cuatro argumentos
 SELECT tstzspan('2001-01-01 08:00:00', '2001-01-03 09:30:00', false, true);
 -- (2001-01-01 08:00:00+01, 2001-01-03 09:30:00+01]
 </programlisting>
@@ -621,14 +621,12 @@ SELECT timestamps(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-0
 
 				<listitem id="numSpans">
 					<indexterm><primary><varname>numSpans</varname></primary></indexterm>
-					<indexterm><primary><varname>numPeriods</varname></primary></indexterm>
-					<para>Obtener el número de rangos o períodos</para>
+					<para>Obtener el número de rangos</para>
 					<para><varname>numSpans(spanset): integer</varname></para>
-					<para><varname>numPeriods(tstzspanset): integer</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT numSpans(intspanset '{[1,3),[4,4],[6,7)}');
 -- 3
-SELECT numPeriods(tstzspanset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-04],
+SELECT numSpans(tstzspanset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-04],
   [2001-01-05, 2001-01-06)}');
 -- 3
 </programlisting>

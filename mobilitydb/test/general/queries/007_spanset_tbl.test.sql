@@ -77,13 +77,13 @@ SELECT COUNT(*) FROM tbl_tstzspanset WHERE tstzspansetFromHexWKB(asHexWKB(ps)) <
 -- Casting
 -------------------------------------------------------------------------------
 
-SELECT MAX(lower(intspanset(i))) FROM tbl_intspan;
-SELECT MAX(lower(floatspanset(f))) FROM tbl_floatspan;
-SELECT MAX(lower(tstzspanset(p))) FROM tbl_tstzspan;
+SELECT MAX(lower(spanset(i))) FROM tbl_intspan;
+SELECT MAX(lower(spanset(f))) FROM tbl_floatspan;
+SELECT MAX(lower(spanset(p))) FROM tbl_tstzspan;
 
-SELECT MAX(lower(intspan(i))) FROM tbl_intspanset;
-SELECT MAX(lower(floatspan(f))) FROM tbl_floatspanset;
-SELECT MAX(lower(tstzspan(ps))) FROM tbl_tstzspanset;
+SELECT MAX(lower(span(i))) FROM tbl_intspanset;
+SELECT MAX(lower(span(f))) FROM tbl_floatspanset;
+SELECT MAX(lower(span(ps))) FROM tbl_tstzspanset;
 
 -------------------------------------------------------------------------------
 -- Transformation Functions
@@ -123,7 +123,7 @@ SELECT MAX(width(i)) FROM tbl_intspanset;
 SELECT MAX(width(f)) FROM tbl_floatspanset;
 
 SELECT MAX(duration(ps)) FROM tbl_tstzspanset;
-SELECT MAX(timespan(ps)) FROM tbl_tstzspanset;
+SELECT MAX(duration(ps, true)) FROM tbl_tstzspanset;
 
 SELECT MAX(numSpans(i)) FROM tbl_intspanset;
 SELECT MAX(lower(startSpan(i))) FROM tbl_intspanset;

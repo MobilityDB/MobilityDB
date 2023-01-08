@@ -132,7 +132,7 @@ SELECT MAX(route(inst)) FROM tbl_tnpoint_inst;
 
 SELECT MAX(numValues(routes(temp))) FROM tbl_tnpoint;
 
-SELECT MAX(timespan(getTime(temp))) FROM tbl_tnpoint;
+SELECT MAX(duration(getTime(temp))) FROM tbl_tnpoint;
 
 SELECT MAX(getTimestamp(inst)) FROM tbl_tnpoint_inst;
 
@@ -150,7 +150,7 @@ SELECT DISTINCT MAX(getPosition(startValue(temp))) FROM tbl_tnpoint;
 
 SELECT DISTINCT MAX(getPosition(endValue(temp))) FROM tbl_tnpoint;
 
-SELECT MAX(timespan(temp)) FROM tbl_tnpoint;
+SELECT MAX(duration(temp)) FROM tbl_tnpoint;
 
 SELECT MAX(numInstants(temp)) FROM tbl_tnpoint;
 
@@ -174,11 +174,11 @@ SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tnpoint;
 
 SELECT MAX(numSequences(ts)) FROM tbl_tnpoint_seqset;
 
-SELECT MAX(timespan(startSequence(ts))) FROM tbl_tnpoint_seqset;
+SELECT MAX(duration(startSequence(ts))) FROM tbl_tnpoint_seqset;
 
-SELECT MAX(timespan(endSequence(ts))) FROM tbl_tnpoint_seqset;
+SELECT MAX(duration(endSequence(ts))) FROM tbl_tnpoint_seqset;
 
-SELECT MAX(timespan(sequenceN(ts, numSequences(ts)))) FROM tbl_tnpoint_seqset;
+SELECT MAX(duration(sequenceN(ts, numSequences(ts)))) FROM tbl_tnpoint_seqset;
 
 SELECT MAX(array_length(sequences(ts),1)) FROM tbl_tnpoint_seqset;
 

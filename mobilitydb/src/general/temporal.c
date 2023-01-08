@@ -1080,21 +1080,6 @@ Temporal_time(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Temporal_timespan);
-/**
- * @ingroup mobilitydb_temporal_accessor
- * @brief Return the timespan of a temporal value
- * @sqlfunc timespan()
- */
-PGDLLEXPORT Datum
-Temporal_timespan(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Interval *result = temporal_timespan(temp);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
-}
-
 PG_FUNCTION_INFO_V1(Temporal_duration);
 /**
  * @ingroup mobilitydb_temporal_accessor
@@ -1105,7 +1090,8 @@ PGDLLEXPORT Datum
 Temporal_duration(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Interval *result = temporal_duration(temp);
+  bool boundspan = PG_GETARG_BOOL(1);
+  Interval *result = temporal_duration(temp, boundspan);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

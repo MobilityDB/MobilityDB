@@ -744,50 +744,50 @@ SELECT getTime(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, 
  {[2000-01-01 00:00:00+00, 2000-01-03 00:00:00+00], [2000-01-04 00:00:00+00, 2000-01-05 00:00:00+00]}
 (1 row)
 
-SELECT tstzspan(tnpoint 'Npoint(1, 0.5)@2000-01-01');
-                     tstzspan                     
+SELECT timeSpan(tnpoint 'Npoint(1, 0.5)@2000-01-01');
+                     timespan                     
 --------------------------------------------------
  [2000-01-01 00:00:00+00, 2000-01-01 00:00:00+00]
 (1 row)
 
-SELECT tstzspan(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
-                     tstzspan                     
+SELECT timeSpan(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
+                     timespan                     
 --------------------------------------------------
  [2000-01-01 00:00:00+00, 2000-01-03 00:00:00+00]
 (1 row)
 
-SELECT tstzspan(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
-                     tstzspan                     
+SELECT timeSpan(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+                     timespan                     
 --------------------------------------------------
  [2000-01-01 00:00:00+00, 2000-01-03 00:00:00+00]
 (1 row)
 
-SELECT tstzspan(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
-                     tstzspan                     
+SELECT timeSpan(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+                     timespan                     
 --------------------------------------------------
  [2000-01-01 00:00:00+00, 2000-01-05 00:00:00+00]
 (1 row)
 
-SELECT timespan(tnpoint 'Npoint(1, 0.5)@2000-01-01');
- timespan 
+SELECT duration(tnpoint 'Npoint(1, 0.5)@2000-01-01', true);
+ duration 
 ----------
  00:00:00
 (1 row)
 
-SELECT timespan(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
- timespan 
+SELECT duration(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', true);
+ duration 
+----------
+ 00:00:00
+(1 row)
+
+SELECT duration(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', true);
+ duration 
 ----------
  2 days
 (1 row)
 
-SELECT timespan(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
- timespan 
-----------
- 2 days
-(1 row)
-
-SELECT timespan(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
- timespan 
+SELECT duration(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', true);
+ duration 
 ----------
  4 days
 (1 row)

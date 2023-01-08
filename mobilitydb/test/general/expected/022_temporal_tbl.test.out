@@ -499,7 +499,7 @@ SELECT DISTINCT tempSubtype(tbool_inst(ts)) FROM tbl_tbool_seqset WHERE numInsta
 -------------
 (0 rows)
 
-SELECT DISTINCT tempSubtype(tbool_discseq(ts)) FROM tbl_tbool_seqset WHERE timespan(ts) = '00:00:00';
+SELECT DISTINCT tempSubtype(tbool_discseq(ts)) FROM tbl_tbool_seqset WHERE duration(ts) = '00:00:00';
  tempsubtype 
 -------------
 (0 rows)
@@ -523,7 +523,7 @@ SELECT DISTINCT tempSubtype(tint_inst(ts)) FROM tbl_tint_seqset WHERE numInstant
  Instant
 (1 row)
 
-SELECT DISTINCT tempSubtype(tint_discseq(ts)) FROM tbl_tint_seqset WHERE timespan(ts) = '00:00:00';
+SELECT DISTINCT tempSubtype(tint_discseq(ts)) FROM tbl_tint_seqset WHERE duration(ts) = '00:00:00';
  tempsubtype 
 -------------
  Sequence
@@ -548,7 +548,7 @@ SELECT DISTINCT tempSubtype(tfloat_inst(ts)) FROM tbl_tfloat_seqset WHERE numIns
  Instant
 (1 row)
 
-SELECT DISTINCT tempSubtype(tfloat_discseq(ts)) FROM tbl_tfloat_seqset WHERE timespan(ts) = '00:00:00';
+SELECT DISTINCT tempSubtype(tfloat_discseq(ts)) FROM tbl_tfloat_seqset WHERE duration(ts) = '00:00:00';
  tempsubtype 
 -------------
  Sequence
@@ -572,7 +572,7 @@ SELECT DISTINCT tempSubtype(ttext_inst(ts)) FROM tbl_ttext_seqset WHERE numInsta
 -------------
 (0 rows)
 
-SELECT DISTINCT tempSubtype(ttext_discseq(ts)) FROM tbl_ttext_seqset WHERE timespan(ts) = '00:00:00';
+SELECT DISTINCT tempSubtype(ttext_discseq(ts)) FROM tbl_ttext_seqset WHERE duration(ts) = '00:00:00';
  tempsubtype 
 -------------
 (0 rows)
@@ -723,10 +723,10 @@ SELECT MAX(storageSize(temp)) FROM tbl_ttext;
 (1 row)
 
 /*
-SELECT tstzspan(temp) FROM tbl_tbool;
+SELECT span(temp) FROM tbl_tbool;
 SELECT box(temp) FROM tbl_tint;
 SELECT box(temp) FROM tbl_tfloat;
-SELECT tstzspan(temp) FROM tbl_ttext;
+SELECT span(temp) FROM tbl_ttext;
 */
 SELECT DISTINCT getValue(inst) FROM tbl_tbool_inst ORDER BY 1;
  getvalue 
@@ -890,73 +890,97 @@ SELECT MAX(getTimestamp(inst)) FROM tbl_ttext_inst;
  2001-12-30 18:54:00+00
 (1 row)
 
-SELECT MAX(timespan(getTime(temp))) FROM tbl_tbool;
+SELECT MAX(duration(getTime(temp))) FROM tbl_tbool;
+   max    
+----------
+ 04:10:00
+(1 row)
+
+SELECT MAX(duration(getTime(temp))) FROM tbl_tint;
+   max    
+----------
+ 02:48:00
+(1 row)
+
+SELECT MAX(duration(getTime(temp))) FROM tbl_tfloat;
+   max    
+----------
+ 03:38:00
+(1 row)
+
+SELECT MAX(duration(getTime(temp))) FROM tbl_ttext;
+   max    
+----------
+ 04:12:00
+(1 row)
+
+SELECT MAX(duration(timeSpan(temp))) FROM tbl_tbool;
    max    
 ----------
  05:39:00
 (1 row)
 
-SELECT MAX(timespan(getTime(temp))) FROM tbl_tint;
+SELECT MAX(duration(timeSpan(temp))) FROM tbl_tint;
    max    
 ----------
  04:01:00
 (1 row)
 
-SELECT MAX(timespan(getTime(temp))) FROM tbl_tfloat;
+SELECT MAX(duration(timeSpan(temp))) FROM tbl_tfloat;
    max    
 ----------
  04:55:00
 (1 row)
 
-SELECT MAX(timespan(getTime(temp))) FROM tbl_ttext;
+SELECT MAX(duration(timeSpan(temp))) FROM tbl_ttext;
    max    
 ----------
  05:34:00
 (1 row)
 
-SELECT MAX(duration(tstzspan(temp))) FROM tbl_tbool;
+SELECT MAX(duration(temp)) FROM tbl_tbool;
+   max    
+----------
+ 04:10:00
+(1 row)
+
+SELECT MAX(duration(temp)) FROM tbl_tint;
+   max    
+----------
+ 02:48:00
+(1 row)
+
+SELECT MAX(duration(temp)) FROM tbl_tfloat;
+   max    
+----------
+ 03:38:00
+(1 row)
+
+SELECT MAX(duration(temp)) FROM tbl_ttext;
+   max    
+----------
+ 04:12:00
+(1 row)
+
+SELECT MAX(duration(temp, true)) FROM tbl_tbool;
    max    
 ----------
  05:39:00
 (1 row)
 
-SELECT MAX(duration(tstzspan(temp))) FROM tbl_tint;
+SELECT MAX(duration(temp, true)) FROM tbl_tint;
    max    
 ----------
  04:01:00
 (1 row)
 
-SELECT MAX(duration(tstzspan(temp))) FROM tbl_tfloat;
+SELECT MAX(duration(temp, true)) FROM tbl_tfloat;
    max    
 ----------
  04:55:00
 (1 row)
 
-SELECT MAX(duration(tstzspan(temp))) FROM tbl_ttext;
-   max    
-----------
- 05:34:00
-(1 row)
-
-SELECT MAX(timespan(temp)) FROM tbl_tbool;
-   max    
-----------
- 05:39:00
-(1 row)
-
-SELECT MAX(timespan(temp)) FROM tbl_tint;
-   max    
-----------
- 04:01:00
-(1 row)
-
-SELECT MAX(timespan(temp)) FROM tbl_tfloat;
-   max    
-----------
- 04:55:00
-(1 row)
-
-SELECT MAX(timespan(temp)) FROM tbl_ttext;
+SELECT MAX(duration(temp, true)) FROM tbl_ttext;
    max    
 ----------
  05:34:00
@@ -986,73 +1010,73 @@ SELECT MAX(numSequences(seq)) FROM tbl_ttext_seq;
    1
 (1 row)
 
-SELECT MAX(timespan(startSequence(seq))) FROM tbl_tbool_seq;
+SELECT MAX(duration(startSequence(seq))) FROM tbl_tbool_seq;
    max    
 ----------
  00:46:00
 (1 row)
 
-SELECT MAX(timespan(startSequence(seq))) FROM tbl_tint_seq;
+SELECT MAX(duration(startSequence(seq))) FROM tbl_tint_seq;
    max    
 ----------
  00:46:00
 (1 row)
 
-SELECT MAX(timespan(startSequence(seq))) FROM tbl_tfloat_seq;
+SELECT MAX(duration(startSequence(seq))) FROM tbl_tfloat_seq;
    max    
 ----------
  00:59:00
 (1 row)
 
-SELECT MAX(timespan(startSequence(seq))) FROM tbl_ttext_seq;
+SELECT MAX(duration(startSequence(seq))) FROM tbl_ttext_seq;
    max    
 ----------
  00:53:00
 (1 row)
 
-SELECT MAX(timespan(endSequence(seq))) FROM tbl_tbool_seq;
+SELECT MAX(duration(endSequence(seq))) FROM tbl_tbool_seq;
    max    
 ----------
  00:46:00
 (1 row)
 
-SELECT MAX(timespan(endSequence(seq))) FROM tbl_tint_seq;
+SELECT MAX(duration(endSequence(seq))) FROM tbl_tint_seq;
    max    
 ----------
  00:46:00
 (1 row)
 
-SELECT MAX(timespan(endSequence(seq))) FROM tbl_tfloat_seq;
+SELECT MAX(duration(endSequence(seq))) FROM tbl_tfloat_seq;
    max    
 ----------
  00:59:00
 (1 row)
 
-SELECT MAX(timespan(endSequence(seq))) FROM tbl_ttext_seq;
+SELECT MAX(duration(endSequence(seq))) FROM tbl_ttext_seq;
    max    
 ----------
  00:53:00
 (1 row)
 
-SELECT MAX(timespan(sequenceN(seq, numSequences(seq)))) FROM tbl_tbool_seq;
+SELECT MAX(duration(sequenceN(seq, numSequences(seq)))) FROM tbl_tbool_seq;
    max    
 ----------
  00:46:00
 (1 row)
 
-SELECT MAX(timespan(sequenceN(seq, numSequences(seq)))) FROM tbl_tint_seq;
+SELECT MAX(duration(sequenceN(seq, numSequences(seq)))) FROM tbl_tint_seq;
    max    
 ----------
  00:46:00
 (1 row)
 
-SELECT MAX(timespan(sequenceN(seq, numSequences(seq)))) FROM tbl_tfloat_seq;
+SELECT MAX(duration(sequenceN(seq, numSequences(seq)))) FROM tbl_tfloat_seq;
    max    
 ----------
  00:59:00
 (1 row)
 
-SELECT MAX(timespan(sequenceN(seq, numSequences(seq)))) FROM tbl_ttext_seq;
+SELECT MAX(duration(sequenceN(seq, numSequences(seq)))) FROM tbl_ttext_seq;
    max    
 ----------
  00:53:00
@@ -1130,73 +1154,73 @@ SELECT MAX(numSequences(ts)) FROM tbl_ttext_seqset;
    9
 (1 row)
 
-SELECT MAX(timespan(startSequence(ts))) FROM tbl_tbool_seqset;
+SELECT MAX(duration(startSequence(ts))) FROM tbl_tbool_seqset;
    max    
 ----------
  00:44:00
 (1 row)
 
-SELECT MAX(timespan(startSequence(ts))) FROM tbl_tint_seqset;
+SELECT MAX(duration(startSequence(ts))) FROM tbl_tint_seqset;
    max    
 ----------
  00:51:00
 (1 row)
 
-SELECT MAX(timespan(startSequence(ts))) FROM tbl_tfloat_seqset;
+SELECT MAX(duration(startSequence(ts))) FROM tbl_tfloat_seqset;
    max    
 ----------
  00:48:00
 (1 row)
 
-SELECT MAX(timespan(startSequence(ts))) FROM tbl_ttext_seqset;
+SELECT MAX(duration(startSequence(ts))) FROM tbl_ttext_seqset;
    max    
 ----------
  00:54:00
 (1 row)
 
-SELECT MAX(timespan(endSequence(ts))) FROM tbl_tbool_seqset;
+SELECT MAX(duration(endSequence(ts))) FROM tbl_tbool_seqset;
    max    
 ----------
  00:52:00
 (1 row)
 
-SELECT MAX(timespan(endSequence(ts))) FROM tbl_tint_seqset;
+SELECT MAX(duration(endSequence(ts))) FROM tbl_tint_seqset;
    max    
 ----------
  00:47:00
 (1 row)
 
-SELECT MAX(timespan(endSequence(ts))) FROM tbl_tfloat_seqset;
+SELECT MAX(duration(endSequence(ts))) FROM tbl_tfloat_seqset;
    max    
 ----------
  00:50:00
 (1 row)
 
-SELECT MAX(timespan(endSequence(ts))) FROM tbl_ttext_seqset;
+SELECT MAX(duration(endSequence(ts))) FROM tbl_ttext_seqset;
    max    
 ----------
  00:56:00
 (1 row)
 
-SELECT MAX(timespan(sequenceN(ts, numSequences(ts)))) FROM tbl_tbool_seqset;
+SELECT MAX(duration(sequenceN(ts, numSequences(ts)))) FROM tbl_tbool_seqset;
    max    
 ----------
  00:52:00
 (1 row)
 
-SELECT MAX(timespan(sequenceN(ts, numSequences(ts)))) FROM tbl_tint_seqset;
+SELECT MAX(duration(sequenceN(ts, numSequences(ts)))) FROM tbl_tint_seqset;
    max    
 ----------
  00:47:00
 (1 row)
 
-SELECT MAX(timespan(sequenceN(ts, numSequences(ts)))) FROM tbl_tfloat_seqset;
+SELECT MAX(duration(sequenceN(ts, numSequences(ts)))) FROM tbl_tfloat_seqset;
    max    
 ----------
  00:50:00
 (1 row)
 
-SELECT MAX(timespan(sequenceN(ts, numSequences(ts)))) FROM tbl_ttext_seqset;
+SELECT MAX(duration(sequenceN(ts, numSequences(ts)))) FROM tbl_ttext_seqset;
    max    
 ----------
  00:56:00

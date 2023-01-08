@@ -45,13 +45,13 @@ SELECT tstzspanset '{[2000-01-01, 2000-01-02]';
 -- Constructor
 -------------------------------------------------------------------------------
 
-SELECT intspanset(ARRAY [intspan '[1,2)','[3,4)','[5,6)']);
-SELECT floatspanset(ARRAY [floatspan '[1,2)','[3,4)','[5,6)']);
+SELECT spanset(ARRAY [intspan '[1,2)','[3,4)','[5,6)']);
+SELECT spanset(ARRAY [floatspan '[1,2)','[3,4)','[5,6)']);
 
-SELECT tstzspanset(ARRAY [tstzspan '[2000-01-01, 2000-01-02]', '[2000-01-03,2000-01-04]']);
+SELECT spanset(ARRAY [tstzspan '[2000-01-01, 2000-01-02]', '[2000-01-03,2000-01-04]']);
 /* Errors */
-SELECT tstzspanset(ARRAY [tstzspan '[2000-01-01, 2000-01-03]', '[2000-01-02,2000-01-04]']);
-SELECT tstzspanset('{}'::tstzspan[]);
+SELECT spanset(ARRAY [tstzspan '[2000-01-01, 2000-01-03]', '[2000-01-02,2000-01-04]']);
+SELECT spanset('{}'::tstzspan[]);
 
 -------------------------------------------------------------------------------
 -- Casting
@@ -60,9 +60,9 @@ SELECT tstzspanset('{}'::tstzspan[]);
 SELECT intspanset '{[1,2),[3,4),[5,6)}'::intspan;
 SELECT floatspanset '{[1,2),[3,4),[5,6)}'::floatspan;
 
-SELECT tstzspanset(timestamptz '2000-01-01');
-SELECT tstzspanset(tstzset '{2000-01-01,2000-01-02}');
-SELECT tstzspanset(tstzspan '[2000-01-01,2000-01-02]');
+SELECT spanset(timestamptz '2000-01-01');
+SELECT spanset(tstzset '{2000-01-01,2000-01-02}');
+SELECT spanset(tstzspan '[2000-01-01,2000-01-02]');
 
 SELECT timestamptz '2000-01-01'::tstzspanset;
 SELECT tstzset '{2000-01-01,2000-01-02}'::tstzspanset;
@@ -118,19 +118,19 @@ SELECT upper(floatspanset '{[1,2),[3,4),[5,6)}');
 SELECT upper_inc(intspanset '{[1,2),[3,4),[5,6)}');
 SELECT upper_inc(floatspanset '{[1,2),[3,4),[5,6)}');
 
-SELECT tstzspan(tstzspanset '{[2000-01-01,2000-01-01]}');
-SELECT tstzspan(tstzspanset '{(2000-01-01,2000-01-02),(2000-01-02,2000-01-03),(2000-01-03,2000-01-04)}');
-SELECT tstzspan(tstzspanset '{(2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(2000-01-05,2000-01-06)}');
-SELECT tstzspan(tstzspanset '{[2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(2000-01-05,2000-01-06)}');
-SELECT tstzspan(tstzspanset '{(2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(2000-01-05,2000-01-06]}');
-SELECT tstzspan(tstzspanset '{[2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(2000-01-05,2000-01-06]}');
+SELECT span(tstzspanset '{[2000-01-01,2000-01-01]}');
+SELECT span(tstzspanset '{(2000-01-01,2000-01-02),(2000-01-02,2000-01-03),(2000-01-03,2000-01-04)}');
+SELECT span(tstzspanset '{(2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(2000-01-05,2000-01-06)}');
+SELECT span(tstzspanset '{[2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(2000-01-05,2000-01-06)}');
+SELECT span(tstzspanset '{(2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(2000-01-05,2000-01-06]}');
+SELECT span(tstzspanset '{[2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(2000-01-05,2000-01-06]}');
 
-SELECT timespan(tstzspanset '{[2000-01-01,2000-01-01]}');
-SELECT timespan(tstzspanset '{(2000-01-01,2000-01-02),(2000-01-02,2000-01-03),(2000-01-03,2000-01-04)}');
-SELECT timespan(tstzspanset '{(2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(2000-01-05,2000-01-06)}');
-SELECT timespan(tstzspanset '{[2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(2000-01-05,2000-01-06)}');
-SELECT timespan(tstzspanset '{(2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(2000-01-05,2000-01-06]}');
-SELECT timespan(tstzspanset '{[2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(2000-01-05,2000-01-06]}');
+SELECT duration(tstzspanset '{[2000-01-01,2000-01-01]}', true);
+SELECT duration(tstzspanset '{(2000-01-01,2000-01-02),(2000-01-02,2000-01-03),(2000-01-03,2000-01-04)}', true);
+SELECT duration(tstzspanset '{(2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(2000-01-05,2000-01-06)}', true);
+SELECT duration(tstzspanset '{[2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(2000-01-05,2000-01-06)}', true);
+SELECT duration(tstzspanset '{(2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(2000-01-05,2000-01-06]}', true);
+SELECT duration(tstzspanset '{[2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(2000-01-05,2000-01-06]}', true);
 
 SELECT width(intspanset '{[1,2),[3,4),[5,6)}');
 SELECT width(floatspanset '{[1,2),[3,4),[5,6)}');

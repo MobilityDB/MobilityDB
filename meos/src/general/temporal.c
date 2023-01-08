@@ -1957,32 +1957,12 @@ temporal_max_instant(const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_accessor
- * @brief Return the timespan of a temporal value.
- * @sqlfunc timespan()
- * @pymeosfunc timespan()
- */
-Interval *
-temporal_timespan(const Temporal *temp)
-{
-  Interval *result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == TINSTANT)
-    result = palloc0(sizeof(Interval));
-  else if (temp->subtype == TSEQUENCE)
-    result = tsequence_duration((TSequence *) temp);
-  else /* temp->subtype == TSEQUENCESET */
-    result = tsequenceset_timespan((TSequenceSet *) temp);
-  return result;
-}
-
-/**
- * @ingroup libmeos_temporal_accessor
  * @brief Return the duration of a temporal value.
  * @sqlfunc duration()
  * @pymeosfunc duration()
  */
 Interval *
-temporal_duration(const Temporal *temp)
+temporal_duration(const Temporal *temp, bool boundspan)
 {
   Interval *result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -1991,7 +1971,7 @@ temporal_duration(const Temporal *temp)
   else if (temp->subtype == TSEQUENCE)
     result = tsequence_duration((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
-    result = tsequenceset_duration((TSequenceSet *) temp);
+    result = tsequenceset_duration((TSequenceSet *) temp, boundspan);
   return result;
 }
 

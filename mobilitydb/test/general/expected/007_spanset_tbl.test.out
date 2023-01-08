@@ -114,37 +114,37 @@ SELECT COUNT(*) FROM tbl_tstzspanset WHERE tstzspansetFromHexWKB(asHexWKB(ps)) <
      0
 (1 row)
 
-SELECT MAX(lower(intspanset(i))) FROM tbl_intspan;
+SELECT MAX(lower(spanset(i))) FROM tbl_intspan;
  max 
 -----
   99
 (1 row)
 
-SELECT MAX(lower(floatspanset(f))) FROM tbl_floatspan;
+SELECT MAX(lower(spanset(f))) FROM tbl_floatspan;
         max        
 -------------------
  99.38322069356218
 (1 row)
 
-SELECT MAX(lower(tstzspanset(p))) FROM tbl_tstzspan;
+SELECT MAX(lower(spanset(p))) FROM tbl_tstzspan;
           max           
 ------------------------
  2001-12-29 20:53:00+00
 (1 row)
 
-SELECT MAX(lower(intspan(i))) FROM tbl_intspanset;
+SELECT MAX(lower(span(i))) FROM tbl_intspanset;
  max 
 -----
   55
 (1 row)
 
-SELECT MAX(lower(floatspan(f))) FROM tbl_floatspanset;
+SELECT MAX(lower(span(f))) FROM tbl_floatspanset;
         max         
 --------------------
  47.333306414151025
 (1 row)
 
-SELECT MAX(lower(tstzspan(ps))) FROM tbl_tstzspanset;
+SELECT MAX(lower(span(ps))) FROM tbl_tstzspanset;
           max           
 ------------------------
  2001-12-30 12:01:00+00
@@ -290,7 +290,7 @@ SELECT MAX(duration(ps)) FROM tbl_tstzspanset;
  00:56:00
 (1 row)
 
-SELECT MAX(timespan(ps)) FROM tbl_tstzspanset;
+SELECT MAX(duration(ps, true)) FROM tbl_tstzspanset;
    max    
 ----------
  01:45:00
