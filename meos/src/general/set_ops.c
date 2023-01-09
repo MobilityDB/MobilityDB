@@ -1174,8 +1174,8 @@ union_tstzset_timestamp(const Set *ts, const TimestampTz t)
  * @brief Return the union of a timestamp and a timestamp set
  * @sqlop @p +
  */
-TimestampSet *
-union_timestamp_tstzset(const TimestampTz t, const TimestampSet *ts)
+Set *
+union_timestamp_tstzset(const TimestampTz t, const Set *ts)
 {
   return union_tstzset_timestamp(ts, t);
 }
