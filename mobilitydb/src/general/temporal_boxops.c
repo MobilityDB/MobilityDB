@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -83,7 +83,7 @@ temporal_max_header_size(void)
  */
 Datum
 boxop_timestamp_temporal_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const Period *, const Period *))
+  bool (*func)(const Span *, const Span *))
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
@@ -100,7 +100,7 @@ boxop_timestamp_temporal_ext(FunctionCallInfo fcinfo,
  */
 Datum
 boxop_temporal_timestamp_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const Period *, const Period *))
+  bool (*func)(const Span *, const Span *))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
@@ -110,36 +110,36 @@ boxop_temporal_timestamp_ext(FunctionCallInfo fcinfo,
 }
 
 /**
- * @brief Generic bounding box operator for a timestampset and a temporal value
+ * @brief Generic bounding box operator for a tstzset and a temporal value
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Bounding box function
  */
 Datum
-boxop_timestampset_temporal_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const Period *, const Period *))
+boxop_tstzset_temporal_ext(FunctionCallInfo fcinfo,
+  bool (*func)(const Span *, const Span *))
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  Set *ts = PG_GETARG_SET_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  bool result = boxop_temporal_timestampset(temp, ts, func, true);
+  bool result = boxop_temporal_tstzset(temp, ts, func, true);
   PG_FREE_IF_COPY(ts, 0);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_BOOL(result);
 }
 
 /**
- * @brief Generic bounding box operator for a temporal value and a timestampset
+ * @brief Generic bounding box operator for a temporal value and a tstzset
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Bounding box function
  */
 Datum
-boxop_temporal_timestampset_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const Period *, const Period *))
+boxop_temporal_tstzset_ext(FunctionCallInfo fcinfo,
+  bool (*func)(const Span *, const Span *))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = boxop_temporal_timestampset(temp, ts, func, false);
+  Set *ts = PG_GETARG_SET_P(1);
+  bool result = boxop_temporal_tstzset(temp, ts, func, false);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ts, 1);
   PG_RETURN_BOOL(result);
@@ -153,9 +153,9 @@ boxop_temporal_timestampset_ext(FunctionCallInfo fcinfo,
  */
 Datum
 boxop_period_temporal_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const Period *, const Period *))
+  bool (*func)(const Span *, const Span *))
 {
-  Period *p = PG_GETARG_SPAN_P(0);
+  Span *p = PG_GETARG_SPAN_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   bool result = boxop_temporal_period(temp, p, func, true);
   PG_FREE_IF_COPY(temp, 1);
@@ -170,10 +170,10 @@ boxop_period_temporal_ext(FunctionCallInfo fcinfo,
  */
 Datum
 boxop_temporal_period_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const Period *, const Period *))
+  bool (*func)(const Span *, const Span *))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Period *p = PG_GETARG_SPAN_P(1);
+  Span *p = PG_GETARG_SPAN_P(1);
   bool result = boxop_temporal_period(temp, p, func, false);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);
@@ -187,9 +187,9 @@ boxop_temporal_period_ext(FunctionCallInfo fcinfo,
  */
 Datum
 boxop_periodset_temporal_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const Period *, const Period *))
+  bool (*func)(const Span *, const Span *))
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
+  SpanSet *ps = PG_GETARG_SPANSET_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   bool result = boxop_temporal_periodset(temp, ps, func, true);
   PG_FREE_IF_COPY(ps, 0);
@@ -205,10 +205,10 @@ boxop_periodset_temporal_ext(FunctionCallInfo fcinfo,
  */
 Datum
 boxop_temporal_periodset_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const Period *, const Period *))
+  bool (*func)(const Span *, const Span *))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
+  SpanSet *ps = PG_GETARG_SPANSET_P(1);
   bool result = boxop_temporal_periodset(temp, ps, func, false);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ps, 1);
@@ -223,7 +223,7 @@ boxop_temporal_periodset_ext(FunctionCallInfo fcinfo,
  */
 Datum
 boxop_temporal_temporal_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const Period *, const Period *))
+  bool (*func)(const Span *, const Span *))
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
@@ -265,32 +265,32 @@ Contains_temporal_timestamp(PG_FUNCTION_ARGS)
   return boxop_temporal_timestamp_ext(fcinfo, &contains_span_span);
 }
 
-PG_FUNCTION_INFO_V1(Contains_timestampset_temporal);
+PG_FUNCTION_INFO_V1(Contains_tstzset_temporal);
 /**
  * @ingroup mobilitydb_temporal_topo
- * @brief Return true if the bounding period of a timestampset contains the one
+ * @brief Return true if the bounding period of a tstzset contains the one
  * of a temporal value
  * @sqlfunc contains_bbox()
  * @sqlop @p \@>
  */
 PGDLLEXPORT Datum
-Contains_timestampset_temporal(PG_FUNCTION_ARGS)
+Contains_tstzset_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_timestampset_temporal_ext(fcinfo, &contains_span_span);
+  return boxop_tstzset_temporal_ext(fcinfo, &contains_span_span);
 }
 
-PG_FUNCTION_INFO_V1(Contains_temporal_timestampset);
+PG_FUNCTION_INFO_V1(Contains_temporal_tstzset);
 /**
  * @ingroup mobilitydb_temporal_topo
  * @brief Return true if the bounding period of a temporal value contains the
- * one of a timestampset
+ * one of a tstzset
  * @sqlfunc contains_bbox()
  * @sqlop @p \@>
  */
 PGDLLEXPORT Datum
-Contains_temporal_timestampset(PG_FUNCTION_ARGS)
+Contains_temporal_tstzset(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_timestampset_ext(fcinfo, &contains_span_span);
+  return boxop_temporal_tstzset_ext(fcinfo, &contains_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Contains_period_temporal);
@@ -391,32 +391,32 @@ Contained_temporal_timestamp(PG_FUNCTION_ARGS)
   return boxop_temporal_timestamp_ext(fcinfo, &contained_span_span);
 }
 
-PG_FUNCTION_INFO_V1(Contained_timestampset_temporal);
+PG_FUNCTION_INFO_V1(Contained_tstzset_temporal);
 /**
  * @ingroup mobilitydb_temporal_topo
- * @brief Return true if the bounding period of a timestampset is contained in the
+ * @brief Return true if the bounding period of a tstzset is contained in the
  * one of a temporal value overlap
  * @sqlfunc contained_bbox()
  * @sqlop @p <@
  */
 PGDLLEXPORT Datum
-Contained_timestampset_temporal(PG_FUNCTION_ARGS)
+Contained_tstzset_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_timestampset_temporal_ext(fcinfo, &contained_span_span);
+  return boxop_tstzset_temporal_ext(fcinfo, &contained_span_span);
 }
 
-PG_FUNCTION_INFO_V1(Contained_temporal_timestampset);
+PG_FUNCTION_INFO_V1(Contained_temporal_tstzset);
 /**
  * @ingroup mobilitydb_temporal_topo
  * @brief Return true if the bounding period of a temporal value is contained in
- * the one of a timestampset
+ * the one of a tstzset
  * @sqlfunc contained_bbox()
  * @sqlop @p <@
  */
 PGDLLEXPORT Datum
-Contained_temporal_timestampset(PG_FUNCTION_ARGS)
+Contained_temporal_tstzset(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_timestampset_ext(fcinfo, &contained_span_span);
+  return boxop_temporal_tstzset_ext(fcinfo, &contained_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Contained_period_temporal);
@@ -519,32 +519,32 @@ Overlaps_temporal_timestamp(PG_FUNCTION_ARGS)
   return boxop_temporal_timestamp_ext(fcinfo, &overlaps_span_span);
 }
 
-PG_FUNCTION_INFO_V1(Overlaps_timestampset_temporal);
+PG_FUNCTION_INFO_V1(Overlaps_tstzset_temporal);
 /**
  * @ingroup mobilitydb_temporal_topo
- * @brief Return true if the bounding period a timestampset and the one
+ * @brief Return true if the bounding period a tstzset and the one
  * of a temporal value overlap
  * @sqlfunc overlaps_bbox()
  * @sqlop @p &&
  */
 PGDLLEXPORT Datum
-Overlaps_timestampset_temporal(PG_FUNCTION_ARGS)
+Overlaps_tstzset_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_timestampset_temporal_ext(fcinfo, &overlaps_span_span);
+  return boxop_tstzset_temporal_ext(fcinfo, &overlaps_span_span);
 }
 
-PG_FUNCTION_INFO_V1(Overlaps_temporal_timestampset);
+PG_FUNCTION_INFO_V1(Overlaps_temporal_tstzset);
 /**
  * @ingroup mobilitydb_temporal_topo
  * @brief Return true if the bounding periods of a temporal value and of
- * a timestampset overlap
+ * a tstzset overlap
  * @sqlfunc overlaps_bbox()
  * @sqlop @p &&
  */
 PGDLLEXPORT Datum
-Overlaps_temporal_timestampset(PG_FUNCTION_ARGS)
+Overlaps_temporal_tstzset(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_timestampset_ext(fcinfo, &overlaps_span_span);
+  return boxop_temporal_tstzset_ext(fcinfo, &overlaps_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Overlaps_period_temporal);
@@ -646,32 +646,32 @@ Same_temporal_timestamp(PG_FUNCTION_ARGS)
   return boxop_temporal_timestamp_ext(fcinfo, &span_eq);
 }
 
-PG_FUNCTION_INFO_V1(Same_timestampset_temporal);
+PG_FUNCTION_INFO_V1(Same_tstzset_temporal);
 /**
  * @ingroup mobilitydb_temporal_topo
- * @brief Return true if the bounding periods of a timestampset and of
+ * @brief Return true if the bounding periods of a tstzset and of
  * a temporal value are equal
  * @sqlfunc same_bbox()
  * @sqlop @p ~=
  */
 PGDLLEXPORT Datum
-Same_timestampset_temporal(PG_FUNCTION_ARGS)
+Same_tstzset_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_timestampset_temporal_ext(fcinfo, &span_eq);
+  return boxop_tstzset_temporal_ext(fcinfo, &span_eq);
 }
 
-PG_FUNCTION_INFO_V1(Same_temporal_timestampset);
+PG_FUNCTION_INFO_V1(Same_temporal_tstzset);
 /**
  * @ingroup mobilitydb_temporal_topo
  * @brief Return true if the bounding periods of a temporal value and of
- * a timestampset are equal
+ * a tstzset are equal
  * @sqlfunc same_bbox()
  * @sqlop @p ~=
  */
 PGDLLEXPORT Datum
-Same_temporal_timestampset(PG_FUNCTION_ARGS)
+Same_temporal_tstzset(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_timestampset_ext(fcinfo, &span_eq);
+  return boxop_temporal_tstzset_ext(fcinfo, &span_eq);
 }
 
 PG_FUNCTION_INFO_V1(Same_period_temporal);
@@ -773,32 +773,32 @@ Adjacent_temporal_timestamp(PG_FUNCTION_ARGS)
   return boxop_temporal_timestamp_ext(fcinfo, &adjacent_span_span);
 }
 
-PG_FUNCTION_INFO_V1(Adjacent_timestampset_temporal);
+PG_FUNCTION_INFO_V1(Adjacent_tstzset_temporal);
 /**
  * @ingroup mobilitydb_temporal_topo
- * @brief Return true if the bounding periods of a timestampset and of
+ * @brief Return true if the bounding periods of a tstzset and of
  * a temporal value are adjacent
  * @sqlfunc adjacent_bbox()
  * @sqlop @p -|-
  */
 PGDLLEXPORT Datum
-Adjacent_timestampset_temporal(PG_FUNCTION_ARGS)
+Adjacent_tstzset_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_timestampset_temporal_ext(fcinfo, &adjacent_span_span);
+  return boxop_tstzset_temporal_ext(fcinfo, &adjacent_span_span);
 }
 
-PG_FUNCTION_INFO_V1(Adjacent_temporal_timestampset);
+PG_FUNCTION_INFO_V1(Adjacent_temporal_tstzset);
 /**
  * @ingroup mobilitydb_temporal_topo
  * @brief Return true if the bounding periods of a temporal value and of
- * a timestampset are adjacent
+ * a tstzset are adjacent
  * @sqlfunc adjacent_bbox()
  * @sqlop @p -|-
  */
 PGDLLEXPORT Datum
-Adjacent_temporal_timestampset(PG_FUNCTION_ARGS)
+Adjacent_temporal_tstzset(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_timestampset_ext(fcinfo, &adjacent_span_span);
+  return boxop_temporal_tstzset_ext(fcinfo, &adjacent_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Adjacent_period_temporal);

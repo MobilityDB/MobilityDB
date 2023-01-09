@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -31,8 +31,8 @@
  * @brief Basic functions for set of (distinct) timestamps.
  */
 
-#ifndef __TIMESTAMPSET_H__
-#define __TIMESTAMPSET_H__
+#ifndef __SET_H__
+#define __SET_H__
 
 /*****************************************************************************/
 
@@ -42,8 +42,8 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-/* MobilityDB */
-#include "general/timetypes.h"
+/* MEOS */
+#include <meos.h>
 
 #if MEOS
   #define DatumGetSetP(X)      ((Set *) DatumGetPointer(X))
@@ -83,4 +83,4 @@ extern bool set_find_value(const Set *s, Datum, int *loc);
 
 /*****************************************************************************/
 
-#endif
+#endif /* __SET_H__ */

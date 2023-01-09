@@ -1,12 +1,12 @@
 /***********************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -45,6 +45,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/lifting.h"
+#include "general/set.h"
 #include "general/temporal_util.h"
 /* MobilityDB */
 #include "pg_general/temporal.h"
@@ -714,6 +715,23 @@ datum_round_geo(Datum value, Datum prec)
 }
 
 /**
+ * @brief Set the precision of the coordinates to the number of decimal places.
+ */
+Set *
+geoset_round(const Set *s, Datum prec)
+{
+  Datum *values = palloc(sizeof(Datum) * s->count);
+  for (int i = 0; i < s->count; i++)
+  {
+    Datum value = set_val_n(s, i);
+    values[i] = datum_round_geo(value, prec);
+  }
+  Set *result = set_make(values, s->count, s->basetype, ORDERED);
+  pfree(values);
+  return result;
+}
+
+/**
  * @ingroup libmeos_temporal_spatial_transf
  * @brief Set the precision of the coordinates of a temporal point to a
  * number of decimal places.
@@ -747,6 +765,20 @@ Geo_round(PG_FUNCTION_ARGS)
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   int prec = PG_GETARG_INT32(1);
   PG_RETURN_POINTER(datum_round_geo(PointerGetDatum(gs), Int32GetDatum(prec)));
+}
+
+PG_FUNCTION_INFO_V1(Geoset_round);
+/**
+ * @ingroup mobilitydb_temporal_spatial_transf
+ * @brief Sets the precision of the coordinates of the geometry set
+ * @sqlfunc round()
+ */
+PGDLLEXPORT Datum
+Geoset_round(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  int prec = PG_GETARG_INT32(1);
+  PG_RETURN_POINTER(geoset_round(s, Int32GetDatum(prec)));
 }
 
 PG_FUNCTION_INFO_V1(Tpoint_round);

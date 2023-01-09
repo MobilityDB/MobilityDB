@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -39,7 +39,7 @@
 /* MEOS */
 #include "general/meos_catalog.h"
 #include "general/span.h"
-#include "general/timetypes.h"
+#include "general/set.h"
 #include "general/tbox.h"
 #include "point/stbox.h"
 
@@ -52,11 +52,11 @@ extern char *text_to_cstring(const text *t);
 #define C_COLLATION_OID 950
 #define POSIX_COLLATION_OID 951
 
-#if MEOS
+#ifndef FMGR_H
   /* To avoid including fmgr.h However this implies that the text values must
    * be ALWAYS detoasted */
   #define DatumGetTextP(X)      ((text *) DatumGetPointer(X)) // PG_DETOAST_DATUM(X))
-#endif
+#endif /* FMGR_H */
 
 /**
  * Floating point precision
@@ -247,7 +247,7 @@ enum MOBDB_WKB_TSUBTYPE
   MOBDB_WKB_TSEQUENCESET =     3,  /**< temporal sequence set subtype */
 };
 
-/* Period bounds */
+/* Span bounds */
 #define MOBDB_WKB_LOWER_INC        0x01
 #define MOBDB_WKB_UPPER_INC        0x02
 
@@ -297,7 +297,7 @@ enum MOBDB_WKB_TSUBTYPE
  */
 typedef union bboxunion
 {
-  Period    p;      /**< Period */
+  Span      p;      /**< Span */
   TBox      b;      /**< Temporal box */
   STBox     g;      /**< Spatiotemporal box */
 } bboxunion;

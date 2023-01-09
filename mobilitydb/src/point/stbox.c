@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -307,7 +307,7 @@ PGDLLEXPORT Datum
 Stbox_to_period(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
-  Period *result = stbox_to_period(box);
+  Span *result = stbox_to_period(box);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
@@ -352,7 +352,7 @@ Timestamp_to_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Timestampset_to_stbox);
+PG_FUNCTION_INFO_V1(Tstzset_to_stbox);
 /**
  * @ingroup mobilitydb_box_cast
  * @brief Transform a timestamp set to a spatiotemporal box
@@ -360,11 +360,11 @@ PG_FUNCTION_INFO_V1(Timestampset_to_stbox);
  * @sqlfunc @p ::
  */
 PGDLLEXPORT Datum
-Timestampset_to_stbox(PG_FUNCTION_ARGS)
+Tstzset_to_stbox(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  Set *ts = PG_GETARG_SET_P(0);
   STBox *result = palloc(sizeof(STBox));
-  timestampset_set_stbox(ts, result);
+  tstzset_set_stbox(ts, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -378,7 +378,7 @@ PG_FUNCTION_INFO_V1(Period_to_stbox);
 PGDLLEXPORT Datum
 Period_to_stbox(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_SPAN_P(0);
+  Span *p = PG_GETARG_SPAN_P(0);
   STBox *result = palloc(sizeof(STBox));
   period_set_stbox(p, result);
   PG_RETURN_POINTER(result);
@@ -391,12 +391,12 @@ Period_to_stbox(PG_FUNCTION_ARGS)
 void
 periodset_stbox_slice(Datum psdatum, STBox *box)
 {
-  PeriodSet *ps = NULL;
+  SpanSet *ps = NULL;
   if (PG_DATUM_NEEDS_DETOAST((struct varlena *) psdatum))
-    ps = (PeriodSet *) PG_DETOAST_DATUM_SLICE(psdatum, 0,
+    ps = (SpanSet *) PG_DETOAST_DATUM_SLICE(psdatum, 0,
       time_max_header_size());
   else
-    ps = (PeriodSet *) psdatum;
+    ps = (SpanSet *) psdatum;
   periodset_set_stbox(ps, box);
   PG_FREE_IF_COPY_P(ps, DatumGetPointer(psdatum));
   return;
@@ -449,7 +449,7 @@ PGDLLEXPORT Datum
 Geo_period_to_stbox(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  Period *p = PG_GETARG_SPAN_P(1);
+  Span *p = PG_GETARG_SPAN_P(1);
   STBox *result = geo_period_to_stbox(gs, p);
   PG_FREE_IF_COPY(gs, 0);
   if (! result)

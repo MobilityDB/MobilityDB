@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -134,21 +134,21 @@ time_cachedop(Oid operid, CachedOp *cachedOp)
 {
   for (int i = EQ_OP; i <= OVERAFTER_OP; i++)
   {
-    if (operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TIMESTAMPSET) ||
-        operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_PERIOD) ||
-        operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_PERIODSET) ||
-        operid == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TIMESTAMPTZ) ||
-        operid == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TIMESTAMPSET) ||
-        operid == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_PERIOD) ||
-        operid == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_PERIODSET) ||
-        operid == oper_oid((CachedOp) i, T_PERIOD, T_TIMESTAMPTZ) ||
-        operid == oper_oid((CachedOp) i, T_PERIOD, T_TIMESTAMPSET) ||
-        operid == oper_oid((CachedOp) i, T_PERIOD, T_PERIOD) ||
-        operid == oper_oid((CachedOp) i, T_PERIOD, T_PERIODSET) ||
-        operid == oper_oid((CachedOp) i, T_PERIODSET, T_TIMESTAMPTZ) ||
-        operid == oper_oid((CachedOp) i, T_PERIODSET, T_TIMESTAMPSET) ||
-        operid == oper_oid((CachedOp) i, T_PERIODSET, T_PERIOD) ||
-        operid == oper_oid((CachedOp) i, T_PERIODSET, T_PERIODSET))
+    if (operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TSTZSET) ||
+        operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TSTZSPAN) ||
+        operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TSTZSPANSET) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSET, T_TIMESTAMPTZ) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSET, T_TSTZSET) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSET, T_TSTZSPAN) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSET, T_TSTZSPANSET) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSPAN, T_TIMESTAMPTZ) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSPAN, T_TSTZSET) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSPAN, T_TSTZSPAN) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSPAN, T_TSTZSPANSET) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSPANSET, T_TIMESTAMPTZ) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSPANSET, T_TSTZSET) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSPANSET, T_TSTZSPAN) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSPANSET, T_TSTZSPANSET))
       {
         *cachedOp = (CachedOp) i;
         return true;
@@ -847,11 +847,11 @@ span_const_to_span(Node *other, Span *span)
  * Transform the constant into a period
  */
 void
-time_const_to_period(Node *other, Period *period)
+time_const_to_period(Node *other, Span *period)
 {
   Oid consttype = ((Const *) other)->consttype;
   meosType timetype = oid_type(consttype);
-  const Period *p;
+  const Span *p;
   ensure_time_type(timetype);
   if (timetype == T_TIMESTAMPTZ)
   {
@@ -860,25 +860,25 @@ time_const_to_period(Node *other, Period *period)
     Datum t = ((Const *) other)->constvalue;
     span_set(t, t, true, true, T_TIMESTAMPTZ, period);
   }
-  else if (timetype == T_TIMESTAMPSET)
+  else if (timetype == T_TSTZSET)
   {
-    /* The right argument is a TimestampSet constant. We convert it into
+    /* The right argument is a TstzSet constant. We convert it into
      * its bounding period. */
-    const TimestampSet *ts = DatumGetTimestampSetP(((Const *) other)->constvalue);
+    const Set *ts = DatumGetSetP(((Const *) other)->constvalue);
     set_set_span(ts, period);
   }
-  else if (timetype == T_PERIOD)
+  else if (timetype == T_TSTZSPAN)
   {
     /* Just copy the value */
     p = DatumGetSpanP(((Const *) other)->constvalue);
-    memcpy(period, p, sizeof(Period));
+    memcpy(period, p, sizeof(Span));
   }
-  else /* timetype == T_PERIODSET */
+  else /* timetype == T_TSTZSPANSET */
   {
     /* The right argument is a PeriodSet constant. We convert it into
      * its bounding period. */
-    const PeriodSet *ps = DatumGetPeriodSetP(((Const *) other)->constvalue);
-    memcpy(period, &ps->span, sizeof(Period));
+    const SpanSet *ps = DatumGetSpanSetP(((Const *) other)->constvalue);
+    memcpy(period, &ps->span, sizeof(Span));
   }
   return;
 }
@@ -894,8 +894,7 @@ span_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
   Node *other;
   bool varonleft;
   Selectivity selec;
-  Span span;
-  Period period;
+  Span span, period;
 
   /*
    * If expression is not (variable op something) or (something op
@@ -1616,7 +1615,7 @@ _mobdb_span_joinsel(PG_FUNCTION_ARGS)
   meosType atttype2 = oid_type(get_atttype(table1_oid, att1_num));
 
   /* Determine whether we target the value or the time dimension */
-  bool value = (atttype1 != T_PERIOD && atttype2 != T_PERIOD);
+  bool value = (atttype1 != T_TSTZSPAN && atttype2 != T_TSTZSPAN);
 
   CachedOp cachedOp;
   bool found = value ?

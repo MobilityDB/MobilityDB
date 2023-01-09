@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -82,7 +82,7 @@
  * Transform the constant into a period
  */
 static bool
-temporal_const_to_period(Node *other, Period *period)
+temporal_const_to_period(Node *other, Span *period)
 {
   Oid consttype = ((Const *) other)->consttype;
   meosType type = oid_type(consttype);
@@ -104,21 +104,21 @@ temporal_cachedop(Oid operid, CachedOp *cachedOp)
   for (int i = LT_OP; i <= OVERAFTER_OP; i++) {
     if (operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TBOOL) ||
         operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TTEXT) ||
-        operid == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TBOOL) ||
-        operid == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TTEXT) ||
-        operid == oper_oid((CachedOp) i, T_PERIOD, T_TBOOL) ||
-        operid == oper_oid((CachedOp) i, T_PERIOD, T_TTEXT) ||
-        operid == oper_oid((CachedOp) i, T_PERIODSET, T_TBOOL) ||
-        operid == oper_oid((CachedOp) i, T_PERIODSET, T_TTEXT) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSET, T_TBOOL) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSET, T_TTEXT) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSPAN, T_TBOOL) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSPAN, T_TTEXT) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSPANSET, T_TBOOL) ||
+        operid == oper_oid((CachedOp) i, T_TSTZSPANSET, T_TTEXT) ||
         operid == oper_oid((CachedOp) i, T_TBOOL, T_TIMESTAMPTZ) ||
-        operid == oper_oid((CachedOp) i, T_TBOOL, T_TIMESTAMPSET) ||
-        operid == oper_oid((CachedOp) i, T_TBOOL, T_PERIOD) ||
-        operid == oper_oid((CachedOp) i, T_TBOOL, T_PERIODSET) ||
+        operid == oper_oid((CachedOp) i, T_TBOOL, T_TSTZSET) ||
+        operid == oper_oid((CachedOp) i, T_TBOOL, T_TSTZSPAN) ||
+        operid == oper_oid((CachedOp) i, T_TBOOL, T_TSTZSPANSET) ||
         operid == oper_oid((CachedOp) i, T_TBOOL, T_TBOOL) ||
         operid == oper_oid((CachedOp) i, T_TTEXT, T_TIMESTAMPTZ) ||
-        operid == oper_oid((CachedOp) i, T_TTEXT, T_TIMESTAMPSET) ||
-        operid == oper_oid((CachedOp) i, T_TTEXT, T_PERIOD) ||
-        operid == oper_oid((CachedOp) i, T_TTEXT, T_PERIODSET) ||
+        operid == oper_oid((CachedOp) i, T_TTEXT, T_TSTZSET) ||
+        operid == oper_oid((CachedOp) i, T_TTEXT, T_TSTZSPAN) ||
+        operid == oper_oid((CachedOp) i, T_TTEXT, T_TSTZSPANSET) ||
         operid == oper_oid((CachedOp) i, T_TTEXT, T_TTEXT))
       {
         *cachedOp = (CachedOp) i;
@@ -186,7 +186,7 @@ temporal_joinsel_default(Oid operid __attribute__((unused)))
  * respectively.
  */
 Selectivity
-temporal_sel_period(VariableStatData *vardata, Period *period,
+temporal_sel_period(VariableStatData *vardata, Span *period,
   CachedOp cachedOp)
 {
   float8 selec;
@@ -197,7 +197,7 @@ temporal_sel_period(VariableStatData *vardata, Period *period,
    */
   if (cachedOp == SAME_OP)
   {
-    Oid operid = oper_oid(EQ_OP, T_PERIOD, T_PERIOD);
+    Oid operid = oper_oid(EQ_OP, T_TSTZSPAN, T_TSTZSPAN);
 #if POSTGRESQL_VERSION_NUMBER < 130000
     selec = var_eq_const(vardata, operid, SpanPGetDatum(period),
       false, false, false);
@@ -321,7 +321,7 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
   /* Transform the constant into a bounding box and compute the selectivity */
   if (tempfamily == TEMPORALTYPE)
   {
-    Period period;
+    Span period;
     if (! temporal_const_to_period(other, &period))
       /* In the case of unknown constant */
       return temporal_sel_default(cachedOp);
@@ -334,7 +334,7 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
     meosType basetype = temptype_basetype(oid_type(vardata.atttype));
     /* Transform the constant into a span and/or a period */
     Span *s = NULL;
-    Period *p = NULL;
+    Span *p = NULL;
     if (! tnumber_const_to_span_period(other, &s, &p, basetype))
       /* In the case of unknown constant */
       return tnumber_sel_default(cachedOp);

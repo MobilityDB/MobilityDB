@@ -110,7 +110,7 @@ SELECT COUNT(*) FROM tbl_tbox WHERE tboxFromHexWKB(asHexWKB(b)) <> b;
      0
 (1 row)
 
-SELECT tbox(floatspan '[1,2]', period '[2000-01-01,2000-01-02]');
+SELECT tbox(floatspan '[1,2]', tstzspan '[2000-01-01,2000-01-02]');
                                tbox                               
 ------------------------------------------------------------------
  TBOX XT([1, 2],[2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00])
@@ -122,7 +122,7 @@ SELECT tbox(floatspan '[1,2]');
  TBOX X([1, 2])
 (1 row)
 
-SELECT tbox(period '[2000-01-01,2000-01-02]');
+SELECT tbox(tstzspan '[2000-01-01,2000-01-02]');
                            tbox                           
 ----------------------------------------------------------
  TBOX T([2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00])
@@ -134,8 +134,8 @@ SELECT tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])'::floatspan;
  [1, 2]
 (1 row)
 
-SELECT tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])'::period;
-                      period                      
+SELECT tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])'::tstzspan;
+                     tstzspan                     
 --------------------------------------------------
  [2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00]
 (1 row)
@@ -146,9 +146,9 @@ SELECT tbox 'TBOX X([1.0, 2.0])'::floatspan;
  [1, 2]
 (1 row)
 
-SELECT tbox 'TBOX X([1.0, 2.0])'::period;
- period 
---------
+SELECT tbox 'TBOX X([1.0, 2.0])'::tstzspan;
+ tstzspan 
+----------
  
 (1 row)
 
@@ -158,8 +158,8 @@ SELECT tbox 'TBOX T((2000-01-01,2000-01-02))'::floatspan;
  
 (1 row)
 
-SELECT tbox 'TBOX T((2000-01-01,2000-01-02))'::period;
-                      period                      
+SELECT tbox 'TBOX T((2000-01-01,2000-01-02))'::tstzspan;
+                     tstzspan                     
 --------------------------------------------------
  (2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00)
 (1 row)
@@ -188,7 +188,7 @@ SELECT floatset '{1,2}'::tbox;
  TBOX X([1, 2])
 (1 row)
 
-SELECT timestampset '{2000-01-01,2000-01-02}'::tbox;
+SELECT tstzset '{2000-01-01,2000-01-02}'::tbox;
                            tbox                           
 ----------------------------------------------------------
  TBOX T([2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00])
@@ -206,7 +206,7 @@ SELECT floatspan '[1,2]'::tbox;
  TBOX X([1, 2])
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]'::tbox;
+SELECT tstzspan '[2000-01-01,2000-01-02]'::tbox;
                            tbox                           
 ----------------------------------------------------------
  TBOX T([2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00])
@@ -224,7 +224,7 @@ SELECT floatspanset '{[1,2]}'::tbox;
  TBOX X([1, 2])
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02]}'::tbox;
+SELECT tstzspanset '{[2000-01-01,2000-01-02]}'::tbox;
                            tbox                           
 ----------------------------------------------------------
  TBOX T([2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00])
@@ -236,7 +236,7 @@ SELECT ROUND(MAX(upper(b::floatspan) - lower(b::floatspan))::numeric, 6) FROM tb
  9.798705
 (1 row)
 
-SELECT MAX(duration(b::period)) FROM tbl_tbox;
+SELECT MAX(duration(b::tstzspan)) FROM tbl_tbox;
    max    
 ----------
  00:09:00
@@ -429,7 +429,7 @@ SELECT tbox 'TBOX XT([1.0, 2.0],[2000-01-02, 2000-02-01])' ~= tbox 'TBOX XT([1.0
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]'::tbox -|- period '[2000-01-02, 2000-01-03]'::tbox;
+SELECT tstzspan '[2000-01-01,2000-01-02]'::tbox -|- tstzspan '[2000-01-02, 2000-01-03]'::tbox;
  ?column? 
 ----------
  t

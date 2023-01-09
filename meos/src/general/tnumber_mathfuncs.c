@@ -2,12 +2,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -237,7 +237,7 @@ arithop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
    * the common timespan */
   if (oper == DIV)
   {
-    PeriodSet *ps = temporal_time(temp1);
+    SpanSet *ps = temporal_time(temp1);
     Temporal *projtemp2 = temporal_restrict_periodset(temp2, ps, REST_AT);
     if (projtemp2 == NULL)
       return NULL;

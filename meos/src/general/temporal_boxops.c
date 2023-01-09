@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -63,7 +63,7 @@
 bool
 bbox_type(meosType bboxtype)
 {
-  if (bboxtype == T_PERIOD || bboxtype == T_TBOX || bboxtype == T_STBOX)
+  if (bboxtype == T_TSTZSPAN || bboxtype == T_TBOX || bboxtype == T_STBOX)
     return true;
   return false;
 }
@@ -86,8 +86,8 @@ size_t
 bbox_get_size(meosType bboxtype)
 {
   ensure_bbox_type(bboxtype);
-  if (bboxtype == T_PERIOD)
-    return sizeof(Period);
+  if (bboxtype == T_TSTZSPAN)
+    return sizeof(Span);
   if (bboxtype == T_TBOX)
     return sizeof(TBox);
   else /* bboxtype == T_STBOX */
@@ -101,7 +101,7 @@ int
 bbox_max_dims(meosType bboxtype)
 {
   ensure_bbox_type(bboxtype);
-  if (bboxtype == T_PERIOD)
+  if (bboxtype == T_TSTZSPAN)
     return 1;
   if (bboxtype == T_TBOX)
     return 2;
@@ -170,7 +170,7 @@ temporal_bbox_shift_tscale(void *box, meosType temptype, const Interval *shift,
 {
   ensure_temporal_type(temptype);
   if (talpha_type(temptype))
-    period_shift_tscale((Period *) box, shift, duration);
+    period_shift_tscale((Span *) box, shift, duration);
   else if (tnumber_type(temptype))
     tbox_shift_tscale((TBox *) box, shift, duration);
   else if (tspatial_type(temptype))
@@ -206,7 +206,7 @@ size_t
 temporal_bbox_size(meosType temptype)
 {
   if (talpha_type(temptype))
-    return sizeof(Period);
+    return sizeof(Span);
   if (tnumber_type(temptype))
     return sizeof(TBox);
   if (tspatial_type(temptype))
@@ -321,7 +321,7 @@ tinstarr_compute_bbox(const TInstant **instants, int count, bool lower_inc,
       instants[0]->temptype);
   /* Set the lower_inc and upper_inc bounds of the period at the beginning
    * of the bounding box */
-  Period *p = (Period *) box;
+  Span *p = (Span *) box;
   p->lower_inc = lower_inc;
   p->upper_inc = upper_inc;
   return;
@@ -413,10 +413,10 @@ tsequenceset_expand_bbox(TSequenceSet *ss, const TSequence *seq)
  * @param[in] count Number of elements in the array
  */
 static void
-tseqarr_set_period(const TSequence **sequences, int count, Period *period)
+tseqarr_set_period(const TSequence **sequences, int count, Span *period)
 {
-  const Period *first = &sequences[0]->period;
-  const Period *last = &sequences[count - 1]->period;
+  const Span *first = &sequences[0]->period;
+  const Span *last = &sequences[count - 1]->period;
   span_set(first->lower, last->upper, first->lower_inc, last->upper_inc,
     T_TIMESTAMPTZ, period);
   return;
@@ -450,7 +450,7 @@ tsequenceset_compute_bbox(const TSequence **sequences, int count, void *box)
   /* Only external types have bounding box */ // TODO
   ensure_temporal_type(sequences[0]->temptype);
   if (talpha_type(sequences[0]->temptype))
-    tseqarr_set_period(sequences, count, (Period *) box);
+    tseqarr_set_period(sequences, count, (Span *) box);
   else if (tnumber_type(sequences[0]->temptype))
     tnumberseqarr_set_tbox(sequences, count, (TBox *) box);
   else if (tspatial_type(sequences[0]->temptype))
@@ -477,9 +477,9 @@ tsequenceset_compute_bbox(const TSequence **sequences, int count, void *box)
  */
 Datum
 boxop_temporal_timestamp(const Temporal *temp, TimestampTz t,
-  bool (*func)(const Period *, const Period *), bool invert)
+  bool (*func)(const Span *, const Span *), bool invert)
 {
-  Period p1, p2;
+  Span p1, p2;
   temporal_set_period(temp, &p1);
   span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
     T_TIMESTAMPTZ, &p2);
@@ -497,10 +497,10 @@ boxop_temporal_timestamp(const Temporal *temp, TimestampTz t,
  * function
  */
 Datum
-boxop_temporal_timestampset(const Temporal *temp, const TimestampSet *ts,
-  bool (*func)(const Period *, const Period *), bool invert)
+boxop_temporal_tstzset(const Temporal *temp, const Set *ts,
+  bool (*func)(const Span *, const Span *), bool invert)
 {
-  Period p1, p2;
+  Span p1, p2;
   temporal_set_period(temp, &p1);
   set_set_span(ts, &p2);
   bool result = invert ? func(&p2, &p1) : func(&p1, &p2);
@@ -517,10 +517,10 @@ boxop_temporal_timestampset(const Temporal *temp, const TimestampSet *ts,
  * function
  */
 Datum
-boxop_temporal_period(const Temporal *temp, const Period *p,
-  bool (*func)(const Period *, const Period *), bool invert)
+boxop_temporal_period(const Temporal *temp, const Span *p,
+  bool (*func)(const Span *, const Span *), bool invert)
 {
-  Period p1;
+  Span p1;
   temporal_set_period(temp, &p1);
   bool result = invert ? func(p, &p1) : func(&p1, p);
   return result;
@@ -536,10 +536,10 @@ boxop_temporal_period(const Temporal *temp, const Period *p,
  * function
  */
 bool
-boxop_temporal_periodset(const Temporal *temp, const PeriodSet *ps,
-  bool (*func)(const Period *, const Period *), bool invert)
+boxop_temporal_periodset(const Temporal *temp, const SpanSet *ps,
+  bool (*func)(const Span *, const Span *), bool invert)
 {
-  Period p;
+  Span p;
   temporal_set_period(temp, &p);
   bool result = invert ? func(&ps->span, &p) : func(&p, &ps->span);
   return result;
@@ -553,9 +553,9 @@ boxop_temporal_periodset(const Temporal *temp, const PeriodSet *ps,
  */
 bool
 boxop_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
-  bool (*func)(const Period *, const Period *))
+  bool (*func)(const Span *, const Span *))
 {
-  Period p1, p2;
+  Span p1, p2;
   temporal_set_period(temp1, &p1);
   temporal_set_period(temp2, &p2);
   bool result = func(&p1, &p2);

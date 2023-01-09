@@ -222,10 +222,10 @@ SELECT MAX(numValues(routes(temp))) FROM tbl_tnpoint;
    9
 (1 row)
 
-SELECT MAX(timespan(getTime(temp))) FROM tbl_tnpoint;
+SELECT MAX(duration(getTime(temp))) FROM tbl_tnpoint;
    max    
 ----------
- 05:17:00
+ 04:00:00
 (1 row)
 
 SELECT MAX(getTimestamp(inst)) FROM tbl_tnpoint_inst;
@@ -276,10 +276,10 @@ SELECT DISTINCT MAX(getPosition(endValue(temp))) FROM tbl_tnpoint;
  0.995935
 (1 row)
 
-SELECT MAX(timespan(temp)) FROM tbl_tnpoint;
+SELECT MAX(duration(temp)) FROM tbl_tnpoint;
    max    
 ----------
- 05:17:00
+ 04:00:00
 (1 row)
 
 SELECT MAX(numInstants(temp)) FROM tbl_tnpoint;
@@ -348,19 +348,19 @@ SELECT MAX(numSequences(ts)) FROM tbl_tnpoint_seqset;
    9
 (1 row)
 
-SELECT MAX(timespan(startSequence(ts))) FROM tbl_tnpoint_seqset;
+SELECT MAX(duration(startSequence(ts))) FROM tbl_tnpoint_seqset;
    max    
 ----------
  00:50:00
 (1 row)
 
-SELECT MAX(timespan(endSequence(ts))) FROM tbl_tnpoint_seqset;
+SELECT MAX(duration(endSequence(ts))) FROM tbl_tnpoint_seqset;
    max    
 ----------
  00:50:00
 (1 row)
 
-SELECT MAX(timespan(sequenceN(ts, numSequences(ts)))) FROM tbl_tnpoint_seqset;
+SELECT MAX(duration(sequenceN(ts, numSequences(ts)))) FROM tbl_tnpoint_seqset;
    max    
 ----------
  00:50:00
@@ -423,42 +423,42 @@ WHERE valueAtTimestamp(temp, t) IS NOT NULL;
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestampset
+SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset
 WHERE atTime(temp, ts) IS NOT NULL;
  count 
 -------
      1
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestampset
+SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset
 WHERE minusTime(temp, ts) IS NOT NULL;
  count 
 -------
   9900
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_period
+SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspan
 WHERE atTime(temp, p) IS NOT NULL;
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_period
+SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspan
 WHERE minusTime(temp, p) IS NOT NULL;
  count 
 -------
   9900
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_periodset
+SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspanset
 WHERE atTime(temp, ps) IS NOT NULL;
  count 
 -------
      3
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_periodset
+SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspanset
 WHERE minusTime(temp, ps) IS NOT NULL;
  count 
 -------
@@ -472,21 +472,21 @@ WHERE overlapsTime(temp, t) IS NOT NULL;
   9900
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestampset
+SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset
 WHERE overlapsTime(temp, ts) IS NOT NULL;
  count 
 -------
   9900
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_period
+SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspan
 WHERE overlapsTime(temp, p) IS NOT NULL;
  count 
 -------
   9900
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_periodset
+SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspanset
 WHERE overlapsTime(temp, ps) IS NOT NULL;
  count 
 -------
@@ -549,19 +549,19 @@ SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, timestamptz '2001-06-0
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, timestampset '{2001-06-01, 2001-07-01}');
+SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, tstzset '{2001-06-01, 2001-07-01}');
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, period '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, tstzspan '[2001-06-01, 2001-07-01]');
  count 
 -------
     11
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, tstzspanset '{[2001-06-01, 2001-07-01]}');
  count 
 -------
     11
@@ -577,19 +577,19 @@ SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, timestamptz '2001-06-0
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, timestampset '{2001-06-01, 2001-07-01}');
+SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, tstzset '{2001-06-01, 2001-07-01}');
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, period '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, tstzspan '[2001-06-01, 2001-07-01]');
  count 
 -------
     11
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, tstzspanset '{[2001-06-01, 2001-07-01]}');
  count 
 -------
     11

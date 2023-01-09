@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -277,7 +277,7 @@ period_mfjson_size(void)
  * Write into the buffer the period bounding box represented in MF-JSON format
  */
 static size_t
-period_mfjson_buf(char *output, const Period *p)
+period_mfjson_buf(char *output, const Span *p)
 {
   char *ptr = output;
   ptr += sprintf(ptr, "\"stBoundedBy\":{\"period\":{\"begin\":");
@@ -424,7 +424,7 @@ bbox_mfjson_buf(meosType temptype, char *output, const bboxunion *bbox,
   {
     case T_TBOOL:
     case T_TTEXT:
-      return period_mfjson_buf(output, (Period *) bbox);
+      return period_mfjson_buf(output, (Span *) bbox);
     case T_TINT:
     case T_TFLOAT:
       return tbox_mfjson_buf(output, (TBox *) bbox, precision);
@@ -2309,9 +2309,9 @@ set_as_wkb(const Set *s, uint8_t variant, size_t *size_out)
  * @sqlfunc asHexWKB()
  */
 char *
-set_as_hexwkb(const TimestampSet *ts, uint8_t variant, size_t *size_out)
+set_as_hexwkb(const Set *s, uint8_t variant, size_t *size_out)
 {
-  char *result = (char *) datum_as_wkb(PointerGetDatum(ts), ts->settype,
+  char *result = (char *) datum_as_wkb(PointerGetDatum(s), s->settype,
     variant | (uint8_t) WKB_HEX, size_out);
   return result;
 }

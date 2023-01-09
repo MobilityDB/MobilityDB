@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -259,11 +259,11 @@ CREATE OPERATOR CLASS floatspan_rtree_ops
 
 /******************************************************************************/
 
-CREATE FUNCTION span_gist_consistent(internal, period, smallint, oid, internal)
+CREATE FUNCTION span_gist_consistent(internal, tstzspan, smallint, oid, internal)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Span_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_gist_same(period, period, internal)
+CREATE FUNCTION span_gist_same(tstzspan, tstzspan, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Span_gist_same'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -271,55 +271,55 @@ CREATE FUNCTION span_gist_same(period, period, internal)
 /******************************************************************************/
 
 CREATE OPERATOR CLASS period_rtree_ops
-  DEFAULT FOR TYPE period USING gist AS
+  DEFAULT FOR TYPE tstzspan USING gist AS
   -- overlaps
-  OPERATOR  3    && (period, timestampset),
-  OPERATOR  3    && (period, period),
-  OPERATOR  3    && (period, periodset),
+  OPERATOR  3    && (tstzspan, tstzset),
+  OPERATOR  3    && (tstzspan, tstzspan),
+  OPERATOR  3    && (tstzspan, tstzspanset),
   -- contains
-  OPERATOR  7    @> (period, timestamptz),
-  OPERATOR  7    @> (period, timestampset),
-  OPERATOR  7    @> (period, period),
-  OPERATOR  7    @> (period, periodset),
+  OPERATOR  7    @> (tstzspan, timestamptz),
+  OPERATOR  7    @> (tstzspan, tstzset),
+  OPERATOR  7    @> (tstzspan, tstzspan),
+  OPERATOR  7    @> (tstzspan, tstzspanset),
   -- contained by
-  OPERATOR  8    <@ (period, period),
-  OPERATOR  8    <@ (period, periodset),
+  OPERATOR  8    <@ (tstzspan, tstzspan),
+  OPERATOR  8    <@ (tstzspan, tstzspanset),
   -- adjacent
-  OPERATOR  17    -|- (period, period),
-  OPERATOR  17    -|- (period, periodset),
+  OPERATOR  17    -|- (tstzspan, tstzspan),
+  OPERATOR  17    -|- (tstzspan, tstzspanset),
   -- equals
-  OPERATOR  18    = (period, period),
+  OPERATOR  18    = (tstzspan, tstzspan),
   -- nearest approach distance
-  OPERATOR  25    <-> (period, timestamptz) FOR ORDER BY pg_catalog.float_ops,
-  OPERATOR  25    <-> (period, timestampset) FOR ORDER BY pg_catalog.float_ops,
-  OPERATOR  25    <-> (period, period) FOR ORDER BY pg_catalog.float_ops,
-  OPERATOR  25    <-> (period, periodset) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (tstzspan, timestamptz) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (tstzspan, tstzset) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (tstzspan, tstzspan) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (tstzspan, tstzspanset) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
-  OPERATOR  28    &<# (period, timestamptz),
-  OPERATOR  28    &<# (period, timestampset),
-  OPERATOR  28    &<# (period, period),
-  OPERATOR  28    &<# (period, periodset),
+  OPERATOR  28    &<# (tstzspan, timestamptz),
+  OPERATOR  28    &<# (tstzspan, tstzset),
+  OPERATOR  28    &<# (tstzspan, tstzspan),
+  OPERATOR  28    &<# (tstzspan, tstzspanset),
   -- strictly before
-  OPERATOR  29    <<# (period, timestamptz),
-  OPERATOR  29    <<# (period, timestampset),
-  OPERATOR  29    <<# (period, period),
-  OPERATOR  29    <<# (period, periodset),
+  OPERATOR  29    <<# (tstzspan, timestamptz),
+  OPERATOR  29    <<# (tstzspan, tstzset),
+  OPERATOR  29    <<# (tstzspan, tstzspan),
+  OPERATOR  29    <<# (tstzspan, tstzspanset),
   -- strictly after
-  OPERATOR  30    #>> (period, timestamptz),
-  OPERATOR  30    #>> (period, timestampset),
-  OPERATOR  30    #>> (period, period),
-  OPERATOR  30    #>> (period, periodset),
+  OPERATOR  30    #>> (tstzspan, timestamptz),
+  OPERATOR  30    #>> (tstzspan, tstzset),
+  OPERATOR  30    #>> (tstzspan, tstzspan),
+  OPERATOR  30    #>> (tstzspan, tstzspanset),
   -- overlaps or after
-  OPERATOR  31    #&> (period, timestamptz),
-  OPERATOR  31    #&> (period, timestampset),
-  OPERATOR  31    #&> (period, period),
-  OPERATOR  31    #&> (period, periodset),
+  OPERATOR  31    #&> (tstzspan, timestamptz),
+  OPERATOR  31    #&> (tstzspan, tstzset),
+  OPERATOR  31    #&> (tstzspan, tstzspan),
+  OPERATOR  31    #&> (tstzspan, tstzspanset),
   -- functions
-  FUNCTION  1  span_gist_consistent(internal, period, smallint, oid, internal),
+  FUNCTION  1  span_gist_consistent(internal, tstzspan, smallint, oid, internal),
   FUNCTION  2  span_gist_union(internal, internal),
   FUNCTION  5  span_gist_penalty(internal, internal, internal),
   FUNCTION  6  span_gist_picksplit(internal, internal),
-  FUNCTION  7  span_gist_same(period, period, internal),
+  FUNCTION  7  span_gist_same(tstzspan, tstzspan, internal),
   FUNCTION  9  span_gist_fetch(internal);
 
 /******************************************************************************
@@ -521,49 +521,49 @@ CREATE FUNCTION period_spgist_config(internal, internal)
 /******************************************************************************/
 
 CREATE OPERATOR CLASS period_quadtree_ops
-  DEFAULT FOR TYPE period USING spgist AS
+  DEFAULT FOR TYPE tstzspan USING spgist AS
   -- overlaps
-  OPERATOR  3    && (period, timestampset),
-  OPERATOR  3    && (period, period),
-  OPERATOR  3    && (period, periodset),
+  OPERATOR  3    && (tstzspan, tstzset),
+  OPERATOR  3    && (tstzspan, tstzspan),
+  OPERATOR  3    && (tstzspan, tstzspanset),
   -- contains
-  OPERATOR  7    @> (period, timestamptz),
-  OPERATOR  7    @> (period, timestampset),
-  OPERATOR  7    @> (period, period),
-  OPERATOR  7    @> (period, periodset),
+  OPERATOR  7    @> (tstzspan, timestamptz),
+  OPERATOR  7    @> (tstzspan, tstzset),
+  OPERATOR  7    @> (tstzspan, tstzspan),
+  OPERATOR  7    @> (tstzspan, tstzspanset),
   -- contained by
-  OPERATOR  8    <@ (period, period),
-  OPERATOR  8    <@ (period, periodset),
+  OPERATOR  8    <@ (tstzspan, tstzspan),
+  OPERATOR  8    <@ (tstzspan, tstzspanset),
   -- adjacent
-  OPERATOR  17    -|- (period, period),
-  OPERATOR  17    -|- (period, periodset),
+  OPERATOR  17    -|- (tstzspan, tstzspan),
+  OPERATOR  17    -|- (tstzspan, tstzspanset),
   -- equals
-  OPERATOR  18    = (period, period),
+  OPERATOR  18    = (tstzspan, tstzspan),
   -- nearest approach distance
-  OPERATOR  25    <->(period, timestamptz) FOR ORDER BY pg_catalog.float_ops,
-  OPERATOR  25    <->(period, timestampset) FOR ORDER BY pg_catalog.float_ops,
-  OPERATOR  25    <->(period, period) FOR ORDER BY pg_catalog.float_ops,
-  OPERATOR  25    <->(period, periodset) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <->(tstzspan, timestamptz) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <->(tstzspan, tstzset) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <->(tstzspan, tstzspan) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <->(tstzspan, tstzspanset) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
-  OPERATOR  28    &<# (period, timestamptz),
-  OPERATOR  28    &<# (period, timestampset),
-  OPERATOR  28    &<# (period, period),
-  OPERATOR  28    &<# (period, periodset),
+  OPERATOR  28    &<# (tstzspan, timestamptz),
+  OPERATOR  28    &<# (tstzspan, tstzset),
+  OPERATOR  28    &<# (tstzspan, tstzspan),
+  OPERATOR  28    &<# (tstzspan, tstzspanset),
   -- strictly before
-  OPERATOR  29    <<# (period, timestamptz),
-  OPERATOR  29    <<# (period, timestampset),
-  OPERATOR  29    <<# (period, period),
-  OPERATOR  29    <<# (period, periodset),
+  OPERATOR  29    <<# (tstzspan, timestamptz),
+  OPERATOR  29    <<# (tstzspan, tstzset),
+  OPERATOR  29    <<# (tstzspan, tstzspan),
+  OPERATOR  29    <<# (tstzspan, tstzspanset),
   -- strictly after
-  OPERATOR  30    #>> (period, timestamptz),
-  OPERATOR  30    #>> (period, timestampset),
-  OPERATOR  30    #>> (period, period),
-  OPERATOR  30    #>> (period, periodset),
+  OPERATOR  30    #>> (tstzspan, timestamptz),
+  OPERATOR  30    #>> (tstzspan, tstzset),
+  OPERATOR  30    #>> (tstzspan, tstzspan),
+  OPERATOR  30    #>> (tstzspan, tstzspanset),
   -- overlaps or after
-  OPERATOR  31    #&> (period, timestamptz),
-  OPERATOR  31    #&> (period, timestampset),
-  OPERATOR  31    #&> (period, period),
-  OPERATOR  31    #&> (period, periodset),
+  OPERATOR  31    #&> (tstzspan, timestamptz),
+  OPERATOR  31    #&> (tstzspan, tstzset),
+  OPERATOR  31    #&> (tstzspan, tstzspan),
+  OPERATOR  31    #&> (tstzspan, tstzspanset),
   -- functions
   FUNCTION  1  period_spgist_config(internal, internal),
   FUNCTION  2  span_quadtree_choose(internal, internal),
@@ -747,49 +747,49 @@ CREATE OPERATOR CLASS floatspan_kdtree_ops
 /******************************************************************************/
 
 CREATE OPERATOR CLASS period_kdtree_ops
-  FOR TYPE period USING spgist AS
+  FOR TYPE tstzspan USING spgist AS
   -- overlaps
-  OPERATOR  3    && (period, timestampset),
-  OPERATOR  3    && (period, period),
-  OPERATOR  3    && (period, periodset),
+  OPERATOR  3    && (tstzspan, tstzset),
+  OPERATOR  3    && (tstzspan, tstzspan),
+  OPERATOR  3    && (tstzspan, tstzspanset),
   -- contains
-  OPERATOR  7    @> (period, timestamptz),
-  OPERATOR  7    @> (period, timestampset),
-  OPERATOR  7    @> (period, period),
-  OPERATOR  7    @> (period, periodset),
+  OPERATOR  7    @> (tstzspan, timestamptz),
+  OPERATOR  7    @> (tstzspan, tstzset),
+  OPERATOR  7    @> (tstzspan, tstzspan),
+  OPERATOR  7    @> (tstzspan, tstzspanset),
   -- contained by
-  OPERATOR  8    <@ (period, period),
-  OPERATOR  8    <@ (period, periodset),
+  OPERATOR  8    <@ (tstzspan, tstzspan),
+  OPERATOR  8    <@ (tstzspan, tstzspanset),
   -- adjacent
-  OPERATOR  17    -|- (period, period),
-  OPERATOR  17    -|- (period, periodset),
+  OPERATOR  17    -|- (tstzspan, tstzspan),
+  OPERATOR  17    -|- (tstzspan, tstzspanset),
   -- equals
-  OPERATOR  18    = (period, period),
+  OPERATOR  18    = (tstzspan, tstzspan),
   -- nearest approach distance
-  OPERATOR  25    <-> (period, timestamptz) FOR ORDER BY pg_catalog.float_ops,
-  OPERATOR  25    <-> (period, timestampset) FOR ORDER BY pg_catalog.float_ops,
-  OPERATOR  25    <-> (period, period) FOR ORDER BY pg_catalog.float_ops,
-  OPERATOR  25    <-> (period, periodset) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (tstzspan, timestamptz) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (tstzspan, tstzset) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (tstzspan, tstzspan) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (tstzspan, tstzspanset) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
-  OPERATOR  28    &<# (period, timestamptz),
-  OPERATOR  28    &<# (period, timestampset),
-  OPERATOR  28    &<# (period, period),
-  OPERATOR  28    &<# (period, periodset),
+  OPERATOR  28    &<# (tstzspan, timestamptz),
+  OPERATOR  28    &<# (tstzspan, tstzset),
+  OPERATOR  28    &<# (tstzspan, tstzspan),
+  OPERATOR  28    &<# (tstzspan, tstzspanset),
   -- strictly before
-  OPERATOR  29    <<# (period, timestamptz),
-  OPERATOR  29    <<# (period, timestampset),
-  OPERATOR  29    <<# (period, period),
-  OPERATOR  29    <<# (period, periodset),
+  OPERATOR  29    <<# (tstzspan, timestamptz),
+  OPERATOR  29    <<# (tstzspan, tstzset),
+  OPERATOR  29    <<# (tstzspan, tstzspan),
+  OPERATOR  29    <<# (tstzspan, tstzspanset),
   -- strictly after
-  OPERATOR  30    #>> (period, timestamptz),
-  OPERATOR  30    #>> (period, timestampset),
-  OPERATOR  30    #>> (period, period),
-  OPERATOR  30    #>> (period, periodset),
+  OPERATOR  30    #>> (tstzspan, timestamptz),
+  OPERATOR  30    #>> (tstzspan, tstzset),
+  OPERATOR  30    #>> (tstzspan, tstzspan),
+  OPERATOR  30    #>> (tstzspan, tstzspanset),
   -- overlaps or after
-  OPERATOR  31    #&> (period, timestamptz),
-  OPERATOR  31    #&> (period, timestampset),
-  OPERATOR  31    #&> (period, period),
-  OPERATOR  31    #&> (period, periodset),
+  OPERATOR  31    #&> (tstzspan, timestamptz),
+  OPERATOR  31    #&> (tstzspan, tstzset),
+  OPERATOR  31    #&> (tstzspan, tstzspan),
+  OPERATOR  31    #&> (tstzspan, tstzspanset),
   -- functions
   FUNCTION  1  period_spgist_config(internal, internal),
   FUNCTION  2  span_kdtree_choose(internal, internal),

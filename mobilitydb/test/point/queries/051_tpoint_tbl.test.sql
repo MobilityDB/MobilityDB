@@ -1,12 +1,12 @@
 -------------------------------------------------------------------------------
 --
 -- This MobilityDB code is provided under The PostgreSQL License.
--- Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+-- Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
 -- contributors
 --
 -- MobilityDB includes portions of PostGIS version 3 source code released
 -- under the GNU General Public License (GPLv2 or later).
--- Copyright (c) 2001-2022, PostGIS contributors
+-- Copyright (c) 2001-2023, PostGIS contributors
 --
 -- Permission to use, copy, modify, and distribute this software and its
 -- documentation for any purpose, without fee, and without a written
@@ -120,22 +120,22 @@ SELECT DISTINCT tempSubtype(tgeogpoint_seqset(seq)) FROM tbl_tgeogpoint3D_seq;
 ------------------------------------------------------------------------------/
 
 SELECT DISTINCT tempSubtype(tgeompoint_inst(ts)) FROM tbl_tgeompoint_seqset WHERE numInstants(ts) = 1;
-SELECT DISTINCT tempSubtype(tgeompoint_discseq(ts)) FROM tbl_tgeompoint_seqset WHERE timespan(ts) = '00:00:00';
+SELECT DISTINCT tempSubtype(tgeompoint_discseq(ts)) FROM tbl_tgeompoint_seqset WHERE duration(ts) = '00:00:00';
 SELECT DISTINCT tempSubtype(tgeompoint_contseq(ts)) FROM tbl_tgeompoint_seqset WHERE numSequences(ts) = 1;
 SELECT DISTINCT tempSubtype(tgeompoint_seqset(ts)) FROM tbl_tgeompoint_seqset;
 
 SELECT DISTINCT tempSubtype(tgeompoint_inst(ts)) FROM tbl_tgeompoint3D_seqset WHERE numInstants(ts) = 1;
-SELECT DISTINCT tempSubtype(tgeompoint_discseq(ts)) FROM tbl_tgeompoint3D_seqset WHERE timespan(ts) = '00:00:00';
+SELECT DISTINCT tempSubtype(tgeompoint_discseq(ts)) FROM tbl_tgeompoint3D_seqset WHERE duration(ts) = '00:00:00';
 SELECT DISTINCT tempSubtype(tgeompoint_contseq(ts)) FROM tbl_tgeompoint3D_seqset WHERE numSequences(ts) = 1;
 SELECT DISTINCT tempSubtype(tgeompoint_seqset(ts)) FROM tbl_tgeompoint3D_seqset;
 
 SELECT DISTINCT tempSubtype(tgeogpoint_inst(ts)) FROM tbl_tgeogpoint_seqset WHERE numInstants(ts) = 1;
-SELECT DISTINCT tempSubtype(tgeogpoint_discseq(ts)) FROM tbl_tgeogpoint_seqset WHERE timespan(ts) = '00:00:00';
+SELECT DISTINCT tempSubtype(tgeogpoint_discseq(ts)) FROM tbl_tgeogpoint_seqset WHERE duration(ts) = '00:00:00';
 SELECT DISTINCT tempSubtype(tgeogpoint_contseq(ts)) FROM tbl_tgeogpoint_seqset WHERE numSequences(ts) = 1;
 SELECT DISTINCT tempSubtype(tgeogpoint_seqset(ts)) FROM tbl_tgeogpoint_seqset;
 
 SELECT DISTINCT tempSubtype(tgeogpoint_inst(ts)) FROM tbl_tgeogpoint3D_seqset WHERE numInstants(ts) = 1;
-SELECT DISTINCT tempSubtype(tgeogpoint_discseq(ts)) FROM tbl_tgeogpoint3D_seqset WHERE timespan(ts) = '00:00:00';
+SELECT DISTINCT tempSubtype(tgeogpoint_discseq(ts)) FROM tbl_tgeogpoint3D_seqset WHERE duration(ts) = '00:00:00';
 SELECT DISTINCT tempSubtype(tgeogpoint_contseq(ts)) FROM tbl_tgeogpoint3D_seqset WHERE numSequences(ts) = 1;
 SELECT DISTINCT tempSubtype(tgeogpoint_seqset(ts)) FROM tbl_tgeogpoint3D_seqset;
 
@@ -190,40 +190,40 @@ SELECT MAX(getTimestamp(inst)) FROM tbl_tgeogpoint_inst;
 SELECT MAX(getTimestamp(inst)) FROM tbl_tgeompoint3D_inst;
 SELECT MAX(getTimestamp(inst)) FROM tbl_tgeogpoint3D_inst;
 
-SELECT MAX(timespan(getTime(temp))) FROM tbl_tgeompoint;
-SELECT MAX(timespan(getTime(temp))) FROM tbl_tgeogpoint;
-SELECT MAX(timespan(getTime(temp))) FROM tbl_tgeompoint3D;
-SELECT MAX(timespan(getTime(temp))) FROM tbl_tgeogpoint3D;
+SELECT MAX(duration(getTime(temp))) FROM tbl_tgeompoint;
+SELECT MAX(duration(getTime(temp))) FROM tbl_tgeogpoint;
+SELECT MAX(duration(getTime(temp))) FROM tbl_tgeompoint3D;
+SELECT MAX(duration(getTime(temp))) FROM tbl_tgeogpoint3D;
 
-SELECT MAX(duration(period(temp))) FROM tbl_tgeompoint;
-SELECT MAX(duration(period(temp))) FROM tbl_tgeogpoint;
-SELECT MAX(duration(period(temp))) FROM tbl_tgeompoint3D;
-SELECT MAX(duration(period(temp))) FROM tbl_tgeogpoint3D;
+SELECT MAX(duration(timeSpan(temp))) FROM tbl_tgeompoint;
+SELECT MAX(duration(timeSpan(temp))) FROM tbl_tgeogpoint;
+SELECT MAX(duration(timeSpan(temp))) FROM tbl_tgeompoint3D;
+SELECT MAX(duration(timeSpan(temp))) FROM tbl_tgeogpoint3D;
 
-SELECT MAX(timespan(temp)) FROM tbl_tgeompoint;
-SELECT MAX(timespan(temp)) FROM tbl_tgeogpoint;
-SELECT MAX(timespan(temp)) FROM tbl_tgeompoint3D;
-SELECT MAX(timespan(temp)) FROM tbl_tgeogpoint3D;
+SELECT MAX(duration(temp)) FROM tbl_tgeompoint;
+SELECT MAX(duration(temp)) FROM tbl_tgeogpoint;
+SELECT MAX(duration(temp)) FROM tbl_tgeompoint3D;
+SELECT MAX(duration(temp)) FROM tbl_tgeogpoint3D;
 
 SELECT MAX(numSequences(seq)) FROM tbl_tgeompoint_seq;
 SELECT MAX(numSequences(seq)) FROM tbl_tgeogpoint_seq;
 SELECT MAX(numSequences(seq)) FROM tbl_tgeompoint3D_seq;
 SELECT MAX(numSequences(seq)) FROM tbl_tgeogpoint3D_seq;
 
-SELECT MAX(timespan(startSequence(seq))) FROM tbl_tgeompoint_seq;
-SELECT MAX(timespan(startSequence(seq))) FROM tbl_tgeogpoint_seq;
-SELECT MAX(timespan(startSequence(seq))) FROM tbl_tgeompoint3D_seq;
-SELECT MAX(timespan(startSequence(seq))) FROM tbl_tgeogpoint3D_seq;
+SELECT MAX(duration(startSequence(seq))) FROM tbl_tgeompoint_seq;
+SELECT MAX(duration(startSequence(seq))) FROM tbl_tgeogpoint_seq;
+SELECT MAX(duration(startSequence(seq))) FROM tbl_tgeompoint3D_seq;
+SELECT MAX(duration(startSequence(seq))) FROM tbl_tgeogpoint3D_seq;
 
-SELECT MAX(timespan(endSequence(seq))) FROM tbl_tgeompoint_seq;
-SELECT MAX(timespan(endSequence(seq))) FROM tbl_tgeogpoint_seq;
-SELECT MAX(timespan(endSequence(seq))) FROM tbl_tgeompoint3D_seq;
-SELECT MAX(timespan(endSequence(seq))) FROM tbl_tgeogpoint3D_seq;
+SELECT MAX(duration(endSequence(seq))) FROM tbl_tgeompoint_seq;
+SELECT MAX(duration(endSequence(seq))) FROM tbl_tgeogpoint_seq;
+SELECT MAX(duration(endSequence(seq))) FROM tbl_tgeompoint3D_seq;
+SELECT MAX(duration(endSequence(seq))) FROM tbl_tgeogpoint3D_seq;
 
-SELECT MAX(timespan(sequenceN(seq, numSequences(seq)))) FROM tbl_tgeompoint_seq;
-SELECT MAX(timespan(sequenceN(seq, numSequences(seq)))) FROM tbl_tgeogpoint_seq;
-SELECT MAX(timespan(sequenceN(seq, numSequences(seq)))) FROM tbl_tgeompoint3D_seq;
-SELECT MAX(timespan(sequenceN(seq, numSequences(seq)))) FROM tbl_tgeogpoint3D_seq;
+SELECT MAX(duration(sequenceN(seq, numSequences(seq)))) FROM tbl_tgeompoint_seq;
+SELECT MAX(duration(sequenceN(seq, numSequences(seq)))) FROM tbl_tgeogpoint_seq;
+SELECT MAX(duration(sequenceN(seq, numSequences(seq)))) FROM tbl_tgeompoint3D_seq;
+SELECT MAX(duration(sequenceN(seq, numSequences(seq)))) FROM tbl_tgeogpoint3D_seq;
 
 SELECT MAX(array_length(sequences(seq),1)) FROM tbl_tgeompoint_seq;
 SELECT MAX(array_length(sequences(seq),1)) FROM tbl_tgeogpoint_seq;
@@ -235,20 +235,20 @@ SELECT MAX(numSequences(ts)) FROM tbl_tgeogpoint_seqset;
 SELECT MAX(numSequences(ts)) FROM tbl_tgeompoint3D_seqset;
 SELECT MAX(numSequences(ts)) FROM tbl_tgeogpoint3D_seqset;
 
-SELECT MAX(timespan(startSequence(ts))) FROM tbl_tgeompoint_seqset;
-SELECT MAX(timespan(startSequence(ts))) FROM tbl_tgeogpoint_seqset;
-SELECT MAX(timespan(startSequence(ts))) FROM tbl_tgeompoint3D_seqset;
-SELECT MAX(timespan(startSequence(ts))) FROM tbl_tgeogpoint3D_seqset;
+SELECT MAX(duration(startSequence(ts))) FROM tbl_tgeompoint_seqset;
+SELECT MAX(duration(startSequence(ts))) FROM tbl_tgeogpoint_seqset;
+SELECT MAX(duration(startSequence(ts))) FROM tbl_tgeompoint3D_seqset;
+SELECT MAX(duration(startSequence(ts))) FROM tbl_tgeogpoint3D_seqset;
 
-SELECT MAX(timespan(endSequence(ts))) FROM tbl_tgeompoint_seqset;
-SELECT MAX(timespan(endSequence(ts))) FROM tbl_tgeogpoint_seqset;
-SELECT MAX(timespan(endSequence(ts))) FROM tbl_tgeompoint3D_seqset;
-SELECT MAX(timespan(endSequence(ts))) FROM tbl_tgeogpoint3D_seqset;
+SELECT MAX(duration(endSequence(ts))) FROM tbl_tgeompoint_seqset;
+SELECT MAX(duration(endSequence(ts))) FROM tbl_tgeogpoint_seqset;
+SELECT MAX(duration(endSequence(ts))) FROM tbl_tgeompoint3D_seqset;
+SELECT MAX(duration(endSequence(ts))) FROM tbl_tgeogpoint3D_seqset;
 
-SELECT MAX(timespan(sequenceN(ts, numSequences(ts)))) FROM tbl_tgeompoint_seqset;
-SELECT MAX(timespan(sequenceN(ts, numSequences(ts)))) FROM tbl_tgeogpoint_seqset;
-SELECT MAX(timespan(sequenceN(ts, numSequences(ts)))) FROM tbl_tgeompoint3D_seqset;
-SELECT MAX(timespan(sequenceN(ts, numSequences(ts)))) FROM tbl_tgeogpoint3D_seqset;
+SELECT MAX(duration(sequenceN(ts, numSequences(ts)))) FROM tbl_tgeompoint_seqset;
+SELECT MAX(duration(sequenceN(ts, numSequences(ts)))) FROM tbl_tgeogpoint_seqset;
+SELECT MAX(duration(sequenceN(ts, numSequences(ts)))) FROM tbl_tgeompoint3D_seqset;
+SELECT MAX(duration(sequenceN(ts, numSequences(ts)))) FROM tbl_tgeogpoint3D_seqset;
 
 SELECT MAX(array_length(sequences(ts),1)) FROM tbl_tgeompoint_seqset;
 SELECT MAX(array_length(sequences(ts),1)) FROM tbl_tgeogpoint_seqset;
@@ -366,20 +366,20 @@ SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE temp != merge(atTime(
 SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_timestamptz WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
 SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_timestamptz WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
 
-SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestampset WHERE temp != merge(atTime(temp, ts), minusTime(temp, ts));
-SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestampset WHERE temp != merge(atTime(temp, ts), minusTime(temp, ts));
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_timestampset WHERE temp != merge(atTime(temp, ts), minusTime(temp, ts));
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_timestampset WHERE temp != merge(atTime(temp, ts), minusTime(temp, ts));
+SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzset WHERE temp != merge(atTime(temp, ts), minusTime(temp, ts));
+SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzset WHERE temp != merge(atTime(temp, ts), minusTime(temp, ts));
+SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzset WHERE temp != merge(atTime(temp, ts), minusTime(temp, ts));
+SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzset WHERE temp != merge(atTime(temp, ts), minusTime(temp, ts));
 
-SELECT COUNT(*) FROM tbl_tgeompoint, tbl_period WHERE temp != merge(atTime(temp, p), minusTime(temp, p));
-SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_period WHERE temp != merge(atTime(temp, p), minusTime(temp, p));
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_period WHERE temp != merge(atTime(temp, p), minusTime(temp, p));
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_period WHERE temp != merge(atTime(temp, p), minusTime(temp, p));
+SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspan WHERE temp != merge(atTime(temp, p), minusTime(temp, p));
+SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspan WHERE temp != merge(atTime(temp, p), minusTime(temp, p));
+SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzspan WHERE temp != merge(atTime(temp, p), minusTime(temp, p));
+SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspan WHERE temp != merge(atTime(temp, p), minusTime(temp, p));
 
-SELECT COUNT(*) FROM tbl_tgeompoint, tbl_periodset WHERE temp != merge(atTime(temp, ps), minusTime(temp, ps));
-SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp != merge(atTime(temp, ps), minusTime(temp, ps));
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_periodset WHERE temp != merge(atTime(temp, ps), minusTime(temp, ps));
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_periodset WHERE temp != merge(atTime(temp, ps), minusTime(temp, ps));
+SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp != merge(atTime(temp, ps), minusTime(temp, ps));
+SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp != merge(atTime(temp, ps), minusTime(temp, ps));
+SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzspanset WHERE temp != merge(atTime(temp, ps), minusTime(temp, ps));
+SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspanset WHERE temp != merge(atTime(temp, ps), minusTime(temp, ps));
 
 -------------------------------------------------------------------------------
 -- Modification functions
@@ -402,31 +402,31 @@ WHERE overlapsTime(temp, t) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_timestamptz
 WHERE overlapsTime(temp, t) IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestampset
+SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzset
 WHERE overlapsTime(temp, ts) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestampset
+SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzset
 WHERE overlapsTime(temp, ts) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_timestampset
+SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzset
 WHERE overlapsTime(temp, ts) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_timestampset
+SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzset
 WHERE overlapsTime(temp, ts) IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_tgeompoint, tbl_period
+SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspan
 WHERE overlapsTime(temp, p) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_period
+SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspan
 WHERE overlapsTime(temp, p) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_period
+SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzspan
 WHERE overlapsTime(temp, p) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_period
+SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspan
 WHERE overlapsTime(temp, p) IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_tgeompoint, tbl_periodset
+SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset
 WHERE overlapsTime(temp, ps) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_periodset
+SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset
 WHERE overlapsTime(temp, ps) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_periodset
+SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzspanset
 WHERE overlapsTime(temp, ps) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_periodset
+SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspanset
 WHERE overlapsTime(temp, ps) IS NOT NULL;
 
 SELECT MAX(st_memsize(twCentroid(temp))) FROM tbl_tgeompoint;
@@ -505,14 +505,14 @@ SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp %= 'Point(1.5 1.5)';
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE overlapsTime(temp, timestamptz '2001-06-01');
 SELECT COUNT(*) FROM tbl_tgeogpoint WHERE overlapsTime(temp, timestamptz '2001-06-01');
 
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE overlapsTime(temp, timestampset '{2001-06-01, 2001-07-01}');
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE overlapsTime(temp, timestampset '{2001-06-01, 2001-07-01}');
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE overlapsTime(temp, tstzset '{2001-06-01, 2001-07-01}');
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE overlapsTime(temp, tstzset '{2001-06-01, 2001-07-01}');
 
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE overlapsTime(temp, period '[2001-06-01, 2001-07-01]');
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE overlapsTime(temp, period '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE overlapsTime(temp, tstzspan '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE overlapsTime(temp, tstzspan '[2001-06-01, 2001-07-01]');
 
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE overlapsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE overlapsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE overlapsTime(temp, tstzspanset '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE overlapsTime(temp, tstzspanset '{[2001-06-01, 2001-07-01]}');
 
 DROP INDEX tbl_tgeompoint_rtree_idx;
 DROP INDEX tbl_tgeogpoint_rtree_idx;
@@ -534,14 +534,14 @@ SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp %= 'Point(1.5 1.5)';
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE overlapsTime(temp, timestamptz '2001-06-01');
 SELECT COUNT(*) FROM tbl_tgeogpoint WHERE overlapsTime(temp, timestamptz '2001-06-01');
 
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE overlapsTime(temp, timestampset '{2001-06-01, 2001-07-01}');
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE overlapsTime(temp, timestampset '{2001-06-01, 2001-07-01}');
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE overlapsTime(temp, tstzset '{2001-06-01, 2001-07-01}');
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE overlapsTime(temp, tstzset '{2001-06-01, 2001-07-01}');
 
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE overlapsTime(temp, period '[2001-06-01, 2001-07-01]');
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE overlapsTime(temp, period '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE overlapsTime(temp, tstzspan '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE overlapsTime(temp, tstzspan '[2001-06-01, 2001-07-01]');
 
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE overlapsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE overlapsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE overlapsTime(temp, tstzspanset '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE overlapsTime(temp, tstzspanset '{[2001-06-01, 2001-07-01]}');
 
 DROP INDEX tbl_tgeompoint_quadtree_idx;
 DROP INDEX tbl_tgeogpoint_quadtree_idx;

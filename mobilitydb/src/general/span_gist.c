@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -168,13 +168,13 @@ span_gist_get_span(FunctionCallInfo fcinfo, Span *result, Oid typid)
     span_set(d, d, true, true, type, result);
   }
   else if (type == T_INTSET || type == T_BIGINTSET || type == T_FLOATSET ||
-    type == T_TIMESTAMPSET)
+    type == T_TSTZSET)
   {
     Set *s = PG_GETARG_SET_P(1);
     set_set_span(s, result);
   }
   else if (type == T_INTSPAN || type == T_BIGINTSPAN || type == T_FLOATSPAN ||
-    type == T_PERIOD)
+    type == T_TSTZSPAN)
   {
     Span *s = PG_GETARG_SPAN_P(1);
     if (s == NULL)
@@ -182,7 +182,7 @@ span_gist_get_span(FunctionCallInfo fcinfo, Span *result, Oid typid)
     memcpy(result, s, sizeof(Span));
   }
   else if (type == T_INTSPANSET || type == T_BIGINTSPANSET ||
-    type == T_FLOATSPANSET || type == T_PERIODSET)
+    type == T_FLOATSPANSET || type == T_TSTZSPANSET)
   {
     Datum psdatum = PG_GETARG_DATUM(1);
     spanset_span_slice(psdatum, result);

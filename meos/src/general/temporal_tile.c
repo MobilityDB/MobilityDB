@@ -1,12 +1,12 @@
 /***********************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -426,7 +426,7 @@ tbox_tile_get(double value, TimestampTz t, double xsize, int64 tunits,
   Datum xmax = Float8GetDatum(value + xsize);
   Datum tmin = TimestampTzGetDatum(t);
   Datum tmax = TimestampTzGetDatum(t + tunits);
-  Period period;
+  Span period;
   Span span;
   span_set(tmin, tmax, true, false, T_TIMESTAMPTZ, &period);
   span_set(xmin, xmax, true, false, T_FLOAT8, &span);
@@ -1465,7 +1465,7 @@ temporal_value_time_split1(Temporal *temp, Datum size, Interval *duration,
   int time_count = 1;
   if (timesplit)
   {
-    Period p;
+    Span p;
     temporal_set_period(temp, &p);
     TimestampTz start_time = p.lower;
     TimestampTz end_time = p.upper;

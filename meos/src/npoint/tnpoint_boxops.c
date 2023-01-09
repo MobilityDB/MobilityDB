@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -73,6 +73,25 @@ npoint_set_stbox(const Npoint *np, STBox *box)
   return result;
 }
 
+/**
+ * Set the spatiotemporal box from an array of network point values
+ *
+ * @param[in] values Temporal network point values
+ * @param[in] count Number of elements in the array
+ * @param[out] box Spatiotemporal box
+ */
+void
+npointarr_set_stbox(const Datum *values, int count, STBox *box)
+{
+  npoint_set_stbox(DatumGetNpointP(values[0]), box);
+  for (int i = 1; i < count; i++)
+  {
+    STBox box1;
+    npoint_set_stbox(DatumGetNpointP(values[i]), &box1);
+    stbox_expand(&box1, box);
+  }
+  return;
+}
 /**
  * Set the spatiotemporal box from the network point value
  *
@@ -223,8 +242,8 @@ bool
 npoint_timestamp_set_stbox(const Npoint *np, TimestampTz t, STBox *box)
 {
   npoint_set_stbox(np, box);
-  span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t),
-    true, true, T_TIMESTAMPTZ, &box->period);
+  span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
+    T_TIMESTAMPTZ, &box->period);
   MOBDB_FLAGS_SET_T(box->flags, true);
   return true;
 }
@@ -233,7 +252,7 @@ npoint_timestamp_set_stbox(const Npoint *np, TimestampTz t, STBox *box)
  * @brief Transform a network point and a period to a spatiotemporal box
  */
 bool
-npoint_period_set_stbox(const Npoint *np, const Period *p, STBox *box)
+npoint_period_set_stbox(const Npoint *np, const Span *p, STBox *box)
 {
   npoint_set_stbox(np, box);
   memcpy(&box->period, p, sizeof(Span));

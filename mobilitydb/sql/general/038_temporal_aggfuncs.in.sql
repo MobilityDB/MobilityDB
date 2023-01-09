@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -32,28 +32,28 @@
  * Temporal aggregate functions
  */
 
-CREATE FUNCTION temporal_extent_transfn(period, tbool)
-  RETURNS period
+CREATE FUNCTION temporal_extent_transfn(tstzspan, tbool)
+  RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Temporal_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION temporal_extent_transfn(period, ttext)
-  RETURNS period
+CREATE FUNCTION temporal_extent_transfn(tstzspan, ttext)
+  RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Temporal_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION temporal_extent_combinefn(period, period)
-  RETURNS period
+CREATE FUNCTION temporal_extent_combinefn(tstzspan, tstzspan)
+  RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Span_extent_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE extent(tbool) (
   SFUNC = temporal_extent_transfn,
-  STYPE = period,
+  STYPE = tstzspan,
   COMBINEFUNC = temporal_extent_combinefn,
   PARALLEL = safe
 );
 CREATE AGGREGATE extent(ttext) (
   SFUNC = temporal_extent_transfn,
-  STYPE = period,
+  STYPE = tstzspan,
   COMBINEFUNC = temporal_extent_combinefn,
   PARALLEL = safe
 );

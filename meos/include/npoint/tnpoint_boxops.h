@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -43,10 +43,11 @@
 /*****************************************************************************/
 
 extern bool npoint_set_stbox(const Npoint *np, STBox *box);
+extern void npointarr_set_stbox(const Datum *values, int count, STBox *box);
 extern bool nsegment_set_stbox(const Nsegment *ns, STBox *box);
 extern bool npoint_timestamp_set_stbox(const Npoint *np, TimestampTz t,
   STBox *box);
-extern bool npoint_period_set_stbox(const Npoint *np, const Period *p,
+extern bool npoint_period_set_stbox(const Npoint *np, const Span *p,
   STBox *box);
 
 extern void tnpointinst_set_stbox(const TInstant *inst, STBox *box);

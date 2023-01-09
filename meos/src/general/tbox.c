@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -141,7 +141,7 @@ tbox_out(const TBox *box, int maxdd)
  * @sqlfunc tbox()
  */
 TBox *
-tbox_make(const Period *p, const Span *s)
+tbox_make(const Span *p, const Span *s)
 {
   /* Note: zero-fill is done in function tbox_set */
   TBox *result = palloc(sizeof(TBox));
@@ -156,7 +156,7 @@ tbox_make(const Period *p, const Span *s)
  * allocation
  */
 void
-tbox_set(const Period *p, const Span *s, TBox *box)
+tbox_set(const Span *p, const Span *s, TBox *box)
 {
   /* At least on of the X or T dimensions should be given */
   assert(p || s);
@@ -348,7 +348,7 @@ numset_to_tbox(const Set *s)
  * @brief Set a temporal box from a timestamp set.
  */
 void
-timestampset_set_tbox(const Set *s, TBox *box)
+tstzset_set_tbox(const Set *s, TBox *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBox));
@@ -366,10 +366,10 @@ timestampset_set_tbox(const Set *s, TBox *box)
  * @sqlop @p ::
  */
 TBox *
-timestampset_to_tbox(const Set *s)
+tstzset_to_tbox(const Set *s)
 {
   TBox *result = palloc(sizeof(TBox));
-  timestampset_set_tbox(s, result);
+  tstzset_set_tbox(s, result);
   return result;
 }
 #endif /* MEOS */
@@ -413,7 +413,7 @@ numspan_to_tbox(const Span *s)
  * @brief Set a temporal box from a period.
  */
 void
-period_set_tbox(const Period *p, TBox *box)
+period_set_tbox(const Span *p, TBox *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBox));
@@ -431,7 +431,7 @@ period_set_tbox(const Period *p, TBox *box)
  * @sqlop @p ::
  */
 TBox *
-period_to_tbox(const Period *p)
+period_to_tbox(const Span *p)
 {
   TBox *result = palloc(sizeof(TBox));
   period_set_tbox(p, result);
@@ -465,20 +465,18 @@ numspanset_to_tbox(const SpanSet *ss)
   numspanset_set_tbox(ss, result);
   return result;
 }
-#endif /* MEOS */
 
 /**
  * @ingroup libmeos_internal_box_cast
  * @brief Set a temporal box from a period set.
  */
 void
-periodset_set_tbox(const PeriodSet *ps, TBox *box)
+periodset_set_tbox(const SpanSet *ps, TBox *box)
 {
   period_set_tbox(&ps->span, box);
   return;
 }
 
-#if MEOS
 /**
  * @ingroup libmeos_box_cast
  * @brief Cast a period set to a temporal box.
@@ -486,7 +484,7 @@ periodset_set_tbox(const PeriodSet *ps, TBox *box)
  * @sqlop @p ::
  */
 TBox *
-periodset_to_tbox(const PeriodSet *ps)
+periodset_to_tbox(const SpanSet *ps)
 {
   TBox *result = palloc(sizeof(TBox));
   periodset_set_tbox(ps, result);
@@ -552,7 +550,7 @@ float_timestamp_to_tbox(double d, TimestampTz t)
  * @sqlfunc tbox()
  */
 TBox *
-number_period_to_tbox(Datum d, meosType basetype, const Period *p)
+number_period_to_tbox(Datum d, meosType basetype, const Span *p)
 {
   TBox *result = palloc(sizeof(TBox));
   number_set_tbox(d, basetype, result);
@@ -568,7 +566,7 @@ number_period_to_tbox(Datum d, meosType basetype, const Period *p)
  * @sqlfunc tbox()
  */
 TBox *
-int_period_to_tbox(int i, const Period *p)
+int_period_to_tbox(int i, const Span *p)
 {
   TBox *result = palloc(sizeof(TBox));
   int_set_tbox(i, result);
@@ -583,7 +581,7 @@ int_period_to_tbox(int i, const Period *p)
  * @sqlfunc tbox()
  */
 TBox *
-float_period_to_tbox(double d, const Period *p)
+float_period_to_tbox(double d, const Span *p)
 {
   TBox *result = palloc(sizeof(TBox));
   float_set_tbox(d, result);
@@ -620,7 +618,7 @@ span_timestamp_to_tbox(const Span *span, TimestampTz t)
  * @sqlfunc tbox()
  */
 TBox *
-span_period_to_tbox(const Span *span, const Period *p)
+span_period_to_tbox(const Span *span, const Span *p)
 {
   ensure_tnumber_spantype(span->spantype);
   assert(p->basetype == T_TIMESTAMPTZ);
@@ -655,7 +653,7 @@ tbox_to_floatspan(const TBox *box)
  * @brief Cast a temporal box as a period
  * @sqlop @p ::
  */
-Period *
+Span *
 tbox_to_period(const TBox *box)
 {
   if (! MOBDB_FLAGS_GET_T(box->flags))

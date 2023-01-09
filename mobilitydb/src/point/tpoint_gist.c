@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -287,19 +287,19 @@ tpoint_gist_get_stbox(FunctionCallInfo fcinfo, STBox *result,
     TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
     timestamp_set_stbox(t, result);
   }
-  else if (type == T_TIMESTAMPSET)
+  else if (type == T_TSTZSET)
   {
     Set *set = PG_GETARG_SET_P(1);
     if (set == NULL)
       return false;
-    timestampset_set_stbox(set, result);
+    tstzset_set_stbox(set, result);
   }
-  else if (type == T_PERIOD)
+  else if (type == T_TSTZSPAN)
   {
-    Period *p = PG_GETARG_SPAN_P(1);
+    Span *p = PG_GETARG_SPAN_P(1);
     period_set_stbox(p, result);
   }
-  else if (type == T_PERIODSET)
+  else if (type == T_TSTZSPANSET)
   {
     Datum psdatum = PG_GETARG_DATUM(1);
     periodset_stbox_slice(psdatum, result);

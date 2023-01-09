@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -171,7 +171,7 @@ contains_floatspan_float(const Span *s, double d)
  * @pymeosfunc contains_timestamp()
  */
 bool
-contains_period_timestamp(const Period *p, TimestampTz t)
+contains_period_timestamp(const Span *p, TimestampTz t)
 {
   return contains_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
@@ -265,7 +265,7 @@ contained_float_floatspan(double d, const Span *s)
  * @sqlop @p <@
  */
 bool
-contained_timestamp_period(TimestampTz t, const Period *p)
+contained_timestamp_period(TimestampTz t, const Span *p)
 {
   return contains_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
@@ -399,7 +399,7 @@ adjacent_floatspan_float(const Span *s, double d)
  * @sqlop @p -|-
  */
 bool
-adjacent_period_timestamp(const Period *p, TimestampTz t)
+adjacent_period_timestamp(const Span *p, TimestampTz t)
 {
   return adjacent_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
@@ -498,7 +498,7 @@ left_float_floatspan(double d, const Span *s)
  * @sqlop @p <<
  */
 bool
-before_timestamp_period(TimestampTz t, const Period *p)
+before_timestamp_period(TimestampTz t, const Span *p)
 {
   return left_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p);
 }
@@ -556,7 +556,7 @@ left_floatspan_float(const Span *s, double d)
  * @sqlop @p <<
  */
 bool
-before_period_timestamp(const Period *p, TimestampTz t)
+before_period_timestamp(const Span *p, TimestampTz t)
 {
   return left_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
@@ -653,7 +653,7 @@ right_float_floatspan(double d, const Span *s)
  * @sqlop @p #>>
  */
 bool
-after_timestamp_period(TimestampTz t, const Period *p)
+after_timestamp_period(TimestampTz t, const Span *p)
 {
   return before_period_timestamp(p, t);
 }
@@ -720,7 +720,7 @@ right_floatspan_float(const Span *s, double d)
  * @sqlop @p #>>
  */
 bool
-after_period_timestamp(const Period *p, TimestampTz t)
+after_period_timestamp(const Span *p, TimestampTz t)
 {
   return before_timestamp_period(t, p);
 }
@@ -803,7 +803,7 @@ overleft_float_floatspan(double d, const Span *s)
  * @sqlop @p &<#
  */
 bool
-overbefore_timestamp_period(TimestampTz t, const Period *p)
+overbefore_timestamp_period(TimestampTz t, const Span *p)
 {
   return overleft_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p);
 }
@@ -876,7 +876,7 @@ overleft_floatspan_float(const Span *s, double d)
  * @sqlop @p &<#
  */
 bool
-overbefore_period_timestamp(const Period *p, TimestampTz t)
+overbefore_period_timestamp(const Span *p, TimestampTz t)
 {
   return overleft_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
@@ -962,7 +962,7 @@ overright_float_floatspan(double d, const Span *s)
  * @sqlop @p #&>
  */
 bool
-overafter_timestamp_period(TimestampTz t, const Period *p)
+overafter_timestamp_period(TimestampTz t, const Span *p)
 {
   return overright_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p);
 }
@@ -1037,7 +1037,7 @@ overright_floatspan_float(const Span *s, double d)
  * @sqlop @p #&>
  */
 bool
-overafter_period_timestamp(const Period *p, TimestampTz t)
+overafter_period_timestamp(const Span *p, TimestampTz t)
 {
   return overright_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
@@ -1141,8 +1141,8 @@ union_floatspan_float(const Span *s, double d)
  * @brief Return the union of a period and a timestamp
  * @sqlop @p +
  */
-PeriodSet *
-union_period_timestamp(const Period *p, TimestampTz t)
+SpanSet *
+union_period_timestamp(const Span *p, TimestampTz t)
 {
   return union_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
@@ -1264,7 +1264,7 @@ intersection_floatspan_float(const Span *s, double d, double *result)
  * @sqlop @p *
  */
 bool
-intersection_period_timestamp(const Period *p, TimestampTz t,
+intersection_period_timestamp(const Span *p, TimestampTz t,
   TimestampTz *result)
 {
   if (! contains_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ))
@@ -1394,7 +1394,7 @@ minus_float_floatspan(double d, const Span *s, double *result)
  * @sqlop @p -
  */
 bool
-minus_timestamp_period(TimestampTz t, const Period *p, TimestampTz *result)
+minus_timestamp_period(TimestampTz t, const Span *p, TimestampTz *result)
 {
   Datum v;
   bool res = minus_value_span(TimestampTzGetDatum(t), T_TIMESTAMPTZ, p, &v);
@@ -1518,7 +1518,7 @@ minus_floatspan_float(const Span *s, double d)
  * @sqlop @p -
  */
 SpanSet *
-minus_period_timestamp(const Period *p, TimestampTz t)
+minus_period_timestamp(const Span *p, TimestampTz t)
 {
   return minus_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
@@ -1729,7 +1729,7 @@ distance_floatspan_float(const Span *s, double d)
  * @sqlop @p <->
  */
 double
-distance_period_timestamp(const Period *p, TimestampTz t)
+distance_period_timestamp(const Span *p, TimestampTz t)
 {
   return distance_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
@@ -1740,7 +1740,7 @@ distance_period_timestamp(const Period *p, TimestampTz t)
  * @sqlop @p <->
  */
 double
-distance_span_set(const Period *p, const Set *s)
+distance_span_set(const Span *p, const Set *s)
 {
   Span sp;
   set_set_span(s, &sp);

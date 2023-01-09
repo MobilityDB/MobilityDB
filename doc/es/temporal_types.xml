@@ -139,11 +139,11 @@ CREATE TABLE Flight(FlightNo integer, Route tgeogpoint(Sequence, PointZ, 4326));
 		</listitem>
 
 		<listitem>
-			<para>El tipo <varname>tbox</varname> (temporal box) par los tipos <varname>tint</varname> y <varname>tfloat</varname>, donde la extensión del valor se define en la dimensión X y la extensión temporal en la dimensión T.</para>
+			<para>El tipo <varname>tbox</varname> (temporal box) par los tipos <varname>tint</varname> y <varname>tfloat</varname>, donde la extensión del valor y de tiempo se define, respectivamente, por un rango numérico y un rango de tiempo.</para>
 		</listitem>
 
 		<listitem>
-			<para>El tipo <varname>stbox</varname> (spatiotemporal box) para los tipos <varname>tgeompoint</varname> y <varname>tgeogpoint</varname>, donde la extensión espacial se define en las dimensiones X, Y y Z y la extensión temporal en la dimensión T.</para>
+			<para>El tipo <varname>stbox</varname> (spatiotemporal box) para los tipos <varname>tgeompoint</varname> y <varname>tgeogpoint</varname>, donde la extensión espacial se define en las dimensiones X, Y y Z y la extensión de timpo se define en un rango de tiempo.</para>
 		</listitem>
 	</itemizedlist>
 
@@ -176,7 +176,7 @@ FROM Department;
 -- 20 | NULL
 
 -- Restricción a un período
-SELECT DeptNo, atTime(NoEmps, period '[2001-01-01, 2001-04-01]')
+SELECT DeptNo, atTime(NoEmps, atTime(NoEmps, tstzspan '[2001-01-01, 2001-04-01]')
 FROM Department;
 -- 10 | [10@2001-01-01 00:00:00+00, 12@2001-04-01 00:00:00+00]
 -- 20 | [4@2001-02-01 00:00:00+00, 4@2001-04-01 00:00:00+00]
@@ -214,7 +214,7 @@ FROM Trips;
 -- 20 | NULL
 
 -- Restricción a un período
-SELECT CarId, asText(atTime(Trip, period '[2001-01-01 08:05:00,2001-01-01 08:10:00]'))
+SELECT CarId, asText(atTime(Trip, tstzspan '[2001-01-01 08:05:00,2001-01-01 08:10:00]'))
 FROM Trips;
 -- 10 | {[POINT(1 0)@2001-01-01 08:05:00+00, POINT(2 0)@2001-01-01 08:10:00+00]}
 -- 20 | {[POINT(0 0)@2001-01-01 08:05:00+00, POINT(1 1)@2001-01-01 08:10:00+00]}

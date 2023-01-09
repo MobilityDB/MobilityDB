@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -47,10 +47,10 @@
 
 extern bool tnumber_cachedop(Oid operid, CachedOp *cachedOp);
 extern bool tnumber_const_to_span_period(const Node *other, Span **s,
-  Period **p, meosType basetype);
+  Span **p, meosType basetype);
 extern float8 tnumber_sel_default(CachedOp cachedOp);
 extern Selectivity tnumber_sel_span_period(VariableStatData *vardata,
-  Span *span, Period *period, CachedOp cachedOp, Oid basetypid);
+  Span *span, Span *period, CachedOp cachedOp, Oid basetypid);
 
 extern float8 tnumber_joinsel_default(CachedOp cachedOp);
 extern bool tnumber_joinsel_components(CachedOp cachedOp, meosType oprleft,

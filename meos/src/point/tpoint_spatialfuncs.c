@@ -1,12 +1,12 @@
 /***********************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -3820,7 +3820,7 @@ tpointseq_timestamp_at_value(const TSequence *seq, Datum value,
  * @pre The temporal sequence is simple, that is, non self-intersecting and
  * the intersection is non empty
  */
-Period **
+Span **
 tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter, int *count)
 {
   /* The temporal sequence has at least 2 instants since
@@ -3830,7 +3830,7 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter, int *count)
   assert(seq->count > 1);
   const TInstant *start = tsequence_inst_n(seq, 0);
   const TInstant *end = tsequence_inst_n(seq, seq->count - 1);
-  Period **result;
+  Span **result;
 
   /* If the sequence is stationary the whole sequence intersects with the
    * geometry since gsinter is not empty */
@@ -3867,7 +3867,7 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter, int *count)
     coll = lwgeom_as_lwcollection(lwgeom_inter);
     countinter = coll->ngeoms;
   }
-  Period **periods = palloc(sizeof(Period *) * countinter);
+  Span **periods = palloc(sizeof(Span *) * countinter);
   int k = 0;
   for (int i = 0; i < countinter; i++)
   {
@@ -3959,7 +3959,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
    * temporal points */
   int countsimple;
   TSequence **simpleseqs = tpointseq_make_simple(seq, &countsimple);
-  Period **allperiods = NULL; /* make compiler quiet */
+  Span **allperiods = NULL; /* make compiler quiet */
   int totalcount = 0;
 
   if (countsimple == 1)
@@ -3982,7 +3982,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
   else
   {
     /* General case: Allocate memory for the result */
-    Period ***periods = palloc(sizeof(Period *) * countsimple);
+    Span ***periods = palloc(sizeof(Span *) * countsimple);
     int *countpers = palloc0(sizeof(int) * countsimple);
     /* Loop for every simple piece of the sequence */
     for (int i = 0; i < countsimple; i++)
@@ -4006,7 +4006,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
       return NULL;
     }
     /* Assemble the periods into a single array */
-    allperiods = palloc(sizeof(Period *) * totalcount);
+    allperiods = palloc(sizeof(Span *) * totalcount);
     int k = 0;
     for (int i = 0; i < countsimple; i++)
     {
@@ -4018,7 +4018,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
     /* It is necessary to sort the periods */
     spanarr_sort(allperiods, totalcount);
   }
-  PeriodSet *ps = spanset_make_free(allperiods, totalcount, NORMALIZE);
+  SpanSet *ps = spanset_make_free(allperiods, totalcount, NORMALIZE);
   TSequence **result = palloc(sizeof(TSequence *) * totalcount);
   *count = tcontseq_at_periodset1(seq, ps, result);
   pfree(ps);
@@ -4091,11 +4091,11 @@ tpointseq_minus_geometry(const TSequence *seq, const GSERIALIZED *gs,
     return result;
   }
 
-  const Period **periods = palloc(sizeof(Period *) * countinter);
+  const Span **periods = palloc(sizeof(Span *) * countinter);
   for (int i = 0; i < countinter; i++)
     periods[i] = &sequences[i]->period;
-  PeriodSet *ps1 = spanset_make(periods, countinter, NORMALIZE_NO);
-  PeriodSet *ps2 = minus_span_spanset(&seq->period, ps1);
+  SpanSet *ps1 = spanset_make(periods, countinter, NORMALIZE_NO);
+  SpanSet *ps2 = minus_span_spanset(&seq->period, ps1);
   pfree(ps1); pfree(periods);
   if (ps2 == NULL)
   {
@@ -4459,9 +4459,9 @@ tpoint_minus_stbox1(const Temporal *temp, const STBox *box)
   Temporal *temp1 = tpoint_at_stbox1(temp, box, UPPER_INC);
   if (temp1 != NULL)
   {
-    PeriodSet *ps1 = temporal_time(temp);
-    PeriodSet *ps2 = temporal_time(temp1);
-    PeriodSet *ps = minus_spanset_spanset(ps1, ps2);
+    SpanSet *ps1 = temporal_time(temp);
+    SpanSet *ps2 = temporal_time(temp1);
+    SpanSet *ps = minus_spanset_spanset(ps1, ps2);
     if (ps != NULL)
     {
       result = temporal_restrict_periodset(temp, ps, REST_MINUS);

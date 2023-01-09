@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -231,17 +231,8 @@ tinstant_to_string(const TInstant *inst, int maxdd, outfunc value_out)
   char *t = pg_timestamptz_out(inst->t);
   meosType basetype = temptype_basetype(inst->temptype);
   char *value = value_out(tinstant_value(inst), basetype, maxdd);
-  char *result;
-  if (inst->temptype == T_TTEXT)
-  {
-    result = palloc(strlen(value) + strlen(t) + 4);
-    sprintf(result, "\"%s\"@%s", value, t);
-  }
-  else
-  {
-    result = palloc(strlen(value) + strlen(t) + 2);
-    sprintf(result, "%s@%s", value, t);
-  }
+  char *result = palloc(strlen(value) + strlen(t) + 2);
+  sprintf(result, "%s@%s", value, t);
   pfree(t);
   pfree(value);
   return result;
@@ -448,10 +439,10 @@ tfloatinst_spanset(const TInstant *inst)
  * @brief Return the time frame of a temporal instant as a period set.
  * @sqlfunc getTime()
  */
-PeriodSet *
+SpanSet *
 tinstant_time(const TInstant *inst)
 {
-  PeriodSet *result = timestamp_to_periodset(inst->t);
+  SpanSet *result = timestamp_to_periodset(inst->t);
   return result;
 }
 
@@ -462,7 +453,7 @@ tinstant_time(const TInstant *inst)
  * @sqlop @p ::
  */
 void
-tinstant_set_period(const TInstant *inst, Period *p)
+tinstant_set_period(const TInstant *inst, Span *p)
 {
   return span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
     true, true, T_TIMESTAMPTZ, p);
@@ -844,7 +835,7 @@ tinstant_restrict_timestamp(const TInstant *inst, TimestampTz t, bool atfunc)
  * discrete sequence.
  */
 bool
-tinstant_restrict_timestampset_test(const TInstant *inst, const TimestampSet *ts,
+tinstant_restrict_tstzset_test(const TInstant *inst, const Set *ts,
   bool atfunc)
 {
   for (int i = 0; i < ts->count; i++)
@@ -856,13 +847,13 @@ tinstant_restrict_timestampset_test(const TInstant *inst, const TimestampSet *ts
 /**
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal instant to (the complement of) a timestamp set.
- * @sqlfunc atTimestampSet(), minusTimestampSet()
+ * @sqlfunc atTstzSet(), minusTstzSet()
  */
 TInstant *
-tinstant_restrict_timestampset(const TInstant *inst, const TimestampSet *ts,
+tinstant_restrict_tstzset(const TInstant *inst, const Set *ts,
   bool atfunc)
 {
-  if (tinstant_restrict_timestampset_test(inst, ts, atfunc))
+  if (tinstant_restrict_tstzset_test(inst, ts, atfunc))
     return tinstant_copy(inst);
   return NULL;
 }
@@ -873,7 +864,7 @@ tinstant_restrict_timestampset(const TInstant *inst, const TimestampSet *ts,
  * @sqlfunc atPeriod(), minusPeriod()
  */
 TInstant *
-tinstant_restrict_period(const TInstant *inst, const Period *period,
+tinstant_restrict_period(const TInstant *inst, const Span *period,
   bool atfunc)
 {
   bool contains = contains_period_timestamp(period, inst->t);
@@ -889,7 +880,7 @@ tinstant_restrict_period(const TInstant *inst, const Period *period,
  * discrete sequence.
  */
 bool
-tinstant_restrict_periodset_test(const TInstant *inst, const PeriodSet *ps,
+tinstant_restrict_periodset_test(const TInstant *inst, const SpanSet *ps,
   bool atfunc)
 {
   for (int i = 0; i < ps->count; i++)
@@ -904,7 +895,7 @@ tinstant_restrict_periodset_test(const TInstant *inst, const PeriodSet *ps,
  * @sqlfunc atTime(), minusTime()
  */
 TInstant *
-tinstant_restrict_periodset(const TInstant *inst,const  PeriodSet *ps,
+tinstant_restrict_periodset(const TInstant *inst,const  SpanSet *ps,
   bool atfunc)
 {
   if (tinstant_restrict_periodset_test(inst, ps, atfunc))
@@ -995,10 +986,10 @@ tinstant_overlaps_timestamp(const TInstant *inst, TimestampTz t)
 /**
  * @ingroup libmeos_internal_temporal_time
  * @brief Return true if a temporal instant intersects a timestamp set.
- * @sqlfunc intersectsTimestampSet()
+ * @sqlfunc intersectsTstzSet()
  */
 bool
-tinstant_overlaps_timestampset(const TInstant *inst, const TimestampSet *ts)
+tinstant_overlaps_tstzset(const TInstant *inst, const Set *ts)
 {
   for (int i = 0; i < ts->count; i++)
     if (inst->t == DatumGetTimestampTz(set_val_n(ts, i)))
@@ -1012,7 +1003,7 @@ tinstant_overlaps_timestampset(const TInstant *inst, const TimestampSet *ts)
  * @sqlfunc intersectsPeriod()
  */
 bool
-tinstant_overlaps_period(const TInstant *inst, const Period *p)
+tinstant_overlaps_period(const TInstant *inst, const Span *p)
 {
   return contains_period_timestamp(p, inst->t);
 }
@@ -1023,7 +1014,7 @@ tinstant_overlaps_period(const TInstant *inst, const Period *p)
  * @sqlfunc intersectsPeriodSet()
  */
 bool
-tinstant_overlaps_periodset(const TInstant *inst, const PeriodSet *ps)
+tinstant_overlaps_periodset(const TInstant *inst, const SpanSet *ps)
 {
   for (int i = 0; i < ps->count; i++)
     if (contains_period_timestamp(spanset_sp_n(ps, i), inst->t))

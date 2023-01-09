@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -290,7 +290,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom,
 
   /* Get the periods at which the temporal point intersects the geometry */
   int countper;
-  Period **periods = tpointseq_interperiods(seq, gsinter, &countper);
+  Span **periods = tpointseq_interperiods(seq, gsinter, &countper);
   if (countper == 0)
   {
     result = palloc(sizeof(TSequence *));
@@ -300,14 +300,14 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom,
     *count = 1;
     return result;
   }
-  PeriodSet *ps;
+  SpanSet *ps;
   if (countper == 1)
     ps = minus_span_span(&seq->period, periods[0]);
   else
   {
     /* It is necessary to sort the periods */
     spanarr_sort(periods, countper);
-    PeriodSet *ps1 = spanset_make((const Period **) periods, countper, NORMALIZE);
+    SpanSet *ps1 = spanset_make((const Span **) periods, countper, NORMALIZE);
     ps = minus_span_spanset(&seq->period, ps1);
     pfree(ps1);
   }
@@ -322,7 +322,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom,
   {
     for (int i = 0; i < ps->count; i++)
     {
-      const Period *p = spanset_sp_n(ps, i);
+      const Span *p = spanset_sp_n(ps, i);
       result[i + countper] = tsequence_from_base_time(datum_no, T_TBOOL, p,
         STEPWISE);
     }

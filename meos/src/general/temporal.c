@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -1155,7 +1155,7 @@ tfloat_to_tint(const Temporal *temp)
  * @brief Set a period to the bounding period of a temporal value.
  */
 void
-temporal_set_period(const Temporal *temp, Period *p)
+temporal_set_period(const Temporal *temp, Span *p)
 {
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
@@ -1175,10 +1175,10 @@ temporal_set_period(const Temporal *temp, Period *p)
  * @sqlop @p ::
  * @pymeosfunc period()
  */
-Period *
+Span *
 temporal_to_period(const Temporal *temp)
 {
-  Period *result = palloc(sizeof(Period));
+  Span *result = palloc(sizeof(Span));
   temporal_set_period(temp, result);
   return result;
 }
@@ -1610,10 +1610,10 @@ tfloat_spanset(const Temporal *temp)
  * @sqlfunc getTime()
  * @pymeosfunc getTime()
  */
-PeriodSet *
+SpanSet *
 temporal_time(const Temporal *temp)
 {
-  PeriodSet *result;
+  SpanSet *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = tinstant_time((TInstant *) temp);
@@ -1957,32 +1957,12 @@ temporal_max_instant(const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_accessor
- * @brief Return the timespan of a temporal value.
- * @sqlfunc timespan()
- * @pymeosfunc timespan()
- */
-Interval *
-temporal_timespan(const Temporal *temp)
-{
-  Interval *result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == TINSTANT)
-    result = palloc0(sizeof(Interval));
-  else if (temp->subtype == TSEQUENCE)
-    result = tsequence_duration((TSequence *) temp);
-  else /* temp->subtype == TSEQUENCESET */
-    result = tsequenceset_timespan((TSequenceSet *) temp);
-  return result;
-}
-
-/**
- * @ingroup libmeos_temporal_accessor
  * @brief Return the duration of a temporal value.
  * @sqlfunc duration()
  * @pymeosfunc duration()
  */
 Interval *
-temporal_duration(const Temporal *temp)
+temporal_duration(const Temporal *temp, bool boundspan)
 {
   Interval *result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -1991,7 +1971,7 @@ temporal_duration(const Temporal *temp)
   else if (temp->subtype == TSEQUENCE)
     result = tsequence_duration((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
-    result = tsequenceset_duration((TSequenceSet *) temp);
+    result = tsequenceset_duration((TSequenceSet *) temp, boundspan);
   return result;
 }
 
@@ -3129,26 +3109,25 @@ temporal_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
  * @sqlfunc atTime(), minusTime()
  */
 Temporal *
-temporal_restrict_timestampset(const Temporal *temp, const TimestampSet *ts,
-  bool atfunc)
+temporal_restrict_tstzset(const Temporal *temp, const Set *ts, bool atfunc)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
-    result = (Temporal *) tinstant_restrict_timestampset(
+    result = (Temporal *) tinstant_restrict_tstzset(
       (TInstant *) temp, ts, atfunc);
   else if (temp->subtype == TSEQUENCE)
   {
     if (MOBDB_FLAGS_GET_DISCRETE(temp->flags))
-      result = (Temporal *) tdiscseq_restrict_timestampset((TSequence *) temp,
+      result = (Temporal *) tdiscseq_restrict_tstzset((TSequence *) temp,
         ts, atfunc);
     else
       result = atfunc ?
-        (Temporal *) tcontseq_at_timestampset((TSequence *) temp, ts) :
-        (Temporal *) tcontseq_minus_timestampset((TSequence *) temp, ts);
+        (Temporal *) tcontseq_at_tstzset((TSequence *) temp, ts) :
+        (Temporal *) tcontseq_minus_tstzset((TSequence *) temp, ts);
   }
   else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tsequenceset_restrict_timestampset(
+    result = (Temporal *) tsequenceset_restrict_tstzset(
       (TSequenceSet *) temp, ts, atfunc);
   return result;
 }
@@ -3161,7 +3140,7 @@ temporal_restrict_timestampset(const Temporal *temp, const TimestampSet *ts,
  * @sqlfunc atTime(), minusTime()
  */
 Temporal *
-temporal_restrict_period(const Temporal *temp, const Period *p, bool atfunc)
+temporal_restrict_period(const Temporal *temp, const Span *p, bool atfunc)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -3193,7 +3172,7 @@ temporal_restrict_period(const Temporal *temp, const Period *p, bool atfunc)
  * @sqlfunc atTime(), minusTime()
  */
 Temporal *
-temporal_restrict_periodset(const Temporal *temp, const PeriodSet *ps,
+temporal_restrict_periodset(const Temporal *temp, const SpanSet *ps,
   bool atfunc)
 {
   Temporal *result;
@@ -3273,7 +3252,7 @@ tnumber_minus_tbox(const Temporal *temp, const TBox *box)
   Temporal *temp1 = tnumber_at_tbox(temp, box);
   if (temp1 != NULL)
   {
-    PeriodSet *ps = temporal_time(temp1);
+    SpanSet *ps = temporal_time(temp1);
     result = temporal_restrict_periodset(temp, ps, REST_MINUS);
     pfree(temp1); pfree(ps);
   }
@@ -3335,7 +3314,7 @@ temporal_insert(const Temporal *temp1, const Temporal *temp2, bool connect)
 Temporal *
 temporal_update(const Temporal *temp1, const Temporal *temp2, bool connect)
 {
-  PeriodSet *ps = temporal_time(temp2);
+  SpanSet *ps = temporal_time(temp2);
   Temporal *rest = temporal_restrict_periodset(temp1, ps, REST_MINUS);
   if (! rest)
     return (Temporal *) temp2;
@@ -3384,29 +3363,29 @@ temporal_delete_timestamp(const Temporal *temp, TimestampTz t, bool connect)
  * @sqlfunc deleteTime()
  */
 Temporal *
-temporal_delete_timestampset(const Temporal *temp, const TimestampSet *ts,
+temporal_delete_tstzset(const Temporal *temp, const Set *ts,
   bool connect)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
-    result = (Temporal *) tinstant_restrict_timestampset((TInstant *) temp, ts,
+    result = (Temporal *) tinstant_restrict_tstzset((TInstant *) temp, ts,
       REST_MINUS);
   else if (temp->subtype == TSEQUENCE)
   {
     if (MOBDB_FLAGS_GET_DISCRETE(temp->flags))
-      result = (Temporal *) tdiscseq_restrict_timestampset((TSequence *) temp,
+      result = (Temporal *) tdiscseq_restrict_tstzset((TSequence *) temp,
         ts, REST_MINUS);
     else
       result = connect ?
-        (Temporal *) tcontseq_delete_timestampset((TSequence *) temp, ts) :
-        (Temporal *) tcontseq_minus_timestampset((TSequence *) temp, ts);
+        (Temporal *) tcontseq_delete_tstzset((TSequence *) temp, ts) :
+        (Temporal *) tcontseq_minus_tstzset((TSequence *) temp, ts);
   }
   else /* temp->subtype == TSEQUENCESET */
   {
     result = connect ?
-      (Temporal *) tsequenceset_delete_timestampset((TSequenceSet *) temp, ts) :
-      (Temporal *) tsequenceset_restrict_timestampset((TSequenceSet *) temp, ts,
+      (Temporal *) tsequenceset_delete_tstzset((TSequenceSet *) temp, ts) :
+      (Temporal *) tsequenceset_restrict_tstzset((TSequenceSet *) temp, ts,
         REST_MINUS);
   }
   return result;
@@ -3419,7 +3398,7 @@ temporal_delete_timestampset(const Temporal *temp, const TimestampSet *ts,
  * @sqlfunc deleteTime()
  */
 Temporal *
-temporal_delete_period(const Temporal *temp, const Period *p, bool connect)
+temporal_delete_period(const Temporal *temp, const Span *p, bool connect)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -3452,7 +3431,7 @@ temporal_delete_period(const Temporal *temp, const Period *p, bool connect)
  * @sqlfunc deleteTime()
  */
 Temporal *
-temporal_delete_periodset(const Temporal *temp, const PeriodSet *ps,
+temporal_delete_periodset(const Temporal *temp, const SpanSet *ps,
   bool connect)
 {
   Temporal *result;
@@ -3512,16 +3491,16 @@ temporal_overlaps_timestamp(const Temporal *temp, TimestampTz t)
  * @pymeosfunc overlapsTime()
  */
 bool
-temporal_overlaps_timestampset(const Temporal *temp, const TimestampSet *ts)
+temporal_overlaps_tstzset(const Temporal *temp, const Set *ts)
 {
   bool result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
-    result = tinstant_overlaps_timestampset((TInstant *) temp, ts);
+    result = tinstant_overlaps_tstzset((TInstant *) temp, ts);
   else if (temp->subtype == TSEQUENCE)
-    result = tsequence_overlaps_timestampset((TSequence *) temp, ts);
+    result = tsequence_overlaps_tstzset((TSequence *) temp, ts);
   else /* temp->subtype == TSEQUENCESET */
-    result = tsequenceset_overlaps_timestampset((TSequenceSet *) temp, ts);
+    result = tsequenceset_overlaps_tstzset((TSequenceSet *) temp, ts);
   return result;
 }
 
@@ -3532,7 +3511,7 @@ temporal_overlaps_timestampset(const Temporal *temp, const TimestampSet *ts)
  * @pymeosfunc overlapsTime()
  */
 bool
-temporal_overlaps_period(const Temporal *temp, const Period *p)
+temporal_overlaps_period(const Temporal *temp, const Span *p)
 {
   bool result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -3552,7 +3531,7 @@ temporal_overlaps_period(const Temporal *temp, const Period *p)
  * @pymeosfunc overlapsTime()
  */
 bool
-temporal_overlaps_periodset(const Temporal *temp, const PeriodSet *ps)
+temporal_overlaps_periodset(const Temporal *temp, const SpanSet *ps)
 {
   bool result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -3727,7 +3706,7 @@ temporal_cmp(const Temporal *temp1, const Temporal *temp2)
   /* Compare bounding period
    * We need to compare periods AND bounding boxes since the bounding boxes
    * do not distinguish between inclusive and exclusive bounds */
-  Period p1, p2;
+  Span p1, p2;
   temporal_set_period(temp1, &p1);
   temporal_set_period(temp2, &p2);
   int result = span_cmp(&p1, &p2);

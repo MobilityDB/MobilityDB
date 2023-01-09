@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -72,16 +72,15 @@ extern void tsequenceset_compute_bbox(const TSequence **seqs, int count,
 /* Bounding box operators for temporal types */
 
 extern Datum boxop_temporal_timestamp(const Temporal *temp, TimestampTz t,
-  bool (*func)(const Period *, const Period *), bool invert);
-extern Datum boxop_temporal_timestampset(const Temporal *temp,
-  const TimestampSet *ts, bool (*func)(const Period *, const Period *),
-  bool invert);
-extern Datum boxop_temporal_period(const Temporal *temp, const Period *p,
-  bool (*func)(const Period *, const Period *), bool invert);
-extern bool boxop_temporal_periodset(const Temporal *temp, const PeriodSet *ps,
-  bool (*func)(const Period *, const Period *), bool invert);
+  bool (*func)(const Span *, const Span *), bool invert);
+extern Datum boxop_temporal_tstzset(const Temporal *temp, const Set *ts,
+  bool (*func)(const Span *, const Span *), bool invert);
+extern Datum boxop_temporal_period(const Temporal *temp, const Span *p,
+  bool (*func)(const Span *, const Span *), bool invert);
+extern bool boxop_temporal_periodset(const Temporal *temp, const SpanSet *ps,
+  bool (*func)(const Span *, const Span *), bool invert);
 extern bool boxop_temporal_temporal(const Temporal *temp1,
-  const Temporal *temp2, bool (*func)(const Period *, const Period *));
+  const Temporal *temp2, bool (*func)(const Span *, const Span *));
 
 extern bool boxop_tnumber_number(const Temporal *temp, Datum value,
   meosType basetype, bool (*func)(const TBox *, const TBox *), bool invert);

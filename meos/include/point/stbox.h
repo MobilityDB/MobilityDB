@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -39,7 +39,7 @@
 /* PostGIS */
 #include <liblwgeom.h>
 /* MobilityDB */
-#include "general/timetypes.h"
+#include "general/set.h"
 
 /*****************************************************************************
  * fmgr macros
@@ -59,7 +59,7 @@ extern void ensure_has_T_stbox(const STBox *box);
 
 /* Set an STBox from a <Type> */
 
-extern void timestampset_stbox_slice(Datum tsdatum, STBox *box);
+extern void tstzset_stbox_slice(Datum tsdatum, STBox *box);
 extern void periodset_stbox_slice(Datum psdatum, STBox *box);
 
 /* SRID functions */

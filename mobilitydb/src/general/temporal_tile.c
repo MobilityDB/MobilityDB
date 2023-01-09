@@ -1,12 +1,12 @@
 /***********************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -215,7 +215,7 @@ Period_bucket(PG_FUNCTION_ARGS)
   TimestampTz origin = PG_GETARG_TIMESTAMPTZ(2);
   TimestampTz time_bucket = timestamptz_bucket(t, duration, origin);
   int64 tunits = interval_units(duration);
-  Period *result = span_bucket_get(TimestampTzGetDatum(time_bucket),
+  Span *result = span_bucket_get(TimestampTzGetDatum(time_bucket),
     Int64GetDatum(tunits), T_TIMESTAMPTZ);
   PG_RETURN_POINTER(result);
 }

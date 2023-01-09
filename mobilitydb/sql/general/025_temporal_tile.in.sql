@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -83,10 +83,10 @@ CREATE FUNCTION spanBucket(value float, size float,
 
 CREATE TYPE time_period AS (
   index integer,
-  period period
+  tstzspan tstzspan
 );
 
-CREATE FUNCTION bucketList(period, interval, timestamptz DEFAULT '2000-01-03')
+CREATE FUNCTION bucketList(tstzspan, interval, timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF time_period
   AS 'MODULE_PATHNAME', 'Period_bucket_list'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -108,7 +108,7 @@ CREATE FUNCTION timeBucket("time" timestamptz, duration interval,
 
 CREATE FUNCTION periodBucket(timestamptz, interval,
   timestamptz DEFAULT '2000-01-03')
-  RETURNS period
+  RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Period_bucket'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

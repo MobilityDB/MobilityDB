@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -236,7 +236,7 @@ contains_textset_text(const Set *s, text *t)
  * @sqlop @p \@>
  */
 bool
-contains_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
+contains_tstzset_timestamp(const Set *ts, TimestampTz t)
 {
   return contains_set_value(ts, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
@@ -337,7 +337,7 @@ contained_text_textset(text *txt, const Set *s)
  * @sqlop @p <@
  */
 bool
-contained_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
+contained_timestamp_tstzset(TimestampTz t, const Set *ts)
 {
   return contains_set_value(ts, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
@@ -453,7 +453,7 @@ left_text_textset(text *txt, const Set *s)
  * @sqlop @p <<#
  */
 bool
-before_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
+before_timestamp_tstzset(TimestampTz t, const Set *ts)
 {
   return left_value_set(TimestampTzGetDatum(t), T_TIMESTAMPTZ, ts);
 }
@@ -521,7 +521,7 @@ left_textset_text(const Set *s, text *txt)
  * @sqlop @p <<, @p <<#
  */
 bool
-before_timestampset_timestamp(const Set *s, TimestampTz t)
+before_tstzset_timestamp(const Set *s, TimestampTz t)
 {
   return left_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
@@ -606,9 +606,9 @@ right_text_textset(text *txt, const Set *s)
  * @sqlop @p #>>
  */
 bool
-after_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
+after_timestamp_tstzset(TimestampTz t, const Set *ts)
 {
-  return before_timestampset_timestamp(ts, t);
+  return before_tstzset_timestamp(ts, t);
 }
 #endif /* MEOS */
 
@@ -674,7 +674,7 @@ right_textset_text(const Set *s, text *txt)
  * @sqlop @p >>, @p #>>
  */
 bool
-after_timestampset_timestamptz(const Set *s, TimestampTz t)
+after_tstzset_timestamptz(const Set *s, TimestampTz t)
 {
   return right_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
@@ -758,7 +758,7 @@ overleft_text_textset(text *txt, const Set *s)
  * @sqlop @p &<#
  */
 bool
-overbefore_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
+overbefore_timestamp_tstzset(TimestampTz t, const Set *ts)
 {
   return overleft_value_set(TimestampTzGetDatum(t), T_TIMESTAMPTZ, ts);
 }
@@ -827,7 +827,7 @@ overleft_textset_text(const Set *s, text *txt)
  * @sqlop @p &<#
  */
 bool
-overbefore_timestampset_timestamp(const Set *s, TimestampTz t)
+overbefore_tstzset_timestamp(const Set *s, TimestampTz t)
 {
   return overleft_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
@@ -902,7 +902,7 @@ overright_float_floatset(double d, const Set *s)
  * @sqlop @p #&>
  */
 bool
-overafter_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
+overafter_timestamp_tstzset(TimestampTz t, const Set *ts)
 {
   return overright_value_set(TimestampTzGetDatum(t), T_TIMESTAMPTZ, ts);
 }
@@ -970,7 +970,7 @@ overright_textset_text(const Set *s, text *txt)
  * @sqlop @p &>, @p #&>
  */
 bool
-overafter_timestampset_timestamp(const Set *s, TimestampTz t)
+overafter_tstzset_timestamp(const Set *s, TimestampTz t)
 {
   return overright_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
@@ -1073,7 +1073,7 @@ union_text_text(text *txt1, text *txt2)
  * @brief Return the union of the timestamps
  * @sqlop @p +
  */
-TimestampSet *
+Set *
 union_timestamp_timestamp(TimestampTz t1, TimestampTz t2)
 {
   return union_value_value(TimestampTzGetDatum(t1), TimestampTzGetDatum(t2),
@@ -1163,10 +1163,10 @@ union_textset_text(const Set *s, text *txt)
  * @brief Return the union of a timestamp set and a timestamp
  * @sqlop @p +
  */
-TimestampSet *
-union_timestampset_timestamp(const TimestampSet *ts, const TimestampTz t)
+Set *
+union_tstzset_timestamp(const Set *ts, const TimestampTz t)
 {
-  return union_timestamp_timestampset(t, ts);
+  return union_timestamp_tstzset(t, ts);
 }
 #endif /* MEOS */
 
@@ -1276,7 +1276,7 @@ intersection_textset_text(const Set *s, const text *txt, text **result)
  * @sqlop @p *
  */
 bool
-intersection_timestampset_timestamp(const TimestampSet *ts, TimestampTz t,
+intersection_tstzset_timestamp(const Set *ts, TimestampTz t,
   TimestampTz *result)
 {
   Datum v;
@@ -1524,8 +1524,8 @@ minus_textset_text(const Set *s, const text *txt)
  * @brief Return the difference of a timestamp set and a timestamp.
  * @sqlop @p -
  */
-TimestampSet *
-minus_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
+Set *
+minus_tstzset_timestamp(const Set *ts, TimestampTz t)
 {
   /* Bounding box test */
   Span s;
@@ -1624,7 +1624,7 @@ distance_textset_text(const Set *s, const text *txt)
  * @sqlop @p <->
  */
 double
-distance_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
+distance_tstzset_timestamp(const Set *ts, TimestampTz t)
 {
   return distance_set_value(ts, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }

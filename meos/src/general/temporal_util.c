@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -588,8 +588,8 @@ tinstarr_sort_cmp(const TInstant **l, const TInstant **r)
 static int
 tseqarr_sort_cmp(TSequence **l, TSequence **r)
 {
-  Period lp = (*l)->period;
-  Period rp = (*r)->period;
+  Span lp = (*l)->period;
+  Span rp = (*r)->period;
   return span_cmp(&lp, &rp);
 }
 
@@ -1039,7 +1039,13 @@ basetype_out(Datum value, meosType basetype, int maxdd)
     case T_FLOAT8:
       return float8_out(DatumGetFloat8(value), maxdd);
     case T_TEXT:
-      return text2cstring(DatumGetTextP(value));
+    {
+      char *str = text2cstring(DatumGetTextP(value));
+      char *result = palloc(strlen(str) + 4);
+      sprintf(result, "\"%s\"", str);
+      pfree(str);
+      return result;
+    }
     case T_GEOMETRY:
     return gserialized_out(DatumGetGserializedP(value));
     case T_GEOGRAPHY:

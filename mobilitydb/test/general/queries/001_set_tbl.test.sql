@@ -1,12 +1,12 @@
 -------------------------------------------------------------------------------
 --
 -- This MobilityDB code is provided under The PostgreSQL License.
--- Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+-- Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
 -- contributors
 --
 -- MobilityDB includes portions of PostGIS version 3 source code released
 -- under the GNU General Public License (GPLv2 or later).
--- Copyright (c) 2001-2022, PostGIS contributors
+-- Copyright (c) 2001-2023, PostGIS contributors
 --
 -- Permission to use, copy, modify, and distribute this software and its
 -- documentation for any purpose, without fee, and without a written
@@ -62,12 +62,12 @@ COPY tbl_textset_tmp FROM '/tmp/tbl_textset' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_textset t1, tbl_textset_tmp t2 WHERE t1.k = t2.k AND t1.t <> t2.t;
 DROP TABLE tbl_textset_tmp;
 
-COPY tbl_timestampset TO '/tmp/tbl_timestampset' (FORMAT BINARY);
-DROP TABLE IF EXISTS tbl_timestampset_tmp;
-CREATE TABLE tbl_timestampset_tmp AS TABLE tbl_timestampset WITH NO DATA;
-COPY tbl_timestampset_tmp FROM '/tmp/tbl_timestampset' (FORMAT BINARY);
-SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset_tmp t2 WHERE t1.k = t2.k AND t1.ts <> t2.ts;
-DROP TABLE tbl_timestampset_tmp;
+COPY tbl_tstzset TO '/tmp/tbl_tstzset' (FORMAT BINARY);
+DROP TABLE IF EXISTS tbl_tstzset_tmp;
+CREATE TABLE tbl_tstzset_tmp AS TABLE tbl_tstzset WITH NO DATA;
+COPY tbl_tstzset_tmp FROM '/tmp/tbl_tstzset' (FORMAT BINARY);
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset_tmp t2 WHERE t1.k = t2.k AND t1.ts <> t2.ts;
+DROP TABLE tbl_tstzset_tmp;
 
 -- Input/output from/to WKB and HexWKB
 
@@ -75,22 +75,22 @@ SELECT COUNT(*) FROM tbl_intset WHERE intsetFromBinary(asBinary(i)) <> i;
 SELECT COUNT(*) FROM tbl_bigintset WHERE bigintsetFromBinary(asBinary(b)) <> b;
 SELECT COUNT(*) FROM tbl_floatset WHERE floatsetFromBinary(asBinary(f)) <> f;
 SELECT COUNT(*) FROM tbl_textset WHERE textsetFromBinary(asBinary(t)) <> t;
-SELECT COUNT(*) FROM tbl_timestampset WHERE timestampsetFromBinary(asBinary(ts)) <> ts;
+SELECT COUNT(*) FROM tbl_tstzset WHERE tstzsetFromBinary(asBinary(ts)) <> ts;
 
 SELECT COUNT(*) FROM tbl_intset WHERE intsetFromHexWKB(asHexWKB(i)) <> i;
 SELECT COUNT(*) FROM tbl_bigintset WHERE bigintsetFromHexWKB(asHexWKB(b)) <> b;
 SELECT COUNT(*) FROM tbl_floatset WHERE floatsetFromHexWKB(asHexWKB(f)) <> f;
-SELECT COUNT(*) FROM tbl_timestampset WHERE timestampsetFromHexWKB(asHexWKB(ts)) <> ts;
+SELECT COUNT(*) FROM tbl_tstzset WHERE tstzsetFromHexWKB(asHexWKB(ts)) <> ts;
 
 -------------------------------------------------------------------------------
 -- Constructor
 
-SELECT memorySize(timestampset(array_agg(DISTINCT t ORDER BY t))) FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10;
+SELECT memorySize(tstzset(array_agg(DISTINCT t ORDER BY t))) FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10;
 
 -------------------------------------------------------------------------------
 -- Cast
 
-SELECT COUNT(*) FROM tbl_timestamptz WHERE t::timestampset IS NOT NULL;
+SELECT COUNT(*) FROM tbl_timestamptz WHERE t::tstzset IS NOT NULL;
 
 -------------------------------------------------------------------------------
 -- Transformation functions
@@ -100,21 +100,21 @@ SELECT MIN(startValue(round(f, 5))) FROM tbl_floatset;
 SELECT MIN(startValue(shift(i, 5))) FROM tbl_intset;
 SELECT MIN(startValue(shift(b, 5))) FROM tbl_bigintset;
 SELECT MIN(startValue(shift(f, 5))) FROM tbl_floatset;
-SELECT MIN(startTimestamp(shift(ts, '5 min'))) FROM tbl_timestampset;
+SELECT MIN(startValue(shift(ts, '5 min'))) FROM tbl_tstzset;
 
 -------------------------------------------------------------------------------
 -- Accessor functions
 
-SELECT MAX(memorySize(ts)) FROM tbl_timestampset;
-SELECT MAX(storageSize(ts)) FROM tbl_timestampset;
+SELECT MAX(memorySize(ts)) FROM tbl_tstzset;
+SELECT MAX(storageSize(ts)) FROM tbl_tstzset;
 
-SELECT MIN(lower(period(ts))) FROM tbl_timestampset;
+SELECT MIN(lower(span(ts))) FROM tbl_tstzset;
 
-SELECT MIN(numTimestamps(ts)) FROM tbl_timestampset;
-SELECT MIN(startTimestamp(ts)) FROM tbl_timestampset;
-SELECT MIN(endTimestamp(ts)) FROM tbl_timestampset;
-SELECT MIN(timestampN(ts, 1)) FROM tbl_timestampset;
-SELECT MIN(array_length(timestamps(ts), 1)) FROM tbl_timestampset;
+SELECT MIN(numValues(ts)) FROM tbl_tstzset;
+SELECT MIN(startValue(ts)) FROM tbl_tstzset;
+SELECT MIN(endValue(ts)) FROM tbl_tstzset;
+SELECT MIN(valueN(ts, 1)) FROM tbl_tstzset;
+SELECT MIN(array_length(getValues(ts), 1)) FROM tbl_tstzset;
 
 -------------------------------------------------------------------------------
 -- Set_agg and unnest functions
@@ -122,7 +122,7 @@ SELECT MIN(array_length(timestamps(ts), 1)) FROM tbl_timestampset;
 SELECT numValues(set_agg(i)) FROM tbl_int;
 SELECT numValues(set_agg(b)) FROM tbl_bigint;
 SELECT numValues(set_agg(f)) FROM tbl_float;
-SELECT numTimestamps(set_agg(t)) FROM tbl_timestamptz;
+SELECT numValues(set_agg(t)) FROM tbl_timestamptz;
 SELECT numValues(set_agg(t)) FROM tbl_text;
 
 WITH test1(k, i) AS (
@@ -141,10 +141,10 @@ test2 (k, f) AS (
   SELECT k, set_agg(f) FROM test1 GROUP BY k )
 SELECT COUNT(*) FROM test2 t1, tbl_floatset t2 WHERE t1.k = t2.k AND t1.f <> t2.f;
 WITH test1(k, ts) AS (
-  SELECT k, unnest(ts) FROM tbl_timestampset ),
+  SELECT k, unnest(ts) FROM tbl_tstzset ),
 test2 (k, ts) AS (
   SELECT k, set_agg(ts) FROM test1 GROUP BY k )
-SELECT COUNT(*) FROM test2 t1, tbl_timestampset t2 WHERE t1.k = t2.k AND t1.ts <> t2.ts;
+SELECT COUNT(*) FROM test2 t1, tbl_tstzset t2 WHERE t1.k = t2.k AND t1.ts <> t2.ts;
 WITH test1(k, t) AS (
   SELECT k, unnest(t) FROM tbl_textset ),
 test2 (k, t) AS (
@@ -154,22 +154,22 @@ SELECT COUNT(*) FROM test2 t1, tbl_textset t2 WHERE t1.k = t2.k AND t1.t <> t2.t
 -------------------------------------------------------------------------------
 -- Comparison functions
 
-SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE timestampset_cmp(t1.ts, t2.ts) = -1;
-SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts = t2.ts;
-SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts <> t2.ts;
-SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts < t2.ts;
-SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts <= t2.ts;
-SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts > t2.ts;
-SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts >= t2.ts;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE tstzset_cmp(t1.ts, t2.ts) = -1;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.ts = t2.ts;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.ts <> t2.ts;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.ts < t2.ts;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.ts <= t2.ts;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.ts > t2.ts;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.ts >= t2.ts;
 
 SELECT MAX(intset_hash(i)) FROM tbl_intset;
 SELECT MAX(bigintset_hash(b)) FROM tbl_bigintset;
 SELECT MAX(floatset_hash(f)) FROM tbl_floatset;
-SELECT MAX(timestampset_hash(ts)) FROM tbl_timestampset;
+SELECT MAX(tstzset_hash(ts)) FROM tbl_tstzset;
 
 SELECT MAX(intset_hash_extended(i, 1)) FROM tbl_intset;
 SELECT MAX(bigintset_hash_extended(b, 1)) FROM tbl_bigintset;
 SELECT MAX(floatset_hash_extended(f, 1)) FROM tbl_floatset;
-SELECT MAX(timestampset_hash_extended(ts, 1)) FROM tbl_timestampset;
+SELECT MAX(tstzset_hash_extended(ts, 1)) FROM tbl_tstzset;
 
 -------------------------------------------------------------------------------

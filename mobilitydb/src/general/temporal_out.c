@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -316,7 +316,7 @@ PGDLLEXPORT Datum
 Set_as_hexwkb(PG_FUNCTION_ARGS)
 {
   /* Ensure that the value is detoasted if necessary */
-  Set *s = PG_GETARG_TIMESTAMPSET_P(0);
+  Set *s = PG_GETARG_SET_P(0);
   meosType settype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   text *result = datum_as_hexwkb_ext(fcinfo, PointerGetDatum(s), settype);
   PG_FREE_IF_COPY(s, 0);

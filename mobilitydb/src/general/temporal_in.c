@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -31,7 +31,10 @@
  * @brief Input of temporal types in WKT, MF-JSON, WKB, EWKB, and HexWKB format.
  */
 
-/* MobilityDB */
+/* PostgreSQL */
+#include <postgres.h>
+#include <fmgr.h>
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/temporal_util.h"
@@ -105,7 +108,7 @@ PG_FUNCTION_INFO_V1(Set_from_wkb);
 /**
  * @ingroup mobilitydb_temporal_inout
  * @brief Input a timestamp set from its WKB representation
- * @sqlfunc timestampsetFromBinary()
+ * @sqlfunc tstzsetFromBinary()
  *
  */
 PGDLLEXPORT Datum
@@ -122,7 +125,7 @@ PG_FUNCTION_INFO_V1(Set_from_hexwkb);
 /**
  * @ingroup mobilitydb_temporal_inout
  * @brief Input a timestamp set from its HexWKB representation
- * @sqlfunc timestampsetFromHexWKB()
+ * @sqlfunc tstzsetFromHexWKB()
  */
 PGDLLEXPORT Datum
 Set_from_hexwkb(PG_FUNCTION_ARGS)

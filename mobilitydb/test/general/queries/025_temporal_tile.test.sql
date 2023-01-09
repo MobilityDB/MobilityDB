@@ -1,12 +1,12 @@
 -------------------------------------------------------------------------------
 --
 -- This MobilityDB code is provided under The PostgreSQL License.
--- Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+-- Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
 -- contributors
 --
 -- MobilityDB includes portions of PostGIS version 3 source code released
 -- under the GNU General Public License (GPLv2 or later).
--- Copyright (c) 2001-2022, PostGIS contributors
+-- Copyright (c) 2001-2023, PostGIS contributors
 --
 -- Permission to use, copy, modify, and distribute this software and its
 -- documentation for any purpose, without fee, and without a written
@@ -63,8 +63,8 @@ SELECT spanBucket(3.5, 2.5, 1.5);
 
 -------------------------------------------------------------------------------
 
-SELECT bucketList(period '[2000-01-01, 2000-01-10]', '1 week') LIMIT 3;
-SELECT bucketList(period '[2000-01-01, 2000-01-10]', '1 week', '2020-06-15') LIMIT 3;
+SELECT bucketList(tstzspan '[2000-01-01, 2000-01-10]', '1 week') LIMIT 3;
+SELECT bucketList(tstzspan '[2000-01-01, 2000-01-10]', '1 week', '2020-06-15') LIMIT 3;
 
 SELECT timeBucket('2020-01-01', '1 week');
 SELECT timeBucket('2020-01-01', '1 week', timestamptz '2001-06-01');

@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -45,7 +45,7 @@
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_setspan_agg
+ * @ingroup libmeos_internal_setspan_agg
  * @brief Transition function for set aggregate of values
  */
 Set *
@@ -57,6 +57,58 @@ set_agg_transfn(Set *state, Datum d, meosType basetype)
 
   return union_set_value(state, d, basetype);
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_setspan_agg
+ * @brief Transition function for set aggregate of values
+ */
+Set *
+intset_agg_transfn(Set *state, int32 i)
+{
+  return set_agg_transfn(state, Int32GetDatum(i), T_INT4);
+}
+
+/**
+ * @ingroup libmeos_setspan_agg
+ * @brief Transition function for set aggregate of values
+ */
+Set *
+bigintset_agg_transfn(Set *state, int64 i)
+{
+  return set_agg_transfn(state, Int64GetDatum(i), T_INT8);
+}
+
+/**
+ * @ingroup libmeos_setspan_agg
+ * @brief Transition function for set aggregate of values
+ */
+Set *
+floatset_agg_transfn(Set *state, double d)
+{
+  return set_agg_transfn(state, Float8GetDatum(d), T_FLOAT8);
+}
+
+/**
+ * @ingroup libmeos_setspan_agg
+ * @brief Transition function for set aggregate of values
+ */
+Set *
+tstzset_agg_transfn(Set *state, TimestampTz t)
+{
+  return set_agg_transfn(state, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+}
+
+/**
+ * @ingroup libmeos_setspan_agg
+ * @brief Transition function for set aggregate of values
+ */
+Set *
+textset_agg_transfn(Set *state, const text *txt)
+{
+  return set_agg_transfn(state, PointerGetDatum(txt), T_TEXT);
+}
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_agg

@@ -1,12 +1,12 @@
 ﻿-------------------------------------------------------------------------------
 --
 -- This MobilityDB code is provided under The PostgreSQL License.
--- Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+-- Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
 -- contributors
 --
 -- MobilityDB includes portions of PostGIS version 3 source code released
 -- under the GNU General Public License (GPLv2 or later).
--- Copyright (c) 2001-2022, PostGIS contributors
+-- Copyright (c) 2001-2023, PostGIS contributors
 --
 -- Permission to use, copy, modify, and distribute this software and its
 -- documentation for any purpose, without fee, and without a written
@@ -93,31 +93,31 @@ INSERT INTO test_tnpoint_posops(op, leftarg, rightarg, no_idx)
 SELECT '#&>', 'timestamptz', 'tnpoint', COUNT(*) FROM tbl_timestamptz, tbl_tnpoint WHERE t #&> temp;
 
 INSERT INTO test_tnpoint_posops(op, leftarg, rightarg, no_idx)
-SELECT '<<#', 'timestampset', 'tnpoint', COUNT(*) FROM tbl_timestampset, tbl_tnpoint WHERE ts <<# temp;
+SELECT '<<#', 'tstzset', 'tnpoint', COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE ts <<# temp;
 INSERT INTO test_tnpoint_posops(op, leftarg, rightarg, no_idx)
-SELECT '#>>', 'timestampset', 'tnpoint', COUNT(*) FROM tbl_timestampset, tbl_tnpoint WHERE ts #>> temp;
+SELECT '#>>', 'tstzset', 'tnpoint', COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE ts #>> temp;
 INSERT INTO test_tnpoint_posops(op, leftarg, rightarg, no_idx)
-SELECT '&<#', 'timestampset', 'tnpoint', COUNT(*) FROM tbl_timestampset, tbl_tnpoint WHERE ts &<# temp;
+SELECT '&<#', 'tstzset', 'tnpoint', COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE ts &<# temp;
 INSERT INTO test_tnpoint_posops(op, leftarg, rightarg, no_idx)
-SELECT '#&>', 'timestampset', 'tnpoint', COUNT(*) FROM tbl_timestampset, tbl_tnpoint WHERE ts #&> temp;
+SELECT '#&>', 'tstzset', 'tnpoint', COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE ts #&> temp;
 
 INSERT INTO test_tnpoint_posops(op, leftarg, rightarg, no_idx)
-SELECT '<<#', 'period', 'tnpoint', COUNT(*) FROM tbl_period, tbl_tnpoint WHERE p <<# temp;
+SELECT '<<#', 'tstzspan', 'tnpoint', COUNT(*) FROM tbl_tstzspan, tbl_tnpoint WHERE p <<# temp;
 INSERT INTO test_tnpoint_posops(op, leftarg, rightarg, no_idx)
-SELECT '#>>', 'period', 'tnpoint', COUNT(*) FROM tbl_period, tbl_tnpoint WHERE p #>> temp;
+SELECT '#>>', 'tstzspan', 'tnpoint', COUNT(*) FROM tbl_tstzspan, tbl_tnpoint WHERE p #>> temp;
 INSERT INTO test_tnpoint_posops(op, leftarg, rightarg, no_idx)
-SELECT '&<#', 'period', 'tnpoint', COUNT(*) FROM tbl_period, tbl_tnpoint WHERE p &<# temp;
+SELECT '&<#', 'tstzspan', 'tnpoint', COUNT(*) FROM tbl_tstzspan, tbl_tnpoint WHERE p &<# temp;
 INSERT INTO test_tnpoint_posops(op, leftarg, rightarg, no_idx)
-SELECT '#&>', 'period', 'tnpoint', COUNT(*) FROM tbl_period, tbl_tnpoint WHERE p #&> temp;
+SELECT '#&>', 'tstzspan', 'tnpoint', COUNT(*) FROM tbl_tstzspan, tbl_tnpoint WHERE p #&> temp;
 
 INSERT INTO test_tnpoint_posops(op, leftarg, rightarg, no_idx)
-SELECT '<<#', 'periodset', 'tnpoint', COUNT(*) FROM tbl_periodset, tbl_tnpoint WHERE ps <<# temp;
+SELECT '<<#', 'tstzspanset', 'tnpoint', COUNT(*) FROM tbl_tstzspanset, tbl_tnpoint WHERE ps <<# temp;
 INSERT INTO test_tnpoint_posops(op, leftarg, rightarg, no_idx)
-SELECT '#>>', 'periodset', 'tnpoint', COUNT(*) FROM tbl_periodset, tbl_tnpoint WHERE ps #>> temp;
+SELECT '#>>', 'tstzspanset', 'tnpoint', COUNT(*) FROM tbl_tstzspanset, tbl_tnpoint WHERE ps #>> temp;
 INSERT INTO test_tnpoint_posops(op, leftarg, rightarg, no_idx)
-SELECT '&<#', 'periodset', 'tnpoint', COUNT(*) FROM tbl_periodset, tbl_tnpoint WHERE ps &<# temp;
+SELECT '&<#', 'tstzspanset', 'tnpoint', COUNT(*) FROM tbl_tstzspanset, tbl_tnpoint WHERE ps &<# temp;
 INSERT INTO test_tnpoint_posops(op, leftarg, rightarg, no_idx)
-SELECT '#&>', 'periodset', 'tnpoint', COUNT(*) FROM tbl_periodset, tbl_tnpoint WHERE ps #&> temp;
+SELECT '#&>', 'tstzspanset', 'tnpoint', COUNT(*) FROM tbl_tstzspanset, tbl_tnpoint WHERE ps #&> temp;
 
 -------------------------------------------------------------------------------
 
@@ -165,31 +165,31 @@ INSERT INTO test_tnpoint_posops(op, leftarg, rightarg, no_idx)
 SELECT '#&>', 'tnpoint', 'timestamptz', COUNT(*) FROM tbl_tnpoint, tbl_timestamptz WHERE temp #&> t;
 
 INSERT INTO test_tnpoint_posops(op, leftarg, rightarg, no_idx)
-SELECT '<<#', 'tnpoint', 'timestampset', COUNT(*) FROM tbl_tnpoint, tbl_timestampset WHERE temp <<# ts;
+SELECT '<<#', 'tnpoint', 'tstzset', COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp <<# ts;
 INSERT INTO test_tnpoint_posops(op, leftarg, rightarg, no_idx)
-SELECT '#>>', 'tnpoint', 'timestampset', COUNT(*) FROM tbl_tnpoint, tbl_timestampset WHERE temp #>> ts;
+SELECT '#>>', 'tnpoint', 'tstzset', COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp #>> ts;
 INSERT INTO test_tnpoint_posops(op, leftarg, rightarg, no_idx)
-SELECT '&<#', 'tnpoint', 'timestampset', COUNT(*) FROM tbl_tnpoint, tbl_timestampset WHERE temp &<# ts;
+SELECT '&<#', 'tnpoint', 'tstzset', COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp &<# ts;
 INSERT INTO test_tnpoint_posops(op, leftarg, rightarg, no_idx)
-SELECT '#&>', 'tnpoint', 'timestampset', COUNT(*) FROM tbl_tnpoint, tbl_timestampset WHERE temp #&> ts;
+SELECT '#&>', 'tnpoint', 'tstzset', COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp #&> ts;
 
 INSERT INTO test_tnpoint_posops(op, leftarg, rightarg, no_idx)
-SELECT '<<#', 'tnpoint', 'period', COUNT(*) FROM tbl_tnpoint, tbl_period WHERE temp <<# p;
+SELECT '<<#', 'tnpoint', 'tstzspan', COUNT(*) FROM tbl_tnpoint, tbl_tstzspan WHERE temp <<# p;
 INSERT INTO test_tnpoint_posops(op, leftarg, rightarg, no_idx)
-SELECT '#>>', 'tnpoint', 'period', COUNT(*) FROM tbl_tnpoint, tbl_period WHERE temp #>> p;
+SELECT '#>>', 'tnpoint', 'tstzspan', COUNT(*) FROM tbl_tnpoint, tbl_tstzspan WHERE temp #>> p;
 INSERT INTO test_tnpoint_posops(op, leftarg, rightarg, no_idx)
-SELECT '&<#', 'tnpoint', 'period', COUNT(*) FROM tbl_tnpoint, tbl_period WHERE temp &<# p;
+SELECT '&<#', 'tnpoint', 'tstzspan', COUNT(*) FROM tbl_tnpoint, tbl_tstzspan WHERE temp &<# p;
 INSERT INTO test_tnpoint_posops(op, leftarg, rightarg, no_idx)
-SELECT '#&>', 'tnpoint', 'period', COUNT(*) FROM tbl_tnpoint, tbl_period WHERE temp #&> p;
+SELECT '#&>', 'tnpoint', 'tstzspan', COUNT(*) FROM tbl_tnpoint, tbl_tstzspan WHERE temp #&> p;
 
 INSERT INTO test_tnpoint_posops(op, leftarg, rightarg, no_idx)
-SELECT '<<#', 'tnpoint', 'periodset', COUNT(*) FROM tbl_tnpoint, tbl_periodset WHERE temp <<# ps;
+SELECT '<<#', 'tnpoint', 'tstzspanset', COUNT(*) FROM tbl_tnpoint, tbl_tstzspanset WHERE temp <<# ps;
 INSERT INTO test_tnpoint_posops(op, leftarg, rightarg, no_idx)
-SELECT '#>>', 'tnpoint', 'periodset', COUNT(*) FROM tbl_tnpoint, tbl_periodset WHERE temp #>> ps;
+SELECT '#>>', 'tnpoint', 'tstzspanset', COUNT(*) FROM tbl_tnpoint, tbl_tstzspanset WHERE temp #>> ps;
 INSERT INTO test_tnpoint_posops(op, leftarg, rightarg, no_idx)
-SELECT '&<#', 'tnpoint', 'periodset', COUNT(*) FROM tbl_tnpoint, tbl_periodset WHERE temp &<# ps;
+SELECT '&<#', 'tnpoint', 'tstzspanset', COUNT(*) FROM tbl_tnpoint, tbl_tstzspanset WHERE temp &<# ps;
 INSERT INTO test_tnpoint_posops(op, leftarg, rightarg, no_idx)
-SELECT '#&>', 'tnpoint', 'periodset', COUNT(*) FROM tbl_tnpoint, tbl_periodset WHERE temp #&> ps;
+SELECT '#&>', 'tnpoint', 'tstzspanset', COUNT(*) FROM tbl_tnpoint, tbl_tstzspanset WHERE temp #&> ps;
 
 INSERT INTO test_tnpoint_posops(op, leftarg, rightarg, no_idx)
 SELECT '<<', 'tnpoint', 'tnpoint', COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.temp << t2.temp;
@@ -290,43 +290,43 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tnpoint WHERE t #&> 
 WHERE op = '#&>' and leftarg = 'timestamptz' and rightarg = 'tnpoint';
 
 UPDATE test_tnpoint_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tnpoint WHERE ts <<# temp )
-WHERE op = '<<#' and leftarg = 'timestampset' and rightarg = 'tnpoint';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE ts <<# temp )
+WHERE op = '<<#' and leftarg = 'tstzset' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tnpoint WHERE ts #>> temp )
-WHERE op = '#>>' and leftarg = 'timestampset' and rightarg = 'tnpoint';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE ts #>> temp )
+WHERE op = '#>>' and leftarg = 'tstzset' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tnpoint WHERE ts &<# temp )
-WHERE op = '&<#' and leftarg = 'timestampset' and rightarg = 'tnpoint';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE ts &<# temp )
+WHERE op = '&<#' and leftarg = 'tstzset' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tnpoint WHERE ts #&> temp )
-WHERE op = '#&>' and leftarg = 'timestampset' and rightarg = 'tnpoint';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE ts #&> temp )
+WHERE op = '#&>' and leftarg = 'tstzset' and rightarg = 'tnpoint';
 
 UPDATE test_tnpoint_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tnpoint WHERE p <<# temp )
-WHERE op = '<<#' and leftarg = 'period' and rightarg = 'tnpoint';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tnpoint WHERE p <<# temp )
+WHERE op = '<<#' and leftarg = 'tstzspan' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tnpoint WHERE p #>> temp )
-WHERE op = '#>>' and leftarg = 'period' and rightarg = 'tnpoint';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tnpoint WHERE p #>> temp )
+WHERE op = '#>>' and leftarg = 'tstzspan' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tnpoint WHERE p &<# temp )
-WHERE op = '&<#' and leftarg = 'period' and rightarg = 'tnpoint';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tnpoint WHERE p &<# temp )
+WHERE op = '&<#' and leftarg = 'tstzspan' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tnpoint WHERE p #&> temp )
-WHERE op = '#&>' and leftarg = 'period' and rightarg = 'tnpoint';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tnpoint WHERE p #&> temp )
+WHERE op = '#&>' and leftarg = 'tstzspan' and rightarg = 'tnpoint';
 
 UPDATE test_tnpoint_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tnpoint WHERE ps <<# temp )
-WHERE op = '<<#' and leftarg = 'periodset' and rightarg = 'tnpoint';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tnpoint WHERE ps <<# temp )
+WHERE op = '<<#' and leftarg = 'tstzspanset' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tnpoint WHERE ps #>> temp )
-WHERE op = '#>>' and leftarg = 'periodset' and rightarg = 'tnpoint';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tnpoint WHERE ps #>> temp )
+WHERE op = '#>>' and leftarg = 'tstzspanset' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tnpoint WHERE ps &<# temp )
-WHERE op = '&<#' and leftarg = 'periodset' and rightarg = 'tnpoint';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tnpoint WHERE ps &<# temp )
+WHERE op = '&<#' and leftarg = 'tstzspanset' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tnpoint WHERE ps #&> temp )
-WHERE op = '#&>' and leftarg = 'periodset' and rightarg = 'tnpoint';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tnpoint WHERE ps #&> temp )
+WHERE op = '#&>' and leftarg = 'tstzspanset' and rightarg = 'tnpoint';
 
 -------------------------------------------------------------------------------
 
@@ -396,43 +396,43 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz WHERE temp #
 WHERE op = '#&>' and leftarg = 'tnpoint' and rightarg = 'timestamptz';
 
 UPDATE test_tnpoint_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestampset WHERE temp <<# ts )
-WHERE op = '<<#' and leftarg = 'tnpoint' and rightarg = 'timestampset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp <<# ts )
+WHERE op = '<<#' and leftarg = 'tnpoint' and rightarg = 'tstzset';
 UPDATE test_tnpoint_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestampset WHERE temp #>> ts )
-WHERE op = '#>>' and leftarg = 'tnpoint' and rightarg = 'timestampset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp #>> ts )
+WHERE op = '#>>' and leftarg = 'tnpoint' and rightarg = 'tstzset';
 UPDATE test_tnpoint_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestampset WHERE temp &<# ts )
-WHERE op = '&<#' and leftarg = 'tnpoint' and rightarg = 'timestampset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp &<# ts )
+WHERE op = '&<#' and leftarg = 'tnpoint' and rightarg = 'tstzset';
 UPDATE test_tnpoint_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestampset WHERE temp #&> ts )
-WHERE op = '#&>' and leftarg = 'tnpoint' and rightarg = 'timestampset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp #&> ts )
+WHERE op = '#&>' and leftarg = 'tnpoint' and rightarg = 'tstzset';
 
 UPDATE test_tnpoint_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_period WHERE temp <<# p )
-WHERE op = '<<#' and leftarg = 'tnpoint' and rightarg = 'period';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspan WHERE temp <<# p )
+WHERE op = '<<#' and leftarg = 'tnpoint' and rightarg = 'tstzspan';
 UPDATE test_tnpoint_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_period WHERE temp #>> p )
-WHERE op = '#>>' and leftarg = 'tnpoint' and rightarg = 'period';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspan WHERE temp #>> p )
+WHERE op = '#>>' and leftarg = 'tnpoint' and rightarg = 'tstzspan';
 UPDATE test_tnpoint_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_period WHERE temp &<# p )
-WHERE op = '&<#' and leftarg = 'tnpoint' and rightarg = 'period';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspan WHERE temp &<# p )
+WHERE op = '&<#' and leftarg = 'tnpoint' and rightarg = 'tstzspan';
 UPDATE test_tnpoint_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_period WHERE temp #&> p )
-WHERE op = '#&>' and leftarg = 'tnpoint' and rightarg = 'period';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspan WHERE temp #&> p )
+WHERE op = '#&>' and leftarg = 'tnpoint' and rightarg = 'tstzspan';
 
 UPDATE test_tnpoint_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_periodset WHERE temp <<# ps )
-WHERE op = '<<#' and leftarg = 'tnpoint' and rightarg = 'periodset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspanset WHERE temp <<# ps )
+WHERE op = '<<#' and leftarg = 'tnpoint' and rightarg = 'tstzspanset';
 UPDATE test_tnpoint_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_periodset WHERE temp #>> ps )
-WHERE op = '#>>' and leftarg = 'tnpoint' and rightarg = 'periodset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspanset WHERE temp #>> ps )
+WHERE op = '#>>' and leftarg = 'tnpoint' and rightarg = 'tstzspanset';
 UPDATE test_tnpoint_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_periodset WHERE temp &<# ps )
-WHERE op = '&<#' and leftarg = 'tnpoint' and rightarg = 'periodset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspanset WHERE temp &<# ps )
+WHERE op = '&<#' and leftarg = 'tnpoint' and rightarg = 'tstzspanset';
 UPDATE test_tnpoint_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_periodset WHERE temp #&> ps )
-WHERE op = '#&>' and leftarg = 'tnpoint' and rightarg = 'periodset';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspanset WHERE temp #&> ps )
+WHERE op = '#&>' and leftarg = 'tnpoint' and rightarg = 'tstzspanset';
 
 UPDATE test_tnpoint_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.temp << t2.temp )
@@ -549,43 +549,43 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tnpoint WHERE t #
 WHERE op = '#&>' and leftarg = 'timestamptz' and rightarg = 'tnpoint';
 
 UPDATE test_tnpoint_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tnpoint WHERE ts <<# temp )
-WHERE op = '<<#' and leftarg = 'timestampset' and rightarg = 'tnpoint';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE ts <<# temp )
+WHERE op = '<<#' and leftarg = 'tstzset' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tnpoint WHERE ts #>> temp )
-WHERE op = '#>>' and leftarg = 'timestampset' and rightarg = 'tnpoint';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE ts #>> temp )
+WHERE op = '#>>' and leftarg = 'tstzset' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tnpoint WHERE ts &<# temp )
-WHERE op = '&<#' and leftarg = 'timestampset' and rightarg = 'tnpoint';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE ts &<# temp )
+WHERE op = '&<#' and leftarg = 'tstzset' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tnpoint WHERE ts #&> temp )
-WHERE op = '#&>' and leftarg = 'timestampset' and rightarg = 'tnpoint';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE ts #&> temp )
+WHERE op = '#&>' and leftarg = 'tstzset' and rightarg = 'tnpoint';
 
 UPDATE test_tnpoint_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tnpoint WHERE p <<# temp )
-WHERE op = '<<#' and leftarg = 'period' and rightarg = 'tnpoint';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tnpoint WHERE p <<# temp )
+WHERE op = '<<#' and leftarg = 'tstzspan' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tnpoint WHERE p #>> temp )
-WHERE op = '#>>' and leftarg = 'period' and rightarg = 'tnpoint';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tnpoint WHERE p #>> temp )
+WHERE op = '#>>' and leftarg = 'tstzspan' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tnpoint WHERE p &<# temp )
-WHERE op = '&<#' and leftarg = 'period' and rightarg = 'tnpoint';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tnpoint WHERE p &<# temp )
+WHERE op = '&<#' and leftarg = 'tstzspan' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tnpoint WHERE p #&> temp )
-WHERE op = '#&>' and leftarg = 'period' and rightarg = 'tnpoint';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tnpoint WHERE p #&> temp )
+WHERE op = '#&>' and leftarg = 'tstzspan' and rightarg = 'tnpoint';
 
 UPDATE test_tnpoint_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tnpoint WHERE ps <<# temp )
-WHERE op = '<<#' and leftarg = 'periodset' and rightarg = 'tnpoint';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tnpoint WHERE ps <<# temp )
+WHERE op = '<<#' and leftarg = 'tstzspanset' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tnpoint WHERE ps #>> temp )
-WHERE op = '#>>' and leftarg = 'periodset' and rightarg = 'tnpoint';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tnpoint WHERE ps #>> temp )
+WHERE op = '#>>' and leftarg = 'tstzspanset' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tnpoint WHERE ps &<# temp )
-WHERE op = '&<#' and leftarg = 'periodset' and rightarg = 'tnpoint';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tnpoint WHERE ps &<# temp )
+WHERE op = '&<#' and leftarg = 'tstzspanset' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tnpoint WHERE ps #&> temp )
-WHERE op = '#&>' and leftarg = 'periodset' and rightarg = 'tnpoint';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tnpoint WHERE ps #&> temp )
+WHERE op = '#&>' and leftarg = 'tstzspanset' and rightarg = 'tnpoint';
 
 -------------------------------------------------------------------------------
 
@@ -655,43 +655,43 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz WHERE tem
 WHERE op = '#&>' and leftarg = 'tnpoint' and rightarg = 'timestamptz';
 
 UPDATE test_tnpoint_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestampset WHERE temp <<# ts )
-WHERE op = '<<#' and leftarg = 'tnpoint' and rightarg = 'timestampset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp <<# ts )
+WHERE op = '<<#' and leftarg = 'tnpoint' and rightarg = 'tstzset';
 UPDATE test_tnpoint_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestampset WHERE temp #>> ts )
-WHERE op = '#>>' and leftarg = 'tnpoint' and rightarg = 'timestampset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp #>> ts )
+WHERE op = '#>>' and leftarg = 'tnpoint' and rightarg = 'tstzset';
 UPDATE test_tnpoint_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestampset WHERE temp &<# ts )
-WHERE op = '&<#' and leftarg = 'tnpoint' and rightarg = 'timestampset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp &<# ts )
+WHERE op = '&<#' and leftarg = 'tnpoint' and rightarg = 'tstzset';
 UPDATE test_tnpoint_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestampset WHERE temp #&> ts )
-WHERE op = '#&>' and leftarg = 'tnpoint' and rightarg = 'timestampset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp #&> ts )
+WHERE op = '#&>' and leftarg = 'tnpoint' and rightarg = 'tstzset';
 
 UPDATE test_tnpoint_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_period WHERE temp <<# p )
-WHERE op = '<<#' and leftarg = 'tnpoint' and rightarg = 'period';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspan WHERE temp <<# p )
+WHERE op = '<<#' and leftarg = 'tnpoint' and rightarg = 'tstzspan';
 UPDATE test_tnpoint_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_period WHERE temp #>> p )
-WHERE op = '#>>' and leftarg = 'tnpoint' and rightarg = 'period';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspan WHERE temp #>> p )
+WHERE op = '#>>' and leftarg = 'tnpoint' and rightarg = 'tstzspan';
 UPDATE test_tnpoint_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_period WHERE temp &<# p )
-WHERE op = '&<#' and leftarg = 'tnpoint' and rightarg = 'period';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspan WHERE temp &<# p )
+WHERE op = '&<#' and leftarg = 'tnpoint' and rightarg = 'tstzspan';
 UPDATE test_tnpoint_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_period WHERE temp #&> p )
-WHERE op = '#&>' and leftarg = 'tnpoint' and rightarg = 'period';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspan WHERE temp #&> p )
+WHERE op = '#&>' and leftarg = 'tnpoint' and rightarg = 'tstzspan';
 
 UPDATE test_tnpoint_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_periodset WHERE temp <<# ps )
-WHERE op = '<<#' and leftarg = 'tnpoint' and rightarg = 'periodset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspanset WHERE temp <<# ps )
+WHERE op = '<<#' and leftarg = 'tnpoint' and rightarg = 'tstzspanset';
 UPDATE test_tnpoint_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_periodset WHERE temp #>> ps )
-WHERE op = '#>>' and leftarg = 'tnpoint' and rightarg = 'periodset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspanset WHERE temp #>> ps )
+WHERE op = '#>>' and leftarg = 'tnpoint' and rightarg = 'tstzspanset';
 UPDATE test_tnpoint_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_periodset WHERE temp &<# ps )
-WHERE op = '&<#' and leftarg = 'tnpoint' and rightarg = 'periodset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspanset WHERE temp &<# ps )
+WHERE op = '&<#' and leftarg = 'tnpoint' and rightarg = 'tstzspanset';
 UPDATE test_tnpoint_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_periodset WHERE temp #&> ps )
-WHERE op = '#&>' and leftarg = 'tnpoint' and rightarg = 'periodset';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspanset WHERE temp #&> ps )
+WHERE op = '#&>' and leftarg = 'tnpoint' and rightarg = 'tstzspanset';
 
 UPDATE test_tnpoint_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.temp << t2.temp )
@@ -808,43 +808,43 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tnpoint WHERE t #&>
 WHERE op = '#&>' and leftarg = 'timestamptz' and rightarg = 'tnpoint';
 
 UPDATE test_tnpoint_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tnpoint WHERE ts <<# temp )
-WHERE op = '<<#' and leftarg = 'timestampset' and rightarg = 'tnpoint';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE ts <<# temp )
+WHERE op = '<<#' and leftarg = 'tstzset' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tnpoint WHERE ts #>> temp )
-WHERE op = '#>>' and leftarg = 'timestampset' and rightarg = 'tnpoint';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE ts #>> temp )
+WHERE op = '#>>' and leftarg = 'tstzset' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tnpoint WHERE ts &<# temp )
-WHERE op = '&<#' and leftarg = 'timestampset' and rightarg = 'tnpoint';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE ts &<# temp )
+WHERE op = '&<#' and leftarg = 'tstzset' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestampset, tbl_tnpoint WHERE ts #&> temp )
-WHERE op = '#&>' and leftarg = 'timestampset' and rightarg = 'tnpoint';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE ts #&> temp )
+WHERE op = '#&>' and leftarg = 'tstzset' and rightarg = 'tnpoint';
 
 UPDATE test_tnpoint_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tnpoint WHERE p <<# temp )
-WHERE op = '<<#' and leftarg = 'period' and rightarg = 'tnpoint';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tnpoint WHERE p <<# temp )
+WHERE op = '<<#' and leftarg = 'tstzspan' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tnpoint WHERE p #>> temp )
-WHERE op = '#>>' and leftarg = 'period' and rightarg = 'tnpoint';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tnpoint WHERE p #>> temp )
+WHERE op = '#>>' and leftarg = 'tstzspan' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tnpoint WHERE p &<# temp )
-WHERE op = '&<#' and leftarg = 'period' and rightarg = 'tnpoint';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tnpoint WHERE p &<# temp )
+WHERE op = '&<#' and leftarg = 'tstzspan' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_period, tbl_tnpoint WHERE p #&> temp )
-WHERE op = '#&>' and leftarg = 'period' and rightarg = 'tnpoint';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tnpoint WHERE p #&> temp )
+WHERE op = '#&>' and leftarg = 'tstzspan' and rightarg = 'tnpoint';
 
 UPDATE test_tnpoint_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tnpoint WHERE ps <<# temp )
-WHERE op = '<<#' and leftarg = 'periodset' and rightarg = 'tnpoint';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tnpoint WHERE ps <<# temp )
+WHERE op = '<<#' and leftarg = 'tstzspanset' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tnpoint WHERE ps #>> temp )
-WHERE op = '#>>' and leftarg = 'periodset' and rightarg = 'tnpoint';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tnpoint WHERE ps #>> temp )
+WHERE op = '#>>' and leftarg = 'tstzspanset' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tnpoint WHERE ps &<# temp )
-WHERE op = '&<#' and leftarg = 'periodset' and rightarg = 'tnpoint';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tnpoint WHERE ps &<# temp )
+WHERE op = '&<#' and leftarg = 'tstzspanset' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_periodset, tbl_tnpoint WHERE ps #&> temp )
-WHERE op = '#&>' and leftarg = 'periodset' and rightarg = 'tnpoint';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tnpoint WHERE ps #&> temp )
+WHERE op = '#&>' and leftarg = 'tstzspanset' and rightarg = 'tnpoint';
 
 -------------------------------------------------------------------------------
 
@@ -914,43 +914,43 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz WHERE temp 
 WHERE op = '#&>' and leftarg = 'tnpoint' and rightarg = 'timestamptz';
 
 UPDATE test_tnpoint_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestampset WHERE temp <<# ts )
-WHERE op = '<<#' and leftarg = 'tnpoint' and rightarg = 'timestampset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp <<# ts )
+WHERE op = '<<#' and leftarg = 'tnpoint' and rightarg = 'tstzset';
 UPDATE test_tnpoint_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestampset WHERE temp #>> ts )
-WHERE op = '#>>' and leftarg = 'tnpoint' and rightarg = 'timestampset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp #>> ts )
+WHERE op = '#>>' and leftarg = 'tnpoint' and rightarg = 'tstzset';
 UPDATE test_tnpoint_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestampset WHERE temp &<# ts )
-WHERE op = '&<#' and leftarg = 'tnpoint' and rightarg = 'timestampset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp &<# ts )
+WHERE op = '&<#' and leftarg = 'tnpoint' and rightarg = 'tstzset';
 UPDATE test_tnpoint_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestampset WHERE temp #&> ts )
-WHERE op = '#&>' and leftarg = 'tnpoint' and rightarg = 'timestampset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp #&> ts )
+WHERE op = '#&>' and leftarg = 'tnpoint' and rightarg = 'tstzset';
 
 UPDATE test_tnpoint_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_period WHERE temp <<# p )
-WHERE op = '<<#' and leftarg = 'tnpoint' and rightarg = 'period';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspan WHERE temp <<# p )
+WHERE op = '<<#' and leftarg = 'tnpoint' and rightarg = 'tstzspan';
 UPDATE test_tnpoint_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_period WHERE temp #>> p )
-WHERE op = '#>>' and leftarg = 'tnpoint' and rightarg = 'period';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspan WHERE temp #>> p )
+WHERE op = '#>>' and leftarg = 'tnpoint' and rightarg = 'tstzspan';
 UPDATE test_tnpoint_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_period WHERE temp &<# p )
-WHERE op = '&<#' and leftarg = 'tnpoint' and rightarg = 'period';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspan WHERE temp &<# p )
+WHERE op = '&<#' and leftarg = 'tnpoint' and rightarg = 'tstzspan';
 UPDATE test_tnpoint_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_period WHERE temp #&> p )
-WHERE op = '#&>' and leftarg = 'tnpoint' and rightarg = 'period';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspan WHERE temp #&> p )
+WHERE op = '#&>' and leftarg = 'tnpoint' and rightarg = 'tstzspan';
 
 UPDATE test_tnpoint_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_periodset WHERE temp <<# ps )
-WHERE op = '<<#' and leftarg = 'tnpoint' and rightarg = 'periodset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspanset WHERE temp <<# ps )
+WHERE op = '<<#' and leftarg = 'tnpoint' and rightarg = 'tstzspanset';
 UPDATE test_tnpoint_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_periodset WHERE temp #>> ps )
-WHERE op = '#>>' and leftarg = 'tnpoint' and rightarg = 'periodset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspanset WHERE temp #>> ps )
+WHERE op = '#>>' and leftarg = 'tnpoint' and rightarg = 'tstzspanset';
 UPDATE test_tnpoint_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_periodset WHERE temp &<# ps )
-WHERE op = '&<#' and leftarg = 'tnpoint' and rightarg = 'periodset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspanset WHERE temp &<# ps )
+WHERE op = '&<#' and leftarg = 'tnpoint' and rightarg = 'tstzspanset';
 UPDATE test_tnpoint_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_periodset WHERE temp #&> ps )
-WHERE op = '#&>' and leftarg = 'tnpoint' and rightarg = 'periodset';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspanset WHERE temp #&> ps )
+WHERE op = '#&>' and leftarg = 'tnpoint' and rightarg = 'tstzspanset';
 
 UPDATE test_tnpoint_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.temp << t2.temp )

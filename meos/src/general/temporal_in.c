@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -1086,7 +1086,7 @@ span_basevalue_from_wkb_state(wkb_parse_state *s)
     case T_FLOATSPAN:
       result = Float8GetDatum(double_from_wkb_state(s));
       break;
-    case T_PERIOD:
+    case T_TSTZSPAN:
       result = TimestampTzGetDatum(timestamp_from_wkb_state(s));
       break;
     default: /* Error! */
@@ -1199,7 +1199,7 @@ set_basevalue_from_wkb_state(wkb_parse_state *s)
     case T_TEXTSET:
       result = PointerGetDatum(text_from_wkb_state(s));
       break;
-    case T_TIMESTAMPSET:
+    case T_TSTZSET:
       result = TimestampTzGetDatum(timestamp_from_wkb_state(s));
       break;
     default: /* Error! */
@@ -1623,7 +1623,7 @@ datum_from_hexwkb(const char *hexwkb, int size, meosType type)
  * @ingroup libmeos_setspan_inout
  * @brief Return a set from its Well-Known Binary (WKB)
  * representation.
- * @sqlfunc timestampsetFromBinary()
+ * @sqlfunc tstzsetFromBinary()
  */
 Set *
 set_from_wkb(const uint8_t *wkb, int size)
@@ -1636,7 +1636,7 @@ set_from_wkb(const uint8_t *wkb, int size)
  * @ingroup libmeos_setspan_inout
  * @brief Return a set from its WKB representation in hex-encoded
  * ASCII.
- * @sqlfunc timestampsetFromHexWKB()
+ * @sqlfunc tstzsetFromHexWKB()
  */
 Set *
 set_from_hexwkb(const char *hexwkb)
@@ -1682,7 +1682,7 @@ span_from_hexwkb(const char *hexwkb)
  * representation.
  * @sqlfunc periodsetFromBinary()
  */
-PeriodSet *
+SpanSet *
 spanset_from_wkb(const uint8_t *wkb, int size)
 {
   /* We pass ANY span set type, the actual type is read from the byte string */
@@ -1694,12 +1694,12 @@ spanset_from_wkb(const uint8_t *wkb, int size)
  * @brief Return a period set from its WKB representation in hex-encoded ASCII
  * @sqlfunc periodsetFromHexWKB()
  */
-PeriodSet *
+SpanSet *
 spanset_from_hexwkb(const char *hexwkb)
 {
   int size = strlen(hexwkb);
   /* We pass ANY span set type, the actual type is read from the byte string */
-  return DatumGetPeriodSetP(datum_from_hexwkb(hexwkb, size, T_INTSPANSET));
+  return DatumGetSpanSetP(datum_from_hexwkb(hexwkb, size, T_INTSPANSET));
 }
 
 /*****************************************************************************/

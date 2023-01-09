@@ -26,11 +26,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="spantime_FromBinary"><varname>intspanFromBinary</varname>, <varname>intspansetFromBinary</varname>, <varname>floatspanFromBinary</varname>, <varname>floatspansetFromBinary</varname>, <varname>periodFromBinary</varname>, <varname>periodsetFromBinary</varname>, <varname>timestampsetFromBinary</varname></link>: Entrar un rango o un tipo de tiempo en la representación binaria conocida (WKB)</para>
+					<para><link linkend="spantime_FromBinary"><varname>intspanFromBinary</varname>, <varname>intspansetFromBinary</varname>, <varname>floatspanFromBinary</varname>, <varname>floatspansetFromBinary</varname>, <varname>tstzspanFromBinary</varname>, <varname>tstzspansetFromBinary</varname>, <varname>tstzsetFromBinary</varname></link>: Entrar un rango o un tipo de tiempo en la representación binaria conocida (WKB)</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="spantime_FromHexWKB"><varname>intspanFromHexWKB</varname>, <varname>intspansetFromHexWKB</varname>, <varname>floatspanFromHexWKB</varname>, <varname>floatspansetFromHexWKB</varname>, <varname>periodFromHexWKB</varname>, <varname>periodsetFromHexWKB</varname>, <varname>timestampsetFromHexWKB</varname></link>: Entrar un rango o un tipo de tiempo en la representación hexadecimal binaria conocida (HexWKB)</para>
+					<para><link linkend="spantime_FromHexWKB"><varname>intspanFromHexWKB</varname>, <varname>intspansetFromHexWKB</varname>, <varname>floatspanFromHexWKB</varname>, <varname>floatspansetFromHexWKB</varname>, <varname>tstzspanFromHexWKB</varname>, <varname>tstzspansetFromHexWKB</varname>, <varname>tstzsetFromHexWKB</varname></link>: Entrar un rango o un tipo de tiempo en la representación hexadecimal binaria conocida (HexWKB)</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -39,15 +39,15 @@
 			<title>Funciones de constructor</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="span"><varname>intspan</varname>, <varname>floatspan</varname>, <varname>period</varname></link>: Constructores para valores de rango</para>
+					<para><link linkend="span"><varname>intspan</varname>, <varname>floatspan</varname>, <varname>tstzspan</varname></link>: Constructores para valores de rango</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="spanset"><varname>intspanset</varname>, <varname>floatspanset</varname>, <varname>periodset</varname></link>: Constructores para valores de conjunto de rangos</para>
+					<para><link linkend="spanset"><varname>intspanset</varname>, <varname>floatspanset</varname>, <varname>tstzspanset</varname></link>: Constructores para valores de conjunto de rangos</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="timestampset"><varname>timestampset</varname></link>: Constructor para <varname>timestampset</varname></para>
+					<para><link linkend="tstzset"><varname>tstzset</varname></link>: Constructor para <varname>tstzset</varname></para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -60,11 +60,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="timestampset_cast"><varname>timestampset::periodset</varname></link>: Convertir un <varname>timestampset</varname> a un <varname>periodset</varname></para>
+					<para><link linkend="tstzset_cast"><varname>tstzset::tstzspanset</varname></link>: Convertir un <varname>tstzset</varname> a un <varname>tstzspanset</varname></para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_cast"><varname>span::spanset</varname></link>: Convertir un <varname>period</varname> a otro tipo de tiempo</para>
+					<para><link linkend="setspan_cast"><varname>span::spanset</varname></link>: Convertir un <varname>tstzspan</varname> a otro tipo de tiempo</para>
 				</listitem>
 
 				<listitem>
@@ -118,47 +118,47 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_period"><varname>period</varname></link>: Obtener el período en el que se define el conjunto de marcas de tiempo o el conjunto de períodos ignorando las posibles brechas de tiempo</para>
+					<para><link linkend="setspan_period"><varname>period</varname></link>: Obtener el período delimitador del conjunto de marcas de tiempo o el conjunto de períodos ignorando las posibles brechas de tiempo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_numTimestamps"><varname>numTimestamps</varname></link>: Obtener el número de marcas de tiempo diferentes</para>
+					<para><link linkend="setspan_numTimestamps"><varname>numValues</varname></link>: Obtener el número de valores</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_startTimestamp"><varname>startTimestamp</varname></link>: Obtener la marca de tiempo inicial</para>
+					<para><link linkend="setspan_startTimestamp"><varname>startValue</varname></link>: Obtener el valor inicial</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_endTimestamp"><varname>endTimestamp</varname></link>: Obtener la marca de tiempo final</para>
+					<para><link linkend="setspan_endTimestamp"><varname>endValue</varname></link>: Obtener el valor final</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_timestampN"><varname>timestampN</varname></link>: Obtener la enésima marca de tiempo diferente</para>
+					<para><link linkend="setspan_timestampN"><varname>valueN</varname></link>: Obtener el enésimo valor diferente</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_timestamps"><varname>timestamps</varname></link>: Obtener las marcas de tiempo diferentes</para>
+					<para><link linkend="setspan_timestamps"><varname>values</varname></link>: Obtener los valores diferentes</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="numSpans"><varname>numSpans</varname>, <varname>numPeriods</varname></link>: Obtener el número de rangos o períodos</para>
+					<para><link linkend="numSpans"><varname>numSpans</varname></link>: Obtener el número de rangos o períodos</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="startSpan"><varname>startSpan</varname>, <varname>startPeriod</varname></link>: Obtener el rango o período inicial</para>
+					<para><link linkend="startSpan"><varname>startSpan</varname></link>: Obtener el rango o período inicial</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="endSpan"><varname>endSpan</varname>, <varname>endPeriod</varname></link>: Obtener el rango o período final</para>
+					<para><link linkend="endSpan"><varname>endSpan</varname></link>: Obtener el rango</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="spanN"><varname>spanN</varname>, <varname>periodN</varname></link>: Obtener el enésimo rango o período</para>
+					<para><link linkend="spanN"><varname>spanN</varname></link>: Obtener el enésimo rango</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="spans"><varname>spans</varname>, <varname>periods</varname></link>: Obtener los rangos períodos</para>
+					<para><link linkend="spans"><varname>spans</varname></link>: Obtener los rangos</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -625,7 +625,7 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="ttype_bbox"><varname>ttype::period</varname>, <varname>tnumber::{numspan,tbox}</varname>, <varname>tpoint::stbox</varname></link>: Convertir un valor temporal a un cuadro delimitador</para>
+					<para><link linkend="ttype_bbox"><varname>ttype::tstzspan</varname>, <varname>tnumber::{numspan,tbox}</varname>, <varname>tpoint::stbox</varname></link>: Convertir un valor temporal a un cuadro delimitador</para>
 				</listitem>
 
 				<listitem>
@@ -769,7 +769,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_period"><varname>period</varname></link>: Obtener el período en el que está definido el valor temporal ignorando las posibles brechas de tiempo</para>
+					<para><link linkend="ttype_period"><varname>period</varname></link>: Obtener el período delimitador del valor temporal ignorando las posibles brechas de tiempo</para>
 				</listitem>
 
 				<listitem>

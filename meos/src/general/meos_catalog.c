@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -77,8 +77,11 @@ settype_cache_struct _settype_cache[] =
   {T_INTSET,        T_INT4},
   {T_BIGINTSET,     T_INT8},
   {T_FLOATSET,      T_FLOAT8},
-  {T_TIMESTAMPSET,  T_TIMESTAMPTZ},
+  {T_TSTZSET,       T_TIMESTAMPTZ},
   {T_TEXTSET,       T_TEXT},
+  {T_GEOMSET,       T_GEOMETRY},
+  {T_GEOGSET,       T_GEOGRAPHY},
+  {T_NPOINTSET,     T_NPOINT},
 };
 
 /**
@@ -91,11 +94,11 @@ spantype_cache_struct _spantype_cache[] =
   {T_INTSPAN,       T_INT4},
   {T_BIGINTSPAN,    T_INT8},
   {T_FLOATSPAN,     T_FLOAT8},
-  {T_PERIOD,        T_TIMESTAMPTZ},
+  {T_TSTZSPAN,      T_TIMESTAMPTZ},
 };
 
 /**
- * Global array that keeps type information for the span types defined
+ * Global array that keeps type information for the span set types defined
  * in MobilityDB.
  */
 spansettype_cache_struct _spansettype_cache[] =
@@ -104,7 +107,7 @@ spansettype_cache_struct _spansettype_cache[] =
   {T_INTSPANSET,    T_INTSPAN},
   {T_BIGINTSPANSET, T_BIGINTSPAN},
   {T_FLOATSPANSET,  T_FLOATSPAN},
-  {T_PERIODSET,     T_PERIOD},
+  {T_TSTZSPANSET,   T_TSTZSPAN},
 };
 
 /*****************************************************************************
@@ -235,8 +238,8 @@ basetype_settype(meosType basetype)
 bool
 time_type(meosType timetype)
 {
-  if (timetype == T_TIMESTAMPTZ || timetype == T_TIMESTAMPSET ||
-    timetype == T_PERIOD || timetype == T_PERIODSET)
+  if (timetype == T_TIMESTAMPTZ || timetype == T_TSTZSET ||
+    timetype == T_TSTZSPAN || timetype == T_TSTZSPANSET)
     return true;
   return false;
 }
@@ -261,7 +264,8 @@ bool
 set_basetype(meosType basetype)
 {
   if (basetype == T_TIMESTAMPTZ || basetype == T_INT4 || basetype == T_INT8 ||
-      basetype == T_FLOAT8 || basetype == T_TEXT)
+      basetype == T_FLOAT8 || basetype == T_TEXT || basetype == T_GEOMETRY ||
+      basetype == T_GEOGRAPHY || basetype == T_NPOINT)
     return true;
   return false;
 }
@@ -283,8 +287,9 @@ ensure_set_basetype(meosType basetype)
 bool
 set_type(meosType settype)
 {
-  if (settype == T_TIMESTAMPSET || settype == T_INTSET ||
-      settype == T_BIGINTSET || settype == T_FLOATSET || settype == T_TEXTSET)
+  if (settype == T_TSTZSET || settype == T_INTSET || settype == T_BIGINTSET ||
+      settype == T_FLOATSET || settype == T_TEXTSET || settype == T_GEOMSET ||
+      settype == T_GEOGSET || settype == T_NPOINTSET)
     return true;
   return false;
 }
@@ -300,6 +305,17 @@ ensure_set_type(meosType settype)
   return;
 }
 
+/**
+ * Return true if the type is a set type
+ */
+bool
+alphanumset_type(meosType settype)
+{
+  if (settype == T_TSTZSET || settype == T_INTSET || settype == T_BIGINTSET ||
+      settype == T_FLOATSET || settype == T_TEXTSET)
+    return true;
+  return false;
+}
 
 /**
  * Return true if the type is a set type
@@ -348,6 +364,17 @@ ensure_numset_basetype(meosType basetype)
 }
 #endif /* not used */
 
+/**
+ * Return true if the type is a geo set type
+ */
+bool
+geoset_type(meosType settype)
+{
+  if (settype == T_GEOMSET || settype == T_GEOGSET || settype == T_NPOINTSET)
+    return true;
+  return false;
+}
+
 /*****************************************************************************/
 
 /**
@@ -356,7 +383,7 @@ ensure_numset_basetype(meosType basetype)
 bool
 span_type(meosType spantype)
 {
-  if (spantype == T_PERIOD || spantype == T_INTSPAN ||
+  if (spantype == T_TSTZSPAN || spantype == T_INTSPAN ||
       spantype == T_BIGINTSPAN || spantype == T_FLOATSPAN)
     return true;
   return false;
@@ -453,7 +480,7 @@ ensure_numspan_basetype(meosType basetype)
 bool
 spanset_type(meosType spansettype)
 {
-  if (spansettype == T_PERIODSET || spansettype == T_INTSPANSET ||
+  if (spansettype == T_TSTZSPANSET || spansettype == T_INTSPANSET ||
       spansettype == T_BIGINTSPANSET || spansettype == T_FLOATSPANSET)
     return true;
   return false;

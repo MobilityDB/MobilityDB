@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -66,30 +66,33 @@ typedef enum
   T_BIGINTSET      = 16,  /**< int8 set type */
   T_BIGINTSPAN     = 17,  /**< int8 span type */
   T_BIGINTSPANSET  = 18,  /**< int8 span set type */
-  T_PERIOD         = 19,  /**< period type */
-  T_PERIODSET      = 20,  /**< period set type */
-  T_STBOX          = 21,  /**< spatiotemporal box type */
-  T_TBOOL          = 22,  /**< temporal boolean type */
-  T_TBOX           = 23,  /**< temporal box type */
-  T_TDOUBLE2       = 24,  /**< temporal double2 type */
-  T_TDOUBLE3       = 25,  /**< temporal double3 type */
-  T_TDOUBLE4       = 26,  /**< temporal double4 type */
-  T_TEXT           = 27,  /**< text type */
-  T_TEXTSET        = 28,  /**< text type */
-  T_TFLOAT         = 29,  /**< temporal float type */
-  T_TIMESTAMPSET   = 30,  /**< timestamp set type */
-  T_TIMESTAMPTZ    = 31,  /**< timestamp with time zone type */
-  T_TINT           = 32,  /**< temporal integer type */
-  T_TSTZRANGE      = 33,  /**< PostgreSQL timestamp with time zone range type */
-  T_TSTZMULTIRANGE = 34,  /**< PostgreSQL timestamp with time zone multirange type */
+  T_STBOX          = 19,  /**< spatiotemporal box type */
+  T_TBOOL          = 20,  /**< temporal boolean type */
+  T_TBOX           = 21,  /**< temporal box type */
+  T_TDOUBLE2       = 22,  /**< temporal double2 type */
+  T_TDOUBLE3       = 23,  /**< temporal double3 type */
+  T_TDOUBLE4       = 24,  /**< temporal double4 type */
+  T_TEXT           = 25,  /**< text type */
+  T_TEXTSET        = 26,  /**< text type */
+  T_TFLOAT         = 27,  /**< temporal float type */
+  T_TIMESTAMPTZ    = 28,  /**< timestamp with time zone type */
+  T_TINT           = 29,  /**< temporal integer type */
+  T_TSTZMULTIRANGE = 30,  /**< PostgreSQL timestamp with time zone multirange type */
+  T_TSTZRANGE      = 31,  /**< PostgreSQL timestamp with time zone range type */
+  T_TSTZSET        = 32,  /**< timestamptz set type */
+  T_TSTZSPAN       = 33,  /**< timestamptz span type */
+  T_TSTZSPANSET    = 34,  /**< timestamptz span set type */
   T_TTEXT          = 35,  /**< temporal text type */
   T_GEOMETRY       = 36,  /**< geometry type */
-  T_GEOGRAPHY      = 37,  /**< geography type */
-  T_TGEOMPOINT     = 38,  /**< temporal geometry point type */
-  T_TGEOGPOINT     = 39,  /**< temporal geography point type */
-  T_NPOINT         = 40,  /**< network point type */
-  T_NSEGMENT       = 41,  /**< network segment type */
-  T_TNPOINT        = 42,  /**< temporal network point type */
+  T_GEOMSET        = 37,  /**< geometry set type */
+  T_GEOGRAPHY      = 38,  /**< geography type */
+  T_GEOGSET        = 39,  /**< geography set type */
+  T_TGEOMPOINT     = 40,  /**< temporal geometry point type */
+  T_TGEOGPOINT     = 41,  /**< temporal geography point type */
+  T_NPOINT         = 42,  /**< network point type */
+  T_NPOINTSET      = 43,  /**< network point set type */
+  T_NSEGMENT       = 44,  /**< network segment type */
+  T_TNPOINT        = 45,  /**< temporal network point type */
 } meosType;
 
 /**
@@ -149,8 +152,10 @@ extern void ensure_set_basetype(meosType basetype);
 
 extern bool set_type(meosType settype);
 extern void ensure_set_type(meosType settype);
+extern bool alphanumset_type(meosType settype);
 extern bool numset_type(meosType settype);
 extern void ensure_numset_type(meosType settype);
+extern bool geoset_type(meosType settype);
 
 extern bool span_type(meosType spantype);
 extern void ensure_span_type(meosType spantype);

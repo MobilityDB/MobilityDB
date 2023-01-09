@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -116,11 +116,11 @@ timestamp_tagg(TimestampTz *times1, int count1, TimestampTz *times2,
  * @param[out] newcount Number of elements in the result
  * @note Return new periods that must be freed by the calling function.
  */
-Period **
-period_tagg(Period **periods1, int count1, Period **periods2, int count2,
+Span **
+period_tagg(Span **periods1, int count1, Span **periods2, int count2,
   int *newcount)
 {
-  Period **periods = palloc(sizeof(Period *) * (count1 + count2));
+  Span **periods = palloc(sizeof(Span *) * (count1 + count2));
   int i = 0, j = 0, k = 0;
   while (i < count1 && j < count2)
   {
@@ -139,7 +139,7 @@ period_tagg(Period **periods1, int count1, Period **periods2, int count2,
     periods[k++] = periods1[i++];
   while (j < count2)
     periods[k++] = periods2[j++];
-  Period **result = spanarr_normalize(periods, k, SORT_NO, newcount);
+  Span **result = spanarr_normalize(periods, k, SORT_NO, newcount);
   pfree(periods);
   return result;
 }
@@ -190,15 +190,15 @@ time_tagg_combinefn(SkipList *state1, SkipList *state2)
  * @ingroup libmeos_setspan_agg
  * @brief Transition function for extent aggregate of timestamp set values
  */
-Period *
-timestamp_extent_transfn(Period *p, TimestampTz t)
+Span *
+timestamp_extent_transfn(Span *p, TimestampTz t)
 {
   /* Null period: return the period of the timestamp */
   if (! p)
     return span_make(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true,
       true, T_TIMESTAMPTZ);
 
-  Period p1;
+  Span p1;
   span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true,
       true, T_TIMESTAMPTZ, &p1);
   span_expand(&p1, p);
@@ -209,16 +209,16 @@ timestamp_extent_transfn(Period *p, TimestampTz t)
  * @ingroup libmeos_setspan_agg
  * @brief Transition function for extent aggregate of timestamp set values
  */
-Period *
-timestampset_extent_transfn(Period *p, const TimestampSet *ts)
+Span *
+tstzset_extent_transfn(Span *p, const Set *ts)
 {
   /* Can't do anything with null inputs */
   if (! p && ! ts)
     return NULL;
-  /* Null period and non-null timestampset, return the bbox of the timestampset */
+  /* Null period and non-null timestamp set, return the bbox of the timestamp set */
   if (! p)
     return set_to_span(ts);
-  /* Non-null period and null timestampset, return the period */
+  /* Non-null period and null timestamp set, return the period */
   if (! ts)
     return span_copy(p);
 
@@ -304,9 +304,9 @@ timestamp_tunion_transfn(SkipList *state, TimestampTz t)
  * @param[in] ts Timestamp set value
  */
 SkipList *
-timestampset_tunion_transfn(SkipList *state, const TimestampSet *ts)
+tstzset_tunion_transfn(SkipList *state, const Set *ts)
 {
-  TimestampTz *times = timestampset_timestamps(ts);
+  TimestampTz *times = tstzset_timestamps(ts);
   SkipList *result;
   if (! state)
     result = skiplist_make((void **) times, ts->count, TIMESTAMPTZ);
@@ -328,7 +328,7 @@ timestampset_tunion_transfn(SkipList *state, const TimestampSet *ts)
  * @param[in] p Period
  */
 SkipList *
-period_tunion_transfn(SkipList *state, const Period *p)
+period_tunion_transfn(SkipList *state, const Span *p)
 {
   SkipList *result;
   if (! state)
@@ -350,10 +350,10 @@ period_tunion_transfn(SkipList *state, const Period *p)
  * @param[in] ps Period set value
  */
 SkipList *
-periodset_tunion_transfn(SkipList *state, const PeriodSet *ps)
+periodset_tunion_transfn(SkipList *state, const SpanSet *ps)
 {
   int count;
-  const Period **periods = spanset_spans(ps, &count);
+  const Span **periods = spanset_spans(ps, &count);
   SkipList *result;
   if (! state)
     /* Periods are copied while constructing the skiplist */
@@ -374,7 +374,7 @@ periodset_tunion_transfn(SkipList *state, const PeriodSet *ps)
  * @ingroup libmeos_setspan_agg
  * @brief Final function for union aggregation of timestamp set values
  */
-TimestampSet *
+Set *
 timestamp_tunion_finalfn(SkipList *state)
 {
   if (! state || state->length == 0)
@@ -385,21 +385,21 @@ timestamp_tunion_finalfn(SkipList *state)
 
   Set *result = set_make(values, state->length, T_TIMESTAMPTZ, ORDERED);
   pfree(values);
-  return (TimestampSet *) result;
+  return (Set *) result;
 }
 
 /**
  * @ingroup libmeos_setspan_agg
  * @brief Final function for union aggregation of period (set) values
  */
-PeriodSet *
+SpanSet *
 period_tunion_finalfn(SkipList *state)
 {
   if (! state || state->length == 0)
 
   assert(state->elemtype == PERIOD);
-  const Period **values = (const Period **) skiplist_values(state);
-  PeriodSet *result = spanset_make(values, state->length, NORMALIZE);
+  const Span **values = (const Span **) skiplist_values(state);
+  SpanSet *result = spanset_make(values, state->length, NORMALIZE);
   pfree(values);
   return result;
 }
@@ -428,7 +428,7 @@ timestamp_transform_tcount(TimestampTz t, const Interval *interval,
  * performing temporal count aggregation
  */
 static TInstant **
-timestampset_transform_tcount(const TimestampSet *ts, const Interval *interval,
+tstzset_transform_tcount(const Set *ts, const Interval *interval,
   TimestampTz origin, int *newcount)
 {
   TInstant **result = palloc(sizeof(TInstant *) * ts->count);
@@ -461,7 +461,7 @@ timestampset_transform_tcount(const TimestampSet *ts, const Interval *interval,
  * performing temporal count aggregation
  */
 static TSequence *
-period_transform_tcount(const Period *p, const Interval *interval,
+period_transform_tcount(const Span *p, const Interval *interval,
   TimestampTz origin)
 {
   TSequence *result;
@@ -499,13 +499,13 @@ period_transform_tcount(const Period *p, const Interval *interval,
  * performing temporal count aggregation
  */
 static TSequence **
-periodset_transform_tcount(const PeriodSet *ps, const Interval *interval,
+periodset_transform_tcount(const SpanSet *ps, const Interval *interval,
   TimestampTz origin)
 {
   TSequence **result = palloc(sizeof(TSequence *) * ps->count);
   for (int i = 0; i < ps->count; i++)
   {
-    const Period *p = spanset_sp_n(ps, i);
+    const Span *p = spanset_sp_n(ps, i);
     result[i] = period_transform_tcount(p, interval, origin);
   }
   return result;
@@ -551,11 +551,11 @@ timestamp_tcount_transfn(SkipList *state, TimestampTz t,
  * @brief Transition function for temporal count aggregate of timestamp sets
  */
 SkipList *
-timestampset_tcount_transfn(SkipList *state, const TimestampSet *ts,
+tstzset_tcount_transfn(SkipList *state, const Set *ts,
   const Interval *interval, TimestampTz origin)
 {
   int count;
-  TInstant **instants = timestampset_transform_tcount(ts, interval, origin,
+  TInstant **instants = tstzset_transform_tcount(ts, interval, origin,
     &count);
   /* Due to the bucketing, it is possible that count < ts->count */
 
@@ -579,8 +579,8 @@ timestampset_tcount_transfn(SkipList *state, const TimestampSet *ts,
  * @brief Transition function for temporal count aggregate of periods
  */
 SkipList *
-period_tcount_transfn(SkipList *state, const Period *p,
-  const Interval *interval, TimestampTz origin)
+period_tcount_transfn(SkipList *state, const Span *p, const Interval *interval,
+  TimestampTz origin)
 {
   TSequence *seq = period_transform_tcount(p, interval, origin);
   if (! state)
@@ -603,7 +603,7 @@ period_tcount_transfn(SkipList *state, const Period *p,
  * @brief Transition function for temporal count aggregate of period sets
  */
 SkipList *
-periodset_tcount_transfn(SkipList *state, const PeriodSet *ps,
+periodset_tcount_transfn(SkipList *state, const SpanSet *ps,
   const Interval *interval, TimestampTz origin)
 {
   TSequence **sequences = periodset_transform_tcount(ps, interval, origin);

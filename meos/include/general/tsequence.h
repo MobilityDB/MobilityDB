@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -124,13 +124,13 @@ extern TInstant *tsegment_at_timestamp(const TInstant *inst1,
   const TInstant *inst2, bool linear, TimestampTz t);
 extern int tcontseq_minus_timestamp1(const TSequence *seq, TimestampTz t,
   TSequence **result);
-extern int tcontseq_minus_timestampset1(const TSequence *seq,
-  const TimestampSet *ss, TSequence **result);
-extern int tcontseq_minus_period1(const TSequence *seq, const Period *p,
+extern int tcontseq_minus_tstzset1(const TSequence *seq, const Set *s,
   TSequence **result);
-extern int tcontseq_at_periodset1(const TSequence *seq, const PeriodSet *ps,
+extern int tcontseq_minus_period1(const TSequence *seq, const Span *p,
   TSequence **result);
-extern int tcontseq_minus_periodset1(const TSequence *seq, const PeriodSet *ps,
+extern int tcontseq_at_periodset1(const TSequence *seq, const SpanSet *ps,
+  TSequence **result);
+extern int tcontseq_minus_periodset1(const TSequence *seq, const SpanSet *ps,
   int from, TSequence **result);
 
 /*****************************************************************************/

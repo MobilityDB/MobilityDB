@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -222,12 +222,12 @@ FROM generate_series(1, perc) AS k UNION
 SELECT k, random_floatset(1, 100, 10, 5, 10)
 FROM generate_series(perc+1, size) AS k;
 
-DROP TABLE IF EXISTS tbl_timestampset;
-CREATE TABLE tbl_timestampset AS
+DROP TABLE IF EXISTS tbl_tstzset;
+CREATE TABLE tbl_tstzset AS
 /* Add perc NULL values */
 SELECT k, NULL AS t
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_timestampset('2001-01-01', '2001-12-31', 10, 5, 10)
+SELECT k, random_tstzset('2001-01-01', '2001-12-31', 10, 5, 10)
 FROM generate_series(perc+1, size) AS k;
 
 -------------------------------------------------------------------------------
@@ -256,8 +256,8 @@ FROM generate_series(1, perc) AS k UNION
 SELECT k, random_floatspan(1, 100, 10, 5)
 FROM generate_series(perc+1, size) AS k;
 
-DROP TABLE IF EXISTS tbl_period;
-CREATE TABLE tbl_period AS
+DROP TABLE IF EXISTS tbl_tstzspan;
+CREATE TABLE tbl_tstzspan AS
 /* Add perc NULL values */
 SELECT k, NULL AS p
 FROM generate_series(1, perc) AS k UNION
@@ -290,8 +290,8 @@ FROM generate_series(1, perc) AS k UNION
 SELECT k, random_floatspanset(1, 100, 10, 5, 10)
 FROM generate_series(perc+1, size) AS k;
 
-DROP TABLE IF EXISTS tbl_periodset;
-CREATE TABLE tbl_periodset AS
+DROP TABLE IF EXISTS tbl_tstzspanset;
+CREATE TABLE tbl_tstzspanset AS
 /* Add perc NULL values */
 SELECT k, NULL AS ps
 FROM generate_series(1, perc) AS k UNION
@@ -495,11 +495,11 @@ SET seq = (SELECT ~ seq FROM tbl_tbool_seq t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_tbool_seq t1
-SET seq = (SELECT shift(seq, timespan(seq)) FROM tbl_tbool_seq t2 WHERE t2.k = t1.k+perc)
+SET seq = (SELECT shift(seq, duration(seq, true)) FROM tbl_tbool_seq t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
 UPDATE tbl_tbool_seq t1
-SET seq = (SELECT shift(seq, date_trunc('minute',timespan(seq)/2))
+SET seq = (SELECT shift(seq, date_trunc('minute', duration(seq, true)/2))
   FROM tbl_tbool_seq t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 
@@ -520,11 +520,11 @@ SET seq = (SELECT seq + random_int(1, 2) FROM tbl_tint_seq t2 WHERE t2.k = t1.k+
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_tint_seq t1
-SET seq = (SELECT shift(seq, timespan(seq)) FROM tbl_tint_seq t2 WHERE t2.k = t1.k+perc)
+SET seq = (SELECT shift(seq, duration(seq, true)) FROM tbl_tint_seq t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
 UPDATE tbl_tint_seq t1
-SET seq = (SELECT shift(seq, date_trunc('minute',timespan(seq)/2))
+SET seq = (SELECT shift(seq, date_trunc('minute',duration(seq, true)/2))
   FROM tbl_tint_seq t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 
@@ -545,11 +545,11 @@ SET seq = (SELECT seq + random_int(1, 2) FROM tbl_tfloat_seq t2 WHERE t2.k = t1.
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_tfloat_seq t1
-SET seq = (SELECT shift(seq, timespan(seq)) FROM tbl_tfloat_seq t2 WHERE t2.k = t1.k+perc)
+SET seq = (SELECT shift(seq, duration(seq, true)) FROM tbl_tfloat_seq t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
 UPDATE tbl_tfloat_seq t1
-SET seq = (SELECT shift(seq, date_trunc('minute',timespan(seq)/2))
+SET seq = (SELECT shift(seq, date_trunc('minute',duration(seq, true)/2))
   FROM tbl_tfloat_seq t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 
@@ -570,11 +570,11 @@ SET seq = (SELECT seq || text 'A' FROM tbl_ttext_seq t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_ttext_seq t1
-SET seq = (SELECT shift(seq, timespan(seq)) FROM tbl_ttext_seq t2 WHERE t2.k = t1.k+perc)
+SET seq = (SELECT shift(seq, duration(seq, true)) FROM tbl_ttext_seq t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
 UPDATE tbl_ttext_seq t1
-SET seq = (SELECT shift(seq, date_trunc('minute',timespan(seq)/2))
+SET seq = (SELECT shift(seq, date_trunc('minute',duration(seq, true)/2))
   FROM tbl_ttext_seq t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 
@@ -597,11 +597,11 @@ SET ts = (SELECT ~ ts FROM tbl_tbool_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_tbool_seqset t1
-SET ts = (SELECT shift(ts, timespan(ts)) FROM tbl_tbool_seqset t2 WHERE t2.k = t1.k+perc)
+SET ts = (SELECT shift(ts, duration(ts, true)) FROM tbl_tbool_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
 UPDATE tbl_tbool_seqset t1
-SET ts = (SELECT shift(ts, date_trunc('minute', timespan(ts)/2))
+SET ts = (SELECT shift(ts, date_trunc('minute', duration(ts, true)/2))
   FROM tbl_tbool_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 
@@ -622,11 +622,11 @@ SET ts = (SELECT ts + random_int(1, 2) FROM tbl_tint_seqset t2 WHERE t2.k = t1.k
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_tint_seqset t1
-SET ts = (SELECT shift(ts, timespan(ts)) FROM tbl_tint_seqset t2 WHERE t2.k = t1.k+perc)
+SET ts = (SELECT shift(ts, duration(ts, true)) FROM tbl_tint_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
 UPDATE tbl_tint_seqset t1
-SET ts = (SELECT shift(ts, date_trunc('minute', timespan(ts)/2))
+SET ts = (SELECT shift(ts, date_trunc('minute', duration(ts, true)/2))
   FROM tbl_tint_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 
@@ -647,11 +647,11 @@ SET ts = (SELECT ts + random_int(1, 2) FROM tbl_tfloat_seqset t2 WHERE t2.k = t1
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_tfloat_seqset t1
-SET ts = (SELECT shift(ts, timespan(ts)) FROM tbl_tfloat_seqset t2 WHERE t2.k = t1.k+perc)
+SET ts = (SELECT shift(ts, duration(ts, true)) FROM tbl_tfloat_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
 UPDATE tbl_tfloat_seqset t1
-SET ts = (SELECT shift(ts, date_trunc('minute', timespan(ts)/2))
+SET ts = (SELECT shift(ts, date_trunc('minute', duration(ts, true)/2))
   FROM tbl_tfloat_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 
@@ -672,11 +672,11 @@ SET ts = (SELECT ts || text 'A' FROM tbl_ttext_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_ttext_seqset t1
-SET ts = (SELECT shift(ts, timespan(ts)) FROM tbl_ttext_seqset t2 WHERE t2.k = t1.k+perc)
+SET ts = (SELECT shift(ts, duration(ts, true)) FROM tbl_ttext_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
 UPDATE tbl_ttext_seqset t1
-SET ts = (SELECT shift(ts, date_trunc('minute', timespan(ts)/2))
+SET ts = (SELECT shift(ts, date_trunc('minute', duration(ts, true)/2))
   FROM tbl_ttext_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 
@@ -731,11 +731,11 @@ SET seq = (SELECT seq + random_int(1, 2) FROM tbl_tfloat_step_seq t2 WHERE t2.k 
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_tfloat_step_seq t1
-SET seq = (SELECT shift(seq, timespan(seq)) FROM tbl_tfloat_step_seq t2 WHERE t2.k = t1.k+perc)
+SET seq = (SELECT shift(seq, duration(seq, true)) FROM tbl_tfloat_step_seq t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
 UPDATE tbl_tfloat_step_seq t1
-SET seq = (SELECT shift(seq, date_trunc('minute',timespan(seq)/2))
+SET seq = (SELECT shift(seq, date_trunc('minute',duration(seq, true)/2))
   FROM tbl_tfloat_step_seq t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 
@@ -756,11 +756,11 @@ SET ts = (SELECT ts + random_int(1, 2) FROM tbl_tfloat_step_seqset t2 WHERE t2.k
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_tfloat_step_seqset t1
-SET ts = (SELECT shift(ts, timespan(ts)) FROM tbl_tfloat_step_seqset t2 WHERE t2.k = t1.k+perc)
+SET ts = (SELECT shift(ts, duration(ts, true)) FROM tbl_tfloat_step_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
 UPDATE tbl_tfloat_step_seqset t1
-SET ts = (SELECT shift(ts, date_trunc('minute', timespan(ts)/2))
+SET ts = (SELECT shift(ts, date_trunc('minute', duration(ts, true)/2))
   FROM tbl_tfloat_step_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 

@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -49,7 +49,7 @@ stbox_parse(const char **str)
 {
   /* make compiler quiet */
   double xmin = 0, xmax = 0, ymin = 0, ymax = 0, zmin = 0, zmax = 0;
-  Period *period = NULL;
+  Span *period = NULL;
   bool hasx = false, hasz = false, hast = false, geodetic = false;
   int srid = 0;
   bool hassrid = false;
@@ -188,7 +188,7 @@ stbox_parse(const char **str)
   }
 
   if (hast)
-    period = span_parse(str, T_PERIOD, false, true);
+    period = span_parse(str, T_TSTZSPAN, false, true);
 
   /* Parse closing parenthesis */
   p_whitespace(str);

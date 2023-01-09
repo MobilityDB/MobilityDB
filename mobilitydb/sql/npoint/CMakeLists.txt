@@ -2,6 +2,7 @@
 
 SET(LOCAL_FILES
   081_tnpoint_static
+  082_npointset
   083_tnpoint
   085_tnpoint_compops
   087_tnpoint_spatialfuncs

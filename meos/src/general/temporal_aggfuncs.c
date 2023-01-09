@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -219,7 +219,7 @@ static int
 tsequence_tagg1(const TSequence *seq1, const TSequence *seq2,
   datum_func2 func, bool crossings, TSequence **result)
 {
-  Period inter;
+  Span inter;
   if (! inter_span_span(&seq1->period, &seq2->period, &inter))
   {
     const TSequence *sequences[2];
@@ -256,7 +256,7 @@ tsequence_tagg1(const TSequence *seq1, const TSequence *seq2,
    * [3@2000-01-01, 4@2000-01-03, 5@2000-01-04], and
    * (3@2000-01-04, 4@2000-01-05]
    */
-  Period period;
+  Span period;
   TimestampTz lower1 = DatumGetTimestampTz(seq1->period.lower);
   TimestampTz upper1 = DatumGetTimestampTz(seq1->period.upper);
   bool lower1_inc = seq1->period.lower_inc;
@@ -1135,10 +1135,10 @@ tnumber_tavg_finalfn(SkipList *state)
 /**
  * Transition function for temporal extent aggregation of temporal values
  */
-Period *
-temporal_extent_transfn(Period *p, Temporal *temp)
+Span *
+temporal_extent_transfn(Span *p, Temporal *temp)
 {
-  Period *result;
+  Span *result;
 
   /* Can't do anything with null inputs */
   if (! p && ! temp)
@@ -1146,19 +1146,19 @@ temporal_extent_transfn(Period *p, Temporal *temp)
   /* Null period and non-null temporal, return the bbox of the temporal */
   if (! p)
   {
-    result = palloc0(sizeof(Period));
+    result = palloc0(sizeof(Span));
     temporal_set_period(temp, result);
     return result;
   }
   /* Non-null period and null temporal, return the period */
   if (! temp)
   {
-    result = palloc0(sizeof(Period));
-    memcpy(result, p, sizeof(Period));
+    result = palloc0(sizeof(Span));
+    memcpy(result, p, sizeof(Span));
     return result;
   }
 
-  Period p1;
+  Span p1;
   temporal_set_period(temp, &p1);
   result = bbox_union_span_span(p, &p1);
   return result;

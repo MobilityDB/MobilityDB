@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -519,9 +519,9 @@ temporal_minus_timestamp(const Temporal *temp, TimestampTz t)
  * @sqlfunc atTime()
  */
 Temporal *
-temporal_at_timestampset(const Temporal *temp, const TimestampSet *ts)
+temporal_at_tstzset(const Temporal *temp, const Set *ts)
 {
-  Temporal *result = temporal_restrict_timestampset(temp, ts, REST_AT);
+  Temporal *result = temporal_restrict_tstzset(temp, ts, REST_AT);
   return result;
 }
 
@@ -531,9 +531,9 @@ temporal_at_timestampset(const Temporal *temp, const TimestampSet *ts)
  * @sqlfunc minusTime()
  */
 Temporal *
-temporal_minus_timestampset(const Temporal *temp, const TimestampSet *ts)
+temporal_minus_tstzset(const Temporal *temp, const Set *ts)
 {
-  Temporal *result = temporal_restrict_timestampset(temp, ts, REST_MINUS);
+  Temporal *result = temporal_restrict_tstzset(temp, ts, REST_MINUS);
   return result;
 }
 
@@ -543,7 +543,7 @@ temporal_minus_timestampset(const Temporal *temp, const TimestampSet *ts)
  * @sqlfunc atTime()
  */
 Temporal *
-temporal_at_period(const Temporal *temp, const Period *p)
+temporal_at_period(const Temporal *temp, const Span *p)
 {
   Temporal *result = temporal_restrict_period(temp, p, REST_AT);
   return result;
@@ -555,7 +555,7 @@ temporal_at_period(const Temporal *temp, const Period *p)
  * @sqlfunc minusTime()
  */
 Temporal *
-temporal_minus_period(const Temporal *temp, const Period *p)
+temporal_minus_period(const Temporal *temp, const Span *p)
 {
   Temporal *result = temporal_restrict_period(temp, p, REST_MINUS);
   return result;
@@ -567,7 +567,7 @@ temporal_minus_period(const Temporal *temp, const Period *p)
  * @sqlfunc atTime()
  */
 Temporal *
-temporal_at_periodset(const Temporal *temp, const PeriodSet *ps)
+temporal_at_periodset(const Temporal *temp, const SpanSet *ps)
 {
   Temporal *result = temporal_restrict_periodset(temp, ps, REST_AT);
   return result;
@@ -579,7 +579,7 @@ temporal_at_periodset(const Temporal *temp, const PeriodSet *ps)
  * @sqlfunc minusTime()
  */
 Temporal *
-temporal_minus_periodset(const Temporal *temp, const PeriodSet *ps)
+temporal_minus_periodset(const Temporal *temp, const SpanSet *ps)
 {
   Temporal *result = temporal_restrict_periodset(temp, ps, REST_MINUS);
   return result;

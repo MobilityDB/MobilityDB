@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -166,7 +166,7 @@ contains_floatspanset_float(const SpanSet *ss, double d)
  * @sqlop @p \@>
  */
 bool
-contains_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
+contains_periodset_timestamp(const SpanSet *ps, TimestampTz t)
 {
   return contains_spanset_value(ps, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
@@ -519,7 +519,7 @@ adjacent_floatspanset_float(const SpanSet *ss, double d)
  * @sqlop @p -|-
  */
 bool
-adjacent_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
+adjacent_periodset_timestamp(const SpanSet *ps, TimestampTz t)
 {
   return adjacent_spanset_value(ps, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
@@ -638,7 +638,7 @@ left_float_floatspanset(double d, const SpanSet *ss)
  * @sqlop @p <<#
  */
 bool
-before_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
+before_timestamp_periodset(TimestampTz t, const SpanSet *ps)
 {
   return left_value_spanset(TimestampTzGetDatum(t), T_TIMESTAMPTZ, ps);
 }
@@ -720,7 +720,7 @@ left_floatspanset_float(const SpanSet *ss, double d)
  * @sqlop @p <<#
  */
 bool
-before_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
+before_periodset_timestamp(const SpanSet *ps, TimestampTz t)
 {
   return left_spanset_value(ps, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
@@ -990,7 +990,7 @@ overleft_floatspanset_float(const SpanSet *ss, double d)
  * @sqlop @p &<#
  */
 bool
-overbefore_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
+overbefore_periodset_timestamp(const SpanSet *ps, TimestampTz t)
 {
   return overleft_spanset_value(ps, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
@@ -1047,7 +1047,7 @@ overleft_float_floatspanset(double d, const SpanSet *ss)
  * @sqlop @p &<#
  */
 bool
-overbefore_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
+overbefore_timestamp_periodset(TimestampTz t, const SpanSet *ps)
 {
   return overleft_value_spanset(TimestampTzGetDatum(t), T_TIMESTAMPTZ, ps);
 }
@@ -1173,7 +1173,7 @@ overright_float_floatspanset(double d, const SpanSet *ss)
  * @sqlop @p #&>
  */
 bool
-overafter_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
+overafter_timestamp_periodset(TimestampTz t, const SpanSet *ps)
 {
   return overright_value_spanset(TimestampTzGetDatum(t), T_TIMESTAMPTZ, ps);
 }
@@ -1343,8 +1343,8 @@ union_floatspanset_float(const SpanSet *ss, double d)
  * @brief Return the union of a period set and a timestamp.
  * @sqlop @p +
  */
-PeriodSet *
-union_periodset_timestamp(PeriodSet *ps, TimestampTz t)
+SpanSet *
+union_periodset_timestamp(SpanSet *ps, TimestampTz t)
 {
   return union_spanset_value(ps, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
@@ -1550,7 +1550,7 @@ intersection_floatspanset_float(const SpanSet *ss, double d, double *result)
  * @sqlop @p *
  */
 bool
-intersection_periodset_timestamp(const PeriodSet *ps, TimestampTz t,
+intersection_periodset_timestamp(const SpanSet *ps, TimestampTz t,
   TimestampTz *result)
 {
   if (! contains_spanset_value(ps, TimestampTzGetDatum(t), T_TIMESTAMPTZ))
@@ -1713,7 +1713,7 @@ minus_float_floatspanset(double d, const SpanSet *ss, double *result)
  * @sqlop @p -
  */
 bool
-minus_timestamp_periodset(TimestampTz t, const PeriodSet *ps,
+minus_timestamp_periodset(TimestampTz t, const SpanSet *ps,
   TimestampTz *result)
 {
   Datum v;
@@ -1859,7 +1859,7 @@ minus_floatspanset_float(const SpanSet *ss, double d)
  * @sqlop @p -
  */
 SpanSet *
-minus_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
+minus_periodset_timestamp(const SpanSet *ps, TimestampTz t)
 {
   return minus_spanset_value(ps, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
@@ -2120,7 +2120,7 @@ distance_floatspanset_float(const SpanSet *ss, double d)
  * @sqlop @p <->
  */
 double
-distance_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
+distance_periodset_timestamp(const SpanSet *ps, TimestampTz t)
 {
   return distance_spanset_value(ps, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }

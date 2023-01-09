@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -83,9 +83,9 @@ contains_temporal_timestamp(const Temporal *temp, TimestampTz t)
  * @sqlop @p \@>
  */
 bool
-contains_timestampset_temporal(const TimestampSet *ts, const Temporal *temp)
+contains_tstzset_temporal(const Set *ts, const Temporal *temp)
 {
-  return boxop_temporal_timestampset(temp, ts, &contains_span_span, INVERT);
+  return boxop_temporal_tstzset(temp, ts, &contains_span_span, INVERT);
 }
 
 /**
@@ -95,9 +95,9 @@ contains_timestampset_temporal(const TimestampSet *ts, const Temporal *temp)
  * @sqlop @p \@>
  */
 bool
-contains_temporal_timestampset(const Temporal *temp, const TimestampSet *ts)
+contains_temporal_tstzset(const Temporal *temp, const Set *ts)
 {
-  return boxop_temporal_timestampset(temp, ts, &contains_span_span,
+  return boxop_temporal_tstzset(temp, ts, &contains_span_span,
     INVERT_NO);
 }
 
@@ -108,7 +108,7 @@ contains_temporal_timestampset(const Temporal *temp, const TimestampSet *ts)
  * @sqlop @p \@>
  */
 bool
-contains_period_temporal(const Period *p, const Temporal *temp)
+contains_period_temporal(const Span *p, const Temporal *temp)
 {
   return boxop_temporal_period(temp, p, &contains_span_span, INVERT);
 }
@@ -120,7 +120,7 @@ contains_period_temporal(const Period *p, const Temporal *temp)
  * @sqlop @p \@>
  */
 bool
-contains_temporal_period(const Temporal *temp, const Period *p)
+contains_temporal_period(const Temporal *temp, const Span *p)
 {
   return boxop_temporal_period(temp, p, &contains_span_span, INVERT_NO);
 }
@@ -132,7 +132,7 @@ contains_temporal_period(const Temporal *temp, const Period *p)
  * @sqlop @p \@>
  */
 bool
-contains_periodset_temporal(const PeriodSet *ps, const Temporal *temp)
+contains_periodset_temporal(const SpanSet *ps, const Temporal *temp)
 {
   return boxop_temporal_periodset(temp, ps, &contains_span_span, INVERT);
 }
@@ -144,7 +144,7 @@ contains_periodset_temporal(const PeriodSet *ps, const Temporal *temp)
  * @sqlop @p \@>
  */
 bool
-contains_temporal_periodset(const Temporal *temp, const PeriodSet *ps)
+contains_temporal_periodset(const Temporal *temp, const SpanSet *ps)
 {
   return boxop_temporal_periodset(temp, ps, &contains_span_span, INVERT_NO);
 }
@@ -194,9 +194,9 @@ contained_temporal_timestamp(const Temporal *temp, TimestampTz t)
  * @sqlop @p <@
  */
 bool
-contained_timestampset_temporal(const TimestampSet *ts, const Temporal *temp)
+contained_tstzset_temporal(const Set *ts, const Temporal *temp)
 {
-  return boxop_temporal_timestampset(temp, ts, &contained_span_span, INVERT);
+  return boxop_temporal_tstzset(temp, ts, &contained_span_span, INVERT);
 }
 
 /**
@@ -206,9 +206,9 @@ contained_timestampset_temporal(const TimestampSet *ts, const Temporal *temp)
  * @sqlop @p <@
  */
 bool
-contained_temporal_timestampset(const Temporal *temp, const TimestampSet *ts)
+contained_temporal_tstzset(const Temporal *temp, const Set *ts)
 {
-  return boxop_temporal_timestampset(temp, ts, &contained_span_span,
+  return boxop_temporal_tstzset(temp, ts, &contained_span_span,
     INVERT_NO);
 }
 
@@ -219,7 +219,7 @@ contained_temporal_timestampset(const Temporal *temp, const TimestampSet *ts)
  * @sqlop @p <@
  */
 bool
-contained_period_temporal(const Period *p, const Temporal *temp)
+contained_period_temporal(const Span *p, const Temporal *temp)
 {
   return boxop_temporal_period(temp, p, &contained_span_span, INVERT);
 }
@@ -231,7 +231,7 @@ contained_period_temporal(const Period *p, const Temporal *temp)
  * @sqlop @p <@
  */
 bool
-contained_temporal_period(const Temporal *temp, const Period *p)
+contained_temporal_period(const Temporal *temp, const Span *p)
 {
   return boxop_temporal_period(temp, p, &contained_span_span, INVERT_NO);
 }
@@ -243,7 +243,7 @@ contained_temporal_period(const Temporal *temp, const Period *p)
  * @sqlop @p <@
  */
 bool
-contained_periodset_temporal(const PeriodSet *ps, const Temporal *temp)
+contained_periodset_temporal(const SpanSet *ps, const Temporal *temp)
 {
   return boxop_temporal_periodset(temp, ps, &contained_span_span, INVERT);
 }
@@ -255,7 +255,7 @@ contained_periodset_temporal(const PeriodSet *ps, const Temporal *temp)
  * @sqlop @p <@
  */
 bool
-contained_temporal_periodset(const Temporal *temp, const PeriodSet *ps)
+contained_temporal_periodset(const Temporal *temp, const SpanSet *ps)
 {
   return boxop_temporal_periodset(temp, ps, &contained_span_span, INVERT_NO);
 }
@@ -305,9 +305,9 @@ overlaps_temporal_timestamp(const Temporal *temp, TimestampTz t)
  * @sqlop @p &&
  */
 bool
-overlaps_timestampset_temporal(const TimestampSet *ts, const Temporal *temp)
+overlaps_tstzset_temporal(const Set *ts, const Temporal *temp)
 {
-  return boxop_temporal_timestampset(temp, ts, &overlaps_span_span, INVERT);
+  return boxop_temporal_tstzset(temp, ts, &overlaps_span_span, INVERT);
 }
 
 /**
@@ -317,9 +317,9 @@ overlaps_timestampset_temporal(const TimestampSet *ts, const Temporal *temp)
  * @sqlop @p &&
  */
 bool
-overlaps_temporal_timestampset(const Temporal *temp, const TimestampSet *ts)
+overlaps_temporal_tstzset(const Temporal *temp, const Set *ts)
 {
-  return boxop_temporal_timestampset(temp, ts, &overlaps_span_span,
+  return boxop_temporal_tstzset(temp, ts, &overlaps_span_span,
     INVERT_NO);
 }
 
@@ -330,7 +330,7 @@ overlaps_temporal_timestampset(const Temporal *temp, const TimestampSet *ts)
  * @sqlop @p &&
  */
 bool
-overlaps_period_temporal(const Period *p, const Temporal *temp)
+overlaps_period_temporal(const Span *p, const Temporal *temp)
 {
   return boxop_temporal_period(temp, p, &overlaps_span_span, INVERT);
 }
@@ -342,7 +342,7 @@ overlaps_period_temporal(const Period *p, const Temporal *temp)
  * @sqlop @p &&
  */
 bool
-overlaps_temporal_period(const Temporal *temp, const Period *p)
+overlaps_temporal_period(const Temporal *temp, const Span *p)
 {
   return boxop_temporal_period(temp, p, &overlaps_span_span, INVERT_NO);
 }
@@ -354,7 +354,7 @@ overlaps_temporal_period(const Temporal *temp, const Period *p)
  * @sqlop @p &&
  */
 bool
-overlaps_periodset_temporal(const PeriodSet *ps, const Temporal *temp)
+overlaps_periodset_temporal(const SpanSet *ps, const Temporal *temp)
 {
   return boxop_temporal_periodset(temp, ps, &overlaps_span_span, INVERT);
 }
@@ -366,7 +366,7 @@ overlaps_periodset_temporal(const PeriodSet *ps, const Temporal *temp)
  * @sqlop @p &&
  */
 bool
-overlaps_temporal_periodset(const Temporal *temp, const PeriodSet *ps)
+overlaps_temporal_periodset(const Temporal *temp, const SpanSet *ps)
 {
   return boxop_temporal_periodset(temp, ps, &overlaps_span_span, INVERT_NO);
 }
@@ -415,9 +415,9 @@ same_temporal_timestamp(const Temporal *temp, TimestampTz t)
  * @sqlop @p ~=
  */
 bool
-same_timestampset_temporal(const TimestampSet *ts, const Temporal *temp)
+same_tstzset_temporal(const Set *ts, const Temporal *temp)
 {
-  return boxop_temporal_timestampset(temp, ts, &span_eq, INVERT);
+  return boxop_temporal_tstzset(temp, ts, &span_eq, INVERT);
 }
 
 /**
@@ -427,9 +427,9 @@ same_timestampset_temporal(const TimestampSet *ts, const Temporal *temp)
  * @sqlop @p ~=
  */
 bool
-same_temporal_timestampset(const Temporal *temp, const TimestampSet *ts)
+same_temporal_tstzset(const Temporal *temp, const Set *ts)
 {
-  return boxop_temporal_timestampset(temp, ts, &span_eq, INVERT_NO);
+  return boxop_temporal_tstzset(temp, ts, &span_eq, INVERT_NO);
 }
 
 /**
@@ -439,7 +439,7 @@ same_temporal_timestampset(const Temporal *temp, const TimestampSet *ts)
  * @sqlop @p ~=
  */
 bool
-same_period_temporal(const Period *p, const Temporal *temp)
+same_period_temporal(const Span *p, const Temporal *temp)
 {
   return boxop_temporal_period(temp, p, &span_eq, INVERT);
 }
@@ -451,7 +451,7 @@ same_period_temporal(const Period *p, const Temporal *temp)
  * @sqlop @p ~=
  */
 bool
-same_temporal_period(const Temporal *temp, const Period *p)
+same_temporal_period(const Temporal *temp, const Span *p)
 {
   return boxop_temporal_period(temp, p, &span_eq, INVERT_NO);
 }
@@ -463,7 +463,7 @@ same_temporal_period(const Temporal *temp, const Period *p)
  * @sqlop @p ~=
  */
 bool
-same_periodset_temporal(const PeriodSet *ps, const Temporal *temp)
+same_periodset_temporal(const SpanSet *ps, const Temporal *temp)
 {
   return boxop_temporal_periodset(temp, ps, &span_eq, INVERT);
 }
@@ -475,7 +475,7 @@ same_periodset_temporal(const PeriodSet *ps, const Temporal *temp)
  * @sqlop @p ~=
  */
 bool
-same_temporal_periodset(const Temporal *temp, const PeriodSet *ps)
+same_temporal_periodset(const Temporal *temp, const SpanSet *ps)
 {
   return boxop_temporal_periodset(temp, ps, &span_eq, INVERT_NO);
 }
@@ -524,9 +524,9 @@ adjacent_temporal_timestamp(const Temporal *temp, TimestampTz t)
  * @sqlop @p -|-
  */
 bool
-adjacent_timestampset_temporal(const TimestampSet *ts, const Temporal *temp)
+adjacent_tstzset_temporal(const Set *ts, const Temporal *temp)
 {
-  return boxop_temporal_timestampset(temp, ts, &adjacent_span_span, INVERT);
+  return boxop_temporal_tstzset(temp, ts, &adjacent_span_span, INVERT);
 }
 
 /**
@@ -536,9 +536,9 @@ adjacent_timestampset_temporal(const TimestampSet *ts, const Temporal *temp)
  * @sqlop @p -|-
  */
 bool
-adjacent_temporal_timestampset(const Temporal *temp, const TimestampSet *ts)
+adjacent_temporal_tstzset(const Temporal *temp, const Set *ts)
 {
-  return boxop_temporal_timestampset(temp, ts, &adjacent_span_span,
+  return boxop_temporal_tstzset(temp, ts, &adjacent_span_span,
     INVERT_NO);
 }
 
@@ -549,7 +549,7 @@ adjacent_temporal_timestampset(const Temporal *temp, const TimestampSet *ts)
  * @sqlop @p -|-
  */
 bool
-adjacent_period_temporal(const Period *p, const Temporal *temp)
+adjacent_period_temporal(const Span *p, const Temporal *temp)
 {
   return boxop_temporal_period(temp, p, &adjacent_span_span, INVERT);
 }
@@ -561,7 +561,7 @@ adjacent_period_temporal(const Period *p, const Temporal *temp)
  * @sqlop @p -|-
  */
 bool
-adjacent_temporal_period(const Temporal *temp, const Period *p)
+adjacent_temporal_period(const Temporal *temp, const Span *p)
 {
   return boxop_temporal_period(temp, p, &adjacent_span_span, INVERT_NO);
 }
@@ -573,7 +573,7 @@ adjacent_temporal_period(const Temporal *temp, const Period *p)
  * @sqlop @p -|-
  */
 bool
-adjacent_periodset_temporal(const PeriodSet *ps, const Temporal *temp)
+adjacent_periodset_temporal(const SpanSet *ps, const Temporal *temp)
 {
   return boxop_temporal_periodset(temp, ps, &adjacent_span_span, INVERT);
 }
@@ -585,7 +585,7 @@ adjacent_periodset_temporal(const PeriodSet *ps, const Temporal *temp)
  * @sqlop @p -|-
  */
 bool
-adjacent_temporal_periodset(const Temporal *temp, const PeriodSet *ps)
+adjacent_temporal_periodset(const Temporal *temp, const SpanSet *ps)
 {
   return boxop_temporal_periodset(temp, ps, &adjacent_span_span, INVERT_NO);
 }

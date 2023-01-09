@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -430,9 +430,9 @@ PG_FUNCTION_INFO_V1(Period_shift);
 PGDLLEXPORT Datum
 Period_shift(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_SPAN_P(0);
+  Span *p = PG_GETARG_SPAN_P(0);
   Interval *shift = PG_GETARG_INTERVAL_P(1);
-  Period *result = span_copy(p);
+  Span *result = span_copy(p);
   period_shift_tscale(result, shift, NULL);
   PG_RETURN_POINTER(result);
 }
@@ -446,9 +446,9 @@ PG_FUNCTION_INFO_V1(Period_tscale);
 PGDLLEXPORT Datum
 Period_tscale(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_SPAN_P(0);
+  Span *p = PG_GETARG_SPAN_P(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
-  Period *result = span_copy(p);
+  Span *result = span_copy(p);
   period_shift_tscale(result, NULL, duration);
   PG_RETURN_POINTER(result);
 }
@@ -462,10 +462,10 @@ PG_FUNCTION_INFO_V1(Period_shift_tscale);
 PGDLLEXPORT Datum
 Period_shift_tscale(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_SPAN_P(0);
+  Span *p = PG_GETARG_SPAN_P(0);
   Interval *shift = PG_GETARG_INTERVAL_P(1);
   Interval *duration = PG_GETARG_INTERVAL_P(2);
-  Period *result = span_copy(p);
+  Span *result = span_copy(p);
   period_shift_tscale(result, shift, duration);
   PG_RETURN_POINTER(result);
 }

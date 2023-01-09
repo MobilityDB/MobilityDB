@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -61,10 +61,10 @@ extern bool tnumberinst_restrict_span_test(const TInstant *inst,
   const Span *span, bool atfunc);
 extern bool tnumberinst_restrict_spanset_test(const TInstant *inst,
   const SpanSet *ss, bool atfunc);
-extern bool tinstant_restrict_timestampset_test(const TInstant *inst,
-  const TimestampSet *ts, bool atfunc);
+extern bool tinstant_restrict_tstzset_test(const TInstant *inst,
+  const Set *ts, bool atfunc);
 extern bool tinstant_restrict_periodset_test(const TInstant *inst,
-  const PeriodSet *ps, bool atfunc);
+  const SpanSet *ps, bool atfunc);
 
 /* Intersection function */
 

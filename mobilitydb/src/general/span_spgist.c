@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -112,7 +112,7 @@ spannode_init(SpanNode *nodebox, meosType spantype, meosType basetype)
   memset(nodebox, 0, sizeof(SpanNode));
   Datum min, max;
   ensure_span_type(spantype);
-  if (spantype == T_PERIOD)
+  if (spantype == T_TSTZSPAN)
   {
     min = TimestampTzGetDatum(DT_NOBEGIN);
     max = TimestampTzGetDatum(DT_NOEND);
@@ -326,7 +326,7 @@ overRight2D(const SpanNode *nodebox, const Span *query)
  * Can any period from nodebox be before the query?
  */
 static bool
-before2D(const SpanNode *nodebox, const Period *query)
+before2D(const SpanNode *nodebox, const Span *query)
 {
   return left_span_span(&nodebox->right, query);
 }
@@ -335,7 +335,7 @@ before2D(const SpanNode *nodebox, const Period *query)
  * Can any period from nodebox does not extend after the query?
  */
 static bool
-overBefore2D(const SpanNode *nodebox, const Period *query)
+overBefore2D(const SpanNode *nodebox, const Span *query)
 {
   return overleft_span_span(&nodebox->right, query);
 }
@@ -344,7 +344,7 @@ overBefore2D(const SpanNode *nodebox, const Period *query)
  * Can any period from nodebox be after the query?
  */
 static bool
-after2D(const SpanNode *nodebox, const Period *query)
+after2D(const SpanNode *nodebox, const Span *query)
 {
   return right_span_span(&nodebox->left, query);
 }
@@ -353,7 +353,7 @@ after2D(const SpanNode *nodebox, const Period *query)
  * Can any period from nodebox does not extend before the query?
  */
 static bool
-overAfter2D(const SpanNode *nodebox, const Period *query)
+overAfter2D(const SpanNode *nodebox, const Span *query)
 {
   return overright_span_span(&nodebox->left, query);
 }
@@ -469,9 +469,9 @@ PGDLLEXPORT Datum
 Period_spgist_config(PG_FUNCTION_ARGS)
 {
   spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
-  cfg->prefixType = type_oid(T_PERIOD);  /* A type represented by its bounding box */
+  cfg->prefixType = type_oid(T_TSTZSPAN);  /* A type represented by its bounding box */
   cfg->labelType = VOIDOID;  /* We don't need node labels. */
-  cfg->leafType = type_oid(T_PERIOD);
+  cfg->leafType = type_oid(T_TSTZSPAN);
   cfg->canReturnData = false;
   cfg->longValuesOK = false;
   PG_RETURN_VOID();

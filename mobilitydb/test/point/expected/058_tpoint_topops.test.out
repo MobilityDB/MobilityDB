@@ -40,19 +40,19 @@ SELECT timestamptz '2000-01-01'::stbox;
  STBOX T([2000-01-01 00:00:00+00, 2000-01-01 00:00:00+00])
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-02}'::stbox;
+SELECT tstzset '{2000-01-01, 2000-01-02}'::stbox;
                            stbox                           
 -----------------------------------------------------------
  STBOX T([2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00])
 (1 row)
 
-SELECT period '[2000-01-01, 2000-01-02]'::stbox;
+SELECT tstzspan '[2000-01-01, 2000-01-02]'::stbox;
                            stbox                           
 -----------------------------------------------------------
  STBOX T([2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00])
 (1 row)
 
-SELECT periodset '{[2000-01-01, 2000-01-02],[2000-01-03, 2000-01-04]}'::stbox;
+SELECT tstzspanset '{[2000-01-01, 2000-01-02],[2000-01-03, 2000-01-04]}'::stbox;
                            stbox                           
 -----------------------------------------------------------
  STBOX T([2000-01-01 00:00:00+00, 2000-01-04 00:00:00+00])
@@ -76,19 +76,19 @@ SELECT stbox(geometry 'Point(1 1 1)', timestamptz '2000-01-01');
  STBOX ZT(((1,1,1),(1,1,1)),[2000-01-01 00:00:00+00, 2000-01-01 00:00:00+00])
 (1 row)
 
-SELECT stbox(geometry 'Point empty', period '[2000-01-01, 2000-01-02]');
+SELECT stbox(geometry 'Point empty', tstzspan '[2000-01-01, 2000-01-02]');
  stbox 
 -------
  
 (1 row)
 
-SELECT stbox(geometry 'Point(1 1)', period '[2000-01-01, 2000-01-02]');
+SELECT stbox(geometry 'Point(1 1)', tstzspan '[2000-01-01, 2000-01-02]');
                                   stbox                                   
 --------------------------------------------------------------------------
  STBOX XT(((1,1),(1,1)),[2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00])
 (1 row)
 
-SELECT stbox(geometry 'Point(1 1 1)', period '[2000-01-01, 2000-01-02]');
+SELECT stbox(geometry 'Point(1 1 1)', tstzspan '[2000-01-01, 2000-01-02]');
                                     stbox                                     
 ------------------------------------------------------------------------------
  STBOX ZT(((1,1,1),(1,1,1)),[2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00])
@@ -112,19 +112,19 @@ SELECT round(stbox(geography 'Point(1 1 1)', timestamptz '2000-01-01'), 13);
  SRID=4326;GEODSTBOX ZT(((0.9996954135095,0.0174497483513,0.0174524064373),(0.9996954135095,0.0174497483513,0.0174524064373)),[2000-01-01 00:00:00+00, 2000-01-01 00:00:00+00])
 (1 row)
 
-SELECT round(stbox(geography 'Point empty', period '[2000-01-01, 2000-01-02]'), 13);
+SELECT round(stbox(geography 'Point empty', tstzspan '[2000-01-01, 2000-01-02]'), 13);
  round 
 -------
  
 (1 row)
 
-SELECT round(stbox(geography 'Point(1 1)', period '[2000-01-01, 2000-01-02]'), 13);
+SELECT round(stbox(geography 'Point(1 1)', tstzspan '[2000-01-01, 2000-01-02]'), 13);
                                                                                      round                                                                                      
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX ZT(((0.9996954135095,0.0174497483513,0.0174524064373),(0.9996954135095,0.0174497483513,0.0174524064373)),[2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00])
 (1 row)
 
-SELECT round(stbox(geography 'Point(1 1 1)', period '[2000-01-01, 2000-01-02]'), 13);
+SELECT round(stbox(geography 'Point(1 1 1)', tstzspan '[2000-01-01, 2000-01-02]'), 13);
                                                                                      round                                                                                      
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX ZT(((0.9996954135095,0.0174497483513,0.0174524064373),(0.9996954135095,0.0174497483513,0.0174524064373)),[2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00])
@@ -575,289 +575,289 @@ SELECT timestamptz '2000-01-01' && tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' && tgeompoint 'Point(1 1)@2000-01-01';
+SELECT tstzset '{2000-01-01, 2000-01-03}' && tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' && tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
+SELECT tstzset '{2000-01-01, 2000-01-03}' && tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' && tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
+SELECT tstzset '{2000-01-01, 2000-01-03}' && tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' && tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
+SELECT tstzset '{2000-01-01, 2000-01-03}' && tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' && tgeogpoint 'Point(1.5 1.5)@2000-01-01';
+SELECT tstzset '{2000-01-01, 2000-01-03}' && tgeogpoint 'Point(1.5 1.5)@2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' && tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
+SELECT tstzset '{2000-01-01, 2000-01-03}' && tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' && tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
+SELECT tstzset '{2000-01-01, 2000-01-03}' && tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' && tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
+SELECT tstzset '{2000-01-01, 2000-01-03}' && tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' && tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT tstzset '{2000-01-01, 2000-01-03}' && tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' && tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT tstzset '{2000-01-01, 2000-01-03}' && tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' && tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT tstzset '{2000-01-01, 2000-01-03}' && tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' && tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT tstzset '{2000-01-01, 2000-01-03}' && tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' && tgeogpoint 'Point(1 1 1)@2000-01-01';
+SELECT tstzset '{2000-01-01, 2000-01-03}' && tgeogpoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' && tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT tstzset '{2000-01-01, 2000-01-03}' && tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' && tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT tstzset '{2000-01-01, 2000-01-03}' && tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' && tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT tstzset '{2000-01-01, 2000-01-03}' && tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' && tgeompoint 'Point(1 1)@2000-01-01';
+SELECT tstzspan '[2000-01-01,2000-01-02]' && tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' && tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
+SELECT tstzspan '[2000-01-01,2000-01-02]' && tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' && tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
+SELECT tstzspan '[2000-01-01,2000-01-02]' && tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' && tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
+SELECT tstzspan '[2000-01-01,2000-01-02]' && tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' && tgeogpoint 'Point(1.5 1.5)@2000-01-01';
+SELECT tstzspan '[2000-01-01,2000-01-02]' && tgeogpoint 'Point(1.5 1.5)@2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' && tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
+SELECT tstzspan '[2000-01-01,2000-01-02]' && tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' && tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
+SELECT tstzspan '[2000-01-01,2000-01-02]' && tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' && tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
+SELECT tstzspan '[2000-01-01,2000-01-02]' && tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' && tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT tstzspan '[2000-01-01,2000-01-02]' && tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' && tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT tstzspan '[2000-01-01,2000-01-02]' && tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' && tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT tstzspan '[2000-01-01,2000-01-02]' && tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' && tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT tstzspan '[2000-01-01,2000-01-02]' && tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' && tgeogpoint 'Point(1 1 1)@2000-01-01';
+SELECT tstzspan '[2000-01-01,2000-01-02]' && tgeogpoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' && tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT tstzspan '[2000-01-01,2000-01-02]' && tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' && tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT tstzspan '[2000-01-01,2000-01-02]' && tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' && tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT tstzspan '[2000-01-01,2000-01-02]' && tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' && tgeompoint 'Point(1 1)@2000-01-01';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' && tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' && tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' && tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' && tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' && tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' && tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' && tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' && tgeogpoint 'Point(1.5 1.5)@2000-01-01';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' && tgeogpoint 'Point(1.5 1.5)@2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' && tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' && tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' && tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' && tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' && tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' && tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' && tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' && tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' && tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' && tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' && tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' && tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' && tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' && tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' && tgeogpoint 'Point(1 1 1)@2000-01-01';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' && tgeogpoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' && tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' && tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' && tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' && tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' && tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' && tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
  ?column? 
 ----------
  t
@@ -1250,289 +1250,289 @@ SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
  t
 (1 row)
 
-SELECT tgeompoint 'Point(1 1)@2000-01-01' && timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeompoint 'Point(1 1)@2000-01-01' && tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' && timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' && tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' && timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' && tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' && timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' && tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' && timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' && tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' && timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' && tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' && timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' && tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' && timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' && tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' && timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' && tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' && timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' && tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' && timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' && tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' && timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' && tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' && timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' && tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' && timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' && tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' && timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' && tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' && timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' && tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint 'Point(1 1)@2000-01-01' && period '[2000-01-01,2000-01-02]';
+SELECT tgeompoint 'Point(1 1)@2000-01-01' && tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' && period '[2000-01-01,2000-01-02]';
+SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' && tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' && period '[2000-01-01,2000-01-02]';
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' && tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' && period '[2000-01-01,2000-01-02]';
+SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' && tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' && period '[2000-01-01,2000-01-02]';
+SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' && tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' && period '[2000-01-01,2000-01-02]';
+SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' && tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' && period '[2000-01-01,2000-01-02]';
+SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' && tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' && period '[2000-01-01,2000-01-02]';
+SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' && tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' && period '[2000-01-01,2000-01-02]';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' && tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' && period '[2000-01-01,2000-01-02]';
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' && tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' && period '[2000-01-01,2000-01-02]';
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' && tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' && period '[2000-01-01,2000-01-02]';
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' && tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' && period '[2000-01-01,2000-01-02]';
+SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' && tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' && period '[2000-01-01,2000-01-02]';
+SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' && tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' && period '[2000-01-01,2000-01-02]';
+SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' && tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' && period '[2000-01-01,2000-01-02]';
+SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' && tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint 'Point(1 1)@2000-01-01' && periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeompoint 'Point(1 1)@2000-01-01' && tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' && periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' && tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' && periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' && tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' && periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' && tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' && periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' && tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' && periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' && tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' && periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' && tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' && periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' && tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' && periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' && tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' && periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' && tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' && periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' && tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' && periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' && tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' && periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' && tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' && periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' && tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' && periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' && tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' && periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' && tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  t
@@ -2145,289 +2145,289 @@ SELECT timestamptz '2000-01-01' @> tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(
  f
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' @> tgeompoint 'Point(1 1)@2000-01-01';
+SELECT tstzset '{2000-01-01, 2000-01-03}' @> tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' @> tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
+SELECT tstzset '{2000-01-01, 2000-01-03}' @> tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' @> tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
+SELECT tstzset '{2000-01-01, 2000-01-03}' @> tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' @> tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
+SELECT tstzset '{2000-01-01, 2000-01-03}' @> tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' @> tgeogpoint 'Point(1.5 1.5)@2000-01-01';
+SELECT tstzset '{2000-01-01, 2000-01-03}' @> tgeogpoint 'Point(1.5 1.5)@2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' @> tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
+SELECT tstzset '{2000-01-01, 2000-01-03}' @> tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' @> tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
+SELECT tstzset '{2000-01-01, 2000-01-03}' @> tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' @> tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
+SELECT tstzset '{2000-01-01, 2000-01-03}' @> tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' @> tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT tstzset '{2000-01-01, 2000-01-03}' @> tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' @> tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT tstzset '{2000-01-01, 2000-01-03}' @> tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' @> tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT tstzset '{2000-01-01, 2000-01-03}' @> tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' @> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT tstzset '{2000-01-01, 2000-01-03}' @> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' @> tgeogpoint 'Point(1 1 1)@2000-01-01';
+SELECT tstzset '{2000-01-01, 2000-01-03}' @> tgeogpoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' @> tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT tstzset '{2000-01-01, 2000-01-03}' @> tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' @> tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT tstzset '{2000-01-01, 2000-01-03}' @> tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' @> tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT tstzset '{2000-01-01, 2000-01-03}' @> tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' @> tgeompoint 'Point(1 1)@2000-01-01';
+SELECT tstzspan '[2000-01-01,2000-01-02]' @> tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' @> tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
+SELECT tstzspan '[2000-01-01,2000-01-02]' @> tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' @> tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
+SELECT tstzspan '[2000-01-01,2000-01-02]' @> tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' @> tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
+SELECT tstzspan '[2000-01-01,2000-01-02]' @> tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' @> tgeogpoint 'Point(1.5 1.5)@2000-01-01';
+SELECT tstzspan '[2000-01-01,2000-01-02]' @> tgeogpoint 'Point(1.5 1.5)@2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' @> tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
+SELECT tstzspan '[2000-01-01,2000-01-02]' @> tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' @> tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
+SELECT tstzspan '[2000-01-01,2000-01-02]' @> tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' @> tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
+SELECT tstzspan '[2000-01-01,2000-01-02]' @> tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' @> tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT tstzspan '[2000-01-01,2000-01-02]' @> tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' @> tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT tstzspan '[2000-01-01,2000-01-02]' @> tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' @> tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT tstzspan '[2000-01-01,2000-01-02]' @> tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' @> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT tstzspan '[2000-01-01,2000-01-02]' @> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' @> tgeogpoint 'Point(1 1 1)@2000-01-01';
+SELECT tstzspan '[2000-01-01,2000-01-02]' @> tgeogpoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' @> tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT tstzspan '[2000-01-01,2000-01-02]' @> tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' @> tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT tstzspan '[2000-01-01,2000-01-02]' @> tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' @> tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT tstzspan '[2000-01-01,2000-01-02]' @> tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' @> tgeompoint 'Point(1 1)@2000-01-01';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' @> tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' @> tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' @> tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' @> tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' @> tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' @> tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' @> tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' @> tgeogpoint 'Point(1.5 1.5)@2000-01-01';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' @> tgeogpoint 'Point(1.5 1.5)@2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' @> tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' @> tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' @> tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' @> tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' @> tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' @> tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' @> tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' @> tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' @> tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' @> tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' @> tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' @> tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' @> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' @> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' @> tgeogpoint 'Point(1 1 1)@2000-01-01';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' @> tgeogpoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' @> tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' @> tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' @> tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' @> tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' @> tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' @> tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
  ?column? 
 ----------
  f
@@ -2817,289 +2817,289 @@ SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
  t
 (1 row)
 
-SELECT tgeompoint 'Point(1 1)@2000-01-01' @> timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeompoint 'Point(1 1)@2000-01-01' @> tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' @> timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' @> tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' @> timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' @> tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' @> timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' @> tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' @> timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' @> tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' @> timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' @> tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' @> timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' @> tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' @> timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' @> tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' @> timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' @> tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' @> timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' @> tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' @> timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' @> tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' @> timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' @> tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' @> timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' @> tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' @> timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' @> tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' @> timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' @> tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' @> timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' @> tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint 'Point(1 1)@2000-01-01' @> period '[2000-01-01,2000-01-02]';
+SELECT tgeompoint 'Point(1 1)@2000-01-01' @> tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' @> period '[2000-01-01,2000-01-02]';
+SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' @> tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' @> period '[2000-01-01,2000-01-02]';
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' @> tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' @> period '[2000-01-01,2000-01-02]';
+SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' @> tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' @> period '[2000-01-01,2000-01-02]';
+SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' @> tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' @> period '[2000-01-01,2000-01-02]';
+SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' @> tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' @> period '[2000-01-01,2000-01-02]';
+SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' @> tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' @> period '[2000-01-01,2000-01-02]';
+SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' @> tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' @> period '[2000-01-01,2000-01-02]';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' @> tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' @> period '[2000-01-01,2000-01-02]';
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' @> tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' @> period '[2000-01-01,2000-01-02]';
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' @> tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' @> period '[2000-01-01,2000-01-02]';
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' @> tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' @> period '[2000-01-01,2000-01-02]';
+SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' @> tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' @> period '[2000-01-01,2000-01-02]';
+SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' @> tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' @> period '[2000-01-01,2000-01-02]';
+SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' @> tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' @> period '[2000-01-01,2000-01-02]';
+SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' @> tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint 'Point(1 1)@2000-01-01' @> periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeompoint 'Point(1 1)@2000-01-01' @> tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' @> periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' @> tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' @> periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' @> tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' @> periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' @> tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' @> periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' @> tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' @> periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' @> tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' @> periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' @> tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' @> periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' @> tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' @> periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' @> tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' @> periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' @> tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' @> periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' @> tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' @> periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' @> tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' @> periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' @> tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' @> periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' @> tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' @> periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' @> tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' @> periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' @> tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  t
@@ -3706,289 +3706,289 @@ SELECT timestamptz '2000-01-01' <@ tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' <@ tgeompoint 'Point(1 1)@2000-01-01';
+SELECT tstzset '{2000-01-01, 2000-01-03}' <@ tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' <@ tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
+SELECT tstzset '{2000-01-01, 2000-01-03}' <@ tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' <@ tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
+SELECT tstzset '{2000-01-01, 2000-01-03}' <@ tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' <@ tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
+SELECT tstzset '{2000-01-01, 2000-01-03}' <@ tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' <@ tgeogpoint 'Point(1.5 1.5)@2000-01-01';
+SELECT tstzset '{2000-01-01, 2000-01-03}' <@ tgeogpoint 'Point(1.5 1.5)@2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' <@ tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
+SELECT tstzset '{2000-01-01, 2000-01-03}' <@ tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' <@ tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
+SELECT tstzset '{2000-01-01, 2000-01-03}' <@ tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' <@ tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
+SELECT tstzset '{2000-01-01, 2000-01-03}' <@ tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' <@ tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT tstzset '{2000-01-01, 2000-01-03}' <@ tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' <@ tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT tstzset '{2000-01-01, 2000-01-03}' <@ tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' <@ tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT tstzset '{2000-01-01, 2000-01-03}' <@ tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' <@ tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT tstzset '{2000-01-01, 2000-01-03}' <@ tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' <@ tgeogpoint 'Point(1 1 1)@2000-01-01';
+SELECT tstzset '{2000-01-01, 2000-01-03}' <@ tgeogpoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' <@ tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT tstzset '{2000-01-01, 2000-01-03}' <@ tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' <@ tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT tstzset '{2000-01-01, 2000-01-03}' <@ tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' <@ tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT tstzset '{2000-01-01, 2000-01-03}' <@ tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' <@ tgeompoint 'Point(1 1)@2000-01-01';
+SELECT tstzspan '[2000-01-01,2000-01-02]' <@ tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' <@ tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
+SELECT tstzspan '[2000-01-01,2000-01-02]' <@ tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' <@ tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
+SELECT tstzspan '[2000-01-01,2000-01-02]' <@ tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' <@ tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
+SELECT tstzspan '[2000-01-01,2000-01-02]' <@ tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' <@ tgeogpoint 'Point(1.5 1.5)@2000-01-01';
+SELECT tstzspan '[2000-01-01,2000-01-02]' <@ tgeogpoint 'Point(1.5 1.5)@2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' <@ tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
+SELECT tstzspan '[2000-01-01,2000-01-02]' <@ tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' <@ tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
+SELECT tstzspan '[2000-01-01,2000-01-02]' <@ tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' <@ tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
+SELECT tstzspan '[2000-01-01,2000-01-02]' <@ tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' <@ tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT tstzspan '[2000-01-01,2000-01-02]' <@ tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' <@ tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT tstzspan '[2000-01-01,2000-01-02]' <@ tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' <@ tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT tstzspan '[2000-01-01,2000-01-02]' <@ tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' <@ tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT tstzspan '[2000-01-01,2000-01-02]' <@ tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' <@ tgeogpoint 'Point(1 1 1)@2000-01-01';
+SELECT tstzspan '[2000-01-01,2000-01-02]' <@ tgeogpoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' <@ tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT tstzspan '[2000-01-01,2000-01-02]' <@ tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' <@ tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT tstzspan '[2000-01-01,2000-01-02]' <@ tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' <@ tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT tstzspan '[2000-01-01,2000-01-02]' <@ tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' <@ tgeompoint 'Point(1 1)@2000-01-01';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' <@ tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' <@ tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' <@ tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' <@ tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' <@ tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' <@ tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' <@ tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' <@ tgeogpoint 'Point(1.5 1.5)@2000-01-01';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' <@ tgeogpoint 'Point(1.5 1.5)@2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' <@ tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' <@ tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' <@ tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' <@ tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' <@ tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' <@ tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' <@ tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' <@ tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' <@ tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' <@ tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' <@ tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' <@ tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' <@ tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' <@ tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' <@ tgeogpoint 'Point(1 1 1)@2000-01-01';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' <@ tgeogpoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' <@ tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' <@ tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' <@ tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' <@ tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' <@ tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' <@ tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
  ?column? 
 ----------
  t
@@ -4378,289 +4378,289 @@ SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
  f
 (1 row)
 
-SELECT tgeompoint 'Point(1 1)@2000-01-01' <@ timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeompoint 'Point(1 1)@2000-01-01' <@ tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' <@ timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' <@ tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' <@ timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' <@ tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' <@ timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' <@ tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' <@ timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' <@ tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' <@ timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' <@ tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' <@ timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' <@ tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' <@ timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' <@ tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <@ timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <@ tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' <@ timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' <@ tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' <@ timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' <@ tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' <@ timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' <@ tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' <@ timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' <@ tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' <@ timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' <@ tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' <@ timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' <@ tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' <@ timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' <@ tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint 'Point(1 1)@2000-01-01' <@ period '[2000-01-01,2000-01-02]';
+SELECT tgeompoint 'Point(1 1)@2000-01-01' <@ tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' <@ period '[2000-01-01,2000-01-02]';
+SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' <@ tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' <@ period '[2000-01-01,2000-01-02]';
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' <@ tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' <@ period '[2000-01-01,2000-01-02]';
+SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' <@ tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' <@ period '[2000-01-01,2000-01-02]';
+SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' <@ tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' <@ period '[2000-01-01,2000-01-02]';
+SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' <@ tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' <@ period '[2000-01-01,2000-01-02]';
+SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' <@ tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' <@ period '[2000-01-01,2000-01-02]';
+SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' <@ tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <@ period '[2000-01-01,2000-01-02]';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <@ tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' <@ period '[2000-01-01,2000-01-02]';
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' <@ tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' <@ period '[2000-01-01,2000-01-02]';
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' <@ tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' <@ period '[2000-01-01,2000-01-02]';
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' <@ tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' <@ period '[2000-01-01,2000-01-02]';
+SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' <@ tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' <@ period '[2000-01-01,2000-01-02]';
+SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' <@ tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' <@ period '[2000-01-01,2000-01-02]';
+SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' <@ tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' <@ period '[2000-01-01,2000-01-02]';
+SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' <@ tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint 'Point(1 1)@2000-01-01' <@ periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeompoint 'Point(1 1)@2000-01-01' <@ tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' <@ periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' <@ tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' <@ periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' <@ tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' <@ periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' <@ tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' <@ periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' <@ tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' <@ periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' <@ tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' <@ periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' <@ tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' <@ periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' <@ tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <@ periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <@ tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' <@ periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' <@ tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' <@ periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' <@ tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' <@ periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' <@ tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' <@ periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' <@ tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' <@ periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' <@ tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' <@ periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' <@ tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' <@ periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' <@ tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
@@ -5267,289 +5267,289 @@ SELECT timestamptz '2000-01-01' -|- tgeogpoint '{[Point(1 1 1)@2000-01-01, Point
  f
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' -|- tgeompoint 'Point(1 1)@2000-01-01';
+SELECT tstzset '{2000-01-01, 2000-01-03}' -|- tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' -|- tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
+SELECT tstzset '{2000-01-01, 2000-01-03}' -|- tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' -|- tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
+SELECT tstzset '{2000-01-01, 2000-01-03}' -|- tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' -|- tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
+SELECT tstzset '{2000-01-01, 2000-01-03}' -|- tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' -|- tgeogpoint 'Point(1.5 1.5)@2000-01-01';
+SELECT tstzset '{2000-01-01, 2000-01-03}' -|- tgeogpoint 'Point(1.5 1.5)@2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' -|- tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
+SELECT tstzset '{2000-01-01, 2000-01-03}' -|- tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' -|- tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
+SELECT tstzset '{2000-01-01, 2000-01-03}' -|- tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' -|- tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
+SELECT tstzset '{2000-01-01, 2000-01-03}' -|- tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' -|- tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT tstzset '{2000-01-01, 2000-01-03}' -|- tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' -|- tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT tstzset '{2000-01-01, 2000-01-03}' -|- tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' -|- tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT tstzset '{2000-01-01, 2000-01-03}' -|- tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' -|- tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT tstzset '{2000-01-01, 2000-01-03}' -|- tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' -|- tgeogpoint 'Point(1 1 1)@2000-01-01';
+SELECT tstzset '{2000-01-01, 2000-01-03}' -|- tgeogpoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' -|- tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT tstzset '{2000-01-01, 2000-01-03}' -|- tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' -|- tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT tstzset '{2000-01-01, 2000-01-03}' -|- tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' -|- tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT tstzset '{2000-01-01, 2000-01-03}' -|- tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' -|- tgeompoint 'Point(1 1)@2000-01-01';
+SELECT tstzspan '[2000-01-01,2000-01-02]' -|- tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' -|- tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
+SELECT tstzspan '[2000-01-01,2000-01-02]' -|- tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' -|- tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
+SELECT tstzspan '[2000-01-01,2000-01-02]' -|- tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' -|- tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
+SELECT tstzspan '[2000-01-01,2000-01-02]' -|- tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' -|- tgeogpoint 'Point(1.5 1.5)@2000-01-01';
+SELECT tstzspan '[2000-01-01,2000-01-02]' -|- tgeogpoint 'Point(1.5 1.5)@2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' -|- tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
+SELECT tstzspan '[2000-01-01,2000-01-02]' -|- tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' -|- tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
+SELECT tstzspan '[2000-01-01,2000-01-02]' -|- tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' -|- tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
+SELECT tstzspan '[2000-01-01,2000-01-02]' -|- tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' -|- tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT tstzspan '[2000-01-01,2000-01-02]' -|- tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' -|- tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT tstzspan '[2000-01-01,2000-01-02]' -|- tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' -|- tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT tstzspan '[2000-01-01,2000-01-02]' -|- tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' -|- tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT tstzspan '[2000-01-01,2000-01-02]' -|- tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' -|- tgeogpoint 'Point(1 1 1)@2000-01-01';
+SELECT tstzspan '[2000-01-01,2000-01-02]' -|- tgeogpoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' -|- tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT tstzspan '[2000-01-01,2000-01-02]' -|- tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' -|- tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT tstzspan '[2000-01-01,2000-01-02]' -|- tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' -|- tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT tstzspan '[2000-01-01,2000-01-02]' -|- tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' -|- tgeompoint 'Point(1 1)@2000-01-01';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' -|- tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' -|- tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' -|- tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' -|- tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' -|- tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' -|- tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' -|- tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' -|- tgeogpoint 'Point(1.5 1.5)@2000-01-01';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' -|- tgeogpoint 'Point(1.5 1.5)@2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' -|- tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' -|- tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' -|- tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' -|- tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' -|- tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' -|- tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' -|- tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' -|- tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' -|- tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' -|- tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' -|- tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' -|- tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' -|- tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' -|- tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' -|- tgeogpoint 'Point(1 1 1)@2000-01-01';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' -|- tgeogpoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' -|- tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' -|- tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' -|- tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' -|- tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' -|- tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' -|- tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
  ?column? 
 ----------
  f
@@ -5939,289 +5939,289 @@ SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
  f
 (1 row)
 
-SELECT tgeompoint 'Point(1 1)@2000-01-01' -|- timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeompoint 'Point(1 1)@2000-01-01' -|- tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' -|- timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' -|- tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' -|- timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' -|- tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' -|- timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' -|- tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' -|- timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' -|- tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' -|- timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' -|- tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' -|- timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' -|- tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' -|- timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' -|- tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' -|- timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' -|- tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' -|- timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' -|- tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' -|- timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' -|- tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' -|- timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' -|- tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' -|- timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' -|- tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' -|- timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' -|- tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' -|- timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' -|- tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' -|- timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' -|- tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint 'Point(1 1)@2000-01-01' -|- period '[2000-01-01,2000-01-02]';
+SELECT tgeompoint 'Point(1 1)@2000-01-01' -|- tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' -|- period '[2000-01-01,2000-01-02]';
+SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' -|- tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' -|- period '[2000-01-01,2000-01-02]';
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' -|- tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' -|- period '[2000-01-01,2000-01-02]';
+SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' -|- tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' -|- period '[2000-01-01,2000-01-02]';
+SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' -|- tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' -|- period '[2000-01-01,2000-01-02]';
+SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' -|- tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' -|- period '[2000-01-01,2000-01-02]';
+SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' -|- tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' -|- period '[2000-01-01,2000-01-02]';
+SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' -|- tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' -|- period '[2000-01-01,2000-01-02]';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' -|- tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' -|- period '[2000-01-01,2000-01-02]';
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' -|- tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' -|- period '[2000-01-01,2000-01-02]';
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' -|- tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' -|- period '[2000-01-01,2000-01-02]';
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' -|- tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' -|- period '[2000-01-01,2000-01-02]';
+SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' -|- tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' -|- period '[2000-01-01,2000-01-02]';
+SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' -|- tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' -|- period '[2000-01-01,2000-01-02]';
+SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' -|- tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' -|- period '[2000-01-01,2000-01-02]';
+SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' -|- tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint 'Point(1 1)@2000-01-01' -|- periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeompoint 'Point(1 1)@2000-01-01' -|- tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' -|- periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' -|- tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' -|- periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' -|- tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' -|- periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' -|- tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' -|- periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' -|- tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' -|- periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' -|- tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' -|- periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' -|- tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' -|- periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' -|- tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' -|- periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' -|- tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' -|- periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' -|- tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' -|- periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' -|- tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' -|- periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' -|- tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' -|- periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' -|- tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' -|- periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' -|- tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' -|- periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' -|- tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' -|- periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' -|- tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
@@ -6828,289 +6828,289 @@ SELECT timestamptz '2000-01-01' ~= tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(
  f
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' ~= tgeompoint 'Point(1 1)@2000-01-01';
+SELECT tstzset '{2000-01-01, 2000-01-03}' ~= tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' ~= tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
+SELECT tstzset '{2000-01-01, 2000-01-03}' ~= tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' ~= tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
+SELECT tstzset '{2000-01-01, 2000-01-03}' ~= tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' ~= tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
+SELECT tstzset '{2000-01-01, 2000-01-03}' ~= tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' ~= tgeogpoint 'Point(1.5 1.5)@2000-01-01';
+SELECT tstzset '{2000-01-01, 2000-01-03}' ~= tgeogpoint 'Point(1.5 1.5)@2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' ~= tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
+SELECT tstzset '{2000-01-01, 2000-01-03}' ~= tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' ~= tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
+SELECT tstzset '{2000-01-01, 2000-01-03}' ~= tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' ~= tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
+SELECT tstzset '{2000-01-01, 2000-01-03}' ~= tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' ~= tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT tstzset '{2000-01-01, 2000-01-03}' ~= tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' ~= tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT tstzset '{2000-01-01, 2000-01-03}' ~= tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' ~= tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT tstzset '{2000-01-01, 2000-01-03}' ~= tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' ~= tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT tstzset '{2000-01-01, 2000-01-03}' ~= tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' ~= tgeogpoint 'Point(1 1 1)@2000-01-01';
+SELECT tstzset '{2000-01-01, 2000-01-03}' ~= tgeogpoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' ~= tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT tstzset '{2000-01-01, 2000-01-03}' ~= tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' ~= tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT tstzset '{2000-01-01, 2000-01-03}' ~= tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestampset '{2000-01-01, 2000-01-03}' ~= tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT tstzset '{2000-01-01, 2000-01-03}' ~= tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' ~= tgeompoint 'Point(1 1)@2000-01-01';
+SELECT tstzspan '[2000-01-01,2000-01-02]' ~= tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' ~= tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
+SELECT tstzspan '[2000-01-01,2000-01-02]' ~= tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' ~= tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
+SELECT tstzspan '[2000-01-01,2000-01-02]' ~= tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' ~= tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
+SELECT tstzspan '[2000-01-01,2000-01-02]' ~= tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' ~= tgeogpoint 'Point(1.5 1.5)@2000-01-01';
+SELECT tstzspan '[2000-01-01,2000-01-02]' ~= tgeogpoint 'Point(1.5 1.5)@2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' ~= tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
+SELECT tstzspan '[2000-01-01,2000-01-02]' ~= tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' ~= tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
+SELECT tstzspan '[2000-01-01,2000-01-02]' ~= tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' ~= tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
+SELECT tstzspan '[2000-01-01,2000-01-02]' ~= tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' ~= tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT tstzspan '[2000-01-01,2000-01-02]' ~= tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' ~= tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT tstzspan '[2000-01-01,2000-01-02]' ~= tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' ~= tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT tstzspan '[2000-01-01,2000-01-02]' ~= tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' ~= tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT tstzspan '[2000-01-01,2000-01-02]' ~= tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' ~= tgeogpoint 'Point(1 1 1)@2000-01-01';
+SELECT tstzspan '[2000-01-01,2000-01-02]' ~= tgeogpoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' ~= tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT tstzspan '[2000-01-01,2000-01-02]' ~= tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' ~= tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT tstzspan '[2000-01-01,2000-01-02]' ~= tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT period '[2000-01-01,2000-01-02]' ~= tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT tstzspan '[2000-01-01,2000-01-02]' ~= tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' ~= tgeompoint 'Point(1 1)@2000-01-01';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' ~= tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' ~= tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' ~= tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' ~= tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' ~= tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' ~= tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' ~= tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' ~= tgeogpoint 'Point(1.5 1.5)@2000-01-01';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' ~= tgeogpoint 'Point(1.5 1.5)@2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' ~= tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' ~= tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' ~= tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' ~= tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' ~= tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' ~= tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' ~= tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' ~= tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' ~= tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' ~= tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' ~= tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' ~= tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' ~= tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' ~= tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' ~= tgeogpoint 'Point(1 1 1)@2000-01-01';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' ~= tgeogpoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' ~= tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' ~= tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' ~= tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' ~= tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' ~= tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' ~= tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
  ?column? 
 ----------
  f
@@ -7500,289 +7500,289 @@ SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
  f
 (1 row)
 
-SELECT tgeompoint 'Point(1 1)@2000-01-01' ~= timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeompoint 'Point(1 1)@2000-01-01' ~= tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' ~= timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' ~= tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' ~= timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' ~= tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' ~= timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' ~= tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' ~= timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' ~= tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' ~= timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' ~= tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' ~= timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' ~= tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' ~= timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' ~= tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' ~= timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' ~= tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' ~= timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' ~= tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' ~= timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' ~= tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' ~= timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' ~= tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' ~= timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' ~= tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' ~= timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' ~= tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' ~= timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' ~= tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' ~= timestampset '{2000-01-01, 2000-01-03}';
+SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' ~= tstzset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint 'Point(1 1)@2000-01-01' ~= period '[2000-01-01,2000-01-02]';
+SELECT tgeompoint 'Point(1 1)@2000-01-01' ~= tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' ~= period '[2000-01-01,2000-01-02]';
+SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' ~= tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' ~= period '[2000-01-01,2000-01-02]';
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' ~= tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' ~= period '[2000-01-01,2000-01-02]';
+SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' ~= tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' ~= period '[2000-01-01,2000-01-02]';
+SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' ~= tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' ~= period '[2000-01-01,2000-01-02]';
+SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' ~= tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' ~= period '[2000-01-01,2000-01-02]';
+SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' ~= tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' ~= period '[2000-01-01,2000-01-02]';
+SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' ~= tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' ~= period '[2000-01-01,2000-01-02]';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' ~= tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' ~= period '[2000-01-01,2000-01-02]';
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' ~= tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' ~= period '[2000-01-01,2000-01-02]';
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' ~= tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' ~= period '[2000-01-01,2000-01-02]';
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' ~= tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' ~= period '[2000-01-01,2000-01-02]';
+SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' ~= tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' ~= period '[2000-01-01,2000-01-02]';
+SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' ~= tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' ~= period '[2000-01-01,2000-01-02]';
+SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' ~= tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' ~= period '[2000-01-01,2000-01-02]';
+SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' ~= tstzspan '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint 'Point(1 1)@2000-01-01' ~= periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeompoint 'Point(1 1)@2000-01-01' ~= tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' ~= periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' ~= tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' ~= periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' ~= tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' ~= periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' ~= tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' ~= periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' ~= tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' ~= periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' ~= tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' ~= periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' ~= tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' ~= periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' ~= tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' ~= periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' ~= tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' ~= periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' ~= tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' ~= periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' ~= tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' ~= periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' ~= tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' ~= periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' ~= tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' ~= periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' ~= tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' ~= periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' ~= tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' ~= periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
+SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' ~= tstzspanset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
  f

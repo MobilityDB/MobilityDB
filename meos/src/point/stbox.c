@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -245,7 +245,7 @@ stbox_out(const STBox *box, int maxdd)
 STBox *
 stbox_make(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin,
   double xmax, double ymin, double ymax, double zmin, double zmax,
-  const Period *p)
+  const Span *p)
 {
   /* Note: zero-fill is done in function stbox_set */
   STBox *result = palloc(sizeof(STBox));
@@ -263,7 +263,7 @@ stbox_make(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin,
 void
 stbox_set(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin,
   double xmax, double ymin, double ymax, double zmin, double zmax,
-  const Period *p, STBox *box)
+  const Span *p, STBox *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBox));
@@ -399,7 +399,7 @@ stbox_to_geo(const STBox *box)
  * @brief Cast a temporal box as a period
  * @sqlop @p ::
  */
-Period *
+Span *
 stbox_to_period(const STBox *box)
 {
   if (! MOBDB_FLAGS_GET_T(box->flags))
@@ -499,6 +499,26 @@ geo_to_stbox(const GSERIALIZED *gs)
 #endif /* MEOS */
 
 /**
+ * Set the spatiotemporal box from an array of geometries/geographies
+ *
+ * @param[in] values Values
+ * @param[in] count Number of elements in the array
+ * @param[out] box Spatiotemporal box
+ */
+void
+geoarr_set_stbox(const Datum *values, int count, STBox *box)
+{
+  geo_set_stbox(DatumGetGserializedP(values[0]), box);
+  for (int i = 1; i < count; i++)
+  {
+    STBox box1;
+    geo_set_stbox(DatumGetGserializedP(values[i]), &box1);
+    stbox_expand(&box1, box);
+  }
+  return;
+}
+
+/**
  * @ingroup libmeos_internal_box_cast
  * @brief Set a spatiotemporal box from a timestamp.
  */
@@ -536,7 +556,7 @@ timestamp_to_stbox(TimestampTz t)
  * @brief Set a spatiotemporal box from a timestamp set.
  */
 void
-timestampset_set_stbox(const TimestampSet *ts, STBox *box)
+tstzset_set_stbox(const Set *ts, STBox *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBox));
@@ -553,10 +573,10 @@ timestampset_set_stbox(const TimestampSet *ts, STBox *box)
  * @sqlop @p ::
  */
 STBox *
-timestampset_to_stbox(const TimestampSet *ts)
+tstzset_to_stbox(const Set *ts)
 {
   STBox *result = palloc(sizeof(STBox));
-  timestampset_set_stbox(ts, result);
+  tstzset_set_stbox(ts, result);
   return result;
 }
 #endif /* MEOS */
@@ -566,7 +586,7 @@ timestampset_to_stbox(const TimestampSet *ts)
  * @brief Set a spatiotemporal box from a period.
  */
 void
-period_set_stbox(const Period *p, STBox *box)
+period_set_stbox(const Span *p, STBox *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBox));
@@ -583,7 +603,7 @@ period_set_stbox(const Period *p, STBox *box)
  * @sqlop @p ::
  */
 STBox *
-period_to_stbox(const Period *p)
+period_to_stbox(const Span *p)
 {
   STBox *result = palloc(sizeof(STBox));
   period_set_stbox(p, result);
@@ -596,7 +616,7 @@ period_to_stbox(const Period *p)
  * @brief Set a spatiotemporal box from a period set.
  */
 void
-periodset_set_stbox(const PeriodSet *ps, STBox *box)
+periodset_set_stbox(const SpanSet *ps, STBox *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBox));
@@ -613,7 +633,7 @@ periodset_set_stbox(const PeriodSet *ps, STBox *box)
  * @sqlop @p ::
  */
 STBox *
-periodset_to_stbox(const PeriodSet *ps)
+periodset_to_stbox(const SpanSet *ps)
 {
   STBox *result = palloc(sizeof(STBox));
   periodset_set_stbox(ps, result);
@@ -645,7 +665,7 @@ geo_timestamp_to_stbox(const GSERIALIZED *gs, TimestampTz t)
  * @sqlfunc stbox()
  */
 STBox *
-geo_period_to_stbox(const GSERIALIZED *gs, const Period *p)
+geo_period_to_stbox(const GSERIALIZED *gs, const Span *p)
 {
   if (gserialized_is_empty(gs))
     return NULL;
@@ -1403,7 +1423,7 @@ inter_stbox_stbox(const STBox *box1, const STBox *box2, STBox *result)
     return false;
 
   double xmin = 0, xmax = 0, ymin = 0, ymax = 0, zmin = 0, zmax = 0;
-  Period period;
+  Span period;
   if (hasx)
   {
     xmin = Max(box1->xmin, box2->xmin);

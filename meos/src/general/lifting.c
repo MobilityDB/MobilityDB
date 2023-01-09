@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -942,7 +942,7 @@ tfunc_tdiscseq_tsequenceset(const TSequence *is, const TSequenceSet *ss,
  */
 static int
 tfunc_tcontseq_tcontseq_single(const TSequence *seq1, const TSequence *seq2,
-  LiftedFunctionInfo *lfinfo, Period *inter, TSequence **result)
+  LiftedFunctionInfo *lfinfo, Span *inter, TSequence **result)
 {
   /*
    * General case
@@ -1048,7 +1048,7 @@ tfunc_tcontseq_tcontseq_single(const TSequence *seq1, const TSequence *seq2,
  */
 static int
 tfunc_tcontseq_tcontseq_multi(const TSequence *seq1, const TSequence *seq2,
-  LiftedFunctionInfo *lfinfo, Period *inter, bool discont, TSequence **result)
+  LiftedFunctionInfo *lfinfo, Span *inter, bool discont, TSequence **result)
 {
   /* Array that keeps the new instants added for the synchronization */
   TInstant **tofree = palloc(sizeof(TInstant *) *
@@ -1253,7 +1253,7 @@ tfunc_tcontseq_tcontseq_dispatch(const TSequence *seq1, const TSequence *seq2,
   LiftedFunctionInfo *lfinfo, TSequence **result)
 {
   /* Test whether the bounding period of the two temporal values overlap */
-  Period inter;
+  Span inter;
   if (! inter_span_span(&seq1->period, &seq2->period, &inter))
     return 0;
 
@@ -1441,7 +1441,7 @@ tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   LiftedFunctionInfo *lfinfo)
 {
   /* Bounding box test */
-  Period p1, p2;
+  Span p1, p2;
   temporal_set_period(temp1, &p1);
   temporal_set_period(temp2, &p2);
   if (! overlaps_span_span(&p1, &p2))
@@ -1790,7 +1790,7 @@ efunc_tdiscseq_tsequenceset(const TSequence *is, const TSequenceSet *ss,
  */
 static int
 efunc_tcontseq_tcontseq_discont(const TSequence *seq1,
-  const TSequence *seq2, LiftedFunctionInfo *lfinfo, Period *inter)
+  const TSequence *seq2, LiftedFunctionInfo *lfinfo, Span *inter)
 {
   /* Array that keeps the new instants added for the synchronization */
   TInstant **tofree = palloc(sizeof(TInstant *) *
@@ -1917,7 +1917,7 @@ efunc_tcontseq_tcontseq(const TSequence *seq1,
   const TSequence *seq2, LiftedFunctionInfo *lfinfo)
 {
   /* Test whether the bounding period of the two temporal values overlap */
-  Period inter;
+  Span inter;
   if (! inter_span_span(&seq1->period, &seq2->period, &inter))
     return -1;
 
@@ -2030,7 +2030,7 @@ efunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   LiftedFunctionInfo *lfinfo)
 {
   /* Bounding box test */
-  Period p1, p2;
+  Span p1, p2;
   temporal_set_period(temp1, &p1);
   temporal_set_period(temp2, &p2);
   if (! overlaps_span_span(&p1, &p2))

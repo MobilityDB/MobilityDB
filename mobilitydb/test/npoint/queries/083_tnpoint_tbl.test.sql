@@ -1,12 +1,12 @@
 ﻿-------------------------------------------------------------------------------
 --
 -- This MobilityDB code is provided under The PostgreSQL License.
--- Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+-- Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
 -- contributors
 --
 -- MobilityDB includes portions of PostGIS version 3 source code released
 -- under the GNU General Public License (GPLv2 or later).
--- Copyright (c) 2001-2022, PostGIS contributors
+-- Copyright (c) 2001-2023, PostGIS contributors
 --
 -- Permission to use, copy, modify, and distribute this software and its
 -- documentation for any purpose, without fee, and without a written
@@ -132,7 +132,7 @@ SELECT MAX(route(inst)) FROM tbl_tnpoint_inst;
 
 SELECT MAX(numValues(routes(temp))) FROM tbl_tnpoint;
 
-SELECT MAX(timespan(getTime(temp))) FROM tbl_tnpoint;
+SELECT MAX(duration(getTime(temp))) FROM tbl_tnpoint;
 
 SELECT MAX(getTimestamp(inst)) FROM tbl_tnpoint_inst;
 
@@ -150,7 +150,7 @@ SELECT DISTINCT MAX(getPosition(startValue(temp))) FROM tbl_tnpoint;
 
 SELECT DISTINCT MAX(getPosition(endValue(temp))) FROM tbl_tnpoint;
 
-SELECT MAX(timespan(temp)) FROM tbl_tnpoint;
+SELECT MAX(duration(temp)) FROM tbl_tnpoint;
 
 SELECT MAX(numInstants(temp)) FROM tbl_tnpoint;
 
@@ -174,11 +174,11 @@ SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tnpoint;
 
 SELECT MAX(numSequences(ts)) FROM tbl_tnpoint_seqset;
 
-SELECT MAX(timespan(startSequence(ts))) FROM tbl_tnpoint_seqset;
+SELECT MAX(duration(startSequence(ts))) FROM tbl_tnpoint_seqset;
 
-SELECT MAX(timespan(endSequence(ts))) FROM tbl_tnpoint_seqset;
+SELECT MAX(duration(endSequence(ts))) FROM tbl_tnpoint_seqset;
 
-SELECT MAX(timespan(sequenceN(ts, numSequences(ts)))) FROM tbl_tnpoint_seqset;
+SELECT MAX(duration(sequenceN(ts, numSequences(ts)))) FROM tbl_tnpoint_seqset;
 
 SELECT MAX(array_length(sequences(ts),1)) FROM tbl_tnpoint_seqset;
 
@@ -209,34 +209,34 @@ WHERE minusTime(temp, t) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz
 WHERE valueAtTimestamp(temp, t) IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestampset
+SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset
 WHERE atTime(temp, ts) IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestampset
+SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset
 WHERE minusTime(temp, ts) IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_period
+SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspan
 WHERE atTime(temp, p) IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_period
+SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspan
 WHERE minusTime(temp, p) IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_periodset
+SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspanset
 WHERE atTime(temp, ps) IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_periodset
+SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspanset
 WHERE minusTime(temp, ps) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz
 WHERE overlapsTime(temp, t) IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestampset
+SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset
 WHERE overlapsTime(temp, ts) IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_period
+SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspan
 WHERE overlapsTime(temp, p) IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_periodset
+SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspanset
 WHERE overlapsTime(temp, ps) IS NOT NULL;
 
 -------------------------------------------------------------------------------
@@ -282,11 +282,11 @@ CREATE INDEX tbl_tnpoint_rtree_idx ON tbl_tnpoint USING gist(temp);
 
 SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, timestamptz '2001-06-01');
 
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, timestampset '{2001-06-01, 2001-07-01}');
+SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, tstzset '{2001-06-01, 2001-07-01}');
 
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, period '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, tstzspan '[2001-06-01, 2001-07-01]');
 
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, tstzspanset '{[2001-06-01, 2001-07-01]}');
 
 DROP INDEX tbl_tnpoint_rtree_idx;
 
@@ -302,11 +302,11 @@ CREATE INDEX tbl_tnpoint_quadtree_idx ON tbl_tnpoint USING spgist(temp);
 
 SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, timestamptz '2001-06-01');
 
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, timestampset '{2001-06-01, 2001-07-01}');
+SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, tstzset '{2001-06-01, 2001-07-01}');
 
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, period '[2001-06-01, 2001-07-01]');
+SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, tstzspan '[2001-06-01, 2001-07-01]');
 
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, periodset '{[2001-06-01, 2001-07-01]}');
+SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, tstzspanset '{[2001-06-01, 2001-07-01]}');
 
 DROP INDEX tbl_tnpoint_quadtree_idx;
 

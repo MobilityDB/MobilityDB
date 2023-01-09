@@ -1,12 +1,12 @@
 -------------------------------------------------------------------------------
 --
 -- This MobilityDB code is provided under The PostgreSQL License.
--- Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+-- Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
 -- contributors
 --
 -- MobilityDB includes portions of PostGIS version 3 source code released
 -- under the GNU General Public License (GPLv2 or later).
--- Copyright (c) 2001-2022, PostGIS contributors
+-- Copyright (c) 2001-2023, PostGIS contributors
 --
 -- Permission to use, copy, modify, and distribute this software and its
 -- documentation for any purpose, without fee, and without a written
@@ -32,83 +32,83 @@
 -- Tests of operators for time types.
 -------------------------------------------------------------------------------
 
-ANALYZE tbl_timestampset_big;
-ANALYZE tbl_period_big;
-ANALYZE tbl_periodset_big;
+ANALYZE tbl_tstzset_big;
+ANALYZE tbl_tstzspan_big;
+ANALYZE tbl_tstzspanset_big;
 
-DROP INDEX IF EXISTS tbl_timestampset_big_rtree_idx;
-DROP INDEX IF EXISTS tbl_period_big_rtree_idx;
-DROP INDEX IF EXISTS tbl_periodset_big_rtree_idx;
-
--------------------------------------------------------------------------------
-
-CREATE INDEX tbl_timestampset_big_rtree_idx ON tbl_timestampset_big USING GIST(ts);
-CREATE INDEX tbl_period_big_rtree_idx ON tbl_period_big USING GIST(p);
-CREATE INDEX tbl_periodset_big_rtree_idx ON tbl_periodset_big USING GIST(ps);
-
-SELECT COUNT(*) FROM tbl_timestampset_big WHERE ts && period '[2001-01-01, 2001-02-01]';
-SELECT COUNT(*) FROM tbl_timestampset_big WHERE ts <@ period '[2001-01-01, 2001-02-01]';
-SELECT COUNT(*) FROM tbl_timestampset_big WHERE ts -|- period '[2001-01-01, 2001-02-01]';
-SELECT COUNT(*) FROM tbl_timestampset_big WHERE ts <<# period '[2001-01-01, 2001-02-01]';
-SELECT COUNT(*) FROM tbl_timestampset_big WHERE ts &<# period '[2001-01-01, 2001-02-01]';
-SELECT COUNT(*) FROM tbl_timestampset_big WHERE ts #>> period '[2001-01-01, 2001-02-01]';
-SELECT COUNT(*) FROM tbl_timestampset_big WHERE ts #&> period '[2001-01-01, 2001-02-01]';
-
-SELECT COUNT(*) FROM tbl_period_big WHERE p @> timestamptz '2001-01-01';
-SELECT COUNT(*) FROM tbl_period_big WHERE p -|- timestamptz '2001-01-01';
-SELECT COUNT(*) FROM tbl_period_big WHERE p <<# timestamptz '2001-01-01';
-SELECT COUNT(*) FROM tbl_period_big WHERE p &<# timestamptz '2001-01-01';
-SELECT COUNT(*) FROM tbl_period_big WHERE p #>> timestamptz '2001-01-01';
-SELECT COUNT(*) FROM tbl_period_big WHERE p #&> timestamptz '2001-01-01';
-
-SELECT COUNT(*) FROM tbl_period_big WHERE p && timestampset '{2001-01-01, 2001-02-01}';
-SELECT COUNT(*) FROM tbl_period_big WHERE p @> timestampset '{2001-01-01, 2001-02-01}';
-SELECT COUNT(*) FROM tbl_period_big WHERE p -|- timestampset '{2001-01-01, 2001-02-01}';
-SELECT COUNT(*) FROM tbl_period_big WHERE p <<# timestampset '{2001-01-01, 2001-02-01}';
-SELECT COUNT(*) FROM tbl_period_big WHERE p &<# timestampset '{2001-01-01, 2001-02-01}';
-SELECT COUNT(*) FROM tbl_period_big WHERE p #>> timestampset '{2001-01-01, 2001-02-01}';
-SELECT COUNT(*) FROM tbl_period_big WHERE p #&> timestampset '{2001-01-01, 2001-02-01}';
-
-SELECT COUNT(*) FROM tbl_period_big WHERE p && period '[2001-06-01, 2001-07-01]';
-SELECT COUNT(*) FROM tbl_period_big WHERE p @> period '[2001-06-01, 2001-07-01]';
-SELECT COUNT(*) FROM tbl_period_big WHERE p <@ period '[2001-06-01, 2001-07-01]';
-SELECT COUNT(*) FROM tbl_period_big WHERE p -|- period '[2001-06-01, 2001-07-01]';
-SELECT COUNT(*) FROM tbl_period_big WHERE p <<# period '[2001-01-01, 2001-02-01]';
-SELECT COUNT(*) FROM tbl_period_big WHERE p &<# period '[2001-01-01, 2001-02-01]';
-SELECT COUNT(*) FROM tbl_period_big WHERE p #>> period '[2001-11-01, 2001-12-01]';
-SELECT COUNT(*) FROM tbl_period_big WHERE p #&> period '[2001-11-01, 2001-12-01]';
-
-SELECT COUNT(*) FROM tbl_period_big WHERE p && periodset '{[2001-01-01, 2001-02-01]}';
-SELECT COUNT(*) FROM tbl_period_big WHERE p @> periodset '{[2001-01-01, 2001-02-01]}';
-SELECT COUNT(*) FROM tbl_period_big WHERE p <@ periodset '{[2001-01-01, 2001-02-01]}';
-SELECT COUNT(*) FROM tbl_period_big WHERE p -|- periodset '{[2001-01-01, 2001-02-01]}';
-SELECT COUNT(*) FROM tbl_period_big WHERE p <<# periodset '{[2001-01-01, 2001-02-01]}';
-SELECT COUNT(*) FROM tbl_period_big WHERE p &<# periodset '{[2001-01-01, 2001-02-01]}';
-SELECT COUNT(*) FROM tbl_period_big WHERE p #>> periodset '{[2001-01-01, 2001-02-01]}';
-SELECT COUNT(*) FROM tbl_period_big WHERE p #&> periodset '{[2001-01-01, 2001-02-01]}';
-
-SELECT COUNT(*) FROM tbl_periodset_big WHERE ps && period '[2001-01-01, 2001-02-01]';
-SELECT COUNT(*) FROM tbl_periodset_big WHERE ps @> period '[2001-01-01, 2001-02-01]';
-SELECT COUNT(*) FROM tbl_periodset_big WHERE ps <@ period '[2001-01-01, 2001-02-01]';
-SELECT COUNT(*) FROM tbl_periodset_big WHERE ps <<# period '[2001-01-01, 2001-02-01]';
-SELECT COUNT(*) FROM tbl_periodset_big WHERE ps &<# period '[2001-01-01, 2001-02-01]';
-SELECT COUNT(*) FROM tbl_periodset_big WHERE ps #>> period '[2001-01-01, 2001-02-01]';
-SELECT COUNT(*) FROM tbl_periodset_big WHERE ps #&> period '[2001-01-01, 2001-02-01]';
-
-DROP INDEX IF EXISTS tbl_timestampset_big_rtree_idx;
-DROP INDEX IF EXISTS tbl_period_big_rtree_idx;
-DROP INDEX IF EXISTS tbl_periodset_big_rtree_idx;
+DROP INDEX IF EXISTS tbl_tstzset_big_rtree_idx;
+DROP INDEX IF EXISTS tbl_tstzspan_big_rtree_idx;
+DROP INDEX IF EXISTS tbl_tstzspanset_big_rtree_idx;
 
 -------------------------------------------------------------------------------
 
-DROP TABLE IF EXISTS tbl_period_test;
-CREATE TABLE tbl_period_test AS
-SELECT period '[2000-01-01,2000-01-02]';
-ANALYZE tbl_period_test;
-DELETE FROM tbl_period_test;
-INSERT INTO tbl_period_test
-SELECT NULL::period UNION SELECT NULL::period;
-ANALYZE tbl_period_test;
-DROP TABLE tbl_period_test;
+CREATE INDEX tbl_tstzset_big_rtree_idx ON tbl_tstzset_big USING GIST(ts);
+CREATE INDEX tbl_tstzspan_big_rtree_idx ON tbl_tstzspan_big USING GIST(p);
+CREATE INDEX tbl_tstzspanset_big_rtree_idx ON tbl_tstzspanset_big USING GIST(ps);
+
+SELECT COUNT(*) FROM tbl_tstzset_big WHERE ts && tstzspan '[2001-01-01, 2001-02-01]';
+SELECT COUNT(*) FROM tbl_tstzset_big WHERE ts <@ tstzspan '[2001-01-01, 2001-02-01]';
+SELECT COUNT(*) FROM tbl_tstzset_big WHERE ts -|- tstzspan '[2001-01-01, 2001-02-01]';
+SELECT COUNT(*) FROM tbl_tstzset_big WHERE ts <<# tstzspan '[2001-01-01, 2001-02-01]';
+SELECT COUNT(*) FROM tbl_tstzset_big WHERE ts &<# tstzspan '[2001-01-01, 2001-02-01]';
+SELECT COUNT(*) FROM tbl_tstzset_big WHERE ts #>> tstzspan '[2001-01-01, 2001-02-01]';
+SELECT COUNT(*) FROM tbl_tstzset_big WHERE ts #&> tstzspan '[2001-01-01, 2001-02-01]';
+
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p @> timestamptz '2001-01-01';
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p -|- timestamptz '2001-01-01';
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p <<# timestamptz '2001-01-01';
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p &<# timestamptz '2001-01-01';
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p #>> timestamptz '2001-01-01';
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p #&> timestamptz '2001-01-01';
+
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p && tstzset '{2001-01-01, 2001-02-01}';
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p @> tstzset '{2001-01-01, 2001-02-01}';
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p -|- tstzset '{2001-01-01, 2001-02-01}';
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p <<# tstzset '{2001-01-01, 2001-02-01}';
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p &<# tstzset '{2001-01-01, 2001-02-01}';
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p #>> tstzset '{2001-01-01, 2001-02-01}';
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p #&> tstzset '{2001-01-01, 2001-02-01}';
+
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p && tstzspan '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p @> tstzspan '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p <@ tstzspan '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p -|- tstzspan '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p <<# tstzspan '[2001-01-01, 2001-02-01]';
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p &<# tstzspan '[2001-01-01, 2001-02-01]';
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p #>> tstzspan '[2001-11-01, 2001-12-01]';
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p #&> tstzspan '[2001-11-01, 2001-12-01]';
+
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p && tstzspanset '{[2001-01-01, 2001-02-01]}';
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p @> tstzspanset '{[2001-01-01, 2001-02-01]}';
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p <@ tstzspanset '{[2001-01-01, 2001-02-01]}';
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p -|- tstzspanset '{[2001-01-01, 2001-02-01]}';
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p <<# tstzspanset '{[2001-01-01, 2001-02-01]}';
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p &<# tstzspanset '{[2001-01-01, 2001-02-01]}';
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p #>> tstzspanset '{[2001-01-01, 2001-02-01]}';
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p #&> tstzspanset '{[2001-01-01, 2001-02-01]}';
+
+SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps && tstzspan '[2001-01-01, 2001-02-01]';
+SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps @> tstzspan '[2001-01-01, 2001-02-01]';
+SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps <@ tstzspan '[2001-01-01, 2001-02-01]';
+SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps <<# tstzspan '[2001-01-01, 2001-02-01]';
+SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps &<# tstzspan '[2001-01-01, 2001-02-01]';
+SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps #>> tstzspan '[2001-01-01, 2001-02-01]';
+SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps #&> tstzspan '[2001-01-01, 2001-02-01]';
+
+DROP INDEX IF EXISTS tbl_tstzset_big_rtree_idx;
+DROP INDEX IF EXISTS tbl_tstzspan_big_rtree_idx;
+DROP INDEX IF EXISTS tbl_tstzspanset_big_rtree_idx;
+
+-------------------------------------------------------------------------------
+
+DROP TABLE IF EXISTS tbl_tstzspan_test;
+CREATE TABLE tbl_tstzspan_test AS
+SELECT tstzspan '[2000-01-01,2000-01-02]';
+ANALYZE tbl_tstzspan_test;
+DELETE FROM tbl_tstzspan_test;
+INSERT INTO tbl_tstzspan_test
+SELECT NULL::tstzspan UNION SELECT NULL::tstzspan;
+ANALYZE tbl_tstzspan_test;
+DROP TABLE tbl_tstzspan_test;
 
 -------------------------------------------------------------------------------

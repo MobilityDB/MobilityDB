@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -158,7 +158,7 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     Datum value;
     bool isnull;
     SpanBound span_lower, span_upper;
-    Period period;
+    Span period;
     SpanBound period_lower, period_upper;
     Temporal *temp;
 
@@ -221,7 +221,7 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     }
 
     span_compute_stats(stats, non_null_cnt, &slot_idx, time_lowers,
-      time_uppers, time_lengths, T_PERIOD);
+      time_uppers, time_lengths, T_TSTZSPAN);
   }
   else if (null_cnt > 0)
   {
@@ -297,7 +297,7 @@ temporal_extra_info(VacAttrStats *stats)
   extra_data->value_hash = &typentry->hash_proc_finfo;
 
   /* Information about the time type */
-  Oid per_typid = type_oid(T_PERIOD);
+  Oid per_typid = type_oid(T_TSTZSPAN);
   typentry = lookup_type_cache(per_typid,
     TYPECACHE_EQ_OPR | TYPECACHE_LT_OPR | TYPECACHE_CMP_PROC_FINFO |
     TYPECACHE_HASH_PROC_FINFO);
@@ -305,7 +305,7 @@ temporal_extra_info(VacAttrStats *stats)
   extra_data->time_eq_opr = typentry->eq_opr;
   extra_data->time_lt_opr = typentry->lt_opr;
   extra_data->time_typbyval = false;
-  extra_data->time_typlen = sizeof(Period);
+  extra_data->time_typlen = sizeof(Span);
   extra_data->time_typalign = 'd';
   extra_data->time_cmp = &typentry->cmp_proc_finfo;
   extra_data->time_hash = &typentry->hash_proc_finfo;

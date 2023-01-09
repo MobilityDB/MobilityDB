@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -443,22 +443,22 @@ tnumber_spgist_get_tbox(const ScanKeyData *scankey, TBox *result)
     Set *set = DatumGetSetP(scankey->sk_argument);
     numset_set_tbox(set, result);
   }
-  else if (type == T_TIMESTAMPSET)
+  else if (type == T_TSTZSET)
   {
     Set *set = DatumGetSetP(scankey->sk_argument);
-    timestampset_set_tbox(set, result);
+    tstzset_set_tbox(set, result);
   }
   else if (tnumber_spantype(type))
   {
     Span *span = DatumGetSpanP(scankey->sk_argument);
     numspan_set_tbox(span, result);
   }
-  else if (type == T_PERIOD)
+  else if (type == T_TSTZSPAN)
   {
-    Period *p = DatumGetSpanP(scankey->sk_argument);
+    Span *p = DatumGetSpanP(scankey->sk_argument);
     period_set_tbox(p, result);
   }
-  else if (tnumber_spansettype(type) || type == T_PERIODSET)
+  else if (tnumber_spansettype(type) || type == T_TSTZSPANSET)
   {
     spanset_tbox_slice(scankey->sk_argument, result);
   }

@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -216,12 +216,12 @@ tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBox *result, Oid typid)
       return false;
     numset_set_tbox(set, result);
   }
-  else if (type == T_TIMESTAMPSET)
+  else if (type == T_TSTZSET)
   {
     Set *set = PG_GETARG_SET_P(1);
     if (set == NULL)
       return false;
-    timestampset_set_tbox(set, result);
+    tstzset_set_tbox(set, result);
   }
   else if (tnumber_spantype(type))
   {
@@ -230,12 +230,12 @@ tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBox *result, Oid typid)
       return false;
     numspan_set_tbox(span, result);
   }
-  else if (type == T_PERIOD)
+  else if (type == T_TSTZSPAN)
   {
-    Period *p = PG_GETARG_SPAN_P(1);
+    Span *p = PG_GETARG_SPAN_P(1);
     period_set_tbox(p, result);
   }
-  else if (tnumber_spansettype(type) || type == T_PERIODSET)
+  else if (tnumber_spansettype(type) || type == T_TSTZSPANSET)
   {
     Datum ssdatum = PG_GETARG_DATUM(1);
     spanset_tbox_slice(ssdatum, result);

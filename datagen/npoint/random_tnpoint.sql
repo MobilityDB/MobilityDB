@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation FOR any purpose, without fee, and without a written
@@ -109,7 +109,7 @@ FROM generate_series(1,10) k;
  *
  * @param[in] lown, highn Inclusive bounds of the range for the identifier of
  * the network point
- * @param[in] lowtime, hightime Inclusive bounds of the period
+ * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  */
 DROP FUNCTION IF EXISTS random_tnpoint_inst;
 CREATE FUNCTION random_tnpoint_inst(lown integer, highn integer,
@@ -132,7 +132,7 @@ FROM generate_series(1,10) k;
  *
  * @param[in] lown, highn Inclusive bounds of the range for the identifier of
  * the network point
- * @param[in] lowtime, hightime Inclusive bounds of the period
+ * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
  * @param[in] mincard, maxcard Inclusive bounds of the number of instants
  */
@@ -169,7 +169,7 @@ FROM generate_series(1,10) k;
  *
  * @param[in] lown, highn Inclusive bounds of the range for the identifier of
  * the network point
- * @param[in] lowtime, hightime Inclusive bounds of the period
+ * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
  * @param[in] mincard, maxcard Inclusive bounds of the number of instants
  * @param[in] linear True when the sequence has linear interpolation
@@ -229,7 +229,7 @@ FROM generate_series (1, 15) AS k;
  *
  * @param[in] lown, highn Inclusive bounds of the range for the identifier of
  * the network point
- * @param[in] lowtime, hightime Inclusive bounds of the period
+ * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
  * @param[in] mincardseq, maxcardseq Inclusive bounds of the number of instants in a
  * sequence

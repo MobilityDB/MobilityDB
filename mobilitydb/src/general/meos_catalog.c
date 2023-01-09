@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -91,8 +91,6 @@ const char *_type_names[] =
   [T_BIGINTSET] = "bigintset",
   [T_BIGINTSPAN] = "bigintspan",
   [T_BIGINTSPANSET] = "bigintspanset",
-  [T_PERIOD] = "period",
-  [T_PERIODSET] = "periodset",
   [T_STBOX] = "stbox",
   [T_TBOOL] = "tbool",
   [T_TBOX] = "tbox",
@@ -102,21 +100,24 @@ const char *_type_names[] =
   [T_TEXT] = "text",
   [T_TEXTSET] = "textset",
   [T_TFLOAT] = "tfloat",
-  [T_TIMESTAMPSET] = "timestampset",
   [T_TIMESTAMPTZ] = "timestamptz",
   [T_TINT] = "tint",
-  [T_TSTZRANGE] = "tstzrange",
   [T_TSTZMULTIRANGE] = "tstzmultirange",
+  [T_TSTZRANGE] = "tstzrange",
+  [T_TSTZSET] = "tstzset",
+  [T_TSTZSPAN] = "tstzspan",
+  [T_TSTZSPANSET] = "tstzspanset",
   [T_TTEXT] = "ttext",
   [T_GEOMETRY] = "geometry",
+  [T_GEOMSET] = "geomset",
   [T_GEOGRAPHY] = "geography",
+  [T_GEOGSET] = "geogset",
   [T_TGEOMPOINT] = "tgeompoint",
   [T_TGEOGPOINT] = "tgeogpoint",
-#if NPOINT
   [T_NPOINT] = "npoint",
+  [T_NPOINTSET] = "npointset",
   [T_NSEGMENT] = "nsegment",
-  [T_TNPOINT] = "tnpoint"
-#endif
+  [T_TNPOINT] = "tnpoint",
 };
 
 /**

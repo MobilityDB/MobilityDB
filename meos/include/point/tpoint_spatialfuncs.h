@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2022, PostGIS contributors
+ * Copyright (c) 2001-2023, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -173,7 +173,7 @@ extern TSequence **tpointseq_at_geometry(const TSequence *seq,
 extern Temporal *tpoint_at_stbox1(const Temporal *temp, const STBox *box,
   bool upper_inc);
 extern Temporal *tpoint_minus_stbox(const Temporal *temp, const STBox *box);
-extern Period **tpointseq_interperiods(const TSequence *seq,
+extern Span **tpointseq_interperiods(const TSequence *seq,
   GSERIALIZED *gsinter, int *count);
 
 /*****************************************************************************/
