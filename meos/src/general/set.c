@@ -366,6 +366,7 @@ set_val_n(const Set *s, int index)
  * @param[in] values Array of values
  * @param[in] count Number of elements in the array
  * @param[in] basetype Base type
+ * @param[in] ordered True for ordered sets
  * @sqlfunc intset(), bigintset(), floatset(), textset(), tstzset()
  * @pymeosfunc TstzSet()
  */

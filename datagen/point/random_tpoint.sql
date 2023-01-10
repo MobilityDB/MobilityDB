@@ -680,8 +680,8 @@ FROM generate_series(1, 15) AS k;
  */
 DROP FUNCTION IF EXISTS random_geog_point_set;
 CREATE FUNCTION random_geog_point_set(lowx float, highx float, lowy float,
-  highy float, maxdelta float, mincard int, maxcard int, srid int DEFAULT 0)
-  RETURNS geomset AS $$
+  highy float, maxdelta float, mincard int, maxcard int, srid int DEFAULT 4326)
+  RETURNS geogset AS $$
 DECLARE
   garr geography[];
 BEGIN

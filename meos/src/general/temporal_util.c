@@ -158,6 +158,12 @@ datum_cmp2(Datum l, Datum r, meosType typel, meosType typer)
     return float8_cmp_internal(DatumGetFloat8(l), (double) DatumGetInt32(r));
   if (typel == T_TEXT && typer == T_TEXT)
     return text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID);
+  if ((typel == T_GEOMETRY || typel == T_GEOGRAPHY) && typel == typer)
+    return gserialized_cmp(DatumGetGserializedP(l), DatumGetGserializedP(r));
+#if NPOINT
+  if (typel == T_NPOINT && typel == typer)
+    return npoint_eq(DatumGetNpointP(l), DatumGetNpointP(r));
+#endif
   elog(ERROR, "unknown compare function for base type: %d", typel);
 }
 
@@ -176,13 +182,10 @@ datum_eq2(Datum l, Datum r, meosType typel, meosType typer)
     (typel == T_INT8 && typer == T_INT8))
     return l == r;
   if (typel == T_FLOAT8 && typer == T_FLOAT8)
-    // return MOBDB_FP_EQ(DatumGetFloat8(l), DatumGetFloat8(r));
     return float8_eq(DatumGetFloat8(l), DatumGetFloat8(r));
   if (typel == T_INT4 && typer == T_FLOAT8)
-    // return MOBDB_FP_EQ((double) DatumGetInt32(l), DatumGetFloat8(r));
     return float8_eq((double) DatumGetInt32(l), DatumGetFloat8(r));
   if (typel == T_FLOAT8 && typer == T_INT4)
-    // return MOBDB_FP_EQ(DatumGetFloat8(l), (double) DatumGetInt32(r));
     return float8_eq(DatumGetFloat8(l), (double) DatumGetInt32(r));
   if (typel == T_TEXT && typer == T_TEXT)
     return text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) == 0;
@@ -192,10 +195,9 @@ datum_eq2(Datum l, Datum r, meosType typel, meosType typer)
     return double3_eq(DatumGetDouble3P(l), DatumGetDouble3P(r));
   if (typel == T_DOUBLE4 && typel == typer)
     return double4_eq(DatumGetDouble4P(l), DatumGetDouble4P(r));
-  if (typel == T_GEOMETRY && typel == typer)
-    return datum_point_eq(l, r);
-  if (typel == T_GEOGRAPHY && typel == typer)
-    return datum_point_eq(l, r);
+  if ((typel == T_GEOMETRY || typel == T_GEOGRAPHY) && typel == typer)
+    return (gserialized_cmp(DatumGetGserializedP(l),
+      DatumGetGserializedP(r)) == 0);
 #if NPOINT
   if (typel == T_NPOINT && typel == typer)
     return npoint_eq(DatumGetNpointP(l), DatumGetNpointP(r));

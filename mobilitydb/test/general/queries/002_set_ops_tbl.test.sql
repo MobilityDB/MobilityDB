@@ -49,8 +49,6 @@ SELECT COUNT(*) FROM tbl_textset t1, tbl_textset t2 WHERE t1.t = t2.t;
 
 -------------------------------------------------------------------------------
 
-SELECT set_union(3,2);
-
 SELECT COUNT(*) FROM tbl_intset t1, tbl_int t2 WHERE t1.i + t2.i IS NOT NULL;
 SELECT COUNT(*) FROM tbl_int t1, tbl_intset t2 WHERE t1.i + t2.i IS NOT NULL;
 SELECT COUNT(*) FROM tbl_intset t1, tbl_intset t2 WHERE t1.i + t2.i IS NOT NULL;

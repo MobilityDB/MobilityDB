@@ -265,6 +265,26 @@ INSERT INTO tbl_geography3D(g)
 (SELECT g FROM tbl_geog_multipolygon3D ORDER BY k LIMIT (size * 0.2));
 
 ------------------------------------------------------------------------------
+-- Set Point Types
+------------------------------------------------------------------------------
+
+DROP TABLE IF EXISTS tbl_geompointset;
+CREATE TABLE tbl_geompointset AS
+/* Add perc NULL values */
+SELECT k, NULL AS g
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_geom_point_set(-100, 100, -100, 100, 10, 5, 10)
+FROM generate_series(perc+1, size) AS k;
+
+DROP TABLE IF EXISTS tbl_geogpointset;
+CREATE TABLE tbl_geogpointset AS
+/* Add perc NULL values */
+SELECT k, NULL AS g
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_geog_point_set(0, 80, 0, 80, 10, 5, 10)
+FROM generate_series(perc+1, size) AS k;
+
+------------------------------------------------------------------------------
 -- Temporal Point Types
 ------------------------------------------------------------------------------
 

@@ -187,6 +187,7 @@ tsequenceset_seq_n(const TSequenceSet *ss, int index)
  *
  * @param[in] sequences Array of sequences
  * @param[in] count Number of elements in the array
+ * @param[in] maxcount Maximum number of elements in the array
  * @param[in] normalize True if the resulting value should be normalized.
  * In particular, normalize is false when synchronizing two temporal sequence
  * sets before applying an operation to them.

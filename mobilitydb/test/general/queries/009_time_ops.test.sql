@@ -217,8 +217,6 @@ SELECT tstzspanset '{[2000-01-01, 2000-01-02], [2000-01-03, 2000-01-04]}' #&> ts
 
 -------------------------------------------------------------------------------
 
-SELECT timestamptz '2000-01-01' + timestamptz '2000-01-01';
-SELECT timestamptz '2000-01-01' + timestamptz '2000-01-02';
 SELECT timestamptz '2000-01-01' + tstzset '{2000-01-02, 2000-01-03, 2000-01-05}';
 SELECT timestamptz '2000-01-01' + tstzset '{2000-01-01, 2000-01-03, 2000-01-05}';
 SELECT timestamptz '2000-01-05' + tstzset '{2000-01-01, 2000-01-03, 2000-01-05}';
@@ -287,10 +285,6 @@ SELECT tstzspanset '{[2000-01-05, 2000-01-07], [2000-01-08, 2000-01-09], [2000-0
 
 -------------------------------------------------------------------------------
 
--- set_minus should be used otherwise it calls the PostgreSQL - between
--- timestamps that yields an interval
-SELECT set_minus(timestamptz '2000-01-01', timestamptz '2000-01-01');
-SELECT set_minus(timestamptz '2000-01-01', timestamptz '2000-01-02');
 SELECT timestamptz '2000-01-01' - tstzset '{2000-01-02, 2000-01-03, 2000-01-05}';
 SELECT timestamptz '2000-01-01' - tstzset '{2000-01-01, 2000-01-03, 2000-01-05}';
 SELECT timestamptz '2000-01-05' - tstzset '{2000-01-01, 2000-01-03, 2000-01-05}';
@@ -363,8 +357,6 @@ SELECT tstzspanset '{[2000-01-01, 2000-01-03],[2000-01-04, 2000-01-05]}' - tstzs
 
 -------------------------------------------------------------------------------
 
-SELECT timestamptz '2000-01-01' * timestamptz '2000-01-01';
-SELECT timestamptz '2000-01-01' * timestamptz '2000-01-02';
 SELECT timestamptz '2000-01-01' * tstzset '{2000-01-02, 2000-01-03, 2000-01-05}';
 SELECT timestamptz '2000-01-01' * tstzset '{2000-01-01, 2000-01-03, 2000-01-05}';
 SELECT timestamptz '2000-01-05' * tstzset '{2000-01-01, 2000-01-03, 2000-01-05}';

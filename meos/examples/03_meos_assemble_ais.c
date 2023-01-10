@@ -30,7 +30,8 @@
 /**
  * @brief A simple program that reads AIS data from a CSV file, constructs
  * trips from these records, and outputs for each trip the MMSI, the number of
- * instants, and the distance travelled.
+ * instants, and the distance travelled. The program also stores in a CSV file
+ * the assembled trips.
  *
  * Please read the assumptions made about the input file `aisinput.csv` in the
  * file `meos_read_ais.c` in the same directory. Furthermore, this program
@@ -41,7 +42,7 @@
  *
  * The program can be build as follows
  * @code
- * gcc -Wall -g -I/usr/local/include -o meos_assemble_ais_full meos_assemble_ais_full.c -L/usr/local/lib -lmeos
+ * gcc -Wall -g -I/usr/local/include -o 03_meos_assemble_ais 03_meos_assemble_ais.c -L/usr/local/lib -lmeos
  * @endcode
  */
 
@@ -52,6 +53,8 @@
 
 /* Maximum number of instants in an input trip */
 #define MAX_INSTANTS 50000
+/* Number of instants in a batch for printing a marker */
+#define NO_INSTANTS_BATCH 1000
 /* Maximum length in characters of a header record in the input CSV file */
 #define MAX_LENGTH_HEADER 1024
 /* Maximum length in characters of a point in the input data */
@@ -97,6 +100,8 @@ int main(void)
   int numships = 0;
   /* Iterator variables */
   int i, j;
+  /* Return value */
+  int return_value = 0;
 
   /* Substitute the full file path in the first argument of fopen */
   FILE *file = fopen("aisinput.csv", "r");
@@ -104,6 +109,7 @@ int main(void)
   if (! file)
   {
     printf("Error opening file\n");
+    meos_finalize();
     return 1;
   }
 
@@ -117,6 +123,9 @@ int main(void)
   /* Read the first line of the file with the headers */
   fscanf(file, "%1023s\n", header_buffer);
 
+  printf("Reading the instants (one marker every %d instants)\n",
+    NO_INSTANTS_BATCH);
+
   /* Continue reading the file */
   do
   {
@@ -128,8 +137,11 @@ int main(void)
     if (read == 5)
     {
       no_records++;
-      printf("*");
-      fflush(stdout);
+      if (no_records % NO_INSTANTS_BATCH == 0)
+      {
+        printf("*");
+        fflush(stdout);
+      }
     }
 
     if (read != 5 && !feof(file))
@@ -140,20 +152,9 @@ int main(void)
 
     if (ferror(file))
     {
-      printf("Error reading file\n");
-      fclose(file);
-      /* Free memory */
-      for (i = 0; i < numships; i++)
-      {
-        free(trips[i].trip);
-        free(trips[i].SOG);
-        for (j = 0; j < trips[i].numinstants; j++)
-        {
-          free(trips[i].trip_instants[j]);
-          free(trips[i].SOG_instants[j]);
-        }
-      }
-      return 1;
+      printf("Error reading the input file");
+      return_value = 1;
+      goto cleanup;
     }
 
     /* Find the place to store the new instant */
@@ -169,6 +170,13 @@ int main(void)
     if (ship < 0)
     {
       ship = numships++;
+      if (ship == MAX_TRIPS)
+      {
+        printf("The maximum number of ships in the input file is bigger than %d",
+          MAX_TRIPS);
+        return_value = 1;
+        goto cleanup;
+      }
       trips[ship].MMSI = rec.MMSI;
     }
 
@@ -186,6 +194,9 @@ int main(void)
     TInstant *inst2 = (TInstant *) tfloatinst_make(rec.SOG, rec.T);
     trips[ship].SOG_instants[trips[ship].numinstants++] = inst2;
   } while (!feof(file));
+
+  /* Close the input file */
+  fclose(file);
 
   printf("\n%d records read.\n%d incomplete records ignored.\n",
     no_records, no_nulls);
@@ -208,6 +219,33 @@ int main(void)
       temporal_num_instants(trips[i].SOG), tnumber_twavg(trips[i].SOG));
   }
 
+  /* Open the output file */
+  file = fopen("aistrips.csv", "w+");
+
+  /* Write the header line */
+  fprintf(file,"mmsi,trip,sog\n");
+
+  /* Loop for each trip */
+  for (i = 0; i < numships; i++)
+  {
+    /* Write line in the CSV file */
+    char *trip_str = tpoint_out(trips[i].trip, 6);
+    char *sog_str = tfloat_out(trips[i].SOG, 6);
+    fprintf(file,"%ld,%s,%s\n", trips[i].MMSI, trip_str, sog_str);
+    free(trip_str); free(sog_str);
+  }
+
+  /* Close the file */
+  fclose(file);
+
+  /* Calculate the elapsed time */
+  t = clock() - t;
+  double time_taken = ((double) t) / CLOCKS_PER_SEC;
+  printf("The program took %f seconds to execute\n", time_taken);
+
+/* Clean up */
+cleanup:
+
  /* Free memory */
   for (i = 0; i < numships; i++)
   {
@@ -220,16 +258,8 @@ int main(void)
     }
   }
 
-  /* Close the file */
-  fclose(file);
-
-  /* Calculate the elapsed time */
-  t = clock() - t;
-  double time_taken = ((double) t) / CLOCKS_PER_SEC;
-  printf("The program took %f seconds to execute\n", time_taken);
-
   /* Finalize MEOS */
   meos_finalize();
 
-  return 0;
+  return return_value;
 }

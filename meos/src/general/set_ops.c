@@ -996,93 +996,6 @@ overright_set_set(const Set *s1, const Set *s2)
 
 /**
  * @ingroup libmeos_internal_setspan_set
- * @brief Return the union of two values
- */
-Set *
-union_value_value(Datum d1, Datum d2, meosType basetype)
-{
-  Set *result;
-  int cmp = datum_cmp(d1, d2, basetype);
-  if (cmp == 0)
-    result = set_make(&d1, 1, basetype, ORDERED);
-  else
-  {
-    Datum values[2];
-    if (cmp < 0)
-    {
-      values[0] = d1;
-      values[1] = d2;
-    }
-    else
-    {
-      values[0] = d2;
-      values[1] = d1;
-    }
-    result = set_make(values, 2, basetype, ORDERED);
-  }
-  return result;
-}
-
-#if MEOS
-/**
- * @ingroup libmeos_setspan_set
- * @brief Return the union of two values
- * @sqlop @p +
- */
-Set *
-union_int_int(int i1, int i2)
-{
-  return union_value_value(Int32GetDatum(i1), Int32GetDatum(i2), T_INT4);
-}
-
-/**
- * @ingroup libmeos_setspan_set
- * @brief Return the union of two values
- * @sqlop @p +
- */
-Set *
-union_bigint_bigint(int64 i1, int64 i2)
-{
-  return union_value_value(Int64GetDatum(i1), Int64GetDatum(i2), T_INT8);
-}
-
-/**
- * @ingroup libmeos_setspan_set
- * @brief Return the union of two values
- * @sqlop @p +
- */
-Set *
-union_float_float(double d1, double d2)
-{
-  return union_value_value(Float8GetDatum(d1), Float8GetDatum(d2), T_FLOAT8);
-}
-
-/**
- * @ingroup libmeos_setspan_set
- * @brief Return the union of two values
- * @sqlop @p +
- */
-Set *
-union_text_text(text *txt1, text *txt2)
-{
-  return union_value_value(PointerGetDatum(txt1), PointerGetDatum(txt2), T_TEXT);
-}
-
-/**
- * @ingroup libmeos_setspan_set
- * @brief Return the union of the timestamps
- * @sqlop @p +
- */
-Set *
-union_timestamp_timestamp(TimestampTz t1, TimestampTz t2)
-{
-  return union_value_value(TimestampTzGetDatum(t1), TimestampTzGetDatum(t2),
-    T_TIMESTAMPTZ);
-}
-#endif /* MEOS */
-
-/**
- * @ingroup libmeos_internal_setspan_set
  * @brief Return the union of a value and a set.
  */
 Set *
@@ -1164,9 +1077,9 @@ union_textset_text(const Set *s, text *txt)
  * @sqlop @p +
  */
 Set *
-union_tstzset_timestamp(const Set *ts, const TimestampTz t)
+union_tstzset_timestamp(const Set *s, const TimestampTz t)
 {
-  return union_timestamp_tstzset(t, ts);
+  return union_set_value(s, t, T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
 
@@ -1184,19 +1097,6 @@ union_set_set(const Set *s1, const Set *s2)
 /*****************************************************************************
  * Set intersection
  *****************************************************************************/
-
-/**
- * @ingroup libmeos_internal_setspan_set
- * @brief Return the intersection of two values
- */
-bool
-intersection_value_value(Datum d1, Datum d2, meosType basetype, Datum *result)
-{
-  if (datum_ne(d1, d2, basetype))
-    return false;
-  *result  = d1;
-  return true;
-}
 
 /**
  * @ingroup libmeos_internal_setspan_set
@@ -1302,81 +1202,6 @@ intersection_set_set(const Set *s1, const Set *s2)
  * Set difference
  * The functions produce new results that must be freed
  *****************************************************************************/
-
-/**
- * @ingroup libmeos_internal_setspan_set
- * @brief Return the difference of two values
- */
-bool
-minus_value_value(Datum d1, Datum d2, meosType basetype, Datum *result)
-{
-  if (datum_eq(d1, d2, basetype))
-    return false;
-  *result = d1;
-  return true;
-}
-
-#if MEOS
-/**
- * @ingroup libmeos_setspan_set
- * @brief Return the difference of two values
- * @sqlop @p -
- */
-bool
-minus_int_int(int i1, int i2, int *result)
-{
-  Datum v;
-  bool found = minus_value_value(Int32GetDatum(i1), Int32GetDatum(i2),
-    T_INT4, &v);
-  *result = DatumGetInt32(v);
-  return found;
-}
-
-/**
- * @ingroup libmeos_setspan_set
- * @brief Return the difference of two values
- * @sqlop @p -
- */
-bool
-minus_bigint_bigint(int64 i1, int64 i2, int64 *result)
-{
-  Datum v;
-  bool found = minus_value_value(Int64GetDatum(i1), Int64GetDatum(i2),
-    T_INT8, &v);
-  *result = DatumGetInt64(v);
-  return found;
-}
-
-/**
- * @ingroup libmeos_setspan_set
- * @brief Return the intersection of two values
- * @sqlop @p -
- */
-bool
-minus_float_float(double d1, double d2, double *result)
-{
-  Datum v;
-  bool found = minus_value_value(Float8GetDatum(d1), Float8GetDatum(d2),
-    T_FLOAT8, &v);
-  *result = DatumGetFloat8(v);
-  return found;
-}
-
-/**
- * @ingroup libmeos_setspan_set
- * @brief Return the intersection of two values
- * @sqlop @p -
- */
-bool
-minus_text_text(const text *txt1, const text *txt2, text **result)
-{
-  Datum v;
-  bool found = minus_value_value(PointerGetDatum(txt1), PointerGetDatum(txt2),
-    T_TEXT, &v);
-  *result = DatumGetTextP(v);
-  return found;
-}
-#endif /* MEOS */
 
 /**
  * @ingroup libmeos_internal_setspan_set

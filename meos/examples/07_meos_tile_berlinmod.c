@@ -42,7 +42,7 @@
  *
  * The program can be build as follows
  * @code
- * gcc -Wall -g -I/usr/local/include -o meos_tile_berlinmod meos_tile_berlinmod.c -L/usr/local/lib -lmeos
+ * gcc -Wall -g -I/usr/local/include -o 07_meos_tile_berlinmod 07_meos_tile_berlinmod.c -L/usr/local/lib -lmeos
  * @endcode
  */
 

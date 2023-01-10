@@ -82,12 +82,6 @@ SELECT COUNT(*) FROM tbl_textset t1, tbl_textset t2 WHERE t1.t = t2.t;
     99
 (1 row)
 
-SELECT set_union(3,2);
- set_union 
------------
- {2, 3}
-(1 row)
-
 SELECT COUNT(*) FROM tbl_intset t1, tbl_int t2 WHERE t1.i + t2.i IS NOT NULL;
  count 
 -------
