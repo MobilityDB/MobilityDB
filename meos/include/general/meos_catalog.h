@@ -34,8 +34,12 @@
 #ifndef __MEOS_CATALOG_H__
 #define __MEOS_CATALOG_H__
 
+/* C */
+#include <stdbool.h>
 /* PostgreSQL */
-#include <postgres.h>
+#ifndef int16
+typedef signed short int16;
+#endif
 
 /*****************************************************************************
  * Data structures
