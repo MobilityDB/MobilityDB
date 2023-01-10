@@ -39,13 +39,14 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <utils/timestamp.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/pg_types.h"
 #include "general/temporal_out.h"
 #include "general/temporal_parser.h"
 #include "general/temporal_util.h"
+#include "point/tpoint_out.h"
 #include "npoint/tnpoint_boxops.h"
 
 /*****************************************************************************
@@ -205,6 +206,49 @@ set_out(const Set *s, int maxdd)
   return stringarr_to_string(strings, s->count, outlen, "", '{', '}');
 }
 
+/*****************************************************************************/
+
+/**
+ * @ingroup libmeos_internal_spanset_inout
+ * @brief Return the Well-Known Text (WKT) representation of a geoset.
+ * @sqlfunc asText()
+ */
+char *
+geoset_out(const Set *set, int maxdd, outfunc value_out)
+{
+  char **strings = palloc(sizeof(char *) * set->count);
+  size_t outlen = 0;
+  for (int i = 0; i < set->count; i++)
+  {
+    Datum value = set_val_n(set, i);
+    strings[i] = value_out(value, 0, maxdd);
+    outlen += strlen(strings[i]) + 2;
+  }
+  return stringarr_to_string(strings, set->count, outlen, "", '{', '}');
+}
+
+/**
+ * @ingroup libmeos_spanset_inout
+ * @brief Return the Well-Known Text (WKT) representation a geoset.
+ * @sqlfunc asText()
+ */
+char *
+geoset_as_text(const Set *set, int maxdd)
+{
+  return geoset_out(set, maxdd, &wkt_out);
+}
+
+/**
+ * @ingroup libmeos_spanset_inout
+ * @brief Return the Extended Well-Known Text (EWKT) representation a geoset.
+ * @sqlfunc asEWKT()
+ */
+char *
+geoset_as_ewkt(const Set *set, int maxdd)
+{
+  return geoset_out(set, maxdd, &ewkt_out);
+}
+
 /*****************************************************************************
  * Constructor functions
  *****************************************************************************/
@@ -237,7 +281,7 @@ valuearr_compute_bbox(const Datum *values, meosType basetype, int count,
 {
   /* Currently, only geo set types have bounding box */
   ensure_set_basetype(basetype);
-  if (talpha_type(basetype) || tnumber_type(basetype))
+  if (alphanum_basetype(basetype))
     ;
   else if (basetype == T_GEOMETRY || basetype == T_GEOGRAPHY)
     geoarr_set_stbox(values, count, (STBox *) box);
@@ -335,8 +379,12 @@ set_make(const Datum *values, int count, meosType basetype, bool ordered)
     {
       if (datum_ge(values[i], values[i + 1], basetype))
       {
-        char *str1 = basetype_out(values[i], basetype, OUT_DEFAULT_DECIMAL_DIGITS);
-        char *str2 = basetype_out(values[i + 1], basetype, OUT_DEFAULT_DECIMAL_DIGITS);
+        char *str1 = geo_basetype(basetype) ?
+          ewkt_out(values[i], basetype, OUT_DEFAULT_DECIMAL_DIGITS) :
+          basetype_out(values[i], basetype, OUT_DEFAULT_DECIMAL_DIGITS);
+        char *str2 = geo_basetype(basetype) ?
+          ewkt_out(values[i + 1], basetype, OUT_DEFAULT_DECIMAL_DIGITS) :
+          basetype_out(values[i + 1], basetype, OUT_DEFAULT_DECIMAL_DIGITS);
         elog(ERROR, "The values of a set must be increasing: %s %s",
           str1, str2);
         pfree(str1); pfree(str2);

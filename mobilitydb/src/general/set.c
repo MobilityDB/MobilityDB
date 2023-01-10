@@ -108,7 +108,7 @@ Set_recv(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Set_send);
 /**
  * @ingroup mobilitydb_setspan_inout
- * @brief Send function for timestamp set
+ * @brief Send function for sets
  * @sqlfunc intset_send(), bigintset_send(), floatset_send(), tstzset_send()
  */
 PGDLLEXPORT Datum
@@ -121,6 +121,48 @@ Set_send(PG_FUNCTION_ARGS)
   bytea *result = bstring2bytea(wkb, wkb_size);
   pfree(wkb);
   PG_RETURN_BYTEA_P(result);
+}
+
+/*****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Geoset_as_text);
+/**
+ * @ingroup mobilitydb_setspan_inout
+ * @brief Return the Well-Known Text (WKT) representation a geoset.
+ * @sqlfunc asText()
+ */
+PGDLLEXPORT Datum
+Geoset_as_text(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+    dbl_dig_for_wkt = PG_GETARG_INT32(1);
+  char *str = geoset_as_text(s, dbl_dig_for_wkt);
+  text *result = cstring2text(str);
+  pfree(str);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_TEXT_P(result);
+}
+
+PG_FUNCTION_INFO_V1(Geoset_as_ewkt);
+/**
+ * @ingroup mobilitydb_setspan_inout
+ * @brief Return the Extended Well-Known Text (EWKT) representation a geoset.
+ * @sqlfunc asEWKT()
+ */
+PGDLLEXPORT Datum
+Geoset_as_ewkt(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+    dbl_dig_for_wkt = PG_GETARG_INT32(1);
+  char *str = geoset_as_ewkt(s, dbl_dig_for_wkt);
+  text *result = cstring2text(str);
+  pfree(str);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_TEXT_P(result);
 }
 
 /*****************************************************************************

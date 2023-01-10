@@ -1166,18 +1166,7 @@ union_textset_text(const Set *s, text *txt)
 Set *
 union_tstzset_timestamp(const Set *ts, const TimestampTz t)
 {
-  return union_set_value(ts, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
-}
-
-/**
- * @ingroup libmeos_setspan_set
- * @brief Return the union of a timestamp and a timestamp set
- * @sqlop @p +
- */
-Set *
-union_timestamp_tstzset(const TimestampTz t, const Set *ts)
-{
-  return union_tstzset_timestamp(ts, t);
+  return union_timestamp_tstzset(t, ts);
 }
 #endif /* MEOS */
 

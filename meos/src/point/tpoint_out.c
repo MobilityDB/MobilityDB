@@ -54,7 +54,7 @@
  * @brief Output a geometry in Well-Known Text (WKT) format.
  * @note The parameter `type` is not needed for temporal points
  */
-static char *
+char *
 wkt_out(Datum value, meosType type __attribute__((unused)), int maxdd)
 {
   GSERIALIZED *gs = DatumGetGserializedP(value);

@@ -34,12 +34,8 @@
 #ifndef __MEOS_CATALOG_H__
 #define __MEOS_CATALOG_H__
 
-/* C */
-#include <stdbool.h>
 /* PostgreSQL */
-#ifndef int16
-typedef signed short int16;
-#endif
+#include <postgres.h>
 
 /*****************************************************************************
  * Data structures
@@ -149,6 +145,13 @@ extern meosType basetype_settype(meosType basetype);
 
 /* Catalog functions */
 
+extern void ensure_basetype(meosType basetype);
+extern bool alpha_basetype(meosType basetype);
+extern bool number_basetype(meosType basetype);
+extern bool alphanum_basetype(meosType basetype);
+extern bool geo_basetype(meosType basetype);
+extern bool spatial_basetype(meosType basetype);
+
 extern bool time_type(meosType timetype);
 extern void ensure_time_type(meosType timetype);
 extern bool set_basetype(meosType basetype);
@@ -197,7 +200,6 @@ extern bool tnumber_spansettype(meosType spansettype);
 extern void ensure_tnumber_spansettype(meosType spansettype);
 extern bool tspatial_type(meosType temptype);
 extern bool tspatial_basetype(meosType basetype);
-extern bool tgeo_basetype(meosType basetype);
 extern bool tgeo_type(meosType basetype);
 extern void ensure_tgeo_type(meosType basetype);
 

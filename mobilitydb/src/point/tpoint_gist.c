@@ -275,7 +275,7 @@ static bool
 tpoint_gist_get_stbox(FunctionCallInfo fcinfo, STBox *result,
   meosType type)
 {
-  if (tgeo_basetype(type))
+  if (geo_basetype(type))
   {
     GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
     if (gs == NULL || gserialized_is_empty(gs))

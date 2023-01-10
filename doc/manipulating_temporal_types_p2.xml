@@ -20,7 +20,7 @@
 			<listitem id="frechetDistance">
 				<indexterm><primary><varname>frechetDistance</varname></primary></indexterm>
 				<para>Get the discrete <ulink url="https://en.wikipedia.org/wiki/Fr%C3%A9chet_distance">Fréchet distance</ulink> between two temporal values &Z_support; &geography_support;</para>
-				<para><varname>frechetDistance({tnumber, tgeo}, {tnumber, tgeo}): float</varname></para>
+				<para><varname>frechetDistance({tnumber, tgeo}, {tnumber, tgeo}) → float</varname></para>
 				<para>This function has a linear space complexity since only two rows of the distance matrix are allocated in memory. Nevertheless, its time complexity is quadratic in the number of instants of the temporal values. Therefore, the function will require considerable time for temporal values with large number of instants.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT frechetDistance(tfloat '[1@2001-01-01, 3@2001-01-03, 1@2001-01-06]',
@@ -37,7 +37,7 @@ SELECT round(frechetDistance(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001
 			<listitem id="frechetDistancePath">
 				<indexterm><primary><varname>frechetDistancePath</varname></primary></indexterm>
 				<para>Get the correspondences between two temporal values with respect to the discrete Fréchet distance &Z_support; &geography_support; &SRF;</para>
-				<para><varname>frechetDistancePath({tnumber, tgeo}, {tnumber, tgeo}): pairs</varname></para>
+				<para><varname>frechetDistancePath({tnumber, tgeo}, {tnumber, tgeo}) → pairs</varname></para>
 				<para>This function requires to allocate in memory a distance matrix whose size is quadratic in the number of instants of the temporal values. Therefore, the function will fail for temporal values with large number of instants depending on the available memory.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT frechetDistancePath(tfloat '[1@2001-01-01, 3@2001-01-03, 1@2001-01-06]',
@@ -62,7 +62,7 @@ SELECT frechetDistancePath(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-0
 			<listitem id="dynamicTimeWarp">
 				<indexterm><primary><varname>dynamicTimeWarp</varname></primary></indexterm>
 				<para>Get the <ulink url="https://en.wikipedia.org/wiki/Dynamic_time_warping">Dynamic Time Warp</ulink> (DTW) distance between two temporal values &Z_support; &geography_support;</para>
-				<para><varname>dynamicTimeWarp({tnumber, tgeo}, {tnumber, tgeo}): float</varname></para>
+				<para><varname>dynamicTimeWarp({tnumber, tgeo}, {tnumber, tgeo}) → float</varname></para>
 				<para>This function has a linear space complexity since only two rows of the distance matrix are allocated in memory. Nevertheless, its time complexity is quadratic in the number of instants of the temporal values. Therefore, the function will require considerable time for temporal values with large number of instants.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT dynamicTimeWarp(tfloat '[1@2001-01-01, 3@2001-01-03, 1@2001-01-06]',
@@ -79,7 +79,7 @@ SELECT round(dynamicTimeWarp(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001
 			<listitem id="dynamicTimeWarpPath">
 				<indexterm><primary><varname>dynamicTimeWarpPath</varname></primary></indexterm>
 				<para>Get the correspondences between two temporal values with respect to the discrete Fréchet distance &Z_support; &geography_support; &SRF;</para>
-				<para><varname>dynamicTimeWarpPath({tnumber, tgeo}, {tnumber, tgeo}): pairs</varname></para>
+				<para><varname>dynamicTimeWarpPath({tnumber, tgeo}, {tnumber, tgeo}) → pairs</varname></para>
 				<para>This function requires to allocate a distance matrix which is quadratic in the size of the number of instants of the temporal values. Therefore, memory allocation will fail for temporal values with large number of instants.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT dynamicTimeWarpPath(tfloat '[1@2001-01-01, 3@2001-01-03, 1@2001-01-06]',
@@ -132,7 +132,7 @@ SELECT dynamicTimeWarpPath(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-0
 					<indexterm><primary><varname>bucketList</varname></primary></indexterm>
 					<para>Return a set of couples (index, bucket) that cover the span or tstzspan with buckets of the same size or duration aligned with the origin. &SRF;</para>
 					<para>If the origin is not specified, it is set by default to 0 for number spans and Monday, January 3, 2000 for periods. The indices start by 1.</para>
-					<para><varname>bucketList(bounds unitspan,size number,origin number=0): setof index_span</varname></para>
+					<para><varname>bucketList(bounds unitspan,size number,origin number=0) → setof index_span</varname></para>
 					<para><varname>bucketList(bounds tstzspan,duration interval,origin timestamptz='2000-01-03'):</varname></para>
 					<para><varname>  setof index_span</varname></para>
 					<programlisting language="sql" xml:space="preserve">
@@ -165,7 +165,7 @@ SELECT bucketList(tfloat '[1@2000-01-15, 10@2000-01-25]'::tstzspan, '2 days', '2
 					<indexterm><primary><varname>valueBucket</varname></primary></indexterm>
 					<para> Return the start value of the bucket that contains the input number.</para>
 					<para>If the origin is not specified, it is set by default to 0.</para>
-					<para><varname>valueBucket(value number,size number,origin number=0): number</varname></para>
+					<para><varname>valueBucket(value number,size number,origin number=0) → number</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT valueBucket(3, 2);
 -- 2
@@ -178,7 +178,7 @@ SELECT valueBucket(3.5, 2.5, 1.5);
 					<indexterm><primary><varname>spanBucket</varname></primary></indexterm>
 					<para>Return the span in the bucket space that contains the input number.</para>
 					<para>If the origin is not specified, it is set by default to 0.</para>
-					<para><varname>spanBucket(value number,size number,origin number=0): span</varname></para>
+					<para><varname>spanBucket(value number,size number,origin number=0) → span</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT spanBucket(2, 2);
 -- [2,4)
@@ -231,11 +231,11 @@ SELECT periodBucket('2000-01-04', interval '1 week', '2000-01-07');
 					<para>Return a set of couples (index, tile) that covers the box with multidimensional tiles of the same size and duration. &Z_support; &SRF;</para>
 					<para>If the origin of the value and/or time dimensions are not specified, they are set by default to 0 or <varname>'Point(0 0 0)'</varname> for the value dimension (depending on the box type) and to Monday, January 3, 2000 for the time dimension.</para>
 					<para><varname>tileList(bounds tbox,size float,duration interval,vorigin float=0,</varname></para>
-					<para><varname>  torigin timestamptz='2000-01-03'): setof index_box</varname></para>
+					<para><varname>  torigin timestamptz='2000-01-03') → setof index_box</varname></para>
 					<para><varname>tileList(bounds stbox,size float,sorigin geometry='Point(0 0 0)'):</varname></para>
 					<para><varname>  setof index_box</varname></para>
 					<para><varname>tileList(bounds stbox,size float,duration interval,sorigin geometry='Point(0 0 0)',</varname></para>
-					<para><varname>  torigin timestamptz='2000-01-03'): setof index_box</varname></para>
+					<para><varname>  torigin timestamptz='2000-01-03') → setof index_box</varname></para>
 					<para>In the case of a spatiotemporal grid, the SRID of the tile coordinates is determined by the input box and the size is given in the units of the SRID. If the origin for the spatial coordinates is given, which must be a point, its dimensionality and SRID should be equal to the one of box, otherwise an error is raised.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT (gr).index, (gr).box
@@ -288,10 +288,10 @@ SELECT tileList(tgeompoint '[Point(3 3 3)@2000-01-15,
 					<para>Return the tile of the multidimensional grid that contains the value and the timestamp. &Z_support;</para>
 					<para>If the origin of the value and/or time dimensions are not specified, they are set by default to 0 or <varname>Point(0 0 0)</varname> for the value dimension and Monday, January 3, 2000 for the time dimension, respectively.</para>
 					<para><varname>tile(value float,time timestamptz,size float,duration interval,</varname></para>
-					<para><varname>  vorigin float=0.0,torigin timestamptz='2000-01-03'): tbox</varname></para>
-					<para><varname>tile(point geometry,size float,sorigin geometry='Point(0 0 0)'): stbox</varname></para>
+					<para><varname>  vorigin float=0.0,torigin timestamptz='2000-01-03') → tbox</varname></para>
+					<para><varname>tile(point geometry,size float,sorigin geometry='Point(0 0 0)') → stbox</varname></para>
 					<para><varname>tile(point geometry,time timestamptz,size float,duration interval,sorigin</varname></para>
-					<para><varname>  geometry='Point(0 0 0)',torigin timestamptz='2000-01-03'): stbox</varname></para>
+					<para><varname>  geometry='Point(0 0 0)',torigin timestamptz='2000-01-03') → stbox</varname></para>
 					<para>In the case of a spatiotemporal grid, the SRID of the tile coordinates is determined by the input point and the size is given in the units of the SRID. If the origin for the spatial coordinates is given, which must be a point, its dimensionality and SRID should be equal to the one of box, otherwise an error is raised.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT tile(15, '2000-01-15', 2, interval '2 days');
@@ -317,7 +317,7 @@ SELECT tile(geometry 'Point(1 1)', '2000-01-01', 2.0, '2 days', 'Point(1 1)',
 				<listitem id="valueSplit">
 					<indexterm><primary><varname>valueSplit</varname></primary></indexterm>
 					<para>Fragment the temporal number with respect to span buckets. &SRF;</para>
-					<para><varname>valueSplit(value tnumber,size number,origin number=0): setof number_tnumber</varname></para>
+					<para><varname>valueSplit(value tnumber,size number,origin number=0) → setof number_tnumber</varname></para>
 					<para>If the origin of values is not specified, it is set by default to 0.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT (sp).number, (sp).tnumber
@@ -390,7 +390,7 @@ GROUP BY dow, dow_no ORDER BY dow_no;
 					<indexterm><primary><varname>valueTimeSplit</varname></primary></indexterm>
 					<para>Fragment the temporal number with respect to the tiles in a value-time grid. &SRF;</para>
 					<para><varname>valueTimeSplit(value tumber,size number,duration interval,vorigin number=0,</varname></para>
-					<para><varname>  torigin timestamptz='2000-01-03'): setof number_time_tnumber</varname></para>
+					<para><varname>  torigin timestamptz='2000-01-03') → setof number_time_tnumber</varname></para>
 					<para>If the origin of values and/or time are not specified, they are set by default to 0 and to Monday, January 3, 2000, respectively.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT (sp).number, (sp).time, (sp).tnumber
@@ -411,7 +411,7 @@ FROM (SELECT valueTimeSplit(tfloat '[1@2001-01-01, 10@2001-01-10)', 5.0, '5 days
 					<indexterm><primary><varname>spaceSplit</varname></primary></indexterm>
 					<para>Fragment the temporal point with respect to the tiles in a spatial grid. &Z_support; &SRF;</para>
 					<para><varname>spaceSplit(value tgeompoint,size float,origin geometry='Point(0 0 0)',</varname></para>
-					<para><varname>  bitmatrix=true): setof point_tpoint</varname></para>
+					<para><varname>  bitmatrix=true) → setof point_tpoint</varname></para>
 					<para>If the origin of the space dimension is not specified, it is set by default to <varname>'Point(0 0 0)'</varname>. If the argument <varname>bitmatrix</varname> is not specified, then the computation will use a bit matrix to speed up the process.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
@@ -478,8 +478,8 @@ FROM (SELECT spaceTimeSplit(tgeompoint '[Point(1 1 1)@2020-03-01,
 			<listitem id="tcount">
 				<indexterm><primary><varname>tcount</varname></primary></indexterm>
 				<para>Temporal count</para>
-				<para><varname>tcount(ttype): {tint_seq,tint_seqset}</varname></para>
-				<para><varname>tcount(ttype, interval, timestamptz): {tint_seq,tint_seqset}</varname></para>
+				<para><varname>tcount(ttype) → {tint_seq,tint_seqset}</varname></para>
+				<para><varname>tcount(ttype, interval, timestamptz) → {tint_seq,tint_seqset}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tcount(NoEmps) FROM Department;
 -- {[1@2001-01-01, 2@2001-02-01, 1@2001-08-01, 1@2001-10-01)}
@@ -489,7 +489,7 @@ SELECT tcount(NoEmps) FROM Department;
 			<listitem id="extent">
 				<indexterm><primary><varname>extent</varname></primary></indexterm>
 				<para>Bounding box extent</para>
-				<para><varname>extent(temp): {tstzspan,tbox,stbox}</varname></para>
+				<para><varname>extent(temp) → {tstzspan,tbox,stbox}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT extent(noEmps) FROM Department;
 -- TBOX XT((4,12),[2001-01-01,2001-10-01])
@@ -501,7 +501,7 @@ SELECT extent(Trip) FROM Trips;
 			<listitem id="tand">
 				<indexterm><primary><varname>tand</varname></primary></indexterm>
 				<para>Temporal and</para>
-				<para><varname>tand(tbool): tbool</varname></para>
+				<para><varname>tand(tbool) → tbool</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tand(NoEmps #&gt; 6) FROM Department;
 -- {[t@2001-01-01, f@2001-04-01, f@2001-10-01)}
@@ -511,7 +511,7 @@ SELECT tand(NoEmps #&gt; 6) FROM Department;
 			<listitem id="tor">
 				<indexterm><primary><varname>tor</varname></primary></indexterm>
 				<para>Temporal or</para>
-				<para><varname>tor(tbool): tbool</varname></para>
+				<para><varname>tor(tbool) → tbool</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tor(NoEmps #&gt; 6) FROM Department;
 -- {[t@2001-01-01, f@2001-08-01, f@2001-10-01)}
@@ -521,7 +521,7 @@ SELECT tor(NoEmps #&gt; 6) FROM Department;
 			<listitem id="tmin">
 				<indexterm><primary><varname>tmin</varname></primary></indexterm>
 				<para>Temporal minimum</para>
-				<para><varname>tmin(ttype): ttype</varname></para>
+				<para><varname>tmin(ttype) → ttype</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tmin(NoEmps) FROM Department;
 -- {[10@2001-01-01, 4@2001-02-01, 6@2001-06-01, 6@2001-10-01)}
@@ -531,7 +531,7 @@ SELECT tmin(NoEmps) FROM Department;
 			<listitem id="tmax">
 				<indexterm><primary><varname>tmax</varname></primary></indexterm>
 				<para>Temporal maximum</para>
-				<para><varname>tmax(ttype): ttype</varname></para>
+				<para><varname>tmax(ttype) → ttype</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tmax(NoEmps) FROM Department;
 -- {[10@2001-01-01, 12@2001-04-01, 6@2001-08-01, 6@2001-10-01)}
@@ -541,7 +541,7 @@ SELECT tmax(NoEmps) FROM Department;
 			<listitem id="tsum">
 				<indexterm><primary><varname>tsum</varname></primary></indexterm>
 				<para>Temporal sum</para>
-				<para><varname>tsum(tnumber): {tnumber_seq,tnumber_seqset}</varname></para>
+				<para><varname>tsum(tnumber) → {tnumber_seq,tnumber_seqset}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tsum(NoEmps) FROM Department;
 /* {[10@2001-01-01, 14@2001-02-01, 16@2001-04-01, 18@2001-06-01, 6@2001-08-01,
@@ -552,7 +552,7 @@ SELECT tsum(NoEmps) FROM Department;
 			<listitem id="tavg">
 				<indexterm><primary><varname>tavg</varname></primary></indexterm>
 				<para>Temporal average</para>
-				<para><varname>tavg(tnumber): {tfloat_seq,tfloat_seqset}</varname></para>
+				<para><varname>tavg(tnumber) → {tfloat_seq,tfloat_seqset}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tavg(NoEmps) FROM Department;
 /* {[10@2001-01-01, 10@2001-02-01), [7@2001-02-01, 7@2001-04-01),
@@ -564,7 +564,7 @@ SELECT tavg(NoEmps) FROM Department;
 			<listitem id="wmin">
 				<indexterm><primary><varname>wmin</varname></primary></indexterm>
 				<para>Window minimum</para>
-				<para><varname>wmin(tnumber,interval): {tnumber_seq,tnumber_seqset}</varname></para>
+				<para><varname>wmin(tnumber,interval) → {tnumber_seq,tnumber_seqset}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT wmin(NoEmps, interval '2 days') FROM Department;
 -- {[10@2001-01-01, 4@2001-04-01, 6@2001-06-03, 6@2001-10-03)}
@@ -574,7 +574,7 @@ SELECT wmin(NoEmps, interval '2 days') FROM Department;
 			<listitem id="wmax">
 				<indexterm><primary><varname>wmax</varname></primary></indexterm>
 				<para>Window maximum</para>
-				<para><varname>wmax(tnumber,interval): {tnumber_discseq,tnumber_seqset}</varname></para>
+				<para><varname>wmax(tnumber,interval) → {tnumber_discseq,tnumber_seqset}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT wmax(NoEmps, interval '2 days') FROM Department;
 -- {[10@2001-01-01, 12@2001-04-01, 6@2001-08-03, 6@2001-10-03)}
@@ -584,7 +584,7 @@ SELECT wmax(NoEmps, interval '2 days') FROM Department;
 			<listitem id="wcount">
 				<indexterm><primary><varname>wcount</varname></primary></indexterm>
 				<para>Window count</para>
-				<para><varname>wcount(tnumber,interval): {tint_seq,tint_seqset}</varname></para>
+				<para><varname>wcount(tnumber,interval) → {tint_seq,tint_seqset}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT wcount(NoEmps, interval '2 days') FROM Department;
 /* {[1@2001-01-01, 2@2001-02-01, 3@2001-04-01, 2@2001-04-03, 3@2001-06-01, 2@2001-06-03,
@@ -595,7 +595,7 @@ SELECT wcount(NoEmps, interval '2 days') FROM Department;
 			<listitem id="wsum">
 				<indexterm><primary><varname>wsum</varname></primary></indexterm>
 				<para>Window sum</para>
-				<para><varname>wsum(tint,interval): {tint_seq,tint_seqset}</varname></para>
+				<para><varname>wsum(tint,interval) → {tint_seq,tint_seqset}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT wsum(NoEmps, interval '2 days') FROM Department;
 /* {[10@2001-01-01, 14@2001-02-01, 26@2001-04-01, 16@2001-04-03, 22@2001-06-01,
@@ -606,7 +606,7 @@ SELECT wsum(NoEmps, interval '2 days') FROM Department;
 			<listitem id="wavg">
 				<indexterm><primary><varname>wavg</varname></primary></indexterm>
 				<para>Window average</para>
-				<para><varname>wavg(tint,interval): {tfloat_seq,tfloat_seqset}</varname></para>
+				<para><varname>wavg(tint,interval) → {tfloat_seq,tfloat_seqset}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT wavg(NoEmps, interval '2 days') FROM Department;
 /* {[10@2001-01-01, 10@2001-02-01), [7@2001-02-01, 7@2001-04-01),
@@ -620,7 +620,7 @@ SELECT wavg(NoEmps, interval '2 days') FROM Department;
 			<listitem id="tcentroid">
 				<indexterm><primary><varname>tcentroid</varname></primary></indexterm>
 				<para>Temporal centroid</para>
-				<para><varname>tcentroid(tgeompoint): tgeompoint</varname></para>
+				<para><varname>tcentroid(tgeompoint) → tgeompoint</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tcentroid(Trip) FROM Trips;
 /* {[POINT(0 0)@2001-01-01 08:00:00+00, POINT(1 0)@2001-01-01 08:05:00+00),
@@ -639,7 +639,7 @@ SELECT tcentroid(Trip) FROM Trips;
 			<listitem id="mobilitydb_version">
 				<indexterm><primary><varname>mobilitydb_version</varname></primary></indexterm>
 				<para>Version of the MobilityDB extension</para>
-				<para><varname>mobilitydb_version(): text</varname></para>
+				<para><varname>mobilitydb_version() → text</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT mobilitydb_version();
 -- MobilityDB 1.1
@@ -649,7 +649,7 @@ SELECT mobilitydb_version();
 			<listitem id="mobilitydb_full_version">
 				<indexterm><primary><varname>mobilitydb_full_version</varname></primary></indexterm>
 				<para>Versions of the MobilityDB extension and its dependencies</para>
-				<para><varname>mobilitydb_full_version(): text</varname></para>
+				<para><varname>mobilitydb_full_version() → text</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT mobilitydb_full_version();
 -- MobilityDB 1.1.0, PostgreSQL 14.2, PostGIS 3.2.1

@@ -1,6 +1,3 @@
-#ifndef POSTGRES_H
-#define POSTGRES_H
-
 typedef uintptr_t Datum;
 
 typedef signed char int8;
@@ -36,4 +33,3 @@ typedef struct varlena
 typedef varlena text;
 typedef struct varlena bytea;
 
-#endif              /* POSTGRES_H */

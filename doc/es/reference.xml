@@ -12,6 +12,100 @@
 	<title>Referencia de MobilityDB</title>
 
 	<sect1>
+		<title>Tipos de MobilityDB</title>
+		<para>MobilityDB define cuatro <emphasis>tipos de plantilla</emphasis> (o <emphasis>template types</emphasis>) que actúan como constructores de tipos sobre <emphasis>tipos de base</emphasis>. Estos tipos de plantilla son <varname>set</varname>, <varname>span</varname>, <varname>spanset</varname> y <varname>temporal</varname>. <xref linkend="templatetypes" /> muestra los tipos definidos sobre estos tipos de plantilla. Además, MobilityDB define dos tipos de cuadros delimitadores, a saber, <varname>tbox</varname> y <varname>stbox</varname>.</para>
+
+		<table frame="all" colsep="1" rowsep="1" id="templatetypes">
+			<?dblatex table-width="autowidth.column: 1 2 3 4 5"?>
+			<title>Instancias actuales de los tipos de plantilla en MobilityDB</title>
+			<tgroup cols="5" align="left" colsep="1" rowsep="1">
+			<colspec colnum="1" colname="col1"/>
+			<colspec colnum="2" colname="col2"/>
+			<colspec colnum="3" colname="col3"/>
+			<colspec colnum="4" colname="col4"/>
+			<colspec colnum="5" colname="col5"/>
+			<thead>
+				<row>
+					<entry morerows="1"><emphasis role="bold">Tipos de base</emphasis></entry>
+					<entry namest="col2" nameend="col5" align="center">Tipos de plantilla</entry>
+				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>set</varname></emphasis></entry>
+					<entry><varname><emphasis role="bold">span</emphasis></varname></entry>
+					<entry><varname><emphasis role="bold">spanset</emphasis></varname></entry>
+					<entry><varname><emphasis role="bold">temporal</emphasis></varname></entry>
+				</row>
+			</thead>
+			<tbody>
+				<row>
+					<entry><emphasis role="bold"><varname>bool</varname></emphasis></entry>
+					<entry><varname></varname></entry>
+					<entry><varname></varname></entry>
+					<entry><varname></varname></entry>
+					<entry><varname>tbool</varname></entry>
+				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>text</varname></emphasis></entry>
+					<entry><varname>textset</varname></entry>
+					<entry><varname></varname></entry>
+					<entry><varname></varname></entry>
+					<entry><varname>ttext</varname></entry>
+				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>int</varname></emphasis></entry>
+					<entry><varname>intset</varname></entry>
+					<entry><varname>intspan</varname></entry>
+					<entry><varname>intspanset</varname></entry>
+					<entry><varname>tint</varname></entry>
+				</row>
+				<row>
+						<entry><emphasis role="bold"><varname>bigint</varname></emphasis></entry>
+						<entry><varname>bigintset</varname></entry>
+						<entry><varname>bigintspan</varname></entry>
+						<entry><varname>bigintspanset</varname></entry>
+						<entry><varname></varname></entry>
+				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>float</varname></emphasis></entry>
+					<entry><varname>floatset</varname></entry>
+					<entry><varname>floatspan</varname></entry>
+					<entry><varname>floatspanset</varname></entry>
+					<entry><varname>tfloat</varname></entry>
+				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>timestamptz</varname></emphasis></entry>
+					<entry><varname>tstzset</varname></entry>
+					<entry><varname>tstzspan</varname></entry>
+					<entry><varname>tstzspanset</varname></entry>
+					<entry><varname></varname></entry>
+				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>geometry</varname></emphasis></entry>
+					<entry><varname>geomset</varname></entry>
+					<entry><varname></varname></entry>
+					<entry><varname></varname></entry>
+					<entry><varname>tgeompoint</varname></entry>
+				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>geography</varname></emphasis></entry>
+					<entry><varname>geogset</varname></entry>
+					<entry><varname></varname></entry>
+					<entry><varname></varname></entry>
+					<entry><varname>tgeogpoint</varname></entry>
+				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>npoint</varname></emphasis></entry>
+					<entry><varname>npointset</varname></entry>
+					<entry><varname></varname></entry>
+					<entry><varname></varname></entry>
+					<entry><varname>tnpoint</varname></entry>
+				</row>
+			</tbody>
+			</tgroup>
+		</table>
+	</sect1>
+
+	<sect1>
 		<title>Funciones y operadores para tipos de rango y tipos de tiempo</title>
 
 		<sect2>
@@ -39,15 +133,15 @@
 			<title>Funciones de constructor</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="span"><varname>intspan</varname>, <varname>floatspan</varname>, <varname>tstzspan</varname></link>: Constructores para valores de rango</para>
+					<para><link linkend="span"><varname>span</varname></link>: Constructores para valores de rango</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="spanset"><varname>intspanset</varname>, <varname>floatspanset</varname>, <varname>tstzspanset</varname></link>: Constructores para valores de conjunto de rangos</para>
+					<para><link linkend="spanset"><varname>spanset</varname></link>: Constructores para valores de conjunto de rangos</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tstzset"><varname>tstzset</varname></link>: Constructor para <varname>tstzset</varname></para>
+					<para><link linkend="set"><varname>set</varname></link>: Constructor para valores de conjunto</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -60,11 +154,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tstzset_cast"><varname>tstzset::tstzspanset</varname></link>: Convertir un <varname>tstzset</varname> a un <varname>tstzspanset</varname></para>
+					<para><link linkend="tstzset_cast"><varname>set::spanset</varname></link>: Convertir un conjunto a un conjunto de rangos</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_cast"><varname>span::spanset</varname></link>: Convertir un <varname>tstzspan</varname> a otro tipo de tiempo</para>
+					<para><link linkend="setspan_cast"><varname>span::spanset</varname></link>: Convertir un rango a un conjunto de rangos</para>
 				</listitem>
 
 				<listitem>

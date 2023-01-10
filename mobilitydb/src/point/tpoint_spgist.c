@@ -689,7 +689,7 @@ static bool
 tpoint_spgist_get_stbox(const ScanKeyData *scankey, STBox *result)
 {
   meosType type = oid_type(scankey->sk_subtype);
-  if (tgeo_basetype(type))
+  if (geo_basetype(type))
   {
     GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(scankey->sk_argument);
     /* The geometry can be empty */

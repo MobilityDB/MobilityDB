@@ -176,11 +176,14 @@ datum_eq2(Datum l, Datum r, meosType typel, meosType typer)
     (typel == T_INT8 && typer == T_INT8))
     return l == r;
   if (typel == T_FLOAT8 && typer == T_FLOAT8)
-    return MOBDB_FP_EQ(DatumGetFloat8(l), DatumGetFloat8(r));
+    // return MOBDB_FP_EQ(DatumGetFloat8(l), DatumGetFloat8(r));
+    return float8_eq(DatumGetFloat8(l), DatumGetFloat8(r));
   if (typel == T_INT4 && typer == T_FLOAT8)
-    return MOBDB_FP_EQ((double) DatumGetInt32(l), DatumGetFloat8(r));
+    // return MOBDB_FP_EQ((double) DatumGetInt32(l), DatumGetFloat8(r));
+    return float8_eq((double) DatumGetInt32(l), DatumGetFloat8(r));
   if (typel == T_FLOAT8 && typer == T_INT4)
-    return MOBDB_FP_EQ(DatumGetFloat8(l), (double) DatumGetInt32(r));
+    // return MOBDB_FP_EQ(DatumGetFloat8(l), (double) DatumGetInt32(r));
+    return float8_eq(DatumGetFloat8(l), (double) DatumGetInt32(r));
   if (typel == T_TEXT && typer == T_TEXT)
     return text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) == 0;
   if (typel == T_DOUBLE2 && typel == typer)

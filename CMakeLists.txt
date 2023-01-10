@@ -180,6 +180,12 @@ endif()
 # Build either MobilityDB or MEOS
 #-------------------------------------
 
+# Customize the meos.h file for buiding MEOS/MobilityDB
+file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos.in.h" MEOS_H_IN)
+file(READ "${CMAKE_SOURCE_DIR}/meos/include/pg_int_defs.in.h" PG_INT_DEFS_H)
+string(REGEX REPLACE @POSTGRES_DEFS@ "${PG_INT_DEFS_H}" MEOS_H "${MEOS_H_IN}")
+file(WRITE "${CMAKE_SOURCE_DIR}/meos/include/meos.h" "${MEOS_H}")
+
 if(MEOS)
   add_subdirectory(meos)
 else()

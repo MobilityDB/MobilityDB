@@ -227,10 +227,81 @@ basetype_settype(meosType basetype)
   elog(ERROR, "type %u is not a set type", basetype);
 }
 
-
 /*****************************************************************************
  * Catalog functions
  *****************************************************************************/
+
+/**
+ * Ensure that a type is a base type
+ */
+void
+ensure_basetype(meosType basetype)
+{
+  if (basetype != T_BOOL && basetype != T_TEXT && basetype != T_INT4 &&
+    basetype != T_INT8 && basetype != T_FLOAT8 && basetype != T_TIMESTAMPTZ &&
+    basetype != T_GEOMETRY && basetype != T_GEOGRAPHY && basetype != T_NPOINT
+    )
+    elog(ERROR, "unknown base type: %d", basetype);
+  return;
+}
+
+/**
+ * Return true if the type is a set type
+ */
+bool
+alpha_basetype(meosType basetype)
+{
+  if (basetype == T_BOOL || basetype == T_TEXT)
+    return true;
+  return false;
+}
+
+/**
+ * Return true if the type is a set type
+ */
+bool
+number_basetype(meosType basetype)
+{
+  if (basetype == T_INT4 || basetype == T_INT8 || basetype == T_FLOAT8)
+    return true;
+  return false;
+}
+
+/**
+ * Return true if the type is a set type
+ */
+bool
+alphanum_basetype(meosType basetype)
+{
+  if (basetype == T_BOOL || basetype == T_TEXT || basetype == T_INT4 ||
+      basetype == T_INT8 || basetype == T_FLOAT8 || basetype == T_TIMESTAMPTZ)
+    return true;
+  return false;
+}
+
+/**
+ * Return true if the type is a geo base type
+ */
+bool
+geo_basetype(meosType basetype)
+{
+  if (basetype == T_GEOMETRY || basetype == T_GEOGRAPHY)
+    return true;
+  return false;
+}
+
+/**
+ * Return true if the type is a spatial base type
+ */
+bool
+spatial_basetype(meosType basetype)
+{
+  if (basetype == T_GEOMETRY || basetype == T_GEOGRAPHY)
+    return true;
+  return false;
+}
+
+/*****************************************************************************/
 
 /**
  * Return true if the type is a time type
@@ -271,7 +342,7 @@ set_basetype(meosType basetype)
 }
 
 /**
- * Ensure that the span base type is supported by MobilityDB
+ * Ensure that the span base type is
  */
 void
 ensure_set_basetype(meosType basetype)
@@ -590,7 +661,7 @@ temporal_type(meosType temptype)
 }
 
 /**
- * Ensure that the base type is supported by MobilityDB
+ * Ensure that a type is a temporal type
  */
 void
 ensure_temporal_type(meosType temptype)
@@ -601,7 +672,7 @@ ensure_temporal_type(meosType temptype)
 }
 
 /**
- * Ensure that the base type is supported by MobilityDB
+ * Ensure that a type is a temporal base type
  * @note The TimestampTz type is added to cope with base types for spans.
  * Also, the int8 type is added to cope with the rid in network points.
  */
@@ -855,17 +926,6 @@ tspatial_basetype(meosType basetype)
     || basetype == T_NPOINT
 #endif
     )
-    return true;
-  return false;
-}
-
-/**
- * Return true if the type is a point base type supported by MobilityDB
- */
-bool
-tgeo_basetype(meosType basetype)
-{
-  if (basetype == T_GEOMETRY || basetype == T_GEOGRAPHY)
     return true;
   return false;
 }
