@@ -61,9 +61,9 @@ SELECT COUNT(*) FROM tbl_floatset t1, tbl_float t2 WHERE t1.f + t2.f IS NOT NULL
 SELECT COUNT(*) FROM tbl_float t1, tbl_floatset t2 WHERE t1.f + t2.f IS NOT NULL;
 SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f + t2.f IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_tstzset t1, tbl_timestamptz t2 WHERE t1.ts + t2.t IS NOT NULL;
-SELECT COUNT(*) FROM tbl_timestamptz t1, tbl_tstzset t2 WHERE t1.t + t2.ts IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.ts + t2.ts IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_timestamptz t2 WHERE t1.t + t2.t IS NOT NULL;
+SELECT COUNT(*) FROM tbl_timestamptz t1, tbl_tstzset t2 WHERE t1.t + t2.t IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t + t2.t IS NOT NULL;
 
 -------------------------------------------------------------------------------
 
@@ -79,9 +79,9 @@ SELECT COUNT(*) FROM tbl_floatset t1, tbl_float t2 WHERE t1.f - t2.f IS NOT NULL
 SELECT COUNT(*) FROM tbl_float t1, tbl_floatset t2 WHERE t1.f - t2.f IS NOT NULL;
 SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f - t2.f IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_tstzset t1, tbl_timestamptz t2 WHERE t1.ts - t2.t IS NOT NULL;
-SELECT COUNT(*) FROM tbl_timestamptz t1, tbl_tstzset t2 WHERE t1.t - t2.ts IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.ts - t2.ts IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_timestamptz t2 WHERE t1.t - t2.t IS NOT NULL;
+SELECT COUNT(*) FROM tbl_timestamptz t1, tbl_tstzset t2 WHERE t1.t - t2.t IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t - t2.t IS NOT NULL;
 
 -------------------------------------------------------------------------------
 
@@ -97,9 +97,9 @@ SELECT COUNT(*) FROM tbl_floatset t1, tbl_float t2 WHERE t1.f * t2.f IS NOT NULL
 SELECT COUNT(*) FROM tbl_float t1, tbl_floatset t2 WHERE t1.f * t2.f IS NOT NULL;
 SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f * t2.f IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_tstzset t1, tbl_timestamptz t2 WHERE t1.ts * t2.t IS NOT NULL;
-SELECT COUNT(*) FROM tbl_timestamptz t1, tbl_tstzset t2 WHERE t1.t * t2.ts IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.ts * t2.ts IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_timestamptz t2 WHERE t1.t * t2.t IS NOT NULL;
+SELECT COUNT(*) FROM tbl_timestamptz t1, tbl_tstzset t2 WHERE t1.t * t2.t IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t * t2.t IS NOT NULL;
 
 -------------------------------------------------------------------------------
 
@@ -115,8 +115,8 @@ SELECT MIN(t1.f <-> t2.f) FROM tbl_float t1, tbl_floatset t2;
 SELECT MIN(t1.f <-> t2.f) FROM tbl_floatset t1, tbl_float t2;
 SELECT MIN(t1.f <-> t2.f) FROM tbl_floatset t1, tbl_floatset t2;
 
-SELECT MIN(t1.t <-> t2.ts) FROM tbl_timestamptz t1, tbl_tstzset t2;
-SELECT MIN(t1.ts <-> t2.t) FROM tbl_tstzset t1, tbl_timestamptz t2;
-SELECT MIN(t1.ts <-> t2.ts) FROM tbl_tstzset t1, tbl_tstzset t2;
+SELECT MIN(t1.t <-> t2.t) FROM tbl_timestamptz t1, tbl_tstzset t2;
+SELECT MIN(t1.t <-> t2.t) FROM tbl_tstzset t1, tbl_timestamptz t2;
+SELECT MIN(t1.t <-> t2.t) FROM tbl_tstzset t1, tbl_tstzset t2;
 
 -------------------------------------------------------------------------------

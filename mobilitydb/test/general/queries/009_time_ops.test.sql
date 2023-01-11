@@ -387,12 +387,12 @@ DROP INDEX tbl_tstzspan_big_quadtree_idx;
 -- RESTRICTION SELECTIVITY
 -- Test index support function
 
-CREATE INDEX tbl_tstzset_big_rtree_idx ON tbl_tstzset_big USING gist(ts);
+CREATE INDEX tbl_tstzset_big_rtree_idx ON tbl_tstzset_big USING gist(t);
 CREATE INDEX tbl_tstzspan_big_rtree_idx ON tbl_tstzspan_big USING gist(p);
 CREATE INDEX tbl_tstzspanset_big_rtree_idx ON tbl_tstzspanset_big USING gist(ps);
 
 -- EXPLAIN ANALYZE
-SELECT COUNT(*) FROM tbl_tstzset_big WHERE ts && tstzset '{2001-06-01, 2001-07-01}';
+SELECT COUNT(*) FROM tbl_tstzset_big WHERE t && tstzset '{2001-06-01, 2001-07-01}';
 
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p && tstzspan '[2001-06-01, 2001-07-01]';
 SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps && tstzspan '[2001-06-01, 2001-07-01]';
@@ -401,11 +401,11 @@ SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p && tstzspanset '{[2001-06-01, 2001
 SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps && tstzspanset '{[2001-06-01, 2001-07-01]}';
 
 -- EXPLAIN ANALYZE
-SELECT COUNT(*) FROM tbl_tstzset_big WHERE ts @> timestamptz '2001-06-01';
+SELECT COUNT(*) FROM tbl_tstzset_big WHERE t @> timestamptz '2001-06-01';
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p @> timestamptz '2001-06-01';
 SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps @> timestamptz '2001-06-01';
 
-SELECT COUNT(*) FROM tbl_tstzset_big WHERE ts @> tstzset '{2001-06-01, 2001-07-01}';
+SELECT COUNT(*) FROM tbl_tstzset_big WHERE t @> tstzset '{2001-06-01, 2001-07-01}';
 
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p @> tstzspan '[2001-06-01, 2001-07-01]';
 SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps @> tstzspan '[2001-06-01, 2001-07-01]';
@@ -414,11 +414,11 @@ SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p @> tstzspanset '{[2001-06-01, 2001
 SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps @> tstzspanset '{[2001-06-01, 2001-07-01]}';
 
 -- EXPLAIN ANALYZE
-SELECT COUNT(*) FROM tbl_tstzset_big WHERE timestamptz '2001-06-01' <@ ts;
+SELECT COUNT(*) FROM tbl_tstzset_big WHERE timestamptz '2001-06-01' <@ t;
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE timestamptz '2001-06-01' <@ p;
 SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE timestamptz '2001-06-01' <@ ps;
 
-SELECT COUNT(*) FROM tbl_tstzset_big WHERE tstzset '{2001-06-01, 2001-07-01}' <@ ts;
+SELECT COUNT(*) FROM tbl_tstzset_big WHERE tstzset '{2001-06-01, 2001-07-01}' <@ t;
 
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE tstzspan '[2001-06-01, 2001-07-01]' <@ p;
 SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE tstzspan '[2001-06-01, 2001-07-01]' <@ ps;
@@ -434,12 +434,12 @@ DROP INDEX tbl_tstzspanset_big_rtree_idx;
 -- JOIN SELECTIVITY
 -- Test index support function
 
-CREATE INDEX tbl_tstzset_rtree_idx ON tbl_tstzset USING gist(ts);
+CREATE INDEX tbl_tstzset_rtree_idx ON tbl_tstzset USING gist(t);
 CREATE INDEX tbl_tstzspan_rtree_idx ON tbl_tstzspan USING gist(p);
 CREATE INDEX tbl_tstzspanset_rtree_idx ON tbl_tstzspanset USING gist(ps);
 
 -- EXPLAIN ANALYZE
-SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.ts && t2.ts;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t && t2.t;
 
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p && t2.p;
 SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspan t2 WHERE t1.ps && t2.p;
@@ -455,7 +455,7 @@ SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE t1.p @> t2.ps;
 SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.ps @> t2.ps;
 
 -- EXPLAIN ANALYZE
-SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.ts <@ t2.ts;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t <@ t2.t;
 
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p <@ t2.p;
 SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspan t2 WHERE t1.ps <@ t2.p;
@@ -471,12 +471,12 @@ DROP INDEX tbl_tstzspanset_rtree_idx;
 -- RESTRICTION SELECTIVITY
 -- Test index support function
 
-CREATE INDEX tbl_tstzset_big_quadtree_idx ON tbl_tstzset_big USING spgist(ts);
+CREATE INDEX tbl_tstzset_big_quadtree_idx ON tbl_tstzset_big USING spgist(t);
 CREATE INDEX tbl_tstzspan_big_quadtree_idx ON tbl_tstzspan_big USING spgist(p);
 CREATE INDEX tbl_tstzspanset_big_quadtree_idx ON tbl_tstzspanset_big USING spgist(ps);
 
 -- EXPLAIN ANALYZE
-SELECT COUNT(*) FROM tbl_tstzset_big WHERE ts && tstzset '{2001-06-01, 2001-07-01}';
+SELECT COUNT(*) FROM tbl_tstzset_big WHERE t && tstzset '{2001-06-01, 2001-07-01}';
 
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p && tstzspan '[2001-06-01, 2001-07-01]';
 SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps && tstzspan '[2001-06-01, 2001-07-01]';
@@ -485,11 +485,11 @@ SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p && tstzspanset '{[2001-06-01, 2001
 SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps && tstzspanset '{[2001-06-01, 2001-07-01]}';
 
 -- EXPLAIN ANALYZE
-SELECT COUNT(*) FROM tbl_tstzset_big WHERE ts @> timestamptz '2001-06-01';
+SELECT COUNT(*) FROM tbl_tstzset_big WHERE t @> timestamptz '2001-06-01';
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p @> timestamptz '2001-06-01';
 SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps @> timestamptz '2001-06-01';
 
-SELECT COUNT(*) FROM tbl_tstzset_big WHERE ts @> tstzset '{2001-06-01, 2001-07-01}';
+SELECT COUNT(*) FROM tbl_tstzset_big WHERE t @> tstzset '{2001-06-01, 2001-07-01}';
 
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p @> tstzspan '[2001-06-01, 2001-07-01]';
 SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps @> tstzspan '[2001-06-01, 2001-07-01]';
@@ -498,11 +498,11 @@ SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p @> tstzspanset '{[2001-06-01, 2001
 SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps @> tstzspanset '{[2001-06-01, 2001-07-01]}';
 
 -- EXPLAIN ANALYZE
-SELECT COUNT(*) FROM tbl_tstzset_big WHERE timestamptz '2001-06-01' <@ ts;
+SELECT COUNT(*) FROM tbl_tstzset_big WHERE timestamptz '2001-06-01' <@ t;
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE timestamptz '2001-06-01' <@ p;
 SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE timestamptz '2001-06-01' <@ ps;
 
-SELECT COUNT(*) FROM tbl_tstzset_big WHERE tstzset '{2001-06-01, 2001-07-01}' <@ ts;
+SELECT COUNT(*) FROM tbl_tstzset_big WHERE tstzset '{2001-06-01, 2001-07-01}' <@ t;
 
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE tstzspan '[2001-06-01, 2001-07-01]' <@ p;
 SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE tstzspan '[2001-06-01, 2001-07-01]' <@ ps;
@@ -518,33 +518,33 @@ DROP INDEX tbl_tstzspanset_big_quadtree_idx;
 -- JOIN SELECTIVITY
 -- Test index support function
 
-CREATE INDEX tbl_tstzset_quadtree_idx ON tbl_tstzset USING gist(ts);
+CREATE INDEX tbl_tstzset_quadtree_idx ON tbl_tstzset USING gist(t);
 CREATE INDEX tbl_tstzspan_quadtree_idx ON tbl_tstzspan USING gist(p);
 CREATE INDEX tbl_tstzspanset_quadtree_idx ON tbl_tstzspanset USING gist(ps);
 
 -- EXPLAIN ANALYZE
-SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.ts && t2.ts;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t && t2.t;
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p && t2.p;
 SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.ps && t2.ps;
 
-SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.ts && t2.ts;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t && t2.t;
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p && t2.p;
 SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.ps && t2.ps;
 
-SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.ts && t2.ts;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t && t2.t;
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p && t2.p;
 SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.ps && t2.ps;
 
-SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.ts && t2.ts;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t && t2.t;
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p && t2.p;
 SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.ps && t2.ps;
 
 -- EXPLAIN ANALYZE
-SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.ts @> t2.ts;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t @> t2.t;
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p @> t2.p;
 SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.ps @> t2.ps;
 
-SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.ts @> t2.ts;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t @> t2.t;
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p @> t2.p;
 SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.ps @> t2.ps;
 
@@ -555,11 +555,11 @@ SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p @> t2.p;
 SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.ps @> t2.ps;
 
 -- EXPLAIN ANALYZE
-SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.ts <@ t2.ts;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t <@ t2.t;
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p <@ t2.p;
 SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.ps <@ t2.ps;
 
-SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.ts <@ t2.ts;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t <@ t2.t;
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p <@ t2.p;
 SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.ps <@ t2.ps;
 
@@ -577,12 +577,12 @@ DROP INDEX tbl_tstzspanset_quadtree_idx;
 -- JOIN SELECTIVITY
 -- Test index support function
 
-CREATE INDEX tbl_tstzset_quadtree_idx ON tbl_tstzset USING spgist(ts);
+CREATE INDEX tbl_tstzset_quadtree_idx ON tbl_tstzset USING spgist(t);
 CREATE INDEX tbl_tstzspan_quadtree_idx ON tbl_tstzspan USING spgist(p);
 CREATE INDEX tbl_tstzspanset_quadtree_idx ON tbl_tstzspanset USING spgist(ps);
 
 -- EXPLAIN ANALYZE
-SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.ts && t2.ts;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t && t2.t;
 
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p && t2.p;
 SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspan t2 WHERE t1.ps && t2.p;
@@ -591,7 +591,7 @@ SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE t1.p && t2.ps;
 SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.ps && t2.ps;
 
 -- EXPLAIN ANALYZE
-SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.ts @> t2.ts;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t @> t2.t;
 
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p @> t2.p;
 SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspan t2 WHERE t1.ps @> t2.p;
@@ -600,7 +600,7 @@ SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE t1.p @> t2.ps;
 SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.ps @> t2.ps;
 
 -- EXPLAIN ANALYZE
-SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.ts <@ t2.ts;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t <@ t2.t;
 
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p <@ t2.p;
 SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspan t2 WHERE t1.ps <@ t2.p;

@@ -1050,27 +1050,49 @@ temporalarr_out(const Temporal **temparr, int count, int maxdd)
  *****************************************************************************/
 
 /**
+ * @brief Return the size of the WKB representation of a base value.
+ */
+static size_t
+basetype_to_wkb_size(Datum value, meosType basetype, int16 flags)
+{
+  switch (basetype)
+  {
+    case T_BOOL:
+      return MOBDB_WKB_BYTE_SIZE;
+    case T_INT4:
+      return MOBDB_WKB_INT4_SIZE;
+    case T_INT8:
+      return MOBDB_WKB_INT8_SIZE;
+    case T_FLOAT8:
+      return MOBDB_WKB_DOUBLE_SIZE;
+    case T_TIMESTAMPTZ:
+      return MOBDB_WKB_TIMESTAMP_SIZE;
+    case T_TEXT:
+      return MOBDB_WKB_INT8_SIZE + VARSIZE_ANY_EXHDR(DatumGetTextP(value)) + 1;
+    case T_GEOMETRY:
+    case T_GEOGRAPHY:
+    {
+      int dims = MOBDB_FLAGS_GET_Z(flags) ? 3 : 2;
+      return dims * MOBDB_WKB_DOUBLE_SIZE;
+    }
+#if NPOINT
+    case T_NPOINT:
+      return MOBDB_WKB_INT8_SIZE + MOBDB_WKB_DOUBLE_SIZE;
+#endif /* NPOINT */
+    default: /* Error! */
+      elog(ERROR, "Unknown temporal base type: %d", basetype);
+  }
+}
+
+/**
  * Return the size of the WKB representation of the base value of an ordered
  * set type.
  */
 static size_t
-set_basetype_to_wkb_size(Datum value, meosType basetype)
+set_basetype_to_wkb_size(Datum value, meosType basetype, int16 flags)
 {
-  size_t result = 0;
   ensure_set_basetype(basetype);
-  if (basetype == T_INT4)
-    result = MOBDB_WKB_INT4_SIZE;
-  else if (basetype == T_INT8)
-    result = MOBDB_WKB_INT8_SIZE;
-  else if (basetype == T_FLOAT8)
-    result = MOBDB_WKB_DOUBLE_SIZE;
-  else if (basetype == T_TEXT)
-    result = MOBDB_WKB_INT8_SIZE + VARSIZE_ANY_EXHDR(DatumGetTextP(value)) + 1;
-  else if (basetype == T_TIMESTAMPTZ)
-    result = MOBDB_WKB_TIMESTAMP_SIZE;
-  else
-    elog(ERROR, "Unknown base type for set: %d", basetype);
-  return result;
+  return basetype_to_wkb_size(value, basetype, flags);
 }
 
 /**
@@ -1086,7 +1108,7 @@ set_to_wkb_size(const Set *s)
   for (int i = 0; i < s->count; i++)
   {
     Datum value = set_val_n(s, i);
-    result += set_basetype_to_wkb_size(value, basetype);
+    result += set_basetype_to_wkb_size(value, basetype, s->flags);
   }
   /* Endian flag + settype + count + values */
   result += MOBDB_WKB_BYTE_SIZE + MOBDB_WKB_INT2_SIZE +
@@ -1102,24 +1124,9 @@ set_to_wkb_size(const Set *s)
 static size_t
 span_basetype_to_wkb_size(const Span *s)
 {
-  size_t result = 0;
   ensure_span_basetype(s->basetype);
-  switch (s->basetype)
-  {
-    case T_INT4:
-      result = MOBDB_WKB_INT4_SIZE;
-      break;
-    case T_INT8:
-      result = MOBDB_WKB_INT8_SIZE;
-      break;
-    case T_FLOAT8:
-      result = MOBDB_WKB_DOUBLE_SIZE;
-      break;
-    case T_TIMESTAMPTZ:
-      result = MOBDB_WKB_TIMESTAMP_SIZE;
-      break;
-  }
-  return result;
+  /* Onlyt the second parameter is used for spans */
+  return basetype_to_wkb_size(0, s->basetype, 0);
 }
 
 /**
@@ -1233,29 +1240,8 @@ stbox_to_wkb_size(const STBox *box, uint8_t variant)
 static size_t
 temporal_basetype_to_wkb_size(Datum value, meosType basetype, int16 flags)
 {
-  switch (basetype)
-  {
-    case T_BOOL:
-      return MOBDB_WKB_BYTE_SIZE;
-    case T_INT4:
-      return MOBDB_WKB_INT4_SIZE;
-    case T_FLOAT8:
-      return MOBDB_WKB_DOUBLE_SIZE;
-    case T_TEXT:
-      return MOBDB_WKB_INT8_SIZE + VARSIZE_ANY_EXHDR(DatumGetTextP(value)) + 1;
-    case T_GEOMETRY:
-    case T_GEOGRAPHY:
-    {
-      int dims = MOBDB_FLAGS_GET_Z(flags) ? 3 : 2;
-      return dims * MOBDB_WKB_DOUBLE_SIZE;
-    }
-#if NPOINT
-    case T_NPOINT:
-      return MOBDB_WKB_INT8_SIZE + MOBDB_WKB_DOUBLE_SIZE;
-#endif /* NPOINT */
-    default: /* Error! */
-      elog(ERROR, "Unknown temporal base type: %d", basetype);
-  }
+  ensure_temporal_basetype(basetype);
+  return basetype_to_wkb_size(value, basetype, flags);
 }
 
 /**
@@ -1596,18 +1582,18 @@ text_to_wkb_buf(const text *txt, uint8_t *buf, uint8_t variant)
  * - 1 timestamp
  */
 uint8_t *
-coords_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
+coords_to_wkb_buf(Datum value, int16 flags, uint8_t *buf, uint8_t variant)
 {
-  if (MOBDB_FLAGS_GET_Z(inst->flags))
+  if (MOBDB_FLAGS_GET_Z(flags))
   {
-    const POINT3DZ *point = datum_point3dz_p(tinstant_value(inst));
+    const POINT3DZ *point = datum_point3dz_p(value);
     buf = double_to_wkb_buf(point->x, buf, variant);
     buf = double_to_wkb_buf(point->y, buf, variant);
     buf = double_to_wkb_buf(point->z, buf, variant);
   }
   else
   {
-    const POINT2D *point = datum_point2d_p(tinstant_value(inst));
+    const POINT2D *point = datum_point2d_p(value);
     buf = double_to_wkb_buf(point->x, buf, variant);
     buf = double_to_wkb_buf(point->y, buf, variant);
   }
@@ -1628,8 +1614,6 @@ npoint_to_wkb_buf(const Npoint *np, uint8_t *buf, uint8_t variant)
 }
 #endif /* NPOINT */
 
-/*****************************************************************************/
-
 /**
  * Write into the buffer a temporal instant represented in Well-Known Binary
  * (WKB) format as follows
@@ -1637,22 +1621,46 @@ npoint_to_wkb_buf(const Npoint *np, uint8_t *buf, uint8_t variant)
  * - timestamp
  */
 static uint8_t *
-set_value_to_wkb_buf(Datum value, meosType basetype, uint8_t *buf,
+basevalue_to_wkb_buf(Datum value, meosType basetype, int16 flags, uint8_t *buf,
   uint8_t variant)
 {
-  ensure_set_basetype(basetype);
-  if (basetype == T_INT4)
-    buf = int32_to_wkb_buf(DatumGetInt32(value), buf, variant);
-  else if (basetype == T_INT8 || basetype == T_TIMESTAMPTZ)
-    buf = int64_to_wkb_buf(DatumGetInt64(value), buf, variant);
-  else if (basetype == T_FLOAT8)
-    buf = double_to_wkb_buf(DatumGetFloat8(value), buf, variant);
-  else if (basetype == T_TEXT)
-    buf = text_to_wkb_buf(DatumGetTextP(value), buf, variant);
-  else /* error */
-    elog(ERROR, "Unknown base type for set: %d", basetype);
+  switch (basetype)
+  {
+    case T_BOOL:
+      buf = bool_to_wkb_buf(DatumGetBool(value), buf, variant);
+      break;
+    case T_INT4:
+      buf = int32_to_wkb_buf(DatumGetInt32(value), buf, variant);
+      break;
+    case T_INT8:
+      buf = int64_to_wkb_buf(DatumGetInt64(value), buf, variant);
+      break;
+    case T_FLOAT8:
+      buf = double_to_wkb_buf(DatumGetFloat8(value), buf, variant);
+      break;
+    case T_TIMESTAMPTZ:
+      buf = timestamp_to_wkb_buf(DatumGetTimestampTz(value), buf, variant);
+      break;
+    case T_TEXT:
+      buf = text_to_wkb_buf(DatumGetTextP(value), buf, variant);
+      break;
+    case T_GEOMETRY:
+    case T_GEOGRAPHY:
+      buf = coords_to_wkb_buf(value, flags, buf, variant);
+      break;
+#if NPOINT
+    case T_NPOINT:
+      buf = npoint_to_wkb_buf(DatumGetNpointP(value), buf, variant);
+      break;
+#endif /* NPOINT */
+    default: /* Error! */
+      elog(ERROR, "unknown basetype for function basevalue_to_wkb_buf: %d",
+        basetype);
+  }
   return buf;
 }
+
+/*****************************************************************************/
 
 /**
  * Write into the buffer a set represented in Well-Known Binary (WKB)
@@ -1673,7 +1681,8 @@ set_to_wkb_buf(const Set *s, uint8_t *buf, uint8_t variant)
   buf = int32_to_wkb_buf(s->count, buf, variant);
   /* Write the values */
   for (int i = 0; i < s->count; i++)
-    buf = set_value_to_wkb_buf(set_val_n(s, i), s->basetype, buf, variant);
+    buf = basevalue_to_wkb_buf(set_val_n(s, i), s->basetype, s->flags, buf,
+      variant);
   return buf;
 }
 
@@ -1978,33 +1987,7 @@ tinstant_basevalue_time_to_wkb_buf(const TInstant *inst, uint8_t *buf,
   Datum value = tinstant_value(inst);
   meosType basetype = temptype_basetype(inst->temptype);
   ensure_temporal_basetype(basetype);
-  switch (basetype)
-  {
-    case T_BOOL:
-      buf = bool_to_wkb_buf(DatumGetBool(value), buf, variant);
-      break;
-    case T_INT4:
-      buf = int32_to_wkb_buf(DatumGetInt32(value), buf, variant);
-      break;
-    case T_FLOAT8:
-      buf = double_to_wkb_buf(DatumGetFloat8(value), buf, variant);
-      break;
-    case T_TEXT:
-      buf = text_to_wkb_buf(DatumGetTextP(value), buf, variant);
-      break;
-    case T_GEOMETRY:
-    case T_GEOGRAPHY:
-      buf = coords_to_wkb_buf(inst, buf, variant);
-      break;
-#if NPOINT
-    case T_NPOINT:
-      buf = npoint_to_wkb_buf(DatumGetNpointP(value), buf, variant);
-      break;
-#endif /* NPOINT */
-    default: /* Error! */
-      elog(ERROR, "unknown type_input function for base type: %d", basetype);
-  }
-
+  buf = basevalue_to_wkb_buf(value, basetype, inst->flags, buf, variant);
   buf = timestamp_to_wkb_buf(inst->t, buf, variant);
   return buf;
 }

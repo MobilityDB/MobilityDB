@@ -210,10 +210,10 @@ SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz
 WHERE valueAtTimestamp(temp, t) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset
-WHERE atTime(temp, ts) IS NOT NULL;
+WHERE atTime(temp, t) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset
-WHERE minusTime(temp, ts) IS NOT NULL;
+WHERE minusTime(temp, t) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspan
 WHERE atTime(temp, p) IS NOT NULL;
@@ -231,7 +231,7 @@ SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz
 WHERE overlapsTime(temp, t) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset
-WHERE overlapsTime(temp, ts) IS NOT NULL;
+WHERE overlapsTime(temp, t) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspan
 WHERE overlapsTime(temp, p) IS NOT NULL;

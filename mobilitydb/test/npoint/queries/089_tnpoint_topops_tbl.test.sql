@@ -72,15 +72,15 @@ INSERT INTO test_tnpoint_topops(op, leftarg, rightarg, no_idx)
 SELECT '-|-', 'timestamptz', 'tnpoint', COUNT(*) FROM tbl_timestamptz, tbl_tnpoint WHERE t -|- temp;
 
 INSERT INTO test_tnpoint_topops(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'tstzset', 'tnpoint', COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE ts && temp;
+SELECT '&&', 'tstzset', 'tnpoint', COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE t && temp;
 INSERT INTO test_tnpoint_topops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'tstzset', 'tnpoint', COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE ts @> temp;
+SELECT '@>', 'tstzset', 'tnpoint', COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE t @> temp;
 INSERT INTO test_tnpoint_topops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'tstzset', 'tnpoint', COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE ts <@ temp;
+SELECT '<@', 'tstzset', 'tnpoint', COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE t <@ temp;
 INSERT INTO test_tnpoint_topops(op, leftarg, rightarg, no_idx)
-SELECT '~=', 'tstzset', 'tnpoint', COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE ts ~= temp;
+SELECT '~=', 'tstzset', 'tnpoint', COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE t ~= temp;
 INSERT INTO test_tnpoint_topops(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'tstzset', 'tnpoint', COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE ts -|- temp;
+SELECT '-|-', 'tstzset', 'tnpoint', COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE t -|- temp;
 
 INSERT INTO test_tnpoint_topops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'tstzspan', 'tnpoint', COUNT(*) FROM tbl_tstzspan, tbl_tnpoint WHERE p && temp;
@@ -141,15 +141,15 @@ INSERT INTO test_tnpoint_topops(op, leftarg, rightarg, no_idx)
 SELECT '-|-', 'tnpoint', 'timestamptz', COUNT(*) FROM tbl_tnpoint, tbl_timestamptz WHERE temp -|- t;
 
 INSERT INTO test_tnpoint_topops(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'tnpoint', 'tstzset', COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp && ts;
+SELECT '&&', 'tnpoint', 'tstzset', COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp && t;
 INSERT INTO test_tnpoint_topops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'tnpoint', 'tstzset', COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp @> ts;
+SELECT '@>', 'tnpoint', 'tstzset', COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp @> t;
 INSERT INTO test_tnpoint_topops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'tnpoint', 'tstzset', COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp <@ ts;
+SELECT '<@', 'tnpoint', 'tstzset', COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp <@ t;
 INSERT INTO test_tnpoint_topops(op, leftarg, rightarg, no_idx)
-SELECT '~=', 'tnpoint', 'tstzset', COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp ~= ts;
+SELECT '~=', 'tnpoint', 'tstzset', COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp ~= t;
 INSERT INTO test_tnpoint_topops(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'tnpoint', 'tstzset', COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp -|- ts;
+SELECT '-|-', 'tnpoint', 'tstzset', COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp -|- t;
 
 INSERT INTO test_tnpoint_topops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'tnpoint', 'tstzspan', COUNT(*) FROM tbl_tnpoint, tbl_tstzspan WHERE temp && p;
@@ -235,19 +235,19 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tnpoint WHERE t -|- 
 WHERE op = '-|-' and leftarg = 'timestamptz' and rightarg = 'tnpoint';
 
 UPDATE test_tnpoint_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE ts && temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE t && temp )
 WHERE op = '&&' and leftarg = 'tstzset' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE ts @> temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE t @> temp )
 WHERE op = '@>' and leftarg = 'tstzset' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE ts <@ temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE t <@ temp )
 WHERE op = '<@' and leftarg = 'tstzset' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE ts ~= temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE t ~= temp )
 WHERE op = '~=' and leftarg = 'tstzset' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE ts -|- temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE t -|- temp )
 WHERE op = '-|-' and leftarg = 'tstzset' and rightarg = 'tnpoint';
 
 UPDATE test_tnpoint_topops
@@ -334,19 +334,19 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz WHERE temp -
 WHERE op = '-|-' and leftarg = 'tnpoint' and rightarg = 'timestamptz';
 
 UPDATE test_tnpoint_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp && ts )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp && t )
 WHERE op = '&&' and leftarg = 'tnpoint' and rightarg = 'tstzset';
 UPDATE test_tnpoint_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp @> ts )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp @> t )
 WHERE op = '@>' and leftarg = 'tnpoint' and rightarg = 'tstzset';
 UPDATE test_tnpoint_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp <@ ts )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp <@ t )
 WHERE op = '<@' and leftarg = 'tnpoint' and rightarg = 'tstzset';
 UPDATE test_tnpoint_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp ~= ts )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp ~= t )
 WHERE op = '~=' and leftarg = 'tnpoint' and rightarg = 'tstzset';
 UPDATE test_tnpoint_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp -|- ts )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp -|- t )
 WHERE op = '-|-' and leftarg = 'tnpoint' and rightarg = 'tstzset';
 
 UPDATE test_tnpoint_topops
@@ -457,19 +457,19 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tnpoint WHERE t -
 WHERE op = '-|-' and leftarg = 'timestamptz' and rightarg = 'tnpoint';
 
 UPDATE test_tnpoint_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE ts && temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE t && temp )
 WHERE op = '&&' and leftarg = 'tstzset' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE ts @> temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE t @> temp )
 WHERE op = '@>' and leftarg = 'tstzset' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE ts <@ temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE t <@ temp )
 WHERE op = '<@' and leftarg = 'tstzset' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE ts ~= temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE t ~= temp )
 WHERE op = '~=' and leftarg = 'tstzset' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE ts -|- temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE t -|- temp )
 WHERE op = '-|-' and leftarg = 'tstzset' and rightarg = 'tnpoint';
 
 UPDATE test_tnpoint_topops
@@ -556,19 +556,19 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz WHERE tem
 WHERE op = '-|-' and leftarg = 'tnpoint' and rightarg = 'timestamptz';
 
 UPDATE test_tnpoint_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp && ts )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp && t )
 WHERE op = '&&' and leftarg = 'tnpoint' and rightarg = 'tstzset';
 UPDATE test_tnpoint_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp @> ts )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp @> t )
 WHERE op = '@>' and leftarg = 'tnpoint' and rightarg = 'tstzset';
 UPDATE test_tnpoint_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp <@ ts )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp <@ t )
 WHERE op = '<@' and leftarg = 'tnpoint' and rightarg = 'tstzset';
 UPDATE test_tnpoint_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp ~= ts )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp ~= t )
 WHERE op = '~=' and leftarg = 'tnpoint' and rightarg = 'tstzset';
 UPDATE test_tnpoint_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp -|- ts )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp -|- t )
 WHERE op = '-|-' and leftarg = 'tnpoint' and rightarg = 'tstzset';
 
 UPDATE test_tnpoint_topops
@@ -679,19 +679,19 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tnpoint WHERE t -|-
 WHERE op = '-|-' and leftarg = 'timestamptz' and rightarg = 'tnpoint';
 
 UPDATE test_tnpoint_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE ts && temp )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE t && temp )
 WHERE op = '&&' and leftarg = 'tstzset' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE ts @> temp )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE t @> temp )
 WHERE op = '@>' and leftarg = 'tstzset' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE ts <@ temp )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE t <@ temp )
 WHERE op = '<@' and leftarg = 'tstzset' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE ts ~= temp )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE t ~= temp )
 WHERE op = '~=' and leftarg = 'tstzset' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE ts -|- temp )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tnpoint WHERE t -|- temp )
 WHERE op = '-|-' and leftarg = 'tstzset' and rightarg = 'tnpoint';
 
 UPDATE test_tnpoint_topops
@@ -778,19 +778,19 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz WHERE temp 
 WHERE op = '-|-' and leftarg = 'tnpoint' and rightarg = 'timestamptz';
 
 UPDATE test_tnpoint_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp && ts )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp && t )
 WHERE op = '&&' and leftarg = 'tnpoint' and rightarg = 'tstzset';
 UPDATE test_tnpoint_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp @> ts )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp @> t )
 WHERE op = '@>' and leftarg = 'tnpoint' and rightarg = 'tstzset';
 UPDATE test_tnpoint_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp <@ ts )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp <@ t )
 WHERE op = '<@' and leftarg = 'tnpoint' and rightarg = 'tstzset';
 UPDATE test_tnpoint_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp ~= ts )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp ~= t )
 WHERE op = '~=' and leftarg = 'tnpoint' and rightarg = 'tstzset';
 UPDATE test_tnpoint_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp -|- ts )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset WHERE temp -|- t )
 WHERE op = '-|-' and leftarg = 'tnpoint' and rightarg = 'tstzset';
 
 UPDATE test_tnpoint_topops

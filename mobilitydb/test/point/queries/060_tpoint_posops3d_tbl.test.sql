@@ -87,13 +87,13 @@ INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
 SELECT '#&>', 'timestamptz', 'tgeompoint3D', COUNT(*) FROM tbl_timestamptz, tbl_tgeompoint3D WHERE t #&> temp;
 
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '<<#', 'tstzset', 'tgeompoint3D', COUNT(*) FROM tbl_tstzset, tbl_tgeompoint3D WHERE ts <<# temp;
+SELECT '<<#', 'tstzset', 'tgeompoint3D', COUNT(*) FROM tbl_tstzset, tbl_tgeompoint3D WHERE t <<# temp;
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '#>>', 'tstzset', 'tgeompoint3D', COUNT(*) FROM tbl_tstzset, tbl_tgeompoint3D WHERE ts #>> temp;
+SELECT '#>>', 'tstzset', 'tgeompoint3D', COUNT(*) FROM tbl_tstzset, tbl_tgeompoint3D WHERE t #>> temp;
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '&<#', 'tstzset', 'tgeompoint3D', COUNT(*) FROM tbl_tstzset, tbl_tgeompoint3D WHERE ts &<# temp;
+SELECT '&<#', 'tstzset', 'tgeompoint3D', COUNT(*) FROM tbl_tstzset, tbl_tgeompoint3D WHERE t &<# temp;
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '#&>', 'tstzset', 'tgeompoint3D', COUNT(*) FROM tbl_tstzset, tbl_tgeompoint3D WHERE ts #&> temp;
+SELECT '#&>', 'tstzset', 'tgeompoint3D', COUNT(*) FROM tbl_tstzset, tbl_tgeompoint3D WHERE t #&> temp;
 
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
 SELECT '<<#', 'tstzspan', 'tgeompoint3D', COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint3D WHERE p <<# temp;
@@ -125,13 +125,13 @@ INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
 SELECT '#&>', 'timestamptz', 'tgeogpoint3D', COUNT(*) FROM tbl_timestamptz, tbl_tgeogpoint3D WHERE t #&> temp;
 
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '<<#', 'tstzset', 'tgeogpoint3D', COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint3D WHERE ts <<# temp;
+SELECT '<<#', 'tstzset', 'tgeogpoint3D', COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint3D WHERE t <<# temp;
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '#>>', 'tstzset', 'tgeogpoint3D', COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint3D WHERE ts #>> temp;
+SELECT '#>>', 'tstzset', 'tgeogpoint3D', COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint3D WHERE t #>> temp;
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '&<#', 'tstzset', 'tgeogpoint3D', COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint3D WHERE ts &<# temp;
+SELECT '&<#', 'tstzset', 'tgeogpoint3D', COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint3D WHERE t &<# temp;
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '#&>', 'tstzset', 'tgeogpoint3D', COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint3D WHERE ts #&> temp;
+SELECT '#&>', 'tstzset', 'tgeogpoint3D', COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint3D WHERE t #&> temp;
 
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
 SELECT '<<#', 'tstzspan', 'tgeogpoint3D', COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint3D WHERE p <<# temp;
@@ -188,13 +188,13 @@ INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
 SELECT '#&>', 'tgeompoint3D', 'timestamptz', COUNT(*) FROM tbl_tgeompoint3D, tbl_timestamptz WHERE temp #&> t;
 
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '<<#', 'tgeompoint3D', 'tstzset', COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzset WHERE temp <<# ts;
+SELECT '<<#', 'tgeompoint3D', 'tstzset', COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzset WHERE temp <<# t;
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '#>>', 'tgeompoint3D', 'tstzset', COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzset WHERE temp #>> ts;
+SELECT '#>>', 'tgeompoint3D', 'tstzset', COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzset WHERE temp #>> t;
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '&<#', 'tgeompoint3D', 'tstzset', COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzset WHERE temp &<# ts;
+SELECT '&<#', 'tgeompoint3D', 'tstzset', COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzset WHERE temp &<# t;
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '#&>', 'tgeompoint3D', 'tstzset', COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzset WHERE temp #&> ts;
+SELECT '#&>', 'tgeompoint3D', 'tstzset', COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzset WHERE temp #&> t;
 
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
 SELECT '<<#', 'tgeompoint3D', 'tstzspan', COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzspan WHERE temp <<# p;
@@ -262,13 +262,13 @@ INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
 SELECT '#&>', 'tgeogpoint3D', 'timestamptz', COUNT(*) FROM tbl_tgeogpoint3D, tbl_timestamptz WHERE temp #&> t;
 
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '<<#', 'tgeogpoint3D', 'tstzset', COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzset WHERE temp <<# ts;
+SELECT '<<#', 'tgeogpoint3D', 'tstzset', COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzset WHERE temp <<# t;
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '#>>', 'tgeogpoint3D', 'tstzset', COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzset WHERE temp #>> ts;
+SELECT '#>>', 'tgeogpoint3D', 'tstzset', COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzset WHERE temp #>> t;
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '&<#', 'tgeogpoint3D', 'tstzset', COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzset WHERE temp &<# ts;
+SELECT '&<#', 'tgeogpoint3D', 'tstzset', COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzset WHERE temp &<# t;
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
-SELECT '#&>', 'tgeogpoint3D', 'tstzset', COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzset WHERE temp #&> ts;
+SELECT '#&>', 'tgeogpoint3D', 'tstzset', COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzset WHERE temp #&> t;
 
 INSERT INTO test_posops3d(op, leftarg, rightarg, no_idx)
 SELECT '<<#', 'tgeogpoint3D', 'tstzspan', COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspan WHERE temp <<# p;
@@ -347,16 +347,16 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeompoint3D WHERE t
 WHERE op = '#&>' AND leftarg = 'timestamptz' AND rightarg = 'tgeompoint3D';
 
 UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeompoint3D WHERE ts <<# temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeompoint3D WHERE t <<# temp )
 WHERE op = '<<#' AND leftarg = 'tstzset' AND rightarg = 'tgeompoint3D';
 UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeompoint3D WHERE ts #>> temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeompoint3D WHERE t #>> temp )
 WHERE op = '#>>' AND leftarg = 'tstzset' AND rightarg = 'tgeompoint3D';
 UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeompoint3D WHERE ts &<# temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeompoint3D WHERE t &<# temp )
 WHERE op = '&<#' AND leftarg = 'tstzset' AND rightarg = 'tgeompoint3D';
 UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeompoint3D WHERE ts #&> temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeompoint3D WHERE t #&> temp )
 WHERE op = '#&>' AND leftarg = 'tstzset' AND rightarg = 'tgeompoint3D';
 
 UPDATE test_posops3d
@@ -401,16 +401,16 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeogpoint3D WHERE t
 WHERE op = '#&>' AND leftarg = 'timestamptz' AND rightarg = 'tgeogpoint3D';
 
 UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint3D WHERE ts <<# temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint3D WHERE t <<# temp )
 WHERE op = '<<#' AND leftarg = 'tstzset' AND rightarg = 'tgeogpoint3D';
 UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint3D WHERE ts #>> temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint3D WHERE t #>> temp )
 WHERE op = '#>>' AND leftarg = 'tstzset' AND rightarg = 'tgeogpoint3D';
 UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint3D WHERE ts &<# temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint3D WHERE t &<# temp )
 WHERE op = '&<#' AND leftarg = 'tstzset' AND rightarg = 'tgeogpoint3D';
 UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint3D WHERE ts #&> temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint3D WHERE t #&> temp )
 WHERE op = '#&>' AND leftarg = 'tstzset' AND rightarg = 'tgeogpoint3D';
 
 UPDATE test_posops3d
@@ -494,16 +494,16 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_timestamptz WHERE t
 WHERE op = '#&>' AND leftarg = 'tgeompoint3D' AND rightarg = 'timestamptz';
 
 UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzset WHERE temp <<# ts )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzset WHERE temp <<# t )
 WHERE op = '<<#' AND leftarg = 'tgeompoint3D' AND rightarg = 'tstzset';
 UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzset WHERE temp #>> ts )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzset WHERE temp #>> t )
 WHERE op = '#>>' AND leftarg = 'tgeompoint3D' AND rightarg = 'tstzset';
 UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzset WHERE temp &<# ts )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzset WHERE temp &<# t )
 WHERE op = '&<#' AND leftarg = 'tgeompoint3D' AND rightarg = 'tstzset';
 UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzset WHERE temp #&> ts )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzset WHERE temp #&> t )
 WHERE op = '#&>' AND leftarg = 'tgeompoint3D' AND rightarg = 'tstzset';
 
 UPDATE test_posops3d
@@ -600,16 +600,16 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_timestamptz WHERE t
 WHERE op = '#&>' AND leftarg = 'tgeogpoint3D' AND rightarg = 'timestamptz';
 
 UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzset WHERE temp <<# ts )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzset WHERE temp <<# t )
 WHERE op = '<<#' AND leftarg = 'tgeogpoint3D' AND rightarg = 'tstzset';
 UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzset WHERE temp #>> ts )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzset WHERE temp #>> t )
 WHERE op = '#>>' AND leftarg = 'tgeogpoint3D' AND rightarg = 'tstzset';
 UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzset WHERE temp &<# ts )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzset WHERE temp &<# t )
 WHERE op = '&<#' AND leftarg = 'tgeogpoint3D' AND rightarg = 'tstzset';
 UPDATE test_posops3d
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzset WHERE temp #&> ts )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzset WHERE temp #&> t )
 WHERE op = '#&>' AND leftarg = 'tgeogpoint3D' AND rightarg = 'tstzset';
 
 UPDATE test_posops3d
@@ -701,16 +701,16 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeompoint3D WHER
 WHERE op = '#&>' AND leftarg = 'timestamptz' AND rightarg = 'tgeompoint3D';
 
 UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeompoint3D WHERE ts <<# temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeompoint3D WHERE t <<# temp )
 WHERE op = '<<#' AND leftarg = 'tstzset' AND rightarg = 'tgeompoint3D';
 UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeompoint3D WHERE ts #>> temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeompoint3D WHERE t #>> temp )
 WHERE op = '#>>' AND leftarg = 'tstzset' AND rightarg = 'tgeompoint3D';
 UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeompoint3D WHERE ts &<# temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeompoint3D WHERE t &<# temp )
 WHERE op = '&<#' AND leftarg = 'tstzset' AND rightarg = 'tgeompoint3D';
 UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeompoint3D WHERE ts #&> temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeompoint3D WHERE t #&> temp )
 WHERE op = '#&>' AND leftarg = 'tstzset' AND rightarg = 'tgeompoint3D';
 
 UPDATE test_posops3d
@@ -755,16 +755,16 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeogpoint3D WHER
 WHERE op = '#&>' AND leftarg = 'timestamptz' AND rightarg = 'tgeogpoint3D';
 
 UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint3D WHERE ts <<# temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint3D WHERE t <<# temp )
 WHERE op = '<<#' AND leftarg = 'tstzset' AND rightarg = 'tgeogpoint3D';
 UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint3D WHERE ts #>> temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint3D WHERE t #>> temp )
 WHERE op = '#>>' AND leftarg = 'tstzset' AND rightarg = 'tgeogpoint3D';
 UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint3D WHERE ts &<# temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint3D WHERE t &<# temp )
 WHERE op = '&<#' AND leftarg = 'tstzset' AND rightarg = 'tgeogpoint3D';
 UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint3D WHERE ts #&> temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint3D WHERE t #&> temp )
 WHERE op = '#&>' AND leftarg = 'tstzset' AND rightarg = 'tgeogpoint3D';
 
 UPDATE test_posops3d
@@ -848,16 +848,16 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_timestamptz WHER
 WHERE op = '#&>' AND leftarg = 'tgeompoint3D' AND rightarg = 'timestamptz';
 
 UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzset WHERE temp <<# ts )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzset WHERE temp <<# t )
 WHERE op = '<<#' AND leftarg = 'tgeompoint3D' AND rightarg = 'tstzset';
 UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzset WHERE temp #>> ts )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzset WHERE temp #>> t )
 WHERE op = '#>>' AND leftarg = 'tgeompoint3D' AND rightarg = 'tstzset';
 UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzset WHERE temp &<# ts )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzset WHERE temp &<# t )
 WHERE op = '&<#' AND leftarg = 'tgeompoint3D' AND rightarg = 'tstzset';
 UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzset WHERE temp #&> ts )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzset WHERE temp #&> t )
 WHERE op = '#&>' AND leftarg = 'tgeompoint3D' AND rightarg = 'tstzset';
 
 UPDATE test_posops3d
@@ -954,16 +954,16 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_timestamptz WHER
 WHERE op = '#&>' AND leftarg = 'tgeogpoint3D' AND rightarg = 'timestamptz';
 
 UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzset WHERE temp <<# ts )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzset WHERE temp <<# t )
 WHERE op = '<<#' AND leftarg = 'tgeogpoint3D' AND rightarg = 'tstzset';
 UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzset WHERE temp #>> ts )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzset WHERE temp #>> t )
 WHERE op = '#>>' AND leftarg = 'tgeogpoint3D' AND rightarg = 'tstzset';
 UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzset WHERE temp &<# ts )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzset WHERE temp &<# t )
 WHERE op = '&<#' AND leftarg = 'tgeogpoint3D' AND rightarg = 'tstzset';
 UPDATE test_posops3d
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzset WHERE temp #&> ts )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzset WHERE temp #&> t )
 WHERE op = '#&>' AND leftarg = 'tgeogpoint3D' AND rightarg = 'tstzset';
 
 UPDATE test_posops3d
@@ -1059,16 +1059,16 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeompoint3D WHERE 
 WHERE op = '#&>' AND leftarg = 'timestamptz' AND rightarg = 'tgeompoint3D';
 
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeompoint3D WHERE ts <<# temp )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeompoint3D WHERE t <<# temp )
 WHERE op = '<<#' AND leftarg = 'tstzset' AND rightarg = 'tgeompoint3D';
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeompoint3D WHERE ts #>> temp )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeompoint3D WHERE t #>> temp )
 WHERE op = '#>>' AND leftarg = 'tstzset' AND rightarg = 'tgeompoint3D';
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeompoint3D WHERE ts &<# temp )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeompoint3D WHERE t &<# temp )
 WHERE op = '&<#' AND leftarg = 'tstzset' AND rightarg = 'tgeompoint3D';
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeompoint3D WHERE ts #&> temp )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeompoint3D WHERE t #&> temp )
 WHERE op = '#&>' AND leftarg = 'tstzset' AND rightarg = 'tgeompoint3D';
 
 UPDATE test_posops3d
@@ -1113,16 +1113,16 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeogpoint3D WHERE 
 WHERE op = '#&>' AND leftarg = 'timestamptz' AND rightarg = 'tgeogpoint3D';
 
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint3D WHERE ts <<# temp )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint3D WHERE t <<# temp )
 WHERE op = '<<#' AND leftarg = 'tstzset' AND rightarg = 'tgeogpoint3D';
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint3D WHERE ts #>> temp )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint3D WHERE t #>> temp )
 WHERE op = '#>>' AND leftarg = 'tstzset' AND rightarg = 'tgeogpoint3D';
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint3D WHERE ts &<# temp )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint3D WHERE t &<# temp )
 WHERE op = '&<#' AND leftarg = 'tstzset' AND rightarg = 'tgeogpoint3D';
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint3D WHERE ts #&> temp )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint3D WHERE t #&> temp )
 WHERE op = '#&>' AND leftarg = 'tstzset' AND rightarg = 'tgeogpoint3D';
 
 UPDATE test_posops3d
@@ -1206,16 +1206,16 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_timestamptz WHERE 
 WHERE op = '#&>' AND leftarg = 'tgeompoint3D' AND rightarg = 'timestamptz';
 
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzset WHERE temp <<# ts )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzset WHERE temp <<# t )
 WHERE op = '<<#' AND leftarg = 'tgeompoint3D' AND rightarg = 'tstzset';
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzset WHERE temp #>> ts )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzset WHERE temp #>> t )
 WHERE op = '#>>' AND leftarg = 'tgeompoint3D' AND rightarg = 'tstzset';
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzset WHERE temp &<# ts )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzset WHERE temp &<# t )
 WHERE op = '&<#' AND leftarg = 'tgeompoint3D' AND rightarg = 'tstzset';
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzset WHERE temp #&> ts )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzset WHERE temp #&> t )
 WHERE op = '#&>' AND leftarg = 'tgeompoint3D' AND rightarg = 'tstzset';
 
 UPDATE test_posops3d
@@ -1312,16 +1312,16 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_timestamptz WHERE 
 WHERE op = '#&>' AND leftarg = 'tgeogpoint3D' AND rightarg = 'timestamptz';
 
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzset WHERE temp <<# ts )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzset WHERE temp <<# t )
 WHERE op = '<<#' AND leftarg = 'tgeogpoint3D' AND rightarg = 'tstzset';
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzset WHERE temp #>> ts )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzset WHERE temp #>> t )
 WHERE op = '#>>' AND leftarg = 'tgeogpoint3D' AND rightarg = 'tstzset';
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzset WHERE temp &<# ts )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzset WHERE temp &<# t )
 WHERE op = '&<#' AND leftarg = 'tgeogpoint3D' AND rightarg = 'tstzset';
 UPDATE test_posops3d
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzset WHERE temp #&> ts )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzset WHERE temp #&> t )
 WHERE op = '#&>' AND leftarg = 'tgeogpoint3D' AND rightarg = 'tstzset';
 
 UPDATE test_posops3d

@@ -46,7 +46,7 @@ SELECT COUNT(*) FROM tbl_tstzspan WHERE p::tbox IS NOT NULL;
     99
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzset WHERE ts::tbox IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tstzset WHERE t::tbox IS NOT NULL;
  count 
 -------
     99

@@ -77,7 +77,7 @@ int main(void)
   for (i = 0; i < MAX_INSTANTS; i++)
   {
     t = pg_timestamp_pl_interval(t, oneday);
-    instants[i] = tfloatinst_make(i % 2 + 1, t);;
+    instants[i] = tfloatinst_make(i % 2 + 1, t);
   }
 
   seq = (Temporal *) tsequence_make((const TInstant **) instants, MAX_INSTANTS,

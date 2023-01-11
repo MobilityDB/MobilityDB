@@ -49,7 +49,7 @@ SELECT extent(temp) FROM (VALUES
 ('{[2000-01-01, 2000-01-02]}'::tstzspanset),(NULL::tstzspanset)) t(temp);
 
 SELECT extent(t) FROM tbl_timestamptz;
-SELECT extent(ts) FROM tbl_tstzset;
+SELECT extent(t) FROM tbl_tstzset;
 SELECT extent(p) FROM tbl_tstzspan;
 SELECT extent(ps) FROM tbl_tstzspanset;
 
@@ -59,7 +59,7 @@ set parallel_tuple_cost=0;
 set min_parallel_table_scan_size=0;
 set max_parallel_workers_per_gather=2;
 
-SELECT numValues(tunion(ts)) from tbl_tstzset_big;
+SELECT numValues(tunion(t)) from tbl_tstzset_big;
 SELECT extent(temp::tstzspan) FROM tbl_tfloat_big;
 SELECT numSpans(tunion(temp::tstzspan)) from tbl_tfloat_big;
 
@@ -93,12 +93,12 @@ SELECT tcount(temp) FROM (VALUES
 ('{[2000-01-01, 2000-01-02]}'::tstzspanset),(NULL::tstzspanset)) t(temp);
 
 SELECT numInstants(tcount(t)) FROM tbl_timestamptz;
-SELECT numInstants(tcount(ts)) FROM tbl_tstzset;
+SELECT numInstants(tcount(t)) FROM tbl_tstzset;
 SELECT numInstants(tcount(p)) FROM tbl_tstzspan;
 SELECT numInstants(tcount(ps)) FROM tbl_tstzspanset;
 
 SELECT numInstants(tcount(t, '1 week', '2001-01-01')) FROM tbl_timestamptz;
-SELECT numInstants(tcount(ts, '1 week', '2001-01-01')) FROM tbl_tstzset;
+SELECT numInstants(tcount(t, '1 week', '2001-01-01')) FROM tbl_tstzset;
 SELECT numInstants(tcount(p, '1 week', '2001-01-01')) FROM tbl_tstzspan;
 SELECT numInstants(tcount(ps, '1 week', '2001-01-01')) FROM tbl_tstzspanset;
 
@@ -139,25 +139,25 @@ SELECT tunion(temp) FROM (VALUES
 ('{[2000-01-01, 2000-01-03]}'::tstzspanset),
 ('{[2000-01-02, 2000-01-06]}'::tstzspanset)) t(temp);
 
-WITH Temp(ts) AS (
+WITH Temp(t) AS (
   SELECT tstzset '{2000-01-01}' UNION
   SELECT tstzset '{2000-01-01, 2000-01-02, 2000-01-04}'
 )
-SELECT tunion(ts) FROM Temp;
+SELECT tunion(t) FROM Temp;
 
-WITH Temp(ts) AS (
+WITH Temp(t) AS (
   SELECT tstzset(array_agg(t))
   FROM generate_series(timestamp '2000-01-01 00:00', timestamp '2000-01-01 00:30', interval '1 sec') t
   UNION
   SELECT tstzset(array_agg(t))
   FROM generate_series(timestamp '2000-01-01 00:15', timestamp '2000-01-01 00:45', interval '1 sec') t
 )
-SELECT startValue(tunion(ts)) FROM Temp;
+SELECT startValue(tunion(t)) FROM Temp;
 
 -------------------------------------------------------------------------------
 
 SELECT numValues(tunion(t)) FROM tbl_timestamptz;
-SELECT numValues(tunion(ts)) FROM tbl_tstzset;
+SELECT numValues(tunion(t)) FROM tbl_tstzset;
 SELECT numSpans(tunion(p)) FROM tbl_tstzspan;
 SELECT numSpans(tunion(ps)) FROM tbl_tstzspanset;
 

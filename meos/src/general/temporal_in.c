@@ -1042,6 +1042,50 @@ npoint_from_wkb_state(wkb_parse_state *s)
 /*****************************************************************************/
 
 /**
+ * @brief Return a base value from its WKB representation.
+ */
+static Datum
+basevalue_from_wkb_state(wkb_parse_state *s)
+{
+  Datum result;
+  switch (s->basetype)
+  {
+    case T_BOOL:
+      result = BoolGetDatum(byte_from_wkb_state(s));
+      break;
+    case T_INT4:
+      result = Int32GetDatum(int32_from_wkb_state(s));
+      break;
+    case T_INT8:
+      result = Int64GetDatum(int64_from_wkb_state(s));
+      break;
+    case T_FLOAT8:
+      result = Float8GetDatum(double_from_wkb_state(s));
+      break;
+    case T_TIMESTAMPTZ:
+      result = TimestampTzGetDatum(timestamp_from_wkb_state(s));
+      break;
+    case T_TEXT:
+      result = PointerGetDatum(text_from_wkb_state(s));
+      break;
+    case T_GEOMETRY:
+    case T_GEOGRAPHY:
+      // TODO Generalize for geometries
+      result = point_from_wkb_state(s);
+      break;
+#if NPOINT
+    case T_NPOINT:
+      result = PointerGetDatum(npoint_from_wkb_state(s));
+      break;
+#endif /* NPOINT */
+    default: /* Error! */
+      elog(ERROR, "Unknown base type: %d", s->basetype);
+      break;
+  }
+  return result;
+}
+
+/**
  * Return the size of a span base value from its WKB representation.
  */
 static size_t
@@ -1071,29 +1115,20 @@ span_basevalue_from_wkb_size(wkb_parse_state *s)
  * Return a value from its WKB representation.
  */
 static Datum
+set_basevalue_from_wkb_state(wkb_parse_state *s)
+{
+  ensure_set_type(s->type);
+  return basevalue_from_wkb_state(s);
+}
+
+/**
+ * Return a value from its WKB representation.
+ */
+static Datum
 span_basevalue_from_wkb_state(wkb_parse_state *s)
 {
-  Datum result;
   ensure_span_type(s->spantype);
-  switch (s->spantype)
-  {
-    case T_INTSPAN:
-      result = Int32GetDatum(int32_from_wkb_state(s));
-      break;
-    case T_BIGINTSPAN:
-      result = Int64GetDatum(int64_from_wkb_state(s));
-      break;
-    case T_FLOATSPAN:
-      result = Float8GetDatum(double_from_wkb_state(s));
-      break;
-    case T_TSTZSPAN:
-      result = TimestampTzGetDatum(timestamp_from_wkb_state(s));
-      break;
-    default: /* Error! */
-      elog(ERROR, "Unknown span type: %d", s->spantype);
-      break;
-  }
-  return result;
+  return basevalue_from_wkb_state(s);
 }
 
 /**
@@ -1178,38 +1213,6 @@ spanset_from_wkb_state(wkb_parse_state *s)
 /*****************************************************************************/
 
 /**
- * Return a value from its WKB representation.
- */
-static Datum
-set_basevalue_from_wkb_state(wkb_parse_state *s)
-{
-  Datum result;
-  ensure_set_type(s->type);
-  switch (s->type)
-  {
-    case T_INTSET:
-      result = Int32GetDatum(int32_from_wkb_state(s));
-      break;
-    case T_BIGINTSET:
-      result = Int64GetDatum(int64_from_wkb_state(s));
-      break;
-    case T_FLOATSET:
-      result = Float8GetDatum(double_from_wkb_state(s));
-      break;
-    case T_TEXTSET:
-      result = PointerGetDatum(text_from_wkb_state(s));
-      break;
-    case T_TSTZSET:
-      result = TimestampTzGetDatum(timestamp_from_wkb_state(s));
-      break;
-    default: /* Error! */
-      elog(ERROR, "Unknown set type: %d", s->type);
-      break;
-  }
-  return result;
-}
-
-/**
  * Return a set from its WKB representation
  */
 static Set *
@@ -1218,7 +1221,7 @@ set_from_wkb_state(wkb_parse_state *s)
   /* Read the set type */
   uint16_t wkb_settype = (uint16_t) int16_from_wkb_state(s);
   /* For template classes it is necessary to store the specific type */
-  s->type = wkb_settype;;
+  s->type = wkb_settype;
   s->basetype = settype_basetype(s->type);
   /* Read the number of values and allocate space for them */
   int count = int32_from_wkb_state(s);
@@ -1393,41 +1396,8 @@ temporal_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
 static Datum
 temporal_basevalue_from_wkb_state(wkb_parse_state *s)
 {
-  Datum result;
   ensure_temporal_basetype(s->basetype);
-  switch (s->temptype)
-  {
-    case T_TBOOL:
-      result = BoolGetDatum(byte_from_wkb_state(s));
-      break;
-    case T_TINT:
-      result = Int32GetDatum(int32_from_wkb_state(s));
-      break;
-#if 0 /* not used */
-    case T_TINT8:
-      result = Int64GetDatum(int64_from_wkb_state(s));
-      break;
-#endif /* not used */
-    case T_TFLOAT:
-      result = Float8GetDatum(double_from_wkb_state(s));
-      break;
-    case T_TTEXT:
-      result = PointerGetDatum(text_from_wkb_state(s));
-      break;
-    case T_TGEOMPOINT:
-    case T_TGEOGPOINT:
-      result = point_from_wkb_state(s);
-      break;
-#if NPOINT
-    case T_TNPOINT:
-      result = PointerGetDatum(npoint_from_wkb_state(s));
-      break;
-#endif /* NPOINT */
-    default: /* Error! */
-      elog(ERROR, "Unknown temporal type: %d", s->temptype);
-      break;
-  }
-  return result;
+  return basevalue_from_wkb_state(s);
 }
 
 /**

@@ -60,16 +60,16 @@ INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'timestamptz', 'ttext', COUNT(*) FROM tbl_timestamptz, tbl_ttext WHERE t && temp;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'tstzset', 'tbool', COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE ts && temp;
+SELECT '&&', 'tstzset', 'tbool', COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE t && temp;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'tstzset', 'tint', COUNT(*) FROM tbl_tstzset, tbl_tint WHERE ts && temp;
+SELECT '&&', 'tstzset', 'tint', COUNT(*) FROM tbl_tstzset, tbl_tint WHERE t && temp;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'tstzset', 'tfloat', COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE ts && temp;
+SELECT '&&', 'tstzset', 'tfloat', COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE t && temp;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'tstzset', 'ttext', COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE ts && temp;
+SELECT '&&', 'tstzset', 'ttext', COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE t && temp;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'tstzspan', 'tbool', COUNT(*) FROM tbl_tstzspan, tbl_tbool WHERE p && temp;
@@ -99,7 +99,7 @@ INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'tbool', 'timestamptz', COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE temp && t;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'tbool', 'tstzset', COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp && ts;
+SELECT '&&', 'tbool', 'tstzset', COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp && t;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'tbool', 'tstzspan', COUNT(*) FROM tbl_tbool, tbl_tstzspan WHERE temp && p;
@@ -126,7 +126,7 @@ INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'tint', 'timestamptz', COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE temp && t;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'tint', 'tstzset', COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp && ts;
+SELECT '&&', 'tint', 'tstzset', COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp && t;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'tint', 'tstzspan', COUNT(*) FROM tbl_tint, tbl_tstzspan WHERE temp && p;
@@ -156,7 +156,7 @@ INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'tfloat', 'timestamptz', COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp && t;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'tfloat', 'tstzset', COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp && ts;
+SELECT '&&', 'tfloat', 'tstzset', COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp && t;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'tfloat', 'tstzspan', COUNT(*) FROM tbl_tfloat, tbl_tstzspan WHERE temp && p;
@@ -177,7 +177,7 @@ INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'ttext', 'timestamptz', COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE temp && t;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'ttext', 'tstzset', COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp && ts;
+SELECT '&&', 'ttext', 'tstzset', COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp && t;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'ttext', 'tstzspan', COUNT(*) FROM tbl_ttext, tbl_tstzspan WHERE temp && p;
@@ -201,16 +201,16 @@ INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '@>', 'timestamptz', 'ttext', COUNT(*) FROM tbl_timestamptz, tbl_ttext WHERE t @> temp;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'tstzset', 'tbool', COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE ts @> temp;
+SELECT '@>', 'tstzset', 'tbool', COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE t @> temp;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'tstzset', 'tint', COUNT(*) FROM tbl_tstzset, tbl_tint WHERE ts @> temp;
+SELECT '@>', 'tstzset', 'tint', COUNT(*) FROM tbl_tstzset, tbl_tint WHERE t @> temp;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'tstzset', 'tfloat', COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE ts @> temp;
+SELECT '@>', 'tstzset', 'tfloat', COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE t @> temp;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'tstzset', 'ttext', COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE ts @> temp;
+SELECT '@>', 'tstzset', 'ttext', COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE t @> temp;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '@>', 'tstzspan', 'tbool', COUNT(*) FROM tbl_tstzspan, tbl_tbool WHERE p @> temp;
@@ -240,7 +240,7 @@ INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '@>', 'tbool', 'timestamptz', COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE temp @> t;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'tbool', 'tstzset', COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp @> ts;
+SELECT '@>', 'tbool', 'tstzset', COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp @> t;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '@>', 'tbool', 'tstzspan', COUNT(*) FROM tbl_tbool, tbl_tstzspan WHERE temp @> p;
@@ -267,7 +267,7 @@ INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '@>', 'tint', 'timestamptz', COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE temp @> t;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'tint', 'tstzset', COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp @> ts;
+SELECT '@>', 'tint', 'tstzset', COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp @> t;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '@>', 'tint', 'tstzspan', COUNT(*) FROM tbl_tint, tbl_tstzspan WHERE temp @> p;
@@ -297,7 +297,7 @@ INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '@>', 'tfloat', 'timestamptz', COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp @> t;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'tfloat', 'tstzset', COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp @> ts;
+SELECT '@>', 'tfloat', 'tstzset', COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp @> t;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '@>', 'tfloat', 'tstzspan', COUNT(*) FROM tbl_tfloat, tbl_tstzspan WHERE temp @> p;
@@ -318,7 +318,7 @@ INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '@>', 'ttext', 'timestamptz', COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE temp @> t;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'ttext', 'tstzset', COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp @> ts;
+SELECT '@>', 'ttext', 'tstzset', COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp @> t;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '@>', 'ttext', 'tstzspan', COUNT(*) FROM tbl_ttext, tbl_tstzspan WHERE temp @> p;
@@ -342,16 +342,16 @@ INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '<@', 'timestamptz', 'ttext', COUNT(*) FROM tbl_timestamptz, tbl_ttext WHERE t <@ temp;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'tstzset', 'tbool', COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE ts <@ temp;
+SELECT '<@', 'tstzset', 'tbool', COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE t <@ temp;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'tstzset', 'tint', COUNT(*) FROM tbl_tstzset, tbl_tint WHERE ts <@ temp;
+SELECT '<@', 'tstzset', 'tint', COUNT(*) FROM tbl_tstzset, tbl_tint WHERE t <@ temp;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'tstzset', 'tfloat', COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE ts <@ temp;
+SELECT '<@', 'tstzset', 'tfloat', COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE t <@ temp;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'tstzset', 'ttext', COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE ts <@ temp;
+SELECT '<@', 'tstzset', 'ttext', COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE t <@ temp;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '<@', 'tstzspan', 'tbool', COUNT(*) FROM tbl_tstzspan, tbl_tbool WHERE p <@ temp;
@@ -381,7 +381,7 @@ INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '<@', 'tbool', 'timestamptz', COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE temp <@ t;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'tbool', 'tstzset', COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp <@ ts;
+SELECT '<@', 'tbool', 'tstzset', COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp <@ t;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '<@', 'tbool', 'tstzspan', COUNT(*) FROM tbl_tbool, tbl_tstzspan WHERE temp <@ p;
@@ -408,7 +408,7 @@ INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '<@', 'tint', 'timestamptz', COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE temp <@ t;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'tint', 'tstzset', COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp <@ ts;
+SELECT '<@', 'tint', 'tstzset', COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp <@ t;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '<@', 'tint', 'tstzspan', COUNT(*) FROM tbl_tint, tbl_tstzspan WHERE temp <@ p;
@@ -438,7 +438,7 @@ INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '<@', 'tfloat', 'timestamptz', COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp <@ t;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'tfloat', 'tstzset', COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp <@ ts;
+SELECT '<@', 'tfloat', 'tstzset', COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp <@ t;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '<@', 'tfloat', 'tstzspan', COUNT(*) FROM tbl_tfloat, tbl_tstzspan WHERE temp <@ p;
@@ -459,7 +459,7 @@ INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '<@', 'ttext', 'timestamptz', COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE temp <@ t;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'ttext', 'tstzset', COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp <@ ts;
+SELECT '<@', 'ttext', 'tstzset', COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp <@ t;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '<@', 'ttext', 'tstzspan', COUNT(*) FROM tbl_ttext, tbl_tstzspan WHERE temp <@ p;
@@ -483,16 +483,16 @@ INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '-|-', 'timestamptz', 'ttext', COUNT(*) FROM tbl_timestamptz, tbl_ttext WHERE t -|- temp;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'tstzset', 'tbool', COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE ts -|- temp;
+SELECT '-|-', 'tstzset', 'tbool', COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE t -|- temp;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'tstzset', 'tint', COUNT(*) FROM tbl_tstzset, tbl_tint WHERE ts -|- temp;
+SELECT '-|-', 'tstzset', 'tint', COUNT(*) FROM tbl_tstzset, tbl_tint WHERE t -|- temp;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'tstzset', 'tfloat', COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE ts -|- temp;
+SELECT '-|-', 'tstzset', 'tfloat', COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE t -|- temp;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'tstzset', 'ttext', COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE ts -|- temp;
+SELECT '-|-', 'tstzset', 'ttext', COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE t -|- temp;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '-|-', 'tstzspan', 'tbool', COUNT(*) FROM tbl_tstzspan, tbl_tbool WHERE p -|- temp;
@@ -522,7 +522,7 @@ INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '-|-', 'tbool', 'timestamptz', COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE temp -|- t;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'tbool', 'tstzset', COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp -|- ts;
+SELECT '-|-', 'tbool', 'tstzset', COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp -|- t;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '-|-', 'tbool', 'tstzspan', COUNT(*) FROM tbl_tbool, tbl_tstzspan WHERE temp -|- p;
@@ -549,7 +549,7 @@ INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '-|-', 'tint', 'timestamptz', COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE temp -|- t;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'tint', 'tstzset', COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp -|- ts;
+SELECT '-|-', 'tint', 'tstzset', COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp -|- t;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '-|-', 'tint', 'tstzspan', COUNT(*) FROM tbl_tint, tbl_tstzspan WHERE temp -|- p;
@@ -579,7 +579,7 @@ INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '-|-', 'tfloat', 'timestamptz', COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp -|- t;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'tfloat', 'tstzset', COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp -|- ts;
+SELECT '-|-', 'tfloat', 'tstzset', COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp -|- t;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '-|-', 'tfloat', 'tstzspan', COUNT(*) FROM tbl_tfloat, tbl_tstzspan WHERE temp -|- p;
@@ -600,7 +600,7 @@ INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '-|-', 'ttext', 'timestamptz', COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE temp -|- t;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'ttext', 'tstzset', COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp -|- ts;
+SELECT '-|-', 'ttext', 'tstzset', COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp -|- t;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '-|-', 'ttext', 'tstzspan', COUNT(*) FROM tbl_ttext, tbl_tstzspan WHERE temp -|- p;
@@ -624,16 +624,16 @@ INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '~=', 'timestamptz', 'ttext', COUNT(*) FROM tbl_timestamptz, tbl_ttext WHERE t ~= temp;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '~=', 'tstzset', 'tbool', COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE ts ~= temp;
+SELECT '~=', 'tstzset', 'tbool', COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE t ~= temp;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '~=', 'tstzset', 'tint', COUNT(*) FROM tbl_tstzset, tbl_tint WHERE ts ~= temp;
+SELECT '~=', 'tstzset', 'tint', COUNT(*) FROM tbl_tstzset, tbl_tint WHERE t ~= temp;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '~=', 'tstzset', 'tfloat', COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE ts ~= temp;
+SELECT '~=', 'tstzset', 'tfloat', COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE t ~= temp;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '~=', 'tstzset', 'ttext', COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE ts ~= temp;
+SELECT '~=', 'tstzset', 'ttext', COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE t ~= temp;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '~=', 'tstzspan', 'tbool', COUNT(*) FROM tbl_tstzspan, tbl_tbool WHERE p ~= temp;
@@ -663,7 +663,7 @@ INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '~=', 'tbool', 'timestamptz', COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE temp ~= t;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '~=', 'tbool', 'tstzset', COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp ~= ts;
+SELECT '~=', 'tbool', 'tstzset', COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp ~= t;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '~=', 'tbool', 'tstzspan', COUNT(*) FROM tbl_tbool, tbl_tstzspan WHERE temp ~= p;
@@ -690,7 +690,7 @@ INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '~=', 'tint', 'timestamptz', COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE temp ~= t;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '~=', 'tint', 'tstzset', COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp ~= ts;
+SELECT '~=', 'tint', 'tstzset', COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp ~= t;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '~=', 'tint', 'tstzspan', COUNT(*) FROM tbl_tint, tbl_tstzspan WHERE temp ~= p;
@@ -720,7 +720,7 @@ INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '~=', 'tfloat', 'timestamptz', COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp ~= t;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '~=', 'tfloat', 'tstzset', COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp ~= ts;
+SELECT '~=', 'tfloat', 'tstzset', COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp ~= t;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '~=', 'tfloat', 'tstzspan', COUNT(*) FROM tbl_tfloat, tbl_tstzspan WHERE temp ~= p;
@@ -741,7 +741,7 @@ INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '~=', 'ttext', 'timestamptz', COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE temp ~= t;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '~=', 'ttext', 'tstzset', COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp ~= ts;
+SELECT '~=', 'ttext', 'tstzset', COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp ~= t;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '~=', 'ttext', 'tstzspan', COUNT(*) FROM tbl_ttext, tbl_tstzspan WHERE temp ~= p;
@@ -777,19 +777,19 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_ttext WHERE t && tem
 WHERE op = '&&' AND leftarg = 'timestamptz' AND rightarg = 'ttext';
 UPDATE 1
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE ts && temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE t && temp )
 WHERE op = '&&' AND leftarg = 'tstzset' AND rightarg = 'tbool';
 UPDATE 1
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tint WHERE ts && temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tint WHERE t && temp )
 WHERE op = '&&' AND leftarg = 'tstzset' AND rightarg = 'tint';
 UPDATE 1
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE ts && temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE t && temp )
 WHERE op = '&&' AND leftarg = 'tstzset' AND rightarg = 'tfloat';
 UPDATE 1
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE ts && temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE t && temp )
 WHERE op = '&&' AND leftarg = 'tstzset' AND rightarg = 'ttext';
 UPDATE 1
 UPDATE test_topops
@@ -829,7 +829,7 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE temp && 
 WHERE op = '&&' AND leftarg = 'tbool' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp && ts )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp && t )
 WHERE op = '&&' AND leftarg = 'tbool' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -865,7 +865,7 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE temp && t
 WHERE op = '&&' AND leftarg = 'tint' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp && ts )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp && t )
 WHERE op = '&&' AND leftarg = 'tint' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -905,7 +905,7 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp &&
 WHERE op = '&&' AND leftarg = 'tfloat' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp && ts )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp && t )
 WHERE op = '&&' AND leftarg = 'tfloat' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -933,7 +933,7 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE temp && 
 WHERE op = '&&' AND leftarg = 'ttext' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp && ts )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp && t )
 WHERE op = '&&' AND leftarg = 'ttext' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -965,19 +965,19 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_ttext WHERE t @> tem
 WHERE op = '@>' AND leftarg = 'timestamptz' AND rightarg = 'ttext';
 UPDATE 1
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE ts @> temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE t @> temp )
 WHERE op = '@>' AND leftarg = 'tstzset' AND rightarg = 'tbool';
 UPDATE 1
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tint WHERE ts @> temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tint WHERE t @> temp )
 WHERE op = '@>' AND leftarg = 'tstzset' AND rightarg = 'tint';
 UPDATE 1
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE ts @> temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE t @> temp )
 WHERE op = '@>' AND leftarg = 'tstzset' AND rightarg = 'tfloat';
 UPDATE 1
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE ts @> temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE t @> temp )
 WHERE op = '@>' AND leftarg = 'tstzset' AND rightarg = 'ttext';
 UPDATE 1
 UPDATE test_topops
@@ -1017,7 +1017,7 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE temp @> 
 WHERE op = '@>' AND leftarg = 'tbool' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp @> ts )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp @> t )
 WHERE op = '@>' AND leftarg = 'tbool' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -1053,7 +1053,7 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE temp @> t
 WHERE op = '@>' AND leftarg = 'tint' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp @> ts )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp @> t )
 WHERE op = '@>' AND leftarg = 'tint' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -1093,7 +1093,7 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp @>
 WHERE op = '@>' AND leftarg = 'tfloat' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp @> ts )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp @> t )
 WHERE op = '@>' AND leftarg = 'tfloat' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -1121,7 +1121,7 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE temp @> 
 WHERE op = '@>' AND leftarg = 'ttext' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp @> ts )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp @> t )
 WHERE op = '@>' AND leftarg = 'ttext' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -1153,19 +1153,19 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_ttext WHERE t <@ tem
 WHERE op = '<@' AND leftarg = 'timestamptz' AND rightarg = 'ttext';
 UPDATE 1
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE ts <@ temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE t <@ temp )
 WHERE op = '<@' AND leftarg = 'tstzset' AND rightarg = 'tbool';
 UPDATE 1
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tint WHERE ts <@ temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tint WHERE t <@ temp )
 WHERE op = '<@' AND leftarg = 'tstzset' AND rightarg = 'tint';
 UPDATE 1
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE ts <@ temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE t <@ temp )
 WHERE op = '<@' AND leftarg = 'tstzset' AND rightarg = 'tfloat';
 UPDATE 1
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE ts <@ temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE t <@ temp )
 WHERE op = '<@' AND leftarg = 'tstzset' AND rightarg = 'ttext';
 UPDATE 1
 UPDATE test_topops
@@ -1205,7 +1205,7 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE temp <@ 
 WHERE op = '<@' AND leftarg = 'tbool' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp <@ ts )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp <@ t )
 WHERE op = '<@' AND leftarg = 'tbool' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -1241,7 +1241,7 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE temp <@ t
 WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp <@ ts )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp <@ t )
 WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -1281,7 +1281,7 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp <@
 WHERE op = '<@' AND leftarg = 'tfloat' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp <@ ts )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp <@ t )
 WHERE op = '<@' AND leftarg = 'tfloat' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -1309,7 +1309,7 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE temp <@ 
 WHERE op = '<@' AND leftarg = 'ttext' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp <@ ts )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp <@ t )
 WHERE op = '<@' AND leftarg = 'ttext' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -1341,19 +1341,19 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_ttext WHERE t -|- te
 WHERE op = '-|-' AND leftarg = 'timestamptz' AND rightarg = 'ttext';
 UPDATE 1
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE ts -|- temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE t -|- temp )
 WHERE op = '-|-' AND leftarg = 'tstzset' AND rightarg = 'tbool';
 UPDATE 1
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tint WHERE ts -|- temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tint WHERE t -|- temp )
 WHERE op = '-|-' AND leftarg = 'tstzset' AND rightarg = 'tint';
 UPDATE 1
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE ts -|- temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE t -|- temp )
 WHERE op = '-|-' AND leftarg = 'tstzset' AND rightarg = 'tfloat';
 UPDATE 1
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE ts -|- temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE t -|- temp )
 WHERE op = '-|-' AND leftarg = 'tstzset' AND rightarg = 'ttext';
 UPDATE 1
 UPDATE test_topops
@@ -1393,7 +1393,7 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE temp -|-
 WHERE op = '-|-' AND leftarg = 'tbool' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp -|- ts )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp -|- t )
 WHERE op = '-|-' AND leftarg = 'tbool' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -1429,7 +1429,7 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE temp -|- 
 WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp -|- ts )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp -|- t )
 WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -1469,7 +1469,7 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp -|
 WHERE op = '-|-' AND leftarg = 'tfloat' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp -|- ts )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp -|- t )
 WHERE op = '-|-' AND leftarg = 'tfloat' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -1497,7 +1497,7 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE temp -|-
 WHERE op = '-|-' AND leftarg = 'ttext' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp -|- ts )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp -|- t )
 WHERE op = '-|-' AND leftarg = 'ttext' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -1529,19 +1529,19 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_ttext WHERE t ~= tem
 WHERE op = '~=' AND leftarg = 'timestamptz' AND rightarg = 'ttext';
 UPDATE 1
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE ts ~= temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE t ~= temp )
 WHERE op = '~=' AND leftarg = 'tstzset' AND rightarg = 'tbool';
 UPDATE 1
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tint WHERE ts ~= temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tint WHERE t ~= temp )
 WHERE op = '~=' AND leftarg = 'tstzset' AND rightarg = 'tint';
 UPDATE 1
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE ts ~= temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE t ~= temp )
 WHERE op = '~=' AND leftarg = 'tstzset' AND rightarg = 'tfloat';
 UPDATE 1
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE ts ~= temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE t ~= temp )
 WHERE op = '~=' AND leftarg = 'tstzset' AND rightarg = 'ttext';
 UPDATE 1
 UPDATE test_topops
@@ -1581,7 +1581,7 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE temp ~= 
 WHERE op = '~=' AND leftarg = 'tbool' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp ~= ts )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp ~= t )
 WHERE op = '~=' AND leftarg = 'tbool' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -1617,7 +1617,7 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE temp ~= t
 WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp ~= ts )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp ~= t )
 WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -1657,7 +1657,7 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp ~=
 WHERE op = '~=' AND leftarg = 'tfloat' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp ~= ts )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp ~= t )
 WHERE op = '~=' AND leftarg = 'tfloat' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -1685,7 +1685,7 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE temp ~= 
 WHERE op = '~=' AND leftarg = 'ttext' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp ~= ts )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp ~= t )
 WHERE op = '~=' AND leftarg = 'ttext' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -1733,19 +1733,19 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_ttext WHERE t && 
 WHERE op = '&&' AND leftarg = 'timestamptz' AND rightarg = 'ttext';
 UPDATE 1
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE ts && temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE t && temp )
 WHERE op = '&&' AND leftarg = 'tstzset' AND rightarg = 'tbool';
 UPDATE 1
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tint WHERE ts && temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tint WHERE t && temp )
 WHERE op = '&&' AND leftarg = 'tstzset' AND rightarg = 'tint';
 UPDATE 1
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE ts && temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE t && temp )
 WHERE op = '&&' AND leftarg = 'tstzset' AND rightarg = 'tfloat';
 UPDATE 1
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE ts && temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE t && temp )
 WHERE op = '&&' AND leftarg = 'tstzset' AND rightarg = 'ttext';
 UPDATE 1
 UPDATE test_topops
@@ -1785,7 +1785,7 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE temp 
 WHERE op = '&&' AND leftarg = 'tbool' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp && ts )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp && t )
 WHERE op = '&&' AND leftarg = 'tbool' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -1821,7 +1821,7 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE temp &
 WHERE op = '&&' AND leftarg = 'tint' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp && ts )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp && t )
 WHERE op = '&&' AND leftarg = 'tint' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -1861,7 +1861,7 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp
 WHERE op = '&&' AND leftarg = 'tfloat' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp && ts )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp && t )
 WHERE op = '&&' AND leftarg = 'tfloat' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -1889,7 +1889,7 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE temp 
 WHERE op = '&&' AND leftarg = 'ttext' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp && ts )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp && t )
 WHERE op = '&&' AND leftarg = 'ttext' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -1921,19 +1921,19 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_ttext WHERE t @> 
 WHERE op = '@>' AND leftarg = 'timestamptz' AND rightarg = 'ttext';
 UPDATE 1
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE ts @> temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE t @> temp )
 WHERE op = '@>' AND leftarg = 'tstzset' AND rightarg = 'tbool';
 UPDATE 1
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tint WHERE ts @> temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tint WHERE t @> temp )
 WHERE op = '@>' AND leftarg = 'tstzset' AND rightarg = 'tint';
 UPDATE 1
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE ts @> temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE t @> temp )
 WHERE op = '@>' AND leftarg = 'tstzset' AND rightarg = 'tfloat';
 UPDATE 1
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE ts @> temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE t @> temp )
 WHERE op = '@>' AND leftarg = 'tstzset' AND rightarg = 'ttext';
 UPDATE 1
 UPDATE test_topops
@@ -1973,7 +1973,7 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE temp 
 WHERE op = '@>' AND leftarg = 'tbool' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp @> ts )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp @> t )
 WHERE op = '@>' AND leftarg = 'tbool' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -2009,7 +2009,7 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE temp @
 WHERE op = '@>' AND leftarg = 'tint' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp @> ts )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp @> t )
 WHERE op = '@>' AND leftarg = 'tint' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -2049,7 +2049,7 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp
 WHERE op = '@>' AND leftarg = 'tfloat' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp @> ts )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp @> t )
 WHERE op = '@>' AND leftarg = 'tfloat' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -2077,7 +2077,7 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE temp 
 WHERE op = '@>' AND leftarg = 'ttext' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp @> ts )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp @> t )
 WHERE op = '@>' AND leftarg = 'ttext' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -2109,19 +2109,19 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_ttext WHERE t <@ 
 WHERE op = '<@' AND leftarg = 'timestamptz' AND rightarg = 'ttext';
 UPDATE 1
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE ts <@ temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE t <@ temp )
 WHERE op = '<@' AND leftarg = 'tstzset' AND rightarg = 'tbool';
 UPDATE 1
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tint WHERE ts <@ temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tint WHERE t <@ temp )
 WHERE op = '<@' AND leftarg = 'tstzset' AND rightarg = 'tint';
 UPDATE 1
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE ts <@ temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE t <@ temp )
 WHERE op = '<@' AND leftarg = 'tstzset' AND rightarg = 'tfloat';
 UPDATE 1
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE ts <@ temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE t <@ temp )
 WHERE op = '<@' AND leftarg = 'tstzset' AND rightarg = 'ttext';
 UPDATE 1
 UPDATE test_topops
@@ -2161,7 +2161,7 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE temp 
 WHERE op = '<@' AND leftarg = 'tbool' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp <@ ts )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp <@ t )
 WHERE op = '<@' AND leftarg = 'tbool' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -2197,7 +2197,7 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE temp <
 WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp <@ ts )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp <@ t )
 WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -2237,7 +2237,7 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp
 WHERE op = '<@' AND leftarg = 'tfloat' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp <@ ts )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp <@ t )
 WHERE op = '<@' AND leftarg = 'tfloat' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -2265,7 +2265,7 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE temp 
 WHERE op = '<@' AND leftarg = 'ttext' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp <@ ts )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp <@ t )
 WHERE op = '<@' AND leftarg = 'ttext' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -2297,19 +2297,19 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_ttext WHERE t -|-
 WHERE op = '-|-' AND leftarg = 'timestamptz' AND rightarg = 'ttext';
 UPDATE 1
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE ts -|- temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE t -|- temp )
 WHERE op = '-|-' AND leftarg = 'tstzset' AND rightarg = 'tbool';
 UPDATE 1
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tint WHERE ts -|- temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tint WHERE t -|- temp )
 WHERE op = '-|-' AND leftarg = 'tstzset' AND rightarg = 'tint';
 UPDATE 1
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE ts -|- temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE t -|- temp )
 WHERE op = '-|-' AND leftarg = 'tstzset' AND rightarg = 'tfloat';
 UPDATE 1
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE ts -|- temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE t -|- temp )
 WHERE op = '-|-' AND leftarg = 'tstzset' AND rightarg = 'ttext';
 UPDATE 1
 UPDATE test_topops
@@ -2349,7 +2349,7 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE temp 
 WHERE op = '-|-' AND leftarg = 'tbool' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp -|- ts )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp -|- t )
 WHERE op = '-|-' AND leftarg = 'tbool' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -2385,7 +2385,7 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE temp -
 WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp -|- ts )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp -|- t )
 WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -2425,7 +2425,7 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp
 WHERE op = '-|-' AND leftarg = 'tfloat' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp -|- ts )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp -|- t )
 WHERE op = '-|-' AND leftarg = 'tfloat' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -2453,7 +2453,7 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE temp 
 WHERE op = '-|-' AND leftarg = 'ttext' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp -|- ts )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp -|- t )
 WHERE op = '-|-' AND leftarg = 'ttext' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -2485,19 +2485,19 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_ttext WHERE t ~= 
 WHERE op = '~=' AND leftarg = 'timestamptz' AND rightarg = 'ttext';
 UPDATE 1
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE ts ~= temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE t ~= temp )
 WHERE op = '~=' AND leftarg = 'tstzset' AND rightarg = 'tbool';
 UPDATE 1
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tint WHERE ts ~= temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tint WHERE t ~= temp )
 WHERE op = '~=' AND leftarg = 'tstzset' AND rightarg = 'tint';
 UPDATE 1
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE ts ~= temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE t ~= temp )
 WHERE op = '~=' AND leftarg = 'tstzset' AND rightarg = 'tfloat';
 UPDATE 1
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE ts ~= temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE t ~= temp )
 WHERE op = '~=' AND leftarg = 'tstzset' AND rightarg = 'ttext';
 UPDATE 1
 UPDATE test_topops
@@ -2537,7 +2537,7 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE temp 
 WHERE op = '~=' AND leftarg = 'tbool' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp ~= ts )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp ~= t )
 WHERE op = '~=' AND leftarg = 'tbool' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -2573,7 +2573,7 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE temp ~
 WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp ~= ts )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp ~= t )
 WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -2613,7 +2613,7 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp
 WHERE op = '~=' AND leftarg = 'tfloat' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp ~= ts )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp ~= t )
 WHERE op = '~=' AND leftarg = 'tfloat' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -2641,7 +2641,7 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE temp 
 WHERE op = '~=' AND leftarg = 'ttext' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp ~= ts )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp ~= t )
 WHERE op = '~=' AND leftarg = 'ttext' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -2689,19 +2689,19 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_ttext WHERE t && te
 WHERE op = '&&' AND leftarg = 'timestamptz' AND rightarg = 'ttext';
 UPDATE 1
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE ts && temp )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE t && temp )
 WHERE op = '&&' AND leftarg = 'tstzset' AND rightarg = 'tbool';
 UPDATE 1
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tint WHERE ts && temp )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tint WHERE t && temp )
 WHERE op = '&&' AND leftarg = 'tstzset' AND rightarg = 'tint';
 UPDATE 1
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE ts && temp )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE t && temp )
 WHERE op = '&&' AND leftarg = 'tstzset' AND rightarg = 'tfloat';
 UPDATE 1
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE ts && temp )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE t && temp )
 WHERE op = '&&' AND leftarg = 'tstzset' AND rightarg = 'ttext';
 UPDATE 1
 UPDATE test_topops
@@ -2741,7 +2741,7 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE temp &&
 WHERE op = '&&' AND leftarg = 'tbool' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp && ts )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp && t )
 WHERE op = '&&' AND leftarg = 'tbool' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -2777,7 +2777,7 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE temp && 
 WHERE op = '&&' AND leftarg = 'tint' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp && ts )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp && t )
 WHERE op = '&&' AND leftarg = 'tint' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -2817,7 +2817,7 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp &
 WHERE op = '&&' AND leftarg = 'tfloat' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp && ts )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp && t )
 WHERE op = '&&' AND leftarg = 'tfloat' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -2845,7 +2845,7 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE temp &&
 WHERE op = '&&' AND leftarg = 'ttext' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp && ts )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp && t )
 WHERE op = '&&' AND leftarg = 'ttext' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -2877,19 +2877,19 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_ttext WHERE t @> te
 WHERE op = '@>' AND leftarg = 'timestamptz' AND rightarg = 'ttext';
 UPDATE 1
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE ts @> temp )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE t @> temp )
 WHERE op = '@>' AND leftarg = 'tstzset' AND rightarg = 'tbool';
 UPDATE 1
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tint WHERE ts @> temp )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tint WHERE t @> temp )
 WHERE op = '@>' AND leftarg = 'tstzset' AND rightarg = 'tint';
 UPDATE 1
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE ts @> temp )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE t @> temp )
 WHERE op = '@>' AND leftarg = 'tstzset' AND rightarg = 'tfloat';
 UPDATE 1
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE ts @> temp )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE t @> temp )
 WHERE op = '@>' AND leftarg = 'tstzset' AND rightarg = 'ttext';
 UPDATE 1
 UPDATE test_topops
@@ -2929,7 +2929,7 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE temp @>
 WHERE op = '@>' AND leftarg = 'tbool' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp @> ts )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp @> t )
 WHERE op = '@>' AND leftarg = 'tbool' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -2965,7 +2965,7 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE temp @> 
 WHERE op = '@>' AND leftarg = 'tint' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp @> ts )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp @> t )
 WHERE op = '@>' AND leftarg = 'tint' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -3005,7 +3005,7 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp @
 WHERE op = '@>' AND leftarg = 'tfloat' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp @> ts )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp @> t )
 WHERE op = '@>' AND leftarg = 'tfloat' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -3033,7 +3033,7 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE temp @>
 WHERE op = '@>' AND leftarg = 'ttext' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp @> ts )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp @> t )
 WHERE op = '@>' AND leftarg = 'ttext' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -3065,19 +3065,19 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_ttext WHERE t <@ te
 WHERE op = '<@' AND leftarg = 'timestamptz' AND rightarg = 'ttext';
 UPDATE 1
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE ts <@ temp )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE t <@ temp )
 WHERE op = '<@' AND leftarg = 'tstzset' AND rightarg = 'tbool';
 UPDATE 1
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tint WHERE ts <@ temp )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tint WHERE t <@ temp )
 WHERE op = '<@' AND leftarg = 'tstzset' AND rightarg = 'tint';
 UPDATE 1
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE ts <@ temp )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE t <@ temp )
 WHERE op = '<@' AND leftarg = 'tstzset' AND rightarg = 'tfloat';
 UPDATE 1
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE ts <@ temp )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE t <@ temp )
 WHERE op = '<@' AND leftarg = 'tstzset' AND rightarg = 'ttext';
 UPDATE 1
 UPDATE test_topops
@@ -3117,7 +3117,7 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE temp <@
 WHERE op = '<@' AND leftarg = 'tbool' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp <@ ts )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp <@ t )
 WHERE op = '<@' AND leftarg = 'tbool' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -3153,7 +3153,7 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE temp <@ 
 WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp <@ ts )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp <@ t )
 WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -3193,7 +3193,7 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp <
 WHERE op = '<@' AND leftarg = 'tfloat' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp <@ ts )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp <@ t )
 WHERE op = '<@' AND leftarg = 'tfloat' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -3221,7 +3221,7 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE temp <@
 WHERE op = '<@' AND leftarg = 'ttext' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp <@ ts )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp <@ t )
 WHERE op = '<@' AND leftarg = 'ttext' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -3253,19 +3253,19 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_ttext WHERE t -|- t
 WHERE op = '-|-' AND leftarg = 'timestamptz' AND rightarg = 'ttext';
 UPDATE 1
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE ts -|- temp )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE t -|- temp )
 WHERE op = '-|-' AND leftarg = 'tstzset' AND rightarg = 'tbool';
 UPDATE 1
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tint WHERE ts -|- temp )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tint WHERE t -|- temp )
 WHERE op = '-|-' AND leftarg = 'tstzset' AND rightarg = 'tint';
 UPDATE 1
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE ts -|- temp )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE t -|- temp )
 WHERE op = '-|-' AND leftarg = 'tstzset' AND rightarg = 'tfloat';
 UPDATE 1
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE ts -|- temp )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE t -|- temp )
 WHERE op = '-|-' AND leftarg = 'tstzset' AND rightarg = 'ttext';
 UPDATE 1
 UPDATE test_topops
@@ -3305,7 +3305,7 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE temp -|
 WHERE op = '-|-' AND leftarg = 'tbool' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp -|- ts )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp -|- t )
 WHERE op = '-|-' AND leftarg = 'tbool' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -3341,7 +3341,7 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE temp -|-
 WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp -|- ts )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp -|- t )
 WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -3381,7 +3381,7 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp -
 WHERE op = '-|-' AND leftarg = 'tfloat' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp -|- ts )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp -|- t )
 WHERE op = '-|-' AND leftarg = 'tfloat' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -3409,7 +3409,7 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE temp -|
 WHERE op = '-|-' AND leftarg = 'ttext' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp -|- ts )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp -|- t )
 WHERE op = '-|-' AND leftarg = 'ttext' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -3441,19 +3441,19 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_ttext WHERE t ~= te
 WHERE op = '~=' AND leftarg = 'timestamptz' AND rightarg = 'ttext';
 UPDATE 1
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE ts ~= temp )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tbool WHERE t ~= temp )
 WHERE op = '~=' AND leftarg = 'tstzset' AND rightarg = 'tbool';
 UPDATE 1
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tint WHERE ts ~= temp )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tint WHERE t ~= temp )
 WHERE op = '~=' AND leftarg = 'tstzset' AND rightarg = 'tint';
 UPDATE 1
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE ts ~= temp )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tfloat WHERE t ~= temp )
 WHERE op = '~=' AND leftarg = 'tstzset' AND rightarg = 'tfloat';
 UPDATE 1
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE ts ~= temp )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_ttext WHERE t ~= temp )
 WHERE op = '~=' AND leftarg = 'tstzset' AND rightarg = 'ttext';
 UPDATE 1
 UPDATE test_topops
@@ -3493,7 +3493,7 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE temp ~=
 WHERE op = '~=' AND leftarg = 'tbool' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp ~= ts )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE temp ~= t )
 WHERE op = '~=' AND leftarg = 'tbool' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -3529,7 +3529,7 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE temp ~= 
 WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp ~= ts )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE temp ~= t )
 WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -3569,7 +3569,7 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp ~
 WHERE op = '~=' AND leftarg = 'tfloat' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp ~= ts )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE temp ~= t )
 WHERE op = '~=' AND leftarg = 'tfloat' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
@@ -3597,7 +3597,7 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE temp ~=
 WHERE op = '~=' AND leftarg = 'ttext' AND rightarg = 'timestamptz';
 UPDATE 1
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp ~= ts )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE temp ~= t )
 WHERE op = '~=' AND leftarg = 'ttext' AND rightarg = 'tstzset';
 UPDATE 1
 UPDATE test_topops
