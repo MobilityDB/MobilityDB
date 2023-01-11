@@ -314,6 +314,8 @@ extern Span *floatspan_in(const char *str);
 extern char *floatspan_out(const Span *s, int maxdd);
 extern SpanSet *floatspanset_in(const char *str);
 extern char *floatspanset_out(const SpanSet *ss, int maxdd);
+extern char *geoset_as_text(const Set *set, int maxdd);
+extern char *geoset_as_ewkt(const Set *set, int maxdd);
 extern Set *intset_in(const char *str);
 extern Span *intspan_in(const char *str);
 extern char *intspan_out(const Span *s);
