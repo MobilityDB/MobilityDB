@@ -34,105 +34,73 @@
 -------------------------------------------------------------------------------
 
 SELECT COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i + t2.i IS NOT NULL;
-SELECT COUNT(*) FROM tbl_intset t1, tbl_intspan t2 WHERE t1.i + t2.i IS NOT NULL;
 SELECT COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i + t2.i IS NOT NULL;
-SELECT COUNT(*) FROM tbl_intspan t1, tbl_intset t2 WHERE t1.i + t2.i IS NOT NULL;
 SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i + t2.i IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintspan t2 WHERE t1.b + t2.b IS NOT NULL;
-SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintspan t2 WHERE t1.b + t2.b IS NOT NULL;
 SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t1.b + t2.b IS NOT NULL;
-SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintset t2 WHERE t1.b + t2.b IS NOT NULL;
 SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b + t2.b IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f + t2.f IS NOT NULL;
-SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatspan t2 WHERE t1.f + t2.f IS NOT NULL;
 SELECT COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f + t2.f IS NOT NULL;
-SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatset t2 WHERE t1.f + t2.f IS NOT NULL;
 SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f + t2.f IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_timestamptz t1, tbl_tstzspan t2 WHERE t1.t + t2.p IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzspan t2 WHERE t1.ts + t2.p IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_timestamptz t2 WHERE t1.p + t2.t IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzset t2 WHERE t1.p + t2.ts IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p + t2.p IS NOT NULL;
 
 -------------------------------------------------------------------------------
 
 SELECT COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i - t2.i IS NOT NULL;
-SELECT COUNT(*) FROM tbl_intset t1, tbl_intspan t2 WHERE t1.i - t2.i IS NOT NULL;
 SELECT COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i - t2.i IS NOT NULL;
-SELECT COUNT(*) FROM tbl_intspan t1, tbl_intset t2 WHERE t1.i - t2.i IS NOT NULL;
 SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i - t2.i IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintspan t2 WHERE t1.b - t2.b IS NOT NULL;
-SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintspan t2 WHERE t1.b - t2.b IS NOT NULL;
 SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t1.b - t2.b IS NOT NULL;
-SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintset t2 WHERE t1.b - t2.b IS NOT NULL;
 SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b - t2.b IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f - t2.f IS NOT NULL;
-SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatspan t2 WHERE t1.f - t2.f IS NOT NULL;
 SELECT COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f - t2.f IS NOT NULL;
-SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatset t2 WHERE t1.f - t2.f IS NOT NULL;
 SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f - t2.f IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_timestamptz t1, tbl_tstzspan t2 WHERE t1.t - t2.p IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzspan t2 WHERE t1.ts - t2.p IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_timestamptz t2 WHERE t1.p - t2.t IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzset t2 WHERE t1.p - t2.ts IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p - t2.p IS NOT NULL;
 
 -------------------------------------------------------------------------------
 
 SELECT COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i * t2.i IS NOT NULL;
-SELECT COUNT(*) FROM tbl_intset t1, tbl_intspan t2 WHERE t1.i * t2.i IS NOT NULL;
 SELECT COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i * t2.i IS NOT NULL;
-SELECT COUNT(*) FROM tbl_intspan t1, tbl_intset t2 WHERE t1.i * t2.i IS NOT NULL;
 SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i * t2.i IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintspan t2 WHERE t1.b * t2.b IS NOT NULL;
-SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintspan t2 WHERE t1.b * t2.b IS NOT NULL;
 SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t1.b * t2.b IS NOT NULL;
-SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintset t2 WHERE t1.b * t2.b IS NOT NULL;
 SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b * t2.b IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f * t2.f IS NOT NULL;
-SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatspan t2 WHERE t1.f * t2.f IS NOT NULL;
 SELECT COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f * t2.f IS NOT NULL;
-SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatset t2 WHERE t1.f * t2.f IS NOT NULL;
 SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f * t2.f IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_timestamptz t1, tbl_tstzspan t2 WHERE t1.t * t2.p IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzspan t2 WHERE t1.ts * t2.p IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_timestamptz t2 WHERE t1.p * t2.t IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzset t2 WHERE t1.p * t2.ts IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p * t2.p IS NOT NULL;
 
 -------------------------------------------------------------------------------
 
 SELECT MIN(t1.i <-> t2.i) FROM tbl_int t1, tbl_intspan t2;
-SELECT MIN(t1.i <-> t2.i) FROM tbl_intset t1, tbl_intspan t2;
 SELECT MIN(t1.i <-> t2.i) FROM tbl_intspan t1, tbl_int t2;
-SELECT MIN(t1.i <-> t2.i) FROM tbl_intspan t1, tbl_intset t2;
 SELECT MIN(t1.i <-> t2.i) FROM tbl_intspan t1, tbl_intspan t2;
 
 SELECT MIN(t1.b <-> t2.b) FROM tbl_bigint t1, tbl_bigintspan t2;
-SELECT MIN(t1.b <-> t2.b) FROM tbl_bigintset t1, tbl_bigintspan t2;
 SELECT MIN(t1.b <-> t2.b) FROM tbl_bigintspan t1, tbl_bigint t2;
-SELECT MIN(t1.b <-> t2.b) FROM tbl_bigintspan t1, tbl_bigintset t2;
 SELECT MIN(t1.b <-> t2.b) FROM tbl_bigintspan t1, tbl_bigintspan t2;
 
 SELECT MIN(t1.f <-> t2.f) FROM tbl_float t1, tbl_floatspan t2;
-SELECT MIN(t1.f <-> t2.f) FROM tbl_floatset t1, tbl_floatspan t2;
 SELECT MIN(t1.f <-> t2.f) FROM tbl_floatspan t1, tbl_float t2;
-SELECT MIN(t1.f <-> t2.f) FROM tbl_floatspan t1, tbl_floatset t2;
 SELECT MIN(t1.f <-> t2.f) FROM tbl_floatspan t1, tbl_floatspan t2;
 
 SELECT MIN(t1.t <-> t2.p) FROM tbl_timestamptz t1, tbl_tstzspan t2;
-SELECT MIN(t1.ts <-> t2.p) FROM tbl_tstzset t1, tbl_tstzspan t2;
 SELECT MIN(t1.p <-> t2.t) FROM tbl_tstzspan t1, tbl_timestamptz t2;
-SELECT MIN(t1.p <-> t2.ts) FROM tbl_tstzspan t1, tbl_tstzset t2;
 SELECT MIN(t1.p <-> t2.p) FROM tbl_tstzspan t1, tbl_tstzspan t2;
 
 -------------------------------------------------------------------------------

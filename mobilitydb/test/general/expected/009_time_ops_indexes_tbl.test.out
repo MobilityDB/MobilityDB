@@ -1,60 +1,13 @@
-DROP INDEX IF EXISTS tbl_tstzset_big_quadtree_idx;
-NOTICE:  index "tbl_tstzset_big_quadtree_idx" does not exist, skipping
-DROP INDEX
 DROP INDEX IF EXISTS tbl_tstzspanset_big_quadtree_idx;
 NOTICE:  index "tbl_tstzspanset_big_quadtree_idx" does not exist, skipping
 DROP INDEX
 DROP INDEX IF EXISTS tbl_tstzspan_big_quadtree_idx;
 NOTICE:  index "tbl_tstzspan_big_quadtree_idx" does not exist, skipping
 DROP INDEX
-CREATE INDEX tbl_tstzset_big_quadtree_idx ON tbl_tstzset_big USING SPGIST(ts);
-CREATE INDEX
 CREATE INDEX tbl_tstzspan_big_quadtree_idx ON tbl_tstzspan_big USING SPGIST(p);
 CREATE INDEX
 CREATE INDEX tbl_tstzspanset_big_quadtree_idx ON tbl_tstzspanset_big USING SPGIST(ps);
 CREATE INDEX
-SELECT COUNT(*) FROM tbl_tstzset_big WHERE ts && tstzspan '[2001-01-01, 2001-02-01]';
- count 
--------
-  1080
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tstzset_big WHERE ts <@ tstzspan '[2001-01-01, 2001-02-01]';
- count 
--------
-  1079
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tstzset_big WHERE ts -|- tstzspan '[2001-01-01, 2001-02-01]';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tstzset_big WHERE ts <<# tstzspan '[2001-01-01, 2001-02-01]';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tstzset_big WHERE ts &<# tstzspan '[2001-01-01, 2001-02-01]';
- count 
--------
-  1080
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tstzset_big WHERE ts #>> tstzspan '[2001-01-01, 2001-02-01]';
- count 
--------
- 10800
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tstzset_big WHERE ts #&> tstzspan '[2001-01-01, 2001-02-01]';
- count 
--------
- 11879
-(1 row)
-
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p @> timestamptz '2001-01-01';
  count 
 -------
@@ -86,48 +39,6 @@ SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p #>> timestamptz '2001-01-01';
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p #&> timestamptz '2001-01-01';
- count 
--------
- 11880
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p && tstzset '{2001-01-01, 2001-02-01}';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p @> tstzset '{2001-01-01, 2001-02-01}';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p -|- tstzset '{2001-01-01, 2001-02-01}';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p <<# tstzset '{2001-01-01, 2001-02-01}';
- count 
--------
-   500
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p &<# tstzset '{2001-01-01, 2001-02-01}';
- count 
--------
-  1545
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p #>> tstzset '{2001-01-01, 2001-02-01}';
- count 
--------
- 10835
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p #&> tstzset '{2001-01-01, 2001-02-01}';
  count 
 -------
  11880
@@ -277,8 +188,6 @@ SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps #&> tstzspan '[2001-01-01, 200
  11877
 (1 row)
 
-DROP INDEX tbl_tstzset_big_quadtree_idx;
-DROP INDEX
 DROP INDEX tbl_tstzspan_big_quadtree_idx;
 DROP INDEX
 DROP INDEX tbl_tstzspanset_big_quadtree_idx;
