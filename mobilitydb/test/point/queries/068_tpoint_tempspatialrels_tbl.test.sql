@@ -39,7 +39,7 @@ SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint_step_seq
   WHERE tcontains(g, seq) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint_step_seqset
-  WHERE tcontains(g, ts) IS NOT NULL;
+  WHERE tcontains(g, ss) IS NOT NULL;
 
 -------------------------------------------------------------------------------
 -- Robustness test
@@ -52,7 +52,7 @@ SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint_step_seq
   WHERE tcontains(g, seq) ?= true <> contains(g, seq);
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint_step_seqset
-  WHERE tcontains(g, ts) ?= true <> contains(g, ts);
+  WHERE tcontains(g, ss) ?= true <> contains(g, ss);
 
 -------------------------------------------------------------------------------
 -- tdisjoint
@@ -67,7 +67,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom_point
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq
   WHERE tdisjoint(g, seq) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
-  WHERE tdisjoint(g, ts) IS NOT NULL;
+  WHERE tdisjoint(g, ss) IS NOT NULL;
 
 -------------------------------------------------------------------------------
 -- Robustness test
@@ -81,7 +81,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom_point
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq
   WHERE tdisjoint(g, seq) ?= true <> disjoint(g, seq);
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
-  WHERE tdisjoint(g, ts) ?= true <> disjoint(g, ts);
+  WHERE tdisjoint(g, ss) ?= true <> disjoint(g, ss);
 
 -- Temporal points
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
@@ -102,7 +102,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom_point
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq
   WHERE tintersects(g, seq) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
-  WHERE tintersects(g, ts) IS NOT NULL;
+  WHERE tintersects(g, ss) IS NOT NULL;
 
 -------------------------------------------------------------------------------
 -- Robustness test
@@ -116,7 +116,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom_point
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq
   WHERE tintersects(g, seq) ?= true <> intersects(g, seq);
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
-  WHERE tintersects(g, ts) ?= true <> intersects(g, ts);
+  WHERE tintersects(g, ss) ?= true <> intersects(g, ss);
 
 -- Temporal points
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
@@ -137,7 +137,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom_point
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint_step_seq
   WHERE ttouches(g, seq) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint_step_seqset
-  WHERE ttouches(g, ts) IS NOT NULL;
+  WHERE ttouches(g, ss) IS NOT NULL;
 
 -------------------------------------------------------------------------------
 -- Robustness test
@@ -151,7 +151,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint_step_seq
   WHERE ttouches(g, seq) ?= true <> touches(g, seq);
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint_step_seqset
-  WHERE ttouches(g, ts) ?= true <> touches(g, ts);
+  WHERE ttouches(g, ss) ?= true <> touches(g, ss);
 
 -------------------------------------------------------------------------------
 -- tdwithin
@@ -168,7 +168,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq
   WHERE tdwithin(g, seq, 10) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
-  WHERE tdwithin(g, ts, 10) IS NOT NULL;
+  WHERE tdwithin(g, ss, 10) IS NOT NULL;
 
 -- Mixed 2D/3D
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint3D t2
@@ -190,7 +190,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq
   WHERE tdwithin(g, seq, 10) ?= true <> dwithin(g, seq, 10);
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
-  WHERE tdwithin(g, ts, 10) ?= true <> dwithin(g, ts, 10);
+  WHERE tdwithin(g, ss, 10) ?= true <> dwithin(g, ss, 10);
 
 -- Mixed 2D/3D
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint3D t2

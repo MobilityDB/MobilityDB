@@ -83,16 +83,16 @@ SELECT numSequences(wcount(seq, interval '5 minutes')) FROM tbl_tfloat_seq;
 -- Temporal sequence sets
 -------------------------------------------------------------------------------
 
-SELECT numSequences(wmin(ts, interval '5 minutes')) FROM tbl_tint_seqset;
-SELECT numSequences(wmax(ts, interval '5 minutes')) FROM tbl_tint_seqset;
-SELECT numSequences(wsum(ts, interval '5 minutes')) FROM tbl_tint_seqset;
-SELECT numSequences(wcount(ts, interval '5 minutes')) FROM tbl_tint_seqset;
-SELECT numSequences(wavg(ts, interval '5 minutes')) FROM tbl_tint_seqset;
+SELECT numSequences(wmin(ss, interval '5 minutes')) FROM tbl_tint_seqset;
+SELECT numSequences(wmax(ss, interval '5 minutes')) FROM tbl_tint_seqset;
+SELECT numSequences(wsum(ss, interval '5 minutes')) FROM tbl_tint_seqset;
+SELECT numSequences(wcount(ss, interval '5 minutes')) FROM tbl_tint_seqset;
+SELECT numSequences(wavg(ss, interval '5 minutes')) FROM tbl_tint_seqset;
 
 -------------------------------------------------------------------------------
 
-SELECT numSequences(wmin(ts, interval '5 minutes')) FROM tbl_tfloat_seqset;
-SELECT numSequences(wmax(ts, interval '5 minutes')) FROM tbl_tfloat_seqset;
-SELECT numSequences(wcount(ts, interval '5 minutes')) FROM tbl_tfloat_seqset;
+SELECT numSequences(wmin(ss, interval '5 minutes')) FROM tbl_tfloat_seqset;
+SELECT numSequences(wmax(ss, interval '5 minutes')) FROM tbl_tfloat_seqset;
+SELECT numSequences(wcount(ss, interval '5 minutes')) FROM tbl_tfloat_seqset;
 
 -------------------------------------------------------------------------------

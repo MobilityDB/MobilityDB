@@ -91,10 +91,10 @@ SELECT DISTINCT tempSubtype(tnpoint_seqset(seq)) FROM tbl_tnpoint_seq;
 
 -------------------------------------------------------------------------------
 
-SELECT DISTINCT tempSubtype(tnpoint(ts)) FROM tbl_tnpoint_seqset WHERE numInstants(ts) = 1;
-SELECT DISTINCT tempSubtype(tnpoint_discseq(ts)) FROM tbl_tnpoint_seqset WHERE duration(ts) = '00:00:00';
-SELECT DISTINCT tempSubtype(tnpoint_contseq(ts)) FROM tbl_tnpoint_seqset WHERE numSequences(ts) = 1;
-SELECT DISTINCT tempSubtype(tnpoint_seqset(ts)) FROM tbl_tnpoint_seqset;
+SELECT DISTINCT tempSubtype(tnpoint(ss)) FROM tbl_tnpoint_seqset WHERE numInstants(ss) = 1;
+SELECT DISTINCT tempSubtype(tnpoint_discseq(ss)) FROM tbl_tnpoint_seqset WHERE duration(ss) = '00:00:00';
+SELECT DISTINCT tempSubtype(tnpoint_contseq(ss)) FROM tbl_tnpoint_seqset WHERE numSequences(ss) = 1;
+SELECT DISTINCT tempSubtype(tnpoint_seqset(ss)) FROM tbl_tnpoint_seqset;
 
 -------------------------------------------------------------------------------
 --  Append functions
@@ -172,15 +172,15 @@ SELECT MAX(timestampN(temp,1)) FROM tbl_tnpoint;
 
 SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tnpoint;
 
-SELECT MAX(numSequences(ts)) FROM tbl_tnpoint_seqset;
+SELECT MAX(numSequences(ss)) FROM tbl_tnpoint_seqset;
 
-SELECT MAX(duration(startSequence(ts))) FROM tbl_tnpoint_seqset;
+SELECT MAX(duration(startSequence(ss))) FROM tbl_tnpoint_seqset;
 
-SELECT MAX(duration(endSequence(ts))) FROM tbl_tnpoint_seqset;
+SELECT MAX(duration(endSequence(ss))) FROM tbl_tnpoint_seqset;
 
-SELECT MAX(duration(sequenceN(ts, numSequences(ts)))) FROM tbl_tnpoint_seqset;
+SELECT MAX(duration(sequenceN(ss, numSequences(ss)))) FROM tbl_tnpoint_seqset;
 
-SELECT MAX(array_length(sequences(ts),1)) FROM tbl_tnpoint_seqset;
+SELECT MAX(array_length(sequences(ss),1)) FROM tbl_tnpoint_seqset;
 
 -------------------------------------------------------------------------------
 --  Restriction functions

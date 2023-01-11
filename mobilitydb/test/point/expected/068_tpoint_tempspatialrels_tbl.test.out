@@ -13,7 +13,7 @@ SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint_step_seq
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint_step_seqset
-  WHERE tcontains(g, ts) IS NOT NULL;
+  WHERE tcontains(g, ss) IS NOT NULL;
  count 
 -------
   9400
@@ -35,7 +35,7 @@ SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint_step_seq
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint_step_seqset
-  WHERE tcontains(g, ts) ?= true <> contains(g, ts);
+  WHERE tcontains(g, ss) ?= true <> contains(g, ss);
  count 
 -------
      0
@@ -63,7 +63,7 @@ SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
-  WHERE tdisjoint(g, ts) IS NOT NULL;
+  WHERE tdisjoint(g, ss) IS NOT NULL;
  count 
 -------
   9900
@@ -91,7 +91,7 @@ SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
-  WHERE tdisjoint(g, ts) ?= true <> disjoint(g, ts);
+  WHERE tdisjoint(g, ss) ?= true <> disjoint(g, ss);
  count 
 -------
      0
@@ -133,7 +133,7 @@ SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
-  WHERE tintersects(g, ts) IS NOT NULL;
+  WHERE tintersects(g, ss) IS NOT NULL;
  count 
 -------
   9900
@@ -161,7 +161,7 @@ SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
-  WHERE tintersects(g, ts) ?= true <> intersects(g, ts);
+  WHERE tintersects(g, ss) ?= true <> intersects(g, ss);
  count 
 -------
      0
@@ -203,7 +203,7 @@ SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint_step_seq
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint_step_seqset
-  WHERE ttouches(g, ts) IS NOT NULL;
+  WHERE ttouches(g, ss) IS NOT NULL;
  count 
 -------
   9400
@@ -231,7 +231,7 @@ SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint_step_seq
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint_step_seqset
-  WHERE ttouches(g, ts) ?= true <> touches(g, ts);
+  WHERE ttouches(g, ss) ?= true <> touches(g, ss);
  count 
 -------
      0
@@ -266,7 +266,7 @@ SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
-  WHERE tdwithin(g, ts, 10) IS NOT NULL;
+  WHERE tdwithin(g, ss, 10) IS NOT NULL;
  count 
 -------
   9900
@@ -315,7 +315,7 @@ SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
-  WHERE tdwithin(g, ts, 10) ?= true <> dwithin(g, ts, 10);
+  WHERE tdwithin(g, ss, 10) ?= true <> dwithin(g, ss, 10);
  count 
 -------
      0

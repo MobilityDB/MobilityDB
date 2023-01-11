@@ -42,8 +42,8 @@ SELECT round(extent(ti), 6) FROM tbl_tgeompoint_discseq;
 SELECT round(extent(ti), 6) FROM tbl_tgeogpoint_discseq;
 SELECT round(extent(seq), 6) FROM tbl_tgeompoint_seq;
 SELECT round(extent(seq), 6) FROM tbl_tgeogpoint_seq;
-SELECT round(extent(ts), 6) FROM tbl_tgeompoint_seqset;
-SELECT round(extent(ts), 6) FROM tbl_tgeogpoint_seqset;
+SELECT round(extent(ss), 6) FROM tbl_tgeompoint_seqset;
+SELECT round(extent(ss), 6) FROM tbl_tgeogpoint_seqset;
 SELECT round(extent(temp), 6) FROM tbl_tgeompoint;
 SELECT round(extent(temp), 6) FROM tbl_tgeogpoint;
 
@@ -53,8 +53,8 @@ SELECT round(extent(ti), 6) FROM tbl_tgeompoint3D_discseq;
 SELECT round(extent(ti), 6) FROM tbl_tgeogpoint3D_discseq;
 SELECT round(extent(seq), 6) FROM tbl_tgeompoint3D_seq;
 SELECT round(extent(seq), 6) FROM tbl_tgeogpoint3D_seq;
-SELECT round(extent(ts), 6) FROM tbl_tgeompoint3D_seqset;
-SELECT round(extent(ts), 6) FROM tbl_tgeogpoint3D_seqset;
+SELECT round(extent(ss), 6) FROM tbl_tgeompoint3D_seqset;
+SELECT round(extent(ss), 6) FROM tbl_tgeogpoint3D_seqset;
 SELECT round(extent(temp), 6) FROM tbl_tgeompoint3D;
 SELECT round(extent(temp), 6) FROM tbl_tgeogpoint3D;
 
@@ -79,10 +79,10 @@ SELECT numSequences(tcount(seq)) FROM tbl_tgeompoint_seq;
 SELECT k%10, numSequences(tcentroid(seq)) FROM tbl_tgeompoint_seq GROUP BY k%10 ORDER BY k%10;
 SELECT k%10, numSequences(tcount(seq)) FROM tbl_tgeompoint_seq GROUP BY k%10 ORDER BY k%10;
 
-SELECT numSequences(tcentroid(ts)) FROM tbl_tgeompoint_seqset;
-SELECT numSequences(tcount(ts)) FROM tbl_tgeompoint_seqset;
-SELECT k%10, numSequences(tcentroid(ts)) FROM tbl_tgeompoint_seqset GROUP BY k%10 ORDER BY k%10;
-SELECT k%10, numSequences(tcount(ts)) FROM tbl_tgeompoint_seqset GROUP BY k%10 ORDER BY k%10;
+SELECT numSequences(tcentroid(ss)) FROM tbl_tgeompoint_seqset;
+SELECT numSequences(tcount(ss)) FROM tbl_tgeompoint_seqset;
+SELECT k%10, numSequences(tcentroid(ss)) FROM tbl_tgeompoint_seqset GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tcount(ss)) FROM tbl_tgeompoint_seqset GROUP BY k%10 ORDER BY k%10;
 
 SELECT numInstants(tcentroid(inst)) FROM tbl_tgeompoint3D_inst;
 SELECT numInstants(tcount(inst)) FROM tbl_tgeompoint3D_inst;
@@ -99,10 +99,10 @@ SELECT numSequences(tcount(seq)) FROM tbl_tgeompoint3D_seq;
 SELECT k%10, numSequences(tcentroid(seq)) FROM tbl_tgeompoint3D_seq GROUP BY k%10 ORDER BY k%10;
 SELECT k%10, numSequences(tcount(seq)) FROM tbl_tgeompoint3D_seq GROUP BY k%10 ORDER BY k%10;
 
-SELECT numSequences(tcentroid(ts)) FROM tbl_tgeompoint3D_seqset;
-SELECT numSequences(tcount(ts)) FROM tbl_tgeompoint3D_seqset;
-SELECT k%10, numSequences(tcentroid(ts)) FROM tbl_tgeompoint3D_seqset GROUP BY k%10 ORDER BY k%10;
-SELECT k%10, numSequences(tcount(ts)) FROM tbl_tgeompoint3D_seqset GROUP BY k%10 ORDER BY k%10;
+SELECT numSequences(tcentroid(ss)) FROM tbl_tgeompoint3D_seqset;
+SELECT numSequences(tcount(ss)) FROM tbl_tgeompoint3D_seqset;
+SELECT k%10, numSequences(tcentroid(ss)) FROM tbl_tgeompoint3D_seqset GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tcount(ss)) FROM tbl_tgeompoint3D_seqset GROUP BY k%10 ORDER BY k%10;
 
 -------------------------------------------------------------------------------
 
@@ -119,8 +119,8 @@ SELECT numSequences(tcount(seq)) FROM tbl_tgeogpoint_seq;
 -- SELECT numSequences(tcount(seq, '12 hours', '2020-01-01')) FROM tbl_tgeogpoint_seq;
 SELECT k%10, numSequences(tcount(seq)) FROM tbl_tgeogpoint_seq GROUP BY k%10 ORDER BY k%10;
 
-SELECT numSequences(tcount(ts)) FROM tbl_tgeogpoint_seqset;
-SELECT k%10, numSequences(tcount(ts)) FROM tbl_tgeogpoint_seqset GROUP BY k%10 ORDER BY k%10;
+SELECT numSequences(tcount(ss)) FROM tbl_tgeogpoint_seqset;
+SELECT k%10, numSequences(tcount(ss)) FROM tbl_tgeogpoint_seqset GROUP BY k%10 ORDER BY k%10;
 
 -------------------------------------------------------------------------------
 
