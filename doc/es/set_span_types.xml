@@ -71,7 +71,7 @@
 				<para><varname>time</varname> representa cualquier tipo de tiempo, es decir, <varname>timestamptz</varname>, <varname>tstzspan</varname>, <varname>tstzset</varname> o <varname>tstzspanset</varname>,</para>
 			</listitem>
 			<listitem>
-				<para>Un conjunto de tipos como <varname>{set,span}</varname> representa cualquiera de los tipos enumerados,</para>
+				<para>Un conjunto de tipos como <varname>{set,base}</varname> representa cualquiera de los tipos enumerados,</para>
 			</listitem>
 			<listitem>
 				<para><varname>type[]</varname> representa una matriz de <varname>type</varname>.</para>
@@ -82,14 +82,17 @@
 			Como ejemplo, la firma del operador contiene (<varname>@&gt;</varname>) es como sigue:
 		</para>
 		<programlisting xml:space="preserve">
-{set,span} @&gt; {set,span,element} → boolean
+{set,span} @&gt; {set,span,base} → boolean
 </programlisting>
 		<para>
-			Observe que no todas las combinaciones de tipos en las firmas son significativas. Por ejemplo, en la firma anterior, los conjuntos no pueden contener los rangos, ya que estos últimos pueden contener un número infinito de valores. Por otro lado, los rangos pueden contener tanto los conjuntos como los rangos. Por lo tanto, MobilityDB sólo define las combinaciones significativas.
-		</para>
-
+			Nótese que la firma anterior es una versión abreviada de la firma más precisa a continuación
+ 		</para>
+		<programlisting xml:space="preserve">
+set @&gt; {set,base} → boolean
+span @&gt; {span,base} → boolean
+</programlisting>
 		<para>
-			A continuación, por concisión, la parte de tiempo de las marcas de tiempo se omite en la mayoría de los ejemplos. Recuerde que en ese caso PostgreSQL asume el tiempo <varname>00:00:00</varname>.
+			ya que los conjuntos y los rangos no se pueden mezclar en las operaciones y, por lo tanto, por ejemplo, no se puede preguntar si un rango contiene un conjunto. A continuación, por concisión, utilizamos el estilo abreviado de las firmas anteriores. Además, la parte de tiempo de las marcas de tiempo se omite en la mayoría de los ejemplos. Recuerde que en ese caso PostgreSQL asume el tiempo <varname>00:00:00</varname>.
 		</para>
 
 		<sect2>
@@ -523,59 +526,53 @@ SELECT tstzspan(tstzspanset '{[2001-01-01, 2001-01-02), [2001-01-03, 2001-01-04)
 </programlisting>
 				</listitem>
 
-				<listitem id="setspan_numTimestamps">
-					<indexterm><primary><varname>numTimestamps</varname></primary></indexterm>
-					<para>Obtener el número de marcas de tiempo diferentes</para>
-					<para><varname>numTimestamps({tstzset,tstzspanset}) → integer</varname></para>
+				<listitem id="numValues">
+					<indexterm><primary><varname>numValues</varname></primary></indexterm>
+					<para>Obtener el número de valores</para>
+					<para><varname>numValues(set) → integer</varname></para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT numTimestamps(tstzset '{2001-01-01, 2001-01-03, 2001-01-04}');
+SELECT numValues(intset '{1,3,5,7}');
+-- 4
+</programlisting>
+				</listitem>
+
+				<listitem id="set_startValue">
+					<indexterm><primary><varname>startValue</varname></primary></indexterm>
+					<para>Obtener el valor inicial</para>
+					<para><varname>startValue(set) → base</varname></para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT startValue(intset '{1,3,5,7}');
+-- 1
+</programlisting>
+				</listitem>
+
+				<listitem id="set_endValue">
+					<indexterm><primary><varname>endValue</varname></primary></indexterm>
+					<para>Obtener el valor final</para>
+					<para><varname>endValue(set) → base</varname></para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT endValue(tstzset '{2001-01-01, 2001-01-03, 2001-01-05, 2001-01-07}');
+-- 2001-01-07
+</programlisting>
+				</listitem>
+
+				<listitem id="set_valueN">
+					<indexterm><primary><varname>valueN</varname></primary></indexterm>
+					<para>Obtener el enésimo valor</para>
+					<para><varname>valueN(set,integer) → base</varname></para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT valueN(floatset '{1,3,5,7}',2);
 -- 3
-SELECT numTimestamps(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}');
--- 3
 </programlisting>
 				</listitem>
 
-				<listitem id="setspan_startTimestamp">
-					<indexterm><primary><varname>startTimestamp</varname></primary></indexterm>
-					<para>Obtener la marca de tiempo inicial</para>
-					<para><varname>startTimestamp({tstzset,tstzspanset}) → timestamptz</varname></para>
-					<para>La función no tiene en cuenta si los límites son inclusivos o no.</para>
+				<listitem id="set_values">
+					<indexterm><primary><varname>values</varname></primary></indexterm>
+					<para>Obtener los valores</para>
+					<para><varname>values(set) → base[]</varname></para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT startTimestamp(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}');
--- 2001-01-01
-</programlisting>
-				</listitem>
-
-				<listitem id="setspan_endTimestamp">
-					<indexterm><primary><varname>endTimestamp</varname></primary></indexterm>
-					<para>Obtener la marca de tiempo final</para>
-					<para><varname>endTimestamp({tstzset,tstzspanset}) → timestamptz</varname></para>
-					<para>La función no tiene en cuenta si los límites son inclusivos o no.</para>
-					<programlisting language="sql" xml:space="preserve">
-SELECT endTimestamp(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}');
--- 2001-01-05
-</programlisting>
-				</listitem>
-
-				<listitem id="setspan_timestampN">
-					<indexterm><primary><varname>timestampN</varname></primary></indexterm>
-					<para>Obtener la enésima marca de tiempo diferente</para>
-					<para><varname>timestampN({tstzset,tstzspanset},integer) → timestamptz</varname></para>
-					<para>La función no tiene en cuenta si los límites son inclusivos o no.</para>
-					<programlisting language="sql" xml:space="preserve">
-SELECT timestampN(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}', 3);
--- 2001-01-04
-</programlisting>
-				</listitem>
-
-				<listitem id="setspan_timestamps">
-					<indexterm><primary><varname>timestamps</varname></primary></indexterm>
-					<para>Obtener las marcas de tiempo diferentes</para>
-					<para><varname>timestamps({tstzset,tstzspanset}) → tstzset</varname></para>
-					<para>La función no tiene en cuenta si los límites son inclusivos o no.</para>
-					<programlisting language="sql" xml:space="preserve">
-SELECT timestamps(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}');
--- {"2001-01-01", "2001-01-03", "2001-01-05"}
+SELECT values(tstzset '{2001-01-01, 2001-01-03, 2001-01-05, 2001-01-07}');
+-- {"2001-01-01", "2001-01-03)", "2001-01-05", "2001-01-07"}
 </programlisting>
 				</listitem>
 
@@ -641,6 +638,60 @@ SELECT spans(floatspanset '{[1,3),[4,4],[6,7)}');
 SELECT spans(tstzspanset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-04],
   [2001-01-05, 2001-01-06)}');
 -- {"[2001-01-01,2001-01-03)", "[2001-01-04,2001-01-04]", "[2001-01-05,2001-01-06)"}
+</programlisting>
+				</listitem>
+
+				<listitem id="setspan_numTimestamps">
+					<indexterm><primary><varname>numTimestamps</varname></primary></indexterm>
+					<para>Obtener el número de marcas de tiempo diferentes</para>
+					<para><varname>numTimestamps(tstzspanset) → integer</varname></para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT numTimestamps(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}');
+-- 3
+</programlisting>
+				</listitem>
+
+				<listitem id="setspan_startTimestamp">
+					<indexterm><primary><varname>startTimestamp</varname></primary></indexterm>
+					<para>Obtener la marca de tiempo inicial</para>
+					<para><varname>startTimestamp(tstzspanset) → timestamptz</varname></para>
+					<para>La función no tiene en cuenta si los límites son inclusivos o no.</para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT startTimestamp(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}');
+-- 2001-01-01
+</programlisting>
+				</listitem>
+
+				<listitem id="setspan_endTimestamp">
+					<indexterm><primary><varname>endTimestamp</varname></primary></indexterm>
+					<para>Obtener la marca de tiempo final</para>
+					<para><varname>endTimestamp(tstzspanset) → timestamptz</varname></para>
+					<para>La función no tiene en cuenta si los límites son inclusivos o no.</para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT endTimestamp(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}');
+-- 2001-01-05
+</programlisting>
+				</listitem>
+
+				<listitem id="setspan_timestampN">
+					<indexterm><primary><varname>timestampN</varname></primary></indexterm>
+					<para>Obtener la enésima marca de tiempo diferente</para>
+					<para><varname>timestampN(tstzspanset,integer) → timestamptz</varname></para>
+					<para>La función no tiene en cuenta si los límites son inclusivos o no.</para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT timestampN(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}', 3);
+-- 2001-01-04
+</programlisting>
+				</listitem>
+
+				<listitem id="setspan_timestamps">
+					<indexterm><primary><varname>timestamps</varname></primary></indexterm>
+					<para>Obtener las marcas de tiempo diferentes</para>
+					<para><varname>timestamps(tstzspanset) → tstzset</varname></para>
+					<para>La función no tiene en cuenta si los límites son inclusivos o no.</para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT timestamps(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}');
+-- {"2001-01-01", "2001-01-03", "2001-01-05"}
 </programlisting>
 				</listitem>
 			</itemizedlist>
