@@ -47,8 +47,7 @@
  *****************************************************************************/
 
 /**
- * Global array that keeps type information for the temporal types defined
- * in MobilityDB.
+ * Global array that keeps type information for the temporal types
  */
 temptype_cache_struct _temptype_cache[] =
 {
@@ -69,7 +68,6 @@ temptype_cache_struct _temptype_cache[] =
 
 /**
  * Global array that keeps type information for the set types defined
- * in MobilityDB.
  */
 settype_cache_struct _settype_cache[] =
 {
@@ -86,7 +84,6 @@ settype_cache_struct _settype_cache[] =
 
 /**
  * Global array that keeps type information for the span types defined
- * in MobilityDB.
  */
 spantype_cache_struct _spantype_cache[] =
 {
@@ -99,7 +96,6 @@ spantype_cache_struct _spantype_cache[] =
 
 /**
  * Global array that keeps type information for the span set types defined
- * in MobilityDB.
  */
 spansettype_cache_struct _spansettype_cache[] =
 {
@@ -116,7 +112,6 @@ spansettype_cache_struct _spansettype_cache[] =
 
 /**
  * Return the base type from the temporal type
- * @note this function is defined again for MobilityDB below
  */
 meosType
 temptype_basetype(meosType temptype)
@@ -342,7 +337,7 @@ set_basetype(meosType basetype)
 }
 
 /**
- * Ensure that the span base type is
+ * Ensure that the type is a set base type
  */
 void
 ensure_set_basetype(meosType basetype)
@@ -767,7 +762,7 @@ basetype_length(meosType basetype)
 
 /**
  * Return true if the type is a temporal alpha type (i.e., those whose
- * bounding box is a period) supported by MobilityDB
+ * bounding box is a period)
  */
 bool
 talpha_type(meosType temptype)
@@ -789,7 +784,7 @@ tnumber_type(meosType temptype)
 }
 
 /**
- * Return true if the type is a number base type supported by MobilityDB
+ * Return true if the type is a number base type
  */
 void
 ensure_tnumber_type(meosType temptype)
@@ -800,7 +795,7 @@ ensure_tnumber_type(meosType temptype)
 }
 
 /**
- * Test whether the type is a number base type supported by MobilityDB
+ * Test whether the type is a number base type
  */
 bool
 tnumber_basetype(meosType basetype)
@@ -811,7 +806,7 @@ tnumber_basetype(meosType basetype)
 }
 
 /**
- * Return true if the type is a number base type supported by MobilityDB
+ * Return true if the type is a number base type
  */
 void
 ensure_tnumber_basetype(meosType basetype)
@@ -822,8 +817,7 @@ ensure_tnumber_basetype(meosType basetype)
 }
 
 /**
- * Return true if the type is a set number type
- *
+ * @brief Return true if the type is a set number type
  * @note Function used in particular in the indexes
  */
 bool
@@ -894,8 +888,7 @@ ensure_tnumber_spansettype(meosType spansettype)
 }
 
 /**
- * Return true if the type is a spatiotemporal type
- *
+ * @brief Return true if the type is a spatiotemporal type
  * @note This function is used for features common to all spatiotemporal types,
  * in particular, all of them use the same bounding box STBox. Therefore it is
  * used for the indexes and selectivity functions
@@ -913,8 +906,7 @@ tspatial_type(meosType temptype)
 }
 
 /**
- * Return true if the type is a spatiotemporal type
- *
+ * @brief Return true if the type is a spatiotemporal type
  * @note This function is used for features common to all spatiotemporal types,
  * in particular, all of them use the same bounding box STBox
  */
@@ -931,7 +923,7 @@ tspatial_basetype(meosType basetype)
 }
 
 /**
- * Return true if the type is a temporal point type supported by MobilityDB
+ * Return true if the type is a temporal point type
  */
 bool
 tgeo_type(meosType temptype)
@@ -942,7 +934,7 @@ tgeo_type(meosType temptype)
 }
 
 /**
- * Ensure that the type is a point base type supported by MobilityDB
+ * Ensure that the type is a point base type
  */
 void
 ensure_tgeo_type(meosType temptype)
