@@ -56,7 +56,7 @@ CREATE FUNCTION _disjoint(geometry, tgeompoint)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION disjoint(geometry, tgeompoint)
   RETURNS boolean
-  AS 'SELECT NOT($1 OPERATOR(@extschema@.&&) $2) OR @extschema@._disjoint($1,$2)'
+  AS 'SELECT NOT(stbox($1) OPERATOR(@extschema@.&&) $2) OR @extschema@._disjoint($1,$2)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION _disjoint(tgeompoint, geometry)
@@ -65,7 +65,7 @@ CREATE FUNCTION _disjoint(tgeompoint, geometry)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION disjoint(tgeompoint, geometry)
   RETURNS boolean
-  AS 'SELECT NOT($1 OPERATOR(@extschema@.&&) $2) OR @extschema@._disjoint($1,$2)'
+  AS 'SELECT NOT($1 OPERATOR(@extschema@.&&) stbox($2)) OR @extschema@._disjoint($1,$2)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION _disjoint(tgeompoint, tgeompoint)
@@ -103,7 +103,7 @@ CREATE FUNCTION _disjoint(geography, tgeogpoint)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION disjoint(geography, tgeogpoint)
   RETURNS boolean
-  AS 'SELECT NOT($1 OPERATOR(@extschema@.&&) $2) OR @extschema@._disjoint($1,$2)'
+  AS 'SELECT NOT(stbox($1) OPERATOR(@extschema@.&&) $2) OR @extschema@._disjoint($1,$2)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION _disjoint(tgeogpoint, geography)
@@ -112,7 +112,7 @@ CREATE FUNCTION _disjoint(tgeogpoint, geography)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION disjoint(tgeogpoint, geography)
   RETURNS boolean
-  AS 'SELECT NOT($1 OPERATOR(@extschema@.&&) $2) OR @extschema@._disjoint($1,$2)'
+  AS 'SELECT NOT($1 OPERATOR(@extschema@.&&) stbox($2)) OR @extschema@._disjoint($1,$2)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION _disjoint(tgeogpoint, tgeogpoint)

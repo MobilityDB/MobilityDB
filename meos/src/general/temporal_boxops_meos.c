@@ -54,55 +54,6 @@
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if a timestamp contains the bounding period of a
- * temporal value
- * @sqlop @p \@>
- */
-bool
-contains_timestamp_temporal(TimestampTz t, const Temporal *temp)
-{
-  return boxop_temporal_timestamp(temp, t, &contains_span_span, INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding period of a temporal value contains a
- * timestamp
- * @sqlop @p \@>
- */
-bool
-contains_temporal_timestamp(const Temporal *temp, TimestampTz t)
-{
-  return boxop_temporal_timestamp(temp, t, &contains_span_span, INVERT_NO);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding period of a timestamp set contains the
- * one of a temporal value
- * @sqlop @p \@>
- */
-bool
-contains_tstzset_temporal(const Set *ts, const Temporal *temp)
-{
-  return boxop_temporal_tstzset(temp, ts, &contains_span_span, INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding period of a temporal value contains the
- * the one of a timestamp set
- * @sqlop @p \@>
- */
-bool
-contains_temporal_tstzset(const Temporal *temp, const Set *ts)
-{
-  return boxop_temporal_tstzset(temp, ts, &contains_span_span,
-    INVERT_NO);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
  * @brief Return true if a period contains the bounding period of a
  * temporal value
  * @sqlop @p \@>
@@ -127,30 +78,6 @@ contains_temporal_period(const Temporal *temp, const Span *p)
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding period of a period set contains the
- * one of a temporal value
- * @sqlop @p \@>
- */
-bool
-contains_periodset_temporal(const SpanSet *ps, const Temporal *temp)
-{
-  return boxop_temporal_periodset(temp, ps, &contains_span_span, INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding period of a temporal value contains
- * the one of a period set
- * @sqlop @p \@>
- */
-bool
-contains_temporal_periodset(const Temporal *temp, const SpanSet *ps)
-{
-  return boxop_temporal_periodset(temp, ps, &contains_span_span, INVERT_NO);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding period of the first temporal value
  * contains the one of the second temporal value.
  * @sqlop @p \@>
@@ -162,55 +89,6 @@ contains_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 }
 
 /*****************************************************************************/
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if a timestamp is contained in the bounding period of
- * a temporal value
- * @sqlop @p <@
- */
-bool
-contained_timestamp_temporal(TimestampTz t, const Temporal *temp)
-{
-  return boxop_temporal_timestamp(temp, t, &contained_span_span, INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding period of a temporal value is contained
- * in a timestamp
- * @sqlop @p <@
- */
-bool
-contained_temporal_timestamp(const Temporal *temp, TimestampTz t)
-{
-  return boxop_temporal_timestamp(temp, t, &contained_span_span, INVERT_NO);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding period of a timestamp set is contained
- * in the one of a temporal value
- * @sqlop @p <@
- */
-bool
-contained_tstzset_temporal(const Set *ts, const Temporal *temp)
-{
-  return boxop_temporal_tstzset(temp, ts, &contained_span_span, INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding period of a temporal value is contained
- * in the one of a timestamp set
- * @sqlop @p <@
- */
-bool
-contained_temporal_tstzset(const Temporal *temp, const Set *ts)
-{
-  return boxop_temporal_tstzset(temp, ts, &contained_span_span,
-    INVERT_NO);
-}
 
 /**
  * @ingroup libmeos_temporal_topo
@@ -238,30 +116,6 @@ contained_temporal_period(const Temporal *temp, const Span *p)
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding period of a period set is contained
- * in the one of a temporal value
- * @sqlop @p <@
- */
-bool
-contained_periodset_temporal(const SpanSet *ps, const Temporal *temp)
-{
-  return boxop_temporal_periodset(temp, ps, &contained_span_span, INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding period of a temporal value is contained
- * in the one of a period set
- * @sqlop @p <@
- */
-bool
-contained_temporal_periodset(const Temporal *temp, const SpanSet *ps)
-{
-  return boxop_temporal_periodset(temp, ps, &contained_span_span, INVERT_NO);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding period of the first temporal value is
  * contained in the one of the second temporal value.
  * @sqlop @p <@
@@ -273,55 +127,6 @@ contained_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 }
 
 /*****************************************************************************/
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if a timestamp and the bounding period of a temporal
- * value overlap
- * @sqlop @p &&
- */
-bool
-overlaps_timestamp_temporal(TimestampTz t, const Temporal *temp)
-{
-  return boxop_temporal_timestamp(temp, t, &overlaps_span_span, INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding period of a temporal value and a
- * timestamp overlap
- * @sqlop @p &&
- */
-bool
-overlaps_temporal_timestamp(const Temporal *temp, TimestampTz t)
-{
-  return boxop_temporal_timestamp(temp, t, &overlaps_span_span, INVERT_NO);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding periods of a timestamp set and of
- * a temporal value overlap
- * @sqlop @p &&
- */
-bool
-overlaps_tstzset_temporal(const Set *ts, const Temporal *temp)
-{
-  return boxop_temporal_tstzset(temp, ts, &overlaps_span_span, INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding periods of a temporal value and of
- * a timestamp set overlap
- * @sqlop @p &&
- */
-bool
-overlaps_temporal_tstzset(const Temporal *temp, const Set *ts)
-{
-  return boxop_temporal_tstzset(temp, ts, &overlaps_span_span,
-    INVERT_NO);
-}
 
 /**
  * @ingroup libmeos_temporal_topo
@@ -349,30 +154,6 @@ overlaps_temporal_period(const Temporal *temp, const Span *p)
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding periods of a period set and of
- * a temporal value overlap
- * @sqlop @p &&
- */
-bool
-overlaps_periodset_temporal(const SpanSet *ps, const Temporal *temp)
-{
-  return boxop_temporal_periodset(temp, ps, &overlaps_span_span, INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding periods of a temporal value and of
- * a period set overlap
- * @sqlop @p &&
- */
-bool
-overlaps_temporal_periodset(const Temporal *temp, const SpanSet *ps)
-{
-  return boxop_temporal_periodset(temp, ps, &overlaps_span_span, INVERT_NO);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding periods of the temporal values overlap
  * @sqlop @p &&
  */
@@ -383,54 +164,6 @@ overlaps_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 }
 
 /*****************************************************************************/
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if a timestamp and the bounding period of a temporal
- * value are equal
- * @sqlop @p ~=
- */
-bool
-same_timestamp_temporal(TimestampTz t, const Temporal *temp)
-{
-  return boxop_temporal_timestamp(temp, t, &span_eq, INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding period of a temporal value and a
- * timestamp are equal
- * @sqlop @p ~=
- */
-bool
-same_temporal_timestamp(const Temporal *temp, TimestampTz t)
-{
-  return boxop_temporal_timestamp(temp, t, &span_eq, INVERT_NO);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding periods of a timestamp set and of the
- * a temporal value are equal
- * @sqlop @p ~=
- */
-bool
-same_tstzset_temporal(const Set *ts, const Temporal *temp)
-{
-  return boxop_temporal_tstzset(temp, ts, &span_eq, INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding periods of a temporal value and of
- * a timestamp set are equal
- * @sqlop @p ~=
- */
-bool
-same_temporal_tstzset(const Temporal *temp, const Set *ts)
-{
-  return boxop_temporal_tstzset(temp, ts, &span_eq, INVERT_NO);
-}
 
 /**
  * @ingroup libmeos_temporal_topo
@@ -458,30 +191,6 @@ same_temporal_period(const Temporal *temp, const Span *p)
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding periods of a period set and of
- * a temporal value are equal
- * @sqlop @p ~=
- */
-bool
-same_periodset_temporal(const SpanSet *ps, const Temporal *temp)
-{
-  return boxop_temporal_periodset(temp, ps, &span_eq, INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding period of a temporal value and
- * a period set are equal
- * @sqlop @p ~=
- */
-bool
-same_temporal_periodset(const Temporal *temp, const SpanSet *ps)
-{
-  return boxop_temporal_periodset(temp, ps, &span_eq, INVERT_NO);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding periods of the temporal values are equal
  * @sqlop @p ~=
  */
@@ -492,55 +201,6 @@ same_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 }
 
 /*****************************************************************************/
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if a timestamp and the bounding period of a temporal
- * value are adjacent
- * @sqlop @p -|-
- */
-bool
-adjacent_timestamp_temporal(TimestampTz t, const Temporal *temp)
-{
-  return boxop_temporal_timestamp(temp, t, &adjacent_span_span, INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding period of a temporal value and a
- * timestamp are adjacent
- * @sqlop @p -|-
- */
-bool
-adjacent_temporal_timestamp(const Temporal *temp, TimestampTz t)
-{
-  return boxop_temporal_timestamp(temp, t, &adjacent_span_span, INVERT_NO);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding period of a timestamp set and
- * a temporal value are adjacent
- * @sqlop @p -|-
- */
-bool
-adjacent_tstzset_temporal(const Set *ts, const Temporal *temp)
-{
-  return boxop_temporal_tstzset(temp, ts, &adjacent_span_span, INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding periods of a temporal value and of
- * a timestamp set are adjacent
- * @sqlop @p -|-
- */
-bool
-adjacent_temporal_tstzset(const Temporal *temp, const Set *ts)
-{
-  return boxop_temporal_tstzset(temp, ts, &adjacent_span_span,
-    INVERT_NO);
-}
 
 /**
  * @ingroup libmeos_temporal_topo
@@ -568,30 +228,6 @@ adjacent_temporal_period(const Temporal *temp, const Span *p)
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding period of a period set and
- * a temporal value are adjacent
- * @sqlop @p -|-
- */
-bool
-adjacent_periodset_temporal(const SpanSet *ps, const Temporal *temp)
-{
-  return boxop_temporal_periodset(temp, ps, &adjacent_span_span, INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding period of a temporal value and
- * a period set are adjacent
- * @sqlop @p -|-
- */
-bool
-adjacent_temporal_periodset(const Temporal *temp, const SpanSet *ps)
-{
-  return boxop_temporal_periodset(temp, ps, &adjacent_span_span, INVERT_NO);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
  * @brief Return true if the bounding periods of the temporal values are
  * adjacent
  * @sqlop @p -|-
@@ -605,58 +241,6 @@ adjacent_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 /*****************************************************************************
  * Bounding box operators for temporal numbers
  *****************************************************************************/
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if an integer contains the bounding box of a temporal
- * integer
- * @sqlop @p \@>
- */
-bool
-contains_int_tint(int i, const Temporal *tnumber)
-{
-  return boxop_tnumber_number(tnumber, Int32GetDatum(i), T_INT4,
-    &contains_tbox_tbox, INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if a float contains the bounding box of a temporal
- * float
- * @sqlop @p \@>
- */
-bool
-contains_float_tfloat(double d, const Temporal *tnumber)
-{
-  return boxop_tnumber_number(tnumber, Float8GetDatum(d), T_FLOAT8,
-    &contains_tbox_tbox, INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding box of a temporal integer contains an
- * integer
- * @sqlop @p \@>
- */
-bool
-contains_tint_int(const Temporal *tnumber, int i)
-{
-  return boxop_tnumber_number(tnumber, Int32GetDatum(i), T_INT4,
-    &contains_tbox_tbox, INVERT_NO);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding box of a temporal float contains a
- * float
- * @sqlop @p \@>
- */
-bool
-contains_tfloat_float(const Temporal *tnumber, double d)
-{
-  return boxop_tnumber_number(tnumber, Float8GetDatum(d), T_FLOAT8,
-    &contains_tbox_tbox, INVERT_NO);
-}
 
 /**
  * @ingroup libmeos_temporal_topo
@@ -680,30 +264,6 @@ bool
 contains_tnumber_numspan(const Temporal *tnumber, const Span *span)
 {
   return boxop_tnumber_numspan(tnumber, span, &contains_tbox_tbox, INVERT_NO);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if a span contains the bounding box of a temporal
- * number
- * @sqlop @p \@>
- */
-bool
-contains_spanset_tnumber(const SpanSet *ss, const Temporal *tnumber)
-{
-  return boxop_tnumber_numspanset(tnumber, ss, &contains_tbox_tbox, INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding box of a temporal number contains a
- * span
- * @sqlop @p \@>
- */
-bool
-contains_tnumber_numspanset(const Temporal *tnumber, const SpanSet *ss)
-{
-  return boxop_tnumber_numspanset(tnumber, ss, &contains_tbox_tbox, INVERT_NO);
 }
 
 /**
@@ -746,58 +306,6 @@ contains_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if an integer is contained in the bounding box of a
- * temporal integer
- * @sqlop @p <@
- */
-bool
-contained_int_tint(int i, const Temporal *tnumber)
-{
-  return boxop_tnumber_number(tnumber, Int32GetDatum(i), T_INT4,
-    &contained_tbox_tbox, INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if a float is contained in the bounding box of a temporal
- * float
- * @sqlop @p <@
- */
-bool
-contained_float_tfloat(double d, const Temporal *tnumber)
-{
-  return boxop_tnumber_number(tnumber, Float8GetDatum(d), T_FLOAT8,
-    &contained_tbox_tbox, INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding box of a temporal integer is contained in
- * an integer
- * @sqlop @p <@
- */
-bool
-contained_tint_int(const Temporal *tnumber, int i)
-{
-  return boxop_tnumber_number(tnumber, Int32GetDatum(i), T_INT4,
-    &contained_tbox_tbox, INVERT_NO);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding box of a temporal float is contained in a
- * float
- * @sqlop @p <@
- */
-bool
-contained_tfloat_float(const Temporal *tnumber, double d)
-{
-  return boxop_tnumber_number(tnumber, Float8GetDatum(d), T_FLOAT8,
-    &contained_tbox_tbox, INVERT_NO);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
  * @brief Return true if a span is contained in the bounding box of a
  * temporal number
  * @sqlop @p <@
@@ -818,30 +326,6 @@ bool
 contained_tnumber_numspan(const Temporal *tnumber, const Span *span)
 {
   return boxop_tnumber_numspan(tnumber, span, &contained_tbox_tbox, INVERT_NO);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if a span set is contained in the bounding box of a
- * temporal number
- * @sqlop @p <@
- */
-bool
-contained_spanset_tnumber(const SpanSet *ss, const Temporal *tnumber)
-{
-  return boxop_tnumber_numspanset(tnumber, ss, &contained_tbox_tbox, INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding box of a temporal number is contained
- * in a span
- * @sqlop @p <@
- */
-bool
-contained_tnumber_numspanset(const Temporal *tnumber, const SpanSet *ss)
-{
-  return boxop_tnumber_numspanset(tnumber, ss, &contained_tbox_tbox, INVERT_NO);
 }
 
 /**
@@ -884,57 +368,6 @@ contained_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if an integer overlaps the bounding box of a
- * temporal integer
- * @sqlop @p &&
- */
-bool
-overlaps_int_tint(int i, const Temporal *tnumber)
-{
-  return boxop_tnumber_number(tnumber, Int32GetDatum(i), T_INT4,
-    &overlaps_tbox_tbox, INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if a float overlaps the bounding box of a temporal
- * float
- * @sqlop @p &&
- */
-bool
-overlaps_float_tfloat(double d, const Temporal *tnumber)
-{
-  return boxop_tnumber_number(tnumber, Float8GetDatum(d), T_FLOAT8,
-    &overlaps_tbox_tbox, INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding box of a temporal integer overlaps
- * an integer
- * @sqlop @p &&
- */
-bool
-overlaps_tint_int(const Temporal *tnumber, int i)
-{
-  return boxop_tnumber_number(tnumber, Int32GetDatum(i), T_INT4,
-    &overlaps_tbox_tbox, INVERT_NO);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding box of a temporal float overlaps a float
- * @sqlop @p &&
- */
-bool
-overlaps_tfloat_float(const Temporal *tnumber, double d)
-{
-  return boxop_tnumber_number(tnumber, Float8GetDatum(d), T_FLOAT8,
-    &overlaps_tbox_tbox, INVERT_NO);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
  * @brief Return true if a span and the bounding box of a temporal number
  * overlap
  * @sqlop @p &&
@@ -955,30 +388,6 @@ bool
 overlaps_tnumber_numspan(const Temporal *tnumber, const Span *span)
 {
   return boxop_tnumber_numspan(tnumber, span, &overlaps_tbox_tbox, INVERT_NO);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if a span set and the bounding box of a temporal number
- * overlap
- * @sqlop @p &&
- */
-bool
-overlaps_spanset_tnumber(const SpanSet *ss, const Temporal *tnumber)
-{
-  return boxop_tnumber_numspanset(tnumber, ss, &overlaps_tbox_tbox, INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding box of a temporal number and a span set
- * overlap
- * @sqlop @p &&
- */
-bool
-overlaps_tnumber_numspanset(const Temporal *tnumber, const SpanSet *ss)
-{
-  return boxop_tnumber_numspanset(tnumber, ss, &overlaps_tbox_tbox, INVERT_NO);
 }
 
 /**
@@ -1020,58 +429,6 @@ overlaps_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if an integer is the same as the bounding box of a
- * temporal integer
- * @sqlop @p ~=
- */
-bool
-same_int_tint(int i, const Temporal *tnumber)
-{
-  return boxop_tnumber_number(tnumber, Int32GetDatum(i), T_INT4,
-    &same_tbox_tbox, INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if a float is the same as the bounding box of a temporal
- * float
- * @sqlop @p ~=
- */
-bool
-same_float_tfloat(double d, const Temporal *tnumber)
-{
-  return boxop_tnumber_number(tnumber, Float8GetDatum(d), T_FLOAT8,
-    &same_tbox_tbox, INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding box of a temporal integer is the same as
- * an integer
- * @sqlop @p ~=
- */
-bool
-same_tint_int(const Temporal *tnumber, int i)
-{
-  return boxop_tnumber_number(tnumber, Int32GetDatum(i), T_INT4,
-    &same_tbox_tbox, INVERT_NO);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding box of a temporal float is the same as a
- * float
- * @sqlop @p ~=
- */
-bool
-same_tfloat_float(const Temporal *tnumber, double d)
-{
-  return boxop_tnumber_number(tnumber, Float8GetDatum(d), T_FLOAT8,
-    &same_tbox_tbox, INVERT_NO);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
  * @brief Return true if a span and the bounding box of a temporal number
  * are equal on the common dimensions
  * @sqlop @p ~=
@@ -1092,30 +449,6 @@ bool
 same_tnumber_numspan(const Temporal *tnumber, const Span *span)
 {
   return boxop_tnumber_numspan(tnumber, span, &same_tbox_tbox, INVERT_NO);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if a span and the bounding box of a temporal number
- * are equal on the common dimensions
- * @sqlop @p ~=
- */
-bool
-same_spanset_tnumber(const SpanSet *ss, const Temporal *tnumber)
-{
-  return boxop_tnumber_numspanset(tnumber, ss, &same_tbox_tbox, INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding box of a temporal number and a span
- * are equal on the common dimensions
- * @sqlop @p ~=
- */
-bool
-same_tnumber_numspanset(const Temporal *tnumber, const SpanSet *ss)
-{
-  return boxop_tnumber_numspanset(tnumber, ss, &same_tbox_tbox, INVERT_NO);
 }
 
 /**
@@ -1158,58 +491,6 @@ same_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
 
 /**
  * @ingroup libmeos_temporal_topo
- * @brief Return true if an integer is adjacent to the bounding box of a
- * temporal integer
- * @sqlop @p -|-
- */
-bool
-adjacent_int_tint(int i, const Temporal *tnumber)
-{
-  return boxop_tnumber_number(tnumber, Int32GetDatum(i), T_INT4,
-    &adjacent_tbox_tbox, INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if a float is adjacent to the bounding box of a temporal
- * float
- * @sqlop @p -|-
- */
-bool
-adjacent_float_tfloat(double d, const Temporal *tnumber)
-{
-  return boxop_tnumber_number(tnumber, Float8GetDatum(d), T_FLOAT8,
-    &adjacent_tbox_tbox, INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding box of a temporal integer is adjacent to
- * an integer
- * @sqlop @p -|-
- */
-bool
-adjacent_tint_int(const Temporal *tnumber, int i)
-{
-  return boxop_tnumber_number(tnumber, Int32GetDatum(i), T_INT4,
-    &adjacent_tbox_tbox, INVERT_NO);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding box of a temporal float is adjacent to a
- * float
- * @sqlop @p -|-
- */
-bool
-adjacent_tfloat_float(const Temporal *tnumber, double d)
-{
-  return boxop_tnumber_number(tnumber, Float8GetDatum(d), T_FLOAT8,
-    &adjacent_tbox_tbox, INVERT_NO);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
  * @brief Return true if a span and the bounding box of a temporal number
  * are adjacent
  * @sqlop @p -|-
@@ -1230,30 +511,6 @@ bool
 adjacent_tnumber_numspan(const Temporal *tnumber, const Span *span)
 {
   return boxop_tnumber_numspan(tnumber, span, &adjacent_tbox_tbox, INVERT_NO);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if a span set and the bounding box of a temporal number
- * are adjacent
- * @sqlop @p -|-
- */
-bool
-adjacent_spanset_tnumber(const SpanSet *ss, const Temporal *tnumber)
-{
-  return boxop_tnumber_numspanset(tnumber, ss, &adjacent_tbox_tbox, INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_topo
- * @brief Return true if the bounding box of a temporal number and the
- * a span set are adjacent
- * @sqlop @p -|-
- */
-bool
-adjacent_tnumber_numspanset(const Temporal *tnumber, const SpanSet *ss)
-{
-  return boxop_tnumber_numspanset(tnumber, ss, &adjacent_tbox_tbox, INVERT_NO);
 }
 
 /**

@@ -30,54 +30,6 @@ CREATE TABLE test_posops(
 );
 CREATE TABLE
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '<<', 'geometry', 'tgeompoint', COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g << temp;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '>>', 'geometry', 'tgeompoint', COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g >> temp;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '&<', 'geometry', 'tgeompoint', COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g &< temp;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '&>', 'geometry', 'tgeompoint', COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g &> temp;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '<<|', 'geometry', 'tgeompoint', COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g <<| temp;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '|>>', 'geometry', 'tgeompoint', COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g |>> temp;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '&<|', 'geometry', 'tgeompoint', COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g &<| temp;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '|&>', 'geometry', 'tgeompoint', COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g |&> temp;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '<<#', 'timestamptz', 'tgeompoint', COUNT(*) FROM tbl_timestamptz, tbl_tgeompoint WHERE t <<# temp;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '#>>', 'timestamptz', 'tgeompoint', COUNT(*) FROM tbl_timestamptz, tbl_tgeompoint WHERE t #>> temp;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '&<#', 'timestamptz', 'tgeompoint', COUNT(*) FROM tbl_timestamptz, tbl_tgeompoint WHERE t &<# temp;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '#&>', 'timestamptz', 'tgeompoint', COUNT(*) FROM tbl_timestamptz, tbl_tgeompoint WHERE t #&> temp;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '<<#', 'tstzset', 'tgeompoint', COUNT(*) FROM tbl_tstzset, tbl_tgeompoint WHERE t <<# temp;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '#>>', 'tstzset', 'tgeompoint', COUNT(*) FROM tbl_tstzset, tbl_tgeompoint WHERE t #>> temp;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '&<#', 'tstzset', 'tgeompoint', COUNT(*) FROM tbl_tstzset, tbl_tgeompoint WHERE t &<# temp;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '#&>', 'tstzset', 'tgeompoint', COUNT(*) FROM tbl_tstzset, tbl_tgeompoint WHERE t #&> temp;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '<<#', 'tstzspan', 'tgeompoint', COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint WHERE p <<# temp;
 INSERT 0 1
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
@@ -88,42 +40,6 @@ SELECT '&<#', 'tstzspan', 'tgeompoint', COUNT(*) FROM tbl_tstzspan, tbl_tgeompoi
 INSERT 0 1
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '#&>', 'tstzspan', 'tgeompoint', COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint WHERE p #&> temp;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '<<#', 'tstzspanset', 'tgeompoint', COUNT(*) FROM tbl_tstzspanset, tbl_tgeompoint WHERE ps <<# temp;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '#>>', 'tstzspanset', 'tgeompoint', COUNT(*) FROM tbl_tstzspanset, tbl_tgeompoint WHERE ps #>> temp;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '&<#', 'tstzspanset', 'tgeompoint', COUNT(*) FROM tbl_tstzspanset, tbl_tgeompoint WHERE ps &<# temp;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '#&>', 'tstzspanset', 'tgeompoint', COUNT(*) FROM tbl_tstzspanset, tbl_tgeompoint WHERE ps #&> temp;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '<<#', 'timestamptz', 'tgeogpoint', COUNT(*) FROM tbl_timestamptz, tbl_tgeogpoint WHERE t <<# temp;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '#>>', 'timestamptz', 'tgeogpoint', COUNT(*) FROM tbl_timestamptz, tbl_tgeogpoint WHERE t #>> temp;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '&<#', 'timestamptz', 'tgeogpoint', COUNT(*) FROM tbl_timestamptz, tbl_tgeogpoint WHERE t &<# temp;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '#&>', 'timestamptz', 'tgeogpoint', COUNT(*) FROM tbl_timestamptz, tbl_tgeogpoint WHERE t #&> temp;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '<<#', 'tstzset', 'tgeogpoint', COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint WHERE t <<# temp;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '#>>', 'tstzset', 'tgeogpoint', COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint WHERE t #>> temp;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '&<#', 'tstzset', 'tgeogpoint', COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint WHERE t &<# temp;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '#&>', 'tstzset', 'tgeogpoint', COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint WHERE t #&> temp;
 INSERT 0 1
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '<<#', 'tstzspan', 'tgeogpoint', COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint WHERE p <<# temp;
@@ -138,66 +54,6 @@ INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '#&>', 'tstzspan', 'tgeogpoint', COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint WHERE p #&> temp;
 INSERT 0 1
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '<<#', 'tstzspanset', 'tgeogpoint', COUNT(*) FROM tbl_tstzspanset, tbl_tgeogpoint WHERE ps <<# temp;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '#>>', 'tstzspanset', 'tgeogpoint', COUNT(*) FROM tbl_tstzspanset, tbl_tgeogpoint WHERE ps #>> temp;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '&<#', 'tstzspanset', 'tgeogpoint', COUNT(*) FROM tbl_tstzspanset, tbl_tgeogpoint WHERE ps &<# temp;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '#&>', 'tstzspanset', 'tgeogpoint', COUNT(*) FROM tbl_tstzspanset, tbl_tgeogpoint WHERE ps #&> temp;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '<<', 'tgeompoint', 'geometry', COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp << g;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '>>', 'tgeompoint', 'geometry', COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp >> g;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '&<', 'tgeompoint', 'geometry', COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp &< g;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '&>', 'tgeompoint', 'geometry', COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp &> g;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '<<|', 'tgeompoint', 'geometry', COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp <<| g;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '|>>', 'tgeompoint', 'geometry', COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp |>> g;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '&<|', 'tgeompoint', 'geometry', COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp &<| g;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '|&>', 'tgeompoint', 'geometry', COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp |&> g;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '<<#', 'tgeompoint', 'timestamptz', COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz WHERE temp <<# t;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '#>>', 'tgeompoint', 'timestamptz', COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz WHERE temp #>> t;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '&<#', 'tgeompoint', 'timestamptz', COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz WHERE temp &<# t;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '#&>', 'tgeompoint', 'timestamptz', COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz WHERE temp #&> t;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '<<#', 'tgeompoint', 'tstzset', COUNT(*) FROM tbl_tgeompoint, tbl_tstzset WHERE temp <<# t;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '#>>', 'tgeompoint', 'tstzset', COUNT(*) FROM tbl_tgeompoint, tbl_tstzset WHERE temp #>> t;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '&<#', 'tgeompoint', 'tstzset', COUNT(*) FROM tbl_tgeompoint, tbl_tstzset WHERE temp &<# t;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '#&>', 'tgeompoint', 'tstzset', COUNT(*) FROM tbl_tgeompoint, tbl_tstzset WHERE temp #&> t;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '<<#', 'tgeompoint', 'tstzspan', COUNT(*) FROM tbl_tgeompoint, tbl_tstzspan WHERE temp <<# p;
 INSERT 0 1
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
@@ -208,18 +64,6 @@ SELECT '&<#', 'tgeompoint', 'tstzspan', COUNT(*) FROM tbl_tgeompoint, tbl_tstzsp
 INSERT 0 1
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '#&>', 'tgeompoint', 'tstzspan', COUNT(*) FROM tbl_tgeompoint, tbl_tstzspan WHERE temp #&> p;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '<<#', 'tgeompoint', 'tstzspanset', COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp <<# ps;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '#>>', 'tgeompoint', 'tstzspanset', COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp #>> ps;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '&<#', 'tgeompoint', 'tstzspanset', COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp &<# ps;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '#&>', 'tgeompoint', 'tstzspanset', COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp #&> ps;
 INSERT 0 1
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '<<', 'tgeompoint', 'tgeompoint', COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp << t2.temp;
@@ -258,30 +102,6 @@ INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '#&>', 'tgeompoint', 'tgeompoint', COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp #&> t2.temp;
 INSERT 0 1
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '<<#', 'tgeogpoint', 'timestamptz', COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE temp <<# t;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '#>>', 'tgeogpoint', 'timestamptz', COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE temp #>> t;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '&<#', 'tgeogpoint', 'timestamptz', COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE temp &<# t;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '#&>', 'tgeogpoint', 'timestamptz', COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE temp #&> t;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '<<#', 'tgeogpoint', 'tstzset', COUNT(*) FROM tbl_tgeogpoint, tbl_tstzset WHERE temp <<# t;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '#>>', 'tgeogpoint', 'tstzset', COUNT(*) FROM tbl_tgeogpoint, tbl_tstzset WHERE temp #>> t;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '&<#', 'tgeogpoint', 'tstzset', COUNT(*) FROM tbl_tgeogpoint, tbl_tstzset WHERE temp &<# t;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '#&>', 'tgeogpoint', 'tstzset', COUNT(*) FROM tbl_tgeogpoint, tbl_tstzset WHERE temp #&> t;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '<<#', 'tgeogpoint', 'tstzspan', COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspan WHERE temp <<# p;
 INSERT 0 1
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
@@ -293,86 +113,10 @@ INSERT 0 1
 INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
 SELECT '#&>', 'tgeogpoint', 'tstzspan', COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspan WHERE temp #&> p;
 INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '<<#', 'tgeogpoint', 'tstzspanset', COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp <<# ps;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '#>>', 'tgeogpoint', 'tstzspanset', COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp #>> ps;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '&<#', 'tgeogpoint', 'tstzspanset', COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp &<# ps;
-INSERT 0 1
-INSERT INTO test_posops(op, leftarg, rightarg, no_idx)
-SELECT '#&>', 'tgeogpoint', 'tstzspanset', COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp #&> ps;
-INSERT 0 1
 CREATE INDEX tbl_tgeompoint_rtree_idx ON tbl_tgeompoint USING GIST(temp);
 CREATE INDEX
 CREATE INDEX tbl_tgeogpoint_rtree_idx ON tbl_tgeogpoint USING GIST(temp);
 CREATE INDEX
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g << temp )
-WHERE op = '<<' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g >> temp )
-WHERE op = '>>' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g &< temp )
-WHERE op = '&<' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g &> temp )
-WHERE op = '&>' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g <<| temp )
-WHERE op = '<<|' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g |>> temp )
-WHERE op = '|>>' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g &<| temp )
-WHERE op = '&<|' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g |&> temp )
-WHERE op = '|&>' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeompoint WHERE t <<# temp )
-WHERE op = '<<#' AND leftarg = 'timestamptz' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeompoint WHERE t #>> temp )
-WHERE op = '#>>' AND leftarg = 'timestamptz' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeompoint WHERE t &<# temp )
-WHERE op = '&<#' AND leftarg = 'timestamptz' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeompoint WHERE t #&> temp )
-WHERE op = '#&>' AND leftarg = 'timestamptz' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeompoint WHERE t <<# temp )
-WHERE op = '<<#' AND leftarg = 'tstzset' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeompoint WHERE t #>> temp )
-WHERE op = '#>>' AND leftarg = 'tstzset' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeompoint WHERE t &<# temp )
-WHERE op = '&<#' AND leftarg = 'tstzset' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeompoint WHERE t #&> temp )
-WHERE op = '#&>' AND leftarg = 'tstzset' AND rightarg = 'tgeompoint';
-UPDATE 1
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint WHERE p <<# temp )
 WHERE op = '<<#' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint';
@@ -388,54 +132,6 @@ UPDATE 1
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint WHERE p #&> temp )
 WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeompoint WHERE ps <<# temp )
-WHERE op = '<<#' AND leftarg = 'tstzspanset' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeompoint WHERE ps #>> temp )
-WHERE op = '#>>' AND leftarg = 'tstzspanset' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeompoint WHERE ps &<# temp )
-WHERE op = '&<#' AND leftarg = 'tstzspanset' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeompoint WHERE ps #&> temp )
-WHERE op = '#&>' AND leftarg = 'tstzspanset' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeogpoint WHERE t <<# temp )
-WHERE op = '<<#' AND leftarg = 'timestamptz' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeogpoint WHERE t #>> temp )
-WHERE op = '#>>' AND leftarg = 'timestamptz' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeogpoint WHERE t &<# temp )
-WHERE op = '&<#' AND leftarg = 'timestamptz' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeogpoint WHERE t #&> temp )
-WHERE op = '#&>' AND leftarg = 'timestamptz' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint WHERE t <<# temp )
-WHERE op = '<<#' AND leftarg = 'tstzset' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint WHERE t #>> temp )
-WHERE op = '#>>' AND leftarg = 'tstzset' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint WHERE t &<# temp )
-WHERE op = '&<#' AND leftarg = 'tstzset' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint WHERE t #&> temp )
-WHERE op = '#&>' AND leftarg = 'tstzset' AND rightarg = 'tgeogpoint';
 UPDATE 1
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint WHERE p <<# temp )
@@ -454,86 +150,6 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint WHERE p #&> 
 WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint';
 UPDATE 1
 UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeogpoint WHERE ps <<# temp )
-WHERE op = '<<#' AND leftarg = 'tstzspanset' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeogpoint WHERE ps #>> temp )
-WHERE op = '#>>' AND leftarg = 'tstzspanset' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeogpoint WHERE ps &<# temp )
-WHERE op = '&<#' AND leftarg = 'tstzspanset' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeogpoint WHERE ps #&> temp )
-WHERE op = '#&>' AND leftarg = 'tstzspanset' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp << g )
-WHERE op = '<<' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp >> g )
-WHERE op = '>>' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp &< g )
-WHERE op = '&<' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp &> g )
-WHERE op = '&>' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp <<| g )
-WHERE op = '<<|' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp |>> g )
-WHERE op = '|>>' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp &<| g )
-WHERE op = '&<|' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp |&> g )
-WHERE op = '|&>' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz WHERE temp <<# t )
-WHERE op = '<<#' AND leftarg = 'tgeompoint' AND rightarg = 'timestamptz';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz WHERE temp #>> t )
-WHERE op = '#>>' AND leftarg = 'tgeompoint' AND rightarg = 'timestamptz';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz WHERE temp &<# t )
-WHERE op = '&<#' AND leftarg = 'tgeompoint' AND rightarg = 'timestamptz';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz WHERE temp #&> t )
-WHERE op = '#&>' AND leftarg = 'tgeompoint' AND rightarg = 'timestamptz';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzset WHERE temp <<# t )
-WHERE op = '<<#' AND leftarg = 'tgeompoint' AND rightarg = 'tstzset';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzset WHERE temp #>> t )
-WHERE op = '#>>' AND leftarg = 'tgeompoint' AND rightarg = 'tstzset';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzset WHERE temp &<# t )
-WHERE op = '&<#' AND leftarg = 'tgeompoint' AND rightarg = 'tstzset';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzset WHERE temp #&> t )
-WHERE op = '#&>' AND leftarg = 'tgeompoint' AND rightarg = 'tstzset';
-UPDATE 1
-UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspan WHERE temp <<# p )
 WHERE op = '<<#' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspan';
 UPDATE 1
@@ -548,22 +164,6 @@ UPDATE 1
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspan WHERE temp #&> p )
 WHERE op = '#&>' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspan';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp <<# ps )
-WHERE op = '<<#' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspanset';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp #>> ps )
-WHERE op = '#>>' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspanset';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp &<# ps )
-WHERE op = '&<#' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspanset';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp #&> ps )
-WHERE op = '#&>' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspanset';
 UPDATE 1
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp << t2.temp )
@@ -614,38 +214,6 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHER
 WHERE op = '#&>' AND leftarg = 'tgeompoint' AND rightarg = 'tgeompoint';
 UPDATE 1
 UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE temp <<# t )
-WHERE op = '<<#' AND leftarg = 'tgeogpoint' AND rightarg = 'timestamptz';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE temp #>> t )
-WHERE op = '#>>' AND leftarg = 'tgeogpoint' AND rightarg = 'timestamptz';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE temp &<# t )
-WHERE op = '&<#' AND leftarg = 'tgeogpoint' AND rightarg = 'timestamptz';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE temp #&> t )
-WHERE op = '#&>' AND leftarg = 'tgeogpoint' AND rightarg = 'timestamptz';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzset WHERE temp <<# t )
-WHERE op = '<<#' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzset';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzset WHERE temp #>> t )
-WHERE op = '#>>' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzset';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzset WHERE temp &<# t )
-WHERE op = '&<#' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzset';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzset WHERE temp #&> t )
-WHERE op = '#&>' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzset';
-UPDATE 1
-UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspan WHERE temp <<# p )
 WHERE op = '<<#' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspan';
 UPDATE 1
@@ -661,22 +229,6 @@ UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspan WHERE temp #&> p )
 WHERE op = '#&>' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspan';
 UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp <<# ps )
-WHERE op = '<<#' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspanset';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp #>> ps )
-WHERE op = '#>>' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspanset';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp &<# ps )
-WHERE op = '&<#' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspanset';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp #&> ps )
-WHERE op = '#&>' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspanset';
-UPDATE 1
 DROP INDEX tbl_tgeompoint_rtree_idx;
 DROP INDEX
 DROP INDEX tbl_tgeogpoint_rtree_idx;
@@ -685,70 +237,6 @@ CREATE INDEX tbl_tgeompoint_quadtree_idx ON tbl_tgeompoint USING SPGIST(temp);
 CREATE INDEX
 CREATE INDEX tbl_tgeogpoint_quadtree_idx ON tbl_tgeogpoint USING SPGIST(temp);
 CREATE INDEX
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g << temp )
-WHERE op = '<<' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g >> temp )
-WHERE op = '>>' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g &< temp )
-WHERE op = '&<' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g &> temp )
-WHERE op = '&>' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g <<| temp )
-WHERE op = '<<|' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g |>> temp )
-WHERE op = '|>>' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g &<| temp )
-WHERE op = '&<|' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g |&> temp )
-WHERE op = '|&>' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeompoint WHERE t <<# temp )
-WHERE op = '<<#' AND leftarg = 'timestamptz' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeompoint WHERE t #>> temp )
-WHERE op = '#>>' AND leftarg = 'timestamptz' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeompoint WHERE t &<# temp )
-WHERE op = '&<#' AND leftarg = 'timestamptz' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeompoint WHERE t #&> temp )
-WHERE op = '#&>' AND leftarg = 'timestamptz' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeompoint WHERE t <<# temp )
-WHERE op = '<<#' AND leftarg = 'tstzset' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeompoint WHERE t #>> temp )
-WHERE op = '#>>' AND leftarg = 'tstzset' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeompoint WHERE t &<# temp )
-WHERE op = '&<#' AND leftarg = 'tstzset' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeompoint WHERE t #&> temp )
-WHERE op = '#&>' AND leftarg = 'tstzset' AND rightarg = 'tgeompoint';
-UPDATE 1
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint WHERE p <<# temp )
 WHERE op = '<<#' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint';
@@ -764,54 +252,6 @@ UPDATE 1
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint WHERE p #&> temp )
 WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeompoint WHERE ps <<# temp )
-WHERE op = '<<#' AND leftarg = 'tstzspanset' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeompoint WHERE ps #>> temp )
-WHERE op = '#>>' AND leftarg = 'tstzspanset' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeompoint WHERE ps &<# temp )
-WHERE op = '&<#' AND leftarg = 'tstzspanset' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeompoint WHERE ps #&> temp )
-WHERE op = '#&>' AND leftarg = 'tstzspanset' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeogpoint WHERE t <<# temp )
-WHERE op = '<<#' AND leftarg = 'timestamptz' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeogpoint WHERE t #>> temp )
-WHERE op = '#>>' AND leftarg = 'timestamptz' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeogpoint WHERE t &<# temp )
-WHERE op = '&<#' AND leftarg = 'timestamptz' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeogpoint WHERE t #&> temp )
-WHERE op = '#&>' AND leftarg = 'timestamptz' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint WHERE t <<# temp )
-WHERE op = '<<#' AND leftarg = 'tstzset' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint WHERE t #>> temp )
-WHERE op = '#>>' AND leftarg = 'tstzset' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint WHERE t &<# temp )
-WHERE op = '&<#' AND leftarg = 'tstzset' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint WHERE t #&> temp )
-WHERE op = '#&>' AND leftarg = 'tstzset' AND rightarg = 'tgeogpoint';
 UPDATE 1
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint WHERE p <<# temp )
@@ -830,86 +270,6 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint WHERE p #
 WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint';
 UPDATE 1
 UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeogpoint WHERE ps <<# temp )
-WHERE op = '<<#' AND leftarg = 'tstzspanset' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeogpoint WHERE ps #>> temp )
-WHERE op = '#>>' AND leftarg = 'tstzspanset' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeogpoint WHERE ps &<# temp )
-WHERE op = '&<#' AND leftarg = 'tstzspanset' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeogpoint WHERE ps #&> temp )
-WHERE op = '#&>' AND leftarg = 'tstzspanset' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp << g )
-WHERE op = '<<' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp >> g )
-WHERE op = '>>' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp &< g )
-WHERE op = '&<' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp &> g )
-WHERE op = '&>' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp <<| g )
-WHERE op = '<<|' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp |>> g )
-WHERE op = '|>>' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp &<| g )
-WHERE op = '&<|' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp |&> g )
-WHERE op = '|&>' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz WHERE temp <<# t )
-WHERE op = '<<#' AND leftarg = 'tgeompoint' AND rightarg = 'timestamptz';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz WHERE temp #>> t )
-WHERE op = '#>>' AND leftarg = 'tgeompoint' AND rightarg = 'timestamptz';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz WHERE temp &<# t )
-WHERE op = '&<#' AND leftarg = 'tgeompoint' AND rightarg = 'timestamptz';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz WHERE temp #&> t )
-WHERE op = '#&>' AND leftarg = 'tgeompoint' AND rightarg = 'timestamptz';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzset WHERE temp <<# t )
-WHERE op = '<<#' AND leftarg = 'tgeompoint' AND rightarg = 'tstzset';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzset WHERE temp #>> t )
-WHERE op = '#>>' AND leftarg = 'tgeompoint' AND rightarg = 'tstzset';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzset WHERE temp &<# t )
-WHERE op = '&<#' AND leftarg = 'tgeompoint' AND rightarg = 'tstzset';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzset WHERE temp #&> t )
-WHERE op = '#&>' AND leftarg = 'tgeompoint' AND rightarg = 'tstzset';
-UPDATE 1
-UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspan WHERE temp <<# p )
 WHERE op = '<<#' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspan';
 UPDATE 1
@@ -924,22 +284,6 @@ UPDATE 1
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspan WHERE temp #&> p )
 WHERE op = '#&>' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspan';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp <<# ps )
-WHERE op = '<<#' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspanset';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp #>> ps )
-WHERE op = '#>>' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspanset';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp &<# ps )
-WHERE op = '&<#' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspanset';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp #&> ps )
-WHERE op = '#&>' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspanset';
 UPDATE 1
 UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp << t2.temp )
@@ -990,38 +334,6 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 W
 WHERE op = '#&>' AND leftarg = 'tgeompoint' AND rightarg = 'tgeompoint';
 UPDATE 1
 UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE temp <<# t )
-WHERE op = '<<#' AND leftarg = 'tgeogpoint' AND rightarg = 'timestamptz';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE temp #>> t )
-WHERE op = '#>>' AND leftarg = 'tgeogpoint' AND rightarg = 'timestamptz';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE temp &<# t )
-WHERE op = '&<#' AND leftarg = 'tgeogpoint' AND rightarg = 'timestamptz';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE temp #&> t )
-WHERE op = '#&>' AND leftarg = 'tgeogpoint' AND rightarg = 'timestamptz';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzset WHERE temp <<# t )
-WHERE op = '<<#' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzset';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzset WHERE temp #>> t )
-WHERE op = '#>>' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzset';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzset WHERE temp &<# t )
-WHERE op = '&<#' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzset';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzset WHERE temp #&> t )
-WHERE op = '#&>' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzset';
-UPDATE 1
-UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspan WHERE temp <<# p )
 WHERE op = '<<#' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspan';
 UPDATE 1
@@ -1037,22 +349,6 @@ UPDATE test_posops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspan WHERE temp #&> p )
 WHERE op = '#&>' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspan';
 UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp <<# ps )
-WHERE op = '<<#' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspanset';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp #>> ps )
-WHERE op = '#>>' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspanset';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp &<# ps )
-WHERE op = '&<#' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspanset';
-UPDATE 1
-UPDATE test_posops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp #&> ps )
-WHERE op = '#&>' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspanset';
-UPDATE 1
 DROP INDEX tbl_tgeompoint_quadtree_idx;
 DROP INDEX
 DROP INDEX tbl_tgeogpoint_quadtree_idx;
@@ -1061,70 +357,6 @@ CREATE INDEX tbl_tgeompoint_rtree_idx ON tbl_tgeompoint USING GIST(temp);
 CREATE INDEX
 CREATE INDEX tbl_tgeogpoint_rtree_idx ON tbl_tgeogpoint USING GIST(temp);
 CREATE INDEX
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g << temp )
-WHERE op = '<<' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g >> temp )
-WHERE op = '>>' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g &< temp )
-WHERE op = '&<' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g &> temp )
-WHERE op = '&>' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g <<| temp )
-WHERE op = '<<|' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g |>> temp )
-WHERE op = '|>>' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g &<| temp )
-WHERE op = '&<|' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g |&> temp )
-WHERE op = '|&>' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeompoint WHERE t <<# temp )
-WHERE op = '<<#' AND leftarg = 'timestamptz' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeompoint WHERE t #>> temp )
-WHERE op = '#>>' AND leftarg = 'timestamptz' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeompoint WHERE t &<# temp )
-WHERE op = '&<#' AND leftarg = 'timestamptz' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeompoint WHERE t #&> temp )
-WHERE op = '#&>' AND leftarg = 'timestamptz' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeompoint WHERE t <<# temp )
-WHERE op = '<<#' AND leftarg = 'tstzset' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeompoint WHERE t #>> temp )
-WHERE op = '#>>' AND leftarg = 'tstzset' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeompoint WHERE t &<# temp )
-WHERE op = '&<#' AND leftarg = 'tstzset' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeompoint WHERE t #&> temp )
-WHERE op = '#&>' AND leftarg = 'tstzset' AND rightarg = 'tgeompoint';
-UPDATE 1
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint WHERE p <<# temp )
 WHERE op = '<<#' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint';
@@ -1140,54 +372,6 @@ UPDATE 1
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint WHERE p #&> temp )
 WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeompoint WHERE ps <<# temp )
-WHERE op = '<<#' AND leftarg = 'tstzspanset' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeompoint WHERE ps #>> temp )
-WHERE op = '#>>' AND leftarg = 'tstzspanset' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeompoint WHERE ps &<# temp )
-WHERE op = '&<#' AND leftarg = 'tstzspanset' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeompoint WHERE ps #&> temp )
-WHERE op = '#&>' AND leftarg = 'tstzspanset' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeogpoint WHERE t <<# temp )
-WHERE op = '<<#' AND leftarg = 'timestamptz' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeogpoint WHERE t #>> temp )
-WHERE op = '#>>' AND leftarg = 'timestamptz' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeogpoint WHERE t &<# temp )
-WHERE op = '&<#' AND leftarg = 'timestamptz' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeogpoint WHERE t #&> temp )
-WHERE op = '#&>' AND leftarg = 'timestamptz' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint WHERE t <<# temp )
-WHERE op = '<<#' AND leftarg = 'tstzset' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint WHERE t #>> temp )
-WHERE op = '#>>' AND leftarg = 'tstzset' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint WHERE t &<# temp )
-WHERE op = '&<#' AND leftarg = 'tstzset' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint WHERE t #&> temp )
-WHERE op = '#&>' AND leftarg = 'tstzset' AND rightarg = 'tgeogpoint';
 UPDATE 1
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint WHERE p <<# temp )
@@ -1206,86 +390,6 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint WHERE p #&> 
 WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint';
 UPDATE 1
 UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeogpoint WHERE ps <<# temp )
-WHERE op = '<<#' AND leftarg = 'tstzspanset' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeogpoint WHERE ps #>> temp )
-WHERE op = '#>>' AND leftarg = 'tstzspanset' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeogpoint WHERE ps &<# temp )
-WHERE op = '&<#' AND leftarg = 'tstzspanset' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeogpoint WHERE ps #&> temp )
-WHERE op = '#&>' AND leftarg = 'tstzspanset' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp << g )
-WHERE op = '<<' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp >> g )
-WHERE op = '>>' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp &< g )
-WHERE op = '&<' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp &> g )
-WHERE op = '&>' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp <<| g )
-WHERE op = '<<|' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp |>> g )
-WHERE op = '|>>' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp &<| g )
-WHERE op = '&<|' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp |&> g )
-WHERE op = '|&>' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz WHERE temp <<# t )
-WHERE op = '<<#' AND leftarg = 'tgeompoint' AND rightarg = 'timestamptz';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz WHERE temp #>> t )
-WHERE op = '#>>' AND leftarg = 'tgeompoint' AND rightarg = 'timestamptz';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz WHERE temp &<# t )
-WHERE op = '&<#' AND leftarg = 'tgeompoint' AND rightarg = 'timestamptz';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz WHERE temp #&> t )
-WHERE op = '#&>' AND leftarg = 'tgeompoint' AND rightarg = 'timestamptz';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzset WHERE temp <<# t )
-WHERE op = '<<#' AND leftarg = 'tgeompoint' AND rightarg = 'tstzset';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzset WHERE temp #>> t )
-WHERE op = '#>>' AND leftarg = 'tgeompoint' AND rightarg = 'tstzset';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzset WHERE temp &<# t )
-WHERE op = '&<#' AND leftarg = 'tgeompoint' AND rightarg = 'tstzset';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzset WHERE temp #&> t )
-WHERE op = '#&>' AND leftarg = 'tgeompoint' AND rightarg = 'tstzset';
-UPDATE 1
-UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspan WHERE temp <<# p )
 WHERE op = '<<#' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspan';
 UPDATE 1
@@ -1300,22 +404,6 @@ UPDATE 1
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspan WHERE temp #&> p )
 WHERE op = '#&>' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspan';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp <<# ps )
-WHERE op = '<<#' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspanset';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp #>> ps )
-WHERE op = '#>>' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspanset';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp &<# ps )
-WHERE op = '&<#' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspanset';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp #&> ps )
-WHERE op = '#&>' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspanset';
 UPDATE 1
 UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp << t2.temp )
@@ -1366,38 +454,6 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHER
 WHERE op = '#&>' AND leftarg = 'tgeompoint' AND rightarg = 'tgeompoint';
 UPDATE 1
 UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE temp <<# t )
-WHERE op = '<<#' AND leftarg = 'tgeogpoint' AND rightarg = 'timestamptz';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE temp #>> t )
-WHERE op = '#>>' AND leftarg = 'tgeogpoint' AND rightarg = 'timestamptz';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE temp &<# t )
-WHERE op = '&<#' AND leftarg = 'tgeogpoint' AND rightarg = 'timestamptz';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE temp #&> t )
-WHERE op = '#&>' AND leftarg = 'tgeogpoint' AND rightarg = 'timestamptz';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzset WHERE temp <<# t )
-WHERE op = '<<#' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzset';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzset WHERE temp #>> t )
-WHERE op = '#>>' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzset';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzset WHERE temp &<# t )
-WHERE op = '&<#' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzset';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzset WHERE temp #&> t )
-WHERE op = '#&>' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzset';
-UPDATE 1
-UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspan WHERE temp <<# p )
 WHERE op = '<<#' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspan';
 UPDATE 1
@@ -1413,22 +469,6 @@ UPDATE test_posops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspan WHERE temp #&> p )
 WHERE op = '#&>' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspan';
 UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp <<# ps )
-WHERE op = '<<#' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspanset';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp #>> ps )
-WHERE op = '#>>' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspanset';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp &<# ps )
-WHERE op = '&<#' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspanset';
-UPDATE 1
-UPDATE test_posops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp #&> ps )
-WHERE op = '#&>' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspanset';
-UPDATE 1
 DROP INDEX tbl_tgeompoint_rtree_idx;
 DROP INDEX
 DROP INDEX tbl_tgeogpoint_rtree_idx;
@@ -1437,70 +477,6 @@ CREATE INDEX tbl_tgeompoint_kdtree_idx ON tbl_tgeompoint USING SPGIST(temp tgeom
 CREATE INDEX
 CREATE INDEX tbl_tgeogpoint_kdtree_idx ON tbl_tgeogpoint USING SPGIST(temp tgeogpoint_kdtree_ops);
 CREATE INDEX
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g << temp )
-WHERE op = '<<' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g >> temp )
-WHERE op = '>>' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g &< temp )
-WHERE op = '&<' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g &> temp )
-WHERE op = '&>' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g <<| temp )
-WHERE op = '<<|' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g |>> temp )
-WHERE op = '|>>' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g &<| temp )
-WHERE op = '&<|' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE g |&> temp )
-WHERE op = '|&>' AND leftarg = 'geometry' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeompoint WHERE t <<# temp )
-WHERE op = '<<#' AND leftarg = 'timestamptz' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeompoint WHERE t #>> temp )
-WHERE op = '#>>' AND leftarg = 'timestamptz' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeompoint WHERE t &<# temp )
-WHERE op = '&<#' AND leftarg = 'timestamptz' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeompoint WHERE t #&> temp )
-WHERE op = '#&>' AND leftarg = 'timestamptz' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeompoint WHERE t <<# temp )
-WHERE op = '<<#' AND leftarg = 'tstzset' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeompoint WHERE t #>> temp )
-WHERE op = '#>>' AND leftarg = 'tstzset' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeompoint WHERE t &<# temp )
-WHERE op = '&<#' AND leftarg = 'tstzset' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeompoint WHERE t #&> temp )
-WHERE op = '#&>' AND leftarg = 'tstzset' AND rightarg = 'tgeompoint';
-UPDATE 1
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint WHERE p <<# temp )
 WHERE op = '<<#' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint';
@@ -1516,54 +492,6 @@ UPDATE 1
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeompoint WHERE p #&> temp )
 WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeompoint WHERE ps <<# temp )
-WHERE op = '<<#' AND leftarg = 'tstzspanset' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeompoint WHERE ps #>> temp )
-WHERE op = '#>>' AND leftarg = 'tstzspanset' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeompoint WHERE ps &<# temp )
-WHERE op = '&<#' AND leftarg = 'tstzspanset' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeompoint WHERE ps #&> temp )
-WHERE op = '#&>' AND leftarg = 'tstzspanset' AND rightarg = 'tgeompoint';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeogpoint WHERE t <<# temp )
-WHERE op = '<<#' AND leftarg = 'timestamptz' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeogpoint WHERE t #>> temp )
-WHERE op = '#>>' AND leftarg = 'timestamptz' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeogpoint WHERE t &<# temp )
-WHERE op = '&<#' AND leftarg = 'timestamptz' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz, tbl_tgeogpoint WHERE t #&> temp )
-WHERE op = '#&>' AND leftarg = 'timestamptz' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint WHERE t <<# temp )
-WHERE op = '<<#' AND leftarg = 'tstzset' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint WHERE t #>> temp )
-WHERE op = '#>>' AND leftarg = 'tstzset' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint WHERE t &<# temp )
-WHERE op = '&<#' AND leftarg = 'tstzset' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzset, tbl_tgeogpoint WHERE t #&> temp )
-WHERE op = '#&>' AND leftarg = 'tstzset' AND rightarg = 'tgeogpoint';
 UPDATE 1
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint WHERE p <<# temp )
@@ -1582,86 +510,6 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tgeogpoint WHERE p #&>
 WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'tgeogpoint';
 UPDATE 1
 UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeogpoint WHERE ps <<# temp )
-WHERE op = '<<#' AND leftarg = 'tstzspanset' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeogpoint WHERE ps #>> temp )
-WHERE op = '#>>' AND leftarg = 'tstzspanset' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeogpoint WHERE ps &<# temp )
-WHERE op = '&<#' AND leftarg = 'tstzspanset' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspanset, tbl_tgeogpoint WHERE ps #&> temp )
-WHERE op = '#&>' AND leftarg = 'tstzspanset' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp << g )
-WHERE op = '<<' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp >> g )
-WHERE op = '>>' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp &< g )
-WHERE op = '&<' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp &> g )
-WHERE op = '&>' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp <<| g )
-WHERE op = '<<|' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp |>> g )
-WHERE op = '|>>' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp &<| g )
-WHERE op = '&<|' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp |&> g )
-WHERE op = '|&>' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz WHERE temp <<# t )
-WHERE op = '<<#' AND leftarg = 'tgeompoint' AND rightarg = 'timestamptz';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz WHERE temp #>> t )
-WHERE op = '#>>' AND leftarg = 'tgeompoint' AND rightarg = 'timestamptz';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz WHERE temp &<# t )
-WHERE op = '&<#' AND leftarg = 'tgeompoint' AND rightarg = 'timestamptz';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz WHERE temp #&> t )
-WHERE op = '#&>' AND leftarg = 'tgeompoint' AND rightarg = 'timestamptz';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzset WHERE temp <<# t )
-WHERE op = '<<#' AND leftarg = 'tgeompoint' AND rightarg = 'tstzset';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzset WHERE temp #>> t )
-WHERE op = '#>>' AND leftarg = 'tgeompoint' AND rightarg = 'tstzset';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzset WHERE temp &<# t )
-WHERE op = '&<#' AND leftarg = 'tgeompoint' AND rightarg = 'tstzset';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzset WHERE temp #&> t )
-WHERE op = '#&>' AND leftarg = 'tgeompoint' AND rightarg = 'tstzset';
-UPDATE 1
-UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspan WHERE temp <<# p )
 WHERE op = '<<#' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspan';
 UPDATE 1
@@ -1676,22 +524,6 @@ UPDATE 1
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspan WHERE temp #&> p )
 WHERE op = '#&>' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspan';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp <<# ps )
-WHERE op = '<<#' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspanset';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp #>> ps )
-WHERE op = '#>>' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspanset';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp &<# ps )
-WHERE op = '&<#' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspanset';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp #&> ps )
-WHERE op = '#&>' AND leftarg = 'tgeompoint' AND rightarg = 'tstzspanset';
 UPDATE 1
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp << t2.temp )
@@ -1742,38 +574,6 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHE
 WHERE op = '#&>' AND leftarg = 'tgeompoint' AND rightarg = 'tgeompoint';
 UPDATE 1
 UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE temp <<# t )
-WHERE op = '<<#' AND leftarg = 'tgeogpoint' AND rightarg = 'timestamptz';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE temp #>> t )
-WHERE op = '#>>' AND leftarg = 'tgeogpoint' AND rightarg = 'timestamptz';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE temp &<# t )
-WHERE op = '&<#' AND leftarg = 'tgeogpoint' AND rightarg = 'timestamptz';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE temp #&> t )
-WHERE op = '#&>' AND leftarg = 'tgeogpoint' AND rightarg = 'timestamptz';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzset WHERE temp <<# t )
-WHERE op = '<<#' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzset';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzset WHERE temp #>> t )
-WHERE op = '#>>' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzset';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzset WHERE temp &<# t )
-WHERE op = '&<#' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzset';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzset WHERE temp #&> t )
-WHERE op = '#&>' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzset';
-UPDATE 1
-UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspan WHERE temp <<# p )
 WHERE op = '<<#' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspan';
 UPDATE 1
@@ -1788,22 +588,6 @@ UPDATE 1
 UPDATE test_posops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspan WHERE temp #&> p )
 WHERE op = '#&>' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspan';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp <<# ps )
-WHERE op = '<<#' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspanset';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp #>> ps )
-WHERE op = '#>>' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspanset';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp &<# ps )
-WHERE op = '&<#' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspanset';
-UPDATE 1
-UPDATE test_posops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp #&> ps )
-WHERE op = '#&>' AND leftarg = 'tgeogpoint' AND rightarg = 'tstzspanset';
 UPDATE 1
 DROP INDEX tbl_tgeompoint_kdtree_idx;
 DROP INDEX

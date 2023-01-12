@@ -243,123 +243,78 @@ CREATE OPERATOR CLASS stbox_kdtree_ops
 CREATE OPERATOR CLASS tgeompoint_quadtree_ops
   DEFAULT FOR TYPE tgeompoint USING spgist AS
   -- strictly left
-  OPERATOR  1    << (tgeompoint, geometry),
   OPERATOR  1    << (tgeompoint, stbox),
   OPERATOR  1    << (tgeompoint, tgeompoint),
   -- overlaps or left
-  OPERATOR  2    &< (tgeompoint, geometry),
   OPERATOR  2    &< (tgeompoint, stbox),
   OPERATOR  2    &< (tgeompoint, tgeompoint),
   -- overlaps
-  OPERATOR  3    && (tgeompoint, geometry),
-  OPERATOR  3    && (tgeompoint, timestamptz),
-  OPERATOR  3    && (tgeompoint, tstzset),
   OPERATOR  3    && (tgeompoint, tstzspan),
-  OPERATOR  3    && (tgeompoint, tstzspanset),
   OPERATOR  3    && (tgeompoint, stbox),
   OPERATOR  3    && (tgeompoint, tgeompoint),
   -- overlaps or right
-  OPERATOR  4    &> (tgeompoint, geometry),
   OPERATOR  4    &> (tgeompoint, stbox),
   OPERATOR  4    &> (tgeompoint, tgeompoint),
     -- strictly right
-  OPERATOR  5    >> (tgeompoint, geometry),
   OPERATOR  5    >> (tgeompoint, stbox),
   OPERATOR  5    >> (tgeompoint, tgeompoint),
     -- same
-  OPERATOR  6    ~= (tgeompoint, geometry),
-  OPERATOR  6    ~= (tgeompoint, timestamptz),
-  OPERATOR  6    ~= (tgeompoint, tstzset),
   OPERATOR  6    ~= (tgeompoint, tstzspan),
-  OPERATOR  6    ~= (tgeompoint, tstzspanset),
   OPERATOR  6    ~= (tgeompoint, stbox),
   OPERATOR  6    ~= (tgeompoint, tgeompoint),
   -- contains
-  OPERATOR  7    @> (tgeompoint, geometry),
-  OPERATOR  7    @> (tgeompoint, timestamptz),
-  OPERATOR  7    @> (tgeompoint, tstzset),
   OPERATOR  7    @> (tgeompoint, tstzspan),
-  OPERATOR  7    @> (tgeompoint, tstzspanset),
   OPERATOR  7    @> (tgeompoint, stbox),
   OPERATOR  7    @> (tgeompoint, tgeompoint),
   -- contained by
-  OPERATOR  8    <@ (tgeompoint, geometry),
-  OPERATOR  8    <@ (tgeompoint, timestamptz),
-  OPERATOR  8    <@ (tgeompoint, tstzset),
   OPERATOR  8    <@ (tgeompoint, tstzspan),
-  OPERATOR  8    <@ (tgeompoint, tstzspanset),
   OPERATOR  8    <@ (tgeompoint, stbox),
   OPERATOR  8    <@ (tgeompoint, tgeompoint),
   -- overlaps or below
-  OPERATOR  9    &<| (tgeompoint, geometry),
   OPERATOR  9    &<| (tgeompoint, stbox),
   OPERATOR  9    &<| (tgeompoint, tgeompoint),
   -- strictly below
-  OPERATOR  10    <<| (tgeompoint, geometry),
   OPERATOR  10    <<| (tgeompoint, stbox),
   OPERATOR  10    <<| (tgeompoint, tgeompoint),
   -- strictly above
-  OPERATOR  11    |>> (tgeompoint, geometry),
   OPERATOR  11    |>> (tgeompoint, stbox),
   OPERATOR  11    |>> (tgeompoint, tgeompoint),
   -- overlaps or above
-  OPERATOR  12    |&> (tgeompoint, geometry),
   OPERATOR  12    |&> (tgeompoint, stbox),
   OPERATOR  12    |&> (tgeompoint, tgeompoint),
   -- adjacent
-  OPERATOR  17    -|- (tgeompoint, geometry),
-  OPERATOR  17    -|- (tgeompoint, timestamptz),
-  OPERATOR  17    -|- (tgeompoint, tstzset),
   OPERATOR  17    -|- (tgeompoint, tstzspan),
-  OPERATOR  17    -|- (tgeompoint, tstzspanset),
   OPERATOR  17    -|- (tgeompoint, stbox),
   OPERATOR  17    -|- (tgeompoint, tgeompoint),
   -- nearest approach distance
-  OPERATOR  25    |=| (tgeompoint, geometry) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tgeompoint, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tgeompoint, tgeompoint) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
-  OPERATOR  28    &<# (tgeompoint, timestamptz),
-  OPERATOR  28    &<# (tgeompoint, tstzset),
   OPERATOR  28    &<# (tgeompoint, tstzspan),
-  OPERATOR  28    &<# (tgeompoint, tstzspanset),
   OPERATOR  28    &<# (tgeompoint, stbox),
   OPERATOR  28    &<# (tgeompoint, tgeompoint),
   -- strictly before
-  OPERATOR  29    <<# (tgeompoint, timestamptz),
-  OPERATOR  29    <<# (tgeompoint, tstzset),
   OPERATOR  29    <<# (tgeompoint, tstzspan),
-  OPERATOR  29    <<# (tgeompoint, tstzspanset),
   OPERATOR  29    <<# (tgeompoint, stbox),
   OPERATOR  29    <<# (tgeompoint, tgeompoint),
   -- strictly after
-  OPERATOR  30    #>> (tgeompoint, timestamptz),
-  OPERATOR  30    #>> (tgeompoint, tstzset),
   OPERATOR  30    #>> (tgeompoint, tstzspan),
-  OPERATOR  30    #>> (tgeompoint, tstzspanset),
   OPERATOR  30    #>> (tgeompoint, stbox),
   OPERATOR  30    #>> (tgeompoint, tgeompoint),
   -- overlaps or after
-  OPERATOR  31    #&> (tgeompoint, timestamptz),
-  OPERATOR  31    #&> (tgeompoint, tstzset),
   OPERATOR  31    #&> (tgeompoint, tstzspan),
-  OPERATOR  31    #&> (tgeompoint, tstzspanset),
   OPERATOR  31    #&> (tgeompoint, stbox),
   OPERATOR  31    #&> (tgeompoint, tgeompoint),
   -- overlaps or front
-  OPERATOR  32    &</ (tgeompoint, geometry),
   OPERATOR  32    &</ (tgeompoint, stbox),
   OPERATOR  32    &</ (tgeompoint, tgeompoint),
   -- strictly front
-  OPERATOR  33    <</ (tgeompoint, geometry),
   OPERATOR  33    <</ (tgeompoint, stbox),
   OPERATOR  33    <</ (tgeompoint, tgeompoint),
   -- strictly back
-  OPERATOR  34    />> (tgeompoint, geometry),
   OPERATOR  34    />> (tgeompoint, stbox),
   OPERATOR  34    />> (tgeompoint, tgeompoint),
   -- overlaps or back
-  OPERATOR  35    /&> (tgeompoint, geometry),
   OPERATOR  35    /&> (tgeompoint, stbox),
   OPERATOR  35    /&> (tgeompoint, tgeompoint),
   -- functions
@@ -375,123 +330,78 @@ CREATE OPERATOR CLASS tgeompoint_quadtree_ops
 CREATE OPERATOR CLASS tgeompoint_kdtree_ops
   FOR TYPE tgeompoint USING spgist AS
   -- strictly left
-  OPERATOR  1    << (tgeompoint, geometry),
   OPERATOR  1    << (tgeompoint, stbox),
   OPERATOR  1    << (tgeompoint, tgeompoint),
   -- overlaps or left
-  OPERATOR  2    &< (tgeompoint, geometry),
   OPERATOR  2    &< (tgeompoint, stbox),
   OPERATOR  2    &< (tgeompoint, tgeompoint),
   -- overlaps
-  OPERATOR  3    && (tgeompoint, geometry),
-  OPERATOR  3    && (tgeompoint, timestamptz),
-  OPERATOR  3    && (tgeompoint, tstzset),
   OPERATOR  3    && (tgeompoint, tstzspan),
-  OPERATOR  3    && (tgeompoint, tstzspanset),
   OPERATOR  3    && (tgeompoint, stbox),
   OPERATOR  3    && (tgeompoint, tgeompoint),
   -- overlaps or right
-  OPERATOR  4    &> (tgeompoint, geometry),
   OPERATOR  4    &> (tgeompoint, stbox),
   OPERATOR  4    &> (tgeompoint, tgeompoint),
     -- strictly right
-  OPERATOR  5    >> (tgeompoint, geometry),
   OPERATOR  5    >> (tgeompoint, stbox),
   OPERATOR  5    >> (tgeompoint, tgeompoint),
     -- same
-  OPERATOR  6    ~= (tgeompoint, geometry),
-  OPERATOR  6    ~= (tgeompoint, timestamptz),
-  OPERATOR  6    ~= (tgeompoint, tstzset),
   OPERATOR  6    ~= (tgeompoint, tstzspan),
-  OPERATOR  6    ~= (tgeompoint, tstzspanset),
   OPERATOR  6    ~= (tgeompoint, stbox),
   OPERATOR  6    ~= (tgeompoint, tgeompoint),
   -- contains
-  OPERATOR  7    @> (tgeompoint, geometry),
-  OPERATOR  7    @> (tgeompoint, timestamptz),
-  OPERATOR  7    @> (tgeompoint, tstzset),
   OPERATOR  7    @> (tgeompoint, tstzspan),
-  OPERATOR  7    @> (tgeompoint, tstzspanset),
   OPERATOR  7    @> (tgeompoint, stbox),
   OPERATOR  7    @> (tgeompoint, tgeompoint),
   -- contained by
-  OPERATOR  8    <@ (tgeompoint, geometry),
-  OPERATOR  8    <@ (tgeompoint, timestamptz),
-  OPERATOR  8    <@ (tgeompoint, tstzset),
   OPERATOR  8    <@ (tgeompoint, tstzspan),
-  OPERATOR  8    <@ (tgeompoint, tstzspanset),
   OPERATOR  8    <@ (tgeompoint, stbox),
   OPERATOR  8    <@ (tgeompoint, tgeompoint),
   -- overlaps or below
-  OPERATOR  9    &<| (tgeompoint, geometry),
   OPERATOR  9    &<| (tgeompoint, stbox),
   OPERATOR  9    &<| (tgeompoint, tgeompoint),
   -- strictly below
-  OPERATOR  10    <<| (tgeompoint, geometry),
   OPERATOR  10    <<| (tgeompoint, stbox),
   OPERATOR  10    <<| (tgeompoint, tgeompoint),
   -- strictly above
-  OPERATOR  11    |>> (tgeompoint, geometry),
   OPERATOR  11    |>> (tgeompoint, stbox),
   OPERATOR  11    |>> (tgeompoint, tgeompoint),
   -- overlaps or above
-  OPERATOR  12    |&> (tgeompoint, geometry),
   OPERATOR  12    |&> (tgeompoint, stbox),
   OPERATOR  12    |&> (tgeompoint, tgeompoint),
   -- adjacent
-  OPERATOR  17    -|- (tgeompoint, geometry),
-  OPERATOR  17    -|- (tgeompoint, timestamptz),
-  OPERATOR  17    -|- (tgeompoint, tstzset),
   OPERATOR  17    -|- (tgeompoint, tstzspan),
-  OPERATOR  17    -|- (tgeompoint, tstzspanset),
   OPERATOR  17    -|- (tgeompoint, stbox),
   OPERATOR  17    -|- (tgeompoint, tgeompoint),
   -- nearest approach distance
-  OPERATOR  25    |=| (tgeompoint, geometry) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tgeompoint, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tgeompoint, tgeompoint) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
-  OPERATOR  28    &<# (tgeompoint, timestamptz),
-  OPERATOR  28    &<# (tgeompoint, tstzset),
   OPERATOR  28    &<# (tgeompoint, tstzspan),
-  OPERATOR  28    &<# (tgeompoint, tstzspanset),
   OPERATOR  28    &<# (tgeompoint, stbox),
   OPERATOR  28    &<# (tgeompoint, tgeompoint),
   -- strictly before
-  OPERATOR  29    <<# (tgeompoint, timestamptz),
-  OPERATOR  29    <<# (tgeompoint, tstzset),
   OPERATOR  29    <<# (tgeompoint, tstzspan),
-  OPERATOR  29    <<# (tgeompoint, tstzspanset),
   OPERATOR  29    <<# (tgeompoint, stbox),
   OPERATOR  29    <<# (tgeompoint, tgeompoint),
   -- strictly after
-  OPERATOR  30    #>> (tgeompoint, timestamptz),
-  OPERATOR  30    #>> (tgeompoint, tstzset),
   OPERATOR  30    #>> (tgeompoint, tstzspan),
-  OPERATOR  30    #>> (tgeompoint, tstzspanset),
   OPERATOR  30    #>> (tgeompoint, stbox),
   OPERATOR  30    #>> (tgeompoint, tgeompoint),
   -- overlaps or after
-  OPERATOR  31    #&> (tgeompoint, timestamptz),
-  OPERATOR  31    #&> (tgeompoint, tstzset),
   OPERATOR  31    #&> (tgeompoint, tstzspan),
-  OPERATOR  31    #&> (tgeompoint, tstzspanset),
   OPERATOR  31    #&> (tgeompoint, stbox),
   OPERATOR  31    #&> (tgeompoint, tgeompoint),
   -- overlaps or front
-  OPERATOR  32    &</ (tgeompoint, geometry),
   OPERATOR  32    &</ (tgeompoint, stbox),
   OPERATOR  32    &</ (tgeompoint, tgeompoint),
   -- strictly front
-  OPERATOR  33    <</ (tgeompoint, geometry),
   OPERATOR  33    <</ (tgeompoint, stbox),
   OPERATOR  33    <</ (tgeompoint, tgeompoint),
   -- strictly back
-  OPERATOR  34    />> (tgeompoint, geometry),
   OPERATOR  34    />> (tgeompoint, stbox),
   OPERATOR  34    />> (tgeompoint, tgeompoint),
   -- overlaps or back
-  OPERATOR  35    /&> (tgeompoint, geometry),
   OPERATOR  35    /&> (tgeompoint, stbox),
   OPERATOR  35    /&> (tgeompoint, tgeompoint),
   -- functions
@@ -507,75 +417,42 @@ CREATE OPERATOR CLASS tgeompoint_kdtree_ops
 CREATE OPERATOR CLASS tgeogpoint_quadtree_ops
   DEFAULT FOR TYPE tgeogpoint USING spgist AS
   -- overlaps
-  OPERATOR  3    && (tgeogpoint, geography),
-  OPERATOR  3    && (tgeogpoint, timestamptz),
-  OPERATOR  3    && (tgeogpoint, tstzset),
   OPERATOR  3    && (tgeogpoint, tstzspan),
-  OPERATOR  3    && (tgeogpoint, tstzspanset),
   OPERATOR  3    && (tgeogpoint, stbox),
   OPERATOR  3    && (tgeogpoint, tgeogpoint),
     -- same
-  OPERATOR  6    ~= (tgeogpoint, geography),
-  OPERATOR  6    ~= (tgeogpoint, timestamptz),
-  OPERATOR  6    ~= (tgeogpoint, tstzset),
   OPERATOR  6    ~= (tgeogpoint, tstzspan),
-  OPERATOR  6    ~= (tgeogpoint, tstzspanset),
   OPERATOR  6    ~= (tgeogpoint, stbox),
   OPERATOR  6    ~= (tgeogpoint, tgeogpoint),
   -- contains
-  OPERATOR  7    @> (tgeogpoint, geography),
-  OPERATOR  7    @> (tgeogpoint, timestamptz),
-  OPERATOR  7    @> (tgeogpoint, tstzset),
   OPERATOR  7    @> (tgeogpoint, tstzspan),
-  OPERATOR  7    @> (tgeogpoint, tstzspanset),
   OPERATOR  7    @> (tgeogpoint, stbox),
   OPERATOR  7    @> (tgeogpoint, tgeogpoint),
   -- contained by
-  OPERATOR  8    <@ (tgeogpoint, geography),
-  OPERATOR  8    <@ (tgeogpoint, timestamptz),
-  OPERATOR  8    <@ (tgeogpoint, tstzset),
   OPERATOR  8    <@ (tgeogpoint, tstzspan),
-  OPERATOR  8    <@ (tgeogpoint, tstzspanset),
   OPERATOR  8    <@ (tgeogpoint, stbox),
   OPERATOR  8    <@ (tgeogpoint, tgeogpoint),
   -- adjacent
-  OPERATOR  17    -|- (tgeogpoint, geography),
-  OPERATOR  17    -|- (tgeogpoint, timestamptz),
-  OPERATOR  17    -|- (tgeogpoint, tstzset),
   OPERATOR  17    -|- (tgeogpoint, tstzspan),
-  OPERATOR  17    -|- (tgeogpoint, tstzspanset),
   OPERATOR  17    -|- (tgeogpoint, stbox),
   OPERATOR  17    -|- (tgeogpoint, tgeogpoint),
   -- nearest approach distance
-  OPERATOR  25    |=| (tgeogpoint, geography) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tgeogpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tgeogpoint, tgeogpoint) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
-  OPERATOR  28    &<# (tgeogpoint, timestamptz),
-  OPERATOR  28    &<# (tgeogpoint, tstzset),
   OPERATOR  28    &<# (tgeogpoint, tstzspan),
-  OPERATOR  28    &<# (tgeogpoint, tstzspanset),
   OPERATOR  28    &<# (tgeogpoint, stbox),
   OPERATOR  28    &<# (tgeogpoint, tgeogpoint),
   -- strictly before
-  OPERATOR  29    <<# (tgeogpoint, timestamptz),
-  OPERATOR  29    <<# (tgeogpoint, tstzset),
   OPERATOR  29    <<# (tgeogpoint, tstzspan),
-  OPERATOR  29    <<# (tgeogpoint, tstzspanset),
   OPERATOR  29    <<# (tgeogpoint, stbox),
   OPERATOR  29    <<# (tgeogpoint, tgeogpoint),
   -- strictly after
-  OPERATOR  30    #>> (tgeogpoint, timestamptz),
-  OPERATOR  30    #>> (tgeogpoint, tstzset),
   OPERATOR  30    #>> (tgeogpoint, tstzspan),
-  OPERATOR  30    #>> (tgeogpoint, tstzspanset),
   OPERATOR  30    #>> (tgeogpoint, stbox),
   OPERATOR  30    #>> (tgeogpoint, tgeogpoint),
   -- overlaps or after
-  OPERATOR  31    #&> (tgeogpoint, timestamptz),
-  OPERATOR  31    #&> (tgeogpoint, tstzset),
   OPERATOR  31    #&> (tgeogpoint, tstzspan),
-  OPERATOR  31    #&> (tgeogpoint, tstzspanset),
   OPERATOR  31    #&> (tgeogpoint, stbox),
   OPERATOR  31    #&> (tgeogpoint, tgeogpoint),
   -- functions
@@ -591,75 +468,41 @@ CREATE OPERATOR CLASS tgeogpoint_quadtree_ops
 CREATE OPERATOR CLASS tgeogpoint_kdtree_ops
   FOR TYPE tgeogpoint USING spgist AS
   -- overlaps
-  OPERATOR  3    && (tgeogpoint, geography),
-  OPERATOR  3    && (tgeogpoint, timestamptz),
-  OPERATOR  3    && (tgeogpoint, tstzset),
   OPERATOR  3    && (tgeogpoint, tstzspan),
-  OPERATOR  3    && (tgeogpoint, tstzspanset),
-  OPERATOR  3    && (tgeogpoint, stbox),
   OPERATOR  3    && (tgeogpoint, tgeogpoint),
     -- same
-  OPERATOR  6    ~= (tgeogpoint, geography),
-  OPERATOR  6    ~= (tgeogpoint, timestamptz),
-  OPERATOR  6    ~= (tgeogpoint, tstzset),
   OPERATOR  6    ~= (tgeogpoint, tstzspan),
-  OPERATOR  6    ~= (tgeogpoint, tstzspanset),
   OPERATOR  6    ~= (tgeogpoint, stbox),
   OPERATOR  6    ~= (tgeogpoint, tgeogpoint),
   -- contains
-  OPERATOR  7    @> (tgeogpoint, geography),
-  OPERATOR  7    @> (tgeogpoint, timestamptz),
-  OPERATOR  7    @> (tgeogpoint, tstzset),
   OPERATOR  7    @> (tgeogpoint, tstzspan),
-  OPERATOR  7    @> (tgeogpoint, tstzspanset),
   OPERATOR  7    @> (tgeogpoint, stbox),
   OPERATOR  7    @> (tgeogpoint, tgeogpoint),
   -- contained by
-  OPERATOR  8    <@ (tgeogpoint, geography),
-  OPERATOR  8    <@ (tgeogpoint, timestamptz),
-  OPERATOR  8    <@ (tgeogpoint, tstzset),
   OPERATOR  8    <@ (tgeogpoint, tstzspan),
-  OPERATOR  8    <@ (tgeogpoint, tstzspanset),
   OPERATOR  8    <@ (tgeogpoint, stbox),
   OPERATOR  8    <@ (tgeogpoint, tgeogpoint),
   -- adjacent
-  OPERATOR  17    -|- (tgeogpoint, geography),
-  OPERATOR  17    -|- (tgeogpoint, timestamptz),
-  OPERATOR  17    -|- (tgeogpoint, tstzset),
   OPERATOR  17    -|- (tgeogpoint, tstzspan),
-  OPERATOR  17    -|- (tgeogpoint, tstzspanset),
   OPERATOR  17    -|- (tgeogpoint, stbox),
   OPERATOR  17    -|- (tgeogpoint, tgeogpoint),
   -- nearest approach distance
-  OPERATOR  25    |=| (tgeogpoint, geography) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tgeogpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tgeogpoint, tgeogpoint) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
-  OPERATOR  28    &<# (tgeogpoint, timestamptz),
-  OPERATOR  28    &<# (tgeogpoint, tstzset),
   OPERATOR  28    &<# (tgeogpoint, tstzspan),
-  OPERATOR  28    &<# (tgeogpoint, tstzspanset),
   OPERATOR  28    &<# (tgeogpoint, stbox),
   OPERATOR  28    &<# (tgeogpoint, tgeogpoint),
   -- strictly before
-  OPERATOR  29    <<# (tgeogpoint, timestamptz),
-  OPERATOR  29    <<# (tgeogpoint, tstzset),
   OPERATOR  29    <<# (tgeogpoint, tstzspan),
-  OPERATOR  29    <<# (tgeogpoint, tstzspanset),
   OPERATOR  29    <<# (tgeogpoint, stbox),
   OPERATOR  29    <<# (tgeogpoint, tgeogpoint),
   -- strictly after
-  OPERATOR  30    #>> (tgeogpoint, timestamptz),
-  OPERATOR  30    #>> (tgeogpoint, tstzset),
   OPERATOR  30    #>> (tgeogpoint, tstzspan),
-  OPERATOR  30    #>> (tgeogpoint, tstzspanset),
   OPERATOR  30    #>> (tgeogpoint, stbox),
   OPERATOR  30    #>> (tgeogpoint, tgeogpoint),
   -- overlaps or after
-  OPERATOR  31    #&> (tgeogpoint, timestamptz),
-  OPERATOR  31    #&> (tgeogpoint, tstzset),
   OPERATOR  31    #&> (tgeogpoint, tstzspan),
-  OPERATOR  31    #&> (tgeogpoint, tstzspanset),
   OPERATOR  31    #&> (tgeogpoint, stbox),
   OPERATOR  31    #&> (tgeogpoint, tgeogpoint),
   -- functions

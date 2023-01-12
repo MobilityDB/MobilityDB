@@ -86,7 +86,7 @@ CREATE FUNCTION _intersects(npoint, tnpoint)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION intersects(npoint, tnpoint)
   RETURNS boolean
-  AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND @extschema@._intersects($1,$2)'
+  AS 'SELECT stbox($1) OPERATOR(@extschema@.&&) $2 AND @extschema@._intersects($1,$2)'
   LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION _intersects(tnpoint, npoint)
@@ -95,7 +95,7 @@ CREATE FUNCTION _intersects(tnpoint, npoint)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION intersects(tnpoint, npoint)
   RETURNS boolean
-  AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND @extschema@._intersects($1,$2)'
+  AS 'SELECT $1 OPERATOR(@extschema@.&&) stbox($2) AND @extschema@._intersects($1,$2)'
   LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION intersects(geometry, tnpoint)
@@ -124,7 +124,7 @@ CREATE FUNCTION _touches(npoint, tnpoint)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION touches(npoint, tnpoint)
   RETURNS boolean
-  AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND @extschema@._touches($1,$2)'
+  AS 'SELECT stbox($1) OPERATOR(@extschema@.&&) $2 AND @extschema@._touches($1,$2)'
   LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION _touches(tnpoint, npoint)
@@ -133,7 +133,7 @@ CREATE FUNCTION _touches(tnpoint, npoint)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION touches(tnpoint, npoint)
   RETURNS boolean
-  AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND @extschema@._touches($1,$2)'
+  AS 'SELECT $1 OPERATOR(@extschema@.&&) stbox($2) AND @extschema@._touches($1,$2)'
   LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION touches(geometry, tnpoint)
@@ -157,7 +157,7 @@ CREATE FUNCTION _dwithin(npoint, tnpoint, dist float8)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION dwithin(npoint, tnpoint, dist float8)
   RETURNS boolean
-  AS 'SELECT @extschema@.expandSpatial($1::stbox,$3) OPERATOR(@extschema@.&&) $2 AND @extschema@._dwithin($1, $2, $3)'
+  AS 'SELECT @extschema@.expandSpatial(stbox($1),$3) OPERATOR(@extschema@.&&) $2 AND @extschema@._dwithin($1, $2, $3)'
   LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION _dwithin(tnpoint, npoint, dist float8)
@@ -166,7 +166,7 @@ CREATE FUNCTION _dwithin(tnpoint, npoint, dist float8)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION dwithin(tnpoint, npoint, dist float8)
   RETURNS boolean
-  AS 'SELECT $1 OPERATOR(@extschema@.&&) @extschema@.expandSpatial($2::stbox,$3) AND @extschema@._dwithin($1, $2, $3)'
+  AS 'SELECT $1 OPERATOR(@extschema@.&&) @extschema@.expandSpatial(stbox($2),$3) AND @extschema@._dwithin($1, $2, $3)'
   LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION dwithin(geometry, tnpoint, dist float8)

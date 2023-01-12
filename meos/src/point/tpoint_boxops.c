@@ -398,28 +398,6 @@ tpoint_stboxes(const Temporal *temp, int *count)
  *****************************************************************************/
 
 /**
- * @brief Generic bounding box function for a temporal point and a geometry.
- *
- * @param[in] temp Temporal point
- * @param[in] gs Geometry
- * @param[in] func Bounding box function
- * @param[in] invert True if the geometry is the first argument of the
- * function
- */
-int
-boxop_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
-  bool (*func)(const STBox *, const STBox *), bool invert)
-{
-  if (gserialized_is_empty(gs))
-    return -1;
-  STBox box1, box2;
-  temporal_set_bbox(temp, &box1);
-  geo_set_stbox(gs, &box2);
-  bool result = invert ? func(&box2, &box1) : func(&box1, &box2);
-  return result ? 1 : 0;
-}
-
-/**
  * @brief Generic bounding box function for a temporal point and a
  * spatiotemporal box
  *
