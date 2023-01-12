@@ -100,6 +100,24 @@ SELECT COUNT(*) FROM tbl_geomset t1, tbl_geomset_tmp t2 WHERE t1.k = t2.k AND t1
 
 DROP TABLE tbl_geomset_tmp;
 DROP TABLE
+COPY tbl_geogset TO '/tmp/tbl_geogset' (FORMAT BINARY);
+COPY 100
+DROP TABLE IF EXISTS tbl_geogset_tmp;
+NOTICE:  table "tbl_geogset_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_geogset_tmp AS TABLE tbl_geogset WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_geogset_tmp FROM '/tmp/tbl_geogset' (FORMAT BINARY);
+ERROR:  The values of a set must be increasing: POINT(15.64017132260659 24.943997522645418) POINT(24.441898928197716 23.530694585235636)
+CONTEXT:  COPY tbl_geogset_tmp, line 2, column g
+SELECT COUNT(*) FROM tbl_geogset t1, tbl_geogset_tmp t2 WHERE t1.k = t2.k AND t1.g <> t2.g;
+ count 
+-------
+     0
+(1 row)
+
+DROP TABLE tbl_geogset_tmp;
+DROP TABLE
 SELECT COUNT(*) FROM tbl_intset WHERE intsetFromBinary(asBinary(i)) <> i;
  count 
 -------

@@ -1676,13 +1676,16 @@ gserialized_as_geojson(const GSERIALIZED *geom, int option, int precision,
   pfree(txt);
   return result;
 }
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_pgis_types
  * @brief Return true if the geometries are the same
+ * @note The `pgis_` prefix is needed since there is a PostGIS function
+ * `gserialized_same` in file `gserialized_gist_nd.c`
  */
 bool
-gserialized_same(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
+pgis_gserialized_same(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
 {
   LWGEOM *lwgeom1 = lwgeom_from_gserialized(geom1);
   LWGEOM *lwgeom2 = lwgeom_from_gserialized(geom2);
@@ -1690,7 +1693,6 @@ gserialized_same(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
   pfree(lwgeom1); pfree(lwgeom2);
   return (result == LW_TRUE);
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Functions adapted from geography_inout.c

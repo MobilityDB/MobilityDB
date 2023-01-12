@@ -76,12 +76,12 @@ COPY tbl_geomset_tmp FROM '/tmp/tbl_geomset' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_geomset t1, tbl_geomset_tmp t2 WHERE t1.k = t2.k AND t1.g <> t2.g;
 DROP TABLE tbl_geomset_tmp;
 
--- COPY tbl_geomset TO '/tmp/tbl_geogset' (FORMAT BINARY);
--- DROP TABLE IF EXISTS tbl_geogset_tmp;
--- CREATE TABLE tbl_geogset_tmp AS TABLE tbl_geogset WITH NO DATA;
--- COPY tbl_geogset_tmp FROM '/tmp/tbl_geogset' (FORMAT BINARY);
--- SELECT COUNT(*) FROM tbl_geogset t1, tbl_geogset_tmp t2 WHERE t1.k = t2.k AND t1.g <> t2.g;
--- DROP TABLE tbl_geogset_tmp;
+COPY tbl_geogset TO '/tmp/tbl_geogset' (FORMAT BINARY);
+DROP TABLE IF EXISTS tbl_geogset_tmp;
+CREATE TABLE tbl_geogset_tmp AS TABLE tbl_geogset WITH NO DATA;
+COPY tbl_geogset_tmp FROM '/tmp/tbl_geogset' (FORMAT BINARY);
+SELECT COUNT(*) FROM tbl_geogset t1, tbl_geogset_tmp t2 WHERE t1.k = t2.k AND t1.g <> t2.g;
+DROP TABLE tbl_geogset_tmp;
 
 -- Input/output from/to WKB and HexWKB
 

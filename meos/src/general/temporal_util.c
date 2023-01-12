@@ -196,8 +196,8 @@ datum_eq2(Datum l, Datum r, meosType typel, meosType typer)
   if (typel == T_DOUBLE4 && typel == typer)
     return double4_eq(DatumGetDouble4P(l), DatumGetDouble4P(r));
   if ((typel == T_GEOMETRY || typel == T_GEOGRAPHY) && typel == typer)
-    return (gserialized_cmp(DatumGetGserializedP(l),
-      DatumGetGserializedP(r)) == 0);
+    return pgis_gserialized_same(DatumGetGserializedP(l),
+      DatumGetGserializedP(r));
 #if NPOINT
   if (typel == T_NPOINT && typel == typer)
     return npoint_eq(DatumGetNpointP(l), DatumGetNpointP(r));

@@ -705,9 +705,7 @@ CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 
 		<para>For example, given the index defined above on the <varname>Department</varname> table and a query that involves a condition with the <varname>&amp;&amp;</varname> (overlaps) operator, if the right argument is a temporal float then both the value and the time dimensions are considered for filtering the tuples of the relation, while if the right argument is a float value, a float span, or a time type, then either the value or the time dimension will be used for filtering the tuples of the relation. Furthermore, a bounding box can be constructed from a value/span and/or a timestamp/period, which can be used for filtering the tuples of the relation. Examples of queries using the index on the <varname>Department</varname> table defined above are given next.
 			<programlisting language="sql" xml:space="preserve">
-SELECT * FROM Department WHERE NoEmps &amp;&amp; 5;
 SELECT * FROM Department WHERE NoEmps &amp;&amp; intspan '[1, 5)';
-SELECT * FROM Department WHERE NoEmps &amp;&amp; timestamptz '2001-04-01';
 SELECT * FROM Department WHERE NoEmps &amp;&amp; tstzspan '[2001-04-01, 2001-05-01)';
 SELECT * FROM Department WHERE NoEmps &amp;&amp;
   tbox(intspan '[1, 5)', tstzspan '[2001-04-01, 2001-05-01)');

@@ -706,9 +706,7 @@ CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 
 		<para>Por ejemplo, dado el índice definido anteriormente en la tabla <varname>Department</varname> y una consulta que implica una condición con el operador <varname>&amp;&amp;</varname> (superposición), si el argumento derecho es un flotante temporal, entonces se consideran tanto el valor como las dimensiones de tiempo para filtrar las tuplas de la relación, mientras que si el argumento derecho es un valor flotante, un rango flotante o un tipo de tiempo, entonces el valor o la dimensión de tiempo se utilizará para filtrar las tuplas de la relación. Además, se puede construir un cuadro delimitador a partir de un valor/rango y/o una marca de tiempo/período, que se puede usar para filtrar las tuplas de la relación. Ejemplos de consultas que utilizan el índice en la tabla <varname>Department</varname> definida anteriormente se dan a continuación.
 			<programlisting language="sql" xml:space="preserve">
-SELECT * FROM Department WHERE NoEmps &amp;&amp; 5;
 SELECT * FROM Department WHERE NoEmps &amp;&amp; intspan '[1, 5)';
-SELECT * FROM Department WHERE NoEmps &amp;&amp; timestamptz '2001-04-01';
 SELECT * FROM Department WHERE NoEmps &amp;&amp; tstzspan '[2001-04-01, 2001-05-01)';
 SELECT * FROM Department WHERE NoEmps &amp;&amp;
   tbox(intspan '[1, 5)', tstzspan '[2001-04-01, 2001-05-01)');

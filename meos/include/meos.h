@@ -296,7 +296,7 @@ extern GSERIALIZED *gserialized_from_hexewkb(const char *wkt);
 extern GSERIALIZED *gserialized_from_text(char *wkt, int srid);
 extern GSERIALIZED *gserialized_in(char *input, int32 geom_typmod);
 extern char *gserialized_out(const GSERIALIZED *geom);
-extern bool gserialized_same(const GSERIALIZED *geom1, const GSERIALIZED *geom2);
+extern bool pgis_gserialized_same(const GSERIALIZED *geom1, const GSERIALIZED *geom2);
 
 /*****************************************************************************
  * Functions for set and span types
