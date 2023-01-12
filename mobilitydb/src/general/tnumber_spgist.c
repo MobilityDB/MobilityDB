@@ -428,27 +428,7 @@ static bool
 tnumber_spgist_get_tbox(const ScanKeyData *scankey, TBox *result)
 {
   meosType type = oid_type(scankey->sk_subtype);
-  if (tnumber_basetype(type))
-  {
-    Datum value = scankey->sk_argument;
-    number_set_tbox(value, type, result);
-  }
-  else if (type == T_TIMESTAMPTZ)
-  {
-    TimestampTz t = DatumGetTimestampTz(scankey->sk_argument);
-    timestamp_set_tbox(t, result);
-  }
-  else if (tnumber_settype(type))
-  {
-    Set *set = DatumGetSetP(scankey->sk_argument);
-    numset_set_tbox(set, result);
-  }
-  else if (type == T_TSTZSET)
-  {
-    Set *set = DatumGetSetP(scankey->sk_argument);
-    tstzset_set_tbox(set, result);
-  }
-  else if (tnumber_spantype(type))
+  if (tnumber_spantype(type))
   {
     Span *span = DatumGetSpanP(scankey->sk_argument);
     numspan_set_tbox(span, result);
@@ -457,10 +437,6 @@ tnumber_spgist_get_tbox(const ScanKeyData *scankey, TBox *result)
   {
     Span *p = DatumGetSpanP(scankey->sk_argument);
     period_set_tbox(p, result);
-  }
-  else if (tnumber_spansettype(type) || type == T_TSTZSPANSET)
-  {
-    spanset_tbox_slice(scankey->sk_argument, result);
   }
   else if (type == T_TBOX)
   {

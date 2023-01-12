@@ -689,31 +689,10 @@ static bool
 tpoint_spgist_get_stbox(const ScanKeyData *scankey, STBox *result)
 {
   meosType type = oid_type(scankey->sk_subtype);
-  if (geo_basetype(type))
-  {
-    GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(scankey->sk_argument);
-    /* The geometry can be empty */
-    if (! geo_set_stbox(gs, result))
-      return false;
-  }
-  else if (type == T_TIMESTAMPTZ)
-  {
-    TimestampTz t = DatumGetTimestampTz(scankey->sk_argument);
-    timestamp_set_stbox(t, result);
-  }
-  else if (type == T_TSTZSET)
-  {
-    Set *set = DatumGetSetP(scankey->sk_argument);
-    tstzset_set_stbox(set, result);
-  }
-  else if (type == T_TSTZSPAN)
+  if (type == T_TSTZSPAN)
   {
     Span *p = DatumGetSpanP(scankey->sk_argument);
     period_set_stbox(p, result);
-  }
-  else if (type == T_TSTZSPANSET)
-  {
-    periodset_stbox_slice(scankey->sk_argument, result);
   }
   else if (type == T_STBOX)
   {

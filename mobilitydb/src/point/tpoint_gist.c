@@ -275,34 +275,10 @@ static bool
 tpoint_gist_get_stbox(FunctionCallInfo fcinfo, STBox *result,
   meosType type)
 {
-  if (geo_basetype(type))
-  {
-    GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-    if (gs == NULL || gserialized_is_empty(gs))
-      return false;
-    geo_set_stbox(gs, result);
-  }
-  else if (type == T_TIMESTAMPTZ)
-  {
-    TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-    timestamp_set_stbox(t, result);
-  }
-  else if (type == T_TSTZSET)
-  {
-    Set *set = PG_GETARG_SET_P(1);
-    if (set == NULL)
-      return false;
-    tstzset_set_stbox(set, result);
-  }
-  else if (type == T_TSTZSPAN)
+  if (type == T_TSTZSPAN)
   {
     Span *p = PG_GETARG_SPAN_P(1);
     period_set_stbox(p, result);
-  }
-  else if (type == T_TSTZSPANSET)
-  {
-    Datum psdatum = PG_GETARG_DATUM(1);
-    periodset_stbox_slice(psdatum, result);
   }
   else if (type == T_STBOX)
   {
