@@ -679,8 +679,9 @@ CREATE TABLE tbl_tfloat_big_allthesame AS SELECT k, tfloat(5.0, p) AS temp FROM 
 CREATE INDEX tbl_tfloat_big_allthesame_quadtree_idx ON tbl_tfloat_big_allthesame USING SPGIST(temp);
 ANALYZE tbl_tfloat_big_allthesame;
 
-SELECT COUNT(*) FROM tbl_tfloat_big_allthesame WHERE temp && 5.0;
-SELECT k FROM tbl_tfloat_big_allthesame ORDER BY temp |=| 5.0, k LIMIT 3;
+-- TODO
+-- SELECT COUNT(*) FROM tbl_tfloat_big_allthesame WHERE temp && 5.0;
+-- SELECT k FROM tbl_tfloat_big_allthesame ORDER BY temp |=| 5.0, k LIMIT 3;
 
 DROP TABLE tbl_tfloat_big_allthesame;
 

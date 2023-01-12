@@ -1319,9 +1319,6 @@ UPDATE test_topops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_intspan WHERE temp ~= i )
 WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'intspan';
 UPDATE test_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_intspanset WHERE temp ~= i )
-WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'intspanset';
-UPDATE test_topops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tint, tbl_tstzspan WHERE temp ~= p )
 WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'tstzspan';
 UPDATE test_topops

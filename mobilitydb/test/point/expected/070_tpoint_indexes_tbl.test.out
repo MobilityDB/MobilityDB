@@ -31,114 +31,6 @@ CREATE INDEX tbl_tgeompoint3D_big_rtree_idx ON tbl_tgeompoint3D_big USING GIST(t
 CREATE INDEX
 CREATE INDEX tbl_tgeogpoint3D_big_rtree_idx ON tbl_tgeogpoint3D_big USING GIST(temp);
 CREATE INDEX
-SELECT COUNT(*) > 0 FROM tbl_tgeompoint3D_big WHERE temp && geometry 'Linestring(1 1 1,10 10 10)';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT COUNT(*) > 0 FROM tbl_tgeompoint3D_big WHERE temp @> geometry 'Linestring(1 1 1,10 10 10)';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp <@ geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp ~= geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp -|- geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp << geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-    29
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp &< geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-   315
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp >> geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-  5821
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp &> geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-  9322
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp <<| geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-    38
-(1 row)
-
-SELECT COUNT(*) > 0 FROM tbl_tgeompoint3D_big WHERE temp &<| geometry 'Linestring(1 1 1,10 10 10)';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp |>> geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-  5757
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp |&> geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-  9225
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp <</ geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-    27
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp &</ geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-   302
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp />> geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-  5792
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp /&> geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-  9318
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp |&> geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-  9225
-(1 row)
-
 SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp <<# tstzspan '[2001-01-01, 2001-02-01]';
  count 
 -------
@@ -319,36 +211,6 @@ SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp #&> tgeompoint '[Point(1 1 
  10100
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp && geography 'Linestring(1 1 1,10 10 10)';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp @> geography 'Linestring(1 1 1,10 10 10)';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp <@ geography 'Linestring(1 1 1,10 10 10)';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp ~= geography 'Linestring(1 1 1,10 10 10)';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp -|- geography 'Linestring(1 1 1,10 10 10)';
- count 
--------
-     0
-(1 row)
-
 SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp <<# tstzspan '[2001-01-01, 2001-02-01]';
  count 
 -------
@@ -471,36 +333,6 @@ CREATE INDEX tbl_tgeompoint3D_big_quadtree_idx ON tbl_tgeompoint3D_big USING SPG
 CREATE INDEX
 CREATE INDEX tbl_tgeogpoint3D_big_quadtree_idx ON tbl_tgeogpoint3D_big USING SPGIST(temp);
 CREATE INDEX
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp && geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-  2199
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp @> geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-   149
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp <@ geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp ~= geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp -|- geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-     0
-(1 row)
-
 SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp && tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
  count 
 -------
@@ -529,84 +361,6 @@ SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp -|- tgeompoint '[Point(1 1 
  count 
 -------
      0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp << geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-    29
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp &< geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-   315
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp >> geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-  5821
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp &> geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-  9322
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp <<| geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-    38
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp &<| geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-   333
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp |>> geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-  5757
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp |&> geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-  9225
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp <</ geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-    27
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp &</ geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-   302
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp />> geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-  5792
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp /&> geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-  9318
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp |&> geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-  9225
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp <<# tstzspan '[2001-01-01, 2001-02-01]';
@@ -733,36 +487,6 @@ SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp #&> tgeompoint '[Point(1 1 
  count 
 -------
  10100
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp && geography 'Linestring(1 1 1,10 10 10)';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp @> geography 'Linestring(1 1 1,10 10 10)';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp <@ geography 'Linestring(1 1 1,10 10 10)';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp ~= geography 'Linestring(1 1 1,10 10 10)';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp -|- geography 'Linestring(1 1 1,10 10 10)';
- count 
--------
-     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp <<# tstzspan '[2001-01-01, 2001-02-01]';
@@ -851,36 +575,6 @@ CREATE INDEX tbl_tgeompoint3D_big_kdtree_idx ON tbl_tgeompoint3D_big USING SPGIS
 CREATE INDEX
 CREATE INDEX tbl_tgeogpoint3D_big_kdtree_idx ON tbl_tgeogpoint3D_big USING SPGIST(temp tgeogpoint_kdtree_ops);
 CREATE INDEX
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp && geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-  2199
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp @> geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-   149
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp <@ geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp ~= geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp -|- geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-     0
-(1 row)
-
 SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp && tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
  count 
 -------
@@ -909,84 +603,6 @@ SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp -|- tgeompoint '[Point(1 1 
  count 
 -------
      0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp << geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-    29
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp &< geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-   315
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp >> geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-  5584
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp &> geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-  9322
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp <<| geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-    38
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp &<| geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-   333
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp |>> geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-  5757
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp |&> geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-  9225
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp <</ geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-    27
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp &</ geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-   302
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp />> geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-  5792
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp /&> geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-  9318
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp |&> geometry 'Linestring(1 1 1,10 10 10)';
- count 
--------
-  9225
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp <<# tstzspan '[2001-01-01, 2001-02-01]';
@@ -1113,36 +729,6 @@ SELECT COUNT(*) FROM tbl_tgeompoint3D_big WHERE temp #&> tgeompoint '[Point(1 1 
  count 
 -------
  10100
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp && geography 'Linestring(1 1 1,10 10 10)';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp @> geography 'Linestring(1 1 1,10 10 10)';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp <@ geography 'Linestring(1 1 1,10 10 10)';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp ~= geography 'Linestring(1 1 1,10 10 10)';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp -|- geography 'Linestring(1 1 1,10 10 10)';
- count 
--------
-     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeogpoint3D_big WHERE temp <<# tstzspan '[2001-01-01, 2001-02-01]';
@@ -1241,14 +827,6 @@ CREATE INDEX tbl_tgeompoint_quadtree_idx ON tbl_tgeompoint USING SPGIST(temp);
 CREATE INDEX
 CREATE INDEX tbl_tgeompoint3D_quadtree_idx ON tbl_tgeompoint3D USING SPGIST(temp);
 CREATE INDEX
-SELECT temp |=| geometry 'Point empty' FROM tbl_tgeompoint ORDER BY 1 LIMIT 3;
- ?column? 
-----------
-         
-         
-         
-(3 rows)
-
 WITH test AS (
   SELECT temp |=| tgeompoint '[Point(1 1)@2001-06-01, Point(2 2)@2001-07-01]' AS distance FROM tbl_tgeompoint ORDER BY 1 LIMIT 3 )
 SELECT round(distance::numeric, 6) FROM test;
@@ -1279,19 +857,5 @@ CREATE INDEX tbl_tgeompoint3D_big_allthesame_quadtree_idx ON tbl_tgeompoint3D_bi
 CREATE INDEX
 ANALYZE tbl_tgeompoint3D_big_allthesame;
 ANALYZE
-SELECT COUNT(*) FROM tbl_tgeompoint3D_big_allthesame WHERE temp && geometry 'Point(5 5 5)';
- count 
--------
- 12380
-(1 row)
-
-SELECT temp |=| geometry 'Point(5 5 5)' FROM tbl_tgeompoint3D_big_allthesame ORDER BY 1 LIMIT 3;
- ?column? 
-----------
-        0
-        0
-        0
-(3 rows)
-
 DROP TABLE tbl_tgeompoint3D_big_allthesame;
 DROP TABLE
