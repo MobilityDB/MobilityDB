@@ -51,7 +51,7 @@
 #include "general/temporal_util.h"
 
 /*****************************************************************************
- * Functions
+ * Double2
  *****************************************************************************/
 
 #if MEOS
@@ -71,7 +71,7 @@ double2_make(double a, double b)
  * @brief Output function for double2 values
  */
 char *
-double2_out(double2 *d, int maxdd)
+double2_out(const double2 *d, int maxdd)
 {
   char *astr = float8_out(d->a, maxdd);
   char *bstr = float8_out(d->b, maxdd);
@@ -116,28 +116,26 @@ double2_eq(const double2 *d1, const double2 *d2)
   return (d1->a == d2->a && d1->b == d2->b);
 }
 
-#if MEOS
 /**
- * Return -1, 0, or 1 depending on whether the first double2
+ * @brief Return -1, 0, or 1 depending on whether the first double2
  * is less than, equal, or greater than the second one
  */
 int
-double2_cmp(double2 *d1, double2 *d2)
+double2_cmp(const double2 *d1, const double2 *d2)
 {
   int cmp = float8_cmp_internal(d1->a, d2->a);
   if (cmp == 0)
     cmp = float8_cmp_internal(d1->b, d2->b);
   return cmp;
 }
-#endif
 
 /*****************************************************************************
- * Functions
+ * Double3
  *****************************************************************************/
 
 #if MEOS
 /**
- * Create a double2 value from the double values
+ * @brief Create a double3 value from the double values
  */
 double3 *
 double3_make(double a, double b, double c)
@@ -167,7 +165,7 @@ double3_out(double3 *d, int maxdd)
 #endif /* MEOS */
 
 /**
- * Set a double3 value from the double values
+ * @brief Set a double3 value from the double values
  */
 void
 double3_set(double a, double b, double c, double3 *result)
@@ -180,7 +178,7 @@ double3_set(double a, double b, double c, double3 *result)
 }
 
 /**
- * Return the addition of the double3 values
+ * @brief Return the addition of the double3 values
  */
 double3 *
 double3_add(const double3 *d1, const double3 *d2)
@@ -193,7 +191,7 @@ double3_add(const double3 *d1, const double3 *d2)
 }
 
 /**
- * Return true if the double3 values are equal
+ * @brief Return true if the double3 values are equal
  */
 bool
 double3_eq(const double3 *d1, const double3 *d2)
@@ -201,13 +199,12 @@ double3_eq(const double3 *d1, const double3 *d2)
   return (d1->a == d2->a && d1->b == d2->b && d1->c == d2->c);
 }
 
-#if MEOS
 /**
- * Return -1, 0, or 1 depending on whether the first double2
+ * @brief Return -1, 0, or 1 depending on whether the first double3
  * is less than, equal, or greater than the second one
  */
 int
-double3_cmp(double3 *d1, double3 *d2)
+double3_cmp(const double3 *d1, const double3 *d2)
 {
   int cmp = float8_cmp_internal(d1->a, d2->a);
   if (cmp == 0)
@@ -218,10 +215,9 @@ double3_cmp(double3 *d1, double3 *d2)
   }
   return cmp;
 }
-#endif
 
 /*****************************************************************************
- * Functions
+ * Double4
  *****************************************************************************/
 
 #if MEOS
@@ -241,7 +237,7 @@ double4_make(double a, double b, double c, double d)
  * @brief Output function for double4 values
  */
 char *
-double4_out(double4 *d, int maxdd)
+double4_out(const double4 *d, int maxdd)
 {
   char *astr = float8_out(d->a, maxdd);
   char *bstr = float8_out(d->b, maxdd);
@@ -259,7 +255,7 @@ double4_out(double4 *d, int maxdd)
 #endif /* MEOS */
 
 /**
- * Set a double4 value from the double values
+ * @brief Set a double4 value from the double values
  */
 void
 double4_set(double a, double b, double c, double d, double4 *result)
@@ -273,7 +269,7 @@ double4_set(double a, double b, double c, double d, double4 *result)
 }
 
 /**
- * Return the addition of the double4 values
+ * @brief Return the addition of the double4 values
  */
 double4 *
 double4_add(const double4 *d1, const double4 *d2)
@@ -287,13 +283,34 @@ double4_add(const double4 *d1, const double4 *d2)
 }
 
 /**
- * Return true if the double4 values are equal
+ * @brief Return true if the double4 values are equal
  */
 bool
 double4_eq(const double4 *d1, const double4 *d2)
 {
   return (d1->a == d2->a && d1->b == d2->b && d1->c == d2->c &&
     d1->d == d2->d);
+}
+
+/**
+ * @brief Return -1, 0, or 1 depending on whether the first double4
+ * is less than, equal, or greater than the second one
+ */
+int
+double4_cmp(const double4 *d1, const double4 *d2)
+{
+  int cmp = float8_cmp_internal(d1->a, d2->a);
+  if (cmp == 0)
+  {
+    cmp = float8_cmp_internal(d1->b, d2->b);
+    if (cmp == 0)
+    {
+      cmp = float8_cmp_internal(d1->c, d2->c);
+      if (cmp == 0)
+        cmp = float8_cmp_internal(d1->d, d2->d);
+    }
+  }
+  return cmp;
 }
 
 /*****************************************************************************/

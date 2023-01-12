@@ -43,16 +43,17 @@
 extern void double2_set(double a, double b, double2 *result);
 extern double2 *double2_add(const double2 *d1, const double2 *d2);
 extern bool double2_eq(const double2 *d1, const double2 *d2);
-/* extern int double2_cmp(const double2 *d1, const double2 *d2); */
+extern int double2_cmp(const double2 *d1, const double2 *d2);
 
 extern void double3_set(double a, double b, double c, double3 *result);
 extern double3 *double3_add(const double3 *d1, const double3 *d2);
 extern bool double3_eq(const double3 *d1, const double3 *d2);
-/* extern int double3_cmp(const double3 *d1, const double3 *d2); */
+extern int double3_cmp(const double3 *d1, const double3 *d2);
 
 extern void double4_set(double a, double b, double c, double d, double4 *result);
 extern double4 *double4_add(const double4 *d1, const double4 *d2);
 extern bool double4_eq(const double4 *d1, const double4 *d2);
+extern int double4_cmp(const double4 *d1, const double4 *d2);
 
 /*****************************************************************************/
 

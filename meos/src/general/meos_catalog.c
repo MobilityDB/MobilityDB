@@ -234,6 +234,8 @@ ensure_basetype(meosType basetype)
 {
   if (basetype != T_BOOL && basetype != T_TEXT && basetype != T_INT4 &&
     basetype != T_INT8 && basetype != T_FLOAT8 && basetype != T_TIMESTAMPTZ &&
+    /* The doubleX are internal types used for temporal aggregation */
+    basetype != T_DOUBLE2 && basetype != T_DOUBLE3 && basetype != T_DOUBLE4 &&
     basetype != T_GEOMETRY && basetype != T_GEOGRAPHY && basetype != T_NPOINT
     )
     elog(ERROR, "unknown base type: %d", basetype);

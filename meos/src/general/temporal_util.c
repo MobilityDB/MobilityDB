@@ -138,12 +138,15 @@ datum_ge(Datum l, Datum r, meosType type)
 int
 datum_cmp2(Datum l, Datum r, meosType typel, meosType typer)
 {
-  ensure_set_basetype(typel);
+  ensure_basetype(typel);
   if (typel != typer)
-    ensure_set_basetype(typer);
+    ensure_basetype(typer);
   if (typel == T_TIMESTAMPTZ && typer == T_TIMESTAMPTZ)
     return timestamptz_cmp_internal(DatumGetTimestampTz(l),
       DatumGetTimestampTz(r));
+  if (typel == T_BOOL && typer == T_BOOL)
+    return (DatumGetBool(l) < DatumGetBool(r)) ? -1 :
+      ((DatumGetBool(l) > DatumGetBool(r)) ? 1 : 0);
   if (typel == T_INT4 && typer == T_INT4)
     return (DatumGetInt32(l) < DatumGetInt32(r)) ? -1 :
       ((DatumGetInt32(l) > DatumGetInt32(r)) ? 1 : 0);
@@ -158,6 +161,12 @@ datum_cmp2(Datum l, Datum r, meosType typel, meosType typer)
     return float8_cmp_internal(DatumGetFloat8(l), (double) DatumGetInt32(r));
   if (typel == T_TEXT && typer == T_TEXT)
     return text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID);
+  if (typel == T_DOUBLE2 && typel == typer)
+    return double2_cmp(DatumGetDouble2P(l), DatumGetDouble2P(r));
+  if (typel == T_DOUBLE3 && typel == typer)
+    return double3_cmp(DatumGetDouble3P(l), DatumGetDouble3P(r));
+  if (typel == T_DOUBLE4 && typel == typer)
+    return double4_cmp(DatumGetDouble4P(l), DatumGetDouble4P(r));
   if ((typel == T_GEOMETRY || typel == T_GEOGRAPHY) && typel == typer)
     return gserialized_cmp(DatumGetGserializedP(l), DatumGetGserializedP(r));
 #if NPOINT
@@ -168,14 +177,15 @@ datum_cmp2(Datum l, Datum r, meosType typel, meosType typer)
 }
 
 /**
- * Return true if the values are equal even if their type is not the same
+ * @brief Return true if the values are equal even if their type is not the same
+ * @note This function should be faster than the function datum_cmp2
  */
 bool
 datum_eq2(Datum l, Datum r, meosType typel, meosType typer)
 {
-  ensure_temporal_basetype(typel);
+  ensure_basetype(typel);
   if (typel != typer)
-    ensure_temporal_basetype(typer);
+    ensure_basetype(typer);
   if ((typel == T_TIMESTAMPTZ && typer == T_TIMESTAMPTZ) ||
     (typel == T_BOOL && typer == T_BOOL) ||
     (typel == T_INT4 && typer == T_INT4) ||
@@ -188,7 +198,8 @@ datum_eq2(Datum l, Datum r, meosType typel, meosType typer)
   if (typel == T_FLOAT8 && typer == T_INT4)
     return float8_eq(DatumGetFloat8(l), (double) DatumGetInt32(r));
   if (typel == T_TEXT && typer == T_TEXT)
-    return text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) == 0;
+    return text_cmp(DatumGetTextP(l), DatumGetTextP(r),
+      DEFAULT_COLLATION_OID) == 0;
   if (typel == T_DOUBLE2 && typel == typer)
     return double2_eq(DatumGetDouble2P(l), DatumGetDouble2P(r));
   if (typel == T_DOUBLE3 && typel == typer)
@@ -196,8 +207,8 @@ datum_eq2(Datum l, Datum r, meosType typel, meosType typer)
   if (typel == T_DOUBLE4 && typel == typer)
     return double4_eq(DatumGetDouble4P(l), DatumGetDouble4P(r));
   if ((typel == T_GEOMETRY || typel == T_GEOGRAPHY) && typel == typer)
-    return pgis_gserialized_same(DatumGetGserializedP(l),
-      DatumGetGserializedP(r));
+    return (gserialized_cmp(DatumGetGserializedP(l),
+      DatumGetGserializedP(r)) == 0);
 #if NPOINT
   if (typel == T_NPOINT && typel == typer)
     return npoint_eq(DatumGetNpointP(l), DatumGetNpointP(r));
@@ -220,37 +231,7 @@ datum_ne2(Datum l, Datum r, meosType typel, meosType typer)
 bool
 datum_lt2(Datum l, Datum r, meosType typel, meosType typer)
 {
-  ensure_temporal_basetype(typel);
-  if (typel != typer)
-    ensure_temporal_basetype(typer);
-  if (typel == T_TIMESTAMPTZ && typer == T_TIMESTAMPTZ)
-    return DatumGetTimestampTz(l) < DatumGetTimestampTz(r);
-  if (typel == T_BOOL && typer == T_BOOL)
-    return DatumGetBool(l) < DatumGetBool(r);
-  if (typel == T_INT4 && typer == T_INT4)
-    return DatumGetInt32(l) < DatumGetInt32(r);
-  if (typel == T_INT8 && typer == T_INT8)
-    return DatumGetInt64(l) < DatumGetInt64(r);
-  if (typel == T_INT4 && typer == T_FLOAT8)
-    return MOBDB_FP_LT((double) DatumGetInt32(l), DatumGetFloat8(r));
-  if (typel == T_FLOAT8 && typer == T_INT4)
-    return MOBDB_FP_LT(DatumGetFloat8(l), (double) DatumGetInt32(r));
-  if (typel == T_FLOAT8 && typer == T_FLOAT8)
-    return MOBDB_FP_LT(DatumGetFloat8(l), DatumGetFloat8(r));
-  if (typel == T_TEXT && typel == typer)
-    return text_cmp(DatumGetTextP(l), DatumGetTextP(r),
-      DEFAULT_COLLATION_OID) < 0;
-  if (typel == T_GEOMETRY && typel == typer)
-    return gserialized_cmp(DatumGetGserializedP(l),
-      DatumGetGserializedP(r)) < 0;
-  if (typel == T_GEOGRAPHY && typel == typer)
-    return gserialized_cmp(DatumGetGserializedP(l),
-      DatumGetGserializedP(r)) < 0;
-#if NPOINT
-  if (typel == T_NPOINT && typel == typer)
-    return npoint_lt(DatumGetNpointP(l), DatumGetNpointP(r));
-#endif
-  elog(ERROR, "unknown datum_lt2 function for base type: %d", typel);
+  return datum_cmp2(l, r, typel, typer) < 0;
 }
 
 
@@ -260,7 +241,7 @@ datum_lt2(Datum l, Datum r, meosType typel, meosType typer)
 bool
 datum_le2(Datum l, Datum r, meosType typel, meosType typer)
 {
-  return datum_eq2(l, r, typel, typer) || datum_lt2(l, r, typel, typer);
+  return datum_cmp2(l, r, typel, typer) <= 0;
 }
 
 /**
@@ -269,7 +250,7 @@ datum_le2(Datum l, Datum r, meosType typel, meosType typer)
 bool
 datum_gt2(Datum l, Datum r, meosType typel, meosType typer)
 {
-  return datum_lt2(r, l, typer, typel);
+  return datum_cmp2(l, r, typel, typer) > 0;
 }
 
 /**
@@ -278,7 +259,7 @@ datum_gt2(Datum l, Datum r, meosType typel, meosType typer)
 bool
 datum_ge2(Datum l, Datum r, meosType typel, meosType typer)
 {
-  return datum_eq2(l, r, typel, typer) || datum_gt2(l, r, typel, typer);
+  return datum_cmp2(l, r, typel, typer) >= 0;
 }
 
 /*****************************************************************************/

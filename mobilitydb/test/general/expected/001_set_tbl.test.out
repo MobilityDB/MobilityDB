@@ -180,6 +180,12 @@ SELECT COUNT(*) FROM tbl_tstzset WHERE tstzsetFromHexWKB(asHexWKB(t)) <> t;
      0
 (1 row)
 
+SELECT COUNT(*) FROM tbl_geomset WHERE geomsetFromHexWKB(asHexWKB(g)) <> g;
+ count 
+-------
+     0
+(1 row)
+
 SELECT memorySize(tstzset(array_agg(DISTINCT t ORDER BY t))) FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10;
  memorysize 
 ------------
