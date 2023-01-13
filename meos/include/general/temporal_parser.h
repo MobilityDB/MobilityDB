@@ -52,7 +52,7 @@ extern bool p_cbracket(const char **str);
 extern bool p_oparen(const char **str);
 extern bool p_cparen(const char **str);
 extern bool p_comma(const char **str);
-extern Datum basetype_parse(const char **str, meosType basetypid);
+extern Datum temporal_basetype_parse(const char **str, meosType basetypid);
 extern double double_parse(const char **str);
 extern Datum elem_parse(const char **str, meosType basetype);
 extern Set *set_parse(const char **str, meosType basetype);

@@ -249,6 +249,7 @@ tpoint_index_recheck(StrategyNumber strategy)
    * inclusive or exclusive bounds */
   switch (strategy)
   {
+    case RTAdjacentStrategyNumber:
     case RTLeftStrategyNumber:
     case RTOverLeftStrategyNumber:
     case RTRightStrategyNumber:

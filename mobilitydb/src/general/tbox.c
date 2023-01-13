@@ -315,7 +315,7 @@ spanset_tbox_slice(Datum ssdatum, TBox *box)
       time_max_header_size());
   else
     ss = (SpanSet *) ssdatum;
-  if (numspan_basetype(ss->span.basetype))
+  if (numspan_type(ss->span.spantype))
     numspan_set_tbox(&ss->span, box);
   else
     period_set_tbox(&ss->span, box);

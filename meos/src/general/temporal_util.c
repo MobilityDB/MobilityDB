@@ -752,11 +752,11 @@ int
 varstr_cmp(const char *arg1, int len1, const char *arg2, int len2,
   Oid collid __attribute__((unused)))
 {
-	int result = memcmp(arg1, arg2, Min(len1, len2));
+  int result = memcmp(arg1, arg2, Min(len1, len2));
   if ((result == 0) && (len1 != len2))
     result = (len1 < len2) ? -1 : 1;
   return result;
-	}
+}
 #endif /* MEOS */
 
 /**
@@ -976,7 +976,7 @@ basetype_in(const char *str, meosType basetype, bool end)
 basetype_in(const char *str, meosType basetype, bool end __attribute__((unused)))
 #endif
 {
-  ensure_temporal_basetype(basetype);
+  ensure_basetype(basetype);
   switch (basetype)
   {
     case T_TIMESTAMPTZ:
@@ -1011,7 +1011,7 @@ basetype_in(const char *str, meosType basetype, bool end __attribute__((unused))
 char *
 basetype_out(Datum value, meosType basetype, int maxdd)
 {
-  ensure_temporal_basetype(basetype);
+  ensure_basetype(basetype);
   switch (basetype)
   {
     case T_TIMESTAMPTZ:

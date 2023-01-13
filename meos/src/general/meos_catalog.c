@@ -47,7 +47,7 @@
  *****************************************************************************/
 
 /**
- * Global array that keeps type information for the temporal types
+ * @brief Global array that keeps type information for the temporal types
  */
 temptype_cache_struct _temptype_cache[] =
 {
@@ -67,7 +67,7 @@ temptype_cache_struct _temptype_cache[] =
 };
 
 /**
- * Global array that keeps type information for the set types defined
+ * @brief Global array that keeps type information for the set types defined
  */
 settype_cache_struct _settype_cache[] =
 {
@@ -79,11 +79,13 @@ settype_cache_struct _settype_cache[] =
   {T_TEXTSET,       T_TEXT},
   {T_GEOMSET,       T_GEOMETRY},
   {T_GEOGSET,       T_GEOGRAPHY},
+#if NPOINT
   {T_NPOINTSET,     T_NPOINT},
+#endif
 };
 
 /**
- * Global array that keeps type information for the span types defined
+ * @brief Global array that keeps type information for the span types defined
  */
 spantype_cache_struct _spantype_cache[] =
 {
@@ -95,7 +97,7 @@ spantype_cache_struct _spantype_cache[] =
 };
 
 /**
- * Global array that keeps type information for the span set types defined
+ * @brief Global array that keeps type information for the span set types defined
  */
 spansettype_cache_struct _spansettype_cache[] =
 {
@@ -111,7 +113,7 @@ spansettype_cache_struct _spansettype_cache[] =
  *****************************************************************************/
 
 /**
- * Return the base type from the temporal type
+ * @brief Return the base type from the temporal type
  */
 meosType
 temptype_basetype(meosType temptype)
@@ -127,7 +129,7 @@ temptype_basetype(meosType temptype)
 }
 
 /**
- * Return the base type from the span type
+ * @brief Return the base type from the span type
  */
 meosType
 spantype_basetype(meosType spantype)
@@ -143,7 +145,7 @@ spantype_basetype(meosType spantype)
 }
 
 /**
- * Return the span type from the span set type
+ * @brief Return the span type from the span set type
  */
 meosType
 spansettype_spantype(meosType spansettype)
@@ -159,7 +161,7 @@ spansettype_spantype(meosType spansettype)
 }
 
 /**
- * Return the base type from the span type
+ * @brief Return the base type from the span type
  */
 meosType
 basetype_spantype(meosType basetype)
@@ -175,7 +177,7 @@ basetype_spantype(meosType basetype)
 }
 
 /**
- * Return the span type from the span set type
+ * @brief Return the span type from the span set type
  */
 meosType
 spantype_spansettype(meosType spantype)
@@ -191,7 +193,7 @@ spantype_spansettype(meosType spantype)
 }
 
 /**
- * Return the base type from a set type
+ * @brief Return the base type from a set type
  */
 meosType
 settype_basetype(meosType settype)
@@ -207,7 +209,7 @@ settype_basetype(meosType settype)
 }
 
 /**
- * Return the base type from the set type
+ * @brief Return the base type from the set type
  */
 meosType
 basetype_settype(meosType basetype)
@@ -227,73 +229,111 @@ basetype_settype(meosType basetype)
  *****************************************************************************/
 
 /**
- * Ensure that a type is a base type
+ * @brief Ensure that a type is a base type of one of the template types, that is,
+ * Set, Span, SpanSet, and Temporal
  */
 void
-ensure_basetype(meosType basetype)
+ensure_basetype(meosType type)
 {
-  if (basetype != T_BOOL && basetype != T_TEXT && basetype != T_INT4 &&
-    basetype != T_INT8 && basetype != T_FLOAT8 && basetype != T_TIMESTAMPTZ &&
+  if (type != T_BOOL && type != T_TEXT && type != T_INT4 &&
+    type != T_INT8 && type != T_FLOAT8 && type != T_TIMESTAMPTZ &&
     /* The doubleX are internal types used for temporal aggregation */
-    basetype != T_DOUBLE2 && basetype != T_DOUBLE3 && basetype != T_DOUBLE4 &&
-    basetype != T_GEOMETRY && basetype != T_GEOGRAPHY && basetype != T_NPOINT
+    type != T_DOUBLE2 && type != T_DOUBLE3 && type != T_DOUBLE4 &&
+    type != T_GEOMETRY && type != T_GEOGRAPHY && type != T_NPOINT
     )
-    elog(ERROR, "unknown base type: %d", basetype);
+    elog(ERROR, "unknown base type: %d", type);
   return;
 }
 
 /**
- * Return true if the type is a set type
+ * @brief Return true if the values of the type are passed by value.
  */
 bool
-alpha_basetype(meosType basetype)
+basetype_byvalue(meosType type)
 {
-  if (basetype == T_BOOL || basetype == T_TEXT)
+  ensure_basetype(type);
+  if (type == T_BOOL || type == T_INT4 || type == T_INT8 || type == T_FLOAT8 ||
+      type == T_TIMESTAMPTZ)
     return true;
   return false;
 }
 
 /**
- * Return true if the type is a set type
+ * @brief Return the length of a base type
+ */
+int16
+basetype_length(meosType type)
+{
+  ensure_basetype(type);
+  if (type == T_DOUBLE2)
+    return sizeof(double2);
+  if (type == T_DOUBLE3)
+    return sizeof(double3);
+  if (type == T_DOUBLE4)
+    return sizeof(double4);
+  if (type == T_TEXT)
+    return -1;
+  if (type == T_GEOMETRY || type == T_GEOGRAPHY)
+    return -1;
+#if NPOINT
+  if (type == T_NPOINT)
+    return sizeof(Npoint);
+#endif
+  elog(ERROR, "unknown basetype_length function for base type: %d", type);
+}
+
+/**
+ * @brief Return true if the type is an alpha base type
  */
 bool
-number_basetype(meosType basetype)
+alpha_basetype(meosType type)
 {
-  if (basetype == T_INT4 || basetype == T_INT8 || basetype == T_FLOAT8)
+  if (type == T_BOOL || type == T_TEXT)
     return true;
   return false;
 }
 
 /**
- * Return true if the type is a set type
+ * @brief Return true if the type is a number base type
  */
 bool
-alphanum_basetype(meosType basetype)
+number_basetype(meosType type)
 {
-  if (basetype == T_BOOL || basetype == T_TEXT || basetype == T_INT4 ||
-      basetype == T_INT8 || basetype == T_FLOAT8 || basetype == T_TIMESTAMPTZ)
+  if (type == T_INT4 || type == T_INT8 || type == T_FLOAT8)
     return true;
   return false;
 }
 
 /**
- * Return true if the type is a geo base type
+ * @brief Return true if the type is an alphanumeric base type
  */
 bool
-geo_basetype(meosType basetype)
+alphanum_basetype(meosType type)
 {
-  if (basetype == T_GEOMETRY || basetype == T_GEOGRAPHY)
+  if (type == T_BOOL || type == T_TEXT || type == T_INT4 ||
+      type == T_INT8 || type == T_FLOAT8 || type == T_TIMESTAMPTZ)
     return true;
   return false;
 }
 
 /**
- * Return true if the type is a spatial base type
+ * @brief Return true if the type is a geo base type
  */
 bool
-spatial_basetype(meosType basetype)
+geo_basetype(meosType type)
 {
-  if (basetype == T_GEOMETRY || basetype == T_GEOGRAPHY)
+  if (type == T_GEOMETRY || type == T_GEOGRAPHY)
+    return true;
+  return false;
+}
+
+/**
+ * @brief Return true if the type is a spatial base type
+ */
+bool
+spatial_basetype(meosType type)
+{
+  if (type == T_GEOMETRY || type == T_GEOGRAPHY)
     return true;
   return false;
 }
@@ -301,144 +341,97 @@ spatial_basetype(meosType basetype)
 /*****************************************************************************/
 
 /**
- * Return true if the type is a time type
+ * @brief Return true if the type is a time type
  */
 bool
-time_type(meosType timetype)
+time_type(meosType type)
 {
-  if (timetype == T_TIMESTAMPTZ || timetype == T_TSTZSET ||
-    timetype == T_TSTZSPAN || timetype == T_TSTZSPANSET)
+  if (type == T_TIMESTAMPTZ || type == T_TSTZSET ||
+    type == T_TSTZSPAN || type == T_TSTZSPANSET)
     return true;
   return false;
 }
 
 /**
- * Ensure that the type corresponds to a time type
+ * @brief Ensure that the type corresponds to a time type
  */
 void
-ensure_time_type(meosType timetype)
+ensure_time_type(meosType type)
 {
-  if (! time_type(timetype))
-    elog(ERROR, "unknown time type: %d", timetype);
+  if (! time_type(type))
+    elog(ERROR, "unknown time type: %d", type);
   return;
 }
 
 /*****************************************************************************/
 
 /**
- * Return true if the type is a base type of a set type
+ * @brief Return true if the type is a base type of a set type
  */
 bool
-set_basetype(meosType basetype)
+set_basetype(meosType type)
 {
-  if (basetype == T_TIMESTAMPTZ || basetype == T_INT4 || basetype == T_INT8 ||
-      basetype == T_FLOAT8 || basetype == T_TEXT || basetype == T_GEOMETRY ||
-      basetype == T_GEOGRAPHY || basetype == T_NPOINT)
+  if (type == T_TIMESTAMPTZ || type == T_INT4 || type == T_INT8 ||
+      type == T_FLOAT8 || type == T_TEXT || type == T_GEOMETRY ||
+      type == T_GEOGRAPHY || type == T_NPOINT)
     return true;
   return false;
 }
 
 /**
- * Ensure that the type is a set base type
+ * @brief Ensure that the type is a set base type
  */
 void
-ensure_set_basetype(meosType basetype)
+ensure_set_basetype(meosType type)
 {
-  if (! set_basetype(basetype))
-    elog(ERROR, "unknown set base type: %d", basetype);
+  if (! set_basetype(type))
+    elog(ERROR, "unknown set base type: %d", type);
   return;
 }
 
 /**
- * Return true if the type is a set type
+ * @brief Return true if the type is a set type
  */
 bool
-set_type(meosType settype)
+set_type(meosType type)
 {
-  if (settype == T_TSTZSET || settype == T_INTSET || settype == T_BIGINTSET ||
-      settype == T_FLOATSET || settype == T_TEXTSET || settype == T_GEOMSET ||
-      settype == T_GEOGSET || settype == T_NPOINTSET)
+  if (type == T_TSTZSET || type == T_INTSET || type == T_BIGINTSET ||
+      type == T_FLOATSET || type == T_TEXTSET || type == T_GEOMSET ||
+      type == T_GEOGSET || type == T_NPOINTSET)
     return true;
   return false;
 }
 
 /**
- * Ensure that the type is a set type
- */
-void
-ensure_set_type(meosType settype)
-{
-  if (! set_type(settype))
-    elog(ERROR, "unknown set type: %d", settype);
-  return;
-}
-
-/**
- * Return true if the type is a set type
+ * @brief Return true if the type is a set type
  */
 bool
-alphanumset_type(meosType settype)
+numset_type(meosType type)
 {
-  if (settype == T_TSTZSET || settype == T_INTSET || settype == T_BIGINTSET ||
-      settype == T_FLOATSET || settype == T_TEXTSET)
+  if (type == T_INTSET || type == T_BIGINTSET || type == T_FLOATSET)
     return true;
   return false;
 }
 
 /**
- * Return true if the type is a set type
+ * @brief Return true if the type is a set type
  */
 bool
-numset_type(meosType settype)
+alphanumset_type(meosType type)
 {
-  if (settype == T_INTSET || settype == T_BIGINTSET || settype == T_FLOATSET)
-    return true;
-  return false;
-}
-
-#if 0 /* not used */
-/**
- * Ensure that the type is a set type
- */
-void
-ensure_numset_type(meosType settype)
-{
-  if (! numset_type(settype))
-    elog(ERROR, "unknown numeric set type: %d", settype);
-  return;
-}
-
-/**
- * Return true if the type is a base type of a numeric set type
- */
-bool
-numset_basetype(meosType basetype)
-{
-  if (basetype == T_INT4 || basetype == T_INT8 || basetype == T_FLOAT8 ||
-      basetype == T_TEXT)
+  if (type == T_TSTZSET || type == T_INTSET || type == T_BIGINTSET ||
+      type == T_FLOATSET || type == T_TEXTSET)
     return true;
   return false;
 }
 
 /**
- * Ensure that the type is a base type of a numeric set type
- */
-void
-ensure_numset_basetype(meosType basetype)
-{
-  if (! numspan_basetype(basetype))
-    elog(ERROR, "unknown numeric set base type: %d", basetype);
-  return;
-}
-#endif /* not used */
-
-/**
- * Return true if the type is a geo set type
+ * @brief Return true if the type is a geo set type
  */
 bool
-geoset_type(meosType settype)
+geoset_type(meosType type)
 {
-  if (settype == T_GEOMSET || settype == T_GEOGSET || settype == T_NPOINTSET)
+  if (type == T_GEOMSET || type == T_GEOGSET || type == T_NPOINTSET)
     return true;
   return false;
 }
@@ -446,211 +439,124 @@ geoset_type(meosType settype)
 /*****************************************************************************/
 
 /**
- * Return true if the type is a span type
+ * @brief Return true if the type is a set base type
  */
 bool
-span_type(meosType spantype)
+span_basetype(meosType type)
 {
-  if (spantype == T_TSTZSPAN || spantype == T_INTSPAN ||
-      spantype == T_BIGINTSPAN || spantype == T_FLOATSPAN)
+  if (type == T_TIMESTAMPTZ || type == T_INT4 || type == T_INT8 ||
+      type == T_FLOAT8)
     return true;
   return false;
 }
 
 /**
- * Ensure that the type is a span type
+ * @brief Ensure that the type is a span base type
  */
 void
-ensure_span_type(meosType spantype)
+ensure_span_basetype(meosType type)
 {
-  if (! span_type(spantype))
-    elog(ERROR, "unknown span type: %d", spantype);
+  if (! span_basetype(type))
+    elog(ERROR, "unknown span base type: %d", type);
   return;
 }
 
 /**
- * Return true if the type is a numeric span type
+ * @brief Return true if the type is a span type
  */
 bool
-numspan_type(meosType spantype)
+span_type(meosType type)
 {
-  if (spantype == T_INTSPAN || spantype == T_BIGINTSPAN ||
-      spantype == T_FLOATSPAN)
-    return true;
-  return false;
-}
-
-#if 0 /* not used */
-/**
- * Ensure that the type is a span type
- */
-void
-ensure_numspan_type(meosType spantype)
-{
-  if (! numspan_type(spantype))
-    elog(ERROR, "unknown numeric span type: %d", spantype);
-  return;
-}
-#endif /* not used */
-
-/**
- * Return true if the type is a set base type
- */
-bool
-span_basetype(meosType basetype)
-{
-  if (basetype == T_TIMESTAMPTZ || basetype == T_INT4 || basetype == T_INT8 ||
-      basetype == T_FLOAT8)
+  if (type == T_TSTZSPAN || type == T_INTSPAN ||
+      type == T_BIGINTSPAN || type == T_FLOATSPAN)
     return true;
   return false;
 }
 
 /**
- * Ensure that the type is a span base type
+ * @brief Ensure that the type is a span type
  */
 void
-ensure_span_basetype(meosType basetype)
+ensure_span_type(meosType type)
 {
-  if (! span_basetype(basetype))
-    elog(ERROR, "unknown span base type: %d", basetype);
+  if (! span_type(type))
+    elog(ERROR, "unknown span type: %d", type);
   return;
 }
 
 /**
- * Return true if the type is a base type of a numeric span type
+ * @brief Return true if the type is a numeric span type
  */
 bool
-numspan_basetype(meosType basetype)
+numspan_type(meosType type)
 {
-  if (basetype == T_INT4 || basetype == T_INT8 || basetype == T_FLOAT8)
+  if (type == T_INTSPAN || type == T_BIGINTSPAN || type == T_FLOATSPAN)
     return true;
   return false;
 }
-
-#if 0 /* not used */
-/**
- * Ensure that the type is a base type of a numeric span type
- */
-void
-ensure_numspan_basetype(meosType basetype)
-{
-  if (! numspan_basetype(basetype))
-    elog(ERROR, "unknown numeric span base type: %d", basetype);
-  return;
-}
-#endif /* not used */
 
 /*****************************************************************************/
 
 /**
- * Return true if the type is a span set type
+ * @brief Return true if the type is a span set base type
  */
 bool
-spanset_type(meosType spansettype)
+spanset_basetype(meosType type)
 {
-  if (spansettype == T_TSTZSPANSET || spansettype == T_INTSPANSET ||
-      spansettype == T_BIGINTSPANSET || spansettype == T_FLOATSPANSET)
-    return true;
-  return false;
-}
-
-#if 0 /* not used */
-/**
- * Ensure that the type is a span type
- */
-void
-ensure_spanset_type(meosType spansettype)
-{
-  if (! spanset_type(spansettype))
-    elog(ERROR, "unknown span set type: %d", spansettype);
-  return;
-}
-#endif /* not used */
-
-/**
- * Return true if the type is a numeric span type
- */
-bool
-numspanset_type(meosType spansettype)
-{
-  if (spansettype == T_INTSPANSET || spansettype == T_BIGINTSPANSET ||
-      spansettype == T_FLOATSPANSET)
-    return true;
-  return false;
-}
-
-#if 0 /* not used */
-/**
- * Ensure that the type is a span type
- */
-void
-ensure_numspanset_type(meosType spansettype)
-{
-  if (! numspanset_type(spansettype))
-    elog(ERROR, "unknown numeric span set type: %d", spansettype);
-  return;
-}
-
-/**
- * Return true if the type is a set base type
- */
-bool
-spanset_basetype(meosType basetype)
-{
-  if (basetype == T_TIMESTAMPTZ || basetype == T_INT4 || basetype == T_INT8 ||
-      basetype == T_FLOAT8)
+  if (type == T_TIMESTAMPTZ || type == T_INT4 || type == T_INT8 ||
+      type == T_FLOAT8)
     return true;
   return false;
 }
 
 /**
- * Ensure that the type is a span set base type
+ * @brief Ensure that the type is a span set base type
  */
 void
-ensure_spanset_basetype(meosType basetype)
+ensure_spanset_basetype(meosType type)
 {
-  if (! spanset_basetype(basetype))
-    elog(ERROR, "unknown span set base type: %d", basetype);
+  if (! spanset_basetype(type))
+    elog(ERROR, "unknown span set base type: %d", type);
   return;
 }
 
 /**
- * Return true if the type is a base type of a numeric span set type
+ * @brief Return true if the type is a span set type
  */
 bool
-numspanset_basetype(meosType basetype)
+spanset_type(meosType type)
 {
-  if (basetype == T_INT4 || basetype == T_INT8 || basetype == T_FLOAT8)
+  if (type == T_TSTZSPANSET || type == T_INTSPANSET ||
+      type == T_BIGINTSPANSET || type == T_FLOATSPANSET)
     return true;
   return false;
 }
 
 /**
- * Ensure that the type is a base type of a numeric span set type
+ * @brief Return true if the type is a numeric span type
  */
-void
-ensure_numspanset_basetype(meosType basetype)
+bool
+numspanset_type(meosType type)
 {
-  if (! numspanset_basetype(basetype))
-    elog(ERROR, "unknown numeric span set base type: %d", basetype);
-  return;
+  if (type == T_INTSPANSET || type == T_BIGINTSPANSET ||
+      type == T_FLOATSPANSET)
+    return true;
+  return false;
 }
-#endif /* not used */
 
 /*****************************************************************************/
 
 /**
- * @brief Return true if the temporal type is an EXTERNAL temporal type
- *
+ * @brief Return true if the type is an EXTERNAL temporal type
  * @note Function used in particular in the indexes
  */
 bool
-temporal_type(meosType temptype)
+temporal_type(meosType type)
 {
-  if (temptype == T_TBOOL || temptype == T_TINT || temptype == T_TFLOAT ||
-    temptype == T_TTEXT || temptype == T_TGEOMPOINT || temptype == T_TGEOGPOINT
+  if (type == T_TBOOL || type == T_TINT || type == T_TFLOAT ||
+      type == T_TTEXT || type == T_TGEOMPOINT || type == T_TGEOGPOINT
 #if NPOINT
-    || temptype == T_TNPOINT
+    || type == T_TNPOINT
 #endif
     )
     return true;
@@ -658,48 +564,44 @@ temporal_type(meosType temptype)
 }
 
 /**
- * Ensure that a type is a temporal type
+ * @brief Ensure that a type is a temporal type
  */
 void
-ensure_temporal_type(meosType temptype)
+ensure_temporal_type(meosType type)
 {
-  if (! temporal_type(temptype))
-    elog(ERROR, "unknown temporal type: %d", temptype);
+  if (! temporal_type(type))
+    elog(ERROR, "unknown temporal type: %d", type);
   return;
 }
 
 /**
- * Ensure that a type is a temporal base type
- * @note The TimestampTz type is added to cope with base types for spans.
- * Also, the int8 type is added to cope with the rid in network points.
+ * @brief Ensure that a type is a temporal base type
  */
 void
-ensure_temporal_basetype(meosType basetype)
+ensure_temporal_basetype(meosType type)
 {
-  if (basetype != T_TIMESTAMPTZ &&
-    basetype != T_BOOL && basetype != T_INT4 && basetype != T_INT8 &&
-    basetype != T_FLOAT8 && basetype != T_TEXT &&
-    basetype != T_DOUBLE2 && basetype != T_DOUBLE3 && basetype != T_DOUBLE4 &&
-    basetype != T_GEOMETRY && basetype != T_GEOGRAPHY
+  if (type != T_BOOL && type != T_INT4 && type != T_FLOAT8 && type != T_TEXT &&
+    /* The doubleX are internal types used for temporal aggregation */
+    type != T_DOUBLE2 && type != T_DOUBLE3 && type != T_DOUBLE4 &&
+    type != T_GEOMETRY && type != T_GEOGRAPHY
 #if NPOINT
-    && basetype != T_NPOINT
+    && type != T_NPOINT
 #endif
     )
-    elog(ERROR, "unknown temporal base type: %d", basetype);
+    elog(ERROR, "unknown temporal base type: %d", type);
   return;
 }
 
 /**
- * Return true if the temporal type is continuous
+ * @brief Return true if the type is a temporal continuous type
  */
 bool
-temptype_continuous(meosType temptype)
+temptype_continuous(meosType type)
 {
-  if (temptype == T_TFLOAT || temptype == T_TDOUBLE2 ||
-    temptype == T_TDOUBLE3 || temptype == T_TDOUBLE4 ||
-    temptype == T_TGEOMPOINT || temptype == T_TGEOGPOINT
+  if (type == T_TFLOAT || type == T_TDOUBLE2 || type == T_TDOUBLE3 ||
+      type == T_TDOUBLE4 || type == T_TGEOMPOINT || type == T_TGEOGPOINT
 #if NPOINT
-    || temptype == T_TNPOINT
+    || type == T_TNPOINT
 #endif
     )
     return true;
@@ -707,185 +609,139 @@ temptype_continuous(meosType temptype)
 }
 
 /**
- * Ensure that the temporal type is continuous
+ * @brief Ensure that the temporal type is continuous
  */
 void
-ensure_temptype_continuous(meosType temptype)
+ensure_temptype_continuous(meosType type)
 {
-  if (! temptype_continuous(temptype))
-    elog(ERROR, "unknown continuous temporal type: %d", temptype);
+  if (! temptype_continuous(type))
+    elog(ERROR, "unknown continuous temporal type: %d", type);
   return;
 }
 
 /**
- * Return true if the values of the type are passed by value.
- *
- * This function is called only for the base types of the temporal types
- * To avoid a call of the slow function get_typbyval (which makes a lookup
- * call), the known base types are explicitly enumerated.
- */
-bool
-basetype_byvalue(meosType basetype)
-{
-  ensure_temporal_basetype(basetype);
-  if (basetype == T_BOOL || basetype == T_INT4 || basetype == T_INT8 ||
-      basetype == T_FLOAT8 || basetype == T_TIMESTAMPTZ)
-    return true;
-  return false;
-}
-
-/**
- * Return the length of type
- *
- * This function is called only for the base types of the temporal types
- * passed by reference. To avoid a call of the slow function get_typlen
- * (which makes a lookup call), the known base types are explicitly enumerated.
- */
-int16
-basetype_length(meosType basetype)
-{
-  ensure_temporal_basetype(basetype);
-  if (basetype == T_DOUBLE2)
-    return sizeof(double2);
-  if (basetype == T_DOUBLE3)
-    return sizeof(double3);
-  if (basetype == T_DOUBLE4)
-    return sizeof(double4);
-  if (basetype == T_TEXT)
-    return -1;
-  if (basetype == T_GEOMETRY || basetype == T_GEOGRAPHY)
-    return -1;
-#if NPOINT
-  if (basetype == T_NPOINT)
-    return sizeof(Npoint);
-#endif
-  elog(ERROR, "unknown basetype_length function for base type: %d", basetype);
-}
-
-/**
- * Return true if the type is a temporal alpha type (i.e., those whose
+ * @brief Return true if the type is a temporal alpha type (i.e., those whose
  * bounding box is a period)
  */
 bool
-talpha_type(meosType temptype)
+talpha_type(meosType type)
 {
-  if (temptype == T_TBOOL || temptype == T_TTEXT)
+  if (type == T_TBOOL || type == T_TTEXT)
     return true;
   return false;
 }
 
 /**
- * Return true if the type is a temporal number type
+ * @brief Return true if the type is a temporal number type
  */
 bool
-tnumber_type(meosType temptype)
+tnumber_type(meosType type)
 {
-  if (temptype == T_TINT || temptype == T_TFLOAT)
+  if (type == T_TINT || type == T_TFLOAT)
     return true;
   return false;
 }
 
 /**
- * Return true if the type is a number base type
+ * @brief Return true if the type is a number base type
  */
 void
-ensure_tnumber_type(meosType temptype)
+ensure_tnumber_type(meosType type)
 {
-  if (! tnumber_type(temptype))
-    elog(ERROR, "unknown temporal number type: %d", temptype);
+  if (! tnumber_type(type))
+    elog(ERROR, "unknown temporal number type: %d", type);
   return;
 }
 
 /**
- * Test whether the type is a number base type
+ * @brief Return true if the type is a temporal number base type
  */
 bool
-tnumber_basetype(meosType basetype)
+tnumber_basetype(meosType type)
 {
-  if (basetype == T_INT4 || basetype == T_FLOAT8)
+  if (type == T_INT4 || type == T_FLOAT8)
     return true;
   return false;
 }
 
 /**
- * Return true if the type is a number base type
+ * @brief Return true if the type is a number base type
  */
 void
-ensure_tnumber_basetype(meosType basetype)
+ensure_tnumber_basetype(meosType type)
 {
-  if (! tnumber_basetype(basetype))
-    elog(ERROR, "unknown number base type: %d", basetype);
+  if (! tnumber_basetype(type))
+    elog(ERROR, "unknown number base type: %d", type);
   return;
 }
 
+#if 0 /* not used */
 /**
  * @brief Return true if the type is a set number type
  * @note Function used in particular in the indexes
  */
 bool
-tnumber_settype(meosType settype)
+tnumber_settype(meosType type)
 {
-  if (settype == T_INTSET || settype == T_FLOATSET)
+  if (type == T_INTSET || type == T_FLOATSET)
     return true;
   return false;
 }
 
 /**
- * Ensure that the type is a span type
+ * @brief Ensure that the type is a span type
  */
 void
-ensure_tnumber_settype(meosType settype)
+ensure_tnumber_settype(meosType type)
 {
-  if (! tnumber_settype(settype))
-    elog(ERROR, "unknown number set type: %d", settype);
+  if (! tnumber_settype(type))
+    elog(ERROR, "unknown number set type: %d", type);
+  return;
+}
+#endif /* not used */
+
+/**
+ * @brief Return true if the type is a span number type
+ * @note Function used in particular in the indexes
+ */
+bool
+tnumber_spantype(meosType type)
+{
+  if (type == T_INTSPAN || type == T_FLOATSPAN)
+    return true;
+  return false;
+}
+
+/**
+ * @brief Ensure that the type is a span type
+ */
+void
+ensure_tnumber_spantype(meosType type)
+{
+  if (! tnumber_spantype(type))
+    elog(ERROR, "unknown number span type: %d", type);
   return;
 }
 
 /**
- * Return true if the type is a span number type
- *
- * @note Function used in particular in the indexes
+ * @brief Return true if the type is a span set number type
  */
 bool
-tnumber_spantype(meosType spantype)
+tnumber_spansettype(meosType type)
 {
-  if (spantype == T_INTSPAN || spantype == T_FLOATSPAN)
+  if (type == T_INTSPANSET || type == T_FLOATSPANSET)
     return true;
   return false;
 }
 
 /**
- * Ensure that the type is a span type
+ * @brief Ensure that the type is a span type
  */
 void
-ensure_tnumber_spantype(meosType spantype)
+ensure_tnumber_spansettype(meosType type)
 {
-  if (! tnumber_spantype(spantype))
-    elog(ERROR, "unknown number span type: %d", spantype);
-  return;
-}
-
-/**
- * Return true if the type is a span number type
- *
- * @note Function used in particular in the indexes
- */
-bool
-tnumber_spansettype(meosType spansettype)
-{
-  if (spansettype == T_INTSPANSET || spansettype == T_FLOATSPANSET)
-    return true;
-  return false;
-}
-
-/**
- * Ensure that the type is a span type
- */
-void
-ensure_tnumber_spansettype(meosType spansettype)
-{
-  if (! tnumber_spansettype(spansettype))
-    elog(ERROR, "unknown number span set type: %d", spansettype);
+  if (! tnumber_spansettype(type))
+    elog(ERROR, "unknown number span set type: %d", type);
   return;
 }
 
@@ -896,11 +752,11 @@ ensure_tnumber_spansettype(meosType spansettype)
  * used for the indexes and selectivity functions
  */
 bool
-tspatial_type(meosType temptype)
+tspatial_type(meosType type)
 {
-  if (temptype == T_TGEOMPOINT || temptype == T_TGEOGPOINT
+  if (type == T_TGEOMPOINT || type == T_TGEOGPOINT
 #if NPOINT
-      || temptype == T_TNPOINT
+      || type == T_TNPOINT
 #endif
       )
     return true;
@@ -908,16 +764,16 @@ tspatial_type(meosType temptype)
 }
 
 /**
- * @brief Return true if the type is a spatiotemporal type
+ * @brief Return true if the type is a base type of a spatiotemporal type
  * @note This function is used for features common to all spatiotemporal types,
  * in particular, all of them use the same bounding box STBox
  */
 bool
-tspatial_basetype(meosType basetype)
+tspatial_basetype(meosType type)
 {
-  if (basetype == T_GEOMETRY || basetype == T_GEOGRAPHY
+  if (type == T_GEOMETRY || type == T_GEOGRAPHY
 #if NPOINT
-    || basetype == T_NPOINT
+    || type == T_NPOINT
 #endif
     )
     return true;
@@ -925,24 +781,24 @@ tspatial_basetype(meosType basetype)
 }
 
 /**
- * Return true if the type is a temporal point type
+ * @brief Return true if the type is a temporal point type
  */
 bool
-tgeo_type(meosType temptype)
+tgeo_type(meosType type)
 {
-  if (temptype == T_TGEOMPOINT || temptype == T_TGEOGPOINT)
+  if (type == T_TGEOMPOINT || type == T_TGEOGPOINT)
     return true;
   return false;
 }
 
 /**
- * Ensure that the type is a point base type
+ * @brief Ensure that the type is a point base type
  */
 void
-ensure_tgeo_type(meosType temptype)
+ensure_tgeo_type(meosType type)
 {
-  if (! tgeo_type(temptype))
-    elog(ERROR, "unknown geospatial temporal type: %d", temptype);
+  if (! tgeo_type(type))
+    elog(ERROR, "unknown geospatial temporal type: %d", type);
   return;
 }
 

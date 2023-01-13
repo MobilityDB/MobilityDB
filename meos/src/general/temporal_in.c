@@ -1112,26 +1112,6 @@ span_basevalue_from_wkb_size(wkb_parse_state *s)
 }
 
 /**
- * Return a value from its WKB representation.
- */
-static Datum
-set_basevalue_from_wkb_state(wkb_parse_state *s)
-{
-  ensure_set_type(s->type);
-  return basevalue_from_wkb_state(s);
-}
-
-/**
- * Return a value from its WKB representation.
- */
-static Datum
-span_basevalue_from_wkb_state(wkb_parse_state *s)
-{
-  ensure_span_type(s->spantype);
-  return basevalue_from_wkb_state(s);
-}
-
-/**
  * Set the bound flags from their WKB representation
  */
 static void
@@ -1165,8 +1145,8 @@ span_from_wkb_state1(wkb_parse_state *s)
   wkb_parse_state_check(s, size);
 
   /* Read the values and create the span */
-  Datum lower = span_basevalue_from_wkb_state(s);
-  Datum upper = span_basevalue_from_wkb_state(s);
+  Datum lower = basevalue_from_wkb_state(s);
+  Datum upper = basevalue_from_wkb_state(s);
   Span *result = span_make(lower, upper, lower_inc, upper_inc, s->basetype);
   return result;
 }
@@ -1229,7 +1209,7 @@ set_from_wkb_state(wkb_parse_state *s)
 
   /* Read and create the set */
   for (int i = 0; i < count; i++)
-    values[i] = set_basevalue_from_wkb_state(s);
+    values[i] = basevalue_from_wkb_state(s);
   Set *result = set_make_free(values, count, s->basetype, ORDERED);
   return result;
 }
@@ -1391,16 +1371,6 @@ temporal_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
 }
 
 /**
- * Return a value from its WKB representation.
- */
-static Datum
-temporal_basevalue_from_wkb_state(wkb_parse_state *s)
-{
-  ensure_temporal_basetype(s->basetype);
-  return basevalue_from_wkb_state(s);
-}
-
-/**
  * @brief Return a temporal instant point from its WKB representation.
  *
  * It reads the base type value and the timestamp and advances the parse state
@@ -1412,7 +1382,7 @@ static TInstant *
 tinstant_from_wkb_state(wkb_parse_state *s)
 {
   /* Read the values from the buffer and create the instant */
-  Datum value = temporal_basevalue_from_wkb_state(s);
+  Datum value = basevalue_from_wkb_state(s);
   TimestampTz t = timestamp_from_wkb_state(s);
   TInstant *result = tinstant_make(value, s->temptype, t);
   if (! basetype_byvalue(s->basetype))
@@ -1430,7 +1400,7 @@ tinstarr_from_wkb_state(wkb_parse_state *s, int count)
   for (int i = 0; i < count; i++)
   {
     /* Parse the point and the timestamp to create the instant point */
-    Datum value = temporal_basevalue_from_wkb_state(s);
+    Datum value = basevalue_from_wkb_state(s);
     TimestampTz t = timestamp_from_wkb_state(s);
     result[i] = tinstant_make(value, s->temptype, t);
     if (! basetype_byvalue(s->basetype))
@@ -1482,7 +1452,7 @@ tsequenceset_from_wkb_state(wkb_parse_state *s)
     for (int j = 0; j < countinst; j++)
     {
       /* Parse the value and the timestamp to create the temporal instant */
-      Datum value = temporal_basevalue_from_wkb_state(s);
+      Datum value = basevalue_from_wkb_state(s);
       TimestampTz t = timestamp_from_wkb_state(s);
       instants[j] = tinstant_make(value, s->temptype, t);
       if (! basetype_byvalue(s->basetype))

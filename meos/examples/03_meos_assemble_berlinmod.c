@@ -237,7 +237,7 @@ int main(void)
     size_t length;
     char *trip_str = temporal_as_hexwkb(trips[i].trip, (WKB_XDR | WKB_HEX),
       &length);
-    printf("-----> TripId: %d, length %ld", trips[i].tripid, length);
+    printf("-----> TripId: %d, length %lu", trips[i].tripid, length);
     fprintf(file,"%d,%d,%s,%d,%s\n", trips[i].tripid, trips[i].vehid, date_str,
       trips[i].seq, trip_str);
     free(date_str); free(trip_str);

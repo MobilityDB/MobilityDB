@@ -198,7 +198,7 @@ double_parse(const char **str)
  * Parse a base value from the buffer
  */
 Datum
-basetype_parse(const char **str, meosType basetype)
+temporal_basetype_parse(const char **str, meosType basetype)
 {
   p_whitespace(str);
   int delim = 0;
@@ -507,7 +507,7 @@ tinstant_parse(const char **str, meosType temptype, bool end, bool make)
   p_whitespace(str);
   meosType basetype = temptype_basetype(temptype);
   /* The next two instructions will throw an exception if they fail */
-  Datum elem = basetype_parse(str, basetype);
+  Datum elem = temporal_basetype_parse(str, basetype);
   TimestampTz t = timestamp_parse(str);
   /* Ensure there is no more input */
   ensure_end_input(str, end, "temporal");

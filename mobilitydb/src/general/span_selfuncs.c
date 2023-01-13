@@ -810,7 +810,7 @@ span_sel_hist(VariableStatData *vardata, const Span *constval,
 /*****************************************************************************/
 
 /**
- * Transform the constant into a span
+ * @brief Transform the constant into a span
  */
 void
 span_const_to_span(Node *other, Span *span)
@@ -844,7 +844,7 @@ span_const_to_span(Node *other, Span *span)
 }
 
 /**
- * Transform the constant into a period
+ * @brief Transform the constant into a period
  */
 void
 time_const_to_period(Node *other, Span *period)
@@ -884,7 +884,7 @@ time_const_to_period(Node *other, Span *period)
 }
 
 /**
- * Restriction selectivity for span and time operators
+ * @brief Restriction selectivity for span and time operators
  */
 float8
 span_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,

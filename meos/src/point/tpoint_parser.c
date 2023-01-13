@@ -224,7 +224,7 @@ tpointinst_parse(const char **str, meosType temptype, bool end, bool make,
   p_whitespace(str);
   meosType basetype = temptype_basetype(temptype);
   /* The next instruction will throw an exception if it fails */
-  Datum geo = basetype_parse(str, basetype);
+  Datum geo = temporal_basetype_parse(str, basetype);
   GSERIALIZED *gs = DatumGetGserializedP(geo);
   ensure_point_type(gs);
   ensure_non_empty(gs);
