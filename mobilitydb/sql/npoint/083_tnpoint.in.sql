@@ -520,12 +520,12 @@ CREATE FUNCTION valueAtTimestamp(tnpoint, timestamptz)
 
 CREATE FUNCTION atTime(tnpoint, tstzset)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Temporal_at_tstzset'
+  AS 'MODULE_PATHNAME', 'Temporal_at_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION minusTime(tnpoint, tstzset)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Temporal_minus_tstzset'
+  AS 'MODULE_PATHNAME', 'Temporal_minus_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION atTime(tnpoint, tstzspan)
@@ -568,7 +568,7 @@ CREATE FUNCTION deleteTime(tnpoint, timestamptz, connect boolean DEFAULT TRUE)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION deleteTime(tnpoint, tstzset, connect boolean DEFAULT TRUE)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Temporal_delete_tstzset'
+  AS 'MODULE_PATHNAME', 'Temporal_delete_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION deleteTime(tnpoint, tstzspan, connect boolean DEFAULT TRUE)
   RETURNS tnpoint
@@ -591,7 +591,7 @@ CREATE FUNCTION overlapsTime(tnpoint, timestamptz)
 
 CREATE FUNCTION overlapsTime(tnpoint, tstzset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_overlaps_tstzset'
+  AS 'MODULE_PATHNAME', 'Temporal_overlaps_timestampset'
   SUPPORT tnpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

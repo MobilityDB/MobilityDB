@@ -2239,18 +2239,18 @@ Temporal_value_at_timestamp(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Temporal_at_tstzset);
+PG_FUNCTION_INFO_V1(Temporal_at_timestampset);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to a timestamp set
  * @sqlfunc atTime()
  */
 PGDLLEXPORT Datum
-Temporal_at_tstzset(PG_FUNCTION_ARGS)
+Temporal_at_timestampset(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Set *ts = PG_GETARG_SET_P(1);
-  Temporal *result = temporal_restrict_tstzset(temp, ts, REST_AT);
+  Temporal *result = temporal_restrict_timestampset(temp, ts, REST_AT);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ts, 1);
   if (! result)
@@ -2258,18 +2258,18 @@ Temporal_at_tstzset(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Temporal_minus_tstzset);
+PG_FUNCTION_INFO_V1(Temporal_minus_timestampset);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to the complement of a timestamp set
  * @sqlfunc minusTime()
  */
 PGDLLEXPORT Datum
-Temporal_minus_tstzset(PG_FUNCTION_ARGS)
+Temporal_minus_timestampset(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Set *ts = PG_GETARG_SET_P(1);
-  Temporal *result = temporal_restrict_tstzset(temp, ts, REST_MINUS);
+  Temporal *result = temporal_restrict_timestampset(temp, ts, REST_MINUS);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ts, 1);
   if (! result)
@@ -2414,19 +2414,19 @@ Temporal_delete_timestamp(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Temporal_delete_tstzset);
+PG_FUNCTION_INFO_V1(Temporal_delete_timestampset);
 /**
  * @ingroup mobilitydb_temporal_modif
  * @brief Delete a timestamp set from a temporal value
  * @sqlfunc deleteTime()
  */
 PGDLLEXPORT Datum
-Temporal_delete_tstzset(PG_FUNCTION_ARGS)
+Temporal_delete_timestampset(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Set *ts = PG_GETARG_SET_P(1);
   bool connect = PG_GETARG_BOOL(2);
-  Temporal *result = temporal_delete_tstzset(temp, ts, connect);
+  Temporal *result = temporal_delete_timestampset(temp, ts, connect);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ts, 1);
   if (! result)
@@ -2493,18 +2493,18 @@ Temporal_overlaps_timestamp(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(Temporal_overlaps_tstzset);
+PG_FUNCTION_INFO_V1(Temporal_overlaps_timestampset);
 /**
  * @ingroup mobilitydb_temporal_time
  * @brief Return true if a temporal value intersects a timestamp set
  * @sqlfunc intersectsTime()
  */
 PGDLLEXPORT Datum
-Temporal_overlaps_tstzset(PG_FUNCTION_ARGS)
+Temporal_overlaps_timestampset(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Set *ts = PG_GETARG_SET_P(1);
-  bool result = temporal_overlaps_tstzset(temp, ts);
+  bool result = temporal_overlaps_timestampset(temp, ts);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ts, 1);
   PG_RETURN_BOOL(result);

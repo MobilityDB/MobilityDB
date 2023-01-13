@@ -124,7 +124,7 @@ extern TInstant *tsegment_at_timestamp(const TInstant *inst1,
   const TInstant *inst2, bool linear, TimestampTz t);
 extern int tcontseq_minus_timestamp1(const TSequence *seq, TimestampTz t,
   TSequence **result);
-extern int tcontseq_minus_tstzset1(const TSequence *seq, const Set *s,
+extern int tcontseq_minus_timestampset1(const TSequence *seq, const Set *s,
   TSequence **result);
 extern int tcontseq_minus_period1(const TSequence *seq, const Span *p,
   TSequence **result);

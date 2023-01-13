@@ -4443,7 +4443,7 @@ tdiscseq_minus_timestamp(const TSequence *seq, TimestampTz t)
  * @sqlfunc atTime(), minusTime()
  */
 TSequence *
-tdiscseq_restrict_tstzset(const TSequence *seq, const Set *ts,
+tdiscseq_restrict_timestampset(const TSequence *seq, const Set *ts,
   bool atfunc)
 {
   TSequence *result;
@@ -4475,7 +4475,7 @@ tdiscseq_restrict_tstzset(const TSequence *seq, const Set *ts,
   if (seq->count == 1)
   {
     inst = tsequence_inst_n(seq, 0);
-    if (tinstant_restrict_tstzset_test(inst, ts, atfunc))
+    if (tinstant_restrict_timestampset_test(inst, ts, atfunc))
       return tsequence_copy(seq);
     return NULL;
   }
@@ -4803,7 +4803,7 @@ tcontseq_minus_timestamp(const TSequence *seq, TimestampTz t)
  * @sqlfunc atTstzSet()
  */
 TSequence *
-tcontseq_at_tstzset(const TSequence *seq, const Set *ts)
+tcontseq_at_timestampset(const TSequence *seq, const Set *ts)
 {
   TInstant *inst;
 
@@ -4866,7 +4866,7 @@ tcontseq_at_tstzset(const TSequence *seq, const Set *ts)
  * @return Number of resulting sequences returned
  */
 int
-tcontseq_minus_tstzset1(const TSequence *seq, const Set *ts,
+tcontseq_minus_timestampset1(const TSequence *seq, const Set *ts,
   TSequence **result)
 {
   /* Singleton timestamp set */
@@ -4983,10 +4983,10 @@ tcontseq_minus_tstzset1(const TSequence *seq, const Set *ts,
  * @sqlfunc minusTstzSet()
  */
 TSequenceSet *
-tcontseq_minus_tstzset(const TSequence *seq, const Set *ts)
+tcontseq_minus_timestampset(const TSequence *seq, const Set *ts)
 {
   TSequence **sequences = palloc0(sizeof(TSequence *) * (ts->count + 1));
-  int count = tcontseq_minus_tstzset1(seq, ts, sequences);
+  int count = tcontseq_minus_timestampset1(seq, ts, sequences);
   return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
 
@@ -5415,7 +5415,7 @@ tcontseq_delete_timestamp(const TSequence *seq, TimestampTz t)
  * @param[in] ts Timestamp set
  */
 TSequence *
-tcontseq_delete_tstzset(const TSequence *seq, const Set *ts)
+tcontseq_delete_timestampset(const TSequence *seq, const Set *ts)
 {
   /* Singleton timestamp set */
   if (ts->count == 1)
@@ -5620,7 +5620,7 @@ tsequence_overlaps_timestamp(const TSequence *seq, TimestampTz t)
  * @sqlfunc intersectsTstzSet()
  */
 bool
-tsequence_overlaps_tstzset(const TSequence *seq, const Set *ts)
+tsequence_overlaps_timestampset(const TSequence *seq, const Set *ts)
 {
   for (int i = 0; i < ts->count; i++)
     if (tsequence_overlaps_timestamp(seq,

@@ -835,7 +835,7 @@ tinstant_restrict_timestamp(const TInstant *inst, TimestampTz t, bool atfunc)
  * discrete sequence.
  */
 bool
-tinstant_restrict_tstzset_test(const TInstant *inst, const Set *ts,
+tinstant_restrict_timestampset_test(const TInstant *inst, const Set *ts,
   bool atfunc)
 {
   for (int i = 0; i < ts->count; i++)
@@ -850,10 +850,10 @@ tinstant_restrict_tstzset_test(const TInstant *inst, const Set *ts,
  * @sqlfunc atTstzSet(), minusTstzSet()
  */
 TInstant *
-tinstant_restrict_tstzset(const TInstant *inst, const Set *ts,
+tinstant_restrict_timestampset(const TInstant *inst, const Set *ts,
   bool atfunc)
 {
-  if (tinstant_restrict_tstzset_test(inst, ts, atfunc))
+  if (tinstant_restrict_timestampset_test(inst, ts, atfunc))
     return tinstant_copy(inst);
   return NULL;
 }
@@ -989,7 +989,7 @@ tinstant_overlaps_timestamp(const TInstant *inst, TimestampTz t)
  * @sqlfunc intersectsTstzSet()
  */
 bool
-tinstant_overlaps_tstzset(const TInstant *inst, const Set *ts)
+tinstant_overlaps_timestampset(const TInstant *inst, const Set *ts)
 {
   for (int i = 0; i < ts->count; i++)
     if (inst->t == DatumGetTimestampTz(set_val_n(ts, i)))

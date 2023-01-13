@@ -790,20 +790,20 @@ CREATE FUNCTION valueAtTimestamp(tgeogpoint, timestamptz)
 
 CREATE FUNCTION atTime(tgeompoint, tstzset)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Temporal_at_tstzset'
+  AS 'MODULE_PATHNAME', 'Temporal_at_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION atTime(tgeogpoint, tstzset)
   RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'Temporal_at_tstzset'
+  AS 'MODULE_PATHNAME', 'Temporal_at_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION minusTime(tgeompoint, tstzset)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Temporal_minus_tstzset'
+  AS 'MODULE_PATHNAME', 'Temporal_minus_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION minusTime(tgeogpoint, tstzset)
   RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'Temporal_minus_tstzset'
+  AS 'MODULE_PATHNAME', 'Temporal_minus_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION atTime(tgeompoint, tstzspan)
@@ -875,11 +875,11 @@ CREATE FUNCTION deleteTime(tgeogpoint, timestamptz, connect boolean DEFAULT TRUE
 
 CREATE FUNCTION deleteTime(tgeompoint, tstzset, connect boolean DEFAULT TRUE)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Temporal_delete_tstzset'
+  AS 'MODULE_PATHNAME', 'Temporal_delete_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION deleteTime(tgeogpoint, tstzset, connect boolean DEFAULT TRUE)
   RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'Temporal_delete_tstzset'
+  AS 'MODULE_PATHNAME', 'Temporal_delete_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION deleteTime(tgeompoint, tstzspan, connect boolean DEFAULT TRUE)
@@ -917,12 +917,12 @@ CREATE FUNCTION overlapsTime(tgeogpoint, timestamptz)
 
 CREATE FUNCTION overlapsTime(tgeompoint, tstzset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_overlaps_tstzset'
+  AS 'MODULE_PATHNAME', 'Temporal_overlaps_timestampset'
   SUPPORT tpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlapsTime(tgeogpoint, tstzset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_overlaps_tstzset'
+  AS 'MODULE_PATHNAME', 'Temporal_overlaps_timestampset'
   SUPPORT tpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
