@@ -1910,41 +1910,31 @@ Temporal_minus_value(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-/* Helper macro to input a temporal and an array for restriction operations */
-#define INPUT_REST_ARRAY(temp, array, count) \
-  do { \
-    temp = PG_GETARG_TEMPORAL_P(0);  \
-    array = PG_GETARG_ARRAYTYPE_P(1); \
-    /* Return NULL or a copy of a temporal value on empty array */ \
-    count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array)); \
-    if (count == 0) \
-    { \
-      PG_FREE_IF_COPY(array, 1); \
-      if (atfunc) \
-      { \
-        PG_FREE_IF_COPY(temp, 0); \
-        PG_RETURN_NULL(); \
-      } \
-      else \
-      { \
-        Temporal *result = temporal_copy(temp); \
-        PG_FREE_IF_COPY(temp, 0); \
-        PG_RETURN_POINTER(result); \
-      } \
-    } \
-  } while(0);
-
-
 /**
  * @brief Restrict a temporal value to (the complement of) an array of base values
  */
 static Datum
 temporal_restrict_values_ext(FunctionCallInfo fcinfo, bool atfunc)
 {
-  Temporal *temp;
-  ArrayType *array;
-  int count;
-  INPUT_REST_ARRAY(temp, array, count);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  ArrayType *array = PG_GETARG_ARRAYTYPE_P(1);
+  /* Return NULL or a copy of a temporal value on empty array */
+  int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
+  if (count == 0)
+  {
+    PG_FREE_IF_COPY(array, 1);
+    if (atfunc)
+    {
+      PG_FREE_IF_COPY(temp, 0);
+      PG_RETURN_NULL();
+    }
+    else
+    {
+      Temporal *result = temporal_copy(temp);
+      PG_FREE_IF_COPY(temp, 0);
+      PG_RETURN_POINTER(result);
+    }
+  }
   Datum *values = datumarr_extract(array, &count);
   /* For temporal points the validity of values in the array is done in
    * bounding box function */

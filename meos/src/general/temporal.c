@@ -1186,7 +1186,7 @@ temporal_to_period(const Temporal *temp)
 
 /**
  * @ingroup libmeos_internal_temporal_cast
- * @brief Set a span with value span of a temporal number .
+ * @brief Set a span with value span of a temporal number.
  */
 void
 tnumber_set_span(const Temporal *temp, Span *s)
@@ -1460,8 +1460,8 @@ temporal_interpolation(const Temporal *temp)
 /**
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Set the second argument to the bounding box of a temporal value
- * @note For temporal instants the bounding box must be computed.
- * For the other subtypes a copy of the precomputed bounding box is made.
+ * @note For temporal instants the bounding box must be computed. For the
+ * other subtypes, a copy of the precomputed bounding box is made.
  * @sqlfunc period(), tbox(), stbox()
  * @sqlop @p ::
  */
@@ -2737,10 +2737,10 @@ temporal_bbox_restrict_value(const Temporal *temp, Datum value)
   /* Bounding box test */
   if (tnumber_type(temp->temptype))
   {
-    TBox box1, box2;
-    temporal_set_bbox(temp, &box1);
-    number_set_tbox(value, temptype_basetype(temp->temptype), &box2);
-    return contains_tbox_tbox(&box1, &box2);
+    Span span1, span2;
+    tnumber_set_span(temp, &span1);
+    value_set_span(value, temptype_basetype(temp->temptype), &span2);
+    return contains_span_span(&span1, &span2);
   }
   if (tgeo_type(temp->temptype))
   {
@@ -2936,7 +2936,6 @@ temporal_restrict_values(const Temporal *temp, Datum *values, int count,
   pfree(newvalues);
   return result;
 }
-
 
 /*****************************************************************************/
 

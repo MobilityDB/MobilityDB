@@ -72,6 +72,7 @@ extern void span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc, m
 
 /* Cast functions for set and span types */
 
+extern void value_set_span(Datum d, meosType basetype, Span *s);
 extern Set *value_to_set(Datum d, meosType basetype);
 extern Span *value_to_span(Datum d, meosType basetype);
 extern SpanSet *value_to_spanset(Datum d, meosType basetype);
@@ -394,6 +395,7 @@ extern Datum temporal_end_value(const Temporal *temp);
 extern Datum temporal_max_value(const Temporal *temp);
 extern Datum temporal_min_value(const Temporal *temp);
 extern void temporal_set_bbox(const Temporal *temp, void *box);
+extern void tnumber_set_span(const Temporal *temp, Span *span);
 extern Datum temporal_start_value(const Temporal *temp);
 extern Datum *temporal_values(const Temporal *temp, int *count);
 extern SpanSet *tfloatinst_spanset(const TInstant *inst);

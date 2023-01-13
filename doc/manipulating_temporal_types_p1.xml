@@ -275,7 +275,7 @@ SELECT tgeogpoint 'Interp=Stepwise;[SRID=4326;Point(0 0)@2000-01-01,
 					<listitem><para>0: means no option (default value)</para></listitem>
 					<listitem><para>1: MFJSON BBOX</para></listitem>
 				</itemizedlist>
-				<para>The <varname>flags</varname> argument can be used to customize the JSON output, for example, to produce an easy-to-read (for human readers) JSON output. Please look at the documentation of the <varname>json-c</varname> library. Typical values are as follows:</para>
+				<para>The <varname>flags</varname> argument can be used to customize the JSON output, for example, to produce an easy-to-read (for human readers) JSON output. Refer to the documentation of the <varname>json-c</varname> library for the possible values. Typical values are as follows:</para>
 				<itemizedlist>
 					<listitem><para>0: means no option (default value)</para></listitem>
 					<listitem><para>1: JSON_C_TO_STRING_SPACED</para></listitem>

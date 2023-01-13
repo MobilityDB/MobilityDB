@@ -63,7 +63,7 @@ extern int varstr_cmp(const char *arg1, int len1, const char *arg2, int len2, Oi
 /* Version of the functions where the types of both arguments is equal */
 
 /**
- * Return true if the first value is less than the second one
+ * @brief Return true if the first value is less than the second one
  */
 int
 datum_cmp(Datum l, Datum r, meosType type)
@@ -72,7 +72,7 @@ datum_cmp(Datum l, Datum r, meosType type)
 }
 
 /**
- * Return true if the values are equal
+ * @brief Return true if the values are equal
  */
 bool
 datum_eq(Datum l, Datum r, meosType type)
@@ -81,7 +81,7 @@ datum_eq(Datum l, Datum r, meosType type)
 }
 
 /**
- * Return true if the values are different
+ * @brief Return true if the values are different
  */
 bool
 datum_ne(Datum l, Datum r, meosType type)
@@ -90,7 +90,7 @@ datum_ne(Datum l, Datum r, meosType type)
 }
 
 /**
- * Return true if the first value is less than the second one
+ * @brief Return true if the first value is less than the second one
  */
 bool
 datum_lt(Datum l, Datum r, meosType type)
@@ -99,7 +99,7 @@ datum_lt(Datum l, Datum r, meosType type)
 }
 
 /**
- * Return true if the first value is less than or equal to the second one
+ * @brief Return true if the first value is less than or equal to the second one
  */
 bool
 datum_le(Datum l, Datum r, meosType type)
@@ -108,7 +108,7 @@ datum_le(Datum l, Datum r, meosType type)
 }
 
 /**
- * Return true if the first value is greater than the second one
+ * @brief Return true if the first value is greater than the second one
  */
 bool
 datum_gt(Datum l, Datum r, meosType type)
@@ -117,7 +117,7 @@ datum_gt(Datum l, Datum r, meosType type)
 }
 
 /**
- * Return true if the first value is greater than or equal to the second one
+ * @brief Return true if the first value is greater than or equal to the second one
  */
 bool
 datum_ge(Datum l, Datum r, meosType type)
@@ -133,7 +133,7 @@ datum_ge(Datum l, Datum r, meosType type)
  */
 
 /**
- * Return true if the first value is less than the second one
+ * @brief Return true if the first value is less than the second one
  */
 int
 datum_cmp2(Datum l, Datum r, meosType typel, meosType typer)
@@ -217,7 +217,7 @@ datum_eq2(Datum l, Datum r, meosType typel, meosType typer)
 }
 
 /**
- * Return true if the values are different
+ * @brief Return true if the values are different
  */
 bool
 datum_ne2(Datum l, Datum r, meosType typel, meosType typer)
@@ -226,7 +226,7 @@ datum_ne2(Datum l, Datum r, meosType typel, meosType typer)
 }
 
 /**
- * Return true if the first value is less than the second one
+ * @brief Return true if the first value is less than the second one
  */
 bool
 datum_lt2(Datum l, Datum r, meosType typel, meosType typer)
@@ -236,7 +236,7 @@ datum_lt2(Datum l, Datum r, meosType typel, meosType typer)
 
 
 /**
- * Return true if the first value is less than or equal to the second one
+ * @brief Return true if the first value is less than or equal to the second one
  */
 bool
 datum_le2(Datum l, Datum r, meosType typel, meosType typer)
@@ -245,7 +245,7 @@ datum_le2(Datum l, Datum r, meosType typel, meosType typer)
 }
 
 /**
- * Return true if the first value is greater than the second one
+ * @brief Return true if the first value is greater than the second one
  */
 bool
 datum_gt2(Datum l, Datum r, meosType typel, meosType typer)
@@ -254,7 +254,7 @@ datum_gt2(Datum l, Datum r, meosType typel, meosType typer)
 }
 
 /**
- * Return true if the first value is greater than or equal to the second one
+ * @brief Return true if the first value is greater than or equal to the second one
  */
 bool
 datum_ge2(Datum l, Datum r, meosType typel, meosType typer)
@@ -265,7 +265,7 @@ datum_ge2(Datum l, Datum r, meosType typel, meosType typer)
 /*****************************************************************************/
 
 /**
- * Return a Datum true if the values are equal
+ * @brief Return a Datum true if the values are equal
  */
 Datum
 datum2_eq2(Datum l, Datum r, meosType typel, meosType typer)
@@ -274,7 +274,7 @@ datum2_eq2(Datum l, Datum r, meosType typel, meosType typer)
 }
 
 /**
- * Return a Datum true if the values are different
+ * @brief Return a Datum true if the values are different
  */
 Datum
 datum2_ne2(Datum l, Datum r, meosType typel, meosType typer)
@@ -283,7 +283,7 @@ datum2_ne2(Datum l, Datum r, meosType typel, meosType typer)
 }
 
 /**
- * Return a Datum true if the first value is less than the second one
+ * @brief Return a Datum true if the first value is less than the second one
  */
 Datum
 datum2_lt2(Datum l, Datum r, meosType typel, meosType typer)
@@ -292,7 +292,7 @@ datum2_lt2(Datum l, Datum r, meosType typel, meosType typer)
 }
 
 /**
- * Return a Datum true if the first value is less than or equal to the second one
+ * @brief Return a Datum true if the first value is less than or equal to the second one
  */
 Datum
 datum2_le2(Datum l, Datum r, meosType typel, meosType typer)
@@ -301,7 +301,7 @@ datum2_le2(Datum l, Datum r, meosType typel, meosType typer)
 }
 
 /**
- * Return a Datum true if the first value is greater than the second one
+ * @brief Return a Datum true if the first value is greater than the second one
  */
 Datum
 datum2_gt2(Datum l, Datum r, meosType typel, meosType typer)
@@ -310,7 +310,7 @@ datum2_gt2(Datum l, Datum r, meosType typel, meosType typer)
 }
 
 /**
- * Return a Datum true if the first value is greater than or equal to the second one
+ * @brief Return a Datum true if the first value is greater than or equal to the second one
  */
 Datum
 datum2_ge2(Datum l, Datum r, meosType typel, meosType typer)
@@ -324,7 +324,7 @@ datum2_ge2(Datum l, Datum r, meosType typel, meosType typer)
  *****************************************************************************/
 
 /**
- * Return the addition of the two numbers
+ * @brief Return the addition of the two numbers
  */
 Datum
 datum_add(Datum l, Datum r, meosType typel, meosType typer)
@@ -361,7 +361,7 @@ datum_add(Datum l, Datum r, meosType typel, meosType typer)
 }
 
 /**
- * Return the subtraction of the two numbers
+ * @brief Return the subtraction of the two numbers
  */
 Datum
 datum_sub(Datum l, Datum r, meosType typel, meosType typer)
@@ -398,7 +398,7 @@ datum_sub(Datum l, Datum r, meosType typel, meosType typer)
 }
 
 /**
- * Return the multiplication of the two numbers
+ * @brief Return the multiplication of the two numbers
  */
 Datum
 datum_mult(Datum l, Datum r, meosType typel, meosType typer)
@@ -435,7 +435,7 @@ datum_mult(Datum l, Datum r, meosType typel, meosType typer)
 }
 
 /**
- * Return the division of the two numbers
+ * @brief Return the division of the two numbers
  */
 Datum
 datum_div(Datum l, Datum r, meosType typel, meosType typer)
@@ -476,7 +476,7 @@ datum_div(Datum l, Datum r, meosType typel, meosType typer)
  *****************************************************************************/
 
 /**
- * Align to double
+ * @brief Align to double
  */
 size_t
 double_pad(size_t size)
@@ -487,7 +487,7 @@ double_pad(size_t size)
 }
 
 /**
- * Copy a Datum if it is passed by reference
+ * @brief Copy a Datum if it is passed by reference
  */
 Datum
 datum_copy(Datum value, meosType basetype)
@@ -504,7 +504,7 @@ datum_copy(Datum value, meosType basetype)
 }
 
 /**
- * Convert a number to a double
+ * @brief Convert a number to a double
  */
 double
 datum_double(Datum d, meosType basetype)
@@ -523,7 +523,7 @@ datum_double(Datum d, meosType basetype)
  *****************************************************************************/
 
 /**
- * Comparator function for datums
+ * @brief Comparator function for datums
  */
 static int
 datum_sort_cmp(const Datum *l, const Datum *r, const meosType *type)
@@ -540,7 +540,7 @@ datum_sort_cmp(const Datum *l, const Datum *r, const meosType *type)
 }
 
 /**
- * Comparator function for timestamps
+ * @brief Comparator function for timestamps
  */
 static int
 timestamp_sort_cmp(const TimestampTz *l, const TimestampTz *r)
@@ -551,7 +551,7 @@ timestamp_sort_cmp(const TimestampTz *l, const TimestampTz *r)
 }
 
 /**
- * Comparator function for spans
+ * @brief Comparator function for spans
  */
 static int
 span_sort_cmp(const Span **l, const Span **r)
@@ -560,7 +560,7 @@ span_sort_cmp(const Span **l, const Span **r)
 }
 
 /**
- * Comparator function for temporal instants
+ * @brief Comparator function for temporal instants
  */
 static int
 tinstarr_sort_cmp(const TInstant **l, const TInstant **r)
@@ -569,7 +569,7 @@ tinstarr_sort_cmp(const TInstant **l, const TInstant **r)
 }
 
 /**
- * Comparator function for temporal sequences
+ * @brief Comparator function for temporal sequences
  */
 static int
 tseqarr_sort_cmp(TSequence **l, TSequence **r)
@@ -582,7 +582,7 @@ tseqarr_sort_cmp(TSequence **l, TSequence **r)
 /*****************************************************************************/
 
 /**
- * Sort function for datums
+ * @brief Sort function for datums
  */
 void
 datumarr_sort(Datum *values, int count, meosType type)
@@ -592,7 +592,7 @@ datumarr_sort(Datum *values, int count, meosType type)
 }
 
 /**
- * Sort function for timestamps
+ * @brief Sort function for timestamps
  */
 void
 timestamparr_sort(TimestampTz *times, int count)
@@ -603,7 +603,7 @@ timestamparr_sort(TimestampTz *times, int count)
 
 #if 0 /* Not used */
 /**
- * Sort function for double2
+ * @brief Sort function for double2
  */
 void
 double2arr_sort(double2 *doubles, int count)
@@ -612,7 +612,7 @@ double2arr_sort(double2 *doubles, int count)
 }
 
 /**
- * Sort function for double3
+ * @brief Sort function for double3
  */
 void
 double3arr_sort(double3 *triples, int count)
@@ -622,7 +622,7 @@ double3arr_sort(double3 *triples, int count)
 #endif
 
 /**
- * Sort function for spans
+ * @brief Sort function for spans
  */
 void
 spanarr_sort(Span **spans, int count)
@@ -632,7 +632,7 @@ spanarr_sort(Span **spans, int count)
 }
 
 /**
- * Sort function for temporal instants
+ * @brief Sort function for temporal instants
  */
 void
 tinstarr_sort(TInstant **instants, int count)
@@ -642,7 +642,7 @@ tinstarr_sort(TInstant **instants, int count)
 }
 
 /**
- * Sort function for temporal sequences
+ * @brief Sort function for temporal sequences
  */
 void
 tseqarr_sort(TSequence **sequences, int count)
@@ -657,7 +657,7 @@ tseqarr_sort(TSequence **sequences, int count)
  *****************************************************************************/
 
 /**
- * Remove duplicates from an array of datums
+ * @brief Remove duplicates from an array of datums
  */
 int
 datumarr_remove_duplicates(Datum *values, int count, meosType type)
@@ -671,7 +671,7 @@ datumarr_remove_duplicates(Datum *values, int count, meosType type)
 }
 
 /**
- * Remove duplicates from an array of timestamps
+ * @brief Remove duplicates from an array of timestamps
  */
 int
 timestamparr_remove_duplicates(TimestampTz *values, int count)
@@ -685,7 +685,7 @@ timestamparr_remove_duplicates(TimestampTz *values, int count)
 }
 
 /**
- * Remove duplicates from an array of temporal instants
+ * @brief Remove duplicates from an array of temporal instants
  */
 int
 tinstarr_remove_duplicates(const TInstant **instants, int count)
@@ -703,7 +703,7 @@ tinstarr_remove_duplicates(const TInstant **instants, int count)
  *****************************************************************************/
 
 /**
- * Convert a C binary string into a bytea
+ * @brief Convert a C binary string into a bytea
  */
 bytea *
 bstring2bytea(const uint8_t *wkb, size_t size)
@@ -715,7 +715,7 @@ bstring2bytea(const uint8_t *wkb, size_t size)
 }
 
 /**
- * Convert a C string into a text value
+ * @brief Convert a C string into a text value
  *
  * @note We don't include <utils/builtins.h> to avoid collisions with json-c/json.h
  * @note Function taken from PostGIS file lwgeom_in_geojson.c
@@ -731,7 +731,7 @@ cstring2text(const char *cstring)
 }
 
 /**
- * Convert a text value into a C string
+ * @brief Convert a text value into a C string
  *
  * @note We don't include <utils/builtins.h> to avoid collisions with json-c/json.h
  * @note Function taken from PostGIS file lwgeom_in_geojson.c
@@ -760,7 +760,7 @@ varstr_cmp(const char *arg1, int len1, const char *arg2, int len2,
 #endif /* MEOS */
 
 /**
- * Comparison function for text values
+ * @brief Comparison function for text values
  *
  * @note Function copied from PostgreSQL since it is not exported
  */
@@ -784,7 +784,7 @@ text_cmp(text *arg1, text *arg2, Oid collid __attribute__((unused)))
  *****************************************************************************/
 
 /**
- * Free a C array of pointers
+ * @brief Free a C array of pointers
  */
 void
 pfree_array(void **array, int count)
@@ -796,7 +796,7 @@ pfree_array(void **array, int count)
 }
 
 /**
- * Free a C array of Datum pointers
+ * @brief Free a C array of Datum pointers
  */
 void
 pfree_datumarr(Datum *array, int count)
@@ -808,7 +808,7 @@ pfree_datumarr(Datum *array, int count)
 }
 
 /**
- * Return the string resulting from assembling the array of strings.
+ * @brief Return the string resulting from assembling the array of strings.
  * The function frees the memory of the input strings after finishing.
  */
 char *
@@ -840,7 +840,7 @@ stringarr_to_string(char **strings, int count, int outlen,
  *****************************************************************************/
 
 /**
- * Determine the 3D hypotenuse.
+ * @brief Determine the 3D hypotenuse.
  *
  * If required, x, y, and z are swapped to make x the larger number. The
  * traditional formula of x^2+y^2+z^2 is rearranged to factor x outside the
@@ -902,8 +902,7 @@ hypot3d(double x, double y, double z)
 
 #if 0 /* not used */
 /**
- * Determine the 4D hypotenuse.
- *
+ * @brief Determine the 4D hypotenuse.
  * @see The function is a generalization of the 3D case in function hypot3d
  */
 double
@@ -967,7 +966,7 @@ hypot4d(double x, double y, double z, double m)
  *****************************************************************************/
 
 /**
- * Call input function of the base type
+ * @brief Call input function of the base type
  */
 Datum
 #if NPOINT
@@ -1006,7 +1005,7 @@ basetype_in(const char *str, meosType basetype, bool end __attribute__((unused))
 }
 
 /**
- * Call output function of the base type
+ * @brief Call output function of the base type
  */
 char *
 basetype_out(Datum value, meosType basetype, int maxdd)

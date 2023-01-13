@@ -545,11 +545,23 @@ span_copy(const Span *s)
  * @ingroup libmeos_internal_setspan_cast
  * @brief Cast a value as a span
  */
+void
+value_set_span(Datum d, meosType basetype, Span *s)
+{
+  ensure_span_basetype(basetype);
+  span_set(d, d, true, true, basetype, s);
+  return;
+}
+
+/**
+ * @ingroup libmeos_internal_setspan_cast
+ * @brief Cast a value as a span
+ */
 Span *
 value_to_span(Datum d, meosType basetype)
 {
-  ensure_span_basetype(basetype);
-  Span *result = span_make(d, d, true, true, basetype);
+  Span *result = palloc(sizeof(Span));
+  value_set_span(d, basetype, result);
   return result;
 }
 

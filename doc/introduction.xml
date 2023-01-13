@@ -229,7 +229,7 @@ CREATE EXTENSION mobilitydb CASCADE;
 				<listitem><para>GNU Scientific Library (GSL). GSL is available from <ulink url="https://www.gnu.org/software/gsl/">https://www.gnu.org/software/gsl/</ulink>. GSL is used for the random number generators.</para></listitem>
 			</itemizedlist>
 			<para>
-				Please notice that PostGIS has its own dependencies such as Proj4, GEOS, LibXML2, or JSON-C, and these libraries are also used in MobilityDB. For a full PostgreSQL/PostGIS support matrix and PostGIS/GEOS support matrix refer to <ulink url="http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS">http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS</ulink>.
+				Notice that PostGIS has its own dependencies such as Proj4, GEOS, LibXML2, or JSON-C, and these libraries are also used in MobilityDB. For a full PostgreSQL/PostGIS support matrix and PostGIS/GEOS support matrix refer to <ulink url="http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS">http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS</ulink>.
 			</para>
 
 			<para>
@@ -283,7 +283,7 @@ cmake -L ..
 		<sect2 id="build_install">
 			<title>Build and Install</title>
 			<para>
-				Please notice that the current version of MobilityDB has only been tested on Linux and MacOS systems. It may work on other Unix-like systems, but remain untested. Support for Windows is planned. We are looking for volunteers to help us to test MobilityDB on multiple platforms.
+				Notice that the current version of MobilityDB has only been tested on Linux and MacOS systems. It may work on other Unix-like systems, but remain untested. Support for Windows is planned. We are looking for volunteers to help us to test MobilityDB on multiple platforms.
 			</para>
 			<para>
 				The following instructions start from <varname>path/to/MobilityDB</varname> on a Linux system
