@@ -56,7 +56,7 @@ span_value_min(Datum l, Datum r, meosType type)
   if (type == T_TIMESTAMPTZ)
     return TimestampTzGetDatum(Min(DatumGetTimestampTz(l),
       DatumGetTimestampTz(r)));
-  else if (type == T_INT4)
+  else if (type == T_INT4) /** x **/
     return Int32GetDatum(Min(DatumGetInt32(l), DatumGetInt32(r)));
   else if (type == T_INT8)
     return Int64GetDatum(Min(DatumGetInt64(l), DatumGetInt64(r)));
@@ -74,7 +74,7 @@ span_value_max(Datum l, Datum r, meosType type)
   if (type == T_TIMESTAMPTZ)
     return TimestampTzGetDatum(Max(DatumGetTimestampTz(l),
       DatumGetTimestampTz(r)));
-  else if (type == T_INT4)
+  else if (type == T_INT4) /** x **/
     return Int32GetDatum(Max(DatumGetInt32(l), DatumGetInt32(r)));
   else if (type == T_INT8)
     return Int64GetDatum(Max(DatumGetInt64(l), DatumGetInt64(r)));
@@ -1204,7 +1204,7 @@ minus_span_value1(const Span *s, Datum d, meosType basetype, Span **result)
 
   /* Account for canonicalized spans */
   Datum upper1;
-  if (basetype == T_INT4)
+  if (basetype == T_INT4) /** x **/
     upper1 = Int32GetDatum(DatumGetInt32(s->upper) - (int32) 1);
   else if (basetype == T_INT8)
     upper1 = Int64GetDatum(DatumGetInt64(s->upper) - (int64) 1);
@@ -1224,7 +1224,7 @@ minus_span_value1(const Span *s, Datum d, meosType basetype, Span **result)
 
   if (equpper)
   {
-    if (basetype == T_INT4 || basetype == T_INT8)
+    if (basetype == T_INT4 || basetype == T_INT8) /** x **/
       result[0] = span_make(s->lower, upper1, true, false, basetype);
     else
       result[0] = span_make(s->lower, s->upper, s->lower_inc, false, basetype);
@@ -1400,7 +1400,7 @@ distance_value_value(Datum l, Datum r, meosType typel, meosType typer)
   ensure_span_basetype(typel);
   if (typel != typer)
     ensure_span_basetype(typer);
-  if (typel == T_INT4 && typer == T_INT4)
+  if (typel == T_INT4 && typer == T_INT4) /** x **/
     return (double) abs(DatumGetInt32(l) - DatumGetInt32(r));
   if (typel == T_INT8 && typer == T_INT8)
     return (double) labs(DatumGetInt64(l) - DatumGetInt64(r));

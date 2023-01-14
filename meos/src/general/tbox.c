@@ -202,11 +202,7 @@ number_set_tbox(Datum value, meosType basetype, TBox *box)
   ensure_tnumber_basetype(basetype);
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBox));
-  Datum dvalue;
-  if (basetype == T_INT4)
-    dvalue = Float8GetDatum((double) DatumGetInt32(value));
-  else /* basetype == T_FLOAT8 */
-    dvalue = value;
+  Datum dvalue = Float8GetDatum(datum_double(value, basetype));
   span_set(dvalue, dvalue, true, true, T_FLOAT8, &box->span);
   MOBDB_FLAGS_SET_X(box->flags, true);
   MOBDB_FLAGS_SET_T(box->flags, false);
@@ -318,10 +314,7 @@ numset_set_tbox(const Set *s, TBox *box)
   memset(box, 0, sizeof(TBox));
   Span sp;
   set_set_span(s, &sp);
-  if (s->basetype == T_INT4)
-    intspan_set_floatspan(&sp, &box->span);
-  else
-    memcpy(&box->span, &sp, sizeof(Span));
+  numspan_set_floatspan(&sp, &box->span);
   MOBDB_FLAGS_SET_X(box->flags, true);
   MOBDB_FLAGS_SET_T(box->flags, false);
   return;
@@ -383,10 +376,7 @@ numspan_set_tbox(const Span *s, TBox *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBox));
-  if (s->basetype == T_INT4) /** xx **/
-    intspan_set_floatspan(s, &box->span);
-  else
-    memcpy(&box->span, s, sizeof(Span));
+  numspan_set_floatspan(s, &box->span);
   MOBDB_FLAGS_SET_X(box->flags, true);
   MOBDB_FLAGS_SET_T(box->flags, false);
   return;
@@ -601,10 +591,7 @@ span_timestamp_to_tbox(const Span *span, TimestampTz t)
 {
   ensure_tnumber_spantype(span->spantype);
   TBox *result = palloc(sizeof(TBox));
-  if (span->basetype == T_INT4)
-    intspan_set_floatspan(span, &result->span);
-  else
-    memcpy(&result->span, span, sizeof(Span));
+  numspan_set_floatspan(span, &result->span);
   Datum dt = TimestampTzGetDatum(t);
   span_set(dt, dt, true, true, T_TIMESTAMPTZ, &result->period);
   MOBDB_FLAGS_SET_X(result->flags, true);
@@ -623,10 +610,7 @@ span_period_to_tbox(const Span *span, const Span *p)
   ensure_tnumber_spantype(span->spantype);
   assert(p->basetype == T_TIMESTAMPTZ);
   TBox *result = palloc(sizeof(TBox));
-  if (span->basetype == T_INT4)
-    intspan_set_floatspan(span, &result->span);
-  else
-    memcpy(&result->span, span, sizeof(Span));
+  numspan_set_floatspan(span, &result->span);
   memcpy(&result->period, p, sizeof(Span));
   MOBDB_FLAGS_SET_X(result->flags, true);
   MOBDB_FLAGS_SET_T(result->flags, true);

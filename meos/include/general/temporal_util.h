@@ -47,6 +47,7 @@
 extern size_t double_pad(size_t size);
 extern Datum datum_copy(Datum value, meosType typid);
 extern double datum_double(Datum d, meosType basetype);
+extern Datum double_datum(double d, meosType basetype);
 extern bytea *bstring2bytea(const uint8_t *wkb, size_t size);
 
 /* Input/output functions */

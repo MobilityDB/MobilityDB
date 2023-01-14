@@ -55,7 +55,7 @@ Datum
 number_distance(Datum l, Datum r, meosType typel, meosType typer)
 {
   Datum result = 0;
-  if (typel == T_INT4)
+  if (typel == T_INT4) /** x **/
   {
     if (typer == T_INT4)
       result = Int32GetDatum(abs(DatumGetInt32(l) - DatumGetInt32(r)));

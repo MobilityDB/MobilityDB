@@ -237,11 +237,8 @@ tinstant_set_bbox(const TInstant *inst, void *box)
       true, true, T_TIMESTAMPTZ, (Span *) box);
   else if (tnumber_type(inst->temptype))
   {
-    Datum value;
-    if (inst->temptype == T_TINT)  /** xx **/
-      value = Float8GetDatum(tnumberinst_double(inst));
-    else /* inst->temptype == T_TFLOAT */
-      value = tinstant_value(inst);
+    meosType basetype = temptype_basetype(inst->temptype);
+    Datum value = Float8GetDatum(datum_double(tinstant_value(inst), basetype));
     TBox *tbox = (TBox *) box;
     memset(tbox, 0, sizeof(TBox));
     span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),

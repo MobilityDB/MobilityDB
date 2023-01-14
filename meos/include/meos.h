@@ -453,6 +453,7 @@ extern void bigintspan_set_floatspan(const Span *s1, Span *s2);
 extern void floatspan_set_bigintspan(const Span *s1, Span *s2);
 extern void floatspan_set_intspan(const Span *s1, Span *s2);
 extern void intspan_set_floatspan(const Span *s1, Span *s2);
+extern void numspan_set_floatspan(const Span *s1, Span *s2);
 extern Set *set_shift(const Set *s, Datum shift);
 extern void period_shift_tscale(Span *p, const Interval *shift, const Interval *duration);
 extern SpanSet *periodset_shift_tscale(const SpanSet *ps, const Interval *shift, const Interval *duration);

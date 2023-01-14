@@ -109,7 +109,7 @@ span_bucket_state_make(const Span *s, Datum size, Datum origin)
   state->size = size;
   state->origin = origin;
   /* intspans are in canonical form so their upper bound is exclusive */
-  Datum upper = (s->basetype == T_INT4) ?
+  Datum upper = (s->basetype == T_INT4) ? /** x **/
     Int32GetDatum(DatumGetInt32(s->upper) - 1) : s->upper;
   state->minvalue = state->value =
     datum_bucket(s->lower, size, origin, state->basetype);
@@ -308,7 +308,7 @@ datum_bucket(Datum value, Datum size, Datum origin, meosType basetype)
 {
   ensure_positive_datum(size, basetype);
   ensure_span_basetype(basetype);
-  if (basetype == T_INT4)
+  if (basetype == T_INT4) /** x **/
     return Int32GetDatum(int_bucket(DatumGetInt32(value),
       DatumGetInt32(size), DatumGetInt32(origin)));
   else if (basetype == T_FLOAT8)
@@ -930,7 +930,7 @@ static int
 bucket_position(Datum value, Datum size, Datum origin, meosType type)
 {
   ensure_tnumber_basetype(type);
-  if (type == T_INT4)
+  if (type == T_INT4) /** x **/
     return (DatumGetInt32(value) - DatumGetInt32(origin)) /
       DatumGetInt32(size);
   else /* type == T_FLOAT8 */
@@ -1453,7 +1453,7 @@ temporal_value_time_split1(Temporal *temp, Datum size, Interval *duration,
     Datum end_value = datum_add(span->upper, size, basetype, basetype);
     start_bucket = datum_bucket(start_value, size, vorigin, basetype);
     end_bucket = datum_bucket(end_value, size, vorigin, basetype);
-    value_count = (basetype == T_INT4) ?
+    value_count = (basetype == T_INT4) ? /** x **/
       (DatumGetInt32(end_bucket) - DatumGetInt32(start_bucket)) /
         DatumGetInt32(size) :
       floor((DatumGetFloat8(end_bucket) - DatumGetFloat8(start_bucket)) /

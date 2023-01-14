@@ -472,6 +472,71 @@ datum_div(Datum l, Datum r, meosType typel, meosType typer)
 }
 
 /*****************************************************************************
+ * Hash functions on datums
+ *****************************************************************************/
+
+/**
+ * @ingroup libmeos_internal_setspan_accessor
+ * @brief Return the 32-bit hash of a value.
+ */
+uint32
+datum_hash(Datum d, meosType type)
+{
+  ensure_basetype(type);
+  if (type == T_TIMESTAMPTZ)
+    return pg_hashint8(TimestampTzGetDatum(d));
+  else if (type == T_BOOL)
+    return hash_bytes_uint32((int32) DatumGetBool(d));
+  else if (type == T_INT4)
+    return hash_bytes_uint32(DatumGetInt32(d));
+  else if (type == T_INT8)
+    return pg_hashint8(DatumGetInt64(d));
+  else if (type == T_FLOAT8)
+    return pg_hashfloat8(DatumGetFloat8(d));
+  else if (type == T_TEXT)
+    return pg_hashtext(DatumGetTextP(d));
+  else if (geo_basetype(type))
+    return gserialized_hash(DatumGetGserializedP(d));
+#if NPOINT
+  else if (type == T_NPOINT)
+    return npoint_hash(DatumGetNpointP(d));
+#endif
+  else
+    elog(ERROR, "unknown hash function for base type: %d", type);
+}
+
+/**
+ * @ingroup libmeos_internal_setspan_accessor
+ * @brief Return the 64-bit hash of a value using a seed.
+ */
+uint64
+datum_hash_extended(Datum d, meosType type, uint64 seed)
+{
+  ensure_basetype(type);
+  if (type == T_TIMESTAMPTZ)
+    return pg_hashint8extended(TimestampTzGetDatum(d), seed);
+  else if (type == T_BOOL)
+    return hash_bytes_uint32_extended((int32) DatumGetBool(d), seed);
+  else if (type == T_INT4)
+    return hash_bytes_uint32_extended(DatumGetInt32(d), seed);
+  else if (type == T_INT8)
+    return pg_hashint8extended(Int64GetDatum(d), seed);
+  else if (type == T_FLOAT8)
+    return pg_hashfloat8extended(Float8GetDatum(d), seed);
+  else if (type == T_TEXT)
+    return pg_hashtextextended(DatumGetTextP(d), seed);
+  // TODO
+  // else if (geo_basetype(type))
+    // return gserialized_hash_extended(DatumGetGserializedP(d), seed);
+#if NPOINT
+  else if (type == T_NPOINT)
+    return npoint_hash_extended(DatumGetNpointP(d), seed);
+#endif
+  else
+    elog(ERROR, "unknown hash function for base type: %d", type);
+}
+
+/*****************************************************************************
  * Miscellaneous functions
  *****************************************************************************/
 
@@ -516,6 +581,21 @@ datum_double(Datum d, meosType basetype)
     return (double) DatumGetInt64(d);
   else /* basetype == T_FLOAT8 */
     return DatumGetFloat8(d);
+}
+
+/**
+ * @brief Convert a double to a datum
+ */
+Datum
+double_datum(double d, meosType basetype)
+{
+  ensure_tnumber_basetype(basetype);
+  if (basetype == T_INT4)
+    return Int32GetDatum((int32) d);
+  if (basetype == T_INT8)
+    return Int64GetDatum((int64) d);
+  else /* basetype == T_FLOAT8 */
+    return Float8GetDatum(d);
 }
 
 /*****************************************************************************

@@ -160,29 +160,25 @@ static bool
 span_gist_get_span(FunctionCallInfo fcinfo, Span *result, Oid typid)
 {
   meosType type = oid_type(typid);
-  if (type == T_INT4 || type == T_INT8 || type == T_FLOAT8 ||
-    type == T_TIMESTAMPTZ)
+  if (span_basetype(type))
   {
     /* Since function span_gist_consistent is strict, d is not NULL */
     Datum d = PG_GETARG_DATUM(1);
     span_set(d, d, true, true, type, result);
   }
-  else if (type == T_INTSET || type == T_BIGINTSET || type == T_FLOATSET ||
-    type == T_TSTZSET)
+  else if (set_type(type))
   {
     Set *s = PG_GETARG_SET_P(1);
     set_set_span(s, result);
   }
-  else if (type == T_INTSPAN || type == T_BIGINTSPAN || type == T_FLOATSPAN ||
-    type == T_TSTZSPAN)
+  else if (span_type(type))
   {
     Span *s = PG_GETARG_SPAN_P(1);
     if (s == NULL)
       PG_RETURN_BOOL(false);
     memcpy(result, s, sizeof(Span));
   }
-  else if (type == T_INTSPANSET || type == T_BIGINTSPANSET ||
-    type == T_FLOATSPANSET || type == T_TSTZSPANSET)
+  else if (spanset_type(type))
   {
     Datum psdatum = PG_GETARG_DATUM(1);
     spanset_span_slice(psdatum, result);

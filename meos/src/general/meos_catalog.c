@@ -285,67 +285,6 @@ basetype_length(meosType type)
 }
 
 /**
- * @ingroup libmeos_internal_setspan_accessor
- * @brief Return the 32-bit hash of a value.
- */
-uint32
-datum_hash(Datum d, meosType type)
-{
-  ensure_basetype(type);
-  if (type == T_TIMESTAMPTZ)
-    return pg_hashint8(TimestampTzGetDatum(d));
-  else if (type == T_BOOL)
-    return hash_bytes_uint32((int32) DatumGetBool(d));
-  else if (type == T_INT4)
-    return hash_bytes_uint32(DatumGetInt32(d));
-  else if (type == T_INT8)
-    return pg_hashint8(DatumGetInt64(d));
-  else if (type == T_FLOAT8)
-    return pg_hashfloat8(DatumGetFloat8(d));
-  else if (type == T_TEXT)
-    return pg_hashtext(DatumGetTextP(d));
-  else if (geo_basetype(type))
-    return gserialized_hash(DatumGetGserializedP(d));
-#if NPOINT
-  else if (type == T_NPOINT)
-    return npoint_hash(DatumGetNpointP(d));
-#endif
-  else
-    elog(ERROR, "unknown hash function for base type: %d", type);
-}
-
-/**
- * @ingroup libmeos_internal_setspan_accessor
- * @brief Return the 64-bit hash of a value using a seed.
- */
-uint64
-datum_hash_extended(Datum d, meosType type, uint64 seed)
-{
-  ensure_basetype(type);
-  if (type == T_TIMESTAMPTZ)
-    return pg_hashint8extended(TimestampTzGetDatum(d), seed);
-  else if (type == T_BOOL)
-    return hash_bytes_uint32_extended((int32) DatumGetBool(d), seed);
-  else if (type == T_INT4)
-    return hash_bytes_uint32_extended(DatumGetInt32(d), seed);
-  else if (type == T_INT8)
-    return pg_hashint8extended(Int64GetDatum(d), seed);
-  else if (type == T_FLOAT8)
-    return pg_hashfloat8extended(Float8GetDatum(d), seed);
-  else if (type == T_TEXT)
-    return pg_hashtextextended(DatumGetTextP(d), seed);
-  // TODO
-  // else if (geo_basetype(type))
-    // return gserialized_hash_extended(DatumGetGserializedP(value));
-// #if NPOINT
-  // else if (type == T_NPOINT)
-    // return npoint_hash_extended(DatumGetNpointP(value));
-// #endif
-  else
-    elog(ERROR, "unknown hash function for base type: %d", type);
-}
-
-/**
  * @brief Return true if the type is an alpha base type
  */
 bool
@@ -525,6 +464,17 @@ ensure_span_basetype(meosType type)
 }
 
 /**
+ * @brief Return true if the type is a canonical base type of a span type
+ */
+bool
+span_canon_basetype(meosType type)
+{
+  if (type == T_INT4 || type == T_INT8)
+    return true;
+  return false;
+}
+
+/**
  * @brief Return true if the type is a span type
  */
 bool
@@ -554,17 +504,6 @@ bool
 numspan_type(meosType type)
 {
   if (type == T_INTSPAN || type == T_BIGINTSPAN || type == T_FLOATSPAN)
-    return true;
-  return false;
-}
-
-/**
- * @brief Return true if the type is a numeric span type
- */
-bool
-numspan_canonical_type(meosType type)
-{
-  if (type == T_INTSPAN || type == T_BIGINTSPAN)
     return true;
   return false;
 }

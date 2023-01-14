@@ -895,4 +895,21 @@ npoint_hash(const Npoint *np)
   return result;
 }
 
+/**
+ * @brief Return the 32-bit hash value of a network point.
+ */
+uint64
+npoint_hash_extended(const Npoint *np, uint64 seed)
+{
+  /* Compute hashes of value and position */
+  uint64 rid_hash = pg_hashfloat8extended(np->rid, seed);
+  uint64 pos_hash = pg_hashfloat8extended(np->pos, seed);
+
+  /* Merge hashes of value and position */
+  uint64 result = rid_hash;
+  result = (result << 1) | (result >> 31);
+  result ^= pos_hash;
+  return result;
+}
+
 /*****************************************************************************/

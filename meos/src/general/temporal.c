@@ -281,7 +281,7 @@ ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
     {
       double dist = -1;
       if (tnumber_basetype(basetype))
-        dist = (basetype == T_INT4) ?
+        dist = (basetype == T_INT4) ? /** x **/
           (double) DatumGetInt32(number_distance(value1, value2, basetype, basetype)) :
           DatumGetFloat8(number_distance(value1, value2, basetype, basetype));
       else if (geo_basetype(basetype))
@@ -352,7 +352,7 @@ void
 ensure_positive_datum(Datum size, meosType basetype)
 {
   ensure_span_basetype(basetype);
-  if (basetype == T_INT4)
+  if (basetype == T_INT4) /** x **/
   {
     int isize = DatumGetInt32(size);
     if (isize <= 0)
@@ -1193,19 +1193,16 @@ tnumber_set_span(const Temporal *temp, Span *s)
 {
   ensure_tnumber_type(temp->temptype);
   ensure_valid_tempsubtype(temp->subtype);
+  meosType basetype = temptype_basetype(temp->temptype);
   if (temp->subtype == TINSTANT)
   {
     Datum value = tinstant_value((TInstant *) temp);
-    meosType basetype = temptype_basetype(temp->temptype);
     span_set(value, value, true, true, basetype, s);
   }
   else
   {
     TBox *box = (TBox *) temporal_bbox_ptr(temp);
-    if (temp->temptype == T_TINT) /** xx **/
-      floatspan_set_intspan(&box->span, s);
-    else
-      memcpy(s, &box->span, sizeof(Span));
+    floatspan_set_numspan(&box->span, s, basetype);
   }
   return;
 }
@@ -2348,8 +2345,8 @@ temporal_bbox_ev_al_eq(const Temporal *temp, Datum value, bool ever)
   {
     TBox box;
     temporal_set_bbox(temp, &box);
-    Datum dvalue = (temp->temptype == T_TINT) ? /** xx **/
-      Float8GetDatum(DatumGetInt32(value)) : value;
+    meosType basetype = temptype_basetype(temp->temptype);
+    Datum dvalue = Float8GetDatum(datum_double(value, basetype));
     return (ever &&
         datum_le(box.span.lower, dvalue, box.span.basetype) &&
         datum_le(dvalue, box.span.upper, box.span.basetype)) ||
@@ -2392,8 +2389,8 @@ temporal_bbox_ev_al_lt_le(const Temporal *temp, Datum value, bool ever)
   {
     TBox box;
     temporal_set_bbox(temp, &box);
-    Datum dvalue = (temp->temptype == T_TINT) ? /** xx **/
-      Float8GetDatum(DatumGetInt32(value)) : value;
+    meosType basetype = temptype_basetype(temp->temptype);
+    Datum dvalue = Float8GetDatum(datum_double(value, basetype));
     if ((ever && datum_lt(dvalue, box.span.lower, box.span.basetype)) ||
       (! ever && datum_lt(dvalue, box.span.upper, box.span.basetype)))
       return false;

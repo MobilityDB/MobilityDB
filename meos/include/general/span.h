@@ -88,8 +88,6 @@ extern Span **spanarr_normalize(Span **spans, int count, bool sort,
   int *newcount);
 extern void span_bounds(const Span *s, double *xmin, double *xmax);
 
-extern void intspan_set_floatspan(const Span *s1, Span *s2);
-extern void floatspan_set_intspan(const Span *s1, Span *s2);
 extern size_t span_to_wkb_size(const Span *s);
 extern uint8_t *span_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant);
 
