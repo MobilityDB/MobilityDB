@@ -1129,24 +1129,6 @@ set_gt(const Set *s1, const Set *s2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_accessor
- * @brief Return the 32-bit hash of a value.
- */
-uint32
-datum_hash(Datum d, meosType basetype)
-{
-  ensure_set_basetype(basetype);
-  if (basetype == T_TIMESTAMPTZ)
-    return pg_hashint8(TimestampTzGetDatum(d));
-  else if (basetype == T_INT4)
-    return DatumGetInt32(hash_bytes_uint32(d));
-  else if (basetype == T_INT8)
-    return pg_hashint8(Int64GetDatum(d));
-  else /* basetype == T_FLOAT8 */
-    return pg_hashfloat8(Float8GetDatum(d));
-}
-
-/**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the 32-bit hash of a set.
  * @sqlfunc tstzset_hash()
@@ -1162,24 +1144,6 @@ set_hash(const Set *s)
     result = (result << 5) - result + value_hash;
   }
   return result;
-}
-
-/**
- * @ingroup libmeos_internal_setspan_accessor
- * @brief Return the 64-bit hash of a value using a seed.
- */
-uint64
-datum_hash_extended(Datum d, meosType basetype, uint64 seed)
-{
-  ensure_set_basetype(basetype);
-  if (basetype == T_TIMESTAMPTZ)
-    return pg_hashint8extended(TimestampTzGetDatum(d), seed);
-  else if (basetype == T_INT4)
-    return hash_bytes_uint32_extended(DatumGetInt32(d), seed);
-  else if (basetype == T_INT8)
-    return pg_hashint8extended(Int64GetDatum(d), seed);
-  else /* basetype == T_FLOAT8 */
-    return pg_hashfloat8extended(Float8GetDatum(d), seed);
 }
 
 /**

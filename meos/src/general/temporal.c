@@ -1202,7 +1202,7 @@ tnumber_set_span(const Temporal *temp, Span *s)
   else
   {
     TBox *box = (TBox *) temporal_bbox_ptr(temp);
-    if (temp->temptype == T_TINT)
+    if (temp->temptype == T_TINT) /** xx **/
       floatspan_set_intspan(&box->span, s);
     else
       memcpy(s, &box->span, sizeof(Span));
@@ -2348,7 +2348,7 @@ temporal_bbox_ev_al_eq(const Temporal *temp, Datum value, bool ever)
   {
     TBox box;
     temporal_set_bbox(temp, &box);
-    Datum dvalue = (temp->temptype == T_TINT) ?
+    Datum dvalue = (temp->temptype == T_TINT) ? /** xx **/
       Float8GetDatum(DatumGetInt32(value)) : value;
     return (ever &&
         datum_le(box.span.lower, dvalue, box.span.basetype) &&
@@ -2392,7 +2392,7 @@ temporal_bbox_ev_al_lt_le(const Temporal *temp, Datum value, bool ever)
   {
     TBox box;
     temporal_set_bbox(temp, &box);
-    Datum dvalue = (temp->temptype == T_TINT) ?
+    Datum dvalue = (temp->temptype == T_TINT) ? /** xx **/
       Float8GetDatum(DatumGetInt32(value)) : value;
     if ((ever && datum_lt(dvalue, box.span.lower, box.span.basetype)) ||
       (! ever && datum_lt(dvalue, box.span.upper, box.span.basetype)))
@@ -3754,7 +3754,7 @@ temporal_cmp(const Temporal *temp1, const Temporal *temp2)
   if (temp1->flags > temp2->flags)
     return 1;
 
-  /* Finally compare temporal type */
+  /* Finally compare temporal subtype */
   if (temp1->subtype < temp2->subtype)
     return -1;
   else if (temp1->subtype > temp2->subtype)

@@ -275,7 +275,7 @@ overlaps_span_span(const Span *s1, const Span *s2)
  */
 bool
 adjacent_span_value(const Span *s, Datum d, meosType basetype)
-{
+{ /** xx **/
   /*
    * A timestamp A and a span C..D are adjacent if and only if
    * A is adjacent to C, or D is adjacent to A.
@@ -343,7 +343,7 @@ adjacent_span_span(const Span *s1, const Span *s2)
    * B is adjacent to C, or D is adjacent to A.
    */
   assert(s1->spantype == s2->spantype);
-  return (
+  return ( /** xx **/
     (datum_eq2(s1->upper, s2->lower, s1->basetype, s2->basetype) &&
       s1->upper_inc != s2->lower_inc) ||
     (datum_eq2(s2->upper, s1->lower, s2->basetype, s1->basetype) &&

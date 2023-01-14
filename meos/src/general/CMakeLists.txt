@@ -18,14 +18,12 @@ add_library(general OBJECT
   temporal.c
   temporal_aggfuncs.c
   temporal_boxops.c
-  temporal_boxops_meos.c
   temporal_compops.c
   temporal_compops_meos.c
   temporal_in.c
   temporal_meos.c
   temporal_out.c
   temporal_parser.c
-  temporal_posops_meos.c
   temporal_similarity.c
   temporal_tile.c
   temporal_util.c

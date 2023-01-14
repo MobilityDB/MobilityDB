@@ -224,7 +224,7 @@ PG_FUNCTION_INFO_V1(Left_numspan_tnumber);
 PGDLLEXPORT Datum
 Left_numspan_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_numspan_tnumber_ext(fcinfo, &left_tbox_tbox);
+  return boxop_numspan_tnumber_ext(fcinfo, &left_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Overleft_numspan_tnumber);
@@ -237,7 +237,7 @@ PG_FUNCTION_INFO_V1(Overleft_numspan_tnumber);
 PGDLLEXPORT Datum
 Overleft_numspan_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_numspan_tnumber_ext(fcinfo, &overleft_tbox_tbox);
+  return boxop_numspan_tnumber_ext(fcinfo, &overleft_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Right_numspan_tnumber);
@@ -250,7 +250,7 @@ PG_FUNCTION_INFO_V1(Right_numspan_tnumber);
 PGDLLEXPORT Datum
 Right_numspan_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_numspan_tnumber_ext(fcinfo, &right_tbox_tbox);
+  return boxop_numspan_tnumber_ext(fcinfo, &right_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Overright_numspan_tnumber);
@@ -263,7 +263,7 @@ PG_FUNCTION_INFO_V1(Overright_numspan_tnumber);
 PGDLLEXPORT Datum
 Overright_numspan_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_numspan_tnumber_ext(fcinfo, &overright_tbox_tbox);
+  return boxop_numspan_tnumber_ext(fcinfo, &overright_span_span);
 }
 
 /*****************************************************************************/
@@ -279,7 +279,7 @@ PG_FUNCTION_INFO_V1(Left_tnumber_numspan);
 PGDLLEXPORT Datum
 Left_tnumber_numspan(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_numspan_ext(fcinfo, &left_tbox_tbox);
+  return boxop_tnumber_numspan_ext(fcinfo, &left_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Overleft_tnumber_numspan);
@@ -292,7 +292,7 @@ PG_FUNCTION_INFO_V1(Overleft_tnumber_numspan);
 PGDLLEXPORT Datum
 Overleft_tnumber_numspan(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_numspan_ext(fcinfo, &overleft_tbox_tbox);
+  return boxop_tnumber_numspan_ext(fcinfo, &overleft_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Right_tnumber_numspan);
@@ -305,7 +305,7 @@ PG_FUNCTION_INFO_V1(Right_tnumber_numspan);
 PGDLLEXPORT Datum
 Right_tnumber_numspan(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_numspan_ext(fcinfo, &right_tbox_tbox);
+  return boxop_tnumber_numspan_ext(fcinfo, &right_span_span);
 }
 
 PG_FUNCTION_INFO_V1(Overright_tnumber_numspan);
@@ -318,7 +318,7 @@ PG_FUNCTION_INFO_V1(Overright_tnumber_numspan);
 PGDLLEXPORT Datum
 Overright_tnumber_numspan(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_numspan_ext(fcinfo, &overright_tbox_tbox);
+  return boxop_tnumber_numspan_ext(fcinfo, &overright_span_span);
 }
 
 /*****************************************************************************/

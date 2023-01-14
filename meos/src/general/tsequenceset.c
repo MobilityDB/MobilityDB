@@ -765,7 +765,7 @@ tsequenceset_min_value(const TSequenceSet *ss)
   {
     TBox *box = TSEQUENCESET_BBOX_PTR(ss);
     Datum min = box->span.lower;
-    if (ss->temptype == T_TINT)
+    if (ss->temptype == T_TINT) /** xx **/
       min = Int32GetDatum((int) DatumGetFloat8(min));
     return min;
   }
@@ -794,7 +794,7 @@ tsequenceset_max_value(const TSequenceSet *ss)
     TBox *box = TSEQUENCESET_BBOX_PTR(ss);
     Datum max = box->span.upper;
     /* The upper bound for integer spans is exclusive due to cananicalization */
-    if (ss->temptype == T_TINT)
+    if (ss->temptype == T_TINT)  /** xx **/
       max = Int32GetDatum((int) DatumGetFloat8(max));
     return max;
   }

@@ -1097,37 +1097,16 @@ tinstant_cmp(const TInstant *inst1, const TInstant *inst2)
 uint32
 tinstant_hash(const TInstant *inst)
 {
-  uint32 result;
-  uint32 time_hash;
-
   Datum value = tinstant_value(inst);
-  /* Apply the hash function according to the base type */
-  uint32 value_hash = 0;
-  ensure_temporal_type(inst->temptype);
-  if (inst->temptype == T_TBOOL)
-    value_hash = hash_uint32((int32) value);
-  else if (inst->temptype == T_TINT)
-    value_hash = hash_uint32((int32) value);
-  else if (inst->temptype == T_TFLOAT)
-    value_hash = pg_hashfloat8(DatumGetFloat8(value));
-  else if (inst->temptype == T_TTEXT)
-    value_hash = pg_hashtext(DatumGetTextP(value));
-  else if (tgeo_type(inst->temptype))
-    value_hash = gserialized_hash(DatumGetGserializedP(value));
-#if NPOINT
-  else if (inst->temptype == T_TNPOINT)
-    value_hash = npoint_hash(DatumGetNpointP(value));
-#endif
-  else
-    elog(ERROR, "unknown hash function for temporal type: %d", inst->temptype);
-  /* Apply the hash function according to the timestamp */
-  time_hash = pg_hashint8(inst->t);
-
+  meosType basetype = temptype_basetype(inst->temptype);
+  /* Apply the hash function to the base type */
+  uint32 value_hash = datum_hash(value, basetype);
+  /* Apply the hash function to the timestamp */
+  uint32 time_hash = pg_hashint8(inst->t);
   /* Merge hashes of value and timestamp */
-  result = value_hash;
+  uint32 result = value_hash;
   result = (result << 1) | (result >> 31);
   result ^= time_hash;
-
   return result;
 }
 

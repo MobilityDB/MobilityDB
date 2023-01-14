@@ -41,6 +41,7 @@
 #include <math.h>
 #include <limits.h>
 /* PostgreSQL */
+#include <postgres.h>
 #include <common/int128.h>
 #include <utils/datetime.h>
 #include <utils/float.h>
@@ -1360,5 +1361,19 @@ pg_hashtext(text *key)
     VARSIZE_ANY_EXHDR(key)));
   return result;
 }
+
+/**
+ * @brief Get the 32-bit hash value of an text value.
+ * @note PostgreSQL function: Datum hashtext(PG_FUNCTION_ARGS)
+ * We simulate what would happen using DEFAULT_COLLATION_OID
+ */
+uint64
+pg_hashtextextended(text *key, uint64 seed)
+{
+  uint64 result = DatumGetUInt64(hash_any_extended(
+    (unsigned char *) VARDATA_ANY(key), VARSIZE_ANY_EXHDR(key), seed));
+  return result;
+}
+
 /*****************************************************************************/
 

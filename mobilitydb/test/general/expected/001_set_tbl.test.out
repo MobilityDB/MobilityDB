@@ -413,7 +413,7 @@ SELECT MAX(bigintset_hash(b)) FROM tbl_bigintset;
 SELECT MAX(floatset_hash(f)) FROM tbl_floatset;
     max     
 ------------
- 1978644117
+ 2055509444
 (1 row)
 
 SELECT MAX(tstzset_hash(t)) FROM tbl_tstzset;

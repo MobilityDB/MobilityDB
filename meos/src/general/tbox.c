@@ -383,7 +383,7 @@ numspan_set_tbox(const Span *s, TBox *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBox));
-  if (s->basetype == T_INT4)
+  if (s->basetype == T_INT4) /** xx **/
     intspan_set_floatspan(s, &box->span);
   else
     memcpy(&box->span, s, sizeof(Span));
@@ -935,18 +935,16 @@ adjacent_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   bool hasx, hast;
   topo_tbox_tbox_init(box1, box2, &hasx, &hast);
-  TBox inter;
-  if (! inter_tbox_tbox(box1, box2, &inter))
-    return false;
   /* Boxes are adjacent if they share n dimensions and their intersection is
    * at most of n-1 dimensions */
+  if (hasx && ! hast) /** xx **/
+    return (adjacent_span_span(&box1->span, &box2->span));
   if (! hasx && hast)
-    return (inter.period.lower == inter.period.upper);
-  if (hasx && ! hast)
-    return (inter.span.lower == inter.span.upper);
+    return (adjacent_span_span(&box1->period, &box2->period));
   /* (hasx && hast) */
-  return (inter.span.lower == inter.span.upper ||
-      inter.period.lower == inter.period.upper);
+  bool adjx = adjacent_span_span(&box1->span, &box2->span);
+  bool adjt = adjacent_span_span(&box1->period, &box2->period);
+  return ((adjx && ! adjt) || (! adjx && adjt));
 }
 
 /*****************************************************************************

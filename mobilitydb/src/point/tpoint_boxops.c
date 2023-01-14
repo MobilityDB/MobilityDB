@@ -51,6 +51,7 @@
 #include <liblwgeom.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_internal.h>
 #include "general/temporaltypes.h"
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
@@ -98,7 +99,9 @@ boxop_stbox_tpoint_ext(FunctionCallInfo fcinfo,
 {
   STBox *box = PG_GETARG_STBOX_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  bool result = boxop_tpoint_stbox(temp, box, func, INVERT);
+  STBox box1;
+  temporal_set_bbox(temp, &box1);
+  bool result = func(box, &box1);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_BOOL(result);
 }
@@ -115,7 +118,9 @@ boxop_tpoint_stbox_ext(FunctionCallInfo fcinfo,
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   STBox *box = PG_GETARG_STBOX_P(1);
-  bool result = boxop_tpoint_stbox(temp, box, func, INVERT_NO);
+  STBox box1;
+  temporal_set_bbox(temp, &box1);
+  bool result = func(&box1, box);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);
 }
@@ -132,7 +137,10 @@ boxop_tpoint_tpoint_ext(FunctionCallInfo fcinfo,
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  bool result = boxop_tpoint_tpoint(temp1, temp2, func);
+  STBox box1, box2;
+  temporal_set_bbox(temp1, &box1);
+  temporal_set_bbox(temp2, &box2);
+  bool result = func(&box1, &box2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   PG_RETURN_BOOL(result);

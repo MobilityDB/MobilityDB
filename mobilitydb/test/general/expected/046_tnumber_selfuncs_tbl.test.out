@@ -1375,7 +1375,7 @@ SELECT COUNT(*) FROM tbl_tbool WHERE temp -|- tstzspan '[2001-06-01, 2001-07-01]
 SELECT COUNT(*) FROM tbl_tint WHERE temp -|- intspan '[1,3]';
  count 
 -------
-     6
+     2
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint WHERE temp -|- tbox 'TBOX XT([1.5,2.5],[2000-01-01, 2000-01-03])';
@@ -4143,7 +4143,7 @@ SELECT COUNT(*) FROM tbl_tbool WHERE temp -|- tstzspan '[2001-06-01, 2001-07-01]
 SELECT COUNT(*) FROM tbl_tint WHERE temp -|- intspan '[1,3]';
  count 
 -------
-     6
+     2
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint WHERE temp -|- tbox 'TBOX XT([1.5,2.5],[2000-01-01, 2000-01-03])';

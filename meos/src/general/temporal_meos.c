@@ -331,7 +331,7 @@ tint_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
   assert(temp->temptype == T_TINT);
   Datum res;
   bool result = temporal_value_at_timestamp(temp, t, strict, &res);
-  *value = DatumGetInt32(res);
+  *value = DatumGetInt32(res);  /** xx **/
   return result;
 }
 

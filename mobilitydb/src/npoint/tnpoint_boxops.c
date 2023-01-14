@@ -44,6 +44,7 @@
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_internal.h>
 #include "npoint/tnpoint.h"
 #include "npoint/tnpoint_static.h"
 #include "npoint/tnpoint_spatialfuncs.h"
@@ -157,11 +158,13 @@ Tnpoint_to_stbox(PG_FUNCTION_ARGS)
  */
 Datum
 boxop_stbox_tnpoint_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const STBox *, const STBox *), bool spatial)
+  bool (*func)(const STBox *, const STBox *))
 {
   STBox *box = PG_GETARG_STBOX_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  int result = boxop_tnpoint_stbox(temp, box, func, spatial, INVERT);
+  STBox box1;
+  temporal_set_bbox(temp, &box1);
+  int result = func(box, &box1);
   PG_FREE_IF_COPY(temp, 1);
   if (result < 0)
     PG_RETURN_NULL();
@@ -178,11 +181,13 @@ boxop_stbox_tnpoint_ext(FunctionCallInfo fcinfo,
  */
 Datum
 boxop_tnpoint_stbox_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const STBox *, const STBox *), bool spatial)
+  bool (*func)(const STBox *, const STBox *))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   STBox *box = PG_GETARG_STBOX_P(1);
-  int result = boxop_tnpoint_stbox(temp, box, func, spatial, INVERT_NO);
+  STBox box1;
+  temporal_set_bbox(temp, &box1);
+  int result = func(&box1, box);
   PG_FREE_IF_COPY(temp, 0);
   if (result < 0)
     PG_RETURN_NULL();
@@ -201,7 +206,10 @@ boxop_tnpoint_tnpoint_ext(FunctionCallInfo fcinfo,
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  bool result = boxop_tnpoint_tnpoint(temp1, temp2, func);
+  STBox box1, box2;
+  temporal_set_bbox(temp1, &box1);
+  temporal_set_bbox(temp2, &box2);
+  bool result = func(&box1, &box2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   PG_RETURN_BOOL(result);

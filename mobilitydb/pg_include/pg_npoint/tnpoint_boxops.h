@@ -49,9 +49,9 @@ extern Datum boxop_geo_tnpoint_ext(FunctionCallInfo fcinfo,
 extern Datum boxop_tnpoint_geo_ext(FunctionCallInfo fcinfo,
   bool (*func)(const STBox *, const STBox *));
 extern Datum boxop_stbox_tnpoint_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const STBox *, const STBox *), bool spatial);
+  bool (*func)(const STBox *, const STBox *));
 extern Datum boxop_tnpoint_stbox_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const STBox *, const STBox *), bool spatial);
+  bool (*func)(const STBox *, const STBox *));
 extern Datum boxop_npoint_tnpoint_ext(FunctionCallInfo fcinfo,
   bool (*func)(const STBox *, const STBox *));
 extern Datum boxop_tnpoint_npoint_ext(FunctionCallInfo fcinfo,

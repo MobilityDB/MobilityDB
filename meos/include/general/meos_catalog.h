@@ -173,6 +173,7 @@ extern bool geoset_type(meosType settype);
 extern bool span_type(meosType spantype);
 extern void ensure_span_type(meosType spantype);
 extern bool numspan_type(meosType spantype);
+extern bool numspan_canonical_type(meosType spantype);
 extern void ensure_numspan_type(meosType spantype);
 extern bool span_basetype(meosType basetype);
 extern void ensure_span_basetype(meosType basetype);
