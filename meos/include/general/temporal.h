@@ -257,10 +257,13 @@ enum MOBDB_WKB_TSUBTYPE
 
 /* Variation flags
  * The first byte of the variation flag depends on the type we are sending
+ * - Set types: xxxO where O states whether the set is ordered or not
  * - Box types: xxTX where X and T state whether the corresponding dimensions
- *   are present and x are unused
- * - Temporal types: xxSS where SS correspond to the subtype and x is unused
+ *   are present
+ * - Temporal types: xxSS where SS correspond to the subtype
+ * and x are unused bits
  */
+#define MOBDB_WKB_ORDERED          0x01  // 1
 #define MOBDB_WKB_XFLAG            0x01  // 1
 #define MOBDB_WKB_TFLAG            0x02  // 2
 #define MOBDB_WKB_INTERPFLAGS      0x0C  // 4 + 8

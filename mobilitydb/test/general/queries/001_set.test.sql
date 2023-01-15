@@ -41,9 +41,16 @@ SELECT tstzset '{2000-01-01, 2000-01-02';
 -------------------------------------------------------------------------------
 
 SELECT tstzset(ARRAY [timestamptz '2000-01-01', '2000-01-02', '2000-01-03']);
-/* Errors */
 SELECT tstzset(ARRAY [timestamptz '2000-01-01', '2000-01-01', '2000-01-03']);
+/* Errors */
 SELECT tstzset('{}'::timestamptz[]);
+
+SELECT geomset(ARRAY[geometry 'Point(1 1)', 'Point(2 2)', 'Point(3 3)']);
+/* Errors */
+SELECT geomset(ARRAY[geometry 'Point(1 1)', 'Point(1 1 1)']);
+SELECT geomset(ARRAY[geometry 'Point(1 1)', 'Point empty']);
+SELECT geomset(ARRAY[geometry 'Point(1 1)', 'Linestring(1 1,2 2)']);
+SELECT geomset(ARRAY[geometry 'Point(1 1)', 'SRID=5676;Point(1 1)']);
 
 -------------------------------------------------------------------------------
 -- Casting

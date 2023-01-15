@@ -1110,8 +1110,8 @@ set_to_wkb_size(const Set *s)
     Datum value = set_val_n(s, i);
     result += set_basetype_to_wkb_size(value, basetype, s->flags);
   }
-  /* Endian flag + settype + count + values */
-  result += MOBDB_WKB_BYTE_SIZE + MOBDB_WKB_INT2_SIZE +
+  /* Endian flag + settype + set flags + count + values */
+  result += MOBDB_WKB_BYTE_SIZE * 2 + MOBDB_WKB_INT2_SIZE +
     MOBDB_WKB_INT4_SIZE;
   return result;
 }
@@ -1663,6 +1663,45 @@ basevalue_to_wkb_buf(Datum value, meosType basetype, int16 flags, uint8_t *buf,
 /*****************************************************************************/
 
 /**
+ * Return true if the temporal point needs to output the SRID
+ */
+bool
+geoset_wkb_needs_srid(const Set *set, uint8_t variant)
+{
+  /* Add an SRID if the WKB form is extended and if the set has one */
+  if ((variant & WKB_EXTENDED) && geoset_srid(set) != SRID_UNKNOWN)
+    return true;
+
+  /* Everything else doesn't get an SRID */
+  return false;
+}
+
+/**
+ * Write into the buffer the flag containing the temporal type and
+ * other characteristics represented in Well-Known Binary (WKB) format.
+ * In binary format it is a byte as follows
+ * xSGZxxxO
+ * S = SRID, G = Geodetic, Z = has Z, O = ordered set, x = unused bit
+ */
+static uint8_t *
+set_flags_to_wkb_buf(const Set *set, uint8_t *buf, uint8_t variant)
+{
+  /* Set the flags */
+  uint8_t wkb_flags = MOBDB_WKB_ORDERED;
+  if (geo_basetype(set->basetype))
+  {
+    if (MOBDB_FLAGS_GET_Z(set->flags))
+      wkb_flags |= MOBDB_WKB_ZFLAG;
+    if (MOBDB_FLAGS_GET_GEODETIC(set->flags))
+      wkb_flags |= MOBDB_WKB_GEODETICFLAG;
+    if (geoset_wkb_needs_srid(set, variant))
+      wkb_flags |= MOBDB_WKB_SRIDFLAG;
+  }
+  /* Write the flags */
+  return uint8_to_wkb_buf(wkb_flags, buf, variant);
+}
+
+/**
  * Write into the buffer a set represented in Well-Known Binary (WKB)
  * format as follows
  * - Endian byte
@@ -1677,6 +1716,8 @@ set_to_wkb_buf(const Set *s, uint8_t *buf, uint8_t variant)
   buf = endian_to_wkb_buf(buf, variant);
   /* Write the set type */
   buf = int16_to_wkb_buf(s->settype, buf, variant);
+  /* Write the set flags */
+  buf = set_flags_to_wkb_buf(s, buf, variant);
   /* Write the count */
   buf = int32_to_wkb_buf(s->count, buf, variant);
   /* Write the values */
@@ -1950,7 +1991,7 @@ stbox_to_wkb_buf(const STBox *box, uint8_t *buf, uint8_t variant)
  * other characteristics represented in Well-Known Binary (WKB) format.
  * In binary format it is a byte as follows
  * xSGZIITT
- * L = Linear, S = SRID, G = Geodetic, Z = has Z, x = unused bit
+ * S = SRID, G = Geodetic, Z = has Z, x = unused bit
  * II = Interpolation with values 0 to 2
  * TT = Temporal subtype with values 1 to 3
  */

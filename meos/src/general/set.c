@@ -47,6 +47,7 @@
 #include "general/temporal_parser.h"
 #include "general/temporal_util.h"
 #include "point/tpoint_out.h"
+#include "point/tpoint_spatialfuncs.h"
 #include "npoint/tnpoint_boxops.h"
 
 /*****************************************************************************
@@ -373,24 +374,42 @@ set_val_n(const Set *s, int index)
 Set *
 set_make(const Datum *values, int count, meosType basetype, bool ordered)
 {
-  if (ordered)
+  bool hasz = false;
+  bool isgeodetic = false;
+  if (geo_basetype(basetype))
   {
+    /* Ensure the spatial validity of the elements */
+    GSERIALIZED *gs1 = DatumGetGserializedP(values[0]);
+    int srid = gserialized_get_srid(gs1);
+    hasz = FLAGS_GET_Z(gs1->gflags);
+    isgeodetic = FLAGS_GET_GEODETIC(gs1->gflags);
     /* Test the validity of the values */
-    for (int i = 0; i < count - 1; i++)
+    for (int i = 0; i < count; i++)
     {
-      if (datum_ge(values[i], values[i + 1], basetype))
-      {
-        char *str1 = geo_basetype(basetype) ?
-          ewkt_out(values[i], basetype, OUT_DEFAULT_DECIMAL_DIGITS) :
-          basetype_out(values[i], basetype, OUT_DEFAULT_DECIMAL_DIGITS);
-        char *str2 = geo_basetype(basetype) ?
-          ewkt_out(values[i + 1], basetype, OUT_DEFAULT_DECIMAL_DIGITS) :
-          basetype_out(values[i + 1], basetype, OUT_DEFAULT_DECIMAL_DIGITS);
-        elog(ERROR, "The values of a set must be increasing: %s %s",
-          str1, str2);
-        pfree(str1); pfree(str2);
-      }
+      /* Test that the geometry is not empty */
+      GSERIALIZED *gs2 = DatumGetGserializedP(values[i]);
+      ensure_point_type(gs2);
+      ensure_same_srid(srid, gserialized_get_srid(gs2));
+      ensure_same_dimensionality_gs(gs1, gs2);
+      ensure_non_empty(gs2);
     }
+  }
+
+  /* Sort the values and remove duplicates */
+  Datum *newvalues;
+  int newcount;
+  if (ordered && count > 1)
+  {
+  /* Sort the values and remove duplicates */
+    newvalues = palloc(sizeof(Datum *) * count);
+    memcpy(newvalues, values, sizeof(Datum *) * count);
+    datumarr_sort(newvalues, count, basetype);
+    newcount = datumarr_remove_duplicates(newvalues, count, basetype);
+  }
+  else
+  {
+    newvalues = (Datum *) values;
+    newcount = count;
   }
 
   /* Get the bounding box size */
@@ -413,43 +432,47 @@ set_make(const Datum *values, int count, meosType basetype, bool ordered)
   {
     if (typlen == -1)
     {
-      for (int i = 0; i < count; i++)
-        values_size += double_pad(VARSIZE(values[i]));
+      for (int i = 0; i < newcount; i++)
+        values_size += double_pad(VARSIZE(newvalues[i]));
     }
     else
-      values_size = double_pad(typlen) * count;
+      values_size = double_pad(typlen) * newcount;
   }
 
   /* Determine overall memory size */
   size_t memsize = double_pad(sizeof(Set)) + double_pad(bboxsize) +
-    (sizeof(size_t) * count) + values_size;
+    (sizeof(size_t) * newcount) + values_size;
 
   /* Create the Set */
   Set *result = palloc0(memsize);
   SET_VARSIZE(result, memsize);
   MOBDB_FLAGS_SET_BYVAL(result->flags, typbyval);
   MOBDB_FLAGS_SET_ORDERED(result->flags, ordered);
-  result->count = count;
+  if (geo_basetype(basetype))
+  {
+    MOBDB_FLAGS_SET_Z(result->flags, hasz);
+    MOBDB_FLAGS_SET_GEODETIC(result->flags, isgeodetic);
+  }
+  result->count = newcount;
   result->settype = settype;
   result->basetype = basetype;
   result->bboxsize = bboxsize;
-
   /* Copy the array of values */
   if (typbyval)
   {
-    for (int i = 0; i < count; i++)
-      (set_offsets_ptr(result))[i] = values[i];
+    for (int i = 0; i < newcount; i++)
+      (set_offsets_ptr(result))[i] = newvalues[i];
   }
   else
   {
     /* Store the composing values */
     size_t pdata = double_pad(sizeof(Set)) + double_pad(bboxsize) +
-      sizeof(size_t) * count;
+      sizeof(size_t) * newcount;
     size_t pos = 0;
-    for (int i = 0; i < count; i++)
+    for (int i = 0; i < newcount; i++)
     {
-      size_t size_elem = (typlen == -1) ? VARSIZE(values[i]) : (uint32) typlen;
-      memcpy(((char *) result) + pdata + pos, DatumGetPointer(values[i]),
+      size_t size_elem = (typlen == -1) ? VARSIZE(newvalues[i]) : (uint32) typlen;
+      memcpy(((char *) result) + pdata + pos, DatumGetPointer(newvalues[i]),
         size_elem);
       (set_offsets_ptr(result))[i] = pos;
       pos += double_pad(size_elem);
@@ -458,8 +481,10 @@ set_make(const Datum *values, int count, meosType basetype, bool ordered)
 
   /* Compute the bounding box */
   if (bboxsize != 0)
-    valuearr_compute_bbox(values, basetype, count, set_bbox_ptr(result));
+    valuearr_compute_bbox(newvalues, basetype, newcount, set_bbox_ptr(result));
 
+  if (ordered && count > 1)
+    pfree(newvalues);
   return result;
 }
 
@@ -937,6 +962,19 @@ tstzset_timestamps(const Set *ts)
   for (int i = 0; i < ts->count; i++)
     result[i] = DatumGetTimestampTz(set_val_n(ts, i));
   return result;
+}
+
+/**
+ * @ingroup libmeos_internal_setspan_accessor
+ * @brief Return the SRID of a geoset point.
+ * @sqlfunc SRID()
+ */
+int
+geoset_srid(const Set *set)
+{
+  assert(geo_basetype(set->basetype));
+  GSERIALIZED *gs = DatumGetGserializedP(set_val_n(set, 0));
+  return gserialized_get_srid(gs);
 }
 
 /*****************************************************************************

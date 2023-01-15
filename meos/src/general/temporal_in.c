@@ -66,6 +66,7 @@ typedef struct
   uint8_t temptype;       /**< Current temporal type we are handling */
   uint8_t subtype;        /**< Current temporal subtype we are handling */
   int32_t srid;           /**< Current SRID we are handling */
+  bool ordered;           /**< Is the set ordered? */
   bool hasx;              /**< X? */
   bool hasz;              /**< Z? */
   bool hast;              /**< T? */
@@ -1070,7 +1071,7 @@ basevalue_from_wkb_state(wkb_parse_state *s)
       break;
     case T_GEOMETRY:
     case T_GEOGRAPHY:
-      // TODO Generalize for geometries
+      /* Notice that only point geometries/geographies are allowed */
       result = point_from_wkb_state(s);
       break;
 #if NPOINT
@@ -1193,6 +1194,30 @@ spanset_from_wkb_state(wkb_parse_state *s)
 /*****************************************************************************/
 
 /**
+ * Parse the WKB flags.
+ */
+void
+set_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
+{
+  s->hasz = false;
+  s->geodetic = false;
+  s->has_srid = false;
+  if (wkb_flags & MOBDB_WKB_ORDERED)
+    s->ordered = true;
+  /* Get the flags */
+  if (geo_basetype(s->basetype))
+  {
+    if (wkb_flags & MOBDB_WKB_ZFLAG)
+      s->hasz = true;
+    if (wkb_flags & MOBDB_WKB_GEODETICFLAG)
+      s->geodetic = true;
+    if (wkb_flags & MOBDB_WKB_SRIDFLAG)
+      s->has_srid = true;
+  }
+  return;
+}
+
+/**
  * Return a set from its WKB representation
  */
 static Set *
@@ -1203,6 +1228,15 @@ set_from_wkb_state(wkb_parse_state *s)
   /* For template classes it is necessary to store the specific type */
   s->type = wkb_settype;
   s->basetype = settype_basetype(s->type);
+  /* Read the set flags */
+  uint8_t wkb_flags = (uint8_t) byte_from_wkb_state(s);
+  set_flags_from_wkb_state(s, wkb_flags);
+  /* Read the SRID, if necessary */
+  if (s->has_srid)
+    s->srid = int32_from_wkb_state(s);
+  else if (wkb_flags & MOBDB_WKB_GEODETICFLAG)
+    s->srid = SRID_DEFAULT;
+
   /* Read the number of values and allocate space for them */
   int count = int32_from_wkb_state(s);
   Datum *values = palloc(sizeof(Datum) * count);
