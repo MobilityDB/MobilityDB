@@ -39,7 +39,7 @@
 #include <meos_internal.h>
 #include "general/set.h"
 #include "general/spanset.h"
-#include "general/temporal_util.h"
+#include "general/type_util.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 
@@ -62,24 +62,6 @@ Contains_spanset_value(PG_FUNCTION_ARGS)
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   bool result = contains_spanset_value(ss, d, basetype);
   PG_FREE_IF_COPY(ss, 0);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(Contains_spanset_set);
-/**
- * @ingroup mobilitydb_spantime_topo
- * @brief Return true if a span set contains a set
- * @sqlfunc span_contains()
- * @sqlop @p \@>
- */
-PGDLLEXPORT Datum
-Contains_spanset_set(PG_FUNCTION_ARGS)
-{
-  SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Set *s = PG_GETARG_SET_P(1);
-  bool result = contains_spanset_set(ss, s);
-  PG_FREE_IF_COPY(ss, 0);
-  PG_FREE_IF_COPY(s, 1);
   PG_RETURN_BOOL(result);
 }
 
@@ -157,24 +139,6 @@ Contained_value_spanset(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(Contained_set_spanset);
-/**
- * @ingroup mobilitydb_spantime_topo
- * @brief Return true if a set is contained by a span set
- * @sqlfunc span_contained()
- * @sqlop @p <@
- */
-PGDLLEXPORT Datum
-Contained_set_spanset(PG_FUNCTION_ARGS)
-{
-  Set *s = PG_GETARG_SET_P(0);
-  SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  bool result = contained_set_spanset(s, ss);
-  PG_FREE_IF_COPY(s, 0);
-  PG_FREE_IF_COPY(ss, 1);
-  PG_RETURN_BOOL(result);
-}
-
 PG_FUNCTION_INFO_V1(Contained_span_spanset);
 /**
  * @ingroup mobilitydb_spantime_topo
@@ -230,42 +194,6 @@ Contained_spanset_spanset(PG_FUNCTION_ARGS)
 /*****************************************************************************
  * Overlaps
  *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(Overlaps_set_spanset);
-/**
- * @ingroup mobilitydb_spantime_topo
- * @brief Return true if a set and a span set overlap
- * @sqlfunc span_overlaps()
- * @sqlop @p &&
- */
-PGDLLEXPORT Datum
-Overlaps_set_spanset(PG_FUNCTION_ARGS)
-{
-  Set *s = PG_GETARG_SET_P(0);
-  SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  bool result = overlaps_spanset_set(ss, s);
-  PG_FREE_IF_COPY(s, 0);
-  PG_FREE_IF_COPY(ss, 1);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(Overlaps_spanset_set);
-/**
- * @ingroup mobilitydb_spantime_topo
- * @brief Return true if a span set and a set overlap
- * @sqlfunc span_overlaps()
- * @sqlop @p &&
- */
-PGDLLEXPORT Datum
-Overlaps_spanset_set(PG_FUNCTION_ARGS)
-{
-  SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Set *s = PG_GETARG_SET_P(1);
-  bool result = overlaps_spanset_set(ss, s);
-  PG_FREE_IF_COPY(ss, 0);
-  PG_FREE_IF_COPY(s, 1);
-  PG_RETURN_BOOL(result);
-}
 
 PG_FUNCTION_INFO_V1(Overlaps_span_spanset);
 /**
@@ -341,24 +269,6 @@ Adjacent_value_spanset(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(Adjacent_set_spanset);
-/**
- * @ingroup mobilitydb_spantime_topo
- * @brief Return true if a set and a span set are adjacent
- * @sqlfunc span_adjacent()
- * @sqlop @p -|-
- */
-PGDLLEXPORT Datum
-Adjacent_set_spanset(PG_FUNCTION_ARGS)
-{
-  Set *s = PG_GETARG_SET_P(0);
-  SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  bool result = adjacent_spanset_set(ss, s);
-  PG_FREE_IF_COPY(s, 0);
-  PG_FREE_IF_COPY(ss, 1);
-  PG_RETURN_BOOL(result);
-}
-
 PG_FUNCTION_INFO_V1(Adjacent_spanset_value);
 /**
  * @ingroup mobilitydb_spantime_topo
@@ -374,24 +284,6 @@ Adjacent_spanset_value(PG_FUNCTION_ARGS)
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   bool result = adjacent_spanset_value(ss, d, basetype);
   PG_FREE_IF_COPY(ss, 0);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(Adjacent_spanset_set);
-/**
- * @ingroup mobilitydb_spantime_topo
- * @brief Return true if a span set and a set are adjacent
- * @sqlfunc span_adjacent()
- * @sqlop @p -|-
- */
-PGDLLEXPORT Datum
-Adjacent_spanset_set(PG_FUNCTION_ARGS)
-{
-  SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Set *s = PG_GETARG_SET_P(1);
-  bool result = adjacent_spanset_set(ss, s);
-  PG_FREE_IF_COPY(ss, 0);
-  PG_FREE_IF_COPY(s, 1);
   PG_RETURN_BOOL(result);
 }
 
@@ -469,24 +361,6 @@ Left_value_spanset(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(Left_set_spanset);
-/**
- * @ingroup mobilitydb_spantime_pos
- * @brief Return true if a set is strictly to the left of a span set
- * @sqlfunc span_left()
- * @sqlop @p <<#
- */
-PGDLLEXPORT Datum
-Left_set_spanset(PG_FUNCTION_ARGS)
-{
-  Set *s = PG_GETARG_SET_P(0);
-  SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  bool result = left_set_spanset(s, ss);
-  PG_FREE_IF_COPY(s, 0);
-  PG_FREE_IF_COPY(ss, 1);
-  PG_RETURN_BOOL(result);
-}
-
 PG_FUNCTION_INFO_V1(Left_span_spanset);
 /**
  * @ingroup mobilitydb_spantime_pos
@@ -519,24 +393,6 @@ Left_spanset_value(PG_FUNCTION_ARGS)
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   bool result = left_spanset_value(ss, d, basetype);
   PG_FREE_IF_COPY(ss, 0);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(Left_spanset_set);
-/**
- * @ingroup mobilitydb_spantime_pos
- * @brief Return true if a span set is strictly to the left a set
- * @sqlfunc span_left()
- * @sqlop @p <<#
- */
-PGDLLEXPORT Datum
-Left_spanset_set(PG_FUNCTION_ARGS)
-{
-  SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Set *s = PG_GETARG_SET_P(1);
-  bool result = left_spanset_set(ss, s);
-  PG_FREE_IF_COPY(ss, 0);
-  PG_FREE_IF_COPY(s, 1);
   PG_RETURN_BOOL(result);
 }
 
@@ -597,24 +453,6 @@ Right_value_spanset(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(Right_set_spanset);
-/**
- * @ingroup mobilitydb_spantime_pos
- * @brief Return true if a set is strictly after a span set
- * @sqlfunc span_after()
- * @sqlop @p #>>
- */
-PGDLLEXPORT Datum
-Right_set_spanset(PG_FUNCTION_ARGS)
-{
-  Set *s = PG_GETARG_SET_P(0);
-  SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  bool result = right_set_spanset(s, ss);
-  PG_FREE_IF_COPY(s, 0);
-  PG_FREE_IF_COPY(ss, 1);
-  PG_RETURN_BOOL(result);
-}
-
 PG_FUNCTION_INFO_V1(Right_span_spanset);
 /**
  * @ingroup mobilitydb_spantime_pos
@@ -647,24 +485,6 @@ Right_spanset_value(PG_FUNCTION_ARGS)
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   bool result = right_spanset_value(ss, d, basetype);
   PG_FREE_IF_COPY(ss, 0);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(Right_spanset_set);
-/**
- * @ingroup mobilitydb_spantime_pos
- * @brief Return true if a span set is strictly after a set
- * @sqlfunc span_after()
- * @sqlop @p #>>
- */
-PGDLLEXPORT Datum
-Right_spanset_set(PG_FUNCTION_ARGS)
-{
-  SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Set *s = PG_GETARG_SET_P(1);
-  bool result = right_spanset_set(ss, s);
-  PG_FREE_IF_COPY(ss, 0);
-  PG_FREE_IF_COPY(s, 1);
   PG_RETURN_BOOL(result);
 }
 
@@ -725,24 +545,6 @@ Overleft_value_spanset(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(Overleft_set_spanset);
-/**
- * @ingroup mobilitydb_spantime_pos
- * @brief Return true if a set is not after a span set
- * @sqlfunc span_overleft()
- * @sqlop @p &<#
- */
-PGDLLEXPORT Datum
-Overleft_set_spanset(PG_FUNCTION_ARGS)
-{
-  Set *s = PG_GETARG_SET_P(0);
-  SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  bool result = overleft_set_spanset(s, ss);
-  PG_FREE_IF_COPY(s, 0);
-  PG_FREE_IF_COPY(ss, 1);
-  PG_RETURN_BOOL(result);
-}
-
 PG_FUNCTION_INFO_V1(Overleft_spanset_value);
 /**
  * @ingroup mobilitydb_spantime_topo
@@ -758,24 +560,6 @@ Overleft_spanset_value(PG_FUNCTION_ARGS)
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   bool result = overleft_spanset_value(ss, d, basetype);
   PG_FREE_IF_COPY(ss, 0);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(Overleft_spanset_set);
-/**
- * @ingroup mobilitydb_spantime_pos
- * @brief Return true if a span set is not after a set
- * @sqlfunc span_overleft()
- * @sqlop @p &<#
- */
-PGDLLEXPORT Datum
-Overleft_spanset_set(PG_FUNCTION_ARGS)
-{
-  SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Set *s = PG_GETARG_SET_P(1);
-  bool result = overleft_spanset_set(ss, s);
-  PG_FREE_IF_COPY(ss, 0);
-  PG_FREE_IF_COPY(s, 1);
   PG_RETURN_BOOL(result);
 }
 
@@ -853,24 +637,6 @@ Overright_value_spanset(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(Overright_set_spanset);
-/**
- * @ingroup mobilitydb_spantime_pos
- * @brief Return true if a set is not left a span set
- * @sqlfunc span_overafter()
- * @sqlop @p #&>
- */
-PGDLLEXPORT Datum
-Overright_set_spanset(PG_FUNCTION_ARGS)
-{
-  Set *s = PG_GETARG_SET_P(0);
-  SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  bool result = overright_set_spanset(s, ss);
-  PG_FREE_IF_COPY(s, 0);
-  PG_FREE_IF_COPY(ss, 1);
-  PG_RETURN_BOOL(result);
-}
-
 PG_FUNCTION_INFO_V1(Overright_spanset_value);
 /**
  * @ingroup mobilitydb_spantime_topo
@@ -903,24 +669,6 @@ Overright_span_spanset(PG_FUNCTION_ARGS)
   SpanSet *ss = PG_GETARG_SPANSET_P(1);
   bool result = overright_span_spanset(s, ss);
   PG_FREE_IF_COPY(ss, 1);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(Overright_spanset_set);
-/**
- * @ingroup mobilitydb_spantime_pos
- * @brief Return true if a span set is not left a set
- * @sqlfunc span_overafter()
- * @sqlop @p #&>
- */
-PGDLLEXPORT Datum
-Overright_spanset_set(PG_FUNCTION_ARGS)
-{
-  SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Set *s = PG_GETARG_SET_P(1);
-  bool result = overright_spanset_set(ss, s);
-  PG_FREE_IF_COPY(ss, 0);
-  PG_FREE_IF_COPY(s, 1);
   PG_RETURN_BOOL(result);
 }
 
@@ -981,24 +729,6 @@ Union_value_spanset(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Union_set_spanset);
-/**
- * @ingroup mobilitydb_spantime_set
- * @brief Return the union of a set and a span set
- * @sqlfunc span_union()
- * @sqlop @p +
- */
-PGDLLEXPORT Datum
-Union_set_spanset(PG_FUNCTION_ARGS)
-{
-  Set *s = PG_GETARG_SET_P(0);
-  SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  SpanSet *result = union_spanset_set(ss, s);
-  PG_FREE_IF_COPY(s, 0);
-  PG_FREE_IF_COPY(ss, 1);
-  PG_RETURN_POINTER(result);
-}
-
 PG_FUNCTION_INFO_V1(Union_span_spanset);
 /**
  * @ingroup mobilitydb_spantime_set
@@ -1031,24 +761,6 @@ Union_spanset_value(PG_FUNCTION_ARGS)
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   SpanSet *result = union_spanset_value(ss, d, basetype);
   PG_FREE_IF_COPY(ss, 0);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Union_spanset_set);
-/**
- * @ingroup mobilitydb_spantime_set
- * @brief Return the union of a span set and a set
- * @sqlfunc span_union()
- * @sqlop @p +
- */
-PGDLLEXPORT Datum
-Union_spanset_set(PG_FUNCTION_ARGS)
-{
-  SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Set *s = PG_GETARG_SET_P(1);
-  SpanSet *result = union_spanset_set(ss, s);
-  PG_FREE_IF_COPY(ss, 0);
-  PG_FREE_IF_COPY(s, 1);
   PG_RETURN_POINTER(result);
 }
 
@@ -1112,26 +824,6 @@ Intersection_value_spanset(PG_FUNCTION_ARGS)
   PG_RETURN_DATUM(result);
 }
 
-PG_FUNCTION_INFO_V1(Intersection_set_spanset);
-/**
- * @ingroup mobilitydb_spantime_set
- * @brief Return the intersection of a set and a span set
- * @sqlfunc span_intersection()
- * @sqlop @p *
- */
-PGDLLEXPORT Datum
-Intersection_set_spanset(PG_FUNCTION_ARGS)
-{
-  Set *s = PG_GETARG_SET_P(0);
-  SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  Set *result = intersection_spanset_set(ss, s);
-  PG_FREE_IF_COPY(s, 0);
-  PG_FREE_IF_COPY(ss, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
-}
-
 PG_FUNCTION_INFO_V1(Intersection_span_spanset);
 /**
  * @ingroup mobilitydb_spantime_set
@@ -1170,26 +862,6 @@ Intersection_spanset_value(PG_FUNCTION_ARGS)
   if (! found)
     PG_RETURN_NULL();
   PG_RETURN_DATUM(result);
-}
-
-PG_FUNCTION_INFO_V1(Intersection_spanset_set);
-/**
- * @ingroup mobilitydb_spantime_set
- * @brief Return the intersection of a span set and a set
- * @sqlfunc span_intersection()
- * @sqlop @p *
- */
-PGDLLEXPORT Datum
-Intersection_spanset_set(PG_FUNCTION_ARGS)
-{
-  SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Set *s = PG_GETARG_SET_P(1);
-  Set *result = intersection_spanset_set(ss, s);
-  PG_FREE_IF_COPY(ss, 0);
-  PG_FREE_IF_COPY(s, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
 }
 
 PG_FUNCTION_INFO_V1(Intersection_spanset_span);
@@ -1257,26 +929,6 @@ Minus_value_spanset(PG_FUNCTION_ARGS)
   PG_RETURN_DATUM(result);
 }
 
-PG_FUNCTION_INFO_V1(Minus_set_spanset);
-/**
- * @ingroup mobilitydb_spantime_set
- * @brief Return the difference of a set and a span set
- * @sqlfunc span_minus()
- * @sqlop @p -
- */
-PGDLLEXPORT Datum
-Minus_set_spanset(PG_FUNCTION_ARGS)
-{
-  Set *s = PG_GETARG_SET_P(0);
-  SpanSet *ss = PG_GETARG_SPANSET_P(1);
-  Set *result = minus_set_spanset(s, ss);
-  PG_FREE_IF_COPY(s, 0);
-  PG_FREE_IF_COPY(ss, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
-}
-
 PG_FUNCTION_INFO_V1(Minus_span_spanset);
 /**
  * @ingroup mobilitydb_spantime_set
@@ -1311,26 +963,6 @@ Minus_spanset_value(PG_FUNCTION_ARGS)
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   SpanSet *result = minus_spanset_value(ss, d, basetype);
   PG_FREE_IF_COPY(ss, 0);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Minus_spanset_set);
-/**
- * @ingroup mobilitydb_spantime_set
- * @brief Return the difference of a span set and a set
- * @sqlfunc span_minus()
- * @sqlop @p -
- */
-PGDLLEXPORT Datum
-Minus_spanset_set(PG_FUNCTION_ARGS)
-{
-  SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Set *s = PG_GETARG_SET_P(1);
-  SpanSet *result = minus_spanset_set(ss, s);
-  PG_FREE_IF_COPY(ss, 0);
-  PG_FREE_IF_COPY(s, 1);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
@@ -1397,26 +1029,6 @@ Distance_value_spanset(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 }
 
-PG_FUNCTION_INFO_V1(Distance_set_spanset);
-/**
- * @ingroup mobilitydb_spantime_dist
- * @brief Return the distance in seconds between a set and a span set
- * @sqlfunc span_distance()
- * @sqlop @p <->
- */
-PGDLLEXPORT Datum
-Distance_set_spanset(PG_FUNCTION_ARGS)
-{
-  Set *s = PG_GETARG_SET_P(0);
-  Datum ss = PG_GETARG_DATUM(1);
-  Span s1, s2;
-  set_set_span(s, &s1);
-  spanset_span_slice(ss, &s2);
-  double result = distance_span_span(&s1, &s2);
-  PG_FREE_IF_COPY(s, 0);
-  PG_RETURN_FLOAT8(result);
-}
-
 PG_FUNCTION_INFO_V1(Distance_span_spanset);
 /**
  * @ingroup mobilitydb_spantime_dist
@@ -1450,26 +1062,6 @@ Distance_spanset_value(PG_FUNCTION_ARGS)
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   double result = distance_spanset_value(ss, d, basetype);
   PG_FREE_IF_COPY(ss, 0);
-  PG_RETURN_FLOAT8(result);
-}
-
-PG_FUNCTION_INFO_V1(Distance_spanset_set);
-/**
- * @ingroup mobilitydb_spantime_dist
- * @brief Return the distance in seconds between a span set and a set
- * @sqlfunc span_distance()
- * @sqlop @p <->
- */
-PGDLLEXPORT Datum
-Distance_spanset_set(PG_FUNCTION_ARGS)
-{
-  Datum ss = PG_GETARG_DATUM(0);
-  Set *s = PG_GETARG_SET_P(1);
-  Span s1, s2;
-  spanset_span_slice(ss, &s1);
-  set_set_span(s, &s2);
-  double result = distance_span_span(&s1, &s2);
-  PG_FREE_IF_COPY(s, 1);
   PG_RETURN_FLOAT8(result);
 }
 

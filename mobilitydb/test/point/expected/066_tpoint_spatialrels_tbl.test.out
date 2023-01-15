@@ -179,7 +179,7 @@ SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq WHERE dwithin(g, se
    720
 (1 row)
 
-SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset WHERE dwithin(g, ts, 10);
+SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset WHERE dwithin(g, ss, 10);
  count 
 -------
   3970

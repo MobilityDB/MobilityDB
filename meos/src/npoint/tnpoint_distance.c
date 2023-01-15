@@ -35,11 +35,11 @@
 
 /* C */
 #include <assert.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/lifting.h"
-#include "general/temporal_util.h"
+#include "general/type_util.h"
 #include "point/pgis_call.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_distance.h"

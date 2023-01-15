@@ -67,13 +67,13 @@ int main()
   GSERIALIZED *polygon1 = gserialized_in(polygon_text, -1);
 
   /* Ensure that the reverted types are equal to the original ones */
-  if (! gserialized_same(point, point1))
+  if (! pgis_gserialized_same(point, point1))
     printf("ERROR: Distinct input and output geometries in WKT\n%s\n%s",
       point_wkt, point_text);
-  if (! gserialized_same(linestring, linestring1))
+  if (! pgis_gserialized_same(linestring, linestring1))
     printf("ERROR: Distinct input and output geometries in WKT\n%s\n%s",
       linestring_wkt, linestring_text);
-  if (! gserialized_same(polygon, polygon1))
+  if (! pgis_gserialized_same(polygon, polygon1))
     printf("ERROR: Distinct input and output geometries in WKT\n%s\n%s",
       polygon_wkt, polygon_text);
 
@@ -88,13 +88,13 @@ int main()
   GSERIALIZED *polygon2 = gserialized_from_geojson(polygon_geojson);
 
   /* Ensure that the reverted types are equal to the original ones */
-  if (! gserialized_same(point, point2))
+  if (! pgis_gserialized_same(point, point2))
     printf("ERROR: Distinct input and output geometries in GeoJSON\n%s\n%s",
       point_wkt, point_geojson);
-  if (! gserialized_same(linestring, linestring2))
+  if (! pgis_gserialized_same(linestring, linestring2))
     printf("ERROR: Distinct input and output geometries in GeoJSON\n%s\n%s",
       linestring_wkt, linestring_geojson);
-  if (! gserialized_same(polygon, polygon2))
+  if (! pgis_gserialized_same(polygon, polygon2))
     printf("ERROR: Distinct input and output geometries in GeoJSON\n%s\n%s",
       polygon_wkt, polygon_geojson);
 
@@ -109,13 +109,13 @@ int main()
   GSERIALIZED *polygon3 = gserialized_from_hexewkb(polygon_hexwkb);
 
   /* Ensure that the reverted types are equal to the original ones */
-  if (! gserialized_same(point, point3))
+  if (! pgis_gserialized_same(point, point3))
     printf("ERROR: Distinct input and output geometries in HexEWKB\n%s\n%s",
       point_wkt, point_text);
-  if (! gserialized_same(linestring, linestring3))
+  if (! pgis_gserialized_same(linestring, linestring3))
     printf("ERROR: Distinct input and output geometries in HexEWKB\n%s\n%s",
       linestring_wkt, linestring_text);
-  if (! gserialized_same(polygon, polygon3))
+  if (! pgis_gserialized_same(polygon, polygon3))
     printf("ERROR: Distinct input and output geometries in HexEWKB\n%s\n%s",
       polygon_wkt, polygon_text);
 

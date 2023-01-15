@@ -30,10 +30,7 @@ add_library(pg_general OBJECT
   temporal_spgist.c
   temporal_supportfn.c
   temporal_tile.c
-  temporal_util.c
   temporal_waggfuncs.c
-  temporal_in.c
-  temporal_out.c
   time_aggfuncs.c
   tinstant.c
   tnumber_distance.c
@@ -43,4 +40,7 @@ add_library(pg_general OBJECT
   tnumber_spgist.c
   tsequence.c
   ttext_textfuncs.c
+  type_in.c
+  type_out.c
+  type_util.c
 )

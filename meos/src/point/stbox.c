@@ -35,14 +35,14 @@
 
 /* C */
 #include <assert.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/pg_types.h"
 #include "general/set.h"
 #include "general/temporal.h"
-#include "general/temporal_util.h"
 #include "general/tnumber_mathfuncs.h"
+#include "general/type_util.h"
 #include "point/pgis_call.h"
 #include "point/tpoint.h"
 #include "point/tpoint_parser.h"

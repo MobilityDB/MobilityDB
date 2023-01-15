@@ -42,13 +42,13 @@
 #else
   #include <access/hash.h>
 #endif
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/pg_types.h"
-#include "general/temporal_parser.h"
-#include "general/temporal_util.h"
 #include "general/tnumber_mathfuncs.h"
+#include "general/type_parser.h"
+#include "general/type_util.h"
 
 /*****************************************************************************
  * General functions
@@ -476,7 +476,7 @@ span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
   meosType basetype, Span *s)
 {
   /* Canonicalize */
-  if (basetype == T_INT4)
+  if (basetype == T_INT4) /** x **/
   {
     if (! lower_inc)
     {
@@ -545,11 +545,23 @@ span_copy(const Span *s)
  * @ingroup libmeos_internal_setspan_cast
  * @brief Cast a value as a span
  */
+void
+value_set_span(Datum d, meosType basetype, Span *s)
+{
+  ensure_span_basetype(basetype);
+  span_set(d, d, true, true, basetype, s);
+  return;
+}
+
+/**
+ * @ingroup libmeos_internal_setspan_cast
+ * @brief Cast a value as a span
+ */
 Span *
 value_to_span(Datum d, meosType basetype)
 {
-  ensure_span_basetype(basetype);
-  Span *result = span_make(d, d, true, true, basetype);
+  Span *result = palloc(sizeof(Span));
+  value_set_span(d, basetype, result);
   return result;
 }
 
@@ -753,6 +765,40 @@ period_duration(const Span *s)
 /*****************************************************************************
  * Transformation functions
  *****************************************************************************/
+
+/**
+ * @ingroup libmeos_internal_setspan_transf
+ * @brief Set the second span with the first one transformed to floatspan
+ * @note This currently works only for intspan <-> floatspan
+ */
+void
+numspan_set_floatspan(const Span *s1, Span *s2)
+{
+  memset(s2, 0, sizeof(Span));
+  if (s1->basetype == T_INT4)
+    intspan_set_floatspan(s1, s2);
+  else /* s1->basetype == T_FLOAT8 */
+    memcpy(s2, s1, sizeof(Span));
+  return;
+}
+
+/**
+ * @ingroup libmeos_internal_setspan_transf
+ * @brief Set the second span with the first one transformed to intspan
+ * @note This currently works only for intspan <-> floatspan
+ */
+void
+floatspan_set_numspan(const Span *s1, Span *s2, meosType basetype)
+{
+  memset(s2, 0, sizeof(Span));
+  if (basetype == T_INT4)
+    floatspan_set_intspan(s1, s2);
+  else /* basetype == T_FLOAT8 */
+    memcpy(s2, s1, sizeof(Span));
+  return;
+}
+
+/*****************************************************************************/
 
 /**
  * @ingroup libmeos_setspan_transf

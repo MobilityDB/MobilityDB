@@ -374,15 +374,15 @@ SELECT minusValue(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02
 SELECT minusValue(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 'Npoint(1, 0.5)');
 SELECT minusValue(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 'Npoint(1, 0.5)');
 
-SELECT atValues(tnpoint 'Npoint(1, 0.5)@2000-01-01', ARRAY[npoint 'Npoint(1, 0.5)']);
-SELECT atValues(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', ARRAY[npoint 'Npoint(1, 0.5)']);
-SELECT atValues(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', ARRAY[npoint 'Npoint(1, 0.5)']);
-SELECT atValues(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', ARRAY[npoint 'Npoint(1, 0.5)']);
+SELECT atValues(tnpoint 'Npoint(1, 0.5)@2000-01-01', npointset '{"Npoint(1, 0.5)"}');
+SELECT atValues(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', npointset '{"Npoint(1, 0.5)"}');
+SELECT atValues(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', npointset '{"Npoint(1, 0.5)"}');
+SELECT atValues(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', npointset '{"Npoint(1, 0.5)"}');
 
-SELECT minusValues(tnpoint 'Npoint(1, 0.5)@2000-01-01', ARRAY[npoint 'Npoint(1, 0.5)']);
-SELECT minusValues(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', ARRAY[npoint 'Npoint(1, 0.5)']);
-SELECT minusValues(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', ARRAY[npoint 'Npoint(1, 0.5)']);
-SELECT minusValues(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', ARRAY[npoint 'Npoint(1, 0.5)']);
+SELECT minusValues(tnpoint 'Npoint(1, 0.5)@2000-01-01', npointset '{"Npoint(1, 0.5)"}');
+SELECT minusValues(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', npointset '{"Npoint(1, 0.5)"}');
+SELECT minusValues(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', npointset '{"Npoint(1, 0.5)"}');
+SELECT minusValues(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', npointset '{"Npoint(1, 0.5)"}');
 
 SELECT atTime(tnpoint 'Npoint(1, 0.5)@2000-01-01', timestamptz '2000-01-01');
 SELECT atTime(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', timestamptz '2000-01-01');

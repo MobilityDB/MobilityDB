@@ -459,7 +459,7 @@ tpoint_const_stbox(Node *other, STBox *box)
 {
   Oid consttypid = ((Const *) other)->consttype;
   meosType type = oid_type(consttypid);
-  if (tgeo_basetype(type))
+  if (geo_basetype(type))
     geo_set_stbox((GSERIALIZED *) PointerGetDatum(((Const *) other)->constvalue),
       box);
   else if (type == T_TIMESTAMPTZ)

@@ -76,7 +76,7 @@ SELECT round(extent(temp::floatspan)) FROM tbl_tfloat;
 SELECT COUNT(*) FROM tbl_tint_inst WHERE tfloat(inst) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tint_discseq WHERE tfloat(ti) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tint_seq WHERE tfloat(seq) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tint_seqset WHERE tfloat(ts) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint_seqset WHERE tfloat(ss) IS NOT NULL;
 
 -------------------------------------------------------------------------------
 -- Constructor functions
@@ -176,25 +176,25 @@ SELECT DISTINCT tempSubtype(ttext_seqset(seq)) FROM tbl_ttext_seq;
 
 -------------------------------------------------------------------------------
 
-SELECT DISTINCT tempSubtype(tbool_inst(ts)) FROM tbl_tbool_seqset WHERE numInstants(ts) = 1;
-SELECT DISTINCT tempSubtype(tbool_discseq(ts)) FROM tbl_tbool_seqset WHERE duration(ts) = '00:00:00';
-SELECT DISTINCT tempSubtype(tbool_contseq(ts)) FROM tbl_tbool_seqset WHERE numSequences(ts) = 1;
-SELECT DISTINCT tempSubtype(tbool_seqset(ts)) FROM tbl_tbool_seqset;
+SELECT DISTINCT tempSubtype(tbool_inst(ss)) FROM tbl_tbool_seqset WHERE numInstants(ss) = 1;
+SELECT DISTINCT tempSubtype(tbool_discseq(ss)) FROM tbl_tbool_seqset WHERE duration(ss) = '00:00:00';
+SELECT DISTINCT tempSubtype(tbool_contseq(ss)) FROM tbl_tbool_seqset WHERE numSequences(ss) = 1;
+SELECT DISTINCT tempSubtype(tbool_seqset(ss)) FROM tbl_tbool_seqset;
 
-SELECT DISTINCT tempSubtype(tint_inst(ts)) FROM tbl_tint_seqset WHERE numInstants(ts) = 1;
-SELECT DISTINCT tempSubtype(tint_discseq(ts)) FROM tbl_tint_seqset WHERE duration(ts) = '00:00:00';
-SELECT DISTINCT tempSubtype(tint_contseq(ts)) FROM tbl_tint_seqset WHERE numSequences(ts) = 1;
-SELECT DISTINCT tempSubtype(tint_seqset(ts)) FROM tbl_tint_seqset;
+SELECT DISTINCT tempSubtype(tint_inst(ss)) FROM tbl_tint_seqset WHERE numInstants(ss) = 1;
+SELECT DISTINCT tempSubtype(tint_discseq(ss)) FROM tbl_tint_seqset WHERE duration(ss) = '00:00:00';
+SELECT DISTINCT tempSubtype(tint_contseq(ss)) FROM tbl_tint_seqset WHERE numSequences(ss) = 1;
+SELECT DISTINCT tempSubtype(tint_seqset(ss)) FROM tbl_tint_seqset;
 
-SELECT DISTINCT tempSubtype(tfloat_inst(ts)) FROM tbl_tfloat_seqset WHERE numInstants(ts) = 1;
-SELECT DISTINCT tempSubtype(tfloat_discseq(ts)) FROM tbl_tfloat_seqset WHERE duration(ts) = '00:00:00';
-SELECT DISTINCT tempSubtype(tfloat_contseq(ts)) FROM tbl_tfloat_seqset WHERE numSequences(ts) = 1;
-SELECT DISTINCT tempSubtype(tfloat_seqset(ts)) FROM tbl_tfloat_seqset;
+SELECT DISTINCT tempSubtype(tfloat_inst(ss)) FROM tbl_tfloat_seqset WHERE numInstants(ss) = 1;
+SELECT DISTINCT tempSubtype(tfloat_discseq(ss)) FROM tbl_tfloat_seqset WHERE duration(ss) = '00:00:00';
+SELECT DISTINCT tempSubtype(tfloat_contseq(ss)) FROM tbl_tfloat_seqset WHERE numSequences(ss) = 1;
+SELECT DISTINCT tempSubtype(tfloat_seqset(ss)) FROM tbl_tfloat_seqset;
 
-SELECT DISTINCT tempSubtype(ttext_inst(ts)) FROM tbl_ttext_seqset WHERE numInstants(ts) = 1;
-SELECT DISTINCT tempSubtype(ttext_discseq(ts)) FROM tbl_ttext_seqset WHERE duration(ts) = '00:00:00';
-SELECT DISTINCT tempSubtype(ttext_contseq(ts)) FROM tbl_ttext_seqset WHERE numSequences(ts) = 1;
-SELECT DISTINCT tempSubtype(ttext_seqset(ts)) FROM tbl_ttext_seqset;
+SELECT DISTINCT tempSubtype(ttext_inst(ss)) FROM tbl_ttext_seqset WHERE numInstants(ss) = 1;
+SELECT DISTINCT tempSubtype(ttext_discseq(ss)) FROM tbl_ttext_seqset WHERE duration(ss) = '00:00:00';
+SELECT DISTINCT tempSubtype(ttext_contseq(ss)) FROM tbl_ttext_seqset WHERE numSequences(ss) = 1;
+SELECT DISTINCT tempSubtype(ttext_seqset(ss)) FROM tbl_ttext_seqset;
 
 -------------------------------------------------------------------------------
 
@@ -242,9 +242,9 @@ SELECT round(MAX(getValue(inst))::numeric, 6) FROM tbl_tfloat_inst;
 SELECT MAX(getValue(inst)) FROM tbl_ttext_inst;
 
 SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_tbool;
-SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_tint;
+SELECT MAX(numValues(getValues(temp))) FROM tbl_tint;
 SELECT MAX(numSpans(getValues(temp))) FROM tbl_tfloat;
-SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_ttext;
+SELECT MAX(numValues(getValues(temp))) FROM tbl_ttext;
 
 SELECT DISTINCT startValue(temp) FROM tbl_tbool;
 SELECT MAX(startValue(temp)) FROM tbl_tint;
@@ -319,35 +319,35 @@ SELECT MAX(array_length(segments(seq),1)) FROM tbl_tint_seq;
 SELECT MAX(array_length(segments(seq),1)) FROM tbl_tfloat_seq;
 SELECT MAX(array_length(segments(seq),1)) FROM tbl_ttext_seq;
 
-SELECT MAX(numSequences(ts)) FROM tbl_tbool_seqset;
-SELECT MAX(numSequences(ts)) FROM tbl_tint_seqset;
-SELECT MAX(numSequences(ts)) FROM tbl_tfloat_seqset;
-SELECT MAX(numSequences(ts)) FROM tbl_ttext_seqset;
+SELECT MAX(numSequences(ss)) FROM tbl_tbool_seqset;
+SELECT MAX(numSequences(ss)) FROM tbl_tint_seqset;
+SELECT MAX(numSequences(ss)) FROM tbl_tfloat_seqset;
+SELECT MAX(numSequences(ss)) FROM tbl_ttext_seqset;
 
-SELECT MAX(duration(startSequence(ts))) FROM tbl_tbool_seqset;
-SELECT MAX(duration(startSequence(ts))) FROM tbl_tint_seqset;
-SELECT MAX(duration(startSequence(ts))) FROM tbl_tfloat_seqset;
-SELECT MAX(duration(startSequence(ts))) FROM tbl_ttext_seqset;
+SELECT MAX(duration(startSequence(ss))) FROM tbl_tbool_seqset;
+SELECT MAX(duration(startSequence(ss))) FROM tbl_tint_seqset;
+SELECT MAX(duration(startSequence(ss))) FROM tbl_tfloat_seqset;
+SELECT MAX(duration(startSequence(ss))) FROM tbl_ttext_seqset;
 
-SELECT MAX(duration(endSequence(ts))) FROM tbl_tbool_seqset;
-SELECT MAX(duration(endSequence(ts))) FROM tbl_tint_seqset;
-SELECT MAX(duration(endSequence(ts))) FROM tbl_tfloat_seqset;
-SELECT MAX(duration(endSequence(ts))) FROM tbl_ttext_seqset;
+SELECT MAX(duration(endSequence(ss))) FROM tbl_tbool_seqset;
+SELECT MAX(duration(endSequence(ss))) FROM tbl_tint_seqset;
+SELECT MAX(duration(endSequence(ss))) FROM tbl_tfloat_seqset;
+SELECT MAX(duration(endSequence(ss))) FROM tbl_ttext_seqset;
 
-SELECT MAX(duration(sequenceN(ts, numSequences(ts)))) FROM tbl_tbool_seqset;
-SELECT MAX(duration(sequenceN(ts, numSequences(ts)))) FROM tbl_tint_seqset;
-SELECT MAX(duration(sequenceN(ts, numSequences(ts)))) FROM tbl_tfloat_seqset;
-SELECT MAX(duration(sequenceN(ts, numSequences(ts)))) FROM tbl_ttext_seqset;
+SELECT MAX(duration(sequenceN(ss, numSequences(ss)))) FROM tbl_tbool_seqset;
+SELECT MAX(duration(sequenceN(ss, numSequences(ss)))) FROM tbl_tint_seqset;
+SELECT MAX(duration(sequenceN(ss, numSequences(ss)))) FROM tbl_tfloat_seqset;
+SELECT MAX(duration(sequenceN(ss, numSequences(ss)))) FROM tbl_ttext_seqset;
 
-SELECT MAX(array_length(sequences(ts),1)) FROM tbl_tbool_seqset;
-SELECT MAX(array_length(sequences(ts),1)) FROM tbl_tint_seqset;
-SELECT MAX(array_length(sequences(ts),1)) FROM tbl_tfloat_seqset;
-SELECT MAX(array_length(sequences(ts),1)) FROM tbl_ttext_seqset;
+SELECT MAX(array_length(sequences(ss),1)) FROM tbl_tbool_seqset;
+SELECT MAX(array_length(sequences(ss),1)) FROM tbl_tint_seqset;
+SELECT MAX(array_length(sequences(ss),1)) FROM tbl_tfloat_seqset;
+SELECT MAX(array_length(sequences(ss),1)) FROM tbl_ttext_seqset;
 
-SELECT MAX(array_length(segments(ts),1)) FROM tbl_tbool_seqset;
-SELECT MAX(array_length(segments(ts),1)) FROM tbl_tint_seqset;
-SELECT MAX(array_length(segments(ts),1)) FROM tbl_tfloat_seqset;
-SELECT MAX(array_length(segments(ts),1)) FROM tbl_ttext_seqset;
+SELECT MAX(array_length(segments(ss),1)) FROM tbl_tbool_seqset;
+SELECT MAX(array_length(segments(ss),1)) FROM tbl_tint_seqset;
+SELECT MAX(array_length(segments(ss),1)) FROM tbl_tfloat_seqset;
+SELECT MAX(array_length(segments(ss),1)) FROM tbl_ttext_seqset;
 
 SELECT MAX(numInstants(temp)) FROM tbl_tbool;
 SELECT MAX(numInstants(temp)) FROM tbl_tint;
@@ -511,12 +511,12 @@ SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp != merge(atValue(temp, i), min
 SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp != merge(atValue(temp, f), minusValue(temp, f));
 SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp != merge(atValue(temp, t), minusValue(temp, t));
 
-SELECT COUNT(*) FROM tbl_tint, ( SELECT array_agg(i) AS arr FROM tbl_int WHERE i IS NOT NULL ) tmp
-WHERE temp != merge(atValues(temp, arr), minusValues(temp, arr));
-SELECT COUNT(*) FROM tbl_tfloat, ( SELECT array_agg(f) AS arr FROM tbl_float WHERE f IS NOT NULL ) tmp
-WHERE temp != merge(atValues(temp, arr), minusValues(temp, arr));
-SELECT COUNT(*) FROM tbl_ttext, ( SELECT array_agg(t) AS arr FROM tbl_text WHERE t IS NOT NULL ) tmp
-WHERE temp != merge(atValues(temp, arr), minusValues(temp, arr));
+SELECT COUNT(*) FROM tbl_tint, ( SELECT intset(array_agg(i)) AS s FROM tbl_int WHERE i IS NOT NULL ) tmp
+WHERE temp != merge(atValues(temp, s), minusValues(temp, s));
+SELECT COUNT(*) FROM tbl_tfloat, ( SELECT floatset(array_agg(f)) AS s FROM tbl_float WHERE f IS NOT NULL ) tmp
+WHERE temp != merge(atValues(temp, s), minusValues(temp, s));
+SELECT COUNT(*) FROM tbl_ttext, ( SELECT textset(array_agg(t)) AS s FROM tbl_text WHERE t IS NOT NULL ) tmp
+WHERE temp != merge(atValues(temp, s), minusValues(temp, s));
 
 SELECT COUNT(*) FROM tbl_tint, tbl_intspan WHERE temp != merge(atSpan(temp, i), minusSpan(temp, i));
 SELECT COUNT(*) FROM tbl_tfloat, tbl_floatspan WHERE temp != merge(atSpan(temp, f), minusSpan(temp, f));
@@ -539,10 +539,10 @@ SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE merge(atTime(temp, t), minu
 SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE merge(atTime(temp, t), minusTime(temp, t)) != temp;
 SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE merge(atTime(temp, t), minusTime(temp, t)) != temp;
 
-SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE merge(atTime(temp, ts), minusTime(temp, ts)) != temp;
-SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE merge(atTime(temp, ts), minusTime(temp, ts)) != temp;
-SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE merge(atTime(temp, ts), minusTime(temp, ts)) != temp;
-SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE merge(atTime(temp, ts), minusTime(temp, ts)) != temp;
+SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE merge(atTime(temp, t), minusTime(temp, t)) != temp;
+SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE merge(atTime(temp, t), minusTime(temp, t)) != temp;
+SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE merge(atTime(temp, t), minusTime(temp, t)) != temp;
+SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE merge(atTime(temp, t), minusTime(temp, t)) != temp;
 
 SELECT COUNT(*) FROM tbl_tbool, tbl_tstzspan WHERE merge(atTime(temp, p), minusTime(temp, p)) != temp;
 SELECT COUNT(*) FROM tbl_tint, tbl_tstzspan WHERE merge(atTime(temp, p), minusTime(temp, p)) != temp;
@@ -562,10 +562,10 @@ SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE overlapsTime(temp, t) IS NO
 SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE overlapsTime(temp, t) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE overlapsTime(temp, t) IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE overlapsTime(temp, ts) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE overlapsTime(temp, ts) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE overlapsTime(temp, ts) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE overlapsTime(temp, ts) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tbool, tbl_tstzset WHERE overlapsTime(temp, t) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint, tbl_tstzset WHERE overlapsTime(temp, t) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat, tbl_tstzset WHERE overlapsTime(temp, t) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_ttext, tbl_tstzset WHERE overlapsTime(temp, t) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tbool, tbl_tstzspan WHERE overlapsTime(temp, p) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tint, tbl_tstzspan WHERE overlapsTime(temp, p) IS NOT NULL;
@@ -591,15 +591,15 @@ SELECT SUM(numInstants(deleteTime(t1.temp, t2.t, false))) FROM tbl_tint t1, tbl_
 SELECT SUM(numInstants(deleteTime(t1.temp, t2.t, false))) FROM tbl_tfloat t1, tbl_timestamptz t2;
 SELECT SUM(numInstants(deleteTime(t1.temp, t2.t, false))) FROM tbl_ttext t1, tbl_timestamptz t2;
 
-SELECT SUM(numInstants(deleteTime(t1.temp, t2.ts))) FROM tbl_tbool t1, tbl_tstzset t2;
-SELECT SUM(numInstants(deleteTime(t1.temp, t2.ts))) FROM tbl_tint t1, tbl_tstzset t2;
-SELECT SUM(numInstants(deleteTime(t1.temp, t2.ts))) FROM tbl_tfloat t1, tbl_tstzset t2;
-SELECT SUM(numInstants(deleteTime(t1.temp, t2.ts))) FROM tbl_ttext t1, tbl_tstzset t2;
+SELECT SUM(numInstants(deleteTime(t1.temp, t2.t))) FROM tbl_tbool t1, tbl_tstzset t2;
+SELECT SUM(numInstants(deleteTime(t1.temp, t2.t))) FROM tbl_tint t1, tbl_tstzset t2;
+SELECT SUM(numInstants(deleteTime(t1.temp, t2.t))) FROM tbl_tfloat t1, tbl_tstzset t2;
+SELECT SUM(numInstants(deleteTime(t1.temp, t2.t))) FROM tbl_ttext t1, tbl_tstzset t2;
 
-SELECT SUM(numInstants(deleteTime(t1.temp, t2.ts, false))) FROM tbl_tbool t1, tbl_tstzset t2;
-SELECT SUM(numInstants(deleteTime(t1.temp, t2.ts, false))) FROM tbl_tint t1, tbl_tstzset t2;
-SELECT SUM(numInstants(deleteTime(t1.temp, t2.ts, false))) FROM tbl_tfloat t1, tbl_tstzset t2;
-SELECT SUM(numInstants(deleteTime(t1.temp, t2.ts, false))) FROM tbl_ttext t1, tbl_tstzset t2;
+SELECT SUM(numInstants(deleteTime(t1.temp, t2.t, false))) FROM tbl_tbool t1, tbl_tstzset t2;
+SELECT SUM(numInstants(deleteTime(t1.temp, t2.t, false))) FROM tbl_tint t1, tbl_tstzset t2;
+SELECT SUM(numInstants(deleteTime(t1.temp, t2.t, false))) FROM tbl_tfloat t1, tbl_tstzset t2;
+SELECT SUM(numInstants(deleteTime(t1.temp, t2.t, false))) FROM tbl_ttext t1, tbl_tstzset t2;
 
 SELECT SUM(numInstants(deleteTime(t1.temp, t2.p))) FROM tbl_tbool t1, tbl_tstzspan t2;
 SELECT SUM(numInstants(deleteTime(t1.temp, t2.p))) FROM tbl_tint t1, tbl_tstzspan t2;

@@ -45,9 +45,9 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include <general/set.h>
-#include <general/temporal_boxops.h>
-#include <general/temporal_util.h>
+#include "general/set.h"
+#include "general/temporal_boxops.h"
+#include "general/type_util.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 #include "pg_general/temporal.h"
@@ -199,31 +199,7 @@ static bool
 tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBox *result, Oid typid)
 {
   meosType type = oid_type(typid);
-  if (tnumber_basetype(type))
-  {
-    Datum value = PG_GETARG_DATUM(1);
-    number_set_tbox(value, type, result);
-  }
-  else if (type == T_TIMESTAMPTZ)
-  {
-    TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-    timestamp_set_tbox(t, result);
-  }
-  else if (tnumber_settype(type))
-  {
-    Set *set = PG_GETARG_SET_P(1);
-    if (set == NULL)
-      return false;
-    numset_set_tbox(set, result);
-  }
-  else if (type == T_TSTZSET)
-  {
-    Set *set = PG_GETARG_SET_P(1);
-    if (set == NULL)
-      return false;
-    tstzset_set_tbox(set, result);
-  }
-  else if (tnumber_spantype(type))
+  if (tnumber_spantype(type))
   {
     Span *span = PG_GETARG_SPAN_P(1);
     if (span == NULL)
@@ -234,11 +210,6 @@ tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBox *result, Oid typid)
   {
     Span *p = PG_GETARG_SPAN_P(1);
     period_set_tbox(p, result);
-  }
-  else if (tnumber_spansettype(type) || type == T_TSTZSPANSET)
-  {
-    Datum ssdatum = PG_GETARG_DATUM(1);
-    spanset_tbox_slice(ssdatum, result);
   }
   else if (type == T_TBOX)
   {

@@ -91,10 +91,10 @@ SELECT DISTINCT tempSubtype(tnpoint_seqset(seq)) FROM tbl_tnpoint_seq;
 
 -------------------------------------------------------------------------------
 
-SELECT DISTINCT tempSubtype(tnpoint(ts)) FROM tbl_tnpoint_seqset WHERE numInstants(ts) = 1;
-SELECT DISTINCT tempSubtype(tnpoint_discseq(ts)) FROM tbl_tnpoint_seqset WHERE duration(ts) = '00:00:00';
-SELECT DISTINCT tempSubtype(tnpoint_contseq(ts)) FROM tbl_tnpoint_seqset WHERE numSequences(ts) = 1;
-SELECT DISTINCT tempSubtype(tnpoint_seqset(ts)) FROM tbl_tnpoint_seqset;
+SELECT DISTINCT tempSubtype(tnpoint(ss)) FROM tbl_tnpoint_seqset WHERE numInstants(ss) = 1;
+SELECT DISTINCT tempSubtype(tnpoint_discseq(ss)) FROM tbl_tnpoint_seqset WHERE duration(ss) = '00:00:00';
+SELECT DISTINCT tempSubtype(tnpoint_contseq(ss)) FROM tbl_tnpoint_seqset WHERE numSequences(ss) = 1;
+SELECT DISTINCT tempSubtype(tnpoint_seqset(ss)) FROM tbl_tnpoint_seqset;
 
 -------------------------------------------------------------------------------
 --  Append functions
@@ -124,7 +124,7 @@ SELECT stbox(temp) FROM tbl_tnpoint;
 
 SELECT getValue(inst) FROM tbl_tnpoint_inst ORDER BY getValue(inst) LIMIT 1;
 
-SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_tnpoint;
+SELECT MAX(numValues(getValues(temp))) FROM tbl_tnpoint;
 
 SELECT MAX(array_length(positions(temp), 1)) FROM tbl_tnpoint;
 
@@ -172,15 +172,15 @@ SELECT MAX(timestampN(temp,1)) FROM tbl_tnpoint;
 
 SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tnpoint;
 
-SELECT MAX(numSequences(ts)) FROM tbl_tnpoint_seqset;
+SELECT MAX(numSequences(ss)) FROM tbl_tnpoint_seqset;
 
-SELECT MAX(duration(startSequence(ts))) FROM tbl_tnpoint_seqset;
+SELECT MAX(duration(startSequence(ss))) FROM tbl_tnpoint_seqset;
 
-SELECT MAX(duration(endSequence(ts))) FROM tbl_tnpoint_seqset;
+SELECT MAX(duration(endSequence(ss))) FROM tbl_tnpoint_seqset;
 
-SELECT MAX(duration(sequenceN(ts, numSequences(ts)))) FROM tbl_tnpoint_seqset;
+SELECT MAX(duration(sequenceN(ss, numSequences(ss)))) FROM tbl_tnpoint_seqset;
 
-SELECT MAX(array_length(sequences(ts),1)) FROM tbl_tnpoint_seqset;
+SELECT MAX(array_length(sequences(ss),1)) FROM tbl_tnpoint_seqset;
 
 -------------------------------------------------------------------------------
 --  Restriction functions
@@ -193,12 +193,12 @@ SELECT COUNT(*) FROM tbl_tnpoint, tbl_npoint
 WHERE minusValue(temp, np) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint,
-( SELECT array_agg(np) AS valuearr FROM tbl_npoint) tmp
-WHERE atValues(temp, valuearr) IS NOT NULL;
+( SELECT npointset(array_agg(np)) AS s FROM tbl_npoint) tmp
+WHERE atValues(temp, s) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint,
-( SELECT array_agg(np) AS valuearr FROM tbl_npoint) tmp
-WHERE minusValues(temp, valuearr) IS NOT NULL;
+( SELECT npointset(array_agg(np)) AS s FROM tbl_npoint) tmp
+WHERE minusValues(temp, s) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz
 WHERE atTime(temp, t) IS NOT NULL;
@@ -210,10 +210,10 @@ SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz
 WHERE valueAtTimestamp(temp, t) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset
-WHERE atTime(temp, ts) IS NOT NULL;
+WHERE atTime(temp, t) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset
-WHERE minusTime(temp, ts) IS NOT NULL;
+WHERE minusTime(temp, t) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspan
 WHERE atTime(temp, p) IS NOT NULL;
@@ -231,7 +231,7 @@ SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz
 WHERE overlapsTime(temp, t) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset
-WHERE overlapsTime(temp, ts) IS NOT NULL;
+WHERE overlapsTime(temp, t) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspan
 WHERE overlapsTime(temp, p) IS NOT NULL;

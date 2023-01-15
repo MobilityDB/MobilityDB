@@ -37,10 +37,10 @@
 /* C */
 #include <assert.h>
 #include <math.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include "general/tnumber_mathfuncs.h"
-#include "general/temporal_util.h"
+#include "general/type_util.h"
 
 /*****************************************************************************
  * Temporal addition

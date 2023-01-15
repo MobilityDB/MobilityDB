@@ -89,6 +89,7 @@ extern uint64 hash_bytes_uint32_extended(uint32 k, uint64 seed);
 extern uint64 pg_hashint8extended(int64 val, uint64 seed);
 extern uint64 pg_hashfloat8extended(float8 key, uint64 seed);
 extern uint32 pg_hashtext(text *key);
+extern uint64 pg_hashtextextended(text *key, uint64 seed);
 
 /*****************************************************************************/
 

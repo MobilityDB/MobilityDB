@@ -829,7 +829,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tints
-  WHERE ts && RandTimestamp
+  WHERE ss && RandTimestamp
   INTO J;
 
   StartTime := clock_timestamp();
@@ -849,7 +849,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloats
-  WHERE ts && RandTimestamp
+  WHERE ss && RandTimestamp
   INTO J;
 
   StartTime := clock_timestamp();
@@ -869,7 +869,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompoints
-  WHERE ts && RandTimestamp
+  WHERE ss && RandTimestamp
   INTO J;
 
   StartTime := clock_timestamp();
@@ -889,7 +889,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tints
-  WHERE ts && RandTstzset
+  WHERE ss && RandTstzset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -909,7 +909,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloats
-  WHERE ts && RandTstzset
+  WHERE ss && RandTstzset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -929,7 +929,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompoints
-  WHERE ts && RandTstzset
+  WHERE ss && RandTstzset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -949,7 +949,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tints
-  WHERE ts && RandTstzspan
+  WHERE ss && RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -969,7 +969,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloats
-  WHERE ts && RandTstzspan
+  WHERE ss && RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -989,7 +989,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompoints
-  WHERE ts && RandTstzspan
+  WHERE ss && RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -1009,7 +1009,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tints
-  WHERE ts && RandTstzspanset
+  WHERE ss && RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -1029,7 +1029,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloats
-  WHERE ts && RandTstzspanset
+  WHERE ss && RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -1049,7 +1049,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompoints
-  WHERE ts && RandTstzspanset
+  WHERE ss && RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -1793,7 +1793,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tints
-  WHERE ts @> RandTimestamp
+  WHERE ss @> RandTimestamp
   INTO J;
 
   StartTime := clock_timestamp();
@@ -1813,7 +1813,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloats
-  WHERE ts @> RandTimestamp
+  WHERE ss @> RandTimestamp
   INTO J;
 
   StartTime := clock_timestamp();
@@ -1833,7 +1833,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompoints
-  WHERE ts @> RandTimestamp
+  WHERE ss @> RandTimestamp
   INTO J;
 
   StartTime := clock_timestamp();
@@ -1853,7 +1853,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tints
-  WHERE ts @> RandTstzset
+  WHERE ss @> RandTstzset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -1873,7 +1873,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloats
-  WHERE ts @> RandTimestamp
+  WHERE ss @> RandTimestamp
   INTO J;
 
   StartTime := clock_timestamp();
@@ -1893,7 +1893,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompoints
-  WHERE ts @> RandTimestamp
+  WHERE ss @> RandTimestamp
   INTO J;
 
   StartTime := clock_timestamp();
@@ -1913,7 +1913,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tints
-  WHERE ts @> RandTstzspan
+  WHERE ss @> RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -1933,7 +1933,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloats
-  WHERE ts @> RandTstzspan
+  WHERE ss @> RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -1953,7 +1953,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompoints
-  WHERE ts @> RandTstzspan
+  WHERE ss @> RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -1973,7 +1973,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tints
-  WHERE ts @> RandTstzspanset
+  WHERE ss @> RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -1993,7 +1993,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloats
-  WHERE ts @> RandTstzspanset
+  WHERE ss @> RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -2013,7 +2013,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompoints
-  WHERE ts @> RandTstzspanset
+  WHERE ss @> RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -2756,7 +2756,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tints
-  WHERE ts <@ RandTimestamp
+  WHERE ss <@ RandTimestamp
   INTO J;
 
   StartTime := clock_timestamp();
@@ -2776,7 +2776,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloats
-  WHERE ts <@ RandTimestamp
+  WHERE ss <@ RandTimestamp
   INTO J;
 
   StartTime := clock_timestamp();
@@ -2796,7 +2796,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompoints
-  WHERE ts <@ RandTimestamp
+  WHERE ss <@ RandTimestamp
   INTO J;
 
   StartTime := clock_timestamp();
@@ -2816,7 +2816,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tints
-  WHERE ts <@ RandTstzset
+  WHERE ss <@ RandTstzset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -2836,7 +2836,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloats
-  WHERE ts <@ RandTimestamp
+  WHERE ss <@ RandTimestamp
   INTO J;
 
   StartTime := clock_timestamp();
@@ -2856,7 +2856,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompoints
-  WHERE ts <@ RandTimestamp
+  WHERE ss <@ RandTimestamp
   INTO J;
 
   StartTime := clock_timestamp();
@@ -2876,7 +2876,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tints
-  WHERE ts <@ RandTstzspan
+  WHERE ss <@ RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -2896,7 +2896,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloats
-  WHERE ts <@ RandTstzspan
+  WHERE ss <@ RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -2916,7 +2916,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompoints
-  WHERE ts <@ RandTstzspan
+  WHERE ss <@ RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -2936,7 +2936,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tints
-  WHERE ts <@ RandTstzspanset
+  WHERE ss <@ RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -2956,7 +2956,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloats
-  WHERE ts <@ RandTstzspanset
+  WHERE ss <@ RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -2976,7 +2976,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompoints
-  WHERE ts <@ RandTstzspanset
+  WHERE ss <@ RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -3719,7 +3719,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tints
-  WHERE ts ~= RandTimestamp
+  WHERE ss ~= RandTimestamp
   INTO J;
 
   StartTime := clock_timestamp();
@@ -3739,7 +3739,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloats
-  WHERE ts ~= RandTimestamp
+  WHERE ss ~= RandTimestamp
   INTO J;
 
   StartTime := clock_timestamp();
@@ -3759,7 +3759,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompoints
-  WHERE ts ~= RandTimestamp
+  WHERE ss ~= RandTimestamp
   INTO J;
 
   StartTime := clock_timestamp();
@@ -3779,7 +3779,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tints
-  WHERE ts ~= RandTstzset
+  WHERE ss ~= RandTstzset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -3799,7 +3799,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloats
-  WHERE ts ~= RandTimestamp
+  WHERE ss ~= RandTimestamp
   INTO J;
 
   StartTime := clock_timestamp();
@@ -3819,7 +3819,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompoints
-  WHERE ts ~= RandTimestamp
+  WHERE ss ~= RandTimestamp
   INTO J;
 
   StartTime := clock_timestamp();
@@ -3839,7 +3839,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tints
-  WHERE ts ~= RandTstzspan
+  WHERE ss ~= RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -3859,7 +3859,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloats
-  WHERE ts ~= RandTstzspan
+  WHERE ss ~= RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -3879,7 +3879,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompoints
-  WHERE ts ~= RandTstzspan
+  WHERE ss ~= RandTstzspan
   INTO J;
 
   StartTime := clock_timestamp();
@@ -3899,7 +3899,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tints
-  WHERE ts ~= RandTstzspanset
+  WHERE ss ~= RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -3919,7 +3919,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloats
-  WHERE ts ~= RandTstzspanset
+  WHERE ss ~= RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();
@@ -3939,7 +3939,7 @@ FOR i IN 1..10 LOOP
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompoints
-  WHERE ts ~= RandTstzspanset
+  WHERE ss ~= RandTstzspanset
   INTO J;
 
   StartTime := clock_timestamp();

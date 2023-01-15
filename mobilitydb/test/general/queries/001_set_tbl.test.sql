@@ -66,8 +66,22 @@ COPY tbl_tstzset TO '/tmp/tbl_tstzset' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_tstzset_tmp;
 CREATE TABLE tbl_tstzset_tmp AS TABLE tbl_tstzset WITH NO DATA;
 COPY tbl_tstzset_tmp FROM '/tmp/tbl_tstzset' (FORMAT BINARY);
-SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset_tmp t2 WHERE t1.k = t2.k AND t1.ts <> t2.ts;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset_tmp t2 WHERE t1.k = t2.k AND t1.t <> t2.t;
 DROP TABLE tbl_tstzset_tmp;
+
+COPY tbl_geomset TO '/tmp/tbl_geomset' (FORMAT BINARY);
+DROP TABLE IF EXISTS tbl_geomset_tmp;
+CREATE TABLE tbl_geomset_tmp AS TABLE tbl_geomset WITH NO DATA;
+COPY tbl_geomset_tmp FROM '/tmp/tbl_geomset' (FORMAT BINARY);
+SELECT COUNT(*) FROM tbl_geomset t1, tbl_geomset_tmp t2 WHERE t1.k = t2.k AND t1.g <> t2.g;
+DROP TABLE tbl_geomset_tmp;
+
+COPY tbl_geogset TO '/tmp/tbl_geogset' (FORMAT BINARY);
+DROP TABLE IF EXISTS tbl_geogset_tmp;
+CREATE TABLE tbl_geogset_tmp AS TABLE tbl_geogset WITH NO DATA;
+COPY tbl_geogset_tmp FROM '/tmp/tbl_geogset' (FORMAT BINARY);
+SELECT COUNT(*) FROM tbl_geogset t1, tbl_geogset_tmp t2 WHERE t1.k = t2.k AND t1.g <> t2.g;
+DROP TABLE tbl_geogset_tmp;
 
 -- Input/output from/to WKB and HexWKB
 
@@ -75,12 +89,16 @@ SELECT COUNT(*) FROM tbl_intset WHERE intsetFromBinary(asBinary(i)) <> i;
 SELECT COUNT(*) FROM tbl_bigintset WHERE bigintsetFromBinary(asBinary(b)) <> b;
 SELECT COUNT(*) FROM tbl_floatset WHERE floatsetFromBinary(asBinary(f)) <> f;
 SELECT COUNT(*) FROM tbl_textset WHERE textsetFromBinary(asBinary(t)) <> t;
-SELECT COUNT(*) FROM tbl_tstzset WHERE tstzsetFromBinary(asBinary(ts)) <> ts;
+SELECT COUNT(*) FROM tbl_tstzset WHERE tstzsetFromBinary(asBinary(t)) <> t;
+SELECT COUNT(*) FROM tbl_geomset WHERE geomsetFromBinary(asBinary(g)) <> g;
+SELECT COUNT(*) FROM tbl_geogset WHERE geogsetFromBinary(asBinary(g)) <> g;
 
 SELECT COUNT(*) FROM tbl_intset WHERE intsetFromHexWKB(asHexWKB(i)) <> i;
 SELECT COUNT(*) FROM tbl_bigintset WHERE bigintsetFromHexWKB(asHexWKB(b)) <> b;
 SELECT COUNT(*) FROM tbl_floatset WHERE floatsetFromHexWKB(asHexWKB(f)) <> f;
-SELECT COUNT(*) FROM tbl_tstzset WHERE tstzsetFromHexWKB(asHexWKB(ts)) <> ts;
+SELECT COUNT(*) FROM tbl_tstzset WHERE tstzsetFromHexWKB(asHexWKB(t)) <> t;
+SELECT COUNT(*) FROM tbl_geomset WHERE geomsetFromHexWKB(asHexWKB(g)) <> g;
+-- SELECT COUNT(*) FROM tbl_geogset WHERE geogsetFromHexWKB(asHexWKB(g)) <> g;
 
 -------------------------------------------------------------------------------
 -- Constructor
@@ -100,21 +118,21 @@ SELECT MIN(startValue(round(f, 5))) FROM tbl_floatset;
 SELECT MIN(startValue(shift(i, 5))) FROM tbl_intset;
 SELECT MIN(startValue(shift(b, 5))) FROM tbl_bigintset;
 SELECT MIN(startValue(shift(f, 5))) FROM tbl_floatset;
-SELECT MIN(startValue(shift(ts, '5 min'))) FROM tbl_tstzset;
+SELECT MIN(startValue(shift(t, '5 min'))) FROM tbl_tstzset;
 
 -------------------------------------------------------------------------------
 -- Accessor functions
 
-SELECT MAX(memorySize(ts)) FROM tbl_tstzset;
-SELECT MAX(storageSize(ts)) FROM tbl_tstzset;
+SELECT MAX(memorySize(t)) FROM tbl_tstzset;
+SELECT MAX(storageSize(t)) FROM tbl_tstzset;
 
-SELECT MIN(lower(span(ts))) FROM tbl_tstzset;
+SELECT MIN(lower(span(t))) FROM tbl_tstzset;
 
-SELECT MIN(numValues(ts)) FROM tbl_tstzset;
-SELECT MIN(startValue(ts)) FROM tbl_tstzset;
-SELECT MIN(endValue(ts)) FROM tbl_tstzset;
-SELECT MIN(valueN(ts, 1)) FROM tbl_tstzset;
-SELECT MIN(array_length(getValues(ts), 1)) FROM tbl_tstzset;
+SELECT MIN(numValues(t)) FROM tbl_tstzset;
+SELECT MIN(startValue(t)) FROM tbl_tstzset;
+SELECT MIN(endValue(t)) FROM tbl_tstzset;
+SELECT MIN(valueN(t, 1)) FROM tbl_tstzset;
+SELECT MIN(array_length(getValues(t), 1)) FROM tbl_tstzset;
 
 -------------------------------------------------------------------------------
 -- Set_agg and unnest functions
@@ -140,11 +158,11 @@ WITH test1(k, f) AS (
 test2 (k, f) AS (
   SELECT k, set_agg(f) FROM test1 GROUP BY k )
 SELECT COUNT(*) FROM test2 t1, tbl_floatset t2 WHERE t1.k = t2.k AND t1.f <> t2.f;
-WITH test1(k, ts) AS (
-  SELECT k, unnest(ts) FROM tbl_tstzset ),
-test2 (k, ts) AS (
-  SELECT k, set_agg(ts) FROM test1 GROUP BY k )
-SELECT COUNT(*) FROM test2 t1, tbl_tstzset t2 WHERE t1.k = t2.k AND t1.ts <> t2.ts;
+WITH test1(k, t) AS (
+  SELECT k, unnest(t) FROM tbl_tstzset ),
+test2 (k, t) AS (
+  SELECT k, set_agg(t) FROM test1 GROUP BY k )
+SELECT COUNT(*) FROM test2 t1, tbl_tstzset t2 WHERE t1.k = t2.k AND t1.t <> t2.t;
 WITH test1(k, t) AS (
   SELECT k, unnest(t) FROM tbl_textset ),
 test2 (k, t) AS (
@@ -154,22 +172,22 @@ SELECT COUNT(*) FROM test2 t1, tbl_textset t2 WHERE t1.k = t2.k AND t1.t <> t2.t
 -------------------------------------------------------------------------------
 -- Comparison functions
 
-SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE tstzset_cmp(t1.ts, t2.ts) = -1;
-SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.ts = t2.ts;
-SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.ts <> t2.ts;
-SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.ts < t2.ts;
-SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.ts <= t2.ts;
-SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.ts > t2.ts;
-SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.ts >= t2.ts;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE tstzset_cmp(t1.t, t2.t) = -1;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t = t2.t;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t <> t2.t;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t < t2.t;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t <= t2.t;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t > t2.t;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t >= t2.t;
 
 SELECT MAX(intset_hash(i)) FROM tbl_intset;
 SELECT MAX(bigintset_hash(b)) FROM tbl_bigintset;
 SELECT MAX(floatset_hash(f)) FROM tbl_floatset;
-SELECT MAX(tstzset_hash(ts)) FROM tbl_tstzset;
+SELECT MAX(tstzset_hash(t)) FROM tbl_tstzset;
 
 SELECT MAX(intset_hash_extended(i, 1)) FROM tbl_intset;
 SELECT MAX(bigintset_hash_extended(b, 1)) FROM tbl_bigintset;
 SELECT MAX(floatset_hash_extended(f, 1)) FROM tbl_floatset;
-SELECT MAX(tstzset_hash_extended(ts, 1)) FROM tbl_tstzset;
+SELECT MAX(tstzset_hash_extended(t, 1)) FROM tbl_tstzset;
 
 -------------------------------------------------------------------------------

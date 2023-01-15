@@ -39,13 +39,15 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <utils/timestamp.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/pg_types.h"
-#include "general/temporal_out.h"
-#include "general/temporal_parser.h"
-#include "general/temporal_util.h"
+#include "general/type_out.h"
+#include "general/type_parser.h"
+#include "general/type_util.h"
+#include "point/tpoint_out.h"
+#include "point/tpoint_spatialfuncs.h"
 #include "npoint/tnpoint_boxops.h"
 
 /*****************************************************************************
@@ -187,6 +189,40 @@ tstzset_in(const char *str)
 }
 #endif /* MEOS */
 
+
+/**
+ * @ingroup libmeos_setspan_inout
+ * @brief Return true if the base type value is output enclosed into quotes.
+ */
+static bool
+set_basetype_quotes(meosType type)
+{
+  /* Text values are output with quotes in the `basetype_out` function */
+  if (type == T_TIMESTAMPTZ || spatial_basetype(type))
+    return true;
+  return false;
+}
+
+/**
+ * @ingroup libmeos_internal_setspan_inout
+ * @brief Return the Well-Known Text (WKT) representation of a set.
+ */
+char *
+set_out_fn(const Set *s, int maxdd, outfunc value_out)
+{
+  char **strings = palloc(sizeof(char *) * s->count);
+  size_t outlen = 0;
+  for (int i = 0; i < s->count; i++)
+  {
+    Datum d = set_val_n(s, i);
+    strings[i] = value_out(d, s->basetype, maxdd);
+    outlen += strlen(strings[i]) + 1;
+  }
+  bool quotes = set_basetype_quotes(s->basetype);
+  return stringarr_to_string(strings, s->count, outlen, "", '{', '}', quotes,
+    SPACES);
+}
+
 /**
  * @ingroup libmeos_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a set.
@@ -194,15 +230,29 @@ tstzset_in(const char *str)
 char *
 set_out(const Set *s, int maxdd)
 {
-  char **strings = palloc(sizeof(char *) * s->count);
-  size_t outlen = 0;
-  for (int i = 0; i < s->count; i++)
-  {
-    Datum d = set_val_n(s, i);
-    strings[i] = basetype_out(d, s->basetype, maxdd);
-    outlen += strlen(strings[i]) + 2;
-  }
-  return stringarr_to_string(strings, s->count, outlen, "", '{', '}');
+  return set_out_fn(s, maxdd, &basetype_out);
+}
+
+/**
+ * @ingroup libmeos_spanset_inout
+ * @brief Return the Well-Known Text (WKT) representation a geoset.
+ * @sqlfunc asText()
+ */
+char *
+geoset_as_text(const Set *set, int maxdd)
+{
+  return set_out_fn(set, maxdd, &wkt_out);
+}
+
+/**
+ * @ingroup libmeos_spanset_inout
+ * @brief Return the Extended Well-Known Text (EWKT) representation a geoset.
+ * @sqlfunc asEWKT()
+ */
+char *
+geoset_as_ewkt(const Set *set, int maxdd)
+{
+  return set_out_fn(set, maxdd, &ewkt_out);
 }
 
 /*****************************************************************************
@@ -237,9 +287,9 @@ valuearr_compute_bbox(const Datum *values, meosType basetype, int count,
 {
   /* Currently, only geo set types have bounding box */
   ensure_set_basetype(basetype);
-  if (talpha_type(basetype) || tnumber_type(basetype))
+  if (alphanum_basetype(basetype))
     ;
-  else if (basetype == T_GEOMETRY || basetype == T_GEOGRAPHY)
+  else if (geo_basetype(basetype))
     geoarr_set_stbox(values, count, (STBox *) box);
 #if NPOINT
   else if (basetype == T_NPOINT)
@@ -322,26 +372,49 @@ set_val_n(const Set *s, int index)
  * @param[in] values Array of values
  * @param[in] count Number of elements in the array
  * @param[in] basetype Base type
+ * @param[in] ordered True for ordered sets
  * @sqlfunc intset(), bigintset(), floatset(), textset(), tstzset()
  * @pymeosfunc TstzSet()
  */
 Set *
 set_make(const Datum *values, int count, meosType basetype, bool ordered)
 {
-  if (ordered)
+  bool hasz = false;
+  bool isgeodetic = false;
+  if (geo_basetype(basetype))
   {
+    /* Ensure the spatial validity of the elements */
+    GSERIALIZED *gs1 = DatumGetGserializedP(values[0]);
+    int srid = gserialized_get_srid(gs1);
+    hasz = FLAGS_GET_Z(gs1->gflags);
+    isgeodetic = FLAGS_GET_GEODETIC(gs1->gflags);
     /* Test the validity of the values */
-    for (int i = 0; i < count - 1; i++)
+    for (int i = 0; i < count; i++)
     {
-      if (datum_ge(values[i], values[i + 1], basetype))
-      {
-        char *str1 = basetype_out(values[i], basetype, OUT_DEFAULT_DECIMAL_DIGITS);
-        char *str2 = basetype_out(values[i + 1], basetype, OUT_DEFAULT_DECIMAL_DIGITS);
-        elog(ERROR, "The values of a set must be increasing: %s %s",
-          str1, str2);
-        pfree(str1); pfree(str2);
-      }
+      /* Test that the geometry is not empty */
+      GSERIALIZED *gs2 = DatumGetGserializedP(values[i]);
+      ensure_point_type(gs2);
+      ensure_same_srid(srid, gserialized_get_srid(gs2));
+      ensure_same_dimensionality_gs(gs1, gs2);
+      ensure_non_empty(gs2);
     }
+  }
+
+  /* Sort the values and remove duplicates */
+  Datum *newvalues;
+  int newcount;
+  if (ordered && count > 1)
+  {
+  /* Sort the values and remove duplicates */
+    newvalues = palloc(sizeof(Datum *) * count);
+    memcpy(newvalues, values, sizeof(Datum *) * count);
+    datumarr_sort(newvalues, count, basetype);
+    newcount = datumarr_remove_duplicates(newvalues, count, basetype);
+  }
+  else
+  {
+    newvalues = (Datum *) values;
+    newcount = count;
   }
 
   /* Get the bounding box size */
@@ -364,43 +437,48 @@ set_make(const Datum *values, int count, meosType basetype, bool ordered)
   {
     if (typlen == -1)
     {
-      for (int i = 0; i < count; i++)
-        values_size += double_pad(VARSIZE(values[i]));
+      for (int i = 0; i < newcount; i++)
+        values_size += double_pad(VARSIZE(newvalues[i]));
     }
     else
-      values_size = double_pad(typlen) * count;
+      values_size = double_pad(typlen) * newcount;
   }
 
   /* Determine overall memory size */
   size_t memsize = double_pad(sizeof(Set)) + double_pad(bboxsize) +
-    (sizeof(size_t) * count) + values_size;
+    (sizeof(size_t) * newcount) + values_size;
 
   /* Create the Set */
   Set *result = palloc0(memsize);
   SET_VARSIZE(result, memsize);
   MOBDB_FLAGS_SET_BYVAL(result->flags, typbyval);
   MOBDB_FLAGS_SET_ORDERED(result->flags, ordered);
-  result->count = count;
+  if (geo_basetype(basetype))
+  {
+    MOBDB_FLAGS_SET_X(result->flags, true);
+    MOBDB_FLAGS_SET_Z(result->flags, hasz);
+    MOBDB_FLAGS_SET_GEODETIC(result->flags, isgeodetic);
+  }
+  result->count = newcount;
   result->settype = settype;
   result->basetype = basetype;
   result->bboxsize = bboxsize;
-
   /* Copy the array of values */
   if (typbyval)
   {
-    for (int i = 0; i < count; i++)
-      (set_offsets_ptr(result))[i] = values[i];
+    for (int i = 0; i < newcount; i++)
+      (set_offsets_ptr(result))[i] = newvalues[i];
   }
   else
   {
     /* Store the composing values */
     size_t pdata = double_pad(sizeof(Set)) + double_pad(bboxsize) +
-      sizeof(size_t) * count;
+      sizeof(size_t) * newcount;
     size_t pos = 0;
-    for (int i = 0; i < count; i++)
+    for (int i = 0; i < newcount; i++)
     {
-      size_t size_elem = (typlen == -1) ? VARSIZE(values[i]) : (uint32) typlen;
-      memcpy(((char *) result) + pdata + pos, DatumGetPointer(values[i]),
+      size_t size_elem = (typlen == -1) ? VARSIZE(newvalues[i]) : (uint32) typlen;
+      memcpy(((char *) result) + pdata + pos, DatumGetPointer(newvalues[i]),
         size_elem);
       (set_offsets_ptr(result))[i] = pos;
       pos += double_pad(size_elem);
@@ -409,8 +487,10 @@ set_make(const Datum *values, int count, meosType basetype, bool ordered)
 
   /* Compute the bounding box */
   if (bboxsize != 0)
-    valuearr_compute_bbox(values, basetype, count, set_bbox_ptr(result));
+    valuearr_compute_bbox(newvalues, basetype, newcount, set_bbox_ptr(result));
 
+  if (ordered && count > 1)
+    pfree(newvalues);
   return result;
 }
 
@@ -890,6 +970,19 @@ tstzset_timestamps(const Set *ts)
   return result;
 }
 
+/**
+ * @ingroup libmeos_internal_setspan_accessor
+ * @brief Return the SRID of a geoset point.
+ * @sqlfunc SRID()
+ */
+int
+geoset_srid(const Set *set)
+{
+  assert(geo_basetype(set->basetype));
+  GSERIALIZED *gs = DatumGetGserializedP(set_val_n(set, 0));
+  return gserialized_get_srid(gs);
+}
+
 /*****************************************************************************
  * Modification functions
  *****************************************************************************/
@@ -1080,24 +1173,6 @@ set_gt(const Set *s1, const Set *s2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_accessor
- * @brief Return the 32-bit hash of a value.
- */
-uint32
-datum_hash(Datum d, meosType basetype)
-{
-  ensure_set_basetype(basetype);
-  if (basetype == T_TIMESTAMPTZ)
-    return pg_hashint8(TimestampTzGetDatum(d));
-  else if (basetype == T_INT4)
-    return DatumGetInt32(hash_bytes_uint32(d));
-  else if (basetype == T_INT8)
-    return pg_hashint8(Int64GetDatum(d));
-  else /* basetype == T_FLOAT8 */
-    return pg_hashfloat8(Float8GetDatum(d));
-}
-
-/**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the 32-bit hash of a set.
  * @sqlfunc tstzset_hash()
@@ -1113,24 +1188,6 @@ set_hash(const Set *s)
     result = (result << 5) - result + value_hash;
   }
   return result;
-}
-
-/**
- * @ingroup libmeos_internal_setspan_accessor
- * @brief Return the 64-bit hash of a value using a seed.
- */
-uint64
-datum_hash_extended(Datum d, meosType basetype, uint64 seed)
-{
-  ensure_set_basetype(basetype);
-  if (basetype == T_TIMESTAMPTZ)
-    return pg_hashint8extended(TimestampTzGetDatum(d), seed);
-  else if (basetype == T_INT4)
-    return hash_bytes_uint32_extended(DatumGetInt32(d), seed);
-  else if (basetype == T_INT8)
-    return pg_hashint8extended(Int64GetDatum(d), seed);
-  else /* basetype == T_FLOAT8 */
-    return pg_hashfloat8extended(Float8GetDatum(d), seed);
 }
 
 /**

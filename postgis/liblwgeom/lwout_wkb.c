@@ -457,7 +457,8 @@ static size_t lwpoint_to_wkb_size(const LWPOINT *pt, uint8_t variant)
 	return size;
 }
 
-static uint8_t* lwpoint_to_wkb_buf(const LWPOINT *pt, uint8_t *buf, uint8_t variant)
+static  // MOBDB
+uint8_t* lwpoint_to_wkb_buf(const LWPOINT *pt, uint8_t *buf, uint8_t variant)
 {
 	/* Only process empty at this level in the EXTENDED case */
 	if ( (variant & WKB_EXTENDED) && lwgeom_is_empty((LWGEOM*)pt) )

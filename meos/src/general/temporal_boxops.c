@@ -237,11 +237,8 @@ tinstant_set_bbox(const TInstant *inst, void *box)
       true, true, T_TIMESTAMPTZ, (Span *) box);
   else if (tnumber_type(inst->temptype))
   {
-    Datum value;
-    if (inst->temptype == T_TINT)
-      value = Float8GetDatum(tnumberinst_double(inst));
-    else /* inst->temptype == T_TFLOAT */
-      value = tinstant_value(inst);
+    meosType basetype = temptype_basetype(inst->temptype);
+    Datum value = Float8GetDatum(datum_double(tinstant_value(inst), basetype));
     TBox *tbox = (TBox *) box;
     memset(tbox, 0, sizeof(TBox));
     span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
@@ -391,7 +388,7 @@ tsequenceset_expand_bbox(TSequenceSet *ss, const TSequence *seq)
     tbox_expand((TBox *) TSEQUENCE_BBOX_PTR(seq),
       (TBox *) TSEQUENCE_BBOX_PTR(ss));
   // TODO Generalize as for tgeogpointseq_expand_stbox
-  else if (ss->temptype == T_TGEOMPOINT || ss->temptype == T_TGEOGPOINT)
+  else if (tgeo_type(ss->temptype))
     stbox_expand((STBox *) TSEQUENCE_BBOX_PTR(seq),
       (STBox *) TSEQUENCE_BBOX_PTR(ss));
 #if NPOINT
@@ -459,206 +456,6 @@ tsequenceset_compute_bbox(const TSequence **sequences, int count, void *box)
     elog(ERROR, "unknown bounding box function for temporal type: %d",
       sequences[0]->temptype);
   return;
-}
-
-/*****************************************************************************
- * Bounding box operators for temporal types: Generic functions
- * The inclusive/exclusive bounds are taken into account for the comparisons
- *****************************************************************************/
-
-/**
- * Generic bounding box operator for a temporal value and a timestamp.
- *
- * @param[in] temp Temporal value
- * @param[in] t Timestamp
- * @param[in] func Bounding box function
- * @param[in] invert True if the timestamp is the first argument of the
- * function
- */
-Datum
-boxop_temporal_timestamp(const Temporal *temp, TimestampTz t,
-  bool (*func)(const Span *, const Span *), bool invert)
-{
-  Span p1, p2;
-  temporal_set_period(temp, &p1);
-  span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
-    T_TIMESTAMPTZ, &p2);
-  bool result = invert ? func(&p2, &p1) : func(&p1, &p2);
-  return result;
-}
-
-/**
- * Generic bounding box operator for a period and a temporal value.
- *
- * @param[in] temp Temporal value
- * @param[in] ts Timestamp set
- * @param[in] func Bounding box function
- * @param[in] invert True if the timestamp set is the first argument of the
- * function
- */
-Datum
-boxop_temporal_tstzset(const Temporal *temp, const Set *ts,
-  bool (*func)(const Span *, const Span *), bool invert)
-{
-  Span p1, p2;
-  temporal_set_period(temp, &p1);
-  set_set_span(ts, &p2);
-  bool result = invert ? func(&p2, &p1) : func(&p1, &p2);
-  return result;
-}
-
-/**
- * Generic bounding box operator for a period and a temporal value.
- *
- * @param[in] temp Temporal value
- * @param[in] p Period
- * @param[in] func Bounding box function
- * @param[in] invert True if the period is the first argument of the
- * function
- */
-Datum
-boxop_temporal_period(const Temporal *temp, const Span *p,
-  bool (*func)(const Span *, const Span *), bool invert)
-{
-  Span p1;
-  temporal_set_period(temp, &p1);
-  bool result = invert ? func(p, &p1) : func(&p1, p);
-  return result;
-}
-
-/**
- * Generic bounding box operator for a temporal value and a periodset
- *
- * @param[in] temp Temporal value
- * @param[in] ps Period set
- * @param[in] func Bounding box function
- * @param[in] invert True if the period set is the first argument of the
- * function
- */
-bool
-boxop_temporal_periodset(const Temporal *temp, const SpanSet *ps,
-  bool (*func)(const Span *, const Span *), bool invert)
-{
-  Span p;
-  temporal_set_period(temp, &p);
-  bool result = invert ? func(&ps->span, &p) : func(&p, &ps->span);
-  return result;
-}
-
-/**
- * Generic bounding box operator for two temporal values
- *
- * @param[in] temp1,temp2 Temporal values
- * @param[in] func Bounding box function
- */
-bool
-boxop_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
-  bool (*func)(const Span *, const Span *))
-{
-  Span p1, p2;
-  temporal_set_period(temp1, &p1);
-  temporal_set_period(temp2, &p2);
-  bool result = func(&p1, &p2);
-  return result;
-}
-
-/*****************************************************************************
- * Bounding box operators for temporal number types: Generic functions
- *****************************************************************************/
-
-/**
- * Generic bounding box operator for a temporal number and a number
- *
- * @param[in] temp Temporal number
- * @param[in] number Type
- * @param[in] basetype Base type value
- * @param[in] func Bounding box function
- * @param[in] invert True if the base value is the first argument of the
- * function
- */
-bool
-boxop_tnumber_number(const Temporal *temp, Datum number, meosType basetype,
-  bool (*func)(const TBox *, const TBox *), bool invert)
-{
-  TBox box1, box2;
-  temporal_set_bbox(temp, &box1);
-  number_set_tbox(number, basetype, &box2);
-  bool result = invert ? func(&box2, &box1) : func(&box1, &box2);
-  return result;
-}
-
-/**
- * Generic bounding box operator for a temporal number and a span
- *
- * @param[in] temp Temporal number
- * @param[in] span Span
- * @param[in] func Bounding box function
- * @param[in] invert True if the span is the first argument of the function.
- */
-bool
-boxop_tnumber_numspan(const Temporal *temp, const Span *span,
-  bool (*func)(const TBox *, const TBox *), bool invert)
-{
-  TBox box1, box2;
-  temporal_set_bbox(temp, &box1);
-  numspan_set_tbox(span, &box2);
-  bool result = invert ? func(&box2, &box1) : func(&box1, &box2);
-  return (result);
-}
-
-/**
- * Generic bounding box operator for a temporal number and a span
- *
- * @param[in] temp Temporal number
- * @param[in] ss Span set
- * @param[in] func Bounding box function
- * @param[in] invert True if the span is the first argument of the function.
- */
-bool
-boxop_tnumber_numspanset(const Temporal *temp, const SpanSet *ss,
-  bool (*func)(const TBox *, const TBox *), bool invert)
-{
-  TBox box1, box2;
-  temporal_set_bbox(temp, &box1);
-  numspanset_set_tbox(ss, &box2);
-  bool result = invert ? func(&box2, &box1) : func(&box1, &box2);
-  return (result);
-}
-
-/**
- * Generic bounding box operator for a temporal number and a temporal box
- *
- * @param[in] temp Temporal number
- * @param[in] box Bounding box
- * @param[in] invert True if the bounding box is the first argument of the
- * function
- * @param[in] func Bounding box function
- */
-bool
-boxop_tnumber_tbox(const Temporal *temp, const TBox *box,
-  bool (*func)(const TBox *, const TBox *), bool invert)
-{
-  TBox box1;
-  temporal_set_bbox(temp, &box1);
-  bool result = invert ? func(box, &box1) : func(&box1, box);
-  return result;
-}
-
-/**
- * Generic bounding box operator for two temporal numbers
- *
- * @param[in] temp1,temp2 Temporal numbers
- * @param[in] func Bounding box function
- */
-bool
-boxop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
-  bool (*func)(const TBox *, const TBox *))
-{
-  TBox box1, box2;
-  temporal_set_bbox(temp1, &box1);
-  temporal_set_bbox(temp2, &box2);
-  bool result = func(&box1, &box2);
-  return result;
 }
 
 /*****************************************************************************/

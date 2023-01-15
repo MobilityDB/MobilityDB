@@ -634,6 +634,78 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
+ * Generate an array of random 2D geometric points
+ *
+ * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
+ * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
+ * @param[in] maxdelta Maximum difference between two consecutive coordinate values
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
+ * @param[in] srid SRID of the coordinates
+ */
+DROP FUNCTION IF EXISTS random_geom_point_set;
+CREATE FUNCTION random_geom_point_set(lowx float, highx float, lowy float,
+  highy float, maxdelta float, mincard int, maxcard int, srid int DEFAULT 0)
+  RETURNS geomset AS $$
+DECLARE
+  garr geometry[];
+BEGIN
+  garr = random_geom_point_array(lowx, highx, lowy, highy, maxdelta,
+    mincard, maxcard, srid);
+  garr = ARRAY(SELECT DISTINCT unnest(garr) ORDER BY 1);
+  RETURN geomset(garr);
+END;
+$$ LANGUAGE PLPGSQL STRICT;
+
+/*
+SELECT k, asewkt(random_geom_point_set(-100, 100, -100, 100, 10, 5, 10)) AS g
+FROM generate_series(1, 15) AS k;
+
+SELECT k, asewkt(random_geom_point_set(-100, 100, -100, 100, 10, 5, 10, 3812)) AS g
+FROM generate_series(1, 15) AS k;
+
+SELECT k, random_geom_point_set(-100, 100, -100, 100, 10, 5, 10) AS g
+FROM generate_series(1, 15) AS k;
+*/
+
+-------------------------------------------------------------------------------
+
+/**
+ * Generate an array of random 2D geographic points
+ *
+ * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
+ * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
+ * @param[in] maxdelta Maximum difference between two consecutive coordinate values
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
+ * @param[in] srid SRID of the coordinates
+ */
+DROP FUNCTION IF EXISTS random_geog_point_set;
+CREATE FUNCTION random_geog_point_set(lowx float, highx float, lowy float,
+  highy float, maxdelta float, mincard int, maxcard int, srid int DEFAULT 4326)
+  RETURNS geogset AS $$
+DECLARE
+  garr geography[];
+BEGIN
+  garr = random_geog_point_array(lowx, highx, lowy, highy, maxdelta,
+    mincard, maxcard, srid);
+  garr = ARRAY(SELECT DISTINCT unnest(garr) ORDER BY 1);
+  RETURN geogset(garr);
+END;
+$$ LANGUAGE PLPGSQL STRICT;
+
+/*
+SELECT k, asewkt(random_geog_point_set(0, 80, 0, 80, 10, 5, 10)) AS g
+FROM generate_series(1, 15) AS k;
+
+SELECT k, asewkt(random_geog_point_set(0, 80, 0, 80, 10, 5, 10, 3812)) AS g
+FROM generate_series(1, 15) AS k;
+
+SELECT k, random_geog_point_set(0, 80, 0, 80, 10, 5, 10) AS g
+FROM generate_series(1, 15) AS k;
+*/
+
+-------------------------------------------------------------------------------
+
+/**
  * Generate a random 2D geometric linestring
  *
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates

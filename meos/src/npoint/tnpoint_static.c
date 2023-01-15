@@ -47,9 +47,9 @@
 /* MEOS */
 #include <meos.h>
 #include "general/pg_types.h"
-#include "general/temporal_out.h"
-#include "general/temporal_util.h"
 #include "general/tnumber_mathfuncs.h"
+#include "general/type_out.h"
+#include "general/type_util.h"
 #include "point/pgis_call.h"
 #include "point/tpoint_out.h"
 #include "point/tpoint_spatialfuncs.h"
@@ -890,6 +890,23 @@ npoint_hash(const Npoint *np)
 
   /* Merge hashes of value and position */
   uint32 result = rid_hash;
+  result = (result << 1) | (result >> 31);
+  result ^= pos_hash;
+  return result;
+}
+
+/**
+ * @brief Return the 32-bit hash value of a network point.
+ */
+uint64
+npoint_hash_extended(const Npoint *np, uint64 seed)
+{
+  /* Compute hashes of value and position */
+  uint64 rid_hash = pg_hashfloat8extended(np->rid, seed);
+  uint64 pos_hash = pg_hashfloat8extended(np->pos, seed);
+
+  /* Merge hashes of value and position */
+  uint64 result = rid_hash;
   result = (result << 1) | (result >> 31);
   result ^= pos_hash;
   return result;

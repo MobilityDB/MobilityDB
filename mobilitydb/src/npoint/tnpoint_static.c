@@ -43,8 +43,8 @@
 #include <liblwgeom.h>
 /* MEOS */
 #include <meos.h>
-#include "general/temporal_out.h"
-#include "general/temporal_util.h"
+#include "general/type_out.h"
+#include "general/type_util.h"
 /* MobilityDB */
 #include "pg_general/temporal.h"
 #include "pg_general/tnumber_mathfuncs.h"

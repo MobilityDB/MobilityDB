@@ -18,17 +18,11 @@ add_library(general OBJECT
   temporal.c
   temporal_aggfuncs.c
   temporal_boxops.c
-  temporal_boxops_meos.c
   temporal_compops.c
   temporal_compops_meos.c
-  temporal_in.c
   temporal_meos.c
-  temporal_out.c
-  temporal_parser.c
-  temporal_posops_meos.c
   temporal_similarity.c
   temporal_tile.c
-  temporal_util.c
   time_aggfuncs.c
   tinstant.c
   tnumber_distance.c
@@ -38,4 +32,8 @@ add_library(general OBJECT
   tsequenceset.c
   ttext_textfuncs.c
   ttext_textfuncs_meos.c
+  type_in.c
+  type_out.c
+  type_parser.c
+  type_util.c
 )

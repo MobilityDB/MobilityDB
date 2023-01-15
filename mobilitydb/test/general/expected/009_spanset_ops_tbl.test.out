@@ -4,12 +4,6 @@ SELECT COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i + t2.i IS NOT NULL
   9801
 (1 row)
 
-SELECT COUNT(*) FROM tbl_intset t1, tbl_intspanset t2 WHERE t1.i + t2.i IS NOT NULL;
- count 
--------
- 98901
-(1 row)
-
 SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE t1.i + t2.i IS NOT NULL;
  count 
 -------
@@ -20,12 +14,6 @@ SELECT COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.i + t2.i IS NOT NULL
  count 
 -------
   9801
-(1 row)
-
-SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intset t2 WHERE t1.i + t2.i IS NOT NULL;
- count 
--------
- 98901
 (1 row)
 
 SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspan t2 WHERE t1.i + t2.i IS NOT NULL;
@@ -46,12 +34,6 @@ SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintspanset t2 WHERE t1.b + t2.b IS NO
   9801
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintspanset t2 WHERE t1.b + t2.b IS NOT NULL;
- count 
--------
- 98901
-(1 row)
-
 SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspanset t2 WHERE t1.b + t2.b IS NOT NULL;
  count 
 -------
@@ -62,12 +44,6 @@ SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigint t2 WHERE t1.b + t2.b IS NO
  count 
 -------
   9801
-(1 row)
-
-SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintset t2 WHERE t1.b + t2.b IS NOT NULL;
- count 
--------
- 98901
 (1 row)
 
 SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspan t2 WHERE t1.b + t2.b IS NOT NULL;
@@ -88,12 +64,6 @@ SELECT COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f + t2.f IS NOT 
   9801
 (1 row)
 
-SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatspanset t2 WHERE t1.f + t2.f IS NOT NULL;
- count 
--------
-  9801
-(1 row)
-
 SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspanset t2 WHERE t1.f + t2.f IS NOT NULL;
  count 
 -------
@@ -101,12 +71,6 @@ SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspanset t2 WHERE t1.f + t2.f IS 
 (1 row)
 
 SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.f + t2.f IS NOT NULL;
- count 
--------
-  9801
-(1 row)
-
-SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatset t2 WHERE t1.f + t2.f IS NOT NULL;
  count 
 -------
   9801
@@ -130,12 +94,6 @@ SELECT COUNT(*) FROM tbl_timestamptz t1, tbl_tstzspanset t2 WHERE t1.t + t2.ps I
   9801
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzspanset t2 WHERE t1.ts + t2.ps IS NOT NULL;
- count 
--------
-  9801
-(1 row)
-
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE t1.p + t2.ps IS NOT NULL;
  count 
 -------
@@ -143,12 +101,6 @@ SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE t1.p + t2.ps IS N
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_timestamptz t2 WHERE t1.ps + t2.t IS NOT NULL;
- count 
--------
-  9801
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzset t2 WHERE t1.ps + t2.ts IS NOT NULL;
  count 
 -------
   9801
@@ -172,12 +124,6 @@ SELECT COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i - t2.i IS NOT NULL
   7636
 (1 row)
 
-SELECT COUNT(*) FROM tbl_intset t1, tbl_intspanset t2 WHERE t1.i - t2.i IS NOT NULL;
- count 
--------
- 98898
-(1 row)
-
 SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE t1.i - t2.i IS NOT NULL;
  count 
 -------
@@ -190,8 +136,6 @@ SELECT COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.i - t2.i IS NOT NULL
   9801
 (1 row)
 
-SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intset t2 WHERE t1.i - t2.i IS NOT NULL;
-ERROR:  Span cannot be empty
 SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspan t2 WHERE t1.i - t2.i IS NOT NULL;
  count 
 -------
@@ -210,12 +154,6 @@ SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintspanset t2 WHERE t1.b - t2.b IS NO
   7705
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintspanset t2 WHERE t1.b - t2.b IS NOT NULL;
- count 
--------
- 98900
-(1 row)
-
 SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspanset t2 WHERE t1.b - t2.b IS NOT NULL;
  count 
 -------
@@ -228,8 +166,6 @@ SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigint t2 WHERE t1.b - t2.b IS NO
   9801
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintset t2 WHERE t1.b - t2.b IS NOT NULL;
-ERROR:  Span cannot be empty
 SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspan t2 WHERE t1.b - t2.b IS NOT NULL;
  count 
 -------
@@ -248,12 +184,6 @@ SELECT COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f - t2.f IS NOT 
   7671
 (1 row)
 
-SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatspanset t2 WHERE t1.f - t2.f IS NOT NULL;
- count 
--------
-  9801
-(1 row)
-
 SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspanset t2 WHERE t1.f - t2.f IS NOT NULL;
  count 
 -------
@@ -261,12 +191,6 @@ SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspanset t2 WHERE t1.f - t2.f IS 
 (1 row)
 
 SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.f - t2.f IS NOT NULL;
- count 
--------
-  9801
-(1 row)
-
-SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatset t2 WHERE t1.f - t2.f IS NOT NULL;
  count 
 -------
   9801
@@ -290,12 +214,6 @@ SELECT COUNT(*) FROM tbl_timestamptz t1, tbl_tstzspanset t2 WHERE t1.t - t2.ps I
   9801
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzspanset t2 WHERE t1.ts - t2.ps IS NOT NULL;
- count 
--------
-  9801
-(1 row)
-
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE t1.p - t2.ps IS NOT NULL;
  count 
 -------
@@ -303,12 +221,6 @@ SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE t1.p - t2.ps IS N
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_timestamptz t2 WHERE t1.ps - t2.t IS NOT NULL;
- count 
--------
-  9801
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzset t2 WHERE t1.ps - t2.ts IS NOT NULL;
  count 
 -------
   9801
@@ -332,12 +244,6 @@ SELECT COUNT(*) FROM tbl_int t1, tbl_intspanset t2 WHERE t1.i * t2.i IS NOT NULL
   2165
 (1 row)
 
-SELECT COUNT(*) FROM tbl_intset t1, tbl_intspanset t2 WHERE t1.i * t2.i IS NOT NULL;
- count 
--------
-  7897
-(1 row)
-
 SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspanset t2 WHERE t1.i * t2.i IS NOT NULL;
  count 
 -------
@@ -348,12 +254,6 @@ SELECT COUNT(*) FROM tbl_intspanset t1, tbl_int t2 WHERE t1.i * t2.i IS NOT NULL
  count 
 -------
   2165
-(1 row)
-
-SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intset t2 WHERE t1.i * t2.i IS NOT NULL;
- count 
--------
-  7897
 (1 row)
 
 SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspan t2 WHERE t1.i * t2.i IS NOT NULL;
@@ -374,12 +274,6 @@ SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintspanset t2 WHERE t1.b * t2.b IS NO
   2096
 (1 row)
 
-SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintspanset t2 WHERE t1.b * t2.b IS NOT NULL;
- count 
--------
-  8450
-(1 row)
-
 SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspanset t2 WHERE t1.b * t2.b IS NOT NULL;
  count 
 -------
@@ -390,12 +284,6 @@ SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigint t2 WHERE t1.b * t2.b IS NO
  count 
 -------
   2096
-(1 row)
-
-SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintset t2 WHERE t1.b * t2.b IS NOT NULL;
- count 
--------
-  8450
 (1 row)
 
 SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspan t2 WHERE t1.b * t2.b IS NOT NULL;
@@ -416,12 +304,6 @@ SELECT COUNT(*) FROM tbl_float t1, tbl_floatspanset t2 WHERE t1.f * t2.f IS NOT 
   2130
 (1 row)
 
-SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatspanset t2 WHERE t1.f * t2.f IS NOT NULL;
- count 
--------
-  7931
-(1 row)
-
 SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspanset t2 WHERE t1.f * t2.f IS NOT NULL;
  count 
 -------
@@ -432,12 +314,6 @@ SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_float t2 WHERE t1.f * t2.f IS NOT 
  count 
 -------
   2130
-(1 row)
-
-SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatset t2 WHERE t1.f * t2.f IS NOT NULL;
- count 
--------
-  7931
 (1 row)
 
 SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspan t2 WHERE t1.f * t2.f IS NOT NULL;
@@ -458,12 +334,6 @@ SELECT COUNT(*) FROM tbl_timestamptz t1, tbl_tstzspanset t2 WHERE t1.t * t2.ps I
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzspanset t2 WHERE t1.ts * t2.ps IS NOT NULL;
- count 
--------
-     1
-(1 row)
-
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE t1.p * t2.ps IS NOT NULL;
  count 
 -------
@@ -474,12 +344,6 @@ SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_timestamptz t2 WHERE t1.ps * t2.t I
  count 
 -------
      0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzset t2 WHERE t1.ps * t2.ts IS NOT NULL;
- count 
--------
-     1
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspan t2 WHERE t1.ps * t2.p IS NOT NULL;
@@ -500,19 +364,7 @@ SELECT MIN(t1.i <-> t2.i) FROM tbl_int t1, tbl_intspanset t2;
    0
 (1 row)
 
-SELECT MIN(t1.i <-> t2.i) FROM tbl_intset t1, tbl_intspanset t2;
- min 
------
-   0
-(1 row)
-
 SELECT MIN(t1.i <-> t2.i) FROM tbl_intspanset t1, tbl_int t2;
- min 
------
-   0
-(1 row)
-
-SELECT MIN(t1.i <-> t2.i) FROM tbl_intspanset t1, tbl_intset t2;
  min 
 -----
    0
@@ -530,19 +382,7 @@ SELECT MIN(t1.b <-> t2.b) FROM tbl_bigint t1, tbl_bigintspanset t2;
    0
 (1 row)
 
-SELECT MIN(t1.b <-> t2.b) FROM tbl_bigintset t1, tbl_bigintspanset t2;
- min 
------
-   0
-(1 row)
-
 SELECT MIN(t1.b <-> t2.b) FROM tbl_bigintspanset t1, tbl_bigint t2;
- min 
------
-   0
-(1 row)
-
-SELECT MIN(t1.b <-> t2.b) FROM tbl_bigintspanset t1, tbl_bigintset t2;
  min 
 -----
    0
@@ -560,19 +400,7 @@ SELECT MIN(t1.f <-> t2.f) FROM tbl_float t1, tbl_floatspanset t2;
    0
 (1 row)
 
-SELECT MIN(t1.f <-> t2.f) FROM tbl_floatset t1, tbl_floatspanset t2;
- min 
------
-   0
-(1 row)
-
 SELECT MIN(t1.f <-> t2.f) FROM tbl_floatspanset t1, tbl_float t2;
- min 
------
-   0
-(1 row)
-
-SELECT MIN(t1.f <-> t2.f) FROM tbl_floatspanset t1, tbl_floatset t2;
  min 
 -----
    0
@@ -590,22 +418,10 @@ SELECT MIN(t1.t <-> t2.p) FROM tbl_timestamptz t1, tbl_tstzspan t2;
  2760
 (1 row)
 
-SELECT MIN(t1.ts <-> t2.p) FROM tbl_tstzset t1, tbl_tstzspan t2;
- min 
------
-   0
-(1 row)
-
 SELECT MIN(t1.p <-> t2.t) FROM tbl_tstzspan t1, tbl_timestamptz t2;
  min  
 ------
  2760
-(1 row)
-
-SELECT MIN(t1.p <-> t2.ts) FROM tbl_tstzspan t1, tbl_tstzset t2;
- min 
------
-   0
 (1 row)
 
 SELECT MIN(t1.p <-> t2.p) FROM tbl_tstzspan t1, tbl_tstzspan t2;

@@ -82,6 +82,14 @@ extern char *text_to_cstring(const text *t);
 #define ORDERED         true
 #define ORDERED_NO      false
 
+/** Symbolic constants for the output of string elements */
+#define QUOTES          true
+#define QUOTES_NO       false
+
+/** Symbolic constants for the output of string elements */
+#define SPACES          true
+#define SPACES_NO       false
+
 /** Symbolic constants for lifting */
 #define INVERT          true
 #define INVERT_NO       false
@@ -257,10 +265,13 @@ enum MOBDB_WKB_TSUBTYPE
 
 /* Variation flags
  * The first byte of the variation flag depends on the type we are sending
+ * - Set types: xxxO where O states whether the set is ordered or not
  * - Box types: xxTX where X and T state whether the corresponding dimensions
- *   are present and x are unused
- * - Temporal types: xxSS where SS correspond to the subtype and x is unused
+ *   are present
+ * - Temporal types: xxSS where SS correspond to the subtype
+ * and x are unused bits
  */
+#define MOBDB_WKB_ORDERED          0x01  // 1
 #define MOBDB_WKB_XFLAG            0x01  // 1
 #define MOBDB_WKB_TFLAG            0x02  // 2
 #define MOBDB_WKB_INTERPFLAGS      0x0C  // 4 + 8
@@ -462,6 +473,7 @@ extern bool temporal_bbox_ev_al_lt_le(const Temporal *temp, Datum value,
 extern bool temporal_bbox_restrict_value(const Temporal *temp, Datum value);
 extern Datum *temporal_bbox_restrict_values(const Temporal *temp,
   const Datum *values, int count, int *newcount);
+extern bool temporal_bbox_restrict_set(const Temporal *temp, const Set *set);
 extern Temporal *temporal_restrict_minmax(const Temporal *temp, bool min,
   bool atfunc);
 

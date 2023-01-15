@@ -68,8 +68,8 @@ SELECT stbox 'SRID=4326;GEODSTBOX Z(((1.0,2.0,3.0),(1.0,2.0,3.0)))';
 				<listitem id="box_asBinary">
 					<indexterm><primary><varname>asBinary</varname></primary></indexterm>
 					<para>Obtener la representación binaria conocida (Well-Known Binary o WKB)</para>
-					<para><varname>asBinary(box): bytea</varname></para>
-					<para><varname>asBinary(box,endian text): bytea</varname></para>
+					<para><varname>asBinary(box) → bytea</varname></para>
+					<para><varname>asBinary(box,endian text) → bytea</varname></para>
 					<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT asBinary(tbox 'TBOX XT([1,2),[2000-01-01,2000-01-02))');
@@ -84,8 +84,8 @@ SELECT asBinary(stbox 'STBOX Z(((1,1),(2,2)))');
 				<listitem id="box_asHexWKB">
 					<indexterm><primary><varname>asHexWKB</varname></primary></indexterm>
 					<para>Obtener la representación hexadecimal binaria conocida (HexWKB) en formato texto</para>
-					<para><varname>asHexWKB(box): text</varname></para>
-					<para><varname>asHexWKB(box,endian text): text</varname></para>
+					<para><varname>asHexWKB(box) → text</varname></para>
+					<para><varname>asHexWKB(box,endian text) → text</varname></para>
 					<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT asHexWKB(tbox 'TBOX XT([1,2),[2000-01-01,2000-01-02))');
@@ -100,7 +100,7 @@ SELECT asHexWKB(stbox 'STBOX X(((1,1),(2,2)))');
 				<listitem id="tboxFromBinary">
 					<indexterm><primary><varname>tboxFromBinary</varname></primary></indexterm>
 					<para>Entrar un cuadro delimitador temporal en una representación binaria conocida (WKB)</para>
-					<para><varname>tboxFromBinary(bytea): tbox</varname></para>
+					<para><varname>tboxFromBinary(bytea) → tbox</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT tboxFromBinary(
   '\x01030a0001005c6c29ffffffff00bc434713000000060001000000000000f03f0000000000000040');
@@ -111,7 +111,7 @@ SELECT tboxFromBinary(
 				<listitem id="stboxFromBinary">
 					<indexterm><primary><varname>stboxFromBinary</varname></primary></indexterm>
 					<para>Entrar un cuadro delimitador espacio-temporal en una representación binaria conocida (WKB)</para>
-					<para><varname>stboxFromBinary(bytea): stbox</varname></para>
+					<para><varname>stboxFromBinary(bytea) → stbox</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT stboxFromBinary(
   '\x0101000000000000f03f0000000000000040000000000000f03f0000000000000040');
@@ -122,7 +122,7 @@ SELECT stboxFromBinary(
 				<listitem id="tboxFromHexWKB">
 					<indexterm><primary><varname>tboxFromHexWKB</varname></primary></indexterm>
 					<para>Entrar un cuadro delimitador temporal en una representación hexadecimal binaria conocida (HexWKB)</para>
-					<para><varname>tboxFromHexWKB(text): tbox</varname></para>
+					<para><varname>tboxFromHexWKB(text) → tbox</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT tboxFromHexWKB(
   '01030A0001005C6C29FFFFFFFF00BC434713000000060001000000000000F03F0000000000000040');
@@ -133,7 +133,7 @@ SELECT tboxFromHexWKB(
 				<listitem id="stboxFromHexWKB">
 					<indexterm><primary><varname>stboxFromHexWKB</varname></primary></indexterm>
 					<para>Entrar un cuadro delimitador espacio-temporal en una representación hexadecimal binaria conocida (HexWKB)</para>
-					<para><varname>stboxFromHexWKB(text): stbox</varname></para>
+					<para><varname>stboxFromHexWKB(text) → stbox</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT stboxFromHexWKB(
   '0101000000000000F03F0000000000000040000000000000F03F0000000000000040');
@@ -177,16 +177,16 @@ SELECT tbox(tstzspan '[2001-01-01,2001-01-02)');
 			<listitem id="stbox">
 				<indexterm><primary><varname>stbox</varname></primary></indexterm>
 				<para>Constructor para <varname>stbox</varname></para>
-				<para><varname>stbox(float,float,float,float,integer): stbox</varname></para>
-				<para><varname>stbox_z(float,float,float,float,float,float,integer): stbox</varname></para>
-				<para><varname>stbox_t({timestamptz,tstzspan},float,float,float,float,integer): stbox</varname></para>
-				<para><varname>stbox_zt({timestamptz,tstzspan},float,float,float,float,float,float,integer): stbox</varname></para>
-				<para><varname>geodstbox_t(time): stbox</varname></para>
-				<para><varname>geodstbox_z(float,float,float,float,float,float,integer): stbox</varname></para>
-				<para><varname>geodstbox_zt({timestamptz,tstzspan},float,float,float,float,float,float,integer): stbox</varname></para>
-				<para><varname>stbox(geo): stbox</varname></para>
-				<para><varname>stbox_t(time): stbox</varname></para>
-				<para><varname>stbox(geo,time): stbox</varname></para>
+				<para><varname>stbox(float,float,float,float,integer) → stbox</varname></para>
+				<para><varname>stbox_z(float,float,float,float,float,float,integer) → stbox</varname></para>
+				<para><varname>stbox_t({timestamptz,tstzspan},float,float,float,float,integer) → stbox</varname></para>
+				<para><varname>stbox_zt({timestamptz,tstzspan},float,float,float,float,float,float,integer) → stbox</varname></para>
+				<para><varname>geodstbox_t(time) → stbox</varname></para>
+				<para><varname>geodstbox_z(float,float,float,float,float,float,integer) → stbox</varname></para>
+				<para><varname>geodstbox_zt({timestamptz,tstzspan},float,float,float,float,float,float,integer) → stbox</varname></para>
+				<para><varname>stbox(geo) → stbox</varname></para>
+				<para><varname>stbox_t(time) → stbox</varname></para>
+				<para><varname>stbox(geo,time) → stbox</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 -- Sólo dimensión de valores con coordenadas X e Y
 SELECT stbox(1.0,2.0,1.0,2.0);
@@ -286,7 +286,7 @@ SELECT tstzspanset '{(2001-01-01,2001-01-02),(2001-01-03,2001-01-04)}'::stbox;
 			<listitem id="hasX">
 				<indexterm><primary><varname>hasX</varname></primary></indexterm>
 				<para>¿Tiene dimensión X?</para>
-				<para><varname>hasX(box): boolean</varname></para>
+				<para><varname>hasX(box) → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT hasX(tbox 'TBOX T([2000-01-01,2000-01-03))');
 -- false
@@ -298,7 +298,7 @@ SELECT hasX(stbox 'STBOX X(((1.0,2.0),(3.0,4.0)))');
 			<listitem id="hasZ">
 				<indexterm><primary><varname>hasZ</varname></primary></indexterm>
 				<para>¿Tiene dimensión Z?</para>
-				<para><varname>hasZ(stbox): boolean</varname></para>
+				<para><varname>hasZ(stbox) → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT hasZ(stbox 'STBOX X(((1.0,2.0),(3.0,4.0)))');
 -- false
@@ -308,7 +308,7 @@ SELECT hasZ(stbox 'STBOX X(((1.0,2.0),(3.0,4.0)))');
 			<listitem id="isGeodetic">
 				<indexterm><primary><varname>isGeodetic</varname></primary></indexterm>
 				<para>¿Es geodética?</para>
-				<para><varname>isGeodetic(stbox): boolean</varname></para>
+				<para><varname>isGeodetic(stbox) → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT isGeodetic(stbox 'GEODSTBOX Z('(1.0,1.0,0.0),(3.0,3.0,1.0)))');
 -- true
@@ -320,7 +320,7 @@ SELECT isGeodetic(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-02])
 			<listitem id="hasT">
 				<indexterm><primary><varname>hasT</varname></primary></indexterm>
 				<para>¿Tiene dimensión T?</para>
-				<para><varname>hasT(box): boolean</varname></para>
+				<para><varname>hasT(box) → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT hasT(tbox 'TBOX XT((1.0,3.0),[2000-01-01,2000-01-03])');
 -- true
@@ -332,7 +332,7 @@ SELECT hasT(stbox 'STBOX X(((1.0,2.0),(3.0,4.0)))');
 			<listitem id="Xmin">
 				<indexterm><primary><varname>Xmin</varname></primary></indexterm>
 				<para>Obtener el valor mínimo de X</para>
-				<para><varname>Xmin(box): float</varname></para>
+				<para><varname>Xmin(box) → float</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT Xmin(tbox 'TBOX XT((1.0,3.0),[2000-01-01,2000-01-03))');
 -- 1
@@ -344,7 +344,7 @@ SELECT Xmin(stbox 'STBOX X(((1.0,2.0),(3.0,4.0)))');
 			<listitem id="Xmax">
 				<indexterm><primary><varname>Xmax</varname></primary></indexterm>
 				<para>Obtener el valor máximo de X</para>
-				<para><varname>Xmax(box): float</varname></para>
+				<para><varname>Xmax(box) → float</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT Xmax(tbox 'TBOX XT((1.0,3.0),[2000-01-01,2000-01-03))');
 -- 3
@@ -356,7 +356,7 @@ SELECT Xmax(stbox 'STBOX X(((1.0,2.0),(3.0,4.0)))');
 			<listitem id="Ymin">
 				<indexterm><primary><varname>Ymin</varname></primary></indexterm>
 				<para>Obtener el valor mínimo de Y</para>
-				<para><varname>Ymin(stbox): float</varname></para>
+				<para><varname>Ymin(stbox) → float</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT Ymin(stbox 'STBOX X(((1.0,2.0),(3.0,4.0)))');
 -- 2
@@ -366,7 +366,7 @@ SELECT Ymin(stbox 'STBOX X(((1.0,2.0),(3.0,4.0)))');
 			<listitem id="Ymax">
 				<indexterm><primary><varname>Ymax</varname></primary></indexterm>
 				<para>Obtener el valor máximo de Y</para>
-				<para><varname>Ymax(stbox): float</varname></para>
+				<para><varname>Ymax(stbox) → float</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT Ymax(stbox 'STBOX X(((1.0,2.0),(3.0,4.0)))');
 -- 4
@@ -376,7 +376,7 @@ SELECT Ymax(stbox 'STBOX X(((1.0,2.0),(3.0,4.0)))');
 			<listitem id="Zmin">
 				<indexterm><primary><varname>Zmin</varname></primary></indexterm>
 				<para>Obtener el valor mínimo de Z</para>
-				<para><varname>Zmin(stbox): float</varname></para>
+				<para><varname>Zmin(stbox) → float</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT Zmin(stbox 'STBOX Z(((1.0,2.0,3.0),(4.0,5.0,6.0)))');
 -- 3
@@ -386,7 +386,7 @@ SELECT Zmin(stbox 'STBOX Z(((1.0,2.0,3.0),(4.0,5.0,6.0)))');
 			<listitem id="Zmax">
 				<indexterm><primary><varname>Zmax</varname></primary></indexterm>
 				<para>Obtener el valor máximo de Z</para>
-				<para><varname>Zmax(stbox): float</varname></para>
+				<para><varname>Zmax(stbox) → float</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT Zmax(stbox 'STBOX Z(((1.0,2.0,3.0),(4.0,5.0,6.0)))');
 -- 6
@@ -396,7 +396,7 @@ SELECT Zmax(stbox 'STBOX Z(((1.0,2.0,3.0),(4.0,5.0,6.0)))');
 			<listitem id="Tmin">
 				<indexterm><primary><varname>Tmin</varname></primary></indexterm>
 				<para>Obtener el valor mínimo de T</para>
-				<para><varname>Tmin(box): timestamptz</varname></para>
+				<para><varname>Tmin(box) → timestamptz</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT Tmin(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 -- 2001-01-01
@@ -406,7 +406,7 @@ SELECT Tmin(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 			<listitem id="Tmax">
 				<indexterm><primary><varname>Tmax</varname></primary></indexterm>
 				<para>Obtener el valor máximo de T</para>
-				<para><varname>Tmax(box): timestamptz</varname></para>
+				<para><varname>Tmax(box) → timestamptz</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT Tmax(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 -- 2001-01-03
@@ -425,7 +425,7 @@ SELECT Tmax(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 				<listitem id="expandValue">
 					<indexterm><primary><varname>expandValue</varname></primary></indexterm>
 					<para>Extender la dimensión numérica del cuadro delimitador con un valor flotante</para>
-					<para><varname>expandValue(tbox,float): tbox</varname></para>
+					<para><varname>expandValue(tbox,float) → tbox</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT expandValue(tbox 'TBOX XT((1,2),[2001-01-01,2001-01-03])', 1);
 -- TBOX XT((0,3),[2001-01-01, 2001-01-03])
@@ -437,7 +437,7 @@ SELECT expandValue(tbox 'TBOX T([2001-01-01,2001-01-03))', 1);
 				<listitem id="expandSpatial">
 					<indexterm><primary><varname>expandSpatial</varname></primary></indexterm>
 					<para>Extender la dimensión espacial del cuadro delimitador con un valor flotante</para>
-					<para><varname>expandSpatial(stbox,float): stbox</varname></para>
+					<para><varname>expandSpatial(stbox,float) → stbox</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT expandSpatial(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-03])', 1);
 -- STBOX ZT(((0,0,0),(3,3,3)),[2001-01-01, 2001-01-03])
@@ -449,7 +449,7 @@ SELECT expandSpatial(stbox 'STBOX T([2001-01-01,2001-01-03))', 1);
 				<listitem id="expandTemporal">
 					<indexterm><primary><varname>expandTemporal</varname></primary></indexterm>
 					<para>Extender la dimensión temporal del cuadro delimitador con un intervalo de tiempo</para>
-					<para><varname>expandTemporal(box,interval): box</varname></para>
+					<para><varname>expandTemporal(box,interval) → box</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT expandTemporal(tbox 'TBOX XT((1,2),[2001-01-01,2001-01-03])', interval '1 day');
 -- TBOX XT((1,2),[2011-12-31, 2001-01-04])
@@ -462,7 +462,7 @@ SELECT expandTemporal(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-03])
 				<listitem id="box_round">
 					<indexterm><primary><varname>round</varname></primary></indexterm>
 					<para>Redondear el valor o las coordenadas del cuadro delimitador a un número de decimales</para>
-					<para><varname>round(box,integer): box</varname></para>
+					<para><varname>round(box,integer) → box</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT round(tbox 'TBOX XT((1.12345,2.12345),[2000-01-01,2000-01-02])', 2);
 -- TBOX XT((1.12, 2.12),[2000-01-01,2000-01-02])
@@ -482,7 +482,7 @@ SELECT round(stbox 'STBOX XT(((1.12345,1.12345),(2.12345,2.12345)),
 			<listitem id="stbox_SRID">
 				<indexterm><primary><varname>SRID</varname></primary></indexterm>
 				<para>Obtener el identificador de referencia espacial</para>
-				<para><varname>SRID(stbox): integer</varname></para>
+				<para><varname>SRID(stbox) → integer</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT SRID(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');
 -- 0
@@ -496,7 +496,7 @@ SELECT SRID(stbox 'GEODSTBOX T([2000-01-01,2000-01-02))');
 			<listitem id="stbox_setSRID">
 				<indexterm><primary><varname>setSRID</varname></primary></indexterm>
 				<para>Especificar el identificador de referencia espacial</para>
-				<para><varname>setSRID(stbox): stbox</varname></para>
+				<para><varname>setSRID(stbox) → stbox</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT setSRID(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),
   [2000-01-01,2000-01-02])', 5676);
@@ -506,8 +506,8 @@ SELECT setSRID(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),
 
 			<listitem id="stbox_transform">
 				<indexterm><primary><varname>transform</varname></primary></indexterm>
-				<para>Transformar a una referencia espacial diferente</para>
-				<para><varname>transform(stbox,integer): stbox</varname></para>
+				<para>Transformar a una referencia espacial diferente &Z_support; &geography_support;</para>
+				<para><varname>transform(stbox,integer) → stbox</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT transform(stbox 'SRID=4326;STBOX XT(((2.340088, 49.400250),
   (6.575317, 51.553167)),[2000-01-01,2000-01-02])', 3812);
@@ -525,7 +525,7 @@ SELECT transform(stbox 'SRID=4326;STBOX XT(((2.340088, 49.400250),
 			<listitem id="box_extent">
 				<indexterm><primary><varname>extent</varname></primary></indexterm>
 				<para>Extensión del cuadro delimitador</para>
-				<para><varname>extent(box): box</varname></para>
+				<para><varname>extent(box) → box</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 WITH boxes(b) AS (
   SELECT tbox 'TBOX XT((1,3),[2000-01-01,2000-01-03])' UNION
@@ -555,7 +555,7 @@ SELECT extent(b) FROM boxes;
 			<listitem id="box_eq">
 				<indexterm><primary><varname>=</varname></primary></indexterm>
 				<para>¿Son iguales los cuadros delimitadores?</para>
-				<para><varname>box = box: boolean</varname></para>
+				<para><varname>box = box → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbox 'TBOX XT([1,1],[2001-01-01,2001-01-04])' =
   tbox 'TBOX XT([2,2],[2001-01-03,2001-01-05])';
@@ -566,7 +566,7 @@ SELECT tbox 'TBOX XT([1,1],[2001-01-01,2001-01-04])' =
 			<listitem id="box_ne">
 				<indexterm><primary><varname>&lt;&gt;</varname></primary></indexterm>
 				<para>¿Son diferentes los cuadros delimitadores?</para>
-				<para><varname>box &lt;&gt; box: boolean</varname></para>
+				<para><varname>box &lt;&gt; box → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbox 'TBOX XT([1,1],[2001-01-01,2001-01-04])' &lt;&gt;
   tbox 'TBOX XT([2,2],[2001-01-03,2001-01-05])';
@@ -577,7 +577,7 @@ SELECT tbox 'TBOX XT([1,1],[2001-01-01,2001-01-04])' &lt;&gt;
 			<listitem id="box_lt">
 				<indexterm><primary><varname>&lt;</varname></primary></indexterm>
 				<para>¿Es el primer cuadro delimitador menor que el segundo?</para>
-				<para><varname>box &lt; box: boolean</varname></para>
+				<para><varname>box &lt; box → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbox 'TBOX XT([1,1],[2001-01-01,2001-01-04])' &lt;
   tbox 'TBOX XT([1,2],[2001-01-03,2001-01-05])';
@@ -588,7 +588,7 @@ SELECT tbox 'TBOX XT([1,1],[2001-01-01,2001-01-04])' &lt;
 			<listitem id="box_gt">
 				<indexterm><primary><varname>&gt;</varname></primary></indexterm>
 				<para>¿Es el primer cuadro delimitador mayor que el segundo?</para>
-				<para><varname>box &gt; box: boolean</varname></para>
+				<para><varname>box &gt; box → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbox 'TBOX XT([1,1],[2001-01-03,2001-01-04])' &gt;
   tbox 'TBOX XT((1,2),[2001-01-01,2001-01-05])';
@@ -599,7 +599,7 @@ SELECT tbox 'TBOX XT([1,1],[2001-01-03,2001-01-04])' &gt;
 			<listitem id="box_le">
 				<indexterm><primary><varname>&lt;=</varname></primary></indexterm>
 				<para>¿Es el primer cuadro delimitador menor o igual que el segundo?</para>
-				<para><varname>box &lt;= box: boolean</varname></para>
+				<para><varname>box &lt;= box → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbox 'TBOX XT([1,1],[2001-01-01,2001-01-04])' &lt;=
   tbox 'TBOX XT([2,2],[2001-01-03,2001-01-05])';
@@ -610,7 +610,7 @@ SELECT tbox 'TBOX XT([1,1],[2001-01-01,2001-01-04])' &lt;=
 			<listitem id="box_ge">
 				<indexterm><primary><varname>&gt;=</varname></primary></indexterm>
 				<para>¿Es el primer cuadro delimitador mayor o igual que el segundo?</para>
-				<para><varname>box &gt;= box: boolean</varname></para>
+				<para><varname>box &gt;= box → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbox 'TBOX XT([1,1],[2001-01-01,2001-01-04])' &gt;=
   tbox 'TBOX XT([2,2],[2001-01-03,2001-01-05])';
@@ -629,14 +629,14 @@ SELECT tbox 'TBOX XT([1,1],[2001-01-01,2001-01-04])' &gt;=
 			<listitem id="box_union">
 				<indexterm><primary><varname>+</varname></primary></indexterm>
 				<para>Unión de los cuadros delimitadores</para>
-				<para><varname>box + box: box</varname></para>
+				<para><varname>box + box → box</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbox 'TBOX XT([1,3),[2001-01-01,2001-01-03])' +
   tbox 'TBOX XT([2,4),[2001-01-02,2001-01-04])';
 -- TBOX XT([1,4),[2001-01-01, 2001-01-04])
 SELECT stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])' +
   stbox 'STBOX XT(((2,2),(3,3)),[2001-01-01,2001-01-03])';
--- ERROR:  The arguments must be of the same dimensiónality
+-- ERROR:  The arguments must be of the same dimensionality
 SELECT tbox 'TBOX XT((1,3),[2001-01-01,2001-01-02])' +
   tbox 'TBOX XT((3,4),[2001-01-03,2001-01-04])';
 -- ERROR:  Result of box union would not be contiguous
@@ -646,7 +646,7 @@ SELECT tbox 'TBOX XT((1,3),[2001-01-01,2001-01-02])' +
 			<listitem id="box_intersection">
 				<indexterm><primary><varname>*</varname></primary></indexterm>
 				<para>Intersección de los cuadros delimitadores</para>
-				<para><varname>box * box: box</varname></para>
+				<para><varname>box * box → box</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbox 'TBOX XT([1,3),[2001-01-01,2001-01-03])' *
   tbox 'TBOX XT([2001-01-02,2001-01-04))';
@@ -670,7 +670,7 @@ SELECT stbox 'STBOX ZT(((1,1,1),(3,3,3)),[2001-01-01,2001-01-02])' *
 			<listitem id="box_overlap">
 				<indexterm><primary><varname>&amp;&amp;</varname></primary></indexterm>
 				<para>¿Se superponen los cuadros delimitadores?</para>
-				<para><varname>box &amp;&amp; box: boolean</varname></para>
+				<para><varname>box &amp;&amp; box → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbox 'TBOX XT((1,3),[2001-01-01,2001-01-03])' &amp;&amp;
   tbox 'TBOX XT((2,4),[2001-01-02,2001-01-04])';
@@ -684,7 +684,7 @@ SELECT stbox 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])' &amp;&amp;
 			<listitem id="box_contains">
 				<indexterm><primary><varname>@&gt;</varname></primary></indexterm>
 				<para>¿Contiene el primer cuadro delimitador el segundo?</para>
-				<para><varname>box @&gt; box: boolean</varname></para>
+				<para><varname>box @&gt; box → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbox 'TBOX XT((1,4),[2001-01-01,2001-01-04])' @&gt;
   tbox 'TBOX XT((2,3),[2001-01-01,2001-01-02])';
@@ -698,7 +698,7 @@ SELECT stbox 'STBOX Z(((1,1,1),(3,3,3)))' @&gt;
 			<listitem id="box_containedby">
 				<indexterm><primary><varname>&lt;@</varname></primary></indexterm>
 				<para>¿Está el primer cuadro delimitador contenido en el segundo?</para>
-				<para><varname>box &lt;@ box: boolean</varname></para>
+				<para><varname>box &lt;@ box → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbox 'TBOX XT((1,2),[2001-01-01,2001-01-02])' &lt;@
   tbox 'TBOX XT((1,2),[2001-01-01,2001-01-02])';
@@ -712,7 +712,7 @@ SELECT stbox 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02)' &lt;@
 			<listitem id="box_same">
 				<indexterm><primary><varname>~=</varname></primary></indexterm>
 				<para>¿Son los cuadros delimitadores iguales en sus dimensiónes comunes?</para>
-				<para><varname>box ~= box: boolean</varname></para>
+				<para><varname>box ~= box → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbox 'TBOX XT((1,2),[2001-01-01,2001-01-02])' ~=
   tbox 'TBOX XT([2001-01-01,2001-01-02])';
@@ -726,7 +726,7 @@ SELECT stbox 'STBOX XT(((1,1),(3,3)),[2001-01-01,2001-01-03])' ~=
 			<listitem id="box_adjacent">
 				<indexterm><primary><varname>-|-</varname></primary></indexterm>
 				<para>¿Son los cuadros delimitadores adyacentes?</para>
-				<para><varname>box -|- box: boolean</varname></para>
+				<para><varname>box -|- box → boolean</varname></para>
 				<para>Dos cuadros delimitadores son adyacentes si comparten  <emphasis>n</emphasis> dimensiónes y si su intersección tiene como máximo <emphasis>n</emphasis>-1 dimensiónes.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbox 'TBOX XT((1,2)[2001-01-01,2001-01-02])' -|-
@@ -751,21 +751,21 @@ SELECT stbox 'STBOX XT(((1,1),(3,3)),[2001-01-01,2001-01-03])' -|-
 			<listitem id="tbox_left">
 				<indexterm><primary><varname>&lt;&lt;</varname></primary></indexterm>
 				<para>¿Son los valores X del primer cuadro delimitador estrictamente menores que los del segundo?</para>
-				<para><varname>tbox &lt;&lt; tbox: boolean</varname></para>
+				<para><varname>tbox &lt;&lt; tbox → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbox 'TBOX XT((1,2),[2001-01-01,2001-01-02])' &lt;&lt;
   tbox 'TBOX XT((3,4),[2001-01-03,2001-01-04])';
 -- true
 SELECT tbox 'TBOX XT((1,2),[2001-01-01,2001-01-02])' &lt;&lt;
   tbox 'TBOX XT([2001-01-03,2001-01-04])';
--- ERROR:  The box must have value dimensión
+-- ERROR:  The box must have value dimension
 </programlisting>
 			</listitem>
 
 			<listitem id="tbox_right">
 				<indexterm><primary><varname>&gt;&gt;</varname></primary></indexterm>
 				<para>¿Son los valores X del primer cuadro delimitador estrictamente mayores que los del segundo?</para>
-				<para><varname>tbox &gt;&gt; tbox: boolean</varname></para>
+				<para><varname>tbox &gt;&gt; tbox → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbox 'TBOX XT((3,4),[2001-01-03,2001-01-04])' &gt;&gt;
   tbox 'TBOX XT((1,2),[2001-01-01,2001-01-02])';
@@ -776,7 +776,7 @@ SELECT tbox 'TBOX XT((3,4),[2001-01-03,2001-01-04])' &gt;&gt;
 			<listitem id="tbox_overleft">
 				<indexterm><primary><varname>&amp;&lt;</varname></primary></indexterm>
 				<para>¿No son los valores X del primer cuadro delimitador mayores que los del segundo?</para>
-				<para><varname>tbox &amp;&lt; tbox: boolean</varname></para>
+				<para><varname>tbox &amp;&lt; tbox → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbox 'TBOX XT((1,4),[2001-01-01,2001-01-04])' &amp;&lt;
   tbox 'TBOX XT((3,4),[2001-01-03,2001-01-04])';
@@ -787,7 +787,7 @@ SELECT tbox 'TBOX XT((1,4),[2001-01-01,2001-01-04])' &amp;&lt;
 			<listitem id="tbox_overright">
 				<indexterm><primary><varname>&amp;&gt;</varname></primary></indexterm>
 				<para>¿No son los valores X del primer cuadro delimitador menores que los del segundo?</para>
-				<para><varname>tbox &amp;&gt; tbox: boolean</varname></para>
+				<para><varname>tbox &amp;&gt; tbox → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbox 'TBOX XT((1,2),[2001-01-01,2001-01-02])' &amp;&gt;
   tbox 'TBOX XT((1,4),[2001-01-01,2001-01-04])';
@@ -801,7 +801,7 @@ SELECT tbox 'TBOX XT((1,2),[2001-01-01,2001-01-02])' &amp;&gt;
 			<listitem id="stbox_left">
 				<indexterm><primary><varname>&lt;&lt;</varname></primary></indexterm>
 				<para>¿Están los valores X del primer cuadro delimitador estrictamente a la izquierda de los del segundo?</para>
-				<para><varname>stbox &lt;&lt; stbox: boolean</varname></para>
+				<para><varname>stbox &lt;&lt; stbox → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT stbox 'STBOX Z(((1,1,1),(2,2,2)))' &lt;&lt; stbox 'STBOX Z(((3,3,3),(4,4,4)))';
 -- true
@@ -811,7 +811,7 @@ SELECT stbox 'STBOX Z(((1,1,1),(2,2,2)))' &lt;&lt; stbox 'STBOX Z(((3,3,3),(4,4,
 			<listitem id="stbox_right">
 				<indexterm><primary><varname>&gt;&gt;</varname></primary></indexterm>
 				<para>¿Están los valores X del primer cuadro delimitador estrictamente a la derecha de los del segundo?</para>
-				<para><varname>stbox &gt;&gt; stbox: boolean</varname></para>
+				<para><varname>stbox &gt;&gt; stbox → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT stbox 'STBOX Z(((3,3,3),(4,4,4)))' &gt;&gt; stbox 'STBOX Z(((1,1,1),(2,2,2)))';
 -- true
@@ -821,7 +821,7 @@ SELECT stbox 'STBOX Z(((3,3,3),(4,4,4)))' &gt;&gt; stbox 'STBOX Z(((1,1,1),(2,2,
 			<listitem id="stbox_overleft">
 				<indexterm><primary><varname>&amp;&lt;</varname></primary></indexterm>
 				<para>¿No están los valores X del primer cuadro delimitador a la derecha de los del segundo?</para>
-				<para><varname>stbox &amp;&lt; stbox: boolean</varname></para>
+				<para><varname>stbox &amp;&lt; stbox → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT stbox 'STBOX Z(((1,1,1),(4,4,4)))' &amp;&lt; stbox 'STBOX Z(((3,3,3),(4,4,4)))';
 -- true
@@ -831,7 +831,7 @@ SELECT stbox 'STBOX Z(((1,1,1),(4,4,4)))' &amp;&lt; stbox 'STBOX Z(((3,3,3),(4,4
 			<listitem id="stbox_overright">
 				<indexterm><primary><varname>&amp;&gt;</varname></primary></indexterm>
 				<para>¿No están los valores X del primer cuadro delimitador a la izquierda de los del segundo?</para>
-				<para><varname>stbox &amp;&gt; stbox: boolean</varname></para>
+				<para><varname>stbox &amp;&gt; stbox → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT stbox 'STBOX Z(((3,3,3),(4,4,4)))' &amp;&gt; stbox 'STBOX Z(((1,1,1),(2,2,2)))';
 -- true
@@ -841,7 +841,7 @@ SELECT stbox 'STBOX Z(((3,3,3),(4,4,4)))' &amp;&gt; stbox 'STBOX Z(((1,1,1),(2,2
 			<listitem id="stbox_below">
 				<indexterm><primary><varname>&lt;&lt;|</varname></primary></indexterm>
 				<para>¿Están los valores de Y del primer cuadro delimitador estrictamente debajo de los del segundo?</para>
-				<para><varname>stbox &lt;&lt;| stbox: boolean</varname></para>
+				<para><varname>stbox &lt;&lt;| stbox → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT stbox 'STBOX Z(((1,1,1),(2,2,2)))' &lt;&lt;| stbox 'STBOX Z(((3,3,3),(4,4,4)))';
 -- true
@@ -851,7 +851,7 @@ SELECT stbox 'STBOX Z(((1,1,1),(2,2,2)))' &lt;&lt;| stbox 'STBOX Z(((3,3,3),(4,4
 			<listitem id="stbox_above">
 				<indexterm><primary><varname>|&gt;&gt;</varname></primary></indexterm>
 				<para>¿Están los valores de Y del primer cuadro delimitador estrictamente arriba de los del segundo?</para>
-				<para><varname>stbox |&gt;&gt; stbox: boolean</varname></para>
+				<para><varname>stbox |&gt;&gt; stbox → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT stbox 'STBOX Z(((3,3,3),(4,4,4)))' |&gt;&gt; stbox 'STBOX Z(((1,1,1),(2,2,2)))';
 -- true
@@ -861,7 +861,7 @@ SELECT stbox 'STBOX Z(((3,3,3),(4,4,4)))' |&gt;&gt; stbox 'STBOX Z(((1,1,1),(2,2
 			<listitem id="stbox_overbelow">
 				<indexterm><primary><varname>&amp;&lt;|</varname></primary></indexterm>
 				<para>¿No están los valores de Y del primer cuadro delimitador  arriba de los del segundo?</para>
-				<para><varname>stbox &amp;&lt;| stbox: boolean</varname></para>
+				<para><varname>stbox &amp;&lt;| stbox → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT stbox 'STBOX Z(((1,1,1),(4,4,4)))' &amp;&lt;| stbox 'STBOX Z(((3,3,3),(4,4,4)))';
 -- true
@@ -871,7 +871,7 @@ SELECT stbox 'STBOX Z(((1,1,1),(4,4,4)))' &amp;&lt;| stbox 'STBOX Z(((3,3,3),(4,
 			<listitem id="stbox_overabove">
 				<indexterm><primary><varname>|&amp;&gt;</varname></primary></indexterm>
 				<para>¿No están los valores de Y del primer cuadro delimitador debajo de los del segundo?</para>
-				<para><varname>stbox |&amp;&gt; stbox: boolean</varname></para>
+				<para><varname>stbox |&amp;&gt; stbox → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT stbox 'STBOX Z(((3,3,3),(4,4,4)))' |&amp;&gt; stbox 'STBOX Z(((1,1,1),(2,2,2)))';
 -- false
@@ -881,7 +881,7 @@ SELECT stbox 'STBOX Z(((3,3,3),(4,4,4)))' |&amp;&gt; stbox 'STBOX Z(((1,1,1),(2,
 			<listitem id="stbox_front">
 				<indexterm><primary><varname>&lt;&lt;/</varname></primary></indexterm>
 				<para>¿Están los valores Z del primer cuadro delimitador estrictamente delante de los del segundo?</para>
-				<para><varname>stbox &lt;&lt;/ stbox: boolean</varname></para>
+				<para><varname>stbox &lt;&lt;/ stbox → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT stbox 'STBOX Z(((1,1,1),(2,2,2)))' &lt;&lt;/ stbox 'STBOX Z(((3,3,3),(4,4,4)))';
 </programlisting>
@@ -890,7 +890,7 @@ SELECT stbox 'STBOX Z(((1,1,1),(2,2,2)))' &lt;&lt;/ stbox 'STBOX Z(((3,3,3),(4,4
 			<listitem id="stbox_back">
 				<indexterm><primary><varname>/&gt;&gt;</varname></primary></indexterm>
 				<para>¿Están los valores Z del primer cuadro delimitador estrictamente detrás de los del segundo?</para>
-				<para><varname>stbox /&gt;&gt; stbox: boolean</varname></para>
+				<para><varname>stbox /&gt;&gt; stbox → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT stbox 'STBOX Z(((3,3,3),(4,4,4)))' /&gt;&gt; stbox 'STBOX Z(((1,1,1),(2,2,2)))';
 -- true
@@ -900,7 +900,7 @@ SELECT stbox 'STBOX Z(((3,3,3),(4,4,4)))' /&gt;&gt; stbox 'STBOX Z(((1,1,1),(2,2
 			<listitem id="stbox_overfront">
 				<indexterm><primary><varname>&amp;&lt;/</varname></primary></indexterm>
 				<para>¿No están los valores Z del primer cuadro delimitador detrás de los del segundo?</para>
-				<para><varname>stbox &amp;&lt;/ stbox: boolean</varname></para>
+				<para><varname>stbox &amp;&lt;/ stbox → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT stbox 'STBOX Z(((1,1,1),(4,4,4)))' &amp;&lt;/ stbox 'STBOX Z(((3,3,3),(4,4,4)))';
 -- true
@@ -910,7 +910,7 @@ SELECT stbox 'STBOX Z(((1,1,1),(4,4,4)))' &amp;&lt;/ stbox 'STBOX Z(((3,3,3),(4,
 			<listitem id="stbox_overback">
 				<indexterm><primary><varname>/&amp;&gt;</varname></primary></indexterm>
 				<para>¿No están los valores Z del primer cuadro delimitador delante de los del segundo?</para>
-				<para><varname>stbox /&amp;&gt; stbox: boolean</varname></para>
+				<para><varname>stbox /&amp;&gt; stbox → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT stbox 'STBOX Z(((3,3,3),(4,4,4)))' /&amp;&gt; stbox 'STBOX Z(((1,1,1),(2,2,2)))';
 -- true
@@ -923,7 +923,7 @@ SELECT stbox 'STBOX Z(((3,3,3),(4,4,4)))' /&amp;&gt; stbox 'STBOX Z(((1,1,1),(2,
 			<listitem id="box_before">
 				<indexterm><primary><varname>&lt;&lt;#</varname></primary></indexterm>
 				<para>¿Son los valores de T del primer cuadro delimitador estrictamente anteriores a los del segundo?</para>
-				<para><varname>box &lt;&lt;# box: boolean</varname></para>
+				<para><varname>box &lt;&lt;# box → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbox 'TBOX XT((1,2),[2000-01-01,2000-01-02])' &lt;&lt;#
   tbox 'TBOX XT((3,4),[2000-01-03,2000-01-04])';
@@ -934,7 +934,7 @@ SELECT tbox 'TBOX XT((1,2),[2000-01-01,2000-01-02])' &lt;&lt;#
 			<listitem id="box_after">
 				<indexterm><primary><varname>#&gt;&gt;</varname></primary></indexterm>
 				<para>¿Son los valores de T del primer cuadro delimitador estrictamente posteriores a los del segundo?</para>
-				<para><varname>box #&gt;&gt; box: boolean</varname></para>
+				<para><varname>box #&gt;&gt; box → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT stbox 'STBOX XT((4,4),[2000-01-03,2000-01-04],((3,3)))'  #&gt;&gt;
   stbox 'STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-02])';
@@ -945,7 +945,7 @@ SELECT stbox 'STBOX XT((4,4),[2000-01-03,2000-01-04],((3,3)))'  #&gt;&gt;
 			<listitem id="box_overbefore">
 				<indexterm><primary><varname>&amp;&lt;#</varname></primary></indexterm>
 				<para>¿No son los valores de T del primer cuadro delimitador posteriores a los del segundo?</para>
-				<para><varname>box &amp;&lt;# box: boolean</varname></para>
+				<para><varname>box &amp;&lt;# box → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbox 'TBOX XT((1,4),[2000-01-01,2000-01-04])' &amp;&lt;#
   tbox 'TBOX XT((3,4),[2000-01-03,2000-01-04])';
@@ -956,7 +956,7 @@ SELECT tbox 'TBOX XT((1,4),[2000-01-01,2000-01-04])' &amp;&lt;#
 			<listitem id="box_overafter">
 				<indexterm><primary><varname>#&amp;&gt;</varname></primary></indexterm>
 				<para>¿No son los valores de T del primer cuadro delimitador anteriores a los del segundo?</para>
-				<para><varname>box #&amp;&gt; box: boolean</varname></para>
+				<para><varname>box #&amp;&gt; box → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT stbox 'STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-02])' #&amp;&gt;
   stbox 'STBOX XT(((1,1),(4,4)),[2000-01-01,2000-01-04])';

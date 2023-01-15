@@ -38,13 +38,13 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <utils/timestamp.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/pg_types.h"
 #include "general/span.h"
-#include "general/temporal_util.h"
-#include "general/temporal_parser.h"
+#include "general/type_parser.h"
+#include "general/type_util.h"
 
 /*****************************************************************************
  * General functions
@@ -178,9 +178,10 @@ spanset_out(const SpanSet *ss, int maxdd)
   {
     const Span *s = spanset_sp_n(ss, i);
     strings[i] = span_out(s, maxdd);
-    outlen += strlen(strings[i]) + 2;
+    outlen += strlen(strings[i]) + 1;
   }
-  return stringarr_to_string(strings, ss->count, outlen, "", '{', '}');
+  return stringarr_to_string(strings, ss->count, outlen, "", '{', '}',
+    QUOTES_NO, SPACES);
 }
 
 #if MEOS

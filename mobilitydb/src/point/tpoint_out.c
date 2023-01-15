@@ -41,14 +41,14 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/temporal_out.h"
-#include "general/temporal_util.h"
 #include "general/tinstant.h"
 #include "general/tsequence.h"
 #include "general/tsequenceset.h"
+#include "general/type_out.h"
+#include "general/type_util.h"
 #include "point/tpoint_spatialfuncs.h"
 /* MobilityDB */
-#include "pg_general/temporal_util.h"
+#include "pg_general/type_util.h"
 
 /*****************************************************************************
  * Output in WKT and EWKT format

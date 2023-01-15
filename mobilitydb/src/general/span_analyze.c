@@ -97,8 +97,7 @@ span_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
   old_cxt = MemoryContextSwitchTo(stats->anl_context);
 
   /* Set the kind of histogram depending on the value or the time dimension */
-  bool valuedim = (spantype == T_INTSPAN || spantype == T_BIGINTSPAN ||
-    spantype == T_FLOATSPAN);
+  bool valuedim = numspan_type(spantype);
 
   /*
    * Generate a bounds histogram and a length histogram slot entries

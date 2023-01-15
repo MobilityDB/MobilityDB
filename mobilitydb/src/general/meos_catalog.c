@@ -114,10 +114,12 @@ const char *_type_names[] =
   [T_GEOGSET] = "geogset",
   [T_TGEOMPOINT] = "tgeompoint",
   [T_TGEOGPOINT] = "tgeogpoint",
+#if NPOINT
   [T_NPOINT] = "npoint",
   [T_NPOINTSET] = "npointset",
   [T_NSEGMENT] = "nsegment",
   [T_TNPOINT] = "tnpoint",
+#endif
 };
 
 /**

@@ -43,13 +43,13 @@
 #else
   #include <access/hash.h>
 #endif
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/pg_types.h"
 #include "general/temporaltypes.h"
-#include "general/temporal_util.h"
-#include "general/temporal_parser.h"
+#include "general/type_parser.h"
+#include "general/type_util.h"
 #include "point/tpoint_parser.h"
 #include "point/tpoint_spatialfuncs.h"
 #if NPOINT
@@ -709,13 +709,14 @@ tinstant_restrict_value(const TInstant *inst, Datum value, bool atfunc)
  * discrete sequence.
  */
 bool
-tinstant_restrict_values_test(const TInstant *inst, const Datum *values,
-  int count, bool atfunc)
+tinstant_restrict_values_test(const TInstant *inst, const Set *set,
+  bool atfunc)
 {
   Datum value = tinstant_value(inst);
-  for (int i = 0; i < count; i++)
+  meosType basetype = temptype_basetype(inst->temptype);
+  for (int i = 0; i < set->count; i++)
   {
-    if (datum_eq(value, values[i], temptype_basetype(inst->temptype)))
+    if (datum_eq(value, set_val_n(set, i), basetype))
       return atfunc ? true : false;
   }
   return atfunc ? false : true;
@@ -727,10 +728,9 @@ tinstant_restrict_values_test(const TInstant *inst, const Datum *values,
  * @sqlfunc atValues(), minusValues()
  */
 TInstant *
-tinstant_restrict_values(const TInstant *inst, const Datum *values,
-  int count, bool atfunc)
+tinstant_restrict_values(const TInstant *inst, const Set *set, bool atfunc)
 {
-  if (tinstant_restrict_values_test(inst, values, count, atfunc))
+  if (tinstant_restrict_values_test(inst, set, atfunc))
     return tinstant_copy(inst);
   return NULL;
 }
@@ -835,7 +835,7 @@ tinstant_restrict_timestamp(const TInstant *inst, TimestampTz t, bool atfunc)
  * discrete sequence.
  */
 bool
-tinstant_restrict_tstzset_test(const TInstant *inst, const Set *ts,
+tinstant_restrict_timestampset_test(const TInstant *inst, const Set *ts,
   bool atfunc)
 {
   for (int i = 0; i < ts->count; i++)
@@ -850,10 +850,10 @@ tinstant_restrict_tstzset_test(const TInstant *inst, const Set *ts,
  * @sqlfunc atTstzSet(), minusTstzSet()
  */
 TInstant *
-tinstant_restrict_tstzset(const TInstant *inst, const Set *ts,
+tinstant_restrict_timestampset(const TInstant *inst, const Set *ts,
   bool atfunc)
 {
-  if (tinstant_restrict_tstzset_test(inst, ts, atfunc))
+  if (tinstant_restrict_timestampset_test(inst, ts, atfunc))
     return tinstant_copy(inst);
   return NULL;
 }
@@ -989,7 +989,7 @@ tinstant_overlaps_timestamp(const TInstant *inst, TimestampTz t)
  * @sqlfunc intersectsTstzSet()
  */
 bool
-tinstant_overlaps_tstzset(const TInstant *inst, const Set *ts)
+tinstant_overlaps_timestampset(const TInstant *inst, const Set *ts)
 {
   for (int i = 0; i < ts->count; i++)
     if (inst->t == DatumGetTimestampTz(set_val_n(ts, i)))
@@ -1097,37 +1097,16 @@ tinstant_cmp(const TInstant *inst1, const TInstant *inst2)
 uint32
 tinstant_hash(const TInstant *inst)
 {
-  uint32 result;
-  uint32 time_hash;
-
   Datum value = tinstant_value(inst);
-  /* Apply the hash function according to the base type */
-  uint32 value_hash = 0;
-  ensure_temporal_type(inst->temptype);
-  if (inst->temptype == T_TBOOL)
-    value_hash = hash_uint32((int32) value);
-  else if (inst->temptype == T_TINT)
-    value_hash = hash_uint32((int32) value);
-  else if (inst->temptype == T_TFLOAT)
-    value_hash = pg_hashfloat8(DatumGetFloat8(value));
-  else if (inst->temptype == T_TTEXT)
-    value_hash = pg_hashtext(DatumGetTextP(value));
-  else if (tgeo_type(inst->temptype))
-    value_hash = gserialized_hash(DatumGetGserializedP(value));
-#if NPOINT
-  else if (inst->temptype == T_TNPOINT)
-    value_hash = npoint_hash(DatumGetNpointP(value));
-#endif
-  else
-    elog(ERROR, "unknown hash function for temporal type: %d", inst->temptype);
-  /* Apply the hash function according to the timestamp */
-  time_hash = pg_hashint8(inst->t);
-
+  meosType basetype = temptype_basetype(inst->temptype);
+  /* Apply the hash function to the base type */
+  uint32 value_hash = datum_hash(value, basetype);
+  /* Apply the hash function to the timestamp */
+  uint32 time_hash = pg_hashint8(inst->t);
   /* Merge hashes of value and timestamp */
-  result = value_hash;
+  uint32 result = value_hash;
   result = (result << 1) | (result >> 31);
   result ^= time_hash;
-
   return result;
 }
 

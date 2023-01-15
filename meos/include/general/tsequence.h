@@ -114,8 +114,8 @@ extern Datum tsegment_value_at_timestamp(const TInstant *inst1,
 
 extern int tcontseq_restrict_value1(const TSequence *seq, Datum value,
   bool atfunc, TSequence **result);
-extern int tsequence_at_values1(const TSequence *seq, const Datum *values,
-  int count, TSequence **result);
+extern int tsequence_at_values1(const TSequence *seq, const Set *set,
+  TSequence **result);
 extern int tnumbercontseq_restrict_span2(const TSequence *seq,
   const Span *span, bool atfunc, TSequence **result);
 extern int tnumbercontseq_restrict_spanset1(const TSequence *seq,
@@ -124,7 +124,7 @@ extern TInstant *tsegment_at_timestamp(const TInstant *inst1,
   const TInstant *inst2, bool linear, TimestampTz t);
 extern int tcontseq_minus_timestamp1(const TSequence *seq, TimestampTz t,
   TSequence **result);
-extern int tcontseq_minus_tstzset1(const TSequence *seq, const Set *s,
+extern int tcontseq_minus_timestampset1(const TSequence *seq, const Set *s,
   TSequence **result);
 extern int tcontseq_minus_period1(const TSequence *seq, const Span *p,
   TSequence **result);

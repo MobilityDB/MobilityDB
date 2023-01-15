@@ -1,4 +1,4 @@
-/*****************************************************************************
+  /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
  * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB

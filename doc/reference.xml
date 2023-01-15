@@ -12,6 +12,100 @@
 	<title>MobilityDB Reference</title>
 
 	<sect1>
+		<title>MobilityDB Types</title>
+		<para>MobilityDB defines four <emphasis>template types</emphasis> that act as type constructors over <emphasis>base types</emphasis>. These template types are <varname>set</varname>, <varname>span</varname>, <varname>spanset</varname>, and <varname>temporal</varname>. <xref linkend="templatetypes" /> shows the types defined over these template types. Furthermore, MobilityDB defines two bounding box types, namely, <varname>tbox</varname> and <varname>stbox</varname>.</para>
+
+		<table frame="all" colsep="1" rowsep="1" id="templatetypes">
+			<?dblatex table-width="autowidth.column: 1 2 3 4 5"?>
+			<title>MobilityDB current instantiations of template types</title>
+			<tgroup cols="5" align="left" colsep="1" rowsep="1">
+			<colspec colnum="1" colname="col1"/>
+			<colspec colnum="2" colname="col2"/>
+			<colspec colnum="3" colname="col3"/>
+			<colspec colnum="4" colname="col4"/>
+			<colspec colnum="5" colname="col5"/>
+			<thead>
+				<row>
+					<entry morerows="1"><emphasis role="bold">Base Types</emphasis></entry>
+					<entry namest="col2" nameend="col5" align="center">Template Types</entry>
+				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>set</varname></emphasis></entry>
+					<entry><varname><emphasis role="bold">span</emphasis></varname></entry>
+					<entry><varname><emphasis role="bold">spanset</emphasis></varname></entry>
+					<entry><varname><emphasis role="bold">temporal</emphasis></varname></entry>
+				</row>
+			</thead>
+			<tbody>
+				<row>
+					<entry><emphasis role="bold"><varname>bool</varname></emphasis></entry>
+					<entry><varname></varname></entry>
+					<entry><varname></varname></entry>
+					<entry><varname></varname></entry>
+					<entry><varname>tbool</varname></entry>
+				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>text</varname></emphasis></entry>
+					<entry><varname>textset</varname></entry>
+					<entry><varname></varname></entry>
+					<entry><varname></varname></entry>
+					<entry><varname>ttext</varname></entry>
+				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>int</varname></emphasis></entry>
+					<entry><varname>intset</varname></entry>
+					<entry><varname>intspan</varname></entry>
+					<entry><varname>intspanset</varname></entry>
+					<entry><varname>tint</varname></entry>
+				</row>
+				<row>
+						<entry><emphasis role="bold"><varname>bigint</varname></emphasis></entry>
+						<entry><varname>bigintset</varname></entry>
+						<entry><varname>bigintspan</varname></entry>
+						<entry><varname>bigintspanset</varname></entry>
+						<entry><varname></varname></entry>
+				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>float</varname></emphasis></entry>
+					<entry><varname>floatset</varname></entry>
+					<entry><varname>floatspan</varname></entry>
+					<entry><varname>floatspanset</varname></entry>
+					<entry><varname>tfloat</varname></entry>
+				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>timestamptz</varname></emphasis></entry>
+					<entry><varname>tstzset</varname></entry>
+					<entry><varname>tstzspan</varname></entry>
+					<entry><varname>tstzspanset</varname></entry>
+					<entry><varname></varname></entry>
+				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>geometry</varname></emphasis></entry>
+					<entry><varname>geomset</varname></entry>
+					<entry><varname></varname></entry>
+					<entry><varname></varname></entry>
+					<entry><varname>tgeompoint</varname></entry>
+				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>geography</varname></emphasis></entry>
+					<entry><varname>geogset</varname></entry>
+					<entry><varname></varname></entry>
+					<entry><varname></varname></entry>
+					<entry><varname>tgeogpoint</varname></entry>
+				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>npoint</varname></emphasis></entry>
+					<entry><varname>npointset</varname></entry>
+					<entry><varname></varname></entry>
+					<entry><varname></varname></entry>
+					<entry><varname>tnpoint</varname></entry>
+				</row>
+			</tbody>
+			</tgroup>
+		</table>
+	</sect1>
+
+	<sect1>
 		<title>Functions and Operators for Span and Time Types</title>
 
 		<sect2>
@@ -30,7 +124,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="spantime_FromHexWKB"><varname>intspanFromHexWKB</varname>, <varname>intspansetFromHexWKB</varname>, <varname>floatspanFromHexWKB</varname>, <varname>floatspansetFromHexWKB</varname>, <varname>tstzspanFromHexWKB</varname>, <varname>tstzspansetFromHexWKB</varname>, <varname>tstzsetFromHexWKB</varname></link>: Input a span or time type from an Hexadecimal Well-Known Binary (HexWKB) representation</para>
+					<para><link linkend="spantime_FromHexWKB"><varname>intspanFromHexWKB</varname>, <varname>intspansetFromHexWKB</varname>, <varname>floatspanFromHexWKB</varname>, <varname>floatspansetFromHexWKB</varname>, <varname>tstzsetFromHexWKB</varname>, <varname>tstzspanFromHexWKB</varname>, <varname>tstzspansetFromHexWKB</varname></link>: Input a span or time type from an Hexadecimal Well-Known Binary (HexWKB) representation</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -39,15 +133,15 @@
 			<title>Constructor Functions</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="span"><varname>intspan</varname>, <varname>floatspan</varname>, <varname>tstzspan</varname></link>: Constructor for span values</para>
+					<para><link linkend="set"><varname>set</varname></link>: Constructor for set values</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="spanset"><varname>intspanset</varname>, <varname>floatspanset</varname>, <varname>tstzspanset</varname></link>: Constructor for span set values</para>
+					<para><link linkend="span"><varname>span</varname></link>: Constructor for span values</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tstzset"><varname>tstzset</varname></link>: Constructor for <varname>tstzset</varname></para>
+					<para><link linkend="spanset"><varname>spanset</varname></link>: Constructor for span set values</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -60,7 +154,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tstzset_cast"><varname>tstzset::tstzspanset</varname></link>: Cast a <varname>tstzset</varname> value to a <varname>tstzspanset</varname> value</para>
+					<para><link linkend="set_cast"><varname>set::spanset</varname></link>: Cast a set value to a span set value</para>
 				</listitem>
 
 				<listitem>
@@ -118,7 +212,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_tstzspan"><varname>tstzspan</varname></link>: Get the bounding span of the <varname>tstzset</varname> or <varname>tstzspanset</varname> ignoring the potential time gaps</para>
+					<para><link linkend="setspan_span"><varname>span</varname></link>: Get the bounding span of the set or span set ignoring the potential time gaps</para>
 				</listitem>
 
 				<listitem>

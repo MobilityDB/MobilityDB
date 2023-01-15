@@ -41,14 +41,14 @@
 #include <liblwgeom.h>
 #include <liblwgeom_internal.h>
 #include <lwgeodetic.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/pg_types.h"
 #include "general/lifting.h"
 #include "general/temporaltypes.h"
-#include "general/temporal_util.h"
 #include "general/tnumber_mathfuncs.h"
+#include "general/type_util.h"
 #include "point/pgis_call.h"
 #include "point/tpoint_boxops.h"
 #include "point/tpoint_spatialrels.h"
@@ -184,14 +184,17 @@ datum_point_eq(Datum geopoint1, Datum geopoint2)
   {
     const POINT3DZ *point1 = gserialized_point3dz_p(gs1);
     const POINT3DZ *point2 = gserialized_point3dz_p(gs2);
-    return FP_EQUALS(point1->x, point2->x) && FP_EQUALS(point1->y, point2->y) &&
-      FP_EQUALS(point1->z, point2->z);
+    // return FP_EQUALS(point1->x, point2->x) && FP_EQUALS(point1->y, point2->y) &&
+      // FP_EQUALS(point1->z, point2->z);
+    return float8_eq(point1->x, point2->x) && float8_eq(point1->y, point2->y) &&
+      float8_eq(point1->z, point2->z);
   }
   else
   {
     const POINT2D *point1 = gserialized_point2d_p(gs1);
     const POINT2D *point2 = gserialized_point2d_p(gs2);
-    return FP_EQUALS(point1->x, point2->x) && FP_EQUALS(point1->y, point2->y);
+    // return FP_EQUALS(point1->x, point2->x) && FP_EQUALS(point1->y, point2->y);
+    return float8_eq(point1->x, point2->x) && float8_eq(point1->y, point2->y);
   }
 }
 
@@ -3692,8 +3695,8 @@ tpointseq_step_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
     return NULL;
   }
   TSequence **result = palloc(sizeof(TSequence *) * seq->count);
-  int newcount = tsequence_at_values1(seq, points, k, result);
-  pfree_datumarr(points, k);
+  Set *set = set_make_free(points, k, T_GEOMETRY, ORDERED);
+  int newcount = tsequence_at_values1(seq, set, result);
   *count = newcount;
   return result;
 }

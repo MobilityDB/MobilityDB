@@ -51,7 +51,7 @@ SELECT asEWKT(ARRAY[geometry 'SRID=5676;Point(0 0)', 'SRID=5676;Point(1 1)']);
 						<listitem><para>2: MFJSON Short CRS (e.g EPSG:4326)</para></listitem>
 						<listitem><para>4: MFJSON Long CRS (e.g urn:ogc:def:crs:EPSG::4326)</para></listitem>
 					</itemizedlist>
-					<para>El argumento <varname>flags</varname> puede usarse para personalizar la salida JSON, por ejemplo, para producir una salida JSON fácil de leer (para lectores humanos). Consulte la documentación de la biblioteca <varname>json-c</varname>. Los valores típicos son los siguientes:</para>
+					<para>El argumento <varname>flags</varname> puede usarse para personalizar la salida JSON, por ejemplo, para producir una salida JSON fácil de leer (para lectores humanos). Consulte la documentación de la biblioteca <varname>json-c</varname> para conocer los valores posibles. Los valores típicos son los siguientes:</para>
 					<itemizedlist>
 						<listitem><para>0: means no option (default value)</para></listitem>
 						<listitem><para>1: JSON_C_TO_STRING_SPACED</para></listitem>

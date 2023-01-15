@@ -50,7 +50,7 @@ SELECT asEWKT(ARRAY[geometry 'SRID=5676;Point(0 0)', 'SRID=5676;Point(1 1)']);
 						<listitem><para>2: MFJSON Short CRS (e.g EPSG:4326)</para></listitem>
 						<listitem><para>4: MFJSON Long CRS (e.g urn:ogc:def:crs:EPSG::4326)</para></listitem>
 					</itemizedlist>
-					<para>The <varname>flags</varname> argument can be used to customize the JSON output, for example, to produce an easy-to-read (for human readers) JSON output. Please look at the documentation of the <varname>json-c</varname> library. Typical values are as follows:</para>
+					<para>The <varname>flags</varname> argument can be used to customize the JSON output, for example, to produce an easy-to-read (for human readers) JSON output. Refer to the documentation of the <varname>json-c</varname> library for the possible values. Typical values are as follows:</para>
 					<itemizedlist>
 						<listitem><para>0: means no option (default value)</para></listitem>
 						<listitem><para>1: JSON_C_TO_STRING_SPACED</para></listitem>
@@ -443,7 +443,7 @@ SELECT round(degrees(bearing(tgeompoint '[Point(2 1)@2001-01-01, Point(0 1)@2001
   tgeompoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]')), 3);
 -- [243.435@2001-01-01, 116.565@2001-01-03]
 </programlisting>
-					<para>Please notice that this function currently does not accept two temporal geographic points.</para>
+					<para>Notice that this function currently does not accept two temporal geographic points.</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

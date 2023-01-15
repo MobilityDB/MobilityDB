@@ -45,8 +45,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-/* MobilityDB */
-#include "general/temporal_util.h"
+#include "general/type_util.h"
 #include "point/pgis_call.h"
 #include "point/tpoint_boxops.h"
 #include "point/tpoint_spatialfuncs.h"
@@ -258,100 +257,6 @@ npoint_period_set_stbox(const Npoint *np, const Span *p, STBox *box)
   memcpy(&box->period, p, sizeof(Span));
   MOBDB_FLAGS_SET_T(box->flags, true);
   return true;
-}
-
-/*****************************************************************************
- * Generic box functions
- *****************************************************************************/
-
-/**
- * @brief Generic box function for a temporal network point and a geometry.
- *
- * @param[in] temp Temporal network point
- * @param[in] gs Geometry
- * @param[in] func Function
- * @param[in] invert True if the geometry is the first argument of the
- * function
- */
-int
-boxop_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
-  bool (*func)(const STBox *, const STBox *), bool invert)
-{
-  if (gserialized_is_empty(gs))
-    return -1;
-  ensure_same_srid(tnpoint_srid(temp), gserialized_get_srid(gs));
-  ensure_has_not_Z_gs(gs);
-  STBox box1, box2;
-  geo_set_stbox(gs, &box2);
-  temporal_set_bbox(temp, &box1);
-  bool result = invert ? func(&box2, &box1) : func(&box1, &box2);
-  return(result ? 1 : 0);
-}
-
-/**
- * @brief Generic box function for a temporal network point and an stbox.
- *
- * @param[in] temp Temporal network point
- * @param[in] box Bounding box
- * @param[in] func Function
- * @param[in] spatial True if the function considers the spatial dimension,
- * false when it considers the temporal dimension
- * @param[in] invert True if the bounding box is the first argument of the
- * function
- */
-int
-boxop_tnpoint_stbox(const Temporal *temp, const STBox *box,
-  bool (*func)(const STBox *, const STBox *), bool spatial, bool invert)
-{
-  if ((spatial && ! MOBDB_FLAGS_GET_X(box->flags)) ||
-     (! spatial && ! MOBDB_FLAGS_GET_T(box->flags)))
-    return -1;
-  ensure_not_geodetic(box->flags);
-  ensure_same_srid_tnpoint_stbox(temp, box);
-  STBox box1;
-  temporal_set_bbox(temp, &box1);
-  bool result = invert ? func(box, &box1) : func(&box1, box);
-  return result ? 1 : 0;
-}
-
-/**
- * @brief Generic box function for a temporal network point and a network point.
- *
- * @param[in] temp Temporal network point
- * @param[in] np network point
- * @param[in] func Function
- * @param[in] invert True if the network point is the first argument of the
- * function
- */
-bool
-boxop_tnpoint_npoint(const Temporal *temp, const Npoint *np,
-  bool (*func)(const STBox *, const STBox *), bool invert)
-{
-  ensure_same_srid(tnpoint_srid(temp), npoint_srid(np));
-  STBox box1, box2;
-  /* Return an error if the geometry is not found, is null, or is empty */
-  npoint_set_stbox(np, &box2);
-  temporal_set_bbox(temp, &box1);
-  bool result = invert ? func(&box2, &box1) : func(&box1, &box2);
-  return result;
-}
-
-/**
- * @brief Generic box function for two temporal network points
- *
- * @param[in] temp1,temp2 Temporal network points
- * @param[in] func Function
- */
-bool
-boxop_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
-  bool (*func)(const STBox *, const STBox *))
-{
-  ensure_same_srid(tnpoint_srid(temp1), tnpoint_srid(temp2));
-  STBox box1, box2;
-  temporal_set_bbox(temp1, &box1);
-  temporal_set_bbox(temp2, &box2);
-  bool result = func(&box1, &box2);
-  return result;
 }
 
 /*****************************************************************************/

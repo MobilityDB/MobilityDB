@@ -39,7 +39,7 @@
 /* MEOS */
 #include "general/skiplist.h"
 #include "general/temporal.h"
-#include "general/temporal_util.h"
+#include "general/type_util.h"
 
 /*****************************************************************************/
 

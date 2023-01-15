@@ -35,11 +35,11 @@
 #include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/set.h"
-#include "general/temporal_util.h"
+#include "general/type_util.h"
 
 /*****************************************************************************
  * Generic operations
@@ -236,7 +236,7 @@ contains_textset_text(const Set *s, text *t)
  * @sqlop @p \@>
  */
 bool
-contains_tstzset_timestamp(const Set *ts, TimestampTz t)
+contains_timestampset_timestamp(const Set *ts, TimestampTz t)
 {
   return contains_set_value(ts, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
@@ -337,7 +337,7 @@ contained_text_textset(text *txt, const Set *s)
  * @sqlop @p <@
  */
 bool
-contained_timestamp_tstzset(TimestampTz t, const Set *ts)
+contained_timestamp_timestampset(TimestampTz t, const Set *ts)
 {
   return contains_set_value(ts, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
@@ -453,7 +453,7 @@ left_text_textset(text *txt, const Set *s)
  * @sqlop @p <<#
  */
 bool
-before_timestamp_tstzset(TimestampTz t, const Set *ts)
+before_timestamp_timestampset(TimestampTz t, const Set *ts)
 {
   return left_value_set(TimestampTzGetDatum(t), T_TIMESTAMPTZ, ts);
 }
@@ -521,7 +521,7 @@ left_textset_text(const Set *s, text *txt)
  * @sqlop @p <<, @p <<#
  */
 bool
-before_tstzset_timestamp(const Set *s, TimestampTz t)
+before_timestampset_timestamp(const Set *s, TimestampTz t)
 {
   return left_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
@@ -606,9 +606,9 @@ right_text_textset(text *txt, const Set *s)
  * @sqlop @p #>>
  */
 bool
-after_timestamp_tstzset(TimestampTz t, const Set *ts)
+after_timestamp_timestampset(TimestampTz t, const Set *ts)
 {
-  return before_tstzset_timestamp(ts, t);
+  return before_timestampset_timestamp(ts, t);
 }
 #endif /* MEOS */
 
@@ -674,7 +674,7 @@ right_textset_text(const Set *s, text *txt)
  * @sqlop @p >>, @p #>>
  */
 bool
-after_tstzset_timestamptz(const Set *s, TimestampTz t)
+after_timestampset_timestamptz(const Set *s, TimestampTz t)
 {
   return right_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
@@ -758,7 +758,7 @@ overleft_text_textset(text *txt, const Set *s)
  * @sqlop @p &<#
  */
 bool
-overbefore_timestamp_tstzset(TimestampTz t, const Set *ts)
+overbefore_timestamp_timestampset(TimestampTz t, const Set *ts)
 {
   return overleft_value_set(TimestampTzGetDatum(t), T_TIMESTAMPTZ, ts);
 }
@@ -827,7 +827,7 @@ overleft_textset_text(const Set *s, text *txt)
  * @sqlop @p &<#
  */
 bool
-overbefore_tstzset_timestamp(const Set *s, TimestampTz t)
+overbefore_timestampset_timestamp(const Set *s, TimestampTz t)
 {
   return overleft_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
@@ -902,7 +902,7 @@ overright_float_floatset(double d, const Set *s)
  * @sqlop @p #&>
  */
 bool
-overafter_timestamp_tstzset(TimestampTz t, const Set *ts)
+overafter_timestamp_timestampset(TimestampTz t, const Set *ts)
 {
   return overright_value_set(TimestampTzGetDatum(t), T_TIMESTAMPTZ, ts);
 }
@@ -970,7 +970,7 @@ overright_textset_text(const Set *s, text *txt)
  * @sqlop @p &>, @p #&>
  */
 bool
-overafter_tstzset_timestamp(const Set *s, TimestampTz t)
+overafter_timestampset_timestamp(const Set *s, TimestampTz t)
 {
   return overright_set_value(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
@@ -993,93 +993,6 @@ overright_set_set(const Set *s1, const Set *s2)
 /*****************************************************************************
  * Set union
  *****************************************************************************/
-
-/**
- * @ingroup libmeos_internal_setspan_set
- * @brief Return the union of two values
- */
-Set *
-union_value_value(Datum d1, Datum d2, meosType basetype)
-{
-  Set *result;
-  int cmp = datum_cmp(d1, d2, basetype);
-  if (cmp == 0)
-    result = set_make(&d1, 1, basetype, ORDERED);
-  else
-  {
-    Datum values[2];
-    if (cmp < 0)
-    {
-      values[0] = d1;
-      values[1] = d2;
-    }
-    else
-    {
-      values[0] = d2;
-      values[1] = d1;
-    }
-    result = set_make(values, 2, basetype, ORDERED);
-  }
-  return result;
-}
-
-#if MEOS
-/**
- * @ingroup libmeos_setspan_set
- * @brief Return the union of two values
- * @sqlop @p +
- */
-Set *
-union_int_int(int i1, int i2)
-{
-  return union_value_value(Int32GetDatum(i1), Int32GetDatum(i2), T_INT4);
-}
-
-/**
- * @ingroup libmeos_setspan_set
- * @brief Return the union of two values
- * @sqlop @p +
- */
-Set *
-union_bigint_bigint(int64 i1, int64 i2)
-{
-  return union_value_value(Int64GetDatum(i1), Int64GetDatum(i2), T_INT8);
-}
-
-/**
- * @ingroup libmeos_setspan_set
- * @brief Return the union of two values
- * @sqlop @p +
- */
-Set *
-union_float_float(double d1, double d2)
-{
-  return union_value_value(Float8GetDatum(d1), Float8GetDatum(d2), T_FLOAT8);
-}
-
-/**
- * @ingroup libmeos_setspan_set
- * @brief Return the union of two values
- * @sqlop @p +
- */
-Set *
-union_text_text(text *txt1, text *txt2)
-{
-  return union_value_value(PointerGetDatum(txt1), PointerGetDatum(txt2), T_TEXT);
-}
-
-/**
- * @ingroup libmeos_setspan_set
- * @brief Return the union of the timestamps
- * @sqlop @p +
- */
-Set *
-union_timestamp_timestamp(TimestampTz t1, TimestampTz t2)
-{
-  return union_value_value(TimestampTzGetDatum(t1), TimestampTzGetDatum(t2),
-    T_TIMESTAMPTZ);
-}
-#endif /* MEOS */
 
 /**
  * @ingroup libmeos_internal_setspan_set
@@ -1164,7 +1077,7 @@ union_textset_text(const Set *s, text *txt)
  * @sqlop @p +
  */
 Set *
-union_tstzset_timestamp(const Set *ts, const TimestampTz t)
+union_timestampset_timestamp(const Set *ts, const TimestampTz t)
 {
   return union_set_value(ts, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
@@ -1175,9 +1088,9 @@ union_tstzset_timestamp(const Set *ts, const TimestampTz t)
  * @sqlop @p +
  */
 Set *
-union_timestamp_tstzset(const TimestampTz t, const Set *ts)
+union_timestamp_timestampset(const TimestampTz t, const Set *ts)
 {
-  return union_tstzset_timestamp(ts, t);
+  return union_timestampset_timestamp(ts, t);
 }
 #endif /* MEOS */
 
@@ -1195,19 +1108,6 @@ union_set_set(const Set *s1, const Set *s2)
 /*****************************************************************************
  * Set intersection
  *****************************************************************************/
-
-/**
- * @ingroup libmeos_internal_setspan_set
- * @brief Return the intersection of two values
- */
-bool
-intersection_value_value(Datum d1, Datum d2, meosType basetype, Datum *result)
-{
-  if (datum_ne(d1, d2, basetype))
-    return false;
-  *result  = d1;
-  return true;
-}
 
 /**
  * @ingroup libmeos_internal_setspan_set
@@ -1287,7 +1187,7 @@ intersection_textset_text(const Set *s, const text *txt, text **result)
  * @sqlop @p *
  */
 bool
-intersection_tstzset_timestamp(const Set *ts, TimestampTz t,
+intersection_timestampset_timestamp(const Set *ts, TimestampTz t,
   TimestampTz *result)
 {
   Datum v;
@@ -1313,81 +1213,6 @@ intersection_set_set(const Set *s1, const Set *s2)
  * Set difference
  * The functions produce new results that must be freed
  *****************************************************************************/
-
-/**
- * @ingroup libmeos_internal_setspan_set
- * @brief Return the difference of two values
- */
-bool
-minus_value_value(Datum d1, Datum d2, meosType basetype, Datum *result)
-{
-  if (datum_eq(d1, d2, basetype))
-    return false;
-  *result = d1;
-  return true;
-}
-
-#if MEOS
-/**
- * @ingroup libmeos_setspan_set
- * @brief Return the difference of two values
- * @sqlop @p -
- */
-bool
-minus_int_int(int i1, int i2, int *result)
-{
-  Datum v;
-  bool found = minus_value_value(Int32GetDatum(i1), Int32GetDatum(i2),
-    T_INT4, &v);
-  *result = DatumGetInt32(v);
-  return found;
-}
-
-/**
- * @ingroup libmeos_setspan_set
- * @brief Return the difference of two values
- * @sqlop @p -
- */
-bool
-minus_bigint_bigint(int64 i1, int64 i2, int64 *result)
-{
-  Datum v;
-  bool found = minus_value_value(Int64GetDatum(i1), Int64GetDatum(i2),
-    T_INT8, &v);
-  *result = DatumGetInt64(v);
-  return found;
-}
-
-/**
- * @ingroup libmeos_setspan_set
- * @brief Return the intersection of two values
- * @sqlop @p -
- */
-bool
-minus_float_float(double d1, double d2, double *result)
-{
-  Datum v;
-  bool found = minus_value_value(Float8GetDatum(d1), Float8GetDatum(d2),
-    T_FLOAT8, &v);
-  *result = DatumGetFloat8(v);
-  return found;
-}
-
-/**
- * @ingroup libmeos_setspan_set
- * @brief Return the intersection of two values
- * @sqlop @p -
- */
-bool
-minus_text_text(const text *txt1, const text *txt2, text **result)
-{
-  Datum v;
-  bool found = minus_value_value(PointerGetDatum(txt1), PointerGetDatum(txt2),
-    T_TEXT, &v);
-  *result = DatumGetTextP(v);
-  return found;
-}
-#endif /* MEOS */
 
 /**
  * @ingroup libmeos_internal_setspan_set
@@ -1536,7 +1361,7 @@ minus_textset_text(const Set *s, const text *txt)
  * @sqlop @p -
  */
 Set *
-minus_tstzset_timestamp(const Set *ts, TimestampTz t)
+minus_timestampset_timestamp(const Set *ts, TimestampTz t)
 {
   /* Bounding box test */
   Span s;
@@ -1635,7 +1460,7 @@ distance_textset_text(const Set *s, const text *txt)
  * @sqlop @p <->
  */
 double
-distance_tstzset_timestamp(const Set *ts, TimestampTz t)
+distance_timestampset_timestamp(const Set *ts, TimestampTz t)
 {
   return distance_set_value(ts, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }

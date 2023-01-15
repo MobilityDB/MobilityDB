@@ -49,9 +49,9 @@ extern Datum boxop_timestamp_temporal_ext(FunctionCallInfo fcinfo,
   bool (*func)(const Span *, const Span *));
 extern Datum boxop_temporal_timestamp_ext(FunctionCallInfo fcinfo,
   bool (*func)(const Span *, const Span *));
-extern Datum boxop_tstzset_temporal_ext(FunctionCallInfo fcinfo,
+extern Datum boxop_timestampset_temporal_ext(FunctionCallInfo fcinfo,
   bool (*func)(const Span *, const Span *));
-extern Datum boxop_temporal_tstzset_ext(FunctionCallInfo fcinfo,
+extern Datum boxop_temporal_timestampset_ext(FunctionCallInfo fcinfo,
   bool (*func)(const Span *, const Span *));
 extern Datum boxop_period_temporal_ext(FunctionCallInfo fcinfo,
   bool (*func)(const Span *, const Span *));
@@ -69,11 +69,11 @@ extern Datum boxop_number_tnumber_ext(FunctionCallInfo fcinfo,
 extern Datum boxop_tnumber_number_ext(FunctionCallInfo fcinfo,
   bool (*func)(const TBox *, const TBox *));
 extern Datum boxop_numspan_tnumber_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const TBox *, const TBox *));
+  bool (*func)(const Span *, const Span *));
 extern Datum boxop_tnumber_numspan_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const TBox *, const TBox *));
+  bool (*func)(const Span *, const Span *));
 extern Datum boxop_numspanset_tnumber_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const TBox *, const TBox *));
+  bool (*func)(const Span *, const Span *));
 extern Datum boxop_tnumber_numspanset_ext(FunctionCallInfo fcinfo,
   bool (*func)(const TBox *, const TBox *));
 extern Datum boxop_tbox_tnumber_ext(FunctionCallInfo fcinfo,

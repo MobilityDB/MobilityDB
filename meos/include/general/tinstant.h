@@ -56,12 +56,12 @@ extern char *tinstant_to_string(const TInstant *inst, int maxdd,
 /* Restriction Functions */
 
 extern bool tinstant_restrict_values_test(const TInstant *inst,
-  const Datum *values, int count, bool atfunc);
+  const Set *set, bool atfunc);
 extern bool tnumberinst_restrict_span_test(const TInstant *inst,
   const Span *span, bool atfunc);
 extern bool tnumberinst_restrict_spanset_test(const TInstant *inst,
   const SpanSet *ss, bool atfunc);
-extern bool tinstant_restrict_tstzset_test(const TInstant *inst,
+extern bool tinstant_restrict_timestampset_test(const TInstant *inst,
   const Set *ts, bool atfunc);
 extern bool tinstant_restrict_periodset_test(const TInstant *inst,
   const SpanSet *ps, bool atfunc);

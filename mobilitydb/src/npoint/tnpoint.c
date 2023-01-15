@@ -37,9 +37,9 @@
 #include <postgres.h>
 /* MEOS */
 #include <meos.h>
-#include "general/temporal_parser.h"
-#include "general/temporal_util.h"
 #include "general/lifting.h"
+#include "general/type_parser.h"
+#include "general/type_util.h"
 #include "npoint/tnpoint_static.h"
 #include "npoint/tnpoint_parser.h"
 /* MobilityDB */

@@ -44,7 +44,7 @@ SELECT COUNT(*) FROM tbl_intspan WHERE i::tbox IS NOT NULL;
 SELECT COUNT(*) FROM tbl_floatspan WHERE f::tbox IS NOT NULL;
 SELECT COUNT(*) FROM tbl_timestamptz WHERE t::tbox IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tstzspan WHERE p::tbox IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tstzset WHERE ts::tbox IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tstzset WHERE t::tbox IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tstzspanset WHERE ps::tbox IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tint WHERE temp::tbox IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tfloat WHERE temp::tbox IS NOT NULL;

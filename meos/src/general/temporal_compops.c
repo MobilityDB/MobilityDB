@@ -33,10 +33,10 @@
 
 #include "general/temporal_compops.h"
 
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
-#include "general/temporal_util.h"
 #include "general/lifting.h"
+#include "general/type_util.h"
 #include "point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************

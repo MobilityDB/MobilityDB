@@ -38,12 +38,12 @@
 #include <float.h>
 /* PostGIS */
 #include <liblwgeom_internal.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include "general/tinstant.h"
 #include "general/tsequence.h"
 #include "general/tsequenceset.h"
-#include "general/temporal_util.h"
+#include "general/type_util.h"
 #include "point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************
@@ -54,7 +54,7 @@
  * @brief Output a geometry in Well-Known Text (WKT) format.
  * @note The parameter `type` is not needed for temporal points
  */
-static char *
+char *
 wkt_out(Datum value, meosType type __attribute__((unused)), int maxdd)
 {
   GSERIALIZED *gs = DatumGetGserializedP(value);

@@ -35,11 +35,11 @@
 
 /* PostgreSQL */
 #include <libpq/pqformat.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 /* MobilityDB */
-#include "pg_general/temporal_util.h"
+#include "pg_general/type_util.h"
 
 /*****************************************************************************
  * Send and receive functions

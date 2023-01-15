@@ -54,7 +54,7 @@
 #include "general/spanset.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_boxops.h"
-#include "general/temporal_parser.h"
+#include "general/type_parser.h"
 #include "point/tpoint_boxops.h"
 #include "point/tpoint_parser.h"
 #include "point/tpoint_spatialfuncs.h"
@@ -183,7 +183,7 @@ datum_collinear(Datum value1, Datum value2, Datum value3, meosType basetype,
   if (basetype == T_DOUBLE2)
     return double2_collinear(DatumGetDouble2P(value1), DatumGetDouble2P(value2),
       DatumGetDouble2P(value3), ratio);
-  if (basetype == T_GEOMETRY || basetype == T_GEOGRAPHY)
+  if (geo_basetype(basetype))
   {
     GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value1);
     bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
@@ -680,7 +680,7 @@ tsequence_to_string(const TSequence *seq, int maxdd, bool component,
   {
     const TInstant *inst = tsequence_inst_n(seq, i);
     strings[i] = tinstant_to_string(inst, maxdd, value_out);
-    outlen += strlen(strings[i]) + 2;
+    outlen += strlen(strings[i]) + 1;
   }
   char open, close;
   if (MOBDB_FLAGS_GET_DISCRETE(seq->flags))
@@ -693,8 +693,8 @@ tsequence_to_string(const TSequence *seq, int maxdd, bool component,
     open = seq->period.lower_inc ? (char) '[' : (char) '(';
     close = seq->period.upper_inc ? (char) ']' : (char) ')';
   }
-  return stringarr_to_string(strings, seq->count, outlen, prefix,
-    open, close);
+  return stringarr_to_string(strings, seq->count, outlen, prefix, open, close,
+    QUOTES_NO, SPACES);
 }
 
 /**
@@ -2203,12 +2203,12 @@ tsequence_max_instant(const TSequence *seq)
 Datum
 tsequence_min_value(const TSequence *seq)
 {
-  if (seq->temptype == T_TINT || seq->temptype == T_TFLOAT)
+  if (tnumber_type(seq->temptype))
   {
     TBox *box = TSEQUENCE_BBOX_PTR(seq);
-    Datum min = box->span.lower;
-    if (seq->temptype == T_TINT)
-      min = Int32GetDatum((int) DatumGetFloat8(min));
+    Datum dmin = box->span.lower;
+    meosType basetype = temptype_basetype(seq->temptype);
+    Datum min = double_datum(DatumGetFloat8(dmin), basetype);
     return min;
   }
 
@@ -2231,13 +2231,13 @@ tsequence_min_value(const TSequence *seq)
 Datum
 tsequence_max_value(const TSequence *seq)
 {
-  if (seq->temptype == T_TINT || seq->temptype == T_TFLOAT)
+  if (tnumber_type(seq->temptype))
   {
     TBox *box = TSEQUENCE_BBOX_PTR(seq);
-    Datum max = box->span.upper;
-    /* The upper bound for integer spans is exclusive due to canonicalization */
-    if (seq->temptype == T_TINT)
-      max = Int32GetDatum((int) DatumGetFloat8(max));
+    Datum dmax = box->span.upper;
+    /* The span in a TBox is always a double span */
+    meosType basetype = temptype_basetype(seq->temptype);
+    Datum max = double_datum(DatumGetFloat8(dmax), basetype);
     return max;
   }
 
@@ -2513,7 +2513,7 @@ tsegment_value_at_timestamp(const TInstant *inst1, const TInstant *inst2,
     dresult->d = start->d + (double) ((long double)(end->d - start->d) * ratio);
     return Double4PGetDatum(dresult);
   }
-  if (inst1->temptype == T_TGEOMPOINT || inst1->temptype == T_TGEOGPOINT)
+  if (tgeo_type(inst1->temptype))
   {
     return geosegm_interpolate_point(value1, value2, ratio);
   }
@@ -3428,8 +3428,7 @@ tdiscseq_restrict_value(const TSequence *seq, Datum value, bool atfunc)
  * @sqlfunc atValues(), minusValues()
  */
 TSequence *
-tdiscseq_restrict_values(const TSequence *seq, const Datum *values,
-  int count, bool atfunc)
+tdiscseq_restrict_values(const TSequence *seq, const Set *set, bool atfunc)
 {
   const TInstant *inst;
 
@@ -3437,7 +3436,7 @@ tdiscseq_restrict_values(const TSequence *seq, const Datum *values,
   if (seq->count == 1)
   {
     inst = tsequence_inst_n(seq, 0);
-    if (tinstant_restrict_values_test(inst, values, count, atfunc))
+    if (tinstant_restrict_values_test(inst, set, atfunc))
       return tsequence_copy(seq);
     return NULL;
   }
@@ -3448,7 +3447,7 @@ tdiscseq_restrict_values(const TSequence *seq, const Datum *values,
   for (int i = 0; i < seq->count; i++)
   {
     inst = tsequence_inst_n(seq, i);
-    if (tinstant_restrict_values_test(inst, values, count, atfunc))
+    if (tinstant_restrict_values_test(inst, set, atfunc))
       instants[newcount++] = inst;
   }
   TSequence *result = (newcount == 0) ? NULL :
@@ -3693,8 +3692,7 @@ tcontseq_restrict_value(const TSequence *seq, Datum value, bool atfunc)
  * @note This function is called for each sequence of a temporal sequence set
  */
 int
-tsequence_at_values1(const TSequence *seq, const Datum *values, int count,
-  TSequence **result)
+tsequence_at_values1(const TSequence *seq, const Set *set, TSequence **result)
 {
   const TInstant *inst1, *inst2;
 
@@ -3702,7 +3700,7 @@ tsequence_at_values1(const TSequence *seq, const Datum *values, int count,
   if (seq->count == 1)
   {
     inst1 = tsequence_inst_n(seq, 0);
-    TInstant *inst = tinstant_restrict_values(inst1, values, count, REST_AT);
+    TInstant *inst = tinstant_restrict_values(inst1, set, REST_AT);
     if (inst == NULL)
       return 0;
     pfree(inst);
@@ -3711,10 +3709,7 @@ tsequence_at_values1(const TSequence *seq, const Datum *values, int count,
   }
 
   /* Bounding box test */
-  int count1;
-  Datum *values1 = temporal_bbox_restrict_values((Temporal *) seq, values,
-    count, &count1);
-  if (count1 == 0)
+  if (! temporal_bbox_restrict_set((Temporal *) seq, set))
     return 0;
 
   /* General case */
@@ -3726,17 +3721,16 @@ tsequence_at_values1(const TSequence *seq, const Datum *values, int count,
   {
     inst2 = tsequence_inst_n(seq, i);
     bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-    for (int j = 0; j < count1; j++)
+    for (int j = 0; j < set->count; j++)
       /* Each iteration adds between 0 and 2 sequences */
-      k += tsegment_restrict_value(inst1, inst2, interp, lower_inc,
-        upper_inc, values1[j], REST_AT, &result[k]);
+      k += tsegment_restrict_value(inst1, inst2, interp, lower_inc, upper_inc,
+        set_val_n(set, j), REST_AT, &result[k]);
     inst1 = inst2;
     lower_inc = true;
   }
   if (k > 1)
     tseqarr_sort(result, k);
 
-  pfree(values1);
   return k;
 }
 
@@ -3756,12 +3750,12 @@ tsequence_at_values1(const TSequence *seq, const Datum *values, int count,
  * @sqlfunc atValues(), minusValues()
  */
 TSequenceSet *
-tcontseq_restrict_values(const TSequence *seq, const Datum *values, int count,
-  bool atfunc)
+tcontseq_restrict_values(const TSequence *seq, const Set *set, bool atfunc)
 {
   /* General case */
-  TSequence **sequences = palloc(sizeof(TSequence *) * seq->count * count * 2);
-  int newcount = tsequence_at_values1(seq, values, count, sequences);
+  TSequence **sequences = palloc(sizeof(TSequence *) * seq->count *
+    set->count * 2);
+  int newcount = tsequence_at_values1(seq, set, sequences);
   TSequenceSet *atresult = tsequenceset_make_free(sequences, newcount, NORMALIZE);
   if (atfunc)
     return atresult;
@@ -4443,7 +4437,7 @@ tdiscseq_minus_timestamp(const TSequence *seq, TimestampTz t)
  * @sqlfunc atTime(), minusTime()
  */
 TSequence *
-tdiscseq_restrict_tstzset(const TSequence *seq, const Set *ts,
+tdiscseq_restrict_timestampset(const TSequence *seq, const Set *ts,
   bool atfunc)
 {
   TSequence *result;
@@ -4475,7 +4469,7 @@ tdiscseq_restrict_tstzset(const TSequence *seq, const Set *ts,
   if (seq->count == 1)
   {
     inst = tsequence_inst_n(seq, 0);
-    if (tinstant_restrict_tstzset_test(inst, ts, atfunc))
+    if (tinstant_restrict_timestampset_test(inst, ts, atfunc))
       return tsequence_copy(seq);
     return NULL;
   }
@@ -4803,7 +4797,7 @@ tcontseq_minus_timestamp(const TSequence *seq, TimestampTz t)
  * @sqlfunc atTstzSet()
  */
 TSequence *
-tcontseq_at_tstzset(const TSequence *seq, const Set *ts)
+tcontseq_at_timestampset(const TSequence *seq, const Set *ts)
 {
   TInstant *inst;
 
@@ -4866,7 +4860,7 @@ tcontseq_at_tstzset(const TSequence *seq, const Set *ts)
  * @return Number of resulting sequences returned
  */
 int
-tcontseq_minus_tstzset1(const TSequence *seq, const Set *ts,
+tcontseq_minus_timestampset1(const TSequence *seq, const Set *ts,
   TSequence **result)
 {
   /* Singleton timestamp set */
@@ -4983,10 +4977,10 @@ tcontseq_minus_tstzset1(const TSequence *seq, const Set *ts,
  * @sqlfunc minusTstzSet()
  */
 TSequenceSet *
-tcontseq_minus_tstzset(const TSequence *seq, const Set *ts)
+tcontseq_minus_timestampset(const TSequence *seq, const Set *ts)
 {
   TSequence **sequences = palloc0(sizeof(TSequence *) * (ts->count + 1));
-  int count = tcontseq_minus_tstzset1(seq, ts, sequences);
+  int count = tcontseq_minus_timestampset1(seq, ts, sequences);
   return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
 
@@ -5415,7 +5409,7 @@ tcontseq_delete_timestamp(const TSequence *seq, TimestampTz t)
  * @param[in] ts Timestamp set
  */
 TSequence *
-tcontseq_delete_tstzset(const TSequence *seq, const Set *ts)
+tcontseq_delete_timestampset(const TSequence *seq, const Set *ts)
 {
   /* Singleton timestamp set */
   if (ts->count == 1)
@@ -5620,7 +5614,7 @@ tsequence_overlaps_timestamp(const TSequence *seq, TimestampTz t)
  * @sqlfunc intersectsTstzSet()
  */
 bool
-tsequence_overlaps_tstzset(const TSequence *seq, const Set *ts)
+tsequence_overlaps_timestampset(const TSequence *seq, const Set *ts)
 {
   for (int i = 0; i < ts->count; i++)
     if (tsequence_overlaps_timestamp(seq,

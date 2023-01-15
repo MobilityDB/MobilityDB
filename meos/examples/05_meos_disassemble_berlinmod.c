@@ -45,7 +45,7 @@
  *
  * The program can be build as follows
  * @code
- * gcc -Wall -g -I/usr/local/include -o meos_disassemble_berlinmod meos_disassemble_berlinmod.c -L/usr/local/lib -lmeos
+ * gcc -Wall -g -I/usr/local/include -o 05_meos_disassemble_berlinmod 05_meos_disassemble_berlinmod.c -L/usr/local/lib -lmeos
  * @endcode
  */
 

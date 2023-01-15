@@ -42,8 +42,8 @@
 #include <meos_internal.h>
 #include "general/pg_types.h"
 #include "general/set.h"
-#include "general/temporal_out.h"
-#include "general/temporal_util.h"
+#include "general/type_out.h"
+#include "general/type_util.h"
 #include "point/tpoint_spatialfuncs.h"
 /* MobilityDB */
 #include "pg_general/temporal.h"

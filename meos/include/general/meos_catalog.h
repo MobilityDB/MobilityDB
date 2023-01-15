@@ -93,10 +93,12 @@ typedef enum
   T_GEOGSET        = 39,  /**< geography set type */
   T_TGEOMPOINT     = 40,  /**< temporal geometry point type */
   T_TGEOGPOINT     = 41,  /**< temporal geography point type */
+#if NPOINT
   T_NPOINT         = 42,  /**< network point type */
   T_NPOINTSET      = 43,  /**< network point set type */
   T_NSEGMENT       = 44,  /**< network segment type */
   T_TNPOINT        = 45,  /**< temporal network point type */
+#endif
 } meosType;
 
 /**
@@ -149,6 +151,13 @@ extern meosType basetype_settype(meosType basetype);
 
 /* Catalog functions */
 
+extern void ensure_basetype(meosType basetype);
+extern bool alpha_basetype(meosType basetype);
+extern bool number_basetype(meosType basetype);
+extern bool alphanum_basetype(meosType basetype);
+extern bool geo_basetype(meosType basetype);
+extern bool spatial_basetype(meosType basetype);
+
 extern bool time_type(meosType timetype);
 extern void ensure_time_type(meosType timetype);
 extern bool set_basetype(meosType basetype);
@@ -161,10 +170,11 @@ extern bool numset_type(meosType settype);
 extern void ensure_numset_type(meosType settype);
 extern bool geoset_type(meosType settype);
 
-extern bool span_type(meosType spantype);
-extern void ensure_span_type(meosType spantype);
-extern bool numspan_type(meosType spantype);
-extern void ensure_numspan_type(meosType spantype);
+extern bool span_type(meosType type);
+extern void ensure_span_type(meosType type);
+extern bool numspan_type(meosType type);
+extern void ensure_numspan_type(meosType type);
+extern bool span_canon_basetype(meosType type);
 extern bool span_basetype(meosType basetype);
 extern void ensure_span_basetype(meosType basetype);
 extern bool numspan_basetype(meosType basetype);
@@ -197,7 +207,6 @@ extern bool tnumber_spansettype(meosType spansettype);
 extern void ensure_tnumber_spansettype(meosType spansettype);
 extern bool tspatial_type(meosType temptype);
 extern bool tspatial_basetype(meosType basetype);
-extern bool tgeo_basetype(meosType basetype);
 extern bool tgeo_type(meosType basetype);
 extern void ensure_tgeo_type(meosType basetype);
 

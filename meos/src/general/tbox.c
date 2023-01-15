@@ -40,9 +40,9 @@
 #include <meos_internal.h>
 #include "general/pg_types.h"
 #include "general/set.h"
-#include "general/temporal_parser.h"
-#include "general/temporal_util.h"
 #include "general/tnumber_mathfuncs.h"
+#include "general/type_parser.h"
+#include "general/type_util.h"
 
 /** Buffer size for input and output of TBox values */
 #define MAXTBOXLEN    128
@@ -202,11 +202,7 @@ number_set_tbox(Datum value, meosType basetype, TBox *box)
   ensure_tnumber_basetype(basetype);
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBox));
-  Datum dvalue;
-  if (basetype == T_INT4)
-    dvalue = Float8GetDatum((double) DatumGetInt32(value));
-  else /* basetype == T_FLOAT8 */
-    dvalue = value;
+  Datum dvalue = Float8GetDatum(datum_double(value, basetype));
   span_set(dvalue, dvalue, true, true, T_FLOAT8, &box->span);
   MOBDB_FLAGS_SET_X(box->flags, true);
   MOBDB_FLAGS_SET_T(box->flags, false);
@@ -318,10 +314,7 @@ numset_set_tbox(const Set *s, TBox *box)
   memset(box, 0, sizeof(TBox));
   Span sp;
   set_set_span(s, &sp);
-  if (s->basetype == T_INT4)
-    intspan_set_floatspan(&sp, &box->span);
-  else
-    memcpy(&box->span, &sp, sizeof(Span));
+  numspan_set_floatspan(&sp, &box->span);
   MOBDB_FLAGS_SET_X(box->flags, true);
   MOBDB_FLAGS_SET_T(box->flags, false);
   return;
@@ -383,10 +376,7 @@ numspan_set_tbox(const Span *s, TBox *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBox));
-  if (s->basetype == T_INT4)
-    intspan_set_floatspan(s, &box->span);
-  else
-    memcpy(&box->span, s, sizeof(Span));
+  numspan_set_floatspan(s, &box->span);
   MOBDB_FLAGS_SET_X(box->flags, true);
   MOBDB_FLAGS_SET_T(box->flags, false);
   return;
@@ -601,10 +591,7 @@ span_timestamp_to_tbox(const Span *span, TimestampTz t)
 {
   ensure_tnumber_spantype(span->spantype);
   TBox *result = palloc(sizeof(TBox));
-  if (span->basetype == T_INT4)
-    intspan_set_floatspan(span, &result->span);
-  else
-    memcpy(&result->span, span, sizeof(Span));
+  numspan_set_floatspan(span, &result->span);
   Datum dt = TimestampTzGetDatum(t);
   span_set(dt, dt, true, true, T_TIMESTAMPTZ, &result->period);
   MOBDB_FLAGS_SET_X(result->flags, true);
@@ -623,10 +610,7 @@ span_period_to_tbox(const Span *span, const Span *p)
   ensure_tnumber_spantype(span->spantype);
   assert(p->basetype == T_TIMESTAMPTZ);
   TBox *result = palloc(sizeof(TBox));
-  if (span->basetype == T_INT4)
-    intspan_set_floatspan(span, &result->span);
-  else
-    memcpy(&result->span, span, sizeof(Span));
+  numspan_set_floatspan(span, &result->span);
   memcpy(&result->period, p, sizeof(Span));
   MOBDB_FLAGS_SET_X(result->flags, true);
   MOBDB_FLAGS_SET_T(result->flags, true);
@@ -935,18 +919,16 @@ adjacent_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   bool hasx, hast;
   topo_tbox_tbox_init(box1, box2, &hasx, &hast);
-  TBox inter;
-  if (! inter_tbox_tbox(box1, box2, &inter))
-    return false;
   /* Boxes are adjacent if they share n dimensions and their intersection is
    * at most of n-1 dimensions */
-  if (! hasx && hast)
-    return (inter.period.lower == inter.period.upper);
   if (hasx && ! hast)
-    return (inter.span.lower == inter.span.upper);
+    return (adjacent_span_span(&box1->span, &box2->span));
+  if (! hasx && hast)
+    return (adjacent_span_span(&box1->period, &box2->period));
   /* (hasx && hast) */
-  return (inter.span.lower == inter.span.upper ||
-      inter.period.lower == inter.period.upper);
+  bool adjx = adjacent_span_span(&box1->span, &box2->span);
+  bool adjt = adjacent_span_span(&box1->period, &box2->period);
+  return ((adjx && ! adjt) || (! adjx && adjt));
 }
 
 /*****************************************************************************

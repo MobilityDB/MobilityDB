@@ -372,23 +372,6 @@ Overright_set_set(PG_FUNCTION_ARGS)
  * Set union
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Union_value_value);
-/**
- * @ingroup mobilitydb_setspan_set
- * @brief Return the union of the timestamps
- * @sqlfunc time_union()
- * @sqlop @p +
- */
-PGDLLEXPORT Datum
-Union_value_value(PG_FUNCTION_ARGS)
-{
-  Datum d1 = PG_GETARG_DATUM(0);
-  Datum d2 = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  Set *result = union_value_value(d1,d2, basetype);
-  PG_RETURN_POINTER(result);
-}
-
 PG_FUNCTION_INFO_V1(Union_value_set);
 /**
  * @ingroup mobilitydb_setspan_set
@@ -448,26 +431,6 @@ Union_set_set(PG_FUNCTION_ARGS)
 /*****************************************************************************
  * Set intersection
  *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(Intersection_value_value);
-/**
- * @ingroup mobilitydb_setspan_set
- * @brief Return the intersection of the timestamps
- * @sqlfunc time_intersection()
- * @sqlop @p *
- */
-PGDLLEXPORT Datum
-Intersection_value_value(PG_FUNCTION_ARGS)
-{
-  Datum d1 = PG_GETARG_DATUM(0);
-  Datum d2 = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  Datum result;
-  bool found = intersection_value_value(d1, d2, basetype, &result);
-  if (! found)
-    PG_RETURN_NULL();
-  PG_RETURN_DATUM(result);
-}
 
 PG_FUNCTION_INFO_V1(Intersection_value_set);
 /**
@@ -535,25 +498,6 @@ Intersection_set_set(PG_FUNCTION_ARGS)
  * Set difference
  * The functions produce new results that must be freed right
  *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(Minus_value_value);
-/**
- * @ingroup mobilitydb_setspan_set
- * @brief Return the difference of the values
- * @sqlfunc time_minus()
- * @sqlop @p -
- */
-PGDLLEXPORT Datum
-Minus_value_value(PG_FUNCTION_ARGS)
-{
-  Datum d1 = PG_GETARG_DATUM(0);
-  Datum d2 = PG_GETARG_DATUM(1);
-  Datum result;
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  if (! minus_value_value(d1, d2, basetype, &result))
-    PG_RETURN_NULL();
-  PG_RETURN_DATUM(result);
-}
 
 PG_FUNCTION_INFO_V1(Minus_value_set);
 /**

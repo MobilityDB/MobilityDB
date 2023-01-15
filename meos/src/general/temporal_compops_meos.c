@@ -33,9 +33,9 @@
 
 #include "general/temporal_compops.h"
 
-/* MobilityDB */
+/* MEOS */
 #include "general/temporaltypes.h"
-#include "general/temporal_util.h"
+#include "general/type_util.h"
 
 /*****************************************************************************
  * Temporal eq

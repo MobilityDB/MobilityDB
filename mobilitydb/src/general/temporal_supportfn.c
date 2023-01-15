@@ -281,7 +281,7 @@ makeExpandExpr(Node *arg, Node *radiusarg, Oid argoid, Oid retoid,
 
 /**
  * For functions that we want enhanced with spatial index lookups, add
- * this support function to the SQL function defintion, for example:
+ * this support function to the SQL function definition, for example:
  * @code
  * CREATE OR REPLACE FUNCTION ever_eq(tfloat, float)
  *   RETURNS boolean

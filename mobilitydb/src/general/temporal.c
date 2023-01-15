@@ -47,17 +47,17 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/temporal_out.h"
-#include "general/temporal_util.h"
 #include "general/pg_types.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_boxops.h"
+#include "general/type_out.h"
+#include "general/type_util.h"
 /* MobilityDB */
 #include "pg_general/doxygen_mobilitydb_api.h"
 #include "pg_general/meos_catalog.h"
-#include "pg_general/temporal_util.h"
 #include "pg_general/tinstant.h"
 #include "pg_general/tsequence.h"
+#include "pg_general/type_util.h"
 #include "pg_point/tpoint_spatialfuncs.h"
 
 /* To avoid including fmgrprotos.h */
@@ -932,8 +932,16 @@ Temporal_values(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int count;
   Datum *values = temporal_values(temp, &count);
-  ArrayType *result = datumarr_to_array(values, count,
-    temptype_basetype(temp->temptype));
+  meosType basetype = temptype_basetype(temp->temptype);
+  /* Currently, there is no boolset type */
+  if (temp->temptype == T_TBOOL)
+  {
+    ArrayType *result = datumarr_to_array(values, count, basetype);
+    pfree(values);
+    PG_FREE_IF_COPY(temp, 0);
+    PG_RETURN_POINTER(result);
+  }
+  Set *result = set_make(values, count, basetype, ORDERED);
   pfree(values);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -1910,51 +1918,22 @@ Temporal_minus_value(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-/* Helper macro to input a temporal and an array for restriction operations */
-#define INPUT_REST_ARRAY(temp, array, count) \
-  do { \
-    temp = PG_GETARG_TEMPORAL_P(0);  \
-    array = PG_GETARG_ARRAYTYPE_P(1); \
-    /* Return NULL or a copy of a temporal value on empty array */ \
-    count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array)); \
-    if (count == 0) \
-    { \
-      PG_FREE_IF_COPY(array, 1); \
-      if (atfunc) \
-      { \
-        PG_FREE_IF_COPY(temp, 0); \
-        PG_RETURN_NULL(); \
-      } \
-      else \
-      { \
-        Temporal *result = temporal_copy(temp); \
-        PG_FREE_IF_COPY(temp, 0); \
-        PG_RETURN_POINTER(result); \
-      } \
-    } \
-  } while(0);
-
-
 /**
  * @brief Restrict a temporal value to (the complement of) an array of base values
  */
 static Datum
 temporal_restrict_values_ext(FunctionCallInfo fcinfo, bool atfunc)
 {
-  Temporal *temp;
-  ArrayType *array;
-  int count;
-  INPUT_REST_ARRAY(temp, array, count);
-  Datum *values = datumarr_extract(array, &count);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Set *set = PG_GETARG_SET_P(1);
   /* For temporal points the validity of values in the array is done in
    * bounding box function */
-  Temporal *result = (count > 1) ?
-    temporal_restrict_values(temp, values, count, atfunc) :
-    temporal_restrict_value(temp, values[0], atfunc);
+  Temporal *result = (set->count > 1) ?
+    temporal_restrict_values(temp, set, atfunc) :
+    temporal_restrict_value(temp, set_val_n(set, 0), atfunc);
 
-  pfree(values);
   PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(array, 1);
+  PG_FREE_IF_COPY(set, 1);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
@@ -2239,18 +2218,18 @@ Temporal_value_at_timestamp(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Temporal_at_tstzset);
+PG_FUNCTION_INFO_V1(Temporal_at_timestampset);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to a timestamp set
  * @sqlfunc atTime()
  */
 PGDLLEXPORT Datum
-Temporal_at_tstzset(PG_FUNCTION_ARGS)
+Temporal_at_timestampset(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Set *ts = PG_GETARG_SET_P(1);
-  Temporal *result = temporal_restrict_tstzset(temp, ts, REST_AT);
+  Temporal *result = temporal_restrict_timestampset(temp, ts, REST_AT);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ts, 1);
   if (! result)
@@ -2258,18 +2237,18 @@ Temporal_at_tstzset(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Temporal_minus_tstzset);
+PG_FUNCTION_INFO_V1(Temporal_minus_timestampset);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal value to the complement of a timestamp set
  * @sqlfunc minusTime()
  */
 PGDLLEXPORT Datum
-Temporal_minus_tstzset(PG_FUNCTION_ARGS)
+Temporal_minus_timestampset(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Set *ts = PG_GETARG_SET_P(1);
-  Temporal *result = temporal_restrict_tstzset(temp, ts, REST_MINUS);
+  Temporal *result = temporal_restrict_timestampset(temp, ts, REST_MINUS);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ts, 1);
   if (! result)
@@ -2414,19 +2393,19 @@ Temporal_delete_timestamp(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Temporal_delete_tstzset);
+PG_FUNCTION_INFO_V1(Temporal_delete_timestampset);
 /**
  * @ingroup mobilitydb_temporal_modif
  * @brief Delete a timestamp set from a temporal value
  * @sqlfunc deleteTime()
  */
 PGDLLEXPORT Datum
-Temporal_delete_tstzset(PG_FUNCTION_ARGS)
+Temporal_delete_timestampset(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Set *ts = PG_GETARG_SET_P(1);
   bool connect = PG_GETARG_BOOL(2);
-  Temporal *result = temporal_delete_tstzset(temp, ts, connect);
+  Temporal *result = temporal_delete_timestampset(temp, ts, connect);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ts, 1);
   if (! result)
@@ -2493,18 +2472,18 @@ Temporal_overlaps_timestamp(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(Temporal_overlaps_tstzset);
+PG_FUNCTION_INFO_V1(Temporal_overlaps_timestampset);
 /**
  * @ingroup mobilitydb_temporal_time
  * @brief Return true if a temporal value intersects a timestamp set
  * @sqlfunc intersectsTime()
  */
 PGDLLEXPORT Datum
-Temporal_overlaps_tstzset(PG_FUNCTION_ARGS)
+Temporal_overlaps_timestampset(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Set *ts = PG_GETARG_SET_P(1);
-  bool result = temporal_overlaps_tstzset(temp, ts);
+  bool result = temporal_overlaps_timestampset(temp, ts);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ts, 1);
   PG_RETURN_BOOL(result);
