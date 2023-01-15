@@ -932,8 +932,16 @@ Temporal_values(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int count;
   Datum *values = temporal_values(temp, &count);
-  ArrayType *result = datumarr_to_array(values, count,
-    temptype_basetype(temp->temptype));
+  meosType basetype = temptype_basetype(temp->temptype);
+  /* Currently, there is no boolset type */
+  if (temp->temptype == T_TBOOL)
+  {
+    ArrayType *result = datumarr_to_array(values, count, basetype);
+    pfree(values);
+    PG_FREE_IF_COPY(temp, 0);
+    PG_RETURN_POINTER(result);
+  }
+  Set *result = set_make(values, count, basetype, ORDERED);
   pfree(values);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -1917,34 +1925,15 @@ static Datum
 temporal_restrict_values_ext(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  ArrayType *array = PG_GETARG_ARRAYTYPE_P(1);
-  /* Return NULL or a copy of a temporal value on empty array */
-  int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
-  if (count == 0)
-  {
-    PG_FREE_IF_COPY(array, 1);
-    if (atfunc)
-    {
-      PG_FREE_IF_COPY(temp, 0);
-      PG_RETURN_NULL();
-    }
-    else
-    {
-      Temporal *result = temporal_copy(temp);
-      PG_FREE_IF_COPY(temp, 0);
-      PG_RETURN_POINTER(result);
-    }
-  }
-  Datum *values = datumarr_extract(array, &count);
+  Set *set = PG_GETARG_SET_P(1);
   /* For temporal points the validity of values in the array is done in
    * bounding box function */
-  Temporal *result = (count > 1) ?
-    temporal_restrict_values(temp, values, count, atfunc) :
-    temporal_restrict_value(temp, values[0], atfunc);
+  Temporal *result = (set->count > 1) ?
+    temporal_restrict_values(temp, set, atfunc) :
+    temporal_restrict_value(temp, set_val_n(set, 0), atfunc);
 
-  pfree(values);
   PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(array, 1);
+  PG_FREE_IF_COPY(set, 1);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);

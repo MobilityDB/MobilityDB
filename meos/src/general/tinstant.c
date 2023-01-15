@@ -709,13 +709,14 @@ tinstant_restrict_value(const TInstant *inst, Datum value, bool atfunc)
  * discrete sequence.
  */
 bool
-tinstant_restrict_values_test(const TInstant *inst, const Datum *values,
-  int count, bool atfunc)
+tinstant_restrict_values_test(const TInstant *inst, const Set *set,
+  bool atfunc)
 {
   Datum value = tinstant_value(inst);
-  for (int i = 0; i < count; i++)
+  meosType basetype = temptype_basetype(inst->temptype);
+  for (int i = 0; i < set->count; i++)
   {
-    if (datum_eq(value, values[i], temptype_basetype(inst->temptype)))
+    if (datum_eq(value, set_val_n(set, i), basetype))
       return atfunc ? true : false;
   }
   return atfunc ? false : true;
@@ -727,10 +728,9 @@ tinstant_restrict_values_test(const TInstant *inst, const Datum *values,
  * @sqlfunc atValues(), minusValues()
  */
 TInstant *
-tinstant_restrict_values(const TInstant *inst, const Datum *values,
-  int count, bool atfunc)
+tinstant_restrict_values(const TInstant *inst, const Set *set, bool atfunc)
 {
-  if (tinstant_restrict_values_test(inst, values, count, atfunc))
+  if (tinstant_restrict_values_test(inst, set, atfunc))
     return tinstant_copy(inst);
   return NULL;
 }

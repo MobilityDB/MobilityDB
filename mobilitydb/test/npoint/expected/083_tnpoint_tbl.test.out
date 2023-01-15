@@ -198,7 +198,7 @@ SELECT getValue(inst) FROM tbl_tnpoint_inst ORDER BY getValue(inst) LIMIT 1;
  NPoint(0,0.658185)
 (1 row)
 
-SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_tnpoint;
+SELECT MAX(numValues(getValues(temp))) FROM tbl_tnpoint;
  max 
 -----
   56
@@ -387,16 +387,16 @@ WHERE minusValue(temp, np) IS NOT NULL;
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tnpoint,
-( SELECT array_agg(np) AS valuearr FROM tbl_npoint) tmp
-WHERE atValues(temp, valuearr) IS NOT NULL;
+( SELECT npointset(array_agg(np)) AS s FROM tbl_npoint) tmp
+WHERE atValues(temp, s) IS NOT NULL;
  count 
 -------
     30
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tnpoint,
-( SELECT array_agg(np) AS valuearr FROM tbl_npoint) tmp
-WHERE minusValues(temp, valuearr) IS NOT NULL;
+( SELECT npointset(array_agg(np)) AS s FROM tbl_npoint) tmp
+WHERE minusValues(temp, s) IS NOT NULL;
  count 
 -------
    100

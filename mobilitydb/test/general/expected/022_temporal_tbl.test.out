@@ -760,7 +760,7 @@ SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_tbool;
    2
 (1 row)
 
-SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_tint;
+SELECT MAX(numValues(getValues(temp))) FROM tbl_tint;
  max 
 -----
   35
@@ -772,7 +772,7 @@ SELECT MAX(numSpans(getValues(temp))) FROM tbl_tfloat;
    9
 (1 row)
 
-SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_ttext;
+SELECT MAX(numValues(getValues(temp))) FROM tbl_ttext;
  max 
 -----
   54
@@ -1910,22 +1910,22 @@ SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp != merge(atValue(temp, t), m
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint, ( SELECT array_agg(i) AS arr FROM tbl_int WHERE i IS NOT NULL ) tmp
-WHERE temp != merge(atValues(temp, arr), minusValues(temp, arr));
+SELECT COUNT(*) FROM tbl_tint, ( SELECT intset(array_agg(i)) AS s FROM tbl_int WHERE i IS NOT NULL ) tmp
+WHERE temp != merge(atValues(temp, s), minusValues(temp, s));
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat, ( SELECT array_agg(f) AS arr FROM tbl_float WHERE f IS NOT NULL ) tmp
-WHERE temp != merge(atValues(temp, arr), minusValues(temp, arr));
+SELECT COUNT(*) FROM tbl_tfloat, ( SELECT floatset(array_agg(f)) AS s FROM tbl_float WHERE f IS NOT NULL ) tmp
+WHERE temp != merge(atValues(temp, s), minusValues(temp, s));
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext, ( SELECT array_agg(t) AS arr FROM tbl_text WHERE t IS NOT NULL ) tmp
-WHERE temp != merge(atValues(temp, arr), minusValues(temp, arr));
+SELECT COUNT(*) FROM tbl_ttext, ( SELECT textset(array_agg(t)) AS s FROM tbl_text WHERE t IS NOT NULL ) tmp
+WHERE temp != merge(atValues(temp, s), minusValues(temp, s));
  count 
 -------
      0

@@ -743,20 +743,20 @@ CREATE FUNCTION minusValue(tgeogpoint, geography(Point))
   AS 'MODULE_PATHNAME', 'Temporal_minus_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION atValues(tgeompoint, geometry(Point)[])
+CREATE FUNCTION atValues(tgeompoint, geomset)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Temporal_at_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION atValues(tgeogpoint, geography(Point)[])
+CREATE FUNCTION atValues(tgeogpoint, geogset)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Temporal_at_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION minusValues(tgeompoint, geometry(Point)[])
+CREATE FUNCTION minusValues(tgeompoint, geomset)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Temporal_minus_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION minusValues(tgeogpoint, geography(Point)[])
+CREATE FUNCTION minusValues(tgeogpoint, geogset)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Temporal_minus_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

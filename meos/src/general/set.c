@@ -189,6 +189,40 @@ tstzset_in(const char *str)
 }
 #endif /* MEOS */
 
+
+/**
+ * @ingroup libmeos_setspan_inout
+ * @brief Return true if the base type value is output enclosed into quotes.
+ */
+static bool
+set_basetype_quotes(meosType type)
+{
+  /* Text values are output with quotes in the `basetype_out` function */
+  if (type == T_TIMESTAMPTZ || spatial_basetype(type))
+    return true;
+  return false;
+}
+
+/**
+ * @ingroup libmeos_internal_setspan_inout
+ * @brief Return the Well-Known Text (WKT) representation of a set.
+ */
+char *
+set_out_fn(const Set *s, int maxdd, outfunc value_out)
+{
+  char **strings = palloc(sizeof(char *) * s->count);
+  size_t outlen = 0;
+  for (int i = 0; i < s->count; i++)
+  {
+    Datum d = set_val_n(s, i);
+    strings[i] = value_out(d, s->basetype, maxdd);
+    outlen += strlen(strings[i]) + 1;
+  }
+  bool quotes = set_basetype_quotes(s->basetype);
+  return stringarr_to_string(strings, s->count, outlen, "", '{', '}', quotes,
+    SPACES);
+}
+
 /**
  * @ingroup libmeos_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a set.
@@ -196,36 +230,7 @@ tstzset_in(const char *str)
 char *
 set_out(const Set *s, int maxdd)
 {
-  char **strings = palloc(sizeof(char *) * s->count);
-  size_t outlen = 0;
-  for (int i = 0; i < s->count; i++)
-  {
-    Datum d = set_val_n(s, i);
-    strings[i] = basetype_out(d, s->basetype, maxdd);
-    outlen += strlen(strings[i]) + 2;
-  }
-  return stringarr_to_string(strings, s->count, outlen, "", '{', '}');
-}
-
-/*****************************************************************************/
-
-/**
- * @ingroup libmeos_internal_spanset_inout
- * @brief Return the Well-Known Text (WKT) representation of a geoset.
- * @sqlfunc asText()
- */
-char *
-geoset_out(const Set *set, int maxdd, outfunc value_out)
-{
-  char **strings = palloc(sizeof(char *) * set->count);
-  size_t outlen = 0;
-  for (int i = 0; i < set->count; i++)
-  {
-    Datum value = set_val_n(set, i);
-    strings[i] = value_out(value, 0, maxdd);
-    outlen += strlen(strings[i]) + 2;
-  }
-  return stringarr_to_string(strings, set->count, outlen, "", '{', '}');
+  return set_out_fn(s, maxdd, &basetype_out);
 }
 
 /**
@@ -236,7 +241,7 @@ geoset_out(const Set *set, int maxdd, outfunc value_out)
 char *
 geoset_as_text(const Set *set, int maxdd)
 {
-  return geoset_out(set, maxdd, &wkt_out);
+  return set_out_fn(set, maxdd, &wkt_out);
 }
 
 /**
@@ -247,7 +252,7 @@ geoset_as_text(const Set *set, int maxdd)
 char *
 geoset_as_ewkt(const Set *set, int maxdd)
 {
-  return geoset_out(set, maxdd, &ewkt_out);
+  return set_out_fn(set, maxdd, &ewkt_out);
 }
 
 /*****************************************************************************
@@ -450,6 +455,7 @@ set_make(const Datum *values, int count, meosType basetype, bool ordered)
   MOBDB_FLAGS_SET_ORDERED(result->flags, ordered);
   if (geo_basetype(basetype))
   {
+    MOBDB_FLAGS_SET_X(result->flags, true);
     MOBDB_FLAGS_SET_Z(result->flags, hasz);
     MOBDB_FLAGS_SET_GEODETIC(result->flags, isgeodetic);
   }

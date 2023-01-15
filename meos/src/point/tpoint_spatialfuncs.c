@@ -3695,8 +3695,8 @@ tpointseq_step_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
     return NULL;
   }
   TSequence **result = palloc(sizeof(TSequence *) * seq->count);
-  int newcount = tsequence_at_values1(seq, points, k, result);
-  pfree_datumarr(points, k);
+  Set *set = set_make_free(points, k, T_GEOMETRY, ORDERED);
+  int newcount = tsequence_at_values1(seq, set, result);
   *count = newcount;
   return result;
 }

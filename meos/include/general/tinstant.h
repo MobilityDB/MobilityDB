@@ -56,7 +56,7 @@ extern char *tinstant_to_string(const TInstant *inst, int maxdd,
 /* Restriction Functions */
 
 extern bool tinstant_restrict_values_test(const TInstant *inst,
-  const Datum *values, int count, bool atfunc);
+  const Set *set, bool atfunc);
 extern bool tnumberinst_restrict_span_test(const TInstant *inst,
   const Span *span, bool atfunc);
 extern bool tnumberinst_restrict_spanset_test(const TInstant *inst,

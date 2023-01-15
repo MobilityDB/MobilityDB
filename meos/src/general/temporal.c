@@ -624,6 +624,19 @@ tgeogpoint_in(const char *str)
 }
 #endif /* MEOS */
 
+
+/**
+ * @ingroup libmeos_internal_temporal_inout
+ * @brief Return the Well-Known Text (WKT) representation of a temporal value.
+ */
+bool
+temporal_basetype_quotes(meosType temptype)
+{
+  if (temptype == T_TTEXT)
+    return true;
+  return false;
+}
+
 /**
  * @ingroup libmeos_internal_temporal_inout
  * @brief Return the Well-Known Text (WKT) representation of a temporal value.
@@ -2893,19 +2906,47 @@ temporal_restrict_value(const Temporal *temp, Datum value, bool atfunc)
 
 /**
  * @ingroup libmeos_internal_temporal_restrict
+ * @brief Return true if the bounding box of the temporal and the set overlap
+ * values.
+ */
+bool
+temporal_bbox_restrict_set(const Temporal *temp, const Set *set)
+{
+  /* Bounding box test */
+  if (tnumber_type(temp->temptype))
+  {
+    Span span1, span2;
+    tnumber_set_span(temp, &span1);
+    set_set_span(set, &span2);
+    return overlaps_span_span(&span1, &span2);
+  }
+  if (tgeo_type(temp->temptype) && temp->subtype != TINSTANT)
+  {
+    STBox box;
+    temporal_set_bbox(temp, &box);
+    return contains_stbox_stbox(&box, (STBox *) set_bbox_ptr(set));
+  }
+  return true;
+}
+
+/**
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) an array of base
  * values.
  * @sqlfunc atValues(), minusValues()
  */
 Temporal *
-temporal_restrict_values(const Temporal *temp, Datum *values, int count,
-  bool atfunc)
+temporal_restrict_values(const Temporal *temp, const Set *set, bool atfunc)
 {
+  /* Ensure validity of arguments */
+  if (tgeo_type(temp->temptype))
+  {
+    ensure_same_srid(tpoint_srid(temp), geoset_srid(set));
+    ensure_same_spatial_dimensionality(temp->flags, set->flags);
+  }
+
   /* Bounding box test */
-  int newcount;
-  Datum *newvalues = temporal_bbox_restrict_values(temp, values, count,
-    &newcount);
-  if (newcount == 0)
+  if (! temporal_bbox_restrict_set(temp, set))
   {
     if (atfunc)
       return NULL;
@@ -2918,19 +2959,16 @@ temporal_restrict_values(const Temporal *temp, Datum *values, int count,
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
-    result = (Temporal *) tinstant_restrict_values((TInstant *) temp,
-      newvalues, newcount, atfunc);
+    result = (Temporal *) tinstant_restrict_values((TInstant *) temp, set,
+      atfunc);
   else if (temp->subtype == TSEQUENCE)
     result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
-      (Temporal *) tdiscseq_restrict_values((TSequence *) temp, newvalues,
-        newcount, atfunc) :
-      (Temporal *) tcontseq_restrict_values((TSequence *) temp, newvalues,
-        newcount, atfunc);
+      (Temporal *) tdiscseq_restrict_values((TSequence *) temp, set, atfunc) :
+      (Temporal *) tcontseq_restrict_values((TSequence *) temp, set, atfunc);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tsequenceset_restrict_values((TSequenceSet *) temp,
-      newvalues, newcount, atfunc);
+      set, atfunc);
 
-  pfree(newvalues);
   return result;
 }
 

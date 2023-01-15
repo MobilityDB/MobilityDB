@@ -521,7 +521,7 @@ CREATE FUNCTION getValues(tbool)
   AS 'MODULE_PATHNAME', 'Temporal_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION getValues(tint)
-  RETURNS integer[]
+  RETURNS intset
   AS 'MODULE_PATHNAME', 'Temporal_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION getValues(tfloat)
@@ -529,7 +529,7 @@ CREATE FUNCTION getValues(tfloat)
   AS 'MODULE_PATHNAME', 'Tfloat_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION getValues(ttext)
-  RETURNS text[]
+  RETURNS textset
   AS 'MODULE_PATHNAME', 'Temporal_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -1660,28 +1660,28 @@ CREATE FUNCTION minusValue(ttext, text)
   AS 'MODULE_PATHNAME', 'Temporal_minus_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION atValues(tint, int[])
+CREATE FUNCTION atValues(tint, intset)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Temporal_at_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION atValues(tfloat, float[])
+CREATE FUNCTION atValues(tfloat, floatset)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Temporal_at_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION atValues(ttext, text[])
+CREATE FUNCTION atValues(ttext, textset)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Temporal_at_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION minusValues(tint, int[])
+CREATE FUNCTION minusValues(tint, intset)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Temporal_minus_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION minusValues(tfloat, float[])
+CREATE FUNCTION minusValues(tfloat, floatset)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Temporal_minus_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION minusValues(ttext, text[])
+CREATE FUNCTION minusValues(ttext, textset)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Temporal_minus_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

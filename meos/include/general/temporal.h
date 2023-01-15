@@ -82,6 +82,14 @@ extern char *text_to_cstring(const text *t);
 #define ORDERED         true
 #define ORDERED_NO      false
 
+/** Symbolic constants for the output of string elements */
+#define QUOTES          true
+#define QUOTES_NO       false
+
+/** Symbolic constants for the output of string elements */
+#define SPACES          true
+#define SPACES_NO       false
+
 /** Symbolic constants for lifting */
 #define INVERT          true
 #define INVERT_NO       false
@@ -465,6 +473,7 @@ extern bool temporal_bbox_ev_al_lt_le(const Temporal *temp, Datum value,
 extern bool temporal_bbox_restrict_value(const Temporal *temp, Datum value);
 extern Datum *temporal_bbox_restrict_values(const Temporal *temp,
   const Datum *values, int count, int *newcount);
+extern bool temporal_bbox_restrict_set(const Temporal *temp, const Set *set);
 extern Temporal *temporal_restrict_minmax(const Temporal *temp, bool min,
   bool atfunc);
 

@@ -347,14 +347,18 @@ SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geog_point WHERE temp != merge(atValue(
 SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_geom_point3D WHERE temp != merge(atValue(temp, g), minusValue(temp, g));
 SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geog_point3D WHERE temp != merge(atValue(temp, g), minusValue(temp, g));
 
-SELECT COUNT(*) FROM tbl_tgeompoint, ( SELECT array_agg(g) AS arr FROM tbl_geom_point WHERE g IS NOT NULL LIMIT 10) tmp
-WHERE temp != merge(atValues(temp, arr), minusValues(temp, arr));
-SELECT COUNT(*) FROM tbl_tgeogpoint, ( SELECT array_agg(g) AS arr FROM tbl_geog_point WHERE g IS NOT NULL LIMIT 10) tmp
-WHERE temp != merge(atValues(temp, arr), minusValues(temp, arr));
-SELECT COUNT(*) FROM tbl_tgeompoint3D, ( SELECT array_agg(g) AS arr FROM tbl_geom_point3D WHERE g IS NOT NULL LIMIT 10) tmp
-WHERE temp != merge(atValues(temp, arr), minusValues(temp, arr));
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, ( SELECT array_agg(g) AS arr FROM tbl_geog_point3D WHERE g IS NOT NULL LIMIT 10) tmp
-WHERE temp != merge(atValues(temp, arr), minusValues(temp, arr));
+SELECT COUNT(*) FROM tbl_tgeompoint, (
+  SELECT geomset(array_agg(g)) AS s FROM tbl_geom_point WHERE g IS NOT NULL AND NOT ST_IsEmpty(g)) tmp
+WHERE temp != merge(atValues(temp, s), minusValues(temp, s));
+SELECT COUNT(*) FROM tbl_tgeogpoint, (
+  SELECT geogset(array_agg(g)) AS s FROM tbl_geog_point WHERE g IS NOT NULL AND NOT ST_IsEmpty(g::geometry)) tmp
+WHERE temp != merge(atValues(temp, s), minusValues(temp, s));
+SELECT COUNT(*) FROM tbl_tgeompoint3D, (
+  SELECT geomset(array_agg(g)) AS s FROM tbl_geom_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g)) tmp
+WHERE temp != merge(atValues(temp, s), minusValues(temp, s));
+SELECT COUNT(*) FROM tbl_tgeogpoint3D, (
+  SELECT geogset(array_agg(g)) AS s FROM tbl_geog_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g::geometry)) tmp
+WHERE temp != merge(atValues(temp, s), minusValues(temp, s));
 
 SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz WHERE valueAtTimestamp(temp, t) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE valueAtTimestamp(temp, t) IS NOT NULL;

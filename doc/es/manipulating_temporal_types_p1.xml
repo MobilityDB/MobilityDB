@@ -739,7 +739,7 @@ SELECT ST_AsText(getValue(tgeompoint 'Point(0 0)@2001-01-01'));
 			<listitem id="getValues">
 				<indexterm><primary><varname>getValues</varname></primary></indexterm>
 				<para>Obtener los valores</para>
-				<para><varname>getValues(ttype) → {base[],floatspanset,geo}</varname></para>
+				<para><varname>getValues(ttype) → {set,floatspanset,geo}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT getValues(tint '[1@2001-01-01, 2@2001-01-03]');
 -- {1,2}
@@ -1488,13 +1488,13 @@ SELECT asText(atValue(tgeompoint '[Point(0 0 0)@2001-01-01, Point(2 2 2)@2001-01
 
 				<listitem id="atValues">
 					<indexterm><primary><varname>atValues</varname></primary></indexterm>
-					<para>Restringir a una matriz de valores</para>
-					<para><varname>atValues(ttype,base[]) → ttype</varname></para>
+					<para>Restringir a un conjunto de valores</para>
+					<para><varname>atValues(ttype,set) → ttype</varname></para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT atValues(tfloat '[1@2001-01-01, 4@2001-01-4)', ARRAY[1, 3, 5]);
+SELECT atValues(tfloat '[1@2001-01-01, 4@2001-01-4)', floatset '{1, 3, 5}');
 -- {[1@2001-01-01], [3@2001-01-03]}
 SELECT asText(atValues(tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03)',
-  ARRAY[geometry 'Point(0 0)', 'Point(1 1)']));
+  geomset '{"Point(0 0)", "Point(1 1)"}'));
 -- {[POINT(0 0)@2001-01-01], [POINT(1 1)@2001-01-02]}
 </programlisting>
 				</listitem>
@@ -1632,14 +1632,14 @@ SELECT asText(minusValue(tgeompoint '[Point(0 0 0)@2001-01-01, Point(2 2 2)@2001
 
 				<listitem id="minusValues">
 					<indexterm><primary><varname>minusValues</varname></primary></indexterm>
-					<para>Diferencia con una matriz de valores</para>
-					<para><varname>minusValues(ttype,base[]) → ttype</varname></para>
+					<para>Diferencia con un conjunto de valores</para>
+					<para><varname>minusValues(ttype,set) → ttype</varname></para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT minusValues(tfloat '[1@2001-01-01, 4@2001-01-4)', ARRAY[2, 3]);
+SELECT minusValues(tfloat '[1@2001-01-01, 4@2001-01-4)', floatset '{2, 3}');
 /* {[1@2001-01-01, 2@2001-01-02), (2@2001-01-02, 3@2001-01-03),
    (3@2001-01-03, 4@2001-01-04)} */
 SELECT asText(minusValues(tgeompoint '[Point(0 0 0)@2001-01-01, Point(3 3 3)@2001-01-04)',
-  ARRAY[geometry 'Point(1 1 1)', 'Point(2 2 2)']));
+  geomset '{"Point(1 1 1)", "Point(2 2 2)"}'));
 /* {[POINT Z (0 0 0)@2001-01-01, POINT Z (1 1 1)@2001-01-02),
    (POINT Z (1 1 1)@2001-01-02, POINT Z (2 2 2)@2001-01-03),
    (POINT Z (2 2 2)@2001-01-03, POINT Z (3 3 3)@2001-01-04)} */

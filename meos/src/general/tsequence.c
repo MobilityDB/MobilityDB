@@ -680,7 +680,7 @@ tsequence_to_string(const TSequence *seq, int maxdd, bool component,
   {
     const TInstant *inst = tsequence_inst_n(seq, i);
     strings[i] = tinstant_to_string(inst, maxdd, value_out);
-    outlen += strlen(strings[i]) + 2;
+    outlen += strlen(strings[i]) + 1;
   }
   char open, close;
   if (MOBDB_FLAGS_GET_DISCRETE(seq->flags))
@@ -693,8 +693,8 @@ tsequence_to_string(const TSequence *seq, int maxdd, bool component,
     open = seq->period.lower_inc ? (char) '[' : (char) '(';
     close = seq->period.upper_inc ? (char) ']' : (char) ')';
   }
-  return stringarr_to_string(strings, seq->count, outlen, prefix,
-    open, close);
+  return stringarr_to_string(strings, seq->count, outlen, prefix, open, close,
+    QUOTES_NO, SPACES);
 }
 
 /**
@@ -3428,8 +3428,7 @@ tdiscseq_restrict_value(const TSequence *seq, Datum value, bool atfunc)
  * @sqlfunc atValues(), minusValues()
  */
 TSequence *
-tdiscseq_restrict_values(const TSequence *seq, const Datum *values,
-  int count, bool atfunc)
+tdiscseq_restrict_values(const TSequence *seq, const Set *set, bool atfunc)
 {
   const TInstant *inst;
 
@@ -3437,7 +3436,7 @@ tdiscseq_restrict_values(const TSequence *seq, const Datum *values,
   if (seq->count == 1)
   {
     inst = tsequence_inst_n(seq, 0);
-    if (tinstant_restrict_values_test(inst, values, count, atfunc))
+    if (tinstant_restrict_values_test(inst, set, atfunc))
       return tsequence_copy(seq);
     return NULL;
   }
@@ -3448,7 +3447,7 @@ tdiscseq_restrict_values(const TSequence *seq, const Datum *values,
   for (int i = 0; i < seq->count; i++)
   {
     inst = tsequence_inst_n(seq, i);
-    if (tinstant_restrict_values_test(inst, values, count, atfunc))
+    if (tinstant_restrict_values_test(inst, set, atfunc))
       instants[newcount++] = inst;
   }
   TSequence *result = (newcount == 0) ? NULL :
@@ -3693,8 +3692,7 @@ tcontseq_restrict_value(const TSequence *seq, Datum value, bool atfunc)
  * @note This function is called for each sequence of a temporal sequence set
  */
 int
-tsequence_at_values1(const TSequence *seq, const Datum *values, int count,
-  TSequence **result)
+tsequence_at_values1(const TSequence *seq, const Set *set, TSequence **result)
 {
   const TInstant *inst1, *inst2;
 
@@ -3702,7 +3700,7 @@ tsequence_at_values1(const TSequence *seq, const Datum *values, int count,
   if (seq->count == 1)
   {
     inst1 = tsequence_inst_n(seq, 0);
-    TInstant *inst = tinstant_restrict_values(inst1, values, count, REST_AT);
+    TInstant *inst = tinstant_restrict_values(inst1, set, REST_AT);
     if (inst == NULL)
       return 0;
     pfree(inst);
@@ -3711,10 +3709,7 @@ tsequence_at_values1(const TSequence *seq, const Datum *values, int count,
   }
 
   /* Bounding box test */
-  int count1;
-  Datum *values1 = temporal_bbox_restrict_values((Temporal *) seq, values,
-    count, &count1);
-  if (count1 == 0)
+  if (! temporal_bbox_restrict_set((Temporal *) seq, set))
     return 0;
 
   /* General case */
@@ -3726,17 +3721,16 @@ tsequence_at_values1(const TSequence *seq, const Datum *values, int count,
   {
     inst2 = tsequence_inst_n(seq, i);
     bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-    for (int j = 0; j < count1; j++)
+    for (int j = 0; j < set->count; j++)
       /* Each iteration adds between 0 and 2 sequences */
-      k += tsegment_restrict_value(inst1, inst2, interp, lower_inc,
-        upper_inc, values1[j], REST_AT, &result[k]);
+      k += tsegment_restrict_value(inst1, inst2, interp, lower_inc, upper_inc,
+        set_val_n(set, j), REST_AT, &result[k]);
     inst1 = inst2;
     lower_inc = true;
   }
   if (k > 1)
     tseqarr_sort(result, k);
 
-  pfree(values1);
   return k;
 }
 
@@ -3756,12 +3750,12 @@ tsequence_at_values1(const TSequence *seq, const Datum *values, int count,
  * @sqlfunc atValues(), minusValues()
  */
 TSequenceSet *
-tcontseq_restrict_values(const TSequence *seq, const Datum *values, int count,
-  bool atfunc)
+tcontseq_restrict_values(const TSequence *seq, const Set *set, bool atfunc)
 {
   /* General case */
-  TSequence **sequences = palloc(sizeof(TSequence *) * seq->count * count * 2);
-  int newcount = tsequence_at_values1(seq, values, count, sequences);
+  TSequence **sequences = palloc(sizeof(TSequence *) * seq->count *
+    set->count * 2);
+  int newcount = tsequence_at_values1(seq, set, sequences);
   TSequenceSet *atresult = tsequenceset_make_free(sequences, newcount, NORMALIZE);
   if (atfunc)
     return atresult;

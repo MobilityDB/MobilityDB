@@ -890,27 +890,51 @@ pfree_datumarr(Datum *array, int count)
 /**
  * @brief Return the string resulting from assembling the array of strings.
  * The function frees the memory of the input strings after finishing.
+ * @param[in] strings Array of strings to ouput
+ * @param[in] count Number of elements in the input array
+ * @param[in] outlen Total length of the elements and the additional ','
+ * @param[in] prefix Prefix to add to the string (e.g., for interpolation)
+ * @param[in] open, close Starting/ending character (e.g., '{' and '}')
+ * @param[in] quotes True when elements should be enclosed into quotes
+ * @param[in] spaces True when elements should be separated by spaces
  */
 char *
-stringarr_to_string(char **strings, int count, int outlen,
-  char *prefix, char open, char close)
+stringarr_to_string(char **strings, int count, int outlen, char *prefix,
+  char open, char close, bool quotes, bool spaces)
 {
-  char *result = palloc(strlen(prefix) + outlen + 3);
-  result[outlen] = '\0';
+  int size = strlen(prefix) + outlen + 3;
+  if (quotes)
+    size += count * 4;
+  if (spaces)
+    size += count;
+  char *result = palloc(size);
   size_t pos = 0;
   strcpy(result, prefix);
   pos += strlen(prefix);
   result[pos++] = open;
   for (int i = 0; i < count; i++)
   {
+    if (quotes)
+      result[pos++] = '"';
     strcpy(result + pos, strings[i]);
     pos += strlen(strings[i]);
+    if (quotes)
+      result[pos++] = '"';
     result[pos++] = ',';
-    result[pos++] = ' ';
+    if (spaces)
+      result[pos++] = ' ';
     pfree(strings[i]);
   }
-  result[pos - 2] = close;
-  result[pos - 1] = '\0';
+  if (spaces)
+  {
+    result[pos - 2] = close;
+    result[pos - 1] = '\0';
+  }
+  else
+  {
+    result[pos - 1] = close;
+    result[pos] = '\0';
+  }
   pfree(strings);
   return result;
 }

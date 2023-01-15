@@ -259,7 +259,7 @@ CREATE FUNCTION getValue(tnpoint)
 
 -- values is a reserved word in SQL
 CREATE FUNCTION getValues(tnpoint)
-  RETURNS npoint[]
+  RETURNS npointset
   AS 'MODULE_PATHNAME', 'Temporal_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -493,12 +493,12 @@ CREATE FUNCTION minusValue(tnpoint, npoint)
   AS 'MODULE_PATHNAME', 'Temporal_minus_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION atValues(tnpoint, npoint[])
+CREATE FUNCTION atValues(tnpoint, npointset)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_at_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION minusValues(tnpoint, npoint[])
+CREATE FUNCTION minusValues(tnpoint, npointset)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_minus_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

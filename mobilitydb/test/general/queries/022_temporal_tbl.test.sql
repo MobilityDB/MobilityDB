@@ -242,9 +242,9 @@ SELECT round(MAX(getValue(inst))::numeric, 6) FROM tbl_tfloat_inst;
 SELECT MAX(getValue(inst)) FROM tbl_ttext_inst;
 
 SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_tbool;
-SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_tint;
+SELECT MAX(numValues(getValues(temp))) FROM tbl_tint;
 SELECT MAX(numSpans(getValues(temp))) FROM tbl_tfloat;
-SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_ttext;
+SELECT MAX(numValues(getValues(temp))) FROM tbl_ttext;
 
 SELECT DISTINCT startValue(temp) FROM tbl_tbool;
 SELECT MAX(startValue(temp)) FROM tbl_tint;
@@ -511,12 +511,12 @@ SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp != merge(atValue(temp, i), min
 SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp != merge(atValue(temp, f), minusValue(temp, f));
 SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp != merge(atValue(temp, t), minusValue(temp, t));
 
-SELECT COUNT(*) FROM tbl_tint, ( SELECT array_agg(i) AS arr FROM tbl_int WHERE i IS NOT NULL ) tmp
-WHERE temp != merge(atValues(temp, arr), minusValues(temp, arr));
-SELECT COUNT(*) FROM tbl_tfloat, ( SELECT array_agg(f) AS arr FROM tbl_float WHERE f IS NOT NULL ) tmp
-WHERE temp != merge(atValues(temp, arr), minusValues(temp, arr));
-SELECT COUNT(*) FROM tbl_ttext, ( SELECT array_agg(t) AS arr FROM tbl_text WHERE t IS NOT NULL ) tmp
-WHERE temp != merge(atValues(temp, arr), minusValues(temp, arr));
+SELECT COUNT(*) FROM tbl_tint, ( SELECT intset(array_agg(i)) AS s FROM tbl_int WHERE i IS NOT NULL ) tmp
+WHERE temp != merge(atValues(temp, s), minusValues(temp, s));
+SELECT COUNT(*) FROM tbl_tfloat, ( SELECT floatset(array_agg(f)) AS s FROM tbl_float WHERE f IS NOT NULL ) tmp
+WHERE temp != merge(atValues(temp, s), minusValues(temp, s));
+SELECT COUNT(*) FROM tbl_ttext, ( SELECT textset(array_agg(t)) AS s FROM tbl_text WHERE t IS NOT NULL ) tmp
+WHERE temp != merge(atValues(temp, s), minusValues(temp, s));
 
 SELECT COUNT(*) FROM tbl_tint, tbl_intspan WHERE temp != merge(atSpan(temp, i), minusSpan(temp, i));
 SELECT COUNT(*) FROM tbl_tfloat, tbl_floatspan WHERE temp != merge(atSpan(temp, f), minusSpan(temp, f));

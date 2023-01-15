@@ -178,9 +178,10 @@ spanset_out(const SpanSet *ss, int maxdd)
   {
     const Span *s = spanset_sp_n(ss, i);
     strings[i] = span_out(s, maxdd);
-    outlen += strlen(strings[i]) + 2;
+    outlen += strlen(strings[i]) + 1;
   }
-  return stringarr_to_string(strings, ss->count, outlen, "", '{', '}');
+  return stringarr_to_string(strings, ss->count, outlen, "", '{', '}',
+    QUOTES_NO, SPACES);
 }
 
 #if MEOS

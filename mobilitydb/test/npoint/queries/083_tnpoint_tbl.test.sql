@@ -124,7 +124,7 @@ SELECT stbox(temp) FROM tbl_tnpoint;
 
 SELECT getValue(inst) FROM tbl_tnpoint_inst ORDER BY getValue(inst) LIMIT 1;
 
-SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_tnpoint;
+SELECT MAX(numValues(getValues(temp))) FROM tbl_tnpoint;
 
 SELECT MAX(array_length(positions(temp), 1)) FROM tbl_tnpoint;
 
@@ -193,12 +193,12 @@ SELECT COUNT(*) FROM tbl_tnpoint, tbl_npoint
 WHERE minusValue(temp, np) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint,
-( SELECT array_agg(np) AS valuearr FROM tbl_npoint) tmp
-WHERE atValues(temp, valuearr) IS NOT NULL;
+( SELECT npointset(array_agg(np)) AS s FROM tbl_npoint) tmp
+WHERE atValues(temp, s) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint,
-( SELECT array_agg(np) AS valuearr FROM tbl_npoint) tmp
-WHERE minusValues(temp, valuearr) IS NOT NULL;
+( SELECT npointset(array_agg(np)) AS s FROM tbl_npoint) tmp
+WHERE minusValues(temp, s) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz
 WHERE atTime(temp, t) IS NOT NULL;

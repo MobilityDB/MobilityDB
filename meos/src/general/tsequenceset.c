@@ -1627,22 +1627,22 @@ tsequenceset_restrict_value(const TSequenceSet *ss, Datum value, bool atfunc)
  * @sqlfunc atValues(), minusValues()
  */
 TSequenceSet *
-tsequenceset_restrict_values(const TSequenceSet *ss, const Datum *values,
-  int count, bool atfunc)
+tsequenceset_restrict_values(const TSequenceSet *ss, const Set *set,
+  bool atfunc)
 {
   /* Singleton sequence set */
   if (ss->count == 1)
-    return tcontseq_restrict_values(tsequenceset_seq_n(ss, 0), values,
-      count, atfunc);
+    return tcontseq_restrict_values(tsequenceset_seq_n(ss, 0), set, atfunc);
 
   /* General case
    * Compute the AT function */
-  TSequence **sequences = palloc(sizeof(TSequence *) * ss->totalcount * count);
+  TSequence **sequences = palloc(sizeof(TSequence *) * ss->totalcount *
+     set->count);
   int k = 0;
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
-    k += tsequence_at_values1(seq, values, count, &sequences[k]);
+    k += tsequence_at_values1(seq, set, &sequences[k]);
   }
   TSequenceSet *atresult = tsequenceset_make_free(sequences, k, NORMALIZE);
   if (atfunc)
@@ -2683,9 +2683,10 @@ tsequenceset_to_string(const TSequenceSet *ss, int maxdd, outfunc value_out)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
     strings[i] = tsequence_to_string(seq, maxdd, true, value_out);
-    outlen += strlen(strings[i]) + 2;
+    outlen += strlen(strings[i]) + 1;
   }
-  return stringarr_to_string(strings, ss->count, outlen, prefix, '{', '}');
+  return stringarr_to_string(strings, ss->count, outlen, prefix, '{', '}',
+    QUOTES_NO, SPACES);
 }
 
 /**

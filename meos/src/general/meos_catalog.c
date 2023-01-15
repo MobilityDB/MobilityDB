@@ -284,6 +284,7 @@ basetype_length(meosType type)
   elog(ERROR, "unknown basetype_length function for base type: %d", type);
 }
 
+#if 0 /* not used */
 /**
  * @brief Return true if the type is an alpha base type
  */
@@ -305,6 +306,7 @@ number_basetype(meosType type)
     return true;
   return false;
 }
+#endif /* not used */
 
 /**
  * @brief Return true if the type is an alphanumeric base type
@@ -335,7 +337,7 @@ geo_basetype(meosType type)
 bool
 spatial_basetype(meosType type)
 {
-  if (type == T_GEOMETRY || type == T_GEOGRAPHY)
+  if (type == T_GEOMETRY || type == T_GEOGRAPHY || type == T_NPOINT)
     return true;
   return false;
 }
@@ -510,6 +512,7 @@ numspan_type(meosType type)
 
 /*****************************************************************************/
 
+#if 0 /* not used */
 /**
  * @brief Return true if the type is a span set base type
  */
@@ -532,6 +535,7 @@ ensure_spanset_basetype(meosType type)
     elog(ERROR, "unknown span set base type: %d", type);
   return;
 }
+#endif /* not used */
 
 /**
  * @brief Return true if the type is a span set type
