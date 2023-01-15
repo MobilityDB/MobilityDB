@@ -33,10 +33,10 @@
 
 #include "point/tpoint_parser.h"
 
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/temporal_parser.h"
+#include "general/type_parser.h"
 #include "point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************/

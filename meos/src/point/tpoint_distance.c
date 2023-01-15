@@ -43,12 +43,12 @@
 #include <lwgeodetic_tree.h>
 #include <measures.h>
 #include <measures3d.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/lifting.h"
 #include "general/temporaltypes.h"
-#include "general/temporal_util.h"
+#include "general/type_util.h"
 #include "point/pgis_call.h"
 #include "point/geography_funcs.h"
 #include "point/tpoint.h"

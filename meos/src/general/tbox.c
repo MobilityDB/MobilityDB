@@ -40,9 +40,9 @@
 #include <meos_internal.h>
 #include "general/pg_types.h"
 #include "general/set.h"
-#include "general/temporal_parser.h"
-#include "general/temporal_util.h"
 #include "general/tnumber_mathfuncs.h"
+#include "general/type_parser.h"
+#include "general/type_util.h"
 
 /** Buffer size for input and output of TBox values */
 #define MAXTBOXLEN    128
@@ -921,7 +921,7 @@ adjacent_tbox_tbox(const TBox *box1, const TBox *box2)
   topo_tbox_tbox_init(box1, box2, &hasx, &hast);
   /* Boxes are adjacent if they share n dimensions and their intersection is
    * at most of n-1 dimensions */
-  if (hasx && ! hast) /** xx **/
+  if (hasx && ! hast)
     return (adjacent_span_span(&box1->span, &box2->span));
   if (! hasx && hast)
     return (adjacent_span_span(&box1->period, &box2->period));

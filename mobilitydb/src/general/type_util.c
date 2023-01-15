@@ -31,7 +31,7 @@
  * @brief General utility functions for temporal types.
  */
 
-#include "general/temporal_util.h"
+#include "general/type_util.h"
 
 /* C */
 #include <assert.h>

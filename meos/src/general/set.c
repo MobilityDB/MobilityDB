@@ -43,9 +43,9 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/pg_types.h"
-#include "general/temporal_out.h"
-#include "general/temporal_parser.h"
-#include "general/temporal_util.h"
+#include "general/type_out.h"
+#include "general/type_parser.h"
+#include "general/type_util.h"
 #include "point/tpoint_out.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "npoint/tnpoint_boxops.h"
@@ -284,7 +284,7 @@ valuearr_compute_bbox(const Datum *values, meosType basetype, int count,
   ensure_set_basetype(basetype);
   if (alphanum_basetype(basetype))
     ;
-  else if (basetype == T_GEOMETRY || basetype == T_GEOGRAPHY)
+  else if (geo_basetype(basetype))
     geoarr_set_stbox(values, count, (STBox *) box);
 #if NPOINT
   else if (basetype == T_NPOINT)

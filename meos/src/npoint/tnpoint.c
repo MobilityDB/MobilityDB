@@ -35,13 +35,13 @@
 
 /* C */
 #include <assert.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/set.h"
-#include "general/temporal_parser.h"
-#include "general/temporal_util.h"
 #include "general/lifting.h"
+#include "general/set.h"
+#include "general/type_parser.h"
+#include "general/type_util.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "npoint/tnpoint_static.h"
 #include "npoint/tnpoint_parser.h"

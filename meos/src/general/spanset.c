@@ -43,8 +43,8 @@
 #include <meos_internal.h>
 #include "general/pg_types.h"
 #include "general/span.h"
-#include "general/temporal_util.h"
-#include "general/temporal_parser.h"
+#include "general/type_parser.h"
+#include "general/type_util.h"
 
 /*****************************************************************************
  * General functions

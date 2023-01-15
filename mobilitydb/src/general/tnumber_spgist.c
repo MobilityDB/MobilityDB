@@ -105,8 +105,8 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include <general/set.h>
-#include <general/temporal_util.h>
+#include "general/set.h"
+#include "general/type_util.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 #include "pg_general/temporal.h"

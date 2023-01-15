@@ -47,9 +47,9 @@
 /* MEOS */
 #include <meos.h>
 #include "general/pg_types.h"
-#include "general/temporal_out.h"
-#include "general/temporal_util.h"
 #include "general/tnumber_mathfuncs.h"
+#include "general/type_out.h"
+#include "general/type_util.h"
 #include "point/pgis_call.h"
 #include "point/tpoint_out.h"
 #include "point/tpoint_spatialfuncs.h"

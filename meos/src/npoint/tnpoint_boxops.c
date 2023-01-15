@@ -45,8 +45,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-/* MobilityDB */
-#include "general/temporal_util.h"
+#include "general/type_util.h"
 #include "point/pgis_call.h"
 #include "point/tpoint_boxops.h"
 #include "point/tpoint_spatialfuncs.h"

@@ -46,9 +46,9 @@
 #include <float.h>
 /* PostgreSQL */
 #include <utils/float.h>
-/* MobilityDB */
+/* MEOS */
 #include "general/pg_types.h"
-#include "general/temporal_util.h"
+#include "general/type_util.h"
 
 /*****************************************************************************
  * Double2

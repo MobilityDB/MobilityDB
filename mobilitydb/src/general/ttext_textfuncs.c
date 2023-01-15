@@ -36,8 +36,8 @@
 #include <fmgr.h>
 /* MEOS */
 #include "general/temporal.h"
-#include "general/temporal_util.h"
 #include "general/ttext_textfuncs.h"
+#include "general/type_util.h"
 
 /*****************************************************************************
  * Text concatenation

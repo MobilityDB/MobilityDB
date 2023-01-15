@@ -38,14 +38,14 @@
 #include <postgres.h>
 /* PostGIS */
 #include <liblwgeom_internal.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/pg_types.h"
 #include "general/tinstant.h"
 #include "general/tsequence.h"
 #include "general/tsequenceset.h"
-#include "general/temporal_util.h"
+#include "general/type_util.h"
 #include "point/tpoint_spatialfuncs.h"
 #if NPOINT
   #include "npoint/tnpoint_static.h"
@@ -1073,7 +1073,7 @@ basetype_to_wkb_size(Datum value, meosType basetype, int16 flags)
     case T_GEOGRAPHY:
     {
       int dims = MOBDB_FLAGS_GET_Z(flags) ? 3 : 2;
-      return dims * MOBDB_WKB_DOUBLE_SIZE;
+      return MOBDB_WKB_DOUBLE_SIZE * dims;
     }
 #if NPOINT
     case T_NPOINT:
@@ -1125,7 +1125,7 @@ static size_t
 span_basetype_to_wkb_size(const Span *s)
 {
   ensure_span_basetype(s->basetype);
-  /* Onlyt the second parameter is used for spans */
+  /* Only the second parameter is used for spans */
   return basetype_to_wkb_size(0, s->basetype, 0);
 }
 

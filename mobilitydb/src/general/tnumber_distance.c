@@ -233,7 +233,7 @@ NAD_tnumber_tnumber(PG_FUNCTION_ARGS)
   }
 
   Datum result = temporal_min_value(dist);
-  if (restype == T_TINT) /** xx **/
+  if (restype == T_TINT)
     result = Float8GetDatum((double) DatumGetInt32(result));
   pfree(dist);
   PG_FREE_IF_COPY(temp1, 0);

@@ -54,7 +54,7 @@
 #include "general/spanset.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_boxops.h"
-#include "general/temporal_parser.h"
+#include "general/type_parser.h"
 #include "point/tpoint_boxops.h"
 #include "point/tpoint_parser.h"
 #include "point/tpoint_spatialfuncs.h"
@@ -183,7 +183,7 @@ datum_collinear(Datum value1, Datum value2, Datum value3, meosType basetype,
   if (basetype == T_DOUBLE2)
     return double2_collinear(DatumGetDouble2P(value1), DatumGetDouble2P(value2),
       DatumGetDouble2P(value3), ratio);
-  if (basetype == T_GEOMETRY || basetype == T_GEOGRAPHY)
+  if (geo_basetype(basetype))
   {
     GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value1);
     bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
@@ -2513,7 +2513,7 @@ tsegment_value_at_timestamp(const TInstant *inst1, const TInstant *inst2,
     dresult->d = start->d + (double) ((long double)(end->d - start->d) * ratio);
     return Double4PGetDatum(dresult);
   }
-  if (inst1->temptype == T_TGEOMPOINT || inst1->temptype == T_TGEOGPOINT)
+  if (tgeo_type(inst1->temptype))
   {
     return geosegm_interpolate_point(value1, value2, ratio);
   }

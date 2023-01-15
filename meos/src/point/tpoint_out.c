@@ -38,12 +38,12 @@
 #include <float.h>
 /* PostGIS */
 #include <liblwgeom_internal.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include "general/tinstant.h"
 #include "general/tsequence.h"
 #include "general/tsequenceset.h"
-#include "general/temporal_util.h"
+#include "general/type_util.h"
 #include "point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************

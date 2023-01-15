@@ -35,11 +35,11 @@
 #include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/set.h"
-#include "general/temporal_util.h"
+#include "general/type_util.h"
 
 /*****************************************************************************
  * Generic operations

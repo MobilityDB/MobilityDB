@@ -31,8 +31,8 @@
  * @brief Miscellaneous utility functions for temporal types.
  */
 
-#ifndef __TEMPORAL_UTIL_H__
-#define __TEMPORAL_UTIL_H__
+#ifndef __TYPE_UTIL_H__
+#define __TYPE_UTIL_H__
 
 /* PostgreSQL */
 #include <postgres.h>
@@ -122,4 +122,4 @@ extern double hypot3d(double x, double y, double z);
 
 /*****************************************************************************/
 
-#endif
+#endif /* __TYPE_UTIL_H__ */

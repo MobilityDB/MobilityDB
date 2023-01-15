@@ -41,14 +41,14 @@
 #include <liblwgeom.h>
 #include <liblwgeom_internal.h>
 #include <lwgeodetic.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/pg_types.h"
 #include "general/lifting.h"
 #include "general/temporaltypes.h"
-#include "general/temporal_util.h"
 #include "general/tnumber_mathfuncs.h"
+#include "general/type_util.h"
 #include "point/pgis_call.h"
 #include "point/tpoint_boxops.h"
 #include "point/tpoint_spatialrels.h"

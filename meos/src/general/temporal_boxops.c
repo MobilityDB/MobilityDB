@@ -388,7 +388,7 @@ tsequenceset_expand_bbox(TSequenceSet *ss, const TSequence *seq)
     tbox_expand((TBox *) TSEQUENCE_BBOX_PTR(seq),
       (TBox *) TSEQUENCE_BBOX_PTR(ss));
   // TODO Generalize as for tgeogpointseq_expand_stbox
-  else if (ss->temptype == T_TGEOMPOINT || ss->temptype == T_TGEOGPOINT)
+  else if (tgeo_type(ss->temptype))
     stbox_expand((STBox *) TSEQUENCE_BBOX_PTR(seq),
       (STBox *) TSEQUENCE_BBOX_PTR(ss));
 #if NPOINT

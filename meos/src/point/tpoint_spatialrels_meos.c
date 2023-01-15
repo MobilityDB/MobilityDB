@@ -50,7 +50,7 @@
 /* MEOS */
 #include "general/meos_catalog.h"
 #include "general/temporaltypes.h"
-#include "general/temporal_util.h"
+#include "general/type_util.h"
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_distance.h"

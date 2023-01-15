@@ -38,7 +38,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/temporal_util.h"
+#include "general/type_util.h"
 
 /*****************************************************************************
  * Aggregate functions for set types

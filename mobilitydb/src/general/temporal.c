@@ -47,17 +47,17 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/temporal_out.h"
-#include "general/temporal_util.h"
 #include "general/pg_types.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_boxops.h"
+#include "general/type_out.h"
+#include "general/type_util.h"
 /* MobilityDB */
 #include "pg_general/doxygen_mobilitydb_api.h"
 #include "pg_general/meos_catalog.h"
-#include "pg_general/temporal_util.h"
 #include "pg_general/tinstant.h"
 #include "pg_general/tsequence.h"
+#include "pg_general/type_util.h"
 #include "pg_point/tpoint_spatialfuncs.h"
 
 /* To avoid including fmgrprotos.h */

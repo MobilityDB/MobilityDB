@@ -36,13 +36,13 @@
  * moment which is both correct and simple.
  */
 
-#include "general/temporal_parser.h"
+#include "general/type_parser.h"
 
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/pg_types.h"
-#include "general/temporal_util.h"
+#include "general/type_util.h"
 
 /*****************************************************************************/
 

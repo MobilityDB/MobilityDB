@@ -379,7 +379,7 @@ tpoint_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
   GSERIALIZED **value)
 {
   assert(value != NULL);
-  assert(temp->temptype == T_TGEOMPOINT || temp->temptype == T_TGEOGPOINT);
+  assert(tgeo_type(temp->temptype));
   Datum res;
   bool result = temporal_value_at_timestamp(temp, t, strict, &res);
   *value = DatumGetGserializedP(res);

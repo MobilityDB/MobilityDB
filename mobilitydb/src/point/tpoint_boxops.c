@@ -56,7 +56,7 @@
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
 /* MobilityDB */
-#include "pg_general/temporal_util.h"
+#include "pg_general/type_util.h"
 #include "pg_point/postgis.h"
 
 /*****************************************************************************

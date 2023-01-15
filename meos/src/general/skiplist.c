@@ -50,14 +50,14 @@
 #endif /* MEOS */
 /* GSL */
 #include <gsl/gsl_rng.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/pg_types.h"
 #include "general/span.h"
 #include "general/temporal_aggfuncs.h"
-#include "general/temporal_util.h"
 #include "general/time_aggfuncs.h"
+#include "general/type_util.h"
 
 #if ! MEOS
   extern FunctionCallInfo fetch_fcinfo();

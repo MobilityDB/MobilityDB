@@ -35,10 +35,10 @@
 
 /* PostgreSQL */
 #include "utils/formatting.h"
-/* MobilityDB */
-#include "general/temporal.h"
-#include "general/temporal_util.h"
+/* MEOS */
 #include "general/lifting.h"
+#include "general/temporal.h"
+#include "general/type_util.h"
 
 /*****************************************************************************
  * Textual functions on datums

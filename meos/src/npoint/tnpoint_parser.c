@@ -33,10 +33,10 @@
 
 #include "npoint/tnpoint_parser.h"
 
-/* MobilityDB */
+/* MEOS */
 #include "general/temporaltypes.h"
-#include "general/temporal_parser.h"
-#include "general/temporal_util.h"
+#include "general/type_parser.h"
+#include "general/type_util.h"
 #include "npoint/tnpoint.h"
 #include "npoint/tnpoint_static.h"
 

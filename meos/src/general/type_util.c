@@ -31,7 +31,7 @@
  * @brief General utility functions for temporal types.
  */
 
-#include "general/temporal_util.h"
+#include "general/type_util.h"
 
 /* C */
 #include <assert.h>
@@ -39,13 +39,13 @@
 #include <postgres.h>
 #include <utils/float.h>
 #include <utils/timestamp.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/temporal.h"
 #include "general/pg_types.h"
 #include "general/doublen.h"
-#include "general/temporal_parser.h"
+#include "general/type_parser.h"
 #include "point/pgis_call.h"
 #include "point/tpoint_spatialfuncs.h"
 #if NPOINT

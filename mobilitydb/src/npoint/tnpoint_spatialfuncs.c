@@ -39,7 +39,7 @@
 #include <meos.h>
 /* MobilityDB */
 #include "pg_general/temporal.h"
-#include "pg_general/temporal_util.h"
+#include "pg_general/type_util.h"
 
 /*****************************************************************************
  * Functions for spatial reference systems

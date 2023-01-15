@@ -45,7 +45,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/set.h"
-#include "general/temporal_util.h"
+#include "general/type_util.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 #include "pg_general/temporal.h"
@@ -273,8 +273,7 @@ tpoint_index_recheck(StrategyNumber strategy)
  * must not be taken into account by the operators to infinity.
  */
 static bool
-tpoint_gist_get_stbox(FunctionCallInfo fcinfo, STBox *result,
-  meosType type)
+tpoint_gist_get_stbox(FunctionCallInfo fcinfo, STBox *result, meosType type)
 {
   if (type == T_TSTZSPAN)
   {

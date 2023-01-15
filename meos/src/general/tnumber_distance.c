@@ -37,12 +37,12 @@
 #include <assert.h>
 #include <float.h>
 #include <math.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/lifting.h"
 #include "general/temporaltypes.h"
-#include "general/temporal_util.h"
+#include "general/type_util.h"
 
 /*****************************************************************************
  * Temporal distance
@@ -55,7 +55,7 @@ Datum
 number_distance(Datum l, Datum r, meosType typel, meosType typer)
 {
   Datum result = 0;
-  if (typel == T_INT4) /** x **/
+  if (typel == T_INT4) /** xx **/
   {
     if (typer == T_INT4)
       result = Int32GetDatum(abs(DatumGetInt32(l) - DatumGetInt32(r)));

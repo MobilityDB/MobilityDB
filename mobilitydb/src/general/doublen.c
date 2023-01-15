@@ -38,9 +38,9 @@
 /* PostgreSQL */
 #include <libpq/pqformat.h>
 #include <utils/float.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
-#include "general/temporal_util.h"
+#include "general/type_util.h"
 
 /*****************************************************************************
  * Send/receive functions

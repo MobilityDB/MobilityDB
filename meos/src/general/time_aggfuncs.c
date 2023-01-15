@@ -44,7 +44,7 @@
 #include "general/skiplist.h"
 #include "general/temporal_aggfuncs.h"
 #include "general/temporal_tile.h"
-#include "general/temporal_util.h"
+#include "general/type_util.h"
 
 /*****************************************************************************
  * Aggregate functions for time types

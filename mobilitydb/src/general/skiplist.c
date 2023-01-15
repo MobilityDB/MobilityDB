@@ -43,7 +43,7 @@
 #include <utils/timestamp.h>
 /* GSL */
 #include <gsl/gsl_rng.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/pg_types.h"
@@ -52,7 +52,7 @@
 /* MobilityDB */
 #include "pg_general/span.h"
 #include "pg_general/temporal.h"
-#include "pg_general/temporal_util.h"
+#include "pg_general/type_util.h"
 
 /*****************************************************************************
  * Functions manipulating skip lists

@@ -156,11 +156,11 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <utils/timestamp.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/temporaltypes.h"
-#include "general/temporal_util.h"
+#include "general/type_util.h"
 
 /*****************************************************************************
  * Functions where the argument is a temporal type.

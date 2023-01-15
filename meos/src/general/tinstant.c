@@ -43,13 +43,13 @@
 #else
   #include <access/hash.h>
 #endif
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/pg_types.h"
 #include "general/temporaltypes.h"
-#include "general/temporal_util.h"
-#include "general/temporal_parser.h"
+#include "general/type_parser.h"
+#include "general/type_util.h"
 #include "point/tpoint_parser.h"
 #include "point/tpoint_spatialfuncs.h"
 #if NPOINT

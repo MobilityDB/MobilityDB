@@ -35,11 +35,11 @@
 
 /* PostgreSQL */
 /* MEOS */
+#include "general/lifting.h"
 #include "general/meos_catalog.h"
 #include "general/temporaltypes.h"
-#include "general/temporal_util.h"
-#include "general/lifting.h"
 #include "general/temporal_compops.h"
+#include "general/type_util.h"
 #include "point/stbox.h"
 #include "point/tpoint_parser.h"
 #include "point/tpoint_boxops.h"
