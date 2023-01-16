@@ -114,7 +114,7 @@ CREATE CAST (npoint AS npointset) WITH FUNCTION set(npoint);
 
 CREATE FUNCTION round(npointset, integer DEFAULT 0)
   RETURNS npointset
-  AS 'MODULE_PATHNAME', 'Geoset_round'
+  AS 'MODULE_PATHNAME', 'Npointset_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************

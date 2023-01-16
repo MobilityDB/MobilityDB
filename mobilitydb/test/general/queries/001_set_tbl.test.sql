@@ -142,6 +142,8 @@ SELECT numValues(set_agg(b)) FROM tbl_bigint;
 SELECT numValues(set_agg(f)) FROM tbl_float;
 SELECT numValues(set_agg(t)) FROM tbl_timestamptz;
 SELECT numValues(set_agg(t)) FROM tbl_text;
+SELECT numValues(set_agg(g)) FROM tbl_geom_point3D WHERE NOT ST_IsEmpty(g);
+SELECT numValues(set_agg(g)) FROM tbl_geog_point3D WHERE NOT ST_IsEmpty(g::geometry);
 
 WITH test1(k, i) AS (
   SELECT k, unnest(i) FROM tbl_intset ),
@@ -168,6 +170,16 @@ WITH test1(k, t) AS (
 test2 (k, t) AS (
   SELECT k, set_agg(t) FROM test1 GROUP BY k )
 SELECT COUNT(*) FROM test2 t1, tbl_textset t2 WHERE t1.k = t2.k AND t1.t <> t2.t;
+WITH test1(k, g) AS (
+  SELECT k, unnest(g) FROM tbl_geomset ),
+test2 (k, g) AS (
+  SELECT k, set_agg(g) FROM test1 GROUP BY k )
+SELECT COUNT(*) FROM test2 t1, tbl_geomset t2 WHERE t1.k = t2.k AND t1.g <> t2.g;
+WITH test1(k, g) AS (
+  SELECT k, unnest(g) FROM tbl_geogset ),
+test2 (k, g) AS (
+  SELECT k, set_agg(g) FROM test1 GROUP BY k )
+SELECT COUNT(*) FROM test2 t1, tbl_geogset t2 WHERE t1.k = t2.k AND t1.g <> t2.g;
 
 -------------------------------------------------------------------------------
 -- Comparison functions
