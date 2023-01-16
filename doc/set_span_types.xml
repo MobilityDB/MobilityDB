@@ -174,7 +174,7 @@ SELECT tstzspanset '{[2001-01-01 08:00:00, 2001-01-01 08:10:00),
 			<itemizedlist>
 				<listitem id="spantime_asBinary">
 					<indexterm><primary><varname>asBinary</varname></primary></indexterm>
-					<para>Get the Well-Known Binary (WKB) representation of a span or time type</para>
+					<para>Get the Well-Known Binary (WKB) representation of a set or span type</para>
 					<para><varname>asBinary({set,spans},endian text='') → bytea</varname></para>
 					<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</para>
 					<programlisting language="sql" xml:space="preserve">
@@ -189,7 +189,7 @@ SELECT asBinary(intspanset '{[1, 2], [4, 5]}', 'XDR');
 
 				<listitem id="spantime_asHexWKB">
 					<indexterm><primary><varname>asHexWKB</varname></primary></indexterm>
-					<para>Get the Hexadecimal Well-Known Binary (HexWKB) representation as text of a span or time type</para>
+					<para>Get the Hexadecimal Well-Known Binary (HexWKB) representation as text of a set or span type</para>
 					<para><varname>asHexWKB({set,spans},endian text='') → text</varname></para>
 					<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then NDR is used.</para>
 					<programlisting language="sql" xml:space="preserve">
@@ -206,11 +206,12 @@ SELECT asHexWKB(intspanset '{[1, 2], [4, 5]}', 'XDR');
 					<indexterm><primary><varname>intsetFromBinary</varname></primary></indexterm>
 					<indexterm><primary><varname>intspanFromBinary</varname></primary></indexterm>
 					<indexterm><primary><varname>intspansetFromBinary</varname></primary></indexterm>
-					<para>Input a span or time type from a Well-Known Binary (WKB) representation</para>
+					<para>Input a set or span type from a Well-Known Binary (WKB) representation</para>
 					<para>There is one function per base type, the name of the function has as prefix the name of the base type, which is <varname>int</varname> in the example signatures below</para>
 					<para><varname>intsetFromBinary(bytea) → intset</varname></para>
 					<para><varname>intspanFromBinary(bytea) → intspan</varname></para>
 					<para><varname>intspansetFromBinary(bytea) → intspanset</varname></para>
+					<para><varname>...</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT tstzsetFromBinary('\x01020000000fce0136a58010000bc8f4f92580100');
 -- {2001-01-01, 2001-01-03}
@@ -231,6 +232,7 @@ SELECT tstzspansetFromBinary(
 					<para><varname>intsetFromHexWKB(text) → intset</varname></para>
 					<para><varname>intspanFromHexWKB(text) → intspan</varname></para>
 					<para><varname>intspansetFromHexWKB(text) → intspanset</varname></para>
+					<para><varname>...</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT tstzsetFromHexWKB('010200000000FCE0136A58010000BC8F4F92580100');
 -- {2001-01-01, 2001-01-03}
@@ -737,14 +739,14 @@ SELECT round(floatspanset '{[1.123456789, 2.123456789],[3.123456789,4.123456789]
 					<para>Are the values equal?</para>
 					<para><varname>{set,spans} = {set,spans} → boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
+SELECT tstzset '{2001-01-01, 2001-01-02}' = tstzset '{2001-01-01, 2001-01-04}';
+-- false
 SELECT intspan '[1,3]' = intspan '[1,4)';
--- true
-SELECT floatspanset '{[1, 2),[2,3)}' = floatspanset '{[1,3)}';
 -- true
 SELECT tstzspan '[2001-01-01, 2001-01-04)' = tstzspan '[2001-01-01, 2001-01-04)';
 -- true
-SELECT tstzset '{2001-01-01, 2001-01-02}' = tstzset '{2001-01-01, 2001-01-04}';
--- false
+SELECT floatspanset '{[1, 2),[2,3)}' = floatspanset '{[1,3)}';
+-- true
 </programlisting>
 				</listitem>
 
@@ -753,10 +755,10 @@ SELECT tstzset '{2001-01-01, 2001-01-02}' = tstzset '{2001-01-01, 2001-01-04}';
 					<para>Are the values different?</para>
 					<para><varname>{set,spans} &lt;&gt; {set,spans} → boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT tstzspan '[2001-01-01, 2001-01-04)' &lt;&gt; tstzspan '[2001-01-03, 2001-01-05)';
--- true
 SELECT tstzset '{2001-01-01, 2001-01-04}' &lt;&gt; tstzset '{2001-01-01, 2001-01-05}';
 -- false
+SELECT tstzspan '[2001-01-01, 2001-01-04)' &lt;&gt; tstzspan '[2001-01-03, 2001-01-05)';
+-- true
 </programlisting>
 				</listitem>
 
@@ -765,13 +767,13 @@ SELECT tstzset '{2001-01-01, 2001-01-04}' &lt;&gt; tstzset '{2001-01-01, 2001-01
 					<para>Is the first value less than the second one?</para>
 					<para><varname>{set,spans} &lt; {set,spans} → boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT intspanset '{[1,2],[3,4]}' &lt; intspanset '{[3, 4]}';
+SELECT tstzset '{2001-01-01, 2001-01-04}' &lt; tstzset '{2001-01-01, 2001-01-05}';
 -- true
 SELECT floatspan '[3, 4]' &lt; floatspan '(3, 4]';
 -- true
 SELECT tstzspan '[2001-01-01, 2001-01-04)' &lt; tstzspan '[2001-01-01, 2001-01-04]';
 -- true
-SELECT tstzset '{2001-01-01, 2001-01-04}' &lt; tstzset '{2001-01-01, 2001-01-05}';
+SELECT intspanset '{[1,2],[3,4]}' &lt; intspanset '{[3, 4]}';
 -- true
 </programlisting>
 				</listitem>
@@ -806,10 +808,10 @@ SELECT tstzspanset '{[2001-01-01, 2001-01-04)}' &lt;=
 					<para>Is the first value greater than or equal to the second one?</para>
 					<para><varname>{set,spans} &gt;= {set,spans} → boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT intspanset '{[1, 4)}' &gt;= intspanset '{[1, 5), [6, 7)}';
--- false
 SELECT tstzspan '[2001-01-03, 2001-01-05)' &gt;= tstzspan '[2001-01-03, 2001-01-04)';
 -- true
+SELECT intspanset '{[1, 4)}' &gt;= intspanset '{[1, 5), [6, 7)}';
+-- false
 </programlisting>
 				</listitem>
 			</itemizedlist>
@@ -890,9 +892,9 @@ SELECT intset '{1, 3}' &amp;&amp; intset '{2, 3, 4}';
 -- true
 SELECT floatspan '[1, 3)' &amp;&amp; floatspan '[3, 4)';
 -- false
-SELECT floatspanset '{[1, 5),[6, 8)}' &amp;&amp; floatspan '[1, 6)';
--- true
 SELECT tstzspan '[2011-01-01, 2011-01-05)' &amp;&amp; tstzspan '[2011-01-02, 2011-01-07)';
+-- true
+SELECT floatspanset '{[1, 5),[6, 8)}' &amp;&amp; floatspan '[1, 6)';
 -- true
 </programlisting>
 				</listitem>
@@ -920,9 +922,9 @@ SELECT timestamptz '2011-01-10' &lt;@ tstzspan '[2011-01-01, 2011-05-01)';
 -- true
 SELECT floatspan '[2, 5]' &lt;@ floatspan '[1, 5)';
 -- false
-SELECT floatspanset '{[1,2],[3,4]}' &lt;@ floatspan '[1, 6]';
--- true
 SELECT tstzspan '[2011-02-01, 2011-03-01)' &lt;@ tstzspan '[2011-01-01, 2011-05-01)';
+-- true
+SELECT floatspanset '{[1,2],[3,4]}' &lt;@ floatspan '[1, 6]';
 -- true
 </programlisting>
 				</listitem>
@@ -937,8 +939,6 @@ SELECT intspan '[2, 6)' -|- intspan '[6, 7)';
 SELECT floatspan '[2, 5)' -|- floatspan '(5, 6)';
 -- false
 SELECT floatspanset '{[2, 3],[4, 5)}' -|- floatspan '(5, 6)';
--- true
-SELECT tstzspan '[2011-01-01, 2011-01-05)' -|- tstzset '{2011-01-05, 2011-01-07}';
 -- true
 SELECT tstzspanset '{[2001-01-01, 2001-01-02]}' -|- tstzspan '[2001-01-02, 2001-01-03)';
 -- false
@@ -1165,7 +1165,7 @@ CREATE INDEX Reservation_During_Idx ON Reservation USING GIST(During);
 </programlisting>
 		</para>
 		<para>A GiST or an SP-GiST index can accelerate queries involving the following operators: <varname>=</varname>, <varname>&amp;&amp;</varname>, <varname>&lt;@</varname>, <varname>@&gt;</varname>, <varname>-|-</varname>, <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>&amp;&lt;#</varname>, <varname>#&amp;&gt;</varname>, and <varname>&lt;-&gt;</varname>.</para>
-		<para>In addition, B-tree indexes can be created for table columns of a span or time type. For these index types, basically the only useful operation is equality. There is a B-tree sort ordering defined for values of span time types with corresponding <varname>&lt;</varname>, <varname>&lt;=</varname>, <varname>&gt;</varname>, and <varname>&gt;=</varname> operators, but the ordering is rather arbitrary and not usually useful in the real world. The B-tree support is primarily meant to allow sorting internally in queries, rather than creation of actual indexes.</para>
-		<para>Finally, hash indexes can be created for table columns of a span or time type. For these types of indexes, the only operation defined is equality.</para>
+		<para>In addition, B-tree indexes can be created for table columns of a set or span types. For these index types, basically the only useful operation is equality. There is a B-tree sort ordering defined for values of span time types with corresponding <varname>&lt;</varname>, <varname>&lt;=</varname>, <varname>&gt;</varname>, and <varname>&gt;=</varname> operators, but the ordering is rather arbitrary and not usually useful in the real world. The B-tree support is primarily meant to allow sorting internally in queries, rather than creation of actual indexes.</para>
+		<para>Finally, hash indexes can be created for table columns of a set or span types. For these types of indexes, the only operation defined is equality.</para>
 	</sect1>
 </chapter>

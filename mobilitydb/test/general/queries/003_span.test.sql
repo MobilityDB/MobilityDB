@@ -49,11 +49,11 @@ SELECT asText(tstzspan '[2000-01-01, 2000-01-03]');
 -- Constructors
 -------------------------------------------------------------------------------
 
-SELECT tstzspan ('2000-01-01','2000-01-02');
-SELECT tstzspan ('2000-01-01','2000-01-01', true, true);
+SELECT span(timestamptz '2000-01-01', '2000-01-02');
+SELECT span(timestamptz '2000-01-01', '2000-01-01', true, true);
 /* Errors */
-SELECT tstzspan ('2000-01-01','2000-01-01');
-SELECT tstzspan ('2000-01-02','2000-01-01');
+SELECT span(timestamptz '2000-01-01', '2000-01-01');
+SELECT span(timestamptz '2000-01-02', '2000-01-01');
 
 -------------------------------------------------------------------------------
 -- Casting
@@ -136,8 +136,8 @@ SELECT duration(tstzspan '(2000-01-01,2000-01-02]');
 SELECT duration(tstzspan '[2000-01-01,2000-01-02)');
 SELECT duration(tstzspan '(2000-01-01,2000-01-02)');
 
-SELECT period_cmp('[2000-01-01,2000-01-01]', '(2000-01-01,2000-01-02)');
-SELECT period_cmp('[2000-01-01, 2000-01-02]', '[2000-01-01, 2000-01-02)');
+SELECT span_cmp(tstzspan '[2000-01-01,2000-01-01]', '(2000-01-01,2000-01-02)');
+SELECT span_cmp(tstzspan '[2000-01-01, 2000-01-02]', '[2000-01-01, 2000-01-02)');
 SELECT tstzspan '[2000-01-01,2000-01-01]' = tstzspan '(2000-01-01,2000-01-02)';
 SELECT tstzspan '[2000-01-01,2000-01-01]' <> tstzspan '(2000-01-01,2000-01-02)';
 SELECT tstzspan '[2000-01-01,2000-01-01]' < tstzspan '(2000-01-01,2000-01-02)';
@@ -146,11 +146,11 @@ SELECT tstzspan '[2000-01-01,2000-01-01]' > tstzspan '(2000-01-01,2000-01-02)';
 SELECT tstzspan '[2000-01-01,2000-01-01]' >= tstzspan '(2000-01-01,2000-01-02)';
 SELECT tstzspan '[2000-01-01,2000-01-01]' = tstzspan '(2000-01-01,2000-01-02)';
 
-SELECT period_hash('[2000-01-01,2000-01-02]') = period_hash('[2000-01-01,2000-01-02]');
-SELECT period_hash('[2000-01-01,2000-01-02]') <> period_hash('[2000-01-02,2000-01-02]');
+SELECT span_hash(tstzspan '[2000-01-01,2000-01-02]') = span_hash(tstzspan '[2000-01-01,2000-01-02]');
+SELECT span_hash(tstzspan '[2000-01-01,2000-01-02]') <> span_hash(tstzspan '[2000-01-02,2000-01-02]');
 
-SELECT period_hash_extended('[2000-01-01,2000-01-02]', 1) = period_hash_extended('[2000-01-01,2000-01-02]', 1);
-SELECT period_hash_extended('[2000-01-01,2000-01-02]', 1) <> period_hash_extended('[2000-01-02,2000-01-02]', 1);
+SELECT span_hash_extended(tstzspan '[2000-01-01,2000-01-02]', 1) = span_hash_extended(tstzspan '[2000-01-01,2000-01-02]', 1);
+SELECT span_hash_extended(tstzspan '[2000-01-01,2000-01-02]', 1) <> span_hash_extended(tstzspan '[2000-01-02,2000-01-02]', 1);
 
 -------------------------------------------------------------------------------
 

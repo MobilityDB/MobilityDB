@@ -1713,36 +1713,36 @@ WITH values(v) AS (SELECT unnest(ARRAY[1 - 1e-17, 1 + 1e-12, 2 - 1e-15, 2 + 1e-1
   temp(t) AS (SELECT tfloat '[1@2000-01-01, 2@2000-01-02]')
 SELECT DISTINCT t = merge(atValue(t,v), minusValue(t,v)) FROM temp, values;
 
-SELECT atValues(tint '1@2000-01-01', intset(1));
-SELECT atValues(tint '{1@2000-01-01}', intset(1));
-SELECT atValues(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', intset(1));
-SELECT atValues(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', intset(1));
-SELECT atValues(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', intset(1));
-SELECT atValues(tfloat '1.5@2000-01-01', floatset('{1.5,2}'));
-SELECT atValues(tfloat '{1.5@2000-01-01}', floatset('{1.5,2}'));
-SELECT atValues(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', floatset('{1.5,2}'));
-SELECT atValues(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', floatset('{1.5,2}'));
-SELECT atValues(tfloat 'Interp=Stepwise;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', floatset('{1.5,2}'));
-SELECT atValues(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', floatset('{1.5,2}'));
-SELECT atValues(tfloat 'Interp=Stepwise;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', floatset('{1.5,2}'));
+SELECT atValues(tint '1@2000-01-01', intset '{1}');
+SELECT atValues(tint '{1@2000-01-01}', intset '{1}');
+SELECT atValues(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', intset '{1}');
+SELECT atValues(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', intset '{1}');
+SELECT atValues(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', intset '{1}');
+SELECT atValues(tfloat '1.5@2000-01-01', floatset '{1.5,2}');
+SELECT atValues(tfloat '{1.5@2000-01-01}', floatset '{1.5,2}');
+SELECT atValues(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', floatset '{1.5,2}');
+SELECT atValues(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', floatset '{1.5,2}');
+SELECT atValues(tfloat 'Interp=Stepwise;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', floatset '{1.5,2}');
+SELECT atValues(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', floatset '{1.5,2}');
+SELECT atValues(tfloat 'Interp=Stepwise;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', floatset '{1.5,2}');
 SELECT atValues(ttext 'AAA@2000-01-01', textset '{"AAA"}');
 SELECT atValues(ttext '{AAA@2000-01-01}', textset '{"AAA"}');
 SELECT atValues(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', textset '{"AAA"}');
 SELECT atValues(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', textset '{"AAA"}');
 SELECT atValues(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', textset '{"AAA"}');
 
-SELECT minusValues(tint '1@2000-01-01', intset(1));
-SELECT minusValues(tint '{1@2000-01-01}', intset(1));
-SELECT minusValues(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', intset(1));
-SELECT minusValues(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', intset(1));
-SELECT minusValues(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', intset(1));
-SELECT minusValues(tfloat '1.5@2000-01-01', floatset(1.5));
-SELECT minusValues(tfloat '{1.5@2000-01-01}', floatset(1.5));
-SELECT minusValues(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', floatset('{1.5,2}'));
-SELECT minusValues(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', floatset('{1.5,2}'));
-SELECT minusValues(tfloat 'Interp=Stepwise;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', floatset('{1.5,2}'));
-SELECT minusValues(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', floatset('{1.5,2}'));
-SELECT minusValues(tfloat 'Interp=Stepwise;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', floatset('{1.5,2}'));
+SELECT minusValues(tint '1@2000-01-01', intset '{1}');
+SELECT minusValues(tint '{1@2000-01-01}', intset '{1}');
+SELECT minusValues(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', intset '{1}');
+SELECT minusValues(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', intset '{1}');
+SELECT minusValues(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', intset '{1}');
+SELECT minusValues(tfloat '1.5@2000-01-01', floatset '{1.5}');
+SELECT minusValues(tfloat '{1.5@2000-01-01}', floatset '{1.5}');
+SELECT minusValues(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', floatset '{1.5,2}');
+SELECT minusValues(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', floatset '{1.5,2}');
+SELECT minusValues(tfloat 'Interp=Stepwise;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', floatset '{1.5,2}');
+SELECT minusValues(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', floatset '{1.5,2}');
+SELECT minusValues(tfloat 'Interp=Stepwise;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', floatset '{1.5,2}');
 SELECT minusValues(ttext 'AAA@2000-01-01', textset '{"AAA"}');
 SELECT minusValues(ttext '{AAA@2000-01-01}', textset '{"AAA"}');
 SELECT minusValues(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', textset '{"AAA"}');
@@ -2465,38 +2465,38 @@ SELECT round(twAvg(tfloat 'Interp=Stepwise;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5
 -- Comparison functions and B-tree indexing
 -------------------------------------------------------------------------------
 
-SELECT tbool_cmp(tbool 't@2000-01-01', tbool 't@2000-01-01');
-SELECT tbool_cmp(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', tbool 't@2000-01-01');
-SELECT tbool_cmp(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', tbool 't@2000-01-01');
-SELECT tbool_cmp(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', tbool 't@2000-01-01');
+SELECT temporal_cmp(tbool 't@2000-01-01', tbool 't@2000-01-01');
+SELECT temporal_cmp(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', tbool 't@2000-01-01');
+SELECT temporal_cmp(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', tbool 't@2000-01-01');
+SELECT temporal_cmp(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', tbool 't@2000-01-01');
 
-SELECT tbool_cmp(tbool 't@2000-01-01', tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
-SELECT tbool_cmp(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
-SELECT tbool_cmp(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
-SELECT tbool_cmp(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
+SELECT temporal_cmp(tbool 't@2000-01-01', tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
+SELECT temporal_cmp(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
+SELECT temporal_cmp(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
+SELECT temporal_cmp(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
 
-SELECT tbool_cmp(tbool 't@2000-01-01', tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
-SELECT tbool_cmp(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
-SELECT tbool_cmp(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
-SELECT tbool_cmp(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
+SELECT temporal_cmp(tbool 't@2000-01-01', tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
+SELECT temporal_cmp(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
+SELECT temporal_cmp(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
+SELECT temporal_cmp(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
 
-SELECT tbool_cmp(tbool 't@2000-01-01', tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
-SELECT tbool_cmp(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
-SELECT tbool_cmp(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
-SELECT tbool_cmp(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
+SELECT temporal_cmp(tbool 't@2000-01-01', tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
+SELECT temporal_cmp(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
+SELECT temporal_cmp(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
+SELECT temporal_cmp(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
 
-SELECT tfloat_cmp('1@2000-01-01', '{1@2000-01-01}');
-SELECT tfloat_cmp('[1@2000-01-01, 2@2000-01-02]', '(1@2000-01-01, 2@2000-01-02]');
-SELECT tfloat_cmp('(1@2000-01-01, 2@2000-01-02]', '[1@2000-01-01, 2@2000-01-02]');
-SELECT tfloat_cmp('Interp=Stepwise;[1@2000-01-01, 2@2000-01-02]', '[1@2000-01-01, 2@2000-01-02]');
-SELECT tfloat_cmp('[1@2000-01-01, 2@2000-01-02]', 'Interp=Stepwise;[1@2000-01-01, 2@2000-01-02]');
-SELECT tfloat_cmp('[1@2000-01-01, 2@2000-01-02, 4@2000-01-05]', '[1@2000-01-01, 3@2000-01-03, 4@2000-01-05]');
-SELECT tfloat_cmp('[1@2000-01-01, 3@2000-01-03, 4@2000-01-05]', '[1@2000-01-01, 2@2000-01-02, 4@2000-01-05]');
+SELECT temporal_cmp(tint '1@2000-01-01', '{1@2000-01-01}');
+SELECT temporal_cmp(tint '[1@2000-01-01, 2@2000-01-02]', '(1@2000-01-01, 2@2000-01-02]');
+SELECT temporal_cmp(tint '(1@2000-01-01, 2@2000-01-02]', '[1@2000-01-01, 2@2000-01-02]');
+SELECT temporal_cmp(tint 'Interp=Stepwise;[1@2000-01-01, 2@2000-01-02]', '[1@2000-01-01, 2@2000-01-02]');
+SELECT temporal_cmp(tint '[1@2000-01-01, 2@2000-01-02]', 'Interp=Stepwise;[1@2000-01-01, 2@2000-01-02]');
+SELECT temporal_cmp(tint '[1@2000-01-01, 2@2000-01-02, 4@2000-01-05]', '[1@2000-01-01, 3@2000-01-03, 4@2000-01-05]');
+SELECT temporal_cmp(tint '[1@2000-01-01, 3@2000-01-03, 4@2000-01-05]', '[1@2000-01-01, 2@2000-01-02, 4@2000-01-05]');
 
-SELECT tfloat_cmp('{[1@2000-01-01, 2@2000-01-02]}', '{(1@2000-01-01, 2@2000-01-02]}');
-SELECT tfloat_cmp('{(1@2000-01-01, 2@2000-01-02]}', '{[1@2000-01-01, 2@2000-01-02]}');
-SELECT tfloat_cmp('Interp=Stepwise;{[1@2000-01-01, 2@2000-01-02]}', '{[1@2000-01-01, 2@2000-01-02]}');
-SELECT tfloat_cmp('{[1@2000-01-01, 2@2000-01-02]}', 'Interp=Stepwise;{[1@2000-01-01, 2@2000-01-02]}');
+SELECT temporal_cmp(tint '{[1@2000-01-01, 2@2000-01-02]}', '{(1@2000-01-01, 2@2000-01-02]}');
+SELECT temporal_cmp(tint '{(1@2000-01-01, 2@2000-01-02]}', '{[1@2000-01-01, 2@2000-01-02]}');
+SELECT temporal_cmp(tint 'Interp=Stepwise;{[1@2000-01-01, 2@2000-01-02]}', '{[1@2000-01-01, 2@2000-01-02]}');
+SELECT temporal_cmp(tint '{[1@2000-01-01, 2@2000-01-02]}', 'Interp=Stepwise;{[1@2000-01-01, 2@2000-01-02]}');
 
 -------------------------------------------------------------------------------
 
@@ -2864,21 +2864,21 @@ SELECT tfloat '{1@2000-01-01, 1@2000-01-02}' = tfloat '{[1@2000-01-01], [1@2000-
 
 -------------------------------------------------------------------------------
 
-SELECT tbool_hash(tbool 't@2000-01-01');
-SELECT tbool_hash(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
-SELECT tbool_hash(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
-SELECT tbool_hash(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
-SELECT tint_hash(tint '1@2000-01-01');
-SELECT tint_hash(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
-SELECT tint_hash(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
-SELECT tint_hash(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
-SELECT tfloat_hash(tfloat '1.5@2000-01-01');
-SELECT tfloat_hash(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
-SELECT tfloat_hash(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
-SELECT tfloat_hash(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
-SELECT ttext_hash(ttext 'AAA@2000-01-01');
-SELECT ttext_hash(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
-SELECT ttext_hash(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
-SELECT ttext_hash(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
+SELECT temporal_hash(tbool 't@2000-01-01');
+SELECT temporal_hash(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
+SELECT temporal_hash(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
+SELECT temporal_hash(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
+SELECT temporal_hash(tint '1@2000-01-01');
+SELECT temporal_hash(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
+SELECT temporal_hash(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
+SELECT temporal_hash(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
+SELECT temporal_hash(tfloat '1.5@2000-01-01');
+SELECT temporal_hash(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
+SELECT temporal_hash(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
+SELECT temporal_hash(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
+SELECT temporal_hash(ttext 'AAA@2000-01-01');
+SELECT temporal_hash(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
+SELECT temporal_hash(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
+SELECT temporal_hash(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
 
 ------------------------------------------------------------------------------

@@ -533,7 +533,7 @@ CREATE OPERATOR > (
   RESTRICT = areasel, JOIN = areajoinsel
 );
 
-CREATE OPERATOR CLASS tbox_ops
+CREATE OPERATOR CLASS tbox_btree_ops
   DEFAULT FOR TYPE tbox USING btree AS
   OPERATOR  1  < ,
   OPERATOR  2  <= ,

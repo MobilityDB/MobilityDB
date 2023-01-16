@@ -188,88 +188,88 @@ CREATE AGGREGATE set_agg(npoint) (
  * Comparison functions and B-tree indexing
  ******************************************************************************/
 
-CREATE FUNCTION npointset_eq(npointset, npointset)
+CREATE FUNCTION set_eq(npointset, npointset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION npointset_ne(npointset, npointset)
+CREATE FUNCTION set_ne(npointset, npointset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION npointset_lt(npointset, npointset)
+CREATE FUNCTION set_lt(npointset, npointset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION npointset_le(npointset, npointset)
+CREATE FUNCTION set_le(npointset, npointset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION npointset_ge(npointset, npointset)
+CREATE FUNCTION set_ge(npointset, npointset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION npointset_gt(npointset, npointset)
+CREATE FUNCTION set_gt(npointset, npointset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Set_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION npointset_cmp(npointset, npointset)
+CREATE FUNCTION set_cmp(npointset, npointset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR = (
   LEFTARG = npointset, RIGHTARG = npointset,
-  PROCEDURE = npointset_eq,
+  PROCEDURE = set_eq,
   COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = eqsel, JOIN = eqjoinsel
 );
 CREATE OPERATOR <> (
   LEFTARG = npointset, RIGHTARG = npointset,
-  PROCEDURE = npointset_ne,
+  PROCEDURE = set_ne,
   COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
 CREATE OPERATOR < (
   LEFTARG = npointset, RIGHTARG = npointset,
-  PROCEDURE = npointset_lt,
+  PROCEDURE = set_lt,
   COMMUTATOR = >, NEGATOR = >=
   -- RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = npointset, RIGHTARG = npointset,
-  PROCEDURE = npointset_le,
+  PROCEDURE = set_le,
   COMMUTATOR = >=, NEGATOR = >
   -- RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = npointset, RIGHTARG = npointset,
-  PROCEDURE = npointset_ge,
+  PROCEDURE = set_ge,
   COMMUTATOR = <=, NEGATOR = <
   -- RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR > (
   LEFTARG = npointset, RIGHTARG = npointset,
-  PROCEDURE = npointset_gt,
+  PROCEDURE = set_gt,
   COMMUTATOR = <, NEGATOR = <=
   -- RESTRICT = span_sel, JOIN = span_joinsel
 );
 
-CREATE OPERATOR CLASS npointset_ops
+CREATE OPERATOR CLASS npointset_btree_ops
   DEFAULT FOR TYPE npointset USING btree AS
     OPERATOR  1  <,
     OPERATOR  2  <=,
     OPERATOR  3  =,
     OPERATOR  4  >=,
     OPERATOR  5  >,
-    FUNCTION  1  npointset_cmp(npointset, npointset);
+    FUNCTION  1  set_cmp(npointset, npointset);
 
 /******************************************************************************/
 
-CREATE FUNCTION npointset_hash(npointset)
+CREATE FUNCTION set_hash(npointset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION npointset_hash_extended(npointset, bigint)
+CREATE FUNCTION set_hash_extended(npointset, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Set_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -277,8 +277,8 @@ CREATE FUNCTION npointset_hash_extended(npointset, bigint)
 CREATE OPERATOR CLASS npointset_hash_ops
   DEFAULT FOR TYPE npointset USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   npointset_hash(npointset),
-    FUNCTION    2   npointset_hash_extended(npointset, bigint);
+    FUNCTION    1   set_hash(npointset),
+    FUNCTION    2   set_hash_extended(npointset, bigint);
 
 /******************************************************************************
  * Operators

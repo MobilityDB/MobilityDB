@@ -228,7 +228,7 @@ SELECT timestamps(tstzspanset '{[2000-01-01,2000-01-02),(2000-01-03,2000-01-04),
 SELECT timestamps(tstzspanset '{(2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(2000-01-05,2000-01-06]}');
 SELECT timestamps(tstzspanset '{[2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(2000-01-05,2000-01-06]}');
 
-SELECT intspanset_cmp(intspanset '{[1,1]}', intspanset '{[1,2),[2,3),[3,4)}');
+SELECT spanset_cmp(intspanset '{[1,1]}', intspanset '{[1,2),[2,3),[3,4)}');
 SELECT intspanset '{[1,1]}' = intspanset '{[1,2),[2,3),[3,4)}';
 SELECT intspanset '{[1,1]}' <> intspanset '{[1,2),[2,3),[3,4)}';
 SELECT intspanset '{[1,1]}' < intspanset '{[1,2),[2,3),[3,4)}';
@@ -236,7 +236,7 @@ SELECT intspanset '{[1,1]}' <= intspanset '{[1,2),[2,3),[3,4)}';
 SELECT intspanset '{[1,1]}' > intspanset '{[1,2),[2,3),[3,4)}';
 SELECT intspanset '{[1,1]}' >= intspanset '{[1,2),[2,3),[3,4)}';
 
-SELECT floatspanset_cmp(floatspanset '{[1,1]}', floatspanset '{[1,2),[2,3),[3,4)}');
+SELECT spanset_cmp(floatspanset '{[1,1]}', floatspanset '{[1,2),[2,3),[3,4)}');
 SELECT floatspanset '{[1,1]}' = floatspanset '{[1,2),[2,3),[3,4)}';
 SELECT floatspanset '{[1,1]}' <> floatspanset '{[1,2),[2,3),[3,4)}';
 SELECT floatspanset '{[1,1]}' < floatspanset '{[1,2),[2,3),[3,4)}';
@@ -244,7 +244,7 @@ SELECT floatspanset '{[1,1]}' <= floatspanset '{[1,2),[2,3),[3,4)}';
 SELECT floatspanset '{[1,1]}' > floatspanset '{[1,2),[2,3),[3,4)}';
 SELECT floatspanset '{[1,1]}' >= floatspanset '{[1,2),[2,3),[3,4)}';
 
-SELECT tstzspanset_cmp(tstzspanset '{[2000-01-01,2000-01-01]}', tstzspanset '{(2000-01-01,2000-01-02),(2000-01-02,2000-01-03),(2000-01-03,2000-01-04)}');
+SELECT spanset_cmp(tstzspanset '{[2000-01-01,2000-01-01]}', tstzspanset '{(2000-01-01,2000-01-02),(2000-01-02,2000-01-03),(2000-01-03,2000-01-04)}');
 SELECT tstzspanset '{[2000-01-01,2000-01-01]}' = tstzspanset '{(2000-01-01,2000-01-02),(2000-01-02,2000-01-03),(2000-01-03,2000-01-04)}';
 SELECT tstzspanset '{[2000-01-01,2000-01-01]}' <> tstzspanset '{(2000-01-01,2000-01-02),(2000-01-02,2000-01-03),(2000-01-03,2000-01-04)}';
 SELECT tstzspanset '{[2000-01-01,2000-01-01]}' < tstzspanset '{(2000-01-01,2000-01-02),(2000-01-02,2000-01-03),(2000-01-03,2000-01-04)}';
@@ -254,18 +254,18 @@ SELECT tstzspanset '{[2000-01-01,2000-01-01]}' <= tstzspanset '{(2000-01-01,2000
 SELECT tstzspanset '{[2000-01-01,2000-01-01]}' > tstzspanset '{(2000-01-01,2000-01-02),(2000-01-02,2000-01-03),(2000-01-03,2000-01-04)}';
 SELECT tstzspanset '{[2000-01-01,2000-01-01]}' >= tstzspanset '{(2000-01-01,2000-01-02),(2000-01-02,2000-01-03),(2000-01-03,2000-01-04)}';
 
-SELECT intspanset_hash('{[1,2]}') = intspanset_hash('{[1,2]}');
-SELECT intspanset_hash('{[1,2]}') <> intspanset_hash('{[2,2]}');
-SELECT floatspanset_hash('{[1,2]}') = floatspanset_hash('{[1,2]}');
-SELECT floatspanset_hash('{[1,2]}') <> floatspanset_hash('{[2,2]}');
-SELECT tstzspanset_hash('{[2000-01-01,2000-01-02]}') = tstzspanset_hash('{[2000-01-01,2000-01-02]}');
-SELECT tstzspanset_hash('{[2000-01-01,2000-01-02]}') <> tstzspanset_hash('{[2000-01-02,2000-01-02]}');
+SELECT spanset_hash(intspanset '{[1,2]}') = spanset_hash(intspanset '{[1,2]}');
+SELECT spanset_hash(intspanset '{[1,2]}') <> spanset_hash(intspanset '{[2,2]}');
+SELECT spanset_hash(floatspanset '{[1.5,2.5]}') = spanset_hash(floatspanset '{[1.5,2.5]}');
+SELECT spanset_hash(floatspanset '{[1.5,2.5]}') <> spanset_hash(floatspanset '{[2.5,2.5]}');
+SELECT spanset_hash(tstzspanset '{[2000-01-01,2000-01-02]}') = spanset_hash(tstzspanset '{[2000-01-01,2000-01-02]}');
+SELECT spanset_hash(tstzspanset '{[2000-01-01,2000-01-02]}') <> spanset_hash(tstzspanset '{[2000-01-02,2000-01-02]}');
 
-SELECT intspanset_hash_extended('{[1,2]}', 1) = intspanset_hash_extended('{[1,2]}', 1);
-SELECT intspanset_hash_extended('{[1,2]}', 1) <> intspanset_hash_extended('{[2,2]}', 1);
-SELECT floatspanset_hash_extended('{[1,2]}', 1) = floatspanset_hash_extended('{[1,2]}', 1);
-SELECT floatspanset_hash_extended('{[1,2]}', 1) <> floatspanset_hash_extended('{[2,2]}', 1);
-SELECT tstzspanset_hash_extended('{[2000-01-01,2000-01-02]}', 1) = tstzspanset_hash_extended('{[2000-01-01,2000-01-02]}', 1);
-SELECT tstzspanset_hash_extended('{[2000-01-01,2000-01-02]}', 1) <> tstzspanset_hash_extended('{[2000-01-02,2000-01-02]}', 1);
+SELECT spanset_hash_extended(intspanset '{[1,2]}', 1) = spanset_hash_extended(intspanset '{[1,2]}', 1);
+SELECT spanset_hash_extended(intspanset '{[1,2]}', 1) <> spanset_hash_extended(intspanset '{[2,2]}', 1);
+SELECT spanset_hash_extended(floatspanset '{[1,2]}', 1) = spanset_hash_extended(floatspanset '{[1,2]}', 1);
+SELECT spanset_hash_extended(floatspanset '{[1,2]}', 1) <> spanset_hash_extended(floatspanset '{[2,2]}', 1);
+SELECT spanset_hash_extended(tstzspanset '{[2000-01-01,2000-01-02]}', 1) = spanset_hash_extended(tstzspanset '{[2000-01-01,2000-01-02]}', 1);
+SELECT spanset_hash_extended(tstzspanset '{[2000-01-01,2000-01-02]}', 1) <> spanset_hash_extended(tstzspanset '{[2000-01-02,2000-01-02]}', 1);
 
 -------------------------------------------------------------------------------

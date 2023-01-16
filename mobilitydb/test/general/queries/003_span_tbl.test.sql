@@ -69,12 +69,12 @@ DROP TABLE tbl_tstzspan_tmp;
 SELECT COUNT(*) FROM tbl_intspan WHERE intspanFromBinary(asBinary(i)) <> i;
 SELECT COUNT(*) FROM tbl_bigintspan WHERE bigintspanFromBinary(asBinary(b)) <> b;
 SELECT COUNT(*) FROM tbl_floatspan WHERE floatspanFromBinary(asBinary(f)) <> f;
-SELECT COUNT(*) FROM tbl_tstzspan WHERE periodFromBinary(asBinary(p)) <> p;
+SELECT COUNT(*) FROM tbl_tstzspan WHERE tstzspanFromBinary(asBinary(p)) <> p;
 
 SELECT COUNT(*) FROM tbl_intspan WHERE intspanFromHexWKB(asHexWKB(i)) <> i;
 SELECT COUNT(*) FROM tbl_bigintspan WHERE bigintspanFromHexWKB(asHexWKB(b)) <> b;
 SELECT COUNT(*) FROM tbl_floatspan WHERE floatspanFromHexWKB(asHexWKB(f)) <> f;
-SELECT COUNT(*) FROM tbl_tstzspan WHERE periodFromHexWKB(asHexWKB(p)) <> p;
+SELECT COUNT(*) FROM tbl_tstzspan WHERE tstzspanFromHexWKB(asHexWKB(p)) <> p;
 
 -------------------------------------------------------------------------------
 -- Casting
@@ -99,11 +99,11 @@ SELECT MAX(lower(shift(p, i))) FROM tbl_tstzspan, tbl_interval;
 SELECT MAX(lower(tscale(p, i))) FROM tbl_tstzspan, tbl_interval;
 SELECT MAX(lower(shiftTscale(p, t1.i, t2.i))) FROM tbl_tstzspan, tbl_interval t1, tbl_interval t2;
 
-SELECT MAX(duration(tstzspan(t, t + i))) FROM tbl_timestamptz, tbl_interval;
-SELECT MAX(duration(tstzspan(t, t + i, true, true))) FROM tbl_timestamptz, tbl_interval;
-SELECT MAX(duration(tstzspan(t, t + i, true, false))) FROM tbl_timestamptz, tbl_interval;
-SELECT MAX(duration(tstzspan(t, t + i, false, true))) FROM tbl_timestamptz, tbl_interval;
-SELECT MAX(duration(tstzspan(t, t + i, false, false))) FROM tbl_timestamptz, tbl_interval;
+SELECT MAX(duration(span(t, t + i))) FROM tbl_timestamptz, tbl_interval;
+SELECT MAX(duration(span(t, t + i, true, true))) FROM tbl_timestamptz, tbl_interval;
+SELECT MAX(duration(span(t, t + i, true, false))) FROM tbl_timestamptz, tbl_interval;
+SELECT MAX(duration(span(t, t + i, false, true))) FROM tbl_timestamptz, tbl_interval;
+SELECT MAX(duration(span(t, t + i, false, false))) FROM tbl_timestamptz, tbl_interval;
 
 -------------------------------------------------------------------------------
 -- Accessor Functions
@@ -133,14 +133,14 @@ SELECT MAX(lower(shift(p, '5 min'))) FROM tbl_tstzspan;
 -- Comparison Functions
 -------------------------------------------------------------------------------
 
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE period_cmp(t1.p, t2.p) = -1;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE span_cmp(t1.p, t2.p) = -1;
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p < t2.p;
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p <= t2.p;
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p > t2.p;
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p >= t2.p;
 
-SELECT MAX(period_hash(p)) != 0 FROM tbl_tstzspan;
-SELECT MAX(period_hash_extended(p, 1)) != 0 FROM tbl_tstzspan;
+SELECT MAX(span_hash(p)) != 0 FROM tbl_tstzspan;
+SELECT MAX(span_hash_extended(p, 1)) != 0 FROM tbl_tstzspan;
 
 -------------------------------------------------------------------------------
 -- Aggregation functions

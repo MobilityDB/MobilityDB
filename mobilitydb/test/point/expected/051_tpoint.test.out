@@ -3599,127 +3599,127 @@ SELECT minusValue(tgeogpoint 'Point(1 1)@2000-01-01', geography 'SRID=4283;Point
 ERROR:  Operation on mixed SRID
 SELECT minusValue(tgeogpoint 'Point(1 1)@2000-01-01', geography 'Point(1 1 1)');
 ERROR:  Operation on mixed 2D/3D dimensions
-SELECT asText(atValues(tgeompoint 'Point(1 1)@2000-01-01', geomset(ST_Point(1,1))));
+SELECT asText(atValues(tgeompoint 'Point(1 1)@2000-01-01', geomset '{"Point(1 1)"}'));
               astext               
 -----------------------------------
  POINT(1 1)@2000-01-01 00:00:00+00
 (1 row)
 
-SELECT asText(atValues(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geomset(ST_Point(1,1))));
+SELECT asText(atValues(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geomset '{"Point(1 1)"}'));
                                  astext                                 
 ------------------------------------------------------------------------
  {POINT(1 1)@2000-01-01 00:00:00+00, POINT(1 1)@2000-01-03 00:00:00+00}
 (1 row)
 
-SELECT asText(atValues(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geomset(ST_Point(1,1))));
+SELECT asText(atValues(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geomset '{"Point(1 1)"}'));
                                    astext                                   
 ----------------------------------------------------------------------------
  {[POINT(1 1)@2000-01-01 00:00:00+00], [POINT(1 1)@2000-01-03 00:00:00+00]}
 (1 row)
 
-SELECT asText(atValues(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geomset(ST_Point(1,1))));
+SELECT asText(atValues(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geomset '{"Point(1 1)"}'));
                                    astext                                   
 ----------------------------------------------------------------------------
  {[POINT(1 1)@2000-01-01 00:00:00+00], [POINT(1 1)@2000-01-03 00:00:00+00]}
 (1 row)
 
-SELECT asText(atValues(tgeogpoint 'Point(1.5 1.5)@2000-01-01', geogset(ST_Point(1.5,1.5))));
+SELECT asText(atValues(tgeogpoint 'Point(1.5 1.5)@2000-01-01', geogset '{"Point(1.5 1.5)"}'));
                 astext                 
 ---------------------------------------
  POINT(1.5 1.5)@2000-01-01 00:00:00+00
 (1 row)
 
-SELECT asText(atValues(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', geogset(ST_Point(1.5,1.5))));
+SELECT asText(atValues(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', geogset '{"Point(1.5 1.5)"}'));
                                      astext                                     
 --------------------------------------------------------------------------------
  {POINT(1.5 1.5)@2000-01-01 00:00:00+00, POINT(1.5 1.5)@2000-01-03 00:00:00+00}
 (1 row)
 
-SELECT asText(atValues(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', geogset(ST_Point(1.5,1.5))));
+SELECT asText(atValues(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', geogset '{"Point(1.5 1.5)"}'));
                                        astext                                       
 ------------------------------------------------------------------------------------
  {[POINT(1.5 1.5)@2000-01-01 00:00:00+00], [POINT(1.5 1.5)@2000-01-03 00:00:00+00]}
 (1 row)
 
-SELECT asText(atValues(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', geogset(ST_Point(1.5,1.5))));
+SELECT asText(atValues(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', geogset '{"Point(1.5 1.5)"}'));
                                        astext                                       
 ------------------------------------------------------------------------------------
  {[POINT(1.5 1.5)@2000-01-01 00:00:00+00], [POINT(1.5 1.5)@2000-01-03 00:00:00+00]}
 (1 row)
 
 /* Errors */
-SELECT atValues(tgeompoint 'Point(1 1)@2000-01-01', geomset(geometry 'Linestring(1 1,2 2)'));
+SELECT atValues(tgeompoint 'Point(1 1)@2000-01-01', set(geometry 'Linestring(1 1,2 2)'));
 ERROR:  Only point geometries accepted
-SELECT atValues(tgeompoint 'Point(1 1)@2000-01-01', geomset(geometry 'SRID=5676;Point(1 1)'));
+SELECT atValues(tgeompoint 'Point(1 1)@2000-01-01', set(geometry 'SRID=5676;Point(1 1)'));
 ERROR:  Operation on mixed SRID
-SELECT atValues(tgeompoint 'Point(1 1)@2000-01-01', geomset(geometry 'Point(1 1 1)'));
+SELECT atValues(tgeompoint 'Point(1 1)@2000-01-01', set(geometry 'Point(1 1 1)'));
 ERROR:  Operation on mixed 2D/3D dimensions
-SELECT atValues(tgeogpoint 'Point(1 1)@2000-01-01', geogset(geography 'Linestring(1 1,2 2)'));
+SELECT atValues(tgeogpoint 'Point(1 1)@2000-01-01', set(geography 'Linestring(1 1,2 2)'));
 ERROR:  Only point geometries accepted
-SELECT atValues(tgeogpoint 'Point(1 1)@2000-01-01', geogset(geography 'SRID=4283;Point(1 1)'));
+SELECT atValues(tgeogpoint 'Point(1 1)@2000-01-01', set(geography 'SRID=4283;Point(1 1)'));
 ERROR:  Operation on mixed SRID
-SELECT atValues(tgeogpoint 'Point(1 1)@2000-01-01', geogset(geography 'Point(1 1 1)'));
+SELECT atValues(tgeogpoint 'Point(1 1)@2000-01-01', set(geography 'Point(1 1 1)'));
 ERROR:  Operation on mixed 2D/3D dimensions
-SELECT asText(minusValues(tgeompoint 'Point(1 1)@2000-01-01', geomset(ST_Point(1,1))));
+SELECT asText(minusValues(tgeompoint 'Point(1 1)@2000-01-01', geomset '{"Point(1 1)"}'));
  astext 
 --------
  
 (1 row)
 
-SELECT asText(minusValues(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geomset(ST_Point(1,1))));
+SELECT asText(minusValues(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geomset '{"Point(1 1)"}'));
                astext                
 -------------------------------------
  {POINT(2 2)@2000-01-02 00:00:00+00}
 (1 row)
 
-SELECT asText(minusValues(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geomset(ST_Point(1,1))));
+SELECT asText(minusValues(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geomset '{"Point(1 1)"}'));
                                                    astext                                                    
 -------------------------------------------------------------------------------------------------------------
  {(POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-02 00:00:00+00, POINT(1 1)@2000-01-03 00:00:00+00)}
 (1 row)
 
-SELECT asText(minusValues(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geomset(ST_Point(1,1))));
+SELECT asText(minusValues(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geomset '{"Point(1 1)"}'));
                                                                                        astext                                                                                        
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {(POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-02 00:00:00+00, POINT(1 1)@2000-01-03 00:00:00+00), [POINT(3 3)@2000-01-04 00:00:00+00, POINT(3 3)@2000-01-05 00:00:00+00]}
 (1 row)
 
-SELECT asText(minusValues(tgeogpoint 'Point(1.5 1.5)@2000-01-01', geogset(ST_Point(1.5,1.5))));
+SELECT asText(minusValues(tgeogpoint 'Point(1.5 1.5)@2000-01-01', geogset '{"Point(1.5 1.5)"}'));
  astext 
 --------
  
 (1 row)
 
-SELECT asText(minusValues(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', geogset(ST_Point(1.5,1.5))));
+SELECT asText(minusValues(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', geogset '{"Point(1.5 1.5)"}'));
                  astext                  
 -----------------------------------------
  {POINT(2.5 2.5)@2000-01-02 00:00:00+00}
 (1 row)
 
-SELECT asText(minusValues(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', geogset(ST_Point(1.5,1.5))));
+SELECT asText(minusValues(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', geogset '{"Point(1.5 1.5)"}'));
                                                          astext                                                          
 -------------------------------------------------------------------------------------------------------------------------
  {(POINT(1.5 1.5)@2000-01-01 00:00:00+00, POINT(2.5 2.5)@2000-01-02 00:00:00+00, POINT(1.5 1.5)@2000-01-03 00:00:00+00)}
 (1 row)
 
-SELECT asText(minusValues(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', geogset(ST_Point(1.5,1.5))));
+SELECT asText(minusValues(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', geogset '{"Point(1.5 1.5)"}'));
                                                                                                  astext                                                                                                  
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {(POINT(1.5 1.5)@2000-01-01 00:00:00+00, POINT(2.5 2.5)@2000-01-02 00:00:00+00, POINT(1.5 1.5)@2000-01-03 00:00:00+00), [POINT(3.5 3.5)@2000-01-04 00:00:00+00, POINT(3.5 3.5)@2000-01-05 00:00:00+00]}
 (1 row)
 
 /* Errors */
-SELECT minusValues(tgeompoint 'Point(1 1)@2000-01-01', geomset(geometry 'Linestring(1 1,2 2)'));
+SELECT minusValues(tgeompoint 'Point(1 1)@2000-01-01', set(geometry 'Linestring(1 1,2 2)'));
 ERROR:  Only point geometries accepted
-SELECT minusValues(tgeompoint 'Point(1 1)@2000-01-01', geomset(geometry 'SRID=5676;Point(1 1)'));
+SELECT minusValues(tgeompoint 'Point(1 1)@2000-01-01', set(geometry 'SRID=5676;Point(1 1)'));
 ERROR:  Operation on mixed SRID
-SELECT minusValues(tgeompoint 'Point(1 1)@2000-01-01', geomset(geometry 'Point(1 1 1)'));
+SELECT minusValues(tgeompoint 'Point(1 1)@2000-01-01', set(geometry 'Point(1 1 1)'));
 ERROR:  Operation on mixed 2D/3D dimensions
-SELECT minusValues(tgeogpoint 'Point(1 1)@2000-01-01', geogset(geography 'Linestring(1 1,2 2)'));
+SELECT minusValues(tgeogpoint 'Point(1 1)@2000-01-01', set(geography 'Linestring(1 1,2 2)'));
 ERROR:  Only point geometries accepted
-SELECT minusValues(tgeogpoint 'Point(1 1)@2000-01-01', geogset(geography 'SRID=4283;Point(1 1)'));
+SELECT minusValues(tgeogpoint 'Point(1 1)@2000-01-01', set(geography 'SRID=4283;Point(1 1)'));
 ERROR:  Operation on mixed SRID
-SELECT minusValues(tgeogpoint 'Point(1 1)@2000-01-01', geogset(geography 'Point(1 1 1)'));
+SELECT minusValues(tgeogpoint 'Point(1 1)@2000-01-01', set(geography 'Point(1 1 1)'));
 ERROR:  Operation on mixed 2D/3D dimensions
 SELECT asText(atTime(tgeompoint 'Point(1 1)@2000-01-01', timestamptz '2000-01-01'));
               astext               
@@ -5689,51 +5689,51 @@ SELECT 1 WHERE tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-0
         1
 (1 row)
 
-SELECT tgeompoint_hash(tgeompoint 'Point(1 1)@2000-01-01');
- tgeompoint_hash 
------------------
-        -5434271
+SELECT temporal_hash(tgeompoint 'Point(1 1)@2000-01-01');
+ temporal_hash 
+---------------
+      -5434271
 (1 row)
 
-SELECT tgeompoint_hash(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
- tgeompoint_hash 
------------------
-      -275850004
+SELECT temporal_hash(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+ temporal_hash 
+---------------
+    -275850004
 (1 row)
 
-SELECT tgeompoint_hash(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
- tgeompoint_hash 
------------------
-      -275850004
+SELECT temporal_hash(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+ temporal_hash 
+---------------
+    -275850004
 (1 row)
 
-SELECT tgeompoint_hash(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
- tgeompoint_hash 
------------------
-      1176402621
+SELECT temporal_hash(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ temporal_hash 
+---------------
+    1176402621
 (1 row)
 
-SELECT tgeogpoint_hash(tgeogpoint 'Point(1.5 1.5)@2000-01-01');
- tgeogpoint_hash 
------------------
-      -561657319
+SELECT temporal_hash(tgeogpoint 'Point(1.5 1.5)@2000-01-01');
+ temporal_hash 
+---------------
+    -561657319
 (1 row)
 
-SELECT tgeogpoint_hash(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
- tgeogpoint_hash 
------------------
-       360498788
+SELECT temporal_hash(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
+ temporal_hash 
+---------------
+     360498788
 (1 row)
 
-SELECT tgeogpoint_hash(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
- tgeogpoint_hash 
------------------
-       360498788
+SELECT temporal_hash(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
+ temporal_hash 
+---------------
+     360498788
 (1 row)
 
-SELECT tgeogpoint_hash(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
- tgeogpoint_hash 
------------------
-     -2142249749
+SELECT temporal_hash(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
+ temporal_hash 
+---------------
+   -2142249749
 (1 row)
 

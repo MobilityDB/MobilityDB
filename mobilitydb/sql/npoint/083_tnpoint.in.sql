@@ -626,91 +626,91 @@ CREATE FUNCTION timeSplit(tnpoint, bucket_width interval,
  * Comparison functions and B-tree indexing
  ******************************************************************************/
 
-CREATE FUNCTION tnpoint_lt(tnpoint, tnpoint)
+CREATE FUNCTION temporal_lt(tnpoint, tnpoint)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Temporal_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tnpoint_le(tnpoint, tnpoint)
+CREATE FUNCTION temporal_le(tnpoint, tnpoint)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Temporal_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tnpoint_eq(tnpoint, tnpoint)
+CREATE FUNCTION temporal_eq(tnpoint, tnpoint)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Temporal_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tnpoint_ne(tnpoint, tnpoint)
+CREATE FUNCTION temporal_ne(tnpoint, tnpoint)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Temporal_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tnpoint_ge(tnpoint, tnpoint)
+CREATE FUNCTION temporal_ge(tnpoint, tnpoint)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Temporal_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tnpoint_gt(tnpoint, tnpoint)
+CREATE FUNCTION temporal_gt(tnpoint, tnpoint)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Temporal_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tnpoint_cmp(tnpoint, tnpoint)
+CREATE FUNCTION temporal_cmp(tnpoint, tnpoint)
   RETURNS int4
   AS 'MODULE_PATHNAME', 'Temporal_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR < (
   LEFTARG = tnpoint, RIGHTARG = tnpoint,
-  PROCEDURE = tnpoint_lt,
+  PROCEDURE = temporal_lt,
   COMMUTATOR = >, NEGATOR = >=,
   RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = tnpoint, RIGHTARG = tnpoint,
-  PROCEDURE = tnpoint_le,
+  PROCEDURE = temporal_le,
   COMMUTATOR = >=, NEGATOR = >,
   RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR = (
   LEFTARG = tnpoint, RIGHTARG = tnpoint,
-  PROCEDURE = tnpoint_eq,
+  PROCEDURE = temporal_eq,
   COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = eqsel, JOIN = eqjoinsel
 );
 CREATE OPERATOR <> (
   LEFTARG = tnpoint, RIGHTARG = tnpoint,
-  PROCEDURE = tnpoint_ne,
+  PROCEDURE = temporal_ne,
   COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = tnpoint, RIGHTARG = tnpoint,
-  PROCEDURE = tnpoint_ge,
+  PROCEDURE = temporal_ge,
   COMMUTATOR = <=, NEGATOR = <,
   RESTRICT = scalargtsel, JOIN = scalargtjoinsel
 );
 CREATE OPERATOR > (
   LEFTARG = tnpoint, RIGHTARG = tnpoint,
-  PROCEDURE = tnpoint_gt,
+  PROCEDURE = temporal_gt,
   COMMUTATOR = <, NEGATOR = <=,
   RESTRICT = scalargtsel, JOIN = scalargtjoinsel
 );
 
-CREATE OPERATOR CLASS tnpoint_ops
+CREATE OPERATOR CLASS tnpoint_btree_ops
   DEFAULT FOR TYPE tnpoint USING btree AS
     OPERATOR  1 <,
     OPERATOR  2 <=,
     OPERATOR  3 =,
     OPERATOR  4 >=,
     OPERATOR  5 >,
-    FUNCTION  1 tnpoint_cmp(tnpoint, tnpoint);
+    FUNCTION  1 temporal_cmp(tnpoint, tnpoint);
 
 /******************************************************************************/
 
-CREATE FUNCTION tnpoint_hash(tnpoint)
+CREATE FUNCTION temporal_hash(tnpoint)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR CLASS hash_tnpoint_ops
+CREATE OPERATOR CLASS tnpoint_hash_ops
   DEFAULT FOR TYPE tnpoint USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   tnpoint_hash(tnpoint);
+    FUNCTION    1   temporal_hash(tnpoint);
 
 /******************************************************************************/

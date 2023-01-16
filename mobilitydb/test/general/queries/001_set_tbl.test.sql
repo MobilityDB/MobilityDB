@@ -103,7 +103,7 @@ SELECT COUNT(*) FROM tbl_geomset WHERE geomsetFromHexWKB(asHexWKB(g)) <> g;
 -------------------------------------------------------------------------------
 -- Constructor
 
-SELECT memorySize(tstzset(array_agg(DISTINCT t ORDER BY t))) FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10;
+SELECT memorySize(set(array_agg(DISTINCT t ORDER BY t))) FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10;
 
 -------------------------------------------------------------------------------
 -- Cast
@@ -172,7 +172,7 @@ SELECT COUNT(*) FROM test2 t1, tbl_textset t2 WHERE t1.k = t2.k AND t1.t <> t2.t
 -------------------------------------------------------------------------------
 -- Comparison functions
 
-SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE tstzset_cmp(t1.t, t2.t) = -1;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE set_cmp(t1.t, t2.t) = -1;
 SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t = t2.t;
 SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t <> t2.t;
 SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t < t2.t;
@@ -180,14 +180,14 @@ SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t <= t2.t;
 SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t > t2.t;
 SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t >= t2.t;
 
-SELECT MAX(intset_hash(i)) FROM tbl_intset;
-SELECT MAX(bigintset_hash(b)) FROM tbl_bigintset;
-SELECT MAX(floatset_hash(f)) FROM tbl_floatset;
-SELECT MAX(tstzset_hash(t)) FROM tbl_tstzset;
+SELECT MAX(set_hash(i)) FROM tbl_intset;
+SELECT MAX(set_hash(b)) FROM tbl_bigintset;
+SELECT MAX(set_hash(f)) FROM tbl_floatset;
+SELECT MAX(set_hash(t)) FROM tbl_tstzset;
 
-SELECT MAX(intset_hash_extended(i, 1)) FROM tbl_intset;
-SELECT MAX(bigintset_hash_extended(b, 1)) FROM tbl_bigintset;
-SELECT MAX(floatset_hash_extended(f, 1)) FROM tbl_floatset;
-SELECT MAX(tstzset_hash_extended(t, 1)) FROM tbl_tstzset;
+SELECT MAX(set_hash_extended(i, 1)) FROM tbl_intset;
+SELECT MAX(set_hash_extended(b, 1)) FROM tbl_bigintset;
+SELECT MAX(set_hash_extended(f, 1)) FROM tbl_floatset;
+SELECT MAX(set_hash_extended(t, 1)) FROM tbl_tstzset;
 
 -------------------------------------------------------------------------------

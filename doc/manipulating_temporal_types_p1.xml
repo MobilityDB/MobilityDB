@@ -339,8 +339,10 @@ SELECT asHexWKB(ttext 'AAA@2001-01-01');
 			</listitem>
 
 			<listitem id="tboolFromBinary">
-				<indexterm><primary><varname>tboolFromBinary</varname>, <varname>tintFromBinary</varname>, ...</primary></indexterm>
+				<indexterm><primary><varname>tboolFromBinary</varname></primary></indexterm>
+				<indexterm><primary><varname>tintFromBinary</varname></primary></indexterm>
 				<para>Input a temporal value from its Well-Known Binary (WKB) representation</para>
+				<para>There is one function per base type, the name of the function has as prefix the name of the base type, which is <varname>tbool</varname> or <varname>tint</varname> in the example signatures below</para>
 				<para><varname>tboolFromBinary(bytea) → tbool</varname></para>
 				<para><varname>tintFromBinary(bytea) → tint</varname></para>
 				<para><varname>...</varname></para>
@@ -357,8 +359,10 @@ SELECT ttextFromBinary('\x01170001040000000000000041414100009c57d3c11c0000');
 			</listitem>
 
 			<listitem id="tboolFromHexWKB">
-				<indexterm><primary><varname>tboolFromHexWKB</varname>, <varname>tintFromHexWKB</varname>, ...</primary></indexterm>
+				<indexterm><primary><varname>tboolFromHexWKB</varname></primary></indexterm>
+				<indexterm><primary><varname>tintFromHexWKB</varname></primary></indexterm>
 				<para>Input a temporal value from its Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
+				<para>There is one function per base type, the name of the function has as prefix the name of the base type, which is <varname>tbool</varname> or <varname>tint</varname> in the example signatures below</para>
 				<para><varname>tboolFromHexWKB(text) → tbool</varname></para>
 				<para><varname>tintFromHexWKB(text) → tint</varname></para>
 				<para><varname>...</varname></para>
@@ -765,13 +769,6 @@ SELECT maxValue(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 5@2001-01-
 				<programlisting language="sql" xml:space="preserve">
 SELECT minInstant(tfloat '{1@2001-01-01, 2@2001-01-03, 3@2001-01-05}');
 -- 1@2001-01-01
-</programlisting>
-			</listitem>
-
-			<listitem id="maxInstant">
-				<para>Get the instant with the  value</para>
-				<para>The function does not take into account whether the bounds are inclusive or not. If several instants have the maximum value, the first one is returned.</para>
-				<programlisting language="sql" xml:space="preserve">
 SELECT maxInstant(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 5@2001-01-05)}');
 -- 5@2001-01-05
 </programlisting>

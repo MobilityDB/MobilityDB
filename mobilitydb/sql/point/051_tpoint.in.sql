@@ -976,177 +976,177 @@ CREATE FUNCTION timeSplit(tgeogpoint, bucket_width interval,
  * Comparison functions and B-tree indexing
  ******************************************************************************/
 
-CREATE FUNCTION tgeompoint_lt(tgeompoint, tgeompoint)
+CREATE FUNCTION temporal_lt(tgeompoint, tgeompoint)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Temporal_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeompoint_le(tgeompoint, tgeompoint)
+CREATE FUNCTION temporal_le(tgeompoint, tgeompoint)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Temporal_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeompoint_eq(tgeompoint, tgeompoint)
+CREATE FUNCTION temporal_eq(tgeompoint, tgeompoint)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Temporal_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeompoint_ne(tgeompoint, tgeompoint)
+CREATE FUNCTION temporal_ne(tgeompoint, tgeompoint)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Temporal_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeompoint_ge(tgeompoint, tgeompoint)
+CREATE FUNCTION temporal_ge(tgeompoint, tgeompoint)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Temporal_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeompoint_gt(tgeompoint, tgeompoint)
+CREATE FUNCTION temporal_gt(tgeompoint, tgeompoint)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Temporal_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeompoint_cmp(tgeompoint, tgeompoint)
+CREATE FUNCTION temporal_cmp(tgeompoint, tgeompoint)
   RETURNS int4
   AS 'MODULE_PATHNAME', 'Temporal_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR < (
   LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
-  PROCEDURE = tgeompoint_lt,
+  PROCEDURE = temporal_lt,
   COMMUTATOR = >, NEGATOR = >=,
   RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
-  PROCEDURE = tgeompoint_le,
+  PROCEDURE = temporal_le,
   COMMUTATOR = >=, NEGATOR = >,
   RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR = (
   LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
-  PROCEDURE = tgeompoint_eq,
+  PROCEDURE = temporal_eq,
   COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR <> (
   LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
-  PROCEDURE = tgeompoint_ne,
+  PROCEDURE = temporal_ne,
   COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
-  PROCEDURE = tgeompoint_ge,
+  PROCEDURE = temporal_ge,
   COMMUTATOR = <=, NEGATOR = <,
   RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR > (
   LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
-  PROCEDURE = tgeompoint_gt,
+  PROCEDURE = temporal_gt,
   COMMUTATOR = <, NEGATOR = <=,
   RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 
-CREATE OPERATOR CLASS tgeompoint_ops
+CREATE OPERATOR CLASS tgeompoint_btree_ops
   DEFAULT FOR TYPE tgeompoint USING btree AS
     OPERATOR  1  <,
     OPERATOR  2  <=,
     OPERATOR  3  =,
     OPERATOR  4  >=,
     OPERATOR  5  >,
-    FUNCTION  1  tgeompoint_cmp(tgeompoint, tgeompoint);
+    FUNCTION  1  temporal_cmp(tgeompoint, tgeompoint);
 
 /******************************************************************************/
 
-CREATE FUNCTION tgeogpoint_lt(tgeogpoint, tgeogpoint)
+CREATE FUNCTION temporal_lt(tgeogpoint, tgeogpoint)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Temporal_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeogpoint_le(tgeogpoint, tgeogpoint)
+CREATE FUNCTION temporal_le(tgeogpoint, tgeogpoint)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Temporal_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeogpoint_eq(tgeogpoint, tgeogpoint)
+CREATE FUNCTION temporal_eq(tgeogpoint, tgeogpoint)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Temporal_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeogpoint_ne(tgeogpoint, tgeogpoint)
+CREATE FUNCTION temporal_ne(tgeogpoint, tgeogpoint)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Temporal_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeogpoint_ge(tgeogpoint, tgeogpoint)
+CREATE FUNCTION temporal_ge(tgeogpoint, tgeogpoint)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Temporal_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeogpoint_gt(tgeogpoint, tgeogpoint)
+CREATE FUNCTION temporal_gt(tgeogpoint, tgeogpoint)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Temporal_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeogpoint_cmp(tgeogpoint, tgeogpoint)
+CREATE FUNCTION temporal_cmp(tgeogpoint, tgeogpoint)
   RETURNS int4
   AS 'MODULE_PATHNAME', 'Temporal_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR < (
   LEFTARG = tgeogpoint, RIGHTARG = tgeogpoint,
-  PROCEDURE = tgeogpoint_lt,
+  PROCEDURE = temporal_lt,
   COMMUTATOR = >,  NEGATOR = >=,
   RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = tgeogpoint, RIGHTARG = tgeogpoint,
-  PROCEDURE = tgeogpoint_le,
+  PROCEDURE = temporal_le,
   COMMUTATOR = >=, NEGATOR = >,
   RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR = (
   LEFTARG = tgeogpoint, RIGHTARG = tgeogpoint,
-  PROCEDURE = tgeogpoint_eq,
+  PROCEDURE = temporal_eq,
   COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR <> (
   LEFTARG = tgeogpoint, RIGHTARG = tgeogpoint,
-  PROCEDURE = tgeogpoint_ne,
+  PROCEDURE = temporal_ne,
   COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = tgeogpoint, RIGHTARG = tgeogpoint,
-  PROCEDURE = tgeogpoint_ge,
+  PROCEDURE = temporal_ge,
   COMMUTATOR = <=, NEGATOR = <,
   RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR > (
   LEFTARG = tgeogpoint, RIGHTARG = tgeogpoint,
-  PROCEDURE = tgeogpoint_gt,
+  PROCEDURE = temporal_gt,
   COMMUTATOR = <, NEGATOR = <=,
   RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 
-CREATE OPERATOR CLASS tgeogpoint_ops
+CREATE OPERATOR CLASS tgeogpoint_btree_ops
   DEFAULT FOR TYPE tgeogpoint USING btree AS
     OPERATOR  1  <,
     OPERATOR  2  <=,
     OPERATOR  3  =,
     OPERATOR  4  >=,
     OPERATOR  5  >,
-    FUNCTION  1  tgeogpoint_cmp(tgeogpoint, tgeogpoint);
+    FUNCTION  1  temporal_cmp(tgeogpoint, tgeogpoint);
 
 /******************************************************************************/
 
-CREATE FUNCTION tgeompoint_hash(tgeompoint)
+CREATE FUNCTION temporal_hash(tgeompoint)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeogpoint_hash(tgeogpoint)
+CREATE FUNCTION temporal_hash(tgeogpoint)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR CLASS hash_tgeompoint_ops
+CREATE OPERATOR CLASS tgeompoint_hash_ops
   DEFAULT FOR TYPE tgeompoint USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   tgeompoint_hash(tgeompoint);
-CREATE OPERATOR CLASS hash_tgeogpoint_ops
+    FUNCTION    1   temporal_hash(tgeompoint);
+CREATE OPERATOR CLASS tgeogpoint_hash_ops
   DEFAULT FOR TYPE tgeogpoint USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   tgeogpoint_hash(tgeogpoint);
+    FUNCTION    1   temporal_hash(tgeogpoint);
 
 /******************************************************************************/
 
