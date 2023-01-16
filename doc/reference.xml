@@ -393,7 +393,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="stbox"><varname>stbox, stboxt</varname></link>: Constructor for <varname>stbox</varname></para>
+					<para><link linkend="stbox"><varname>stbox, stbox_z, stbox_t, stbox_zt, geodstbox_z, geodstbox_t, geodstbox_zt</varname></link>: Constructor for <varname>stbox</varname></para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -688,7 +688,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_period"><varname>period</varname></link>: Get the period on which the temporal value is defined ignoring the potential time gaps</para>
+					<para><link linkend="ttype_timespan"><varname>timespan</varname></link>: Get the time span on which the temporal value is defined ignoring the potential time gaps</para>
 				</listitem>
 
 				<listitem>
@@ -772,7 +772,6 @@
 				<listitem>
 					<para><link linkend="unnest"><varname>unnest</varname></link>: Transform a nonlinear temporal value into a set of rows, each one containing a base value and a period set during which the temporal value has the base value.</para>
 				</listitem>
-
 			</itemizedlist>
 		</sect2>
 
@@ -810,97 +809,47 @@
 		<sect2>
 			<title>Restriction Functions</title>
 
-			<sect3>
-				<title>Selection Functions</title>
-
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="atValue"><varname>atValue</varname></link>: Restrict to a value</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="atValues"><varname>atValues</varname></link>: Restrict to an array of values</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="atSpan"><varname>atSpan</varname></link>: Restrict to a span</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="atSpanset"><varname>atSpanset</varname></link>: Restrict to a span set</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="atMin"><varname>atMin</varname></link>: Restrict to the minimum value</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="atMax"><varname>atMax</varname></link>: Restrict to the maximum value</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="atGeometry"><varname>atGeometry</varname></link>: Restrict to a geometry</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="atTime"><varname>atTime</varname></link>: Restrict to a time value</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="atTbox"><varname>atTbox</varname></link>: Restrict to a <varname>tbox</varname></para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="atStbox"><varname>atStbox</varname></link>: Restrict to an <varname>stbox</varname></para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
-
-			<sect3>
-				<title>Difference Functions</title>
-
-				<itemizedlist>
-					<listitem>
-					<para><link linkend="minusValue"><varname>minusValue</varname></link>: Difference with a value</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="minusValues"><varname>minusValues</varname></link>: Difference with an array of values</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="minusSpan"><varname>minusSpan</varname></link>: Difference with a span</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="minusSpanset"><varname>minusSpanset</varname></link>: Difference with a span set</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="minusMin"><varname>minusMin</varname></link>: Difference with the minimum value</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="minusMax"><varname>minusMax</varname></link>: Difference with the maximum value</para>
-					</listitem>
-
+			<itemizedlist>
 				<listitem>
-					<para><link linkend="minusGeometry"><varname>minusGeometry</varname></link>: Difference with a geometry</para>
+					<para><link linkend="atValue"><varname>atValue</varname>, <varname>minusValue</varname></link>: Restrict to (the complement of) a value</para>
 				</listitem>
 
-					<listitem>
-						<para><link linkend="minusTime"><varname>minusTime</varname></link>: Difference with a time value</para>
-					</listitem>
+			<listitem>
+					<para><link linkend="atValues"><varname>atValues</varname>, <varname>minusValues</varname></link>: Restrict to (the complement of) an array of values</para>
+				</listitem>
 
-					<listitem>
-						<para><link linkend="minusTbox"><varname>minusTbox</varname></link>: Difference with a <varname>tbox</varname></para>
-					</listitem>
+				<listitem>
+					<para><link linkend="atSpan"><varname>atSpan</varname>, <varname>minusSpan</varname></link>: Restrict to (the complement of) a span</para>
+				</listitem>
 
-					<listitem>
-						<para><link linkend="minusStbox"><varname>minusStbox</varname></link>: Difference with an <varname>stbox</varname></para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
+				<listitem>
+					<para><link linkend="atSpanset"><varname>atSpanset</varname>, <varname>minusSpanset</varname></link>: Restrict to (the complement of) a span set</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="atMin"><varname>atMin</varname>, <varname>minusMin</varname></link>: Restrict to (the complement of) the minimum value</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="atMax"><varname>atMax</varname>, <varname>minusMax</varname></link>: Restrict to (the complement of) the maximum value</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="atGeometry"><varname>atGeometry</varname>, <varname>minusGeometry</varname></link>: Restrict to (the complement of) a geometry</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="atTime"><varname>atTime</varname>, <varname>minusTime</varname></link>: Restrict to (the complement of) a time value</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="atTbox"><varname>atTbox</varname>, <varname>minusTbox</varname></link>: Restrict to (the complement of) a <varname>tbox</varname></para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="atStbox"><varname>atStbox</varname>, <varname>minusStbox</varname></link>: Restrict to an <varname>stbox</varname></para>
+				</listitem>
+			</itemizedlist>
 		</sect2>
 
 		<sect2>
@@ -1654,19 +1603,11 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_atValue"><varname>atValue</varname></link>: Restrict to a value</para>
+						<para><link linkend="tnpoint_atValue"><varname>atValue</varname>, <varname>minusValue</varname></link>: Restrict to (the complement of) a value</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_atGeometry"><varname>atGeometry</varname></link>: Restrict to a geometry</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tnpoint_minusValue"><varname>minusValue</varname></link>: Difference with a value</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tnpoint_minusGeometry"><varname>minusGeometry</varname></link>: Difference with a geometry</para>
+						<para><link linkend="tnpoint_atGeometry"><varname>atGeometry</varname>, <varname>minusGeometry</varname></link>: Restrict to (the complement of) a geometry</para>
 					</listitem>
 
 					<listitem>

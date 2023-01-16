@@ -837,14 +837,14 @@ SELECT duration(tfloat '{[1@2001-01-01, 2@2001-01-03), [2@2001-01-04, 2@2001-01-
 </programlisting>
 			</listitem>
 
-			<listitem id="ttype_period">
+			<listitem id="ttype_timespan">
 				<indexterm><primary><varname>timespan</varname></primary></indexterm>
 				<para>Get the time span on which the temporal value is defined ignoring the potential time gaps</para>
 				<para><varname>timespan(ttype) → tstzspan</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT period(tint '{1@2001-01-01, 2@2001-01-03, 3@2001-01-05}');
+SELECT timespan(tint '{1@2001-01-01, 2@2001-01-03, 3@2001-01-05}');
 -- [2001-01-01, 2001-01-05]
-SELECT period(tfloat '{[1@2001-01-01, 1@2001-01-02), [2@2001-01-03, 3@2001-01-04)}');
+SELECT timespan(tfloat '{[1@2001-01-01, 1@2001-01-02), [2@2001-01-03, 3@2001-01-04)}');
 -- [2001-01-01, 2001-01-04)
 </programlisting>
 			</listitem>
@@ -1197,7 +1197,7 @@ FROM (SELECT unnest(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01,
 
 		<orderedlist>
 			<listitem>
-				<para>In the first case, shown as the top result in the figure, the meaning of operation is to introduce time gaps after removing the instants of the temporal value intersecting the time value. This is equivalent to the difference operations (<xref linkend="difference" />), which restrict a temporal value to the complement of the time value.</para>
+				<para>In the first case, shown as the top result in the figure, the meaning of operation is to introduce time gaps after removing the instants of the temporal value intersecting the time value. This is equivalent to the restriction operations (<xref linkend="restriction_functions" />), which restrict a temporal value to the complement of the time value.</para>
 			</listitem>
 
 			<listitem>
@@ -2120,23 +2120,17 @@ SELECT ttext '[A@2001-01-01, B@2001-01-03, C@2001-01-04]' ||
 </programlisting>
 			</listitem>
 
-			<listitem id="ttext_upper">
-				<indexterm><primary><varname>upper</varname></primary></indexterm>
-				<para>Transform to uppercase</para>
-				<para><varname>upper(ttext) → ttext</varname></para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT upper(ttext '[AA@2000-01-01, bb@2000-01-02]');
--- ["AA"@2000-01-01, "BB"@2000-01-02]
-</programlisting>
-			</listitem>
-
 			<listitem id="ttext_lower">
 				<indexterm><primary><varname>lower</varname></primary></indexterm>
-				<para>Transform to lowercase</para>
+				<indexterm><primary><varname>upper</varname></primary></indexterm>
+				<para>Transform to lowercase/uppercase</para>
+				<para><varname>upper(ttext) → ttext</varname></para>
 				<para><varname>lower(ttext) → ttext</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT lower(ttext '[AA@2000-01-01, bb@2000-01-02]');
 -- ["aa"@2000-01-01, "bb"@2000-01-02]
+SELECT upper(ttext '[AA@2000-01-01, bb@2000-01-02]');
+-- ["AA"@2000-01-01, "BB"@2000-01-02]
 </programlisting>
 			</listitem>
 		</itemizedlist>
