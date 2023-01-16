@@ -271,7 +271,7 @@ CREATE OPERATOR > (
   RESTRICT = scalargtsel, JOIN = scalargtjoinsel
 );
 
-CREATE OPERATOR CLASS npoint_ops
+CREATE OPERATOR CLASS npoint_btree_ops
   DEFAULT FOR TYPE npoint USING btree AS
   OPERATOR  1 < ,
   OPERATOR  2 <= ,
@@ -348,7 +348,7 @@ CREATE OPERATOR > (
   RESTRICT = scalargtsel, JOIN = scalargtjoinsel
 );
 
-CREATE OPERATOR CLASS nsegment_ops
+CREATE OPERATOR CLASS nsegment_btree_ops
   DEFAULT FOR TYPE nsegment USING btree AS
   OPERATOR  1 < ,
   OPERATOR  2 <= ,

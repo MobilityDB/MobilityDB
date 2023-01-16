@@ -625,7 +625,7 @@ CREATE OPERATOR > (
   RESTRICT = areasel, JOIN = areajoinsel
 );
 
-CREATE OPERATOR CLASS stbox_ops
+CREATE OPERATOR CLASS stbox_btree_ops
   DEFAULT FOR TYPE stbox USING btree AS
   OPERATOR  1  < ,
   OPERATOR  2  <= ,

@@ -2179,346 +2179,346 @@ CREATE FUNCTION temporal_joinsel(internal, oid, internal, smallint, internal)
  * Comparison functions and B-tree indexing
  ******************************************************************************/
 
-CREATE FUNCTION tbool_lt(tbool, tbool)
+CREATE FUNCTION temporal_lt(tbool, tbool)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbool_le(tbool, tbool)
+CREATE FUNCTION temporal_le(tbool, tbool)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbool_eq(tbool, tbool)
+CREATE FUNCTION temporal_eq(tbool, tbool)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbool_ne(tbool, tbool)
+CREATE FUNCTION temporal_ne(tbool, tbool)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbool_ge(tbool, tbool)
+CREATE FUNCTION temporal_ge(tbool, tbool)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbool_gt(tbool, tbool)
+CREATE FUNCTION temporal_gt(tbool, tbool)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbool_cmp(tbool, tbool)
+CREATE FUNCTION temporal_cmp(tbool, tbool)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR < (
   LEFTARG = tbool, RIGHTARG = tbool,
-  PROCEDURE = tbool_lt,
+  PROCEDURE = temporal_lt,
   COMMUTATOR = >, NEGATOR = >=,
   RESTRICT = temporal_sel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = tbool, RIGHTARG = tbool,
-  PROCEDURE = tbool_le,
+  PROCEDURE = temporal_le,
   COMMUTATOR = >=, NEGATOR = >,
   RESTRICT = temporal_sel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR = (
   LEFTARG = tbool, RIGHTARG = tbool,
-  PROCEDURE = tbool_eq,
+  PROCEDURE = temporal_eq,
   COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = eqsel, JOIN = eqjoinsel
 );
 CREATE OPERATOR <> (
   LEFTARG = tbool, RIGHTARG = tbool,
-  PROCEDURE = tbool_ne,
+  PROCEDURE = temporal_ne,
   COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = tbool, RIGHTARG = tbool,
-  PROCEDURE = tbool_ge,
+  PROCEDURE = temporal_ge,
   COMMUTATOR = <=, NEGATOR = <,
   RESTRICT = temporal_sel, JOIN = scalargtjoinsel
 );
 CREATE OPERATOR > (
   LEFTARG = tbool, RIGHTARG = tbool,
-  PROCEDURE = tbool_gt,
+  PROCEDURE = temporal_gt,
   COMMUTATOR = <, NEGATOR = <=,
   RESTRICT = temporal_sel, JOIN = scalargtjoinsel
 );
 
-CREATE OPERATOR CLASS tbool_ops
+CREATE OPERATOR CLASS tbool_btree_ops
   DEFAULT FOR TYPE tbool USING btree AS
     OPERATOR  1  <,
     OPERATOR  2  <=,
     OPERATOR  3  =,
     OPERATOR  4  >=,
     OPERATOR  5  >,
-    FUNCTION  1  tbool_cmp(tbool, tbool);
+    FUNCTION  1  temporal_cmp(tbool, tbool);
 
 /*****************************************************************************/
 
-CREATE FUNCTION tint_lt(tint, tint)
+CREATE FUNCTION temporal_lt(tint, tint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tint_le(tint, tint)
+CREATE FUNCTION temporal_le(tint, tint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tint_eq(tint, tint)
+CREATE FUNCTION temporal_eq(tint, tint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tint_ne(tint, tint)
+CREATE FUNCTION temporal_ne(tint, tint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tint_ge(tint, tint)
+CREATE FUNCTION temporal_ge(tint, tint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tint_gt(tint, tint)
+CREATE FUNCTION temporal_gt(tint, tint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tint_cmp(tint, tint)
+CREATE FUNCTION temporal_cmp(tint, tint)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR < (
   LEFTARG = tint, RIGHTARG = tint,
-  PROCEDURE = tint_lt,
+  PROCEDURE = temporal_lt,
   COMMUTATOR = >, NEGATOR = >=,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = tint, RIGHTARG = tint,
-  PROCEDURE = tint_le,
+  PROCEDURE = temporal_le,
   COMMUTATOR = >=, NEGATOR = >,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR = (
   LEFTARG = tint, RIGHTARG = tint,
-  PROCEDURE = tint_eq,
+  PROCEDURE = temporal_eq,
   COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = eqsel, JOIN = eqjoinsel
 );
 CREATE OPERATOR <> (
   LEFTARG = tint, RIGHTARG = tint,
-  PROCEDURE = tint_ne,
+  PROCEDURE = temporal_ne,
   COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = tint, RIGHTARG = tint,
-  PROCEDURE = tint_ge,
+  PROCEDURE = temporal_ge,
   COMMUTATOR = <=, NEGATOR = <,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR > (
   LEFTARG = tint, RIGHTARG = tint,
-  PROCEDURE = tint_gt,
+  PROCEDURE = temporal_gt,
   COMMUTATOR = <, NEGATOR = <=,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 
-CREATE OPERATOR CLASS tint_ops
+CREATE OPERATOR CLASS tint_btree_ops
   DEFAULT FOR TYPE tint USING btree AS
     OPERATOR  1  <,
     OPERATOR  2  <=,
     OPERATOR  3  =,
     OPERATOR  4  >=,
     OPERATOR  5  >,
-    FUNCTION  1  tint_cmp(tint, tint);
+    FUNCTION  1  temporal_cmp(tint, tint);
 
 /*****************************************************************************/
 
-CREATE FUNCTION tfloat_lt(tfloat, tfloat)
+CREATE FUNCTION temporal_lt(tfloat, tfloat)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tfloat_le(tfloat, tfloat)
+CREATE FUNCTION temporal_le(tfloat, tfloat)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tfloat_eq(tfloat, tfloat)
+CREATE FUNCTION temporal_eq(tfloat, tfloat)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tfloat_ne(tfloat, tfloat)
+CREATE FUNCTION temporal_ne(tfloat, tfloat)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tfloat_ge(tfloat, tfloat)
+CREATE FUNCTION temporal_ge(tfloat, tfloat)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tfloat_gt(tfloat, tfloat)
+CREATE FUNCTION temporal_gt(tfloat, tfloat)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tfloat_cmp(tfloat, tfloat)
+CREATE FUNCTION temporal_cmp(tfloat, tfloat)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR < (
   LEFTARG = tfloat, RIGHTARG = tfloat,
-  PROCEDURE = tfloat_lt,
+  PROCEDURE = temporal_lt,
   COMMUTATOR = >, NEGATOR = >=,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = tfloat, RIGHTARG = tfloat,
-  PROCEDURE = tfloat_le,
+  PROCEDURE = temporal_le,
   COMMUTATOR = >=, NEGATOR = >,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR = (
   LEFTARG = tfloat, RIGHTARG = tfloat,
-  PROCEDURE = tfloat_eq,
+  PROCEDURE = temporal_eq,
   COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = eqsel, JOIN = eqjoinsel
 );
 CREATE OPERATOR <> (
   LEFTARG = tfloat, RIGHTARG = tfloat,
-  PROCEDURE = tfloat_ne,
+  PROCEDURE = temporal_ne,
   COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = tfloat, RIGHTARG = tfloat,
-  PROCEDURE = tfloat_ge,
+  PROCEDURE = temporal_ge,
   COMMUTATOR = <=, NEGATOR = <,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR > (
   LEFTARG = tfloat, RIGHTARG = tfloat,
-  PROCEDURE = tfloat_gt,
+  PROCEDURE = temporal_gt,
   COMMUTATOR = <, NEGATOR = <=,
   RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 
-CREATE OPERATOR CLASS tfloat_ops
+CREATE OPERATOR CLASS tfloat_btree_ops
   DEFAULT FOR TYPE tfloat USING btree AS
     OPERATOR  1  <,
     OPERATOR  2  <=,
     OPERATOR  3  =,
     OPERATOR  4  >=,
     OPERATOR  5  >,
-    FUNCTION  1  tfloat_cmp(tfloat, tfloat);
+    FUNCTION  1  temporal_cmp(tfloat, tfloat);
 
 /******************************************************************************/
 
-CREATE FUNCTION ttext_lt(ttext, ttext)
+CREATE FUNCTION temporal_lt(ttext, ttext)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ttext_le(ttext, ttext)
+CREATE FUNCTION temporal_le(ttext, ttext)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ttext_eq(ttext, ttext)
+CREATE FUNCTION temporal_eq(ttext, ttext)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ttext_ne(ttext, ttext)
+CREATE FUNCTION temporal_ne(ttext, ttext)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ttext_ge(ttext, ttext)
+CREATE FUNCTION temporal_ge(ttext, ttext)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ttext_gt(ttext, ttext)
+CREATE FUNCTION temporal_gt(ttext, ttext)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ttext_cmp(ttext, ttext)
+CREATE FUNCTION temporal_cmp(ttext, ttext)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR < (
   LEFTARG = ttext, RIGHTARG = ttext,
-  PROCEDURE = ttext_lt,
+  PROCEDURE = temporal_lt,
   COMMUTATOR = >, NEGATOR = >=,
   RESTRICT = temporal_sel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = ttext, RIGHTARG = ttext,
-  PROCEDURE = ttext_le,
+  PROCEDURE = temporal_le,
   COMMUTATOR = >=, NEGATOR = >,
   RESTRICT = temporal_sel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR = (
   LEFTARG = ttext, RIGHTARG = ttext,
-  PROCEDURE = ttext_eq,
+  PROCEDURE = temporal_eq,
   COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = eqsel, JOIN = eqjoinsel
 );
 CREATE OPERATOR <> (
   LEFTARG = ttext, RIGHTARG = ttext,
-  PROCEDURE = ttext_ne,
+  PROCEDURE = temporal_ne,
   COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = ttext, RIGHTARG = ttext,
-  PROCEDURE = ttext_ge,
+  PROCEDURE = temporal_ge,
   COMMUTATOR = <=, NEGATOR = <,
   RESTRICT = temporal_sel, JOIN = scalargtjoinsel
 );
 CREATE OPERATOR > (
   LEFTARG = ttext, RIGHTARG = ttext,
-  PROCEDURE = ttext_gt,
+  PROCEDURE = temporal_gt,
   COMMUTATOR = <, NEGATOR = <=,
   RESTRICT = temporal_sel, JOIN = scalargtjoinsel
 );
 
-CREATE OPERATOR CLASS ttext_ops
+CREATE OPERATOR CLASS ttext_btree_ops
   DEFAULT FOR TYPE ttext USING btree AS
     OPERATOR  1  <,
     OPERATOR  2  <=,
     OPERATOR  3  =,
     OPERATOR  4  >=,
     OPERATOR  5  >,
-    FUNCTION  1  ttext_cmp(ttext, ttext);
+    FUNCTION  1  temporal_cmp(ttext, ttext);
 
 /******************************************************************************/
 
-CREATE FUNCTION tbool_hash(tbool)
+CREATE FUNCTION temporal_hash(tbool)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tint_hash(tint)
+CREATE FUNCTION temporal_hash(tint)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tfloat_hash(tfloat)
+CREATE FUNCTION temporal_hash(tfloat)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ttext_hash(ttext)
+CREATE FUNCTION temporal_hash(ttext)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR CLASS hash_tbool_ops
+CREATE OPERATOR CLASS tbool_hash_ops
   DEFAULT FOR TYPE tbool USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   tbool_hash(tbool);
-CREATE OPERATOR CLASS hash_tint_ops
+    FUNCTION    1   temporal_hash(tbool);
+CREATE OPERATOR CLASS tint_hash_ops
   DEFAULT FOR TYPE tint USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   tint_hash(tint);
-CREATE OPERATOR CLASS hash_tfloat_ops
+    FUNCTION    1   temporal_hash(tint);
+CREATE OPERATOR CLASS tfloat_hash_ops
   DEFAULT FOR TYPE tfloat USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   tfloat_hash(tfloat);
-CREATE OPERATOR CLASS hash_ttext_ops
+    FUNCTION    1   temporal_hash(tfloat);
+CREATE OPERATOR CLASS ttext_hash_ops
   DEFAULT FOR TYPE ttext USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   ttext_hash(ttext);
+    FUNCTION    1   temporal_hash(ttext);
 
 /******************************************************************************/

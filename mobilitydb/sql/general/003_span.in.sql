@@ -94,19 +94,19 @@ CREATE FUNCTION floatspan_send(floatspan)
   AS 'MODULE_PATHNAME', 'Span_send'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION period_in(cstring)
+CREATE FUNCTION tstzspan_in(cstring)
   RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Span_in'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION period_out(tstzspan)
+CREATE FUNCTION tstzspan_out(tstzspan)
   RETURNS cstring
   AS 'MODULE_PATHNAME', 'Span_out'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION period_recv(internal)
+CREATE FUNCTION tstzspan_recv(internal)
   RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Span_recv'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION period_send(tstzspan)
+CREATE FUNCTION tstzspan_send(tstzspan)
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Span_send'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -123,7 +123,7 @@ CREATE FUNCTION floatspan_analyze(internal)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Floatspan_analyze'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION period_analyze(internal)
+CREATE FUNCTION tstzspan_analyze(internal)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Period_analyze'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -160,12 +160,12 @@ CREATE TYPE floatspan (
 
 CREATE TYPE tstzspan (
   internallength = 24,
-  input = period_in,
-  output = period_out,
-  receive = period_recv,
-  send = period_send,
+  input = tstzspan_in,
+  output = tstzspan_out,
+  receive = tstzspan_recv,
+  send = tstzspan_send,
   alignment = double,
-  analyze = period_analyze
+  analyze = tstzspan_analyze
 );
 
 -- Input/output in WKB and HexWKB format
@@ -182,7 +182,7 @@ CREATE FUNCTION floatspanFromBinary(bytea)
   RETURNS floatspan
   AS 'MODULE_PATHNAME', 'Span_from_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION periodFromBinary(bytea)
+CREATE FUNCTION tstzspanFromBinary(bytea)
   RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Span_from_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -199,7 +199,7 @@ CREATE FUNCTION floatspanFromHexWKB(text)
   RETURNS floatspan
   AS 'MODULE_PATHNAME', 'Span_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION periodFromHexWKB(text)
+CREATE FUNCTION tstzspanFromHexWKB(text)
   RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Span_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -259,19 +259,19 @@ CREATE FUNCTION asHexWKB(tstzspan, endianenconding text DEFAULT '')
  * Constructors
  ******************************************************************************/
 
-CREATE FUNCTION intspan(int, int, boolean DEFAULT true, boolean DEFAULT false)
+CREATE FUNCTION span(int, int, boolean DEFAULT true, boolean DEFAULT false)
   RETURNS intspan
   AS 'MODULE_PATHNAME', 'Span_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION bigintspan(bigint, bigint, boolean DEFAULT true, boolean DEFAULT false)
+CREATE FUNCTION span(bigint, bigint, boolean DEFAULT true, boolean DEFAULT false)
   RETURNS bigintspan
   AS 'MODULE_PATHNAME', 'Span_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION floatspan(float, float, boolean DEFAULT true, boolean DEFAULT false)
+CREATE FUNCTION span(float, float, boolean DEFAULT true, boolean DEFAULT false)
   RETURNS floatspan
   AS 'MODULE_PATHNAME', 'Span_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tstzspan(timestamptz, timestamptz, boolean DEFAULT true, boolean DEFAULT false)
+CREATE FUNCTION span(timestamptz, timestamptz, boolean DEFAULT true, boolean DEFAULT false)
   RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Span_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -529,7 +529,7 @@ CREATE FUNCTION span_eq(floatspan, floatspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION period_eq(tstzspan, tstzspan)
+CREATE FUNCTION span_eq(tstzspan, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -546,7 +546,7 @@ CREATE FUNCTION span_ne(floatspan, floatspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION period_ne(tstzspan, tstzspan)
+CREATE FUNCTION span_ne(tstzspan, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -563,7 +563,7 @@ CREATE FUNCTION span_lt(floatspan, floatspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION period_lt(tstzspan, tstzspan)
+CREATE FUNCTION span_lt(tstzspan, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -580,7 +580,7 @@ CREATE FUNCTION span_le(floatspan, floatspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION period_le(tstzspan, tstzspan)
+CREATE FUNCTION span_le(tstzspan, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -597,7 +597,7 @@ CREATE FUNCTION span_ge(floatspan, floatspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION period_ge(tstzspan, tstzspan)
+CREATE FUNCTION span_ge(tstzspan, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -614,7 +614,7 @@ CREATE FUNCTION span_gt(floatspan, floatspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION period_gt(tstzspan, tstzspan)
+CREATE FUNCTION span_gt(tstzspan, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -631,7 +631,7 @@ CREATE FUNCTION span_cmp(floatspan, floatspan)
   RETURNS int4
   AS 'MODULE_PATHNAME', 'Span_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION period_cmp(tstzspan, tstzspan)
+CREATE FUNCTION span_cmp(tstzspan, tstzspan)
   RETURNS int4
   AS 'MODULE_PATHNAME', 'Span_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -655,7 +655,7 @@ CREATE OPERATOR = (
   RESTRICT = eqsel, JOIN = eqjoinsel
 );
 CREATE OPERATOR = (
-  PROCEDURE = period_eq,
+  PROCEDURE = span_eq,
   LEFTARG = tstzspan, RIGHTARG = tstzspan,
   COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = eqsel, JOIN = eqjoinsel
@@ -680,7 +680,7 @@ CREATE OPERATOR <> (
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
 CREATE OPERATOR <> (
-  PROCEDURE = period_ne,
+  PROCEDURE = span_ne,
   LEFTARG = tstzspan, RIGHTARG = tstzspan,
   COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = neqsel, JOIN = neqjoinsel
@@ -705,7 +705,7 @@ CREATE OPERATOR < (
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR < (
-  PROCEDURE = period_lt,
+  PROCEDURE = span_lt,
   LEFTARG = tstzspan, RIGHTARG = tstzspan,
   COMMUTATOR = >, NEGATOR = >=,
   RESTRICT = span_sel, JOIN = span_joinsel
@@ -730,7 +730,7 @@ CREATE OPERATOR <= (
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <= (
-  PROCEDURE = period_le,
+  PROCEDURE = span_le,
   LEFTARG = tstzspan, RIGHTARG = tstzspan,
   COMMUTATOR = >=, NEGATOR = >,
   RESTRICT = span_sel, JOIN = span_joinsel
@@ -755,7 +755,7 @@ CREATE OPERATOR >= (
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR >= (
-  PROCEDURE = period_ge,
+  PROCEDURE = span_ge,
   LEFTARG = tstzspan, RIGHTARG = tstzspan,
   COMMUTATOR = <=, NEGATOR = <,
   RESTRICT = span_sel, JOIN = span_joinsel
@@ -780,13 +780,13 @@ CREATE OPERATOR > (
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR > (
-  PROCEDURE = period_gt,
+  PROCEDURE = span_gt,
   LEFTARG = tstzspan, RIGHTARG = tstzspan,
   COMMUTATOR = <, NEGATOR = <=,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 
-CREATE OPERATOR CLASS intspan_ops
+CREATE OPERATOR CLASS intspan_btree_ops
   DEFAULT FOR TYPE intspan USING btree AS
   OPERATOR  1  < ,
   OPERATOR  2  <= ,
@@ -794,7 +794,7 @@ CREATE OPERATOR CLASS intspan_ops
   OPERATOR  4  >= ,
   OPERATOR  5  > ,
   FUNCTION  1  span_cmp(intspan, intspan);
-CREATE OPERATOR CLASS bigintspan_ops
+CREATE OPERATOR CLASS bigintspan_btree_ops
   DEFAULT FOR TYPE bigintspan USING btree AS
   OPERATOR  1  < ,
   OPERATOR  2  <= ,
@@ -802,7 +802,7 @@ CREATE OPERATOR CLASS bigintspan_ops
   OPERATOR  4  >= ,
   OPERATOR  5  > ,
   FUNCTION  1  span_cmp(bigintspan, bigintspan);
-CREATE OPERATOR CLASS floatspan_ops
+CREATE OPERATOR CLASS floatspan_btree_ops
   DEFAULT FOR TYPE floatspan USING btree AS
   OPERATOR  1  < ,
   OPERATOR  2  <= ,
@@ -810,14 +810,14 @@ CREATE OPERATOR CLASS floatspan_ops
   OPERATOR  4  >= ,
   OPERATOR  5  > ,
   FUNCTION  1  span_cmp(floatspan, floatspan);
-CREATE OPERATOR CLASS period_ops
+CREATE OPERATOR CLASS tstzspan_btree_ops
   DEFAULT FOR TYPE tstzspan USING btree AS
   OPERATOR  1  < ,
   OPERATOR  2  <= ,
   OPERATOR  3  = ,
   OPERATOR  4  >= ,
   OPERATOR  5  > ,
-  FUNCTION  1  period_cmp(tstzspan, tstzspan);
+  FUNCTION  1  span_cmp(tstzspan, tstzspan);
 
 /******************************************************************************/
 
@@ -833,7 +833,7 @@ CREATE FUNCTION span_hash(floatspan)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Span_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION period_hash(tstzspan)
+CREATE FUNCTION span_hash(tstzspan)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Span_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -850,7 +850,7 @@ CREATE FUNCTION span_hash_extended(floatspan, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Span_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION period_hash_extended(tstzspan, bigint)
+CREATE FUNCTION span_hash_extended(tstzspan, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Span_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -870,10 +870,10 @@ CREATE OPERATOR CLASS floatspan_hash_ops
     OPERATOR    1   = ,
     FUNCTION    1   span_hash(floatspan),
     FUNCTION    2   span_hash_extended(floatspan, bigint);
-CREATE OPERATOR CLASS period_hash_ops
+CREATE OPERATOR CLASS tstzspan_hash_ops
   DEFAULT FOR TYPE tstzspan USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   period_hash(tstzspan),
-    FUNCTION    2   period_hash_extended(tstzspan, bigint);
+    FUNCTION    1   span_hash(tstzspan),
+    FUNCTION    2   span_hash_extended(tstzspan, bigint);
 
 /******************************************************************************/

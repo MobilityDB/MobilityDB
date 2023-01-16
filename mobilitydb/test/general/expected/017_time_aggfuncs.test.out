@@ -328,10 +328,10 @@ SELECT tunion(t) FROM Temp;
 (1 row)
 
 WITH Temp(t) AS (
-  SELECT tstzset(array_agg(t))
+  SELECT set(array_agg(t))
   FROM generate_series(timestamp '2000-01-01 00:00', timestamp '2000-01-01 00:30', interval '1 sec') t
   UNION
-  SELECT tstzset(array_agg(t))
+  SELECT set(array_agg(t))
   FROM generate_series(timestamp '2000-01-01 00:15', timestamp '2000-01-01 00:45', interval '1 sec') t
 )
 SELECT startValue(tunion(t)) FROM Temp;

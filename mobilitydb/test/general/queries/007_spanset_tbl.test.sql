@@ -151,7 +151,7 @@ SELECT MAX((timestamps(ps))[1]) FROM tbl_tstzspanset;
 
 SELECT MAX(startTimestamp(shift(ps, '5 min'))) FROM tbl_tstzspanset;
 
-SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE intspanset_cmp(t1.i, t2.i) = -1;
+SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE spanset_cmp(t1.i, t2.i) = -1;
 SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i = t2.i;
 SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i <> t2.i;
 SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i < t2.i;
@@ -159,7 +159,15 @@ SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i <= t2.i;
 SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i > t2.i;
 SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i >= t2.i;
 
-SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE floatspanset_cmp(t1.f, t2.f) = -1;
+SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset t2 WHERE spanset_cmp(t1.b, t2.b) = -1;
+SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset t2 WHERE t1.b = t2.b;
+SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset t2 WHERE t1.b <> t2.b;
+SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset t2 WHERE t1.b < t2.b;
+SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset t2 WHERE t1.b <= t2.b;
+SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset t2 WHERE t1.b > t2.b;
+SELECT COUNT(*) FROM tbl_bigintspanset t1, tbl_bigintspanset t2 WHERE t1.b >= t2.b;
+
+SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE spanset_cmp(t1.f, t2.f) = -1;
 SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f = t2.f;
 SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f <> t2.f;
 SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f < t2.f;
@@ -167,7 +175,7 @@ SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f <= t2.f
 SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f > t2.f;
 SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f >= t2.f;
 
-SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE tstzspanset_cmp(t1.ps, t2.ps) = -1;
+SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE spanset_cmp(t1.ps, t2.ps) = -1;
 SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.ps = t2.ps;
 SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.ps <> t2.ps;
 SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.ps < t2.ps;
@@ -175,7 +183,7 @@ SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.ps <= t2.ps
 SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.ps > t2.ps;
 SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.ps >= t2.ps;
 
-SELECT MAX(tstzspanset_hash(ps)) != 0 FROM tbl_tstzspanset;
-SELECT MAX(tstzspanset_hash_extended(ps, 1)) != 0 FROM tbl_tstzspanset;
+SELECT MAX(spanset_hash(ps)) != 0 FROM tbl_tstzspanset;
+SELECT MAX(spanset_hash_extended(ps, 1)) != 0 FROM tbl_tstzspanset;
 
 -------------------------------------------------------------------------------

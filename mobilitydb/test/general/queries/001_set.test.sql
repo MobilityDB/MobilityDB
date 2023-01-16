@@ -40,23 +40,23 @@ SELECT tstzset '{2000-01-01, 2000-01-02';
 -- Constructor
 -------------------------------------------------------------------------------
 
-SELECT tstzset(ARRAY [timestamptz '2000-01-01', '2000-01-02', '2000-01-03']);
-SELECT tstzset(ARRAY [timestamptz '2000-01-01', '2000-01-01', '2000-01-03']);
+SELECT set(ARRAY [timestamptz '2000-01-01', '2000-01-02', '2000-01-03']);
+SELECT set(ARRAY [timestamptz '2000-01-01', '2000-01-01', '2000-01-03']);
 /* Errors */
-SELECT tstzset('{}'::timestamptz[]);
+SELECT set('{}'::timestamptz[]);
 
-SELECT geomset(ARRAY[geometry 'Point(1 1)', 'Point(2 2)', 'Point(3 3)']);
+SELECT set(ARRAY[geometry 'Point(1 1)', 'Point(2 2)', 'Point(3 3)']);
 /* Errors */
-SELECT geomset(ARRAY[geometry 'Point(1 1)', 'Point(1 1 1)']);
-SELECT geomset(ARRAY[geometry 'Point(1 1)', 'Point empty']);
-SELECT geomset(ARRAY[geometry 'Point(1 1)', 'Linestring(1 1,2 2)']);
-SELECT geomset(ARRAY[geometry 'Point(1 1)', 'SRID=5676;Point(1 1)']);
+SELECT set(ARRAY[geometry 'Point(1 1)', 'Point(1 1 1)']);
+SELECT set(ARRAY[geometry 'Point(1 1)', 'Point empty']);
+SELECT set(ARRAY[geometry 'Point(1 1)', 'Linestring(1 1,2 2)']);
+SELECT set(ARRAY[geometry 'Point(1 1)', 'SRID=5676;Point(1 1)']);
 
 -------------------------------------------------------------------------------
 -- Casting
 -------------------------------------------------------------------------------
 
-SELECT tstzset(timestamptz '2000-01-01');
+SELECT set(timestamptz '2000-01-01');
 SELECT timestamptz '2000-01-01'::tstzset;
 
 -------------------------------------------------------------------------------
@@ -98,7 +98,7 @@ SELECT tscale(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', '1 hour');
 SELECT shiftTscale(tstzset '{2000-01-01}', '1 day', '1 hour');
 SELECT shiftTscale(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', '1 day', '1 hour');
 
-SELECT tstzset_cmp(tstzset '{2000-01-01}', tstzset '{2000-01-01, 2000-01-02, 2000-01-03}') = -1;
+SELECT set_cmp(tstzset '{2000-01-01}', tstzset '{2000-01-01, 2000-01-02, 2000-01-03}') = -1;
 SELECT tstzset '{2000-01-01}' = tstzset '{2000-01-01, 2000-01-02, 2000-01-03}';
 SELECT tstzset '{2000-01-01}' <> tstzset '{2000-01-01, 2000-01-02, 2000-01-03}';
 SELECT tstzset '{2000-01-01}' < tstzset '{2000-01-01, 2000-01-02, 2000-01-03}';
@@ -107,10 +107,10 @@ SELECT tstzset '{2000-01-01}' <= tstzset '{2000-01-01, 2000-01-02, 2000-01-03}';
 SELECT tstzset '{2000-01-01}' > tstzset '{2000-01-01, 2000-01-02, 2000-01-03}';
 SELECT tstzset '{2000-01-01}' >= tstzset '{2000-01-01, 2000-01-02, 2000-01-03}';
 
-SELECT tstzset_hash('{2000-01-01,2000-01-02}') = tstzset_hash('{2000-01-01,2000-01-02}');
-SELECT tstzset_hash('{2000-01-01,2000-01-02}') <> tstzset_hash('{2000-01-01,2000-01-02}');
+SELECT set_hash(tstzset '{2000-01-01,2000-01-02}') = set_hash(tstzset '{2000-01-01,2000-01-02}');
+SELECT set_hash(tstzset '{2000-01-01,2000-01-02}') <> set_hash(tstzset '{2000-01-01,2000-01-02}');
 
-SELECT tstzset_hash_extended('{2000-01-01,2000-01-02}', 1) = tstzset_hash_extended('{2000-01-01,2000-01-02}', 1);
-SELECT tstzset_hash_extended('{2000-01-01,2000-01-02}', 1) <> tstzset_hash_extended('{2000-01-01,2000-01-02}', 1);
+SELECT set_hash_extended(tstzset '{2000-01-01,2000-01-02}', 1) = set_hash_extended(tstzset '{2000-01-01,2000-01-02}', 1);
+SELECT set_hash_extended(tstzset '{2000-01-01,2000-01-02}', 1) <> set_hash_extended(tstzset '{2000-01-01,2000-01-02}', 1);
 
 -------------------------------------------------------------------------------

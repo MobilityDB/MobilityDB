@@ -7,38 +7,38 @@ SELECT tstzset '{2000-01-01, 2000-01-02';
 ERROR:  Could not parse the set
 LINE 1: SELECT tstzset '{2000-01-01, 2000-01-02';
                        ^
-SELECT tstzset(ARRAY [timestamptz '2000-01-01', '2000-01-02', '2000-01-03']);
-                                    tstzset                                     
+SELECT set(ARRAY [timestamptz '2000-01-01', '2000-01-02', '2000-01-03']);
+                                      set                                       
 --------------------------------------------------------------------------------
  {"2000-01-01 00:00:00+00", "2000-01-02 00:00:00+00", "2000-01-03 00:00:00+00"}
 (1 row)
 
-SELECT tstzset(ARRAY [timestamptz '2000-01-01', '2000-01-01', '2000-01-03']);
-                       tstzset                        
+SELECT set(ARRAY [timestamptz '2000-01-01', '2000-01-01', '2000-01-03']);
+                         set                          
 ------------------------------------------------------
  {"2000-01-01 00:00:00+00", "2000-01-03 00:00:00+00"}
 (1 row)
 
 /* Errors */
-SELECT tstzset('{}'::timestamptz[]);
+SELECT set('{}'::timestamptz[]);
 ERROR:  The input array cannot be empty
-SELECT geomset(ARRAY[geometry 'Point(1 1)', 'Point(2 2)', 'Point(3 3)']);
-                                                                  geomset                                                                   
+SELECT set(ARRAY[geometry 'Point(1 1)', 'Point(2 2)', 'Point(3 3)']);
+                                                                    set                                                                     
 --------------------------------------------------------------------------------------------------------------------------------------------
  {"0101000000000000000000F03F000000000000F03F", "010100000000000000000000400000000000000040", "010100000000000000000008400000000000000840"}
 (1 row)
 
 /* Errors */
-SELECT geomset(ARRAY[geometry 'Point(1 1)', 'Point(1 1 1)']);
+SELECT set(ARRAY[geometry 'Point(1 1)', 'Point(1 1 1)']);
 ERROR:  Operation on mixed 2D/3D dimensions
-SELECT geomset(ARRAY[geometry 'Point(1 1)', 'Point empty']);
+SELECT set(ARRAY[geometry 'Point(1 1)', 'Point empty']);
 ERROR:  Only non-empty geometries accepted
-SELECT geomset(ARRAY[geometry 'Point(1 1)', 'Linestring(1 1,2 2)']);
+SELECT set(ARRAY[geometry 'Point(1 1)', 'Linestring(1 1,2 2)']);
 ERROR:  Only point geometries accepted
-SELECT geomset(ARRAY[geometry 'Point(1 1)', 'SRID=5676;Point(1 1)']);
+SELECT set(ARRAY[geometry 'Point(1 1)', 'SRID=5676;Point(1 1)']);
 ERROR:  Operation on mixed SRID
-SELECT tstzset(timestamptz '2000-01-01');
-          tstzset           
+SELECT set(timestamptz '2000-01-01');
+            set             
 ----------------------------
  {"2000-01-01 00:00:00+00"}
 (1 row)
@@ -193,7 +193,7 @@ SELECT shiftTscale(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', '1 day', '1 h
  {"2000-01-02 00:00:00+00", "2000-01-02 00:30:00+00", "2000-01-02 01:00:00+00"}
 (1 row)
 
-SELECT tstzset_cmp(tstzset '{2000-01-01}', tstzset '{2000-01-01, 2000-01-02, 2000-01-03}') = -1;
+SELECT set_cmp(tstzset '{2000-01-01}', tstzset '{2000-01-01, 2000-01-02, 2000-01-03}') = -1;
  ?column? 
 ----------
  t
@@ -241,25 +241,25 @@ SELECT tstzset '{2000-01-01}' >= tstzset '{2000-01-01, 2000-01-02, 2000-01-03}';
  f
 (1 row)
 
-SELECT tstzset_hash('{2000-01-01,2000-01-02}') = tstzset_hash('{2000-01-01,2000-01-02}');
+SELECT set_hash(tstzset '{2000-01-01,2000-01-02}') = set_hash(tstzset '{2000-01-01,2000-01-02}');
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tstzset_hash('{2000-01-01,2000-01-02}') <> tstzset_hash('{2000-01-01,2000-01-02}');
+SELECT set_hash(tstzset '{2000-01-01,2000-01-02}') <> set_hash(tstzset '{2000-01-01,2000-01-02}');
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tstzset_hash_extended('{2000-01-01,2000-01-02}', 1) = tstzset_hash_extended('{2000-01-01,2000-01-02}', 1);
+SELECT set_hash_extended(tstzset '{2000-01-01,2000-01-02}', 1) = set_hash_extended(tstzset '{2000-01-01,2000-01-02}', 1);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tstzset_hash_extended('{2000-01-01,2000-01-02}', 1) <> tstzset_hash_extended('{2000-01-01,2000-01-02}', 1);
+SELECT set_hash_extended(tstzset '{2000-01-01,2000-01-02}', 1) <> set_hash_extended(tstzset '{2000-01-01,2000-01-02}', 1);
  ?column? 
 ----------
  f
