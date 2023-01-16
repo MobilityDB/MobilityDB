@@ -426,8 +426,10 @@ SELECT storageSize(tstzspanset '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-
 
 				<listitem id="lower">
 					<indexterm><primary><varname>lower</varname></primary></indexterm>
-					<para>Get the lower bound</para>
+					<indexterm><primary><varname>upper</varname></primary></indexterm>
+					<para>Get the lower/upper bound</para>
 					<para><varname>lower(span) → base</varname></para>
+					<para><varname>upper(span) → base</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT lower(intspan '[20, 25)');
 -- 20
@@ -436,12 +438,6 @@ SELECT lower(intspanset '{[1,2],[4,5]}');
 SELECT lower(tstzspan '[2011-01-01, 2011-01-05)');
 -- 2011-01-01
 </programlisting>
-				</listitem>
-
-				<listitem id="upper">
-					<indexterm><primary><varname>upper</varname></primary></indexterm>
-					<para>Get the upper bound</para>
-					<para><varname>upper(span) → base</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT upper(intspanset '{[1,2],[4,5]}');
 --  6
@@ -454,8 +450,10 @@ SELECT upper(tstzspan '[2011-01-01, 2011-01-05)');
 
 				<listitem id="lower_inc">
 					<indexterm><primary><varname>lower_inc</varname></primary></indexterm>
-					<para>Is the lower bound inclusive?</para>
+					<indexterm><primary><varname>upper_inc</varname></primary></indexterm>
+					<para>Is the lower/upper bound inclusive?</para>
 					<para><varname>lower_inc(span) → boolean</varname></para>
+					<para><varname>upper_inc(span) → boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT lower_inc(intspan '[20, 25)');
 -- true
@@ -464,12 +462,6 @@ SELECT lower_inc(intspanset '{[1,2],[4,5]}');
 SELECT lower_inc(tstzspan '[2011-01-01, 2011-01-05)');
 -- true
 </programlisting>
-				</listitem>
-
-				<listitem id="upper_inc">
-					<indexterm><primary><varname>upper_inc</varname></primary></indexterm>
-					<para>Is the upper bound inclusive?</para>
-					<para><varname>upper_inc(span) → boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT upper_inc(intspanset '{[1,2],[4,5]}');
 -- false
@@ -533,29 +525,17 @@ SELECT numValues(intset '{1,3,5,7}');
 
 				<listitem id="set_startValue">
 					<indexterm><primary><varname>startValue</varname></primary></indexterm>
-					<para>Get the start value</para>
+					<indexterm><primary><varname>endValue</varname></primary></indexterm>
+					<indexterm><primary><varname>valueN</varname></primary></indexterm>
+					<para>Get the start/end/n-th value</para>
 					<para><varname>startValue(set) → base</varname></para>
+					<para><varname>endValue(set) → base</varname></para>
+					<para><varname>valueN(set,integer) → base</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT startValue(intset '{1,3,5,7}');
 -- 1
-</programlisting>
-				</listitem>
-
-				<listitem id="set_endValue">
-					<indexterm><primary><varname>endValue</varname></primary></indexterm>
-					<para>Get the end value</para>
-					<para><varname>endValue(set) → base</varname></para>
-					<programlisting language="sql" xml:space="preserve">
 SELECT endValue(tstzset '{2001-01-01, 2001-01-03, 2001-01-05, 2001-01-07}');
 -- 2001-01-07
-</programlisting>
-				</listitem>
-
-				<listitem id="set_valueN">
-					<indexterm><primary><varname>valueN</varname></primary></indexterm>
-					<para>Get the n-th value</para>
-					<para><varname>valueN(set,integer) → base</varname></para>
-					<programlisting language="sql" xml:space="preserve">
 SELECT valueN(floatset '{1,3,5,7}',2);
 -- 3
 </programlisting>
@@ -586,8 +566,11 @@ SELECT numSpans(tstzspanset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-04]
 
 				<listitem id="startSpan">
 					<indexterm><primary><varname>startSpan</varname></primary></indexterm>
-					<para>Get the start span</para>
+					<indexterm><primary><varname>endSpan</varname></primary></indexterm>
+					<para>Get the start/end/n-th span</para>
 					<para><varname>startSpan(spanset) → span</varname></para>
+					<para><varname>endSpan(spanset) → span</varname></para>
+					<para><varname>spanN(spanset,integer) → span</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT startSpan(intspanset '{[1,3),[4,4],[6,7)}');
 -- [1,3)
@@ -595,12 +578,6 @@ SELECT startSpan(tstzspanset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-04
   [2001-01-05, 2001-01-06)}');
 -- [2001-01-01,2001-01-03)
 </programlisting>
-				</listitem>
-
-				<listitem id="endSpan">
-					<indexterm><primary><varname>endSpan</varname></primary></indexterm>
-					<para>Get the end span</para>
-					<para><varname>endSpan(spanset) → span</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT endSpan(floatspanset '{[1,3),[4,4],[6,7)}');
 -- [6,7)
@@ -608,12 +585,6 @@ SELECT endSpan(tstzspanset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-04],
   [2001-01-05, 2001-01-06)}');
 -- [2001-01-05,2001-01-06)
 </programlisting>
-				</listitem>
-
-				<listitem id="spanN">
-					<indexterm><primary><varname>spanN</varname></primary></indexterm>
-					<para>Get the n-th span</para>
-					<para><varname>spanN(spanset,integer) → span</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT spanN(floatspanset '{[1,3),[4,4],[6,7)}',2);
 -- [4,4]
@@ -650,32 +621,18 @@ SELECT numTimestamps(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-0
 
 				<listitem id="setspan_startTimestamp">
 					<indexterm><primary><varname>startTimestamp</varname></primary></indexterm>
-					<para>Get the start timestamp</para>
+					<indexterm><primary><varname>endTimestamp</varname></primary></indexterm>
+					<indexterm><primary><varname>timestampN</varname></primary></indexterm>
+					<para>Get the start/end/n-th timestamp</para>
 					<para><varname>startTimestamp(tstzspanset) → timestamptz</varname></para>
-					<para>The function does not take into account whether the bounds are inclusive or not.</para>
+					<para><varname>endTimestamp(tstzspanset) → timestamptz</varname></para>
+					<para><varname>timestampN(tstzspanset,integer) → timestamptz</varname></para>
+					<para>The functions do not take into account whether the bounds are inclusive or not.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT startTimestamp(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}');
 -- 2001-01-01
-</programlisting>
-				</listitem>
-
-				<listitem id="setspan_endTimestamp">
-					<indexterm><primary><varname>endTimestamp</varname></primary></indexterm>
-					<para>Get the end timestamp</para>
-					<para><varname>endTimestamp(tstzspanset) → timestamptz</varname></para>
-					<para>The function does not take into account whether the bounds are inclusive or not.</para>
-					<programlisting language="sql" xml:space="preserve">
 SELECT endTimestamp(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}');
 -- 2001-01-05
-</programlisting>
-				</listitem>
-
-				<listitem id="setspan_timestampN">
-					<indexterm><primary><varname>timestampN</varname></primary></indexterm>
-					<para>Get the n-th different timestamp</para>
-					<para><varname>timestampN(tstzspanset,integer) → timestamptz</varname></para>
-					<para>The function does not take into account whether the bounds are inclusive or not.</para>
-					<programlisting language="sql" xml:space="preserve">
 SELECT timestampN(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}', 3);
 -- 2001-01-04
 </programlisting>

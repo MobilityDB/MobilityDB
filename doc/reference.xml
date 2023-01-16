@@ -106,25 +106,25 @@
 	</sect1>
 
 	<sect1>
-		<title>Functions and Operators for Span and Time Types</title>
+		<title>Functions and Operators for Set and Span Types</title>
 
 		<sect2>
 			<title>Input/Output Functions</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="spantime_asBinary"><varname>asBinary</varname></link>: Get the Well-Known Binary (WKB) representation of a span or time type</para>
+					<para><link linkend="spantime_asBinary"><varname>asBinary</varname></link>: Get the Well-Known Binary (WKB) representation of a set or span type</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="spantime_asHexWKB"><varname>asHexWKB</varname></link>: Get the Hexadecimal Well-Known Binary (HexWKB) representation as text of a span or time type</para>
+					<para><link linkend="spantime_asHexWKB"><varname>asHexWKB</varname></link>: Get the Hexadecimal Well-Known Binary (HexWKB) representation as text of a set or span type</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="spantime_FromBinary"><varname>intspanFromBinary</varname>, <varname>intspansetFromBinary</varname>, <varname>floatspanFromBinary</varname>, <varname>floatspansetFromBinary</varname>, <varname>tstzspanFromBinary</varname>, <varname>tstzspansetFromBinary</varname>, <varname>tstzsetFromBinary</varname></link>: Input a span or time type from a Well-Known Binary (WKB) representation</para>
+					<para><link linkend="spantime_FromBinary"><varname>intsetFromBinary</varname>, <varname>intspanFromBinary</varname>, <varname>intspansetFromBinary</varname>, <varname>...</varname></link>: Input a span or set type from a Well-Known Binary (WKB) representation</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="spantime_FromHexWKB"><varname>intspanFromHexWKB</varname>, <varname>intspansetFromHexWKB</varname>, <varname>floatspanFromHexWKB</varname>, <varname>floatspansetFromHexWKB</varname>, <varname>tstzsetFromHexWKB</varname>, <varname>tstzspanFromHexWKB</varname>, <varname>tstzspansetFromHexWKB</varname></link>: Input a span or time type from an Hexadecimal Well-Known Binary (HexWKB) representation</para>
+					<para><link linkend="spantime_FromHexWKB"><varname>intsetFromHexWKB</varname>, <varname>intspanFromHexWKB</varname>, <varname>intspansetFromHexWKB</varname>, <varname>...</varname></link>: Input a span or set type from an Hexadecimal Well-Known Binary (HexWKB) representation</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -150,23 +150,39 @@
 			<title>Casting</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="timestamptz_cast"><varname>timestamptz::time</varname></link>: Cast a <varname>timestamptz</varname> value to another time type</para>
+					<para><link linkend="timestamptz_cast"><varname>base::set</varname>, <varname>set(base)</varname></link>: Cast a base value to set value</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="set_cast"><varname>set::spanset</varname></link>: Cast a set value to a span set value</para>
+					<para><link linkend="timestamptz_cast"><varname>base::span</varname>, <varname>span(base)</varname></link>: Cast a base value to span value</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_cast"><varname>span::spanset</varname></link>: Cast a span value to a span set value</para>
+					<para><link linkend="timestamptz_cast"><varname>base::spanset</varname>, <varname>spanset(base)</varname></link>: Cast a base value to span set value</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_cast_range"><varname>span::range</varname></link>: Cast a span value to a PostgreSQL range value</para>
+					<para><link linkend="set_cast"><varname>set::spanset</varname>, <varname>spanset(set)</varname></link>: Cast a set value to a span set value</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="range_cast_span"><varname>range::span</varname></link>: Cast a PostgreSQL range value to a span value</para>
+					<para><link linkend="setspan_cast"><varname>span::spanset</varname>, <varname>spanset(span)</varname></link>: Cast a span value to a span set value</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="setspan_cast_range"><varname>span::range</varname>, <varname>range(span)</varname></link>: Cast a span value to a PostgreSQL range value</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="setspan_cast_range"><varname>spanset::multirange</varname>, <varname>multirange(spanset)</varname></link>: Cast a span set value to a PostgreSQL multirange value</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="range_cast_span"><varname>range::span</varname>, <varname>span(range)</varname></link>: Cast a PostgreSQL range value to a span value</para>
+
+				<listitem>
+					<para><link linkend="range_cast_span"><varname>multirange::spanset</varname>, <varname>spanset(multirange)</varname></link>: Cast a PostgreSQL multirange value to a span set value</para>
+				</listitem>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -184,19 +200,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="lower"><varname>lower</varname></link>: Get the lower bound</para>
+					<para><link linkend="lower"><varname>lower</varname>, <varname>upper</varname></link>: Get the lower/upper bound</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="upper"><varname>upper</varname></link>: Get the upper bound</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="lower_inc"><varname>lower_inc</varname></link>: Is the lower bound inclusive?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="upper_inc"><varname>upper_inc</varname></link>: Is the upper bound inclusive?</para>
+					<para><link linkend="lower_inc"><varname>lower_inc</varname>, <varname>upper_inc</varname></link>: Is the lower/upper bound inclusive?</para>
 				</listitem>
 
 				<listitem>
@@ -208,10 +216,6 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_timespan"><varname>timespan</varname></link>: Get the timespan ignoring the potential time gaps</para>
-				</listitem>
-
-				<listitem>
 					<para><link linkend="setspan_span"><varname>span</varname></link>: Get the bounding span of the set or span set ignoring the potential time gaps</para>
 				</listitem>
 
@@ -220,19 +224,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_startValue"><varname>startValue</varname></link>: Get the start value</para>
+					<para><link linkend="setspan_startValue"><varname>startValue</varname>, <varname>endValue</varname>, <varname>valueN</varname></link>: Get the start/end/n-th value</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_endValue"><varname>endValue</varname></link>: Get the end value</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="setspan_valueN"><varname>valueN</varname></link>: Get the n-th value</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="setspan_values"><varname>values</varname></link>: Get the values</para>
+					<para><link linkend="setspan_values"><varname>getValues</varname></link>: Get the values</para>
 				</listitem>
 
 				<listitem>
@@ -240,15 +236,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="startSpan"><varname>startSpan</varname></link>: Get the start span</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="endSpan"><varname>endSpan</varname></link>: Get the end span</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="spanN"><varname>spanN</varname></link>: Get the n-th span</para>
+					<para><link linkend="startSpan"><varname>startSpan</varname>, <varname>endSpan</varname>, <varname>spanN</varname></link>: Get the start/end/n-th span</para>
 				</listitem>
 
 				<listitem>
@@ -274,7 +262,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="floatspan_round"><varname>round</varname></link>: Round the bounds of a float span to a number of decimal places</para>
+					<para><link linkend="floatspan_round"><varname>round</varname></link>: Round the bounds of a float set or span to a number of decimal places</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -314,15 +302,15 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="setspan_union"><varname>+</varname></link>: Union of values</para>
+					<para><link linkend="setspan_union"><varname>+</varname></link>: Union of sets or spans</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_difference"><varname>-</varname></link>: Difference of values</para>
+					<para><link linkend="setspan_difference"><varname>-</varname></link>: Difference of sets or spans</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_intersection"><varname>*</varname></link>: Intersection of values</para>
+					<para><link linkend="setspan_intersection"><varname>*</varname></link>: Intersection of sets or spans</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -332,35 +320,35 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="setspan_overlaps"><varname>&amp;&amp;</varname></link>: Do the values overlap (have values in common)?</para>
+					<para><link linkend="setspan_overlaps"><varname>&amp;&amp;</varname></link>: Do the sets or spans overlap (have values in common)?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_contains"><varname>@&gt;</varname></link>: Does the first value contain the second one?</para>
+					<para><link linkend="setspan_contains"><varname>@&gt;</varname></link>: Does the first set or span contain the second one?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_containedby"><varname>&lt;@</varname></link>: Is the first value contained by the second one?</para>
+					<para><link linkend="setspan_containedby"><varname>&lt;@</varname></link>: Is the first set or span contained by the second one?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_adjacent"><varname>-|-</varname></link>: Is the first value adjacent to the second one?</para>
+					<para><link linkend="setspan_adjacent"><varname>-|-</varname></link>: Is the first set or span adjacent to the second one?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_left"><varname>&lt;&lt;</varname>, <varname>#&lt;&lt;</varname></link>: Is the first value scritly to the left of the second one?</para>
+					<para><link linkend="setspan_left"><varname>&lt;&lt;</varname>, <varname>&lt;&lt;#</varname></link>: Is the first set or span scritly to the left of the second one?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_right"><varname>&gt;&gt;</varname>, <varname>&gt;&gt;#</varname></link>: Is the first value strictly to the right of the second one?</para>
+					<para><link linkend="setspan_right"><varname>&gt;&gt;</varname>, <varname>#&gt;&gt;</varname></link>: Is the first set or span strictly to the right of the second one?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_overleft"><varname>&amp;&lt;</varname>, <varname>#&amp;&lt;</varname></link>: Is the first value not to the right of the second one?</para>
+					<para><link linkend="setspan_overleft"><varname>&amp;&lt;</varname>, <varname>&amp;&lt;#</varname></link>: Is the first set or span not to the right of the second one?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_overright"><varname>&amp;&gt;</varname>, <varname>&amp;&gt;#</varname></link>: Is the first value not to the left of the second one?</para>
+					<para><link linkend="setspan_overright"><varname>&amp;&gt;</varname>, <varname>#&amp;&gt;</varname></link>: Is the first set or span not to the left of the second one?</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -437,52 +425,19 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="hasX"><varname>hasX</varname></link>: Has X dimension?</para>
+					<para><link linkend="hasX"><varname>hasX</varname>, <varname>hasZ</varname>, <varname>hasT</varname></link>: Has X/Z/T dimension?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="hasZ"><varname>hasZ</varname></link>: Has Z dimension?</para>
+					<para><link linkend="isGeodetic"><varname>isGeodetic</varname></link>: Is geodetic?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="hasT"><varname>hasT</varname></link>: Has T dimension?</para>
+					<para><link linkend="Xmin"><varname>Xmin</varname>, <varname>Ymin</varname>, <varname>Zmin</varname>, <varname>Tmin</varname></link>: Get the minimum X/Y/Z/T value</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="isGeodetic"><varname>hasZ</varname></link>: Is geodetic?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="Xmin"><varname>Xmin</varname></link>: Get the minimum X value</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="Xmax"><varname>Xmax</varname></link>: Get the maximum X value</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="Ymin"><varname>Ymin</varname></link>: Get the minimum Y value</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="Ymax"><varname>Ymax</varname></link>: Get the maximum Y value</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="Zmin"><varname>Zmin</varname></link>: Get the minimum Z value</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="Zmax"><varname>Zmax</varname></link>: Get the maximum Z value</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="Tmin"><varname>Tmin</varname></link>: Get the minimum T value</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="Tmax"><varname>Tmax</varname></link>: Get the maximum T value</para>
-					<para></para>
+					<para><link linkend="Xmax"><varname>Xmax</varname>, <varname>Ymax</varname>, <varname>Zmax</varname>, <varname>Tmax</varname></link>: Get the maximum X/Y/Z/T value</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -570,11 +525,11 @@
 			<title>Set Operators</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="box_union"><varname>+</varname></link>: Union of the bounding boxes</para>
+					<para><link linkend="box_union"><varname>+</varname></link>: Union of bounding boxes</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="box_intersection"><varname>*</varname></link>: Intersection of the bounding boxes</para>
+					<para><link linkend="box_intersection"><varname>*</varname></link>: Intersection of bounding boxes</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -608,83 +563,19 @@
 			<title>Relative Position Operators</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tbox_left"><varname>&lt;&lt;</varname></link>: Are the X values of the first bounding box strictly less than those of the second one?</para>
+					<para><link linkend="tbox_left"><varname>&lt;&lt;</varname>, <varname>&lt;&lt;|</varname>, <varname>&lt;&lt;/</varname>, <varname>&lt;&lt;#</varname></link>: Are the X/Y/Z/T values of the first bounding box strictly less than those of the second one?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tbox_right"><varname>&gt;&gt;</varname></link>: Are the X values of the first bounding box strictly greater than those of the second one?</para>
+					<para><link linkend="tbox_right"><varname>&gt;&gt;</varname>,<varname>|&gt;&gt;</varname>, <varname>/&gt;&gt;</varname>, <varname>#&gt;&gt;</varname></link>: Are the X/Y/Z/T values of the first bounding box strictly greater than those of the second one?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tbox_overleft"><varname>&amp;&lt;</varname></link>: Are the X values of the first bounding box not greater than those of the second one?</para>
+					<para><link linkend="tbox_overleft"><varname>&amp;&lt;</varname>, <varname>&amp;&lt;|</varname>, <varname>&amp;&lt;/</varname>, <varname>&amp;&lt;#</varname></link>: Are the X/Y/Z/T values of the first bounding box not greater than those of the second one?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tbox_overright"><varname>&amp;&gt;</varname></link>: Are the X values of the first bounding box not less than those of the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="stbox_left"><varname>&lt;&lt;</varname></link>: Are the X values of the first bounding box strictly to the left of those of the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="stbox_right"><varname>&gt;&gt;</varname></link>: Are the X values of the first bounding box strictly to the right of those of the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="stbox_overleft"><varname>&amp;&lt;</varname></link>: Are the X values of the first bounding box not to the right of those of the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="stbox_overright"><varname>&amp;&gt;</varname></link>: Are the X values of the first bounding box not to the left of those of the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="stbox_below"><varname>&lt;&lt;|</varname></link>: Are the Y values of the first bounding box strictly below of those of the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="stbox_above"><varname>|&gt;&gt;</varname></link>: Are the Y values of the first bounding box strictly above of those of the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="stbox_overbelow"><varname>&amp;&lt;|</varname></link>: Are the Y values of the first bounding box not above of those of the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="stbox_overabove"><varname>|&amp;&gt;</varname></link>: Are the Y values of the first bounding box not below of those of the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="stbox_front"><varname>&lt;&lt;/</varname></link>: Are the Z values of the first bounding box strictly in front of those of the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="stbox_back"><varname>/&gt;&gt;</varname></link>: Are the Z values of the first bounding box strictly back of those of the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="stbox_overfront"><varname>&amp;&lt;/</varname></link>: Are the Z values of the first bounding box not back of those of the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="stbox_overback"><varname>/&amp;&gt;</varname></link>: Are the Z values of the first bounding box not in front of those of the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_before"><varname>&lt;&lt;#</varname></link>: Are the T values of the first bounding box strictly before those of the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_after"><varname>#&gt;&gt;</varname></link>: Are the T values of the first bounding box strictly after those of the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_overbefore"><varname>&amp;&lt;#</varname></link>: Are the T values of the first bounding box not after those of the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_overafter"><varname>#&amp;&gt;</varname></link>: Are the T values of the first bounding box not before those of the second one?</para>
+					<para><link linkend="tbox_overright"><varname>&amp;&gt;</varname>, <varname>|&amp;&gt;</varname>, <varname>/&amp;&gt;</varname>, <varname>#&amp;&gt;</varname></link>: Are the X/Y/Z/T values of the first bounding box not less than those of the second one?</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -765,31 +656,19 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="startValue"><varname>startValue</varname></link>: Get the start value</para>
+					<para><link linkend="startValue"><varname>startValue</varname>, <varname>endValue</varname></link>: Get the start/end value</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="endValue"><varname>endValue</varname></link>: Get the end value</para>
+					<para><link linkend="minValue"><varname>minValue</varname>, <varname>maxValue</varname></link>: Get the minimum/maximum value</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="minValue"><varname>minValue</varname></link>: Get the minimum value</para>
+					<para><link linkend="minInstant"><varname>minInstant</varname>, <varname>maxInstant</varname></link>: Get the instant with the minimum/maximum value</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="maxValue"><varname>maxValue</varname></link>: Get the maximum value</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="minInstant"><varname>minInstant</varname></link>: Get the instant with the minimum value</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="maxInstant"><varname>maxInstant</varname></link>: Get the instant with the maximum value</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="valueSpan"><varname>valueSpan</varname></link>: Get the value span</para>
+					<para><link linkend="valueSpan"><varname>valueSpan</varname>, <varname>timeSpan</varname></link>: Get the value/time span</para>
 				</listitem>
 
 				<listitem>
@@ -809,10 +688,6 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_timespan"><varname>timespan</varname></link>: Get the timespan ignoring the potential time gaps</para>
-				</listitem>
-
-				<listitem>
 					<para><link linkend="ttype_period"><varname>period</varname></link>: Get the period on which the temporal value is defined ignoring the potential time gaps</para>
 				</listitem>
 
@@ -821,15 +696,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="startInstant"><varname>startInstant</varname></link>: Get the start instant</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="endInstant"><varname>endInstant</varname></link>: Get the end instant</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="instantN"><varname>instantN</varname></link>: Get the n-th different instant</para>
+					<para><link linkend="startInstant"><varname>startInstant</varname>, <varname>endInstant</varname>, <varname>instantN</varname></link>: Get the start/end/n-th instant</para>
 				</listitem>
 
 				<listitem>
@@ -841,15 +708,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_startTimestamp"><varname>startTimestamp</varname></link>: Get the start timestamp</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="ttype_endTimestamp"><varname>endTimestamp</varname></link>: Get the end timestamp</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="ttype_timestampN"><varname>timestampN</varname></link>: Get the n-th different timestamp</para>
+					<para><link linkend="ttype_startTimestamp"><varname>startTimestamp</varname>, <varname>endTimestamp</varname>, <varname>timestampN</varname></link>: Get the start/end/n-th timestamp</para>
 				</listitem>
 
 				<listitem>
@@ -861,15 +720,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="startSequence"><varname>startSequence</varname></link>: Get the start sequence</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="endSequence"><varname>endSequence</varname></link>: Get the end sequence</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="sequenceN"><varname>sequenceN</varname></link>: Get the n-th sequence</para>
+					<para><link linkend="startSequence"><varname>startSequence</varname>, <varname>endSequence</varname>, <varname>sequenceN</varname></link>: Get the start/end/n-th sequence</para>
 				</listitem>
 
 				<listitem>
@@ -1090,51 +941,27 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="ttype_eveq"><varname>?=</varname></link>: Is the temporal value ever equal to the value?</para>
+						<para><link linkend="ttype_eveq"><varname>?=</varname>, <varname>%=</varname></link>: Is the temporal value ever/always equal to the value?</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="ttype_evne"><varname>?&lt;&gt;</varname></link>: Is the temporal value ever different from the value?</para>
+						<para><link linkend="ttype_evne"><varname>?&lt;&gt;</varname>, <varname>%&lt;&gt;</varname></link>: Is the temporal value ever/always different from the value?</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="ttype_evlt"><varname>?&lt;</varname></link>: Is the temporal value ever less than the value?</para>
+						<para><link linkend="ttype_evlt"><varname>?&lt;</varname>, <varname>%&lt;</varname></link>: Is the temporal value ever/always less than the value?</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="ttype_evgt"><varname>?&gt;</varname></link>: Is the temporal value ever greater than the value?</para>
+						<para><link linkend="ttype_evgt"><varname>?&gt;</varname>, <varname>%&gt;</varname></link>: Is the temporal value ever/always greater than the value?</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="ttype_evle"><varname>?&lt;=</varname></link>: Is the temporal value ever less than or equal to the value?</para>
+						<para><link linkend="ttype_evle"><varname>?&lt;=</varname>, <varname>%&lt;=</varname></link>: Is the temporal value ever/always less than or equal to the value?</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="ttype_evge"><varname>?&gt;=</varname></link>: Is the temporal value ever greater than or equal to the value?</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="ttype_aleq"><varname>%=</varname></link>: Is the temporal value always equal to the value?</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="ttype_alne"><varname>%&lt;&gt;</varname></link>: Is the temporal value always different to the value?</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="ttype_allt"><varname>%&lt;</varname></link>: Is the temporal value always less than the value?</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="ttype_algt"><varname>%&gt;</varname></link>: Is the temporal value always greater than the value?</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="ttype_alle"><varname>%&lt;=</varname></link>: Is the temporal value always less than or equal to the value?</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="ttype_alge"><varname>%&gt;=</varname></link>: Is the temporal value always greater than or equal to the value?</para>
+						<para><link linkend="ttype_evge"><varname>?&gt;=</varname>, <varname>%&gt;=</varname></link>: Is the temporal value ever/always greater than or equal to the value?</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1275,51 +1102,27 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tgeompointFromText"><varname>tgeompointFromText</varname></link>: Input a temporal geometry point from a Well-Known Text (WKT) representation</para>
+						<para><link linkend="tgeompointFromText"><varname>tgeompointFromText</varname>, <varname>tgeogpointFromText</varname></link>: Input a temporal geometry/geography point from a Well-Known Text (WKT) representation</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tgeogpointFromText"><varname>tgeogpointFromText</varname></link>: Input a temporal geography point from a Well-Known Text (WKT) representation</para>
+						<para><link linkend="tgeompointFromEWKT"><varname>tgeompointFromEWKT</varname>, <varname>tgeogpointFromEWKT</varname></link>: Input a temporal geometry/geography point from an Extended Well-Known Text (EWKT) representation</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tgeompointFromEWKT"><varname>tgeompointFromEWKT</varname></link>: Input a temporal geometry point from an Extended Well-Known Text (EWKT) representation</para>
+						<para><link linkend="tgeompointFromMFJSON"><varname>tgeompointFromMFJSON</varname>, <varname>tgeogpointFromMFJSON</varname></link>: Input a temporal geometry/geography point from a Moving Features JSON representation</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tgeogpointFromEWKT"><varname>tgeogpointFromEWKT</varname></link>: Input a temporal geography point from an Extended Well-Known Text (EWKT) representation</para>
+						<para><link linkend="tgeompointFromBinary"><varname>tgeompointFromBinary</varname>, <varname>tgeogpointFromBinary</varname></link>: Input a temporal geometry/geography point from a Well-Known Binary (WKB) representation</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tgeompointFromMFJSON"><varname>tgeompointFromMFJSON</varname></link>: Input a temporal geometry point from a Moving Features JSON representation</para>
+						<para><link linkend="tgeompointFromEWKB"><varname>tgeompointFromEWKB</varname>, <varname>tgeogpointFromEWKB</varname></link>: Input a temporal geometry/geography point from an Extended Well-Known Binary (EWKB) representation</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tgeogpointFromMFJSON"><varname>tgeogpointFromMFJSON</varname></link>: Input a temporal geography geometry point from a Moving Features JSON representation</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tgeompointFromBinary"><varname>tgeompointFromBinary</varname></link>: Input a temporal geometry point from a Well-Known Binary (WKB) representation</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tgeogpointFromBinary"><varname>tgeogpointFromBinary</varname></link>: Input a temporal geography point from a Well-Known Binary (WKB) representation</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tgeompointFromEWKB"><varname>tgeompointFromEWKB</varname></link>: Input a temporal geometry point from an Extended Well-Known Binary (EWKB) representation</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tgeogpointFromEWKB"><varname>tgeogpointFromEWKB</varname></link>: Input a temporal geography point from an Extended Well-Known Binary (EWKB) representation</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tgeompointFromHexEWKB"><varname>tgeompointFromHexEWKB</varname></link>: Input a temporal geometry point from an Hexadecimal Extended Well-Known Binary (EWKB) representation as text </para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tgeogpointFromHexEWKB"><varname>tgeogpointFromHexEWKB</varname></link>: Input a temporal geography point from an Hexadecimal Extended Well-Known Binary (EWKB) representation as text </para>
+						<para><link linkend="tgeompointFromHexEWKB"><varname>tgeompointFromHexEWKB</varname>, <varname>tgeogpointFromHexEWKB</varname></link>: Input a temporal geometry/geography point from an Hexadecimal Extended Well-Known Binary (EWKB) representation as text </para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1356,15 +1159,7 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="getX"><varname>getX</varname></link>: Get the X coordinate values as a temporal float</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="getY"><varname>getY</varname></link>: Get the Y coordinate values as a temporal float</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="getZ"><varname>getZ</varname></link>: Get the Z coordinate values as a temporal float</para>
+						<para><link linkend="getX"><varname>getX</varname>, <varname>getY</varname>, <varname>getZ</varname></link>: Get the X/Y/Z/T coordinate values as a temporal float</para>
 					</listitem>
 
 					<listitem>
@@ -1696,12 +1491,9 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="startPosition"><varname>startPosition</varname></link>: Get the start position</para>
+						<para><link linkend="startPosition"><varname>startPosition</varname>, <varname>endPosition</varname></link>: Get the start/end position</para>
 					</listitem>
 
-					<listitem>
-						<para><link linkend="endPosition"><varname>endPosition</varname></link>: Get the end position</para>
-					</listitem>
 
 					<listitem>
 						<para><link linkend="npoint_srid"><varname>SRID</varname></link>: Get the spatial reference identifier</para>
