@@ -1002,7 +1002,7 @@ Set *
 union_set_value(const Set *s, Datum d, meosType basetype)
 {
   assert(basetype == s->basetype);
-  Datum *values = palloc(sizeof(TimestampTz) * (s->count + 1));
+  Datum *values = palloc(sizeof(Datum *) * (s->count + 1));
   int k = 0;
   bool found = false;
   for (int i = 0; i < s->count; i++)

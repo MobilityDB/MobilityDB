@@ -58,13 +58,14 @@ PG_FUNCTION_INFO_V1(Set_agg_transfn);
 PGDLLEXPORT Datum
 Set_agg_transfn(PG_FUNCTION_ARGS)
 {
+  // MemoryContext ctx = set_aggregation_context(fcinfo);
   Set *state = PG_ARGISNULL(0) ? NULL : PG_GETARG_SET_P(0);
   if (PG_ARGISNULL(1))
     PG_RETURN_NULL();
   Datum d = PG_GETARG_DATUM(1);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   void *value = NULL;
-  if (! basetype_byvalue(basetype) &&
+  if (basetype_varlength(basetype) &&
       PG_DATUM_NEEDS_DETOAST((struct varlena *) d))
     value = PG_DETOAST_DATUM(d);
   state = set_agg_transfn(state, value ? PointerGetDatum(value) : d, basetype);

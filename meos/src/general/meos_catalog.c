@@ -231,8 +231,8 @@ basetype_settype(meosType basetype)
  *****************************************************************************/
 
 /**
- * @brief Ensure that a type is a base type of one of the template types, that is,
- * Set, Span, SpanSet, and Temporal
+ * @brief Ensure that a type is a base type of one of the template types,
+ * that is, Set, Span, SpanSet, and Temporal
  */
 void
 ensure_basetype(meosType type)
@@ -248,7 +248,7 @@ ensure_basetype(meosType type)
 }
 
 /**
- * @brief Return true if the values of the type are passed by value.
+ * @brief Return true if the values of the base type are passed by value.
  */
 bool
 basetype_byvalue(meosType type)
@@ -256,6 +256,18 @@ basetype_byvalue(meosType type)
   ensure_basetype(type);
   if (type == T_BOOL || type == T_INT4 || type == T_INT8 || type == T_FLOAT8 ||
       type == T_TIMESTAMPTZ)
+    return true;
+  return false;
+}
+
+/**
+ * @brief Return true if the values of the base type are of variable length.
+ */
+bool
+basetype_varlength(meosType type)
+{
+  ensure_basetype(type);
+  if (type == T_TEXT || type == T_GEOMETRY || type == T_GEOGRAPHY)
     return true;
   return false;
 }

@@ -92,7 +92,7 @@ CREATE FUNCTION asHexWKB(npointset, endianenconding text DEFAULT '')
  * Constructor
  ******************************************************************************/
 
-CREATE FUNCTION npointset(npoint[])
+CREATE FUNCTION set(npoint[])
   RETURNS npointset
   AS 'MODULE_PATHNAME', 'Set_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -101,12 +101,12 @@ CREATE FUNCTION npointset(npoint[])
  * Casting
  ******************************************************************************/
 
-CREATE FUNCTION npointset(npoint)
+CREATE FUNCTION set(npoint)
   RETURNS npointset
   AS 'MODULE_PATHNAME', 'Value_to_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE CAST (npoint AS npointset) WITH FUNCTION npointset(npoint);
+CREATE CAST (npoint AS npointset) WITH FUNCTION set(npoint);
 
 /*****************************************************************************
  * Transformation functions

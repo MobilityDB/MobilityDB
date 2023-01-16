@@ -193,11 +193,11 @@ SELECT COUNT(*) FROM tbl_tnpoint, tbl_npoint
 WHERE minusValue(temp, np) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint,
-( SELECT npointset(array_agg(np)) AS s FROM tbl_npoint) tmp
+( SELECT set_agg(np) AS s FROM tbl_npoint) tmp
 WHERE atValues(temp, s) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint,
-( SELECT npointset(array_agg(np)) AS s FROM tbl_npoint) tmp
+( SELECT set_agg(np) AS s FROM tbl_npoint) tmp
 WHERE minusValues(temp, s) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz
