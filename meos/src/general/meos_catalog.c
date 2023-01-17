@@ -447,6 +447,17 @@ alphanumset_type(meosType type)
 bool
 geoset_type(meosType type)
 {
+  if (type == T_GEOMSET || type == T_GEOGSET)
+    return true;
+  return false;
+}
+
+/**
+ * @brief Return true if the type is a geo set type
+ */
+bool
+spatialset_type(meosType type)
+{
   if (type == T_GEOMSET || type == T_GEOGSET || type == T_NPOINTSET)
     return true;
   return false;

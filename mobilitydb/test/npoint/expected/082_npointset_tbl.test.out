@@ -1,0 +1,153 @@
+COPY tbl_npointset TO '/tmp/tbl_npointset' (FORMAT BINARY);
+COPY 100
+DROP TABLE IF EXISTS tbl_npointset_tmp;
+NOTICE:  table "tbl_npointset_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_npointset_tmp AS TABLE tbl_npointset WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_npointset_tmp FROM '/tmp/tbl_npointset' (FORMAT BINARY);
+COPY 100
+SELECT COUNT(*) FROM tbl_npointset t1, tbl_npointset_tmp t2 WHERE t1.k = t2.k AND t1.n <> t2.n;
+ count 
+-------
+     0
+(1 row)
+
+DROP TABLE tbl_npointset_tmp;
+DROP TABLE
+SELECT COUNT(*) FROM tbl_npointset WHERE npointsetFromHexWKB(asHexWKB(n)) <> n;
+ count 
+-------
+     0
+(1 row)
+
+SELECT memorySize(set(array_agg(DISTINCT np ORDER BY np))) FROM tbl_npoint WHERE np IS NOT NULL LIMIT 10;
+ memorysize 
+------------
+       2496
+(1 row)
+
+SELECT COUNT(*) FROM tbl_npoint WHERE np::npointset IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT MIN(getPosition(startValue(round(n, 3)))) FROM tbl_npointset;
+  min  
+-------
+ 0.003
+(1 row)
+
+SELECT MAX(memorySize(n)) FROM tbl_npointset;
+ max 
+-----
+ 336
+(1 row)
+
+SELECT MAX(storageSize(n)) FROM tbl_npointset;
+ max 
+-----
+ 336
+(1 row)
+
+SELECT MIN(numValues(n)) FROM tbl_npointset;
+ min 
+-----
+   5
+(1 row)
+
+SELECT MIN(getPosition(startValue(n))) FROM tbl_npointset;
+       min        
+------------------
+ 0.00279449201463
+(1 row)
+
+SELECT MIN(getPosition(endValue(n))) FROM tbl_npointset;
+       min        
+------------------
+ 0.00279449201463
+(1 row)
+
+SELECT MIN(getPosition(valueN(n, 1))) FROM tbl_npointset;
+       min        
+------------------
+ 0.00279449201463
+(1 row)
+
+SELECT MIN(array_length(getValues(n), 1)) FROM tbl_npointset;
+ min 
+-----
+   5
+(1 row)
+
+SELECT numValues(set_agg(np)) FROM tbl_npoint;
+ numvalues 
+-----------
+       100
+(1 row)
+
+WITH test1(k, n) AS (
+  SELECT k, unnest(n) FROM tbl_npointset ),
+test2 (k, n) AS (
+  SELECT k, set_agg(n) FROM test1 GROUP BY k )
+SELECT COUNT(*) FROM test2 t1, tbl_npointset t2 WHERE t1.k = t2.k AND t1.n <> t2.n;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_npointset t1, tbl_npointset t2 WHERE set_cmp(t1.n, t2.n) = -1;
+ count 
+-------
+  4851
+(1 row)
+
+SELECT COUNT(*) FROM tbl_npointset t1, tbl_npointset t2 WHERE t1.n = t2.n;
+ count 
+-------
+    99
+(1 row)
+
+SELECT COUNT(*) FROM tbl_npointset t1, tbl_npointset t2 WHERE t1.n <> t2.n;
+ count 
+-------
+  9702
+(1 row)
+
+SELECT COUNT(*) FROM tbl_npointset t1, tbl_npointset t2 WHERE t1.n < t2.n;
+ count 
+-------
+  4851
+(1 row)
+
+SELECT COUNT(*) FROM tbl_npointset t1, tbl_npointset t2 WHERE t1.n <= t2.n;
+ count 
+-------
+  4950
+(1 row)
+
+SELECT COUNT(*) FROM tbl_npointset t1, tbl_npointset t2 WHERE t1.n > t2.n;
+ count 
+-------
+  4851
+(1 row)
+
+SELECT COUNT(*) FROM tbl_npointset t1, tbl_npointset t2 WHERE t1.n >= t2.n;
+ count 
+-------
+  4950
+(1 row)
+
+SELECT MAX(set_hash(n)) FROM tbl_npointset;
+    max     
+------------
+ 2135309225
+(1 row)
+
+SELECT MAX(set_hash_extended(n, 1)) FROM tbl_npointset;
+         max         
+---------------------
+ 9222373586350389408
+(1 row)
+

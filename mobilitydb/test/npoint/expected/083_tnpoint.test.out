@@ -654,7 +654,7 @@ SELECT positions(tnpoint 'Npoint(1, 0.5)@2000-01-01');
 SELECT positions(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
                    positions                   
 -----------------------------------------------
- {"NSegment(1,0.5,0.5)","NSegment(1,0.3,0.3)"}
+ {"NSegment(1,0.3,0.3)","NSegment(1,0.5,0.5)"}
 (1 row)
 
 SELECT positions(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
@@ -672,13 +672,13 @@ SELECT positions(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02
 SELECT positions(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
                               positions                              
 ---------------------------------------------------------------------
- {"NSegment(1,0.5,0.5)","NSegment(1,0.4,0.4)","NSegment(1,0.2,0.2)"}
+ {"NSegment(1,0.2,0.2)","NSegment(1,0.4,0.4)","NSegment(1,0.5,0.5)"}
 (1 row)
 
 SELECT positions(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
                                          positions                                         
 -------------------------------------------------------------------------------------------
- {"NSegment(2,0.6,0.6)","NSegment(1,0.5,0.5)","NSegment(1,0.4,0.4)","NSegment(1,0.2,0.2)"}
+ {"NSegment(1,0.2,0.2)","NSegment(1,0.4,0.4)","NSegment(1,0.5,0.5)","NSegment(2,0.6,0.6)"}
 (1 row)
 
 SELECT route(tnpoint 'Npoint(1, 0.5)@2000-01-01');
