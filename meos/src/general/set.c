@@ -267,7 +267,7 @@ set_bbox_size(meosType settype)
 {
   if (alphanumset_type(settype))
     return 0;
-  if (geoset_type(settype))
+  if (spatialset_type(settype))
     return sizeof(STBox);
   elog(ERROR, "unknown set_bbox_size function for set type: %d",
     settype);
@@ -438,7 +438,8 @@ set_make(const Datum *values, int count, meosType basetype, bool ordered)
     if (typlen == -1)
     {
       for (int i = 0; i < newcount; i++)
-        values_size += double_pad(VARSIZE(newvalues[i]));
+        /* VARSIZE_ANY is used for oblivious data alignment, see postgres.h */
+        values_size += double_pad(VARSIZE_ANY(DatumGetPointer(newvalues[i])));
     }
     else
       values_size = double_pad(typlen) * newcount;
@@ -477,7 +478,9 @@ set_make(const Datum *values, int count, meosType basetype, bool ordered)
     size_t pos = 0;
     for (int i = 0; i < newcount; i++)
     {
-      size_t size_elem = (typlen == -1) ? VARSIZE(newvalues[i]) : (uint32) typlen;
+      /* VARSIZE_ANY is used for oblivious data alignment, see postgres.h */
+      size_t size_elem = (typlen == -1) ?
+        VARSIZE_ANY(newvalues[i]) : (uint32) typlen;
       memcpy(((char *) result) + pdata + pos, DatumGetPointer(newvalues[i]),
         size_elem);
       (set_offsets_ptr(result))[i] = pos;

@@ -177,6 +177,20 @@ Tnpoint_round(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PG_FUNCTION_INFO_V1(Npointset_round);
+/**
+ * @ingroup mobilitydb_temporal_spatial_transf
+ * @brief Sets the precision of the coordinates of the geometry set
+ * @sqlfunc round()
+ */
+PGDLLEXPORT Datum
+Npointset_round(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  int prec = PG_GETARG_INT32(1);
+  PG_RETURN_POINTER(npointset_round(s, Int32GetDatum(prec)));
+}
+
 /*****************************************************************************
  * Accessor functions
  *****************************************************************************/

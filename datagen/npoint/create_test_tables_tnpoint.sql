@@ -75,6 +75,14 @@ CREATE TABLE tbl_nsegment AS
 SELECT k, random_nsegment(0, size) AS ns
 FROM generate_series(1, size) k;
 
+DROP TABLE IF EXISTS tbl_npointset;
+CREATE TABLE tbl_npointset AS
+/* Add perc NULL values */
+SELECT k, NULL AS n
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_npoint_set(1, 100, 5, 10)
+FROM generate_series(perc+1, size) AS k;
+
 ------------------------------------------------------------------------------
 -- Temporal Network Types
 ------------------------------------------------------------------------------

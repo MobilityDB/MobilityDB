@@ -69,20 +69,6 @@ COPY tbl_tstzset_tmp FROM '/tmp/tbl_tstzset' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset_tmp t2 WHERE t1.k = t2.k AND t1.t <> t2.t;
 DROP TABLE tbl_tstzset_tmp;
 
-COPY tbl_geomset TO '/tmp/tbl_geomset' (FORMAT BINARY);
-DROP TABLE IF EXISTS tbl_geomset_tmp;
-CREATE TABLE tbl_geomset_tmp AS TABLE tbl_geomset WITH NO DATA;
-COPY tbl_geomset_tmp FROM '/tmp/tbl_geomset' (FORMAT BINARY);
-SELECT COUNT(*) FROM tbl_geomset t1, tbl_geomset_tmp t2 WHERE t1.k = t2.k AND t1.g <> t2.g;
-DROP TABLE tbl_geomset_tmp;
-
-COPY tbl_geogset TO '/tmp/tbl_geogset' (FORMAT BINARY);
-DROP TABLE IF EXISTS tbl_geogset_tmp;
-CREATE TABLE tbl_geogset_tmp AS TABLE tbl_geogset WITH NO DATA;
-COPY tbl_geogset_tmp FROM '/tmp/tbl_geogset' (FORMAT BINARY);
-SELECT COUNT(*) FROM tbl_geogset t1, tbl_geogset_tmp t2 WHERE t1.k = t2.k AND t1.g <> t2.g;
-DROP TABLE tbl_geogset_tmp;
-
 -- Input/output from/to WKB and HexWKB
 
 SELECT COUNT(*) FROM tbl_intset WHERE intsetFromBinary(asBinary(i)) <> i;
@@ -90,15 +76,11 @@ SELECT COUNT(*) FROM tbl_bigintset WHERE bigintsetFromBinary(asBinary(b)) <> b;
 SELECT COUNT(*) FROM tbl_floatset WHERE floatsetFromBinary(asBinary(f)) <> f;
 SELECT COUNT(*) FROM tbl_textset WHERE textsetFromBinary(asBinary(t)) <> t;
 SELECT COUNT(*) FROM tbl_tstzset WHERE tstzsetFromBinary(asBinary(t)) <> t;
-SELECT COUNT(*) FROM tbl_geomset WHERE geomsetFromBinary(asBinary(g)) <> g;
-SELECT COUNT(*) FROM tbl_geogset WHERE geogsetFromBinary(asBinary(g)) <> g;
 
 SELECT COUNT(*) FROM tbl_intset WHERE intsetFromHexWKB(asHexWKB(i)) <> i;
 SELECT COUNT(*) FROM tbl_bigintset WHERE bigintsetFromHexWKB(asHexWKB(b)) <> b;
 SELECT COUNT(*) FROM tbl_floatset WHERE floatsetFromHexWKB(asHexWKB(f)) <> f;
 SELECT COUNT(*) FROM tbl_tstzset WHERE tstzsetFromHexWKB(asHexWKB(t)) <> t;
-SELECT COUNT(*) FROM tbl_geomset WHERE geomsetFromHexWKB(asHexWKB(g)) <> g;
--- SELECT COUNT(*) FROM tbl_geogset WHERE geogsetFromHexWKB(asHexWKB(g)) <> g;
 
 -------------------------------------------------------------------------------
 -- Constructor

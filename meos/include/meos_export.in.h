@@ -414,7 +414,6 @@ extern TimestampTz periodset_end_timestamp(const SpanSet *ps);
 extern TimestampTz periodset_lower(const SpanSet *ps);
 extern int periodset_num_timestamps(const SpanSet *ps);
 extern TimestampTz periodset_start_timestamp(const SpanSet *ps);
-extern Interval *periodset_timespan(const SpanSet *ps);
 extern bool periodset_timestamp_n(const SpanSet *ps, int n, TimestampTz *result);
 extern TimestampTz *periodset_timestamps(const SpanSet *ps, int *count);
 extern TimestampTz periodset_upper(const SpanSet *ps);

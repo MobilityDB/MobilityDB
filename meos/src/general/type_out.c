@@ -1096,20 +1096,39 @@ set_basetype_to_wkb_size(Datum value, meosType basetype, int16 flags)
 }
 
 /**
+ * Return true if the temporal point needs to output the SRID
+ */
+bool
+geoset_wkb_needs_srid(const Set *set, uint8_t variant)
+{
+  if (geoset_type(set->settype))
+  {
+    /* Add an SRID if the WKB form is extended and if the set has one */
+    if ((variant & WKB_EXTENDED) && geoset_srid(set) != SRID_UNKNOWN)
+      return true;
+  }
+
+  /* Everything else doesn't get an SRID */
+  return false;
+}
+
+/**
  * Return the size in bytes of a set represented in Well-Known Binary
  * (WKB) format
  */
 static size_t
-set_to_wkb_size(const Set *s)
+set_to_wkb_size(const Set *set, uint8_t variant)
 {
   size_t result = 0;
-  meosType basetype = settype_basetype(s->settype);
+  meosType basetype = settype_basetype(set->settype);
   /* Compute the size of the values which may be of variable length*/
-  for (int i = 0; i < s->count; i++)
+  for (int i = 0; i < set->count; i++)
   {
-    Datum value = set_val_n(s, i);
-    result += set_basetype_to_wkb_size(value, basetype, s->flags);
+    Datum value = set_val_n(set, i);
+    result += set_basetype_to_wkb_size(value, basetype, set->flags);
   }
+  if (geoset_wkb_needs_srid(set, variant))
+    result += MOBDB_WKB_INT4_SIZE;
   /* Endian flag + settype + set flags + count + values */
   result += MOBDB_WKB_BYTE_SIZE * 2 + MOBDB_WKB_INT2_SIZE +
     MOBDB_WKB_INT4_SIZE;
@@ -1372,7 +1391,7 @@ datum_to_wkb_size(Datum value, meosType type, uint8_t variant)
 {
   size_t result;
   if (set_type(type))
-    result = set_to_wkb_size((Set *) DatumGetPointer(value));
+    result = set_to_wkb_size((Set *) DatumGetPointer(value), variant);
   else if (span_type(type))
     result = span_to_wkb_size((Span *) DatumGetPointer(value));
   else if (spanset_type(type))
@@ -1663,20 +1682,6 @@ basevalue_to_wkb_buf(Datum value, meosType basetype, int16 flags, uint8_t *buf,
 /*****************************************************************************/
 
 /**
- * Return true if the temporal point needs to output the SRID
- */
-bool
-geoset_wkb_needs_srid(const Set *set, uint8_t variant)
-{
-  /* Add an SRID if the WKB form is extended and if the set has one */
-  if ((variant & WKB_EXTENDED) && geoset_srid(set) != SRID_UNKNOWN)
-    return true;
-
-  /* Everything else doesn't get an SRID */
-  return false;
-}
-
-/**
  * Write into the buffer the flag containing the temporal type and
  * other characteristics represented in Well-Known Binary (WKB) format.
  * In binary format it is a byte as follows
@@ -1710,20 +1715,23 @@ set_flags_to_wkb_buf(const Set *set, uint8_t *buf, uint8_t variant)
  * - Values
  */
 static uint8_t *
-set_to_wkb_buf(const Set *s, uint8_t *buf, uint8_t variant)
+set_to_wkb_buf(const Set *set, uint8_t *buf, uint8_t variant)
 {
   /* Write the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
   /* Write the set type */
-  buf = int16_to_wkb_buf(s->settype, buf, variant);
+  buf = int16_to_wkb_buf(set->settype, buf, variant);
   /* Write the set flags */
-  buf = set_flags_to_wkb_buf(s, buf, variant);
+  buf = set_flags_to_wkb_buf(set, buf, variant);
+  /* Write the optional SRID for extended variant */
+  if (geoset_wkb_needs_srid(set, variant))
+    buf = int32_to_wkb_buf(geoset_srid(set), buf, variant);
   /* Write the count */
-  buf = int32_to_wkb_buf(s->count, buf, variant);
+  buf = int32_to_wkb_buf(set->count, buf, variant);
   /* Write the values */
-  for (int i = 0; i < s->count; i++)
-    buf = basevalue_to_wkb_buf(set_val_n(s, i), s->basetype, s->flags, buf,
-      variant);
+  for (int i = 0; i < set->count; i++)
+    buf = basevalue_to_wkb_buf(set_val_n(set, i), set->basetype, set->flags,
+      buf, variant);
   return buf;
 }
 

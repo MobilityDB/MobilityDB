@@ -43,6 +43,7 @@
 #include <liblwgeom.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_internal.h>
 #include "general/type_out.h"
 #include "general/type_util.h"
 /* MobilityDB */
@@ -153,6 +154,23 @@ nsegment_round(const Nsegment *ns, Datum size)
   double pos2 = DatumGetFloat8(datum_round_float(Float8GetDatum(ns->pos2),
     size));
   Nsegment *result = nsegment_make(ns->rid, pos1, pos2);
+  return result;
+}
+
+/**
+ * @brief Set the precision of the coordinates to the number of decimal places.
+ */
+Set *
+npointset_round(const Set *s, Datum prec)
+{
+  Datum *values = palloc(sizeof(Datum) * s->count);
+  for (int i = 0; i < s->count; i++)
+  {
+    Datum value = set_val_n(s, i);
+    values[i] = datum_npoint_round(value, prec);
+  }
+  Set *result = set_make(values, s->count, s->basetype, ORDERED);
+  pfree(values);
   return result;
 }
 

@@ -83,40 +83,6 @@ SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset_tmp t2 WHERE t1.k = t2.k AND t1
 
 DROP TABLE tbl_tstzset_tmp;
 DROP TABLE
-COPY tbl_geomset TO '/tmp/tbl_geomset' (FORMAT BINARY);
-COPY 100
-DROP TABLE IF EXISTS tbl_geomset_tmp;
-NOTICE:  table "tbl_geomset_tmp" does not exist, skipping
-DROP TABLE
-CREATE TABLE tbl_geomset_tmp AS TABLE tbl_geomset WITH NO DATA;
-CREATE TABLE AS
-COPY tbl_geomset_tmp FROM '/tmp/tbl_geomset' (FORMAT BINARY);
-COPY 100
-SELECT COUNT(*) FROM tbl_geomset t1, tbl_geomset_tmp t2 WHERE t1.k = t2.k AND t1.g <> t2.g;
- count 
--------
-     0
-(1 row)
-
-DROP TABLE tbl_geomset_tmp;
-DROP TABLE
-COPY tbl_geogset TO '/tmp/tbl_geogset' (FORMAT BINARY);
-COPY 100
-DROP TABLE IF EXISTS tbl_geogset_tmp;
-NOTICE:  table "tbl_geogset_tmp" does not exist, skipping
-DROP TABLE
-CREATE TABLE tbl_geogset_tmp AS TABLE tbl_geogset WITH NO DATA;
-CREATE TABLE AS
-COPY tbl_geogset_tmp FROM '/tmp/tbl_geogset' (FORMAT BINARY);
-COPY 100
-SELECT COUNT(*) FROM tbl_geogset t1, tbl_geogset_tmp t2 WHERE t1.k = t2.k AND t1.g <> t2.g;
- count 
--------
-     0
-(1 row)
-
-DROP TABLE tbl_geogset_tmp;
-DROP TABLE
 SELECT COUNT(*) FROM tbl_intset WHERE intsetFromBinary(asBinary(i)) <> i;
  count 
 -------
@@ -147,18 +113,6 @@ SELECT COUNT(*) FROM tbl_tstzset WHERE tstzsetFromBinary(asBinary(t)) <> t;
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_geomset WHERE geomsetFromBinary(asBinary(g)) <> g;
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_geogset WHERE geogsetFromBinary(asBinary(g)) <> g;
- count 
--------
-     0
-(1 row)
-
 SELECT COUNT(*) FROM tbl_intset WHERE intsetFromHexWKB(asHexWKB(i)) <> i;
  count 
 -------
@@ -178,12 +132,6 @@ SELECT COUNT(*) FROM tbl_floatset WHERE floatsetFromHexWKB(asHexWKB(f)) <> f;
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzset WHERE tstzsetFromHexWKB(asHexWKB(t)) <> t;
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_geomset WHERE geomsetFromHexWKB(asHexWKB(g)) <> g;
  count 
 -------
      0

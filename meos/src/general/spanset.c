@@ -671,21 +671,6 @@ spanset_width(const SpanSet *ss)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the timespan of a period set
- * @sqlfunc timespan()
- * @pymeosfunc timespan()
- */
-Interval *
-periodset_timespan(const SpanSet *ps)
-{
-  const Span *p1 = spanset_sp_n(ps, 0);
-  const Span *p2 = spanset_sp_n(ps, ps->count - 1);
-  Interval *result = pg_timestamp_mi(p2->upper, p1->lower);
-  return result;
-}
-
-/**
- * @ingroup libmeos_setspan_accessor
  * @brief Return the duration of a period set
  * @sqlfunc duration()
  * @pymeosfunc duration()

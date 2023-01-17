@@ -649,10 +649,8 @@ CREATE FUNCTION random_geom_point_set(lowx float, highx float, lowy float,
 DECLARE
   garr geometry[];
 BEGIN
-  garr = random_geom_point_array(lowx, highx, lowy, highy, maxdelta,
-    mincard, maxcard, srid);
-  garr = ARRAY(SELECT DISTINCT unnest(garr) ORDER BY 1);
-  RETURN geomset(garr);
+  RETURN set(random_geom_point_array(lowx, highx, lowy, highy, maxdelta,
+    mincard, maxcard, srid));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -685,10 +683,8 @@ CREATE FUNCTION random_geog_point_set(lowx float, highx float, lowy float,
 DECLARE
   garr geography[];
 BEGIN
-  garr = random_geog_point_array(lowx, highx, lowy, highy, maxdelta,
-    mincard, maxcard, srid);
-  garr = ARRAY(SELECT DISTINCT unnest(garr) ORDER BY 1);
-  RETURN geogset(garr);
+  RETURN set(random_geog_point_array(lowx, highx, lowy, highy, maxdelta,
+    mincard, maxcard, srid));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
