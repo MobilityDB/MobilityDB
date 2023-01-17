@@ -171,7 +171,7 @@ datum_cmp2(Datum l, Datum r, meosType typel, meosType typer)
     return gserialized_cmp(DatumGetGserializedP(l), DatumGetGserializedP(r));
 #if NPOINT
   if (typel == T_NPOINT && typel == typer)
-    return npoint_eq(DatumGetNpointP(l), DatumGetNpointP(r));
+    return npoint_cmp(DatumGetNpointP(l), DatumGetNpointP(r));
 #endif
   elog(ERROR, "unknown compare function for base type: %d", typel);
 }
@@ -525,7 +525,7 @@ datum_hash_extended(Datum d, meosType type, uint64 seed)
     return pg_hashfloat8extended(Float8GetDatum(d), seed);
   else if (type == T_TEXT)
     return pg_hashtextextended(DatumGetTextP(d), seed);
-  // TODO
+  // PostGIS currently does not provide an extended hash function
   // else if (geo_basetype(type))
     // return gserialized_hash_extended(DatumGetGserializedP(d), seed);
 #if NPOINT
@@ -533,7 +533,7 @@ datum_hash_extended(Datum d, meosType type, uint64 seed)
     return npoint_hash_extended(DatumGetNpointP(d), seed);
 #endif
   else
-    elog(ERROR, "unknown hash function for base type: %d", type);
+    elog(ERROR, "unknown extended hash function for base type: %d", type);
 }
 
 /*****************************************************************************
@@ -611,12 +611,7 @@ datum_sort_cmp(const Datum *l, const Datum *r, const meosType *type)
   Datum x = *l;
   Datum y = *r;
   meosType t = *type;
-  if (datum_eq(x, y, t))
-    return 0;
-  else if (datum_lt(x, y, t))
-    return -1;
-  else
-    return 1;
+  return datum_cmp(x, y, t);
 }
 
 /**

@@ -59,6 +59,7 @@ extern bytea *nsegment_send(const Nsegment *ns);
 extern Datum datum_npoint_round(Datum npoint, Datum size);
 extern Npoint *npoint_round(const Npoint *np, Datum size);
 extern Nsegment *nsegment_round(const Nsegment *ns, Datum size);
+extern Set *npointset_round(const Set *s, Datum prec);
 
 /*****************************************************************************/
 

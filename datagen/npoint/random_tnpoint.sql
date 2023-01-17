@@ -33,9 +33,9 @@
  * and temporal network point types.
  */
 
--------------------------------------------------------------------------------
--- Network points
--------------------------------------------------------------------------------
+------------------------------------------------------------------------------
+-- Static Network Types
+------------------------------------------------------------------------------
 
 /**
  * Generate a random fraction between in the range [0,1]
@@ -102,6 +102,79 @@ SELECT k, random_nsegment(1, 100) AS g
 FROM generate_series(1,10) k;
 */
 
+-------------------------------------------------------------------------------
+
+/**
+ * Generate an array of random network points
+ *
+ * @param[in] lown, highn Inclusive bounds of the range for the rid
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
+ */
+DROP FUNCTION IF EXISTS random_npoint_array;
+CREATE FUNCTION random_npoint_array(lown integer, highn integer, mincard int,
+    maxcard int)
+  RETURNS npoint[] AS $$
+DECLARE
+  result npoint[];
+  card int;
+BEGIN
+  IF lown > highn THEN
+    RAISE EXCEPTION 'lown must be less than or equal to highn: %, %',
+      lowy, highy;
+  END IF;
+  IF mincard > maxcard THEN
+    RAISE EXCEPTION 'mincard must be less than or equal to maxcard: %, %',
+      mincard, maxcard;
+  END IF;
+  card = random_int(mincard, maxcard);
+  FOR i IN 1..card
+  LOOP
+    result[i] = random_npoint(lown, highn);
+  END LOOP;
+  RETURN result;
+END;
+$$ LANGUAGE PLPGSQL STRICT;
+
+/*
+SELECT k, random_npoint_array(1, 100, 5, 10) AS g
+FROM generate_series(1, 15) AS k;
+
+SELECT k, asewkt(random_npoint_array(1, 100, 5, 10, 3812)) AS g
+FROM generate_series(1, 15) AS k;
+*/
+
+-------------------------------------------------------------------------------
+
+/**
+ * Generate an array of random network points
+ *
+ * @param[in] lown, highn Inclusive bounds of the range for the rid
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
+ */
+DROP FUNCTION IF EXISTS random_npoint_set;
+CREATE FUNCTION random_npoint_set(lown integer, highn integer, mincard int,
+    maxcard int)
+  RETURNS npointset AS $$
+DECLARE
+  nparr npoint[];
+BEGIN
+  RETURN set(random_npoint_array(lown, highn, mincard, maxcard));
+END;
+$$ LANGUAGE PLPGSQL STRICT;
+
+/*
+SELECT k, asewkt(random_npoint_set(1, 100, 5, 10)) AS g
+FROM generate_series(1, 15) AS k;
+
+SELECT k, asewkt(random_npoint_set(1, 100, 5, 10, 3812)) AS g
+FROM generate_series(1, 15) AS k;
+
+SELECT k, random_npoint_set(1, 100, 5, 10) AS g
+FROM generate_series(1, 15) AS k;
+*/
+
+------------------------------------------------------------------------------
+-- Temporal Network Types
 ------------------------------------------------------------------------------
 
 /**
