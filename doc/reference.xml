@@ -810,20 +810,9 @@
 			<title>Restriction Functions</title>
 
 			<itemizedlist>
-				<listitem>
-					<para><link linkend="atValue"><varname>atValue</varname>, <varname>minusValue</varname></link>: Restrict to (the complement of) a value</para>
-				</listitem>
 
 			<listitem>
-					<para><link linkend="atValues"><varname>atValues</varname>, <varname>minusValues</varname></link>: Restrict to (the complement of) an array of values</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="atSpan"><varname>atSpan</varname>, <varname>minusSpan</varname></link>: Restrict to (the complement of) a span</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="atSpanset"><varname>atSpanset</varname>, <varname>minusSpanset</varname></link>: Restrict to (the complement of) a span set</para>
+					<para><link linkend="atValues"><varname>atValues</varname>, <varname>minusValues</varname></link>: Restrict to (the complement of) a set of values</para>
 				</listitem>
 
 				<listitem>

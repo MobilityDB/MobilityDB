@@ -725,20 +725,20 @@ CREATE OPERATOR %<> (
  * Restriction Functions
  *****************************************************************************/
 
-CREATE FUNCTION atValue(tgeompoint, geometry(Point))
+CREATE FUNCTION atValues(tgeompoint, geometry(Point))
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Temporal_at_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION atValue(tgeogpoint, geography(Point))
+CREATE FUNCTION atValues(tgeogpoint, geography(Point))
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Temporal_at_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION minusValue(tgeompoint, geometry(Point))
+CREATE FUNCTION minusValues(tgeompoint, geometry(Point))
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Temporal_minus_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION minusValue(tgeogpoint, geography(Point))
+CREATE FUNCTION minusValues(tgeogpoint, geography(Point))
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Temporal_minus_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

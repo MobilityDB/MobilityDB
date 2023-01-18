@@ -790,19 +790,7 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="atValue"><varname>atValue</varname>, <varname>minusValue</varname></link>: Restringir a (al complemento de) un valor</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="atValues"><varname>atValues</varname>, <varname>minusValues</varname></link>: Restringir a (al complemento de) una matriz de valores</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="atSpan"><varname>atSpan</varname>, <varname>minusSpan</varname></link>: Restringir a (al complemento de) un rango de valores</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="atSpanset"><varname>atSpanset</varname>, <varname>minusSpanset</varname></link>: Restringir a (al complemento de) un conjunto de rangos de valores</para>
+					<para><link linkend="atValues"><varname>atValues</varname>, <varname>minusValues</varname></link>: Restringir a (al complemento de) un conjunto de valores</para>
 				</listitem>
 
 				<listitem>

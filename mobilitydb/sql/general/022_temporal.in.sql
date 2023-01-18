@@ -1626,36 +1626,36 @@ CREATE FUNCTION merge(ttext[])
  * Restriction functions
  *****************************************************************************/
 
-CREATE FUNCTION atValue(tbool, boolean)
+CREATE FUNCTION atValues(tbool, boolean)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_at_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION atValue(tint, integer)
+CREATE FUNCTION atValues(tint, integer)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Temporal_at_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION atValue(tfloat, float)
+CREATE FUNCTION atValues(tfloat, float)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Temporal_at_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION atValue(ttext, text)
+CREATE FUNCTION atValues(ttext, text)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Temporal_at_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION minusValue(tbool, boolean)
+CREATE FUNCTION minusValues(tbool, boolean)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_minus_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION minusValue(tint, integer)
+CREATE FUNCTION minusValues(tint, integer)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Temporal_minus_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION minusValue(tfloat, float)
+CREATE FUNCTION minusValues(tfloat, float)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Temporal_minus_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION minusValue(ttext, text)
+CREATE FUNCTION minusValues(ttext, text)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Temporal_minus_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -1686,38 +1686,38 @@ CREATE FUNCTION minusValues(ttext, textset)
   AS 'MODULE_PATHNAME', 'Temporal_minus_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION atSpan(tint, intspan)
+CREATE FUNCTION atValues(tint, intspan)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Tnumber_at_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION atSpan(tfloat, floatspan)
+CREATE FUNCTION atValues(tfloat, floatspan)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tnumber_at_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION minusSpan(tint, intspan)
+CREATE FUNCTION minusValues(tint, intspan)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Tnumber_minus_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION minusSpan(tfloat, floatspan)
+CREATE FUNCTION minusValues(tfloat, floatspan)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tnumber_minus_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION atSpanset(tint, intspanset)
+CREATE FUNCTION atValues(tint, intspanset)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Tnumber_at_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION atSpanset(tfloat, floatspanset)
+CREATE FUNCTION atValues(tfloat, floatspanset)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tnumber_at_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION minusSpanset(tint, intspanset)
+CREATE FUNCTION minusValues(tint, intspanset)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Tnumber_minus_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION minusSpanset(tfloat, floatspanset)
+CREATE FUNCTION minusValues(tfloat, floatspanset)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tnumber_minus_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

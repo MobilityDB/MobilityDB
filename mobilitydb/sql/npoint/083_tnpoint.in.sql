@@ -483,12 +483,12 @@ CREATE OPERATOR %<> (
  * Restriction functions
  ******************************************************************************/
 
-CREATE FUNCTION atValue(tnpoint, npoint)
+CREATE FUNCTION atValues(tnpoint, npoint)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_at_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION minusValue(tnpoint, npoint)
+CREATE FUNCTION minusValues(tnpoint, npoint)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_minus_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

@@ -32,6 +32,30 @@ SELECT COUNT(*) FROM tbl_geogset t1, tbl_geogset_tmp t2 WHERE t1.k = t2.k AND t1
 
 DROP TABLE tbl_geogset_tmp;
 DROP TABLE
+SELECT MAX(length(asText(g))) FROM tbl_geomset;
+ max 
+-----
+ 491
+(1 row)
+
+SELECT MAX(length(asText(g))) FROM tbl_geogset;
+ max 
+-----
+ 470
+(1 row)
+
+SELECT MAX(length(asEWKT(g))) FROM tbl_geomset;
+ max 
+-----
+ 491
+(1 row)
+
+SELECT MAX(length(asEWKT(g))) FROM tbl_geogset;
+ max 
+-----
+ 570
+(1 row)
+
 SELECT COUNT(*) FROM tbl_geomset WHERE geomsetFromBinary(asBinary(g)) <> g;
  count 
 -------
