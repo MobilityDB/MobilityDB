@@ -96,4 +96,20 @@ Set_agg_combinefn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PG_FUNCTION_INFO_V1(Set_agg_finalfn);
+/**
+ * Combine function for set aggregate of set types
+ */
+PGDLLEXPORT Datum
+Set_agg_finalfn(PG_FUNCTION_ARGS)
+{
+  MemoryContext ctx = set_aggregation_context(fcinfo);
+  Set *state = PG_GETARG_SET_P(0);
+  unset_aggregation_context(ctx);
+  Set *result = set_agg_finalfn(state);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
 /*****************************************************************************/

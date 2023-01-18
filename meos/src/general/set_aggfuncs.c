@@ -45,6 +45,78 @@
  *****************************************************************************/
 
 /**
+ * @ingroup libmeos_internal_temporal_transf
+ * @brief Append a value to an unordered array.
+ * @param[in,out] set Set
+ * @param[in] d Value
+ * @param[in] basetype Base type
+ */
+Set *
+set_append_value(Set *set, Datum d, meosType basetype)
+{
+  assert(set->basetype == basetype);
+
+  /* Account for expandable structures
+   * A while is used instead of an if to enable to break the loop if there is
+   * no more available space */
+  bool typbyval = MOBDB_FLAGS_GET_BYVAL(set->flags);
+  while (set->count < set->maxcount)
+  {
+    if (typbyval)
+    {
+      (set_offsets_ptr(set))[set->count - 1] = d;
+      set->count++;
+      return set;
+    }
+
+    /* Determine whether there is enough available space */
+    size_t size;
+    int16 typlen = basetype_length(basetype);
+    if (typlen == -1)
+      /* VARSIZE_ANY is used for oblivious data alignment, see postgres.h */
+      size = double_pad(VARSIZE_ANY(DatumGetPointer(d)));
+    else
+      size = double_pad(typlen);
+
+    /* Get the last instant to keep */
+    Datum last = set_val_n(set, set->count - 1);
+    size_t size_last = (typlen == -1) ? double_pad(VARSIZE(last)) : size;
+    size_t avail_size = ((char *) set + VARSIZE(set)) -
+      ((char *) DatumGetPointer(last) + size_last);
+    if (size > avail_size)
+      /* There is not enough available space */
+      break;
+
+    /* There is enough space to add the new value */
+    /* Update the offsets array and the count when adding one instant */
+    (set_offsets_ptr(set))[set->count - 1] =
+      (set_offsets_ptr(set))[set->count - 2] + size;
+    set->count++;
+    memcpy((char *) DatumGetPointer(last), DatumGetPointer(d), size);
+    /* Expand the bounding box and return */
+    if (set->bboxsize != 0)
+      set_expand_bbox(d, basetype, set_bbox_ptr(set));
+    return set;
+  }
+
+  /* This is the first time we use an expandable structure or there is no more
+   * free space */
+  Datum *values = palloc(sizeof(Datum) * set->count + 1);
+  for (int i = 0; i < set->count; i++)
+    values[i] = set_val_n(set, i);
+  values[set->count] = d;
+  int maxcount = set->maxcount * 2;
+#ifdef DEBUG_BUILD
+    printf(" set -> %d\n", maxcount);
+#endif /* DEBUG_BUILD */
+
+  Set *result = set_make_exp(values, set->count + 1, maxcount, set->basetype,
+    ORDERED_NO);
+  pfree(values);
+  return result;
+}
+
+/**
  * @ingroup libmeos_internal_setspan_agg
  * @brief Transition function for set aggregate of values
  */
@@ -53,8 +125,9 @@ set_agg_transfn(Set *state, Datum d, meosType basetype)
 {
   /* Null set: create a new set with the value */
   if (! state)
-    return set_make(&d, 1, basetype, ORDERED);
+    return set_make(&d, 1, basetype, ORDERED_NO);
 
+  // return set_append_value(state, d, basetype);
   return union_set_value(state, d, basetype);
 }
 
@@ -126,6 +199,27 @@ set_agg_combinefn(Set *state1, Set *state2)
 
   assert(state1->settype == state2->settype);
   return union_set_set(state1, state2);
+}
+
+/**
+ * @ingroup libmeos_internal_setspan_agg
+ * @brief Transition function for set aggregate of values
+ */
+Set *
+set_agg_finalfn(Set *state)
+{
+  if (! state)
+    return NULL;
+
+  /* Collect the UNSORTED values */
+  Datum *values = palloc(sizeof(Datum) * state->count);
+  for (int i = 0; i < state->count; i++)
+    values[i] = set_val_n(state, i);
+
+  Set *result = set_make_exp(values, state->count, state->count,
+    state->basetype, ORDERED);
+  pfree(values);
+  return result;
 }
 
 /*****************************************************************************/

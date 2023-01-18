@@ -63,15 +63,15 @@ CREATE TABLE tbl_int AS
 /* Add perc NULL values */
 SELECT k, NULL AS i
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_int(0, 100)
+SELECT k, random_int(0, 100) AS i
 FROM generate_series(perc+1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_bigint;
 CREATE TABLE tbl_bigint AS
 /* Add perc NULL values */
-SELECT k, NULL AS i
+SELECT k, NULL AS b
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_bigint(0, 100)
+SELECT k, random_bigint(0, 100) AS b
 FROM generate_series(perc+1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_float;
@@ -79,7 +79,7 @@ CREATE TABLE tbl_float AS
 /* Add perc NULL values */
 SELECT k, NULL AS f
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_float(0, 100)
+SELECT k, random_float(0, 100) AS b
 FROM generate_series(perc+1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_text;
@@ -87,7 +87,7 @@ CREATE TABLE tbl_text AS
 /* Add perc NULL values */
 SELECT k, NULL AS t
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_text(10)
+SELECT k, random_text(10) AS t
 FROM generate_series(perc+1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_textset;
@@ -95,7 +95,7 @@ CREATE TABLE tbl_textset AS
 /* Add perc NULL values */
 SELECT k, NULL AS t
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_textset(10, 1, 10)
+SELECT k, random_textset(10, 1, 10) AS t
 FROM generate_series(perc+1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_tbox;

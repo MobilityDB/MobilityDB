@@ -59,6 +59,7 @@ typedef struct
   uint8 basetype;       /**< span basetype */
   int16 flags;          /**< flags */
   int32 count;          /**< Number of elements */
+  int32 maxcount;       /**< Maximum number of elements */
   int32 bboxsize;       /**< Size of the bouding box */
 } Set;
 
@@ -677,6 +678,7 @@ extern SpanSet *period_tunion_finalfn(SkipList *state);
 extern SkipList *periodset_tcount_transfn(SkipList *state, const SpanSet *ps, const Interval *interval, TimestampTz origin);
 extern SkipList *periodset_tunion_transfn(SkipList *state, const SpanSet *ps);
 extern Set *set_agg_combinefn(Set *state1, Set *state2);
+extern Set *set_agg_finalfn(Set *state);
 extern Span *span_extent_transfn(Span *s1, const Span *s2);
 extern Span *spanset_extent_transfn(Span *s, const SpanSet *ss);
 extern Set *textset_agg_transfn(Set *state, const text *txt);
