@@ -319,36 +319,45 @@ SELECT tstzspanset(ARRAY[tstzspan '[2001-01-01 08:00, 2001-01-01 08:10]',
 			<itemizedlist>
 				<listitem id="base_cast">
 					<indexterm><primary><varname>::</varname></primary></indexterm>
+					<indexterm><primary><varname>set</varname></primary></indexterm>
+					<indexterm><primary><varname>span</varname></primary></indexterm>
+					<indexterm><primary><varname>spanset</varname></primary></indexterm>
 					<para>Cast a base value to a set, span, or span set value</para>
 					<para><varname>base::{set,span,spanset}</varname></para>
+					<para><varname>set(base)</varname></para>
+					<para><varname>span(base)</varname></para>
+					<para><varname>spanset(base)</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT CAST(timestamptz '2001-01-01 08:00:00' AS tstzset);
 -- {2001-01-01 08:00:00+01}
-SELECT CAST(timestamptz '2001-01-01 08:00:00' AS tstzspan);
+SELECT timestamptz '2001-01-01 08:00:00'::tstzspan;
 -- [2001-01-01 08:00:00+01, 2001-01-01 08:00:00+01]
-SELECT CAST(timestamptz '2001-01-01 08:00:00' AS tstzspanset);
+SELECT spanset(timestamptz '2001-01-01 08:00:00');
 -- {[2001-01-01 08:00:00+01, 2001-01-01 08:00:00+01]}
 </programlisting>
 				</listitem>
+
 				<listitem id="set_cast">
 					<indexterm><primary><varname>::</varname></primary></indexterm>
 					<para>Cast a set value to a span set value</para>
 					<para><varname>set::spanset</varname></para>
+					<para><varname>spanset(set)</varname></para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT CAST(tstzset '{2001-01-01 08:00:00, 2001-01-01 08:15:00,
-  2001-01-01 08:25:00}' AS tstzspanset);
+SELECT spanset(tstzset '{2001-01-01 08:00:00, 2001-01-01 08:15:00,
+  2001-01-01 08:25:00}');
 /* {[2001-01-01 08:00:00+01, 2001-01-01 08:00:00+01],
    [2001-01-01 08:15:00+01, 2001-01-01 08:15:00+01],
    [2001-01-01 08:25:00+01, 2001-01-01 08:25:00+01]} */
 </programlisting>
 				</listitem>
+
 				<listitem id="span_cast">
 					<indexterm><primary><varname>::</varname></primary></indexterm>
+					<indexterm><primary><varname>spanset</varname></primary></indexterm>
 					<para>Cast a span value to a span set value</para>
 					<para><varname>span::spanset</varname></para>
+					<para><varname>spanset(span)</varname></para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT intspan '[1,2]'::intspanset;
--- {[1, 3)}
 SELECT floatspan '[1.5,2.5]'::floatspanset;
 -- {[1.5, 2.5]}
 SELECT tstzspan '[2001-01-01 08:00:00, 2001-01-01 08:30:00)'::tstzspanset;
@@ -356,39 +365,47 @@ SELECT tstzspan '[2001-01-01 08:00:00, 2001-01-01 08:30:00)'::tstzspanset;
 </programlisting>
 				</listitem>
 
-				<listitem id="span_cast_range">
+				<listitem id="range_cast">
 					<indexterm><primary><varname>::</varname></primary></indexterm>
-					<para>Cast a span value to a PostgreSQL range value</para>
+					<indexterm><primary><varname>span</varname></primary></indexterm>
+					<indexterm><primary><varname>range</varname></primary></indexterm>
+					<para>Cast a span value to and from a PostgreSQL range value</para>
 					<para><varname>span::range</varname></para>
-					<para><varname>spanset::multirange</varname></para>
+					<para><varname>range::span</varname></para>
+					<para><varname>range(span)</varname></para>
+					<para><varname>span(range)</varname></para>
+					<para>Notice that PostgreSQL range values accept empty ranges and ranges with infinite values, which are not allowed as span values in MobilityDB</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT intspan '[10, 20)'::int4range;
 -- [10,20)
-SELECT intspanset '{[1,2],[4,5]}'::int4multirange;
--- {[1,3),[4,6)}
 SELECT tstzspan '[2001-01-01 08:00:00, 2001-01-01 08:30:00)'::tstzrange;
 -- ["2001-01-01 08:00:00+01","2001-01-01 08:30:00+01")
-SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-04,2000-01-05]}'::tstzmultirange;
--- {[2000-01-01,2000-01-02],[2000-01-04,2000-01-05]}
-</programlisting>
-				</listitem>
-				<listitem id="range_cast_span">
-					<indexterm><primary><varname>::</varname></primary></indexterm>
-					<para>Cast a PostgreSQL range value to a span value</para>
-					<para><varname>range::span</varname></para>
-					<para><varname>multirange::spanset</varname></para>
-					<para>Notice that PostgreSQL range values accept empty ranges and ranges with infinite values, which are not allowed as span values in MobilityDB</para>
-					<programlisting language="sql" xml:space="preserve">
 SELECT int4range '[10, 20)'::intspan;
 -- [10,20)
 SELECT int4range 'empty'::intspan;
 -- ERROR:  Range cannot be empty
 SELECT int4range '[10,)'::intspan;
 -- ERROR:  Range bounds cannot be infinite
-SELECT int4multirange '{[1,2],[4,5]}'::intspanset;
--- {[1, 3), [4, 6)}
 SELECT tstzrange '[2001-01-01 08:00:00, 2001-01-01 08:30:00)'::tstzspan;
 -- [2001-01-01 08:00:00+01, 2001-01-01 08:30:00+01)
+</programlisting>
+				</listitem>
+				<listitem id="multirange_cast">
+					<indexterm><primary><varname>::</varname></primary></indexterm>
+					<indexterm><primary><varname>spanset</varname></primary></indexterm>
+					<indexterm><primary><varname>multirange</varname></primary></indexterm>
+					<para>Cast a span set value to and from a PostgreSQL multirange value</para>
+					<para><varname>spanset::multirange</varname></para>
+					<para><varname>multirange::spanset</varname></para>
+					<para><varname>multirange(spanset)</varname></para>
+					<para><varname>spanset(multirange)</varname></para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT intspanset '{[1,2],[4,5]}'::int4multirange;
+-- {[1,3),[4,6)}
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-04,2000-01-05]}'::tstzmultirange;
+-- {[2000-01-01,2000-01-02],[2000-01-04,2000-01-05]}
+SELECT int4multirange '{[1,2],[4,5]}'::intspanset;
+-- {[1, 3), [4, 6)}
 SELECT tstzmultirange '{[2000-01-01,2000-01-02],[2000-01-04,2000-01-05]}'::tstzspanset;
 -- {[2000-01-01, 2000-01-02], [2000-01-04, 2000-01-05]}
 </programlisting>
@@ -515,7 +532,7 @@ SELECT span(tstzspanset '{[2001-01-01, 2001-01-02), [2001-01-03, 2001-01-04)}');
 </programlisting>
 				</listitem>
 
-				<listitem id="numValues">
+				<listitem id="setspan_numValues">
 					<indexterm><primary><varname>numValues</varname></primary></indexterm>
 					<para>Get the number of values</para>
 					<para><varname>numValues(set) → integer</varname></para>
@@ -525,7 +542,7 @@ SELECT numValues(intset '{1,3,5,7}');
 </programlisting>
 				</listitem>
 
-				<listitem id="set_startValue">
+				<listitem id="setspan_startValue">
 					<indexterm><primary><varname>startValue</varname></primary></indexterm>
 					<indexterm><primary><varname>endValue</varname></primary></indexterm>
 					<indexterm><primary><varname>valueN</varname></primary></indexterm>
@@ -543,7 +560,7 @@ SELECT valueN(floatset '{1,3,5,7}',2);
 </programlisting>
 				</listitem>
 
-				<listitem id="set_values">
+				<listitem id="setspan_values">
 					<indexterm><primary><varname>values</varname></primary></indexterm>
 					<para>Get the values</para>
 					<para><varname>values(set) → base[]</varname></para>

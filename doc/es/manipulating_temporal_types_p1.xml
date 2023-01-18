@@ -1379,7 +1379,7 @@ SELECT merge(ARRAY[tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]}'
 		<para>Hay dos conjuntos complementarios de funciones de restricción. El primer conjunto de funciones restringe el valor temporal con respecto a un valor o una extensión de tiempo. Dos ejemplos son <varname>atValues</varname> o <varname>atTime</varname>. El segundo conjunto de funciones restringe el valor temporal con respecto al <emphasis>complement</emphasis> de un valor o una extensión de tiempo. Dos ejemplos son <varname>minusValues</varname> o <varname>minusTime</varname></para>
 
 		<itemizedlist>
-			<listitem id="atValue">
+			<listitem id="atValues">
 				<indexterm><primary><varname>atValues</varname></primary></indexterm>
 				<indexterm><primary><varname>minusValues</varname></primary></indexterm>
 				<para>Restringir a (al complemento de) un valor</para>
@@ -1594,7 +1594,7 @@ WITH temp(temp, box) AS (SELECT
 SELECT asText(minusGeometry(minusTime(temp, box::tstzspan), box::geometry)) FROM temp;
 -- {(POINT(2 2)@2001-01-02, POINT(3 3)@2001-01-03)}
 </programlisting>
-				<para>De manera similar a la función <link linkend="minusTbox"><varname>minusTbox</varname></link>, cuando el cuadro delimitador tiene dimensiones de espacio y tiempo, la función <varname> minusStbox</varname> restringe el punto temporal con respecto a las  extensiones de espacio <emphasis>o</emphasis> de tiempo del cuadro. Para obtener la restricción utilizando una semántica <emphasis>y</emphasis>, deben aplicarse las dos funciones <varname>minusGeometry</varname> y <varname>minusTime</varname>.</para>
+				<para>De manera similar a la función <link linkend="atTbox"><varname>minusTbox</varname></link>, cuando el cuadro delimitador tiene dimensiones de espacio y tiempo, la función <varname> minusStbox</varname> restringe el punto temporal con respecto a las  extensiones de espacio <emphasis>o</emphasis> de tiempo del cuadro. Para obtener la restricción utilizando una semántica <emphasis>y</emphasis>, deben aplicarse las dos funciones <varname>minusGeometry</varname> y <varname>minusTime</varname>.</para>
 			</listitem>
 		</itemizedlist>
 	</sect1>

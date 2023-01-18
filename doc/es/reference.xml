@@ -31,9 +31,9 @@
 				</row>
 				<row>
 					<entry><emphasis role="bold"><varname>set</varname></emphasis></entry>
-					<entry><varname><emphasis role="bold">span</emphasis></varname></entry>
-					<entry><varname><emphasis role="bold">spanset</emphasis></varname></entry>
-					<entry><varname><emphasis role="bold">temporal</emphasis></varname></entry>
+					<entry><emphasis role="bold"><varname>span</varname></emphasis></entry>
+					<entry><emphasis role="bold"><varname>spanset</varname></emphasis></entry>
+					<entry><emphasis role="bold"><varname>temporal</varname></emphasis></entry>
 				</row>
 			</thead>
 			<tbody>
@@ -133,15 +133,15 @@
 			<title>Funciones de constructor</title>
 			<itemizedlist>
 				<listitem>
+					<para><link linkend="set"><varname>set</varname></link>: Constructor para valores de conjunto</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="span"><varname>span</varname></link>: Constructores para valores de rango</para>
 				</listitem>
 
 				<listitem>
 					<para><link linkend="spanset"><varname>spanset</varname></link>: Constructores para valores de conjunto de rangos</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="set"><varname>set</varname></link>: Constructor para valores de conjunto</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -150,23 +150,23 @@
 			<title>Conversión de tipos</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="timestamptz_cast"><varname>timestamptz::time</varname></link>: Convertir un <varname>timestamptz</varname> a otro tipo de tiempo</para>
+					<para><link linkend="base_cast"><varname>::</varname>, <varname>set(base)</varname>, <varname>span(base)</varname>, <varname>spanset(base)</varname></link>: Convertir un valor de base en un valor de conjunto, de rango o de conjunto de rangos</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tstzset_cast"><varname>set::spanset</varname></link>: Convertir un conjunto a un conjunto de rangos</para>
+					<para><link linkend="set_cast"><varname>::</varname>, <varname>spanset(set)</varname></link>: Convertir un valor de conjunto en un valor de conjunto de rangos</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_cast"><varname>span::spanset</varname></link>: Convertir un rango a un conjunto de rangos</para>
+					<para><link linkend="span_cast"><varname>::</varname>, <varname>spanset(span)</varname></link>: Convertir un rango a un conjunto de rangos</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_cast_range"><varname>span::range</varname></link>: Convertir un rango MobilityDB a un rango PostgreSQL</para>
+					<para><link linkend="range_cast"><varname>::</varname>, <varname>span(range)</varname>, <varname>range(span)</varname></link>: Convertir un rango de MobilityDB hacia y desde un rango PostgreSQL</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="range_cast_span"><varname>range::span</varname></link>: Convertir un rango PostgreSQL a un rango MobilityDB</para>
+					<para><link linkend="multirange_cast"><varname>::</varname>, <varname>multirange(spanset)</varname>, <varname>spanset(multirange)</varname></link>: Convertir un rango PostgreSQL a un rango MobilityDB</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -200,7 +200,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_timespan"><varname>timespan</varname></link>: Obtener el lapso de tiempo del conjunto o del rango ignorando las posibles brechas de tiempo</para>
+					<para><link linkend="setspan_span"><varname>span</varname></link>: Obtener el lapso de tiempo delimitador ignorando las posibles brechas de tiempo</para>
 				</listitem>
 
 				<listitem>
@@ -421,7 +421,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="Xmax"><varname>Xmax</varname>, <varname>Ymax</varname>, <varname>Zmax</varname>, <varname>Tmax</varname></link>: Obtener el valor máximo de X</para>
+					<para><link linkend="Xmax"><varname>Xmax</varname>, <varname>Ymax</varname>, <varname>Zmax</varname>, <varname>Tmax</varname></link>: Obtener el valor máximo de X/Y/Z/T</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -981,11 +981,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttext_upper"><varname>upper</varname></link>: Transformar a mayúsculas</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="ttext_lower"><varname>lower</varname></link>: Transformar a minúsculas</para>
+					<para><link linkend="ttext_lower"><varname>lower</varname>, <varname>upper</varname></link>: Transformar a minúsculas/mayúsculas</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

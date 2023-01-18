@@ -1585,7 +1585,7 @@ WITH temp(temp, box) AS (SELECT
 SELECT asText(minusGeometry(minusTime(temp, box::tstzspan), box::geometry)) FROM temp;
 -- {(POINT(2 2)@2001-01-02, POINT(3 3)@2001-01-03)}
 </programlisting>
-				<para>Similarly to function <link linkend="minusTbox"><varname>minusTbox</varname></link>, when the bounding box has both space and time dimensions, the function <varname>minusStbox</varname> restricts the temporal point with respect to the space <emphasis>or</emphasis> the time extents of the box. To obtain the restriction using an <emphasis>and</emphasis> semantics, both the <varname>minusGeometry</varname> and <varname>minusTime</varname> functions must be applied.</para>
+				<para>Similarly to function <link linkend="atTbox"><varname>minusTbox</varname></link>, when the bounding box has both space and time dimensions, the function <varname>minusStbox</varname> restricts the temporal point with respect to the space <emphasis>or</emphasis> the time extents of the box. To obtain the restriction using an <emphasis>and</emphasis> semantics, both the <varname>minusGeometry</varname> and <varname>minusTime</varname> functions must be applied.</para>
 			</listitem>
 		</itemizedlist>
 	</sect1>

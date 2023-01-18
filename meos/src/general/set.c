@@ -86,7 +86,7 @@ set_find_value(const Set *s, Datum d, int *loc)
   int middle = 0; /* make compiler quiet */
   while (first <= last)
   {
-    middle = (first + last)/2;
+    middle = (first + last) / 2;
     Datum d1 = set_val_n(s, middle);
     int cmp = datum_cmp(d, d1, s->basetype);
     if (cmp == 0)
@@ -370,7 +370,7 @@ set_val_n(const Set *s, int index)
     /* start of data : start address + size of struct + size of bbox + */
     ((char *) s) + double_pad(sizeof(Set)) + double_pad(s->bboxsize) +
       /* offset array + offset */
-      (sizeof(size_t) * s->count) + (set_offsets_ptr(s))[index] );
+      (sizeof(size_t) * s->maxcount) + (set_offsets_ptr(s))[index] );
 }
 
 /**
@@ -484,12 +484,12 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
   }
 
   /* Compute the total size for maxcount elements as a proportion of the size
-   * of the count elements provided. Note that this is only an initial
-   * estimation. The functions adding elements to a set must verify both
-   * the maximum number of elements and the remaining space for adding an
+   * of the count elements provided. Note that this is only an INITIAL
+   * ESTIMATION. The functions adding elements to a set must verify BOTH
+   * the maximum number of elements AND the remaining space for adding an
    * additional variable-length element of arbitrary size */
   if (count != maxcount)
-    values_size *= (double) maxcount / count;
+    values_size = (double) values_size * (double) maxcount / (double) count;
 
   /* Total size of the struct */
   size_t memsize = double_pad(sizeof(Set)) + double_pad(bboxsize) +

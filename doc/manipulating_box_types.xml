@@ -311,59 +311,43 @@ SELECT isGeodetic(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-02])
 
 			<listitem id="Xmin">
 				<indexterm><primary><varname>Xmin</varname></primary></indexterm>
-				<indexterm><primary><varname>Xmax</varname></primary></indexterm>
-				<para>Get the minimum/maximum X value</para>
+				<indexterm><primary><varname>Ymin</varname></primary></indexterm>
+				<indexterm><primary><varname>Zmin</varname></primary></indexterm>
+				<indexterm><primary><varname>Tmin</varname></primary></indexterm>
+				<para>Get the minimum X/Y/Z/T value</para>
 				<para><varname>Xmin(box) → float</varname></para>
-				<para><varname>Xmax(box) → float</varname></para>
+				<para><varname>Ymin(stbox) → float</varname></para>
+				<para><varname>Zmin(stbox) → float</varname></para>
+				<para><varname>Tmin(box) → timestamptz</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT Xmin(tbox 'TBOX XT((1.0,3.0),[2000-01-01,2000-01-03))');
 -- 1
-SELECT Xmin(stbox 'STBOX X(((1.0,2.0),(3.0,4.0)))');
--- 1
-SELECT Xmax(tbox 'TBOX XT((1.0,3.0),[2000-01-01,2000-01-03))');
--- 3
-SELECT Xmax(stbox 'STBOX X(((1.0,2.0),(3.0,4.0)))');
--- 3
-</programlisting>
-			</listitem>
-
-			<listitem id="Ymin">
-				<indexterm><primary><varname>Ymin</varname></primary></indexterm>
-				<indexterm><primary><varname>Ymax</varname></primary></indexterm>
-				<para>Get the minimum/maximum Y value</para>
-				<para><varname>Ymin(stbox) → float</varname></para>
-				<para><varname>Ymax(stbox) → float</varname></para>
-				<programlisting language="sql" xml:space="preserve">
 SELECT Ymin(stbox 'STBOX X(((1.0,2.0),(3.0,4.0)))');
 -- 2
-SELECT Ymax(stbox 'STBOX X(((1.0,2.0),(3.0,4.0)))');
--- 4
-</programlisting>
-			</listitem>
-
-			<listitem id="Zmin">
-				<indexterm><primary><varname>Zmin</varname></primary></indexterm>
-				<indexterm><primary><varname>Zmax</varname></primary></indexterm>
-				<para>Get the minimum/maximum Z value</para>
-				<para><varname>Zmin(stbox) → float</varname></para>
-				<para><varname>Zmax(stbox) → float</varname></para>
-				<programlisting language="sql" xml:space="preserve">
 SELECT Zmin(stbox 'STBOX Z(((1.0,2.0,3.0),(4.0,5.0,6.0)))');
 -- 3
-SELECT Zmax(stbox 'STBOX Z(((1.0,2.0,3.0),(4.0,5.0,6.0)))');
--- 6
+SELECT Tmin(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
+-- 2001-01-01
 </programlisting>
 			</listitem>
 
-			<listitem id="Tmin">
-				<indexterm><primary><varname>Tmin</varname></primary></indexterm>
+			<listitem id="Xmax">
+				<indexterm><primary><varname>Xmax</varname></primary></indexterm>
+				<indexterm><primary><varname>Ymax</varname></primary></indexterm>
+				<indexterm><primary><varname>Zmax</varname></primary></indexterm>
 				<indexterm><primary><varname>Tmax</varname></primary></indexterm>
-				<para>Get the minimum/maximum T value</para>
-				<para><varname>Tmin(box) → timestamptz</varname></para>
+				<para>Get the maximum X/Y/Z/T value</para>
+				<para><varname>Xmax(box) → float</varname></para>
+				<para><varname>Ymax(stbox) → float</varname></para>
+				<para><varname>Zmax(stbox) → float</varname></para>
 				<para><varname>Tmax(box) → timestamptz</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT Tmin(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
--- 2001-01-01
+SELECT Xmax(stbox 'STBOX X(((1.0,2.0),(3.0,4.0)))');
+-- 3
+SELECT Ymax(stbox 'STBOX X(((1.0,2.0),(3.0,4.0)))');
+-- 4
+SELECT Zmax(stbox 'STBOX Z(((1.0,2.0,3.0),(4.0,5.0,6.0)))');
+-- 6
 SELECT Tmax(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 -- 2001-01-03
 </programlisting>
