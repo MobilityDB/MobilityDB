@@ -31,8 +31,6 @@
  * @brief Aggregate functions for set types.
  */
 
-// #include "general/time_aggfuncs.h"
-
 /* PostgreSQL */
 #include <postgres.h>
 #include <utils/memutils.h>

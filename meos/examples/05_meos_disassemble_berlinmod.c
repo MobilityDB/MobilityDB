@@ -36,7 +36,11 @@
  *
  * The input file is
  * - `trips.csv`: 55 trips from 5 cars during 4 days obtained from the
- *   generator at scale factor 0.005
+ *   generator at scale factor 0.005. The input file has been generated with
+ *   the following SQL command on the database containing the generated data
+ * @code
+ * COPY (SELECT tripid, vehid, day, seqno, ashexewkb(trip) FROM trips WHERE vehid < 6 ORDER BY tripid) TO '/home/user/src/trips.csv' CSV HEADER;
+ * @endcode
  * In the above file, the coordinates are given in the 3857 coordinate system,
  * https://epsg.io/3857
  * and the timestamps are given in the Europe/Brussels time zone.
@@ -54,7 +58,7 @@
 #include <meos.h>
 
 /* Maximum length in characters of a trip in the input data */
-#define MAX_LENGTH_TRIP 160000
+#define MAX_LENGTH_TRIP 170001
 /* Maximum length in characters of a header in the input CSV file */
 #define MAX_LENGTH_HEADER 1024
 /* Maximum length in characters of a date in the input data */
@@ -104,7 +108,7 @@ int main(void)
   do
   {
     int tripid, vehid, seq;
-    int read = fscanf(file, "%d,%d,%10[^,],%d,%160000[^\n]\n",
+    int read = fscanf(file, "%d,%d,%10[^,],%d,%170000[^\n]\n",
       &tripid, &vehid, date_buffer, &seq, trip_buffer);
     /* Transform the string representing the date into a date value */
     DateADT day = pg_date_in(date_buffer);

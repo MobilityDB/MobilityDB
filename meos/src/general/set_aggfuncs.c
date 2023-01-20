@@ -35,8 +35,8 @@
 #include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
-#include <fmgr.h>
 #if ! MEOS
+  #include <fmgr.h>
   #include <utils/memutils.h>
 #endif /* MEOS */
 /* MEOS */

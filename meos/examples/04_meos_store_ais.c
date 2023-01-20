@@ -67,6 +67,8 @@
 #include <libpq-fe.h>
 #include <meos.h>
 
+/* Number of instants in a batch for printing a marker */
+#define NO_INSTANTS_BATCH 1000
 /* Maximum length in characters of a header record in the input CSV file */
 #define MAX_LENGTH_HEADER 1024
 /* Maximum length for a SQL output query */
@@ -173,10 +175,11 @@ main(int argc, char **argv)
   /* Start a transaction block */
   exec_sql(conn, "BEGIN", PGRES_COMMAND_OK);
 
-  printf("Start processing the file\n");
-
   /* Read the first line of the file with the headers */
   fscanf(file, "%1023s\n", text_buffer);
+
+  printf("Reading the instants (one marker every %d instants)\n",
+    NO_INSTANTS_BATCH);
 
   /* Continue reading the file */
   int len;
@@ -188,7 +191,14 @@ main(int argc, char **argv)
     rec.T = pg_timestamp_in(text_buffer, -1);
 
     if (read == 5)
+    {
       no_records++;
+      if (no_records % NO_INSTANTS_BATCH == 0)
+      {
+        printf("*");
+        fflush(stdout);
+      }
+    }
 
     if (read != 5 && ! feof(file))
     {
@@ -230,7 +240,7 @@ main(int argc, char **argv)
     exec_sql(conn, insert_buffer, PGRES_COMMAND_OK);
   }
 
-  printf("%d records read.\n%d incomplete records ignored.\n",
+  printf("\n%d records read.\n%d incomplete records ignored.\n",
     no_records, no_nulls);
 
   sprintf(text_buffer, "SELECT COUNT(*) FROM public.AISInstants;");

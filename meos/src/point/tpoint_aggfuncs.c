@@ -243,7 +243,7 @@ tpoint_tcentroid_transfn(SkipList *state, Temporal *temp)
  * Transition function for temporal extent aggregation of temporal point values
  */
 STBox *
-tpoint_extent_transfn(STBox *box, Temporal *temp)
+tpoint_extent_transfn(STBox *box, const Temporal *temp)
 {
   /* Can't do anything with null inputs */
   if (! box && ! temp)

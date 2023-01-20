@@ -288,6 +288,29 @@ skiplist_print(const SkipList *list)
 /*****************************************************************************/
 
 /**
+ * Reads the state value from the buffer
+ *
+ * @param[in] state State
+ * @param[in] data Structure containing the data
+ * @param[in] size Size of the structure
+ */
+void
+aggstate_set_extra(SkipList *state, void *data, size_t size)
+{
+#if ! MEOS
+  MemoryContext ctx;
+  assert(AggCheckCallContext(fetch_fcinfo(), &ctx));
+  MemoryContext oldctx = MemoryContextSwitchTo(ctx);
+#endif /* ! MEOS */
+  state->extra = palloc(size);
+  state->extrasize = size;
+  memcpy(state->extra, data, size);
+#if ! MEOS
+  MemoryContextSwitchTo(oldctx);
+#endif /* ! MEOS */
+}
+
+/**
  * Return the value at the head of the skiplist
  */
 void *
@@ -351,6 +374,9 @@ skiplist_make(void **values, int count, SkipListElemType elemtype)
   }
   result->elems[count - 1].value = NULL; /* set tail value to NULL */
   result->tail = count - 1;
+#if ! MEOS
+  unset_aggregation_context(oldctx);
+#endif /* ! MEOS */
 
   /* Link the list in a balanced fashion */
   for (int level = 0; level < height; level++)
@@ -366,9 +392,6 @@ skiplist_make(void **values, int count, SkipListElemType elemtype)
     result->elems[count - 1].height = height;
   }
 
-#if ! MEOS
-  unset_aggregation_context(oldctx);
-#endif /* ! MEOS */
   return result;
 }
 
@@ -629,7 +652,7 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
 }
 
 /**
- * Return the values contained in the skiplist
+ * @brief Return the values contained in the skiplist
  */
 void **
 skiplist_values(SkipList *list)

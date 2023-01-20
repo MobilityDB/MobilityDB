@@ -636,6 +636,7 @@ temporal_tagg_finalfn(SkipList *state)
     result = (Temporal *) tsequenceset_make((const TSequence **) values,
       state->length, NORMALIZE);
   pfree(values);
+  skiplist_free(state);
   return result;
 }
 
@@ -1136,7 +1137,7 @@ tnumber_tavg_finalfn(SkipList *state)
  * Transition function for temporal extent aggregation of temporal values
  */
 Span *
-temporal_extent_transfn(Span *p, Temporal *temp)
+temporal_extent_transfn(Span *p, const Temporal *temp)
 {
   Span *result;
 
@@ -1168,7 +1169,7 @@ temporal_extent_transfn(Span *p, Temporal *temp)
  * Transition function for temporal extent aggregation for temporal numbers
  */
 TBox *
-tnumber_extent_transfn(TBox *box, Temporal *temp)
+tnumber_extent_transfn(TBox *box, const Temporal *temp)
 {
   /* Can't do anything with null inputs */
   if (!box && !temp)
