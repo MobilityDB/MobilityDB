@@ -35,10 +35,21 @@
 #include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
+#include <fmgr.h>
+#if ! MEOS
+  #include <utils/memutils.h>
+#endif /* MEOS */
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/type_util.h"
+
+#if ! MEOS
+  extern FunctionCallInfo fetch_fcinfo();
+  extern void store_fcinfo(FunctionCallInfo fcinfo);
+  extern MemoryContext set_aggregation_context(FunctionCallInfo fcinfo);
+  extern void unset_aggregation_context(MemoryContext ctx);
+#endif /* ! MEOS */
 
 /*****************************************************************************
  * Aggregate functions for set types
@@ -59,13 +70,12 @@ set_append_value(Set *set, Datum d, meosType basetype)
   /* Account for expandable structures
    * A while is used instead of an if to enable to break the loop if there is
    * no more available space */
-  bool typbyval = MOBDB_FLAGS_GET_BYVAL(set->flags);
   while (set->count < set->maxcount)
   {
-    if (typbyval)
+    /* If passed by value, set datum in the offsets array */
+    if (MOBDB_FLAGS_GET_BYVAL(set->flags))
     {
-      (set_offsets_ptr(set))[set->count - 1] = d;
-      set->count++;
+      (set_offsets_ptr(set))[set->count++] = d;
       return set;
     }
 
@@ -107,11 +117,17 @@ set_append_value(Set *set, Datum d, meosType basetype)
   values[set->count] = d;
   int maxcount = set->maxcount * 2;
 #ifdef DEBUG_BUILD
-    printf(" set -> %d\n", maxcount);
+  printf(" set -> %d\n", maxcount);
 #endif /* DEBUG_BUILD */
 
+#if ! MEOS
+  MemoryContext ctx = set_aggregation_context(fetch_fcinfo());
+#endif /* ! MEOS */
   Set *result = set_make_exp(values, set->count + 1, maxcount, set->basetype,
     ORDERED_NO);
+#if ! MEOS
+  unset_aggregation_context(ctx);
+#endif /* ! MEOS */
   pfree(values);
   return result;
 }
@@ -125,7 +141,16 @@ set_agg_transfn(Set *state, Datum d, meosType basetype)
 {
   /* Null set: create a new set with the value */
   if (! state)
-    return set_make(&d, 1, basetype, ORDERED_NO);
+  {
+#if ! MEOS
+    MemoryContext ctx = set_aggregation_context(fetch_fcinfo());
+#endif /* ! MEOS */
+    Set *result = set_make(&d, 1, basetype, ORDERED_NO);
+#if ! MEOS
+    unset_aggregation_context(ctx);
+#endif /* ! MEOS */
+    return result;
+  }
 
   // return set_append_value(state, d, basetype);
   return union_set_value(state, d, basetype);

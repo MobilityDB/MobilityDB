@@ -477,7 +477,7 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
     {
       for (int i = 0; i < newcount; i++)
         /* VARSIZE_ANY is used for oblivious data alignment, see postgres.h */
-        values_size += double_pad(VARSIZE_ANY(DatumGetPointer(newvalues[i])));
+        values_size += double_pad(VARSIZE(DatumGetPointer(newvalues[i])));
     }
     else
       values_size = double_pad(typlen) * newcount;
@@ -527,7 +527,7 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
     {
       /* VARSIZE_ANY is used for oblivious data alignment, see postgres.h */
       size_t size_elem = (typlen == -1) ?
-        VARSIZE_ANY(newvalues[i]) : (uint32) typlen;
+        VARSIZE(newvalues[i]) : (uint32) typlen;
       memcpy(((char *) result) + pdata + pos, DatumGetPointer(newvalues[i]),
         size_elem);
       (set_offsets_ptr(result))[i] = pos;

@@ -248,7 +248,7 @@ SELECT numValues(set_agg(f)) FROM tbl_float;
 SELECT numValues(set_agg(t)) FROM tbl_timestamptz;
  numvalues 
 -----------
-        88
+        99
 (1 row)
 
 SELECT numValues(set_agg(t)) FROM tbl_text;
