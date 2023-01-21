@@ -39,7 +39,7 @@
  *   generator at scale factor 0.005. The input file has been generated with
  *   the following SQL command on the database containing the generated data
  * @code
- * COPY (SELECT tripid, vehid, day, seqno, ashexewkb(trip) FROM trips WHERE vehid < 6 ORDER BY tripid) TO '/home/user/src/trips.csv' CSV HEADER;
+ * COPY (SELECT tripid, vehid, day, seqno, ashexewkb(trip) AS trip FROM trips WHERE vehid < 6 ORDER BY tripid) TO '/home/user/src/trips.csv' CSV HEADER;
  * @endcode
  * In the above file, the coordinates are given in the 3857 coordinate system,
  * https://epsg.io/3857
@@ -204,8 +204,8 @@ int main(void)
       curr_inst[min_trip] = -1;
   }
 
-  printf("\n%d trip records read.", records_in);
-  printf("\n%d observation records written.\n\n", records_out);
+  printf("\n%d trip records read from file 'trips.csv'.", records_in);
+  printf("\n%d observation records written in file 'trip_instants.csv'.\n\n", records_out);
 
   /* Free memory */
   for (i = 0; i < records_in; i++)

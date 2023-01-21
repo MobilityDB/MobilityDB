@@ -428,8 +428,8 @@ stbox_union_rt(const STBox *a, const STBox *b, STBox *new)
 }
 
 /**
- * Return the size of a spatiotemporal box for penalty-calculation purposes.
- * The result can be +Infinity, but not NaN.
+ * @brief Return the size of a spatiotemporal box for penalty-calculation
+ * purposes. The result can be +Infinity, but not NaN.
  */
 static double
 stbox_size(const STBox *box)
@@ -453,9 +453,22 @@ stbox_size(const STBox *box)
    */
   if (isnan(box->xmax) || isnan(box->ymax) || isnan(box->zmax))
     return get_float8_infinity();
-  return (box->xmax - box->xmin) * (box->ymax - box->ymin) *
-    (box->zmax - box->zmin) * (DatumGetTimestampTz(box->period.upper) -
-      DatumGetTimestampTz(box->period.lower));
+
+  /* Compute the size */
+  if (MOBDB_FLAGS_GET_X(box->flags))
+  {
+    double result = (box->xmax - box->xmin) * (box->ymax - box->ymin);
+    if (MOBDB_FLAGS_GET_Z(box->flags))
+      result *= (box->zmax - box->zmin);
+    if (MOBDB_FLAGS_GET_T(box->flags))
+      /* Expressed in seconds */
+      result *= (double) (DatumGetTimestampTz(box->period.upper) -
+        DatumGetTimestampTz(box->period.lower)) / USECS_PER_SEC;
+    return result;
+  }
+  /* The box has only time dimension */
+  return (double) (DatumGetTimestampTz(box->period.upper) -
+      DatumGetTimestampTz(box->period.lower)) / USECS_PER_SEC;
 }
 
 /**

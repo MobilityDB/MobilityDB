@@ -323,7 +323,7 @@ SELECT asBinary(ttext 'AAA@2001-01-01');
 				<indexterm><primary><varname>asHexWKB</varname></primary></indexterm>
 				<para>Obtener la representación hexadecimal binaria conocida (HexWKB) en formato texto</para>
 				<para><varname>asHexWKB(ttype,endian text='') → text</varname></para>
-				<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza NDR.</para>
+				<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT asHexWKB(tbool 'true@2001-01-01');
 -- 010D000101009C57D3C11C0000

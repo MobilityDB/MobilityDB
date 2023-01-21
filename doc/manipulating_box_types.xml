@@ -84,7 +84,7 @@ SELECT asBinary(stbox 'STBOX X(((1,1),(2,2)))');
 					<indexterm><primary><varname>asHexWKB</varname></primary></indexterm>
 					<para>Get the Hexadecimal Well-Known Binary (HexWKB) representation as text</para>
 					<para><varname>asHexWKB(box,endian text='') → text</varname></para>
-					<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then NDR is used.</para>
+					<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT asHexWKB(tbox 'TBOX XT([1,2),[2000-01-01,2000-01-02))');
 -- 01030A0001005C6C29FFFFFFFF00BC434713000000060001000000000000F03F0000000000000040

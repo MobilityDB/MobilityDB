@@ -191,7 +191,7 @@ SELECT asBinary(intspanset '{[1, 2], [4, 5]}', 'XDR');
 					<indexterm><primary><varname>asHexWKB</varname></primary></indexterm>
 					<para>Get the Hexadecimal Well-Known Binary (HexWKB) representation as text of a set or span type</para>
 					<para><varname>asHexWKB({set,spans},endian text='') → text</varname></para>
-					<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then NDR is used.</para>
+					<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT asHexWKB(tstzset '{2001-01-01, 2001-01-03}');
 -- 0102000000009C57D3C11C0000005C060FEA1C0000

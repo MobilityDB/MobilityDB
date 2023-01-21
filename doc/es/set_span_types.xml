@@ -197,7 +197,7 @@ SELECT asBinary(intspanset '{[1, 2], [4, 5]}', 'XDR');
 					<indexterm><primary><varname>asHexWKB</varname></primary></indexterm>
 					<para>Obtener la representación hexadecimal binaria conocida (HexWKB) en formato texto de un rango o un tipo de tiempo</para>
 					<para><varname>asHexWKB({set,spans},endian text='') → text</varname></para>
-					<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza NDR.</para>
+					<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT asHexWKB(tstzset '{2001-01-01, 2001-01-03}');
 -- 0102000000009C57D3C11C0000005C060FEA1C0000
