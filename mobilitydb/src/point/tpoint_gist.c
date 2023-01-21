@@ -434,6 +434,10 @@ stbox_union_rt(const STBox *a, const STBox *b, STBox *new)
 static double
 stbox_size(const STBox *box)
 {
+  double result_size = 1;
+  bool  hasx = MOBDB_FLAGS_GET_X(box->flags),
+        hasz = MOBDB_FLAGS_GET_Z(box->flags),
+        hast = MOBDB_FLAGS_GET_T(box->flags);
   /*
    * Check for zero-width cases.  Note that we define the size of a zero-
    * by-infinity box as zero.  It's important to special-case this somehow,
@@ -441,9 +445,10 @@ stbox_size(const STBox *box)
    *
    * The less-than cases should not happen, but if they do, say "zero".
    */
-  if (FLOAT8_LE(box->xmax, box->xmin) || FLOAT8_LE(box->ymax, box->ymin) ||
-    FLOAT8_LE(box->zmax, box->zmin) ||
-    datum_le(box->period.upper, box->period.lower, T_TIMESTAMPTZ))
+  if ((hasx && (FLOAT8_LE(box->xmax, box->xmin)
+                || FLOAT8_LE(box->ymax, box->ymin)
+                || (hasz && FLOAT8_LE(box->zmax, box->zmin))))
+      || (hast && datum_le(box->period.upper, box->period.lower, T_TIMESTAMPTZ)))
     return 0.0;
 
   /*
@@ -451,11 +456,23 @@ stbox_size(const STBox *box)
    * and a non-NaN is infinite.  Note the previous check eliminated the
    * possibility that the low fields are NaNs.
    */
-  if (isnan(box->xmax) || isnan(box->ymax) || isnan(box->zmax))
+  if (hasx && (isnan(box->xmax) || isnan(box->ymax) || (hasz && isnan(box->zmax))))
     return get_float8_infinity();
-  return (box->xmax - box->xmin) * (box->ymax - box->ymin) *
-    (box->zmax - box->zmin) * (DatumGetTimestampTz(box->period.upper) -
-      DatumGetTimestampTz(box->period.lower));
+
+  /*
+   * Compute the box size
+   */
+  if (hasx)
+  {
+    result_size *= (box->xmax - box->xmin) * (box->ymax - box->ymin);
+    if (hasz)
+      result_size *= (box->xmax - box->xmin) * (box->ymax - box->ymin);
+  }
+  if (hast)
+    /* Expressed in seconds */
+    result_size *= (DatumGetTimestampTz(box->period.upper) -
+      DatumGetTimestampTz(box->period.lower)) / USECS_PER_SEC;
+  return result_size;
 }
 
 /**
