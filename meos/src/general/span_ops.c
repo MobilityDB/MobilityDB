@@ -805,18 +805,6 @@ overafter_timestamp_period(TimestampTz t, const Span *p)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_setspan_pos
- * @brief Return true if a set does not extend to the left of a span set.
- * @sqlop @p #&>
- */
-bool
-overright_set_spanset(const Set *os, const SpanSet *ss)
-{
-  Datum v = set_val_n(os, 0);
-  const Span *s = spanset_sp_n(ss, 0);
-  return overright_value_span(v, os->basetype, s);
-}
-/**
  * @ingroup libmeos_internal_setspan_pos
  * @brief Return true if a span does not extend to the left of a value.
  */

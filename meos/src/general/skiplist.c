@@ -288,6 +288,29 @@ skiplist_print(const SkipList *list)
 /*****************************************************************************/
 
 /**
+ * Reads the state value from the buffer
+ *
+ * @param[in] state State
+ * @param[in] data Structure containing the data
+ * @param[in] size Size of the structure
+ */
+void
+aggstate_set_extra(SkipList *state, void *data, size_t size)
+{
+#if ! MEOS
+  MemoryContext ctx;
+  assert(AggCheckCallContext(fetch_fcinfo(), &ctx));
+  MemoryContext oldctx = MemoryContextSwitchTo(ctx);
+#endif /* ! MEOS */
+  state->extra = palloc(size);
+  state->extrasize = size;
+  memcpy(state->extra, data, size);
+#if ! MEOS
+  MemoryContextSwitchTo(oldctx);
+#endif /* ! MEOS */
+}
+
+/**
  * Return the value at the head of the skiplist
  */
 void *
@@ -351,6 +374,9 @@ skiplist_make(void **values, int count, SkipListElemType elemtype)
   }
   result->elems[count - 1].value = NULL; /* set tail value to NULL */
   result->tail = count - 1;
+#if ! MEOS
+  unset_aggregation_context(oldctx);
+#endif /* ! MEOS */
 
   /* Link the list in a balanced fashion */
   for (int level = 0; level < height; level++)
@@ -366,9 +392,6 @@ skiplist_make(void **values, int count, SkipListElemType elemtype)
     result->elems[count - 1].height = height;
   }
 
-#if ! MEOS
-  unset_aggregation_context(oldctx);
-#endif /* ! MEOS */
   return result;
 }
 
@@ -422,8 +445,12 @@ skiplist_elempos(const SkipList *list, Span *p, int cur)
 }
 
 /**
- * Splice the skiplist with the array of values using the aggregation
+ * @brief Splice the skiplist with the array of values using the aggregation
  * function
+ * @note The complexity of this function is
+ * - average: O(count*log(n)) (unless I'm mistaken)
+ * - worst case: O(n+count*log(n)) (when period spans the whole list so
+ *   everything has to be deleted)
  *
  * @param[in,out] list Skiplist
  * @param[in] values Array of values
@@ -439,12 +466,19 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
   MemoryContext oldctx;
 #endif /* ! MEOS */
 
-  /*
-   * O(count*log(n)) average (unless I'm mistaken)
-   * O(n+count*log(n)) worst case (when period spans the whole list so
-   * everything has to be deleted)
-   */
   assert(list->length > 0);
+
+  /* Temporal aggregation cannot mix instants and sequences */
+  if (list->elemtype == TEMPORAL)
+  {
+    Temporal *head = (Temporal *) skiplist_headval(list);
+    Temporal *temp = (Temporal *) values[0];
+    if (head->subtype != temp->subtype)
+      elog(ERROR, "Cannot aggregate temporal values of different type");
+    if (MOBDB_FLAGS_GET_LINEAR(head->flags) !=
+      MOBDB_FLAGS_GET_LINEAR(temp->flags))
+      elog(ERROR, "Cannot aggregate temporal values of different interpolation");
+  }
 
   /* Compute the span of the new values */
   Span p;
@@ -629,17 +663,40 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
 }
 
 /**
- * Return the values contained in the skiplist
+ * @brief Return the values contained in the skiplist
  */
 void **
 skiplist_values(SkipList *list)
 {
+#if ! MEOS
+  MemoryContext ctx = set_aggregation_context(fetch_fcinfo());
+#endif /* ! MEOS */
   void **result = palloc(sizeof(void *) * list->length);
   int cur = list->elems[0].next[0];
   int count = 0;
   while (cur != list->tail)
   {
     result[count++] = list->elems[cur].value;
+    cur = list->elems[cur].next[0];
+  }
+#if ! MEOS
+  unset_aggregation_context(ctx);
+#endif /* ! MEOS */
+  return result;
+}
+
+/**
+ * @brief Return the values contained in the skiplist
+ */
+Temporal **
+skiplist_temporal_values(SkipList *list)
+{
+  Temporal **result = palloc(sizeof(Temporal *) * list->length);
+  int cur = list->elems[0].next[0];
+  int count = 0;
+  while (cur != list->tail)
+  {
+    result[count++] = temporal_copy(list->elems[cur].value);
     cur = list->elems[cur].next[0];
   }
   return result;

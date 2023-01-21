@@ -187,10 +187,10 @@ SELECT MAX(array_length(sequences(ss),1)) FROM tbl_tnpoint_seqset;
 -------------------------------------------------------------------------------
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_npoint
-WHERE atValue(temp, np) IS NOT NULL;
+WHERE atValues(temp, np) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_npoint
-WHERE minusValue(temp, np) IS NOT NULL;
+WHERE minusValues(temp, np) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tnpoint,
 ( SELECT set_agg(np) AS s FROM tbl_npoint) tmp

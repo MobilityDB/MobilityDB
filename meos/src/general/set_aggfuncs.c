@@ -35,14 +35,102 @@
 #include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
+#if ! MEOS
+  #include <fmgr.h>
+  #include <utils/memutils.h>
+#endif /* MEOS */
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/type_util.h"
 
+#if ! MEOS
+  extern FunctionCallInfo fetch_fcinfo();
+  extern void store_fcinfo(FunctionCallInfo fcinfo);
+  extern MemoryContext set_aggregation_context(FunctionCallInfo fcinfo);
+  extern void unset_aggregation_context(MemoryContext ctx);
+#endif /* ! MEOS */
+
 /*****************************************************************************
  * Aggregate functions for set types
  *****************************************************************************/
+
+/**
+ * @ingroup libmeos_internal_temporal_transf
+ * @brief Append a value to an unordered array.
+ * @param[in,out] set Set
+ * @param[in] d Value
+ * @param[in] basetype Base type
+ */
+Set *
+set_append_value(Set *set, Datum d, meosType basetype)
+{
+  assert(set->basetype == basetype);
+
+  /* Account for expandable structures
+   * A while is used instead of an if to enable to break the loop if there is
+   * no more available space */
+  while (set->count < set->maxcount)
+  {
+    /* If passed by value, set datum in the offsets array */
+    if (MOBDB_FLAGS_GET_BYVAL(set->flags))
+    {
+      (set_offsets_ptr(set))[set->count++] = d;
+      return set;
+    }
+
+    /* Determine whether there is enough available space */
+    size_t size_elem;
+    int16 typlen = basetype_length(basetype);
+    if (typlen == -1)
+      /* VARSIZE_ANY is used for oblivious data alignment, see postgres.h */
+      size_elem = VARSIZE_ANY(DatumGetPointer(d));
+    else
+      size_elem = typlen;
+
+    /* Get the last instant to keep */
+    Datum last = set_val_n(set, set->count - 1);
+    size_t size_last = (typlen == -1) ? VARSIZE_ANY(last) : size_elem;
+    size_t avail_size = ((char *) set + VARSIZE_ANY(set)) -
+      ((char *) DatumGetPointer(last) + double_pad(size_last));
+    if (double_pad(size_elem) > avail_size)
+      /* There is NOT enough available space */
+      break;
+
+    /* There is enough space to add the new value */
+    size_t pdata = double_pad(sizeof(Set)) + double_pad(set->bboxsize) +
+      sizeof(size_t) * set->maxcount;
+    size_t pos = (set_offsets_ptr(set))[set->count - 1] + double_pad(size_last);
+    memcpy(((char *) set) + pdata + pos, DatumGetPointer(d), size_elem);
+    (set_offsets_ptr(set))[set->count++] = pos;
+    /* Expand the bounding box and return */
+    if (set->bboxsize != 0)
+      set_expand_bbox(d, basetype, set_bbox_ptr(set));
+    return set;
+  }
+
+  /* This is the first time we use an expandable structure or there is no more
+   * free space */
+  Datum *values = palloc(sizeof(Datum) * set->count + 1);
+  for (int i = 0; i < set->count; i++)
+    values[i] = set_val_n(set, i);
+  values[set->count] = d;
+  int maxcount = set->maxcount * 2;
+#ifdef DEBUG_BUILD
+  printf(" set -> %d\n", maxcount);
+#endif /* DEBUG_BUILD */
+
+#if ! MEOS
+  MemoryContext ctx = set_aggregation_context(fetch_fcinfo());
+#endif /* ! MEOS */
+  Set *result = set_make_exp(values, set->count + 1, maxcount, set->basetype,
+    ORDERED_NO);
+#if ! MEOS
+  unset_aggregation_context(ctx);
+#endif /* ! MEOS */
+  pfree(values);
+  return result;
+}
 
 /**
  * @ingroup libmeos_internal_setspan_agg
@@ -53,9 +141,20 @@ set_agg_transfn(Set *state, Datum d, meosType basetype)
 {
   /* Null set: create a new set with the value */
   if (! state)
-    return set_make(&d, 1, basetype, ORDERED);
+  {
+#if ! MEOS
+    MemoryContext ctx = set_aggregation_context(fetch_fcinfo());
+#endif /* ! MEOS */
+    /* Arbitrary initialization to 64 elemnts */
+    Set *result = set_make_exp(&d, 1, 64, basetype, ORDERED_NO);
+#if ! MEOS
+    unset_aggregation_context(ctx);
+#endif /* ! MEOS */
+    return result;
+  }
 
-  return union_set_value(state, d, basetype);
+  return set_append_value(state, d, basetype);
+  // return union_set_value(state, d, basetype);
 }
 
 #if MEOS
@@ -110,22 +209,43 @@ textset_agg_transfn(Set *state, const text *txt)
 }
 #endif /* MEOS */
 
+// /**
+ // * @ingroup libmeos_setspan_agg
+ // * @brief Combine function for tset aggregate of values
+ // *
+ // * @param[in] state1, state2 State values
+ // */
+// Set *
+// set_agg_combinefn(Set *state1, Set *state2)
+// {
+  // if (! state1)
+    // return state2;
+  // if (! state2)
+    // return state1;
+
+  // assert(state1->settype == state2->settype);
+  // return union_set_set(state1, state2);
+// }
+
 /**
- * @ingroup libmeos_setspan_agg
- * @brief Combine function for tset aggregate of values
- *
- * @param[in] state1, state2 State values
+ * @ingroup libmeos_internal_setspan_agg
+ * @brief Transition function for set aggregate of values
  */
 Set *
-set_agg_combinefn(Set *state1, Set *state2)
+set_agg_finalfn(Set *state)
 {
-  if (! state1)
-    return state2;
-  if (! state2)
-    return state1;
+  if (! state)
+    return NULL;
 
-  assert(state1->settype == state2->settype);
-  return union_set_set(state1, state2);
+  /* Collect the UNSORTED values */
+  Datum *values = palloc(sizeof(Datum) * state->count);
+  for (int i = 0; i < state->count; i++)
+    values[i] = set_val_n(state, i);
+
+  Set *result = set_make_exp(values, state->count, state->count,
+    state->basetype, ORDERED);
+  pfree(values);
+  return result;
 }
 
 /*****************************************************************************/

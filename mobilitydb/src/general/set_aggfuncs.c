@@ -31,8 +31,6 @@
  * @brief Aggregate functions for set types.
  */
 
-// #include "general/time_aggfuncs.h"
-
 /* PostgreSQL */
 #include <postgres.h>
 #include <utils/memutils.h>
@@ -48,7 +46,7 @@
 #include "pg_general/meos_catalog.h"
 
 /*****************************************************************************
- * Aggregate transition functions for set types
+ * Aggregate functions for set types
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(Set_agg_transfn);
@@ -58,41 +56,64 @@ PG_FUNCTION_INFO_V1(Set_agg_transfn);
 PGDLLEXPORT Datum
 Set_agg_transfn(PG_FUNCTION_ARGS)
 {
-  // MemoryContext ctx = set_aggregation_context(fcinfo);
+  MemoryContext ctx = set_aggregation_context(fcinfo);
   Set *state = PG_ARGISNULL(0) ? NULL : PG_GETARG_SET_P(0);
   if (PG_ARGISNULL(1))
-    PG_RETURN_NULL();
+  {
+    if (state)
+      PG_RETURN_POINTER(state);
+    else
+      PG_RETURN_NULL();
+  }
+  unset_aggregation_context(ctx);
   Datum d = PG_GETARG_DATUM(1);
+  /* Detoast the value if necessary */
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  void *value = NULL;
+  Datum dvalue = d;
   if (basetype_varlength(basetype) &&
       PG_DATUM_NEEDS_DETOAST((struct varlena *) d))
-    value = PG_DETOAST_DATUM(d);
-  state = set_agg_transfn(state, value ? PointerGetDatum(value) : d, basetype);
+    dvalue = PointerGetDatum(PG_DETOAST_DATUM(d));
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  state = set_agg_transfn(state, dvalue, basetype);
+  if (dvalue != d)
+    pfree(DatumGetPointer(dvalue));
   if (! state)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(state);
 }
 
-/*****************************************************************************
- * Aggregate combine functions for set types
- *****************************************************************************/
+// PG_FUNCTION_INFO_V1(Set_agg_combinefn);
+// /**
+ // * Combine function for set aggregate of set types
+ // */
+// PGDLLEXPORT Datum
+// Set_agg_combinefn(PG_FUNCTION_ARGS)
+// {
+  // MemoryContext ctx = set_aggregation_context(fcinfo);
+  // Set *state1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_SET_P(0);
+  // Set *state2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_SET_P(1);
+  // if (state1 == NULL && state2 == NULL)
+    // PG_RETURN_NULL();
+  // unset_aggregation_context(ctx);
+  // store_fcinfo(fcinfo);
+  // Set *result = set_agg_combinefn(state1, state2);
+  // PG_RETURN_POINTER(result);
+// }
 
-PG_FUNCTION_INFO_V1(Set_agg_combinefn);
+PG_FUNCTION_INFO_V1(Set_agg_finalfn);
 /**
  * Combine function for set aggregate of set types
  */
 PGDLLEXPORT Datum
-Set_agg_combinefn(PG_FUNCTION_ARGS)
+Set_agg_finalfn(PG_FUNCTION_ARGS)
 {
   MemoryContext ctx = set_aggregation_context(fcinfo);
-  Set *state1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_SET_P(0);
-  Set *state2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_SET_P(1);
-  if (state1 == NULL && state2 == NULL)
-    PG_RETURN_NULL();
+  Set *state = PG_GETARG_SET_P(0);
   unset_aggregation_context(ctx);
-  store_fcinfo(fcinfo);
-  Set *result = set_agg_combinefn(state1, state2);
+  Set *result = set_agg_finalfn(state);
+  if (! result)
+    PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
 

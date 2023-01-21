@@ -62,6 +62,10 @@
 		</listitem>
 
 		<listitem>
+			<para><varname>values</varname> representa cualquier conjunto de valores de un tipo base de un tipo temporal, por ejemplo, <varname>integer</varname>, <varname>intset</varname>, <varname>intspan </varname> y <varname>intspanset</varname> para el tipo base <varname>integer</varname></para>
+		</listitem>
+
+		<listitem>
 			<para><varname>number</varname> representa cualquier tipo de base numérico, es decir, <varname>integer</varname> o <varname>float</varname>,</para>
 		</listitem>
 
@@ -319,7 +323,7 @@ SELECT asBinary(ttext 'AAA@2001-01-01');
 				<indexterm><primary><varname>asHexWKB</varname></primary></indexterm>
 				<para>Obtener la representación hexadecimal binaria conocida (HexWKB) en formato texto</para>
 				<para><varname>asHexWKB(ttype,endian text='') → text</varname></para>
-				<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza NDR.</para>
+				<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT asHexWKB(tbool 'true@2001-01-01');
 -- 010D000101009C57D3C11C0000
@@ -1372,22 +1376,33 @@ SELECT merge(ARRAY[tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]}'
 
 	<sect1 id="restriction_functions">
 		<title>Funciones de restricción</title>
-		<para>Hay dos conjuntos complementarios de funciones de restricción. El primer conjunto de funciones restringe el valor temporal con respecto a un valor o una extensión de tiempo. Dos ejemplos son <varname>atValue</varname> o <varname>atGeometry</varname>. El segundo conjunto de funciones restringe el valor temporal con respecto al <emphasis>complement</emphasis> de un valor o una extensión de tiempo. Dos ejemplos son <varname>minusValue</varname> o <varname>minusGeometry</varname></para>
+		<para>Hay dos conjuntos complementarios de funciones de restricción. El primer conjunto de funciones restringe el valor temporal con respecto a un valor o una extensión de tiempo. Dos ejemplos son <varname>atValues</varname> o <varname>atTime</varname>. El segundo conjunto de funciones restringe el valor temporal con respecto al <emphasis>complement</emphasis> de un valor o una extensión de tiempo. Dos ejemplos son <varname>minusValues</varname> o <varname>minusTime</varname></para>
 
 		<itemizedlist>
-			<listitem id="atValue">
-				<indexterm><primary><varname>atValue</varname></primary></indexterm>
-				<indexterm><primary><varname>minusValue</varname></primary></indexterm>
+			<listitem id="atValues">
+				<indexterm><primary><varname>atValues</varname></primary></indexterm>
+				<indexterm><primary><varname>minusValues</varname></primary></indexterm>
 				<para>Restringir a (al complemento de) un valor</para>
-				<para><varname>atValue(ttype,base) → ttype</varname></para>
-				<para><varname>minusValue(ttype,base) → ttype</varname></para>
+				<para><varname>atValues(ttype,values) → ttype</varname></para>
+				<para><varname>minusValues(ttype,values) → ttype</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT atValue(tint '[1@2001-01-01, 1@2001-01-15)', 1);
+SELECT atValues(tint '[1@2001-01-01, 1@2001-01-15)', 1);
 -- [1@2001-01-01, 1@2001-01-15)
-SELECT asText(atValue(tgeompoint '[Point(0 0 0)@2001-01-01, Point(2 2 2)@2001-01-03)',
+SELECT asText(atValues(tgeompoint '[Point(0 0 0)@2001-01-01, Point(2 2 2)@2001-01-03)',
   'Point(1 1 1)'));
 -- {[POINT Z (1 1 1)@2001-01-02]}
+SELECT atValues(tfloat '[1@2001-01-01, 4@2001-01-4)', floatset '{1, 3, 5}');
+-- {[1@2001-01-01], [3@2001-01-03]}
+SELECT asText(atValues(tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03)',
+  geomset '{"Point(0 0)", "Point(1 1)"}'));
+-- {[POINT(0 0)@2001-01-01], [POINT(1 1)@2001-01-02]}
+SELECT atValues(tfloat '[1@2001-01-01, 4@2001-01-4)', floatspan '[1,3]');
+-- [1@2001-01-01, 3@2001-01-03]
+SELECT atValues(tfloat '[1@2001-01-01, 5@2001-01-05)',
+  floatspanset '{[1,2], [3,4]}');
+-- {[1@2001-01-01, 2@2001-01-02],[3@2001-01-03, 4@2001-01-04]}
 </programlisting>
+
 				<programlisting language="sql" xml:space="preserve">
 SELECT minusValue(tint '[1@2001-01-01, 2@2001-01-02, 2@2001-01-03)', 1);
 -- {[2@2001-01-02, 2@2001-01-03)}
@@ -1395,23 +1410,6 @@ SELECT asText(minusValue(tgeompoint '[Point(0 0 0)@2001-01-01, Point(2 2 2)@2001
   'Point(1 1 1)'));
 /* {[POINT Z (0 0 0)@2001-01-01, POINT Z (1 1 1)@2001-01-02),
    (POINT Z (1 1 1)@2001-01-02, POINT Z (2 2 2)@2001-01-03)} */
-</programlisting>
-				</listitem>
-
-			<listitem id="atValues">
-				<indexterm><primary><varname>atValues</varname></primary></indexterm>
-				<indexterm><primary><varname>minusValues</varname></primary></indexterm>
-				<para>Restringir a (al complemento de) un conjunto de valores</para>
-				<para><varname>atValues(ttype,set) → ttype</varname></para>
-				<para><varname>minusValues(ttype,set) → ttype</varname></para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT atValues(tfloat '[1@2001-01-01, 4@2001-01-4)', floatset '{1, 3, 5}');
--- {[1@2001-01-01], [3@2001-01-03]}
-SELECT asText(atValues(tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03)',
-  geomset '{"Point(0 0)", "Point(1 1)"}'));
--- {[POINT(0 0)@2001-01-01], [POINT(1 1)@2001-01-02]}
-</programlisting>
-				<programlisting language="sql" xml:space="preserve">
 SELECT minusValues(tfloat '[1@2001-01-01, 4@2001-01-4)', floatset '{2, 3}');
 /* {[1@2001-01-01, 2@2001-01-02), (2@2001-01-02, 3@2001-01-03),
    (3@2001-01-03, 4@2001-01-04)} */
@@ -1420,42 +1418,13 @@ SELECT asText(minusValues(tgeompoint '[Point(0 0 0)@2001-01-01, Point(3 3 3)@200
 /* {[POINT Z (0 0 0)@2001-01-01, POINT Z (1 1 1)@2001-01-02),
    (POINT Z (1 1 1)@2001-01-02, POINT Z (2 2 2)@2001-01-03),
    (POINT Z (2 2 2)@2001-01-03, POINT Z (3 3 3)@2001-01-04)} */
-</programlisting>
-				</listitem>
-
-			<listitem id="atSpan">
-				<indexterm><primary><varname>atSpan</varname></primary></indexterm>
-				<indexterm><primary><varname>minusSpan</varname></primary></indexterm>
-				<para>Restringir a (al complemento de) un rango de valores</para>
-				<para><varname>atSpan(tnumber,numspan) → ttype</varname></para>
-				<para><varname>minusSpan(tnumber,numspan) → ttype</varname></para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT atSpan(tfloat '[1@2001-01-01, 4@2001-01-4)', floatspan '[1,3]');
--- [1@2001-01-01, 3@2001-01-03]
-</programlisting>
-				<programlisting language="sql" xml:space="preserve">
-SELECT minusSpan(tfloat '[1@2001-01-01, 4@2001-01-4)', floatspan '[2,3]');
+SELECT minusValues(tfloat '[1@2001-01-01, 4@2001-01-4)', floatspan '[2,3]');
 -- {[1@2001-01-01, 2@2001-01-02), (3@2001-01-03, 4@2001-01-04)}
-</programlisting>
-			</listitem>
-
-			<listitem id="atSpanset">
-				<indexterm><primary><varname>atSpanset</varname></primary></indexterm>
-				<indexterm><primary><varname>minusSpanset</varname></primary></indexterm>
-				<para>Restringir a (al complemento de) un conjunto de rango de valores</para>
-				<para><varname>atSpanset(tnumber,numspanset) → ttype</varname></para>
-				<para><varname>minusSpanset(tnumber,numspanset) → ttype</varname></para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT atSpanset(tfloat '[1@2001-01-01, 5@2001-01-05)',
-  floatspanset '{[1,2], [3,4]}');
--- {[1@2001-01-01, 2@2001-01-02],[3@2001-01-03, 4@2001-01-04]}
-</programlisting>
-				<programlisting language="sql" xml:space="preserve">
-SELECT minusSpanset(tfloat '[1@2001-01-01, 5@2001-01-05)',
+SELECT minusValues(tfloat '[1@2001-01-01, 5@2001-01-05)',
   floatspanset '{[1,2], [3,4]}');
 -- {(2@2001-01-02, 3@2001-01-03), (4@2001-01-04, 5@2001-01-05)}
 </programlisting>
-			</listitem>
+				</listitem>
 
 			<listitem id="atMin">
 				<indexterm><primary><varname>atMin</varname></primary></indexterm>
@@ -1587,7 +1556,7 @@ SELECT minusTime(tint '[1@2001-01-01, 1@2001-01-15)',
 				<para>Restringir a (al complemento de) un <varname>tbox</varname></para>
 				<para><varname>atTbox(tnumber,tbox) → tnumber</varname></para>
 				<para><varname>minusTbox(tnumber,tbox) → tnumber</varname></para>
-				<para>Observe que cuando el cuadro delimitador tiene dimensiones de valor y de tiempo, la diferencia se calcula restringiendo el número temporal al cuadro usando la función <varname>atTbox</varname>, calculando la extensión de tiempo de esta restricción, y restringiendo el número temporal a la diferencia de la extensión del tiempo. Esto es necesario para garantizar que <varname>tnumber = merge(atTbox(tnumber,tbox), minusTbox(tnumber,tbox))</varname> (ver la función <link linkend="merge"><varname>merge</varname></link>). En otras palabras, mientras que la función <varname>atTbox</varname> restringe el número temporal con respecto al rango <emphasis>y</emphasis> al período que definen el cuadro delimitador, la función <varname>minusTbox</varname> restringe el número temporal con respecto al rango <emphasis>o</emphasis> al período. Para obtener la restricción usando una semántica <emphasis>y</emphasis>, deben aplicarse las dos funciones <varname>minusSpan</varname> y <varname>minusPeriod</varname>.</para>
+				<para>Observe que cuando el cuadro delimitador tiene dimensiones de valor y de tiempo, la diferencia se calcula restringiendo el número temporal al cuadro usando la función <varname>atTbox</varname>, calculando la extensión de tiempo de esta restricción, y restringiendo el número temporal a la diferencia de la extensión del tiempo. Esto es necesario para garantizar que <varname>tnumber = merge(atTbox(tnumber,tbox), minusTbox(tnumber,tbox))</varname> (ver la función <link linkend="merge"><varname>merge</varname></link>). En otras palabras, mientras que la función <varname>atTbox</varname> restringe el número temporal con respecto al rango <emphasis>y</emphasis> al período que definen el cuadro delimitador, la función <varname>minusTbox</varname> restringe el número temporal con respecto al rango <emphasis>o</emphasis> al período. Para obtener la restricción usando una semántica <emphasis>y</emphasis>, deben aplicarse las dos funciones <varname>minusValues</varname> y <varname>minusTime</varname>.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT atTbox(tfloat '[0@2001-01-01, 3@2001-01-04)',
   tbox 'TBOX XT((0,2),[2001-01-02, 2001-01-04])');
@@ -1599,7 +1568,7 @@ SELECT minusTbox(tfloat '[1@2001-01-01, 4@2001-01-04)',
 -- {[1@2001-01-01, 3@2001-01-03)}
 WITH temp(temp, box) AS (SELECT tfloat '[1@2001-01-01, 4@2001-01-04)',
   'TBOX XT((1,2),[2001-01-03, 2001-01-04])' )
-SELECT minusSpan(minusPeriod(temp, box::tstzspan), box::floatspan) FROM temp;
+SELECT minusValues(minusTime(temp, box::tstzspan), box::floatspan) FROM temp;
 -- {[1@2001-01-01], [2@2001-01-02, 3@2001-01-03)}
 </programlisting>
 			</listitem>
@@ -1622,10 +1591,10 @@ SELECT asText(minusStbox(tgeompoint '[Point(1 1)@2001-01-01, Point(4 4)@2001-01-
 WITH temp(temp, box) AS (SELECT
   tgeompoint '[Point(1 1)@2001-01-01, Point(4 4)@2001-01-04)',
   stbox 'STBOX XT(((1,1),(2,2)),[2001-01-03,2001-01-04])')
-SELECT asText(minusGeometry(minusPeriod(temp, box::tstzspan), box::geometry)) FROM temp;
+SELECT asText(minusGeometry(minusTime(temp, box::tstzspan), box::geometry)) FROM temp;
 -- {(POINT(2 2)@2001-01-02, POINT(3 3)@2001-01-03)}
 </programlisting>
-				<para>De manera similar a la función <link linkend="minusTbox"><varname>minusTbox</varname></link>, cuando el cuadro delimitador tiene dimensiones de espacio y tiempo, la función <varname> minusStbox</varname> restringe el punto temporal con respecto a las  extensiones de espacio <emphasis>o</emphasis> de tiempo del cuadro. Para obtener la restricción utilizando una semántica <emphasis>y</emphasis>, deben aplicarse las dos funciones <varname>minusGeometry</varname> y <varname>minusPeriod</varname>.</para>
+				<para>De manera similar a la función <link linkend="atTbox"><varname>minusTbox</varname></link>, cuando el cuadro delimitador tiene dimensiones de espacio y tiempo, la función <varname> minusStbox</varname> restringe el punto temporal con respecto a las  extensiones de espacio <emphasis>o</emphasis> de tiempo del cuadro. Para obtener la restricción utilizando una semántica <emphasis>y</emphasis>, deben aplicarse las dos funciones <varname>minusGeometry</varname> y <varname>minusTime</varname>.</para>
 			</listitem>
 		</itemizedlist>
 	</sect1>

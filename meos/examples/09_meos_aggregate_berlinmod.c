@@ -58,12 +58,12 @@ typedef struct
 
 trip_record trip_rec;
 
+/* Maximum length in characters of a trip in the input data */
+#define MAX_LENGTH_TRIP 170001
 /* Maximum length in characters of a header in the input CSV file */
 #define MAX_LENGTH_HEADER 1024
 /* Maximum length in characters of a date in the input data */
 #define MAX_LENGTH_DATE 12
-/* Maximum length in characters of a trip in the input data */
-#define MAX_LENGTH_TRIP 160000
 
 /* Main program */
 int main(void)
@@ -99,7 +99,7 @@ int main(void)
   /* Continue reading the file */
   do
   {
-    int read = fscanf(file, "%d,%d,%10[^,],%d,%160000[^\n]\n",
+    int read = fscanf(file, "%d,%d,%10[^,],%d,%170000[^\n]\n",
       &trip_rec.tripid, &trip_rec.vehid, date_buffer, &trip_rec.seq, trip_buffer);
     /* Transform the string representing the date into a date value */
     DateADT day = pg_date_in(date_buffer);
@@ -151,7 +151,6 @@ int main(void)
     printf("\%s\n", tint_out(tcount_seqs[i]));
 
   /* Free memory */
-  skiplist_free(state);
   free(tcount_seqs);
 
   /* Close the input file */

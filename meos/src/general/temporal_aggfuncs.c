@@ -441,22 +441,6 @@ tsequence_tagg(TSequence **sequences1, int count1, TSequence **sequences2,
  *****************************************************************************/
 
 /**
- * Ensure that the subtype and the interpolation of the skiplist and temporal
- * point are the same
- */
-void
-ensure_same_tempsubtype_skiplist(SkipList *state, const Temporal *temp)
-{
-  Temporal *head = (Temporal *) skiplist_headval(state);
-  if (state->elemtype != TEMPORAL || head->subtype != temp->subtype)
-    elog(ERROR, "Cannot aggregate temporal values of different type");
-  if (MOBDB_FLAGS_GET_LINEAR(head->flags) !=
-    MOBDB_FLAGS_GET_LINEAR(temp->flags))
-    elog(ERROR, "Cannot aggregate temporal values of different interpolation");
-  return;
-}
-
-/**
  * Generic transition function for aggregating temporal values
  * of instant subtype
  *
@@ -474,7 +458,6 @@ tinstant_tagg_transfn(SkipList *state, const TInstant *inst, datum_func2 func)
     result = skiplist_make((void **) instants, 1, TEMPORAL);
   else
   {
-    ensure_same_tempsubtype_skiplist(state, (Temporal *) inst);
     skiplist_splice(state, (void **) instants, 1, func, false);
     result = state;
   }
@@ -499,7 +482,6 @@ tdiscseq_tagg_transfn(SkipList *state, const TSequence *seq, datum_func2 func)
     result = skiplist_make((void **) instants, seq->count, TEMPORAL);
   else
   {
-    ensure_same_tempsubtype_skiplist(state, (Temporal *) instants[0]);
     skiplist_splice(state, (void **) instants, seq->count, func, false);
     result = state;
   }
@@ -525,7 +507,6 @@ tcontseq_tagg_transfn(SkipList *state, const TSequence *seq,
     result = skiplist_make((void **) &seq, 1, TEMPORAL);
   else
   {
-    ensure_same_tempsubtype_skiplist(state, (Temporal *) seq);
     skiplist_splice(state, (void **) &seq, 1, func, crossings);
     result = state;
   }
@@ -551,9 +532,7 @@ tsequenceset_tagg_transfn(SkipList *state, const TSequenceSet *ss,
     result = skiplist_make((void **) sequences, ss->count, TEMPORAL);
   else
   {
-    ensure_same_tempsubtype_skiplist(state, (Temporal *) sequences[0]);
-    skiplist_splice(state, (void **) sequences, ss->count, func,
-      crossings);
+    skiplist_splice(state, (void **) sequences, ss->count, func, crossings);
     result = state;
   }
   pfree(sequences);
@@ -597,16 +576,19 @@ temporal_tagg_transfn(SkipList *state, const Temporal *temp, datum_func2 func,
  * after checking the dimensionality and the SRID of the values
  */
 SkipList *
-temporal_tagg_combinefn(SkipList *state1, SkipList *state2,
-  datum_func2 func, bool crossings)
+temporal_tagg_combinefn(SkipList *state1, SkipList *state2, datum_func2 func,
+  bool crossings)
 {
   if (! state1)
     return state2;
   if (! state2)
     return state1;
 
-  Temporal *head2 = (Temporal *) skiplist_headval(state2);
-  ensure_same_tempsubtype_skiplist(state1, head2);
+  if (state1->length == 0)
+    return state2;
+  if (state2->length == 0)
+    return state1;
+
   int count2 = state2->length;
   void **values2 = skiplist_values(state2);
   skiplist_splice(state1, values2, count2, func, crossings);
@@ -625,17 +607,17 @@ temporal_tagg_finalfn(SkipList *state)
 {
   if (state == NULL || state->length == 0)
     return NULL;
-
-  Temporal **values = (Temporal **) skiplist_values(state);
+  /* A copy of the values is needed for switching from aggregate context */
+  Temporal **values = skiplist_temporal_values(state);
   Temporal *result = NULL;
   assert(values[0]->subtype == TINSTANT || values[0]->subtype == TSEQUENCE);
   if (values[0]->subtype == TINSTANT)
-    result = (Temporal *) tsequence_make((const TInstant **) values,
+    result = (Temporal *) tsequence_make_free((TInstant **) values,
       state->length, true, true, DISCRETE, NORMALIZE_NO);
   else /* values[0]->subtype == TSEQUENCE */
-    result = (Temporal *) tsequenceset_make((const TSequence **) values,
+    result = (Temporal *) tsequenceset_make_free((TSequence **) values,
       state->length, NORMALIZE);
-  pfree(values);
+  skiplist_free(state);
   return result;
 }
 
@@ -879,10 +861,7 @@ temporal_tagg_transform_transfn(SkipList *state, const Temporal *temp,
   if (! state)
     state = skiplist_make((void **) temparr, count, TEMPORAL);
   else
-  {
-    ensure_same_tempsubtype_skiplist(state, temparr[0]);
     skiplist_splice(state, (void **) temparr, count, func, crossings);
-  }
 
   pfree_array((void **) temparr, count);
   return state;
@@ -1036,11 +1015,7 @@ temporal_tcount_transfn(SkipList *state, const Temporal *temp,
   if (! state)
     state = skiplist_make((void **) temparr, count, TEMPORAL);
   else
-  {
-    ensure_same_tempsubtype_skiplist(state, temparr[0]);
-    skiplist_splice(state, (void **) temparr, count, &datum_sum_int32,
-      false);
-  }
+    skiplist_splice(state, (void **) temparr, count, &datum_sum_int32, false);
   pfree_array((void **) temparr, count);
   return state;
 }
@@ -1136,7 +1111,7 @@ tnumber_tavg_finalfn(SkipList *state)
  * Transition function for temporal extent aggregation of temporal values
  */
 Span *
-temporal_extent_transfn(Span *p, Temporal *temp)
+temporal_extent_transfn(Span *p, const Temporal *temp)
 {
   Span *result;
 
@@ -1168,7 +1143,7 @@ temporal_extent_transfn(Span *p, Temporal *temp)
  * Transition function for temporal extent aggregation for temporal numbers
  */
 TBox *
-tnumber_extent_transfn(TBox *box, Temporal *temp)
+tnumber_extent_transfn(TBox *box, const Temporal *temp)
 {
   /* Can't do anything with null inputs */
   if (!box && !temp)

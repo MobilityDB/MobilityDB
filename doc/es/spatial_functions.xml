@@ -48,8 +48,8 @@ SELECT asEWKT(ARRAY[geometry 'SRID=5676;Point(0 0)', 'SRID=5676;Point(1 1)']);
 					<itemizedlist>
 						<listitem><para>0: significa que no hay opción (valor por defecto)</para></listitem>
 						<listitem><para>1: MFJSON BBOX</para></listitem>
-						<listitem><para>2: MFJSON Short CRS (e.g EPSG:4326)</para></listitem>
-						<listitem><para>4: MFJSON Long CRS (e.g urn:ogc:def:crs:EPSG::4326)</para></listitem>
+						<listitem><para>2: MFJSON Short CRS (e.g., EPSG:4326)</para></listitem>
+						<listitem><para>4: MFJSON Long CRS (e.g., urn:ogc:def:crs:EPSG::4326)</para></listitem>
 					</itemizedlist>
 					<para>El argumento <varname>flags</varname> puede usarse para personalizar la salida JSON, por ejemplo, para producir una salida JSON fácil de leer (para lectores humanos). Consulte la documentación de la biblioteca <varname>json-c</varname> para conocer los valores posibles. Los valores típicos son los siguientes:</para>
 					<itemizedlist>
@@ -98,7 +98,7 @@ SELECT asEWKB(tgeogpoint 'SRID=7844;Point(1 2 3)@2001-01-01');
 					<indexterm><primary><varname>asHexEWKB</varname></primary></indexterm>
 					<para>Obtener la representación hexadecimal extendida binaria conocida (Extended Well-Known Binary o EWKB) en formato texto &Z_support; &geography_support;</para>
 					<para><varname>asHexEWKB(tpoint,endian text='') → text</varname></para>
-					<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza NDR.</para>
+					<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT asHexEWKB(tgeompoint 'SRID=3812;Point(1 2 3)@2001-01-01');
 -- 01D1E40E0000000000000000F03F0000000000000040000000000000084000FCE0136A580100

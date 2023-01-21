@@ -61,7 +61,6 @@ extern TInstant **tinstant_tagg(TInstant **instants1, int count1,
 extern TSequence **tsequence_tagg(TSequence **sequences1, int count1,
   TSequence **sequences2, int count2, Datum (*func)(Datum, Datum),
   bool crossings, int *newcount);
-extern void ensure_same_tempsubtype_skiplist(SkipList *state, const Temporal *temp);
 extern SkipList *tcontseq_tagg_transfn(SkipList *state, const TSequence *seq,
   datum_func2 func, bool interpoint);
 extern SkipList *temporal_tagg_combinefn1(SkipList *state1, SkipList *state2,

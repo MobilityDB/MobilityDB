@@ -86,7 +86,8 @@ Temporal_tagg_transfn(FunctionCallInfo fcinfo, datum_func2 func, bool crossings)
  * @param[in] crossings True if turning points are added in the segments
  */
 static Datum
-Temporal_tagg_combinefn(FunctionCallInfo fcinfo, datum_func2 func, bool crossings)
+Temporal_tagg_combinefn(FunctionCallInfo fcinfo, datum_func2 func,
+  bool crossings)
 {
   SkipList *state1, *state2;
   INPUT_AGG_COMB_STATE(fcinfo, state1, state2);
@@ -186,7 +187,7 @@ Temporal_tcount_bucket_transfn(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_tcount_combinefn);
 /**
- * Generic combine function for temporal aggregation
+ * Combine function for temporal count aggregation
  */
 PGDLLEXPORT Datum
 Temporal_tcount_combinefn(PG_FUNCTION_ARGS)

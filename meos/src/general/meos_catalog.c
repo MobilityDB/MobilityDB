@@ -63,9 +63,7 @@ temptype_cache_struct _temptype_cache[] =
   {T_TTEXT,      T_TEXT},
   {T_TGEOMPOINT, T_GEOMETRY},
   {T_TGEOGPOINT, T_GEOGRAPHY},
-#if NPOINT
   {T_TNPOINT,    T_NPOINT},
-#endif
 };
 
 /**
@@ -81,9 +79,7 @@ settype_cache_struct _settype_cache[] =
   {T_TEXTSET,       T_TEXT},
   {T_GEOMSET,       T_GEOMETRY},
   {T_GEOGSET,       T_GEOGRAPHY},
-#if NPOINT
   {T_NPOINTSET,     T_NPOINT},
-#endif
 };
 
 /**

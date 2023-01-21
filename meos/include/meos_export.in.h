@@ -56,6 +56,7 @@ typedef struct
   uint8 basetype;       /**< span basetype */
   int16 flags;          /**< flags */
   int32 count;          /**< Number of elements */
+  int32 maxcount;       /**< Maximum number of elements */
   int32 bboxsize;       /**< Size of the bouding box */
 } Set;
 
@@ -672,6 +673,7 @@ extern SpanSet *period_tunion_finalfn(SkipList *state);
 extern SkipList *periodset_tcount_transfn(SkipList *state, const SpanSet *ps, const Interval *interval, TimestampTz origin);
 extern SkipList *periodset_tunion_transfn(SkipList *state, const SpanSet *ps);
 extern Set *set_agg_combinefn(Set *state1, Set *state2);
+extern Set *set_agg_finalfn(Set *state);
 extern Span *span_extent_transfn(Span *s1, const Span *s2);
 extern Span *spanset_extent_transfn(Span *s, const SpanSet *ss);
 extern Set *textset_agg_transfn(Set *state, const text *txt);
@@ -1660,7 +1662,7 @@ extern bool temporal_overlaps_timestampset(const Temporal *temp, const Set *ss);
 
 extern SkipList *tbool_tand_transfn(SkipList *state, const Temporal *temp);
 extern SkipList *tbool_tor_transfn(SkipList *state, const Temporal *temp);
-extern Span *temporal_extent_transfn(Span *p, Temporal *temp);
+extern Span *temporal_extent_transfn(Span *p, const Temporal *temp);
 extern Temporal *temporal_tagg_finalfn(SkipList *state);
 extern SkipList *temporal_tcount_transfn(SkipList *state, const Temporal *temp, const Interval *interval, TimestampTz origin);
 extern SkipList *tfloat_tmax_transfn(SkipList *state, const Temporal *temp);
@@ -1670,10 +1672,11 @@ extern SkipList *tint_tmax_transfn(SkipList *state, const Temporal *temp);
 extern SkipList *tint_tmin_transfn(SkipList *state, const Temporal *temp);
 extern SkipList *tint_tsum_transfn(SkipList *state, const Temporal *temp);
 extern double tnumber_integral(const Temporal *temp);
-extern TBox *tnumber_extent_transfn(TBox *box, Temporal *temp);
+extern TBox *tnumber_extent_transfn(TBox *box, const Temporal *temp);
 extern Temporal *tnumber_tavg_finalfn(SkipList *state);
 extern SkipList *tnumber_tavg_transfn(SkipList *state, const Temporal *temp);
 extern double tnumber_twavg(const Temporal *temp);
+extern STBox *tpoint_extent_transfn(STBox *box, const Temporal *temp);
 extern GSERIALIZED *tpoint_twcentroid(const Temporal *temp);
 extern SkipList *ttext_tmax_transfn(SkipList *state, const Temporal *temp);
 extern SkipList *ttext_tmin_transfn(SkipList *state, const Temporal *temp);

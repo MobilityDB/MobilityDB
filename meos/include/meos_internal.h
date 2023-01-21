@@ -61,9 +61,11 @@ extern SpanSet *spanset_in(const char *str, meosType spantype);
 
 /* Constructor functions for set and span types */
 
+extern void set_expand_bbox(Datum d, meosType basetype, void *box);
 extern void *set_bbox_ptr(const Set *s);
 extern size_t *set_offsets_ptr(const Set *s);
 extern Set *set_make(const Datum *values, int count, meosType basetype, bool ordered);
+extern Set *set_make_exp(const Datum *values, int count, int maxcount, meosType basetype, bool ordered);
 extern Set *set_make_free(Datum *values, int count, meosType basetype, bool ordered);
 extern Set *set_copy(const Set *s);
 extern Span *span_make(Datum lower, Datum upper, bool lower_inc, bool upper_inc, meosType basetype);

@@ -93,12 +93,10 @@ typedef enum
   T_GEOGSET        = 39,  /**< geography set type */
   T_TGEOMPOINT     = 40,  /**< temporal geometry point type */
   T_TGEOGPOINT     = 41,  /**< temporal geography point type */
-#if NPOINT
   T_NPOINT         = 42,  /**< network point type */
   T_NPOINTSET      = 43,  /**< network point set type */
   T_NSEGMENT       = 44,  /**< network segment type */
   T_TNPOINT        = 45,  /**< temporal network point type */
-#endif
 } meosType;
 
 /**

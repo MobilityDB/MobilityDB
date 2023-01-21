@@ -48,7 +48,12 @@ COPY tbl_geogset_tmp FROM '/tmp/tbl_geogset' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_geogset t1, tbl_geogset_tmp t2 WHERE t1.k = t2.k AND t1.g <> t2.g;
 DROP TABLE tbl_geogset_tmp;
 
--- Input/output from/to WKB and HexWKB
+-- Input/output from/to WKT, EWKT, WKB, and HexWKB
+
+SELECT MAX(length(asText(g))) FROM tbl_geomset;
+SELECT MAX(length(asText(g))) FROM tbl_geogset;
+SELECT MAX(length(asEWKT(g))) FROM tbl_geomset;
+SELECT MAX(length(asEWKT(g))) FROM tbl_geogset;
 
 SELECT COUNT(*) FROM tbl_geomset WHERE geomsetFromBinary(asBinary(g)) <> g;
 SELECT COUNT(*) FROM tbl_geogset WHERE geogsetFromBinary(asBinary(g)) <> g;

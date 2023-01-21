@@ -200,6 +200,37 @@ tpoint_transform_tcentroid(const Temporal *temp, int *count)
   return result;
 }
 
+/*****************************************************************************/
+
+/**
+ * Transition function for temporal centroid aggregation of temporal point values
+ */
+SkipList *
+tpoint_tcentroid_transfn(SkipList *state, Temporal *temp)
+{
+  geoaggstate_check_temp(state, temp);
+  datum_func2 func = MOBDB_FLAGS_GET_Z(temp->flags) ?
+    &datum_sum_double4 : &datum_sum_double3;
+
+  int count;
+  Temporal **temparr = tpoint_transform_tcentroid(temp, &count);
+  if (state)
+    skiplist_splice(state, (void **) temparr, count, func, false);
+  else
+  {
+    state = skiplist_make((void **) temparr, count, TEMPORAL);
+    struct GeoAggregateState extra =
+    {
+      .srid = tpoint_srid(temp),
+      .hasz = MOBDB_FLAGS_GET_Z(temp->flags) != 0
+    };
+    aggstate_set_extra(state, &extra, sizeof(struct GeoAggregateState));
+  }
+
+  pfree_array((void **) temparr, count);
+  return state;
+}
+
 /*****************************************************************************
  * Extent
  *****************************************************************************/
@@ -209,7 +240,7 @@ tpoint_transform_tcentroid(const Temporal *temp, int *count)
  * Transition function for temporal extent aggregation of temporal point values
  */
 STBox *
-tpoint_extent_transfn(STBox *box, Temporal *temp)
+tpoint_extent_transfn(STBox *box, const Temporal *temp)
 {
   /* Can't do anything with null inputs */
   if (! box && ! temp)

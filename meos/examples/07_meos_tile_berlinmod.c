@@ -52,7 +52,7 @@
 #include <meos.h>
 
 /* Maximum length in characters of a trip in the input data */
-#define MAX_LENGTH_TRIP 160000
+#define MAX_LENGTH_TRIP 170001
 /* Maximum length in characters of a header record in the input CSV file */
 #define MAX_LENGTH_HEADER 1024
 /* Maximum length in characters of a date in the input data */
@@ -125,13 +125,13 @@ int main(void)
 
   /* Read the first line of the file with the headers */
   fscanf(file, "%1023s\n", header_buffer);
-  printf("Processing records\n");
+  printf("Processing records (one marker per trip)\n");
 
   /* Continue reading the file */
   do
   {
     int tripId, vehId, seq;
-    int read = fscanf(file, "%d,%d,%10[^,],%d,%160000[^\n]\n",
+    int read = fscanf(file, "%d,%d,%10[^,],%d,%170000[^\n]\n",
       &tripId, &vehId, date_buffer, &seq, trip_buffer);
     /* Transform the string representing the trip into a temporal value */
     Temporal *trip = temporal_from_hexwkb(trip_buffer);
@@ -172,7 +172,7 @@ int main(void)
       {
         trip_splits[k].count++;
         trip_splits[k].distance += tpoint_length(split) / 1e3;
-        dur1 = temporal_duration(split);
+        dur1 = temporal_duration(split, false);
         dur2 = pg_interval_pl(dur1, &trip_splits[k].duration);
         memcpy(&trip_splits[k].duration, dur2, sizeof(Interval));
         free(split); free(dur1); free(dur2);
@@ -188,7 +188,7 @@ int main(void)
       if (split != NULL)
       {
         speed_splits[k].count++;
-        dur1 = temporal_duration(split);
+        dur1 = temporal_duration(split, false);
         dur2 = pg_interval_pl(dur1, &speed_splits[k].duration);
         memcpy(&speed_splits[k].duration, dur2, sizeof(Interval));
         free(split); free(dur1); free(dur2);

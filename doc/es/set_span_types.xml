@@ -197,7 +197,7 @@ SELECT asBinary(intspanset '{[1, 2], [4, 5]}', 'XDR');
 					<indexterm><primary><varname>asHexWKB</varname></primary></indexterm>
 					<para>Obtener la representación hexadecimal binaria conocida (HexWKB) en formato texto de un rango o un tipo de tiempo</para>
 					<para><varname>asHexWKB({set,spans},endian text='') → text</varname></para>
-					<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza NDR.</para>
+					<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT asHexWKB(tstzset '{2001-01-01, 2001-01-03}');
 -- 0102000000009C57D3C11C0000005C060FEA1C0000
@@ -262,7 +262,7 @@ SELECT tstzspansetFromHexWKB(
 			<para>La función constructora para los tipos de conjunto tiene un único argumento que es una matriz de valores del tipo base correspondiente. Los valores deben estar ordenados y no pueden tener nulos ni duplicados.
 			</para>
 			<itemizedlist>
-				<listitem id="tstzset">
+				<listitem id="set">
 					<indexterm><primary><varname>intset</varname></primary></indexterm>
 					<indexterm><primary><varname>floatset</varname></primary></indexterm>
 					<indexterm><primary><varname>textset</varname></primary></indexterm>
@@ -327,14 +327,20 @@ SELECT tstzspanset(ARRAY[tstzspan '[2001-01-01 08:00, 2001-01-01 08:10]',
 			<itemizedlist>
 				<listitem id="base_cast">
 					<indexterm><primary><varname>::</varname></primary></indexterm>
+					<indexterm><primary><varname>set</varname></primary></indexterm>
+					<indexterm><primary><varname>span</varname></primary></indexterm>
+					<indexterm><primary><varname>spanset</varname></primary></indexterm>
 					<para>Convertir un valor de base en un valor de conjunto, rango o conjunto de rangos</para>
 					<para><varname>base::{set,span,spanset}</varname></para>
+					<para><varname>set(base)</varname></para>
+					<para><varname>span(base)</varname></para>
+					<para><varname>spanset(base)</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT CAST(timestamptz '2001-01-01 08:00:00' AS tstzset);
 -- {2001-01-01 08:00:00+01}
-SELECT CAST(timestamptz '2001-01-01 08:00:00' AS tstzspan);
+SELECT timestamptz '2001-01-01 08:00:00'::tstzspan;
 -- [2001-01-01 08:00:00+01, 2001-01-01 08:00:00+01]
-SELECT CAST(timestamptz '2001-01-01 08:00:00' AS tstzspanset);
+SELECT spanset(timestamptz '2001-01-01 08:00:00');
 -- {[2001-01-01 08:00:00+01, 2001-01-01 08:00:00+01]}
 </programlisting>
 				</listitem>
@@ -343,8 +349,8 @@ SELECT CAST(timestamptz '2001-01-01 08:00:00' AS tstzspanset);
 					<para>Convertir un valor de conjunto en un valor de conjunto de rangos</para>
 					<para><varname>set::spanset</varname></para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT CAST(tstzset '{2001-01-01 08:00:00, 2001-01-01 08:15:00,
-  2001-01-01 08:25:00}' AS tstzspanset);
+SELECT spanset(tstzset '{2001-01-01 08:00:00, 2001-01-01 08:15:00,
+  2001-01-01 08:25:00}');
 /* {[2001-01-01 08:00:00+01, 2001-01-01 08:00:00+01],
    [2001-01-01 08:15:00+01, 2001-01-01 08:15:00+01],
    [2001-01-01 08:25:00+01, 2001-01-01 08:25:00+01]} */
@@ -355,8 +361,6 @@ SELECT CAST(tstzset '{2001-01-01 08:00:00, 2001-01-01 08:15:00,
 					<para>Convertir un valor de rango a un valor de conjunto de rangos</para>
 					<para><varname>span::spanset</varname></para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT intspan '[1,2]'::intspanset;
--- {[1, 3)}
 SELECT floatspan '[1.5,2.5]'::floatspanset;
 -- {[1.5, 2.5]}
 SELECT tstzspan '[2001-01-01 08:00:00, 2001-01-01 08:30:00)'::tstzspanset;
@@ -364,39 +368,47 @@ SELECT tstzspan '[2001-01-01 08:00:00, 2001-01-01 08:30:00)'::tstzspanset;
 </programlisting>
 				</listitem>
 
-				<listitem id="span_cast_range">
+				<listitem id="range_cast">
 					<indexterm><primary><varname>::</varname></primary></indexterm>
-					<para>Convertir un valor de rango en MobilityDB en un valor de rango de PostgreSQL</para>
+					<indexterm><primary><varname>span</varname></primary></indexterm>
+					<indexterm><primary><varname>range</varname></primary></indexterm>
+					<para>Convertir un valor de de rango en MobilityDB hacia y desde un valor de rango de PostgreSQL</para>
 					<para><varname>span::range</varname></para>
-					<para><varname>spanset::multirange</varname></para>
+					<para><varname>range::span</varname></para>
+					<para><varname>range(span)</varname></para>
+					<para><varname>span(range)</varname></para>
+					<para>Nótese que los valores de rango en PostgreSQL aceptan rangos vacíos y rangos con límites infinitos, que no están permitidos como valores de rango en MobilityDB</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT intspan '[10, 20)'::int4range;
 -- [10,20)
-SELECT intspanset '{[1,2],[4,5]}'::int4multirange;
--- {[1,3),[4,6)}
 SELECT tstzspan '[2001-01-01 08:00:00, 2001-01-01 08:30:00)'::tstzrange;
 -- ["2001-01-01 08:00:00+01","2001-01-01 08:30:00+01")
-SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-04,2000-01-05]}'::tstzmultirange;
--- {[2000-01-01,2000-01-02],[2000-01-04,2000-01-05]}
-</programlisting>
-				</listitem>
-				<listitem id="range_cast_span">
-					<indexterm><primary><varname>::</varname></primary></indexterm>
-					<para>Convertir un valor de rango de PostgreSQL en un valor de rango de MobilityDB</para>
-					<para><varname>range::span</varname></para>
-					<para><varname>multirange::spanset</varname></para>
-					<para>Nótese que los valores de rango en PostgreSQL aceptan rangos vacíos y rangos con límites infinitos, que no están permitidos como valores de rango en MobilityDB</para>
-					<programlisting language="sql" xml:space="preserve">
 SELECT int4range '[10, 20)'::intspan;
 -- [10,20)
 SELECT int4range 'empty'::intspan;
 -- ERROR:  Range cannot be empty
 SELECT int4range '[10,)'::intspan;
 -- ERROR:  Range bounds cannot be infinite
-SELECT int4multirange '{[1,2],[4,5]}'::intspanset;
--- {[1, 3), [4, 6)}
 SELECT tstzrange '[2001-01-01 08:00:00, 2001-01-01 08:30:00)'::tstzspan;
 -- [2001-01-01 08:00:00+01, 2001-01-01 08:30:00+01)
+</programlisting>
+				</listitem>
+				<listitem id="multirange_cast">
+					<indexterm><primary><varname>::</varname></primary></indexterm>
+					<indexterm><primary><varname>spanset</varname></primary></indexterm>
+					<indexterm><primary><varname>multirange</varname></primary></indexterm>
+					<para>Convertir un valor de conjunto de rangos de MobilityDB hacia y desde un valor de multirango de PostgreSQL</para>
+					<para><varname>spanset::multirange</varname></para>
+					<para><varname>multirange::spanset</varname></para>
+					<para><varname>multirange(spanset)</varname></para>
+					<para><varname>spanset(multirange)</varname></para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT intspanset '{[1,2],[4,5]}'::int4multirange;
+-- {[1,3),[4,6)}
+SELECT tstzspanset '{[2000-01-01,2000-01-02],[2000-01-04,2000-01-05]}'::tstzmultirange;
+-- {[2000-01-01,2000-01-02],[2000-01-04,2000-01-05]}
+SELECT int4multirange '{[1,2],[4,5]}'::intspanset;
+-- {[1, 3), [4, 6)}
 SELECT tstzmultirange '{[2000-01-01,2000-01-02],[2000-01-04,2000-01-05]}'::tstzspanset;
 -- {[2000-01-01, 2000-01-02], [2000-01-04, 2000-01-05]}
 </programlisting>

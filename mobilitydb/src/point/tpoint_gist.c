@@ -428,8 +428,8 @@ stbox_union_rt(const STBox *a, const STBox *b, STBox *new)
 }
 
 /**
- * Return the size of a spatiotemporal box for penalty-calculation purposes.
- * The result can be +Infinity, but not NaN.
+ * @brief Return the size of a spatiotemporal box for penalty-calculation
+ * purposes. The result can be +Infinity, but not NaN.
  */
 static double
 stbox_size(const STBox *box)

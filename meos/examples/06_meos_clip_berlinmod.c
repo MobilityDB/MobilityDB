@@ -54,11 +54,12 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <meos.h>
 
 /* Maximum length in characters of a trip in the input data */
-#define MAX_LENGTH_TRIP 160000
+#define MAX_LENGTH_TRIP 170001
 /* Maximum length in characters of a geometry in the input data */
 #define MAX_LENGTH_GEOM 100000
 /* Maximum length in characters of a header record in the input CSV file */
@@ -310,12 +311,12 @@ int main(void)
 
   /* Read the first line of the file with the headers */
   fscanf(file, "%1023s\n", header_buffer);
-  printf("Reading trip records\n");
+  printf("Processing trip records (one marker per trip)\n");
 
   /* Continue reading the file */
   do
   {
-    int read = fscanf(file, "%d,%d,%10[^,],%d,%160000[^\n]\n",
+    int read = fscanf(file, "%d,%d,%10[^,],%d,%170000[^\n]\n",
       &trip_rec.tripid, &trip_rec.vehid, date_buffer, &trip_rec.seq,
       trip_buffer);
     /* Transform the string representing the trip into a temporal value */

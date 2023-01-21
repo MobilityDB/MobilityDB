@@ -86,7 +86,7 @@ set_find_value(const Set *s, Datum d, int *loc)
   int middle = 0; /* make compiler quiet */
   while (first <= last)
   {
-    middle = (first + last)/2;
+    middle = (first + last) / 2;
     Datum d1 = set_val_n(s, middle);
     int cmp = datum_cmp(d, d1, s->basetype);
     if (cmp == 0)
@@ -296,7 +296,41 @@ valuearr_compute_bbox(const Datum *values, meosType basetype, int count,
    npointarr_set_stbox(values, count, (STBox *) box);
 #endif
   else
-    elog(ERROR, "unknown bounding box function for set type: %d", basetype);
+    elog(ERROR, "unknown set type for computint bounding box: %d", basetype);
+  return;
+}
+
+/**
+ * Set a bounding box from an array of set values
+ *
+ * @param[in] set Set
+ * @param[in] d Value to append to the set
+ * @param[in] basetype Type of the value
+ * @param[out] box Bounding box
+ */
+void
+set_expand_bbox(Datum d, meosType basetype, void *box)
+{
+  /* Currently, only geo set types have bounding box */
+  ensure_set_basetype(basetype);
+  if (alphanum_basetype(basetype))
+    ;
+  else if (geo_basetype(basetype))
+  {
+    STBox box1;
+    geo_set_stbox(DatumGetGserializedP(d), &box1);
+    stbox_expand(&box1, (STBox *) box);
+  }
+#if NPOINT
+  else if (basetype == T_NPOINT)
+  {
+    STBox box1;
+    npoint_set_stbox(DatumGetNpointP(d), &box1);
+    stbox_expand(&box1, (STBox *) box);
+  }
+#endif
+  else
+    elog(ERROR, "unknown set type for expanding bounding box: %d", basetype);
   return;
 }
 
@@ -336,7 +370,7 @@ set_val_n(const Set *s, int index)
     /* start of data : start address + size of struct + size of bbox + */
     ((char *) s) + double_pad(sizeof(Set)) + double_pad(s->bboxsize) +
       /* offset array + offset */
-      (sizeof(size_t) * s->count) + (set_offsets_ptr(s))[index] );
+      (sizeof(size_t) * s->maxcount) + (set_offsets_ptr(s))[index] );
 }
 
 /**
@@ -371,14 +405,18 @@ set_val_n(const Set *s, int index)
  *
  * @param[in] values Array of values
  * @param[in] count Number of elements in the array
+ * @param[in] maxcount Maximum number of elements in the array
  * @param[in] basetype Base type
  * @param[in] ordered True for ordered sets
  * @sqlfunc intset(), bigintset(), floatset(), textset(), tstzset()
  * @pymeosfunc TstzSet()
  */
 Set *
-set_make(const Datum *values, int count, meosType basetype, bool ordered)
+set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
+  bool ordered)
 {
+  assert(maxcount >= count);
+
   bool hasz = false;
   bool isgeodetic = false;
   if (geo_basetype(basetype))
@@ -445,9 +483,17 @@ set_make(const Datum *values, int count, meosType basetype, bool ordered)
       values_size = double_pad(typlen) * newcount;
   }
 
-  /* Determine overall memory size */
+  /* Compute the total size for maxcount elements as a proportion of the size
+   * of the count elements provided. Note that this is only an INITIAL
+   * ESTIMATION. The functions adding elements to a set must verify BOTH
+   * the maximum number of elements AND the remaining space for adding an
+   * additional variable-length element of arbitrary size */
+  if (count != maxcount)
+    values_size = (double) values_size * (double) maxcount / (double) count;
+
+  /* Total size of the struct */
   size_t memsize = double_pad(sizeof(Set)) + double_pad(bboxsize) +
-    (sizeof(size_t) * newcount) + values_size;
+    (sizeof(size_t) * maxcount) + values_size;
 
   /* Create the Set */
   Set *result = palloc0(memsize);
@@ -461,6 +507,7 @@ set_make(const Datum *values, int count, meosType basetype, bool ordered)
     MOBDB_FLAGS_SET_GEODETIC(result->flags, isgeodetic);
   }
   result->count = newcount;
+  result->maxcount = maxcount;
   result->settype = settype;
   result->basetype = basetype;
   result->bboxsize = bboxsize;
@@ -474,7 +521,7 @@ set_make(const Datum *values, int count, meosType basetype, bool ordered)
   {
     /* Store the composing values */
     size_t pdata = double_pad(sizeof(Set)) + double_pad(bboxsize) +
-      sizeof(size_t) * newcount;
+      sizeof(size_t) * maxcount;
     size_t pos = 0;
     for (int i = 0; i < newcount; i++)
     {
@@ -495,6 +542,23 @@ set_make(const Datum *values, int count, meosType basetype, bool ordered)
   if (ordered && count > 1)
     pfree(newvalues);
   return result;
+}
+
+/**
+ * @ingroup libmeos_internal_setspan_constructor
+ * @brief Construct a set from an array of values.
+ * @param[in] values Array of values
+ * @param[in] count Number of elements in the array
+ * @param[in] maxcount Maximum number of elements in the array
+ * @param[in] basetype Base type
+ * @param[in] ordered True for ordered sets
+ * @sqlfunc intset(), bigintset(), floatset(), textset(), tstzset()
+ * @pymeosfunc TstzSet()
+ */
+Set *
+set_make(const Datum *values, int count, meosType basetype, bool ordered)
+{
+  return set_make_exp(values, count, count, basetype, ordered);
 }
 
 /**

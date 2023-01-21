@@ -1,6 +1,25 @@
 #ifndef _LIBLWGEOM_H
 #define _LIBLWGEOM_H
 
+/******************************************************************/
+
+/*
+** Variants available for WKB and WKT output types
+*/
+
+#define WKB_ISO 0x01
+#define WKB_SFSQL 0x02
+#define WKB_EXTENDED 0x04
+#define WKB_NDR 0x08
+#define WKB_XDR 0x10
+#define WKB_HEX 0x20
+#define WKB_NO_NPOINTS 0x40 /* Internal use only */
+#define WKB_NO_SRID 0x80 /* Internal use only */
+
+#define WKT_ISO 0x01
+#define WKT_SFSQL 0x02
+#define WKT_EXTENDED 0x04
+
 typedef uint16_t lwflags_t;
 
 /******************************************************************/

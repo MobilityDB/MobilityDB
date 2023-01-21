@@ -62,6 +62,10 @@
 		</listitem>
 
 		<listitem>
+			<para><varname>values</varname> represents any set of values of a base type of a temporal type, for example, <varname>integer</varname>, <varname>intset</varname>, <varname>intspan</varname>, and <varname>intspanset</varname> for the base type <varname>integer</varname></para>
+		</listitem>
+
+		<listitem>
 			<para><varname>number</varname> represents any number base type, that is, <varname>integer</varname> or <varname>float</varname>,</para>
 		</listitem>
 
@@ -1364,47 +1368,41 @@ SELECT merge(ARRAY[tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]}'
 	<sect1 id="restriction_functions">
 		<title>Restriction Functions</title>
 
-		<para>There are two complementary sets of restriction functions. The first set functions restricts the temporal value with respect to a value or a time extent. Examples are <varname>atValue</varname> or <varname>atGeometry</varname>. The second set functions restricts the temporal value with respect to the <emphasis>complement</emphasis> of a value or a time extent. Examples are <varname>minusValue</varname> or <varname>minusGeometry</varname></para>
+		<para>There are two complementary sets of restriction functions. The first set functions restricts the temporal value with respect to a value or a time extent. Examples are <varname>atValues</varname> or <varname>atTime</varname>. The second set functions restricts the temporal value with respect to the <emphasis>complement</emphasis> of a value or a time extent. Examples are <varname>minusValues</varname> or <varname>minusTime</varname></para>
 
 		<itemizedlist>
-			<listitem id="atValue">
-				<indexterm><primary><varname>atValue</varname>, <varname>minusValue</varname></primary></indexterm>
-				<para>Restrict to (the complement of) a value</para>
-				<para><varname>atValue(ttype,base) → ttype</varname></para>
-				<para><varname>minusValue(ttype,base) → ttype</varname></para>
+			<listitem id="atValues">
+				<indexterm><primary><varname>atValues</varname></primary></indexterm>
+				<indexterm><primary><varname>minusValues</varname></primary></indexterm>
+				<para>Restrict to (the complement of) a set of values</para>
+				<para><varname>atValues(ttype,values) → ttype</varname></para>
+				<para><varname>minusValues(ttype,values) → ttype</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT atValue(tint '[1@2001-01-01, 1@2001-01-15)', 1);
+SELECT atValues(tint '[1@2001-01-01, 1@2001-01-15)', 1);
 -- [1@2001-01-01, 1@2001-01-15)
-SELECT asText(atValue(tgeompoint '[Point(0 0 0)@2001-01-01, Point(2 2 2)@2001-01-03)',
+SELECT asText(atValues(tgeompoint '[Point(0 0 0)@2001-01-01, Point(2 2 2)@2001-01-03)',
   'Point(1 1 1)'));
 -- {[POINT Z (1 1 1)@2001-01-02]}
-</programlisting>
-
-				<programlisting language="sql" xml:space="preserve">
-SELECT minusValue(tint '[1@2001-01-01, 2@2001-01-02, 2@2001-01-03)', 1);
--- {[2@2001-01-02, 2@2001-01-03)}
-SELECT asText(minusValue(tgeompoint '[Point(0 0 0)@2001-01-01, Point(2 2 2)@2001-01-03)',
-  'Point(1 1 1)'));
-/* {[POINT Z (0 0 0)@2001-01-01, POINT Z (1 1 1)@2001-01-02),
-   (POINT Z (1 1 1)@2001-01-02, POINT Z (2 2 2)@2001-01-03)} */
-</programlisting>
-			</listitem>
-
-			<listitem id="atValues">
-				<indexterm><primary><varname>atValues</varname>, <varname>minusValues</varname></primary></indexterm>
-				<para>Restrict to (the complement of) a set of values</para>
-				<para><varname>atValues(ttype,set) → ttype</varname></para>
-				<para><varname>minusValues(ttype,set) → ttype</varname></para>
-				<programlisting language="sql" xml:space="preserve">
 SELECT atValues(tfloat '[1@2001-01-01, 4@2001-01-4)', floatset '{1, 3, 5}');
 -- {[1@2001-01-01], [3@2001-01-03]}
 SELECT asText(atValues(tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03)',
   geomset '{"Point(0 0)", "Point(1 1)"}'));
 -- {[POINT(0 0)@2001-01-01], [POINT(1 1)@2001-01-02]}
+SELECT atValues(tfloat '[1@2001-01-01, 4@2001-01-4)', floatspan '[1,3]');
+-- [1@2001-01-01, 3@2001-01-03]
+SELECT atValues(tfloat '[1@2001-01-01, 5@2001-01-05)',
+  floatspanset '{[1,2], [3,4]}');
+-- {[1@2001-01-01, 2@2001-01-02],[3@2001-01-03, 4@2001-01-04]}
 </programlisting>
 
 				<programlisting language="sql" xml:space="preserve">
-SELECT minusValues(tfloat '[1@2001-01-01, 4@2001-01-4)', floaset '{2, 3}');
+SELECT minusValues(tint '[1@2001-01-01, 2@2001-01-02, 2@2001-01-03)', 1);
+-- {[2@2001-01-02, 2@2001-01-03)}
+SELECT asText(minusValues(tgeompoint '[Point(0 0 0)@2001-01-01, Point(2 2 2)@2001-01-03)',
+  'Point(1 1 1)'));
+/* {[POINT Z (0 0 0)@2001-01-01, POINT Z (1 1 1)@2001-01-02),
+   (POINT Z (1 1 1)@2001-01-02, POINT Z (2 2 2)@2001-01-03)} */
+SELECT minusValues(tfloat '[1@2001-01-01, 4@2001-01-4)', floatset '{2, 3}');
 /* {[1@2001-01-01, 2@2001-01-02), (2@2001-01-02, 3@2001-01-03),
    (3@2001-01-03, 4@2001-01-04)} */
 SELECT asText(minusValues(tgeompoint '[Point(0 0 0)@2001-01-01, Point(3 3 3)@2001-01-04)',
@@ -1412,38 +1410,9 @@ SELECT asText(minusValues(tgeompoint '[Point(0 0 0)@2001-01-01, Point(3 3 3)@200
 /* {[POINT Z (0 0 0)@2001-01-01, POINT Z (1 1 1)@2001-01-02),
    (POINT Z (1 1 1)@2001-01-02, POINT Z (2 2 2)@2001-01-03),
   (POINT Z (2 2 2)@2001-01-03, POINT Z (3 3 3)@2001-01-04)} */
-</programlisting>
-		</listitem>
-
-			<listitem id="atSpan">
-				<indexterm><primary><varname>atSpan</varname>, <varname>minusSpan</varname></primary></indexterm>
-				<para>Restrict to (the complement of) a span</para>
-				<para><varname>atSpan(tnumber,numspan) → ttype</varname></para>
-				<para><varname>minusSpan(tnumber,numspan) → ttype</varname></para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT atSpan(tfloat '[1@2001-01-01, 4@2001-01-4)', floatspan '[1,3]');
--- [1@2001-01-01, 3@2001-01-03]
-</programlisting>
-
-				<programlisting language="sql" xml:space="preserve">
-SELECT minusSpan(tfloat '[1@2001-01-01, 4@2001-01-4)', floatspan '[2,3]');
+SELECT minusValues(tfloat '[1@2001-01-01, 4@2001-01-4)', floatspan '[2,3]');
 -- {[1@2001-01-01, 2@2001-01-02), (3@2001-01-03, 4@2001-01-04)}
-</programlisting>
-			</listitem>
-
-			<listitem id="atSpanset">
-				<indexterm><primary><varname>atSpanset</varname>, <varname>minusSpanset</varname></primary></indexterm>
-				<para>Restrict to (the complement of) a span set</para>
-				<para><varname>atSpanset(tnumber,numspanset) → ttype</varname></para>
-				<para><varname>minusSpanset(tnumber,numspanset) → ttype</varname></para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT atSpanset(tfloat '[1@2001-01-01, 5@2001-01-05)',
-  floatspanset '{[1,2], [3,4]}');
--- {[1@2001-01-01, 2@2001-01-02],[3@2001-01-03, 4@2001-01-04]}
-</programlisting>
-
-				<programlisting language="sql" xml:space="preserve">
-SELECT minusSpanset(tfloat '[1@2001-01-01, 5@2001-01-05)',
+SELECT minusValues(tfloat '[1@2001-01-01, 5@2001-01-05)',
   floatspanset '{[1,2], [3,4]}');
 -- {(2@2001-01-02, 3@2001-01-03), (4@2001-01-04, 5@2001-01-05)}
 </programlisting>
@@ -1592,7 +1561,7 @@ WITH temp(temp, box) AS (SELECT tfloat '[1@2001-01-01, 4@2001-01-04)',
 SELECT minusSpan(minusPeriod(temp, box::tstzspan), box::floatspan) FROM temp;
 -- {[1@2001-01-01], [2@2001-01-02, 3@2001-01-03)}
 </programlisting>
-			<para>Notice that when the bounding box has both value and time dimensions, the difference is computed by restricting the temporal number to the box using the function <varname>atTbox</varname>, computing the time extent of this restriction, and restricting the temporal number to the difference of the time extent. This is required to ensure that <varname>tnumber = merge(atTbox(tnumber,tbox), minusTbox(tnumber,tbox))</varname> (see the function <link linkend="merge"><varname>merge</varname></link>). In other words, while the function <varname>atTbox</varname> restricts the temporal number with respect to the span <emphasis>and</emphasis> the period defining the bounding box, the function <varname>minusTbox</varname> restricts the temporal number with respect to the span <emphasis>or</emphasis> the period. To obtain the restriction using an <emphasis>and</emphasis> semantics, both the <varname>minusSpan</varname> and <varname>minusPeriod</varname> functions must be applied.</para>
+			<para>Notice that when the bounding box has both value and time dimensions, the difference is computed by restricting the temporal number to the box using the function <varname>atTbox</varname>, computing the time extent of this restriction, and restricting the temporal number to the difference of the time extent. This is required to ensure that <varname>tnumber = merge(atTbox(tnumber,tbox), minusTbox(tnumber,tbox))</varname> (see the function <link linkend="merge"><varname>merge</varname></link>). In other words, while the function <varname>atTbox</varname> restricts the temporal number with respect to the span <emphasis>and</emphasis> the period defining the bounding box, the function <varname>minusTbox</varname> restricts the temporal number with respect to the span <emphasis>or</emphasis> the period. To obtain the restriction using an <emphasis>and</emphasis> semantics, both the <varname>minusValues</varname> and <varname>minusTime</varname> functions must be applied.</para>
 		</listitem>
 
 			<listitem id="atStbox">
@@ -1613,10 +1582,10 @@ SELECT asText(minusStbox(tgeompoint '[Point(1 1)@2001-01-01, Point(4 4)@2001-01-
 WITH temp(temp, box) AS (SELECT
   tgeompoint '[Point(1 1)@2001-01-01, Point(4 4)@2001-01-04)',
   stbox 'STBOX XT(((1,1),(2,2)),[2001-01-03,2001-01-04])')
-SELECT asText(minusGeometry(minusPeriod(temp, box::tstzspan), box::geometry)) FROM temp;
+SELECT asText(minusGeometry(minusTime(temp, box::tstzspan), box::geometry)) FROM temp;
 -- {(POINT(2 2)@2001-01-02, POINT(3 3)@2001-01-03)}
 </programlisting>
-				<para>Similary to the function <link linkend="minusTbox"><varname>minusTbox</varname></link>, when the bounding box has both space and time dimensions, the function <varname>minusStbox</varname> restricts the temporal point with respect to the space <emphasis>or</emphasis> the time extents of the box. To obtain the restriction using an <emphasis>and</emphasis> semantics, both the <varname>minusGeometry</varname> and <varname>minusPeriod</varname> functions must be applied.</para>
+				<para>Similarly to function <link linkend="atTbox"><varname>minusTbox</varname></link>, when the bounding box has both space and time dimensions, the function <varname>minusStbox</varname> restricts the temporal point with respect to the space <emphasis>or</emphasis> the time extents of the box. To obtain the restriction using an <emphasis>and</emphasis> semantics, both the <varname>minusGeometry</varname> and <varname>minusTime</varname> functions must be applied.</para>
 			</listitem>
 		</itemizedlist>
 	</sect1>

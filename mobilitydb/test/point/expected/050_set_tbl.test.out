@@ -32,6 +32,30 @@ SELECT COUNT(*) FROM tbl_geogset t1, tbl_geogset_tmp t2 WHERE t1.k = t2.k AND t1
 
 DROP TABLE tbl_geogset_tmp;
 DROP TABLE
+SELECT MAX(length(asText(g))) FROM tbl_geomset;
+ max 
+-----
+ 491
+(1 row)
+
+SELECT MAX(length(asText(g))) FROM tbl_geogset;
+ max 
+-----
+ 470
+(1 row)
+
+SELECT MAX(length(asEWKT(g))) FROM tbl_geomset;
+ max 
+-----
+ 491
+(1 row)
+
+SELECT MAX(length(asEWKT(g))) FROM tbl_geogset;
+ max 
+-----
+ 570
+(1 row)
+
 SELECT COUNT(*) FROM tbl_geomset WHERE geomsetFromBinary(asBinary(g)) <> g;
  count 
 -------
@@ -59,13 +83,13 @@ SELECT COUNT(*) FROM tbl_geogset WHERE geogsetFromHexWKB(asHexWKB(g)) <> g;
 SELECT memorySize(set_agg(g)) FROM tbl_geom_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g);
  memorysize 
 ------------
-       4848
+       4856
 (1 row)
 
 SELECT memorySize(set_agg(g)) FROM tbl_geog_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g::geometry);
  memorysize 
 ------------
-       4848
+       4856
 (1 row)
 
 SELECT MAX(memorySize(set(g))) FROM tbl_geom_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g);
@@ -87,13 +111,13 @@ SELECT MIN(ST_X(startValue(round(g, 6))::geometry)) FROM tbl_geogset;
 SELECT MAX(memorySize(g)) FROM tbl_geomset;
  max 
 -----
- 496
+ 504
 (1 row)
 
 SELECT MAX(storageSize(g)) FROM tbl_geomset;
  max 
 -----
- 496
+ 504
 (1 row)
 
 SELECT MIN(numValues(g)) FROM tbl_geomset;
@@ -129,13 +153,13 @@ SELECT MIN(array_length(getValues(g), 1)) FROM tbl_geomset;
 SELECT MAX(memorySize(g)) FROM tbl_geogset;
  max 
 -----
- 496
+ 504
 (1 row)
 
 SELECT MAX(storageSize(g)) FROM tbl_geogset;
  max 
 -----
- 496
+ 504
 (1 row)
 
 SELECT MIN(numValues(g)) FROM tbl_geogset;

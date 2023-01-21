@@ -64,7 +64,7 @@
 MemoryContext
 set_aggregation_context(FunctionCallInfo fcinfo)
 {
-  MemoryContext ctx;
+  MemoryContext ctx = NULL;
   if (! AggCheckCallContext(fcinfo, &ctx))
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("Cannot switch to aggregation context")));
@@ -84,29 +84,6 @@ unset_aggregation_context(MemoryContext ctx)
 /*****************************************************************************
  * Generic binary aggregate functions needed for parallelization
  *****************************************************************************/
-
-/**
- * Reads the state value from the buffer
- *
- * @param[in] state State
- * @param[in] data Structure containing the data
- * @param[in] size Size of the structure
- */
-void
-aggstate_set_extra(SkipList *state, void *data, size_t size)
-{
-#if ! MEOS
-  MemoryContext ctx;
-  assert(AggCheckCallContext(fetch_fcinfo(), &ctx));
-  MemoryContext oldctx = MemoryContextSwitchTo(ctx);
-#endif /* ! MEOS */
-  state->extra = palloc(size);
-  state->extrasize = size;
-  memcpy(state->extra, data, size);
-#if ! MEOS
-  MemoryContextSwitchTo(oldctx);
-#endif /* ! MEOS */
-}
 
 /**
  * Writes the state value into the buffer

@@ -176,7 +176,7 @@ time_tagg_combinefn(SkipList *state1, SkipList *state2)
   /* Delete the new aggregate values */
   if (smallest->elemtype == TIMESTAMPTZ)
     pfree(values);
-  else
+  else /* smallest->elemtype == PERIOD */
     pfree_array(values, smallest->length);
   return largest;
 }

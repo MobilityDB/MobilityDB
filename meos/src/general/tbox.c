@@ -351,22 +351,6 @@ tstzset_set_tbox(const Set *s, TBox *box)
   return;
 }
 
-#if MEOS
-/**
- * @ingroup libmeos_box_cast
- * @brief Cast a timestamp set to a temporal box.
- * @sqlfunc tbox()
- * @sqlop @p ::
- */
-TBox *
-tstzset_to_tbox(const Set *s)
-{
-  TBox *result = palloc(sizeof(TBox));
-  tstzset_set_tbox(s, result);
-  return result;
-}
-#endif /* MEOS */
-
 /**
  * @ingroup libmeos_internal_box_cast
  * @brief Set a temporal box from a number span.
@@ -427,7 +411,6 @@ period_to_tbox(const Span *p)
   period_set_tbox(p, result);
   return result;
 }
-#endif /* MEOS */
 
 /**
  * @ingroup libmeos_internal_box_cast
@@ -441,7 +424,6 @@ numspanset_set_tbox(const SpanSet *ss, TBox *box)
   return;
 }
 
-#if MEOS
 /**
  * @ingroup libmeos_box_cast
  * @brief Cast a span set to a temporal box.
