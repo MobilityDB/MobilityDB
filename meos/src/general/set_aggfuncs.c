@@ -80,29 +80,29 @@ set_append_value(Set *set, Datum d, meosType basetype)
     }
 
     /* Determine whether there is enough available space */
-    size_t size;
+    size_t size_elem;
     int16 typlen = basetype_length(basetype);
     if (typlen == -1)
       /* VARSIZE_ANY is used for oblivious data alignment, see postgres.h */
-      size = double_pad(VARSIZE_ANY(DatumGetPointer(d)));
+      size_elem = VARSIZE_ANY(DatumGetPointer(d));
     else
-      size = double_pad(typlen);
+      size_elem = typlen;
 
     /* Get the last instant to keep */
     Datum last = set_val_n(set, set->count - 1);
-    size_t size_last = (typlen == -1) ? double_pad(VARSIZE(last)) : size;
-    size_t avail_size = ((char *) set + VARSIZE(set)) -
-      ((char *) DatumGetPointer(last) + size_last);
-    if (size > avail_size)
-      /* There is not enough available space */
+    size_t size_last = (typlen == -1) ? VARSIZE_ANY(last) : size_elem;
+    size_t avail_size = ((char *) set + VARSIZE_ANY(set)) -
+      ((char *) DatumGetPointer(last) + double_pad(size_last));
+    if (double_pad(size_elem) > avail_size)
+      /* There is NOT enough available space */
       break;
 
     /* There is enough space to add the new value */
-    /* Update the offsets array and the count when adding one instant */
-    (set_offsets_ptr(set))[set->count - 1] =
-      (set_offsets_ptr(set))[set->count - 2] + size;
-    set->count++;
-    memcpy((char *) DatumGetPointer(last), DatumGetPointer(d), size);
+    size_t pdata = double_pad(sizeof(Set)) + double_pad(set->bboxsize) +
+      sizeof(size_t) * set->maxcount;
+    size_t pos = (set_offsets_ptr(set))[set->count - 1] + double_pad(size_last);
+    memcpy(((char *) set) + pdata + pos, DatumGetPointer(d), size_elem);
+    (set_offsets_ptr(set))[set->count++] = pos;
     /* Expand the bounding box and return */
     if (set->bboxsize != 0)
       set_expand_bbox(d, basetype, set_bbox_ptr(set));
@@ -145,15 +145,16 @@ set_agg_transfn(Set *state, Datum d, meosType basetype)
 #if ! MEOS
     MemoryContext ctx = set_aggregation_context(fetch_fcinfo());
 #endif /* ! MEOS */
-    Set *result = set_make(&d, 1, basetype, ORDERED_NO);
+    /* Arbitrary initialization to 64 elemnts */
+    Set *result = set_make_exp(&d, 1, 64, basetype, ORDERED_NO);
 #if ! MEOS
     unset_aggregation_context(ctx);
 #endif /* ! MEOS */
     return result;
   }
 
-  // return set_append_value(state, d, basetype);
-  return union_set_value(state, d, basetype);
+  return set_append_value(state, d, basetype);
+  // return union_set_value(state, d, basetype);
 }
 
 #if MEOS
@@ -208,23 +209,23 @@ textset_agg_transfn(Set *state, const text *txt)
 }
 #endif /* MEOS */
 
-/**
- * @ingroup libmeos_setspan_agg
- * @brief Combine function for tset aggregate of values
- *
- * @param[in] state1, state2 State values
- */
-Set *
-set_agg_combinefn(Set *state1, Set *state2)
-{
-  if (! state1)
-    return state2;
-  if (! state2)
-    return state1;
+// /**
+ // * @ingroup libmeos_setspan_agg
+ // * @brief Combine function for tset aggregate of values
+ // *
+ // * @param[in] state1, state2 State values
+ // */
+// Set *
+// set_agg_combinefn(Set *state1, Set *state2)
+// {
+  // if (! state1)
+    // return state2;
+  // if (! state2)
+    // return state1;
 
-  assert(state1->settype == state2->settype);
-  return union_set_set(state1, state2);
-}
+  // assert(state1->settype == state2->settype);
+  // return union_set_set(state1, state2);
+// }
 
 /**
  * @ingroup libmeos_internal_setspan_agg

@@ -53,15 +53,15 @@ IF perc < 1 THEN perc := 1; END IF;
 DROP TABLE IF EXISTS tbl_bool;
 CREATE TABLE tbl_bool AS
 /* Add perc NULL values */
-SELECT k, NULL AS b
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_bool()
+SELECT k, random_bool() AS b
 FROM generate_series(perc+1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_int;
 CREATE TABLE tbl_int AS
 /* Add perc NULL values */
-SELECT k, NULL AS i
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
 SELECT k, random_int(0, 100) AS i
 FROM generate_series(perc+1, size) AS k;
@@ -69,7 +69,7 @@ FROM generate_series(perc+1, size) AS k;
 DROP TABLE IF EXISTS tbl_bigint;
 CREATE TABLE tbl_bigint AS
 /* Add perc NULL values */
-SELECT k, NULL AS b
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
 SELECT k, random_bigint(0, 100) AS b
 FROM generate_series(perc+1, size) AS k;
@@ -77,15 +77,15 @@ FROM generate_series(perc+1, size) AS k;
 DROP TABLE IF EXISTS tbl_float;
 CREATE TABLE tbl_float AS
 /* Add perc NULL values */
-SELECT k, NULL AS f
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_float(0, 100) AS b
+SELECT k, random_float(0, 100) AS f
 FROM generate_series(perc+1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_text;
 CREATE TABLE tbl_text AS
 /* Add perc NULL values */
-SELECT k, NULL AS t
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
 SELECT k, random_text(10) AS t
 FROM generate_series(perc+1, size) AS k;
@@ -93,7 +93,7 @@ FROM generate_series(perc+1, size) AS k;
 DROP TABLE IF EXISTS tbl_textset;
 CREATE TABLE tbl_textset AS
 /* Add perc NULL values */
-SELECT k, NULL AS t
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
 SELECT k, random_textset(10, 1, 10) AS t
 FROM generate_series(perc+1, size) AS k;
@@ -101,97 +101,97 @@ FROM generate_series(perc+1, size) AS k;
 DROP TABLE IF EXISTS tbl_tbox;
 CREATE TABLE tbl_tbox AS
 /* Add perc NULL values */
-SELECT k, NULL AS b
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_tbox(0, 100, '2001-01-01', '2001-12-31', 10, 10)
+SELECT k, random_tbox(0, 100, '2001-01-01', '2001-12-31', 10, 10) AS b
 FROM generate_series(perc+1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_interval;
 CREATE TABLE tbl_interval AS
 /* Add perc NULL values */
-SELECT k, NULL AS i
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_minutes(1, 100)
+SELECT k, random_minutes(1, 100) AS i
 FROM generate_series(perc+1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_timestamptz;
 CREATE TABLE tbl_timestamptz AS
 /* Add perc NULL values */
-SELECT k, NULL AS t
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_timestamptz('2001-01-01', '2001-12-31')
+SELECT k, random_timestamptz('2001-01-01', '2001-12-31') AS t
 FROM generate_series(perc+1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_int4range;
 CREATE TABLE tbl_int4range AS
 /* Add perc NULL values */
-SELECT k, NULL AS i
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_int4range(0, 100, 10)
+SELECT k, random_int4range(0, 100, 10) AS i
 FROM generate_series(perc+1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_intspan;
 CREATE TABLE tbl_intspan AS
 /* Add perc NULL values */
-SELECT k, NULL AS i
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_intspan(0, 100, 10)
+SELECT k, random_intspan(0, 100, 10) AS i
 FROM generate_series(perc+1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_intspanset;
 CREATE TABLE tbl_intspanset AS
 /* Add perc NULL values */
-SELECT k, NULL AS ss
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_intspanset(0, 100, 5, 5, 10)
+SELECT k, random_intspanset(0, 100, 5, 5, 10) AS i
 FROM generate_series(perc+1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_bigintspan;
 CREATE TABLE tbl_bigintspan AS
 /* Add perc NULL values */
-SELECT k, NULL AS i
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_bigintspan(0, 100, 10)
+SELECT k, random_bigintspan(0, 100, 10) AS i
 FROM generate_series(perc+1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_bigintspanset;
 CREATE TABLE tbl_bigintspanset AS
 /* Add perc NULL values */
-SELECT k, NULL AS ss
-FROM generate_series(1, perc) AS k UNION
+SELECT k, NULL
+FROM generate_series(1, perc) AS k UNION AS b
 SELECT k, random_bigintspanset(0, 100, 5, 5, 10)
 FROM generate_series(perc+1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_floatspan;
 CREATE TABLE tbl_floatspan AS
 /* Add perc NULL values */
-SELECT k, NULL AS f
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_floatspan(0, 100, 10)
+SELECT k, random_floatspan(0, 100, 10) AS f
 FROM generate_series(perc+1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_floatspanset;
 CREATE TABLE tbl_floatspanset AS
 /* Add perc NULL values */
-SELECT k, NULL AS ss
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_floatspanset(0, 100, 5, 5, 10)
+SELECT k, random_floatspanset(0, 100, 5, 5, 10) AS f
 FROM generate_series(perc+1, 100) AS k;
 
 DROP TABLE IF EXISTS tbl_tstzrange;
 CREATE TABLE tbl_tstzrange AS
 /* Add perc NULL values */
-SELECT k, NULL AS r
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_tstzrange('2001-01-01', '2001-12-31', 10)
+SELECT k, random_tstzrange('2001-01-01', '2001-12-31', 10) AS t
 FROM generate_series(perc+1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_tstzrange_array;
 CREATE TABLE tbl_tstzrange_array AS
 /* Add perc NULL values */
-SELECT k, NULL AS ra
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_tstzrange_array('2001-01-01', '2001-12-31', 10, 5, 10)
+SELECT k, random_tstzrange_array('2001-01-01', '2001-12-31', 10, 5, 10) AS r
 FROM generate_series(perc+1, size) AS k;
 
 -------------------------------------------------------------------------------
@@ -201,33 +201,33 @@ FROM generate_series(perc+1, size) AS k;
 DROP TABLE IF EXISTS tbl_intset;
 CREATE TABLE tbl_intset AS
 /* Add perc NULL values */
-SELECT k, NULL AS i
-FROM generate_series(1, perc) AS k UNION
+SELECT k, NULL
+FROM generate_series(1, perc) AS k UNION AS i
 SELECT k, random_intset(1, 100, 10, 5, 10)
 FROM generate_series(perc+1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_bigintset;
 CREATE TABLE tbl_bigintset AS
 /* Add perc NULL values */
-SELECT k, NULL AS b
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_bigintset(1, 100, 10, 5, 10)
+SELECT k, random_bigintset(1, 100, 10, 5, 10) AS b
 FROM generate_series(perc+1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_floatset;
 CREATE TABLE tbl_floatset AS
 /* Add perc NULL values */
-SELECT k, NULL AS f
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_floatset(1, 100, 10, 5, 10)
+SELECT k, random_floatset(1, 100, 10, 5, 10) AS f
 FROM generate_series(perc+1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_tstzset;
 CREATE TABLE tbl_tstzset AS
 /* Add perc NULL values */
-SELECT k, NULL AS t
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_tstzset('2001-01-01', '2001-12-31', 10, 5, 10)
+SELECT k, random_tstzset('2001-01-01', '2001-12-31', 10, 5, 10) AS t
 FROM generate_series(perc+1, size) AS k;
 
 -------------------------------------------------------------------------------
@@ -235,33 +235,33 @@ FROM generate_series(perc+1, size) AS k;
 DROP TABLE IF EXISTS tbl_intspan;
 CREATE TABLE tbl_intspan AS
 /* Add perc NULL values */
-SELECT k, NULL AS i
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_intspan(1, 100, 10, 5)
+SELECT k, random_intspan(1, 100, 10, 5) AS i
 FROM generate_series(perc+1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_bigintspan;
 CREATE TABLE tbl_bigintspan AS
 /* Add perc NULL values */
-SELECT k, NULL AS b
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_bigintspan(1, 100, 10, 5)
+SELECT k, random_bigintspan(1, 100, 10, 5) AS b
 FROM generate_series(perc+1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_floatspan;
 CREATE TABLE tbl_floatspan AS
 /* Add perc NULL values */
-SELECT k, NULL AS f
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_floatspan(1, 100, 10, 5)
+SELECT k, random_floatspan(1, 100, 10, 5) AS f
 FROM generate_series(perc+1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_tstzspan;
 CREATE TABLE tbl_tstzspan AS
 /* Add perc NULL values */
-SELECT k, NULL AS p
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_period('2001-01-01', '2001-12-31', 10)
+SELECT k, random_period('2001-01-01', '2001-12-31', 10) AS t
 FROM generate_series(perc+1, size) AS k;
 
 -------------------------------------------------------------------------------
@@ -269,33 +269,33 @@ FROM generate_series(perc+1, size) AS k;
 DROP TABLE IF EXISTS tbl_intspanset;
 CREATE TABLE tbl_intspanset AS
 /* Add perc NULL values */
-SELECT k, NULL AS i
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_intspanset(1, 100, 10, 5, 10)
+SELECT k, random_intspanset(1, 100, 10, 5, 10) AS i
 FROM generate_series(perc+1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_bigintspanset;
 CREATE TABLE tbl_bigintspanset AS
 /* Add perc NULL values */
-SELECT k, NULL AS b
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_bigintspanset(1, 100, 10, 5, 10)
+SELECT k, random_bigintspanset(1, 100, 10, 5, 10) AS b
 FROM generate_series(perc+1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_floatspanset;
 CREATE TABLE tbl_floatspanset AS
 /* Add perc NULL values */
-SELECT k, NULL AS f
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_floatspanset(1, 100, 10, 5, 10)
+SELECT k, random_floatspanset(1, 100, 10, 5, 10) AS f
 FROM generate_series(perc+1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_tstzspanset;
 CREATE TABLE tbl_tstzspanset AS
 /* Add perc NULL values */
-SELECT k, NULL AS ps
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_periodset('2001-01-01', '2001-12-31', 10, 5, 10)
+SELECT k, random_periodset('2001-01-01', '2001-12-31', 10, 5, 10) AS t
 FROM generate_series(perc+1, size) AS k;
 
 ------------------------------------------------------------------------------
@@ -305,9 +305,9 @@ FROM generate_series(perc+1, size) AS k;
 DROP TABLE IF EXISTS tbl_tbool_inst;
 CREATE TABLE tbl_tbool_inst AS
 /* Add perc NULL values */
-SELECT k, NULL AS inst
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_tbool_inst('2001-01-01', '2001-12-31')
+SELECT k, random_tbool_inst('2001-01-01', '2001-12-31') AS inst
 FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
 UPDATE tbl_tbool_inst t1
@@ -322,9 +322,9 @@ WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 DROP TABLE IF EXISTS tbl_tint_inst;
 CREATE TABLE tbl_tint_inst AS
 /* Add perc NULL values */
-SELECT k, NULL AS inst
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_tint_inst(0, 100, '2001-01-01', '2001-12-31')
+SELECT k, random_tint_inst(0, 100, '2001-01-01', '2001-12-31') AS inst
 FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
 UPDATE tbl_tint_inst t1
@@ -339,9 +339,9 @@ WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 DROP TABLE IF EXISTS tbl_tfloat_inst;
 CREATE TABLE tbl_tfloat_inst AS
 /* Add perc NULL values */
-SELECT k, NULL AS inst
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_tfloat_inst(0, 100, '2001-01-01', '2001-12-31')
+SELECT k, random_tfloat_inst(0, 100, '2001-01-01', '2001-12-31') AS inst
 FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
 UPDATE tbl_tfloat_inst t1
@@ -356,9 +356,9 @@ WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 DROP TABLE IF EXISTS tbl_ttext_inst;
 CREATE TABLE tbl_ttext_inst AS
 /* Add perc NULL values */
-SELECT k, NULL AS inst
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_ttext_inst('2001-01-01', '2001-12-31', 10)
+SELECT k, random_ttext_inst('2001-01-01', '2001-12-31', 10) AS inst
 FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
 UPDATE tbl_ttext_inst t1
@@ -375,7 +375,7 @@ WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 DROP TABLE IF EXISTS tbl_tbool_discseq;
 CREATE TABLE tbl_tbool_discseq AS
 /* Add perc NULL values */
-SELECT k, NULL AS ti
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
 SELECT k, random_tbool_discseq('2001-01-01', '2001-12-31', 10, 5, 10) AS ti
 FROM generate_series(perc+1, size) k;
@@ -401,7 +401,7 @@ WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 DROP TABLE IF EXISTS tbl_tint_discseq;
 CREATE TABLE tbl_tint_discseq AS
 /* Add perc NULL values */
-SELECT k, NULL AS ti
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
 SELECT k, random_tint_discseq(1, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10) AS ti
 FROM generate_series(perc+1, size) k;
@@ -427,7 +427,7 @@ WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 DROP TABLE IF EXISTS tbl_tfloat_discseq;
 CREATE TABLE tbl_tfloat_discseq AS
 /* Add perc NULL values */
-SELECT k, NULL AS ti
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
 SELECT k, random_tfloat_discseq(1, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10) AS ti
 FROM generate_series(perc+1, size) k;
@@ -453,7 +453,7 @@ WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 DROP TABLE IF EXISTS tbl_ttext_discseq;
 CREATE TABLE tbl_ttext_discseq AS
 /* Add perc NULL values */
-SELECT k, NULL AS ti
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
 SELECT k, random_ttext_discseq('2001-01-01', '2001-12-31', 10, 10, 5, 10) AS ti
 FROM generate_series(perc+1, size) k;
@@ -481,7 +481,7 @@ WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 DROP TABLE IF EXISTS tbl_tbool_seq;
 CREATE TABLE tbl_tbool_seq AS
 /* Add perc NULL values */
-SELECT k, NULL AS seq
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
 SELECT k, random_tbool_seq('2001-01-01', '2001-12-31', 10, 5, 10) AS seq
 FROM generate_series(perc+1, size) k;
@@ -506,7 +506,7 @@ WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 DROP TABLE IF EXISTS tbl_tint_seq;
 CREATE TABLE tbl_tint_seq AS
 /* Add perc NULL values */
-SELECT k, NULL AS seq
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
 SELECT k, random_tint_seq(1, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10) AS seq
 FROM generate_series(perc+1, size) k;
@@ -531,7 +531,7 @@ WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 DROP TABLE IF EXISTS tbl_tfloat_seq;
 CREATE TABLE tbl_tfloat_seq AS
 /* Add perc NULL values */
-SELECT k, NULL AS seq
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
 SELECT k, random_tfloat_seq(1, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10) AS seq
 FROM generate_series(perc+1, size) k;
@@ -556,7 +556,7 @@ WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 DROP TABLE IF EXISTS tbl_ttext_seq;
 CREATE TABLE tbl_ttext_seq AS
 /* Add perc NULL values */
-SELECT k, NULL AS seq
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
 SELECT k, random_ttext_seq('2001-01-01', '2001-12-31', 10, 10, 5, 10) AS seq
 FROM generate_series(perc+1, size) k;
@@ -583,7 +583,7 @@ WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 DROP TABLE IF EXISTS tbl_tbool_seqset;
 CREATE TABLE tbl_tbool_seqset AS
 /* Add perc NULL values */
-SELECT k, NULL AS ts
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
 SELECT k, random_tbool_seqset('2001-01-01', '2001-12-31', 10, 5, 10, 5, 10) AS ts
 FROM generate_series(perc+1, size) AS k;
@@ -608,7 +608,7 @@ WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 DROP TABLE IF EXISTS tbl_tint_seqset;
 CREATE TABLE tbl_tint_seqset AS
 /* Add perc NULL values */
-SELECT k, NULL AS ts
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
 SELECT k, random_tint_seqset(1, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10, 5, 10) AS ts
 FROM generate_series(perc+1, size) AS k;
@@ -633,7 +633,7 @@ WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 DROP TABLE IF EXISTS tbl_tfloat_seqset;
 CREATE TABLE tbl_tfloat_seqset AS
 /* Add perc NULL values */
-SELECT k, NULL AS ts
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
 SELECT k, random_tfloat_seqset(1, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10, 5, 10) AS ts
 FROM generate_series(perc+1, size) AS k;
@@ -658,7 +658,7 @@ WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 DROP TABLE IF EXISTS tbl_ttext_seqset;
 CREATE TABLE tbl_ttext_seqset AS
 /* Add perc NULL values */
-SELECT k, NULL AS ts
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
 SELECT k, random_ttext_seqset('2001-01-01', '2001-12-31', 10, 10, 5, 10, 5, 10) AS ts
 FROM generate_series(perc+1, size) AS k;
@@ -717,7 +717,7 @@ CREATE TABLE tbl_ttext(k, temp) AS
 DROP TABLE IF EXISTS tbl_tfloat_step_seq;
 CREATE TABLE tbl_tfloat_step_seq AS
 /* Add perc NULL values */
-SELECT k, NULL AS seq
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
 SELECT k, random_tfloat_seq(1, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10, linear:=false) AS seq
 FROM generate_series(perc+1, size) k;
@@ -742,7 +742,7 @@ WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 DROP TABLE IF EXISTS tbl_tfloat_step_seqset;
 CREATE TABLE tbl_tfloat_step_seqset AS
 /* Add perc NULL values */
-SELECT k, NULL AS ts
+SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
 SELECT k, random_tfloat_seqset(1, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10, 5, 10, linear:=false) AS ts
 FROM generate_series(perc+1, size) AS k;

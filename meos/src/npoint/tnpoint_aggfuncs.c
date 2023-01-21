@@ -62,10 +62,7 @@ tnpoint_tcentroid_transfn(SkipList *state, Temporal *temp)
   int count;
   Temporal **temparr = tpoint_transform_tcentroid(temp1, &count);
   if (state)
-  {
-    ensure_same_tempsubtype_skiplist(state, temparr[0]);
     skiplist_splice(state, (void **) temparr, count, func, false);
-  }
   else
   {
     state = skiplist_make((void **) temparr, count, TEMPORAL);

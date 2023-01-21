@@ -806,34 +806,34 @@ CREATE FUNCTION set_agg_transfn(geogset, geography)
   AS 'MODULE_PATHNAME', 'Set_agg_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION set_agg_combinefn(intset, intset)
-  RETURNS intset
-  AS 'MODULE_PATHNAME', 'Set_agg_combinefn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_agg_combinefn(bigintset, bigintset)
-  RETURNS bigintset
-  AS 'MODULE_PATHNAME', 'Set_agg_combinefn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_agg_combinefn(floatset, floatset)
-  RETURNS floatset
-  AS 'MODULE_PATHNAME', 'Set_agg_combinefn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_agg_combinefn(tstzset, tstzset)
-  RETURNS tstzset
-  AS 'MODULE_PATHNAME', 'Set_agg_combinefn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_agg_combinefn(textset, textset)
-  RETURNS textset
-  AS 'MODULE_PATHNAME', 'Set_agg_combinefn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_agg_combinefn(geomset, geomset)
-  RETURNS geomset
-  AS 'MODULE_PATHNAME', 'Set_agg_combinefn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_agg_combinefn(geogset, geogset)
-  RETURNS geogset
-  AS 'MODULE_PATHNAME', 'Set_agg_combinefn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+-- CREATE FUNCTION set_agg_combinefn(intset, intset)
+  -- RETURNS intset
+  -- AS 'MODULE_PATHNAME', 'Set_agg_combinefn'
+  -- LANGUAGE C IMMUTABLE PARALLEL SAFE;
+-- CREATE FUNCTION set_agg_combinefn(bigintset, bigintset)
+  -- RETURNS bigintset
+  -- AS 'MODULE_PATHNAME', 'Set_agg_combinefn'
+  -- LANGUAGE C IMMUTABLE PARALLEL SAFE;
+-- CREATE FUNCTION set_agg_combinefn(floatset, floatset)
+  -- RETURNS floatset
+  -- AS 'MODULE_PATHNAME', 'Set_agg_combinefn'
+  -- LANGUAGE C IMMUTABLE PARALLEL SAFE;
+-- CREATE FUNCTION set_agg_combinefn(tstzset, tstzset)
+  -- RETURNS tstzset
+  -- AS 'MODULE_PATHNAME', 'Set_agg_combinefn'
+  -- LANGUAGE C IMMUTABLE PARALLEL SAFE;
+-- CREATE FUNCTION set_agg_combinefn(textset, textset)
+  -- RETURNS textset
+  -- AS 'MODULE_PATHNAME', 'Set_agg_combinefn'
+  -- LANGUAGE C IMMUTABLE PARALLEL SAFE;
+-- CREATE FUNCTION set_agg_combinefn(geomset, geomset)
+  -- RETURNS geomset
+  -- AS 'MODULE_PATHNAME', 'Set_agg_combinefn'
+  -- LANGUAGE C IMMUTABLE PARALLEL SAFE;
+-- CREATE FUNCTION set_agg_combinefn(geogset, geogset)
+  -- RETURNS geogset
+  -- AS 'MODULE_PATHNAME', 'Set_agg_combinefn'
+  -- LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION set_agg_finalfn(intset)
   RETURNS intset
@@ -867,49 +867,49 @@ CREATE FUNCTION set_agg_finalfn(geogset)
 CREATE AGGREGATE set_agg(int) (
   SFUNC = set_agg_transfn,
   STYPE = intset,
-  COMBINEFUNC = set_agg_combinefn,
+  -- COMBINEFUNC = set_agg_combinefn,
   FINALFUNC = set_agg_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE set_agg(bigint) (
   SFUNC = set_agg_transfn,
   STYPE = bigintset,
-  COMBINEFUNC = set_agg_combinefn,
+  -- COMBINEFUNC = set_agg_combinefn,
   FINALFUNC = set_agg_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE set_agg(float) (
   SFUNC = set_agg_transfn,
   STYPE = floatset,
-  COMBINEFUNC = set_agg_combinefn,
+  -- COMBINEFUNC = set_agg_combinefn,
   FINALFUNC = set_agg_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE set_agg(timestamptz) (
   SFUNC = set_agg_transfn,
   STYPE = tstzset,
-  COMBINEFUNC = set_agg_combinefn,
+  -- COMBINEFUNC = set_agg_combinefn,
   FINALFUNC = set_agg_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE set_agg(text) (
   SFUNC = set_agg_transfn,
   STYPE = textset,
-  COMBINEFUNC = set_agg_combinefn,
+  -- COMBINEFUNC = set_agg_combinefn,
   FINALFUNC = set_agg_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE set_agg(geometry) (
   SFUNC = set_agg_transfn,
   STYPE = geomset,
-  COMBINEFUNC = set_agg_combinefn,
+  -- COMBINEFUNC = set_agg_combinefn,
   FINALFUNC = set_agg_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE set_agg(geography) (
   SFUNC = set_agg_transfn,
   STYPE = geogset,
-  COMBINEFUNC = set_agg_combinefn,
+  -- COMBINEFUNC = set_agg_combinefn,
   FINALFUNC = set_agg_finalfn,
   PARALLEL = safe
 );

@@ -64,7 +64,7 @@
 MemoryContext
 set_aggregation_context(FunctionCallInfo fcinfo)
 {
-  MemoryContext ctx;
+  MemoryContext ctx = NULL;
   if (! AggCheckCallContext(fcinfo, &ctx))
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("Cannot switch to aggregation context")));

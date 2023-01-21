@@ -172,10 +172,10 @@ CREATE FUNCTION set_agg_transfn(npointset, npoint)
   RETURNS npointset
   AS 'MODULE_PATHNAME', 'Set_agg_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_agg_combinefn(npointset, npointset)
-  RETURNS npointset
-  AS 'MODULE_PATHNAME', 'Set_agg_combinefn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+-- CREATE FUNCTION set_agg_combinefn(npointset, npointset)
+  -- RETURNS npointset
+  -- AS 'MODULE_PATHNAME', 'Set_agg_combinefn'
+  -- LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION set_agg_finalfn(npointset)
   RETURNS npointset
   AS 'MODULE_PATHNAME', 'Set_agg_finalfn'
@@ -184,7 +184,7 @@ CREATE FUNCTION set_agg_finalfn(npointset)
 CREATE AGGREGATE set_agg(npoint) (
   SFUNC = set_agg_transfn,
   STYPE = npointset,
-  COMBINEFUNC = set_agg_combinefn,
+  -- COMBINEFUNC = set_agg_combinefn,
   FINALFUNC = set_agg_finalfn,
   PARALLEL = safe
 );
