@@ -685,4 +685,21 @@ skiplist_values(SkipList *list)
   return result;
 }
 
+/**
+ * @brief Return the values contained in the skiplist
+ */
+Temporal **
+skiplist_temporal_values(SkipList *list)
+{
+  Temporal **result = palloc(sizeof(Temporal *) * list->length);
+  int cur = list->elems[0].next[0];
+  int count = 0;
+  while (cur != list->tail)
+  {
+    result[count++] = temporal_copy(list->elems[cur].value);
+    cur = list->elems[cur].next[0];
+  }
+  return result;
+}
+
 /*****************************************************************************/

@@ -607,17 +607,16 @@ temporal_tagg_finalfn(SkipList *state)
 {
   if (state == NULL || state->length == 0)
     return NULL;
-
-  Temporal **values = (Temporal **) skiplist_values(state);
+  /* A copy of the values is needed for switching from aggregate context */
+  Temporal **values = skiplist_temporal_values(state);
   Temporal *result = NULL;
   assert(values[0]->subtype == TINSTANT || values[0]->subtype == TSEQUENCE);
   if (values[0]->subtype == TINSTANT)
-    result = (Temporal *) tsequence_make((const TInstant **) values,
+    result = (Temporal *) tsequence_make_free((TInstant **) values,
       state->length, true, true, DISCRETE, NORMALIZE_NO);
   else /* values[0]->subtype == TSEQUENCE */
-    result = (Temporal *) tsequenceset_make((const TSequence **) values,
+    result = (Temporal *) tsequenceset_make_free((TSequence **) values,
       state->length, NORMALIZE);
-  pfree(values);
   skiplist_free(state);
   return result;
 }
