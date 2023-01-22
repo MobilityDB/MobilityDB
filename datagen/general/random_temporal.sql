@@ -641,9 +641,9 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random timestamptz in a tstzspan
+ * Generate a random timestamptz in a period
  *
- * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
+ * @param[in] lowtime, hightime Inclusive bounds of the period
  */
 DROP FUNCTION IF EXISTS random_timestamptz;
 CREATE FUNCTION random_timestamptz(lowtime timestamptz, hightime timestamptz)
@@ -747,8 +747,8 @@ FROM generate_series(1, 15) AS k;
  * @param[in] fixstart True when this function is called for generating
  *   a tstzspan set and in this case the start timestamp is already fixed
  */
-DROP FUNCTION IF EXISTS random_period;
-CREATE FUNCTION random_period(lowtime timestamptz, hightime timestamptz,
+DROP FUNCTION IF EXISTS random_tstzspan;
+CREATE FUNCTION random_tstzspan(lowtime timestamptz, hightime timestamptz,
   maxminutes int, fixstart bool DEFAULT false)
   RETURNS tstzspan AS $$
 DECLARE
@@ -767,17 +767,17 @@ BEGIN
   END IF;
   /* Generate instantaneous periods with 0.1 probability */
   IF random() < 0.1 THEN
-    RETURN tstzspan(t, t, true, true);
+    RETURN span(t, t, true, true);
   ELSE
     lower_inc = random() > 0.5;
     upper_inc = random() > 0.5;
-    RETURN tstzspan(t, t + random_minutes(1, maxminutes), lower_inc, upper_inc);
+    RETURN span(t, t + random_minutes(1, maxminutes), lower_inc, upper_inc);
   END IF;
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, random_period('2001-01-01', '2002-01-01', 10) AS p
+SELECT k, random_tstzspan('2001-01-01', '2002-01-01', 10) AS p
 FROM generate_series(1,10) k;
 */
 
@@ -790,8 +790,8 @@ FROM generate_series(1,10) k;
  * @param[in] maxminutes Maximum number of minutes between the timestamps
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
  */
-DROP FUNCTION IF EXISTS random_period_array;
-CREATE FUNCTION random_period_array(lowtime timestamptz, hightime timestamptz,
+DROP FUNCTION IF EXISTS random_tstzspan_array;
+CREATE FUNCTION random_tstzspan_array(lowtime timestamptz, hightime timestamptz,
   maxminutes int, mincard int, maxcard int)
   RETURNS tstzspan[] AS $$
 DECLARE
@@ -811,7 +811,7 @@ BEGIN
   t2 = hightime - interval '1 minute' * maxminutes * (card - 1) * 2;
   FOR i IN 1..card
   LOOP
-    result[i] = random_period(t1, t2, maxminutes, i > 1);
+    result[i] = random_tstzspan(t1, t2, maxminutes, i > 1);
     t1 = upper(result[i]) + random_minutes(1, maxminutes);
     t2 = t2 + interval '1 minute' * maxminutes * 2;
   END LOOP;
@@ -820,7 +820,7 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, random_period_array('2001-01-01', '2002-01-01', 10, 5, 10) AS parr
+SELECT k, random_tstzspan_array('2001-01-01', '2002-01-01', 10, 5, 10) AS parr
 FROM generate_series(1, 15) AS k;
 */
 
@@ -837,7 +837,7 @@ CREATE FUNCTION random_tstzrange(lowtime timestamptz, hightime timestamptz,
   maxminutes int)
   RETURNS tstzrange AS $$
 BEGIN
-  RETURN random_period(lowtime, hightime, maxminutes)::tstzrange;
+  RETURN random_tstzspan(lowtime, hightime, maxminutes)::tstzrange;
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -864,7 +864,7 @@ DECLARE
   result tstzrange[];
   card int;
 BEGIN
-  SELECT random_period_array(lowtime, hightime, maxminutes, mincard, maxcard)
+  SELECT random_tstzspan_array(lowtime, hightime, maxminutes, mincard, maxcard)
   INTO periodarr;
   card = array_length(periodarr, 1);
   FOR i IN 1..card
@@ -1051,18 +1051,18 @@ FROM generate_series(1, 15) AS k;
  * @param[in] maxminutes Maximum number of minutes between two consecutive timestamps
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
  */
-DROP FUNCTION IF EXISTS random_periodset;
-CREATE FUNCTION random_periodset(lowtime timestamptz, hightime timestamptz,
+DROP FUNCTION IF EXISTS random_tstzspanset;
+CREATE FUNCTION random_tstzspanset(lowtime timestamptz, hightime timestamptz,
   maxminutes int, mincard int, maxcard int)
   RETURNS tstzspanset AS $$
 BEGIN
-  RETURN tstzspanset(random_period_array(lowtime, hightime, maxminutes, mincard,
+  RETURN tstzspanset(random_tstzspan_array(lowtime, hightime, maxminutes, mincard,
     maxcard));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, random_periodset('2001-01-01', '2002-01-01', 10, 5, 10) AS ps
+SELECT k, random_tstzspanset('2001-01-01', '2002-01-01', 10, 5, 10) AS ps
 FROM generate_series(1, 15) AS k;
 */
 

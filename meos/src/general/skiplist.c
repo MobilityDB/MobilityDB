@@ -686,11 +686,30 @@ skiplist_values(SkipList *list)
 }
 
 /**
- * @brief Return the values contained in the skiplist
+ * @brief Return a copy of the period values contained in the skiplist
+ */
+Span **
+skiplist_period_values(SkipList *list)
+{
+  assert(list->elemtype == PERIOD);
+  Span **result = palloc(sizeof(Span *) * list->length);
+  int cur = list->elems[0].next[0];
+  int count = 0;
+  while (cur != list->tail)
+  {
+    result[count++] = span_copy(list->elems[cur].value);
+    cur = list->elems[cur].next[0];
+  }
+  return result;
+}
+
+/**
+ * @brief Return a copy of the temporal values contained in the skiplist
  */
 Temporal **
 skiplist_temporal_values(SkipList *list)
 {
+  assert(list->elemtype == TEMPORAL);
   Temporal **result = palloc(sizeof(Temporal *) * list->length);
   int cur = list->elems[0].next[0];
   int count = 0;

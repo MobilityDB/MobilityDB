@@ -60,7 +60,7 @@ datum_sum_int32(Datum l, Datum r)
 }
 
 /*
- * Generic aggregate function for timestamp set values
+ * @brief Generic aggregate function to aggregate timestamp set values
  *
  * @param[in] times1 Accumulated state
  * @param[in] count1 Number of elements in the accumulated state
@@ -76,25 +76,17 @@ timestamp_tagg(TimestampTz *times1, int count1, TimestampTz *times2,
   int i = 0, j = 0, count = 0;
   while (i < count1 && j < count2)
   {
-    TimestampTz t1 = times1[i];
-    TimestampTz t2 = times2[j];
-    int cmp = timestamptz_cmp_internal(t1, t2);
+    int cmp = timestamptz_cmp_internal(times1[i], times2[j]);
     if (cmp == 0)
     {
-      result[count++] = t1;
-      i++;
+      result[count++] = times1[i++];
       j++;
     }
     else if (cmp < 0)
-    {
-      result[count++] = t1;
-      i++;
-    }
+
+      result[count++] = times1[i++];
     else
-    {
-      result[count++] = t2;
-      j++;
-    }
+      result[count++] = times2[j++];
   }
   /* Copy the timetamps from state1 or state2 that are after the end of the
      other state */
@@ -161,6 +153,12 @@ time_tagg_combinefn(SkipList *state1, SkipList *state2)
   if (! state2)
     return state1;
 
+  if (state1->length == 0)
+    return state2;
+  if (state2->length == 0)
+    return state1;
+
+
   assert(state1->elemtype == state2->elemtype);
   SkipList *smallest, *largest;
   if (state1->length < state2->length)
@@ -171,7 +169,8 @@ time_tagg_combinefn(SkipList *state1, SkipList *state2)
   {
     smallest = state2; largest = state1;
   }
-  void **values = skiplist_values(smallest);
+  void **values = (smallest->elemtype == TIMESTAMPTZ) ?
+    skiplist_values(smallest) : (void **) skiplist_period_values(smallest);
   skiplist_splice(largest, values, smallest->length, NULL, CROSSINGS_NO);
   /* Delete the new aggregate values */
   if (smallest->elemtype == TIMESTAMPTZ)
