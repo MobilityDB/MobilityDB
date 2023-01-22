@@ -36,7 +36,7 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-/* MobilityDB */
+/* MEOS */
 #include "general/temporal.h"
 
 /* Compute either the tintersects or the tdisjoint relationship */

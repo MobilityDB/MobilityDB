@@ -30,7 +30,7 @@
 #ifndef __TEMPORAL_TILE_H__
 #define __TEMPORAL_TILE_H__
 
-/* MobilityDB */
+/* MEOS */
 #include "temporal.h"
 
 #define MAXDIMS 4

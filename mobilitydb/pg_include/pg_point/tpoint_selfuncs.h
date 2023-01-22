@@ -38,9 +38,10 @@
 #include <postgres.h>
 #include <catalog/pg_statistic.h>
 #include <utils/selfuncs.h>
-/* MobilityDB */
+/* MEOS */
 #include "general/meos_catalog.h"
 #include "point/tpoint.h"
+/* MobilityDB */
 #include "pg_point/tpoint_analyze.h"
 
 /**

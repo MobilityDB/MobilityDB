@@ -35,7 +35,7 @@
 #ifndef __DOUBLEN_H__
 #define __DOUBLEN_H__
 
-/* MobilityDB */
+/* MEOS */
 #include "general/temporal.h"
 
 /*****************************************************************************/

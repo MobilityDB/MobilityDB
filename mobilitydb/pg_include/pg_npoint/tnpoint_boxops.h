@@ -38,7 +38,7 @@
 #include <postgres.h>
 #include <utils/palloc.h>
 #include <fmgr.h>
-/* MobilityDB */
+/* MEOS */
 #include "general/temporal.h"
 #include "npoint/tnpoint.h"
 

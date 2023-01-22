@@ -39,7 +39,7 @@
 #include <utils/array.h>
 #include <catalog/pg_type.h>
 #include <lib/stringinfo.h>
-/* MobilityDB */
+/* MEOS */
 #include "npoint/tnpoint.h"
 
 /*****************************************************************************/

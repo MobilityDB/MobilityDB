@@ -37,7 +37,7 @@
 #include <assert.h>
 #include <float.h>
 #include <math.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "point/pgis_call.h"

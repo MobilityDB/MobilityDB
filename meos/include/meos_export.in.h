@@ -361,6 +361,8 @@ extern Set *int_to_intset(int i);
 extern Span *int_to_intspan(int i);
 extern void set_set_span(const Set *os, Span *s);
 extern Span *set_to_span(const Set *s);
+extern void spatialset_set_stbox(const Set *set, STBox *box);
+extern STBox *spatialset_to_stbox(const Set *s);
 extern SpanSet *set_to_spanset(const Set *s);
 extern SpanSet *span_to_spanset(const Span *s);
 extern Span *timestamp_to_period(TimestampTz t);

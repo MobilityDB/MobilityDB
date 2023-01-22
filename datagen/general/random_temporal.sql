@@ -206,7 +206,7 @@ BEGIN
       lowvalue, highvalue, maxdelta;
   END IF;
   v = random_int(lowvalue, highvalue - maxdelta);
-  RETURN intspan(v, v + random_int(1, maxdelta));
+  RETURN span(v, v + random_int(1, maxdelta));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -234,7 +234,7 @@ BEGIN
       lowvalue, highvalue, maxdelta;
   END IF;
   v = random_bigint(lowvalue, highvalue - maxdelta);
-  RETURN bigintspan(v, v + random_bigint(1, maxdelta));
+  RETURN span(v, v + random_bigint(1, maxdelta));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -341,7 +341,7 @@ CREATE FUNCTION random_intspanset(lowvalue int, highvalue int, maxdelta int,
   mincard int, maxcard int)
   RETURNS intspanset AS $$
 BEGIN
-  RETURN intspanset(random_intspan_array(lowvalue, highvalue, maxdelta,
+  RETURN spanset(random_intspan_array(lowvalue, highvalue, maxdelta,
     mincard, maxcard));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
@@ -365,7 +365,7 @@ CREATE FUNCTION random_bigintspanset(lowvalue bigint, highvalue bigint,
   maxdelta int, mincard int, maxcard int)
   RETURNS bigintspanset AS $$
 BEGIN
-  RETURN bigintspanset(random_bigintspan_array(lowvalue, highvalue, maxdelta,
+  RETURN spanset(random_bigintspan_array(lowvalue, highvalue, maxdelta,
     mincard, maxcard));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
@@ -464,7 +464,7 @@ BEGIN
       lowvalue, highvalue, maxdelta;
   END IF;
   v = random_float(lowvalue, highvalue - maxdelta);
-  RETURN floatspan(v, v + random_float(1, maxdelta));
+  RETURN span(v, v + random_float(1, maxdelta));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -531,7 +531,7 @@ CREATE FUNCTION random_floatspanset(lowvalue float, highvalue float,
 DECLARE
   v float;
 BEGIN
-  RETURN floatspanset(random_floatspan_array(lowvalue, highvalue, maxdelta,
+  RETURN spanset(random_floatspan_array(lowvalue, highvalue, maxdelta,
     mincard, maxcard));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
@@ -627,7 +627,7 @@ BEGIN
   textarr := '{}'::text[];
   SELECT array_agg(DISTINCT random_text(maxlength)) INTO textarr
   FROM generate_series(mincard, mincard + random_int(mincard, maxcard)) AS t;
-  RETURN textset(textarr);
+  RETURN set(textarr);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -917,7 +917,7 @@ BEGIN
     iarr[i] = v;
     v = v + random_int(1, maxdelta);
   END LOOP;
-  RETURN intset(iarr);
+  RETURN set(iarr);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -963,7 +963,7 @@ BEGIN
     iarr[i] = v;
     v = v + random_int(1, maxdelta);
   END LOOP;
-  RETURN bigintset(iarr);
+  RETURN set(iarr);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -1009,7 +1009,7 @@ BEGIN
     farr[i] = v;
     v = v + random_float(1, maxdelta);
   END LOOP;
-  RETURN floatset(farr);
+  RETURN set(farr);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -1032,7 +1032,7 @@ CREATE FUNCTION random_tstzset(lowtime timestamptz, hightime timestamptz,
   maxminutes int, mincard int, maxcard int)
   RETURNS tstzset AS $$
 BEGIN
-  RETURN tstzset(random_timestamptz_array(lowtime, hightime, maxminutes,
+  RETURN set(random_timestamptz_array(lowtime, hightime, maxminutes,
     mincard, maxcard));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
@@ -1056,7 +1056,7 @@ CREATE FUNCTION random_tstzspanset(lowtime timestamptz, hightime timestamptz,
   maxminutes int, mincard int, maxcard int)
   RETURNS tstzspanset AS $$
 BEGIN
-  RETURN tstzspanset(random_tstzspan_array(lowtime, hightime, maxminutes, mincard,
+  RETURN spanset(random_tstzspan_array(lowtime, hightime, maxminutes, mincard,
     maxcard));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
@@ -1097,7 +1097,7 @@ BEGIN
   xmin = random_float(lowvalue, highvalue - maxdelta);
   tmin = random_timestamptz(lowtime, hightime - interval '1 minute' * maxminutes);
   RETURN tbox(floatspan(xmin, xmin + random_float(1, maxdelta)),
-    tstzspan(tmin, tmin + random_minutes(1, maxminutes)));
+    span(tmin, tmin + random_minutes(1, maxminutes)));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 

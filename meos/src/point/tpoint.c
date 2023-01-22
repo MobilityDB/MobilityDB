@@ -34,7 +34,7 @@
 #include "point/tpoint.h"
 
 /* PostgreSQL */
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/temporaltypes.h"

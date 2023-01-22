@@ -415,6 +415,17 @@ set_type(meosType type)
 }
 
 /**
+ * @brief Ensure that the type is a set type
+ */
+void
+ensure_set_type(meosType type)
+{
+  if (! set_type(type))
+    elog(ERROR, "unknown set type: %d", type);
+  return;
+}
+
+/**
  * @brief Return true if the type is a set type
  */
 bool

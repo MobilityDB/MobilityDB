@@ -36,7 +36,7 @@
 
 /*****************************************************************************/
 
-/* MobilityDB */
+/* MEOS */
 #include "general/temporal.h"
 #include "general/tinstant.h"
 #include "general/tsequence.h"
@@ -44,4 +44,4 @@
 
 /*****************************************************************************/
 
-#endif
+#endif /* __TEMPORALTYPES_H__ */

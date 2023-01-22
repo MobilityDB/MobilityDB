@@ -40,7 +40,7 @@
 /* PostGIS */
 #include <liblwgeom_internal.h>
 #include <lwgeodetic_tree.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/lifting.h"

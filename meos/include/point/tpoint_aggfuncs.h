@@ -36,7 +36,7 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-/* MobilityDB */
+/* MEOS */
 #include "general/skiplist.h"
 #include "general/temporal.h"
 

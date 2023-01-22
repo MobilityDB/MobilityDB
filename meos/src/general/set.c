@@ -661,13 +661,9 @@ timestamp_to_tstzset(TimestampTz t)
 }
 #endif /* MEOS */
 
-
 /**
  * @ingroup libmeos_setspan_cast
- * @brief Return the bounding span of a set.
- * @sqlfunc span()
- * @sqlop @p ::
- * @pymeosfunc span()
+ * @brief Set the last argument to the bounding span of a set.
  */
 void
 set_set_span(const Set *set, Span *s)
@@ -689,6 +685,36 @@ set_to_span(const Set *s)
 {
   Span *result = palloc(sizeof(Span));
   set_set_span(s, result);
+  return result;
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup libmeos_setspan_cast
+ * @brief Set the last argument to the bounding box of a spatial set.
+ */
+void
+spatialset_set_stbox(const Set *set, STBox *box)
+{
+  assert(spatialset_type(set->settype));
+  memset(box, 0, sizeof(STBox));
+  memcpy(box, set_bbox_ptr(set), sizeof(STBox));
+  return;
+}
+
+/**
+ * @ingroup libmeos_setspan_cast
+ * @brief Return the bounding box of a spatial set.
+ * @sqlfunc stbox()
+ * @sqlop @p ::
+ * @pymeosfunc stbox()
+ */
+STBox *
+spatialset_to_stbox(const Set *s)
+{
+  STBox *result = palloc(sizeof(STBox));
+  spatialset_set_stbox(s, result);
   return result;
 }
 

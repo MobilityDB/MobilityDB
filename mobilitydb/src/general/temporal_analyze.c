@@ -89,7 +89,6 @@
 #include "pg_general/meos_catalog.h"
 #include "pg_general/span_analyze.h"
 #include "pg_general/temporal.h"
-#include "pg_general/temporal_analyze.h"
 
 /*
  * To avoid consuming too much memory, IO and CPU load during analysis, and/or
@@ -102,9 +101,9 @@
 
 /*
  * While statistic functions are running, we keep a pointer to the extra data
- * here for use by assorted subroutines.  The functions doesn't
- * currently need to be re-entrant, so avoiding this is not worth the extra
- * notational cruft that would be needed.
+ * here for use by assorted subroutines.  The functions doesn't currently need
+ * to be re-entrant, so avoiding this is not worth the extra notational cruft
+ * that would be needed.
  */
 TemporalAnalyzeExtraData *temporal_extra_data;
 
@@ -113,37 +112,32 @@ TemporalAnalyzeExtraData *temporal_extra_data;
  *****************************************************************************/
 
 /**
- * Compute statistics for temporal columns
+ * @brief Compute statistics for alphanumeric temporal columns
  *
  * @param[in] stats Structure storing statistics information
  * @param[in] fetchfunc Fetch function
  * @param[in] samplerows Number of sample rows
- * @param[in] tnumber True when collecting statistics for temporal numbers.
- * Otherwise, statistics are collected only for the temporal dimension, that
- * is, for temporal boolean and temporal text.
+ * @param[in] totalrows Only used for temporal spatial types.
  * @note Function derived from compute_span_stats of file spantypes_typanalyze.c
  */
 static void
-temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-  int samplerows, bool tnumber)
+temporal_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
+  int samplerows, double totalrows __attribute__((unused)))
 {
   int null_cnt = 0, non_null_cnt = 0, slot_idx = 0;
   float8 *value_lengths, *time_lengths;
   SpanBound *value_lowers, *value_uppers;
   SpanBound *time_lowers, *time_uppers;
   double total_width = 0;
-  meosType spantype;
+  meosType type = oid_type(stats->attrtypid);
+  ensure_temporal_type(type);
+  bool tnumber = tnumber_type(type);
 
+  /* Store in global variable */
   temporal_extra_data = (TemporalAnalyzeExtraData *)stats->extra_data;
 
   if (tnumber)
   {
-    /* Ensure function is called for temporal numbers */
-    ensure_tnumber_basetype(oid_type(temporal_extra_data->value_typid));
-    if (temporal_extra_data->value_typid == INT4OID)
-      spantype = T_INTSPAN;
-    else /* temporal_extra_data->value_typid == FLOAT8OID */
-      spantype = T_FLOATSPAN;
     value_lowers = palloc(sizeof(SpanBound) * samplerows);
     value_uppers = palloc(sizeof(SpanBound) * samplerows);
     value_lengths = palloc(sizeof(float8) * samplerows);
@@ -155,17 +149,11 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   /* Loop over the temporal values. */
   for (int i = 0; i < samplerows; i++)
   {
-    Datum value;
-    bool isnull;
-    SpanBound span_lower, span_upper;
-    Span period;
-    SpanBound period_lower, period_upper;
-    Temporal *temp;
-
     /* Give backend a chance of interrupting us */
     vacuum_delay_point();
 
-    value = fetchfunc(stats, i, &isnull);
+    bool isnull;
+    Datum value = fetchfunc(stats, i, &isnull);
     if (isnull)
     {
       /* Temporal is null, just count that */
@@ -175,13 +163,14 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
     total_width += VARSIZE(value);
 
-    /* Get Temporal value */
-    temp = DatumGetTemporalP(value);
+    /* Get temporal value */
+    Temporal *temp = DatumGetTemporalP(value);
 
     /* Remember bounds and length for further usage in histograms */
     if (tnumber)
     {
       Span *span = tnumber_to_span(temp);
+      SpanBound span_lower, span_upper;
       span_deserialize(span, &span_lower, &span_upper);
       value_lowers[non_null_cnt] = span_lower;
       value_uppers[non_null_cnt] = span_upper;
@@ -193,13 +182,16 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
         value_lengths[non_null_cnt] = DatumGetFloat8(span_upper.val) -
           DatumGetFloat8(span_lower.val);
     }
+    Span period;
     temporal_set_period(temp, &period);
+    SpanBound period_lower, period_upper;
     span_deserialize((Span *) &period, &period_lower, &period_upper);
     time_lowers[non_null_cnt] = period_lower;
     time_uppers[non_null_cnt] = period_upper;
     time_lengths[non_null_cnt] = distance_value_value(period_upper.val,
       period_lower.val, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 
+    /* Increment non null count */
     non_null_cnt++;
   }
 
@@ -216,12 +208,14 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
     if (tnumber)
     {
-      span_compute_stats(stats, non_null_cnt, &slot_idx, value_lowers,
-        value_uppers, value_lengths, spantype);
+      /* The last argument determines the slot for number/time statistics */
+      span_compute_stats_generic(stats, non_null_cnt, &slot_idx, value_lowers,
+        value_uppers, value_lengths, true);
     }
 
-    span_compute_stats(stats, non_null_cnt, &slot_idx, time_lowers,
-      time_uppers, time_lengths, T_TSTZSPAN);
+    /* The last argument determines the slot for number/time statistics */
+    span_compute_stats_generic(stats, non_null_cnt, &slot_idx, time_lowers,
+      time_uppers, time_lengths, false);
   }
   else if (null_cnt > 0)
   {
@@ -245,19 +239,17 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
  *****************************************************************************/
 
 /**
- * Collect extra information about the temporal type and its base and time
+ * @brief Collect extra information about the temporal type and its base and time
  * types.
  */
-void
+static void
 temporal_extra_info(VacAttrStats *stats)
 {
   TypeCacheEntry *typentry;
   TemporalAnalyzeExtraData *extra_data;
   Form_pg_attribute attr = stats->attr;
 
-  /*
-   * Check attribute data type is a temporal type.
-   */
+  /* Check attribute data type is a temporal type. */
   if (! temporal_type(oid_type(stats->attrtypid)))
     elog(ERROR, "temporal_analyze was invoked with invalid temporal type %u",
        stats->attrtypid);
@@ -265,11 +257,7 @@ temporal_extra_info(VacAttrStats *stats)
   /* Store our findings for use by stats functions */
   extra_data = palloc(sizeof(TemporalAnalyzeExtraData));
 
-  /*
-   * Gather information about the temporal type and its value and time types.
-   */
-
-  /* Information about the temporal type */
+  /* Gather information about the temporal type */
   typentry = lookup_type_cache(stats->attrtypid,
     TYPECACHE_EQ_OPR | TYPECACHE_LT_OPR | TYPECACHE_CMP_PROC_FINFO |
     TYPECACHE_HASH_PROC_FINFO);
@@ -282,7 +270,7 @@ temporal_extra_info(VacAttrStats *stats)
   extra_data->cmp = &typentry->cmp_proc_finfo;
   extra_data->hash = &typentry->hash_proc_finfo;
 
-  /* Information about the value type */
+  /* Gather information about the value type */
   meosType basetype = temptype_basetype(oid_type(stats->attrtypid));
   typentry = lookup_type_cache(type_oid(basetype),
     TYPECACHE_EQ_OPR | TYPECACHE_LT_OPR | TYPECACHE_CMP_PROC_FINFO |
@@ -296,7 +284,7 @@ temporal_extra_info(VacAttrStats *stats)
   extra_data->value_cmp = &typentry->cmp_proc_finfo;
   extra_data->value_hash = &typentry->hash_proc_finfo;
 
-  /* Information about the time type */
+  /* Gather information about the time type */
   Oid per_typid = type_oid(T_TSTZSPAN);
   typentry = lookup_type_cache(per_typid,
     TYPECACHE_EQ_OPR | TYPECACHE_LT_OPR | TYPECACHE_CMP_PROC_FINFO |
@@ -319,33 +307,7 @@ temporal_extra_info(VacAttrStats *stats)
 /*****************************************************************************/
 
 /**
- * Compute the statistics for temporal columns where only the time dimension
- * is considered
- *
- * @param[in] stats Structure storing statistics information
- * @param[in] fetchfunc Fetch function
- * @param[in] samplerows Number of sample rows
- * @param[in] totalrows Total number of rows
- */
-void
-temporal_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-  int samplerows, double totalrows __attribute__((unused)))
-{
-  return temp_compute_stats(stats, fetchfunc, samplerows, false);
-}
-
-/**
- * Compute the statistics for temporal number columns
- */
-void
-tnumber_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-  int samplerows, double totalrows __attribute__((unused)))
-{
-  return temp_compute_stats(stats, fetchfunc, samplerows, true);
-}
-
-/**
- * Generic analyze function for temporal columns
+ * @brief Generic analyze function for temporal columns
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Analyze function for temporal values
@@ -357,10 +319,10 @@ temporal_analyze(FunctionCallInfo fcinfo,
   VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
 
   /*
-   * Call the standard typanalyze function.  It may fail to find needed
+   * Call the standard typanalyze function. It may fail to find needed
    * operators, in which case we also can't do anything, so just fail.
    */
-  if (!std_typanalyze(stats))
+  if (! std_typanalyze(stats))
     PG_RETURN_BOOL(false);
 
   /*
@@ -387,16 +349,6 @@ PGDLLEXPORT Datum
 Temporal_analyze(PG_FUNCTION_ARGS)
 {
   return temporal_analyze(fcinfo, &temporal_compute_stats);
-}
-
-PG_FUNCTION_INFO_V1(Tnumber_analyze);
-/**
- * Compute the statistics for temporal number columns
- */
-PGDLLEXPORT Datum
-Tnumber_analyze(PG_FUNCTION_ARGS)
-{
-  return temporal_analyze(fcinfo, &tnumber_compute_stats);
 }
 
 /*****************************************************************************/

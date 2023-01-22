@@ -810,14 +810,13 @@ tpoint_cachedop_family(Oid operid, CachedOp *cachedOp, TemporalFamily tempfamily
 {
 #if NPOINT
   assert(tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE);
+#else
+  assert(tempfamily == TPOINTTYPE);
+#endif /* NPOINT */
   if (tempfamily == TPOINTTYPE)
     return tpoint_cachedop(operid, cachedOp);
   else /* tempfamily == TNPOINTTYPE */
     return tnpoint_cachedop(operid, cachedOp);
-#else
-  assert(tempfamily == TPOINTTYPE);
-  return tpoint_cachedop(operid, cachedOp);
-#endif /* NPOINT */
 }
 
 /**
@@ -1248,7 +1247,8 @@ tpoint_joinsel_components(CachedOp cachedOp, meosType oprleft,
     cachedOp == BELOW_OP || cachedOp == OVERBELOW_OP ||
     cachedOp == ABOVE_OP || cachedOp == OVERABOVE_OP ||
     cachedOp == FRONT_OP || cachedOp == OVERFRONT_OP ||
-    cachedOp == BACK_OP || cachedOp == OVERBACK_OP)
+    cachedOp == BACK_OP || cachedOp == OVERBACK_OP ||
+    cachedOp == ADJACENT_OP)
   {
     *space = true;
     *time = false;
@@ -1281,9 +1281,8 @@ tpoint_joinsel_components(CachedOp cachedOp, meosType oprleft,
  * points (internal function)
  */
 float8
-tpoint_joinsel(PlannerInfo *root, Oid operid, List *args,
-  JoinType jointype, SpecialJoinInfo *sjinfo, int mode,
-  TemporalFamily tempfamily)
+tpoint_joinsel(PlannerInfo *root, Oid operid, List *args, JoinType jointype,
+  SpecialJoinInfo *sjinfo, int mode, TemporalFamily tempfamily)
 {
   Node *arg1 = (Node *) linitial(args);
   Node *arg2 = (Node *) lsecond(args);
@@ -1308,8 +1307,7 @@ tpoint_joinsel(PlannerInfo *root, Oid operid, List *args,
   meosType oprleft = oid_type(var1->vartype);
   meosType oprright = oid_type(var2->vartype);
   bool space, time;
-  if (! tpoint_joinsel_components(cachedOp, oprleft, oprright,
-    &space, &time))
+  if (! tpoint_joinsel_components(cachedOp, oprleft, oprright, &space, &time))
     /* In the case of unknown arguments */
     return tpoint_joinsel_default(cachedOp);
 

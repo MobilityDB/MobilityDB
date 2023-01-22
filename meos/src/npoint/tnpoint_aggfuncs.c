@@ -37,7 +37,7 @@
 #include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include "general/temporal_aggfuncs.h"
 #include "point/tpoint.h"

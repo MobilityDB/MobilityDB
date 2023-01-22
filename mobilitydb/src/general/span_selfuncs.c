@@ -1040,6 +1040,8 @@ Period_sel(PG_FUNCTION_ARGS)
   return Span_sel_ext(fcinfo, PERIODSEL);
 }
 
+/*****************************************************************************/
+
 PG_FUNCTION_INFO_V1(_mobdb_span_sel);
 /**
  * Utility function to read the calculated selectivity for a given

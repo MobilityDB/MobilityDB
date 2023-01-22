@@ -37,7 +37,7 @@
 
 /* PostgreSQL */
 #include <lib/stringinfo.h>
-/* MobilityDB */
+/* MEOS */
 #include "general/temporal.h"
 
 /*****************************************************************************/

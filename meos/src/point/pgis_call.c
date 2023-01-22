@@ -45,7 +45,7 @@
 #include <liblwgeom.h>
 #include <lwgeom_log.h>
 #include <lwgeom_geos.h>
-/* MobilityDB */
+/* MEOS */
 #include "general/temporal.h"
 #include "point/tpoint_spatialfuncs.h"
 

@@ -68,7 +68,7 @@
 
 #include "point/tpoint_tempspatialrels.h"
 
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 
 /*****************************************************************************

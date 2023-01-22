@@ -34,7 +34,7 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <fmgr.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include "general/span.h"
 

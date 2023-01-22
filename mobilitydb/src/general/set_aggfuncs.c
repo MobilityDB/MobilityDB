@@ -83,24 +83,6 @@ Set_agg_transfn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(state);
 }
 
-// PG_FUNCTION_INFO_V1(Set_agg_combinefn);
-// /**
- // * Combine function for set aggregate of set types
- // */
-// PGDLLEXPORT Datum
-// Set_agg_combinefn(PG_FUNCTION_ARGS)
-// {
-  // MemoryContext ctx = set_aggregation_context(fcinfo);
-  // Set *state1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_SET_P(0);
-  // Set *state2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_SET_P(1);
-  // if (state1 == NULL && state2 == NULL)
-    // PG_RETURN_NULL();
-  // unset_aggregation_context(ctx);
-  // store_fcinfo(fcinfo);
-  // Set *result = set_agg_combinefn(state1, state2);
-  // PG_RETURN_POINTER(result);
-// }
-
 PG_FUNCTION_INFO_V1(Set_agg_finalfn);
 /**
  * Combine function for set aggregate of set types

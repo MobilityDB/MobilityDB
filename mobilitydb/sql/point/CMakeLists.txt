@@ -5,6 +5,7 @@ if (${POSTGRESQL_VERSION_NUMBER} GREATER_EQUAL 110000)
 endif()
 
 SET(LOCAL_FILES
+  050_geoset
   050_stbox
   051_tpoint
   052_tpoint_inout

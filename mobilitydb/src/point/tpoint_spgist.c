@@ -101,7 +101,7 @@
 #include <access/spgist_private.h>
 #include <utils/float.h>
 #include <utils/timestamp.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/set.h"

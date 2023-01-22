@@ -44,9 +44,9 @@
 #if POSTGRESQL_VERSION_NUMBER >= 140000
   #include <utils/multirangetypes.h>
 #endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
-/* MobilityDB */
-#include "general/temporal.h"
+/* MEOS */
 #include "general/span.h"
+#include "general/temporal.h"
 
 /*****************************************************************************/
 

@@ -30,7 +30,7 @@
 #ifndef __TEMPORAL_SIMILARITY_H__
 #define __TEMPORAL_SIMILARITY_H__
 
-/* MobilityDB */
+/* MEOS */
 #include "temporal.h"
 
 /*****************************************************************************/
