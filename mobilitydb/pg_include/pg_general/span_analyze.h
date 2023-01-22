@@ -36,6 +36,7 @@
 
 /* PostgreSQL */
 #include <postgres.h>
+#include <fmgr.h>
 #include <commands/vacuum.h>
 #include <statistics/extended_stats_internal.h>
 /* MEOS */
