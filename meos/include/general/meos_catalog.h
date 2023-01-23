@@ -163,9 +163,9 @@ extern void ensure_set_basetype(meosType basetype);
 
 extern bool set_type(meosType type);
 extern void ensure_set_type(meosType type);
-extern bool alphanumset_type(meosType settype);
 extern bool numset_type(meosType settype);
-extern void ensure_numset_type(meosType settype);
+extern bool set_span_type(meosType type);
+extern bool alphanumset_type(meosType settype);
 extern bool geoset_type(meosType type);
 extern bool spatialset_type(meosType type);
 

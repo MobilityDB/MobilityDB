@@ -1145,7 +1145,23 @@ PG_FUNCTION_INFO_V1(Spatialset_analyze);
 PGDLLEXPORT Datum
 Spatialset_analyze(PG_FUNCTION_ARGS)
 {
-  return set_analyze(fcinfo, &spatialset_compute_stats);
+  VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
+
+  /* Ensure type has a STBox as a bounding box */
+  meosType type = oid_type(stats->attrtypid);
+  assert(spatialset_type(type));
+
+  /*
+   * Call the standard typanalyze function. It may fail to find needed
+   * operators, in which case we also can't do anything, so just fail.
+   */
+  if (! std_typanalyze(stats))
+    PG_RETURN_BOOL(false);
+
+  /* Set the callback function to compute statistics. */
+  stats->compute_stats = spatialset_compute_stats;
+
+  PG_RETURN_BOOL(true);
 }
 
 PG_FUNCTION_INFO_V1(Tpoint_analyze);

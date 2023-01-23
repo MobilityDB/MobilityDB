@@ -55,45 +55,6 @@
 
 /*****************************************************************************/
 
-/*
- * Extra data for compute_stats function
- * Structure based on the ArrayAnalyzeExtraData from file array_typanalyze.c
- */
-typedef struct
-{
-  /* Information about array element type */
-  Oid typid;           /**< element type's OID */
-  Oid eq_opr;          /**< default equality operator's OID */
-  Oid lt_opr;          /**< default less than operator's OID */
-  bool typbyval;       /**< physical properties of element type */
-  int16 typlen;
-  char typalign;
-
-  /* Information about the value part of array element */
-  Oid value_typid;     /**< element type's OID */
-  Oid value_eq_opr;    /**< default equality operator's OID */
-  Oid value_lt_opr;    /**< default less than operator's OID */
-  bool value_typbyval; /**< physical properties of element type */
-  int16 value_typlen;
-  char value_typalign;
-
-  /*
-   * Lookup data for element type's comparison and hash functions (these are
-   * in the type's typcache entry, which we expect to remain valid over the
-   * lifespan of the ANALYZE run)
-   */
-  FmgrInfo *cmp;
-  FmgrInfo *hash;
-  FmgrInfo *value_cmp;
-  FmgrInfo *value_hash;
-
-  /* Saved state from std_typanalyze() */
-  AnalyzeAttrComputeStatsFunc std_compute_stats;
-  void *std_extra_data;
-} SetSpanAnalyzeExtraData;
-
-/*****************************************************************************/
-
 extern int float8_qsort_cmp(const void *a1, const void *a2);
 
 extern void span_compute_stats_generic(VacAttrStats *stats, int non_null_cnt,

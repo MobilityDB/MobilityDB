@@ -440,6 +440,18 @@ numset_type(meosType type)
  * @brief Return true if the type is a set type
  */
 bool
+set_span_type(meosType type)
+{
+  if (type == T_INTSET || type == T_BIGINTSET || type == T_FLOATSET ||
+    type == T_TSTZSET)
+    return true;
+  return false;
+}
+
+/**
+ * @brief Return true if the type is a set type
+ */
+bool
 alphanumset_type(meosType type)
 {
   if (type == T_TSTZSET || type == T_INTSET || type == T_BIGINTSET ||

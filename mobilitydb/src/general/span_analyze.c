@@ -57,14 +57,6 @@
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 
-/*
- * While statistic functions are running, we keep a pointer to the extra data
- * here for use by assorted subroutines.  The functions doesn't currently need
- * to be re-entrant, so avoiding this is not worth the extra notational cruft
- * that would be needed.
- */
-SetSpanAnalyzeExtraData *set_span_extra_data;
-
 /*****************************************************************************/
 
 /**
@@ -336,211 +328,6 @@ span_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   return;
 }
 
-/*****************************************************************************
- * Statistics functions for set types
- *****************************************************************************/
-
-/**
- * @brief Collect extra information about the set type and its base type.
- */
-static void
-set_span_extra_info(VacAttrStats *stats)
-{
-  TypeCacheEntry *typentry;
-  SetSpanAnalyzeExtraData *extra_data;
-  Form_pg_attribute attr = stats->attr;
-
-  /* Check attribute data type is a set type. */
-  if (! set_type(oid_type(stats->attrtypid)))
-    elog(ERROR, "set_analyze was invoked with invalid set type %u",
-       stats->attrtypid);
-
-  /* Store our findings for use by stats functions */
-  extra_data = palloc(sizeof(SetSpanAnalyzeExtraData));
-
-  /* Gather information about the set or span type */
-  typentry = lookup_type_cache(stats->attrtypid,
-    TYPECACHE_EQ_OPR | TYPECACHE_LT_OPR | TYPECACHE_CMP_PROC_FINFO |
-    TYPECACHE_HASH_PROC_FINFO);
-  extra_data->typid = typentry->type_id;
-  extra_data->eq_opr = typentry->eq_opr;
-  extra_data->lt_opr = typentry->lt_opr;
-  extra_data->typbyval = typentry->typbyval;
-  extra_data->typlen = typentry->typlen;
-  extra_data->typalign = typentry->typalign;
-  extra_data->cmp = &typentry->cmp_proc_finfo;
-  extra_data->hash = &typentry->hash_proc_finfo;
-
-  /* Gather information about the base type */
-  meosType basetype = settype_basetype(oid_type(stats->attrtypid));
-  typentry = lookup_type_cache(type_oid(basetype),
-    TYPECACHE_EQ_OPR | TYPECACHE_LT_OPR | TYPECACHE_CMP_PROC_FINFO |
-    TYPECACHE_HASH_PROC_FINFO);
-  extra_data->value_typid = typentry->type_id;
-  extra_data->value_eq_opr = typentry->eq_opr;
-  extra_data->value_lt_opr = typentry->lt_opr;
-  extra_data->value_typbyval = typentry->typbyval;
-  extra_data->value_typlen = typentry->typlen;
-  extra_data->value_typalign = typentry->typalign;
-  extra_data->value_cmp = &typentry->cmp_proc_finfo;
-  extra_data->value_hash = &typentry->hash_proc_finfo;
-
-  extra_data->std_extra_data = stats->extra_data;
-  stats->extra_data = extra_data;
-
-  stats->minrows = 300 * attr->attstattarget;
-}
-
-/**
- * @brief Compute the statistics for set columns
- *
- * @param[in] stats Structure storing statistics information
- * @param[in] fetchfunc Fetch function
- * @param[in] samplerows Number of sample rows
- * @param[in] totalrows Total number of rows
- */
-void
-set_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-  int samplerows, double totalrows __attribute__((unused)))
-{
-  int null_cnt = 0, non_null_cnt = 0, slot_idx = 0;
-  double total_width = 0;
-
-  /* Store in global variable */
-  set_span_extra_data = (SetSpanAnalyzeExtraData *) stats->extra_data;
-
-  /* Ensure function is called for number sets */
-  meosType basetype = oid_type(set_span_extra_data->value_typid);
-  meosType spantype = settype_basetype(basetype);
-  SpanBound *value_lowers = palloc(sizeof(SpanBound) * samplerows);
-  SpanBound *value_uppers = palloc(sizeof(SpanBound) * samplerows);
-  float8 *value_lengths = palloc(sizeof(float8) * samplerows);
-
-  /* Loop over the set values. */
-  for (int i = 0; i < samplerows; i++)
-  {
-    /* Give backend a chance of interrupting us */
-    vacuum_delay_point();
-
-    /* Get value and determine whether is null */
-    bool isnull;
-    Datum value = fetchfunc(stats, i, &isnull);
-    if (isnull)
-    {
-      null_cnt++;
-      continue;
-    }
-
-    /* Accumulate statistics */
-    non_null_cnt++;
-    total_width += VARSIZE(value);
-
-    /* Remember bounds and length for further usage in histograms */
-    Set *set = DatumGetSetP(value);
-    Span *span = set_to_span(set);
-    SpanBound span_lower, span_upper;
-    span_deserialize(span, &span_lower, &span_upper);
-    value_lowers[non_null_cnt] = span_lower;
-    value_uppers[non_null_cnt] = span_upper;
-
-    if (set_span_extra_data->value_typid == INT4OID)
-      value_lengths[non_null_cnt] = (float8) (DatumGetInt32(span_upper.val) -
-        DatumGetInt32(span_lower.val));
-    else if (set_span_extra_data->value_typid == INT8OID)
-      value_lengths[non_null_cnt] = (float8) (DatumGetInt64(span_upper.val) -
-        DatumGetInt64(span_lower.val));
-    else if (set_span_extra_data->value_typid == FLOAT8OID)
-      value_lengths[non_null_cnt] = DatumGetFloat8(span_upper.val) -
-        DatumGetFloat8(span_lower.val);
-    else if (set_span_extra_data->value_typid == TIMESTAMPTZOID)
-      value_lengths[non_null_cnt] = (float8) (DatumGetTimestampTz(span_upper.val) -
-        DatumGetTimestampTz(span_lower.val));
-  }
-
-  /* We can only compute real stats if we found some non-null values. */
-  if (non_null_cnt > 0)
-  {
-    stats->stats_valid = true;
-    /* Do the simple null-frac and width stats */
-    stats->stanullfrac = (float4) null_cnt / (float4) samplerows;
-    stats->stawidth = (int) (total_width / non_null_cnt);
-
-    /* Estimate that non-null values are unique */
-    stats->stadistinct = (float4) (-1.0 * (1.0 - stats->stanullfrac));
-
-    span_compute_stats_generic(stats, non_null_cnt, &slot_idx, value_lowers,
-      value_uppers, value_lengths, spantype);
-  }
-  else if (null_cnt > 0)
-  {
-    /* We found only nulls; assume the column is entirely null */
-    stats->stats_valid = true;
-    stats->stanullfrac = 1.0;
-    stats->stawidth = 0;    /* "unknown" */
-    stats->stadistinct = 0.0;  /* "unknown" */
-  }
-
-  pfree(value_lowers); pfree(value_uppers); pfree(value_lengths);
-  return;
-}
-
-/**
- * @brief Generic analyze function for set columns represented by spans
- *
- * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Analyze function for set values
- */
-Datum
-set_analyze(FunctionCallInfo fcinfo,
-  void (*func)(VacAttrStats *, AnalyzeAttrFetchFunc, int, double))
-{
-  VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
-
-  /*
-   * Call the standard typanalyze function. It may fail to find needed
-   * operators, in which case we also can't do anything, so just fail.
-   */
-  if (! std_typanalyze(stats))
-    PG_RETURN_BOOL(false);
-
-  /*
-   * Ensure set type is valid and collect extra information about the set type
-   * and its base type.
-   */
-  meosType type = oid_type(stats->attrtypid);
-  assert(set_type(type) || span_type(type));
-  set_span_extra_info(stats);
-
-  /* Set the callback function to compute statistics. */
-  assert(func != NULL);
-  stats->compute_stats = func;
-
-  PG_RETURN_BOOL(true);
-}
-
-/*****************************************************************************/
-
-/**
- * @brief Generic function to compute statistics for types with span bounding box
- */
-static bool
-Span_analyze_ext(FunctionCallInfo fcinfo,
-  void (*func)(VacAttrStats *, AnalyzeAttrFetchFunc, int, double))
-{
-  VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
-  Form_pg_attribute attr = stats->attr;
-
-  if (attr->attstattarget < 0)
-    attr->attstattarget = default_statistics_target;
-
-  stats->compute_stats = func;
-
-  /* same as in std_typanalyze */
-  stats->minrows = 300 * attr->attstattarget;
-
-  PG_RETURN_BOOL(true);
-}
-
 /*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(Span_analyze);
@@ -550,7 +337,30 @@ PG_FUNCTION_INFO_V1(Span_analyze);
 PGDLLEXPORT Datum
 Span_analyze(PG_FUNCTION_ARGS)
 {
-  return Span_analyze_ext(fcinfo, &span_compute_stats);
+  VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
+
+  /* Ensure type has a span as a bounding box */
+  meosType type = oid_type(stats->attrtypid);
+  assert(set_span_type(type) || span_type(type) || spanset_type(type) ||
+    talpha_type(type));
+
+  /*
+   * Call the standard typanalyze function. It may fail to find needed
+   * operators, in which case we also can't do anything, so just fail.
+   */
+  if (! std_typanalyze(stats))
+    PG_RETURN_BOOL(false);
+
+  /* Set the callback function to compute statistics. */
+  stats->compute_stats = &span_compute_stats;
+
+  if (stats->attr->attstattarget < 0)
+    stats->attr->attstattarget = default_statistics_target;
+
+  /* same as in std_typanalyze */
+  stats->minrows = 300 * stats->attr->attstattarget;
+
+  PG_RETURN_BOOL(true);
 }
 
 /*****************************************************************************/
