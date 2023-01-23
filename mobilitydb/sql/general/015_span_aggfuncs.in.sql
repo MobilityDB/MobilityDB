@@ -28,11 +28,12 @@
  *****************************************************************************/
 
 /*
- * time_aggfuncs.sql
- * Aggregate functions for time types
+ * span_aggfuncs.sql
+ * Aggregate functions for types whose bounding box is a span
  */
 
 /*****************************************************************************/
+-- span + span
 
 CREATE FUNCTION span_extent_transfn(intspan, intspan)
   RETURNS intspan
@@ -40,6 +41,15 @@ CREATE FUNCTION span_extent_transfn(intspan, intspan)
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION span_extent_combinefn(intspan, intspan)
   RETURNS intspan
+  AS 'MODULE_PATHNAME', 'Span_extent_combinefn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+CREATE FUNCTION span_extent_transfn(bigintspan, bigintspan)
+  RETURNS bigintspan
+  AS 'MODULE_PATHNAME', 'Span_extent_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION span_extent_combinefn(bigintspan, bigintspan)
+  RETURNS bigintspan
   AS 'MODULE_PATHNAME', 'Span_extent_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
@@ -67,6 +77,12 @@ CREATE AGGREGATE extent(intspan) (
   COMBINEFUNC = span_extent_combinefn,
   PARALLEL = safe
 );
+CREATE AGGREGATE extent(bigintspan) (
+  SFUNC = span_extent_transfn,
+  STYPE = bigintspan,
+  COMBINEFUNC = span_extent_combinefn,
+  PARALLEL = safe
+);
 CREATE AGGREGATE extent(floatspan) (
   SFUNC = span_extent_transfn,
   STYPE = floatspan,
@@ -80,33 +96,133 @@ CREATE AGGREGATE extent(tstzspan) (
   PARALLEL = safe
 );
 
-CREATE FUNCTION intspanset_extent_transfn(intspan, intspanset)
+/*****************************************************************************/
+-- span + base
+
+CREATE FUNCTION span_extent_transfn(intspan, int)
+  RETURNS intspan
+  AS 'MODULE_PATHNAME', 'Spanbase_extent_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION span_extent_transfn(bigintspan, bigint)
+  RETURNS bigintspan
+  AS 'MODULE_PATHNAME', 'Spanbase_extent_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION span_extent_transfn(floatspan, float)
+  RETURNS floatspan
+  AS 'MODULE_PATHNAME', 'Spanbase_extent_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION span_extent_transfn(tstzspan, timestamptz)
+  RETURNS tstzspan
+  AS 'MODULE_PATHNAME', 'Spanbase_extent_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+CREATE AGGREGATE extent(int) (
+  SFUNC = span_extent_transfn,
+  STYPE = intspan,
+  COMBINEFUNC = span_extent_combinefn,
+  PARALLEL = safe
+);
+CREATE AGGREGATE extent(bigint) (
+  SFUNC = span_extent_transfn,
+  STYPE = bigintspan,
+  COMBINEFUNC = span_extent_combinefn,
+  PARALLEL = safe
+);
+CREATE AGGREGATE extent(float) (
+  SFUNC = span_extent_transfn,
+  STYPE = floatspan,
+  COMBINEFUNC = span_extent_combinefn,
+  PARALLEL = safe
+);
+CREATE AGGREGATE extent(timestamptz) (
+  SFUNC = span_extent_transfn,
+  STYPE = tstzspan,
+  COMBINEFUNC = span_extent_combinefn,
+  PARALLEL = safe
+);
+
+/*****************************************************************************/
+-- span + <type>
+
+CREATE FUNCTION set_extent_transfn(intspan, intset)
+  RETURNS intspan
+  AS 'MODULE_PATHNAME', 'Set_extent_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION set_extent_transfn(bigintspan, bigintset)
+  RETURNS bigintspan
+  AS 'MODULE_PATHNAME', 'Set_extent_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION set_extent_transfn(floatspan, floatset)
+  RETURNS floatspan
+  AS 'MODULE_PATHNAME', 'Set_extent_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION set_extent_transfn(tstzspan, tstzset)
+  RETURNS tstzspan
+  AS 'MODULE_PATHNAME', 'Set_extent_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+CREATE AGGREGATE extent(intset) (
+  SFUNC = set_extent_transfn,
+  STYPE = intspan,
+  COMBINEFUNC = span_extent_combinefn,
+  PARALLEL = safe
+);
+CREATE AGGREGATE extent(bigintset) (
+  SFUNC = set_extent_transfn,
+  STYPE = bigintspan,
+  COMBINEFUNC = span_extent_combinefn,
+  PARALLEL = safe
+);
+CREATE AGGREGATE extent(floatset) (
+  SFUNC = set_extent_transfn,
+  STYPE = floatspan,
+  COMBINEFUNC = span_extent_combinefn,
+  PARALLEL = safe
+);
+CREATE AGGREGATE extent(tstzset) (
+  SFUNC = set_extent_transfn,
+  STYPE = tstzspan,
+  COMBINEFUNC = span_extent_combinefn,
+  PARALLEL = safe
+);
+
+CREATE FUNCTION spanset_extent_transfn(intspan, intspanset)
   RETURNS intspan
   AS 'MODULE_PATHNAME', 'Spanset_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION floatspanset_extent_transfn(floatspan, floatspanset)
+CREATE FUNCTION spanset_extent_transfn(bigintspan, bigintspanset)
+  RETURNS bigintspan
+  AS 'MODULE_PATHNAME', 'Spanset_extent_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION spanset_extent_transfn(floatspan, floatspanset)
   RETURNS floatspan
   AS 'MODULE_PATHNAME', 'Spanset_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION periodset_extent_transfn(tstzspan, tstzspanset)
+CREATE FUNCTION spanset_extent_transfn(tstzspan, tstzspanset)
   RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Spanset_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE extent(intspanset) (
-  SFUNC = intspanset_extent_transfn,
+  SFUNC = spanset_extent_transfn,
   STYPE = intspan,
   COMBINEFUNC = span_extent_combinefn,
   PARALLEL = safe
 );
+CREATE AGGREGATE extent(bigintspanset) (
+  SFUNC = spanset_extent_transfn,
+  STYPE = bigintspan,
+  COMBINEFUNC = span_extent_combinefn,
+  PARALLEL = safe
+);
 CREATE AGGREGATE extent(floatspanset) (
-  SFUNC = floatspanset_extent_transfn,
+  SFUNC = spanset_extent_transfn,
   STYPE = floatspan,
   COMBINEFUNC = span_extent_combinefn,
   PARALLEL = safe
 );
 CREATE AGGREGATE extent(tstzspanset) (
-  SFUNC = periodset_extent_transfn,
+  SFUNC = spanset_extent_transfn,
   STYPE = tstzspan,
   COMBINEFUNC = span_extent_combinefn,
   PARALLEL = safe

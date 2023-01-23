@@ -46,32 +46,6 @@ CREATE FUNCTION tagg_deserialize(bytea, internal)
 
 /*****************************************************************************/
 
--- extent for periods is already defined for span aggregate functions
-
-CREATE FUNCTION timestamp_extent_transfn(tstzspan, timestamptz)
-  RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Timestamp_extent_transfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tstzset_extent_transfn(tstzspan, tstzset)
-  RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Tstzset_extent_transfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-
-CREATE AGGREGATE extent(timestamptz) (
-  SFUNC = timestamp_extent_transfn,
-  STYPE = tstzspan,
-  COMBINEFUNC = span_extent_combinefn,
-  PARALLEL = safe
-);
-CREATE AGGREGATE extent(tstzset) (
-  SFUNC = tstzset_extent_transfn,
-  STYPE = tstzspan,
-  COMBINEFUNC = span_extent_combinefn,
-  PARALLEL = safe
-);
-
-/*****************************************************************************/
-
 CREATE TYPE tint;
 
 CREATE FUNCTION tcount_transfn(internal, timestamptz)

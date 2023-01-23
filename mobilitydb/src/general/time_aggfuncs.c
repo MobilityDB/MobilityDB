@@ -45,41 +45,6 @@
  * Aggregate transition functions for time types
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Timestamp_extent_transfn);
-/**
- * Transition function for extent aggregation of timestamp values
- */
-PGDLLEXPORT Datum
-Timestamp_extent_transfn(PG_FUNCTION_ARGS)
-{
-  Span *p = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
-  if (PG_ARGISNULL(1))
-    PG_RETURN_POINTER(p);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  p = timestamp_extent_transfn(p, t);
-  if (! p)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(p);
-}
-
-PG_FUNCTION_INFO_V1(Tstzset_extent_transfn);
-/**
- * Transition function for extent aggregation of timestamp set values
- */
-PGDLLEXPORT Datum
-Tstzset_extent_transfn(PG_FUNCTION_ARGS)
-{
-  Span *p = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
-  Set *ts = PG_ARGISNULL(1) ? NULL : PG_GETARG_SET_P(1);
-  p = tstzset_extent_transfn(p, ts);
-  PG_FREE_IF_COPY(ts, 1);
-  if (! p)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(p);
-}
-
-/*****************************************************************************/
-
 PG_FUNCTION_INFO_V1(Timestamp_tunion_transfn);
 /**
  * Transition function for union aggregate of timestamp sets

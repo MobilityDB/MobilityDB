@@ -1108,39 +1108,33 @@ tnumber_tavg_finalfn(SkipList *state)
 /*****************************************************************************/
 
 /**
- * Transition function for temporal extent aggregation of temporal values
+ * @brief Transition function for temporal extent aggregate of temporal values
  */
 Span *
 temporal_extent_transfn(Span *p, const Temporal *temp)
 {
-  Span *result;
-
   /* Can't do anything with null inputs */
   if (! p && ! temp)
     return NULL;
   /* Null period and non-null temporal, return the bbox of the temporal */
   if (! p)
   {
-    result = palloc0(sizeof(Span));
+    Span *result = palloc0(sizeof(Span));
     temporal_set_period(temp, result);
     return result;
   }
   /* Non-null period and null temporal, return the period */
   if (! temp)
-  {
-    result = palloc0(sizeof(Span));
-    memcpy(result, p, sizeof(Span));
-    return result;
-  }
+    return p;
 
   Span p1;
   temporal_set_period(temp, &p1);
-  result = bbox_union_span_span(p, &p1);
-  return result;
+  span_expand(&p1, p);
+  return p;
 }
 
 /**
- * Transition function for temporal extent aggregation for temporal numbers
+ * @brief Transition function for temporal extent aggregate of temporal numbers
  */
 TBox *
 tnumber_extent_transfn(TBox *box, const Temporal *temp)
@@ -1148,23 +1142,22 @@ tnumber_extent_transfn(TBox *box, const Temporal *temp)
   /* Can't do anything with null inputs */
   if (!box && !temp)
     return NULL;
-  TBox *result = palloc0(sizeof(TBox));
   /* Null box and non-null temporal, return the bbox of the temporal */
   if (! box)
   {
+    TBox *result = palloc0(sizeof(TBox));
     temporal_set_bbox(temp, result);
     return result;
   }
   /* Non-null box and null temporal, return the box */
   if (! temp)
-  {
-    memcpy(result, box, sizeof(TBox));
-    return result;
-  }
+    return box;
+
   /* Both box and temporal are not null */
-  temporal_set_bbox(temp, result);
-  tbox_expand(box, result);
-  return result;
+  TBox b;
+  temporal_set_bbox(temp, &b);
+  tbox_expand(&b, box);
+  return box;
 }
 
 /*****************************************************************************/

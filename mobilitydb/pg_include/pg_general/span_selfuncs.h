@@ -58,7 +58,7 @@ typedef enum
 extern float8 span_sel_default(CachedOp cachedOp);
 extern float8 span_joinsel_default(CachedOp cachedOp);
 
-extern void time_const_to_period(Node *other, Span *period);
+extern void span_const_to_span(Node *other, Span *span);
 
 extern double span_sel_hist(VariableStatData *vardata, const Span *constval,
   CachedOp cachedOp, SpanPeriodSel spansel);

@@ -6,11 +6,12 @@ add_library(general OBJECT
   pg_types.c
   skiplist.c
   set.c
-  set_ops.c
   set_aggfuncs.c
+  set_ops.c
   span.c
-  spanset.c
+  span_aggfuncs.c
   span_ops.c
+  spanset.c
   spanset_ops.c
   tbool_boolops.c
   tbool_boolops_meos.c

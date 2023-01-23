@@ -40,10 +40,6 @@ CREATE FUNCTION span_gist_consistent(internal, intset, smallint, oid, internal)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Span_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_gist_same(intset, intset, internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'Span_gist_same'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_gist_distance(internal, intset, smallint, oid, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Span_gist_distance'
@@ -88,7 +84,7 @@ CREATE OPERATOR CLASS intset_rtree_ops
   FUNCTION  3  set_gist_compress(internal),
   FUNCTION  5  span_gist_penalty(internal, internal, internal),
   FUNCTION  6  span_gist_picksplit(internal, internal),
-  FUNCTION  7  span_gist_same(intset, intset, internal),
+  FUNCTION  7  span_gist_same(intspan, intspan, internal),
   FUNCTION  8  span_gist_distance(internal, intset, smallint, oid, internal);
 
 /******************************************************************************/
@@ -96,10 +92,6 @@ CREATE OPERATOR CLASS intset_rtree_ops
 CREATE FUNCTION span_gist_consistent(internal, bigintset, smallint, oid, internal)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Span_gist_consistent'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_gist_same(bigintset, bigintset, internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'Span_gist_same'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_gist_distance(internal, bigintset, smallint, oid, internal)
   RETURNS internal
@@ -141,7 +133,7 @@ CREATE OPERATOR CLASS bigintset_rtree_ops
   FUNCTION  3  set_gist_compress(internal),
   FUNCTION  5  span_gist_penalty(internal, internal, internal),
   FUNCTION  6  span_gist_picksplit(internal, internal),
-  FUNCTION  7  span_gist_same(bigintset, bigintset, internal),
+  FUNCTION  7  span_gist_same(bigintspan, bigintspan, internal),
   FUNCTION  8  span_gist_distance(internal, bigintset, smallint, oid, internal);
 
 /******************************************************************************/
@@ -149,10 +141,6 @@ CREATE OPERATOR CLASS bigintset_rtree_ops
 CREATE FUNCTION span_gist_consistent(internal, floatset, smallint, oid, internal)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Span_gist_consistent'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_gist_same(floatset, floatset, internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'Span_gist_same'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_gist_distance(internal, floatset, smallint, oid, internal)
   RETURNS internal
@@ -194,7 +182,7 @@ CREATE OPERATOR CLASS floatset_rtree_ops
   FUNCTION  3  set_gist_compress(internal),
   FUNCTION  5  span_gist_penalty(internal, internal, internal),
   FUNCTION  6  span_gist_picksplit(internal, internal),
-  FUNCTION  7  span_gist_same(floatset, floatset, internal),
+  FUNCTION  7  span_gist_same(floatspan, floatspan, internal),
   FUNCTION  8  span_gist_distance(internal, floatset, smallint, oid, internal);
 
 /*****************************************************************************/

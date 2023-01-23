@@ -79,21 +79,30 @@ span_joinsel_default(CachedOp cachedOp __attribute__((unused)))
 }
 
 /**
- * Get the enum associated to the operator from different cases
+ * @brief Get the enum associated to the operator from different cases
  */
 static bool
 value_cachedop(Oid operid, CachedOp *cachedOp)
 {
+  // TODO find a more efficient way to do this
   for (int i = EQ_OP; i <= OVERAFTER_OP; i++)
   {
-    if (operid == oper_oid((CachedOp) i, T_INT4, T_INTSPAN) ||
+    if (operid == oper_oid((CachedOp) i, T_INT4, T_INTSET) ||
+        operid == oper_oid((CachedOp) i, T_INT4, T_INTSPAN) ||
         operid == oper_oid((CachedOp) i, T_INT4, T_INTSPANSET) ||
+        operid == oper_oid((CachedOp) i, T_INT8, T_BIGINTSET) ||
+        operid == oper_oid((CachedOp) i, T_INT8, T_BIGINTSPAN) ||
+        operid == oper_oid((CachedOp) i, T_INT8, T_BIGINTSPANSET) ||
         operid == oper_oid((CachedOp) i, T_FLOAT8, T_INTSPAN) ||
         operid == oper_oid((CachedOp) i, T_FLOAT8, T_INTSPANSET) ||
         operid == oper_oid((CachedOp) i, T_TBOX, T_INTSPAN) ||
         operid == oper_oid((CachedOp) i, T_TBOX, T_INTSPANSET) ||
+        operid == oper_oid((CachedOp) i, T_INTSET, T_INT4) ||
         operid == oper_oid((CachedOp) i, T_INTSPAN, T_INT4) ||
         operid == oper_oid((CachedOp) i, T_INTSPANSET, T_INT4) ||
+        operid == oper_oid((CachedOp) i, T_BIGINTSET, T_INT8) ||
+        operid == oper_oid((CachedOp) i, T_BIGINTSPAN, T_INT8) ||
+        operid == oper_oid((CachedOp) i, T_BIGINTSPANSET, T_INT8) ||
         operid == oper_oid((CachedOp) i, T_INTSPAN, T_FLOAT8) ||
         operid == oper_oid((CachedOp) i, T_INTSPANSET, T_FLOAT8) ||
         operid == oper_oid((CachedOp) i, T_INTSPAN, T_TBOX) ||
@@ -817,68 +826,35 @@ span_const_to_span(Node *other, Span *span)
 {
   Oid consttype = ((Const *) other)->consttype;
   meosType type = oid_type(consttype);
-  assert(set_type(type) || set_basetype(type) || span_type(type) ||
-    span_basetype(type));
-  if (set_basetype(type) || span_basetype(type))
+  assert(span_basetype(type) || set_span_type(type) || span_type(type) ||
+    spanset_type(type) || talpha_type(type));
+  if (span_basetype(type))
   {
     /* The right argument is a set or span base constant. We convert it into
      * a singleton span */
     Datum value = ((Const *) other)->constvalue;
     span_set(value, value, true, true, type, span);
   }
-  else if (set_type(type))
+  else if (set_span_type(type))
   {
     /* The right argument is a set constant. We convert it into
      * its bounding span. */
     const Set *s = DatumGetSetP(((Const *) other)->constvalue);
     set_set_span(s, span);
   }
-  else /* span_type(type) */
+  else if(span_type(type))
   {
     /* The right argument is a span constant. We convert it into
      * its bounding span. */
     const Span *s = DatumGetSpanP(((Const *) other)->constvalue);
     memcpy(span, s, sizeof(Span));
   }
-  return;
-}
-
-/**
- * @brief Transform the constant into a period
- */
-void
-time_const_to_period(Node *other, Span *period)
-{
-  Oid consttype = ((Const *) other)->consttype;
-  meosType timetype = oid_type(consttype);
-  const Span *p;
-  ensure_time_type(timetype);
-  if (timetype == T_TIMESTAMPTZ)
+  else if (spanset_type(type))
   {
-    /* The right argument is a TimestampTz constant. We convert it into
-     * a singleton period */
-    Datum t = ((Const *) other)->constvalue;
-    span_set(t, t, true, true, T_TIMESTAMPTZ, period);
-  }
-  else if (timetype == T_TSTZSET)
-  {
-    /* The right argument is a TstzSet constant. We convert it into
-     * its bounding period. */
-    const Set *ts = DatumGetSetP(((Const *) other)->constvalue);
-    set_set_span(ts, period);
-  }
-  else if (timetype == T_TSTZSPAN)
-  {
-    /* Just copy the value */
-    p = DatumGetSpanP(((Const *) other)->constvalue);
-    memcpy(period, p, sizeof(Span));
-  }
-  else /* timetype == T_TSTZSPANSET */
-  {
-    /* The right argument is a PeriodSet constant. We convert it into
-     * its bounding period. */
-    const SpanSet *ps = DatumGetSpanSetP(((Const *) other)->constvalue);
-    memcpy(period, &ps->span, sizeof(Span));
+    /* The right argument is a set constant. We convert it into
+     * its bounding span. */
+    const SpanSet *s = DatumGetSpanSetP(((Const *) other)->constvalue);
+    memcpy(span, &s->span, sizeof(Span));
   }
   return;
 }
@@ -894,7 +870,7 @@ span_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
   Node *other;
   bool varonleft;
   Selectivity selec;
-  Span span, period;
+  Span span;
 
   /*
    * If expression is not (variable op something) or (something op
@@ -944,15 +920,7 @@ span_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
    * OK, there's a Var and a Const we're dealing with here. If the constant
    * is not of the span type, it should be converted to a span.
    */
-  if (spansel == SPANSEL)
-  {
-    span_const_to_span(other, &span);
-  }
-  else
-  {
-    time_const_to_period(other, &period);
-    memcpy(&span, &period, sizeof(Span));
-  }
+  span_const_to_span(other, &span);
 
   /* Get enumeration value associated to the operator */
   CachedOp cachedOp;
