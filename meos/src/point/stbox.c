@@ -918,10 +918,10 @@ stbox_set_srid(const STBox *box, int32 srid)
  * @ingroup libmeos_box_transf
  * @brief Return a spatiotemporal box expanded in the spatial dimension by a
  * double.
- * @sqlfunc expandSpatial()
+ * @sqlfunc expandSpace()
  */
 STBox *
-stbox_expand_spatial(const STBox *box, double d)
+stbox_expand_space(const STBox *box, double d)
 {
   ensure_has_X_stbox(box);
   STBox *result = stbox_copy(box);
@@ -941,10 +941,10 @@ stbox_expand_spatial(const STBox *box, double d)
  * @ingroup libmeos_box_transf
  * @brief Return a spatiotemporal box expanded in the temporal dimension by
  * an interval
- * @sqlfunc expandTemporal()
+ * @sqlfunc expandTime()
  */
 STBox *
-stbox_expand_temporal(const STBox *box, const Interval *interval)
+stbox_expand_time(const STBox *box, const Interval *interval)
 {
   ensure_has_T_stbox(box);
   STBox *result = stbox_copy(box);

@@ -434,11 +434,11 @@
 					</listitem>
 
 				<listitem>
-					<para><link linkend="expandSpatial"><varname>expandSpatial</varname></link>: Extender la dimensión espacial del cuadro delimitador con un valor flotante</para>
+					<para><link linkend="expandSpace"><varname>expandSpace</varname></link>: Extender la dimensión espacial del cuadro delimitador con un valor flotante</para>
 					</listitem>
 
 				<listitem>
-					<para><link linkend="expandTemporal"><varname>expandTemporal</varname></link>: Extender la dimensión temporal del cuadro delimitador con un intervalo de tiempo</para>
+					<para><link linkend="expandTime"><varname>expandTime</varname></link>: Extender la dimensión temporal del cuadro delimitador con un intervalo de tiempo</para>
 				</listitem>
 
 				<listitem>
@@ -1064,7 +1064,7 @@
 				<title>Funciones de cuadro delimitador</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpoint_expandSpatial"><varname>expandSpatial</varname></link>: Obtener el cuadro delimitador espaciotemporal expandido en la dimensión espacial por un valor flotante</para>
+						<para><link linkend="tpoint_expandSpace"><varname>expandSpace</varname></link>: Obtener el cuadro delimitador espaciotemporal expandido en la dimensión espacial por un valor flotante</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

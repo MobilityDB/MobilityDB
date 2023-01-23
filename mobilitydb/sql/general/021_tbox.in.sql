@@ -258,9 +258,9 @@ CREATE FUNCTION expandValue(tbox, float)
   RETURNS tbox
   AS 'MODULE_PATHNAME', 'Tbox_expand_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION expandTemporal(tbox, interval)
+CREATE FUNCTION expandTime(tbox, interval)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'Tbox_expand_temporal'
+  AS 'MODULE_PATHNAME', 'Tbox_expand_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION round(tbox, integer DEFAULT 0)
   RETURNS tbox

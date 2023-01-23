@@ -736,32 +736,32 @@ Stbox_transform(PG_FUNCTION_ARGS)
  * Transformation functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Stbox_expand_spatial);
+PG_FUNCTION_INFO_V1(Stbox_expand_space);
 /**
  * @ingroup mobilitydb_box_transf
  * @brief Return a spatiotemporal box expanded in the spatial dimension of by a double
- * @sqlfunc expandSpatial()
+ * @sqlfunc expandSpace()
  */
 PGDLLEXPORT Datum
-Stbox_expand_spatial(PG_FUNCTION_ARGS)
+Stbox_expand_space(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
   double d = PG_GETARG_FLOAT8(1);
-  PG_RETURN_POINTER(stbox_expand_spatial(box, d));
+  PG_RETURN_POINTER(stbox_expand_space(box, d));
 }
 
-PG_FUNCTION_INFO_V1(Stbox_expand_temporal);
+PG_FUNCTION_INFO_V1(Stbox_expand_time);
 /**
  * @ingroup mobilitydb_box_transf
  * @brief Return a spatiotemporal box expanded in the temporal dimension by an interval
- * @sqlfunc Stbox_expand_temporal()
+ * @sqlfunc Stbox_expand_time()
  */
 PGDLLEXPORT Datum
-Stbox_expand_temporal(PG_FUNCTION_ARGS)
+Stbox_expand_time(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
   Interval *interval = PG_GETARG_INTERVAL_P(1);
-  PG_RETURN_POINTER(stbox_expand_temporal(box, interval));
+  PG_RETURN_POINTER(stbox_expand_time(box, interval));
 }
 
 /**

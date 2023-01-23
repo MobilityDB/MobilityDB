@@ -780,10 +780,10 @@ tbox_expand_value(const TBox *box, const double d)
 /**
  * @ingroup libmeos_box_transf
  * @brief Return a temporal box expanded in the time dimension by an interval.
- * @sqlfunc expandTemporal()
+ * @sqlfunc expandTime()
  */
 TBox *
-tbox_expand_temporal(const TBox *box, const Interval *interval)
+tbox_expand_time(const TBox *box, const Interval *interval)
 {
   ensure_has_T_tbox(box);
   TBox *result = tbox_copy(box);

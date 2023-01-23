@@ -274,13 +274,13 @@ CREATE FUNCTION Tmax(stbox)
  * Functions for expanding the bounding box
  *****************************************************************************/
 
-CREATE FUNCTION expandSpatial(stbox, float)
+CREATE FUNCTION expandSpace(stbox, float)
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Stbox_expand_spatial'
+  AS 'MODULE_PATHNAME', 'Stbox_expand_space'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION expandTemporal(stbox, interval)
+CREATE FUNCTION expandTime(stbox, interval)
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Stbox_expand_temporal'
+  AS 'MODULE_PATHNAME', 'Stbox_expand_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************

@@ -374,26 +374,26 @@ SELECT expandValue(tbox 'TBOX T([2001-01-01,2001-01-03))', 1);
 </programlisting>
 				</listitem>
 
-				<listitem id="expandSpatial">
-					<indexterm><primary><varname>expandSpatial</varname></primary></indexterm>
+				<listitem id="expandSpace">
+					<indexterm><primary><varname>expandSpace</varname></primary></indexterm>
 					<para>Extender la dimensión espacial del cuadro delimitador con un valor flotante</para>
-					<para><varname>expandSpatial(stbox,float) → stbox</varname></para>
+					<para><varname>expandSpace(stbox,float) → stbox</varname></para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT expandSpatial(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-03])', 1);
+SELECT expandSpace(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-03])', 1);
 -- STBOX ZT(((0,0,0),(3,3,3)),[2001-01-01, 2001-01-03])
-SELECT expandSpatial(stbox 'STBOX T([2001-01-01,2001-01-03))', 1);
+SELECT expandSpace(stbox 'STBOX T([2001-01-01,2001-01-03))', 1);
 -- The box must have XY(Z) dimensión
 </programlisting>
 				</listitem>
 
-				<listitem id="expandTemporal">
-					<indexterm><primary><varname>expandTemporal</varname></primary></indexterm>
+				<listitem id="expandTime">
+					<indexterm><primary><varname>expandTime</varname></primary></indexterm>
 					<para>Extender la dimensión temporal del cuadro delimitador con un intervalo de tiempo</para>
-					<para><varname>expandTemporal(box,interval) → box</varname></para>
+					<para><varname>expandTime(box,interval) → box</varname></para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT expandTemporal(tbox 'TBOX XT((1,2),[2001-01-01,2001-01-03])', interval '1 day');
+SELECT expandTime(tbox 'TBOX XT((1,2),[2001-01-01,2001-01-03])', interval '1 day');
 -- TBOX XT((1,2),[2011-12-31, 2001-01-04])
-SELECT expandTemporal(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-03])',
+SELECT expandTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-03])',
   interval '1 day');
 -- STBOX ZT(((1,1,1),(2,2,2)),[2011-12-31, 2001-01-04])
 </programlisting>

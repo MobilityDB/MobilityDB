@@ -79,9 +79,9 @@ CREATE CAST (tnpoint AS stbox) WITH FUNCTION stbox(tnpoint);
 
 /*****************************************************************************/
 
-CREATE FUNCTION expandSpatial(tnpoint, float)
+CREATE FUNCTION expandSpace(tnpoint, float)
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Tpoint_expand_spatial'
+  AS 'MODULE_PATHNAME', 'Tpoint_expand_space'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************

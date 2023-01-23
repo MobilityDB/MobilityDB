@@ -844,12 +844,12 @@ extern int32 stbox_srid(const STBox *box);
 extern void tbox_expand(const TBox *box1, TBox *box2);
 extern void tbox_shift_tscale(TBox *box, const Interval *start, const Interval *duration);
 extern TBox *tbox_expand_value(const TBox *box, const double d);
-extern TBox *tbox_expand_temporal(const TBox *box, const Interval *interval);
+extern TBox *tbox_expand_time(const TBox *box, const Interval *interval);
 extern void stbox_expand(const STBox *box1, STBox *box2);
 extern void stbox_shift_tscale(STBox *box, const Interval *start, const Interval *duration);
 extern STBox *stbox_set_srid(const STBox *box, int32 srid);
-extern STBox *stbox_expand_spatial(const STBox *box, double d);
-extern STBox *stbox_expand_temporal(const STBox *box, const Interval *interval);
+extern STBox *stbox_expand_space(const STBox *box, double d);
+extern STBox *stbox_expand_time(const STBox *box, const Interval *interval);
 
 /*****************************************************************************/
 
@@ -1621,9 +1621,9 @@ extern GSERIALIZED *tpoint_trajectory(const Temporal *temp);
 
 /* Spatial transformation functions for temporal point types */
 
-extern STBox *geo_expand_spatial(const GSERIALIZED *gs, double d);
+extern STBox *geo_expand_space(const GSERIALIZED *gs, double d);
 extern Temporal *tgeompoint_tgeogpoint(const Temporal *temp, bool oper);
-extern STBox *tpoint_expand_spatial(const Temporal *temp, double d);
+extern STBox *tpoint_expand_space(const Temporal *temp, double d);
 extern Temporal **tpoint_make_simple(const Temporal *temp, int *count);
 extern Temporal *tpoint_set_srid(const Temporal *temp, int32 srid);
 

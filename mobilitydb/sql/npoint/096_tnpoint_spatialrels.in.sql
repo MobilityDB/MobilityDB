@@ -157,7 +157,7 @@ CREATE FUNCTION _dwithin(npoint, tnpoint, dist float8)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION dwithin(npoint, tnpoint, dist float8)
   RETURNS boolean
-  AS 'SELECT @extschema@.expandSpatial(stbox($1),$3) OPERATOR(@extschema@.&&) $2 AND @extschema@._dwithin($1, $2, $3)'
+  AS 'SELECT @extschema@.expandSpace(stbox($1),$3) OPERATOR(@extschema@.&&) $2 AND @extschema@._dwithin($1, $2, $3)'
   LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION _dwithin(tnpoint, npoint, dist float8)
@@ -166,7 +166,7 @@ CREATE FUNCTION _dwithin(tnpoint, npoint, dist float8)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION dwithin(tnpoint, npoint, dist float8)
   RETURNS boolean
-  AS 'SELECT $1 OPERATOR(@extschema@.&&) @extschema@.expandSpatial(stbox($2),$3) AND @extschema@._dwithin($1, $2, $3)'
+  AS 'SELECT $1 OPERATOR(@extschema@.&&) @extschema@.expandSpace(stbox($2),$3) AND @extschema@._dwithin($1, $2, $3)'
   LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION dwithin(geometry, tnpoint, dist float8)

@@ -434,11 +434,11 @@
 					</listitem>
 
 				<listitem>
-					<para><link linkend="expandSpatial"><varname>expandSpatial</varname></link>: Expand the spatial dimension of the bounding box by a float value</para>
+					<para><link linkend="expandSpace"><varname>expandSpace</varname></link>: Expand the spatial dimension of the bounding box by a float value</para>
 					</listitem>
 
 				<listitem>
-					<para><link linkend="expandTemporal"><varname>expandTemporal</varname></link>: Expand the temporal dimension of the bounding box by a time interval</para>
+					<para><link linkend="expandTime"><varname>expandTime</varname></link>: Expand the temporal dimension of the bounding box by a time interval</para>
 				</listitem>
 
 				<listitem>
@@ -1067,7 +1067,7 @@
 				<title>Bounding Box Functions</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpoint_expandSpatial"><varname>expandSpatial</varname></link>: Get the spatiotemporal bounding box expanded in the spatial dimension by a float value</para>
+						<para><link linkend="tpoint_expandSpace"><varname>expandSpace</varname></link>: Get the spatiotemporal bounding box expanded in the spatial dimension by a float value</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
