@@ -463,6 +463,10 @@ extern SpanSet *periodset_shift_tscale(const SpanSet *ps, const Interval *shift,
 extern void span_expand(const Span *s1, Span *s2);
 extern Set *tstzset_shift_tscale(const Set *ts, const Interval *shift, const Interval *duration);
 
+extern Span *timestamp_tprecision(TimestampTz t, Interval *duration, TimestampTz torigin);
+extern Span *period_tprecision(const Span *s, Interval *duration, TimestampTz torigin);
+extern SpanSet *periodset_tprecision(const SpanSet *ss, Interval *duration, TimestampTz torigin);
+
 /*****************************************************************************
  * Bounding box functions for set and span types
  *****************************************************************************/
