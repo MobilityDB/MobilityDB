@@ -111,22 +111,7 @@ CREATE FUNCTION tstzspan_send(tstzspan)
   AS 'MODULE_PATHNAME', 'Span_send'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION intspan_analyze(internal)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Intspan_analyze'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION bigintspan_analyze(internal)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Bigintspan_analyze'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION floatspan_analyze(internal)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Floatspan_analyze'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tstzspan_analyze(internal)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Period_analyze'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+/* span_analyze function defined in file 001_set.in.sql */
 
 CREATE TYPE intspan (
   internallength = 24,
@@ -135,7 +120,7 @@ CREATE TYPE intspan (
   receive = intspan_recv,
   send = intspan_send,
   alignment = double,
-  analyze = intspan_analyze
+  analyze = span_analyze
 );
 
 CREATE TYPE bigintspan (
@@ -145,7 +130,7 @@ CREATE TYPE bigintspan (
   receive = bigintspan_recv,
   send = bigintspan_send,
   alignment = double,
-  analyze = bigintspan_analyze
+  analyze = span_analyze
 );
 
 CREATE TYPE floatspan (
@@ -155,7 +140,7 @@ CREATE TYPE floatspan (
   receive = floatspan_recv,
   send = floatspan_send,
   alignment = double,
-  analyze = floatspan_analyze
+  analyze = span_analyze
 );
 
 CREATE TYPE tstzspan (
@@ -165,7 +150,7 @@ CREATE TYPE tstzspan (
   receive = tstzspan_recv,
   send = tstzspan_send,
   alignment = double,
-  analyze = tstzspan_analyze
+  analyze = span_analyze
 );
 
 -- Input/output in WKB and HexWKB format
@@ -476,8 +461,8 @@ CREATE FUNCTION duration(tstzspan)
  * Selectivity functions
  *****************************************************************************/
 
--- Functions span_sel, period_sel and span_joinsel are defined in the file
--- defining the set type
+-- Functions span_sel and span_joinsel are defined in the file defining the
+-- set type
 
 -- Functions for debugging the selectivity code
 

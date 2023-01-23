@@ -44,7 +44,7 @@
 #include <postgres.h>
 #include <utils/palloc.h>
 #include <fmgr.h>
-/* MobilityDB */
+/* MEOS */
 #include "general/lifting.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_spatialrels.h"

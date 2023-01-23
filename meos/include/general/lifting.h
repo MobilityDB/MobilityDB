@@ -35,7 +35,7 @@
 #ifndef __LIFTING_H__
 #define __LIFTING_H__
 
-/* MobilityDB */
+/* MEOS */
 #include "general/temporal.h"
 
 /**

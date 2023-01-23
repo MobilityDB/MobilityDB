@@ -45,41 +45,6 @@
  * Aggregate transition functions for time types
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Timestamp_extent_transfn);
-/**
- * Transition function for extent aggregation of timestamp values
- */
-PGDLLEXPORT Datum
-Timestamp_extent_transfn(PG_FUNCTION_ARGS)
-{
-  Span *p = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
-  if (PG_ARGISNULL(1))
-    PG_RETURN_POINTER(p);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  p = timestamp_extent_transfn(p, t);
-  if (! p)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(p);
-}
-
-PG_FUNCTION_INFO_V1(Tstzset_extent_transfn);
-/**
- * Transition function for extent aggregation of timestamp set values
- */
-PGDLLEXPORT Datum
-Tstzset_extent_transfn(PG_FUNCTION_ARGS)
-{
-  Span *p = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
-  Set *ts = PG_ARGISNULL(1) ? NULL : PG_GETARG_SET_P(1);
-  p = tstzset_extent_transfn(p, ts);
-  PG_FREE_IF_COPY(ts, 1);
-  if (! p)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(p);
-}
-
-/*****************************************************************************/
-
 PG_FUNCTION_INFO_V1(Timestamp_tunion_transfn);
 /**
  * Transition function for union aggregate of timestamp sets
@@ -144,28 +109,6 @@ Periodset_tunion_transfn(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-/**
- * Transition function for temporal count aggregate of timestamps
- */
-Datum
-Timestamp_tcount_transfn_ext(FunctionCallInfo fcinfo, bool bucket)
-{
-  SkipList *state;
-  INPUT_AGG_TRANS_STATE(fcinfo, state);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  Interval *interval = NULL;
-  TimestampTz origin = 0;
-  if (bucket)
-  {
-    if (PG_NARGS() > 1 && ! PG_ARGISNULL(2))
-      interval = PG_GETARG_INTERVAL_P(2);
-    origin = PG_GETARG_TIMESTAMPTZ(3);
-  }
-  store_fcinfo(fcinfo);
-  state = timestamp_tcount_transfn(state, t, interval, origin);
-  PG_RETURN_POINTER(state);
-}
-
 PG_FUNCTION_INFO_V1(Timestamp_tcount_transfn);
 /**
  * Transition function for temporal count aggregate of timestamps
@@ -173,39 +116,11 @@ PG_FUNCTION_INFO_V1(Timestamp_tcount_transfn);
 PGDLLEXPORT Datum
 Timestamp_tcount_transfn(PG_FUNCTION_ARGS)
 {
-  return Timestamp_tcount_transfn_ext(fcinfo, false);
-}
-
-PG_FUNCTION_INFO_V1(Timestamp_tcount_bucket_transfn);
-/**
- * Transition function for temporal count aggregate of timestamps
- */
-PGDLLEXPORT Datum
-Timestamp_tcount_bucket_transfn(PG_FUNCTION_ARGS)
-{
-  return Timestamp_tcount_transfn_ext(fcinfo, true);
-}
-
-/**
- * Transition function for temporal count aggregate of timestamp sets
- */
-Datum
-Tstzset_tcount_transfn_ext(FunctionCallInfo fcinfo, bool bucket)
-{
   SkipList *state;
   INPUT_AGG_TRANS_STATE(fcinfo, state);
-  Set *ts = PG_GETARG_SET_P(1);
-  Interval *interval = NULL;
-  TimestampTz origin = 0;
-  if (bucket)
-  {
-    if (PG_NARGS() > 1 && ! PG_ARGISNULL(2))
-      interval = PG_GETARG_INTERVAL_P(2);
-    origin = PG_GETARG_TIMESTAMPTZ(3);
-  }
+  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   store_fcinfo(fcinfo);
-  state = tstzset_tcount_transfn(state, ts, interval, origin);
-  PG_FREE_IF_COPY(ts, 1);
+  state = timestamp_tcount_transfn(state, t);
   PG_RETURN_POINTER(state);
 }
 
@@ -216,38 +131,12 @@ PG_FUNCTION_INFO_V1(Tstzset_tcount_transfn);
 PGDLLEXPORT Datum
 Tstzset_tcount_transfn(PG_FUNCTION_ARGS)
 {
-  return Tstzset_tcount_transfn_ext(fcinfo, false);
-}
-
-PG_FUNCTION_INFO_V1(Tstzset_tcount_bucket_transfn);
-/**
- * Transition function for temporal count aggregate of timestamp sets
- */
-PGDLLEXPORT Datum
-Tstzset_tcount_bucket_transfn(PG_FUNCTION_ARGS)
-{
-  return Tstzset_tcount_transfn_ext(fcinfo, true);
-}
-
-/**
- * Transition function for temporal count aggregate of periods
- */
-Datum
-Period_tcount_transfn_ext(FunctionCallInfo fcinfo, bool bucket)
-{
   SkipList *state;
   INPUT_AGG_TRANS_STATE(fcinfo, state);
-  Span *p = PG_GETARG_SPAN_P(1);
-  Interval *interval = NULL;
-  TimestampTz origin = 0;
-  if (bucket)
-  {
-    if (PG_NARGS() > 1 && ! PG_ARGISNULL(2))
-      interval = PG_GETARG_INTERVAL_P(2);
-    origin = PG_GETARG_TIMESTAMPTZ(3);
-  }
+  Set *ts = PG_GETARG_SET_P(1);
   store_fcinfo(fcinfo);
-  state = period_tcount_transfn(state, p, interval, origin);
+  state = tstzset_tcount_transfn(state, ts);
+  PG_FREE_IF_COPY(ts, 1);
   PG_RETURN_POINTER(state);
 }
 
@@ -258,39 +147,11 @@ PG_FUNCTION_INFO_V1(Period_tcount_transfn);
 PGDLLEXPORT Datum
 Period_tcount_transfn(PG_FUNCTION_ARGS)
 {
-  return Period_tcount_transfn_ext(fcinfo, false);
-}
-
-PG_FUNCTION_INFO_V1(Period_tcount_bucket_transfn);
-/**
- * Transition function for temporal count aggregate of periods
- */
-PGDLLEXPORT Datum
-Period_tcount_bucket_transfn(PG_FUNCTION_ARGS)
-{
-  return Period_tcount_transfn_ext(fcinfo, true);
-}
-
-/**
- * Transition function for temporal count aggregate of period sets
- */
-Datum
-Periodset_tcount_transfn_ext(FunctionCallInfo fcinfo, bool bucket)
-{
   SkipList *state;
   INPUT_AGG_TRANS_STATE(fcinfo, state);
-  SpanSet *ps = PG_GETARG_SPANSET_P(1);
-  Interval *interval = NULL;
-  TimestampTz origin = 0;
-  if (bucket)
-  {
-    if (PG_NARGS() > 1 && ! PG_ARGISNULL(2))
-      interval = PG_GETARG_INTERVAL_P(2);
-    origin = PG_GETARG_TIMESTAMPTZ(3);
-  }
+  Span *p = PG_GETARG_SPAN_P(1);
   store_fcinfo(fcinfo);
-  state = periodset_tcount_transfn(state, ps, interval, origin);
-  PG_FREE_IF_COPY(ps, 1);
+  state = period_tcount_transfn(state, p);
   PG_RETURN_POINTER(state);
 }
 
@@ -301,17 +162,13 @@ PG_FUNCTION_INFO_V1(Periodset_tcount_transfn);
 PGDLLEXPORT Datum
 Periodset_tcount_transfn(PG_FUNCTION_ARGS)
 {
-  return Periodset_tcount_transfn_ext(fcinfo, false);
-}
-
-PG_FUNCTION_INFO_V1(Periodset_tcount_bucket_transfn);
-/**
- * Transition function for temporal count aggregate of period sets
- */
-PGDLLEXPORT Datum
-Periodset_tcount_bucket_transfn(PG_FUNCTION_ARGS)
-{
-  return Periodset_tcount_transfn_ext(fcinfo, true);
+  SkipList *state;
+  INPUT_AGG_TRANS_STATE(fcinfo, state);
+  SpanSet *ps = PG_GETARG_SPANSET_P(1);
+  store_fcinfo(fcinfo);
+  state = periodset_tcount_transfn(state, ps);
+  PG_FREE_IF_COPY(ps, 1);
+  PG_RETURN_POINTER(state);
 }
 
 /*****************************************************************************

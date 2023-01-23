@@ -38,7 +38,7 @@
 #include <postgres.h>
 /* PostGIS */
 #include <liblwgeom.h>
-/* MobilityDB */
+/* MEOS */
 #include "general/temporal.h"
 #include "point/tpoint.h"
 

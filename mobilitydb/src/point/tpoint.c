@@ -443,38 +443,38 @@ Tpoint_to_stbox(PG_FUNCTION_ARGS)
  * Expand functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Geo_expand_spatial);
+PG_FUNCTION_INFO_V1(Geo_expand_space);
 /**
  * @ingroup mobilitydb_temporal_transf
  * @brief Return the bounding box of a temporal point expanded on the
  * spatial dimension
- * @sqlfunc expandSpatial()
+ * @sqlfunc expandSpace()
  */
 PGDLLEXPORT Datum
-Geo_expand_spatial(PG_FUNCTION_ARGS)
+Geo_expand_space(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   double d = PG_GETARG_FLOAT8(1);
-  STBox *result = geo_expand_spatial(gs, d);
+  STBox *result = geo_expand_space(gs, d);
   PG_FREE_IF_COPY(gs, 0);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Tpoint_expand_spatial);
+PG_FUNCTION_INFO_V1(Tpoint_expand_space);
 /**
  * @ingroup mobilitydb_temporal_transf
  * @brief Return the bounding box of a temporal point expanded on the
  * spatial dimension
- * @sqlfunc expandSpatial()
+ * @sqlfunc expandSpace()
  */
 PGDLLEXPORT Datum
-Tpoint_expand_spatial(PG_FUNCTION_ARGS)
+Tpoint_expand_space(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   double d = PG_GETARG_FLOAT8(1);
-  STBox *result = tpoint_expand_spatial(temp, d);
+  STBox *result = tpoint_expand_space(temp, d);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

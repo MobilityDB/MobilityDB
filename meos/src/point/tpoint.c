@@ -34,7 +34,7 @@
 #include "point/tpoint.h"
 
 /* PostgreSQL */
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/temporaltypes.h"
@@ -85,16 +85,16 @@ tpoint_to_stbox(const Temporal *temp)
  * @ingroup libmeos_temporal_spatial_transf
  * @brief Return the bounding box of a temporal point expanded on the
  * spatial dimension
- * @sqlfunc expandSpatial()
+ * @sqlfunc expandSpace()
  */
 STBox *
-geo_expand_spatial(const GSERIALIZED *gs, double d)
+geo_expand_space(const GSERIALIZED *gs, double d)
 {
   if (gserialized_is_empty(gs))
     return NULL;
   STBox box;
   geo_set_stbox(gs, &box);
-  STBox *result = stbox_expand_spatial(&box, d);
+  STBox *result = stbox_expand_space(&box, d);
   return result;
 }
 
@@ -102,14 +102,14 @@ geo_expand_spatial(const GSERIALIZED *gs, double d)
  * @ingroup libmeos_temporal_spatial_transf
  * @brief Return the bounding box of a temporal point expanded on the
  * spatial dimension
- * @sqlfunc expandSpatial()
+ * @sqlfunc expandSpace()
  */
 STBox *
-tpoint_expand_spatial(const Temporal *temp, double d)
+tpoint_expand_space(const Temporal *temp, double d)
 {
   STBox box;
   temporal_set_bbox(temp, &box);
-  STBox *result = stbox_expand_spatial(&box, d);
+  STBox *result = stbox_expand_space(&box, d);
   return result;
 }
 

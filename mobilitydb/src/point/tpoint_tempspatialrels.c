@@ -75,7 +75,7 @@
 #include <utils/timestamp.h>
 /* PostGIS */
 #include <liblwgeom.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include "general/lifting.h"
 #include "general/temporaltypes.h"

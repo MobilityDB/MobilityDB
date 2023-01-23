@@ -380,8 +380,8 @@ SELECT expandValue(tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])', 2);
  TBOX XT([-1, 4],[2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00])
 (1 row)
 
-SELECT expandTemporal(tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])', interval '1 day');
-                          expandtemporal                          
+SELECT expandTime(tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])', interval '1 day');
+                            expandtime                            
 ------------------------------------------------------------------
  TBOX XT([1, 2],[1999-12-31 00:00:00+00, 2000-01-03 00:00:00+00])
 (1 row)
@@ -395,7 +395,7 @@ SELECT round(tbox 'TBOX XT([1.123456789,2.123456789],[2000-01-01,2000-01-02])', 
 /* Errors */
 SELECT expandValue(tbox 'TBOX T([2000-01-01,2000-01-02])', 2);
 ERROR:  The box must have value dimension
-SELECT expandTemporal(tbox 'TBOX X([1,2])', interval '1 day');
+SELECT expandTime(tbox 'TBOX X([1,2])', interval '1 day');
 ERROR:  The box must have time dimension
 SELECT round(tbox 'TBOX T([2000-01-01,2000-01-02])', 2);
 ERROR:  The box must have value dimension

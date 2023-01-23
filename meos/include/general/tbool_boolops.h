@@ -34,7 +34,7 @@
 #ifndef __TBOOL_BOOLOPS_H__
 #define __TBOOL_BOOLOPS_H__
 
-/* MobilityDB */
+/* MEOS */
 #include "general/temporal.h"
 
 /*****************************************************************************/

@@ -366,6 +366,8 @@ extern Set *int_to_intset(int i);
 extern Span *int_to_intspan(int i);
 extern void set_set_span(const Set *os, Span *s);
 extern Span *set_to_span(const Set *s);
+extern void spatialset_set_stbox(const Set *set, STBox *box);
+extern STBox *spatialset_to_stbox(const Set *s);
 extern SpanSet *set_to_spanset(const Set *s);
 extern SpanSet *span_to_spanset(const Span *s);
 extern Span *timestamp_to_period(TimestampTz t);
@@ -669,13 +671,16 @@ extern double distance_timestampset_timestampset(const Set *ts1, const Set *ts2)
 
 /* Aggregate functions for set and span types */
 
+extern Span *bigint_extent_transfn(Span *s, int64 i);
 extern Set *bigintset_agg_transfn(Set *state, int64 i);
+extern Span *int_extent_transfn(Span *s, int i);
 extern Set *intset_agg_transfn(Set *state, int i);
+extern Span *float_extent_transfn(Span *s, double d);
 extern Set *floatset_agg_transfn(Set *state, double d);
-extern SkipList *period_tcount_transfn(SkipList *state, const Span *p, const Interval *interval, TimestampTz origin);
+extern SkipList *period_tcount_transfn(SkipList *state, const Span *p);
 extern SkipList *period_tunion_transfn(SkipList *state, const Span *p);
 extern SpanSet *period_tunion_finalfn(SkipList *state);
-extern SkipList *periodset_tcount_transfn(SkipList *state, const SpanSet *ps, const Interval *interval, TimestampTz origin);
+extern SkipList *periodset_tcount_transfn(SkipList *state, const SpanSet *ps);
 extern SkipList *periodset_tunion_transfn(SkipList *state, const SpanSet *ps);
 extern Set *set_agg_combinefn(Set *state1, Set *state2);
 extern Set *set_agg_finalfn(Set *state);
@@ -683,12 +688,12 @@ extern Span *span_extent_transfn(Span *s1, const Span *s2);
 extern Span *spanset_extent_transfn(Span *s, const SpanSet *ss);
 extern Set *textset_agg_transfn(Set *state, const text *txt);
 extern Span *timestamp_extent_transfn(Span *p, TimestampTz t);
-extern SkipList *timestamp_tcount_transfn(SkipList *state, TimestampTz t, const Interval *interval, TimestampTz origin);
+extern SkipList *timestamp_tcount_transfn(SkipList *state, TimestampTz t);
 extern SkipList *timestamp_tunion_transfn(SkipList *state, TimestampTz t);
 extern Set *timestamp_tunion_finalfn(SkipList *state);
 extern Set *tstzset_agg_transfn(Set *state, TimestampTz t);
-extern Span *tstzset_extent_transfn(Span *p, const Set *ts);
-extern SkipList *tstzset_tcount_transfn(SkipList *state, const Set *ts, const Interval *interval, TimestampTz origin);
+extern Span *set_extent_transfn(Span *span, const Set *set);
+extern SkipList *tstzset_tcount_transfn(SkipList *state, const Set *ts);
 extern SkipList *tstzset_tunion_transfn(SkipList *state, const Set *ts);
 
 /*****************************************************************************/
@@ -839,12 +844,12 @@ extern int32 stbox_srid(const STBox *box);
 extern void tbox_expand(const TBox *box1, TBox *box2);
 extern void tbox_shift_tscale(TBox *box, const Interval *start, const Interval *duration);
 extern TBox *tbox_expand_value(const TBox *box, const double d);
-extern TBox *tbox_expand_temporal(const TBox *box, const Interval *interval);
+extern TBox *tbox_expand_time(const TBox *box, const Interval *interval);
 extern void stbox_expand(const STBox *box1, STBox *box2);
 extern void stbox_shift_tscale(STBox *box, const Interval *start, const Interval *duration);
 extern STBox *stbox_set_srid(const STBox *box, int32 srid);
-extern STBox *stbox_expand_spatial(const STBox *box, double d);
-extern STBox *stbox_expand_temporal(const STBox *box, const Interval *interval);
+extern STBox *stbox_expand_space(const STBox *box, double d);
+extern STBox *stbox_expand_time(const STBox *box, const Interval *interval);
 
 /*****************************************************************************/
 
@@ -1616,9 +1621,9 @@ extern GSERIALIZED *tpoint_trajectory(const Temporal *temp);
 
 /* Spatial transformation functions for temporal point types */
 
-extern STBox *geo_expand_spatial(const GSERIALIZED *gs, double d);
+extern STBox *geo_expand_space(const GSERIALIZED *gs, double d);
 extern Temporal *tgeompoint_tgeogpoint(const Temporal *temp, bool oper);
-extern STBox *tpoint_expand_spatial(const Temporal *temp, double d);
+extern STBox *tpoint_expand_space(const Temporal *temp, double d);
 extern Temporal **tpoint_make_simple(const Temporal *temp, int *count);
 extern Temporal *tpoint_set_srid(const Temporal *temp, int32 srid);
 
@@ -1669,7 +1674,7 @@ extern SkipList *tbool_tand_transfn(SkipList *state, const Temporal *temp);
 extern SkipList *tbool_tor_transfn(SkipList *state, const Temporal *temp);
 extern Span *temporal_extent_transfn(Span *p, const Temporal *temp);
 extern Temporal *temporal_tagg_finalfn(SkipList *state);
-extern SkipList *temporal_tcount_transfn(SkipList *state, const Temporal *temp, const Interval *interval, TimestampTz origin);
+extern SkipList *temporal_tcount_transfn(SkipList *state, const Temporal *temp);
 extern SkipList *tfloat_tmax_transfn(SkipList *state, const Temporal *temp);
 extern SkipList *tfloat_tmin_transfn(SkipList *state, const Temporal *temp);
 extern SkipList *tfloat_tsum_transfn(SkipList *state, const Temporal *temp);

@@ -36,8 +36,10 @@
 
 /* PostgreSQL */
 #include <postgres.h>
+#include <fmgr.h>
 #include <commands/vacuum.h>
-/* MobilityDB */
+#include <statistics/extended_stats_internal.h>
+/* MEOS */
 #include "general/span.h"
 
 /*
@@ -55,9 +57,11 @@
 
 extern int float8_qsort_cmp(const void *a1, const void *a2);
 
-extern void span_compute_stats(VacAttrStats *stats, int non_null_cnt,
+extern void span_compute_stats_generic(VacAttrStats *stats, int non_null_cnt,
   int *slot_idx, SpanBound *lowers, SpanBound *uppers, float8 *lengths,
-  meosType type);
+  bool valuedim);
+extern Datum set_analyze(FunctionCallInfo fcinfo,
+  void (*func)(VacAttrStats *, AnalyzeAttrFetchFunc, int, double));
 
 /*****************************************************************************/
 

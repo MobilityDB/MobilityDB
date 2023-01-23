@@ -87,7 +87,7 @@ temporal_const_to_period(Node *other, Span *period)
   Oid consttype = ((Const *) other)->consttype;
   meosType type = oid_type(consttype);
   if (time_type(type))
-    time_const_to_period(other, period);
+    span_const_to_span(other, period);
   else if (talpha_type(type))
     temporal_set_bbox(DatumGetTemporalP(((Const *) other)->constvalue), period);
   else

@@ -68,12 +68,12 @@ CREATE FUNCTION valueBucket("value" float, size float,
   AS 'MODULE_PATHNAME', 'Number_bucket'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 
-CREATE FUNCTION spanBucket(value integer, size integer,
+CREATE FUNCTION spanBucket("value" integer, size integer,
   origin integer DEFAULT 0)
   RETURNS intspan
   AS 'MODULE_PATHNAME', 'Span_bucket'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spanBucket(value float, size float,
+CREATE FUNCTION spanBucket("value" float, size float,
   origin float DEFAULT 0.0)
   RETURNS floatspan
   AS 'MODULE_PATHNAME', 'Span_bucket'

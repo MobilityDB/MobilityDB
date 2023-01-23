@@ -78,22 +78,22 @@ SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp::stbox IS NOT NULL;
 
 -------------------------------------------------------------------------------
 
-SELECT expandSpatial(stbox 'STBOX X(((1.0,2.0),(1.0,2.0)))', 0.5);
-SELECT expandSpatial(stbox 'STBOX Z(((1.0,2.0,3.0),(1.0,2.0,3.0)))', 0.5);
-SELECT expandSpatial(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-03,2000-01-03])', 0.5);
-SELECT expandSpatial(stbox 'STBOX ZT(((1.0,2.0,3.0),(1.0,2.0,3.0)),[2000-01-03,2000-01-04])', 0.5);
-SELECT expandSpatial(stbox 'GEODSTBOX Z(((1.0,2.0,3.0),(1.0,2.0,3.0)))', 0.5);
+SELECT expandSpace(stbox 'STBOX X(((1.0,2.0),(1.0,2.0)))', 0.5);
+SELECT expandSpace(stbox 'STBOX Z(((1.0,2.0,3.0),(1.0,2.0,3.0)))', 0.5);
+SELECT expandSpace(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-03,2000-01-03])', 0.5);
+SELECT expandSpace(stbox 'STBOX ZT(((1.0,2.0,3.0),(1.0,2.0,3.0)),[2000-01-03,2000-01-04])', 0.5);
+SELECT expandSpace(stbox 'GEODSTBOX Z(((1.0,2.0,3.0),(1.0,2.0,3.0)))', 0.5);
 
-SELECT expandTemporal(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-03,2000-01-03])', '1 day');
-SELECT expandTemporal(stbox 'STBOX ZT(((1.0,2.0,3.0),(1.0,2.0,3.0)),[2000-01-04,2000-01-04])', '1 day');
-SELECT expandTemporal(stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(1.0,2.0,3.0)),[2000-01-04,2000-01-04])', '1 day');
+SELECT expandTime(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-03,2000-01-03])', '1 day');
+SELECT expandTime(stbox 'STBOX ZT(((1.0,2.0,3.0),(1.0,2.0,3.0)),[2000-01-04,2000-01-04])', '1 day');
+SELECT expandTime(stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(1.0,2.0,3.0)),[2000-01-04,2000-01-04])', '1 day');
 /* Errors */
-SELECT expandTemporal(stbox 'STBOX X(((1.0,2.0),(1.0,2.0)))', '1 day');
-SELECT expandTemporal(stbox 'STBOX Z(((1.0,2.0,3.0),(1.0,2.0,3.0)))', '1 day');
-SELECT expandTemporal(stbox 'GEODSTBOX Z(((1.0,2.0,3.0),(1.0,2.0,3.0)))', '1 day');
+SELECT expandTime(stbox 'STBOX X(((1.0,2.0),(1.0,2.0)))', '1 day');
+SELECT expandTime(stbox 'STBOX Z(((1.0,2.0,3.0),(1.0,2.0,3.0)))', '1 day');
+SELECT expandTime(stbox 'GEODSTBOX Z(((1.0,2.0,3.0),(1.0,2.0,3.0)))', '1 day');
 
-SELECT expandSpatial(geometry 'Linestring empty', 0.5);
-SELECT expandSpatial(geometry 'Linestring(1 1,2 2)', 0.5);
+SELECT expandSpace(geometry 'Linestring empty', 0.5);
+SELECT expandSpace(geometry 'Linestring(1 1,2 2)', 0.5);
 
 -------------------------------------------------------------------------------
 

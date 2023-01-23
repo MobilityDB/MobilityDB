@@ -34,7 +34,7 @@
 #ifndef __TPOINT_TILE_H__
 #define __TPOINT_TILE_H__
 
-/* MobilityDB */
+/* MEOS */
 #include "general/temporal.h"
 
 #define MAXDIMS 4

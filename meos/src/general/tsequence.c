@@ -45,7 +45,7 @@
 #else
   #include <access/hash.h>
 #endif
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/doublen.h"

@@ -161,11 +161,11 @@ extern void ensure_time_type(meosType timetype);
 extern bool set_basetype(meosType basetype);
 extern void ensure_set_basetype(meosType basetype);
 
-extern bool set_type(meosType settype);
-extern void ensure_set_type(meosType settype);
-extern bool alphanumset_type(meosType settype);
+extern bool set_type(meosType type);
+extern void ensure_set_type(meosType type);
 extern bool numset_type(meosType settype);
-extern void ensure_numset_type(meosType settype);
+extern bool set_span_type(meosType type);
+extern bool alphanumset_type(meosType settype);
 extern bool geoset_type(meosType type);
 extern bool spatialset_type(meosType type);
 

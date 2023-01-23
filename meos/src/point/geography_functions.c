@@ -47,7 +47,7 @@
   #include <lwgeom_pg.h>
 #endif /* ! MEOS */
 #include <lwgeodetic_tree.h>
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 #include "point/tpoint_spatialfuncs.h"
 

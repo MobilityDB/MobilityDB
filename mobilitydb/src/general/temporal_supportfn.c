@@ -264,7 +264,7 @@ makeExpandExpr(Node *arg, Node *radiusarg, Oid argoid, Oid retoid,
       || argtype == T_TNPOINT
 #endif /* NPOINT */
       )
-    funcname = "expandspatial";
+    funcname = "expandspace";
   else
     elog(ERROR, "Unknown expand function for type %d", argoid);
   nspfunc = list_make2(makeString(nspname), makeString(funcname));

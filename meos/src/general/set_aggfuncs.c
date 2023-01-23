@@ -209,24 +209,6 @@ textset_agg_transfn(Set *state, const text *txt)
 }
 #endif /* MEOS */
 
-// /**
- // * @ingroup libmeos_setspan_agg
- // * @brief Combine function for tset aggregate of values
- // *
- // * @param[in] state1, state2 State values
- // */
-// Set *
-// set_agg_combinefn(Set *state1, Set *state2)
-// {
-  // if (! state1)
-    // return state2;
-  // if (! state2)
-    // return state1;
-
-  // assert(state1->settype == state2->settype);
-  // return union_set_set(state1, state2);
-// }
-
 /**
  * @ingroup libmeos_internal_setspan_agg
  * @brief Transition function for set aggregate of values

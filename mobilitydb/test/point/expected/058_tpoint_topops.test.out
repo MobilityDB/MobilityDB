@@ -220,69 +220,69 @@ SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp::stbox IS NOT NULL;
    100
 (1 row)
 
-SELECT expandSpatial(stbox 'STBOX X(((1.0,2.0),(1.0,2.0)))', 0.5);
-         expandspatial          
+SELECT expandSpace(stbox 'STBOX X(((1.0,2.0),(1.0,2.0)))', 0.5);
+          expandspace           
 --------------------------------
  STBOX X(((0.5,1.5),(1.5,2.5)))
 (1 row)
 
-SELECT expandSpatial(stbox 'STBOX Z(((1.0,2.0,3.0),(1.0,2.0,3.0)))', 0.5);
-            expandspatial             
+SELECT expandSpace(stbox 'STBOX Z(((1.0,2.0,3.0),(1.0,2.0,3.0)))', 0.5);
+             expandspace              
 --------------------------------------
  STBOX Z((0.5,1.5,2.5),(1.5,2.5,3.5))
 (1 row)
 
-SELECT expandSpatial(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-03,2000-01-03])', 0.5);
-                                  expandspatial                                   
+SELECT expandSpace(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-03,2000-01-03])', 0.5);
+                                   expandspace                                    
 ----------------------------------------------------------------------------------
  STBOX XT(((0.5,1.5),(1.5,2.5)),[2000-01-03 00:00:00+00, 2000-01-03 00:00:00+00])
 (1 row)
 
-SELECT expandSpatial(stbox 'STBOX ZT(((1.0,2.0,3.0),(1.0,2.0,3.0)),[2000-01-03,2000-01-04])', 0.5);
-                                      expandspatial                                       
+SELECT expandSpace(stbox 'STBOX ZT(((1.0,2.0,3.0),(1.0,2.0,3.0)),[2000-01-03,2000-01-04])', 0.5);
+                                       expandspace                                        
 ------------------------------------------------------------------------------------------
  STBOX ZT(((0.5,1.5,2.5),(1.5,2.5,3.5)),[2000-01-03 00:00:00+00, 2000-01-04 00:00:00+00])
 (1 row)
 
-SELECT expandSpatial(stbox 'GEODSTBOX Z(((1.0,2.0,3.0),(1.0,2.0,3.0)))', 0.5);
-                   expandspatial                    
+SELECT expandSpace(stbox 'GEODSTBOX Z(((1.0,2.0,3.0),(1.0,2.0,3.0)))', 0.5);
+                    expandspace                     
 ----------------------------------------------------
  SRID=4326;GEODSTBOX Z((0.5,1.5,2.5),(1.5,2.5,3.5))
 (1 row)
 
-SELECT expandTemporal(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-03,2000-01-03])', '1 day');
-                              expandtemporal                              
+SELECT expandTime(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-03,2000-01-03])', '1 day');
+                                expandtime                                
 --------------------------------------------------------------------------
  STBOX XT(((1,2),(1,2)),[2000-01-02 00:00:00+00, 2000-01-04 00:00:00+00])
 (1 row)
 
-SELECT expandTemporal(stbox 'STBOX ZT(((1.0,2.0,3.0),(1.0,2.0,3.0)),[2000-01-04,2000-01-04])', '1 day');
-                                expandtemporal                                
+SELECT expandTime(stbox 'STBOX ZT(((1.0,2.0,3.0),(1.0,2.0,3.0)),[2000-01-04,2000-01-04])', '1 day');
+                                  expandtime                                  
 ------------------------------------------------------------------------------
  STBOX ZT(((1,2,3),(1,2,3)),[2000-01-03 00:00:00+00, 2000-01-05 00:00:00+00])
 (1 row)
 
-SELECT expandTemporal(stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(1.0,2.0,3.0)),[2000-01-04,2000-01-04])', '1 day');
-                                       expandtemporal                                       
+SELECT expandTime(stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(1.0,2.0,3.0)),[2000-01-04,2000-01-04])', '1 day');
+                                         expandtime                                         
 --------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX ZT(((1,2,3),(1,2,3)),[2000-01-03 00:00:00+00, 2000-01-05 00:00:00+00])
 (1 row)
 
 /* Errors */
-SELECT expandTemporal(stbox 'STBOX X(((1.0,2.0),(1.0,2.0)))', '1 day');
+SELECT expandTime(stbox 'STBOX X(((1.0,2.0),(1.0,2.0)))', '1 day');
 ERROR:  The box must have time dimension
-SELECT expandTemporal(stbox 'STBOX Z(((1.0,2.0,3.0),(1.0,2.0,3.0)))', '1 day');
+SELECT expandTime(stbox 'STBOX Z(((1.0,2.0,3.0),(1.0,2.0,3.0)))', '1 day');
 ERROR:  The box must have time dimension
-SELECT expandTemporal(stbox 'GEODSTBOX Z(((1.0,2.0,3.0),(1.0,2.0,3.0)))', '1 day');
+SELECT expandTime(stbox 'GEODSTBOX Z(((1.0,2.0,3.0),(1.0,2.0,3.0)))', '1 day');
 ERROR:  The box must have time dimension
-SELECT expandSpatial(geometry 'Linestring empty', 0.5);
- expandspatial 
----------------
+SELECT expandSpace(geometry 'Linestring empty', 0.5);
+ expandspace 
+-------------
  
 (1 row)
 
-SELECT expandSpatial(geometry 'Linestring(1 1,2 2)', 0.5);
-         expandspatial          
+SELECT expandSpace(geometry 'Linestring(1 1,2 2)', 0.5);
+          expandspace           
 --------------------------------
  STBOX X(((0.5,0.5),(2.5,2.5)))
 (1 row)

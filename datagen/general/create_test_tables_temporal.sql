@@ -261,7 +261,7 @@ CREATE TABLE tbl_tstzspan AS
 /* Add perc NULL values */
 SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_period('2001-01-01', '2001-12-31', 10) AS t
+SELECT k, random_tstzspan('2001-01-01', '2001-12-31', 10) AS t
 FROM generate_series(perc+1, size) AS k;
 
 -------------------------------------------------------------------------------
@@ -295,7 +295,7 @@ CREATE TABLE tbl_tstzspanset AS
 /* Add perc NULL values */
 SELECT k, NULL
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_periodset('2001-01-01', '2001-12-31', 10, 5, 10) AS t
+SELECT k, random_tstzspanset('2001-01-01', '2001-12-31', 10, 5, 10) AS t
 FROM generate_series(perc+1, size) AS k;
 
 ------------------------------------------------------------------------------

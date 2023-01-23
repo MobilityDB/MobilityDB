@@ -137,11 +137,6 @@ CREATE FUNCTION temporal_analyze(internal)
   AS 'MODULE_PATHNAME', 'Temporal_analyze'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tnumber_analyze(internal)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Tnumber_analyze'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE TYPE tbool (
   internallength = variable,
   input = tbool_in,
@@ -164,7 +159,7 @@ CREATE TYPE tint (
   typmod_out = temporal_typmod_out,
   storage = extended,
   alignment = double,
-  analyze = tnumber_analyze
+  analyze = temporal_analyze
 );
 CREATE TYPE tfloat (
   internallength = variable,
@@ -176,7 +171,7 @@ CREATE TYPE tfloat (
   typmod_out = temporal_typmod_out,
   storage = extended,
   alignment = double,
-  analyze = tnumber_analyze
+  analyze = temporal_analyze
 );
 CREATE TYPE ttext (
   internallength = variable,
@@ -188,7 +183,7 @@ CREATE TYPE ttext (
   typmod_out = temporal_typmod_out,
   storage = extended,
   alignment = double,
-    analyze = temporal_analyze
+  analyze = temporal_analyze
 );
 
 -- Special cast for enforcing the typmod restrictions

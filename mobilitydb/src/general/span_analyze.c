@@ -49,6 +49,7 @@
 #include <postgres.h>
 #include <fmgr.h>
 #include <catalog/pg_operator.h>
+#include <utils/typcache.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -59,7 +60,7 @@
 /*****************************************************************************/
 
 /**
- * Comparison function for sorting float8 values, used for span lengths
+ * @brief Comparison function for sorting float8 values, used for span lengths
  */
 int
 float8_qsort_cmp(const void *a1, const void *a2)
@@ -75,7 +76,7 @@ float8_qsort_cmp(const void *a1, const void *a2)
 }
 
 /**
- * Compute statistics for time type columns and for the time dimension of
+ * @brief Compute statistics for time type columns and for the time dimension of
  * all temporal types whose subtype is not instant
  *
  * @param[in] stats Structure storing statistics information
@@ -83,21 +84,17 @@ float8_qsort_cmp(const void *a1, const void *a2)
  * @param[in] slot_idx Index of the slot where the statistics collected are stored
  * @param[in] lowers,uppers Arrays of span bounds
  * @param[in] lengths Arrays of span lengths
- * @param[in] spantype type Enumerated type of the span
+ * @param[in] True/false for histogram of the value/time dimension
  */
 void
-span_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
-  SpanBound *lowers, SpanBound *uppers, float8 *lengths, meosType spantype)
+span_compute_stats_generic(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
+  SpanBound *lowers, SpanBound *uppers, float8 *lengths, bool valuedim)
 {
   int num_hist, num_bins = stats->attr->attstattarget;
   Datum *bound_hist_values, *length_hist_values;
-  MemoryContext old_cxt;
 
   /* Must copy the target values into anl_context */
-  old_cxt = MemoryContextSwitchTo(stats->anl_context);
-
-  /* Set the kind of histogram depending on the value or the time dimension */
-  bool valuedim = numspan_type(spantype);
+  MemoryContext old_cxt = MemoryContextSwitchTo(stats->anl_context);
 
   /*
    * Generate a bounds histogram and a length histogram slot entries
@@ -105,7 +102,6 @@ span_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
    */
   if (non_null_cnt >= 2)
   {
-
     /* Generate a bounds histogram slot entry */
 
     /* Sort bound values */
@@ -230,7 +226,7 @@ span_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
 }
 
 /**
- * Compute statistics for timestamp set, span, and span set columns
+ * @brief Compute statistics for set, span, and span set columns
  *
  * @param[in] stats Structure storing statistics information
  * @param[in] fetchfunc Fetch function
@@ -238,29 +234,27 @@ span_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
  * @param[in] type Type of the column for which the stats are generated
  */
 static void
-span_compute_stats_generic(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-  int samplerows, meosType type)
+span_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
+  int samplerows, double totalrows __attribute__((unused)))
 {
   int null_cnt = 0, non_null_cnt = 0, slot_idx = 0;
-  float8 *lengths;
-  SpanBound *lowers, *uppers;
   double total_width = 0;
+  meosType type = oid_type(stats->attrtypid);
 
   /* Allocate memory to hold span bounds and lengths of the sample spans */
-  lowers = palloc(sizeof(SpanBound) * samplerows);
-  uppers = palloc(sizeof(SpanBound) * samplerows);
-  lengths = palloc(sizeof(float8) * samplerows);
+  SpanBound *lowers = palloc(sizeof(SpanBound) * samplerows);
+  SpanBound *uppers = palloc(sizeof(SpanBound) * samplerows);
+  float8 *lengths = palloc(sizeof(float8) * samplerows);
 
   /* Loop over the sample span values. */
   for (int i = 0; i < samplerows; i++)
   {
-    vacuum_delay_point();
-
+    /* Get value and determine whether is null */
     bool isnull;
     Datum value = fetchfunc(stats, i, &isnull);
+    /* Skip all NULLs. */
     if (isnull)
     {
-      /* span value is null, just count that */
       null_cnt++;
       continue;
     }
@@ -278,19 +272,19 @@ span_compute_stats_generic(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
       /* Adjust the size */
       total_width += VARSIZE(s);
     }
-    else if (spanset_type(type))
-    {
-      const SpanSet *ss = DatumGetSpanSetP(value);
-      span_deserialize(&ss->span, &lower, &upper);
-      /* Adjust the size */
-      total_width += VARSIZE(ss);
-    }
-    else /* span_type(type) */
+    else if(span_type(type))
     {
       span = DatumGetSpanP(value);
       span_deserialize(span, &lower, &upper);
       /* Adjust the size */
       total_width += sizeof(Span);
+    }
+    else /* spanset_type(type) */
+    {
+      const SpanSet *ss = DatumGetSpanSetP(value);
+      span_deserialize(&ss->span, &lower, &upper);
+      /* Adjust the size */
+      total_width += VARSIZE(ss);
     }
 
     /* Remember bounds and length for further usage in histograms */
@@ -298,7 +292,12 @@ span_compute_stats_generic(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     uppers[non_null_cnt] = upper;
     lengths[non_null_cnt] = distance_value_value(upper.val, lower.val,
       upper.basetype, lower.basetype);
+
+    /* Increment non null count */
     non_null_cnt++;
+
+    /* Give backend a chance of interrupting us */
+    vacuum_delay_point();
   }
 
   /* We can only compute real stats if we found some non-null values. */
@@ -312,8 +311,9 @@ span_compute_stats_generic(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     /* Estimate that non-null values are unique */
     stats->stadistinct = (float4) (-1.0 * (1.0 - stats->stanullfrac));
 
-    span_compute_stats(stats, non_null_cnt, &slot_idx, lowers, uppers,
-      lengths, type);
+    /* The last argument determines the slot for number/time statistics */
+    span_compute_stats_generic(stats, non_null_cnt, &slot_idx, lowers, uppers,
+      lengths, numspan_type(type));
   }
   else if (null_cnt > 0)
   {
@@ -330,375 +330,37 @@ span_compute_stats_generic(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
 /*****************************************************************************/
 
+PG_FUNCTION_INFO_V1(Span_analyze);
 /**
- * Compute statistics for tstzset columns (callback function)
- *
- * @param[in] stats Structure storing statistics information
- * @param[in] fetchfunc Fetch function
- * @param[in] samplerows Number of sample rows
- * @param[in] totalrows Total number of rows
+ *  Compute statistics for span columns
  */
-static void
-intset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-  int samplerows, double totalrows __attribute__((unused)))
-{
-  span_compute_stats_generic(stats, fetchfunc, samplerows, T_INTSET);
-  return;
-}
-
-/**
- * Compute statistics for tstzset columns (callback function)
- *
- * @param[in] stats Structure storing statistics information
- * @param[in] fetchfunc Fetch function
- * @param[in] samplerows Number of sample rows
- * @param[in] totalrows Total number of rows
- */
-static void
-bigintset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-  int samplerows, double totalrows __attribute__((unused)))
-{
-  span_compute_stats_generic(stats, fetchfunc, samplerows, T_BIGINTSET);
-  return;
-}
-
-/**
- * Compute statistics for tstzset columns (callback function)
- *
- * @param[in] stats Structure storing statistics information
- * @param[in] fetchfunc Fetch function
- * @param[in] samplerows Number of sample rows
- * @param[in] totalrows Total number of rows
- */
-static void
-floatset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-  int samplerows, double totalrows __attribute__((unused)))
-{
-  span_compute_stats_generic(stats, fetchfunc, samplerows, T_FLOATSET);
-  return;
-}
-
-/**
- * Compute statistics for tstzset columns (callback function)
- *
- * @param[in] stats Structure storing statistics information
- * @param[in] fetchfunc Fetch function
- * @param[in] samplerows Number of sample rows
- * @param[in] totalrows Total number of rows
- */
-static void
-tstzset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-  int samplerows, double totalrows __attribute__((unused)))
-{
-  span_compute_stats_generic(stats, fetchfunc, samplerows, T_TSTZSET);
-  return;
-}
-
-/**
- * Compute statistics for tstzset columns (callback function)
- *
- * @param[in] stats Structure storing statistics information
- * @param[in] fetchfunc Fetch function
- * @param[in] samplerows Number of sample rows
- * @param[in] totalrows Total number of rows
- */
-static void
-textset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-  int samplerows, double totalrows __attribute__((unused)))
-{
-  span_compute_stats_generic(stats, fetchfunc, samplerows, T_TEXTSET);
-  return;
-}
-
-/*****************************************************************************/
-
-/**
- * Compute statistics for integer span columns (callback function)
- *
- * @param[in] stats Structure storing statistics information
- * @param[in] fetchfunc Fetch function
- * @param[in] samplerows Number of sample rows
- * @param[in] totalrows Total number of rows
- */
-static void
-intspan_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-  int samplerows, double totalrows __attribute__((unused)))
-{
-  span_compute_stats_generic(stats, fetchfunc, samplerows, T_INTSPAN);
-  return;
-}
-
-/**
- * Compute statistics for big integer span columns (callback function)
- *
- * @param[in] stats Structure storing statistics information
- * @param[in] fetchfunc Fetch function
- * @param[in] samplerows Number of sample rows
- * @param[in] totalrows Total number of rows
- */
-static void
-bigintspan_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-  int samplerows, double totalrows __attribute__((unused)))
-{
-  span_compute_stats_generic(stats, fetchfunc, samplerows, T_BIGINTSPAN);
-  return;
-}
-
-/**
- * Compute statistics for float span columns (callback function)
- *
- * @param[in] stats Structure storing statistics information
- * @param[in] fetchfunc Fetch function
- * @param[in] samplerows Number of sample rows
- * @param[in] totalrows Total number of rows
- */
-static void
-floatspan_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-  int samplerows, double totalrows __attribute__((unused)))
-{
-  span_compute_stats_generic(stats, fetchfunc, samplerows, T_FLOATSPAN);
-  return;
-}
-
-/**
- * Compute statistics for float span columns (callback function)
- *
- * @param[in] stats Structure storing statistics information
- * @param[in] fetchfunc Fetch function
- * @param[in] samplerows Number of sample rows
- * @param[in] totalrows Total number of rows
- */
-static void
-period_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-  int samplerows, double totalrows __attribute__((unused)))
-{
-  span_compute_stats_generic(stats, fetchfunc, samplerows, T_TSTZSPAN);
-  return;
-}
-
-/*****************************************************************************/
-
-/**
- * Compute statistics for integer span set columns (callback function)
- *
- * @param[in] stats Structure storing statistics information
- * @param[in] fetchfunc Fetch function
- * @param[in] samplerows Number of sample rows
- * @param[in] totalrows Total number of rows
- */
-static void
-intspanset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-  int samplerows, double totalrows __attribute__((unused)))
-{
-  span_compute_stats_generic(stats, fetchfunc, samplerows, T_INTSPANSET);
-  return;
-}
-
-/**
- * Compute statistics for big integer span set columns (callback function)
- *
- * @param[in] stats Structure storing statistics information
- * @param[in] fetchfunc Fetch function
- * @param[in] samplerows Number of sample rows
- * @param[in] totalrows Total number of rows
- */
-static void
-bigintspanset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-  int samplerows, double totalrows __attribute__((unused)))
-{
-  span_compute_stats_generic(stats, fetchfunc, samplerows, T_BIGINTSPANSET);
-  return;
-}
-
-/**
- * Compute statistics for float span set columns (callback function)
- *
- * @param[in] stats Structure storing statistics information
- * @param[in] fetchfunc Fetch function
- * @param[in] samplerows Number of sample rows
- * @param[in] totalrows Total number of rows
- */
-static void
-floatspanset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-  int samplerows, double totalrows __attribute__((unused)))
-{
-  span_compute_stats_generic(stats, fetchfunc, samplerows, T_FLOATSPANSET);
-  return;
-}
-
-/**
- * Compute statistics for period set columns (callback function)
- *
- * @param[in] stats Structure storing statistics information
- * @param[in] fetchfunc Fetch function
- * @param[in] samplerows Number of sample rows
- * @param[in] totalrows Total number of rows
- */
-static void
-periodset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-  int samplerows, double totalrows __attribute__((unused)))
-{
-  span_compute_stats_generic(stats, fetchfunc, samplerows, T_TSTZSPANSET);
-  return;
-}
-
-/*****************************************************************************/
-
-/**
- * Generic function to compute statistics for types represented by spans
- */
-static bool
-Span_analyze_ext(FunctionCallInfo fcinfo,
-  void (*func)(VacAttrStats *, AnalyzeAttrFetchFunc, int, double))
+PGDLLEXPORT Datum
+Span_analyze(PG_FUNCTION_ARGS)
 {
   VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
-  Form_pg_attribute attr = stats->attr;
 
-  if (attr->attstattarget < 0)
-    attr->attstattarget = default_statistics_target;
+  /* Ensure type has a span as a bounding box */
+  meosType type = oid_type(stats->attrtypid);
+  assert(set_span_type(type) || span_type(type) || spanset_type(type) ||
+    talpha_type(type));
 
-  stats->compute_stats = func;
+  /*
+   * Call the standard typanalyze function. It may fail to find needed
+   * operators, in which case we also can't do anything, so just fail.
+   */
+  if (! std_typanalyze(stats))
+    PG_RETURN_BOOL(false);
+
+  /* Set the callback function to compute statistics. */
+  stats->compute_stats = &span_compute_stats;
+
+  if (stats->attr->attstattarget < 0)
+    stats->attr->attstattarget = default_statistics_target;
 
   /* same as in std_typanalyze */
-  stats->minrows = 300 * attr->attstattarget;
+  stats->minrows = 300 * stats->attr->attstattarget;
 
   PG_RETURN_BOOL(true);
-}
-
-/*****************************************************************************/
-
-PG_FUNCTION_INFO_V1(Intset_analyze);
-/**
- * Compute statistics for integer set columns
- */
-PGDLLEXPORT Datum
-Intset_analyze(PG_FUNCTION_ARGS)
-{
-  return Span_analyze_ext(fcinfo, &intset_compute_stats);
-}
-
-PG_FUNCTION_INFO_V1(Bigintset_analyze);
-/**
- * Compute statistics for integer set columns
- */
-PGDLLEXPORT Datum
-Bigintset_analyze(PG_FUNCTION_ARGS)
-{
-  return Span_analyze_ext(fcinfo, &bigintset_compute_stats);
-}
-
-PG_FUNCTION_INFO_V1(Floatset_analyze);
-/**
- * Compute statistics for integer set columns
- */
-PGDLLEXPORT Datum
-Floatset_analyze(PG_FUNCTION_ARGS)
-{
-  return Span_analyze_ext(fcinfo, &floatset_compute_stats);
-}
-
-PG_FUNCTION_INFO_V1(Tstzset_analyze);
-/**
- * Compute statistics for timestamp set columns
- */
-PGDLLEXPORT Datum
-Tstzset_analyze(PG_FUNCTION_ARGS)
-{
-  return Span_analyze_ext(fcinfo, &tstzset_compute_stats);
-}
-
-PG_FUNCTION_INFO_V1(Textset_analyze);
-/**
- * Compute statistics for text set columns
- */
-PGDLLEXPORT Datum
-Textset_analyze(PG_FUNCTION_ARGS)
-{
-  return Span_analyze_ext(fcinfo, &textset_compute_stats);
-}
-
-/*****************************************************************************/
-
-PG_FUNCTION_INFO_V1(Intspan_analyze);
-/**
- *  Compute statistics for integer span columns
- */
-PGDLLEXPORT Datum
-Intspan_analyze(PG_FUNCTION_ARGS)
-{
-  return Span_analyze_ext(fcinfo, &intspan_compute_stats);
-}
-
-PG_FUNCTION_INFO_V1(Bigintspan_analyze);
-/**
- *  Compute statistics for big integer span columns
- */
-PGDLLEXPORT Datum
-Bigintspan_analyze(PG_FUNCTION_ARGS)
-{
-  return Span_analyze_ext(fcinfo, &bigintspan_compute_stats);
-}
-
-PG_FUNCTION_INFO_V1(Floatspan_analyze);
-/**
- *  Compute statistics for float span columns
- */
-PGDLLEXPORT Datum
-Floatspan_analyze(PG_FUNCTION_ARGS)
-{
-  return Span_analyze_ext(fcinfo, &floatspan_compute_stats);
-}
-
-PG_FUNCTION_INFO_V1(Period_analyze);
-/**
- *  Compute statistics for float span columns
- */
-PGDLLEXPORT Datum
-Period_analyze(PG_FUNCTION_ARGS)
-{
-  return Span_analyze_ext(fcinfo, &period_compute_stats);
-}
-
-/*****************************************************************************/
-
-PG_FUNCTION_INFO_V1(Intspanset_analyze);
-/**
- * Compute statistics for integer span set columns
- */
-PGDLLEXPORT Datum
-Intspanset_analyze(PG_FUNCTION_ARGS)
-{
-  return Span_analyze_ext(fcinfo, &intspanset_compute_stats);
-}
-
-PG_FUNCTION_INFO_V1(Bigintspanset_analyze);
-/**
- * Compute statistics for integer span set columns
- */
-PGDLLEXPORT Datum
-Bigintspanset_analyze(PG_FUNCTION_ARGS)
-{
-  return Span_analyze_ext(fcinfo, &bigintspanset_compute_stats);
-}
-
-PG_FUNCTION_INFO_V1(Floatspanset_analyze);
-/**
- * Compute statistics for float span set columns
- */
-PGDLLEXPORT Datum
-Floatspanset_analyze(PG_FUNCTION_ARGS)
-{
-  return Span_analyze_ext(fcinfo, &floatspanset_compute_stats);
-}
-
-PG_FUNCTION_INFO_V1(Periodset_analyze);
-/**
- * Compute statistics for period set columns
- */
-PGDLLEXPORT Datum
-Periodset_analyze(PG_FUNCTION_ARGS)
-{
-  return Span_analyze_ext(fcinfo, &periodset_compute_stats);
 }
 
 /*****************************************************************************/

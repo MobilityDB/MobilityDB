@@ -107,16 +107,6 @@ typedef struct
  * Statistics information for temporal types
  *****************************************************************************/
 
-extern void temporal_extra_info(VacAttrStats *stats);
-
-extern void tinstant_compute_stats(VacAttrStats *stats,
-  AnalyzeAttrFetchFunc fetchfunc, int samplerows, double totalrows);
-
-extern void tsequenceset_compute_stats(VacAttrStats *stats,
-  AnalyzeAttrFetchFunc fetchfunc, int samplerows, double totalrows);
-
-/*****************************************************************************/
-
 extern Datum temporal_analyze(FunctionCallInfo fcinfo,
   void (*functemp)(VacAttrStats *, AnalyzeAttrFetchFunc, int, double));
 

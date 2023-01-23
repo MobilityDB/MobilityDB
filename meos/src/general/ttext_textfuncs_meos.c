@@ -33,7 +33,7 @@
 
 #include "general/ttext_textfuncs.h"
 
-/* MobilityDB */
+/* MEOS */
 #include <meos.h>
 
 /*****************************************************************************

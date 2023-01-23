@@ -46,32 +46,6 @@ CREATE FUNCTION tagg_deserialize(bytea, internal)
 
 /*****************************************************************************/
 
--- extent for periods is already defined for span aggregate functions
-
-CREATE FUNCTION timestamp_extent_transfn(tstzspan, timestamptz)
-  RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Timestamp_extent_transfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tstzset_extent_transfn(tstzspan, tstzset)
-  RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Tstzset_extent_transfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-
-CREATE AGGREGATE extent(timestamptz) (
-  SFUNC = timestamp_extent_transfn,
-  STYPE = tstzspan,
-  COMBINEFUNC = span_extent_combinefn,
-  PARALLEL = safe
-);
-CREATE AGGREGATE extent(tstzset) (
-  SFUNC = tstzset_extent_transfn,
-  STYPE = tstzspan,
-  COMBINEFUNC = span_extent_combinefn,
-  PARALLEL = safe
-);
-
-/*****************************************************************************/
-
 CREATE TYPE tint;
 
 CREATE FUNCTION tcount_transfn(internal, timestamptz)
@@ -89,27 +63,6 @@ CREATE FUNCTION tcount_transfn(internal, tstzspan)
 CREATE FUNCTION tcount_transfn(internal, tstzspanset)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Periodset_tcount_transfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-
-CREATE FUNCTION tcount_bucket_transfn(internal, timestamptz, interval DEFAULT NULL,
-    timestamptz DEFAULT '2000-01-03')
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'Timestamp_tcount_bucket_transfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tcount_bucket_transfn(internal, tstzset, interval DEFAULT NULL,
-    timestamptz DEFAULT '2000-01-03')
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'Tstzset_tcount_bucket_transfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tcount_bucket_transfn(internal, tstzspan, interval DEFAULT NULL,
-    timestamptz DEFAULT '2000-01-03')
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'Period_tcount_bucket_transfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tcount_bucket_transfn(internal, tstzspanset, interval DEFAULT NULL,
-    timestamptz DEFAULT '2000-01-03')
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'Periodset_tcount_bucket_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION tcount_combinefn(internal, internal)
@@ -130,27 +83,9 @@ CREATE AGGREGATE tcount(timestamptz) (
   DESERIALFUNC = tagg_deserialize,
   PARALLEL = SAFE
 );
-CREATE AGGREGATE tcount(timestamptz, interval, timestamptz) (
-  SFUNC = tcount_bucket_transfn,
-  STYPE = internal,
-  COMBINEFUNC = tcount_combinefn,
-  FINALFUNC = tint_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
-  PARALLEL = SAFE
-);
 
 CREATE AGGREGATE tcount(tstzset) (
   SFUNC = tcount_transfn,
-  STYPE = internal,
-  COMBINEFUNC = tcount_combinefn,
-  FINALFUNC = tint_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
-  PARALLEL = SAFE
-);
-CREATE AGGREGATE tcount(tstzset, interval, timestamptz) (
-  SFUNC = tcount_bucket_transfn,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
   FINALFUNC = tint_tagg_finalfn,
@@ -168,27 +103,9 @@ CREATE AGGREGATE tcount(tstzspan) (
   DESERIALFUNC = tagg_deserialize,
   PARALLEL = SAFE
 );
-CREATE AGGREGATE tcount(tstzspan, interval, timestamptz) (
-  SFUNC = tcount_bucket_transfn,
-  STYPE = internal,
-  COMBINEFUNC = tcount_combinefn,
-  FINALFUNC = tint_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
-  PARALLEL = SAFE
-);
 
 CREATE AGGREGATE tcount(tstzspanset) (
   SFUNC = tcount_transfn,
-  STYPE = internal,
-  COMBINEFUNC = tcount_combinefn,
-  FINALFUNC = tint_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
-  PARALLEL = SAFE
-);
-CREATE AGGREGATE tcount(tstzspanset, interval, timestamptz) (
-  SFUNC = tcount_bucket_transfn,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
   FINALFUNC = tint_tagg_finalfn,

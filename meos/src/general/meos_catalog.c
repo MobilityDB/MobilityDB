@@ -415,12 +415,35 @@ set_type(meosType type)
 }
 
 /**
+ * @brief Ensure that the type is a set type
+ */
+void
+ensure_set_type(meosType type)
+{
+  if (! set_type(type))
+    elog(ERROR, "unknown set type: %d", type);
+  return;
+}
+
+/**
  * @brief Return true if the type is a set type
  */
 bool
 numset_type(meosType type)
 {
   if (type == T_INTSET || type == T_BIGINTSET || type == T_FLOATSET)
+    return true;
+  return false;
+}
+
+/**
+ * @brief Return true if the type is a set type
+ */
+bool
+set_span_type(meosType type)
+{
+  if (type == T_INTSET || type == T_BIGINTSET || type == T_FLOATSET ||
+    type == T_TSTZSET)
     return true;
   return false;
 }

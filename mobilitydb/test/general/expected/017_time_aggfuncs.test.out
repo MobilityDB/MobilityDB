@@ -206,30 +206,6 @@ SELECT numInstants(tcount(ps)) FROM tbl_tstzspanset;
          906
 (1 row)
 
-SELECT numInstants(tcount(t, '1 week', '2001-01-01')) FROM tbl_timestamptz;
- numinstants 
--------------
-          43
-(1 row)
-
-SELECT numInstants(tcount(t, '1 week', '2001-01-01')) FROM tbl_tstzset;
- numinstants 
--------------
-          44
-(1 row)
-
-SELECT numInstants(tcount(p, '1 week', '2001-01-01')) FROM tbl_tstzspan;
- numinstants 
--------------
-          81
-(1 row)
-
-SELECT numInstants(tcount(ps, '1 week', '2001-01-01')) FROM tbl_tstzspanset;
- numinstants 
--------------
-          84
-(1 row)
-
 SELECT tunion(temp) FROM (VALUES
 (NULL::tstzset),(NULL::tstzset)) t(temp);
  tunion 

@@ -104,22 +104,7 @@ CREATE FUNCTION tstzspanset_send(tstzspanset)
   AS 'MODULE_PATHNAME', 'Spanset_send'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION intspanset_analyze(internal)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Intspanset_analyze'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION bigintspanset_analyze(internal)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Bigintspanset_analyze'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION floatspanset_analyze(internal)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Floatspanset_analyze'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tstzspanset_analyze(internal)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Periodset_analyze'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+/* span_analyze function defined in file 001_set.in.sql */
 
 CREATE TYPE intspanset (
   internallength = variable,
@@ -130,7 +115,7 @@ CREATE TYPE intspanset (
   alignment = double,
 -- The following line makes NULL if size < 128
   storage = extended,
-  analyze = intspanset_analyze
+  analyze = span_analyze
 );
 CREATE TYPE bigintspanset (
   internallength = variable,
@@ -141,7 +126,7 @@ CREATE TYPE bigintspanset (
   alignment = double,
 -- The following line makes NULL if size < 128
   storage = extended,
-  analyze = bigintspanset_analyze
+  analyze = span_analyze
 );
 CREATE TYPE floatspanset (
   internallength = variable,
@@ -152,7 +137,7 @@ CREATE TYPE floatspanset (
   alignment = double,
 -- The following line makes NULL if size < 128
   storage = extended,
-  analyze = floatspanset_analyze
+  analyze = span_analyze
 );
 CREATE TYPE tstzspanset (
   internallength = variable,
@@ -162,7 +147,7 @@ CREATE TYPE tstzspanset (
   send = tstzspanset_send,
   alignment = double,
   storage = extended,
-  analyze = tstzspanset_analyze
+  analyze = span_analyze
 );
 
 -- Input/output in WKB and HexWKB format

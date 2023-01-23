@@ -39,7 +39,7 @@
 #include <fmgr.h>
 #include <access/gist.h>
 #include <access/stratnum.h>
-/* MobilityDB */
+/* MEOS */
 #include "general/temporal.h"
 
 /*****************************************************************************/

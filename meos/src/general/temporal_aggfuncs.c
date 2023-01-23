@@ -875,23 +875,18 @@ temporal_tagg_transform_transfn(SkipList *state, const Temporal *temp,
  * Transform a temporal instant value into a temporal integer value for
  * performing temporal count aggregation
  */
-TInstant *
-tinstant_transform_tcount(const TInstant *inst, const Interval *interval,
-  TimestampTz origin)
+static TInstant *
+tinstant_transform_tcount(const TInstant *inst)
 {
-  TimestampTz t = inst->t;
-  if (interval)
-    t = timestamptz_bucket(t, interval, origin);
-  return tinstant_make(Int32GetDatum(1), T_TINT, t);
+  return tinstant_make(Int32GetDatum(1), T_TINT, inst->t);
 }
 
 /**
  * Transform a temporal discrete sequence value into a temporal integer value
  * for performing temporal count aggregation
  */
-TInstant **
-tdiscseq_transform_tcount(const TSequence *seq, const Interval *interval,
-  TimestampTz origin)
+static TInstant **
+tdiscseq_transform_tcount(const TSequence *seq)
 {
   TInstant **result = palloc(sizeof(TInstant *) * seq->count);
   Datum datum_one = Int32GetDatum(1);
@@ -899,8 +894,6 @@ tdiscseq_transform_tcount(const TSequence *seq, const Interval *interval,
   {
     const TInstant *inst = tsequence_inst_n(seq, i);
     TimestampTz t = inst->t;
-    if (interval)
-      t = timestamptz_bucket(t, interval, origin);
     result[i] = tinstant_make(datum_one, T_TINT, t);
   }
   return result;
@@ -910,15 +903,12 @@ tdiscseq_transform_tcount(const TSequence *seq, const Interval *interval,
  * Transform a temporal sequence value into a temporal integer value for
  * performing temporal count aggregation
  */
-TSequence *
-tcontseq_transform_tcount(const TSequence *seq, const Interval *interval,
-  TimestampTz origin)
+static TSequence *
+tcontseq_transform_tcount(const TSequence *seq)
 {
   TSequence *result;
   Datum datum_one = Int32GetDatum(1);
   TimestampTz t = seq->period.lower;
-  if (interval)
-    t = timestamptz_bucket(t, interval, origin);
   if (seq->count == 1)
   {
     TInstant *inst = tinstant_make(datum_one, T_TINT, t);
@@ -930,12 +920,6 @@ tcontseq_transform_tcount(const TSequence *seq, const Interval *interval,
   TInstant *instants[2];
   instants[0] = tinstant_make(datum_one, T_TINT, t);
   t = seq->period.upper;
-  /* The upper timestamp must be gridded to the next bucket */
-  if (interval)
-  {
-    int64 size = interval_units(interval);
-    t = timestamptz_bucket(t, interval, origin) + size;
-  }
   instants[1] = tinstant_make(datum_one, T_TINT, t);
   result = tsequence_make((const TInstant **) instants, 2,
     seq->period.lower_inc, seq->period.upper_inc, STEPWISE, NORMALIZE_NO);
@@ -947,15 +931,14 @@ tcontseq_transform_tcount(const TSequence *seq, const Interval *interval,
  * Transform a temporal sequence set value into a temporal integer value for
  * performing temporal count aggregation
  */
-TSequence **
-tsequenceset_transform_tcount(const TSequenceSet *ss, const Interval *interval,
-  TimestampTz origin)
+static TSequence **
+tsequenceset_transform_tcount(const TSequenceSet *ss)
 {
   TSequence **result = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
-    result[i] = tcontseq_transform_tcount(seq, interval, origin);
+    result[i] = tcontseq_transform_tcount(seq);
   }
   return result;
 }
@@ -965,37 +948,32 @@ tsequenceset_transform_tcount(const TSequenceSet *ss, const Interval *interval,
  * performing temporal count aggregation (dispatch function)
  */
 Temporal **
-temporal_transform_tcount(const Temporal *temp, const Interval *interval,
-  TimestampTz origin, int *count)
+temporal_transform_tcount(const Temporal *temp, int *count)
 {
   Temporal **result;
   if (temp->subtype == TINSTANT)
   {
     result = palloc(sizeof(Temporal *));
-    result[0] = (Temporal *) tinstant_transform_tcount((TInstant *) temp,
-      interval, origin);
+    result[0] = (Temporal *) tinstant_transform_tcount((TInstant *) temp);
     *count = 1;
   }
   else if (temp->subtype == TSEQUENCE)
   {
     if (MOBDB_FLAGS_GET_DISCRETE(temp->flags))
     {
-      result = (Temporal **) tdiscseq_transform_tcount((TSequence *) temp,
-        interval, origin);
+      result = (Temporal **) tdiscseq_transform_tcount((TSequence *) temp);
       *count = ((TSequence *) temp)->count;
     }
     else
     {
       result = palloc(sizeof(Temporal *));
-      result[0] = (Temporal *) tcontseq_transform_tcount((TSequence *) temp,
-        interval, origin);
+      result[0] = (Temporal *) tcontseq_transform_tcount((TSequence *) temp);
       *count = 1;
     }
   }
   else /* temp->subtype == TSEQUENCESET */
   {
-    result = (Temporal **) tsequenceset_transform_tcount((TSequenceSet *) temp,
-      interval, origin);
+    result = (Temporal **) tsequenceset_transform_tcount((TSequenceSet *) temp);
     *count = ((TSequenceSet *) temp)->count;
   }
   assert(result != NULL);
@@ -1007,11 +985,10 @@ temporal_transform_tcount(const Temporal *temp, const Interval *interval,
  * @brief Generic transition function for temporal aggregation
  */
 SkipList *
-temporal_tcount_transfn(SkipList *state, const Temporal *temp,
-  const Interval *interval, TimestampTz origin)
+temporal_tcount_transfn(SkipList *state, const Temporal *temp)
 {
   int count;
-  Temporal **temparr = temporal_transform_tcount(temp, interval, origin, &count);
+  Temporal **temparr = temporal_transform_tcount(temp, &count);
   if (! state)
     state = skiplist_make((void **) temparr, count, TEMPORAL);
   else
@@ -1108,39 +1085,33 @@ tnumber_tavg_finalfn(SkipList *state)
 /*****************************************************************************/
 
 /**
- * Transition function for temporal extent aggregation of temporal values
+ * @brief Transition function for temporal extent aggregate of temporal values
  */
 Span *
 temporal_extent_transfn(Span *p, const Temporal *temp)
 {
-  Span *result;
-
   /* Can't do anything with null inputs */
   if (! p && ! temp)
     return NULL;
   /* Null period and non-null temporal, return the bbox of the temporal */
   if (! p)
   {
-    result = palloc0(sizeof(Span));
+    Span *result = palloc0(sizeof(Span));
     temporal_set_period(temp, result);
     return result;
   }
   /* Non-null period and null temporal, return the period */
   if (! temp)
-  {
-    result = palloc0(sizeof(Span));
-    memcpy(result, p, sizeof(Span));
-    return result;
-  }
+    return p;
 
   Span p1;
   temporal_set_period(temp, &p1);
-  result = bbox_union_span_span(p, &p1);
-  return result;
+  span_expand(&p1, p);
+  return p;
 }
 
 /**
- * Transition function for temporal extent aggregation for temporal numbers
+ * @brief Transition function for temporal extent aggregate of temporal numbers
  */
 TBox *
 tnumber_extent_transfn(TBox *box, const Temporal *temp)
@@ -1148,23 +1119,22 @@ tnumber_extent_transfn(TBox *box, const Temporal *temp)
   /* Can't do anything with null inputs */
   if (!box && !temp)
     return NULL;
-  TBox *result = palloc0(sizeof(TBox));
   /* Null box and non-null temporal, return the bbox of the temporal */
   if (! box)
   {
+    TBox *result = palloc0(sizeof(TBox));
     temporal_set_bbox(temp, result);
     return result;
   }
   /* Non-null box and null temporal, return the box */
   if (! temp)
-  {
-    memcpy(result, box, sizeof(TBox));
-    return result;
-  }
+    return box;
+
   /* Both box and temporal are not null */
-  temporal_set_bbox(temp, result);
-  tbox_expand(box, result);
-  return result;
+  TBox b;
+  temporal_set_bbox(temp, &b);
+  tbox_expand(&b, box);
+  return box;
 }
 
 /*****************************************************************************/

@@ -143,11 +143,11 @@ SELECT MAX(tmax(b)) FROM tbl_tbox;
 -------------------------------------------------------------------------------
 
 SELECT expandValue(tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])', 2);
-SELECT expandTemporal(tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])', interval '1 day');
+SELECT expandTime(tbox 'TBOX XT([1.0,2.0],[2000-01-01,2000-01-02])', interval '1 day');
 SELECT round(tbox 'TBOX XT([1.123456789,2.123456789],[2000-01-01,2000-01-02])', 2);
 /* Errors */
 SELECT expandValue(tbox 'TBOX T([2000-01-01,2000-01-02])', 2);
-SELECT expandTemporal(tbox 'TBOX X([1,2])', interval '1 day');
+SELECT expandTime(tbox 'TBOX X([1,2])', interval '1 day');
 SELECT round(tbox 'TBOX T([2000-01-01,2000-01-02])', 2);
 
 -------------------------------------------------------------------------------

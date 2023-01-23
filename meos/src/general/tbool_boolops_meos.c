@@ -33,7 +33,7 @@
 
 #include "general/tbool_boolops.h"
 
-/* MobilityDB */
+/* MEOS */
 #include "general/temporaltypes.h"
 
 /*****************************************************************************

@@ -38,7 +38,6 @@
 #include <postgres.h>
 /* MEOS */
 #include "meos.h"
-/* MobilityDB */
 #include "general/temporal.h"
 
 /*****************************************************************************

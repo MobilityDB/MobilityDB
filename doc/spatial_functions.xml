@@ -242,15 +242,15 @@ SELECT asEWKT(transform(tgeompoint 'SRID=4326;Point(4.35 50.85)@2001-01-01', 381
 			<title>Bounding Box Functions</title>
 
 			<itemizedlist>
-				<listitem id="tpoint_expandSpatial">
-					<indexterm><primary><varname>expandSpatial</varname></primary></indexterm>
+				<listitem id="tpoint_expandSpace">
+					<indexterm><primary><varname>expandSpace</varname></primary></indexterm>
 					<para>Get the spatiotemporal bounding box expanded in the spatial dimension by a float value &Z_support; &geography_support;</para>
-					<para><varname>expandSpatial({geo,tpoint},float) → stbox</varname></para>
+					<para><varname>expandSpace({geo,tpoint},float) → stbox</varname></para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT expandSpatial(geography 'Linestring(0 0,1 1)', 2);
+SELECT expandSpace(geography 'Linestring(0 0,1 1)', 2);
 /* SRID=4326;GEODSTBOX Z((-1.000304586490452,-2,-2),
    (3,2.0174497483512503,2.0174524064372834)) */
-SELECT expandSpatial(tgeompoint 'Point(0 0)@2001-01-01', 2);
+SELECT expandSpace(tgeompoint 'Point(0 0)@2001-01-01', 2);
 -- STBOX XT((-2,-2),(2,2),[2001-01-01,2001-01-01])
 </programlisting>
 				</listitem>

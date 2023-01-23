@@ -34,7 +34,7 @@
 #ifndef __TNPOINT_PARSER_H__
 #define __TNPOINT_PARSER_H__
 
-/* MobilityDB */
+/* MEOS */
 #include "general/temporal.h"
 #include "npoint/tnpoint.h"
 

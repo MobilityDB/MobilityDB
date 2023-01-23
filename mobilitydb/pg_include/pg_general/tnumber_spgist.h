@@ -35,7 +35,7 @@
 #ifndef __TNUMBER_SPGIST_H__
 #define __TNUMBER_SPGIST_H__
 
-/* MobilityDB */
+/* MEOS */
 #include "general/temporal.h"
 
 /*****************************************************************************/
