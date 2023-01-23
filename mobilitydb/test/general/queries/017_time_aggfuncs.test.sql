@@ -97,11 +97,6 @@ SELECT numInstants(tcount(t)) FROM tbl_tstzset;
 SELECT numInstants(tcount(p)) FROM tbl_tstzspan;
 SELECT numInstants(tcount(ps)) FROM tbl_tstzspanset;
 
-SELECT numInstants(tcount(t, '1 week', '2001-01-01')) FROM tbl_timestamptz;
-SELECT numInstants(tcount(t, '1 week', '2001-01-01')) FROM tbl_tstzset;
-SELECT numInstants(tcount(p, '1 week', '2001-01-01')) FROM tbl_tstzspan;
-SELECT numInstants(tcount(ps, '1 week', '2001-01-01')) FROM tbl_tstzspanset;
-
 -------------------------------------------------------------------------------
 
 SELECT tunion(temp) FROM (VALUES

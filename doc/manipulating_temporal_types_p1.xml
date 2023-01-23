@@ -1981,19 +1981,13 @@ SELECT round(tfloat '[0.785398163397448@2000-01-01, 2.35619449019234@2000-01-02]
 
 			<listitem id="degrees">
 				<indexterm><primary><varname>degrees</varname></primary></indexterm>
-				<para>Convert from radians to degrees</para>
+				<indexterm><primary><varname>radians</varname></primary></indexterm>
+				<para>Convert between radians and degrees</para>
 				<para><varname>degrees(tfloat) → tfloat</varname></para>
+				<para><varname>radians(tfloat) → tfloat</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT degrees(tfloat '[0.785398163397448@2000-01-01, 2.35619449019234@2000-01-02]');
 -- [45@2000-01-01, 135@2000-01-02]
-</programlisting>
-			</listitem>
-
-			<listitem id="radians">
-				<indexterm><primary><varname>radians</varname></primary></indexterm>
-				<para>Convert from degrees to radians</para>
-				<para><varname>radians(tfloat) → tfloat</varname></para>
-				<programlisting language="sql" xml:space="preserve">
 SELECT radians(tfloat '[45@2000-01-01, 135@2000-01-02]');
 -- [0.785398163397448@2000-01-01, 2.35619449019234@2000-01-02]
 </programlisting>
@@ -2092,7 +2086,7 @@ SELECT ttext '[A@2001-01-01, B@2001-01-03, C@2001-01-04]' ||
 			<listitem id="ttext_lower">
 				<indexterm><primary><varname>lower</varname></primary></indexterm>
 				<indexterm><primary><varname>upper</varname></primary></indexterm>
-				<para>Transform to lowercase/uppercase</para>
+				<para>Transform between lowercase and uppercase</para>
 				<para><varname>upper(ttext) → ttext</varname></para>
 				<para><varname>lower(ttext) → ttext</varname></para>
 				<programlisting language="sql" xml:space="preserve">

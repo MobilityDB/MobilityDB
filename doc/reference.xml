@@ -944,7 +944,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="degrees"><varname>degrees</varname></link>: Convert from radians to degrees</para>
+					<para><link linkend="degrees"><varname>degrees</varname>, <varname>radians</varname></link>: Convert between radians and degrees</para>
 				</listitem>
 
 				<listitem>
@@ -983,7 +983,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttext_lower"><varname>lower</varname>, <varname>upper</varname></link>: Transform to lowercase/uppercase</para>
+					<para><link linkend="ttext_lower"><varname>lower</varname>, <varname>upper</varname></link>: Transform between lowercase and uppercase</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

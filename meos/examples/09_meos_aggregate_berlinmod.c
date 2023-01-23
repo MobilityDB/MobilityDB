@@ -130,7 +130,8 @@ int main(void)
 
     /* Add the current value to the running aggregates */
     extent = tpoint_extent_transfn(extent, trip_rec.trip);
-    state = temporal_tcount_transfn(state, trip_rec.trip, interval, origin);
+    // state = temporal_tcount_transfn(state, trip_rec.trip, interval, origin);
+    state = temporal_tcount_transfn(state, trip_rec.trip);
     /* Free memory */
     free(trip_rec.trip);
 

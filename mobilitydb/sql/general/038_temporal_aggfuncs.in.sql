@@ -90,11 +90,6 @@ CREATE FUNCTION tcount_transfn(internal, tbool)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tcount_bucket_transfn(internal, tbool, interval DEFAULT NULL,
-    timestamptz DEFAULT '2000-01-03')
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'Temporal_tcount_bucket_transfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION tbool_tand_transfn(internal, tbool)
   RETURNS internal
@@ -119,17 +114,6 @@ CREATE FUNCTION tbool_tagg_finalfn(internal)
 
 CREATE AGGREGATE tcount(tbool) (
   SFUNC = tcount_transfn,
-  STYPE = internal,
-#if POSTGRESQL_VERSION_NUMBER >= 130000
-  COMBINEFUNC = tcount_combinefn,
-#endif //POSTGRESQL_VERSION_NUMBER >= 130000
-  FINALFUNC = tint_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
-  PARALLEL = SAFE
-);
-CREATE AGGREGATE tcount(tbool, interval, timestamptz) (
-  SFUNC = tcount_bucket_transfn,
   STYPE = internal,
 #if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = tcount_combinefn,
@@ -168,14 +152,6 @@ CREATE AGGREGATE tor(tbool) (
 CREATE FUNCTION tcount_transfn(internal, tint)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tcount_bucket_transfn(internal, tint, interval)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'Temporal_tcount_bucket_transfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tcount_bucket_transfn(internal, tint, interval, timestamptz)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'Temporal_tcount_bucket_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION tint_tmin_transfn(internal, tint)
@@ -218,28 +194,6 @@ CREATE FUNCTION tavg_finalfn(internal)
 
 CREATE AGGREGATE tcount(tint) (
   SFUNC = tcount_transfn,
-  STYPE = internal,
-#if POSTGRESQL_VERSION_NUMBER >= 130000
-  COMBINEFUNC = tcount_combinefn,
-#endif //POSTGRESQL_VERSION_NUMBER >= 130000
-  FINALFUNC = tint_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
-  PARALLEL = SAFE
-);
-CREATE AGGREGATE tcount(tint, interval) (
-  SFUNC = tcount_bucket_transfn,
-  STYPE = internal,
-#if POSTGRESQL_VERSION_NUMBER >= 130000
-  COMBINEFUNC = tcount_combinefn,
-#endif //POSTGRESQL_VERSION_NUMBER >= 130000
-  FINALFUNC = tint_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
-  PARALLEL = SAFE
-);
-CREATE AGGREGATE tcount(tint, interval, timestamptz) (
-  SFUNC = tcount_bucket_transfn,
   STYPE = internal,
 #if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = tcount_combinefn,
@@ -299,15 +253,6 @@ CREATE FUNCTION tcount_transfn(internal, tfloat)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tcount_bucket_transfn(internal, tfloat, interval)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'Temporal_tcount_bucket_transfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tcount_bucket_transfn(internal, tfloat, interval, timestamptz)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'Temporal_tcount_bucket_transfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-
 
 CREATE FUNCTION tfloat_tmin_transfn(internal, tfloat)
   RETURNS internal
@@ -344,28 +289,6 @@ CREATE FUNCTION tavg_transfn(internal, tfloat)
 
 CREATE AGGREGATE tcount(tfloat) (
   SFUNC = tcount_transfn,
-  STYPE = internal,
-#if POSTGRESQL_VERSION_NUMBER >= 130000
-  COMBINEFUNC = tcount_combinefn,
-#endif //POSTGRESQL_VERSION_NUMBER >= 130000
-  FINALFUNC = tint_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
-  PARALLEL = SAFE
-);
-CREATE AGGREGATE tcount(tfloat, interval) (
-  SFUNC = tcount_bucket_transfn,
-  STYPE = internal,
-#if POSTGRESQL_VERSION_NUMBER >= 130000
-  COMBINEFUNC = tcount_combinefn,
-#endif //POSTGRESQL_VERSION_NUMBER >= 130000
-  FINALFUNC = tint_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
-  PARALLEL = SAFE
-);
-CREATE AGGREGATE tcount(tfloat, interval, timestamptz) (
-  SFUNC = tcount_bucket_transfn,
   STYPE = internal,
 #if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = tcount_combinefn,
@@ -427,14 +350,6 @@ CREATE FUNCTION tcount_transfn(internal, ttext)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tcount_bucket_transfn(internal, ttext, interval)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'Temporal_tcount_bucket_transfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tcount_bucket_transfn(internal, ttext, interval, timestamptz)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'Temporal_tcount_bucket_transfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION ttext_tmin_transfn(internal, ttext)
   RETURNS internal
@@ -459,28 +374,6 @@ CREATE FUNCTION ttext_tagg_finalfn(internal)
 
 CREATE AGGREGATE tcount(ttext) (
   SFUNC = tcount_transfn,
-  STYPE = internal,
-#if POSTGRESQL_VERSION_NUMBER >= 130000
-  COMBINEFUNC = tcount_combinefn,
-#endif //POSTGRESQL_VERSION_NUMBER >= 130000
-  FINALFUNC = tint_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
-  PARALLEL = SAFE
-);
-CREATE AGGREGATE tcount(ttext, interval) (
-  SFUNC = tcount_bucket_transfn,
-  STYPE = internal,
-#if POSTGRESQL_VERSION_NUMBER >= 130000
-  COMBINEFUNC = tcount_combinefn,
-#endif //POSTGRESQL_VERSION_NUMBER >= 130000
-  FINALFUNC = tint_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
-  PARALLEL = SAFE
-);
-CREATE AGGREGATE tcount(ttext, interval, timestamptz) (
-  SFUNC = tcount_bucket_transfn,
   STYPE = internal,
 #if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = tcount_combinefn,

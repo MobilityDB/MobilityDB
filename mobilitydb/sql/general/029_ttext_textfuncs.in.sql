@@ -37,31 +37,31 @@
  *****************************************************************************/
 
 
-CREATE FUNCTION textcat(text, ttext)
+CREATE FUNCTION ttext_cat(text, ttext)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Textcat_text_ttext'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION textcat(ttext, text)
+CREATE FUNCTION ttext_cat(ttext, text)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Textcat_ttext_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION textcat(ttext, ttext)
+CREATE FUNCTION ttext_cat(ttext, ttext)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Textcat_ttext_ttext'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR || (
-  PROCEDURE = textcat,
+  PROCEDURE = ttext_cat,
   LEFTARG = text, RIGHTARG = ttext,
   COMMUTATOR = ||
 );
 CREATE OPERATOR || (
-  PROCEDURE = textcat,
+  PROCEDURE = ttext_cat,
   LEFTARG = ttext, RIGHTARG = text,
   COMMUTATOR = ||
 );
 CREATE OPERATOR || (
-  PROCEDURE = textcat,
+  PROCEDURE = ttext_cat,
   LEFTARG = ttext, RIGHTARG = ttext,
   COMMUTATOR = ||
 );

@@ -60,28 +60,10 @@ CREATE FUNCTION tcount_transfn(internal, tgeompoint)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tcount_bucket_transfn(internal, tgeompoint, interval)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'Temporal_tcount_bucket_transfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tcount_bucket_transfn(internal, tgeompoint, interval,
-    timestamptz)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'Temporal_tcount_bucket_transfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION tcount_transfn(internal, tgeogpoint)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tcount_bucket_transfn(internal, tgeogpoint, interval)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'Temporal_tcount_bucket_transfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tcount_bucket_transfn(internal, tgeogpoint, interval,
-    timestamptz)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'Temporal_tcount_bucket_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE tcount(tgeompoint) (
@@ -95,53 +77,9 @@ CREATE AGGREGATE tcount(tgeompoint) (
   DESERIALFUNC = tagg_deserialize,
   PARALLEL = SAFE
 );
-CREATE AGGREGATE tcount(tgeompoint, interval) (
-  SFUNC = tcount_bucket_transfn,
-  STYPE = internal,
-#if POSTGRESQL_VERSION_NUMBER >= 130000
-  COMBINEFUNC = tcount_combinefn,
-#endif //POSTGRESQL_VERSION_NUMBER >= 130000
-  FINALFUNC = tint_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
-  PARALLEL = SAFE
-);
-CREATE AGGREGATE tcount(tgeompoint, interval, timestamptz) (
-  SFUNC = tcount_bucket_transfn,
-  STYPE = internal,
-#if POSTGRESQL_VERSION_NUMBER >= 130000
-  COMBINEFUNC = tcount_combinefn,
-#endif //POSTGRESQL_VERSION_NUMBER >= 130000
-  FINALFUNC = tint_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
-  PARALLEL = SAFE
-);
 
 CREATE AGGREGATE tcount(tgeogpoint) (
   SFUNC = tcount_transfn,
-  STYPE = internal,
-#if POSTGRESQL_VERSION_NUMBER >= 130000
-  COMBINEFUNC = tcount_combinefn,
-#endif //POSTGRESQL_VERSION_NUMBER >= 130000
-  FINALFUNC = tint_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
-  PARALLEL = SAFE
-);
-CREATE AGGREGATE tcount(tgeogpoint, interval) (
-  SFUNC = tcount_bucket_transfn,
-  STYPE = internal,
-#if POSTGRESQL_VERSION_NUMBER >= 130000
-  COMBINEFUNC = tcount_combinefn,
-#endif //POSTGRESQL_VERSION_NUMBER >= 130000
-  FINALFUNC = tint_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
-  PARALLEL = SAFE
-);
-CREATE AGGREGATE tcount(tgeogpoint, interval, timestamptz) (
-  SFUNC = tcount_bucket_transfn,
   STYPE = internal,
 #if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = tcount_combinefn,

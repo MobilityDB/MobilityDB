@@ -62,8 +62,6 @@ SELECT round(extent(temp), 6) FROM tbl_tgeogpoint3D;
 
 SELECT numInstants(tcentroid(inst)) FROM tbl_tgeompoint_inst;
 SELECT numInstants(tcount(inst)) FROM tbl_tgeompoint_inst;
--- SELECT numInstants(tcount(inst, '12 hours')) FROM tbl_tgeompoint_inst;
--- SELECT numInstants(tcount(inst, '12 hours', '2020-01-01')) FROM tbl_tgeompoint_inst;
 SELECT k%10, numInstants(tcentroid(inst)) FROM tbl_tgeompoint_inst GROUP BY k%10 ORDER BY k%10;
 SELECT k%10, numInstants(tcount(inst)) FROM tbl_tgeompoint_inst GROUP BY k%10 ORDER BY k%10;
 
@@ -74,8 +72,6 @@ SELECT k%10, numInstants(tcount(ti)) FROM tbl_tgeompoint_discseq GROUP BY k%10 O
 
 SELECT numSequences(tcentroid(seq)) FROM tbl_tgeompoint_seq;
 SELECT numSequences(tcount(seq)) FROM tbl_tgeompoint_seq;
--- SELECT numSequences(tcount(seq, '12 hours')) FROM tbl_tgeompoint_seq;
--- SELECT numSequences(tcount(seq, '12 hours', '2020-01-01')) FROM tbl_tgeompoint_seq;
 SELECT k%10, numSequences(tcentroid(seq)) FROM tbl_tgeompoint_seq GROUP BY k%10 ORDER BY k%10;
 SELECT k%10, numSequences(tcount(seq)) FROM tbl_tgeompoint_seq GROUP BY k%10 ORDER BY k%10;
 
@@ -107,16 +103,12 @@ SELECT k%10, numSequences(tcount(ss)) FROM tbl_tgeompoint3D_seqset GROUP BY k%10
 -------------------------------------------------------------------------------
 
 SELECT numInstants(tcount(inst)) FROM tbl_tgeogpoint_inst;
--- SELECT numInstants(tcount(inst, '12 hours')) FROM tbl_tgeogpoint_inst;
--- SELECT numInstants(tcount(inst, '12 hours', '2020-01-01')) FROM tbl_tgeogpoint_inst;
 SELECT k%10, numInstants(tcount(inst)) FROM tbl_tgeogpoint_inst GROUP BY k%10 ORDER BY k%10;
 
 SELECT numInstants(tcount(ti)) FROM tbl_tgeogpoint_discseq;
 SELECT k%10, numInstants(tcount(ti)) FROM tbl_tgeogpoint_discseq GROUP BY k%10 ORDER BY k%10;
 
 SELECT numSequences(tcount(seq)) FROM tbl_tgeogpoint_seq;
--- SELECT numSequences(tcount(seq, '12 hours')) FROM tbl_tgeogpoint_seq;
--- SELECT numSequences(tcount(seq, '12 hours', '2020-01-01')) FROM tbl_tgeogpoint_seq;
 SELECT k%10, numSequences(tcount(seq)) FROM tbl_tgeogpoint_seq GROUP BY k%10 ORDER BY k%10;
 
 SELECT numSequences(tcount(ss)) FROM tbl_tgeogpoint_seqset;

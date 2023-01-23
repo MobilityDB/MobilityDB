@@ -71,8 +71,7 @@ extern SkipList *tinstant_tagg_transfn(SkipList *state, const TInstant *inst,
 extern TSequence *tinstant_tavg_finalfn(TInstant **instants, int count);
 extern TSequenceSet *tsequence_tavg_finalfn(TSequence **sequences, int count);
 extern TInstant *tnumberinst_transform_tavg(const TInstant *inst);
-extern Temporal **temporal_transform_tcount(const Temporal *temp,
-  const Interval *interval, TimestampTz origin, int *count);
+extern Temporal **temporal_transform_tcount(const Temporal *temp, int *count);
 extern Temporal **temporal_transform_tagg(const Temporal *temp, int *count,
   TInstant *(*func)(const TInstant *));
 extern SkipList *tsequenceset_tagg_transfn(SkipList *state,
