@@ -705,7 +705,7 @@ SELECT tscale(tstzset '{2001-01-01}', '-1 day');
 			<listitem id="setspan_shiftTscale">
 				<indexterm><primary><varname>shiftTscale</varname></primary></indexterm>
 				<para>Desplazar y escalear el valor de tiempo con los dos intervalos. Esta función combina en un solo paso las funciones <link linkend="setspan_shift"><varname>shift</varname></link> y <link linkend="setspan_tscale"><varname>tscale</varname></link>.</para>
-				<para><varname>shiftTscale({tstzset,tstzspan,tstzspanset},interval,interval):</varname></para>
+				<para><varname>shiftTscale({tstzset,tstzspan,tstzspanset},interval,interval) →</varname></para>
 				<para><varname>  {tstzset,tstzspan,tstzspanset}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT shiftTscale(tstzset '{2001-01-01}', '1 day', '1 day');

@@ -479,7 +479,7 @@ SELECT tgeogpoint_contseq(ARRAY[tgeogpoint 'Point(0 0)@2001-01-01 08:00:00',
 				<para><varname>ttype_seqset(ttype_contseq[]) → ttype_seqset</varname></para>
 				<para><varname>tscalar_seqset_gaps(tint_inst[],maxt='0 minutes') → tscalar_seqset</varname></para>
 				<para><varname>tdisc_seqset_gaps(tint_inst[],maxdist=0.0,maxt='0 minutes') → tdisc_seqset</varname></para>
-				<para><varname>tcont_seqset_gaps(tcont_inst[],linear=true,maxdist=0.0,maxt='0 minutes'):</varname></para>
+				<para><varname>tcont_seqset_gaps(tcont_inst[],linear=true,maxdist=0.0,maxt='0 minutes') →</varname></para>
 				<para><varname>  tcont_seqset</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbool_seqset(ARRAY[tbool '[false@2001-01-01 08:00:00, false@2001-01-01 08:05:00)',
