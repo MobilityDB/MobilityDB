@@ -56,7 +56,7 @@
 
 #if MEOS
 /**
- * Create a double2 value from the double values
+ * @brief Create a double2 value from the double values
  */
 double2 *
 double2_make(double a, double b)
@@ -84,7 +84,7 @@ double2_out(const double2 *d, int maxdd)
 #endif /* MEOS */
 
 /**
- * Set a double2 value from the double values
+ * @brief Set a double2 value from the double values
  */
 void
 double2_set(double a, double b, double2 *result)
@@ -96,7 +96,7 @@ double2_set(double a, double b, double2 *result)
 }
 
 /**
- * Return the addition of the double2 values
+ * @brief Return the addition of the double2 values
  */
 double2 *
 double2_add(const double2 *d1, const double2 *d2)
@@ -108,7 +108,7 @@ double2_add(const double2 *d1, const double2 *d2)
 }
 
 /**
- * Return true if the double2 values are equal
+ * @brief Return true if the double2 values are equal
  */
 bool
 double2_eq(const double2 *d1, const double2 *d2)

@@ -209,7 +209,6 @@ stbox_parse(const char **str)
 
 /**
  * @brief Parse a temporal instant point from the buffer.
- *
  * @param[in] str Input string
  * @param[in] temptype Temporal type
  * @param[in] end Set to true when reading a single instant to ensure there is
@@ -252,7 +251,6 @@ tpointinst_parse(const char **str, meosType temptype, bool end, bool make,
 
 /**
  * @brief Parse a temporal discrete sequence point from the buffer.
- *
  * @param[in] str Input string
  * @param[in] temptype Temporal type
  * @param[in,out] tpoint_srid SRID of the temporal point
@@ -293,7 +291,6 @@ tpointdiscseq_parse(const char **str, meosType temptype, int *tpoint_srid)
 
 /**
  * @brief Parse a temporal sequence point from the buffer.
- *
  * @param[in] str Input string
  * @param[in] temptype Temporal type
  * @param[in] interp Interpolation
@@ -351,7 +348,6 @@ tpointseq_parse(const char **str, meosType temptype, interpType interp,
 
 /**
  * @brief Parse a temporal sequence set point from the buffer.
- *
  * @param[in] str Input string
  * @param[in] temptype Temporal type
  * @param[in] interp Interpolation
@@ -394,7 +390,6 @@ tpointseqset_parse(const char **str, meosType temptype, interpType interp,
 
 /**
  * @brief Parse a temporal point value from the buffer.
- *
  * @param[in] str Input string
  * @param[in] temptype Temporal type
  */

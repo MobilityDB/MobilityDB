@@ -66,8 +66,8 @@
  *****************************************************************************/
 
 /**
- * Convert the geometry/geography point and the measure into a PostGIS point
- * with an M coordinate
+ * @brief Convert the geometry/geography point and the measure into a PostGIS
+ * point with an M coordinate
  */
 static LWPOINT *
 point_measure_to_lwpoint(Datum point, Datum measure)
@@ -91,7 +91,7 @@ point_measure_to_lwpoint(Datum point, Datum measure)
 }
 
 /**
- * Convert the temporal instant point into a PostGIS trajectory point
+ * @brief Convert the temporal instant point into a PostGIS trajectory point
  * where the M coordinate encodes the timestamp in Unix epoch
  */
 static LWPOINT *
@@ -107,7 +107,7 @@ tpointinst_to_lwpoint(const TInstant *inst)
  *****************************************************************************/
 
 /**
- * Construct a geometry/geography with M measure from the temporal instant
+ * @brief Construct a geometry/geography with M measure from the temporal instant
  * point and the temporal float.
  *
  * @param[in] inst Temporal point
@@ -125,7 +125,7 @@ tpointinst_to_geo_measure(const TInstant *inst, const TInstant *measure)
 }
 
 /**
- * Construct a geometry/geography with M measure from the temporal discrete
+ * @brief Construct a geometry/geography with M measure from the temporal discrete
  * sequence point and the temporal float.
  *
  * @param[in] seq Temporal point
@@ -164,7 +164,7 @@ tpointdiscseq_to_geo_measure(const TSequence *seq, const TSequence *measure)
 }
 
 /**
- * Construct a geometry/geography with M measure from the temporal sequence
+ * @brief Construct a geometry/geography with M measure from the temporal sequence
  * point and the temporal float. The function removes one point if two
  * consecutive points are equal
  *
@@ -215,7 +215,7 @@ tpointseq_to_geo_measure1(const TSequence *seq, const TSequence *measure)
 }
 
 /**
- * Converts the temporal sequence point into a PostGIS trajectory
+ * @brief Converts the temporal sequence point into a PostGIS trajectory
  * geometry/geography where the M coordinates encode the timestamps in
  * Unix epoch
  */
@@ -250,9 +250,8 @@ tpointseq_to_geo1(const TSequence *seq)
 }
 
 /**
- * Construct a geometry/geography with M measure from the temporal sequence
- * point and the temporal float.
- *
+ * @brief Construct a geometry/geography with M measure from the temporal
+ * sequence point and the temporal float.
  * @param[in] seq Temporal point
  * @param[in] measure Temporal float
  */
@@ -266,9 +265,8 @@ tpointseq_to_geo_measure(const TSequence *seq, const TSequence *measure)
 }
 
 /**
- * Construct a geometry/geography with M measure from the temporal sequence
- * point and the temporal float.
- *
+ * @brief Construct a geometry/geography with M measure from the temporal
+ * sequence point and the temporal float.
  * @param[in] ss Temporal point
  * @param[in] measure Temporal float
  */
@@ -320,8 +318,8 @@ tpointseqset_to_geo_measure(const TSequenceSet *ss, const TSequenceSet *measure)
 /*****************************************************************************/
 
 /**
- * Construct a geometry/geography with M measure from the temporal sequence
- * point and the temporal float.
+ * @brief Construct a geometry/geography with M measure from the temporal
+ * sequence point and the temporal float.
  *
  * Version that produces a Multilinestring when each composing linestring
  * corresponds to a segment of the orginal temporal point.
@@ -364,7 +362,7 @@ tpointseq_to_geo_measure_segmentize1(const TSequence *seq,
 }
 
 /**
- * Converts the temporal sequence point into a PostGIS trajectory
+ * @brief Converts the temporal sequence point into a PostGIS trajectory
  * geometry/geography where the M coordinates encode the timestamps in
  * Unix epoch
  *
@@ -402,7 +400,7 @@ tpointseq_to_geo_segmentize1(const TSequence *seq, LWGEOM **result)
 }
 
 /**
- * Construct a geometry/geography with M measure from the temporal sequence
+ * @brief Construct a geometry/geography with M measure from the temporal sequence
  * point and the temporal float.
  *
  * Version that produces a Multilinestring when each composing linestring
@@ -436,7 +434,7 @@ tpointseq_to_geo_measure_segmentize(const TSequence *seq,
 }
 
 /**
- * Construct a geometry/geography with M measure from the temporal sequence set
+ * @brief Construct a geometry/geography with M measure from the temporal sequence set
  * point and the temporal float.
  *
  * Version that produces a Multilinestring when each composing linestring
@@ -560,8 +558,8 @@ tpoint_to_geo_measure(const Temporal *tpoint, const Temporal *measure,
  *****************************************************************************/
 
 /**
- * Converts the PostGIS trajectory geometry/geography where the M coordinates
- * encode the timestamps in Unix epoch into a temporal instant point.
+ * @brief Convert the PostGIS trajectory geometry/geography where the M
+ * coordinates encode the timestamps in Unix epoch into a temporal instant point.
  */
 static TInstant *
 trajpoint_to_tpointinst(LWPOINT *lwpoint)
@@ -591,8 +589,8 @@ trajpoint_to_tpointinst(LWPOINT *lwpoint)
 }
 
 /**
- * Converts the PostGIS trajectory geometry/geography where the M coordinates
- * encode the timestamps in Unix epoch into a temporal instant point.
+ * @brief Convert the PostGIS trajectory geometry/geography where the M
+ * coordinates encode the timestamps in Unix epoch into a temporal instant point.
  */
 static TInstant *
 geo_to_tpointinst(const GSERIALIZED *geo)
@@ -605,8 +603,9 @@ geo_to_tpointinst(const GSERIALIZED *geo)
 }
 
 /**
- * Converts the PostGIS trajectory geometry/geography where the M coordinates
- * encode the timestamps in Unix epoch into a temporal discrete sequence point.
+ * @brief Convert the PostGIS trajectory geometry/geography where the M
+ * coordinates encode the timestamps in Unix epoch into a temporal discrete
+ * sequence point.
  */
 static TSequence *
 geo_to_tpointdiscseq(const GSERIALIZED *geo)
@@ -648,8 +647,8 @@ geo_to_tpointdiscseq(const GSERIALIZED *geo)
 }
 
 /**
- * Converts the PostGIS trajectory geometry/geography where the M coordinates
- * encode the timestamps in Unix epoch into a temporal sequence point.
+ * @brief Convert the PostGIS trajectory geometry/geography where the M
+ * coordinates encode the timestamps in Unix epoch into a temporal sequence point.
  */
 static TSequence *
 geo_to_tpointseq(const GSERIALIZED *geo)
@@ -699,8 +698,9 @@ geo_to_tpointseq(const GSERIALIZED *geo)
 }
 
 /**
- * Converts the PostGIS trajectory geometry/geography where the M coordinates
- * encode the timestamps in Unix epoch into a temporal sequence set point.
+ * @brief Convert the PostGIS trajectory geometry/geography where the M
+ * coordinates encode the timestamps in Unix epoch into a temporal sequence
+ * set point.
  */
 static TSequenceSet *
 geo_to_tpointseqset(const GSERIALIZED *geo)
@@ -772,10 +772,9 @@ geo_to_tpoint(const GSERIALIZED *geo)
  ***********************************************************************/
 
 /**
- * Finds a split when simplifying the temporal sequence point using a
+ * @brief Find a split when simplifying the temporal sequence point using a
  * spatio-temporal extension of the Douglas-Peucker line simplification
  * algorithm.
- *
  * @param[in] seq Temporal sequence
  * @param[in] i1,i2 Indexes of the reference instants
  * @param[out] split Location of the split
@@ -816,8 +815,8 @@ tfloatseq_findsplit(const TSequence *seq, int i1, int i2, int *split,
 }
 
 /**
- * Return a negative or a positive value depending on whether the first number
- * is less than or greater than the second one
+ * @brief Return a negative or a positive value depending on whether the first
+ * number is less than or greater than the second one
  */
 static int
 int_cmp(const void *a, const void *b)
@@ -837,8 +836,7 @@ int_cmp(const void *a, const void *b)
 
 #if 0 /* not used */
 /**
- * Return the speed of the temporal point in the segment in units per second
- *
+ * @brief Return the speed of the temporal point in the segment in units per second
  * @param[in] inst1, inst2 Instants defining the segment
  * @param[in] func Distance function (2D, 3D, or geodetic)
  */
@@ -855,7 +853,7 @@ tpointinst_speed(const TInstant *inst1, const TInstant *inst2,
 #endif /* not used */
 
 /**
- * Return the 2D distance between the points
+ * @brief Return the 2D distance between the points
  */
 static double
 dist2d_pt_pt(POINT2D *p1, POINT2D *p2)
@@ -864,7 +862,7 @@ dist2d_pt_pt(POINT2D *p1, POINT2D *p2)
 }
 
 /**
- * Return the 3D distance between the points
+ * @brief Return the 3D distance between the points
  */
 static double
 dist3d_pt_pt(POINT3DZ *p1, POINT3DZ *p2)
@@ -873,8 +871,7 @@ dist3d_pt_pt(POINT3DZ *p1, POINT3DZ *p2)
 }
 
 /**
- * Return the 2D distance between the point the segment
- *
+ * @brief Return the 2D distance between the point the segment
  * @param[in] p Point
  * @param[in] A,B Points defining the segment
  * @see http://geomalgorithms.com/a02-_lines.html
@@ -907,8 +904,7 @@ dist2d_pt_seg(POINT2D *p, POINT2D *A, POINT2D *B)
 }
 
 /**
- * Return the 3D distance between the point the segment
- *
+ * @brief Return the 3D distance between the point the segment
  * @param[in] p Point
  * @param[in] A,B Points defining the segment
  * @note Derived from the PostGIS function lw_dist3d_pt_seg in file
@@ -944,10 +940,9 @@ dist3d_pt_seg(POINT3DZ *p, POINT3DZ *A, POINT3DZ *B)
 }
 
 /**
- * Finds a split when simplifying the temporal sequence point using a
+ * @brief Find a split when simplifying the temporal sequence point using a
  * spatio-temporal extension of the Douglas-Peucker line simplification
  * algorithm.
- *
  * @param[in] seq Temporal sequence
  * @param[in] i1,i2 Indexes of the reference instants
  * @param[in] synchronized True when using the Synchronized Euclidean Distance
@@ -1102,9 +1097,8 @@ tsequence_simplify(const TSequence *seq, double eps_dist, bool synchronized,
 }
 
 /**
- * Simplify the temporal sequence set float/point using a spatio-temporal
+ * @brief Simplify the temporal sequence set float/point using a spatio-temporal
  * extension of the Douglas-Peucker line simplification algorithm.
- *
  * @param[in] ss Temporal point
  * @param[in] eps_dist Epsilon speed
  * @param[in] synchronized True when computing the Synchronized Euclidean
@@ -1151,8 +1145,8 @@ temporal_simplify(const Temporal *temp, double eps_dist, bool synchronized)
  *****************************************************************************/
 
 /**
- * Return a temporal point with consecutive equal points removed.
- * Equality test only on x and y dimensions of input.
+ * @brief Return a temporal point with consecutive equal points removed.
+ * @note The equality test is done only on x and y dimensions of input.
  */
 static TSequence *
 tpointseq_remove_repeated_points(const TSequence *seq, double tolerance,
@@ -1215,8 +1209,8 @@ tpointseq_remove_repeated_points(const TSequence *seq, double tolerance,
 }
 
 /**
- * Return a temporal point with consecutive equal points removed.
- * Equality test only on x and y dimensions of input.
+ * @brief Return a temporal point with consecutive equal points removed.
+ * @note The equality test is done only on x and y dimensions of input.
  */
 static TSequenceSet *
 tpointseqset_remove_repeated_points(const TSequenceSet *ss, double tolerance,
@@ -1262,8 +1256,8 @@ tpointseqset_remove_repeated_points(const TSequenceSet *ss, double tolerance,
 }
 
 /**
- * Return a temporal point with consecutive equal points removed.
- * Equality test only on x and y dimensions of input.
+ * @brief Return a temporal point with consecutive equal points removed.
+ * @note The equality test is done only on x and y dimensions of input.
  */
 static Temporal *
 tpoint_remove_repeated_points(const Temporal *temp, double tolerance,
@@ -1287,7 +1281,7 @@ tpoint_remove_repeated_points(const Temporal *temp, double tolerance,
  *****************************************************************************/
 
 /**
- * Affine transform a temporal point (iterator function)
+ * @brief Affine transform a temporal point (iterator function)
  */
 static void
 tpointinst_affine1(const TInstant *inst, const AFFINE *a, int srid,
@@ -1324,7 +1318,7 @@ tpointinst_affine1(const TInstant *inst, const AFFINE *a, int srid,
 }
 
 /**
- * Affine transform a temporal point.
+ * @brief Affine transform a temporal point.
  */
 static TInstant *
 tpointinst_affine(const TInstant *inst, const AFFINE *a)
@@ -1337,7 +1331,7 @@ tpointinst_affine(const TInstant *inst, const AFFINE *a)
 }
 
 /**
- * Affine transform a temporal point.
+ * @brief Affine transform a temporal point.
  */
 static TSequence *
 tpointseq_affine(const TSequence *seq, const AFFINE *a)
@@ -1356,8 +1350,7 @@ tpointseq_affine(const TSequence *seq, const AFFINE *a)
 }
 
 /**
- * Affine transform a temporal point.
- *
+ * @brief Affine transform a temporal point.
  * @param[in] ss Temporal point
  * @param[in] a Affine transformation
  */
@@ -1371,7 +1364,7 @@ tpointseqset_affine(const TSequenceSet *ss, const AFFINE *a)
 }
 
 /**
- * Affine transform a temporal point.
+ * @brief Affine transform a temporal point.
  */
 static Temporal *
 tpoint_affine(const Temporal *temp, const AFFINE *a)
@@ -1405,7 +1398,7 @@ point_grid(Datum value, bool hasz, const gridspec *grid, POINT4D *p)
 }
 
 /**
- * Stick a temporal point to the given grid specification.
+ * @brief Stick a temporal point to the given grid specification.
  */
 static TInstant *
 tpointinst_grid(const TInstant *inst, const gridspec *grid)
@@ -1431,7 +1424,7 @@ tpointinst_grid(const TInstant *inst, const gridspec *grid)
 }
 
 /**
- * Stick a temporal point to the given grid specification.
+ * @brief Stick a temporal point to the given grid specification.
  */
 static TSequence *
 tpointseq_grid(const TSequence *seq, const gridspec *grid, bool filter_pts)
@@ -1473,7 +1466,7 @@ tpointseq_grid(const TSequence *seq, const gridspec *grid, bool filter_pts)
 }
 
 /**
- * Stick a temporal point to the given grid specification.
+ * @brief Stick a temporal point to the given grid specification.
  */
 static TSequenceSet *
 tpointseqset_grid(const TSequenceSet *ss, const gridspec *grid, bool filter_pts)
@@ -1490,7 +1483,7 @@ tpointseqset_grid(const TSequenceSet *ss, const gridspec *grid, bool filter_pts)
 }
 
 /**
- * Stick a temporal point to the given grid specification.
+ * @brief Stick a temporal point to the given grid specification.
  *
  * Only the x, y, and possible z dimensions are gridded, the timestamp is
  * kept unmodified. Two consecutive instants falling on the same grid cell
@@ -1514,8 +1507,7 @@ tpoint_grid(const Temporal *temp, const gridspec *grid, bool filter_pts)
 /*****************************************************************************/
 
 /**
- * Transform a temporal point into vector tile coordinate space.
- *
+ * @brief Transform a temporal point into vector tile coordinate space.
  * @param[in] tpoint Temporal point
  * @param[in] box Geometric bounds of the tile contents without buffer
  * @param[in] extent Tile extent in tile coordinate space
@@ -1580,8 +1572,7 @@ tpoint_mvt(const Temporal *tpoint, const STBox *box, uint32_t extent,
 /*****************************************************************************/
 
 /**
- * Decouple the points and the timestamps of a temporal point.
- *
+ * @brief Decouple the points and the timestamps of a temporal point.
  * @note The function does not remove consecutive points/instants that are equal.
  * @param[in] inst Temporal point
  * @param[out] timesarr Array of timestamps encoded in Unix epoch
@@ -1598,8 +1589,7 @@ tpointinst_decouple(const TInstant *inst, int64 **timesarr, int *count)
 }
 
 /**
- * Decouple the points and the timestamps of a temporal point.
- *
+ * @brief Decouple the points and the timestamps of a temporal point.
  * @note The function does not remove consecutive points/instants that are equal.
  * @param[in] seq Temporal point
  * @param[out] times Array of timestamps
@@ -1627,8 +1617,7 @@ tpointseq_decouple1(const TSequence *seq, int64 *times)
 }
 
 /**
- * Decouple the points and the timestamps of a temporal point.
- *
+ * @brief Decouple the points and the timestamps of a temporal point.
  * @note The function does not remove consecutive points/instants that are equal.
  * @param[in] seq Temporal point
  * @param[out] timesarr Array of timestamps encoded in Unix epoch
@@ -1647,8 +1636,7 @@ tpointseq_decouple(const TSequence *seq, int64 **timesarr, int *count)
 }
 
 /**
- * Decouple the points and the timestamps of a temporal point.
- *
+ * @brief Decouple the points and the timestamps of a temporal point.
  * @note The function does not remove consecutive points/instants that are equal.
  * @param[in] ss Temporal point
  * @param[out] timesarr Array of timestamps encoded in Unix epoch
@@ -1691,8 +1679,7 @@ tpointseqset_decouple(const TSequenceSet *ss, int64 **timesarr, int *count)
 }
 
 /**
- * Decouple the points and the timestamps of a temporal point.
- *
+ * @brief Decouple the points and the timestamps of a temporal point.
  * @param[in] temp Temporal point
  * @param[out] timesarr Array of timestamps encoded in Unix epoch
  * @param[out] count Number of elements in the output array

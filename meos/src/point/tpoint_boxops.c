@@ -63,7 +63,7 @@ extern int edge_calculate_gbox(const POINT3D *A1, const POINT3D *A2, GBOX *gbox)
  *****************************************************************************/
 
 /**
- * Set the spatiotemporal box from a temporal instant point
+ * @brief Set the spatiotemporal box from a temporal instant point
  */
 void
 tpointinst_set_stbox(const TInstant *inst, STBox *box)
@@ -78,8 +78,7 @@ tpointinst_set_stbox(const TInstant *inst, STBox *box)
 }
 
 /**
- * Set the spatiotemporal box from an array of temporal instant points
- *
+ * @brief Set the spatiotemporal box from an array of temporal instant points
  * @param[in] instants Temporal instant values
  * @param[in] count Number of elements in the array
  * @param[out] box Spatiotemporal box
@@ -100,8 +99,8 @@ tgeompointinstarr_set_stbox(const TInstant **instants, int count, STBox *box)
 
 #if MEOS
 /**
- * Expand the bounding box of a temporal geometric point sequence with an instant
- *
+ * @brief Expand the bounding box of a temporal geometric point sequence with
+ * an instant
  * @param[in] seq Temporal sequence
  * @param[in] inst Temporal instant
  */
@@ -115,8 +114,8 @@ tgeompointseq_expand_stbox(TSequence *seq, const TInstant *inst)
 }
 
 /**
- * Expand the bounding box of a temporal geographic point sequence with an instant
- *
+ * @brief Expand the bounding box of a temporal geographic point sequence with
+ * an instant
  * @param[in] seq Temporal sequence
  * @param[in] inst Temporal instant
  */
@@ -151,8 +150,8 @@ tgeogpointseq_expand_stbox(TSequence *seq, const TInstant *inst)
 #endif /* MEOS */
 
 /**
- * Set the GBOX bounding box from an array of temporal geographic point instants
- *
+ * @brief Set the GBOX bounding box from an array of temporal geographic point
+ * instants
  * @param[in] instants Array of temporal instants
  * @param[in] count Number of elements in the input array
  * @param[in] interp Interpolation
@@ -179,8 +178,7 @@ tgeogpointinstarr_set_gbox(const TInstant **instants, int count,
 
 #if MEOS
 /**
- * Set the GBOX bounding box from a temporal geographic point sequence
- *
+ * @brief Set the GBOX bounding box from a temporal geographic point sequence
  * @param[in] seq Temporal point
  * @param[out] box Resulting bounding box
  */
@@ -206,8 +204,8 @@ tgeogpointseq_set_gbox(const TSequence *seq, GBOX *box)
 #endif /* MEOS */
 
 /**
- * Set the spatiotemporal box from an array of temporal instant geography point
- *
+ * @brief Set the spatiotemporal box from an array of temporal instant
+ * geography point
  * @note This function is called by the constructor of a temporal point
  * sequence when the points are geodetic to compute the bounding box.
  * Since the composing points have been already validated in the constructor
@@ -243,8 +241,8 @@ tgeogpointinstarr_set_stbox(const TInstant **instants, int count,
 
 #if MEOS
 /**
- * Set the spatiotemporal box from an array of temporal instant geography point
- *
+ * @brief Set the spatiotemporal box from an array of temporal instant
+ * geography point
  * @param[in] seq Temporal point
  * @param[out] box Spatiotemporal box
  * @note In the current PostGIS version the difference when computing the
@@ -272,8 +270,7 @@ tgeogpointseq_set_stbox(const TSequence *seq, STBox *box)
 #endif /* MEOS */
 
 /**
- * Set the spatiotemporal box from an array of temporal sequence points
- *
+ * @brief Set the spatiotemporal box from an array of temporal sequence points
  * @param[in] sequences Temporal instant values
  * @param[in] count Number of elements in the array
  * @param[out] box Spatiotemporal box
@@ -297,9 +294,8 @@ tpointseqarr_set_stbox(const TSequence **sequences, int count, STBox *box)
  *****************************************************************************/
 
 /**
- * Return an array of spatiotemporal boxes from the segments of a
+ * @brief Return an array of spatiotemporal boxes from the segments of a
  * temporal sequence point
- *
  * @param[in] seq Temporal value
  * @param[out] result Spatiotemporal box
  * @return Number of elements in the array
@@ -336,7 +332,6 @@ tpointseq_stboxes1(const TSequence *seq, STBox *result)
  * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return an array of spatiotemporal boxes from the segments of a
  * temporal sequence point.
- *
  * @param[in] seq Temporal value
  * @param[out] count Number of elements in the output array
  */
@@ -355,7 +350,6 @@ tpointseq_stboxes(const TSequence *seq, int *count)
  * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return an array of spatiotemporal boxes from the segments of a
  * temporal sequence set point.
- *
  * @param[in] ss Temporal value
  * @param[out] count Number of elements in the output array
  */

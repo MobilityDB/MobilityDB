@@ -168,7 +168,7 @@
  *****************************************************************************/
 
 /**
- * Apply the variadic function with the optional arguments to the base value
+ * @brief Apply the variadic function with the optional arguments to the base value
  */
 static Datum
 tfunc_base(Datum value, LiftedFunctionInfo *lfinfo)
@@ -187,8 +187,7 @@ tfunc_base(Datum value, LiftedFunctionInfo *lfinfo)
 }
 
 /**
- * Apply the function with the optional arguments to the temporal value
- *
+ * @brief Apply the function with the optional arguments to the temporal value
  * @param[in] inst Temporal value
  * @param[in] lfinfo Information about the lifted function
  */
@@ -202,8 +201,7 @@ tfunc_tinstant(const TInstant *inst, LiftedFunctionInfo *lfinfo)
 }
 
 /**
- * Apply the function to the temporal value
- *
+ * @brief Apply the function to the temporal value
  * @param[in] seq Temporal value
  * @param[in] lfinfo Information about the lifted function
  */
@@ -221,8 +219,7 @@ tfunc_tsequence(const TSequence *seq, LiftedFunctionInfo *lfinfo)
 }
 
 /**
- * Apply the function to the temporal value
- *
+ * @brief Apply the function to the temporal value
  * @param[in] ss Temporal value
  * @param[in] lfinfo Information about the lifted function
  */
@@ -239,8 +236,7 @@ tfunc_tsequenceset(const TSequenceSet *ss, LiftedFunctionInfo *lfinfo)
 }
 
 /**
- * Apply the function to the temporal value (dispatch function)
- *
+ * @brief Apply the function to the temporal value (dispatch function)
  * @param[in] temp Temporal value
  * @param[in] lfinfo Information about the lifted function
  */
@@ -297,8 +293,7 @@ tfunc_base_base(Datum value1, Datum value2, LiftedFunctionInfo *lfinfo)
 }
 
 /**
- * Apply the function to the temporal value and the base value
- *
+ * @brief Apply the function to the temporal value and the base value
  * @param[in] inst Temporal value
  * @param[in] value Base value
  * @param[in] lfinfo Information about the lifted function
@@ -315,8 +310,7 @@ tfunc_tinstant_base(const TInstant *inst, Datum value,
 }
 
 /**
- * Apply the function to the temporal value and the base value
- *
+ * @brief Apply the function to the temporal value and the base value
  * @param[in] seq Temporal value
  * @param[in] value Base value
  * @param[in] lfinfo Information about the lifted function
@@ -336,9 +330,8 @@ tfunc_tsequence_base(const TSequence *seq, Datum value,
 }
 
 /**
- * Apply the function to the temporal value and the base value when turning
- * points should be added
- *
+ * @brief Apply the function to the temporal value and the base value when
+ * turning points should be added
  * @param[in] seq Temporal value
  * @param[in] value Base value
  * @param[in] lfinfo Information about the lifted function
@@ -383,9 +376,8 @@ tfunc_tlinearseq_base_turnpt(const TSequence *seq, Datum value,
 }
 
 /**
- * Apply the function to the temporal value and the base value when the
+ * @brief Apply the function to the temporal value and the base value when the
  * function has instantaneuous discontinuties
- *
  * @param[in] seq Temporal value
  * @param[in] value Base value
  * @param[in] lfinfo Information about the lifted function
@@ -535,7 +527,8 @@ tfunc_tlinearseq_base_discont(const TSequence *seq, Datum value,
 }
 
 /**
- * Apply the function to the temporal value and the base value.
+ * @brief Apply the function to the temporal value and the base value.
+ *
  * Dispatch function depending on whether the function has
  * instantaneous discontinuities.
  */
@@ -566,8 +559,7 @@ tfunc_tlinearseq_base(const TSequence *seq, Datum value,
 }
 
 /**
- * Apply the function to the temporal value and the base value
- *
+ * @brief Apply the function to the temporal value and the base value
  * @param[in] ss Temporal value
  * @param[in] value Base value
  * @param[in] lfinfo Information about the lifted function
@@ -597,9 +589,8 @@ tfunc_tsequenceset_base(const TSequenceSet *ss, Datum value,
 }
 
 /**
- * Apply the function to the temporal value and the base value
+ * @brief Apply the function to the temporal value and the base value
  * (dispatch function)
- *
  * @param[in] temp Temporal value
  * @param[in] value Base value
  * @param[in] lfinfo Information about the lifted function
@@ -628,7 +619,7 @@ tfunc_temporal_base(const Temporal *temp, Datum value,
  *****************************************************************************/
 
 /**
- * Invert the arguments of the lfinfo struct
+ * @brief Invert the arguments of the lfinfo struct
  */
 static void
 lfinfo_invert(LiftedFunctionInfo *lfinfo)
@@ -640,7 +631,7 @@ lfinfo_invert(LiftedFunctionInfo *lfinfo)
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function
+ * @brief Synchronize the temporal values and apply to them the function
  *
  * @param[in] inst1,inst2 Temporal values
  * @param[in] lfinfo Information about the lifted function
@@ -664,8 +655,7 @@ tfunc_tinstant_tinstant(const TInstant *inst1, const TInstant *inst2,
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function
- *
+ * @brief Synchronize the temporal values and apply to them the function
  * @param[in] is,inst Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -685,8 +675,7 @@ tfunc_tdiscseq_tinstant(const TSequence *is, const TInstant *inst,
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function
- *
+ * @brief Synchronize the temporal values and apply to them the function
  * @param[in] inst,is Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -699,9 +688,8 @@ tfunc_tinstant_tdiscseq(const TInstant *inst, const TSequence *is,
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function with the
- * optional argument
- *
+ * @brief Synchronize the temporal values and apply to them the function with
+ * the optional argument
  * @param[in] seq,inst Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -722,9 +710,8 @@ tfunc_tcontseq_tinstant(const TSequence *seq, const TInstant *inst,
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function with the
- * optional argument
- *
+ * @brief Synchronize the temporal values and apply to them the function with
+ * the optional argument
  * @param[in] inst,seq Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -737,9 +724,8 @@ tfunc_tinstant_tcontseq(const TInstant *inst, const TSequence *seq,
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function with the
- * optional argument
- *
+ * @brief Synchronize the temporal values and apply to them the function with
+ * the optional argument
  * @param[in] ss,inst Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -759,9 +745,8 @@ tfunc_tsequenceset_tinstant(const TSequenceSet *ss, const TInstant *inst,
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function with the
- * optional argument
- *
+ * @brief Synchronize the temporal values and apply to them the function with
+ * the optional argument
  * @param[in] inst,ss Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -776,9 +761,8 @@ tfunc_tinstant_tsequenceset(const TInstant *inst, const TSequenceSet *ss,
 /*****************************************************************************/
 
 /**
- * Synchronizes the temporal values and applies to them the function with the
- * optional argument
- *
+ * @brief Synchronize the temporal values and apply to them the function with
+ * with optional argument
  * @param[in] seq1,seq2 Temporal values
  * @param[in] lfinfo Information about the lifted function
  * @note This function is called by other functions besides the dispatch
@@ -818,9 +802,8 @@ tfunc_tdiscseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function with the
- * optional argument
- *
+ * @brief Synchronize the temporal values and apply to them the function with
+ * the optional argument
  * @param[in] seq1,seq2 Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -852,9 +835,8 @@ tfunc_tcontseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function with the
- * optional argument
- *
+ * @brief Synchronize the temporal values and apply to them the function with
+ * the optional argument
  * @param[in] seq1,seq2 Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -867,9 +849,8 @@ tfunc_tdiscseq_tcontseq(const TSequence *seq1, const TSequence *seq2,
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function with the
- * optional argument
- *
+ * @brief Synchronize the temporal values and apply to them the function with
+ * the optional argument
  * @param[in] ss,seq Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -910,9 +891,8 @@ tfunc_tsequenceset_tdiscseq(const TSequenceSet *ss, const TSequence *seq,
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function with the
- * optional argument
- *
+ * @brief Synchronize the temporal values and apply to them the function with
+ * the optional argument
  * @param[in] is,ss Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -927,7 +907,8 @@ tfunc_tdiscseq_tsequenceset(const TSequence *is, const TSequenceSet *ss,
 /*****************************************************************************/
 
 /**
- * @brief Synchronizes the temporal values and applies to them the function.
+ * @brief Synchronizes the temporal values and apply to them the function.
+ *
  * This function is applied when the result is a single sequence and thus
  * it is used when
  * - the function to lift has NOT instantaneous discontinuities
@@ -1033,7 +1014,8 @@ tfunc_tcontseq_tcontseq_single(const TSequence *seq1, const TSequence *seq2,
 }
 
 /**
- * @brief Synchronizes the temporal values and applies to them the function.
+ * @brief Synchronizes the temporal values and apply to them the function.
+ *
  * This function is applied when the result is an array of sequences and thus
  * it is used when
  * - the function to lift has instantaneous discontinuities
@@ -1244,7 +1226,7 @@ tfunc_tcontseq_tcontseq_multi(const TSequence *seq1, const TSequence *seq2,
 }
 
 /**
- * @brief Synchronizes the temporal values and applies to them the function
+ * @brief Synchronizes the temporal values and apply to them the function
  * @note This function is called for each composing sequence of a temporal
  * sequence set and therefore the bounding period test is repeated
  */
@@ -1284,7 +1266,7 @@ tfunc_tcontseq_tcontseq_dispatch(const TSequence *seq1, const TSequence *seq2,
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function
+ * @brief Synchronize the temporal values and apply to them the function
  */
 static Temporal *
 tfunc_tcontseq_tcontseq(const TSequence *seq1, const TSequence *seq2,
@@ -1328,8 +1310,7 @@ tfunc_tcontseq_tcontseq(const TSequence *seq1, const TSequence *seq2,
 /*****************************************************************************/
 
 /**
- * Synchronizes the temporal values and applies to them the function
- *
+ * @brief Synchronize the temporal values and apply to them the function
  * @param[in] ss,seq Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -1368,8 +1349,7 @@ tfunc_tsequenceset_tcontseq(const TSequenceSet *ss, const TSequence *seq,
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function
- *
+ * @brief Synchronize the temporal values and apply to them the function
  * @param[in] seq,ss Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -1382,8 +1362,7 @@ tfunc_tcontseq_tsequenceset(const TSequence *seq, const TSequenceSet *ss,
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function
- *
+ * @brief Synchronize the temporal values and apply to them the function
  * @param[in] ss1,ss2 Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -1431,8 +1410,8 @@ tfunc_tsequenceset_tsequenceset(const TSequenceSet *ss1,
 /*****************************************************************************/
 
 /**
- * @brief Synchronizes the temporal values and applies to them the function
-  *
+ * @brief Synchronize the temporal values and apply to them the function
+
  * @param[in] temp1,temp2 Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -1520,8 +1499,7 @@ tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
  *****************************************************************************/
 
 /**
- * Synchronizes the temporal values and applies to them the function
- *
+ * @brief Synchronize the temporal values and apply to them the function
  * @param[in] inst1,inst2 Temporal values
  * @param[in] lfinfo Information about the lifted function
  * @note This function is called by other functions besides the dispatch
@@ -1542,8 +1520,7 @@ efunc_tinstant_tinstant(const TInstant *inst1, const TInstant *inst2,
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function
- *
+ * @brief Synchronize the temporal values and apply to them the function
  * @param[in] is,inst Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -1561,8 +1538,7 @@ efunc_tdiscseq_tinstant(const TSequence *is, const TInstant *inst,
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function
- *
+ * @brief Synchronize the temporal values and apply to them the function
  * @param[in] inst,is Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -1575,9 +1551,8 @@ efunc_tinstant_tdiscseq(const TInstant *inst, const TSequence *is,
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function with the
+ * @brief Synchronize the temporal values and apply to them the function with the
  * optional argument
- *
  * @param[in] seq,inst Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -1595,9 +1570,8 @@ efunc_tcontseq_tinstant(const TSequence *seq, const TInstant *inst,
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function with the
- * optional argument
- *
+ * @brief Synchronize the temporal values and apply to them the function with
+ * the optional argument
  * @param[in] inst,seq Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -1610,9 +1584,8 @@ efunc_tinstant_tcontseq(const TInstant *inst, const TSequence *seq,
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function with the
- * optional argument
- *
+ * @brief Synchronize the temporal values and apply to them the function with
+ * the optional argument
  * @param[in] ss,inst Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -1630,9 +1603,8 @@ efunc_tsequenceset_tinstant(const TSequenceSet *ss, const TInstant *inst,
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function with the
- * optional argument
- *
+ * @brief Synchronize the temporal values and apply to them the function with
+ * the optional argument
  * @param[in] inst,ss Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -1647,9 +1619,8 @@ efunc_tinstant_tsequenceset(const TInstant *inst, const TSequenceSet *ss,
 /*****************************************************************************/
 
 /**
- * Synchronizes the temporal values and applies to them the function with the
- * optional argument
- *
+ * @brief Synchronize the temporal values and apply to them the function with
+ * the optional argument
  * @param[in] seq1,seq2 Temporal values
  * @param[in] lfinfo Information about the lifted function
  * @note This function is called by other functions besides the dispatch
@@ -1683,9 +1654,8 @@ efunc_tdiscseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function with the
- * optional argument
- *
+ * @brief Synchronize the temporal values and apply to them the function with
+ * the optional argument
  * @param[in] seq1,seq2 Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -1711,9 +1681,8 @@ efunc_tcontseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function with the
- * optional argument
- *
+ * @brief Synchronize the temporal values and apply to them the function with
+ * the optional argument
  * @param[in] seq1,seq2 Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -1726,9 +1695,8 @@ efunc_tdiscseq_tcontseq(const TSequence *seq1, const TSequence *seq2,
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function with the
- * optional argument
- *
+ * @brief Synchronize the temporal values and apply to them the function with
+ * the optional argument
  * @param[in] ss,seq Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -1764,9 +1732,8 @@ efunc_tsequenceset_tdiscseq(const TSequenceSet *ss, const TSequence *seq,
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function with the
- * optional argument
- *
+ * @brief Synchronize the temporal values and apply to them the function with
+ * the optional argument
  * @param[in] is,ss Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -1779,7 +1746,7 @@ efunc_tdiscseq_tsequenceset(const TSequence *is, const TSequenceSet *ss,
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function.
+ * @brief Synchronize the temporal values and apply to them the function.
  * This function is applied for functions with instantaneous discontinuities
  * and thus the result is an array of sequences. This function is applied
  * when at least one temporal value has linear interpolation.
@@ -1906,9 +1873,8 @@ efunc_tcontseq_tcontseq_discont(const TSequence *seq1,
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function
+ * @brief Synchronize the temporal values and apply to them the function
  * (dispatch function)
- *
  * @note This function is called for each composing sequence of a temporal
  * sequence set and therefore the bounding period test is repeated
  */
@@ -1938,8 +1904,7 @@ efunc_tcontseq_tcontseq(const TSequence *seq1,
 /*****************************************************************************/
 
 /**
- * Synchronizes the temporal values and applies to them the function
- *
+ * @brief Synchronize the temporal values and apply to them the function
  * @param[in] ss,seq Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -1966,8 +1931,7 @@ efunc_tsequenceset_tcontseq(const TSequenceSet *ss, const TSequence *seq,
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function
- *
+ * @brief Synchronize the temporal values and apply to them the function
  * @param[in] seq,ss Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -1980,8 +1944,7 @@ efunc_tsequence_tsequenceset(const TSequence *seq, const TSequenceSet *ss,
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function
- *
+ * @brief Synchronize the temporal values and apply to them the function
  * @param[in] ss1,ss2 Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -2020,8 +1983,7 @@ efunc_tsequenceset_tsequenceset(const TSequenceSet *ss1,
 /*****************************************************************************/
 
 /**
- * @brief Synchronizes the temporal values and applies to them the function
- *
+ * @brief Synchronize the temporal values and apply to them the function
  * @param[in] temp1,temp2 Temporal values
  * @param[in] lfinfo Information about the lifted function
  */

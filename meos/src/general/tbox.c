@@ -52,7 +52,7 @@
  *****************************************************************************/
 
 /**
- * Ensure that a temporal box has X values
+ * @brief Ensure that a temporal box has X values
  */
 void
 ensure_has_X_tbox(const TBox *box)
@@ -62,7 +62,7 @@ ensure_has_X_tbox(const TBox *box)
 }
 
 /**
- * Ensure that a temporal box has T values
+ * @brief Ensure that a temporal box has T values
  */
 void
 ensure_has_T_tbox(const TBox *box)
@@ -72,7 +72,7 @@ ensure_has_T_tbox(const TBox *box)
 }
 
 /**
- * Ensure that a temporal boxes have the same dimensionality
+ * @brief Ensure that a temporal boxes have the same dimensionality
  */
 void
 ensure_same_dimensionality_tbox(const TBox *box1, const TBox *box2)
@@ -801,7 +801,7 @@ tbox_expand_time(const TBox *box, const Interval *interval)
  *****************************************************************************/
 
 /**
- * Set the ouput variables with the values of the flags of the boxes.
+ * @brief Set the ouput variables with the values of the flags of the boxes.
  *
  * @param[in] box1,box2 Input boxes
  * @param[out] hasx,hast Boolean variables
@@ -815,7 +815,7 @@ tbox_tbox_flags(const TBox *box1, const TBox *box2, bool *hasx, bool *hast)
 }
 
 /**
- * Set the ouput variables with the values of the flags of the boxes.
+ * @brief Set the ouput variables with the values of the flags of the boxes.
  *
  * @param[in] box1,box2 Input boxes
  * @param[out] hasx,hast Boolean variables

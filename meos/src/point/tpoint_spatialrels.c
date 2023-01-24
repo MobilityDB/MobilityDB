@@ -62,7 +62,7 @@
  *****************************************************************************/
 
 /**
- * Call the PostGIS function ST_Contains with the 2 arguments
+ * @brief Call the PostGIS function ST_Contains with the 2 arguments
  */
 Datum
 geom_contains(Datum geom1, Datum geom2)
@@ -72,7 +72,7 @@ geom_contains(Datum geom1, Datum geom2)
 }
 
 /**
- * Call the PostGIS function ST_Intersects with the 2 arguments
+ * @brief Call the PostGIS function ST_Intersects with the 2 arguments
  * and negate the result
  */
 Datum
@@ -82,7 +82,7 @@ geom_disjoint2d(Datum geom1, Datum geom2)
 }
 
 /**
- * Call the PostGIS function ST_Intersects3D with the 2 arguments
+ * @brief Call the PostGIS function ST_Intersects3D with the 2 arguments
  * and negates the result
  */
 Datum
@@ -92,7 +92,7 @@ geom_disjoint3d(Datum geom1, Datum geom2)
 }
 
 /**
- * Call the PostGIS function ST_Intersects for geographies with the 2 arguments
+ * @brief Call the PostGIS function ST_Intersects for geographies with the 2 arguments
  */
 Datum
 geog_disjoint(Datum geog1, Datum geog2)
@@ -101,7 +101,7 @@ geog_disjoint(Datum geog1, Datum geog2)
 }
 
 /**
- * Call the PostGIS function ST_Intersects with the 2 arguments
+ * @brief Call the PostGIS function ST_Intersects with the 2 arguments
  */
 Datum
 geom_intersects2d(Datum geom1, Datum geom2)
@@ -111,7 +111,7 @@ geom_intersects2d(Datum geom1, Datum geom2)
 }
 
 /**
- * Call the PostGIS function ST_3DIntersects with the 2 arguments
+ * @brief Call the PostGIS function ST_3DIntersects with the 2 arguments
  */
 Datum
 geom_intersects3d(Datum geom1, Datum geom2)
@@ -121,7 +121,7 @@ geom_intersects3d(Datum geom1, Datum geom2)
 }
 
 /**
- * Call the PostGIS function ST_Intersects for geographies with the 2 arguments
+ * @brief Call the PostGIS function ST_Intersects for geographies with the 2 arguments
  */
 Datum
 geog_intersects(Datum geog1, Datum geog2)
@@ -131,7 +131,7 @@ geog_intersects(Datum geog1, Datum geog2)
 }
 
 /**
- * Call the PostGIS function ST_Touches with the 2 arguments
+ * @brief Call the PostGIS function ST_Touches with the 2 arguments
  */
 Datum
 geom_touches(Datum geom1, Datum geom2)
@@ -141,7 +141,7 @@ geom_touches(Datum geom1, Datum geom2)
 }
 
 /**
- * Call the PostGIS function ST_DWithin with the 3 arguments
+ * @brief Call the PostGIS function ST_DWithin with the 3 arguments
  */
 Datum
 geom_dwithin2d(Datum geom1, Datum geom2, Datum dist)
@@ -151,7 +151,7 @@ geom_dwithin2d(Datum geom1, Datum geom2, Datum dist)
 }
 
 /**
- * Call the PostGIS function ST_3DDWithin with the 3 arguments
+ * @brief Call the PostGIS function ST_3DDWithin with the 3 arguments
  */
 Datum
 geom_dwithin3d(Datum geom1, Datum geom2, Datum dist)
@@ -161,7 +161,7 @@ geom_dwithin3d(Datum geom1, Datum geom2, Datum dist)
 }
 
 /**
- * Call the PostGIS function ST_DWithin for geographies with the 3 arguments
+ * @brief Call the PostGIS function ST_DWithin for geographies with the 3 arguments
  */
 Datum
 geog_dwithin(Datum geog1, Datum geog2, Datum dist)
@@ -173,7 +173,7 @@ geog_dwithin(Datum geog1, Datum geog2, Datum dist)
 /*****************************************************************************/
 
 /**
- * Select the appropriate disjoint function for a MobilityDB type and a
+ * @brief Select the appropriate disjoint function for a MobilityDB type and a
  * GSERIALIZED. We need two parameters to cope with mixed 2D/3D arguments
  */
 static datum_func2
@@ -190,7 +190,7 @@ get_disjoint_fn_gs(int16 flags1, uint8_t flags2)
 }
 
 /**
- * Select the appropriate intersect function for a MobilityDB type and a
+ * @brief Select the appropriate intersect function for a MobilityDB type and a
  * GSERIALIZED. We need two parameters to cope with mixed 2D/3D arguments
  */
 static datum_func2
@@ -207,7 +207,7 @@ get_intersects_fn_gs(int16 flags1, uint8_t flags2)
 }
 
 /**
- * Select the appropriate dwithin function for two MobilityDB types.
+ * @brief Select the appropriate dwithin function for two MobilityDB types.
  * We need two parameters to cope with mixed 2D/3D arguments
  */
 datum_func3
@@ -224,7 +224,7 @@ get_dwithin_fn(int16 flags1, int16 flags2)
 }
 
 /**
- * Select the appropriate dwithin function for a MobilityDB type and a
+ * @brief Select the appropriate dwithin function for a MobilityDB type and a
  * GSERIALIZED. We need two parameters to cope with mixed 2D/3D arguments
  */
 static datum_func3
@@ -246,7 +246,6 @@ get_dwithin_fn_gs(int16 flags1, uint8_t flags2)
 
 /**
  * @brief Generic ever spatial relationship for a temporal point and a geometry
- *
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
  * @param[in] param Parameter
@@ -276,7 +275,6 @@ spatialrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, Datum param,
 /**
  * @brief Return true if the temporal points ever satisfy the spatial
  * relationship.
- *
  * @param[in] temp1,temp2 Temporal points
  * @param[in] func Spatial relationship
  */
@@ -312,7 +310,7 @@ spatialrel_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
  *****************************************************************************/
 
 /**
- * Call the PostGIS function ST_Relate twice to compute the ever contains
+ * @brief Call the PostGIS function ST_Relate twice to compute the ever contains
  * relationship between the trajectory of a temporal point and a geometry
  * @param[in] geom1 Trajectory of the temporal point
  * @param[in] geom2 Geometry
@@ -352,7 +350,6 @@ contains_geo_tpoint(const GSERIALIZED *geo, const Temporal *temp)
 /**
  * @brief Return true if a temporal instant point and a geometry are ever
  * disjoint
- *
  * @param[in] inst Temporal point
  * @param[in] geo Geometry
  * @param[in] func PostGIS function to be called
@@ -367,7 +364,6 @@ disjoint_tpointinst_geo(const TInstant *inst, Datum geo,
 /**
  * @brief Return true if a temporal sequence point and a geometry are ever
  * disjoint
- *
  * @param[in] seq Temporal point
  * @param[in] geo Geometry
  * @param[in] func PostGIS function to be called
@@ -388,7 +384,6 @@ disjoint_tpointseq_geo(const TSequence *seq, Datum geo,
 /**
  * @brief Return true if a temporal sequence set point and a geometry are ever
  * disjoint
- *
  * @param[in] ss Temporal point
  * @param[in] geo Geometry
  * @param[in] func PostGIS function to be used for instantaneous sequences
@@ -410,7 +405,6 @@ disjoint_tpointseqset_geo(const TSequenceSet *ss, Datum geo,
  * @ingroup libmeos_temporal_spatial_rel
  * @brief Return 1 if a temporal point and a geometry are ever disjoint,
  * 0 if not, and -1 if the geometry is empty.
- *
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
  * @sqlfunc disjoint()
@@ -516,8 +510,7 @@ dwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 /*****************************************************************************/
 
 /**
- * Return true if the temporal points are ever within the given distance
- *
+ * @brief Return true if the temporal points are ever within the given distance
  * @param[in] inst1,inst2 Temporal points
  * @param[in] dist Distance
  * @param[in] func DWithin function (2D or 3D)
@@ -533,8 +526,7 @@ dwithin_tpointinst_tpointinst(const TInstant *inst1, const TInstant *inst2,
 }
 
 /**
- * Return true if the temporal points are ever within the given distance
- *
+ * @brief Return true if the temporal points are ever within the given distance
  * @param[in] seq1,seq2 Temporal points
  * @param[in] dist Distance
  * @param[in] func DWithin function (2D or 3D)
@@ -555,8 +547,7 @@ dwithin_tpointdiscseq_tpointdiscseq(const TSequence *seq1,
 }
 
 /**
- * Return true if the temporal points are ever within the given distance
- *
+ * @brief Return true if the temporal points are ever within the given distance
  * @param[in] seq1,seq2 Temporal points
  * @param[in] dist Distance
  * @param[in] func DWithin function (2D or 3D)
@@ -627,8 +618,7 @@ dwithin_tpointseq_tpointseq(const TSequence *seq1, const TSequence *seq2,
 }
 
 /**
- * Return true if the temporal points are ever within the given distance
- *
+ * @brief Return true if the temporal points are ever within the given distance
  * @param[in] ss1,ss2 Temporal points
  * @param[in] dist Distance
  * @param[in] func DWithin function (2D or 3D)

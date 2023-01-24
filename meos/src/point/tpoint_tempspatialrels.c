@@ -128,7 +128,6 @@ geometry 'polygon((0 0,1 1,2 0.5,3 1,4 1,4 0,0 0))'))
 
 /**
  * @brief Evaluates tintersects/tdisjoint for a temporal point and a geometry.
- *
  * @param[in] inst Temporal point
  * @param[in] geom Geometry
  * @param[in] tinter True when computing tintersects, false for tdisjoint
@@ -148,7 +147,6 @@ tinterrel_tpointinst_geom(const TInstant *inst, Datum geom, bool tinter,
 
 /**
  * @brief Evaluates tintersects/tdisjoint for a temporal point and a geometry.
- *
  * @param[in] seq Temporal point
  * @param[in] geom Geometry
  * @param[in] tinter True when computing tintersects, false for tdisjoint
@@ -175,9 +173,8 @@ tinterrel_tpointdiscseq_geom(const TSequence *seq, Datum geom, bool tinter,
 }
 
 /**
- * Evaluates tintersects/tdisjoint for a temporal sequence point with step
- * interpolation and a geometry
- *
+ * @brief Evaluates tintersects/tdisjoint for a temporal sequence point with
+ * step interpolation and a geometry
  * @param[in] seq Temporal point
  * @param[in] geom Geometry
  * @param[in] tinter True when computing tintersects, false for tdisjoint
@@ -225,8 +222,7 @@ tinterrel_tpointseq_step_geom(const TSequence *seq, Datum geom, bool tinter,
 }
 
 /**
- * Evaluates tintersects/tdisjoint for a temporal point and a geometry.
- *
+ * @brief Evaluates tintersects/tdisjoint for a temporal point and a geometry.
  * @param[in] seq Temporal point
  * @param[in] geom Geometry
  * @param[in] box Bounding box of the geometry
@@ -335,7 +331,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom,
 }
 
 /**
- * Evaluates tintersects/tdisjoint for a temporal point and a geometry.
+ * @brief Evaluates tintersects/tdisjoint for a temporal point and a geometry.
  *
  * The function splits the temporal point in an array of temporal point
  * sequences that are simple (that is, not self-intersecting) and loops
@@ -412,7 +408,6 @@ tinterrel_tpointcontseq_geom(const TSequence *seq, Datum geom, const STBox *box,
 
 /**
  * @brief Evaluates tintersects/tdisjoint for a temporal point and a geometry.
- *
  * @param[in] ss Temporal point
  * @param[in] geom Geometry
  * @param[in] box Bounding box of the geometry
@@ -446,7 +441,6 @@ tinterrel_tpointseqset_geom(const TSequenceSet *ss, Datum geom,
 
 /**
  * @brief Evaluates tintersects/tdisjoint for a temporal point and a geometry.
- *
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
  * @param[in] tinter True when computing tintersects, false for tdisjoint
@@ -591,10 +585,9 @@ tgeompoint '[POINT(4 3)@2000-01-04, POINT(5 3)@2000-01-05]', 1)
  *****************************************************************************/
 
 /**
- * Return the timestamps at which EITHER the segments of the two temporal
+ * @brief Return the timestamps at which EITHER the segments of the two temporal
  * points OR a segment of a temporal point and a point are within the given
  * distance.
- *
  * @param[in] sv1,ev1 Points defining the first segment
  * @param[in] sv2,ev2 Points defining the second segment
  * @param[in] lower,upper Timestamps associated to the segments
@@ -801,9 +794,8 @@ tdwithin_add_solutions(int solutions, TimestampTz lower, TimestampTz upper,
 }
 
 /**
- * Return the timestamps at which the segments of two temporal points are
+ * @brief Return the timestamps at which the segments of two temporal points are
  * within the given distance
- *
  * @param[in] seq1,seq2 Temporal points
  * @param[in] dist Distance
  * @param[in] func DWithin function (2D or 3D)
@@ -900,9 +892,8 @@ tdwithin_tpointseq_tpointseq2(const TSequence *seq1, const TSequence *seq2,
 }
 
 /**
- * Return the timestamps at which the segments of two temporal points are
- * within the given distance
- *
+ * @brief Return the timestamps at which the segments of two temporal points
+ * are within the given distance
  * @param[in] seq1,seq2 Temporal points
  * @param[in] dist Distance
  * @param[in] func DWithin function (2D or 3D)
@@ -919,9 +910,8 @@ tdwithin_tpointseq_tpointseq(const TSequence *seq1, const TSequence *seq2,
 }
 
 /**
- * Return the timestamps at which the segments of two temporal points are
- * within the given distance
- *
+ * @brief Return the timestamps at which the segments of two temporal points
+ * are within the given distance
  * @param[in] ss1,ss2 Temporal points
  * @param[in] dist Distance
  * @param[in] func DWithin function (2D or 3D)
@@ -951,9 +941,8 @@ tdwithin_tpointseqset_tpointseqset(const TSequenceSet *ss1,
 /*****************************************************************************/
 
 /**
- * Return the timestamps at which a temporal point and a point are
+ * @brief Return the timestamps at which a temporal point and a point are
  * within the given distance
- *
  * @param[in] seq Temporal point
  * @param[in] point Point
  * @param[in] dist Distance
@@ -1035,9 +1024,8 @@ tdwithin_tpointseq_point1(const TSequence *seq, Datum point, Datum dist,
 }
 
 /**
- * Return the timestamps at which the a temporal point and a point are
+ * @brief Return the timestamps at which the a temporal point and a point are
  * within the given distance
- *
  * @param[in] seq Temporal point
  * @param[in] point Point
  * @param[in] dist Distance
@@ -1054,9 +1042,8 @@ tdwithin_tpointseq_point(const TSequence *seq, Datum point, Datum dist,
 }
 
 /**
- * Return the timestamps at which a temporal point and a point are
+ * @brief Return the timestamps at which a temporal point and a point are
  * within the given distance
- *
  * @param[in] ss Temporal point
  * @param[in] point Point
  * @param[in] dist Distance

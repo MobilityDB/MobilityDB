@@ -153,8 +153,6 @@ Tnpoint_to_stbox(PG_FUNCTION_ARGS)
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
- * @param[in] spatial True when the function considers the spatial dimension,
- * false when it considers the temporal dimension
  */
 Datum
 boxop_stbox_tnpoint_ext(FunctionCallInfo fcinfo,
@@ -176,8 +174,6 @@ boxop_stbox_tnpoint_ext(FunctionCallInfo fcinfo,
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
- * @param[in] spatial True when the function considers the spatial dimension,
- * false when it considers the temporal dimension
  */
 Datum
 boxop_tnpoint_stbox_ext(FunctionCallInfo fcinfo,

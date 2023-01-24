@@ -56,7 +56,6 @@
 
 /**
  * @brief Deconstruct a span
- *
  * @param[in] s Span value
  * @param[out] lower,upper Bounds
  */
@@ -133,7 +132,7 @@ span_bound_cmp(const SpanBound *b1, const SpanBound *b2)
 }
 
 /**
- * Comparison function for sorting span bounds.
+ * @brief Comparison function for sorting span bounds.
  */
 int
 span_bound_qsort_cmp(const void *a1, const void *a2)
@@ -144,7 +143,7 @@ span_bound_qsort_cmp(const void *a1, const void *a2)
 }
 
 /**
- * Compare the lower bounds of two spans, returning <0, 0, or >0 according to
+ * @brief Compare the lower bounds of two spans, returning <0, 0, or >0 according to
  * whether the first bound is less than, equal to, or greater than the second one.
  *
  * @note The function is equivalent to `span_bound_cmp` but avoids
@@ -170,7 +169,7 @@ span_lower_cmp(const Span *a, const Span *b)
 }
 
 /**
- * Compare the upper bounds of two spans, returning <0, 0, or >0 according to
+ * @brief Compare the upper bounds of two spans, returning <0, 0, or >0 according to
  * whether the first bound is less than, equal to, or greater than the second one.
  *
  * @note The function is equivalent to `span_bound_cmp` but avoids
@@ -306,7 +305,7 @@ period_in(const char *str)
 #endif /* MEOS */
 
 /**
- * Remove the quotes from the Well-Known Text (WKT) representation of a span
+ * @brief Remove the quotes from the Well-Known Text (WKT) representation of a span
  */
 static char *
 unquote(char *str)
@@ -944,8 +943,8 @@ span_ne(const Span *s1, const Span *s2)
 
 /**
  * @ingroup libmeos_setspan_comp
- * @brief Return -1, 0, or 1 depending on whether the first span
- * is less than, equal, or greater than the second one.
+ * @brief Return -1, 0, or 1 depending on whether the first span is less than,
+ * equal, or greater than the second one.
  * @note Function used for B-tree comparison
  * @sqlfunc intspan_cmp(), bigintspan_cmp(), floatspan_cmp(), period_cmp()
  * @pymeosfunc _cmp()

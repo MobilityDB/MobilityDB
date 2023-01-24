@@ -46,7 +46,7 @@
  *****************************************************************************/
 
 /**
- * Return true if the bounding boxes of the sets overlap
+ * @brief Return true if the bounding boxes of the sets overlap
  */
 bool
 bbox_overlaps_set_set(const Set *s1, const Set *s2)
@@ -62,7 +62,7 @@ bbox_overlaps_set_set(const Set *s1, const Set *s2)
 }
 
 /**
- * Return true if the bounding box of the first set contains the bounding box
+ * @brief Return true if the bounding box of the first set contains the bounding box
  * of the second
  */
 bool
@@ -79,7 +79,7 @@ bbox_contains_set_set(const Set *s1, const Set *s2)
 }
 
 /**
- * Return true if the bounding box of the first set contains the value
+ * @brief Return true if the bounding box of the first set contains the value
  */
 bool
 bbox_contains_set_value(const Set *s, Datum d, meosType basetype)
@@ -95,7 +95,7 @@ bbox_contains_set_value(const Set *s, Datum d, meosType basetype)
 /*****************************************************************************/
 
 /**
- * Return the union, intersection, or difference of two sets
+ * @brief Return the union, intersection, or difference of two sets
  */
 static Set *
 setop_set_set(const Set *s1, const Set *s2, SetOper setop)

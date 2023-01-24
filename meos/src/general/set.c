@@ -260,7 +260,7 @@ geoset_as_ewkt(const Set *set, int maxdd)
  *****************************************************************************/
 
 /**
- * Return the size of a bounding box of a temporal type
+ * @brief Return the size of a bounding box of a temporal type
  */
 static size_t
 set_bbox_size(meosType settype)
@@ -274,7 +274,7 @@ set_bbox_size(meosType settype)
 }
 
 /**
- * Set a bounding box from an array of set values
+ * @brief Set a bounding box from an array of set values
  *
  * @param[in] values Values
  * @param[in] basetype Type of the values
@@ -301,9 +301,8 @@ valuearr_compute_bbox(const Datum *values, meosType basetype, int count,
 }
 
 /**
- * Set a bounding box from an array of set values
+ * @brief Set a bounding box from an array of set values
  *
- * @param[in] set Set
  * @param[in] d Value to append to the set
  * @param[in] basetype Type of the value
  * @param[out] box Bounding box
@@ -335,7 +334,7 @@ set_expand_bbox(Datum d, meosType basetype, void *box)
 }
 
 /**
- * Return a pointer to the bounding box of a temporal sequence
+ * @brief Return a pointer to the bounding box of a temporal sequence
  */
 void *
 set_bbox_ptr(const Set *s)
@@ -344,7 +343,7 @@ set_bbox_ptr(const Set *s)
 }
 
 /**
- * Return a pointer to the offsets array of a set
+ * @brief Return a pointer to the offsets array of a set
  */
 size_t *
 set_offsets_ptr(const Set *s)
@@ -549,7 +548,6 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
  * @brief Construct a set from an array of values.
  * @param[in] values Array of values
  * @param[in] count Number of elements in the array
- * @param[in] maxcount Maximum number of elements in the array
  * @param[in] basetype Base type
  * @param[in] ordered True for ordered sets
  * @sqlfunc intset(), bigintset(), floatset(), textset(), tstzset()
@@ -563,9 +561,8 @@ set_make(const Datum *values, int count, meosType basetype, bool ordered)
 
 /**
  * @ingroup libmeos_internal_setspan_constructor
- * @brief Construct a set from the array of values and free the
- * array after the creation.
- *
+ * @brief Construct a set from the array of values and free the array after
+ * the creation.
  * @param[in] values Array of values
  * @param[in] count Number of elements in the array
  * @param[in] basetype Base type
@@ -882,7 +879,6 @@ tstzset_end_timestamp(const Set *ts)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the n-th value of a set.
- *
  * @param[in] s Set
  * @param[in] n Number
  * @param[out] result Timestamp
@@ -904,7 +900,6 @@ set_value_n(const Set *s, int n, Datum *result)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the n-th value of an integer set.
- *
  * @param[in] s Integer set
  * @param[in] n Number
  * @param[out] result Value
@@ -925,7 +920,6 @@ intset_value_n(const Set *s, int n, int *result)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the n-th value of a big integer set.
- *
  * @param[in] s Integer set
  * @param[in] n Number
  * @param[out] result Value
@@ -946,7 +940,6 @@ bigintset_value_n(const Set *s, int n, int64 *result)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the n-th value of a float set.
- *
  * @param[in] s Float set
  * @param[in] n Number
  * @param[out] result Value
@@ -967,7 +960,6 @@ floatset_value_n(const Set *s, int n, double *result)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the n-th value of a set.
- *
  * @param[in] ts Timestamp set
  * @param[in] n Number
  * @param[out] result Timestamp

@@ -58,8 +58,7 @@
  *****************************************************************************/
 
 /**
- * Ensure that the subtype of a temporal value is valid
- *
+ * @brief Ensure that the subtype of a temporal value is valid
  * @note Used for the dispatch functions
  */
 void
@@ -71,8 +70,7 @@ ensure_valid_tempsubtype(int16 subtype)
 }
 
 /**
- * Ensure that the subtype of a temporal value is valid
- *
+ * @brief Ensure that the subtype of a temporal value is valid
  * @note Used for the the analyze and selectivity functions
  */
 void
@@ -85,7 +83,7 @@ ensure_valid_tempsubtype_all(int16 subtype)
 }
 
 /**
- * Ensure that the subtype of temporal type is a sequence (set)
+ * @brief Ensure that the subtype of temporal type is a sequence (set)
  */
 void
 ensure_continuous(const Temporal *temp)
@@ -96,7 +94,7 @@ ensure_continuous(const Temporal *temp)
 }
 
 /**
- * Ensure that the elements of an array are of instant subtype
+ * @brief Ensure that the elements of an array are of instant subtype
  */
 void
 ensure_tinstarr(const TInstant **instants, int count)
@@ -110,7 +108,7 @@ ensure_tinstarr(const TInstant **instants, int count)
 }
 
 /**
- * Ensure that a temporal value does not have linear interpolation
+ * @brief Ensure that a temporal value does not have linear interpolation
  */
 void
 ensure_nonlinear_interpolation(int16 flags)
@@ -121,8 +119,8 @@ ensure_nonlinear_interpolation(int16 flags)
 }
 
 /**
- * Ensure that two temporal values have at least one common dimension based on
- * their flags
+ * @brief Ensure that two temporal values have at least one common dimension
+ * based on their flags
  */
 void
 ensure_common_dimension(int16 flags1, int16 flags2)
@@ -134,7 +132,7 @@ ensure_common_dimension(int16 flags1, int16 flags2)
 }
 
 /**
- * Ensure that two temporal values have the same base type
+ * @brief Ensure that two temporal values have the same base type
  */
 void
 ensure_same_temptype(const Temporal *temp1, const Temporal *temp2)
@@ -145,7 +143,7 @@ ensure_same_temptype(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * Ensure that two temporal values have the same interpolation
+ * @brief Ensure that two temporal values have the same interpolation
  */
 void
 ensure_same_interpolation(const Temporal *temp1, const Temporal *temp2)
@@ -161,7 +159,7 @@ ensure_same_interpolation(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * Ensure that the timestamp of the first temporal instant is smaller
+ * @brief Ensure that the timestamp of the first temporal instant is smaller
  * (or equal if the merge parameter is true) than the one of the second
  * temporal instant. Moreover, ensures that the values are the same
  * if the timestamps are equal
@@ -187,7 +185,7 @@ ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2,
 }
 
 /**
- * Ensure that two temporal instants have increasing timestamp
+ * @brief Ensure that two temporal instants have increasing timestamp
  * (or may be equal if the merge parameter is true), and if they
  * are temporal points, have the same srid and the same dimensionality.
  *
@@ -214,7 +212,7 @@ ensure_valid_tinstarr1(const TInstant *inst1, const TInstant *inst2,
 }
 
 /**
- * Ensure that all temporal instants of the array have increasing
+ * @brief Ensure that all temporal instants of the array have increasing
  * timestamp (or may be equal if the merge parameter is true), and if they
  * are temporal points, have the same srid and the same dimensionality.
  *
@@ -234,9 +232,10 @@ ensure_valid_tinstarr(const TInstant **instants, int count, bool merge,
 }
 
 /**
- * Ensure that all temporal instants of the array have increasing
+ * @brief Ensure that all temporal instants of the array have increasing
  * timestamp (or may be equal if the merge parameter is true), and if they
  * are temporal points, have the same srid and the same dimensionality.
+ *
  * This function extends function ensure_valid_tinstarr by determining
  * the splits that must be made according the maximum distance or interval
  * between consecutive instants.
@@ -317,7 +316,7 @@ ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
 }
 
 /**
- * Ensure that all temporal instants of the array have increasing
+ * @brief Ensure that all temporal instants of the array have increasing
  * timestamp, and if they are temporal points, have the same srid and the
  * same dimensionality
  */
@@ -346,7 +345,7 @@ ensure_valid_tseqarr(const TSequence **sequences, int count)
 /*****************************************************************************/
 
 /**
- * Ensure that the number is positive
+ * @brief Ensure that the number is positive
  */
 void
 ensure_positive_datum(Datum size, meosType basetype)
@@ -374,7 +373,7 @@ ensure_positive_datum(Datum size, meosType basetype)
 }
 
 /**
- * Ensure that the interval is a positive and absolute duration
+ * @brief Ensure that the interval is a positive and absolute duration
  */
 void
 ensure_valid_duration(const Interval *duration)
@@ -412,8 +411,7 @@ temporal_bbox_ptr(const Temporal *temp)
 }
 
 /**
- * Temporally intersect the two temporal values
- *
+ * @brief Temporally intersect the two temporal values
  * @param[in] temp1,temp2 Input values
  * @param[in] mode Either intersection or synchronization
  * @param[out] inter1,inter2 Output values
@@ -508,7 +506,7 @@ intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 
 #define MOBDB_VERSION_STR_MAXLEN 256
 /**
- * Version of the MobilityDB extension
+ * @brief Version of the MobilityDB extension
  */
 char *
 mobilitydb_version(void)
@@ -518,7 +516,7 @@ mobilitydb_version(void)
 }
 
 /**
- * Versions of the MobilityDB extension and its dependencies
+ * @brief Versions of the MobilityDB extension and its dependencies
  */
 char *
 mobilitydb_full_version(void)
@@ -906,8 +904,7 @@ temporal_append_tsequence(Temporal *temp, const TSequence *seq, bool expand)
 }
 
 /**
- * Convert two temporal values into a common subtype
- *
+ * @brief Convert two temporal values into a common subtype
  * @param[in] temp1,temp2 Input values
  * @param[out] out1,out2 Output values
  * @note Each of the output values may be equal to the input values to avoid
@@ -982,7 +979,6 @@ temporal_convert_same_subtype(const Temporal *temp1, const Temporal *temp2,
 /**
  * @ingroup libmeos_temporal_transf
  * @brief Merge two temporal values.
- *
  * @result Merged value. Return NULL if both arguments are NULL.
  * If one argument is null the other argument is output.
  * @sqlfunc merge()
@@ -1025,8 +1021,7 @@ temporal_merge(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * Convert the array of temporal values into a common subtype
- *
+ * @brief Convert the array of temporal values into a common subtype
  * @param[in] temparr Array of values
  * @param[in] count Number of values
  * @param[in] subtype common subtype
@@ -1360,7 +1355,6 @@ temporal_step_to_linear(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_transf
  * @brief Return a temporal value shifted and/or scaled by the intervals.
- *
  * @param[in] temp Temporal value
  * @param[in] shift Interval for shift
  * @param[in] duration Interval for scale
@@ -2043,7 +2037,6 @@ temporal_end_sequence(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the n-th sequence of a temporal sequence (set).
- *
  * @note n is assumed to be 1-based.
  * @sqlfunc sequenceN()
  */
@@ -2344,8 +2337,8 @@ temporal_timestamps(const Temporal *temp, int *count)
  *****************************************************************************/
 
 /**
- * Return true if the bounding box of a temporal value is ever/always equal
- * to a base value
+ * @brief Return true if the bounding box of a temporal value is ever/always
+ * equal to a base value
  * @param[in] temp Temporal value
  * @param[in] value Value to be found
  * @param[in] ever True when testing ever, false when testing always
@@ -2387,9 +2380,11 @@ temporal_bbox_ev_al_eq(const Temporal *temp, Datum value, bool ever)
 }
 
 /**
- * Return true if the bounding box of a temporal value is ever/always less
- * than or equal to the base value. The same test is used for both since the
- * bounding box does not distinguish between the inclusive/exclusive bounds.
+ * @brief Return true if the bounding box of a temporal value is ever/always
+ * less than or equal to the base value.
+ *
+ * The same test is used for both since the bounding box does not
+ * distinguish between inclusive/exclusive bounds.
  *
  * @param[in] temp Temporal value
  * @param[in] value Base value
@@ -2739,7 +2734,8 @@ bool ttext_always_le(const Temporal *temp, text *txt)
  *****************************************************************************/
 
 /**
- * Return true if the bounding box of a temporal value contains a base value
+ * @brief Return true if the bounding box of a temporal value contains a base
+ * value
  */
 bool
 temporal_bbox_restrict_value(const Temporal *temp, Datum value)
@@ -2773,8 +2769,8 @@ temporal_bbox_restrict_value(const Temporal *temp, Datum value)
 }
 
 /**
- * Return the array of base values that are contained in the bounding box
- * of a temporal value.
+ * @brief Return the array of base values that are contained in the bounding
+ * box of a temporal value.
  *
  * @param[in] temp Temporal value
  * @param[in] values Array of base values
@@ -2845,8 +2841,8 @@ temporal_bbox_restrict_values(const Temporal *temp, const Datum *values,
 }
 
 /**
- * Return true if the bounding box of the temporal number overlaps the span
- * of base values
+ * @brief Return true if the bounding box of the temporal number overlaps the
+ * span of base values
  */
 bool
 tnumber_bbox_restrict_span(const Temporal *temp, const Span *span)
@@ -2866,7 +2862,6 @@ tnumber_bbox_restrict_span(const Temporal *temp, const Span *span)
 /**
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) a base value.
- *
  * @note This function does a bounding box test for the temporal types
  * different from instant. The singleton tests are done in the functions for
  * the specific temporal types.
@@ -3268,9 +3263,9 @@ tnumber_at_tbox(const Temporal *temp, const TBox *box)
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal number to the complement of a temporal box.
  *
- * We cannot make the difference from each dimension separately, i.e.,
- * restrict at the period and then restrict to the span. Therefore, we
- * compute the atTbox and then compute the complement of the value obtained.
+ * It is not possible to make the difference from each dimension separately,
+ * i.e., restrict at the period and then restrict to the span. Therefore, we
+ * compute the `atTbox` and then compute the complement of the value obtained.
  * @sqlfunc minusTbox()
  */
 Temporal *
@@ -3628,7 +3623,6 @@ tnumber_twavg(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_comp
  * @brief Return true if the temporal values are equal.
- *
  * @note The internal B-tree comparator is not used to increase efficiency
  * @sqlop @p =
  * @pymeosfunc __eq__()
@@ -3728,7 +3722,6 @@ temporal_ne(const Temporal *temp1, const Temporal *temp2)
  * @ingroup libmeos_temporal_comp
  * @brief Return -1, 0, or 1 depending on whether the first temporal value is
  * less than, equal, or greater than the second one.
- *
  * @note Function used for B-tree comparison
  * @sqlfunc tbool_cmp(), tint_cmp(), tfloat_cmp(), ttext_cmp(), etc.
  */

@@ -84,7 +84,8 @@ float8_qsort_cmp(const void *a1, const void *a2)
  * @param[in] slot_idx Index of the slot where the statistics collected are stored
  * @param[in] lowers,uppers Arrays of span bounds
  * @param[in] lengths Arrays of span lengths
- * @param[in] True/false for histogram of the value/time dimension
+ * @param[in] valuedim True for computing the histogram of the value dimension,
+ * false for the time dimension
  */
 void
 span_compute_stats_generic(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
@@ -231,7 +232,7 @@ span_compute_stats_generic(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
  * @param[in] stats Structure storing statistics information
  * @param[in] fetchfunc Fetch function
  * @param[in] samplerows Number of sample rows
- * @param[in] type Type of the column for which the stats are generated
+ * @param[in] totalrows Total number of rows
  */
 static void
 span_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,

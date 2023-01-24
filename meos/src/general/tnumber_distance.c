@@ -49,7 +49,7 @@
  *****************************************************************************/
 
 /**
- * Return the distance between two numbers
+ * @brief Return the distance between two numbers
  */
 Datum
 number_distance(Datum l, Datum r, meosType typel, meosType typer)
@@ -77,7 +77,6 @@ number_distance(Datum l, Datum r, meosType typel, meosType typer)
 /**
  * @ingroup libmeos_internal_temporal_dist
  * @brief Return the temporal distance between a temporal number and a number.
- *
  * @param[in] temp Temporal number
  * @param[in] value Value
  * @param[in] valuetype Type of the value
@@ -130,7 +129,7 @@ distance_tfloat_float(const Temporal *temp, double d)
 #endif /* MEOS */
 
 /**
- * Return true if two segments of the temporal numbers intersect at a
+ * @brief Return true if two segments of the temporal numbers intersect at a
  * timestamp.
  *
  * This function is passed to the lifting infrastructure when computing the

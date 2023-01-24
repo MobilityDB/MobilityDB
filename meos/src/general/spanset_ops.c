@@ -49,8 +49,7 @@
  *****************************************************************************/
 
 /**
- * Set the precision of a time value according to time buckets.
- *
+ * @brief Set the precision of a time value according to time buckets.
  * @param[in] t Time value
  * @param[in] duration Size of the time buckets
  * @param[in] torigin Time origin of the buckets
@@ -69,8 +68,7 @@ timestamp_tprecision(TimestampTz t, Interval *duration, TimestampTz torigin)
 }
 
 /**
- * Set the precision of a time value according to period buckets.
- *
+ * @brief Set the precision of a time value according to period buckets.
  * @param[in] s Time value
  * @param[in] duration Size of the time buckets
  * @param[in] torigin Time origin of the buckets
@@ -92,8 +90,7 @@ period_tprecision(const Span *s, Interval *duration, TimestampTz torigin)
 }
 
 /**
- * Set the precision of a time value into an array of disjoint fragments
- *
+ * @brief Set the precision of a time value into an array of disjoint fragments
  * @param[in] ss Time value
  * @param[in] duration Size of the time buckets
  * @param[in] torigin Time origin of the buckets

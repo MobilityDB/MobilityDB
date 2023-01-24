@@ -603,10 +603,9 @@ gserialized_reverse(const GSERIALIZED *geom)
 }
 
 /**
- * Compute the azimuth of segment defined by the two
- * given Point geometries.
- * @return NULL on exception (same point).
- *     Return radians otherwise.
+ * @brief Compute the azimuth of segment defined by the two given Point
+ * geometries.
+ * @return NULL on exception (same point). Return radians otherwise.
  */
 bool
 gserialized_azimuth(GSERIALIZED *geom1, GSERIALIZED *geom2, double *result)
@@ -965,11 +964,11 @@ gserialized_intersection(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
 }
 
 /**
- * @brief This is the final function for GeomUnion
- *       aggregate. Will have as input an array of Geometries.
- *       Will iteratively call GEOSUnion on the GEOS-converted
- *       versions of them and return PGIS-converted version back.
- *       Changing combination order *might* speed up performance.
+ * @brief This is the final function for GeomUnion aggregate.
+ * Will have as input an array of Geometries.
+ * Will iteratively call GEOSUnion on the GEOS-converted versions of them
+ * and return PGIS-converted version back.
+ * Changing combination order *might* speed up performance.
  * @note PostGIS function: pgis_union_geometry_array(PG_FUNCTION_ARGS)
  */
 GSERIALIZED *
@@ -2147,7 +2146,7 @@ gserialized_line_locate_point(GSERIALIZED *geom1, GSERIALIZED *geom2)
 /**
  * PointN(GEOMETRY,INTEGER) -- find the first linestring in GEOMETRY,
  * @return the point at index INTEGER (1 is 1st point).  Return NULL if
- *     there is no LINESTRING(..) in GEOMETRY or INTEGER is out of bounds.
+ * there is no LINESTRING(..) in GEOMETRY or INTEGER is out of bounds.
  */
 GSERIALIZED *
 gserialized_pointn_linestring(const GSERIALIZED *geom, int where)

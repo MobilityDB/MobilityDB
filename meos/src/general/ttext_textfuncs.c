@@ -236,7 +236,7 @@ datum_upper(Datum value)
  *****************************************************************************/
 
 /**
- * Apply the function to transform the temporal text value
+ * @brief Apply the function to transform the temporal text value
  */
 Temporal *
 textfunc_ttext(const Temporal *temp, Datum (*func)(Datum value))
@@ -253,7 +253,7 @@ textfunc_ttext(const Temporal *temp, Datum (*func)(Datum value))
 }
 
 /**
- * Apply the function to the temporal text value and the base text value
+ * @brief Apply the function to the temporal text value and the base text value
  */
 Temporal *
 textfunc_ttext_text(const Temporal *temp, Datum value, datum_func2 func,
@@ -273,7 +273,7 @@ textfunc_ttext_text(const Temporal *temp, Datum value, datum_func2 func,
 }
 
 /**
- * Apply the function to the temporal text value and the base text value.
+ * @brief Apply the function to the temporal text value and the base text value.
  */
 Temporal *
 textfunc_ttext_ttext(const Temporal *temp1, const Temporal *temp2,

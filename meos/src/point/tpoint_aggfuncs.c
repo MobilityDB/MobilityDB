@@ -52,7 +52,7 @@
  *****************************************************************************/
 
 /**
- * Check the validity of the temporal point values for aggregation
+ * @brief Check the validity of the temporal point values for aggregation
  */
 void
 geoaggstate_check(const SkipList *state, int32_t srid, bool hasz)
@@ -68,7 +68,7 @@ geoaggstate_check(const SkipList *state, int32_t srid, bool hasz)
 }
 
 /**
- * Check the validity of the temporal point values for aggregation
+ * @brief Check the validity of the temporal point values for aggregation
  */
 void
 geoaggstate_check_state(const SkipList *state1, const SkipList *state2)
@@ -82,7 +82,7 @@ geoaggstate_check_state(const SkipList *state1, const SkipList *state2)
 }
 
 /**
- * Check the validity of the temporal point values for aggregation
+ * @brief Check the validity of the temporal point values for aggregation
  */
 void
 geoaggstate_check_temp(const SkipList *state, const Temporal *t)
@@ -94,7 +94,7 @@ geoaggstate_check_temp(const SkipList *state, const Temporal *t)
 /*****************************************************************************/
 
 /**
- * Transform a temporal point value of instant type into a temporal
+ * @brief Transform a temporal point value of instant type into a temporal
  * double3/double4 value for performing temporal centroid aggregation
  */
 static TInstant *
@@ -119,7 +119,7 @@ tpointinst_transform_tcentroid(const TInstant *inst)
 }
 
 /**
- * Transform a temporal point discrete sequence into a temporal
+ * @brief Transform a temporal point discrete sequence into a temporal
  * double3/double4 value for performing temporal centroid aggregation
  */
 static TInstant **
@@ -135,7 +135,7 @@ tpointdiscseq_transform_tcentroid(const TSequence *seq)
 }
 
 /**
- * Transform a temporal point value of sequence type into a temporal
+ * @brief Transform a temporal point value of sequence type into a temporal
  * double3/double4 value for performing temporal centroid aggregation
  */
 static TSequence *
@@ -147,7 +147,7 @@ tpointseq_transform_tcentroid(const TSequence *seq)
 }
 
 /**
- * Transform a temporal point value of sequence set type into a temporal
+ * @brief Transform a temporal point value of sequence set type into a temporal
  * double3/double4 value for performing temporal centroid aggregation
  */
 static TSequence **
@@ -163,7 +163,7 @@ tpointseqset_transform_tcentroid(const TSequenceSet *ts)
 }
 
 /**
- * Transform a temporal point value for performing temporal centroid aggregation
+ * @brief Transform a temporal point value for performing temporal centroid aggregation
  */
 Temporal **
 tpoint_transform_tcentroid(const Temporal *temp, int *count)
@@ -203,7 +203,7 @@ tpoint_transform_tcentroid(const Temporal *temp, int *count)
 /*****************************************************************************/
 
 /**
- * Transition function for temporal centroid aggregation of temporal point values
+ * @brief Transition function for temporal centroid aggregation of temporal point values
  */
 SkipList *
 tpoint_tcentroid_transfn(SkipList *state, Temporal *temp)
@@ -237,7 +237,7 @@ tpoint_tcentroid_transfn(SkipList *state, Temporal *temp)
 
 #if MEOS
 /**
- * Transition function for temporal extent aggregation of temporal point values
+ * @brief Transition function for temporal extent aggregation of temporal point values
  */
 STBox *
 tpoint_extent_transfn(STBox *box, const Temporal *temp)
@@ -274,7 +274,7 @@ tpoint_extent_transfn(STBox *box, const Temporal *temp)
  *****************************************************************************/
 
 /**
- * Transforms a temporal doubleN instant into a point
+ * @brief Transform a temporal doubleN instant into a point
  */
 static Datum
 doublen_to_point(const TInstant *inst, int srid)
@@ -305,9 +305,8 @@ doublen_to_point(const TInstant *inst, int srid)
 }
 
 /**
- * Final function for temporal centroid aggregation of temporal point values
- * with instant type
- *
+ * @brief Final function for temporal centroid aggregation of temporal point
+ * value with instant type
  * @param[in] instants Temporal values
  * @param[in] count Number of elements in the array
  * @param[in] srid SRID of the values
@@ -328,9 +327,8 @@ tpointinst_tcentroid_finalfn(TInstant **instants, int count, int srid)
 }
 
 /**
- * Final function for temporal centroid aggregation of temporal point values
- * with sequence type
- *
+ * @brief Final function for temporal centroid aggregation of temporal point
+ * values with sequence type
  * @param[in] sequences Temporal values
  * @param[in] count Number of elements in the array
  * @param[in] srid SRID of the values

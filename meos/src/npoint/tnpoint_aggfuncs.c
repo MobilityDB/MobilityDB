@@ -48,8 +48,8 @@
 /*****************************************************************************/
 
 /**
- * Transition function for temporal centroid aggregation of temporal network
- * points
+ * @brief Transition function for temporal centroid aggregation of temporal
+ * network points
  */
 SkipList *
 tnpoint_tcentroid_transfn(SkipList *state, Temporal *temp)

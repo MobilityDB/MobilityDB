@@ -53,7 +53,7 @@
 /*****************************************************************************/
 
 /**
- * Structure used for passing the parse state between the parsing functions.
+ * @brief Structure used for passing the parse state between the parsing functions.
  */
 typedef struct
 {
@@ -81,7 +81,7 @@ typedef struct
  *****************************************************************************/
 
 /**
- * Return the JSON member corresponding to the name
+ * @brief Return the JSON member corresponding to the name
  *
  * @note Function taken from PostGIS file lwin_geojson.c
  */
@@ -119,7 +119,7 @@ findMemberByName(json_object *poObj, const char *pszName)
 }
 
 /**
- * Return a single point from its MF-JSON coordinates. In this case the
+ * @brief Return a single point from its MF-JSON coordinates. In this case the
  * coordinate array is a single array of cordinations such as
  * "coordinates":[1,1]
  */
@@ -164,7 +164,7 @@ parse_mfjson_coord(json_object *poObj, int srid, bool geodetic)
 }
 
 /**
- * Return an array of points from its MF-JSON coordinates. In this case the
+ * @brief Return an array of points from its MF-JSON coordinates. In this case the
  * coordinate array is an array of arrays of cordinates such as
  * "values":[1.5,2.5]
  */
@@ -218,7 +218,7 @@ parse_mfjson_values(json_object *mfjson, meosType temptype, int *count)
 
 /* TODO MAKE POSSIBLE TO CALL THIS FUNCTION */
 /**
- * Return an array of points from its MF-JSON coordinates. In this case the
+ * @brief Return an array of points from its MF-JSON coordinates. In this case the
  * coordinate array is an array of arrays of cordinates such as
  * "coordinates":[[1,1],[2,2]]
  */
@@ -250,7 +250,7 @@ parse_mfjson_points(json_object *mfjson, int srid, bool geodetic,
 }
 
 /**
- * Return an array of timestamps from its MF-JSON datetimes values
+ * @brief Return an array of timestamps from its MF-JSON datetimes values
  */
 static TimestampTz *
 parse_mfjson_datetimes(json_object *mfjson, int *count)
@@ -433,7 +433,7 @@ tgeogpointinst_from_mfjson(json_object *mfjson, int srid)
 #endif /* MEOS */
 
 /**
- * Return array of temporal instant points from its MF-JSON representation
+ * @brief Return array of temporal instant points from its MF-JSON representation
  */
 static TInstant **
 tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int srid,
@@ -832,7 +832,7 @@ temporal_from_mfjson(const char *mfjson)
  *****************************************************************************/
 
 /**
- * Check that we are not about to read off the end of the WKB array
+ * @brief Check that we are not about to read off the end of the WKB array
  */
 static inline void
 wkb_parse_state_check(wkb_parse_state *s, size_t next)
@@ -842,7 +842,7 @@ wkb_parse_state_check(wkb_parse_state *s, size_t next)
 }
 
 /**
- * Read a byte and advance the parse state forward
+ * @brief Read a byte and advance the parse state forward
  */
 char
 byte_from_wkb_state(wkb_parse_state *s)
@@ -857,7 +857,7 @@ byte_from_wkb_state(wkb_parse_state *s)
 }
 
 /**
- * Read a 2-byte integer and advance the parse state forward
+ * @brief Read a 2-byte integer and advance the parse state forward
  */
 uint16_t
 int16_from_wkb_state(wkb_parse_state *s)
@@ -882,7 +882,7 @@ int16_from_wkb_state(wkb_parse_state *s)
 }
 
 /**
- * Read a 4-byte integer and advance the parse state forward
+ * @brief Read a 4-byte integer and advance the parse state forward
  */
 uint32_t
 int32_from_wkb_state(wkb_parse_state *s)
@@ -907,7 +907,7 @@ int32_from_wkb_state(wkb_parse_state *s)
 }
 
 /**
- * Read an 8-byte integer and advance the parse state forward
+ * @brief Read an 8-byte integer and advance the parse state forward
  */
 uint64_t
 int64_from_wkb_state(wkb_parse_state *s)
@@ -932,7 +932,7 @@ int64_from_wkb_state(wkb_parse_state *s)
 }
 
 /**
- * Read an 8-byte double and advance the parse state forward
+ * @brief Read an 8-byte double and advance the parse state forward
  */
 double
 double_from_wkb_state(wkb_parse_state *s)
@@ -957,7 +957,7 @@ double_from_wkb_state(wkb_parse_state *s)
 }
 
 /**
- * Read an 8-byte timestamp and advance the parse state forward
+ * @brief Read an 8-byte timestamp and advance the parse state forward
  */
 TimestampTz
 timestamp_from_wkb_state(wkb_parse_state *s)
@@ -982,7 +982,7 @@ timestamp_from_wkb_state(wkb_parse_state *s)
 }
 
 /**
- * Read a text and advance the parse state forward
+ * @brief Read a text and advance the parse state forward
  */
 text *
 text_from_wkb_state(wkb_parse_state *s)
@@ -1003,7 +1003,7 @@ text_from_wkb_state(wkb_parse_state *s)
 }
 
 /**
- * Return a point from its WKB representation. A WKB point has just a set of
+ * @brief Return a point from its WKB representation. A WKB point has just a set of
  * doubles, with the quantity depending on the dimension of the point.
  */
 Datum
@@ -1024,7 +1024,7 @@ point_from_wkb_state(wkb_parse_state *s)
 
 #if NPOINT
 /**
- * Read an npoint and advance the parse state forward
+ * @brief Read an npoint and advance the parse state forward
  */
 Npoint *
 npoint_from_wkb_state(wkb_parse_state *s)
@@ -1087,7 +1087,7 @@ basevalue_from_wkb_state(wkb_parse_state *s)
 }
 
 /**
- * Return the size of a span base value from its WKB representation.
+ * @brief Return the size of a span base value from its WKB representation.
  */
 static size_t
 span_basevalue_from_wkb_size(wkb_parse_state *s)
@@ -1113,7 +1113,7 @@ span_basevalue_from_wkb_size(wkb_parse_state *s)
 }
 
 /**
- * Set the bound flags from their WKB representation
+ * @brief Set the bound flags from their WKB representation
  */
 static void
 bounds_from_wkb_state(uint8_t wkb_bounds, bool *lower_inc, bool *upper_inc)
@@ -1130,7 +1130,7 @@ bounds_from_wkb_state(uint8_t wkb_bounds, bool *lower_inc, bool *upper_inc)
 }
 
 /**
- * Return a span from its WKB representation when reading components spans
+ * @brief Return a span from its WKB representation when reading components spans
  * in a span set (which does not repeat the spantype for every component
  */
 static Span *
@@ -1153,7 +1153,7 @@ span_from_wkb_state1(wkb_parse_state *s)
 }
 
 /**
- * Return a span from its WKB representation
+ * @brief Return a span from its WKB representation
  */
 Span *
 span_from_wkb_state(wkb_parse_state *s)
@@ -1168,7 +1168,7 @@ span_from_wkb_state(wkb_parse_state *s)
 /*****************************************************************************/
 
 /**
- * Return a span set from its WKB representation
+ * @brief Return a span set from its WKB representation
  */
 static SpanSet *
 spanset_from_wkb_state(wkb_parse_state *s)
@@ -1194,7 +1194,7 @@ spanset_from_wkb_state(wkb_parse_state *s)
 /*****************************************************************************/
 
 /**
- * Parse the WKB flags.
+ * @brief Parse the WKB flags.
  */
 void
 set_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
@@ -1218,7 +1218,7 @@ set_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
 }
 
 /**
- * Return a set from its WKB representation
+ * @brief Return a set from its WKB representation
  */
 static Set *
 set_from_wkb_state(wkb_parse_state *s)
@@ -1251,7 +1251,7 @@ set_from_wkb_state(wkb_parse_state *s)
 /*****************************************************************************/
 
 /**
- * Set the state flags according to a box byte flag read from the buffer.
+ * @brief Set the state flags according to a box byte flag read from the buffer.
  */
 static void
 tbox_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
@@ -1267,7 +1267,7 @@ tbox_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
 }
 
 /**
- * Return a temporal box from its WKB representation
+ * @brief Return a temporal box from its WKB representation
  */
 static TBox *
 tbox_from_wkb_state(wkb_parse_state *s)
@@ -1293,7 +1293,7 @@ tbox_from_wkb_state(wkb_parse_state *s)
 /*****************************************************************************/
 
 /**
- * Set the state flags according to a box byte flag read from the buffer.
+ * @brief Set the state flags according to a box byte flag read from the buffer.
  */
 static void
 stbox_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
@@ -1318,7 +1318,7 @@ stbox_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
 }
 
 /**
- * Return a spatiotemporal box from its WKB representation
+ * @brief Return a spatiotemporal box from its WKB representation
  */
 static STBox *
 stbox_from_wkb_state(wkb_parse_state *s)
@@ -1360,7 +1360,7 @@ stbox_from_wkb_state(wkb_parse_state *s)
 /*****************************************************************************/
 
 /**
- * Take in an unknown kind of WKB type number and ensure it comes out as an
+ * @brief Take in an unknown kind of WKB type number and ensure it comes out as an
  * extended WKB type number (with Z/GEODETIC/SRID/LINEAR_INTERP flags masked
  * onto the high bits).
  */
@@ -1425,7 +1425,7 @@ tinstant_from_wkb_state(wkb_parse_state *s)
 }
 
 /**
- * Return a temporal instant array from its WKB representation
+ * @brief Return a temporal instant array from its WKB representation
  */
 static TInstant **
 tinstarr_from_wkb_state(wkb_parse_state *s, int count)
@@ -1444,7 +1444,7 @@ tinstarr_from_wkb_state(wkb_parse_state *s, int count)
 }
 
 /**
- * Return a temporal sequence value from its WKB representation
+ * @brief Return a temporal sequence value from its WKB representation
  */
 static TSequence *
 tsequence_from_wkb_state(wkb_parse_state *s)
@@ -1463,7 +1463,7 @@ tsequence_from_wkb_state(wkb_parse_state *s)
 }
 
 /**
- * Return a temporal sequence set value from its WKB representation
+ * @brief Return a temporal sequence set value from its WKB representation
  */
 static TSequenceSet *
 tsequenceset_from_wkb_state(wkb_parse_state *s)
@@ -1499,7 +1499,7 @@ tsequenceset_from_wkb_state(wkb_parse_state *s)
 }
 
 /**
- * Return a temporal value from its WKB representation
+ * @brief Return a temporal value from its WKB representation
  */
 static Temporal *
 temporal_from_wkb_state(wkb_parse_state *s)

@@ -93,8 +93,8 @@ int main(void)
   /* Variable keeping the current aggregate state */
   SkipList *state = NULL;
   STBox *extent = NULL;
-  // Interval *interval = pg_interval_in("1 hour", -1);
-  // TimestampTz origin = pg_timestamptz_in("2020-06-01", -1);
+  Interval *interval = pg_interval_in("1 hour", -1);
+  TimestampTz origin = pg_timestamptz_in("2020-06-01", -1);
 
   /* Continue reading the file */
   do
@@ -130,8 +130,10 @@ int main(void)
 
     /* Add the current value to the running aggregates */
     extent = tpoint_extent_transfn(extent, trip_rec.trip);
-    // state = temporal_tcount_transfn(state, trip_rec.trip, interval, origin);
-    state = temporal_tcount_transfn(state, trip_rec.trip);
+    /* Get the time of the trip at an hour granularity */
+    SpanSet *ps = periodset_tprecision(temporal_time(trip_rec.trip), interval, origin);
+    /* Aggregate the time of the trip */
+    state = periodset_tcount_transfn(state, ps);
     /* Free memory */
     free(trip_rec.trip);
 

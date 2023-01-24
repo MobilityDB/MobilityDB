@@ -329,7 +329,7 @@ tnpointseqset_linear_positions(const TSequenceSet *ss, int *count)
 }
 
 /**
- * Return the network segments covered by the temporal network point.
+ * @brief Return the network segments covered by the temporal network point.
  */
 Nsegment **
 tnpointseqset_step_positions(const TSequenceSet *ss, int *count)

@@ -96,7 +96,7 @@ tinstant_value_copy(const TInstant *inst)
 }
 
 /**
- * Sets the value and the timestamp of a temporal instant
+ * @brief Set the value and the timestamp of a temporal instant
  *
  * @param[in,out] inst Temporal instant to be modified
  * @param[in] value Value
@@ -112,7 +112,7 @@ tinstant_set(TInstant *inst, Datum value, TimestampTz t)
 }
 
 /**
- * Convert the value of temporal number instant to a double
+ * @brief Convert the value of temporal number instant to a double
  */
 double
 tnumberinst_double(const TInstant *inst)
@@ -701,7 +701,7 @@ tinstant_restrict_value(const TInstant *inst, Datum value, bool atfunc)
 }
 
 /**
- * Return true if a temporal instant satisfies the restriction to
+ * @brief Return true if a temporal instant satisfies the restriction to
  * (the complement of) an array of base values
  *
  * @pre There are no duplicates values in the array
@@ -736,7 +736,7 @@ tinstant_restrict_values(const TInstant *inst, const Set *set, bool atfunc)
 }
 
 /**
- * Return true if a temporal number instant satisfies the restriction to
+ * @brief Return true if a temporal number instant satisfies the restriction to
  * (the complement of) a span of base values
  *
  * @param[in] inst Temporal number
@@ -777,7 +777,7 @@ tnumberinst_restrict_span(const TInstant *inst, const Span *span,
 }
 
 /**
- * Return true if a temporal number satisfies the restriction to
+ * @brief Return true if a temporal number satisfies the restriction to
  * (the complement of) an array of spans of base values
  * @note This function is called for each composing instant in a temporal
  * discrete sequence.
@@ -828,7 +828,7 @@ tinstant_restrict_timestamp(const TInstant *inst, TimestampTz t, bool atfunc)
 }
 
 /**
- * Return true if a temporal instant satisfies the restriction to
+ * @brief Return true if a temporal instant satisfies the restriction to
  * (the complement of) a timestamp set.
  *
  * @note This function is called for each composing instant in a temporal
@@ -874,7 +874,7 @@ tinstant_restrict_period(const TInstant *inst, const Span *period,
 }
 
 /**
- * Return true if a temporal instant satisfies the restriction to
+ * @brief Return true if a temporal instant satisfies the restriction to
  * (the complement of) a timestamp set.
  * @note This function is called for each composing instant in a temporal
  * discrete sequence.
@@ -950,7 +950,7 @@ tinstant_merge_array(const TInstant **instants, int count)
  *****************************************************************************/
 
 /**
- * Temporally intersect two temporal instants
+ * @brief Temporally intersect two temporal instants
  *
  * @param[in] inst1,inst2 Input values
  * @param[out] inter1, inter2 Output values

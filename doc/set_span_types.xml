@@ -727,6 +727,31 @@ SELECT shiftTscale(tstzspanset '{[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-
 </programlisting>
 			</listitem>
 
+				<listitem id="time_tprecision">
+					<indexterm><primary><varname>tprecision</varname></primary></indexterm>
+					<para>Set the temporal precision of the time value to the interval with respect to the origin</para>
+					<para><varname>tprecision(time,interval,origin timestamptz=’2000-01-03’) → time</varname></para>
+					<para>If the origin is not specified, it is set by default to Monday, January 3, 2000</para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT tprecision(timestamptz '2001-12-03', '30 days');
+-- [2001-11-23, 2001-12-23)
+SELECT tprecision(timestamptz '2001-12-03', '30 days', '2001-12-01');
+-- [2001-12-01, 2001-12-31)
+SELECT tprecision(timestamptz '2001-12-01 08:10', '1 day');
+-- [2001-12-01, 2001-12-02)
+SELECT tprecision(tstzspan '[2001-12-01 08:00, 2001-12-01 09:00]', '1 day');
+-- [2001-12-01, 2001-12-02)
+SELECT tprecision(tstzspan '[2001-12-01 08:00, 2001-12-15 09:00]', '1 day');
+-- [2001-12-01, 2001-12-16)
+SELECT tprecision(tstzspanset '{[2001-12-01 08:00, 2001-12-01 09:00],
+  [2001-12-01 10:00, 2001-12-01 11:00]}', '1 day');
+-- {[2001-12-01, 2001-12-02)}
+SELECT tprecision(tstzspanset '{[2001-12-01 08:00, 2001-12-01 09:00],
+  [2001-12-01 10:00, 2001-12-01 11:00]}', '1 day');
+-- {[2001-12-01, 2001-12-02)}
+</programlisting>
+				</listitem>
+
 				<listitem id="floatspan_round">
 					<indexterm><primary><varname>round</varname></primary></indexterm>
 					<para>Round the bounds of a float span to a number of decimal places</para>

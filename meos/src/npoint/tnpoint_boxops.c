@@ -73,8 +73,7 @@ npoint_set_stbox(const Npoint *np, STBox *box)
 }
 
 /**
- * Set the spatiotemporal box from an array of network point values
- *
+ * @brief Set the spatiotemporal box from an array of network point values
  * @param[in] values Temporal network point values
  * @param[in] count Number of elements in the array
  * @param[out] box Spatiotemporal box
@@ -92,8 +91,7 @@ npointarr_set_stbox(const Datum *values, int count, STBox *box)
   return;
 }
 /**
- * Set the spatiotemporal box from the network point value
- *
+ * @brief Set the spatiotemporal box from the network point value
  * @param[in] inst Temporal network point
  * @param[out] box Spatiotemporal box
  */
@@ -108,8 +106,8 @@ tnpointinst_set_stbox(const TInstant *inst, STBox *box)
 }
 
 /**
- * Set the spatiotemporal box from the array of temporal network point values
- *
+ * @brief Set the spatiotemporal box from the array of temporal network point
+ * values
  * @param[in] instants Temporal network point values
  * @param[in] count Number of elements in the array
  * @param[out] box Spatiotemporal box
@@ -128,8 +126,8 @@ tnpointinstarr_step_set_stbox(const TInstant **instants, int count, STBox *box)
 }
 
 /**
- * Set the spatiotemporal box from the array of temporal network point values
- *
+ * @brief Set the spatiotemporal box from the array of temporal network point
+ * values
  * @param[in] instants Temporal instant values
  * @param[in] count Number of elements in the array
  * @param[out] box Spatiotemporal box
@@ -163,8 +161,8 @@ tnpointinstarr_linear_set_stbox(const TInstant **instants, int count,
 }
 
 /**
- * Set the spatiotemporal box from the array of temporal network point values.
- *
+ * @brief Set the spatiotemporal box from the array of temporal network point
+ * values.
  * @param[in] instants Temporal instant values
  * @param[in] count Number of elements in the array
  * @param[in] interp Interpolation
@@ -183,8 +181,8 @@ tnpointinstarr_set_stbox(const TInstant **instants, int count,
 
 #if MEOS
 /**
- * Expand the temporal box of a temporal network point sequence with an instant
- *
+ * @brief Expand the temporal box of a temporal network point sequence with an
+ * instant
  * @param[in] seq Temporal sequence
  * @param[in] inst Temporal instant
  */
