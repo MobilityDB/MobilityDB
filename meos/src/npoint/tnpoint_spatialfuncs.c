@@ -53,7 +53,7 @@
  *****************************************************************************/
 
 /**
- * Ensure that a temporal network point and a STBox have the same SRID
+ * @brief Ensure that a temporal network point and a STBox have the same SRID
  */
 void
 ensure_same_srid_tnpoint_stbox(const Temporal *temp, const STBox *box)
@@ -65,7 +65,8 @@ ensure_same_srid_tnpoint_stbox(const Temporal *temp, const STBox *box)
 }
 
 /**
- * Ensure that two temporal network point instants have the same route identifier
+ * @brief Ensure that two temporal network point instants have the same route
+ * identifier
  */
 void
 ensure_same_rid_tnpointinst(const TInstant *inst1, const TInstant *inst2)
@@ -81,9 +82,8 @@ ensure_same_rid_tnpointinst(const TInstant *inst1, const TInstant *inst2)
  *****************************************************************************/
 
 /**
- * Return true if a segment of a temporal network point value intersects
+ * @brief Return true if a segment of a temporal network point value intersects
  * a base value at the timestamp
- *
  * @param[in] inst1,inst2 Temporal instants defining the segment
  * @param[in] value Base value
  * @param[out] t Timestamp

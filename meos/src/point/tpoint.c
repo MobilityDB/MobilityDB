@@ -49,7 +49,7 @@
  *****************************************************************************/
 
 /**
- * Copy a GSERIALIZED. This function is not available anymore in PostGIS 3
+ * @brief Copy a GSERIALIZED. This function is not available anymore in PostGIS 3
  */
 GSERIALIZED *
 gserialized_copy(const GSERIALIZED *g)

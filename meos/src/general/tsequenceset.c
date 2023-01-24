@@ -55,7 +55,7 @@
  *****************************************************************************/
 
 /**
- * Return the location of a timestamp in a temporal sequence set using
+ * @brief Return the location of a timestamp in a temporal sequence set using
  * binary search
  *
  * If the timestamp is contained in the temporal sequence set, the index of the
@@ -109,7 +109,7 @@ tsequenceset_find_timestamp(const TSequenceSet *ss, TimestampTz t, int *loc)
  *****************************************************************************/
 
 /**
- * Ensure the validity of the arguments when creating a temporal sequence set
+ * @brief Ensure the validity of the arguments when creating a temporal sequence set
  */
 static void
 tsequenceset_make_valid(const TSequence **sequences, int count)
@@ -141,7 +141,7 @@ tsequenceset_set_bbox(const TSequenceSet *ss, void *box)
 }
 
 /**
- * Return a pointer to the offsets array of a temporal sequence set
+ * @brief Return a pointer to the offsets array of a temporal sequence set
  */
 static size_t *
 tsequenceset_offsets_ptr(const TSequenceSet *ss)
@@ -170,7 +170,7 @@ tsequenceset_seq_n(const TSequenceSet *ss, int index)
 }
 
 /**
- * Construct a temporal sequence set from an array of temporal sequences
+ * @brief Construct a temporal sequence set from an array of temporal sequences
  *
  * For example, the memory structure of a temporal sequence set with two
  * sequences is as follows
@@ -330,7 +330,7 @@ tsequenceset_make_free(TSequence **sequences, int count, bool normalize)
 }
 
 /**
- * Ensure the validity of the arguments when creating a temporal value
+ * @brief Ensure the validity of the arguments when creating a temporal value
  * This function extends function tsequence_make_valid by spliting the
  * sequences according the maximum distance or interval between instants.
  */
@@ -1620,8 +1620,7 @@ tsequenceset_restrict_value(const TSequenceSet *ss, Datum value, bool atfunc)
  * base values.
  *
  * @param[in] ss Temporal sequence set
- * @param[in] values Array of base values
- * @param[in] count Number of elements in the input array
+ * @param[in] set Set of base values
  * @param[in] atfunc True if the restriction is at, false for minus
  * @pre There are no duplicates values in the array
  * @sqlfunc atValues(), minusValues()
@@ -2333,7 +2332,7 @@ tsequenceset_merge_array(const TSequenceSet **seqsets, int count)
  *****************************************************************************/
 
 /**
- * Temporally intersect or synchronize a temporal sequence set and a temporal
+ * @brief Temporally intersect or synchronize a temporal sequence set and a temporal
  * sequence
  *
  * The resulting values are composed of denormalized sequences
@@ -2389,7 +2388,7 @@ synchronize_tsequenceset_tsequence(const TSequenceSet *ss, const TSequence *seq,
 }
 
 /**
- * Temporally intersect or synchronize two temporal sequence sets
+ * @brief Temporally intersect or synchronize two temporal sequence sets
  *
  * @param[in] ss1,ss2 Input values
  * @param[in] mode Intersection or synchronization (with or without adding crossings)
@@ -2451,7 +2450,7 @@ synchronize_tsequenceset_tsequenceset(const TSequenceSet *ss1,
  *****************************************************************************/
 
 /**
- * Temporally intersect two temporal values
+ * @brief Temporally intersect two temporal values
  *
  * @param[in] ss,inst Input values
  * @param[out] inter1, inter2 Output values
@@ -2472,7 +2471,7 @@ intersection_tsequenceset_tinstant(const TSequenceSet *ss, const TInstant *inst,
 }
 
 /**
- * Temporally intersect two temporal values
+ * @brief Temporally intersect two temporal values
  *
  * @param[in] inst,ss Input values
  * @param[out] inter1, inter2 Output values
@@ -2486,7 +2485,7 @@ intersection_tinstant_tsequenceset(const TInstant *inst, const TSequenceSet *ss,
 }
 
 /**
- * Temporally intersect two temporal values
+ * @brief Temporally intersect two temporal values
  *
  * @param[in] ss,seq Input values
  * @param[out] inter1, inter2 Output values
@@ -2538,7 +2537,7 @@ intersection_tsequenceset_tdiscseq(const TSequenceSet *ss,
 }
 
 /**
- * Temporally intersect two temporal values
+ * @brief Temporally intersect two temporal values
  *
  * @param[in] seq,ss Input values
  * @param[out] inter1,inter2 Output values
@@ -2552,7 +2551,7 @@ intersection_tdiscseq_tsequenceset(const TSequence *seq,
 }
 
 /**
- * Temporally intersect or synchronize two temporal values
+ * @brief Temporally intersect or synchronize two temporal values
  *
  * @param[in] seq,ss Input values
  * @param[in] mode Enumeration for either intersect or synchronize
@@ -3153,7 +3152,7 @@ tnumberseqset_integral(const TSequenceSet *ss)
 }
 
 /**
- * Return the duration of a temporal sequence set as a double
+ * @brief Return the duration of a temporal sequence set as a double
  */
 static double
 tsequenceset_interval_double(const TSequenceSet *ss)

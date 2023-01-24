@@ -463,6 +463,10 @@ extern SpanSet *periodset_shift_tscale(const SpanSet *ps, const Interval *shift,
 extern void span_expand(const Span *s1, Span *s2);
 extern Set *tstzset_shift_tscale(const Set *ts, const Interval *shift, const Interval *duration);
 
+extern Span *timestamp_tprecision(TimestampTz t, Interval *duration, TimestampTz torigin);
+extern Span *period_tprecision(const Span *s, Interval *duration, TimestampTz torigin);
+extern SpanSet *periodset_tprecision(const SpanSet *ss, Interval *duration, TimestampTz torigin);
+
 /*****************************************************************************
  * Bounding box functions for set and span types
  *****************************************************************************/
@@ -1088,6 +1092,7 @@ extern Temporal *temporal_to_tdiscseq(const Temporal *temp);
 extern Temporal *temporal_to_tcontseq(const Temporal *temp);
 extern Temporal *temporal_to_tsequenceset(const Temporal *temp);
 extern Temporal *temporal_tscale(const Temporal *temp, const Interval *duration);
+extern Temporal *tnumber_tprecision(const Temporal *temp, const Interval *duration, TimestampTz origin);
 
 /*****************************************************************************/
 
@@ -1133,6 +1138,7 @@ extern Temporal *tpoint_minus_stbox(const Temporal *temp, const STBox *box);
 extern Temporal *tpoint_minus_value(const Temporal *temp, GSERIALIZED *gs);
 extern Temporal *tpoint_minus_values(const Temporal *temp, const Set *set);
 extern bool tpoint_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict, GSERIALIZED **value);
+extern TSequence *tsequence_at_period(const TSequence *seq, const Span *p);
 extern Temporal *ttext_at_value(const Temporal *temp, text *txt);
 extern Temporal *ttext_at_values(const Temporal *temp, const Set *set);
 extern Temporal *ttext_minus_value(const Temporal *temp, text *txt);

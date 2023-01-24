@@ -44,6 +44,53 @@
 #include "pg_general/meos_catalog.h"
 
 /*****************************************************************************
+ * Time precision functions
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Timestamp_tprecision);
+/**
+ * Return the initial timestamp of the bucket in which a timestamp falls.
+ */
+PGDLLEXPORT Datum
+Timestamp_tprecision(PG_FUNCTION_ARGS)
+{
+  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
+  Interval *duration = PG_GETARG_INTERVAL_P(1);
+  TimestampTz origin = PG_GETARG_TIMESTAMPTZ(2);
+  Span *result = timestamp_tprecision(t, duration, origin);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Period_tprecision);
+/**
+ * Generate a bucket in a bucket list for periods.
+*/
+PGDLLEXPORT Datum
+Period_tprecision(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  Interval *duration = PG_GETARG_INTERVAL_P(1);
+  TimestampTz origin = PG_GETARG_TIMESTAMPTZ(2);
+  Span *result = period_tprecision(s, duration, origin);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Periodset_tprecision);
+/**
+ * Generate a bucket in a bucket list for periods.
+*/
+PGDLLEXPORT Datum
+Periodset_tprecision(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  Interval *duration = PG_GETARG_INTERVAL_P(1);
+  TimestampTz origin = PG_GETARG_TIMESTAMPTZ(2);
+  SpanSet *result = periodset_tprecision(ss, duration, origin);
+  PG_FREE_IF_COPY(ss, 0);
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
  * Contains
  *****************************************************************************/
 

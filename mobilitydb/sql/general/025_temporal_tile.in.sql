@@ -81,13 +81,13 @@ CREATE FUNCTION spanBucket("value" float, size float,
 
 /*****************************************************************************/
 
-CREATE TYPE time_period AS (
+CREATE TYPE index_span AS (
   index integer,
-  tstzspan tstzspan
+  span tstzspan
 );
 
 CREATE FUNCTION bucketList(tstzspan, interval, timestamptz DEFAULT '2000-01-03')
-  RETURNS SETOF time_period
+  RETURNS SETOF index_span
   AS 'MODULE_PATHNAME', 'Period_bucket_list'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -118,7 +118,7 @@ CREATE FUNCTION periodBucket(timestamptz, interval,
 
 CREATE TYPE index_tbox AS (
   index integer,
-  box tbox
+  tile tbox
 );
 
 CREATE FUNCTION tileList(bounds tbox, size float,

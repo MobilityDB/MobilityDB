@@ -57,10 +57,10 @@
 /*****************************************************************************/
 
 /**
- * Return the distance between the two geometries. When the first geometry
- * is a segment it also computes a value between 0 and 1 that represents
- * the location in the segment of the closest point to the second geometry,
- * as a fraction of total segment length.
+ * @brief Return the distance between the two geometries. When the first
+ * geometry is a segment it also computes a value between 0 and 1 that
+ * represents the location in the segment of the closest point to the second
+ * geometry, as a fraction of total segment length.
  *
  * @note Function inspired by PostGIS function lw_dist2d_distancepoint
  * from measures.c
@@ -147,8 +147,8 @@ lw_distance_fraction(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
  *****************************************************************************/
 
 /**
- * Return the value and timestamp at which the a temporal point segment and
- * a point are at the minimum distance. These are the turning points when
+ * @brief Return the value and timestamp at which the a temporal point segment
+ * and a point are at the minimum distance. These are the turning points when
  * computing the temporal distance.
  *
  * @param[in] start,end Instants defining the first segment
@@ -236,8 +236,8 @@ point3d_min_dist(const POINT3DZ *p1, const POINT3DZ *p2,
 }
 
 /**
- * Return the value and timestamp at which the two temporal geometric point
- * segments are at the minimum distance. These are the turning points
+ * @brief Return the value and timestamp at which the two temporal geometric
+ * point segments are at the minimum distance. These are the turning points
  * when computing the temporal distance.
  *
  * @param[in] start1,end1 Instants defining the first segment
@@ -292,8 +292,8 @@ tgeompoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
 }
 
 /**
- * Return the single timestamp at which the two temporal geographic point
- * segments are at the minimum distance. These are the turning points
+ * @brief Return the single timestamp at which the two temporal geographic
+ * point segments are at the minimum distance. These are the turning points
  * when computing the temporal distance.
  *
  * @param[in] start1,end1 Instants defining the first segment
@@ -356,8 +356,8 @@ tgeogpoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
 }
 
 /**
- * Return the value and timestamp at which the two temporal point segments
- * are at the minimum distance.
+ * @brief Return the value and timestamp at which the two temporal point
+ * segments are at the minimum distance.
  *
  * @param[in] start1,end1 Instants defining the first segment
  * @param[in] start2,end2 Instants defining the second segment
@@ -440,9 +440,8 @@ distance_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * Return the new current nearest approach instant between the temporal
+ * @brief Return the new current nearest approach instant between the temporal
  * sequence point with stepwise interpolation and a geometry/geography
- *
  * @param[in] seq Temporal point
  * @param[in] geo Geometry/geography
  * @param[in] mindist Current minimum distance, it is set at DBL_MAX at the
@@ -473,9 +472,8 @@ NAI_tpointseq_discstep_geo1(const TSequence *seq, const LWGEOM *geo,
 }
 
 /**
- * Return the nearest approach instant between the temporal sequence
+ * @brief Return the nearest approach instant between the temporal sequence
  * point with stepwise interpolation and a geometry/geography
- *
  * @param[in] seq Temporal point
  * @param[in] geo Geometry/geography
  */
@@ -488,9 +486,8 @@ NAI_tpointseq_discstep_geo(const TSequence *seq, const LWGEOM *geo)
 }
 
 /**
- * Return the nearest approach instant between the temporal sequence set
+ * @brief Return the nearest approach instant between the temporal sequence set
  * point with stepwise interpolation and a geometry/geography
- *
  * @param[in] ss Temporal point
  * @param[in] geo Geometry/geography
  */
@@ -511,10 +508,9 @@ NAI_tpointseqset_step_geo(const TSequenceSet *ss, const LWGEOM *geo)
 /*****************************************************************************/
 
 /**
- * Return the distance and the timestamp of the nearest approach instant
+ * @brief Return the distance and the timestamp of the nearest approach instant
  * between the temporal sequence point with linear interpolation and the
  * geometry/geography
- *
  * @param[in] inst1,inst2 Temporal segment
  * @param[in] geo Geometry/geography
  * @param[out] t Timestamp
@@ -558,10 +554,9 @@ NAI_tpointsegm_linear_geo1(const TInstant *inst1, const TInstant *inst2,
 }
 
 /**
- * Return the distance and the timestamp of the nearest approach instant
+ * @brief Return the distance and the timestamp of the nearest approach instant
  * between the temporal sequence point with linear interpolation and the
  * geometry/geography
- *
  * @param[in] seq Temporal point
  * @param[in] geo Geometry/geography
  * @param[in] mindist Minimum distance found so far, or DBL_MAX at the beginning
@@ -610,7 +605,7 @@ NAI_tpointseq_linear_geo2(const TSequence *seq, const LWGEOM *geo,
 }
 
 /**
- * Return the nearest approach instant between the temporal sequence
+ * @brief Return the nearest approach instant between the temporal sequence
  * point with linear interpolation and a geometry
  */
 static TInstant *
@@ -628,7 +623,7 @@ NAI_tpointseq_linear_geo(const TSequence *seq, const LWGEOM *geo)
 }
 
 /**
- * Return the nearest approach instant between the temporal sequence set
+ * @brief Return the nearest approach instant between the temporal sequence set
  * point with linear interpolation and a geometry
  */
 static TInstant *

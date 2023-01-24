@@ -69,7 +69,7 @@
  *****************************************************************************/
 
 /**
- * Return true if the three values are collinear
+ * @brief Return true if the three values are collinear
  *
  * @param[in] x1,x2,x3 Input values
  * @param[in] ratio Value in [0,1] representing the duration of the
@@ -84,7 +84,7 @@ float_collinear(double x1, double x2, double x3, double ratio)
 }
 
 /**
- * Return true if the three double2 values are collinear
+ * @brief Return true if the three double2 values are collinear
  *
  * @param[in] x1,x2,x3 Input values
  * @param[in] ratio Value in [0,1] representing the duration of the
@@ -104,7 +104,7 @@ double2_collinear(const double2 *x1, const double2 *x2, const double2 *x3,
 }
 
 /**
- * Return true if the three values are collinear
+ * @brief Return true if the three values are collinear
  *
  * @param[in] x1,x2,x3 Input values
  * @param[in] ratio Value in [0,1] representing the duration of the
@@ -125,7 +125,7 @@ double3_collinear(const double3 *x1, const double3 *x2, const double3 *x3,
 }
 
 /**
- * Return true if the three values are collinear
+ * @brief Return true if the three values are collinear
  *
  * @param[in] x1,x2,x3 Input values
  * @param[in] ratio Value in [0,1] representing the duration of the
@@ -149,7 +149,7 @@ double4_collinear(const double4 *x1, const double4 *x2, const double4 *x3,
 
 #if NPOINT
 /**
- * Return true if the three values are collinear
+ * @brief Return true if the three values are collinear
  *
  * @param[in] np1,np2,np3 Input values
  * @param[in] ratio Value in [0,1] representing the duration of the
@@ -164,7 +164,7 @@ npoint_collinear(Npoint *np1, Npoint *np2, Npoint *np3, double ratio)
 #endif
 
 /**
- * Return true if the three values are collinear
+ * @brief Return true if the three values are collinear
  *
  * @param[in] value1,value2,value3 Input values
  * @param[in] basetype Base type
@@ -241,7 +241,7 @@ tsequence_norm_test(Datum value1, Datum value2, Datum value3, meosType basetype,
 }
 
 /**
- * Normalize the array of temporal instants
+ * @brief Normalize the array of temporal instants
  *
  * @param[in] instants Array of input instants
  * @param[in] interp Interpolation
@@ -389,7 +389,7 @@ tsequence_join_test(const TSequence *seq1, const TSequence *seq2,
 }
 
 /**
- * Join two temporal sequences
+ * @brief Join two temporal sequences
  *
  * @param[in] seq1,seq2 Temporal sequences
  * @param[in] removelast,removefirst Remove the last and/or the
@@ -712,7 +712,7 @@ tsequence_out(const TSequence *seq, int maxdd)
  *****************************************************************************/
 
 /**
- * Ensure the validity of the arguments when creating a temporal sequence
+ * @brief Ensure the validity of the arguments when creating a temporal sequence
  */
 void
 tsequence_make_valid1(const TInstant **instants, int count, bool lower_inc,
@@ -732,7 +732,7 @@ tsequence_make_valid1(const TInstant **instants, int count, bool lower_inc,
 }
 
 /**
- * Ensure the validity of the arguments when creating a temporal sequence
+ * @brief Ensure the validity of the arguments when creating a temporal sequence
  */
 static void
 tsequence_make_valid(const TInstant **instants, int count, bool lower_inc,
@@ -758,7 +758,7 @@ tsequence_set_bbox(const TSequence *seq, void *box)
 }
 
 /**
- * Return a pointer to the offsets array of a temporal sequence
+ * @brief Return a pointer to the offsets array of a temporal sequence
  */
 size_t *
 tsequence_offsets_ptr(const TSequence *seq)
@@ -1064,8 +1064,7 @@ tdiscseq_from_base(Datum value, meosType temptype, const TSequence *seq)
  * etc.
  */
 TSequence *
-tdiscseq_from_base_time(Datum value, meosType temptype,
-  const Set *ts)
+tdiscseq_from_base_time(Datum value, meosType temptype, const Set *ts)
 {
   TInstant **instants = palloc(sizeof(TInstant *) * ts->count);
   for (int i = 0; i < ts->count; i++)
@@ -3421,8 +3420,7 @@ tdiscseq_restrict_value(const TSequence *seq, Datum value, bool atfunc)
  * of base values.
  *
  * @param[in] seq Temporal sequence
- * @param[in] values Array of base values
- * @param[in] count Number of elements in the input array
+ * @param[in] set Set of base values
  * @param[in] atfunc True if the restriction is at, false for minus
  * @pre There are no duplicates values in the array
  * @sqlfunc atValues(), minusValues()
@@ -3683,8 +3681,7 @@ tcontseq_restrict_value(const TSequence *seq, Datum value, bool atfunc)
  * Restrict a temporal sequence to an array of base values
  *
  * @param[in] seq Temporal sequence
- * @param[in] values Array of base values
- * @param[in] count Number of elements in the input array
+ * @param[in] set Set of base values
  * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
  * @return Number of resulting sequences returned
@@ -3740,8 +3737,7 @@ tsequence_at_values1(const TSequence *seq, const Set *set, TSequence **result)
  * values.
  *
  * @param[in] seq Temporal sequence
- * @param[in] values Array of base values
- * @param[in] count Number of elements in the input array
+ * @param[in] set Set of base values
  * @param[in] atfunc True if the restriction is at, false for minus
  * @return Resulting temporal sequence set.
  * @note A bounding box test and an instantaneous sequence test are done in
@@ -5057,7 +5053,6 @@ tcontseq_at_period(const TSequence *seq, const Span *p)
   return result;
 }
 
-#if MEOS
 /**
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal sequence to a period.
@@ -5071,7 +5066,6 @@ tsequence_at_period(const TSequence *seq, const Span *p)
   else
     return tcontseq_at_period(seq, p);
 }
-#endif /* MEOS */
 
 /**
  * Restrict a temporal sequence to the complement of a period.

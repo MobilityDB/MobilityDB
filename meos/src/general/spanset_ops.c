@@ -41,7 +41,95 @@
 #include <meos_internal.h>
 #include "general/set.h"
 #include "general/spanset.h"
+#include "general/temporal_tile.h"
 #include "general/type_util.h"
+
+/*****************************************************************************
+ * Time precision functions for time values
+ *****************************************************************************/
+
+/**
+ * @brief Set the precision of a time value according to time buckets.
+ * @param[in] t Time value
+ * @param[in] duration Size of the time buckets
+ * @param[in] torigin Time origin of the buckets
+ */
+Span *
+timestamp_tprecision(TimestampTz t, Interval *duration, TimestampTz torigin)
+{
+  ensure_valid_duration(duration);
+  int64 tunits = interval_units(duration);
+  TimestampTz lower = timestamptz_bucket(t, duration, torigin);
+  /* The upper bound must be gridded to the next bucket */
+  TimestampTz upper = lower + tunits;
+  Span *result = span_make(TimestampTzGetDatum(lower),
+    TimestampTzGetDatum(upper), true, false, T_TIMESTAMPTZ);
+  return result;
+}
+
+/**
+ * @brief Set the precision of a time value according to period buckets.
+ * @param[in] s Time value
+ * @param[in] duration Size of the time buckets
+ * @param[in] torigin Time origin of the buckets
+ */
+Span *
+period_tprecision(const Span *s, Interval *duration, TimestampTz torigin)
+{
+  assert(s->basetype == T_TIMESTAMPTZ);
+  ensure_valid_duration(duration);
+  int64 tunits = interval_units(duration);
+  TimestampTz lower = s->lower;
+  TimestampTz upper = s->upper;
+  TimestampTz lower_bucket = timestamptz_bucket(lower, duration, torigin);
+  /* We need to add tunits to obtain the end timestamp of the last bucket */
+  TimestampTz upper_bucket = timestamptz_bucket(upper, duration, torigin) +
+    tunits;
+  Span *result = span_make(TimestampTzGetDatum(lower_bucket),
+    TimestampTzGetDatum(upper_bucket), true, false, T_TIMESTAMPTZ);
+  return result;
+}
+
+/**
+ * @brief Set the precision of a time value into an array of disjoint fragments
+ * @param[in] ss Time value
+ * @param[in] duration Size of the time buckets
+ * @param[in] torigin Time origin of the buckets
+ */
+SpanSet *
+periodset_tprecision(const SpanSet *ss, Interval *duration, TimestampTz torigin)
+{
+  assert(ss->basetype == T_TIMESTAMPTZ);
+  ensure_valid_duration(duration);
+  int64 tunits = interval_units(duration);
+  TimestampTz lower = DatumGetTimestampTz(ss->span.lower);
+  TimestampTz upper = DatumGetTimestampTz(ss->span.upper);
+  TimestampTz lower_bucket = timestamptz_bucket(lower, duration, torigin);
+  /* We need to add tunits to obtain the end timestamp of the last bucket */
+  TimestampTz upper_bucket = timestamptz_bucket(upper, duration, torigin) +
+    tunits;
+  /* Number of buckets */
+  int count = (int) (((int64) upper_bucket - (int64) lower_bucket) / tunits);
+  Span **spans = palloc(sizeof(Span *) * count);
+  lower = lower_bucket;
+  upper = lower_bucket + tunits;
+  spans[0] = span_make(TimestampTzGetDatum(lower),
+    TimestampTzGetDatum(upper), true, false, T_TIMESTAMPTZ);
+  int k = 1;
+  /* Loop for each bucket */
+  for (int i = 1; i < count; i++)
+  {
+    lower += tunits;
+    upper += tunits;
+    Span s;
+    span_set(TimestampTzGetDatum(lower),
+      TimestampTzGetDatum(upper), true, false, T_TIMESTAMPTZ, &s);
+    if (overlaps_spanset_span(ss, &s))
+      spans[k++] = span_copy(&s);
+  }
+  SpanSet *result = spanset_make_free(spans, k, NORMALIZE);
+  return result;
+}
 
 /*****************************************************************************
  * Contains

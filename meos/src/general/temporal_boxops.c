@@ -58,7 +58,7 @@
  *****************************************************************************/
 
 /**
- * Return true if the type is a bounding box type
+ * @brief Return true if the type is a bounding box type
  */
 bool
 bbox_type(meosType bboxtype)
@@ -69,7 +69,7 @@ bbox_type(meosType bboxtype)
 }
 
 /**
- * Ensure that the type corresponds to a bounding box type
+ * @brief Ensure that the type corresponds to a bounding box type
  */
 void
 ensure_bbox_type(meosType bboxtype)
@@ -80,7 +80,7 @@ ensure_bbox_type(meosType bboxtype)
 }
 
 /**
- * Return the size of a bounding box type
+ * @brief Return the size of a bounding box type
  */
 size_t
 bbox_get_size(meosType bboxtype)
@@ -95,7 +95,7 @@ bbox_get_size(meosType bboxtype)
 }
 
 /**
- * Return the maximum number of dimensions of a bounding box type
+ * @brief Return the maximum number of dimensions of a bounding box type
  */
 int
 bbox_max_dims(meosType bboxtype)
@@ -110,8 +110,7 @@ bbox_max_dims(meosType bboxtype)
 }
 
 /**
- * Return true if two bounding boxes are equal
- *
+ * @brief Return true if two bounding boxes are equal
  * @param[in] box1,box2 Bounding boxes
  * @param[in] temptype Temporal type
  */
@@ -136,9 +135,8 @@ temporal_bbox_eq(const void *box1, const void *box2, meosType temptype)
 }
 
 /**
- * Return -1, 0, or 1 depending on whether the first bounding box
+ * @brief Return -1, 0, or 1 depending on whether the first bounding box
  * is less than, equal, or greater than the second one
- *
  * @param[in] box1,box2 Bounding boxes
  * @param[in] temptype Temporal type
  */
@@ -157,8 +155,7 @@ temporal_bbox_cmp(const void *box1, const void *box2, meosType temptype)
 }
 
 /**
- * Shift and/or scale the time span of the bounding box by the intervals
- *
+ * @brief Shift and/or scale the time span of the bounding box by the intervals
  * @param[in] box Bounding box
  * @param[in] shift Interval to shift
  * @param[in] duration Interval to scale
@@ -188,7 +185,7 @@ temporal_bbox_shift_tscale(void *box, meosType temptype, const Interval *shift,
  *****************************************************************************/
 
 /**
- * Return true if a temporal type does not have bounding box
+ * @brief Return true if a temporal type does not have bounding box
  */
 static bool
 temptype_without_bbox(meosType temptype)
@@ -200,7 +197,7 @@ temptype_without_bbox(meosType temptype)
 }
 
 /**
- * Return the size of a bounding box of a temporal type
+ * @brief Return the size of a bounding box of a temporal type
  */
 size_t
 temporal_bbox_size(meosType temptype)
@@ -221,7 +218,6 @@ temporal_bbox_size(meosType temptype)
 /**
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Set the second argument to the bounding box of a temporal instant
- *
  * @param[in] box Bounding box
  * @param[in] inst Temporal value
  * @sqlfunc period(), tbox(), stbox()
@@ -261,8 +257,7 @@ tinstant_set_bbox(const TInstant *inst, void *box)
 }
 
 /**
- * Set a temporal box from an array of temporal number instants
- *
+ * @brief Set a temporal box from an array of temporal number instants
  * @param[in] instants Temporal instants
  * @param[in] count Number of elements in the array
  * @param[in] box Box
@@ -281,8 +276,7 @@ tnumberinstarr_set_tbox(const TInstant **instants, int count, TBox *box)
 }
 
 /**
- * Set a bounding box from an array of temporal instant values
- *
+ * @brief Set a bounding box from an array of temporal instant values
  * @param[in] instants Temporal instants
  * @param[in] count Number of elements in the array
  * @param[in] lower_inc,upper_inc Period bounds
@@ -326,8 +320,7 @@ tinstarr_compute_bbox(const TInstant **instants, int count, bool lower_inc,
 
 #if MEOS
 /**
- * Expand the bounding box of a temporal number sequence with an instant
- *
+ * @brief Expand the bounding box of a temporal number sequence with an instant
  * @param[inout] seq Temporal sequence
  * @param[in] inst Temporal instant
  */
@@ -341,8 +334,7 @@ tnumberseq_expand_tbox(TSequence *seq, const TInstant *inst)
 }
 
 /**
- * Expand the bounding box of a temporal sequence with an additional instant
- *
+ * @brief Expand the bounding box of a temporal sequence with an additional instant
  * @param[inout] seq Temporal sequence
  * @param[in] inst Temporal instant
  */
@@ -372,8 +364,7 @@ tsequence_expand_bbox(TSequence *seq, const TInstant *inst)
 }
 
 /**
- * Expand the bounding box of a temporal sequence set with an additional sequence
- *
+ * @brief Expand the bounding box of a temporal sequence set with an additional sequence
  * @param[inout] ss Temporal sequence set
  * @param[in] seq Temporal sequence
  */
@@ -403,8 +394,7 @@ tsequenceset_expand_bbox(TSequenceSet *ss, const TSequence *seq)
 #endif /* MEOS */
 
 /**
- * Set the period from the array of temporal sequence values
- *
+ * @brief Set the period from the array of temporal sequence values
  * @param[in] period Period
  * @param[in] sequences Temporal instants
  * @param[in] count Number of elements in the array
@@ -420,8 +410,7 @@ tseqarr_set_period(const TSequence **sequences, int count, Span *period)
 }
 
 /**
- * Set the temporal box from the array of temporal number sequence values
- *
+ * @brief Set the temporal box from the array of temporal number sequence values
  * @param[in] box Box
  * @param[in] sequences Temporal instants
  * @param[in] count Number of elements in the array
@@ -439,7 +428,7 @@ tnumberseqarr_set_tbox(const TSequence **sequences, int count, TBox *box)
 }
 
 /**
- * Set the bounding box from the array of temporal sequence values
+ * @brief Set the bounding box from the array of temporal sequence values
  */
 void
 tsequenceset_compute_bbox(const TSequence **sequences, int count, void *box)

@@ -75,7 +75,7 @@ spanbase_extent_transfn(Span *s, Datum d, meosType basetype)
 Span *
 int_extent_transfn(Span *s, int i)
 {
-  return spanbase_agg_transfn(s, Int32GetDatum(i), T_INT4);
+  return spanbase_extent_transfn(s, Int32GetDatum(i), T_INT4);
 }
 
 /**
@@ -85,7 +85,7 @@ int_extent_transfn(Span *s, int i)
 Span *
 bigint_extent_transfn(Span *s, int64 i)
 {
-  return spanbase_agg_transfn(s, Int64GetDatum(i), T_INT8);
+  return spanbase_extent_transfn(s, Int64GetDatum(i), T_INT8);
 }
 
 /**
@@ -95,7 +95,7 @@ bigint_extent_transfn(Span *s, int64 i)
 Span *
 float_extent_transfn(Span *s, double d)
 {
-  return spanbase_agg_transfn(s, Float8GetDatum(d), T_FLOAT8);
+  return spanbase_extent_transfn(s, Float8GetDatum(d), T_FLOAT8);
 }
 
 /**
@@ -105,7 +105,7 @@ float_extent_transfn(Span *s, double d)
 Span *
 timestamp_extent_transfn(Span *s, TimestampTz t)
 {
-  return spanbase_agg_transfn(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  return spanbase_extent_transfn(s, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 #endif /* MEOS */
 

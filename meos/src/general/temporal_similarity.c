@@ -49,8 +49,7 @@
  *****************************************************************************/
 
 /**
- * Compute the distance between two temporal instants.
- *
+ * @brief Compute the distance between two temporal instants.
  * @param[in] inst1,inst2 Temporal instants
  */
 static double
@@ -61,8 +60,7 @@ tnumberinst_distance(const TInstant *inst1, const TInstant *inst2)
 }
 
 /**
- * Compute the distance between two temporal instants.
- *
+ * @brief Compute the distance between two temporal instants.
  * @param[in] inst1,inst2 Temporal instants
  */
 static double
@@ -76,8 +74,7 @@ tpointinst_distance(const TInstant *inst1, const TInstant *inst2)
 }
 
 /**
- * Compute the distance between two temporal instants.
- *
+ * @brief Compute the distance between two temporal instants.
  * @param[in] inst1,inst2 Temporal instants
  */
 static double
@@ -95,9 +92,8 @@ tinstant_distance(const TInstant *inst1, const TInstant *inst2)
  *****************************************************************************/
 
 /**
- * Linear space computation of the similarity distance between two temporal
+ * @brief Linear space computation of the similarity distance between two temporal
  * values. Only two rows of the full matrix are used.
- *
  * @param[in] instants1,instants2 Arrays of temporal instants
  * @param[in] count1,count2 Number of instants in the arrays
  * @param[in] simfunc Similarity function, i.e., Frechet or DTW
@@ -161,9 +157,8 @@ tinstarr_similarity1(double *dist, const TInstant **instants1, int count1,
 }
 
 /**
- * Linear space computation of the similarity distance between two temporal
+ * @brief Linear space computation of the similarity distance between two temporal
  * values. Only two rows of the full matrix are used.
- *
  * @param[in] instants1,instants2 Arrays of temporal instants
  * @param[in] count1,count2 Number of instants in the arrays
  * @param[in] simfunc Similarity function, i.e., Frechet or DTW
@@ -187,7 +182,6 @@ tinstarr_similarity(const TInstant **instants1, int count1,
 
 /**
  * @brief Compute the similarity distance between two temporal values.
- *
  * @param[in] temp1,temp2 Temporal values
  * @param[in] simfunc Similarity function, i.e., Frechet or DTW
  */
@@ -211,7 +205,6 @@ temporal_similarity(const Temporal *temp1, const Temporal *temp2,
 /**
  * @ingroup libmeos_temporal_similarity
  * @brief Compute the Frechet distance between two temporal values.
- *
  * @param[in] temp1,temp2 Temporal values
  * @sqlfunc frechetDistance()
  */
@@ -224,7 +217,6 @@ temporal_frechet_distance(const Temporal *temp1, const Temporal *temp2)
 /**
  * @ingroup libmeos_temporal_similarity
  * @brief Compute the Dynamic Time Warp distance between two temporal values.
- *
  * @param[in] temp1,temp2 Temporal values
  * @sqlfunc dynamicTimeWarp()
  */
@@ -242,7 +234,7 @@ temporal_dyntimewarp_distance(const Temporal *temp1, const Temporal *temp2)
 
 #ifdef DEBUG_BUILD
 /**
- * Print a distance matrix in tabular form
+ * @brief Print a distance matrix in tabular form
  */
 void
 matrix_print(double *dist, int count1, int count2)
@@ -275,7 +267,7 @@ matrix_print(double *dist, int count1, int count2)
 }
 
 /**
- * Print a distant path found from the distance matrix
+ * @brief Print a distant path found from the distance matrix
  */
 void
 path_print(Match *path, int count)
@@ -291,9 +283,8 @@ path_print(Match *path, int count)
 #endif
 
 /**
- * Compute the similarity path between two temporal values based on the
+ * @brief Compute the similarity path between two temporal values based on the
  * distance matrix.
- *
  * @param[in] dist Matrix keeping the distances
  * @param[in] count1,count2 Number of rows and columns of the matrix
  * @param[out] count Number of elements of the similarity path
@@ -336,9 +327,8 @@ tinstarr_similarity_path(double *dist, int count1, int count2, int *count)
 }
 
 /**
- * Computing the similarity distance between two temporal values using a
+ * @brief Compute the similarity distance between two temporal values using a
  * full matrix.
- *
  * @param[in] instants1,instants2 Instants of the temporal values
  * @param[in] count1,count2 Number of instants of the temporal values
  * @param[in] simfunc Similarity function, i.e., Frechet or DTW
@@ -402,8 +392,7 @@ tinstarr_similarity_matrix1(const TInstant **instants1, int count1,
 }
 
 /**
- * Computes the similarity distance between two temporal values.
- *
+ * @brief Compute the similarity distance between two temporal values.
  * @param[in] instants1,instants2 Arrays of temporal instants
  * @param[in] count1,count2 Number of instants in the arrays
  * @param[in] simfunc Similarity function, i.e., Frechet or DTW
@@ -456,7 +445,6 @@ temporal_similarity_path(const Temporal *temp1, const Temporal *temp2,
 /**
  * @ingroup libmeos_temporal_similarity
  * @brief Compute the Frechet distance between two temporal values.
- *
  * @param[in] temp1,temp2 Temporal values
  * @param[out] count Number of elements of the output array
  * @sqlfunc frechetDistancePath()
@@ -470,7 +458,6 @@ temporal_frechet_path(const Temporal *temp1, const Temporal *temp2, int *count)
 /**
  * @ingroup libmeos_temporal_similarity
  * @brief Compute the Dynamic Time Warp distance between two temporal values.
- *
  * @param[in] temp1,temp2 Temporal values
  * @param[out] count Number of elements of the output array
  * @sqlfunc dynamicTimeWarpPath()

@@ -1793,6 +1793,23 @@ Temporal_shift_tscale(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PG_FUNCTION_INFO_V1(Tnumber_tprecision);
+/**
+ * @ingroup mobilitydb_temporal_transf
+ * @brief Set the precision of a temporal value according to period buckets.
+ * @sqlfunc tempSubtype()
+ */
+PGDLLEXPORT Datum
+Tnumber_tprecision(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Interval *duration = PG_GETARG_INTERVAL_P(1);
+  TimestampTz origin = PG_GETARG_TIMESTAMPTZ(2);
+  Temporal *result = tnumber_tprecision(temp, duration, origin);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEXT_P(result);
+}
+
 /*****************************************************************************
  * Append and merge functions
  *****************************************************************************/

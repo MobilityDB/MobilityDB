@@ -103,7 +103,7 @@ stbox_shift_tscale(STBox *box, const Interval *shift, const Interval *duration)
  *****************************************************************************/
 
 /**
- * Ensure that the temporal value has XY dimension
+ * @brief Ensure that the temporal value has XY dimension
  */
 void
 ensure_has_X_stbox(const STBox *box)
@@ -114,7 +114,7 @@ ensure_has_X_stbox(const STBox *box)
 }
 
 /**
- * Ensure that the temporal value has T dimension
+ * @brief Ensure that the temporal value has T dimension
  */
 void
 ensure_has_T_stbox(const STBox *box)
@@ -499,7 +499,7 @@ geo_to_stbox(const GSERIALIZED *gs)
 #endif /* MEOS */
 
 /**
- * Set the spatiotemporal box from an array of geometries/geographies
+ * @brief Set the spatiotemporal box from an array of geometries/geographies
  *
  * @param[in] values Values
  * @param[in] count Number of elements in the array
@@ -962,8 +962,7 @@ stbox_expand_time(const STBox *box, const Interval *interval)
  *****************************************************************************/
 
 /**
- * Set the ouput variables with the values of the flags of the boxes.
- *
+ * @brief Set the ouput variables with the values of the flags of the boxes.
  * @param[in] box1,box2 Input boxes
  * @param[out] hasx,hasz,hast,geodetic Boolean variables
  */
@@ -980,8 +979,8 @@ stbox_stbox_flags(const STBox *box1, const STBox *box2, bool *hasx,
 }
 
 /**
- * Verify the conditions and set the ouput variables with the values of the
- * flags of the boxes.
+ * @brief Verify the conditions and set the ouput variables with the values of
+ * the flags of the boxes.
  *
  * Mixing 2D/3D is enabled to compute, for example, 2.5D operations
  * @param[in] box1,box2 Input boxes
@@ -1122,8 +1121,7 @@ adjacent_stbox_stbox(const STBox *box1, const STBox *box2)
  *****************************************************************************/
 
 /**
- * Verify the conditions for a position operator
- *
+ * @brief Verify the conditions for a position operator
  * @param[in] box1,box2 Input boxes
  */
 static void

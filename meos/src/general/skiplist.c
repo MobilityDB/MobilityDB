@@ -75,7 +75,7 @@
 #define SKIPLIST_INITIAL_FREELIST 32
 
 /**
- * Enumeration for the relative position of a given element into a skiplist
+ * @brief Enumeration for the relative position of a given element into a skiplist
  */
 typedef enum
 {
@@ -115,7 +115,7 @@ gsl_random48()
 }
 
 /**
- * This simulates up to SKIPLIST_MAXLEVEL repeated coin flips without
+ * @brief This simulates up to SKIPLIST_MAXLEVEL repeated coin flips without
  * spinning the RNG every time (courtesy of the internet)
  */
 static int
@@ -228,7 +228,8 @@ skiplist_free(SkipList *list)
 }
 
 /**
- * Output the skiplist in graphviz dot format for visualisation and debugging purposes
+ * @brief Output the skiplist in graphviz dot format for visualisation and
+ * debugging purposes
  */
 #ifdef DEBUG_BUILD
 void
@@ -288,7 +289,7 @@ skiplist_print(const SkipList *list)
 /*****************************************************************************/
 
 /**
- * Reads the state value from the buffer
+ * @brief Reads the state value from the buffer
  *
  * @param[in] state State
  * @param[in] data Structure containing the data
@@ -311,7 +312,7 @@ aggstate_set_extra(SkipList *state, void *data, size_t size)
 }
 
 /**
- * Return the value at the head of the skiplist
+ * @brief Return the value at the head of the skiplist
  */
 void *
 skiplist_headval(SkipList *list)
@@ -333,7 +334,7 @@ skiplist_tailval(SkipList *list)
 #endif /* not used */
 
 /**
- * Constructs a skiplist from the array of values values
+ * @brief Constructs a skiplist from the array of values values
  *
  * @param[in] values Array of values
  * @param[in] count Number of elements in the array
@@ -396,7 +397,7 @@ skiplist_make(void **values, int count, SkipListElemType elemtype)
 }
 
 /**
- * Determine the relative position of a period and a timestamp
+ * @brief Determine the relative position of a period and a timestamp
  */
 static RelativeTimePos
 pos_period_timestamp(const Span *p, TimestampTz t)
@@ -409,7 +410,7 @@ pos_period_timestamp(const Span *p, TimestampTz t)
 }
 
 /**
- * Determine the relative position of two periods
+ * @brief Determine the relative position of two periods
  */
 static RelativeTimePos
 pos_period_period(const Span *p1, const Span *p2)
@@ -422,7 +423,7 @@ pos_period_period(const Span *p1, const Span *p2)
 }
 
 /**
- * Comparison function used for skiplists
+ * @brief Comparison function used for skiplists
  */
 static RelativeTimePos
 skiplist_elempos(const SkipList *list, Span *p, int cur)

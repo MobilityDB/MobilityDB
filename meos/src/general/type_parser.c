@@ -28,7 +28,7 @@
  *****************************************************************************/
 
 /**
- * @brief Functions for parsing time types and temporal types.
+ * @brief Functions for parsing time types and temporal types
  *
  * Many functions make two passes for parsing, the first one to obtain the
  * number of elements in order to do memory allocation with `palloc`, the
@@ -47,7 +47,7 @@
 /*****************************************************************************/
 
 /**
- * Input a white space from the buffer
+ * @brief Input a white space from the buffer
  */
 void
 p_whitespace(const char **str)
@@ -58,7 +58,7 @@ p_whitespace(const char **str)
 }
 
 /**
- * Ensure there is no more input excepted white spaces
+ * @brief Ensure there is no more input excepted white spaces
  */
 void
 ensure_end_input(const char **str, bool end, const char *type)
@@ -73,7 +73,7 @@ ensure_end_input(const char **str, bool end, const char *type)
 }
 
 /**
- * Input an opening brace from the buffer
+ * @brief Input an opening brace from the buffer
  */
 bool
 p_obrace(const char **str)
@@ -88,7 +88,7 @@ p_obrace(const char **str)
 }
 
 /**
- * Input a closing brace from the buffer
+ * @brief Input a closing brace from the buffer
  */
 bool
 p_cbrace(const char **str)
@@ -103,7 +103,7 @@ p_cbrace(const char **str)
 }
 
 /**
- * Input an opening bracket from the buffer
+ * @brief Input an opening bracket from the buffer
  */
 bool
 p_obracket(const char **str)
@@ -118,7 +118,7 @@ p_obracket(const char **str)
 }
 
 /**
- * Input a closing bracket from the buffer
+ * @brief Input a closing bracket from the buffer
  */
 bool
 p_cbracket(const char **str)
@@ -133,7 +133,7 @@ p_cbracket(const char **str)
 }
 
 /**
- * Input an opening parenthesis from the buffer
+ * @brief Input an opening parenthesis from the buffer
  */
 bool
 p_oparen(const char **str)
@@ -148,7 +148,7 @@ p_oparen(const char **str)
 }
 
 /**
- * Input a closing parenthesis from the buffer
+ * @brief Input a closing parenthesis from the buffer
  */
 bool
 p_cparen(const char **str)
@@ -163,7 +163,7 @@ p_cparen(const char **str)
 }
 
 /**
- * Input a comma from the buffer
+ * @brief Input a comma from the buffer
  */
 bool
 p_comma(const char **str)
@@ -178,7 +178,7 @@ p_comma(const char **str)
 }
 
 /**
- * Input a double from the buffer
+ * @brief Input a double from the buffer
  *
  * @param[in,out] str Pointer to the current position of the input buffer
  */
@@ -195,7 +195,7 @@ double_parse(const char **str)
 }
 
 /**
- * Parse a base value from the buffer
+ * @brief Parse a base value from the buffer
  */
 Datum
 temporal_basetype_parse(const char **str, meosType basetype)
@@ -309,7 +309,7 @@ tbox_parse(const char **str)
 /* Time Types */
 
 /**
- * Parse a timestamp value from the buffer.
+ * @brief Parse a timestamp value from the buffer.
  */
 TimestampTz
 timestamp_parse(const char **str)
@@ -334,7 +334,7 @@ timestamp_parse(const char **str)
 /* Set and Span Types */
 
 /**
- * Parse a element value from the buffer.
+ * @brief Parse a element value from the buffer.
  */
 Datum
 elem_parse(const char **str, meosType basetype)
@@ -400,7 +400,7 @@ set_parse(const char **str, meosType settype)
 }
 
 /**
- * Parse a element value from the buffer.
+ * @brief Parse a element value from the buffer
  */
 Datum
 bound_parse(const char **str, meosType basetype)
@@ -420,7 +420,7 @@ bound_parse(const char **str, meosType basetype)
 }
 
 /**
- * @brief Parse a span value from the buffer.
+ * @brief Parse a span value from the buffer
  */
 Span *
 span_parse(const char **str, meosType spantype, bool end, bool make)
@@ -455,7 +455,7 @@ span_parse(const char **str, meosType spantype, bool end, bool make)
 }
 
 /**
- * @brief Parse a span set value from the buffer.
+ * @brief Parse a span set value from the buffer
  */
 SpanSet *
 spanset_parse(const char **str, meosType spansettype)
@@ -493,8 +493,7 @@ spanset_parse(const char **str, meosType spansettype)
 /* Temporal Types */
 
 /**
- * @brief Parse a temporal instant value from the buffer.
- *
+ * @brief Parse a temporal instant value from the buffer
  * @param[in] str Input string
  * @param[in] temptype Temporal type
  * @param[in] end Set to true when reading a single instant to ensure there is
@@ -517,8 +516,7 @@ tinstant_parse(const char **str, meosType temptype, bool end, bool make)
 }
 
 /**
- * @brief Parse a temporal discrete sequence from the buffer.
- *
+ * @brief Parse a temporal discrete sequence from the buffer
  * @param[in] str Input string
  * @param[in] temptype Base type
  */
@@ -558,8 +556,7 @@ tdiscseq_parse(const char **str, meosType temptype)
 }
 
 /**
- * @brief Parse a temporal sequence value from the buffer.
- *
+ * @brief Parse a temporal sequence value from the buffer
  * @param[in] str Input string
  * @param[in] temptype Temporal type
  * @param[in] interp Interpolation
@@ -615,8 +612,7 @@ tcontseq_parse(const char **str, meosType temptype, interpType interp, bool end,
 }
 
 /**
- * @brief Parse a temporal sequence set value from the buffer.
- *
+ * @brief Parse a temporal sequence set value from the buffer
  * @param[in] str Input string
  * @param[in] temptype Temporal type
  * @param[in] interp Interpolation
@@ -656,8 +652,7 @@ tsequenceset_parse(const char **str, meosType temptype, interpType interp)
 }
 
 /**
- * @brief Parse a temporal value from the buffer (dispatch function).
- *
+ * @brief Parse a temporal value from the buffer (dispatch function)
  * @param[in] str Input string
  * @param[in] temptype Temporal type
  */

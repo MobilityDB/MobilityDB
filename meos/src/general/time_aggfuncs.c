@@ -51,7 +51,7 @@
  *****************************************************************************/
 
 /**
- * Return the sum of the two arguments
+ * @brief Return the sum of the two arguments
  */
 Datum
 datum_sum_int32(Datum l, Datum r)
@@ -99,8 +99,7 @@ timestamp_tagg(TimestampTz *times1, int count1, TimestampTz *times2,
 }
 
 /**
- * Generic aggregate function for periods.
- *
+ * @brief Generic aggregate function for periods.
  * @param[in] periods1 Accumulated state
  * @param[in] count1 Number of elements in the accumulated state
  * @param[in] periods2 Periods of a period (set) value
@@ -141,8 +140,7 @@ period_tagg(Span **periods1, int count1, Span **periods2, int count2,
  *****************************************************************************/
 
 /**
- * Generic combine function for temporal aggregate of time values
- *
+ * @brief Generic combine function for temporal aggregate of time values
  * @param[in] state1, state2 State values
  */
 SkipList *
@@ -187,7 +185,6 @@ time_tagg_combinefn(SkipList *state1, SkipList *state2)
 /**
  * @ingroup libmeos_setspan_agg
  * @brief Transition function for tunion aggregate of timestamps
- *
  * @param[in,out] state Timestamp array containing the state
  * @param[in] t Timestamp value
  */
@@ -209,7 +206,6 @@ timestamp_tunion_transfn(SkipList *state, TimestampTz t)
 /**
  * @ingroup libmeos_setspan_agg
  * @brief Transition function for aggregating timestamp sets
- *
  * @param[in,out] state Timestamp array containing the state
  * @param[in] ts Timestamp set value
  */
@@ -233,7 +229,6 @@ tstzset_tunion_transfn(SkipList *state, const Set *ts)
 /**
  * @ingroup libmeos_setspan_agg
  * @brief Generic transition function for aggregating period values
- *
  * @param[in,out] state Skiplist containing the state
  * @param[in] p Period
  */
@@ -255,7 +250,6 @@ period_tunion_transfn(SkipList *state, const Span *p)
 /**
  * @ingroup libmeos_setspan_agg
  * @brief Generic transition function for aggregating period set values
- *
  * @param[in,out] state Skiplist containing the state
  * @param[in] ps Period set value
  */
@@ -319,7 +313,7 @@ period_tunion_finalfn(SkipList *state)
  *****************************************************************************/
 
 /**
- * Transform a timestamp value into a temporal integer value for
+ * @brief Transform a timestamp value into a temporal integer value for
  * performing temporal count aggregation
  */
 static TInstant **
@@ -331,7 +325,7 @@ timestamp_transform_tcount(TimestampTz t)
 }
 
 /**
- * Transform a timestamp set value into a temporal integer value for
+ * @brief Transform a timestamp set value into a temporal integer value for
  * performing temporal count aggregation
  */
 static TInstant **
@@ -359,7 +353,7 @@ tstzset_transform_tcount(const Set *ts, int *newcount)
 }
 
 /**
- * Transform a period value into a temporal integer value for
+ * @brief Transform a period value into a temporal integer value for
  * performing temporal count aggregation
  */
 static TSequence *
@@ -388,7 +382,7 @@ period_transform_tcount(const Span *p)
 }
 
 /**
- * Transform a period set value into a temporal integer value for
+ * @brief Transform a period set value into a temporal integer value for
  * performing temporal count aggregation
  */
 static TSequence **

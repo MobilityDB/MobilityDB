@@ -38,7 +38,7 @@
 
 CREATE TYPE index_stbox AS (
   index integer,
-  box stbox
+  tile stbox
 );
 
 CREATE FUNCTION tileList(bounds stbox, size float,

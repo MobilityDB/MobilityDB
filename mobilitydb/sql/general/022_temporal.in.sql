@@ -1546,6 +1546,15 @@ CREATE FUNCTION shiftTscale(ttext, interval, interval)
   AS 'MODULE_PATHNAME', 'Temporal_shift_tscale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION tprecision(tint, interval, timestamptz)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Tnumber_tprecision'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tprecision(tfloat, interval, timestamptz)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Tnumber_tprecision'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************/
 
 CREATE FUNCTION appendInstant(tbool, tbool)

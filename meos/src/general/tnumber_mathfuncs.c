@@ -54,7 +54,7 @@
  *****************************************************************************/
 
 /**
- * Convert a number from radians to degrees
+ * @brief Convert a number from radians to degrees
  */
 static Datum
 datum_degrees(Datum value)
@@ -63,7 +63,7 @@ datum_degrees(Datum value)
 }
 
 /**
- * Convert a number from degrees to radians
+ * @brief Convert a number from degrees to radians
  */
 static Datum
 datum_radians(Datum value)
@@ -73,7 +73,7 @@ datum_radians(Datum value)
 
 
 /**
- * Find the single timestamptz at which the operation of two temporal
+ * @brief Find the single timestamptz at which the operation of two temporal
  * number segments is at a local minimum/maximum. The function supposes that
  * the instants are synchronized, that is, start1->t = start2->t and
  * end1->t = end2->t. The function only return an intersection at the middle,
@@ -112,7 +112,7 @@ tnumber_arithop_tp_at_timestamp1(const TInstant *start1, const TInstant *end1,
 }
 
 /**
- * Find the single timestamptz at which the operation of two temporal
+ * @brief Find the single timestamptz at which the operation of two temporal
  * number segments is at a local minimum/maximum.
  *
  @note This function is called only when both sequences are linear.
@@ -134,7 +134,7 @@ tnumber_arithop_tp_at_timestamp(const TInstant *start1, const TInstant *end1,
 }
 
 /**
- * Find the single timestamptz at which the multiplication of two temporal
+ * @brief Find the single timestamptz at which the multiplication of two temporal
  * number segments is at a local minimum/maximum.
  *
  @note This function is called only when both sequences are linear.
@@ -148,7 +148,7 @@ tnumber_mult_tp_at_timestamp(const TInstant *start1, const TInstant *end1,
 }
 
 /**
- * Find the single timestamptz at which the division of two temporal
+ * @brief Find the single timestamptz at which the division of two temporal
  * number segments is at a local minimum/maximum.
  *
  @note This function is called only when both sequences are linear.
@@ -166,8 +166,7 @@ tnumber_div_tp_at_timestamp(const TInstant *start1, const TInstant *end1,
  *****************************************************************************/
 
 /**
- * Generic arithmetic operator on a temporal number and a number
- *
+ * @brief Generic arithmetic operator on a temporal number and a number
  * @param[in] temp Temporal number
  * @param[in] value Number
  * @param[in] basetype Base type
@@ -217,8 +216,7 @@ arithop_tnumber_number(const Temporal *temp, Datum value, meosType basetype,
 }
 
 /**
- * Generic arithmetic operator on two temporal numbers
- *
+ * @brief Generic arithmetic operator on two temporal numbers
  * @param[in] temp1,temp2 Temporal numbers
  * @param[in] oper Enumeration that states the arithmetic operator
  * @param[in] func Arithmetic function

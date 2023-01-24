@@ -387,7 +387,6 @@ bresenham_bm(BitMatrix *bm, int *coords1, int *coords2, int numdims)
 
 /**
  * @brief Generate a tile from the current state of the multidimensional grid
- *
  * @param[in] x,y,z,t Lower coordinates of the tile to output
  * @param[in] size Tile size for the spatial dimensions in the units of the SRID
  * @param[in] tunits Tile size for the temporal dimension in PostgreSQL time units
@@ -422,7 +421,6 @@ stbox_tile_set(double x, double y, double z, TimestampTz t, double size,
 
 /**
  * @brief Create the initial state that persists across multiple calls of the function
- *
  * @param[in] temp Optional temporal point to split
  * @param[in] box Bounds for generating the multidimensional grid
  * @param[in] size Tile size for the spatial dimensions in the units of the SRID
@@ -473,7 +471,6 @@ stbox_tile_state_make(const Temporal *temp, const STBox *box, double size,
 
 /**
  * @brief Increment the current state to the next tile of the multidimensional grid
- *
  * @param[in] state State to increment
  */
 void
@@ -557,7 +554,6 @@ stbox_tile_state_next(STboxGridState *state)
 
 /**
  * @brief Get the current tile of the multidimensional grid
- *
  * @param[in] state State to increment
  * @param[out] box Current tile
  */
@@ -667,7 +663,6 @@ stbox_tile_list(STBox *bounds, double size, const Interval *duration,
 
 /**
  * @brief Transform the minimum values of a tile into matrix coordinates
- *
  * @param[in] x,y,z,t Minimum values of the tile
  * @param[in] state Grid information
  * @param[out] coords Matrix coordinates
@@ -690,7 +685,6 @@ tile_get_coords(int *coords, double x, double y, double z, TimestampTz t,
 
 /**
  * @brief Get the coordinates of the tile corresponding the temporal instant point
- *
  * @param[in] inst Temporal point
  * @param[in] hasz Whether the tile has Z dimension
  * @param[in] hast Whether the tile has T dimension
@@ -719,7 +713,6 @@ tpointinst_get_coords(int *coords, const TInstant *inst, bool hasz, bool hast,
 
 /**
  * @brief Set the bit corresponding to the tiles intersecting the temporal point
- *
  * @param[in] inst Temporal point
  * @param[in] hasz Whether the tile has Z dimension
  * @param[in] hast Whether the tile has T dimension
@@ -741,7 +734,6 @@ tpointinst_set_tiles(const TInstant *inst, bool hasz, bool hast,
 
 /**
  * @brief Set the bit corresponding to the tiles intersecting the temporal point
- *
  * @param[in] seq Temporal point
  * @param[in] hasz Whether the tile has Z dimension
  * @param[in] hast Whether the tile has T dimension
@@ -766,7 +758,6 @@ tdiscseq_set_tiles(const TSequence *seq, bool hasz, bool hast,
 
 /**
  * @brief Set the bit corresponding to the tiles intersecting the temporal point
- *
  * @param[in] seq Temporal point
  * @param[in] hasz Whether the tile has Z dimension
  * @param[in] hast Whether the tile has T dimension
@@ -794,7 +785,6 @@ tcontseq_set_tiles(const TSequence *seq, bool hasz, bool hast,
 
 /**
  * @brief Set the bit corresponding to the tiles intersecting the temporal point
- *
  * @param[in] ss Temporal point
  * @param[in] hasz Whether the tile has Z dimension
  * @param[in] hast Whether the tile has T dimension
@@ -815,7 +805,6 @@ tpointseqset_set_tiles(const TSequenceSet *ss, bool hasz, bool hast,
 
 /**
  * @brief Set the bit corresponding to the tiles intersecting the temporal point
- *
  * @param[in] temp Temporal point
  * @param[in] state Grid definition
  * @param[out] bm Bit matrix

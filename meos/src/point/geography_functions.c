@@ -51,6 +51,9 @@
 #include <meos.h>
 #include "point/tpoint_spatialfuncs.h"
 
+/**
+ * @brief Compute the shortest line between two geographies
+ */
 static LWGEOM *
 geography_tree_shortestline(const GSERIALIZED* g1, const GSERIALIZED* g2,
   double threshold, const SPHEROID *spheroid)
@@ -99,9 +102,9 @@ geography_tree_shortestline(const GSERIALIZED* g1, const GSERIALIZED* g2,
 }
 
 /**
-Returns the point in first input geography that is closest to the second
-input geography in 2d (internal function)
-*/
+ * @brief Returns the point in first input geography that is closest to the
+ * second input geography in 2D (internal function)
+ */
 GSERIALIZED *
 geography_shortestline_internal(const GSERIALIZED *g1, const GSERIALIZED *g2,
   bool use_spheroid)

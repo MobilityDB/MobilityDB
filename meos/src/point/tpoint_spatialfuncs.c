@@ -82,7 +82,7 @@
   FLAGS_GET_VERSBIT2(gs->gflags) * 8 )
 
 /**
- * Return a 2D point from the datum
+ * @brief Return a 2D point from the datum
  */
 POINT2D
 datum_point2d(Datum geom)
@@ -93,7 +93,7 @@ datum_point2d(Datum geom)
 }
 
 /**
- * Return a 3DZ point from the datum
+ * @brief Return a 3DZ point from the datum
  */
 POINT3DZ
 datum_point3dz(Datum geom)
@@ -104,7 +104,7 @@ datum_point3dz(Datum geom)
 }
 
 /**
- * Return a 4D point from the datum
+ * @brief Return a 4D point from the datum
  * @note The M dimension is ignored
  */
 void
@@ -131,7 +131,7 @@ datum_point4d(Datum geom, POINT4D *p)
 /*****************************************************************************/
 
 /**
- * Return a pointer to a 2D point from the datum
+ * @brief Return a pointer to a 2D point from the datum
  */
 const POINT2D *
 datum_point2d_p(Datum geom)
@@ -141,7 +141,7 @@ datum_point2d_p(Datum geom)
 }
 
 /**
- * Return a 2D point from the serialized geometry
+ * @brief Return a 2D point from the serialized geometry
  */
 const POINT2D *
 gserialized_point2d_p(const GSERIALIZED *gs)
@@ -150,7 +150,7 @@ gserialized_point2d_p(const GSERIALIZED *gs)
 }
 
 /**
- * Return a pointer to a 3DZ point from the datum
+ * @brief Return a pointer to a 3DZ point from the datum
  */
 const POINT3DZ *
 datum_point3dz_p(Datum geom)
@@ -160,7 +160,7 @@ datum_point3dz_p(Datum geom)
 }
 
 /**
- * Return a 3DZ point from the serialized geometry
+ * @brief Return a 3DZ point from the serialized geometry
  */
 const POINT3DZ *
 gserialized_point3dz_p(const GSERIALIZED *gs)
@@ -169,7 +169,7 @@ gserialized_point3dz_p(const GSERIALIZED *gs)
 }
 
 /**
- * Return true if the points are equal
+ * @brief Return true if the points are equal
  */
 bool
 datum_point_eq(Datum geopoint1, Datum geopoint2)
@@ -199,7 +199,7 @@ datum_point_eq(Datum geopoint1, Datum geopoint2)
 }
 
 /**
- * Return true if the points are equal
+ * @brief Return true if the points are equal
  */
 Datum
 datum2_point_eq(Datum geopoint1, Datum geopoint2)
@@ -208,7 +208,7 @@ datum2_point_eq(Datum geopoint1, Datum geopoint2)
 }
 
 /**
- * Return true if the points are equal
+ * @brief Return true if the points are equal
  */
 Datum
 datum2_point_ne(Datum geopoint1, Datum geopoint2)
@@ -217,7 +217,7 @@ datum2_point_ne(Datum geopoint1, Datum geopoint2)
 }
 
 /**
- * Serialize a geometry/geography
+ * @brief Serialize a geometry/geography
  *
  *@pre It is supposed that the flags such as Z and geodetic have been
  * set up before by the calling function
@@ -236,7 +236,7 @@ geo_serialize(const LWGEOM *geom)
  *****************************************************************************/
 
 /**
- * Select the appropriate distance function
+ * @brief Select the appropriate distance function
  */
 datum_func2
 distance_fn(int16 flags)
@@ -251,7 +251,7 @@ distance_fn(int16 flags)
 }
 
 /**
- * Select the appropriate distance function
+ * @brief Select the appropriate distance function
  */
 datum_func2
 pt_distance_fn(int16 flags)
@@ -266,7 +266,7 @@ pt_distance_fn(int16 flags)
 }
 
 /**
- * Return the 2D distance between the two geometries
+ * @brief Return the 2D distance between the two geometries
  * @pre For PostGIS version > 3 the geometries are NOT toasted
  */
 Datum
@@ -277,7 +277,7 @@ geom_distance2d(Datum geom1, Datum geom2)
 }
 
 /**
- * Return the 3D distance between the two geometries
+ * @brief Return the 3D distance between the two geometries
  */
 Datum
 geom_distance3d(Datum geom1, Datum geom2)
@@ -287,7 +287,7 @@ geom_distance3d(Datum geom1, Datum geom2)
 }
 
 /**
- * Return the distance between the two geographies
+ * @brief Return the distance between the two geographies
  */
 Datum
 geog_distance(Datum geog1, Datum geog2)
@@ -297,7 +297,7 @@ geog_distance(Datum geog1, Datum geog2)
 }
 
 /**
- * Return the 2D distance between the two geometric points
+ * @brief Return the 2D distance between the two geometric points
  */
 Datum
 pt_distance2d(Datum geom1, Datum geom2)
@@ -308,7 +308,7 @@ pt_distance2d(Datum geom1, Datum geom2)
 }
 
 /**
- * Return the 3D distance between the two geometric points
+ * @brief Return the 3D distance between the two geometric points
  */
 Datum
 pt_distance3d(Datum geom1, Datum geom2)
@@ -319,7 +319,7 @@ pt_distance3d(Datum geom1, Datum geom2)
 }
 
 /**
- * Return the 2D intersection between the two geometries
+ * @brief Return the 2D intersection between the two geometries
  */
 Datum
 geom_intersection2d(Datum geom1, Datum geom2)
@@ -333,8 +333,8 @@ geom_intersection2d(Datum geom1, Datum geom2)
  *****************************************************************************/
 
 /**
- * Ensure that the spatial constraints required for operating on two temporal
- * geometries are satisfied
+ * @brief Ensure that the spatial constraints required for operating on two
+ * temporal geometries are satisfied
  */
 void
 ensure_spatial_validity(const Temporal *temp1, const Temporal *temp2)
@@ -348,7 +348,7 @@ ensure_spatial_validity(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * Ensure that the spatiotemporal argument has planar coordinates
+ * @brief Ensure that the spatiotemporal argument has planar coordinates
  */
 void
 ensure_not_geodetic(int16 flags)
@@ -359,8 +359,8 @@ ensure_not_geodetic(int16 flags)
 }
 
 /**
- * Ensure that the spatiotemporal argument have the same type of coordinates,
- * either planar or geodetic
+ * @brief Ensure that the spatiotemporal argument have the same type of
+ * coordinates, either planar or geodetic
  */
 void
 ensure_same_geodetic(int16 flags1, int16 flags2)
@@ -372,7 +372,7 @@ ensure_same_geodetic(int16 flags1, int16 flags2)
 }
 
 /**
- * Ensure that the two spatial "objects" have the same SRID
+ * @brief Ensure that the two spatial "objects" have the same SRID
  */
 void
 ensure_same_srid(int32_t srid1, int32_t srid2)
@@ -383,7 +383,7 @@ ensure_same_srid(int32_t srid1, int32_t srid2)
 }
 
 /**
- * Ensure that the spatiotemporal boxes have the same SRID
+ * @brief Ensure that the spatiotemporal boxes have the same SRID
  */
 void
 ensure_same_srid_stbox(const STBox *box1, const STBox *box2)
@@ -395,7 +395,8 @@ ensure_same_srid_stbox(const STBox *box1, const STBox *box2)
 }
 
 /**
- * Ensure that a temporal point and a spatiotemporal boxes have the same SRID
+ * @brief Ensure that a temporal point and a spatiotemporal boxes have the same
+ * SRID
  */
 void
 ensure_same_srid_tpoint_stbox(const Temporal *temp, const STBox *box)
@@ -407,7 +408,8 @@ ensure_same_srid_tpoint_stbox(const Temporal *temp, const STBox *box)
 }
 
 /**
- * Ensure that a temporal point and a geometry/geography have the same SRID
+ * @brief Ensure that a temporal point and a geometry/geography have the same
+ * SRID
  */
 void
 ensure_same_srid_stbox_gs(const STBox *box, const GSERIALIZED *gs)
@@ -418,8 +420,8 @@ ensure_same_srid_stbox_gs(const STBox *box, const GSERIALIZED *gs)
 }
 
 /**
- * Ensure that two temporal points have the same dimensionality as given by
- * their flags
+ * @brief Ensure that two temporal points have the same dimensionality as given
+ * by their flags
  */
 void
 ensure_same_dimensionality(int16 flags1, int16 flags2)
@@ -432,8 +434,8 @@ ensure_same_dimensionality(int16 flags1, int16 flags2)
 }
 
 /**
- * Ensure that two temporal points have the same spatial dimensionality as
- * given by their flags
+ * @brief Ensure that two temporal points have the same spatial dimensionality
+ * as given by their flags
  */
 void
 ensure_same_spatial_dimensionality(int16 flags1, int16 flags2)
@@ -445,8 +447,8 @@ ensure_same_spatial_dimensionality(int16 flags1, int16 flags2)
 }
 
 /**
- * Ensure that a temporal point and a spatiotemporal box have the same spatial
- * dimensionality as given by their flags
+ * @brief Ensure that a temporal point and a spatiotemporal box have the same
+ * spatial dimensionality as given by their flags
  */
 void
 ensure_same_spatial_dimensionality_temp_box(int16 flags1, int16 flags2)
@@ -460,7 +462,7 @@ ensure_same_spatial_dimensionality_temp_box(int16 flags1, int16 flags2)
 }
 
 /**
- * Ensure that two geometries/geographies have the same dimensionality
+ * @brief Ensure that two geometries/geographies have the same dimensionality
  */
 void
 ensure_same_dimensionality_gs(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
@@ -471,7 +473,8 @@ ensure_same_dimensionality_gs(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 }
 
 /**
- * Ensure that a temporal point and a geometry/geography have the same dimensionality
+ * @brief Ensure that a temporal point and a geometry/geography have the same
+ * dimensionality
  */
 void
 ensure_same_dimensionality_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs)
@@ -482,7 +485,8 @@ ensure_same_dimensionality_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs
 }
 
 /**
- * Ensure that the spatiotemporal boxes have the same spatial dimensionality
+ * @brief Ensure that the spatiotemporal boxes have the same spatial
+ * dimensionality
  */
 void
 ensure_same_spatial_dimensionality_stbox_gs(const STBox *box, const GSERIALIZED *gs)
@@ -496,7 +500,7 @@ ensure_same_spatial_dimensionality_stbox_gs(const STBox *box, const GSERIALIZED 
 }
 
 /**
- * Ensure that a temporal point has Z dimension
+ * @brief Ensure that a temporal point has Z dimension
  */
 void
 ensure_has_Z(int16 flags)
@@ -507,7 +511,7 @@ ensure_has_Z(int16 flags)
 }
 
 /**
- * Ensure that a temporal point has not Z dimension
+ * @brief Ensure that a temporal point has not Z dimension
  */
 void
 ensure_has_not_Z(int16 flags)
@@ -518,7 +522,7 @@ ensure_has_not_Z(int16 flags)
 }
 
 /**
- * Ensure that the geometry/geography has not Z dimension
+ * @brief Ensure that the geometry/geography has not Z dimension
  */
 void
 ensure_has_Z_gs(const GSERIALIZED *gs)
@@ -529,7 +533,7 @@ ensure_has_Z_gs(const GSERIALIZED *gs)
 }
 
 /**
- * Ensure that the geometry/geography has not Z dimension
+ * @brief Ensure that the geometry/geography has not Z dimension
  */
 void
 ensure_has_not_Z_gs(const GSERIALIZED *gs)
@@ -540,7 +544,7 @@ ensure_has_not_Z_gs(const GSERIALIZED *gs)
 }
 
 /**
- * Ensure that the geometry/geography has M dimension
+ * @brief Ensure that the geometry/geography has M dimension
  */
 void
 ensure_has_M_gs(const GSERIALIZED *gs)
@@ -551,7 +555,7 @@ ensure_has_M_gs(const GSERIALIZED *gs)
 }
 
 /**
- * Ensure that the geometry/geography has not M dimension
+ * @brief Ensure that the geometry/geography has not M dimension
  */
 void
 ensure_has_not_M_gs(const GSERIALIZED *gs)
@@ -562,7 +566,7 @@ ensure_has_not_M_gs(const GSERIALIZED *gs)
 }
 
 /**
- * Ensure that the geometry/geography is a point
+ * @brief Ensure that the geometry/geography is a point
  */
 void
 ensure_point_type(const GSERIALIZED *gs)
@@ -573,7 +577,7 @@ ensure_point_type(const GSERIALIZED *gs)
 }
 
 /**
- * Ensure that the geometry/geography is not empty
+ * @brief Ensure that the geometry/geography is not empty
  */
 void
 ensure_non_empty(const GSERIALIZED *gs)
@@ -631,7 +635,7 @@ point3dz_on_segment(const POINT3DZ *p, const POINT3DZ *A, const POINT3DZ *B)
 }
 
 /**
- * Return true if point p is in the segment defined by A and B (geodetic)
+ * @brief Return true if point p is in the segment defined by A and B (geodetic)
  */
 static bool
 point_on_segment_sphere(const POINT4D *p, const POINT4D *A, const POINT4D *B)
@@ -643,8 +647,7 @@ point_on_segment_sphere(const POINT4D *p, const POINT4D *A, const POINT4D *B)
 }
 
 /**
- * Determine if a point is in a segment.
- *
+ * @brief Determine if a point is in a segment.
  * @param[in] start,end Points defining the segment
  * @param[in] point Point
  */
@@ -928,7 +931,8 @@ bool tgeogpoint_always_eq(const Temporal *temp, GSERIALIZED *gs)
  *****************************************************************************/
 
 /**
- * Function derived from PostGIS file lwalgorithm.c since it is declared static
+ * @brief Function derived from PostGIS file lwalgorithm.c since it is declared
+ * static
  */
 static bool
 lw_seg_interact(const POINT2D p1, const POINT2D p2, const POINT2D q1,
@@ -954,10 +958,9 @@ lw_seg_interact(const POINT2D p1, const POINT2D p2, const POINT2D q1,
 }
 
 /**
- * Return a long double between 0 and 1 representing the location of the
+ * @brief Return a long double between 0 and 1 representing the location of the
  * closest point on the segment to the given point, as a fraction of total
  * segment length (2D version)
- *
  * @note Function derived from the PostGIS function closest_point_on_segment
  */
 long double
@@ -1004,10 +1007,9 @@ closest_point2d_on_segment_ratio(const POINT2D *p, const POINT2D *A,
 }
 
 /**
- * Return a float between 0 and 1 representing the location of the closest
- * point on the segment to the given point, as a fraction of total segment
- * length (3D version)
- *
+ * @brief Return a float between 0 and 1 representing the location of the
+ * closest point on the segment to the given point, as a fraction of total
+ * segment length (3D version)
  * @note Function derived from the PostGIS function closest_point_on_segment
  */
 long double
@@ -1046,10 +1048,9 @@ closest_point3dz_on_segment_ratio(const POINT3DZ *p, const POINT3DZ *A,
 }
 
 /**
- * Return a float between 0 and 1 representing the location of the closest
- * point on the geography segment to the given point, as a fraction of total
- * segment length
- *
+ * @brief Return a float between 0 and 1 representing the location of the
+ * closest point on the geography segment to the given point, as a fraction of
+ * total segment length
  *@param[in] p Reference point
  *@param[in] A,B Points defining the segment
  *@param[out] closest Closest point in the segment
@@ -1094,7 +1095,7 @@ closest_point_on_segment_sphere(const POINT4D *p, const POINT4D *A,
 }
 
 /**
- * Find interpolation point p between geography points p1 and p2
+ * @brief Find interpolation point p between geography points p1 and p2
  * so that the len(p1,p) == len(p1,p2)
  * f and p falls on p1,p2 segment
  *
@@ -1129,7 +1130,7 @@ interpolate_point4d_sphere(const POINT3D *p1, const POINT3D *p2,
  *****************************************************************************/
 
 /**
- * Create a point
+ * @brief Create a point
  */
 GSERIALIZED *
 gspoint_make(double x, double y, double z, bool hasz, bool geodetic,
@@ -1144,7 +1145,7 @@ gspoint_make(double x, double y, double z, bool hasz, bool geodetic,
 }
 
 /**
- * Return a point interpolated from the geometry/geography segment with
+ * @brief Return a point interpolated from the geometry/geography segment with
  * respect to the fraction of its total length
  *
  * @param[in] start,end Points defining the segment
@@ -1189,10 +1190,9 @@ geosegm_interpolate_point(Datum start, Datum end, long double ratio)
 }
 
 /**
- * Return a float between 0 and 1 representing the location of the closest
- * point on the geometry segment to the given point, as a fraction of total
- * segment length
- *
+ * @brief Return a float between 0 and 1 representing the location of the
+ * closest point on the geometry segment to the given point, as a fraction of
+ * total segment length
  *@param[in] start,end Points defining the segment
  *@param[in] point Reference point
  *@param[out] dist Distance
@@ -1267,9 +1267,8 @@ geosegm_locate_point(Datum start, Datum end, Datum point, double *dist)
  *****************************************************************************/
 
 /**
- * Return true if a segment of a temporal point value intersects a point
+ * @brief Return true if a segment of a temporal point value intersects a point
  * at the timestamp
- *
  * @param[in] inst1,inst2 Temporal instants defining the segment
  * @param[in] value Base value
  * @param[out] t Timestamp
@@ -1300,9 +1299,8 @@ tpointsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
 }
 
 /**
- * Return true if two segments of a temporal geometric points intersect at
- * a timestamp
- *
+ * @brief Return true if two segments of a temporal geometric points intersect
+ * at a timestamp
  * @param[in] start1,end1 Temporal instants defining the first segment
  * @param[in] start2,end2 Temporal instants defining the second segment
  * @param[out] t Timestamp
@@ -1409,9 +1407,8 @@ tgeompointsegm_intersection(const TInstant *start1, const TInstant *end1,
 }
 
 /**
- * Return true if two segments of twp temporal geographic points intersect at
- * a timestamp
- *
+ * @brief Return true if two segments of twp temporal geographic points
+ * intersect at a timestamp
  * @param[in] start1,end1 Temporal instants defining the first segment
  * @param[in] start2,end2 Temporal instants defining the second segment
  * @param[out] t Timestamp
@@ -1463,8 +1460,7 @@ tgeogpointsegm_intersection(const TInstant *start1, const TInstant *end1,
 }
 
 /**
- * Return true if the three values are collinear
- *
+ * @brief Return true if the three values are collinear
  * @param[in] value1,value2,value3 Input values
  * @param[in] ratio Value in [0,1] representing the duration of the
  * timestamps associated to `value1` and `value2` divided by the duration
@@ -1606,8 +1602,7 @@ lwpointarr_make_trajectory(LWGEOM **lwpoints, int count, interpType interp)
 }
 
 /**
- * Compute the trajectory from two geometry points
- *
+ * @brief Compute the trajectory from two geometry points
  * @param[in] value1,value2 Points
  */
 LWLINE *
@@ -1636,7 +1631,6 @@ lwline_make(Datum value1, Datum value2)
 /**
  * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Compute the trajectory of a temporal discrete sequence point
- *
  * @param[in] seq Temporal value
  * @note Notice that this function does not remove duplicate points
  * @sqlfunc trajectory()
@@ -1667,7 +1661,6 @@ tpointdiscseq_trajectory(const TSequence *seq)
 /**
  * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the trajectory of a temporal sequence point
- *
  * @param[in] seq Temporal sequence
  * @note Since the sequence has been already validated there is no
  * verification of the input in this function, in particular for geographies
@@ -1961,7 +1954,6 @@ tpoint_set_srid(const Temporal *temp, int32 srid)
 /**
  * @ingroup libmeos_internal_temporal_spatial_transf
  * @brief Convert a temporal point from/to a geometry/geography point
- *
  * @param[in] inst Temporal instant point
  * @param[in] oper True when transforming from geometry to geography,
  * false otherwise
@@ -1983,7 +1975,6 @@ tgeompointinst_tgeogpointinst(const TInstant *inst, bool oper)
 /**
  * @ingroup libmeos_internal_temporal_spatial_transf
  * @brief Convert a temporal point from/to a geometry/geography point
- *
  * @param[in] seq Temporal sequence point
  * @param[in] oper True when transforming from geometry to geography,
  * false otherwise
@@ -2031,7 +2022,6 @@ tgeompointseq_tgeogpointseq(const TSequence *seq, bool oper)
 /**
  * @ingroup libmeos_internal_temporal_spatial_transf
  * @brief Convert a temporal point from/to a geometry/geography point
- *
  * @param[in] ss Temporal sequence set point
  * @param[in] oper True when transforming from geometry to geography,
  * false otherwise
@@ -2082,7 +2072,7 @@ tgeompoint_tgeogpoint(const Temporal *temp, bool oper)
  *****************************************************************************/
 
 /**
- * Get the X coordinates of a temporal point
+ * @brief Get the X coordinates of a temporal point
  */
 static Datum
 point_get_x(Datum point)
@@ -2093,7 +2083,7 @@ point_get_x(Datum point)
 }
 
 /**
- * Get the Y coordinates of a temporal point
+ * @brief Get the Y coordinates of a temporal point
  */
 static Datum
 point_get_y(Datum point)
@@ -2104,7 +2094,7 @@ point_get_y(Datum point)
 }
 
 /**
- * Get the Z coordinates of a temporal point
+ * @brief Get the Z coordinates of a temporal point
  */
 static Datum
 point_get_z(Datum point)
@@ -2117,7 +2107,6 @@ point_get_z(Datum point)
 /**
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Get one of the coordinates of a temporal point as a temporal float.
- *
  * @param[in] temp Temporal point
  * @param[in] coord Coordinate number where 0 = X, 1 = Y, 2 = Z
  * @sqlfunc getX(), getY(), getZ()
@@ -2151,7 +2140,7 @@ tpoint_get_coord(const Temporal *temp, int coord)
  *****************************************************************************/
 
 /**
- * Return the length traversed by a temporal sequence point with plannar
+ * @brief Return the length traversed by a temporal sequence point with plannar
  * coordinates
  * @pre The temporal point has linear interpolation
  */
@@ -2173,7 +2162,7 @@ tpointseq_length_2d(const TSequence *seq)
 }
 
 /**
- * Return the length traversed by a temporal sequence point with plannar
+ * @brief Return the length traversed by a temporal sequence point with plannar
  * coordinates
  * @pre The temporal point has linear interpolation
  */
@@ -2551,7 +2540,7 @@ tpoint_twcentroid(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * Return the azimuth of the two geometry points
+ * @brief Return the azimuth of the two geometry points
  */
 static Datum
 geom_azimuth(Datum geom1, Datum geom2)
@@ -2564,7 +2553,7 @@ geom_azimuth(Datum geom1, Datum geom2)
 }
 
 /**
- * Return the azimuth the two geography points
+ * @brief Return the azimuth the two geography points
  */
 static Datum
 geog_azimuth(Datum geog1, Datum geog2)
@@ -2582,7 +2571,7 @@ geog_azimuth(Datum geog1, Datum geog2)
 }
 
 /**
- * Return the temporal azimuth of a temporal geometry point.
+ * @brief Return the temporal azimuth of a temporal geometry point.
  *
  * @param[in] seq Temporal value
  * @param[out] result Array on which the pointers of the newly constructed
@@ -2706,7 +2695,7 @@ tpoint_azimuth(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * Normalize the bearing from -180° to + 180° (in radians) to
+ * @brief Normalize the bearing from -180° to + 180° (in radians) to
  * 0° to 360° (in radians)
  */
 static double
@@ -2722,7 +2711,7 @@ alpha(const POINT2D *p1, const POINT2D *p2)
 }
 
 /**
- * Computes the bearing between two geometric points
+ * @brief Compute the bearing between two geometric points
  */
 static Datum
 geom_bearing(Datum point1, Datum point2)
@@ -2747,8 +2736,8 @@ geom_bearing(Datum point1, Datum point2)
 }
 
 /**
- * Compute the bearing between two geographic points
- * Derived from https://gist.github.com/jeromer/2005586
+ * @brief Compute the bearing between two geographic points
+ * @note Derived from https://gist.github.com/jeromer/2005586
  *
  * N.B. In PostGIS, for geodetic coordinates, X is longitude and Y is latitude
  * The formulae used is the following:
@@ -2780,7 +2769,7 @@ geog_bearing(Datum point1, Datum point2)
 }
 
 /**
- * Select the appropriate bearing function
+ * @brief Select the appropriate bearing function
  */
 static datum_func2
 get_bearing_fn(int16 flags)
@@ -2794,9 +2783,8 @@ get_bearing_fn(int16 flags)
 }
 
 /**
- * Return the value and timestamp at which the a temporal point segment
+ * @brief Return the value and timestamp at which the a temporal point segment
  * and a point are at the minimum bearing
- *
  * @param[in] start,end Instants defining the segment
  * @param[in] point Geometric/geographic point
  * @param[in] basetypid Base type
@@ -2859,9 +2847,8 @@ tpoint_geo_min_bearing_at_timestamp(const TInstant *start, const TInstant *end,
 }
 
 /**
- * Return the value and timestamp at which the two temporal point segments
- * are at the minimum bearing
- *
+ * @brief Return the value and timestamp at which the two temporal point
+ * segments are at the minimum bearing
  * @param[in] start1,end1 Instants defining the first segment
  * @param[in] start2,end2 Instants defining the second segment
  * @param[out] value Value
@@ -3026,12 +3013,12 @@ enum
 } MOBDB_SEG_INTER_TYPE;
 
 /**
- * Finds the UNIQUE point of intersection p between two closed
+ * @brief Find the UNIQUE point of intersection p between two closed
  * collinear segments ab and cd. Return p and a MOBDB_SEG_INTER_TYPE value.
- * Notice that if the segments overlap no point is returned since they
+ * @note If the segments overlap no point is returned since they
  * can be an infinite number of them.
- * This function is called after verifying that the points
- * are collinear and that their bounding boxes intersect.
+ * @pre This function is called after verifying that the points are
+ * collinear and that their bounding boxes intersect.
  */
 static int
 parseg2d_intersection(const POINT2D a, const POINT2D b, const POINT2D c,
@@ -3066,10 +3053,10 @@ parseg2d_intersection(const POINT2D a, const POINT2D b, const POINT2D c,
 }
 
 /**
- * Finds the UNIQUE point of intersection p between two closed segments
- * ab and cd. Return p and a MOBDB_SEG_INTER_TYPE value. Notice that if the
- * segments overlap no point is returned since they can be an infinite
- * number of them
+ * @brief Find the UNIQUE point of intersection p between two closed segments
+ * ab and cd. Return p and a MOBDB_SEG_INTER_TYPE value.
+ * @note If the segments overlap no point is returned since they can be an
+ * infinite number of them
  */
 static int
 seg2d_intersection(const POINT2D a, const POINT2D b, const POINT2D c,
@@ -3110,9 +3097,8 @@ seg2d_intersection(const POINT2D a, const POINT2D b, const POINT2D c,
  *****************************************************************************/
 
 /**
- * Split a temporal point sequence with discrete or stepwise interpolation
- * into an array of non self-intersecting pieces
- *
+ * @brief Split a temporal point sequence with discrete or stepwise
+ * interpolation into an array of non self-intersecting fragments
  * @param[in] seq Temporal point
  * @param[out] count Number of elements in the resulting array
  * @result Boolean array determining the instant numbers at which the
@@ -3164,10 +3150,9 @@ tpointseq_discstep_find_splits(const TSequence *seq, int *count)
 }
 
 /**
- * Split a temporal point sequence with linear interpolation into an array
- * of non self-intersecting pieces. The function works only on 2D even if
- * the input points are in 3D
- *
+ * @brief Split a temporal point sequence with linear interpolation into an
+ * array of non self-intersecting fragments.
+ * @note The function works only on 2D even if the input points are in 3D
  * @param[in] seq Temporal point
  * @param[out] count Number of elements in the resulting array
  * @result Boolean array determining the instant numbers at which the
@@ -3271,8 +3256,7 @@ tpointseq_linear_find_splits(const TSequence *seq, int *count)
  *****************************************************************************/
 
 /**
- * Return true if a temporal point does not self-intersect.
- *
+ * @brief Return true if a temporal point does not self-intersect.
  * @param[in] seq Temporal point
  * @param[in] count Number of instants of the temporal point
  * @pre The temporal point sequence has discrete or stepwise interpolation
@@ -3304,7 +3288,6 @@ tpointseq_discstep_is_simple(const TSequence *seq, int count)
 /**
  * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return true if a temporal point does not self-intersect.
- *
  * @param[in] seq Temporal point
  * @sqlfunc isSimple();
  */
@@ -3326,7 +3309,6 @@ tpointseq_is_simple(const TSequence *seq)
 /**
  * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return true if a temporal point does not self-intersect.
- *
  * @param[in] ss Temporal point
  * @sqlfunc isSimple()
  */
@@ -3366,9 +3348,8 @@ tpoint_is_simple(const Temporal *temp)
 /*****************************************************************************/
 
 /**
- * Split a temporal discrete sequence point into an array of non self-intersecting
- * pieces.
- *
+ * @brief Split a temporal discrete sequence point into an array of non
+ * self-intersecting fragments.
  * @param[in] seq Temporal point
  * @param[in] splits Bool array stating the splits
  * @param[in] count Number of elements in the resulting array
@@ -3400,8 +3381,8 @@ tpointdiscseq_split(const TSequence *seq, bool *splits, int count)
 }
 
 /**
- * Split a temporal point into an array of non self-intersecting pieces
- *
+ * @brief Split a temporal point into an array of non self-intersecting
+ * fragments
  * @param[in] seq Temporal sequence point
  * @param[in] splits Bool array stating the splits
  * @param[in] count Number of elements in the resulting array
@@ -3466,8 +3447,7 @@ tpointcontseq_split(const TSequence *seq, bool *splits, int count)
 /**
  * @ingroup libmeos_internal_temporal_spatial_transf
  * @brief Split a temporal sequence point into an array of non
- * self-intersecting pieces.
- *
+ * self-intersecting fragments.
  * @param[in] seq Temporal sequence point
  * @param[out] count Number of elements in the resulting array
  * @note This function is called for each sequence of a sequence set
@@ -3512,8 +3492,7 @@ tpointseq_make_simple(const TSequence *seq, int *count)
 /**
  * @ingroup libmeos_internal_temporal_spatial_transf
  * @brief Split a temporal sequence set point into an array of non
- * self-intersecting pieces.
- *
+ * self-intersecting fragments.
  * @param[in] ss Temporal sequence set point
  * @param[out] count Number of elements in the output array
  * @sqlfunc makeSimple()
@@ -3542,8 +3521,8 @@ tpointseqset_make_simple(const TSequenceSet *ss, int *count)
 
 /**
  * @ingroup libmeos_temporal_spatial_transf
- * @brief Split a temporal point into an array of non self-intersecting pieces.
- *
+ * @brief Split a temporal point into an array of non self-intersecting
+ * fragments.
  * @param[in] temp Temporal point
  * @param[out] count Number of elements in the output array
  * @see tpointseq_make_simple
@@ -3577,7 +3556,6 @@ tpoint_make_simple(const Temporal *temp, int *count)
 /**
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal point instant to (the complement of) a geometry.
- *
  * @param[in] inst Temporal instant point
  * @param[in] gs Geometry
  * @param[in] atfunc True if the restriction is at, false for minus
@@ -3600,7 +3578,6 @@ tpointinst_restrict_geometry(const TInstant *inst, const GSERIALIZED *gs,
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal point discrete sequence to (the complement of) a
  * geometry.
- *
  * @param[in] seq Temporal discrete sequence point
  * @param[in] gs Geometry
  * @param[in] atfunc True if the restriction is at, false for minus
@@ -3630,7 +3607,7 @@ tpointdiscseq_restrict_geometry(const TSequence *seq, const GSERIALIZED *gs,
 }
 
 /**
- * Get the intersection points
+ * @brief Get the intersection points
  */
 static int
 gsinter_get_points(Datum *result, GSERIALIZED *gsinter)
@@ -3660,8 +3637,8 @@ gsinter_get_points(Datum *result, GSERIALIZED *gsinter)
 }
 
 /**
- * Restrict a temporal sequence point with step interpolation to a geometry
- *
+ * @brief Restrict a temporal sequence point with step interpolation to a
+ * geometry
  * @param[in] seq Temporal point
  * @param[in] gs Geometry
  * @param[out] count Number of elements in the resulting array
@@ -3704,8 +3681,8 @@ tpointseq_step_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
 /*****************************************************************************/
 
 /**
- * Return the timestamp at which a segment of a temporal point takes a base
- * value
+ * @brief Return the timestamp at which a segment of a temporal point takes a
+ * base value
  *
  * This function must take into account the roundoff errors and thus it uses
  * the datum_point_eq_eps for comparing two values so the coordinates of the
@@ -3776,7 +3753,8 @@ tpointsegm_timestamp_at_value1(const TInstant *inst1, const TInstant *inst2,
 }
 
 /**
- * Return the timestamp at which a temporal point sequence is equal to a point
+ * @brief Return the timestamp at which a temporal point sequence is equal to a
+ * point
  *
  * This function is called by the atGeometry function to find the timestamp
  * at which an intersection point found by PostGIS is located. This function
@@ -3814,9 +3792,8 @@ tpointseq_timestamp_at_value(const TSequence *seq, Datum value,
 }
 
 /**
- * Get the periods at which a temporal sequence point with linear interpolation
- * intersects a geometry
- *
+ * @brief Get the periods at which a temporal sequence point with linear
+ * interpolation intersects a geometry
  * @param[in] seq Temporal point
  * @param[in] gsinter Intersection of the temporal point and the geometry
  * @param[out] count Number of elements in the resulting array
@@ -3948,8 +3925,8 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter, int *count)
 }
 
 /**
- * Restrict a temporal sequence point with linear interpolation to a geometry
- *
+ * @brief Restrict a temporal sequence point with linear interpolation to a
+ * geometry
  * @param[in] seq Temporal point sequence
  * @param[in] gs Geometry
  * @param[out] count Number of elements in the resulting array
@@ -4064,7 +4041,7 @@ tpointseq_at_geometry(const TSequence *seq, const GSERIALIZED *gs, int *count)
 }
 
 /**
- * Restrict a temporal sequence point to the complement of a geometry
+ * @brief Restrict a temporal sequence point to the complement of a geometry
  *
  * It is not possible to use a similar approach as for tpointseq_at_geometry1
  * where instead of computing the intersections we compute the difference since
@@ -4114,7 +4091,6 @@ tpointseq_minus_geometry(const TSequence *seq, const GSERIALIZED *gs,
 /**
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal point sequence to (the complement of a) geometry.
- *
  * @param[in] seq Temporal sequence point
  * @param[in] gs Geometry
  * @param[in] atfunc True if the restriction is at, false for minus
@@ -4144,7 +4120,6 @@ tpointseq_restrict_geometry(const TSequence *seq, const GSERIALIZED *gs,
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal point sequence set to (the complement of) a
  * geometry.
- *
  * @param[in] ss Temporal sequence set point
  * @param[in] gs Geometry
  * @param[in] box Bounding box of the geometry
@@ -4208,8 +4183,6 @@ tpointseqset_restrict_geometry(const TSequenceSet *ss, const GSERIALIZED *gs,
 /**
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal point to (the complement of) a geometry.
- *
- *
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
  * @param[in] atfunc True if the restriction is at, false for minus
@@ -4281,7 +4254,8 @@ tpoint_minus_geometry(const Temporal *temp, const GSERIALIZED *gs)
 /*****************************************************************************/
 
 /**
- * Assemble a 2D point for its x and y coordinates, srid, and geodetic flag
+ * @brief Assemble a 2D point for its x and y coordinates, srid, and geodetic
+ * flag
  */
 static Datum
 point2D_assemble(Datum x, Datum y, Datum srid, Datum geodetic)
@@ -4297,8 +4271,8 @@ point2D_assemble(Datum x, Datum y, Datum srid, Datum geodetic)
 }
 
 /**
- * Assemble a 2D temporal point for two temporal floats, srid, and geodetic
- * flag
+ * @brief Assemble a 2D temporal point for two temporal floats, srid, and
+ * geodetic flag
  */
 static Temporal *
 tpoint_assemble_coords_xy(Temporal *temp_x, Temporal *temp_y, int srid,
@@ -4321,7 +4295,7 @@ tpoint_assemble_coords_xy(Temporal *temp_x, Temporal *temp_y, int srid,
 }
 
 /**
- * Add a z value to a 2D point
+ * @brief Add a z value to a 2D point
  */
 static Datum
 point2D_add_z(Datum point, Datum z, Datum srid)
@@ -4339,7 +4313,7 @@ point2D_add_z(Datum point, Datum z, Datum srid)
 }
 
 /**
- * Assemble a 2D temporal point for two temporal floats
+ * @brief Assemble a 2D temporal point for two temporal floats
  */
 static Temporal *
 tpoint_add_z(Temporal *temp, Temporal *temp_z, int srid)
