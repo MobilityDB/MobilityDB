@@ -76,6 +76,7 @@ timestamp_tprecision(TimestampTz t, Interval *duration, TimestampTz torigin)
 Span *
 period_tprecision(const Span *s, Interval *duration, TimestampTz torigin)
 {
+  assert(s->basetype == T_TIMESTAMPTZ);
   ensure_valid_duration(duration);
   int64 tunits = interval_units(duration);
   TimestampTz lower = s->lower;
@@ -98,6 +99,7 @@ period_tprecision(const Span *s, Interval *duration, TimestampTz torigin)
 SpanSet *
 periodset_tprecision(const SpanSet *ss, Interval *duration, TimestampTz torigin)
 {
+  assert(ss->basetype == T_TIMESTAMPTZ);
   ensure_valid_duration(duration);
   int64 tunits = interval_units(duration);
   TimestampTz lower = DatumGetTimestampTz(ss->span.lower);
