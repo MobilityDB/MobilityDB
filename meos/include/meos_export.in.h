@@ -1087,6 +1087,7 @@ extern Temporal *temporal_to_tdiscseq(const Temporal *temp);
 extern Temporal *temporal_to_tcontseq(const Temporal *temp);
 extern Temporal *temporal_to_tsequenceset(const Temporal *temp);
 extern Temporal *temporal_tscale(const Temporal *temp, const Interval *duration);
+extern Temporal *temporal_tprecision(const Temporal *temp, const Interval *duration, TimestampTz origin);
 
 /*****************************************************************************/
 
@@ -1132,6 +1133,7 @@ extern Temporal *tpoint_minus_stbox(const Temporal *temp, const STBox *box);
 extern Temporal *tpoint_minus_value(const Temporal *temp, GSERIALIZED *gs);
 extern Temporal *tpoint_minus_values(const Temporal *temp, const Set *set);
 extern bool tpoint_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict, GSERIALIZED **value);
+extern TSequence *tsequence_at_period(const TSequence *seq, const Span *p);
 extern Temporal *ttext_at_value(const Temporal *temp, text *txt);
 extern Temporal *ttext_at_values(const Temporal *temp, const Set *set);
 extern Temporal *ttext_minus_value(const Temporal *temp, text *txt);

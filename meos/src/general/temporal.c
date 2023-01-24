@@ -45,6 +45,7 @@
 #include "general/temporaltypes.h"
 #include "general/temporal_boxops.h"
 #include "general/tnumber_distance.h"
+#include "general/temporal_tile.h"
 #include "general/type_parser.h"
 #include "general/type_util.h"
 #include "point/tpoint_spatialfuncs.h"
@@ -1398,6 +1399,155 @@ temporal_tscale(const Temporal *temp, const Interval *duration)
   return temporal_shift_tscale(temp, NULL, duration);
 }
 #endif /* MEOS */
+
+/*****************************************************************************
+ * Time precision functions for time values
+ *****************************************************************************/
+
+/**
+ * @brief Set the precision of a temporal value according to time buckets.
+ * @param[in] inst Temporal value
+ * @param[in] duration Size of the time buckets
+ * @param[in] torigin Time origin of the buckets
+ */
+TSequence *
+tnumberinst_tprecision(const TInstant *inst, const Interval *duration,
+  TimestampTz torigin)
+{
+  ensure_valid_duration(duration);
+  int64 tunits = interval_units(duration);
+  TimestampTz lower = timestamptz_bucket(inst->t, duration, torigin);
+  /* The upper bound must be gridded to the next bucket */
+  TimestampTz upper = lower + tunits;
+  Span s;
+  span_set(TimestampTzGetDatum(lower), TimestampTzGetDatum(upper), true, false,
+    T_TIMESTAMPTZ, &s);
+  Datum value = tinstant_value(inst);
+  bool linear = MOBDB_FLAGS_GET_LINEAR(inst->flags);
+  TSequence *result = tsequence_from_base_time(value, inst->temptype, &s,
+    linear ? LINEAR : STEPWISE);
+  return result;
+}
+
+/**
+ * @brief Set the precision of a temporal value according to period buckets.
+ * @param[in] seq Temporal value
+ * @param[in] duration Size of the time buckets
+ * @param[in] torigin Time origin of the buckets
+ */
+TSequenceSet *
+tnumberseq_tprecision(const TSequence *seq, const Interval *duration,
+  TimestampTz torigin)
+{
+  ensure_valid_duration(duration);
+  int64 tunits = interval_units(duration);
+  TimestampTz lower = DatumGetTimestampTz(seq->period.lower);
+  TimestampTz upper = DatumGetTimestampTz(seq->period.upper);
+  TimestampTz lower_bucket = timestamptz_bucket(lower, duration, torigin);
+  /* We need to add tunits to obtain the end timestamp of the last bucket */
+  TimestampTz upper_bucket = timestamptz_bucket(upper, duration, torigin) +
+    tunits;
+  /* Number of buckets */
+  int count = (int) (((int64) upper_bucket - (int64) lower_bucket) / tunits);
+  TSequence **sequences = palloc(sizeof(TSequence *) * count);
+  lower = lower_bucket;
+  upper = lower_bucket + tunits;
+  bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
+  int k = 0;
+  /* Loop for each bucket */
+  for (int i = 0; i < count; i++)
+  {
+    Span s;
+    span_set(TimestampTzGetDatum(lower), TimestampTzGetDatum(upper),
+      true, false, T_TIMESTAMPTZ, &s);
+    span_set(TimestampTzGetDatum(lower),
+      TimestampTzGetDatum(upper), true, false, T_TIMESTAMPTZ, &s);
+    TSequence *proj = tsequence_at_period(seq, &s);
+    if (proj)
+    {
+      Datum value = Float8GetDatum(tnumbercontseq_twavg(proj));
+      sequences[k++] = tsequence_from_base_time(value, seq->temptype, &s,
+        linear ? LINEAR : STEPWISE);
+      pfree(proj);
+    }
+    lower += tunits;
+    upper += tunits;
+  }
+  TSequenceSet *result = tsequenceset_make_free(sequences, k, NORMALIZE);
+  return result;
+}
+
+/**
+ * @brief Set the precision of a temporal value according to period buckets.
+ * @param[in] ss Temporal value
+ * @param[in] duration Size of the time buckets
+ * @param[in] torigin Time origin of the buckets
+ */
+TSequenceSet *
+tnumberseqset_tprecision(const TSequenceSet *ss, const Interval *duration,
+  TimestampTz torigin)
+{
+  ensure_valid_duration(duration);
+  int64 tunits = interval_units(duration);
+  TimestampTz lower = DatumGetTimestampTz(ss->period.lower);
+  TimestampTz upper = DatumGetTimestampTz(ss->period.upper);
+  TimestampTz lower_bucket = timestamptz_bucket(lower, duration, torigin);
+  /* We need to add tunits to obtain the end timestamp of the last bucket */
+  TimestampTz upper_bucket = timestamptz_bucket(upper, duration, torigin) +
+    tunits;
+  /* Number of buckets */
+  int count = (int) (((int64) upper_bucket - (int64) lower_bucket) / tunits);
+  TSequence **sequences = palloc(sizeof(TSequence *) * count);
+  lower = lower_bucket;
+  upper = lower_bucket + tunits;
+  bool linear = MOBDB_FLAGS_GET_LINEAR(ss->flags);
+  int k = 0;
+  /* Loop for each bucket */
+  for (int i = 0; i < count; i++)
+  {
+    Span s;
+    span_set(TimestampTzGetDatum(lower), TimestampTzGetDatum(upper),
+      true, false, T_TIMESTAMPTZ, &s);
+    span_set(TimestampTzGetDatum(lower),
+      TimestampTzGetDatum(upper), true, false, T_TIMESTAMPTZ, &s);
+    TSequenceSet *proj = tsequenceset_restrict_period(ss, &s, REST_AT);
+    if (proj)
+    {
+      Datum value = Float8GetDatum(tnumber_twavg((Temporal *) proj));
+      sequences[k++] = tsequence_from_base_time(value, ss->temptype, &s,
+        linear ? LINEAR : STEPWISE);
+      pfree(proj);
+    }
+    lower += tunits;
+    upper += tunits;
+  }
+  TSequenceSet *result = tsequenceset_make_free(sequences, k, NORMALIZE);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_transf
+ * @brief Set the precision of a temporal value according to period buckets.
+ * @sqlfunc tempSubtype();
+ * @pymeosfunc tempSubtype()
+ */
+Temporal *
+tnumber_tprecision(const Temporal *temp, const Interval *duration,
+  TimestampTz torigin)
+{
+  Temporal *result;
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == TINSTANT)
+    result = (Temporal *) tnumberinst_tprecision((TInstant *) temp, duration,
+      torigin);
+  else if (temp->subtype == TSEQUENCE)
+    result = (Temporal *) tnumberseq_tprecision((TSequence *) temp, duration,
+      torigin);
+  else /* temp->subtype == TSEQUENCESET */
+    result = (Temporal *) tnumberseqset_tprecision((TSequenceSet *) temp,
+      duration, torigin);
+  return result;
+}
 
 /*****************************************************************************
  * Accessor functions
