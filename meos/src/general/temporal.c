@@ -109,6 +109,28 @@ ensure_tinstarr(const TInstant **instants, int count)
 }
 
 /**
+ * @brief Ensure that a temporal value has discrete interpolation
+ */
+void
+ensure_discrete_interpolation(int16 flags)
+{
+  if (! MOBDB_FLAGS_GET_DISCRETE(flags))
+    elog(ERROR, "The temporal value must have discrete interpolation");
+  return;
+}
+
+/**
+ * @brief Ensure that a temporal value has continuous interpolation
+ */
+void
+ensure_continuous_interpolation(int16 flags)
+{
+  if (! MOBDB_FLAGS_GET_CONTINUOUS(flags))
+    elog(ERROR, "The temporal value must have continuous interpolation");
+  return;
+}
+
+/**
  * @brief Ensure that a temporal value does not have linear interpolation
  */
 void
@@ -1639,7 +1661,10 @@ temporal_values(const Temporal *temp, int *count)
   if (temp->subtype == TINSTANT)
     result = tinstant_values((TInstant *) temp, count);
   else if (temp->subtype == TSEQUENCE)
+  {
+    ensure_discrete_interpolation(temp->flags);
     result = tsequence_values((TSequence *) temp, count);
+  }
   else /* temp->subtype == TSEQUENCESET */
     result = tsequenceset_values((TSequenceSet *) temp, count);
   return result;
@@ -1746,7 +1771,10 @@ tfloat_spanset(const Temporal *temp)
   if (temp->subtype == TINSTANT)
     result = tfloatinst_spanset((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
+  {
+    ensure_continuous_interpolation(temp->flags);
     result = tfloatseq_spanset((TSequence *) temp);
+  }
   else /* temp->subtype == TSEQUENCESET */
     result = tfloatseqset_spanset((TSequenceSet *) temp);
   return result;
