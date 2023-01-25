@@ -48,7 +48,7 @@
 
 PG_FUNCTION_INFO_V1(point_constructor);
 /**
- * Point Constructor
+ * @brief Point constructor
  */
 Datum
 point_constructor(PG_FUNCTION_ARGS)
@@ -64,7 +64,7 @@ point_constructor(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(line_constructor);
 /**
- * LINE Constructor
+ * @brief LINE constructor
  */
 Datum
 line_constructor(PG_FUNCTION_ARGS)
@@ -82,7 +82,7 @@ line_constructor(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(lseg_constructor);
 /**
- * LSEG Constructor
+ * @brief LSEG constructor
  */
 Datum
 lseg_constructor(PG_FUNCTION_ARGS)
@@ -100,7 +100,7 @@ lseg_constructor(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(box_constructor);
 /**
- * BOX Constructor
+ * @brief BOX constructor
  */
 Datum
 box_constructor(PG_FUNCTION_ARGS)
@@ -118,7 +118,7 @@ box_constructor(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(circle_constructor);
 /**
- * CIRCLE Constructor
+ * @brief CIRCLE constructor
  */
 Datum
 circle_constructor(PG_FUNCTION_ARGS)
@@ -135,7 +135,7 @@ circle_constructor(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(path_constructor);
 /**
- * PATH Constructor
+ * @brief PATH constructor
  */
 Datum
 path_constructor(PG_FUNCTION_ARGS)
@@ -222,7 +222,7 @@ make_bound_box(POLYGON *poly)
 
 PG_FUNCTION_INFO_V1(poly_constructor);
 /**
- * POLYGON Constructor
+ * @brief POLYGON constructor
  */
 Datum
 poly_constructor(PG_FUNCTION_ARGS)

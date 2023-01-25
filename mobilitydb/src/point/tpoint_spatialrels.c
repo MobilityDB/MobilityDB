@@ -63,8 +63,8 @@
  *****************************************************************************/
 
 /**
- * Return true if the temporal points ever satisfy the spatial relationship
- *
+ * @brief Return true if the temporal points ever satisfy the spatial
+ * relationship
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Spatial relationship
  */

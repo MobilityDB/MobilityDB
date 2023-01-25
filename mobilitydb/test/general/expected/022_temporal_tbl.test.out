@@ -1622,6 +1622,30 @@ SELECT COUNT(shiftTscale(temp, i, i)) FROM tbl_ttext, tbl_interval;
   9504
 (1 row)
 
+SELECT MAX(startTimestamp(tprecision(inst, '15 minutes'))) FROM tbl_tint_inst;
+          max           
+------------------------
+ 2001-12-27 07:00:00+00
+(1 row)
+
+SELECT MAX(startTimestamp(tprecision(ti, '15 minutes'))) FROM tbl_tint_discseq;
+          max           
+------------------------
+ 2001-12-30 14:00:00+00
+(1 row)
+
+SELECT MAX(startTimestamp(tprecision(seq, '15 minutes'))) FROM tbl_tint_seq;
+          max           
+------------------------
+ 2001-12-29 19:30:00+00
+(1 row)
+
+SELECT MAX(startTimestamp(tprecision(ss, '15 minutes'))) FROM tbl_tint_seqset;
+          max           
+------------------------
+ 2001-12-25 19:45:00+00
+(1 row)
+
 SELECT COUNT(*) FROM tbl_tbool WHERE temp ?= startValue(temp);
  count 
 -------

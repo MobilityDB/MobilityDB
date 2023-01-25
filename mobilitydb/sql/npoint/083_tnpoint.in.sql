@@ -386,7 +386,7 @@ CREATE FUNCTION segments(tnpoint)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
- * Shift and tscale functions
+ * Transformation functions
  *****************************************************************************/
 
 CREATE FUNCTION shift(tnpoint, interval)

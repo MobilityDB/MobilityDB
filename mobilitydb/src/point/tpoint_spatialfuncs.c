@@ -58,7 +58,7 @@
  *****************************************************************************/
 
 /**
- * Generic function for the temporal ever/always comparison operators
+ * @brief Generic function for the temporal ever/always comparison operators
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Specific function for the ever/always comparison
@@ -389,7 +389,7 @@ Tgeogpoint_to_tgeompoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Set the precision of the coordinates to the number of decimal places
+ * @brief Set the precision of the coordinates to the number of decimal places
  */
 static void
 round_point(POINTARRAY *points, uint32_t i, int prec, bool hasz,
@@ -414,7 +414,7 @@ round_point(POINTARRAY *points, uint32_t i, int prec, bool hasz,
 }
 
 /**
- * Set the precision of the coordinates to the number of decimal places
+ * @brief Set the precision of the coordinates to the number of decimal places
  */
 static Datum
 datum_round_point(GSERIALIZED *gs, Datum prec)
@@ -430,7 +430,7 @@ datum_round_point(GSERIALIZED *gs, Datum prec)
 }
 
 /**
- * Set the precision of the coordinates to the number of decimal places
+ * @brief Set the precision of the coordinates to the number of decimal places
  */
 static void
 round_linestring(LWLINE *lwline, Datum prec, bool hasz, bool hasm)
@@ -442,7 +442,7 @@ round_linestring(LWLINE *lwline, Datum prec, bool hasz, bool hasm)
 }
 
 /**
- * Set the precision of the coordinates to the number of decimal places
+ * @brief Set the precision of the coordinates to the number of decimal places
  */
 static Datum
 datum_round_linestring(GSERIALIZED *gs, Datum prec)
@@ -458,7 +458,7 @@ datum_round_linestring(GSERIALIZED *gs, Datum prec)
 }
 
 /**
- * Set the precision of the coordinates to the number of decimal places
+ * @brief Set the precision of the coordinates to the number of decimal places
  */
 static void
 round_triangle(LWTRIANGLE *lwtriangle, Datum prec, bool hasz, bool hasm)
@@ -470,7 +470,7 @@ round_triangle(LWTRIANGLE *lwtriangle, Datum prec, bool hasz, bool hasm)
 }
 
 /**
- * Set the precision of the coordinates to the number of decimal places
+ * @brief Set the precision of the coordinates to the number of decimal places
  */
 static Datum
 datum_round_triangle(GSERIALIZED *gs, Datum prec)
@@ -486,7 +486,7 @@ datum_round_triangle(GSERIALIZED *gs, Datum prec)
 }
 
 /**
- * Set the precision of the coordinates to the number of decimal places
+ * @brief Set the precision of the coordinates to the number of decimal places
  */
 static void
 round_circularstring(LWCIRCSTRING *lwcircstring, Datum prec, bool hasz,
@@ -499,7 +499,7 @@ round_circularstring(LWCIRCSTRING *lwcircstring, Datum prec, bool hasz,
 }
 
 /**
- * Set the precision of the coordinates to the number of decimal places
+ * @brief Set the precision of the coordinates to the number of decimal places
  */
 static Datum
 datum_round_circularstring(GSERIALIZED *gs, Datum prec)
@@ -515,7 +515,7 @@ datum_round_circularstring(GSERIALIZED *gs, Datum prec)
 }
 
 /**
- * Set the precision of the coordinates to the number of decimal places
+ * @brief Set the precision of the coordinates to the number of decimal places
  */
 static void
 round_polygon(LWPOLY *lwpoly, Datum prec, bool hasz, bool hasm)
@@ -532,7 +532,7 @@ round_polygon(LWPOLY *lwpoly, Datum prec, bool hasz, bool hasm)
 }
 
 /**
- * Set the precision of the coordinates to the number of decimal places
+ * @brief Set the precision of the coordinates to the number of decimal places
  */
 static Datum
 datum_round_polygon(GSERIALIZED *gs, Datum prec)
@@ -548,7 +548,7 @@ datum_round_polygon(GSERIALIZED *gs, Datum prec)
 }
 
 /**
- * Set the precision of the coordinates to the number of decimal places
+ * @brief Set the precision of the coordinates to the number of decimal places
  */
 static void
 round_multipoint(LWMPOINT *lwmpoint, Datum prec, bool hasz, bool hasm)
@@ -563,7 +563,7 @@ round_multipoint(LWMPOINT *lwmpoint, Datum prec, bool hasz, bool hasm)
 }
 
 /**
- * Set the precision of the coordinates to the number of decimal places
+ * @brief Set the precision of the coordinates to the number of decimal places
  */
 static Datum
 datum_round_multipoint(GSERIALIZED *gs, Datum prec)
@@ -579,7 +579,7 @@ datum_round_multipoint(GSERIALIZED *gs, Datum prec)
 }
 
 /**
- * Set the precision of the coordinates to the number of decimal places
+ * @brief Set the precision of the coordinates to the number of decimal places
  */
 static void
 round_multilinestring(LWMLINE *lwmline, Datum prec, bool hasz, bool hasm)
@@ -596,7 +596,7 @@ round_multilinestring(LWMLINE *lwmline, Datum prec, bool hasz, bool hasm)
 }
 
 /**
- * Set the precision of the coordinates to the number of decimal places
+ * @brief Set the precision of the coordinates to the number of decimal places
  */
 static Datum
 datum_round_multilinestring(GSERIALIZED *gs, Datum prec)
@@ -612,7 +612,7 @@ datum_round_multilinestring(GSERIALIZED *gs, Datum prec)
 }
 
 /**
- * Set the precision of the coordinates to the number of decimal places
+ * @brief Set the precision of the coordinates to the number of decimal places
  */
 static void
 round_multipolygon(LWMPOLY *lwmpoly, Datum prec, bool hasz, bool hasm)
@@ -627,7 +627,7 @@ round_multipolygon(LWMPOLY *lwmpoly, Datum prec, bool hasz, bool hasm)
 }
 
 /**
- * Set the precision of the coordinates to the number of decimal places
+ * @brief Set the precision of the coordinates to the number of decimal places
  */
 static Datum
 datum_round_multipolygon(GSERIALIZED *gs, Datum prec)
@@ -643,7 +643,7 @@ datum_round_multipolygon(GSERIALIZED *gs, Datum prec)
 }
 
 /**
- * Set the precision of the coordinates to the number of decimal places
+ * @brief Set the precision of the coordinates to the number of decimal places
  */
 static Datum
 datum_round_geometrycollection(GSERIALIZED *gs, Datum prec)
@@ -682,7 +682,6 @@ datum_round_geometrycollection(GSERIALIZED *gs, Datum prec)
 
 /**
  * @brief Set the precision of the coordinates to the number of decimal places.
- *
  * @note Currently not all geometry types are allowed
  */
 Datum
@@ -1081,9 +1080,8 @@ Tpoint_make_simple(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Restrict a temporal point to (the complement of) a geometry
- *
- * Mixing 2D/3D is enabled to compute, for example, 2.5D operations
+ * @brief Restrict a temporal point to (the complement of) a geometry
+ * @note Mixing 2D/3D is enabled to compute, for example, 2.5D operations
  */
 static Datum
 tpoint_restrict_geometry_ext(FunctionCallInfo fcinfo, bool atfunc)

@@ -457,15 +457,14 @@ extern void floatspan_set_bigintspan(const Span *s1, Span *s2);
 extern void floatspan_set_intspan(const Span *s1, Span *s2);
 extern void intspan_set_floatspan(const Span *s1, Span *s2);
 extern void numspan_set_floatspan(const Span *s1, Span *s2);
-extern Set *set_shift(const Set *s, Datum shift);
+extern Span *period_tprecision(const Span *s, const Interval *duration, TimestampTz torigin);
+extern SpanSet *periodset_tprecision(const SpanSet *ss, const Interval *duration, TimestampTz torigin);
 extern void period_shift_tscale(Span *p, const Interval *shift, const Interval *duration);
 extern SpanSet *periodset_shift_tscale(const SpanSet *ps, const Interval *shift, const Interval *duration);
+extern Set *set_shift(const Set *s, Datum shift);
 extern void span_expand(const Span *s1, Span *s2);
+extern TimestampTz timestamp_tprecision(TimestampTz t, const Interval *duration, TimestampTz torigin);
 extern Set *tstzset_shift_tscale(const Set *ts, const Interval *shift, const Interval *duration);
-
-extern Span *timestamp_tprecision(TimestampTz t, Interval *duration, TimestampTz torigin);
-extern Span *period_tprecision(const Span *s, Interval *duration, TimestampTz torigin);
-extern SpanSet *periodset_tprecision(const SpanSet *ss, Interval *duration, TimestampTz torigin);
 
 /*****************************************************************************
  * Bounding box functions for set and span types
@@ -1091,8 +1090,8 @@ extern Temporal *temporal_to_tinstant(const Temporal *temp);
 extern Temporal *temporal_to_tdiscseq(const Temporal *temp);
 extern Temporal *temporal_to_tcontseq(const Temporal *temp);
 extern Temporal *temporal_to_tsequenceset(const Temporal *temp);
+extern Temporal *temporal_tprecision(const Temporal *temp, const Interval *duration, TimestampTz origin);
 extern Temporal *temporal_tscale(const Temporal *temp, const Interval *duration);
-extern Temporal *tnumber_tprecision(const Temporal *temp, const Interval *duration, TimestampTz origin);
 
 /*****************************************************************************/
 

@@ -47,7 +47,7 @@
 
 PG_FUNCTION_INFO_V1(Timestamp_tunion_transfn);
 /**
- * Transition function for union aggregate of timestamp sets
+ * @brief Transition function for union aggregate of timestamp sets
  */
 PGDLLEXPORT Datum
 Timestamp_tunion_transfn(PG_FUNCTION_ARGS)
@@ -62,7 +62,7 @@ Timestamp_tunion_transfn(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tstzset_tunion_transfn);
 /**
- * Transition function for union aggregate of timestamp sets
+ * @brief Transition function for union aggregate of timestamp sets
  */
 PGDLLEXPORT Datum
 Tstzset_tunion_transfn(PG_FUNCTION_ARGS)
@@ -78,7 +78,7 @@ Tstzset_tunion_transfn(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Period_tunion_transfn);
 /**
- * Transition function for union aggregate of periods
+ * @brief Transition function for union aggregate of periods
  */
 PGDLLEXPORT Datum
 Period_tunion_transfn(PG_FUNCTION_ARGS)
@@ -93,7 +93,7 @@ Period_tunion_transfn(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_tunion_transfn);
 /**
- * Transition function for union aggregate of period sets
+ * @brief Transition function for union aggregate of period sets
  */
 PGDLLEXPORT Datum
 Periodset_tunion_transfn(PG_FUNCTION_ARGS)
@@ -111,7 +111,7 @@ Periodset_tunion_transfn(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestamp_tcount_transfn);
 /**
- * Transition function for temporal count aggregate of timestamps
+ * @brief Transition function for temporal count aggregate of timestamps
  */
 PGDLLEXPORT Datum
 Timestamp_tcount_transfn(PG_FUNCTION_ARGS)
@@ -126,7 +126,7 @@ Timestamp_tcount_transfn(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tstzset_tcount_transfn);
 /**
- * Transition function for temporal count aggregate of timestamp sets
+ * @brief Transition function for temporal count aggregate of timestamp sets
  */
 PGDLLEXPORT Datum
 Tstzset_tcount_transfn(PG_FUNCTION_ARGS)
@@ -142,7 +142,7 @@ Tstzset_tcount_transfn(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Period_tcount_transfn);
 /**
- * Transition function for temporal count aggregate of periods
+ * @brief Transition function for temporal count aggregate of periods
  */
 PGDLLEXPORT Datum
 Period_tcount_transfn(PG_FUNCTION_ARGS)
@@ -157,7 +157,7 @@ Period_tcount_transfn(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_tcount_transfn);
 /**
- * Transition function for temporal count aggregate of period sets
+ * @brief Transition function for temporal count aggregate of period sets
  */
 PGDLLEXPORT Datum
 Periodset_tcount_transfn(PG_FUNCTION_ARGS)
@@ -177,7 +177,7 @@ Periodset_tcount_transfn(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Time_tunion_combinefn);
 /**
- * Combine function for union aggregate of time types
+ * @brief Combine function for union aggregate of time types
  */
 PGDLLEXPORT Datum
 Time_tunion_combinefn(PG_FUNCTION_ARGS)
@@ -195,7 +195,7 @@ Time_tunion_combinefn(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestamp_tunion_finalfn);
 /**
- * Final function for union aggregation of timestamp set values
+ * @brief Final function for union aggregation of timestamp set values
  */
 PGDLLEXPORT Datum
 Timestamp_tunion_finalfn(PG_FUNCTION_ARGS)
@@ -208,7 +208,7 @@ Timestamp_tunion_finalfn(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Period_tunion_finalfn);
 /**
- * Final function for union aggregation of period (set) values
+ * @brief Final function for union aggregation of period (set) values
  */
 PGDLLEXPORT Datum
 Period_tunion_finalfn(PG_FUNCTION_ARGS)

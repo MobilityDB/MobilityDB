@@ -51,7 +51,7 @@
 
 PG_FUNCTION_INFO_V1(Set_agg_transfn);
 /**
- * Transition function for set aggregation of values
+ * @brief Transition function for set aggregation of values
  */
 PGDLLEXPORT Datum
 Set_agg_transfn(PG_FUNCTION_ARGS)
@@ -85,7 +85,7 @@ Set_agg_transfn(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Set_agg_finalfn);
 /**
- * Combine function for set aggregate of set types
+ * @brief Combine function for set aggregate of set types
  */
 PGDLLEXPORT Datum
 Set_agg_finalfn(PG_FUNCTION_ARGS)

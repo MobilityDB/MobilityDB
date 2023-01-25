@@ -59,7 +59,7 @@
  *****************************************************************************/
 
 /**
- * Switch to the memory context for aggregation
+ * @brief Switch to the memory context for aggregation
  */
 MemoryContext
 set_aggregation_context(FunctionCallInfo fcinfo)
@@ -72,7 +72,7 @@ set_aggregation_context(FunctionCallInfo fcinfo)
 }
 
 /**
- * Switch to the given memory context
+ * @brief Switch to the given memory context
  */
 void
 unset_aggregation_context(MemoryContext ctx)
@@ -86,8 +86,7 @@ unset_aggregation_context(MemoryContext ctx)
  *****************************************************************************/
 
 /**
- * Writes the state value into the buffer
- *
+ * @brief Write the state value into the buffer
  * @param[in] state State
  * @param[in] buf Buffer
  */
@@ -130,8 +129,7 @@ aggstate_write(SkipList *state, StringInfo buf)
 }
 
 /**
- * Reads the state value from the buffer
- *
+ * @brief Read the state value from the buffer
  * @param[in] buf Buffer
  */
 static SkipList *
@@ -173,7 +171,7 @@ aggstate_read(StringInfo buf)
 
 PG_FUNCTION_INFO_V1(Tagg_serialize);
 /**
- * Serialize the state value
+ * @brief Serialize the state value
  */
 PGDLLEXPORT Datum
 Tagg_serialize(PG_FUNCTION_ARGS)
@@ -187,7 +185,7 @@ Tagg_serialize(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tagg_deserialize);
 /**
- * Deserialize the state value
+ * @brief Deserialize the state value
  */
 PGDLLEXPORT Datum
 Tagg_deserialize(PG_FUNCTION_ARGS)

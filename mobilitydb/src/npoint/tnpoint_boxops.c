@@ -150,7 +150,6 @@ Tnpoint_to_stbox(PG_FUNCTION_ARGS)
 
 /**
  * @brief Generic box function for an stbox and a temporal network point
- *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
  */
@@ -171,7 +170,6 @@ boxop_stbox_tnpoint_ext(FunctionCallInfo fcinfo,
 
 /**
  * @brief Generic box function for a temporal network point and an stbox
- *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
  */
@@ -192,7 +190,6 @@ boxop_tnpoint_stbox_ext(FunctionCallInfo fcinfo,
 
 /**
  * @brief Generic box function for two temporal network points
- *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
  */

@@ -73,7 +73,6 @@ PG_FUNCTION_INFO_V1(Span_from_wkb);
  * @ingroup mobilitydb_temporal_inout
  * @brief Input a span from its WKB representation
  * @sqlfunc intspanFromBinary(), floatspanFromBinary(), periodFromBinary
- *
  */
 PGDLLEXPORT Datum
 Span_from_wkb(PG_FUNCTION_ARGS)
@@ -109,7 +108,6 @@ PG_FUNCTION_INFO_V1(Set_from_wkb);
  * @ingroup mobilitydb_temporal_inout
  * @brief Input a timestamp set from its WKB representation
  * @sqlfunc tstzsetFromBinary()
- *
  */
 PGDLLEXPORT Datum
 Set_from_wkb(PG_FUNCTION_ARGS)

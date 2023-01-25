@@ -66,7 +66,7 @@ temporal_similarity_ext(FunctionCallInfo fcinfo, SimFunc simfunc)
 
 PG_FUNCTION_INFO_V1(Temporal_frechet_distance);
 /**
- * Compute the discrete Frechet distance between two temporal values.
+ * @brief Compute the discrete Frechet distance between two temporal values.
  */
 PGDLLEXPORT Datum
 Temporal_frechet_distance(PG_FUNCTION_ARGS)
@@ -76,7 +76,8 @@ Temporal_frechet_distance(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_dynamic_time_warp);
 /**
- * Compute the Dynamic Time Match (DTW) distance between two temporal values.
+ * @brief Compute the Dynamic Time Match (DTW) distance between two temporal
+ * values.
  */
 PGDLLEXPORT Datum
 Temporal_dynamic_time_warp(PG_FUNCTION_ARGS)
@@ -90,8 +91,8 @@ Temporal_dynamic_time_warp(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Create the initial state that persists across multiple calls of the function
- *
+ * @brief Create the initial state that persists across multiple calls of the
+ * function
  * @param[in] path Match path
  * @param[in] size Size of the path
  * @pre The size argument must be greater to 0.
@@ -111,8 +112,7 @@ similarity_path_state_make(Match *path, int size)
 }
 
 /**
- * Increment the current state to the next warp of the path
- *
+ * @brief Increment the current state to the next warp of the path
  * @param[in] state State to increment
  */
 static void
@@ -132,7 +132,7 @@ similarity_path_state_next(SimilarityPathState *state)
  *****************************************************************************/
 
 /**
- * Compute the Dynamic Time Match (DTW) path between two temporal values.
+ * @brief Compute the Dynamic Time Match (DTW) path between two temporal values.
  */
 Datum
 temporal_similarity_path_ext(FunctionCallInfo fcinfo, SimFunc simfunc)
@@ -201,7 +201,7 @@ temporal_similarity_path_ext(FunctionCallInfo fcinfo, SimFunc simfunc)
 
 PG_FUNCTION_INFO_V1(Temporal_frechet_path);
 /**
- * Compute the Frechet path between two temporal values.
+ * @brief Compute the Frechet path between two temporal values.
  */
 PGDLLEXPORT Datum
 Temporal_frechet_path(PG_FUNCTION_ARGS)
@@ -211,7 +211,7 @@ Temporal_frechet_path(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_dynamic_time_warp_path);
 /**
- * Compute the Dynamic Time Warp (DTW) path between two temporal values.
+ * @brief Compute the Dynamic Time Warp (DTW) path between two temporal values.
  */
 PGDLLEXPORT Datum
 Temporal_dynamic_time_warp_path(PG_FUNCTION_ARGS)

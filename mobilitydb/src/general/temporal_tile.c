@@ -57,7 +57,7 @@
 
 PG_FUNCTION_INFO_V1(Number_bucket);
 /**
- * Return the initial value of the bucket in which an integer value falls.
+ * @brief Return the initial value of the bucket in which an integer value falls.
  */
 PGDLLEXPORT Datum
 Number_bucket(PG_FUNCTION_ARGS)
@@ -76,7 +76,7 @@ Number_bucket(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Timestamptz_bucket);
 /**
- * Return the initial timestamp of the bucket in which a timestamp falls.
+ * @brief Return the initial timestamp of the bucket in which a timestamp falls.
  */
 PGDLLEXPORT Datum
 Timestamptz_bucket(PG_FUNCTION_ARGS)
@@ -167,7 +167,7 @@ Span_bucket_list_ext(FunctionCallInfo fcinfo, bool valuelist)
 
 PG_FUNCTION_INFO_V1(Span_bucket_list);
 /**
- * Generate a span bucket list.
+ * @brief Generate a span bucket list.
  */
 PGDLLEXPORT Datum
 Span_bucket_list(PG_FUNCTION_ARGS)
@@ -177,7 +177,7 @@ Span_bucket_list(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Period_bucket_list);
 /**
- * Generate a period bucket list.
+ * @brief Generate a period bucket list.
  */
 PGDLLEXPORT Datum
 Period_bucket_list(PG_FUNCTION_ARGS)
@@ -189,7 +189,7 @@ Period_bucket_list(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Span_bucket);
 /**
- * Generate an integer or float span bucket in a bucket list for spans.
+ * @brief Generate an integer or float span bucket in a bucket list for spans.
 */
 PGDLLEXPORT Datum
 Span_bucket(PG_FUNCTION_ARGS)
@@ -205,7 +205,7 @@ Span_bucket(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Period_bucket);
 /**
- * Generate a bucket in a bucket list for periods.
+ * @brief Generate a bucket in a bucket list for periods.
 */
 PGDLLEXPORT Datum
 Period_bucket(PG_FUNCTION_ARGS)
@@ -224,7 +224,7 @@ Period_bucket(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tbox_tile_list);
 /**
- * Generate a multidimensional grid for temporal numbers.
+ * @brief Generate a multidimensional grid for temporal numbers.
  */
 PGDLLEXPORT Datum
 Tbox_tile_list(PG_FUNCTION_ARGS)
@@ -298,7 +298,7 @@ Tbox_tile_list(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tbox_tile);
 /**
- * Generate a tile in a multidimensional grid for temporal numbers.
+ * @brief Generate a tile in a multidimensional grid for temporal numbers.
 */
 PGDLLEXPORT Datum
 Tbox_tile(PG_FUNCTION_ARGS)
@@ -324,8 +324,8 @@ Tbox_tile(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Create the initial state that persists across multiple calls of the function
- *
+ * @brief Create the initial state that persists across multiple calls of the
+ * function
  * @param[in] size Value bucket size
  * @param[in] tunits Time bucket size
  * @param[in] value_buckets Initial values of the tiles
@@ -354,8 +354,8 @@ value_time_split_state_make(Datum size, int64 tunits, Datum *value_buckets,
 }
 
 /**
- * Increment the current state to the next tile of the multidimensional grid
- *
+ * @brief Increment the current state to the next tile of the multidimensional
+ * grid
  * @param[in] state State to increment
  */
 void
@@ -470,7 +470,7 @@ Temporal_value_time_split_ext(FunctionCallInfo fcinfo, bool valuesplit,
 
 PG_FUNCTION_INFO_V1(Temporal_time_split);
 /**
- * Split a temporal value into fragments with respect to period buckets.
+ * @brief Split a temporal value into fragments with respect to period buckets.
  */
 PGDLLEXPORT Datum
 Temporal_time_split(PG_FUNCTION_ARGS)
@@ -480,7 +480,7 @@ Temporal_time_split(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tnumber_value_split);
 /**
- * Split a temporal value into fragments with respect to period tiles.
+ * @brief Split a temporal value into fragments with respect to period tiles.
  */
 PGDLLEXPORT Datum
 Tnumber_value_split(PG_FUNCTION_ARGS)
@@ -490,7 +490,8 @@ Tnumber_value_split(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tnumber_value_time_split);
 /**
- * Split a temporal value into fragments with respect to span and period tiles.
+ * @brief Split a temporal value into fragments with respect to span and period
+ * tiles.
  */
 PGDLLEXPORT Datum
 Tnumber_value_time_split(PG_FUNCTION_ARGS)

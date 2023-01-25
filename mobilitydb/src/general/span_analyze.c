@@ -228,7 +228,6 @@ span_compute_stats_generic(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
 
 /**
  * @brief Compute statistics for set, span, and span set columns
- *
  * @param[in] stats Structure storing statistics information
  * @param[in] fetchfunc Fetch function
  * @param[in] samplerows Number of sample rows
@@ -333,7 +332,7 @@ span_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
 PG_FUNCTION_INFO_V1(Span_analyze);
 /**
- *  Compute statistics for span columns
+ * @brief Compute statistics for span columns
  */
 PGDLLEXPORT Datum
 Span_analyze(PG_FUNCTION_ARGS)

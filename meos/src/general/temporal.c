@@ -623,19 +623,6 @@ tgeogpoint_in(const char *str)
 }
 #endif /* MEOS */
 
-
-/**
- * @ingroup libmeos_internal_temporal_inout
- * @brief Return the Well-Known Text (WKT) representation of a temporal value.
- */
-bool
-temporal_basetype_quotes(meosType temptype)
-{
-  if (temptype == T_TTEXT)
-    return true;
-  return false;
-}
-
 /**
  * @ingroup libmeos_internal_temporal_inout
  * @brief Return the Well-Known Text (WKT) representation of a temporal value.
@@ -1405,27 +1392,36 @@ temporal_tscale(const Temporal *temp, const Interval *duration)
  *****************************************************************************/
 
 /**
+ * @brief Aggregate the values that are merged due to a temporal granularity
+ * change
+ * @param[in] temp Temporal value
+ */
+static Datum
+temporal_tprecision_agg_values(const Temporal *temp)
+{
+  assert(tnumber_type(temp->temptype) || tgeo_type(temp->temptype));
+  Datum result;
+  if (tnumber_type(temp->temptype))
+    result = Float8GetDatum(tnumber_twavg(temp));
+  else if (tgeo_type(temp->temptype))
+    result = PointerGetDatum(tpoint_twcentroid(temp));
+  return result;
+}
+
+/**
  * @brief Set the precision of a temporal value according to time buckets.
  * @param[in] inst Temporal value
  * @param[in] duration Size of the time buckets
  * @param[in] torigin Time origin of the buckets
  */
-TSequence *
-tnumberinst_tprecision(const TInstant *inst, const Interval *duration,
+TInstant *
+tinstant_tprecision(const TInstant *inst, const Interval *duration,
   TimestampTz torigin)
 {
   ensure_valid_duration(duration);
-  int64 tunits = interval_units(duration);
   TimestampTz lower = timestamptz_bucket(inst->t, duration, torigin);
-  /* The upper bound must be gridded to the next bucket */
-  TimestampTz upper = lower + tunits;
-  Span s;
-  span_set(TimestampTzGetDatum(lower), TimestampTzGetDatum(upper), true, false,
-    T_TIMESTAMPTZ, &s);
   Datum value = tinstant_value(inst);
-  bool linear = MOBDB_FLAGS_GET_LINEAR(inst->flags);
-  TSequence *result = tsequence_from_base_time(value, inst->temptype, &s,
-    linear ? LINEAR : STEPWISE);
+  TInstant *result = tinstant_make(value, inst->temptype, lower);
   return result;
 }
 
@@ -1435,8 +1431,8 @@ tnumberinst_tprecision(const TInstant *inst, const Interval *duration,
  * @param[in] duration Size of the time buckets
  * @param[in] torigin Time origin of the buckets
  */
-TSequenceSet *
-tnumberseq_tprecision(const TSequence *seq, const Interval *duration,
+TSequence *
+tsequence_tprecision(const TSequence *seq, const Interval *duration,
   TimestampTz torigin)
 {
   ensure_valid_duration(duration);
@@ -1449,10 +1445,10 @@ tnumberseq_tprecision(const TSequence *seq, const Interval *duration,
     tunits;
   /* Number of buckets */
   int count = (int) (((int64) upper_bucket - (int64) lower_bucket) / tunits);
-  TSequence **sequences = palloc(sizeof(TSequence *) * count);
+  TInstant **instants = palloc(sizeof(TInstant *) * (count + 1));
   lower = lower_bucket;
   upper = lower_bucket + tunits;
-  bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
+  interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
   int k = 0;
   /* Loop for each bucket */
   for (int i = 0; i < count; i++)
@@ -1460,20 +1456,18 @@ tnumberseq_tprecision(const TSequence *seq, const Interval *duration,
     Span s;
     span_set(TimestampTzGetDatum(lower), TimestampTzGetDatum(upper),
       true, false, T_TIMESTAMPTZ, &s);
-    span_set(TimestampTzGetDatum(lower),
-      TimestampTzGetDatum(upper), true, false, T_TIMESTAMPTZ, &s);
     TSequence *proj = tsequence_at_period(seq, &s);
     if (proj)
     {
-      Datum value = Float8GetDatum(tnumbercontseq_twavg(proj));
-      sequences[k++] = tsequence_from_base_time(value, seq->temptype, &s,
-        linear ? LINEAR : STEPWISE);
+      Datum value = temporal_tprecision_agg_values((Temporal *) proj);
+      instants[k++] = tinstant_make(value, seq->temptype, lower);
       pfree(proj);
     }
-    lower += tunits;
+    lower = upper;
     upper += tunits;
   }
-  TSequenceSet *result = tsequenceset_make_free(sequences, k, NORMALIZE);
+  TSequence *result = tsequence_make_free(instants, k, true, true, interp,
+    NORMALIZE);
   return result;
 }
 
@@ -1484,7 +1478,7 @@ tnumberseq_tprecision(const TSequence *seq, const Interval *duration,
  * @param[in] torigin Time origin of the buckets
  */
 TSequenceSet *
-tnumberseqset_tprecision(const TSequenceSet *ss, const Interval *duration,
+tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
   TimestampTz torigin)
 {
   ensure_valid_duration(duration);
@@ -1513,7 +1507,7 @@ tnumberseqset_tprecision(const TSequenceSet *ss, const Interval *duration,
     TSequenceSet *proj = tsequenceset_restrict_period(ss, &s, REST_AT);
     if (proj)
     {
-      Datum value = Float8GetDatum(tnumber_twavg((Temporal *) proj));
+      Datum value = temporal_tprecision_agg_values((Temporal *) proj);
       sequences[k++] = tsequence_from_base_time(value, ss->temptype, &s,
         linear ? LINEAR : STEPWISE);
       pfree(proj);
@@ -1532,19 +1526,19 @@ tnumberseqset_tprecision(const TSequenceSet *ss, const Interval *duration,
  * @pymeosfunc tempSubtype()
  */
 Temporal *
-tnumber_tprecision(const Temporal *temp, const Interval *duration,
+temporal_tprecision(const Temporal *temp, const Interval *duration,
   TimestampTz torigin)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
-    result = (Temporal *) tnumberinst_tprecision((TInstant *) temp, duration,
+    result = (Temporal *) tinstant_tprecision((TInstant *) temp, duration,
       torigin);
   else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tnumberseq_tprecision((TSequence *) temp, duration,
+    result = (Temporal *) tsequence_tprecision((TSequence *) temp, duration,
       torigin);
   else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tnumberseqset_tprecision((TSequenceSet *) temp,
+    result = (Temporal *) tsequenceset_tprecision((TSequenceSet *) temp,
       duration, torigin);
   return result;
 }
@@ -2916,78 +2910,6 @@ temporal_bbox_restrict_value(const Temporal *temp, Datum value)
     }
   }
   return true;
-}
-
-/**
- * @brief Return the array of base values that are contained in the bounding
- * box of a temporal value.
- *
- * @param[in] temp Temporal value
- * @param[in] values Array of base values
- * @param[in] count Number of elements in the input array
- * @param[out] newcount Number of elements in the output array
- * @return Filtered array of values.
- */
-Datum *
-temporal_bbox_restrict_values(const Temporal *temp, const Datum *values,
-  int count, int *newcount)
-{
-  Datum *newvalues = palloc(sizeof(Datum) * count);
-  int k = 0;
-  meosType basetype = temptype_basetype(temp->temptype);
-
-  /* Bounding box test */
-  if (tnumber_type(temp->temptype))
-  {
-    TBox box1;
-    temporal_set_bbox(temp, &box1);
-    for (int i = 0; i < count; i++)
-    {
-      TBox box2;
-      number_set_tbox(values[i], basetype, &box2);
-      if (contains_tbox_tbox(&box1, &box2))
-        newvalues[k++] = values[i];
-    }
-  }
-  if (tgeo_type(temp->temptype))
-  {
-    STBox box1;
-    temporal_set_bbox(temp, &box1);
-    for (int i = 0; i < count; i++)
-    {
-      /* Test that the geometry is not empty */
-      GSERIALIZED *gs = DatumGetGserializedP(values[i]);
-      ensure_point_type(gs);
-      ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
-      ensure_same_dimensionality_tpoint_gs(temp, gs);
-      if (! gserialized_is_empty(gs))
-      {
-        STBox box2;
-        geo_set_stbox(gs, &box2);
-        if (contains_stbox_stbox(&box1, &box2))
-          newvalues[k++] = values[i];
-      }
-    }
-  }
-  else
-  {  /* For other types than the ones above */
-    for (int i = 0; i < count; i++)
-      newvalues[i] = values[i];
-    k = count;
-  }
-  if (k == 0)
-  {
-    *newcount = k;
-    pfree(newvalues);
-    return NULL;
-  }
-  if (k > 1)
-  {
-    datumarr_sort(newvalues, k, basetype);
-    k = datumarr_remove_duplicates(newvalues, k, basetype);
-  }
-  *newcount = k;
-  return newvalues;
 }
 
 /**

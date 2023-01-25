@@ -46,7 +46,7 @@
 
 PG_FUNCTION_INFO_V1(Span_extent_transfn);
 /**
- * Transition function for extent aggregation of span values
+ * @brief Transition function for extent aggregation of span values
  */
 PGDLLEXPORT Datum
 Span_extent_transfn(PG_FUNCTION_ARGS)
@@ -61,7 +61,7 @@ Span_extent_transfn(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Spanbase_extent_transfn);
 /**
- * Transition function for extent aggregation of base values of span types
+ * @brief Transition function for extent aggregation of base values of span types
  */
 PGDLLEXPORT Datum
 Spanbase_extent_transfn(PG_FUNCTION_ARGS)
@@ -79,7 +79,7 @@ Spanbase_extent_transfn(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Span_extent_combinefn);
 /**
- * Combine function for temporal extent aggregation
+ * @brief Combine function for temporal extent aggregation
  */
 PGDLLEXPORT Datum
 Span_extent_combinefn(PG_FUNCTION_ARGS)
@@ -101,7 +101,7 @@ Span_extent_combinefn(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Set_extent_transfn);
 /**
- * Transition function for extent aggregation of set values
+ * @brief Transition function for extent aggregation of set values
  */
 PGDLLEXPORT Datum
 Set_extent_transfn(PG_FUNCTION_ARGS)
@@ -117,7 +117,7 @@ Set_extent_transfn(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Spanset_extent_transfn);
 /**
- * Transition function for extent aggregation of span set values
+ * @brief Transition function for extent aggregation of span set values
  */
 PGDLLEXPORT Datum
 Spanset_extent_transfn(PG_FUNCTION_ARGS)

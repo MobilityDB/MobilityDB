@@ -56,8 +56,8 @@
  *****************************************************************************/
 
 /**
- * Structure to represent the bounding box of an inner node containing a set
- * of spans
+ * @brief Structure to represent the bounding box of an inner node containing a
+ * set of spans
  */
 typedef struct
 {
@@ -66,7 +66,7 @@ typedef struct
 } SpanNode;
 
 /**
- * Structure to sort a set of spans of an inner node
+ * @brief Structure to sort a set of spans of an inner node
  */
 typedef struct SortedSpan
 {
@@ -79,7 +79,7 @@ typedef struct SortedSpan
  *****************************************************************************/
 
 /**
- * Comparator to sort spans on their lower bound
+ * @brief Comparator to sort spans on their lower bound
  */
 static int
 span_lower_qsort_cmp(const void *a, const void *b)
@@ -90,7 +90,7 @@ span_lower_qsort_cmp(const void *a, const void *b)
 }
 
 /**
- * Comparator to sort spans on their upper bound
+ * @brief Comparator to sort spans on their upper bound
  */
 static int
 span_upper_qsort_cmp(const void *a, const void *b)
@@ -101,7 +101,7 @@ span_upper_qsort_cmp(const void *a, const void *b)
 }
 
 /**
- * Initialize the traversal value
+ * @brief Initialize the traversal value
  *
  * In the beginning, we don't have any restrictions.  We have to
  * initialize the struct to cover the whole 2D space.
@@ -140,7 +140,7 @@ spannode_init(SpanNode *nodebox, meosType spantype, meosType basetype)
 }
 
 /**
- * Copy a traversal value
+ * @brief Copy a traversal value
  */
 SpanNode *
 spannode_copy(const SpanNode *orig)
@@ -151,8 +151,8 @@ spannode_copy(const SpanNode *orig)
 }
 
 /**
- * Compute the next traversal value for a quadtree given the bounding box
- * and the centroid of the current node and the quadrant number (0 to 3).
+ * @brief Compute the next traversal value for a quadtree given the bounding
+ * box and the centroid of the current node and the quadrant number (0 to 3).
  *
  * For example, given the bounding box of the root node (level 0) and
  * the centroid as follows
@@ -193,8 +193,9 @@ spannode_quadtree_next(const SpanNode *nodebox, const Span *centroid,
 }
 
 /**
- * Compute the next traversal value for a k-d tree given the bounding box and
- * the centroid of the current node, the half number (0 or 1) and the level.
+ * @brief Compute the next traversal value for a k-d tree given the bounding
+ * box and the centroid of the current node, the half number (0 or 1), and the
+ * level.
  *
  * For example, given the bounding box of the root node (level 0) and
  * the centroid as follows
@@ -245,7 +246,7 @@ spannode_kdtree_next(const SpanNode *nodebox, const Span *centroid,
 }
 
 /**
- * Calculate the quadrant
+ * @brief Calculate the quadrant
  *
  * The quadrant is 8 bit unsigned integer with 2 least bits in use.
  * This function accepts Spans as input. The 2 bits are set by comparing
@@ -263,7 +264,7 @@ get_quadrant2D(const Span *centroid, const Span *query)
 }
 
 /**
- * Can any span from nodebox overlap with this argument?
+ * @brief Can any span from nodebox overlap with this argument?
  */
 static bool
 overlap2D(const SpanNode *nodebox, const Span *query)
@@ -275,7 +276,7 @@ overlap2D(const SpanNode *nodebox, const Span *query)
 }
 
 /**
- * Can any span from nodebox contain the query?
+ * @brief Can any span from nodebox contain the query?
  */
 static bool
 contain2D(const SpanNode *nodebox, const Span *query)
@@ -287,7 +288,7 @@ contain2D(const SpanNode *nodebox, const Span *query)
 }
 
 /**
- * Can any span from nodebox be left the query?
+ * @brief Can any span from nodebox be left the query?
  */
 static bool
 left2D(const SpanNode *nodebox, const Span *query)
@@ -296,7 +297,7 @@ left2D(const SpanNode *nodebox, const Span *query)
 }
 
 /**
- * Can any span from nodebox does not extend right the query?
+ * @brief Can any span from nodebox does not extend right the query?
  */
 static bool
 overLeft2D(const SpanNode *nodebox, const Span *query)
@@ -305,7 +306,7 @@ overLeft2D(const SpanNode *nodebox, const Span *query)
 }
 
 /**
- * Can any span from nodebox be right the query?
+ * @brief Can any span from nodebox be right the query?
  */
 static bool
 right2D(const SpanNode *nodebox, const Span *query)
@@ -314,7 +315,7 @@ right2D(const SpanNode *nodebox, const Span *query)
 }
 
 /**
- * Can any span from nodebox does not extend left the query?
+ * @brief Can any span from nodebox does not extend left the query?
  */
 static bool
 overRight2D(const SpanNode *nodebox, const Span *query)
@@ -323,7 +324,7 @@ overRight2D(const SpanNode *nodebox, const Span *query)
 }
 
 /**
- * Can any period from nodebox be before the query?
+ * @brief Can any period from nodebox be before the query?
  */
 static bool
 before2D(const SpanNode *nodebox, const Span *query)
@@ -332,7 +333,7 @@ before2D(const SpanNode *nodebox, const Span *query)
 }
 
 /**
- * Can any period from nodebox does not extend after the query?
+ * @brief Can any period from nodebox does not extend after the query?
  */
 static bool
 overBefore2D(const SpanNode *nodebox, const Span *query)
@@ -341,7 +342,7 @@ overBefore2D(const SpanNode *nodebox, const Span *query)
 }
 
 /**
- * Can any period from nodebox be after the query?
+ * @brief Can any period from nodebox be after the query?
  */
 static bool
 after2D(const SpanNode *nodebox, const Span *query)
@@ -350,7 +351,7 @@ after2D(const SpanNode *nodebox, const Span *query)
 }
 
 /**
- * Can any period from nodebox does not extend before the query?
+ * @brief Can any period from nodebox does not extend before the query?
  */
 static bool
 overAfter2D(const SpanNode *nodebox, const Span *query)
@@ -359,7 +360,7 @@ overAfter2D(const SpanNode *nodebox, const Span *query)
 }
 
 /**
- * Distance between a query span and a box of spans
+ * @brief Distance between a query span and a box of spans
  */
 static double
 distance_span_nodespan(Span *query, SpanNode *nodebox)
@@ -374,7 +375,7 @@ distance_span_nodespan(Span *query, SpanNode *nodebox)
 }
 
 /**
- * Transform a query argument into a span.
+ * @brief Transform a query argument into a span.
  */
 static bool
 span_spgist_get_span(const ScanKeyData *scankey, Span *result)
@@ -415,7 +416,7 @@ span_spgist_get_span(const ScanKeyData *scankey, Span *result)
 
 PG_FUNCTION_INFO_V1(Intspan_spgist_config);
 /**
- * SP-GiST config function for span types
+ * @brief SP-GiST config function for span types
  */
 PGDLLEXPORT Datum
 Intspan_spgist_config(PG_FUNCTION_ARGS)
@@ -431,7 +432,7 @@ Intspan_spgist_config(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Bigintspan_spgist_config);
 /**
- * SP-GiST config function for span types
+ * @brief SP-GiST config function for span types
  */
 PGDLLEXPORT Datum
 Bigintspan_spgist_config(PG_FUNCTION_ARGS)
@@ -447,7 +448,7 @@ Bigintspan_spgist_config(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Floatspan_spgist_config);
 /**
- * SP-GiST config function for span types
+ * @brief SP-GiST config function for span types
  */
 PGDLLEXPORT Datum
 Floatspan_spgist_config(PG_FUNCTION_ARGS)
@@ -463,7 +464,7 @@ Floatspan_spgist_config(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Period_spgist_config);
 /**
- * SP-GiST config function for span types
+ * @brief SP-GiST config function for span types
  */
 PGDLLEXPORT Datum
 Period_spgist_config(PG_FUNCTION_ARGS)
@@ -482,7 +483,7 @@ Period_spgist_config(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Determine which quadrant a 2D-mapped span falls into, relative to the
+ * @brief Determine which quadrant a 2D-mapped span falls into, relative to the
  * centroid.
  *
  * Quadrants are numbered as follows:
@@ -503,7 +504,7 @@ Period_spgist_config(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Span_quadtree_choose);
 /**
- * SP-GiST choose function for span types
+ * @brief SP-GiST choose function for span types
  */
 PGDLLEXPORT Datum
 Span_quadtree_choose(PG_FUNCTION_ARGS)
@@ -541,7 +542,7 @@ Span_quadtree_choose(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Determine which half a 2D-mapped span falls into, relative to the
+ * @brief Determine which half a 2D-mapped span falls into, relative to the
  * centroid and the level number.
  *
  * Halves are numbered 0 and 1, and depending on whether the level number is
@@ -581,7 +582,7 @@ span_level_cmp(Span *centroid, Span *query, int level)
 
 PG_FUNCTION_INFO_V1(Span_kdtree_choose);
 /**
- * K-d tree choose function for span types
+ * @brief K-d tree choose function for span types
  */
 PGDLLEXPORT Datum
 Span_kdtree_choose(PG_FUNCTION_ARGS)
@@ -606,7 +607,7 @@ Span_kdtree_choose(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Span_quadtree_picksplit);
 /**
- * SP-GiST pick-split function for span types
+ * @brief SP-GiST pick-split function for span types
  *
  * It splits a list of span types into quadrants by choosing a central 4D
  * point as the median of the coordinates of the span types.
@@ -670,7 +671,7 @@ Span_quadtree_picksplit(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Span_kdtree_picksplit);
 /**
- * K-d tree pick-split function for span types
+ * @brief K-d tree pick-split function for span types
  */
 PGDLLEXPORT Datum
 Span_kdtree_picksplit(PG_FUNCTION_ARGS)
@@ -722,7 +723,7 @@ Span_kdtree_picksplit(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Generic SP-GiST inner consistent function for span types
+ * @brief Generic SP-GiST inner consistent function for span types
  */
 Datum
 Span_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
@@ -915,7 +916,7 @@ Span_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
 
 PG_FUNCTION_INFO_V1(Span_quadtree_inner_consistent);
 /**
- * Quad-tree inner consistent function for span types
+ * @brief Quad-tree inner consistent function for span types
  */
 PGDLLEXPORT Datum
 Span_quadtree_inner_consistent(PG_FUNCTION_ARGS)
@@ -925,7 +926,7 @@ Span_quadtree_inner_consistent(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Span_kdtree_inner_consistent);
 /**
- * K-d tree inner consistent function for span types
+ * @brief K-d tree inner consistent function for span types
  */
 PGDLLEXPORT Datum
 Span_kdtree_inner_consistent(PG_FUNCTION_ARGS)
@@ -939,7 +940,7 @@ Span_kdtree_inner_consistent(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Span_spgist_leaf_consistent);
 /**
- * SP-GiST leaf-level consistency function for span types
+ * @brief SP-GiST leaf-level consistency function for span types
  */
 PGDLLEXPORT Datum
 Span_spgist_leaf_consistent(PG_FUNCTION_ARGS)
@@ -1002,7 +1003,7 @@ Span_spgist_leaf_consistent(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Set_spgist_compress);
 /**
- * SP-GiST compress function for timestamp sets
+ * @brief SP-GiST compress function for timestamp sets
  */
 PGDLLEXPORT Datum
 Set_spgist_compress(PG_FUNCTION_ARGS)
@@ -1015,7 +1016,7 @@ Set_spgist_compress(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Spanset_spgist_compress);
 /**
- * SP-GiST compress function for period sets
+ * @brief SP-GiST compress function for period sets
  */
 PGDLLEXPORT Datum
 Spanset_spgist_compress(PG_FUNCTION_ARGS)

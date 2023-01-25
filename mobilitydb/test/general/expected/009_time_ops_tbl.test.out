@@ -1,3 +1,21 @@
+SELECT MAX(tprecision(t, '15 minutes')) FROM tbl_timestamptz;
+          max           
+------------------------
+ 2001-12-26 07:00:00+00
+(1 row)
+
+SELECT MAX(lower(tprecision(p, '15 minutes'))) FROM tbl_tstzspan;
+          max           
+------------------------
+ 2001-12-29 20:45:00+00
+(1 row)
+
+SELECT MAX(lower(tprecision(ps, '15 minutes'))) FROM tbl_tstzspanset;
+          max           
+------------------------
+ 2001-12-30 12:00:00+00
+(1 row)
+
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p < t2.p;
  count 
 -------

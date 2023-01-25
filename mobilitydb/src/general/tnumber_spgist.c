@@ -28,8 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief SP-GiST implementation of 4-dimensional quad-tree over temporal
- * integers and temporal floats.
+ * @brief SP-GiST implementation of 4-dimensional quad-tree and kd-tree over
+ * temporal integers and temporal floats.
  *
  * These functions are based on those in the file ``geo_spgist.c`. from
  * PostgreSQL. This module provides SP-GiST implementation for temporal
@@ -117,8 +117,8 @@
  *****************************************************************************/
 
 /**
- * Structure to represent the bounding box of an inner node containing a set
- * of temporal boxes
+ * @brief Structure to represent the bounding box of an inner node containing a
+ * set of temporal boxes
  */
 typedef struct
 {
@@ -127,7 +127,7 @@ typedef struct
 } TboxNode;
 
 /**
- * Structure to sort the temporal boxes of an inner node
+ * @brief Structure to sort the temporal boxes of an inner node
  */
 typedef struct SortedTbox
 {
@@ -140,7 +140,7 @@ typedef struct SortedTbox
  *****************************************************************************/
 
 /**
- * Initialize the traversal value
+ * @brief Initialize the traversal value
  *
  * In the beginning, we don't have any restrictions.  We have to
  * initialize the struct to cover the whole 4D space.
@@ -163,7 +163,7 @@ tboxnode_init(TBox *centroid, TboxNode *nodebox)
 }
 
 /**
- * Copy a traversal value
+ * @brief Copy a traversal value
  */
 TboxNode *
 tboxnode_copy(const TboxNode *box)
@@ -174,7 +174,7 @@ tboxnode_copy(const TboxNode *box)
 }
 
 /**
- * Calculate the quadrant
+ * @brief Calculate the quadrant
  *
  * The quadrant is 8 bit unsigned integer with 4 least bits in use.
  * This function accepts BOXes as input. All 4 bits are set by comparing
@@ -201,7 +201,7 @@ get_quadrant4D(const TBox *centroid, const TBox *inBox)
 }
 
 /**
- * Calculate the next traversal value
+ * @brief Calculate the next traversal value
  *
  * All centroids are bounded by TboxNode, but SP-GiST only keeps
  * boxes.  When we are traversing the tree, we must calculate TboxNode,
@@ -237,8 +237,9 @@ tboxnode_quadtree_next(const TboxNode *nodebox, const TBox *centroid,
 }
 
 /**
- * Compute the next traversal value for a k-d tree given the bounding box and
- * the centroid of the current node, the half number (0 or 1) and the level.
+ * @brief Compute the next traversal value for a k-d tree given the bounding
+ * box and the centroid of the current node, the half number (0 or 1) and the
+ * level.
  */
 static void
 tboxnode_kdtree_next(const TboxNode *nodebox, const TBox *centroid,
@@ -282,7 +283,7 @@ tboxnode_kdtree_next(const TboxNode *nodebox, const TBox *centroid,
 }
 
 /**
- * Can any rectangle from nodebox overlap with this argument?
+ * @brief Can any rectangle from nodebox overlap with this argument?
  */
 static bool
 overlap4D(const TboxNode *nodebox, const TBox *query)
@@ -302,7 +303,7 @@ overlap4D(const TboxNode *nodebox, const TBox *query)
 }
 
 /**
- * Can any rectangle from nodebox contain this argument?
+ * @brief Can any rectangle from nodebox contain this argument?
  */
 static bool
 contain4D(const TboxNode *nodebox, const TBox *query)
@@ -322,7 +323,7 @@ contain4D(const TboxNode *nodebox, const TBox *query)
 }
 
 /**
- * Can any rectangle from nodebox be left of this argument?
+ * @brief Can any rectangle from nodebox be left of this argument?
  */
 static bool
 left4D(const TboxNode *nodebox, const TBox *query)
@@ -331,7 +332,8 @@ left4D(const TboxNode *nodebox, const TBox *query)
 }
 
 /**
- * Can any rectangle from nodebox does not extend the right of this argument?
+ * @brief Can any rectangle from nodebox does not extend the right of this
+ * argument?
  */
 static bool
 overLeft4D(const TboxNode *nodebox, const TBox *query)
@@ -340,7 +342,7 @@ overLeft4D(const TboxNode *nodebox, const TBox *query)
 }
 
 /**
- * Can any rectangle from nodebox be right of this argument?
+ * @brief Can any rectangle from nodebox be right of this argument?
  */
 static bool
 right4D(const TboxNode *nodebox, const TBox *query)
@@ -349,7 +351,8 @@ right4D(const TboxNode *nodebox, const TBox *query)
 }
 
 /**
- * Can any rectangle from nodebox does not extend the left of this argument?
+ * @brief Can any rectangle from nodebox does not extend the left of this
+ * argument?
  */
 static bool
 overRight4D(const TboxNode *nodebox, const TBox *query)
@@ -358,7 +361,7 @@ overRight4D(const TboxNode *nodebox, const TBox *query)
 }
 
 /**
- * Can any rectangle from nodebox be before this argument?
+ * @brief Can any rectangle from nodebox be before this argument?
  */
 static bool
 before4D(const TboxNode *nodebox, const TBox *query)
@@ -367,7 +370,7 @@ before4D(const TboxNode *nodebox, const TBox *query)
 }
 
 /**
- * Can any rectangle from nodebox does not extend after this argument?
+ * @brief Can any rectangle from nodebox does not extend after this argument?
  */
 static bool
 overBefore4D(const TboxNode *nodebox, const TBox *query)
@@ -376,7 +379,7 @@ overBefore4D(const TboxNode *nodebox, const TBox *query)
 }
 
 /**
- * Can any rectangle from nodebox be after this argument?
+ * @brief Can any rectangle from nodebox be after this argument?
  */
 static bool
 after4D(const TboxNode *nodebox, const TBox *query)
@@ -385,7 +388,7 @@ after4D(const TboxNode *nodebox, const TBox *query)
 }
 
 /**
- * Can any rectangle from nodebox does not extend before this argument?
+ * @brief Can any rectangle from nodebox does not extend before this argument?
  */
 static bool
 overAfter4D(const TboxNode *nodebox, const TBox *query)
@@ -394,7 +397,7 @@ overAfter4D(const TboxNode *nodebox, const TBox *query)
 }
 
 /**
- * Lower bound for the distance between query and nodebox.
+ * @brief Lower bound for the distance between query and nodebox.
  * @note The temporal dimension is not taken into the account since it is not
  * possible to mix different units in the computation. As a consequence, the
  * filtering is not very restrictive.
@@ -422,7 +425,7 @@ distance_tbox_nodebox(const TBox *query, const TboxNode *nodebox)
 }
 
 /**
- * Transform a query argument into a TBox.
+ * @brief Transform a query argument into a TBox.
  */
 static bool
 tnumber_spgist_get_tbox(const ScanKeyData *scankey, TBox *result)
@@ -452,7 +455,7 @@ tnumber_spgist_get_tbox(const ScanKeyData *scankey, TBox *result)
 }
 
 /**
- * Comparator of temporal boxes based on their xmin value
+ * @brief Comparator of temporal boxes based on their xmin value
  */
 static int
 tbox_xmin_cmp(const TBox *box1, const TBox *box2)
@@ -466,7 +469,7 @@ tbox_xmin_cmp(const TBox *box1, const TBox *box2)
 }
 
 /**
- * Comparator of temporal boxes based on their xmax value
+ * @brief Comparator of temporal boxes based on their xmax value
  */
 static int
 tbox_xmax_cmp(const TBox *box1, const TBox *box2)
@@ -480,7 +483,7 @@ tbox_xmax_cmp(const TBox *box1, const TBox *box2)
 }
 
 /**
- * Comparator of temporal boxes based on their tmin value
+ * @brief Comparator of temporal boxes based on their tmin value
  */
 static int
 tbox_tmin_cmp(const TBox *box1, const TBox *box2)
@@ -494,7 +497,7 @@ tbox_tmin_cmp(const TBox *box1, const TBox *box2)
 }
 
 /**
- * Comparator of temporal boxes based on their tmax value
+ * @brief Comparator of temporal boxes based on their tmax value
  */
 static int
 tbox_tmax_cmp(const TBox *box1, const TBox *box2)
@@ -527,7 +530,7 @@ tbox_level_cmp(TBox *centroid, TBox *query, int level)
 
 PG_FUNCTION_INFO_V1(Tbox_spgist_config);
 /**
- * SP-GiST config function for temporal numbers
+ * @brief SP-GiST config function for temporal numbers
  */
 PGDLLEXPORT Datum
 Tbox_spgist_config(PG_FUNCTION_ARGS)
@@ -547,7 +550,7 @@ Tbox_spgist_config(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tbox_quadtree_choose);
 /**
- * SP-GiST choose function for temporal numbers
+ * @brief SP-GiST choose function for temporal numbers
  */
 PGDLLEXPORT Datum
 Tbox_quadtree_choose(PG_FUNCTION_ARGS)
@@ -572,8 +575,8 @@ Tbox_quadtree_choose(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Determine which half a 4D-mapped temporal box falls into, relative to the
- * centroid and the level number.
+ * @brief Determine which half a 4D-mapped temporal box falls into, relative to
+ * the centroid and the level number.
  *
  * Halves are numbered 0 and 1, and depending on the value of level number
  * modulo 4 is even or odd, the halves will be as follows:
@@ -605,7 +608,7 @@ Tbox_quadtree_choose(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tbox_kdtree_choose);
 /**
- * K-d tree choose function for time types
+ * @brief K-d tree choose function for time types
  */
 PGDLLEXPORT Datum
 Tbox_kdtree_choose(PG_FUNCTION_ARGS)
@@ -629,7 +632,7 @@ Tbox_kdtree_choose(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Comparator for qsort
+ * @brief Comparator for qsort
  *
  * We don't need to use the floating point macros in here, because this is
  * only going to be used in a place to affect the performance of the index,
@@ -647,7 +650,7 @@ compareDoubles(const void *a, const void *b)
 
 PG_FUNCTION_INFO_V1(Tbox_quadtree_picksplit);
 /**
- * SP-GiST pick-split function for temporal numbers
+ * @brief SP-GiST pick-split function for temporal numbers
  *
  * It splits a list of boxes into quadrants by choosing a central 4D
  * point as the median of the coordinates of the boxes.
@@ -717,7 +720,7 @@ Tbox_quadtree_picksplit(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tbox_kdtree_picksplit);
 /**
- * K-d tree pick-split function for time types
+ * @brief K-d tree pick-split function for time types
  */
 PGDLLEXPORT Datum
 Tbox_kdtree_picksplit(PG_FUNCTION_ARGS)
@@ -779,7 +782,7 @@ Tbox_kdtree_picksplit(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Generic SP-GiST inner consistent function for temporal numbers
+ * @brief Generic SP-GiST inner consistent function for temporal numbers
  */
 static Datum
 tbox_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
@@ -962,7 +965,7 @@ tbox_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
 
 PG_FUNCTION_INFO_V1(Tbox_quadtree_inner_consistent);
 /**
- * Quad-tree inner consistent function for temporal numbers
+ * @brief Quad-tree inner consistent function for temporal numbers
  */
 PGDLLEXPORT Datum
 Tbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
@@ -972,7 +975,7 @@ Tbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tbox_kdtree_inner_consistent);
 /**
- * Kd-tree inner consistent function for temporal numbers
+ * @brief Kd-tree inner consistent function for temporal numbers
  */
 PGDLLEXPORT Datum
 Tbox_kdtree_inner_consistent(PG_FUNCTION_ARGS)
@@ -986,7 +989,7 @@ Tbox_kdtree_inner_consistent(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tbox_spgist_leaf_consistent);
 /**
- * SP-GiST leaf-level consistency function for temporal numbers
+ * @brief SP-GiST leaf-level consistency function for temporal numbers
  */
 PGDLLEXPORT Datum
 Tbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
@@ -1045,7 +1048,7 @@ Tbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tnumber_spgist_compress);
 /**
- * SP-GiST compress function for temporal numbers
+ * @brief SP-GiST compress function for temporal numbers
  */
 PGDLLEXPORT Datum
 Tnumber_spgist_compress(PG_FUNCTION_ARGS)

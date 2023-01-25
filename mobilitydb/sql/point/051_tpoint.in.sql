@@ -594,6 +594,17 @@ CREATE FUNCTION shiftTscale(tgeogpoint, interval, interval)
   AS 'MODULE_PATHNAME', 'Temporal_shift_tscale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION tprecision(tgeompoint, duration interval,
+  origin timestamptz DEFAULT '2000-01-03')
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Temporal_tprecision'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tprecision(tgeogpoint, duration interval,
+  origin timestamptz DEFAULT '2000-01-03')
+  RETURNS tgeogpoint
+  AS 'MODULE_PATHNAME', 'Temporal_tprecision'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************
  * Unnest Function
  *****************************************************************************/

@@ -150,7 +150,8 @@ PG_FUNCTION_INFO_V1(Tpoint_in);
 /**
  * @ingroup mobilitydb_temporal_inout
  * @brief Generic input function for temporal points
- * @note Examples of input for the various temporal types:
+ *
+ * Examples of input for the various temporal types:
  * @code
  * // Instant
  * Point(0 0) @ 2012-01-01 08:00:00

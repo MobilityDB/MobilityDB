@@ -113,7 +113,6 @@ TemporalAnalyzeExtraData *temporal_extra_data;
 
 /**
  * @brief Compute statistics for alphanumeric temporal columns
- *
  * @param[in] stats Structure storing statistics information
  * @param[in] fetchfunc Fetch function
  * @param[in] samplerows Number of sample rows
@@ -308,7 +307,6 @@ temporal_extra_info(VacAttrStats *stats)
 
 /**
  * @brief Generic analyze function for temporal columns
- *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Analyze function for temporal values
  */
@@ -342,8 +340,8 @@ temporal_analyze(FunctionCallInfo fcinfo,
 
 PG_FUNCTION_INFO_V1(Temporal_analyze);
 /**
- * Compute the statistics for temporal columns where only the time dimension
- * is considered
+ * @brief Compute the statistics for temporal columns where only the time
+ * dimension is considered
  */
 PGDLLEXPORT Datum
 Temporal_analyze(PG_FUNCTION_ARGS)

@@ -27,6 +27,19 @@
  *
  *****************************************************************************/
 
+/* PostgreSQL */
+#include "postgres.h"
+#include "access/gin.h"
+#include "access/stratnum.h"
+/* MEOS */
+#include <meos.h>
+#include <meos_internal.h>
+#include "general/set.h"
+#include "general/temporal.h"
+#include "npoint/tnpoint.h"
+/* MobilityDB */
+#include "pg_general/temporal.h"
+
 /*****************************************************************************
  * Operator strategy numbers used in the GIN set and tnpoint opclasses
  *****************************************************************************/
@@ -43,22 +56,9 @@
 
 /*****************************************************************************/
 
-/* PostgreSQL */
-#include "postgres.h"
-#include "access/gin.h"
-#include "access/stratnum.h"
-/* MEOS */
-#include <meos.h>
-#include <meos_internal.h>
-#include "general/set.h"
-#include "general/temporal.h"
-#include "npoint/tnpoint.h"
-/* MobilityDB */
-#include "pg_general/temporal.h"
-
 PG_FUNCTION_INFO_V1(Tnpoint_gin_extract_value);
-/*
- * extractValue support function
+/**
+ * @brief extractValue support function
  */
 Datum
 Tnpoint_gin_extract_value(PG_FUNCTION_ARGS)
@@ -79,8 +79,8 @@ Tnpoint_gin_extract_value(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(Tnpoint_gin_extract_query);
-/*
- * extractQuery support function
+/**
+ * @brief extractQuery support function
  */
 Datum
 Tnpoint_gin_extract_query(PG_FUNCTION_ARGS)
@@ -134,3 +134,5 @@ Tnpoint_gin_extract_query(PG_FUNCTION_ARGS)
 
   PG_RETURN_POINTER(elems);
 }
+
+/*****************************************************************************/

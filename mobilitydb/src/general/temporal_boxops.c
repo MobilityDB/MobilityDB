@@ -31,7 +31,7 @@
  * @brief Bounding box operators for temporal types.
  *
  * The bounding box of temporal values are
- * - a `Period` for temporal Booleans
+ * - a `Span` for temporal Boolean and temporal text values
  * - a `TBox` for temporal integers and floats, where the *x* coordinate is for
  *   the value dimension and the *t* coordinate is for the time dimension.
  * The following operators are defined: `overlaps`, `contains`, `contained`,
@@ -60,8 +60,8 @@
 
 /**
  * @brief Return the size in bytes to read from toast to get the basic
- * information from a temporal: Temporal struct (i.e., TInstant,
- * TSequence, TSequence, or TSequenceSet) and bounding box size
+ * information from a temporal: Temporal struct (i.e., TInstant, TSequence,
+ * or TSequenceSet) and bounding box size
 */
 uint32_t
 temporal_max_header_size(void)
@@ -78,7 +78,6 @@ temporal_max_header_size(void)
 
 /**
  * @brief Generic bounding box operator for a period and a temporal value
- *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Bounding box function
  */
@@ -97,7 +96,6 @@ boxop_period_temporal_ext(FunctionCallInfo fcinfo,
 
 /**
  * @brief Generic bounding box operator for a temporal value and a period
- *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Bounding box function
  */
@@ -116,7 +114,6 @@ boxop_temporal_period_ext(FunctionCallInfo fcinfo,
 
 /**
  * @brief Generic bounding box operator for two temporal values
- *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Bounding box function
  */
@@ -358,7 +355,6 @@ Adjacent_temporal_temporal(PG_FUNCTION_ARGS)
 
 /**
  * @brief Generic bounding box operator for a span and a temporal number
- *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Bounding box function
  */
@@ -377,7 +373,6 @@ boxop_numspan_tnumber_ext(FunctionCallInfo fcinfo,
 
 /**
  * @brief Generic bounding box operator for a temporal number and a span
- *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Bounding box function
  */
@@ -396,7 +391,6 @@ boxop_tnumber_numspan_ext(FunctionCallInfo fcinfo,
 
 /**
  * @brief Generic bounding box operator for a temporal box and a temporal number
- *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Bounding box function
  */
@@ -415,7 +409,6 @@ boxop_tbox_tnumber_ext(FunctionCallInfo fcinfo,
 
 /**
  * @brief Generic bounding box operator for a temporal number and a temporal box
- *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Bounding box function
  */
@@ -434,7 +427,6 @@ boxop_tnumber_tbox_ext(FunctionCallInfo fcinfo,
 
 /**
  * @brief Generic bounding box operator for two temporal numbers
- *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Bounding box function
  */

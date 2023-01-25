@@ -102,8 +102,8 @@ geography_tree_shortestline(const GSERIALIZED* g1, const GSERIALIZED* g2,
 }
 
 /**
- * @brief Returns the point in first input geography that is closest to the
- * second input geography in 2D (internal function)
+ * @brief Return the point in first input geography that is closest to the
+ * second input geography in 2D
  */
 GSERIALIZED *
 geography_shortestline_internal(const GSERIALIZED *g1, const GSERIALIZED *g2,

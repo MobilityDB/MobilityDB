@@ -32,9 +32,9 @@
  * Operators for span set types.
  */
 
-CREATE FUNCTION tprecision(TimestampTz, duration interval,
+CREATE FUNCTION tprecision(timestamptz, duration interval,
     origin timestamptz DEFAULT '2000-01-03')
-  RETURNS tstzspan
+  RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Timestamp_tprecision'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 CREATE FUNCTION tprecision(tstzspan, duration interval,

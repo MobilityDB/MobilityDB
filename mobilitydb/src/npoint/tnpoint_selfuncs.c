@@ -41,7 +41,7 @@
 /*****************************************************************************/
 
 /**
- * Get the enum value associated to the operator
+ * @brief Get the enum value associated to the operator
  */
 bool
 tnpoint_cachedop(Oid operid, CachedOp *cachedOp)
@@ -77,7 +77,8 @@ tnpoint_cachedop(Oid operid, CachedOp *cachedOp)
 
 PG_FUNCTION_INFO_V1(Tnpoint_sel);
 /**
- * Estimate the restriction selectivity of the operators for temporal network points
+ * @brief Estimate the restriction selectivity of the operators for temporal
+ * network points
  */
 PGDLLEXPORT Datum
 Tnpoint_sel(PG_FUNCTION_ARGS)
@@ -91,7 +92,8 @@ Tnpoint_sel(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tnpoint_joinsel);
 /**
- * Estimate the join selectivity of the operators for temporal network points
+ * @brief Estimate the join selectivity of the operators for temporal network
+ * points
  */
 PGDLLEXPORT Datum
 Tnpoint_joinsel(PG_FUNCTION_ARGS)

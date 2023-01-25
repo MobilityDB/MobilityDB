@@ -67,7 +67,7 @@
  *****************************************************************************/
 
 /**
- * Global array for caching the names of the types used in MobilityDB
+ * @brief Global array for caching the names of the types used in MobilityDB
  * to avoid (slow) lookups. The array is initialized at the loading of
  * the extension.
  */
@@ -123,7 +123,7 @@ const char *_type_names[] =
 };
 
 /**
- * Global array for caching the names of the operators used in MobilityDB
+ * @brief Global array for caching the names of the operators used in MobilityDB
  * to avoid (slow) lookups. The array is initialized at the loading of
  * the extension.
  */
@@ -162,18 +162,18 @@ const char *_op_names[] =
 };
 
 /**
- * Global variable that states whether the type and operator Oid caches
+ * @brief Global variable that states whether the type and operator Oid caches
  * has been initialized.
  */
 bool _oid_cache_ready = false;
 
 /**
- * Global array that keeps the Oids of the types used in MobilityDB.
+ * @brief Global array that keeps the Oids of the types used in MobilityDB.
  */
 Oid _type_oids[sizeof(_type_names) / sizeof(char *)];
 
 /**
- * Global 3-dimensional array that keeps the Oids of the operators
+ * @brief Global 3-dimensional array that keeps the Oids of the operators
  * used in MobilityDB. The first dimension corresponds to the operator
  * class (e.g., <=), the second and third dimensions correspond,
  * respectively, to the left and right arguments of the operator.
@@ -197,7 +197,7 @@ internal_type(const char *typname)
 }
 
 /**
- * Populate the Oid cache for types
+ * @brief Populate the Oid cache for types
  */
 static void
 populate_typeoid_cache()
@@ -214,7 +214,7 @@ populate_typeoid_cache()
 }
 
 /**
- * Populate the Oid cache for operators
+ * Populate @brief the Oid cache for operators
  */
 static void
 populate_operoid_cache()
@@ -270,7 +270,7 @@ populate_operoid_cache()
 
 PG_FUNCTION_INFO_V1(fill_opcache);
 /**
- * Function executed during the `CREATE EXTENSION` to precompute the
+ * @brief Function executed during the `CREATE EXTENSION` to precompute the
  * operator cache and store it as a table in the catalog
  */
 PGDLLEXPORT Datum
@@ -317,7 +317,7 @@ fill_opcache(PG_FUNCTION_ARGS __attribute__((unused)))
 }
 
 /**
- * Fetch from the cache the Oid of a type
+ * @brief Fetch from the cache the Oid of a type
  *
  * @arg[in] type Enum value for the type
  */
@@ -330,7 +330,7 @@ type_oid(meosType type)
 }
 
 /**
- * Fetch from the cache the Oid of an operator
+ * @brief Fetch from the cache the Oid of an operator
  *
  * @arg[in] oper Enum value for the operator
  * @arg[in] lt Enum value for the left type
@@ -345,7 +345,7 @@ oper_oid(CachedOp oper, meosType lt, meosType rt)
 }
 
 /**
- * Fetch from the cache the Oid of a type
+ * @brief Fetch from the cache the Oid of a type
  *
  * @arg[in] type Enum value for the type
  */

@@ -66,7 +66,7 @@ const gsl_rng_type *_rng_type;
 gsl_rng *_rng;
 
 /**
- * Initialize the Gnu Scientific Library
+ * @brief Initialize the Gnu Scientific Library
  */
 static void
 initialize_gsl()
@@ -79,7 +79,7 @@ initialize_gsl()
 }
 
 /**
- * Return the angle in degrees between 3 points
+ * @brief Return the angle in degrees between 3 points
  */
 static double
 pt_angle(POINT2D p1, POINT2D p2, POINT2D p3)
@@ -105,7 +105,7 @@ pt_angle(POINT2D p1, POINT2D p2, POINT2D p3)
   } while (0)
 
 /**
- * Create a trip using the BerlinMOD data generator (internal function)
+ * @brief Create a trip using the BerlinMOD data generator
  */
 static TSequence *
 create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categories,
@@ -464,7 +464,7 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
 
 PG_FUNCTION_INFO_V1(create_trip);
 /**
- * Create a trip using the BerlinMOD data generator.
+ * @brief Create a trip using the BerlinMOD data generator.
  *
  * @note This function is equivalent to the PL/pgSQL function
  * CreateTrip in the BerlinMOD generator but is written in C

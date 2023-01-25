@@ -49,7 +49,7 @@
  *****************************************************************************/
 
 /**
- * Helper macro to input the current aggregate state
+ * @brief Helper macro to input the current aggregate state
  */
 #define INPUT_AGG_TRANS_STATE_ARG(fcinfo, state)  \
   do {  \
@@ -67,8 +67,7 @@
   } while (0)
 
 /**
- * Extend the temporal instant value by the time interval
- *
+ * @brief Extend the temporal instant value by the time interval
  * @param[in] inst Temporal value
  * @param[in] interval Interval
  * @param[out] result Array on which the pointers of the newly constructed
@@ -89,8 +88,7 @@ tinstant_extend(const TInstant *inst, const Interval *interval,
 }
 
 /**
- * Extend the temporal discrete sequence value by the time interval
- *
+ * @brief Extend the temporal discrete sequence value by the time interval
  * @param[in] seq Temporal value
  * @param[in] interval Interval
  * @param[out] result Array on which the pointers of the newly constructed
@@ -109,8 +107,7 @@ tdiscseq_extend(const TSequence *seq, const Interval *interval,
 }
 
 /**
- * Extend the temporal sequence value by the time interval
- *
+ * @brief Extend the temporal sequence value by the time interval
  * @param[in] seq Temporal value
  * @param[in] interval Interval
  * @param[in] min True if the calling function is min, max otherwise.
@@ -184,8 +181,7 @@ tcontseq_extend(const TSequence *seq, const Interval *interval, bool min,
 }
 
 /**
- * Extend the temporal sequence set value by the time interval
- *
+ * @brief Extend the temporal sequence set value by the time interval
  * @param[in] ss Temporal value
  * @param[in] interval Interval
  * @param[in] min True if the calling function is min, max otherwise.
@@ -207,8 +203,7 @@ tsequenceset_extend(const TSequenceSet *ss, const Interval *interval, bool min,
 }
 
 /**
- * Extend the temporal value by the time interval
- *
+ * @brief Extend the temporal value by the time interval
  * @param[in] temp Temporal value
  * @param[in] interval Interval
  * @param[in] min True if the calling function is min, max otherwise
@@ -248,8 +243,8 @@ temporal_extend(Temporal *temp, Interval *interval, bool min, int *count)
  *****************************************************************************/
 
 /**
- * Construct a sequence with a value 1 by extending the two bounds by the
- * time interval
+ * @brief Construct a sequence with a value 1 by extending the two bounds by
+ * the time interval
  */
 static TSequence *
 tinstant_transform_wcount1(TimestampTz lower, TimestampTz upper,
@@ -266,8 +261,7 @@ tinstant_transform_wcount1(TimestampTz lower, TimestampTz upper,
 }
 
 /**
- * Transform the temporal number instant value by the time interval
- *
+ * @brief Transform the temporal number instant value by the time interval
  * @param[in] inst Temporal value
  * @param[in] interval Interval
  * @param[out] result Array on which the pointers of the newly constructed
@@ -283,8 +277,8 @@ tinstant_transform_wcount(const TInstant *inst, const Interval *interval,
 }
 
 /**
- * Transform the temporal number discrete sequence value by the time interval
- *
+ * @brief Transform the temporal number discrete sequence value by the time
+ * interval
  * @param[in] seq Temporal value
  * @param[in] interval Interval
  * @param[out] result Array on which the pointers of the newly constructed
@@ -303,8 +297,7 @@ tdiscseq_transform_wcount(const TSequence *seq, const Interval *interval,
 }
 
 /**
- * Transform the temporal number sequence value by the time interval
- *
+ * @brief Transform the temporal number sequence value by the time interval
  * @param[in] seq Temporal value
  * @param[in] interval Interval
  * @param[out] result Array on which the pointers of the newly constructed
@@ -333,8 +326,7 @@ tcontseq_transform_wcount(const TSequence *seq, const Interval *interval,
 }
 
 /**
- * Transform the temporal number sequence set value by the time interval
- *
+ * @brief Transform the temporal number sequence set value by the time interval
  * @param[in] ss Temporal value
  * @param[in] interval Interval
  * @param[out] result Array on which the pointers of the newly constructed
@@ -354,8 +346,7 @@ tsequenceset_transform_wcount(const TSequenceSet *ss, const Interval *interval,
 }
 
 /**
- * Transform the temporal number by the time interval
- *
+ * @brief Transform the temporal number by the time interval
  * @param[in] temp Temporal value
  * @param[in] interval Interval
  * @param[out] count Number of elements in the output array
@@ -392,9 +383,8 @@ temporal_transform_wcount(const Temporal *temp, const Interval *interval,
 /*****************************************************************************/
 
 /**
- * Transform the temporal number into a temporal double and extend it
+ * @brief Transform the temporal number into a temporal double and extend it
  * by the time interval
- *
  * @param[in] inst Temporal value
  * @param[in] interval Interval
  * @param[out] result Array on which the pointers of the newly constructed
@@ -424,9 +414,8 @@ tnumberinst_transform_wavg(const TInstant *inst, const Interval *interval,
 }
 
 /**
- * Transform the temporal number into a temporal double and extend it
+ * @brief Transform the temporal number into a temporal double and extend it
  * by the time interval
- *
  * @param[in] seq Temporal value
  * @param[in] interval Interval
  * @param[out] result Array on which the pointers of the newly constructed
@@ -515,9 +504,8 @@ tintseqset_transform_wavg(const TSequenceSet *ss, const Interval *interval,
 }
 
 /**
- * Transform the temporal integer sequence set value into a temporal double
- * and extend it by a time interval
- *
+ * @brief Transform the temporal integer sequence set value into a temporal
+ * double and extend it by a time interval
  * @param[in] temp Temporal value
  * @param[in] interval Interval
  * @param[out] count Number of elements in the output array
@@ -557,8 +545,8 @@ tnumber_transform_wavg(const Temporal *temp, const Interval *interval,
  *****************************************************************************/
 
 /**
- * Generic moving window transition function for min, max, and sum aggregation
- *
+ * @brief Generic moving window transition function for min, max, and sum
+ * aggregation
  * @param[in,out] state Skiplist containing the state
  * @param[in] temp Temporal value
  * @param[in] interval Interval
@@ -585,8 +573,8 @@ temporal_wagg_transfn1(SkipList *state, Temporal *temp, Interval *interval,
 }
 
 /**
- * Generic moving window transition function for min, max, and sum aggregation
- *
+ * @brief Generic moving window transition function for min, max, and sum
+ * aggregation
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
  * @param[in] min True if the calling function is min, max otherwise
@@ -614,7 +602,7 @@ temporal_wagg_transfn(FunctionCallInfo fcinfo, datum_func2 func, bool min,
 }
 
 /**
- * Transition function for moving window count and average aggregation
+ * @brief Transition function for moving window count and average aggregation
  * for temporal values
  */
 Datum
@@ -641,7 +629,8 @@ temporal_wagg_transform_transfn(FunctionCallInfo fcinfo, datum_func2 func,
 
 PG_FUNCTION_INFO_V1(Tint_wmin_transfn);
 /**
- * Transition function for moving window minimun aggregation for temporal integer values
+ * @brief Transition function for moving window minimun aggregation for
+ * temporal integer values
  */
 PGDLLEXPORT Datum
 Tint_wmin_transfn(PG_FUNCTION_ARGS)
@@ -651,7 +640,7 @@ Tint_wmin_transfn(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tfloat_wmin_transfn);
 /**
- * Transition function for moving window minimun
+ * @brief Transition function for moving window minimun
  */
 PGDLLEXPORT Datum
 Tfloat_wmin_transfn(PG_FUNCTION_ARGS)
@@ -661,7 +650,8 @@ Tfloat_wmin_transfn(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tint_wmax_transfn);
 /**
- * Transition function for moving window maximun aggregation for temporal integer values
+ * @brief Transition function for moving window maximun aggregation for
+ * temporal integer values
  */
 PGDLLEXPORT Datum
 Tint_wmax_transfn(PG_FUNCTION_ARGS)
@@ -671,7 +661,8 @@ Tint_wmax_transfn(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tfloat_wmax_transfn);
 /**
- * Transition function for moving window maximun aggregation for temporal float values
+ * @brief Transition function for moving window maximun aggregation for
+ * temporal float values
  */
 PGDLLEXPORT Datum
 Tfloat_wmax_transfn(PG_FUNCTION_ARGS)
@@ -681,7 +672,8 @@ Tfloat_wmax_transfn(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tint_wsum_transfn);
 /**
- * Transition function for moving window sum aggregation for temporal inter values
+ * @brief Transition function for moving window sum aggregation for temporal
+ * integer values
  */
 PGDLLEXPORT Datum
 Tint_wsum_transfn(PG_FUNCTION_ARGS)
@@ -691,7 +683,8 @@ Tint_wsum_transfn(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tfloat_wsum_transfn);
 /**
- * Transition function for moving window sum aggregation for temporal float values
+ * @brief Transition function for moving window sum aggregation for temporal
+ * float values
  */
 PGDLLEXPORT Datum
 Tfloat_wsum_transfn(PG_FUNCTION_ARGS)
@@ -701,7 +694,8 @@ Tfloat_wsum_transfn(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Temporal_wcount_transfn);
 /**
- * Transition function for moving window count aggregation for temporal values
+ * @brief Transition function for moving window count aggregation for temporal
+ * values
  */
 PGDLLEXPORT Datum
 Temporal_wcount_transfn(PG_FUNCTION_ARGS)
@@ -712,7 +706,8 @@ Temporal_wcount_transfn(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tnumber_wavg_transfn);
 /**
- * Transition function for moving window average aggregation for temporal values
+ * @brief Transition function for moving window average aggregation for
+ * temporal values
  */
 PGDLLEXPORT Datum
 Tnumber_wavg_transfn(PG_FUNCTION_ARGS)

@@ -94,8 +94,8 @@
  *****************************************************************************/
 
 /**
- * Return the temporal disjoint/intersection relationship between a geometry
- * and a temporal point
+ * @brief Return the temporal disjoint/intersection relationship between a
+ * geometry and a temporal point
  */
 static Datum
 tinterrel_geo_tpoint_ext(FunctionCallInfo fcinfo, bool tinter)
@@ -119,8 +119,8 @@ tinterrel_geo_tpoint_ext(FunctionCallInfo fcinfo, bool tinter)
 }
 
 /**
- * Return the temporal disjoint/intersection relationship between a geometry
- * and a temporal point
+ * @brief Return the temporal disjoint/intersection relationship between a
+ * geometry and a temporal point
  */
 static Datum
 tinterrel_tpoint_geo_ext(FunctionCallInfo fcinfo, bool tinter)

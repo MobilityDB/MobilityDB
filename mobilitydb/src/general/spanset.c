@@ -193,8 +193,8 @@ Set_to_spanset(PG_FUNCTION_ARGS)
 }
 
 /**
- * Peak into a span set datum to find the bounding box. If the datum needs
- * to be detoasted, extract only the header and not the full object.
+ * @brief Peak into a span set datum to find the bounding box. If the datum
+ * needs to be detoasted, extract only the header and not the full object.
  */
 void
 spanset_span_slice(Datum d, Span *s)

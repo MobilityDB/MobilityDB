@@ -143,7 +143,7 @@ Stbox_as_text(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Construct a spatiotemporal box from the arguments
+ * @brief Construct a spatiotemporal box from the arguments
  */
 static Datum
 stbox_constructor_ext(FunctionCallInfo fcinfo, bool hasx, bool hasz,
@@ -385,8 +385,8 @@ Period_to_stbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * Peak into a period set datum to find the bounding box. If the datum needs
- * to be detoasted, extract only the header and not the full object.
+ * @brief Peak into a period set datum to find the bounding box. If the datum
+ * needs to be detoasted, extract only the header and not the full object.
  */
 void
 periodset_stbox_slice(Datum psdatum, STBox *box)

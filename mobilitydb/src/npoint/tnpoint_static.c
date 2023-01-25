@@ -70,7 +70,6 @@ npoint_recv(StringInfo buf)
 
 /**
  * @brief Return the binary representation of a network point
- *
  * @param[in] np Network point
  */
 bytea *
@@ -182,6 +181,7 @@ PG_FUNCTION_INFO_V1(Npoint_in);
 /**
  * @ingroup mobilitydb_temporal_inout
  * @brief Input function for network points
+ *
  * Example of input:
  *    (1, 0.5)
  * @sqlfunc npoint_in()
@@ -578,7 +578,6 @@ PG_FUNCTION_INFO_V1(Npoint_cmp);
  * @ingroup mobilitydb_temporal_comp
  * @brief Return -1, 0, or 1 depending on whether the first network point
  * is less than, equal, or greater than the second one
- *
  * @note Function used for B-tree comparison
  * @sqlfunc npoint_cmp()
  */

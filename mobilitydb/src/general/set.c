@@ -441,8 +441,8 @@ Tstzset_shift_tscale(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Create the initial state that persists across multiple calls of the function
- *
+ * @brief Create the initial state that persists across multiple calls of the
+ * function
  * @param[in] set Set value
  * @param[in] values Array of values appearing in the temporal value
  * @param[in] count Number of elements in the input array
@@ -461,7 +461,7 @@ set_unnest_state_make(const Set *set, Datum *values, int count)
 }
 
 /**
- * Increment the current state to the next unnest value
+ * @brief Increment the current state to the next unnest value
  *
  * @param[in] state State to increment
  */
@@ -479,7 +479,7 @@ set_unnest_state_next(SetUnnestState *state)
 
 PG_FUNCTION_INFO_V1(Set_unnest);
 /**
- * Generate a list of values from a set.
+ * @brief Generate a list of values from a set.
  */
 PGDLLEXPORT Datum
 Set_unnest(PG_FUNCTION_ARGS)
