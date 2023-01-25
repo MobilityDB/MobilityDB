@@ -1661,10 +1661,7 @@ temporal_values(const Temporal *temp, int *count)
   if (temp->subtype == TINSTANT)
     result = tinstant_values((TInstant *) temp, count);
   else if (temp->subtype == TSEQUENCE)
-  {
-    ensure_discrete_interpolation(temp->flags);
     result = tsequence_values((TSequence *) temp, count);
-  }
   else /* temp->subtype == TSEQUENCESET */
     result = tsequenceset_values((TSequenceSet *) temp, count);
   return result;
@@ -1771,10 +1768,7 @@ tfloat_spanset(const Temporal *temp)
   if (temp->subtype == TINSTANT)
     result = tfloatinst_spanset((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
-  {
-    ensure_continuous_interpolation(temp->flags);
     result = tfloatseq_spanset((TSequence *) temp);
-  }
   else /* temp->subtype == TSEQUENCESET */
     result = tfloatseqset_spanset((TSequenceSet *) temp);
   return result;
