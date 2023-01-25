@@ -1405,13 +1405,35 @@ temporal_tscale(const Temporal *temp, const Interval *duration)
  *****************************************************************************/
 
 /**
+ * @brief Aggregate the values that are merged due to a temporal granularity
+ * change
+ * @param[in] temp Temporal value
+ */
+static Datum
+temporal_tprecision_agg_values(const Temporal *temp)
+{
+  /* tspatial_type covers both tgeo_type and temp->temptype == T_TNPOINT */
+  assert(tnumber_type(temp->temptype) || tspatial_type(temp->temptype));
+  Datum result;
+  if (tnumber_type(temp->temptype))
+    result = Float8GetDatum(tnumber_twavg(temp));
+  else if (tgeo_type(temp->temptype))
+    result = PointerGetDatum(tpoint_twcentroid(temp));
+#if NPOINT
+  else if (temp->temptype == T_TNPOINT)
+    result = PointerGetDatum(tpoint_twcentroid(temp));
+#endif
+  return result;
+}
+
+/**
  * @brief Set the precision of a temporal value according to time buckets.
  * @param[in] inst Temporal value
  * @param[in] duration Size of the time buckets
  * @param[in] torigin Time origin of the buckets
  */
 TInstant *
-tnumberinst_tprecision(const TInstant *inst, const Interval *duration,
+tinstant_tprecision(const TInstant *inst, const Interval *duration,
   TimestampTz torigin)
 {
   ensure_valid_duration(duration);
@@ -1428,7 +1450,7 @@ tnumberinst_tprecision(const TInstant *inst, const Interval *duration,
  * @param[in] torigin Time origin of the buckets
  */
 TSequence *
-tnumberseq_tprecision(const TSequence *seq, const Interval *duration,
+tsequence_tprecision(const TSequence *seq, const Interval *duration,
   TimestampTz torigin)
 {
   ensure_valid_duration(duration);
@@ -1455,7 +1477,7 @@ tnumberseq_tprecision(const TSequence *seq, const Interval *duration,
     TSequence *proj = tsequence_at_period(seq, &s);
     if (proj)
     {
-      Datum value = Float8GetDatum(tnumbercontseq_twavg(proj));
+      Datum value = temporal_tprecision_agg_values((Temporal *) proj);
       instants[k++] = tinstant_make(value, seq->temptype, lower);
       pfree(proj);
     }
@@ -1474,7 +1496,7 @@ tnumberseq_tprecision(const TSequence *seq, const Interval *duration,
  * @param[in] torigin Time origin of the buckets
  */
 TSequenceSet *
-tnumberseqset_tprecision(const TSequenceSet *ss, const Interval *duration,
+tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
   TimestampTz torigin)
 {
   ensure_valid_duration(duration);
@@ -1503,7 +1525,7 @@ tnumberseqset_tprecision(const TSequenceSet *ss, const Interval *duration,
     TSequenceSet *proj = tsequenceset_restrict_period(ss, &s, REST_AT);
     if (proj)
     {
-      Datum value = Float8GetDatum(tnumber_twavg((Temporal *) proj));
+      Datum value = temporal_tprecision_agg_values((Temporal *) proj);
       sequences[k++] = tsequence_from_base_time(value, ss->temptype, &s,
         linear ? LINEAR : STEPWISE);
       pfree(proj);
@@ -1522,19 +1544,19 @@ tnumberseqset_tprecision(const TSequenceSet *ss, const Interval *duration,
  * @pymeosfunc tempSubtype()
  */
 Temporal *
-tnumber_tprecision(const Temporal *temp, const Interval *duration,
+temporal_tprecision(const Temporal *temp, const Interval *duration,
   TimestampTz torigin)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
-    result = (Temporal *) tnumberinst_tprecision((TInstant *) temp, duration,
+    result = (Temporal *) tinstant_tprecision((TInstant *) temp, duration,
       torigin);
   else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tnumberseq_tprecision((TSequence *) temp, duration,
+    result = (Temporal *) tsequence_tprecision((TSequence *) temp, duration,
       torigin);
   else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tnumberseqset_tprecision((TSequenceSet *) temp,
+    result = (Temporal *) tsequenceset_tprecision((TSequenceSet *) temp,
       duration, torigin);
   return result;
 }

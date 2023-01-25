@@ -1253,6 +1253,30 @@ SELECT COUNT(shiftTscale(temp, i, i)) FROM tbl_tgeogpoint3D, tbl_interval;
   9900
 (1 row)
 
+SELECT MAX(startTimestamp(tprecision(inst, '15 minutes'))) FROM tbl_tgeompoint_inst;
+          max           
+------------------------
+ 2001-12-11 14:30:00+00
+(1 row)
+
+SELECT MAX(startTimestamp(tprecision(ti, '15 minutes'))) FROM tbl_tgeompoint_discseq;
+          max           
+------------------------
+ 2001-12-23 15:15:00+00
+(1 row)
+
+SELECT MAX(startTimestamp(tprecision(seq, '15 minutes'))) FROM tbl_tgeompoint_seq;
+          max           
+------------------------
+ 2001-12-25 04:15:00+00
+(1 row)
+
+SELECT MAX(startTimestamp(tprecision(ss, '15 minutes'))) FROM tbl_tgeompoint_seqset;
+          max           
+------------------------
+ 2001-12-30 04:30:00+00
+(1 row)
+
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp ?= startValue(temp);
  count 
 -------
