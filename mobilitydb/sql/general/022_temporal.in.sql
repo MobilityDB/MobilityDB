@@ -1546,11 +1546,13 @@ CREATE FUNCTION shiftTscale(ttext, interval, interval)
   AS 'MODULE_PATHNAME', 'Temporal_shift_tscale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tprecision(tint, interval, timestamptz)
+CREATE FUNCTION tprecision(tint, duration interval,
+  origin timestamptz DEFAULT '2000-01-03')
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Tnumber_tprecision'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tprecision(tfloat, interval, timestamptz)
+CREATE FUNCTION tprecision(tfloat, duration interval,
+  origin timestamptz DEFAULT '2000-01-03')
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tnumber_tprecision'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

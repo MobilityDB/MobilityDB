@@ -29,8 +29,17 @@
 
 -------------------------------------------------------------------------------
 -- File time_ops.c
--- Selectivity tests of time operators
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- Granularity modification with tprecision
+
+SELECT MAX(tprecision(t, '15 minutes')) FROM tbl_timestamptz;
+SELECT MAX(lower(tprecision(p, '15 minutes'))) FROM tbl_tstzspan;
+SELECT MAX(lower(tprecision(ps, '15 minutes'))) FROM tbl_tstzspanset;
+
+-------------------------------------------------------------------------------
+-- Selectivity tests of time operators
 
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p < t2.p;
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p <= t2.p;

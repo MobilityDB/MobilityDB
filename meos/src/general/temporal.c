@@ -1410,22 +1410,14 @@ temporal_tscale(const Temporal *temp, const Interval *duration)
  * @param[in] duration Size of the time buckets
  * @param[in] torigin Time origin of the buckets
  */
-TSequence *
+TInstant *
 tnumberinst_tprecision(const TInstant *inst, const Interval *duration,
   TimestampTz torigin)
 {
   ensure_valid_duration(duration);
-  int64 tunits = interval_units(duration);
   TimestampTz lower = timestamptz_bucket(inst->t, duration, torigin);
-  /* The upper bound must be gridded to the next bucket */
-  TimestampTz upper = lower + tunits;
-  Span s;
-  span_set(TimestampTzGetDatum(lower), TimestampTzGetDatum(upper), true, false,
-    T_TIMESTAMPTZ, &s);
   Datum value = tinstant_value(inst);
-  bool linear = MOBDB_FLAGS_GET_LINEAR(inst->flags);
-  TSequence *result = tsequence_from_base_time(value, inst->temptype, &s,
-    linear ? LINEAR : STEPWISE);
+  TInstant *result = tinstant_make(value, inst->temptype, lower);
   return result;
 }
 
@@ -1435,7 +1427,7 @@ tnumberinst_tprecision(const TInstant *inst, const Interval *duration,
  * @param[in] duration Size of the time buckets
  * @param[in] torigin Time origin of the buckets
  */
-TSequenceSet *
+TSequence *
 tnumberseq_tprecision(const TSequence *seq, const Interval *duration,
   TimestampTz torigin)
 {
@@ -1449,10 +1441,10 @@ tnumberseq_tprecision(const TSequence *seq, const Interval *duration,
     tunits;
   /* Number of buckets */
   int count = (int) (((int64) upper_bucket - (int64) lower_bucket) / tunits);
-  TSequence **sequences = palloc(sizeof(TSequence *) * count);
+  TInstant **instants = palloc(sizeof(TInstant *) * (count + 1));
   lower = lower_bucket;
   upper = lower_bucket + tunits;
-  bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
+  interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
   int k = 0;
   /* Loop for each bucket */
   for (int i = 0; i < count; i++)
@@ -1460,20 +1452,18 @@ tnumberseq_tprecision(const TSequence *seq, const Interval *duration,
     Span s;
     span_set(TimestampTzGetDatum(lower), TimestampTzGetDatum(upper),
       true, false, T_TIMESTAMPTZ, &s);
-    span_set(TimestampTzGetDatum(lower),
-      TimestampTzGetDatum(upper), true, false, T_TIMESTAMPTZ, &s);
     TSequence *proj = tsequence_at_period(seq, &s);
     if (proj)
     {
       Datum value = Float8GetDatum(tnumbercontseq_twavg(proj));
-      sequences[k++] = tsequence_from_base_time(value, seq->temptype, &s,
-        linear ? LINEAR : STEPWISE);
+      instants[k++] = tinstant_make(value, seq->temptype, lower);
       pfree(proj);
     }
-    lower += tunits;
+    lower = upper;
     upper += tunits;
   }
-  TSequenceSet *result = tsequenceset_make_free(sequences, k, NORMALIZE);
+  TSequence *result = tsequence_make_free(instants, k, true, true, interp,
+    NORMALIZE);
   return result;
 }
 

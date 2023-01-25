@@ -57,8 +57,8 @@ Timestamp_tprecision(PG_FUNCTION_ARGS)
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
   TimestampTz origin = PG_GETARG_TIMESTAMPTZ(2);
-  Span *result = timestamp_tprecision(t, duration, origin);
-  PG_RETURN_POINTER(result);
+  TimestampTz result = timestamp_tprecision(t, duration, origin);
+  PG_RETURN_TIMESTAMPTZ(result);
 }
 
 PG_FUNCTION_INFO_V1(Period_tprecision);
