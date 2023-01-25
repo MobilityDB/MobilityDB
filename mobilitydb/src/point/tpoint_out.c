@@ -103,8 +103,8 @@ Tpoint_as_ewkt(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /**
- * Output a geometry/geography or temporal geometry/geography point array in
- * Well-Known Text (WKT) format
+ * @brief Output a geometry/geography or temporal geometry/geography point
+ * array in Well-Known Text (WKT) format
  */
 static Datum
 geoarr_as_text_ext(FunctionCallInfo fcinfo, bool temparr, bool extended)

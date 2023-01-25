@@ -113,7 +113,6 @@ spatialrel_tnpoint_npoint_ext(FunctionCallInfo fcinfo,
 /**
  * @brief Return true if the temporal network points ever satisfy the spatial
  * relationship
- *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Spatial relationship
  */

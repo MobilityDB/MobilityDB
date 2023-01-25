@@ -58,7 +58,7 @@
  *****************************************************************************/
 
 /**
- * Call receive function of the base type
+ * @brief Call receive function of the base type
  */
 Datum
 call_recv(meosType type, StringInfo buf)
@@ -82,7 +82,7 @@ call_recv(meosType type, StringInfo buf)
 }
 
 /**
- * Call send function of the base type
+ * @brief Call send function of the base type
  */
 bytea *
 call_send(meosType type, Datum value)
@@ -106,7 +106,7 @@ call_send(meosType type, Datum value)
 }
 
 /**
- * Call PostgreSQL function with 1 argument
+ * @brief Call PostgreSQL function with 1 argument
  */
 Datum
 call_function1(PGFunction func, Datum arg1)
@@ -126,7 +126,7 @@ call_function1(PGFunction func, Datum arg1)
 }
 
 /**
- * Call PostgreSQL function with 2 arguments
+ * @brief Call PostgreSQL function with 2 arguments
  */
 Datum
 call_function2(PGFunction func, Datum arg1, Datum arg2)
@@ -150,7 +150,7 @@ call_function2(PGFunction func, Datum arg1, Datum arg2)
 
 #if 0 /* not used */
 /**
- * Call PostgreSQL function with 3 arguments
+ * @brief Call PostgreSQL function with 3 arguments
  */
 Datum
 call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3)
@@ -179,8 +179,8 @@ call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3)
  *****************************************************************************/
 
 /**
- * Extract a C array from a PostgreSQL array containing datums
- * If array elements are pass-by-ref data type, the returned Datums will
+ * @brief Extract a C array from a PostgreSQL array containing datums.
+ * @note If array elements are pass-by-ref data type, the returned Datums will
  * be pointers into the array object.
  */
 Datum *
@@ -197,7 +197,7 @@ datumarr_extract(ArrayType *array, int *count)
 }
 
 /**
- * Extract a C array from a PostgreSQL array containing spans
+ * @brief Extract a C array from a PostgreSQL array containing spans
  */
 Span **
 spanarr_extract(ArrayType *array, int *count)
@@ -206,7 +206,7 @@ spanarr_extract(ArrayType *array, int *count)
 }
 
 /**
- * Extract a C array from a PostgreSQL array containing temporal values
+ * @brief Extract a C array from a PostgreSQL array containing temporal values
  */
 Temporal **
 temporalarr_extract(ArrayType *array, int *count)
@@ -220,8 +220,8 @@ temporalarr_extract(ArrayType *array, int *count)
 /*****************************************************************************/
 
 /**
- * Convert a C array of datums into a PostgreSQL array.
- * Note that the values will be copied into the object even if pass-by-ref type
+ * @brief Convert a C array of datums into a PostgreSQL array.
+ * @note The values will be copied into the object even if pass-by-ref type
  */
 ArrayType *
 datumarr_to_array(Datum *values, int count, meosType type)
@@ -238,7 +238,7 @@ datumarr_to_array(Datum *values, int count, meosType type)
 }
 
 /**
- * Convert a C array of timestamps into a PostgreSQL array
+ * @brief Convert a C array of timestamps into a PostgreSQL array
  */
 ArrayType *
 int64arr_to_array(const int64 *longints, int count)
@@ -253,7 +253,7 @@ int64arr_to_array(const int64 *longints, int count)
 }
 
 /**
- * Convert a C array of timestamps into a PostgreSQL array
+ * @brief Convert a C array of timestamps into a PostgreSQL array
  */
 ArrayType *
 timestamparr_to_array(const TimestampTz *times, int count)
@@ -265,7 +265,7 @@ timestamparr_to_array(const TimestampTz *times, int count)
 }
 
 /**
- * Convert a C array of spans into a PostgreSQL array
+ * @brief Convert a C array of spans into a PostgreSQL array
  */
 ArrayType *
 spanarr_to_array(Span **spans, int count)
@@ -277,7 +277,7 @@ spanarr_to_array(Span **spans, int count)
 }
 
 /**
- * Convert a C array of text values into a PostgreSQL array
+ * @brief Convert a C array of text values into a PostgreSQL array
  */
 ArrayType *
 strarr_to_textarray(char **strarr, int count)
@@ -293,7 +293,7 @@ strarr_to_textarray(char **strarr, int count)
 }
 
 /**
- * Convert a C array of temporal values into a PostgreSQL array
+ * @brief Convert a C array of temporal values into a PostgreSQL array
  */
 ArrayType *
 temporalarr_to_array(const Temporal **temporalarr, int count)
@@ -306,7 +306,7 @@ temporalarr_to_array(const Temporal **temporalarr, int count)
 }
 
 /**
- * Convert a C array of spatiotemporal boxes into a PostgreSQL array
+ * @brief Convert a C array of spatiotemporal boxes into a PostgreSQL array
  */
 ArrayType *
 stboxarr_to_array(STBox *boxarr, int count)
@@ -326,7 +326,7 @@ stboxarr_to_array(STBox *boxarr, int count)
  *****************************************************************************/
 
 /**
- * Construct a range value from given arguments
+ * @brief Construct a range value from given arguments
  */
 RangeType *
 range_make(Datum from, Datum to, bool lower_inc, bool upper_inc,
@@ -355,7 +355,7 @@ range_make(Datum from, Datum to, bool lower_inc, bool upper_inc,
 
 #if POSTGRESQL_VERSION_NUMBER >= 140000
 /**
- * Construct a range value from given arguments
+ * @brief Construct a range value from given arguments
  */
 MultirangeType *
 multirange_make(const SpanSet *ss)

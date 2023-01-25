@@ -103,14 +103,14 @@ time_max_header_size(void)
  *****************************************************************************/
 
 /**
- * Global variable that saves the PostgreSQL fcinfo. In PostgreSQL this is
- * needed when doing aggregation and we need to change the context, in PostGIS
- * when functions such as transform, geography_distance, or geography_azimuth
- * need to access the proj cache */
+ * @brief Global variable that saves the PostgreSQL fcinfo. In PostgreSQL this
+ * is needed when doing aggregation and we need to change the context, in
+ * PostGIS when functions such as transform, geography_distance, or
+ * geography_azimuth need to access the proj cache */
 FunctionCallInfo _FCINFO;
 
 /**
- * Fetch from the cache the fcinfo of the external function
+ * @brief Fetch from the cache the fcinfo of the external function
  */
 FunctionCallInfo
 fetch_fcinfo()
@@ -120,7 +120,7 @@ fetch_fcinfo()
 }
 
 /**
- * Store in the cache the fcinfo of the external function
+ * @brief Store in the cache the fcinfo of the external function
  */
 void
 store_fcinfo(FunctionCallInfo fcinfo)
@@ -135,7 +135,6 @@ store_fcinfo(FunctionCallInfo fcinfo)
 
 /**
  * @brief Ensure that the array is not empty
- *
  * @note Used for the constructor functions
  */
 void
@@ -389,6 +388,94 @@ Mobilitydb_full_version(PG_FUNCTION_ARGS __attribute__((unused)))
   text *result = cstring_to_text(version);
   pfree(version);
   PG_RETURN_TEXT_P(result);
+}
+
+/*****************************************************************************
+ * Send and receive functions
+ * The send and receive functions are needed for temporal aggregation
+ *****************************************************************************/
+
+/**
+ * @brief Return a temporal instant from its binary representation read from
+ * a buffer.
+ * @param[in] buf Buffer
+ * @param[in] temptype Temporal type
+ */
+TInstant *
+tinstant_recv(StringInfo buf, meosType temptype)
+{
+  TimestampTz t = call_recv(T_TIMESTAMPTZ, buf);
+  int size = pq_getmsgint(buf, 4);
+  StringInfoData buf2 =
+  {
+    .cursor = 0,
+    .len = size,
+    .maxlen = size,
+    .data = buf->data + buf->cursor
+  };
+  meosType basetype = temptype_basetype(temptype);
+  Datum value = call_recv(basetype, &buf2);
+  buf->cursor += size;
+  return tinstant_make(value, temptype, t);
+}
+
+/**
+ * @brief Write the binary representation of a temporal instant into
+ * a buffer.
+ * @param[in] inst Temporal instant
+ * @param[in] buf Buffer
+ */
+void
+tinstant_write(const TInstant *inst, StringInfo buf)
+{
+  meosType basetype = temptype_basetype(inst->temptype);
+  bytea *bt = call_send(T_TIMESTAMPTZ, TimestampTzGetDatum(inst->t));
+  bytea *bv = call_send(basetype, tinstant_value(inst));
+  pq_sendbytes(buf, VARDATA(bt), VARSIZE(bt) - VARHDRSZ);
+  pq_sendint32(buf, VARSIZE(bv) - VARHDRSZ);
+  pq_sendbytes(buf, VARDATA(bv), VARSIZE(bv) - VARHDRSZ);
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Return a temporal sequence from its binary representation read from
+ * a buffer.
+ * @param[in] buf Buffer
+ * @param[in] temptype Temporal type
+ */
+TSequence *
+tsequence_recv(StringInfo buf, meosType temptype)
+{
+  int count = (int) pq_getmsgint(buf, 4);
+  bool lower_inc = (char) pq_getmsgbyte(buf);
+  bool upper_inc = (char) pq_getmsgbyte(buf);
+  interpType interp = (char) pq_getmsgbyte(buf);
+  TInstant **instants = palloc(sizeof(TInstant *) * count);
+  for (int i = 0; i < count; i++)
+    instants[i] = tinstant_recv(buf, temptype);
+  return tsequence_make_free(instants, count, lower_inc, upper_inc, interp,
+    NORMALIZE);
+}
+
+/**
+ * @brief Write the binary representation of a temporal sequence into a buffer.
+ * @param[in] seq Temporal sequence
+ * @param[in] buf Buffer
+ */
+void
+tsequence_write(const TSequence *seq, StringInfo buf)
+{
+  pq_sendint32(buf, seq->count);
+  pq_sendbyte(buf, seq->period.lower_inc ? (uint8) 1 : (uint8) 0);
+  pq_sendbyte(buf, seq->period.upper_inc ? (uint8) 1 : (uint8) 0);
+  pq_sendbyte(buf, (uint8) MOBDB_FLAGS_GET_INTERP(seq->flags));
+  for (int i = 0; i < seq->count; i++)
+  {
+    const TInstant *inst = tsequence_inst_n(seq, i);
+    tinstant_write(inst, buf);
+  }
+  return;
 }
 
 /*****************************************************************************
@@ -789,7 +876,6 @@ PG_FUNCTION_INFO_V1(Temporal_to_period);
 /**
  * @ingroup mobilitydb_temporal_cast
  * @brief Return the bounding period on which a temporal value is defined
- *
  * @note We cannot detoast only the header since we don't know whether the
  * lower and upper bounds of the period are inclusive or not
  * @sqlfunc period()
@@ -1373,8 +1459,8 @@ Temporal_timestamps(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Create the initial state that persists across multiple calls of the function
- *
+ * @brief Create the initial state that persists across multiple calls of the
+ * function
  * @param[in] temp Temporal value
  * @param[in] values Array of values appearing in the temporal value
  * @param[in] count Number of elements in the input array
@@ -1393,8 +1479,7 @@ temporal_unnest_state_make(const Temporal *temp, Datum *values, int count)
 }
 
 /**
- * Increment the current state to the next unnest value
- *
+ * @brief Increment the current state to the next unnest value
  * @param[in] state State to increment
  */
 void
@@ -1411,7 +1496,7 @@ temporal_unnest_state_next(TempUnnestState *state)
 
 PG_FUNCTION_INFO_V1(Temporal_unnest);
 /**
- * Generate a list of values and associated period sets.
+ * @brief Generate a list of values and associated period sets.
  */
 PGDLLEXPORT Datum
 Temporal_unnest(PG_FUNCTION_ARGS)
@@ -1485,7 +1570,6 @@ Temporal_unnest(PG_FUNCTION_ARGS)
 
 /**
  * @brief Generic function for the temporal ever/always comparison operators
-
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Specific function for the ever/always comparison
  */

@@ -58,7 +58,6 @@
 
 /**
  * @brief Generic arithmetic operator on a number an a temporal number
- *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Arithmetic function
  * @param[in] oper Enumeration that states the arithmetic operator
@@ -78,7 +77,6 @@ arithop_number_tnumber_ext(FunctionCallInfo fcinfo, TArithmetic oper,
 
 /**
  * @brief Generic arithmetic operator on a temporal number an a number
- *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Arithmetic function
  * @param[in] oper Enumeration that states the arithmetic operator
@@ -98,7 +96,6 @@ arithop_tnumber_number_ext(FunctionCallInfo fcinfo, TArithmetic oper,
 
 /**
  * @brief Generic arithmetic operator on a temporal numbers
- *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] oper Enumeration that states the arithmetic operator
  * @param[in] func Arithmetic function

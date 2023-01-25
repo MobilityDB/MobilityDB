@@ -27,17 +27,9 @@
  *
  *****************************************************************************/
 
-/*****************************************************************************
- * Operator strategy numbers used in the GIN set and tnpoint opclasses
- *****************************************************************************/
-
-#define GinOverlapStrategySetSet             10    /* for && */
-#define GinContainsStrategySetValue          20    /* for @> */
-#define GinContainsStrategySetSet            21    /* for @> */
-#define GinContainedStrategySetSet           30    /* for <@ */
-#define GinEqualStrategySetSet               40    /* for =  */
-
-/*****************************************************************************/
+/**
+ * @brief GIN index functions for set types.
+ */
 
 /* PostgreSQL */
 #include "postgres.h"
@@ -50,9 +42,22 @@
 /* MobilityDB */
 #include "pg_general/temporal.h"
 
+
+/*****************************************************************************
+ * Operator strategy numbers used in the GIN set and tnpoint opclasses
+ *****************************************************************************/
+
+#define GinOverlapStrategySetSet             10    /* for && */
+#define GinContainsStrategySetValue          20    /* for @> */
+#define GinContainsStrategySetSet            21    /* for @> */
+#define GinContainedStrategySetSet           30    /* for <@ */
+#define GinEqualStrategySetSet               40    /* for =  */
+
+/*****************************************************************************/
+
 PG_FUNCTION_INFO_V1(Set_gin_extract_value);
-/*
- * extractValue support function
+/**
+ * @brief extractValue support function
  */
 Datum
 Set_gin_extract_value(PG_FUNCTION_ARGS)
@@ -68,8 +73,8 @@ Set_gin_extract_value(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(Set_gin_extract_query);
-/*
- * extractQuery support function
+/**
+ * @brief extractQuery support function
  */
 Datum
 Set_gin_extract_query(PG_FUNCTION_ARGS)
@@ -107,8 +112,8 @@ Set_gin_extract_query(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(Set_gin_triconsistent);
-/*
- * triconsistent support function
+/**
+ * @brief triconsistent support function
  */
 Datum
 Set_gin_triconsistent(PG_FUNCTION_ARGS)

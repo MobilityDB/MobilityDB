@@ -29,8 +29,7 @@
 
 /**
  * @brief Aggregate functions for temporal network points.
- *
- * The only function currently provided is temporal centroid.
+ * @note The only function currently provided is temporal centroid.
  */
 
 /* C */
@@ -53,8 +52,8 @@
 
 PG_FUNCTION_INFO_V1(Tnpoint_tcentroid_transfn);
 /**
- * Transition function for temporal centroid aggregation of temporal network
- * points
+ * @brief Transition function for temporal centroid aggregation of temporal
+ * network points
  */
 PGDLLEXPORT Datum
 Tnpoint_tcentroid_transfn(PG_FUNCTION_ARGS)

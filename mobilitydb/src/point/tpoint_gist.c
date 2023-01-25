@@ -57,7 +57,7 @@
  *****************************************************************************/
 
 /**
- * Leaf-level consistency for temporal points.
+ * @brief Leaf-level consistency for temporal points.
  *
  * Since spatiotemporal boxes do not distinguish between inclusive and
  * exclusive bounds it is necessary to generalize the tests, e.g.,
@@ -151,7 +151,7 @@ stbox_index_consistent_leaf(const STBox *key, const STBox *query,
 }
 
 /**
- * Internal-page consistent method for temporal points.
+ * @brief Internal-page consistent method for temporal points.
  *
  * Return false if for all data items x below entry, the predicate
  * x op query must be false, where op is the oper corresponding to strategy
@@ -238,8 +238,7 @@ stbox_gist_consistent(const STBox *key, const STBox *query,
 }
 
 /**
- * Determine whether a recheck is necessary depending on the strategy
- *
+ * @brief Determine whether a recheck is necessary depending on the strategy
  * @param[in] strategy Operator of the operator class being applied
  */
 bool
@@ -269,8 +268,8 @@ tpoint_index_recheck(StrategyNumber strategy)
 }
 
 /**
- * Transform the query argument into a box initializing the dimensions that
- * must not be taken into account by the operators to infinity.
+ * @brief Transform the query argument into a box initializing the dimensions
+ * that must not be taken into account by the operators to infinity.
  */
 static bool
 tpoint_gist_get_stbox(FunctionCallInfo fcinfo, STBox *result, meosType type)
@@ -301,7 +300,7 @@ tpoint_gist_get_stbox(FunctionCallInfo fcinfo, STBox *result, meosType type)
 
 PG_FUNCTION_INFO_V1(Stbox_gist_consistent);
 /**
- * GiST consistent method for temporal points
+ * @brief GiST consistent method for temporal points
  */
 PGDLLEXPORT Datum
 Stbox_gist_consistent(PG_FUNCTION_ARGS)
@@ -335,7 +334,7 @@ Stbox_gist_consistent(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Increase the first box to include the second one
+ * @brief Increase the first box to include the second one
  */
 void
 stbox_adjust(void *bbox1, void *bbox2)
@@ -359,7 +358,7 @@ stbox_adjust(void *bbox1, void *bbox2)
 
 PG_FUNCTION_INFO_V1(Stbox_gist_union);
 /**
- * GiST union method for temporal points
+ * @brief GiST union method for temporal points
  *
  * Return the minimal bounding box that encloses all the entries in entryvec
  */
@@ -380,7 +379,7 @@ Stbox_gist_union(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tpoint_gist_compress);
 /**
- * GiST compress methods for temporal points
+ * @brief GiST compress methods for temporal points
  */
 PGDLLEXPORT Datum
 Tpoint_gist_compress(PG_FUNCTION_ARGS)
@@ -403,8 +402,7 @@ Tpoint_gist_compress(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Calculates the union of two tboxes.
- *
+ * @brief Calculate the union of two tboxes.
  * @param[in] a,b Input boxes
  * @param[out] new Resulting box
  */
@@ -476,7 +474,7 @@ stbox_size(const STBox *box)
 }
 
 /**
- * Return the amount by which the union of the two boxes is larger than
+ * @brief Return the amount by which the union of the two boxes is larger than
  * the original STBox's volume.  The result can be +Infinity, but not NaN.
  */
 double
@@ -491,7 +489,7 @@ stbox_penalty(void *bbox1, void *bbox2)
 
 PG_FUNCTION_INFO_V1(Stbox_gist_penalty);
 /**
- * GiST penalty method for temporal points.
+ * @brief GiST penalty method for temporal points.
  * As in the R-tree paper, we use change in area as our penalty metric
  */
 PGDLLEXPORT Datum
@@ -512,7 +510,7 @@ Stbox_gist_penalty(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Stbox_gist_picksplit);
 /**
- * GiST picksplit method for temporal points.
+ * @brief GiST picksplit method for temporal points.
  *
  * The algorithm finds split of boxes by considering splits along each axis.
  * Each entry is first projected as an interval on the X-axis, and different
@@ -546,7 +544,7 @@ Stbox_gist_picksplit(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Stbox_gist_same);
 /**
- * GiST same method for temporal points.
+ * @brief GiST same method for temporal points.
  *
  * Return true only when boxes are exactly the same.  We can't use fuzzy
  * comparisons here without breaking index consistency; therefore, this isn't
@@ -576,8 +574,8 @@ Stbox_gist_same(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Stbox_gist_distance);
 /**
- * GiST support function. Take in a query and an entry and return the "distance"
- * between them.
+ * @brief GiST support function. Take in a query and an entry and return the
+ * "distance" between them.
 */
 PGDLLEXPORT Datum
 Stbox_gist_distance(PG_FUNCTION_ARGS)

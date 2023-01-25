@@ -42,7 +42,7 @@
 
 PG_FUNCTION_INFO_V1(Tnpoint_analyze);
 /**
- * Compute the statistics for temporal network point columns
+ * @brief Compute the statistics for temporal network point columns
  */
 PGDLLEXPORT Datum
 Tnpoint_analyze(PG_FUNCTION_ARGS)

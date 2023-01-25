@@ -68,7 +68,7 @@ double eqbes = 0;
 double MDC = 2.0;    /* standard in Hagen, zone=2 */
 
 /**
- *
+ * @brief Transform to Gauss-Krueger projection
  */
 static POINT2D
 BesselBLToGaussKrueger(double b, double ll)
@@ -101,7 +101,7 @@ BesselBLToGaussKrueger(double b, double ll)
 }
 
 /**
- *
+ * @brief Perform Helmert Transformation
  */
 static POINT3D
 HelmertTransformation(double x, double y, double z)
@@ -151,7 +151,7 @@ BLRauenberg (double x, double y, double z)
 }
 
 /**
- * Get Datum from 2D point
+ * @brief Get Datum from 2D point
  */
 static Datum
 point2d_get_datum(const POINT2D *p2d)
@@ -162,7 +162,7 @@ point2d_get_datum(const POINT2D *p2d)
 }
 
 /**
- * Transform a point into the Gauss-Kruger projection used in Secondo
+ * @brief Transform a point into the Gauss-Kruger projection used in Secondo
  */
 static Datum
 gk(Datum point)
@@ -199,7 +199,7 @@ gk(Datum point)
 }
 
 /**
- * Transform a geometry into the Gauss-Kruger projection used in Secondo
+ * @brief Transform a geometry into the Gauss-Kruger projection used in Secondo
  */
 GSERIALIZED *
 geometry_transform_gk(const GSERIALIZED *gs)
@@ -260,7 +260,8 @@ geometry_transform_gk(const GSERIALIZED *gs)
 }
 
 /**
- * Transform a temporal point into the Gauss-Krueger projection used in Secondo
+ * @brief Transform a temporal point into the Gauss-Krueger projection used in
+ * Secondo
  */
 Temporal *
 tgeompoint_transform_gk(const Temporal *temp)
@@ -279,7 +280,7 @@ tgeompoint_transform_gk(const Temporal *temp)
 
 PG_FUNCTION_INFO_V1(Geometry_transform_gk);
 /**
- * Transform a geometry into the Gauss-Krueger projection used in Secondo
+ * @brief Transform a geometry into the Gauss-Krueger projection used in Secondo
  */
 PGDLLEXPORT Datum
 Geometry_transform_gk(PG_FUNCTION_ARGS)
@@ -292,7 +293,8 @@ Geometry_transform_gk(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tgeompoint_transform_gk);
 /**
- * Transform a temporal point into the Gauss-Krueger projection used in Secondo
+ * @brief Transform a temporal point into the Gauss-Krueger projection used in
+ * Secondo
  */
 PGDLLEXPORT Datum
 Tgeompoint_transform_gk(PG_FUNCTION_ARGS)

@@ -85,7 +85,7 @@
 */
 
 /**
- * Assign a number to the n-dimensional statistics kind
+ * @brief Assign a number to the n-dimensional statistics kind
  */
 #define STATISTIC_KIND_ND 102
 #define STATISTIC_KIND_2D 103
@@ -93,7 +93,7 @@
 #define STATISTIC_SLOT_2D 1
 
 /**
- * The SD factor restricts the side of the statistics histogram
+ * @brief The SD factor restricts the side of the statistics histogram
  * based on the standard deviation of the extent of the data.
  * SDFACTOR is the number of standard deviations from the mean
  * the histogram will extend.
@@ -101,7 +101,7 @@
 #define SDFACTOR 3.25
 
 /**
- * Minimum width of a dimension that we'll bother trying to
+ * @brief Minimum width of a dimension that we'll bother trying to
  * compute statistics on. Bearing in mind we have no control
  * over units, but noting that for geographics, 10E-5 is in the
  * range of meters, we go lower than that.
@@ -109,7 +109,7 @@
 #define MIN_DIMENSION_WIDTH 0.000000001
 
 /**
- * Maximum width of a dimension that we'll bother trying to
+ * @brief Maximum width of a dimension that we'll bother trying to
  * compute statistics on.
  */
 #define MAX_DIMENSION_WIDTH 1.0E+20
@@ -118,7 +118,7 @@
 #define NUM_BINS 50
 
 /**
- * Integer comparison function for qsort
+ * @brief Integer comparison function for qsort
  */
 static int
 cmp_int(const void *a, const void *b)
@@ -143,9 +143,8 @@ nd_box_init(ND_BOX *a)
 }
 
 /**
- * Prepare an ND_BOX for bounds calculation:
- * set the maxes to the smallest thing possible and
- * the mins to the largest.
+ * @brief Prepare an ND_BOX for bounds calculation: set the maximum values to
+ * the smallest thing possible and the mininum values to the largest.
  */
 static int
 nd_box_init_bounds(ND_BOX *a)
@@ -160,7 +159,7 @@ nd_box_init_bounds(ND_BOX *a)
 }
 
 /**
- * Return the sum of values of the double array
+ * @brief Return the sum of values of the double array
  */
 static double
 total_double(const double *vals, int nvals)
@@ -188,7 +187,7 @@ nd_box_merge(const ND_BOX *source, ND_BOX *target)
 }
 
 /**
- * What stats cells overlap with this ND_BOX? Put the lowest cell
+ * @brief What stats cells overlap with this ND_BOX? Put the lowest cell
  * addresses in ND_IBOX->min and the highest in ND_IBOX->max
  */
 int
@@ -222,7 +221,7 @@ nd_box_overlap(const ND_STATS *nd_stats, const ND_BOX *nd_box, ND_IBOX *nd_ibox)
 }
 
 /**
- * Return true if #ND_BOX a overlaps b, false otherwise.
+ * @brief Return true if #ND_BOX a overlaps b, false otherwise.
  */
 int
 nd_box_intersects(const ND_BOX *a, const ND_BOX *b, int ndims)
@@ -237,7 +236,7 @@ nd_box_intersects(const ND_BOX *a, const ND_BOX *b, int ndims)
 }
 
 /**
- * Return the proportion of b2 that is covered by b1
+ * @brief Return the proportion of b2 that is covered by b1
  */
 double
 nd_box_ratio_overlaps(const ND_BOX *b1, const ND_BOX *b2, int ndims)
@@ -313,7 +312,7 @@ nd_box_from_gbox(const GBOX *gbox, ND_BOX *nd_box)
 }
 
 /**
- * The difference between the fourth and first quintile values,
+ * @brief The difference between the fourth and first quintile values,
  * the "inter-quintile range"
  */
 static int
@@ -324,7 +323,7 @@ range_quintile(int *vals, int nvals)
 }
 
 /**
- * Given an n-d index array (counter), and a domain to increment it
+ * @brief Given an n-d index array (counter), and a domain to increment it
  * in (ibox) increment it by one, unless it's already at the max of
  * the domain, in which case return false.
  */
@@ -351,8 +350,8 @@ nd_increment(ND_IBOX *ibox, int ndims, int *counter)
 }
 
 /**
- * Expand an #ND_BOX ever so slightly. Expand parameter is the proportion
- * of total width to add.
+ * @brief Expand an #ND_BOX ever so slightly. Expand parameter is the
+ * proportion of total width to add.
  */
 static int
 nd_box_expand(ND_BOX *nd_box, double expansion_factor)
@@ -368,7 +367,7 @@ nd_box_expand(ND_BOX *nd_box, double expansion_factor)
 }
 
 /**
- * Given a position in the n-d histogram (i,j,k) return the
+ * @brief Given a position in the n-d histogram (i,j,k) return the
  * position in the 1-d values array.
  */
 int
@@ -393,7 +392,7 @@ nd_stats_value_index(const ND_STATS *stats, const int *indexes)
 }
 
 /**
- * Calculate how much a set of boxes is homogenously distributed
+ * @brief Calculate how much a set of boxes is homogenously distributed
  * or contentrated within one dimension, returning the range_quintile of
  * of the overlap counts per cell in a uniform
  * partition of the extent of the dimension.
@@ -478,10 +477,9 @@ nd_box_array_distribution(const ND_BOX **nd_boxes, int num_boxes, const ND_BOX *
 }
 
 /**
- * Given that geodetic boxes are X/Y/Z regardless of the
- * underlying geometry dimensionality and other boxes
- * are guided by HAS_Z/HAS_M in their dimesionality,
- * we have a little utility function to make it easy.
+ * @brief Given that geodetic boxes are X/Y/Z regardless of the underlying
+ * geometry dimensionality and other boxes are guided by HAS_Z/HAS_M in their
+ * dimesionality, we have a little utility function to make it easy.
  */
 static int
 gbox_ndims(const GBOX* gbox)
@@ -497,7 +495,7 @@ gbox_ndims(const GBOX* gbox)
 }
 
 /**
- * The gserialized_analyze_nd sets this function as a
+ * @brief The gserialized_analyze_nd sets this function as a
  * callback on the stats object when called by the ANALYZE
  * command. ANALYZE then gathers the requisite number of
  * sample rows and then calls this function.
@@ -963,7 +961,7 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
  *****************************************************************************/
 
 /**
- * Compute the statistics for spatial set columns (callback function)
+ * @brief Compute the statistics for spatial set columns (callback function)
  */
 void
 spatialset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
@@ -1040,7 +1038,7 @@ spatialset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
  *****************************************************************************/
 
 /**
- * Compute the statistics for temporal point columns (callback function)
+ * @brief Compute the statistics for temporal point columns (callback function)
  */
 void
 tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
@@ -1140,7 +1138,7 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
 PG_FUNCTION_INFO_V1(Spatialset_analyze);
 /**
- * Compute the statistics for spatial set columns
+ * @brief Compute the statistics for spatial set columns
  */
 PGDLLEXPORT Datum
 Spatialset_analyze(PG_FUNCTION_ARGS)
@@ -1166,7 +1164,7 @@ Spatialset_analyze(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tpoint_analyze);
 /**
- * Compute the statistics for temporal point columns
+ * @brief Compute the statistics for temporal point columns
  */
 PGDLLEXPORT Datum
 Tpoint_analyze(PG_FUNCTION_ARGS)

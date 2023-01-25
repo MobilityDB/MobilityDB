@@ -89,7 +89,6 @@ Tpoint_stboxes(PG_FUNCTION_ARGS)
 
 /**
  * @brief Generic bounding box function for a spatiotemporal box and a temporal point
- *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Bounding box function
  */
@@ -108,7 +107,6 @@ boxop_stbox_tpoint_ext(FunctionCallInfo fcinfo,
 
 /**
  * @brief Generic bounding box function for a temporal point and a spatiotemporal box
- *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Bounding box function
  */
@@ -127,7 +125,6 @@ boxop_tpoint_stbox_ext(FunctionCallInfo fcinfo,
 
 /**
  * @brief Generic topological function for two temporal points
- *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Bounding box function
  */

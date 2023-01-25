@@ -79,7 +79,7 @@
  *****************************************************************************/
 
 /**
- * Transform the constant into a period
+ * @brief Transform the constant into a period
  */
 static bool
 temporal_const_to_period(Node *other, Span *period)
@@ -96,7 +96,7 @@ temporal_const_to_period(Node *other, Span *period)
 }
 
 /**
- * Return the enum value associated to the operator
+ * @brief Return the enum value associated to the operator
  */
 static bool
 temporal_cachedop(Oid operid, CachedOp *cachedOp)
@@ -129,7 +129,7 @@ temporal_cachedop(Oid operid, CachedOp *cachedOp)
 }
 
 /**
- * Return a default selectivity estimate for the operator when we don't
+ * @brief Return a default selectivity estimate for the operator when we don't
  * have statistics or cannot use them for some reason.
  */
 static double
@@ -166,8 +166,8 @@ temporal_sel_default(CachedOp oper)
 }
 
 /**
- * Return a default join selectivity estimate for given operator, when we
- * don't have statistics or cannot use them for some reason.
+ * @brief Return a default join selectivity estimate for given operator, when
+ * we don't have statistics or cannot use them for some reason.
  */
 float8
 temporal_joinsel_default(Oid operid __attribute__((unused)))
@@ -178,12 +178,13 @@ temporal_joinsel_default(Oid operid __attribute__((unused)))
 
 
 /**
- * Return an estimate of the selectivity of the search period and the
- * operator for columns of temporal values. For the traditional comparison
- * operators (<, <=, ...), we follow the approach for range types in
- * PostgreSQL, this function computes the selectivity for <, <=, >, and >=,
- * while the selectivity functions for = and <> are eqsel and neqsel,
- * respectively.
+ * @brief Return an estimate of the selectivity of the search period and the
+ * operator for columns of temporal values.
+ *
+ * For the traditional comparison operators (<, <=, ...), we follow the
+ * approach for range types in PostgreSQL, this function computes the
+ * selectivity for <, <=, >, and >=, while the selectivity functions for = and
+ * <> are eqsel and neqsel, respectively.
  */
 Selectivity
 temporal_sel_period(VariableStatData *vardata, Span *period,
@@ -231,7 +232,7 @@ temporal_sel_period(VariableStatData *vardata, Span *period,
 /*****************************************************************************/
 
 /**
- * Get enumeration value associated to the operator according to the family
+ * @brief Get enumeration value associated to the operator according to the family
  */
 static bool
 temporal_cachedop_family(Oid operid, CachedOp *cachedOp,
@@ -246,8 +247,8 @@ temporal_cachedop_family(Oid operid, CachedOp *cachedOp,
 }
 
 /**
- * Estimate the selectivity value of the operators for temporal types whose
- * bounding box is a period, that is, tbool and ttext (internal function)
+ * @brief Estimate the selectivity value of the operators for temporal types
+ * whose bounding box is a period, that is, tbool and ttext
  */
 float8
 temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
@@ -376,8 +377,8 @@ temporal_sel_ext(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
 
 PG_FUNCTION_INFO_V1(Temporal_sel);
 /**
- * Estimate the selectivity value of the operators for temporal types whose
- * bounding box is a period, that is, tbool and ttext.
+ * @brief Estimate the selectivity value of the operators for temporal types
+ * whose bounding box is a period, that is, tbool and ttext.
  */
 PGDLLEXPORT Datum
 Temporal_sel(PG_FUNCTION_ARGS)
@@ -390,7 +391,9 @@ Temporal_sel(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Return an estimate of the join selectivity for columns of temporal values.
+ * @brief Return an estimate of the join selectivity for columns of temporal
+ * values.
+ *
  * For the traditional comparison operators (<, <=, ...), we follow the
  * approach for range types in PostgreSQL, this function  computes the
  * selectivity for <, <=, >, and >=, while the selectivity functions for
@@ -466,7 +469,7 @@ temporal_joinsel(PlannerInfo *root, Oid operid, List *args,
 }
 
 /*
- * Estimate the join selectivity value of the operators for temporal
+ * @brief Estimate the join selectivity value of the operators for temporal
  * alphanumeric types and temporal number types.
  */
 float8

@@ -58,7 +58,7 @@
  *****************************************************************************/
 
 /**
- * Leaf-level consistency for temporal numbers.
+ * @brief Leaf-level consistency for temporal numbers.
  *
  * Since temporal boxes do not distinguish between inclusive and
  * exclusive bounds, it is necessary to generalize the tests, e.g.,
@@ -129,7 +129,7 @@ tbox_index_consistent_leaf(const TBox *key, const TBox *query,
 }
 
 /**
- * GiST internal-page consistent method for temporal numbers.
+ * @brief GiST internal-page consistent method for temporal numbers.
  *
  * Return false if for all data items x below entry, the predicate
  * x op query must be false, where op is the oper corresponding to
@@ -192,8 +192,8 @@ tnumber_gist_consistent(const TBox *key, const TBox *query,
 }
 
 /**
- * Transform the query argument into a box initializing the dimensions that
- * must not be taken into account by the operators to infinity.
+ * @brief Transform the query argument into a box initializing the dimensions
+ * that must not be taken into account by the operators to infinity.
  */
 static bool
 tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBox *result, Oid typid)
@@ -232,7 +232,7 @@ tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBox *result, Oid typid)
 
 PG_FUNCTION_INFO_V1(Tnumber_gist_consistent);
 /**
- * GiST consistent method for temporal numbers
+ * @brief GiST consistent method for temporal numbers
  */
 PGDLLEXPORT Datum
 Tnumber_gist_consistent(PG_FUNCTION_ARGS)
@@ -270,8 +270,7 @@ Tnumber_gist_consistent(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Expand the first box to include the second one
- *
+ * @brief Expand the first box to include the second one
  * @param[in,out] bbox1 Resulting box
  * @param[in] bbox2 Add-on box
  * @note This function is similar to tbox_expand in file tbox.c but uses
@@ -299,7 +298,7 @@ tbox_adjust(void *bbox1, void *bbox2)
 
 PG_FUNCTION_INFO_V1(Tbox_gist_union);
 /**
- * GiST union method for temporal numbers.
+ * @brief GiST union method for temporal numbers.
  *
  * Return the minimal bounding box that encloses all the entries in entryvec
  */
@@ -320,7 +319,7 @@ Tbox_gist_union(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tnumber_gist_compress);
 /**
- * GiST compress method for temporal numbers
+ * @brief GiST compress method for temporal numbers
  */
 PGDLLEXPORT Datum
 Tnumber_gist_compress(PG_FUNCTION_ARGS)
@@ -343,8 +342,7 @@ Tnumber_gist_compress(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Calculates the union of two tboxes.
- *
+ * @brief Calculates the union of two tboxes.
  * @param[in] a,b Input boxes
  * @param[out] new Resulting box
  * @note This function uses NaN-aware comparisons
@@ -369,7 +367,7 @@ tbox_union_rt(const TBox *a, const TBox *b, TBox *new)
 }
 
 /**
- * Return the size of a temporal box for penalty-calculation purposes.
+ * @brief Return the size of a temporal box for penalty-calculation purposes.
  * The result can be +Infinity, but not NaN.
  */
 static double
@@ -399,7 +397,7 @@ tbox_size(const TBox *box)
 }
 
 /**
- * Return the amount by which the union of the two boxes is larger than
+ * @brief Return the amount by which the union of the two boxes is larger than
  * the original TBox's area.  The result can be +Infinity, but not NaN.
  */
 double
@@ -414,7 +412,7 @@ tbox_penalty(void *bbox1, void *bbox2)
 
 PG_FUNCTION_INFO_V1(Tbox_gist_penalty);
 /**
- * GiST penalty method for temporal boxes.
+ * @brief GiST penalty method for temporal boxes.
  * As in the R-tree paper, we use change in area as our penalty metric
  */
 PGDLLEXPORT Datum
@@ -434,7 +432,7 @@ Tbox_gist_penalty(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Interval comparison function by lower bound of the interval;
+ * @brief Interval comparison function by lower bound of the interval.
  */
 int
 interval_cmp_lower(const void *i1, const void *i2)
@@ -446,7 +444,7 @@ interval_cmp_lower(const void *i1, const void *i2)
 }
 
 /**
- * Interval comparison function by upper bound of the interval;
+ * @brief Interval comparison function by upper bound of the interval.
  */
 int
 interval_cmp_upper(const void *i1, const void *i2)
@@ -458,7 +456,7 @@ interval_cmp_upper(const void *i1, const void *i2)
 }
 
 /**
- * Replace negative (or NaN) value with zero.
+ * @brief Replace negative (or NaN) value with zero.
  */
 inline float
 non_negative(float val)
@@ -470,7 +468,7 @@ non_negative(float val)
 }
 
 /**
- * Consider replacement of currently selected split with the better one.
+ * @brief Consider replacement of currently selected split with the better one.
  */
 inline void
 bbox_gist_consider_split(ConsiderSplitContext *context, int dimNum,
@@ -614,8 +612,8 @@ bbox_gist_consider_split(ConsiderSplitContext *context, int dimNum,
   } while(0)
 
 /**
- * Trivial split: half of entries will be placed on one page and the other
- * half on another page
+ * @brief Trivial split: half of entries will be placed on one page and the
+ * other half on another page
  */
 void
 bbox_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v,
@@ -652,7 +650,7 @@ bbox_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v,
 }
 
 /**
- * Double sorting split algorithm.
+ * @brief Double sorting split algorithm.
  *
  * The algorithm finds split of boxes by considering splits along each axis.
  * Each entry is first projected as an interval on the X-axis, and different
@@ -1068,7 +1066,7 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, meosType bboxtype,
 
 PG_FUNCTION_INFO_V1(Tbox_gist_picksplit);
 /**
- * GiST picksplit method for temporal numbers
+ * @brief GiST picksplit method for temporal numbers
  */
 PGDLLEXPORT Datum
 Tbox_gist_picksplit(PG_FUNCTION_ARGS)
@@ -1081,7 +1079,7 @@ Tbox_gist_picksplit(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tbox_gist_same);
 /**
- * GiST same method for temporal numbers.
+ * @brief GiST same method for temporal numbers.
  * Return true only when boxes are exactly the same.  We can't use fuzzy
  * comparisons here without breaking index consistency; therefore, this isn't
  * equivalent to box_same().
@@ -1111,8 +1109,8 @@ Tbox_gist_same(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tbox_gist_distance);
 /**
- * GiST support function. Take in a query and an entry and return the "distance"
- * between them.
+ * @brief GiST support function. Take in a query and an entry and return the
+ * "distance" between them.
 */
 PGDLLEXPORT Datum
 Tbox_gist_distance(PG_FUNCTION_ARGS)

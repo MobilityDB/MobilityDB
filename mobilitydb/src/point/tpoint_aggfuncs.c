@@ -56,7 +56,8 @@
 
 PG_FUNCTION_INFO_V1(Tpoint_extent_transfn);
 /**
- * Transition function for temporal extent aggregation of temporal point values
+ * @brief Transition function for temporal extent aggregation of temporal point
+ * values
  */
 PGDLLEXPORT Datum
 Tpoint_extent_transfn(PG_FUNCTION_ARGS)
@@ -97,8 +98,8 @@ Tpoint_extent_transfn(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tpoint_tcentroid_transfn);
 /**
- * Transition function for temporal centroid aggregation of temporal network
- * points
+ * @brief Transition function for temporal centroid aggregation of temporal
+ * network points
  */
 PGDLLEXPORT Datum
 Tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
@@ -117,7 +118,8 @@ Tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tpoint_tcentroid_combinefn);
 /**
- * Combine function for temporal centroid aggregation of temporal point values
+ * @brief Combine function for temporal centroid aggregation of temporal point
+ * values
  */
 PGDLLEXPORT Datum
 Tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS)
@@ -145,7 +147,8 @@ Tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tpoint_tcentroid_finalfn);
 /**
- * Final function for temporal centroid aggregation of temporal point values
+ * @brief Final function for temporal centroid aggregation of temporal point
+ * values
  */
 PGDLLEXPORT Datum
 Tpoint_tcentroid_finalfn(PG_FUNCTION_ARGS)

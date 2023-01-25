@@ -193,9 +193,9 @@ temporal_get_strategy_by_type(meosType temptype, uint16_t index)
  *****************************************************************************/
 
 /**
- * Is the function calling the support function one of those we will enhance
- * with index ops? If so, copy the metadata for the function into idxfn and
- * return true. If false... how did the support function get added, anyways?
+ * @brief Is the function calling the support function one of those we will
+ * enhance with index ops? If so, copy the metadata for the function into idxfn
+ * and return true. If false, how did the support function get added, anyways?
  */
 bool
 func_needs_index(Oid funcid, const IndexableFunction *idxfns,
@@ -217,8 +217,8 @@ func_needs_index(Oid funcid, const IndexableFunction *idxfns,
 }
 
 /**
- * We only add index enhancements for indexes that support range-based
- *searches like the && operator), so only implementations based on GIST
+ * @brief We only add index enhancements for indexes that support range-based
+ * searches like the && operator), so only implementations based on GIST
  * and SPGIST.
 */
 Oid
@@ -241,8 +241,9 @@ opFamilyAmOid(Oid opfamilyoid)
 /*****************************************************************************/
 
 /**
- * To apply the "expand for radius search" pattern we need access to the expand
- * function, so lookup the function Oid using the function name and type number.
+ * @brief To apply the "expand for radius search" pattern we need access to the
+ * expand function, so lookup the function Oid using the function name and
+ * type number.
  */
 static FuncExpr *
 makeExpandExpr(Node *arg, Node *radiusarg, Oid argoid, Oid retoid,
@@ -280,7 +281,7 @@ makeExpandExpr(Node *arg, Node *radiusarg, Oid argoid, Oid retoid,
 /*****************************************************************************/
 
 /**
- * For functions that we want enhanced with spatial index lookups, add
+ * @brief For functions that we want enhanced with spatial index lookups, add
  * this support function to the SQL function definition, for example:
  * @code
  * CREATE OR REPLACE FUNCTION ever_eq(tfloat, float)
@@ -551,7 +552,7 @@ temporal_supportfn_ext(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
 
 PG_FUNCTION_INFO_V1(Temporal_supportfn);
 /**
- * Support function for temporal types
+ * @brief Support function for temporal types
  */
 PGDLLEXPORT Datum
 Temporal_supportfn(PG_FUNCTION_ARGS)
@@ -561,7 +562,7 @@ Temporal_supportfn(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tnumber_supportfn);
 /**
- * Support function for temporal number types
+ * @brief Support function for temporal number types
  */
 PGDLLEXPORT Datum
 Tnumber_supportfn(PG_FUNCTION_ARGS)
@@ -571,7 +572,7 @@ Tnumber_supportfn(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tpoint_supportfn);
 /**
- * Support function for temporal number types
+ * @brief Support function for temporal number types
  */
 PGDLLEXPORT Datum
 Tpoint_supportfn(PG_FUNCTION_ARGS)
@@ -582,7 +583,7 @@ Tpoint_supportfn(PG_FUNCTION_ARGS)
 #if NPOINT
 PG_FUNCTION_INFO_V1(Tnpoint_supportfn);
 /**
- * Support function for temporal number types
+ * @brief Support function for temporal number types
  */
 PGDLLEXPORT Datum
 Tnpoint_supportfn(PG_FUNCTION_ARGS)

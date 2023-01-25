@@ -59,9 +59,9 @@
 
 PG_FUNCTION_INFO_V1(Tpoint_to_geo);
 /**
- * Converts the temporal point into a PostGIS trajectory geometry/geography
- * where the M coordinates encode the timestamps in number of seconds since
- * '1970-01-01'
+ * @brief Convert the temporal point into a PostGIS trajectory geometry or
+ * geography where the M coordinates encode the timestamps in number of seconds
+ * since '1970-01-01'
  */
 PGDLLEXPORT Datum
 Tpoint_to_geo(PG_FUNCTION_ARGS)
@@ -76,8 +76,8 @@ Tpoint_to_geo(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Geo_to_tpoint);
 /**
- * Converts the PostGIS trajectory geometry/geography where the M coordinates
- * encode the timestamps in Unix epoch into a temporal point.
+ * @brief Convert the PostGIS trajectory geometry or geography where the M
+ * coordinates encode the timestamps in Unix epoch into a temporal point.
  */
 PGDLLEXPORT Datum
 Geo_to_tpoint(PG_FUNCTION_ARGS)
@@ -90,8 +90,8 @@ Geo_to_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tpoint_to_geo_measure);
 /**
- * Construct a geometry/geography with M measure from the temporal point and
- * the temporal float
+ * @brief Construct a geometry/geography with M measure from the temporal point
+ * and the temporal float
  */
 PGDLLEXPORT Datum
 Tpoint_to_geo_measure(PG_FUNCTION_ARGS)
@@ -110,8 +110,8 @@ Tpoint_to_geo_measure(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tfloat_simplify);
 /**
- * Simplifies the temporal number using a
- * Douglas-Peucker-like line simplification algorithm.
+ * @brief Simplify the temporal number using a Douglas-Peucker-like line
+ * simplification algorithm.
  */
 PGDLLEXPORT Datum
 Tfloat_simplify(PG_FUNCTION_ARGS)
@@ -126,7 +126,7 @@ Tfloat_simplify(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tpoint_simplify);
 /**
- * Simplifies the temporal sequence (set) point using a spatio-temporal
+ * @brief Simplify the temporal sequence (set) point using a spatio-temporal
  * extension of the Douglas-Peucker line simplification algorithm.
  */
 PGDLLEXPORT Datum
@@ -148,7 +148,7 @@ Tpoint_simplify(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tpoint_AsMVTGeom);
 /**
- * Transform the temporal point to Mapbox Vector Tile format
+ * @brief Transform the temporal point to Mapbox Vector Tile format
  */
 PGDLLEXPORT Datum
 Tpoint_AsMVTGeom(PG_FUNCTION_ARGS)

@@ -55,6 +55,9 @@
  * Closest point and closest line functions for geographies.
  ***********************************************************************/
 
+/**
+ * @brief Closest point function for PostGIS geography.
+ */
 static LWGEOM *
 geography_tree_closestpoint(const GSERIALIZED* g1, const GSERIALIZED* g2, double threshold)
 {
@@ -93,11 +96,11 @@ geography_tree_closestpoint(const GSERIALIZED* g1, const GSERIALIZED* g2, double
   return result;
 }
 
-/**
-Returns the point in first input geography that is closest to the second input geography in 2d
-*/
-
 PG_FUNCTION_INFO_V1(geography_closestpoint);
+/**
+ * @brief Return the point in first input geography that is closest to the
+ * second input geography in 2d
+*/
 Datum geography_closestpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED* g1 = NULL;
@@ -134,11 +137,11 @@ Datum geography_closestpoint(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-/**
-Returns the point in first input geography that is closest to the second
-input geography in 2d
-*/
 PG_FUNCTION_INFO_V1(geography_shortestline);
+/**
+ * @brief Return the point in first input geography that is closest to the
+ * second input geography in 2d
+*/
 Datum geography_shortestline(PG_FUNCTION_ARGS)
 {
   /* Get our geography objects loaded into memory. */
@@ -163,6 +166,9 @@ Datum geography_shortestline(PG_FUNCTION_ARGS)
  * ST_LineSubstring for geographies
  ***********************************************************************/
 
+/**
+ * @brief Returns the lenght of the point array wrt the sphere
+ */
 static double
 ptarray_length_sphere(const POINTARRAY *pa)
 {
@@ -190,6 +196,9 @@ ptarray_length_sphere(const POINTARRAY *pa)
   return length;
 }
 
+/**
+ * @brief Return the part of a line between two fractional locations.
+ */
 static POINTARRAY *
 geography_substring(POINTARRAY *ipa, double from, double to,
   double tolerance)
@@ -329,6 +338,9 @@ END:
 }
 
 PG_FUNCTION_INFO_V1(geography_line_substring);
+/**
+ * @brief Return the part of a line between two fractional locations.
+ */
 Datum geography_line_substring(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
@@ -395,9 +407,12 @@ Datum geography_line_substring(PG_FUNCTION_ARGS)
  * Interpolate a point along a geographic line.
  ***********************************************************************/
 
+/**
+ * @brief Interpolate a point along a geographic line.
+ */
 static POINTARRAY *
-geography_interpolate_points(const LWLINE *line,
-  double length_fraction, const SPHEROID *s, char repeat)
+geography_interpolate_points(const LWLINE *line, double length_fraction,
+  const SPHEROID *s, char repeat)
 {
   POINT4D pt;
   uint32_t i;
@@ -480,6 +495,9 @@ geography_interpolate_points(const LWLINE *line,
 }
 
 PG_FUNCTION_INFO_V1(geography_line_interpolate_point);
+/**
+ * @brief Interpolate a point along a geographic line.
+ */
 Datum geography_line_interpolate_point(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
@@ -552,6 +570,9 @@ Datum geography_line_interpolate_point(PG_FUNCTION_ARGS)
  * Locate a point along a geographic line.
  ***********************************************************************/
 
+/**
+ * @brief Locate a point along the point array defining a geographic line.
+ */
 static double
 ptarray_locate_point_spheroid(const POINTARRAY *pa, const POINT4D *p4d,
   const SPHEROID *s, double tolerance, double *mindistout, POINT4D *proj4d)
@@ -735,6 +756,9 @@ ptarray_locate_point_spheroid(const POINTARRAY *pa, const POINT4D *p4d,
 }
 
 PG_FUNCTION_INFO_V1(geography_line_locate_point);
+/**
+ * @brief Locate a point along a geographic line.
+ */
 Datum geography_line_locate_point(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs1 = PG_GETARG_GSERIALIZED_P(0);

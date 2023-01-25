@@ -61,7 +61,7 @@
  *****************************************************************************/
 
 /**
- * Return the enum value associated to the operator
+ * @brief Return the enum value associated to the operator
  */
 bool
 tnumber_cachedop(Oid operid, CachedOp *cachedOp)
@@ -114,7 +114,7 @@ tnumber_cachedop(Oid operid, CachedOp *cachedOp)
 }
 
 /**
- * Transform the constant into a temporal box
+ * @brief Transform the constant into a temporal box
  */
 bool
 tnumber_const_to_span_period(const Node *other, Span **s, Span **p,
@@ -185,7 +185,7 @@ tnumber_const_to_span_period(const Node *other, Span **s, Span **p,
 }
 
 /**
- * Return a default selectivity estimate for the operator when we don't
+ * @brief Return a default selectivity estimate for the operator when we don't
  * have statistics or cannot use them for some reason.
  */
 float8
@@ -226,12 +226,13 @@ tnumber_sel_default(CachedOp operator)
 }
 
 /**
- * Return an estimate of the selectivity of the temporal search box and the
- * operator for columns of temporal numbers. For the traditional comparison
- * operators (<, <=, ...) we follow the approach for span types in
- * PostgreSQL, this function computes the selectivity for <, <=, >, and >=,
- * while the selectivity functions for = and <> are eqsel and neqsel,
- * respectively.
+ * @brief Return an estimate of the selectivity of the temporal search box and
+ * the operator for columns of temporal numbers.
+ *
+ * For the traditional comparison operators (<, <=, ...) we follow the approach
+ * for span types in PostgreSQL, this function computes the selectivity for <,
+ * <=, >, and >=, while the selectivity functions for = and <> are eqsel and
+ * neqsel, respectively.
  */
 Selectivity
 tnumber_sel_span_period(VariableStatData *vardata, Span *span, Span *period,
@@ -318,7 +319,7 @@ tnumber_sel_span_period(VariableStatData *vardata, Span *span, Span *period,
 
 PG_FUNCTION_INFO_V1(Tnumber_sel);
 /**
- * Estimate the selectivity value of the operators for temporal numbers
+ * @brief Estimate the selectivity value of the operators for temporal numbers
  */
 PGDLLEXPORT Datum
 Tnumber_sel(PG_FUNCTION_ARGS)
@@ -329,8 +330,8 @@ Tnumber_sel(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /**
- * Return a default join selectivity estimate for given operator, when we
- * don't have statistics or cannot use them for some reason.
+ * @brief Return a default join selectivity estimate for given operator, when
+ * we don't have statistics or cannot use them for some reason.
  */
 float8
 tnumber_joinsel_default(CachedOp cachedOp __attribute__((unused)))
@@ -340,9 +341,9 @@ tnumber_joinsel_default(CachedOp cachedOp __attribute__((unused)))
 }
 
 /**
- * Depending on the operator and the arguments, determine wheter the value,
- * the time, or both components are taken into account for computing the
- * join selectivity
+ * @brief Depending on the operator and the arguments, determine wheter the
+ * value, the time, or both components are taken into account for computing
+ * the join selectivity
  */
 bool
 tnumber_joinsel_components(CachedOp cachedOp, meosType oprleft,
@@ -384,7 +385,8 @@ tnumber_joinsel_components(CachedOp cachedOp, meosType oprleft,
 
 PG_FUNCTION_INFO_V1(Tnumber_joinsel);
 /**
- * Estimate the join selectivity value of the operators for temporal numbers
+ * @brief Estimate the join selectivity value of the operators for temporal
+ * numbers
  */
 PGDLLEXPORT Datum
 Tnumber_joinsel(PG_FUNCTION_ARGS)

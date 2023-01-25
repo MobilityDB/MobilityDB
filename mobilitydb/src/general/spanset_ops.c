@@ -49,7 +49,7 @@
 
 PG_FUNCTION_INFO_V1(Timestamp_tprecision);
 /**
- * Return the initial timestamp of the bucket in which a timestamp falls.
+ * @brief Return the initial timestamp of the bucket in which a timestamp falls.
  */
 PGDLLEXPORT Datum
 Timestamp_tprecision(PG_FUNCTION_ARGS)
@@ -63,7 +63,7 @@ Timestamp_tprecision(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Period_tprecision);
 /**
- * Generate a bucket in a bucket list for periods.
+ * @brief Generate a bucket in a bucket list for periods.
 */
 PGDLLEXPORT Datum
 Period_tprecision(PG_FUNCTION_ARGS)
@@ -77,7 +77,7 @@ Period_tprecision(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Periodset_tprecision);
 /**
- * Generate a bucket in a bucket list for periods.
+ * @brief Generate a bucket in a bucket list for periods.
 */
 PGDLLEXPORT Datum
 Periodset_tprecision(PG_FUNCTION_ARGS)

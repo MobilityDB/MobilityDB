@@ -49,7 +49,7 @@
 
 PG_FUNCTION_INFO_V1(Temporal_gist_compress);
 /**
- * GiST compress method for temporal values
+ * @brief GiST compress method for temporal values
  */
 PGDLLEXPORT Datum
 Temporal_gist_compress(PG_FUNCTION_ARGS)
