@@ -75,8 +75,8 @@ period_tprecision(const Span *s, const Interval *duration, TimestampTz torigin)
   assert(s->basetype == T_TIMESTAMPTZ);
   ensure_valid_duration(duration);
   int64 tunits = interval_units(duration);
-  TimestampTz lower = TimestampTzGetDatum(s->lower);
-  TimestampTz upper = TimestampTzGetDatum(s->upper);
+  TimestampTz lower = DatumGetTimestampTz(s->lower);
+  TimestampTz upper = DatumGetTimestampTz(s->upper);
   TimestampTz lower_bucket = timestamptz_bucket(lower, duration, torigin);
   /* We need to add tunits to obtain the end timestamp of the last bucket */
   TimestampTz upper_bucket = timestamptz_bucket(upper, duration, torigin) +
