@@ -623,19 +623,6 @@ tgeogpoint_in(const char *str)
 }
 #endif /* MEOS */
 
-
-/**
- * @ingroup libmeos_internal_temporal_inout
- * @brief Return the Well-Known Text (WKT) representation of a temporal value.
- */
-bool
-temporal_basetype_quotes(meosType temptype)
-{
-  if (temptype == T_TTEXT)
-    return true;
-  return false;
-}
-
 /**
  * @ingroup libmeos_internal_temporal_inout
  * @brief Return the Well-Known Text (WKT) representation of a temporal value.
@@ -1412,17 +1399,12 @@ temporal_tscale(const Temporal *temp, const Interval *duration)
 static Datum
 temporal_tprecision_agg_values(const Temporal *temp)
 {
-  /* tspatial_type covers both tgeo_type and temp->temptype == T_TNPOINT */
-  assert(tnumber_type(temp->temptype) || tspatial_type(temp->temptype));
+  assert(tnumber_type(temp->temptype) || tgeo_type(temp->temptype));
   Datum result;
   if (tnumber_type(temp->temptype))
     result = Float8GetDatum(tnumber_twavg(temp));
   else if (tgeo_type(temp->temptype))
     result = PointerGetDatum(tpoint_twcentroid(temp));
-#if NPOINT
-  else if (temp->temptype == T_TNPOINT)
-    result = PointerGetDatum(tpoint_twcentroid(temp));
-#endif
   return result;
 }
 
@@ -2928,78 +2910,6 @@ temporal_bbox_restrict_value(const Temporal *temp, Datum value)
     }
   }
   return true;
-}
-
-/**
- * @brief Return the array of base values that are contained in the bounding
- * box of a temporal value.
- *
- * @param[in] temp Temporal value
- * @param[in] values Array of base values
- * @param[in] count Number of elements in the input array
- * @param[out] newcount Number of elements in the output array
- * @return Filtered array of values.
- */
-Datum *
-temporal_bbox_restrict_values(const Temporal *temp, const Datum *values,
-  int count, int *newcount)
-{
-  Datum *newvalues = palloc(sizeof(Datum) * count);
-  int k = 0;
-  meosType basetype = temptype_basetype(temp->temptype);
-
-  /* Bounding box test */
-  if (tnumber_type(temp->temptype))
-  {
-    TBox box1;
-    temporal_set_bbox(temp, &box1);
-    for (int i = 0; i < count; i++)
-    {
-      TBox box2;
-      number_set_tbox(values[i], basetype, &box2);
-      if (contains_tbox_tbox(&box1, &box2))
-        newvalues[k++] = values[i];
-    }
-  }
-  if (tgeo_type(temp->temptype))
-  {
-    STBox box1;
-    temporal_set_bbox(temp, &box1);
-    for (int i = 0; i < count; i++)
-    {
-      /* Test that the geometry is not empty */
-      GSERIALIZED *gs = DatumGetGserializedP(values[i]);
-      ensure_point_type(gs);
-      ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
-      ensure_same_dimensionality_tpoint_gs(temp, gs);
-      if (! gserialized_is_empty(gs))
-      {
-        STBox box2;
-        geo_set_stbox(gs, &box2);
-        if (contains_stbox_stbox(&box1, &box2))
-          newvalues[k++] = values[i];
-      }
-    }
-  }
-  else
-  {  /* For other types than the ones above */
-    for (int i = 0; i < count; i++)
-      newvalues[i] = values[i];
-    k = count;
-  }
-  if (k == 0)
-  {
-    *newcount = k;
-    pfree(newvalues);
-    return NULL;
-  }
-  if (k > 1)
-  {
-    datumarr_sort(newvalues, k, basetype);
-    k = datumarr_remove_duplicates(newvalues, k, basetype);
-  }
-  *newcount = k;
-  return newvalues;
 }
 
 /**
