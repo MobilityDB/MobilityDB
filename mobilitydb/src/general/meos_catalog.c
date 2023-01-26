@@ -337,7 +337,7 @@ type_oid(meosType type)
  * @arg[in] rt Enum value for the right type
  */
 Oid
-oper_oid(CachedOp oper, meosType lt, meosType rt)
+oper_oid(meosOper oper, meosType lt, meosType rt)
 {
   if (!_oid_cache_ready)
     populate_operoid_cache();

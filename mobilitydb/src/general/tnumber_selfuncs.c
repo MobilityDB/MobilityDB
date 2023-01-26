@@ -64,49 +64,49 @@
  * @brief Return the enum value associated to the operator
  */
 bool
-tnumber_cachedop(Oid operid, CachedOp *cachedOp)
+tnumber_cachedop(Oid operid, meosOper *oper)
 {
   for (int i = LT_OP; i <= OVERAFTER_OP; i++)
   {
     if (/* Time types */
-        operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TINT) ||
-        operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TFLOAT) ||
-        operid == oper_oid((CachedOp) i, T_TSTZSET, T_TINT) ||
-        operid == oper_oid((CachedOp) i, T_TSTZSET, T_TFLOAT) ||
-        operid == oper_oid((CachedOp) i, T_TSTZSPAN, T_TINT) ||
-        operid == oper_oid((CachedOp) i, T_TSTZSPAN, T_TFLOAT) ||
-        operid == oper_oid((CachedOp) i, T_TSTZSPANSET, T_TINT) ||
-        operid == oper_oid((CachedOp) i, T_TSTZSPANSET, T_TFLOAT) ||
+        operid == oper_oid((meosOper) i, T_TIMESTAMPTZ, T_TINT) ||
+        operid == oper_oid((meosOper) i, T_TIMESTAMPTZ, T_TFLOAT) ||
+        operid == oper_oid((meosOper) i, T_TSTZSET, T_TINT) ||
+        operid == oper_oid((meosOper) i, T_TSTZSET, T_TFLOAT) ||
+        operid == oper_oid((meosOper) i, T_TSTZSPAN, T_TINT) ||
+        operid == oper_oid((meosOper) i, T_TSTZSPAN, T_TFLOAT) ||
+        operid == oper_oid((meosOper) i, T_TSTZSPANSET, T_TINT) ||
+        operid == oper_oid((meosOper) i, T_TSTZSPANSET, T_TFLOAT) ||
         /* Span types */
-        operid == oper_oid((CachedOp) i, T_INTSPAN, T_TINT) ||
-        operid == oper_oid((CachedOp) i, T_FLOATSPAN, T_TFLOAT) ||
+        operid == oper_oid((meosOper) i, T_INTSPAN, T_TINT) ||
+        operid == oper_oid((meosOper) i, T_FLOATSPAN, T_TFLOAT) ||
         /* Tbox type */
-        operid == oper_oid((CachedOp) i, T_TBOX, T_TINT) ||
-        operid == oper_oid((CachedOp) i, T_TBOX, T_TFLOAT) ||
+        operid == oper_oid((meosOper) i, T_TBOX, T_TINT) ||
+        operid == oper_oid((meosOper) i, T_TBOX, T_TFLOAT) ||
         /* Tint type */
-        operid == oper_oid((CachedOp) i, T_TINT, T_TIMESTAMPTZ) ||
-        operid == oper_oid((CachedOp) i, T_TINT, T_TSTZSET) ||
-        operid == oper_oid((CachedOp) i, T_TINT, T_TSTZSPAN) ||
-        operid == oper_oid((CachedOp) i, T_TINT, T_TSTZSPANSET) ||
-        operid == oper_oid((CachedOp) i, T_TINT, T_INT4) ||
-        operid == oper_oid((CachedOp) i, T_TINT, T_FLOAT8) ||
-        operid == oper_oid((CachedOp) i, T_TINT, T_INTSPAN) ||
-        operid == oper_oid((CachedOp) i, T_TINT, T_TBOX) ||
-        operid == oper_oid((CachedOp) i, T_TINT, T_TINT) ||
-        operid == oper_oid((CachedOp) i, T_TINT, T_TFLOAT) ||
+        operid == oper_oid((meosOper) i, T_TINT, T_TIMESTAMPTZ) ||
+        operid == oper_oid((meosOper) i, T_TINT, T_TSTZSET) ||
+        operid == oper_oid((meosOper) i, T_TINT, T_TSTZSPAN) ||
+        operid == oper_oid((meosOper) i, T_TINT, T_TSTZSPANSET) ||
+        operid == oper_oid((meosOper) i, T_TINT, T_INT4) ||
+        operid == oper_oid((meosOper) i, T_TINT, T_FLOAT8) ||
+        operid == oper_oid((meosOper) i, T_TINT, T_INTSPAN) ||
+        operid == oper_oid((meosOper) i, T_TINT, T_TBOX) ||
+        operid == oper_oid((meosOper) i, T_TINT, T_TINT) ||
+        operid == oper_oid((meosOper) i, T_TINT, T_TFLOAT) ||
         /* Tfloat type */
-        operid == oper_oid((CachedOp) i, T_TFLOAT, T_TIMESTAMPTZ) ||
-        operid == oper_oid((CachedOp) i, T_TFLOAT, T_TSTZSET) ||
-        operid == oper_oid((CachedOp) i, T_TFLOAT, T_TSTZSPAN) ||
-        operid == oper_oid((CachedOp) i, T_TFLOAT, T_TSTZSPANSET) ||
-        operid == oper_oid((CachedOp) i, T_TFLOAT, T_INT4) ||
-        operid == oper_oid((CachedOp) i, T_TFLOAT, T_FLOAT8) ||
-        operid == oper_oid((CachedOp) i, T_TFLOAT, T_FLOATSPAN) ||
-        operid == oper_oid((CachedOp) i, T_TFLOAT, T_TBOX) ||
-        operid == oper_oid((CachedOp) i, T_TFLOAT, T_TINT) ||
-        operid == oper_oid((CachedOp) i, T_TFLOAT, T_TFLOAT))
+        operid == oper_oid((meosOper) i, T_TFLOAT, T_TIMESTAMPTZ) ||
+        operid == oper_oid((meosOper) i, T_TFLOAT, T_TSTZSET) ||
+        operid == oper_oid((meosOper) i, T_TFLOAT, T_TSTZSPAN) ||
+        operid == oper_oid((meosOper) i, T_TFLOAT, T_TSTZSPANSET) ||
+        operid == oper_oid((meosOper) i, T_TFLOAT, T_INT4) ||
+        operid == oper_oid((meosOper) i, T_TFLOAT, T_FLOAT8) ||
+        operid == oper_oid((meosOper) i, T_TFLOAT, T_FLOATSPAN) ||
+        operid == oper_oid((meosOper) i, T_TFLOAT, T_TBOX) ||
+        operid == oper_oid((meosOper) i, T_TFLOAT, T_TINT) ||
+        operid == oper_oid((meosOper) i, T_TFLOAT, T_TFLOAT))
       {
-        *cachedOp = (CachedOp) i;
+        *oper = (meosOper) i;
         return true;
       }
   }
@@ -189,7 +189,7 @@ tnumber_const_to_span_period(const Node *other, Span **s, Span **p,
  * have statistics or cannot use them for some reason.
  */
 float8
-tnumber_sel_default(CachedOp operator)
+tnumber_sel_default(meosOper operator)
 {
   switch (operator)
   {
@@ -236,7 +236,7 @@ tnumber_sel_default(CachedOp operator)
  */
 Selectivity
 tnumber_sel_span_period(VariableStatData *vardata, Span *span, Span *period,
-  CachedOp cachedOp, Oid basetypid)
+  meosOper oper, Oid basetypid)
 {
   double selec;
   Oid value_oprid, period_oprid;
@@ -249,7 +249,7 @@ tnumber_sel_span_period(VariableStatData *vardata, Span *span, Span *period,
    * There is no ~= operator for span/time types and thus it is necessary to
    * take care of this operator here.
    */
-  if (cachedOp == SAME_OP)
+  if (oper == SAME_OP)
   {
     /* Selectivity for the value dimension */
     if (span != NULL)
@@ -276,41 +276,41 @@ tnumber_sel_span_period(VariableStatData *vardata, Span *span, Span *period,
 #endif
     }
   }
-  else if (cachedOp == OVERLAPS_OP || cachedOp == CONTAINS_OP ||
-    cachedOp == CONTAINED_OP ||
+  else if (oper == OVERLAPS_OP || oper == CONTAINS_OP ||
+    oper == CONTAINED_OP ||
     /* For b-tree comparisons, temporal values are first compared wrt
      * their bounding boxes, and if these are equal, other criteria apply.
      * For selectivity estimation we approximate by taking into account
      * only the bounding boxes. */
-    cachedOp == LT_OP || cachedOp == LE_OP ||
-    cachedOp == GT_OP || cachedOp == GE_OP)
+    oper == LT_OP || oper == LE_OP ||
+    oper == GT_OP || oper == GE_OP)
   {
     /* Selectivity for the value dimension */
     if (span != NULL)
-      selec *= span_sel_hist(vardata, span, cachedOp, SPANSEL);
+      selec *= span_sel_hist(vardata, span, oper, SPANSEL);
     /* Selectivity for the time dimension */
     if (period != NULL)
       /* Cast the period as a span to call the span selectivity functions */
-      selec *= span_sel_hist(vardata, (Span *) period, cachedOp, PERIODSEL);
+      selec *= span_sel_hist(vardata, (Span *) period, oper, PERIODSEL);
   }
-  else if (cachedOp == LEFT_OP || cachedOp == RIGHT_OP ||
-    cachedOp == OVERLEFT_OP || cachedOp == OVERRIGHT_OP)
+  else if (oper == LEFT_OP || oper == RIGHT_OP ||
+    oper == OVERLEFT_OP || oper == OVERRIGHT_OP)
   {
     /* Selectivity for the value dimension */
     if (span != NULL)
-      selec *= span_sel_hist(vardata, span, cachedOp, SPANSEL);
+      selec *= span_sel_hist(vardata, span, oper, SPANSEL);
   }
-  else if (cachedOp == BEFORE_OP || cachedOp == AFTER_OP ||
-    cachedOp == OVERBEFORE_OP || cachedOp == OVERAFTER_OP)
+  else if (oper == BEFORE_OP || oper == AFTER_OP ||
+    oper == OVERBEFORE_OP || oper == OVERAFTER_OP)
   {
     /* Selectivity for the value dimension */
     if (period != NULL)
       /* Cast the period as a span to call the span selectivity functions */
-      selec *= span_sel_hist(vardata, (Span *) period, cachedOp, PERIODSEL);
+      selec *= span_sel_hist(vardata, (Span *) period, oper, PERIODSEL);
   }
   else /* Unknown operator */
   {
-    selec = tnumber_sel_default(cachedOp);
+    selec = tnumber_sel_default(oper);
   }
   return selec;
 }
@@ -334,7 +334,7 @@ Tnumber_sel(PG_FUNCTION_ARGS)
  * we don't have statistics or cannot use them for some reason.
  */
 float8
-tnumber_joinsel_default(CachedOp cachedOp __attribute__((unused)))
+tnumber_joinsel_default(meosOper oper __attribute__((unused)))
 {
   // TODO take care of the operator
   return 0.001;
@@ -346,7 +346,7 @@ tnumber_joinsel_default(CachedOp cachedOp __attribute__((unused)))
  * the join selectivity
  */
 bool
-tnumber_joinsel_components(CachedOp cachedOp, meosType oprleft,
+tnumber_joinsel_components(meosOper oper, meosType oprleft,
   meosType oprright, bool *value, bool *time)
 {
   /* Get the argument which may not a temporal number */
@@ -354,22 +354,22 @@ tnumber_joinsel_components(CachedOp cachedOp, meosType oprleft,
 
   /* Determine the components */
   if (tnumber_basetype(arg) || tnumber_spantype(arg) ||
-    cachedOp == LEFT_OP || cachedOp == OVERLEFT_OP ||
-    cachedOp == RIGHT_OP || cachedOp == OVERRIGHT_OP)
+    oper == LEFT_OP || oper == OVERLEFT_OP ||
+    oper == RIGHT_OP || oper == OVERRIGHT_OP)
   {
     *value = true;
     *time = false;
   }
   else if (time_type(arg) ||
-    cachedOp == BEFORE_OP || cachedOp == OVERBEFORE_OP ||
-    cachedOp == AFTER_OP || cachedOp == OVERAFTER_OP)
+    oper == BEFORE_OP || oper == OVERBEFORE_OP ||
+    oper == AFTER_OP || oper == OVERAFTER_OP)
   {
     *value = false;
     *time = true;
   }
-  else if (tnumber_type(arg) && (cachedOp == OVERLAPS_OP ||
-    cachedOp == CONTAINS_OP || cachedOp == CONTAINED_OP ||
-    cachedOp == SAME_OP || cachedOp == ADJACENT_OP))
+  else if (tnumber_type(arg) && (oper == OVERLAPS_OP ||
+    oper == CONTAINS_OP || oper == CONTAINED_OP ||
+    oper == SAME_OP || oper == ADJACENT_OP))
   {
     *value = true;
     *time = true;

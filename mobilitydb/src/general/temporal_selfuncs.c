@@ -99,29 +99,29 @@ temporal_const_to_period(Node *other, Span *period)
  * @brief Return the enum value associated to the operator
  */
 static bool
-temporal_cachedop(Oid operid, CachedOp *cachedOp)
+temporal_cachedop(Oid operid, meosOper *oper)
 {
   for (int i = LT_OP; i <= OVERAFTER_OP; i++) {
-    if (operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TBOOL) ||
-        operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TTEXT) ||
-        operid == oper_oid((CachedOp) i, T_TSTZSET, T_TBOOL) ||
-        operid == oper_oid((CachedOp) i, T_TSTZSET, T_TTEXT) ||
-        operid == oper_oid((CachedOp) i, T_TSTZSPAN, T_TBOOL) ||
-        operid == oper_oid((CachedOp) i, T_TSTZSPAN, T_TTEXT) ||
-        operid == oper_oid((CachedOp) i, T_TSTZSPANSET, T_TBOOL) ||
-        operid == oper_oid((CachedOp) i, T_TSTZSPANSET, T_TTEXT) ||
-        operid == oper_oid((CachedOp) i, T_TBOOL, T_TIMESTAMPTZ) ||
-        operid == oper_oid((CachedOp) i, T_TBOOL, T_TSTZSET) ||
-        operid == oper_oid((CachedOp) i, T_TBOOL, T_TSTZSPAN) ||
-        operid == oper_oid((CachedOp) i, T_TBOOL, T_TSTZSPANSET) ||
-        operid == oper_oid((CachedOp) i, T_TBOOL, T_TBOOL) ||
-        operid == oper_oid((CachedOp) i, T_TTEXT, T_TIMESTAMPTZ) ||
-        operid == oper_oid((CachedOp) i, T_TTEXT, T_TSTZSET) ||
-        operid == oper_oid((CachedOp) i, T_TTEXT, T_TSTZSPAN) ||
-        operid == oper_oid((CachedOp) i, T_TTEXT, T_TSTZSPANSET) ||
-        operid == oper_oid((CachedOp) i, T_TTEXT, T_TTEXT))
+    if (operid == oper_oid((meosOper) i, T_TIMESTAMPTZ, T_TBOOL) ||
+        operid == oper_oid((meosOper) i, T_TIMESTAMPTZ, T_TTEXT) ||
+        operid == oper_oid((meosOper) i, T_TSTZSET, T_TBOOL) ||
+        operid == oper_oid((meosOper) i, T_TSTZSET, T_TTEXT) ||
+        operid == oper_oid((meosOper) i, T_TSTZSPAN, T_TBOOL) ||
+        operid == oper_oid((meosOper) i, T_TSTZSPAN, T_TTEXT) ||
+        operid == oper_oid((meosOper) i, T_TSTZSPANSET, T_TBOOL) ||
+        operid == oper_oid((meosOper) i, T_TSTZSPANSET, T_TTEXT) ||
+        operid == oper_oid((meosOper) i, T_TBOOL, T_TIMESTAMPTZ) ||
+        operid == oper_oid((meosOper) i, T_TBOOL, T_TSTZSET) ||
+        operid == oper_oid((meosOper) i, T_TBOOL, T_TSTZSPAN) ||
+        operid == oper_oid((meosOper) i, T_TBOOL, T_TSTZSPANSET) ||
+        operid == oper_oid((meosOper) i, T_TBOOL, T_TBOOL) ||
+        operid == oper_oid((meosOper) i, T_TTEXT, T_TIMESTAMPTZ) ||
+        operid == oper_oid((meosOper) i, T_TTEXT, T_TSTZSET) ||
+        operid == oper_oid((meosOper) i, T_TTEXT, T_TSTZSPAN) ||
+        operid == oper_oid((meosOper) i, T_TTEXT, T_TSTZSPANSET) ||
+        operid == oper_oid((meosOper) i, T_TTEXT, T_TTEXT))
       {
-        *cachedOp = (CachedOp) i;
+        *oper = (meosOper) i;
         return true;
       }
   }
@@ -133,7 +133,7 @@ temporal_cachedop(Oid operid, CachedOp *cachedOp)
  * have statistics or cannot use them for some reason.
  */
 static double
-temporal_sel_default(CachedOp oper)
+temporal_sel_default(meosOper oper)
 {
   switch (oper)
   {
@@ -188,7 +188,7 @@ temporal_joinsel_default(Oid operid __attribute__((unused)))
  */
 Selectivity
 temporal_sel_period(VariableStatData *vardata, Span *period,
-  CachedOp cachedOp)
+  meosOper oper)
 {
   float8 selec;
 
@@ -196,7 +196,7 @@ temporal_sel_period(VariableStatData *vardata, Span *period,
    * There is no ~= operator for time types and thus it is necessary to
    * take care of this operator here.
    */
-  if (cachedOp == SAME_OP)
+  if (oper == SAME_OP)
   {
     Oid operid = oper_oid(EQ_OP, T_TSTZSPAN, T_TSTZSPAN);
 #if POSTGRESQL_VERSION_NUMBER < 130000
@@ -207,24 +207,24 @@ temporal_sel_period(VariableStatData *vardata, Span *period,
       SpanPGetDatum(period), false, false, false);
 #endif
   }
-  else if (cachedOp == OVERLAPS_OP || cachedOp == CONTAINS_OP ||
-    cachedOp == CONTAINED_OP ||  cachedOp == ADJACENT_OP ||
-    cachedOp == BEFORE_OP || cachedOp == OVERBEFORE_OP ||
-    cachedOp == AFTER_OP || cachedOp == OVERAFTER_OP ||
+  else if (oper == OVERLAPS_OP || oper == CONTAINS_OP ||
+    oper == CONTAINED_OP ||  oper == ADJACENT_OP ||
+    oper == BEFORE_OP || oper == OVERBEFORE_OP ||
+    oper == AFTER_OP || oper == OVERAFTER_OP ||
     /* For b-tree comparisons, temporal values are first compared wrt
      * their bounding boxes, and if these are equal, other criteria apply.
      * For selectivity estimation we approximate by taking into account
      * only the bounding boxes. In the case here the bounding box is a
      * period and thus we can use the period selectivity estimation */
-    cachedOp == LT_OP || cachedOp == LE_OP ||
-    cachedOp == GT_OP || cachedOp == GE_OP)
+    oper == LT_OP || oper == LE_OP ||
+    oper == GT_OP || oper == GE_OP)
   {
     /* Cast the period as a span to call the span selectivity functions */
-    selec = span_sel_hist(vardata, (Span *) period, cachedOp, PERIODSEL);
+    selec = span_sel_hist(vardata, (Span *) period, oper, PERIODSEL);
   }
   else /* Unknown operator */
   {
-    selec = temporal_sel_default(cachedOp);
+    selec = temporal_sel_default(oper);
   }
   return selec;
 }
@@ -235,15 +235,15 @@ temporal_sel_period(VariableStatData *vardata, Span *period,
  * @brief Get enumeration value associated to the operator according to the family
  */
 static bool
-temporal_cachedop_family(Oid operid, CachedOp *cachedOp,
+temporal_cachedop_family(Oid operid, meosOper *oper,
   TemporalFamily tempfamily)
 {
   /* Get enumeration value associated to the operator */
   assert(tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE);
   if (tempfamily == TEMPORALTYPE)
-    return temporal_cachedop(operid, cachedOp);
+    return temporal_cachedop(operid, oper);
   else /* tempfamily == TNUMBERTYPE */
-    return tnumber_cachedop(operid, cachedOp);
+    return tnumber_cachedop(operid, oper);
 }
 
 /**
@@ -260,8 +260,8 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
   Selectivity selec;
 
   /* Get enumeration value associated to the operator */
-  CachedOp cachedOp;
-  if (! temporal_cachedop_family(operid, &cachedOp, tempfamily))
+  meosOper oper;
+  if (! temporal_cachedop_family(operid, &oper, tempfamily))
     /* In the case of unknown operator */
     return DEFAULT_TEMP_SEL;
 
@@ -273,9 +273,9 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
       &varonleft))
   {
     if (tempfamily == TEMPORALTYPE)
-      return temporal_sel_default(cachedOp);
+      return temporal_sel_default(oper);
     else /* tempfamily == TNUMBERTYPE */
-      return tnumber_sel_default(cachedOp);
+      return tnumber_sel_default(oper);
   }
 
   /*
@@ -285,9 +285,9 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
   {
     ReleaseVariableStats(vardata);
     if (tempfamily == TEMPORALTYPE)
-      return temporal_sel_default(cachedOp);
+      return temporal_sel_default(oper);
     else /* tempfamily == TNUMBERTYPE */
-      return tnumber_sel_default(cachedOp);
+      return tnumber_sel_default(oper);
   }
 
   /*
@@ -313,9 +313,9 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
       /* Use default selectivity (should we raise an error instead?) */
       ReleaseVariableStats(vardata);
       if (tempfamily == TEMPORALTYPE)
-        return temporal_sel_default(cachedOp);
+        return temporal_sel_default(oper);
       else /* tempfamily == TNUMBERTYPE */
-        return tnumber_sel_default(cachedOp);
+        return tnumber_sel_default(oper);
     }
   }
 
@@ -325,9 +325,9 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
     Span period;
     if (! temporal_const_to_period(other, &period))
       /* In the case of unknown constant */
-      return temporal_sel_default(cachedOp);
+      return temporal_sel_default(oper);
     /* Compute the selectivity */
-    selec = temporal_sel_period(&vardata, &period, cachedOp);
+    selec = temporal_sel_period(&vardata, &period, oper);
   }
   else /* tempfamily == TNUMBERTYPE */
   {
@@ -338,10 +338,10 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
     Span *p = NULL;
     if (! tnumber_const_to_span_period(other, &s, &p, basetype))
       /* In the case of unknown constant */
-      return tnumber_sel_default(cachedOp);
+      return tnumber_sel_default(oper);
 
     /* Compute the selectivity */
-    selec = tnumber_sel_span_period(&vardata, s, p, cachedOp,
+    selec = tnumber_sel_span_period(&vardata, s, p, oper,
       type_oid(basetype));
     /* Free variables */
     if (s) pfree(s);
@@ -415,8 +415,8 @@ temporal_joinsel(PlannerInfo *root, Oid operid, List *args,
     return DEFAULT_TEMP_JOINSEL;
 
   /* Get enumeration value associated to the operator */
-  CachedOp cachedOp;
-  if (! temporal_cachedop_family(operid, &cachedOp, tempfamily))
+  meosOper oper;
+  if (! temporal_cachedop_family(operid, &oper, tempfamily))
     /* In the case of unknown operator */
     return DEFAULT_TEMP_SEL;
 
@@ -434,10 +434,10 @@ temporal_joinsel(PlannerInfo *root, Oid operid, List *args,
   {
     meosType oprleft = oid_type(var1->vartype);
     meosType oprright = oid_type(var2->vartype);
-    if (! tnumber_joinsel_components(cachedOp, oprleft, oprright,
+    if (! tnumber_joinsel_components(oper, oprleft, oprright,
       &value, &time))
       /* In the case of unknown arguments */
-      return tnumber_joinsel_default(cachedOp);
+      return tnumber_joinsel_default(oper);
   }
 
   /*
@@ -456,12 +456,12 @@ temporal_joinsel(PlannerInfo *root, Oid operid, List *args,
      * There is no ~= operator for time types and thus it is necessary to
      * take care of this operator here.
      */
-    if (cachedOp == SAME_OP)
+    if (oper == SAME_OP)
       // TODO
-      selec *= span_joinsel_default(cachedOp);
+      selec *= span_joinsel_default(oper);
     else
       /* Estimate join selectivity */
-      selec *= span_joinsel(root, cachedOp, args, jointype, sjinfo);
+      selec *= span_joinsel(root, oper, args, jointype, sjinfo);
   }
 
   CLAMP_PROBABILITY(selec);

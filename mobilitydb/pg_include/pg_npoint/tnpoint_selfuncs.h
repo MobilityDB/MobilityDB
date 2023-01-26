@@ -42,7 +42,7 @@
 
 /*****************************************************************************/
 
-extern bool tnpoint_cachedop(Oid operid, CachedOp *cachedOp);
+extern bool tnpoint_cachedop(Oid operid, meosOper *oper);
 
 /*****************************************************************************/
 

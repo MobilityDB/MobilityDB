@@ -45,15 +45,15 @@
 
 /*****************************************************************************/
 
-extern bool tnumber_cachedop(Oid operid, CachedOp *cachedOp);
+extern bool tnumber_cachedop(Oid operid, meosOper *oper);
 extern bool tnumber_const_to_span_period(const Node *other, Span **s,
   Span **p, meosType basetype);
-extern float8 tnumber_sel_default(CachedOp cachedOp);
+extern float8 tnumber_sel_default(meosOper oper);
 extern Selectivity tnumber_sel_span_period(VariableStatData *vardata,
-  Span *span, Span *period, CachedOp cachedOp, Oid basetypid);
+  Span *span, Span *period, meosOper oper, Oid basetypid);
 
-extern float8 tnumber_joinsel_default(CachedOp cachedOp);
-extern bool tnumber_joinsel_components(CachedOp cachedOp, meosType oprleft,
+extern float8 tnumber_joinsel_default(meosOper oper);
+extern bool tnumber_joinsel_components(meosOper oper, meosType oprleft,
   meosType oprright, bool *value, bool *time);
 
 /*****************************************************************************/

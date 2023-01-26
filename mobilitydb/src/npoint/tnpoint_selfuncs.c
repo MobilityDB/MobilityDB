@@ -44,27 +44,27 @@
  * @brief Get the enum value associated to the operator
  */
 bool
-tnpoint_cachedop(Oid operid, CachedOp *cachedOp)
+tnpoint_cachedop(Oid operid, meosOper *oper)
 {
   for (int i = OVERLAPS_OP; i <= OVERAFTER_OP; i++)
   {
-    if (operid == oper_oid((CachedOp) i, T_GEOMETRY, T_TNPOINT) ||
-        operid == oper_oid((CachedOp) i, T_NPOINT, T_TNPOINT) ||
-        operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TNPOINT) ||
-        operid == oper_oid((CachedOp) i, T_TSTZSET, T_TNPOINT) ||
-        operid == oper_oid((CachedOp) i, T_TSTZSPAN, T_TNPOINT) ||
-        operid == oper_oid((CachedOp) i, T_TSTZSPANSET, T_TNPOINT) ||
-        operid == oper_oid((CachedOp) i, T_STBOX, T_TNPOINT) ||
-        operid == oper_oid((CachedOp) i, T_TNPOINT, T_GEOMETRY) ||
-        operid == oper_oid((CachedOp) i, T_TNPOINT, T_NPOINT) ||
-        operid == oper_oid((CachedOp) i, T_TNPOINT, T_TIMESTAMPTZ) ||
-        operid == oper_oid((CachedOp) i, T_TNPOINT, T_TSTZSET) ||
-        operid == oper_oid((CachedOp) i, T_TNPOINT, T_TSTZSPAN) ||
-        operid == oper_oid((CachedOp) i, T_TNPOINT, T_TSTZSPANSET) ||
-        operid == oper_oid((CachedOp) i, T_TNPOINT, T_STBOX) ||
-        operid == oper_oid((CachedOp) i, T_TNPOINT, T_TNPOINT))
+    if (operid == oper_oid((meosOper) i, T_GEOMETRY, T_TNPOINT) ||
+        operid == oper_oid((meosOper) i, T_NPOINT, T_TNPOINT) ||
+        operid == oper_oid((meosOper) i, T_TIMESTAMPTZ, T_TNPOINT) ||
+        operid == oper_oid((meosOper) i, T_TSTZSET, T_TNPOINT) ||
+        operid == oper_oid((meosOper) i, T_TSTZSPAN, T_TNPOINT) ||
+        operid == oper_oid((meosOper) i, T_TSTZSPANSET, T_TNPOINT) ||
+        operid == oper_oid((meosOper) i, T_STBOX, T_TNPOINT) ||
+        operid == oper_oid((meosOper) i, T_TNPOINT, T_GEOMETRY) ||
+        operid == oper_oid((meosOper) i, T_TNPOINT, T_NPOINT) ||
+        operid == oper_oid((meosOper) i, T_TNPOINT, T_TIMESTAMPTZ) ||
+        operid == oper_oid((meosOper) i, T_TNPOINT, T_TSTZSET) ||
+        operid == oper_oid((meosOper) i, T_TNPOINT, T_TSTZSPAN) ||
+        operid == oper_oid((meosOper) i, T_TNPOINT, T_TSTZSPANSET) ||
+        operid == oper_oid((meosOper) i, T_TNPOINT, T_STBOX) ||
+        operid == oper_oid((meosOper) i, T_TNPOINT, T_TNPOINT))
       {
-        *cachedOp = (CachedOp) i;
+        *oper = (meosOper) i;
         return true;
       }
   }
