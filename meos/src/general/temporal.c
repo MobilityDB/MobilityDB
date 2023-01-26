@@ -109,6 +109,28 @@ ensure_tinstarr(const TInstant **instants, int count)
 }
 
 /**
+ * @brief Ensure that a temporal value has discrete interpolation
+ */
+void
+ensure_discrete_interpolation(int16 flags)
+{
+  if (! MOBDB_FLAGS_GET_DISCRETE(flags))
+    elog(ERROR, "The temporal value must have discrete interpolation");
+  return;
+}
+
+/**
+ * @brief Ensure that a temporal value has continuous interpolation
+ */
+void
+ensure_continuous_interpolation(int16 flags)
+{
+  if (! MOBDB_FLAGS_GET_CONTINUOUS(flags))
+    elog(ERROR, "The temporal value must have continuous interpolation");
+  return;
+}
+
+/**
  * @brief Ensure that a temporal value does not have linear interpolation
  */
 void

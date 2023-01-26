@@ -766,16 +766,22 @@ SELECT MAX(numValues(getValues(temp))) FROM tbl_tint;
   35
 (1 row)
 
-SELECT MAX(numSpans(getValues(temp))) FROM tbl_tfloat;
+SELECT MAX(numValues(getValues(temp))) FROM tbl_tfloat;
  max 
 -----
-   9
+  52
 (1 row)
 
 SELECT MAX(numValues(getValues(temp))) FROM tbl_ttext;
  max 
 -----
   54
+(1 row)
+
+SELECT MAX(numSpans(traversedValues(temp))) FROM tbl_tfloat;
+ max 
+-----
+   9
 (1 row)
 
 SELECT DISTINCT startValue(temp) FROM tbl_tbool;

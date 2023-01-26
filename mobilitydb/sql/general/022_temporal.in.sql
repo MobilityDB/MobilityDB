@@ -520,12 +520,17 @@ CREATE FUNCTION getValues(tint)
   AS 'MODULE_PATHNAME', 'Temporal_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION getValues(tfloat)
-  RETURNS floatspanset
-  AS 'MODULE_PATHNAME', 'Tfloat_spanset'
+  RETURNS floatset
+  AS 'MODULE_PATHNAME', 'Temporal_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION getValues(ttext)
   RETURNS textset
   AS 'MODULE_PATHNAME', 'Temporal_values'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION traversedValues(tfloat)
+  RETURNS floatspanset
+  AS 'MODULE_PATHNAME', 'Tfloat_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION startValue(tbool)
