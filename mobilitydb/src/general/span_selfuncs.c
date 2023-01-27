@@ -87,26 +87,18 @@ value_cachedop(Oid operid, meosOper *oper)
   // TODO find a more efficient way to do this
   for (int i = EQ_OP; i <= OVERAFTER_OP; i++)
   {
-    if (operid == oper_oid((meosOper) i, T_INT4, T_INTSET) ||
-        operid == oper_oid((meosOper) i, T_INT4, T_INTSPAN) ||
+    if (operid == oper_oid((meosOper) i, T_INT4, T_INTSPAN) ||
         operid == oper_oid((meosOper) i, T_INT4, T_INTSPANSET) ||
-        operid == oper_oid((meosOper) i, T_INT8, T_BIGINTSET) ||
         operid == oper_oid((meosOper) i, T_INT8, T_BIGINTSPAN) ||
         operid == oper_oid((meosOper) i, T_INT8, T_BIGINTSPANSET) ||
         operid == oper_oid((meosOper) i, T_FLOAT8, T_INTSPAN) ||
         operid == oper_oid((meosOper) i, T_FLOAT8, T_INTSPANSET) ||
-        operid == oper_oid((meosOper) i, T_TBOX, T_INTSPAN) ||
-        operid == oper_oid((meosOper) i, T_TBOX, T_INTSPANSET) ||
-        operid == oper_oid((meosOper) i, T_INTSET, T_INT4) ||
         operid == oper_oid((meosOper) i, T_INTSPAN, T_INT4) ||
         operid == oper_oid((meosOper) i, T_INTSPANSET, T_INT4) ||
-        operid == oper_oid((meosOper) i, T_BIGINTSET, T_INT8) ||
         operid == oper_oid((meosOper) i, T_BIGINTSPAN, T_INT8) ||
         operid == oper_oid((meosOper) i, T_BIGINTSPANSET, T_INT8) ||
         operid == oper_oid((meosOper) i, T_INTSPAN, T_FLOAT8) ||
         operid == oper_oid((meosOper) i, T_INTSPANSET, T_FLOAT8) ||
-        operid == oper_oid((meosOper) i, T_INTSPAN, T_TBOX) ||
-        operid == oper_oid((meosOper) i, T_INTSPANSET, T_TBOX) ||
         operid == oper_oid((meosOper) i, T_INTSPAN, T_INTSPAN) ||
         operid == oper_oid((meosOper) i, T_INTSPANSET, T_INTSPAN) ||
         operid == oper_oid((meosOper) i, T_INTSPAN, T_INTSPANSET) ||
@@ -115,14 +107,10 @@ value_cachedop(Oid operid, meosOper *oper)
         operid == oper_oid((meosOper) i, T_INT4, T_FLOATSPANSET) ||
         operid == oper_oid((meosOper) i, T_FLOAT8, T_FLOATSPAN) ||
         operid == oper_oid((meosOper) i, T_FLOAT8, T_FLOATSPANSET) ||
-        operid == oper_oid((meosOper) i, T_TBOX, T_FLOATSPAN) ||
-        operid == oper_oid((meosOper) i, T_TBOX, T_FLOATSPANSET) ||
         operid == oper_oid((meosOper) i, T_FLOATSPAN, T_INT4) ||
         operid == oper_oid((meosOper) i, T_FLOATSPANSET, T_INT4) ||
         operid == oper_oid((meosOper) i, T_FLOATSPAN, T_FLOAT8) ||
         operid == oper_oid((meosOper) i, T_FLOATSPANSET, T_FLOAT8) ||
-        operid == oper_oid((meosOper) i, T_FLOATSPAN, T_TBOX) ||
-        operid == oper_oid((meosOper) i, T_FLOATSPANSET, T_TBOX) ||
         operid == oper_oid((meosOper) i, T_FLOATSPAN, T_FLOATSPAN) ||
         operid == oper_oid((meosOper) i, T_FLOATSPANSET, T_FLOATSPAN) ||
         operid == oper_oid((meosOper) i, T_FLOATSPAN, T_FLOATSPANSET) ||
@@ -143,19 +131,12 @@ time_cachedop(Oid operid, meosOper *oper)
 {
   for (int i = EQ_OP; i <= OVERAFTER_OP; i++)
   {
-    if (operid == oper_oid((meosOper) i, T_TIMESTAMPTZ, T_TSTZSET) ||
-        operid == oper_oid((meosOper) i, T_TIMESTAMPTZ, T_TSTZSPAN) ||
+    if (operid == oper_oid((meosOper) i, T_TIMESTAMPTZ, T_TSTZSPAN) ||
         operid == oper_oid((meosOper) i, T_TIMESTAMPTZ, T_TSTZSPANSET) ||
-        operid == oper_oid((meosOper) i, T_TSTZSET, T_TIMESTAMPTZ) ||
-        operid == oper_oid((meosOper) i, T_TSTZSET, T_TSTZSET) ||
-        operid == oper_oid((meosOper) i, T_TSTZSET, T_TSTZSPAN) ||
-        operid == oper_oid((meosOper) i, T_TSTZSET, T_TSTZSPANSET) ||
         operid == oper_oid((meosOper) i, T_TSTZSPAN, T_TIMESTAMPTZ) ||
-        operid == oper_oid((meosOper) i, T_TSTZSPAN, T_TSTZSET) ||
         operid == oper_oid((meosOper) i, T_TSTZSPAN, T_TSTZSPAN) ||
         operid == oper_oid((meosOper) i, T_TSTZSPAN, T_TSTZSPANSET) ||
         operid == oper_oid((meosOper) i, T_TSTZSPANSET, T_TIMESTAMPTZ) ||
-        operid == oper_oid((meosOper) i, T_TSTZSPANSET, T_TSTZSET) ||
         operid == oper_oid((meosOper) i, T_TSTZSPANSET, T_TSTZSPAN) ||
         operid == oper_oid((meosOper) i, T_TSTZSPANSET, T_TSTZSPANSET))
       {

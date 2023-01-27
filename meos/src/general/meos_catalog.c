@@ -36,6 +36,7 @@
 
 /* PostgreSQL */
 #include <postgres.h>
+#include <common/hashfn.h>
 /* MEOS */
 #include <meos.h>
 #include "general/pg_types.h"
@@ -51,7 +52,7 @@
 /**
  * @brief Global array that keeps type information for the temporal types
  */
-temptype_cache_struct _temptype_cache[] =
+temptype_catalog_struct _temptype_catalog[] =
 {
   /* temptype    basetype */
   {T_TDOUBLE2,   T_DOUBLE2},
@@ -69,7 +70,7 @@ temptype_cache_struct _temptype_cache[] =
 /**
  * @brief Global array that keeps type information for the set types defined
  */
-settype_cache_struct _settype_cache[] =
+settype_catalog_struct _settype_catalog[] =
 {
   /* settype        basetype */
   {T_INTSET,        T_INT4},
@@ -85,7 +86,7 @@ settype_cache_struct _settype_cache[] =
 /**
  * @brief Global array that keeps type information for the span types defined
  */
-spantype_cache_struct _spantype_cache[] =
+spantype_catalog_struct _spantype_catalog[] =
 {
   /* spantype       basetype */
   {T_INTSPAN,       T_INT4},
@@ -97,7 +98,7 @@ spantype_cache_struct _spantype_cache[] =
 /**
  * @brief Global array that keeps type information for the span set types defined
  */
-spansettype_cache_struct _spansettype_cache[] =
+spansettype_catalog_struct _spansettype_catalog[] =
 {
   /* spansettype    spantype */
   {T_INTSPANSET,    T_INTSPAN},
@@ -116,11 +117,11 @@ spansettype_cache_struct _spansettype_cache[] =
 meosType
 temptype_basetype(meosType temptype)
 {
-  int n = sizeof(_temptype_cache) / sizeof(temptype_cache_struct);
+  int n = sizeof(_temptype_catalog) / sizeof(temptype_catalog_struct);
   for (int i = 0; i < n; i++)
   {
-    if (_temptype_cache[i].temptype == temptype)
-      return _temptype_cache[i].basetype;
+    if (_temptype_catalog[i].temptype == temptype)
+      return _temptype_catalog[i].basetype;
   }
   /* We only arrive here on error */
   elog(ERROR, "type %u is not a temporal type", temptype);
@@ -132,11 +133,11 @@ temptype_basetype(meosType temptype)
 meosType
 spantype_basetype(meosType spantype)
 {
-  int n = sizeof(_spantype_cache) / sizeof(spantype_cache_struct);
+  int n = sizeof(_spantype_catalog) / sizeof(spantype_catalog_struct);
   for (int i = 0; i < n; i++)
   {
-    if (_spantype_cache[i].spantype == spantype)
-      return _spantype_cache[i].basetype;
+    if (_spantype_catalog[i].spantype == spantype)
+      return _spantype_catalog[i].basetype;
   }
   /* We only arrive here on error */
   elog(ERROR, "type %u is not a span type", spantype);
@@ -148,11 +149,11 @@ spantype_basetype(meosType spantype)
 meosType
 spansettype_spantype(meosType spansettype)
 {
-  int n = sizeof(_spansettype_cache) / sizeof(spansettype_cache_struct);
+  int n = sizeof(_spansettype_catalog) / sizeof(spansettype_catalog_struct);
   for (int i = 0; i < n; i++)
   {
-    if (_spansettype_cache[i].spansettype == spansettype)
-      return _spansettype_cache[i].spantype;
+    if (_spansettype_catalog[i].spansettype == spansettype)
+      return _spansettype_catalog[i].spantype;
   }
   /* We only arrive here on error */
   elog(ERROR, "type %u is not a span set type", spansettype);
@@ -164,11 +165,11 @@ spansettype_spantype(meosType spansettype)
 meosType
 basetype_spantype(meosType basetype)
 {
-  int n = sizeof(_spantype_cache) / sizeof(spantype_cache_struct);
+  int n = sizeof(_spantype_catalog) / sizeof(spantype_catalog_struct);
   for (int i = 0; i < n; i++)
   {
-    if (_spantype_cache[i].basetype == basetype)
-      return _spantype_cache[i].spantype;
+    if (_spantype_catalog[i].basetype == basetype)
+      return _spantype_catalog[i].spantype;
   }
   /* We only arrive here on error */
   elog(ERROR, "type %u is not a span type", basetype);
@@ -180,11 +181,11 @@ basetype_spantype(meosType basetype)
 meosType
 spantype_spansettype(meosType spantype)
 {
-  int n = sizeof(_spansettype_cache) / sizeof(spansettype_cache_struct);
+  int n = sizeof(_spansettype_catalog) / sizeof(spansettype_catalog_struct);
   for (int i = 0; i < n; i++)
   {
-    if (_spansettype_cache[i].spantype == spantype)
-      return _spansettype_cache[i].spansettype;
+    if (_spansettype_catalog[i].spantype == spantype)
+      return _spansettype_catalog[i].spansettype;
   }
   /* We only arrive here on error */
   elog(ERROR, "type %u is not a span type", spantype);
@@ -196,11 +197,11 @@ spantype_spansettype(meosType spantype)
 meosType
 settype_basetype(meosType settype)
 {
-  int n = sizeof(_settype_cache) / sizeof(settype_cache_struct);
+  int n = sizeof(_settype_catalog) / sizeof(settype_catalog_struct);
   for (int i = 0; i < n; i++)
   {
-    if (_settype_cache[i].settype == settype)
-      return _settype_cache[i].basetype;
+    if (_settype_catalog[i].settype == settype)
+      return _settype_catalog[i].basetype;
   }
   /* We only arrive here on error */
   elog(ERROR, "type %u is not a set type", settype);
@@ -212,11 +213,11 @@ settype_basetype(meosType settype)
 meosType
 basetype_settype(meosType basetype)
 {
-  int n = sizeof(_settype_cache) / sizeof(settype_cache_struct);
+  int n = sizeof(_settype_catalog) / sizeof(settype_catalog_struct);
   for (int i = 0; i < n; i++)
   {
-    if (_settype_cache[i].basetype == basetype)
-      return _settype_cache[i].settype;
+    if (_settype_catalog[i].basetype == basetype)
+      return _settype_catalog[i].settype;
   }
   /* We only arrive here on error */
   elog(ERROR, "type %u is not a set type", basetype);
@@ -539,6 +540,17 @@ ensure_span_type(meosType type)
   if (! span_type(type))
     elog(ERROR, "unknown span type: %d", type);
   return;
+}
+
+/**
+ * @brief Return true if the type is a numeric span type
+ */
+bool
+numspan_basetype(meosType type)
+{
+  if (type == T_INT4 || type == T_INT8 || type == T_FLOAT8)
+    return true;
+  return false;
 }
 
 /**

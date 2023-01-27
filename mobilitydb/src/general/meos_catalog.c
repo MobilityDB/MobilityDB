@@ -54,6 +54,8 @@
 #include <access/htup_details.h>
 #include <access/tableam.h>
 #include <catalog/namespace.h>
+#include <common/hashfn.h>
+#include <lib/simplehash.h>
 #include <utils/rel.h>
 /* MEOS */
 #include "general/temporaltypes.h"
@@ -61,6 +63,32 @@
   #include "npoint/tnpoint_static.h"
 #endif
 #include "general/meos_catalog.h"
+
+/**
+ * Structure to represent the temporal type cache array.
+ */
+typedef struct
+{
+  Oid operOid;       /**< Oid of the operator (hashtable key) */
+  meosOper oper;     /**< Enum value of the operator type */
+  meosType ltype;    /**< Enum value of the left type */
+  meosType rtype;    /**< Enum value of the right type */
+  char status;       /* hash status */
+} meosoper_catalog_struct;
+
+/* define hashtable mapping Oid numbers to meosoper_catalog_struct's */
+#define SH_USE_NONDEFAULT_ALLOCATOR
+#define SH_PREFIX opertable
+#define SH_ELEMENT_TYPE meosoper_catalog_struct
+#define SH_KEY_TYPE Oid
+#define SH_KEY operOid
+#define SH_HASH_KEY(tb, key) hash_bytes_uint32(key)
+#define SH_EQUAL(tb, a, b) a == b
+#define SH_SCOPE static inline
+#define SH_RAW_ALLOCATOR palloc0
+#define SH_DEFINE
+#define SH_DECLARE
+#include "lib/simplehash.h"
 
 /*****************************************************************************
  * Global variables
@@ -165,12 +193,19 @@ const char *_op_names[] =
  * @brief Global variable that states whether the type and operator Oid caches
  * has been initialized.
  */
-bool _oid_cache_ready = false;
+bool _oid_catalog_ready = false;
 
 /**
- * @brief Global array that keeps the Oids of the types used in MobilityDB.
+ * @brief Global array that keeps the type Oids used in MobilityDB.
  */
 Oid _type_oids[sizeof(_type_names) / sizeof(char *)];
+
+/**
+ * @brief Global hash table that keeps the operator Oids used in MobilityDB.
+ */
+
+struct opertable_hash *_oper_oids;
+
 
 /**
  * @brief Global 3-dimensional array that keeps the Oids of the operators
@@ -200,7 +235,7 @@ internal_type(const char *typname)
  * @brief Populate the Oid cache for types
  */
 static void
-populate_typeoid_cache()
+populate_typeoid_catalog()
 {
   int n = sizeof(_type_names) / sizeof(char *);
   for (int i = 0; i < n; i++)
@@ -217,16 +252,19 @@ populate_typeoid_cache()
  * Populate @brief the Oid cache for operators
  */
 static void
-populate_operoid_cache()
+populate_operoid_catalog()
 {
   Oid namespaceId = LookupNamespaceNoError("public");
   OverrideSearchPath* overridePath = GetOverrideSearchPath(CurrentMemoryContext);
   overridePath->schemas = lcons_oid(namespaceId, overridePath->schemas);
   PushOverrideSearchPath(overridePath);
 
+  /* Create the hash table */
+  _oper_oids = opertable_create(1024, NULL);
+
   PG_TRY();
   {
-    populate_typeoid_cache();
+    populate_typeoid_catalog();
     memset(_op_oids, 0, sizeof(_op_oids));
     /*
      * This fetches the pre-computed operator cache from the catalog where
@@ -248,7 +286,21 @@ populate_operoid_cache()
       int32 i = DatumGetInt32(heap_getattr(tuple, 1, tupDesc, &isnull));
       int32 j = DatumGetInt32(heap_getattr(tuple, 2, tupDesc, &isnull));
       int32 k = DatumGetInt32(heap_getattr(tuple, 3, tupDesc, &isnull));
-      _op_oids[i][j][k] = DatumGetObjectId(heap_getattr(tuple, 4, tupDesc, &isnull));
+      Oid operOid = DatumGetObjectId(heap_getattr(tuple, 4, tupDesc, &isnull));
+      _op_oids[i][j][k] = operOid;
+      /* Fill the struct to be added to the hash table */
+      bool found;
+      meosoper_catalog_struct *entry =
+        opertable_insert(_oper_oids, operOid, &found);
+      if (! found)
+      {
+        entry->operOid = operOid;
+        entry->oper = i;
+        entry->ltype = j;
+        entry->rtype = k;
+        // char status;       /* hash status */
+      }
+
       tuple = heap_getnext(scan, ForwardScanDirection);
     }
     heap_endscan(scan);
@@ -258,7 +310,7 @@ populate_operoid_cache()
     table_close(rel, AccessShareLock);
 #endif
     PopOverrideSearchPath();
-    _oid_cache_ready = true;
+    _oid_catalog_ready = true;
   }
   PG_CATCH();
   {
@@ -287,16 +339,18 @@ fill_opcache(PG_FUNCTION_ARGS __attribute__((unused)))
   bool isnull[] = {false, false, false, false};
   Datum data[] = {0, 0, 0, 0};
 
-  populate_typeoid_cache();
+  populate_typeoid_catalog();
   int32 m = sizeof(_op_names) / sizeof(char *);
   int32 n = sizeof(_type_names) / sizeof(char *);
-  for (int32 i = 0; i < m; i++)
+    /* The enumerated values meosType and meosOper set 0 to an unknown value */
+  for (int32 i = 1; i < m; i++)
   {
     List* lst = list_make1(makeString((char *) _op_names[i]));
-    for (int32 j = 0; j < n; j++)
-      for (int32 k = 0; k < n; k++)
+    for (int32 j = 1; j < n; j++)
+      for (int32 k = 1; k < n; k++)
       {
-        data[3] = ObjectIdGetDatum(OpernameGetOprid(lst, _type_oids[j], _type_oids[k]));
+        data[3] = ObjectIdGetDatum(OpernameGetOprid(lst, _type_oids[j],
+          _type_oids[k]));
         if (data[3] != InvalidOid)
         {
           data[0] = Int32GetDatum(i);
@@ -324,8 +378,8 @@ fill_opcache(PG_FUNCTION_ARGS __attribute__((unused)))
 Oid
 type_oid(meosType type)
 {
-  if (!_oid_cache_ready)
-    populate_operoid_cache();
+  if (!_oid_catalog_ready)
+    populate_operoid_catalog();
   return _type_oids[type];
 }
 
@@ -339,8 +393,8 @@ type_oid(meosType type)
 Oid
 oper_oid(meosOper oper, meosType lt, meosType rt)
 {
-  if (!_oid_cache_ready)
-    populate_operoid_cache();
+  if (!_oid_catalog_ready)
+    populate_operoid_catalog();
   return _op_oids[oper][lt][rt];
 }
 
@@ -352,8 +406,8 @@ oper_oid(meosOper oper, meosType lt, meosType rt)
 meosType
 oid_type(Oid typid)
 {
-  if (!_oid_cache_ready)
-    populate_operoid_cache();
+  if (!_oid_catalog_ready)
+    populate_operoid_catalog();
   int n = sizeof(_type_names) / sizeof(char *);
   for (int i = 0; i < n; i++)
   {

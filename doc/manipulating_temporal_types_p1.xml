@@ -1134,8 +1134,8 @@ SELECT asText(shiftTscale(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-0
 
 			<listitem id="unnest">
 				<indexterm><primary><varname>unnest</varname></primary></indexterm>
-				<para>Transform a nonlinear temporal value into a set of rows, each one composed of a base value and a period set during which the temporal value has the base value.</para>
-				<para><varname>unnest(ttype) → setof value_time</varname></para>
+				<para>Transform a nonlinear temporal value into a set of rows, each one is a pair composed of a base value and a period set during which the temporal value has the base value.</para>
+				<para><varname>unnest(ttype) → {(value,time)}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT (un).value, (un).time
 FROM (SELECT unnest(tfloat '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}') AS un) t;
