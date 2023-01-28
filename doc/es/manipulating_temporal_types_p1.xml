@@ -1040,15 +1040,15 @@ SELECT twAvg(tfloat '{[1@2001-01-01, 2@2001-01-03), [2@2001-01-04, 2@2001-01-06)
 		<para>Un valor temporal se puede transformar en otro subtipo. Se genera un error si los subtipos son incompatibles.</para>
 		<itemizedlist>
 			<listitem id="ttype_transform">
-				<indexterm><primary><varname>ttype_inst</varname></primary></indexterm>
-				<indexterm><primary><varname>ttype_discseq</varname></primary></indexterm>
-				<indexterm><primary><varname>ttype_contseq</varname></primary></indexterm>
-				<indexterm><primary><varname>ttype_seqset</varname></primary></indexterm>
+				<indexterm><primary><varname>&lt;ttype&gt;_inst</varname></primary></indexterm>
+				<indexterm><primary><varname>&lt;ttype&gt;_discseq</varname></primary></indexterm>
+				<indexterm><primary><varname>&lt;ttype&gt;_contseq</varname></primary></indexterm>
+				<indexterm><primary><varname>&lt;ttype&gt;_seqset</varname></primary></indexterm>
 				<para>Transformar un tipo temporal a otro subtipo</para>
-				<para><varname>ttype_inst(ttype) → ttype_inst</varname></para>
-				<para><varname>ttype_discseq(ttype) → ttype_discseq</varname></para>
-				<para><varname>ttype_contseq(ttype) → ttype_contseq</varname></para>
-				<para><varname>ttype_seqset(ttype) → ttype_seqset</varname></para>
+				<para><varname>&lt;ttype&gt;_inst(ttype) → ttype_inst</varname></para>
+				<para><varname>&lt;ttype&gt;_discseq(ttype) → ttype_discseq</varname></para>
+				<para><varname>&lt;ttype&gt;_contseq(ttype) → ttype_contseq</varname></para>
+				<para><varname>&lt;ttype&gt;_seqset(ttype) → ttype_seqset</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbool_inst(tbool '{[true@2001-01-01]}');
 -- t@2001-01-01
