@@ -3062,7 +3062,7 @@ tsequenceset_delete_periodset(const TSequenceSet *ss, const SpanSet *ps)
 }
 
 /*****************************************************************************
- * Intersects functions
+ * Overlaps time functions
  *****************************************************************************/
 
 /**

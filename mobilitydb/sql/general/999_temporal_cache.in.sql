@@ -34,9 +34,9 @@
  */
 
 CREATE TABLE mobilitydb_opcache (
+  opnum INT,
   ltypnum INT,
   rtypnum INT,
-  opnum INT,
   opid Oid
 );
 

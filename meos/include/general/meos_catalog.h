@@ -136,6 +136,18 @@ typedef enum
   OVERBEFORE_OP   = 28, /**< Overbefore `&<#` operator */
   AFTER_OP        = 29, /**< After `#>>` operator */
   OVERAFTER_OP    = 30, /**< Overafter `#&>` operator */
+  EVEREQ_OP       = 31, /**< Evereq `?=` operator */
+  EVERNE_OP       = 32, /**< Everne `?<>` operator */
+  EVERLT_OP       = 33, /**< Everlt `?<` operator */
+  EVERLE_OP       = 34, /**< Everle `?<=` operator */
+  EVERGT_OP       = 35, /**< Evergt `?>` operator */
+  EVERGE_OP       = 36, /**< Everge `?>=` operator */
+  ALWAYSEQ_OP     = 37, /**< Alwayseq `%=` operator */
+  ALWAYSNE_OP     = 38, /**< Alwaysne `%<>` operator */
+  ALWAYSLT_OP     = 39, /**< Alwayslt `%<` operator */
+  ALWAYSLE_OP     = 40, /**< Alwaysle `%<=` operator */
+  ALWAYSGT_OP     = 41, /**< Alwaysgt `%>` operator */
+  ALWAYSGE_OP     = 42, /**< Alwaysge `%>=` operator */
 } meosOper;
 
 /**
@@ -176,7 +188,7 @@ typedef struct
 
 /*****************************************************************************/
 
-/* Cache functions */
+/* Type conversion functions */
 
 extern meosType temptype_basetype(meosType temptype);
 extern meosType settype_basetype(meosType settype);

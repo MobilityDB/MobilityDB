@@ -2554,7 +2554,7 @@ Temporal_delete_periodset(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Intersects functions
+ * Overlaps time functions
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(Temporal_overlaps_timestamp);

@@ -82,7 +82,8 @@ span_joinsel_default(meosOper oper __attribute__((unused)))
  * @brief Determine whether we can estimate selectivity for the operator
  */
 static bool
-value_sel(Oid operid __attribute__((unused)), meosType ltype, meosType rtype)
+value_oper_sel(Oid operid __attribute__((unused)), meosType ltype,
+  meosType rtype)
 {
   if ((numspan_basetype(ltype) || numset_type(ltype) || numspan_type(ltype) ||
         spanset_type(ltype)) &&
@@ -96,7 +97,7 @@ value_sel(Oid operid __attribute__((unused)), meosType ltype, meosType rtype)
  * @brief Determine whether we can estimate selectivity for the operator
  */
 bool
-time_sel(meosOper oper __attribute__((unused)), meosType ltype, meosType rtype)
+time_oper_sel(meosOper oper __attribute__((unused)), meosType ltype, meosType rtype)
 {
   if ((timespan_basetype(ltype) || timeset_type(ltype) || timespan_type(ltype) ||
         timespanset_type(ltype)) &&
@@ -700,15 +701,15 @@ span_sel_hist1(AttStatsSlot *hslot, AttStatsSlot *lslot, const Span *constval,
  * This estimate is for the portion of values that are not NULL.
  */
 double
-span_sel_hist(VariableStatData *vardata, const Span *constval,
-  meosOper oper, SpanPeriodSel spansel)
+span_sel_hist(VariableStatData *vardata, const Span *constval, meosOper oper,
+  bool value)
 {
   AttStatsSlot hslot, lslot;
   double selec;
 
   memset(&hslot, 0, sizeof(hslot));
 
-  int stats_kind = (spansel == SPANSEL) ?
+  int stats_kind = value ?
     STATISTIC_KIND_VALUE_BOUNDS_HISTOGRAM :
     STATISTIC_KIND_TIME_BOUNDS_HISTOGRAM;
   /* Try to get histogram of span bounds of vardata */
@@ -728,7 +729,7 @@ span_sel_hist(VariableStatData *vardata, const Span *constval,
   {
     memset(&lslot, 0, sizeof(lslot));
 
-    stats_kind = (spansel == SPANSEL) ?
+    stats_kind = value ?
       STATISTIC_KIND_VALUE_LENGTH_HISTOGRAM :
       STATISTIC_KIND_TIME_LENGTH_HISTOGRAM;
     if (!(HeapTupleIsValid(vardata->statsTuple) &&
@@ -801,11 +802,10 @@ span_const_to_span(Node *other, Span *span)
 }
 
 /**
- * @brief Restriction selectivity for span and time operators
+ * @brief Restriction selectivity for span operators
  */
 float8
-span_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
-  SpanPeriodSel spansel)
+span_sel(PlannerInfo *root, Oid operid, List *args, int varRelid)
 {
   VariableStatData vardata;
   Node *other;
@@ -865,13 +865,17 @@ span_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
   /* Determine whether we can estimate selectivity for the operator */
   meosType ltype, rtype;
   meosOper oper = oid_oper(operid, &ltype, &rtype);
-  bool found = (spansel == SPANSEL) ?
-    value_sel(oper, ltype, rtype) : time_sel(oper, ltype, rtype);
-  if (! found)
+  bool value, time;
+  value = value_oper_sel(oper, ltype, rtype);
+  if (! value)
   {
-    /* Unknown operator */
-    ReleaseVariableStats(vardata);
-    return span_sel_default(operid);
+    time = time_oper_sel(oper, ltype, rtype);
+    if (! time)
+    {
+      /* Unknown operator */
+      ReleaseVariableStats(vardata);
+      return span_sel_default(operid);
+    }
   }
 
   /*
@@ -904,7 +908,7 @@ span_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
    * returning the default estimate, because this still takes into
    * account the fraction of NULL tuples, if we had statistics for them.
    */
-  float8 hist_selec = span_sel_hist(&vardata, &span, oper, spansel);
+  float8 hist_selec = span_sel_hist(&vardata, &span, oper, value);
   if (hist_selec < 0.0)
     hist_selec = span_sel_default(operid);
 
@@ -918,17 +922,6 @@ span_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
   return selec;
 }
 
-Datum
-Span_sel_ext(FunctionCallInfo fcinfo, SpanPeriodSel spansel)
-{
-  PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
-  Oid operid = PG_GETARG_OID(1);
-  List *args = (List *) PG_GETARG_POINTER(2);
-  int varRelid = PG_GETARG_INT32(3);
-  float8 selec = span_sel(root, operid, args, varRelid, spansel);
-  PG_RETURN_FLOAT8((float8) selec);
-}
-
 PG_FUNCTION_INFO_V1(Span_sel);
 /**
  * @brief Restriction selectivity for span operators
@@ -936,17 +929,12 @@ PG_FUNCTION_INFO_V1(Span_sel);
 PGDLLEXPORT Datum
 Span_sel(PG_FUNCTION_ARGS)
 {
-  return Span_sel_ext(fcinfo, SPANSEL);
-}
-
-PG_FUNCTION_INFO_V1(Period_sel);
-/**
- * @brief Restriction selectivity for period operators
- */
-PGDLLEXPORT Datum
-Period_sel(PG_FUNCTION_ARGS)
-{
-  return Span_sel_ext(fcinfo, PERIODSEL);
+  PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
+  Oid operid = PG_GETARG_OID(1);
+  List *args = (List *) PG_GETARG_POINTER(2);
+  int varRelid = PG_GETARG_INT32(3);
+  float8 selec = span_sel(root, operid, args, varRelid);
+  PG_RETURN_FLOAT8((float8) selec);
 }
 
 /*****************************************************************************/
@@ -990,7 +978,7 @@ _mobdb_span_sel(PG_FUNCTION_ARGS)
   meosType ltype, rtype;
   meosOper oper = oid_oper(operid, &ltype, &rtype);
   bool found = value ?
-    value_sel(oper, ltype, rtype) : time_sel(oper, ltype, rtype);
+    value_oper_sel(oper, ltype, rtype) : time_oper_sel(oper, ltype, rtype);
   if (! found)
     /* In case of unknown operator */
     elog(ERROR, "Unknown operator Oid %d", operid);
@@ -1459,12 +1447,15 @@ Span_joinsel(PG_FUNCTION_ARGS)
   /* Determine whether we can estimate selectivity for the operator */
   meosType ltype, rtype;
   meosOper oper = oid_oper(operid, &ltype, &rtype);
-  bool found = value_sel(oper, ltype, rtype);
-  if (! found)
-    found = time_sel(oper, ltype, rtype);
-  if (! found)
-    /* Return default selectivity */
-    PG_RETURN_FLOAT8(span_joinsel_default(operid));
+  bool value, time;
+  value = value_oper_sel(oper, ltype, rtype);
+  if (! value)
+  {
+    time = time_oper_sel(oper, ltype, rtype);
+    if (! time)
+      /* Return default selectivity */
+      PG_RETURN_FLOAT8(span_joinsel_default(operid));
+  }
 
   float8 selec = span_joinsel(root, oper, args, jointype, sjinfo);
 
@@ -1530,13 +1521,15 @@ _mobdb_span_joinsel(PG_FUNCTION_ARGS)
   /* Determine whether we can estimate selectivity for the operator */
   meosType ltype, rtype;
   meosOper oper = oid_oper(operid, &ltype, &rtype);
-  bool value = value_sel(oper, ltype, rtype);
-  bool time;
+  bool value, time;
+  value = value_oper_sel(oper, ltype, rtype);
   if (! value)
-    time = time_sel(oper, ltype, rtype);
-  if (! time)
-    /* In case of unknown operator */
-    elog(ERROR, "Unknown span operator %d", operid);
+  {
+    time = time_oper_sel(oper, ltype, rtype);
+    if (! time)
+      /* In case of unknown operator */
+      elog(ERROR, "Unknown span operator %d", operid);
+  }
 
   /* Retrieve the stats objects */
   HeapTuple stats1_tuple = NULL, stats2_tuple = NULL;

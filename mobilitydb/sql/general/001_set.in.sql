@@ -629,10 +629,6 @@ CREATE FUNCTION span_sel(internal, oid, internal, integer)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Span_sel'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION period_sel(internal, oid, internal, integer)
-  RETURNS float
-  AS 'MODULE_PATHNAME', 'Period_sel'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_joinsel(internal, oid, internal, smallint, internal)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Span_joinsel'
@@ -879,7 +875,7 @@ CREATE OPERATOR < (
   LEFTARG = tstzset, RIGHTARG = tstzset,
   PROCEDURE = set_lt,
   COMMUTATOR = >, NEGATOR = >=,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE OPERATOR <= (
@@ -910,7 +906,7 @@ CREATE OPERATOR <= (
   LEFTARG = tstzset, RIGHTARG = tstzset,
   PROCEDURE = set_le,
   COMMUTATOR = >=, NEGATOR = >,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE OPERATOR >= (
@@ -941,7 +937,7 @@ CREATE OPERATOR >= (
   LEFTARG = tstzset, RIGHTARG = tstzset,
   PROCEDURE = set_ge,
   COMMUTATOR = <=, NEGATOR = <,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE OPERATOR > (
@@ -972,7 +968,7 @@ CREATE OPERATOR > (
   LEFTARG = tstzset, RIGHTARG = tstzset,
   PROCEDURE = set_gt,
   COMMUTATOR = <, NEGATOR = <=,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE OPERATOR CLASS intset_btree_ops

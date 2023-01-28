@@ -5586,7 +5586,7 @@ tcontseq_delete_periodset(const TSequence *seq, const SpanSet *ps)
 }
 
 /*****************************************************************************
- * Intersects functions
+ * Overlaps time functions
  *****************************************************************************/
 
 /**

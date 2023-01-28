@@ -186,7 +186,19 @@ const char *_op_names[] =
   [BEFORE_OP] = "<<#",
   [OVERBEFORE_OP] = "&<#",
   [AFTER_OP] = "#>>",
-  [OVERAFTER_OP] = "#&>"
+  [OVERAFTER_OP] = "#&>",
+  [EVEREQ_OP] = "?=",
+  [EVERNE_OP] = "?<>",
+  [EVERLT_OP] = "?<",
+  [EVERLE_OP] = "?<=",
+  [EVERGT_OP] = "?>",
+  [EVERGE_OP] = "?>=",
+  [ALWAYSEQ_OP] = "%=",
+  [ALWAYSNE_OP] = "%<>",
+  [ALWAYSLT_OP] = "%<",
+  [ALWAYSLE_OP] = "%<=",
+  [ALWAYSGT_OP] = "%>",
+  [ALWAYSGE_OP] = "%>=",
 };
 
 /**
@@ -259,7 +271,7 @@ populate_operoid_catalog()
   PushOverrideSearchPath(overridePath);
 
   /* Create the hash table
-   * As of 2023-27-01 there are 1470 operators defined in MobilityDB.
+   * As of January 2023 there are 1470 operators defined in MobilityDB.
    */
   _oper_oids = opertable_create(CacheMemoryContext, 2048, NULL);
 
@@ -299,7 +311,6 @@ populate_operoid_catalog()
         entry->oper = i;
         entry->ltype = j;
         entry->rtype = k;
-        // char status;
       }
 
       tuple = heap_getnext(scan, ForwardScanDirection);
@@ -380,7 +391,10 @@ type_oid(meosType type)
 {
   if (!_oid_catalog_ready)
     populate_operoid_catalog();
-  return _type_oids[type];
+  Oid result = _type_oids[type];
+  if (! result)
+    elog(ERROR, "Unknown MEOS type; %d", type);
+  return result;
 }
 
 /**
@@ -394,6 +408,10 @@ oper_oid(meosOper oper, meosType lt, meosType rt)
 {
   if (!_oid_catalog_ready)
     populate_operoid_catalog();
+  Oid result = _op_oids[oper][lt][rt];
+  if (! result)
+    elog(ERROR, "Unknown MEOS operator: %d, ltype; %d, rtype; %d",
+      oper, lt, rt);
   return _op_oids[oper][lt][rt];
 }
 

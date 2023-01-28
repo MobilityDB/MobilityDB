@@ -480,49 +480,6 @@ tpoint_const_stbox(Node *other, STBox *box)
 }
 
 /**
- * @brief Get the enum value associated to the operator
- */
-static bool
-tpoint_cachedop(Oid operid, meosOper *oper)
-{
-  for (int i = OVERLAPS_OP; i <= OVERAFTER_OP; i++)
-  {
-    if (operid == oper_oid((meosOper) i, T_GEOMETRY, T_TGEOMPOINT) ||
-        operid == oper_oid((meosOper) i, T_TIMESTAMPTZ, T_TGEOMPOINT) ||
-        operid == oper_oid((meosOper) i, T_TSTZSET, T_TGEOMPOINT) ||
-        operid == oper_oid((meosOper) i, T_TSTZSPAN, T_TGEOMPOINT) ||
-        operid == oper_oid((meosOper) i, T_TSTZSPANSET, T_TGEOMPOINT) ||
-        operid == oper_oid((meosOper) i, T_STBOX, T_TGEOMPOINT) ||
-        operid == oper_oid((meosOper) i, T_TGEOMPOINT, T_GEOMETRY) ||
-        operid == oper_oid((meosOper) i, T_TGEOMPOINT, T_TIMESTAMPTZ) ||
-        operid == oper_oid((meosOper) i, T_TGEOMPOINT, T_TSTZSET) ||
-        operid == oper_oid((meosOper) i, T_TGEOMPOINT, T_TSTZSPAN) ||
-        operid == oper_oid((meosOper) i, T_TGEOMPOINT, T_TSTZSPANSET) ||
-        operid == oper_oid((meosOper) i, T_TGEOMPOINT, T_STBOX) ||
-        operid == oper_oid((meosOper) i, T_TGEOMPOINT, T_TGEOMPOINT) ||
-
-        operid == oper_oid((meosOper) i, T_GEOGRAPHY, T_TGEOGPOINT) ||
-        operid == oper_oid((meosOper) i, T_TIMESTAMPTZ, T_TGEOGPOINT) ||
-        operid == oper_oid((meosOper) i, T_TSTZSET, T_TGEOGPOINT) ||
-        operid == oper_oid((meosOper) i, T_TSTZSPAN, T_TGEOGPOINT) ||
-        operid == oper_oid((meosOper) i, T_TSTZSPANSET, T_TGEOGPOINT) ||
-        operid == oper_oid((meosOper) i, T_STBOX, T_TGEOGPOINT) ||
-        operid == oper_oid((meosOper) i, T_TGEOGPOINT, T_GEOGRAPHY) ||
-        operid == oper_oid((meosOper) i, T_TGEOGPOINT, T_TIMESTAMPTZ) ||
-        operid == oper_oid((meosOper) i, T_TGEOGPOINT, T_TSTZSET) ||
-        operid == oper_oid((meosOper) i, T_TGEOGPOINT, T_TSTZSPAN) ||
-        operid == oper_oid((meosOper) i, T_TGEOGPOINT, T_TSTZSPANSET) ||
-        operid == oper_oid((meosOper) i, T_TGEOGPOINT, T_STBOX) ||
-        operid == oper_oid((meosOper) i, T_TGEOGPOINT, T_TGEOGPOINT))
-      {
-        *oper = (meosOper) i;
-        return true;
-      }
-  }
-  return false;
-}
-
-/**
  * @brief Set the values of an ND_BOX from an STBox
  *
  * The function only takes into account the x, y, and z dimensions of the box?
@@ -802,10 +759,28 @@ tpoint_sel_default(meosOper oper)
 }
 
 /**
+ * @brief Get the enum value associated to the operator
+ */
+static bool
+tpoint_oper_sel(Oid operid __attribute__((unused)), meosType ltype,
+  meosType rtype)
+{
+  if ((timespan_basetype(ltype) || timeset_type(ltype) ||
+        timespan_type(ltype) || timespanset_type(ltype) ||
+        geo_basetype(ltype) || ltype == T_STBOX || tgeo_type(ltype)) &&
+      (timespan_basetype(rtype) || timeset_type(rtype) ||
+        timespan_type(rtype) || timespanset_type(rtype) ||
+        geo_basetype(rtype) || rtype == T_STBOX || tgeo_type(rtype)))
+    return true;
+  return false;
+}
+
+/**
  * @brief Get enumeration value associated to the operator according to the family
  */
 static bool
-tpoint_cachedop_family(Oid operid, meosOper *oper, TemporalFamily tempfamily)
+tpoint_oper_sel_family(meosOper oper __attribute__((unused)), meosType ltype,
+  meosType rtype, TemporalFamily tempfamily)
 {
 #if NPOINT
   assert(tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE);
@@ -813,9 +788,9 @@ tpoint_cachedop_family(Oid operid, meosOper *oper, TemporalFamily tempfamily)
   assert(tempfamily == TPOINTTYPE);
 #endif /* NPOINT */
   if (tempfamily == TPOINTTYPE)
-    return tpoint_cachedop(operid, oper);
+    return tpoint_oper_sel(oper, ltype, rtype);
   else /* tempfamily == TNPOINTTYPE */
-    return tnpoint_cachedop(operid, oper);
+    return tnpoint_oper_sel(oper, ltype, rtype);
 }
 
 /**
@@ -833,9 +808,10 @@ tpoint_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
   STBox box;
   Span period;
 
-  /* Get enumeration value associated to the operator */
-  meosOper oper;
-  if (! tpoint_cachedop_family(operid, &oper, tempfamily))
+  /* Determine whether we can estimate selectivity for the operator */
+  meosType ltype, rtype;
+  meosOper oper = oid_oper(operid, &ltype, &rtype);
+  if (! tpoint_oper_sel_family(oper, ltype, rtype, tempfamily))
     /* In the case of unknown operator */
     return DEFAULT_TEMP_SEL;
 
@@ -1302,9 +1278,10 @@ tpoint_joinsel(PlannerInfo *root, Oid operid, List *args, JoinType jointype,
   if (!IsA(arg1, Var) || !IsA(arg2, Var))
     return DEFAULT_TEMP_JOINSEL;
 
-  /* Get enumeration value associated to the operator */
-  meosOper oper;
-  if (! tpoint_cachedop_family(operid, &oper, tempfamily))
+  /* Determine whether we can estimate selectivity for the operator */
+  meosType ltype, rtype;
+  meosOper oper = oid_oper(operid, &ltype, &rtype);
+  if (! tpoint_oper_sel_family(oper, ltype, rtype, tempfamily))
     /* In the case of unknown operator */
     return DEFAULT_TEMP_SEL;
 
@@ -1312,10 +1289,8 @@ tpoint_joinsel(PlannerInfo *root, Oid operid, List *args, JoinType jointype,
    * Determine whether the space and/or the time components are
    * taken into account for the selectivity estimation
    */
-  meosType oprleft = oid_type(var1->vartype);
-  meosType oprright = oid_type(var2->vartype);
   bool space, time;
-  if (! tpoint_joinsel_components(oper, oprleft, oprright, &space, &time))
+  if (! tpoint_joinsel_components(oper, ltype, rtype, &space, &time))
     /* In the case of unknown arguments */
     return tpoint_joinsel_default(oper);
 

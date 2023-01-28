@@ -127,13 +127,13 @@ CREATE OPERATOR @> (
   PROCEDURE = set_contains,
   LEFTARG = tstzset, RIGHTARG = timestamptz,
   COMMUTATOR = <@,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR @> (
   PROCEDURE = set_contains,
   LEFTARG = tstzset, RIGHTARG = tstzset,
   COMMUTATOR = <@,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 /******************************************************************************/
@@ -229,13 +229,13 @@ CREATE OPERATOR <@ (
   PROCEDURE = set_contained,
   LEFTARG = timestamptz, RIGHTARG = tstzset,
   COMMUTATOR = @>,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <@ (
   PROCEDURE = set_contained,
   LEFTARG = tstzset, RIGHTARG = tstzset,
   COMMUTATOR = @>,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 /******************************************************************************/
@@ -288,7 +288,7 @@ CREATE OPERATOR && (
   PROCEDURE = set_overlaps,
   LEFTARG = tstzset, RIGHTARG = tstzset,
   COMMUTATOR = &&,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 /******************************************************************************/
@@ -427,19 +427,19 @@ CREATE OPERATOR <<# (
   PROCEDURE = set_left,
   LEFTARG = timestamptz, RIGHTARG = tstzset,
   COMMUTATOR = #>>,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <<# (
   PROCEDURE = set_left,
   LEFTARG = tstzset, RIGHTARG = timestamptz,
   COMMUTATOR = #>>,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <<# (
   PROCEDURE = set_left,
   LEFTARG = tstzset, RIGHTARG = tstzset,
   COMMUTATOR = #>>,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 /******************************************************************************/
@@ -578,19 +578,19 @@ CREATE OPERATOR #>> (
   PROCEDURE = set_right,
   LEFTARG = timestamptz, RIGHTARG = tstzset,
   COMMUTATOR = <<#,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR #>> (
   PROCEDURE = set_right,
   LEFTARG = tstzset, RIGHTARG = timestamptz,
   COMMUTATOR = <<#,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR #>> (
   PROCEDURE = set_right,
   LEFTARG = tstzset, RIGHTARG = tstzset,
   COMMUTATOR = <<#,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 /******************************************************************************/
@@ -716,17 +716,17 @@ CREATE OPERATOR &< (
 CREATE OPERATOR &<# (
   PROCEDURE = set_overleft,
   LEFTARG = timestamptz, RIGHTARG = tstzset,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR &<# (
   PROCEDURE = set_overleft,
   LEFTARG = tstzset, RIGHTARG = timestamptz,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR &<# (
   PROCEDURE = set_overleft,
   LEFTARG = tstzset, RIGHTARG = tstzset,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 /******************************************************************************/
@@ -852,17 +852,17 @@ CREATE OPERATOR &> (
 CREATE OPERATOR #&> (
   PROCEDURE = set_overright,
   LEFTARG = timestamptz, RIGHTARG = tstzset,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR #&> (
   PROCEDURE = set_overright,
   LEFTARG = tstzset, RIGHTARG = timestamptz,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR #&> (
   PROCEDURE = set_overright,
   LEFTARG = tstzset, RIGHTARG = tstzset,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 /*****************************************************************************/

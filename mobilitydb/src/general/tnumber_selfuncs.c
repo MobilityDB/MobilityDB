@@ -64,52 +64,16 @@
  * @brief Return the enum value associated to the operator
  */
 bool
-tnumber_cachedop(Oid operid, meosOper *oper)
+tnumber_oper_sel(Oid operid __attribute__((unused)), meosType ltype,
+  meosType rtype)
 {
-  for (int i = LT_OP; i <= OVERAFTER_OP; i++)
-  {
-    if (/* Time types */
-        operid == oper_oid((meosOper) i, T_TIMESTAMPTZ, T_TINT) ||
-        operid == oper_oid((meosOper) i, T_TIMESTAMPTZ, T_TFLOAT) ||
-        operid == oper_oid((meosOper) i, T_TSTZSET, T_TINT) ||
-        operid == oper_oid((meosOper) i, T_TSTZSET, T_TFLOAT) ||
-        operid == oper_oid((meosOper) i, T_TSTZSPAN, T_TINT) ||
-        operid == oper_oid((meosOper) i, T_TSTZSPAN, T_TFLOAT) ||
-        operid == oper_oid((meosOper) i, T_TSTZSPANSET, T_TINT) ||
-        operid == oper_oid((meosOper) i, T_TSTZSPANSET, T_TFLOAT) ||
-        /* Span types */
-        operid == oper_oid((meosOper) i, T_INTSPAN, T_TINT) ||
-        operid == oper_oid((meosOper) i, T_FLOATSPAN, T_TFLOAT) ||
-        /* Tbox type */
-        operid == oper_oid((meosOper) i, T_TBOX, T_TINT) ||
-        operid == oper_oid((meosOper) i, T_TBOX, T_TFLOAT) ||
-        /* Tint type */
-        operid == oper_oid((meosOper) i, T_TINT, T_TIMESTAMPTZ) ||
-        operid == oper_oid((meosOper) i, T_TINT, T_TSTZSET) ||
-        operid == oper_oid((meosOper) i, T_TINT, T_TSTZSPAN) ||
-        operid == oper_oid((meosOper) i, T_TINT, T_TSTZSPANSET) ||
-        operid == oper_oid((meosOper) i, T_TINT, T_INT4) ||
-        operid == oper_oid((meosOper) i, T_TINT, T_FLOAT8) ||
-        operid == oper_oid((meosOper) i, T_TINT, T_INTSPAN) ||
-        operid == oper_oid((meosOper) i, T_TINT, T_TBOX) ||
-        operid == oper_oid((meosOper) i, T_TINT, T_TINT) ||
-        operid == oper_oid((meosOper) i, T_TINT, T_TFLOAT) ||
-        /* Tfloat type */
-        operid == oper_oid((meosOper) i, T_TFLOAT, T_TIMESTAMPTZ) ||
-        operid == oper_oid((meosOper) i, T_TFLOAT, T_TSTZSET) ||
-        operid == oper_oid((meosOper) i, T_TFLOAT, T_TSTZSPAN) ||
-        operid == oper_oid((meosOper) i, T_TFLOAT, T_TSTZSPANSET) ||
-        operid == oper_oid((meosOper) i, T_TFLOAT, T_INT4) ||
-        operid == oper_oid((meosOper) i, T_TFLOAT, T_FLOAT8) ||
-        operid == oper_oid((meosOper) i, T_TFLOAT, T_FLOATSPAN) ||
-        operid == oper_oid((meosOper) i, T_TFLOAT, T_TBOX) ||
-        operid == oper_oid((meosOper) i, T_TFLOAT, T_TINT) ||
-        operid == oper_oid((meosOper) i, T_TFLOAT, T_TFLOAT))
-      {
-        *oper = (meosOper) i;
-        return true;
-      }
-  }
+  if ((timespan_basetype(ltype) || timeset_type(ltype) ||
+        timespan_type(ltype) || timespanset_type(ltype) ||
+        ltype == T_TBOX || temporal_type(ltype)) &&
+      (timespan_basetype(rtype) || timeset_type(rtype) ||
+        timespan_type(rtype) || timespanset_type(rtype) ||
+        rtype == T_TBOX || temporal_type(rtype)))
+    return true;
   return false;
 }
 
@@ -236,7 +200,7 @@ tnumber_sel_default(meosOper operator)
  */
 Selectivity
 tnumber_sel_span_period(VariableStatData *vardata, Span *span, Span *period,
-  meosOper oper, Oid basetypid)
+  meosOper oper)
 {
   double selec;
   Oid value_oprid, period_oprid;
@@ -254,7 +218,7 @@ tnumber_sel_span_period(VariableStatData *vardata, Span *span, Span *period,
     /* Selectivity for the value dimension */
     if (span != NULL)
     {
-      value_oprid = oper_oid(EQ_OP, basetypid, basetypid);
+      value_oprid = oper_oid(EQ_OP, span->spantype, span->spantype);
 #if POSTGRESQL_VERSION_NUMBER < 130000
       selec *= var_eq_const(vardata, value_oprid, PointerGetDatum(span),
         false, false, false);
@@ -266,7 +230,7 @@ tnumber_sel_span_period(VariableStatData *vardata, Span *span, Span *period,
     /* Selectivity for the time dimension */
     if (period != NULL)
     {
-      period_oprid = oper_oid(EQ_OP, T_TSTZSPAN, T_TSTZSPAN);
+      period_oprid = oper_oid(EQ_OP, period->spantype, period->spantype);
 #if POSTGRESQL_VERSION_NUMBER < 130000
       selec *= var_eq_const(vardata, period_oprid, SpanPGetDatum(period),
         false, false, false);
@@ -287,18 +251,18 @@ tnumber_sel_span_period(VariableStatData *vardata, Span *span, Span *period,
   {
     /* Selectivity for the value dimension */
     if (span != NULL)
-      selec *= span_sel_hist(vardata, span, oper, SPANSEL);
+      selec *= span_sel_hist(vardata, span, oper, VALUE_SEL);
     /* Selectivity for the time dimension */
     if (period != NULL)
       /* Cast the period as a span to call the span selectivity functions */
-      selec *= span_sel_hist(vardata, (Span *) period, oper, PERIODSEL);
+      selec *= span_sel_hist(vardata, (Span *) period, oper, TIME_SEL);
   }
   else if (oper == LEFT_OP || oper == RIGHT_OP ||
     oper == OVERLEFT_OP || oper == OVERRIGHT_OP)
   {
     /* Selectivity for the value dimension */
     if (span != NULL)
-      selec *= span_sel_hist(vardata, span, oper, SPANSEL);
+      selec *= span_sel_hist(vardata, span, oper, VALUE_SEL);
   }
   else if (oper == BEFORE_OP || oper == AFTER_OP ||
     oper == OVERBEFORE_OP || oper == OVERAFTER_OP)
@@ -306,7 +270,7 @@ tnumber_sel_span_period(VariableStatData *vardata, Span *span, Span *period,
     /* Selectivity for the value dimension */
     if (period != NULL)
       /* Cast the period as a span to call the span selectivity functions */
-      selec *= span_sel_hist(vardata, (Span *) period, oper, PERIODSEL);
+      selec *= span_sel_hist(vardata, (Span *) period, oper, TIME_SEL);
   }
   else /* Unknown operator */
   {

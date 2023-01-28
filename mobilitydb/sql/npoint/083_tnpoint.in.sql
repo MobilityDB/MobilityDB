@@ -580,7 +580,7 @@ CREATE FUNCTION deleteTime(tnpoint, tstzspanset, connect boolean DEFAULT TRUE)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
- * Intersects Functions
+ * Overlaps time functions
  *****************************************************************************/
 
 CREATE FUNCTION overlapsTime(tnpoint, timestamptz)

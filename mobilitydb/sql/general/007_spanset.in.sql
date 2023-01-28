@@ -825,7 +825,7 @@ CREATE OPERATOR < (
   LEFTARG = tstzspanset, RIGHTARG = tstzspanset,
   PROCEDURE = spanset_lt,
   COMMUTATOR = >, NEGATOR = >=,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE OPERATOR <= (
@@ -850,7 +850,7 @@ CREATE OPERATOR <= (
   LEFTARG = tstzspanset, RIGHTARG = tstzspanset,
   PROCEDURE = spanset_le,
   COMMUTATOR = >=, NEGATOR = >,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE OPERATOR >= (
@@ -875,7 +875,7 @@ CREATE OPERATOR >= (
   LEFTARG = tstzspanset, RIGHTARG = tstzspanset,
   PROCEDURE = spanset_ge,
   COMMUTATOR = <=, NEGATOR = <,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE OPERATOR > (
@@ -900,7 +900,7 @@ CREATE OPERATOR > (
   LEFTARG = tstzspanset, RIGHTARG = tstzspanset,
   PROCEDURE = spanset_gt,
   COMMUTATOR = <, NEGATOR = <=,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE OPERATOR CLASS intspanset_btree_ops

@@ -969,7 +969,7 @@ intersection_tinstant_tinstant(const TInstant *inst1, const TInstant *inst2,
 }
 
 /*****************************************************************************
- * Intersects functions
+ * Overlaps time functions
  *****************************************************************************/
 
 /**

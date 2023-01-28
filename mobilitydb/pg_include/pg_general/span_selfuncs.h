@@ -43,27 +43,15 @@
 
 /*****************************************************************************/
 
-/**
- * Enumeration for using the same functions for computing selectivity of spans
- * and periods
- */
-typedef enum
-{
-  SPANSEL,
-  PERIODSEL
-} SpanPeriodSel;
-
-/*****************************************************************************/
-
 extern float8 span_sel_default(meosOper oper);
 extern float8 span_joinsel_default(meosOper oper);
 
 extern void span_const_to_span(Node *other, Span *span);
 
 extern double span_sel_hist(VariableStatData *vardata, const Span *constval,
-  meosOper oper, SpanPeriodSel spansel);
+  meosOper oper, bool value);
 extern float8 span_sel(PlannerInfo *root, Oid operid, List *args,
-  int varRelid, SpanPeriodSel spansel);
+  int varRelid);
 
 extern float8 span_joinsel(PlannerInfo *root, meosOper oper, List *args,
   JoinType jointype, SpecialJoinInfo *sjinfo);

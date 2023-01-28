@@ -281,6 +281,23 @@ makeExpandExpr(Node *arg, Node *radiusarg, Oid argoid, Oid retoid,
 /*****************************************************************************/
 
 /**
+ * @brief Transform the constant into a period
+ */
+static meosType
+type_to_bbox(meosType type)
+{
+  if (span_basetype(type))
+    return basetype_spantype(type);
+  if (set_type(type))
+    return basetype_spantype(settype_basetype(type));
+  if (spanset_type(type))
+    return spansettype_spantype(type);
+  if (spatial_basetype(type))
+    return T_STBOX;
+  return type;
+}
+
+/**
  * @brief For functions that we want enhanced with spatial index lookups, add
  * this support function to the SQL function definition, for example:
  * @code
@@ -314,7 +331,10 @@ temporal_supportfn_ext(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
     rightoid = exprType(lsecond(req->args));
     meosType ltype = oid_type(leftoid);
     meosType rtype = oid_type(rightoid);
-    operid = oper_oid(OVERLAPS_OP, ltype, rtype);
+    /* Convert base type to span type */
+    meosType ltype1 = type_to_bbox(ltype);
+    meosType rtype1 = type_to_bbox(rtype);
+    operid = oper_oid(OVERLAPS_OP, ltype1, rtype1);
     if (req->is_join)
     {
       if (tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE)

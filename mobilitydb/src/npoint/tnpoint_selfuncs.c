@@ -44,30 +44,16 @@
  * @brief Get the enum value associated to the operator
  */
 bool
-tnpoint_cachedop(Oid operid, meosOper *oper)
+tnpoint_oper_sel(Oid operid __attribute__((unused)), meosType ltype,
+  meosType rtype)
 {
-  for (int i = OVERLAPS_OP; i <= OVERAFTER_OP; i++)
-  {
-    if (operid == oper_oid((meosOper) i, T_GEOMETRY, T_TNPOINT) ||
-        operid == oper_oid((meosOper) i, T_NPOINT, T_TNPOINT) ||
-        operid == oper_oid((meosOper) i, T_TIMESTAMPTZ, T_TNPOINT) ||
-        operid == oper_oid((meosOper) i, T_TSTZSET, T_TNPOINT) ||
-        operid == oper_oid((meosOper) i, T_TSTZSPAN, T_TNPOINT) ||
-        operid == oper_oid((meosOper) i, T_TSTZSPANSET, T_TNPOINT) ||
-        operid == oper_oid((meosOper) i, T_STBOX, T_TNPOINT) ||
-        operid == oper_oid((meosOper) i, T_TNPOINT, T_GEOMETRY) ||
-        operid == oper_oid((meosOper) i, T_TNPOINT, T_NPOINT) ||
-        operid == oper_oid((meosOper) i, T_TNPOINT, T_TIMESTAMPTZ) ||
-        operid == oper_oid((meosOper) i, T_TNPOINT, T_TSTZSET) ||
-        operid == oper_oid((meosOper) i, T_TNPOINT, T_TSTZSPAN) ||
-        operid == oper_oid((meosOper) i, T_TNPOINT, T_TSTZSPANSET) ||
-        operid == oper_oid((meosOper) i, T_TNPOINT, T_STBOX) ||
-        operid == oper_oid((meosOper) i, T_TNPOINT, T_TNPOINT))
-      {
-        *oper = (meosOper) i;
-        return true;
-      }
-  }
+  if ((timespan_basetype(ltype) || timeset_type(ltype) ||
+        timespan_type(ltype) || timespanset_type(ltype) ||
+        spatial_basetype(ltype) || ltype == T_STBOX || tspatial_type(ltype)) &&
+      (timespan_basetype(rtype) || timeset_type(rtype) ||
+        timespan_type(rtype) || timespanset_type(rtype) ||
+        spatial_basetype(rtype) || rtype == T_STBOX || tspatial_type(rtype)))
+    return true;
   return false;
 }
 

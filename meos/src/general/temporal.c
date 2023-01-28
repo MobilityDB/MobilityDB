@@ -3584,7 +3584,7 @@ temporal_delete_periodset(const Temporal *temp, const SpanSet *ps,
 }
 
 /*****************************************************************************
- * Overlaps functions
+ * Overlaps time functions
  *****************************************************************************/
 
 /**
