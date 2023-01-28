@@ -80,8 +80,7 @@ enum TEMPORAL_FUNCTION_IDX
 
 static const int16 TemporalStrategies[] =
 {
-  /* intersectsTime function */
-  [OVERLAPS_TIME_IDX]            = RTOverlapStrategyNumber,
+  /* There are currently no functions */
 };
 
 static const int16 TNumberStrategies[] =

@@ -36,7 +36,11 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <common/hashfn.h>
+#if POSTGRESQL_VERSION_NUMBER >= 130000
+  #include <common/hashfn.h>
+#else
+  #include <access/hash.h>
+#endif
 /* MEOS */
 #include <meos.h>
 #include "general/pg_types.h"

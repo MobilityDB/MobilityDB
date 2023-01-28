@@ -711,10 +711,6 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="overlapsTime"><varname>overlapsTime</varname></link>: ¿Se superpone el valor temporal con el valor de tiempo?</para>
-				</listitem>
-
-				<listitem>
 					<para><link linkend="integral"><varname>integral</varname></link>: Obtener el área bajo la curva</para>
 				</listitem>
 

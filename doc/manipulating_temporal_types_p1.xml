@@ -88,6 +88,10 @@
 		<listitem>
 			<para><varname>type[]</varname> represents an array of <varname>type</varname>.</para>
 		</listitem>
+
+		<listitem>
+			<para><varname>&lt;type&gt;</varname> in the name of a function represents the functions obtained by replacing <varname>&lt;type&gt;</varname> by a specific <varname>type</varname>. For example, <varname>tint_discseq</varname> or <varname>tfloat_discseq</varname> are represented by <varname>&lt;ttype&gt;_discseq</varname>.</para>
+		</listitem>
 	</itemizedlist>
 
 	<para>
@@ -417,12 +421,12 @@ SELECT ttextFromHexWKB('01170001040000000000000041414100009C57D3C11C0000');
 
 		<itemizedlist>
 			<listitem id="ttype_const">
-				<indexterm><primary><varname>ttype</varname></primary></indexterm>
+				<indexterm><primary><varname>&lt;ttype&gt;</varname></primary></indexterm>
 				<para>Constructor for temporal types from a base value and a time value</para>
-				<para><varname>ttype(base,timestamptz) → ttype_inst</varname></para>
-				<para><varname>ttype(base,tstzset) → ttype_discseq</varname></para>
-				<para><varname>ttype(base,tstzspan,linear=true) → ttype_contseq</varname></para>
-				<para><varname>ttype(base,tstzspanset,linear=true) → ttype_seqset</varname></para>
+				<para><varname>&lt;ttype&gt;(base,timestamptz) → ttype_inst</varname></para>
+				<para><varname>&lt;ttype&gt;(base,tstzset) → ttype_discseq</varname></para>
+				<para><varname>&lt;ttype&gt;(base,tstzspan,linear=true) → ttype_contseq</varname></para>
+				<para><varname>&lt;ttype&gt;(base,tstzspanset,linear=true) → ttype_seqset</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbool(true, timestamptz '2001-01-01');
 SELECT tint(1, timestamptz '2001-01-01');
@@ -435,9 +439,9 @@ SELECT tgeogpoint('SRID=7844;Point(0 0)', tstzspanset '{[2001-01-01, 2001-01-02]
 			</listitem>
 
 			<listitem id="ttype_discseq">
-				<indexterm><primary><varname>ttype_discseq</varname></primary></indexterm>
+				<indexterm><primary><varname>&lt;ttype&gt;_discseq</varname></primary></indexterm>
 				<para>Constructor for temporal types of sequence subtype and discrete interpolation</para>
-				<para><varname>ttype_discseq(ttype_inst[]) → ttype_discseq</varname></para>
+				<para><varname>&lt;ttype&gt;_discseq(ttype_inst[]) → ttype_discseq</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbool_discseq(ARRAY[tbool 'true@2001-01-01 08:00:00','false@2001-01-01 08:05:00']);
 SELECT tint_discseq(ARRAY[tint '1@2001-01-01 08:00:00', '2@2001-01-01 08:05:00']);
@@ -451,9 +455,10 @@ SELECT tgeogpoint_discseq(ARRAY[tgeogpoint 'Point(1 1)@2001-01-01 08:00:00',
 			</listitem>
 
 			<listitem id="ttype_contseq">
-				<indexterm><primary><varname>ttype_contseq</varname></primary></indexterm>
+				<indexterm><primary><varname>&lt;ttype&gt;_contseq</varname></primary></indexterm>
 				<para>Constructor for temporal types of sequence subtype and continuous interpolation</para>
-				<para><varname>ttype_contseq(ttype_inst[],left_inc=true,right_inc=true,linear=true}) → ttype_contseq</varname></para>
+				<para><varname>&lt;ttype&gt;_contseq(ttype_inst[],left_inc=true,right_inc=true,linear=true}) →</varname></para>
+				<para><varname>  ttype_contseq</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbool_contseq(ARRAY[tbool 'true@2001-01-01 08:00:00', 'true@2001-01-03 08:05:00'],
   true, true);
@@ -474,12 +479,15 @@ SELECT tgeogpoint_contseq(ARRAY[tgeogpoint 'Point(0 0)@2001-01-01 08:00:00',
 			</listitem>
 
 			<listitem id="ttype_seqset">
-				<indexterm><primary><varname>ttype_seqset</varname></primary></indexterm>
+				<indexterm><primary><varname>&lt;ttype&gt;_seqset</varname></primary></indexterm>
+				<indexterm><primary><varname>&lt;tscalar&gt;_seqset_gaps</varname></primary></indexterm>
+				<indexterm><primary><varname>&lt;tdisc&gt;_seqset_gaps</varname></primary></indexterm>
+				<indexterm><primary><varname>&lt;tcont&gt;_seqset_gaps</varname></primary></indexterm>
 				<para>Constructors for temporal types of sequence set subtype</para>
-				<para><varname>ttype_seqset(ttype_contseq[]) → ttype_seqset</varname></para>
-				<para><varname>tscalar_seqset_gaps(tint_inst[],maxt='0 minutes') → tscalar_seqset</varname></para>
-				<para><varname>tdisc_seqset_gaps(tint_inst[],maxdist=0.0,maxt='0 minutes') → tdisc_seqset</varname></para>
-				<para><varname>tcont_seqset_gaps(tcont_inst[],linear=true,maxdist=0.0,maxt='0 minutes') →</varname></para>
+				<para><varname>&lt;ttype&gt;_seqset(ttype_contseq[]) → ttype_seqset</varname></para>
+				<para><varname>&lt;tscalar&gt;_seqset_gaps(tint_inst[],maxt='0 minutes') → tscalar_seqset</varname></para>
+				<para><varname>&lt;tdisc&gt;_seqset_gaps(tint_inst[],maxdist=0.0,maxt='0 minutes') → tdisc_seqset</varname></para>
+				<para><varname>&lt;tcont&gt;_seqset_gaps(tcont_inst[],linear=true,maxdist=0.0,maxt='0 minutes') →</varname></para>
 				<para><varname>  tcont_seqset</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbool_seqset(ARRAY[tbool '[false@2001-01-01 08:00:00, false@2001-01-01 08:05:00)',
@@ -983,25 +991,6 @@ SELECT segments(tfloat '{[1@2001-01-01, 3@2001-01-02, 2@2001-01-03],
   (3@2001-01-03, 5@2001-01-05]}');
 /* {"[1@2001-01-01, 3@2001-01-02)","[3@2001-01-02, 2@2001-01-03]",
    "(3@2001-01-03, 5@2001-01-05]"} */
-</programlisting>
-			</listitem>
-
-			<listitem id="overlapsTime">
-				<indexterm><primary><varname>overlapsTime</varname></primary></indexterm>
-				<para>Does the temporal value overlap the time value?</para>
-				<para><varname>overlapsTime(ttype,time) → boolean</varname></para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT overlapsTime(tint '[1@2001-01-01, 1@2001-01-15)', timestamptz '2001-01-03');
--- true
-SELECT overlapsTime(tint '[1@2001-01-01, 1@2001-01-15)',
-  tstzset '{2001-01-01, 2001-01-03}');
--- true
-SELECT overlapsTime(tint '[1@2001-01-01, 1@2001-01-04)',
-  tstzspan '[2001-01-01,2001-01-05)');
--- true
-SELECT overlapsTime(tbool '[t@2001-01-01, f@2001-01-15]',
-  tstzspanset '{[2001-01-01, 2001-01-03), [2001-01-05, 2001-01-07)}');
--- true
 </programlisting>
 			</listitem>
 

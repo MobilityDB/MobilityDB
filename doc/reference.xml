@@ -716,10 +716,6 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="overlapsTime"><varname>overlapsTime</varname></link>: Does the temporal value overlap the time value?</para>
-				</listitem>
-
-				<listitem>
 					<para><link linkend="integral"><varname>integral</varname></link>: Get the area under the curve</para>
 				</listitem>
 

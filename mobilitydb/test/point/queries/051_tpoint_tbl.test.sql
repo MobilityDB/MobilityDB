@@ -402,44 +402,8 @@ SELECT SUM(numInstants(update(t1.temp, t2.temp))) FROM tbl_tgeompoint t1, tbl_tg
 SELECT SUM(numInstants(update(t1.temp, t2.temp))) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE t1.k < t2.k;
 
 ------------------------------------------------------------------------------
--- Intersects functions
+-- Local aggregate functions
 ------------------------------------------------------------------------------
-
-SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz
-WHERE overlapsTime(temp, t) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz
-WHERE overlapsTime(temp, t) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_timestamptz
-WHERE overlapsTime(temp, t) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_timestamptz
-WHERE overlapsTime(temp, t) IS NOT NULL;
-
-SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzset
-WHERE overlapsTime(temp, t) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzset
-WHERE overlapsTime(temp, t) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzset
-WHERE overlapsTime(temp, t) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzset
-WHERE overlapsTime(temp, t) IS NOT NULL;
-
-SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspan
-WHERE overlapsTime(temp, p) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspan
-WHERE overlapsTime(temp, p) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzspan
-WHERE overlapsTime(temp, p) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspan
-WHERE overlapsTime(temp, p) IS NOT NULL;
-
-SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset
-WHERE overlapsTime(temp, ps) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset
-WHERE overlapsTime(temp, ps) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzspanset
-WHERE overlapsTime(temp, ps) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspanset
-WHERE overlapsTime(temp, ps) IS NOT NULL;
 
 SELECT MAX(st_memsize(twCentroid(temp))) FROM tbl_tgeompoint;
 SELECT MAX(st_memsize(twCentroid(temp))) FROM tbl_tgeompoint3D;

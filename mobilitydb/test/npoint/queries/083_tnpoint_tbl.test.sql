@@ -227,18 +227,6 @@ WHERE atTime(temp, ps) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspanset
 WHERE minusTime(temp, ps) IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz
-WHERE overlapsTime(temp, t) IS NOT NULL;
-
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset
-WHERE overlapsTime(temp, t) IS NOT NULL;
-
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspan
-WHERE overlapsTime(temp, p) IS NOT NULL;
-
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspanset
-WHERE overlapsTime(temp, ps) IS NOT NULL;
-
 -------------------------------------------------------------------------------
 -- Modification functions
 -------------------------------------------------------------------------------
