@@ -65,7 +65,7 @@
 #include "general/meos_catalog.h"
 
 /**
- * Structure to represent the temporal type cache array.
+ * Structure to represent the operator cache hash table.
  */
 typedef struct
 {
@@ -77,7 +77,6 @@ typedef struct
 } meosoper_catalog_struct;
 
 /* define hashtable mapping Oid numbers to meosoper_catalog_struct's */
-#define SH_USE_NONDEFAULT_ALLOCATOR
 #define SH_PREFIX opertable
 #define SH_ELEMENT_TYPE meosoper_catalog_struct
 #define SH_KEY_TYPE Oid
@@ -85,7 +84,8 @@ typedef struct
 #define SH_HASH_KEY(tb, key) hash_bytes_uint32(key)
 #define SH_EQUAL(tb, a, b) a == b
 #define SH_SCOPE static inline
-#define SH_RAW_ALLOCATOR palloc0
+// #define SH_STORE_HASH
+// #define SH_GET_HASH(tb, a) a->hash
 #define SH_DEFINE
 #define SH_DECLARE
 #include "lib/simplehash.h"
@@ -204,8 +204,7 @@ Oid _type_oids[sizeof(_type_names) / sizeof(char *)];
  * @brief Global hash table that keeps the operator Oids used in MobilityDB.
  */
 
-struct opertable_hash *_oper_oids;
-
+struct opertable_hash *_oper_oids = NULL;
 
 /**
  * @brief Global 3-dimensional array that keeps the Oids of the operators
@@ -249,7 +248,7 @@ populate_typeoid_catalog()
 }
 
 /**
- * Populate @brief the Oid cache for operators
+ * @brief Populate the Oid cache for operators
  */
 static void
 populate_operoid_catalog()
@@ -259,8 +258,10 @@ populate_operoid_catalog()
   overridePath->schemas = lcons_oid(namespaceId, overridePath->schemas);
   PushOverrideSearchPath(overridePath);
 
-  /* Create the hash table */
-  _oper_oids = opertable_create(1024, NULL);
+  /* Create the hash table
+   * As of 2023-27-01 there are 1470 operators defined in MobilityDB.
+   */
+  _oper_oids = opertable_create(CacheMemoryContext, 2048, NULL);
 
   PG_TRY();
   {
@@ -298,7 +299,7 @@ populate_operoid_catalog()
         entry->oper = i;
         entry->ltype = j;
         entry->rtype = k;
-        // char status;       /* hash status */
+        // char status;
       }
 
       tuple = heap_getnext(scan, ForwardScanDirection);
@@ -372,7 +373,6 @@ fill_opcache(PG_FUNCTION_ARGS __attribute__((unused)))
 
 /**
  * @brief Fetch from the cache the Oid of a type
- *
  * @arg[in] type Enum value for the type
  */
 Oid
@@ -385,7 +385,6 @@ type_oid(meosType type)
 
 /**
  * @brief Fetch from the cache the Oid of an operator
- *
  * @arg[in] oper Enum value for the operator
  * @arg[in] lt Enum value for the left type
  * @arg[in] rt Enum value for the right type
@@ -400,7 +399,6 @@ oper_oid(meosOper oper, meosType lt, meosType rt)
 
 /**
  * @brief Fetch from the cache the Oid of a type
- *
  * @arg[in] type Enum value for the type
  */
 meosType
@@ -416,6 +414,27 @@ oid_type(Oid typid)
   }
   ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
     errmsg("Unknown type Oid %d", typid)));
+}
+
+/**
+ * @brief Fetch from the cache the Oid of a type
+ * @arg[in] type Enum value for the operator
+ */
+meosOper
+oid_oper(Oid operOid, meosType *ltype, meosType *rtype)
+{
+  if (!_oid_catalog_ready)
+    populate_operoid_catalog();
+  meosoper_catalog_struct *entry =
+    opertable_lookup(_oper_oids, operOid);
+  if (! entry)
+    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+      errmsg("Unknown operator Oid %d", operOid)));
+  if (ltype)
+    *ltype = entry->ltype;
+  if (rtype)
+    *rtype = entry->rtype;
+  return entry->oper;
 }
 
 /*****************************************************************************/

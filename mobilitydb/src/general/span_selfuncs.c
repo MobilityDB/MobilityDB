@@ -79,71 +79,30 @@ span_joinsel_default(meosOper oper __attribute__((unused)))
 }
 
 /**
- * @brief Get the enum associated to the operator from different cases
+ * @brief Determine whether we can estimate selectivity for the operator
  */
 static bool
-value_cachedop(Oid operid, meosOper *oper)
+value_sel(Oid operid __attribute__((unused)), meosType ltype, meosType rtype)
 {
-  // TODO find a more efficient way to do this
-  for (int i = EQ_OP; i <= OVERAFTER_OP; i++)
-  {
-    if (operid == oper_oid((meosOper) i, T_INT4, T_INTSPAN) ||
-        operid == oper_oid((meosOper) i, T_INT4, T_INTSPANSET) ||
-        operid == oper_oid((meosOper) i, T_INT8, T_BIGINTSPAN) ||
-        operid == oper_oid((meosOper) i, T_INT8, T_BIGINTSPANSET) ||
-        operid == oper_oid((meosOper) i, T_FLOAT8, T_INTSPAN) ||
-        operid == oper_oid((meosOper) i, T_FLOAT8, T_INTSPANSET) ||
-        operid == oper_oid((meosOper) i, T_INTSPAN, T_INT4) ||
-        operid == oper_oid((meosOper) i, T_INTSPANSET, T_INT4) ||
-        operid == oper_oid((meosOper) i, T_BIGINTSPAN, T_INT8) ||
-        operid == oper_oid((meosOper) i, T_BIGINTSPANSET, T_INT8) ||
-        operid == oper_oid((meosOper) i, T_INTSPAN, T_FLOAT8) ||
-        operid == oper_oid((meosOper) i, T_INTSPANSET, T_FLOAT8) ||
-        operid == oper_oid((meosOper) i, T_INTSPAN, T_INTSPAN) ||
-        operid == oper_oid((meosOper) i, T_INTSPANSET, T_INTSPAN) ||
-        operid == oper_oid((meosOper) i, T_INTSPAN, T_INTSPANSET) ||
-        operid == oper_oid((meosOper) i, T_INTSPANSET, T_INTSPANSET) ||
-        operid == oper_oid((meosOper) i, T_INT4, T_FLOATSPAN) ||
-        operid == oper_oid((meosOper) i, T_INT4, T_FLOATSPANSET) ||
-        operid == oper_oid((meosOper) i, T_FLOAT8, T_FLOATSPAN) ||
-        operid == oper_oid((meosOper) i, T_FLOAT8, T_FLOATSPANSET) ||
-        operid == oper_oid((meosOper) i, T_FLOATSPAN, T_INT4) ||
-        operid == oper_oid((meosOper) i, T_FLOATSPANSET, T_INT4) ||
-        operid == oper_oid((meosOper) i, T_FLOATSPAN, T_FLOAT8) ||
-        operid == oper_oid((meosOper) i, T_FLOATSPANSET, T_FLOAT8) ||
-        operid == oper_oid((meosOper) i, T_FLOATSPAN, T_FLOATSPAN) ||
-        operid == oper_oid((meosOper) i, T_FLOATSPANSET, T_FLOATSPAN) ||
-        operid == oper_oid((meosOper) i, T_FLOATSPAN, T_FLOATSPANSET) ||
-        operid == oper_oid((meosOper) i, T_FLOATSPANSET, T_FLOATSPANSET))
-      {
-        *oper = (meosOper) i;
-        return true;
-      }
-  }
+  if ((numspan_basetype(ltype) || numset_type(ltype) || numspan_type(ltype) ||
+        spanset_type(ltype)) &&
+      (numspan_basetype(rtype) || numset_type(rtype) || numspan_type(rtype) ||
+        spanset_type(rtype)))
+    return true;
   return false;
 }
 
 /**
- * @brief Get the enum associated to the operator from different cases
+ * @brief Determine whether we can estimate selectivity for the operator
  */
 bool
-time_cachedop(Oid operid, meosOper *oper)
+time_sel(meosOper oper __attribute__((unused)), meosType ltype, meosType rtype)
 {
-  for (int i = EQ_OP; i <= OVERAFTER_OP; i++)
-  {
-    if (operid == oper_oid((meosOper) i, T_TIMESTAMPTZ, T_TSTZSPAN) ||
-        operid == oper_oid((meosOper) i, T_TIMESTAMPTZ, T_TSTZSPANSET) ||
-        operid == oper_oid((meosOper) i, T_TSTZSPAN, T_TIMESTAMPTZ) ||
-        operid == oper_oid((meosOper) i, T_TSTZSPAN, T_TSTZSPAN) ||
-        operid == oper_oid((meosOper) i, T_TSTZSPAN, T_TSTZSPANSET) ||
-        operid == oper_oid((meosOper) i, T_TSTZSPANSET, T_TIMESTAMPTZ) ||
-        operid == oper_oid((meosOper) i, T_TSTZSPANSET, T_TSTZSPAN) ||
-        operid == oper_oid((meosOper) i, T_TSTZSPANSET, T_TSTZSPANSET))
-      {
-        *oper = (meosOper) i;
-        return true;
-      }
-  }
+  if ((timespan_basetype(ltype) || timeset_type(ltype) || timespan_type(ltype) ||
+        timespanset_type(ltype)) &&
+      (span_basetype(rtype) || timeset_type(rtype) || timespan_type(ltype) ||
+        timespanset_type(rtype)))
+    return true;
   return false;
 }
 
@@ -903,11 +862,11 @@ span_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
    * is not of the span type, it should be converted to a span.
    */
   span_const_to_span(other, &span);
-
-  /* Get enumeration value associated to the operator */
-  meosOper oper;
+  /* Determine whether we can estimate selectivity for the operator */
+  meosType ltype, rtype;
+  meosOper oper = oid_oper(operid, &ltype, &rtype);
   bool found = (spansel == SPANSEL) ?
-    value_cachedop(operid, &oper) : time_cachedop(operid, &oper);
+    value_sel(oper, ltype, rtype) : time_sel(oper, ltype, rtype);
   if (! found)
   {
     /* Unknown operator */
@@ -1027,14 +986,14 @@ _mobdb_span_sel(PG_FUNCTION_ARGS)
 
   /* Determine whether we target the value or the time dimension */
   bool value = (s->basetype != T_TIMESTAMPTZ);
-
-  /* Get enumeration value associated to the operator */
-  meosOper oper;
+  /* Determine whether we can estimate selectivity for the operator */
+  meosType ltype, rtype;
+  meosOper oper = oid_oper(operid, &ltype, &rtype);
   bool found = value ?
-    value_cachedop(operid, &oper) : time_cachedop(operid, &oper);
+    value_sel(oper, ltype, rtype) : time_sel(oper, ltype, rtype);
   if (! found)
     /* In case of unknown operator */
-    elog(ERROR, "Unknown span operator %d", operid);
+    elog(ERROR, "Unknown operator Oid %d", operid);
 
   /* Retrieve the stats object */
   HeapTuple stats_tuple = NULL;
@@ -1497,11 +1456,14 @@ Span_joinsel(PG_FUNCTION_ARGS)
   /* TODO: handle t1 <op> expandX(t2) */
   if (!IsA(arg1, Var) || !IsA(arg2, Var))
     PG_RETURN_FLOAT8(span_joinsel_default(operid));
-
-  /* Get enumeration value associated to the operator */
-  meosOper oper;
-  if (! value_cachedop(operid, &oper))
-    /* Unknown operator */
+  /* Determine whether we can estimate selectivity for the operator */
+  meosType ltype, rtype;
+  meosOper oper = oid_oper(operid, &ltype, &rtype);
+  bool found = value_sel(oper, ltype, rtype);
+  if (! found)
+    found = time_sel(oper, ltype, rtype);
+  if (! found)
+    /* Return default selectivity */
     PG_RETURN_FLOAT8(span_joinsel_default(operid));
 
   float8 selec = span_joinsel(root, oper, args, jointype, sjinfo);
@@ -1543,8 +1505,8 @@ _mobdb_span_joinsel(PG_FUNCTION_ARGS)
   else
     elog(ERROR, "attribute name is null");
 
-  /* Get the attribute type */
-  meosType atttype1 = oid_type(get_atttype(table1_oid, att1_num));
+  // /* Get the attribute type */
+  // meosType atttype1 = oid_type(get_atttype(table1_oid, att1_num));
 
   char *table2_name = get_rel_name(table2_oid);
   if (table2_name == NULL)
@@ -1563,16 +1525,16 @@ _mobdb_span_joinsel(PG_FUNCTION_ARGS)
   else
     elog(ERROR, "attribute name is null");
 
-  /* Get the attribute type */
-  meosType atttype2 = oid_type(get_atttype(table1_oid, att1_num));
-
-  /* Determine whether we target the value or the time dimension */
-  bool value = (atttype1 != T_TSTZSPAN && atttype2 != T_TSTZSPAN);
-
-  meosOper oper;
-  bool found = value ?
-    value_cachedop(operid, &oper) : time_cachedop(operid, &oper);
-  if (! found)
+  // /* Get the attribute type */
+  // meosType atttype2 = oid_type(get_atttype(table1_oid, att1_num));
+  /* Determine whether we can estimate selectivity for the operator */
+  meosType ltype, rtype;
+  meosOper oper = oid_oper(operid, &ltype, &rtype);
+  bool value = value_sel(oper, ltype, rtype);
+  bool time;
+  if (! value)
+    time = time_sel(oper, ltype, rtype);
+  if (! time)
     /* In case of unknown operator */
     elog(ERROR, "Unknown span operator %d", operid);
 

@@ -427,7 +427,7 @@ ensure_set_type(meosType type)
 }
 
 /**
- * @brief Return true if the type is a set type
+ * @brief Return true if the type is a number set type
  */
 bool
 numset_type(meosType type)
@@ -438,7 +438,18 @@ numset_type(meosType type)
 }
 
 /**
- * @brief Return true if the type is a set type
+ * @brief Return true if the type is a time set type
+ */
+bool
+timeset_type(meosType type)
+{
+  if (type == T_TSTZSET)
+    return true;
+  return false;
+}
+
+/**
+ * @brief Return true if the type is a set type with a span as a bounding box
  */
 bool
 set_span_type(meosType type)
@@ -564,6 +575,28 @@ numspan_type(meosType type)
   return false;
 }
 
+/**
+ * @brief Return true if the type is a numeric span type
+ */
+bool
+timespan_basetype(meosType type)
+{
+  if (type == T_TIMESTAMPTZ)
+    return true;
+  return false;
+}
+
+/**
+ * @brief Return true if the type is a numeric span type
+ */
+bool
+timespan_type(meosType type)
+{
+  if (type == T_TSTZSPAN)
+    return true;
+  return false;
+}
+
 /*****************************************************************************/
 
 #if 0 /* not used */
@@ -611,6 +644,17 @@ numspanset_type(meosType type)
 {
   if (type == T_INTSPANSET || type == T_BIGINTSPANSET ||
       type == T_FLOATSPANSET)
+    return true;
+  return false;
+}
+
+/**
+ * @brief Return true if the type is a numeric span type
+ */
+bool
+timespanset_type(meosType type)
+{
+  if (type == T_TSTZSPANSET)
     return true;
   return false;
 }

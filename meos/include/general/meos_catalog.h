@@ -202,28 +202,27 @@ extern void ensure_set_basetype(meosType basetype);
 
 extern bool set_type(meosType type);
 extern void ensure_set_type(meosType type);
-extern bool numset_type(meosType settype);
+extern bool numset_type(meosType type);
+extern bool timeset_type(meosType type);
 extern bool set_span_type(meosType type);
 extern bool alphanumset_type(meosType settype);
 extern bool geoset_type(meosType type);
 extern bool spatialset_type(meosType type);
 
+extern bool span_basetype(meosType type);
+extern void ensure_span_basetype(meosType type);
+extern bool span_canon_basetype(meosType type);
 extern bool span_type(meosType type);
 extern void ensure_span_type(meosType type);
+extern bool numspan_basetype(meosType type);
 extern bool numspan_type(meosType type);
-extern bool span_canon_basetype(meosType type);
-extern bool span_basetype(meosType basetype);
-extern void ensure_span_basetype(meosType basetype);
-extern bool numspan_basetype(meosType basetype);
-extern void ensure_numspan_basetype(meosType basetype);
-extern bool spanset_type(meosType spansettype);
-extern void ensure_spanset_type(meosType spansettype);
-extern bool numspanset_type(meosType spansettype);
-extern void ensure_numspanset_type(meosType spansettype);
-extern bool spanset_basetype(meosType basetype);
-extern void ensure_spanset_basetype(meosType basetype);
-extern bool numspanset_basetype(meosType basetype);
-extern void ensure_numspanset_basetype(meosType basetype);
+extern bool timespan_basetype(meosType type);
+extern bool timespan_type(meosType type);
+
+extern bool spanset_type(meosType type);
+extern bool numspanset_type(meosType type);
+extern bool timespanset_type(meosType type);
+
 extern bool temporal_type(meosType temptype);
 extern void ensure_temporal_type(meosType temptype);
 extern void ensure_temporal_basetype(meosType basetype);
