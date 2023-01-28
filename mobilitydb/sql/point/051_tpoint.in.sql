@@ -365,12 +365,12 @@ CREATE FUNCTION getValue(tgeogpoint)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION getValues(tgeompoint)
-  RETURNS geometry
-  AS 'MODULE_PATHNAME', 'Tpoint_values'
+  RETURNS geomset
+  AS 'MODULE_PATHNAME', 'Temporal_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION getValues(tgeogpoint)
-  RETURNS geography
-  AS 'MODULE_PATHNAME', 'Tpoint_values'
+  RETURNS geogset
+  AS 'MODULE_PATHNAME', 'Temporal_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- time is a reserved word in SQL

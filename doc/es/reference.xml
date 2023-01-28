@@ -635,6 +635,10 @@
 				</listitem>
 
 				<listitem>
+					<para><link linkend="trajectory"><varname>trajectory</varname></link>: Obtener los valores de base transitados por el valor temporal</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="startValue"><varname>startValue</varname>, <varname>endValue</varname></link>: Obtener el valor inicial/final</para>
 				</listitem>
 

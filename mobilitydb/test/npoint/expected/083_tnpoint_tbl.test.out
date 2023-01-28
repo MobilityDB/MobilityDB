@@ -465,34 +465,6 @@ WHERE minusTime(temp, ps) IS NOT NULL;
   9900
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz
-WHERE overlapsTime(temp, t) IS NOT NULL;
- count 
--------
-  9900
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset
-WHERE overlapsTime(temp, t) IS NOT NULL;
- count 
--------
-  9900
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspan
-WHERE overlapsTime(temp, p) IS NOT NULL;
- count 
--------
-  9900
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspanset
-WHERE overlapsTime(temp, ps) IS NOT NULL;
- count 
--------
-  9900
-(1 row)
-
 SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2
 WHERE t1.temp = t2.temp;
  count 

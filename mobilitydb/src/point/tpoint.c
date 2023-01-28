@@ -577,7 +577,7 @@ Tne_tpoint_geo(PG_FUNCTION_ARGS)
  * geometry/geography
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Tpoint_values);
+PG_FUNCTION_INFO_V1(Tpoint_traversed_values);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the base values (that is, the trajectory) of a temporal point
@@ -585,7 +585,7 @@ PG_FUNCTION_INFO_V1(Tpoint_values);
  * @sqlfunc getValues()
  */
 PGDLLEXPORT Datum
-Tpoint_values(PG_FUNCTION_ARGS)
+Tpoint_traversed_values(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum result = PointerGetDatum(tpoint_trajectory(temp));

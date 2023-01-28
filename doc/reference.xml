@@ -640,6 +640,10 @@
 				</listitem>
 
 				<listitem>
+					<para><link linkend="trajectory"><varname>trajectory</varname></link>: Get the values traversed by the temporal value</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="startValue"><varname>startValue</varname>, <varname>endValue</varname></link>: Get the start/end value</para>
 				</listitem>
 

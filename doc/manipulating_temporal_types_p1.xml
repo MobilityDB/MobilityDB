@@ -715,29 +715,37 @@ SELECT ST_AsText(getValue(tgeompoint 'Point(0 0)@2001-01-01'));
 			<listitem id="getValues">
 				<indexterm><primary><varname>getValues</varname></primary></indexterm>
 				<para>Get the values</para>
-				<para><varname>getValues(ttype) → {set,floatspanset,geo}</varname></para>
+				<para><varname>getValues(ttype) → {bool[],set,geo}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT getValues(tint '[1@2001-01-01, 2@2001-01-03]');
--- {1,2}
-SELECT getValues(tfloat '[1@2001-01-01, 2@2001-01-03)');
--- {[1,2)}
+-- {1, 2}
 SELECT getValues(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 4@2001-01-05)}');
--- {[1,2),[3,4)}
-SELECT getValues(tfloat 'Interp=Stepwise;{[1@2001-01-01, 2@2001-01-02],
+-- {1, 2, 3, 4}
+SELECT asText(getValues(tgeompoint '{[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02),
+  [Point(0 1)@2001-01-03, Point(1 1)@2001-01-04)}'));
+-- {"POINT(0 0)", "POINT(1 1)", "POINT(0 1)"}
+</programlisting>
+			</listitem>
+
+			<listitem id="trajectory">
+				<indexterm><primary><varname>trajectory</varname></primary></indexterm>
+				<para>Get the base values traversed by the temporal value</para>
+				<para><varname>trajectory(tcont) → {floatspanset,geo}</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT trajectory(tfloat '[1@2001-01-01, 2@2001-01-03)');
+-- {[1,2)}
+SELECT trajectory(tfloat 'Interp=Stepwise;{[1@2001-01-01, 2@2001-01-02],
   [3@2001-01-03, 4@2001-01-05]}');
 -- {[1, 1], [2, 2], [3, 3], [4, 4]}
-SELECT ST_AsText(getValues(tgeompoint '{[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02),
+SELECT ST_AsText(trajectory(tgeompoint '{[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02),
   [Point(0 1)@2001-01-03, Point(1 1)@2001-01-04)}'));
--- LINESTRING(0 0,0 1,1 1)
-SELECT ST_AsText(getValues(tgeompoint '{[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02),
-  [Point(1 1)@2001-01-03, Point(2 2)@2001-01-04)}'));
--- MULTILINESTRING((0 0,0 1),(1 1,2 2)
-SELECT ST_AsText(getValues(tgeompoint 'Interp=Stepwise;{[Point(0 0)@2001-01-01,
+-- MULTILINESTRING((0 0,0 1),(0 1,1 1))
+SELECT ST_AsText(trajectory(tgeompoint 'Interp=Stepwise;{[Point(0 0)@2001-01-01,
   Point(0 1)@2001-01-02], [Point(0 1)@2001-01-03, Point(1 1)@2001-01-04]}'));
 -- GEOMETRYCOLLECTION(MULTIPOINT(0 0,0 1),MULTIPOINT(0 1,1 1))
-SELECT ST_AsText(getValues(tgeompoint '{Point(0 0)@2001-01-01, Point(0 1)@2001-01-02}'));
+SELECT ST_AsText(trajectory(tgeompoint '{Point(0 0)@2001-01-01, Point(0 1)@2001-01-02}'));
 -- MULTIPOINT(0 0,0 1)
-SELECT ST_AsText(getValues(tgeompoint '{[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02),
+SELECT ST_AsText(trajectory(tgeompoint '{[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02),
   [Point(1 1)@2001-01-03, Point(1 1)@2001-01-04),
   [Point(2 1)@2001-01-05, Point(2 2)@2001-01-06)}'));
 -- GEOMETRYCOLLECTION(POINT(1 1),LINESTRING(0 0,0 1),LINESTRING(2 1,2 2))
