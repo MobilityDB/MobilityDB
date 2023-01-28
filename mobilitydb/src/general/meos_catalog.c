@@ -412,7 +412,7 @@ type_oid(meosType type)
 const char *
 oper_name(meosOper oper)
 {
-  return _opnames[oper];
+  return _op_names[oper];
 }
 
 /**
