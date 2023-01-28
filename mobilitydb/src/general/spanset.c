@@ -276,27 +276,27 @@ Multirange_to_spanset(PG_FUNCTION_ARGS)
  * Accessor functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Spanset_memory_size);
+PG_FUNCTION_INFO_V1(Spanset_mem_size);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the memory size in bytes of a span set
- * @sqlfunc memorySize()
+ * @sqlfunc memSize()
  */
 PGDLLEXPORT Datum
-Spanset_memory_size(PG_FUNCTION_ARGS)
+Spanset_mem_size(PG_FUNCTION_ARGS)
 {
   Datum result = toast_raw_datum_size(PG_GETARG_DATUM(0));
   PG_RETURN_DATUM(result);
 }
 
-PG_FUNCTION_INFO_V1(Spanset_storage_size);
+PG_FUNCTION_INFO_V1(Spanset_store_size);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the storage (compressed) size in bytes of a span set
  * @sqlfunc storageSize()
  */
 PGDLLEXPORT Datum
-Spanset_storage_size(PG_FUNCTION_ARGS)
+Spanset_store_size(PG_FUNCTION_ARGS)
 {
   Datum result = toast_datum_size(PG_GETARG_DATUM(0));
   PG_RETURN_DATUM(result);

@@ -176,11 +176,11 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="setspan_memorySize"><varname>memorySize</varname></link>: Obtener el tamaño de la memoria en bytes</para>
+					<para><link linkend="setspan_memSize"><varname>memSize</varname></link>: Obtener el tamaño de la memoria en bytes</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_memorySize"><varname>storageSize</varname></link>: Obtener el tamaño de almacenamiento (comprimido) en bytes</para>
+					<para><link linkend="setspan_memSize"><varname>storeSize</varname></link>: Obtener el tamaño de almacenamiento (comprimido) en bytes</para>
 				</listitem>
 
 				<listitem>
@@ -615,7 +615,7 @@
 			<title>Funciones de accesor</title>
 			<itemizedlist>
 				<listitem>
-				<para><link linkend="ttype_memorySize"><varname>memorySize</varname></link>: Obtener el tamaño de la memoria en bytes</para>
+				<para><link linkend="ttype_memSize"><varname>memSize</varname></link>: Obtener el tamaño de la memoria en bytes</para>
 				</listitem>
 
 				<listitem>

@@ -21,10 +21,10 @@ SELECT COUNT(*) FROM tbl_npointset WHERE npointsetFromHexWKB(asHexWKB(n)) <> n;
      0
 (1 row)
 
-SELECT memorySize(set(array_agg(DISTINCT np ORDER BY np))) FROM tbl_npoint WHERE np IS NOT NULL LIMIT 10;
- memorysize 
-------------
-       2504
+SELECT memSize(set(array_agg(DISTINCT np ORDER BY np))) FROM tbl_npoint WHERE np IS NOT NULL LIMIT 10;
+ memsize 
+---------
+    2504
 (1 row)
 
 SELECT COUNT(*) FROM tbl_npoint WHERE np::npointset IS NOT NULL;
@@ -39,13 +39,13 @@ SELECT MIN(getPosition(startValue(round(n, 3)))) FROM tbl_npointset;
  0.003
 (1 row)
 
-SELECT MAX(memorySize(n)) FROM tbl_npointset;
+SELECT MAX(memSize(n)) FROM tbl_npointset;
  max 
 -----
  344
 (1 row)
 
-SELECT MAX(storageSize(n)) FROM tbl_npointset;
+SELECT MAX(storeSize(n)) FROM tbl_npointset;
  max 
 -----
  344

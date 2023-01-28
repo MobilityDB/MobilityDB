@@ -176,11 +176,11 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="setspan_memorySize"><varname>memorySize</varname></link>: Get the memory size in bytes</para>
+					<para><link linkend="setspan_memSize"><varname>memSize</varname></link>: Get the memory size in bytes</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_storageSize"><varname>storageSize</varname></link>: Get the storage (compressed) size in bytes</para>
+					<para><link linkend="setspan_storeSize"><varname>storeSize</varname></link>: Get the storage (compressed) size in bytes</para>
 				</listitem>
 
 				<listitem>
@@ -616,11 +616,11 @@
 			<title>Accessor Functions</title>
 			<itemizedlist>
 				<listitem>
-				<para><link linkend="ttype_memorySize"><varname>memorySize</varname></link>: Get the memory size in bytes</para>
+				<para><link linkend="ttype_memSize"><varname>memSize</varname></link>: Get the memory size in bytes</para>
 				</listitem>
 
 				<listitem>
-				<para><link linkend="ttype_storageSize"><varname>storageSize</varname></link>: Get the storage (compressed) size in bytes</para>
+				<para><link linkend="ttype_storeSize"><varname>storeSize</varname></link>: Get the storage (compressed) size in bytes</para>
 				</listitem>
 
 				<listitem>

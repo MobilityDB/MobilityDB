@@ -63,11 +63,11 @@ SELECT timestamptz '2000-01-01'::tstzset;
 -- Functions
 -------------------------------------------------------------------------------
 
-SELECT memorySize(tstzset '{2000-01-01}');
-SELECT memorySize(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}');
+SELECT memSize(tstzset '{2000-01-01}');
+SELECT memSize(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}');
 
-SELECT storageSize(tstzset '{2000-01-01}');
-SELECT storageSize(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}');
+SELECT storeSize(tstzset '{2000-01-01}');
+SELECT storeSize(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}');
 
 SELECT span(tstzset '{2000-01-01}');
 SELECT span(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}');

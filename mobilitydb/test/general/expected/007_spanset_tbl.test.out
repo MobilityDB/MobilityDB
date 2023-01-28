@@ -156,37 +156,37 @@ SELECT MAX(lower(round(f, 6))) FROM tbl_floatspanset;
  47.333306
 (1 row)
 
-SELECT MAX(memorySize(i)) FROM tbl_intspanset;
+SELECT MAX(memSize(i)) FROM tbl_intspanset;
  max 
 -----
  280
 (1 row)
 
-SELECT MAX(memorySize(f)) FROM tbl_floatspanset;
+SELECT MAX(memSize(f)) FROM tbl_floatspanset;
  max 
 -----
  280
 (1 row)
 
-SELECT MAX(memorySize(ps)) FROM tbl_tstzspanset;
+SELECT MAX(memSize(ps)) FROM tbl_tstzspanset;
  max 
 -----
  256
 (1 row)
 
-SELECT MAX(storageSize(i)) FROM tbl_intspanset;
+SELECT MAX(storeSize(i)) FROM tbl_intspanset;
  max 
 -----
  280
 (1 row)
 
-SELECT MAX(storageSize(f)) FROM tbl_floatspanset;
+SELECT MAX(storeSize(f)) FROM tbl_floatspanset;
  max 
 -----
  280
 (1 row)
 
-SELECT MAX(storageSize(ps)) FROM tbl_tstzspanset;
+SELECT MAX(storeSize(ps)) FROM tbl_tstzspanset;
  max 
 -----
  256

@@ -46,7 +46,7 @@ SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint_step_seqset
 
 -- In GEOS 3.11, GEOSRelatePattern does not accept GEOMETRYCOLLECTION
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint
-  WHERE geometrytype(getvalues(temp)) <> 'GEOMETRYCOLLECTION' AND
+  WHERE geometrytype(trajectory(temp)) <> 'GEOMETRYCOLLECTION' AND
   tcontains(g, temp) ?= true <> contains(g, temp);
 -- Step interpolation
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint_step_seq

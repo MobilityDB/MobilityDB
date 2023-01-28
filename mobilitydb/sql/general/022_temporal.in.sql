@@ -458,38 +458,38 @@ CREATE FUNCTION interpolation(ttext)
   AS 'MODULE_PATHNAME', 'Temporal_interpolation'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION memorySize(tbool)
+CREATE FUNCTION memSize(tbool)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Temporal_memory_size'
+  AS 'MODULE_PATHNAME', 'Temporal_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION memorySize(tint)
+CREATE FUNCTION memSize(tint)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Temporal_memory_size'
+  AS 'MODULE_PATHNAME', 'Temporal_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION memorySize(tfloat)
+CREATE FUNCTION memSize(tfloat)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Temporal_memory_size'
+  AS 'MODULE_PATHNAME', 'Temporal_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION memorySize(ttext)
+CREATE FUNCTION memSize(ttext)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Temporal_memory_size'
+  AS 'MODULE_PATHNAME', 'Temporal_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION storageSize(tbool)
+CREATE FUNCTION storeSize(tbool)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Temporal_storage_size'
+  AS 'MODULE_PATHNAME', 'Temporal_store_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION storageSize(tint)
+CREATE FUNCTION storeSize(tint)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Temporal_storage_size'
+  AS 'MODULE_PATHNAME', 'Temporal_store_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION storageSize(tfloat)
+CREATE FUNCTION storeSize(tfloat)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Temporal_storage_size'
+  AS 'MODULE_PATHNAME', 'Temporal_store_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION storageSize(ttext)
+CREATE FUNCTION storeSize(ttext)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Temporal_storage_size'
+  AS 'MODULE_PATHNAME', 'Temporal_store_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- values is a reserved word in SQL

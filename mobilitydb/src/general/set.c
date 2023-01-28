@@ -230,27 +230,27 @@ Set_to_span(PG_FUNCTION_ARGS)
  * Accessor functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Set_memory_size);
+PG_FUNCTION_INFO_V1(Set_mem_size);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the memory size in bytes of a set
- * @sqlfunc memorySize()
+ * @sqlfunc memSize()
  */
 PGDLLEXPORT Datum
-Set_memory_size(PG_FUNCTION_ARGS)
+Set_mem_size(PG_FUNCTION_ARGS)
 {
   Datum result = toast_raw_datum_size(PG_GETARG_DATUM(0));
   PG_RETURN_DATUM(result);
 }
 
-PG_FUNCTION_INFO_V1(Set_storage_size);
+PG_FUNCTION_INFO_V1(Set_store_size);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the storage (compressed) size in bytes of a set
  * @sqlfunc storageSize()
  */
 PGDLLEXPORT Datum
-Set_storage_size(PG_FUNCTION_ARGS)
+Set_store_size(PG_FUNCTION_ARGS)
 {
   Datum result = toast_datum_size(PG_GETARG_DATUM(0));
   PG_RETURN_DATUM(result);

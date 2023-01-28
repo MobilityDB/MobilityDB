@@ -460,25 +460,25 @@ SELECT DISTINCT tempSubtype(temp) FROM tbl_tgeogpoint3D ORDER BY 1;
  SequenceSet
 (3 rows)
 
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE memorySize(temp) > 0;
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE memSize(temp) > 0;
  count 
 -------
    100
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE memorySize(temp) > 0;
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE memSize(temp) > 0;
  count 
 -------
    100
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE memorySize(temp) > 0;
+SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE memSize(temp) > 0;
  count 
 -------
    100
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE memorySize(temp) > 0;
+SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE memSize(temp) > 0;
  count 
 -------
    100
@@ -533,28 +533,28 @@ SELECT MAX(st_memSize(getValue(inst)::geometry)) FROM tbl_tgeogpoint3D_inst;
   64
 (1 row)
 
-SELECT MAX(st_memSize(getValues(temp))) FROM tbl_tgeompoint;
+SELECT MAX(memSize(getValues(temp))) FROM tbl_tgeompoint;
  max  
 ------
- 1000
+ 2344
 (1 row)
 
-SELECT MAX(st_memSize(getValues(temp)::geometry)) FROM tbl_tgeogpoint;
- max 
------
- 856
-(1 row)
-
-SELECT MAX(st_memSize(getValues(temp))) FROM tbl_tgeompoint3D;
+SELECT MAX(memSize(getValues(temp))) FROM tbl_tgeogpoint;
  max  
 ------
- 1360
+ 1984
 (1 row)
 
-SELECT MAX(st_memSize(getValues(temp)::geometry)) FROM tbl_tgeogpoint3D;
+SELECT MAX(memSize(getValues(temp))) FROM tbl_tgeompoint3D;
  max  
 ------
- 1360
+ 2600
+(1 row)
+
+SELECT MAX(memSize(getValues(temp))) FROM tbl_tgeogpoint3D;
+ max  
+------
+ 2600
 (1 row)
 
 SELECT MAX(st_memSize(startValue(temp))) FROM tbl_tgeompoint;

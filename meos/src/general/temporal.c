@@ -1576,10 +1576,10 @@ temporal_tprecision(const Temporal *temp, const Interval *duration,
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the size in bytes of a temporal value
- * @sqlfunc memorySize()
+ * @sqlfunc memSize()
  */
 size_t
-temporal_memory_size(const Temporal *temp)
+temporal_mem_size(const Temporal *temp)
 {
   return VARSIZE(temp);
 }

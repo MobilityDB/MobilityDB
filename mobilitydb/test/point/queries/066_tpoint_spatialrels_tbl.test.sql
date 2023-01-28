@@ -41,7 +41,7 @@ set force_parallel_mode=regress;
 
 -- In GEOS 3.11, GEOSRelatePattern does not accept GEOMETRYCOLLECTION
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint
-WHERE geometrytype(getvalues(temp)) <> 'GEOMETRYCOLLECTION' AND contains(g, temp);
+WHERE geometrytype(trajectory(temp)) <> 'GEOMETRYCOLLECTION' AND contains(g, temp);
 
 -------------------------------------------------------------------------------
 -- disjoint

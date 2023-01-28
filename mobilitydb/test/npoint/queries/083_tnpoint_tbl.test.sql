@@ -116,7 +116,7 @@ SELECT COUNT(*) FROM tbl_tnpoint WHERE round(temp, 7) = round((temp::tgeompoint)
 
 SELECT DISTINCT tempSubtype(temp) FROM tbl_tnpoint ORDER BY 1;
 
-SELECT MAX(memorySize(temp)) FROM tbl_tnpoint;
+SELECT MAX(memSize(temp)) FROM tbl_tnpoint;
 
 /*
 SELECT stbox(temp) FROM tbl_tnpoint;

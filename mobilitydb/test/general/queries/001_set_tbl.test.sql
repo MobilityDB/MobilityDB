@@ -85,7 +85,7 @@ SELECT COUNT(*) FROM tbl_tstzset WHERE tstzsetFromHexWKB(asHexWKB(t)) <> t;
 -------------------------------------------------------------------------------
 -- Constructor
 
-SELECT memorySize(set(array_agg(DISTINCT t ORDER BY t))) FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10;
+SELECT memSize(set(array_agg(DISTINCT t ORDER BY t))) FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10;
 
 -------------------------------------------------------------------------------
 -- Cast
@@ -105,8 +105,8 @@ SELECT MIN(startValue(shift(t, '5 min'))) FROM tbl_tstzset;
 -------------------------------------------------------------------------------
 -- Accessor functions
 
-SELECT MAX(memorySize(t)) FROM tbl_tstzset;
-SELECT MAX(storageSize(t)) FROM tbl_tstzset;
+SELECT MAX(memSize(t)) FROM tbl_tstzset;
+SELECT MAX(storeSize(t)) FROM tbl_tstzset;
 
 SELECT MIN(lower(span(t))) FROM tbl_tstzset;
 

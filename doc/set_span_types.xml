@@ -417,27 +417,27 @@ SELECT tstzmultirange '{[2000-01-01,2000-01-02],[2000-01-04,2000-01-05]}'::tstzs
 			<title>Accessor Functions</title>
 
 			<itemizedlist>
-				<listitem id="setspan_memorySize">
-					<indexterm><primary><varname>memorySize</varname></primary></indexterm>
+				<listitem id="setspan_memSize">
+					<indexterm><primary><varname>memSize</varname></primary></indexterm>
 					<para>Get the memory size in bytes</para>
-					<para><varname>memorySize({set,spanset}) → integer</varname></para>
+					<para><varname>memSize({set,spanset}) → integer</varname></para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT memorySize(tstzset '{2001-01-01, 2001-01-02, 2001-01-03}');
+SELECT memSize(tstzset '{2001-01-01, 2001-01-02, 2001-01-03}');
 -- 104
-SELECT memorySize(tstzspanset '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04],
+SELECT memSize(tstzspanset '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04],
   [2001-01-05, 2001-01-06]}');
 -- 136
 </programlisting>
 				</listitem>
 
-				<listitem id="setspan_storageSize">
-					<indexterm><primary><varname>storageSize</varname></primary></indexterm>
+				<listitem id="setspan_storeSize">
+					<indexterm><primary><varname>storeSize</varname></primary></indexterm>
 					<para>Get the storage (compressed) size in bytes</para>
-					<para><varname>storageSize({set,spanset}) → integer</varname></para>
+					<para><varname>storeSize({set,spanset}) → integer</varname></para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT storageSize(tstzset '{2001-01-01, 2001-01-02, 2001-01-03}');
+SELECT storeSize(tstzset '{2001-01-01, 2001-01-02, 2001-01-03}');
 -- 56
-SELECT storageSize(tstzspanset '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04],
+SELECT storeSize(tstzspanset '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04],
   [2001-01-05, 2001-01-06]}');
 -- 112
 </programlisting>

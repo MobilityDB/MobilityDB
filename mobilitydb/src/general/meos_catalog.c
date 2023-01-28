@@ -265,6 +265,10 @@ populate_typeoid_catalog()
 
 /**
  * @brief Populate the Oid cache for operators
+ *
+ * This fetches the precomputed operator cache from the PostgreSQL catalog that
+ * is stored in table `mobilitydb_opcache`.
+ * @see fill_opcache
  */
 static void
 populate_operoid_catalog()
@@ -284,8 +288,7 @@ populate_operoid_catalog()
     populate_typeoid_catalog();
     memset(_op_oids, 0, sizeof(_op_oids));
     /*
-     * This fetches the pre-computed operator cache from the catalog where
-     * it is stored in a table. See the fill_opcache function below.
+     * Fetches the rows of the table containing the MobilityDB operator cache
      */
     Oid catalog = RelnameGetRelid("mobilitydb_opcache");
 #if POSTGRESQL_VERSION_NUMBER < 130000
@@ -339,7 +342,9 @@ populate_operoid_catalog()
 PG_FUNCTION_INFO_V1(fill_opcache);
 /**
  * @brief Function executed during the `CREATE EXTENSION` to precompute the
- * operator cache and store it as a table in the catalog
+ * operator cache and store it in table `mobilitydb_opcache`
+ * @see populate_operoid_catalog
+ *
  */
 PGDLLEXPORT Datum
 fill_opcache(PG_FUNCTION_ARGS __attribute__((unused)))
@@ -399,6 +404,15 @@ type_oid(meosType type)
   if (! result)
     elog(ERROR, "Unknown MEOS type; %d", type);
   return result;
+}
+
+/**
+ * @brief Return the string name from an operator enum
+ */
+const char *
+oper_name(meosOper oper)
+{
+  return _opnames[oper];
 }
 
 /**

@@ -219,15 +219,15 @@ SELECT DISTINCT tempSubtype(temp) FROM tbl_tint ORDER BY 1;
 SELECT DISTINCT tempSubtype(temp) FROM tbl_tfloat ORDER BY 1;
 SELECT DISTINCT tempSubtype(temp) FROM tbl_ttext ORDER BY 1;
 
-SELECT MAX(memorySize(temp)) FROM tbl_tbool;
-SELECT MAX(memorySize(temp)) FROM tbl_tint;
-SELECT MAX(memorySize(temp)) FROM tbl_tfloat;
-SELECT MAX(memorySize(temp)) FROM tbl_ttext;
+SELECT MAX(memSize(temp)) FROM tbl_tbool;
+SELECT MAX(memSize(temp)) FROM tbl_tint;
+SELECT MAX(memSize(temp)) FROM tbl_tfloat;
+SELECT MAX(memSize(temp)) FROM tbl_ttext;
 
-SELECT MAX(storageSize(temp)) FROM tbl_tbool;
-SELECT MAX(storageSize(temp)) FROM tbl_tint;
-SELECT MAX(storageSize(temp)) FROM tbl_tfloat;
-SELECT MAX(storageSize(temp)) FROM tbl_ttext;
+SELECT MAX(storeSize(temp)) FROM tbl_tbool;
+SELECT MAX(storeSize(temp)) FROM tbl_tint;
+SELECT MAX(storeSize(temp)) FROM tbl_tfloat;
+SELECT MAX(storeSize(temp)) FROM tbl_ttext;
 
 /*
 SELECT span(temp) FROM tbl_tbool;
@@ -246,7 +246,7 @@ SELECT MAX(numValues(getValues(temp))) FROM tbl_tint;
 SELECT MAX(numValues(getValues(temp))) FROM tbl_tfloat;
 SELECT MAX(numValues(getValues(temp))) FROM tbl_ttext;
 
-SELECT MAX(numSpans(traversedValues(temp))) FROM tbl_tfloat;
+SELECT MAX(numSpans(trajectory(temp))) FROM tbl_tfloat;
 
 SELECT DISTINCT startValue(temp) FROM tbl_tbool;
 SELECT MAX(startValue(temp)) FROM tbl_tint;

@@ -5,7 +5,7 @@ SET
 set force_parallel_mode=regress;
 SET
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint
-WHERE geometrytype(getvalues(temp)) <> 'GEOMETRYCOLLECTION' AND contains(g, temp);
+WHERE geometrytype(trajectory(temp)) <> 'GEOMETRYCOLLECTION' AND contains(g, temp);
  count 
 -------
   2897

@@ -336,22 +336,22 @@ CREATE FUNCTION interpolation(tgeogpoint)
   AS 'MODULE_PATHNAME', 'Temporal_interpolation'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION memorySize(tgeompoint)
+CREATE FUNCTION memSize(tgeompoint)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Temporal_memory_size'
+  AS 'MODULE_PATHNAME', 'Temporal_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION memorySize(tgeogpoint)
+CREATE FUNCTION memSize(tgeogpoint)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Temporal_memory_size'
+  AS 'MODULE_PATHNAME', 'Temporal_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION storageSize(tgeompoint)
+CREATE FUNCTION storeSize(tgeompoint)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Temporal_storage_size'
+  AS 'MODULE_PATHNAME', 'Temporal_store_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION storageSize(tgeogpoint)
+CREATE FUNCTION storeSize(tgeogpoint)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Temporal_storage_size'
+  AS 'MODULE_PATHNAME', 'Temporal_store_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- value is a reserved word in SQL

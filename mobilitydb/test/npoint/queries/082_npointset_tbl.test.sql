@@ -48,7 +48,7 @@ SELECT COUNT(*) FROM tbl_npointset WHERE npointsetFromHexWKB(asHexWKB(n)) <> n;
 -------------------------------------------------------------------------------
 -- Constructor
 
-SELECT memorySize(set(array_agg(DISTINCT np ORDER BY np))) FROM tbl_npoint WHERE np IS NOT NULL LIMIT 10;
+SELECT memSize(set(array_agg(DISTINCT np ORDER BY np))) FROM tbl_npoint WHERE np IS NOT NULL LIMIT 10;
 
 -------------------------------------------------------------------------------
 -- Cast
@@ -63,8 +63,8 @@ SELECT MIN(getPosition(startValue(round(n, 3)))) FROM tbl_npointset;
 -------------------------------------------------------------------------------
 -- Accessor functions
 
-SELECT MAX(memorySize(n)) FROM tbl_npointset;
-SELECT MAX(storageSize(n)) FROM tbl_npointset;
+SELECT MAX(memSize(n)) FROM tbl_npointset;
+SELECT MAX(storeSize(n)) FROM tbl_npointset;
 
 SELECT MIN(numValues(n)) FROM tbl_npointset;
 SELECT MIN(getPosition(startValue(n))) FROM tbl_npointset;

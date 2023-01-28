@@ -651,22 +651,22 @@ SELECT asText(geometry 'GEOMETRYCOLLECTION M (LINESTRING M (0 0 978307200,1 1 97
 		<title>Accessor Functions</title>
 		<itemizedlist>
 
-			<listitem id="ttype_memorySize">
-				<indexterm><primary><varname>memorySize</varname></primary></indexterm>
+			<listitem id="ttype_memSize">
+				<indexterm><primary><varname>memSize</varname></primary></indexterm>
 				<para>Get the memory size in bytes</para>
-				<para><varname>memorySize(ttype) → integer</varname></para>
+				<para><varname>memSize(ttype) → integer</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT memorySize(tint '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03}');
+SELECT memSize(tint '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03}');
 -- 280
 </programlisting>
 			</listitem>
 
-			<listitem id="ttype_storageSize">
-				<indexterm><primary><varname>storageSize</varname></primary></indexterm>
+			<listitem id="ttype_storeSize">
+				<indexterm><primary><varname>storeSize</varname></primary></indexterm>
 				<para>Get the storage (compressed) size in bytes</para>
-				<para><varname>storageSize(ttype) → integer</varname></para>
+				<para><varname>storeSize(ttype) → integer</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT storageSize(tint '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03}');
+SELECT storeSize(tint '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03}');
 -- 176
 </programlisting>
 			</listitem>

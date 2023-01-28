@@ -64,14 +64,14 @@ SELECT COUNT(*) FROM tbl_geogset WHERE geogsetFromHexWKB(asHexWKB(g)) <> g;
 -------------------------------------------------------------------------------
 -- Constructor
 
-SELECT memorySize(set_agg(g)) FROM tbl_geom_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g);
-SELECT memorySize(set_agg(g)) FROM tbl_geog_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g::geometry);
+SELECT memSize(set_agg(g)) FROM tbl_geom_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g);
+SELECT memSize(set_agg(g)) FROM tbl_geog_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g::geometry);
 
 -------------------------------------------------------------------------------
 -- Cast
 
-SELECT MAX(memorySize(set(g))) FROM tbl_geom_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g);
-SELECT MAX(memorySize(set(g))) FROM tbl_geog_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g::geometry);
+SELECT MAX(memSize(set(g))) FROM tbl_geom_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g);
+SELECT MAX(memSize(set(g))) FROM tbl_geog_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g::geometry);
 
 -------------------------------------------------------------------------------
 -- Transformation functions
@@ -82,16 +82,16 @@ SELECT MIN(ST_X(startValue(round(g, 6))::geometry)) FROM tbl_geogset;
 -------------------------------------------------------------------------------
 -- Accessor functions
 
-SELECT MAX(memorySize(g)) FROM tbl_geomset;
-SELECT MAX(storageSize(g)) FROM tbl_geomset;
+SELECT MAX(memSize(g)) FROM tbl_geomset;
+SELECT MAX(storeSize(g)) FROM tbl_geomset;
 SELECT MIN(numValues(g)) FROM tbl_geomset;
 SELECT MIN(ST_X(startValue(g))) FROM tbl_geomset;
 SELECT MIN(ST_X(endValue(g))) FROM tbl_geomset;
 SELECT MIN(ST_X(valueN(g, 1))) FROM tbl_geomset;
 SELECT MIN(array_length(getValues(g), 1)) FROM tbl_geomset;
 
-SELECT MAX(memorySize(g)) FROM tbl_geogset;
-SELECT MAX(storageSize(g)) FROM tbl_geogset;
+SELECT MAX(memSize(g)) FROM tbl_geogset;
+SELECT MAX(storeSize(g)) FROM tbl_geogset;
 SELECT MIN(numValues(g)) FROM tbl_geogset;
 SELECT MIN(ST_X(startValue(g)::geometry)) FROM tbl_geogset;
 SELECT MIN(ST_X(endValue(g)::geometry)) FROM tbl_geogset;

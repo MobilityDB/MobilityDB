@@ -373,46 +373,46 @@ CREATE FUNCTION shiftTscale(tstzset, interval, interval)
  * Accessor functions
  ******************************************************************************/
 
-CREATE FUNCTION memorySize(intset)
+CREATE FUNCTION memSize(intset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Set_memory_size'
+  AS 'MODULE_PATHNAME', 'Set_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION memorySize(bigintset)
+CREATE FUNCTION memSize(bigintset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Set_memory_size'
+  AS 'MODULE_PATHNAME', 'Set_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION memorySize(floatset)
+CREATE FUNCTION memSize(floatset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Set_memory_size'
+  AS 'MODULE_PATHNAME', 'Set_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION memorySize(textset)
+CREATE FUNCTION memSize(textset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Set_memory_size'
+  AS 'MODULE_PATHNAME', 'Set_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION memorySize(tstzset)
+CREATE FUNCTION memSize(tstzset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Set_memory_size'
+  AS 'MODULE_PATHNAME', 'Set_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION storageSize(intset)
+CREATE FUNCTION storeSize(intset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Set_storage_size'
+  AS 'MODULE_PATHNAME', 'Set_store_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION storageSize(bigintset)
+CREATE FUNCTION storeSize(bigintset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Set_storage_size'
+  AS 'MODULE_PATHNAME', 'Set_store_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION storageSize(floatset)
+CREATE FUNCTION storeSize(floatset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Set_storage_size'
+  AS 'MODULE_PATHNAME', 'Set_store_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION storageSize(textset)
+CREATE FUNCTION storeSize(textset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Set_memory_size'
+  AS 'MODULE_PATHNAME', 'Set_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION storageSize(tstzset)
+CREATE FUNCTION storeSize(tstzset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Set_storage_size'
+  AS 'MODULE_PATHNAME', 'Set_store_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION numValues(intset)

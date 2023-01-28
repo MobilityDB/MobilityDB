@@ -961,27 +961,27 @@ Temporal_interpolation(PG_FUNCTION_ARGS)
   PG_RETURN_TEXT_P(result);
 }
 
-PG_FUNCTION_INFO_V1(Temporal_memory_size);
+PG_FUNCTION_INFO_V1(Temporal_mem_size);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the memory size in bytes of a temporal value
- * @sqlfunc memorySize()
+ * @sqlfunc memSize()
  */
 PGDLLEXPORT Datum
-Temporal_memory_size(PG_FUNCTION_ARGS)
+Temporal_mem_size(PG_FUNCTION_ARGS)
 {
   Datum result = toast_raw_datum_size(PG_GETARG_DATUM(0));
   PG_RETURN_DATUM(result);
 }
 
-PG_FUNCTION_INFO_V1(Temporal_storage_size);
+PG_FUNCTION_INFO_V1(Temporal_store_size);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the storage (compressed) size in bytes of a temporal value
  * @sqlfunc storageSize()
  */
 PGDLLEXPORT Datum
-Temporal_storage_size(PG_FUNCTION_ARGS)
+Temporal_store_size(PG_FUNCTION_ARGS)
 {
   Datum result = toast_datum_size(PG_GETARG_DATUM(0));
   PG_RETURN_DATUM(result);
