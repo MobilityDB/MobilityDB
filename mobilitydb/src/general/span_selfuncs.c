@@ -1519,11 +1519,10 @@ _mobdb_span_joinsel(PG_FUNCTION_ARGS)
   /* Determine whether we can estimate selectivity for the operator */
   meosType ltype, rtype;
   meosOper oper = oid_oper(operid, &ltype, &rtype);
-  bool value, time;
-  value = value_oper_sel(oper, ltype, rtype);
+  bool value = value_oper_sel(oper, ltype, rtype);
   if (! value)
   {
-    time = time_oper_sel(oper, ltype, rtype);
+    bool time = time_oper_sel(oper, ltype, rtype);
     if (! time)
       /* In case of unknown operator */
       elog(ERROR, "Unknown span operator %d", operid);
