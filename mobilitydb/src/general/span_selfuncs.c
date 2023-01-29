@@ -865,8 +865,7 @@ span_sel(PlannerInfo *root, Oid operid, List *args, int varRelid)
   /* Determine whether we can estimate selectivity for the operator */
   meosType ltype, rtype;
   meosOper oper = oid_oper(operid, &ltype, &rtype);
-  bool value;
-  value = value_oper_sel(oper, ltype, rtype);
+  bool value = value_oper_sel(oper, ltype, rtype);
   if (! value)
   {
     bool time = time_oper_sel(oper, ltype, rtype);
@@ -1447,11 +1446,10 @@ Span_joinsel(PG_FUNCTION_ARGS)
   /* Determine whether we can estimate selectivity for the operator */
   meosType ltype, rtype;
   meosOper oper = oid_oper(operid, &ltype, &rtype);
-  bool value, time;
-  value = value_oper_sel(oper, ltype, rtype);
+  bool value = value_oper_sel(oper, ltype, rtype);
   if (! value)
   {
-    time = time_oper_sel(oper, ltype, rtype);
+    bool time = time_oper_sel(oper, ltype, rtype);
     if (! time)
       /* Return default selectivity */
       PG_RETURN_FLOAT8(span_joinsel_default(operid));
