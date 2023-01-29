@@ -48,7 +48,6 @@
 #include "pg_general/span_selfuncs.h"
 #include "pg_general/temporal_selfuncs.h"
 #include "pg_point/tpoint_analyze.h"
-#include "pg_npoint/tnpoint_selfuncs.h"
 
 /*****************************************************************************
  * Boolean functions for the operators
@@ -450,36 +449,6 @@ nd_box_ratio_position(const ND_BOX *b1, const ND_BOX *b2, meosOper oper)
  *****************************************************************************/
 
 /**
- * @brief Transform the constant into an STBox
- * @note This function is also used for temporal network points
- */
-static bool
-tpoint_const_stbox(Node *other, STBox *box)
-{
-  Oid consttypid = ((Const *) other)->consttype;
-  meosType type = oid_type(consttypid);
-  if (geo_basetype(type))
-    geo_set_stbox((GSERIALIZED *) PointerGetDatum(((Const *) other)->constvalue),
-      box);
-  else if (type == T_TIMESTAMPTZ)
-    timestamp_set_stbox(DatumGetTimestampTz(((Const *) other)->constvalue), box);
-  else if (type == T_TSTZSET)
-    tstzset_set_stbox(DatumGetSetP(((Const *) other)->constvalue),
-      box);
-  else if (type == T_TSTZSPAN)
-    period_set_stbox(DatumGetSpanP(((Const *) other)->constvalue), box);
-  else if (type == T_TSTZSPANSET)
-    periodset_stbox_slice(((Const *) other)->constvalue, box);
-  else if (type == T_STBOX)
-    memcpy(box, DatumGetSTboxP(((Const *) other)->constvalue), sizeof(STBox));
-  else if (tspatial_type(type))
-    temporal_set_bbox(DatumGetTemporalP(((Const *) other)->constvalue), box);
-  else
-    return false;
-  return true;
-}
-
-/**
  * @brief Set the values of an ND_BOX from an STBox
  *
  * The function only takes into account the x, y, and z dimensions of the box?
@@ -518,7 +487,7 @@ nd_box_from_stbox(const STBox *box, ND_BOX *nd_box)
  * @note This function generalizes PostGIS function estimate_selectivity in
  * file gserialized_estimate.c
  */
-static float8
+float8
 geo_sel(VariableStatData *vardata, const STBox *box, meosOper oper)
 {
   ND_STATS *nd_stats;
@@ -711,215 +680,13 @@ geo_sel(VariableStatData *vardata, const STBox *box, meosOper oper)
 }
 
 /*****************************************************************************
- * Restriction selectivity
- *****************************************************************************/
-
-/**
- * @brief Return a default restriction selectivity estimate for a given
- * operator, when we don't have statistics or cannot use them for some reason.
- */
-static float8
-tpoint_sel_default(meosOper oper)
-{
-  switch (oper)
-  {
-    case OVERLAPS_OP:
-      return 0.005;
-
-    case CONTAINS_OP:
-    case CONTAINED_OP:
-      return 0.002;
-
-    case SAME_OP:
-      return 0.001;
-
-    case LEFT_OP:
-    case RIGHT_OP:
-    case OVERLEFT_OP:
-    case OVERRIGHT_OP:
-    case ABOVE_OP:
-    case BELOW_OP:
-    case OVERABOVE_OP:
-    case OVERBELOW_OP:
-    case FRONT_OP:
-    case BACK_OP:
-    case OVERFRONT_OP:
-    case OVERBACK_OP:
-    case AFTER_OP:
-    case BEFORE_OP:
-    case OVERAFTER_OP:
-    case OVERBEFORE_OP:
-      /* these are similar to regular scalar inequalities */
-      return DEFAULT_INEQ_SEL;
-
-    default:
-      /* all operators should be handled above, but just in case */
-      return 0.001;
-  }
-}
-
-/**
- * @brief Get the enum value associated to the operator
- */
-static bool
-tpoint_oper_sel(Oid operid __attribute__((unused)), meosType ltype,
-  meosType rtype)
-{
-  if ((timespan_basetype(ltype) || timeset_type(ltype) ||
-        timespan_type(ltype) || timespanset_type(ltype) ||
-        geo_basetype(ltype) || ltype == T_STBOX || tgeo_type(ltype)) &&
-      (timespan_basetype(rtype) || timeset_type(rtype) ||
-        timespan_type(rtype) || timespanset_type(rtype) ||
-        geo_basetype(rtype) || rtype == T_STBOX || tgeo_type(rtype)))
-    return true;
-  return false;
-}
-
-/**
- * @brief Get enumeration value associated to the operator according to the family
- */
-static bool
-tpoint_oper_sel_family(meosOper oper __attribute__((unused)), meosType ltype,
-  meosType rtype, TemporalFamily tempfamily)
-{
-#if NPOINT
-  assert(tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE);
-#else
-  assert(tempfamily == TPOINTTYPE);
-#endif /* NPOINT */
-  if (tempfamily == TPOINTTYPE)
-    return tpoint_oper_sel(oper, ltype, rtype);
-  else /* tempfamily == TNPOINTTYPE */
-    return tnpoint_oper_sel(oper, ltype, rtype);
-}
-
-/**
- * @brief Estimate the restriction selectivity of the operators for temporal
- * points
- */
-float8
-tpoint_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
-  TemporalFamily tempfamily)
-{
-  VariableStatData vardata;
-  Node *other;
-  bool varonleft;
-  Selectivity selec;
-  STBox box;
-  Span period;
-
-  /* Determine whether we can estimate selectivity for the operator */
-  meosType ltype, rtype;
-  meosOper oper = oid_oper(operid, &ltype, &rtype);
-  if (! tpoint_oper_sel_family(oper, ltype, rtype, tempfamily))
-    /* In the case of unknown operator */
-    return DEFAULT_TEMP_SEL;
-
-  /*
-   * If expression is not (variable oper something) or (something oper
-   * variable), then punt and return a default estimate.
-   */
-  if (! get_restriction_variable(root, args, varRelid, &vardata, &other,
-      &varonleft))
-    return tpoint_sel_default(oper);
-
-  /*
-   * Can't do anything useful if the something is not a constant, either.
-   */
-  if (! IsA(other, Const))
-  {
-    ReleaseVariableStats(vardata);
-    return tpoint_sel_default(oper);
-  }
-
-  /*
-   * All the period operators are strict, so we can cope with a NULL constant
-   * right away.
-   */
-  if (((Const *) other)->constisnull)
-  {
-    ReleaseVariableStats(vardata);
-    return 0.0;
-  }
-
-  /*
-   * If var is on the right, commute the operator, so that we can assume the
-   * var is on the left in what follows.
-   */
-  if (! varonleft)
-  {
-    /* we have other Op var, commute to make var Op other */
-    operid = get_commutator(operid);
-    if (! operid)
-    {
-      /* Use default selectivity (should we raise an error instead?) */
-      ReleaseVariableStats(vardata);
-      return tpoint_sel_default(oper);
-    }
-  }
-
-  /*
-   * Transform the constant into an STBox
-   */
-  if (! tpoint_const_stbox(other, &box))
-    /* In the case of unknown constant */
-    return tpoint_sel_default(oper);
-
-  assert(MOBDB_FLAGS_GET_X(box.flags) || MOBDB_FLAGS_GET_T(box.flags));
-
-  /* Enable the multiplication of the selectivity of the spatial and time
-   * dimensions since either may be missing */
-  selec = 1.0;
-
-  /*
-   * Estimate selectivity for the spatial dimension
-   */
-  if (MOBDB_FLAGS_GET_X(box.flags))
-  {
-    /* PostGIS does not provide selectivity for the traditional
-     * comparisons <, <=, >, >= */
-    if (oper == LT_OP || oper == LE_OP || oper == GT_OP ||
-      oper == GE_OP)
-      selec *= tpoint_sel_default(oper);
-    else
-      selec *= geo_sel(&vardata, &box, oper);
-  }
-  /*
-   * Estimate selectivity for the time dimension
-   */
-  if (MOBDB_FLAGS_GET_T(box.flags))
-  {
-    /* Transform the STBox into a Period */
-    memcpy(&period, &box.period, sizeof(Span));
-
-    /* Compute the selectivity */
-    selec *= temporal_sel_period(&vardata, &period, oper);
-  }
-
-  ReleaseVariableStats(vardata);
-  CLAMP_PROBABILITY(selec);
-  return selec;
-}
-
-PG_FUNCTION_INFO_V1(Tpoint_sel);
-/**
- * @brief Estimate the restriction selectivity of the operators for temporal
- * points
- */
-PGDLLEXPORT Datum
-Tpoint_sel(PG_FUNCTION_ARGS)
-{
-  return temporal_sel_ext(fcinfo, TPOINTTYPE);
-}
-
-/*****************************************************************************
  * Join selectivity
  *****************************************************************************/
 
 /**
  * @brief Get the statistics from the tuple
  */
-static ND_STATS *
+ND_STATS *
 pg_nd_stats_from_tuple(HeapTuple stats_tuple, int mode)
 {
   int stats_kind = STATISTIC_KIND_ND;
@@ -950,7 +717,7 @@ pg_nd_stats_from_tuple(HeapTuple stats_tuple, int mode)
 * Pull the stats object from the PgSQL system catalogs. Used
 * by the selectivity functions and the debugging functions.
 */
-static ND_STATS *
+ND_STATS *
 pg_get_nd_stats(const Oid tableid, AttrNumber att_num, int mode, bool only_parent)
 {
   HeapTuple stats_tuple = NULL;
@@ -972,50 +739,6 @@ pg_get_nd_stats(const Oid tableid, AttrNumber att_num, int mode, bool only_paren
 }
 
 /**
- * @brief Return a default join selectivity estimate for a given operator,
- * when we don't have statistics or cannot use them for some reason.
- */
-static float8
-tpoint_joinsel_default(meosOper oper)
-{
-  switch (oper)
-  {
-    case OVERLAPS_OP:
-      return 0.005;
-
-    case CONTAINS_OP:
-    case CONTAINED_OP:
-      return 0.002;
-
-    case SAME_OP:
-      return 0.001;
-
-    case LEFT_OP:
-    case RIGHT_OP:
-    case OVERLEFT_OP:
-    case OVERRIGHT_OP:
-    case ABOVE_OP:
-    case BELOW_OP:
-    case OVERABOVE_OP:
-    case OVERBELOW_OP:
-    case FRONT_OP:
-    case BACK_OP:
-    case OVERFRONT_OP:
-    case OVERBACK_OP:
-    case AFTER_OP:
-    case BEFORE_OP:
-    case OVERAFTER_OP:
-    case OVERBEFORE_OP:
-      /* these are similar to regular scalar inequalities */
-      return DEFAULT_INEQ_SEL;
-
-    default:
-      /* all operators should be handled above, but just in case */
-      return 0.001;
-  }
-}
-
-/**
 * Given two statistics histograms, what is the selectivity
 * of a join driven by the && operator?
 *
@@ -1028,7 +751,7 @@ tpoint_joinsel_default(meosOper oper)
 * proportion of the cells in the other histogram the cell
 * overlaps: val += val1 * ( val2 * overlap_ratio )
 */
-static float8
+float8
 geo_joinsel(const ND_STATS *s1, const ND_STATS *s2)
 {
   int ncells1, ncells2;
@@ -1206,144 +929,4 @@ geo_joinsel(const ND_STATS *s1, const ND_STATS *s2)
 
   return selectivity;
 }
-
-/**
- * @brief Depending on the operator and the arguments, determine wheter the
- * space, the time, or both components are taken into account for computing the
- * join selectivity
- */
-static bool
-tpoint_joinsel_components(meosOper oper, meosType oprleft,
-  meosType oprright, bool *space, bool *time)
-{
-  /* Get the argument which may not be a temporal point */
-  meosType arg = tspatial_type(oprleft) ? oprright : oprleft;
-
-  /* Determine the components */
-  if (tspatial_basetype(arg) ||
-    oper == LEFT_OP || oper == OVERLEFT_OP ||
-    oper == RIGHT_OP || oper == OVERRIGHT_OP ||
-    oper == BELOW_OP || oper == OVERBELOW_OP ||
-    oper == ABOVE_OP || oper == OVERABOVE_OP ||
-    oper == FRONT_OP || oper == OVERFRONT_OP ||
-    oper == BACK_OP || oper == OVERBACK_OP ||
-    oper == ADJACENT_OP)
-  {
-    *space = true;
-    *time = false;
-  }
-  else if (time_type(arg) ||
-    oper == BEFORE_OP || oper == OVERBEFORE_OP ||
-    oper == AFTER_OP || oper == OVERAFTER_OP)
-  {
-    *space = false;
-    *time = true;
-  }
-  else if (tspatial_type(arg) && (oper == OVERLAPS_OP ||
-    oper == CONTAINS_OP || oper == CONTAINED_OP ||
-    oper == SAME_OP || oper == ADJACENT_OP))
-  {
-    *space = true;
-    *time = true;
-  }
-  else
-  {
-    /* By default only the time component is taken into account */
-    *space = false;
-    *time = true;
-  }
-  return true;
-}
-
-/**
- * @brief Estimate the join selectivity of the operators for temporal
- * (network) points
- *
- * The selectivity is the ratio of the number of rows we think will be
- * returned divided the maximum number of rows the join could possibly
- * return (the full combinatoric join), that is,
- *   joinsel = estimated_nrows / (totalrows1 * totalrows2)
- */
-float8
-tpoint_joinsel(PlannerInfo *root, Oid operid, List *args, JoinType jointype,
-  SpecialJoinInfo *sjinfo, int mode, TemporalFamily tempfamily)
-{
-  Node *arg1 = (Node *) linitial(args);
-  Node *arg2 = (Node *) lsecond(args);
-  Var *var1 = (Var *) arg1;
-  Var *var2 = (Var *) arg2;
-
-  /* We only do column joins right now, no functional joins */
-  /* TODO: handle t1 <oper> expandX(t2) */
-  if (!IsA(arg1, Var) || !IsA(arg2, Var))
-    return DEFAULT_TEMP_JOINSEL;
-
-  /* Determine whether we can estimate selectivity for the operator */
-  meosType ltype, rtype;
-  meosOper oper = oid_oper(operid, &ltype, &rtype);
-  if (! tpoint_oper_sel_family(oper, ltype, rtype, tempfamily))
-    /* In the case of unknown operator */
-    return DEFAULT_TEMP_SEL;
-
-  /*
-   * Determine whether the space and/or the time components are
-   * taken into account for the selectivity estimation
-   */
-  bool space, time;
-  if (! tpoint_joinsel_components(oper, ltype, rtype, &space, &time))
-    /* In the case of unknown arguments */
-    return tpoint_joinsel_default(oper);
-
-  float8 selec = 1.0;
-  if (space)
-  {
-    /* What are the Oids of our tables/relations? */
-    Oid relid1 = rt_fetch(var1->varno, root->parse->rtable)->relid;
-    Oid relid2 = rt_fetch(var2->varno, root->parse->rtable)->relid;
-
-    /* Pull the stats from the stats system. */
-    ND_STATS *stats1 = pg_get_nd_stats(relid1, var1->varattno, mode, false);
-    ND_STATS *stats2 = pg_get_nd_stats(relid2, var2->varattno, mode, false);
-
-    /* If we can't get stats, we have to stop here! */
-    if (! stats1 || ! stats2)
-      selec *= tpoint_joinsel_default(oper);
-    else
-      selec *= geo_joinsel(stats1, stats2);
-    if (stats1)
-      pfree(stats1);
-    if (stats2)
-      pfree(stats2);
-  }
-  if (time)
-  {
-    /*
-     * Return default selectivity for the time dimension for the following cases
-     * - There is no ~= operator for time types
-     * - The support functions for the ever spatial relationships add a
-     *   bounding box test with the && operator, but we need to exclude
-     *   the dwithin operator since it takes 3 arguments and thus the
-     *   PostgreSQL function get_join_variables cannot be invoked.
-     */
-    if (oper == SAME_OP ||
-      (oper == OVERLAPS_OP && list_length(args) != 2))
-      selec *= span_joinsel_default(oper);
-    else
-      /* Estimate join selectivity */
-      selec *= span_joinsel(root, oper, args, jointype, sjinfo);
-  }
-  return selec;
-}
-
-PG_FUNCTION_INFO_V1(Tpoint_joinsel);
-/**
- * @brief Estimate the join selectivity value of the operators for temporal
- * points.
- */
-PGDLLEXPORT Datum
-Tpoint_joinsel(PG_FUNCTION_ARGS)
-{
-  return temporal_joinsel_ext(fcinfo, TPOINTTYPE);
-}
-
 /*****************************************************************************/

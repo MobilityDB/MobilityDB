@@ -59,9 +59,7 @@
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 #include "pg_general/temporal_selfuncs.h"
-#include "pg_general/tnumber_selfuncs.h"
 #include "pg_point/tpoint_selfuncs.h"
-#include "pg_npoint/tnpoint_selfuncs.h"
 
 enum TEMPORAL_FUNCTION_IDX
 {
@@ -335,24 +333,11 @@ temporal_supportfn_ext(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
     meosType rtype1 = type_to_bbox(rtype);
     operid = oper_oid(OVERLAPS_OP, ltype1, rtype1);
     if (req->is_join)
-    {
-      if (tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE)
-        req->selectivity = temporal_joinsel(req->root, operid, req->args,
-          req->jointype, req->sjinfo, tempfamily);
-      else /* (tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE) */
-        req->selectivity = tpoint_joinsel(req->root, operid, req->args,
-          req->jointype, req->sjinfo, Int32GetDatum(0), /* ND mode TO GENERALIZE */
-          tempfamily);
-    }
+      req->selectivity = temporal_joinsel(req->root, operid, req->args,
+        req->jointype, req->sjinfo, tempfamily);
     else
-    {
-      if (tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE)
-        req->selectivity = temporal_sel(req->root, operid, req->args,
-          req->varRelid, tempfamily);
-      else /* (tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE) */
-        req->selectivity = tpoint_sel(req->root, operid, req->args,
-          req->varRelid, tempfamily);
-    }
+      req->selectivity = temporal_sel(req->root, operid, req->args,
+        req->varRelid, tempfamily);
     PG_RETURN_POINTER(req);
   }
 

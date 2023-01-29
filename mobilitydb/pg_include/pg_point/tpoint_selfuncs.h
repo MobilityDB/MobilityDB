@@ -94,12 +94,13 @@
 
 /*****************************************************************************/
 
-extern float8 tpoint_sel(PlannerInfo *root, Oid operid, List *args,
-  int varRelid, TemporalFamily tempfamily);
+extern ND_STATS *pg_nd_stats_from_tuple(HeapTuple stats_tuple, int mode);
+extern ND_STATS *pg_get_nd_stats(const Oid tableid, AttrNumber att_num,
+  int mode, bool only_parent);
 
-extern float8 tpoint_joinsel(PlannerInfo *root, Oid operid, List *args,
-  JoinType jointype, SpecialJoinInfo *sjinfo, int mode,
-  TemporalFamily tempFamily);
+extern float8 geo_sel(VariableStatData *vardata, const STBox *box,
+  meosOper oper);
+extern float8 geo_joinsel(const ND_STATS *s1, const ND_STATS *s2);
 
 /*****************************************************************************/
 
