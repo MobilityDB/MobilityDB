@@ -32,12 +32,12 @@
  * to avoid (slow) lookups. The arrays are initialized when the extension is
  * loaded.
  *
- * The selectivity of Boolean operators is essential to determine efficient
- * execution plans for queries. The extension defines several classes of
- * Boolean operators (equal, less than, overlaps, ...), each of which can
- * have as left or right arguments a built-in type (such as integer,
- * timestamptz, geometry, ...) or a type defined by the extension (such as
- * tstzspan, tint, ...).
+ * Estimating the selectivity of Boolean operators is essential for defining
+ * efficient queries execution plans. The extension defines several classes
+ * of Boolean operators (equal, less than, overlaps, ...), each of which has
+ * as left or right arguments a built-in type (such as integer, timestamptz,
+ * geometry, ...) or a type defined by the extension (such as tstzspan, tint,
+ * ...).
  *
  * As of January 2023 there are 1470 operators defined in MobilityDB.
  * We need to translate between operator Oid <-> MEOS operator info both ways.
@@ -107,11 +107,11 @@ typedef struct
  *****************************************************************************/
 
 /**
- * @brief Global array for caching type names used in MobilityDB to avoid
- * (slow) lookups. The array is initialized when the extension is loaded.
+ * @brief Global array containing type names used in MobilityDB.
  */
 const char *_type_names[] =
 {
+  [T_UNKNOWN] = "",
   [T_BOOL] = "bool",
   [T_DOUBLE2] = "double2",
   [T_DOUBLE3] = "double3",
@@ -162,11 +162,11 @@ const char *_type_names[] =
 };
 
 /**
- * @brief Global array for caching operator names used in MobilityDB to avoid
- * (slow) lookups. The array is initialized when the extension is loaded.
+ * @brief Global array containing operator names used in MobilityDB.
  */
 const char *_oper_names[] =
 {
+  [UNKNOWN_OP] = "",
   [EQ_OP] = "=",
   [NE_OP] = "<>",
   [LT_OP] = "<",
@@ -228,12 +228,12 @@ Oid _type_oids[sizeof(_type_names) / sizeof(char *)];
 struct opertable_hash *_oid_oper = NULL;
 
 /**
- * @brief Global 3-dimensional array that keeps the Oids of the operators
- * used in MobilityDB. The first dimension corresponds to the operator
- * class (e.g., <=), the second and third dimensions correspond,
- * respectively, to the left and right arguments of the operator.
- * A value 0 is stored in the cell of the array if the operator class
- * is not defined for the left and right types.
+ * @brief Global 3-dimensional array that keeps the operator Oids used in
+ * MobilityDB. The first dimension corresponds to the operator class
+ * (e.g., <=), the second and third dimensions correspond, respectively,
+ * to the left and right arguments of the operator. A value 0 is stored in
+ * the cell of the array if the operator class is not defined for the left and
+ * right types.
  */
 Oid _oper_oid[sizeof(_oper_names) / sizeof(char *)]
   [sizeof(_type_names) / sizeof(char *)]
@@ -276,26 +276,27 @@ populate_typeoid_cache()
 }
 
 /**
- * @brief Populate the operator Oid cache
- *
- * This fetches the precomputed operator cache from the PostgreSQL catalog that
- * is stored in table `mobilitydb_opcache`.
- * @see fill_opcache
+ * @brief Populate the operator Oid cache from the precomputed operator cache
+ * stored in table `mobilitydb_opcache`. This table is filled by function
+ * `fill_opcache` when the extension is created.
+ * @note Due to some memory context issues, the _oper_oid array should be
+ * filled again even if it is already filled during the extension creation.
  */
 static void
-populate_operoid_catalog()
+populate_operoid_cache()
 {
   Oid namespaceId = LookupNamespaceNoError("public");
   OverrideSearchPath* overridePath = GetOverrideSearchPath(CurrentMemoryContext);
   overridePath->schemas = lcons_oid(namespaceId, overridePath->schemas);
   PushOverrideSearchPath(overridePath);
 
-  /* Create the hash table */
+  /* Create the operator hash table */
   _oid_oper = opertable_create(CacheMemoryContext, 2048, NULL);
 
   PG_TRY();
   {
     populate_typeoid_cache();
+    /* Initialize the operator array */
     memset(_oper_oid, 0, sizeof(_oper_oid));
     /* Fetch the rows of the table containing the MobilityDB operator cache */
     Oid catalog = RelnameGetRelid("mobilitydb_opcache");
@@ -337,6 +338,7 @@ populate_operoid_catalog()
     table_close(rel, AccessShareLock);
 #endif
     PopOverrideSearchPath();
+    /* Mark that the cache has been initialized */
     _oid_cache_ready = true;
   }
   PG_CATCH();
@@ -347,16 +349,110 @@ populate_operoid_catalog()
   PG_END_TRY();
 }
 
+/**
+ * @brief Fill the operator oid array from the PostgreSQL catalog table
+ * `pg_operator`
+ */
+void
+fill_oper_array()
+{
+  /* Fill the Oid type cache */
+  populate_typeoid_cache();
+  /* Initialize to 0 the Oid operator cache */
+  memset(_oper_oid, 0, sizeof(_oper_oid));
+  /* Get the Oid of the pg_operator catalog table */
+  Oid catalog = RelnameGetRelid("pg_operator");
+#if POSTGRESQL_VERSION_NUMBER < 130000
+  Relation rel = heap_open(catalog, AccessShareLock);
+#else
+  Relation rel = table_open(catalog, AccessShareLock);
+#endif
+  ScanKeyData scandata;
+  TableScanDesc scan = table_beginscan_catalog(rel, 0, &scandata);
+  HeapTuple tuple = heap_getnext(scan, ForwardScanDirection);
+  // int n = 0; /* number of operators added to the oid array */
+  while (HeapTupleIsValid(tuple))
+  {
+    TupleDesc tupDesc = rel->rd_att;
+    /* Get the column numbers of the required attributes */
+    AttrNumber oproid_n = InvalidAttrNumber;
+    AttrNumber oprname_n = InvalidAttrNumber;
+    AttrNumber oprleft_n = InvalidAttrNumber;
+    AttrNumber oprright_n = InvalidAttrNumber;
+    int k = 0;
+    for (int i = 0; i < tupDesc->natts; i++)
+    {
+      Form_pg_attribute att = TupleDescAttr(tupDesc, i);
+      if (namestrcmp(&(att->attname), "oid") == 0)
+      {
+        oproid_n = att->attnum;
+        k++;
+      }
+      else if (namestrcmp(&(att->attname), "oprname") == 0)
+      {
+        oprname_n = att->attnum;
+        k++;
+      }
+      else if (namestrcmp(&(att->attname), "oprleft") == 0)
+      {
+        oprleft_n = att->attnum;
+        k++;
+      }
+      else if (namestrcmp(&(att->attname), "oprright") == 0)
+      {
+        oprright_n = att->attnum;
+        k++;
+      }
+      if (k == 4)
+        break;
+    }
+    /* Get the operator and type Oids and the operator name */
+    bool isnull;
+    Oid oproid = DatumGetInt32(heap_getattr(tuple, oproid_n, tupDesc,
+      &isnull));
+    NameData *oprName = DatumGetName(heap_getattr(tuple, oprname_n, tupDesc,
+      &isnull));
+    char *oprname = (char *) (oprName->data);
+    Oid oprleft = DatumGetInt32(heap_getattr(tuple, oprleft_n, tupDesc,
+      &isnull));
+    Oid oprright = DatumGetInt32(heap_getattr(tuple, oprright_n, tupDesc,
+      &isnull));
+    /* Get the type and operator numbers */
+    meosOper oper = name_oper(oprname);
+    meosType ltype = oid_type(oprleft);
+    meosType rtype = oid_type(oprright);
+    /* Fill the cache if the operator and all its types are recognized */
+    if (oper != UNKNOWN_OP && ltype != T_UNKNOWN && rtype != T_UNKNOWN)
+    {
+      _oper_oid[oper][ltype][rtype] = oproid;
+      // elog(WARNING, "operoid: %d, oper: %d, ltype: %d, rtype: %d",
+        // oproid, oper, ltype, rtype);
+      // n++;
+    }
+    tuple = heap_getnext(scan, ForwardScanDirection);
+    /* Give backend a chance of interrupting us */
+    CHECK_FOR_INTERRUPTS();
+  }
+  heap_endscan(scan);
+#if POSTGRESQL_VERSION_NUMBER < 130000
+  heap_close(rel, AccessShareLock);
+#else
+  table_close(rel, AccessShareLock);
+#endif
+  // elog(WARNING, "Number of operators in the array -> %d\n", n);
+  return;
+}
+
 PG_FUNCTION_INFO_V1(fill_oid_cache);
 /**
  * @brief Function executed during the `CREATE EXTENSION` to precompute the
  * operator cache and store it in table `mobilitydb_opcache`
- * @see populate_operoid_catalog
- *
+ * @see populate_operoid_cache
  */
 PGDLLEXPORT Datum
 fill_oid_cache(PG_FUNCTION_ARGS __attribute__((unused)))
 {
+  /* Get the Oid of the mobilitydb_opcache table */
   Oid catalog = RelnameGetRelid("mobilitydb_opcache");
 #if POSTGRESQL_VERSION_NUMBER < 130000
   Relation rel = heap_open(catalog, AccessExclusiveLock);
@@ -367,183 +463,45 @@ fill_oid_cache(PG_FUNCTION_ARGS __attribute__((unused)))
   bool isnull[] = {false, false, false, false};
   Datum data[] = {0, 0, 0, 0};
 
-  populate_typeoid_cache();
+  /* Fill the operator oid array */
+  fill_oper_array();
+  /* Add a row in the table for the array cells that are non zero */
   int32 m = sizeof(_oper_names) / sizeof(char *);
   int32 n = sizeof(_type_names) / sizeof(char *);
-  const char *name;
   for (int32 i = 1; i < m; i++)
-  {
-    List* lst = list_make1(makeString((char *) _oper_names[i]));
     for (int32 j = 1; j < n; j++)
-    {
-      name = _type_names[j];
-      if (internal_type(name))
-        continue;
       for (int32 k = 1; k < n; k++)
       {
-        name = _type_names[j];
-        if (internal_type(name))
-          continue;
-        Oid oproid = OpernameGetOprid(lst, _type_oids[j], _type_oids[k]);
-        data[3] = ObjectIdGetDatum(oproid);
-        if (data[3] != InvalidOid)
+        Oid oproid = _oper_oid[i][j][k];
+        if (oproid != InvalidOid)
         {
           data[0] = Int32GetDatum(i);
           data[1] = Int32GetDatum(j);
           data[2] = Int32GetDatum(k);
+          data[3] = ObjectIdGetDatum(oproid);
           HeapTuple t = heap_form_tuple(tupDesc, data, isnull);
           simple_heap_insert(rel, t);
-          // /* Fill the struct to be added to the hash table */
-          // bool found;
-          // _oid_oper_entry *entry = opertable_insert(_oid_oper, oproid, &found);
-          // if (! found)
-          // {
-            // entry->oproid = oproid;
-            // entry->oper = i;
-            // entry->ltype = j;
-            // entry->rtype = k;
-          // }
-          // /* Fill the operator Oid array */
-          // _oper_oid[i][j][k] = oproid;
         }
       }
-    }
-    pfree(lst);
-  }
 #if POSTGRESQL_VERSION_NUMBER < 130000
   heap_close(rel, AccessExclusiveLock);
 #else
   table_close(rel, AccessExclusiveLock);
 #endif
-  /* Mark that the cache has been filled */
-  _oid_cache_ready = true;
   PG_RETURN_VOID();
-}
-
-PGDLLEXPORT Datum
-fill_oid_cache_new(PG_FUNCTION_ARGS __attribute__((unused)))
-{
-  Oid namespaceId = LookupNamespaceNoError("public");
-  OverrideSearchPath* overridePath = GetOverrideSearchPath(CurrentMemoryContext);
-  overridePath->schemas = lcons_oid(namespaceId, overridePath->schemas);
-  PushOverrideSearchPath(overridePath);
-
-  /* Create the hash table */
-  _oid_oper = opertable_create(TopMemoryContext, //CacheMemoryContext,
-    2048, NULL);
-
-  PG_TRY();
-  {
-    populate_typeoid_cache();
-    /* Initialize to 0 the three-dimensional array */
-    memset(_oper_oid, 0, sizeof(_oper_oid));
-    /* Fetch the rows of the pg_operator catalog table */
-    Oid catalog = RelnameGetRelid("pg_operator");
-#if POSTGRESQL_VERSION_NUMBER < 130000
-    Relation rel = heap_open(catalog, AccessShareLock);
-#else
-    Relation rel = table_open(catalog, AccessShareLock);
-#endif
-    TupleDesc tupDesc = rel->rd_att;
-    ScanKeyData scandata;
-    TableScanDesc scan = table_beginscan_catalog(rel, 0, &scandata);
-    HeapTuple tuple = heap_getnext(scan, ForwardScanDirection);
-    // int n = 0; /* number of operators added to the hash table */
-    while (HeapTupleIsValid(tuple))
-    {
-      /* Get the required attribute numbers */
-      AttrNumber oproid_n = InvalidAttrNumber;
-      AttrNumber oprname_n = InvalidAttrNumber;
-      AttrNumber oprleft_n = InvalidAttrNumber;
-      AttrNumber oprright_n = InvalidAttrNumber;
-      int k = 0;
-      for (int i = 0; i < tupDesc->natts; i++)
-      {
-        Form_pg_attribute att = TupleDescAttr(tupDesc, i);
-        if (namestrcmp(&(att->attname), "oid") == 0)
-        {
-          oproid_n = att->attnum;
-          k++;
-        }
-        else if (namestrcmp(&(att->attname), "oprname") == 0)
-        {
-          oprname_n = att->attnum;
-          k++;
-        }
-        else if (namestrcmp(&(att->attname), "oprleft") == 0)
-        {
-          oprleft_n = att->attnum;
-          k++;
-        }
-        else if (namestrcmp(&(att->attname), "oprright") == 0)
-        {
-          oprright_n = att->attnum;
-          k++;
-        }
-        if (k == 4)
-          break;
-      }
-      /* Get the Oids and the operator name */
-      bool isnull;
-      Oid oproid = DatumGetInt32(heap_getattr(tuple, oproid_n, tupDesc, &isnull));
-      NameData *oprName = DatumGetName(heap_getattr(tuple, oprname_n, tupDesc, &isnull));
-      char *oprname = (char *) (oprName->data);
-      Oid oprleft = DatumGetInt32(heap_getattr(tuple, oprleft_n, tupDesc, &isnull));
-      Oid oprright = DatumGetInt32(heap_getattr(tuple, oprright_n, tupDesc, &isnull));
-      /* Get the MEOS enums */
-      meosOper oper = name_oper(oprname);
-      meosType ltype = oid_type(oprleft);
-      meosType rtype = oid_type(oprright);
-      /* Fill the cache if the operator and all its types are recognized */
-      if (oper != UNKNOWN_OP && ltype != T_UNKNOWN && rtype != T_UNKNOWN)
-      {
-        _oper_oid[oper][ltype][rtype] = oproid;
-        /* Fill the struct to be added to the hash table */
-        bool found;
-        _oid_oper_entry *entry = opertable_insert(_oid_oper, oproid, &found);
-        if (! found)
-        {
-          entry->oproid = oproid;
-          entry->oper = oper;
-          entry->ltype = ltype;
-          entry->rtype = rtype;
-          // n++;
-        }
-      }
-      tuple = heap_getnext(scan, ForwardScanDirection);
-      /* Give backend a chance of interrupting us */
-      CHECK_FOR_INTERRUPTS();
-    }
-    heap_endscan(scan);
-#if POSTGRESQL_VERSION_NUMBER < 130000
-    heap_close(rel, AccessShareLock);
-#else
-    table_close(rel, AccessShareLock);
-#endif
-    PopOverrideSearchPath();
-    _oid_cache_ready = true;
-    // elog(WARNING, "Number of operators in the hash table -> %d\n", n);
-    PG_RETURN_VOID();
-  }
-  PG_CATCH();
-  {
-    PopOverrideSearchPath();
-    PG_RE_THROW();
-  }
-  PG_END_TRY();
 }
 
 /*****************************************************************************/
 
 /**
  * @brief Fetch from the cache the Oid of a type
- * @arg[in] type Enum value for the type
+ * @arg[in] type Type number
  */
 Oid
 type_oid(meosType type)
 {
   if (!_oid_cache_ready)
-    populate_operoid_catalog();
+    populate_operoid_cache();
   Oid result = _type_oids[type];
   if (! result)
     elog(ERROR, "Unknown MEOS type; %d", type);
@@ -551,49 +509,24 @@ type_oid(meosType type)
 }
 
 /**
- * @brief Return the string name from an operator enum
- */
-const char *
-oper_name(meosOper oper)
-{
-  return _oper_names[oper];
-}
-
-/**
- * @brief Fetch from the cache the Oid of an operator
- * @arg[in] oper Enum value for the operator
- * @arg[in] lt Enum value for the left type
- * @arg[in] rt Enum value for the right type
- */
-Oid
-oper_oid(meosOper oper, meosType lt, meosType rt)
-{
-  if (!_oid_cache_ready)
-    populate_operoid_catalog();
-  Oid result = _oper_oid[oper][lt][rt];
-  if (! result)
-    elog(ERROR, "Unknown MEOS operator: %d, ltype; %d, rtype; %d",
-      oper, lt, rt);
-  return _oper_oid[oper][lt][rt];
-}
-
-/**
- * @brief Fetch from the cache the Oid of a type
- * @arg[in] type Enum value for the type
+ * @brief Fetch from the cache the type number
+ * @arg[in] type Type Oid
+ * @note This function cannot send an error when the type is not found since
+ * it is used for all types that appear in the `pg_operator` table when the
+ * extension is created
  */
 meosType
 oid_type(Oid typid)
 {
   if (!_oid_cache_ready)
-    populate_operoid_catalog();
+    populate_operoid_cache();
   int n = sizeof(_type_names) / sizeof(char *);
   for (int i = 0; i < n; i++)
   {
     if (_type_oids[i] == typid)
       return i;
   }
-  ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-    errmsg("Unknown type Oid %d", typid)));
+  return T_UNKNOWN;
 }
 
 /*****************************************************************************/
@@ -615,14 +548,42 @@ name_oper(const char *name)
 }
 
 /**
- * @brief Fetch from the cache the Oid of a type
- * @arg[in] type Enum value for the operator
+ * @brief Return the string name from an operator number
+ */
+const char *
+oper_name(meosOper oper)
+{
+  return _oper_names[oper];
+}
+
+/**
+ * @brief Fetch from the cache the Oid of an operator
+ * @arg[in] oper Operator number
+ * @arg[in] lt Type number for the left argument
+ * @arg[in] rt Type number for the right argument
+ */
+Oid
+oper_oid(meosOper oper, meosType lt, meosType rt)
+{
+  if (!_oid_cache_ready)
+    populate_operoid_cache();
+  Oid result = _oper_oid[oper][lt][rt];
+  if (! result)
+    elog(ERROR, "Unknown MEOS operator: %d, ltype; %d, rtype; %d",
+      oper, lt, rt);
+  return _oper_oid[oper][lt][rt];
+}
+
+/**
+ * @brief Fetch from the hash table the operator info
+ * @arg[in] oproid Operator oid
+ * @arg[out] ltype,rtype Type number of the left/right argument
  */
 meosOper
 oid_oper(Oid oproid, meosType *ltype, meosType *rtype)
 {
   if (!_oid_cache_ready)
-    populate_operoid_catalog();
+    populate_operoid_cache();
   _oid_oper_entry *entry = opertable_lookup(_oid_oper, oproid);
   if (! entry)
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
