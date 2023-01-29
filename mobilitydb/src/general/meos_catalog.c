@@ -588,11 +588,14 @@ oid_oper(Oid oproid, meosType *ltype, meosType *rtype)
   if (! entry)
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("Unknown operator Oid %d", oproid)));
-  if (ltype)
-    *ltype = entry->ltype;
-  if (rtype)
-    *rtype = entry->rtype;
-  return entry->oper;
+  else
+  {
+    if (ltype)
+      *ltype = entry->ltype;
+    if (rtype)
+      *rtype = entry->rtype;
+    return entry->oper;
+  }
 }
 
 /*****************************************************************************/
