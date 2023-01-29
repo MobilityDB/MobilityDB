@@ -29,7 +29,7 @@
 
 /*
  * set.sql
- * Functions for set of ordered values.
+ * Functions for sets of values.
  */
 
 /******************************************************************************

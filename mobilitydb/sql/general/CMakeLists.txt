@@ -27,7 +27,7 @@ SET(LOCAL_FILES
   040_temporal_waggfuncs
   042_temporal_gist
   044_temporal_spgist
-  999_temporal_cache
+  999_oid_cache
   )
 
 foreach (f ${LOCAL_FILES})

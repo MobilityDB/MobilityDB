@@ -28,9 +28,9 @@
  *****************************************************************************/
 
 /*
- * tempcache.sql
- * Routine that pre-computes the opcache and store it as a table in the
- * catalog.
+ * oid_cache.sql
+ * Routine that pre-computes the type and operator Oid cache and store them in
+ * a global array and a hash table.
  */
 
 CREATE TABLE mobilitydb_opcache (
@@ -40,11 +40,11 @@ CREATE TABLE mobilitydb_opcache (
   opid Oid
 );
 
-CREATE FUNCTION fill_opcache()
+CREATE FUNCTION fill_oid_cache()
   RETURNS VOID
-  AS 'MODULE_PATHNAME', 'fill_opcache'
+  AS 'MODULE_PATHNAME', 'fill_oid_cache'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-SELECT fill_opcache();
+SELECT fill_oid_cache();
 
 /******************************************************************************/
