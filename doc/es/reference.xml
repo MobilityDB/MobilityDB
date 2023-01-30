@@ -1153,23 +1153,23 @@
 				<title>Relaciones posibles </title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="contains"><varname>contains</varname></link>: Puede contener</para>
+						<para><link linkend="econtains"><varname>econtains</varname></link>: Contiene alguna vez</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="disjoint"><varname>disjoint</varname></link>: Puede ser disjunto</para>
+						<para><link linkend="edisjoint"><varname>edisjoint</varname></link>: Es disjunto alguna vez</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="dwithin"><varname>dwithin</varname></link>: Puede estar a distancia de</para>
+						<para><link linkend="edwithin"><varname>edwithin</varname></link>: Está alguna vez a distancia de</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="intersects"><varname>intersects</varname></link>: Puede cruzarse</para>
+						<para><link linkend="eintersects"><varname>eintersects</varname></link>: Cruza alguna vez</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="touches"><varname>touches</varname></link>: Puede tocar</para>
+						<para><link linkend="etouches"><varname>etouches</varname></link>: Toca alguna vez</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1599,7 +1599,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_spatialrels"><varname>contains, disjoint, intersects, touches, dwithin</varname></link>: Relaciones espaciales posibles</para>
+						<para><link linkend="tnpoint_espatialrels"><varname>econtains, edisjoint, eintersects, etouches, edwithin</varname></link>: Relaciones espaciales alguna vez</para>
 					</listitem>
 
 					<listitem>

@@ -69,11 +69,11 @@ enum TEMPORAL_FUNCTION_IDX
   EVER_EQ_IDX                    = 1,
   ALWAYS_EQ_IDX                  = 2,
   /* Ever spatial relationships */
-  CONTAINS_IDX                   = 3,
-  DISJOINT_IDX                   = 4,
-  INTERSECTS_IDX                 = 5,
-  TOUCHES_IDX                    = 6,
-  DWITHIN_IDX                    = 7,
+  ECONTAINS_IDX                   = 3,
+  EDISJOINT_IDX                   = 4,
+  EINTERSECTS_IDX                 = 5,
+  ETOUCHES_IDX                    = 6,
+  EDWITHIN_IDX                    = 7,
 };
 
 static const int16 TemporalStrategies[] =
@@ -98,11 +98,11 @@ static const int16 TPointStrategies[] =
   [EVER_EQ_IDX]                  = RTOverlapStrategyNumber,
   [ALWAYS_EQ_IDX]                = RTOverlapStrategyNumber,
   /* Ever spatial relationships */
-  [CONTAINS_IDX]                 = RTOverlapStrategyNumber,
-  [DISJOINT_IDX]                 = RTOverlapStrategyNumber,
-  [INTERSECTS_IDX]               = RTOverlapStrategyNumber,
-  [TOUCHES_IDX]                  = RTOverlapStrategyNumber,
-  [DWITHIN_IDX]                  = RTOverlapStrategyNumber,
+  [ECONTAINS_IDX]                 = RTOverlapStrategyNumber,
+  [EDISJOINT_IDX]                 = RTOverlapStrategyNumber,
+  [EINTERSECTS_IDX]               = RTOverlapStrategyNumber,
+  [ETOUCHES_IDX]                  = RTOverlapStrategyNumber,
+  [EDWITHIN_IDX]                  = RTOverlapStrategyNumber,
 };
 
 #if NPOINT
@@ -111,11 +111,11 @@ static const int16 TNPointStrategies[] =
   /* intersectsTime functions */
   [OVERLAPS_TIME_IDX]            = RTOverlapStrategyNumber,
   /* Ever spatial relationships */
-  [CONTAINS_IDX]                 = RTOverlapStrategyNumber,
-  [DISJOINT_IDX]                 = RTOverlapStrategyNumber,
-  [INTERSECTS_IDX]               = RTOverlapStrategyNumber,
-  [TOUCHES_IDX]                  = RTOverlapStrategyNumber,
-  [DWITHIN_IDX]                  = RTOverlapStrategyNumber,
+  [ECONTAINS_IDX]                 = RTOverlapStrategyNumber,
+  [EDISJOINT_IDX]                 = RTOverlapStrategyNumber,
+  [EINTERSECTS_IDX]               = RTOverlapStrategyNumber,
+  [ETOUCHES_IDX]                  = RTOverlapStrategyNumber,
+  [EDWITHIN_IDX]                  = RTOverlapStrategyNumber,
 };
 #endif /* NPOINT */
 
@@ -147,11 +147,11 @@ static const IndexableFunction TPointIndexableFunctions[] = {
   {"ever_eq", EVER_EQ_IDX, 2, 0},
   {"always_eq", ALWAYS_EQ_IDX, 2, 0},
   /* Ever spatial relationships */
-  {"contains", CONTAINS_IDX, 2, 0},
-  {"disjoint", DISJOINT_IDX, 2, 0},
-  {"intersects", INTERSECTS_IDX, 2, 0},
-  {"touches", TOUCHES_IDX, 2, 0},
-  {"dwithin", DWITHIN_IDX, 3, 3},
+  {"econtains", ECONTAINS_IDX, 2, 0},
+  {"edisjoint", EDISJOINT_IDX, 2, 0},
+  {"eintersects", EINTERSECTS_IDX, 2, 0},
+  {"etouches", ETOUCHES_IDX, 2, 0},
+  {"edwithin", EDWITHIN_IDX, 3, 3},
   {NULL, 0, 0, 0}
 };
 
@@ -160,11 +160,11 @@ static const IndexableFunction TNPointIndexableFunctions[] = {
   /* overlapsTime function */
   {"overlapstime", OVERLAPS_TIME_IDX, 2, 0},
   /* Ever spatial relationships */
-  {"contains", CONTAINS_IDX, 2, 0},
-  {"disjoint", DISJOINT_IDX, 2, 0},
-  {"intersects", INTERSECTS_IDX, 2, 0},
-  {"touches", TOUCHES_IDX, 2, 0},
-  {"dwithin", DWITHIN_IDX, 3, 3},
+  {"econtains", ECONTAINS_IDX, 2, 0},
+  {"edisjoint", EDISJOINT_IDX, 2, 0},
+  {"eintersects", EINTERSECTS_IDX, 2, 0},
+  {"etouches", ETOUCHES_IDX, 2, 0},
+  {"edwithin", EDWITHIN_IDX, 3, 3},
   {NULL, 0, 0, 0}
 };
 #endif /* NPOINT */

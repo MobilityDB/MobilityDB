@@ -106,7 +106,7 @@ ERROR:  Operation on mixed SRID
 SELECT tcontains(geometry 'Point(1 1)', tgeompoint 'SRID=5676;Point(1 1)@2000-01-01');
 ERROR:  Operation on mixed SRID
 SELECT tcontains(geometry 'Point(1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
-ERROR:  The temporal value cannot have Z dimension
+ERROR:  The temporal point cannot have Z dimension
 SELECT tcontains(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  The geometry cannot have Z dimension
 SELECT tdisjoint(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
@@ -375,7 +375,7 @@ ERROR:  Operation on mixed SRID
 SELECT tdisjoint(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  The geometry cannot have Z dimension
 SELECT tdisjoint(geometry 'Point(1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
-ERROR:  The temporal value cannot have Z dimension
+ERROR:  The temporal point cannot have Z dimension
 SELECT tintersects(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
        tintersects        
 --------------------------
@@ -652,10 +652,10 @@ SELECT tintersects(tgeompoint '{Point(1 1)@2000-01-01, Point(1 1)@2000-01-03}', 
  
 (1 row)
 
-SELECT intersects(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint '[Point(2 1)@2000-01-01, Point(1 2)@2000-01-02]');
- intersects 
-------------
- t
+SELECT tintersects(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint '[Point(2 1)@2000-01-01, Point(1 2)@2000-01-02]');
+                                                 tintersects                                                  
+--------------------------------------------------------------------------------------------------------------
+ {[f@2000-01-01 00:00:00+00, t@2000-01-01 12:00:00+00], (f@2000-01-01 12:00:00+00, f@2000-01-02 00:00:00+00]}
 (1 row)
 
 /* Errors */
@@ -666,7 +666,7 @@ ERROR:  Operation on mixed SRID
 SELECT tintersects(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  The geometry cannot have Z dimension
 SELECT tintersects(geometry 'Point(1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
-ERROR:  The temporal value cannot have Z dimension
+ERROR:  The temporal point cannot have Z dimension
 SELECT ttouches(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
          ttouches         
 --------------------------
@@ -873,7 +873,7 @@ ERROR:  Operation on mixed SRID
 SELECT ttouches(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  The geometry cannot have Z dimension
 SELECT ttouches(geometry 'Point(1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
-ERROR:  The temporal value cannot have Z dimension
+ERROR:  The temporal point cannot have Z dimension
 SELECT tdwithin(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01', 2);
          tdwithin         
 --------------------------

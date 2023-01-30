@@ -824,26 +824,26 @@ SELECT tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-03]' &lt;-&gt
 </programlisting>
 			</listitem>
 
-			<listitem id="tnpoint_spatialrels">
-				<indexterm><primary><varname>contains</varname></primary></indexterm>
-				<indexterm><primary><varname>disjoint</varname></primary></indexterm>
-				<indexterm><primary><varname>intersects</varname></primary></indexterm>
-				<indexterm><primary><varname>touches</varname></primary></indexterm>
-				<indexterm><primary><varname>dwithin</varname></primary></indexterm>
+			<listitem id="tnpoint_espatialrels">
+				<indexterm><primary><varname>econtains</varname></primary></indexterm>
+				<indexterm><primary><varname>edisjoint</varname></primary></indexterm>
+				<indexterm><primary><varname>eintersects</varname></primary></indexterm>
+				<indexterm><primary><varname>etouches</varname></primary></indexterm>
+				<indexterm><primary><varname>edwithin</varname></primary></indexterm>
 				<para>Relaciones espaciales alguna vez</para>
-				<para><varname>contains(geometry,tnpoint) → boolean</varname></para>
-				<para><varname>disjoint({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}) → boolean</varname></para>
-				<para><varname>intersects({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}) → boolean</varname></para>
-				<para><varname>touches({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}) → boolean</varname></para>
-				<para><varname>dwithin({geometry,npoint,tnpoint},{geometry,npoint,tnpoint},float) → boolean</varname></para>
+				<para><varname>econtains(geometry,tnpoint) → boolean</varname></para>
+				<para><varname>edisjoint({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}) → boolean</varname></para>
+				<para><varname>eintersects({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}) → boolean</varname></para>
+				<para><varname>etouches({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}) → boolean</varname></para>
+				<para><varname>edwithin({geometry,npoint,tnpoint},{geometry,npoint,tnpoint},float) → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT contains(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
+SELECT econtains(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
   tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.3)@2001-01-03)');
 -- false
-SELECT disjoint(npoint 'NPoint(2, 0.0)',
+SELECT edisjoint(npoint 'NPoint(2, 0.0)',
   tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.3)@2001-01-03)');
 -- true
-SELECT intersects(tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.3)@2001-01-03)',
+SELECT eintersects(tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.3)@2001-01-03)',
   tnpoint '[NPoint(2, 0.0)@2001-01-01, NPoint(2, 1)@2001-01-03)');
 -- false
 </programlisting>

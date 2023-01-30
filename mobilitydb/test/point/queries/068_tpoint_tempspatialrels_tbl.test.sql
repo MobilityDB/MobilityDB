@@ -47,12 +47,12 @@ SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint_step_seqset
 -- In GEOS 3.11, GEOSRelatePattern does not accept GEOMETRYCOLLECTION
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint
   WHERE geometrytype(trajectory(temp)) <> 'GEOMETRYCOLLECTION' AND
-  tcontains(g, temp) ?= true <> contains(g, temp);
+  tcontains(g, temp) ?= true <> econtains(g, temp);
 -- Step interpolation
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint_step_seq
-  WHERE tcontains(g, seq) ?= true <> contains(g, seq);
+  WHERE tcontains(g, seq) ?= true <> econtains(g, seq);
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint_step_seqset
-  WHERE tcontains(g, ss) ?= true <> contains(g, ss);
+  WHERE tcontains(g, ss) ?= true <> econtains(g, ss);
 
 -------------------------------------------------------------------------------
 -- tdisjoint
@@ -73,21 +73,21 @@ SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
 -- Robustness test
 
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint
-  WHERE tdisjoint(g, temp) ?= true <> disjoint(g, temp);
+  WHERE tdisjoint(g, temp) ?= true <> edisjoint(g, temp);
 SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom_point
-  WHERE tdisjoint(temp, g) ?= true <> disjoint(temp, g);
+  WHERE tdisjoint(temp, g) ?= true <> edisjoint(temp, g);
 
 -- Step interpolation
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq
-  WHERE tdisjoint(g, seq) ?= true <> disjoint(g, seq);
+  WHERE tdisjoint(g, seq) ?= true <> edisjoint(g, seq);
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
-  WHERE tdisjoint(g, ss) ?= true <> disjoint(g, ss);
+  WHERE tdisjoint(g, ss) ?= true <> edisjoint(g, ss);
 
 -- Temporal points
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
-  WHERE tdisjoint(t1.temp, t2.temp) ?= true <> disjoint(t1.temp, t2.temp);
+  WHERE tdisjoint(t1.temp, t2.temp) ?= true <> edisjoint(t1.temp, t2.temp);
 SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2
-  WHERE tdisjoint(t1.temp, t2.temp) ?= true <> disjoint(t1.temp, t2.temp);
+  WHERE tdisjoint(t1.temp, t2.temp) ?= true <> edisjoint(t1.temp, t2.temp);
 
 -------------------------------------------------------------------------------
 -- tintersects
@@ -108,21 +108,21 @@ SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
 -- Robustness test
 
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint
-  WHERE tintersects(g, temp) ?= true <> intersects(g, temp);
+  WHERE tintersects(g, temp) ?= true <> eintersects(g, temp);
 SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom_point
-  WHERE tintersects(temp, g) ?= true <> intersects(temp, g);
+  WHERE tintersects(temp, g) ?= true <> eintersects(temp, g);
 
 -- Step interpolation
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq
-  WHERE tintersects(g, seq) ?= true <> intersects(g, seq);
+  WHERE tintersects(g, seq) ?= true <> eintersects(g, seq);
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
-  WHERE tintersects(g, ss) ?= true <> intersects(g, ss);
+  WHERE tintersects(g, ss) ?= true <> eintersects(g, ss);
 
 -- Temporal points
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
-  WHERE tintersects(t1.temp, t2.temp) ?= true <> intersects(t1.temp, t2.temp);
+  WHERE tintersects(t1.temp, t2.temp) ?= true <> eintersects(t1.temp, t2.temp);
 SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2
-  WHERE tintersects(t1.temp, t2.temp) ?= true <> intersects(t1.temp, t2.temp);
+  WHERE tintersects(t1.temp, t2.temp) ?= true <> eintersects(t1.temp, t2.temp);
 
 -------------------------------------------------------------------------------
 -- ttouches
@@ -143,15 +143,15 @@ SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint_step_seqset
 -- Robustness test
 
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint
-  WHERE ttouches(g, temp) ?= true <> touches(g, temp);
+  WHERE ttouches(g, temp) ?= true <> etouches(g, temp);
 SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry
-  WHERE ttouches(temp, g) ?= true <> touches(temp, g);
+  WHERE ttouches(temp, g) ?= true <> etouches(temp, g);
 
 -- Step interpolation
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint_step_seq
-  WHERE ttouches(g, seq) ?= true <> touches(g, seq);
+  WHERE ttouches(g, seq) ?= true <> etouches(g, seq);
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint_step_seqset
-  WHERE ttouches(g, ss) ?= true <> touches(g, ss);
+  WHERE ttouches(g, ss) ?= true <> etouches(g, ss);
 
 -------------------------------------------------------------------------------
 -- tdwithin
@@ -180,23 +180,23 @@ SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint t2
 -- Robustness test
 
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint
-  WHERE tdwithin(g, temp, 10) ?= true <> dwithin(g, temp, 10);
+  WHERE tdwithin(g, temp, 10) ?= true <> edwithin(g, temp, 10);
 SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom_point
-  WHERE tdwithin(temp, g, 10) ?= true <> dwithin(temp, g, 10);
+  WHERE tdwithin(temp, g, 10) ?= true <> edwithin(temp, g, 10);
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
-  WHERE tdwithin(t1.temp, t2.temp, 10) ?= true <> dwithin(t1.temp, t2.temp, 10);
+  WHERE tdwithin(t1.temp, t2.temp, 10) ?= true <> edwithin(t1.temp, t2.temp, 10);
 
 -- Step interpolation
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq
-  WHERE tdwithin(g, seq, 10) ?= true <> dwithin(g, seq, 10);
+  WHERE tdwithin(g, seq, 10) ?= true <> edwithin(g, seq, 10);
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
-  WHERE tdwithin(g, ss, 10) ?= true <> dwithin(g, ss, 10);
+  WHERE tdwithin(g, ss, 10) ?= true <> edwithin(g, ss, 10);
 
 -- Mixed 2D/3D
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint3D t2
-  WHERE tdwithin(t1.temp, t2.temp, 10) ?= true <> dwithin(t1.temp, t2.temp, 10);
+  WHERE tdwithin(t1.temp, t2.temp, 10) ?= true <> edwithin(t1.temp, t2.temp, 10);
 SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint t2
-  WHERE tdwithin(t1.temp, t2.temp, 10) ?= true <> dwithin(t1.temp, t2.temp, 10);
+  WHERE tdwithin(t1.temp, t2.temp, 10) ?= true <> edwithin(t1.temp, t2.temp, 10);
 
 -------------------------------------------------------------------------------
 -- END;

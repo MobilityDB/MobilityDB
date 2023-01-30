@@ -1161,23 +1161,23 @@
 				<title>Ever Spatial Relationships</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="contains"><varname>contains</varname></link>: Ever contains</para>
+						<para><link linkend="econtains"><varname>econtains</varname></link>: Ever contains</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="disjoint"><varname>disjoint</varname></link>: Is ever disjoint</para>
+						<para><link linkend="edisjoint"><varname>edisjoint</varname></link>: Is ever disjoint</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="dwithin"><varname>dwithin</varname></link>: Is ever at distance within</para>
+						<para><link linkend="edwithin"><varname>edwithin</varname></link>: Is ever at distance within</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="intersects"><varname>intersects</varname></link>: Ever intersects</para>
+						<para><link linkend="eintersects"><varname>eintersects</varname></link>: Ever intersects</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="touches"><varname>touches</varname></link>: Ever touches</para>
+						<para><link linkend="etouches"><varname>etouches</varname></link>: Ever touches</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1608,7 +1608,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_spatialrels"><varname>contains, disjoint, intersects, touches, dwithin</varname></link>: Possible spatial relationships</para>
+						<para><link linkend="tnpoint_espatialrels"><varname>econtains, edisjoint, eintersects, etouches, edwithin</varname></link>: Possible spatial relationships</para>
 					</listitem>
 
 					<listitem>

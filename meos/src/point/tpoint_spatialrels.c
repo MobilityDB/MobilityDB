@@ -254,7 +254,7 @@ get_dwithin_fn_gs(int16 flags1, uint8_t flags2)
  * @param[in] invert True if the arguments should be inverted
  */
 bool
-spatialrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, Datum param,
+espatialrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, Datum param,
   Datum (*func)(Datum, ...), int numparam, bool invert)
 {
   ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
@@ -279,7 +279,7 @@ spatialrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, Datum param,
  * @param[in] func Spatial relationship
  */
 int
-spatialrel_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
+espatialrel_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
   Datum (*func)(Datum, Datum))
 {
   ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2));
@@ -317,7 +317,7 @@ spatialrel_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
  * @note The order of the parameters CANNOT be inverted
  */
 static Datum
-geom_ever_contains(Datum geom1, Datum geom2)
+econtains_geo_geo(Datum geom1, Datum geom2)
 {
   return BoolGetDatum(gserialized_relate_pattern(DatumGetGserializedP(geom1),
       DatumGetGserializedP(geom2), "T********")) ||
@@ -332,14 +332,14 @@ geom_ever_contains(Datum geom1, Datum geom2)
  * @sqlfunc contains()
  */
 int
-contains_geo_tpoint(const GSERIALIZED *geo, const Temporal *temp)
+econtains_geo_tpoint(const GSERIALIZED *geo, const Temporal *temp)
 {
   if (gserialized_is_empty(geo))
     return -1;
   ensure_has_not_Z_gs(geo);
   ensure_has_not_Z(temp->flags);
-  bool result = spatialrel_tpoint_geo(temp, geo, (Datum) NULL,
-    (varfunc) &geom_ever_contains, 2, INVERT_NO);
+  bool result = espatialrel_tpoint_geo(temp, geo, (Datum) NULL,
+    (varfunc) &econtains_geo_geo, 2, INVERT_NO);
   return result ? 1 : 0;
 }
 
@@ -355,7 +355,7 @@ contains_geo_tpoint(const GSERIALIZED *geo, const Temporal *temp)
  * @param[in] func PostGIS function to be called
  */
 bool
-disjoint_tpointinst_geo(const TInstant *inst, Datum geo,
+edisjoint_tpointinst_geo(const TInstant *inst, Datum geo,
   Datum (*func)(Datum, ...))
 {
   return DatumGetBool(func(tinstant_value(inst), geo));
@@ -369,7 +369,7 @@ disjoint_tpointinst_geo(const TInstant *inst, Datum geo,
  * @param[in] func PostGIS function to be called
  */
 bool
-disjoint_tpointseq_geo(const TSequence *seq, Datum geo,
+edisjoint_tpointseq_geo(const TSequence *seq, Datum geo,
   Datum (*func)(Datum, ...))
 {
   for (int i = 0; i < seq->count; i++)
@@ -389,13 +389,13 @@ disjoint_tpointseq_geo(const TSequence *seq, Datum geo,
  * @param[in] func PostGIS function to be used for instantaneous sequences
  */
 bool
-disjoint_tpointseqset_geo(const TSequenceSet *ss, Datum geo,
+edisjoint_tpointseqset_geo(const TSequenceSet *ss, Datum geo,
   Datum (*func)(Datum, ...))
 {
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
-    if (disjoint_tpointseq_geo(seq, geo, func))
+    if (edisjoint_tpointseq_geo(seq, geo, func))
       return true;
   }
   return false;
@@ -410,7 +410,7 @@ disjoint_tpointseqset_geo(const TSequenceSet *ss, Datum geo,
  * @sqlfunc disjoint()
  */
 int
-disjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
+edisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   if (gserialized_is_empty(gs))
     return -1;
@@ -419,13 +419,13 @@ disjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
   bool result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
-    result = disjoint_tpointinst_geo((TInstant *) temp, PointerGetDatum(gs),
+    result = edisjoint_tpointinst_geo((TInstant *) temp, PointerGetDatum(gs),
       func);
   else if (temp->subtype == TSEQUENCE)
-    result = disjoint_tpointseq_geo((TSequence *) temp, PointerGetDatum(gs),
+    result = edisjoint_tpointseq_geo((TSequence *) temp, PointerGetDatum(gs),
       func);
   else /* temp->subtype == TSEQUENCESET */
-    result = disjoint_tpointseqset_geo((TSequenceSet *) temp,
+    result = edisjoint_tpointseqset_geo((TSequenceSet *) temp,
       PointerGetDatum(gs), func);
   return result ? 1 : 0;
 }
@@ -441,12 +441,12 @@ disjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @sqlfunc intersects()
  */
 int
-intersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
+eintersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   if (gserialized_is_empty(gs))
     return -1;
   datum_func2 func = get_intersects_fn_gs(temp->flags, gs->gflags);
-  bool result = spatialrel_tpoint_geo(temp, gs, (Datum) NULL, (varfunc) func, 2,
+  bool result = espatialrel_tpoint_geo(temp, gs, (Datum) NULL, (varfunc) func, 2,
     INVERT_NO);
   return result ? 1 : 0;
 }
@@ -464,7 +464,7 @@ intersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @sqlfunc touches()
  */
 int
-touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
+etouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   if (gserialized_is_empty(gs))
     return -1;
@@ -478,7 +478,7 @@ touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
     varfunc func =
       (MOBDB_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->gflags)) ?
       (varfunc) &geom_intersects3d : (varfunc) &geom_intersects2d;
-    result = spatialrel_tpoint_geo(temp, gsbound, (Datum) NULL, func, 2,
+    result = espatialrel_tpoint_geo(temp, gsbound, (Datum) NULL, func, 2,
       INVERT_NO);
   }
   pfree(gsbound);
@@ -497,12 +497,12 @@ touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @sqlfunc dwithin()
  */
 int
-dwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
+edwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 {
   if (gserialized_is_empty(gs))
     return -1;
   datum_func3 func = get_dwithin_fn_gs(temp->flags, gs->gflags);
-  bool result = spatialrel_tpoint_geo(temp, gs, Float8GetDatum(dist),
+  bool result = espatialrel_tpoint_geo(temp, gs, Float8GetDatum(dist),
     (varfunc) func, 3, INVERT);
   return result ? 1 : 0;
 }
@@ -517,7 +517,7 @@ dwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
  * @pre The temporal points are synchronized
  */
 static bool
-dwithin_tpointinst_tpointinst(const TInstant *inst1, const TInstant *inst2,
+edwithin_tpointinst_tpointinst(const TInstant *inst1, const TInstant *inst2,
   double dist, datum_func3 func)
 {
   Datum value1 = tinstant_value(inst1);
@@ -533,14 +533,14 @@ dwithin_tpointinst_tpointinst(const TInstant *inst1, const TInstant *inst2,
  * @pre The temporal points are synchronized
  */
 static bool
-dwithin_tpointdiscseq_tpointdiscseq(const TSequence *seq1,
+edwithin_tpointdiscseq_tpointdiscseq(const TSequence *seq1,
   const TSequence *seq2, double dist, datum_func3 func)
 {
   for (int i = 0; i < seq1->count; i++)
   {
     const TInstant *inst1 = tsequence_inst_n(seq1, i);
     const TInstant *inst2 = tsequence_inst_n(seq2, i);
-    if (dwithin_tpointinst_tpointinst(inst1, inst2, dist, func))
+    if (edwithin_tpointinst_tpointinst(inst1, inst2, dist, func))
       return true;
   }
   return false;
@@ -554,7 +554,7 @@ dwithin_tpointdiscseq_tpointdiscseq(const TSequence *seq1,
  * @pre The temporal points are synchronized
  */
 static bool
-dwithin_tpointseq_tpointseq(const TSequence *seq1, const TSequence *seq2,
+edwithin_tpointseq_tpointseq(const TSequence *seq1, const TSequence *seq2,
   double dist, datum_func3 func)
 {
   const TInstant *start1, *start2;
@@ -562,7 +562,7 @@ dwithin_tpointseq_tpointseq(const TSequence *seq1, const TSequence *seq2,
   {
     start1 = tsequence_inst_n(seq1, 0);
     start2 = tsequence_inst_n(seq2, 0);
-    return dwithin_tpointinst_tpointinst(start1, start2, dist, func);
+    return edwithin_tpointinst_tpointinst(start1, start2, dist, func);
   }
 
   start1 = tsequence_inst_n(seq1, 0);
@@ -625,14 +625,14 @@ dwithin_tpointseq_tpointseq(const TSequence *seq1, const TSequence *seq2,
  * @pre The temporal points are synchronized
  */
 static bool
-dwithin_tpointseqset_tpointseqset(const TSequenceSet *ss1,
+edwithin_tpointseqset_tpointseqset(const TSequenceSet *ss1,
   const TSequenceSet *ss2, double dist, datum_func3 func)
 {
   for (int i = 0; i < ss1->count; i++)
   {
     const TSequence *seq1 = tsequenceset_seq_n(ss1, i);
     const TSequence *seq2 = tsequenceset_seq_n(ss2, i);
-    if (dwithin_tpointseq_tpointseq(seq1, seq2, dist, func))
+    if (edwithin_tpointseq_tpointseq(seq1, seq2, dist, func))
       return true;
   }
   return false;
@@ -646,23 +646,23 @@ dwithin_tpointseqset_tpointseqset(const TSequenceSet *ss1,
  * @pre The temporal points are synchronized
  */
 int
-dwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
+edwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
   double dist)
 {
   datum_func3 func = get_dwithin_fn(sync1->flags, sync2->flags);
   bool result;
   ensure_valid_tempsubtype(sync1->subtype);
   if (sync1->subtype == TINSTANT)
-    result = dwithin_tpointinst_tpointinst((TInstant *) sync1,
+    result = edwithin_tpointinst_tpointinst((TInstant *) sync1,
       (TInstant *) sync2, dist, func);
   else if (sync1->subtype == TSEQUENCE)
     result = MOBDB_FLAGS_GET_DISCRETE(sync1->flags) ?
-      dwithin_tpointdiscseq_tpointdiscseq((TSequence *) sync1,
+      edwithin_tpointdiscseq_tpointdiscseq((TSequence *) sync1,
         (TSequence *) sync2, dist, func) :
-      dwithin_tpointseq_tpointseq((TSequence *) sync1, (TSequence *) sync2,
+      edwithin_tpointseq_tpointseq((TSequence *) sync1, (TSequence *) sync2,
         dist, func);
   else /* sync1->subtype == TSEQUENCESET */
-    result = dwithin_tpointseqset_tpointseqset((TSequenceSet *) sync1,
+    result = edwithin_tpointseqset_tpointseqset((TSequenceSet *) sync1,
       (TSequenceSet *) sync2, dist, func);
   return result;
 }
@@ -674,7 +674,7 @@ dwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
  * @sqlfunc dwithin()
  */
 int
-dwithin_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2, double dist)
+edwithin_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2, double dist)
 {
   ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2));
   Temporal *sync1, *sync2;
@@ -684,7 +684,7 @@ dwithin_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2, double dist)
     &sync1, &sync2))
     return -1;
 
-  bool result = dwithin_tpoint_tpoint1(sync1, sync2, dist);
+  bool result = edwithin_tpoint_tpoint1(sync1, sync2, dist);
   pfree(sync1); pfree(sync2);
   return result ? 1 : 0;
 }

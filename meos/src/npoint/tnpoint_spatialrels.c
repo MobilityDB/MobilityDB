@@ -60,7 +60,7 @@
  * @param[in] invert True if the arguments should be inverted
  */
 Datum
-spatialrel_tnpoint_geo(const Temporal *temp, Datum geom,
+espatialrel_tnpoint_geo(const Temporal *temp, Datum geom,
   Datum (*func)(Datum, Datum), bool invert)
 {
   Datum geom1 = PointerGetDatum(tnpoint_geom(temp));
@@ -74,7 +74,7 @@ spatialrel_tnpoint_geo(const Temporal *temp, Datum geom,
  * network point
  */
 Datum
-spatialrel_tnpoint_npoint(const Temporal *temp, const Npoint *np,
+espatialrel_tnpoint_npoint(const Temporal *temp, const Npoint *np,
   Datum (*func)(Datum, Datum), bool invert)
 {
   Datum geom1 = PointerGetDatum(tnpoint_geom(temp));
@@ -90,7 +90,7 @@ spatialrel_tnpoint_npoint(const Temporal *temp, const Npoint *np,
  * relationship
  */
 int
-spatialrel_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
+espatialrel_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
   Datum (*func)(Datum, Datum))
 {
   ensure_same_srid(tnpoint_srid(temp1), tnpoint_srid(temp2));
@@ -139,7 +139,7 @@ spatialrel_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
  * @param[in] invert True if the arguments should be inverted
  */
 Datum
-spatialrel3_tnpoint_geom(const Temporal *temp, Datum geom, Datum param,
+espatialrel3_tnpoint_geom(const Temporal *temp, Datum geom, Datum param,
   Datum (*func)(Datum, Datum, Datum), bool invert)
 {
   Datum geom1 = PointerGetDatum(tnpoint_geom(temp));
@@ -159,7 +159,7 @@ spatialrel3_tnpoint_geom(const Temporal *temp, Datum geom, Datum param,
  * @param[in] invert True if the arguments should be inverted
  */
 Datum
-spatialrel3_tnpoint_npoint(const Temporal *temp, const Npoint *np, Datum param,
+espatialrel3_tnpoint_npoint(const Temporal *temp, const Npoint *np, Datum param,
   Datum (*func)(Datum, Datum, Datum), bool invert)
 {
   Datum geom1 = PointerGetDatum(tnpoint_geom(temp));
@@ -178,7 +178,7 @@ spatialrel3_tnpoint_npoint(const Temporal *temp, const Npoint *np, Datum param,
  * relationship
  */
 int
-dwithin_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
+edwithin_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
   double dist)
 {
   ensure_same_srid(tnpoint_srid(temp1), tnpoint_srid(temp2));
@@ -190,7 +190,7 @@ dwithin_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
 
   Temporal *tpoint1 = tnpoint_tgeompoint(sync1);
   Temporal *tpoint2 = tnpoint_tgeompoint(sync2);
-  bool result = dwithin_tpoint_tpoint1(tpoint1, tpoint2, dist);
+  bool result = edwithin_tpoint_tpoint1(tpoint1, tpoint2, dist);
   pfree(tpoint1); pfree(tpoint2);
   pfree(sync1); pfree(sync2);
   return result ? 1 : 0;

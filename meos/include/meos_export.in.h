@@ -1631,19 +1631,19 @@ extern Temporal *tpoint_set_srid(const Temporal *temp, int32 srid);
 
 /* Spatial relationship functions for temporal point types */
 
-extern int contains_geo_tpoint(const GSERIALIZED *geo, const Temporal *temp);
-extern int disjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
-extern int disjoint_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
-extern int dwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist);
-extern int dwithin_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2, double dist);
-extern int intersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
-extern int intersects_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
+extern int econtains_geo_tpoint(const GSERIALIZED *geo, const Temporal *temp);
+extern int edisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern int edisjoint_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
+extern int edwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist);
+extern int edwithin_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2, double dist);
+extern int eintersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern int eintersects_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
+extern int etouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern Temporal *tcontains_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp, bool restr, bool atvalue);
 extern Temporal *tdisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *geo, bool restr, bool atvalue);
 extern Temporal *tdwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist, bool restr, bool atvalue);
 extern Temporal *tdwithin_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2, double dist, bool restr, bool atvalue);
 extern Temporal *tintersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *geo, bool restr, bool atvalue);
-extern int touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern Temporal *ttouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr, bool atvalue);
 
 /*****************************************************************************/
