@@ -1278,8 +1278,6 @@ extern bool left_tint_int(const Temporal *tnumber, int i);
 extern bool overlaps_float_tfloat(double d, const Temporal *tnumber);
 extern bool overlaps_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint);
 extern bool overlaps_int_tint(int i, const Temporal *tnumber);
-extern bool overlaps_period_temporal(const Span *p, const Temporal *temp);
-extern bool overlaps_periodset_temporal(const SpanSet *ps, const Temporal *temp);
 extern bool overlaps_span_tnumber(const Span *span, const Temporal *tnumber);
 extern bool overlaps_stbox_tpoint(const STBox *stbox, const Temporal *tpoint);
 extern bool overlaps_tbox_tnumber(const TBox *tbox, const Temporal *tnumber);
@@ -1289,8 +1287,6 @@ extern bool overlaps_temporal_temporal(const Temporal *temp1, const Temporal *te
 extern bool overlaps_temporal_timestamp(const Temporal *temp, TimestampTz t);
 extern bool overlaps_temporal_timestampset(const Temporal *temp, const Set *ts);
 extern bool overlaps_tfloat_float(const Temporal *tnumber, double d);
-extern bool overlaps_timestamp_temporal(TimestampTz t, const Temporal *temp);
-extern bool overlaps_timestampset_temporal(const Set *ts, const Temporal *temp);
 extern bool overlaps_tint_int(const Temporal *tnumber, int i);
 extern bool overlaps_tnumber_span(const Temporal *tnumber, const Span *span);
 extern bool overlaps_tnumber_tbox(const Temporal *tnumber, const TBox *tbox);
@@ -1661,15 +1657,6 @@ extern Temporal *temporal_delete_timestamp(const Temporal *temp, TimestampTz t, 
 extern Temporal *temporal_delete_timestampset(const Temporal *temp, const Set *ts, bool connect);
 extern Temporal *temporal_delete_period(const Temporal *temp, const Span *p, bool connect);
 extern Temporal *temporal_delete_periodset(const Temporal *temp, const SpanSet *ps, bool connect);
-
-/*****************************************************************************/
-
-/* Overlaps functions for temporal types */
-
-extern bool temporal_overlaps_period(const Temporal *temp, const Span *p);
-extern bool temporal_overlaps_periodset(const Temporal *temp, const SpanSet *ps);
-extern bool temporal_overlaps_timestamp(const Temporal *temp, TimestampTz t);
-extern bool temporal_overlaps_timestampset(const Temporal *temp, const Set *ss);
 
 /*****************************************************************************/
 

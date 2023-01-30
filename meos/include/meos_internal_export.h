@@ -744,23 +744,6 @@ extern TSequenceSet *tsequenceset_delete_periodset(const TSequenceSet *ss, const
 
 /*****************************************************************************/
 
-/* Overlaps functions for temporal types */
-
-extern bool tinstant_overlaps_period(const TInstant *inst, const Span *p);
-extern bool tinstant_overlaps_periodset(const TInstant *inst, const SpanSet *ps);
-extern bool tinstant_overlaps_timestamp(const TInstant *inst, TimestampTz t);
-extern bool tinstant_overlaps_timestampset(const TInstant *inst, const Set *ss);
-extern bool tsequence_overlaps_period(const TSequence *seq, const Span *p);
-extern bool tsequence_overlaps_periodset(const TSequence *seq, const SpanSet *ps);
-extern bool tsequence_overlaps_timestamp(const TSequence *seq, TimestampTz t);
-extern bool tsequence_overlaps_timestampset(const TSequence *seq, const Set *ss);
-extern bool tsequenceset_overlaps_period(const TSequenceSet *ss, const Span *p);
-extern bool tsequenceset_overlaps_periodset(const TSequenceSet *ss, const SpanSet *ps);
-extern bool tsequenceset_overlaps_timestamp(const TSequenceSet *ss, TimestampTz t);
-extern bool tsequenceset_overlaps_timestampset(const TSequenceSet *ss, const Set *ss1);
-
-/*****************************************************************************/
-
 /* Local aggregate functions for temporal types */
 
 extern double tnumberseq_integral(const TSequence *seq);

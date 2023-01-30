@@ -478,18 +478,6 @@ SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp ?= 'Point(1.5 1.5)';
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp %= 'Point(1 1)';
 SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp %= 'Point(1.5 1.5)';
 
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE overlapsTime(temp, timestamptz '2001-06-01');
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE overlapsTime(temp, timestamptz '2001-06-01');
-
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE overlapsTime(temp, tstzset '{2001-06-01, 2001-07-01}');
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE overlapsTime(temp, tstzset '{2001-06-01, 2001-07-01}');
-
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE overlapsTime(temp, tstzspan '[2001-06-01, 2001-07-01]');
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE overlapsTime(temp, tstzspan '[2001-06-01, 2001-07-01]');
-
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE overlapsTime(temp, tstzspanset '{[2001-06-01, 2001-07-01]}');
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE overlapsTime(temp, tstzspanset '{[2001-06-01, 2001-07-01]}');
-
 DROP INDEX tbl_tgeompoint_rtree_idx;
 DROP INDEX tbl_tgeogpoint_rtree_idx;
 
@@ -506,18 +494,6 @@ SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp ?= 'Point(1.5 1.5)';
 
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp %= 'Point(1 1)';
 SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp %= 'Point(1.5 1.5)';
-
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE overlapsTime(temp, timestamptz '2001-06-01');
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE overlapsTime(temp, timestamptz '2001-06-01');
-
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE overlapsTime(temp, tstzset '{2001-06-01, 2001-07-01}');
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE overlapsTime(temp, tstzset '{2001-06-01, 2001-07-01}');
-
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE overlapsTime(temp, tstzspan '[2001-06-01, 2001-07-01]');
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE overlapsTime(temp, tstzspan '[2001-06-01, 2001-07-01]');
-
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE overlapsTime(temp, tstzspanset '{[2001-06-01, 2001-07-01]}');
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE overlapsTime(temp, tstzspanset '{[2001-06-01, 2001-07-01]}');
 
 DROP INDEX tbl_tgeompoint_quadtree_idx;
 DROP INDEX tbl_tgeogpoint_quadtree_idx;

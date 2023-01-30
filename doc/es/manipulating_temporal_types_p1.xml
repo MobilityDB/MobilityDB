@@ -341,16 +341,10 @@ SELECT asHexWKB(ttext 'AAA@2001-01-01');
 			</listitem>
 
 			<listitem id="tboolFromBinary">
-				<indexterm><primary><varname>tboolFromBinary</varname></primary></indexterm>
-				<indexterm><primary><varname>tintFromBinary</varname></primary></indexterm>
-				<indexterm><primary><varname>tfloatFromBinary</varname></primary></indexterm>
-				<indexterm><primary><varname>ttextFromBinary</varname></primary></indexterm>
+				<indexterm><primary><varname>&lt;ttype&gt;FromBinary</varname></primary></indexterm>
 				<para>Entrar un valor temporal de su representación binaria conocida (WKB)</para>
-				<para>Hay una función por tipo base, el nombre de esta función tiene como prefijo el nombre del tipo base, que son <varname>tbool</varname> o <varname>tint</varname> en los ejemplos de firmas a continuación</para>
-				<para><varname>tboolFromBinary(bytea) → tbool</varname></para>
-				<para><varname>tintFromBinary(bytea) → tint</varname></para>
-				<para><varname>tfloatFromBinary(bytea) → tfloat</varname></para>
-				<para><varname>ttextFromBinary(bytea) → ttext</varname></para>
+				<para>Hay una función por tipo base, el nombre de esta función tiene como prefijo el nombre del tipo base, que son <varname>tbool</varname> o <varname>tint</varname> en los ejemplos a continuación.</para>
+				<para><varname>&lt;ttype&gt;FromBinary(bytea) → ttype</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tboolFromBinary('\x010d000101009c57d3c11c0000');
 -- t@2001-01-01
@@ -364,16 +358,10 @@ SELECT ttextFromBinary('\x01170001040000000000000041414100009c57d3c11c0000');
 			</listitem>
 
 			<listitem id="tboolFromHexWKB">
-				<indexterm><primary><varname>tboolFromHexWKB</varname></primary></indexterm>
-				<indexterm><primary><varname>tintFromHexWKB</varname></primary></indexterm>
-				<indexterm><primary><varname>tfloatFromHexWKB</varname></primary></indexterm>
-				<indexterm><primary><varname>ttextFromHexWKB</varname></primary></indexterm>
+				<indexterm><primary><varname>&lt;ttype&gt;FromHexWKB</varname></primary></indexterm>
 				<para>Entrar un valor temporal de su representación hexadecimal binaria conocida (HexWKB)</para>
 				<para>Hay una función por tipo base, el nombre de esta función tiene como prefijo el nombre del tipo base, que son <varname>tbool</varname> o <varname>tint</varname> en los ejemplos de firmas a continuación</para>
-				<para><varname>tboolFromHexWKB(text) → tbool</varname></para>
-				<para><varname>tintFromHexWKB(text) → tint</varname></para>
-				<para><varname>tfloatFromHexWKB(text) → tfloat</varname></para>
-				<para><varname>ttextFromHexWKB(text) → ttext</varname></para>
+				<para><varname>&lt;ttype&gt;FromHexWKB(text) → ttype</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tboolFromHexWKB('010D000101009C57D3C11C0000');
 -- t@2001-01-01

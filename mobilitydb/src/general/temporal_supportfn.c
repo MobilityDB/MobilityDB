@@ -63,8 +63,6 @@
 
 enum TEMPORAL_FUNCTION_IDX
 {
-  /* overlapsTime function */
-  OVERLAPS_TIME_IDX              = 0,
   /* Ever/always comparison functions */
   EVER_EQ_IDX                    = 1,
   ALWAYS_EQ_IDX                  = 2,
@@ -83,8 +81,6 @@ static const int16 TemporalStrategies[] =
 
 static const int16 TNumberStrategies[] =
 {
-  /* intersectsTime function */
-  [OVERLAPS_TIME_IDX]            = RTOverlapStrategyNumber,
   /* Ever/always comparison functions */
   [EVER_EQ_IDX]                  = RTOverlapStrategyNumber,
   [ALWAYS_EQ_IDX]                = RTOverlapStrategyNumber,
@@ -92,8 +88,6 @@ static const int16 TNumberStrategies[] =
 
 static const int16 TPointStrategies[] =
 {
-  /* intersectsTime function */
-  [OVERLAPS_TIME_IDX]            = RTOverlapStrategyNumber,
   /* Ever/always comparison functions */
   [EVER_EQ_IDX]                  = RTOverlapStrategyNumber,
   [ALWAYS_EQ_IDX]                = RTOverlapStrategyNumber,
@@ -108,8 +102,6 @@ static const int16 TPointStrategies[] =
 #if NPOINT
 static const int16 TNPointStrategies[] =
 {
-  /* intersectsTime functions */
-  [OVERLAPS_TIME_IDX]            = RTOverlapStrategyNumber,
   /* Ever spatial relationships */
   [ECONTAINS_IDX]                 = RTOverlapStrategyNumber,
   [EDISJOINT_IDX]                 = RTOverlapStrategyNumber,
@@ -126,14 +118,10 @@ static const int16 TNPointStrategies[] =
 */
 static const IndexableFunction TemporalIndexableFunctions[] =
 {
-  /* intersectsTime function */
-  {"overlapstime", OVERLAPS_TIME_IDX, 2, 0},
   {NULL, 0, 0, 0}
 };
 
 static const IndexableFunction TNumberIndexableFunctions[] = {
-  /* intersectsTime function */
-  {"overlapstime", OVERLAPS_TIME_IDX, 2, 0},
   /* Ever/always comparison functions */
   {"ever_eq", EVER_EQ_IDX, 2, 0},
   {"always_eq", ALWAYS_EQ_IDX, 2, 0},
@@ -141,8 +129,6 @@ static const IndexableFunction TNumberIndexableFunctions[] = {
 };
 
 static const IndexableFunction TPointIndexableFunctions[] = {
-  /* overlapsTime function */
-  {"overlapstime", OVERLAPS_TIME_IDX, 2, 0},
   /* Ever/always comparison functions */
   {"ever_eq", EVER_EQ_IDX, 2, 0},
   {"always_eq", ALWAYS_EQ_IDX, 2, 0},
@@ -157,8 +143,6 @@ static const IndexableFunction TPointIndexableFunctions[] = {
 
 #if NPOINT
 static const IndexableFunction TNPointIndexableFunctions[] = {
-  /* overlapsTime function */
-  {"overlapstime", OVERLAPS_TIME_IDX, 2, 0},
   /* Ever spatial relationships */
   {"econtains", ECONTAINS_IDX, 2, 0},
   {"edisjoint", EDISJOINT_IDX, 2, 0},

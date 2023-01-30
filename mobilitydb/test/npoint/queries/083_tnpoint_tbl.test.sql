@@ -268,14 +268,6 @@ CREATE INDEX tbl_tnpoint_rtree_idx ON tbl_tnpoint USING gist(temp);
 
 -- SELECT COUNT(*) FROM tbl_tnpoint WHERE temp %= 'NPoint(1, 0.1)';
 
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, timestamptz '2001-06-01');
-
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, tstzset '{2001-06-01, 2001-07-01}');
-
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, tstzspan '[2001-06-01, 2001-07-01]');
-
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, tstzspanset '{[2001-06-01, 2001-07-01]}');
-
 DROP INDEX tbl_tnpoint_rtree_idx;
 
 -------------------------------------------------------------------------------
@@ -287,14 +279,6 @@ CREATE INDEX tbl_tnpoint_quadtree_idx ON tbl_tnpoint USING spgist(temp);
 -- SELECT COUNT(*) FROM tbl_tnpoint WHERE temp ?= 'NPoint(1, 0.1)';
 
 -- SELECT COUNT(*) FROM tbl_tnpoint WHERE temp %= 'NPoint(1, 0.1)';
-
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, timestamptz '2001-06-01');
-
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, tstzset '{2001-06-01, 2001-07-01}');
-
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, tstzspan '[2001-06-01, 2001-07-01]');
-
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, tstzspanset '{[2001-06-01, 2001-07-01]}');
 
 DROP INDEX tbl_tnpoint_quadtree_idx;
 

@@ -579,34 +579,6 @@ CREATE FUNCTION deleteTime(tnpoint, tstzspanset, connect boolean DEFAULT TRUE)
   AS 'MODULE_PATHNAME', 'Temporal_delete_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-/*****************************************************************************
- * Overlaps time functions
- *****************************************************************************/
-
-CREATE FUNCTION overlapsTime(tnpoint, timestamptz)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_overlaps_timestamp'
-  SUPPORT tnpoint_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION overlapsTime(tnpoint, tstzset)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_overlaps_timestampset'
-  SUPPORT tnpoint_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION overlapsTime(tnpoint, tstzspan)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_overlaps_period'
-  SUPPORT tnpoint_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION overlapsTime(tnpoint, tstzspanset)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_overlaps_periodset'
-  SUPPORT tnpoint_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 /******************************************************************************
  * Multidimensional tiling
  ******************************************************************************/

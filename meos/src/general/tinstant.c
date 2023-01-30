@@ -969,60 +969,6 @@ intersection_tinstant_tinstant(const TInstant *inst1, const TInstant *inst2,
 }
 
 /*****************************************************************************
- * Overlaps time functions
- *****************************************************************************/
-
-/**
- * @ingroup libmeos_internal_temporal_time
- * @brief Return true if a temporal instant intersects a timestamp.
- * @sqlfunc intersectsTimestamp()
- */
-bool
-tinstant_overlaps_timestamp(const TInstant *inst, TimestampTz t)
-{
-  return (inst->t == t);
-}
-
-/**
- * @ingroup libmeos_internal_temporal_time
- * @brief Return true if a temporal instant intersects a timestamp set.
- * @sqlfunc intersectsTstzSet()
- */
-bool
-tinstant_overlaps_timestampset(const TInstant *inst, const Set *ts)
-{
-  for (int i = 0; i < ts->count; i++)
-    if (inst->t == DatumGetTimestampTz(set_val_n(ts, i)))
-      return true;
-  return false;
-}
-
-/**
- * @ingroup libmeos_internal_temporal_time
- * @brief Return true if a temporal instant intersects a period.
- * @sqlfunc intersectsPeriod()
- */
-bool
-tinstant_overlaps_period(const TInstant *inst, const Span *p)
-{
-  return contains_period_timestamp(p, inst->t);
-}
-
-/**
- * @ingroup libmeos_internal_temporal_time
- * @brief Return true if a temporal instant intersects a period set.
- * @sqlfunc intersectsPeriodSet()
- */
-bool
-tinstant_overlaps_periodset(const TInstant *inst, const SpanSet *ps)
-{
-  for (int i = 0; i < ps->count; i++)
-    if (contains_period_timestamp(spanset_sp_n(ps, i), inst->t))
-      return true;
-  return false;
-}
-
-/*****************************************************************************
  * Comparison functions
  *****************************************************************************/
 

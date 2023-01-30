@@ -911,54 +911,6 @@ CREATE FUNCTION deleteTime(tgeogpoint, tstzspanset, connect boolean DEFAULT TRUE
   AS 'MODULE_PATHNAME', 'Temporal_delete_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-/*****************************************************************************
- * Intersects Functions
- *****************************************************************************/
-
-CREATE FUNCTION overlapsTime(tgeompoint, timestamptz)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_overlaps_timestamp'
-  SUPPORT tpoint_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overlapsTime(tgeogpoint, timestamptz)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_overlaps_timestamp'
-  SUPPORT tpoint_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION overlapsTime(tgeompoint, tstzset)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_overlaps_timestampset'
-  SUPPORT tpoint_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overlapsTime(tgeogpoint, tstzset)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_overlaps_timestampset'
-  SUPPORT tpoint_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION overlapsTime(tgeompoint, tstzspan)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_overlaps_period'
-  SUPPORT tpoint_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overlapsTime(tgeogpoint, tstzspan)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_overlaps_period'
-  SUPPORT tpoint_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION overlapsTime(tgeompoint, tstzspanset)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_overlaps_periodset'
-  SUPPORT tpoint_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overlapsTime(tgeogpoint, tstzspanset)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_overlaps_periodset'
-  SUPPORT tpoint_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 /******************************************************************************
  * Multidimensional tiling
  ******************************************************************************/

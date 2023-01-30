@@ -347,13 +347,10 @@ SELECT asHexWKB(ttext 'AAA@2001-01-01');
 			</listitem>
 
 			<listitem id="tboolFromBinary">
-				<indexterm><primary><varname>tboolFromBinary</varname></primary></indexterm>
-				<indexterm><primary><varname>tintFromBinary</varname></primary></indexterm>
+				<indexterm><primary><varname>&lt;ttype&gt;FromBinary</varname></primary></indexterm>
 				<para>Input a temporal value from its Well-Known Binary (WKB) representation</para>
-				<para>There is one function per base type, the name of the function has as prefix the name of the base type, which is <varname>tbool</varname> or <varname>tint</varname> in the example signatures below</para>
-				<para><varname>tboolFromBinary(bytea) → tbool</varname></para>
-				<para><varname>tintFromBinary(bytea) → tint</varname></para>
-				<para><varname>...</varname></para>
+				<para>There is one function per base type, the name of the function has as prefix the name of the base type, which is <varname>tbool</varname> or <varname>tint</varname> in the examples below.</para>
+				<para><varname>&lt;ttype&gt;FromBinary(bytea) → ttype</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tboolFromBinary('\x010d000101009c57d3c11c0000');
 -- t@2001-01-01
@@ -367,13 +364,10 @@ SELECT ttextFromBinary('\x01170001040000000000000041414100009c57d3c11c0000');
 			</listitem>
 
 			<listitem id="tboolFromHexWKB">
-				<indexterm><primary><varname>tboolFromHexWKB</varname></primary></indexterm>
-				<indexterm><primary><varname>tintFromHexWKB</varname></primary></indexterm>
+				<indexterm><primary><varname>&lt;ttype&gt;FromHexWKB</varname></primary></indexterm>
 				<para>Input a temporal value from its Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
-				<para>There is one function per base type, the name of the function has as prefix the name of the base type, which is <varname>tbool</varname> or <varname>tint</varname> in the example signatures below</para>
-				<para><varname>tboolFromHexWKB(text) → tbool</varname></para>
-				<para><varname>tintFromHexWKB(text) → tint</varname></para>
-				<para><varname>...</varname></para>
+				<para>There is one function per base type, the name of the function has as prefix the name of the base type, which is <varname>tbool</varname> or <varname>tint</varname> in the examples below.</para>
+				<para><varname>&lt;ttype&gt;FromHexWKB(text) → ttype</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tboolFromHexWKB('010D000101009C57D3C11C0000');
 -- t@2001-01-01
@@ -753,7 +747,8 @@ SELECT ST_AsText(trajectory(tgeompoint '{[Point(0 0)@2001-01-01, Point(0 1)@2001
 			</listitem>
 
 			<listitem id="startValue">
-				<indexterm><primary><varname>startValue</varname>, <varname>endValue</varname></primary></indexterm>
+				<indexterm><primary><varname>startValue</varname></primary></indexterm>
+				<indexterm><primary><varname>endValue</varname></primary></indexterm>
 				<para>Get the start/end value</para>
 				<para><varname>startValue(ttype) → base</varname></para>
 				<para><varname>endValue(ttype) → base</varname></para>
@@ -767,7 +762,8 @@ SELECT endValue(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 5@2001-01-
 			</listitem>
 
 			<listitem id="minValue">
-				<indexterm><primary><varname>minValue</varname>, <varname>maxValue</varname></primary></indexterm>
+				<indexterm><primary><varname>minValue</varname></primary></indexterm>
+				<indexterm><primary><varname>maxValue</varname></primary></indexterm>
 				<para>Get the minimum/maximum value</para>
 				<para><varname>minValue(torder) → base</varname></para>
 				<para><varname>maxValue(torder) → base</varname></para>
@@ -781,7 +777,8 @@ SELECT maxValue(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 5@2001-01-
 			</listitem>
 
 			<listitem id="minInstant">
-				<indexterm><primary><varname>minInstant</varname>, <varname>maxInstant</varname></primary></indexterm>
+				<indexterm><primary><varname>minInstant</varname></primary></indexterm>
+				<indexterm><primary><varname>maxInstant</varname></primary></indexterm>
 				<para>Get the instant with the minimum/maximum value</para>
 				<para><varname>minInstant(torder) → base</varname></para>
 				<para><varname>maxInstant(torder) → base</varname></para>
@@ -880,7 +877,9 @@ SELECT numInstants(tfloat '{[1@2000-01-01, 2@2000-01-02), (2@2000-01-02, 3@2000-
 			</listitem>
 
 			<listitem id="startInstant">
-				<indexterm><primary><varname>startInstant</varname>, <varname>endInstant</varname>, <varname>instantN</varname></primary></indexterm>
+				<indexterm><primary><varname>startInstant</varname></primary></indexterm>
+				<indexterm><primary><varname>endInstant</varname></primary></indexterm>
+				<indexterm><primary><varname>instantN</varname></primary></indexterm>
 				<para>Get the start/end/n-th instant</para>
 				<para><varname>startInstant(ttype) → ttype_inst</varname></para>
 				<para><varname>endInstant(ttype) → ttype_inst</varname></para>
@@ -919,7 +918,9 @@ SELECT numTimestamps(tfloat '{[1@2001-01-01, 2@2001-01-03),
 			</listitem>
 
 			<listitem id="ttype_startTimestamp">
-				<indexterm><primary><varname>startTimestamp</varname>, <varname>endTimestamp</varname>, <varname>timestampN</varname></primary></indexterm>
+				<indexterm><primary><varname>startTimestamp</varname></primary></indexterm>
+				<indexterm><primary><varname>endTimestamp</varname></primary></indexterm>
+				<indexterm><primary><varname>timestampN</varname></primary></indexterm>
 				<para>Get the start/end/n-th timestamp</para>
 				<para><varname>startTimestamp(ttype) → timestamptz</varname></para>
 				<para><varname>endTimestamp(ttype) → timestamptz</varname></para>
@@ -959,7 +960,9 @@ SELECT numSequences(tfloat '{[1@2001-01-01, 2@2001-01-03),
 			</listitem>
 
 			<listitem id="startSequence">
-				<indexterm><primary><varname>startSequence</varname>, <varname>endSequence</varname>, <varname>sequenceN</varname></primary></indexterm>
+				<indexterm><primary><varname>startSequence</varname></primary></indexterm>
+				<indexterm><primary><varname>endSequence</varname></primary></indexterm>
+				<indexterm><primary><varname>sequenceN</varname></primary></indexterm>
 				<para>Get the start/end/n-th sequence</para>
 				<para><varname>startSequence({ttype_contseq,ttype_seqset}) → ttype_contseq</varname></para>
 				<para><varname>endSequence({ttype_contseq,ttype_seqset}) → ttype_contseq</varname></para>
@@ -1416,7 +1419,8 @@ SELECT minusValues(tfloat '[1@2001-01-01, 5@2001-01-05)',
 			</listitem>
 
 			<listitem id="atMin">
-				<indexterm><primary><varname>atMin</varname>, <varname>minusMin</varname></primary></indexterm>
+				<indexterm><primary><varname>atMin</varname></primary></indexterm>
+				<indexterm><primary><varname>minusMin</varname></primary></indexterm>
 				<para>Restrict to (the complement of) the minimum value</para>
 				<para><varname>atMin(torder) → torder</varname></para>
 				<para><varname>minusMin(torder) → torder</varname></para>
@@ -1445,7 +1449,8 @@ SELECT minusMin(tint '{[1@2001-01-01, 1@2001-01-03), (1@2001-01-03, 1@2001-01-05
 			</listitem>
 
 			<listitem id="atMax">
-				<indexterm><primary><varname>atMax</varname>, <varname>minusMax</varname></primary></indexterm>
+				<indexterm><primary><varname>atMax</varname></primary></indexterm>
+				<indexterm><primary><varname>minusMax</varname></primary></indexterm>
 				<para>Restrict to (the complement of) the maximum value</para>
 				<para><varname>atMax(torder) → torder</varname></para>
 				<para><varname>minusMax(torder) → torder</varname></para>
@@ -1476,7 +1481,8 @@ SELECT minusMax(tfloat '{[1@2001-01-01, 3@2001-01-03), (3@2001-01-03, 1@2001-01-
 			</listitem>
 
 			<listitem id="atGeometry">
-				<indexterm><primary><varname>atGeometry</varname>, <varname>minusGeometry</varname></primary></indexterm>
+				<indexterm><primary><varname>atGeometry</varname></primary></indexterm>
+				<indexterm><primary><varname>minusGeometry</varname></primary></indexterm>
 				<para>Restrict to (the complement of) a geometry</para>
 				<para><varname>atGeometry(tgeompoint,geometry) → tgeompoint</varname></para>
 				<para><varname>minusGeometry(tgeompoint,geometry) → tgeompoint</varname></para>
@@ -1503,7 +1509,8 @@ SELECT astext(minusGeometry(tgeompoint '[Point(0 0 0)@2000-01-01,
 			</listitem>
 
 			<listitem id="atTime">
-				<indexterm><primary><varname>atTime</varname>, <varname>minusTime</varname></primary></indexterm>
+				<indexterm><primary><varname>atTime</varname></primary></indexterm>
+				<indexterm><primary><varname>minusTime</varname></primary></indexterm>
 				<para>Restrict to (the complement of) a time value</para>
 				<para><varname>atTime(ttype,time) → ttype</varname></para>
 				<para><varname>minusTime(ttype,time) → ttype</varname></para>
