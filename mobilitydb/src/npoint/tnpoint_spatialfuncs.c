@@ -61,18 +61,18 @@ Tnpoint_get_srid(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Geometric positions (Trajectotry) functions
+ * Geometric positions (Trajectory) functions
  * Return the geometric positions covered by a temporal network point
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Tnpoint_get_trajectory);
+PG_FUNCTION_INFO_V1(Tnpoint_trajectory);
 /**
  * @ingroup mobilitydb_temporal_spatial_accessor
  * @brief Return the geometry covered by a temporal network point
  * @sqlfunc trajectory()
  */
 PGDLLEXPORT Datum
-Tnpoint_get_trajectory(PG_FUNCTION_ARGS)
+Tnpoint_trajectory(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *result = tnpoint_geom(temp);

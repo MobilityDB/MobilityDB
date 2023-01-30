@@ -34,6 +34,10 @@
 		</listitem>
 
 		<listitem>
+			<para><varname>tscalar</varname> represents any temporal type whose base type does not have a defined distance, that is, <varname>tbool</varname> or <varname>ttext</varname>,</para>
+		</listitem>
+
+		<listitem>
 			<para><varname>tnumber</varname> represents any temporal number type, that is, <varname>tint</varname> or <varname>tfloat</varname>,</para>
 		</listitem>
 

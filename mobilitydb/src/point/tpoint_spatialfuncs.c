@@ -127,14 +127,14 @@ Tpoint_always_ne(PG_FUNCTION_ARGS)
  * Trajectory function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Tpoint_get_trajectory);
+PG_FUNCTION_INFO_V1(Tpoint_trajectory);
 /**
  * @ingroup mobilitydb_temporal_spatial_accessor
  * @brief Return the trajectory of a temporal point
  * @sqlfunc trajectory()
  */
 PGDLLEXPORT Datum
-Tpoint_get_trajectory(PG_FUNCTION_ARGS)
+Tpoint_trajectory(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *result = tpoint_trajectory(temp);

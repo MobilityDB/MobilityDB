@@ -47,7 +47,7 @@ CREATE FUNCTION SRID(tnpoint)
 
 CREATE FUNCTION trajectory(tnpoint)
   RETURNS geometry
-  AS 'MODULE_PATHNAME', 'Tnpoint_get_trajectory'
+  AS 'MODULE_PATHNAME', 'Tnpoint_trajectory'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
