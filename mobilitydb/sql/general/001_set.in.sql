@@ -459,19 +459,19 @@ CREATE FUNCTION startValue(tstzset)
 
 CREATE FUNCTION endValue(intset)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Set_start_value'
+  AS 'MODULE_PATHNAME', 'Set_end_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION endValue(bigintset)
   RETURNS bigint
-  AS 'MODULE_PATHNAME', 'Set_start_value'
+  AS 'MODULE_PATHNAME', 'Set_end_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION endValue(floatset)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Set_start_value'
+  AS 'MODULE_PATHNAME', 'Set_end_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION endValue(textset)
   RETURNS text
-  AS 'MODULE_PATHNAME', 'Set_start_value'
+  AS 'MODULE_PATHNAME', 'Set_end_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION endValue(tstzset)
   RETURNS timestamptz

@@ -244,11 +244,11 @@ CREATE FUNCTION startValue(geogset)
 
 CREATE FUNCTION endValue(geomset)
   RETURNS geometry
-  AS 'MODULE_PATHNAME', 'Set_start_value'
+  AS 'MODULE_PATHNAME', 'Set_end_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION endValue(geogset)
   RETURNS geography
-  AS 'MODULE_PATHNAME', 'Set_start_value'
+  AS 'MODULE_PATHNAME', 'Set_end_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION valueN(geomset, integer)

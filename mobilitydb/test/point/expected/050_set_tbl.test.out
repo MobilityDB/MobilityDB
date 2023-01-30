@@ -135,7 +135,7 @@ SELECT MIN(ST_X(startValue(g))) FROM tbl_geomset;
 SELECT MIN(ST_X(endValue(g))) FROM tbl_geomset;
     min     
 ------------
- -96.535171
+ -94.408967
 (1 row)
 
 SELECT MIN(ST_X(valueN(g, 1))) FROM tbl_geomset;
@@ -177,7 +177,7 @@ SELECT MIN(ST_X(startValue(g)::geometry)) FROM tbl_geogset;
 SELECT MIN(ST_X(endValue(g)::geometry)) FROM tbl_geogset;
    min    
 ----------
- 0.432515
+ 0.806752
 (1 row)
 
 SELECT MIN(ST_X(valueN(g, 1)::geometry)) FROM tbl_geogset;

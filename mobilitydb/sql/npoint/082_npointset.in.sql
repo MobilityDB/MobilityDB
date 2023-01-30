@@ -143,7 +143,7 @@ CREATE FUNCTION startValue(npointset)
 
 CREATE FUNCTION endValue(npointset)
   RETURNS npoint
-  AS 'MODULE_PATHNAME', 'Set_start_value'
+  AS 'MODULE_PATHNAME', 'Set_end_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION valueN(npointset, integer)

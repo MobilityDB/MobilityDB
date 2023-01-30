@@ -66,7 +66,7 @@ SELECT MIN(getPosition(startValue(n))) FROM tbl_npointset;
 SELECT MIN(getPosition(endValue(n))) FROM tbl_npointset;
        min        
 ------------------
- 0.00279449201463
+ 0.01594605020734
 (1 row)
 
 SELECT MIN(getPosition(valueN(n, 1))) FROM tbl_npointset;
