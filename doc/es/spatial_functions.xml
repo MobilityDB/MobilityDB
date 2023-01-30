@@ -680,7 +680,7 @@ SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02)' &lt;-&gt;
 			<para>Hay dos versiones de las relaciones espaciales:</para>
 			<itemizedlist>
 				<listitem>
-					<para>Las <emphasis>relaciones alguna vez</emphasis> determinan determinan si la relación topológica o de distancia se satisface alguna vez (ver <xref linkend="ever_always_comparison" />) y resultan en un <varname>boolean</varname>. Ejemplos son las funciones <varname>intersects</varname> y <varname>dwithin</varname>.</para>
+					<para>Las <emphasis>relaciones alguna vez</emphasis> determinan determinan si la relación topológica o de distancia se satisface alguna vez (ver <xref linkend="ever_always_comparison" />) y resultan en un <varname>boolean</varname>. Ejemplos son las funciones <varname>eintersects</varname> y <varname>edwithin</varname>.</para>
 				</listitem>
 
 				<listitem>
@@ -692,7 +692,7 @@ SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02)' &lt;-&gt;
 				Por ejemplo, la siguiente consulta
 			</para>
 			<programlisting language="sql" xml:space="preserve">
-SELECT intersects(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
+SELECT eintersects(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
   tgeompoint '[Point(0 2)@2001-01-01, Point(4 2)@2001-01-05)');
 -- t
 </programlisting>
@@ -715,7 +715,7 @@ SELECT tintersects(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
 				calcula en cada instante si el punto temporal se cruza con la geometría. Del mismo modo, la siguiente consulta
 			</para>
 			<programlisting language="sql" xml:space="preserve">
-SELECT dwithin(tgeompoint '[Point(3 1)@2001-01-01, Point(5 1)@2001-01-03)',
+SELECT edwithin(tgeompoint '[Point(3 1)@2001-01-01, Point(5 1)@2001-01-03)',
   tgeompoint '[Point(3 1)@2001-01-01, Point(1 1)@2001-01-03)', 2);
 -- t
 </programlisting>
@@ -737,13 +737,13 @@ SELECT tdwithin(tgeompoint '[Point(3 1)@2001-01-01, Point(5 1)@2001-01-03)',
 			<programlisting language="sql" xml:space="preserve">
 SELECT T.TripId, R.RegionId, tintersects(T.Trip, R.Geom)
 FROM Trips T, Regions R
-WHERE intersects(T.Trip, R.Geom)
+WHERE eintersects(T.Trip, R.Geom)
 </programlisting>
 			<para>
 				que verifica si un viaje <varname>T</varname> (que es un punto temporal) se cruza con una región <varname>R</varname> (que es una geometría) beneficiará de un índice espacio-temporal en la columna <varname>T.Trip</varname> dado que la función <varname>intersects</varname> realiza automáticamente la comparación del cuadro delimitador <varname>T.Trip &amp;&amp; R.Geom</varname>. Esto se explica más adelante en este documento.
 			</para>
 
-			<para>No todas las relaciones espaciales disponibles en PostGIS tienen una generalización significativa para los puntos temporales. Se define una versión generalizada de las siguientes relaciones para los puntos geométricos temporales: <varname>intersects</varname>, <varname>disjoint</varname>, <varname>dwithin</varname>, <varname>contains</varname>, y <varname>touches</varname>, mientras que para los puntos geográficos temporales solo se definen las tres primeras. Además, no todas las combinaciones de parámetros son significativas para una función generalizada dada. Por ejemplo, mientras que <varname>tcontains(geometry,tpoint)</varname> es significativo, <varname>tcontains(tpoint,geometry)</varname> es significativo solo cuando la geometría es un solo punto, y <varname>tcontains(tpoint,tpoint)</varname> es equivalente a <varname>tintersects(tpoint, geometry)</varname>. Por esta razón, solo se define la primera combinación de parámetros para <varname>contains</varname> y <varname>tcontains</varname>.</para>
+			<para>No todas las relaciones espaciales disponibles en PostGIS tienen una generalización significativa para los puntos temporales. Se define una versión generalizada de las siguientes relaciones para los puntos geométricos temporales: <varname>eintersects</varname>, <varname>edisjoint</varname>, <varname>edwithin</varname>, <varname>econtains</varname>, y <varname>etouches</varname>, mientras que para los puntos geográficos temporales solo se definen las tres primeras. Además, no todas las combinaciones de parámetros son significativas para una función generalizada dada. Por ejemplo, mientras que <varname>tcontains(geometry,tpoint)</varname> es significativo, <varname>tcontains(tpoint,geometry)</varname> es significativo solo cuando la geometría es un solo punto, y <varname>tcontains(tpoint,tpoint)</varname> es equivalente a <varname>tintersects(tpoint, geometry)</varname>. Por esta razón, solo se define la primera combinación de parámetros para <varname>econtains</varname> y <varname>tcontains</varname>.</para>
 
 			<para>Finalmente, cabe destacar que las relaciónes temporales permiten mezclar geometrías 2D/3D pero en ese caso, el cálculo sólo se realiza en 2D.</para>
 		</sect2>
@@ -752,65 +752,65 @@ WHERE intersects(T.Trip, R.Geom)
 			<title>Relaciones espaciales alguna vez</title>
 			<para>Todas estas funciones incluyen automáticamente una comparación de cuadro delimitador que hace uso de cualquier índice espacial que esté disponible en los argumentos.</para>
 			<itemizedlist>
-				<listitem id="contains">
-					<indexterm><primary><varname>contains</varname></primary></indexterm>
+				<listitem id="econtains">
+					<indexterm><primary><varname>econtains</varname></primary></indexterm>
 					<para>Contiene alguna vez</para>
-					<para><varname>contains({geo,tgeompoint},{geo,tgeompoint}) → boolean</varname></para>
+					<para><varname>econtains({geo,tgeompoint},{geo,tgeompoint}) → boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT contains(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
+SELECT econtains(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
   tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-03)');
 -- true
 </programlisting>
 				</listitem>
 
-				<listitem id="disjoint">
-					<indexterm><primary><varname>disjoint</varname></primary></indexterm>
+				<listitem id="edisjoint">
+					<indexterm><primary><varname>edisjoint</varname></primary></indexterm>
 					<para>Está disjunto alguna vez &Z_support; &geography_support;</para>
-					<para><varname>disjoint({geo,tgeompoint},{geo,tgeompoint}) → boolean</varname></para>
+					<para><varname>edisjoint({geo,tgeompoint},{geo,tgeompoint}) → boolean</varname></para>
 						<programlisting language="sql" xml:space="preserve">
-SELECT disjoint(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
+SELECT edisjoint(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
   tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-03)');
 -- false
-SELECT disjoint(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
+SELECT edisjoint(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
   tgeompoint '[Point(0 0 1)@2001-01-01, Point(1 1 0)@2001-01-03)');
 -- true
 </programlisting>
 				</listitem>
 
-				<listitem id="dwithin">
-					<indexterm><primary><varname>dwithin</varname></primary></indexterm>
+				<listitem id="edwithin">
+					<indexterm><primary><varname>edwithin</varname></primary></indexterm>
 					<para>Está alguna vez a distancia de &Z_support; &geography_support;</para>
-					<para><varname>dwithin({geo,tpoint},{geo,tpoint},float) → boolean</varname></para>
+					<para><varname>edwithin({geo,tpoint},{geo,tpoint},float) → boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT dwithin(geometry 'Point(1 1 1)',
+SELECT edwithin(geometry 'Point(1 1 1)',
   tgeompoint '[Point(0 0 0)@2000-01-01, Point(1 1 0)@2000-01-02]', 1);
 -- true
-SELECT dwithin(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
+SELECT edwithin(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
   tgeompoint '[Point(0 2 2)@2000-01-01,Point(2 2 2)@2000-01-02]', 1);
 -- false
 </programlisting>
 				</listitem>
 
-				<listitem id="intersects">
-					<indexterm><primary><varname>intersects</varname></primary></indexterm>
+				<listitem id="eintersects">
+					<indexterm><primary><varname>eintersects</varname></primary></indexterm>
 					<para>Intersecta alguna vez &Z_support; &geography_support;</para>
-					<para><varname>intersects({geo,tpoint},{geo,tpoint}) → boolean</varname></para>
+					<para><varname>eintersects({geo,tpoint},{geo,tpoint}) → boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT intersects(geometry 'Polygon((0 0 0,0 1 0,1 1 0,1 0 0,0 0 0))',
+SELECT eintersects(geometry 'Polygon((0 0 0,0 1 0,1 1 0,1 0 0,0 0 0))',
   tgeompoint '[Point(0 0 1)@2001-01-01, Point(1 1 1)@2001-01-03)');
 -- false
-SELECT intersects(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
+SELECT eintersects(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
   tgeompoint '[Point(0 0 1)@2001-01-01, Point(1 1 1)@2001-01-03)');
 -- true
 </programlisting>
 				</listitem>
 
-				<listitem id="touches">
-					<indexterm><primary><varname>touches</varname></primary></indexterm>
+				<listitem id="etouches">
+					<indexterm><primary><varname>etouches</varname></primary></indexterm>
 					<para>Toca alguna vez</para>
-					<para><varname>touches({geo,tgeompoint},{geo,tgeompoint}) → boolean</varname></para>
+					<para><varname>etouches({geo,tgeompoint},{geo,tgeompoint}) → boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT touches(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
+SELECT etouches(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
   tgeompoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-03)');
 -- true
 </programlisting>

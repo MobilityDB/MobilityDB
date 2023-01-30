@@ -144,12 +144,12 @@ CREATE FUNCTION round(tgeogpoint, int DEFAULT 0)
 
 CREATE FUNCTION trajectory(tgeompoint)
   RETURNS geometry
-  AS 'MODULE_PATHNAME', 'Tpoint_get_trajectory'
+  AS 'MODULE_PATHNAME', 'Tpoint_trajectory'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION trajectory(tgeogpoint)
   RETURNS geography
-  AS 'MODULE_PATHNAME', 'Tpoint_get_trajectory'
+  AS 'MODULE_PATHNAME', 'Tpoint_trajectory'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/

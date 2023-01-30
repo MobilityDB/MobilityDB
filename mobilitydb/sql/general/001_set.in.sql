@@ -29,7 +29,7 @@
 
 /*
  * set.sql
- * Functions for set of ordered values.
+ * Functions for sets of values.
  */
 
 /******************************************************************************
@@ -373,46 +373,46 @@ CREATE FUNCTION shiftTscale(tstzset, interval, interval)
  * Accessor functions
  ******************************************************************************/
 
-CREATE FUNCTION memorySize(intset)
+CREATE FUNCTION memSize(intset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Set_memory_size'
+  AS 'MODULE_PATHNAME', 'Set_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION memorySize(bigintset)
+CREATE FUNCTION memSize(bigintset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Set_memory_size'
+  AS 'MODULE_PATHNAME', 'Set_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION memorySize(floatset)
+CREATE FUNCTION memSize(floatset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Set_memory_size'
+  AS 'MODULE_PATHNAME', 'Set_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION memorySize(textset)
+CREATE FUNCTION memSize(textset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Set_memory_size'
+  AS 'MODULE_PATHNAME', 'Set_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION memorySize(tstzset)
+CREATE FUNCTION memSize(tstzset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Set_memory_size'
+  AS 'MODULE_PATHNAME', 'Set_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION storageSize(intset)
+CREATE FUNCTION storeSize(intset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Set_storage_size'
+  AS 'MODULE_PATHNAME', 'Set_store_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION storageSize(bigintset)
+CREATE FUNCTION storeSize(bigintset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Set_storage_size'
+  AS 'MODULE_PATHNAME', 'Set_store_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION storageSize(floatset)
+CREATE FUNCTION storeSize(floatset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Set_storage_size'
+  AS 'MODULE_PATHNAME', 'Set_store_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION storageSize(textset)
+CREATE FUNCTION storeSize(textset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Set_memory_size'
+  AS 'MODULE_PATHNAME', 'Set_store_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION storageSize(tstzset)
+CREATE FUNCTION storeSize(tstzset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Set_storage_size'
+  AS 'MODULE_PATHNAME', 'Set_store_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION numValues(intset)
@@ -459,19 +459,19 @@ CREATE FUNCTION startValue(tstzset)
 
 CREATE FUNCTION endValue(intset)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Set_start_value'
+  AS 'MODULE_PATHNAME', 'Set_end_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION endValue(bigintset)
   RETURNS bigint
-  AS 'MODULE_PATHNAME', 'Set_start_value'
+  AS 'MODULE_PATHNAME', 'Set_end_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION endValue(floatset)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Set_start_value'
+  AS 'MODULE_PATHNAME', 'Set_end_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION endValue(textset)
   RETURNS text
-  AS 'MODULE_PATHNAME', 'Set_start_value'
+  AS 'MODULE_PATHNAME', 'Set_end_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION endValue(tstzset)
   RETURNS timestamptz
@@ -628,10 +628,6 @@ CREATE AGGREGATE set_agg(text) (
 CREATE FUNCTION span_sel(internal, oid, internal, integer)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Span_sel'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION period_sel(internal, oid, internal, integer)
-  RETURNS float
-  AS 'MODULE_PATHNAME', 'Period_sel'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_joinsel(internal, oid, internal, smallint, internal)
   RETURNS float
@@ -879,7 +875,7 @@ CREATE OPERATOR < (
   LEFTARG = tstzset, RIGHTARG = tstzset,
   PROCEDURE = set_lt,
   COMMUTATOR = >, NEGATOR = >=,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE OPERATOR <= (
@@ -910,7 +906,7 @@ CREATE OPERATOR <= (
   LEFTARG = tstzset, RIGHTARG = tstzset,
   PROCEDURE = set_le,
   COMMUTATOR = >=, NEGATOR = >,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE OPERATOR >= (
@@ -941,7 +937,7 @@ CREATE OPERATOR >= (
   LEFTARG = tstzset, RIGHTARG = tstzset,
   PROCEDURE = set_ge,
   COMMUTATOR = <=, NEGATOR = <,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE OPERATOR > (
@@ -972,7 +968,7 @@ CREATE OPERATOR > (
   LEFTARG = tstzset, RIGHTARG = tstzset,
   PROCEDURE = set_gt,
   COMMUTATOR = <, NEGATOR = <=,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE OPERATOR CLASS intset_btree_ops

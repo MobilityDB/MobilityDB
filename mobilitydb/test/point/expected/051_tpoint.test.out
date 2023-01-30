@@ -1780,49 +1780,49 @@ SELECT tempSubtype(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-
  SequenceSet
 (1 row)
 
-SELECT memorySize(tgeompoint 'Point(1 1)@2000-01-01') > 0;
+SELECT memSize(tgeompoint 'Point(1 1)@2000-01-01') > 0;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT memorySize(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}') > 0;
+SELECT memSize(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}') > 0;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT memorySize(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]') > 0;
+SELECT memSize(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]') > 0;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT memorySize(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}') > 0;
+SELECT memSize(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}') > 0;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT memorySize(tgeogpoint 'Point(1.5 1.5)@2000-01-01') > 0;
+SELECT memSize(tgeogpoint 'Point(1.5 1.5)@2000-01-01') > 0;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT memorySize(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}') > 0;
+SELECT memSize(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}') > 0;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT memorySize(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]') > 0;
+SELECT memSize(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]') > 0;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT memorySize(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}') > 0;
+SELECT memSize(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}') > 0;
  ?column? 
 ----------
  t
@@ -1865,64 +1865,64 @@ SELECT ST_AsEWKT(getValue(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)
 ERROR:  The temporal value must be of subtype instant
 SELECT ST_AsEWKT(getValue(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'));
 ERROR:  The temporal value must be of subtype instant
-SELECT ST_AsEWKT(getValues(tgeompoint 'Point(1 1)@2000-01-01'));
- st_asewkt  
-------------
- POINT(1 1)
+SELECT asEWKT(getValues(tgeompoint 'Point(1 1)@2000-01-01'));
+     asewkt     
+----------------
+ {"POINT(1 1)"}
 (1 row)
 
-SELECT ST_AsEWKT(getValues(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'));
-        st_asewkt        
--------------------------
- MULTIPOINT(1 1,2 2,1 1)
+SELECT asEWKT(getValues(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'));
+            asewkt            
+------------------------------
+ {"POINT(1 1)", "POINT(2 2)"}
 (1 row)
 
-SELECT ST_AsEWKT(getValues(tgeompoint '{Point(1 1)@2000-01-01, Point(1 1)@2000-01-02}'));
-      st_asewkt      
----------------------
- MULTIPOINT(1 1,1 1)
+SELECT asEWKT(getValues(tgeompoint '{Point(1 1)@2000-01-01, Point(1 1)@2000-01-02}'));
+     asewkt     
+----------------
+ {"POINT(1 1)"}
 (1 row)
 
-SELECT ST_AsEWKT(getValues(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'));
-        st_asewkt        
--------------------------
- LINESTRING(1 1,2 2,1 1)
+SELECT asEWKT(getValues(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'));
+            asewkt            
+------------------------------
+ {"POINT(1 1)", "POINT(2 2)"}
 (1 row)
 
-SELECT ST_AsEWKT(getValues(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
-                       st_asewkt                        
---------------------------------------------------------
- GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))
+SELECT asEWKT(getValues(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
+                   asewkt                   
+--------------------------------------------
+ {"POINT(1 1)", "POINT(2 2)", "POINT(3 3)"}
 (1 row)
 
-SELECT ST_AsEWKT(getValues(tgeogpoint 'Point(1.5 1.5)@2000-01-01'));
-        st_asewkt         
+SELECT asEWKT(getValues(tgeogpoint 'Point(1.5 1.5)@2000-01-01'));
+            asewkt            
+------------------------------
+ {"SRID=4326;POINT(1.5 1.5)"}
+(1 row)
+
+SELECT asEWKT(getValues(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}'));
+                          asewkt                          
+----------------------------------------------------------
+ {"SRID=4326;POINT(1.5 1.5)", "SRID=4326;POINT(2.5 2.5)"}
+(1 row)
+
+SELECT asEWKT(getValues(tgeogpoint '{Point(1 1)@2000-01-01, Point(1 1)@2000-01-02}'));
+          asewkt          
 --------------------------
- SRID=4326;POINT(1.5 1.5)
+ {"SRID=4326;POINT(1 1)"}
 (1 row)
 
-SELECT ST_AsEWKT(getValues(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}'));
-                   st_asewkt                   
------------------------------------------------
- SRID=4326;MULTIPOINT(1.5 1.5,2.5 2.5,1.5 1.5)
+SELECT asEWKT(getValues(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]'));
+                          asewkt                          
+----------------------------------------------------------
+ {"SRID=4326;POINT(1.5 1.5)", "SRID=4326;POINT(2.5 2.5)"}
 (1 row)
 
-SELECT ST_AsEWKT(getValues(tgeogpoint '{Point(1 1)@2000-01-01, Point(1 1)@2000-01-02}'));
-           st_asewkt           
--------------------------------
- SRID=4326;MULTIPOINT(1 1,1 1)
-(1 row)
-
-SELECT ST_AsEWKT(getValues(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]'));
-                   st_asewkt                   
------------------------------------------------
- SRID=4326;LINESTRING(1.5 1.5,2.5 2.5,1.5 1.5)
-(1 row)
-
-SELECT ST_AsEWKT(getValues(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'));
-                                    st_asewkt                                     
-----------------------------------------------------------------------------------
- SRID=4326;GEOMETRYCOLLECTION(LINESTRING(1.5 1.5,2.5 2.5,1.5 1.5),POINT(3.5 3.5))
+SELECT asEWKT(getValues(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'));
+                                        asewkt                                        
+--------------------------------------------------------------------------------------
+ {"SRID=4326;POINT(1.5 1.5)", "SRID=4326;POINT(3.5 3.5)", "SRID=4326;POINT(2.5 2.5)"}
 (1 row)
 
 SELECT ST_AsEWKT(startValue(tgeompoint 'Point(1 1)@2000-01-01'));
@@ -4343,198 +4343,6 @@ SELECT asText(deleteTime(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)
                                                                               astext                                                                              
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {(POINT(2.5 2.5)@2000-01-02 00:00:00+00, POINT(1.5 1.5)@2000-01-03 00:00:00+00], [POINT(3.5 3.5)@2000-01-04 00:00:00+00, POINT(3.5 3.5)@2000-01-05 00:00:00+00]}
-(1 row)
-
-SELECT overlapsTime(tgeompoint 'Point(1 1)@2000-01-01', timestamptz '2000-01-01');
- overlapstime 
---------------
- t
-(1 row)
-
-SELECT overlapsTime(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', timestamptz '2000-01-01');
- overlapstime 
---------------
- t
-(1 row)
-
-SELECT overlapsTime(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', timestamptz '2000-01-01');
- overlapstime 
---------------
- t
-(1 row)
-
-SELECT overlapsTime(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', timestamptz '2000-01-01');
- overlapstime 
---------------
- t
-(1 row)
-
-SELECT overlapsTime(tgeogpoint 'Point(1.5 1.5)@2000-01-01', timestamptz '2000-01-01');
- overlapstime 
---------------
- t
-(1 row)
-
-SELECT overlapsTime(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', timestamptz '2000-01-01');
- overlapstime 
---------------
- t
-(1 row)
-
-SELECT overlapsTime(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', timestamptz '2000-01-01');
- overlapstime 
---------------
- t
-(1 row)
-
-SELECT overlapsTime(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', timestamptz '2000-01-01');
- overlapstime 
---------------
- t
-(1 row)
-
-SELECT overlapsTime(tgeompoint 'Point(1 1)@2000-01-01', tstzset '{2000-01-01}');
- overlapstime 
---------------
- t
-(1 row)
-
-SELECT overlapsTime(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tstzset '{2000-01-01}');
- overlapstime 
---------------
- t
-(1 row)
-
-SELECT overlapsTime(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tstzset '{2000-01-01}');
- overlapstime 
---------------
- t
-(1 row)
-
-SELECT overlapsTime(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tstzset '{2000-01-01}');
- overlapstime 
---------------
- t
-(1 row)
-
-SELECT overlapsTime(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tstzset '{2000-01-01}');
- overlapstime 
---------------
- t
-(1 row)
-
-SELECT overlapsTime(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tstzset '{2000-01-01}');
- overlapstime 
---------------
- t
-(1 row)
-
-SELECT overlapsTime(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tstzset '{2000-01-01}');
- overlapstime 
---------------
- t
-(1 row)
-
-SELECT overlapsTime(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tstzset '{2000-01-01}');
- overlapstime 
---------------
- t
-(1 row)
-
-SELECT overlapsTime(tgeompoint 'Point(1 1)@2000-01-01', tstzspan '[2000-01-01,2000-01-02]');
- overlapstime 
---------------
- t
-(1 row)
-
-SELECT overlapsTime(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tstzspan '[2000-01-01,2000-01-02]');
- overlapstime 
---------------
- t
-(1 row)
-
-SELECT overlapsTime(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tstzspan '[2000-01-01,2000-01-02]');
- overlapstime 
---------------
- t
-(1 row)
-
-SELECT overlapsTime(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tstzspan '[2000-01-01,2000-01-02]');
- overlapstime 
---------------
- t
-(1 row)
-
-SELECT overlapsTime(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tstzspan '[2000-01-01,2000-01-02]');
- overlapstime 
---------------
- t
-(1 row)
-
-SELECT overlapsTime(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tstzspan '[2000-01-01,2000-01-02]');
- overlapstime 
---------------
- t
-(1 row)
-
-SELECT overlapsTime(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tstzspan '[2000-01-01,2000-01-02]');
- overlapstime 
---------------
- t
-(1 row)
-
-SELECT overlapsTime(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tstzspan '[2000-01-01,2000-01-02]');
- overlapstime 
---------------
- t
-(1 row)
-
-SELECT overlapsTime(tgeompoint 'Point(1 1)@2000-01-01', tstzspanset '{[2000-01-01,2000-01-02]}');
- overlapstime 
---------------
- t
-(1 row)
-
-SELECT overlapsTime(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tstzspanset '{[2000-01-01,2000-01-02]}');
- overlapstime 
---------------
- t
-(1 row)
-
-SELECT overlapsTime(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tstzspanset '{[2000-01-01,2000-01-02]}');
- overlapstime 
---------------
- t
-(1 row)
-
-SELECT overlapsTime(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tstzspanset '{[2000-01-01,2000-01-02]}');
- overlapstime 
---------------
- t
-(1 row)
-
-SELECT overlapsTime(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tstzspanset '{[2000-01-01,2000-01-02]}');
- overlapstime 
---------------
- t
-(1 row)
-
-SELECT overlapsTime(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tstzspanset '{[2000-01-01,2000-01-02]}');
- overlapstime 
---------------
- t
-(1 row)
-
-SELECT overlapsTime(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tstzspanset '{[2000-01-01,2000-01-02]}');
- overlapstime 
---------------
- t
-(1 row)
-
-SELECT overlapsTime(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tstzspanset '{[2000-01-01,2000-01-02]}');
- overlapstime 
---------------
- t
 (1 row)
 
 SELECT tgeompoint 'Point(1 1)@2000-01-01' = tgeompoint 'Point(1 1)@2000-01-01';

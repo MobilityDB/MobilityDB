@@ -458,38 +458,38 @@ CREATE FUNCTION interpolation(ttext)
   AS 'MODULE_PATHNAME', 'Temporal_interpolation'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION memorySize(tbool)
+CREATE FUNCTION memSize(tbool)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Temporal_memory_size'
+  AS 'MODULE_PATHNAME', 'Temporal_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION memorySize(tint)
+CREATE FUNCTION memSize(tint)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Temporal_memory_size'
+  AS 'MODULE_PATHNAME', 'Temporal_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION memorySize(tfloat)
+CREATE FUNCTION memSize(tfloat)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Temporal_memory_size'
+  AS 'MODULE_PATHNAME', 'Temporal_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION memorySize(ttext)
+CREATE FUNCTION memSize(ttext)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Temporal_memory_size'
+  AS 'MODULE_PATHNAME', 'Temporal_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION storageSize(tbool)
+CREATE FUNCTION storeSize(tbool)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Temporal_storage_size'
+  AS 'MODULE_PATHNAME', 'Temporal_store_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION storageSize(tint)
+CREATE FUNCTION storeSize(tint)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Temporal_storage_size'
+  AS 'MODULE_PATHNAME', 'Temporal_store_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION storageSize(tfloat)
+CREATE FUNCTION storeSize(tfloat)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Temporal_storage_size'
+  AS 'MODULE_PATHNAME', 'Temporal_store_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION storageSize(ttext)
+CREATE FUNCTION storeSize(ttext)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Temporal_storage_size'
+  AS 'MODULE_PATHNAME', 'Temporal_store_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- values is a reserved word in SQL
@@ -528,7 +528,7 @@ CREATE FUNCTION getValues(ttext)
   AS 'MODULE_PATHNAME', 'Temporal_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION traversedValues(tfloat)
+CREATE FUNCTION trajectory(tfloat)
   RETURNS floatspanset
   AS 'MODULE_PATHNAME', 'Tfloat_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -2060,94 +2060,6 @@ CREATE FUNCTION deleteTime(tfloat, tstzspanset, connect boolean DEFAULT TRUE)
 CREATE FUNCTION deleteTime(ttext, tstzspanset, connect boolean DEFAULT TRUE)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Temporal_delete_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-/*****************************************************************************
- * Intersection Functions
- *****************************************************************************/
-
-CREATE FUNCTION overlapsTime(tbool, timestamptz)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_overlaps_timestamp'
-  SUPPORT temporal_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overlapsTime(tint, timestamptz)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_overlaps_timestamp'
-  SUPPORT tnumber_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overlapsTime(tfloat, timestamptz)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_overlaps_timestamp'
-  SUPPORT tnumber_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overlapsTime(ttext, timestamptz)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_overlaps_timestamp'
-  SUPPORT temporal_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION overlapsTime(tbool, tstzset)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_overlaps_timestampset'
-  SUPPORT temporal_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overlapsTime(tint, tstzset)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_overlaps_timestampset'
-  SUPPORT tnumber_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overlapsTime(tfloat, tstzset)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_overlaps_timestampset'
-  SUPPORT tnumber_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overlapsTime(ttext, tstzset)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_overlaps_timestampset'
-  SUPPORT temporal_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION overlapsTime(tbool, tstzspan)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_overlaps_period'
-  SUPPORT temporal_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overlapsTime(tint, tstzspan)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_overlaps_period'
-  SUPPORT tnumber_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overlapsTime(tfloat, tstzspan)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_overlaps_period'
-  SUPPORT tnumber_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overlapsTime(ttext, tstzspan)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_overlaps_period'
-  SUPPORT temporal_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION overlapsTime(tbool, tstzspanset)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_overlaps_periodset'
-  SUPPORT temporal_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overlapsTime(tint, tstzspanset)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_overlaps_periodset'
-  SUPPORT tnumber_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overlapsTime(tfloat, tstzspanset)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_overlaps_periodset'
-  SUPPORT tnumber_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overlapsTime(ttext, tstzspanset)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_overlaps_periodset'
-  SUPPORT temporal_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************

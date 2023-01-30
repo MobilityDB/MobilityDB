@@ -42,19 +42,19 @@
 
 /*****************************************************************************/
 
-extern Datum spatialrel_tnpoint_geo(const Temporal *temp, Datum geom,
+extern Datum espatialrel_tnpoint_geo(const Temporal *temp, Datum geom,
   Datum (*func)(Datum, Datum), bool invert);
-extern Datum spatialrel_tnpoint_npoint(const Temporal *temp, const Npoint *np,
+extern Datum espatialrel_tnpoint_npoint(const Temporal *temp, const Npoint *np,
   Datum (*func)(Datum, Datum), bool invert);
-extern int spatialrel_tnpoint_tnpoint(const Temporal *temp1,
+extern int espatialrel_tnpoint_tnpoint(const Temporal *temp1,
   const Temporal *temp2, Datum (*func)(Datum, Datum));
 
-extern Datum spatialrel3_tnpoint_geom(const Temporal *temp, Datum geom,
+extern Datum espatialrel3_tnpoint_geom(const Temporal *temp, Datum geom,
   Datum param, Datum (*func)(Datum, Datum, Datum), bool invert);
-extern Datum spatialrel3_tnpoint_npoint(const Temporal *temp, const Npoint *np,
+extern Datum espatialrel3_tnpoint_npoint(const Temporal *temp, const Npoint *np,
   Datum param, Datum (*func)(Datum, Datum, Datum), bool invert);
 
-extern int dwithin_tnpoint_tnpoint(const Temporal *temp1,
+extern int edwithin_tnpoint_tnpoint(const Temporal *temp1,
   const Temporal *temp2, double dist);
 
 /*****************************************************************************/

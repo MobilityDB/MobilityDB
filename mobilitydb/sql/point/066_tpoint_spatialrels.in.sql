@@ -35,61 +35,61 @@
  */
 
 /*****************************************************************************
- * contains
+ * econtains
  *****************************************************************************/
 
-CREATE FUNCTION contains(geometry, tgeompoint)
+CREATE FUNCTION econtains(geometry, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contains_geo_tpoint'
+  AS 'MODULE_PATHNAME', 'Econtains_geo_tpoint'
   SUPPORT tpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
- * disjoint
+ * edisjoint
  *****************************************************************************/
 
 -- TODO implement the index support in the tpoint_supportfn
 
-CREATE FUNCTION _disjoint(geometry, tgeompoint)
+CREATE FUNCTION _edisjoint(geometry, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Disjoint_geo_tpoint'
+  AS 'MODULE_PATHNAME', 'Edisjoint_geo_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION disjoint(geometry, tgeompoint)
+CREATE FUNCTION edisjoint(geometry, tgeompoint)
   RETURNS boolean
-  AS 'SELECT NOT(stbox($1) OPERATOR(@extschema@.&&) $2) OR @extschema@._disjoint($1,$2)'
+  AS 'SELECT NOT(stbox($1) OPERATOR(@extschema@.&&) $2) OR @extschema@._edisjoint($1,$2)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION _disjoint(tgeompoint, geometry)
+CREATE FUNCTION _edisjoint(tgeompoint, geometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Disjoint_tpoint_geo'
+  AS 'MODULE_PATHNAME', 'Edisjoint_tpoint_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION disjoint(tgeompoint, geometry)
+CREATE FUNCTION edisjoint(tgeompoint, geometry)
   RETURNS boolean
-  AS 'SELECT NOT($1 OPERATOR(@extschema@.&&) stbox($2)) OR @extschema@._disjoint($1,$2)'
+  AS 'SELECT NOT($1 OPERATOR(@extschema@.&&) stbox($2)) OR @extschema@._edisjoint($1,$2)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION _disjoint(tgeompoint, tgeompoint)
+CREATE FUNCTION _edisjoint(tgeompoint, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Disjoint_tpoint_tpoint'
+  AS 'MODULE_PATHNAME', 'Edisjoint_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION disjoint(tgeompoint, tgeompoint)
+CREATE FUNCTION edisjoint(tgeompoint, tgeompoint)
   RETURNS boolean
-  AS 'SELECT NOT($1 OPERATOR(@extschema@.&&) $2) OR @extschema@._disjoint($1,$2)'
+  AS 'SELECT NOT($1 OPERATOR(@extschema@.&&) $2) OR @extschema@._edisjoint($1,$2)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 
--- CREATE FUNCTION disjoint(geometry, tgeompoint)
+-- CREATE FUNCTION edisjoint(geometry, tgeompoint)
   -- RETURNS boolean
-  -- AS 'MODULE_PATHNAME', 'Disjoint_geo_tpoint'
+  -- AS 'MODULE_PATHNAME', 'Edisjoint_geo_tpoint'
   -- SUPPORT tpoint_supportfn
   -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
--- CREATE FUNCTION disjoint(tgeompoint, geometry)
+-- CREATE FUNCTION edisjoint(tgeompoint, geometry)
   -- RETURNS boolean
-  -- AS 'MODULE_PATHNAME', 'Disjoint_tpoint_geo'
+  -- AS 'MODULE_PATHNAME', 'Edisjoint_tpoint_geo'
   -- SUPPORT tpoint_supportfn
   -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
--- CREATE FUNCTION disjoint(tgeompoint, tgeompoint)
+-- CREATE FUNCTION edisjoint(tgeompoint, tgeompoint)
   -- RETURNS boolean
-  -- AS 'MODULE_PATHNAME', 'Disjoint_tpoint_tpoint'
+  -- AS 'MODULE_PATHNAME', 'Edisjoint_tpoint_tpoint'
   -- SUPPORT tpoint_supportfn
   -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -97,120 +97,120 @@ CREATE FUNCTION disjoint(tgeompoint, tgeompoint)
 
 -- TODO implement the index support in the tpoint_supportfn
 
-CREATE FUNCTION _disjoint(geography, tgeogpoint)
+CREATE FUNCTION _edisjoint(geography, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Disjoint_geo_tpoint'
+  AS 'MODULE_PATHNAME', 'Edisjoint_geo_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION disjoint(geography, tgeogpoint)
+CREATE FUNCTION edisjoint(geography, tgeogpoint)
   RETURNS boolean
-  AS 'SELECT NOT(stbox($1) OPERATOR(@extschema@.&&) $2) OR @extschema@._disjoint($1,$2)'
+  AS 'SELECT NOT(stbox($1) OPERATOR(@extschema@.&&) $2) OR @extschema@._edisjoint($1,$2)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION _disjoint(tgeogpoint, geography)
+CREATE FUNCTION _edisjoint(tgeogpoint, geography)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Disjoint_tpoint_geo'
+  AS 'MODULE_PATHNAME', 'Edisjoint_tpoint_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION disjoint(tgeogpoint, geography)
+CREATE FUNCTION edisjoint(tgeogpoint, geography)
   RETURNS boolean
-  AS 'SELECT NOT($1 OPERATOR(@extschema@.&&) stbox($2)) OR @extschema@._disjoint($1,$2)'
+  AS 'SELECT NOT($1 OPERATOR(@extschema@.&&) stbox($2)) OR @extschema@._edisjoint($1,$2)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION _disjoint(tgeogpoint, tgeogpoint)
+CREATE FUNCTION _edisjoint(tgeogpoint, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Disjoint_tpoint_tpoint'
+  AS 'MODULE_PATHNAME', 'Edisjoint_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION disjoint(tgeogpoint, tgeogpoint)
+CREATE FUNCTION edisjoint(tgeogpoint, tgeogpoint)
   RETURNS boolean
-  AS 'SELECT NOT($1 OPERATOR(@extschema@.&&) $2) OR @extschema@._disjoint($1,$2)'
+  AS 'SELECT NOT($1 OPERATOR(@extschema@.&&) $2) OR @extschema@._edisjoint($1,$2)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 
--- CREATE FUNCTION disjoint(geography, tgeogpoint)
+-- CREATE FUNCTION edisjoint(geography, tgeogpoint)
   -- RETURNS boolean
-  -- AS 'MODULE_PATHNAME', 'Disjoint_geo_tpoint'
+  -- AS 'MODULE_PATHNAME', 'Edisjoint_geo_tpoint'
   -- SUPPORT tpoint_supportfn
   -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
--- CREATE FUNCTION disjoint(tgeogpoint, geography)
+-- CREATE FUNCTION edisjoint(tgeogpoint, geography)
   -- RETURNS boolean
-  -- AS 'MODULE_PATHNAME', 'Disjoint_tpoint_geo'
+  -- AS 'MODULE_PATHNAME', 'Edisjoint_tpoint_geo'
   -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
--- CREATE FUNCTION disjoint(tgeogpoint, tgeogpoint)
+-- CREATE FUNCTION edisjoint(tgeogpoint, tgeogpoint)
   -- RETURNS boolean
-  -- AS 'MODULE_PATHNAME', 'Disjoint_tpoint_tpoint'
+  -- AS 'MODULE_PATHNAME', 'Edisjoint_tpoint_tpoint'
   -- SUPPORT tpoint_supportfn
   -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
- * intersects
+ * eintersects
  *****************************************************************************/
 
-CREATE FUNCTION intersects(geometry, tgeompoint)
+CREATE FUNCTION eintersects(geometry, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Intersects_geo_tpoint'
+  AS 'MODULE_PATHNAME', 'Eintersects_geo_tpoint'
   SUPPORT tpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intersects(tgeompoint, geometry)
+CREATE FUNCTION eintersects(tgeompoint, geometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Intersects_tpoint_geo'
+  AS 'MODULE_PATHNAME', 'Eintersects_tpoint_geo'
   SUPPORT tpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intersects(tgeompoint, tgeompoint)
+CREATE FUNCTION eintersects(tgeompoint, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Intersects_tpoint_tpoint'
+  AS 'MODULE_PATHNAME', 'Eintersects_tpoint_tpoint'
   SUPPORT tpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 
-CREATE FUNCTION intersects(geography, tgeogpoint)
+CREATE FUNCTION eintersects(geography, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Intersects_geo_tpoint'
+  AS 'MODULE_PATHNAME', 'Eintersects_geo_tpoint'
   SUPPORT tpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intersects(tgeogpoint, geography)
+CREATE FUNCTION eintersects(tgeogpoint, geography)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Intersects_tpoint_geo'
+  AS 'MODULE_PATHNAME', 'Eintersects_tpoint_geo'
   SUPPORT tpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intersects(tgeogpoint, tgeogpoint)
+CREATE FUNCTION eintersects(tgeogpoint, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Intersects_tpoint_tpoint'
+  AS 'MODULE_PATHNAME', 'Eintersects_tpoint_tpoint'
   SUPPORT tpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
- * touches
+ * etouches
  *****************************************************************************/
 
-CREATE FUNCTION touches(geometry, tgeompoint)
+CREATE FUNCTION etouches(geometry, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Touches_geo_tpoint'
+  AS 'MODULE_PATHNAME', 'Etouches_geo_tpoint'
   SUPPORT tpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION touches(tgeompoint, geometry)
+CREATE FUNCTION etouches(tgeompoint, geometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Touches_tpoint_geo'
+  AS 'MODULE_PATHNAME', 'Etouches_tpoint_geo'
   SUPPORT tpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
- * dwithin
+ * Edwithin
  *****************************************************************************/
 
 -- TODO implement the index support in the tpoint_supportfn
 
-CREATE FUNCTION dwithin(geometry, tgeompoint, dist float8)
+CREATE FUNCTION Edwithin(geometry, tgeompoint, dist float8)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Dwithin_geo_tpoint'
+  AS 'MODULE_PATHNAME', 'Edwithin_geo_tpoint'
   SUPPORT tpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION dwithin(tgeompoint, geometry, dist float8)
+CREATE FUNCTION Edwithin(tgeompoint, geometry, dist float8)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Dwithin_tpoint_geo'
+  AS 'MODULE_PATHNAME', 'Edwithin_tpoint_geo'
   SUPPORT tpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION dwithin(tgeompoint, tgeompoint, dist float8)
+CREATE FUNCTION Edwithin(tgeompoint, tgeompoint, dist float8)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Dwithin_tpoint_tpoint'
+  AS 'MODULE_PATHNAME', 'Edwithin_tpoint_tpoint'
   SUPPORT tpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -218,19 +218,19 @@ CREATE FUNCTION dwithin(tgeompoint, tgeompoint, dist float8)
 
 -- TODO implement the index support in the tpoint_supportfn
 
-CREATE FUNCTION dwithin(geography, tgeogpoint, dist float8)
+CREATE FUNCTION Edwithin(geography, tgeogpoint, dist float8)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Dwithin_geo_tpoint'
+  AS 'MODULE_PATHNAME', 'Edwithin_geo_tpoint'
   SUPPORT tpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION dwithin(tgeogpoint, geography, dist float8)
+CREATE FUNCTION Edwithin(tgeogpoint, geography, dist float8)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Dwithin_tpoint_geo'
+  AS 'MODULE_PATHNAME', 'Edwithin_tpoint_geo'
   SUPPORT tpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION dwithin(tgeogpoint, tgeogpoint, dist float8)
+CREATE FUNCTION Edwithin(tgeogpoint, tgeogpoint, dist float8)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Dwithin_tpoint_tpoint'
+  AS 'MODULE_PATHNAME', 'Edwithin_tpoint_tpoint'
   SUPPORT tpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

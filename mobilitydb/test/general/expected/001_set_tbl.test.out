@@ -137,10 +137,10 @@ SELECT COUNT(*) FROM tbl_tstzset WHERE tstzsetFromHexWKB(asHexWKB(t)) <> t;
      0
 (1 row)
 
-SELECT memorySize(set(array_agg(DISTINCT t ORDER BY t))) FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10;
- memorysize 
-------------
-        816
+SELECT memSize(set(array_agg(DISTINCT t ORDER BY t))) FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10;
+ memsize 
+---------
+     816
 (1 row)
 
 SELECT COUNT(*) FROM tbl_timestamptz WHERE t::tstzset IS NOT NULL;
@@ -179,13 +179,13 @@ SELECT MIN(startValue(shift(t, '5 min'))) FROM tbl_tstzset;
  2001-01-02 01:53:00+00
 (1 row)
 
-SELECT MAX(memorySize(t)) FROM tbl_tstzset;
+SELECT MAX(memSize(t)) FROM tbl_tstzset;
  max 
 -----
   96
 (1 row)
 
-SELECT MAX(storageSize(t)) FROM tbl_tstzset;
+SELECT MAX(storeSize(t)) FROM tbl_tstzset;
  max 
 -----
   93

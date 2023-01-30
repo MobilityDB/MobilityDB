@@ -116,7 +116,7 @@ SELECT COUNT(*) FROM tbl_tnpoint WHERE round(temp, 7) = round((temp::tgeompoint)
 
 SELECT DISTINCT tempSubtype(temp) FROM tbl_tnpoint ORDER BY 1;
 
-SELECT MAX(memorySize(temp)) FROM tbl_tnpoint;
+SELECT MAX(memSize(temp)) FROM tbl_tnpoint;
 
 /*
 SELECT stbox(temp) FROM tbl_tnpoint;
@@ -227,18 +227,6 @@ WHERE atTime(temp, ps) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspanset
 WHERE minusTime(temp, ps) IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz
-WHERE overlapsTime(temp, t) IS NOT NULL;
-
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset
-WHERE overlapsTime(temp, t) IS NOT NULL;
-
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspan
-WHERE overlapsTime(temp, p) IS NOT NULL;
-
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspanset
-WHERE overlapsTime(temp, ps) IS NOT NULL;
-
 -------------------------------------------------------------------------------
 -- Modification functions
 -------------------------------------------------------------------------------
@@ -280,14 +268,6 @@ CREATE INDEX tbl_tnpoint_rtree_idx ON tbl_tnpoint USING gist(temp);
 
 -- SELECT COUNT(*) FROM tbl_tnpoint WHERE temp %= 'NPoint(1, 0.1)';
 
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, timestamptz '2001-06-01');
-
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, tstzset '{2001-06-01, 2001-07-01}');
-
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, tstzspan '[2001-06-01, 2001-07-01]');
-
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, tstzspanset '{[2001-06-01, 2001-07-01]}');
-
 DROP INDEX tbl_tnpoint_rtree_idx;
 
 -------------------------------------------------------------------------------
@@ -299,14 +279,6 @@ CREATE INDEX tbl_tnpoint_quadtree_idx ON tbl_tnpoint USING spgist(temp);
 -- SELECT COUNT(*) FROM tbl_tnpoint WHERE temp ?= 'NPoint(1, 0.1)';
 
 -- SELECT COUNT(*) FROM tbl_tnpoint WHERE temp %= 'NPoint(1, 0.1)';
-
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, timestamptz '2001-06-01');
-
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, tstzset '{2001-06-01, 2001-07-01}');
-
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, tstzspan '[2001-06-01, 2001-07-01]');
-
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, tstzspanset '{[2001-06-01, 2001-07-01]}');
 
 DROP INDEX tbl_tnpoint_quadtree_idx;
 

@@ -121,14 +121,14 @@ CREATE FUNCTION round(npointset, integer DEFAULT 0)
  * Accessor functions
  ******************************************************************************/
 
-CREATE FUNCTION memorySize(npointset)
+CREATE FUNCTION memSize(npointset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Set_memory_size'
+  AS 'MODULE_PATHNAME', 'Set_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION storageSize(npointset)
+CREATE FUNCTION storeSize(npointset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Set_storage_size'
+  AS 'MODULE_PATHNAME', 'Set_store_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION numValues(npointset)
@@ -143,7 +143,7 @@ CREATE FUNCTION startValue(npointset)
 
 CREATE FUNCTION endValue(npointset)
   RETURNS npoint
-  AS 'MODULE_PATHNAME', 'Set_start_value'
+  AS 'MODULE_PATHNAME', 'Set_end_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION valueN(npointset, integer)

@@ -723,10 +723,10 @@ spatialset_to_stbox(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the size in bytes of a set.
- * @sqlfunc memorySize()
+ * @sqlfunc memSize()
  */
 int
-set_memory_size(const Set *s)
+set_mem_size(const Set *s)
 {
   return (int) VARSIZE(DatumGetPointer(s));
 }

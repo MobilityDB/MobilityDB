@@ -61,7 +61,7 @@
  * don't have statistics or cannot use them for some reason.
  */
 float8
-span_sel_default(CachedOp cachedOp __attribute__((unused)))
+span_sel_default(meosOper oper __attribute__((unused)))
 {
   // TODO take care of the operator
   return DEFAULT_TEMP_SEL;
@@ -72,97 +72,38 @@ span_sel_default(CachedOp cachedOp __attribute__((unused)))
  * don't have statistics or cannot use them for some reason.
  */
 float8
-span_joinsel_default(CachedOp cachedOp __attribute__((unused)))
+span_joinsel_default(meosOper oper __attribute__((unused)))
 {
   // TODO take care of the operator
   return DEFAULT_TEMP_JOINSEL;
 }
 
 /**
- * @brief Get the enum associated to the operator from different cases
+ * @brief Determine whether we can estimate selectivity for the operator
  */
 static bool
-value_cachedop(Oid operid, CachedOp *cachedOp)
+value_oper_sel(Oid operid __attribute__((unused)), meosType ltype,
+  meosType rtype)
 {
-  // TODO find a more efficient way to do this
-  for (int i = EQ_OP; i <= OVERAFTER_OP; i++)
-  {
-    if (operid == oper_oid((CachedOp) i, T_INT4, T_INTSET) ||
-        operid == oper_oid((CachedOp) i, T_INT4, T_INTSPAN) ||
-        operid == oper_oid((CachedOp) i, T_INT4, T_INTSPANSET) ||
-        operid == oper_oid((CachedOp) i, T_INT8, T_BIGINTSET) ||
-        operid == oper_oid((CachedOp) i, T_INT8, T_BIGINTSPAN) ||
-        operid == oper_oid((CachedOp) i, T_INT8, T_BIGINTSPANSET) ||
-        operid == oper_oid((CachedOp) i, T_FLOAT8, T_INTSPAN) ||
-        operid == oper_oid((CachedOp) i, T_FLOAT8, T_INTSPANSET) ||
-        operid == oper_oid((CachedOp) i, T_TBOX, T_INTSPAN) ||
-        operid == oper_oid((CachedOp) i, T_TBOX, T_INTSPANSET) ||
-        operid == oper_oid((CachedOp) i, T_INTSET, T_INT4) ||
-        operid == oper_oid((CachedOp) i, T_INTSPAN, T_INT4) ||
-        operid == oper_oid((CachedOp) i, T_INTSPANSET, T_INT4) ||
-        operid == oper_oid((CachedOp) i, T_BIGINTSET, T_INT8) ||
-        operid == oper_oid((CachedOp) i, T_BIGINTSPAN, T_INT8) ||
-        operid == oper_oid((CachedOp) i, T_BIGINTSPANSET, T_INT8) ||
-        operid == oper_oid((CachedOp) i, T_INTSPAN, T_FLOAT8) ||
-        operid == oper_oid((CachedOp) i, T_INTSPANSET, T_FLOAT8) ||
-        operid == oper_oid((CachedOp) i, T_INTSPAN, T_TBOX) ||
-        operid == oper_oid((CachedOp) i, T_INTSPANSET, T_TBOX) ||
-        operid == oper_oid((CachedOp) i, T_INTSPAN, T_INTSPAN) ||
-        operid == oper_oid((CachedOp) i, T_INTSPANSET, T_INTSPAN) ||
-        operid == oper_oid((CachedOp) i, T_INTSPAN, T_INTSPANSET) ||
-        operid == oper_oid((CachedOp) i, T_INTSPANSET, T_INTSPANSET) ||
-        operid == oper_oid((CachedOp) i, T_INT4, T_FLOATSPAN) ||
-        operid == oper_oid((CachedOp) i, T_INT4, T_FLOATSPANSET) ||
-        operid == oper_oid((CachedOp) i, T_FLOAT8, T_FLOATSPAN) ||
-        operid == oper_oid((CachedOp) i, T_FLOAT8, T_FLOATSPANSET) ||
-        operid == oper_oid((CachedOp) i, T_TBOX, T_FLOATSPAN) ||
-        operid == oper_oid((CachedOp) i, T_TBOX, T_FLOATSPANSET) ||
-        operid == oper_oid((CachedOp) i, T_FLOATSPAN, T_INT4) ||
-        operid == oper_oid((CachedOp) i, T_FLOATSPANSET, T_INT4) ||
-        operid == oper_oid((CachedOp) i, T_FLOATSPAN, T_FLOAT8) ||
-        operid == oper_oid((CachedOp) i, T_FLOATSPANSET, T_FLOAT8) ||
-        operid == oper_oid((CachedOp) i, T_FLOATSPAN, T_TBOX) ||
-        operid == oper_oid((CachedOp) i, T_FLOATSPANSET, T_TBOX) ||
-        operid == oper_oid((CachedOp) i, T_FLOATSPAN, T_FLOATSPAN) ||
-        operid == oper_oid((CachedOp) i, T_FLOATSPANSET, T_FLOATSPAN) ||
-        operid == oper_oid((CachedOp) i, T_FLOATSPAN, T_FLOATSPANSET) ||
-        operid == oper_oid((CachedOp) i, T_FLOATSPANSET, T_FLOATSPANSET))
-      {
-        *cachedOp = (CachedOp) i;
-        return true;
-      }
-  }
+  if ((numspan_basetype(ltype) || numset_type(ltype) || numspan_type(ltype) ||
+        spanset_type(ltype)) &&
+      (numspan_basetype(rtype) || numset_type(rtype) || numspan_type(rtype) ||
+        spanset_type(rtype)))
+    return true;
   return false;
 }
 
 /**
- * @brief Get the enum associated to the operator from different cases
+ * @brief Determine whether we can estimate selectivity for the operator
  */
 bool
-time_cachedop(Oid operid, CachedOp *cachedOp)
+time_oper_sel(meosOper oper __attribute__((unused)), meosType ltype, meosType rtype)
 {
-  for (int i = EQ_OP; i <= OVERAFTER_OP; i++)
-  {
-    if (operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TSTZSET) ||
-        operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TSTZSPAN) ||
-        operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TSTZSPANSET) ||
-        operid == oper_oid((CachedOp) i, T_TSTZSET, T_TIMESTAMPTZ) ||
-        operid == oper_oid((CachedOp) i, T_TSTZSET, T_TSTZSET) ||
-        operid == oper_oid((CachedOp) i, T_TSTZSET, T_TSTZSPAN) ||
-        operid == oper_oid((CachedOp) i, T_TSTZSET, T_TSTZSPANSET) ||
-        operid == oper_oid((CachedOp) i, T_TSTZSPAN, T_TIMESTAMPTZ) ||
-        operid == oper_oid((CachedOp) i, T_TSTZSPAN, T_TSTZSET) ||
-        operid == oper_oid((CachedOp) i, T_TSTZSPAN, T_TSTZSPAN) ||
-        operid == oper_oid((CachedOp) i, T_TSTZSPAN, T_TSTZSPANSET) ||
-        operid == oper_oid((CachedOp) i, T_TSTZSPANSET, T_TIMESTAMPTZ) ||
-        operid == oper_oid((CachedOp) i, T_TSTZSPANSET, T_TSTZSET) ||
-        operid == oper_oid((CachedOp) i, T_TSTZSPANSET, T_TSTZSPAN) ||
-        operid == oper_oid((CachedOp) i, T_TSTZSPANSET, T_TSTZSPANSET))
-      {
-        *cachedOp = (CachedOp) i;
-        return true;
-      }
-  }
+  if ((timespan_basetype(ltype) || timeset_type(ltype) || timespan_type(ltype) ||
+        timespanset_type(ltype)) &&
+      (span_basetype(rtype) || timeset_type(rtype) || timespan_type(ltype) ||
+        timespanset_type(rtype)))
+    return true;
   return false;
 }
 
@@ -668,7 +609,7 @@ span_sel_contains(SpanBound *const_lower, SpanBound *const_upper,
  */
 static double
 span_sel_hist1(AttStatsSlot *hslot, AttStatsSlot *lslot, const Span *constval,
-  CachedOp cachedOp)
+  meosOper oper)
 {
   SpanBound *hist_lower, *hist_upper;
   SpanBound const_lower, const_upper;
@@ -709,36 +650,36 @@ span_sel_hist1(AttStatsSlot *hslot, AttStatsSlot *lslot, const Span *constval,
    * The other operators (&&, @>, <@, and -|-) have specific procedures
    * above.
    */
-  if (cachedOp == LT_OP)
+  if (oper == LT_OP)
     selec = span_sel_scalar(&const_lower, hist_lower, nhist, false);
-  else if (cachedOp == LE_OP)
+  else if (oper == LE_OP)
     selec = span_sel_scalar(&const_lower, hist_lower, nhist, true);
-  else if (cachedOp == GT_OP)
+  else if (oper == GT_OP)
     selec = 1.0 - span_sel_scalar(&const_lower, hist_lower, nhist, false);
-  else if (cachedOp == GE_OP)
+  else if (oper == GE_OP)
     selec = 1.0 - span_sel_scalar(&const_lower, hist_lower, nhist, true);
-  else if (cachedOp == LEFT_OP || cachedOp == BEFORE_OP)
+  else if (oper == LEFT_OP || oper == BEFORE_OP)
     /* var <<# const when upper(var) < lower(const)*/
     selec = span_sel_scalar(&const_lower, hist_upper, nhist, false);
-  else if (cachedOp == OVERLEFT_OP || cachedOp == OVERBEFORE_OP)
+  else if (oper == OVERLEFT_OP || oper == OVERBEFORE_OP)
     /* var &<# const when upper(var) <= upper(const) */
     selec = span_sel_scalar(&const_upper, hist_upper, nhist, true);
-  else if (cachedOp == RIGHT_OP || cachedOp == AFTER_OP)
+  else if (oper == RIGHT_OP || oper == AFTER_OP)
     /* var #>> const when lower(var) > upper(const) */
     selec = 1.0 - span_sel_scalar(&const_upper, hist_lower, nhist, true);
-  else if (cachedOp == OVERRIGHT_OP || cachedOp == OVERAFTER_OP)
+  else if (oper == OVERRIGHT_OP || oper == OVERAFTER_OP)
     /* var #&> const when lower(var) >= lower(const)*/
     selec = 1.0 - span_sel_scalar(&const_lower, hist_lower, nhist, false);
-  else if (cachedOp == OVERLAPS_OP)
+  else if (oper == OVERLAPS_OP)
     selec = span_sel_overlaps(&const_lower, &const_upper, hist_lower,
       hist_upper, nhist);
-  else if (cachedOp == CONTAINS_OP)
+  else if (oper == CONTAINS_OP)
     selec = span_sel_contains(&const_lower, &const_upper, hist_lower,
       nhist, lslot->values, lslot->nvalues);
-  else if (cachedOp == CONTAINED_OP)
+  else if (oper == CONTAINED_OP)
     selec = span_sel_contained(&const_lower, &const_upper, hist_lower,
       nhist, lslot->values, lslot->nvalues);
-  else if (cachedOp == ADJACENT_OP)
+  else if (oper == ADJACENT_OP)
     // TODO Analyze whether a similar approach as PostgreSQL selectivity
     // estimation for equality can be used. There, they estimate 1/n if
     // the value is not in the MCV
@@ -760,15 +701,15 @@ span_sel_hist1(AttStatsSlot *hslot, AttStatsSlot *lslot, const Span *constval,
  * This estimate is for the portion of values that are not NULL.
  */
 double
-span_sel_hist(VariableStatData *vardata, const Span *constval,
-  CachedOp cachedOp, SpanPeriodSel spansel)
+span_sel_hist(VariableStatData *vardata, const Span *constval, meosOper oper,
+  bool value)
 {
   AttStatsSlot hslot, lslot;
   double selec;
 
   memset(&hslot, 0, sizeof(hslot));
 
-  int stats_kind = (spansel == SPANSEL) ?
+  int stats_kind = value ?
     STATISTIC_KIND_VALUE_BOUNDS_HISTOGRAM :
     STATISTIC_KIND_TIME_BOUNDS_HISTOGRAM;
   /* Try to get histogram of span bounds of vardata */
@@ -784,11 +725,11 @@ span_sel_hist(VariableStatData *vardata, const Span *constval,
   }
 
   /* @> and @< also need a histogram of span lengths */
-  if (cachedOp == CONTAINS_OP || cachedOp == CONTAINED_OP)
+  if (oper == CONTAINS_OP || oper == CONTAINED_OP)
   {
     memset(&lslot, 0, sizeof(lslot));
 
-    stats_kind = (spansel == SPANSEL) ?
+    stats_kind = value ?
       STATISTIC_KIND_VALUE_LENGTH_HISTOGRAM :
       STATISTIC_KIND_TIME_LENGTH_HISTOGRAM;
     if (!(HeapTupleIsValid(vardata->statsTuple) &&
@@ -807,10 +748,10 @@ span_sel_hist(VariableStatData *vardata, const Span *constval,
     }
   }
 
-  selec = span_sel_hist1(&hslot, &lslot, constval, cachedOp);
+  selec = span_sel_hist1(&hslot, &lslot, constval, oper);
 
   free_attstatsslot(&hslot);
-  if (cachedOp == CONTAINS_OP || cachedOp == CONTAINED_OP)
+  if (oper == CONTAINS_OP || oper == CONTAINED_OP)
     free_attstatsslot(&lslot);
 
   // elog(WARNING, "Selectivity: %lf", selec);
@@ -861,11 +802,10 @@ span_const_to_span(Node *other, Span *span)
 }
 
 /**
- * @brief Restriction selectivity for span and time operators
+ * @brief Restriction selectivity for span operators
  */
 float8
-span_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
-  SpanPeriodSel spansel)
+span_sel(PlannerInfo *root, Oid operid, List *args, int varRelid)
 {
   VariableStatData vardata;
   Node *other;
@@ -922,16 +862,19 @@ span_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
    * is not of the span type, it should be converted to a span.
    */
   span_const_to_span(other, &span);
-
-  /* Get enumeration value associated to the operator */
-  CachedOp cachedOp;
-  bool found = (spansel == SPANSEL) ?
-    value_cachedop(operid, &cachedOp) : time_cachedop(operid, &cachedOp);
-  if (! found)
+  /* Determine whether we can estimate selectivity for the operator */
+  meosType ltype, rtype;
+  meosOper oper = oid_oper(operid, &ltype, &rtype);
+  bool value = value_oper_sel(oper, ltype, rtype);
+  if (! value)
   {
-    /* Unknown operator */
-    ReleaseVariableStats(vardata);
-    return span_sel_default(operid);
+    bool time = time_oper_sel(oper, ltype, rtype);
+    if (! time)
+    {
+      /* Unknown operator */
+      ReleaseVariableStats(vardata);
+      return span_sel_default(operid);
+    }
   }
 
   /*
@@ -964,7 +907,7 @@ span_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
    * returning the default estimate, because this still takes into
    * account the fraction of NULL tuples, if we had statistics for them.
    */
-  float8 hist_selec = span_sel_hist(&vardata, &span, cachedOp, spansel);
+  float8 hist_selec = span_sel_hist(&vardata, &span, oper, value);
   if (hist_selec < 0.0)
     hist_selec = span_sel_default(operid);
 
@@ -978,17 +921,6 @@ span_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
   return selec;
 }
 
-Datum
-Span_sel_ext(FunctionCallInfo fcinfo, SpanPeriodSel spansel)
-{
-  PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
-  Oid operid = PG_GETARG_OID(1);
-  List *args = (List *) PG_GETARG_POINTER(2);
-  int varRelid = PG_GETARG_INT32(3);
-  float8 selec = span_sel(root, operid, args, varRelid, spansel);
-  PG_RETURN_FLOAT8((float8) selec);
-}
-
 PG_FUNCTION_INFO_V1(Span_sel);
 /**
  * @brief Restriction selectivity for span operators
@@ -996,17 +928,12 @@ PG_FUNCTION_INFO_V1(Span_sel);
 PGDLLEXPORT Datum
 Span_sel(PG_FUNCTION_ARGS)
 {
-  return Span_sel_ext(fcinfo, SPANSEL);
-}
-
-PG_FUNCTION_INFO_V1(Period_sel);
-/**
- * @brief Restriction selectivity for period operators
- */
-PGDLLEXPORT Datum
-Period_sel(PG_FUNCTION_ARGS)
-{
-  return Span_sel_ext(fcinfo, PERIODSEL);
+  PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
+  Oid operid = PG_GETARG_OID(1);
+  List *args = (List *) PG_GETARG_POINTER(2);
+  int varRelid = PG_GETARG_INT32(3);
+  float8 selec = span_sel(root, operid, args, varRelid);
+  PG_RETURN_FLOAT8((float8) selec);
 }
 
 /*****************************************************************************/
@@ -1046,14 +973,14 @@ _mobdb_span_sel(PG_FUNCTION_ARGS)
 
   /* Determine whether we target the value or the time dimension */
   bool value = (s->basetype != T_TIMESTAMPTZ);
-
-  /* Get enumeration value associated to the operator */
-  CachedOp cachedOp;
+  /* Determine whether we can estimate selectivity for the operator */
+  meosType ltype, rtype;
+  meosOper oper = oid_oper(operid, &ltype, &rtype);
   bool found = value ?
-    value_cachedop(operid, &cachedOp) : time_cachedop(operid, &cachedOp);
+    value_oper_sel(oper, ltype, rtype) : time_oper_sel(oper, ltype, rtype);
   if (! found)
     /* In case of unknown operator */
-    elog(ERROR, "Unknown span operator %d", operid);
+    elog(ERROR, "Unknown operator Oid %d", operid);
 
   /* Retrieve the stats object */
   HeapTuple stats_tuple = NULL;
@@ -1079,7 +1006,7 @@ _mobdb_span_sel(PG_FUNCTION_ARGS)
   }
 
   /* @> and @< also need a histogram of span lengths */
-  if (cachedOp == CONTAINS_OP || cachedOp == CONTAINED_OP)
+  if (oper == CONTAINS_OP || oper == CONTAINED_OP)
   {
     memset(&lslot, 0, sizeof(lslot));
 
@@ -1102,11 +1029,11 @@ _mobdb_span_sel(PG_FUNCTION_ARGS)
     }
   }
 
-  selec = span_sel_hist1(&hslot, &lslot, s, cachedOp);
+  selec = span_sel_hist1(&hslot, &lslot, s, oper);
 
   ReleaseSysCache(stats_tuple);
   free_attstatsslot(&hslot);
-  if (cachedOp == CONTAINS_OP || cachedOp == CONTAINED_OP)
+  if (oper == CONTAINS_OP || oper == CONTAINED_OP)
     free_attstatsslot(&lslot);
 
   PG_RETURN_FLOAT8(selec);
@@ -1237,7 +1164,7 @@ span_joinsel_contained(SpanBound *lower1, SpanBound *upper1,
  */
 static double
 span_joinsel_hist1(AttStatsSlot *hslot1, AttStatsSlot *hslot2,
-  AttStatsSlot *lslot, CachedOp cachedOp)
+  AttStatsSlot *lslot, meosOper oper)
 {
   int nhist1, nhist2;
   SpanBound *lower1, *upper1, *lower2, *upper2;
@@ -1285,47 +1212,47 @@ span_joinsel_hist1(AttStatsSlot *hslot1, AttStatsSlot *hslot2,
    * The other operators (&&, @>, <@, and -|-) have specific procedures
    * above.
    */
-  if (cachedOp == LT_OP)
+  if (oper == LT_OP)
     selec = span_joinsel_scalar(lower1, nhist1, lower2, nhist2, false);
-  else if (cachedOp == LE_OP)
+  else if (oper == LE_OP)
     selec = span_joinsel_scalar(lower1, nhist1, lower2, nhist2, true);
-  else if (cachedOp == GT_OP)
+  else if (oper == GT_OP)
     selec = 1.0 - span_joinsel_scalar(lower1, nhist1, lower2, nhist2, true);
-  else if (cachedOp == GE_OP)
+  else if (oper == GE_OP)
     selec = 1.0 - span_joinsel_scalar(lower1, nhist1, lower2, nhist2, false);
-  else if (cachedOp == LEFT_OP)
+  else if (oper == LEFT_OP)
     /* var1 << var2 when upper(var1) < lower(var2)*/
     selec = span_joinsel_scalar(upper1, nhist1, lower2, nhist2, false);
-  else if (cachedOp == OVERLEFT_OP)
+  else if (oper == OVERLEFT_OP)
     /* var1 &< var2 when upper(var1) <= upper(var2) */
     selec = span_joinsel_scalar(upper1, nhist1, upper2, nhist2, true);
-  else if (cachedOp == RIGHT_OP)
+  else if (oper == RIGHT_OP)
     /* var1 >> var2 when lower(var1) > upper(var2) */
     selec = 1.0 - span_joinsel_scalar(upper2, nhist2, lower1, nhist1, true);
-  else if (cachedOp == OVERRIGHT_OP)
+  else if (oper == OVERRIGHT_OP)
     /* var1 &> var2 when lower(var1) >= lower(var2) */
     selec = 1.0 - span_joinsel_scalar(lower2, nhist2, lower1, nhist1, false);
-  else if (cachedOp == BEFORE_OP)
+  else if (oper == BEFORE_OP)
     /* var1 <<# var2 when upper(var1) < lower(var2)*/
     selec = span_joinsel_scalar(upper1, nhist1, lower2, nhist2, false);
-  else if (cachedOp == OVERBEFORE_OP)
+  else if (oper == OVERBEFORE_OP)
     /* var1 &<# var2 when upper(var1) <= upper(var2) */
     selec = span_joinsel_scalar(upper1, nhist1, upper2, nhist2, true);
-  else if (cachedOp == AFTER_OP)
+  else if (oper == AFTER_OP)
     /* var1 #>> var2 when lower(var1) > upper(var2) */
     selec = 1.0 - span_joinsel_scalar(upper2, nhist2, lower1, nhist1, true);
-  else if (cachedOp == OVERAFTER_OP)
+  else if (oper == OVERAFTER_OP)
     /* var1 #&> var2 when lower(var1) >= lower(var2) */
     selec = 1.0 - span_joinsel_scalar(lower2, nhist2, lower1, nhist1, false);
-  else if (cachedOp == OVERLAPS_OP)
+  else if (oper == OVERLAPS_OP)
     selec = span_joinsel_overlaps(lower1, upper1, nhist1, lower2, upper2, nhist2);
-  else if (cachedOp == CONTAINS_OP)
+  else if (oper == CONTAINS_OP)
     selec = span_joinsel_contains(lower1, upper1, nhist1, lower2, upper2,
       nhist2, lslot->values, lslot->nvalues);
-  else if (cachedOp == CONTAINED_OP)
+  else if (oper == CONTAINED_OP)
     selec = span_joinsel_contained(lower1, upper1, nhist1, lower2, upper2,
       nhist2, lslot->values, lslot->nvalues);
-  else if (cachedOp == ADJACENT_OP)
+  else if (oper == ADJACENT_OP)
     // TO DO
     selec = span_joinsel_default(InvalidOid);
   else
@@ -1346,7 +1273,7 @@ span_joinsel_hist1(AttStatsSlot *hslot1, AttStatsSlot *hslot2,
  */
 static double
 span_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
-  CachedOp cachedOp)
+  meosOper oper)
 {
   /* There is only one lslot, see explanation below */
   AttStatsSlot hslot1, hslot2, lslot;
@@ -1423,7 +1350,7 @@ span_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
   }
 
   /* @> and @< also need a histogram of span lengths */
-  if (cachedOp == CONTAINS_OP || cachedOp == CONTAINED_OP)
+  if (oper == CONTAINS_OP || oper == CONTAINED_OP)
   {
     /* We only get histograms for vardata2 since for computing the join
      * selectivity we loop over values of the first histogram assuming
@@ -1448,10 +1375,10 @@ span_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
     }
   }
 
-  selec = span_joinsel_hist1(&hslot1, &hslot2, &lslot, cachedOp);
+  selec = span_joinsel_hist1(&hslot1, &hslot2, &lslot, oper);
 
   free_attstatsslot(&hslot1); free_attstatsslot(&hslot2);
-  if (cachedOp == CONTAINS_OP || cachedOp == CONTAINED_OP)
+  if (oper == CONTAINS_OP || oper == CONTAINED_OP)
     free_attstatsslot(&lslot);
 
   // elog(WARNING, "Join selectivity: %lf", selec);
@@ -1464,7 +1391,7 @@ span_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
  * @brief Estimate join selectivity for spans
  */
 float8
-span_joinsel(PlannerInfo *root, CachedOp cachedOp, List *args,
+span_joinsel(PlannerInfo *root, meosOper oper, List *args,
   JoinType jointype __attribute__((unused)), SpecialJoinInfo *sjinfo)
 {
   VariableStatData vardata1, vardata2;
@@ -1473,7 +1400,7 @@ span_joinsel(PlannerInfo *root, CachedOp cachedOp, List *args,
     &join_is_reversed);
 
   /* Estimate join selectivity */
-  float8 selec = span_joinsel_hist(&vardata1, &vardata2, cachedOp);
+  float8 selec = span_joinsel_hist(&vardata1, &vardata2, oper);
 
   ReleaseVariableStats(vardata1);
   ReleaseVariableStats(vardata2);
@@ -1516,14 +1443,19 @@ Span_joinsel(PG_FUNCTION_ARGS)
   /* TODO: handle t1 <op> expandX(t2) */
   if (!IsA(arg1, Var) || !IsA(arg2, Var))
     PG_RETURN_FLOAT8(span_joinsel_default(operid));
+  /* Determine whether we can estimate selectivity for the operator */
+  meosType ltype, rtype;
+  meosOper oper = oid_oper(operid, &ltype, &rtype);
+  bool value = value_oper_sel(oper, ltype, rtype);
+  if (! value)
+  {
+    bool time = time_oper_sel(oper, ltype, rtype);
+    if (! time)
+      /* Return default selectivity */
+      PG_RETURN_FLOAT8(span_joinsel_default(operid));
+  }
 
-  /* Get enumeration value associated to the operator */
-  CachedOp cachedOp;
-  if (! value_cachedop(operid, &cachedOp))
-    /* Unknown operator */
-    PG_RETURN_FLOAT8(span_joinsel_default(operid));
-
-  float8 selec = span_joinsel(root, cachedOp, args, jointype, sjinfo);
+  float8 selec = span_joinsel(root, oper, args, jointype, sjinfo);
 
   PG_RETURN_FLOAT8(selec);
 }
@@ -1562,8 +1494,8 @@ _mobdb_span_joinsel(PG_FUNCTION_ARGS)
   else
     elog(ERROR, "attribute name is null");
 
-  /* Get the attribute type */
-  meosType atttype1 = oid_type(get_atttype(table1_oid, att1_num));
+  // /* Get the attribute type */
+  // meosType atttype1 = oid_type(get_atttype(table1_oid, att1_num));
 
   char *table2_name = get_rel_name(table2_oid);
   if (table2_name == NULL)
@@ -1582,18 +1514,19 @@ _mobdb_span_joinsel(PG_FUNCTION_ARGS)
   else
     elog(ERROR, "attribute name is null");
 
-  /* Get the attribute type */
-  meosType atttype2 = oid_type(get_atttype(table1_oid, att1_num));
-
-  /* Determine whether we target the value or the time dimension */
-  bool value = (atttype1 != T_TSTZSPAN && atttype2 != T_TSTZSPAN);
-
-  CachedOp cachedOp;
-  bool found = value ?
-    value_cachedop(operid, &cachedOp) : time_cachedop(operid, &cachedOp);
-  if (! found)
-    /* In case of unknown operator */
-    elog(ERROR, "Unknown span operator %d", operid);
+  // /* Get the attribute type */
+  // meosType atttype2 = oid_type(get_atttype(table1_oid, att1_num));
+  /* Determine whether we can estimate selectivity for the operator */
+  meosType ltype, rtype;
+  meosOper oper = oid_oper(operid, &ltype, &rtype);
+  bool value = value_oper_sel(oper, ltype, rtype);
+  if (! value)
+  {
+    bool time = time_oper_sel(oper, ltype, rtype);
+    if (! time)
+      /* In case of unknown operator */
+      elog(ERROR, "Unknown span operator %d", operid);
+  }
 
   /* Retrieve the stats objects */
   HeapTuple stats1_tuple = NULL, stats2_tuple = NULL;
@@ -1636,7 +1569,7 @@ _mobdb_span_joinsel(PG_FUNCTION_ARGS)
   }
 
   /* @> and @< also need a histogram of span lengths */
-  if (cachedOp == CONTAINS_OP || cachedOp == CONTAINED_OP)
+  if (oper == CONTAINS_OP || oper == CONTAINED_OP)
   {
     /* We only get histograms for the second table since for computing the
      * join selectivity we loop over values of the first histogram assuming
@@ -1663,11 +1596,11 @@ _mobdb_span_joinsel(PG_FUNCTION_ARGS)
   }
 
   /* Compute selectivity */
-  selec = span_joinsel_hist1(&hslot1, &hslot2, &lslot, cachedOp);
+  selec = span_joinsel_hist1(&hslot1, &hslot2, &lslot, oper);
 
   ReleaseSysCache(stats1_tuple); ReleaseSysCache(stats2_tuple);
   free_attstatsslot(&hslot1); free_attstatsslot(&hslot2);
-  if (cachedOp == CONTAINS_OP || cachedOp == CONTAINED_OP)
+  if (oper == CONTAINS_OP || oper == CONTAINED_OP)
     free_attstatsslot(&lslot);
 
   PG_RETURN_FLOAT8(selec);

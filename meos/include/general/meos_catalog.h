@@ -100,13 +100,64 @@ typedef enum
 } meosType;
 
 /**
+ * Enumeration that defines the classes of Boolean operators used in
+ * MobilityDB.
+ */
+typedef enum
+{
+  UNKNOWN_OP      = 0,
+  EQ_OP           = 1,  /**< Equality `=` operator */
+  NE_OP           = 2,  /**< Distinct `!=` operator */
+  LT_OP           = 3,  /**< Less than `<` operator */
+  LE_OP           = 4,  /**< Less than or equal to `<=` operator */
+  GT_OP           = 5,  /**< Greater than `<` operator */
+  GE_OP           = 6,  /**< Greater than or equal to `>=` operator */
+  ADJACENT_OP     = 7,  /**< Adjacent `-|-` operator */
+  UNION_OP        = 8,  /**< Union `+` operator */
+  MINUS_OP        = 9,  /**< Minus `-` operator */
+  INTERSECT_OP    = 10, /**< Intersection `*` operator */
+  OVERLAPS_OP     = 11, /**< Overlaps `&&` operator */
+  CONTAINS_OP     = 12, /**< Contains `@>` operator */
+  CONTAINED_OP    = 13, /**< Contained `<@` operator */
+  SAME_OP         = 14, /**< Same `~=` operator */
+  LEFT_OP         = 15, /**< Left `<<` operator */
+  OVERLEFT_OP     = 16, /**< Overleft `&<` operator */
+  RIGHT_OP        = 17, /**< Right `>>` operator */
+  OVERRIGHT_OP    = 18, /**< Overright `&>` operator */
+  BELOW_OP        = 19, /**< Below `<<|` operator */
+  OVERBELOW_OP    = 20, /**< Overbelow `&<|` operator */
+  ABOVE_OP        = 21, /**< Above `|>>` operator */
+  OVERABOVE_OP    = 22, /**< Overbove `|&>` operator */
+  FRONT_OP        = 23, /**< Front `<</` operator */
+  OVERFRONT_OP    = 24, /**< Overfront `&</` operator */
+  BACK_OP         = 25, /**< Back `/>>` operator */
+  OVERBACK_OP     = 26, /**< Overback `/&>` operator */
+  BEFORE_OP       = 27, /**< Before `<<#` operator */
+  OVERBEFORE_OP   = 28, /**< Overbefore `&<#` operator */
+  AFTER_OP        = 29, /**< After `#>>` operator */
+  OVERAFTER_OP    = 30, /**< Overafter `#&>` operator */
+  EVEREQ_OP       = 31, /**< Evereq `?=` operator */
+  EVERNE_OP       = 32, /**< Everne `?<>` operator */
+  EVERLT_OP       = 33, /**< Everlt `?<` operator */
+  EVERLE_OP       = 34, /**< Everle `?<=` operator */
+  EVERGT_OP       = 35, /**< Evergt `?>` operator */
+  EVERGE_OP       = 36, /**< Everge `?>=` operator */
+  ALWAYSEQ_OP     = 37, /**< Alwayseq `%=` operator */
+  ALWAYSNE_OP     = 38, /**< Alwaysne `%<>` operator */
+  ALWAYSLT_OP     = 39, /**< Alwayslt `%<` operator */
+  ALWAYSLE_OP     = 40, /**< Alwaysle `%<=` operator */
+  ALWAYSGT_OP     = 41, /**< Alwaysgt `%>` operator */
+  ALWAYSGE_OP     = 42, /**< Alwaysge `%>=` operator */
+} meosOper;
+
+/**
  * Structure to represent the temporal type cache array.
  */
 typedef struct
 {
   meosType temptype;    /**< Enum value of the temporal type */
   meosType basetype;    /**< Enum value of the base type */
-} temptype_cache_struct;
+} temptype_catalog_struct;
 
 /**
  * Structure to represent the span type cache array.
@@ -115,7 +166,7 @@ typedef struct
 {
   meosType settype;     /**< Enum value of the set type */
   meosType basetype;    /**< Enum value of the base type */
-} settype_cache_struct;
+} settype_catalog_struct;
 
 /**
  * Structure to represent the span type cache array.
@@ -124,7 +175,7 @@ typedef struct
 {
   meosType spantype;    /**< Enum value of the span type */
   meosType basetype;    /**< Enum value of the base type */
-} spantype_cache_struct;
+} spantype_catalog_struct;
 
 /**
  * Structure to represent the spanset type cache array.
@@ -133,11 +184,11 @@ typedef struct
 {
   meosType spansettype;    /**< Enum value of the span type */
   meosType spantype;       /**< Enum value of the base type */
-} spansettype_cache_struct;
+} spansettype_catalog_struct;
 
 /*****************************************************************************/
 
-/* Cache functions */
+/* Type conversion functions */
 
 extern meosType temptype_basetype(meosType temptype);
 extern meosType settype_basetype(meosType settype);
@@ -163,29 +214,27 @@ extern void ensure_set_basetype(meosType basetype);
 
 extern bool set_type(meosType type);
 extern void ensure_set_type(meosType type);
-extern bool numset_type(meosType settype);
+extern bool numset_type(meosType type);
+extern bool timeset_type(meosType type);
 extern bool set_span_type(meosType type);
 extern bool alphanumset_type(meosType settype);
 extern bool geoset_type(meosType type);
 extern bool spatialset_type(meosType type);
 
+extern bool span_basetype(meosType type);
+extern void ensure_span_basetype(meosType type);
+extern bool span_canon_basetype(meosType type);
 extern bool span_type(meosType type);
 extern void ensure_span_type(meosType type);
+extern bool numspan_basetype(meosType type);
 extern bool numspan_type(meosType type);
-extern void ensure_numspan_type(meosType type);
-extern bool span_canon_basetype(meosType type);
-extern bool span_basetype(meosType basetype);
-extern void ensure_span_basetype(meosType basetype);
-extern bool numspan_basetype(meosType basetype);
-extern void ensure_numspan_basetype(meosType basetype);
-extern bool spanset_type(meosType spansettype);
-extern void ensure_spanset_type(meosType spansettype);
-extern bool numspanset_type(meosType spansettype);
-extern void ensure_numspanset_type(meosType spansettype);
-extern bool spanset_basetype(meosType basetype);
-extern void ensure_spanset_basetype(meosType basetype);
-extern bool numspanset_basetype(meosType basetype);
-extern void ensure_numspanset_basetype(meosType basetype);
+extern bool timespan_basetype(meosType type);
+extern bool timespan_type(meosType type);
+
+extern bool spanset_type(meosType type);
+extern bool numspanset_type(meosType type);
+extern bool timespanset_type(meosType type);
+
 extern bool temporal_type(meosType temptype);
 extern void ensure_temporal_type(meosType temptype);
 extern void ensure_temporal_basetype(meosType basetype);

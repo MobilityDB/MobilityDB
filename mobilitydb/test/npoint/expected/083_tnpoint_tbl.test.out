@@ -183,7 +183,7 @@ SELECT DISTINCT tempSubtype(temp) FROM tbl_tnpoint ORDER BY 1;
  SequenceSet
 (3 rows)
 
-SELECT MAX(memorySize(temp)) FROM tbl_tnpoint;
+SELECT MAX(memSize(temp)) FROM tbl_tnpoint;
  max  
 ------
  3240
@@ -465,34 +465,6 @@ WHERE minusTime(temp, ps) IS NOT NULL;
   9900
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz
-WHERE overlapsTime(temp, t) IS NOT NULL;
- count 
--------
-  9900
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzset
-WHERE overlapsTime(temp, t) IS NOT NULL;
- count 
--------
-  9900
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspan
-WHERE overlapsTime(temp, p) IS NOT NULL;
- count 
--------
-  9900
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspanset
-WHERE overlapsTime(temp, ps) IS NOT NULL;
- count 
--------
-  9900
-(1 row)
-
 SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2
 WHERE t1.temp = t2.temp;
  count 
@@ -543,57 +515,9 @@ SELECT MAX(temporal_hash(temp)) FROM tbl_tnpoint;
 
 CREATE INDEX tbl_tnpoint_rtree_idx ON tbl_tnpoint USING gist(temp);
 CREATE INDEX
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, timestamptz '2001-06-01');
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, tstzset '{2001-06-01, 2001-07-01}');
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, tstzspan '[2001-06-01, 2001-07-01]');
- count 
--------
-    11
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, tstzspanset '{[2001-06-01, 2001-07-01]}');
- count 
--------
-    11
-(1 row)
-
 DROP INDEX tbl_tnpoint_rtree_idx;
 DROP INDEX
 CREATE INDEX tbl_tnpoint_quadtree_idx ON tbl_tnpoint USING spgist(temp);
 CREATE INDEX
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, timestamptz '2001-06-01');
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, tstzset '{2001-06-01, 2001-07-01}');
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, tstzspan '[2001-06-01, 2001-07-01]');
- count 
--------
-    11
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tnpoint WHERE overlapsTime(temp, tstzspanset '{[2001-06-01, 2001-07-01]}');
- count 
--------
-    11
-(1 row)
-
 DROP INDEX tbl_tnpoint_quadtree_idx;
 DROP INDEX

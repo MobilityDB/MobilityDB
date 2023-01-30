@@ -772,24 +772,24 @@ SELECT interpolation(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
 SELECT interpolation(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
 SELECT interpolation(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
 
-SELECT memorySize(tbool 't@2000-01-01');
-SELECT memorySize(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
-SELECT memorySize(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
-SELECT memorySize(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
-SELECT memorySize(tint '1@2000-01-01');
-SELECT memorySize(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
-SELECT memorySize(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
-SELECT memorySize(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
-SELECT memorySize(tfloat '1.5@2000-01-01');
-SELECT memorySize(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
-SELECT memorySize(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
-SELECT memorySize(tfloat 'Interp=Stepwise;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
-SELECT memorySize(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
-SELECT memorySize(tfloat 'Interp=Stepwise;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
-SELECT memorySize(ttext 'AAA@2000-01-01');
-SELECT memorySize(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
-SELECT memorySize(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
-SELECT memorySize(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
+SELECT memSize(tbool 't@2000-01-01');
+SELECT memSize(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
+SELECT memSize(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
+SELECT memSize(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
+SELECT memSize(tint '1@2000-01-01');
+SELECT memSize(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
+SELECT memSize(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
+SELECT memSize(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
+SELECT memSize(tfloat '1.5@2000-01-01');
+SELECT memSize(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
+SELECT memSize(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
+SELECT memSize(tfloat 'Interp=Stepwise;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
+SELECT memSize(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
+SELECT memSize(tfloat 'Interp=Stepwise;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
+SELECT memSize(ttext 'AAA@2000-01-01');
+SELECT memSize(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
+SELECT memSize(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
+SELECT memSize(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
 
 /*
 SELECT tbox(tint '1@2000-01-01');
@@ -833,13 +833,13 @@ SELECT getValues(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
 SELECT getValues(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
 SELECT getValues(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
 
-SELECT traversedValues(tfloat '1.5@2000-01-01');
-SELECT traversedValues(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
-SELECT traversedValues(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
-SELECT traversedValues(tfloat 'Interp=Stepwise;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
-SELECT traversedValues(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
-SELECT traversedValues(tfloat 'Interp=Stepwise;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
-SELECT traversedValues(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 2@2000-01-04)');
+SELECT trajectory(tfloat '1.5@2000-01-01');
+SELECT trajectory(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
+SELECT trajectory(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
+SELECT trajectory(tfloat 'Interp=Stepwise;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
+SELECT trajectory(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
+SELECT trajectory(tfloat 'Interp=Stepwise;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
+SELECT trajectory(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 2@2000-01-04)');
 
 SELECT startValue(tbool 't@2000-01-01');
 SELECT startValue(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
@@ -2358,80 +2358,6 @@ SELECT deleteTime(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', tstz
 SELECT deleteTime(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', tstzspanset '{[2000-01-01,2000-01-02]}');
 SELECT deleteTime(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]}', tstzspanset '{[2000-01-01,2000-01-02]}');
 SELECT deleteTime(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', tstzspanset '{[2000-01-01,2000-01-02]}');
-
--------------------------------------------------------------------------------
--- Intersects functions
--------------------------------------------------------------------------------
-
-SELECT overlapsTime(tbool 't@2000-01-01', timestamptz '2000-01-01');
-SELECT overlapsTime(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', timestamptz '2000-01-01');
-SELECT overlapsTime(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', timestamptz '2000-01-01');
-SELECT overlapsTime(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', timestamptz '2000-01-01');
-SELECT overlapsTime(tint '1@2000-01-01', timestamptz '2000-01-01');
-SELECT overlapsTime(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', timestamptz '2000-01-01');
-SELECT overlapsTime(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', timestamptz '2000-01-01');
-SELECT overlapsTime(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', timestamptz '2000-01-01');
-SELECT overlapsTime(tfloat '1.5@2000-01-01', timestamptz '2000-01-01');
-SELECT overlapsTime(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', timestamptz '2000-01-01');
-SELECT overlapsTime(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', timestamptz '2000-01-01');
-SELECT overlapsTime(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', timestamptz '2000-01-01');
-SELECT overlapsTime(ttext 'AAA@2000-01-01', timestamptz '2000-01-01');
-SELECT overlapsTime(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', timestamptz '2000-01-01');
-SELECT overlapsTime(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', timestamptz '2000-01-01');
-SELECT overlapsTime(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', timestamptz '2000-01-01');
-
-SELECT overlapsTime(tbool 't@2000-01-01', tstzset '{2000-01-01}');
-SELECT overlapsTime(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', tstzset '{2000-01-01}');
-SELECT overlapsTime(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', tstzset '{2000-01-01}');
-SELECT overlapsTime(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', tstzset '{2000-01-01}');
-SELECT overlapsTime(tint '1@2000-01-01', tstzset '{2000-01-01}');
-SELECT overlapsTime(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', tstzset '{2000-01-01}');
-SELECT overlapsTime(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', tstzset '{2000-01-01}');
-SELECT overlapsTime(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', tstzset '{2000-01-01}');
-SELECT overlapsTime(tfloat '1.5@2000-01-01', tstzset '{2000-01-01}');
-SELECT overlapsTime(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', tstzset '{2000-01-01}');
-SELECT overlapsTime(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', tstzset '{2000-01-01}');
-SELECT overlapsTime(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', tstzset '{2000-01-01}');
-SELECT overlapsTime(ttext 'AAA@2000-01-01', tstzset '{2000-01-01}');
-SELECT overlapsTime(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', tstzset '{2000-01-01}');
-SELECT overlapsTime(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', tstzset '{2000-01-01}');
-SELECT overlapsTime(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', tstzset '{2000-01-01}');
-
-SELECT overlapsTime(tbool 't@2000-01-01', tstzspan '[2000-01-01,2000-01-02]');
-SELECT overlapsTime(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', tstzspan '[2000-01-01,2000-01-02]');
-SELECT overlapsTime(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', tstzspan '[2000-01-01,2000-01-02]');
-SELECT overlapsTime(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', tstzspan '[2000-01-01,2000-01-02]');
-SELECT overlapsTime(tint '1@2000-01-01', tstzspan '[2000-01-01,2000-01-02]');
-SELECT overlapsTime(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', tstzspan '[2000-01-01,2000-01-02]');
-SELECT overlapsTime(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', tstzspan '[2000-01-01,2000-01-02]');
-SELECT overlapsTime(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', tstzspan '[2000-01-01,2000-01-02]');
-SELECT overlapsTime(tfloat '1.5@2000-01-01', tstzspan '[2000-01-01,2000-01-02]');
-SELECT overlapsTime(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', tstzspan '[2000-01-01,2000-01-02]');
-SELECT overlapsTime(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', tstzspan '[2000-01-01,2000-01-02]');
-SELECT overlapsTime(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', tstzspan '[2000-01-01,2000-01-02]');
-SELECT overlapsTime(ttext 'AAA@2000-01-01', tstzspan '[2000-01-01,2000-01-02]');
-SELECT overlapsTime(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', tstzspan '[2000-01-01,2000-01-02]');
-SELECT overlapsTime(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', tstzspan '[2000-01-01,2000-01-02]');
-SELECT overlapsTime(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', tstzspan '[2000-01-01,2000-01-02]');
-
-SELECT overlapsTime(tfloat '{[1@2000-01-02, 1@2000-01-03]}', tstzspan '[2000-01-01, 2000-01-04]');
-
-SELECT overlapsTime(tbool 't@2000-01-01', tstzspanset '{[2000-01-01,2000-01-02]}');
-SELECT overlapsTime(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', tstzspanset '{[2000-01-01,2000-01-02]}');
-SELECT overlapsTime(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', tstzspanset '{[2000-01-01,2000-01-02]}');
-SELECT overlapsTime(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', tstzspanset '{[2000-01-01,2000-01-02]}');
-SELECT overlapsTime(tint '1@2000-01-01', tstzspanset '{[2000-01-01,2000-01-02]}');
-SELECT overlapsTime(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', tstzspanset '{[2000-01-01,2000-01-02]}');
-SELECT overlapsTime(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', tstzspanset '{[2000-01-01,2000-01-02]}');
-SELECT overlapsTime(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', tstzspanset '{[2000-01-01,2000-01-02]}');
-SELECT overlapsTime(tfloat '1.5@2000-01-01', tstzspanset '{[2000-01-01,2000-01-02]}');
-SELECT overlapsTime(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', tstzspanset '{[2000-01-01,2000-01-02]}');
-SELECT overlapsTime(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', tstzspanset '{[2000-01-01,2000-01-02]}');
-SELECT overlapsTime(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', tstzspanset '{[2000-01-01,2000-01-02]}');
-SELECT overlapsTime(ttext 'AAA@2000-01-01', tstzspanset '{[2000-01-01,2000-01-02]}');
-SELECT overlapsTime(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', tstzspanset '{[2000-01-01,2000-01-02]}');
-SELECT overlapsTime(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', tstzspanset '{[2000-01-01,2000-01-02]}');
-SELECT overlapsTime(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', tstzspanset '{[2000-01-01,2000-01-02]}');
 
 -------------------------------------------------------------------------------
 --  Value Aggregate Functions

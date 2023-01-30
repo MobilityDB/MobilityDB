@@ -154,10 +154,10 @@ SELECT DISTINCT tempSubtype(temp) FROM tbl_tgeompoint3D ORDER BY 1;
 SELECT DISTINCT tempSubtype(temp) FROM tbl_tgeogpoint3D ORDER BY 1;
 
 -- The size of geometries increased a few bytes in PostGIS 3
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE memorySize(temp) > 0;
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE memorySize(temp) > 0;
-SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE memorySize(temp) > 0;
-SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE memorySize(temp) > 0;
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE memSize(temp) > 0;
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE memSize(temp) > 0;
+SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE memSize(temp) > 0;
+SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE memSize(temp) > 0;
 
 SELECT MAX(char_length(round(stbox(temp), 13)::text)) FROM tbl_tgeompoint;
 SELECT MAX(char_length(round(stbox(temp), 13)::text)) FROM tbl_tgeogpoint;
@@ -170,10 +170,10 @@ SELECT MAX(st_memSize(getValue(inst)::geometry)) FROM tbl_tgeogpoint_inst;
 SELECT MAX(st_memSize(getValue(inst))) FROM tbl_tgeompoint3D_inst;
 SELECT MAX(st_memSize(getValue(inst)::geometry)) FROM tbl_tgeogpoint3D_inst;
 
-SELECT MAX(st_memSize(getValues(temp))) FROM tbl_tgeompoint;
-SELECT MAX(st_memSize(getValues(temp)::geometry)) FROM tbl_tgeogpoint;
-SELECT MAX(st_memSize(getValues(temp))) FROM tbl_tgeompoint3D;
-SELECT MAX(st_memSize(getValues(temp)::geometry)) FROM tbl_tgeogpoint3D;
+SELECT MAX(memSize(getValues(temp))) FROM tbl_tgeompoint;
+SELECT MAX(memSize(getValues(temp))) FROM tbl_tgeogpoint;
+SELECT MAX(memSize(getValues(temp))) FROM tbl_tgeompoint3D;
+SELECT MAX(memSize(getValues(temp))) FROM tbl_tgeogpoint3D;
 
 SELECT MAX(st_memSize(startValue(temp))) FROM tbl_tgeompoint;
 SELECT MAX(st_memSize(startValue(temp)::geometry)) FROM tbl_tgeogpoint;
@@ -402,44 +402,8 @@ SELECT SUM(numInstants(update(t1.temp, t2.temp))) FROM tbl_tgeompoint t1, tbl_tg
 SELECT SUM(numInstants(update(t1.temp, t2.temp))) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE t1.k < t2.k;
 
 ------------------------------------------------------------------------------
--- Intersects functions
+-- Local aggregate functions
 ------------------------------------------------------------------------------
-
-SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz
-WHERE overlapsTime(temp, t) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz
-WHERE overlapsTime(temp, t) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_timestamptz
-WHERE overlapsTime(temp, t) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_timestamptz
-WHERE overlapsTime(temp, t) IS NOT NULL;
-
-SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzset
-WHERE overlapsTime(temp, t) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzset
-WHERE overlapsTime(temp, t) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzset
-WHERE overlapsTime(temp, t) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzset
-WHERE overlapsTime(temp, t) IS NOT NULL;
-
-SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspan
-WHERE overlapsTime(temp, p) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspan
-WHERE overlapsTime(temp, p) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzspan
-WHERE overlapsTime(temp, p) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspan
-WHERE overlapsTime(temp, p) IS NOT NULL;
-
-SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset
-WHERE overlapsTime(temp, ps) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset
-WHERE overlapsTime(temp, ps) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzspanset
-WHERE overlapsTime(temp, ps) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspanset
-WHERE overlapsTime(temp, ps) IS NOT NULL;
 
 SELECT MAX(st_memsize(twCentroid(temp))) FROM tbl_tgeompoint;
 SELECT MAX(st_memsize(twCentroid(temp))) FROM tbl_tgeompoint3D;
@@ -514,18 +478,6 @@ SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp ?= 'Point(1.5 1.5)';
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp %= 'Point(1 1)';
 SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp %= 'Point(1.5 1.5)';
 
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE overlapsTime(temp, timestamptz '2001-06-01');
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE overlapsTime(temp, timestamptz '2001-06-01');
-
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE overlapsTime(temp, tstzset '{2001-06-01, 2001-07-01}');
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE overlapsTime(temp, tstzset '{2001-06-01, 2001-07-01}');
-
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE overlapsTime(temp, tstzspan '[2001-06-01, 2001-07-01]');
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE overlapsTime(temp, tstzspan '[2001-06-01, 2001-07-01]');
-
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE overlapsTime(temp, tstzspanset '{[2001-06-01, 2001-07-01]}');
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE overlapsTime(temp, tstzspanset '{[2001-06-01, 2001-07-01]}');
-
 DROP INDEX tbl_tgeompoint_rtree_idx;
 DROP INDEX tbl_tgeogpoint_rtree_idx;
 
@@ -542,18 +494,6 @@ SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp ?= 'Point(1.5 1.5)';
 
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp %= 'Point(1 1)';
 SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp %= 'Point(1.5 1.5)';
-
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE overlapsTime(temp, timestamptz '2001-06-01');
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE overlapsTime(temp, timestamptz '2001-06-01');
-
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE overlapsTime(temp, tstzset '{2001-06-01, 2001-07-01}');
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE overlapsTime(temp, tstzset '{2001-06-01, 2001-07-01}');
-
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE overlapsTime(temp, tstzspan '[2001-06-01, 2001-07-01]');
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE overlapsTime(temp, tstzspan '[2001-06-01, 2001-07-01]');
-
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE overlapsTime(temp, tstzspanset '{[2001-06-01, 2001-07-01]}');
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE overlapsTime(temp, tstzspanset '{[2001-06-01, 2001-07-01]}');
 
 DROP INDEX tbl_tgeompoint_quadtree_idx;
 DROP INDEX tbl_tgeogpoint_quadtree_idx;

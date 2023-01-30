@@ -27,23 +27,24 @@
  *
  *****************************************************************************/
 
-/**
- * @brief Functions for selectivity estimation of operators on temporal network
- * points
+/*
+ * oid_cache.sql
+ * Routine that pre-computes the type and operator Oid cache and store them in
+ * a global array and a hash table.
  */
 
-#ifndef __TNPOINT_SELFUNCS_H__
-#define __TNPOINT_SELFUNCS_H__
+CREATE TABLE mobilitydb_opcache (
+  opnum INT,
+  ltypnum INT,
+  rtypnum INT,
+  opid Oid
+);
 
-/* PostgreSQL */
-#include <postgres.h>
-/* MobilityDB */
-#include "pg_general/meos_catalog.h"
+CREATE FUNCTION fill_oid_cache()
+  RETURNS VOID
+  AS 'MODULE_PATHNAME', 'fill_oid_cache'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-/*****************************************************************************/
+SELECT fill_oid_cache();
 
-extern bool tnpoint_cachedop(Oid operid, CachedOp *cachedOp);
-
-/*****************************************************************************/
-
-#endif /* __TNPOINT_SELFUNCS_H__ */
+/******************************************************************************/

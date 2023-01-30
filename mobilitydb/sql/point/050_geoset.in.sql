@@ -206,22 +206,22 @@ CREATE FUNCTION round(geogset, integer DEFAULT 0)
  * Accessor functions
  ******************************************************************************/
 
-CREATE FUNCTION memorySize(geomset)
+CREATE FUNCTION memSize(geomset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Set_memory_size'
+  AS 'MODULE_PATHNAME', 'Set_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION memorySize(geogset)
+CREATE FUNCTION memSize(geogset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Set_memory_size'
+  AS 'MODULE_PATHNAME', 'Set_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION storageSize(geomset)
+CREATE FUNCTION storeSize(geomset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Set_storage_size'
+  AS 'MODULE_PATHNAME', 'Set_store_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION storageSize(geogset)
+CREATE FUNCTION storeSize(geogset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Set_storage_size'
+  AS 'MODULE_PATHNAME', 'Set_store_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION numValues(geomset)
@@ -244,11 +244,11 @@ CREATE FUNCTION startValue(geogset)
 
 CREATE FUNCTION endValue(geomset)
   RETURNS geometry
-  AS 'MODULE_PATHNAME', 'Set_start_value'
+  AS 'MODULE_PATHNAME', 'Set_end_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION endValue(geogset)
   RETURNS geography
-  AS 'MODULE_PATHNAME', 'Set_start_value'
+  AS 'MODULE_PATHNAME', 'Set_end_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION valueN(geomset, integer)

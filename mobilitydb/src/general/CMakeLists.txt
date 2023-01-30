@@ -35,7 +35,6 @@ add_library(pg_general OBJECT
   tnumber_distance.c
   tnumber_gist.c
   tnumber_mathfuncs.c
-  tnumber_selfuncs.c
   tnumber_spgist.c
   ttext_textfuncs.c
   type_in.c

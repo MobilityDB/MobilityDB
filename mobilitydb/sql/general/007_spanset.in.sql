@@ -400,38 +400,38 @@ CREATE FUNCTION shiftTscale(tstzspanset, interval, interval)
  * Accessor Functions
  ******************************************************************************/
 
-CREATE FUNCTION memorySize(intspanset)
+CREATE FUNCTION memSize(intspanset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Spanset_memory_size'
+  AS 'MODULE_PATHNAME', 'Spanset_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION memorySize(bigintspanset)
+CREATE FUNCTION memSize(bigintspanset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Spanset_memory_size'
+  AS 'MODULE_PATHNAME', 'Spanset_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION memorySize(floatspanset)
+CREATE FUNCTION memSize(floatspanset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Spanset_memory_size'
+  AS 'MODULE_PATHNAME', 'Spanset_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION memorySize(tstzspanset)
+CREATE FUNCTION memSize(tstzspanset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Spanset_memory_size'
+  AS 'MODULE_PATHNAME', 'Spanset_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION storageSize(intspanset)
+CREATE FUNCTION storeSize(intspanset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Spanset_storage_size'
+  AS 'MODULE_PATHNAME', 'Spanset_store_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION storageSize(bigintspanset)
+CREATE FUNCTION storeSize(bigintspanset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Spanset_storage_size'
+  AS 'MODULE_PATHNAME', 'Spanset_store_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION storageSize(floatspanset)
+CREATE FUNCTION storeSize(floatspanset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Spanset_storage_size'
+  AS 'MODULE_PATHNAME', 'Spanset_store_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION storageSize(tstzspanset)
+CREATE FUNCTION storeSize(tstzspanset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'Spanset_storage_size'
+  AS 'MODULE_PATHNAME', 'Spanset_store_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION lower(intspanset)
@@ -825,7 +825,7 @@ CREATE OPERATOR < (
   LEFTARG = tstzspanset, RIGHTARG = tstzspanset,
   PROCEDURE = spanset_lt,
   COMMUTATOR = >, NEGATOR = >=,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE OPERATOR <= (
@@ -850,7 +850,7 @@ CREATE OPERATOR <= (
   LEFTARG = tstzspanset, RIGHTARG = tstzspanset,
   PROCEDURE = spanset_le,
   COMMUTATOR = >=, NEGATOR = >,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE OPERATOR >= (
@@ -875,7 +875,7 @@ CREATE OPERATOR >= (
   LEFTARG = tstzspanset, RIGHTARG = tstzspanset,
   PROCEDURE = spanset_ge,
   COMMUTATOR = <=, NEGATOR = <,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE OPERATOR > (
@@ -900,7 +900,7 @@ CREATE OPERATOR > (
   LEFTARG = tstzspanset, RIGHTARG = tstzspanset,
   PROCEDURE = spanset_gt,
   COMMUTATOR = <, NEGATOR = <=,
-  RESTRICT = period_sel, JOIN = span_joinsel
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE OPERATOR CLASS intspanset_btree_ops

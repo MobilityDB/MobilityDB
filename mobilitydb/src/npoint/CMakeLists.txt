@@ -7,7 +7,6 @@ add_library(pg_npoint OBJECT
   tnpoint_gin.c
   tnpoint_posops.c
   tnpoint_routeops.c
-  tnpoint_selfuncs.c
   tnpoint_spatialfuncs.c
   tnpoint_spatialrels.c
   tnpoint_static.c

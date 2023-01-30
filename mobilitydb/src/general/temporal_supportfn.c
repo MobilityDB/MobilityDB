@@ -59,35 +59,28 @@
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 #include "pg_general/temporal_selfuncs.h"
-#include "pg_general/tnumber_selfuncs.h"
 #include "pg_point/tpoint_selfuncs.h"
-#include "pg_npoint/tnpoint_selfuncs.h"
 
 enum TEMPORAL_FUNCTION_IDX
 {
-  /* overlapsTime function */
-  OVERLAPS_TIME_IDX              = 0,
   /* Ever/always comparison functions */
   EVER_EQ_IDX                    = 1,
   ALWAYS_EQ_IDX                  = 2,
   /* Ever spatial relationships */
-  CONTAINS_IDX                   = 3,
-  DISJOINT_IDX                   = 4,
-  INTERSECTS_IDX                 = 5,
-  TOUCHES_IDX                    = 6,
-  DWITHIN_IDX                    = 7,
+  ECONTAINS_IDX                   = 3,
+  EDISJOINT_IDX                   = 4,
+  EINTERSECTS_IDX                 = 5,
+  ETOUCHES_IDX                    = 6,
+  EDWITHIN_IDX                    = 7,
 };
 
 static const int16 TemporalStrategies[] =
 {
-  /* intersectsTime function */
-  [OVERLAPS_TIME_IDX]            = RTOverlapStrategyNumber,
+  /* There are currently no functions */
 };
 
 static const int16 TNumberStrategies[] =
 {
-  /* intersectsTime function */
-  [OVERLAPS_TIME_IDX]            = RTOverlapStrategyNumber,
   /* Ever/always comparison functions */
   [EVER_EQ_IDX]                  = RTOverlapStrategyNumber,
   [ALWAYS_EQ_IDX]                = RTOverlapStrategyNumber,
@@ -95,30 +88,26 @@ static const int16 TNumberStrategies[] =
 
 static const int16 TPointStrategies[] =
 {
-  /* intersectsTime function */
-  [OVERLAPS_TIME_IDX]            = RTOverlapStrategyNumber,
   /* Ever/always comparison functions */
   [EVER_EQ_IDX]                  = RTOverlapStrategyNumber,
   [ALWAYS_EQ_IDX]                = RTOverlapStrategyNumber,
   /* Ever spatial relationships */
-  [CONTAINS_IDX]                 = RTOverlapStrategyNumber,
-  [DISJOINT_IDX]                 = RTOverlapStrategyNumber,
-  [INTERSECTS_IDX]               = RTOverlapStrategyNumber,
-  [TOUCHES_IDX]                  = RTOverlapStrategyNumber,
-  [DWITHIN_IDX]                  = RTOverlapStrategyNumber,
+  [ECONTAINS_IDX]                 = RTOverlapStrategyNumber,
+  [EDISJOINT_IDX]                 = RTOverlapStrategyNumber,
+  [EINTERSECTS_IDX]               = RTOverlapStrategyNumber,
+  [ETOUCHES_IDX]                  = RTOverlapStrategyNumber,
+  [EDWITHIN_IDX]                  = RTOverlapStrategyNumber,
 };
 
 #if NPOINT
 static const int16 TNPointStrategies[] =
 {
-  /* intersectsTime functions */
-  [OVERLAPS_TIME_IDX]            = RTOverlapStrategyNumber,
   /* Ever spatial relationships */
-  [CONTAINS_IDX]                 = RTOverlapStrategyNumber,
-  [DISJOINT_IDX]                 = RTOverlapStrategyNumber,
-  [INTERSECTS_IDX]               = RTOverlapStrategyNumber,
-  [TOUCHES_IDX]                  = RTOverlapStrategyNumber,
-  [DWITHIN_IDX]                  = RTOverlapStrategyNumber,
+  [ECONTAINS_IDX]                 = RTOverlapStrategyNumber,
+  [EDISJOINT_IDX]                 = RTOverlapStrategyNumber,
+  [EINTERSECTS_IDX]               = RTOverlapStrategyNumber,
+  [ETOUCHES_IDX]                  = RTOverlapStrategyNumber,
+  [EDWITHIN_IDX]                  = RTOverlapStrategyNumber,
 };
 #endif /* NPOINT */
 
@@ -129,14 +118,10 @@ static const int16 TNPointStrategies[] =
 */
 static const IndexableFunction TemporalIndexableFunctions[] =
 {
-  /* intersectsTime function */
-  {"overlapstime", OVERLAPS_TIME_IDX, 2, 0},
   {NULL, 0, 0, 0}
 };
 
 static const IndexableFunction TNumberIndexableFunctions[] = {
-  /* intersectsTime function */
-  {"overlapstime", OVERLAPS_TIME_IDX, 2, 0},
   /* Ever/always comparison functions */
   {"ever_eq", EVER_EQ_IDX, 2, 0},
   {"always_eq", ALWAYS_EQ_IDX, 2, 0},
@@ -144,30 +129,26 @@ static const IndexableFunction TNumberIndexableFunctions[] = {
 };
 
 static const IndexableFunction TPointIndexableFunctions[] = {
-  /* overlapsTime function */
-  {"overlapstime", OVERLAPS_TIME_IDX, 2, 0},
   /* Ever/always comparison functions */
   {"ever_eq", EVER_EQ_IDX, 2, 0},
   {"always_eq", ALWAYS_EQ_IDX, 2, 0},
   /* Ever spatial relationships */
-  {"contains", CONTAINS_IDX, 2, 0},
-  {"disjoint", DISJOINT_IDX, 2, 0},
-  {"intersects", INTERSECTS_IDX, 2, 0},
-  {"touches", TOUCHES_IDX, 2, 0},
-  {"dwithin", DWITHIN_IDX, 3, 3},
+  {"econtains", ECONTAINS_IDX, 2, 0},
+  {"edisjoint", EDISJOINT_IDX, 2, 0},
+  {"eintersects", EINTERSECTS_IDX, 2, 0},
+  {"etouches", ETOUCHES_IDX, 2, 0},
+  {"edwithin", EDWITHIN_IDX, 3, 3},
   {NULL, 0, 0, 0}
 };
 
 #if NPOINT
 static const IndexableFunction TNPointIndexableFunctions[] = {
-  /* overlapsTime function */
-  {"overlapstime", OVERLAPS_TIME_IDX, 2, 0},
   /* Ever spatial relationships */
-  {"contains", CONTAINS_IDX, 2, 0},
-  {"disjoint", DISJOINT_IDX, 2, 0},
-  {"intersects", INTERSECTS_IDX, 2, 0},
-  {"touches", TOUCHES_IDX, 2, 0},
-  {"dwithin", DWITHIN_IDX, 3, 3},
+  {"econtains", ECONTAINS_IDX, 2, 0},
+  {"edisjoint", EDISJOINT_IDX, 2, 0},
+  {"eintersects", EINTERSECTS_IDX, 2, 0},
+  {"etouches", ETOUCHES_IDX, 2, 0},
+  {"edwithin", EDWITHIN_IDX, 3, 3},
   {NULL, 0, 0, 0}
 };
 #endif /* NPOINT */
@@ -281,6 +262,23 @@ makeExpandExpr(Node *arg, Node *radiusarg, Oid argoid, Oid retoid,
 /*****************************************************************************/
 
 /**
+ * @brief Transform the constant into a period
+ */
+static meosType
+type_to_bbox(meosType type)
+{
+  if (span_basetype(type))
+    return basetype_spantype(type);
+  if (set_type(type))
+    return basetype_spantype(settype_basetype(type));
+  if (spanset_type(type))
+    return spansettype_spantype(type);
+  if (spatial_basetype(type))
+    return T_STBOX;
+  return type;
+}
+
+/**
  * @brief For functions that we want enhanced with spatial index lookups, add
  * this support function to the SQL function definition, for example:
  * @code
@@ -314,26 +312,16 @@ temporal_supportfn_ext(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
     rightoid = exprType(lsecond(req->args));
     meosType ltype = oid_type(leftoid);
     meosType rtype = oid_type(rightoid);
-    operid = oper_oid(OVERLAPS_OP, ltype, rtype);
+    /* Convert base type to span type */
+    meosType ltype1 = type_to_bbox(ltype);
+    meosType rtype1 = type_to_bbox(rtype);
+    operid = oper_oid(OVERLAPS_OP, ltype1, rtype1);
     if (req->is_join)
-    {
-      if (tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE)
-        req->selectivity = temporal_joinsel(req->root, operid, req->args,
-          req->jointype, req->sjinfo, tempfamily);
-      else /* (tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE) */
-        req->selectivity = tpoint_joinsel(req->root, operid, req->args,
-          req->jointype, req->sjinfo, Int32GetDatum(0), /* ND mode TO GENERALIZE */
-          tempfamily);
-    }
+      req->selectivity = temporal_joinsel(req->root, operid, req->args,
+        req->jointype, req->sjinfo, tempfamily);
     else
-    {
-      if (tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE)
-        req->selectivity = temporal_sel(req->root, operid, req->args,
-          req->varRelid, tempfamily);
-      else /* (tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE) */
-        req->selectivity = tpoint_sel(req->root, operid, req->args,
-          req->varRelid, tempfamily);
-    }
+      req->selectivity = temporal_sel(req->root, operid, req->args,
+        req->varRelid, tempfamily);
     PG_RETURN_POINTER(req);
   }
 

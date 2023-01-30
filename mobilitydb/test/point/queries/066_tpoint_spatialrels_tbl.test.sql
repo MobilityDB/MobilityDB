@@ -36,90 +36,90 @@ set parallel_setup_cost=0;
 set force_parallel_mode=regress;
 
 -------------------------------------------------------------------------------
--- contains
+-- econtains
 -------------------------------------------------------------------------------
 
 -- In GEOS 3.11, GEOSRelatePattern does not accept GEOMETRYCOLLECTION
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint
-WHERE geometrytype(getvalues(temp)) <> 'GEOMETRYCOLLECTION' AND contains(g, temp);
+WHERE geometrytype(trajectory(temp)) <> 'GEOMETRYCOLLECTION' AND econtains(g, temp);
 
 -------------------------------------------------------------------------------
--- disjoint
+-- edisjoint
 -------------------------------------------------------------------------------
 
-SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE disjoint(g, temp);
-SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE disjoint(temp, g);
-SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE disjoint(t1.temp, t2.temp);
+SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE edisjoint(g, temp);
+SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE edisjoint(temp, g);
+SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE edisjoint(t1.temp, t2.temp);
 -- 3D
-SELECT COUNT(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE disjoint(g, temp);
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE disjoint(temp, g);
-SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE disjoint(t1.temp, t2.temp);
+SELECT COUNT(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE edisjoint(g, temp);
+SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE edisjoint(temp, g);
+SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE edisjoint(t1.temp, t2.temp);
 -- Geography
-SELECT COUNT(*) FROM tbl_geography, tbl_tgeogpoint WHERE disjoint(g, temp);
-SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geography WHERE disjoint(temp, g);
-SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE disjoint(t1.temp, t2.temp);
+SELECT COUNT(*) FROM tbl_geography, tbl_tgeogpoint WHERE edisjoint(g, temp);
+SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geography WHERE edisjoint(temp, g);
+SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE edisjoint(t1.temp, t2.temp);
 -- 3D
-SELECT COUNT(*) FROM tbl_geography3D, tbl_tgeogpoint3D WHERE disjoint(g, temp);
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geography3D WHERE disjoint(temp, g);
-SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE disjoint(t1.temp, t2.temp);
+SELECT COUNT(*) FROM tbl_geography3D, tbl_tgeogpoint3D WHERE edisjoint(g, temp);
+SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geography3D WHERE edisjoint(temp, g);
+SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE edisjoint(t1.temp, t2.temp);
 
 -------------------------------------------------------------------------------
--- intersects
+-- eintersects
 -------------------------------------------------------------------------------
 
-SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE intersects(g, temp);
-SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE intersects(temp, g);
-SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE intersects(t1.temp, t2.temp);
+SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE eintersects(g, temp);
+SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE eintersects(temp, g);
+SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE eintersects(t1.temp, t2.temp);
 -- 3D
-SELECT COUNT(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE intersects(g, temp);
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE intersects(temp, g);
-SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE intersects(t1.temp, t2.temp);
+SELECT COUNT(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE eintersects(g, temp);
+SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE eintersects(temp, g);
+SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE eintersects(t1.temp, t2.temp);
 -- Geography
 -- The following two queries return different number result (3302 vs 3300)
 -- depending on PostGIS version. For this reason they are commented out
--- SELECT COUNT(*) FROM tbl_geography, tbl_tgeogpoint WHERE intersects(g, temp);
--- SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geography WHERE intersects(temp, g);
-SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE intersects(t1.temp, t2.temp);
+-- SELECT COUNT(*) FROM tbl_geography, tbl_tgeogpoint WHERE eintersects(g, temp);
+-- SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geography WHERE eintersects(temp, g);
+SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE eintersects(t1.temp, t2.temp);
 -- 3D
-SELECT COUNT(*) FROM tbl_geography3D, tbl_tgeogpoint3D WHERE intersects(g, temp);
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geography3D WHERE intersects(temp, g);
-SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE intersects(t1.temp, t2.temp);
+SELECT COUNT(*) FROM tbl_geography3D, tbl_tgeogpoint3D WHERE eintersects(g, temp);
+SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geography3D WHERE eintersects(temp, g);
+SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE eintersects(t1.temp, t2.temp);
 
 -------------------------------------------------------------------------------
--- touches
+-- etouches
 -------------------------------------------------------------------------------
 
 -- The implementation of the boundary function changed in PostGIS 3.2
 -- The result of these queries changed in PostGIS 3.3
--- SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE touches(g, temp);
--- SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE touches(temp, g);
+-- SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE etouches(g, temp);
+-- SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE etouches(temp, g);
 -- 3D
-SELECT COUNT(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE touches(g, temp);
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE touches(temp, g);
+SELECT COUNT(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE etouches(g, temp);
+SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE etouches(temp, g);
 
 -------------------------------------------------------------------------------
--- dwithin
+-- edwithin
 -------------------------------------------------------------------------------
 
-SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint WHERE dwithin(g, temp, 10);
-SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom_point WHERE dwithin(temp, g, 10);
-SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE dwithin(t1.temp, t2.temp, 10);
+SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint WHERE edwithin(g, temp, 10);
+SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom_point WHERE edwithin(temp, g, 10);
+SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE edwithin(t1.temp, t2.temp, 10);
 -- Step interpolation
-SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq WHERE dwithin(g, seq, 10);
-SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset WHERE dwithin(g, ss, 10);
-SELECT COUNT(*) FROM tbl_tgeompoint_step_seq t1, tbl_tgeompoint t2 WHERE dwithin(t1.seq, t2.temp, 10);
+SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq WHERE edwithin(g, seq, 10);
+SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset WHERE edwithin(g, ss, 10);
+SELECT COUNT(*) FROM tbl_tgeompoint_step_seq t1, tbl_tgeompoint t2 WHERE edwithin(t1.seq, t2.temp, 10);
 -- 3D
-SELECT COUNT(*) FROM tbl_geom_point3D, tbl_tgeompoint3D WHERE dwithin(g, temp, 10);
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_geom_point3D WHERE dwithin(temp, g, 10);
-SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE dwithin(t1.temp, t2.temp, 10);
+SELECT COUNT(*) FROM tbl_geom_point3D, tbl_tgeompoint3D WHERE edwithin(g, temp, 10);
+SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_geom_point3D WHERE edwithin(temp, g, 10);
+SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE edwithin(t1.temp, t2.temp, 10);
 -- Geography
-SELECT COUNT(*) FROM tbl_geog_point, tbl_tgeogpoint WHERE dwithin(g, temp, 10);
-SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geog_point WHERE dwithin(temp, g, 10);
-SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE dwithin(t1.temp, t2.temp, 10);
+SELECT COUNT(*) FROM tbl_geog_point, tbl_tgeogpoint WHERE edwithin(g, temp, 10);
+SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geog_point WHERE edwithin(temp, g, 10);
+SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE edwithin(t1.temp, t2.temp, 10);
 -- 3D
-SELECT COUNT(*) FROM tbl_geog_point3D, tbl_tgeogpoint3D WHERE dwithin(g, temp, 10);
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geog_point3D WHERE dwithin(temp, g, 10);
-SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE dwithin(t1.temp, t2.temp, 10);
+SELECT COUNT(*) FROM tbl_geog_point3D, tbl_tgeogpoint3D WHERE edwithin(g, temp, 10);
+SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geog_point3D WHERE edwithin(temp, g, 10);
+SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE edwithin(t1.temp, t2.temp, 10);
 
 -------------------------------------------------------------------------------
 set parallel_tuple_cost=100;
@@ -132,34 +132,34 @@ set force_parallel_mode=off;
 CREATE INDEX tbl_tgeompoint_rtree_idx ON tbl_tgeompoint USING gist(temp);
 CREATE INDEX tbl_tgeogpoint_rtree_idx ON tbl_tgeogpoint USING gist(temp);
 
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE contains(geometry 'Polygon((0 0,0 5,5 5,5 0,0 0))', temp);
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE econtains(geometry 'Polygon((0 0,0 5,5 5,5 0,0 0))', temp);
 
--- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tgeompoint WHERE disjoint(temp, geometry 'Linestring(0 0,5 5)');
--- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tgeompoint WHERE disjoint(geometry 'Linestring(0 0,5 5)', temp);
--- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tgeompoint WHERE disjoint(temp, tgeompoint '[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]');
+-- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tgeompoint WHERE edisjoint(temp, geometry 'Linestring(0 0,5 5)');
+-- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tgeompoint WHERE edisjoint(geometry 'Linestring(0 0,5 5)', temp);
+-- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tgeompoint WHERE edisjoint(temp, tgeompoint '[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]');
 
--- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tgeogpoint WHERE disjoint(temp, geography 'Linestring(0 0,5 5)');
--- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tgeogpoint WHERE disjoint(geography 'Linestring(0 0,5 5)', temp);
--- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tgeogpoint WHERE disjoint(temp, tgeogpoint '[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]');
+-- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tgeogpoint WHERE edisjoint(temp, geography 'Linestring(0 0,5 5)');
+-- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tgeogpoint WHERE edisjoint(geography 'Linestring(0 0,5 5)', temp);
+-- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tgeogpoint WHERE edisjoint(temp, tgeogpoint '[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]');
 
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE intersects(temp, geometry 'Linestring(0 0,5 5)');
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE intersects(geometry 'Linestring(0 0,5 5)', temp);
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE intersects(temp, tgeompoint '[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]');
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE eintersects(temp, geometry 'Linestring(0 0,5 5)');
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE eintersects(geometry 'Linestring(0 0,5 5)', temp);
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE eintersects(temp, tgeompoint '[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]');
 
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE intersects(temp, geography 'Linestring(0 0,25 25)');
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE intersects(geography 'Linestring(0 0,25 25)', temp);
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE intersects(temp, tgeogpoint '[Point(0 0)@2001-01-01, Point(25 25)@2001-02-01]');
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE eintersects(temp, geography 'Linestring(0 0,25 25)');
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE eintersects(geography 'Linestring(0 0,25 25)', temp);
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE eintersects(temp, tgeogpoint '[Point(0 0)@2001-01-01, Point(25 25)@2001-02-01]');
 
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE touches(temp, geometry 'Linestring(0 0,5 5)');
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE touches(geometry 'Linestring(0 0,5 5)', temp);
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE etouches(temp, geometry 'Linestring(0 0,5 5)');
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE etouches(geometry 'Linestring(0 0,5 5)', temp);
 
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE dwithin(temp, geometry 'Linestring(0 0,15 15)', 5);
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE dwithin(geometry 'Linestring(0 0,5 5)', temp, 5);
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE dwithin(temp, tgeompoint '[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]', 5);
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE edwithin(temp, geometry 'Linestring(0 0,15 15)', 5);
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE edwithin(geometry 'Linestring(0 0,5 5)', temp, 5);
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE edwithin(temp, tgeompoint '[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]', 5);
 
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE dwithin(temp, geography 'Linestring(0 0,5 5)', 5);
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE dwithin(geography 'Linestring(0 0,5 5)', temp, 5);
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE dwithin(temp, tgeogpoint '[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]', 5);
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE edwithin(temp, geography 'Linestring(0 0,5 5)', 5);
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE edwithin(geography 'Linestring(0 0,5 5)', temp, 5);
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE edwithin(temp, tgeogpoint '[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]', 5);
 
 DROP INDEX tbl_tgeompoint_rtree_idx;
 DROP INDEX tbl_tgeogpoint_rtree_idx;
@@ -170,34 +170,34 @@ DROP INDEX tbl_tgeogpoint_rtree_idx;
 CREATE INDEX tbl_tgeompoint_quadtree_idx ON tbl_tgeompoint USING spgist(temp);
 CREATE INDEX tbl_tgeogpoint_quadtree_idx ON tbl_tgeogpoint USING spgist(temp);
 
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE contains(geometry 'Polygon((0 0,0 5,5 5,5 0,0 0))', temp);
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE econtains(geometry 'Polygon((0 0,0 5,5 5,5 0,0 0))', temp);
 
--- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tgeompoint WHERE disjoint(temp, geometry 'Linestring(0 0,5 5)');
--- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tgeompoint WHERE disjoint(geometry 'Linestring(0 0,5 5)', temp);
--- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tgeompoint WHERE disjoint(temp, tgeompoint '[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]');
+-- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tgeompoint WHERE edisjoint(temp, geometry 'Linestring(0 0,5 5)');
+-- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tgeompoint WHERE edisjoint(geometry 'Linestring(0 0,5 5)', temp);
+-- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tgeompoint WHERE edisjoint(temp, tgeompoint '[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]');
 
--- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tgeogpoint WHERE disjoint(temp, geography 'Linestring(0 0,5 5)');
--- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tgeogpoint WHERE disjoint(geography 'Linestring(0 0,5 5)', temp);
--- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tgeogpoint WHERE disjoint(temp, tgeogpoint '[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]');
+-- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tgeogpoint WHERE edisjoint(temp, geography 'Linestring(0 0,5 5)');
+-- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tgeogpoint WHERE edisjoint(geography 'Linestring(0 0,5 5)', temp);
+-- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tgeogpoint WHERE edisjoint(temp, tgeogpoint '[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]');
 
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE intersects(temp, geometry 'Linestring(0 0,5 5)');
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE intersects(geometry 'Linestring(0 0,5 5)', temp);
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE intersects(temp, tgeompoint '[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]');
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE eintersects(temp, geometry 'Linestring(0 0,5 5)');
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE eintersects(geometry 'Linestring(0 0,5 5)', temp);
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE eintersects(temp, tgeompoint '[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]');
 
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE intersects(temp, geography 'Linestring(0 0,5 5)');
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE intersects(geography 'Linestring(0 0,5 5)', temp);
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE intersects(temp, tgeogpoint '[Point(0 0)@2001-01-01, Point(50 50)@2001-02-01]');
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE eintersects(temp, geography 'Linestring(0 0,5 5)');
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE eintersects(geography 'Linestring(0 0,5 5)', temp);
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE eintersects(temp, tgeogpoint '[Point(0 0)@2001-01-01, Point(50 50)@2001-02-01]');
 
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE touches(temp, geometry 'Linestring(0 0,5 5)');
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE touches(geometry 'Linestring(0 0,5 5)', temp);
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE etouches(temp, geometry 'Linestring(0 0,5 5)');
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE etouches(geometry 'Linestring(0 0,5 5)', temp);
 
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE dwithin(temp, geometry 'Linestring(0 0,5 5)', 5);
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE dwithin(geometry 'Linestring(0 0,5 5)', temp, 5);
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE dwithin(temp, tgeompoint '[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]', 5);
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE edwithin(temp, geometry 'Linestring(0 0,5 5)', 5);
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE edwithin(geometry 'Linestring(0 0,5 5)', temp, 5);
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE edwithin(temp, tgeompoint '[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]', 5);
 
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE dwithin(temp, geography 'Linestring(0 0,5 5)', 5);
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE dwithin(geography 'Linestring(0 0,5 5)', temp, 5);
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE dwithin(temp, tgeogpoint '[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]', 5);
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE edwithin(temp, geography 'Linestring(0 0,5 5)', 5);
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE edwithin(geography 'Linestring(0 0,5 5)', temp, 5);
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE edwithin(temp, tgeogpoint '[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]', 5);
 
 DROP INDEX tbl_tgeompoint_quadtree_idx;
 DROP INDEX tbl_tgeogpoint_quadtree_idx;

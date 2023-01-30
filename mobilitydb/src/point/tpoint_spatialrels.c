@@ -35,12 +35,12 @@
  * purposes before applying the corresponding temporal spatial relationship.
  *
  * The following relationships are supported for geometries: `contains`,
- * `disjoint`, `intersects`, `touches`, and `dwithin`.
+ * `edisjoint`, `eintersects`, `etouches`, and `edwithin`.
  *
- * The following relationships are supported for geographies: `disjoint`,
- * `intersects`, `dwithin`.
+ * The following relationships are supported for geographies: `edisjoint`,
+ * `eintersects`, `edwithin`.
  *
- * Only `disjoint`, `dwithin`, and `intersects` are supported for 3D geometries.
+ * Only `edisjoint`, `edwithin`, and `eintersects` are supported for 3D geometries.
  */
 
 #include "point/tpoint_spatialrels.h"
@@ -69,13 +69,13 @@
  * @param[in] func Spatial relationship
  */
 static Datum
-spatialrel_tpoint_tpoint_ext(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum))
+espatialrel_tpoint_tpoint_ext(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum))
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  int result = spatialrel_tpoint_tpoint(temp1, temp2, func);
+  int result = espatialrel_tpoint_tpoint(temp1, temp2, func);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   if (result < 0)
@@ -89,18 +89,18 @@ spatialrel_tpoint_tpoint_ext(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum
  * PostGIS ST_Relate function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Contains_geo_tpoint);
+PG_FUNCTION_INFO_V1(Econtains_geo_tpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
  * @brief Return true if a geometry ever contains a temporal point
- * @sqlfunc contains()
+ * @sqlfunc econtains
  */
 PGDLLEXPORT Datum
-Contains_geo_tpoint(PG_FUNCTION_ARGS)
+Econtains_geo_tpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  int result = contains_geo_tpoint(gs, temp);
+  int result = econtains_geo_tpoint(gs, temp);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (result < 0)
@@ -112,20 +112,20 @@ Contains_geo_tpoint(PG_FUNCTION_ARGS)
  * Ever disjoint (for both geometry and geography)
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Disjoint_geo_tpoint);
+PG_FUNCTION_INFO_V1(Edisjoint_geo_tpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
  * @brief Return true if a geometry and a temporal point are ever disjoint
- * @sqlfunc disjoint()
+ * @sqlfunc edisjoint
  */
 PGDLLEXPORT Datum
-Disjoint_geo_tpoint(PG_FUNCTION_ARGS)
+Edisjoint_geo_tpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  int result = disjoint_tpoint_geo(temp, gs);
+  int result = edisjoint_tpoint_geo(temp, gs);
   PG_FREE_IF_COPY(temp, 1);
   PG_FREE_IF_COPY(gs, 0);
   if (result < 0)
@@ -133,20 +133,20 @@ Disjoint_geo_tpoint(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result ? true : false);
 }
 
-PG_FUNCTION_INFO_V1(Disjoint_tpoint_geo);
+PG_FUNCTION_INFO_V1(Edisjoint_tpoint_geo);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
  * @brief Return true if a temporal point and a geometry are ever disjoint
- * @sqlfunc disjoint()
+ * @sqlfunc edisjoint
  */
 PGDLLEXPORT Datum
-Disjoint_tpoint_geo(PG_FUNCTION_ARGS)
+Edisjoint_tpoint_geo(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  int result = disjoint_tpoint_geo(temp, gs);
+  int result = edisjoint_tpoint_geo(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   if (result < 0)
@@ -154,36 +154,36 @@ Disjoint_tpoint_geo(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result ? true : false);
 }
 
-PG_FUNCTION_INFO_V1(Disjoint_tpoint_tpoint);
+PG_FUNCTION_INFO_V1(Edisjoint_tpoint_tpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
  * @brief Return true if the temporal points are ever disjoint
- * @sqlfunc disjoint()
+ * @sqlfunc edisjoint
  */
 PGDLLEXPORT Datum
-Disjoint_tpoint_tpoint(PG_FUNCTION_ARGS)
+Edisjoint_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-  return spatialrel_tpoint_tpoint_ext(fcinfo, &datum2_point_ne);
+  return espatialrel_tpoint_tpoint_ext(fcinfo, &datum2_point_ne);
 }
 
 /*****************************************************************************
  * Ever intersects (for both geometry and geography)
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Intersects_geo_tpoint);
+PG_FUNCTION_INFO_V1(Eintersects_geo_tpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
  * @brief Return true if a geometry and a temporal point ever intersect
- * @sqlfunc intersects()
+ * @sqlfunc eintersects
  */
 PGDLLEXPORT Datum
-Intersects_geo_tpoint(PG_FUNCTION_ARGS)
+Eintersects_geo_tpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  int result = intersects_tpoint_geo(temp, gs);
+  int result = eintersects_tpoint_geo(temp, gs);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (result < 0)
@@ -191,20 +191,20 @@ Intersects_geo_tpoint(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(Intersects_tpoint_geo);
+PG_FUNCTION_INFO_V1(Eintersects_tpoint_geo);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
  * @brief Return true if a temporal point and a geometry ever intersect
- * @sqlfunc intersects()
+ * @sqlfunc eintersects
  */
 PGDLLEXPORT Datum
-Intersects_tpoint_geo(PG_FUNCTION_ARGS)
+Eintersects_tpoint_geo(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  int result = intersects_tpoint_geo(temp, gs);
+  int result = eintersects_tpoint_geo(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   if (result < 0)
@@ -212,16 +212,16 @@ Intersects_tpoint_geo(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(Intersects_tpoint_tpoint);
+PG_FUNCTION_INFO_V1(Eintersects_tpoint_tpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
  * @brief Return true if the temporal points ever intersect
- * @sqlfunc intersects()
+ * @sqlfunc eintersects
  */
 PGDLLEXPORT Datum
-Intersects_tpoint_tpoint(PG_FUNCTION_ARGS)
+Eintersects_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-  return spatialrel_tpoint_tpoint_ext(fcinfo, &datum2_point_eq);
+  return espatialrel_tpoint_tpoint_ext(fcinfo, &datum2_point_eq);
 }
 
 /*****************************************************************************
@@ -230,18 +230,18 @@ Intersects_tpoint_tpoint(PG_FUNCTION_ARGS)
  * ST_Boundary function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Touches_geo_tpoint);
+PG_FUNCTION_INFO_V1(Etouches_geo_tpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
  * @brief Return true if a geometry and a temporal point ever touch
- * @sqlfunc touches()
+ * @sqlfunc etouches
  */
 PGDLLEXPORT Datum
-Touches_geo_tpoint(PG_FUNCTION_ARGS)
+Etouches_geo_tpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  int result = touches_tpoint_geo(temp, gs);
+  int result = etouches_tpoint_geo(temp, gs);
   PG_FREE_IF_COPY(temp, 1);
   PG_FREE_IF_COPY(gs, 0);
   if (result < 0)
@@ -249,18 +249,18 @@ Touches_geo_tpoint(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(Touches_tpoint_geo);
+PG_FUNCTION_INFO_V1(Etouches_tpoint_geo);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
  * @brief Return true if a temporal point and a geometry ever touch
- * @sqlfunc touches()
+ * @sqlfunc etouches
  */
 PGDLLEXPORT Datum
-Touches_tpoint_geo(PG_FUNCTION_ARGS)
+Etouches_tpoint_geo(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  int result = touches_tpoint_geo(temp, gs);
+  int result = etouches_tpoint_geo(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   if (result < 0)
@@ -273,22 +273,22 @@ Touches_tpoint_geo(PG_FUNCTION_ARGS)
  * The function only accepts points and not arbitrary geometries/geographies
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Dwithin_geo_tpoint);
+PG_FUNCTION_INFO_V1(Edwithin_geo_tpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
  * @brief Return true if a geometry and a temporal point are ever within the
  * given distance
- * @sqlfunc dwithin()
+ * @sqlfunc edwithin
  */
 PGDLLEXPORT Datum
-Dwithin_geo_tpoint(PG_FUNCTION_ARGS)
+Edwithin_geo_tpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   double dist = PG_GETARG_FLOAT8(2);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  int result = dwithin_tpoint_geo(temp, gs, dist);
+  int result = edwithin_tpoint_geo(temp, gs, dist);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (result < 0)
@@ -296,22 +296,22 @@ Dwithin_geo_tpoint(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(Dwithin_tpoint_geo);
+PG_FUNCTION_INFO_V1(Edwithin_tpoint_geo);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
  * @brief Return true if a temporal point and a geometry are ever within the
  * given distance
- * @sqlfunc dwithin()
+ * @sqlfunc edwithin
  */
 PGDLLEXPORT Datum
-Dwithin_tpoint_geo(PG_FUNCTION_ARGS)
+Edwithin_tpoint_geo(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   double dist = PG_GETARG_FLOAT8(2);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  int result = dwithin_tpoint_geo(temp, gs, dist);
+  int result = edwithin_tpoint_geo(temp, gs, dist);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   if (result < 0)
@@ -319,21 +319,21 @@ Dwithin_tpoint_geo(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(Dwithin_tpoint_tpoint);
+PG_FUNCTION_INFO_V1(Edwithin_tpoint_tpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
  * @brief Return true if the temporal points are even within the given distance
- * @sqlfunc dwithin()
+ * @sqlfunc edwithin
  */
 PGDLLEXPORT Datum
-Dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
+Edwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   double dist = PG_GETARG_FLOAT8(2);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  int result = dwithin_tpoint_tpoint(temp1, temp2, dist);
+  int result = edwithin_tpoint_tpoint(temp1, temp2, dist);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   if (result < 0)

@@ -203,15 +203,14 @@ SELECT asHexWKB(intspanset '{[1, 2], [4, 5]}', 'XDR');
 				</listitem>
 
 				<listitem id="spantime_FromBinary">
-					<indexterm><primary><varname>intsetFromBinary</varname></primary></indexterm>
-					<indexterm><primary><varname>intspanFromBinary</varname></primary></indexterm>
-					<indexterm><primary><varname>intspansetFromBinary</varname></primary></indexterm>
+					<indexterm><primary><varname>&lt;set&gt;FromBinary</varname></primary></indexterm>
+					<indexterm><primary><varname>&lt;span&gt;FromBinary</varname></primary></indexterm>
+					<indexterm><primary><varname>&lt;spanset&gt;FromBinary</varname></primary></indexterm>
 					<para>Input a set or span type from a Well-Known Binary (WKB) representation</para>
-					<para>There is one function per base type, the name of the function has as prefix the name of the base type, which is <varname>int</varname> in the example signatures below</para>
-					<para><varname>intsetFromBinary(bytea) → intset</varname></para>
-					<para><varname>intspanFromBinary(bytea) → intspan</varname></para>
-					<para><varname>intspansetFromBinary(bytea) → intspanset</varname></para>
-					<para><varname>...</varname></para>
+					<para>There is one function per base type, the name of the function has as prefix the name of the set type</para>
+					<para><varname>&lt;set&gt;FromBinary(bytea) → set</varname></para>
+					<para><varname>&lt;span&gt;FromBinary(bytea) → span</varname></para>
+					<para><varname>&lt;spanset&gt;FromBinary(bytea) → spanset</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT tstzsetFromBinary('\x01020000000fce0136a58010000bc8f4f92580100');
 -- {2001-01-01, 2001-01-03}
@@ -224,15 +223,14 @@ SELECT tstzspansetFromBinary(
 				</listitem>
 
 				<listitem id="spantime_FromHexWKB">
-					<indexterm><primary><varname>intsetFromHexWKB</varname></primary></indexterm>
-					<indexterm><primary><varname>intspanFromHexWKB</varname></primary></indexterm>
-					<indexterm><primary><varname>intspansetFromHexWKB</varname></primary></indexterm>
+					<indexterm><primary><varname>&lt;set&gt;FromHexWKB</varname></primary></indexterm>
+					<indexterm><primary><varname>&lt;span&gt;FromHexWKB</varname></primary></indexterm>
+					<indexterm><primary><varname>&lt;spanset&gt;FromHexWKB</varname></primary></indexterm>
 					<para>Input a set, span, or span set from an Hexadecimal Well-Known Binary (HexWKB) representation</para>
-					<para>There is one function per base type, the name of the function has as prefix the name of the base type, which is <varname>int</varname> in the example signatures below</para>
-					<para><varname>intsetFromHexWKB(text) → intset</varname></para>
-					<para><varname>intspanFromHexWKB(text) → intspan</varname></para>
-					<para><varname>intspansetFromHexWKB(text) → intspanset</varname></para>
-					<para><varname>...</varname></para>
+					<para>There is one function per set type, the name of the function has as prefix the name of the set type.</para>
+					<para><varname>&lt;set&gt;FromHexWKB(text) → set</varname></para>
+					<para><varname>&lt;span&gt;FromHexWKB(text) → span</varname></para>
+					<para><varname>&lt;spanset&gt;FromHexWKB(text) → spanset</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT tstzsetFromHexWKB('010200000000FCE0136A58010000BC8F4F92580100');
 -- {2001-01-01, 2001-01-03}
@@ -417,27 +415,27 @@ SELECT tstzmultirange '{[2000-01-01,2000-01-02],[2000-01-04,2000-01-05]}'::tstzs
 			<title>Accessor Functions</title>
 
 			<itemizedlist>
-				<listitem id="setspan_memorySize">
-					<indexterm><primary><varname>memorySize</varname></primary></indexterm>
+				<listitem id="setspan_memSize">
+					<indexterm><primary><varname>memSize</varname></primary></indexterm>
 					<para>Get the memory size in bytes</para>
-					<para><varname>memorySize({set,spanset}) → integer</varname></para>
+					<para><varname>memSize({set,spanset}) → integer</varname></para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT memorySize(tstzset '{2001-01-01, 2001-01-02, 2001-01-03}');
+SELECT memSize(tstzset '{2001-01-01, 2001-01-02, 2001-01-03}');
 -- 104
-SELECT memorySize(tstzspanset '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04],
+SELECT memSize(tstzspanset '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04],
   [2001-01-05, 2001-01-06]}');
 -- 136
 </programlisting>
 				</listitem>
 
-				<listitem id="setspan_storageSize">
-					<indexterm><primary><varname>storageSize</varname></primary></indexterm>
+				<listitem id="setspan_storeSize">
+					<indexterm><primary><varname>storeSize</varname></primary></indexterm>
 					<para>Get the storage (compressed) size in bytes</para>
-					<para><varname>storageSize({set,spanset}) → integer</varname></para>
+					<para><varname>storeSize({set,spanset}) → integer</varname></para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT storageSize(tstzset '{2001-01-01, 2001-01-02, 2001-01-03}');
+SELECT storeSize(tstzset '{2001-01-01, 2001-01-02, 2001-01-03}');
 -- 56
-SELECT storageSize(tstzspanset '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04],
+SELECT storeSize(tstzspanset '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04],
   [2001-01-05, 2001-01-06]}');
 -- 112
 </programlisting>

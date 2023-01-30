@@ -34,6 +34,10 @@
 		</listitem>
 
 		<listitem>
+			<para><varname>tscalar</varname> represents any temporal type whose base type does not have a defined distance, that is, <varname>tbool</varname> or <varname>ttext</varname>,</para>
+		</listitem>
+
+		<listitem>
 			<para><varname>tnumber</varname> represents any temporal number type, that is, <varname>tint</varname> or <varname>tfloat</varname>,</para>
 		</listitem>
 
@@ -87,6 +91,10 @@
 
 		<listitem>
 			<para><varname>type[]</varname> represents an array of <varname>type</varname>.</para>
+		</listitem>
+
+		<listitem>
+			<para><varname>&lt;type&gt;</varname> in the name of a function represents the functions obtained by replacing <varname>&lt;type&gt;</varname> by a specific <varname>type</varname>. For example, <varname>tint_discseq</varname> or <varname>tfloat_discseq</varname> are represented by <varname>&lt;ttype&gt;_discseq</varname>.</para>
 		</listitem>
 	</itemizedlist>
 
@@ -343,13 +351,10 @@ SELECT asHexWKB(ttext 'AAA@2001-01-01');
 			</listitem>
 
 			<listitem id="tboolFromBinary">
-				<indexterm><primary><varname>tboolFromBinary</varname></primary></indexterm>
-				<indexterm><primary><varname>tintFromBinary</varname></primary></indexterm>
+				<indexterm><primary><varname>&lt;ttype&gt;FromBinary</varname></primary></indexterm>
 				<para>Input a temporal value from its Well-Known Binary (WKB) representation</para>
-				<para>There is one function per base type, the name of the function has as prefix the name of the base type, which is <varname>tbool</varname> or <varname>tint</varname> in the example signatures below</para>
-				<para><varname>tboolFromBinary(bytea) → tbool</varname></para>
-				<para><varname>tintFromBinary(bytea) → tint</varname></para>
-				<para><varname>...</varname></para>
+				<para>There is one function per base type, the name of the function has as prefix the name of the base type, which is <varname>tbool</varname> or <varname>tint</varname> in the examples below.</para>
+				<para><varname>&lt;ttype&gt;FromBinary(bytea) → ttype</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tboolFromBinary('\x010d000101009c57d3c11c0000');
 -- t@2001-01-01
@@ -363,13 +368,10 @@ SELECT ttextFromBinary('\x01170001040000000000000041414100009c57d3c11c0000');
 			</listitem>
 
 			<listitem id="tboolFromHexWKB">
-				<indexterm><primary><varname>tboolFromHexWKB</varname></primary></indexterm>
-				<indexterm><primary><varname>tintFromHexWKB</varname></primary></indexterm>
+				<indexterm><primary><varname>&lt;ttype&gt;FromHexWKB</varname></primary></indexterm>
 				<para>Input a temporal value from its Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
-				<para>There is one function per base type, the name of the function has as prefix the name of the base type, which is <varname>tbool</varname> or <varname>tint</varname> in the example signatures below</para>
-				<para><varname>tboolFromHexWKB(text) → tbool</varname></para>
-				<para><varname>tintFromHexWKB(text) → tint</varname></para>
-				<para><varname>...</varname></para>
+				<para>There is one function per base type, the name of the function has as prefix the name of the base type, which is <varname>tbool</varname> or <varname>tint</varname> in the examples below.</para>
+				<para><varname>&lt;ttype&gt;FromHexWKB(text) → ttype</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tboolFromHexWKB('010D000101009C57D3C11C0000');
 -- t@2001-01-01
@@ -417,12 +419,12 @@ SELECT ttextFromHexWKB('01170001040000000000000041414100009C57D3C11C0000');
 
 		<itemizedlist>
 			<listitem id="ttype_const">
-				<indexterm><primary><varname>ttype</varname></primary></indexterm>
+				<indexterm><primary><varname>&lt;ttype&gt;</varname></primary></indexterm>
 				<para>Constructor for temporal types from a base value and a time value</para>
-				<para><varname>ttype(base,timestamptz) → ttype_inst</varname></para>
-				<para><varname>ttype(base,tstzset) → ttype_discseq</varname></para>
-				<para><varname>ttype(base,tstzspan,linear=true) → ttype_contseq</varname></para>
-				<para><varname>ttype(base,tstzspanset,linear=true) → ttype_seqset</varname></para>
+				<para><varname>&lt;ttype&gt;(base,timestamptz) → ttype_inst</varname></para>
+				<para><varname>&lt;ttype&gt;(base,tstzset) → ttype_discseq</varname></para>
+				<para><varname>&lt;ttype&gt;(base,tstzspan,linear=true) → ttype_contseq</varname></para>
+				<para><varname>&lt;ttype&gt;(base,tstzspanset,linear=true) → ttype_seqset</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbool(true, timestamptz '2001-01-01');
 SELECT tint(1, timestamptz '2001-01-01');
@@ -435,9 +437,9 @@ SELECT tgeogpoint('SRID=7844;Point(0 0)', tstzspanset '{[2001-01-01, 2001-01-02]
 			</listitem>
 
 			<listitem id="ttype_discseq">
-				<indexterm><primary><varname>ttype_discseq</varname></primary></indexterm>
+				<indexterm><primary><varname>&lt;ttype&gt;_discseq</varname></primary></indexterm>
 				<para>Constructor for temporal types of sequence subtype and discrete interpolation</para>
-				<para><varname>ttype_discseq(ttype_inst[]) → ttype_discseq</varname></para>
+				<para><varname>&lt;ttype&gt;_discseq(ttype_inst[]) → ttype_discseq</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbool_discseq(ARRAY[tbool 'true@2001-01-01 08:00:00','false@2001-01-01 08:05:00']);
 SELECT tint_discseq(ARRAY[tint '1@2001-01-01 08:00:00', '2@2001-01-01 08:05:00']);
@@ -451,9 +453,10 @@ SELECT tgeogpoint_discseq(ARRAY[tgeogpoint 'Point(1 1)@2001-01-01 08:00:00',
 			</listitem>
 
 			<listitem id="ttype_contseq">
-				<indexterm><primary><varname>ttype_contseq</varname></primary></indexterm>
+				<indexterm><primary><varname>&lt;ttype&gt;_contseq</varname></primary></indexterm>
 				<para>Constructor for temporal types of sequence subtype and continuous interpolation</para>
-				<para><varname>ttype_contseq(ttype_inst[],left_inc=true,right_inc=true,linear=true}) → ttype_contseq</varname></para>
+				<para><varname>&lt;ttype&gt;_contseq(ttype_inst[],left_inc=true,right_inc=true,linear=true}) →</varname></para>
+				<para><varname>  ttype_contseq</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbool_contseq(ARRAY[tbool 'true@2001-01-01 08:00:00', 'true@2001-01-03 08:05:00'],
   true, true);
@@ -474,12 +477,15 @@ SELECT tgeogpoint_contseq(ARRAY[tgeogpoint 'Point(0 0)@2001-01-01 08:00:00',
 			</listitem>
 
 			<listitem id="ttype_seqset">
-				<indexterm><primary><varname>ttype_seqset</varname></primary></indexterm>
+				<indexterm><primary><varname>&lt;ttype&gt;_seqset</varname></primary></indexterm>
+				<indexterm><primary><varname>&lt;tscalar&gt;_seqset_gaps</varname></primary></indexterm>
+				<indexterm><primary><varname>&lt;tdisc&gt;_seqset_gaps</varname></primary></indexterm>
+				<indexterm><primary><varname>&lt;tcont&gt;_seqset_gaps</varname></primary></indexterm>
 				<para>Constructors for temporal types of sequence set subtype</para>
-				<para><varname>ttype_seqset(ttype_contseq[]) → ttype_seqset</varname></para>
-				<para><varname>tscalar_seqset_gaps(tint_inst[],maxt='0 minutes') → tscalar_seqset</varname></para>
-				<para><varname>tdisc_seqset_gaps(tint_inst[],maxdist=0.0,maxt='0 minutes') → tdisc_seqset</varname></para>
-				<para><varname>tcont_seqset_gaps(tcont_inst[],linear=true,maxdist=0.0,maxt='0 minutes') →</varname></para>
+				<para><varname>&lt;ttype&gt;_seqset(ttype_contseq[]) → ttype_seqset</varname></para>
+				<para><varname>&lt;tscalar&gt;_seqset_gaps(tint_inst[],maxt='0 minutes') → tscalar_seqset</varname></para>
+				<para><varname>&lt;tdisc&gt;_seqset_gaps(tint_inst[],maxdist=0.0,maxt='0 minutes') → tdisc_seqset</varname></para>
+				<para><varname>&lt;tcont&gt;_seqset_gaps(tcont_inst[],linear=true,maxdist=0.0,maxt='0 minutes') →</varname></para>
 				<para><varname>  tcont_seqset</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbool_seqset(ARRAY[tbool '[false@2001-01-01 08:00:00, false@2001-01-01 08:05:00)',
@@ -643,22 +649,22 @@ SELECT asText(geometry 'GEOMETRYCOLLECTION M (LINESTRING M (0 0 978307200,1 1 97
 		<title>Accessor Functions</title>
 		<itemizedlist>
 
-			<listitem id="ttype_memorySize">
-				<indexterm><primary><varname>memorySize</varname></primary></indexterm>
+			<listitem id="ttype_memSize">
+				<indexterm><primary><varname>memSize</varname></primary></indexterm>
 				<para>Get the memory size in bytes</para>
-				<para><varname>memorySize(ttype) → integer</varname></para>
+				<para><varname>memSize(ttype) → integer</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT memorySize(tint '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03}');
+SELECT memSize(tint '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03}');
 -- 280
 </programlisting>
 			</listitem>
 
-			<listitem id="ttype_storageSize">
-				<indexterm><primary><varname>storageSize</varname></primary></indexterm>
+			<listitem id="ttype_storeSize">
+				<indexterm><primary><varname>storeSize</varname></primary></indexterm>
 				<para>Get the storage (compressed) size in bytes</para>
-				<para><varname>storageSize(ttype) → integer</varname></para>
+				<para><varname>storeSize(ttype) → integer</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT storageSize(tint '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03}');
+SELECT storeSize(tint '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03}');
 -- 176
 </programlisting>
 			</listitem>
@@ -707,29 +713,37 @@ SELECT ST_AsText(getValue(tgeompoint 'Point(0 0)@2001-01-01'));
 			<listitem id="getValues">
 				<indexterm><primary><varname>getValues</varname></primary></indexterm>
 				<para>Get the values</para>
-				<para><varname>getValues(ttype) → {set,floatspanset,geo}</varname></para>
+				<para><varname>getValues(ttype) → {bool[],set,geo}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT getValues(tint '[1@2001-01-01, 2@2001-01-03]');
--- {1,2}
-SELECT getValues(tfloat '[1@2001-01-01, 2@2001-01-03)');
--- {[1,2)}
+-- {1, 2}
 SELECT getValues(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 4@2001-01-05)}');
--- {[1,2),[3,4)}
-SELECT getValues(tfloat 'Interp=Stepwise;{[1@2001-01-01, 2@2001-01-02],
+-- {1, 2, 3, 4}
+SELECT asText(getValues(tgeompoint '{[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02),
+  [Point(0 1)@2001-01-03, Point(1 1)@2001-01-04)}'));
+-- {"POINT(0 0)", "POINT(1 1)", "POINT(0 1)"}
+</programlisting>
+			</listitem>
+
+			<listitem id="trajectory">
+				<indexterm><primary><varname>trajectory</varname></primary></indexterm>
+				<para>Get the base values traversed by the temporal value</para>
+				<para><varname>trajectory(tcont) → {floatspanset,geo}</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT trajectory(tfloat '[1@2001-01-01, 2@2001-01-03)');
+-- {[1,2)}
+SELECT trajectory(tfloat 'Interp=Stepwise;{[1@2001-01-01, 2@2001-01-02],
   [3@2001-01-03, 4@2001-01-05]}');
 -- {[1, 1], [2, 2], [3, 3], [4, 4]}
-SELECT ST_AsText(getValues(tgeompoint '{[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02),
+SELECT ST_AsText(trajectory(tgeompoint '{[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02),
   [Point(0 1)@2001-01-03, Point(1 1)@2001-01-04)}'));
--- LINESTRING(0 0,0 1,1 1)
-SELECT ST_AsText(getValues(tgeompoint '{[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02),
-  [Point(1 1)@2001-01-03, Point(2 2)@2001-01-04)}'));
--- MULTILINESTRING((0 0,0 1),(1 1,2 2)
-SELECT ST_AsText(getValues(tgeompoint 'Interp=Stepwise;{[Point(0 0)@2001-01-01,
+-- MULTILINESTRING((0 0,0 1),(0 1,1 1))
+SELECT ST_AsText(trajectory(tgeompoint 'Interp=Stepwise;{[Point(0 0)@2001-01-01,
   Point(0 1)@2001-01-02], [Point(0 1)@2001-01-03, Point(1 1)@2001-01-04]}'));
 -- GEOMETRYCOLLECTION(MULTIPOINT(0 0,0 1),MULTIPOINT(0 1,1 1))
-SELECT ST_AsText(getValues(tgeompoint '{Point(0 0)@2001-01-01, Point(0 1)@2001-01-02}'));
+SELECT ST_AsText(trajectory(tgeompoint '{Point(0 0)@2001-01-01, Point(0 1)@2001-01-02}'));
 -- MULTIPOINT(0 0,0 1)
-SELECT ST_AsText(getValues(tgeompoint '{[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02),
+SELECT ST_AsText(trajectory(tgeompoint '{[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02),
   [Point(1 1)@2001-01-03, Point(1 1)@2001-01-04),
   [Point(2 1)@2001-01-05, Point(2 2)@2001-01-06)}'));
 -- GEOMETRYCOLLECTION(POINT(1 1),LINESTRING(0 0,0 1),LINESTRING(2 1,2 2))
@@ -737,7 +751,8 @@ SELECT ST_AsText(getValues(tgeompoint '{[Point(0 0)@2001-01-01, Point(0 1)@2001-
 			</listitem>
 
 			<listitem id="startValue">
-				<indexterm><primary><varname>startValue</varname>, <varname>endValue</varname></primary></indexterm>
+				<indexterm><primary><varname>startValue</varname></primary></indexterm>
+				<indexterm><primary><varname>endValue</varname></primary></indexterm>
 				<para>Get the start/end value</para>
 				<para><varname>startValue(ttype) → base</varname></para>
 				<para><varname>endValue(ttype) → base</varname></para>
@@ -751,7 +766,8 @@ SELECT endValue(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 5@2001-01-
 			</listitem>
 
 			<listitem id="minValue">
-				<indexterm><primary><varname>minValue</varname>, <varname>maxValue</varname></primary></indexterm>
+				<indexterm><primary><varname>minValue</varname></primary></indexterm>
+				<indexterm><primary><varname>maxValue</varname></primary></indexterm>
 				<para>Get the minimum/maximum value</para>
 				<para><varname>minValue(torder) → base</varname></para>
 				<para><varname>maxValue(torder) → base</varname></para>
@@ -765,7 +781,8 @@ SELECT maxValue(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 5@2001-01-
 			</listitem>
 
 			<listitem id="minInstant">
-				<indexterm><primary><varname>minInstant</varname>, <varname>maxInstant</varname></primary></indexterm>
+				<indexterm><primary><varname>minInstant</varname></primary></indexterm>
+				<indexterm><primary><varname>maxInstant</varname></primary></indexterm>
 				<para>Get the instant with the minimum/maximum value</para>
 				<para><varname>minInstant(torder) → base</varname></para>
 				<para><varname>maxInstant(torder) → base</varname></para>
@@ -864,7 +881,9 @@ SELECT numInstants(tfloat '{[1@2000-01-01, 2@2000-01-02), (2@2000-01-02, 3@2000-
 			</listitem>
 
 			<listitem id="startInstant">
-				<indexterm><primary><varname>startInstant</varname>, <varname>endInstant</varname>, <varname>instantN</varname></primary></indexterm>
+				<indexterm><primary><varname>startInstant</varname></primary></indexterm>
+				<indexterm><primary><varname>endInstant</varname></primary></indexterm>
+				<indexterm><primary><varname>instantN</varname></primary></indexterm>
 				<para>Get the start/end/n-th instant</para>
 				<para><varname>startInstant(ttype) → ttype_inst</varname></para>
 				<para><varname>endInstant(ttype) → ttype_inst</varname></para>
@@ -903,7 +922,9 @@ SELECT numTimestamps(tfloat '{[1@2001-01-01, 2@2001-01-03),
 			</listitem>
 
 			<listitem id="ttype_startTimestamp">
-				<indexterm><primary><varname>startTimestamp</varname>, <varname>endTimestamp</varname>, <varname>timestampN</varname></primary></indexterm>
+				<indexterm><primary><varname>startTimestamp</varname></primary></indexterm>
+				<indexterm><primary><varname>endTimestamp</varname></primary></indexterm>
+				<indexterm><primary><varname>timestampN</varname></primary></indexterm>
 				<para>Get the start/end/n-th timestamp</para>
 				<para><varname>startTimestamp(ttype) → timestamptz</varname></para>
 				<para><varname>endTimestamp(ttype) → timestamptz</varname></para>
@@ -943,7 +964,9 @@ SELECT numSequences(tfloat '{[1@2001-01-01, 2@2001-01-03),
 			</listitem>
 
 			<listitem id="startSequence">
-				<indexterm><primary><varname>startSequence</varname>, <varname>endSequence</varname>, <varname>sequenceN</varname></primary></indexterm>
+				<indexterm><primary><varname>startSequence</varname></primary></indexterm>
+				<indexterm><primary><varname>endSequence</varname></primary></indexterm>
+				<indexterm><primary><varname>sequenceN</varname></primary></indexterm>
 				<para>Get the start/end/n-th sequence</para>
 				<para><varname>startSequence({ttype_contseq,ttype_seqset}) → ttype_contseq</varname></para>
 				<para><varname>endSequence({ttype_contseq,ttype_seqset}) → ttype_contseq</varname></para>
@@ -986,25 +1009,6 @@ SELECT segments(tfloat '{[1@2001-01-01, 3@2001-01-02, 2@2001-01-03],
 </programlisting>
 			</listitem>
 
-			<listitem id="overlapsTime">
-				<indexterm><primary><varname>overlapsTime</varname></primary></indexterm>
-				<para>Does the temporal value overlap the time value?</para>
-				<para><varname>overlapsTime(ttype,time) → boolean</varname></para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT overlapsTime(tint '[1@2001-01-01, 1@2001-01-15)', timestamptz '2001-01-03');
--- true
-SELECT overlapsTime(tint '[1@2001-01-01, 1@2001-01-15)',
-  tstzset '{2001-01-01, 2001-01-03}');
--- true
-SELECT overlapsTime(tint '[1@2001-01-01, 1@2001-01-04)',
-  tstzspan '[2001-01-01,2001-01-05)');
--- true
-SELECT overlapsTime(tbool '[t@2001-01-01, f@2001-01-15]',
-  tstzspanset '{[2001-01-01, 2001-01-03), [2001-01-05, 2001-01-07)}');
--- true
-</programlisting>
-			</listitem>
-
 			<listitem id="integral">
 				<indexterm><primary><varname>integral</varname></primary></indexterm>
 				<para>Get the area under the curve</para>
@@ -1034,15 +1038,15 @@ SELECT twAvg(tfloat '{[1@2001-01-01, 2@2001-01-03), [2@2001-01-04, 2@2001-01-06)
 		<para>A temporal value can be transformed to another subtype. An error is raised if the subtypes are incompatible.</para>
 		<itemizedlist>
 			<listitem id="ttype_transform">
-				<indexterm><primary><varname>ttype_inst</varname></primary></indexterm>
-				<indexterm><primary><varname>ttype_discseq</varname></primary></indexterm>
-				<indexterm><primary><varname>ttype_contseq</varname></primary></indexterm>
-				<indexterm><primary><varname>ttype_seqset</varname></primary></indexterm>
+				<indexterm><primary><varname>&lt;ttype&gt;_inst</varname></primary></indexterm>
+				<indexterm><primary><varname>&lt;ttype&gt;_discseq</varname></primary></indexterm>
+				<indexterm><primary><varname>&lt;ttype&gt;_contseq</varname></primary></indexterm>
+				<indexterm><primary><varname>&lt;ttype&gt;_seqset</varname></primary></indexterm>
 				<para>Transform a temporal value to another subtype</para>
-				<para><varname>ttype_inst(ttype) → ttype_inst</varname></para>
-				<para><varname>ttype_discseq(ttype) → ttype_discseq</varname></para>
-				<para><varname>ttype_contseq(ttype) → ttype_contseq</varname></para>
-				<para><varname>ttype_seqset(ttype) → ttype_seqset</varname></para>
+				<para><varname>&lt;ttype&gt;_inst(ttype) → ttype_inst</varname></para>
+				<para><varname>&lt;ttype&gt;_discseq(ttype) → ttype_discseq</varname></para>
+				<para><varname>&lt;ttype&gt;_contseq(ttype) → ttype_contseq</varname></para>
+				<para><varname>&lt;ttype&gt;_seqset(ttype) → ttype_seqset</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbool_inst(tbool '{[true@2001-01-01]}');
 -- t@2001-01-01
@@ -1134,8 +1138,8 @@ SELECT asText(shiftTscale(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-0
 
 			<listitem id="unnest">
 				<indexterm><primary><varname>unnest</varname></primary></indexterm>
-				<para>Transform a nonlinear temporal value into a set of rows, each one composed of a base value and a period set during which the temporal value has the base value.</para>
-				<para><varname>unnest(ttype) → setof value_time</varname></para>
+				<para>Transform a nonlinear temporal value into a set of rows, each one is a pair composed of a base value and a period set during which the temporal value has the base value.</para>
+				<para><varname>unnest(ttype) → {(value,time)}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT (un).value, (un).time
 FROM (SELECT unnest(tfloat '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}') AS un) t;
@@ -1419,7 +1423,8 @@ SELECT minusValues(tfloat '[1@2001-01-01, 5@2001-01-05)',
 			</listitem>
 
 			<listitem id="atMin">
-				<indexterm><primary><varname>atMin</varname>, <varname>minusMin</varname></primary></indexterm>
+				<indexterm><primary><varname>atMin</varname></primary></indexterm>
+				<indexterm><primary><varname>minusMin</varname></primary></indexterm>
 				<para>Restrict to (the complement of) the minimum value</para>
 				<para><varname>atMin(torder) → torder</varname></para>
 				<para><varname>minusMin(torder) → torder</varname></para>
@@ -1448,7 +1453,8 @@ SELECT minusMin(tint '{[1@2001-01-01, 1@2001-01-03), (1@2001-01-03, 1@2001-01-05
 			</listitem>
 
 			<listitem id="atMax">
-				<indexterm><primary><varname>atMax</varname>, <varname>minusMax</varname></primary></indexterm>
+				<indexterm><primary><varname>atMax</varname></primary></indexterm>
+				<indexterm><primary><varname>minusMax</varname></primary></indexterm>
 				<para>Restrict to (the complement of) the maximum value</para>
 				<para><varname>atMax(torder) → torder</varname></para>
 				<para><varname>minusMax(torder) → torder</varname></para>
@@ -1479,7 +1485,8 @@ SELECT minusMax(tfloat '{[1@2001-01-01, 3@2001-01-03), (3@2001-01-03, 1@2001-01-
 			</listitem>
 
 			<listitem id="atGeometry">
-				<indexterm><primary><varname>atGeometry</varname>, <varname>minusGeometry</varname></primary></indexterm>
+				<indexterm><primary><varname>atGeometry</varname></primary></indexterm>
+				<indexterm><primary><varname>minusGeometry</varname></primary></indexterm>
 				<para>Restrict to (the complement of) a geometry</para>
 				<para><varname>atGeometry(tgeompoint,geometry) → tgeompoint</varname></para>
 				<para><varname>minusGeometry(tgeompoint,geometry) → tgeompoint</varname></para>
@@ -1506,7 +1513,8 @@ SELECT astext(minusGeometry(tgeompoint '[Point(0 0 0)@2000-01-01,
 			</listitem>
 
 			<listitem id="atTime">
-				<indexterm><primary><varname>atTime</varname>, <varname>minusTime</varname></primary></indexterm>
+				<indexterm><primary><varname>atTime</varname></primary></indexterm>
+				<indexterm><primary><varname>minusTime</varname></primary></indexterm>
 				<para>Restrict to (the complement of) a time value</para>
 				<para><varname>atTime(ttype,time) → ttype</varname></para>
 				<para><varname>minusTime(ttype,time) → ttype</varname></para>

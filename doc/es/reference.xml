@@ -176,11 +176,11 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="setspan_memorySize"><varname>memorySize</varname></link>: Obtener el tamaño de la memoria en bytes</para>
+					<para><link linkend="setspan_memSize"><varname>memSize</varname></link>: Obtener el tamaño de la memoria en bytes</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_memorySize"><varname>storageSize</varname></link>: Obtener el tamaño de almacenamiento (comprimido) en bytes</para>
+					<para><link linkend="setspan_memSize"><varname>storeSize</varname></link>: Obtener el tamaño de almacenamiento (comprimido) en bytes</para>
 				</listitem>
 
 				<listitem>
@@ -615,7 +615,7 @@
 			<title>Funciones de accesor</title>
 			<itemizedlist>
 				<listitem>
-				<para><link linkend="ttype_memorySize"><varname>memorySize</varname></link>: Obtener el tamaño de la memoria en bytes</para>
+				<para><link linkend="ttype_memSize"><varname>memSize</varname></link>: Obtener el tamaño de la memoria en bytes</para>
 				</listitem>
 
 				<listitem>
@@ -632,6 +632,10 @@
 
 				<listitem>
 					<para><link linkend="getValues"><varname>getValues</varname></link>: Obtener los valores</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trajectory"><varname>trajectory</varname></link>: Obtener los valores de base transitados por el valor temporal</para>
 				</listitem>
 
 				<listitem>
@@ -708,10 +712,6 @@
 
 				<listitem>
 					<para><link linkend="segments"><varname>segments</varname></link>: Obtener los segmentos</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="overlapsTime"><varname>overlapsTime</varname></link>: ¿Se superpone el valor temporal con el valor de tiempo?</para>
 				</listitem>
 
 				<listitem>
@@ -1153,23 +1153,23 @@
 				<title>Relaciones posibles </title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="contains"><varname>contains</varname></link>: Puede contener</para>
+						<para><link linkend="econtains"><varname>econtains</varname></link>: Contiene alguna vez</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="disjoint"><varname>disjoint</varname></link>: Puede ser disjunto</para>
+						<para><link linkend="edisjoint"><varname>edisjoint</varname></link>: Es disjunto alguna vez</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="dwithin"><varname>dwithin</varname></link>: Puede estar a distancia de</para>
+						<para><link linkend="edwithin"><varname>edwithin</varname></link>: Está alguna vez a distancia de</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="intersects"><varname>intersects</varname></link>: Puede cruzarse</para>
+						<para><link linkend="eintersects"><varname>eintersects</varname></link>: Cruza alguna vez</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="touches"><varname>touches</varname></link>: Puede tocar</para>
+						<para><link linkend="etouches"><varname>etouches</varname></link>: Toca alguna vez</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1599,7 +1599,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_spatialrels"><varname>contains, disjoint, intersects, touches, dwithin</varname></link>: Relaciones espaciales posibles</para>
+						<para><link linkend="tnpoint_espatialrels"><varname>econtains, edisjoint, eintersects, etouches, edwithin</varname></link>: Relaciones espaciales alguna vez</para>
 					</listitem>
 
 					<listitem>

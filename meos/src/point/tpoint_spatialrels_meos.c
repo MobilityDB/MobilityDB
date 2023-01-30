@@ -67,9 +67,9 @@
  * @sqlfunc disjoint()
  */
 int
-disjoint_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
+edisjoint_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
-  int result = spatialrel_tpoint_tpoint(temp1, temp2, &datum2_point_ne);
+  int result = espatialrel_tpoint_tpoint(temp1, temp2, &datum2_point_ne);
   return result;
 }
 
@@ -84,9 +84,9 @@ disjoint_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
  * @sqlfunc intersects()
  */
 int
-intersects_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
+eintersects_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
-  return spatialrel_tpoint_tpoint(temp1, temp2, &datum2_point_eq);
+  return espatialrel_tpoint_tpoint(temp1, temp2, &datum2_point_eq);
 }
 
 /*****************************************************************************/

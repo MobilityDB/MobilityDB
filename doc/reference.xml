@@ -120,11 +120,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="spantime_FromBinary"><varname>intsetFromBinary</varname>, <varname>intspanFromBinary</varname>, <varname>intspansetFromBinary</varname>, <varname>...</varname></link>: Input a span or set type from a Well-Known Binary (WKB) representation</para>
+					<para><link linkend="spantime_FromBinary"><varname>&lt;settype&lt;FromBinary</varname>, <varname>&lt;spantype&lt;FromBinary</varname>, <varname>&lt;spansettype&lt;FromBinary</varname></link>: Input a span or set type from a Well-Known Binary (WKB) representation</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="spantime_FromHexWKB"><varname>intsetFromHexWKB</varname>, <varname>intspanFromHexWKB</varname>, <varname>intspansetFromHexWKB</varname>, <varname>...</varname></link>: Input a span or set type from an Hexadecimal Well-Known Binary (HexWKB) representation</para>
+					<para><link linkend="spantime_FromHexWKB"><varname>&lt;settype&lt;FromHexWKB</varname>, <varname>&lt;spantype&lt;FromHexWKB</varname>, <varname>&lt;spansettype&lt;FromHexWKB</varname></link>: Input a span or set type from an Hexadecimal Well-Known Binary (HexWKB) representation</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -176,11 +176,11 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="setspan_memorySize"><varname>memorySize</varname></link>: Get the memory size in bytes</para>
+					<para><link linkend="setspan_memSize"><varname>memSize</varname></link>: Get the memory size in bytes</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_storageSize"><varname>storageSize</varname></link>: Get the storage (compressed) size in bytes</para>
+					<para><link linkend="setspan_storeSize"><varname>storeSize</varname></link>: Get the storage (compressed) size in bytes</para>
 				</listitem>
 
 				<listitem>
@@ -616,11 +616,11 @@
 			<title>Accessor Functions</title>
 			<itemizedlist>
 				<listitem>
-				<para><link linkend="ttype_memorySize"><varname>memorySize</varname></link>: Get the memory size in bytes</para>
+				<para><link linkend="ttype_memSize"><varname>memSize</varname></link>: Get the memory size in bytes</para>
 				</listitem>
 
 				<listitem>
-				<para><link linkend="ttype_storageSize"><varname>storageSize</varname></link>: Get the storage (compressed) size in bytes</para>
+				<para><link linkend="ttype_storeSize"><varname>storeSize</varname></link>: Get the storage (compressed) size in bytes</para>
 				</listitem>
 
 				<listitem>
@@ -637,6 +637,10 @@
 
 				<listitem>
 					<para><link linkend="getValues"><varname>getValues</varname></link>: Get the values</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trajectory"><varname>trajectory</varname></link>: Get the values traversed by the temporal value</para>
 				</listitem>
 
 				<listitem>
@@ -713,10 +717,6 @@
 
 				<listitem>
 					<para><link linkend="segments"><varname>segments</varname></link>: Get the segments</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="overlapsTime"><varname>overlapsTime</varname></link>: Does the temporal value overlap the time value?</para>
 				</listitem>
 
 				<listitem>
@@ -1161,23 +1161,23 @@
 				<title>Ever Spatial Relationships</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="contains"><varname>contains</varname></link>: Ever contains</para>
+						<para><link linkend="econtains"><varname>econtains</varname></link>: Ever contains</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="disjoint"><varname>disjoint</varname></link>: Is ever disjoint</para>
+						<para><link linkend="edisjoint"><varname>edisjoint</varname></link>: Is ever disjoint</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="dwithin"><varname>dwithin</varname></link>: Is ever at distance within</para>
+						<para><link linkend="edwithin"><varname>edwithin</varname></link>: Is ever at distance within</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="intersects"><varname>intersects</varname></link>: Ever intersects</para>
+						<para><link linkend="eintersects"><varname>eintersects</varname></link>: Ever intersects</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="touches"><varname>touches</varname></link>: Ever touches</para>
+						<para><link linkend="etouches"><varname>etouches</varname></link>: Ever touches</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1608,7 +1608,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_spatialrels"><varname>contains, disjoint, intersects, touches, dwithin</varname></link>: Possible spatial relationships</para>
+						<para><link linkend="tnpoint_espatialrels"><varname>econtains, edisjoint, eintersects, etouches, edwithin</varname></link>: Possible spatial relationships</para>
 					</listitem>
 
 					<listitem>

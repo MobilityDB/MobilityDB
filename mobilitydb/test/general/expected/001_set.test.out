@@ -49,28 +49,28 @@ SELECT timestamptz '2000-01-01'::tstzset;
  {"2000-01-01 00:00:00+00"}
 (1 row)
 
-SELECT memorySize(tstzset '{2000-01-01}');
- memorysize 
-------------
-         32
+SELECT memSize(tstzset '{2000-01-01}');
+ memsize 
+---------
+      32
 (1 row)
 
-SELECT memorySize(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}');
- memorysize 
-------------
-         48
+SELECT memSize(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}');
+ memsize 
+---------
+      48
 (1 row)
 
-SELECT storageSize(tstzset '{2000-01-01}');
- storagesize 
--------------
-          32
+SELECT storeSize(tstzset '{2000-01-01}');
+ storesize 
+-----------
+        32
 (1 row)
 
-SELECT storageSize(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}');
- storagesize 
--------------
-          48
+SELECT storeSize(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}');
+ storesize 
+-----------
+        48
 (1 row)
 
 SELECT span(tstzset '{2000-01-01}');
