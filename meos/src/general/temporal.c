@@ -1414,23 +1414,6 @@ temporal_tscale(const Temporal *temp, const Interval *duration)
  *****************************************************************************/
 
 /**
- * @brief Aggregate the values that are merged due to a temporal granularity
- * change
- * @param[in] temp Temporal value
- */
-static Datum
-temporal_tprecision_agg_values(const Temporal *temp)
-{
-  assert(tnumber_type(temp->temptype) || tgeo_type(temp->temptype));
-  Datum result;
-  if (tnumber_type(temp->temptype))
-    result = Float8GetDatum(tnumber_twavg(temp));
-  else if (tgeo_type(temp->temptype))
-    result = PointerGetDatum(tpoint_twcentroid(temp));
-  return result;
-}
-
-/**
  * @brief Set the precision of a temporal value according to time buckets.
  * @param[in] inst Temporal value
  * @param[in] duration Size of the time buckets
@@ -1448,6 +1431,23 @@ tinstant_tprecision(const TInstant *inst, const Interval *duration,
 }
 
 /**
+ * @brief Aggregate the values that are merged due to a temporal granularity
+ * change
+ * @param[in] temp Temporal value
+ */
+static Datum
+temporal_tprecision_agg_values(const Temporal *temp)
+{
+  assert(tnumber_type(temp->temptype) || tgeo_type(temp->temptype));
+  Datum result;
+  if (tnumber_type(temp->temptype))
+    result = Float8GetDatum(tnumber_twavg(temp));
+  else if (tgeo_type(temp->temptype))
+    result = PointerGetDatum(tpoint_twcentroid(temp));
+  return result;
+}
+
+/**
  * @brief Set the precision of a temporal value according to period buckets.
  * @param[in] seq Temporal value
  * @param[in] duration Size of the time buckets
@@ -1457,6 +1457,8 @@ TSequence *
 tsequence_tprecision(const TSequence *seq, const Interval *duration,
   TimestampTz torigin)
 {
+  assert(seq->temptype == T_TINT || seq->temptype == T_TFLOAT ||
+    seq->temptype == T_TGEOMPOINT || seq->temptype == T_TGEOGPOINT );
   ensure_valid_duration(duration);
   int64 tunits = interval_units(duration);
   TimestampTz lower = DatumGetTimestampTz(seq->period.lower);
@@ -1467,29 +1469,76 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
     tunits;
   /* Number of buckets */
   int count = (int) (((int64) upper_bucket - (int64) lower_bucket) / tunits);
-  TInstant **instants = palloc(sizeof(TInstant *) * (count + 1));
+  TInstant **ininsts = palloc(sizeof(TInstant *) * seq->count);
+  TInstant **outinsts = palloc(sizeof(TInstant *) * count);
   lower = lower_bucket;
   upper = lower_bucket + tunits;
   interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
-  int k = 0;
-  /* Loop for each bucket */
-  for (int i = 0; i < count; i++)
+  /* New instants computing the value at the beginning/end of the bucket */
+  TInstant *start = NULL, *end = NULL;
+  // bool tofree = false;
+  TSequence *seq1;
+  Datum value;
+  int k = 0; /* Number of instants for computing the twAvg/twCentroid */
+  int l = 0; /* Number of instants of the output sequence */
+  /* Loop for each instant of the sequence */
+  for (int i = 0; i < seq->count; i++)
   {
-    Span s;
-    span_set(TimestampTzGetDatum(lower), TimestampTzGetDatum(upper),
-      true, false, T_TIMESTAMPTZ, &s);
-    TSequence *proj = tsequence_at_period(seq, &s);
-    if (proj)
+    /* Get the next instant */
+    TInstant *inst = (TInstant *) tsequence_inst_n(seq, i);
+    /* If the instant is not in the current bucket */
+    if (k > 0 && timestamptz_cmp_internal(inst->t, upper) > 0)
     {
-      Datum value = temporal_tprecision_agg_values((Temporal *) proj);
-      instants[k++] = tinstant_make(value, seq->temptype, lower);
-      pfree(proj);
+      /* Compute the value at the end of the bucket if we do not have it */
+      if (timestamptz_cmp_internal(ininsts[k - 1]->t, upper) < 0)
+      {
+        tsequence_value_at_timestamp(seq, upper, false, &value);
+        ininsts[k++] = end = tinstant_make(value, seq->temptype, upper);
+      }
+      seq1 = tsequence_make((const TInstant **) ininsts, k, true, true, interp,
+        NORMALIZE);
+      /* Compute the twAvg/twCentroid for the bucket */
+      value = tnumber_type(seq->temptype) ?
+        Float8GetDatum(tnumberseq_twavg(seq1)) :
+        PointerGetDatum(tpointseq_twcentroid(seq1));
+      outinsts[l++] = tinstant_make(value, seq->temptype, lower);
+      pfree(seq1);
+      if (! tnumber_type(seq->temptype))
+        pfree(DatumGetPointer(value));
+      /* Free the instant at the beginning of the bucket if it was generated */
+      if (start)
+      {
+        pfree(start); start = NULL;
+      }
+      /* Save the instant at the bucket end as start for the next bucket */
+      ininsts[0] = ininsts[k - 1];
+      if (end)
+      {
+        start = end; end = NULL;
+      }
+      k = 1;
+      lower = upper;
+      upper += tunits;
     }
-    lower = upper;
-    upper += tunits;
+    ininsts[k++] = inst;
   }
-  TSequence *result = tsequence_make_free(instants, k, true, true, interp,
+  /* Compute the twAvg/twCentroid of the last bucket */
+  if (k > 0)
+  {
+    seq1 = tsequence_make((const TInstant **) ininsts, k, true, true, interp,
+      NORMALIZE);
+    value = tnumber_type(seq->temptype) ?
+      Float8GetDatum(tnumberseq_twavg(seq1)) :
+      PointerGetDatum(tpointseq_twcentroid(seq1));
+    outinsts[l++] = tinstant_make(value, seq->temptype, lower);
+    if (! tnumber_type(seq->temptype))
+      pfree(DatumGetPointer(value));
+    if (start)
+      pfree(start);
+  }
+  TSequence *result = tsequence_make_free(outinsts, l, true, true, interp,
     NORMALIZE);
+  pfree(ininsts);
   return result;
 }
 
@@ -3618,9 +3667,7 @@ tnumber_twavg(const Temporal *temp)
   if (temp->subtype == TINSTANT)
     result = tnumberinst_double((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
-    result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
-      tnumberdiscseq_twavg((TSequence *) temp) :
-      tnumbercontseq_twavg((TSequence *) temp);
+    result = tnumberseq_twavg((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
     result = tnumberseqset_twavg((TSequenceSet *) temp);
   return result;

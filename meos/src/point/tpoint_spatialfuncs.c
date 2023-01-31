@@ -2465,14 +2465,9 @@ tpointseq_twcentroid(const TSequence *seq)
   interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
   TSequence *seqx, *seqy, *seqz;
   tpointseq_twcentroid1(seq, hasz, interp, &seqx, &seqy, &seqz);
-  double twavgx = (interp == DISCRETE) ?
-    tnumberdiscseq_twavg(seqx) : tnumbercontseq_twavg(seqx);
-  double twavgy = (interp == DISCRETE) ?
-    tnumberdiscseq_twavg(seqy) : tnumbercontseq_twavg(seqy);
-  double twavgz = 0.0;
-  if (hasz)
-    twavgz = (interp == DISCRETE) ?
-      tnumberdiscseq_twavg(seqz) : tnumbercontseq_twavg(seqz);
+  double twavgx = tnumberseq_twavg(seqx);
+  double twavgy = tnumberseq_twavg(seqy);
+  double twavgz = (hasz) ? tnumberseq_twavg(seqz) : 0.0;
   GSERIALIZED *result = gspoint_make(twavgx, twavgy, twavgz, hasz, false, srid);
   pfree(seqx); pfree(seqy);
   if (hasz)

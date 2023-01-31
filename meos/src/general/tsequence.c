@@ -5661,6 +5661,19 @@ tnumbercontseq_twavg(const TSequence *seq)
   return result;
 }
 
+/**
+ * @ingroup libmeos_internal_temporal_agg
+ * @brief Return the time-weighted average of a temporal sequence number
+ * @sqlfunc twAvg()
+ */
+double
+tnumberseq_twavg(const TSequence *seq)
+{
+  double result = MOBDB_FLAGS_GET_DISCRETE(seq->flags) ?
+      tnumberdiscseq_twavg(seq) : tnumbercontseq_twavg(seq);
+  return result;
+}
+
 /*****************************************************************************
  * Functions for defining B-tree indexes
  *****************************************************************************/
