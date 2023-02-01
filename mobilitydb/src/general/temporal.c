@@ -621,7 +621,7 @@ tsequence_constructor_ext(FunctionCallInfo fcinfo, bool get_bounds,
   bool lower_inc = (! get_bounds) ? true : PG_GETARG_BOOL(1);
   bool upper_inc = (! get_bounds) ? true : PG_GETARG_BOOL(2);
   bool linear = get_linear ? PG_GETARG_BOOL(3) : false;
-  interpType interp = (! get_bounds) ? DISCRETE : (linear ? LINEAR : STEPWISE);
+  interpType interp = (! get_bounds) ? DISCRETE : (linear ? LINEAR : STEP);
   ensure_non_empty_array(array);
   int count;
   TInstant **instants = (TInstant **) temporalarr_extract(array, &count);
@@ -648,7 +648,7 @@ Tdiscseq_constructor(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Tstepseq_constructor);
 /**
  * @ingroup mobilitydb_temporal_constructor
- * @brief Construct a temporal sequence with stepwise interpolation from the
+ * @brief Construct a temporal sequence with step interpolation from the
  * array of temporal instants
  * @sqlfunc tbool_seq(), tint_seq(), ttext_seq(),
  */
@@ -707,13 +707,13 @@ tsequenceset_constructor_gaps_ext(FunctionCallInfo fcinfo, bool get_linear,
   Interval *maxt;
   if (get_linear)
   {
-    interp = PG_GETARG_BOOL(1) ? LINEAR : STEPWISE;
+    interp = PG_GETARG_BOOL(1) ? LINEAR : STEP;
     maxdist = PG_GETARG_FLOAT8(2);
     maxt = PG_GETARG_INTERVAL_P(3);
   }
   else
   {
-    interp = STEPWISE;
+    interp = STEP;
     if (get_dist)
     {
       maxdist = PG_GETARG_FLOAT8(1);
@@ -738,7 +738,7 @@ tsequenceset_constructor_gaps_ext(FunctionCallInfo fcinfo, bool get_linear,
 PG_FUNCTION_INFO_V1(Tscalarseqset_constructor_gaps);
 /**
  * @ingroup mobilitydb_temporal_constructor
- * @brief Construct a temporal sequence set with stepwise interpolation
+ * @brief Construct a temporal sequence set with step interpolation
  * from the array of temporal instants with scalar base type, that is,
  * a base type that does not have distance.
  * @sqlfunc tbool_seqset_gaps(), ttext_seqset_gaps(),
@@ -752,7 +752,7 @@ Tscalarseqset_constructor_gaps(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Tstepseqset_constructor_gaps);
 /**
  * @ingroup mobilitydb_temporal_constructor
- * @brief Construct a temporal sequence set with stepwise interpolation from the
+ * @brief Construct a temporal sequence set with step interpolation from the
  * array of temporal instants
  * @sqlfunc tint_seqset_gaps()
  */
@@ -765,7 +765,7 @@ Tstepseqset_constructor_gaps(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Tlinearseqset_constructor_gaps);
 /**
  * @ingroup mobilitydb_temporal_constructor
- * @brief Construct a temporal sequence set with linear or stepwise interpolation
+ * @brief Construct a temporal sequence set with linear or step interpolation
  * from the array of temporal instants
  * @sqlfunc tfloat_seqset_gaps(), tgeompoint_seqset_gaps()
  */
@@ -807,9 +807,9 @@ Tsequence_from_base_time(PG_FUNCTION_ARGS)
   Datum value = PG_GETARG_ANYDATUM(0);
   Span *p = PG_GETARG_SPAN_P(1);
   meosType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
-  interpType interp = temptype_continuous(temptype) ? LINEAR : STEPWISE;
+  interpType interp = temptype_continuous(temptype) ? LINEAR : STEP;
   if (PG_NARGS() > 2)
-    interp = PG_GETARG_BOOL(2) ? LINEAR : STEPWISE;
+    interp = PG_GETARG_BOOL(2) ? LINEAR : STEP;
   TSequence *result = tsequence_from_base_time(value, temptype, p, interp);
   PG_RETURN_POINTER(result);
 }
@@ -827,9 +827,9 @@ Tsequenceset_from_base_time(PG_FUNCTION_ARGS)
   Datum value = PG_GETARG_ANYDATUM(0);
   SpanSet *ps = PG_GETARG_SPANSET_P(1);
   meosType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
-  interpType interp = temptype_continuous(temptype) ? LINEAR : STEPWISE;
+  interpType interp = temptype_continuous(temptype) ? LINEAR : STEP;
   if (PG_NARGS() > 2)
-    interp = PG_GETARG_BOOL(2) ? LINEAR : STEPWISE;
+    interp = PG_GETARG_BOOL(2) ? LINEAR : STEP;
   TSequenceSet *result = tsequenceset_from_base_time(value, temptype, ps,
     interp);
   PG_FREE_IF_COPY(ps, 1);
@@ -1800,7 +1800,7 @@ Temporal_to_tsequenceset(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Tempstep_to_templinear);
 /**
  * @ingroup mobilitydb_temporal_transf
- * @brief Transform a temporal value with continuous base type from stepwise
+ * @brief Transform a temporal value with continuous base type from step
  * to linear interpolation
  * @sqlfunc toLinear  ()
  */

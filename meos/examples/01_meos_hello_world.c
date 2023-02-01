@@ -51,10 +51,10 @@ int main()
   char *inst_wkt = "POINT(1 1)@2000-01-01";
   char *seq_disc_wkt = "{POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02}";
   char *seq_linear_wkt = "[POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02]";
-  char *seq_step_wkt = "Interp=Stepwise;[POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02]";
+  char *seq_step_wkt = "Interp=Step;[POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02]";
   char *ss_linear_wkt = "{[POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02],"
     "[POINT(3 3)@2000-01-03, POINT(3 3)@2000-01-04]}";
-  char *ss_step_wkt = "Interp=Stepwise;{[POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02],"
+  char *ss_step_wkt = "Interp=Step;{[POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02],"
     "[POINT(3 3)@2000-01-03, POINT(3 3)@2000-01-04]}";
 
   /* Read WKT into temporal point object */
@@ -95,9 +95,9 @@ int main()
     "--------\n%s\n", seq_linear_wkt, seq_linear_mfjson);
   char *seq_step_mfjson = temporal_as_mfjson(seq_step, true, 3, 6, NULL);
   printf("\n"
-    "-------------------------------------------------\n"
-    "| Temporal Sequence with Stepwise Interpolation |\n"
-    "-------------------------------------------------\n"
+    "--------------------------------------------\n"
+    "| Temporal Sequence with Step Interpolation |\n"
+    "--------------------------------------------\n"
     "WKT:\n"
     "----\n%s\n\n"
     "MF-JSON:\n"
@@ -113,9 +113,9 @@ int main()
     "--------\n%s\n", ss_linear_wkt, ss_linear_mfjson);
   char *ss_step_mfjson = temporal_as_mfjson(ss_step, true, 3, 6, NULL);
   printf("\n"
-    "-----------------------------------------------------\n"
-    "| Temporal Sequence Set with Stepwise Interpolation |\n"
-    "-----------------------------------------------------\n"
+    "------------------------------------------------\n"
+    "| Temporal Sequence Set with Step Interpolation |\n"
+    "------------------------------------------------\n"
     "WKT:\n"
     "----\n%s\n\n"
     "MF-JSON:\n"

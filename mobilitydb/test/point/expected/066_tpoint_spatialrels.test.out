@@ -305,7 +305,7 @@ SELECT edisjoint(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))', tgeompoint '{Point(3
  t
 (1 row)
 
-SELECT edisjoint(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint '[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02]');
+SELECT edisjoint(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint '[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02]');
  edisjoint 
 -----------
  t
@@ -851,13 +851,13 @@ SELECT eintersects(tgeompoint '{[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02], 
  f
 (1 row)
 
-SELECT eintersects(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint '[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02]');
+SELECT eintersects(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint '[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02]');
  eintersects 
 -------------
  t
 (1 row)
 
-SELECT eintersects(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02]', tgeompoint 'Interp=Stepwise;[Point(1 0)@2000-01-01, Point(1 1)@2000-01-02]');
+SELECT eintersects(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02]', tgeompoint 'Interp=Step;[Point(1 0)@2000-01-01, Point(1 1)@2000-01-02]');
  eintersects 
 -------------
  t
@@ -1997,13 +1997,13 @@ SELECT edwithin(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tge
  t
 (1 row)
 
-SELECT edwithin(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'Interp=Stepwise;[Point(5 0)@2000-01-01, Point(3 2)@2000-01-02]', 1);
+SELECT edwithin(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'Interp=Step;[Point(5 0)@2000-01-01, Point(3 2)@2000-01-02]', 1);
  edwithin 
 ----------
  t
 (1 row)
 
-SELECT edwithin(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'Interp=Stepwise;[Point(2 2)@2000-01-01, Point(2 2)@2000-01-02]', 1);
+SELECT edwithin(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'Interp=Step;[Point(2 2)@2000-01-01, Point(2 2)@2000-01-02]', 1);
  edwithin 
 ----------
  t

@@ -1609,7 +1609,7 @@ tpointseq_decouple1(const TSequence *seq, int64 *times)
     times[i] = (inst->t / 1e6) + DELTA_UNIX_POSTGRES_EPOCH;
   }
   LWGEOM *result = lwpointarr_make_trajectory(points, seq->count,
-    MOBDB_FLAGS_GET_LINEAR(seq->flags) ? LINEAR : STEPWISE);
+    MOBDB_FLAGS_GET_LINEAR(seq->flags) ? LINEAR : STEP);
   for (int i = 0; i < seq->count; i++)
     lwpoint_free((LWPOINT *) points[i]);
   pfree(points);

@@ -730,7 +730,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="toLinear"><varname>toLinear</varname></link>: Transform a temporal value with continuous base type from stepwise to linear interpolation</para>
+					<para><link linkend="toLinear"><varname>toLinear</varname></link>: Transform a temporal value with continuous base type from step to linear interpolation</para>
 				</listitem>
 
 				<listitem>
@@ -1482,7 +1482,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_contseq"><varname>tnpoint_contseq</varname></link>: Constructor for temporal network points of sequence subtype and continuous interpolation, that is, linear or stepwise interpolation</para>
+						<para><link linkend="tnpoint_contseq"><varname>tnpoint_contseq</varname></link>: Constructor for temporal network points of sequence subtype and continuous interpolation, that is, linear or step interpolation</para>
 					</listitem>
 
 					<listitem>

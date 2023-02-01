@@ -241,8 +241,7 @@ parse_mfjson_points(json_object *mfjson, int srid, bool geodetic,
   Datum *values = palloc(sizeof(Datum) * numpoints);
   for (int i = 0; i < numpoints; ++i)
   {
-    json_object *coords = NULL;
-    coords = json_object_array_get_idx(coordinates, i);
+    json_object *coords = json_object_array_get_idx(coordinates, i);
     values[i] = parse_mfjson_coord(coords, srid, geodetic);
   }
   *count = numpoints;
@@ -305,25 +304,26 @@ tinstant_from_mfjson(json_object *mfjson, bool isgeo, int srid,
     json_object *values = findMemberByName(mfjson, "values");
     if (values == NULL)
       elog(ERROR, "Unable to find 'values' in MFJSON string");
+    json_object *val = json_object_array_get_idx(values, 0);
     switch (temptype)
     {
       case T_TBOOL:
-        if (json_object_get_type(values) != json_type_boolean)
+        if (json_object_get_type(val) != json_type_boolean)
           elog(ERROR, "Invalid boolean value in 'values' array in MFJSON string");
-        value = BoolGetDatum(json_object_get_boolean(values));
+        value = BoolGetDatum(json_object_get_boolean(val));
         break;
       case T_TINT:
-        if (json_object_get_type(values) != json_type_int)
+        if (json_object_get_type(val) != json_type_int)
           elog(ERROR, "Invalid integer value in 'values' array in MFJSON string");
-        value = Int32GetDatum(json_object_get_int(values));
+        value = Int32GetDatum(json_object_get_int(val));
         break;
       case T_TFLOAT:
-        value = Float8GetDatum(json_object_get_double(values));
+        value = Float8GetDatum(json_object_get_double(val));
         break;
       case T_TTEXT:
-        if (json_object_get_type(values) != json_type_string)
+        if (json_object_get_type(val) != json_type_string)
           elog(ERROR, "Invalid string value in 'values' array in MFJSON string");
-        value = PointerGetDatum(cstring2text(json_object_get_string(values)));
+        value = PointerGetDatum(cstring2text(json_object_get_string(val)));
         break;
       default: /* Error! */
         elog(ERROR, "Unknown temporal type: %d", temptype);
@@ -335,7 +335,8 @@ tinstant_from_mfjson(json_object *mfjson, bool isgeo, int srid,
     json_object *coordinates = findMemberByName(mfjson, "coordinates");
     if (coordinates == NULL)
       elog(ERROR, "Unable to find 'coordinates' in MFJSON string");
-    value = parse_mfjson_coord(coordinates, srid, geodetic);
+    json_object *coords = json_object_array_get_idx(coordinates, 0);
+    value = parse_mfjson_coord(coords, srid, geodetic);
   }
 
   /* Get datetimes
@@ -346,7 +347,9 @@ tinstant_from_mfjson(json_object *mfjson, bool isgeo, int srid,
   json_object *datetimes = findMemberByName(mfjson, "datetimes");
   /* We don't need to test that datetimes is NULL since we look for the
    * "datetimes" member and then call this function */
-  const char *strdatetimes = json_object_get_string(datetimes);
+  json_object* datevalue = NULL;
+  datevalue = json_object_array_get_idx(datetimes, 0);
+  const char *strdatetimes = json_object_get_string(datevalue);
   if (strdatetimes == NULL)
   {
     elog(ERROR, "Invalid 'datetimes' value in MFJSON string");
@@ -509,7 +512,7 @@ tsequence_from_mfjson(json_object *mfjson, bool isgeo, int srid,
 TSequence *
 tboolseq_from_mfjson(json_object *mfjson)
 {
-  return tsequence_from_mfjson(mfjson, false, 0, T_TBOOL, STEPWISE);
+  return tsequence_from_mfjson(mfjson, false, 0, T_TBOOL, STEP);
 }
 
 /**
@@ -520,7 +523,7 @@ tboolseq_from_mfjson(json_object *mfjson)
 TSequence *
 tintseq_from_mfjson(json_object *mfjson)
 {
-  return tsequence_from_mfjson(mfjson, false, 0, T_TINT, STEPWISE);
+  return tsequence_from_mfjson(mfjson, false, 0, T_TINT, STEP);
 }
 
 /**
@@ -542,7 +545,7 @@ tfloatseq_from_mfjson(json_object *mfjson, interpType interp)
 TSequence *
 ttextseq_from_mfjson(json_object *mfjson)
 {
-  return tsequence_from_mfjson(mfjson, false, 0, T_TTEXT, STEPWISE);
+  return tsequence_from_mfjson(mfjson, false, 0, T_TTEXT, STEP);
 }
 
 /**
@@ -610,7 +613,7 @@ tsequenceset_from_mfjson(json_object *mfjson, bool isgeo, int srid,
 TSequenceSet *
 tboolseqset_from_mfjson(json_object *mfjson)
 {
-  return tsequenceset_from_mfjson(mfjson, false, 0, T_TBOOL, STEPWISE);
+  return tsequenceset_from_mfjson(mfjson, false, 0, T_TBOOL, STEP);
 }
 
 /**
@@ -621,7 +624,7 @@ tboolseqset_from_mfjson(json_object *mfjson)
 TSequenceSet *
 tintseqset_from_mfjson(json_object *mfjson)
 {
-  return tsequenceset_from_mfjson(mfjson, false, 0, T_TINT, STEPWISE);
+  return tsequenceset_from_mfjson(mfjson, false, 0, T_TINT, STEP);
 }
 
 /**
@@ -643,7 +646,7 @@ tfloatseqset_from_mfjson(json_object *mfjson, interpType interp)
 TSequenceSet *
 ttextseqset_from_mfjson(json_object *mfjson)
 {
-  return tsequenceset_from_mfjson(mfjson, false, 0, T_TTEXT, STEPWISE);
+  return tsequenceset_from_mfjson(mfjson, false, 0, T_TTEXT, STEP);
 }
 
 /**
@@ -698,7 +701,6 @@ temporal_from_mfjson(const char *mfjson)
   json_object *poObjType = NULL;
   json_object *poObjInterp = NULL;
   json_object *poObjInterp1 = NULL;
-  json_object *poObjDates = NULL;
   json_object *poObjSrs = NULL;
 
   /* Begin to parse json */
@@ -744,16 +746,16 @@ temporal_from_mfjson(const char *mfjson)
   /*
    * Determine interpolation type
    */
-  poObjInterp = findMemberByName(poObj, "interpolations");
+  poObjInterp = findMemberByName(poObj, "interpolation");
   if (poObjInterp == NULL)
-    elog(ERROR, "Unable to find 'interpolations' in MFJSON string");
+    elog(ERROR, "Unable to find 'interpolation' in MFJSON string");
 
   if (json_object_get_type(poObjInterp) != json_type_array)
     elog(ERROR, "Invalid 'interpolations' value in MFJSON string");
 
   const int nSize = json_object_array_length(poObjInterp);
   if (nSize != 1)
-    elog(ERROR, "Multiple 'interpolations' values in MFJSON string");
+    elog(ERROR, "Multiple 'interpolation' values in MFJSON string");
 
   bool isgeo = tgeo_type(temptype);
   if (isgeo)
@@ -795,21 +797,15 @@ temporal_from_mfjson(const char *mfjson)
   const char *pszInterp = json_object_get_string(poObjInterp1);
   if (pszInterp)
   {
-    if (strcmp(pszInterp, "Discrete") == 0)
-    {
-      poObjDates = findMemberByName(poObj, "datetimes");
-      if (poObjDates != NULL &&
-        json_object_get_type(poObjDates) == json_type_array)
-        result = (Temporal *) tsequence_from_mfjson(poObj, isgeo, srid,
-          temptype, DISCRETE);
-      else
-        result = (Temporal *) tinstant_from_mfjson(poObj, isgeo, srid,
-          temptype);
-    }
-    else if (strcmp(pszInterp, "Stepwise") == 0 ||
+    if (strcmp(pszInterp, "None") == 0)
+      result = (Temporal *) tinstant_from_mfjson(poObj, isgeo, srid, temptype);
+    else if (strcmp(pszInterp, "Discrete") == 0)
+      result = (Temporal *) tsequence_from_mfjson(poObj, isgeo, srid,
+        temptype, DISCRETE);
+    else if (strcmp(pszInterp, "Step") == 0 ||
       strcmp(pszInterp, "Linear") == 0)
     {
-      interpType interp = (strcmp(pszInterp, "Linear") == 0) ? LINEAR : STEPWISE;
+      interpType interp = (strcmp(pszInterp, "Linear") == 0) ? LINEAR : STEP;
       json_object *poObjSeqs = findMemberByName(poObj, "sequences");
       if (poObjSeqs != NULL)
         result = (Temporal *) tsequenceset_from_mfjson(poObj, isgeo, srid,
@@ -819,7 +815,7 @@ temporal_from_mfjson(const char *mfjson)
           temptype, interp);
     }
     else
-      elog(ERROR, "Invalid 'interpolations' value in MFJSON string");
+      elog(ERROR, "Invalid 'interpolation' value in MFJSON string");
   }
 
   return result;

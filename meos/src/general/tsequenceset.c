@@ -567,7 +567,7 @@ tsequenceset_from_base_time(Datum value, meosType temptype,
 TSequenceSet *
 tboolseqset_from_base_time(bool b, const SpanSet *ps)
 {
-  return tsequenceset_from_base_time(BoolGetDatum(b), T_TBOOL, ps, STEPWISE);
+  return tsequenceset_from_base_time(BoolGetDatum(b), T_TBOOL, ps, STEP);
 }
 
 /**
@@ -578,7 +578,7 @@ tboolseqset_from_base_time(bool b, const SpanSet *ps)
 TSequenceSet *
 tintseqset_from_base_time(int i, const SpanSet *ps)
 {
-  return tsequenceset_from_base_time(Int32GetDatum(i), T_TINT, ps, STEPWISE);
+  return tsequenceset_from_base_time(Int32GetDatum(i), T_TINT, ps, STEP);
 }
 
 /**
@@ -635,7 +635,7 @@ tgeogpointseqset_from_base_time(const GSERIALIZED *gs, const SpanSet *ps,
 /**
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the array of distinct base values of a temporal sequence set
- * with stepwise interpolation
+ * with step interpolation
  *
  * @param[in] ss Temporal sequence set
  * @param[out] count Number of elements in the output array
@@ -1201,7 +1201,7 @@ tintseqset_to_tfloatseqset(const TSequenceSet *ss)
   TSequenceSet *result = tsequenceset_copy(ss);
   result->temptype = T_TFLOAT;
   MOBDB_FLAGS_SET_CONTINUOUS(result->flags, true);
-  MOBDB_FLAGS_SET_INTERP(result->flags, STEPWISE);
+  MOBDB_FLAGS_SET_INTERP(result->flags, STEP);
   for (int i = 0; i < ss->count; i++)
   {
     TSequence *seq = (TSequence *) tsequenceset_seq_n(result, i);
@@ -1229,7 +1229,7 @@ tfloatseqset_to_tintseqset(const TSequenceSet *ss)
   TSequenceSet *result = tsequenceset_copy(ss);
   result->temptype = T_TINT;
   MOBDB_FLAGS_SET_CONTINUOUS(result->flags, false);
-  MOBDB_FLAGS_SET_INTERP(result->flags, STEPWISE);
+  MOBDB_FLAGS_SET_INTERP(result->flags, STEP);
   for (int i = 0; i < ss->count; i++)
   {
     TSequence *seq = (TSequence *) tsequenceset_seq_n(result, i);
@@ -1276,7 +1276,7 @@ tsequenceset_compact(const TSequenceSet *ss)
 TSequenceSet *
 tinstant_to_tsequenceset(const TInstant *inst, interpType interp)
 {
-  assert(interp == STEPWISE || interp == LINEAR);
+  assert(interp == STEP || interp == LINEAR);
   TSequence *seq = tinstant_to_tsequence(inst, interp);
   TSequenceSet *result = tsequence_to_tsequenceset(seq);
   pfree(seq);
@@ -1292,7 +1292,7 @@ tinstant_to_tsequenceset(const TInstant *inst, interpType interp)
 TSequenceSet *
 tdiscseq_to_tsequenceset(const TSequence *seq, interpType interp)
 {
-  assert(interp == STEPWISE || interp == LINEAR);
+  assert(interp == STEP || interp == LINEAR);
   TSequence **sequences = palloc(sizeof(TSequence *) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
@@ -1347,7 +1347,7 @@ tsequence_to_tsequenceset(const TSequence *seq)
   assert(seq);
   if (MOBDB_FLAGS_GET_DISCRETE(seq->flags))
   {
-    interpType interp = MOBDB_FLAGS_GET_CONTINUOUS(seq->flags) ? LINEAR : STEPWISE;
+    interpType interp = MOBDB_FLAGS_GET_CONTINUOUS(seq->flags) ? LINEAR : STEP;
     return tdiscseq_to_tsequenceset(seq, interp);
   }
   return tsequenceset_make(&seq, 1, NORMALIZE_NO);
@@ -1356,7 +1356,7 @@ tsequence_to_tsequenceset(const TSequence *seq)
 /**
  * @ingroup libmeos_internal_temporal_transf
  * @brief Return a temporal sequence set with continuous base type from
- * stepwise to linear interpolation.
+ * step to linear interpolation.
  * @sqlfunc toLinear()
  */
 TSequenceSet *
@@ -2675,7 +2675,7 @@ tsequenceset_to_string(const TSequenceSet *ss, int maxdd, outfunc value_out)
   char prefix[20];
   if (MOBDB_FLAGS_GET_CONTINUOUS(ss->flags) &&
       ! MOBDB_FLAGS_GET_LINEAR(ss->flags))
-    sprintf(prefix, "Interp=Stepwise;");
+    sprintf(prefix, "Interp=Step;");
   else
     prefix[0] = '\0';
   for (int i = 0; i < ss->count; i++)
@@ -2818,7 +2818,7 @@ tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2)
         instants[1] = tsequence_inst_n(seq2, 0);
         count = (timestamptz_cmp_internal(instants[0]->t, instants[1]->t) == 0) ?
           1 : 2;
-        /* We put true so that it works with stepwise interpolation */
+        /* We put true so that it works with step interpolation */
         tofree[l] = tsequence_make(instants, count, true, true, interp,
           NORMALIZE_NO);
         sequences[k++] = (const TSequence *) tofree[l++];
@@ -2832,7 +2832,7 @@ tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2)
         instants[1] = tsequence_inst_n(seq1, 0);
         count = (timestamptz_cmp_internal(instants[0]->t, instants[1]->t) == 0) ?
           1 : 2;
-        /* We put true so that it works with stepwise interpolation */
+        /* We put true so that it works with step interpolation */
         tofree[l] = tsequence_make(instants, count, true, true, interp,
           NORMALIZE_NO);
         sequences[k++] = (const TSequence *) tofree[l++];
@@ -3040,7 +3040,7 @@ tsequenceset_delete_periodset(const TSequenceSet *ss, const SpanSet *ps)
       instants[1] = tsequence_inst_n(seq, 0);
       int count = (timestamptz_cmp_internal(instants[0]->t, instants[1]->t) == 0) ?
         1 : 2;
-      /* We put true so that it works with stepwise interpolation */
+      /* We put true so that it works with step interpolation */
       tofree[l] = tsequence_make(instants, count, true, true, interp,
         NORMALIZE_NO);
       sequences[k++] = tofree[l++];

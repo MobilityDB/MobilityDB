@@ -43,7 +43,7 @@ SELECT asEWKT(ARRAY[geometry 'SRID=5676;Point(0 0)', 'SRID=5676;Point(1 1)']);
 				<listitem id="asMFJSON">
 					<indexterm><primary><varname>asMFJSON</varname></primary></indexterm>
 					<para>Obtener la representación JSON de características móviles (Moving Features JSON o MF-JSON) &Z_support; &geography_support;</para>
-					<para><varname>asMFJSON(tpoint,options integer=0,flags integer=0,maxdecdigits integer=15) → bytea</varname></para>
+					<para><varname>asMFJSON(tpoint,options=0,flags=0,maxdecdigits=15) → bytea</varname></para>
 					<para>El argumento <varname>options</varname> puede usarse para agregar BBOX y/o CRS en la salida MFJSON:</para>
 					<itemizedlist>
 						<listitem><para>0: significa que no hay opción (valor por defecto)</para></listitem>
@@ -272,21 +272,21 @@ SELECT expandSpace(tgeompoint 'Point(0 0)@2001-01-01', 2);
 SELECT getX(tgeompoint '{Point(1 2)@2000-01-01, Point(3 4)@2000-01-02,
   Point(5 6)@2000-01-03}');
 -- {1@2000-01-01, 3@2000-01-02, 5@2000-01-03}
-SELECT getX(tgeogpoint 'Interp=Stepwise;[Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02,
+SELECT getX(tgeogpoint 'Interp=Step;[Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02,
   Point(7 8 9)@2000-01-03]');
--- Interp=Stepwise;[1@2000-01-01, 4@2000-01-02, 7@2000-01-03]
+-- Interp=Step;[1@2000-01-01, 4@2000-01-02, 7@2000-01-03]
 SELECT getY(tgeompoint '{Point(1 2)@2000-01-01, Point(3 4)@2000-01-02,
   Point(5 6)@2000-01-03}');
 -- {2@2000-01-01, 4@2000-01-02, 6@2000-01-03}
-SELECT getY(tgeogpoint 'Interp=Stepwise;[Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02,
+SELECT getY(tgeogpoint 'Interp=Step;[Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02,
   Point(7 8 9)@2000-01-03]');
--- Interp=Stepwise;[2@2000-01-01, 5@2000-01-02, 8@2000-01-03]
+-- Interp=Step;[2@2000-01-01, 5@2000-01-02, 8@2000-01-03]
 SELECT getZ(tgeompoint '{Point(1 2)@2000-01-01, Point(3 4)@2000-01-02,
   Point(5 6)@2000-01-03}');
 -- The temporal point do not have Z dimension
-SELECT getZ(tgeogpoint 'Interp=Stepwise;[Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02,
+SELECT getZ(tgeogpoint 'Interp=Step;[Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02,
   Point(7 8 9)@2000-01-03]');
--- Interp=Stepwise;[3@2000-01-01, 6@2000-01-02, 9@2000-01-03]
+-- Interp=Step;[3@2000-01-01, 6@2000-01-02, 9@2000-01-03]
 </programlisting>
 				</listitem>
 
@@ -318,7 +318,7 @@ SELECT length(tgeompoint '[Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02]');
 SELECT length(tgeompoint '[Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02,
   Point(0 0 0)@2000-01-03]');
 -- 3.46410161513775
-SELECT length(tgeompoint 'Interp=Stepwise;[Point(0 0 0)@2000-01-01,
+SELECT length(tgeompoint 'Interp=Step;[Point(0 0 0)@2000-01-01,
   Point(1 1 1)@2000-01-02, Point(0 0 0)@2000-01-03]');
 -- 0
 </programlisting>
@@ -333,9 +333,9 @@ SELECT round(cumulativeLength(tgeompoint '{[Point(0 0)@2000-01-01, Point(1 1)@20
   Point(1 0)@2000-01-03], [Point(1 0)@2000-01-04, Point(0 0)@2000-01-05]}'), 6);
 -- {[0@2000-01-01, 1.414214@2000-01-02, 2.414214@2000-01-03],
   [2.414214@2000-01-04, 3.414214@2000-01-05]}
-SELECT cumulativeLength(tgeompoint 'Interp=Stepwise;[Point(0 0 0)@2000-01-01,
+SELECT cumulativeLength(tgeompoint 'Interp=Step;[Point(0 0 0)@2000-01-01,
   Point(1 1 1)@2000-01-02, Point(0 0 0)@2000-01-03]');
--- Interp=Stepwise;[0@2000-01-01, 0@2000-01-03]
+-- Interp=Step;[0@2000-01-01, 0@2000-01-03]
 </programlisting>
 				</listitem>
 
@@ -347,9 +347,9 @@ SELECT cumulativeLength(tgeompoint 'Interp=Stepwise;[Point(0 0 0)@2000-01-01,
 					<programlisting language="sql" xml:space="preserve">
 SELECT speed(tgeompoint '{[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02,
   Point(1 0)@2000-01-03], [Point(1 0)@2000-01-04, Point(0 0)@2000-01-05]}') * 3600 * 24;
-/* Interp=Stepwise;{[1.4142135623731@2000-01-01, 1@2000-01-02, 1@2000-01-03],
+/* Interp=Step;{[1.4142135623731@2000-01-01, 1@2000-01-02, 1@2000-01-03],
    [1@2000-01-04, 1@2000-01-05]} */
-SELECT speed(tgeompoint 'Interp=Stepwise;[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02,
+SELECT speed(tgeompoint 'Interp=Step;[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02,
   Point(1 0)@2000-01-03]');
 -- ERROR:  The temporal value must have linear interpolation
 </programlisting>
@@ -373,7 +373,7 @@ SELECT ST_AsText(twCentroid(tgeompoint '{[Point(0 0 0)@2001-01-01,
 					<programlisting language="sql" xml:space="preserve">
 SELECT degrees(azimuth(tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02,
   Point(1 1 1)@2001-01-03, Point(0 0 0)@2001-01-04)'));
--- Interp=Stepwise;{[45@2001-01-01, 45@2001-01-02], [225@2001-01-03, 225@2001-01-04)}
+-- Interp=Step;{[45@2001-01-01, 45@2001-01-02], [225@2001-01-03, 225@2001-01-04)}
 </programlisting>
 				</listitem>
 
@@ -441,7 +441,7 @@ SELECT asText(makeSimple(tgeompoint '{[Point(0 0 0)@2000-01-01, Point(1 1 1)@200
 				<listitem id="simplify">
 					<indexterm><primary><varname>simplify</varname></primary></indexterm>
 					<para>Simplificar un punto temporal usando una generalización del <ulink url="https://es.wikipedia.org/wiki/Algoritmo_de_Ramer%E2%80%93Douglas%E2%80%93Peucker">algoritmo de Douglas-Peucker</ulink> &Z_support;</para>
-					<para><varname>simplify(tpoint,distance float,sync bool DEFAULT false) → tpoint</varname></para>
+					<para><varname>simplify(tpoint,distance float,SED bool=false) → tpoint</varname></para>
 					<para>La función elimina los puntos cuya distancia es menor que la distancia pasada como tercer argumento, que se especifica en las unidades del sistema de coordenadas. El tercer argumento especifica si se utiliza la distancia euclidiana o la distancia euclidiana sincronizada (Synchronized Euclidean Disance o SED). Observe que la simplificación se aplica sólo a secuencias temporales o conjuntos de secuencias con interpolación lineal. En todos los demás casos, se devuelve una copia del punto temporal dado.</para>
 					<programlisting language="sql" xml:space="preserve">
 -- Euclidean distance
@@ -562,7 +562,7 @@ SELECT tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-03,
   Point(0 0 0)@2001-01-05)' |=| tgeompoint '[Point(2 0 0)@2001-01-02,
   Point(1 1 1)@2001-01-04, Point(2 2 2)@2001-01-06)';
 -- 0.5
-SELECT tgeompoint 'Interp=Stepwise;(Point(1 1)@2000-01-01, Point(3 1)@2000-01-03]' |=|
+SELECT tgeompoint 'Interp=Step;(Point(1 1)@2000-01-01, Point(3 1)@2000-01-03]' |=|
   geometry 'Linestring(1 3,2 2,3 3)';
 -- 1.4142135623731
 </programlisting>
@@ -586,7 +586,7 @@ SELECT ST_DistanceCPA(
 SELECT asText(NearestApproachInstant(tgeompoint '(Point(1 1)@2000-01-01,
   Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
 -- POINT(2 1)@2000-01-02
-SELECT asText(NearestApproachInstant(tgeompoint 'Interp=Stepwise;(Point(1 1)@2000-01-01,
+SELECT asText(NearestApproachInstant(tgeompoint 'Interp=Step;(Point(1 1)@2000-01-01,
   Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
 -- POINT(1 1)@2000-01-01
 SELECT asText(NearestApproachInstant(tgeompoint '(Point(1 1)@2000-01-01,
@@ -617,7 +617,7 @@ SELECT to_timestamp(ST_ClosestPointOfApproach(
 SELECT ST_AsText(shortestLine(tgeompoint '(Point(1 1)@2000-01-01,
   Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
 -- LINESTRING(2 1,2 2)
-SELECT ST_AsText(shortestLine(tgeompoint 'Interp=Stepwise;(Point(1 1)@2000-01-01,
+SELECT ST_AsText(shortestLine(tgeompoint 'Interp=Step;(Point(1 1)@2000-01-01,
   Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
 -- LINESTRING(1 1,2 2)
 SELECT ST_AsText(shortestLine(
@@ -872,7 +872,7 @@ SELECT tdwithin(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
   tgeompoint '[Point(0 0)@2001-01-01, Point(3 0)@2001-01-04)', 1);
 -- {[f@2001-01-01, t@2001-01-02, t@2001-01-03], (f@2001-01-03, f@2001-01-04)}
 SELECT tdwithin(tgeompoint '[Point(1 0)@2000-01-01, Point(1 4)@2000-01-05]',
-  tgeompoint 'Interp=Stepwise;[Point(1 2)@2000-01-01, Point(1 3)@2000-01-05]', 1);
+  tgeompoint 'Interp=Step;[Point(1 2)@2000-01-01, Point(1 3)@2000-01-05]', 1);
 -- {[f@2000-01-01, t@2000-01-02, t@2000-01-04], (f@2000-01-04, t@2000-01-05]}
 </programlisting>
 				</listitem>

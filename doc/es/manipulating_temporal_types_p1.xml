@@ -34,10 +34,6 @@
 		</listitem>
 
 		<listitem>
-			<para><varname>tscalar</varname> representa cualquier tipo temporal cuyo tipo de base no tiene una distancia definida, es decir, <varname>tbool</varname> o <varname>ttext</varname>,</para>
-		</listitem>
-
-		<listitem>
 			<para><varname>tnumber</varname> representa cualquier tipo de número temporal, es decir, <varname>tint</varname> o <varname>tfloat</varname>,</para>
 		</listitem>
 
@@ -198,16 +194,16 @@ SELECT tgeompoint '[Point(0 0)@2017-01-01 08:00:00, Point(0 0)@2017-01-01 08:05:
 SELECT tgeogpoint '[Point(0 0)@2017-01-01 08:00:00, Point(0 1)@2017-01-01 08:05:00,
   Point(0 0)@2017-01-01 08:10:00)';
 </programlisting>
-		<para>Los valores de secuencia cuyo tipo base es continuo pueden especificar que la interpolación es escalonada con el prefijo <varname>Interp=Stepwise</varname>. Si no se especifica, se supone que la interpolación es lineal por defecto. A continuación se dan ejemplos de valores de secuencia con interpolación escalonada:
+		<para>Los valores de secuencia cuyo tipo base es continuo pueden especificar que la interpolación es escalonada con el prefijo <varname>Interp=Step</varname>. Si no se especifica, se supone que la interpolación es lineal por defecto. A continuación se dan ejemplos de valores de secuencia con interpolación escalonada:
 		</para>
 		<programlisting language="sql" xml:space="preserve">
-SELECT tfloat 'Interp=Stepwise;[2.5@2001-01-01 08:00:00, 3@2001-01-01 08:10:00]';
-SELECT tgeompoint 'Interp=Stepwise;[Point(0 0)@2017-01-01 08:00:00,
+SELECT tfloat 'Interp=Step;[2.5@2001-01-01 08:00:00, 3@2001-01-01 08:10:00]';
+SELECT tgeompoint 'Interp=Step;[Point(0 0)@2017-01-01 08:00:00,
   Point(1 1)@2017-01-01 08:05:00, Point(1 1)@2017-01-01 08:10:00)';
-SELECT tgeompoint 'Interp=Stepwise;[Point(0 0)@2017-01-01 08:00:00,
+SELECT tgeompoint 'Interp=Step;[Point(0 0)@2017-01-01 08:00:00,
  Point(1 1)@2017-01-01 08:05:00, Point(0 0)@2017-01-01 08:10:00)';
-ERROR:  Invalid end value for temporal sequence with stepwise interpolation
-SELECT tgeogpoint 'Interp=Stepwise;[Point(0 0)@2017-01-01 08:00:00,
+ERROR:  Invalid end value for temporal sequence with step interpolation
+SELECT tgeogpoint 'Interp=Step;[Point(0 0)@2017-01-01 08:00:00,
   Point(1 1)@2017-01-01 08:10:00]';
 </programlisting>
 		<para>
@@ -231,15 +227,15 @@ SELECT tgeogpoint '{[Point(0 0)@2017-01-01 08:00:00, Point(0 1)@2017-01-01 08:05
   [Point(0 1)@2017-01-01 08:10:00, Point(1 1)@2017-01-01 08:15:00)}';
 </programlisting>
 		<para>
-			Los valores de conjunto de secuencias cuyo tipo base es continuo pueden especificar que la interpolación es escalonada con el prefijo <varname>Interp=Stepwise</varname>. Si no se especifica, se supone que la interpolación es lineal por defecto. A continuación se dan ejemplos de valores de conjunto de secuencias con interpolación escalonada:
+			Los valores de conjunto de secuencias cuyo tipo base es continuo pueden especificar que la interpolación es escalonada con el prefijo <varname>Interp=Step</varname>. Si no se especifica, se supone que la interpolación es lineal por defecto. A continuación se dan ejemplos de valores de conjunto de secuencias con interpolación escalonada:
 		</para>
 		<programlisting language="sql" xml:space="preserve">
-SELECT tfloat 'Interp=Stepwise;{[1@2001-01-01 08:00:00, 2@2001-01-03 08:00:00,
+SELECT tfloat 'Interp=Step;{[1@2001-01-01 08:00:00, 2@2001-01-03 08:00:00,
   2@2001-01-04 08:00:00, 3@2001-01-06 08:00:00]}';
-SELECT tgeompoint 'Interp=Stepwise;{[Point(0 0)@2017-01-01 08:00:00,
+SELECT tgeompoint 'Interp=Step;{[Point(0 0)@2017-01-01 08:00:00,
   Point(0 1)@2017-01-01 08:05:00], [Point(0 1)@2017-01-01 08:10:00,
   Point(0 1)@2017-01-01 08:15:00)}';
-SELECT tgeogpoint 'Interp=Stepwise;{[Point(0 0)@2017-01-01 08:00:00,
+SELECT tgeogpoint 'Interp=Step;{[Point(0 0)@2017-01-01 08:00:00,
   Point(0 1)@2017-01-01 08:05:00], [Point(0 1)@2017-01-01 08:10:00,
   Point(0 1)@2017-01-01 08:15:00)}';
 </programlisting>
@@ -275,7 +271,7 @@ SELECT tgeompoint 'SRID=5435;[SRID=4326;Point(0 0)@2000-01-01,
 			<listitem id="temporal_asMFJSON">
 				<indexterm><primary><varname>asMFJSON</varname></primary></indexterm>
 				<para>Obtener la representación JSON de características móviles (Moving Features JSON o MF-JSON)</para>
-				<para><varname>asMFJSON(ttype,options integer=0,flags integer=0,maxdecdigits integer=15) → bytea</varname></para>
+				<para><varname>asMFJSON(ttype,options=0,flags=0,maxdecdigits=15) → bytea</varname></para>
 				<para>El argumento <varname>options</varname> puede usarse para agregar un cuadro delimitador en la salida MFJSON:</para>
 				<itemizedlist>
 						<listitem><para>0: significa que no hay opción (valor por defecto)</para></listitem>
@@ -291,8 +287,8 @@ SELECT tgeompoint 'SRID=5435;[SRID=4326;Point(0 0)@2000-01-01,
 				<programlisting language="sql" xml:space="preserve">
 SELECT asMFJSON(tbool 't@2019-01-01 18:00:00', 1);
 /* {"type":"MovingBoolean","stBoundedBy":{"period":{"begin":"2019-01-01 18:00:00+01",
-   "end":"2019-01-01 18:00:00+01","lower_inc":true,"upper_inc":true}},"values":true,
-   "datetimes":"2019-01-01T18:00:00+01","interpolations":"Discrete"} */
+   "end":"2019-01-01 18:00:00+01","lower_inc":true,"upper_inc":true}},"values":[true],
+   "datetimes":"[2019-01-01T18:00:00+01]","interpolations":"Discrete"} */
 SELECT asMFJSON(tint '{10@2019-01-01 18:00:00, 25@2019-01-01 18:10:00}', 1); */
 /* {"type":"MovingInteger","stBoundedBy":{"bbox":[10,25],
    "period":{"begin":"2019-01-01 18:00:00+01","end":"2019-01-01 18:10:00+01"}},
@@ -306,7 +302,7 @@ SELECT asMFJSON(ttext '{[walking@2019-01-01 18:00:00+02,
   driving@2019-01-01 18:10:00+02]}');
 /* {"type":"MovingText","sequences":[{"values":["walking","driving"],
    "datetimes":["2019-01-01T17:00:00+01","2019-01-01T17:10:00+01"],
-   "lower_inc":true,"upper_inc":true}],"interpolations":["Stepwise"]} */
+   "lower_inc":true,"upper_inc":true}],"interpolations":["Step"]} */
 </programlisting>
 			</listitem>
 
@@ -485,18 +481,18 @@ SELECT tint_seqset(ARRAY[tint '[1@2001-01-01 08:00:00, 2@2001-01-01 08:05:00,
   2@2001-01-01 08:10:00, 2@2001-01-01 08:15:00)']);
 SELECT tfloat_seqset(ARRAY[tfloat '[1.0@2001-01-01 08:00:00, 2.0@2001-01-01 08:05:00,
   2.0@2001-01-01 08:10:00]', '[2.0@2001-01-01 08:15:00, 3.0@2001-01-01 08:20:00)']);
-SELECT tfloat_seqset(ARRAY[tfloat 'Interp=Stepwise;[1.0@2001-01-01 08:00:00,
+SELECT tfloat_seqset(ARRAY[tfloat 'Interp=Step;[1.0@2001-01-01 08:00:00,
   2.0@2001-01-01 08:05:00, 2.0@2001-01-01 08:10:00]',
-  'Interp=Stepwise;[3.0@2001-01-01 08:15:00, 3.0@2001-01-01 08:20:00)']);
+  'Interp=Step;[3.0@2001-01-01 08:15:00, 3.0@2001-01-01 08:20:00)']);
 SELECT ttext_seqset(ARRAY[ttext '[AAA@2001-01-01 08:00:00, AAA@2001-01-01 08:05:00)',
   '[BBB@2001-01-01 08:10:00, BBB@2001-01-01 08:15:00)']);
 SELECT tgeompoint_seqset(ARRAY[tgeompoint '[Point(0 0)@2001-01-01 08:00:00,
   Point(0 1)@2001-01-01 08:05:00, Point(0 1)@2001-01-01 08:10:00)',
   '[Point(0 1)@2001-01-01 08:15:00, Point(0 0)@2001-01-01 08:20:00)']);
 SELECT tgeogpoint_seqset(ARRAY[tgeogpoint
-  'Interp=Stepwise;[Point(0 0)@2001-01-01 08:00:00, Point(0 0)@2001-01-01 08:05:00)',
-  'Interp=Stepwise;[Point(1 1)@2001-01-01 08:10:00, Point(1 1)@2001-01-01 08:15:00)']);
-SELECT tfloat_seqset(ARRAY[tfloat 'Interp=Stepwise;[1.0@2001-01-01 08:00:00,
+  'Interp=Step;[Point(0 0)@2001-01-01 08:00:00, Point(0 0)@2001-01-01 08:05:00)',
+  'Interp=Step;[Point(1 1)@2001-01-01 08:10:00, Point(1 1)@2001-01-01 08:15:00)']);
+SELECT tfloat_seqset(ARRAY[tfloat 'Interp=Step;[1.0@2001-01-01 08:00:00,
   2.0@2001-01-01 08:05:00, 2.0@2001-01-01 08:10:00]',
   '[3.0@2001-01-01 08:15:00, 3.0@2001-01-01 08:20:00)']);
 -- ERROR:  Input sequences must have the same interpolation
@@ -543,7 +539,7 @@ SELECT tint '[1@2001-01-01, 2@2001-01-03]'::intspan;
 -- [1, 3)
 SELECT tfloat '(1@2000-01-01, 3@2000-01-03, 2@2000-01-05]'::floatspan;
 -- (1, 3]
-SELECT tfloat 'Interp=Stepwise;(1@2000-01-01, 3@2000-01-03, 2@2000-01-05]'::floatspan;
+SELECT tfloat 'Interp=Step;(1@2000-01-01, 3@2000-01-03, 2@2000-01-05]'::floatspan;
 -- [1, 3]
 </programlisting>
 
@@ -571,8 +567,8 @@ SELECT tgeogpoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]'::stbox;
 SELECT tint '[1@2001-01-01, 2@2001-01-03]'::tfloat;
 -- [1@2001-01-01 00:00:00+00, 2@2001-01-03 00:00:00+00]
 SELECT tint '[1@2000-01-01, 2@2000-01-03, 3@2000-01-05]'::tfloat;
--- Interp=Stepwise;[1@2000-01-01, 2@2000-01-03, 3@2000-01-05]
-SELECT tfloat 'Interp=Stepwise;[1.5@2001-01-01, 2.5@2001-01-03]'::tint;
+-- Interp=Step;[1@2000-01-01, 2@2000-01-03, 3@2000-01-05]
+SELECT tfloat 'Interp=Step;[1.5@2001-01-01, 2.5@2001-01-03]'::tint;
 -- [1@2001-01-01 00:00:00+00, 2@2001-01-03 00:00:00+00]
 SELECT tfloat '[1.5@2001-01-01, 2.5@2001-01-03]'::tint;
 -- ERROR:  Cannot cast temporal float with linear interpolation to temporal integer
@@ -663,19 +659,19 @@ SELECT tempSubtype(tint '[1@2001-01-01, 2@2001-01-02, 3@2001-01-03]');
 			<listitem id="interpolation">
 				<indexterm><primary><varname>interpolation</varname></primary></indexterm>
 				<para>Obtener la interpolación</para>
-				<para><varname>interpolation(ttype) → {'Discrete','Stepwise','Linear'}</varname></para>
+				<para><varname>interpolation(ttype) → {'Discrete','Step','Linear'}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT interpolation(tfloat '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03}');
 -- Discrete
 SELECT interpolation(tint '[1@2001-01-01, 2@2001-01-02, 3@2001-01-03]');
--- Stepwise
+-- Step
 SELECT interpolation(tfloat '[1@2001-01-01, 2@2001-01-02, 3@2001-01-03]');
 -- Linear
-SELECT interpolation(tfloat 'Interp=Stepwise;[1@2001-01-01, 2@2001-01-02, 3@2001-01-03]');
--- Stepwise
-SELECT interpolation(tgeompoint 'Interp=Stepwise;[Point(1 1)@2001-01-01,
+SELECT interpolation(tfloat 'Interp=Step;[1@2001-01-01, 2@2001-01-02, 3@2001-01-03]');
+-- Step
+SELECT interpolation(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01,
   Point(2 2)@2001-01-02, Point(3 3)@2001-01-03]');
--- Stepwise
+-- Step
 </programlisting>
 			</listitem>
 
@@ -713,13 +709,13 @@ SELECT asText(getValues(tgeompoint '{[Point(0 0)@2001-01-01, Point(0 1)@2001-01-
 				<programlisting language="sql" xml:space="preserve">
 SELECT trajectory(tfloat '[1@2001-01-01, 2@2001-01-03)');
 -- {[1,2)}
-SELECT trajectory(tfloat 'Interp=Stepwise;{[1@2001-01-01, 2@2001-01-02],
+SELECT trajectory(tfloat 'Interp=Step;{[1@2001-01-01, 2@2001-01-02],
   [3@2001-01-03, 4@2001-01-05]}');
 -- {[1, 1], [2, 2], [3, 3], [4, 4]}
 SELECT ST_AsText(trajectory(tgeompoint '{[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02),
   [Point(0 1)@2001-01-03, Point(1 1)@2001-01-04)}'));
 -- MULTILINESTRING((0 0,0 1),(0 1,1 1))
-SELECT ST_AsText(trajectory(tgeompoint 'Interp=Stepwise;{[Point(0 0)@2001-01-01,
+SELECT ST_AsText(trajectory(tgeompoint 'Interp=Step;{[Point(0 0)@2001-01-01,
   Point(0 1)@2001-01-02], [Point(0 1)@2001-01-03, Point(1 1)@2001-01-04]}'));
 -- GEOMETRYCOLLECTION(MULTIPOINT(0 0,0 1),MULTIPOINT(0 1,1 1))
 SELECT ST_AsText(trajectory(tgeompoint '{Point(0 0)@2001-01-01, Point(0 1)@2001-01-02}'));
@@ -1049,11 +1045,11 @@ SELECT tfloat_seqset(tfloat '{2.5@2001-01-01, 1.5@2001-01-02, 3.5@2001-01-02}');
 				<para>Transformar un valor temporal con tipo de base continuo de interpolación escalonada a lineal</para>
 				<para><varname>toLinear(ttype) → ttype</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT toLinear(tfloat 'Interp=Stepwise;[1@2000-01-01, 2@2000-01-02,
+SELECT toLinear(tfloat 'Interp=Step;[1@2000-01-01, 2@2000-01-02,
   1@2000-01-03, 2@2000-01-04]');
 /* {[1@2000-01-01, 1@2000-01-02), [2@2000-01-02, 2@2000-01-03),
    [1@2000-01-03, 1@2000-01-04), [2@2000-01-04]}" */
-SELECT asText(toLinear(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01,
+SELECT asText(toLinear(tgeompoint 'Interp=Step;{[Point(1 1)@2000-01-01,
   Point(2 2)@2000-01-02], [Point(3 3)@2000-01-05, Point(4 4)@2000-01-06]}'));
 /* {[POINT(1 1)@2000-01-01, POINT(1 1)@2000-01-02), [POINT(2 2)@2000-01-02],
    [POINT(3 3)@2000-01-05, POINT(3 3)@2000-01-06), [POINT(4 4)@2000-01-06]} */
@@ -1134,7 +1130,7 @@ SELECT (un).value, (un).time
 FROM (SELECT unnest(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]') AS un) t;
 -- ERROR:  The temporal value cannot have linear interpolation
 SELECT ST_AsText((un).value), (un).time
-FROM (SELECT unnest(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01,
+FROM (SELECT unnest(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01,
   Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]') AS un) t;
 --  POINT(1 1) | {[2000-01-01, 2000-01-02), [2000-01-03, 2000-01-03]}
 --  POINT(2 2) | {[2000-01-02, 2000-01-03)}</programlisting>
@@ -1984,9 +1980,9 @@ SELECT radians(tfloat '[45@2000-01-01, 135@2000-01-02]');
 				<programlisting language="sql" xml:space="preserve">
 SELECT derivative(tfloat '{[0@2000-01-01, 10@2000-01-02, 5@2000-01-03],
   [1@2000-01-04, 0@2000-01-05]}') * 3600 * 24;
---  Interp=Stepwise;{[-10@2000-01-01, 5@2000-01-02, 5@2000-01-03],
+--  Interp=Step;{[-10@2000-01-01, 5@2000-01-02, 5@2000-01-03],
   [1@2000-01-04, 1@2000-01-05]}
-SELECT derivative(tfloat 'Interp=Stepwise;[0@2000-01-01, 10@2000-01-02, 5@2000-01-03]');
+SELECT derivative(tfloat 'Interp=Step;[0@2000-01-01, 10@2000-01-02, 5@2000-01-03]');
 -- ERROR:  The temporal value must have linear interpolation
 </programlisting>
 			</listitem>

@@ -121,7 +121,7 @@ typedef enum
 {
   INTERP_NONE =    0,
   DISCRETE =       1,
-  STEPWISE =       2,
+  STEP =           2,
   LINEAR =         3,
 } interpType;
 

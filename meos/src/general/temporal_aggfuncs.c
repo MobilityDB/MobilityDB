@@ -912,7 +912,7 @@ tcontseq_transform_tcount(const TSequence *seq)
   if (seq->count == 1)
   {
     TInstant *inst = tinstant_make(datum_one, T_TINT, t);
-    result = tinstant_to_tsequence(inst, STEPWISE);
+    result = tinstant_to_tsequence(inst, STEP);
     pfree(inst);
     return result;
   }
@@ -922,7 +922,7 @@ tcontseq_transform_tcount(const TSequence *seq)
   t = seq->period.upper;
   instants[1] = tinstant_make(datum_one, T_TINT, t);
   result = tsequence_make((const TInstant **) instants, 2,
-    seq->period.lower_inc, seq->period.upper_inc, STEPWISE, NORMALIZE_NO);
+    seq->period.lower_inc, seq->period.upper_inc, STEP, NORMALIZE_NO);
   pfree(instants[0]); pfree(instants[1]);
   return result;
 }

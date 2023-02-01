@@ -175,8 +175,8 @@ ensure_same_interpolation(const Temporal *temp1, const Temporal *temp2)
   interpType interp2 = MOBDB_FLAGS_GET_INTERP(temp2->flags);
   // /* A temporal instant (with INTERP_NONE) can match any interpolation */
   // if (interp1 != INTERP_NONE && interp2 != INTERP_NONE && interp1 != interp2)
-  if ((interp1 == STEPWISE && interp2 == LINEAR) ||
-      (interp2 == STEPWISE && interp1 == LINEAR))
+  if ((interp1 == STEP && interp2 == LINEAR) ||
+      (interp2 == STEP && interp1 == LINEAR))
     elog(ERROR, "The temporal values must have the same continuous interpolation");
   return;
 }
@@ -895,7 +895,7 @@ temporal_append_tsequence(Temporal *temp, const TSequence *seq, bool expand)
   else if (temp->subtype == TSEQUENCE)
   {
     interpType interp1 = MOBDB_FLAGS_GET_INTERP(temp->flags);
-    if (interp1 == interp2 && (interp1 == LINEAR || interp1 == STEPWISE))
+    if (interp1 == interp2 && (interp1 == LINEAR || interp1 == STEP))
       result = (Temporal *) tsequence_append_tsequence((TSequence *) temp,
         seq, expand);
     else
@@ -1311,7 +1311,7 @@ temporal_to_tcontseq(const Temporal *temp)
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tinstant_to_tsequence((TInstant *) temp,
-      MOBDB_FLAGS_GET_CONTINUOUS(temp->flags) ? LINEAR : STEPWISE);
+      MOBDB_FLAGS_GET_CONTINUOUS(temp->flags) ? LINEAR : STEP);
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tsequence_to_tcontseq((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
@@ -1331,7 +1331,7 @@ temporal_to_tsequenceset(const Temporal *temp)
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tinstant_to_tsequenceset((TInstant *) temp,
-      MOBDB_FLAGS_GET_CONTINUOUS(temp->flags) ? LINEAR : STEPWISE);
+      MOBDB_FLAGS_GET_CONTINUOUS(temp->flags) ? LINEAR : STEP);
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tsequence_to_tsequenceset((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
@@ -1342,7 +1342,7 @@ temporal_to_tsequenceset(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_transf
  * @brief Return a temporal value with continuous base type transformed from
- * stepwise to linear interpolation.
+ * step to linear interpolation.
  * @sqlfunc toLinear()
  */
 Temporal *
@@ -1580,7 +1580,7 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
     {
       Datum value = temporal_tprecision_agg_values((Temporal *) proj);
       sequences[k++] = tsequence_from_base_time(value, ss->temptype, &s,
-        linear ? LINEAR : STEPWISE);
+        linear ? LINEAR : STEP);
       pfree(proj);
     }
     lower += tunits;
@@ -1669,8 +1669,8 @@ temporal_interpolation(const Temporal *temp)
   interpType interp = MOBDB_FLAGS_GET_INTERP(temp->flags);
   if (temp->subtype == TINSTANT || interp == DISCRETE)
     strcpy(result, "Discrete");
-  else if (interp == STEPWISE)
-    strcpy(result, "Stepwise");
+  else if (interp == STEP)
+    strcpy(result, "Step");
   else
     strcpy(result, "Linear");
   return result;

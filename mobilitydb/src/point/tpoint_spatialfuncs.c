@@ -278,8 +278,8 @@ tpointseqset_transform(const TSequenceSet *ss, int srid)
       points[k++] = lwgeom_from_gserialized(gsvalue);
     }
   }
-  /* Last parameter set to STEPWISE to force the function to return multipoint */
-  LWGEOM *lwgeom = lwpointarr_make_trajectory(points, ss->totalcount, STEPWISE);
+  /* Last parameter set to STEP to force the function to return multipoint */
+  LWGEOM *lwgeom = lwpointarr_make_trajectory(points, ss->totalcount, STEP);
   Datum multipoint = PointerGetDatum(geo_serialize(lwgeom));
   pfree(lwgeom);
   Datum transf = datum_transform(multipoint, srid);
