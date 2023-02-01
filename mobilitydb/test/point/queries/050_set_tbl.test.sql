@@ -83,7 +83,6 @@ SELECT MIN(ST_X(startValue(round(g, 6))::geometry)) FROM tbl_geogset;
 -- Accessor functions
 
 SELECT MAX(memSize(g)) FROM tbl_geomset;
-SELECT MAX(storeSize(g)) FROM tbl_geomset;
 SELECT MIN(numValues(g)) FROM tbl_geomset;
 SELECT MIN(ST_X(startValue(g))) FROM tbl_geomset;
 SELECT MIN(ST_X(endValue(g))) FROM tbl_geomset;
@@ -91,7 +90,6 @@ SELECT MIN(ST_X(valueN(g, 1))) FROM tbl_geomset;
 SELECT MIN(array_length(getValues(g), 1)) FROM tbl_geomset;
 
 SELECT MAX(memSize(g)) FROM tbl_geogset;
-SELECT MAX(storeSize(g)) FROM tbl_geogset;
 SELECT MIN(numValues(g)) FROM tbl_geogset;
 SELECT MIN(ST_X(startValue(g)::geometry)) FROM tbl_geogset;
 SELECT MIN(ST_X(endValue(g)::geometry)) FROM tbl_geogset;

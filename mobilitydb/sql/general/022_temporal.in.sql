@@ -475,23 +475,6 @@ CREATE FUNCTION memSize(ttext)
   AS 'MODULE_PATHNAME', 'Temporal_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION storeSize(tbool)
-  RETURNS integer
-  AS 'MODULE_PATHNAME', 'Temporal_store_size'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION storeSize(tint)
-  RETURNS integer
-  AS 'MODULE_PATHNAME', 'Temporal_store_size'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION storeSize(tfloat)
-  RETURNS integer
-  AS 'MODULE_PATHNAME', 'Temporal_store_size'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION storeSize(ttext)
-  RETURNS integer
-  AS 'MODULE_PATHNAME', 'Temporal_store_size'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 -- values is a reserved word in SQL
 CREATE FUNCTION getValue(tbool)
   RETURNS boolean

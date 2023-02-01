@@ -974,19 +974,6 @@ Temporal_mem_size(PG_FUNCTION_ARGS)
   PG_RETURN_DATUM(result);
 }
 
-PG_FUNCTION_INFO_V1(Temporal_store_size);
-/**
- * @ingroup mobilitydb_temporal_accessor
- * @brief Return the storage (compressed) size in bytes of a temporal value
- * @sqlfunc storageSize()
- */
-PGDLLEXPORT Datum
-Temporal_store_size(PG_FUNCTION_ARGS)
-{
-  Datum result = toast_datum_size(PG_GETARG_DATUM(0));
-  PG_RETURN_DATUM(result);
-}
-
 PG_FUNCTION_INFO_V1(Tinstant_get_value);
 /**
  * @ingroup mobilitydb_temporal_accessor

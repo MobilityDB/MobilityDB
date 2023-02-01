@@ -64,7 +64,6 @@ SELECT MIN(getPosition(startValue(round(n, 3)))) FROM tbl_npointset;
 -- Accessor functions
 
 SELECT MAX(memSize(n)) FROM tbl_npointset;
-SELECT MAX(storeSize(n)) FROM tbl_npointset;
 
 SELECT MIN(numValues(n)) FROM tbl_npointset;
 SELECT MIN(getPosition(startValue(n))) FROM tbl_npointset;

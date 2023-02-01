@@ -431,19 +431,6 @@ SELECT memSize(tstzspanset '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04],
 </programlisting>
 				</listitem>
 
-				<listitem id="setspan_storeSize">
-					<indexterm><primary><varname>storeSize</varname></primary></indexterm>
-					<para>Obtener el tamaño de almacenamiento (comprimido) en bytes</para>
-					<para><varname>storeSize({set,spanset}) → integer</varname></para>
-					<programlisting language="sql" xml:space="preserve">
-SELECT storeSize(tstzset '{2001-01-01, 2001-01-02, 2001-01-03}');
--- 56
-SELECT storeSize(tstzspanset '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04],
-  [2001-01-05, 2001-01-06]}');
--- 112
-</programlisting>
-				</listitem>
-
 				<listitem id="lower">
 					<indexterm><primary><varname>lower</varname></primary></indexterm>
 					<indexterm><primary><varname>upper</varname></primary></indexterm>

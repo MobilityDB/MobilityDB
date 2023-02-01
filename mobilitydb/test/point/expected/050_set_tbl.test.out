@@ -114,12 +114,6 @@ SELECT MAX(memSize(g)) FROM tbl_geomset;
  504
 (1 row)
 
-SELECT MAX(storeSize(g)) FROM tbl_geomset;
- max 
------
- 504
-(1 row)
-
 SELECT MIN(numValues(g)) FROM tbl_geomset;
  min 
 -----
@@ -151,12 +145,6 @@ SELECT MIN(array_length(getValues(g), 1)) FROM tbl_geomset;
 (1 row)
 
 SELECT MAX(memSize(g)) FROM tbl_geogset;
- max 
------
- 504
-(1 row)
-
-SELECT MAX(storeSize(g)) FROM tbl_geogset;
  max 
 -----
  504

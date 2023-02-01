@@ -45,12 +45,6 @@ SELECT MAX(memSize(n)) FROM tbl_npointset;
  344
 (1 row)
 
-SELECT MAX(storeSize(n)) FROM tbl_npointset;
- max 
------
- 344
-(1 row)
-
 SELECT MIN(numValues(n)) FROM tbl_npointset;
  min 
 -----

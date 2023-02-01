@@ -224,11 +224,6 @@ SELECT MAX(memSize(temp)) FROM tbl_tint;
 SELECT MAX(memSize(temp)) FROM tbl_tfloat;
 SELECT MAX(memSize(temp)) FROM tbl_ttext;
 
-SELECT MAX(storeSize(temp)) FROM tbl_tbool;
-SELECT MAX(storeSize(temp)) FROM tbl_tint;
-SELECT MAX(storeSize(temp)) FROM tbl_tfloat;
-SELECT MAX(storeSize(temp)) FROM tbl_ttext;
-
 /*
 SELECT span(temp) FROM tbl_tbool;
 SELECT box(temp) FROM tbl_tint;

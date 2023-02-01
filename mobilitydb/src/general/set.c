@@ -243,19 +243,6 @@ Set_mem_size(PG_FUNCTION_ARGS)
   PG_RETURN_DATUM(result);
 }
 
-PG_FUNCTION_INFO_V1(Set_store_size);
-/**
- * @ingroup mobilitydb_setspan_accessor
- * @brief Return the storage (compressed) size in bytes of a set
- * @sqlfunc storageSize()
- */
-PGDLLEXPORT Datum
-Set_store_size(PG_FUNCTION_ARGS)
-{
-  Datum result = toast_datum_size(PG_GETARG_DATUM(0));
-  PG_RETURN_DATUM(result);
-}
-
 PG_FUNCTION_INFO_V1(Set_num_values);
 /**
  * @ingroup mobilitydb_setspan_accessor

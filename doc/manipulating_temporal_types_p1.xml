@@ -478,15 +478,12 @@ SELECT tgeogpoint_contseq(ARRAY[tgeogpoint 'Point(0 0)@2001-01-01 08:00:00',
 
 			<listitem id="ttype_seqset">
 				<indexterm><primary><varname>&lt;ttype&gt;_seqset</varname></primary></indexterm>
-				<indexterm><primary><varname>&lt;tscalar&gt;_seqset_gaps</varname></primary></indexterm>
-				<indexterm><primary><varname>&lt;tdisc&gt;_seqset_gaps</varname></primary></indexterm>
-				<indexterm><primary><varname>&lt;tcont&gt;_seqset_gaps</varname></primary></indexterm>
+				<indexterm><primary><varname>&lt;ttype&gt;_seqset_gaps</varname></primary></indexterm>
 				<para>Constructors for temporal types of sequence set subtype</para>
 				<para><varname>&lt;ttype&gt;_seqset(ttype_contseq[]) → ttype_seqset</varname></para>
-				<para><varname>&lt;tscalar&gt;_seqset_gaps(tint_inst[],maxt='0 minutes') → tscalar_seqset</varname></para>
-				<para><varname>&lt;tdisc&gt;_seqset_gaps(tint_inst[],maxdist=0.0,maxt='0 minutes') → tdisc_seqset</varname></para>
-				<para><varname>&lt;tcont&gt;_seqset_gaps(tcont_inst[],linear=true,maxdist=0.0,maxt='0 minutes') →</varname></para>
+				<para><varname>&lt;ttype&gt;_seqset_gaps(ttype_inst[],linear=true,maxdist=0.0,maxt='0 minutes') →</varname></para>
 				<para><varname>  tcont_seqset</varname></para>
+				<para>Los parámetros de la función dependen del tipo temporal. Por ejemplo, el parámetro <varname>maxdist</varname> no está permitido para tipos escalares como <varname>ttext</varname> que no tienen una función de distancia estándar. De manera similar, el parámetro <varname>linear</varname> no está permitido para tipos temporales con subtipo discreto como <varname>tint</varname>.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbool_seqset(ARRAY[tbool '[false@2001-01-01 08:00:00, false@2001-01-01 08:05:00)',
   '[true@2001-01-01 08:05:00]','(false@2001-01-01 08:05:00, false@2001-01-01 08:10:00)']);
@@ -656,16 +653,6 @@ SELECT asText(geometry 'GEOMETRYCOLLECTION M (LINESTRING M (0 0 978307200,1 1 97
 				<programlisting language="sql" xml:space="preserve">
 SELECT memSize(tint '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03}');
 -- 280
-</programlisting>
-			</listitem>
-
-			<listitem id="ttype_storeSize">
-				<indexterm><primary><varname>storeSize</varname></primary></indexterm>
-				<para>Get the storage (compressed) size in bytes</para>
-				<para><varname>storeSize(ttype) → integer</varname></para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT storeSize(tint '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03}');
--- 176
 </programlisting>
 			</listitem>
 

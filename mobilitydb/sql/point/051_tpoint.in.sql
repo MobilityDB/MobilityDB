@@ -345,15 +345,6 @@ CREATE FUNCTION memSize(tgeogpoint)
   AS 'MODULE_PATHNAME', 'Temporal_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION storeSize(tgeompoint)
-  RETURNS int
-  AS 'MODULE_PATHNAME', 'Temporal_store_size'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION storeSize(tgeogpoint)
-  RETURNS int
-  AS 'MODULE_PATHNAME', 'Temporal_store_size'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 -- value is a reserved word in SQL
 CREATE FUNCTION getValue(tgeompoint)
   RETURNS geometry(Point)

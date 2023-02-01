@@ -174,24 +174,6 @@ SELECT MAX(memSize(ps)) FROM tbl_tstzspanset;
  256
 (1 row)
 
-SELECT MAX(storeSize(i)) FROM tbl_intspanset;
- max 
------
- 280
-(1 row)
-
-SELECT MAX(storeSize(f)) FROM tbl_floatspanset;
- max 
------
- 280
-(1 row)
-
-SELECT MAX(storeSize(ps)) FROM tbl_tstzspanset;
- max 
------
- 256
-(1 row)
-
 SELECT MAX(lower(i)) FROM tbl_intspanset;
  max 
 -----

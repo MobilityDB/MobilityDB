@@ -246,11 +246,6 @@ CREATE FUNCTION memSize(tnpoint)
   AS 'MODULE_PATHNAME', 'Temporal_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION storeSize(tnpoint)
-  RETURNS int
-  AS 'MODULE_PATHNAME', 'Temporal_store_size'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 -- value is a reserved word in SQL
 CREATE FUNCTION getValue(tnpoint)
   RETURNS npoint
