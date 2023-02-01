@@ -298,7 +298,7 @@ SELECT tdwithin(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, 
 -- Coverage
 SELECT tdwithin(tgeompoint '(Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', geometry 'Point(0 1)', 1);
 SELECT tdwithin(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02)', geometry 'Point(2 3)', 1);
-SELECT tdwithin(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02)', geometry 'Point(2 3)', 1);
+SELECT tdwithin(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02)', geometry 'Point(2 3)', 1);
 
 SELECT tdwithin(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01', 2);
 SELECT tdwithin(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint 'Point(1 1)@2000-01-01', 2);
@@ -347,12 +347,12 @@ SELECT tdwithin(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Poin
 2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]
 ,[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 1);
 
-SELECT tdwithin(tgeompoint 'Interp=Stepwise;[Point(2 0)@2000-01-01, Point(2 2)@2000-01-05]',
-  tgeompoint 'Interp=Stepwise;[Point(1 0)@2000-01-01, Point(2 0)@2000-01-05]', 1);
+SELECT tdwithin(tgeompoint 'Interp=Step;[Point(2 0)@2000-01-01, Point(2 2)@2000-01-05]',
+  tgeompoint 'Interp=Step;[Point(1 0)@2000-01-01, Point(2 0)@2000-01-05]', 1);
 SELECT tdwithin(tgeompoint '[Point(0 0)@2000-01-01, Point(2 2)@2000-01-05]',
-  tgeompoint 'Interp=Stepwise;[Point(0 1)@2000-01-01, Point(2 0)@2000-01-05]', 1);
+  tgeompoint 'Interp=Step;[Point(0 1)@2000-01-01, Point(2 0)@2000-01-05]', 1);
 SELECT tdwithin(tgeompoint '[Point(1 0)@2000-01-01, Point(1 4)@2000-01-05]',
-  tgeompoint 'Interp=Stepwise;[Point(1 2)@2000-01-01, Point(1 3)@2000-01-05]', 1);
+  tgeompoint 'Interp=Step;[Point(1 2)@2000-01-01, Point(1 3)@2000-01-05]', 1);
 
 -- Mixed 2D/3D
 SELECT tdwithin(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01', 2);

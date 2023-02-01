@@ -385,8 +385,8 @@ SELECT tnpoint('Npoint(1, 0.3)', tstzset '{2000-01-01, 2000-01-03, 2000-01-05}')
 -- {NPoint(1,0.3)@2000-01-01, NPoint(1,0.3)@2000-01-03, NPoint(1,0.3)@2000-01-05}
 SELECT tnpoint('Npoint(1, 0.5)', period '[2000-01-01, 2000-01-02]');
 -- [NPoint(1,0.5)@2000-01-01, NPoint(1,0.5)@2000-01-02]
-SELECT tnpoint('Npoint(1, 0.2)', periodset '{[2000-01-01, 2000-01-03]}', false);
--- Interp=Stepwise;{[NPoint(1,0.2)@2000-01-01, NPoint(1,0.2)@2000-01-03]}
+SELECT tnpoint('Npoint(1, 0.2)', tstzspanset '{[2000-01-01, 2000-01-03]}', false);
+-- Interp=Step;{[NPoint(1,0.2)@2000-01-01, NPoint(1,0.2)@2000-01-03]}
 </programlisting>
 				</listitem>
 
@@ -559,7 +559,7 @@ SELECT cumulativeLength(tnpoint '{[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@200
 				<programlisting language="sql" xml:space="preserve">
 SELECT speed(tnpoint '[NPoint(1, 0.1)@2000-01-01, NPoint(1, 0.4)@2000-01-02,
   NPoint(1, 0.6)@2000-01-03]') * 3600 * 24;
-/* Interp=Stepwise;[21.4016800272077@2000-01-01, 14.2677866848051@2000-01-02,
+/* Interp=Step;[21.4016800272077@2000-01-01, 14.2677866848051@2000-01-02,
    14.2677866848051@2000-01-03] */
 </programlisting>
 			</listitem>

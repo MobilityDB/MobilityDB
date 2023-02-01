@@ -102,7 +102,7 @@ int main(void)
     free(value); free(txt);
     if (! seq)
       seq = (Temporal *) tsequence_make_exp((const TInstant **) &inst, 1,
-        EXPAND ? 2 : 1, true, true, STEPWISE, false);
+        EXPAND ? 2 : 1, true, true, STEP, false);
     else
     {
       Temporal *oldseq = seq;

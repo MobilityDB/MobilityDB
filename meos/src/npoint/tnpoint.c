@@ -252,7 +252,7 @@ tnpointinst_positions(const TInstant *inst)
 
 /**
  * @brief Return the network segments covered by the temporal network point.
- * @note The function is used for both discrete and stepwise interpolation
+ * @note The function is used for both discrete and step interpolation
  */
 Nsegment **
 tnpointseq_step_positions(const TSequence *seq, int *count)

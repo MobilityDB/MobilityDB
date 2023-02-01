@@ -661,13 +661,13 @@ temporal_parse(const char **str, meosType temptype)
 {
   p_whitespace(str);
   Temporal *result = NULL;  /* keep compiler quiet */
-  interpType interp = temptype_continuous(temptype) ? LINEAR : STEPWISE;
-  /* Starts with "Interp=Stepwise;" */
-  if (strncasecmp(*str, "Interp=Stepwise;", 16) == 0)
+  interpType interp = temptype_continuous(temptype) ? LINEAR : STEP;
+  /* Starts with "Interp=Step;" */
+  if (strncasecmp(*str, "Interp=Step;", 12) == 0)
   {
     /* Move str after the semicolon */
-    *str += 16;
-    interp = STEPWISE;
+    *str += 12;
+    interp = STEP;
   }
   if (**str != '{' && **str != '[' && **str != '(')
     result = (Temporal *) tinstant_parse(str, temptype, true, true);

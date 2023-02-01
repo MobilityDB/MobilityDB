@@ -187,7 +187,7 @@ typedef enum
  *   II: interpolation, whose values are
  *   - 00: INTERP_NONE (undetermined) for TInstant
  *   - 01: DISCRETE
- *   - 10: STEPWISE
+ *   - 10: STEP
  *   - 11: LINEAR
  *   C: continuous base type / Ordered collection
  *   B: base type passed by value
@@ -236,7 +236,7 @@ typedef enum
 #define MOBDB_FLAGS_SET_INTERP(flags, value) ((flags) = (((flags) & ~MOBDB_FLAGS_INTERP) | ((value & 0x0003) << 2)))
 
 #define MOBDB_FLAGS_GET_DISCRETE(flags)   ((bool) (MOBDB_FLAGS_GET_INTERP((flags)) == DISCRETE))
-#define MOBDB_FLAGS_GET_STEPWISE(flags)   ((bool) (MOBDB_FLAGS_GET_INTERP((flags)) == STEPWISE))
+#define MOBDB_FLAGS_GET_STEP(flags)       ((bool) (MOBDB_FLAGS_GET_INTERP((flags)) == STEP))
 #define MOBDB_FLAGS_GET_LINEAR(flags)     ((bool) (MOBDB_FLAGS_GET_INTERP((flags)) == LINEAR))
 
 /*****************************************************************************

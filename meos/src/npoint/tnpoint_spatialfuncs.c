@@ -504,7 +504,7 @@ tnpointseq_speed(const TSequence *seq)
     return NULL;
 
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  /* Stepwise interpolation */
+  /* Step interpolation */
   if (! MOBDB_FLAGS_GET_LINEAR(seq->flags))
   {
     Datum length = Float8GetDatum(0.0);
@@ -535,9 +535,9 @@ tnpointseq_speed(const TSequence *seq)
     instants[seq->count-1] = tinstant_make(Float8GetDatum(speed), T_TFLOAT,
       inst2->t);
   }
-  /* The resulting sequence has stepwise interpolation */
+  /* The resulting sequence has step interpolation */
   TSequence *result = tsequence_make_free(instants, seq->count,
-    seq->period.lower_inc, seq->period.upper_inc, STEPWISE, true);
+    seq->period.lower_inc, seq->period.upper_inc, STEP, true);
   return result;
 }
 
@@ -556,8 +556,8 @@ tnpointseqset_speed(const TSequenceSet *ss)
     if (seq1 != NULL)
       sequences[k++] = seq1;
   }
-  /* The resulting sequence set has stepwise interpolation */
-  TSequenceSet *result = tsequenceset_make_free(sequences, k, STEPWISE);
+  /* The resulting sequence set has step interpolation */
+  TSequenceSet *result = tsequenceset_make_free(sequences, k, STEP);
   return result;
 }
 
@@ -661,8 +661,8 @@ tsequence_assemble_instants(TInstant ***instants, int *countinsts,
   /* Add closing instant */
   Datum last_value = tinstant_value(allinstants[n - 1]);
   allinstants[n++] = tinstant_make(last_value, T_TFLOAT, last_time);
-  /* Resulting sequence has stepwise interpolation */
-  return tsequence_make_free(allinstants, n, lower_inc, true, STEPWISE, true);
+  /* Resulting sequence has step interpolation */
+  return tsequence_make_free(allinstants, n, lower_inc, true, STEP, true);
 }
 
 /**
@@ -725,7 +725,7 @@ tnpointseq_azimuth(const TSequence *seq)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * (seq->count - 1));
   int count = tnpointseq_azimuth2(seq, sequences);
-  /* Resulting sequence set has stepwise interpolation */
+  /* Resulting sequence set has step interpolation */
   TSequenceSet *result = tsequenceset_make_free(sequences, count, true);
   return result;
 }
@@ -744,8 +744,8 @@ tnpointseqset_azimuth(const TSequenceSet *ss)
     int countstep = tnpointseq_azimuth2(seq, &sequences[k]);
     k += countstep;
   }
-  /* Resulting sequence set has stepwise interpolation */
-  TSequenceSet *result = tsequenceset_make_free(sequences, k, STEPWISE);
+  /* Resulting sequence set has step interpolation */
+  TSequenceSet *result = tsequenceset_make_free(sequences, k, STEP);
   return result;
 }
 

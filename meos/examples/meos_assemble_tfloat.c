@@ -81,7 +81,7 @@ int main(void)
   }
 
   seq = (Temporal *) tsequence_make((const TInstant **) instants, MAX_INSTANTS,
-    true, true, STEPWISE, true);
+    true, true, STEP, true);
 
   /* Print information about the sequence */
   printf("\nNumber of instants: %d, Time-weighted average: %f\n",

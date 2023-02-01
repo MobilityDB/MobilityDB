@@ -289,19 +289,6 @@ Spanset_mem_size(PG_FUNCTION_ARGS)
   PG_RETURN_DATUM(result);
 }
 
-PG_FUNCTION_INFO_V1(Spanset_store_size);
-/**
- * @ingroup mobilitydb_setspan_accessor
- * @brief Return the storage (compressed) size in bytes of a span set
- * @sqlfunc storageSize()
- */
-PGDLLEXPORT Datum
-Spanset_store_size(PG_FUNCTION_ARGS)
-{
-  Datum result = toast_datum_size(PG_GETARG_DATUM(0));
-  PG_RETURN_DATUM(result);
-}
-
 PG_FUNCTION_INFO_V1(Spanset_lower);
 /**
  * @ingroup mobilitydb_setspan_accessor

@@ -813,7 +813,7 @@ WHERE intersects(T.Trip, R.Geom);
 			<para>The following statistics are collected for the value dimension:
 				<itemizedlist>
 					<listitem>
-						<para>For columns of temporal types with stepwise interpolation (that is, <varname>tbool</varname>, <varname>ttext</varname>, or <varname>tint</varname>):
+						<para>For columns of temporal types with step interpolation (that is, <varname>tbool</varname>, <varname>ttext</varname>, or <varname>tint</varname>):
 							<itemizedlist>
 								<listitem>
 									<para>For the instant subtype, the statistics (4)&#x2013;(6) are collected for the values.</para>

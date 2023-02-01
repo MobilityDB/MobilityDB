@@ -241,7 +241,7 @@ datetimes_mfjson_buf(char *output, TimestampTz t)
 static size_t
 srs_mfjson_size(char *srs)
 {
-  size_t size = sizeof("'crs':{'type':'name',");
+  size_t size = sizeof("'crs':{'type':'Name',");
   size += sizeof("'properties':{'name':''}},");
   size += strlen(srs) * sizeof(char);
   return size;
@@ -254,7 +254,7 @@ static size_t
 srs_mfjson_buf(char *output, char *srs)
 {
   char *ptr = output;
-  ptr += sprintf(ptr, "\"crs\":{\"type\":\"name\",");
+  ptr += sprintf(ptr, "\"crs\":{\"type\":\"Name\",");
   ptr += sprintf(ptr, "\"properties\":{\"name\":\"%s\"}},", srs);
   return (ptr - output);
 }
@@ -268,7 +268,7 @@ period_mfjson_size(void)
 {
   /* The maximum size of a timestamptz is 35 characters, e.g.,
    * "2019-08-06 23:18:16.195062-09:30" */
-  size_t size = sizeof("'stBoundedBy':{'period':{'begin':,'end':,'lower_inc':false,'upper_inc':false}},") +
+  size_t size = sizeof("'period':{'begin':,'end':,'lower_inc':false,'upper_inc':false},") +
     MOBDB_WKT_TIMESTAMPTZ_SIZE * 2;
   size += sizeof("'bbox':[,],");
   return size;
@@ -281,11 +281,11 @@ static size_t
 period_mfjson_buf(char *output, const Span *p)
 {
   char *ptr = output;
-  ptr += sprintf(ptr, "\"stBoundedBy\":{\"period\":{\"begin\":");
+  ptr += sprintf(ptr, "\"period\":{\"begin\":");
   ptr += datetimes_mfjson_buf(ptr, DatumGetTimestampTz(p->lower));
   ptr += sprintf(ptr, ",\"end\":");
   ptr += datetimes_mfjson_buf(ptr, DatumGetTimestampTz(p->upper));
-  ptr += sprintf(ptr, ",\"lower_inc\":%s,'upper_inc':%s}},",
+  ptr += sprintf(ptr, ",\"lower_inc\":%s,'upper_inc':%s},",
     p->lower_inc ? "true" : "false", p->upper_inc ? "true" : "false");
   return (ptr - output);
 }
@@ -299,7 +299,7 @@ tbox_mfjson_size(int precision)
 {
   /* The maximum size of a timestamptz is 35 characters, e.g.,
    * "2019-08-06 23:18:16.195062-09:30" */
-  size_t size = sizeof("'stBoundedBy':{'period':{'begin':,'end':}},") +
+  size_t size = sizeof("'period':{'begin':,'end':},") +
     MOBDB_WKT_TIMESTAMPTZ_SIZE * 2;
   size += sizeof("'bbox':[,],");
   size +=  2 * (OUT_MAX_DIGS_DOUBLE + precision);
@@ -314,7 +314,7 @@ tbox_mfjson_buf(char *output, const TBox *bbox, int precision)
 {
   assert (precision <= OUT_MAX_DOUBLE_PRECISION);
   char *ptr = output;
-  ptr += sprintf(ptr, "\"stBoundedBy\":{\"bbox\":[");
+  ptr += sprintf(ptr, "\"bbox\":[");
   ptr += lwprint_double(DatumGetFloat8(bbox->span.lower), precision, ptr);
   ptr += sprintf(ptr, ",");
   ptr += lwprint_double(DatumGetFloat8(bbox->span.upper), precision, ptr);
@@ -322,7 +322,7 @@ tbox_mfjson_buf(char *output, const TBox *bbox, int precision)
   ptr += datetimes_mfjson_buf(ptr, DatumGetTimestampTz(bbox->period.lower));
   ptr += sprintf(ptr, ",\"end\":");
   ptr += datetimes_mfjson_buf(ptr, DatumGetTimestampTz(bbox->period.upper));
-  ptr += sprintf(ptr, "}},");
+  ptr += sprintf(ptr, "},");
   return (ptr - output);
 }
 
@@ -335,7 +335,7 @@ stbox_mfjson_size(bool hasz, int precision)
 {
   /* The maximum size of a timestamptz is 35 characters,
    * e.g., "2019-08-06 23:18:16.195062-09:30" */
-  size_t size = sizeof("'stBoundedBy':{'period':{'begin':,'end':}},") +
+  size_t size = sizeof("'period':{'begin':,'end':},") +
     sizeof("\"2019-08-06T18:35:48.021455+02:30\",") * 2;
   if (! hasz)
   {
@@ -359,7 +359,7 @@ stbox_mfjson_buf(char *output, const STBox *bbox, bool hasz, int precision)
 {
   assert (precision <= OUT_MAX_DOUBLE_PRECISION);
   char *ptr = output;
-  ptr += sprintf(ptr, "\"stBoundedBy\":{\"bbox\":[[");
+  ptr += sprintf(ptr, "\"bbox\":[[");
   ptr += lwprint_double(bbox->xmin, precision, ptr);
   ptr += sprintf(ptr, ",");
   ptr += lwprint_double(bbox->ymin, precision, ptr);
@@ -381,7 +381,7 @@ stbox_mfjson_buf(char *output, const STBox *bbox, bool hasz, int precision)
   ptr += datetimes_mfjson_buf(ptr, DatumGetTimestampTz(bbox->period.lower));
   ptr += sprintf(ptr, ",\"end\":");
   ptr += datetimes_mfjson_buf(ptr, DatumGetTimestampTz(bbox->period.upper));
-  ptr += sprintf(ptr, "}},");
+  ptr += sprintf(ptr, "},");
   return (ptr - output);
 }
 
@@ -523,8 +523,8 @@ tinstant_mfjson_size(const TInstant *inst, bool isgeo, bool hasz,
     temporal_basevalue_mfjson_size(value, inst->temptype, precision);
   size += datetimes_mfjson_size(1);
   size += temptype_mfjson_size(inst->temptype);
-  size += isgeo ? sizeof("'coordinates':,") : sizeof("'values':,");
-  size += sizeof("'datetimes':,'interpolations':['Discrete']}");
+  size += isgeo ? sizeof("'coordinates':[],") : sizeof("'values':[],");
+  size += sizeof("'datetimes':,'interpolation':['None']}");
   if (srs) size += srs_mfjson_size(srs);
   if (bbox) size += bbox_mfjson_size(inst->temptype, hasz, precision);
   return size;
@@ -541,13 +541,13 @@ tinstant_mfjson_buf(const TInstant *inst, bool isgeo, bool hasz,
   ptr += temptype_mfjson_buf(ptr, inst->temptype);
   if (srs) ptr += srs_mfjson_buf(ptr, srs);
   if (bbox) ptr += bbox_mfjson_buf(inst->temptype, ptr, bbox, hasz, precision);
-  ptr += sprintf(ptr, "\"%s\":", isgeo ? "coordinates" : "values");
+  ptr += sprintf(ptr, "\"%s\":[", isgeo ? "coordinates" : "values");
   ptr += isgeo ? coordinates_mfjson_buf(ptr, inst, precision) :
     temporal_basevalue_mfjson_buf(ptr, tinstant_value(inst), inst->temptype,
       precision);
-  ptr += sprintf(ptr, ",\"datetimes\":");
+  ptr += sprintf(ptr, "],\"datetimes\":[");
   ptr += datetimes_mfjson_buf(ptr, inst->t);
-  ptr += sprintf(ptr, ",\"interpolations\":[\"Discrete\"]}");
+  ptr += sprintf(ptr, "],\"interpolation\":[\"None\"]}");
   return (ptr - output);
 }
 
@@ -670,9 +670,9 @@ tsequence_mfjson_size(const TSequence *seq, bool isgeo, bool hasz,
   }
   size += datetimes_mfjson_size(seq->count);
   size += temptype_mfjson_size(seq->temptype);
-  /* We reserve space for the largest strings, i.e., 'false' and "Stepwise" */
+  /* We reserve space for the largest strings, i.e., 'false' and "Step" */
   size += isgeo ? sizeof("'coordinates':[],") : sizeof("'values':[],");
-  size += sizeof("'datetimes':[],'lower_inc':false,'upper_inc':false,interpolations':['Stepwise']}");
+  size += sizeof("'datetimes':[],'lower_inc':false,'upper_inc':false,interpolation':['Step']}");
   if (srs) size += srs_mfjson_size(srs);
   if (bbox) size += bbox_mfjson_size(seq->temptype, hasz, precision);
   return size;
@@ -705,10 +705,10 @@ tsequence_mfjson_buf(const TSequence *seq, bool isgeo, bool hasz,
     const TInstant *inst = tsequence_inst_n(seq, i);
     ptr += datetimes_mfjson_buf(ptr, inst->t);
   }
-  ptr += sprintf(ptr, "],\"lower_inc\":%s,\"upper_inc\":%s,\"interpolations\":[\"%s\"]}",
+  ptr += sprintf(ptr, "],\"lower_inc\":%s,\"upper_inc\":%s,\"interpolation\":[\"%s\"]}",
     seq->period.lower_inc ? "true" : "false", seq->period.upper_inc ? "true" : "false",
     MOBDB_FLAGS_GET_DISCRETE(seq->flags) ? "Discrete" :
-    ( MOBDB_FLAGS_GET_LINEAR(seq->flags) ? "Linear" : "Stepwise" ) );
+    ( MOBDB_FLAGS_GET_LINEAR(seq->flags) ? "Linear" : "Step" ) );
   return (ptr - output);
 }
 
@@ -837,8 +837,8 @@ tsequenceset_mfjson_size(const TSequenceSet *ss, bool isgeo, bool hasz,
     }
   }
   size += datetimes_mfjson_size(ss->totalcount);
-  /* We reserve space for the largest interpolation string, i.e., "Stepwise" */
-  size += sizeof(",interpolations':['Stepwise']}");
+  /* We reserve space for the largest interpolation string, i.e., "Step" */
+  size += sizeof(",interpolation':['Step']}");
   if (srs) size += srs_mfjson_size(srs);
   if (bbox) size += bbox_mfjson_size(ss->temptype, hasz, precision);
   return size;
@@ -880,8 +880,8 @@ tsequenceset_mfjson_buf(const TSequenceSet *ss, bool isgeo, bool hasz,
       seq->period.lower_inc ? "true" : "false", seq->period.upper_inc ?
         "true" : "false");
   }
-  ptr += sprintf(ptr, "],\"interpolations\":[\"%s\"]}",
-    MOBDB_FLAGS_GET_LINEAR(ss->flags) ? "Linear" : "Stepwise");
+  ptr += sprintf(ptr, "],\"interpolation\":[\"%s\"]}",
+    MOBDB_FLAGS_GET_LINEAR(ss->flags) ? "Linear" : "Step");
   return (ptr - output);
 }
 

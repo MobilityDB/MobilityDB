@@ -15,7 +15,7 @@
 	</para>
 
 	<para>
-		The <emphasis>interpolation</emphasis> of a temporal value states how the value evolves between successive instants. The interpolation is <emphasis>discrete</emphasis> when the value is unknown between two successive instants. They can represent, for example, checkins/checkouts when using an RFID card reader to enter or exit a building. The interpolation is <emphasis>stepwise</emphasis> when the value remains constant between two successive instants. For example, the gear used by a moving car may be represented with a temporal integer, which indicates that its value is constant between two time instants. On the other hand, the interpolation is <emphasis>linear</emphasis> when the value evolves linearly between two successive instants. For example, the speed of a car may be represented with a temporal float, which indicates that the values are known at the time instants but continuously evolve between them. Similarly, the location of a vehicule may be represented by a temporal point where the location between two consecutive GPS readings is obtained by linear interpolation. Temporal types based on discrete base types, that is the <varname>tbool</varname>, <varname>tint</varname>, or <varname>ttext</varname> evolve necesssarily in a stepwise manner. On the other hand, temporal types based on continuous base types, that is <varname>tfloat</varname>, <varname>tgeompoint</varname>, or <varname>tgeogpoint</varname> may evolve in a stepwise or linear manner.
+		The <emphasis>interpolation</emphasis> of a temporal value states how the value evolves between successive instants. The interpolation is <emphasis>discrete</emphasis> when the value is unknown between two successive instants. They can represent, for example, checkins/checkouts when using an RFID card reader to enter or exit a building. The interpolation is <emphasis>step</emphasis> when the value remains constant between two successive instants. For example, the gear used by a moving car may be represented with a temporal integer, which indicates that its value is constant between two time instants. On the other hand, the interpolation is <emphasis>linear</emphasis> when the value evolves linearly between two successive instants. For example, the speed of a car may be represented with a temporal float, which indicates that the values are known at the time instants but continuously evolve between them. Similarly, the location of a vehicule may be represented by a temporal point where the location between two consecutive GPS readings is obtained by linear interpolation. Temporal types based on discrete base types, that is the <varname>tbool</varname>, <varname>tint</varname>, or <varname>ttext</varname> evolve necesssarily in a step manner. On the other hand, temporal types based on continuous base types, that is <varname>tfloat</varname>, <varname>tgeompoint</varname>, or <varname>tgeogpoint</varname> may evolve in a step or linear manner.
 	</para>
 
 	<para>
@@ -30,13 +30,13 @@ SELECT tfloat '17@2018-01-01 08:00:00';
 </programlisting>
 
 	<para>
-		A temporal value of <emphasis>sequence</emphasis> subtype (briefly, a <emphasis>sequence value</emphasis>) represents the evolution of the value during a sequence of time instants, where the values between these instants are interpolated using a discrete, stepwise, or a linear function (see above). An example is as follows:
+		A temporal value of <emphasis>sequence</emphasis> subtype (briefly, a <emphasis>sequence value</emphasis>) represents the evolution of the value during a sequence of time instants, where the values between these instants are interpolated using a discrete, step, or a linear function (see above). An example is as follows:
 	</para>
 	<programlisting language="sql" xml:space="preserve">
 -- Discrete interpolation
 SELECT tfloat '{17@2018-01-01 08:00:00, 17.5@2018-01-01 08:05:00, 18@2018-01-01 08:10:00}'
--- Stepwise interpolation
-SELECT tfloat 'Interp=Stepwise;(10@2018-01-01 08:00:00, 20@2018-01-01 08:05:00,
+-- Step interpolation
+SELECT tfloat 'Interp=Step;(10@2018-01-01 08:00:00, 20@2018-01-01 08:05:00,
   15@2018-01-01 08:10:00]'
 -- Linear interpolation
 SELECT tfloat '(10@2018-01-01 08:00:00, 20@2018-01-01 08:05:00, 15@2018-01-01 08:10:00]'
@@ -49,11 +49,11 @@ SELECT tfloat '(10@2018-01-01 08:00:00, 20@2018-01-01 08:05:00, 15@2018-01-01 08
 SELECT tint '[10@2018-01-01 08:00:00]';
 </programlisting>
 	<para>
-		Sequence values must be <emphasis>uniform</emphasis>, that is, they must be composed of instant values of the same base type. Sequence values with stepwise or linear interpolation are referred to as <emphasis>continuous sequences</emphasis>.
+		Sequence values must be <emphasis>uniform</emphasis>, that is, they must be composed of instant values of the same base type. Sequence values with step or linear interpolation are referred to as <emphasis>continuous sequences</emphasis>.
 	</para>
 
 	<para>
-		The value of a temporal sequence is interpreted by assuming that the period of time defined by every pair of consecutive values <varname>v1@t1</varname> and <varname>v2@t2</varname> is lower inclusive and upper exclusive, unless they are the first or the last instants of the sequence and in that case the bounds of the whole sequence apply. Furthermore, the value taken by the temporal sequence between two consecutive instants depends on whether the interpolation is stepwise or linear. For example, the temporal sequence above represents that the value is <varname>10</varname> during <varname>(2018-01-01 08:00:00, 2018-01-01 08:05:00)</varname>, <varname>20</varname> during <varname>[2018-01-01 08:05:00, 2018-01-01 08:10:00)</varname>, and <varname>15</varname> at the end instant <varname>2018-01-01 08:10:00</varname>. On the other hand, the following temporal sequence
+		The value of a temporal sequence is interpreted by assuming that the period of time defined by every pair of consecutive values <varname>v1@t1</varname> and <varname>v2@t2</varname> is lower inclusive and upper exclusive, unless they are the first or the last instants of the sequence and in that case the bounds of the whole sequence apply. Furthermore, the value taken by the temporal sequence between two consecutive instants depends on whether the interpolation is step or linear. For example, the temporal sequence above represents that the value is <varname>10</varname> during <varname>(2018-01-01 08:00:00, 2018-01-01 08:05:00)</varname>, <varname>20</varname> during <varname>[2018-01-01 08:05:00, 2018-01-01 08:10:00)</varname>, and <varname>15</varname> at the end instant <varname>2018-01-01 08:10:00</varname>. On the other hand, the following temporal sequence
 	<programlisting language="sql" xml:space="preserve">
 SELECT tfloat '(10@2018-01-01 08:00:00, 20@2018-01-01 08:05:00, 15@2018-01-01 08:10:00]';
 </programlisting>
@@ -68,11 +68,11 @@ SELECT tfloat '{[17@2018-01-01 08:00:00, 17.5@2018-01-01 08:05:00],
   [18@2018-01-01 08:10:00, 18@2018-01-01 08:15:00]}';
 </programlisting>
 	<para>
-		As shown in the above examples, sequence set values can only be of stepwise or linear interpolation. Furtheremore, all composing sequences of a sequence set value must be of the same base type and the same interpolation.
+		As shown in the above examples, sequence set values can only be of step or linear interpolation. Furtheremore, all composing sequences of a sequence set value must be of the same base type and the same interpolation.
 	</para>
 
 	<para>
-		Continuous sequence values are converted into <emphasis>normal form</emphasis> so that equivalent values have identical representations. For this, consecutive instant values are merged when possible. For stepwise interpolation, three consecutive instant values can be merged into two if they have the same value. For linear interpolation, three consecutive instant values can be merged into two if the linear functions defining the evolution of values are the same. Examples of transformation into normal form are as follows.
+		Continuous sequence values are converted into <emphasis>normal form</emphasis> so that equivalent values have identical representations. For this, consecutive instant values are merged when possible. For step interpolation, three consecutive instant values can be merged into two if they have the same value. For linear interpolation, three consecutive instant values can be merged into two if the linear functions defining the evolution of values are the same. Examples of transformation into normal form are as follows.
 	</para>
 	<programlisting language="sql" xml:space="preserve">
 SELECT tint '[1@2001-01-01, 2@2001-01-03, 2@2001-01-04, 2@2001-01-05)';
@@ -254,7 +254,7 @@ WHERE T1.CarId &lt; T2.CarId;
 			</listitem>
 
 			<listitem>
-				<para>In a sequence value with stepwise interpolation, the last two values must be equal if upper bound is exclusive.</para>
+				<para>In a sequence value with step interpolation, the last two values must be equal if upper bound is exclusive.</para>
 			</listitem>
 
 			<listitem>
@@ -283,7 +283,7 @@ SELECT tint '[1@2001-01-01 09:00:00)';
 SELECT tint '[1@2001-01-01 08:00:00, 2@2001-01-01 08:00:00]';
 -- Unordered timestamps
 SELECT tint '[1@2001-01-01 08:10:00, 2@2001-01-01 08:00:00]';
--- Incorrect end value for stepwise interpolation
+-- Incorrect end value for step interpolation
 SELECT tint '[1@2001-01-01 08:00:00, 2@2001-01-01 08:10:00)';
 -- Empty sequence set
 SELECT tint '{[]}';

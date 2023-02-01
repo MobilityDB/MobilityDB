@@ -222,7 +222,7 @@ tsequence_norm_test(Datum value1, Datum value2, Datum value3, meosType basetype,
     /* step sequences and 2 consecutive instants that have the same value
       ... 1@t1, 1@t2, 2@t3, ... -> ... 1@t1, 2@t3, ...
     */
-    (interp == STEPWISE && v1v2eq)
+    (interp == STEP && v1v2eq)
     ||
     /* 3 consecutive linear instants that have the same value
       ... 1@t1, 1@t2, 1@t3, ... -> ... 1@t1, 1@t3, ...
@@ -336,7 +336,7 @@ tsequence_join_test(const TSequence *seq1, const TSequence *seq2,
        ..., 1@t1, 1@t2) [1@t2, 2@t3, ... -> ..., 1@t1, 2@t3, ...
        ..., 1@t1, 1@t2] (1@t2, 2@t3, ... -> ..., 1@t1, 2@t3, ...
      */
-    (interp == STEPWISE && eq_last2_last1 && eq_last1_first1)
+    (interp == STEP && eq_last2_last1 && eq_last1_first1)
     ||
     /* If the last/first segments are constant and equal
        ..., 1@t1, 1@t2] (1@t2, 1@t3, ... -> ..., 1@t1, 1@t3, ...
@@ -361,7 +361,7 @@ tsequence_join_test(const TSequence *seq1, const TSequence *seq2,
      ..., 1@t1, 1@t2) [2@t2, 3@t3, ... -> ..., 1@t1, 2@t2, 3@t3, ...
      ..., 1@t1, 1@t2) [2@t2] -> ..., 1@t1, 2@t2]
    */
-  else if (adjacent && interp == STEPWISE && ! seq1->period.upper_inc)
+  else if (adjacent && interp == STEP && ! seq1->period.upper_inc)
   {
     /* Remove the last instant of the first sequence */
     *removelast = true;
@@ -369,7 +369,7 @@ tsequence_join_test(const TSequence *seq1, const TSequence *seq2,
     result = true;
   }
   /* If they are adjacent and have equal last/first value respectively
-    Stepwise
+    Step
     ... 1@t1, 2@t2], (2@t2, 1@t3, ... -> ..., 1@t1, 2@t2, 1@t3, ...
     [1@t1], (1@t1, 2@t2, ... -> ..., 1@t1, 2@t2
     Linear
@@ -578,7 +578,7 @@ tboolseq_in(const char *str, interpType interp)
   if (interp == DISCRETE)
     return tdiscseq_parse(&str, T_TBOOL);
   else
-    return tcontseq_parse(&str, T_TBOOL, STEPWISE, true, true);
+    return tcontseq_parse(&str, T_TBOOL, STEP, true, true);
 }
 
 /**
@@ -592,7 +592,7 @@ tintseq_in(const char *str, interpType interp)
   if (interp == DISCRETE)
     return tdiscseq_parse(&str, T_TINT);
   else
-    return tcontseq_parse(&str, T_TINT, STEPWISE, true, true);
+    return tcontseq_parse(&str, T_TINT, STEP, true, true);
 }
 
 /**
@@ -620,7 +620,7 @@ ttextseq_in(const char *str, interpType interp)
   if (interp == DISCRETE)
     return tdiscseq_parse(&str, T_TTEXT);
   else
-    return tcontseq_parse(&str, T_TTEXT, STEPWISE, true, true);
+    return tcontseq_parse(&str, T_TTEXT, STEP, true, true);
 }
 
 /**
@@ -672,8 +672,8 @@ tsequence_to_string(const TSequence *seq, int maxdd, bool component,
   char prefix[20];
   interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
   if (! component && MOBDB_FLAGS_GET_CONTINUOUS(seq->flags) &&
-      interp == STEPWISE)
-    sprintf(prefix, "Interp=Stepwise;");
+      interp == STEP)
+    sprintf(prefix, "Interp=Step;");
   else
     prefix[0] = '\0';
   for (int i = 0; i < seq->count; i++)
@@ -724,10 +724,10 @@ tsequence_make_valid1(const TInstant **instants, int count, bool lower_inc,
   if (count == 1 && (!lower_inc || !upper_inc))
     elog(ERROR, "Instant sequence must have inclusive bounds");
   meosType basetype = temptype_basetype(instants[0]->temptype);
-  if (interp == STEPWISE && count > 1 && ! upper_inc &&
+  if (interp == STEP && count > 1 && ! upper_inc &&
     datum_ne(tinstant_value(instants[count - 1]),
       tinstant_value(instants[count - 2]), basetype))
-    elog(ERROR, "Invalid end value for temporal sequence with stepwise interpolation");
+    elog(ERROR, "Invalid end value for temporal sequence with step interpolation");
   return;
 }
 
@@ -1272,7 +1272,7 @@ tsequence_from_base_time(Datum value, meosType temptype, const Span *p,
 TSequence *
 tboolseq_from_base_time(bool b, const Span *p)
 {
-  return tsequence_from_base_time(BoolGetDatum(b), T_TBOOL, p, STEPWISE);
+  return tsequence_from_base_time(BoolGetDatum(b), T_TBOOL, p, STEP);
 }
 
 /**
@@ -1282,7 +1282,7 @@ tboolseq_from_base_time(bool b, const Span *p)
 TSequence *
 tintseq_from_base_time(int i, const Span *p)
 {
-  return tsequence_from_base_time(Int32GetDatum(i), T_TINT, p, STEPWISE);
+  return tsequence_from_base_time(Int32GetDatum(i), T_TINT, p, STEP);
 }
 
 /**
@@ -1302,7 +1302,7 @@ tfloatseq_from_base_time(double d, const Span *p, interpType interp)
 TSequence *
 ttextseq_from_base_time(const text *txt, const Span *p)
 {
-  return tsequence_from_base_time(PointerGetDatum(txt), T_TTEXT, p, STEPWISE);
+  return tsequence_from_base_time(PointerGetDatum(txt), T_TTEXT, p, STEP);
 }
 
 /**
@@ -1843,7 +1843,7 @@ tsequence_to_tcontseq(const TSequence *seq)
    if (seq->count != 1)
       elog(ERROR, "Cannot transform input value to a temporal continuous sequence");
     return tinstant_to_tsequence(tsequence_inst_n(seq, 0),
-      MOBDB_FLAGS_GET_CONTINUOUS(seq->flags) ? LINEAR : STEPWISE);
+      MOBDB_FLAGS_GET_CONTINUOUS(seq->flags) ? LINEAR : STEP);
   }
   else
     /* The sequence has continuous interpolation return a copy */
@@ -1866,7 +1866,7 @@ tsequenceset_to_tsequence(const TSequenceSet *ss)
 
 /**
  * Return a temporal sequence with continuous base type transformed from
- * stepwise to linear interpolation
+ * step to linear interpolation
  *
  * @param[in] seq Temporal sequence
  * @param[out] result Array on which the pointers of the newly constructed
@@ -1919,7 +1919,7 @@ tstepseq_to_linear1(const TSequence *seq, TSequence **result)
 /**
  * @ingroup libmeos_internal_temporal_transf
  * @brief Return a temporal sequence with continuous base type transformed from
- * stepwise to linear interpolation.
+ * step to linear interpolation.
  *
  * @param[in] seq Temporal sequence
  * @return Resulting temporal sequence set
@@ -1993,7 +1993,7 @@ tsequence_shift_tscale(const TSequence *seq, const Interval *shift,
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Return the array of base values of a temporal sequence with stepwise
+ * @brief Return the array of base values of a temporal sequence with step
  * interpolation.
  *
  * @param[in] seq Temporal sequence
@@ -2289,7 +2289,7 @@ tsequence_sequences(const TSequence *seq, int *count)
   {
     /* Discrete sequence */
     result = palloc(sizeof(TSequence *) * seq->count);
-    interpType interp = MOBDB_FLAGS_GET_CONTINUOUS(seq->flags) ? LINEAR : STEPWISE;
+    interpType interp = MOBDB_FLAGS_GET_CONTINUOUS(seq->flags) ? LINEAR : STEP;
     for (int i = 0; i < seq->count; i++)
     {
       const TInstant *inst = tsequence_inst_n(seq, i);
@@ -3098,7 +3098,7 @@ tsequence_ever_eq(const TSequence *seq, Datum value)
   if (! temporal_bbox_ev_al_eq((Temporal *) seq, value, EVER))
     return false;
 
-  /* Stepwise interpolation or instantaneous sequence */
+  /* Step interpolation or instantaneous sequence */
   if (! MOBDB_FLAGS_GET_LINEAR(seq->flags) || seq->count == 1)
   {
     for (i = 0; i < seq->count; i++)
@@ -3263,7 +3263,7 @@ tsequence_ever_le(const TSequence *seq, Datum value)
   int i;
   meosType basetype = temptype_basetype(seq->temptype);
 
-  /* Stepwise interpolation or instantaneous sequence */
+  /* Step interpolation or instantaneous sequence */
   if (! MOBDB_FLAGS_GET_LINEAR(seq->flags) || seq->count == 1)
   {
     for (i = 0; i < seq->count; i++)
@@ -3307,7 +3307,7 @@ tsequence_always_lt(const TSequence *seq, Datum value)
   int i;
   meosType basetype = temptype_basetype(seq->temptype);
 
-  /* Stepwise interpolation or instantaneous sequence */
+  /* Step interpolation or instantaneous sequence */
   if (! MOBDB_FLAGS_GET_LINEAR(seq->flags) || seq->count == 1)
   {
     for (i = 0; i < seq->count; i++)
@@ -3513,8 +3513,8 @@ tsegment_restrict_value(const TInstant *inst1, const TInstant *inst2,
     return 1;
   }
 
-  /* Stepwise interpolation */
-  if (interp == STEPWISE)
+  /* Step interpolation */
+  if (interp == STEP)
   {
     int k = 0;
     if (lower)
@@ -3522,11 +3522,11 @@ tsegment_restrict_value(const TInstant *inst1, const TInstant *inst2,
       instants[0] = (TInstant *) inst1;
       instants[1] = tinstant_make(value1, inst1->temptype, inst2->t);
       result[k++] = tsequence_make((const TInstant **) instants, 2,
-        lower_inc, false, STEPWISE, NORMALIZE_NO);
+        lower_inc, false, STEP, NORMALIZE_NO);
       pfree(instants[1]);
     }
     if (upper_inc && upper)
-      result[k++] = tinstant_to_tsequence(inst2, STEPWISE);
+      result[k++] = tinstant_to_tsequence(inst2, STEP);
     return k;
   }
 
@@ -3875,7 +3875,7 @@ tnumbersegm_restrict_span(const TInstant *inst1, const TInstant *inst2,
   Datum value1 = tinstant_value(inst1);
   Datum value2 = tinstant_value(inst2);
   meosType basetype = temptype_basetype(inst1->temptype);
-  interpType interp = linear ? LINEAR : STEPWISE;
+  interpType interp = linear ? LINEAR : STEP;
   TInstant *instants[2];
   bool contains;
 
@@ -3892,7 +3892,7 @@ tnumbersegm_restrict_span(const TInstant *inst1, const TInstant *inst2,
     return 1;
   }
 
-  /* Stepwise interpolation */
+  /* Step interpolation */
   if (! linear)
   {
     int k = 0;
@@ -5301,7 +5301,7 @@ tcontseq_insert(const TSequence *seq1, const TSequence *seq2)
   {
     if (seq1->period.upper_inc && seq2->period.lower_inc)
     {
-      /* We put true so that it works with stepwise interpolation */
+      /* We put true so that it works with step interpolation */
       int count = (timestamptz_cmp_internal(instants[0]->t, instants[1]->t) == 0) ?
         1 : 2;
       tofree = tsequence_make(instants, count, true, true, interp,
@@ -5658,6 +5658,19 @@ tnumbercontseq_twavg(const TSequence *seq)
       temptype_basetype(seq->temptype));
   else
     result = tnumberseq_integral(seq) / duration;
+  return result;
+}
+
+/**
+ * @ingroup libmeos_internal_temporal_agg
+ * @brief Return the time-weighted average of a temporal sequence number
+ * @sqlfunc twAvg()
+ */
+double
+tnumberseq_twavg(const TSequence *seq)
+{
+  double result = MOBDB_FLAGS_GET_DISCRETE(seq->flags) ?
+      tnumberdiscseq_twavg(seq) : tnumbercontseq_twavg(seq);
   return result;
 }
 

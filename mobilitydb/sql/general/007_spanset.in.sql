@@ -417,23 +417,6 @@ CREATE FUNCTION memSize(tstzspanset)
   AS 'MODULE_PATHNAME', 'Spanset_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION storeSize(intspanset)
-  RETURNS int
-  AS 'MODULE_PATHNAME', 'Spanset_store_size'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION storeSize(bigintspanset)
-  RETURNS int
-  AS 'MODULE_PATHNAME', 'Spanset_store_size'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION storeSize(floatspanset)
-  RETURNS int
-  AS 'MODULE_PATHNAME', 'Spanset_store_size'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION storeSize(tstzspanset)
-  RETURNS int
-  AS 'MODULE_PATHNAME', 'Spanset_store_size'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE FUNCTION lower(intspanset)
   RETURNS int
   AS 'MODULE_PATHNAME', 'Spanset_lower'

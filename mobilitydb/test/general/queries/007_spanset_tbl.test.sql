@@ -99,10 +99,6 @@ SELECT MAX(memSize(i)) FROM tbl_intspanset;
 SELECT MAX(memSize(f)) FROM tbl_floatspanset;
 SELECT MAX(memSize(ps)) FROM tbl_tstzspanset;
 
-SELECT MAX(storeSize(i)) FROM tbl_intspanset;
-SELECT MAX(storeSize(f)) FROM tbl_floatspanset;
-SELECT MAX(storeSize(ps)) FROM tbl_tstzspanset;
-
 SELECT MAX(lower(i)) FROM tbl_intspanset;
 SELECT round(MAX(lower(f))::numeric, 6) FROM tbl_floatspanset;
 SELECT MAX(lower(ps)) FROM tbl_tstzspanset;

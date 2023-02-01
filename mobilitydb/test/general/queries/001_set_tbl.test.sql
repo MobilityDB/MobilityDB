@@ -106,7 +106,6 @@ SELECT MIN(startValue(shift(t, '5 min'))) FROM tbl_tstzset;
 -- Accessor functions
 
 SELECT MAX(memSize(t)) FROM tbl_tstzset;
-SELECT MAX(storeSize(t)) FROM tbl_tstzset;
 
 SELECT MIN(lower(span(t))) FROM tbl_tstzset;
 

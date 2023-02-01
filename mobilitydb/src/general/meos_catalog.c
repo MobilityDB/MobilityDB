@@ -349,148 +349,6 @@ populate_operoid_cache()
   PG_END_TRY();
 }
 
-/**
- * @brief Fill the operator oid array from the PostgreSQL catalog table
- * `pg_operator`
- */
-void
-fill_oper_array()
-{
-  /* Fill the Oid type cache */
-  populate_typeoid_cache();
-  /* Initialize to 0 the Oid operator cache */
-  memset(_oper_oid, 0, sizeof(_oper_oid));
-  /* Get the Oid of the pg_operator catalog table */
-  Oid catalog = RelnameGetRelid("pg_operator");
-#if POSTGRESQL_VERSION_NUMBER < 130000
-  Relation rel = heap_open(catalog, AccessShareLock);
-#else
-  Relation rel = table_open(catalog, AccessShareLock);
-#endif
-  ScanKeyData scandata;
-  TableScanDesc scan = table_beginscan_catalog(rel, 0, &scandata);
-  HeapTuple tuple = heap_getnext(scan, ForwardScanDirection);
-  // int n = 0; /* number of operators added to the oid array */
-  while (HeapTupleIsValid(tuple))
-  {
-    TupleDesc tupDesc = rel->rd_att;
-    /* Get the column numbers of the required attributes */
-    AttrNumber oproid_n = InvalidAttrNumber;
-    AttrNumber oprname_n = InvalidAttrNumber;
-    AttrNumber oprleft_n = InvalidAttrNumber;
-    AttrNumber oprright_n = InvalidAttrNumber;
-    int k = 0;
-    for (int i = 0; i < tupDesc->natts; i++)
-    {
-      Form_pg_attribute att = TupleDescAttr(tupDesc, i);
-      if (namestrcmp(&(att->attname), "oid") == 0)
-      {
-        oproid_n = att->attnum;
-        k++;
-      }
-      else if (namestrcmp(&(att->attname), "oprname") == 0)
-      {
-        oprname_n = att->attnum;
-        k++;
-      }
-      else if (namestrcmp(&(att->attname), "oprleft") == 0)
-      {
-        oprleft_n = att->attnum;
-        k++;
-      }
-      else if (namestrcmp(&(att->attname), "oprright") == 0)
-      {
-        oprright_n = att->attnum;
-        k++;
-      }
-      if (k == 4)
-        break;
-    }
-    /* Get the operator and type Oids and the operator name */
-    bool isnull;
-    Oid oproid = DatumGetInt32(heap_getattr(tuple, oproid_n, tupDesc,
-      &isnull));
-    NameData *oprName = DatumGetName(heap_getattr(tuple, oprname_n, tupDesc,
-      &isnull));
-    char *oprname = (char *) (oprName->data);
-    Oid oprleft = DatumGetInt32(heap_getattr(tuple, oprleft_n, tupDesc,
-      &isnull));
-    Oid oprright = DatumGetInt32(heap_getattr(tuple, oprright_n, tupDesc,
-      &isnull));
-    /* Get the type and operator numbers */
-    meosOper oper = name_oper(oprname);
-    meosType ltype = oid_type(oprleft);
-    meosType rtype = oid_type(oprright);
-    /* Fill the cache if the operator and all its types are recognized */
-    if (oper != UNKNOWN_OP && ltype != T_UNKNOWN && rtype != T_UNKNOWN)
-    {
-      _oper_oid[oper][ltype][rtype] = oproid;
-      // elog(WARNING, "operoid: %d, oper: %d, ltype: %d, rtype: %d",
-        // oproid, oper, ltype, rtype);
-      // n++;
-    }
-    tuple = heap_getnext(scan, ForwardScanDirection);
-    /* Give backend a chance of interrupting us */
-    CHECK_FOR_INTERRUPTS();
-  }
-  heap_endscan(scan);
-#if POSTGRESQL_VERSION_NUMBER < 130000
-  heap_close(rel, AccessShareLock);
-#else
-  table_close(rel, AccessShareLock);
-#endif
-  // elog(WARNING, "Number of operators in the array -> %d\n", n);
-  return;
-}
-
-PG_FUNCTION_INFO_V1(fill_oid_cache);
-/**
- * @brief Function executed during the `CREATE EXTENSION` to precompute the
- * operator cache and store it in table `mobilitydb_opcache`
- * @see populate_operoid_cache
- */
-PGDLLEXPORT Datum
-fill_oid_cache(PG_FUNCTION_ARGS __attribute__((unused)))
-{
-  /* Get the Oid of the mobilitydb_opcache table */
-  Oid catalog = RelnameGetRelid("mobilitydb_opcache");
-#if POSTGRESQL_VERSION_NUMBER < 130000
-  Relation rel = heap_open(catalog, AccessExclusiveLock);
-#else
-  Relation rel = table_open(catalog, AccessExclusiveLock);
-#endif
-  TupleDesc tupDesc = rel->rd_att;
-  bool isnull[] = {false, false, false, false};
-  Datum data[] = {0, 0, 0, 0};
-
-  /* Fill the operator oid array */
-  fill_oper_array();
-  /* Add a row in the table for the array cells that are non zero */
-  int32 m = sizeof(_oper_names) / sizeof(char *);
-  int32 n = sizeof(_type_names) / sizeof(char *);
-  for (int32 i = 1; i < m; i++)
-    for (int32 j = 1; j < n; j++)
-      for (int32 k = 1; k < n; k++)
-      {
-        Oid oproid = _oper_oid[i][j][k];
-        if (oproid != InvalidOid)
-        {
-          data[0] = Int32GetDatum(i);
-          data[1] = Int32GetDatum(j);
-          data[2] = Int32GetDatum(k);
-          data[3] = ObjectIdGetDatum(oproid);
-          HeapTuple t = heap_form_tuple(tupDesc, data, isnull);
-          simple_heap_insert(rel, t);
-        }
-      }
-#if POSTGRESQL_VERSION_NUMBER < 130000
-  heap_close(rel, AccessExclusiveLock);
-#else
-  table_close(rel, AccessExclusiveLock);
-#endif
-  PG_RETURN_VOID();
-}
-
 /*****************************************************************************/
 
 /**
@@ -596,6 +454,116 @@ oid_oper(Oid oproid, meosType *ltype, meosType *rtype)
       *rtype = entry->rtype;
     return entry->oper;
   }
+}
+
+/*****************************************************************************/
+
+PG_FUNCTION_INFO_V1(fill_oid_cache);
+/**
+ * @brief Function executed during the `CREATE EXTENSION` to precompute the
+ * operator cache and store it in table `mobilitydb_opcache`
+ * @see populate_operoid_cache
+ */
+PGDLLEXPORT Datum
+fill_oid_cache(PG_FUNCTION_ARGS __attribute__((unused)))
+{
+  /* Fill the Oid type cache */
+  populate_typeoid_cache();
+
+  /* Get the Oid of the mobilitydb_opcache table */
+  Oid cat_mob = RelnameGetRelid("mobilitydb_opcache");
+#if POSTGRESQL_VERSION_NUMBER < 130000
+  Relation rel_mob = heap_open(cat_mob, AccessExclusiveLock);
+#else
+  Relation rel_mob = table_open(cat_mob, AccessExclusiveLock);
+#endif
+  TupleDesc tupDesc_mob = rel_mob->rd_att;
+  bool isnullarr[] = {false, false, false, false};
+  Datum data[] = {0, 0, 0, 0};
+
+  /* Get the Oid of the pg_operator catalog table */
+  Oid cat_pg = RelnameGetRelid("pg_operator");
+#if POSTGRESQL_VERSION_NUMBER < 130000
+  Relation rel_pg = heap_open(cat_pg, AccessShareLock);
+#else
+  Relation rel_pg = table_open(cat_pg, AccessShareLock);
+#endif
+  ScanKeyData scandata;
+  TableScanDesc scan = table_beginscan_catalog(rel_pg, 0, &scandata);
+  HeapTuple tuple = heap_getnext(scan, ForwardScanDirection);
+  while (HeapTupleIsValid(tuple))
+  {
+    TupleDesc tupDesc_pg = rel_pg->rd_att;
+    /* Get the column numbers of the required attributes */
+    AttrNumber oproid_n = InvalidAttrNumber;
+    AttrNumber oprname_n = InvalidAttrNumber;
+    AttrNumber oprleft_n = InvalidAttrNumber;
+    AttrNumber oprright_n = InvalidAttrNumber;
+    int k = 0;
+    for (int i = 0; i < tupDesc_pg->natts; i++)
+    {
+      Form_pg_attribute att = TupleDescAttr(tupDesc_pg, i);
+      if (namestrcmp(&(att->attname), "oid") == 0)
+      {
+        oproid_n = att->attnum;
+        k++;
+      }
+      else if (namestrcmp(&(att->attname), "oprname") == 0)
+      {
+        oprname_n = att->attnum;
+        k++;
+      }
+      else if (namestrcmp(&(att->attname), "oprleft") == 0)
+      {
+        oprleft_n = att->attnum;
+        k++;
+      }
+      else if (namestrcmp(&(att->attname), "oprright") == 0)
+      {
+        oprright_n = att->attnum;
+        k++;
+      }
+      if (k == 4)
+        break;
+    }
+    /* Get the operator and type Oids and the operator name */
+    bool isnull;
+    Oid oproid = DatumGetInt32(heap_getattr(tuple, oproid_n, tupDesc_pg,
+      &isnull));
+    NameData *oprName = DatumGetName(heap_getattr(tuple, oprname_n, tupDesc_pg,
+      &isnull));
+    char *oprname = (char *) (oprName->data);
+    Oid oprleft = DatumGetInt32(heap_getattr(tuple, oprleft_n, tupDesc_pg,
+      &isnull));
+    Oid oprright = DatumGetInt32(heap_getattr(tuple, oprright_n, tupDesc_pg,
+      &isnull));
+    /* Get the type and operator numbers */
+    meosOper oper = name_oper(oprname);
+    meosType ltype = oid_type(oprleft);
+    meosType rtype = oid_type(oprright);
+    /* Fill the cache if the operator and all its types are recognized */
+    if (oper != UNKNOWN_OP && ltype != T_UNKNOWN && rtype != T_UNKNOWN)
+    {
+      data[0] = Int32GetDatum(oper);
+      data[1] = Int32GetDatum(ltype);
+      data[2] = Int32GetDatum(rtype);
+      data[3] = ObjectIdGetDatum(oproid);
+      HeapTuple t = heap_form_tuple(tupDesc_mob, data, isnullarr);
+      simple_heap_insert(rel_mob, t);
+    }
+    tuple = heap_getnext(scan, ForwardScanDirection);
+    /* Give backend a chance of interrupting us */
+    CHECK_FOR_INTERRUPTS();
+  }
+  heap_endscan(scan);
+#if POSTGRESQL_VERSION_NUMBER < 130000
+  heap_close(rel_pg, AccessShareLock);
+  heap_close(rel_mob, AccessExclusiveLock);
+#else
+  table_close(rel_pg, AccessShareLock);
+  table_close(rel_mob, AccessExclusiveLock);
+#endif
+  PG_RETURN_VOID();
 }
 
 /*****************************************************************************/

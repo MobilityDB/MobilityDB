@@ -185,12 +185,6 @@ SELECT MAX(memSize(t)) FROM tbl_tstzset;
   96
 (1 row)
 
-SELECT MAX(storeSize(t)) FROM tbl_tstzset;
- max 
------
-  93
-(1 row)
-
 SELECT MIN(lower(span(t))) FROM tbl_tstzset;
           min           
 ------------------------

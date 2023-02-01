@@ -367,14 +367,14 @@ period_transform_tcount(const Span *p)
   if (p->lower == p->upper)
   {
     result = tsequence_make((const TInstant **) instants, 1, p->lower_inc,
-      p->upper_inc, STEPWISE, NORMALIZE_NO);
+      p->upper_inc, STEP, NORMALIZE_NO);
   }
   else
   {
     t = p->upper;
     instants[1] = tinstant_make(datum_one, T_TINT, t);
     result = tsequence_make((const TInstant **) instants, 2,
-      p->lower_inc, p->upper_inc, STEPWISE, NORMALIZE_NO);
+      p->lower_inc, p->upper_inc, STEP, NORMALIZE_NO);
     pfree(instants[1]);
   }
   pfree(instants[0]);

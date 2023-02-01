@@ -470,7 +470,7 @@ tinstant_sequences(const TInstant *inst, int *count)
 {
   TSequence **result = palloc(sizeof(TSequence *));
   result[0] = tinstant_to_tsequence(inst,
-    MOBDB_FLAGS_GET_CONTINUOUS(inst->flags) ? LINEAR : STEPWISE);
+    MOBDB_FLAGS_GET_CONTINUOUS(inst->flags) ? LINEAR : STEP);
   *count = 1;
   return result;
 }

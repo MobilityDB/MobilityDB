@@ -707,7 +707,7 @@ tsequence_time_split1(const TSequence *seq, TimestampTz start, TimestampTz end,
       lower_inc1 = (m == 0) ? seq->period.lower_inc : true;
       times[m] = lower;
       result[m++] = tsequence_make(instants, k, lower_inc1,
-         (k > 1) ? false : true, linear ? LINEAR : STEPWISE, NORMALIZE);
+         (k > 1) ? false : true, linear ? LINEAR : STEP, NORMALIZE);
       k = 0;
       lower = upper;
       upper += tunits;
@@ -725,7 +725,7 @@ tsequence_time_split1(const TSequence *seq, TimestampTz start, TimestampTz end,
     lower_inc1 = (m == 0) ? seq->period.lower_inc : true;
     times[m] = lower;
     result[m++] = tsequence_make(instants, k, lower_inc1,
-      seq->period.upper_inc, linear ? LINEAR : STEPWISE, NORMALIZE);
+      seq->period.upper_inc, linear ? LINEAR : STEP, NORMALIZE);
   }
   pfree_array((void **) tofree, l);
   pfree(instants);
@@ -1068,8 +1068,8 @@ for (int i = 1; i < seq->count; i++)
       tofree[l++] = bounds[1] = tinstant_make(value, seq->temptype, inst2->t);
       k++;
     }
-    result[bucket_no * numcols + seq_no] = tsequence_make((const TInstant **) bounds,
-      k, lower_inc1, false, STEPWISE, NORMALIZE);
+    result[bucket_no * numcols + seq_no] = tsequence_make(
+      (const TInstant **) bounds, k, lower_inc1, false, STEP, NORMALIZE);
     bounds[0] = bounds[1];
     inst1 = inst2;
     lower_inc1 = true;
@@ -1082,7 +1082,7 @@ for (int i = 1; i < seq->count; i++)
     bucket_value = datum_bucket(value, size, start_bucket, basetype);
     bucket_no = bucket_position(bucket_value, size, start_bucket, basetype);
     seq_no = numseqs[bucket_no]++;
-    result[bucket_no * numcols + seq_no] = tinstant_to_tsequence(inst1, STEPWISE);
+    result[bucket_no * numcols + seq_no] = tinstant_to_tsequence(inst1, STEP);
   }
   pfree_array((void **) tofree, l);
   return;

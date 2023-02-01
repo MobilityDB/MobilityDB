@@ -113,9 +113,9 @@ SELECT wavg(temp, interval '5 minutes') FROM (VALUES (NULL::tint),(NULL::tint)) 
 (1 row)
 
 SELECT wavg(temp, interval '5 minutes') FROM (VALUES (NULL::tint),('1@2000-01-01'::tint)) t(temp);
-                                  wavg                                  
-------------------------------------------------------------------------
- Interp=Stepwise;{[1@2000-01-01 00:00:00+00, 1@2000-01-01 00:05:00+00]}
+                                wavg                                
+--------------------------------------------------------------------
+ Interp=Step;{[1@2000-01-01 00:00:00+00, 1@2000-01-01 00:05:00+00]}
 (1 row)
 
 SELECT wmin(temp, NULL) FROM (VALUES (NULL::tfloat),(NULL::tfloat)) t(temp);
@@ -246,4 +246,4 @@ SELECT wmax(temp, interval '1 day') FROM (VALUES (tfloat '[1@2000-01-01, 1@2000-
 
 /* Errors */
 SELECT wsum(temp, interval '1 day') FROM (VALUES (tfloat '[1@2000-01-01, 1@2000-01-02]'),('[1@2000-01-03, 1@2000-01-04]')) t(temp);
-ERROR:  Operation not supported for temporal float sequences
+ERROR:  Operation not supported for temporal continuous float sequences

@@ -749,6 +749,7 @@ extern TSequenceSet *tsequenceset_delete_periodset(const TSequenceSet *ss, const
 extern double tnumberseq_integral(const TSequence *seq);
 extern double tnumbercontseq_twavg(const TSequence *seq);
 extern double tnumberdiscseq_twavg(const TSequence *seq);
+extern double tnumberseq_twavg(const TSequence *seq);
 extern double tnumberseqset_integral(const TSequenceSet *ss);
 extern double tnumberseqset_twavg(const TSequenceSet *ss);
 extern GSERIALIZED *tpointseq_twcentroid(const TSequence *seq);

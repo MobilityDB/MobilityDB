@@ -427,13 +427,13 @@ tpoint_parse(const char **str, meosType temptype)
   // if (temptype == T_TGEOGPOINT)
     // srid_is_latlong(fcinfo, tpoint_srid);
 
-  interpType interp = temptype_continuous(temptype) ? LINEAR : STEPWISE;
-  /* Starts with "Interp=Stepwise" */
-  if (strncasecmp(*str, "Interp=Stepwise;", 16) == 0)
+  interpType interp = temptype_continuous(temptype) ? LINEAR : STEP;
+  /* Starts with "Interp=Step" */
+  if (strncasecmp(*str, "Interp=Step;", 12) == 0)
   {
     /* Move str after the semicolon */
-    *str += 16;
-    interp = STEPWISE;
+    *str += 12;
+    interp = STEP;
   }
   Temporal *result = NULL; /* keep compiler quiet */
   /* Determine the type of the temporal point */

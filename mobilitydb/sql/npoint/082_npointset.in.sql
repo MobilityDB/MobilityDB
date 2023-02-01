@@ -126,11 +126,6 @@ CREATE FUNCTION memSize(npointset)
   AS 'MODULE_PATHNAME', 'Set_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION storeSize(npointset)
-  RETURNS int
-  AS 'MODULE_PATHNAME', 'Set_store_size'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE FUNCTION numValues(npointset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_num_values'

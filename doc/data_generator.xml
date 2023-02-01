@@ -663,7 +663,7 @@ WHERE t1.k IN (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 				<para><varname>random_tnpoint_discseq</varname>: Generate a random temporal network point of sequence subtype and discrete interpolation</para>
 			</listitem>
 			<listitem>
-				<para><varname>random_tnpoint_seq</varname>: Generate a random temporal network point of sequence subtype and linear or stepwise interpolation</para>
+				<para><varname>random_tnpoint_seq</varname>: Generate a random temporal network point of sequence subtype and linear or step interpolation</para>
 			</listitem>
 			<listitem>
 				<para><varname>random_tnpoint_seqset</varname>: Generate a random temporal network point of sequence set subtype</para>

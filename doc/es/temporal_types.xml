@@ -36,7 +36,7 @@ SELECT tfloat '17@2018-01-01 08:00:00';
 -- Interpolación discreta
 SELECT tfloat '{17@2018-01-01 08:00:00, 17.5@2018-01-01 08:05:00, 18@2018-01-01 08:10:00}'
 -- Interpolación escalonada
-SELECT tfloat 'Interp=Stepwise;(10@2018-01-01 08:00:00, 20@2018-01-01 08:05:00,
+SELECT tfloat 'Interp=Step;(10@2018-01-01 08:00:00, 20@2018-01-01 08:05:00,
   15@2018-01-01 08:10:00]'
 -- Interpolación lineal
 SELECT tfloat '(10@2018-01-01 08:00:00, 20@2018-01-01 08:05:00, 15@2018-01-01 08:10:00]'

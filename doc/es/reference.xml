@@ -120,11 +120,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="spantime_FromBinary"><varname>intsetFromBinary</varname>, <varname>intspanFromBinary</varname>, <varname>intspansetFromBinary</varname>, ...</link>: Entrar un conjunto o un rango en la representación binaria conocida (WKB)</para>
+					<para><link linkend="spantime_FromBinary"><varname>&lt;set&gt;FromBinary</varname>, <varname>&lt;span&gt;FromBinary</varname>, <varname>&lt;spanset&gt;FromBinary</varname></link>: Entrar un conjunto o un rango en la representación binaria conocida (WKB)</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="spantime_FromHexWKB"><varname>intsetFromHexWKB</varname>, <varname>intspanFromHexWKB</varname>, <varname>intspansetFromHexWKB</varname>, ...</link>: Entrar un conjunto o un rango en la representación hexadecimal binaria conocida (HexWKB)</para>
+					<para><link linkend="spantime_FromHexWKB"><varname>&lt;set&gt;FromHexWKB</varname>, <varname>&lt;span&gt;FromHexWKB</varname>, <varname>&lt;spanset&gt;FromHexWKB</varname></link>: Entrar un conjunto o un rango en la representación hexadecimal binaria conocida (HexWKB)</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -177,10 +177,6 @@
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="setspan_memSize"><varname>memSize</varname></link>: Obtener el tamaño de la memoria en bytes</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="setspan_memSize"><varname>storeSize</varname></link>: Obtener el tamaño de almacenamiento (comprimido) en bytes</para>
 				</listitem>
 
 				<listitem>
@@ -572,19 +568,19 @@
 			<title>Funciones de constructor</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="ttype_const"><varname>ttype</varname></link>: Constructor de tipos temporales a partir de un valor base y un valor de tiempo</para>
+					<para><link linkend="ttype_const"><varname>&lt;ttype&gt;</varname></link>: Constructor de tipos temporales a partir de un valor base y un valor de tiempo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_discseq"><varname>ttype_discseq</varname></link>: Constructor para tipos temporales de subtipo secuencia con interpolación discreta</para>
+					<para><link linkend="ttype_discseq"><varname>&lt;ttype&gt;_discseq</varname></link>: Constructor para tipos temporales de subtipo secuencia con interpolación discreta</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_contseq"><varname>ttype_contseq</varname></link>: Constructor para tipos temporales de subtipo secuencia con interpolación contínua</para>
+					<para><link linkend="ttype_contseq"><varname>&lt;ttype&gt;_contseq</varname></link>: Constructor para tipos temporales de subtipo secuencia con interpolación contínua</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_seqset"><varname>ttype_seqset</varname></link>: Constructor para tipos temporales de subtipo conjunto de secuencias</para>
+					<para><link linkend="ttype_seqset"><varname>&lt;ttype&gt;_seqset</varname>, <varname>&lt;ttype&gt;_seqset_gaps</varname></link>: Constructor para tipos temporales de subtipo conjunto de secuencias</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -729,7 +725,7 @@
 
 			<itemizedlist>
 				<listitem>
-				<para><link linkend="ttype_transform"><varname>ttype_inst, ttype_discseq, ttype_contseq, ttype_seqset</varname></link>: Transformar un valor temporal en otro subtipo</para>
+				<para><link linkend="ttype_transform"><varname>&lt;ttype&gt;_inst, &lt;ttype&gt;_discseq, &lt;ttype&gt;_contseq, &lt;ttype&gt;_seqset</varname></link>: Transformar un valor temporal en otro subtipo</para>
 				</listitem>
 
 				<listitem>

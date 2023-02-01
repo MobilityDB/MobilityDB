@@ -82,7 +82,7 @@ tinstant_extend(const TInstant *inst, const Interval *interval,
   instants[0] = (TInstant *) inst;
   instants[1] = tinstant_make(tinstant_value(inst), inst->temptype, upper);
   result[0] = tsequence_make((const TInstant **) instants, 2, true, true,
-    MOBDB_FLAGS_GET_CONTINUOUS(inst->flags) ? LINEAR : STEPWISE, NORMALIZE_NO);
+    MOBDB_FLAGS_GET_CONTINUOUS(inst->flags) ? LINEAR : STEP, NORMALIZE_NO);
   pfree(instants[1]);
   return 1;
 }
@@ -133,7 +133,7 @@ tcontseq_extend(const TSequence *seq, const Interval *interval, bool min,
     Datum value2 = tinstant_value(inst2);
     bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false;
 
-    /* Stepwise interpolation or constant segment */
+    /* Step interpolation or constant segment */
     if (interp != LINEAR || datum_eq(value1, value2, basetype))
     {
       TimestampTz upper = pg_timestamp_pl_interval(inst2->t, interval);
@@ -255,7 +255,7 @@ tinstant_transform_wcount1(TimestampTz lower, TimestampTz upper,
   instants[0] = tinstant_make(Int32GetDatum(1), T_TINT, lower);
   instants[1] = tinstant_make(Int32GetDatum(1), T_TINT, upper1);
   TSequence *result = tsequence_make((const TInstant **) instants, 2,
-    lower_inc, upper_inc, STEPWISE, NORMALIZE_NO);
+    lower_inc, upper_inc, STEP, NORMALIZE_NO);
   pfree(instants[0]); pfree(instants[1]);
   return result;
 }
@@ -408,7 +408,7 @@ tnumberinst_transform_wavg(const TInstant *inst, const Interval *interval,
   instants[0] = tinstant_make(PointerGetDatum(&dvalue), T_TDOUBLE2, inst->t);
   instants[1] = tinstant_make(PointerGetDatum(&dvalue), T_TDOUBLE2, upper);
   result[0] = tsequence_make((const TInstant**) instants, 2, true, true,
-    MOBDB_FLAGS_GET_CONTINUOUS(inst->flags) ? LINEAR : STEPWISE, NORMALIZE_NO);
+    MOBDB_FLAGS_GET_CONTINUOUS(inst->flags) ? LINEAR : STEP, NORMALIZE_NO);
   pfree(instants[0]); pfree(instants[1]);
   return 1;
 }
@@ -472,7 +472,7 @@ tintseq_transform_wavg(const TSequence *seq, const Interval *interval,
     instants[0] = tinstant_make(PointerGetDatum(&dvalue), T_TDOUBLE2, inst1->t);
     instants[1] = tinstant_make(PointerGetDatum(&dvalue), T_TDOUBLE2, upper);
     result[i] = tsequence_make((const TInstant **) instants, 2, lower_inc,
-      upper_inc, STEPWISE, NORMALIZE_NO);
+      upper_inc, STEP, NORMALIZE_NO);
     pfree(instants[0]); pfree(instants[1]);
     inst1 = inst2;
     lower_inc = true;

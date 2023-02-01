@@ -710,7 +710,7 @@ tpointseq_ever_eq(const TSequence *seq, Datum value)
   if (! temporal_bbox_ev_al_eq((Temporal *) seq, value, EVER))
     return false;
 
-  /* Stepwise interpolation or instantaneous sequence */
+  /* Step interpolation or instantaneous sequence */
   if (! MOBDB_FLAGS_GET_LINEAR(seq->flags) || seq->count == 1)
   {
     for (i = 0; i < seq->count; i++)
@@ -1576,7 +1576,7 @@ lwpointarr_remove_duplicates(LWGEOM **points, int count, int *newcount)
 /**
  * @brief Compute a trajectory from a set of points. The result is either a
  * linestring or a multipoint depending on whether the interpolation is
- * stepwise/discrete or linear.
+ * step/discrete or linear.
  * @note The function does not remove duplicate points, that is, repeated
  * points in a multipoint or consecutive equal points in a line string. This
  * should be done in the calling function.
@@ -1649,7 +1649,7 @@ tpointdiscseq_trajectory(const TSequence *seq)
     GSERIALIZED *gsvalue = DatumGetGserializedP(value);
     points[i] = lwgeom_from_gserialized(gsvalue);
   }
-  LWGEOM *lwgeom = lwpointarr_make_trajectory(points, seq->count, STEPWISE);
+  LWGEOM *lwgeom = lwpointarr_make_trajectory(points, seq->count, STEP);
   GSERIALIZED *result = geo_serialize(lwgeom);
   pfree(lwgeom);
   for (int i = 0; i < seq->count; i++)
@@ -1736,7 +1736,7 @@ tpointseqset_trajectory(const TSequenceSet *ss)
   if (k == 0)
   {
     /* Only points */
-    LWGEOM *lwgeom = lwpointarr_make_trajectory((LWGEOM **) points, l, STEPWISE);
+    LWGEOM *lwgeom = lwpointarr_make_trajectory((LWGEOM **) points, l, STEP);
     result = geo_serialize(lwgeom);
     pfree(lwgeom);
   }
@@ -2371,7 +2371,7 @@ tpointseq_speed(const TSequence *seq)
     seq->period.upper);
   /* The resulting sequence has step interpolation */
   TSequence *result = tsequence_make((const TInstant **) instants, seq->count,
-    seq->period.lower_inc, seq->period.upper_inc, STEPWISE, NORMALIZE);
+    seq->period.lower_inc, seq->period.upper_inc, STEP, NORMALIZE);
   pfree_array((void **) instants, seq->count - 1);
   return result;
 }
@@ -2465,14 +2465,9 @@ tpointseq_twcentroid(const TSequence *seq)
   interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
   TSequence *seqx, *seqy, *seqz;
   tpointseq_twcentroid1(seq, hasz, interp, &seqx, &seqy, &seqz);
-  double twavgx = (interp == DISCRETE) ?
-    tnumberdiscseq_twavg(seqx) : tnumbercontseq_twavg(seqx);
-  double twavgy = (interp == DISCRETE) ?
-    tnumberdiscseq_twavg(seqy) : tnumbercontseq_twavg(seqy);
-  double twavgz = 0.0;
-  if (hasz)
-    twavgz = (interp == DISCRETE) ?
-      tnumberdiscseq_twavg(seqz) : tnumbercontseq_twavg(seqz);
+  double twavgx = tnumberseq_twavg(seqx);
+  double twavgy = tnumberseq_twavg(seqy);
+  double twavgz = (hasz) ? tnumberseq_twavg(seqz) : 0.0;
   GSERIALIZED *result = gspoint_make(twavgx, twavgy, twavgz, hasz, false, srid);
   pfree(seqx); pfree(seqy);
   if (hasz)
@@ -2613,7 +2608,7 @@ tpointseq_azimuth1(const TSequence *seq, TSequence **result)
         upper_inc = true;
         /* Resulting sequence has step interpolation */
         result[l++] = tsequence_make((const TInstant **) instants, k,
-          lower_inc, upper_inc, STEPWISE, NORMALIZE);
+          lower_inc, upper_inc, STEP, NORMALIZE);
         for (int j = 0; j < k; j++)
           pfree(instants[j]);
         k = 0;
@@ -2628,7 +2623,7 @@ tpointseq_azimuth1(const TSequence *seq, TSequence **result)
     instants[k++] = tinstant_make(azimuth, T_TFLOAT, inst1->t);
     /* Resulting sequence has step interpolation */
     result[l++] = tsequence_make((const TInstant **) instants, k,
-      lower_inc, upper_inc, STEPWISE, NORMALIZE);
+      lower_inc, upper_inc, STEP, NORMALIZE);
   }
 
   pfree(instants);
@@ -3097,7 +3092,7 @@ seg2d_intersection(const POINT2D a, const POINT2D b, const POINT2D c,
  *****************************************************************************/
 
 /**
- * @brief Split a temporal point sequence with discrete or stepwise
+ * @brief Split a temporal point sequence with discrete or step
  * interpolation into an array of non self-intersecting fragments
  * @param[in] seq Temporal point
  * @param[out] count Number of elements in the resulting array
@@ -3259,7 +3254,7 @@ tpointseq_linear_find_splits(const TSequence *seq, int *count)
  * @brief Return true if a temporal point does not self-intersect.
  * @param[in] seq Temporal point
  * @param[in] count Number of instants of the temporal point
- * @pre The temporal point sequence has discrete or stepwise interpolation
+ * @pre The temporal point sequence has discrete or step interpolation
  */
 static bool
 tpointseq_discstep_is_simple(const TSequence *seq, int count)
@@ -3422,7 +3417,7 @@ tpointcontseq_split(const TSequence *seq, bool *splits, int count)
       upper_inc1 = false;
     }
     result[k++] = tsequence_make((const TInstant **) instants, end - start + 1,
-      lower_inc1, upper_inc1, linear ? LINEAR : STEPWISE, NORMALIZE_NO);
+      lower_inc1, upper_inc1, linear ? LINEAR : STEP, NORMALIZE_NO);
     if (tofree)
     {
       /* Free the last instant created for the step interpolation */
