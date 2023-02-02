@@ -325,12 +325,17 @@ SELECT COUNT(shiftTscale(temp, i, i)) FROM tbl_tgeompoint3D, tbl_interval;
 SELECT COUNT(shiftTscale(temp, i, i)) FROM tbl_tgeogpoint3D, tbl_interval;
 
 -------------------------------------------------------------------------------
--- Granularity modification with tprecision
+-- Granularity modification with tprecision and tsample
 
 SELECT MAX(startTimestamp(tprecision(inst, '15 minutes'))) FROM tbl_tgeompoint_inst;
 SELECT MAX(startTimestamp(tprecision(ti, '15 minutes'))) FROM tbl_tgeompoint_discseq;
 SELECT MAX(startTimestamp(tprecision(seq, '15 minutes'))) FROM tbl_tgeompoint_seq;
 SELECT MAX(startTimestamp(tprecision(ss, '15 minutes'))) FROM tbl_tgeompoint_seqset;
+
+SELECT MAX(startTimestamp(tsample(inst, '15 minutes'))) FROM tbl_tgeompoint_inst;
+SELECT MAX(startTimestamp(tsample(ti, '15 minutes'))) FROM tbl_tgeompoint_discseq;
+SELECT MAX(startTimestamp(tsample(seq, '15 minutes'))) FROM tbl_tgeompoint_seq;
+SELECT MAX(startTimestamp(tsample(ss, '15 minutes'))) FROM tbl_tgeompoint_seqset;
 
 -------------------------------------------------------------------------------
 -- Ever/always comparison functions
