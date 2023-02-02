@@ -835,7 +835,7 @@ tgeogpoint_from_base(const GSERIALIZED *gs, const Temporal *temp, interpType int
  * @param[in,out] temp Temporal value
  * @param[in] inst Temporal instant
  * @param[in] expand True when reserving space for additional instants
- * @sqlfunc appendInstant()
+ * @sqlfunc appendInstant
  */
 Temporal *
 temporal_append_tinstant(Temporal *temp, const TInstant *inst, bool expand)
@@ -868,7 +868,7 @@ temporal_append_tinstant(Temporal *temp, const TInstant *inst, bool expand)
  * @param[in,out] temp Temporal value
  * @param[in] seq Temporal sequence
  * @param[in] expand True when reserving space for additional sequences
- * @sqlfunc appendSequence()
+ * @sqlfunc appendSequence
  */
 Temporal *
 temporal_append_tsequence(Temporal *temp, const TSequence *seq, bool expand)
@@ -918,7 +918,7 @@ temporal_append_tsequence(Temporal *temp, const TSequence *seq, bool expand)
  * @param[in] temp1,temp2 Input values
  * @param[out] out1,out2 Output values
  * @note Each of the output values may be equal to the input values to avoid
- * unnecessary calls to palloc(). The calling function must test whether
+ * unnecessary calls to palloc. The calling function must test whether
  * (tempx == outx) to determine if a pfree is needed.
  */
 static void
@@ -991,7 +991,7 @@ temporal_convert_same_subtype(const Temporal *temp1, const Temporal *temp2,
  * @brief Merge two temporal values.
  * @result Merged value. Return NULL if both arguments are NULL.
  * If one argument is null the other argument is output.
- * @sqlfunc merge()
+ * @sqlfunc merge
  */
 Temporal *
 temporal_merge(const Temporal *temp1, const Temporal *temp2)
@@ -1068,7 +1068,7 @@ temporalarr_convert_subtype(Temporal **temparr, int count, uint8 subtype,
 /**
  * @ingroup libmeos_temporal_transf
  * @brief Merge an array of temporal values.
- * @sqlfunc merge()
+ * @sqlfunc merge
  */
 Temporal *
 temporal_merge_array(Temporal **temparr, int count)
@@ -1189,9 +1189,9 @@ temporal_set_period(const Temporal *temp, Span *p)
 /**
  * @ingroup libmeos_temporal_cast
  * @brief Return the bounding period of a temporal value.
- * @sqlfunc period()
+ * @sqlfunc period
  * @sqlop @p ::
- * @pymeosfunc period()
+ * @pymeosfunc period
  */
 Span *
 temporal_to_period(const Temporal *temp)
@@ -1228,7 +1228,7 @@ tnumber_set_span(const Temporal *temp, Span *s)
 /**
  * @ingroup libmeos_temporal_cast
  * @brief Return the value span of a temporal number.
- * @sqlfunc valueSpan()
+ * @sqlfunc valueSpan
  */
 Span *
 tnumber_to_span(const Temporal *temp)
@@ -1260,7 +1260,7 @@ tnumber_to_tbox(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_transf
  * @brief Return a temporal value transformed into a temporal instant.
- * @sqlfunc tbool_inst(), tint_inst(), tfloat_inst(), ttext_inst(), etc.
+ * @sqlfunc tbool_inst, tint_inst, tfloat_inst, ttext_inst, etc.
  */
 Temporal *
 temporal_to_tinstant(const Temporal *temp)
@@ -1280,8 +1280,8 @@ temporal_to_tinstant(const Temporal *temp)
  * @ingroup libmeos_temporal_transf
  * @brief Return a temporal value transformed into a temporal sequence with
  * discrete interpolation.
- * @sqlfunc tbool_tdiscseq(), tint_tdiscseq(), tfloat_tdiscseq(),
- * ttext_tdiscseq(), etc.
+ * @sqlfunc tbool_tdiscseq, tint_tdiscseq, tfloat_tdiscseq,
+ * ttext_tdiscseq, etc.
  */
 Temporal *
 temporal_to_tdiscseq(const Temporal *temp)
@@ -1301,8 +1301,8 @@ temporal_to_tdiscseq(const Temporal *temp)
  * @ingroup libmeos_temporal_transf
  * @brief Return a temporal value transformed into a temporal sequence with
  * continuous interpolation.
- * @sqlfunc tbool_tcontseq(), tint_tcontseq(), tfloat_tcontseq(),
- * ttext_contseq(), etc.
+ * @sqlfunc tbool_tcontseq, tint_tcontseq, tfloat_tcontseq,
+ * ttext_contseq, etc.
  */
 Temporal *
 temporal_to_tcontseq(const Temporal *temp)
@@ -1322,7 +1322,7 @@ temporal_to_tcontseq(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_transf
  * @brief Return a temporal value transformed into a temporal sequence set.
- * @sqlfunc tbool_seqset(), tint_seqset(), tfloat_seqset(), ttext_seqset(), etc.
+ * @sqlfunc tbool_seqset, tint_seqset, tfloat_seqset, ttext_seqset, etc.
  */
 Temporal *
 temporal_to_tsequenceset(const Temporal *temp)
@@ -1343,7 +1343,7 @@ temporal_to_tsequenceset(const Temporal *temp)
  * @ingroup libmeos_temporal_transf
  * @brief Return a temporal value with continuous base type transformed from
  * step to linear interpolation.
- * @sqlfunc toLinear()
+ * @sqlfunc toLinear
  */
 Temporal *
 temporal_step_to_linear(const Temporal *temp)
@@ -1369,8 +1369,8 @@ temporal_step_to_linear(const Temporal *temp)
  * @param[in] shift Interval for shift
  * @param[in] duration Interval for scale
  * @pre The duration is greater than 0 if is not NULL
- * @sqlfunc shift(), scale(), shiftTscale()
- * @pymeosfunc shift()
+ * @sqlfunc shift, scale, shiftTscale
+ * @pymeosfunc shift
  */
 Temporal *
 temporal_shift_tscale(const Temporal *temp, const Interval *shift,
@@ -1593,8 +1593,8 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
 /**
  * @ingroup libmeos_temporal_transf
  * @brief Set the precision of a temporal value according to period buckets.
- * @sqlfunc tempSubtype();
- * @pymeosfunc tempSubtype()
+ * @sqlfunc tprecision;
+ * @pymeosfunc tprecision
  */
 Temporal *
 temporal_tprecision(const Temporal *temp, const Interval *duration,
@@ -1614,6 +1614,139 @@ temporal_tprecision(const Temporal *temp, const Interval *duration,
   return result;
 }
 
+/*****************************************************************************/
+
+/**
+ * @brief Sample the temporal value according to period buckets.
+ * @param[in] inst Temporal value
+ * @param[in] duration Size of the time buckets
+ * @param[in] torigin Time origin of the buckets
+ */
+TInstant *
+tinstant_tsample(const TInstant *inst, const Interval *duration,
+  TimestampTz torigin)
+{
+  ensure_valid_duration(duration);
+  TimestampTz lower = timestamptz_bucket(inst->t, duration, torigin);
+  if (timestamp_cmp_internal(lower, inst->t) == 0)
+    return tinstant_copy(inst);
+  return NULL;
+}
+
+/**
+ * @brief Sample the temporal value according to period buckets.
+ * @param[in] seq Temporal value
+ * @param[in] duration Size of the time buckets
+ * @param[in] torigin Time origin of the buckets
+ */
+TSequence *
+tsequence_tsample(const TSequence *seq, const Interval *duration,
+  TimestampTz torigin)
+{
+  ensure_valid_duration(duration);
+  int64 tunits = interval_units(duration);
+  TimestampTz lower = DatumGetTimestampTz(seq->period.lower);
+  TimestampTz upper = DatumGetTimestampTz(seq->period.upper);
+  TimestampTz lower_bucket = timestamptz_bucket(lower, duration, torigin);
+  /* We need to add tunits to obtain the end timestamp of the last bucket */
+  TimestampTz upper_bucket = timestamptz_bucket(upper, duration, torigin) +
+    tunits;
+  /* Number of buckets */
+  int count = (int) (((int64) upper_bucket - (int64) lower_bucket) / tunits) + 1;
+  TInstant **instants = palloc(sizeof(TInstant *) * count);
+  interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
+  bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
+  const TInstant *start = tsequence_inst_n(seq, 0);
+  const TInstant *end = tsequence_inst_n(seq, 1);
+  lower = lower_bucket;
+  /* Loop for each segment */
+  bool lower_inc = seq->period.lower_inc;
+  int i = 1; /* Current segment of the sequence */
+  int k = 0; /* Number of instants of the result */
+  while (i < seq->count && lower < upper_bucket)
+  {
+    bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
+    int cmp1 = timestamptz_cmp_internal(start->t, lower);
+    int cmp2 = timestamptz_cmp_internal(lower, end->t);
+    /* If the segment contains the lower bound of the bucket */
+    if ((cmp1 < 0 || (cmp1 == 0 && lower_inc)) &&
+        (cmp2 < 0 || (cmp2 == 0 && upper_inc)))
+    {
+      Datum value = tsegment_value_at_timestamp(start, end, linear, lower);
+      instants[k++] = tinstant_make(value, seq->temptype, lower);
+      /* Advance the bucket */
+      lower += tunits;
+    }
+    /* Advance the bucket if it is after the start of the segment */
+    else if (cmp1 >= 0)
+      lower += tunits;
+    /* Advance the segment if it is after the lower bound of the bucket */
+    else if (cmp2 >= 0)
+    {
+      /* If there are no more segments */
+      if (i == seq->count - 1)
+        break;
+      start = end;
+      end = tsequence_inst_n(seq, ++i);
+    }
+  }
+  if (k == 0)
+    return NULL;
+  TSequence *result = tsequence_make_free(instants, k, true, true, interp,
+    NORMALIZE);
+  return result;
+}
+
+/**
+ * @brief Sample the temporal value according to period buckets.
+ * @param[in] seq Temporal value
+ * @param[in] duration Size of the time buckets
+ * @param[in] torigin Time origin of the buckets
+ */
+TSequenceSet *
+tsequenceset_tsample(const TSequenceSet *ss, const Interval *duration,
+  TimestampTz torigin)
+{
+  TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
+  /* Loop for each segment */
+  int k = 0;
+  for (int i = 0; i < ss->count; i++)
+  {
+    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    TSequence *sample = tsequence_tsample(seq, duration, torigin);
+    if (sample)
+      sequences[k++] = sample;
+  }
+  if (k == 0)
+    return NULL;
+  TSequenceSet *result = tsequenceset_make_free(sequences, k, NORMALIZE);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_transf
+ * @brief Sample the temporal value according to period buckets.
+ * @sqlfunc tsample
+ * @pymeosfunc tsample
+ */
+Temporal *
+temporal_tsample(const Temporal *temp, const Interval *duration,
+  TimestampTz torigin)
+{
+  Temporal *result;
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == TINSTANT)
+    result = (Temporal *) tinstant_tsample((TInstant *) temp, duration,
+      torigin);
+  else if (temp->subtype == TSEQUENCE)
+    result = (Temporal *) tsequence_tsample((TSequence *) temp, duration,
+      torigin);
+  else /* temp->subtype == TSEQUENCESET */
+    result = (Temporal *) tsequenceset_tsample((TSequenceSet *) temp,
+      duration, torigin);
+  return result;
+}
+
 /*****************************************************************************
  * Accessor functions
  *****************************************************************************/
@@ -1625,7 +1758,7 @@ temporal_tprecision(const Temporal *temp, const Interval *duration,
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the size in bytes of a temporal value
- * @sqlfunc memSize()
+ * @sqlfunc memSize
  */
 size_t
 temporal_mem_size(const Temporal *temp)
@@ -1637,8 +1770,8 @@ temporal_mem_size(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the string representation of the subtype of a temporal value.
- * @sqlfunc tempSubtype();
- * @pymeosfunc tempSubtype()
+ * @sqlfunc tempSubtype;
+ * @pymeosfunc tempSubtype
  */
 char *
 temporal_subtype(const Temporal *temp)
@@ -1658,8 +1791,8 @@ temporal_subtype(const Temporal *temp)
  * @ingroup libmeos_temporal_accessor
  * @brief Return the string representation of the interpolation of a temporal
  * value.
- * @sqlfunc interpolation()
- * @pymeosfunc interpolation()
+ * @sqlfunc interpolation
+ * @pymeosfunc interpolation
  */
 char *
 temporal_interpolation(const Temporal *temp)
@@ -1681,7 +1814,7 @@ temporal_interpolation(const Temporal *temp)
  * @brief Set the second argument to the bounding box of a temporal value
  * @note For temporal instants the bounding box must be computed. For the
  * other subtypes, a copy of the precomputed bounding box is made.
- * @sqlfunc period(), tbox(), stbox()
+ * @sqlfunc period, tbox, stbox
  * @sqlop @p ::
  */
 void
@@ -1700,7 +1833,7 @@ temporal_set_bbox(const Temporal *temp, void *box)
 /**
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the array of base values of a temporal value.
- * @sqlfunc values()
+ * @sqlfunc values
  */
 Datum *
 temporal_values(const Temporal *temp, int *count)
@@ -1720,8 +1853,8 @@ temporal_values(const Temporal *temp, int *count)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the the array of base values of a temporal boolean
- * @sqlfunc values()
- * @pymeosfunc getValues()
+ * @sqlfunc values
+ * @pymeosfunc getValues
  */
 bool *
 tbool_values(const Temporal *temp, int *count)
@@ -1737,8 +1870,8 @@ tbool_values(const Temporal *temp, int *count)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the the array of base values of a temporal integer
- * @sqlfunc values()
- * @pymeosfunc getValues()
+ * @sqlfunc values
+ * @pymeosfunc getValues
  */
 int *
 tint_values(const Temporal *temp, int *count)
@@ -1754,8 +1887,8 @@ tint_values(const Temporal *temp, int *count)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the the array of base values of a temporal float
- * @sqlfunc values()
- * @pymeosfunc getValues()
+ * @sqlfunc values
+ * @pymeosfunc getValues
  */
 double *
 tfloat_values(const Temporal *temp, int *count)
@@ -1771,8 +1904,8 @@ tfloat_values(const Temporal *temp, int *count)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the the array of base values of a temporal text
- * @sqlfunc values()
- * @pymeosfunc getValues()
+ * @sqlfunc values
+ * @pymeosfunc getValues
  */
 text **
 ttext_values(const Temporal *temp, int *count)
@@ -1788,8 +1921,8 @@ ttext_values(const Temporal *temp, int *count)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the the array of base values of a temporal geometric point
- * @sqlfunc values()
- * @pymeosfunc getValues()
+ * @sqlfunc values
+ * @pymeosfunc getValues
  */
 GSERIALIZED **
 tpoint_values(const Temporal *temp, int *count)
@@ -1806,8 +1939,8 @@ tpoint_values(const Temporal *temp, int *count)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the base values of a temporal float as an array of spans.
- * @sqlfunc getValues()
- * @pymeosfunc TFloat.getValues()
+ * @sqlfunc getValues
+ * @pymeosfunc TFloat.getValues
  */
 SpanSet *
 tfloat_spanset(const Temporal *temp)
@@ -1826,8 +1959,8 @@ tfloat_spanset(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the time frame of a temporal value as a period set.
- * @sqlfunc getTime()
- * @pymeosfunc getTime()
+ * @sqlfunc getTime
+ * @pymeosfunc getTime
  */
 SpanSet *
 temporal_time(const Temporal *temp)
@@ -1846,8 +1979,8 @@ temporal_time(const Temporal *temp)
 /**
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the start base value of a temporal value
- * @sqlfunc startValue()
- * @pymeosfunc startValue()
+ * @sqlfunc startValue
+ * @pymeosfunc startValue
  */
 Datum
 temporal_start_value(const Temporal *temp)
@@ -1870,8 +2003,8 @@ temporal_start_value(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the start value of a temporal boolean
- * @sqlfunc startValue()
- * @pymeosfunc startValue()
+ * @sqlfunc startValue
+ * @pymeosfunc startValue
  */
 bool
 tbool_start_value(const Temporal *temp)
@@ -1882,8 +2015,8 @@ tbool_start_value(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the start value of a temporal integer
- * @sqlfunc startValue()
- * @pymeosfunc startValue()
+ * @sqlfunc startValue
+ * @pymeosfunc startValue
  */
 int
 tint_start_value(const Temporal *temp)
@@ -1894,8 +2027,8 @@ tint_start_value(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the start value of a temporal float
- * @sqlfunc startValue()
- * @pymeosfunc startValue()
+ * @sqlfunc startValue
+ * @pymeosfunc startValue
  */
 double
 tfloat_start_value(const Temporal *temp)
@@ -1906,8 +2039,8 @@ tfloat_start_value(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the start value of a temporal text
- * @sqlfunc startValue()
- * @pymeosfunc startValue()
+ * @sqlfunc startValue
+ * @pymeosfunc startValue
  */
 text *
 ttext_start_value(const Temporal *temp)
@@ -1918,8 +2051,8 @@ ttext_start_value(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the start value of a temporal geometric point
- * @sqlfunc startValue()
- * @pymeosfunc startValue()
+ * @sqlfunc startValue
+ * @pymeosfunc startValue
  */
 GSERIALIZED *
 tpoint_start_value(const Temporal *temp)
@@ -1955,8 +2088,8 @@ temporal_end_value(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the end value of a temporal boolean
- * @sqlfunc endValue()
- * @pymeosfunc endValue()
+ * @sqlfunc endValue
+ * @pymeosfunc endValue
  */
 bool
 tbool_end_value(const Temporal *temp)
@@ -1967,8 +2100,8 @@ tbool_end_value(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the end value of a temporal integer
- * @sqlfunc endValue()
- * @pymeosfunc endValue()
+ * @sqlfunc endValue
+ * @pymeosfunc endValue
  */
 int
 tint_end_value(const Temporal *temp)
@@ -1979,8 +2112,8 @@ tint_end_value(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the end value of a temporal float
- * @sqlfunc endValue()
- * @pymeosfunc endValue()
+ * @sqlfunc endValue
+ * @pymeosfunc endValue
  */
 double
 tfloat_end_value(const Temporal *temp)
@@ -1991,8 +2124,8 @@ tfloat_end_value(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the end value of a temporal text
- * @sqlfunc endValue()
- * @pymeosfunc endValue()
+ * @sqlfunc endValue
+ * @pymeosfunc endValue
  */
 text *
 ttext_end_value(const Temporal *temp)
@@ -2003,8 +2136,8 @@ ttext_end_value(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the end value of a temporal point
- * @sqlfunc endValue()
- * @pymeosfunc endValue()
+ * @sqlfunc endValue
+ * @pymeosfunc endValue
  */
 GSERIALIZED *
 tpoint_end_value(const Temporal *temp)
@@ -2036,8 +2169,8 @@ temporal_min_value(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the minimum value of a temporal integer
- * @sqlfunc minValue()
- * @pymeosfunc minValue()
+ * @sqlfunc minValue
+ * @pymeosfunc minValue
  */
 int
 tint_min_value(const Temporal *temp)
@@ -2048,8 +2181,8 @@ tint_min_value(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the minimum value of a temporal float
- * @sqlfunc minValue()
- * @pymeosfunc minValue()
+ * @sqlfunc minValue
+ * @pymeosfunc minValue
  */
 double
 tfloat_min_value(const Temporal *temp)
@@ -2060,8 +2193,8 @@ tfloat_min_value(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the minimum value of a temporal text
- * @sqlfunc minValue()
- * @pymeosfunc minValue()
+ * @sqlfunc minValue
+ * @pymeosfunc minValue
  */
 text *
 ttext_min_value(const Temporal *temp)
@@ -2073,8 +2206,8 @@ ttext_min_value(const Temporal *temp)
 /**
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Return a copy of the maximum base value of a temporal value.
- * @sqlfunc maxValue()
- * @pymeosfunc maxValue()
+ * @sqlfunc maxValue
+ * @pymeosfunc maxValue
  */
 Datum
 temporal_max_value(const Temporal *temp)
@@ -2095,8 +2228,8 @@ temporal_max_value(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the maximum value of a temporal integer
- * @sqlfunc maxValue()
- * @pymeosfunc maxValue()
+ * @sqlfunc maxValue
+ * @pymeosfunc maxValue
  */
 int
 tint_max_value(const Temporal *temp)
@@ -2107,8 +2240,8 @@ tint_max_value(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the maximum value of a temporal float
- * @sqlfunc maxValue()
- * @pymeosfunc maxValue()
+ * @sqlfunc maxValue
+ * @pymeosfunc maxValue
  */
 double
 tfloat_max_value(const Temporal *temp)
@@ -2119,8 +2252,8 @@ tfloat_max_value(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the maximum value of a temporal text
- * @sqlfunc maxValue()
- * @pymeosfunc maxValue()
+ * @sqlfunc maxValue
+ * @pymeosfunc maxValue
  */
 text *
 ttext_max_value(const Temporal *temp)
@@ -2138,7 +2271,7 @@ ttext_max_value(const Temporal *temp)
  * an exclusive bound or not.
  * @note Function used, e.g., for computing the shortest line between two
  * temporal points from their temporal distance
- * @sqlfunc minInstant()
+ * @sqlfunc minInstant
  */
 const TInstant *
 temporal_min_instant(const Temporal *temp)
@@ -2158,7 +2291,7 @@ temporal_min_instant(const Temporal *temp)
  * @ingroup libmeos_temporal_accessor
  * @brief Return a pointer to the instant with maximum base value of a
  * temporal value.
- * @sqlfunc maxInstant()
+ * @sqlfunc maxInstant
  */
 const TInstant *
 temporal_max_instant(const Temporal *temp)
@@ -2177,8 +2310,8 @@ temporal_max_instant(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the duration of a temporal value.
- * @sqlfunc duration()
- * @pymeosfunc duration()
+ * @sqlfunc duration
+ * @pymeosfunc duration
  */
 Interval *
 temporal_duration(const Temporal *temp, bool boundspan)
@@ -2197,7 +2330,7 @@ temporal_duration(const Temporal *temp, bool boundspan)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the number of sequences of a temporal sequence (set).
- * @sqlfunc numSequences()
+ * @sqlfunc numSequences
  */
 int
 temporal_num_sequences(const Temporal *temp)
@@ -2212,7 +2345,7 @@ temporal_num_sequences(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the start sequence of a temporal sequence (set).
- * @sqlfunc startSequence()
+ * @sqlfunc startSequence
  */
 TSequence *
 temporal_start_sequence(const Temporal *temp)
@@ -2232,7 +2365,7 @@ temporal_start_sequence(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the end sequence of a temporal sequence (set).
- * @sqlfunc endSequence()
+ * @sqlfunc endSequence
  */
 TSequence *
 temporal_end_sequence(const Temporal *temp)
@@ -2253,7 +2386,7 @@ temporal_end_sequence(const Temporal *temp)
  * @ingroup libmeos_temporal_accessor
  * @brief Return the n-th sequence of a temporal sequence (set).
  * @note n is assumed to be 1-based.
- * @sqlfunc sequenceN()
+ * @sqlfunc sequenceN
  */
 TSequence *
 temporal_sequence_n(const Temporal *temp, int i)
@@ -2277,7 +2410,7 @@ temporal_sequence_n(const Temporal *temp, int i)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the array of sequences of a temporal sequence (set).
- * @sqlfunc sequences()
+ * @sqlfunc sequences
  */
 TSequence **
 temporal_sequences(const Temporal *temp, int *count)
@@ -2296,7 +2429,7 @@ temporal_sequences(const Temporal *temp, int *count)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the array of segments of a temporal value.
- * @sqlfunc segments()
+ * @sqlfunc segments
  */
 TSequence **
 temporal_segments(const Temporal *temp, int *count)
@@ -2314,8 +2447,8 @@ temporal_segments(const Temporal *temp, int *count)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the number of distinct instants of a temporal value.
- * @sqlfunc numInstants()
- * @pymeosfunc numInstants()
+ * @sqlfunc numInstants
+ * @pymeosfunc numInstants
  */
 int
 temporal_num_instants(const Temporal *temp)
@@ -2334,8 +2467,8 @@ temporal_num_instants(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the start instant of a temporal value.
- * @sqlfunc startInstant()
- * @pymeosfunc startInstant()
+ * @sqlfunc startInstant
+ * @pymeosfunc startInstant
  */
 const TInstant *
 temporal_start_instant(const Temporal *temp)
@@ -2358,8 +2491,8 @@ temporal_start_instant(const Temporal *temp)
  * @ingroup libmeos_temporal_accessor
  * @brief Return the end instant of a temporal value.
  * @note This function is used for validity testing.
- * @sqlfunc endInstant()
- * @pymeosfunc endInstant()
+ * @sqlfunc endInstant
+ * @pymeosfunc endInstant
  */
 const TInstant *
 temporal_end_instant(const Temporal *temp)
@@ -2384,8 +2517,8 @@ temporal_end_instant(const Temporal *temp)
  * @ingroup libmeos_temporal_accessor
  * @brief Return the n-th instant of a temporal value.
  * @note n is assumed 1-based
- * @sqlfunc instantN()
- * @pymeosfunc instantN()
+ * @sqlfunc instantN
+ * @pymeosfunc instantN
  */
 const TInstant *
 temporal_instant_n(const Temporal *temp, int n)
@@ -2414,8 +2547,8 @@ temporal_instant_n(const Temporal *temp, int n)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the array of instants of a temporal value.
- * @sqlfunc instants()
- * @pymeosfunc instants()
+ * @sqlfunc instants
+ * @pymeosfunc instants
  */
 const TInstant **
 temporal_instants(const Temporal *temp, int *count)
@@ -2434,8 +2567,8 @@ temporal_instants(const Temporal *temp, int *count)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the number of distinct timestamps of a temporal value.
- * @sqlfunc numTimestamps()
- * @pymeosfunc numTimestamps()
+ * @sqlfunc numTimestamps
+ * @pymeosfunc numTimestamps
  */
 int
 temporal_num_timestamps(const Temporal *temp)
@@ -2454,8 +2587,8 @@ temporal_num_timestamps(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the start timestamp of a temporal value.
- * @sqlfunc startTimestamp()
- * @pymeosfunc startTimestamp()
+ * @sqlfunc startTimestamp
+ * @pymeosfunc startTimestamp
  */
 TimestampTz
 temporal_start_timestamp(const Temporal *temp)
@@ -2474,8 +2607,8 @@ temporal_start_timestamp(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the end timestamp of a temporal value.
- * @sqlfunc endTimestamp()
- * @pymeosfunc endTimestamp()
+ * @sqlfunc endTimestamp
+ * @pymeosfunc endTimestamp
  */
 TimestampTz
 temporal_end_timestamp(const Temporal *temp)
@@ -2495,8 +2628,8 @@ temporal_end_timestamp(const Temporal *temp)
  * @ingroup libmeos_temporal_accessor
  * @brief Return the n-th distinct timestamp of a temporal value.
  * @note n is assumed 1-based
- * @sqlfunc timestampN()
- * @pymeosfunc timestampN()
+ * @sqlfunc timestampN
+ * @pymeosfunc timestampN
  */
 bool
 temporal_timestamp_n(const Temporal *temp, int n, TimestampTz *result)
@@ -2526,8 +2659,8 @@ temporal_timestamp_n(const Temporal *temp, int n, TimestampTz *result)
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the array of distinct timestamps of a temporal value.
- * @sqlfunc timestamps()
- * @pymeosfunc timestamps()
+ * @sqlfunc timestamps
+ * @pymeosfunc timestamps
  */
 TimestampTz *
 temporal_timestamps(const Temporal *temp, int *count)
@@ -3008,7 +3141,7 @@ tnumber_bbox_restrict_span(const Temporal *temp, const Span *span)
  * @note This function does a bounding box test for the temporal types
  * different from instant. The singleton tests are done in the functions for
  * the specific temporal types.
- * @sqlfunc atValue(), minusValue()
+ * @sqlfunc atValue, minusValue
  */
 Temporal *
 temporal_restrict_value(const Temporal *temp, Datum value, bool atfunc)
@@ -3071,7 +3204,7 @@ temporal_bbox_restrict_set(const Temporal *temp, const Set *set)
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) an array of base
  * values.
- * @sqlfunc atValues(), minusValues()
+ * @sqlfunc atValues, minusValues
  */
 Temporal *
 temporal_restrict_values(const Temporal *temp, const Set *set, bool atfunc)
@@ -3115,7 +3248,7 @@ temporal_restrict_values(const Temporal *temp, const Set *set, bool atfunc)
 /**
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) a span of base values.
- * @sqlfunc atSpan(), minusSpan()
+ * @sqlfunc atSpan, minusSpan
  */
 Temporal *
 tnumber_restrict_span(const Temporal *temp, const Span *span, bool atfunc)
@@ -3154,7 +3287,7 @@ tnumber_restrict_span(const Temporal *temp, const Span *span, bool atfunc)
 /**
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) a span set.
- * @sqlfunc atSpanset(), minusSpanset()
+ * @sqlfunc atSpanset, minusSpanset
  */
 Temporal *
 tnumber_restrict_spanset(const Temporal *temp, const SpanSet *ss, bool atfunc)
@@ -3197,7 +3330,7 @@ tnumber_restrict_spanset(const Temporal *temp, const SpanSet *ss, bool atfunc)
 /**
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) a minimum base value
- * @sqlfunc atMin(), atMax(), minusMin(), minusMax()
+ * @sqlfunc atMin, atMax, minusMin, minusMax
  */
 Temporal *
 temporal_restrict_minmax(const Temporal *temp, bool min, bool atfunc)
@@ -3221,7 +3354,7 @@ temporal_restrict_minmax(const Temporal *temp, bool min, bool atfunc)
 /**
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal value to a timestamp.
- * @sqlfunc atTime(), minusTime()
+ * @sqlfunc atTime, minusTime
  */
 Temporal *
 temporal_restrict_timestamp(const Temporal *temp, TimestampTz t, bool atfunc)
@@ -3252,8 +3385,8 @@ temporal_restrict_timestamp(const Temporal *temp, TimestampTz t, bool atfunc)
 /**
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Return the base value of a temporal value at the timestamp
- * @sqlfunc valueAtTimestamp()
- * @pymeosfunc valueAtTimestamp()
+ * @sqlfunc valueAtTimestamp
+ * @pymeosfunc valueAtTimestamp
  */
 bool
 temporal_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
@@ -3278,7 +3411,7 @@ temporal_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
 /**
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) a timestamp set
- * @sqlfunc atTime(), minusTime()
+ * @sqlfunc atTime, minusTime
  */
 Temporal *
 temporal_restrict_timestampset(const Temporal *temp, const Set *ts, bool atfunc)
@@ -3309,7 +3442,7 @@ temporal_restrict_timestampset(const Temporal *temp, const Set *ts, bool atfunc)
 /**
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) a period.
- * @sqlfunc atTime(), minusTime()
+ * @sqlfunc atTime, minusTime
  */
 Temporal *
 temporal_restrict_period(const Temporal *temp, const Span *p, bool atfunc)
@@ -3341,7 +3474,7 @@ temporal_restrict_period(const Temporal *temp, const Span *p, bool atfunc)
 /**
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) a period set.
- * @sqlfunc atTime(), minusTime()
+ * @sqlfunc atTime, minusTime
  */
 Temporal *
 temporal_restrict_periodset(const Temporal *temp, const SpanSet *ps,
@@ -3367,7 +3500,7 @@ temporal_restrict_periodset(const Temporal *temp, const SpanSet *ps,
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal number to a temporal box.
- * @sqlfunc atTbox()
+ * @sqlfunc atTbox
  */
 Temporal *
 tnumber_at_tbox(const Temporal *temp, const TBox *box)
@@ -3409,7 +3542,7 @@ tnumber_at_tbox(const Temporal *temp, const TBox *box)
  * It is not possible to make the difference from each dimension separately,
  * i.e., restrict at the period and then restrict to the span. Therefore, we
  * compute the `atTbox` and then compute the complement of the value obtained.
- * @sqlfunc minusTbox()
+ * @sqlfunc minusTbox
  */
 Temporal *
 tnumber_minus_tbox(const Temporal *temp, const TBox *box)
@@ -3438,7 +3571,7 @@ tnumber_minus_tbox(const Temporal *temp, const TBox *box)
 /**
  * @ingroup libmeos_temporal_transf
  * @brief Insert the second temporal value into the first one.
- * @sqlfunc insert()
+ * @sqlfunc insert
  */
 Temporal *
 temporal_insert(const Temporal *temp1, const Temporal *temp2, bool connect)
@@ -3481,7 +3614,7 @@ temporal_insert(const Temporal *temp1, const Temporal *temp2, bool connect)
 /**
  * @ingroup libmeos_temporal_transf
  * @brief Update the first temporal value with the second one.
- * @sqlfunc update()
+ * @sqlfunc update
  */
 Temporal *
 temporal_update(const Temporal *temp1, const Temporal *temp2, bool connect)
@@ -3499,7 +3632,7 @@ temporal_update(const Temporal *temp1, const Temporal *temp2, bool connect)
  * @ingroup libmeos_temporal_modif
  * @brief Delete a timestamp from a temporal value connecting the instants
  * before and after the given timestamp (if any).
- * @sqlfunc deleteTime()
+ * @sqlfunc deleteTime
  */
 Temporal *
 temporal_delete_timestamp(const Temporal *temp, TimestampTz t, bool connect)
@@ -3532,7 +3665,7 @@ temporal_delete_timestamp(const Temporal *temp, TimestampTz t, bool connect)
  * @ingroup libmeos_temporal_modif
  * @brief Delete a timestamp set from a temporal value connecting the instants
  * before and after the given timestamp (if any).
- * @sqlfunc deleteTime()
+ * @sqlfunc deleteTime
  */
 Temporal *
 temporal_delete_timestampset(const Temporal *temp, const Set *ts,
@@ -3567,7 +3700,7 @@ temporal_delete_timestampset(const Temporal *temp, const Set *ts,
  * @ingroup libmeos_temporal_modif
  * @brief Delete a period from a temporal value connecting the instants
  * before and after the given timestamp (if any).
- * @sqlfunc deleteTime()
+ * @sqlfunc deleteTime
  */
 Temporal *
 temporal_delete_period(const Temporal *temp, const Span *p, bool connect)
@@ -3600,7 +3733,7 @@ temporal_delete_period(const Temporal *temp, const Span *p, bool connect)
  * @ingroup libmeos_temporal_modif
  * @brief Delete a period set from a temporal value connecting the instants
  * before and after the given timestamp (if any).
- * @sqlfunc deleteTime()
+ * @sqlfunc deleteTime
  */
 Temporal *
 temporal_delete_periodset(const Temporal *temp, const SpanSet *ps,
@@ -3657,7 +3790,7 @@ tnumber_integral(const Temporal *temp)
 /**
  * @ingroup libmeos_temporal_agg
  * @brief Return the time-weighted average of a temporal number
- * @sqlfunc twAvg()
+ * @sqlfunc twAvg
  */
 double
 tnumber_twavg(const Temporal *temp)
@@ -3682,7 +3815,7 @@ tnumber_twavg(const Temporal *temp)
  * @brief Return true if the temporal values are equal.
  * @note The internal B-tree comparator is not used to increase efficiency
  * @sqlop @p =
- * @pymeosfunc __eq__()
+ * @pymeosfunc __eq__
  */
 bool
 temporal_eq(const Temporal *temp1, const Temporal *temp2)
@@ -3780,7 +3913,7 @@ temporal_ne(const Temporal *temp1, const Temporal *temp2)
  * @brief Return -1, 0, or 1 depending on whether the first temporal value is
  * less than, equal, or greater than the second one.
  * @note Function used for B-tree comparison
- * @sqlfunc tbool_cmp(), tint_cmp(), tfloat_cmp(), ttext_cmp(), etc.
+ * @sqlfunc tbool_cmp, tint_cmp, tfloat_cmp, ttext_cmp, etc.
  */
 int
 temporal_cmp(const Temporal *temp1, const Temporal *temp2)

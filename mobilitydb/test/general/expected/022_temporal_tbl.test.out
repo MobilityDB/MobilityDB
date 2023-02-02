@@ -1628,6 +1628,30 @@ SELECT MAX(startTimestamp(tprecision(ss, '15 minutes'))) FROM tbl_tint_seqset;
  2001-12-25 19:45:00+00
 (1 row)
 
+SELECT MAX(startTimestamp(tsample(inst, '15 minutes'))) FROM tbl_tint_inst;
+          max           
+------------------------
+ 2001-12-03 09:30:00+00
+(1 row)
+
+SELECT MAX(startTimestamp(tsample(ti, '15 minutes'))) FROM tbl_tint_discseq;
+          max           
+------------------------
+ 2001-12-30 14:15:00+00
+(1 row)
+
+SELECT MAX(startTimestamp(tsample(seq, '15 minutes'))) FROM tbl_tint_seq;
+          max           
+------------------------
+ 2001-12-29 19:45:00+00
+(1 row)
+
+SELECT MAX(startTimestamp(tsample(ss, '15 minutes'))) FROM tbl_tint_seqset;
+          max           
+------------------------
+ 2001-12-25 20:00:00+00
+(1 row)
+
 SELECT COUNT(*) FROM tbl_tbool WHERE temp ?= startValue(temp);
  count 
 -------
@@ -2162,7 +2186,7 @@ SELECT SUM(numInstants(deleteTime(t1.temp, t2.t))) FROM tbl_tbool t1, tbl_tstzse
 (1 row)
 
 SELECT SUM(numInstants(deleteTime(t1.temp, t2.t))) FROM tbl_tint t1, tbl_tstzset t2;
-ERROR:  Invalid end value for temporal sequence with stepwise interpolation
+ERROR:  Invalid end value for temporal sequence with step interpolation
 SELECT SUM(numInstants(deleteTime(t1.temp, t2.t))) FROM tbl_tfloat t1, tbl_tstzset t2;
   sum  
 -------

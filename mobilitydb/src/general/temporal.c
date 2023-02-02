@@ -1868,7 +1868,7 @@ PG_FUNCTION_INFO_V1(Temporal_tprecision);
 /**
  * @ingroup mobilitydb_temporal_transf
  * @brief Set the precision of a temporal value according to period buckets.
- * @sqlfunc tempSubtype()
+ * @sqlfunc tprecision()
  */
 PGDLLEXPORT Datum
 Temporal_tprecision(PG_FUNCTION_ARGS)
@@ -1878,6 +1878,25 @@ Temporal_tprecision(PG_FUNCTION_ARGS)
   TimestampTz origin = PG_GETARG_TIMESTAMPTZ(2);
   Temporal *result = temporal_tprecision(temp, duration, origin);
   PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEXT_P(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_tsample);
+/**
+ * @ingroup mobilitydb_temporal_transf
+ * @brief Sample a temporal value according to period buckets.
+ * @sqlfunc tsample()
+ */
+PGDLLEXPORT Datum
+Temporal_tsample(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Interval *duration = PG_GETARG_INTERVAL_P(1);
+  TimestampTz origin = PG_GETARG_TIMESTAMPTZ(2);
+  Temporal *result = temporal_tsample(temp, duration, origin);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
   PG_RETURN_TEXT_P(result);
 }
 
