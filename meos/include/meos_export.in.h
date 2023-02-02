@@ -1087,6 +1087,7 @@ extern Temporal *temporal_to_tcontseq(const Temporal *temp);
 extern Temporal *temporal_to_tsequenceset(const Temporal *temp);
 extern Temporal *temporal_tscale(const Temporal *temp, const Interval *duration);
 extern Temporal *temporal_tprecision(const Temporal *temp, const Interval *duration, TimestampTz origin);
+extern Temporal *temporal_tsample(const Temporal *temp, const Interval *duration, TimestampTz origin);
 
 /*****************************************************************************/
 

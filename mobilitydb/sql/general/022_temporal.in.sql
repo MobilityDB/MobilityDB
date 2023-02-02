@@ -1545,6 +1545,17 @@ CREATE FUNCTION tprecision(tfloat, duration interval,
   AS 'MODULE_PATHNAME', 'Temporal_tprecision'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION tsample(tint, duration interval,
+  origin timestamptz DEFAULT '2000-01-03')
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_tsample'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tsample(tfloat, duration interval,
+  origin timestamptz DEFAULT '2000-01-03')
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Temporal_tsample'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************/
 
 CREATE FUNCTION appendInstant(tbool, tbool)
