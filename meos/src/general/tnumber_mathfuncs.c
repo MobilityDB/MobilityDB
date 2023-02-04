@@ -332,7 +332,8 @@ tnumberseq_linear_abs(const TSequence *seq)
       double ratio = fabs(dvalue1) / (fabs(dvalue1) + fabs(dvalue2));
       double duration = (double) (inst2->t - inst1->t);
       TimestampTz t = inst1->t + (TimestampTz) (duration * ratio);
-      instants[k++] = tinstant_make(dzero, seq->temptype, t);
+      if (t != inst1->t && t != inst2->t)
+        instants[k++] = tinstant_make(dzero, seq->temptype, t);
     }
     instants[k++] = tnumberinst_abs(inst2);
     inst1 = inst2;

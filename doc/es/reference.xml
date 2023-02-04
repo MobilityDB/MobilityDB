@@ -930,6 +930,10 @@
 				</listitem>
 
 				<listitem>
+					<para><link linkend="abs"><varname>abs</varname></link>: Obtener el valor absoluto del número temporal</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="round"><varname>round</varname></link>: Redondear los valores a un número de posiciones decimales </para>
 				</listitem>
 
