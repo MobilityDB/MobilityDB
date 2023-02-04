@@ -263,6 +263,123 @@ arithop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
 }
 
 /*****************************************************************************
+ * Absolute value
+ *****************************************************************************/
+
+TInstant *
+tnumberinst_abs(const TInstant *inst)
+{
+  meosType basetype = temptype_basetype(inst->temptype);
+  assert(tnumber_basetype(basetype));
+  Datum value = tinstant_value(inst);
+  Datum absvalue;
+  if (basetype == T_INT4)
+    absvalue = Int32GetDatum(abs(DatumGetInt32(value)));
+  else /* basetype == T_FLOAT8 */
+    absvalue = Float8GetDatum(fabs(DatumGetFloat8(value)));
+  TInstant *result = tinstant_make(absvalue, inst->temptype, inst->t);
+  return result;
+}
+
+TSequence *
+tnumberseq_iter_abs(const TSequence *seq)
+{
+  interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  for (int i = 0; i < seq->count; i++)
+  {
+    const TInstant *inst = tsequence_inst_n(seq, i);
+    instants[i] = tnumberinst_abs(inst);
+  }
+  TSequence *result = tsequence_make_free(instants, seq->count,
+    seq->period.lower_inc, seq->period.upper_inc, interp, NORMALIZE);
+  return result;
+}
+
+TSequence *
+tnumberseq_linear_abs(const TSequence *seq)
+{
+  const TInstant *inst1;
+  TSequence *result;
+  meosType basetype = temptype_basetype(seq->temptype);
+
+  /* Instantaneous sequence */
+  if (seq->count == 1)
+  {
+    inst1 = tsequence_inst_n(seq, 0);
+    TInstant *inst2 = tnumberinst_abs(inst1);
+    result = tinstant_to_tsequence(inst2, LINEAR);
+    pfree(inst2);
+    return result;
+  }
+
+  /* General case */
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count * 2);
+  inst1 = tsequence_inst_n(seq, 0);
+  instants[0] = tnumberinst_abs(inst1);
+  Datum value1 = tinstant_value(inst1);
+  double dvalue1 = datum_double(value1, basetype);
+  int k = 1;
+  Datum dzero = (basetype == T_INT4) ? Int32GetDatum(0) : Float8GetDatum(0);
+  for (int i = 1; i < seq->count; i++)
+  {
+    const TInstant *inst2 = tsequence_inst_n(seq, i);
+    Datum value2 = tinstant_value(inst2);
+    double dvalue2 = datum_double(value2, basetype);
+    /* Add the instant when the segment has value equal to zero */
+    if ((dvalue1 < 0 && dvalue2 > 0) || (dvalue1 > 0 && dvalue2 < 0))
+    {
+      double ratio = fabs(dvalue1) / (fabs(dvalue1) + fabs(dvalue2));
+      double duration = (double) (inst2->t - inst1->t);
+      TimestampTz t = inst1->t + (TimestampTz) (duration * ratio);
+      instants[k++] = tinstant_make(dzero, seq->temptype, t);
+    }
+    instants[k++] = tnumberinst_abs(inst2);
+    inst1 = inst2;
+    value1 = value2;
+    dvalue1 = dvalue2;
+  }
+  result = tsequence_make_free(instants, k, seq->period.lower_inc,
+    seq->period.upper_inc, LINEAR, NORMALIZE);
+  return result;
+}
+
+TSequenceSet *
+tnumberseqset_abs(const TSequenceSet *ss)
+{
+  TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
+  for (int i = 0; i < ss->count; i++)
+  {
+    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    sequences[i] = tnumberseq_linear_abs(seq);
+  }
+  TSequenceSet *result = tsequenceset_make_free(sequences, ss->count,
+    NORMALIZE);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_math
+ * @brief Get the absolute value of a temporal number
+ * @sqlfunc abs()
+ */
+Temporal *
+tnumber_abs(const Temporal *temp)
+{
+  Temporal *result = NULL;
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == TINSTANT)
+    result = (Temporal *) tnumberinst_abs((TInstant *) temp);
+  else if (temp->subtype == TSEQUENCE)
+    result = MOBDB_FLAGS_GET_LINEAR(temp->flags) ?
+      (Temporal *) tnumberseq_linear_abs((TSequence *) temp) :
+      (Temporal *) tnumberseq_iter_abs((TSequence *) temp);
+  else /* temp->subtype == TSEQUENCESET */
+    result = (Temporal *) tnumberseqset_abs((TSequenceSet *) temp);
+  return result;
+}
+
+/*****************************************************************************
  * Miscellaneous temporal functions
  *****************************************************************************/
 
@@ -389,9 +506,9 @@ tfloat_derivative(const Temporal *temp)
   if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     ;
   else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tfloatseq_derivative((TSequence *)temp);
+    result = (Temporal *) tfloatseq_derivative((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tfloatseqset_derivative((TSequenceSet *)temp);
+    result = (Temporal *) tfloatseqset_derivative((TSequenceSet *) temp);
   return result;
 }
 

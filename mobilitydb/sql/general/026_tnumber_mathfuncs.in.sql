@@ -471,6 +471,15 @@ CREATE OPERATOR / (
 
 /******************************************************************************/
 
+CREATE FUNCTION abs(tint)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Tnumber_abs'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION abs(tfloat)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Tnumber_abs'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION round(tfloat, integer DEFAULT 0)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tfloat_round'

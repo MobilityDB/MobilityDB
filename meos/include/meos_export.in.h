@@ -1180,7 +1180,7 @@ extern Temporal *sub_tnumber_tnumber(const Temporal *tnumber1, const Temporal *t
 extern Temporal *tfloat_degrees(const Temporal *temp);
 extern Temporal *tfloat_radians(const Temporal *temp);
 extern Temporal *tfloat_derivative(const Temporal *temp);
-
+extern Temporal *tnumber_abs(const Temporal *temp);
 
 /*****************************************************************************/
 
