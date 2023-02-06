@@ -10,8 +10,7 @@
 -->
 <chapter id="manipulating_temporal_types_p2">
 	<title>Manipulación de tipos temporales: Parte 2</title>
-	<para>A continuación presentamos las funciones y operadores para tipos temporales. Estas funciones y operadores son polimórficos, es decir, sus argumentos pueden ser de varios tipos y el tipo del resultado puede depender del tipo de los argumentos. Para expresar esto, usamos la siguiente notación:</para>
-
+	<para>Continuamos en este capítulo la presentación de las funciones y operadores para tipos temporales iniciada en el capítulo anterior.</para>
 
 	<sect1>
 		<title>Funciones y operadores matemáticos</title>

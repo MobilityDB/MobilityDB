@@ -1338,6 +1338,9 @@ SELECT asText(deleteTime(tgeompoint '{[Point(1 1 1)@2000-01-01,
 				<indexterm><primary><varname>appendInstant</varname></primary></indexterm>
 				<para>Append a temporal instant to a temporal value</para>
 				<para><varname>appendInstant(ttype,ttype_inst) → ttype</varname></para>
+				<para><varname>appendInstant(ttype_inst) → ttype_seq</varname></para>
+				<para>The first version of the function returns the result of appending the second argument to the first one. If either input is NULL, then NULL is returned.</para>
+				<para>The second version of the function above is an <emphasis>aggregate</emphasis> function that returns the result of successively appending a set of rows of temporal values. This means that it operates in the same way the <varname>SUM()</varname> and <varname>AVG()</varname> functions do and like most aggregates, it also ignores NULL values.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT appendInstant(tint '1@2000-01-01', tint '1@2000-01-02');
 -- {1@2000-01-01, 1@2000-01-02}
@@ -1356,6 +1359,9 @@ SELECT asText(appendInstant(tgeompoint '{[Point(1 1 1)@2000-01-01,
 				<indexterm><primary><varname>appendSequence</varname></primary></indexterm>
 				<para>Append a temporal sequence to a temporal value</para>
 				<para><varname>appendSequence(ttype,ttype_seq) → {ttype_seq,ttype_seqset}</varname></para>
+				<para><varname>appendSequence(ttype_seq) → {ttype_seq,ttype_seqset}</varname></para>
+				<para>The first version of the function returns the result of appending the second argument to the first one. If either input is NULL, then NULL is returned.</para>
+				<para>The second version of the function above is an <emphasis>aggregate</emphasis> function that returns the result of successively appending a set of rows of temporal values. This means that it operates in the same way the <varname>SUM()</varname> and <varname>AVG()</varname> functions do and like most aggregates, it also ignores NULL values.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT appendSequence(tint '1@2000-01-01', tint '{2@2000-01-02, 3@2000-01-03}');
 -- {1@2000-01-01, 2@2000-01-02, 3@2000-01-03}
