@@ -492,4 +492,77 @@ Temporal_merge_combinefn(PG_FUNCTION_ARGS)
   return Temporal_tagg_combinefn(fcinfo, NULL, CROSSINGS_NO);
 }
 
+/*****************************************************************************
+ * Append tinstant aggregate functions
+ *****************************************************************************/
+
+/**
+ * @ingroup libmeos_internal_temporal_agg
+ * @brief Transition function for append tinstant aggregate
+ */
+Temporal *
+temporal_app_inst_transfn(Temporal *state, TInstant *inst)
+{
+  /* Null state: create a new temporal sequence with the instant */
+  if (! state)
+  {
+#if ! MEOS
+    MemoryContext ctx = set_aggregation_context(fetch_fcinfo());
+#endif /* ! MEOS */
+    /* Arbitrary initialization to 64 elements */
+    interpType interp = MOBDB_FLAGS_GET_CONTINUOUS(inst->flags) ? LINEAR : STEP;
+    Temporal *result = (Temporal *) tsequence_make_exp(
+      (const TInstant **) &inst, 1, 64, true, true, interp, NORMALIZE_NO);
+#if ! MEOS
+    unset_aggregation_context(ctx);
+#endif /* ! MEOS */
+    return result;
+  }
+
+  return temporal_append_tinstant(state, inst, true);
+}
+
+/*****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Temporal_app_inst_transfn);
+/**
+ * @brief Transition function for set aggregation of values
+ */
+PGDLLEXPORT Datum
+Temporal_app_inst_transfn(PG_FUNCTION_ARGS)
+{
+  MemoryContext ctx = set_aggregation_context(fcinfo);
+  Temporal *state = PG_ARGISNULL(0) ? NULL : PG_GETARG_TEMPORAL_P(0);
+  if (PG_ARGISNULL(1))
+  {
+    if (state)
+      PG_RETURN_POINTER(state);
+    else
+      PG_RETURN_NULL();
+  }
+  unset_aggregation_context(ctx);
+  Temporal *inst = PG_GETARG_TEMPORAL_P(1);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  state = temporal_app_inst_transfn(state, (TInstant *) inst);
+  PG_FREE_IF_COPY(inst, 1);
+  PG_RETURN_POINTER(state);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_app_inst_finalfn);
+/**
+ * @brief Combine function for set aggregate of set types
+ */
+PGDLLEXPORT Datum
+Temporal_app_inst_finalfn(PG_FUNCTION_ARGS)
+{
+  MemoryContext ctx = set_aggregation_context(fcinfo);
+  Temporal *state = PG_GETARG_TEMPORAL_P(0);
+  unset_aggregation_context(ctx);
+  Temporal *result = temporal_compact(state);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
 /*****************************************************************************/

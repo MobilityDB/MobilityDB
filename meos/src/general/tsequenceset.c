@@ -1248,7 +1248,6 @@ tfloatseqset_to_tintseqset(const TSequenceSet *ss)
  * Transformation functions
  *****************************************************************************/
 
-#if MEOS
 /**
  * @ingroup libmeos_internal_temporal_constructor
  * @brief Return a copy of a temporal sequence set without any extra space.
@@ -1266,7 +1265,6 @@ tsequenceset_compact(const TSequenceSet *ss)
   }
   return tsequenceset_make_free(sequences, ss->count, NORMALIZE_NO);
 }
-#endif /* MEOS */
 
 /**
  * @ingroup libmeos_internal_temporal_transf

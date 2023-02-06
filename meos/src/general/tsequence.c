@@ -1352,7 +1352,7 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, bool expand)
   assert(seq->temptype == inst->temptype);
   interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
   meosType basetype = temptype_basetype(seq->temptype);
-  TInstant *penult, *last;
+  TInstant *penult, *last, *new;
   last = (TInstant *) tsequence_inst_n(seq, seq->count - 1);
 #if NPOINT
   if (last->temptype == T_TNPOINT && interp != DISCRETE)
@@ -1370,9 +1370,9 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, bool expand)
 
   Datum value1 = tinstant_value(last);
   Datum value = tinstant_value(inst);
-  bool eqv1v = datum_eq(value1, value, basetype);
   if (last->t == inst->t)
   {
+    bool eqv1v = datum_eq(value1, value, basetype);
     if (seq->period.upper_inc)
     {
       if (! eqv1v)
@@ -1413,7 +1413,6 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, bool expand)
     }
   }
 
-#if MEOS
   /* Account for expandable structures
    * A while is used instead of an if to enable to break the loop if there is
    * no more available space */
@@ -1423,9 +1422,9 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, bool expand)
     size_t size = double_pad(VARSIZE(inst));
     /* Get the last instant to keep. It is either the last instant or the
      * penultimate one if the last one is redundant through normalization */
-    penult = (TInstant *) tsequence_inst_n(seq, count - 2);
-    size_t avail_size = ((char *) seq + VARSIZE(seq)) -
-      ((char *) penult + double_pad(VARSIZE(penult)));
+    last = (TInstant *) tsequence_inst_n(seq, count - 2);
+    new = (TInstant *) ((char *) last + double_pad(VARSIZE(last)));
+    size_t avail_size = (char *) seq + VARSIZE(seq) - (char *) new;
     if (size > avail_size)
       /* There is not enough available space */
       break;
@@ -1438,12 +1437,11 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, bool expand)
         (tsequence_offsets_ptr(seq))[count - 2] + size;
       seq->count++;
     }
-    memcpy(last, inst, size);
+    memcpy(new, inst, size);
     /* Expand the bounding box and return */
     tsequence_expand_bbox(seq, inst);
     return (Temporal *) seq;
   }
-#endif /* MEOS */
 
   /* This is the first time we use an expandable structure or there is no more
    * free space */
@@ -1765,7 +1763,6 @@ tfloatseq_to_tintseq(const TSequence *seq)
  * Transformation functions
  *****************************************************************************/
 
-#if MEOS
 /**
  * @ingroup libmeos_internal_temporal_transf
  * @brief Return a copy of a temporal sequence with no additional free space.
@@ -1795,7 +1792,6 @@ tsequence_compact(const TSequence *seq)
     insts_size);
   return result;
 }
-#endif /* MEOS */
 
 /**
  * @ingroup libmeos_internal_temporal_transf

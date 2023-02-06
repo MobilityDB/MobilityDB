@@ -97,7 +97,6 @@ tgeompointinstarr_set_stbox(const TInstant **instants, int count, STBox *box)
   return;
 }
 
-#if MEOS
 /**
  * @brief Expand the bounding box of a temporal geometric point sequence with
  * an instant
@@ -147,7 +146,6 @@ tgeogpointseq_expand_stbox(TSequence *seq, const TInstant *inst)
   stbox_expand(&box, (STBox *) TSEQUENCE_BBOX_PTR(seq));
   return;
 }
-#endif /* MEOS */
 
 /**
  * @brief Set the GBOX bounding box from an array of temporal geographic point

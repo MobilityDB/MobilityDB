@@ -761,6 +761,14 @@ extern GSERIALIZED *tpointseqset_twcentroid(const TSequenceSet *ss);
 
 /*****************************************************************************/
 
+/* Compact functions for final append aggregate */
+
+extern Temporal *temporal_compact(const Temporal *temp);
+extern TSequence *tsequence_compact(const TSequence *seq);
+extern TSequenceSet *tsequenceset_compact(const TSequenceSet *ss);
+
+/*****************************************************************************/
+
 /* Multidimensional tiling functions for temporal types */
 
 extern Temporal **temporal_time_split1(const Temporal *temp, TimestampTz start,
