@@ -22,10 +22,10 @@ SET(LOCAL_FILES
   032_temporal_boxops
   034_temporal_posops
   036_tnumber_distance
-  037_temporal_similarity
-  038_temporal_aggfuncs
-  040_temporal_waggfuncs
-  042_temporal_gist
+  038_temporal_similarity
+  040_temporal_aggfuncs
+  042_temporal_waggfuncs
+  044_temporal_gist
   044_temporal_spgist
   999_oid_cache
   )

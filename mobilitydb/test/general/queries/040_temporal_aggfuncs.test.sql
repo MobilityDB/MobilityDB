@@ -232,3 +232,88 @@ SELECT tsum(temp) FROM (VALUES
 ('{[3@2000-01-02, 4@2000-01-06]}'::tfloat)) t(temp);
 
 -------------------------------------------------------------------------------
+
+WITH temp(inst) AS (
+  SELECT tint '1@2000-01-01' UNION
+  SELECT tint '2@2000-01-02' UNION
+  SELECT tint '3@2000-01-03' UNION
+  SELECT tint '4@2000-01-04' UNION
+  SELECT tint '5@2000-01-05'  )
+SELECT appendInstant(inst ORDER BY inst) FROM temp;
+
+WITH temp(inst) AS (
+  SELECT tint '1@2000-01-01' UNION
+  SELECT tint '1@2000-01-01' UNION
+  SELECT tint '2@2000-01-02' UNION
+  SELECT tint '2@2000-01-02' UNION
+  SELECT tint '3@2000-01-03' UNION
+  SELECT tint '4@2000-01-04' UNION
+  SELECT tint '5@2000-01-05'  )
+SELECT appendInstant(inst ORDER BY inst) FROM temp;
+
+WITH temp(inst) AS (
+  SELECT tfloat '1@2000-01-01' UNION
+  SELECT tfloat '2@2000-01-02' UNION
+  SELECT tfloat '3@2000-01-03' UNION
+  SELECT tfloat '4@2000-01-04' UNION
+  SELECT tfloat '5@2000-01-05' )
+SELECT appendInstant(inst ORDER BY inst) FROM temp;
+
+WITH temp(inst) AS (
+  SELECT tint(extract(day from d)::int % 2, d)
+  FROM generate_series(timestamptz '1900-01-01', '2000-01-10', interval '1 day') AS d )
+SELECT numInstants(appendInstant(inst ORDER BY inst)) FROM temp;
+
+/* Errors */
+WITH temp(inst) AS (
+  SELECT tint '1@2000-01-01' UNION
+  SELECT tint '2@2000-01-01' UNION
+  SELECT tint '2@2000-01-02' UNION
+  SELECT tint '2@2000-01-02' UNION
+  SELECT tint '3@2000-01-03' UNION
+  SELECT tint '4@2000-01-04' UNION
+  SELECT tint '5@2000-01-05'  )
+SELECT appendInstant(inst ORDER BY inst) FROM temp;
+
+-------------------------------------------------------------------------------
+
+WITH temp1(k, inst) AS (
+  SELECT 1, tint '1@2000-01-01' UNION
+  SELECT 2, tint '2@2000-01-02' UNION
+  SELECT 3, tint '3@2000-01-03' UNION
+  SELECT 4, tint '4@2000-01-04' UNION
+  SELECT 5, tint '5@2000-01-05' UNION
+  SELECT 6, tint '5@2000-01-06' UNION
+  SELECT 7, tint '5@2000-01-07' UNION
+  SELECT 8, tint '5@2000-01-08'  ),
+temp2(k, seq) AS (
+  SELECT k / 3, appendInstant(inst ORDER BY inst)
+  FROM temp1
+  GROUP BY k / 3)
+SELECT appendSequence(seq ORDER BY seq) FROM temp2;
+
+WITH temp1(k, inst) AS (
+  SELECT 1, tfloat '1@2000-01-01' UNION
+  SELECT 2, tfloat '2@2000-01-02' UNION
+  SELECT 3, tfloat '3@2000-01-03' UNION
+  SELECT 4, tfloat '4@2000-01-04' UNION
+  SELECT 5, tfloat '5@2000-01-05' UNION
+  SELECT 6, tfloat '5@2000-01-06' UNION
+  SELECT 7, tfloat '5@2000-01-07' UNION
+  SELECT 8, tfloat '5@2000-01-08'  ),
+temp2(seq) AS (
+  SELECT appendInstant(inst ORDER BY inst)
+  FROM temp1
+  GROUP BY k / 3)
+SELECT appendSequence(seq ORDER BY seq) FROM temp2;
+
+WITH temp1(k, inst) AS (
+  SELECT extract(day from d)::int % 2, tint(extract(day from d)::int % 2, d)
+  FROM generate_series(timestamptz '1900-01-01', '2000-01-10', interval '1 day') AS d ),
+temp2(seq) AS (
+  SELECT appendInstant(inst ORDER BY inst)
+  FROM temp1
+  GROUP BY k / 3)
+SELECT numInstants(appendSequence(seq ORDER BY seq)) FROM temp2;
+
+-------------------------------------------------------------------------------
