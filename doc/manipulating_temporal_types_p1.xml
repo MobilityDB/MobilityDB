@@ -1353,6 +1353,26 @@ SELECT asText(appendInstant(tgeompoint '{[Point(1 1 1)@2000-01-01,
    [POINT Z (3 3 3)@2000-01-04, POINT Z (3 3 3)@2000-01-05,
    POINT Z (1 1 1)@2000-01-06]} */
 </programlisting>
+				<programlisting language="sql" xml:space="preserve">
+WITH temp(inst) AS (
+  SELECT tfloat '1@2000-01-01' UNION
+  SELECT tfloat '2@2000-01-02' UNION
+  SELECT tfloat '3@2000-01-03' UNION
+  SELECT tfloat '4@2000-01-04' UNION
+  SELECT tfloat '5@2000-01-05' )
+SELECT appendInstant(inst ORDER BY inst) FROM temp;
+-- [1@2000-01-01, 5@2000-01-05]
+WITH temp(inst) AS (
+  SELECT tgeogpoint 'Point(1 1)@2000-01-01' UNION
+  SELECT tgeogpoint 'Point(2 2)@2000-01-02' UNION
+  SELECT tgeogpoint 'Point(3 3)@2000-01-03' UNION
+  SELECT tgeogpoint 'Point(4 4)@2000-01-04' UNION
+  SELECT tgeogpoint 'Point(5 5)@2000-01-05' )
+SELECT asText(appendInstant(inst ORDER BY inst)) FROM temp;
+/* [POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02, POINT(3 3)@2000-01-03,
+   POINT(4 4)@2000-01-04, POINT(5 5)@2000-01-05] */
+</programlisting>
+				<para>Notice that in the first query above with <varname>tfloat</varname>, the intermediate observations were removed by the normalization process since they were redundant due to linear interpolation. This is not the case for the second query with <varname>tgeogpoint</varname> since geodetic coordinates are used.</para>
 			</listitem>
 
 			<listitem id="appendSequence">

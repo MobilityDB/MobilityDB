@@ -1334,7 +1334,7 @@ SELECT asText(deleteTime(tgeompoint '{[Point(1 1 1)@2000-01-01,
 				<para><varname>appendInstant(ttype,ttype_inst) → ttype</varname></para>
 				<para><varname>appendInstant(ttype_inst) → ttype_seq</varname></para>
 				<para>La primera versión de la función devuelve el resultado de agregar el segundo argumento al primero. Si cualquiera de las entradas es NULL, se devuelve NULL.</para>
-				<para>La segunda versión de la función anterior es una función <emphasis>agregada</emphasis> que devuelve el resultado de agregar sucesivamente un conjunto de filas de valores temporales. Esto significa que funciona de la misma manera que las funciones <varname>SUM()</varname> y <varname>AVG()</varname> y, como la mayoría de los agregados, también ignora los valores NULL.</para>
+				<para>La segunda versión de la función anterior es una función de <emphasis>agregación</emphasis> que devuelve el resultado de agregar sucesivamente un conjunto de filas de valores temporales. Esto significa que funciona de la misma manera que las funciones <varname>SUM()</varname> y <varname>AVG()</varname> y, como la mayoría de los agregados, también ignora los valores NULL.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT appendInstant(tint '1@2000-01-01', tint '1@2000-01-02');
 -- {1@2000-01-01, 1@2000-01-02}
@@ -1347,6 +1347,26 @@ SELECT asText(appendInstant(tgeompoint '{[Point(1 1 1)@2000-01-01,
    [POINT Z (3 3 3)@2000-01-04, POINT Z (3 3 3)@2000-01-05,
    POINT Z (1 1 1)@2000-01-06]} */
 </programlisting>
+				<programlisting language="sql" xml:space="preserve">
+WITH temp(inst) AS (
+  SELECT tfloat '1@2000-01-01' UNION
+  SELECT tfloat '2@2000-01-02' UNION
+  SELECT tfloat '3@2000-01-03' UNION
+  SELECT tfloat '4@2000-01-04' UNION
+  SELECT tfloat '5@2000-01-05' )
+SELECT appendInstant(inst ORDER BY inst) FROM temp;
+-- [1@2000-01-01, 5@2000-01-05]
+WITH temp(inst) AS (
+  SELECT tgeogpoint 'Point(1 1)@2000-01-01' UNION
+  SELECT tgeogpoint 'Point(2 2)@2000-01-02' UNION
+  SELECT tgeogpoint 'Point(3 3)@2000-01-03' UNION
+  SELECT tgeogpoint 'Point(4 4)@2000-01-04' UNION
+  SELECT tgeogpoint 'Point(5 5)@2000-01-05' )
+SELECT asText(appendInstant(inst ORDER BY inst)) FROM temp;
+/* [POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02, POINT(3 3)@2000-01-03,
+   POINT(4 4)@2000-01-04, POINT(5 5)@2000-01-05] */
+</programlisting>
+				<para>Observe que en la primera consulta con <varname>tfloat</varname>, las observaciones intermedias fueron eliminadas por el proceso de normalización ya que eran redundantes debido a la interpolación lineal. Este no es el caso de la segunda consulta con <varname>tgeogpoint</varname> ya que se utilizan coordenadas geodésicas.</para>
 			</listitem>
 
 			<listitem id="appendSequence">
@@ -1355,7 +1375,7 @@ SELECT asText(appendInstant(tgeompoint '{[Point(1 1 1)@2000-01-01,
 				<para><varname>appendSequence(ttype,ttype_seq) → {ttype_seq, ttype_seqset}</varname></para>
 				<para><varname>appendSequence(ttype_seq) → {ttype_seq,ttype_seqset}</varname></para>
 				<para>La primera versión de la función devuelve el resultado de agregar el segundo argumento al primero. Si cualquiera de las entradas es NULL, se devuelve NULL.</para>
-				<para>La segunda versión de la función anterior es una función <emphasis>agregada</emphasis> que devuelve el resultado de agregar sucesivamente un conjunto de filas de valores temporales. Esto significa que funciona de la misma manera que las funciones <varname>SUM()</varname> y <varname>AVG()</varname> y, como la mayoría de los agregados, también ignora los valores NULL.</para>
+				<para>La segunda versión de la función anterior es una función de <emphasis>agregación</emphasis> que devuelve el resultado de agregar sucesivamente un conjunto de filas de valores temporales. Esto significa que funciona de la misma manera que las funciones <varname>SUM()</varname> y <varname>AVG()</varname> y, como la mayoría de los agregados, también ignora los valores NULL.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT appendSequence(tint '1@2000-01-01', tint '{2@2000-01-02, 3@2000-01-03}');
 -- {1@2000-01-01, 2@2000-01-02, 3@2000-01-03}
