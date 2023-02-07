@@ -524,7 +524,7 @@ tinstant_mfjson_size(const TInstant *inst, bool isgeo, bool hasz,
   size += datetimes_mfjson_size(1);
   size += temptype_mfjson_size(inst->temptype);
   size += isgeo ? sizeof("'coordinates':[],") : sizeof("'values':[],");
-  size += sizeof("'datetimes':,'interpolation':['None']}");
+  size += sizeof("'datetimes':,'interpolation':'None'}");
   if (srs) size += srs_mfjson_size(srs);
   if (bbox) size += bbox_mfjson_size(inst->temptype, hasz, precision);
   return size;
@@ -547,7 +547,7 @@ tinstant_mfjson_buf(const TInstant *inst, bool isgeo, bool hasz,
       precision);
   ptr += sprintf(ptr, "],\"datetimes\":[");
   ptr += datetimes_mfjson_buf(ptr, inst->t);
-  ptr += sprintf(ptr, "],\"interpolation\":[\"None\"]}");
+  ptr += sprintf(ptr, "],\"interpolation\":\"None\"}");
   return (ptr - output);
 }
 
@@ -672,7 +672,7 @@ tsequence_mfjson_size(const TSequence *seq, bool isgeo, bool hasz,
   size += temptype_mfjson_size(seq->temptype);
   /* We reserve space for the largest strings, i.e., 'false' and "Step" */
   size += isgeo ? sizeof("'coordinates':[],") : sizeof("'values':[],");
-  size += sizeof("'datetimes':[],'lower_inc':false,'upper_inc':false,interpolation':['Step']}");
+  size += sizeof("'datetimes':[],'lower_inc':false,'upper_inc':false,interpolation':'Step'}");
   if (srs) size += srs_mfjson_size(srs);
   if (bbox) size += bbox_mfjson_size(seq->temptype, hasz, precision);
   return size;
@@ -705,7 +705,7 @@ tsequence_mfjson_buf(const TSequence *seq, bool isgeo, bool hasz,
     const TInstant *inst = tsequence_inst_n(seq, i);
     ptr += datetimes_mfjson_buf(ptr, inst->t);
   }
-  ptr += sprintf(ptr, "],\"lower_inc\":%s,\"upper_inc\":%s,\"interpolation\":[\"%s\"]}",
+  ptr += sprintf(ptr, "],\"lower_inc\":%s,\"upper_inc\":%s,\"interpolation\":\"%s\"}",
     seq->period.lower_inc ? "true" : "false", seq->period.upper_inc ? "true" : "false",
     MOBDB_FLAGS_GET_DISCRETE(seq->flags) ? "Discrete" :
     ( MOBDB_FLAGS_GET_LINEAR(seq->flags) ? "Linear" : "Step" ) );
@@ -837,8 +837,8 @@ tsequenceset_mfjson_size(const TSequenceSet *ss, bool isgeo, bool hasz,
     }
   }
   size += datetimes_mfjson_size(ss->totalcount);
-  /* We reserve space for the largest interpolation string, i.e., "Step" */
-  size += sizeof(",interpolation':['Step']}");
+  /* We reserve space for the largest interpolation string, i.e., "Discrete" */
+  size += sizeof(",interpolation':'Discrete'}");
   if (srs) size += srs_mfjson_size(srs);
   if (bbox) size += bbox_mfjson_size(ss->temptype, hasz, precision);
   return size;
@@ -880,7 +880,7 @@ tsequenceset_mfjson_buf(const TSequenceSet *ss, bool isgeo, bool hasz,
       seq->period.lower_inc ? "true" : "false", seq->period.upper_inc ?
         "true" : "false");
   }
-  ptr += sprintf(ptr, "],\"interpolation\":[\"%s\"]}",
+  ptr += sprintf(ptr, "],\"interpolation\":\"%s\"}",
     MOBDB_FLAGS_GET_LINEAR(ss->flags) ? "Linear" : "Step");
   return (ptr - output);
 }
