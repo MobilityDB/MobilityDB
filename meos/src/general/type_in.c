@@ -700,7 +700,6 @@ temporal_from_mfjson(const char *mfjson)
   json_object *poObj = NULL;
   json_object *poObjType = NULL;
   json_object *poObjInterp = NULL;
-  json_object *poObjInterp1 = NULL;
   json_object *poObjSrs = NULL;
 
   /* Begin to parse json */
@@ -750,13 +749,6 @@ temporal_from_mfjson(const char *mfjson)
   if (poObjInterp == NULL)
     elog(ERROR, "Unable to find 'interpolation' in MFJSON string");
 
-  if (json_object_get_type(poObjInterp) != json_type_array)
-    elog(ERROR, "Invalid 'interpolations' value in MFJSON string");
-
-  const int nSize = json_object_array_length(poObjInterp);
-  if (nSize != 1)
-    elog(ERROR, "Multiple 'interpolation' values in MFJSON string");
-
   bool isgeo = tgeo_type(temptype);
   if (isgeo)
   {
@@ -793,8 +785,7 @@ temporal_from_mfjson(const char *mfjson)
   }
 
   /* Read interpolation value */
-  poObjInterp1 = json_object_array_get_idx(poObjInterp, 0);
-  const char *pszInterp = json_object_get_string(poObjInterp1);
+  const char *pszInterp = json_object_get_string(poObjInterp);
   if (pszInterp)
   {
     if (strcmp(pszInterp, "None") == 0)

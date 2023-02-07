@@ -1699,7 +1699,7 @@ tsequence_tsample(const TSequence *seq, const Interval *duration,
 
 /**
  * @brief Sample the temporal value according to period buckets.
- * @param[in] seq Temporal value
+ * @param[in] ss Temporal value
  * @param[in] duration Size of the time buckets
  * @param[in] torigin Time origin of the buckets
  */
@@ -3803,6 +3803,28 @@ tnumber_twavg(const Temporal *temp)
     result = tnumberseq_twavg((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
     result = tnumberseqset_twavg((TSequenceSet *) temp);
+  return result;
+}
+
+/*****************************************************************************
+ * Compact function for final append aggregate
+ *****************************************************************************/
+
+/**
+ * @ingroup libmeos_internal_temporal_agg
+ * @brief Compact the temporal value by removing extra storage space
+ */
+Temporal *
+temporal_compact(const Temporal *temp)
+{
+  Temporal *result;
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == TINSTANT)
+    result = (Temporal *) tinstant_copy((TInstant *) temp);
+  else if (temp->subtype == TSEQUENCE)
+    result = (Temporal *) tsequence_compact((TSequence *) temp);
+  else /* temp->subtype == TSEQUENCESET */
+    result = (Temporal *) tsequenceset_compact((TSequenceSet *) temp);
   return result;
 }
 

@@ -351,6 +351,21 @@ Tfloat_round(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PG_FUNCTION_INFO_V1(Tnumber_abs);
+/**
+ * @ingroup mobilitydb_temporal_math
+ * @brief Get the absolute value of a temporal number
+ * @sqlfunc abs()
+ */
+PGDLLEXPORT Datum
+Tnumber_abs(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tnumber_abs(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
 PG_FUNCTION_INFO_V1(Tfloat_degrees);
 /**
  * @ingroup mobilitydb_temporal_math

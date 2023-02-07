@@ -145,7 +145,7 @@ set_agg_transfn(Set *state, Datum d, meosType basetype)
 #if ! MEOS
     MemoryContext ctx = set_aggregation_context(fetch_fcinfo());
 #endif /* ! MEOS */
-    /* Arbitrary initialization to 64 elemnts */
+    /* Arbitrary initialization to 64 elements */
     Set *result = set_make_exp(&d, 1, 64, basetype, ORDERED_NO);
 #if ! MEOS
     unset_aggregation_context(ctx);

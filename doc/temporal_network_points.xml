@@ -824,7 +824,7 @@ SELECT tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-03]' &lt;-&gt
 </programlisting>
 			</listitem>
 
-			<listitem id="tnpoint_spatialrels">
+			<listitem id="tnpoint_espatialrels">
 				<indexterm><primary><varname>econtains</varname></primary></indexterm>
 				<indexterm><primary><varname>edisjoint</varname></primary></indexterm>
 				<indexterm><primary><varname>eintersects</varname></primary></indexterm>

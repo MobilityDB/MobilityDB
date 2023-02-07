@@ -1000,6 +1000,7 @@ extern TSequence *tpointseq_make_coords(const double *xcoords, const double *yco
   const TimestampTz *times, int count, int32 srid, bool geodetic, bool lower_inc, bool upper_inc, interpType interp, bool normalize);
 extern TSequence *tsequence_make_free(TInstant **instants, int count, bool lower_inc, bool upper_inc, interpType interp, bool normalize);
 extern TSequenceSet *tsequenceset_make(const TSequence **sequences, int count, bool normalize);
+extern TSequenceSet *tsequenceset_make_exp(const TSequence **sequences, int count, int maxcount, bool normalize);
 extern TSequenceSet *tsequenceset_make_free(TSequence **sequences, int count, bool normalize);
 extern TSequenceSet *tsequenceset_make_gaps(const TInstant **instants, int count, interpType interp, float maxdist, Interval *maxt);
 extern Temporal *ttext_from_base(const text *txt, const Temporal *temp);
@@ -1180,7 +1181,7 @@ extern Temporal *sub_tnumber_tnumber(const Temporal *tnumber1, const Temporal *t
 extern Temporal *tfloat_degrees(const Temporal *temp);
 extern Temporal *tfloat_radians(const Temporal *temp);
 extern Temporal *tfloat_derivative(const Temporal *temp);
-
+extern Temporal *tnumber_abs(const Temporal *temp);
 
 /*****************************************************************************/
 

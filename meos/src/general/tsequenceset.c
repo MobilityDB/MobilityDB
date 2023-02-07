@@ -281,10 +281,24 @@ tsequenceset_make1_exp(const TSequence **sequences, int count, int maxcount,
   return result;
 }
 
-static TSequenceSet *
-tsequenceset_make1(const TSequence **sequences, int count, bool normalize)
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal sequence set from an array of temporal sequences.
+ *
+ * @param[in] sequences Array of sequences
+ * @param[in] count Number of elements in the array
+ * @param[in] maxcount Maximum number of elements in the array
+ * @param[in] normalize True if the resulting value should be normalized.
+ * In particular, normalize is false when synchronizing two
+ * temporal sequence sets before applying an operation to them.
+ * @sqlfunc tbool_seqset(), tint_seqset(), tfloat_seqset(), ttext_seqset(), etc.
+ */
+TSequenceSet *
+tsequenceset_make_exp(const TSequence **sequences, int count, int maxcount,
+  bool normalize)
 {
-  return tsequenceset_make1_exp(sequences, count, count, normalize);
+  tsequenceset_make_valid(sequences, count);
+  return tsequenceset_make1_exp(sequences, count, maxcount, normalize);
 }
 
 /**
@@ -301,8 +315,7 @@ tsequenceset_make1(const TSequence **sequences, int count, bool normalize)
 TSequenceSet *
 tsequenceset_make(const TSequence **sequences, int count, bool normalize)
 {
-  tsequenceset_make_valid(sequences, count);
-  return tsequenceset_make1(sequences, count, normalize);
+  return tsequenceset_make_exp(sequences, count, count, normalize);
 }
 
 /**
@@ -1248,7 +1261,6 @@ tfloatseqset_to_tintseqset(const TSequenceSet *ss)
  * Transformation functions
  *****************************************************************************/
 
-#if MEOS
 /**
  * @ingroup libmeos_internal_temporal_constructor
  * @brief Return a copy of a temporal sequence set without any extra space.
@@ -1266,7 +1278,6 @@ tsequenceset_compact(const TSequenceSet *ss)
   }
   return tsequenceset_make_free(sequences, ss->count, NORMALIZE_NO);
 }
-#endif /* MEOS */
 
 /**
  * @ingroup libmeos_internal_temporal_transf
