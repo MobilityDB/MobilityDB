@@ -252,6 +252,7 @@ WITH temp(inst) AS (
 SELECT appendInstant(inst ORDER BY inst) FROM temp;
 
 WITH temp(inst) AS (
+  SELECT NULL UNION
   SELECT tfloat '1@2000-01-01' UNION
   SELECT tfloat '2@2000-01-02' UNION
   SELECT tfloat '3@2000-01-03' UNION
@@ -300,12 +301,18 @@ WITH temp1(k, inst) AS (
   SELECT 5, tfloat '5@2000-01-05' UNION
   SELECT 6, tfloat '5@2000-01-06' UNION
   SELECT 7, tfloat '5@2000-01-07' UNION
-  SELECT 8, tfloat '5@2000-01-08'  ),
+  SELECT 8, tfloat '5@2000-01-08' ),
 temp2(seq) AS (
   SELECT appendInstant(inst ORDER BY inst)
   FROM temp1
   GROUP BY k / 3)
 SELECT appendSequence(seq ORDER BY seq) FROM temp2;
+
+WITH temp(seq) AS (
+  SELECT NULL UNION
+  SELECT tfloat '[1@2000-01-01, 2@2000-01-02]' UNION
+  SELECT tfloat '[3@2000-01-03, 4@2000-01-04]' )
+SELECT appendSequence(seq ORDER BY seq) FROM temp;
 
 WITH temp1(k, inst) AS (
   SELECT extract(day from d)::int % 2, tint(extract(day from d)::int % 2, d)
