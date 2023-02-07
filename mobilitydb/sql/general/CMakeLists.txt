@@ -25,7 +25,7 @@ SET(LOCAL_FILES
   038_temporal_similarity
   040_temporal_aggfuncs
   042_temporal_waggfuncs
-  044_temporal_gist
+  043_temporal_gist
   044_temporal_spgist
   999_oid_cache
   )

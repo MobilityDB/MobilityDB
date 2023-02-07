@@ -352,7 +352,8 @@ tnumberseqset_abs(const TSequenceSet *ss)
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
-    sequences[i] = tnumberseq_linear_abs(seq);
+    sequences[i] = MOBDB_FLAGS_GET_LINEAR(ss->flags) ?
+      tnumberseq_linear_abs(seq) : tnumberseq_iter_abs(seq);
   }
   TSequenceSet *result = tsequenceset_make_free(sequences, ss->count,
     NORMALIZE);

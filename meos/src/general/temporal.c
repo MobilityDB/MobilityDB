@@ -1699,7 +1699,7 @@ tsequence_tsample(const TSequence *seq, const Interval *duration,
 
 /**
  * @brief Sample the temporal value according to period buckets.
- * @param[in] seq Temporal value
+ * @param[in] ss Temporal value
  * @param[in] duration Size of the time buckets
  * @param[in] torigin Time origin of the buckets
  */
