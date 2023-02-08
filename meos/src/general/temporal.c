@@ -3766,6 +3766,103 @@ temporal_delete_periodset(const Temporal *temp, const SpanSet *ps,
 }
 
 /*****************************************************************************
+ * Stops functions
+ *****************************************************************************/
+
+/**
+ * @brief Return the constant segments of the temporal value
+ */
+static int
+tsequence_stops1(const TSequence *seq, TSequence **result)
+{
+  assert(seq->count > 1);
+  meosType basetype = temptype_basetype(seq->temptype);
+  const TInstant *inst1 = tsequence_inst_n(seq, 0);
+  Datum value1 = tinstant_value(inst1);
+  int k = 0;
+  bool lower = seq->period.lower_inc;
+  for (int i = 1; i < seq->count; i++)
+  {
+    const TInstant *inst2 = tsequence_inst_n(seq, i);
+    Datum value2 = tinstant_value(inst2);
+    bool upper = (i == seq->count - 1) ? seq->period.upper_inc : false;
+    /* The segment belongs to the result if it is constant */
+    if (datum_eq(value1, value2, basetype))
+    {
+      const TInstant *instants[2];
+      instants[0] = inst1;
+      instants[1] = inst2;
+      result[k++] = tsequence_make(instants, 2, lower, upper, LINEAR,
+        NORMALIZE_NO);
+    }
+    inst1 = inst2;
+    value1 = value2;
+    lower = true;
+  }
+  return k;
+}
+
+/**
+ * @ingroup libmeos_temporal_transf
+ * @brief Return the constant segments of the temporal value
+ */
+TSequenceSet *
+tsequence_stops(const TSequence *seq)
+{
+  /* Instantaneous sequence */
+  if (seq->count == 1)
+    return NULL;
+
+  /* General case */
+  TSequence **sequences = palloc(sizeof(TSequence *) * seq->count - 1);
+  int k = tsequence_stops1(seq, sequences);
+  TSequenceSet *result = NULL;
+  if (k > 0)
+    result = tsequenceset_make_free(sequences, k, NORMALIZE_NO);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_transf
+ * @brief Return the constant segments of the temporal value
+ */
+TSequenceSet *
+tsequenceset_stops(const TSequenceSet *ss)
+{
+  TSequence **sequences = palloc(sizeof(TSequence *) * ss->totalcount);
+  int k = 0;
+  for (int i = 0; i < ss->count; i++)
+  {
+    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    k += tsequence_stops1(seq, &sequences[k]);
+  }
+  TSequenceSet *result = tsequenceset_make_free(sequences, k,
+    NORMALIZE);
+  return result;
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup libmeos_temporal_transf
+ * @brief Return the constant segments of the temporal value
+ */
+TSequenceSet *
+temporal_stops(const Temporal *temp)
+{
+  TSequenceSet *result = NULL;
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
+    elog(ERROR, "Input must be a temporal linear sequence (set)");
+  else if (temp->subtype == TSEQUENCE)
+    result = tsequence_stops((TSequence *) temp);
+  else /* temp->subtype == TSEQUENCESET */
+    result = tsequenceset_stops((TSequenceSet *) temp);
+  return result;
+}
+
+
+/*****************************************************************************
  * Local aggregate functions
  *****************************************************************************/
 

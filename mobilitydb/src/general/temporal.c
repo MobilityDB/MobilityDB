@@ -2560,6 +2560,27 @@ Temporal_delete_periodset(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * Stop function
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Temporal_stops);
+/**
+ * @ingroup mobilitydb_temporal_transf
+ * @brief Return the constant segments of the temporal value
+ * @sqlfunc stops()
+ */
+PGDLLEXPORT Datum
+Temporal_stops(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  TSequenceSet *result = temporal_stops(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
  * Local aggregate functions
  *****************************************************************************/
 

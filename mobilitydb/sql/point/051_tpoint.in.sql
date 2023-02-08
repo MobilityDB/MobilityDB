@@ -913,6 +913,20 @@ CREATE FUNCTION deleteTime(tgeogpoint, tstzspanset, connect boolean DEFAULT TRUE
   AS 'MODULE_PATHNAME', 'Temporal_delete_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+/*****************************************************************************
+ * Stops Function
+ *****************************************************************************/
+
+CREATE FUNCTION stops(tgeompoint)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Temporal_stops'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION stops(tgeogpoint)
+  RETURNS tgeogpoint
+  AS 'MODULE_PATHNAME', 'Temporal_stops'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+
 /******************************************************************************
  * Multidimensional tiling
  ******************************************************************************/
