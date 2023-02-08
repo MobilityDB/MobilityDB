@@ -760,6 +760,13 @@ tsequence_set_bbox(const TSequence *seq, void *box)
 /**
  * @brief Return a pointer to the offsets array of a temporal sequence
  */
+#define TSEQUENCE_OFFSETS_PTR(seq) ( \
+  (size_t *)(((char *)seq) + double_pad(sizeof(TSequence)) + \
+  ((seq->bboxsize == 0) ? 0 : double_pad(seq->bboxsize - sizeof(Span)))) )
+
+/**
+ * @brief Return a pointer to the offsets array of a temporal sequence
+ */
 size_t *
 tsequence_offsets_ptr(const TSequence *seq)
 {

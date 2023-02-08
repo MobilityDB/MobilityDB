@@ -51,7 +51,6 @@
 #include "point/tpoint_spatialfuncs.h"
 #if NPOINT
   #include "npoint/tnpoint_spatialfuncs.h"
-  #include "npoint/tnpoint_spatialfuncs.h"
 #endif
 
 /*****************************************************************************
@@ -280,40 +279,27 @@ ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
   meosType basetype = temptype_basetype(instants[0]->temptype);
   int *result = palloc(sizeof(int) * count);
   Datum value1 = tinstant_value(instants[0]);
-#if NPOINT
-  Datum geom1 = 0; /* Used only for temporal network points */
-#endif
   datum_func2 point_distance = NULL;
   if (geo_basetype(basetype))
     point_distance = pt_distance_fn(instants[0]->flags);
-#if NPOINT
-  else if (basetype == T_NPOINT)
-    geom1 = PointerGetDatum(npoint_geom(DatumGetNpointP(value1)));
-#endif
   int k = 0;
   for (int i = 1; i < count; i++)
   {
     ensure_valid_tinstarr1(instants[i - 1], instants[i], merge, interp);
     bool split = false;
     Datum value2 = tinstant_value(instants[i]);
-#if NPOINT
-    Datum geom2 = 0; /* Used only for temporal network points */
-#endif
     if (maxdist > 0 && ! datum_eq(value1, value2, basetype))
     {
       double dist = -1;
       if (tnumber_basetype(basetype))
-        dist = (basetype == T_INT4) ? /** x **/
+        dist = (basetype == T_INT4) ?
           (double) DatumGetInt32(number_distance(value1, value2, basetype, basetype)) :
           DatumGetFloat8(number_distance(value1, value2, basetype, basetype));
       else if (geo_basetype(basetype))
         dist = DatumGetFloat8(point_distance(value1, value2));
 #if NPOINT
       else if (basetype == T_NPOINT)
-      {
-        geom2 = PointerGetDatum(npoint_geom(DatumGetNpointP(value2)));
-        dist = DatumGetFloat8(pt_distance2d(geom1, geom2));
-      }
+        dist = DatumGetFloat8(npoint_distance(value1, value2));
 #endif
       if (dist > maxdist)
         split = true;
@@ -329,10 +315,6 @@ ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
     if (split)
       result[k++] = i;
     value1 = value2;
-#if NPOINT
-    if (basetype == T_NPOINT)
-      geom1 = geom2;
-#endif
   }
   *countsplits = k;
   return result;
@@ -3773,7 +3755,8 @@ temporal_delete_periodset(const Temporal *temp, const SpanSet *ps,
  * @brief Return the constant segments of the temporal value
  */
 static int
-tsequence_stops1(const TSequence *seq, TSequence **result)
+tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
+  datum_func2 point_distance, TSequence **result)
 {
   assert(seq->count > 1);
   meosType basetype = temptype_basetype(seq->temptype);
@@ -3785,9 +3768,30 @@ tsequence_stops1(const TSequence *seq, TSequence **result)
   {
     const TInstant *inst2 = tsequence_inst_n(seq, i);
     Datum value2 = tinstant_value(inst2);
+    /* Verifty that the segment duration is greater or equal then the minimal
+     * duration */
     bool upper = (i == seq->count - 1) ? seq->period.upper_inc : false;
-    /* The segment belongs to the result if it is constant */
+    /* Compute the segment distance if the minimum distance is greater than 0 */
+    double dist;
     if (datum_eq(value1, value2, basetype))
+      dist = 0;
+    else
+    {
+      if (tnumber_basetype(basetype))
+        dist = DatumGetFloat8(double_distance(value1, value2));
+      else if (geo_basetype(basetype))
+        dist = DatumGetFloat8(point_distance(value1, value2));
+#if NPOINT
+      else if (basetype == T_NPOINT)
+        dist = DatumGetFloat8(npoint_distance(value1, value2));
+#endif
+    }
+    /* Compute the segment duration if the minimum tunits is greater than 0 */
+    int64 tunits = 0;
+    if (mintunits > 0)
+      tunits = inst2->t - inst1->t;
+    /* Test whether the segment belongs to the answer */
+    if (dist <= maxdist && mintunits <= tunits)
     {
       const TInstant *instants[2];
       instants[0] = inst1;
@@ -3807,7 +3811,8 @@ tsequence_stops1(const TSequence *seq, TSequence **result)
  * @brief Return the constant segments of the temporal value
  */
 TSequenceSet *
-tsequence_stops(const TSequence *seq)
+tsequence_stops(const TSequence *seq, double maxdist, int64 mintunits,
+  datum_func2 distance_fn)
 {
   /* Instantaneous sequence */
   if (seq->count == 1)
@@ -3815,10 +3820,10 @@ tsequence_stops(const TSequence *seq)
 
   /* General case */
   TSequence **sequences = palloc(sizeof(TSequence *) * seq->count - 1);
-  int k = tsequence_stops1(seq, sequences);
+  int k = tsequence_stops1(seq, maxdist, mintunits, distance_fn, sequences);
   TSequenceSet *result = NULL;
   if (k > 0)
-    result = tsequenceset_make_free(sequences, k, NORMALIZE_NO);
+    result = tsequenceset_make_free(sequences, k, NORMALIZE);
   return result;
 }
 
@@ -3827,17 +3832,17 @@ tsequence_stops(const TSequence *seq)
  * @brief Return the constant segments of the temporal value
  */
 TSequenceSet *
-tsequenceset_stops(const TSequenceSet *ss)
+tsequenceset_stops(const TSequenceSet *ss, double maxdist, int64 mintunits,
+  datum_func2 distance_fn)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->totalcount);
   int k = 0;
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
-    k += tsequence_stops1(seq, &sequences[k]);
+    k += tsequence_stops1(seq, maxdist, mintunits, distance_fn, &sequences[k]);
   }
-  TSequenceSet *result = tsequenceset_make_free(sequences, k,
-    NORMALIZE);
+  TSequenceSet *result = tsequenceset_make_free(sequences, k, NORMALIZE);
   return result;
 }
 
@@ -3848,16 +3853,37 @@ tsequenceset_stops(const TSequenceSet *ss)
  * @brief Return the constant segments of the temporal value
  */
 TSequenceSet *
-temporal_stops(const Temporal *temp)
+temporal_stops(const Temporal *temp, double maxdist,
+  const Interval *minduration)
 {
+  if (maxdist < 0)
+    elog(ERROR, "The maximum distance must be positive: %f", maxdist);
+  Interval intervalzero;
+  memset(&intervalzero, 0, sizeof(Interval));
+  int cmp = pg_interval_cmp(minduration, &intervalzero);
+  if (cmp < 0)
+    elog(ERROR, "The duration must be positive");
+  int64 mintunits = interval_units(minduration);
+  datum_func2 distance_fn = NULL;
+  assert(temp->temptype == T_TFLOAT || tgeo_type(temp->temptype) ||
+    temp->temptype == T_TNPOINT);
+  if (temp->temptype == T_TFLOAT)
+    distance_fn = &double_distance;
+  else if (tgeo_type(temp->temptype))
+    distance_fn = pt_distance_fn(temp->flags);
+  else /* temp->temptype == T_TNPOINT */
+    distance_fn = &npoint_distance;
+
   TSequenceSet *result = NULL;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
-    elog(ERROR, "Input must be a temporal linear sequence (set)");
+    elog(ERROR, "Input must be a temporal sequence (set) with linear interpolation");
   else if (temp->subtype == TSEQUENCE)
-    result = tsequence_stops((TSequence *) temp);
+    result = tsequence_stops((TSequence *) temp, maxdist, mintunits,
+      distance_fn);
   else /* temp->subtype == TSEQUENCESET */
-    result = tsequenceset_stops((TSequenceSet *) temp);
+    result = tsequenceset_stops((TSequenceSet *) temp, maxdist, mintunits,
+      distance_fn);
   return result;
 }
 

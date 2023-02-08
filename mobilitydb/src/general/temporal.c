@@ -2573,7 +2573,12 @@ PGDLLEXPORT Datum
 Temporal_stops(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  TSequenceSet *result = temporal_stops(temp);
+  float maxdist = PG_GETARG_FLOAT8(1);
+  Interval *minduration = PG_GETARG_INTERVAL_P(2);
+  /* Store fcinfo into a global variable */
+  /* Needed for the distance function for temporal geographic points */
+  store_fcinfo(fcinfo);
+  TSequenceSet *result = temporal_stops(temp, maxdist, minduration);
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();

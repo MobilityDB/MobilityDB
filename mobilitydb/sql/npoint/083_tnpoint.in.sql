@@ -544,6 +544,16 @@ CREATE FUNCTION minusTime(tnpoint, tstzspanset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
+ * Stop Function
+ *****************************************************************************/
+
+CREATE FUNCTION stops(tnpoint, maxdist float DEFAULT 0.0,
+    minduration interval DEFAULT '0 minutes')
+  RETURNS tnpoint
+  AS 'MODULE_PATHNAME', 'Temporal_stops'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
  * Modification Functions
  *****************************************************************************/
 

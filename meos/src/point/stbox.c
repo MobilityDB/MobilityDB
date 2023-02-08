@@ -414,6 +414,52 @@ stbox_to_period(const STBox *box)
 
 /**
  * @ingroup libmeos_internal_box_cast
+ * @brief Set a spatiotemporal box from a geometry/geography point.
+ * @note This function is called for the points composing a temporal point
+ * @pre The point is not empty
+ */
+void
+point_set_stbox(const GSERIALIZED *gs, int srid, bool hasz, bool geodetic,
+  STBox *box)
+{
+  /* Note: zero-fill is required here, just as in heap tuples */
+  memset(box, 0, sizeof(STBox));
+  box->srid = srid;
+  MOBDB_FLAGS_SET_X(box->flags, true);
+  MOBDB_FLAGS_SET_Z(box->flags, hasz);
+  MOBDB_FLAGS_SET_T(box->flags, false);
+  MOBDB_FLAGS_SET_GEODETIC(box->flags, geodetic);
+
+  if (geodetic)
+  {
+    POINT3D A1;
+    const POINT2D *p = datum_point2d_p(PointerGetDatum(gs));
+    ll2cart(p, &A1);
+    box->xmin = box->xmax = A1.x;
+    box->ymin = box->ymax = A1.y;
+    box->zmin = box->zmax = A1.z;
+  }
+  else
+  {
+    if (hasz)
+    {
+      const POINT3DZ *p = datum_point3dz_p(PointerGetDatum(gs));
+      box->xmin = box->xmax = p->x;
+      box->ymin = box->ymax = p->y;
+      box->zmin = box->zmax = p->z;
+    }
+    else
+    {
+      const POINT2D *p = datum_point2d_p(PointerGetDatum(gs));
+      box->xmin = box->xmax = p->x;
+      box->ymin = box->ymax = p->y;
+    }
+  }
+  return;
+}
+
+/**
+ * @ingroup libmeos_internal_box_cast
  * @brief Set a spatiotemporal box from a geometry/geography.
  */
 bool

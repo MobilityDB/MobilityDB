@@ -77,6 +77,21 @@ ensure_same_rid_tnpointinst(const TInstant *inst1, const TInstant *inst2)
 }
 
 /*****************************************************************************
+ * Distance function
+ *****************************************************************************/
+
+/**
+ * @brief Return the distance between the two network points
+ */
+Datum
+npoint_distance(Datum np1, Datum np2)
+{
+  Datum geom1 = PointerGetDatum(npoint_geom(DatumGetNpointP(np1)));
+  Datum geom2 = PointerGetDatum(npoint_geom(DatumGetNpointP(np2)));
+  return pt_distance2d(geom1, geom2);
+}
+
+/*****************************************************************************
  * Interpolation functions defining functionality required by tsequence.c
  * that must be implemented by each temporal type
  *****************************************************************************/

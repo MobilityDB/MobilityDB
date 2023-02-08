@@ -1654,7 +1654,7 @@ extern Temporal *temporal_delete_timestamp(const Temporal *temp, TimestampTz t, 
 extern Temporal *temporal_delete_timestampset(const Temporal *temp, const Set *ts, bool connect);
 extern Temporal *temporal_delete_period(const Temporal *temp, const Span *p, bool connect);
 extern Temporal *temporal_delete_periodset(const Temporal *temp, const SpanSet *ps, bool connect);
-extern TSequenceSet *temporal_stops(const Temporal *temp);
+extern TSequenceSet *temporal_stops(const Temporal *temp, double mindist, const Interval *minduration);
 
 /*****************************************************************************/
 

@@ -2060,7 +2060,8 @@ CREATE FUNCTION deleteTime(ttext, tstzspanset, connect boolean DEFAULT TRUE)
  * Stop Function
  *****************************************************************************/
 
-CREATE FUNCTION stops(tfloat)
+CREATE FUNCTION stops(tfloat, maxdist float DEFAULT 0.0,
+    minduration interval DEFAULT '0 minutes')
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Temporal_stops'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

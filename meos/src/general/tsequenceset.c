@@ -353,8 +353,8 @@ tsequenceset_make_valid_gaps(const TInstant **instants, int count,
   Interval *maxt, int *countsplits)
 {
   tsequence_make_valid1(instants, count, lower_inc, upper_inc, interp);
-  return ensure_valid_tinstarr_gaps(instants, count, MERGE_NO,
-    interp, maxdist, maxt, countsplits);
+  return ensure_valid_tinstarr_gaps(instants, count, MERGE_NO, interp, maxdist,
+    maxt, countsplits);
 }
 
 /**

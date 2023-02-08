@@ -68,10 +68,11 @@ extern int edge_calculate_gbox(const POINT3D *A1, const POINT3D *A2, GBOX *gbox)
 void
 tpointinst_set_stbox(const TInstant *inst, STBox *box)
 {
-  GSERIALIZED *gs = DatumGetGserializedP(tinstant_value(inst));
-  /* Non-empty geometries have a bounding box
-   * The argument box is set to 0 on the next call */
-  geo_set_stbox(gs, box);
+  GSERIALIZED *point = DatumGetGserializedP(&inst->value);
+  int srid = tpointinst_srid(inst);
+  bool hasz = MOBDB_FLAGS_GET_Z(inst->flags);
+  bool geodetic = MOBDB_FLAGS_GET_GEODETIC(inst->flags);
+  point_set_stbox(point, srid, hasz, geodetic, box);
   span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
     true, true, T_TIMESTAMPTZ, &box->period);
   MOBDB_FLAGS_SET_T(box->flags, true);
@@ -87,11 +88,16 @@ tpointinst_set_stbox(const TInstant *inst, STBox *box)
 void
 tgeompointinstarr_set_stbox(const TInstant **instants, int count, STBox *box)
 {
-  tpointinst_set_stbox(instants[0], box);
+  GSERIALIZED *point = DatumGetGserializedP(&instants[0]->value);
+  int srid = gserialized_get_srid(point);
+  bool hasz = MOBDB_FLAGS_GET_Z(instants[0]->flags);
+  bool geodetic = MOBDB_FLAGS_GET_GEODETIC(instants[0]->flags);
+  point_set_stbox(point, srid, hasz, geodetic, box);
   for (int i = 1; i < count; i++)
   {
     STBox box1;
-    tpointinst_set_stbox(instants[i], &box1);
+    point = DatumGetGserializedP(&instants[i]->value);
+    point_set_stbox(point, srid, hasz, geodetic, &box1);
     stbox_expand(&box1, box);
   }
   return;

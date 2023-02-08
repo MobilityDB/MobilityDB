@@ -228,6 +228,13 @@ SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspanset
 WHERE minusTime(temp, ps) IS NOT NULL;
 
 -------------------------------------------------------------------------------
+-- Stop function
+-------------------------------------------------------------------------------
+
+SELECT MAX(numInstants(stops(seq, 50.0))) FROM tbl_tnpoint_seq;
+SELECT MAX(numInstants(stops(seq, 50.0, '5 min'))) FROM tbl_tnpoint_seq;
+
+-------------------------------------------------------------------------------
 -- Modification functions
 -------------------------------------------------------------------------------
 

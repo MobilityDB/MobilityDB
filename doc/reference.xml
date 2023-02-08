@@ -746,7 +746,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="unnest"><varname>unnest</varname></link>: Transform a nonlinear temporal value into a set of rows, each one containing a base value and a period set during which the temporal value has the base value.</para>
+					<para><link linkend="stops"><varname>stops</varname></link>: Extract from a temporal sequence (set) with linear interpolation the segments whose distance is less than or equal to the given argument and/or whose duration is greater than or equal to the given argument</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="unnest"><varname>unnest</varname></link>: Transform a nonlinear temporal value into a set of rows, each one containing a base value and a period set during which the temporal value has the base value</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1238,7 +1242,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="valueBucket"><varname>valueBucket</varname></link>: Return the start value of the bucket that contains the input number.</para>
+						<para><link linkend="valueBucket"><varname>valueBucket</varname></link>: Return the start value of the bucket that contains the input number</para>
 					</listitem>
 
 					<listitem>
@@ -1246,7 +1250,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="timeBucket"><varname>timeBucket</varname></link>: Return the start timestamp of the bucket that contains the input timestamp.</para>
+						<para><link linkend="timeBucket"><varname>timeBucket</varname></link>: Return the start timestamp of the bucket that contains the input timestamp</para>
 					</listitem>
 
 					<listitem>
@@ -1261,7 +1265,7 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tileList"><varname>tileList</varname></link>: Return a set of couples (index, tile) that covers the box with multidimensional tiles of the same size and duration.</para>
+						<para><link linkend="tileList"><varname>tileList</varname></link>: Return a set of couples (index, tile) that covers the box with multidimensional tiles of the same size and duration</para>
 					</listitem>
 
 					<listitem>

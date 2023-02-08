@@ -452,6 +452,12 @@ SELECT MAX(startTimestamp(tsample(seq, '15 minutes'))) FROM tbl_tint_seq;
 SELECT MAX(startTimestamp(tsample(ss, '15 minutes'))) FROM tbl_tint_seqset;
 
 -------------------------------------------------------------------------------
+-- stop function
+
+SELECT MAX(numInstants(stops(seq, 50.0))) FROM tbl_tfloat_seq;
+SELECT MAX(numInstants(stops(seq, 50.0, '5 min'))) FROM tbl_tfloat_seq;
+
+-------------------------------------------------------------------------------
 -- Ever/always comparison functions
 -------------------------------------------------------------------------------
 
