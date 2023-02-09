@@ -3756,7 +3756,7 @@ temporal_delete_periodset(const Temporal *temp, const SpanSet *ps,
  */
 static int
 tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
-  datum_func2 point_distance, TSequence **result)
+  datum_func2 distance_fn, TSequence **result)
 {
   assert(seq->count > 1);
   meosType basetype = temptype_basetype(seq->temptype);
@@ -3768,24 +3768,14 @@ tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
   {
     const TInstant *inst2 = tsequence_inst_n(seq, i);
     Datum value2 = tinstant_value(inst2);
-    /* Verifty that the segment duration is greater or equal then the minimal
-     * duration */
     bool upper = (i == seq->count - 1) ? seq->period.upper_inc : false;
-    /* Compute the segment distance if the minimum distance is greater than 0 */
+    /* Compute the segment distance */
     double dist;
     if (datum_eq(value1, value2, basetype))
       dist = 0;
     else
-    {
-      if (tnumber_basetype(basetype))
-        dist = DatumGetFloat8(double_distance(value1, value2));
-      else if (geo_basetype(basetype))
-        dist = DatumGetFloat8(point_distance(value1, value2));
-#if NPOINT
-      else if (basetype == T_NPOINT)
-        dist = DatumGetFloat8(npoint_distance(value1, value2));
-#endif
-    }
+      dist = DatumGetFloat8(distance_fn(value1, value2));
+
     /* Compute the segment duration if the minimum tunits is greater than 0 */
     int64 tunits = 0;
     if (mintunits > 0)
