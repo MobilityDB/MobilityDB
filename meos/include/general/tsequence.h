@@ -42,6 +42,16 @@
 
 /*****************************************************************************/
 
+/**
+ * @brief Return a pointer to the offsets array of a temporal sequence
+ * @note The period component of the bbox is already declared in the struct
+ */
+#define TSEQUENCE_OFFSETS_PTR(seq) ( \
+  (size_t *)(((char *)seq) + DOUBLE_PAD(sizeof(TSequence)) + \
+  ((seq->bboxsize == 0) ? 0 : DOUBLE_PAD(seq->bboxsize - sizeof(Span)))) )
+
+/*****************************************************************************/
+
 /* General functions */
 
 extern int tcontseq_find_timestamp(const TSequence *seq, TimestampTz t);

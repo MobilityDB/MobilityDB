@@ -95,7 +95,7 @@ _PG_init(void)
 uint32_t
 time_max_header_size(void)
 {
-  return double_pad(Max(sizeof(Set), sizeof(SpanSet)));
+  return DOUBLE_PAD(Max(sizeof(Set), sizeof(SpanSet)));
 }
 
 /*****************************************************************************

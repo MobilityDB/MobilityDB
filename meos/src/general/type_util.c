@@ -540,16 +540,16 @@ datum_hash_extended(Datum d, meosType type, uint64 seed)
  * Miscellaneous functions
  *****************************************************************************/
 
-/**
- * @brief Align to double
- */
-size_t
-double_pad(size_t size)
-{
-  if (size % 8)
-    return size + (8 - size % 8);
-  return size;
-}
+// /**
+ // * @brief Align to double
+ // */
+// size_t
+// double_pad(size_t size)
+// {
+  // if (size % 8)
+    // return size + (8 - size % 8);
+  // return size;
+// }
 
 /**
  * @brief Copy a Datum if it is passed by reference

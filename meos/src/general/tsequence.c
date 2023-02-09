@@ -757,22 +757,15 @@ tsequence_set_bbox(const TSequence *seq, void *box)
   return;
 }
 
-/**
- * @brief Return a pointer to the offsets array of a temporal sequence
- */
-#define TSEQUENCE_OFFSETS_PTR(seq) ( \
-  (size_t *)(((char *)seq) + double_pad(sizeof(TSequence)) + \
-  ((seq->bboxsize == 0) ? 0 : double_pad(seq->bboxsize - sizeof(Span)))) )
-
-/**
- * @brief Return a pointer to the offsets array of a temporal sequence
- */
-size_t *
-tsequence_offsets_ptr(const TSequence *seq)
-{
-  return (size_t *)(((char *)seq) + double_pad(sizeof(TSequence)) +
-    ((seq->bboxsize == 0) ? 0 : double_pad(seq->bboxsize - sizeof(Span))));
-}
+// /**
+ // * @brief Return a pointer to the offsets array of a temporal sequence
+ // */
+// size_t *
+// tsequence_offsets_ptr(const TSequence *seq)
+// {
+  // return (size_t *)(((char *)seq) + DOUBLE_PAD(sizeof(TSequence)) +
+    // ((seq->bboxsize == 0) ? 0 : DOUBLE_PAD(seq->bboxsize - sizeof(Span))));
+// }
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
@@ -785,11 +778,11 @@ tsequence_inst_n(const TSequence *seq, int index)
 {
   return (TInstant *)(
     /* start of data */
-    ((char *) seq) + double_pad(sizeof(TSequence)) +
+    ((char *) seq) + DOUBLE_PAD(sizeof(TSequence)) +
       ((seq->bboxsize == 0) ? 0 : (seq->bboxsize - sizeof(Span))) +
       sizeof(size_t) * seq->maxcount +
       /* offset */
-      (tsequence_offsets_ptr(seq))[index]);
+      (TSEQUENCE_OFFSETS_PTR(seq))[index]);
 }
 
 /**
@@ -823,7 +816,7 @@ tsequence_make1_exp(const TInstant **instants, int count, int maxcount,
     norminsts = tinstarr_normalize(instants, interp, count, &newcount);
 
   /* Get the bounding box size */
-  size_t bboxsize = double_pad(temporal_bbox_size(instants[0]->temptype));
+  size_t bboxsize = DOUBLE_PAD(temporal_bbox_size(instants[0]->temptype));
   /* The period component of the bbox is already declared in the struct */
   size_t bboxsize_extra = (bboxsize == 0) ? 0 : bboxsize - sizeof(Span);
 
@@ -831,7 +824,7 @@ tsequence_make1_exp(const TInstant **instants, int count, int maxcount,
   size_t insts_size = 0;
   /* Size of composing instants */
   for (int i = 0; i < newcount; i++)
-    insts_size += double_pad(VARSIZE(norminsts[i]));
+    insts_size += DOUBLE_PAD(VARSIZE(norminsts[i]));
   /* Compute the total size for maxcount instants as a proportion of the size
    * of the count instants provided. Note that this is only an initial
    * estimation. The functions adding instants to a sequence must verify both
@@ -842,7 +835,7 @@ tsequence_make1_exp(const TInstant **instants, int count, int maxcount,
   else
     maxcount = newcount;
   /* Total size of the struct */
-  size_t memsize = double_pad(sizeof(TSequence)) + bboxsize_extra +
+  size_t memsize = DOUBLE_PAD(sizeof(TSequence)) + bboxsize_extra +
     maxcount * sizeof(size_t) + insts_size;
 
   /* Create the temporal sequence */
@@ -883,15 +876,15 @@ tsequence_make1_exp(const TInstant **instants, int count, int maxcount,
       T_TIMESTAMPTZ, &result->period);
   }
   /* Store the composing instants */
-  size_t pdata = double_pad(sizeof(TSequence)) + bboxsize_extra +
+  size_t pdata = DOUBLE_PAD(sizeof(TSequence)) + bboxsize_extra +
     sizeof(size_t) * maxcount;
   size_t pos = 0;
   for (int i = 0; i < newcount; i++)
   {
     memcpy(((char *) result) + pdata + pos, norminsts[i],
       VARSIZE(norminsts[i]));
-    (tsequence_offsets_ptr(result))[i] = pos;
-    pos += double_pad(VARSIZE(norminsts[i]));
+    (TSEQUENCE_OFFSETS_PTR(result))[i] = pos;
+    pos += DOUBLE_PAD(VARSIZE(norminsts[i]));
   }
   if (interp != DISCRETE && normalize && count > 1)
     pfree(norminsts);
@@ -1426,11 +1419,11 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, bool expand)
   while (expand && count <= seq->maxcount)
   {
     /* Determine whether there is enough available space */
-    size_t size = double_pad(VARSIZE(inst));
+    size_t size = DOUBLE_PAD(VARSIZE(inst));
     /* Get the last instant to keep. It is either the last instant or the
      * penultimate one if the last one is redundant through normalization */
     last = (TInstant *) tsequence_inst_n(seq, count - 2);
-    new = (TInstant *) ((char *) last + double_pad(VARSIZE(last)));
+    new = (TInstant *) ((char *) last + DOUBLE_PAD(VARSIZE(last)));
     size_t avail_size = (char *) seq + VARSIZE(seq) - (char *) new;
     if (size > avail_size)
       /* There is not enough available space */
@@ -1440,8 +1433,8 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, bool expand)
     if (count != seq->count)
     {
       /* Update the offsets array and the count when adding one instant */
-      (tsequence_offsets_ptr(seq))[count - 1] =
-        (tsequence_offsets_ptr(seq))[count - 2] + size;
+      (TSEQUENCE_OFFSETS_PTR(seq))[count - 1] =
+        (TSEQUENCE_OFFSETS_PTR(seq))[count - 2] + size;
       seq->count++;
     }
     memcpy(new, inst, size);
@@ -1785,8 +1778,8 @@ tsequence_compact(const TSequence *seq)
   /* Size of composing instants */
   size_t insts_size = 0;
   for (int i = 0; i < seq->count; i++)
-    insts_size += double_pad(VARSIZE(tsequence_inst_n(seq, i)));
-  size_t seqsize = double_pad(sizeof(TSequence)) + bboxsize_extra +
+    insts_size += DOUBLE_PAD(VARSIZE(tsequence_inst_n(seq, i)));
+  size_t seqsize = DOUBLE_PAD(sizeof(TSequence)) + bboxsize_extra +
     seq->count * sizeof(size_t) + insts_size;
   TSequence *result = palloc0(seqsize);
 

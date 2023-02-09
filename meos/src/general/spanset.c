@@ -284,8 +284,8 @@ spanset_make(const Span **spans, int count, bool normalize)
   if (normalize && count > 1)
     newspans = spanarr_normalize((Span **) spans, count, SORT_NO, &newcount);
   /* Notice that the first span is already declared in the struct */
-  size_t memsize = double_pad(sizeof(SpanSet)) +
-    double_pad(sizeof(Span)) * (newcount - 1);
+  size_t memsize = DOUBLE_PAD(sizeof(SpanSet)) +
+    DOUBLE_PAD(sizeof(Span)) * (newcount - 1);
   SpanSet *result = palloc0(memsize);
   SET_VARSIZE(result, memsize);
   result->spansettype = spantype_spansettype(spans[0]->spantype);
