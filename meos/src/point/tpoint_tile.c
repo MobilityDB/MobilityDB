@@ -620,7 +620,7 @@ stbox_tile_list(STBox *bounds, double size, const Interval *duration,
   {
     /* Initialize to 0 the Z dimension if it is missing */
     memset(&pt, 0, sizeof(POINT3DZ));
-    const POINT2D *p2d = gserialized_point2d_p(sorigin);
+    const POINT2D *p2d = GSERIALIZED_POINT2D_P(sorigin);
     pt.x = p2d->x;
     pt.y = p2d->y;
   }

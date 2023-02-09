@@ -108,7 +108,7 @@ Stbox_tile_list(PG_FUNCTION_ARGS)
     {
       /* Initialize to 0 the Z dimension if it is missing */
       memset(&pt, 0, sizeof(POINT3DZ));
-      const POINT2D *p2d = gserialized_point2d_p(sorigin);
+      const POINT2D *p2d = GSERIALIZED_POINT2D_P(sorigin);
       pt.x = p2d->x;
       pt.y = p2d->y;
     }
@@ -213,11 +213,11 @@ Stbox_tile(PG_FUNCTION_ARGS)
   {
     /* Initialize to 0 the Z dimension if it is missing */
     memset(&pt, 0, sizeof(POINT3DZ));
-    const POINT2D *p1 = gserialized_point2d_p(sorigin);
+    const POINT2D *p1 = GSERIALIZED_POINT2D_P(sorigin);
     pt.x = p1->x;
     pt.y = p1->y;
     memset(&ptorig, 0, sizeof(POINT3DZ));
-    const POINT2D *p2 = gserialized_point2d_p(sorigin);
+    const POINT2D *p2 = GSERIALIZED_POINT2D_P(sorigin);
     ptorig.x = p2->x;
     ptorig.y = p2->y;
   }
@@ -306,7 +306,7 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
     {
       /* Initialize to 0 the Z dimension if it is missing */
       memset(&pt, 0, sizeof(POINT3DZ));
-      const POINT2D *p2d = gserialized_point2d_p(sorigin);
+      const POINT2D *p2d = GSERIALIZED_POINT2D_P(sorigin);
       pt.x = p2d->x;
       pt.y = p2d->y;
     }

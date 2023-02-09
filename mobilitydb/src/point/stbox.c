@@ -692,8 +692,8 @@ stbox_transform(const STBox *box, int32 srid)
   Datum max1 = datum_transform(max, srid);
   if (hasz)
   {
-    const POINT3DZ *ptmin1 = datum_point3dz_p(min1);
-    const POINT3DZ *ptmax1 = datum_point3dz_p(max1);
+    const POINT3DZ *ptmin1 = DATUM_POINT3DZ_P(min1);
+    const POINT3DZ *ptmax1 = DATUM_POINT3DZ_P(max1);
     result->xmin = ptmin1->x;
     result->ymin = ptmin1->y;
     result->zmin = ptmin1->z;
@@ -703,8 +703,8 @@ stbox_transform(const STBox *box, int32 srid)
   }
   else
   {
-    const POINT2D *ptmin1 = datum_point2d_p(min1);
-    const POINT2D *ptmax1 = datum_point2d_p(max1);
+    const POINT2D *ptmin1 = DATUM_POINT2D_P(min1);
+    const POINT2D *ptmax1 = DATUM_POINT2D_P(max1);
     result->xmin = ptmin1->x;
     result->ymin = ptmin1->y;
     result->xmax = ptmax1->x;

@@ -45,7 +45,7 @@
 /**
  * @brief Align to double
  */
-#define DOUBLE_PAD(size) ( (size) + (size) % 8 * (8 - (size) % 8) )
+#define DOUBLE_PAD(size) ( (size) + ((size) % 8 ? (8 - (size) % 8) : 0 ) )
 
 /*****************************************************************************/
 

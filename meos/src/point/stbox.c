@@ -424,7 +424,7 @@ point_get_coords(const GSERIALIZED *point, bool hasz, bool geodetic,
   if (geodetic)
   {
     POINT3D A1;
-    const POINT2D *p = datum_point2d_p(PointerGetDatum(point));
+    const POINT2D *p = GSERIALIZED_POINT2D_P(point);
     ll2cart(p, &A1);
     *x = A1.x;
     *y = A1.y;
@@ -434,14 +434,14 @@ point_get_coords(const GSERIALIZED *point, bool hasz, bool geodetic,
   {
     if (hasz)
     {
-      const POINT3DZ *p = datum_point3dz_p(PointerGetDatum(point));
+      const POINT3DZ *p = GSERIALIZED_POINT3DZ_P(point);
       *x = p->x;
       *y = p->y;
       *z = p->z;
     }
     else
     {
-      const POINT2D *p = datum_point2d_p(PointerGetDatum(point));
+      const POINT2D *p = GSERIALIZED_POINT2D_P(point);
       *x = p->x;
       *y = p->y;
     }

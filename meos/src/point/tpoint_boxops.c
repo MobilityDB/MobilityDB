@@ -145,8 +145,8 @@ tgeogpointseq_expand_stbox(TSequence *seq, const TInstant *inst)
   FLAGS_SET_M(edge_gbox.flags, 0);
   FLAGS_SET_GEODETIC(edge_gbox.flags, 1);
   const TInstant *last = tsequence_inst_n(seq, seq->count - 1);
-  const POINT2D *p1 = datum_point2d_p(tinstant_value(last));
-  const POINT2D *p2 = datum_point2d_p(tinstant_value(inst));
+  const POINT2D *p1 = DATUM_POINT2D_P(&last->value);
+  const POINT2D *p2 = DATUM_POINT2D_P(&inst->value);
   ll2cart(p1, &A1);
   ll2cart(p2, &A2);
   edge_calculate_gbox(&A1, &A2, &edge_gbox);
@@ -178,7 +178,7 @@ tgeogpointinstarr_set_gbox(const TInstant **instants, int count,
   LWPOINT **points = palloc(sizeof(LWPOINT *) * count);
   for (int i = 0; i < count; i++)
   {
-    GSERIALIZED *gs = DatumGetGserializedP(tinstant_value(instants[i]));
+    GSERIALIZED *gs = DatumGetGserializedP(&instants[i]->value);
     points[i] = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
   }
   LWGEOM *lwgeom = lwpointarr_make_trajectory((LWGEOM **) points, count,
@@ -204,7 +204,7 @@ tgeogpointseq_set_gbox(const TSequence *seq, GBOX *box)
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = tsequence_inst_n(seq, i);
-    GSERIALIZED *gs = DatumGetGserializedP(tinstant_value(inst));
+    GSERIALIZED *gs = DatumGetGserializedP(&inst->value);
     points[i] = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
   }
   LWGEOM *lwgeom = lwpointarr_make_trajectory((LWGEOM **) points, seq->count,

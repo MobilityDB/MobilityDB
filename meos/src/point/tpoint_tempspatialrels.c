@@ -610,10 +610,10 @@ tdwithin_tpointsegm_tpointsegm(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
   long double a, b, c;
   if (hasz) /* 3D */
   {
-    const POINT3DZ *p1 = datum_point3dz_p(sv1);
-    const POINT3DZ *p2 = datum_point3dz_p(ev1);
-    const POINT3DZ *p3 = datum_point3dz_p(sv2);
-    const POINT3DZ *p4 = datum_point3dz_p(ev2);
+    const POINT3DZ *p1 = DATUM_POINT3DZ_P(sv1);
+    const POINT3DZ *p2 = DATUM_POINT3DZ_P(ev1);
+    const POINT3DZ *p3 = DATUM_POINT3DZ_P(sv2);
+    const POINT3DZ *p4 = DATUM_POINT3DZ_P(ev2);
 
     /* per1 functions
      * x(t) = a1 * t + c1
@@ -654,10 +654,10 @@ tdwithin_tpointsegm_tpointsegm(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
   }
   else /* 2D */
   {
-    const POINT2D *p1 = datum_point2d_p(sv1);
-    const POINT2D *p2 = datum_point2d_p(ev1);
-    const POINT2D *p3 = datum_point2d_p(sv2);
-    const POINT2D *p4 = datum_point2d_p(ev2);
+    const POINT2D *p1 = DATUM_POINT2D_P(sv1);
+    const POINT2D *p2 = DATUM_POINT2D_P(ev1);
+    const POINT2D *p3 = DATUM_POINT2D_P(sv2);
+    const POINT2D *p4 = DATUM_POINT2D_P(ev2);
     /* per1 functions
      * x(t) = a1 * t + c1
      * y(t) = a2 * t + c2 */

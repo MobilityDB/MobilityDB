@@ -757,16 +757,6 @@ tsequence_set_bbox(const TSequence *seq, void *box)
   return;
 }
 
-// /**
- // * @brief Return a pointer to the offsets array of a temporal sequence
- // */
-// size_t *
-// tsequence_offsets_ptr(const TSequence *seq)
-// {
-  // return (size_t *)(((char *)seq) + DOUBLE_PAD(sizeof(TSequence)) +
-    // ((seq->bboxsize == 0) ? 0 : DOUBLE_PAD(seq->bboxsize - sizeof(Span))));
-// }
-
 /**
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the n-th instant of a temporal sequence.

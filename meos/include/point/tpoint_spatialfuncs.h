@@ -46,6 +46,46 @@
 #define GEOM_TO_GEOG        true
 #define GEOG_TO_GEOM        false
 
+/*****************************************************************************
+ * Direct access to a single point in the GSERIALIZED struct
+ *****************************************************************************/
+
+/*
+ * Obtain a geometry/geography point from the GSERIALIZED WITHOUT creating
+ * the corresponding LWGEOM. These functions constitute a **SERIOUS**
+ * break of encapsulation but it is the only way to achieve reasonable
+ * performance when manipulating mobility data.
+ * The datum_* functions suppose that the GSERIALIZED has been already
+ * detoasted. This is typically the case when the datum is within a Temporal*
+ * that has been already detoasted with PG_GETARG_TEMPORAL*
+ * The first variant (e.g. datum_point2d) is slower than the second (e.g.
+ * datum_point2d_p) since the point is passed by value and thus the bytes
+ * are copied. The second version is declared const because you aren't allowed
+ * to modify the values, only read them.
+ */
+
+/**
+ * @brief Definition for the internal aspects of  the GSERIALIZED struct
+ */
+#define LWFLAG_EXTFLAGS    0x20
+#define LWFLAG_VERSBIT2    0x80
+
+#define FLAGS_GET_EXTFLAGS(flags)     (((flags) & LWFLAG_EXTFLAGS)>>5)
+#define FLAGS_GET_VERSBIT2(flags)     (((flags) & LWFLAG_VERSBIT2)>>7)
+
+#define GS_POINT_PTR(gs)    ( (uint8_t *) gs->data + 8 + \
+  FLAGS_GET_BBOX(gs->gflags) * FLAGS_NDIMS_BOX(gs->gflags) * 8 + \
+  FLAGS_GET_VERSBIT2(gs->gflags) * 8 )
+
+/**
+ * @brief Return a pointer to a 2D/3DZ point from the datum/GSERIALIZED
+ */
+#define DATUM_POINT2D_P(gs)  ( (POINT2D *) GS_POINT_PTR(DatumGetGserializedP(gs)) )
+#define DATUM_POINT3DZ_P(gs) ( (POINT3DZ *) GS_POINT_PTR(DatumGetGserializedP(gs)) )
+
+#define GSERIALIZED_POINT2D_P(gs)  ( (POINT2D *) GS_POINT_PTR((gs)) )
+#define GSERIALIZED_POINT3DZ_P(gs) ( (POINT3DZ *) GS_POINT_PTR((gs)) )
+
 /*****************************************************************************/
 
 /* Utility functions */
@@ -53,11 +93,6 @@
 extern POINT2D datum_point2d(Datum value);
 extern POINT3DZ datum_point3dz(Datum value);
 extern void datum_point4d(Datum value, POINT4D *p);
-
-extern const POINT2D *datum_point2d_p(Datum value);
-extern const POINT2D *gserialized_point2d_p(const GSERIALIZED *gs);
-extern const POINT3DZ *datum_point3dz_p(Datum value);
-extern const POINT3DZ *gserialized_point3dz_p(const GSERIALIZED *gs);
 
 extern bool datum_point_eq(Datum geopoint1, Datum geopoint2);
 extern Datum datum2_point_eq(Datum geopoint1, Datum geopoint2);

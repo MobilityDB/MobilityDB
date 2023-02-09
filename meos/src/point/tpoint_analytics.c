@@ -78,12 +78,12 @@ point_measure_to_lwpoint(Datum point, Datum measure)
   LWPOINT *result;
   if (FLAGS_GET_Z(gs->gflags))
   {
-    const POINT3DZ *point = gserialized_point3dz_p(gs);
+    const POINT3DZ *point = GSERIALIZED_POINT3DZ_P(gs);
     result = lwpoint_make4d(srid, point->x, point->y, point->z, d);
   }
   else
   {
-    const POINT2D *point = gserialized_point2d_p(gs);
+    const POINT2D *point = GSERIALIZED_POINT2D_P(gs);
     result = lwpoint_make3dm(srid, point->x, point->y, d);
   }
   FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(gs->gflags));
@@ -1161,13 +1161,13 @@ tpointseq_remove_repeated_points(const TSequence *seq, double tolerance,
 
   const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   instants[0] = tsequence_inst_n(seq, 0);
-  const POINT2D *last = datum_point2d_p(tinstant_value(instants[0]));
+  const POINT2D *last = DATUM_POINT2D_P(&instants[0]->value);
   int k = 1;
   for (int i = 1; i < seq->count; i++)
   {
     bool last_point = (i == seq->count - 1);
     const TInstant *inst = tsequence_inst_n(seq, i);
-    const POINT2D *pt = datum_point2d_p(tinstant_value(inst));
+    const POINT2D *pt = DATUM_POINT2D_P(&inst->value);
 
     /* Don't drop points if we are running short of points */
     if (seq->count - i > min_points - k)

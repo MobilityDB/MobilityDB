@@ -141,17 +141,6 @@ tsequenceset_set_bbox(const TSequenceSet *ss, void *box)
 }
 
 /**
- // * @brief Return a pointer to the offsets array of a temporal sequence set
- // * @note The period component of the bbox is already declared in the struct
- // */
-// static size_t *
-// tsequenceset_offsets_ptr(const TSequenceSet *ss)
-// {
-  // return (size_t *)(((char *)ss) + DOUBLE_PAD(sizeof(TSequenceSet)) +
-    // DOUBLE_PAD(ss->bboxsize - sizeof(Span)));
-// }
-
-/**
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the n-th sequence of a temporal sequence set.
  * @pre The argument @p index is less than the number of sequences in the

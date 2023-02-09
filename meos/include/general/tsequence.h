@@ -47,8 +47,8 @@
  * @note The period component of the bbox is already declared in the struct
  */
 #define TSEQUENCE_OFFSETS_PTR(seq) ( \
-  (size_t *)(((char *)seq) + DOUBLE_PAD(sizeof(TSequence)) + \
-  ((seq->bboxsize == 0) ? 0 : DOUBLE_PAD(seq->bboxsize - sizeof(Span)))) )
+  (size_t *)(((char *) (seq)) + DOUBLE_PAD(sizeof(TSequence)) + \
+  (((seq)->bboxsize == 0) ? 0 : DOUBLE_PAD((seq)->bboxsize - sizeof(Span)))) )
 
 /*****************************************************************************/
 
