@@ -69,10 +69,7 @@ void
 tpointinst_set_stbox(const TInstant *inst, STBox *box)
 {
   GSERIALIZED *point = DatumGetGserializedP(&inst->value);
-  int srid = tpointinst_srid(inst);
-  bool hasz = MOBDB_FLAGS_GET_Z(inst->flags);
-  bool geodetic = MOBDB_FLAGS_GET_GEODETIC(inst->flags);
-  point_set_stbox(point, srid, hasz, geodetic, box);
+  geo_set_stbox(point, box);
   span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
     true, true, T_TIMESTAMPTZ, &box->period);
   MOBDB_FLAGS_SET_T(box->flags, true);
@@ -88,17 +85,30 @@ tpointinst_set_stbox(const TInstant *inst, STBox *box)
 void
 tgeompointinstarr_set_stbox(const TInstant **instants, int count, STBox *box)
 {
+  /* Initialize the bounding box with the first instant */
+  tpointinst_set_stbox(instants[0], box);
+  /* Prepare for the iteration */
   GSERIALIZED *point = DatumGetGserializedP(&instants[0]->value);
-  int srid = gserialized_get_srid(point);
   bool hasz = MOBDB_FLAGS_GET_Z(instants[0]->flags);
   bool geodetic = MOBDB_FLAGS_GET_GEODETIC(instants[0]->flags);
-  point_set_stbox(point, srid, hasz, geodetic, box);
   for (int i = 1; i < count; i++)
   {
-    STBox box1;
     point = DatumGetGserializedP(&instants[i]->value);
-    point_set_stbox(point, srid, hasz, geodetic, &box1);
-    stbox_expand(&box1, box);
+    double x, y, z;
+    point_get_coords(point, hasz, geodetic, &x, &y, &z);
+    box->xmin = Min(box->xmin, x);
+    box->xmax = Max(box->xmax, x);
+    box->ymin = Min(box->ymin, y);
+    box->ymax = Max(box->ymax, y);
+    if (hasz || geodetic)
+    {
+      box->zmin = Min(box->zmin, z);
+      box->zmax = Max(box->zmax, z);
+    }
+    box->period.lower = TimestampTzGetDatum(
+      Min(DatumGetTimestampTz(box->period.lower), instants[i]->t));
+    box->period.upper = TimestampTzGetDatum(
+      Max(DatumGetTimestampTz(box->period.upper), instants[i]->t));
   }
   return;
 }

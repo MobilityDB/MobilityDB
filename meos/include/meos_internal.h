@@ -237,7 +237,7 @@ extern void periodset_set_tbox(const SpanSet *ps, TBox *box);
 extern TBox *number_timestamp_to_tbox(Datum d, meosType basetype, TimestampTz t);
 extern TBox *number_period_to_tbox(Datum d, meosType basetype, const Span *p);
 
-extern void point_set_stbox(const GSERIALIZED *gs, int srid, bool hasz, bool geodetic, STBox *box);
+extern void point_get_coords(const GSERIALIZED *point, bool hasz, bool geodetic, double *x, double *y, double *z);
 extern bool geo_set_stbox(const GSERIALIZED *gs, STBox *box);
 extern void geoarr_set_stbox(const Datum *values, int count, STBox *box);
 extern void timestamp_set_stbox(TimestampTz t, STBox *box);
