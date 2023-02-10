@@ -3752,6 +3752,35 @@ temporal_delete_periodset(const Temporal *temp, const SpanSet *ps,
  *****************************************************************************/
 
 /**
+ * @brief Calculate the length of the diagonal of the minimum rotated rectangle
+ * of the input sequence between the given start and end instants.
+ */
+static double
+mrr_distance(const TSequence *seq, datum_func2 distance_fn, int start, int end)
+{
+  meosType basetype = temptype_basetype(seq->temptype);
+  double dist, maxdist = 0;
+  Datum value1, value2;
+  for (int i = start; i < end; ++i)
+  {
+    value1 = tinstant_value(tsequence_inst_n(seq, i));
+    for (int j = i + 1; j < end + 1; ++j)
+    {
+      value2 = tinstant_value(tsequence_inst_n(seq, j));
+      if (datum_eq(value1, value2, basetype))
+        dist = 0;
+      else
+        dist = DatumGetFloat8(distance_fn(value1, value2));
+
+      if (dist > maxdist)
+        maxdist = dist;
+    }
+  }
+
+  return maxdist;
+}
+
+/**
  * @brief Return the constant segments of the temporal value
  */
 static int
@@ -3759,40 +3788,41 @@ tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
   datum_func2 distance_fn, TSequence **result)
 {
   assert(seq->count > 1);
-  meosType basetype = temptype_basetype(seq->temptype);
-  const TInstant *inst1 = tsequence_inst_n(seq, 0);
-  Datum value1 = tinstant_value(inst1);
-  int k = 0;
-  bool lower = seq->period.lower_inc;
-  for (int i = 1; i < seq->count; i++)
-  {
-    const TInstant *inst2 = tsequence_inst_n(seq, i);
-    Datum value2 = tinstant_value(inst2);
-    bool upper = (i == seq->count - 1) ? seq->period.upper_inc : false;
-    /* Compute the segment distance */
-    double dist;
-    if (datum_eq(value1, value2, basetype))
-      dist = 0;
-    else
-      dist = DatumGetFloat8(distance_fn(value1, value2));
+  const TInstant *inst1, *inst2;
+  int end, start = 0, k = 0;
+  bool is_stopped = false, previously_stopped = false;
 
-    /* Compute the segment duration if the minimum tunits is greater than 0 */
-    int64 tunits = 0;
-    if (mintunits > 0)
-      tunits = inst2->t - inst1->t;
-    /* Test whether the segment belongs to the answer */
-    if (dist <= maxdist && mintunits <= tunits)
+  for (end = 0; end < seq->count; ++end)
+  {
+    inst1 = tsequence_inst_n(seq, start);
+    inst2 = tsequence_inst_n(seq, end);
+
+    while (!is_stopped && end - start > 1
+      && (int64)(inst2->t - inst1->t) >= mintunits)
+      inst1 = tsequence_inst_n(seq, ++start);
+
+    if (end - start == 0)
+      continue;
+
+    is_stopped = mrr_distance(seq, distance_fn, start, end) < maxdist;
+
+    inst2 = tsequence_inst_n(seq, end - 1);
+    if (!is_stopped && previously_stopped
+      && (int64)(inst2->t - inst1->t) >= mintunits)
     {
-      const TInstant *instants[2];
-      instants[0] = inst1;
-      instants[1] = inst2;
-      result[k++] = tsequence_make(instants, 2, lower, upper, LINEAR,
-        NORMALIZE_NO);
+      result[k++] = tsequence_make(&inst1, end - start,
+        true, true, LINEAR, NORMALIZE_NO);
+      start++;
     }
-    inst1 = inst2;
-    value1 = value2;
-    lower = true;
+
+    previously_stopped = is_stopped;
   }
+
+  inst2 = tsequence_inst_n(seq, end);
+  if (is_stopped && (int64)(inst2->t - inst1->t) >= mintunits)
+    result[k++] = tsequence_make(&inst1, end - start,
+      true, true, LINEAR, NORMALIZE_NO);
+
   return k;
 }
 
