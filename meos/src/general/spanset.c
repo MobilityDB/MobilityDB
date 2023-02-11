@@ -108,6 +108,19 @@ periodset_find_timestamp(const SpanSet *ps, TimestampTz t, int *loc)
 }
 #endif /* MEOS */
 
+/**
+ * @ingroup libmeos_internal_setspan_accessor
+ * @brief Return the n-th span of a span set.
+ * @pre The argument @p index is less than the number of spans in the span set
+ * @note This is the internal function equivalent to `spanset_span_n`.
+ * This function does not verify that the index is is in the correct bounds
+ */
+const Span *
+spanset_sp_n(const SpanSet *ss, int index)
+{
+  return (Span *) &ss->elems[index];
+}
+
 /*****************************************************************************
  * Input/output functions
  *****************************************************************************/
@@ -225,23 +238,6 @@ periodset_out(const SpanSet *ss)
   return spanset_out(ss, 0);
 }
 #endif /* MEOS */
-
-/*****************************************************************************
- * Generic functions
- *****************************************************************************/
-
-/**
- * @ingroup libmeos_internal_setspan_accessor
- * @brief Return the n-th span of a span set.
- * @pre The argument @p index is less than the number of spans in the span set
- * @note This is the internal function equivalent to `spanset_span_n`.
- * This function does not verify that the index is is in the correct bounds
- */
-const Span *
-spanset_sp_n(const SpanSet *ss, int index)
-{
-  return (Span *) &ss->elems[index];
-}
 
 /*****************************************************************************
  * Constructor functions
