@@ -3849,6 +3849,8 @@ mrr_distance_geos(GEOSGeometry *geom, bool spherical)
     default:
       elog(ERROR, "Invalid geometry type for Minimum Rotated Rectangle");
   }
+  printf("Distance = %lf\n", result);
+  fflush(stdout);
   return result;
 }
 
@@ -3938,6 +3940,10 @@ tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
     if (use_geos_dist)
       geom = multipoint_add_inst_free(geom, inst2);
 
+    printf("Next, is_stopped, previously_stopped = %d, %d\n",
+      is_stopped, previously_stopped);
+    fflush(stdout);
+
     while (!is_stopped && end - start > 1
       && (int64)(inst2->t - inst1->t) >= mintunits)
     {
@@ -3954,9 +3960,9 @@ tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
       continue;
 
     if (use_geos_dist)
-      is_stopped = mrr_distance_geos(geom, spherical) < maxdist;
+      is_stopped = mrr_distance_geos(geom, spherical) <= maxdist;
     else
-      is_stopped = mrr_distance_scalar(seq, start, end) < maxdist;
+      is_stopped = mrr_distance_scalar(seq, start, end) <= maxdist;
 
     inst2 = tsequence_inst_n(seq, end - 1);
     if (!is_stopped && previously_stopped
@@ -3967,7 +3973,7 @@ tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
           insts[i] = tsequence_inst_n(seq, start + i);
       result[k++] = tsequence_make(insts, end - start,
         true, true, LINEAR, NORMALIZE_NO);
-      start = end + 1;
+      start = end;
 
       if (use_geos_dist)
       {
