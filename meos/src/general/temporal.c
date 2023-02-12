@@ -1244,6 +1244,26 @@ tnumber_to_tbox(const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_transf
+ * @brief Restart a temporal sequence (set) by keeping only the first instant
+ * or sequence.
+ */
+void
+temporal_restart(Temporal *temp)
+{
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == TINSTANT)
+  {
+    elog(ERROR, "Input must be a temporal sequence (set)");
+  }
+  else if (temp->subtype == TSEQUENCE)
+    tsequence_restart((TSequence *) temp);
+  else /* temp->subtype == TSEQUENCESET */
+    tsequenceset_restart((TSequenceSet *) temp);
+  return;
+}
+
+/**
+ * @ingroup libmeos_temporal_transf
  * @brief Return a temporal value transformed into a temporal instant.
  * @sqlfunc tbool_inst, tint_inst, tfloat_inst, ttext_inst, etc.
  */
@@ -3809,8 +3829,7 @@ mrr_distance_geos(GEOSGeometry *geom)
       GEOSGeom_destroy(pt2);
       break;
     default:
-      ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-        errmsg("Invalid geometry type for Minimum Rotated Rectangle")));
+      elog(ERROR, "Invalid geometry type for Minimum Rotated Rectangle");
   }
   return result;
 }
@@ -3870,8 +3889,10 @@ tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
   else if (seq->temptype == T_TGEOMPOINT &&
     MOBDB_FLAGS_GET_Z(seq->flags))
     distance_fn = &pt_distance3d;
+#if NPOINT
   else if (seq->temptype == T_TNPOINT)
     distance_fn = &npoint_distance;
+#endif
   else /* 2D Geometric Distance */
     use_geos_dist = true;
 
@@ -4012,7 +4033,9 @@ temporal_stops(const Temporal *temp, double maxdist,
   TSequenceSet *result = NULL;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
+  {
     elog(ERROR, "Input must be a temporal sequence (set) with linear interpolation");
+  }
   else if (temp->subtype == TSEQUENCE)
     result = tsequence_stops((TSequence *) temp, maxdist, mintunits);
   else /* temp->subtype == TSEQUENCESET */

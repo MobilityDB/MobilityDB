@@ -1785,6 +1785,44 @@ tsequence_compact(const TSequence *seq)
 
 /**
  * @ingroup libmeos_internal_temporal_transf
+ * @brief Restart a temporal sequence by keeping only the first instant
+ */
+void
+tsequence_restart(TSequence *seq)
+{
+  /* Instantaneous sequence */
+  if (seq->count == 1)
+    return;
+
+  /* General case */
+  meosType basetype = temptype_basetype(seq->temptype);
+  TInstant *first = (TInstant *) tsequence_inst_n(seq, 0);
+  /* Copy value */
+  if (basetype_byvalue(basetype))
+  {
+    /* For base types passed by value, update the offsets array */
+    (TSEQUENCE_OFFSETS_PTR(seq))[0] =
+      (TSEQUENCE_OFFSETS_PTR(seq))[seq->count - 1];
+  }
+  else
+  {
+    /* For base types passed by reference, copy the value at the beginning */
+    int16 typlen = basetype_length(basetype);
+    size_t value_size = (typlen != -1) ? DOUBLE_PAD((unsigned int) typlen) :
+      DOUBLE_PAD(VARSIZE(first));
+    TInstant *last = (TInstant *) tsequence_inst_n(seq, seq->count - 1);
+    memcpy(first, last, value_size);
+  }
+  /* Update the count and the bounding box */
+  seq->count = 1;
+  size_t bboxsize = DOUBLE_PAD(temporal_bbox_size(seq->temptype));
+  if (bboxsize != 0)
+    tinstant_set_bbox(first, TSEQUENCE_BBOX_PTR(seq));
+  return;
+}
+
+/**
+ * @ingroup libmeos_internal_temporal_transf
  * @brief Return a temporal instant transformed into a temporal sequence.
  * @sqlfunc tbool_seq(), tint_seq(), tfloat_seq(), ttext_seq(), etc.
  */

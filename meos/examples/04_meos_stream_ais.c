@@ -78,9 +78,10 @@
 #include <string.h>
 #include <libpq-fe.h>
 #include <meos.h>
+#include <meos_internal.h>
 
 /* Number of instants in a batch for printing a marker */
-#define NO_INSTANTS_BATCH 1000
+#define NO_INSTANTS_BATCH 3 // 1000
 /* Maximum length in characters of a header record in the input CSV file */
 #define MAX_LENGTH_HEADER 1024
 /* Maximum length in characters of a point in the input data */
@@ -104,8 +105,8 @@ typedef struct
 typedef struct
 {
   long int MMSI;   /* Identifier of the trip */
-  Temporal *trip; /* Latest observations of the trip */
-  Temporal *SOG;  /* Latest observations of the SOG */
+  TSequence *trip; /* Latest observations of the trip */
+  TSequence *SOG;  /* Latest observations of the SOG */
 } trip_record;
 
 static void
@@ -202,8 +203,8 @@ main(int argc, char **argv)
   /* Create the table that will hold the data */
   printf("Creating the table in the database\n");
   exec_sql(conn, "DROP TABLE IF EXISTS public.AISTrips;", PGRES_COMMAND_OK);
-  exec_sql(conn, "CREATE TABLE public.AISTrips(MMSI integer, "
-    "location public.tgeogpoint, SOG public.tfloat);", PGRES_COMMAND_OK);
+  exec_sql(conn, "CREATE TABLE public.AISTrips(MMSI integer PRIMARY KEY, "
+    "trip public.tgeogpoint, SOG public.tfloat);", PGRES_COMMAND_OK);
 
   /* Read the first line of the file with the headers */
   fscanf(file, "%1023s\n", text_buffer);
@@ -269,18 +270,18 @@ main(int argc, char **argv)
       rec.Latitude, t_out);
     TInstant *inst1 = (TInstant *) tgeogpoint_in(point_buffer);
     TInstant *inst2 = (TInstant *) tfloatinst_make(rec.SOG, rec.T);
-    const TInstant *inst;
     /* Send to the database the trip if reached the maximum number of instants */
-    if (temporal_num_instants(trips[ship].trip) == NO_INSTANTS_BATCH)
+    if (trips[ship].trip && trips[ship].trip->count == NO_INSTANTS_BATCH)
     {
       /* Start a transaction block */
       exec_sql(conn, "BEGIN", PGRES_COMMAND_OK);
       /* Construct the string of the query */
-      char *temp_out = tpoint_out(trips[ship].trip, 15);
+      char *temp_out = tsequence_out(trips[ship].trip, 15);
       char *query_buffer = malloc(sizeof(char) * (strlen(temp_out) + 256));
       sprintf(query_buffer, "INSERT INTO public.AISTrips(MMSI, trip) "
-        "Values=(%ld, %s) ON CONFLICT (MMSI) DO UPDATE SET trip = "
-        "appendSequence(AISTrips.trip, EXCLUDED.trip);",
+        "VALUES (%ld, '%s') ON CONFLICT (MMSI) DO UPDATE SET trip = "
+        // "appendSequence(AISTrips.trip, EXCLUDED.trip);",
+        "EXCLUDED.trip;",
         trips[ship].MMSI, temp_out);
       /* Execute the query */
       PGresult *res = PQexec(conn, query_buffer);
@@ -296,20 +297,16 @@ main(int argc, char **argv)
       exec_sql(conn, "END", PGRES_COMMAND_OK);
       printf("Trip sent to the database, MMSI: %ld \n", trips[ship].MMSI);
       fflush(stdout);
-      /* Initialize the sequence with the last accumulated instant */
-      inst = temporal_end_instant(trips[ship].SOG);
-      TSequence *seq = tsequence_make_exp(&inst, 1, NO_INSTANTS_BATCH,
-        true, true, LINEAR, false);
-      free(trips[ship].trip);
-      trips[ship].trip = (Temporal *) seq;
+      /* Restart the sequence by only keeping the last accumulated instant */
+      tsequence_restart(trips[ship].trip);
     }
     /* Send to the database the SOG if reached the maximum number of instants */
-    if (temporal_num_instants(trips[ship].SOG) == NO_INSTANTS_BATCH)
+    if (trips[ship].SOG && trips[ship].SOG->count == NO_INSTANTS_BATCH)
     {
       /* Start a transaction block */
       exec_sql(conn, "BEGIN", PGRES_COMMAND_OK);
       /* Construct the string of the query */
-      char *temp_out = tfloat_out(trips[ship].SOG, 15);
+      char *temp_out = tsequence_out(trips[ship].SOG, 15);
       char *query_buffer = malloc(sizeof(char) * (strlen(temp_out) + 256));
       sprintf(query_buffer, "INSERT INTO public.AISTrips(MMSI, SOG) "
         "Values=(%ld, %s) ON CONFLICT (MMSI) DO UPDATE SET SOG = "
@@ -328,24 +325,20 @@ main(int argc, char **argv)
       exec_sql(conn, "END", PGRES_COMMAND_OK);
       printf("SOG sent to the database, MMSI: %ld \n", trips[ship].MMSI);
       fflush(stdout);
-      /* Initialize the sequence with the last accumulated instant */
-      inst = temporal_end_instant(trips[ship].SOG);
-      TSequence *seq = tsequence_make_exp(&inst, 1, NO_INSTANTS_BATCH,
-        true, true, LINEAR, false);
-      free(trips[ship].SOG);
-      trips[ship].SOG = (Temporal *) seq;
+      /* Restart the sequence by only keeping the last accumulated instant */
+      tsequence_restart(trips[ship].SOG);
     }
     /* Append the last observation */
     if (! trips[ship].trip)
-      trips[ship].trip = (Temporal *) tsequence_make_exp((const TInstant **) &inst1,
+      trips[ship].trip = tsequence_make_exp((const TInstant **) &inst1,
         1, NO_INSTANTS_BATCH, true, true, LINEAR, false);
     else
-      temporal_append_tinstant(trips[ship].trip, inst1, true);
+      tsequence_append_tinstant(trips[ship].trip, inst1, true);
     if (! trips[ship].SOG)
-      trips[ship].SOG = (Temporal *) tsequence_make_exp((const TInstant **) &inst2,
+      trips[ship].SOG = tsequence_make_exp((const TInstant **) &inst2,
         1, NO_INSTANTS_BATCH, true, true, LINEAR, false);
     else
-      temporal_append_tinstant(trips[ship].SOG, inst2, true);
+      tsequence_append_tinstant(trips[ship].SOG, inst2, true);
   } while (!feof(file));
 
   printf("\n%d records read.\n%d incomplete records ignored.\n",

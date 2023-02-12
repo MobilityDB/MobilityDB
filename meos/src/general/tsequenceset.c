@@ -1270,6 +1270,31 @@ tsequenceset_compact(const TSequenceSet *ss)
 
 /**
  * @ingroup libmeos_internal_temporal_transf
+ * @brief Restart a temporal sequence set by keeping only the first sequence
+ */
+void
+tsequenceset_restart(TSequenceSet *ss)
+{
+  /* Singleton sequence set */
+  if (ss->count == 1)
+    return;
+
+  /* General case */
+  TSequence *first = (TSequence *) tsequenceset_seq_n(ss, 0);
+  TSequence *last = (TSequence *) tsequenceset_seq_n(ss, ss->count - 1);
+  size_t value_size = DOUBLE_PAD(VARSIZE(first));
+  memcpy(first, last, value_size);
+  /* Update the counts and the bounding box */
+  ss->count = 1;
+  ss->totalcount = first->count;
+  size_t bboxsize = DOUBLE_PAD(temporal_bbox_size(ss->temptype));
+  if (bboxsize != 0)
+    memcpy(TSEQUENCESET_BBOX_PTR(ss), TSEQUENCE_BBOX_PTR(first), bboxsize);
+  return;
+}
+
+/**
+ * @ingroup libmeos_internal_temporal_transf
  * @brief Return a temporal instant transformed into a temporal sequence set.
  * @sqlfunc tbool_seqset(), tint_seqset(), tfloat_seqset(), ttext_seqset(), etc.
  */
