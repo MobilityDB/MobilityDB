@@ -38,6 +38,8 @@
 
 /*****************************************************************************/
 
+/* GEOS */
+#include <geos_c.h>
 /* PostgreSQL */
 #include <postgres.h>
 /* PostGIS */
@@ -80,6 +82,9 @@ extern bool gserialized_azimuth(GSERIALIZED *geom1, GSERIALIZED *geom2,
   double *result);
 
 /* Functions adapted from lwgeom_geos.c */
+
+extern GEOSGeometry *POSTGIS2GEOS(const GSERIALIZED *pglwgeom);
+extern GSERIALIZED *GEOS2POSTGIS(GEOSGeom geom, char want3d);
 
 extern bool gserialized_inter_contains(const GSERIALIZED *geom1,
   const GSERIALIZED *geom2, bool inter);

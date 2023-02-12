@@ -775,9 +775,6 @@ GEOS2POSTGIS(GEOSGeom geom, char want3d)
 
   return result;
 }
-#else
-  extern GEOSGeometry *POSTGIS2GEOS(const GSERIALIZED *pglwgeom);
-  extern GSERIALIZED *GEOS2POSTGIS(GEOSGeom geom, char want3d);
 #endif /* MEOS */
 
 /**

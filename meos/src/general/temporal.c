@@ -51,6 +51,7 @@
 #include "general/temporal_tile.h"
 #include "general/type_parser.h"
 #include "general/type_util.h"
+#include "point/pgis_call.h"
 #include "point/tpoint_spatialfuncs.h"
 #if NPOINT
   #include "npoint/tnpoint_spatialfuncs.h"
@@ -3775,32 +3776,37 @@ temporal_delete_periodset(const Temporal *temp, const SpanSet *ps,
  *****************************************************************************/
 
 /**
- * @brief Calculate the length of the diagonal of the minimum rotated rectangle
+ * @brief Calculate the length of the minimum bounding interval
  * of the input sequence between the given start and end instants.
  */
 static double
-mrr_distance_bruteforce(const TSequence *seq, datum_func2 distance_fn, int start, int end)
+mrr_distance_scalar(const TSequence *seq, int start, int end)
 {
-  meosType basetype = temptype_basetype(seq->temptype);
-  double dist, maxdist = 0;
-  Datum value1, value2;
-  for (int i = start; i < end; ++i)
+  assert(seq->temptype == T_TFLOAT);
+  double min_value, max_value, curr_value;
+  min_value = DatumGetFloat8(tinstant_value(tsequence_inst_n(seq, start)));
+  max_value = min_value;
+  for (int i = start + 1; i < end + 1; ++i)
   {
-    value1 = tinstant_value(tsequence_inst_n(seq, i));
-    for (int j = i + 1; j < end + 1; ++j)
-    {
-      value2 = tinstant_value(tsequence_inst_n(seq, j));
-      if (datum_eq(value1, value2, basetype))
-        dist = 0;
-      else
-        dist = DatumGetFloat8(distance_fn(value1, value2));
-
-      if (dist > maxdist)
-        maxdist = dist;
-    }
+    curr_value = DatumGetFloat8(tinstant_value(tsequence_inst_n(seq, i)));
+    min_value = fmin(min_value, curr_value);
+    max_value = fmax(max_value, curr_value);
   }
+  return max_value - min_value;
+}
 
-  return maxdist;
+/**
+ * @brief Calculate the distance between two geographic points given as GEOS geometries.
+ */
+static double
+geog_distance_geos(GEOSGeometry *pt1, GEOSGeometry *pt2)
+{
+  GSERIALIZED *gs1 = GEOS2POSTGIS(pt1, false);
+  GSERIALIZED *gs2 = GEOS2POSTGIS(pt2, false);
+  double dist = gserialized_geog_length(gs1, gs2);
+  pfree(gs1);
+  pfree(gs2);
+  return dist;
 }
 
 /**
@@ -3808,7 +3814,7 @@ mrr_distance_bruteforce(const TSequence *seq, datum_func2 distance_fn, int start
  * of the input sequence between the given start and end instants.
  */
 static double
-mrr_distance_geos(GEOSGeometry *geom)
+mrr_distance_geos(GEOSGeometry *geom, bool spherical)
 {
   double result;
   GEOSGeometry *mrr_geom = GEOSMinimumRotatedRectangle(geom);
@@ -3818,13 +3824,25 @@ mrr_distance_geos(GEOSGeometry *geom)
     case GEOS_POINT:
       result = 0;
       break;
-    case GEOS_LINESTRING:
-      assert(GEOSGeomGetLength(mrr_geom, &result));
+    case GEOS_LINESTRING: // compute length of linestring
+      if (spherical)
+      {
+        pt1 = GEOSGeomGetStartPoint(mrr_geom);
+        pt2 = GEOSGeomGetEndPoint(mrr_geom);
+        result = geog_distance_geos(pt1, pt2);
+        GEOSGeom_destroy(pt1);
+        GEOSGeom_destroy(pt2);
+      }
+      else
+        assert(GEOSGeomGetLength(mrr_geom, &result));
       break;
-    case GEOS_POLYGON:
+    case GEOS_POLYGON: // compute length of diagonal
       pt1 = GEOSGeomGetPointN(GEOSGetExteriorRing(mrr_geom), 0);
       pt2 = GEOSGeomGetPointN(GEOSGetExteriorRing(mrr_geom), 2);
-      assert(GEOSDistance(pt1, pt2, &result));
+      if (spherical)
+        result = geog_distance_geos(pt1, pt2);
+      else
+        assert(GEOSDistance(pt1, pt2, &result));
       GEOSGeom_destroy(pt1);
       GEOSGeom_destroy(pt2);
       break;
@@ -3834,10 +3852,8 @@ mrr_distance_geos(GEOSGeometry *geom)
   return result;
 }
 
-extern GEOSGeometry *POSTGIS2GEOS(const GSERIALIZED *pglwgeom);
-
 /**
- * @brief Create a GEOS Multipoint grometry from
+ * @brief Create a GEOS Multipoint geometry from
  * a part (defined by start and end) of a temporal point sequence
  */
 static GEOSGeometry *
@@ -3847,7 +3863,16 @@ multipoint_make(const TSequence *seq, int start, int end)
   GEOSGeometry **geoms = palloc(sizeof(GEOSGeometry *) * (end - start + 1));
   for (int i = 0; i < end - start + 1; ++i)
   {
-    gs = DatumGetGserializedP(tinstant_value(tsequence_inst_n(seq, start + i)));
+    if (tgeo_type(seq->temptype))
+      gs = DatumGetGserializedP(
+        tinstant_value(tsequence_inst_n(seq, start + i)));
+#if NPOINT
+    else if (seq->temptype == T_TNPOINT)
+      gs = npoint_geom(DatumGetNpointP(
+        tinstant_value(tsequence_inst_n(seq, start + i))));
+#endif
+    else
+      elog(ERROR, "Sequence must have a spatial base type");
     geoms[i] = POSTGIS2GEOS(gs);
   }
   GEOSGeometry *result = GEOSGeom_createCollection(GEOS_MULTIPOINT, geoms, end - start + 1);
@@ -3861,7 +3886,15 @@ multipoint_make(const TSequence *seq, int start, int end)
 static GEOSGeometry *
 multipoint_add_inst_free(GEOSGeometry *geom, const TInstant *inst)
 {
-  GSERIALIZED *gs = DatumGetGserializedP(tinstant_value(inst));
+  GSERIALIZED *gs;
+  if (tgeo_type(inst->temptype))
+    gs = DatumGetGserializedP(tinstant_value(inst));
+#if NPOINT
+  else if (inst->temptype == T_TNPOINT)
+    gs = npoint_geom(DatumGetNpointP(tinstant_value(inst)));
+#endif
+  else
+    elog(ERROR, "Instant must have a spatial base type");
   GEOSGeometry *geom1 = POSTGIS2GEOS(gs);
   GEOSGeometry *result = GEOSUnion(geom, geom1);
   GEOSGeom_destroy(geom1);
@@ -3877,24 +3910,13 @@ tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
   TSequence **result)
 {
   assert(seq->count > 1);
+  assert(seq->temptype == T_TFLOAT
+    || tgeo_type(seq->temptype)
+    || seq->temptype == T_TNPOINT);
 
-  bool use_geos_dist = false;
-  datum_func2 distance_fn = NULL;
-  assert(seq->temptype == T_TFLOAT || tgeo_type(seq->temptype) ||
-    seq->temptype == T_TNPOINT);
-  if (seq->temptype == T_TFLOAT)
-    distance_fn = &double_distance;
-  else if (seq->temptype == T_TGEOGPOINT)
-    distance_fn = &geog_distance;
-  else if (seq->temptype == T_TGEOMPOINT &&
-    MOBDB_FLAGS_GET_Z(seq->flags))
-    distance_fn = &pt_distance3d;
-#if NPOINT
-  else if (seq->temptype == T_TNPOINT)
-    distance_fn = &npoint_distance;
-#endif
-  else /* 2D Geometric Distance */
-    use_geos_dist = true;
+  /* Use GEOS only for non-scalar input */
+  bool use_geos_dist = seq->temptype != T_TFLOAT;
+  bool spherical = seq->temptype == T_TGEOGPOINT;
 
   const TInstant *inst1, *inst2;
   GEOSGeometry *geom;
@@ -3932,9 +3954,9 @@ tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
       continue;
 
     if (use_geos_dist)
-      is_stopped = mrr_distance_geos(geom) < maxdist;
+      is_stopped = mrr_distance_geos(geom, spherical) < maxdist;
     else
-      is_stopped = mrr_distance_bruteforce(seq, distance_fn, start, end) < maxdist;
+      is_stopped = mrr_distance_scalar(seq, start, end) < maxdist;
 
     inst2 = tsequence_inst_n(seq, end - 1);
     if (!is_stopped && previously_stopped
