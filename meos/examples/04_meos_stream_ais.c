@@ -28,19 +28,17 @@
  *****************************************************************************/
 
 /**
- * @brief A simple program that reads AIS data from a CSV file, accumulate them
- * into expandable temporal values which are ready to be processed (e.g., by
- * applying to it any MEOS function) and at the end of the process, stores
- * them in MobilityDB.
+ * @brief A simple program that reads AIS data from a CSV file, accumulates the
+ * observations in main memory and send the temporal values to a MobilityDB
+ * database when they reach a given number of instants in order to free
+ * the memory and ingest the newest observations.
  *
  * This program is similar to `04_meos_store_ais` but illustrates the use of
  * MEOS expandable data structures, which were designed to cope with the
  * requirements of stream applications. In this setting, the expandable data
- * structures accumulate the observations that have been received so far,
- * typically in main memory. Depending on application requirements and the
- * available memory, we need to regularly save the accumulated temporal values
- * into to the database in order to free the memory and be able to ingest the
- * newest observations.
+ * structures accumulate the observations that have been received so far.
+ * Depending on application requirements and the available memory, the
+ * accumulated temporal values must be sent regularly to the database.
  *
  * This program uses the libpq library
  * https://www.postgresql.org/docs/current/libpq.html
@@ -318,7 +316,7 @@ main(int argc, char **argv)
   }
 
   int numrows = PQntuples(res);
-  printf("Result of the query '%s':\n\n", text_buffer);
+  printf("Result of the query '%s'\n\n", text_buffer);
   printf("   mmsi    | numinstants\n");
   printf("-----------+-------------\n");
   for (i = 0; i < numrows; i++)
