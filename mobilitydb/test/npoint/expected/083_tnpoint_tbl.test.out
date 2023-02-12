@@ -474,7 +474,7 @@ SELECT MAX(numInstants(stops(seq, 50.0))) FROM tbl_tnpoint_seq;
 SELECT MAX(numInstants(stops(seq, 50.0, '5 min'))) FROM tbl_tnpoint_seq;
  max 
 -----
-   8
+   9
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2
