@@ -746,7 +746,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="stops"><varname>stops</varname></link>: Extract from a temporal sequence (set) with linear interpolation the segments whose distance is less than or equal to the given argument and/or whose duration is greater than or equal to the given argument</para>
+					<para><link linkend="stops"><varname>stops</varname></link>: Extract from a temporal sequence (set) with linear interpolation the subsequences where the objects stays within an area with a given maximum size for at least the specified duration.</para>
 				</listitem>
 
 				<listitem>
