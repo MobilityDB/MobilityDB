@@ -3796,7 +3796,8 @@ mrr_distance_scalar(const TSequence *seq, int start, int end)
 }
 
 /**
- * @brief Calculate the distance between two geographic points given as GEOS geometries.
+ * @brief Calculate the distance between two geographic points
+ * given as GEOS geometries.
  */
 static double
 geog_distance_geos(GEOSGeometry *pt1, GEOSGeometry *pt2)
@@ -3811,7 +3812,9 @@ geog_distance_geos(GEOSGeometry *pt1, GEOSGeometry *pt2)
 
 /**
  * @brief Calculate the length of the diagonal of the minimum rotated rectangle
- * of the input sequence between the given start and end instants.
+ * of the input GEOS geometry.
+ *
+ * Note: The computation is always done in 2D
  */
 static double
 mrr_distance_geos(GEOSGeometry *geom, bool spherical)
@@ -3849,8 +3852,6 @@ mrr_distance_geos(GEOSGeometry *geom, bool spherical)
     default:
       elog(ERROR, "Invalid geometry type for Minimum Rotated Rectangle");
   }
-  printf("Distance = %lf\n", result);
-  fflush(stdout);
   return result;
 }
 
@@ -3905,7 +3906,9 @@ multipoint_add_inst_free(GEOSGeometry *geom, const TInstant *inst)
 }
 
 /**
- * @brief Return the constant segments of the temporal value
+ * @brief Return the subsequences where the objects stays within
+ * an area with a given maximum size (maxdist) for at least
+ * the specified duration (minunits).
  */
 static int
 tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
@@ -3939,10 +3942,6 @@ tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
 
     if (use_geos_dist)
       geom = multipoint_add_inst_free(geom, inst2);
-
-    printf("Next, is_stopped, previously_stopped = %d, %d\n",
-      is_stopped, previously_stopped);
-    fflush(stdout);
 
     while (!is_stopped && end - start > 1
       && (int64)(inst2->t - inst1->t) >= mintunits)
@@ -4003,7 +4002,9 @@ tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
 
 /**
  * @ingroup libmeos_temporal_transf
- * @brief Return the constant segments of the temporal value
+ * @brief Return the subsequences where the objects stays within
+ * an area with a given maximum size (maxdist) for at least
+ * the specified duration (minunits).
  */
 TSequenceSet *
 tsequence_stops(const TSequence *seq, double maxdist, int64 mintunits)
@@ -4023,7 +4024,9 @@ tsequence_stops(const TSequence *seq, double maxdist, int64 mintunits)
 
 /**
  * @ingroup libmeos_temporal_transf
- * @brief Return the constant segments of the temporal value
+ * @brief Return the subsequences where the objects stays within
+ * an area with a given maximum size (maxdist) for at least
+ * the specified duration (minunits).
  */
 TSequenceSet *
 tsequenceset_stops(const TSequenceSet *ss, double maxdist, int64 mintunits)
@@ -4043,7 +4046,9 @@ tsequenceset_stops(const TSequenceSet *ss, double maxdist, int64 mintunits)
 
 /**
  * @ingroup libmeos_temporal_transf
- * @brief Return the constant segments of the temporal value
+ * @brief Return the subsequences where the objects stays within
+ * an area with a given maximum size (maxdist) for at least
+ * the specified duration (minduration).
  */
 TSequenceSet *
 temporal_stops(const Temporal *temp, double maxdist,
