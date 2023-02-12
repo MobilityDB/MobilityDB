@@ -81,7 +81,7 @@
 #include <meos_internal.h>
 
 /* Number of instants in a batch for printing a marker */
-#define NO_INSTANTS_BATCH 3 // 1000
+#define NO_INSTANTS_BATCH 1000
 /* Maximum length in characters of a header record in the input CSV file */
 #define MAX_LENGTH_HEADER 1024
 /* Maximum length in characters of a point in the input data */
@@ -178,6 +178,12 @@ main(int argc, char **argv)
   exec_sql(conn, "SELECT pg_catalog.set_config('search_path', '', false)",
     PGRES_TUPLES_OK);
 
+  /* Create the table that will hold the data */
+  printf("Creating the table AISTrips in the database\n");
+  exec_sql(conn, "DROP TABLE IF EXISTS public.AISTrips;", PGRES_COMMAND_OK);
+  exec_sql(conn, "CREATE TABLE public.AISTrips(MMSI integer PRIMARY KEY, "
+    "trip public.tgeogpoint, SOG public.tfloat);", PGRES_COMMAND_OK);
+
   /***************************************************************************
    * Section 2: Initialize MEOS and open the input AIS file
    ***************************************************************************/
@@ -196,21 +202,15 @@ main(int argc, char **argv)
   }
 
   /***************************************************************************
-   * Section 3: Read input file line by line and save each observation as a
-   * temporal point in MobilityDB
+   * Section 3: Read input file line by line and append each observation as a
+   * temporal point in MEOS
    ***************************************************************************/
 
-  /* Create the table that will hold the data */
-  printf("Creating the table in the database\n");
-  exec_sql(conn, "DROP TABLE IF EXISTS public.AISTrips;", PGRES_COMMAND_OK);
-  exec_sql(conn, "CREATE TABLE public.AISTrips(MMSI integer PRIMARY KEY, "
-    "trip public.tgeogpoint, SOG public.tfloat);", PGRES_COMMAND_OK);
+  printf("Accumulating %d instants before sending them to the database\n"
+    "(one marker every database update)\n", NO_INSTANTS_BATCH);
 
   /* Read the first line of the file with the headers */
   fscanf(file, "%1023s\n", text_buffer);
-
-  printf("Accumulating %d instants before sending them to the database\n",
-    NO_INSTANTS_BATCH);
 
   /* Continue reading the file */
   do
@@ -270,6 +270,7 @@ main(int argc, char **argv)
       rec.Latitude, t_out);
     TInstant *inst1 = (TInstant *) tgeogpoint_in(point_buffer);
     TInstant *inst2 = (TInstant *) tfloatinst_make(rec.SOG, rec.T);
+
     /* Send to the database the trip if reached the maximum number of instants */
     if (trips[ship].trip && trips[ship].trip->count == NO_INSTANTS_BATCH)
     {
@@ -285,7 +286,7 @@ main(int argc, char **argv)
         trips[ship].MMSI, temp_out);
       /* Execute the query */
       PGresult *res = PQexec(conn, query_buffer);
-      if (PQresultStatus(res) != PGRES_TUPLES_OK)
+      if (PQresultStatus(res) != PGRES_COMMAND_OK)
       {
         fprintf(stderr, "SQL command failed:\n%s %s", query_buffer,
           PQerrorMessage(conn));
@@ -293,13 +294,14 @@ main(int argc, char **argv)
         exit_nicely(conn);
       }
       free(temp_out); free(query_buffer);
-      /* End the transaction */
+      /* End a transaction block */
       exec_sql(conn, "END", PGRES_COMMAND_OK);
-      printf("Trip sent to the database, MMSI: %ld \n", trips[ship].MMSI);
+      printf("*");
       fflush(stdout);
       /* Restart the sequence by only keeping the last accumulated instant */
       tsequence_restart(trips[ship].trip);
     }
+
     /* Send to the database the SOG if reached the maximum number of instants */
     if (trips[ship].SOG && trips[ship].SOG->count == NO_INSTANTS_BATCH)
     {
@@ -309,21 +311,22 @@ main(int argc, char **argv)
       char *temp_out = tsequence_out(trips[ship].SOG, 15);
       char *query_buffer = malloc(sizeof(char) * (strlen(temp_out) + 256));
       sprintf(query_buffer, "INSERT INTO public.AISTrips(MMSI, SOG) "
-        "Values=(%ld, %s) ON CONFLICT (MMSI) DO UPDATE SET SOG = "
-        "appendSequence(AISTrips.SOG, EXCLUDED.SOG);",
+        "VALUES (%ld, '%s') ON CONFLICT (MMSI) DO UPDATE SET SOG = "
+        // "appendSequence(AISTrips.SOG, EXCLUDED.SOG);",
+        "EXCLUDED.SOG;",
         trips[ship].MMSI, temp_out);
       /* Execute the query */
-      PGresult *res = PQexec(conn, text_buffer);
-      if (PQresultStatus(res) != PGRES_TUPLES_OK)
+      PGresult *res = PQexec(conn, query_buffer);
+      if (PQresultStatus(res) != PGRES_COMMAND_OK)
       {
-        fprintf(stderr, "SQL command failed:\n%s %s", text_buffer,
-          PQerrorMessage(conn));
+        fprintf(stderr, "SQL command failed:\n%s", PQerrorMessage(conn));
         PQclear(res);
         exit_nicely(conn);
       }
       free(temp_out); free(query_buffer);
+      /* End a transaction block */
       exec_sql(conn, "END", PGRES_COMMAND_OK);
-      printf("SOG sent to the database, MMSI: %ld \n", trips[ship].MMSI);
+      printf("*");
       fflush(stdout);
       /* Restart the sequence by only keeping the last accumulated instant */
       tsequence_restart(trips[ship].SOG);
