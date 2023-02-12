@@ -37,6 +37,9 @@
 #include <assert.h>
 /* GEOS */
 #include <geos_c.h>
+/* POSTGIS */
+#include <lwgeom_log.h>
+#include <lwgeom_geos.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -3756,7 +3759,7 @@ temporal_delete_periodset(const Temporal *temp, const SpanSet *ps,
  * of the input sequence between the given start and end instants.
  */
 static double
-mrr_distance(const TSequence *seq, datum_func2 distance_fn, int start, int end)
+mrr_distance_bruteforce(const TSequence *seq, datum_func2 distance_fn, int start, int end)
 {
   meosType basetype = temptype_basetype(seq->temptype);
   double dist, maxdist = 0;
@@ -3781,14 +3784,106 @@ mrr_distance(const TSequence *seq, datum_func2 distance_fn, int start, int end)
 }
 
 /**
+ * @brief Calculate the length of the diagonal of the minimum rotated rectangle
+ * of the input sequence between the given start and end instants.
+ */
+static double
+mrr_distance_geos(GEOSGeometry *geom)
+{
+  double result;
+  GEOSGeometry *mrr_geom = GEOSMinimumRotatedRectangle(geom);
+  GEOSGeometry *pt1, *pt2;
+  switch (GEOSGeomTypeId(mrr_geom))
+  {
+    case GEOS_POINT:
+      result = 0;
+      break;
+    case GEOS_LINESTRING:
+      assert(GEOSGeomGetLength(mrr_geom, &result));
+      break;
+    case GEOS_POLYGON:
+      pt1 = GEOSGeomGetPointN(GEOSGetExteriorRing(mrr_geom), 0);
+      pt2 = GEOSGeomGetPointN(GEOSGetExteriorRing(mrr_geom), 2);
+      assert(GEOSDistance(pt1, pt2, &result));
+      GEOSGeom_destroy(pt1);
+      GEOSGeom_destroy(pt2);
+      break;
+    default:
+      ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+        errmsg("Invalid geometry type for Minimum Rotated Rectangle")));
+  }
+  return result;
+}
+
+extern GEOSGeometry *POSTGIS2GEOS(const GSERIALIZED *pglwgeom);
+
+/**
+ * @brief Create a GEOS Multipoint grometry from
+ * a part (defined by start and end) of a temporal point sequence
+ */
+static GEOSGeometry *
+multipoint_make(const TSequence *seq, int start, int end)
+{
+  GSERIALIZED *gs;
+  GEOSGeometry **geoms = palloc(sizeof(GEOSGeometry *) * (end - start + 1));
+  for (int i = 0; i < end - start + 1; ++i)
+  {
+    gs = DatumGetGserializedP(tinstant_value(tsequence_inst_n(seq, start + i)));
+    geoms[i] = POSTGIS2GEOS(gs);
+  }
+  GEOSGeometry *result = GEOSGeom_createCollection(GEOS_MULTIPOINT, geoms, end - start + 1);
+  pfree(geoms);
+  return result;
+}
+
+/**
+ * @brief Add the point stored in the given instant to a GEOS multipoint geometry
+ */
+static GEOSGeometry *
+multipoint_add_inst_free(GEOSGeometry *geom, const TInstant *inst)
+{
+  GSERIALIZED *gs = DatumGetGserializedP(tinstant_value(inst));
+  GEOSGeometry *geom1 = POSTGIS2GEOS(gs);
+  GEOSGeometry *result = GEOSUnion(geom, geom1);
+  GEOSGeom_destroy(geom1);
+  GEOSGeom_destroy(geom);
+  return result;
+}
+
+/**
  * @brief Return the constant segments of the temporal value
  */
 static int
 tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
-  datum_func2 distance_fn, TSequence **result)
+  TSequence **result)
 {
   assert(seq->count > 1);
+
+  bool use_geos_dist = false;
+  datum_func2 distance_fn = NULL;
+  assert(seq->temptype == T_TFLOAT || tgeo_type(seq->temptype) ||
+    seq->temptype == T_TNPOINT);
+  if (seq->temptype == T_TFLOAT)
+    distance_fn = &double_distance;
+  else if (seq->temptype == T_TGEOGPOINT)
+    distance_fn = &geog_distance;
+  else if (seq->temptype == T_TGEOMPOINT &&
+    MOBDB_FLAGS_GET_Z(seq->flags))
+    distance_fn = &pt_distance3d;
+  else if (seq->temptype == T_TNPOINT)
+    distance_fn = &npoint_distance;
+  else /* 2D Geometric Distance */
+    use_geos_dist = true;
+
   const TInstant *inst1, *inst2;
+  GEOSGeometry *geom;
+
+  if (use_geos_dist)
+  {
+    initGEOS(lwnotice, lwgeom_geos_error);
+    geom = GEOSGeom_createEmptyCollection(GEOS_MULTIPOINT);
+  }
+
   int end, start = 0, k = 0;
   bool is_stopped = false, previously_stopped = false;
 
@@ -3797,31 +3892,62 @@ tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
     inst1 = tsequence_inst_n(seq, start);
     inst2 = tsequence_inst_n(seq, end);
 
+    if (use_geos_dist)
+      geom = multipoint_add_inst_free(geom, inst2);
+
     while (!is_stopped && end - start > 1
       && (int64)(inst2->t - inst1->t) >= mintunits)
+    {
       inst1 = tsequence_inst_n(seq, ++start);
+
+      if (use_geos_dist)
+      {
+        GEOSGeom_destroy(geom);
+        geom = multipoint_make(seq, start, end);
+      }
+    }
 
     if (end - start == 0)
       continue;
 
-    is_stopped = mrr_distance(seq, distance_fn, start, end) < maxdist;
+    if (use_geos_dist)
+      is_stopped = mrr_distance_geos(geom) < maxdist;
+    else
+      is_stopped = mrr_distance_bruteforce(seq, distance_fn, start, end) < maxdist;
 
     inst2 = tsequence_inst_n(seq, end - 1);
     if (!is_stopped && previously_stopped
-      && (int64)(inst2->t - inst1->t) >= mintunits)
+      && (int64)(inst2->t - inst1->t) >= mintunits) // Found a stop
     {
-      result[k++] = tsequence_make(&inst1, end - start,
+      const TInstant **insts = palloc(sizeof(TInstant *) * (end - start));
+      for (int i = 0; i < end - start; ++i)
+          insts[i] = tsequence_inst_n(seq, start + i);
+      result[k++] = tsequence_make(insts, end - start,
         true, true, LINEAR, NORMALIZE_NO);
-      start++;
+      start = end + 1;
+
+      if (use_geos_dist)
+      {
+        GEOSGeom_destroy(geom);
+        geom = GEOSGeom_createEmptyCollection(GEOS_MULTIPOINT);
+      }
     }
 
     previously_stopped = is_stopped;
   }
 
-  inst2 = tsequence_inst_n(seq, end);
+  if (use_geos_dist)
+    GEOSGeom_destroy(geom);
+
+  inst2 = tsequence_inst_n(seq, end - 1);
   if (is_stopped && (int64)(inst2->t - inst1->t) >= mintunits)
-    result[k++] = tsequence_make(&inst1, end - start,
+  {
+    const TInstant **insts = palloc(sizeof(TInstant *) * (end - start));
+    for (int i = 0; i < end - start; ++i)
+        insts[i] = tsequence_inst_n(seq, start + i);
+    result[k++] = tsequence_make(insts, end - start,
       true, true, LINEAR, NORMALIZE_NO);
+  }
 
   return k;
 }
@@ -3831,16 +3957,15 @@ tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
  * @brief Return the constant segments of the temporal value
  */
 TSequenceSet *
-tsequence_stops(const TSequence *seq, double maxdist, int64 mintunits,
-  datum_func2 distance_fn)
+tsequence_stops(const TSequence *seq, double maxdist, int64 mintunits)
 {
   /* Instantaneous sequence */
   if (seq->count == 1)
     return NULL;
 
   /* General case */
-  TSequence **sequences = palloc(sizeof(TSequence *) * seq->count - 1);
-  int k = tsequence_stops1(seq, maxdist, mintunits, distance_fn, sequences);
+  TSequence **sequences = palloc(sizeof(TSequence *) * seq->count);
+  int k = tsequence_stops1(seq, maxdist, mintunits, sequences);
   TSequenceSet *result = NULL;
   if (k > 0)
     result = tsequenceset_make_free(sequences, k, NORMALIZE);
@@ -3852,15 +3977,14 @@ tsequence_stops(const TSequence *seq, double maxdist, int64 mintunits,
  * @brief Return the constant segments of the temporal value
  */
 TSequenceSet *
-tsequenceset_stops(const TSequenceSet *ss, double maxdist, int64 mintunits,
-  datum_func2 distance_fn)
+tsequenceset_stops(const TSequenceSet *ss, double maxdist, int64 mintunits)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->totalcount);
   int k = 0;
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
-    k += tsequence_stops1(seq, maxdist, mintunits, distance_fn, &sequences[k]);
+    k += tsequence_stops1(seq, maxdist, mintunits, &sequences[k]);
   }
   TSequenceSet *result = tsequenceset_make_free(sequences, k, NORMALIZE);
   return result;
@@ -3884,26 +4008,15 @@ temporal_stops(const Temporal *temp, double maxdist,
   if (cmp < 0)
     elog(ERROR, "The duration must be positive");
   int64 mintunits = interval_units(minduration);
-  datum_func2 distance_fn = NULL;
-  assert(temp->temptype == T_TFLOAT || tgeo_type(temp->temptype) ||
-    temp->temptype == T_TNPOINT);
-  if (temp->temptype == T_TFLOAT)
-    distance_fn = &double_distance;
-  else if (tgeo_type(temp->temptype))
-    distance_fn = pt_distance_fn(temp->flags);
-  else /* temp->temptype == T_TNPOINT */
-    distance_fn = &npoint_distance;
 
   TSequenceSet *result = NULL;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     elog(ERROR, "Input must be a temporal sequence (set) with linear interpolation");
   else if (temp->subtype == TSEQUENCE)
-    result = tsequence_stops((TSequence *) temp, maxdist, mintunits,
-      distance_fn);
+    result = tsequence_stops((TSequence *) temp, maxdist, mintunits);
   else /* temp->subtype == TSEQUENCESET */
-    result = tsequenceset_stops((TSequenceSet *) temp, maxdist, mintunits,
-      distance_fn);
+    result = tsequenceset_stops((TSequenceSet *) temp, maxdist, mintunits);
   return result;
 }
 
