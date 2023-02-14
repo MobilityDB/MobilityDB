@@ -1245,11 +1245,11 @@ tnumber_to_tbox(const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_transf
- * @brief Restart a temporal sequence (set) by keeping only the first instant
- * or sequence.
+ * @brief Restart a temporal sequence (set) by keeping only the last instants
+ * or sequences.
  */
 void
-temporal_restart(Temporal *temp)
+temporal_restart(Temporal *temp, int last)
 {
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
@@ -1257,9 +1257,9 @@ temporal_restart(Temporal *temp)
     elog(ERROR, "Input must be a temporal sequence (set)");
   }
   else if (temp->subtype == TSEQUENCE)
-    tsequence_restart((TSequence *) temp);
+    tsequence_restart((TSequence *) temp, last);
   else /* temp->subtype == TSEQUENCESET */
-    tsequenceset_restart((TSequenceSet *) temp);
+    tsequenceset_restart((TSequenceSet *) temp, last);
   return;
 }
 

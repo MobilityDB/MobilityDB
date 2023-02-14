@@ -78,8 +78,10 @@
 #include <meos.h>
 #include <meos_internal.h>
 
-/* Number of instants in a batch for printing a marker */
+/* Number of instants to send in batch to the database  */
 #define NO_INSTANTS_BATCH 1000
+/* Number of instants to keep when restarting a sequence */
+#define NO_INSTANTS_KEEP 5
 /* Maximum length in characters of a header record in the input CSV file */
 #define MAX_LENGTH_HEADER 1024
 /* Maximum length in characters of a point in the input data */
@@ -269,8 +271,15 @@ main(int argc, char **argv)
     {
       /* Start a transaction block */
       exec_sql(conn, "BEGIN", PGRES_COMMAND_OK);
+      /* Remove the first (NO_INSTANTS_KEEP - 1) instants which are already in
+       * the database */
+      const TInstant *inst1 = tsequence_inst_n(trips[ship].trip, 0);
+      const TInstant *inst2 = tsequence_inst_n(trips[ship].trip,
+        NO_INSTANTS_KEEP - 2);
+      Span *span = tstzspan_make(inst1->t, inst2->t, true, true);
+      TSequence *seq = tsequence_minus_period(trips[ship].trip, span);
       /* Construct the string of the query */
-      char *temp_out = tsequence_out(trips[ship].trip, 15);
+      char *temp_out = tsequence_out(seq, 15);
       char *query_buffer = malloc(sizeof(char) * (strlen(temp_out) + 256));
       sprintf(query_buffer, "INSERT INTO public.AISTrips(MMSI, trip) "
         "VALUES (%ld, '%s') ON CONFLICT (MMSI) DO UPDATE SET trip = "
@@ -285,20 +294,21 @@ main(int argc, char **argv)
         PQclear(res);
         exit_nicely(conn);
       }
-      free(temp_out); free(query_buffer);
+      /* Free memory */
+      free(span); free(seq); free(temp_out); free(query_buffer);
       /* End a transaction block */
       exec_sql(conn, "END", PGRES_COMMAND_OK);
       printf("*");
       fflush(stdout);
-      /* Restart the sequence by only keeping the last accumulated instant */
-      tsequence_restart(trips[ship].trip);
+      /* Restart the sequence by only keeping the last number of instants */
+      tsequence_restart(trips[ship].trip, NO_INSTANTS_KEEP);
     }
 
     /* Append the last observation */
     TInstant *inst = (TInstant *) tgeogpoint_in(point_buffer);
     if (! trips[ship].trip)
-      trips[ship].trip = tsequence_make_exp((const TInstant **) &inst,
-        1, NO_INSTANTS_BATCH, true, true, LINEAR, false);
+      trips[ship].trip = tsequence_make_exp((const TInstant **) &inst, 1,
+        NO_INSTANTS_BATCH, true, true, LINEAR, false);
     else
       tsequence_append_tinstant(trips[ship].trip, inst, true);
   } while (!feof(file));

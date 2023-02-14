@@ -1785,36 +1785,32 @@ tsequence_compact(const TSequence *seq)
 
 /**
  * @ingroup libmeos_internal_temporal_transf
- * @brief Restart a temporal sequence by keeping only the first instant
+ * @brief Restart a temporal sequence by keeping only the last instants
  */
 void
-tsequence_restart(TSequence *seq)
+tsequence_restart(TSequence *seq, int last)
 {
+  /* Ensure validity of arguments */
+  assert (last > 0 && last < seq->count);
   /* Instantaneous sequence */
   if (seq->count == 1)
     return;
 
   /* General case */
-  meosType basetype = temptype_basetype(seq->temptype);
   TInstant *first = (TInstant *) tsequence_inst_n(seq, 0);
-  /* Copy value */
-  if (basetype_byvalue(basetype))
+  const TInstant *last_n;
+  size_t inst_size = 0;
+  /* Compute the size of the instants to be copied */
+  for (int i = 0; i < last; i++)
   {
-    /* For base types passed by value, update the offsets array */
-    (TSEQUENCE_OFFSETS_PTR(seq))[0] =
-      (TSEQUENCE_OFFSETS_PTR(seq))[seq->count - 1];
+    last_n = tsequence_inst_n(seq, seq->count - i - 1);
+    inst_size += DOUBLE_PAD(VARSIZE(last_n));
   }
-  else
-  {
-    /* For base types passed by reference, copy the value at the beginning */
-    int16 typlen = basetype_length(basetype);
-    size_t value_size = (typlen != -1) ? DOUBLE_PAD((unsigned int) typlen) :
-      DOUBLE_PAD(VARSIZE(first));
-    TInstant *last = (TInstant *) tsequence_inst_n(seq, seq->count - 1);
-    memcpy(first, last, value_size);
-  }
+  /* Copy the last values at the beginning */
+  last_n = tsequence_inst_n(seq, seq->count - last);
+  memcpy(first, last_n, inst_size);
   /* Update the count and the bounding box */
-  seq->count = 1;
+  seq->count = last;
   size_t bboxsize = DOUBLE_PAD(temporal_bbox_size(seq->temptype));
   if (bboxsize != 0)
     tinstant_set_bbox(first, TSEQUENCE_BBOX_PTR(seq));
