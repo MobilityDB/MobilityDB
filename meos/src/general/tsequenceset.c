@@ -251,7 +251,7 @@ tsequenceset_make1_exp(const TSequence **sequences, int count, int maxcount,
    */
   if (bboxsize != 0)
   {
-    tsequenceset_compute_bbox((const TSequence **) normseqs, newcount,
+    tseqarr_compute_bbox((const TSequence **) normseqs, newcount,
       TSEQUENCESET_BBOX_PTR(result));
   }
   /* Store the composing instants */
@@ -1270,23 +1270,34 @@ tsequenceset_compact(const TSequenceSet *ss)
 
 /**
  * @ingroup libmeos_internal_temporal_transf
- * @brief Restart a temporal sequence set by keeping only the first sequence
+ * @brief Restart a temporal sequence set by keeping only the last sequences
  */
 void
-tsequenceset_restart(TSequenceSet *ss)
+tsequenceset_restart(TSequenceSet *ss, int last)
 {
+  /* Ensure validity of arguments */
+  assert (last > 0 && last < ss->count);
   /* Singleton sequence set */
   if (ss->count == 1)
     return;
 
   /* General case */
   TSequence *first = (TSequence *) tsequenceset_seq_n(ss, 0);
-  TSequence *last = (TSequence *) tsequenceset_seq_n(ss, ss->count - 1);
-  size_t value_size = DOUBLE_PAD(VARSIZE(first));
-  memcpy(first, last, value_size);
+  const TSequence *last_n;
+  size_t seq_size = 0;
+  int totalcount = 0;
+  for (int i = 0; i < last; i++)
+  {
+    last_n = tsequenceset_seq_n(ss, ss->count - i - 1);
+    totalcount += last_n->count;
+    seq_size += DOUBLE_PAD(VARSIZE(last_n));
+  }
+  /* Copy the last values at the beginning */
+  last_n = tsequenceset_seq_n(ss, ss->count - last);
+  memcpy(first, last_n, seq_size);
   /* Update the counts and the bounding box */
-  ss->count = 1;
-  ss->totalcount = first->count;
+  ss->count = last;
+  ss->totalcount = totalcount;
   size_t bboxsize = DOUBLE_PAD(temporal_bbox_size(ss->temptype));
   if (bboxsize != 0)
     memcpy(TSEQUENCESET_BBOX_PTR(ss), TSEQUENCE_BBOX_PTR(first), bboxsize);

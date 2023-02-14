@@ -429,7 +429,7 @@ tnumberseqarr_set_tbox(const TSequence **sequences, int count, TBox *box)
  * @brief Set the bounding box from the array of temporal sequence values
  */
 void
-tsequenceset_compute_bbox(const TSequence **sequences, int count, void *box)
+tseqarr_compute_bbox(const TSequence **sequences, int count, void *box)
 {
   /* Only external types have bounding box */ // TODO
   ensure_temporal_type(sequences[0]->temptype);
@@ -442,6 +442,46 @@ tsequenceset_compute_bbox(const TSequence **sequences, int count, void *box)
   else
     elog(ERROR, "unknown bounding box function for temporal type: %d",
       sequences[0]->temptype);
+  return;
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Recompute the bounding box of a temporal sequence
+ * @param[inout] seq Temporal sequence
+ * @note This function is applied after an update (e.g., after a restart)
+ */
+void
+tsequence_compute_bbox(TSequence *seq)
+{
+  const TInstant *inst = tsequence_inst_n(seq, 0);
+  tinstant_set_bbox(inst, TSEQUENCE_BBOX_PTR(seq));
+  for (int i = 1; i < seq->count; i++)
+  {
+    inst = tsequence_inst_n(seq, i);
+    tsequence_expand_bbox(seq, inst);
+  }
+  return;
+}
+
+/**
+ * @brief (Re)compute the bounding box of a temporal sequence set
+ * @param[inout] ss Temporal sequence set
+ * @note This function is applied after an update (e.g., after a restart)
+ */
+void
+tsequenceset_compute_bbox(TSequenceSet *ss)
+{
+  /* Copy the bbox of the first sequence into the bbox of the sequence set */
+  size_t bboxsize = temporal_bbox_size(ss->temptype);
+  const TSequence *seq = tsequenceset_seq_n(ss, 0);
+  memcpy(TSEQUENCESET_BBOX_PTR(ss), TSEQUENCE_BBOX_PTR(seq), bboxsize);
+  for (int i = 1; i < ss->count; i++)
+  {
+    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    tsequenceset_expand_bbox(ss, seq);
+  }
   return;
 }
 
