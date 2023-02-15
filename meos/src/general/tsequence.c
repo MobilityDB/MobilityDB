@@ -1806,14 +1806,14 @@ tsequence_restart(TSequence *seq, int last)
     last_n = tsequence_inst_n(seq, seq->count - i - 1);
     inst_size += DOUBLE_PAD(VARSIZE(last_n));
   }
-  /* Copy the last values at the beginning */
+  /* Copy the last instants at the beginning */
   last_n = tsequence_inst_n(seq, seq->count - last);
   memcpy(first, last_n, inst_size);
   /* Update the count and the bounding box */
   seq->count = last;
   size_t bboxsize = DOUBLE_PAD(temporal_bbox_size(seq->temptype));
   if (bboxsize != 0)
-    tinstant_set_bbox(first, TSEQUENCE_BBOX_PTR(seq));
+    tsequence_compute_bbox(seq);
   return;
 }
 

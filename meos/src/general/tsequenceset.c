@@ -1292,7 +1292,7 @@ tsequenceset_restart(TSequenceSet *ss, int last)
     totalcount += last_n->count;
     seq_size += DOUBLE_PAD(VARSIZE(last_n));
   }
-  /* Copy the last values at the beginning */
+  /* Copy the last instants at the beginning */
   last_n = tsequenceset_seq_n(ss, ss->count - last);
   memcpy(first, last_n, seq_size);
   /* Update the counts and the bounding box */
@@ -1300,7 +1300,7 @@ tsequenceset_restart(TSequenceSet *ss, int last)
   ss->totalcount = totalcount;
   size_t bboxsize = DOUBLE_PAD(temporal_bbox_size(ss->temptype));
   if (bboxsize != 0)
-    memcpy(TSEQUENCESET_BBOX_PTR(ss), TSEQUENCE_BBOX_PTR(first), bboxsize);
+    tsequenceset_compute_bbox(ss);
   return;
 }
 
