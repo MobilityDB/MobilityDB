@@ -1235,7 +1235,7 @@ FROM (SELECT unnest(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01,
 
 	<sect1 id="modification_functions">
 		<title>Modification Functions</title>
-		<para>We explain next the semantics of the modification operations (that is <varname>insert</varname>, <varname>update</varname>, and <varname>delete</varname>) for temporal types. These operations have similar semantics as the corresponding operations for application-time temporal tables introduced in the <ulink url="https://en.wikipedia.org/wiki/SQL:2011">SQL:2011</ulink> standard. The main difference is that SQL uses tuple timestamping (where timestamps are attached to tuples), while temporal values in MobilityDB use attribute timestamping (where timestamps are attached to attribute values).</para>
+		<para>We explain next the semantics of the modification operations (that is, <varname>insert</varname>, <varname>update</varname>, and <varname>delete</varname>) for temporal types. These operations have similar semantics as the corresponding operations for application-time temporal tables introduced in the <ulink url="https://en.wikipedia.org/wiki/SQL:2011">SQL:2011</ulink> standard. The main difference is that SQL uses <emphasis>tuple timestamping</emphasis> (where timestamps are attached to tuples), while temporal values in MobilityDB use <emphasis>attribute timestamping</emphasis> (where timestamps are attached to attribute values).</para>
 
 		<para>The <varname>insert</varname> operation adds to a temporal value the instants of another one without modifying the existing instants, as illustrated in <xref linkend="insert_fig" />.</para>
 
