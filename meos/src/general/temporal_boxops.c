@@ -285,11 +285,7 @@ tnumberinstarr_set_tbox(const TInstant **instants, int count, TBox *box)
  */
 void
 tinstarr_compute_bbox(const TInstant **instants, int count, bool lower_inc,
-#if NPOINT
   bool upper_inc, interpType interp, void *box)
-#else
-  bool upper_inc, interpType interp __attribute__((unused)), void *box)
-#endif
 {
   /* Only external types have bounding box */
   ensure_temporal_type(instants[0]->temptype);
@@ -447,42 +443,40 @@ tseqarr_compute_bbox(const TSequence **sequences, int count, void *box)
 
 /*****************************************************************************/
 
+#if MEOS
 /**
  * @brief Recompute the bounding box of a temporal sequence
  * @param[inout] seq Temporal sequence
- * @note This function is applied after an update (e.g., after a restart)
+ * @note This function is applied upon a restart
  */
 void
 tsequence_compute_bbox(TSequence *seq)
 {
-  const TInstant *inst = tsequence_inst_n(seq, 0);
-  tinstant_set_bbox(inst, TSEQUENCE_BBOX_PTR(seq));
-  for (int i = 1; i < seq->count; i++)
-  {
-    inst = tsequence_inst_n(seq, i);
-    tsequence_expand_bbox(seq, inst);
-  }
+  const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  for (int i = 0; i < seq->count; i++)
+    instants[i] = tsequence_inst_n(seq, i);
+  interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
+  tinstarr_compute_bbox(instants, seq->count, seq->period.lower_inc,
+    seq->period.upper_inc, interp, TSEQUENCESET_BBOX_PTR(seq));
+  pfree(instants);
   return;
 }
 
 /**
  * @brief (Re)compute the bounding box of a temporal sequence set
  * @param[inout] ss Temporal sequence set
- * @note This function is applied after an update (e.g., after a restart)
+ * @note This function is applied upon a restart
  */
 void
 tsequenceset_compute_bbox(TSequenceSet *ss)
 {
-  /* Copy the bbox of the first sequence into the bbox of the sequence set */
-  size_t bboxsize = temporal_bbox_size(ss->temptype);
-  const TSequence *seq = tsequenceset_seq_n(ss, 0);
-  memcpy(TSEQUENCESET_BBOX_PTR(ss), TSEQUENCE_BBOX_PTR(seq), bboxsize);
-  for (int i = 1; i < ss->count; i++)
-  {
-    const TSequence *seq = tsequenceset_seq_n(ss, i);
-    tsequenceset_expand_bbox(ss, seq);
-  }
+  const TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
+  for (int i = 0; i < ss->count; i++)
+    sequences[i] = tsequenceset_seq_n(ss, i);
+  tseqarr_compute_bbox(sequences, ss->count, TSEQUENCESET_BBOX_PTR(ss));
+  pfree(sequences);
   return;
 }
+#endif /* MEOS */
 
 /*****************************************************************************/

@@ -1243,6 +1243,7 @@ tnumber_to_tbox(const Temporal *temp)
  * Transformation functions
  *****************************************************************************/
 
+#if MEOS
 /**
  * @ingroup libmeos_temporal_transf
  * @brief Restart a temporal sequence (set) by keeping only the last instants
@@ -1262,6 +1263,7 @@ temporal_restart(Temporal *temp, int last)
     tsequenceset_restart((TSequenceSet *) temp, last);
   return;
 }
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_temporal_transf

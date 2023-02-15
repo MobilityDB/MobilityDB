@@ -118,8 +118,10 @@ Tfloat_simplify(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   double eps_dist = PG_GETARG_FLOAT8(1);
-  /* There is no synchronized distance for temporal floats */
-  Temporal *result = temporal_simplify(temp, eps_dist, false);
+  bool synchronized = false;
+  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
+    synchronized = PG_GETARG_BOOL(2);
+  Temporal *result = temporal_simplify(temp, eps_dist, synchronized);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

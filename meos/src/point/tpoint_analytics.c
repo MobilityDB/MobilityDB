@@ -189,7 +189,7 @@ tpointseq_to_geo_measure1(const TSequence *seq, const TSequence *measure)
     m = tsequence_inst_n(measure, i);
     LWPOINT *value2 = point_measure_to_lwpoint(tinstant_value(inst),
       tinstant_value(m));
-    /* Add point only if previous point is diffrent from the current one */
+    /* Add point only if previous point is different from the current one */
     if (lwpoint_same(value1, value2) != LW_TRUE)
       points[k++] = value2;
     value1 = value2;
@@ -205,8 +205,8 @@ tpointseq_to_geo_measure1(const TSequence *seq, const TSequence *measure)
     result = MOBDB_FLAGS_GET_LINEAR(seq->flags) ?
       (LWGEOM *) lwline_from_lwgeom_array(points[0]->srid, (uint32_t) k,
         (LWGEOM **) points) :
-      (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE,
-        points[0]->srid, NULL, (uint32_t) k, (LWGEOM **) points);
+      (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE, points[0]->srid, NULL,
+        (uint32_t) k, (LWGEOM **) points);
     for (int i = 0; i < k; i++)
       lwpoint_free(points[i]);
     pfree(points);

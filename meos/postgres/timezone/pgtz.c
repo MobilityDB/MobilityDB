@@ -18,10 +18,12 @@
 #include <time.h>
 #include <dirent.h> /* MobilityDB */
 #include <sys/stat.h> /* MobilityDB */
-#include <search.h> /* MobilityDB */
+#include <search.h> /* MobilityDB for POSIX hsearch */
 // #include "datatype/timestamp.h" /* MobilityDB */
 #include "utils/timestamp_def.h"
 #include "pgtz.h"
+
+#include <lib/simplehash.h> /* MobilityDB */
 
 /* Function in findtimezone.c */
 extern const char *select_default_timezone(const char *share_path);

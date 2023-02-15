@@ -1268,6 +1268,7 @@ tsequenceset_compact(const TSequenceSet *ss)
   return tsequenceset_make_free(sequences, ss->count, NORMALIZE_NO);
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_internal_temporal_transf
  * @brief Restart a temporal sequence set by keeping only the last sequences
@@ -1303,6 +1304,7 @@ tsequenceset_restart(TSequenceSet *ss, int last)
     tsequenceset_compute_bbox(ss);
   return;
 }
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_internal_temporal_transf

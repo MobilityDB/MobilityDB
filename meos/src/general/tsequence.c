@@ -1783,6 +1783,7 @@ tsequence_compact(const TSequence *seq)
   return result;
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_internal_temporal_transf
  * @brief Restart a temporal sequence by keeping only the last instants
@@ -1816,6 +1817,32 @@ tsequence_restart(TSequence *seq, int last)
     tsequence_compute_bbox(seq);
   return;
 }
+
+/**
+ * @ingroup libmeos_internal_temporal_transf
+ * @brief Return a subsequence specified by the two component instants
+ */
+TSequence *
+tsequence_subseq(const TSequence *seq, int from, int to, bool lower_inc,
+  bool upper_inc)
+{
+  /* Ensure validity of arguments */
+  assert (from <= to && from >= 0 && to >= 0 && from < seq->count &&
+    to < seq->count);
+  /* General case */
+  int count = to - from + 1;
+  const TInstant **instants = palloc (sizeof(TInstant *) * count);
+  for (int i = 0; i < to - from; i++)
+    instants[i] = tsequence_inst_n(seq, i + from);
+  interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
+  TSequence *result = tsequence_make(instants, count, lower_inc, upper_inc,
+    interp, NORMALIZE_NO);
+  pfree(instants);
+  return result;
+}
+#endif /* MEOS */
+
+/*****************************************************************************/
 
 /**
  * @ingroup libmeos_internal_temporal_transf

@@ -81,7 +81,7 @@
 /* Number of instants to send in batch to the database  */
 #define NO_INSTANTS_BATCH 1000
 /* Number of instants to keep when restarting a sequence */
-#define NO_INSTANTS_KEEP 5
+#define NO_INSTANTS_KEEP 3
 /* Maximum length in characters of a header record in the input CSV file */
 #define MAX_LENGTH_HEADER 1024
 /* Maximum length in characters of a point in the input data */
@@ -269,21 +269,20 @@ main(int argc, char **argv)
     /* Send to the database the trip if reached the maximum number of instants */
     if (trips[ship].trip && trips[ship].trip->count == NO_INSTANTS_BATCH)
     {
-      /* Start a transaction block */
-      exec_sql(conn, "BEGIN", PGRES_COMMAND_OK);
-      /* Remove the first (NO_INSTANTS_KEEP - 1) instants which are already in
-       * the database */
-      const TInstant *inst1 = tsequence_inst_n(trips[ship].trip, 0);
-      const TInstant *inst2 = tsequence_inst_n(trips[ship].trip,
-        NO_INSTANTS_KEEP - 2);
-      Span *span = tstzspan_make(inst1->t, inst2->t, true, true);
-      TSequence *seq = tsequence_minus_period(trips[ship].trip, span);
+      // /* Remove the first (NO_INSTANTS_KEEP - 1) instants which are already in
+       // * the database */
+      // TSequence *seq;
+      // if (NO_INSTANTS_KEEP > 1)
+        // seq = tsequence_subseq(trips[ship].trip, NO_INSTANTS_KEEP - 1,
+          // trips[ship].trip->count - 1, true, true);
+      // else
+        // seq = trips[ship].trip;
       /* Construct the string of the query */
-      char *temp_out = tsequence_out(seq, 15);
+      char *temp_out = tsequence_out(trips[ship].trip, 15);
       char *query_buffer = malloc(sizeof(char) * (strlen(temp_out) + 256));
       sprintf(query_buffer, "INSERT INTO public.AISTrips(MMSI, trip) "
         "VALUES (%ld, '%s') ON CONFLICT (MMSI) DO UPDATE SET trip = "
-        "public.appendSequence(AISTrips.trip, EXCLUDED.trip);",
+        "public.update(AISTrips.trip, EXCLUDED.trip, true);",
         trips[ship].MMSI, temp_out);
       /* Execute the query */
       PGresult *res = PQexec(conn, query_buffer);
@@ -295,12 +294,12 @@ main(int argc, char **argv)
         exit_nicely(conn);
       }
       /* Free memory */
-      free(span); free(seq); free(temp_out); free(query_buffer);
-      /* End a transaction block */
-      exec_sql(conn, "END", PGRES_COMMAND_OK);
+      // if (NO_INSTANTS_KEEP > 1)
+        // free(seq);
+      free(temp_out); free(query_buffer);
       printf("*");
       fflush(stdout);
-      /* Restart the sequence by only keeping the last number of instants */
+      /* Restart the sequence by only keeping the last instants */
       tsequence_restart(trips[ship].trip, NO_INSTANTS_KEEP);
     }
 

@@ -367,6 +367,7 @@ extern TInstant *tinstant_make(Datum value, meosType temptype, TimestampTz t);
 extern TSequence *tdiscseq_from_base_time(Datum value, meosType temptype, const Set *ss);
 extern TSequence *tsequence_compact(const TSequence *seq);
 extern void tsequence_restart(TSequence *seq, int last);
+extern TSequence *tsequence_subseq(const TSequence *seq, int from, int to, bool lower_inc, bool upper_inc);
 extern TSequence *tsequence_copy(const TSequence *seq);
 extern TSequence *tsequence_from_base(Datum value, meosType temptype, const TSequence *seq, interpType interp);
 extern TSequence *tsequence_from_base_time(Datum value, meosType temptype, const Span *p, interpType interp);
