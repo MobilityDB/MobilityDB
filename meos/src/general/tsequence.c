@@ -2683,12 +2683,12 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
   inst1 = (TInstant *) tsequence_inst_n(seq1, 0);
   inst2 = (TInstant *) tsequence_inst_n(seq2, 0);
   int i = 0, j = 0, k = 0, l = 0;
-  if (inst1->t < (TimestampTz) inter.lower)
+  if (inst1->t < DatumGetTimestampTz(inter.lower))
   {
     i = tcontseq_find_timestamp(seq1, inter.lower) + 1;
     inst1 = (TInstant *) tsequence_inst_n(seq1, i);
   }
-  else if (inst2->t < (TimestampTz) inter.lower)
+  else if (inst2->t < DatumGetTimestampTz(inter.lower))
   {
     j = tcontseq_find_timestamp(seq2, inter.lower) + 1;
     inst2 = (TInstant *) tsequence_inst_n(seq2, j);
@@ -2700,8 +2700,8 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
   meosType basetype1 = temptype_basetype(seq1->temptype);
   meosType basetype2 = temptype_basetype(seq2->temptype);
   while (i < seq1->count && j < seq2->count &&
-    (inst1->t <= (TimestampTz) inter.upper ||
-     inst2->t <= (TimestampTz) inter.upper))
+    (inst1->t <= DatumGetTimestampTz(inter.upper) ||
+     inst2->t <= DatumGetTimestampTz(inter.upper)))
   {
     int cmp = timestamptz_cmp_internal(inst1->t, inst2->t);
     if (cmp == 0)
@@ -2847,7 +2847,7 @@ intersection_tcontseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
       instants1[k] = tsequence_at_timestamp(seq1, inst->t);
       instants2[k++] = inst;
     }
-    if ((TimestampTz) seq1->period.upper < inst->t)
+    if (DatumGetTimestampTz(seq1->period.upper) < inst->t)
       break;
   }
   if (k == 0)
@@ -5070,15 +5070,15 @@ tcontseq_at_period(const TSequence *seq, const Span *p)
   for (int i = n + 2; i < seq->count; i++)
   {
     /* If the end of the intersecting period is between inst1 and inst2 */
-    if (inst1->t <= (TimestampTz) inter.upper &&
-        (TimestampTz) inter.upper <= inst2->t)
+    if (inst1->t <= DatumGetTimestampTz(inter.upper) &&
+        DatumGetTimestampTz(inter.upper) <= inst2->t)
       break;
 
     inst1 = inst2;
     inst2 = tsequence_inst_n(seq, i);
     /* If the intersecting period contains inst1 */
-    if ((TimestampTz) inter.lower <= inst1->t &&
-        inst1->t <= (TimestampTz) inter.upper)
+    if (DatumGetTimestampTz(inter.lower) <= inst1->t &&
+        inst1->t <= DatumGetTimestampTz(inter.upper))
       instants[k++] = (TInstant *) inst1;
   }
   /* The last two values of sequences with step interpolation and

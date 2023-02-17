@@ -970,7 +970,7 @@ tfunc_tcontseq_tcontseq_single(const TSequence *seq1, const TSequence *seq2,
     else
     {
       j++;
-      inst1 = tsequence_at_timestamp(seq1, inst2->t);
+      inst1 = tcontseq_at_timestamp(seq1, inst2->t); // tsequence_at_timestamp(seq1, inst2->t);
       tofree[l++] = inst1;
     }
     /* If not the first instant compute the function on the potential
@@ -981,7 +981,9 @@ tfunc_tcontseq_tcontseq_single(const TSequence *seq1, const TSequence *seq2,
     if (lfinfo->tpfunc != NULL && k > 0 &&
       lfinfo->tpfunc(prev1, inst1, prev2, inst2, &value, &tptime))
     {
-      instants[k++] = tinstant_make(value, lfinfo->restype, tptime);
+      /* Avoid adding a turning point at the same timestamp added next */
+      if (tptime != prev1->t)
+        instants[k++] = tinstant_make(value, lfinfo->restype, tptime);
     }
     /* Compute the function on the synchronized instants */
     value1 = tinstant_value(inst1);
@@ -1014,7 +1016,7 @@ tfunc_tcontseq_tcontseq_single(const TSequence *seq1, const TSequence *seq2,
 }
 
 /**
- * @brief Synchronizes the temporal values and apply to them the function.
+ * @brief Synchronize the temporal values and apply to them the function.
  *
  * This function is applied when the result is an array of sequences and thus
  * it is used when

@@ -826,9 +826,9 @@ periodset_timestamps(const SpanSet *ps, int *count)
   for (int i = 1; i < ps->count; i++)
   {
     p = spanset_sp_n(ps, i);
-    if (result[k - 1] != (TimestampTz) p->lower)
+    if (result[k - 1] != DatumGetTimestampTz(p->lower))
       result[k++] = p->lower;
-    if (result[k - 1] != (TimestampTz) p->upper)
+    if (result[k - 1] != DatumGetTimestampTz(p->upper))
       result[k++] = p->upper;
   }
   *count = k;
