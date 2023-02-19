@@ -3819,7 +3819,7 @@ geog_distance_geos(GEOSGeometry *pt1, GEOSGeometry *pt2)
  * Note: The computation is always done in 2D
  */
 static double
-mrr_distance_geos(GEOSGeometry *geom, bool spherical)
+mrr_distance_geos(GEOSGeometry *geom, bool geodetic)
 {
   double result;
   GEOSGeometry *mrr_geom = GEOSMinimumRotatedRectangle(geom);
@@ -3830,7 +3830,7 @@ mrr_distance_geos(GEOSGeometry *geom, bool spherical)
       result = 0;
       break;
     case GEOS_LINESTRING: // compute length of linestring
-      if (spherical)
+      if (geodetic)
       {
         pt1 = GEOSGeomGetStartPoint(mrr_geom);
         pt2 = GEOSGeomGetEndPoint(mrr_geom);
@@ -3844,7 +3844,7 @@ mrr_distance_geos(GEOSGeometry *geom, bool spherical)
     case GEOS_POLYGON: // compute length of diagonal
       pt1 = GEOSGeomGetPointN(GEOSGetExteriorRing(mrr_geom), 0);
       pt2 = GEOSGeomGetPointN(GEOSGetExteriorRing(mrr_geom), 2);
-      if (spherical)
+      if (geodetic)
         result = geog_distance_geos(pt1, pt2);
       else
         assert(GEOSDistance(pt1, pt2, &result));
@@ -3923,7 +3923,7 @@ tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
 
   /* Use GEOS only for non-scalar input */
   bool use_geos_dist = seq->temptype != T_TFLOAT;
-  bool spherical = seq->temptype == T_TGEOGPOINT;
+  bool geodetic = MOBDB_FLAGS_GET_GEODETIC(seq->flags);
 
   const TInstant *inst1, *inst2;
   GEOSGeometry *geom;
@@ -3935,7 +3935,9 @@ tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
   }
 
   int end, start = 0, k = 0;
-  bool is_stopped = false, previously_stopped = false;
+  bool  is_stopped = false,
+        previously_stopped = false,
+        rebuild_geom = false;
 
   for (end = 0; end < seq->count; ++end)
   {
@@ -3949,19 +3951,21 @@ tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
       && (int64)(inst2->t - inst1->t) >= mintunits)
     {
       inst1 = tsequence_inst_n(seq, ++start);
+      rebuild_geom = true;
+    }
 
-      if (use_geos_dist)
-      {
-        GEOSGeom_destroy(geom);
-        geom = multipoint_make(seq, start, end);
-      }
+    if (rebuild_geom && use_geos_dist)
+    {
+      GEOSGeom_destroy(geom);
+      geom = multipoint_make(seq, start, end);
+      rebuild_geom = false;
     }
 
     if (end - start == 0)
       continue;
 
     if (use_geos_dist)
-      is_stopped = mrr_distance_geos(geom, spherical) <= maxdist;
+      is_stopped = mrr_distance_geos(geom, geodetic) <= maxdist;
     else
       is_stopped = mrr_distance_scalar(seq, start, end) <= maxdist;
 
