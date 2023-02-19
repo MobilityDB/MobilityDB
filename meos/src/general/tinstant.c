@@ -286,7 +286,7 @@ tinstant_make(Datum value, meosType temptype, TimestampTz t)
   if (typbyval)
   {
     /* For base types passed by value */
-    value_size = double_pad(sizeof(Datum));
+    value_size = DOUBLE_PAD(sizeof(Datum));
     value_from = &value;
   }
   else
@@ -294,8 +294,8 @@ tinstant_make(Datum value, meosType temptype, TimestampTz t)
     /* For base types passed by reference */
     value_from = DatumGetPointer(value);
     int16 typlen = basetype_length(basetype);
-    value_size = (typlen != -1) ? double_pad((unsigned int) typlen) :
-      double_pad(VARSIZE(value_from));
+    value_size = (typlen != -1) ? DOUBLE_PAD((unsigned int) typlen) :
+      DOUBLE_PAD(VARSIZE(value_from));
   }
   size += value_size;
   TInstant *result = palloc0(size);

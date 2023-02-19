@@ -401,7 +401,7 @@ SELECT ttextFromHexWKB('01170001040000000000000041414100009C57D3C11C0000');
 			</listitem>
 
 			<listitem>
-				<para>Finalmente, otro conjunto de funciones para valores de conjunto de secuencias tiene como primer argumento una matriz de valores de los valores instantáneos correspondientes, y dos argumentos que establecen una distancia máxima y un intervalo de tiempo máximo tal que se introduce una brecha entre la composición de secuencias del resultado siempre que dos instantes de entrada consecutivos tengan una distancia o un intervalo de tiempo superior a estos valores. Para puntos temporales, la distancia se especifica en unidades del SRID subyacente. Estos dos argumentos de brechas son opcionales y, si no se dan, se asume un valor cero, que no se tiene en cuenta para determinar las brechas en el resultado. Además, las funciones para valores de secuencia con tipo de base continuo tienen un argumento adicional de valor booleano que indica si la interpolación es lineal o no. Si no se especifica este argumento, se asume que es verdadero por defecto.</para>
+				<para>Finalmente, otro conjunto de funciones para valores de conjunto de secuencias tiene como primer argumento una matriz de valores de los valores instantáneos correspondientes, y dos argumentos que establecen una distancia máxima y un intervalo de tiempo máximo tal que se introduce una brecha entre la composición de secuencias del resultado siempre que dos instantes de entrada consecutivos tengan una distancia o un intervalo de tiempo superior a estos valores. Para puntos temporales, la distancia se especifica en unidades del sistema de coordenadas. Estos dos argumentos de brechas son opcionales y, si no se dan, se asume un valor cero, que no se tiene en cuenta para determinar las brechas en el resultado. Además, las funciones para valores de secuencia con tipo de base continuo tienen un argumento adicional de valor booleano que indica si la interpolación es lineal o no. Si no se especifica este argumento, se asume que es verdadero por defecto.</para>
 			</listitem>
 		</itemizedlist>
 
@@ -473,7 +473,7 @@ SELECT tgeogpoint_contseq(ARRAY[tgeogpoint 'Point(0 0)@2001-01-01 08:00:00',
 				<para><varname>&lt;ttype&gt;_seqset(ttype_contseq[]) → ttype_seqset</varname></para>
 				<para><varname>&lt;ttype&gt;_seqset_gaps(ttype_inst[],linear=true,maxdist=0.0,maxt='0 minutes') →</varname></para>
 				<para><varname>  tcont_seqset</varname></para>
-				<para>The parameters of the function depend on the temporal type. For example, the parameter <varname>maxdist</varname> is not allowed for scalar types such as <varname>ttext</varname> that do not have a standard distance function. Similarly, the parameter <varname>linear</varname> is not allowed for temporal types with discrete subtype such as <varname>tint</varname>.</para>
+				<para>Los parámetros de la función dependen del tipo temporal. Por ejemplo, el parámetro <varname>maxdist</varname> no está permitido para tipos escalares como <varname>ttext</varname> que no tienen una función de distancia estándar. De manera similar, el parámetro <varname>linear</varname> no está permitido para tipos temporales con subtipo discreto como <varname>tint</varname>.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbool_seqset(ARRAY[tbool '[false@2001-01-01 08:00:00, false@2001-01-01 08:05:00)',
   '[true@2001-01-01 08:05:00]','(false@2001-01-01 08:05:00, false@2001-01-01 08:10:00)']);
@@ -818,7 +818,7 @@ SELECT getTime(tint '[1@2001-01-01, 1@2001-01-15)');
 			<listitem id="ttype_duration">
 				<indexterm><primary><varname>duration</varname></primary></indexterm>
 				<para>Obtener el intervalo de tiempo</para>
-				<para><varname>duration(ttype, bool boundspan=FALSE) → interval</varname></para>
+				<para><varname>duration(ttype,boundspan=false) → interval</varname></para>
 				<para>Se puede poner en verdadero un parámetro adicional para calcular la duración del período limitador, ignorando así los posibles intervalos de tiempo</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT duration(tfloat '{1@2001-01-01, 2@2001-01-03, 2@2001-01-05}');
@@ -1179,6 +1179,27 @@ SELECT asText(tprecision(tgeompoint '[Point(1 1)@2000-01-01, Point(5 5)@2000-01-
 </programlisting>
 			</listitem>
 
+			<listitem id="stops">
+				<indexterm><primary><varname>stops</varname></primary></indexterm>
+				<para>Extraer de un sequencia o un conjunto de secuencias temporales con interpolación linear los segmentos cuya distancia es menor o igual que el argumento dados y/o cuya duración es mayor o igual que el argumento dado &Z_support; &geography_support;</para>
+				<para><varname>stops({tcont_seq,tcont_seqset},maxDist=0.0,minDuration='0 minutes') → tcont_seqset</varname></para>
+				<para>Si no se proporciona <varname>maxDist</varname>, se supone que es 0.0 y, por lo tanto, la función extrae los segmentos constantes del valor temporal dado.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT stops(tfloat '[1@2000-01-01, 1@2000-01-02, 2@2000-01-03]');
+-- {[1@2000-01-01, 1@2000-01-02)}
+SELECT stops(tfloat '[1@2000-01-01, 1@2000-01-02, 2@2000-01-03]', 0.0, '2 days');
+-- NULL
+SELECT asText(stops(tgeompoint '[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02,
+  Point(2 2)@2000-01-03, Point(2 2)@2000-01-04]'));
+/* {[POINT(1 1)@2000-01-01, POINT(1 1)@2000-01-02), [POINT(2 2)@2000-01-03,
+   POINT(2 2)@2000-01-04]} */
+SELECT asText(stops(tgeompoint '[Point(1 1 1)@2000-01-01, Point(1 1 1)@2000-01-02,
+  Point(2 2 2)@2000-01-03, Point(2 2 2)@2000-01-04]', 1.75));
+/* {[POINT Z (1 1 1)@2000-01-01, POINT Z (1 1 1)@2000-01-02, POINT Z (2 2 2)@2000-01-03,
+   POINT Z (2 2 2)@2000-01-04]} */
+</programlisting>
+			</listitem>
+
 			<listitem id="unnest">
 				<indexterm><primary><varname>unnest</varname></primary></indexterm>
 				<para>Transformar un valor temporal no lineal en un conjunto de filas, cada una es una pareja compuesta de un valor de base y un conjunto de períodos durante el cual el valor temporal tiene el valor de base.</para>
@@ -1272,7 +1293,7 @@ FROM (SELECT unnest(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01,
 		<itemizedlist>
 			<listitem id="insert">
 				<para>Insertar un valor temporal en otro</para>
-				<para><varname>insert(ttype,ttype,connect boolean=true) → ttype</varname></para>
+				<para><varname>insert(ttype,ttype,connect=true) → ttype</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT insert(tint '{1@2000-01-01, 3@2000-01-03, 5@2000-01-05}',
   tint '{3@2000-01-03, 7@2000-01-07}');
@@ -1293,7 +1314,7 @@ SELECT asText(insert(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01
 
 				<listitem id="update">
 					<para>Actualizar un valor temporal con otro</para>
-					<para><varname>update(ttype,ttype,connect boolean=true) → ttype</varname></para>
+					<para><varname>update(ttype,ttype,connect=true) → ttype</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT update(tint '{1@2000-01-01, 3@2000-01-03, 5@2000-01-05}',
   tint '{5@2000-01-03, 7@2000-01-07}');
@@ -1311,7 +1332,7 @@ SELECT asText(update(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(3 3 3)@2000-01
 
 				<listitem id="deleteTime">
 					<para>Eliminar de un valor temporal un valor de tiempo</para>
-					<para><varname>deleteTime(ttype,time,connect boolean=true) → ttype</varname></para>
+					<para><varname>deleteTime(ttype,time,connect=true) → ttype</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT deleteTime(tint '[1@2000-01-01, 1@2000-01-03]', timestamptz '2000-01-02', false);
 -- {[1@2000-01-01, 1@2000-01-02), (1@2000-01-02, 1@2000-01-03]}

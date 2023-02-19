@@ -413,6 +413,43 @@ stbox_to_period(const STBox *box)
  *****************************************************************************/
 
 /**
+ * @brief Get the coordinates from a geometry/geography point.
+ * @note This function is called for the points composing a temporal point
+ * @pre The point is not empty
+ */
+void
+point_get_coords(const GSERIALIZED *point, bool hasz, bool geodetic,
+  double *x, double *y, double *z)
+{
+  if (geodetic)
+  {
+    POINT3D A1;
+    const POINT2D *p = GSERIALIZED_POINT2D_P(point);
+    ll2cart(p, &A1);
+    *x = A1.x;
+    *y = A1.y;
+    *z = A1.z;
+  }
+  else
+  {
+    if (hasz)
+    {
+      const POINT3DZ *p = GSERIALIZED_POINT3DZ_P(point);
+      *x = p->x;
+      *y = p->y;
+      *z = p->z;
+    }
+    else
+    {
+      const POINT2D *p = GSERIALIZED_POINT2D_P(point);
+      *x = p->x;
+      *y = p->y;
+    }
+  }
+  return;
+}
+
+/**
  * @ingroup libmeos_internal_box_cast
  * @brief Set a spatiotemporal box from a geometry/geography.
  */
@@ -435,32 +472,12 @@ geo_set_stbox(const GSERIALIZED *gs, STBox *box)
   /* Short-circuit the case where the geometry/geography is a point */
   if (gserialized_get_type(gs) == POINTTYPE)
   {
-    if (geodetic)
-    {
-      POINT3D A1;
-      const POINT2D *p = datum_point2d_p(PointerGetDatum(gs));
-      ll2cart(p, &A1);
-      box->xmin = box->xmax = A1.x;
-      box->ymin = box->ymax = A1.y;
-      box->zmin = box->zmax = A1.z;
-    }
-    else
-    {
-      if (hasz)
-      {
-        const POINT3DZ *p = datum_point3dz_p(PointerGetDatum(gs));
-        box->xmin = box->xmax = p->x;
-        box->ymin = box->ymax = p->y;
-        box->zmin = box->zmax = p->z;
-      }
-      else
-      {
-        const POINT2D *p = datum_point2d_p(PointerGetDatum(gs));
-        box->xmin = box->xmax = p->x;
-        box->ymin = box->ymax = p->y;
-      }
-    }
-    return true;
+    double x, y, z;
+    point_get_coords(gs, hasz, geodetic, &x, &y, &z);
+    box->xmin = box->xmax = x;
+    box->ymin = box->ymax = y;
+    if (geodetic || hasz)
+      box->zmin = box->zmax = z;
   }
 
   /* General case for arbitrary geometry/geography */

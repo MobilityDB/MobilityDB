@@ -376,7 +376,7 @@ SELECT tnpoint '[Npoint(1, 0.2)@2001-01-01 09:00:00, Npoint(2, 0.2)@2001-01-01 0
 				<listitem id="tnpoint">
 					<indexterm><primary><varname>=</varname></primary></indexterm>
 					<para>Constructor for temporal network points from a base value and a time value</para>
-					<para><varname>tnpoint(npoint,time,linear bool=true) → tnpoint</varname></para>
+					<para><varname>tnpoint(npoint,time,linear=true) → tnpoint</varname></para>
 					<para>When the second argument is a time span or span set, an optional Boolean argument states whether the resulting value has linear interpolation. If the argument is not given it assumed true by default.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT tnpoint('Npoint(1, 0.5)', timestamptz '2000-01-01');
@@ -404,11 +404,10 @@ SELECT tnpoint_discseq(ARRAY[tnpoint 'Npoint(1, 0.3)@2000-01-01',
 				<listitem id="tnpoint_contseq">
 					<indexterm><primary><varname>=</varname></primary></indexterm>
 					<para>Constructor for temporal network points of sequence subtype and linear or step interpolation</para>
-					<para><varname>tnpoint_contseq(tnpoint[],lower_inc boolean=true,upper_inc boolean=true,</varname></para>
-					<para><varname>  linear boolean=true) → tnpoint_seq</varname></para>
+					<para><varname>tnpoint_contseq(tnpoint[],lower_inc=true,upper_inc=true,linear=true) → tnpoint_seq</varname></para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT tnpoint_contseq(ARRAY[tnpoint 'Npoint(1, 0.2)@2000-01-01', 'Npoint(1, 0.4)@2000-01-02',
-  'Npoint(1, 0.5)@2000-01-03']);
+SELECT tnpoint_contseq(ARRAY[tnpoint 'Npoint(1, 0.2)@2000-01-01',
+  'Npoint(1, 0.4)@2000-01-02', 'Npoint(1, 0.5)@2000-01-03']);
 -- [NPoint(1,0.2)@2000-01-01, NPoint(1,0.4)@2000-01-02, NPoint(1,0.5)@2000-01-03]
 </programlisting>
 				</listitem>

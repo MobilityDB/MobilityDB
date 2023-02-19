@@ -338,6 +338,15 @@ SELECT MAX(startTimestamp(tsample(seq, '15 minutes'))) FROM tbl_tgeompoint_seq;
 SELECT MAX(startTimestamp(tsample(ss, '15 minutes'))) FROM tbl_tgeompoint_seqset;
 
 -------------------------------------------------------------------------------
+-- Stop function
+
+SELECT MAX(numInstants(stops(seq, 50.0))) FROM tbl_tgeompoint_seq;
+SELECT MAX(numInstants(stops(seq, 50.0))) FROM tbl_tgeogpoint_seq;
+
+SELECT MAX(numInstants(stops(seq, 50.0, '1 min'))) FROM tbl_tgeompoint_seq;
+SELECT MAX(numInstants(stops(seq, 50.0, '1 min'))) FROM tbl_tgeogpoint_seq;
+
+-------------------------------------------------------------------------------
 -- Ever/always comparison functions
 -------------------------------------------------------------------------------
 

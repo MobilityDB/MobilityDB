@@ -98,7 +98,7 @@ npointarr_set_stbox(const Datum *values, int count, STBox *box)
 void
 tnpointinst_set_stbox(const TInstant *inst, STBox *box)
 {
-  npoint_set_stbox(DatumGetNpointP(tinstant_value(inst)), box);
+  npoint_set_stbox(DatumGetNpointP(&inst->value), box);
   span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
     true, true, T_TIMESTAMPTZ, &box->period);
   MOBDB_FLAGS_SET_T(box->flags, true);
@@ -136,13 +136,13 @@ void
 tnpointinstarr_linear_set_stbox(const TInstant **instants, int count,
   STBox *box)
 {
-  Npoint *np = DatumGetNpointP(tinstant_value(instants[0]));
+  Npoint *np = DatumGetNpointP(&instants[0]->value);
   int64 rid = np->rid;
   double posmin = np->pos, posmax = np->pos;
   TimestampTz tmin = instants[0]->t, tmax = instants[count - 1]->t;
   for (int i = 1; i < count; i++)
   {
-    np = DatumGetNpointP(tinstant_value(instants[i]));
+    np = DatumGetNpointP(&instants[i]->value);
     posmin = Min(posmin, np->pos);
     posmax = Max(posmax, np->pos);
   }
@@ -194,8 +194,8 @@ tnpointseq_expand_bbox(const TSequence *seq, const TInstant *inst)
   if (interp == LINEAR)
   {
     const TInstant *last = tsequence_inst_n(seq, seq->count - 1);
-    Npoint *np1 = DatumGetNpointP(tinstant_value(last));
-    Npoint *np2 = DatumGetNpointP(tinstant_value(inst));
+    Npoint *np1 = DatumGetNpointP(&last->value);
+    Npoint *np2 = DatumGetNpointP(&inst->value);
     int64 rid = np1->rid;
     double posmin = Min(np1->pos, np2->pos);
     double posmax = Min(np1->pos, np2->pos);

@@ -285,11 +285,7 @@ tnumberinstarr_set_tbox(const TInstant **instants, int count, TBox *box)
  */
 void
 tinstarr_compute_bbox(const TInstant **instants, int count, bool lower_inc,
-#if NPOINT
   bool upper_inc, interpType interp, void *box)
-#else
-  bool upper_inc, interpType interp __attribute__((unused)), void *box)
-#endif
 {
   /* Only external types have bounding box */
   ensure_temporal_type(instants[0]->temptype);
@@ -429,7 +425,7 @@ tnumberseqarr_set_tbox(const TSequence **sequences, int count, TBox *box)
  * @brief Set the bounding box from the array of temporal sequence values
  */
 void
-tsequenceset_compute_bbox(const TSequence **sequences, int count, void *box)
+tseqarr_compute_bbox(const TSequence **sequences, int count, void *box)
 {
   /* Only external types have bounding box */ // TODO
   ensure_temporal_type(sequences[0]->temptype);
@@ -444,5 +440,43 @@ tsequenceset_compute_bbox(const TSequence **sequences, int count, void *box)
       sequences[0]->temptype);
   return;
 }
+
+/*****************************************************************************/
+
+#if MEOS
+/**
+ * @brief Recompute the bounding box of a temporal sequence
+ * @param[inout] seq Temporal sequence
+ * @note This function is applied upon a restart
+ */
+void
+tsequence_compute_bbox(TSequence *seq)
+{
+  const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  for (int i = 0; i < seq->count; i++)
+    instants[i] = tsequence_inst_n(seq, i);
+  interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
+  tinstarr_compute_bbox(instants, seq->count, seq->period.lower_inc,
+    seq->period.upper_inc, interp, TSEQUENCESET_BBOX_PTR(seq));
+  pfree(instants);
+  return;
+}
+
+/**
+ * @brief (Re)compute the bounding box of a temporal sequence set
+ * @param[inout] ss Temporal sequence set
+ * @note This function is applied upon a restart
+ */
+void
+tsequenceset_compute_bbox(TSequenceSet *ss)
+{
+  const TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
+  for (int i = 0; i < ss->count; i++)
+    sequences[i] = tsequenceset_seq_n(ss, i);
+  tseqarr_compute_bbox(sequences, ss->count, TSEQUENCESET_BBOX_PTR(ss));
+  pfree(sequences);
+  return;
+}
+#endif /* MEOS */
 
 /*****************************************************************************/

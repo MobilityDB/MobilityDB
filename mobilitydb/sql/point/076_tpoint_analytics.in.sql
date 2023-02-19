@@ -86,7 +86,7 @@ LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 
-CREATE FUNCTION simplify(tfloat, float8)
+CREATE FUNCTION simplify(tfloat, float8, boolean DEFAULT FALSE)
 RETURNS tfloat
 AS 'MODULE_PATHNAME', 'Tfloat_simplify'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

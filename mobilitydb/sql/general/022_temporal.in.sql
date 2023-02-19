@@ -2057,7 +2057,17 @@ CREATE FUNCTION deleteTime(ttext, tstzspanset, connect boolean DEFAULT TRUE)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
- * Value Aggregate Functions
+ * Stop Function
+ *****************************************************************************/
+
+CREATE FUNCTION stops(tfloat, maxdist float DEFAULT 0.0,
+    minduration interval DEFAULT '0 minutes')
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Temporal_stops'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
+ * Local Aggregate Functions
  *****************************************************************************/
 
 CREATE FUNCTION integral(tint)

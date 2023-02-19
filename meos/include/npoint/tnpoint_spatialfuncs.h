@@ -49,6 +49,10 @@ extern void ensure_same_srid_tnpoint_stbox(const Temporal *temp,
 extern void ensure_same_rid_tnpointinst(const TInstant *inst1,
   const TInstant *inst2);
 
+/* Distance function */
+
+extern Datum npoint_distance(Datum np1, Datum np2);
+
 /* Interpolation functions */
 
 extern bool tnpointsegm_intersection_value(const TInstant *inst1,

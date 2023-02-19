@@ -95,7 +95,7 @@ _PG_init(void)
 uint32_t
 time_max_header_size(void)
 {
-  return double_pad(Max(sizeof(Set), sizeof(SpanSet)));
+  return DOUBLE_PAD(Max(sizeof(Set), sizeof(SpanSet)));
 }
 
 /*****************************************************************************
@@ -2554,6 +2554,32 @@ Temporal_delete_periodset(PG_FUNCTION_ARGS)
   Temporal *result = temporal_delete_periodset(temp, ps, connect);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ps, 1);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Stop function
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Temporal_stops);
+/**
+ * @ingroup mobilitydb_temporal_transf
+ * @brief Return the constant segments of the temporal value
+ * @sqlfunc stops()
+ */
+PGDLLEXPORT Datum
+Temporal_stops(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  float maxdist = PG_GETARG_FLOAT8(1);
+  Interval *minduration = PG_GETARG_INTERVAL_P(2);
+  /* Store fcinfo into a global variable */
+  /* Needed for the distance function for temporal geographic points */
+  store_fcinfo(fcinfo);
+  TSequenceSet *result = temporal_stops(temp, maxdist, minduration);
+  PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);

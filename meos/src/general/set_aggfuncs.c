@@ -92,15 +92,15 @@ set_append_value(Set *set, Datum d, meosType basetype)
     Datum last = set_val_n(set, set->count - 1);
     size_t size_last = (typlen == -1) ? VARSIZE_ANY(last) : size_elem;
     size_t avail_size = ((char *) set + VARSIZE_ANY(set)) -
-      ((char *) DatumGetPointer(last) + double_pad(size_last));
-    if (double_pad(size_elem) > avail_size)
+      ((char *) DatumGetPointer(last) + DOUBLE_PAD(size_last));
+    if (DOUBLE_PAD(size_elem) > avail_size)
       /* There is NOT enough available space */
       break;
 
     /* There is enough space to add the new value */
-    size_t pdata = double_pad(sizeof(Set)) + double_pad(set->bboxsize) +
+    size_t pdata = DOUBLE_PAD(sizeof(Set)) + DOUBLE_PAD(set->bboxsize) +
       sizeof(size_t) * set->maxcount;
-    size_t pos = (set_offsets_ptr(set))[set->count - 1] + double_pad(size_last);
+    size_t pos = (set_offsets_ptr(set))[set->count - 1] + DOUBLE_PAD(size_last);
     memcpy(((char *) set) + pdata + pos, DatumGetPointer(d), size_elem);
     (set_offsets_ptr(set))[set->count++] = pos;
     /* Expand the bounding box and return */

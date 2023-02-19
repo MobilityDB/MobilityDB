@@ -38,6 +38,8 @@
 
 /*****************************************************************************/
 
+/* GEOS */
+#include <geos_c.h>
 /* PostgreSQL */
 #include <postgres.h>
 /* PostGIS */
@@ -81,6 +83,9 @@ extern bool gserialized_azimuth(GSERIALIZED *geom1, GSERIALIZED *geom2,
 
 /* Functions adapted from lwgeom_geos.c */
 
+extern GEOSGeometry *POSTGIS2GEOS(const GSERIALIZED *pglwgeom);
+extern GSERIALIZED *GEOS2POSTGIS(GEOSGeom geom, char want3d);
+
 extern bool gserialized_inter_contains(const GSERIALIZED *geom1,
   const GSERIALIZED *geom2, bool inter);
 extern bool gserialized_touches(const GSERIALIZED *geom1,
@@ -88,6 +93,8 @@ extern bool gserialized_touches(const GSERIALIZED *geom1,
 extern GSERIALIZED *gserialized_intersection(const GSERIALIZED *geom1,
   const GSERIALIZED *geom2);
 extern GSERIALIZED *gserialized_array_union(GSERIALIZED **gsarr, int nelems);
+extern double gserialized_hausdorffdistance(const GSERIALIZED *geom1,
+  const GSERIALIZED *geom2);
 
 /* Functions adapted from geography_measurement.c */
 

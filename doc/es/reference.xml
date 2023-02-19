@@ -737,15 +737,19 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tscale"><varname>tscale</varname></link>: Escalear el intervalo de tiempo del valor temporal a un intervalo.</para>
+					<para><link linkend="tscale"><varname>tscale</varname></link>: Escalear el intervalo de tiempo del valor temporal a un intervalo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="shiftTscale"><varname>shiftTscale</varname></link>: Desplazar y escalear el intervalo de tiempo del valor temporal a los dos intervalos.</para>
+					<para><link linkend="shiftTscale"><varname>shiftTscale</varname></link>: Desplazar y escalear el intervalo de tiempo del valor temporal a los dos intervalos</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="unnest"><varname>unnest</varname></link>: Transformar un valor temporal no lineal en un conjunto de filas, cada una compuesta de un valor base y un conjunto de períodos durante el cual el valor temporal tiene el valor de base.</para>
+					<para><link linkend="stops"><varname>stops</varname></link>: Extraer de un sequencia o un conjunto de secuencias temporales con interpolación linear los segmentos cuya distancia es menor o igual que el argumento dados y/o cuya duración es mayor o igual que el argumento dado</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="unnest"><varname>unnest</varname></link>: Transformar un valor temporal no lineal en un conjunto de filas, cada una compuesta de un valor base y un conjunto de períodos durante el cual el valor temporal tiene el valor de base</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1234,19 +1238,19 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="valueBucket"><varname>valueBucket</varname></link>: Obtener el valor inicial del intervalo que contiene el número de entrada.</para>
+						<para><link linkend="valueBucket"><varname>valueBucket</varname></link>: Obtener el valor inicial del intervalo que contiene el número de entrada</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="spanBucket"><varname>spanBucket</varname></link>: Obtener el rango en el espacio de intervalos contiene el número de entrada.</para>
+						<para><link linkend="spanBucket"><varname>spanBucket</varname></link>: Obtener el rango en el espacio de intervalos contiene el número de entrada</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="timeBucket"><varname>timeBucket</varname></link>: Obtener el valor inicial del intervalo que contiene la marca de tiempo de entrada.</para>
+						<para><link linkend="timeBucket"><varname>timeBucket</varname></link>: Obtener el valor inicial del intervalo que contiene la marca de tiempo de entrada</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="periodBucket"><varname>periodBucket</varname></link>: Obtener el período en el espacio de intervalos que contiene la marca de tiempo de entrada.</para>
+						<para><link linkend="periodBucket"><varname>periodBucket</varname></link>: Obtener el período en el espacio de intervalos que contiene la marca de tiempo de entrada</para>
 					</listitem>
 
 				</itemizedlist>

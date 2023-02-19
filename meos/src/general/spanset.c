@@ -108,6 +108,19 @@ periodset_find_timestamp(const SpanSet *ps, TimestampTz t, int *loc)
 }
 #endif /* MEOS */
 
+/**
+ * @ingroup libmeos_internal_setspan_accessor
+ * @brief Return the n-th span of a span set.
+ * @pre The argument @p index is less than the number of spans in the span set
+ * @note This is the internal function equivalent to `spanset_span_n`.
+ * This function does not verify that the index is is in the correct bounds
+ */
+const Span *
+spanset_sp_n(const SpanSet *ss, int index)
+{
+  return (Span *) &ss->elems[index];
+}
+
 /*****************************************************************************
  * Input/output functions
  *****************************************************************************/
@@ -227,23 +240,6 @@ periodset_out(const SpanSet *ss)
 #endif /* MEOS */
 
 /*****************************************************************************
- * Generic functions
- *****************************************************************************/
-
-/**
- * @ingroup libmeos_internal_setspan_accessor
- * @brief Return the n-th span of a span set.
- * @pre The argument @p index is less than the number of spans in the span set
- * @note This is the internal function equivalent to `spanset_span_n`.
- * This function does not verify that the index is is in the correct bounds
- */
-const Span *
-spanset_sp_n(const SpanSet *ss, int index)
-{
-  return (Span *) &ss->elems[index];
-}
-
-/*****************************************************************************
  * Constructor functions
  ****************************************************************************/
 
@@ -284,8 +280,8 @@ spanset_make(const Span **spans, int count, bool normalize)
   if (normalize && count > 1)
     newspans = spanarr_normalize((Span **) spans, count, SORT_NO, &newcount);
   /* Notice that the first span is already declared in the struct */
-  size_t memsize = double_pad(sizeof(SpanSet)) +
-    double_pad(sizeof(Span)) * (newcount - 1);
+  size_t memsize = DOUBLE_PAD(sizeof(SpanSet)) +
+    DOUBLE_PAD(sizeof(Span)) * (newcount - 1);
   SpanSet *result = palloc0(memsize);
   SET_VARSIZE(result, memsize);
   result->spansettype = spantype_spansettype(spans[0]->spantype);
@@ -830,9 +826,9 @@ periodset_timestamps(const SpanSet *ps, int *count)
   for (int i = 1; i < ps->count; i++)
   {
     p = spanset_sp_n(ps, i);
-    if (result[k - 1] != (TimestampTz) p->lower)
+    if (result[k - 1] != DatumGetTimestampTz(p->lower))
       result[k++] = p->lower;
-    if (result[k - 1] != (TimestampTz) p->upper)
+    if (result[k - 1] != DatumGetTimestampTz(p->upper))
       result[k++] = p->upper;
   }
   *count = k;

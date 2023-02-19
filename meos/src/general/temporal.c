@@ -37,6 +37,9 @@
 #include <assert.h>
 /* GEOS */
 #include <geos_c.h>
+/* POSTGIS */
+#include <lwgeom_log.h>
+#include <lwgeom_geos.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -48,9 +51,9 @@
 #include "general/temporal_tile.h"
 #include "general/type_parser.h"
 #include "general/type_util.h"
+#include "point/pgis_call.h"
 #include "point/tpoint_spatialfuncs.h"
 #if NPOINT
-  #include "npoint/tnpoint_spatialfuncs.h"
   #include "npoint/tnpoint_spatialfuncs.h"
 #endif
 
@@ -280,40 +283,27 @@ ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
   meosType basetype = temptype_basetype(instants[0]->temptype);
   int *result = palloc(sizeof(int) * count);
   Datum value1 = tinstant_value(instants[0]);
-#if NPOINT
-  Datum geom1 = 0; /* Used only for temporal network points */
-#endif
   datum_func2 point_distance = NULL;
   if (geo_basetype(basetype))
     point_distance = pt_distance_fn(instants[0]->flags);
-#if NPOINT
-  else if (basetype == T_NPOINT)
-    geom1 = PointerGetDatum(npoint_geom(DatumGetNpointP(value1)));
-#endif
   int k = 0;
   for (int i = 1; i < count; i++)
   {
     ensure_valid_tinstarr1(instants[i - 1], instants[i], merge, interp);
     bool split = false;
     Datum value2 = tinstant_value(instants[i]);
-#if NPOINT
-    Datum geom2 = 0; /* Used only for temporal network points */
-#endif
     if (maxdist > 0 && ! datum_eq(value1, value2, basetype))
     {
       double dist = -1;
       if (tnumber_basetype(basetype))
-        dist = (basetype == T_INT4) ? /** x **/
+        dist = (basetype == T_INT4) ?
           (double) DatumGetInt32(number_distance(value1, value2, basetype, basetype)) :
           DatumGetFloat8(number_distance(value1, value2, basetype, basetype));
       else if (geo_basetype(basetype))
         dist = DatumGetFloat8(point_distance(value1, value2));
 #if NPOINT
       else if (basetype == T_NPOINT)
-      {
-        geom2 = PointerGetDatum(npoint_geom(DatumGetNpointP(value2)));
-        dist = DatumGetFloat8(pt_distance2d(geom1, geom2));
-      }
+        dist = DatumGetFloat8(npoint_distance(value1, value2));
 #endif
       if (dist > maxdist)
         split = true;
@@ -329,10 +319,6 @@ ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
     if (split)
       result[k++] = i;
     value1 = value2;
-#if NPOINT
-    if (basetype == T_NPOINT)
-      geom1 = geom2;
-#endif
   }
   *countsplits = k;
   return result;
@@ -1256,6 +1242,28 @@ tnumber_to_tbox(const Temporal *temp)
 /*****************************************************************************
  * Transformation functions
  *****************************************************************************/
+
+#if MEOS
+/**
+ * @ingroup libmeos_temporal_transf
+ * @brief Restart a temporal sequence (set) by keeping only the last instants
+ * or sequences.
+ */
+void
+temporal_restart(Temporal *temp, int last)
+{
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == TINSTANT)
+  {
+    elog(ERROR, "Input must be a temporal sequence (set)");
+  }
+  else if (temp->subtype == TSEQUENCE)
+    tsequence_restart((TSequence *) temp, last);
+  else /* temp->subtype == TSEQUENCESET */
+    tsequenceset_restart((TSequenceSet *) temp, last);
+  return;
+}
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_temporal_transf
@@ -3764,6 +3772,316 @@ temporal_delete_periodset(const Temporal *temp, const SpanSet *ps,
   }
   return result;
 }
+
+/*****************************************************************************
+ * Stops functions
+ *****************************************************************************/
+
+/**
+ * @brief Calculate the length of the minimum bounding interval
+ * of the input sequence between the given start and end instants.
+ */
+static double
+mrr_distance_scalar(const TSequence *seq, int start, int end)
+{
+  assert(seq->temptype == T_TFLOAT);
+  double min_value, max_value, curr_value;
+  min_value = DatumGetFloat8(tinstant_value(tsequence_inst_n(seq, start)));
+  max_value = min_value;
+  for (int i = start + 1; i < end + 1; ++i)
+  {
+    curr_value = DatumGetFloat8(tinstant_value(tsequence_inst_n(seq, i)));
+    min_value = fmin(min_value, curr_value);
+    max_value = fmax(max_value, curr_value);
+  }
+  return max_value - min_value;
+}
+
+/**
+ * @brief Calculate the distance between two geographic points
+ * given as GEOS geometries.
+ */
+static double
+geog_distance_geos(GEOSGeometry *pt1, GEOSGeometry *pt2)
+{
+  GSERIALIZED *gs1 = GEOS2POSTGIS(pt1, false);
+  GSERIALIZED *gs2 = GEOS2POSTGIS(pt2, false);
+  double dist = gserialized_geog_length(gs1, gs2);
+  pfree(gs1);
+  pfree(gs2);
+  return dist;
+}
+
+/**
+ * @brief Calculate the length of the diagonal of the minimum rotated rectangle
+ * of the input GEOS geometry.
+ *
+ * Note: The computation is always done in 2D
+ */
+static double
+mrr_distance_geos(GEOSGeometry *geom, bool geodetic)
+{
+  double result;
+  GEOSGeometry *mrr_geom = GEOSMinimumRotatedRectangle(geom);
+  GEOSGeometry *pt1, *pt2;
+  switch (GEOSGeomTypeId(mrr_geom))
+  {
+    case GEOS_POINT:
+      result = 0;
+      break;
+    case GEOS_LINESTRING: // compute length of linestring
+      if (geodetic)
+      {
+        pt1 = GEOSGeomGetStartPoint(mrr_geom);
+        pt2 = GEOSGeomGetEndPoint(mrr_geom);
+        result = geog_distance_geos(pt1, pt2);
+        GEOSGeom_destroy(pt1);
+        GEOSGeom_destroy(pt2);
+      }
+      else
+        assert(GEOSGeomGetLength(mrr_geom, &result));
+      break;
+    case GEOS_POLYGON: // compute length of diagonal
+      pt1 = GEOSGeomGetPointN(GEOSGetExteriorRing(mrr_geom), 0);
+      pt2 = GEOSGeomGetPointN(GEOSGetExteriorRing(mrr_geom), 2);
+      if (geodetic)
+        result = geog_distance_geos(pt1, pt2);
+      else
+        assert(GEOSDistance(pt1, pt2, &result));
+      GEOSGeom_destroy(pt1);
+      GEOSGeom_destroy(pt2);
+      break;
+    default:
+      elog(ERROR, "Invalid geometry type for Minimum Rotated Rectangle");
+  }
+  return result;
+}
+
+/**
+ * @brief Create a GEOS Multipoint geometry from
+ * a part (defined by start and end) of a temporal point sequence
+ */
+static GEOSGeometry *
+multipoint_make(const TSequence *seq, int start, int end)
+{
+  GSERIALIZED *gs;
+  GEOSGeometry **geoms = palloc(sizeof(GEOSGeometry *) * (end - start + 1));
+  for (int i = 0; i < end - start + 1; ++i)
+  {
+    if (tgeo_type(seq->temptype))
+      gs = DatumGetGserializedP(
+        tinstant_value(tsequence_inst_n(seq, start + i)));
+#if NPOINT
+    else if (seq->temptype == T_TNPOINT)
+      gs = npoint_geom(DatumGetNpointP(
+        tinstant_value(tsequence_inst_n(seq, start + i))));
+#endif
+    else
+      elog(ERROR, "Sequence must have a spatial base type");
+    geoms[i] = POSTGIS2GEOS(gs);
+  }
+  GEOSGeometry *result = GEOSGeom_createCollection(GEOS_MULTIPOINT, geoms, end - start + 1);
+  pfree(geoms);
+  return result;
+}
+
+/**
+ * @brief Add the point stored in the given instant to a GEOS multipoint geometry
+ */
+static GEOSGeometry *
+multipoint_add_inst_free(GEOSGeometry *geom, const TInstant *inst)
+{
+  GSERIALIZED *gs;
+  if (tgeo_type(inst->temptype))
+    gs = DatumGetGserializedP(tinstant_value(inst));
+#if NPOINT
+  else if (inst->temptype == T_TNPOINT)
+    gs = npoint_geom(DatumGetNpointP(tinstant_value(inst)));
+#endif
+  else
+    elog(ERROR, "Instant must have a spatial base type");
+  GEOSGeometry *geom1 = POSTGIS2GEOS(gs);
+  GEOSGeometry *result = GEOSUnion(geom, geom1);
+  GEOSGeom_destroy(geom1);
+  GEOSGeom_destroy(geom);
+  return result;
+}
+
+/**
+ * @brief Return the subsequences where the objects stays within
+ * an area with a given maximum size (maxdist) for at least
+ * the specified duration (minunits).
+ */
+static int
+tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
+  TSequence **result)
+{
+  assert(seq->count > 1);
+  assert(seq->temptype == T_TFLOAT
+    || tgeo_type(seq->temptype)
+    || seq->temptype == T_TNPOINT);
+
+  /* Use GEOS only for non-scalar input */
+  bool use_geos_dist = seq->temptype != T_TFLOAT;
+  bool geodetic = MOBDB_FLAGS_GET_GEODETIC(seq->flags);
+
+  const TInstant *inst1, *inst2;
+  GEOSGeometry *geom;
+
+  if (use_geos_dist)
+  {
+    initGEOS(lwnotice, lwgeom_geos_error);
+    geom = GEOSGeom_createEmptyCollection(GEOS_MULTIPOINT);
+  }
+
+  int end, start = 0, k = 0;
+  bool  is_stopped = false,
+        previously_stopped = false,
+        rebuild_geom = false;
+
+  for (end = 0; end < seq->count; ++end)
+  {
+    inst1 = tsequence_inst_n(seq, start);
+    inst2 = tsequence_inst_n(seq, end);
+
+    if (use_geos_dist)
+      geom = multipoint_add_inst_free(geom, inst2);
+
+    while (!is_stopped && end - start > 1
+      && (int64)(inst2->t - inst1->t) >= mintunits)
+    {
+      inst1 = tsequence_inst_n(seq, ++start);
+      rebuild_geom = true;
+    }
+
+    if (rebuild_geom && use_geos_dist)
+    {
+      GEOSGeom_destroy(geom);
+      geom = multipoint_make(seq, start, end);
+      rebuild_geom = false;
+    }
+
+    if (end - start == 0)
+      continue;
+
+    if (use_geos_dist)
+      is_stopped = mrr_distance_geos(geom, geodetic) <= maxdist;
+    else
+      is_stopped = mrr_distance_scalar(seq, start, end) <= maxdist;
+
+    inst2 = tsequence_inst_n(seq, end - 1);
+    if (!is_stopped && previously_stopped
+      && (int64)(inst2->t - inst1->t) >= mintunits) // Found a stop
+    {
+      const TInstant **insts = palloc(sizeof(TInstant *) * (end - start));
+      for (int i = 0; i < end - start; ++i)
+          insts[i] = tsequence_inst_n(seq, start + i);
+      result[k++] = tsequence_make(insts, end - start,
+        true, true, LINEAR, NORMALIZE_NO);
+      start = end;
+
+      if (use_geos_dist)
+      {
+        GEOSGeom_destroy(geom);
+        geom = GEOSGeom_createEmptyCollection(GEOS_MULTIPOINT);
+      }
+    }
+
+    previously_stopped = is_stopped;
+  }
+
+  if (use_geos_dist)
+    GEOSGeom_destroy(geom);
+
+  inst2 = tsequence_inst_n(seq, end - 1);
+  if (is_stopped && (int64)(inst2->t - inst1->t) >= mintunits)
+  {
+    const TInstant **insts = palloc(sizeof(TInstant *) * (end - start));
+    for (int i = 0; i < end - start; ++i)
+        insts[i] = tsequence_inst_n(seq, start + i);
+    result[k++] = tsequence_make(insts, end - start,
+      true, true, LINEAR, NORMALIZE_NO);
+  }
+
+  return k;
+}
+
+/**
+ * @ingroup libmeos_temporal_transf
+ * @brief Return the subsequences where the objects stays within
+ * an area with a given maximum size (maxdist) for at least
+ * the specified duration (minunits).
+ */
+TSequenceSet *
+tsequence_stops(const TSequence *seq, double maxdist, int64 mintunits)
+{
+  /* Instantaneous sequence */
+  if (seq->count == 1)
+    return NULL;
+
+  /* General case */
+  TSequence **sequences = palloc(sizeof(TSequence *) * seq->count);
+  int k = tsequence_stops1(seq, maxdist, mintunits, sequences);
+  TSequenceSet *result = NULL;
+  if (k > 0)
+    result = tsequenceset_make_free(sequences, k, NORMALIZE);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_transf
+ * @brief Return the subsequences where the objects stays within
+ * an area with a given maximum size (maxdist) for at least
+ * the specified duration (minunits).
+ */
+TSequenceSet *
+tsequenceset_stops(const TSequenceSet *ss, double maxdist, int64 mintunits)
+{
+  TSequence **sequences = palloc(sizeof(TSequence *) * ss->totalcount);
+  int k = 0;
+  for (int i = 0; i < ss->count; i++)
+  {
+    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    k += tsequence_stops1(seq, maxdist, mintunits, &sequences[k]);
+  }
+  TSequenceSet *result = tsequenceset_make_free(sequences, k, NORMALIZE);
+  return result;
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup libmeos_temporal_transf
+ * @brief Return the subsequences where the objects stays within
+ * an area with a given maximum size (maxdist) for at least
+ * the specified duration (minduration).
+ */
+TSequenceSet *
+temporal_stops(const Temporal *temp, double maxdist,
+  const Interval *minduration)
+{
+  if (maxdist < 0)
+    elog(ERROR, "The maximum distance must be positive: %f", maxdist);
+  Interval intervalzero;
+  memset(&intervalzero, 0, sizeof(Interval));
+  int cmp = pg_interval_cmp(minduration, &intervalzero);
+  if (cmp < 0)
+    elog(ERROR, "The duration must be positive");
+  int64 mintunits = interval_units(minduration);
+
+  TSequenceSet *result = NULL;
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
+  {
+    elog(ERROR, "Input must be a temporal sequence (set) with linear interpolation");
+  }
+  else if (temp->subtype == TSEQUENCE)
+    result = tsequence_stops((TSequence *) temp, maxdist, mintunits);
+  else /* temp->subtype == TSEQUENCESET */
+    result = tsequenceset_stops((TSequenceSet *) temp, maxdist, mintunits);
+  return result;
+}
+
 
 /*****************************************************************************
  * Local aggregate functions

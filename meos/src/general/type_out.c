@@ -187,7 +187,7 @@ coordinates_mfjson_buf(char *output, const TInstant *inst, int precision)
   ptr += sprintf(ptr, "[");
   if (MOBDB_FLAGS_GET_Z(inst->flags))
   {
-    const POINT3DZ *pt = datum_point3dz_p(tinstant_value(inst));
+    const POINT3DZ *pt = DATUM_POINT3DZ_P(&inst->value);
     ptr += lwprint_double(pt->x, precision, ptr);
     ptr += sprintf(ptr, ",");
     ptr += lwprint_double(pt->y, precision, ptr);
@@ -196,7 +196,7 @@ coordinates_mfjson_buf(char *output, const TInstant *inst, int precision)
   }
   else
   {
-    const POINT2D *pt = datum_point2d_p(tinstant_value(inst));
+    const POINT2D *pt = DATUM_POINT2D_P(&inst->value);
     ptr += lwprint_double(pt->x, precision, ptr);
     ptr += sprintf(ptr, ",");
     ptr += lwprint_double(pt->y, precision, ptr);
@@ -1607,14 +1607,14 @@ coords_to_wkb_buf(Datum value, int16 flags, uint8_t *buf, uint8_t variant)
 {
   if (MOBDB_FLAGS_GET_Z(flags))
   {
-    const POINT3DZ *point = datum_point3dz_p(value);
+    const POINT3DZ *point = DATUM_POINT3DZ_P(value);
     buf = double_to_wkb_buf(point->x, buf, variant);
     buf = double_to_wkb_buf(point->y, buf, variant);
     buf = double_to_wkb_buf(point->z, buf, variant);
   }
   else
   {
-    const POINT2D *point = datum_point2d_p(value);
+    const POINT2D *point = DATUM_POINT2D_P(value);
     buf = double_to_wkb_buf(point->x, buf, variant);
     buf = double_to_wkb_buf(point->y, buf, variant);
   }

@@ -1412,9 +1412,9 @@ intersection_spanset_span(const SpanSet *ss, const Span *s)
   for (int i = loc; i < ss->count; i++)
   {
     const Span *s1 = spanset_sp_n(ss, i);
-    Span *s2 = intersection_span_span(s1, s);
-    if (s2 != NULL)
-      spans[k++] = s2;
+    Span s2;
+    if (inter_span_span(s1, s, &s2))
+      spans[k++] = span_copy(&s2);
     if (s->upper < s1->upper)
       break;
   }
@@ -1445,9 +1445,9 @@ intersection_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
   {
     const Span *s1 = spanset_sp_n(ss1, i);
     const Span *s2 = spanset_sp_n(ss2, j);
-    Span *inter = intersection_span_span(s1, s2);
-    if (inter != NULL)
-      spans[k++] = inter;
+    Span inter;
+    if (inter_span_span(s1, s2, &inter))
+      spans[k++] = span_copy(&inter);
     int cmp = datum_cmp(s1->upper, s2->upper, s1->basetype);
     if (cmp == 0 && s1->upper_inc == s2->upper_inc)
     {

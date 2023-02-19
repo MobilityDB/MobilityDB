@@ -661,9 +661,9 @@ tsequence_time_split1(const TSequence *seq, TimestampTz start, TimestampTz end,
    * sequences composing a sequence set.
    * The upper bound for the bucket is exclusive => the test below is >= */
   while (lower < end &&
-    ((TimestampTz) seq->period.lower >= upper ||
-     lower > (TimestampTz) seq->period.upper ||
-     (lower == (TimestampTz) seq->period.upper && ! seq->period.upper_inc)))
+    (DatumGetTimestampTz(seq->period.lower) >= upper ||
+     lower > DatumGetTimestampTz(seq->period.upper) ||
+     (lower == DatumGetTimestampTz(seq->period.upper) && ! seq->period.upper_inc)))
   {
     lower = upper;
     upper += tunits;
@@ -801,7 +801,7 @@ tsequenceset_time_split(const TSequenceSet *ss, TimestampTz start,
     const TSequence *seq = tsequenceset_seq_n(ss, i);
     /* Output the accumulated fragments of the current time bucket (if any)
      * if the current sequence starts on the next time bucket */
-    if (k > 0 && (TimestampTz) seq->period.lower >= upper)
+    if (k > 0 && DatumGetTimestampTz(seq->period.lower) >= upper)
     {
       result[m++] = tsequenceset_make((const TSequence **) fragments, k,
         NORMALIZE);

@@ -343,7 +343,7 @@ extern Span *bigintspan_make(int64 lower, int64 upper, bool lower_inc, bool uppe
 extern Span *floatspan_make(double lower, double upper, bool lower_inc, bool upper_inc);
 extern Span *intspan_make(int lower, int upper, bool lower_inc, bool upper_inc);
 extern Set *set_copy(const Set *ts);
-extern Span *period_make(TimestampTz lower, TimestampTz upper, bool lower_inc, bool upper_inc);
+extern Span *tstzspan_make(TimestampTz lower, TimestampTz upper, bool lower_inc, bool upper_inc);
 extern Span *span_copy(const Span *s);
 extern SpanSet *spanset_copy(const SpanSet *ps);
 extern SpanSet *spanset_make(const Span **spans, int count, bool normalize);
@@ -1654,6 +1654,7 @@ extern Temporal *temporal_delete_timestamp(const Temporal *temp, TimestampTz t, 
 extern Temporal *temporal_delete_timestampset(const Temporal *temp, const Set *ts, bool connect);
 extern Temporal *temporal_delete_period(const Temporal *temp, const Span *p, bool connect);
 extern Temporal *temporal_delete_periodset(const Temporal *temp, const SpanSet *ps, bool connect);
+extern TSequenceSet *temporal_stops(const Temporal *temp, double mindist, const Interval *minduration);
 
 /*****************************************************************************/
 

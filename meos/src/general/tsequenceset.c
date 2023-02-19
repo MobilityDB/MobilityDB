@@ -93,12 +93,12 @@ tsequenceset_find_timestamp(const TSequenceSet *ss, TimestampTz t, int *loc)
       *loc = middle;
       return true;
     }
-    if (t <= (TimestampTz) seq->period.lower)
+    if (t <= DatumGetTimestampTz(seq->period.lower))
       last = middle - 1;
     else
       first = middle + 1;
   }
-  if (t >= (TimestampTz) seq->period.upper)
+  if (t >= DatumGetTimestampTz(seq->period.upper))
     middle++;
   *loc = middle;
   return false;
@@ -141,17 +141,6 @@ tsequenceset_set_bbox(const TSequenceSet *ss, void *box)
 }
 
 /**
- * @brief Return a pointer to the offsets array of a temporal sequence set
- */
-static size_t *
-tsequenceset_offsets_ptr(const TSequenceSet *ss)
-{
-  return (size_t *)(((char *)ss) + double_pad(sizeof(TSequenceSet)) +
-    /* The period component of the bbox is already declared in the struct */
-    double_pad(ss->bboxsize - sizeof(Span)));
-}
-
-/**
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the n-th sequence of a temporal sequence set.
  * @pre The argument @p index is less than the number of sequences in the
@@ -162,11 +151,11 @@ tsequenceset_seq_n(const TSequenceSet *ss, int index)
 {
   return (TSequence *)(
     /* start of data */
-    ((char *)ss) + double_pad(sizeof(TSequenceSet)) +
+    ((char *)ss) + DOUBLE_PAD(sizeof(TSequenceSet)) +
       /* The period component of the bbox is already declared in the struct */
       (ss->bboxsize - sizeof(Span)) + ss->count * sizeof(size_t) +
       /* offset */
-      (tsequenceset_offsets_ptr(ss))[index]);
+      (TSEQUENCESET_OFFSETS_PTR(ss))[index]);
 }
 
 /**
@@ -218,7 +207,7 @@ tsequenceset_make1_exp(const TSequence **sequences, int count, int maxcount,
   for (int i = 0; i < newcount; i++)
   {
     totalcount += normseqs[i]->count;
-    seqs_size += double_pad(VARSIZE(normseqs[i]));
+    seqs_size += DOUBLE_PAD(VARSIZE(normseqs[i]));
   }
   /* Compute the total size for maxcount sequences as a proportion of the size
    * of the count sequences provided. Note that this is only an initial
@@ -230,7 +219,7 @@ tsequenceset_make1_exp(const TSequence **sequences, int count, int maxcount,
   else
     maxcount = newcount;
   /* Size of the struct and the offset array */
-  size_t memsize = double_pad(sizeof(TSequenceSet)) + bboxsize_extra +
+  size_t memsize = DOUBLE_PAD(sizeof(TSequenceSet)) + bboxsize_extra +
     maxcount * sizeof(size_t) + seqs_size;
   /* Create the temporal sequence set */
   TSequenceSet *result = palloc0(memsize);
@@ -262,19 +251,19 @@ tsequenceset_make1_exp(const TSequence **sequences, int count, int maxcount,
    */
   if (bboxsize != 0)
   {
-    tsequenceset_compute_bbox((const TSequence **) normseqs, newcount,
+    tseqarr_compute_bbox((const TSequence **) normseqs, newcount,
       TSEQUENCESET_BBOX_PTR(result));
   }
   /* Store the composing instants */
-  size_t pdata = double_pad(sizeof(TSequenceSet)) +
-    double_pad(bboxsize - sizeof(Span)) + newcount * sizeof(size_t);
+  size_t pdata = DOUBLE_PAD(sizeof(TSequenceSet)) +
+    DOUBLE_PAD(bboxsize - sizeof(Span)) + newcount * sizeof(size_t);
   size_t pos = 0;
   for (int i = 0; i < newcount; i++)
   {
     memcpy(((char *) result) + pdata + pos, normseqs[i],
       VARSIZE(normseqs[i]));
-    (tsequenceset_offsets_ptr(result))[i] = pos;
-    pos += double_pad(VARSIZE(normseqs[i]));
+    (TSEQUENCESET_OFFSETS_PTR(result))[i] = pos;
+    pos += DOUBLE_PAD(VARSIZE(normseqs[i]));
   }
   if (normalize && count > 1)
     pfree_array((void **) normseqs, newcount);
@@ -353,8 +342,8 @@ tsequenceset_make_valid_gaps(const TInstant **instants, int count,
   Interval *maxt, int *countsplits)
 {
   tsequence_make_valid1(instants, count, lower_inc, upper_inc, interp);
-  return ensure_valid_tinstarr_gaps(instants, count, MERGE_NO,
-    interp, maxdist, maxt, countsplits);
+  return ensure_valid_tinstarr_gaps(instants, count, MERGE_NO, interp, maxdist,
+    maxt, countsplits);
 }
 
 /**
@@ -1279,6 +1268,44 @@ tsequenceset_compact(const TSequenceSet *ss)
   return tsequenceset_make_free(sequences, ss->count, NORMALIZE_NO);
 }
 
+#if MEOS
+/**
+ * @ingroup libmeos_internal_temporal_transf
+ * @brief Restart a temporal sequence set by keeping only the last sequences
+ */
+void
+tsequenceset_restart(TSequenceSet *ss, int last)
+{
+  /* Ensure validity of arguments */
+  assert (last > 0 && last < ss->count);
+  /* Singleton sequence set */
+  if (ss->count == 1)
+    return;
+
+  /* General case */
+  TSequence *first = (TSequence *) tsequenceset_seq_n(ss, 0);
+  const TSequence *last_n;
+  size_t seq_size = 0;
+  int totalcount = 0;
+  for (int i = 0; i < last; i++)
+  {
+    last_n = tsequenceset_seq_n(ss, ss->count - i - 1);
+    totalcount += last_n->count;
+    seq_size += DOUBLE_PAD(VARSIZE(last_n));
+  }
+  /* Copy the last instants at the beginning */
+  last_n = tsequenceset_seq_n(ss, ss->count - last);
+  memcpy(first, last_n, seq_size);
+  /* Update the counts and the bounding box */
+  ss->count = last;
+  ss->totalcount = totalcount;
+  size_t bboxsize = DOUBLE_PAD(temporal_bbox_size(ss->temptype));
+  if (bboxsize != 0)
+    tsequenceset_compute_bbox(ss);
+  return;
+}
+#endif /* MEOS */
+
 /**
  * @ingroup libmeos_internal_temporal_transf
  * @brief Return a temporal instant transformed into a temporal sequence set.
@@ -2104,26 +2131,26 @@ tsequenceset_append_tinstant(TSequenceSet *ss, const TInstant *inst, bool expand
      * composing the sequence set that results from appending the instant */
     const TSequence *newseq1, *newseq2 = NULL;
     if (count == ss->count)
-      size += double_pad(VARSIZE(temp));
+      size += DOUBLE_PAD(VARSIZE(temp));
     else /* temp->subtype == TSEQUENCESET */
     {
       ss1 = (TSequenceSet *) temp;
       newseq1 = tsequenceset_seq_n(ss1, 0);
       newseq2 = tsequenceset_seq_n(ss1, 1);
-      size += double_pad(VARSIZE(newseq1));
-      size += double_pad(VARSIZE(newseq2));
+      size += DOUBLE_PAD(VARSIZE(newseq1));
+      size += DOUBLE_PAD(VARSIZE(newseq2));
     }
     /* Remove the size of the current last sequence */
     TSequence *last = (TSequence *) tsequenceset_seq_n(ss, ss->count - 1);
     size_t avail_size = ((char *) ss + VARSIZE(ss)) -
-      ((char *) last + double_pad(VARSIZE(last)));
+      ((char *) last + DOUBLE_PAD(VARSIZE(last)));
     if (size > avail_size)
       break;
     /* Update the offsets array and the counts when adding two sequences */
     if (count != ss->count)
     {
-      (tsequenceset_offsets_ptr(ss))[count - 1] =
-        (tsequenceset_offsets_ptr(ss))[count - 2] + double_pad(VARSIZE(newseq1));
+      (TSEQUENCESET_OFFSETS_PTR(ss))[count - 1] =
+        (TSEQUENCESET_OFFSETS_PTR(ss))[count - 2] + DOUBLE_PAD(VARSIZE(newseq1));
       ss->count++;
       ss->totalcount++;
     }
@@ -2137,7 +2164,7 @@ tsequenceset_append_tinstant(TSequenceSet *ss, const TInstant *inst, bool expand
     {
       memset(last, 0, size);
       memcpy(last, newseq1, VARSIZE(newseq1));
-      last = (TSequence *) ((char *) last + double_pad(VARSIZE(newseq1)));
+      last = (TSequence *) ((char *) last + DOUBLE_PAD(VARSIZE(newseq1)));
       memcpy(last, newseq2, VARSIZE(newseq2));
     }
     /* Expand the bounding box and return */
@@ -2232,12 +2259,12 @@ tsequenceset_append_tsequence(TSequenceSet *ss, const TSequence *seq,
     /* Determine whether there is enough available space */
     size_t size = 0;
     if (join)
-      size += double_pad(VARSIZE(newseq)) - double_pad(VARSIZE(last));
+      size += DOUBLE_PAD(VARSIZE(newseq)) - DOUBLE_PAD(VARSIZE(last));
     else
-      size += double_pad(VARSIZE(seq));
+      size += DOUBLE_PAD(VARSIZE(seq));
     /* Remove the size of the current last sequence */
     size_t avail_size = ((char *) ss + VARSIZE(ss)) -
-      ((char *) last + double_pad(VARSIZE(last)));
+      ((char *) last + DOUBLE_PAD(VARSIZE(last)));
     if (size > avail_size)
       /* There is not enough available space */
       break;
@@ -2246,8 +2273,8 @@ tsequenceset_append_tsequence(TSequenceSet *ss, const TSequence *seq,
     if (! join)
     {
       /* Update the offsets array and the counts when adding one sequence */
-      (tsequenceset_offsets_ptr(ss))[count - 1] =
-        (tsequenceset_offsets_ptr(ss))[count - 2] + double_pad(VARSIZE(last));
+      (TSEQUENCESET_OFFSETS_PTR(ss))[count - 1] =
+        (TSEQUENCESET_OFFSETS_PTR(ss))[count - 2] + DOUBLE_PAD(VARSIZE(last));
       ss->count++;
       ss->totalcount += seq->count;
     }
@@ -2259,7 +2286,7 @@ tsequenceset_append_tsequence(TSequenceSet *ss, const TSequence *seq,
     }
     else
     {
-      last = (TSequence *) ((char *) last + double_pad(VARSIZE(last)));
+      last = (TSequence *) ((char *) last + DOUBLE_PAD(VARSIZE(last)));
       memcpy(last, newseq, VARSIZE(newseq));
     }
     /* Expand the bounding box and return */

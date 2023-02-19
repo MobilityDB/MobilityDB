@@ -56,7 +56,7 @@ span_value_min(Datum l, Datum r, meosType type)
   if (type == T_TIMESTAMPTZ)
     return TimestampTzGetDatum(Min(DatumGetTimestampTz(l),
       DatumGetTimestampTz(r)));
-  else if (type == T_INT4) /** xx **/
+  else if (type == T_INT4)
     return Int32GetDatum(Min(DatumGetInt32(l), DatumGetInt32(r)));
   else if (type == T_INT8)
     return Int64GetDatum(Min(DatumGetInt64(l), DatumGetInt64(r)));
@@ -1093,13 +1093,10 @@ inter_span_span(const Span *s1, const Span *s2, Span *result)
 Span *
 intersection_span_span(const Span *s1, const Span *s2)
 {
-  Span *result = palloc(sizeof(Span));
-  if (! inter_span_span(s1, s2, result))
-  {
-    pfree(result);
+  Span result;
+  if (! inter_span_span(s1, s2, &result))
     return NULL;
-  }
-  return result;
+  return span_copy(&result);
 }
 
 /*****************************************************************************

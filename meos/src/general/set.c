@@ -339,7 +339,7 @@ set_expand_bbox(Datum d, meosType basetype, void *box)
 void *
 set_bbox_ptr(const Set *s)
 {
-  return (void *)( ((char *) s) + double_pad(sizeof(Set)) );
+  return (void *)( ((char *) s) + DOUBLE_PAD(sizeof(Set)) );
 }
 
 /**
@@ -348,8 +348,8 @@ set_bbox_ptr(const Set *s)
 size_t *
 set_offsets_ptr(const Set *s)
 {
-  return (size_t *)( ((char *) s) + double_pad(sizeof(Set)) +
-    double_pad(s->bboxsize) );
+  return (size_t *)( ((char *) s) + DOUBLE_PAD(sizeof(Set)) +
+    DOUBLE_PAD(s->bboxsize) );
 }
 
 /**
@@ -367,7 +367,7 @@ set_val_n(const Set *s, int index)
   /* For base types passed by reference */
   return PointerGetDatum(
     /* start of data : start address + size of struct + size of bbox + */
-    ((char *) s) + double_pad(sizeof(Set)) + double_pad(s->bboxsize) +
+    ((char *) s) + DOUBLE_PAD(sizeof(Set)) + DOUBLE_PAD(s->bboxsize) +
       /* offset array + offset */
       (sizeof(size_t) * s->maxcount) + (set_offsets_ptr(s))[index] );
 }
@@ -456,14 +456,14 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
 
   /* Get the bounding box size */
   meosType settype = basetype_settype(basetype);
-  size_t bboxsize = double_pad(set_bbox_size(settype));
+  size_t bboxsize = DOUBLE_PAD(set_bbox_size(settype));
 
   /* Determine whether the values are passed by value or by reference  */
   int16 typlen;
   bool typbyval = basetype_byvalue(basetype);
   if (typbyval)
     /* For base values passed by value */
-    typlen = double_pad(sizeof(Datum));
+    typlen = DOUBLE_PAD(sizeof(Datum));
   else
     /* For base values passed by reference */
     typlen = basetype_length(basetype);
@@ -476,10 +476,10 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
     {
       for (int i = 0; i < newcount; i++)
         /* VARSIZE_ANY is used for oblivious data alignment, see postgres.h */
-        values_size += double_pad(VARSIZE_ANY(DatumGetPointer(newvalues[i])));
+        values_size += DOUBLE_PAD(VARSIZE_ANY(DatumGetPointer(newvalues[i])));
     }
     else
-      values_size = double_pad(typlen) * newcount;
+      values_size = DOUBLE_PAD(typlen) * newcount;
   }
 
   /* Compute the total size for maxcount elements as a proportion of the size
@@ -491,7 +491,7 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
     values_size = (double) values_size * (double) maxcount / (double) count;
 
   /* Total size of the struct */
-  size_t memsize = double_pad(sizeof(Set)) + double_pad(bboxsize) +
+  size_t memsize = DOUBLE_PAD(sizeof(Set)) + DOUBLE_PAD(bboxsize) +
     (sizeof(size_t) * maxcount) + values_size;
 
   /* Create the Set */
@@ -519,7 +519,7 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
   else
   {
     /* Store the composing values */
-    size_t pdata = double_pad(sizeof(Set)) + double_pad(bboxsize) +
+    size_t pdata = DOUBLE_PAD(sizeof(Set)) + DOUBLE_PAD(bboxsize) +
       sizeof(size_t) * maxcount;
     size_t pos = 0;
     for (int i = 0; i < newcount; i++)
@@ -530,7 +530,7 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
       memcpy(((char *) result) + pdata + pos, DatumGetPointer(newvalues[i]),
         size_elem);
       (set_offsets_ptr(result))[i] = pos;
-      pos += double_pad(size_elem);
+      pos += DOUBLE_PAD(size_elem);
     }
   }
 

@@ -228,6 +228,15 @@ SELECT COUNT(*) FROM tbl_tnpoint, tbl_tstzspanset
 WHERE minusTime(temp, ps) IS NOT NULL;
 
 -------------------------------------------------------------------------------
+-- Stops function
+-------------------------------------------------------------------------------
+
+-- We cannot execute the following tests due to a bug in GEOS
+-- https://trac.osgeo.org/postgis/ticket/5163
+-- SELECT MAX(numInstants(stops(seq, 50.0))) FROM tbl_tnpoint_seq;
+-- SELECT MAX(numInstants(stops(seq, 50.0, '5 min'))) FROM tbl_tnpoint_seq;
+
+-------------------------------------------------------------------------------
 -- Modification functions
 -------------------------------------------------------------------------------
 

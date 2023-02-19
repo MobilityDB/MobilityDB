@@ -775,9 +775,6 @@ GEOS2POSTGIS(GEOSGeom geom, char want3d)
 
   return result;
 }
-#else
-  extern GEOSGeometry *POSTGIS2GEOS(const GSERIALIZED *pglwgeom);
-  extern GSERIALIZED *GEOS2POSTGIS(GEOSGeom geom, char want3d);
 #endif /* MEOS */
 
 /**
@@ -790,12 +787,10 @@ MOBDB_call_geos(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
 {
   initGEOS(lwnotice, lwgeom_geos_error);
 
-  GEOSGeometry *g1;
-  GEOSGeometry *g2;
-  g1 = POSTGIS2GEOS(geom1);
+  GEOSGeometry *g1 = POSTGIS2GEOS(geom1);
   if (!g1)
     elog(ERROR, "First argument geometry could not be converted to GEOS");
-  g2 = POSTGIS2GEOS(geom2);
+  GEOSGeometry *g2 = POSTGIS2GEOS(geom2);
   if (!g2)
   {
     GEOSGeom_destroy(g1);
@@ -815,8 +810,7 @@ MOBDB_call_geos(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
 
 /**
  * @brief Return true if the geometries intersect or the first contains
- * the other
- *
+ * the other, where the function called depend on the third argument
  * @param[in] geom1,geom2 Geometries
  * @param[in] inter: True when performing intersection, false for contains
  * @note PostGIS functions: Datum ST_Intersects(PG_FUNCTION_ARGS) and
@@ -838,10 +832,10 @@ gserialized_inter_contains(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
    * short-circuit 1: if geom2 bounding box does not overlap
    * geom1 bounding box we can return FALSE.
    */
-  if ( gserialized_get_gbox_p(geom1, &box1) &&
-          gserialized_get_gbox_p(geom2, &box2) )
+  if (gserialized_get_gbox_p(geom1, &box1) &&
+      gserialized_get_gbox_p(geom2, &box2))
   {
-    if ( gbox_overlaps_2d(&box1, &box2) == LW_FALSE )
+    if (gbox_overlaps_2d(&box1, &box2) == LW_FALSE)
       return false;
   }
 

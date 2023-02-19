@@ -52,6 +52,15 @@
  * @brief Return the distance between two numbers
  */
 Datum
+double_distance(Datum l, Datum r)
+{
+  return Float8GetDatum(fabs(DatumGetFloat8(l) - DatumGetFloat8(r)));
+}
+
+/**
+ * @brief Return the distance between two numbers
+ */
+Datum
 number_distance(Datum l, Datum r, meosType typel, meosType typer)
 {
   Datum result = 0;

@@ -42,6 +42,13 @@
 
 /*****************************************************************************/
 
+/**
+ * @brief Align to double
+ */
+#define DOUBLE_PAD(size) ( (size) + ((size) % 8 ? (8 - (size) % 8) : 0 ) )
+
+/*****************************************************************************/
+
 /* Miscellaneous functions */
 
 extern size_t double_pad(size_t size);

@@ -57,6 +57,7 @@ find_package(POSTGIS REQUIRED)
 # PostGIS definitions for PostgreSQL and PostGIS version-dependent code
 math(EXPR POSTGIS_PGSQL_VERSION "${POSTGRESQL_VERSION_MAJOR} * 10 +
   ${POSTGRESQL_VERSION_MINOR}")
+
 add_definitions(-DPOSTGIS_VERSION_STRING="${POSTGIS_VERSION_STR}")
 add_definitions(-DPOSTGIS_VERSION_NUMBER=${POSTGIS_VERSION_NUMBER})
 
