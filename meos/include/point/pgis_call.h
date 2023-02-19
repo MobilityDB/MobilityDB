@@ -93,6 +93,8 @@ extern bool gserialized_touches(const GSERIALIZED *geom1,
 extern GSERIALIZED *gserialized_intersection(const GSERIALIZED *geom1,
   const GSERIALIZED *geom2);
 extern GSERIALIZED *gserialized_array_union(GSERIALIZED **gsarr, int nelems);
+extern double gserialized_hausdorffdistance(const GSERIALIZED *geom1,
+  const GSERIALIZED *geom2);
 
 /* Functions adapted from geography_measurement.c */
 

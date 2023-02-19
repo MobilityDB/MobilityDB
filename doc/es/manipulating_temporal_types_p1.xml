@@ -818,7 +818,7 @@ SELECT getTime(tint '[1@2001-01-01, 1@2001-01-15)');
 			<listitem id="ttype_duration">
 				<indexterm><primary><varname>duration</varname></primary></indexterm>
 				<para>Obtener el intervalo de tiempo</para>
-				<para><varname>duration(ttype, bool boundspan=FALSE) → interval</varname></para>
+				<para><varname>duration(ttype,boundspan=false) → interval</varname></para>
 				<para>Se puede poner en verdadero un parámetro adicional para calcular la duración del período limitador, ignorando así los posibles intervalos de tiempo</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT duration(tfloat '{1@2001-01-01, 2@2001-01-03, 2@2001-01-05}');
@@ -1293,7 +1293,7 @@ FROM (SELECT unnest(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01,
 		<itemizedlist>
 			<listitem id="insert">
 				<para>Insertar un valor temporal en otro</para>
-				<para><varname>insert(ttype,ttype,connect boolean=true) → ttype</varname></para>
+				<para><varname>insert(ttype,ttype,connect=true) → ttype</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT insert(tint '{1@2000-01-01, 3@2000-01-03, 5@2000-01-05}',
   tint '{3@2000-01-03, 7@2000-01-07}');
@@ -1314,7 +1314,7 @@ SELECT asText(insert(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01
 
 				<listitem id="update">
 					<para>Actualizar un valor temporal con otro</para>
-					<para><varname>update(ttype,ttype,connect boolean=true) → ttype</varname></para>
+					<para><varname>update(ttype,ttype,connect=true) → ttype</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT update(tint '{1@2000-01-01, 3@2000-01-03, 5@2000-01-05}',
   tint '{5@2000-01-03, 7@2000-01-07}');
@@ -1332,7 +1332,7 @@ SELECT asText(update(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(3 3 3)@2000-01
 
 				<listitem id="deleteTime">
 					<para>Eliminar de un valor temporal un valor de tiempo</para>
-					<para><varname>deleteTime(ttype,time,connect boolean=true) → ttype</varname></para>
+					<para><varname>deleteTime(ttype,time,connect=true) → ttype</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT deleteTime(tint '[1@2000-01-01, 1@2000-01-03]', timestamptz '2000-01-02', false);
 -- {[1@2000-01-01, 1@2000-01-02), (1@2000-01-02, 1@2000-01-03]}

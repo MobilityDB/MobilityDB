@@ -92,8 +92,8 @@ tinstant_distance(const TInstant *inst1, const TInstant *inst2)
  *****************************************************************************/
 
 /**
- * @brief Linear space computation of the similarity distance between two temporal
- * values. Only two rows of the full matrix are used.
+ * @brief Linear space computation of the similarity distance between two
+ * temporal values. Only two rows of the full matrix are used.
  * @param[in] instants1,instants2 Arrays of temporal instants
  * @param[in] count1,count2 Number of instants in the arrays
  * @param[in] simfunc Similarity function, i.e., Frechet or DTW

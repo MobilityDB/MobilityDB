@@ -29,8 +29,9 @@
 
 /*
  * tpoint_similarity.sql
- * Similarity distance for temporal values. Currently, the discrete Frechet
- * distance and the Dynamic Time Warping (DTW) distance are implemented.
+ * Similarity distance for temporal values. Currently, the discrete Hausdorff
+ * distance, the discrete Frechet distance and the Dynamic Time Warping (DTW)
+ * distance are implemented.
  */
 
 CREATE FUNCTION frechetDistance(tgeompoint, tgeompoint)

@@ -781,8 +781,8 @@ geo_to_tpoint(const GSERIALIZED *geo)
  * @param[out] dist Distance at the split
  */
 static void
-tfloatseq_findsplit(const TSequence *seq, int i1, int i2, int *split,
-  double *dist)
+tfloatseq_findsplit(const TSequence *seq, int i1, int i2, bool syncdist,
+  int *split, double *dist)
 {
   *split = i1;
   *dist = -1;
@@ -791,22 +791,38 @@ tfloatseq_findsplit(const TSequence *seq, int i1, int i2, int *split,
 
   const TInstant *start = tsequence_inst_n(seq, i1);
   const TInstant *end = tsequence_inst_n(seq, i2);
-  double value1 = DatumGetFloat8(tinstant_value(start));
-  double value2 = DatumGetFloat8(tinstant_value(end));
+  double startval = DatumGetFloat8(tinstant_value(start));
+  double endval = DatumGetFloat8(tinstant_value(end));
   double duration2 = (double) (end->t - start->t);
   /* Loop for every instant between i1 and i2 */
-  const TInstant *inst1 = start;
   for (int k = i1 + 1; k < i2; k++)
   {
-    const TInstant *inst2 = tsequence_inst_n(seq, k);
-    double value = DatumGetFloat8(tinstant_value(inst2));
-    double duration1 = (double) (inst2->t - inst1->t);
+    const TInstant *inst = tsequence_inst_n(seq, k);
+    double value = DatumGetFloat8(tinstant_value(inst));
+    TimestampTz t;
+    /* If non-synchronized distance or constant segment */
+    if (! syncdist ||fabs(endval - startval) <= MOBDB_EPSILON)
+      t = inst->t;
+    else
+    {
+      /*
+       * The following is equivalent to
+       * tsegment_timestamp_at_value(start, end, LINEAR, value);
+       */
+      double fraction = (value - startval) / (endval - startval);
+      t = start->t + (TimestampTz) (duration2 * fraction);
+    }
+    /*
+     * The following is equivalent to
+     * tsegment_value_at_timestamp(start, end, LINEAR, inst->t);
+     */
+    double duration1 = (double) (t - start->t);
     double ratio = duration1 / duration2;
-    double value_interp = value1 + (value2 - value1) * ratio;
+    double value_interp = startval + (endval - startval) * ratio;
     double d = fabs(value - value_interp);
     if (d > *dist)
     {
-      /* record the maximum */
+      /* Record the maximum */
       *split = k;
       *dist = d;
     }
@@ -945,12 +961,12 @@ dist3d_pt_seg(POINT3DZ *p, POINT3DZ *A, POINT3DZ *B)
  * algorithm.
  * @param[in] seq Temporal sequence
  * @param[in] i1,i2 Indexes of the reference instants
- * @param[in] synchronized True when using the Synchronized Euclidean Distance
+ * @param[in] syncdist True when using the Synchronized Euclidean Distance
  * @param[out] split Location of the split
  * @param[out] dist Distance at the split
  */
 static void
-tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool synchronized,
+tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool syncdist,
   int *split, double *dist)
 {
   POINT2D p2k, p2_sync, p2a, p2b;
@@ -986,7 +1002,7 @@ tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool synchronized,
     if (hasz)
     {
       p3k = datum_point3dz(tinstant_value(inst));
-      if (synchronized)
+      if (syncdist)
       {
         value = tsegment_value_at_timestamp(start, end, linear, inst->t);
         p3_sync = datum_point3dz(value);
@@ -999,7 +1015,7 @@ tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool synchronized,
     else
     {
       p2k = datum_point2d(tinstant_value(inst));
-      if (synchronized)
+      if (syncdist)
       {
         value = tsegment_value_at_timestamp(start, end, linear, inst->t);
         p2_sync = datum_point2d(value);
@@ -1023,7 +1039,7 @@ tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool synchronized,
 /*****************************************************************************/
 
 static TSequence *
-tsequence_simplify(const TSequence *seq, double eps_dist, bool synchronized,
+tsequence_simplify(const TSequence *seq, double eps_dist, bool syncdist,
   uint32_t minpts)
 {
   static size_t stack_size = 256;
@@ -1061,12 +1077,10 @@ tsequence_simplify(const TSequence *seq, double eps_dist, bool synchronized,
   do
   {
     if (seq->temptype == T_TFLOAT)
-      /* There is no synchronized distance for temporal floats */
-      tfloatseq_findsplit(seq, i1, stack[sp], &split, &dist);
+      tfloatseq_findsplit(seq, i1, stack[sp], syncdist, &split, &dist);
     else /* tgeo_type(seq->temptype) */
-      tpointseq_findsplit(seq, i1, stack[sp], synchronized, &split, &dist);
-    bool dosplit = (dist >= 0 &&
-      (dist > eps_dist || outn + sp + 1 < minpts));
+      tpointseq_findsplit(seq, i1, stack[sp], syncdist, &split, &dist);
+    bool dosplit = (dist >= 0 && (dist > eps_dist || outn + sp + 1 < minpts));
     if (dosplit)
       stack[++sp] = split;
     else
@@ -1101,19 +1115,19 @@ tsequence_simplify(const TSequence *seq, double eps_dist, bool synchronized,
  * extension of the Douglas-Peucker line simplification algorithm.
  * @param[in] ss Temporal point
  * @param[in] eps_dist Epsilon speed
- * @param[in] synchronized True when computing the Synchronized Euclidean
+ * @param[in] syncdist True when computing the Synchronized Euclidean
  * Distance (SED), false when computing the spatial only Douglas-Peucker
  * @param[in] minpts Minimum number of points
  */
 static TSequenceSet *
 tsequenceset_simplify(const TSequenceSet *ss, double eps_dist,
-  bool synchronized, uint32_t minpts)
+  bool syncdist, uint32_t minpts)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
-    sequences[i] = tsequence_simplify(seq, eps_dist, synchronized, minpts);
+    sequences[i] = tsequence_simplify(seq, eps_dist, syncdist, minpts);
   }
   return tsequenceset_make_free(sequences, ss->count, NORMALIZE);
 }
@@ -1125,7 +1139,7 @@ tsequenceset_simplify(const TSequenceSet *ss, double eps_dist,
  * @sqlfunc simplify()
  */
 Temporal *
-temporal_simplify(const Temporal *temp, double eps_dist, bool synchronized)
+temporal_simplify(const Temporal *temp, double eps_dist, bool syncdist)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -1133,10 +1147,10 @@ temporal_simplify(const Temporal *temp, double eps_dist, bool synchronized)
     result = temporal_copy(temp);
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tsequence_simplify((TSequence *) temp, eps_dist,
-      synchronized, 2);
+      syncdist, 2);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tsequenceset_simplify((TSequenceSet *) temp,
-      eps_dist, synchronized, 2);
+      eps_dist, syncdist, 2);
   return result;
 }
 

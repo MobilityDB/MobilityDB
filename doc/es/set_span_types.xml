@@ -492,7 +492,7 @@ SELECT width(intspanset '{[1,2],[4,5]}');
 				<listitem id="setspan_duration">
 					<indexterm><primary><varname>duration</varname></primary></indexterm>
 					<para>Obtener el intervalo de tiempo</para>
-					<para><varname>duration(tstzspans, bool boundspan=false) → interval</varname></para>
+					<para><varname>duration(tstzspans,boundspan=false) → interval</varname></para>
 					<para>Se puede establecer a verdadero un parámetro adicional para calcular la duración en el rango delimitador, ignorando así los posibles intervalos de tiempo</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT duration(tstzspan '[2001-01-01, 2001-01-03)');
