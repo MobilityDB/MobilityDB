@@ -321,6 +321,7 @@ tpointinst_tcentroid_finalfn(TInstant **instants, int count, int srid)
     Datum value = doublen_to_point(inst, srid);
     newinstants[i] = tinstant_make(value, T_TGEOMPOINT, inst->t);
     pfree(DatumGetPointer(value));
+    pfree(inst);
   }
   return tsequence_make_free(newinstants, count,  true, true, DISCRETE,
     NORMALIZE_NO);
@@ -351,8 +352,10 @@ tpointseq_tcentroid_finalfn(TSequence **sequences, int count, int srid)
     newsequences[i] = tsequence_make_free(instants, seq->count,
       seq->period.lower_inc, seq->period.upper_inc,
       MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
+    pfree(seq);
   }
-  return tsequenceset_make_free(newsequences, count, NORMALIZE);
+  TSequenceSet *result = tsequenceset_make_free(newsequences, count, NORMALIZE);
+  return result;
 }
 
 /*****************************************************************************/

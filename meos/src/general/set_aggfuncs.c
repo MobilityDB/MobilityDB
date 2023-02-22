@@ -227,6 +227,7 @@ set_agg_finalfn(Set *state)
   Set *result = set_make_exp(values, state->count, state->count,
     state->basetype, ORDERED);
   pfree(values);
+  pfree(state);
   return result;
 }
 

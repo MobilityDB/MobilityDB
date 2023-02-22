@@ -1079,6 +1079,7 @@ tnumber_tavg_finalfn(SkipList *state)
     result = (Temporal *) tsequence_tavg_finalfn((TSequence **) values,
       state->length);
   pfree(values);
+  skiplist_free(state);
   return result;
 }
 
