@@ -288,9 +288,8 @@ timestamp_tunion_finalfn(SkipList *state)
   Datum *values = (Datum *) skiplist_values(state);
 
   Set *result = set_make(values, state->length, T_TIMESTAMPTZ, ORDERED);
-  // pfree_array((void **) values, state->length);
   pfree(values);
-  pfree(state);
+  skiplist_free(state);
   return (Set *) result;
 }
 
@@ -302,11 +301,13 @@ SpanSet *
 period_tunion_finalfn(SkipList *state)
 {
   if (! state || state->length == 0)
+    return NULL;
 
   assert(state->elemtype == PERIOD);
   const Span **values = (const Span **) skiplist_values(state);
   SpanSet *result = spanset_make(values, state->length, NORMALIZE);
   pfree(values);
+  skiplist_free(state);
   return result;
 }
 
