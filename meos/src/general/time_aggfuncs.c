@@ -288,7 +288,9 @@ timestamp_tunion_finalfn(SkipList *state)
   Datum *values = (Datum *) skiplist_values(state);
 
   Set *result = set_make(values, state->length, T_TIMESTAMPTZ, ORDERED);
+  // pfree_array((void **) values, state->length);
   pfree(values);
+  pfree(state);
   return (Set *) result;
 }
 
