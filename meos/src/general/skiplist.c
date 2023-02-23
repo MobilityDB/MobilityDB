@@ -450,14 +450,15 @@ skiplist_elempos(const SkipList *list, Span *p, int cur)
  * function
  * @note The complexity of this function is
  * - average: O(count*log(n)) (unless I'm mistaken)
- * - worst case: O(n+count*log(n)) (when period spans the whole list so
+ * - worst case: O(n + count*log(n)) (when period spans the whole list so
  *   everything has to be deleted)
  *
  * @param[in,out] list Skiplist
  * @param[in] values Array of values
  * @param[in] count Number of elements in the array
- * @param[in] func Function
- * @param[in] crossings True if turning points are added in the segments
+ * @param[in] func Function used when aggregating temporal values
+ * @param[in] crossings True if turning points are added in the segments when
+ * aggregating temporal value
  */
 void
 skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
@@ -477,7 +478,7 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
     if (head->subtype != temp->subtype)
       elog(ERROR, "Cannot aggregate temporal values of different type");
     if (MOBDB_FLAGS_GET_LINEAR(head->flags) !=
-      MOBDB_FLAGS_GET_LINEAR(temp->flags))
+        MOBDB_FLAGS_GET_LINEAR(temp->flags))
       elog(ERROR, "Cannot aggregate temporal values of different interpolation");
   }
 
@@ -658,8 +659,14 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
       height = rheight;
   }
 
-  if (spliced_count != 0 && list->elemtype != TIMESTAMPTZ)
-    pfree_array((void **) values, count);
+  /* Free memory */
+  if (spliced_count != 0)
+  {
+    if (list->elemtype == TIMESTAMPTZ)
+      pfree(values);
+    else
+      pfree_array((void **) values, count);
+  }
   return;
 }
 
@@ -693,14 +700,20 @@ Span **
 skiplist_period_values(SkipList *list)
 {
   assert(list->elemtype == PERIOD);
+#if ! MEOS
+  MemoryContext ctx = set_aggregation_context(fetch_fcinfo());
+#endif /* ! MEOS */
   Span **result = palloc(sizeof(Span *) * list->length);
   int cur = list->elems[0].next[0];
   int count = 0;
   while (cur != list->tail)
   {
-    result[count++] = span_copy(list->elems[cur].value);
+    result[count++] = list->elems[cur].value;
     cur = list->elems[cur].next[0];
   }
+#if ! MEOS
+  unset_aggregation_context(ctx);
+#endif /* ! MEOS */
   return result;
 }
 

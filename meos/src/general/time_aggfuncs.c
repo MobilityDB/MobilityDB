@@ -156,7 +156,6 @@ time_tagg_combinefn(SkipList *state1, SkipList *state2)
   if (state2->length == 0)
     return state1;
 
-
   assert(state1->elemtype == state2->elemtype);
   SkipList *smallest, *largest;
   if (state1->length < state2->length)
@@ -170,11 +169,9 @@ time_tagg_combinefn(SkipList *state1, SkipList *state2)
   void **values = (smallest->elemtype == TIMESTAMPTZ) ?
     skiplist_values(smallest) : (void **) skiplist_period_values(smallest);
   skiplist_splice(largest, values, smallest->length, NULL, CROSSINGS_NO);
-  /* Delete the new aggregate values */
-  if (smallest->elemtype == TIMESTAMPTZ)
-    pfree(values);
-  else /* smallest->elemtype == PERIOD */
-    pfree_array(values, smallest->length);
+  /* Free memory */
+  pfree(values);
+  // skiplist_free(smallest);
   return largest;
 }
 
@@ -256,11 +253,16 @@ period_tunion_transfn(SkipList *state, const Span *p)
 SkipList *
 periodset_tunion_transfn(SkipList *state, const SpanSet *ps)
 {
+  /* Singleton period set */
+  if (ps->count == 1)
+    return period_tunion_transfn(state, spanset_sp_n(ps, 0));
+
+  /* General case */
   int count;
   const Span **periods = spanset_spans(ps, &count);
   SkipList *result;
   if (! state)
-    /* Periods are copied while constructing the skiplist */
+    /* Periods are copied when constructing the skiplist */
     result = skiplist_make((void **) periods, ps->count, PERIOD);
   else
   {

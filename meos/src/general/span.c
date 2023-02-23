@@ -214,36 +214,21 @@ spanarr_normalize(Span **spans, int count, bool sort, int *newcount)
     spanarr_sort(spans, count);
   int k = 0;
   Span **result = palloc(sizeof(Span *) * count);
-  Span *current = spans[0];
-  bool isnew = false;
+  Span *current = span_copy(spans[0]);
   for (int i = 1; i < count; i++)
   {
     Span *next = spans[i];
     if (overlaps_span_span(current, next) || adjacent_span_span(current, next))
-    {
       /* Compute the union of the spans */
-      Span *newspan = span_copy(current);
-      span_expand(next, newspan);
-      if (isnew)
-        pfree(current);
-      current = newspan;
-      isnew = true;
-    }
+      span_expand(next, current);
     else
     {
-      if (isnew)
-        result[k++] = current;
-      else
-        result[k++] = span_copy(current);
-      current = next;
-      isnew = false;
+      result[k++] = current;
+      current = span_copy(next);
     }
   }
-  if (isnew)
-    result[k++] = current;
-  else
-    result[k++] = span_copy(current);
-
+  result[k++] = current;
+  /* Set the output parameter */
   *newcount = k;
   return result;
 }
