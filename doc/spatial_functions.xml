@@ -442,7 +442,7 @@ SELECT asText(makeSimple(tgeompoint '{[Point(0 0 0)@2000-01-01, Point(1 1 1)@200
 				<listitem id="simplify">
 					<indexterm><primary><varname>simplify</varname></primary></indexterm>
 					<para>Simplify a temporal float or a temporal point using the <ulink url="https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm">Douglas-Peucker algorithm</ulink> &Z_support;</para>
-					<para><varname>simplify({tfloat,tpoint},distance float,syncdist=true) → {tfloat,tpoint}</varname></para>
+					<para><varname>simplify({tfloat,tgeompoint},distance float,syncdist=true) → {tfloat,tgeompoint}</varname></para>
 					<para>The function removes values or points that are less than or equal to the distance passed as second argument. In the case of temporal points, the distance is specified in the units of the coordinate system. The third argument applies only for temporal points and specifies whether the spatial or the synchronized distance is used. Notice that simplification applies only to temporal sequences or sequence sets with linear interpolation. In all other cases, a copy of the given temporal point is returned.</para>
 					<programlisting language="sql" xml:space="preserve">
 -- Synchronized distance by default
@@ -450,6 +450,12 @@ SELECT simplify(tfloat '[1@2000-01-01, 1@2000-01-06, 4@2000-01-07]', 2);
 -- [1@2000-01-01, 1@2000-01-06, 4@2000-01-07]
 SELECT simplify(tfloat '[1@2000-01-01, 1@2000-01-06, 4@2000-01-07]', 2.5);
 -- [1@2000-01-01, 4@2000-01-07]
+SELECT asText(simplify(tgeompoint '[Point(1 1 1)@2000-01-01, Point(6 1 1)@2000-01-06,
+  Point(7 4 4)@2000-01-07]', 3.5));
+-- [POINT Z (1 1 1)@2000-01-01, POINT Z (6 1 1)@2000-01-06, POINT Z (7 4 4)@2000-01-07]
+SELECT asText(simplify(tgeompoint '[Point(1 1 1)@2000-01-01, Point(6 1 1)@2000-01-06,
+  Point(7 4 4)@2000-01-07]', 4));
+-- [POINT Z (1 1 1)@2000-01-01, POINT Z (7 4 4)@2000-01-07]
 </programlisting>
 					<programlisting language="sql" xml:space="preserve">
 -- Spatial vs synchronized Euclidean distance
