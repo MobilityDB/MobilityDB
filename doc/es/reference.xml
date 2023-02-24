@@ -1118,7 +1118,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="simplify"><varname>simplify</varname></link>: Simplificar un punto temporal usando una generalización del algoritmo de Douglas-Peucker</para>
+						<para><link linkend="simplify"><varname>simplify</varname></link>: Simplificar un punto temporal usando el algoritmo de Douglas-Peucker</para>
 					</listitem>
 
 					<listitem>

@@ -168,7 +168,7 @@ SELECT numInstants(simplify(tfloat '[47@2000-01-01, 69@2000-01-02, 75@2000-01-03
 
 -------------------------------------------------------------------------------
 
--- Euclidean distance specified
+-- Synchronized Euclidean Distance by default
 SELECT ST_AsText(trajectory(simplify(tgeompoint '[Point(0 4)@2000-01-01,
   Point(1 1)@2000-01-02, Point(2 3)@2000-01-03, Point(3 1)@2000-01-04,
   Point(4 3)@2000-01-05, Point(5 0)@2000-01-06, Point(6 4)@2000-01-07]', 1.5)));
@@ -211,6 +211,6 @@ SELECT asText(simplify(tgeompoint '[POINT(77 69)@2000-01-02, POINT(83 75)@2000-0
 -- Standard vs Synchronized Euclidean distance
 
 SELECT asText(simplify(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-04]', 1));
-SELECT asText(simplify(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-04]', 1, true));
+SELECT asText(simplify(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-04]', 1, false));
 
 -------------------------------------------------------------------------------

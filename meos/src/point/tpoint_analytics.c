@@ -772,17 +772,17 @@ geo_to_tpoint(const GSERIALIZED *geo)
  ***********************************************************************/
 
 /**
- * @brief Find a split when simplifying the temporal sequence point using a
- * spatio-temporal extension of the Douglas-Peucker line simplification
- * algorithm.
+ * @brief Find a split when simplifying the temporal sequence point using the
+ * Douglas-Peucker line simplification algorithm.
  * @param[in] seq Temporal sequence
  * @param[in] i1,i2 Indexes of the reference instants
  * @param[out] split Location of the split
  * @param[out] dist Distance at the split
+ * @note For temporal floats only the Synchronized Distance is used
  */
 static void
-tfloatseq_findsplit(const TSequence *seq, int i1, int i2, bool syncdist,
-  int *split, double *dist)
+tfloatseq_findsplit(const TSequence *seq, int i1, int i2, int *split,
+  double *dist)
 {
   *split = i1;
   *dist = -1;
@@ -799,24 +799,11 @@ tfloatseq_findsplit(const TSequence *seq, int i1, int i2, bool syncdist,
   {
     const TInstant *inst = tsequence_inst_n(seq, k);
     double value = DatumGetFloat8(tinstant_value(inst));
-    TimestampTz t;
-    /* If non-synchronized distance or constant segment */
-    if (! syncdist ||fabs(endval - startval) <= MOBDB_EPSILON)
-      t = inst->t;
-    else
-    {
-      /*
-       * The following is equivalent to
-       * tsegment_timestamp_at_value(start, end, LINEAR, value);
-       */
-      double fraction = (value - startval) / (endval - startval);
-      t = start->t + (TimestampTz) (duration2 * fraction);
-    }
     /*
      * The following is equivalent to
      * tsegment_value_at_timestamp(start, end, LINEAR, inst->t);
      */
-    double duration1 = (double) (t - start->t);
+    double duration1 = (double) (inst->t - start->t);
     double ratio = duration1 / duration2;
     double value_interp = startval + (endval - startval) * ratio;
     double d = fabs(value - value_interp);
@@ -956,9 +943,8 @@ dist3d_pt_seg(POINT3DZ *p, POINT3DZ *A, POINT3DZ *B)
 }
 
 /**
- * @brief Find a split when simplifying the temporal sequence point using a
- * spatio-temporal extension of the Douglas-Peucker line simplification
- * algorithm.
+ * @brief Find a split when simplifying the temporal sequence point using the
+ * Douglas-Peucker line simplification algorithm.
  * @param[in] seq Temporal sequence
  * @param[in] i1,i2 Indexes of the reference instants
  * @param[in] syncdist True when using the Synchronized Euclidean Distance
@@ -1038,8 +1024,12 @@ tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool syncdist,
 
 /*****************************************************************************/
 
+/**
+ * @brief Simplify the temporal sequence set float/point using the
+ * Douglas-Peucker line simplification algorithm.
+ */
 static TSequence *
-tsequence_simplify(const TSequence *seq, double eps_dist, bool syncdist,
+tsequence_simplify(const TSequence *seq, double dist, bool syncdist,
   uint32_t minpts)
 {
   static size_t stack_size = 256;
@@ -1050,7 +1040,7 @@ tsequence_simplify(const TSequence *seq, double eps_dist, bool syncdist,
   int i1, split;
   uint32_t outn = 0;
   uint32_t i;
-  double dist;
+  double d;
 
   assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
   assert(seq->temptype == T_TFLOAT || tgeo_type(seq->temptype));
@@ -1076,11 +1066,12 @@ tsequence_simplify(const TSequence *seq, double eps_dist, bool syncdist,
   outlist[outn++] = 0;
   do
   {
+    /* For temporal floats only Synchronized Distance is used */
     if (seq->temptype == T_TFLOAT)
-      tfloatseq_findsplit(seq, i1, stack[sp], syncdist, &split, &dist);
+      tfloatseq_findsplit(seq, i1, stack[sp], &split, &d);
     else /* tgeo_type(seq->temptype) */
-      tpointseq_findsplit(seq, i1, stack[sp], syncdist, &split, &dist);
-    bool dosplit = (dist >= 0 && (dist > eps_dist || outn + sp + 1 < minpts));
+      tpointseq_findsplit(seq, i1, stack[sp], syncdist, &split, &d);
+    bool dosplit = (d >= 0 && (d > dist || outn + sp + 1 < minpts));
     if (dosplit)
       stack[++sp] = split;
     else
@@ -1091,9 +1082,9 @@ tsequence_simplify(const TSequence *seq, double eps_dist, bool syncdist,
   }
   while (sp >= 0);
 
-  /* Put list of retained points into order */
+  /* Order the list of points kept */
   qsort(outlist, outn, sizeof(int), int_cmp);
-  /* Create new TSequence */
+  /* Create a new temporal sequence */
   const TInstant **instants = palloc(sizeof(TInstant *) * outn);
   for (i = 0; i < outn; i++)
     instants[i] = tsequence_inst_n(seq, outlist[i]);
@@ -1101,7 +1092,7 @@ tsequence_simplify(const TSequence *seq, double eps_dist, bool syncdist,
     seq->period.upper_inc, LINEAR, NORMALIZE);
   pfree(instants);
 
-  /* Only free if arrays are on heap */
+  /* Free memory only if arrays are on the heap */
   if (stack != stack_static)
     pfree(stack);
   if (outlist != outlist_static)
@@ -1111,46 +1102,54 @@ tsequence_simplify(const TSequence *seq, double eps_dist, bool syncdist,
 }
 
 /**
- * @brief Simplify the temporal sequence set float/point using a spatio-temporal
- * extension of the Douglas-Peucker line simplification algorithm.
+ * @brief Simplify the temporal sequence set float/point using the
+ * Douglas-Peucker line simplification algorithm.
  * @param[in] ss Temporal point
- * @param[in] eps_dist Epsilon speed
+ * @param[in] dist Distance
  * @param[in] syncdist True when computing the Synchronized Euclidean
- * Distance (SED), false when computing the spatial only Douglas-Peucker
+ * Distance (SED), false when computing the spatial only distance.
  * @param[in] minpts Minimum number of points
  */
 static TSequenceSet *
-tsequenceset_simplify(const TSequenceSet *ss, double eps_dist,
-  bool syncdist, uint32_t minpts)
+tsequenceset_simplify(const TSequenceSet *ss, double dist, bool syncdist,
+  uint32_t minpts)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
-    sequences[i] = tsequence_simplify(seq, eps_dist, syncdist, minpts);
+    sequences[i] = tsequence_simplify(seq, dist, syncdist, minpts);
   }
   return tsequenceset_make_free(sequences, ss->count, NORMALIZE);
 }
 
 /**
  * @ingroup libmeos_temporal_analytics
- * @brief Simplify the temporal float/point using a spatio-temporal
- * extension of the Douglas-Peucker line simplification algorithm.
+ * @brief Simplify the temporal float/point using the Douglas-Peucker line
+ * simplification algorithm.
+ * @param[in] temp Temporal value
+ * @param[in] dist Distance in the units of the values for temporal floats or
+ * the units of coordinate system for temporal points.
+ * @param[in] syncdist True when the Synchronized Distance is used, false when
+ * the spatial-only distance is used. Only used for temporal points.
+ * @note The funcion applies only for temporal sequences or sequence sets with
+ * linear interpolation. In all other cases, it returns a copy of the temporal
+ * value.
  * @sqlfunc simplify()
  */
 Temporal *
-temporal_simplify(const Temporal *temp, double eps_dist, bool syncdist)
+temporal_simplify(const Temporal *temp, double dist, bool syncdist)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     result = temporal_copy(temp);
   else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tsequence_simplify((TSequence *) temp, eps_dist,
+    result = (Temporal *) tsequence_simplify((TSequence *) temp, dist,
       syncdist, 2);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tsequenceset_simplify((TSequenceSet *) temp,
-      eps_dist, syncdist, 2);
+      dist, syncdist, 2);
   return result;
 }
 

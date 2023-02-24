@@ -440,9 +440,9 @@ SELECT asText(makeSimple(tgeompoint '{[Point(0 0 0)@2000-01-01, Point(1 1 1)@200
 
 				<listitem id="simplify">
 					<indexterm><primary><varname>simplify</varname></primary></indexterm>
-					<para>Simplificar un flotante o un punto temporal usando una generalización temporal del <ulink url="https://es.wikipedia.org/wiki/Algoritmo_de_Ramer%E2%80%93Douglas%E2%80%93Peucker">algoritmo de Douglas-Peucker</ulink> &Z_support;</para>
-					<para><varname>simplify({tfloat,tpoint},distance float,syncdist=false) → {tfloat,tpoint}</varname></para>
-					<para>La función elimina los valores or los puntos cuya distancia es menor que la distancia pasada como tercer argumento. En el caso de puntos temporales la distancia se especifica en las unidades del sistema de coordenadas. El tercer argumento especifica si se utiliza la distancia euclidiana o la distancia euclidiana sincronizada (Synchronized Euclidean Distance o SED). Observe que la simplificación se aplica sólo a secuencias temporales o conjuntos de secuencias con interpolación lineal. En todos los demás casos, se devuelve una copia del punto temporal dado.</para>
+					<para>Simplificar un flotante o un punto temporal usando el <ulink url="https://es.wikipedia.org/wiki/Algoritmo_de_Ramer%E2%80%93Douglas%E2%80%93Peucker">algoritmo de Douglas-Peucker</ulink> &Z_support;</para>
+					<para><varname>simplify({tfloat,tpoint},distance float,syncdist=true) → {tfloat,tpoint}</varname></para>
+					<para>La función elimina los valores or los puntos cuya distancia es menor que la distancia pasada como segundo argumento. En el caso de puntos temporales la distancia se especifica en las unidades del sistema de coordenadas. El tercer argumento se aplica solo a puntos temporales y especifica si se utiliza la distancia euclidiana o la distancia euclidiana sincronizada (Synchronized Euclidean Distance o SED). Observe que la simplificación se aplica sólo a secuencias temporales o conjuntos de secuencias con interpolación lineal. En todos los demás casos, se devuelve una copia del punto temporal dado.</para>
 					<programlisting language="sql" xml:space="preserve">
 -- Euclidean distance
 SELECT simplify(tfloat '[1@2000-01-01, 1@2000-01-04, 3@2000-01-05, 3@2000-01-08,
@@ -476,7 +476,7 @@ SELECT asText(simplify(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02
 -- [POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02, POINT(3 1)@2000-01-04]
 </programlisting>
 					<para>La diferencia entre usar la distancia euclidiana sincronizada o la distancia espacial se ilustra en los dos últimos ejemplos anteriores. En el primer ejemplo, que usa la distancia euclidiana, se elimina el segundo instante ya que la distancia perperdicular entre <varname>POINT(2 2)</varname> y la línea definida por <varname>POINT(1 1)</varname> y <varname>POINT(3 1)</varname> es igual a 1. Por el contrario, en el segundo ejemplo se mantiene el segundo instante dado que la proyección de <varname>Point(2 2)</varname> en la marca de tiempo <varname >2000-01-02</varname> sobre el segmento de línea temporal da como resultado <varname>Point(1.66 1)</varname> y la distancia entre el punto original y su proyección es 1.05.</para>
-					<para>Un uso típico de la función <varname>simplify</varname> es reducir el tamaño de un conjunto de datos, en particular con fines de visualización.</para>
+					<para>Un uso típico de la función <varname>simplify</varname> es reducir el tamaño de un conjunto de datos, en particular con fines de visualización. Si la visualización es estática, se debe preferir la distancia euclidiana; si la visualización es dinámica, se debe preferir la distancia euclidiana sincronizada.</para>
 				</listitem>
 
 				<listitem id="geoMeasure">
