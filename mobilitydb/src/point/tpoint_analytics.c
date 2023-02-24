@@ -108,38 +108,20 @@ Tpoint_to_geo_measure(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Tfloat_simplify);
+PG_FUNCTION_INFO_V1(Temporal_simplify);
 /**
- * @brief Simplify the temporal number using a Douglas-Peucker-like line
- * simplification algorithm.
+ * @brief Simplify the temporal sequence (set) float or point using a
+ * Douglas-Peucker line simplification algorithm.
  */
 PGDLLEXPORT Datum
-Tfloat_simplify(PG_FUNCTION_ARGS)
+Temporal_simplify(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  double eps_dist = PG_GETARG_FLOAT8(1);
-  bool synchronized = false;
+  double dist = PG_GETARG_FLOAT8(1);
+  bool syncdist = true;
   if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
-    synchronized = PG_GETARG_BOOL(2);
-  Temporal *result = temporal_simplify(temp, eps_dist, synchronized);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Tpoint_simplify);
-/**
- * @brief Simplify the temporal sequence (set) point using a spatio-temporal
- * extension of the Douglas-Peucker line simplification algorithm.
- */
-PGDLLEXPORT Datum
-Tpoint_simplify(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  double eps_dist = PG_GETARG_FLOAT8(1);
-  bool synchronized = false;
-  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
-    synchronized = PG_GETARG_BOOL(2);
-  Temporal *result = temporal_simplify(temp, eps_dist, synchronized);
+    syncdist = PG_GETARG_BOOL(2);
+  Temporal *result = temporal_simplify(temp, dist, syncdist);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

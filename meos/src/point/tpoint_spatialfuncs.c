@@ -908,7 +908,8 @@ closest_point2d_on_segment_ratio(const POINT2D *p, const POINT2D *A,
 {
   if (FP_EQUALS(A->x, B->x) && FP_EQUALS(A->y, B->y))
   {
-    *closest = *A;
+    if (closest)
+      *closest = *A;
     return 0.0;
   }
 
@@ -931,17 +932,22 @@ closest_point2d_on_segment_ratio(const POINT2D *p, const POINT2D *A,
 
   if (r < 0)
   {
-    *closest = *A;
+    if (closest)
+      *closest = *A;
     return 0.0;
   }
   if (r > 1)
   {
-    *closest = *B;
+    if (closest)
+      *closest = *B;
     return 1.0;
   }
 
-  closest->x = A->x + ( (B->x - A->x) * r );
-  closest->y = A->y + ( (B->y - A->y) * r );
+  if (closest)
+  {
+    closest->x = A->x + ( (B->x - A->x) * r );
+    closest->y = A->y + ( (B->y - A->y) * r );
+  }
   return r;
 }
 
