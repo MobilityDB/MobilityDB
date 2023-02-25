@@ -34,9 +34,12 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <fmgr.h>
+#include <utils/array.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/temporal.h"
+#include "general/type_util.h"
 #include "general/set.h"
 #include "general/span.h"
 /* MobilityDB */
@@ -129,6 +132,115 @@ Spanset_extent_transfn(PG_FUNCTION_ARGS)
   if (! s)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(s);
+}
+
+/*****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Span_agg_transfn);
+/*
+ * @brief Transition function for aggregating spans
+ *
+ * All we do here is gather the input spans into an array
+ * so that the finalfn can sort and combine them.
+ */
+PGDLLEXPORT Datum
+Span_agg_transfn(PG_FUNCTION_ARGS)
+{
+  MemoryContext aggContext;
+  ArrayBuildState *state;
+
+  if (!AggCheckCallContext(fcinfo, &aggContext))
+    elog(ERROR, "span_agg_transfn called in non-aggregate context");
+
+  Oid spanoid = get_fn_expr_argtype(fcinfo->flinfo, 1);
+  meosType spantype = oid_type(spanoid);
+  ensure_span_type(spantype);
+
+  if (PG_ARGISNULL(0))
+    state = initArrayResult(spanoid, aggContext, false);
+  else
+    state = (ArrayBuildState *) PG_GETARG_POINTER(0);
+
+  /* Skip NULLs */
+  if (! PG_ARGISNULL(1))
+    accumArrayResult(state, PG_GETARG_DATUM(1), false, spanoid, aggContext);
+
+  PG_RETURN_POINTER(state);
+}
+
+PG_FUNCTION_INFO_V1(Spanset_agg_transfn);
+/*
+ * @brief Transition function for aggregating spans
+ *
+ * All we do here is gather the input span sets' spans into an array so
+ * that the finalfn can sort and combine them.
+ */
+PGDLLEXPORT Datum
+Spanset_agg_transfn(PG_FUNCTION_ARGS)
+{
+  MemoryContext aggContext;
+  if (!AggCheckCallContext(fcinfo, &aggContext))
+    elog(ERROR, "Spanset_agg_transfn called in non-aggregate context");
+
+  Oid spansetoid = get_fn_expr_argtype(fcinfo->flinfo, 1);
+  meosType spansettype = oid_type(spansetoid);
+  ensure_spanset_type(spansettype);
+  meosType spantype = spansettype_spantype(spansettype);
+  Oid spanoid = type_oid(spantype);
+
+  ArrayBuildState *state;
+  if (PG_ARGISNULL(0))
+    state = initArrayResult(spanoid, aggContext, false);
+  else
+    state = (ArrayBuildState *) PG_GETARG_POINTER(0);
+
+  /* skip NULLs */
+  if (! PG_ARGISNULL(1) )
+  {
+    SpanSet *ss = PG_GETARG_SPANSET_P(1);
+    const Span **spans = spanset_spans(ss);
+    for (int i = 0; i < ss->count; i++)
+      accumArrayResult(state, SpanPGetDatum(spans[i]), false, spanoid,
+        aggContext);
+  }
+  PG_RETURN_POINTER(state);
+}
+
+PG_FUNCTION_INFO_V1(Span_agg_finalfn);
+/*
+ * @brief use our internal array to merge overlapping/touching spans.
+ * @note Shared by span_agg_finalfn() and spanset_agg_finalfn().
+ */
+PGDLLEXPORT Datum
+Span_agg_finalfn(PG_FUNCTION_ARGS)
+{
+  MemoryContext aggContext;
+  if (! AggCheckCallContext(fcinfo, &aggContext))
+    elog(ERROR, "Span_agg_finalfn called in non-aggregate context");
+
+  ArrayBuildState *state = PG_ARGISNULL(0) ? NULL :
+    (ArrayBuildState *) PG_GETARG_POINTER(0);
+  if (state == NULL)
+    /* This shouldn't be possible, but just in case.... */
+    PG_RETURN_NULL();
+
+  /* Also return NULL if we had zero inputs, like other aggregates */
+  int32 count = state->nelems;
+  if (count == 0)
+    PG_RETURN_NULL();
+
+  Span **spans = palloc0(count * sizeof(Span *));
+  for (int i = 0; i < count; i++)
+    spans[i] = DatumGetSpanP(state->dvalues[i]);
+
+  int newcount;
+  Span **normspans = spanarr_normalize(spans, count, true, &newcount);
+  SpanSet *result = spanset_make_free(normspans, newcount, NORMALIZE_NO);
+
+  /* Free memory */
+  pfree_array((void **) spans, count);
+
+  PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************/

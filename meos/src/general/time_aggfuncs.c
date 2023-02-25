@@ -258,8 +258,7 @@ periodset_tunion_transfn(SkipList *state, const SpanSet *ps)
     return period_tunion_transfn(state, spanset_sp_n(ps, 0));
 
   /* General case */
-  int count;
-  const Span **periods = spanset_spans(ps, &count);
+  const Span **periods = spanset_spans(ps);
   SkipList *result;
   if (! state)
     /* Periods are copied when constructing the skiplist */

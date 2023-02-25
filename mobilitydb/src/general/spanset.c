@@ -527,8 +527,7 @@ PGDLLEXPORT Datum
 Spanset_spans(PG_FUNCTION_ARGS)
 {
   SpanSet *ps = PG_GETARG_SPANSET_P(0);
-  int count;
-  const Span **spans = spanset_spans(ps, &count);
+  const Span **spans = spanset_spans(ps);
   ArrayType *result = spanarr_to_array(spans, ps->count);
   pfree(spans);
   PG_FREE_IF_COPY(ps, 0);
