@@ -211,12 +211,10 @@ skiplist_free(SkipList *list)
   {
     /* Free the element values of the skiplist if they are not NULL */
     int cur = 0;
-    /* True when the value is passed by reference and thus it must be freed */
-    bool freeval = (list->elemtype != TIMESTAMPTZ);
     while (cur != -1)
     {
       SkipListElem *e = &list->elems[cur];
-      if (e->value && freeval)
+      if (e->value)
         pfree(e->value);
       cur = e->next[0];
     }
@@ -251,19 +249,10 @@ skiplist_print(const SkipList *list)
       len += sprintf(buf+len, "<p0>\"];\n");
     else
     {
-      char *val;
-      if (list->elemtype == TIMESTAMPTZ)
-        val = pg_timestamptz_out((TimestampTz) e->value);
-      else if (list->elemtype == PERIOD)
-        /* The second argument of span_out is not used for spans */
-        val = span_out(e->value, Int32GetDatum(0));
-      else /* list->elemtype == TEMPORAL */
-      {
-        Span p;
-        temporal_set_period(e->value, &p);
-        /* The second argument of span_out is not used for spans */
-        val = span_out(&p, Int32GetDatum(0));
-      }
+      Span p;
+      temporal_set_period(e->value, &p);
+      /* The second argument of span_out is not used for spans */
+      char *val = span_out(&p, Int32GetDatum(0));
       len +=  sprintf(buf+len, "<p0>%s\"];\n", val);
       pfree(val);
     }
@@ -433,11 +422,6 @@ skiplist_elempos(const SkipList *list, Span *p, int cur)
   if (cur == -1 || cur == list->tail)
     return BEFORE; /* Tail is +inf */
 
-  if (list->elemtype == TIMESTAMPTZ)
-    return pos_period_timestamp(p, (TimestampTz) list->elems[cur].value);
-  if (list->elemtype == PERIOD)
-    return pos_period_period(p, (Span *) list->elems[cur].value);
-  /* list->elemtype == TEMPORAL */
   Temporal *temp = (Temporal *) list->elems[cur].value;
   if (temp->subtype == TINSTANT)
     return pos_period_timestamp(p, ((TInstant *) temp)->t);
@@ -469,51 +453,34 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
 #endif /* ! MEOS */
 
   assert(list->length > 0);
+  assert(list->elemtype == TEMPORAL);
 
   /* Temporal aggregation cannot mix instants and sequences */
-  if (list->elemtype == TEMPORAL)
-  {
-    Temporal *head = (Temporal *) skiplist_headval(list);
-    Temporal *temp = (Temporal *) values[0];
-    if (head->subtype != temp->subtype)
-      elog(ERROR, "Cannot aggregate temporal values of different type");
-    if (MOBDB_FLAGS_GET_LINEAR(head->flags) !=
-        MOBDB_FLAGS_GET_LINEAR(temp->flags))
-      elog(ERROR, "Cannot aggregate temporal values of different interpolation");
-  }
+  Temporal *temp1 = (Temporal *) skiplist_headval(list);
+  Temporal *temp2 = (Temporal *) values[0];
+  if (temp1->subtype != temp2->subtype)
+    elog(ERROR, "Cannot aggregate temporal values of different type");
+  if (MOBDB_FLAGS_GET_LINEAR(temp1->flags) !=
+      MOBDB_FLAGS_GET_LINEAR(temp2->flags))
+    elog(ERROR, "Cannot aggregate temporal values of different interpolation");
 
   /* Compute the span of the new values */
   Span p;
   uint8 subtype = 0;
-  if (list->elemtype == TIMESTAMPTZ)
+  subtype = ((Temporal *) skiplist_headval(list))->subtype;
+  if (subtype == TINSTANT)
   {
-    span_set(TimestampTzGetDatum(values[0]),
-      TimestampTzGetDatum(values[count - 1]), true, true, T_TIMESTAMPTZ, &p);
+    TInstant *first = (TInstant *) values[0];
+    TInstant *last = (TInstant *) values[count - 1];
+    span_set(TimestampTzGetDatum(first->t), TimestampTzGetDatum(last->t),
+      true, true, T_TIMESTAMPTZ, &p);
   }
-  else if (list->elemtype == PERIOD)
+  else /* subtype == TSEQUENCE */
   {
-    Span *first = (Span *) values[0];
-    Span *last = (Span *) values[count - 1];
-    span_set(first->lower, last->upper, first->lower_inc, last->upper_inc,
-      T_TIMESTAMPTZ, &p);
-  }
-  else /* list->elemtype == TEMPORAL */
-  {
-    subtype = ((Temporal *) skiplist_headval(list))->subtype;
-    if (subtype == TINSTANT)
-    {
-      TInstant *first = (TInstant *) values[0];
-      TInstant *last = (TInstant *) values[count - 1];
-      span_set(TimestampTzGetDatum(first->t), TimestampTzGetDatum(last->t),
-        true, true, T_TIMESTAMPTZ, &p);
-    }
-    else /* subtype == TSEQUENCE */
-    {
-      TSequence *first = (TSequence *) values[0];
-      TSequence *last = (TSequence *) values[count - 1];
-      span_set(first->period.lower, last->period.upper,
-        first->period.lower_inc, last->period.upper_inc, T_TIMESTAMPTZ, &p);
-    }
+    TSequence *first = (TSequence *) values[0];
+    TSequence *last = (TSequence *) values[count - 1];
+    span_set(first->period.lower, last->period.upper,
+      first->period.lower_inc, last->period.upper_inc, T_TIMESTAMPTZ, &p);
   }
 
   /* Find the list values that are strictly before the span of new values */
@@ -583,34 +550,19 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
   {
     int newcount = 0;
     void **newvalues;
-    if (list->elemtype == TIMESTAMPTZ)
-    {
-      newvalues = (void **) timestamp_tagg((TimestampTz *) spliced,
-        spliced_count, (TimestampTz *) values, count, &newcount);
-    }
-    else if (list->elemtype == PERIOD)
-    {
-      newvalues = (void **) period_tagg((Span **) spliced, spliced_count,
-        (Span **) values, count, &newcount);
-    }
-    else /* list->elemtype == TEMPORAL */
-    {
-      if (subtype == TINSTANT)
-        newvalues = (void **) tinstant_tagg((TInstant **) spliced,
-          spliced_count, (TInstant **) values, count, func, &newcount);
-      else /* subtype == TSEQUENCE */
-        newvalues = (void **) tsequence_tagg((TSequence **) spliced,
-          spliced_count, (TSequence **) values, count, func, crossings,
-          &newcount);
-    }
+    if (subtype == TINSTANT)
+      newvalues = (void **) tinstant_tagg((TInstant **) spliced,
+        spliced_count, (TInstant **) values, count, func, &newcount);
+    else /* subtype == TSEQUENCE */
+      newvalues = (void **) tsequence_tagg((TSequence **) spliced,
+        spliced_count, (TSequence **) values, count, func, crossings,
+        &newcount);
 
     /* Delete the spliced-out values */
-    if (list->elemtype != TIMESTAMPTZ)
-    {
-      for (int i = 0; i < spliced_count; i++)
-        pfree(spliced[i]);
-    }
+    for (int i = 0; i < spliced_count; i++)
+      pfree(spliced[i]);
     pfree(spliced);
+
     values = newvalues;
     count = newcount;
   }
@@ -637,12 +589,7 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
 #if ! MEOS
     oldctx = set_aggregation_context(fetch_fcinfo());
 #endif /* ! MEOS */
-    if (list->elemtype == TIMESTAMPTZ)
-      newelm->value = values[i];
-    else if (list->elemtype == PERIOD)
-      newelm->value = span_copy(values[i]);
-    else /* list->elemtype == TEMPORAL */
-      newelm->value = temporal_copy(values[i]);
+    newelm->value = temporal_copy(values[i]);
 #if ! MEOS
     unset_aggregation_context(oldctx);
 #endif /* ! MEOS */
@@ -661,12 +608,7 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
 
   /* Free memory */
   if (spliced_count != 0)
-  {
-    if (list->elemtype == TIMESTAMPTZ)
-      pfree(values);
-    else
-      pfree_array((void **) values, count);
-  }
+    pfree_array((void **) values, count);
   return;
 }
 
@@ -680,30 +622,6 @@ skiplist_values(SkipList *list)
   MemoryContext ctx = set_aggregation_context(fetch_fcinfo());
 #endif /* ! MEOS */
   void **result = palloc(sizeof(void *) * list->length);
-  int cur = list->elems[0].next[0];
-  int count = 0;
-  while (cur != list->tail)
-  {
-    result[count++] = list->elems[cur].value;
-    cur = list->elems[cur].next[0];
-  }
-#if ! MEOS
-  unset_aggregation_context(ctx);
-#endif /* ! MEOS */
-  return result;
-}
-
-/**
- * @brief Return a copy of the period values contained in the skiplist
- */
-Span **
-skiplist_period_values(SkipList *list)
-{
-  assert(list->elemtype == PERIOD);
-#if ! MEOS
-  MemoryContext ctx = set_aggregation_context(fetch_fcinfo());
-#endif /* ! MEOS */
-  Span **result = palloc(sizeof(Span *) * list->length);
   int cur = list->elems[0].next[0];
   int count = 0;
   while (cur != list->tail)

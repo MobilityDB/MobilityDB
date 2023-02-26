@@ -641,6 +641,17 @@ spanset_type(meosType type)
 }
 
 /**
+ * @brief Ensure that the type is a span type
+ */
+void
+ensure_spanset_type(meosType type)
+{
+  if (! spanset_type(type))
+    elog(ERROR, "unknown span set type: %d", type);
+  return;
+}
+
+/**
  * @brief Return true if the type is a numeric span type
  */
 bool

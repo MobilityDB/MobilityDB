@@ -163,25 +163,28 @@ CREATE FUNCTION unnest(npointset)
 /*****************************************************************************/
 
 -- The function is not STRICT
-CREATE FUNCTION set_agg_transfn(npointset, npoint)
-  RETURNS npointset
-  AS 'MODULE_PATHNAME', 'Set_agg_transfn'
+CREATE FUNCTION set_union_transfn(internal, npoint)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Value_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
--- CREATE FUNCTION set_agg_combinefn(npointset, npointset)
-  -- RETURNS npointset
-  -- AS 'MODULE_PATHNAME', 'Set_agg_combinefn'
-  -- LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_agg_finalfn(npointset)
+CREATE FUNCTION set_union_transfn(internal, npointset)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Set_union_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION npointset_union_finalfn(internal)
   RETURNS npointset
-  AS 'MODULE_PATHNAME', 'Set_agg_finalfn'
+  AS 'MODULE_PATHNAME', 'Set_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE AGGREGATE set_agg(npoint) (
-  SFUNC = set_agg_transfn,
-  STYPE = npointset,
-  -- COMBINEFUNC = set_agg_combinefn,
-  FINALFUNC = set_agg_finalfn,
-  PARALLEL = safe
+CREATE AGGREGATE set_union(npoint) (
+  SFUNC = set_union_transfn,
+  STYPE = internal,
+  FINALFUNC = npointset_union_finalfn
+);
+CREATE AGGREGATE set_union(npointset) (
+  SFUNC = set_union_transfn,
+  STYPE = internal,
+  FINALFUNC = npointset_union_finalfn
 );
 
 /******************************************************************************

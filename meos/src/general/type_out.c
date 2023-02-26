@@ -1331,10 +1331,9 @@ tsequence_to_wkb_size(const TSequence *seq, uint8_t variant)
     size += MOBDB_WKB_INT4_SIZE;
   /* Include the number of instants and the period bounds flag */
   size += MOBDB_WKB_INT4_SIZE + MOBDB_WKB_BYTE_SIZE;
-  int count;
-  const TInstant **instants = tsequence_instants(seq, &count);
+  const TInstant **instants = tsequence_instants(seq);
   /* Include the TInstant array */
-  size += tinstarr_to_wkb_size(instants, count);
+  size += tinstarr_to_wkb_size(instants, seq->count);
   pfree(instants);
   return size;
 }
@@ -1357,9 +1356,8 @@ tsequenceset_to_wkb_size(const TSequenceSet *ss, uint8_t variant)
   /* For each sequence include the number of instants and the period bounds flag */
   size += ss->count * (MOBDB_WKB_INT4_SIZE + MOBDB_WKB_BYTE_SIZE);
   /* Include all the instants of all the sequences */
-  int count;
-  const TInstant **instants = tsequenceset_instants(ss, &count);
-  size += tinstarr_to_wkb_size(instants, count);
+  const TInstant **instants = tsequenceset_instants(ss);
+  size += tinstarr_to_wkb_size(instants, ss->totalcount);
   pfree(instants);
   return size;
 }

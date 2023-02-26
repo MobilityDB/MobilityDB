@@ -64,8 +64,8 @@ SELECT COUNT(*) FROM tbl_geogset WHERE geogsetFromHexWKB(asHexWKB(g)) <> g;
 -------------------------------------------------------------------------------
 -- Constructor
 
-SELECT memSize(set_agg(g)) FROM tbl_geom_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g);
-SELECT memSize(set_agg(g)) FROM tbl_geog_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g::geometry);
+SELECT memSize(set_union(g)) FROM tbl_geom_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g);
+SELECT memSize(set_union(g)) FROM tbl_geog_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g::geometry);
 
 -------------------------------------------------------------------------------
 -- Cast
@@ -97,20 +97,20 @@ SELECT MIN(ST_X(valueN(g, 1)::geometry)) FROM tbl_geogset;
 SELECT MIN(array_length(getValues(g), 1)) FROM tbl_geogset;
 
 -------------------------------------------------------------------------------
--- Set_agg and unnest functions
+-- Set_union and unnest functions
 
-SELECT numValues(set_agg(g)) FROM tbl_geom_point3D WHERE NOT ST_IsEmpty(g);
-SELECT numValues(set_agg(g)) FROM tbl_geog_point3D WHERE NOT ST_IsEmpty(g::geometry);
+SELECT numValues(set_union(g)) FROM tbl_geom_point3D WHERE NOT ST_IsEmpty(g);
+SELECT numValues(set_union(g)) FROM tbl_geog_point3D WHERE NOT ST_IsEmpty(g::geometry);
 
 WITH test1(k, g) AS (
   SELECT k, unnest(g) FROM tbl_geomset ),
 test2 (k, g) AS (
-  SELECT k, set_agg(g) FROM test1 GROUP BY k )
+  SELECT k, set_union(g) FROM test1 GROUP BY k )
 SELECT COUNT(*) FROM test2 t1, tbl_geomset t2 WHERE t1.k = t2.k AND t1.g <> t2.g;
 WITH test1(k, g) AS (
   SELECT k, unnest(g) FROM tbl_geogset ),
 test2 (k, g) AS (
-  SELECT k, set_agg(g) FROM test1 GROUP BY k )
+  SELECT k, set_union(g) FROM test1 GROUP BY k )
 SELECT COUNT(*) FROM test2 t1, tbl_geogset t2 WHERE t1.k = t2.k AND t1.g <> t2.g;
 
 -------------------------------------------------------------------------------

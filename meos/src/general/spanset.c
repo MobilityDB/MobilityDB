@@ -891,18 +891,15 @@ spanset_span_n(const SpanSet *ss, int i)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the spans of a span set.
- * @post The output parameter @p count is equal to the number of spans of
- * the input span set
  * @sqlfunc spans()
  * @pymeosfunc spans()
  */
 const Span **
-spanset_spans(const SpanSet *ss, int *count)
+spanset_spans(const SpanSet *ss)
 {
   const Span **spans = palloc(sizeof(Span *) * ss->count);
   for (int i = 0; i < ss->count; i++)
     spans[i] = spanset_sp_n(ss, i);
-  *count = ss->count;
   return spans;
 }
 

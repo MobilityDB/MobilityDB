@@ -45,70 +45,6 @@
  * Aggregate transition functions for time types
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Timestamp_tunion_transfn);
-/**
- * @brief Transition function for union aggregate of timestamp sets
- */
-PGDLLEXPORT Datum
-Timestamp_tunion_transfn(PG_FUNCTION_ARGS)
-{
-  SkipList *state;
-  INPUT_AGG_TRANS_STATE(fcinfo, state);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  store_fcinfo(fcinfo);
-  SkipList *result = timestamp_tunion_transfn(state, t);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Tstzset_tunion_transfn);
-/**
- * @brief Transition function for union aggregate of timestamp sets
- */
-PGDLLEXPORT Datum
-Tstzset_tunion_transfn(PG_FUNCTION_ARGS)
-{
-  SkipList *state;
-  INPUT_AGG_TRANS_STATE(fcinfo, state);
-  Set *ts = PG_GETARG_SET_P(1);
-  store_fcinfo(fcinfo);
-  SkipList *result = tstzset_tunion_transfn(state, ts);
-  PG_FREE_IF_COPY(ts, 1);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Period_tunion_transfn);
-/**
- * @brief Transition function for union aggregate of periods
- */
-PGDLLEXPORT Datum
-Period_tunion_transfn(PG_FUNCTION_ARGS)
-{
-  SkipList *state;
-  INPUT_AGG_TRANS_STATE(fcinfo, state);
-  Span *p = PG_GETARG_SPAN_P(1);
-  store_fcinfo(fcinfo);
-  SkipList *result = period_tunion_transfn(state, p);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Periodset_tunion_transfn);
-/**
- * @brief Transition function for union aggregate of period sets
- */
-PGDLLEXPORT Datum
-Periodset_tunion_transfn(PG_FUNCTION_ARGS)
-{
-  SkipList *state;
-  INPUT_AGG_TRANS_STATE(fcinfo, state);
-  SpanSet *ps = PG_GETARG_SPANSET_P(1);
-  store_fcinfo(fcinfo);
-  SkipList *result = periodset_tunion_transfn(state, ps);
-  PG_FREE_IF_COPY(ps, 1);
-  PG_RETURN_POINTER(result);
-}
-
-/*****************************************************************************/
-
 PG_FUNCTION_INFO_V1(Timestamp_tcount_transfn);
 /**
  * @brief Transition function for temporal count aggregate of timestamps
@@ -169,54 +105,6 @@ Periodset_tcount_transfn(PG_FUNCTION_ARGS)
   state = periodset_tcount_transfn(state, ps);
   PG_FREE_IF_COPY(ps, 1);
   PG_RETURN_POINTER(state);
-}
-
-/*****************************************************************************
- * Aggregate combine functions for time types
- *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(Time_tunion_combinefn);
-/**
- * @brief Combine function for union aggregate of time types
- */
-PGDLLEXPORT Datum
-Time_tunion_combinefn(PG_FUNCTION_ARGS)
-{
-  SkipList *state1, *state2;
-  INPUT_AGG_COMB_STATE(fcinfo, state1, state2);
-  store_fcinfo(fcinfo);
-  SkipList *result = time_tagg_combinefn(state1, state2);
-  PG_RETURN_POINTER(result);
-}
-
-/*****************************************************************************
- * Aggregate final functions for time types
- *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(Timestamp_tunion_finalfn);
-/**
- * @brief Final function for union aggregation of timestamp set values
- */
-PGDLLEXPORT Datum
-Timestamp_tunion_finalfn(PG_FUNCTION_ARGS)
-{
-  /* The final function is strict, we do not need to test for null values */
-  SkipList *state = (SkipList *) PG_GETARG_POINTER(0);
-  Set *result = timestamp_tunion_finalfn(state);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Period_tunion_finalfn);
-/**
- * @brief Final function for union aggregation of period (set) values
- */
-PGDLLEXPORT Datum
-Period_tunion_finalfn(PG_FUNCTION_ARGS)
-{
-  /* The final function is strict, we do not need to test for null values */
-  SkipList *state = (SkipList *) PG_GETARG_POINTER(0);
-  SpanSet *result = period_tunion_finalfn(state);
-  PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************/

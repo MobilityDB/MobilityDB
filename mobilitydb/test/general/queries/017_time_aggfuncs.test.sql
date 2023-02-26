@@ -53,21 +53,9 @@ SELECT extent(t) FROM tbl_tstzset;
 SELECT extent(p) FROM tbl_tstzspan;
 SELECT extent(ps) FROM tbl_tstzspanset;
 
--- encourage use of parallel plans
-set parallel_setup_cost=0;
-set parallel_tuple_cost=0;
-set min_parallel_table_scan_size=0;
-set max_parallel_workers_per_gather=2;
-
-SELECT numValues(tunion(t)) from tbl_tstzset_big;
+SELECT numValues(set_union(t)) from tbl_tstzset_big;
 SELECT extent(temp::tstzspan) FROM tbl_tfloat_big;
-SELECT numSpans(tunion(temp::tstzspan)) from tbl_tfloat_big;
-
--- reset to default values
-reset parallel_setup_cost;
-reset parallel_tuple_cost;
-reset min_parallel_table_scan_size;
-reset max_parallel_workers_per_gather;
+SELECT numSpans(span_union(temp::tstzspan)) from tbl_tfloat_big;
 
 -------------------------------------------------------------------------------
 
@@ -99,38 +87,38 @@ SELECT numInstants(tcount(ps)) FROM tbl_tstzspanset;
 
 -------------------------------------------------------------------------------
 
-SELECT tunion(temp) FROM (VALUES
+SELECT set_union(temp) FROM (VALUES
 (NULL::tstzset),(NULL::tstzset)) t(temp);
-SELECT tunion(temp) FROM (VALUES
+SELECT set_union(temp) FROM (VALUES
 (NULL::tstzset),('{2000-01-01}'::tstzset)) t(temp);
-SELECT tunion(temp) FROM (VALUES
+SELECT set_union(temp) FROM (VALUES
 ('{2000-01-01}'::tstzset),(NULL::tstzset)) t(temp);
 
-SELECT tunion(temp) FROM (VALUES
+SELECT span_union(temp) FROM (VALUES
 (NULL::tstzspan),(NULL::tstzspan)) t(temp);
-SELECT tunion(temp) FROM (VALUES
+SELECT span_union(temp) FROM (VALUES
 (NULL::tstzspan),('[2000-01-01, 2000-01-02]'::tstzspan)) t(temp);
-SELECT tunion(temp) FROM (VALUES
+SELECT span_union(temp) FROM (VALUES
 ('[2000-01-01, 2000-01-02]'::tstzspan),(NULL::tstzspan)) t(temp);
 
-SELECT tunion(temp) FROM (VALUES
+SELECT span_union(temp) FROM (VALUES
 (NULL::tstzspanset),(NULL::tstzspanset)) t(temp);
-SELECT tunion(temp) FROM (VALUES
+SELECT span_union(temp) FROM (VALUES
 (NULL::tstzspanset),('{[2000-01-01, 2000-01-02]}'::tstzspanset)) t(temp);
-SELECT tunion(temp) FROM (VALUES
+SELECT span_union(temp) FROM (VALUES
 ('{[2000-01-01, 2000-01-02]}'::tstzspanset),(NULL::tstzspanset)) t(temp);
 
 -------------------------------------------------------------------------------
 
-SELECT tunion(temp) FROM (VALUES
+SELECT set_union(temp) FROM (VALUES
 ('{2000-01-01, 2000-01-03, 2000-01-05, 2000-01-07}'::tstzset),
 ('{2000-01-02, 2000-01-06}'::tstzset)) t(temp);
 
-SELECT tunion(temp) FROM (VALUES
+SELECT span_union(temp) FROM (VALUES
 ('[2000-01-01, 2000-01-03]'::tstzspan),
 ('[2000-01-02, 2000-01-06]'::tstzspan)) t(temp);
 
-SELECT tunion(temp) FROM (VALUES
+SELECT span_union(temp) FROM (VALUES
 ('{[2000-01-01, 2000-01-03]}'::tstzspanset),
 ('{[2000-01-02, 2000-01-06]}'::tstzspanset)) t(temp);
 
@@ -138,7 +126,7 @@ WITH Temp(t) AS (
   SELECT tstzset '{2000-01-01}' UNION
   SELECT tstzset '{2000-01-01, 2000-01-02, 2000-01-04}'
 )
-SELECT tunion(t) FROM Temp;
+SELECT set_union(t) FROM Temp;
 
 WITH Temp(t) AS (
   SELECT set(array_agg(t))
@@ -147,13 +135,13 @@ WITH Temp(t) AS (
   SELECT set(array_agg(t))
   FROM generate_series(timestamp '2000-01-01 00:15', timestamp '2000-01-01 00:45', interval '1 sec') t
 )
-SELECT startValue(tunion(t)) FROM Temp;
+SELECT startValue(set_union(t)) FROM Temp;
 
 -------------------------------------------------------------------------------
 
-SELECT numValues(tunion(t)) FROM tbl_timestamptz;
-SELECT numValues(tunion(t)) FROM tbl_tstzset;
-SELECT numSpans(tunion(p)) FROM tbl_tstzspan;
-SELECT numSpans(tunion(ps)) FROM tbl_tstzspanset;
+SELECT numValues(set_union(t)) FROM tbl_timestamptz;
+SELECT numValues(set_union(t)) FROM tbl_tstzset;
+SELECT numSpans(span_union(p)) FROM tbl_tstzspan;
+SELECT numSpans(span_union(ps)) FROM tbl_tstzspanset;
 
 -------------------------------------------------------------------------------

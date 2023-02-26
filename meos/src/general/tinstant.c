@@ -461,22 +461,6 @@ tinstant_set_period(const TInstant *inst, Span *p)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Return the singleton array of sequences of a temporal instant.
- * @post The output parameter @p count is equal to 1
- * @sqlfunc sequences()
- */
-TSequence **
-tinstant_sequences(const TInstant *inst, int *count)
-{
-  TSequence **result = palloc(sizeof(TSequence *));
-  result[0] = tinstant_to_tsequence(inst,
-    MOBDB_FLAGS_GET_CONTINUOUS(inst->flags) ? LINEAR : STEP);
-  *count = 1;
-  return result;
-}
-
-/**
- * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the singleton array of timestamps of a temporal instant.
  * @post The output parameter @p count is equal to 1
  * @sqlfunc timestamps()

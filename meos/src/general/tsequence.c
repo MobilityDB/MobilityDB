@@ -1912,9 +1912,8 @@ tsequenceset_to_tsequence(const TSequenceSet *ss)
 }
 
 /**
- * Return a temporal sequence with continuous base type transformed from
+ * @brief Return a temporal sequence with continuous base type transformed from
  * step to linear interpolation
- *
  * @param[in] seq Temporal sequence
  * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
@@ -2325,48 +2324,37 @@ tsequence_set_period(const TSequence *seq, Span *p)
 /**
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the singleton array of sequences of a temporal sequence.
- * @post The output parameter @p count is equal to 1
  * @sqlfunc sequences()
  */
 TSequence **
 tsequence_sequences(const TSequence *seq, int *count)
 {
-  TSequence **result;
-  if (MOBDB_FLAGS_GET_DISCRETE(seq->flags))
-  {
-    /* Discrete sequence */
-    result = palloc(sizeof(TSequence *) * seq->count);
-    interpType interp = MOBDB_FLAGS_GET_CONTINUOUS(seq->flags) ? LINEAR : STEP;
-    for (int i = 0; i < seq->count; i++)
-    {
-      const TInstant *inst = tsequence_inst_n(seq, i);
-      result[i] = tinstant_to_tsequence(inst, interp);
-    }
-    *count = seq->count;
-  }
-  else
-  {
-    /* Continuous sequence */
-    result = palloc(sizeof(TSequence *));
-    result[0] = tsequence_copy(seq);
-    *count = 1;
-  }
+  TSequence **result = palloc(sizeof(TSequence *));
+  result[0] = tsequence_copy(seq);
+  *count = 1;
   return result;
 }
 
 /**
- * Return the array of segments of a temporal sequence
+ * @brief Return the array of segments of a temporal sequence
+ * @param[in] seq Temporal sequence
+ * @param[out] result Array on which the pointers of the newly constructed
+ * segments are stored
+ * @return Number of resulting sequences returned
+ * @note This function is used when iterating
  */
 int
 tsequence_segments1(const TSequence *seq, TSequence **result)
 {
   assert(! MOBDB_FLAGS_GET_DISCRETE(seq->flags));
+  /* Singleton sequence */
   if (seq->count == 1)
   {
     result[0] = tsequence_copy(seq);
     return 1;
   }
 
+  /* General case */
   TInstant *instants[2];
   interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
   bool lower_inc = seq->period.lower_inc;
@@ -2410,12 +2398,23 @@ tsequence_segments1(const TSequence *seq, TSequence **result)
 TSequence **
 tsequence_segments(const TSequence *seq, int *count)
 {
+  TSequence **result = palloc(sizeof(TSequence *) * seq->count);
+
   /* Discrete sequence */
   if (MOBDB_FLAGS_GET_DISCRETE(seq->flags))
-    return tsequence_sequences(seq, count);
+  {
+    /* Discrete sequence */
+    interpType interp = MOBDB_FLAGS_GET_CONTINUOUS(seq->flags) ? LINEAR : STEP;
+    for (int i = 0; i < seq->count; i++)
+    {
+      const TInstant *inst = tsequence_inst_n(seq, i);
+      result[i] = tinstant_to_tsequence(inst, interp);
+    }
+    *count = seq->count;
+    return result;
+  }
 
   /* Continuous sequence */
-  TSequence **result = palloc(sizeof(TSequence *) * seq->count);
   *count = tsequence_segments1(seq, result);
   return result;
 }
@@ -2424,17 +2423,14 @@ tsequence_segments(const TSequence *seq, int *count)
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the array of distinct instants of a temporal sequence.
  * @note By definition, all instants of a sequence are distinct
- * @post The output parameter @p count is equal to the number of instants of the
- * input temporal sequence
  * @sqlfunc instants()
  */
 const TInstant **
-tsequence_instants(const TSequence *seq, int *count)
+tsequence_instants(const TSequence *seq)
 {
   const TInstant **result = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
     result[i] = tsequence_inst_n(seq, i);
-  *count = seq->count;
   return result;
 }
 
