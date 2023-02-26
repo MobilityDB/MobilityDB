@@ -527,76 +527,76 @@ CREATE FUNCTION unnest(textset)
 /*****************************************************************************/
 
 -- The function is not STRICT
-CREATE FUNCTION set_agg_transfn(intset, int)
+CREATE FUNCTION set_union_transfn(intset, int)
   RETURNS intset
-  AS 'MODULE_PATHNAME', 'Set_agg_transfn'
+  AS 'MODULE_PATHNAME', 'Set_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_agg_transfn(bigintset, bigint)
+CREATE FUNCTION set_union_transfn(bigintset, bigint)
   RETURNS bigintset
-  AS 'MODULE_PATHNAME', 'Set_agg_transfn'
+  AS 'MODULE_PATHNAME', 'Set_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_agg_transfn(floatset, float)
+CREATE FUNCTION set_union_transfn(floatset, float)
   RETURNS floatset
-  AS 'MODULE_PATHNAME', 'Set_agg_transfn'
+  AS 'MODULE_PATHNAME', 'Set_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_agg_transfn(tstzset, timestamptz)
+CREATE FUNCTION set_union_transfn(tstzset, timestamptz)
   RETURNS tstzset
-  AS 'MODULE_PATHNAME', 'Set_agg_transfn'
+  AS 'MODULE_PATHNAME', 'Set_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_agg_transfn(textset, text)
+CREATE FUNCTION set_union_transfn(textset, text)
   RETURNS textset
-  AS 'MODULE_PATHNAME', 'Set_agg_transfn'
+  AS 'MODULE_PATHNAME', 'Set_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION set_agg_finalfn(intset)
+CREATE FUNCTION set_union_finalfn(intset)
   RETURNS intset
-  AS 'MODULE_PATHNAME', 'Set_agg_finalfn'
+  AS 'MODULE_PATHNAME', 'Set_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_agg_finalfn(bigintset)
+CREATE FUNCTION set_union_finalfn(bigintset)
   RETURNS bigintset
-  AS 'MODULE_PATHNAME', 'Set_agg_finalfn'
+  AS 'MODULE_PATHNAME', 'Set_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_agg_finalfn(floatset)
+CREATE FUNCTION set_union_finalfn(floatset)
   RETURNS floatset
-  AS 'MODULE_PATHNAME', 'Set_agg_finalfn'
+  AS 'MODULE_PATHNAME', 'Set_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_agg_finalfn(tstzset)
+CREATE FUNCTION set_union_finalfn(tstzset)
   RETURNS tstzset
-  AS 'MODULE_PATHNAME', 'Set_agg_finalfn'
+  AS 'MODULE_PATHNAME', 'Set_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_agg_finalfn(textset)
+CREATE FUNCTION set_union_finalfn(textset)
   RETURNS textset
-  AS 'MODULE_PATHNAME', 'Set_agg_finalfn'
+  AS 'MODULE_PATHNAME', 'Set_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE AGGREGATE set_agg(int) (
-  SFUNC = set_agg_transfn,
+CREATE AGGREGATE set_union(int) (
+  SFUNC = set_union_transfn,
   STYPE = intset,
-  FINALFUNC = set_agg_finalfn,
+  FINALFUNC = set_union_finalfn,
   PARALLEL = safe
 );
-CREATE AGGREGATE set_agg(bigint) (
-  SFUNC = set_agg_transfn,
+CREATE AGGREGATE set_union(bigint) (
+  SFUNC = set_union_transfn,
   STYPE = bigintset,
-  FINALFUNC = set_agg_finalfn,
+  FINALFUNC = set_union_finalfn,
   PARALLEL = safe
 );
-CREATE AGGREGATE set_agg(float) (
-  SFUNC = set_agg_transfn,
+CREATE AGGREGATE set_union(float) (
+  SFUNC = set_union_transfn,
   STYPE = floatset,
-  FINALFUNC = set_agg_finalfn,
+  FINALFUNC = set_union_finalfn,
   PARALLEL = safe
 );
-CREATE AGGREGATE set_agg(timestamptz) (
-  SFUNC = set_agg_transfn,
+CREATE AGGREGATE set_union(timestamptz) (
+  SFUNC = set_union_transfn,
   STYPE = tstzset,
-  FINALFUNC = set_agg_finalfn,
+  FINALFUNC = set_union_finalfn,
   PARALLEL = safe
 );
-CREATE AGGREGATE set_agg(text) (
-  SFUNC = set_agg_transfn,
+CREATE AGGREGATE set_union(text) (
+  SFUNC = set_union_transfn,
   STYPE = textset,
-  FINALFUNC = set_agg_finalfn,
+  FINALFUNC = set_union_finalfn,
   PARALLEL = safe
 );
 

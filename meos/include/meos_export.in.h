@@ -670,26 +670,26 @@ extern double distance_timestampset_timestampset(const Set *ts1, const Set *ts2)
 /* Aggregate functions for set and span types */
 
 extern Span *bigint_extent_transfn(Span *s, int64 i);
-extern Set *bigintset_agg_transfn(Set *state, int64 i);
+extern Set *bigintset_union_transfn(Set *state, int64 i);
 extern Span *int_extent_transfn(Span *s, int i);
-extern Set *intset_agg_transfn(Set *state, int i);
+extern Set *intset_union_transfn(Set *state, int i);
 extern Span *float_extent_transfn(Span *s, double d);
-extern Set *floatset_agg_transfn(Set *state, double d);
+extern Set *floatset_union_transfn(Set *state, double d);
 extern SkipList *period_tcount_transfn(SkipList *state, const Span *p);
 extern SkipList *period_tunion_transfn(SkipList *state, const Span *p);
 extern SpanSet *period_tunion_finalfn(SkipList *state);
 extern SkipList *periodset_tcount_transfn(SkipList *state, const SpanSet *ps);
 extern SkipList *periodset_tunion_transfn(SkipList *state, const SpanSet *ps);
-extern Set *set_agg_combinefn(Set *state1, Set *state2);
-extern Set *set_agg_finalfn(Set *state);
+extern Set *set_union_combinefn(Set *state1, Set *state2);
+extern Set *set_union_finalfn(Set *state);
 extern Span *span_extent_transfn(Span *s1, const Span *s2);
 extern Span *spanset_extent_transfn(Span *s, const SpanSet *ss);
-extern Set *textset_agg_transfn(Set *state, const text *txt);
+extern Set *textset_union_transfn(Set *state, const text *txt);
 extern Span *timestamp_extent_transfn(Span *p, TimestampTz t);
 extern SkipList *timestamp_tcount_transfn(SkipList *state, TimestampTz t);
 extern SkipList *timestamp_tunion_transfn(SkipList *state, TimestampTz t);
 extern Set *timestamp_tunion_finalfn(SkipList *state);
-extern Set *tstzset_agg_transfn(Set *state, TimestampTz t);
+extern Set *tstzset_union_transfn(Set *state, TimestampTz t);
 extern Span *set_extent_transfn(Span *span, const Set *set);
 extern SkipList *tstzset_tcount_transfn(SkipList *state, const Set *ts);
 extern SkipList *tstzset_tunion_transfn(SkipList *state, const Set *ts);

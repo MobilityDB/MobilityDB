@@ -136,7 +136,7 @@ Spanset_extent_transfn(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Span_agg_transfn);
+PG_FUNCTION_INFO_V1(Span_union_transfn);
 /*
  * @brief Transition function for aggregating spans
  *
@@ -144,13 +144,13 @@ PG_FUNCTION_INFO_V1(Span_agg_transfn);
  * so that the finalfn can sort and combine them.
  */
 PGDLLEXPORT Datum
-Span_agg_transfn(PG_FUNCTION_ARGS)
+Span_union_transfn(PG_FUNCTION_ARGS)
 {
   MemoryContext aggContext;
   ArrayBuildState *state;
 
   if (!AggCheckCallContext(fcinfo, &aggContext))
-    elog(ERROR, "span_agg_transfn called in non-aggregate context");
+    elog(ERROR, "span_union_transfn called in non-aggregate context");
 
   Oid spanoid = get_fn_expr_argtype(fcinfo->flinfo, 1);
   meosType spantype = oid_type(spanoid);
@@ -168,7 +168,7 @@ Span_agg_transfn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(state);
 }
 
-PG_FUNCTION_INFO_V1(Spanset_agg_transfn);
+PG_FUNCTION_INFO_V1(Spanset_union_transfn);
 /*
  * @brief Transition function for aggregating spans
  *
@@ -176,11 +176,11 @@ PG_FUNCTION_INFO_V1(Spanset_agg_transfn);
  * that the finalfn can sort and combine them.
  */
 PGDLLEXPORT Datum
-Spanset_agg_transfn(PG_FUNCTION_ARGS)
+Spanset_union_transfn(PG_FUNCTION_ARGS)
 {
   MemoryContext aggContext;
   if (!AggCheckCallContext(fcinfo, &aggContext))
-    elog(ERROR, "Spanset_agg_transfn called in non-aggregate context");
+    elog(ERROR, "Spanset_union_transfn called in non-aggregate context");
 
   Oid spansetoid = get_fn_expr_argtype(fcinfo->flinfo, 1);
   meosType spansettype = oid_type(spansetoid);
@@ -206,17 +206,17 @@ Spanset_agg_transfn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(state);
 }
 
-PG_FUNCTION_INFO_V1(Span_agg_finalfn);
+PG_FUNCTION_INFO_V1(Span_union_finalfn);
 /*
  * @brief use our internal array to merge overlapping/touching spans.
- * @note Shared by span_agg_finalfn() and spanset_agg_finalfn().
+ * @note Shared by Span_union_finalfn() and Spanset_union_finalfn().
  */
 PGDLLEXPORT Datum
-Span_agg_finalfn(PG_FUNCTION_ARGS)
+Span_union_finalfn(PG_FUNCTION_ARGS)
 {
   MemoryContext aggContext;
   if (! AggCheckCallContext(fcinfo, &aggContext))
-    elog(ERROR, "Span_agg_finalfn called in non-aggregate context");
+    elog(ERROR, "Span_union_finalfn called in non-aggregate context");
 
   ArrayBuildState *state = PG_ARGISNULL(0) ? NULL :
     (ArrayBuildState *) PG_GETARG_POINTER(0);

@@ -105,7 +105,7 @@ extern void lower_upper_shift_tscale(TimestampTz *lower, TimestampTz *upper, con
 
 /* Aggregate functions for set and span types */
 
-extern Set *set_agg_transfn(Set *s, Datum d, meosType basetype);
+extern Set *set_union_transfn(Set *s, Datum d, meosType basetype);
 
 /*****************************************************************************
  * Bounding box functions for set and span types

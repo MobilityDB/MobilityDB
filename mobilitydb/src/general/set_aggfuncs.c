@@ -49,12 +49,12 @@
  * Aggregate functions for set types
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Set_agg_transfn);
+PG_FUNCTION_INFO_V1(Set_union_transfn);
 /**
  * @brief Transition function for set aggregation of values
  */
 PGDLLEXPORT Datum
-Set_agg_transfn(PG_FUNCTION_ARGS)
+Set_union_transfn(PG_FUNCTION_ARGS)
 {
   MemoryContext ctx = set_aggregation_context(fcinfo);
   Set *state = PG_ARGISNULL(0) ? NULL : PG_GETARG_SET_P(0);
@@ -75,7 +75,7 @@ Set_agg_transfn(PG_FUNCTION_ARGS)
     dvalue = PointerGetDatum(PG_DETOAST_DATUM(d));
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  state = set_agg_transfn(state, dvalue, basetype);
+  state = set_union_transfn(state, dvalue, basetype);
   if (dvalue != d)
     pfree(DatumGetPointer(dvalue));
   if (! state)
@@ -83,17 +83,17 @@ Set_agg_transfn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(state);
 }
 
-PG_FUNCTION_INFO_V1(Set_agg_finalfn);
+PG_FUNCTION_INFO_V1(Set_union_finalfn);
 /**
  * @brief Combine function for set aggregate of set types
  */
 PGDLLEXPORT Datum
-Set_agg_finalfn(PG_FUNCTION_ARGS)
+Set_union_finalfn(PG_FUNCTION_ARGS)
 {
   MemoryContext ctx = set_aggregation_context(fcinfo);
   Set *state = PG_GETARG_SET_P(0);
   unset_aggregation_context(ctx);
-  Set *result = set_agg_finalfn(state);
+  Set *result = set_union_finalfn(state);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);

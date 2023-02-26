@@ -72,14 +72,14 @@ SELECT MIN(getPosition(valueN(n, 1))) FROM tbl_npointset;
 SELECT MIN(array_length(getValues(n), 1)) FROM tbl_npointset;
 
 -------------------------------------------------------------------------------
--- Set_agg and unnest functions
+-- Set_union and unnest functions
 
-SELECT numValues(set_agg(np)) FROM tbl_npoint;
+SELECT numValues(set_union(np)) FROM tbl_npoint;
 
 WITH test1(k, n) AS (
   SELECT k, unnest(n) FROM tbl_npointset ),
 test2 (k, n) AS (
-  SELECT k, set_agg(n) FROM test1 GROUP BY k )
+  SELECT k, set_union(n) FROM test1 GROUP BY k )
 SELECT COUNT(*) FROM test2 t1, tbl_npointset t2 WHERE t1.k = t2.k AND t1.n <> t2.n;
 
 -------------------------------------------------------------------------------

@@ -137,7 +137,7 @@ set_append_value(Set *set, Datum d, meosType basetype)
  * @brief Transition function for set aggregate of values
  */
 Set *
-set_agg_transfn(Set *state, Datum d, meosType basetype)
+set_union_transfn(Set *state, Datum d, meosType basetype)
 {
   /* Null set: create a new set with the value */
   if (! state)
@@ -163,9 +163,9 @@ set_agg_transfn(Set *state, Datum d, meosType basetype)
  * @brief Transition function for set aggregate of values
  */
 Set *
-intset_agg_transfn(Set *state, int32 i)
+intset_union_transfn(Set *state, int32 i)
 {
-  return set_agg_transfn(state, Int32GetDatum(i), T_INT4);
+  return set_union_transfn(state, Int32GetDatum(i), T_INT4);
 }
 
 /**
@@ -173,9 +173,9 @@ intset_agg_transfn(Set *state, int32 i)
  * @brief Transition function for set aggregate of values
  */
 Set *
-bigintset_agg_transfn(Set *state, int64 i)
+bigintset_union_transfn(Set *state, int64 i)
 {
-  return set_agg_transfn(state, Int64GetDatum(i), T_INT8);
+  return set_union_transfn(state, Int64GetDatum(i), T_INT8);
 }
 
 /**
@@ -183,9 +183,9 @@ bigintset_agg_transfn(Set *state, int64 i)
  * @brief Transition function for set aggregate of values
  */
 Set *
-floatset_agg_transfn(Set *state, double d)
+floatset_union_transfn(Set *state, double d)
 {
-  return set_agg_transfn(state, Float8GetDatum(d), T_FLOAT8);
+  return set_union_transfn(state, Float8GetDatum(d), T_FLOAT8);
 }
 
 /**
@@ -193,9 +193,9 @@ floatset_agg_transfn(Set *state, double d)
  * @brief Transition function for set aggregate of values
  */
 Set *
-tstzset_agg_transfn(Set *state, TimestampTz t)
+tstzset_union_transfn(Set *state, TimestampTz t)
 {
-  return set_agg_transfn(state, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+  return set_union_transfn(state, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 
 /**
@@ -203,9 +203,9 @@ tstzset_agg_transfn(Set *state, TimestampTz t)
  * @brief Transition function for set aggregate of values
  */
 Set *
-textset_agg_transfn(Set *state, const text *txt)
+textset_union_transfn(Set *state, const text *txt)
 {
-  return set_agg_transfn(state, PointerGetDatum(txt), T_TEXT);
+  return set_union_transfn(state, PointerGetDatum(txt), T_TEXT);
 }
 #endif /* MEOS */
 
@@ -214,7 +214,7 @@ textset_agg_transfn(Set *state, const text *txt)
  * @brief Transition function for set aggregate of values
  */
 Set *
-set_agg_finalfn(Set *state)
+set_union_finalfn(Set *state)
 {
   if (! state)
     return NULL;

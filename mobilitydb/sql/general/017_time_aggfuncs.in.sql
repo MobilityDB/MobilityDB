@@ -189,99 +189,99 @@ CREATE AGGREGATE tunion(tstzspanset) (
 
 /*****************************************************************************/
 
-CREATE FUNCTION span_agg_transfn(internal, intspan)
+CREATE FUNCTION span_union_transfn(internal, intspan)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'Span_agg_transfn'
+  AS 'MODULE_PATHNAME', 'Span_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION span_agg_transfn(internal, bigintspan)
+CREATE FUNCTION span_union_transfn(internal, bigintspan)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'Span_agg_transfn'
+  AS 'MODULE_PATHNAME', 'Span_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION span_agg_transfn(internal, floatspan)
+CREATE FUNCTION span_union_transfn(internal, floatspan)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'Span_agg_transfn'
+  AS 'MODULE_PATHNAME', 'Span_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION span_agg_transfn(internal, tstzspan)
+CREATE FUNCTION span_union_transfn(internal, tstzspan)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'Span_agg_transfn'
+  AS 'MODULE_PATHNAME', 'Span_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION intspan_agg_finalfn(internal)
+CREATE FUNCTION intspan_union_finalfn(internal)
   RETURNS intspanset
-  AS 'MODULE_PATHNAME', 'Span_agg_finalfn'
+  AS 'MODULE_PATHNAME', 'Span_union_finalfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION bigintspan_agg_finalfn(internal)
+CREATE FUNCTION bigintspan_union_finalfn(internal)
   RETURNS bigintspanset
-  AS 'MODULE_PATHNAME', 'Span_agg_finalfn'
+  AS 'MODULE_PATHNAME', 'Span_union_finalfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION floatspan_agg_finalfn(internal)
+CREATE FUNCTION floatspan_union_finalfn(internal)
   RETURNS floatspanset
-  AS 'MODULE_PATHNAME', 'Span_agg_finalfn'
+  AS 'MODULE_PATHNAME', 'Span_union_finalfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tstzspan_agg_finalfn(internal)
+CREATE FUNCTION tstzspan_union_finalfn(internal)
   RETURNS tstzspanset
-  AS 'MODULE_PATHNAME', 'Span_agg_finalfn'
+  AS 'MODULE_PATHNAME', 'Span_union_finalfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE AGGREGATE span_agg(intspan) (
-  SFUNC = span_agg_transfn,
+CREATE AGGREGATE span_union(intspan) (
+  SFUNC = span_union_transfn,
   STYPE = internal,
-  FINALFUNC = intspan_agg_finalfn
+  FINALFUNC = intspan_union_finalfn
 );
-CREATE AGGREGATE span_agg(bigintspan) (
-  SFUNC = span_agg_transfn,
+CREATE AGGREGATE span_union(bigintspan) (
+  SFUNC = span_union_transfn,
   STYPE = internal,
-  FINALFUNC = bigintspan_agg_finalfn
+  FINALFUNC = bigintspan_union_finalfn
 );
-CREATE AGGREGATE span_agg(floatspan) (
-  SFUNC = span_agg_transfn,
+CREATE AGGREGATE span_union(floatspan) (
+  SFUNC = span_union_transfn,
   STYPE = internal,
-  FINALFUNC = floatspan_agg_finalfn
+  FINALFUNC = floatspan_union_finalfn
 );
-CREATE AGGREGATE span_agg(tstzspan) (
-  SFUNC = span_agg_transfn,
+CREATE AGGREGATE span_union(tstzspan) (
+  SFUNC = span_union_transfn,
   STYPE = internal,
-  FINALFUNC = tstzspan_agg_finalfn
+  FINALFUNC = tstzspan_union_finalfn
 );
 
 /*****************************************************************************/
 
-CREATE FUNCTION spanset_agg_transfn(internal, intspanset)
+CREATE FUNCTION spanset_union_transfn(internal, intspanset)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'Spanset_agg_transfn'
+  AS 'MODULE_PATHNAME', 'Spanset_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION spanset_agg_transfn(internal, bigintspanset)
+CREATE FUNCTION spanset_union_transfn(internal, bigintspanset)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'Spanset_agg_transfn'
+  AS 'MODULE_PATHNAME', 'Spanset_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION spanset_agg_transfn(internal, floatspanset)
+CREATE FUNCTION spanset_union_transfn(internal, floatspanset)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'Spanset_agg_transfn'
+  AS 'MODULE_PATHNAME', 'Spanset_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION spanset_agg_transfn(internal, tstzspanset)
+CREATE FUNCTION spanset_union_transfn(internal, tstzspanset)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'Spanset_agg_transfn'
+  AS 'MODULE_PATHNAME', 'Spanset_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE AGGREGATE span_agg(intspanset) (
-  SFUNC = spanset_agg_transfn,
+CREATE AGGREGATE span_union(intspanset) (
+  SFUNC = spanset_union_transfn,
   STYPE = internal,
-  FINALFUNC = intspan_agg_finalfn
+  FINALFUNC = intspan_union_finalfn
 );
-CREATE AGGREGATE span_agg(bigintspanset) (
-  SFUNC = spanset_agg_transfn,
+CREATE AGGREGATE span_union(bigintspanset) (
+  SFUNC = spanset_union_transfn,
   STYPE = internal,
-  FINALFUNC = bigintspan_agg_finalfn
+  FINALFUNC = bigintspan_union_finalfn
 );
-CREATE AGGREGATE span_agg(floatspanset) (
-  SFUNC = spanset_agg_transfn,
+CREATE AGGREGATE span_union(floatspanset) (
+  SFUNC = spanset_union_transfn,
   STYPE = internal,
-  FINALFUNC = floatspan_agg_finalfn
+  FINALFUNC = floatspan_union_finalfn
 );
-CREATE AGGREGATE span_agg(tstzspanset) (
-  SFUNC = spanset_agg_transfn,
+CREATE AGGREGATE span_union(tstzspanset) (
+  SFUNC = spanset_union_transfn,
   STYPE = internal,
-  FINALFUNC = tstzspan_agg_finalfn
+  FINALFUNC = tstzspan_union_finalfn
 );
 
 /*****************************************************************************/

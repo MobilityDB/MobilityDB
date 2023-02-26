@@ -276,34 +276,34 @@ CREATE FUNCTION unnest(geogset)
 /*****************************************************************************/
 
 -- The function is not STRICT
-CREATE FUNCTION set_agg_transfn(geomset, geometry)
+CREATE FUNCTION set_union_transfn(geomset, geometry)
   RETURNS geomset
-  AS 'MODULE_PATHNAME', 'Set_agg_transfn'
+  AS 'MODULE_PATHNAME', 'Set_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_agg_transfn(geogset, geography)
+CREATE FUNCTION set_union_transfn(geogset, geography)
   RETURNS geogset
-  AS 'MODULE_PATHNAME', 'Set_agg_transfn'
+  AS 'MODULE_PATHNAME', 'Set_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION set_agg_finalfn(geomset)
+CREATE FUNCTION set_union_finalfn(geomset)
   RETURNS geomset
-  AS 'MODULE_PATHNAME', 'Set_agg_finalfn'
+  AS 'MODULE_PATHNAME', 'Set_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_agg_finalfn(geogset)
+CREATE FUNCTION set_union_finalfn(geogset)
   RETURNS geogset
-  AS 'MODULE_PATHNAME', 'Set_agg_finalfn'
+  AS 'MODULE_PATHNAME', 'Set_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE AGGREGATE set_agg(geometry) (
-  SFUNC = set_agg_transfn,
+CREATE AGGREGATE set_union(geometry) (
+  SFUNC = set_union_transfn,
   STYPE = geomset,
-  FINALFUNC = set_agg_finalfn,
+  FINALFUNC = set_union_finalfn,
   PARALLEL = safe
 );
-CREATE AGGREGATE set_agg(geography) (
-  SFUNC = set_agg_transfn,
+CREATE AGGREGATE set_union(geography) (
+  SFUNC = set_union_transfn,
   STYPE = geogset,
-  FINALFUNC = set_agg_finalfn,
+  FINALFUNC = set_union_finalfn,
   PARALLEL = safe
 );
 

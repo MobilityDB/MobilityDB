@@ -163,24 +163,24 @@ CREATE FUNCTION unnest(npointset)
 /*****************************************************************************/
 
 -- The function is not STRICT
-CREATE FUNCTION set_agg_transfn(npointset, npoint)
+CREATE FUNCTION set_union_transfn(npointset, npoint)
   RETURNS npointset
-  AS 'MODULE_PATHNAME', 'Set_agg_transfn'
+  AS 'MODULE_PATHNAME', 'Set_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
--- CREATE FUNCTION set_agg_combinefn(npointset, npointset)
+-- CREATE FUNCTION set_union_combinefn(npointset, npointset)
   -- RETURNS npointset
-  -- AS 'MODULE_PATHNAME', 'Set_agg_combinefn'
+  -- AS 'MODULE_PATHNAME', 'Set_union_combinefn'
   -- LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_agg_finalfn(npointset)
+CREATE FUNCTION set_union_finalfn(npointset)
   RETURNS npointset
-  AS 'MODULE_PATHNAME', 'Set_agg_finalfn'
+  AS 'MODULE_PATHNAME', 'Set_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE AGGREGATE set_agg(npoint) (
-  SFUNC = set_agg_transfn,
+CREATE AGGREGATE set_union(npoint) (
+  SFUNC = set_union_transfn,
   STYPE = npointset,
-  -- COMBINEFUNC = set_agg_combinefn,
-  FINALFUNC = set_agg_finalfn,
+  -- COMBINEFUNC = set_union_combinefn,
+  FINALFUNC = set_union_finalfn,
   PARALLEL = safe
 );
 

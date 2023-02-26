@@ -107,7 +107,7 @@ extern void floatspan_set_numspan(const Span *s1, Span *s2, meosType basetype);
 
 /* Aggregate functions for set and span types */
 
-extern Set *set_agg_transfn(Set *s, Datum d, meosType basetype);
+extern Set *set_union_transfn(Set *s, Datum d, meosType basetype);
 extern Span *spanbase_extent_transfn(Span *s, Datum d, meosType basetype);
 
 /*****************************************************************************
