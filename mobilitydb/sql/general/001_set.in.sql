@@ -527,76 +527,129 @@ CREATE FUNCTION unnest(textset)
 /*****************************************************************************/
 
 -- The function is not STRICT
-CREATE FUNCTION set_union_transfn(intset, int)
-  RETURNS intset
+CREATE FUNCTION set_union_transfn(internal, int)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Value_union_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION set_union_transfn(internal, bigint)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Value_union_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION set_union_transfn(internal, float)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Value_union_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION set_union_transfn(internal, timestamptz)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Value_union_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION set_union_transfn(internal, text)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Value_union_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+-- The function is not STRICT
+CREATE FUNCTION set_union_transfn(internal, intset)
+  RETURNS internal
   AS 'MODULE_PATHNAME', 'Set_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_union_transfn(bigintset, bigint)
-  RETURNS bigintset
+CREATE FUNCTION set_union_transfn(internal, bigintset)
+  RETURNS internal
   AS 'MODULE_PATHNAME', 'Set_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_union_transfn(floatset, float)
-  RETURNS floatset
+CREATE FUNCTION set_union_transfn(internal, floatset)
+  RETURNS internal
   AS 'MODULE_PATHNAME', 'Set_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_union_transfn(tstzset, timestamptz)
-  RETURNS tstzset
+CREATE FUNCTION set_union_transfn(internal, tstzset)
+  RETURNS internal
   AS 'MODULE_PATHNAME', 'Set_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_union_transfn(textset, text)
-  RETURNS textset
+CREATE FUNCTION set_union_transfn(internal, textset)
+  RETURNS internal
   AS 'MODULE_PATHNAME', 'Set_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION set_union_finalfn(intset)
+CREATE FUNCTION intset_union_finalfn(internal)
   RETURNS intset
   AS 'MODULE_PATHNAME', 'Set_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_union_finalfn(bigintset)
+CREATE FUNCTION bigintset_union_finalfn(internal)
   RETURNS bigintset
   AS 'MODULE_PATHNAME', 'Set_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_union_finalfn(floatset)
+CREATE FUNCTION floatset_union_finalfn(internal)
   RETURNS floatset
   AS 'MODULE_PATHNAME', 'Set_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_union_finalfn(tstzset)
+CREATE FUNCTION tstzset_union_finalfn(internal)
   RETURNS tstzset
   AS 'MODULE_PATHNAME', 'Set_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_union_finalfn(textset)
+CREATE FUNCTION textset_union_finalfn(internal)
   RETURNS textset
   AS 'MODULE_PATHNAME', 'Set_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE set_union(int) (
   SFUNC = set_union_transfn,
-  STYPE = intset,
-  FINALFUNC = set_union_finalfn,
+  STYPE = internal,
+  FINALFUNC = intset_union_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE set_union(bigint) (
   SFUNC = set_union_transfn,
-  STYPE = bigintset,
-  FINALFUNC = set_union_finalfn,
+  STYPE = internal,
+  FINALFUNC = bigintset_union_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE set_union(float) (
   SFUNC = set_union_transfn,
-  STYPE = floatset,
-  FINALFUNC = set_union_finalfn,
+  STYPE = internal,
+  FINALFUNC = floatset_union_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE set_union(timestamptz) (
   SFUNC = set_union_transfn,
-  STYPE = tstzset,
-  FINALFUNC = set_union_finalfn,
+  STYPE = internal,
+  FINALFUNC = tstzset_union_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE set_union(text) (
   SFUNC = set_union_transfn,
-  STYPE = textset,
-  FINALFUNC = set_union_finalfn,
+  STYPE = internal,
+  FINALFUNC = textset_union_finalfn,
+  PARALLEL = safe
+);
+
+CREATE AGGREGATE set_union(intset) (
+  SFUNC = set_union_transfn,
+  STYPE = internal,
+  FINALFUNC = intset_union_finalfn,
+  PARALLEL = safe
+);
+CREATE AGGREGATE set_union(bigintset) (
+  SFUNC = set_union_transfn,
+  STYPE = internal,
+  FINALFUNC = bigintset_union_finalfn,
+  PARALLEL = safe
+);
+CREATE AGGREGATE set_union(floatset) (
+  SFUNC = set_union_transfn,
+  STYPE = internal,
+  FINALFUNC = floatset_union_finalfn,
+  PARALLEL = safe
+);
+CREATE AGGREGATE set_union(tstzset) (
+  SFUNC = set_union_transfn,
+  STYPE = internal,
+  FINALFUNC = tstzset_union_finalfn,
+  PARALLEL = safe
+);
+CREATE AGGREGATE set_union(textset) (
+  SFUNC = set_union_transfn,
+  STYPE = internal,
+  FINALFUNC = textset_union_finalfn,
   PARALLEL = safe
 );
 

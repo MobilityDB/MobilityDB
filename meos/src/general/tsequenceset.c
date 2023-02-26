@@ -889,17 +889,14 @@ tsequenceset_sequences_p(const TSequenceSet *ss)
 /**
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the array of sequences of a temporal sequence set.
- * @post The output parameter @p count is equal to the number of sequences of
- * the input temporal sequence set
  * @sqlfunc sequences()
  */
 TSequence **
-tsequenceset_sequences(const TSequenceSet *ss, int *count)
+tsequenceset_sequences(const TSequenceSet *ss)
 {
   TSequence **result = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
     result[i] = tsequence_copy(tsequenceset_seq_n(ss, i));
-  *count = ss->count;
   return result;
 }
 
@@ -998,7 +995,7 @@ tsequenceset_inst_n(const TSequenceSet *ss, int n)
  * @sqlfunc instants()
  */
 const TInstant **
-tsequenceset_instants(const TSequenceSet *ss, int *count)
+tsequenceset_instants(const TSequenceSet *ss)
 {
   const TInstant **result = palloc(sizeof(TInstant *) * ss->totalcount);
   int k = 0;
@@ -1008,7 +1005,6 @@ tsequenceset_instants(const TSequenceSet *ss, int *count)
     for (int j = 0; j < seq->count; j++)
       result[k++] = tsequence_inst_n(seq, j);
   }
-  *count = ss->totalcount;
   return result;
 }
 

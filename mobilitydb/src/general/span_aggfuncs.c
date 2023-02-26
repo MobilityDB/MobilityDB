@@ -202,6 +202,7 @@ Spanset_union_transfn(PG_FUNCTION_ARGS)
     for (int i = 0; i < ss->count; i++)
       accumArrayResult(state, SpanPGetDatum(spans[i]), false, spanoid,
         aggContext);
+    pfree(spans);
   }
   PG_RETURN_POINTER(state);
 }

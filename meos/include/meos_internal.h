@@ -107,7 +107,8 @@ extern void floatspan_set_numspan(const Span *s1, Span *s2, meosType basetype);
 
 /* Aggregate functions for set and span types */
 
-extern Set *set_union_transfn(Set *s, Datum d, meosType basetype);
+extern Set *value_union_transfn(Set *state, Datum d, meosType basetype);
+extern Set *set_union_transfn(Set *state, Set *set);
 extern Span *spanbase_extent_transfn(Span *s, Datum d, meosType basetype);
 
 /*****************************************************************************
@@ -414,7 +415,6 @@ extern Span *tfloatseqset_span(const TSequenceSet *ss);
 extern SpanSet *tfloatseqset_spanset(const TSequenceSet *ss);
 extern uint32 tinstant_hash(const TInstant *inst);
 extern const TInstant **tinstant_instants(const TInstant *inst, int *count);
-extern TSequence **tinstant_sequences(const TInstant *inst, int *count);
 extern void tinstant_set_bbox(const TInstant *inst, void *box);
 extern SpanSet *tinstant_time(const TInstant *inst);
 extern TimestampTz *tinstant_timestamps(const TInstant *inst, int *count);
@@ -429,7 +429,7 @@ extern Interval *tsequence_duration(const TSequence *seq);
 extern TimestampTz tsequence_end_timestamp(const TSequence *seq);
 extern uint32 tsequence_hash(const TSequence *seq);
 extern const TInstant *tsequence_inst_n(const TSequence *seq, int index);
-extern const TInstant **tsequence_instants(const TSequence *seq, int *count);
+extern const TInstant **tsequence_instants(const TSequence *seq);
 extern const TInstant *tsequence_max_instant(const TSequence *seq);
 extern Datum tsequence_max_value(const TSequence *seq);
 extern const TInstant *tsequence_min_instant(const TSequence *seq);
@@ -450,7 +450,7 @@ extern Interval *tsequenceset_duration(const TSequenceSet *ss, bool boundspan);
 extern TimestampTz tsequenceset_end_timestamp(const TSequenceSet *ss);
 extern uint32 tsequenceset_hash(const TSequenceSet *ss);
 extern const TInstant *tsequenceset_inst_n(const TSequenceSet *ss, int n);
-extern const TInstant **tsequenceset_instants(const TSequenceSet *ss, int *count);
+extern const TInstant **tsequenceset_instants(const TSequenceSet *ss);
 extern const TInstant *tsequenceset_max_instant(const TSequenceSet *ss);
 extern Datum tsequenceset_max_value(const TSequenceSet *ss);
 extern const TInstant *tsequenceset_min_instant(const TSequenceSet *ss);
@@ -458,7 +458,7 @@ extern Datum tsequenceset_min_value(const TSequenceSet *ss);
 extern int tsequenceset_num_instants(const TSequenceSet *ss);
 extern int tsequenceset_num_timestamps(const TSequenceSet *ss);
 extern TSequence **tsequenceset_segments(const TSequenceSet *ss, int *count);
-extern TSequence **tsequenceset_sequences(const TSequenceSet *ss, int *count);
+extern TSequence **tsequenceset_sequences(const TSequenceSet *ss);
 extern const TSequence **tsequenceset_sequences_p(const TSequenceSet *ss);
 extern void tsequenceset_set_bbox(const TSequenceSet *ss, void *box);
 extern TimestampTz tsequenceset_start_timestamp(const TSequenceSet *ss);

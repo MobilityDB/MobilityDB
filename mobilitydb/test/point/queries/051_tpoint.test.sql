@@ -809,14 +809,15 @@ SELECT asEWKT(sequenceN(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-0
 SELECT asEWKT(sequenceN(tgeogpoint 'Point(1.5 1.5)@2000-01-01', 1));
 SELECT asEWKT(sequenceN(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', 1));
 
-SELECT asEWKT(sequences(tgeompoint 'Point(1 1)@2000-01-01'));
-SELECT asEWKT(sequences(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'));
 SELECT asEWKT(sequences(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'));
 SELECT asEWKT(sequences(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
-SELECT asEWKT(sequences(tgeogpoint 'Point(1.5 1.5)@2000-01-01'));
-SELECT asEWKT(sequences(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}'));
 SELECT asEWKT(sequences(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]'));
 SELECT asEWKT(sequences(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'));
+/* Errors */
+SELECT asEWKT(sequences(tgeompoint 'Point(1 1)@2000-01-01'));
+SELECT asEWKT(sequences(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'));
+SELECT asEWKT(sequences(tgeogpoint 'Point(1.5 1.5)@2000-01-01'));
+SELECT asEWKT(sequences(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}'));
 
 SELECT numInstants(tgeompoint 'Point(1 1)@2000-01-01');
 SELECT numInstants(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');

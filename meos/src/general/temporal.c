@@ -92,6 +92,7 @@ ensure_valid_tempsubtype_all(int16 subtype)
 void
 ensure_continuous(const Temporal *temp)
 {
+  ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT || MOBDB_FLAGS_GET_DISCRETE(temp->flags))
     elog(ERROR, "Input must be a temporal continuous sequence (set)");
   return;
@@ -1357,8 +1358,6 @@ Temporal *
 temporal_step_to_linear(const Temporal *temp)
 {
   ensure_continuous(temp);
-  ensure_temptype_continuous(temp->temptype);
-
   if (MOBDB_FLAGS_GET_LINEAR(temp->flags))
     return temporal_copy(temp);
 
@@ -2424,13 +2423,17 @@ TSequence **
 temporal_sequences(const Temporal *temp, int *count)
 {
   TSequence **result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == TINSTANT)
-    result = tinstant_sequences((TInstant *) temp, count);
-  else if (temp->subtype == TSEQUENCE)
+  ensure_continuous(temp);
+  if (temp->subtype == TSEQUENCE)
+  {
     result = tsequence_sequences((TSequence *) temp, count);
+    *count = 1;
+  }
   else /* temp->subtype == TSEQUENCE */
-    result = tsequenceset_sequences((TSequenceSet *) temp, count);
+  {
+    result = tsequenceset_sequences((TSequenceSet *) temp);
+    *count = ((TSequenceSet *) temp)->count;
+  }
   return result;
 }
 
@@ -2442,10 +2445,12 @@ temporal_sequences(const Temporal *temp, int *count)
 TSequence **
 temporal_segments(const Temporal *temp, int *count)
 {
-  TSequence **result;
   if (temp->subtype == TINSTANT)
-    result = tinstant_sequences((TInstant *) temp, count);
-  else if (temp->subtype == TSEQUENCE)
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("The temporal value must be of subtype sequence (set)")));
+
+  TSequence **result;
+  if (temp->subtype == TSEQUENCE)
     result = tsequence_segments((TSequence *) temp, count);
   else /* temp->subtype == TSEQUENCESET */
     result = tsequenceset_segments((TSequenceSet *) temp, count);
@@ -2566,9 +2571,15 @@ temporal_instants(const Temporal *temp, int *count)
   if (temp->subtype == TINSTANT)
     result = tinstant_instants((TInstant *) temp, count);
   else if (temp->subtype == TSEQUENCE)
-    result = tsequence_instants((TSequence *) temp, count);
+  {
+    result = tsequence_instants((TSequence *) temp);
+    *count = ((TSequence *) temp)->count;
+  }
   else /* temp->subtype == TSEQUENCESET */
-    result = tsequenceset_instants((TSequenceSet *) temp, count);
+  {
+    result = tsequenceset_instants((TSequenceSet *) temp);
+    *count = ((TSequenceSet *) temp)->totalcount;
+  }
   return result;
 }
 

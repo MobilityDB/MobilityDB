@@ -2423,17 +2423,14 @@ tsequence_segments(const TSequence *seq, int *count)
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the array of distinct instants of a temporal sequence.
  * @note By definition, all instants of a sequence are distinct
- * @post The output parameter @p count is equal to the number of instants of the
- * input temporal sequence
  * @sqlfunc instants()
  */
 const TInstant **
-tsequence_instants(const TSequence *seq, int *count)
+tsequence_instants(const TSequence *seq)
 {
   const TInstant **result = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
     result[i] = tsequence_inst_n(seq, i);
-  *count = seq->count;
   return result;
 }
 

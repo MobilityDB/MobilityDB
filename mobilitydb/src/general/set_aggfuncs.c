@@ -49,53 +49,117 @@
  * Aggregate functions for set types
  *****************************************************************************/
 
+PG_FUNCTION_INFO_V1(Value_union_transfn);
+/*
+ * @brief Transition function for aggregating spans
+ *
+ * All we do here is gather the input spans into an array
+ * so that the finalfn can sort and combine them.
+ */
+PGDLLEXPORT Datum
+Value_union_transfn(PG_FUNCTION_ARGS)
+{
+  MemoryContext aggContext;
+  ArrayBuildState *state;
+
+  if (!AggCheckCallContext(fcinfo, &aggContext))
+    elog(ERROR, "Value_union_transfn called in non-aggregate context");
+
+  Oid valueoid = get_fn_expr_argtype(fcinfo->flinfo, 1);
+  meosType basetype = oid_type(valueoid);
+  ensure_set_basetype(basetype);
+
+  if (PG_ARGISNULL(0))
+    state = initArrayResult(valueoid, aggContext, false);
+  else
+    state = (ArrayBuildState *) PG_GETARG_POINTER(0);
+
+  /* Skip NULLs */
+  if (! PG_ARGISNULL(1))
+    accumArrayResult(state, PG_GETARG_DATUM(1), false, valueoid, aggContext);
+
+  PG_RETURN_POINTER(state);
+}
+
 PG_FUNCTION_INFO_V1(Set_union_transfn);
-/**
- * @brief Transition function for set aggregation of values
+/*
+ * @brief Transition function for aggregating spans
+ *
+ * All we do here is gather the input span sets' spans into an array so
+ * that the finalfn can sort and combine them.
  */
 PGDLLEXPORT Datum
 Set_union_transfn(PG_FUNCTION_ARGS)
 {
-  MemoryContext ctx = set_aggregation_context(fcinfo);
-  Set *state = PG_ARGISNULL(0) ? NULL : PG_GETARG_SET_P(0);
-  if (PG_ARGISNULL(1))
+  MemoryContext aggContext;
+  if (!AggCheckCallContext(fcinfo, &aggContext))
+    elog(ERROR, "Set_union_transfn called in non-aggregate context");
+
+  Oid setoid = get_fn_expr_argtype(fcinfo->flinfo, 1);
+  meosType settype = oid_type(setoid);
+  ensure_set_type(settype);
+  meosType basetype = settype_basetype(settype);
+  Oid baseoid = type_oid(basetype);
+
+  ArrayBuildState *state;
+  if (PG_ARGISNULL(0))
+    state = initArrayResult(baseoid, aggContext, false);
+  else
+    state = (ArrayBuildState *) PG_GETARG_POINTER(0);
+
+  /* skip NULLs */
+  if (! PG_ARGISNULL(1) )
   {
-    if (state)
-      PG_RETURN_POINTER(state);
-    else
-      PG_RETURN_NULL();
+    Set *set = PG_GETARG_SET_P(1);
+    Datum *values = set_values(set);
+    for (int i = 0; i < set->count; i++)
+      accumArrayResult(state, values[i], false, baseoid, aggContext);
+    pfree(values);
   }
-  unset_aggregation_context(ctx);
-  Datum d = PG_GETARG_DATUM(1);
-  /* Detoast the value if necessary */
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  Datum dvalue = d;
-  if (basetype_varlength(basetype) &&
-      PG_DATUM_NEEDS_DETOAST((struct varlena *) d))
-    dvalue = PointerGetDatum(PG_DETOAST_DATUM(d));
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
-  state = set_union_transfn(state, dvalue, basetype);
-  if (dvalue != d)
-    pfree(DatumGetPointer(dvalue));
-  if (! state)
-    PG_RETURN_NULL();
   PG_RETURN_POINTER(state);
 }
 
 PG_FUNCTION_INFO_V1(Set_union_finalfn);
-/**
- * @brief Combine function for set aggregate of set types
+/*
+ * @brief use our internal array to merge overlapping/touching spans.
+ * @note Shared by Span_union_finalfn() and Spanset_union_finalfn().
  */
 PGDLLEXPORT Datum
 Set_union_finalfn(PG_FUNCTION_ARGS)
 {
-  MemoryContext ctx = set_aggregation_context(fcinfo);
-  Set *state = PG_GETARG_SET_P(0);
-  unset_aggregation_context(ctx);
-  Set *result = set_union_finalfn(state);
-  if (! result)
+  MemoryContext aggContext;
+  if (! AggCheckCallContext(fcinfo, &aggContext))
+    elog(ERROR, "Set_union_finalfn called in non-aggregate context");
+
+  ArrayBuildState *state = PG_ARGISNULL(0) ? NULL :
+    (ArrayBuildState *) PG_GETARG_POINTER(0);
+  if (state == NULL)
+    /* This shouldn't be possible, but just in case.... */
     PG_RETURN_NULL();
+
+  /* Also return NULL if we had zero inputs, like other aggregates */
+  int32 count = state->nelems;
+  if (count == 0)
+    PG_RETURN_NULL();
+
+  Oid setoid = get_fn_expr_rettype(fcinfo->flinfo);
+  meosType settype = oid_type(setoid);
+  meosType basetype = settype_basetype(settype);
+  bool typbyval = basetype_byvalue(basetype);
+
+  Datum *values = palloc0(sizeof(Datum) * count);
+  for (int i = 0; i < count; i++)
+  {
+    values[i] = state->dvalues[i];
+    if (! typbyval)
+      pfree(DatumGetPointer(state->dvalues[i]));
+  }
+
+  Set *result = set_make_exp(values, count, count, basetype, ORDERED);
+
+  /* Free memory */
+  pfree(values);
+
   PG_RETURN_POINTER(result);
 }
 

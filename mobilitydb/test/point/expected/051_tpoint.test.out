@@ -2370,18 +2370,6 @@ SELECT asEWKT(sequenceN(tgeogpoint 'Point(1.5 1.5)@2000-01-01', 1));
 ERROR:  Input must be a temporal continuous sequence (set)
 SELECT asEWKT(sequenceN(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', 1));
 ERROR:  Input must be a temporal continuous sequence (set)
-SELECT asEWKT(sequences(tgeompoint 'Point(1 1)@2000-01-01'));
-                 asewkt                  
------------------------------------------
- {"[POINT(1 1)@2000-01-01 00:00:00+00]"}
-(1 row)
-
-SELECT asEWKT(sequences(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'));
-                                                    asewkt                                                     
----------------------------------------------------------------------------------------------------------------
- {"{POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-02 00:00:00+00, POINT(1 1)@2000-01-03 00:00:00+00}"}
-(1 row)
-
 SELECT asEWKT(sequences(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'));
                                                     asewkt                                                     
 ---------------------------------------------------------------------------------------------------------------
@@ -2392,18 +2380,6 @@ SELECT asEWKT(sequences(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-
                                                                                          asewkt                                                                                         
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {"[POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-02 00:00:00+00, POINT(1 1)@2000-01-03 00:00:00+00]","[POINT(3 3)@2000-01-04 00:00:00+00, POINT(3 3)@2000-01-05 00:00:00+00]"}
-(1 row)
-
-SELECT asEWKT(sequences(tgeogpoint 'Point(1.5 1.5)@2000-01-01'));
-                        asewkt                         
--------------------------------------------------------
- {"SRID=4326;[POINT(1.5 1.5)@2000-01-01 00:00:00+00]"}
-(1 row)
-
-SELECT asEWKT(sequences(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}'));
-                                                               asewkt                                                                
--------------------------------------------------------------------------------------------------------------------------------------
- {"SRID=4326;{POINT(1.5 1.5)@2000-01-01 00:00:00+00, POINT(2.5 2.5)@2000-01-02 00:00:00+00, POINT(1.5 1.5)@2000-01-03 00:00:00+00}"}
 (1 row)
 
 SELECT asEWKT(sequences(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]'));
@@ -2418,6 +2394,15 @@ SELECT asEWKT(sequences(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@
  {"SRID=4326;[POINT(1.5 1.5)@2000-01-01 00:00:00+00, POINT(2.5 2.5)@2000-01-02 00:00:00+00, POINT(1.5 1.5)@2000-01-03 00:00:00+00]","SRID=4326;[POINT(3.5 3.5)@2000-01-04 00:00:00+00, POINT(3.5 3.5)@2000-01-05 00:00:00+00]"}
 (1 row)
 
+/* Errors */
+SELECT asEWKT(sequences(tgeompoint 'Point(1 1)@2000-01-01'));
+ERROR:  Input must be a temporal continuous sequence (set)
+SELECT asEWKT(sequences(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'));
+ERROR:  Input must be a temporal continuous sequence (set)
+SELECT asEWKT(sequences(tgeogpoint 'Point(1.5 1.5)@2000-01-01'));
+ERROR:  Input must be a temporal continuous sequence (set)
+SELECT asEWKT(sequences(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}'));
+ERROR:  Input must be a temporal continuous sequence (set)
 SELECT numInstants(tgeompoint 'Point(1 1)@2000-01-01');
  numinstants 
 -------------

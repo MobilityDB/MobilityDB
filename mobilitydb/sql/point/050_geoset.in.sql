@@ -276,35 +276,53 @@ CREATE FUNCTION unnest(geogset)
 /*****************************************************************************/
 
 -- The function is not STRICT
-CREATE FUNCTION set_union_transfn(geomset, geometry)
-  RETURNS geomset
+CREATE FUNCTION set_union_transfn(internal, geometry)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Value_union_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION set_union_transfn(internal, geography)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Value_union_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+CREATE FUNCTION set_union_transfn(internal, geomset)
+  RETURNS internal
   AS 'MODULE_PATHNAME', 'Set_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_union_transfn(geogset, geography)
-  RETURNS geogset
+CREATE FUNCTION set_union_transfn(internal, geogset)
+  RETURNS internal
   AS 'MODULE_PATHNAME', 'Set_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION set_union_finalfn(geomset)
+CREATE FUNCTION geomset_union_finalfn(internal)
   RETURNS geomset
   AS 'MODULE_PATHNAME', 'Set_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION set_union_finalfn(geogset)
+CREATE FUNCTION geogset_union_finalfn(internal)
   RETURNS geogset
   AS 'MODULE_PATHNAME', 'Set_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE set_union(geometry) (
   SFUNC = set_union_transfn,
-  STYPE = geomset,
-  FINALFUNC = set_union_finalfn,
-  PARALLEL = safe
+  STYPE = internal,
+  FINALFUNC = geomset_union_finalfn
 );
 CREATE AGGREGATE set_union(geography) (
   SFUNC = set_union_transfn,
-  STYPE = geogset,
-  FINALFUNC = set_union_finalfn,
-  PARALLEL = safe
+  STYPE = internal,
+  FINALFUNC = geogset_union_finalfn
+);
+
+CREATE AGGREGATE set_union(geomset) (
+  SFUNC = set_union_transfn,
+  STYPE = internal,
+  FINALFUNC = geomset_union_finalfn
+);
+CREATE AGGREGATE set_union(geogset) (
+  SFUNC = set_union_transfn,
+  STYPE = internal,
+  FINALFUNC = geogset_union_finalfn
 );
 
 /*****************************************************************************
