@@ -2300,7 +2300,7 @@ tpointseq_speed(const TSequence *seq)
   datum_func2 func = pt_distance_fn(seq->flags);
   const TInstant *inst1 = tsequence_inst_n(seq, 0);
   Datum value1 = tinstant_value(inst1);
-  double speed;
+  double speed = 0.0; /* make compiler quiet */
   for (int i = 0; i < seq->count - 1; i++)
   {
     const TInstant *inst2 = tsequence_inst_n(seq, i + 1);
@@ -3152,6 +3152,7 @@ tpointseq_linear_find_splits(const TSequence *seq, int *count)
       {
         /* Candidate for intersection */
         POINT2D p;
+        memset(&p, 0, sizeof(POINT2D)); /* make compiler quiet */
         int intertype = seg2d_intersection(points[i], points[i + 1],
           points[j], points[j + 1], &p);
         if (intertype > 0 &&

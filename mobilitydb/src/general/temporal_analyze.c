@@ -124,8 +124,8 @@ temporal_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   int samplerows, double totalrows __attribute__((unused)))
 {
   int null_cnt = 0, non_null_cnt = 0, slot_idx = 0;
-  float8 *value_lengths, *time_lengths;
-  SpanBound *value_lowers, *value_uppers;
+  float8 *value_lengths = NULL, *time_lengths; /* make compiler quiet */
+  SpanBound *value_lowers = NULL, *value_uppers = NULL; /* make compiler quiet */
   SpanBound *time_lowers, *time_uppers;
   double total_width = 0;
   meosType type = oid_type(stats->attrtypid);

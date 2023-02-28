@@ -1434,7 +1434,7 @@ tsequenceset_shift_tscale(const TSequenceSet *ss, const Interval *shift,
   const TInstant *inst2 = tsequence_inst_n(seq2, seq2->count - 1);
   span_set(TimestampTzGetDatum(inst1->t), TimestampTzGetDatum(inst2->t),
     seq1->period.lower_inc, seq2->period.upper_inc, T_TIMESTAMPTZ, &p1);
-  span_set(p1.lower, p1.upper, p1.lower_inc, p1.upper_inc, T_TIMESTAMPTZ, &p2);
+  memcpy(&p2, &p1, sizeof(Span));
   period_shift_tscale(&p2, shift, duration);
   TimestampTz delta;
   if (shift != NULL)
@@ -1456,7 +1456,7 @@ tsequenceset_shift_tscale(const TSequenceSet *ss, const Interval *shift,
       seq->period.upper += delta;
     }
     /* If the sequence is instantaneous we cannot scale */
-    if (duration != NULL && seq->count > 1)
+    if (duration != NULL && ! instant)
     {
       seq->period.lower = p2.lower + (seq->period.lower - p1.lower) * scale;
       seq->period.upper = p2.lower + (seq->period.upper - p1.lower) * scale;
@@ -1469,7 +1469,7 @@ tsequenceset_shift_tscale(const TSequenceSet *ss, const Interval *shift,
       if (shift != NULL)
         inst->t += delta;
       /* If the sequence is instantaneous we cannot scale */
-      if (duration != NULL && seq->count > 1)
+      if (duration != NULL && ! instant)
         inst->t = p2.lower + (inst->t - p2.lower) * scale;
     }
   }

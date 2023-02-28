@@ -629,7 +629,7 @@ NAI_tpointseq_linear_geo(const TSequence *seq, const LWGEOM *geo)
 static TInstant *
 NAI_tpointseqset_linear_geo(const TSequenceSet *ss, const LWGEOM *geo)
 {
-  TimestampTz t;
+  TimestampTz t = 0; /* make compiler quiet */
   double mindist = DBL_MAX;
   for (int i = 0; i < ss->count; i++)
   {

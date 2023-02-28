@@ -448,21 +448,23 @@ tfloatseq_derivative(const TSequence *seq)
     return NULL;
 
   /* General case */
+  meosType basetype = temptype_basetype(seq->temptype);
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   const TInstant *inst1 = tsequence_inst_n(seq, 0);
   Datum value1 = tinstant_value(inst1);
-  double derivative;
-  meosType basetype = temptype_basetype(seq->temptype);
+  double dvalue1 = datum_double(value1, basetype);
+  double derivative = 0.0; /* make compiler quiet */
   for (int i = 0; i < seq->count - 1; i++)
   {
     const TInstant *inst2 = tsequence_inst_n(seq, i + 1);
     Datum value2 = tinstant_value(inst2);
+    double dvalue2 = datum_double(value2, basetype);
     derivative = datum_eq(value1, value2, basetype) ? 0.0 :
-      (datum_double(value1, basetype) - datum_double(value2, basetype)) /
-        ((double)(inst2->t - inst1->t) / 1000000);
+      (dvalue1 - dvalue2) / ((double)(inst2->t - inst1->t) / 1000000);
     instants[i] = tinstant_make(Float8GetDatum(derivative), T_TFLOAT, inst1->t);
     inst1 = inst2;
     value1 = value2;
+    dvalue1 = dvalue2;
   }
   instants[seq->count - 1] = tinstant_make(Float8GetDatum(derivative),
     T_TFLOAT, seq->period.upper);

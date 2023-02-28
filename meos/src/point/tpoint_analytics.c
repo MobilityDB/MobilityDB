@@ -1449,6 +1449,7 @@ tpointseq_grid(const TSequence *seq, const gridspec *grid, bool filter_pts)
   for (int i = 0; i < seq->count; i++)
   {
     POINT4D p, prev_p;
+    memset(&prev_p, 0, sizeof(POINT4D)); /* make compiler quiet */
     const TInstant *inst = tsequence_inst_n(seq, i);
     Datum value = tinstant_value(inst);
     point_grid(value, hasz, grid, &p);

@@ -1449,7 +1449,7 @@ temporal_tprecision_agg_values(const Temporal *temp)
   Datum result;
   if (tnumber_type(temp->temptype))
     result = Float8GetDatum(tnumber_twavg(temp));
-  else if (tgeo_type(temp->temptype))
+  else /* tgeo_type(temp->temptype) */
     result = PointerGetDatum(tpoint_twcentroid(temp));
   return result;
 }
@@ -3936,8 +3936,8 @@ tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
   bool use_geos_dist = seq->temptype != T_TFLOAT;
   bool geodetic = MOBDB_FLAGS_GET_GEODETIC(seq->flags);
 
-  const TInstant *inst1, *inst2;
-  GEOSGeometry *geom;
+  const TInstant *inst1 = NULL, *inst2 = NULL; /* make compiler quiet */
+  GEOSGeometry *geom = NULL;
 
   if (use_geos_dist)
   {
