@@ -198,17 +198,17 @@ CREATE FUNCTION etouches(tgeompoint, geometry)
 
 -- TODO implement the index support in the tpoint_supportfn
 
-CREATE FUNCTION Edwithin(geometry, tgeompoint, dist float8)
+CREATE FUNCTION Edwithin(geometry, tgeompoint, dist float)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edwithin_geo_tpoint'
   SUPPORT tpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION Edwithin(tgeompoint, geometry, dist float8)
+CREATE FUNCTION Edwithin(tgeompoint, geometry, dist float)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edwithin_tpoint_geo'
   SUPPORT tpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION Edwithin(tgeompoint, tgeompoint, dist float8)
+CREATE FUNCTION Edwithin(tgeompoint, tgeompoint, dist float)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edwithin_tpoint_tpoint'
   SUPPORT tpoint_supportfn
@@ -218,17 +218,17 @@ CREATE FUNCTION Edwithin(tgeompoint, tgeompoint, dist float8)
 
 -- TODO implement the index support in the tpoint_supportfn
 
-CREATE FUNCTION Edwithin(geography, tgeogpoint, dist float8)
+CREATE FUNCTION Edwithin(geography, tgeogpoint, dist float)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edwithin_geo_tpoint'
   SUPPORT tpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION Edwithin(tgeogpoint, geography, dist float8)
+CREATE FUNCTION Edwithin(tgeogpoint, geography, dist float)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edwithin_tpoint_geo'
   SUPPORT tpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION Edwithin(tgeogpoint, tgeogpoint, dist float8)
+CREATE FUNCTION Edwithin(tgeogpoint, tgeogpoint, dist float)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edwithin_tpoint_tpoint'
   SUPPORT tpoint_supportfn

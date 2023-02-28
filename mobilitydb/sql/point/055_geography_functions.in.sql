@@ -33,14 +33,14 @@
  */
 
 -- Availability: 3.1.0
-CREATE FUNCTION ST_LineInterpolatePoint(geography, float8,
+CREATE FUNCTION ST_LineInterpolatePoint(geography, float,
     use_spheroid boolean DEFAULT true)
   RETURNS geography
   AS 'MODULE_PATHNAME', 'geography_line_interpolate_point'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- Availability: 3.1.0
-CREATE FUNCTION ST_LineInterpolatePoints(geography, float8,
+CREATE FUNCTION ST_LineInterpolatePoints(geography, float,
     use_spheroid boolean DEFAULT true, repeat boolean DEFAULT true)
   RETURNS geography
   AS 'MODULE_PATHNAME', 'geography_line_interpolate_point'
@@ -54,7 +54,7 @@ CREATE FUNCTION ST_LineLocatePoint(geography, geography,
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- Availability: 3.1.0
-CREATE FUNCTION ST_LineSubstring(geography, float8, float8)
+CREATE FUNCTION ST_LineSubstring(geography, float, float)
   RETURNS geography
   AS 'MODULE_PATHNAME', 'geography_line_substring'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

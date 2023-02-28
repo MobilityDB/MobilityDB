@@ -168,44 +168,44 @@ CREATE FUNCTION ttouches(tnpoint, npoint, atvalue bool)
  * tdwithin
  *****************************************************************************/
 
-CREATE FUNCTION tdwithin(geometry, tnpoint, dist float8)
+CREATE FUNCTION tdwithin(geometry, tnpoint, dist float)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tdwithin_geo_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tdwithin(npoint, tnpoint, dist float8)
+CREATE FUNCTION tdwithin(npoint, tnpoint, dist float)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tdwithin_npoint_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tdwithin(tnpoint, geometry, dist float8)
+CREATE FUNCTION tdwithin(tnpoint, geometry, dist float)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tdwithin_tnpoint_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tdwithin(tnpoint, npoint, dist float8)
+CREATE FUNCTION tdwithin(tnpoint, npoint, dist float)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tdwithin_tnpoint_npoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tdwithin(tnpoint, tnpoint, dist float8)
+CREATE FUNCTION tdwithin(tnpoint, tnpoint, dist float)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tdwithin_tnpoint_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tdwithin(geometry, tnpoint, dist float8, atvalue bool)
+CREATE FUNCTION tdwithin(geometry, tnpoint, dist float, atvalue bool)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tdwithin_geo_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tdwithin(npoint, tnpoint, dist float8, atvalue bool)
+CREATE FUNCTION tdwithin(npoint, tnpoint, dist float, atvalue bool)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tdwithin_npoint_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tdwithin(tnpoint, geometry, dist float8, atvalue bool)
+CREATE FUNCTION tdwithin(tnpoint, geometry, dist float, atvalue bool)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tdwithin_tnpoint_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tdwithin(tnpoint, npoint, dist float8, atvalue bool)
+CREATE FUNCTION tdwithin(tnpoint, npoint, dist float, atvalue bool)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tdwithin_tnpoint_npoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tdwithin(tnpoint, tnpoint, dist float8, atvalue bool)
+CREATE FUNCTION tdwithin(tnpoint, tnpoint, dist float, atvalue bool)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tdwithin_tnpoint_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
