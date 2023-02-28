@@ -936,6 +936,7 @@ tfunc_tcontseq_tcontseq_single(const TSequence *seq1, const TSequence *seq2,
    */
   TInstant *inst1 = (TInstant *) tsequence_inst_n(seq1, 0);
   TInstant *inst2 = (TInstant *) tsequence_inst_n(seq2, 0);
+  TInstant *prev1 = NULL, *prev2 = NULL; /* make compiler quiet */
   TimestampTz lower = DatumGetTimestampTz(inter->lower);
   TimestampTz upper = DatumGetTimestampTz(inter->upper);
   int i = 0, j = 0, k = 0, l = 0;
@@ -977,19 +978,17 @@ tfunc_tcontseq_tcontseq_single(const TSequence *seq1, const TSequence *seq2,
     }
     /* If not the first instant compute the function on the potential
        turning point before adding the new instants */
-    TInstant *prev1 = NULL, *prev2 = NULL; /* make compiler quiet */
-    Datum value1, value2;
-    TimestampTz tptime;
     if (lfinfo->tpfunc != NULL && k > 0)
     {
+      TimestampTz tptime;
       bool found = lfinfo->tpfunc(prev1, inst1, prev2, inst2, &value, &tptime);
       /* Avoid adding a turning point at the same timestamp added next */
       if (found && tptime != prev1->t)
         instants[k++] = tinstant_make(value, lfinfo->restype, tptime);
     }
     /* Compute the function on the synchronized instants */
-    value1 = tinstant_value(inst1);
-    value2 = tinstant_value(inst2);
+    Datum value1 = tinstant_value(inst1);
+    Datum value2 = tinstant_value(inst2);
     value = tfunc_base_base(value1, value2, lfinfo);
     instants[k++] = tinstant_make(value, lfinfo->restype, inst1->t);
     DATUM_FREE(value, resbasetype);
