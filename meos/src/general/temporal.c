@@ -38,6 +38,7 @@
 /* GEOS */
 #include <geos_c.h>
 /* POSTGIS */
+#include <lwgeodetic.h>
 #include <lwgeom_log.h>
 #include <lwgeom_geos.h>
 /* MEOS */
@@ -2446,8 +2447,7 @@ TSequence **
 temporal_segments(const Temporal *temp, int *count)
 {
   if (temp->subtype == TINSTANT)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The temporal value must be of subtype sequence (set)")));
+    elog(ERROR, "The temporal value must be of subtype sequence (set)");
 
   TSequence **result;
   if (temp->subtype == TSEQUENCE)
@@ -3808,19 +3808,50 @@ mrr_distance_scalar(const TSequence *seq, int start, int end)
   return max_value - min_value;
 }
 
+/* Defined in liblwgeom_internal.h */
+#define PGIS_FP_TOLERANCE 1e-12
+
 /**
  * @brief Calculate the distance between two geographic points
  * given as GEOS geometries.
  */
 static double
-geog_distance_geos(GEOSGeometry *pt1, GEOSGeometry *pt2)
+geog_distance_geos(const GEOSGeometry *pt1, const GEOSGeometry *pt2)
 {
-  GSERIALIZED *gs1 = GEOS2POSTGIS(pt1, false);
-  GSERIALIZED *gs2 = GEOS2POSTGIS(pt2, false);
-  double dist = gserialized_geog_length(gs1, gs2);
-  pfree(gs1);
-  pfree(gs2);
-  return dist;
+  // GSERIALIZED *gs1 = GEOS2POSTGIS((GEOSGeometry *) pt1, false);
+  // GSERIALIZED *gs2 = GEOS2POSTGIS((GEOSGeometry *) pt2, false);
+  // double dist = gserialized_geog_distance(gs1, gs2);
+  // pfree(gs1);
+  // pfree(gs2);
+  // return dist;
+
+  /* Skip postgis function calls */
+
+  double x1, y1, x2, y2;
+  GEOSGeomGetX(pt1, &x1);
+  GEOSGeomGetY(pt1, &y1);
+  GEOSGeomGetX(pt2, &x2);
+  GEOSGeomGetY(pt2, &y2);
+
+  /* Code taken from ptarray_distance_spheroid function in lwgeodetic.c */
+
+  GEOGRAPHIC_POINT g1, g2;
+  geographic_point_init(x1, y1, &g1);
+  geographic_point_init(x2, y2, &g2);
+
+  SPHEROID s;
+  spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
+
+  /* Sphere special case, axes equal */
+  double distance = s.radius * sphere_distance(&g1, &g2);
+  if ( s.a == s.b )
+    return distance;
+  /* Below tolerance, actual distance isn't of interest */
+  else if ( distance < 0.95 * PGIS_FP_TOLERANCE )
+    return distance;
+  /* Close or greater than tolerance, get the real answer to be sure */
+  else
+    return spheroid_distance(&g1, &g2, &s);
 }
 
 /**
@@ -3832,38 +3863,52 @@ geog_distance_geos(GEOSGeometry *pt1, GEOSGeometry *pt2)
 static double
 mrr_distance_geos(GEOSGeometry *geom, bool geodetic)
 {
-  double result;
-  GEOSGeometry *mrr_geom = GEOSMinimumRotatedRectangle(geom);
-  GEOSGeometry *pt1, *pt2;
-  switch (GEOSGeomTypeId(mrr_geom))
+
+  double result = 0;
+  int numGeoms = GEOSGetNumGeometries(geom);
+  if (numGeoms == 2)
   {
-    case GEOS_POINT:
-      result = 0;
-      break;
-    case GEOS_LINESTRING: // compute length of linestring
-      if (geodetic)
-      {
-        pt1 = GEOSGeomGetStartPoint(mrr_geom);
-        pt2 = GEOSGeomGetEndPoint(mrr_geom);
-        result = geog_distance_geos(pt1, pt2);
+    const GEOSGeometry *pt1 = GEOSGetGeometryN(geom, 0);
+    const GEOSGeometry *pt2 = GEOSGetGeometryN(geom, 1);
+    if (geodetic)
+      result = geog_distance_geos(pt1, pt2);
+    else
+      GEOSDistance(pt1, pt2, &result);
+  }
+  else if (numGeoms > 2)
+  {
+    GEOSGeometry *mrr_geom = GEOSMinimumRotatedRectangle(geom);
+    GEOSGeometry *pt1, *pt2;
+    switch (GEOSGeomTypeId(mrr_geom))
+    {
+      case GEOS_POINT:
+        result = 0;
+        break;
+      case GEOS_LINESTRING: // compute length of linestring
+        if (geodetic)
+        {
+          pt1 = GEOSGeomGetStartPoint(mrr_geom);
+          pt2 = GEOSGeomGetEndPoint(mrr_geom);
+          result = geog_distance_geos(pt1, pt2);
+          GEOSGeom_destroy(pt1);
+          GEOSGeom_destroy(pt2);
+        }
+        else
+          GEOSGeomGetLength(mrr_geom, &result);
+        break;
+      case GEOS_POLYGON: // compute length of diagonal
+        pt1 = GEOSGeomGetPointN(GEOSGetExteriorRing(mrr_geom), 0);
+        pt2 = GEOSGeomGetPointN(GEOSGetExteriorRing(mrr_geom), 2);
+        if (geodetic)
+          result = geog_distance_geos(pt1, pt2);
+        else
+          GEOSDistance(pt1, pt2, &result);
         GEOSGeom_destroy(pt1);
         GEOSGeom_destroy(pt2);
-      }
-      else
-        assert(GEOSGeomGetLength(mrr_geom, &result));
-      break;
-    case GEOS_POLYGON: // compute length of diagonal
-      pt1 = GEOSGeomGetPointN(GEOSGetExteriorRing(mrr_geom), 0);
-      pt2 = GEOSGeomGetPointN(GEOSGetExteriorRing(mrr_geom), 2);
-      if (geodetic)
-        result = geog_distance_geos(pt1, pt2);
-      else
-        assert(GEOSDistance(pt1, pt2, &result));
-      GEOSGeom_destroy(pt1);
-      GEOSGeom_destroy(pt2);
-      break;
-    default:
-      elog(ERROR, "Invalid geometry type for Minimum Rotated Rectangle");
+        break;
+      default:
+        elog(ERROR, "Invalid geometry type for Minimum Rotated Rectangle");
+    }
   }
   return result;
 }
@@ -3889,7 +3934,10 @@ multipoint_make(const TSequence *seq, int start, int end)
 #endif
     else
       elog(ERROR, "Sequence must have a spatial base type");
-    geoms[i] = POSTGIS2GEOS(gs);
+    // geoms[i] = POSTGIS2GEOS(gs);
+    // Skip postgis function calls
+    const POINT2D *pt = GSERIALIZED_POINT2D_P(gs);
+    geoms[i] = GEOSGeom_createPointFromXY(pt->x, pt->y);
   }
   GEOSGeometry *result = GEOSGeom_createCollection(GEOS_MULTIPOINT, geoms, end - start + 1);
   pfree(geoms);
@@ -3911,7 +3959,10 @@ multipoint_add_inst_free(GEOSGeometry *geom, const TInstant *inst)
 #endif
   else
     elog(ERROR, "Instant must have a spatial base type");
-  GEOSGeometry *geom1 = POSTGIS2GEOS(gs);
+  // GEOSGeometry *geom1 = POSTGIS2GEOS(gs);
+  // Skip postgis function calls
+  const POINT2D *pt = GSERIALIZED_POINT2D_P(gs);
+  GEOSGeometry *geom1 = GEOSGeom_createPointFromXY(pt->x, pt->y);
   GEOSGeometry *result = GEOSUnion(geom, geom1);
   GEOSGeom_destroy(geom1);
   GEOSGeom_destroy(geom);
@@ -3936,8 +3987,8 @@ tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
   bool use_geos_dist = seq->temptype != T_TFLOAT;
   bool geodetic = MOBDB_FLAGS_GET_GEODETIC(seq->flags);
 
-  const TInstant *inst1, *inst2;
-  GEOSGeometry *geom;
+  const TInstant *inst1 = NULL, *inst2;
+  GEOSGeometry *geom = NULL;
 
   if (use_geos_dist)
   {
@@ -3955,9 +4006,6 @@ tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
     inst1 = tsequence_inst_n(seq, start);
     inst2 = tsequence_inst_n(seq, end);
 
-    if (use_geos_dist)
-      geom = multipoint_add_inst_free(geom, inst2);
-
     while (!is_stopped && end - start > 1
       && (int64)(inst2->t - inst1->t) >= mintunits)
     {
@@ -3971,6 +4019,8 @@ tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
       geom = multipoint_make(seq, start, end);
       rebuild_geom = false;
     }
+    else if (use_geos_dist)
+      geom = multipoint_add_inst_free(geom, inst2);
 
     if (end - start == 0)
       continue;
@@ -3992,10 +4042,7 @@ tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
       start = end;
 
       if (use_geos_dist)
-      {
-        GEOSGeom_destroy(geom);
-        geom = GEOSGeom_createEmptyCollection(GEOS_MULTIPOINT);
-      }
+        rebuild_geom = true;
     }
 
     previously_stopped = is_stopped;
