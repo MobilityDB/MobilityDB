@@ -957,6 +957,8 @@ tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool syncdist,
 {
   POINT2D p2k, p2_sync, p2a, p2b;
   POINT3DZ p3k, p3_sync, p3a, p3b;
+  memset(&p3a, 0, sizeof(POINT3DZ)); /* make compiler quiet */
+  memset(&p3b, 0, sizeof(POINT3DZ)); /* make compiler quiet */
   Datum value;
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
   bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);

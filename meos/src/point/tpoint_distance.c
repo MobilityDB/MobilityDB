@@ -480,7 +480,7 @@ NAI_tpointseq_discstep_geo1(const TSequence *seq, const LWGEOM *geo,
 static TInstant *
 NAI_tpointseq_discstep_geo(const TSequence *seq, const LWGEOM *geo)
 {
-  const TInstant *inst;
+  const TInstant *inst = NULL; /* make compiler quiet */
   NAI_tpointseq_discstep_geo1(seq, geo, DBL_MAX, &inst);
   return tinstant_copy(inst);
 }

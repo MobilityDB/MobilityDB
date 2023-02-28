@@ -67,10 +67,10 @@
 /**
  * @brief Definition for the internal aspects of  the GSERIALIZED struct
  */
-#define LWFLAG_EXTFLAGS    0x20
+// #define LWFLAG_EXTFLAGS    0x20
 #define LWFLAG_VERSBIT2    0x80
 
-#define FLAGS_GET_EXTFLAGS(flags)     (((flags) & LWFLAG_EXTFLAGS)>>5)
+// #define FLAGS_GET_EXTFLAGS(flags)     (((flags) & LWFLAG_EXTFLAGS)>>5)
 #define FLAGS_GET_VERSBIT2(flags)     (((flags) & LWFLAG_VERSBIT2)>>7)
 
 #define GS_POINT_PTR(gs)    ( (uint8_t *) gs->data + 8 + \
