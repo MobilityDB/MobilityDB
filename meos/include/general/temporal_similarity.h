@@ -38,7 +38,8 @@
 typedef enum
 {
   FRECHET,
-  DYNTIMEWARP
+  DYNTIMEWARP,
+  HAUSDORFF
 } SimFunc;
 
 /**

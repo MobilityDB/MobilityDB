@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * @brief Similarity distance for temporal values. Currently, discrete Frechet
- * distance and Dynamic Time Warping (DTW) distance are implemented.
+ * @brief Similarity distance for temporal values.
  */
 
 #include "general/temporal_similarity.h"
@@ -55,10 +54,13 @@ temporal_similarity_ext(FunctionCallInfo fcinfo, SimFunc simfunc)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
+  // TODO Synchronized
   /* Store fcinfo into a global variable for temporal geographic points */
   if (temp1->temptype == T_TGEOGPOINT)
     store_fcinfo(fcinfo);
-  double result = temporal_similarity(temp1, temp2, simfunc);
+  double result = (simfunc == HAUSDORFF) ?
+    temporal_hausdorff_distance(temp1, temp2, false) :
+    temporal_similarity(temp1, temp2, simfunc);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   PG_RETURN_FLOAT8(result);
@@ -83,6 +85,17 @@ PGDLLEXPORT Datum
 Temporal_dynamic_time_warp(PG_FUNCTION_ARGS)
 {
   return temporal_similarity_ext(fcinfo, DYNTIMEWARP);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_hausdorff_distance);
+/**
+ * @brief Compute the Dynamic Time Match (DTW) distance between two temporal
+ * values.
+ */
+PGDLLEXPORT Datum
+Temporal_hausdorff_distance(PG_FUNCTION_ARGS)
+{
+  return temporal_similarity_ext(fcinfo, HAUSDORFF);
 }
 
 /*****************************************************************************

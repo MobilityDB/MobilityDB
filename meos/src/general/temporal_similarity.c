@@ -37,12 +37,14 @@
 /* C */
 #include <assert.h>
 #include <math.h>
+#include <float.h>
 /* PostgreSQL */
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/temporaltypes.h"
 #include "point/tpoint_spatialfuncs.h"
+#include "npoint/tnpoint_spatialfuncs.h"
 
 /*****************************************************************************
  * Compute the distance between two instants depending on their type
@@ -78,12 +80,29 @@ tpointinst_distance(const TInstant *inst1, const TInstant *inst2)
  * @param[in] inst1,inst2 Temporal instants
  */
 static double
+tnpointinst_distance(const TInstant *inst1, const TInstant *inst2)
+{
+  Datum value1 = tinstant_value(inst1);
+  Datum value2 = tinstant_value(inst2);
+  double result = DatumGetFloat8(npoint_distance(value1, value2));
+  return result;
+}
+
+/**
+ * @brief Compute the distance between two temporal instants.
+ * @param[in] inst1,inst2 Temporal instants
+ */
+static double
 tinstant_distance(const TInstant *inst1, const TInstant *inst2)
 {
   if (tnumber_type(inst1->temptype))
     return tnumberinst_distance(inst1, inst2);
   if (tgeo_type(inst1->temptype))
     return tpointinst_distance(inst1, inst2);
+#if NPOINT
+  if (inst1->temptype == T_TNPOINT)
+    return tnpointinst_distance(inst1, inst2);
+#endif
   elog(ERROR, "Unexpected temporal type: inst1->temptype");
 }
 
@@ -468,5 +487,80 @@ temporal_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2, int *cou
   return temporal_similarity_path(temp1, temp2, count, DYNTIMEWARP);
 }
 #endif
+
+/*****************************************************************************
+ * Hausdorff distance
+ *****************************************************************************/
+
+/**
+ * @brief Compute the discrete Hausdorff distance between two temporal values.
+ * @param[in] instants1,instants2 Arrays of temporal instants
+ * @param[in] count1,count2 Number of instants in the arrays
+ * @param[in] synchronized True when using the Synchronized Euclidean Distance
+ */
+static double
+tinstarr_hausdorff_distance(const TInstant **instants1, int count1,
+  const TInstant **instants2, int count2, bool synchronized __attribute__((unused)))
+{
+  const TInstant *inst1, *inst2;
+  double cmax = 0.0, cmin;
+  double d;
+  int i, j;
+  for (i = 0; i < count1; i++)
+  {
+    inst1 = instants1[i];
+    cmin = DBL_MAX;
+    for (j = 0; j < count2; j++)
+    {
+      inst2 = instants2[j];
+      // TODO synchronized
+      d = tinstant_distance(inst1, inst2);
+      if (d < cmin)
+        cmin = d;
+      if (cmin < cmax)
+        break;
+    }
+    if (cmax < cmin && cmin < DBL_MAX)
+      cmax = cmin;
+  }
+  for (j = 0; j < count2; j++)
+  {
+    cmin = DBL_MAX;
+    inst2 = instants2[j];
+    for (i = 0; i < count1; i++)
+    {
+      inst1 = instants1[i];
+      // TODO synchronized
+      d = tinstant_distance(inst1, inst2);
+      if (d < cmin)
+        cmin = d;
+      if (cmin < cmax)
+        break;
+    }
+    if (cmax < cmin && cmin < DBL_MAX)
+      cmax = cmin;
+  }
+  return cmax;
+}
+
+/**
+ * @brief Compute the Hausdorf distance between two temporal values.
+ * @param[in] temp1,temp2 Temporal values
+ * @param[in] synchronized True when using the Synchronized Euclidean Distance
+ */
+double
+temporal_hausdorff_distance(const Temporal *temp1, const Temporal *temp2,
+  bool synchronized __attribute__((unused)))
+{
+  double result;
+  int count1, count2;
+  const TInstant **instants1 = temporal_instants(temp1, &count1);
+  const TInstant **instants2 = temporal_instants(temp2, &count2);
+  result = tinstarr_hausdorff_distance(instants1, count1, instants2, count2,
+    synchronized);
+  /* Free memory */
+  pfree(instants1); pfree(instants2);
+  return result;
+}
 
 /*****************************************************************************/
