@@ -2276,6 +2276,22 @@ tpoint_cumulative_length(const Temporal *temp)
   return result;
 }
 
+/*****************************************************************************/
+
+/**
+ * @ingroup libmeos_temporal_spatial_accessor
+ * @brief Return the convex hull of a temporal point.
+ * @sqlfunc convexHull()
+ */
+GSERIALIZED *
+tpoint_convex_hull(const Temporal *temp)
+{
+  GSERIALIZED *traj = tpoint_trajectory(temp);
+  GSERIALIZED *result = gserialized_convex_hull(traj);
+  pfree(traj);
+  return result;
+}
+
 /*****************************************************************************
  * Speed functions
  *****************************************************************************/

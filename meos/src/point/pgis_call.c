@@ -671,14 +671,14 @@ static char
 gserialized_is_point(const GSERIALIZED* g)
 {
   int type = gserialized_get_type(g);
-  return type == POINTTYPE || type == MULTIPOINTTYPE;
+  return (type == POINTTYPE || type == MULTIPOINTTYPE);
 }
 
 static char
 gserialized_is_poly(const GSERIALIZED* g)
 {
-    int type = gserialized_get_type(g);
-    return type == POLYGONTYPE || type == MULTIPOLYGONTYPE;
+  int type = gserialized_get_type(g);
+  return (type == POLYGONTYPE || type == MULTIPOLYGONTYPE);
 }
 
 /**
@@ -688,7 +688,7 @@ gserialized_is_poly(const GSERIALIZED* g)
  * the cache
  */
 static int
-MOBDB_point_in_polygon(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
+MEOS_point_in_polygon(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
   bool inter)
 {
   const GSERIALIZED *gpoly = gserialized_is_poly(geom1) ? geom1 : geom2;
@@ -782,7 +782,7 @@ GEOS2POSTGIS(GEOSGeom geom, char want3d)
  * call the GEOS function passed as argument
  */
 static char
-MOBDB_call_geos(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
+MEOS_call_geos2(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
   char (*func)(const GEOSGeometry *g1, const GEOSGeometry *g2))
 {
   initGEOS(lwnotice, lwgeom_geos_error);
@@ -846,7 +846,7 @@ gserialized_inter_contains(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
   if ((gserialized_is_point(geom1) && gserialized_is_poly(geom2)) ||
       (gserialized_is_poly(geom1) && gserialized_is_point(geom2)))
   {
-    int pip_result = MOBDB_point_in_polygon(geom1, geom2, inter);
+    int pip_result = MEOS_point_in_polygon(geom1, geom2, inter);
     return inter ?
       (pip_result != -1) : /* not outside */
       (pip_result == 1); /* inside */
@@ -854,8 +854,8 @@ gserialized_inter_contains(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
 
   /* Call GEOS function */
   bool result = inter ?
-    (bool) MOBDB_call_geos(geom1, geom2, &GEOSIntersects) :
-    (bool) MOBDB_call_geos(geom1, geom2, &GEOSContains);
+    (bool) MEOS_call_geos2(geom1, geom2, &GEOSIntersects) :
+    (bool) MEOS_call_geos2(geom1, geom2, &GEOSContains);
 
   return result;
 }
@@ -888,7 +888,7 @@ gserialized_touches(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
   }
 
   /* Call GEOS function */
-  bool result = (bool) MOBDB_call_geos(geom1, geom2, &GEOSTouches);
+  bool result = (bool) MEOS_call_geos2(geom1, geom2, &GEOSTouches);
 
   return result;
 }
@@ -937,7 +937,7 @@ gserialized_relate_pattern(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
 }
 
 /**
- * @brief Return true if the 3D geometries intersect
+ * @brief Return the intersection of the 3D geometries
  * @note PostGIS function: ST_Intersection(PG_FUNCTION_ARGS)
  * @note With respect to the original function we do not use the prec argument
  */
@@ -1059,6 +1059,64 @@ gserialized_array_union(GSERIALIZED **gsarr, int nelems)
     return NULL;
 
   return gser_out;
+}
+
+/**
+ * @brief Return the convex hull of the geometry
+ * @note PostGIS function: ST_ConvexHull(PG_FUNCTION_ARGS)
+ * @note With respect to the original function we do not use the prec argument
+ */
+GSERIALIZED *
+gserialized_convex_hull(const GSERIALIZED *geom)
+{
+  /* Empty.ConvexHull() == Empty */
+  if ( gserialized_is_empty(geom) )
+    return gserialized_copy(geom);
+
+  int32_t srid = gserialized_get_srid(geom);
+
+  initGEOS(lwpgnotice, lwgeom_geos_error);
+
+  GEOSGeometry *g1 = POSTGIS2GEOS(geom);
+  if (!g1)
+    elog(ERROR, "First argument geometry could not be converted to GEOS");
+
+  GEOSGeometry *g3 = GEOSConvexHull(g1);
+  GEOSGeom_destroy(g1);
+
+  if (!g3)
+    elog(ERROR,"GEOS convexhull() threw an error !");
+
+  GEOSSetSRID(g3, srid);
+
+  LWGEOM *lwout = GEOS2LWGEOM(g3, gserialized_has_z(geom));
+  GEOSGeom_destroy(g3);
+
+  if (!lwout)
+  {
+    elog(ERROR, "convexhull() failed to convert GEOS geometry to LWGEOM");
+    return NULL; /* never get here */
+  }
+
+  /* Copy input bbox if any */
+  GBOX bbox;
+  if ( gserialized_get_gbox_p(geom, &bbox) )
+  {
+    /* Force the box to have the same dimensionality as the lwgeom */
+    bbox.flags = lwout->flags;
+    lwout->bbox = gbox_copy(&bbox);
+  }
+
+  GSERIALIZED *result = geometry_serialize(lwout);
+  lwgeom_free(lwout);
+
+  if (!result)
+  {
+    elog(ERROR,"GEOS convexhull() threw an error !");
+    return NULL; /* never get here */
+  }
+
+  return result;
 }
 
 /*****************************************************************************

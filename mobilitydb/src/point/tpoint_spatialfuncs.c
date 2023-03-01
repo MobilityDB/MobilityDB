@@ -882,6 +882,25 @@ Tpoint_cumulative_length(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PG_FUNCTION_INFO_V1(Tpoint_convex_hull);
+/**
+ * @ingroup mobilitydb_temporal_spatial_accessor
+ * @brief Return the convex hull of  a temporal point
+ * @sqlfunc convexHull()
+ */
+PGDLLEXPORT Datum
+Tpoint_convex_hull(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  GSERIALIZED *result = tpoint_convex_hull(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
 /*****************************************************************************
  * Speed functions
  *****************************************************************************/

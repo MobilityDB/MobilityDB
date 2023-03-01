@@ -1599,6 +1599,7 @@ extern bool bearing_point_point(const GSERIALIZED *geo1, const GSERIALIZED *geo2
 extern Temporal *bearing_tpoint_point(const Temporal *temp, const GSERIALIZED *gs, bool invert);
 extern Temporal *bearing_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
 extern Temporal *tpoint_azimuth(const Temporal *temp);
+extern GSERIALIZED *tpoint_convex_hull(const Temporal *temp);
 extern Temporal *tpoint_cumulative_length(const Temporal *temp);
 extern Temporal *tpoint_get_coord(const Temporal *temp, int coord);
 extern bool tpoint_is_simple(const Temporal *temp);

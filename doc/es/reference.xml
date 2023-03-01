@@ -938,6 +938,10 @@
 				</listitem>
 
 				<listitem>
+					<para><link linkend="deltaValue"><varname>deltaValue</varname></link>: Obtener la diferencia de valor entre instantes consectivos del número temporal</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="round"><varname>round</varname></link>: Redondear los valores a un número de posiciones decimales </para>
 				</listitem>
 

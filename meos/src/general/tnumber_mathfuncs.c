@@ -382,6 +382,108 @@ tnumber_abs(const Temporal *temp)
 }
 
 /*****************************************************************************
+ * Delta value
+ *****************************************************************************/
+
+/**
+ * @brief Return the delta value of the two numbers
+ */
+static Datum
+delta_value(Datum value1, Datum value2, meosType basetype)
+{
+  Datum result;
+  if (basetype == T_INT4)
+    result = Int32GetDatum(DatumGetInt32(value2) - DatumGetInt32(value1));
+  else /* basetype == T_FLOAT8 */
+    result = Float8GetDatum(DatumGetFloat8(value2) - DatumGetFloat8(value1));
+  return result;
+}
+
+/**
+ * @brief Return the temporal delta value of a temporal number.
+ */
+TSequence *
+tnumberseq_delta_value(const TSequence *seq)
+{
+  /* Instantaneous sequence */
+  if (seq->count == 1)
+    return NULL;
+
+  /* General case */
+  /* We are sure that there are at least 2 instants */
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  const TInstant *inst1 = tsequence_inst_n(seq, 0);
+  Datum value1 = tinstant_value(inst1);
+  meosType basetype = temptype_basetype(seq->temptype);
+  Datum delta = 0; /* make compiler quiet */
+  for (int i = 1; i < seq->count; i++)
+  {
+    const TInstant *inst2 = tsequence_inst_n(seq, i);
+    Datum value2 = tinstant_value(inst2);
+    delta = delta_value(value1, value2, basetype);
+    instants[i - 1] = tinstant_make(delta, seq->temptype, inst1->t);
+    inst1 = inst2;
+    value1 = value2;
+  }
+  instants[seq->count - 1] = tinstant_make(delta, seq->temptype, inst1->t);
+  /* Resulting sequence has discrete or step interpolation */
+  interpType interp = MOBDB_FLAGS_GET_DISCRETE(seq->flags) ?
+    DISCRETE : STEP;
+  return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
+    false, interp, NORMALIZE);
+}
+
+/**
+ * @brief Return the temporal delta_value of a temporal number.
+ */
+TSequenceSet *
+tnumberseqset_delta_value(const TSequenceSet *ss)
+{
+  TSequence *delta;
+
+  /* Singleton sequence set */
+  if (ss->count == 1)
+  {
+    delta = tnumberseq_delta_value(tsequenceset_seq_n(ss, 0));
+    TSequenceSet *result = tsequence_to_tsequenceset(delta);
+    pfree(delta);
+    return result;
+  }
+
+  /* General case */
+  TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
+  int k = 0;
+  for (int i = 0; i < ss->count; i++)
+  {
+    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    delta = tnumberseq_delta_value(seq);
+    if (delta)
+      sequences[k++] = delta;
+  }
+  /* Resulting sequence set has step interpolation */
+  return tsequenceset_make_free(sequences, k, NORMALIZE);
+}
+
+/**
+ * @ingroup mobilitydb_temporal_math
+ * @brief Return the delta value of a temporal number.
+ * @sqlfunc deltaValue()
+ */
+Temporal *
+tnumber_delta_value(const Temporal *temp)
+{
+  Temporal *result = NULL;
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == TINSTANT)
+    ;
+  else if (temp->subtype == TSEQUENCE)
+    result = (Temporal *) tnumberseq_delta_value((TSequence *) temp);
+  else /* temp->subtype == TSEQUENCESET */
+    result = (Temporal *) tnumberseqset_delta_value((TSequenceSet *) temp);
+  return result;
+}
+
+/*****************************************************************************
  * Miscellaneous temporal functions
  *****************************************************************************/
 

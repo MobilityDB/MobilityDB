@@ -940,6 +940,10 @@
 				</listitem>
 
 				<listitem>
+					<para><link linkend="deltaValue"><varname>deltaValue</varname></link>: Get the value difference between consecutive instants of the temporal number</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="round"><varname>round</varname></link>: Round the values to a number of decimal places</para>
 				</listitem>
 

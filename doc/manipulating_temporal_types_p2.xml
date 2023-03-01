@@ -87,6 +87,20 @@ SELECT abs(tint '[1@2000-01-01, -1@2000-01-03, 1@2000-01-05, -1@2000-01-07]');
 </programlisting>
 			</listitem>
 
+			<listitem id="deltaValue">
+				<indexterm><primary><varname>deltaValue</varname></primary></indexterm>
+				<para>Get the value difference between consecutive instants of the temporal number</para>
+				<para><varname>deltaValue(tnumber) → tnumber</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT deltaValue(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
+-- [1@2000-01-01, -1@2000-01-02, -1@2000-01-03)
+SELECT deltaValue(tfloat '{[1.5@2000-01-01, 2@2000-01-02, 1@2000-01-03],
+  [2@2000-01-04, 2@2000-01-05]}');
+/* Interp=Step;{[0.5@2000-01-01, -1@2000-01-02, -1@2000-01-03),
+  [0@2000-01-04, 0@2000-01-05)} */
+</programlisting>
+			</listitem>
+
 			<listitem id="round">
 				<indexterm><primary><varname>round</varname></primary></indexterm>
 				<para>Round the values to a number of decimal places</para>

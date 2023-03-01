@@ -366,6 +366,23 @@ Tnumber_abs(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PG_FUNCTION_INFO_V1(Tnumber_delta_value);
+/**
+ * @ingroup mobilitydb_temporal_math
+ * @brief Get the delta value of a temporal number
+ * @sqlfunc deltaValue()
+ */
+PGDLLEXPORT Datum
+Tnumber_delta_value(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tnumber_delta_value(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
 PG_FUNCTION_INFO_V1(Tfloat_degrees);
 /**
  * @ingroup mobilitydb_temporal_math

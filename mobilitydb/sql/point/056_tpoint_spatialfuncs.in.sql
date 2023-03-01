@@ -172,6 +172,11 @@ CREATE FUNCTION cumulativeLength(tgeogpoint)
   AS 'MODULE_PATHNAME', 'Tpoint_cumulative_length'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION convexHull(tgeompoint)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Tpoint_convex_hull'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION speed(tgeompoint)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tpoint_speed'
