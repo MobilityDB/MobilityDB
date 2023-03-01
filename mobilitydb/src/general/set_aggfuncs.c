@@ -60,15 +60,14 @@ PGDLLEXPORT Datum
 Value_union_transfn(PG_FUNCTION_ARGS)
 {
   MemoryContext aggContext;
-  ArrayBuildState *state;
-
-  if (!AggCheckCallContext(fcinfo, &aggContext))
+  if (! AggCheckCallContext(fcinfo, &aggContext))
     elog(ERROR, "Value_union_transfn called in non-aggregate context");
 
   Oid valueoid = get_fn_expr_argtype(fcinfo->flinfo, 1);
   meosType basetype = oid_type(valueoid);
   ensure_set_basetype(basetype);
 
+  ArrayBuildState *state;
   if (PG_ARGISNULL(0))
     state = initArrayResult(valueoid, aggContext, false);
   else
@@ -92,7 +91,7 @@ PGDLLEXPORT Datum
 Set_union_transfn(PG_FUNCTION_ARGS)
 {
   MemoryContext aggContext;
-  if (!AggCheckCallContext(fcinfo, &aggContext))
+  if (! AggCheckCallContext(fcinfo, &aggContext))
     elog(ERROR, "Set_union_transfn called in non-aggregate context");
 
   Oid setoid = get_fn_expr_argtype(fcinfo->flinfo, 1);

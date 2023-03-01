@@ -1209,6 +1209,10 @@
 
 			<itemizedlist>
 				<listitem>
+					<para><link linkend="hausdorffDistance"><varname>hausdorffDistance</varname></link>: Obtener la distancia de Hausdorff discreta entre dos valores temporales</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="frechetDistance"><varname>frechetDistance</varname></link>: Obtener la distancia de Fréchet discreta entre dos valores temporales</para>
 				</listitem>
 

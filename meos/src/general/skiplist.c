@@ -289,7 +289,8 @@ aggstate_set_extra(SkipList *state, void *data, size_t size)
 {
 #if ! MEOS
   MemoryContext ctx;
-  assert(AggCheckCallContext(fetch_fcinfo(), &ctx));
+  if(! AggCheckCallContext(fetch_fcinfo(), &ctx))
+    elog(ERROR, "Set_union_transfn called in non-aggregate context");
   MemoryContext oldctx = MemoryContextSwitchTo(ctx);
 #endif /* ! MEOS */
   state->extra = palloc(size);

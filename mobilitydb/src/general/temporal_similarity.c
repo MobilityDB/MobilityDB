@@ -54,12 +54,11 @@ temporal_similarity_ext(FunctionCallInfo fcinfo, SimFunc simfunc)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  // TODO Synchronized
   /* Store fcinfo into a global variable for temporal geographic points */
   if (temp1->temptype == T_TGEOGPOINT)
     store_fcinfo(fcinfo);
   double result = (simfunc == HAUSDORFF) ?
-    temporal_hausdorff_distance(temp1, temp2, false) :
+    temporal_hausdorff_distance(temp1, temp2) :
     temporal_similarity(temp1, temp2, simfunc);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
