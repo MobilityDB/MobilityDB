@@ -238,7 +238,8 @@ Stbox_tile(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @brief Get the tile border from a spatiotemporal box as a PostGIS geometry
+ * @brief Get the tile border that must be removed from a spatiotemporal box
+ * during the tiling process as a PostGIS geometry
  *
  * The following figure shows the borders that are removed (represented by x)
  * @code

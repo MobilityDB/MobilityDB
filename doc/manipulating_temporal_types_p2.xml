@@ -115,8 +115,9 @@ SELECT round(tfloat '[0.785398163397448@2000-01-01, 2.35619449019234@2000-01-02]
 				<indexterm><primary><varname>degrees</varname></primary></indexterm>
 				<indexterm><primary><varname>radians</varname></primary></indexterm>
 				<para>Convert between radians and degrees</para>
-				<para><varname>degrees(tfloat) → tfloat</varname></para>
+				<para><varname>degrees(tfloat,normalize=false) → tfloat</varname></para>
 				<para><varname>radians(tfloat) → tfloat</varname></para>
+				<para>The additional parameter in the <varname>degrees</varname> function can be used to normalize the values between 0 and 360 degrees.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT degrees(tfloat '[0.785398163397448@2000-01-01, 2.35619449019234@2000-01-02]');
 -- [45@2000-01-01, 135@2000-01-02]
