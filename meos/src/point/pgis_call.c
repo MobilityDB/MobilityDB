@@ -1075,7 +1075,7 @@ gserialized_convex_hull(const GSERIALIZED *geom)
 
   int32_t srid = gserialized_get_srid(geom);
 
-  initGEOS(lwpgnotice, lwgeom_geos_error);
+  initGEOS(lwnotice, lwgeom_geos_error);
 
   GEOSGeometry *g1 = POSTGIS2GEOS(geom);
   if (!g1)
@@ -1107,7 +1107,7 @@ gserialized_convex_hull(const GSERIALIZED *geom)
     lwout->bbox = gbox_copy(&bbox);
   }
 
-  GSERIALIZED *result = geometry_serialize(lwout);
+  GSERIALIZED *result = geo_serialize(lwout);
   lwgeom_free(lwout);
 
   if (!result)

@@ -2446,8 +2446,7 @@ TSequence **
 temporal_segments(const Temporal *temp, int *count)
 {
   if (temp->subtype == TINSTANT)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The temporal value must be of subtype sequence (set)")));
+    elog(ERROR, "The temporal value must be of subtype sequence (set)");
 
   TSequence **result;
   if (temp->subtype == TSEQUENCE)

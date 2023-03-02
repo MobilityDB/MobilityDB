@@ -2125,7 +2125,7 @@ tsequenceset_append_tinstant(TSequenceSet *ss, const TInstant *inst, bool expand
     /* Append the new sequence(s) if there is enough space: only one if the
      * instant was appended to the last sequence, or the two sequences
      * composing the sequence set that results from appending the instant */
-    const TSequence *newseq1, *newseq2 = NULL;
+    const TSequence *newseq1 = NULL, *newseq2 = NULL; /* make compiler quiet */
     if (count == ss->count)
       size += DOUBLE_PAD(VARSIZE(temp));
     else /* temp->subtype == TSEQUENCESET */

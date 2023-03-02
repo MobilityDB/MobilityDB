@@ -238,6 +238,43 @@ Stbox_tile(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
+ * @brief Get the tile border from a spatiotemporal box as a PostGIS geometry
+ *
+ * The following figure shows the borders that are removed (represented by x)
+ * @code
+ * xxxxxxxxxxxxxxxxx
+ * |               x
+ * |               x
+ * |---------------x
+ * @code
+ */
+static GSERIALIZED *
+stbox_to_tile_border(const STBox *box)
+{
+  ensure_has_X_stbox(box);
+  assert(! MOBDB_FLAGS_GET_Z(box->flags));
+  assert(! MOBDB_FLAGS_GET_GEODETIC(box->flags));
+  /* Since there is no M value a 0 value is passed */
+  POINTARRAY *pa = ptarray_construct_empty(false, 0, 3);
+  /* Initialize the 3 vertices of the line */
+  POINT4D pt;
+  pt = (POINT4D) { box->xmin, box->ymax, 0.0, 0.0 };
+  ptarray_append_point(pa, &pt, LW_TRUE);
+  pt = (POINT4D) { box->xmax, box->ymax, 0.0, 0.0 };
+  ptarray_append_point(pa, &pt, LW_TRUE);
+  pt = (POINT4D) { box->xmax, box->ymin, 0.0, 0.0 };
+  ptarray_append_point(pa, &pt, LW_TRUE);
+  /* No bbox is passed as second argument */
+  LWLINE *line = lwline_construct(box->srid, NULL, pa);
+  FLAGS_SET_Z(line->flags, false);
+  FLAGS_SET_GEODETIC(line->flags, false);
+  LWGEOM *geo = lwline_as_lwgeom(line);
+  GSERIALIZED *result = geo_serialize(geo);
+  lwgeom_free(geo);
+  return result;
+}
+
+/**
  * @brief Split a temporal point with respect to a spatial and possibly a
  * temporal grid.
  */
@@ -376,7 +413,17 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
     }
     stbox_tile_state_next(state);
     /* Restrict the temporal point to the box */
-    Temporal *atstbox = tpoint_at_stbox1(state->temp, &box, UPPER_EXC);
+    Temporal *atstbox = tpoint_at_stbox1(state->temp, &box);
+    if (atstbox == NULL)
+      continue;
+    /* Remove the right and lower bound of the tile */
+    STBox box2d;
+    memcpy(&box2d, &box, sizeof(STBox));
+    MOBDB_FLAGS_SET_Z(box2d.flags, false);
+    GSERIALIZED *geo = stbox_to_tile_border(&box2d);
+    Temporal *atstbox1 = tpoint_restrict_geometry(atstbox, geo, REST_MINUS);
+    pfree(geo); pfree(atstbox);
+    atstbox = atstbox1;
     if (atstbox == NULL)
       continue;
     /* Form tuple and return */

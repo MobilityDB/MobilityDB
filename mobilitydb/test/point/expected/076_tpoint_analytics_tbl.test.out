@@ -489,9 +489,9 @@ FROM (SELECT asMVTGeom(temp, stbox 'STBOX X(((0,0),(50,50)))') AS mvt
 SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(ST_AsText((mvt).geom))
 FROM (SELECT asMVTGeom(tgeompoint '{Point(0 0 0)@2000-01-01, Point(100 100 100)@2000-04-10}',
   stbox 'STBOX X(((0,0),(1000,1000)))') AS mvt ) AS t) AS t(dp);
-              array_agg              
--------------------------------------
- {"POINT(0 4096)","POINT(410 3686)"}
+                    array_agg                    
+-------------------------------------------------
+ {"POINT Z (0 4096 0)","POINT Z (410 3686 100)"}
 (1 row)
 
 SELECT ST_AsText((mvt).geom)
@@ -513,9 +513,9 @@ FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-0
 SELECT ST_AsText((mvt).geom)
 FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0 0)@2000-01-01, Point(100 100 100)@2000-04-10]',
   stbox 'STBOX X(((40,40),(60,60)))') AS mvt ) AS t;
-            st_astext            
----------------------------------
- LINESTRING(-256 4352,4352 -256)
+                   st_astext                    
+------------------------------------------------
+ LINESTRING Z (-256 4352 38.75,4352 -256 61.25)
 (1 row)
 
 SELECT ST_AsText((mvt).geom)

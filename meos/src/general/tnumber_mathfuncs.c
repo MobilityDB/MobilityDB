@@ -57,9 +57,12 @@
  * @brief Convert a number from radians to degrees
  */
 static Datum
-datum_degrees(Datum value)
+datum_degrees(Datum value, Datum normalize)
 {
-  return Float8GetDatum(float8_div(DatumGetFloat8(value), RADIANS_PER_DEGREE));
+  double result = float8_div(DatumGetFloat8(value), RADIANS_PER_DEGREE);
+  if (DatumGetBool(normalize) && result < 0)
+    result += 360;
+  return Float8GetDatum(result);
 }
 
 /**
@@ -493,13 +496,14 @@ tnumber_delta_value(const Temporal *temp)
  * @sqlfunc degrees()
  */
 Temporal *
-tfloat_degrees(const Temporal *temp)
+tfloat_degrees(const Temporal *temp, bool normalize)
 {
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_degrees;
-  lfinfo.numparam = 0;
+  lfinfo.numparam = 1;
+  lfinfo.param[0] = BoolGetDatum(normalize);
   lfinfo.args = true;
   lfinfo.argtype[0] = temptype_basetype(temp->temptype);
   lfinfo.restype = T_TFLOAT;

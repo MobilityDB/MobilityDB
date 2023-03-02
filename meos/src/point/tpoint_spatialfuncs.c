@@ -3526,7 +3526,7 @@ tpointinst_restrict_geometry(const TInstant *inst, const GSERIALIZED *gs,
 {
   bool inter = DatumGetBool(geom_intersects2d(tinstant_value(inst),
     PointerGetDatum(gs)));
-  if ((atfunc && !inter) || (!atfunc && inter))
+  if ((atfunc && ! inter) || (! atfunc && inter))
     return NULL;
   return tinstant_copy(inst);
 }
@@ -4210,6 +4210,7 @@ tpoint_minus_geometry(const Temporal *temp, const GSERIALIZED *gs)
 
 /*****************************************************************************/
 
+#if 0 /* not used */
 /**
  * @brief Assemble a 2D point for its x and y coordinates, srid, and geodetic
  * flag
@@ -4289,17 +4290,19 @@ tpoint_add_z(Temporal *temp, Temporal *temp_z, int srid)
   lfinfo.tpfunc = NULL;
   return tfunc_temporal_temporal(temp, temp_z, &lfinfo);
 }
+#endif /* not used */
 
 /**
  * @brief Restrict a temporal point to a spatiotemporal box.
- * @pre The arguments are of the same dimensionality and have the same SRID
+ * @note The temporal point may be 3D and the box MUST be 2D to be able to
+ * restrict to the geometry
+ * @pre The arguments have the same SRID
  */
 Temporal *
-tpoint_at_stbox1(const Temporal *temp, const STBox *box, bool upper_inc)
+tpoint_at_stbox1(const Temporal *temp, const STBox *box)
 {
   /* At least one of MOBDB_FLAGS_GET_X and MOBDB_FLAGS_GET_T is true */
   bool hasx = MOBDB_FLAGS_GET_X(box->flags);
-  bool hasz = MOBDB_FLAGS_GET_Z(box->flags);
   bool hast = MOBDB_FLAGS_GET_T(box->flags);
   assert(hasx || hast);
 
@@ -4324,45 +4327,15 @@ tpoint_at_stbox1(const Temporal *temp, const STBox *box, bool upper_inc)
   Temporal *result = NULL;
   if (hasx)
   {
-    /* Split the temporal point into temporal floats for each coordinate */
-    Temporal *temp_x = tpoint_get_coord(temp1, 0);
-    Temporal *temp_y = tpoint_get_coord(temp1, 1);
-    Temporal *temp_z = NULL;
-    if (hasz)
-      temp_z = tpoint_get_coord(temp1, 2);
-    Span *span_x = span_make(Float8GetDatum(box->xmin),
-      Float8GetDatum(box->xmax), true, upper_inc, T_FLOAT8);
-    Span *span_y = span_make(Float8GetDatum(box->ymin),
-      Float8GetDatum(box->ymax), true, upper_inc, T_FLOAT8);
-    Span *span_z = NULL;
-    if (hasz)
-      span_z = span_make(Float8GetDatum(box->zmin), Float8GetDatum(box->zmax),
-        true, upper_inc, T_FLOAT8);
-    Temporal *at_temp_x = tnumber_restrict_span(temp_x, span_x, REST_AT);
-    Temporal *at_temp_y = tnumber_restrict_span(temp_y, span_y, REST_AT);
-    Temporal *at_temp_z = NULL;
-    if (hasz)
-      at_temp_z = tnumber_restrict_span(temp_z, span_z, REST_AT);
-    Temporal *result2D = NULL;
-    if (at_temp_x != NULL && at_temp_y != NULL && (! hasz || at_temp_z != NULL))
-    {
-      /* Combine the temporal floats for each coordinate into a temporal point */
-      int srid = tpoint_srid(temp1);
-      bool geodetic = MOBDB_FLAGS_GET_GEODETIC(temp1->flags);
-      result2D = tpoint_assemble_coords_xy(at_temp_x, at_temp_y, srid,
-        geodetic);
-      result = (result2D != NULL && hasz) ?
-        tpoint_add_z(result2D, at_temp_z, srid) : result2D;
-    }
-    pfree(temp_x); pfree(span_x); pfree(temp_y); pfree(span_y);
-    if (at_temp_x != NULL) pfree(at_temp_x);
-    if (at_temp_y != NULL) pfree(at_temp_y);
-    if (hasz)
-    {
-      pfree(temp_z); pfree(span_z);
-      if (at_temp_z != NULL) pfree(at_temp_z);
-      if (result2D != NULL) pfree(result2D);
-    }
+    /* Convert the stbox to a 2D polygon */
+    STBox box2d;
+    memcpy(&box2d, box, sizeof(STBox));
+    MOBDB_FLAGS_SET_Z(box2d.flags, false);
+    GSERIALIZED *geo = stbox_to_geo(&box2d);
+    /* Notice that if the stbox is 2D and the point is 3D we keep the Z
+     * coordinate in the result */
+    result = tpoint_restrict_geometry(temp1, geo, REST_AT);
+    pfree(geo);
   }
   else
     result = temp1;
@@ -4390,7 +4363,7 @@ tpoint_minus_stbox1(const Temporal *temp, const STBox *box)
     return temporal_copy(temp);
 
   Temporal *result = NULL;
-  Temporal *temp1 = tpoint_at_stbox1(temp, box, UPPER_INC);
+  Temporal *temp1 = tpoint_at_stbox1(temp, box);
   if (temp1 != NULL)
   {
     SpanSet *ps1 = temporal_time(temp);
@@ -4427,7 +4400,7 @@ tpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool atfunc)
     ensure_same_srid_tpoint_stbox(temp, box);
     ensure_same_spatial_dimensionality_temp_box(temp->flags, box->flags);
   }
-  Temporal *result = atfunc ? tpoint_at_stbox1(temp, box, UPPER_INC) :
+  Temporal *result = atfunc ? tpoint_at_stbox1(temp, box) :
     tpoint_minus_stbox1(temp, box);
   return result;
 }
