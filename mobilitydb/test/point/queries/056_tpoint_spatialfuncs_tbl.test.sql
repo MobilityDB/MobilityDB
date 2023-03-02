@@ -116,6 +116,11 @@ AND abs(startValue(speed(temp)) - st_distance(startValue(temp), getValue(instant
 SELECT ST_AsText(round(twcentroid(temp), 6)) FROM tbl_tgeompoint LIMIT 10;
 SELECT ST_AsText(round(twcentroid(temp), 6)) FROM tbl_tgeompoint3D LIMIT 10;
 
+SELECT round(AVG(degrees(direction(temp)))::numeric, 6) FROM tbl_tgeompoint;
+SELECT round(AVG(degrees(direction(temp)))::numeric, 6) FROM tbl_tgeogpoint;
+SELECT round(AVG(degrees(direction(temp)))::numeric, 6) FROM tbl_tgeompoint3D;
+SELECT round(AVG(degrees(direction(temp)))::numeric, 6) FROM tbl_tgeogpoint3D;
+
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE azimuth(temp) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE azimuth(temp) IS NOT NULL;
 -- Return negative result in PostGIS 2.5.5, return erroneous value in PostGIS 3.1.1

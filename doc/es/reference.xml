@@ -1101,6 +1101,10 @@
 					</listitem>
 
 					<listitem>
+						<para><link linkend="direction"><varname>direction</varname></link>: Obtener la dirección</para>
+					</listitem>
+
+					<listitem>
 						<para><link linkend="azimuth"><varname>azimuth</varname></link>: Obtener el acimut temporal</para>
 					</listitem>
 

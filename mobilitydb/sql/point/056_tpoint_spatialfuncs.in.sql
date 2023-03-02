@@ -191,6 +191,15 @@ CREATE FUNCTION twcentroid(tgeompoint)
   AS 'MODULE_PATHNAME', 'Tpoint_twcentroid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION direction(tgeompoint)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Tpoint_direction'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION direction(tgeogpoint)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Tpoint_direction'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION azimuth(tgeompoint)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tpoint_azimuth'

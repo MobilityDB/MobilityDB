@@ -925,6 +925,31 @@ Tpoint_speed(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * Direction function
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Tpoint_direction);
+/**
+ * @ingroup mobilitydb_temporal_spatial_accessor
+ * @brief Return the direction of a temporal point, that is, the azimuth
+ * between the first and the last points
+ * @sqlfunc direction()
+ */
+PGDLLEXPORT Datum
+Tpoint_direction(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  double result;
+  bool found = tpoint_direction(temp, &result);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! found)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
  * Time-weighed centroid for temporal geometry points
  *****************************************************************************/
 

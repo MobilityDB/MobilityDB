@@ -2492,7 +2492,7 @@ tpoint_twcentroid(const Temporal *temp)
 }
 
 /*****************************************************************************
- * Temporal azimuth
+ * Direction
  *****************************************************************************/
 
 /**
@@ -2525,6 +2525,95 @@ geog_azimuth(Datum geog1, Datum geog2)
     lwgeom_as_lwpoint(lwgeom2), &s);
   return Float8GetDatum(result);
 }
+
+/**
+ * @ingroup libmeos_internal_temporal_spatial_accessor
+ * @brief Return the direction of a temporal point.
+ * @param[in] seq Temporal value
+ * @param[out] result Azimuth between the first and last point
+ * @result True when it is possible to determine the azimuth, i.e., when there
+ * are at least two points that are not equal; false, otherwise.
+ * @sqlfunc direction()
+ */
+bool
+tpointseq_direction(const TSequence *seq, double *result)
+{
+  /* Instantaneous sequence */
+  if (seq->count == 1)
+    return false;
+
+  /* Determine the PostGIS function to call */
+  datum_func2 func = MOBDB_FLAGS_GET_GEODETIC(seq->flags) ?
+    &geog_azimuth : &geom_azimuth;
+
+  /* We are sure that there are at least 2 instants */
+  const TInstant *inst1 = tsequence_inst_n(seq, 0);
+  const TInstant *inst2 = tsequence_inst_n(seq, seq->count - 1);
+  Datum value1 = tinstant_value(inst1);
+  Datum value2 = tinstant_value(inst2);
+  if (datum_point_eq(value1, value2))
+    return false;
+
+  *result = func(value1, value2);
+  return true;
+}
+
+/**
+ * @ingroup libmeos_internal_temporal_spatial_accessor
+ * @brief Return the direction of a temporal point.
+ * @param[in] ss Temporal value
+ * @param[out] result Azimuth between the first and last point
+ * @result True when it is possible to determine the azimuth, i.e., when there
+ * are at least two points that are not equal; false, otherwise.
+ * @sqlfunc direction()
+ */
+bool
+tpointseqset_direction(const TSequenceSet *ss, double *result)
+{
+  /* Singleton sequence set */
+  if (ss->count == 1)
+    return tpointseq_direction(tsequenceset_seq_n(ss, 0), result);
+
+  /* Determine the PostGIS function to call */
+  datum_func2 func = MOBDB_FLAGS_GET_GEODETIC(ss->flags) ?
+    &geog_azimuth : &geom_azimuth;
+
+  /* We are sure that there are at least 2 instants */
+  const TSequence *seq1 = tsequenceset_seq_n(ss, 0);
+  const TInstant *inst1 = tsequence_inst_n(seq1, 0);
+  const TSequence *seq2 = tsequenceset_seq_n(ss, ss->count - 1);
+  const TInstant *inst2 = tsequence_inst_n(seq2, seq2->count - 1);
+  Datum value1 = tinstant_value(inst1);
+  Datum value2 = tinstant_value(inst2);
+  if (datum_point_eq(value1, value2))
+    return false;
+
+  *result = func(value1, value2);
+  return true;
+}
+
+/**
+ * @ingroup libmeos_temporal_spatial_accessor
+ * @brief Return the direction of a temporal point.
+ * @sqlfunc direction()
+ */
+bool
+tpoint_direction(const Temporal *temp, double *result)
+{
+  bool found;
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == TINSTANT)
+    ;
+  else if (temp->subtype == TSEQUENCE)
+    found = tpointseq_direction((TSequence *) temp, result);
+  else /* temp->subtype == TSEQUENCESET */
+    found = tpointseqset_direction((TSequenceSet *) temp, result);
+  return found;
+}
+
+/*****************************************************************************
+ * Temporal azimuth
+ *****************************************************************************/
 
 /**
  * @brief Return the temporal azimuth of a temporal geometry point.

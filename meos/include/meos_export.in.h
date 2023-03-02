@@ -1601,6 +1601,7 @@ extern Temporal *bearing_tpoint_tpoint(const Temporal *temp1, const Temporal *te
 extern Temporal *tpoint_azimuth(const Temporal *temp);
 extern GSERIALIZED *tpoint_convex_hull(const Temporal *temp);
 extern Temporal *tpoint_cumulative_length(const Temporal *temp);
+extern bool tpoint_direction(const Temporal *temp);
 extern Temporal *tpoint_get_coord(const Temporal *temp, int coord);
 extern bool tpoint_is_simple(const Temporal *temp);
 extern double tpoint_length(const Temporal *temp);

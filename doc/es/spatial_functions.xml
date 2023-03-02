@@ -366,10 +366,26 @@ SELECT ST_AsText(twCentroid(tgeompoint '{[Point(0 0 0)@2001-01-01,
 </programlisting>
 				</listitem>
 
+				<listitem id="direction">
+					<indexterm><primary><varname>direction</varname></primary></indexterm>
+					<para>Obtener la dirección, es decir, el acimut entre las ubicaciones inicial y final &Z_support; &geography_support;</para>
+					<para><varname>direction(tpoint) → float</varname></para>
+					<para>El resultado se expresa en radianes. Es NULL si solo hay una ubicación o si las ubicaciones inicial y final son iguales.</para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT round(degrees(direction(tgeompoint '[Point(0 0)@2001-01-01,
+  Point(-1 -1)@2001-01-02, Point(1 1)@2001-01-03]'))::numeric, 6);
+-- 45.000000
+SELECT direction(tgeompoint '{[Point(0 0 0)@2001-01-01,
+  Point(0 1 1)@2001-01-02, Point(0 1 1)@2001-01-03, Point(0 0 0)@2001-01-04)}');
+-- NULL
+</programlisting>
+				</listitem>
+
 				<listitem id="azimuth">
 					<indexterm><primary><varname>azimuth</varname></primary></indexterm>
 					<para>Obtener el acimut temporal &Z_support; &geography_support;</para>
 					<para><varname>azimuth(tpoint) → tfloat</varname></para>
+					<para>El resultado se expresa en radianes. El azimut es indefinido cuando dos localizaciones sucesivas son iguales y en este caso se añade una brecha de tempo.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT degrees(azimuth(tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02,
   Point(1 1 1)@2001-01-03, Point(0 0 0)@2001-01-04)'));

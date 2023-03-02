@@ -1105,6 +1105,10 @@
 					</listitem>
 
 					<listitem>
+						<para><link linkend="direction"><varname>direction</varname></link>: Get the direction</para>
+					</listitem>
+
+					<listitem>
 						<para><link linkend="azimuth"><varname>azimuth</varname></link>: Get the temporal azimuth</para>
 					</listitem>
 
