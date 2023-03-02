@@ -130,7 +130,7 @@ main(int argc, char **argv)
 
   /* Open/create the output file */
   /* You may substitute the full file path in the first argument of fopen */
-  FILE *fileOut = fopen("aisoutput.csv", "r+");
+  FILE *fileOut = fopen("aisoutput.csv", "w+");
 
   if (! fileOut)
   {
@@ -234,9 +234,6 @@ main(int argc, char **argv)
         NO_INSTANTS_BATCH, true, true, LINEAR, false);
     else
       tsequence_append_tinstant(trips[ship].trip, inst, true);
-
-    
-    
   } while (!feof(fileIn));
 
   printf("\n%d records read.\n%d incomplete records ignored.\n",
