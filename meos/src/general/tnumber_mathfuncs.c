@@ -60,8 +60,13 @@ static Datum
 datum_degrees(Datum value, Datum normalize)
 {
   double result = float8_div(DatumGetFloat8(value), RADIANS_PER_DEGREE);
-  if (DatumGetBool(normalize) && result < 0)
-    result += 360;
+  if (DatumGetBool(normalize))
+  {
+    /* The value would be in the range (-360, 360) */
+    result = fmod(result, 360.0);
+    if (result < 0)
+      result += 360.0; /* The value would be in the range [0, 360) */
+  }
   return Float8GetDatum(result);
 }
 
