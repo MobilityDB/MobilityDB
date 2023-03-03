@@ -562,7 +562,7 @@
 	</sect1>
 
 	<sect1>
-		<title>Funciones y operadores para tipos temporales</title>
+		<title>Funciones y operadores para tipos temporales: Parte I</title>
 
 		<sect2>
 			<title>Funciones de constructor</title>
@@ -913,6 +913,11 @@
 			</sect3>
 		</sect2>
 
+	</sect1>
+
+	<sect1>
+		<title>Funciones y operadores para tipos temporales: Parte II</title>
+
 		<sect2>
 			<title>Funciones y operadores matemáticos </title>
 
@@ -1211,6 +1216,10 @@
 				</itemizedlist>
 			</sect3>
 		</sect2>
+	</sect1>
+
+	<sect1>
+		<title>Funciones y operadores para tipos temporales: Parte III</title>
 
 		<sect2>
 			<title>Funciones de similaridad</title>

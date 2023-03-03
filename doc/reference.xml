@@ -106,10 +106,10 @@
 	</sect1>
 
 	<sect1>
-		<title>Functions and Operators for Set and Span Types</title>
+		<title>Operations for Set and Span Types</title>
 
 		<sect2>
-			<title>Input/Output Functions</title>
+			<title>Input/Output</title>
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="spantime_asBinary"><varname>asBinary</varname></link>: Get the Well-Known Binary (WKB) representation of a set or span type</para>
@@ -130,7 +130,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Constructor Functions</title>
+			<title>Constructors</title>
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="set"><varname>set</varname></link>: Constructor for set values</para>
@@ -170,10 +170,9 @@
 				</listitem>
 			</itemizedlist>
 		</sect2>
+
 		<sect2>
-
-			<title>Accessor Functions</title>
-
+			<title>Accessors</title>
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="setspan_memSize"><varname>memSize</varname></link>: Get the memory size in bytes</para>
@@ -226,7 +225,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Modification Functions</title>
+			<title>Transformations</title>
 
 			<itemizedlist>
 				<listitem>
@@ -248,7 +247,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Comparison Operators</title>
+			<title>Comparisons</title>
 
 			<itemizedlist>
 				<listitem>
@@ -278,7 +277,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Set Operators</title>
+			<title>Set Operations</title>
 
 			<itemizedlist>
 				<listitem>
@@ -296,7 +295,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Topological and Relative Position Operators</title>
+			<title>Topological and Relative Position Operations</title>
 
 			<itemizedlist>
 				<listitem>
@@ -334,7 +333,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Distance Operators</title>
+			<title>Distance Operations</title>
 
 			<itemizedlist>
 				<listitem>
@@ -344,7 +343,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Aggregate Functions</title>
+			<title>Aggregate Operations</title>
 
 			<itemizedlist>
 				<listitem>
@@ -363,10 +362,10 @@
 	</sect1>
 
 	<sect1>
-		<title>Functions and Operators for Box Types</title>
+		<title>Operations for Box Types</title>
 
 		<sect2>
-			<title>Constructor Functions</title>
+			<title>Constructors</title>
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="tbox"><varname>tbox</varname></link>: Constructor for <varname>tbox</varname></para>
@@ -401,7 +400,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Accessor Functions</title>
+			<title>Accessors</title>
 
 			<itemizedlist>
 				<listitem>
@@ -423,7 +422,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Modification Functions</title>
+			<title>Transformations</title>
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="expandValue"><varname>expandValue</varname></link>: Expand the numeric dimension of the bounding box by a float value</para>
@@ -463,7 +462,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Aggregate Functions</title>
+			<title>Aggregate Operations</title>
 
 			<itemizedlist>
 				<listitem>
@@ -473,7 +472,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Comparison Operators</title>
+			<title>Comparisons</title>
 			<itemizedlist>
 				<listitem>
 				<para><link linkend="box_eq"><varname>=</varname></link>: Are the bounding boxes equal?</para>
@@ -502,7 +501,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Set Operators</title>
+			<title>Set Operations</title>
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="box_union"><varname>+</varname></link>: Union of bounding boxes</para>
@@ -515,7 +514,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Topological Operators</title>
+			<title>Topological and Relative Position Operations</title>
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="box_overlap"><varname>&amp;&amp;</varname></link>: Do the bounding boxes overlap?</para>
@@ -536,12 +535,7 @@
 				<listitem>
 					<para><link linkend="box_adjacent"><varname>-|-</varname></link>: Are the bounding boxes adjacent?</para>
 				</listitem>
-			</itemizedlist>
-		</sect2>
 
-		<sect2>
-			<title>Relative Position Operators</title>
-			<itemizedlist>
 				<listitem>
 					<para><link linkend="tbox_left"><varname>&lt;&lt;</varname>, <varname>&lt;&lt;|</varname>, <varname>&lt;&lt;/</varname>, <varname>&lt;&lt;#</varname></link>: Are the X/Y/Z/T values of the first bounding box strictly less than those of the second one?</para>
 				</listitem>
@@ -562,10 +556,10 @@
 	</sect1>
 
 	<sect1>
-		<title>Functions and Operators for Temporal Types</title>
+		<title>Operations for Temporal Types: Generic Operations</title>
 
 		<sect2>
-			<title>Constructor Functions</title>
+			<title>Constructors</title>
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="ttype_const"><varname>&lt;ttype&gt;</varname></link>: Constructor for temporal types from a base value and a time value</para>
@@ -609,7 +603,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Accessor Functions</title>
+			<title>Accessors</title>
 			<itemizedlist>
 				<listitem>
 				<para><link linkend="ttype_memSize"><varname>memSize</varname></link>: Get the memory size in bytes</para>
@@ -722,7 +716,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Transformation Functions</title>
+			<title>Transformations</title>
 
 			<itemizedlist>
 				<listitem>
@@ -756,7 +750,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Modification Functions</title>
+			<title>Modifications</title>
 
 			<itemizedlist>
 				<listitem>
@@ -787,7 +781,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Restriction Functions</title>
+			<title>Restrictions</title>
 
 			<itemizedlist>
 
@@ -822,10 +816,10 @@
 		</sect2>
 
 		<sect2>
-			<title>Comparison Operators</title>
+			<title>Comparisons</title>
 
 			<sect3>
-				<title>Traditional Comparison Operators</title>
+				<title>Traditional Comparisons</title>
 
 				<itemizedlist>
 					<listitem>
@@ -855,7 +849,7 @@
 			</sect3>
 
 			<sect3>
-				<title>Ever and Always Comparison Operators</title>
+				<title>Ever and Always Comparisons</title>
 
 				<itemizedlist>
 					<listitem>
@@ -885,7 +879,7 @@
 			</sect3>
 
 			<sect3>
-				<title>Temporal Comparison Operators</title>
+				<title>Temporal Comparisons</title>
 
 				<itemizedlist>
 					<listitem>
@@ -914,9 +908,13 @@
 				</itemizedlist>
 			</sect3>
 		</sect2>
+	</sect1>
+
+	<sect1>
+		<title>Operations for Temporal Types: Type-Specific Operations</title>
 
 		<sect2>
-			<title>Mathematical Functions and Operators</title>
+			<title>Mathematical Operations</title>
 
 			<itemizedlist>
 				<listitem>
@@ -958,7 +956,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Boolean Functions and Operators</title>
+			<title>Boolean Operations</title>
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="tbool_and"><varname>&amp;</varname></link>: Temporal and</para>
@@ -979,7 +977,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Text Functions and Operators</title>
+			<title>Text Operations</title>
 
 			<itemizedlist>
 				<listitem>
@@ -993,10 +991,10 @@
 		</sect2>
 
 		<sect2>
-			<title>Spatial Functions and Operators</title>
+			<title>Spatial Operations</title>
 
 			<sect3>
-				<title>Input/Output Functions</title>
+				<title>Input/Output</title>
 
 				<itemizedlist>
 					<listitem>
@@ -1050,7 +1048,7 @@
 			</sect3>
 
 			<sect3>
-				<title>Spatial Reference System Functions</title>
+				<title>Spatial Reference System Operations</title>
 
 				<itemizedlist>
 					<listitem>
@@ -1068,7 +1066,7 @@
 			</sect3>
 
 			<sect3>
-				<title>Bounding Box Functions</title>
+				<title>Bounding Box Operations</title>
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="tpoint_expandSpace"><varname>expandSpace</varname></link>: Get the spatiotemporal bounding box expanded in the spatial dimension by a float value</para>
@@ -1077,7 +1075,7 @@
 			</sect3>
 
 			<sect3>
-				<title>Accessor Functions</title>
+				<title>Accessors</title>
 
 				<itemizedlist>
 					<listitem>
@@ -1119,7 +1117,7 @@
 			</sect3>
 
 			<sect3>
-				<title>Manipulation Functions</title>
+				<title>Tranformations</title>
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="tpoint_round"><varname>round</varname></link>: Round the coordinate values to a number of decimal places</para>
@@ -1144,7 +1142,7 @@
 			</sect3>
 
 			<sect3>
-				<title>Distance Functions and Operators</title>
+				<title>Distance Operations</title>
 
 				<itemizedlist>
 					<listitem>
@@ -1215,9 +1213,13 @@
 				</itemizedlist>
 			</sect3>
 		</sect2>
+	</sect1>
+
+	<sect1>
+		<title>Operations for Temporal Types: Analytics Operations</title>
 
 		<sect2>
-			<title>Similarity Functions</title>
+			<title>Similarity</title>
 
 			<itemizedlist>
 				<listitem>
@@ -1246,7 +1248,7 @@
 			<title>Multidimensional Tiling</title>
 
 			<sect3>
-				<title>Bucket Functions</title>
+				<title>Bucket Operations</title>
 
 				<itemizedlist>
 					<listitem>
@@ -1273,7 +1275,7 @@
 			</sect3>
 
 			<sect3>
-				<title>Grid Functions</title>
+				<title>Grid Operations</title>
 
 				<itemizedlist>
 					<listitem>
@@ -1287,7 +1289,7 @@
 			</sect3>
 
 			<sect3>
-				<title>Split Functions</title>
+				<title>Split Operations</title>
 
 				<itemizedlist>
 					<listitem>
@@ -1314,7 +1316,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Aggregate Functions</title>
+			<title>Aggregate Operations</title>
 
 			<itemizedlist>
 				<listitem>
@@ -1391,13 +1393,13 @@
 	</sect1>
 
 	<sect1>
-		<title>Functions and Operators for Temporal Network Points</title>
+		<title>Operations for Temporal Network Points</title>
 
 		<sect2>
 			<title>Static Network Types</title>
 
 			<sect3>
-				<title>Constructor Functions</title>
+				<title>Constructors</title>
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="npoint"><varname>npoint</varname></link>: Constructor for network points</para>
@@ -1410,7 +1412,7 @@
 			</sect3>
 
 			<sect3>
-				<title>Accessor Functions</title>
+				<title>Accessors</title>
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="route"><varname>route</varname></link>: Get the route identifier</para>
@@ -1432,7 +1434,7 @@
 			</sect3>
 
 			<sect3>
-				<title>Modification Functions</title>
+				<title>Transformations</title>
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="npoint_round"><varname>round</varname></link>: Round the position(s) of the network point or the network segment to the number of decimal places</para>
@@ -1441,7 +1443,7 @@
 			</sect3>
 
 			<sect3>
-				<title>Spatial Functions</title>
+				<title>Spatial Operations</title>
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="npoint_geometry"><varname>::</varname></link>: Cast a network point to a geometry</para>
@@ -1458,7 +1460,7 @@
 			</sect3>
 
 			<sect3>
-				<title>Comparison Operators</title>
+				<title>Comparisons</title>
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="static_eq"><varname>=</varname></link>: Are the values equal?</para>
@@ -1525,7 +1527,7 @@
 			</sect3>
 
 			<sect3>
-				<title>Functions and Operators</title>
+				<title>Operations</title>
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="tnpoint_transform"><varname>tnpoint_inst, tnpoint_discseq, tnpoint_contseq, tnpoint_seqset</varname></link>: Transform a temporal network to another subtype</para>
@@ -1630,7 +1632,7 @@
 			</sect3>
 
 			<sect3>
-				<title>Aggregate Functions</title>
+				<title>Aggregate Operations</title>
 
 				<itemizedlist>
 					<listitem>

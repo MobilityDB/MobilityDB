@@ -9,7 +9,7 @@
    ****************************************************************************
 -->
 <chapter id="manipulating_box_types">
-	<title>Manipulating Bounding Box Types</title>
+	<title>Bounding Box Types</title>
 	<para>We present next the functions and operators for bounding box types. These functions and operators are polimorhic, that is, their argumentos can be of various types and their result type may depend on the type of the arguments. To express this in the signature of the operators, we use the following notation:</para>
 
 	<itemizedlist>
@@ -20,7 +20,7 @@
 	<para>In the following, we specify with the symbol &Z_support; that the function supports 3D points and with the symbol &geography_support; that the function is available for geographies.</para>
 
 	<sect1 id="input_output_box_tyes">
-		<title>Input/Output of Bounding Box Types</title>
+		<title>Input/Output</title>
 			<para>
 				MobilityDB generalizes Open Geospatial Consortium's Well-Known Text (WKT) and Well-Known Binary (WKB) input/output format for all temporal types. We present next the functions for input and output box types.
 			</para>
@@ -130,7 +130,7 @@ SELECT stboxFromHexWKB(
 	</sect1>
 
 	<sect1 id="constructor_box_types">
-		<title>Constructor Functions</title>
+		<title>Constructors</title>
 
 		<para>
 			Type <varname>tbox</varname> has several constructor functions depending on whether the value and/or the time extent are given. The value extent can be specified by a number or a span, while the time extent can be specified by a time type.
@@ -272,7 +272,7 @@ SELECT tstzspanset '{(2001-01-01,2001-01-02),(2001-01-03,2001-01-04)}'::stbox;
 	</sect1>
 
 	<sect1 id="accessor_box_types">
-		<title>Accessor Functions</title>
+		<title>Accessors</title>
 
 		<itemizedlist>
 			<listitem id="hasX">
@@ -356,7 +356,7 @@ SELECT Tmax(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 	</sect1>
 
 	<sect1 id ="modification_box_tyes">
-			<title>Modification Functions</title>
+			<title>Transformations</title>
 
 			<para>
 				The functions given next expand the bounding boxes on the value and the time dimension or set the precision of the value dimension. These functions raise an error if the corresponding dimension is not present.
@@ -416,7 +416,7 @@ SELECT round(stbox 'STBOX XT(((1.12345, 1.12345),(2.12345, 2.12345)),
 		</sect1>
 
 	<sect1 id ="srid_box_tyes">
-		<title>Spatial Reference System Functions</title>
+		<title>Spatial Reference System Operations</title>
 
 		<itemizedlist>
 			<listitem id="stbox_SRID">
@@ -459,7 +459,7 @@ SELECT transform(stbox 'SRID=4326;STBOX XT(((2.340088,49.400250),(6.575317,51.55
 	</sect1>
 
 	<sect1>
-		<title>Aggregate Functions</title>
+		<title>Aggregate Operations</title>
 
 		<itemizedlist>
 			<listitem id="box_extent">
@@ -487,7 +487,7 @@ SELECT extent(b) FROM boxes;
 	</sect1>
 
 	<sect1 id="comparison_box_types">
-		<title>Comparison Operators</title>
+		<title>Comparisons</title>
 
 		<para>The traditional comparison operators (<varname>=</varname>, <varname>&lt;</varname>, and so on) can be applied to box types. Excepted equality  and inequality, the other comparison operators are not useful in the real world but allow B-tree indexes to be constructed on box types. These operators compare first the timestamps and if those are equal, compare the values.</para>
 
@@ -561,7 +561,7 @@ SELECT tbox 'TBOX XT([1,1],[2001-01-01,2001-01-04])' &gt;=
 	</sect1>
 
 	<sect1 id="set_box_types">
-		<title>Set Operators</title>
+		<title>Set Operations</title>
 
 		<para>The set operators for box types are union (<varname>+</varname>) and intersection (<varname>*</varname>). In the case of union, the operands must have exactly the same dimensions, otherwise an error is raised. Furthermore, if the operands do not overlap on all the dimensions and error is raised, since in this would result in a box with disjoint values, which cannot be represented.  The operator computes the union on all dimensions that are present in both arguments. In the case of intersection, the operands must have at least one common dimension, otherwise an error is raised. The operator computes the intersection on all dimensions that are present in both arguments.</para>
 
@@ -600,7 +600,7 @@ SELECT stbox 'STBOX ZT(((1,1,1),(3,3,3)),[2001-01-01,2001-01-02])' *
 	</sect1>
 
 	<sect1 id="box_topo_operators">
-		<title>Topological Operators</title>
+		<title>Topological Operations</title>
 
 		<para>There are five topological operators: overlaps (<varname>&amp;&amp;</varname>), contains (<varname>@&gt;</varname>), contained (<varname>&lt;@</varname>), same (<varname>~=</varname>), and adjacent (<varname>-|-</varname>). The operators verify the topological relationship between the bounding boxes taking into account the value and/or the time dimension for as many dimensions that are present on both arguments.</para>
 
@@ -681,7 +681,7 @@ SELECT stbox 'STBOX XT(((1,1),(3,3)),[2001-01-01,2001-01-03])' -|-
 	</sect1>
 
 	<sect1 id="box_relpos_operators">
-		<title>Relative Position Operators</title>
+		<title>Relative Position Operations</title>
 
 		<para>These operators consider the relative position of the bounding boxes. The operators <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, and <varname>&amp;&gt;</varname> consider the X value for the <varname>tbox</varname> type and the X coordinates for the <varname>stbox</varname> type, the operators <varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&amp;&lt;|</varname>, and <varname>|&amp;&gt;</varname> consider the Y coordinates for the <varname>stbox</varname> type, the operators <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&amp;&lt;/</varname>, and <varname>/&amp;&gt;</varname> consider the Z coordinates for the <varname>stbox</varname> type, and the operators <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&lt;</varname>, and <varname>#&amp;&gt;</varname> consider the time dimension for the <varname>tbox</varname> and <varname>stbox</varname> types. The operators raise an error if both boxes do not have the required dimension.</para>
 
@@ -790,7 +790,7 @@ SELECT stbox 'STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-02])' #&amp;&gt;
 	</sect1>
 
 	<sect1 id ="indexing_box_types">
-		<title>Indexing of Box Types</title>
+		<title>Indexing</title>
 		<para>GiST and SP-GiST indexes can be created for table columns of the <varname>tbox</varname> and <varname>stbox</varname> types. The GiST index implements an R-tree and the SP-GiST index implements an n-dimensional quad-tree. An example of creation of a GiST index in a column <varname>Box</varname> of type <varname>stbox</varname> in a table <varname>Trips</varname> is as follows:
 			<programlisting language="sql" xml:space="preserve">
 CREATE TABLE Trips(TripID integer PRIMARY KEY, Trip tgeompoint, Box stbox);

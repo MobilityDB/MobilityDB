@@ -8,11 +8,11 @@
    ****************************************************************************
 -->
 	<sect1>
-		<title>Spatial Functions and Operators</title>
+		<title>Spatial Operations</title>
 		<para>In the following, we specify with the symbol &Z_support; that the function supports 3D points and with the symbol &geography_support; that the function is available for geographies.</para>
 
 		<sect2 id="tpoint_inout">
-			<title>Input/Output Functions</title>
+			<title>Input/Output</title>
 
 			<itemizedlist>
 				<listitem id="asText">
@@ -203,7 +203,7 @@ SELECT asEWKT(tgeogpointFromHexEWKB(
 		</sect2>
 
 		<sect2>
-			<title>Spatial Reference System Functions</title>
+			<title>Spatial Reference System Operations</title>
 
 			<itemizedlist>
 				<listitem id="tpoint_SRID">
@@ -239,7 +239,7 @@ SELECT asEWKT(transform(tgeompoint 'SRID=4326;Point(4.35 50.85)@2001-01-01', 381
 		</sect2>
 
 		<sect2>
-			<title>Bounding Box Functions</title>
+			<title>Bounding Box Operations</title>
 
 			<itemizedlist>
 				<listitem id="tpoint_expandSpace">
@@ -258,7 +258,7 @@ SELECT expandSpace(tgeompoint 'Point(0 0)@2001-01-01', 2);
 		</sect2>
 
 		<sect2>
-			<title>Accessor Functions</title>
+			<title>Accessors</title>
 			<itemizedlist>
 				<listitem id="getX">
 					<indexterm><primary><varname>getX</varname></primary></indexterm>
@@ -414,7 +414,7 @@ SELECT round(degrees(bearing(tgeompoint '[Point(2 1)@2001-01-01, Point(0 1)@2001
 		</sect2>
 
 		<sect2>
-			<title>Manipulation Functions</title>
+			<title>Transformations</title>
 
 			<itemizedlist>
 				<listitem id="tpoint_round">
@@ -486,7 +486,9 @@ SELECT asText(simplify(tgeompoint '[Point(1 1)@2000-01-01, Point(6 1)@2000-01-06
 					<figure id="dist_vs_sed">
 							<title>Difference between the spatial and the synchronous distance.</title>
 						<mediaobject>
-							<imageobject><imagedata scale='100' fileref='images/dist_vs_sed' /></imageobject>
+							<imageobject><imagedata scale='100' fileref='images/dist_vs_sed.pdf' /></imageobject>
+							<imageobject><imagedata scale='100' fileref='images/dist_vs_sed.svg' /></imageobject>
+							<imageobject><imagedata scale='100' fileref='images/dist_vs_sed.png' /></imageobject>
 						</mediaobject>
 					</figure>
 					<para>A typical use for the <varname>simplify</varname> function is to reduce the size of a dataset, in particular for visualization purposes. If the visualization is static, then the spatial distance should be preferred, if the visualization is dynamic or animated, the synchronized distance should be preferred.</para>
@@ -565,7 +567,7 @@ FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-0
 		</sect2>
 
 		<sect2>
-			<title>Distance Functions and Operators</title>
+			<title>Distance Operations</title>
 
 			<itemizedlist>
 				<listitem id="smallest_distance">

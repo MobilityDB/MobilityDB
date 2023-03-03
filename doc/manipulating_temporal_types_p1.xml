@@ -9,7 +9,7 @@
    ****************************************************************************
 -->
 <chapter id="manipulating_temporal_types_p1">
-	<title>Manipulating Temporal Types: Part 1</title>
+	<title>Temporal Types: Generic Operations</title>
 	<para>We present next the functions and operators for temporal types. These functions and operators are polymorphic, that is, their arguments may be of several types, and the result type may depend on the type of the arguments. To express this, we use the following notation:</para>
 
 	<itemizedlist>
@@ -1250,29 +1250,20 @@ FROM (SELECT unnest(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01,
 
 		<para>As shown in the figure, the temporal values may only intersect at their boundary, and in that case, they must have the same base value at their common timestamps, otherwise an error is raised. The result of the operation is the union of the instants for both temporal values, as shown in the first result of the figure. This is equivalent to a <varname>merge</varname> operation explained below. Alternatively, as shown in the second result of the figure, the inserted fragments that are disjoint with the original value are connected to the last instant before and the first instant after the fragment. A Boolean parameter <varname>connect</varname> is used to choose between the two results, and the parameter is set to true by default. Notice that this only applies to continuous temporal values.</para>
 
-		<para>The <varname>update</varname> operation replaces the instants in the first temporal value with those of the second one as illustrated in <xref linkend="update_fig" />.</para>
+		<para>The <varname>update</varname> operation replaces the instants in the first temporal value with those of the second one as illustrated in <xref linkend="update_delete_fig" />.</para>
 
-		<figure id="update_fig" float="start">
-			<title>Update operation for temporal values.</title>
+		<figure id="update_delete_fig" float="start">
+			<title>Update and delete operation for temporal values.</title>
 			<mediaobject>
-				<imageobject><imagedata format="PDF" scale='100' fileref="images/update.pdf"/></imageobject>
-				<imageobject><imagedata format="SVG" scale='100' fileref="images/update.svg"/></imageobject>
-				<imageobject><imagedata format="PNG" scale='100' fileref="images/update.png"/></imageobject>
+				<imageobject><imagedata format="PDF" scale='100' fileref="images/update_delete.pdf"/></imageobject>
+				<imageobject><imagedata format="SVG" scale='100' fileref="images/update_delete.svg"/></imageobject>
+				<imageobject><imagedata format="PNG" scale='100' fileref="images/update_delete.png"/></imageobject>
 			</mediaobject>
 		</figure>
 
 		<para>As in the case of an <varname>insert</varname> operation, an additional Boolean parameter determines whether the replaced disconnected fragments are connected in the resulting value, as shown in the two possible results in the figure. When the two temporal values are either disjoint or only overlap at their boundary, this corresponds to an <varname>insert</varname> operation as explained above. In this case, the <varname>update</varname> operation behaves as an <varname>upsert</varname> operation in SQL.</para>
 
-		<para>The <varname>deleteTime</varname> operation removes the instants of a temporal value that intersect a time value. This operation can be used in two different situations, illustrated in <xref linkend="deleteTime_fig" />.</para>
-
-		<figure id="deleteTime_fig" float="start">
-			<title>Delete operation for temporal values.</title>
-			<mediaobject>
-				<imageobject><imagedata format="PDF" scale='100' fileref="images/delete.pdf"/></imageobject>
-				<imageobject><imagedata format="SVG" scale='100' fileref="images/delete.svg"/></imageobject>
-				<imageobject><imagedata format="PNG" scale='100' fileref="images/delete.png"/></imageobject>
-			</mediaobject>
-		</figure>
+		<para>The <varname>deleteTime</varname> operation removes the instants of a temporal value that intersect a time value. This operation can be used in two different situations, illustrated in <xref linkend="update_delete_fig" />.</para>
 
 		<orderedlist>
 			<listitem>
@@ -1294,7 +1285,7 @@ FROM (SELECT unnest(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01,
 		</figure>
 
 		<para>
-			<xref linkend="modif_sql_fig" /> shows the equivalent modification operations for temporal tables in the SQL standard. Intuitively, these figures are obtained by rotating 90 degrees clockwise the corresponding figures for temporal values (<xref linkend="insert_fig" />, <xref linkend="update_fig" />, and <xref linkend="deleteTime_fig" />). This follows the fact that in SQL consecutive tuples ordered by time are typically connected through the <varname>LEAD</varname> and <varname>LAG</varname> window functions.
+			<xref linkend="modif_sql_fig" /> shows the equivalent modification operations for temporal tables in the SQL standard. Intuitively, these figures are obtained by rotating 90 degrees clockwise the corresponding figures for temporal values (<xref linkend="insert_fig" /> and <xref linkend="update_delete_fig" />). This follows from the fact that in SQL consecutive tuples ordered by time are typically connected through the <varname>LEAD</varname> and <varname>LAG</varname> window functions.
 		</para>
 
 		<itemizedlist>

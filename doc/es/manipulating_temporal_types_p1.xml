@@ -9,7 +9,7 @@
    ****************************************************************************
 -->
 <chapter id="manipulating_temporal_types_p1">
-	<title>Manipulación de tipos temporales: Parte 1</title>
+	<title>Tipos temporales: Operaciones genéricas</title>
 	<para>A continuación presentamos las funciones y operadores para tipos temporales. Estas funciones y operadores son polimórficos, es decir, sus argumentos pueden ser de varios tipos y el tipo del resultado puede depender del tipo de los argumentos. Para expresar esto, usamos la siguiente notación:</para>
 
 	<itemizedlist>
@@ -1243,29 +1243,20 @@ FROM (SELECT unnest(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01,
 
 		<para>Como se muestra en la figura, los valores temporales solo pueden intersectarse en su límite y, en ese caso, deben tener el mismo valor de base en sus marcas de tiempo comunes; de lo contrario, se genera un error. El resultado de la operación es la unión de los instantes para ambos valores temporales, como se muestra en el primer resultado de la figura. Esto es equivalente a una operación <varname>merge</varname> que se explica a continuación. Alternativamente, como se muestra en el segundo resultado de la figura, los fragmentos insertados que son disjuntos con el valor original se conectan al último instante anterior y al primer instante posterior al fragmento. Se utiliza un parámetro booleano <varname>connect</varname> para elegir entre los dos resultados, y el parámetro es verdadero por defecto. Nótese que esto solo se aplica a valores temporales continuos.</para>
 
-		<para>La operación <varname>update</varname> reemplaza los instantes en un primer valor temporal con los de un segundo valor como se ilustra en la <xref linkend="update_fig" />.</para>
+		<para>La operación <varname>update</varname> reemplaza los instantes en un primer valor temporal con los de un segundo valor como se ilustra en la <xref linkend="update_delete_fig" />.</para>
 
-		<figure id="update_fig" float="start">
-			<title>Operación de actualización para valores temporales.</title>
+		<figure id="update_delete_fig" float="start">
+			<title>Operaciónes de actualización y supresión para valores temporales.</title>
 			<mediaobject>
-				<imageobject><imagedata format="PDF" scale='100' fileref="../images/update.pdf"/></imageobject>
-				<imageobject><imagedata format="SVG" scale='100' fileref="../images/update.svg"/></imageobject>
-				<imageobject><imagedata format="PNG" scale='100' fileref="../images/update.png"/></imageobject>
+				<imageobject><imagedata format="PDF" scale='100' fileref="../images/update_delete.pdf"/></imageobject>
+				<imageobject><imagedata format="SVG" scale='100' fileref="../images/update_delete.svg"/></imageobject>
+				<imageobject><imagedata format="PNG" scale='100' fileref="../images/update_delete.png"/></imageobject>
 			</mediaobject>
 		</figure>
 
 		<para>Como se muestra en la figura, el valor resultante contiene los instantes del segundo valor, independientemente de los instantes anteriores que tenía en el valor temporal original. Como en el caso de una operación <varname>insert</varname>, un parámetro booleano adicional determina si los nuevos fragmentos desconectados están conectados en el valor resultante, como se muestra en los dos posibles resultados de la figura. Cuando los dos valores temporales son disjuntos o solo se intersectan en su límite, esto corresponde a una operación <varname>insert</varname> como se explicó anteriormente. En este caso, la operación <varname>update</varname> se comporta como una operación <varname>upsert</varname> en SQL.</para>
 
-		<para>La operación <varname>deleteTime</varname> elimina los instantes de un valor temporal que intersectan un valor de tiempo. Esta operación se puede utilizar en dos situaciones diferentes, ilustradas en la <xref linkend="deleteTime_fig" />.</para>
-
-		<figure id="deleteTime_fig" float="start">
-			<title>Operación de supresión para valores temporales.</title>
-			<mediaobject>
-				<imageobject><imagedata format="PDF" scale='100' fileref="../images/delete.pdf"/></imageobject>
-				<imageobject><imagedata format="SVG" scale='100' fileref="../images/delete.svg"/></imageobject>
-				<imageobject><imagedata format="PNG" scale='100' fileref="../images/delete.png"/></imageobject>
-			</mediaobject>
-		</figure>
+		<para>La operación <varname>deleteTime</varname> elimina los instantes de un valor temporal que intersectan un valor de tiempo. Esta operación se puede utilizar en dos situaciones diferentes, ilustradas en la <xref linkend="update_delete_fig" />.</para>
 
 		<orderedlist>
 			<listitem>
@@ -1287,7 +1278,7 @@ FROM (SELECT unnest(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01,
 		</figure>
 
 		<para>
-				La <xref linkend="modif_sql_fig" /> muestra las operaciones de modificación equivalentes para tablas temporales en el estándar SQL. Intuitivamente, estas figuras se obtienen girando 90 grados en el sentido de las agujas del reloj las figuras correspondientes para los valores temporales (<xref linkend="insert_fig" />, <xref linkend="update_fig" />, y <xref linkend="deleteTime_fig" />). Esto se debe al hecho de que en SQL, las tuplas consecutivas ordenadas por tiempo generalmente se conectan a través de las funciones de ventana <varname>LEAD</varname> y <varname>LAG</varname>.
+				La <xref linkend="modif_sql_fig" /> muestra las operaciones de modificación equivalentes para tablas temporales en el estándar SQL. Intuitivamente, estas figuras se obtienen girando 90 grados en el sentido de las agujas del reloj las figuras correspondientes para los valores temporales (<xref linkend="insert_fig" /> y <xref linkend="update_delete_fig" />). Esto se debe al hecho de que en SQL, las tuplas consecutivas ordenadas por tiempo generalmente se conectan a través de las funciones de ventana <varname>LEAD</varname> y <varname>LAG</varname>.
 		</para>
 
 		<itemizedlist>

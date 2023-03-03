@@ -86,7 +86,7 @@ SELECT npoint 'Npoint(99999999, 1.0)';
 		<para>We give next the functions and operators for the static network types.</para>
 
 		<sect2 id="constructor_functions">
-			<title>Constructor Functions</title>
+			<title>Constructors</title>
 
 			<itemizedlist>
 				<listitem id="npoint">
@@ -110,7 +110,7 @@ SELECT nsegment(76, 0.3, 0.5);
 		</sect2>
 
 		<sect2>
-			<title>Modification Functions</title>
+			<title>Transformations</title>
 			<itemizedlist>
 				<listitem id="npoint_round">
 					<indexterm><primary><varname>round</varname></primary></indexterm>
@@ -127,7 +127,7 @@ SELECT round(nsegment(76, 0.123456789, 0.223456789), 6);
 		</sect2>
 
 		<sect2 id="accessor_functions">
-			<title>Accessor Functions</title>
+			<title>Accessors</title>
 
 			<itemizedlist>
 				<listitem id="route">
@@ -169,7 +169,7 @@ SELECT endPosition(nsegment 'Nsegment(76, 0.3, 0.5)');
 		</sect2>
 
 		<sect2 id="spatial_functions">
-			<title>Spatial Functions</title>
+			<title>Spatial Operations</title>
 
 			<itemizedlist>
 				<listitem id="npoint_srid">
@@ -243,7 +243,7 @@ SELECT equals(npoint(1, f1), npoint(2, f2)) FROM fractions;
 		</sect2>
 
 		<sect2 id="static_operators">
-			<title>Comparison Operators</title>
+			<title>Comparisons</title>
 
 			<para>The comparison operators (=, &lt;, and so on) for static network types require that the left and right arguments be of the same type. Excepted the equality and inequality, the other comparison operators are not useful in the real world but allow B-tree indexes to be constructed on static network types.</para>
 
@@ -370,7 +370,7 @@ SELECT tnpoint '[Npoint(1, 0.2)@2001-01-01 09:00:00, Npoint(2, 0.2)@2001-01-01 0
 	</sect1>
 
 	<sect1 id="constructors_temporal_network_points">
-		<title>Constructors for Temporal Network Points</title>
+		<title>Constructors</title>
 
 			<itemizedlist>
 				<listitem id="tnpoint">
@@ -427,7 +427,7 @@ SELECT tnpoint_seqset(ARRAY[tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@
 	</sect1>
 
 	<sect1 id="casting_temporal_network_types">
-		<title>Casting for Temporal Network Points</title>
+		<title>Casting</title>
 
 		<para>A temporal network point value can be converted to and from a temporal geometry point. This can be done using an explicit <varname>CAST</varname> or using the <varname>::</varname> notation. A null value is returned if any of the composing geometry point values cannot be converted into a <varname>npoint</varname> value.</para>
 		<itemizedlist>
@@ -461,7 +461,7 @@ SELECT tgeompoint '[POINT(23.057077727326 28.7666335767956)@2001-01-01,
 	</sect1>
 
 	<sect1 id="functions_temporal_network_points">
-		<title>Functions and Operators for Temporal Network Points</title>
+		<title>Operations</title>
 
 		<para>All functions for temporal types described in <xref linkend="manipulating_temporal_types_p1" /> and <xref linkend="manipulating_temporal_types_p2" /> can be applied for temporal network point types. Therefore, in the signatures of the functions, the notation <varname>base</varname> also represents an <varname>npoint</varname> and the notations <varname>ttype</varname>, <varname>tpoint</varname>, and <varname>tgeompoint</varname> also represent a <varname>tnpoint</varname>. Furthermore, the functions that have an argument of type <varname>geometry</varname> accept in addition an argument of type <varname>npoint</varname>. To avoid redundancy, we only present next some examples of these functions and operators for temporal network points.</para>
 
@@ -875,7 +875,7 @@ SELECT tdwithin(tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-03)'
 	</sect1>
 
 	<sect1 id="aggregate_temporal_network_points">
-		<title>Aggregate Functions</title>
+		<title>Aggregations</title>
 
 		<para>The three aggregate functions for temporal network points are illustrated next.</para>
 
@@ -931,7 +931,7 @@ FROM Temp;
 	</sect1>
 
 	<sect1 id="indexing_temporal_network_points">
-		<title>Indexing of Temporal Network Points</title>
+		<title>Indexing</title>
 
 		<para>GiST and SP-GiST indexes can be created for table columns of temporal networks points. An example of index creation is follows:</para>
 		<programlisting language="sql" xml:space="preserve">
