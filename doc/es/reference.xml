@@ -820,7 +820,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Comparaciónes</title>
+			<title>Comparaciones</title>
 
 			<sect3>
 				<title>Comparaciones tradicionales</title>
@@ -1396,13 +1396,13 @@
 	</sect1>
 
 	<sect1>
-		<title>Funciones y operadores para puntos de red temporales</title>
+		<title>Operaciones para puntos de red temporales</title>
 
 		<sect2>
 			<title>Tipos de red estáticos</title>
 
 			<sect3>
-				<title>Funciones de constructor</title>
+				<title>Constructores</title>
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="npoint"><varname>npoint</varname></link>: Constructor para puntos de red</para>
@@ -1415,16 +1415,7 @@
 			</sect3>
 
 			<sect3>
-				<title>Funciones de modificación</title>
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="npoint_round"><varname>round</varname></link>: Redondear la(s) posición(es) del punto de red or el segmento de red en el número de posiciones decimales</para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
-
-			<sect3>
-				<title>Funciones de accesor</title>
+				<title>Accesores</title>
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="route"><varname>route</varname></link>: Obtener el identificador de ruta</para>
@@ -1445,7 +1436,16 @@
 			</sect3>
 
 			<sect3>
-				<title>Funciones espaciales</title>
+				<title>Transformaciones</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="npoint_round"><varname>round</varname></link>: Redondear la(s) posición(es) del punto de red or el segmento de red en el número de posiciones decimales</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Operaciones espaciales</title>
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="npoint_geometry"><varname>::</varname></link>: Convertir un punto de red en una geometría</para>
@@ -1462,7 +1462,7 @@
 			</sect3>
 
 			<sect3>
-				<title>Operadores de comparación</title>
+				<title>Comparaciones</title>
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="static_eq"><varname>=</varname></link>: ¿Son iguales los valores?</para>
@@ -1529,7 +1529,7 @@
 			</sect3>
 
 			<sect3>
-				<title>Funciones y operadores</title>
+				<title>Operaciones</title>
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="tnpoint_transform"><varname>tnpoint_inst, tnpoint_discseq, tnpoint_contseq, tnpoint_seqset</varname></link>: Transformar un punto de red temporal en otro subtipo</para>
