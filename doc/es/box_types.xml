@@ -8,8 +8,8 @@
     Alike 3.0 License: https://creativecommons.org/licenses/by-sa/3.0/
    ****************************************************************************
 -->
-<chapter id="manipulating_box_types">
-	<title>Manipulación de tipos cuadro delimitador</title>
+<chapter id="box_types">
+	<title>Tipos de cuadro delimitador</title>
 	<para>A continuación presentamos las funciones y operadores para tipos cuadro delimitador. Estas funciones y operadores son polimórficos, es decir, sus argumentos pueden ser de varios tipos y el tipo del resultado puede depender del tipo de los argumentos. Para expresar esto, usamos la siguiente notación:</para>
 
 	<itemizedlist>
@@ -19,8 +19,8 @@
 	</itemizedlist>
   <para>A continuación, especificamos con el símbolo &Z_support; que la función admite puntos 3D y con el símbolo &geography_support; que la función está disponible para geografías.</para>
 
-	<sect1 id="input_output_box_tyes">
-		<title>Entrada/salida de tipos cuadro delimitador</title>
+	<sect1 id="box_types_input_output">
+		<title>Entrada y salida</title>
 		<para>
 			MobilityDB generaliza los formatos de entrada/salida Well-Known Text (WKT) y Well-Known Binary (WKB) del Open Geospatial Consortium para todos los tipos temporales. Presentamos a continuación las funciones de entrada y salida para los tipos de cuadro delimitador.
 		</para>
@@ -129,8 +129,8 @@ SELECT stboxFromHexWKB(
 			</itemizedlist>
 	</sect1>
 
-	<sect1 id="constructor_box_types">
-		<title>Funciones de constructor</title>
+	<sect1 id="box_types_constructors">
+		<title>Constructores</title>
 
 		<para>
 			El tipo <varname>tbox</varname> tienen varias funciones constructoras dependiendo de si se da la extensión de valor y/o de tiempo. La extensión de valor se puede especificar mediante un número o un intervalo, mientras que la extensión de tiempo se puede especificar mediante un tipo de tiempo.
@@ -207,7 +207,7 @@ SELECT stbox(geography 'Linestring(1 1 1,2 2 2)', tstzspan '[2001-01-03, 2001-01
 		</itemizedlist>
 	</sect1>
 
-	<sect1 id="casting_box_types">
+	<sect1 id="box_types_casting">
 		<title>Conversiones de tipo</title>
 
 		<itemizedlist>
@@ -271,8 +271,8 @@ SELECT tstzspanset '{(2001-01-01,2001-01-02),(2001-01-03,2001-01-04)}'::stbox;
 		</itemizedlist>
 	</sect1>
 
-	<sect1 id="accessor_box_types">
-		<title>Funciones de accesor</title>
+	<sect1 id="box_types_accessors">
+		<title>Accesores</title>
 
 		<itemizedlist>
 			<listitem id="hasX">
@@ -355,8 +355,8 @@ SELECT Tmax(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 		</itemizedlist>
 	</sect1>
 
-	<sect1 id ="modification_box_tyes">
-			<title>Funciones de modificación</title>
+	<sect1 id ="box_types_transformations">
+			<title>Transformaciones</title>
 
 			<para>
 				Las funciones dadas a continuación expanden los cuadros delimitadores en la dimensión de valor y de tiempo o establecen la precisión de la dimensión de valor. Estas funciones generan un error si la dimensión correspondiente no está presente.
@@ -415,8 +415,8 @@ SELECT round(stbox 'STBOX XT(((1.12345,1.12345),(2.12345,2.12345)),
 			</itemizedlist>
 		</sect1>
 
-	<sect1 id ="srid_box_tyes">
-		<title>Funciones del sistema de referencia espacial</title>
+	<sect1 id ="box_types_srid">
+		<title>Sistema de referencia espacial</title>
 
 		<itemizedlist>
 			<listitem id="stbox_SRID">
@@ -458,8 +458,8 @@ SELECT transform(stbox 'SRID=4326;STBOX XT(((2.340088, 49.400250),
 		</itemizedlist>
 	</sect1>
 
-	<sect1>
-		<title>Funciones aggregadas</title>
+	<sect1 id ="box_types_aggregations">
+		<title>Aggregaciones</title>
 
 		<itemizedlist>
 			<listitem id="box_extent">
@@ -486,8 +486,8 @@ SELECT extent(b) FROM boxes;
 		</itemizedlist>
 	</sect1>
 
-	<sect1 id="comparison_box_types">
-		<title>Operadores de comparación</title>
+	<sect1 id="box_types_comparisons">
+		<title>Comparaciones</title>
 
 		<para>Los operadores de comparación tradicionales (<varname>=</varname>, <varname>&lt;</varname>, etc.) se pueden aplicar a tipos de cuadro delimitador. Exceptuando la igualdad y la no igualdad, los otros operadores de comparación no son útiles en el mundo real pero permiten construir índices de árbol B en tipos de cuadro delimitador. Estos operadores comparan primero los valores de tiempo y, si son iguales, comparan los valores.</para>
 
@@ -560,8 +560,8 @@ SELECT tbox 'TBOX XT([1,1],[2001-01-01,2001-01-04])' &gt;=
 		</itemizedlist>
 	</sect1>
 
-	<sect1 id="set_box_types">
-		<title>Operadores de conjuntos</title>
+	<sect1 id="box_types_set">
+		<title>Operaciones de conjuntos</title>
 
 		<para>Los operadores de conjuntos para los tipos de cuadro delimitador son la unión (<varname>+</varname>) y la intersección (<varname>*</varname>). En el caso de la unión, los operandos deben tener exactamente las mismas dimensiónes, de lo contrario se genera un error. Además, si los operandos no se superponen en todas las dimensiónes se genera un error, ya que esto daría como resultado una caja con valores disjuntos, que no se puede representar. El operador calcula la unión en todas las dimensiónes que están presentes en ambos argumentos. En el caso de intersección, los operandos deben tener al menos una dimensión común, de lo contrario se genera un error. El operador calcula la intersección en todas las dimensiónes que están presentes en ambos argumentos.</para>
 
@@ -599,8 +599,8 @@ SELECT stbox 'STBOX ZT(((1,1,1),(3,3,3)),[2001-01-01,2001-01-02])' *
 		</itemizedlist>
 	</sect1>
 
-	<sect1 id="box_topo_operators">
-		<title>Operadores topológicos</title>
+	<sect1 id="box_types_topo">
+		<title>Operaciones topológicas</title>
 
 		<para>Hay cinco operadores topológicos: superposición (<varname>&amp;&amp;</varname>), contiene (<varname>@&gt;</varname>), es contenido (<varname>&lt;@</varname>), mismo (<varname>~=</varname>) y adyacente (<varname>-|-</varname>). Los operadores verifican la relación topológica entre los cuadros delimitadores teniendo en cuenta la dimensión de valor y/o de tiempo para todas las dimensiónes que estén presentes en ambos argumentos.</para>
 
@@ -680,8 +680,8 @@ SELECT stbox 'STBOX XT(((1,1),(3,3)),[2001-01-01,2001-01-03])' -|-
 		</itemizedlist>
 	</sect1>
 
-	<sect1 id="box_relpos_operators">
-		<title>Operadores de posición relativa</title>
+	<sect1 id="box_types_relative">
+		<title>Operaciones de posición relativa</title>
 
 		<para>Estos operadores consideran la posición relativa de los cuadros delimitadores. Los operadores <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname> y <varname>&amp;&gt;</varname> consideran el valor X para el tipo <varname>tbox</varname> y las coordenadas X para el tipo <varname>stbox</varname>, los operadores <varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&amp;&lt;|</varname> y <varname>|&amp;&gt;</varname> consideran las coordenadas Y para el tipo <varname>stbox</varname>, los operadores <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&amp;&lt;/</varname> y <varname>/&amp;&gt;</varname> consideran las coordenadas Z para el tipo <varname>stbox</varname> y los operadores <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&lt;</varname> y <varname>#&amp;&gt;</varname> consideran la dimensión de tiempo para los tipos <varname>tbox</varname> y <varname>stbox</varname>. Los operadores generan un error si ambos cuadros delimitadores no tienen la dimensión requerida.</para>
 
@@ -797,8 +797,8 @@ SELECT stbox 'STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-02])' #&amp;&gt;
 		</itemizedlist>
 	</sect1>
 
-	<sect1 id ="indexing_box_types">
-		<title>Indexación de los tipos cuadro delimitador</title>
+	<sect1 id ="box_types_indexing">
+		<title>Indexación</title>
 		<para>Se pueden crear índices GiST y SP-GiST para columnas de tablas de los tipos <varname>tbox</varname> y <varname>stbox</varname>. El índice GiST implementa un árbol R, mientras que el índice SP-GiST implementa un árbol cuádruple n-dimensiónal. Un ejemplo de creación de un índice GiST en una columna <varname>Box</varname> de tipo <varname>stbox</varname> en una tabla <varname>Trips</varname> es el siguiente:
 			<programlisting language="sql" xml:space="preserve">
 CREATE TABLE Trips(TripID integer PRIMARY KEY, Trip tgeompoint, Box stbox);

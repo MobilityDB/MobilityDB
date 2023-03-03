@@ -12,14 +12,14 @@
 	<title>Set and Span Types</title>
 
 	<para>
-		MobilityDB provides <emphasis>set</emphasis>, <emphasis>span</emphasis>, and <emphasis>span set</emphasis> types for representing set of values another type, which is called the <emphasis>base type</emphasis>. Set types are akin to PostgreSQL array types restricted to one dimension, but enforce the constraint that sets do not have duplicates. Span and span set types in MobilityDB correspond to the range and multirange types in PostgreSQL but have additional constraints. In particular, span types in MobilityDB are of fixed length and do not allow empty spans and infinite bounds.
+		MobilityDB provides <emphasis>set</emphasis>, <emphasis>span</emphasis>, and <emphasis>span set</emphasis> types for representing set of values another type, which is called the <emphasis>base type</emphasis>. Set types are akin to <emphasis>array types</emphasis> in PostgreSQL restricted to one dimension, but enforce the constraint that sets do not have duplicates. Span and span set types in MobilityDB correspond to the <emphasis>range and multirange types</emphasis> in PostgreSQL but have additional constraints. In particular, span types in MobilityDB are of fixed length and do not allow empty spans and infinite bounds.
 	</para>
 
 	<para>
 		The base types used for constructing set, span, and span set types are the types <varname>integer</varname>, <varname>bigint</varname>, <varname>float</varname>, <varname>timestamptz</varname> (timestamp with time zone), and <varname>text</varname> provided by PostgreSQL, the types <varname>geometry</varname> and <varname>geography</varname> provided by PostGIS, and the type <varname>npoint</varname> (network point) provided by MobilityDB (see <xref linkend="temporal_network_points" />). MobilityDB provides the following set and span types:
 		<itemizedlist>
 			<listitem>
-				<para><varname>set</varname>: <varname>intset</varname>, <varname>bigintset</varname>, <varname>floatset</varname>, <varname>textset</varname>, <varname>geomset</varname>, <varname>geogset</varname>, <varname>npointset</varname> (see <xref linkend="temporal_network_points" />).</para>
+				<para><varname>set</varname>: <varname>intset</varname>, <varname>bigintset</varname>, <varname>floatset</varname>, <varname>textset</varname>, <varname>geomset</varname>, <varname>geogset</varname>, <varname>npointset</varname>.</para>
 			</listitem>
 			<listitem>
 				<para><varname>span</varname>: <varname>intspan</varname>, <varname>bigintspan</varname>, <varname>floatspan</varname>, <varname>tstzspan</varname>.</para>
@@ -31,68 +31,64 @@
 	</para>
 
 	<para>
-		In what follows, since span and span set types have similar functions and operators, when we speak about span types we mean both span and span set types, unless we explicitly refer to <emphasis>unit</emphasis> span types and span <emphasis>set</emphasis> types to distinguish them.
+		We present next the functions and operators for set and span types. These functions and operators are polymorphic, that is, their arguments may be of several types, and the result type may depend on the type of the arguments. To express this in the signature of the functions and operators, we use the following notation:
 	</para>
+	<itemizedlist>
+		<listitem>
+			<para><varname>set</varname> represents any set type, such as <varname>intset</varname> or <varname>tstzset</varname>.</para>
+		</listitem>
+		<listitem>
+			<para><varname>span</varname> represents any span type, such as <varname>intspan</varname> or <varname>tstzspanset</varname>.</para>
+		</listitem>
+		<listitem>
+			<para><varname>spanset</varname> represents any span set type, such as <varname>intspanset</varname> or <varname>tstzspanset</varname>.</para>
+		</listitem>
+		<listitem>
+			<para><varname>spans</varname> represents any span or span set type, such as <varname>intspan</varname> or <varname>tstzspanset</varname>.</para>
+		</listitem>
+		<listitem>
+			<para><varname>numspans</varname> represents any numeric span type, such as <varname>intspan</varname> or <varname>floatspanset</varname>.</para>
+		</listitem>
+		<listitem>
+			<para><varname>base</varname> represents any base type of a set or span type, such as <varname>integer</varname> or <varname>timestamptz</varname></para>
+		</listitem>
+		<listitem>
+			<para><varname>number</varname> represents any base type of a numeric span type, such as <varname>integer</varname> or <varname>float</varname>,</para>
+		</listitem>
+		<listitem>
+			<para><varname>time</varname> represents any time type, that is, <varname>timestamptz</varname>, <varname>tstzspan</varname>, <varname>tstzset</varname>, or <varname>tstzspanset</varname>,</para>
+		</listitem>
+		<listitem>
+			<para>A set of types such as <varname>{set,spans}</varname> represents any of the types listed,</para>
+		</listitem>
+		<listitem>
+			<para><varname>type[]</varname> represents an array of <varname>type</varname>.</para>
+		</listitem>
+	</itemizedlist>
 
-	<sect1 id ="functions_operations_set_span_types">
-		<title>Operations for Set and Span Types</title>
-
-		<para>
-			We present next the functions and operators for set and span types. These functions and operators are polymorphic, that is, their arguments may be of several types, and the result type may depend on the type of the arguments. To express this in the signature of the functions and operators, we use the following notation:
-		</para>
-		<itemizedlist>
-			<listitem>
-				<para><varname>set</varname> represents any set type, such as <varname>intset</varname> or <varname>tstzset</varname>.</para>
-			</listitem>
-			<listitem>
-				<para><varname>span</varname> represents any span type, such as <varname>intspan</varname> or <varname>tstzspanset</varname>.</para>
-			</listitem>
-			<listitem>
-				<para><varname>spanset</varname> represents any span set type, such as <varname>intspanset</varname> or <varname>tstzspanset</varname>.</para>
-			</listitem>
-			<listitem>
-				<para><varname>spans</varname> represents any span or span set type, such as <varname>intspan</varname> or <varname>tstzspanset</varname>.</para>
-			</listitem>
-			<listitem>
-				<para><varname>numspans</varname> represents any numeric span type, such as <varname>intspan</varname> or <varname>floatspanset</varname>.</para>
-			</listitem>
-			<listitem>
-				<para><varname>base</varname> represents any base type of a set or span type, such as <varname>integer</varname> or <varname>timestamptz</varname></para>
-			</listitem>
-			<listitem>
-				<para><varname>number</varname> represents any base type of a numeric span type, such as <varname>integer</varname> or <varname>float</varname>,</para>
-			</listitem>
-			<listitem>
-				<para><varname>time</varname> represents any time type, that is, <varname>timestamptz</varname>, <varname>tstzspan</varname>, <varname>tstzset</varname>, or <varname>tstzspanset</varname>,</para>
-			</listitem>
-			<listitem>
-				<para>A set of types such as <varname>{set,spans}</varname> represents any of the types listed,</para>
-			</listitem>
-			<listitem>
-				<para><varname>type[]</varname> represents an array of <varname>type</varname>.</para>
-			</listitem>
-		</itemizedlist>
-
-		<para>
-			As an example, the signature of the contains operator (<varname>@&gt;</varname>) is as follows:
-		</para>
-		<programlisting xml:space="preserve">
+	<para>
+		As an example, the signature of the contains operator (<varname>@&gt;</varname>) is as follows:
+	</para>
+	<programlisting xml:space="preserve">
 {set,spans} @&gt; {set,spans,base} → boolean
 </programlisting>
-		<para>
-			Notice that the signature above is an abridged version of the more precise signature below
- 		</para>
-		<programlisting xml:space="preserve">
+	<para>
+		Notice that the signature above is an abridged version of the more precise signature below
+	</para>
+	<programlisting xml:space="preserve">
 set @&gt; {set,base} → boolean
 spans @&gt; {spans,base} → boolean
 </programlisting>
-		<para>
-			since sets and spans cannot be mixed in operations and thus, for instance, we cannot ask wether a span contains a set. In the following, for conciseness, we use the abridged style of signatures above. Furthermore, the time part of the timestamps is omitted in most examples. Recall that in that case PostgreSQL assumes the time <varname>00:00:00</varname>.
-		</para>
-	</sect1>
+	<para>
+		since sets and spans cannot be mixed in operations and thus, for instance, we cannot ask wether a span contains a set. In the following, for conciseness, we use the abridged style of signatures above. Furthermore, the time part of the timestamps is omitted in most examples. Recall that in that case PostgreSQL assumes the time <varname>00:00:00</varname>.
+	</para>
+
+	<para>
+		In what follows, since span and span set types have similar functions and operators, when we speak about span types we mean both span and span set types, unless we explicitly refer to <emphasis>unit</emphasis> span types and span <emphasis>set</emphasis> types to distinguish them.
+	</para>
 
 	<sect1>
-		<title>Input/Output</title>
+		<title>Input and Output</title>
 
 		<para>
 			MobilityDB generalizes Open Geospatial Consortium's (<ulink url="https://www.ogc.org/">OGC</ulink>) Well-Known Text (<ulink url="https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry">WKT</ulink>) and Well-Known Binary (<ulink url="https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry#Well-known_binary">WKB</ulink>) input/output format for all its types. In this way, applications can exchange data between them using a standardized exchange format. The WKT format is human-readable while the WKB format is more compact and more efficient than the WKT format. The WKB format can be output either as a binary string or as a character string encoded in hexadecimal ASCII.
@@ -656,8 +652,8 @@ SELECT timestamps(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-0
 		</itemizedlist>
 	</sect1>
 
-	<sect1 id ="modification_time_tyes">
-		<title>Tranformation</title>
+	<sect1>
+		<title>Transformations</title>
 
 		<itemizedlist>
 			<listitem id="setspan_shift">
@@ -1090,7 +1086,7 @@ SELECT tstzset '{2001-01-01, 2001-01-03, 2001-01-05}' &lt;-&gt;
 
 		<para>The temporal aggregate functions are the following ones:</para>
 		<itemizedlist>
-			<listitem><para>Function <varname>tcount</varname> generalizes the traditional function <varname>count</varname>. The temporal count can be used to compute at each point in time the number of available objects (for example, number of spans). Function <varname>tcount</varname> returns a temporal integer (see <xref linkend="temporal_types" />). The function has two optional parameters that specify the granularity (an <varname>interval</varname>) and the origin of time (a <varname>timestamptz</varname>). When these parameters are given, the temporal count is computed at time buckets of the given granularity (see <xref linkend="multidimensional_tiling" />).</para></listitem>
+			<listitem><para>Function <varname>tcount</varname> generalizes the traditional function <varname>count</varname>. The temporal count can be used to compute at each point in time the number of available objects (for example, number of spans). Function <varname>tcount</varname> returns a temporal integer (see <xref linkend="temporal_types" />). The function has two optional parameters that specify the granularity (an <varname>interval</varname>) and the origin of time (a <varname>timestamptz</varname>). When these parameters are given, the temporal count is computed at time buckets of the given granularity (see <xref linkend="temporal_types_tiling" />).</para></listitem>
 			<listitem><para>Function <varname>extent</varname> returns a bounding span that encloses a set of span or time values.</para></listitem>
 		</itemizedlist>
 

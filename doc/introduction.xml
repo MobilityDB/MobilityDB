@@ -46,29 +46,23 @@
 
 	<sect1 id="sponsors">
 		<title>Sponsors</title>
-		<sect2 id="research_sponsors">
-			<title>Research Sponsors</title>
-			<para>
-				These are research funding organizations (in alphabetical order) that have contributed with monetary funding to the MobilityDB project.
-				<itemizedlist>
-					<listitem><para><ulink url="https://ec.europa.eu/research/mariecurieactions/">European Commission</ulink></para></listitem>
-					<listitem><para><ulink url="https://www.frs-fnrs.be/en">Fonds de la Recherche Scientifique (FNRS), Belgium</ulink></para></listitem>
-					<listitem><para><ulink url="https://innoviris.brussels/">Innoviris, Belgium</ulink></para></listitem>
-				</itemizedlist>
-			</para>
-		</sect2>
+		<para>
+			These are research funding organizations (in alphabetical order) that have contributed with monetary funding to the MobilityDB project.
+			<itemizedlist>
+				<listitem><para><ulink url="https://ec.europa.eu/research/mariecurieactions/">European Commission</ulink></para></listitem>
+				<listitem><para><ulink url="https://www.frs-fnrs.be/en">Fonds de la Recherche Scientifique (FNRS), Belgium</ulink></para></listitem>
+				<listitem><para><ulink url="https://innoviris.brussels/">Innoviris, Belgium</ulink></para></listitem>
+			</itemizedlist>
+		</para>
 
-		<sect2 id="corporate_sponsors">
-			<title>Corporate Sponsors</title>
-			<para>
-				These are corporate entities (in alphabetical order) that have contributed developer time or monetary funding to the MobilityDB project.
-				<itemizedlist>
-					<listitem><para><ulink url="https://www.adonmo.com/">Adonmo, India</ulink></para></listitem>
-					<listitem><para><ulink url="https://georepublic.info/en/">Georepublic, Germany</ulink></para></listitem>
-					<listitem><para><ulink url="https://www.ulb.be">Université libre de Bruxelles, Belgium</ulink></para></listitem>
-				</itemizedlist>
-			</para>
-		</sect2>
+		<para>
+			These are corporate entities (in alphabetical order) that have contributed developer time or monetary funding to the MobilityDB project.
+			<itemizedlist>
+				<listitem><para><ulink url="https://www.adonmo.com/">Adonmo, India</ulink></para></listitem>
+				<listitem><para><ulink url="https://georepublic.info/en/">Georepublic, Germany</ulink></para></listitem>
+				<listitem><para><ulink url="https://www.ulb.be">Université libre de Bruxelles, Belgium</ulink></para></listitem>
+			</itemizedlist>
+		</para>
 	</sect1>
 
 	<sect1 id="license">

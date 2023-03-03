@@ -8,11 +8,10 @@
     Alike 3.0 License: https://creativecommons.org/licenses/by-sa/3.0/
    ****************************************************************************
 -->
-<chapter id="manipulating_temporal_types_p2">
-	<title>Temporal Types: Type-Specific Operations</title>
-	<para>We continue in this chapter the presentation of functions and operators for temporal types started in the previous chapter.</para>
+<chapter id="temporal_types_alpha">
+	<title>Temporal Types: Alphanumeric Operations</title>
 
-	<sect1>
+	<sect1 id="temporal_types_math">
 		<title>Mathematical Operations</title>
 
 		<itemizedlist>
@@ -143,7 +142,7 @@ SELECT derivative(tfloat 'Interp=Step;[0@2000-01-01, 10@2000-01-02, 5@2000-01-03
 		</itemizedlist>
 	</sect1>
 
-	<sect1>
+	<sect1 id="temporal_types_bool">
 		<title>Boolean Operations</title>
 		<itemizedlist>
 			<listitem id="tbool_and">
@@ -197,7 +196,7 @@ SELECT whenTrue(tdwithin(tgeompoint '[Point(1 1)@2000-01-01, Point(4 4)@2000-01-
 		</itemizedlist>
 	</sect1>
 
-	<sect1>
+	<sect1 id="temporal_types_text">
 		<title>Text Operations</title>
 
 		<itemizedlist>
@@ -231,7 +230,5 @@ SELECT upper(ttext '[AA@2000-01-01, bb@2000-01-02]');
 			</listitem>
 		</itemizedlist>
 	</sect1>
-
-	&spatial_functions;
 
 </chapter>

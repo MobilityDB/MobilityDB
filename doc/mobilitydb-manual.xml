@@ -15,12 +15,12 @@
 
 <!ENTITY introduction SYSTEM "introduction.xml">
 <!ENTITY set_span_types SYSTEM "set_span_types.xml">
+<!ENTITY box_types SYSTEM "box_types.xml">
 <!ENTITY temporal_types SYSTEM "temporal_types.xml">
-<!ENTITY manipulating_box_types SYSTEM "manipulating_box_types.xml">
-<!ENTITY manipulating_temporal_types_p1 SYSTEM "manipulating_temporal_types_p1.xml">
-<!ENTITY manipulating_temporal_types_p2 SYSTEM "manipulating_temporal_types_p2.xml">
-<!ENTITY manipulating_temporal_types_p3 SYSTEM "manipulating_temporal_types_p3.xml">
-<!ENTITY spatial_functions SYSTEM "spatial_functions.xml">
+<!ENTITY temporal_types_ops_p1 SYSTEM "temporal_types_ops_p1.xml">
+<!ENTITY temporal_types_alpha SYSTEM "temporal_types_alpha.xml">
+<!ENTITY temporal_types_ops_p3 SYSTEM "temporal_types_ops_p3.xml">
+<!ENTITY temporal_types_spatial SYSTEM "temporal_types_spatial.xml">
 <!ENTITY temporal_network_points SYSTEM "temporal_network_points.xml">
 <!ENTITY reference SYSTEM "reference.xml">
 <!ENTITY data_generator SYSTEM "data_generator.xml">
@@ -69,7 +69,7 @@
 			</affiliation>
 		</author>
 
-		<pubdate><?dbtimestamp format="Y-m-d"?>.</pubdate>
+		<pubdate><?dbtimestamp format="Y-m-d"?></pubdate>
 		<abstract>
 			<para>
 				MobilityDB is an extension to the <ulink url="https://www.postgresql.org/">PostgreSQL</ulink> database system and its spatial extension <ulink url="http://postgis.net/">PostGIS</ulink>. It allows temporal and spatio-temporal objects to be stored in the database, that is, objects whose attribute values and/or location evolves in time. MobilityDB includes functions for analysis and processing of temporal and spatio-temporal objects and provides support for GiST and SP-GiST indexes. MobilityDB is open source and its code is available on <ulink url="https://github.com/MobilityDB/MobilityDB">Github</ulink>. An adapter for the Python programming language is also available on <ulink url="https://github.com/MobilityDB/MobilityDB-python">Github</ulink>.
@@ -111,11 +111,12 @@
 
 	&introduction;
 	&set_span_types;
+	&box_types;
 	&temporal_types;
-	&manipulating_box_types;
-	&manipulating_temporal_types_p1;
-	&manipulating_temporal_types_p2;
-	&manipulating_temporal_types_p3;
+	&temporal_types_ops_p1;
+	&temporal_types_alpha;
+	&temporal_types_spatial;
+	&temporal_types_ops_p3;
 	&temporal_network_points;
 	&reference;
 	&data_generator;
