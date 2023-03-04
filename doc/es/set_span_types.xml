@@ -98,7 +98,7 @@ spans @&gt; {base,spans} → boolean
 	<sect1>
 		<title>Entrada y salida</title>
 		<para>
-				MobilityDB generaliza los formatos de entrada/salida Well-Known Text (<ulink url="https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry">WKT</ulink>) y Well-Known Binary (<ulink url="https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry">WKT</ulink>) del Open Geospatial Consortium (<ulink url="https://www.ogc.org/">OGC</ulink>) a para todos sus tipos. De esta forma, las aplicaciones pueden intercambiar datos entre ellas utilizando un formato de intercambio estandarizado. El formato WKT es legible por humanos, mientras que el formato WKB es más compacto y más eficiente que el formato WKT. El formato WKB se puede generar como una cadena binaria o como una cadena de caracteres codificada en ASCII hexadecimal.
+				MobilityDB generaliza los formatos de entrada y salida Well-Known Text (<ulink url="https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry">WKT</ulink>) y Well-Known Binary (<ulink url="https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry">WKT</ulink>) del Open Geospatial Consortium (<ulink url="https://www.ogc.org/">OGC</ulink>) a para todos sus tipos. De esta forma, las aplicaciones pueden intercambiar datos entre ellas utilizando un formato de intercambio estandarizado. El formato WKT es legible por humanos, mientras que el formato WKB es más compacto y más eficiente que el formato WKT. El formato WKB se puede generar como una cadena binaria o como una cadena de caracteres codificada en ASCII hexadecimal.
 		</para>
 
 		<para>
@@ -171,13 +171,13 @@ SELECT tstzspanset '{[2001-01-01 08:00:00, 2001-01-01 08:10:00),
 </programlisting>
 
 		<para>
-			Damos a continuación las funciones de entrada/salida de tipos de rango y de tiempo en formato binario conocido.
+			Damos a continuación las funciones de entrada y salida de tipos de conjunto y de rango en formato binario conocido.
 		</para>
 
 		<itemizedlist>
 			<listitem id="spantime_asBinary">
 				<indexterm><primary><varname>asBinary</varname></primary></indexterm>
-				<para>Obtener la representación binaria conocida (Well-Known Binary o WKB) de un rango o un tipo de tiempo</para>
+				<para>Obtener la representación binaria conocida (Well-Known Binary o WKB)</para>
 				<para><varname>asBinary({set,spans},endian text='') → bytea</varname></para>
 				<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</para>
 				<programlisting language="sql" xml:space="preserve">
@@ -192,7 +192,7 @@ SELECT asBinary(intspanset '{[1, 2], [4, 5]}', 'XDR');
 
 			<listitem id="spantime_asHexWKB">
 				<indexterm><primary><varname>asHexWKB</varname></primary></indexterm>
-				<para>Obtener la representación hexadecimal binaria conocida (HexWKB) en formato texto de un rango o un tipo de tiempo</para>
+				<para>Obtener la representación hexadecimal binaria conocida (HexWKB) en formato texto</para>
 				<para><varname>asHexWKB({set,spans},endian text='') → text</varname></para>
 				<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</para>
 				<programlisting language="sql" xml:space="preserve">
@@ -209,8 +209,8 @@ SELECT asHexWKB(intspanset '{[1, 2], [4, 5]}', 'XDR');
 				<indexterm><primary><varname>&lt;set&gt;FromBinary</varname></primary></indexterm>
 				<indexterm><primary><varname>&lt;span&gt;FromBinary</varname></primary></indexterm>
 				<indexterm><primary><varname>&lt;spanset&gt;FromBinary</varname></primary></indexterm>
-				<para>Entrar un rango o un tipo de tiempo en la representación binaria conocida (WKB)</para>
-				<para>Hay una función por tipo de conjunto, el nombre de la función tiene como prefijo el nombre del tipo de conjunto.</para>
+				<para>Obtener a partir de la representación binaria conocida (WKB)</para>
+				<para>Hay una función por tipo de conjunto o de rango, el nombre de la función tiene como prefijo el nombre del tipo.</para>
 				<para><varname>&lt;set&gt;FromBinary(bytea) → set</varname></para>
 				<para><varname>&lt;span&gt;FromBinary(bytea) → span</varname></para>
 				<para><varname>&lt;spanset&gt;FromBinary(bytea) → spanset</varname></para>
@@ -229,8 +229,8 @@ SELECT tstzspansetFromBinary(
 				<indexterm><primary><varname>&lt;set&gt;FromHexWKB</varname></primary></indexterm>
 				<indexterm><primary><varname>&lt;span&gt;FromHexWKB</varname></primary></indexterm>
 				<indexterm><primary><varname>&lt;spanset&gt;FromHexWKB</varname></primary></indexterm>
-				<para>Entrar un rango o un tipo de tiempo en la representación hexadecimal binaria conocida (HexWKB)</para>
-				<para>Hay una función por tipo de conjunto, el nombre de esta función tiene como prefijo el nombre del tipo de conjunto.</para>
+				<para>Obtener a partir de la representación hexadecimal binaria conocida (HexWKB)</para>
+				<para>Hay una función por tipo de conjunto o de rango, el nombre de la función tiene como prefijo el nombre del tipo.</para>
 				<para><varname>&lt;set&gt;FromHexWKB(text) → set</varname></para>
 				<para><varname>&lt;span&gt;FromHexWKB(text) → span</varname></para>
 				<para><varname>&lt;spanset&gt;FromHexWKB(text) → spanset</varname></para>
@@ -724,7 +724,7 @@ SELECT round(floatspanset '{[1.123456789, 2.123456789],[3.123456789,4.123456789]
 
 		<para>Los operadores de comparación (<varname>=</varname>, <varname>&lt;</varname>, etc.) requieren que los argumentos izquierdo y derecho sean del mismo tipo. Exceptuando la igualdad y la no igualdad, los otros operadores de comparación no son útiles en el mundo real, pero permiten construir índices de árbol B en tipos de rango o de tiempo. Para los valores de rango, los operadores comparan primero el límite inferior y luego el límite superior. Para los valores de conjunto de marcas de tiempo y conjunto de períodos, los operadores comparan primero los períodos delimitadores y, si son iguales, comparan los primeros N instantes o períodos, donde N es el mínimo del número de instantes o períodos que componen ambos valores.</para>
 
-		<para>Los operadores de comparación disponibles para los tipos de rango y de tiempo se dan a continuación. Recuerde que los rangos de enteros siempre se representan por su forma canónica.</para>
+		<para>Los operadores de comparación disponibles para los tipos de conjunto y de rango se dan a continuación. Recuerde que los rangos de enteros siempre se representan por su forma canónica.</para>
 
 		<itemizedlist>
 			<listitem id="setspan_eq">
@@ -813,7 +813,7 @@ SELECT tstzspan '[2001-01-03, 2001-01-05)' &gt;= tstzspan '[2001-01-03, 2001-01-
 	<sect1 id="setspan_set_operators">
 		<title>Operaciones de conjuntos</title>
 
-		<para>Los tipos de rango y de tiempo tienen operadores de conjuntos asociados, a saber, unión, diferencia e intersección, que se representan, respectivamente, por <varname>+</varname>, <varname>-</varname> y <varname>* </varname>. Los operadores de conjunto para los tipos de rango y tiempo se dan a continuación.</para>
+		<para>Los tipos de conjunto y de rango tienen operadores de conjuntos asociados, a saber, unión, diferencia e intersección, que se representan, respectivamente, por <varname>+</varname>, <varname>-</varname> y <varname>* </varname>. Los operadores de conjunto para los tipos de rango y tiempo se dan a continuación.</para>
 
 		<itemizedlist>
 			<listitem id="setspan_union">
@@ -871,8 +871,8 @@ SELECT tstzspan '[2011-01-01, 2011-01-05)' * tstzspan '[2011-01-03, 2011-01-07)'
 		</itemizedlist>
 	</sect1>
 
-	<sect1 id="setspan_topo_operators">
-		<title>Operaciones topológicas</title>
+	<sect1 id="setspan_topo_relpos">
+		<title>Operaciones topológicas y de posición relativa</title>
 		<para>A continuación se presentan los operadores topológicos disponibles para los tipos de conjunto y de rango.</para>
 
 		<itemizedlist>
@@ -940,12 +940,8 @@ SELECT tstzspanset '{[2001-01-01, 2001-01-02]}' -|- tstzspan '[2001-01-02, 2001-
 </programlisting>
 			</listitem>
 		</itemizedlist>
-	</sect1>
 
-	<sect1 id="setspan_relpos_operators">
-		<title>Operaciones de posición relativa</title>
-
-		<para>Los operadores de posición relativa disponibles para los tipos de rango y de tiempo se dan a continuación. Observe que los operadores para tipos de tiempo tienen un `<varname>#</varname>' adicional para distinguirlos de los operadores para tipos de números.</para>
+		<para>Los operadores de posición relativa disponibles para los tipos de conjunto y de rango se dan a continuación. Observe que los operadores para tipos de tiempo tienen un `<varname>#</varname>' adicional para distinguirlos de los operadores para tipos de números.</para>
 
 		<itemizedlist>
 			<listitem id="setspan_left">
@@ -1152,7 +1148,7 @@ SELECT tunion(ps) FROM periods;
 	<sect1 id ="indexing_time_types">
 		<title>Indexación</title>
 
-		<para>Se pueden crear índices GiST y SP-GiST en columnas de tablas de los tipos de rango y de tiempo. El índice GiST implementa un árbol R, mientras que el índice SP-GiST implementa un árbol cuádruple. Un ejemplo de creación de un índice GiST en una columna <varname>During</varname> de tipo <varname>tstzspan</varname> en una tabla <varname>Reservation</varname> es como sigue:
+		<para>Se pueden crear índices GiST y SP-GiST en columnas de tablas de los tipos de conjunto y de rango. El índice GiST implementa un árbol R, mientras que el índice SP-GiST implementa un árbol cuádruple. Un ejemplo de creación de un índice GiST en una columna <varname>During</varname> de tipo <varname>tstzspan</varname> en una tabla <varname>Reservation</varname> es como sigue:
 			<programlisting language="sql" xml:space="preserve">
 CREATE TABLE Reservation (ReservationID integer PRIMARY KEY, RoomID integer,
   During tstzspan);

@@ -112,19 +112,19 @@
 			<title>Input and Output</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="spantime_asBinary"><varname>asBinary</varname></link>: Get the Well-Known Binary (WKB) representation of a set or span type</para>
+					<para><link linkend="setspan_asBinary"><varname>asBinary</varname></link>: Get the Well-Known Binary (WKB) representation</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="spantime_asHexWKB"><varname>asHexWKB</varname></link>: Get the Hexadecimal Well-Known Binary (HexWKB) representation as text of a set or span type</para>
+					<para><link linkend="setspan_asHexWKB"><varname>asHexWKB</varname></link>: Get the Hexadecimal Well-Known Binary (HexWKB) representation as text</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="spantime_FromBinary"><varname>&lt;set&gt;FromBinary</varname>, <varname>&lt;span&gt;FromBinary</varname>, <varname>&lt;spanset&gt;FromBinary</varname></link>: Input a span or set type from a Well-Known Binary (WKB) representation</para>
+					<para><link linkend="setspan_FromBinary"><varname>&lt;set&gt;FromBinary</varname>, <varname>&lt;span&gt;FromBinary</varname>, <varname>&lt;spanset&gt;FromBinary</varname></link>: Input from a Well-Known Binary (WKB) representation</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="spantime_FromHexWKB"><varname>&lt;set&gt;FromHexWKB</varname>, <varname>&lt;span&gt;FromHexWKB</varname>, <varname>&lt;spanset&gt;FromHexWKB</varname></link>: Input a span or set type from an Hexadecimal Well-Known Binary (HexWKB) representation</para>
+					<para><link linkend="setspan_FromHexWKB"><varname>&lt;set&gt;FromHexWKB</varname>, <varname>&lt;span&gt;FromHexWKB</varname>, <varname>&lt;spanset&gt;FromHexWKB</varname></link>: Input from an Hexadecimal Well-Known Binary (HexWKB) representation</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -343,7 +343,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Aggregate Operations</title>
+			<title>Aggregations</title>
 
 			<itemizedlist>
 				<listitem>
@@ -363,6 +363,27 @@
 
 	<sect1>
 		<title>Operations for Box Types</title>
+
+		<sect2>
+			<title>Input and Output</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="box_asBinary"><varname>asBinary</varname></link>: Get the Well-Known Binary (WKB) representation</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="box_asHexWKB"><varname>asHexWKB</varname></link>: Get the Hexadecimal Well-Known Binary (HexWKB) representation as text</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="box_FromBinary"><varname>tboxFromBinary</varname>, <varname>stboxFromBinary</varname></link>: Input from a Well-Known Binary (WKB) representation</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="box_FromHexWKB"><varname>tboxFromHexWKB</varname>, <varname>stboxFromHexWKB</varname></link>: Input from an Hexadecimal Well-Known Binary (HexWKB) representation</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
 
 		<sect2>
 			<title>Constructors</title>
@@ -444,7 +465,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Spatial Reference System Functions</title>
+			<title>Spatial Reference System</title>
 
 			<itemizedlist>
 				<listitem>
@@ -462,7 +483,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Aggregate Operations</title>
+			<title>Aggregations</title>
 
 			<itemizedlist>
 				<listitem>
@@ -557,6 +578,53 @@
 
 	<sect1>
 		<title>Operations for Temporal Types: Generic Operations</title>
+
+		<sect2>
+			<title>Input and Output</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="temporal_asMFJSON"><varname>asMFJSON</varname></link>: Get the Moving Features JSON (MF-JSON) representation</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="temporal_asBinary"><varname>asBinary</varname></link>: Get the Well-Known Binary (WKB) representation</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="temporal_asHexWKB"><varname>asHexWKB</varname></link>: Get the Hexadecimal Well-Known Binary (HexWKB) representation as text</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="temporal_FromMFJSON"><varname>&lt;ttype&gt;FromMFJSON</varname></link>: Input from a Moving Features JSON (MF-JSON) representation</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="temporal_FromBinary"><varname>&lt;ttype&gt;FromBinary</varname></link>: Input from a Well-Known Binary (WKB) representation</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="temporal_FromHexWKB"><varname>&lt;ttype&gt;FromHexWKB</varname></link>: Input from an Hexadecimal Well-Known Binary (HexWKB) representation</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Constructors</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="set"><varname>set</varname></link>: Constructor for set values</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="span"><varname>span</varname></link>: Constructor for span values</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="spanset"><varname>spanset</varname></link>: Constructor for span set values</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
 
 		<sect2>
 			<title>Constructors</title>
@@ -1050,7 +1118,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Spatial Reference System Operations</title>
+			<title>Spatial Reference System</title>
 
 			<itemizedlist>
 				<listitem>
@@ -1166,7 +1234,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Ever Spatial Relationships</title>
+			<title>Ever and Temporal Spatial Relationships</title>
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="econtains"><varname>econtains</varname></link>: Ever contains</para>
@@ -1187,12 +1255,7 @@
 				<listitem>
 					<para><link linkend="etouches"><varname>etouches</varname></link>: Ever touches</para>
 				</listitem>
-			</itemizedlist>
-		</sect2>
 
-		<sect2>
-			<title>Temporal Spatial Relationships</title>
-			<itemizedlist>
 				<listitem>
 					<para><link linkend="tcontains"><varname>tcontains</varname></link>: Temporal contains</para>
 				</listitem>
@@ -1317,7 +1380,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Aggregate Operations</title>
+			<title>Aggregations</title>
 
 			<itemizedlist>
 				<listitem>
@@ -1633,7 +1696,7 @@
 			</sect3>
 
 			<sect3>
-				<title>Aggregate Operations</title>
+				<title>Aggregations</title>
 
 				<itemizedlist>
 					<listitem>

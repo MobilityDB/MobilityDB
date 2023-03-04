@@ -91,7 +91,7 @@ spans @&gt; {spans,base} → boolean
 		<title>Input and Output</title>
 
 		<para>
-			MobilityDB generalizes Open Geospatial Consortium's (<ulink url="https://www.ogc.org/">OGC</ulink>) Well-Known Text (<ulink url="https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry">WKT</ulink>) and Well-Known Binary (<ulink url="https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry#Well-known_binary">WKB</ulink>) input/output format for all its types. In this way, applications can exchange data between them using a standardized exchange format. The WKT format is human-readable while the WKB format is more compact and more efficient than the WKT format. The WKB format can be output either as a binary string or as a character string encoded in hexadecimal ASCII.
+			MobilityDB generalizes Open Geospatial Consortium's (<ulink url="https://www.ogc.org/">OGC</ulink>) Well-Known Text (<ulink url="https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry">WKT</ulink>) and Well-Known Binary (<ulink url="https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry#Well-known_binary">WKB</ulink>) input and output format for all its types. In this way, applications can exchange data between them using a standardized exchange format. The WKT format is human-readable while the WKB format is more compact and more efficient than the WKT format. The WKB format can be output either as a binary string or as a character string encoded in hexadecimal ASCII.
 		</para>
 
 
@@ -165,13 +165,13 @@ SELECT tstzspanset '{[2001-01-01 08:00:00, 2001-01-01 08:10:00),
 </programlisting>
 
 		<para>
-			We give next the functions for input/output of span and time types in Well-Known Binary format.
+			We give next the functions for input and output of set and span types in Well-Known Binary format.
 		</para>
 
 		<itemizedlist>
-			<listitem id="spantime_asBinary">
+			<listitem id="setspan_asBinary">
 				<indexterm><primary><varname>asBinary</varname></primary></indexterm>
-				<para>Get the Well-Known Binary (WKB) representation of a set or span type</para>
+				<para>Get the Well-Known Binary (WKB) representation</para>
 				<para><varname>asBinary({set,spans},endian text='') → bytea</varname></para>
 				<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</para>
 				<programlisting language="sql" xml:space="preserve">
@@ -184,9 +184,9 @@ SELECT asBinary(intspanset '{[1, 2], [4, 5]}', 'XDR');
 </programlisting>
 			</listitem>
 
-			<listitem id="spantime_asHexWKB">
+			<listitem id="setspan_asHexWKB">
 				<indexterm><primary><varname>asHexWKB</varname></primary></indexterm>
-				<para>Get the Hexadecimal Well-Known Binary (HexWKB) representation as text of a set or span type</para>
+				<para>Get the Hexadecimal Well-Known Binary (HexWKB) representation as text</para>
 				<para><varname>asHexWKB({set,spans},endian text='') → text</varname></para>
 				<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</para>
 				<programlisting language="sql" xml:space="preserve">
@@ -199,11 +199,11 @@ SELECT asHexWKB(intspanset '{[1, 2], [4, 5]}', 'XDR');
 </programlisting>
 			</listitem>
 
-			<listitem id="spantime_FromBinary">
+			<listitem id="setspan_FromBinary">
 				<indexterm><primary><varname>&lt;set&gt;FromBinary</varname></primary></indexterm>
 				<indexterm><primary><varname>&lt;span&gt;FromBinary</varname></primary></indexterm>
 				<indexterm><primary><varname>&lt;spanset&gt;FromBinary</varname></primary></indexterm>
-				<para>Input a set or span type from a Well-Known Binary (WKB) representation</para>
+				<para>Input from a Well-Known Binary (WKB) representation</para>
 				<para>There is one function per base type, the name of the function has as prefix the name of the set type</para>
 				<para><varname>&lt;set&gt;FromBinary(bytea) → set</varname></para>
 				<para><varname>&lt;span&gt;FromBinary(bytea) → span</varname></para>
@@ -219,11 +219,11 @@ SELECT tstzspansetFromBinary(
 </programlisting>
 			</listitem>
 
-			<listitem id="spantime_FromHexWKB">
+			<listitem id="setspan_FromHexWKB">
 				<indexterm><primary><varname>&lt;set&gt;FromHexWKB</varname></primary></indexterm>
 				<indexterm><primary><varname>&lt;span&gt;FromHexWKB</varname></primary></indexterm>
 				<indexterm><primary><varname>&lt;spanset&gt;FromHexWKB</varname></primary></indexterm>
-				<para>Input a set, span, or span set from an Hexadecimal Well-Known Binary (HexWKB) representation</para>
+				<para>Input from an Hexadecimal Well-Known Binary (HexWKB) representation</para>
 				<para>There is one function per set type, the name of the function has as prefix the name of the set type.</para>
 				<para><varname>&lt;set&gt;FromHexWKB(text) → set</varname></para>
 				<para><varname>&lt;span&gt;FromHexWKB(text) → span</varname></para>
@@ -753,9 +753,9 @@ SELECT round(floatspanset '{[1.123456789, 2.123456789],[3.123456789,4.123456789]
 	<sect1 id="setspan_comp_operators">
 		<title>Comparisons</title>
 
-		<para>The comparison operators (<varname>=</varname>, <varname>&lt;</varname>, and so on) require that the left and right arguments be of the same type. Excepted equality and inequality, the other comparison operators are not useful in the real world but allow B-tree indexes to be constructed on span and time types. For span values, the operators compare first the lower bound, then the upper bound. For set and span set values, the operators compare first the bounding spans, and if those are equal, they compare the first N values or spans, where N is the minimum of the number of composing values or spans of both values.</para>
+		<para>The comparison operators (<varname>=</varname>, <varname>&lt;</varname>, and so on) require that the left and right arguments be of the same type. Excepted equality and inequality, the other comparison operators are not useful in the real world but allow B-tree indexes to be constructed on set and span types. For span values, the operators compare first the lower bound, then the upper bound. For set and span set values, the operators compare first the bounding spans, and if those are equal, they compare the first N values or spans, where N is the minimum of the number of composing values or spans of both values.</para>
 
-		<para>The comparison operators available for the span and time types are given next. Recall that integer spans are always represented by their canonical form.</para>
+		<para>The comparison operators available for the set and span types are given next. Recall that integer spans are always represented by their canonical form.</para>
 
 		<itemizedlist>
 			<listitem id="setspan_eq">
@@ -844,7 +844,7 @@ SELECT intspanset '{[1, 4)}' &gt;= intspanset '{[1, 5), [6, 7)}';
 	<sect1 id="setspan_set_operators">
 		<title>Set Operations</title>
 
-		<para>The span and time types have associated set operators, namely union, difference, and intersection, which are represented, respectively by <varname>+</varname>, <varname>-</varname>, and <varname>*</varname>. The set operators for the span and time types are given next.</para>
+		<para>The set and span types have associated set operators, namely union, difference, and intersection, which are represented, respectively by <varname>+</varname>, <varname>-</varname>, and <varname>*</varname>. The set operators for the set and span types are given next.</para>
 
 		<itemizedlist>
 			<listitem id="setspan_union">
@@ -902,9 +902,9 @@ SELECT tstzspan '[2011-01-01, 2011-01-05)' * tstzspan '[2011-01-03, 2011-01-07)'
 		</itemizedlist>
 	</sect1>
 
-	<sect1 id="setspan_topo_operators">
-		<title>Topological Operations</title>
-		<para>The topological operations available for the span and time types are given next.</para>
+	<sect1 id="setspan_topo_relpos">
+		<title>Topological and Relative Position Operations</title>
+		<para>The topological operations available for the set and span types are given next.</para>
 
 		<itemizedlist>
 			<listitem id="setspan_overlaps">
@@ -969,11 +969,8 @@ SELECT tstzspanset '{[2001-01-01, 2001-01-02]}' -|- tstzspan '[2001-01-02, 2001-
 </programlisting>
 			</listitem>
 		</itemizedlist>
-	</sect1>
 
-	<sect1 id="setspan_relpos_operators">
-		<title>Relative Position Operations</title>
-		<para>The relative position operations available for span and time types are given next. Notice that the operators for time types have an additional `<varname>#</varname>' to distinguish them from the operators for number types.</para>
+		<para>The relative position operations available for set and span types are given next. Notice that the operators for time types have an additional `<varname>#</varname>' to distinguish them from the operators for number types.</para>
 
 		<itemizedlist>
 			<listitem id="setspan_left">
@@ -1054,7 +1051,7 @@ SELECT timestamp '2011-01-01' #&amp;&gt; tstzspan '[2011-01-01, 2011-01-05)';
 	<sect1>
 		<title>Distance Operations</title>
 
-		<para>The distance operator <varname>&lt;-&gt;</varname> for span and time types consider the bounding span and returns a <varname>float</varname> value which is the smallest distance between the two values. In the case of time spans it returns the number of seconds between the two time values. The distance operator can also be used for nearest neighbor searches using a GiST or an SP-GiST index (see <xref linkend="indexing_time_types" />).</para>
+		<para>The distance operator <varname>&lt;-&gt;</varname> for set and span types consider the bounding span and returns a <varname>float</varname> value which is the smallest distance between the two values. In the case of time spans it returns the number of seconds between the two time values. The distance operator can also be used for nearest neighbor searches using a GiST or an SP-GiST index (see <xref linkend="indexing_time_types" />).</para>
 
 		<itemizedlist>
 			<listitem id="smallest_distance_time">
@@ -1080,7 +1077,7 @@ SELECT tstzset '{2001-01-01, 2001-01-03, 2001-01-05}' &lt;-&gt;
 	</sect1>
 
 	<sect1>
-		<title>Aggregate Operations</title>
+		<title>Aggregations</title>
 
 		<para>The temporal aggregate functions generalize the traditional aggregate functions. Their semantics is that they compute the value of the function at every instant in the <emphasis>union</emphasis> of the temporal extents of the values to aggregate. In contrast, recall that all other functions manipulating time types compute the value of the function at every instant in the <emphasis>intersection</emphasis> of the temporal extents of the arguments.</para>
 
@@ -1180,7 +1177,7 @@ SELECT tunion(ps) FROM periods;
 	<sect1 id ="indexing_time_types">
 		<title>Indexing</title>
 
-		<para>GiST and SP-GiST indexes can be created for table columns of the span and time types. The GiST index implements an R-tree while the SP-GiST index implements a quad-tree. An example of creation of a GiST index in a column <varname>During</varname> of type <varname>tstzspan</varname> in a table <varname>Reservation</varname> is as follows:
+		<para>GiST and SP-GiST indexes can be created for table columns of the set and span types. The GiST index implements an R-tree while the SP-GiST index implements a quad-tree. An example of creation of a GiST index in a column <varname>During</varname> of type <varname>tstzspan</varname> in a table <varname>Reservation</varname> is as follows:
 			<programlisting language="sql" xml:space="preserve">
 CREATE TABLE Reservation (ReservationID integer PRIMARY KEY, RoomID integer,
   During tstzspan);

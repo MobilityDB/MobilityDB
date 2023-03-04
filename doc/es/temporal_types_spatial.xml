@@ -696,7 +696,7 @@ SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02)' &lt;-&gt;
 	</sect1>
 
 	<sect1 id="tpoint_spatial_rel">
-		<title>Relaciones espaciales</title>
+		<title>Relaciones espaciales alguna vez y temporales</title>
 
 		<para>Las relaciones topológicas como <varname>ST_Intersects</varname> y las relaciones de distancia como <varname>ST_DWithin</varname> pueden ser generalizadas a los puntos temporales. Los argumentos de estas funciones generalizadas son un punto temporal y un tipo base (es decir, un <varname>geometry</varname> o un <varname>geography</varname>) o dos puntos temporales. Además, ambos argumentos deben ser del mismo tipo base, es decir, estas funciones no permiten merzclar un punto de geometría temporal (o una geometría) y un punto de geografía temporal (o una geografía).</para>
 
@@ -769,11 +769,8 @@ WHERE eintersects(T.Trip, R.Geom)
 		<para>No todas las relaciones espaciales disponibles en PostGIS tienen una generalización significativa para los puntos temporales. Se define una versión generalizada de las siguientes relaciones para los puntos geométricos temporales: <varname>eintersects</varname>, <varname>edisjoint</varname>, <varname>edwithin</varname>, <varname>econtains</varname>, y <varname>etouches</varname>, mientras que para los puntos geográficos temporales solo se definen las tres primeras. Además, no todas las combinaciones de parámetros son significativas para una función generalizada dada. Por ejemplo, mientras que <varname>tcontains(geometry,tpoint)</varname> es significativo, <varname>tcontains(tpoint,geometry)</varname> es significativo solo cuando la geometría es un solo punto, y <varname>tcontains(tpoint,tpoint)</varname> es equivalente a <varname>tintersects(tpoint, geometry)</varname>. Por esta razón, solo se define la primera combinación de parámetros para <varname>econtains</varname> y <varname>tcontains</varname>.</para>
 
 		<para>Finalmente, cabe destacar que las relaciónes temporales permiten mezclar geometrías 2D/3D pero en ese caso, el cálculo sólo se realiza en 2D.</para>
-	</sect1>
 
-	<sect1 id="tpoint_spatial_rel_ever">
-		<title>Relaciones espaciales alguna vez</title>
-		<para>Todas estas funciones incluyen automáticamente una comparación de cuadro delimitador que hace uso de cualquier índice espacial que esté disponible en los argumentos.</para>
+		<para>Presentamos a continuación las relaciones espaciales alguna vez. Todas estas funciones incluyen automáticamente una comparación de cuadro delimitador que hace uso de cualquier índice espacial que esté disponible en los argumentos.</para>
 		<itemizedlist>
 			<listitem id="econtains">
 				<indexterm><primary><varname>econtains</varname></primary></indexterm>
@@ -839,11 +836,8 @@ SELECT etouches(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
 </programlisting>
 			</listitem>
 		</itemizedlist>
-	</sect1>
 
-	<sect1 id="tpoint_spatial_rel_temp">
-		<title>Relaciones espaciales temporales</title>
-		<para>Un requisito común con respecto a las relaciones espaciales temporales es restringir el resultado de la relación a los instantes en que el valor del resultado es verdadero (alternativamente, falso). Por ejemplo, la siguiente consulta calcula para cada viaje el tiempo dedicado viajando en el municipio de Bruselas.</para>
+		<para>Presentamos a continuación las relaciones espaciales temporales. Un requisito común con respecto ellas es restringir el resultado de la relación a los instantes en que el valor del resultado es verdadero o falso. Por ejemplo, la siguiente consulta calcula para cada viaje el tiempo dedicado viajando en el municipio de Bruselas.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT TripId, duration(atValue(tintersects(T.trip, M.geom), True))
 FROM Trips T, Municipality M

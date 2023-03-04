@@ -22,7 +22,7 @@
 	<sect1 id="box_types_input_output">
 		<title>Input and Output</title>
 			<para>
-				MobilityDB generalizes Open Geospatial Consortium's Well-Known Text (WKT) and Well-Known Binary (WKB) input/output format for all temporal types. We present next the functions for input and output box types.
+				MobilityDB generalizes Open Geospatial Consortium's Well-Known Text (WKT) and Well-Known Binary (WKB) input and output format for all temporal types. We present next the functions for input and output box types.
 			</para>
 
 		<para>A <varname>tbox</varname> is composed of a numeric and/or time dimensions. For each dimension, a span given, that is,  a <varname>floatspan</varname> for the value dimension and a <varname>tstzspan</varname> for the time dimension. Examples of input of <varname>tbox</varname> values are as follows:
@@ -61,7 +61,7 @@ SELECT stbox 'SRID=4326;GEODSTBOX Z(((1.0,2.0,3.0),(1.0,2.0,3.0)))';
 		</para>
 
 			<para>
-				We give next the functions for input/output of box types in Well-Known Binary format.
+				We give next the functions for input and output of box types in Well-Known Text and Well-Known Binary format.
 			</para>
 
 			<itemizedlist>
@@ -95,10 +95,10 @@ SELECT asHexWKB(stbox 'STBOX X(((1,1),(2,2)))');
 </programlisting>
 				</listitem>
 
-				<listitem id="tboxFromBinary">
+				<listitem id="box_FromBinary">
 					<indexterm><primary><varname>tboxFromBinary</varname></primary></indexterm>
 					<indexterm><primary><varname>stboxFromBinary</varname></primary></indexterm>
-					<para>Input a box from a Well-Known Binary (WKB) representation</para>
+					<para>Input from a Well-Known Binary (WKB) representation</para>
 					<para><varname>tboxFromBinary(bytea) → tbox</varname></para>
 					<para><varname>stboxFromBinary(bytea) → stbox</varname></para>
 					<programlisting language="sql" xml:space="preserve">
@@ -111,10 +111,10 @@ SELECT stboxFromBinary(
 </programlisting>
 				</listitem>
 
-				<listitem id="tboxFromHexWKB">
+				<listitem id="box_FromHexWKB">
 					<indexterm><primary><varname>tboxFromHexWKB</varname></primary></indexterm>
 					<indexterm><primary><varname>stboxFromHexWKB</varname></primary></indexterm>
-					<para>Input a box from an Hexadecimal Well-Known Binary (HexWKB) representation &Z_support;</para>
+					<para>Input from an Hexadecimal Well-Known Binary (HexWKB) representation &Z_support;</para>
 					<para><varname>tboxFromHexWKB(text) → tbox</varname></para>
 					<para><varname>stboxFromHexWKB(text) → stbox</varname></para>
 					<programlisting language="sql" xml:space="preserve">
@@ -416,7 +416,7 @@ SELECT round(stbox 'STBOX XT(((1.12345, 1.12345),(2.12345, 2.12345)),
 		</sect1>
 
 	<sect1 id ="box_types_srid">
-		<title>Spatial Reference System Operations</title>
+		<title>Spatial Reference System</title>
 
 		<itemizedlist>
 			<listitem id="stbox_SRID">
@@ -599,8 +599,8 @@ SELECT stbox 'STBOX ZT(((1,1,1),(3,3,3)),[2001-01-01,2001-01-02])' *
 		</itemizedlist>
 	</sect1>
 
-	<sect1 id="box_types_topo">
-		<title>Topological Operations</title>
+	<sect1 id="box_types_topo_rel">
+		<title>Topological and Relative Position Operations</title>
 
 		<para>There are five topological operators: overlaps (<varname>&amp;&amp;</varname>), contains (<varname>@&gt;</varname>), contained (<varname>&lt;@</varname>), same (<varname>~=</varname>), and adjacent (<varname>-|-</varname>). The operators verify the topological relationship between the bounding boxes taking into account the value and/or the time dimension for as many dimensions that are present on both arguments.</para>
 
@@ -678,12 +678,8 @@ SELECT stbox 'STBOX XT(((1,1),(3,3)),[2001-01-01,2001-01-03])' -|-
 </programlisting>
 			</listitem>
 		</itemizedlist>
-	</sect1>
 
-	<sect1 id="box_types_relative">
-		<title>Relative Position Operations</title>
-
-		<para>These operators consider the relative position of the bounding boxes. The operators <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, and <varname>&amp;&gt;</varname> consider the X value for the <varname>tbox</varname> type and the X coordinates for the <varname>stbox</varname> type, the operators <varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&amp;&lt;|</varname>, and <varname>|&amp;&gt;</varname> consider the Y coordinates for the <varname>stbox</varname> type, the operators <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&amp;&lt;/</varname>, and <varname>/&amp;&gt;</varname> consider the Z coordinates for the <varname>stbox</varname> type, and the operators <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&lt;</varname>, and <varname>#&amp;&gt;</varname> consider the time dimension for the <varname>tbox</varname> and <varname>stbox</varname> types. The operators raise an error if both boxes do not have the required dimension.</para>
+		<para>The relative position operators consider the relative position of the bounding boxes. The operators <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, and <varname>&amp;&gt;</varname> consider the X value for the <varname>tbox</varname> type and the X coordinates for the <varname>stbox</varname> type, the operators <varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&amp;&lt;|</varname>, and <varname>|&amp;&gt;</varname> consider the Y coordinates for the <varname>stbox</varname> type, the operators <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&amp;&lt;/</varname>, and <varname>/&amp;&gt;</varname> consider the Z coordinates for the <varname>stbox</varname> type, and the operators <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&lt;</varname>, and <varname>#&amp;&gt;</varname> consider the time dimension for the <varname>tbox</varname> and <varname>stbox</varname> types. The operators raise an error if both boxes do not have the required dimension.</para>
 
 		<para>The operators for the numeric dimension of the <varname>tbox</varname> type are given next.</para>
 

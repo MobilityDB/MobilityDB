@@ -158,7 +158,7 @@ SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' #&lt;
 	<sect1 id="temporal_types_input_output">
 		<title>Entrada y salida</title>
 			<para>
-				MobilityDB generaliza los formatos de entrada/salida Well-Known Text (WKT), Moving Features JSON (MF-JSON) y Well-Known Binary (WKB) del Open Geospatial Consortium para todos los tipos temporales. Presentamos a continuación las funciones de entrada y salida para los tipos temporales. Empezamos describiendo formato WKT.
+				MobilityDB generaliza los formatos de entrada y salida Well-Known Text (WKT), Moving Features JSON (MF-JSON) y Well-Known Binary (WKB) del Open Geospatial Consortium para todos los tipos temporales. Presentamos a continuación las funciones de entrada y salida para los tipos temporales. Empezamos describiendo formato WKT.
 			</para>
 
 		<para>
@@ -268,7 +268,7 @@ SELECT tgeompoint 'SRID=5435;[SRID=4326;Point(0 0)@2000-01-01,
 </programlisting>
 
 		<para>
-			Damos a continuación las funciones de entrada/salida en formato Moving Features JSON (MF-JSON) y binario conocido (WKB) para los tipos alfanuméricos temporales. Las funciones correspondientes para los puntos temporales se detallan en la <xref linkend="tpoint_inout" />.
+			Damos a continuación las funciones de entrada y salida en formato Moving Features JSON (MF-JSON) y binario conocido (WKB) para los tipos alfanuméricos temporales. Las funciones correspondientes para los puntos temporales se detallan en la <xref linkend="tpoint_inout" />.
 		</para>
 
 		<itemizedlist>
@@ -290,23 +290,22 @@ SELECT tgeompoint 'SRID=5435;[SRID=4326;Point(0 0)@2000-01-01,
 				<para>El argumento <varname>maxdecdigits</varname> puede usarse para establecer el número máximo de decimales en la salida de los valores en punto flotante (por defecto 15).</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT asMFJSON(tbool 't@2019-01-01 18:00:00', 1);
-/* {"type":"MovingBoolean","stBoundedBy":{"period":{"begin":"2019-01-01 18:00:00+01",
-   "end":"2019-01-01 18:00:00+01","lower_inc":true,"upper_inc":true}},"values":[true],
-   "datetimes":"[2019-01-01T18:00:00+01]","interpolations":"Discrete"} */
-SELECT asMFJSON(tint '{10@2019-01-01 18:00:00, 25@2019-01-01 18:10:00}', 1); */
-/* {"type":"MovingInteger","stBoundedBy":{"bbox":[10,25],
-   "period":{"begin":"2019-01-01 18:00:00+01","end":"2019-01-01 18:10:00+01"}},
-   "values":[10,25],"datetimes":["2019-01-01T18:00:00+01","2019-01-01T18:10:00+01"],
-   "interpolations":["Discrete"]} */
+/* {"type":"MovingBoolean","period":{"begin":"2019-01-01T18:00:00+01",
+  "end":"2019-01-01T18:00:00+01","lower_inc":true,"upper_inc":true},
+  "values":[true],"datetimes":["2019-01-01T18:00:00+01"],"interpolation":"None"} */
+SELECT asMFJSON(tint '{10@2019-01-01 18:00:00, 25@2019-01-01 18:10:00}', 1);
+/* {"type":"MovingInteger","bbox":[10,25],"period":{"begin":"2019-01-01T18:00:00+01",
+   "end":"2019-01-01T18:10:00+01"},"values":[10,25],"datetimes":["2019-01-01T18:00:00+01",
+   "2019-01-01T18:10:00+01"],"lower_inc":true,"upper_inc":true,
+   "interpolation":"Discrete"} */
 SELECT asMFJSON(tfloat '[10.5@2019-01-01 18:00:00+02, 25.5@2019-01-01 18:10:00+02]');
-/* {"type":"MovingFloat","values":[10.5,25.5],
-   "datetimes":["2019-01-01T17:00:00+01","2019-01-01T17:10:00+01"],
-   "lower_inc":true,"upper_inc":true,"interpolations":["Linear"]} */
+/* {"type":"MovingFloat","values":[10.5,25.5],"datetimes":["2019-01-01T17:00:00+01",
+  "2019-01-01T17:10:00+01"],"lower_inc":true,"upper_inc":true,"interpolation":"Linear"} */
 SELECT asMFJSON(ttext '{[walking@2019-01-01 18:00:00+02,
   driving@2019-01-01 18:10:00+02]}');
 /* {"type":"MovingText","sequences":[{"values":["walking","driving"],
-   "datetimes":["2019-01-01T17:00:00+01","2019-01-01T17:10:00+01"],
-   "lower_inc":true,"upper_inc":true}],"interpolations":["Step"]} */
+  "datetimes":["2019-01-01T17:00:00+01","2019-01-01T17:10:00+01"],
+  "lower_inc":true,"upper_inc":true}],"interpolation":"Step"} */
 </programlisting>
 			</listitem>
 
@@ -344,7 +343,37 @@ SELECT asHexWKB(ttext 'AAA@2001-01-01');
 </programlisting>
 			</listitem>
 
-			<listitem id="tboolFromBinary">
+			<listitem id="temporal_FromMFJSON">
+				<indexterm><primary><varname>&lt;ttype&gt;FromMFJSON</varname></primary></indexterm>
+				<para>Input a temporal value from its Moving Features JSON (MF-JSON) representation</para>
+				<para>There is one function per base type, the name of the function has as prefix the name of the base type, which is <varname>tbool</varname> or <varname>tint</varname> in the examples below.</para>
+				<para><varname>&lt;ttype&gt;FromMFJSON(bytea) → ttype</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT tboolFromMFJSON(text
+  '{"type":"MovingBoolean","period":{"begin":"2019-01-01T18:00:00+01",
+  "end":"2019-01-01T18:00:00+01","lower_inc":true,"upper_inc":true},
+  "values":[true],"datetimes":["2019-01-01T18:00:00+01"],"interpolation":"None"}');
+-- t@2019-01-01 18:00:00
+SELECT tintFromMFJSON(text
+  '{"type":"MovingInteger","bbox":[10,25],"period":{"begin":"2019-01-01T18:00:00+01",
+   "end":"2019-01-01T18:10:00+01"},"values":[10,25],"datetimes":["2019-01-01T18:00:00+01",
+   "2019-01-01T18:10:00+01"],"lower_inc":true,"upper_inc":true,
+   "interpolation":"Discrete"}');
+-- {10@2019-01-01 18:00:00, 25@2019-01-01 18:10:00}
+SELECT tfloatFromMFJSON(text
+  '{"type":"MovingFloat","values":[10.5,25.5],"datetimes":["2019-01-01T17:00:00+01",
+   "2019-01-01T17:10:00+01"],"lower_inc":true,"upper_inc":true,
+   "interpolation":"Linear"}');
+-- [10.5@2019-01-01 18:00:00, 25.5@2019-01-01 18:10:00]'
+SELECT ttextFromMFJSON(text
+  '{"type":"MovingText","sequences":[{"values":["walking","driving"],
+  "datetimes":["2019-01-01T17:00:00+01","2019-01-01T17:10:00+01"],
+  "lower_inc":true,"upper_inc":true}],"interpolation":"Step"}');
+-- {["walking"@2019-01-01 18:00:00, "driving"@2019-01-01 18:10:00]}');
+</programlisting>
+			</listitem>
+
+			<listitem id="temporal_FromBinary">
 				<indexterm><primary><varname>&lt;ttype&gt;FromBinary</varname></primary></indexterm>
 				<para>Entrar un valor temporal de su representación binaria conocida (WKB)</para>
 				<para>Hay una función por tipo base, el nombre de esta función tiene como prefijo el nombre del tipo base, que son <varname>tbool</varname> o <varname>tint</varname> en los ejemplos a continuación.</para>
@@ -361,7 +390,7 @@ SELECT ttextFromBinary('\x01170001040000000000000041414100009c57d3c11c0000');
 </programlisting>
 			</listitem>
 
-			<listitem id="tboolFromHexWKB">
+			<listitem id="temporal_FromHexWKB">
 				<indexterm><primary><varname>&lt;ttype&gt;FromHexWKB</varname></primary></indexterm>
 				<para>Entrar un valor temporal de su representación hexadecimal binaria conocida (HexWKB)</para>
 				<para>Hay una función por tipo base, el nombre de esta función tiene como prefijo el nombre del tipo base, que son <varname>tbool</varname> o <varname>tint</varname> en los ejemplos de firmas a continuación</para>

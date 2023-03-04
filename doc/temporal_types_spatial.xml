@@ -203,7 +203,7 @@ SELECT asEWKT(tgeogpointFromHexEWKB(
 	</sect1>
 
 	<sect1 id="tpoint_srid">
-		<title>Spatial Reference System Operations</title>
+		<title>Spatial Reference System</title>
 
 		<itemizedlist>
 			<listitem id="tpoint_SRID">
@@ -696,7 +696,7 @@ SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02)' &lt;-&gt;
 	</sect1>
 
 	<sect1 id="tpoint_spatial_rel">
-		<title>Spatial Relationships</title>
+		<title>Ever and Temporal Spatial Relationships</title>
 
 		<para>The topological relationships such as <varname>ST_Intersects</varname> and the distance relationships such as <varname>ST_DWithin</varname> can be generalized for temporal points. The arguments of these generalized functions are either a temporal point and a base type (that is, a <varname>geometry</varname> or a <varname>geography</varname>) or two temporal points. Furthermore, both arguments must be of the same base type, that is, these functions do not allow to mix a temporal geometry point (or a geometry) and a temporal geography point (or a geography).</para>
 
@@ -769,11 +769,8 @@ WHERE eintersects(T.Trip, R.Geom)
 		<para>Not all spatial relationships available in PostGIS have a meaningful generalization for temporal points. A generalized version of the following relationships are defined for temporal geometric points: <varname>eintersects</varname>, <varname>edisjoint</varname>, <varname>edwithin</varname>, <varname>econtains</varname>, and <varname>etouches</varname>, while for temporal geographic points only the three first ones are defined. Furthermore, not all combinations of parameters are meaningful for a given generalized function. For example, while <varname>tcontains(geometry, tpoint)</varname> is meaningful, <varname>tcontains(tpoint, geometry)</varname> is meaningful only when the geometry is a single point, and <varname>tcontains(tpoint, tpoint)</varname> is equivalent to <varname>tintersects(tpoint, geometry)</varname>. For this reason, only the first combination of parameters is defined for <varname>econtains</varname> and <varname>tcontains</varname>.</para>
 
 		<para>Finally, it is worth noting that the temporal relationships allow to mix 2D/3D geometries but in that case, the computation is only performed on 2D.</para>
-	</sect1>
 
-	<sect1 id="tpoint_spatial_rel_ever">
-		<title>Ever Spatial Relationships</title>
-		<para>All these functions automatically include a bounding box comparison that makes use of any spatial indexes that are available on the arguments.</para>
+		<para>We present next the ever spatial relationships. All of them automatically include a bounding box comparison that makes use of any spatial indexes that are available on the arguments.</para>
 		<itemizedlist>
 			<listitem id="econtains">
 				<indexterm><primary><varname>econtains</varname></primary></indexterm>
@@ -839,11 +836,8 @@ SELECT etouches(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
 </programlisting>
 			</listitem>
 		</itemizedlist>
-	</sect1>
 
-	<sect1 id="tpoint_spatial_rel_temp">
-		<title>Temporal Spatial Relationships</title>
-		<para>A common requirement regarding the temporal spatial relationships is to restrict the result of the relationship to the instants when the value of the result is true (alternatively, false). As an example, the following query computes for each trip the time spent traveling in the Brussels municipality.</para>
+		<para>We present next the temporal spatial relationships. A common requirement regarding them is to restrict the result of the relationship to the instants when the value of the result is true or false. As an example, the following query computes for each trip the time spent traveling in the Brussels municipality.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT TripId, duration(atValue(tintersects(T.trip, M.geom), True))
 FROM Trips T, Municipality M

@@ -112,19 +112,19 @@
 			<title>Entrada y salida</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="spantime_asBinary"><varname>asBinary</varname></link>: Obtener la representación binaria conocida (Well-Known Binary o WKB) de un conjunto o un rango</para>
+					<para><link linkend="setspan_asBinary"><varname>asBinary</varname></link>: Obtener la representación binaria conocida (Well-Known Binary o WKB)</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="spantime_asHexWKB"><varname>asHexWKB</varname></link>: Obtener la representación hexadecimal binaria conocida (HexWKB) de un conjunto o un rango</para>
+					<para><link linkend="setspan_asHexWKB"><varname>asHexWKB</varname></link>: Obtener la representación hexadecimal binaria conocida (HexWKB)</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="spantime_FromBinary"><varname>&lt;set&gt;FromBinary</varname>, <varname>&lt;span&gt;FromBinary</varname>, <varname>&lt;spanset&gt;FromBinary</varname></link>: Entrar un conjunto o un rango en la representación binaria conocida (WKB)</para>
+					<para><link linkend="setspan_FromBinary"><varname>&lt;set&gt;FromBinary</varname>, <varname>&lt;span&gt;FromBinary</varname>, <varname>&lt;spanset&gt;FromBinary</varname></link>: Obtener a partir de la representación binaria conocida (WKB)</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="spantime_FromHexWKB"><varname>&lt;set&gt;FromHexWKB</varname>, <varname>&lt;span&gt;FromHexWKB</varname>, <varname>&lt;spanset&gt;FromHexWKB</varname></link>: Entrar un conjunto o un rango en la representación hexadecimal binaria conocida (HexWKB)</para>
+					<para><link linkend="setspan_FromHexWKB"><varname>&lt;set&gt;FromHexWKB</varname>, <varname>&lt;span&gt;FromHexWKB</varname>, <varname>&lt;spanset&gt;FromHexWKB</varname></link>: Obtener a partir de la representación hexadecimal binaria conocida (HexWKB)</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -366,6 +366,27 @@
 		<title>Tipos de cuadro delimitadores</title>
 
 		<sect2>
+			<title>Entrada y salida</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="box_asBinary"><varname>asBinary</varname></link>: Obtener la representación binaria conocida (Well-Known Binary o WKB)</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="box_asHexWKB"><varname>asHexWKB</varname></link>: Obtener la representación hexadecimal binaria conocida (HexWKB)</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="box_FromBinary"><varname>tboxFromBinary</varname>, <varname>stboxFromBinary</varname></link>: Obtener a partir de la representación binaria conocida (WKB)</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="box_FromHexWKB"><varname>tboxFromHexWKB</varname>, <varname>stboxFromHexWKB</varname></link>: Obtener a partir de la representación hexadecimal binaria conocida (HexWKB)</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
 			<title>Constructores</title>
 			<itemizedlist>
 				<listitem>
@@ -515,7 +536,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Operaciones topológicas</title>
+			<title>Operaciones topológicas y de posición relativa</title>
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="box_overlap"><varname>&amp;&amp;</varname></link>: ¿Se superponen los cuadros delimitadores?</para>
@@ -536,12 +557,7 @@
 				<listitem>
 					<para><link linkend="box_adjacent"><varname>-|-</varname></link>: ¿Son los cuadros delimitadores adyacentes?</para>
 				</listitem>
-			</itemizedlist>
-		</sect2>
 
-		<sect2>
-			<title>Operaciones de posición relativa</title>
-			<itemizedlist>
 				<listitem>
 					<para><link linkend="tbox_left"><varname>&lt;&lt;</varname>, <varname>&lt;&lt;|</varname>, <varname>&lt;&lt;/</varname>, <varname>&lt;&lt;#</varname></link>: ¿Son los valores X/Y/Z/T del primer cuadro delimitador estrictamente mayores que los del segundo?</para>
 				</listitem>
@@ -563,6 +579,35 @@
 
 	<sect1>
 		<title>Tipos temporales: Operaciones genéricas</title>
+
+		<sect2>
+			<title>Entrada y salida</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="temporal_asMFJSON"><varname>asMFJSON</varname></link>: Obtener la representación Moving Features JSON (MF-JSON)</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="temporal_asBinary"><varname>asBinary</varname></link>: Obtener la representación Well-Known Binary (WKB)</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="temporal_asHexWKB"><varname>asHexWKB</varname></link>: Obtener la representación Hexadecimal Well-Known Binary (HexWKB) como texto</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="temporal_FromMFJSON"><varname>&lt;ttype&gt;FromMFJSON</varname></link>: Obtener a partir de la representación Moving Features JSON (MF-JSON)</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="temporal_FromBinary"><varname>&lt;ttype&gt;FromBinary</varname></link>: Obtener a partir de la representación Well-Known Binary (WKB)</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="temporal_FromHexWKB"><varname>&lt;ttype&gt;FromHexWKB</varname></link>: Obtener a partir de la representación Hexadecimal Well-Known Binary (HexWKB)</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
 
 		<sect2>
 			<title>Constructores</title>
@@ -1181,7 +1226,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Relaciones alguna vez</title>
+			<title>Relaciones espaciales alguna vez y temporales</title>
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="econtains"><varname>econtains</varname></link>: Contiene alguna vez</para>
@@ -1202,12 +1247,7 @@
 				<listitem>
 					<para><link linkend="etouches"><varname>etouches</varname></link>: Toca alguna vez</para>
 				</listitem>
-			</itemizedlist>
-		</sect2>
 
-		<sect2>
-			<title>Relaciones temporales</title>
-			<itemizedlist>
 				<listitem>
 					<para><link linkend="tcontains"><varname>tcontains</varname></link>: Contiene temporal</para>
 				</listitem>
