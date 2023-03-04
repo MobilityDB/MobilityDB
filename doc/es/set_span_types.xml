@@ -175,7 +175,7 @@ SELECT tstzspanset '{[2001-01-01 08:00:00, 2001-01-01 08:10:00),
 		</para>
 
 		<itemizedlist>
-			<listitem id="spantime_asBinary">
+			<listitem id="setspan_asBinary">
 				<indexterm><primary><varname>asBinary</varname></primary></indexterm>
 				<para>Obtener la representación binaria conocida (Well-Known Binary o WKB)</para>
 				<para><varname>asBinary({set,spans},endian text='') → bytea</varname></para>
@@ -190,7 +190,7 @@ SELECT asBinary(intspanset '{[1, 2], [4, 5]}', 'XDR');
 </programlisting>
 			</listitem>
 
-			<listitem id="spantime_asHexWKB">
+			<listitem id="setspan_asHexWKB">
 				<indexterm><primary><varname>asHexWKB</varname></primary></indexterm>
 				<para>Obtener la representación hexadecimal binaria conocida (HexWKB) en formato texto</para>
 				<para><varname>asHexWKB({set,spans},endian text='') → text</varname></para>
@@ -205,7 +205,7 @@ SELECT asHexWKB(intspanset '{[1, 2], [4, 5]}', 'XDR');
 </programlisting>
 			</listitem>
 
-			<listitem id="spantime_FromBinary">
+			<listitem id="setspan_FromBinary">
 				<indexterm><primary><varname>&lt;set&gt;FromBinary</varname></primary></indexterm>
 				<indexterm><primary><varname>&lt;span&gt;FromBinary</varname></primary></indexterm>
 				<indexterm><primary><varname>&lt;spanset&gt;FromBinary</varname></primary></indexterm>
@@ -225,7 +225,7 @@ SELECT tstzspansetFromBinary(
 </programlisting>
 			</listitem>
 
-			<listitem id="spantime_FromHexWKB">
+			<listitem id="setspan_FromHexWKB">
 				<indexterm><primary><varname>&lt;set&gt;FromHexWKB</varname></primary></indexterm>
 				<indexterm><primary><varname>&lt;span&gt;FromHexWKB</varname></primary></indexterm>
 				<indexterm><primary><varname>&lt;spanset&gt;FromHexWKB</varname></primary></indexterm>

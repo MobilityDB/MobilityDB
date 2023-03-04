@@ -1,4 +1,4 @@
-  /***********************************************************************
+/***********************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
  * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
@@ -48,8 +48,9 @@
 #include "point/geography_funcs.h"
 #include "point/tpoint.h"
 #include "point/tpoint_boxops.h"
-#include "point/tpoint_spatialrels.h"
+#include "point/tpoint_distance.h"
 #include "point/tpoint_spatialfuncs.h"
+#include "point/tpoint_spatialrels.h"
 
 /* Timestamps in PostgreSQL are encoded as MICROseconds since '2000-01-01'
  * while Unix epoch are encoded as MILLIseconds since '1970-01-01'.
@@ -768,18 +769,194 @@ geo_to_tpoint(const GSERIALIZED *geo)
 }
 
 /***********************************************************************
- * Minimum distance simplification for temporal points.
+ * Minimum distance simplification for temporal floats and points.
  * Inspired from Moving Pandas function MinDistanceGeneralizer
  * https://github.com/movingpandas/movingpandas/blob/main/movingpandas/trajectory_generalizer.py
  ***********************************************************************/
 
+/**
+ * @brief Simplify the temporal sequence float/point ensuring that consecutive
+ * values are at least a certain distance apart.
+ * @param[in] seq Temporal value
+ * @param[in] dist Minimum distance
+ */
+TSequence *
+tsequence_simplify_min_dist(const TSequence *seq, double dist)
+{
+  const TInstant *inst1 = tsequence_inst_n(seq, 0);
+  /* Add first instant to the output sequence */
+  const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  instants[0] = inst1;
+  int k = 1;
+  bool last = false;
+  /* Loop for every instant */
+  for (int i = 1; i < seq->count; i++)
+  {
+    const TInstant *inst2 = tsequence_inst_n(seq, i);
+    double d = tinstant_distance(inst1, inst2);
+    if (d > dist)
+    {
+      /* Add instant to output sequence */
+      instants[k++] = inst2;
+      inst1 = inst2;
+      if (i == seq->count - 1)
+        last = true;
+    }
+  }
+  TSequence *result = tsequence_make(instants, k,
+    (k == 1) ? true : seq->period.lower_inc,
+    (k == 1 || ! last) ? true : seq->period.upper_inc, LINEAR, NORMALIZE);
+  pfree(instants);
+  return result;
+}
+
+/**
+ * @brief Simplify the temporal sequence float/point ensuring that consecutive
+ * values are at least a certain distance apart.
+ * @param[in] ss Temporal value
+ * @param[in] dist Distance
+ */
+TSequenceSet *
+tsequenceset_simplify_min_dist(const TSequenceSet *ss, double dist)
+{
+  TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
+  for (int i = 0; i < ss->count; i++)
+  {
+    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    sequences[i] = tsequence_simplify_min_dist(seq, dist);
+  }
+  return tsequenceset_make_free(sequences, ss->count, NORMALIZE);
+}
+
+/**
+ * @ingroup libmeos_temporal_analytics
+ * @brief Simplify the temporal sequence float/point ensuring that consecutive
+ * values are at least a certain distance apart.
+ *
+ * This function is inspired from the Moving Pandas function MinDistanceGeneralizer
+ * https://github.com/movingpandas/movingpandas/blob/main/movingpandas/trajectory_generalizer.py
+ * @param[in] temp Temporal value
+ * @param[in] dist Distance in the units of the values for temporal floats or
+ * the units of the coordinate system for temporal points.
+ * @note The funcion applies only for temporal sequences or sequence sets with
+ * linear interpolation. In all other cases, it returns a copy of the temporal
+ * value.
+ * @sqlfunc minDistSimplify()
+ */
+Temporal *
+temporal_simplify_min_dist(const Temporal *temp, double dist)
+{
+  ensure_positive_datum(Float8GetDatum(dist), T_FLOAT8);
+  Temporal *result;
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
+    result = temporal_copy(temp);
+  else if (temp->subtype == TSEQUENCE)
+    result = (Temporal *) tsequence_simplify_min_dist((TSequence *) temp, dist);
+  else /* temp->subtype == TSEQUENCESET */
+    result = (Temporal *) tsequenceset_simplify_min_dist((TSequenceSet *) temp,
+      dist);
+  return result;
+}
+
+/***********************************************************************
+ * Minimum time delta simplification for temporal floats and points.
+ * Inspired from Moving Pandas function MinTimeDeltaGeneralizer
+ * https://github.com/movingpandas/movingpandas/blob/main/movingpandas/trajectory_generalizer.py
+ ***********************************************************************/
+
+/**
+ * @brief Simplify the temporal sequence float/point ensuring that consecutive
+ * values are at least a certain time interval apart.
+ * @param[in] seq Temporal value
+ * @param[in] mint Minimum time interval
+ */
+TSequence *
+tsequence_simplify_min_tdelta(const TSequence *seq, const Interval *mint)
+{
+  const TInstant *inst1 = tsequence_inst_n(seq, 0);
+  /* Add first instant to the output sequence */
+  const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  instants[0] = inst1;
+  int k = 1;
+  bool last = false;
+  /* Loop for every instant */
+  for (int i = 1; i < seq->count; i++)
+  {
+    const TInstant *inst2 = tsequence_inst_n(seq, i);
+    Interval *duration = pg_timestamp_mi(inst2->t, inst1->t);
+    if (pg_interval_cmp(duration, mint) > 0)
+    {
+      /* Add instant to output sequence */
+      instants[k++] = inst2;
+      inst1 = inst2;
+      if (i == seq->count - 1)
+        last = true;
+    }
+    pfree(duration);
+  }
+  TSequence *result = tsequence_make(instants, k,
+    (k == 1) ? true : seq->period.lower_inc,
+    (k == 1 || ! last) ? true : seq->period.upper_inc, LINEAR, NORMALIZE);
+  pfree(instants);
+  return result;
+}
+
+/**
+ * @brief Simplify the temporal sequence float/point ensuring that consecutive
+ * values are at least a certain time interval apart.
+ * @param[in] ss Temporal value
+ * @param[in] mint Minimum time interval
+ */
+TSequenceSet *
+tsequenceset_simplify_min_tdelta(const TSequenceSet *ss, const Interval *mint)
+{
+  TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
+  for (int i = 0; i < ss->count; i++)
+  {
+    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    sequences[i] = tsequence_simplify_min_tdelta(seq, mint);
+  }
+  return tsequenceset_make_free(sequences, ss->count, NORMALIZE);
+}
+
+/**
+ * @ingroup libmeos_temporal_analytics
+ * @brief Simplify the temporal sequence float/point ensuring that consecutive
+ * values are at least a certain time interval apart.
+ *
+ * This function is inspired from the Moving Pandas function MinTimeDeltaGeneralizer
+ * https://github.com/movingpandas/movingpandas/blob/main/movingpandas/trajectory_generalizer.py
+ * @param[in] temp Temporal value
+ * @param[in] mint Minimum time interval
+ * @note The funcion applies only for temporal sequences or sequence sets with
+ * linear interpolation. In all other cases, it returns a copy of the temporal
+ * value.
+ * @sqlfunc minTimeDeltaSimplify()
+ */
+Temporal *
+temporal_simplify_min_tdelta(const Temporal *temp, const Interval *mint)
+{
+  ensure_valid_duration(mint);
+  Temporal *result;
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
+    result = temporal_copy(temp);
+  else if (temp->subtype == TSEQUENCE)
+    result = (Temporal *) tsequence_simplify_min_tdelta((TSequence *) temp,
+      mint);
+  else /* temp->subtype == TSEQUENCESET */
+    result = (Temporal *) tsequenceset_simplify_min_tdelta((TSequenceSet *) temp,
+      mint);
+  return result;
+}
 
 /***********************************************************************
  * Simple Douglas-Peucker-like value simplification for temporal floats.
  ***********************************************************************/
 
 /**
- * @brief Find a split when simplifying the temporal sequence point using the
+ * @brief Find a split when simplifying the temporal sequence float using the
  * Douglas-Peucker line simplification algorithm.
  * @param[in] seq Temporal sequence
  * @param[in] i1,i2 Indexes of the reference instants

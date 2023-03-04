@@ -54,6 +54,49 @@
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
 
+/*****************************************************************************
+ * Compute the distance between two instants depending on their type
+ *****************************************************************************/
+
+/**
+ * @brief Compute the distance between two temporal instants.
+ * @param[in] inst1,inst2 Temporal instants
+ */
+double
+tnumberinst_distance(const TInstant *inst1, const TInstant *inst2)
+{
+  double result = fabs(tnumberinst_double(inst1) - tnumberinst_double(inst2));
+  return result;
+}
+
+/**
+ * @brief Compute the distance between two temporal instants.
+ * @param[in] inst1,inst2 Temporal instants
+ */
+double
+tpointinst_distance(const TInstant *inst1, const TInstant *inst2)
+{
+  datum_func2 func = pt_distance_fn(inst1->flags);
+  Datum value1 = tinstant_value(inst1);
+  Datum value2 = tinstant_value(inst2);
+  double result = DatumGetFloat8(func(value1, value2));
+  return result;
+}
+
+/**
+ * @brief Compute the distance between two temporal instants.
+ * @param[in] inst1,inst2 Temporal instants
+ */
+double
+tinstant_distance(const TInstant *inst1, const TInstant *inst2)
+{
+  if (tnumber_type(inst1->temptype))
+    return tnumberinst_distance(inst1, inst2);
+  if (tgeo_type(inst1->temptype))
+    return tpointinst_distance(inst1, inst2);
+  elog(ERROR, "Unexpected temporal type: inst1->temptype");
+}
+
 /*****************************************************************************/
 
 /**

@@ -1198,10 +1198,6 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="simplify"><varname>simplify</varname></link>: Simplify a temporal point using the Douglas-Peucker algorithm</para>
-				</listitem>
-
-				<listitem>
 					<para><link linkend="geoMeasure"><varname>geoMeasure</varname></link>: Construct a geometry/geography with M measure from a temporal point and a temporal float</para>
 				</listitem>
 
@@ -1281,6 +1277,24 @@
 
 	<sect1>
 		<title>Operations for Temporal Types: Analytics Operations</title>
+
+		<sect2>
+			<title>Simplification</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="minDistSimplify"><varname>minDistSimplify</varname></link>: Simplify a temporal float or a temporal point ensuring that consecutive values are at least a certain distance apart</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="minTimeDeltaSimplify"><varname>minTimeDeltaSimplify</varname></link>: Simplify a temporal float or a temporal point ensuring that consecutive values are at least a certain time interval apart</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="dpSimplify"><varname>dpSimplify</varname></link>: Simplify a temporal float or a temporal point using the Douglas-Peucker algorithm</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
 
 		<sect2>
 			<title>Similarity</title>

@@ -1190,10 +1190,6 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="simplify"><varname>simplify</varname></link>: Simplificar un punto temporal usando el algoritmo de Douglas-Peucker</para>
-				</listitem>
-
-				<listitem>
 					<para><link linkend="geoMeasure"><varname>geoMeasure</varname></link>: Construir una geometría/geografía con medida M a partir de un punto temporal y un número flotante temporal </para>
 				</listitem>
 
@@ -1273,6 +1269,24 @@
 
 	<sect1>
 		<title>Tipos temporales: Operaciones de análisis</title>
+
+		<sect2>
+			<title>Simplicación</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="minDistSimplify"><varname>minDistSimplify</varname></link>: Simplificar un flotante o un punto temporal asegurándose de que los valores consecutivos estén al menos separados por una cierta distancia</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="minTimeDeltaSimplify"><varname>minTimeDeltaSimplify</varname></link>: Simplificar un flotante o un punto temporal asegurándose de que los valores consecutivos estén al menos separados por un cierto intervalo de tiempo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="dpSimplify"><varname>dpSimplify</varname></link>: Simplificar un flotante o un punto temporal usando el algoritmo de Douglas-Peucker</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
 
 		<sect2>
 			<title>Similaridad</title>

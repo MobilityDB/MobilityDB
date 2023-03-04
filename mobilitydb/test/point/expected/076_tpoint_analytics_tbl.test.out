@@ -460,6 +460,42 @@ SELECT ST_AsText(round(geoMeasure(temp, round(speed(temp),2)), 6)) FROM tbl_tgeo
  MULTILINESTRING ZM ((74.964648 43.149308 37.687564 0.21,37.568644 78.776645 1.997434 0.14,91.209209 84.318487 27.398488 0.34,16.092665 66.521071 1.628714 0.34),(48.266965 33.145534 10.217677 0.22,99.153404 22.164786 23.24573 0.32,33.542146 59.374398 10.354208 1,2.523706 48.041772 60.153258 1))
 (47 rows)
 
+SELECT MAX(numInstants(minDistSimplify(temp, 4))) FROM tbl_tfloat;
+ max 
+-----
+  46
+(1 row)
+
+SELECT MAX(numInstants(minDistSimplify(temp, 4))) FROM tbl_tgeompoint;
+ max 
+-----
+  55
+(1 row)
+
+SELECT MAX(numInstants(minDistSimplify(temp, 4))) FROM tbl_tgeogpoint;
+ max 
+-----
+  47
+(1 row)
+
+SELECT MAX(numInstants(minTimeDeltaSimplify(temp, '3 min'))) FROM tbl_tfloat;
+ max 
+-----
+  41
+(1 row)
+
+SELECT MAX(numInstants(minTimeDeltaSimplify(temp, '3 min'))) FROM tbl_tgeompoint;
+ max 
+-----
+  43
+(1 row)
+
+SELECT MAX(numInstants(minTimeDeltaSimplify(temp, '3 min'))) FROM tbl_tgeogpoint;
+ max 
+-----
+  38
+(1 row)
+
 SELECT MAX(numInstants(dpSimplify(temp, 4))) FROM tbl_tfloat;
  max 
 -----

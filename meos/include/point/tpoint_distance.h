@@ -44,6 +44,10 @@
 
 /*****************************************************************************/
 
+extern double tnumberinst_distance(const TInstant *inst1, const TInstant *inst2);
+extern double tpointinst_distance(const TInstant *inst1, const TInstant *inst2);
+extern double tinstant_distance(const TInstant *inst1, const TInstant *inst2);
+
 /*****************************************************************************/
 
 #endif

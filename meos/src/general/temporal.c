@@ -313,9 +313,9 @@ ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
     if (maxt != NULL && ! split)
     {
       Interval *duration = pg_timestamp_mi(instants[i]->t, instants[i - 1]->t);
-      int cmp = pg_interval_cmp(duration, maxt);
-      if (cmp > 0)
+      if (pg_interval_cmp(duration, maxt) > 0)
         split = true;
+      pfree(duration);
     }
     if (split)
       result[k++] = i;
