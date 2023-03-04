@@ -497,6 +497,18 @@ tnumber_delta_value(const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_math
+ * @brief Convert a number from radians to degrees
+ * @sqlfunc degrees()
+ */
+double
+float_degrees(double value, bool normalize)
+{
+  return DatumGetFloat8(datum_degrees(Float8GetDatum(value),
+    BoolGetDatum(normalize)));
+}
+
+/**
+ * @ingroup libmeos_temporal_math
  * @brief Convert a temporal number from radians to degrees
  * @sqlfunc degrees()
  */

@@ -768,6 +768,13 @@ geo_to_tpoint(const GSERIALIZED *geo)
 }
 
 /***********************************************************************
+ * Minimum distance simplification for temporal points.
+ * Inspired from Moving Pandas function MinDistanceGeneralizer
+ * https://github.com/movingpandas/movingpandas/blob/main/movingpandas/trajectory_generalizer.py
+ ***********************************************************************/
+
+
+/***********************************************************************
  * Simple Douglas-Peucker-like value simplification for temporal floats.
  ***********************************************************************/
 
@@ -836,24 +843,6 @@ int_cmp(const void *a, const void *b)
  * No checks are done to avoid introduction of self-intersections.
  * No topology relations are considered.
  ***********************************************************************/
-
-#if 0 /* not used */
-/**
- * @brief Return the speed of the temporal point in the segment in units per second
- * @param[in] inst1, inst2 Instants defining the segment
- * @param[in] func Distance function (2D, 3D, or geodetic)
- */
-static double
-tpointinst_speed(const TInstant *inst1, const TInstant *inst2,
-  datum_func2 func)
-{
-  Datum value1 = tinstant_value(inst1);
-  Datum value2 = tinstant_value(inst2);
-  return datum_point_eq(value1, value2) ? 0 :
-    DatumGetFloat8(func(value1, value2)) /
-      ((double)(inst2->t - inst1->t) / 1000000);
-}
-#endif /* not used */
 
 /**
  * @brief Return the 2D distance between the points
@@ -1031,7 +1020,7 @@ tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool syncdist,
  * Douglas-Peucker line simplification algorithm.
  */
 static TSequence *
-tsequence_simplify(const TSequence *seq, double dist, bool syncdist,
+tsequence_simplify_dp(const TSequence *seq, double dist, bool syncdist,
   uint32_t minpts)
 {
   static size_t stack_size = 256;
@@ -1113,14 +1102,14 @@ tsequence_simplify(const TSequence *seq, double dist, bool syncdist,
  * @param[in] minpts Minimum number of points
  */
 static TSequenceSet *
-tsequenceset_simplify(const TSequenceSet *ss, double dist, bool syncdist,
+tsequenceset_simplify_dp(const TSequenceSet *ss, double dist, bool syncdist,
   uint32_t minpts)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
-    sequences[i] = tsequence_simplify(seq, dist, syncdist, minpts);
+    sequences[i] = tsequence_simplify_dp(seq, dist, syncdist, minpts);
   }
   return tsequenceset_make_free(sequences, ss->count, NORMALIZE);
 }
@@ -1131,26 +1120,26 @@ tsequenceset_simplify(const TSequenceSet *ss, double dist, bool syncdist,
  * simplification algorithm.
  * @param[in] temp Temporal value
  * @param[in] dist Distance in the units of the values for temporal floats or
- * the units of coordinate system for temporal points.
+ * the units of the coordinate system for temporal points.
  * @param[in] syncdist True when the Synchronized Distance is used, false when
  * the spatial-only distance is used. Only used for temporal points.
  * @note The funcion applies only for temporal sequences or sequence sets with
  * linear interpolation. In all other cases, it returns a copy of the temporal
  * value.
- * @sqlfunc simplify()
+ * @sqlfunc dpSimplify()
  */
 Temporal *
-temporal_simplify(const Temporal *temp, double dist, bool syncdist)
+temporal_simplify_dp(const Temporal *temp, double dist, bool syncdist)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     result = temporal_copy(temp);
   else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tsequence_simplify((TSequence *) temp, dist,
+    result = (Temporal *) tsequence_simplify_dp((TSequence *) temp, dist,
       syncdist, 2);
   else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tsequenceset_simplify((TSequenceSet *) temp,
+    result = (Temporal *) tsequenceset_simplify_dp((TSequenceSet *) temp,
       dist, syncdist, 2);
   return result;
 }
@@ -1550,7 +1539,7 @@ tpoint_mvt(const Temporal *tpoint, const STBox *box, uint32_t extent,
   Temporal *tpoint1 = tpoint_remove_repeated_points(tpoint, res, 2);
 
   /* Euclidean (not synchronized) distance, i.e., parameter set to false */
-  Temporal *tpoint2 = temporal_simplify(tpoint1, res, false);
+  Temporal *tpoint2 = temporal_simplify_dp(tpoint1, res, false);
   pfree(tpoint1);
 
   /* Transform to tile coordinate space */

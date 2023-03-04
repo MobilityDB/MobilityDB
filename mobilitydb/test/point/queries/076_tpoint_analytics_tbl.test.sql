@@ -85,9 +85,9 @@ SELECT ST_AsText(round(geoMeasure(temp, round(speed(temp),2)), 6)) FROM tbl_tgeo
 
 -------------------------------------------------------------------------------
 
-SELECT MAX(numInstants(simplify(temp, 4))) FROM tbl_tfloat;
-SELECT MAX(numInstants(simplify(temp, 4))) FROM tbl_tgeompoint;
-SELECT MAX(numInstants(simplify(temp, 4, false))) FROM tbl_tgeompoint;
+SELECT MAX(numInstants(dpSimplify(temp, 4))) FROM tbl_tfloat;
+SELECT MAX(numInstants(dpSimplify(temp, 4))) FROM tbl_tgeompoint;
+SELECT MAX(numInstants(dpSimplify(temp, 4, false))) FROM tbl_tgeompoint;
 
 -------------------------------------------------------------------------------
 

@@ -383,6 +383,23 @@ Tnumber_delta_value(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PG_FUNCTION_INFO_V1(Float_degrees);
+/**
+ * @ingroup mobilitydb_temporal_math
+ * @brief Convert a number from radians to degrees
+ * @sqlfunc degrees()
+ */
+PGDLLEXPORT Datum
+Float_degrees(PG_FUNCTION_ARGS)
+{
+  double value = PG_GETARG_FLOAT8(0);
+  bool normalize = false;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+    normalize = PG_GETARG_BOOL(1);
+  double result = float_degrees(value, normalize);
+  PG_RETURN_FLOAT8(result);
+}
+
 PG_FUNCTION_INFO_V1(Tfloat_degrees);
 /**
  * @ingroup mobilitydb_temporal_math

@@ -108,20 +108,20 @@ Tpoint_to_geo_measure(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Temporal_simplify);
+PG_FUNCTION_INFO_V1(Temporal_simplify_dp);
 /**
  * @brief Simplify the temporal sequence (set) float or point using a
  * Douglas-Peucker line simplification algorithm.
  */
 PGDLLEXPORT Datum
-Temporal_simplify(PG_FUNCTION_ARGS)
+Temporal_simplify_dp(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   double dist = PG_GETARG_FLOAT8(1);
   bool syncdist = true;
   if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
     syncdist = PG_GETARG_BOOL(2);
-  Temporal *result = temporal_simplify(temp, dist, syncdist);
+  Temporal *result = temporal_simplify_dp(temp, dist, syncdist);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

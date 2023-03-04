@@ -1156,6 +1156,7 @@ extern Temporal *add_int_tint(int i, const Temporal *tnumber);
 extern Temporal *add_tfloat_float(const Temporal *tnumber, double d);
 extern Temporal *add_tint_int(const Temporal *tnumber, int i);
 extern Temporal *add_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2);
+extern double float_degrees(double value, bool normalize);
 extern Temporal *div_float_tfloat(double d, const Temporal *tnumber);
 extern Temporal *div_int_tint(int i, const Temporal *tnumber);
 extern Temporal *div_tfloat_float(const Temporal *tnumber, double d);
@@ -1713,7 +1714,7 @@ extern double temporal_hausdorff_distance(const Temporal *temp1, const Temporal 
 /* Analytics functions for temporal types */
 
 Temporal *geo_to_tpoint(const GSERIALIZED *geo);
-Temporal *temporal_simplify(const Temporal *temp, double eps_dist, bool synchronized);
+Temporal *temporal_simplify_dp(const Temporal *temp, double eps_dist, bool synchronized);
 bool tpoint_AsMVTGeom(const Temporal *temp, const STBox *bounds, int32_t extent,
   int32_t buffer, bool clip_geom, GSERIALIZED **geom, int64 **timesarr, int *count);
 bool tpoint_to_geo_measure(const Temporal *tpoint, const Temporal *measure, bool segmentize, GSERIALIZED **result);

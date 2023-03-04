@@ -86,14 +86,14 @@ LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 
-CREATE FUNCTION simplify(tfloat, float, boolean DEFAULT TRUE)
+CREATE FUNCTION dpSimplify(tfloat, float, boolean DEFAULT TRUE)
 RETURNS tfloat
-AS 'MODULE_PATHNAME', 'Temporal_simplify'
+AS 'MODULE_PATHNAME', 'Temporal_simplify_dp'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION simplify(tgeompoint, float, boolean DEFAULT TRUE)
+CREATE FUNCTION dpSimplify(tgeompoint, float, boolean DEFAULT TRUE)
 RETURNS tgeompoint
-AS 'MODULE_PATHNAME', 'Temporal_simplify'
+AS 'MODULE_PATHNAME', 'Temporal_simplify_dp'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE TYPE geom_times AS (
