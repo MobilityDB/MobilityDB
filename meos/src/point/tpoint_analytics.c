@@ -1108,9 +1108,7 @@ tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool syncdist,
   int *split, double *dist)
 {
   POINT2D p2k, p2_sync, p2a, p2b;
-  POINT3DZ p3k, p3_sync, p3a, p3b;
-  memset(&p3a, 0, sizeof(POINT3DZ)); /* make compiler quiet */
-  memset(&p3b, 0, sizeof(POINT3DZ)); /* make compiler quiet */
+  POINT3DZ p3k, p3_sync, p3a = { 0 }, p3b = { 0 }; /* make compiler quiet */
   Datum value;
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
   bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
@@ -1720,8 +1718,7 @@ tpointseq_grid(const TSequence *seq, const gridspec *grid, bool filter_pts)
   int k = 0;
   for (int i = 0; i < seq->count; i++)
   {
-    POINT4D p, prev_p;
-    memset(&prev_p, 0, sizeof(POINT4D)); /* make compiler quiet */
+    POINT4D p, prev_p = { 0 }; /* make compiler quiet */
     const TInstant *inst = tsequence_inst_n(seq, i);
     Datum value = tinstant_value(inst);
     point_grid(value, hasz, grid, &p);

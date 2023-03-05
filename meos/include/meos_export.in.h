@@ -1717,6 +1717,7 @@ Temporal *geo_to_tpoint(const GSERIALIZED *geo);
 Temporal *temporal_simplify_min_dist(const Temporal *temp, double dist);
 Temporal *temporal_simplify_min_tdelta(const Temporal *temp, const Interval *mint);
 Temporal *temporal_simplify_dp(const Temporal *temp, double eps_dist, bool synchronized);
+Temporal *temporal_simplify_max_dist(const Temporal *temp, double eps_dist, bool synchronized);
 bool tpoint_AsMVTGeom(const Temporal *temp, const STBox *bounds, int32_t extent,
   int32_t buffer, bool clip_geom, GSERIALIZED **geom, int64 **timesarr, int *count);
 bool tpoint_to_geo_measure(const Temporal *tpoint, const Temporal *measure, bool segmentize, GSERIALIZED **result);
