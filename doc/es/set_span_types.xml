@@ -1050,16 +1050,14 @@ SELECT tstzset '{2001-01-01, 2001-01-03, 2001-01-05}' &lt;-&gt;
 		<sect1>
 		<title>Agregaciones</title>
 
-		<para>Las funciones agregadas temporales generalizan las funciones agregadas tradicionales. Su semántica es que calculan el valor de la función en cada instante de la <emphasis>unión</emphasis> de las extensiones temporales de los valores a agregar. En contraste, recuerde que todas las otras funciones que manipulan tipos de tiempo calculan el valor de la función en cada instante de la <emphasis>intersección</emphasis> de las extensiones temporales de los argumentos.</para>
+		<para>Hay varias funciones agregadas definidas para los tipos de conjunto y de rango. Estas se describen a continuación.</para>
 
-		<para>Las funciones agregadas temporales son las siguientes:</para>
 		<itemizedlist>
-			<listitem><para>La función <varname>tcount</varname> generaliza la función tradicional <varname>count</varname>. El conteo temporal se puede utilizar para calcular en cada momento el número de objetos disponibles (por ejemplo, el número of períodos). La función <varname>tcount</varname> devuelve un entero temporal (ver el <xref linkend="temporal_types" />). La función tiene dos parámetros opcionales que especifican la granularidad (un <varname>interval</varname>) y el origen del tiempo (un <varname>timestamptz</varname>). Cuando se dan estos parámetros, el conteo temporal se calcula en intervalos de tiempo de la granularidad dada (ver <xref linkend="temporal_types_tiling" />)</para></listitem>
+			<listitem><para>La función <varname>tcount</varname> generaliza la función de agregación tradicional <varname>count</varname>. El conteo temporal se puede utilizar para calcular en cada momento el número de objetos disponibles (por ejemplo, el número of períodos). La función <varname>tcount</varname> devuelve un entero temporal (ver el <xref linkend="temporal_types" />). La función tiene dos parámetros opcionales que especifican la granularidad (un <varname>interval</varname>) y el origen del tiempo (un <varname>timestamptz</varname>). Cuando se dan estos parámetros, el conteo temporal se calcula en intervalos de tiempo de la granularidad dada (ver <xref linkend="temporal_types_tiling" />)</para></listitem>
 			<listitem><para>La función <varname>extent</varname> devuelve el rango o período delimitador que engloba un conjunto de valores de rango o de tiempo.</para></listitem>
-		</itemizedlist>
 
-		<para>La unión es una operación a muy útil para los tipos de tiempo. Como hemos visto en la <xref linkend="setspan_set_operators" />, podemos calcular la unión de dos valores de tiempo usando el operador <varname>+</varname>. Sin embargo, también es muy útil tener una versión agregada del operador de unión para combinar un número arbitrario de valores. La función <varname>tunion</varname> se puede utilizar para este propósito.
-		</para>
+			<listitem><para>La unión es una operación muy útil para los tipos de conjunto y de rango. Como hemos visto en la <xref linkend="setspan_set_operators" />, podemos calcular la unión de dos valores de conjunto o de rango usando el operador <varname>+</varname>. Sin embargo, también es muy útil tener una versión agregada del operador de unión para combinar un número arbitrario de valores. Las funciones <varname>set_union</varname> y <varname>span_union</varname> se pueden utilizar para este propósito.</para></listitem>
+		</itemizedlist>
 
 		<itemizedlist>
 			<listitem id="setspan_tcount">
@@ -1121,10 +1119,12 @@ SELECT extent(ps) FROM periods;
 </programlisting>
 			</listitem>
 
-			<listitem id="tunion">
-				<indexterm><primary><varname>tunion</varname></primary></indexterm>
-				<para>Unión temporal</para>
-				<para><varname>tunion({tstzset,tstzspan,tstzspanset})→{tstzset,tstzspanset}</varname></para>
+			<listitem id="setspan_union_agg">
+				<indexterm><primary><varname>set_union</varname></primary></indexterm>
+				<indexterm><primary><varname>span_union</varname></primary></indexterm>
+				<para>Unión agregada</para>
+				<para><varname>set_union({value,set}) → set</varname></para>
+				<para><varname>span_union(spans) → spanset</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 WITH times(ts) AS (
   SELECT tstzset '{2000-01-01, 2000-01-03, 2000-01-05}' UNION

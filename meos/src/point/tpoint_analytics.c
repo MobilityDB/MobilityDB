@@ -783,6 +783,7 @@ geo_to_tpoint(const GSERIALIZED *geo)
 TSequence *
 tsequence_simplify_min_dist(const TSequence *seq, double dist)
 {
+  datum_func2 func = pt_distance_fn(seq->flags);
   const TInstant *inst1 = tsequence_inst_n(seq, 0);
   /* Add first instant to the output sequence */
   const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
@@ -793,7 +794,7 @@ tsequence_simplify_min_dist(const TSequence *seq, double dist)
   for (int i = 1; i < seq->count; i++)
   {
     const TInstant *inst2 = tsequence_inst_n(seq, i);
-    double d = tinstant_distance(inst1, inst2);
+    double d = tinstant_distance(inst1, inst2, func);
     if (d > dist)
     {
       /* Add instant to output sequence */

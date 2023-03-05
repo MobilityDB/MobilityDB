@@ -1079,16 +1079,13 @@ SELECT tstzset '{2001-01-01, 2001-01-03, 2001-01-05}' &lt;-&gt;
 	<sect1>
 		<title>Aggregations</title>
 
-		<para>The temporal aggregate functions generalize the traditional aggregate functions. Their semantics is that they compute the value of the function at every instant in the <emphasis>union</emphasis> of the temporal extents of the values to aggregate. In contrast, recall that all other functions manipulating time types compute the value of the function at every instant in the <emphasis>intersection</emphasis> of the temporal extents of the arguments.</para>
+		<para>There are several aggregate functions defined for set and span types. They are described next.</para>
 
-		<para>The temporal aggregate functions are the following ones:</para>
 		<itemizedlist>
-			<listitem><para>Function <varname>tcount</varname> generalizes the traditional function <varname>count</varname>. The temporal count can be used to compute at each point in time the number of available objects (for example, number of spans). Function <varname>tcount</varname> returns a temporal integer (see <xref linkend="temporal_types" />). The function has two optional parameters that specify the granularity (an <varname>interval</varname>) and the origin of time (a <varname>timestamptz</varname>). When these parameters are given, the temporal count is computed at time buckets of the given granularity (see <xref linkend="temporal_types_tiling" />).</para></listitem>
+			<listitem><para>Function <varname>tcount</varname> generalizes the traditional aggregate function <varname>count</varname>. The temporal count can be used to compute at each point in time the number of available objects (for example, number of spans). Function <varname>tcount</varname> returns a temporal integer (see <xref linkend="temporal_types" />). The function has two optional parameters that specify the granularity (an <varname>interval</varname>) and the origin of time (a <varname>timestamptz</varname>). When these parameters are given, the temporal count is computed at time buckets of the given granularity (see <xref linkend="temporal_types_tiling" />).</para></listitem>
 			<listitem><para>Function <varname>extent</varname> returns a bounding span that encloses a set of span or time values.</para></listitem>
+			<listitem><para>Union is a very useful operation for set and span types. As we have seen in <xref linkend="setspan_set_operators" />, we can compute the union of two set or span values using the <varname>+</varname> operator. However, it is also very useful to have an aggregate version of the union operator for combining an arbitrary number of values. Functions <varname>set_union</varname> and <varname>span_union</varname> can be used for this purpose.</para></listitem>
 		</itemizedlist>
-
-		<para>Union is a very useful operation for time types. As we have seen in <xref linkend="setspan_set_operators" />, we can compute the union of two time values using the <varname>+</varname> operator. However, it is also very useful to have an aggregate version of the union operator for combining an arbitrary number of values. Function <varname>tunion</varname> can be used for this purpose.
-		</para>
 
 		<itemizedlist>
 			<listitem id="setspan_tcount">
@@ -1150,24 +1147,26 @@ SELECT extent(ps) FROM periods;
 </programlisting>
 			</listitem>
 
-			<listitem id="tunion">
-				<indexterm><primary><varname>tunion</varname></primary></indexterm>
-				<para>Temporal union</para>
-				<para><varname>tunion({tstzset,tstzspan,tstzspanset}) → {tstzset,tstzspanset}</varname></para>
+			<listitem id="setspan_union_agg">
+				<indexterm><primary><varname>set_union</varname></primary></indexterm>
+				<indexterm><primary><varname>span_union</varname></primary></indexterm>
+				<para>Aggregate union</para>
+				<para><varname>set_union({value,set}) → set</varname></para>
+				<para><varname>span_union(spans) → spanset</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 WITH times(ts) AS (
   SELECT tstzset '{2000-01-01, 2000-01-03, 2000-01-05}' UNION
   SELECT tstzset '{2000-01-02, 2000-01-04, 2000-01-06}' UNION
   SELECT tstzset '{2000-01-01, 2000-01-02}'
 )
-SELECT tunion(ts) FROM times;
+SELECT set_union(ts) FROM times;
 -- {2000-01-01, 2000-01-02, 2000-01-03, 2000-01-04, 2000-01-05, 2000-01-06}
 WITH periods(ps) AS (
   SELECT tstzspanset '{[2000-01-01, 2000-01-02], [2000-01-03, 2000-01-04]}' UNION
   SELECT tstzspanset '{[2000-01-02, 2000-01-03], [2000-01-05, 2000-01-06]}' UNION
   SELECT tstzspanset '{[2000-01-07, 2000-01-08]}'
 )
-SELECT tunion(ps) FROM periods;
+SELECT span_union(ps) FROM periods;
 -- {[2000-01-01, 2000-01-04], [2000-01-05, 2000-01-06], [2000-01-07, 2000-01-08]}
 </programlisting>
 			</listitem>

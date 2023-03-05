@@ -355,7 +355,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tunion"><varname>tunion</varname></link>: Temporal union</para>
+					<para><link linkend="setspan_union_agg"><varname>set_union</varname>, <varname>span_union</varname></link>: Aggregate union</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

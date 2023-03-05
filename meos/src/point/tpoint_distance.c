@@ -74,9 +74,9 @@ tnumberinst_distance(const TInstant *inst1, const TInstant *inst2)
  * @param[in] inst1,inst2 Temporal instants
  */
 double
-tpointinst_distance(const TInstant *inst1, const TInstant *inst2)
+tpointinst_distance(const TInstant *inst1, const TInstant *inst2,
+  datum_func2 func)
 {
-  datum_func2 func = pt_distance_fn(inst1->flags);
   Datum value1 = tinstant_value(inst1);
   Datum value2 = tinstant_value(inst2);
   double result = DatumGetFloat8(func(value1, value2));
@@ -88,12 +88,13 @@ tpointinst_distance(const TInstant *inst1, const TInstant *inst2)
  * @param[in] inst1,inst2 Temporal instants
  */
 double
-tinstant_distance(const TInstant *inst1, const TInstant *inst2)
+tinstant_distance(const TInstant *inst1, const TInstant *inst2,
+  datum_func2 func)
 {
   if (tnumber_type(inst1->temptype))
     return tnumberinst_distance(inst1, inst2);
   if (tgeo_type(inst1->temptype))
-    return tpointinst_distance(inst1, inst2);
+    return tpointinst_distance(inst1, inst2, func);
   elog(ERROR, "Unexpected temporal type: inst1->temptype");
 }
 

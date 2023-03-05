@@ -43,51 +43,9 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/temporaltypes.h"
+#include "point/tpoint_distance.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "npoint/tnpoint_spatialfuncs.h"
-
-/*****************************************************************************
- * Compute the distance between two instants depending on their type
- *****************************************************************************/
-
-/**
- * @brief Compute the distance between two temporal instants.
- * @param[in] inst1,inst2 Temporal instants
- */
-static double
-tnumberinst_distance(const TInstant *inst1, const TInstant *inst2)
-{
-  double result = fabs(tnumberinst_double(inst1) - tnumberinst_double(inst2));
-  return result;
-}
-
-/**
- * @brief Compute the distance between two temporal instants.
- * @param[in] inst1,inst2 Temporal instants
- */
-static double
-tpointinst_distance(const TInstant *inst1, const TInstant *inst2)
-{
-  datum_func2 func = pt_distance_fn(inst1->flags);
-  Datum value1 = tinstant_value(inst1);
-  Datum value2 = tinstant_value(inst2);
-  double result = DatumGetFloat8(func(value1, value2));
-  return result;
-}
-
-/**
- * @brief Compute the distance between two temporal instants.
- * @param[in] inst1,inst2 Temporal instants
- */
-static double
-tinstant_distance(const TInstant *inst1, const TInstant *inst2)
-{
-  if (tnumber_type(inst1->temptype))
-    return tnumberinst_distance(inst1, inst2);
-  if (tgeo_type(inst1->temptype))
-    return tpointinst_distance(inst1, inst2);
-  elog(ERROR, "Unexpected temporal type: inst1->temptype");
-}
 
 /*****************************************************************************
  * Linear space computation of the similarity distance
@@ -105,13 +63,14 @@ static double
 tinstarr_similarity1(double *dist, const TInstant **instants1, int count1,
   const TInstant **instants2, int count2, SimFunc simfunc)
 {
+  datum_func2 func = pt_distance_fn(instants1[0]->flags);
   for (int i = 0; i < count1; i++)
   {
     for (int j = 0; j < count2; j++)
     {
       const TInstant *inst1 = instants1[i];
       const TInstant *inst2 = instants2[j];
-      double d = tinstant_distance(inst1, inst2);
+      double d = tinstant_distance(inst1, inst2, func);
       if (i > 0 && j > 0)
       {
         if (simfunc == FRECHET)
@@ -229,7 +188,6 @@ temporal_dyntimewarp_distance(const Temporal *temp1, const Temporal *temp2)
 }
 #endif
 
-
 /*****************************************************************************
  * Iterative implementation of the similarity distance with a full matrix
  *****************************************************************************/
@@ -340,13 +298,14 @@ static void
 tinstarr_similarity_matrix1(const TInstant **instants1, int count1,
   const TInstant **instants2, int count2, SimFunc simfunc, double *dist)
 {
+  datum_func2 func = pt_distance_fn(instants1[0]->flags);
   for (int i = 0; i < count1; i++)
   {
     for (int j = 0; j < count2; j++)
     {
       const TInstant *inst1 = instants1[i];
       const TInstant *inst2 = instants2[j];
-      double d = tinstant_distance(inst1, inst2);
+      double d = tinstant_distance(inst1, inst2, func);
       if (i > 0 && j > 0)
       {
         if (simfunc == FRECHET)
@@ -484,6 +443,7 @@ static double
 tinstarr_hausdorff_distance(const TInstant **instants1, int count1,
   const TInstant **instants2, int count2)
 {
+  datum_func2 func = pt_distance_fn(instants1[0]->flags);
   const TInstant *inst1, *inst2;
   double cmax = 0.0, cmin;
   double d;
@@ -495,7 +455,7 @@ tinstarr_hausdorff_distance(const TInstant **instants1, int count1,
     for (j = 0; j < count2; j++)
     {
       inst2 = instants2[j];
-      d = tinstant_distance(inst1, inst2);
+      d = tinstant_distance(inst1, inst2, func);
       if (d < cmin)
         cmin = d;
       if (cmin < cmax)
@@ -511,7 +471,7 @@ tinstarr_hausdorff_distance(const TInstant **instants1, int count1,
     for (i = 0; i < count1; i++)
     {
       inst1 = instants1[i];
-      d = tinstant_distance(inst1, inst2);
+      d = tinstant_distance(inst1, inst2, func);
       if (d < cmin)
         cmin = d;
       if (cmin < cmax)

@@ -688,7 +688,7 @@ gserialized_is_poly(const GSERIALIZED* g)
  * the cache
  */
 static int
-MEOS_point_in_polygon(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
+meos_point_in_polygon(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
   bool inter)
 {
   const GSERIALIZED *gpoly = gserialized_is_poly(geom1) ? geom1 : geom2;
@@ -782,7 +782,7 @@ GEOS2POSTGIS(GEOSGeom geom, char want3d)
  * call the GEOS function passed as argument
  */
 static char
-MEOS_call_geos2(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
+meos_call_geos2(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
   char (*func)(const GEOSGeometry *g1, const GEOSGeometry *g2))
 {
   initGEOS(lwnotice, lwgeom_geos_error);
@@ -846,7 +846,7 @@ gserialized_inter_contains(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
   if ((gserialized_is_point(geom1) && gserialized_is_poly(geom2)) ||
       (gserialized_is_poly(geom1) && gserialized_is_point(geom2)))
   {
-    int pip_result = MEOS_point_in_polygon(geom1, geom2, inter);
+    int pip_result = meos_point_in_polygon(geom1, geom2, inter);
     return inter ?
       (pip_result != -1) : /* not outside */
       (pip_result == 1); /* inside */
@@ -854,8 +854,8 @@ gserialized_inter_contains(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
 
   /* Call GEOS function */
   bool result = inter ?
-    (bool) MEOS_call_geos2(geom1, geom2, &GEOSIntersects) :
-    (bool) MEOS_call_geos2(geom1, geom2, &GEOSContains);
+    (bool) meos_call_geos2(geom1, geom2, &GEOSIntersects) :
+    (bool) meos_call_geos2(geom1, geom2, &GEOSContains);
 
   return result;
 }
@@ -888,7 +888,7 @@ gserialized_touches(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
   }
 
   /* Call GEOS function */
-  bool result = (bool) MEOS_call_geos2(geom1, geom2, &GEOSTouches);
+  bool result = (bool) meos_call_geos2(geom1, geom2, &GEOSTouches);
 
   return result;
 }
