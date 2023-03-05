@@ -135,6 +135,7 @@ tpointinst_to_geo_measure(const TInstant *inst, const TInstant *measure)
 static GSERIALIZED *
 tpointdiscseq_to_geo_measure(const TSequence *seq, const TSequence *measure)
 {
+  bool geodetic = MOBDB_FLAGS_GET_GEODETIC(seq->flags);
   LWGEOM **points = palloc(sizeof(LWGEOM *) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
@@ -143,7 +144,7 @@ tpointdiscseq_to_geo_measure(const TSequence *seq, const TSequence *measure)
     {
       const TInstant *m = tsequence_inst_n(measure, i);
       points[i] = (LWGEOM *) point_measure_to_lwpoint(tinstant_value(inst),
-          tinstant_value(m));
+        tinstant_value(m));
     }
     else
       points[i] = (LWGEOM *) tpointinst_to_lwpoint(inst);
@@ -155,11 +156,12 @@ tpointdiscseq_to_geo_measure(const TSequence *seq, const TSequence *measure)
   {
     LWGEOM *mpoint = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE,
       points[0]->srid, NULL, (uint32_t) seq->count, points);
+    FLAGS_SET_GEODETIC(mpoint->flags, geodetic);
     result = geo_serialize(mpoint);
     pfree(mpoint);
   }
   for (int i = 0; i < seq->count; i++)
-    lwgeom_free (points[i]);
+    lwgeom_free(points[i]);
   pfree(points);
   return result;
 }
@@ -243,6 +245,7 @@ tpointseq_to_geo1(const TSequence *seq)
     else
       result = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE,
         points[0]->srid, NULL, (uint32_t) seq->count, points);
+    FLAGS_SET_GEODETIC(result->flags, MOBDB_FLAGS_GET_GEODETIC(seq->flags));
     for (int i = 0; i < seq->count; i++)
       lwpoint_free((LWPOINT *) points[i]);
     pfree(points);
@@ -286,6 +289,7 @@ tpointseqset_to_geo_measure(const TSequenceSet *ss, const TSequenceSet *measure)
     return tpointseq_to_geo_measure(seq, m);
   }
 
+  bool geodetic = MOBDB_FLAGS_GET_GEODETIC(ss->flags);
   uint8_t colltype = 0;
   LWGEOM **geoms = palloc(sizeof(LWGEOM *) * ss->count);
   for (int i = 0; i < ss->count; i++)
@@ -310,6 +314,8 @@ tpointseqset_to_geo_measure(const TSequenceSet *ss, const TSequenceSet *measure)
   // TODO add the bounding box instead of ask PostGIS to compute it again
   LWGEOM *coll = (LWGEOM *) lwcollection_construct((uint8_t) colltype,
     geoms[0]->srid, NULL, (uint32_t) ss->count, geoms);
+  /* Function lwcollection_construct lose the geodetic flag if any */
+  FLAGS_SET_GEODETIC(coll->flags, geodetic);
   GSERIALIZED *result = geo_serialize(coll);
   /* We cannot lwgeom_free(geoms[i] or lwgeom_free(coll) */
   pfree(geoms);
@@ -656,6 +662,7 @@ geo_to_tpointseq(const GSERIALIZED *geo)
 {
   /* Geometry is a LINESTRING */
   bool hasz = (bool) FLAGS_GET_Z(geo->gflags);
+  bool geodetic = (bool) FLAGS_GET_GEODETIC(geo->gflags);
   LWGEOM *lwgeom = lwgeom_from_gserialized(geo);
   LWLINE *lwline = lwgeom_as_lwline(lwgeom);
   int npoints = lwline->points->npoints;
@@ -690,6 +697,8 @@ geo_to_tpointseq(const GSERIALIZED *geo)
   {
     /* Return freshly allocated LWPOINT */
     LWPOINT *lwpoint = lwline_get_lwpoint(lwline, (uint32_t) i);
+    /* Function lwline_get_lwpoint lose the geodetic flag if any */
+    FLAGS_SET_GEODETIC(lwpoint->flags, geodetic);
     instants[i] = trajpoint_to_tpointinst(lwpoint);
     lwpoint_free(lwpoint);
   }
