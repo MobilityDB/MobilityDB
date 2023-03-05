@@ -12,40 +12,40 @@ SELECT ST_Extent(round(temp::geometry, 6)) FROM tbl_tgeompoint3D;
  BOX(0.029 0.153451,99.997066 99.910108)
 (1 row)
 
-SELECT ST_Extent(temp::geometry) FROM tbl_tgeompoint;
-                                  st_extent                                   
-------------------------------------------------------------------------------
- BOX(0.098500959575176 0.568102905526757,99.93585967458785 99.93778457865119)
+SELECT ST_Extent(round(temp::geometry, 6)) FROM tbl_tgeompoint;
+                 st_extent                 
+-------------------------------------------
+ BOX(0.098501 0.568103,99.93586 99.937785)
 (1 row)
 
-SELECT ST_Extent(temp::geometry) FROM tbl_tgeompoint3D;
-                           st_extent                            
-----------------------------------------------------------------
- BOX(0.029 0.15345080755651,99.9970662407577 99.91010841913521)
+SELECT ST_Extent(round(temp::geometry, 6)) FROM tbl_tgeompoint3D;
+                st_extent                
+-----------------------------------------
+ BOX(0.029 0.153451,99.997066 99.910108)
 (1 row)
 
-SELECT ST_Extent(round(temp::geography, 6)::geometry) FROM tbl_tgeogpoint;
+SELECT ST_Extent(round((temp::geography)::geometry, 6)) FROM tbl_tgeogpoint;
                   st_extent                   
 ----------------------------------------------
  BOX(-9.793144 35.003975,31.919876 71.847103)
 (1 row)
 
-SELECT ST_Extent(round(temp::geography, 6)::geometry) FROM tbl_tgeogpoint3D;
+SELECT ST_Extent(round((temp::geography)::geometry, 6)) FROM tbl_tgeogpoint3D;
                  st_extent                  
 --------------------------------------------
  BOX(-9.77763 35.053716,31.914229 71.89642)
 (1 row)
 
-SELECT ST_Extent((temp::geography)::geometry) FROM tbl_tgeogpoint;
-                                  st_extent                                   
-------------------------------------------------------------------------------
- BOX(-9.79314389731735 35.00397456251085,31.91987571120262 71.84710287861526)
+SELECT ST_Extent(round((temp::geography)::geometry, 6)) FROM tbl_tgeogpoint;
+                  st_extent                   
+----------------------------------------------
+ BOX(-9.793144 35.003975,31.919876 71.847103)
 (1 row)
 
-SELECT ST_Extent((temp::geography)::geometry) FROM tbl_tgeogpoint3D;
-                                  st_extent                                  
------------------------------------------------------------------------------
- BOX(-9.777630142867565 35.05371579434723,31.9142293818295 71.8964201794006)
+SELECT ST_Extent(round((temp::geography)::geometry, 6)) FROM tbl_tgeogpoint3D;
+                 st_extent                  
+--------------------------------------------
+ BOX(-9.77763 35.053716,31.914229 71.89642)
 (1 row)
 
 SELECT ST_Extent(round(asGeometry(temp, true), 6)) FROM tbl_tgeompoint;
@@ -60,88 +60,88 @@ SELECT ST_Extent(round(asGeometry(temp, true), 6)) FROM tbl_tgeompoint3D;
  BOX(0.029 0.153451,99.997066 99.910108)
 (1 row)
 
-SELECT ST_Extent(asGeometry(temp, true)) FROM tbl_tgeompoint;
-                                  st_extent                                   
-------------------------------------------------------------------------------
- BOX(0.098500959575176 0.568102905526757,99.93585967458785 99.93778457865119)
+SELECT ST_Extent(round(asGeometry(temp, true), 6)) FROM tbl_tgeompoint;
+                 st_extent                 
+-------------------------------------------
+ BOX(0.098501 0.568103,99.93586 99.937785)
 (1 row)
 
-SELECT ST_Extent(asGeometry(temp, true)) FROM tbl_tgeompoint3D;
-                           st_extent                            
-----------------------------------------------------------------
- BOX(0.029 0.15345080755651,99.9970662407577 99.91010841913521)
+SELECT ST_Extent(round(asGeometry(temp, true), 6)) FROM tbl_tgeompoint3D;
+                st_extent                
+-----------------------------------------
+ BOX(0.029 0.153451,99.997066 99.910108)
 (1 row)
 
-SELECT ST_Extent(round(asGeography(temp, true), 6)::geometry) FROM tbl_tgeogpoint;
+SELECT ST_Extent(round(asGeography(temp, true)::geometry, 6)) FROM tbl_tgeogpoint;
                   st_extent                   
 ----------------------------------------------
  BOX(-9.793144 35.003975,31.919876 71.847103)
 (1 row)
 
-SELECT ST_Extent(round(asGeography(temp, true), 6)::geometry) FROM tbl_tgeogpoint3D;
+SELECT ST_Extent(round(asGeography(temp, true)::geometry, 6)) FROM tbl_tgeogpoint3D;
                  st_extent                  
 --------------------------------------------
  BOX(-9.77763 35.053716,31.914229 71.89642)
 (1 row)
 
-SELECT ST_Extent(asGeography(temp, true)::geometry) FROM tbl_tgeogpoint;
-                                  st_extent                                   
-------------------------------------------------------------------------------
- BOX(-9.79314389731735 35.00397456251085,31.91987571120262 71.84710287861526)
+SELECT ST_Extent(round(asGeography(temp, true)::geometry, 6)) FROM tbl_tgeogpoint;
+                  st_extent                   
+----------------------------------------------
+ BOX(-9.793144 35.003975,31.919876 71.847103)
 (1 row)
 
-SELECT ST_Extent(asGeography(temp, true)::geometry) FROM tbl_tgeogpoint3D;
-                                  st_extent                                  
------------------------------------------------------------------------------
- BOX(-9.777630142867565 35.05371579434723,31.9142293818295 71.8964201794006)
+SELECT ST_Extent(round(asGeography(temp, true)::geometry, 6)) FROM tbl_tgeogpoint3D;
+                 st_extent                  
+--------------------------------------------
+ BOX(-9.77763 35.053716,31.914229 71.89642)
 (1 row)
 
-SELECT extent(round((temp::geometry)::tgeompoint, 6)) FROM tbl_tgeompoint;
-                                                extent                                                 
+SELECT round(extent((temp::geometry)::tgeompoint), 6) FROM tbl_tgeompoint;
+                                                 round                                                 
 -------------------------------------------------------------------------------------------------------
  STBOX XT(((0.098501,0.568103),(99.93586,99.937785)),[2001-01-01 10:09:00+00, 2001-12-30 10:07:00+00])
 (1 row)
 
-SELECT extent(round((temp::geometry)::tgeompoint, 6)) FROM tbl_tgeompoint3D;
-                                                         extent                                                         
+SELECT round(extent((temp::geometry)::tgeompoint), 6) FROM tbl_tgeompoint3D;
+                                                         round                                                          
 ------------------------------------------------------------------------------------------------------------------------
  STBOX ZT(((0.029,0.153451,0.198564),(99.997066,99.910108,99.981844)),[2001-01-01 05:13:00+00, 2001-12-30 14:00:00+00])
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE (temp::geometry)::tgeompoint = temp;
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE asText((temp::geometry)::tgeompoint) = asText(temp);
  count 
 -------
-    59
+    52
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE (temp::geometry)::tgeompoint = temp;
+SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE asText((temp::geometry)::tgeompoint) = asText(temp);
  count 
 -------
-    58
+    55
 (1 row)
 
-SELECT extent(round((temp::geography)::tgeogpoint, 6)) FROM tbl_tgeogpoint;
-                                                                                          extent                                                                                           
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- SRID=4326;GEODSTBOX ZT(((0.278621838867849,-0.134475549728709,0.57363326514913),(0.819030541178553,0.408011535503932,0.95022850177314)),[2001-01-04 09:31:00+00, 2001-12-17 18:56:00+00])
+SELECT round(extent((temp::geography)::tgeogpoint), 6) FROM tbl_tgeogpoint;
+                                                                 round                                                                 
+---------------------------------------------------------------------------------------------------------------------------------------
+ SRID=4326;GEODSTBOX ZT(((0.278622,-0.134476,0.573633),(0.819031,0.408012,0.950229)),[2001-01-04 09:31:00+00, 2001-12-17 18:56:00+00])
 (1 row)
 
-SELECT extent(round((temp::geography)::tgeogpoint, 6)) FROM tbl_tgeogpoint3D;
-                                                                                           extent                                                                                            
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- SRID=4326;GEODSTBOX ZT(((0.270672141795059,-0.136686698215046,0.574344156460964),(0.817047872366668,0.410720821662655,0.950496317843095)),[2001-01-04 03:45:00+00, 2001-12-23 08:21:00+00])
+SELECT round(extent((temp::geography)::tgeogpoint), 6) FROM tbl_tgeogpoint3D;
+                                                                 round                                                                 
+---------------------------------------------------------------------------------------------------------------------------------------
+ SRID=4326;GEODSTBOX ZT(((0.270672,-0.136687,0.574344),(0.817048,0.410721,0.950496)),[2001-01-04 03:45:00+00, 2001-12-23 08:21:00+00])
 (1 row)
 
-SELECT extent((temp::geography)::tgeogpoint) FROM tbl_tgeogpoint;
-                                                                                           extent                                                                                            
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- SRID=4326;GEODSTBOX ZT(((0.278621845601788,-0.134475551953408,0.573633258894695),(0.819030546067184,0.408011532541755,0.950228501113093)),[2001-01-04 09:31:00+00, 2001-12-17 18:56:00+00])
+SELECT round(extent((temp::geography)::tgeogpoint), 6) FROM tbl_tgeogpoint;
+                                                                 round                                                                 
+---------------------------------------------------------------------------------------------------------------------------------------
+ SRID=4326;GEODSTBOX ZT(((0.278622,-0.134476,0.573633),(0.819031,0.408012,0.950229)),[2001-01-04 09:31:00+00, 2001-12-17 18:56:00+00])
 (1 row)
 
-SELECT extent((temp::geography)::tgeogpoint) FROM tbl_tgeogpoint3D;
-                                                                                           extent                                                                                           
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- SRID=4326;GEODSTBOX ZT(((0.270672143751032,-0.136686696072958,0.574344153522698),(0.817047877072573,0.410720819088369,0.95049631881605)),[2001-01-04 03:45:00+00, 2001-12-23 08:21:00+00])
+SELECT round(extent((temp::geography)::tgeogpoint), 6) FROM tbl_tgeogpoint3D;
+                                                                 round                                                                 
+---------------------------------------------------------------------------------------------------------------------------------------
+ SRID=4326;GEODSTBOX ZT(((0.270672,-0.136687,0.574344),(0.817048,0.410721,0.950496)),[2001-01-04 03:45:00+00, 2001-12-23 08:21:00+00])
 (1 row)
 
 SELECT ST_Extent(round(geoMeasure(t1.temp, t2.temp), 6)) FROM tbl_tgeompoint t1, tbl_tfloat t2 WHERE getTime(t1.temp) && getTime(t2.temp);

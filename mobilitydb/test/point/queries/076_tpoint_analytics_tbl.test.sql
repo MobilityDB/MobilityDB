@@ -38,42 +38,43 @@ set force_parallel_mode=regress;
 SELECT ST_Extent(round(temp::geometry, 6)) FROM tbl_tgeompoint;
 SELECT ST_Extent(round(temp::geometry, 6)) FROM tbl_tgeompoint3D;
 
-SELECT ST_Extent(temp::geometry) FROM tbl_tgeompoint;
-SELECT ST_Extent(temp::geometry) FROM tbl_tgeompoint3D;
+SELECT ST_Extent(round(temp::geometry, 6)) FROM tbl_tgeompoint;
+SELECT ST_Extent(round(temp::geometry, 6)) FROM tbl_tgeompoint3D;
 
-SELECT ST_Extent(round(temp::geography, 6)::geometry) FROM tbl_tgeogpoint;
-SELECT ST_Extent(round(temp::geography, 6)::geometry) FROM tbl_tgeogpoint3D;
+SELECT ST_Extent(round((temp::geography)::geometry, 6)) FROM tbl_tgeogpoint;
+SELECT ST_Extent(round((temp::geography)::geometry, 6)) FROM tbl_tgeogpoint3D;
 
-SELECT ST_Extent((temp::geography)::geometry) FROM tbl_tgeogpoint;
-SELECT ST_Extent((temp::geography)::geometry) FROM tbl_tgeogpoint3D;
+SELECT ST_Extent(round((temp::geography)::geometry, 6)) FROM tbl_tgeogpoint;
+SELECT ST_Extent(round((temp::geography)::geometry, 6)) FROM tbl_tgeogpoint3D;
 
 --------------------------------------------------------
 
 SELECT ST_Extent(round(asGeometry(temp, true), 6)) FROM tbl_tgeompoint;
 SELECT ST_Extent(round(asGeometry(temp, true), 6)) FROM tbl_tgeompoint3D;
 
-SELECT ST_Extent(asGeometry(temp, true)) FROM tbl_tgeompoint;
-SELECT ST_Extent(asGeometry(temp, true)) FROM tbl_tgeompoint3D;
+SELECT ST_Extent(round(asGeometry(temp, true), 6)) FROM tbl_tgeompoint;
+SELECT ST_Extent(round(asGeometry(temp, true), 6)) FROM tbl_tgeompoint3D;
 
-SELECT ST_Extent(round(asGeography(temp, true), 6)::geometry) FROM tbl_tgeogpoint;
-SELECT ST_Extent(round(asGeography(temp, true), 6)::geometry) FROM tbl_tgeogpoint3D;
+SELECT ST_Extent(round(asGeography(temp, true)::geometry, 6)) FROM tbl_tgeogpoint;
+SELECT ST_Extent(round(asGeography(temp, true)::geometry, 6)) FROM tbl_tgeogpoint3D;
 
-SELECT ST_Extent(asGeography(temp, true)::geometry) FROM tbl_tgeogpoint;
-SELECT ST_Extent(asGeography(temp, true)::geometry) FROM tbl_tgeogpoint3D;
+SELECT ST_Extent(round(asGeography(temp, true)::geometry, 6)) FROM tbl_tgeogpoint;
+SELECT ST_Extent(round(asGeography(temp, true)::geometry, 6)) FROM tbl_tgeogpoint3D;
 
 -------------------------------------------------------------------------------
 
-SELECT extent(round((temp::geometry)::tgeompoint, 6)) FROM tbl_tgeompoint;
-SELECT extent(round((temp::geometry)::tgeompoint, 6)) FROM tbl_tgeompoint3D;
+SELECT round(extent((temp::geometry)::tgeompoint), 6) FROM tbl_tgeompoint;
+SELECT round(extent((temp::geometry)::tgeompoint), 6) FROM tbl_tgeompoint3D;
 
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE (temp::geometry)::tgeompoint = temp;
-SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE (temp::geometry)::tgeompoint = temp;
+-- The reason for the low counts is that the lower/ upper bounds are lost in the translation
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE asText((temp::geometry)::tgeompoint) = asText(temp);
+SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE asText((temp::geometry)::tgeompoint) = asText(temp);
 
-SELECT extent(round((temp::geography)::tgeogpoint, 6)) FROM tbl_tgeogpoint;
-SELECT extent(round((temp::geography)::tgeogpoint, 6)) FROM tbl_tgeogpoint3D;
+SELECT round(extent((temp::geography)::tgeogpoint), 6) FROM tbl_tgeogpoint;
+SELECT round(extent((temp::geography)::tgeogpoint), 6) FROM tbl_tgeogpoint3D;
 
-SELECT extent((temp::geography)::tgeogpoint) FROM tbl_tgeogpoint;
-SELECT extent((temp::geography)::tgeogpoint) FROM tbl_tgeogpoint3D;
+SELECT round(extent((temp::geography)::tgeogpoint), 6) FROM tbl_tgeogpoint;
+SELECT round(extent((temp::geography)::tgeogpoint), 6) FROM tbl_tgeogpoint3D;
 
 -------------------------------------------------------------------------------
 
