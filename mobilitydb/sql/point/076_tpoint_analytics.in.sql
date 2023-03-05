@@ -112,11 +112,20 @@ RETURNS tgeompoint
 AS 'MODULE_PATHNAME', 'Temporal_simplify_min_tdelta'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION dpSimplify(tfloat, float, boolean DEFAULT TRUE)
+CREATE FUNCTION maxDistSimplify(tfloat, float, boolean DEFAULT TRUE)
+RETURNS tfloat
+AS 'MODULE_PATHNAME', 'Temporal_simplify_max_dist'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION maxDistSimplify(tgeompoint, float, boolean DEFAULT TRUE)
+RETURNS tgeompoint
+AS 'MODULE_PATHNAME', 'Temporal_simplify_max_dist'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION DouglasPeuckerSimplify(tfloat, float, boolean DEFAULT TRUE)
 RETURNS tfloat
 AS 'MODULE_PATHNAME', 'Temporal_simplify_dp'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION dpSimplify(tgeompoint, float, boolean DEFAULT TRUE)
+CREATE FUNCTION DouglasPeuckerSimplify(tgeompoint, float, boolean DEFAULT TRUE)
 RETURNS tgeompoint
 AS 'MODULE_PATHNAME', 'Temporal_simplify_dp'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

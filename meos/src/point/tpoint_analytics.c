@@ -1002,20 +1002,6 @@ tfloatseq_findsplit(const TSequence *seq, int i1, int i2, int *split,
   return;
 }
 
-/**
- * @brief Return a negative or a positive value depending on whether the first
- * number is less than or greater than the second one
- */
-static int
-int_cmp(const void *a, const void *b)
-{
-  /* casting pointer types */
-  const int *ia = (const int *) a;
-  const int *ib = (const int *) b;
-  /* returns negative if b > a and positive if a > b */
-  return *ia - *ib;
-}
-
 /***********************************************************************
  * Simple spatio-temporal Douglas-Peucker line simplification.
  * No checks are done to avoid introduction of self-intersections.
@@ -1123,9 +1109,7 @@ tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool syncdist,
   int *split, double *dist)
 {
   POINT2D p2k, p2_sync, p2a, p2b;
-  POINT3DZ p3k, p3_sync, p3a, p3b;
-  memset(&p3a, 0, sizeof(POINT3DZ)); /* make compiler quiet */
-  memset(&p3b, 0, sizeof(POINT3DZ)); /* make compiler quiet */
+  POINT3DZ p3k, p3_sync, p3a = { 0 }, p3b = { 0 }; /* make compiler quiet */
   Datum value;
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
   bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
@@ -1192,6 +1176,124 @@ tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool syncdist,
 }
 
 /*****************************************************************************/
+
+/**
+ * @brief Simplify the temporal sequence float/point using a single-pass
+ * implementation of the Douglas-Peucker line simplification algorithm that
+ * checks whether the provided distance threshold is exceeded.
+ * @param[in] seq Temporal value
+ * @param[in] dist Minimum distance
+ */
+TSequence *
+tsequence_simplify_max_dist(const TSequence *seq, double dist, bool syncdist,
+  uint32_t minpts)
+{
+  const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  const TInstant *prev = NULL;
+  const TInstant *cur = NULL;
+  uint32_t start = 0, /* Lower index for finding the split */
+           k = 0;     /* Number of instants in the result */
+  int split;          /* Index of the split */
+  double d;           /* Distance */
+  for (int i = 0; i < seq->count; i++)
+  {
+    cur = tsequence_inst_n(seq, i);
+    if (prev == NULL)
+    {
+      instants[k++] = cur;
+      prev = cur;
+      continue;
+    }
+    /* For temporal floats only Synchronized Distance is used */
+    if (seq->temptype == T_TFLOAT)
+      tfloatseq_findsplit(seq, start, i, &split, &d);
+    else /* tgeo_type(seq->temptype) */
+      tpointseq_findsplit(seq, start, i, syncdist, &split, &d);
+    bool dosplit = (d >= 0 && (d > dist || start + i + 1 < minpts));
+    if (dosplit)
+    {
+      prev = cur;
+      instants[k++] = tsequence_inst_n(seq, split);
+      start = split;
+      continue;
+    }
+  }
+  if (instants[k - 1] != cur)
+    instants[k++] = cur;
+  TSequence *result = tsequence_make(instants, k,
+    (k == 1) ? true : seq->period.lower_inc,
+    (k == 1) ? true : seq->period.upper_inc, LINEAR, NORMALIZE);
+  pfree(instants);
+  return result;
+}
+
+/**
+ * @brief Simplify the temporal sequence set float/point using a single-pass
+ * Douglas-Peucker line simplification algorithm.
+ * @param[in] ss Temporal point
+ * @param[in] dist Distance
+ * @param[in] syncdist True when computing the Synchronized Euclidean
+ * Distance (SED), false when computing the spatial only distance.
+ * @param[in] minpts Minimum number of points
+ */
+static TSequenceSet *
+tsequenceset_simplify_max_dist(const TSequenceSet *ss, double dist,
+  bool syncdist, uint32_t minpts)
+{
+  TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
+  for (int i = 0; i < ss->count; i++)
+  {
+    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    sequences[i] = tsequence_simplify_max_dist(seq, dist, syncdist, minpts);
+  }
+  return tsequenceset_make_free(sequences, ss->count, NORMALIZE);
+}
+
+/**
+ * @ingroup libmeos_temporal_analytics
+ * @brief Simplify the temporal float/point using a single-pass Douglas-Peucker
+ * line simplification algorithm.
+ * @param[in] temp Temporal value
+ * @param[in] dist Distance in the units of the values for temporal floats or
+ * the units of the coordinate system for temporal points.
+ * @param[in] syncdist True when the Synchronized Distance is used, false when
+ * the spatial-only distance is used. Only used for temporal points.
+ * @note The funcion applies only for temporal sequences or sequence sets with
+ * linear interpolation. In all other cases, it returns a copy of the temporal
+ * value.
+ * @sqlfunc maxDistSimplify()
+ */
+Temporal *
+temporal_simplify_max_dist(const Temporal *temp, double dist, bool syncdist)
+{
+  Temporal *result;
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
+    result = temporal_copy(temp);
+  else if (temp->subtype == TSEQUENCE)
+    result = (Temporal *) tsequence_simplify_max_dist((TSequence *) temp, dist,
+      syncdist, 2);
+  else /* temp->subtype == TSEQUENCESET */
+    result = (Temporal *) tsequenceset_simplify_max_dist((TSequenceSet *) temp,
+      dist, syncdist, 2);
+  return result;
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Return a negative or a positive value depending on whether the first
+ * number is less than or greater than the second one
+ */
+static int
+int_cmp(const void *a, const void *b)
+{
+  /* casting pointer types */
+  const int *ia = (const int *) a;
+  const int *ib = (const int *) b;
+  /* returns negative if b > a and positive if a > b */
+  return *ia - *ib;
+}
 
 /**
  * @brief Simplify the temporal sequence set float/point using the
@@ -1617,8 +1719,7 @@ tpointseq_grid(const TSequence *seq, const gridspec *grid, bool filter_pts)
   int k = 0;
   for (int i = 0; i < seq->count; i++)
   {
-    POINT4D p, prev_p;
-    memset(&prev_p, 0, sizeof(POINT4D)); /* make compiler quiet */
+    POINT4D p, prev_p = { 0 }; /* make compiler quiet */
     const TInstant *inst = tsequence_inst_n(seq, i);
     Datum value = tinstant_value(inst);
     point_grid(value, hasz, grid, &p);

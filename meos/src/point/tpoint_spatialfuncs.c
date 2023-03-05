@@ -2600,7 +2600,7 @@ tpointseqset_direction(const TSequenceSet *ss, double *result)
 bool
 tpoint_direction(const Temporal *temp, double *result)
 {
-  bool found;
+  bool found = false;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     ;
@@ -3256,8 +3256,7 @@ tpointseq_linear_find_splits(const TSequence *seq, int *count)
           points[j], points[j + 1]))
       {
         /* Candidate for intersection */
-        POINT2D p;
-        memset(&p, 0, sizeof(POINT2D)); /* make compiler quiet */
+        POINT2D p = { 0 }; /* make compiler quiet */
         int intertype = seg2d_intersection(points[i], points[i + 1],
           points[j], points[j + 1], &p);
         if (intertype > 0 &&

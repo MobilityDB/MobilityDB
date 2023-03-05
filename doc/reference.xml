@@ -1291,7 +1291,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="dpSimplify"><varname>dpSimplify</varname></link>: Simplify a temporal float or a temporal point using the Douglas-Peucker algorithm</para>
+					<para><link linkend="DouglasPeuckerSimplify"><varname>maxDistSimplify</varname>, <varname>DouglasPeuckerSimplify</varname></link>: Simplify a temporal float or a temporal point using the Douglas-Peucker algorithm</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
