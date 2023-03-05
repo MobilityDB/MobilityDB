@@ -1283,7 +1283,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="dpSimplify"><varname>dpSimplify</varname></link>: Simplificar un flotante o un punto temporal usando el algoritmo de Douglas-Peucker</para>
+					<para><link linkend="DouglasPeuckerSimplify"><varname>maxDistSimplify</varname>, <varname>DouglasPeuckerSimplify</varname></link>: Simplificar un flotante o un punto temporal usando el algoritmo de Douglas-Peucker</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

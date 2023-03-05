@@ -46,23 +46,29 @@ SELECT asText(minTimeDeltaSimplify(tgeogpoint '[Point(1 1 1)@2000-01-01,
 </programlisting>
 			</listitem>
 
-			<listitem id="dpSimplify">
-				<indexterm><primary><varname>dpSimplify</varname></primary></indexterm>
+			<listitem id="DouglasPeuckerSimplify">
+				<indexterm><primary><varname>maxDistSimplify</varname></primary></indexterm>
+				<indexterm><primary><varname>DouglasPeuckerSimplify</varname></primary></indexterm>
 				<para>Simplificar un flotante o un punto temporal usando el <ulink url="https://es.wikipedia.org/wiki/Algoritmo_de_Ramer%E2%80%93Douglas%E2%80%93Peucker">algoritmo de Douglas-Peucker</ulink> &Z_support;</para>
-				<para><varname>dpSimplify({tfloat,tgeompoint},distance float,syncdist=true) → {tfloat,tgeompoint}</varname></para>
+				<para><varname>maxDistSimplify({tfloat,tgeompoint},maxdist float,syncdist=true) →</varname></para>
+				<para><varname>  {tfloat,tgeompoint}</varname></para>
+				<para><varname>DouglasPeuckerSimplify({tfloat,tgeompoint},maxdist float,syncdist=true) →</varname></para>
+				<para><varname>  {tfloat,tgeompoint}</varname></para>
+				<para>La diferencia entre las dos funciones es que <varname>maxDistSimplify</varname> usa una versión del algoritmo de un solo recorrido, mientras que <varname>DouglasPeuckerSimplify</varname> usa el algoritmo recursivo estándar.</para>
 				<para>La función elimina los valores or los puntos cuya distancia es menor que la distancia pasada como segundo argumento. En el caso de puntos temporales la distancia se especifica en las unidades del sistema de coordenadas. El tercer argumento se aplica solo a puntos temporales y especifica si se utiliza la distancia espacial o la distancia  sincronizada. Observe que la simplificación se aplica sólo a secuencias temporales o conjuntos de secuencias con interpolación lineal. En todos los demás casos, se devuelve una copia del punto temporal dado.</para>
 				<programlisting language="sql" xml:space="preserve">
--- Synchronized distance by default
-SELECT dpSimplify(tfloat '[1@2000-01-01, 1@2000-01-06, 4@2000-01-07]', 2);
--- [1@2000-01-01, 1@2000-01-06, 4@2000-01-07]
-SELECT dpSimplify(tfloat '[1@2000-01-01, 1@2000-01-06, 4@2000-01-07]', 2.5);
--- [1@2000-01-01, 4@2000-01-07]
-SELECT asText(dpSimplify(tgeompoint '[Point(1 1 1)@2000-01-01, Point(6 1 1)@2000-01-06,
-  Point(7 4 4)@2000-01-07]', 3.5));
--- [POINT Z (1 1 1)@2000-01-01, POINT Z (6 1 1)@2000-01-06, POINT Z (7 4 4)@2000-01-07]
-SELECT asText(dpSimplify(tgeompoint '[Point(1 1 1)@2000-01-01, Point(6 1 1)@2000-01-06,
-  Point(7 4 4)@2000-01-07]', 4));
--- [POINT Z (1 1 1)@2000-01-01, POINT Z (7 4 4)@2000-01-07]
+-- Only synchronous distance for temporal floats
+SELECT maxDistSimplify(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 3@2000-01-04,
+  1@2000-01-05]', 1, false);
+-- [1@2000-01-01, 1@2000-01-03, 3@2000-01-04, 1@2000-01-05]
+-- Synchronous distance by default for temporal points
+SELECT asText(maxDistSimplify(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02,
+  Point(3 1)@2000-01-03, Point(3 3)@2000-01-05, Point(5 1)@2000-01-06]', 2));
+-- [POINT(1 1)@2000-01-01, POINT(3 3)@2000-01-05, POINT(5 1)@2000-01-06]
+-- Spatial distance
+SELECT asText(maxDistSimplify(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02,
+  Point(3 1)@2000-01-03, Point(3 3)@2000-01-05, Point(5 1)@2000-01-06]', 2, false));
+-- [POINT(1 1)@2000-01-01, POINT(5 1)@2000-01-06]
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
 -- Spatial vs synchronized distance

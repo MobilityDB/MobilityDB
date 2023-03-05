@@ -2600,7 +2600,7 @@ tpointseqset_direction(const TSequenceSet *ss, double *result)
 bool
 tpoint_direction(const Temporal *temp, double *result)
 {
-  bool found;
+  bool found = false;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == TINSTANT)
     ;

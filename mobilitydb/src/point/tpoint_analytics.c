@@ -141,6 +141,23 @@ Temporal_simplify_min_tdelta(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PG_FUNCTION_INFO_V1(Temporal_simplify_max_dist);
+/**
+ * @brief Simplify the temporal sequence (set) float or point using a
+ * single-pass Douglas-Peucker line simplification algorithm.
+ */
+PGDLLEXPORT Datum
+Temporal_simplify_max_dist(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  double dist = PG_GETARG_FLOAT8(1);
+  bool syncdist = true;
+  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
+    syncdist = PG_GETARG_BOOL(2);
+  Temporal *result = temporal_simplify_max_dist(temp, dist, syncdist);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
 
 PG_FUNCTION_INFO_V1(Temporal_simplify_dp);
 /**
