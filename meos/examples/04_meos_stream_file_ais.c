@@ -52,9 +52,9 @@
 #include <meos_internal.h>
 
 /* Number of instants to send in batch to the file  */
-#define NO_INSTANTS_BATCH 1000
+#define NO_INSTANTS_BATCH 500
 /* Number of instants to keep when restarting a sequence */
-#define NO_INSTANTS_KEEP 3
+#define NO_INSTANTS_KEEP 2
 /* Maximum length in characters of a header record in the input CSV file */
 #define MAX_LENGTH_HEADER 1024
 /* Maximum length in characters of a point in the input data */
@@ -65,6 +65,8 @@
 #define NO_BULK_INSERT 20
 /* Maximum number of trips */
 #define MAX_TRIPS 5
+
+int count=0;
 
 typedef struct
 {
@@ -82,22 +84,20 @@ typedef struct
 } trip_record;
 
 //verifies if the size if greater than the max size, of so, it sends the data to the file
-int windowManager(int size, trip_record *trips, int ship ,FILE *fileOut, int *count)
+int windowManager(int size, trip_record *trips, int ship ,FILE *fileOut)
 {
   if (trips[ship].trip && trips[ship].trip->count == NO_INSTANTS_BATCH)
   {
 
     char *temp_out = tsequence_out(trips[ship].trip, 15);
-    //printf("%d\n",trips[ship].trip->count);
     fprintf(fileOut, "%ld, %s\n",trips[ship].MMSI, temp_out);
     /* Free memory */
     free(temp_out);
-    *count+=1;
+    count++;
     printf("*");
     fflush(stdout);
     /* Restart the sequence by only keeping the last instants */
     tsequence_restart(trips[ship].trip, NO_INSTANTS_KEEP);
-    printf("New size of count %d \n",trips[ship].trip->count);
 
   }
   return 1;
@@ -110,8 +110,6 @@ main(int argc, char **argv)
 {
   AIS_record rec;
   int no_records = 0;
-  int countAppend = 0;
-  int countWindow = 0;
   int no_nulls = 0;
   char point_buffer[MAX_LENGTH_POINT];
   char text_buffer[MAX_LENGTH_HEADER];
@@ -225,7 +223,7 @@ main(int argc, char **argv)
 
 
     /* Send to the logfile the trip if reached the maximum number of instants */
-    windowManager(NO_INSTANTS_BATCH,trips, ship,fileOut, &countWindow);
+    windowManager(NO_INSTANTS_BATCH,trips, ship,fileOut);
 
     /* Append the last observation */
     TInstant *inst = (TInstant *) tgeogpoint_in(point_buffer);
@@ -236,9 +234,8 @@ main(int argc, char **argv)
       tsequence_append_tinstant(trips[ship].trip, inst, true);
   } while (!feof(fileIn));
 
-  printf("\n%d records read.\n%d incomplete records ignored.\n",
-    no_records, no_nulls);
-  printf("Count Window manger %d, count append %d \n",countWindow, countAppend);
+  printf("\n%d records read.\n%d incomplete records ignored. %d writes to the logfile\n",
+    no_records, no_nulls,count);
 
   /* Close the file */
   fclose(fileIn);

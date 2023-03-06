@@ -79,9 +79,9 @@
 #include <meos_internal.h>
 
 /* Number of instants to send in batch to the database  */
-#define NO_INSTANTS_BATCH 1000
-/* Number of instants to keep when restarting a sequence */
-#define NO_INSTANTS_KEEP 3
+#define NO_INSTANTS_BATCH 500
+/* Number of instants to keep when restarting a sequence, should keep at least one */
+#define NO_INSTANTS_KEEP 2
 /* Maximum length in characters of a header record in the input CSV file */
 #define MAX_LENGTH_HEADER 1024
 /* Maximum length in characters of a point in the input data */
@@ -92,6 +92,8 @@
 #define NO_BULK_INSERT 20
 /* Maximum number of trips */
 #define MAX_TRIPS 5
+
+int count=0;
 
 typedef struct
 {
@@ -128,6 +130,42 @@ exec_sql(PGconn *conn, const char *sql, ExecStatusType status)
   PQclear(res);
 }
 
+//verifies if the size if greater than the max size, of so, it sends the data to the database
+int windowManager(int size, trip_record *trips, int ship ,PGconn *conn)
+{
+  if (trips[ship].trip && trips[ship].trip->count == NO_INSTANTS_BATCH)
+  {
+
+    char *temp_out = tsequence_out(trips[ship].trip, 15);
+    //printf("%d\n",trips[ship].trip->count);
+
+    char *query_buffer = malloc(sizeof(char) * (strlen(temp_out) + 256));
+    /* Send to the database the trip if reached the maximum number of instants */
+    sprintf(query_buffer, "INSERT INTO public.AISTrips(MMSI, trip) VALUES (%ld, '%s') ON CONFLICT (MMSI) DO UPDATE SET trip = public.update(AISTrips.trip, EXCLUDED.trip, true);",
+        trips[ship].MMSI, temp_out);
+
+    PGresult *res = PQexec(conn, query_buffer);
+    if (PQresultStatus(res) != PGRES_COMMAND_OK)
+    {
+      fprintf(stderr, "SQL command failed:\n%s %s", query_buffer,
+      PQerrorMessage(conn));
+      PQclear(res);
+      exit_nicely(conn);
+    }
+
+    /* Free memory */
+    free(temp_out);
+    free(query_buffer);
+    count++;
+    printf("*");
+    fflush(stdout);
+    /* Restart the sequence by only keeping the last instants */
+    tsequence_restart(trips[ship].trip, NO_INSTANTS_KEEP);
+  }
+  return 1;
+}
+
+
 int
 main(int argc, char **argv)
 {
@@ -159,7 +197,7 @@ main(int argc, char **argv)
   if (argc > 1)
     conninfo = argv[1];
   else
-    conninfo = "host=localhost user=esteban dbname=test";
+    conninfo = "user=mariana dbname=test";
 
   /* Make a connection to the database */
   conn = PQconnectdb(conninfo);
@@ -266,42 +304,8 @@ main(int argc, char **argv)
     sprintf(point_buffer, "SRID=4326;Point(%lf %lf)@%s+00", rec.Longitude,
       rec.Latitude, t_out);
 
-    /* Send to the database the trip if reached the maximum number of instants */
-    if (trips[ship].trip && trips[ship].trip->count == NO_INSTANTS_BATCH)
-    {
-      // /* Remove the first (NO_INSTANTS_KEEP - 1) instants which are already in
-       // * the database */
-      // TSequence *seq;
-      // if (NO_INSTANTS_KEEP > 1)
-        // seq = tsequence_subseq(trips[ship].trip, NO_INSTANTS_KEEP - 1,
-          // trips[ship].trip->count - 1, true, true);
-      // else
-        // seq = trips[ship].trip;
-      /* Construct the string of the query */
-      char *temp_out = tsequence_out(trips[ship].trip, 15);
-      char *query_buffer = malloc(sizeof(char) * (strlen(temp_out) + 256));
-      sprintf(query_buffer, "INSERT INTO public.AISTrips(MMSI, trip) "
-        "VALUES (%ld, '%s') ON CONFLICT (MMSI) DO UPDATE SET trip = "
-        "public.update(AISTrips.trip, EXCLUDED.trip, true);",
-        trips[ship].MMSI, temp_out);
-      /* Execute the query */
-      PGresult *res = PQexec(conn, query_buffer);
-      if (PQresultStatus(res) != PGRES_COMMAND_OK)
-      {
-        fprintf(stderr, "SQL command failed:\n%s %s", query_buffer,
-          PQerrorMessage(conn));
-        PQclear(res);
-        exit_nicely(conn);
-      }
-      /* Free memory */
-      // if (NO_INSTANTS_KEEP > 1)
-        // free(seq);
-      free(temp_out); free(query_buffer);
-      printf("*");
-      fflush(stdout);
-      /* Restart the sequence by only keeping the last instants */
-      tsequence_restart(trips[ship].trip, NO_INSTANTS_KEEP);
-    }
+    windowManager(NO_INSTANTS_BATCH,trips, ship,conn);
+
 
     /* Append the last observation */
     TInstant *inst = (TInstant *) tgeogpoint_in(point_buffer);
@@ -312,8 +316,8 @@ main(int argc, char **argv)
       tsequence_append_tinstant(trips[ship].trip, inst, true);
   } while (!feof(file));
 
-  printf("\n%d records read.\n%d incomplete records ignored.\n",
-    no_records, no_nulls);
+  printf("\n%d records read.\n%d incomplete records ignored. %d writes to the database\n",
+    no_records, no_nulls,count);
 
   sprintf(text_buffer, "SELECT MMSI, public.numInstants(trip) FROM public.AISTrips;");
   PGresult *res = PQexec(conn, text_buffer);
