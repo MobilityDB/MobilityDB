@@ -4156,7 +4156,7 @@ tpointseq_minus_geometry(const TSequence *seq, const GSERIALIZED *gs,
  * @sqlfunc atGeometry(), minusGeometry()
  */
 TSequenceSet *
-tpointseq_restrict_geometry(const TSequence *seq, const GSERIALIZED *gs,
+tpointcontseq_restrict_geometry(const TSequence *seq, const GSERIALIZED *gs,
   bool atfunc)
 {
   int count;
@@ -4188,7 +4188,8 @@ tpointseqset_restrict_geometry(const TSequenceSet *ss, const GSERIALIZED *gs,
 {
   /* Singleton sequence set */
   if (ss->count == 1)
-    return tpointseq_restrict_geometry(tsequenceset_seq_n(ss, 0), gs, atfunc);
+    return tpointcontseq_restrict_geometry(tsequenceset_seq_n(ss, 0), gs,
+      atfunc);
 
   /* palloc0 used due to the bounding box test in the for loop below */
   TSequence ***sequences = palloc0(sizeof(TSequence *) * ss->count);
@@ -4271,7 +4272,7 @@ tpoint_restrict_geometry(const Temporal *temp, const GSERIALIZED *gs,
   else if (temp->subtype == TSEQUENCE)
     result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
       (Temporal *) tpointdiscseq_restrict_geometry((TSequence *) temp, gs, atfunc) :
-      (Temporal *) tpointseq_restrict_geometry((TSequence *) temp, gs, atfunc);
+      (Temporal *) tpointcontseq_restrict_geometry((TSequence *) temp, gs, atfunc);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tpointseqset_restrict_geometry((TSequenceSet *) temp,
       gs, &box2, atfunc);
@@ -4306,88 +4307,6 @@ tpoint_minus_geometry(const Temporal *temp, const GSERIALIZED *gs)
 #endif /* MEOS */
 
 /*****************************************************************************/
-
-#if 0 /* not used */
-/**
- * @brief Assemble a 2D point for its x and y coordinates, srid, and geodetic
- * flag
- */
-static Datum
-point2D_assemble(Datum x, Datum y, Datum srid, Datum geodetic)
-{
-  double x1 = DatumGetFloat8(x);
-  double y1 = DatumGetFloat8(y);
-  int srid1 = DatumGetInt32(srid);
-  LWPOINT *lwpoint = lwpoint_make2d(srid1, x1, y1);
-  FLAGS_SET_GEODETIC(lwpoint->flags, DatumGetBool(geodetic));
-  Datum result = PointerGetDatum(geo_serialize((LWGEOM *) lwpoint));
-  lwpoint_free(lwpoint);
-  return result;
-}
-
-/**
- * @brief Assemble a 2D temporal point for two temporal floats, srid, and
- * geodetic flag
- */
-static Temporal *
-tpoint_assemble_coords_xy(Temporal *temp_x, Temporal *temp_y, int srid,
-  bool geodetic)
-{
-  LiftedFunctionInfo lfinfo;
-  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) &point2D_assemble;
-  lfinfo.numparam = 2;
-  lfinfo.param[0] = Int32GetDatum(srid);
-  lfinfo.param[1] = BoolGetDatum(geodetic);
-  lfinfo.restype = T_TGEOMPOINT; // TODO Geography ???
-  lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp_x->flags) ||
-    MOBDB_FLAGS_GET_LINEAR(temp_y->flags);
-  lfinfo.invert = INVERT_NO;
-  lfinfo.discont = CONTINUOUS;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
-  return tfunc_temporal_temporal(temp_x, temp_y, &lfinfo);
-}
-
-/**
- * @brief Add a z value to a 2D point
- */
-static Datum
-point2D_add_z(Datum point, Datum z, Datum srid)
-{
-  GSERIALIZED *gs = DatumGetGserializedP(point);
-  bool geodetic = FLAGS_GET_GEODETIC(gs->gflags);
-  const POINT2D *pt = DATUM_POINT2D_P(point);
-  double z1 = DatumGetFloat8(z);
-  int srid1 = DatumGetInt32(srid);
-  LWPOINT *lwpoint = lwpoint_make3dz(srid1, pt->x, pt->y, z1);
-  FLAGS_SET_GEODETIC(lwpoint->flags, geodetic);
-  Datum result = PointerGetDatum(geo_serialize((LWGEOM *) lwpoint));
-  lwpoint_free(lwpoint);
-  return result;
-}
-
-/**
- * @brief Assemble a 2D temporal point for two temporal floats
- */
-static Temporal *
-tpoint_add_z(Temporal *temp, Temporal *temp_z, int srid)
-{
-  LiftedFunctionInfo lfinfo;
-  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) &point2D_add_z;
-  lfinfo.numparam = 1;
-  lfinfo.param[0] = Int32GetDatum(srid);
-  lfinfo.restype = T_TGEOMPOINT; // TODO Geography ???
-  lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp->flags) ||
-    MOBDB_FLAGS_GET_LINEAR(temp_z->flags);
-  lfinfo.invert = INVERT_NO;
-  lfinfo.discont = CONTINUOUS;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
-  return tfunc_temporal_temporal(temp, temp_z, &lfinfo);
-}
-#endif /* not used */
 
 /**
  * @brief Restrict a temporal point to a spatiotemporal box.
