@@ -1917,6 +1917,27 @@ tgeompointinst_tgeogpointinst(const TInstant *inst, bool oper)
   return result;
 }
 
+
+/**
+ * @brief Coerce coordinate values into range [-180 -90, 180 90] for GEOGRAPHY
+ * @note Transposed from PostGIS function ptarray_force_geodetic in file
+ * lwgeodetic.c. We do not issue a warning.
+ */
+void
+pt_force_geodetic(LWPOINT *point)
+{
+  POINT4D pt;
+  getPoint4d_p(point->point, 0, &pt);
+  if ( pt.x < -180.0 || pt.x > 180.0 || pt.y < -90.0 || pt.y > 90.0 )
+  {
+    pt.x = longitude_degrees_normalize(pt.x);
+    pt.y = latitude_degrees_normalize(pt.y);
+    ptarray_set_point4d(point->point, 0, &pt);
+  }
+  FLAGS_SET_GEODETIC(point->flags, true);
+  return;
+}
+
 /**
  * @ingroup libmeos_internal_temporal_spatial_transf
  * @brief Convert a temporal point from/to a geometry/geography point
@@ -1928,38 +1949,33 @@ tgeompointinst_tgeogpointinst(const TInstant *inst, bool oper)
 TSequence *
 tgeompointseq_tgeogpointseq(const TSequence *seq, bool oper)
 {
-  /* Construct a multipoint with all the points */
-  LWPOINT **points = palloc(sizeof(LWPOINT *) * seq->count);
-  const TInstant *inst;
-  GSERIALIZED *gs;
-  for (int i = 0; i < seq->count; i++)
-  {
-    inst = tsequence_inst_n(seq, i);
-    gs = DatumGetGserializedP(&inst->value);
-    points[i] = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
-  }
-  LWGEOM *lwresult = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE,
-      points[0]->srid, NULL, (uint32_t) seq->count, (LWGEOM **) points);
-  GSERIALIZED *mpoint_orig = geo_serialize(lwresult);
-  for (int i = 0; i < seq->count; i++)
-    lwpoint_free(points[i]);
-  pfree(points);
-  /* Convert the multipoint geometry/geography */
-  gs = (oper == GEOM_TO_GEOG) ?
-    gserialized_geog_from_geom(mpoint_orig) :
-    gserialized_geom_from_geog(mpoint_orig);
-  /* Construct the resulting tpoint from the multipoint geometry/geography */
-  LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
-  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   meosType restype = (oper == GEOM_TO_GEOG) ?  T_TGEOGPOINT : T_TGEOMPOINT;
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
-    inst = tsequence_inst_n(seq, i);
-    Datum point = PointerGetDatum(geo_serialize((LWGEOM *) (lwmpoint->geoms[i])));
-    instants[i] = tinstant_make(point, restype, inst->t);
-    pfree(DatumGetPointer(point));
+    const TInstant *inst = tsequence_inst_n(seq, i);
+    GSERIALIZED *gs = DatumGetGserializedP(&inst->value);
+    LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
+    /* Short circuit functions gserialized_geog_from_geom and
+       gserialized_geom_from_geog since we know it is a point */
+    if ((int) lwgeom->srid <= 0)
+      lwgeom->srid = SRID_DEFAULT;
+    if (oper == GEOM_TO_GEOG)
+    {
+      /* We cannot test the following without access to PROJ */
+      // srid_check_latlong(lwgeom->srid);
+      /* Coerce the coordinate values into [-180 -90, 180 90] for GEOGRAPHY */
+      pt_force_geodetic((LWPOINT *) lwgeom);
+      lwgeom_set_geodetic(lwgeom, true);
+    }
+    else
+    {
+      lwgeom_set_geodetic(lwgeom, false);
+    }
+    GSERIALIZED *newgs = geo_serialize(lwgeom);
+    instants[i] = tinstant_make(PointerGetDatum(newgs), restype, inst->t);
+    pfree(newgs);
   }
-  lwmpoint_free(lwmpoint);
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
     seq->period.upper_inc, MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
 }
