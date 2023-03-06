@@ -1894,6 +1894,7 @@ pgis_geography_from_binary(const char *wkb_bytea)
 
 /*****************************************************************************/
 
+#if 0 /* not used  */
 /**
  * @brief Get a geography from a geometry
  * @note PostGIS function: geography_from_geometry(PG_FUNCTION_ARGS)
@@ -1953,6 +1954,7 @@ gserialized_geom_from_geog(GSERIALIZED *geom)
   lwgeom_free(lwgeom);
   return result;
 }
+#endif /* not used  */
 
 /*****************************************************************************
  * Functions adapted from lwgeom_functions_analytic.c

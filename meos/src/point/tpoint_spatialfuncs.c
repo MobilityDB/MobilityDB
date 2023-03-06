@@ -1897,28 +1897,6 @@ tpoint_set_srid(const Temporal *temp, int32 srid)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_temporal_spatial_transf
- * @brief Convert a temporal point from/to a geometry/geography point
- * @param[in] inst Temporal instant point
- * @param[in] oper True when transforming from geometry to geography,
- * false otherwise
- * @sqlop ::
- */
-TInstant *
-tgeompointinst_tgeogpointinst(const TInstant *inst, bool oper)
-{
-  GSERIALIZED *gs = DatumGetGserializedP(&inst->value);
-  Datum point = (oper == GEOM_TO_GEOG) ?
-    PointerGetDatum(gserialized_geog_from_geom(gs)) :
-    PointerGetDatum(gserialized_geom_from_geog(gs));
-  TInstant *result = tinstant_make(point, (oper == GEOM_TO_GEOG) ?
-    T_TGEOGPOINT : T_TGEOMPOINT, inst->t);
-  pfree(DatumGetPointer(point));
-  return result;
-}
-
-
-/**
  * @brief Coerce coordinate values into range [-180 -90, 180 90] for GEOGRAPHY
  * @note Transposed from PostGIS function ptarray_force_geodetic in file
  * lwgeodetic.c. We do not issue a warning.
@@ -1941,6 +1919,42 @@ pt_force_geodetic(LWPOINT *point)
 /**
  * @ingroup libmeos_internal_temporal_spatial_transf
  * @brief Convert a temporal point from/to a geometry/geography point
+ * @param[in] inst Temporal instant point
+ * @param[in] oper True when transforming from geometry to geography,
+ * false otherwise
+ * @sqlop ::
+ */
+TInstant *
+tgeompointinst_tgeogpointinst(const TInstant *inst, bool oper)
+{
+  GSERIALIZED *gs = DatumGetGserializedP(&inst->value);
+  LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
+  /* Short circuit functions gserialized_geog_from_geom and
+     gserialized_geom_from_geog since we know it is a point */
+  if ((int) lwgeom->srid <= 0)
+    lwgeom->srid = SRID_DEFAULT;
+  if (oper == GEOM_TO_GEOG)
+  {
+    /* We cannot test the following without access to PROJ */
+    // srid_check_latlong(lwgeom->srid);
+    /* Coerce the coordinate values into [-180 -90, 180 90] for GEOGRAPHY */
+    pt_force_geodetic((LWPOINT *) lwgeom);
+    lwgeom_set_geodetic(lwgeom, true);
+  }
+  else
+  {
+    lwgeom_set_geodetic(lwgeom, false);
+  }
+  GSERIALIZED *newgs = geo_serialize(lwgeom);
+  TInstant *result = tinstant_make(PointerGetDatum(newgs),
+    (oper == GEOM_TO_GEOG) ? T_TGEOGPOINT : T_TGEOMPOINT, inst->t);
+  pfree(newgs);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_internal_temporal_spatial_transf
+ * @brief Convert a temporal point from/to a geometry/geography point
  * @param[in] seq Temporal sequence point
  * @param[in] oper True when transforming from geometry to geography,
  * false otherwise
@@ -1949,32 +1963,11 @@ pt_force_geodetic(LWPOINT *point)
 TSequence *
 tgeompointseq_tgeogpointseq(const TSequence *seq, bool oper)
 {
-  meosType restype = (oper == GEOM_TO_GEOG) ?  T_TGEOGPOINT : T_TGEOMPOINT;
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = tsequence_inst_n(seq, i);
-    GSERIALIZED *gs = DatumGetGserializedP(&inst->value);
-    LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
-    /* Short circuit functions gserialized_geog_from_geom and
-       gserialized_geom_from_geog since we know it is a point */
-    if ((int) lwgeom->srid <= 0)
-      lwgeom->srid = SRID_DEFAULT;
-    if (oper == GEOM_TO_GEOG)
-    {
-      /* We cannot test the following without access to PROJ */
-      // srid_check_latlong(lwgeom->srid);
-      /* Coerce the coordinate values into [-180 -90, 180 90] for GEOGRAPHY */
-      pt_force_geodetic((LWPOINT *) lwgeom);
-      lwgeom_set_geodetic(lwgeom, true);
-    }
-    else
-    {
-      lwgeom_set_geodetic(lwgeom, false);
-    }
-    GSERIALIZED *newgs = geo_serialize(lwgeom);
-    instants[i] = tinstant_make(PointerGetDatum(newgs), restype, inst->t);
-    pfree(newgs);
+    instants[i] = tgeompointinst_tgeogpointinst(inst, oper);
   }
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
     seq->period.upper_inc, MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);

@@ -1415,7 +1415,7 @@ tsequenceset_simplify_dp(const TSequenceSet *ss, double dist, bool syncdist,
  * @note The funcion applies only for temporal sequences or sequence sets with
  * linear interpolation. In all other cases, it returns a copy of the temporal
  * value.
- * @sqlfunc dpSimplify()
+ * @sqlfunc DouglasPeuckerSimplify()
  */
 Temporal *
 temporal_simplify_dp(const Temporal *temp, double dist, bool syncdist)

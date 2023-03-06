@@ -67,9 +67,6 @@ SELECT round(MAX(ST_X(ST_StartPoint(transform_gk(g))))::numeric, 6) FROM tbl_geo
 (1 row)
 
 SELECT tgeogpoint(temp) FROM tbl_tgeompoint LIMIT 10;
-NOTICE:  Coordinate values were coerced into range [-180 -90, 180 90] for GEOGRAPHY
-NOTICE:  Coordinate values were coerced into range [-180 -90, 180 90] for GEOGRAPHY
-NOTICE:  Coordinate values were coerced into range [-180 -90, 180 90] for GEOGRAPHY
                                 tgeogpoint                                 
 ---------------------------------------------------------------------------
  0101000020E61000000000D0B7817C3540000046622AB45440@2001-06-11 14:33:00+00
@@ -100,8 +97,6 @@ SELECT tgeompoint(temp) FROM tbl_tgeogpoint LIMIT 10;
 (10 rows)
 
 SELECT tgeogpoint(temp) FROM tbl_tgeompoint3D LIMIT 10;
-NOTICE:  Coordinate values were coerced into range [-180 -90, 180 90] for GEOGRAPHY
-NOTICE:  Coordinate values were coerced into range [-180 -90, 180 90] for GEOGRAPHY
                                         tgeogpoint                                         
 -------------------------------------------------------------------------------------------
  01010000A0E610000000004453E6914D40000020108B4132400000C02D06D85540@2001-01-01 05:13:00+00
@@ -132,9 +127,6 @@ SELECT tgeompoint(temp) FROM tbl_tgeogpoint3D LIMIT 10;
 (10 rows)
 
 SELECT temp::tgeogpoint FROM tbl_tgeompoint LIMIT 10;
-NOTICE:  Coordinate values were coerced into range [-180 -90, 180 90] for GEOGRAPHY
-NOTICE:  Coordinate values were coerced into range [-180 -90, 180 90] for GEOGRAPHY
-NOTICE:  Coordinate values were coerced into range [-180 -90, 180 90] for GEOGRAPHY
                                    temp                                    
 ---------------------------------------------------------------------------
  0101000020E61000000000D0B7817C3540000046622AB45440@2001-06-11 14:33:00+00
@@ -165,8 +157,6 @@ SELECT temp::tgeompoint FROM tbl_tgeogpoint LIMIT 10;
 (10 rows)
 
 SELECT temp::tgeogpoint FROM tbl_tgeompoint3D LIMIT 10;
-NOTICE:  Coordinate values were coerced into range [-180 -90, 180 90] for GEOGRAPHY
-NOTICE:  Coordinate values were coerced into range [-180 -90, 180 90] for GEOGRAPHY
                                            temp                                            
 -------------------------------------------------------------------------------------------
  01010000A0E610000000004453E6914D40000020108B4132400000C02D06D85540@2001-01-01 05:13:00+00
