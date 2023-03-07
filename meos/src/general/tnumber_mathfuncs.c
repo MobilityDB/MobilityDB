@@ -54,20 +54,32 @@
  *****************************************************************************/
 
 /**
+ * @ingroup libmeos_temporal_math
  * @brief Convert a number from radians to degrees
+ * @sqlfunc degrees()
  */
-static Datum
-datum_degrees(Datum value, Datum normalize)
+double
+float_degrees(double value, bool normalize)
 {
-  double result = float8_div(DatumGetFloat8(value), RADIANS_PER_DEGREE);
-  if (DatumGetBool(normalize))
+  double result = float8_div(value, RADIANS_PER_DEGREE);
+  if (normalize)
   {
     /* The value would be in the range (-360, 360) */
     result = fmod(result, 360.0);
     if (result < 0)
       result += 360.0; /* The value would be in the range [0, 360) */
   }
-  return Float8GetDatum(result);
+  return result;
+}
+
+/**
+ * @brief Convert a number from radians to degrees
+ */
+static Datum
+datum_degrees(Datum value, Datum normalize)
+{
+  return Float8GetDatum(float_degrees(DatumGetFloat8(value),
+    DatumGetBool(normalize)));
 }
 
 /**
@@ -78,7 +90,6 @@ datum_radians(Datum value)
 {
   return Float8GetDatum(float8_mul(DatumGetFloat8(value), RADIANS_PER_DEGREE));
 }
-
 
 /**
  * @brief Find the single timestamptz at which the operation of two temporal
@@ -494,18 +505,6 @@ tnumber_delta_value(const Temporal *temp)
 /*****************************************************************************
  * Miscellaneous temporal functions
  *****************************************************************************/
-
-/**
- * @ingroup libmeos_temporal_math
- * @brief Convert a number from radians to degrees
- * @sqlfunc degrees()
- */
-double
-float_degrees(double value, bool normalize)
-{
-  return DatumGetFloat8(datum_degrees(Float8GetDatum(value),
-    BoolGetDatum(normalize)));
-}
 
 /**
  * @ingroup libmeos_temporal_math
