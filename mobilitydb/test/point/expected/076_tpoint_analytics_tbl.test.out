@@ -189,7 +189,7 @@ SELECT MAX(numInstants(minDistSimplify(temp, 4))) FROM tbl_tgeogpoint;
 SELECT MAX(numInstants(minTimeDeltaSimplify(temp, '3 min'))) FROM tbl_tfloat;
  max 
 -----
-  41
+  42
 (1 row)
 
 SELECT MAX(numInstants(minTimeDeltaSimplify(temp, '3 min'))) FROM tbl_tgeompoint;

@@ -813,7 +813,7 @@ tsequence_simplify_min_dist(const TSequence *seq, double dist)
         last = true;
     }
   }
-  if (k > 1 && ! last)
+  if (seq->count > 1 && ! last)
     instants[k++] = tsequence_inst_n(seq, seq->count - 1);
   TSequence *result = tsequence_make(instants, k,
     (k == 1) ? true : seq->period.lower_inc,
@@ -907,7 +907,7 @@ tsequence_simplify_min_tdelta(const TSequence *seq, const Interval *mint)
     }
     pfree(duration);
   }
-  if (k > 1 && ! last)
+  if (seq->count > 1 && ! last)
     instants[k++] = tsequence_inst_n(seq, seq->count - 1);
   TSequence *result = tsequence_make(instants, k,
     (k == 1) ? true : seq->period.lower_inc,
