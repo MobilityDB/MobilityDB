@@ -478,6 +478,7 @@ geo_set_stbox(const GSERIALIZED *gs, STBox *box)
     box->ymin = box->ymax = y;
     if (geodetic || hasz)
       box->zmin = box->zmax = z;
+    return true;
   }
 
   /* General case for arbitrary geometry/geography */

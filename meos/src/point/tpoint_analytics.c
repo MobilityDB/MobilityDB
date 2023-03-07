@@ -176,7 +176,7 @@ tpointdiscseq_to_geo_measure(const TSequence *seq, const TSequence *measure)
  * @pre The temporal point and the measure are synchronized
  */
 static LWGEOM *
-tpointseq_to_geo_measure1(const TSequence *seq, const TSequence *measure)
+tpointcontseq_to_geo_measure1(const TSequence *seq, const TSequence *measure)
 {
   LWPOINT **points = palloc(sizeof(LWPOINT *) * seq->count);
   /* Remove two consecutive points if they are equal */
@@ -260,10 +260,10 @@ tpointseq_to_geo1(const TSequence *seq)
  * @param[in] measure Temporal float
  */
 static GSERIALIZED *
-tpointseq_to_geo_measure(const TSequence *seq, const TSequence *measure)
+tpointcontseq_to_geo_measure(const TSequence *seq, const TSequence *measure)
 {
   LWGEOM *lwgeom = measure ?
-    tpointseq_to_geo_measure1(seq, measure) : tpointseq_to_geo1(seq);
+    tpointcontseq_to_geo_measure1(seq, measure) : tpointseq_to_geo1(seq);
   GSERIALIZED *result = geo_serialize(lwgeom);
   return result;
 }
@@ -286,7 +286,7 @@ tpointseqset_to_geo_measure(const TSequenceSet *ss, const TSequenceSet *measure)
     seq = tsequenceset_seq_n(ss, 0);
     if (measure)
       m = tsequenceset_seq_n(measure, 0);
-    return tpointseq_to_geo_measure(seq, m);
+    return tpointcontseq_to_geo_measure(seq, m);
   }
 
   bool geodetic = MOBDB_FLAGS_GET_GEODETIC(ss->flags);
@@ -298,7 +298,7 @@ tpointseqset_to_geo_measure(const TSequenceSet *ss, const TSequenceSet *measure)
     if (measure)
     {
       m = tsequenceset_seq_n(measure, i);
-      geoms[i] = tpointseq_to_geo_measure1(seq, m);
+      geoms[i] = tpointcontseq_to_geo_measure1(seq, m);
     }
     else
       geoms[i] = tpointseq_to_geo1(seq);
@@ -337,7 +337,7 @@ tpointseqset_to_geo_measure(const TSequenceSet *ss, const TSequenceSet *measure)
  * sequences are stored
  */
 static int
-tpointseq_to_geo_measure_segmentize1(const TSequence *seq,
+tpointcontseq_to_geo_measure_segmentize1(const TSequence *seq,
   const TSequence *measure, LWGEOM **result)
 {
   const TInstant *inst = tsequence_inst_n(seq, 0);
@@ -414,13 +414,13 @@ tpointseq_to_geo_segmentize1(const TSequence *seq, LWGEOM **result)
  * corresponds to a segment of the orginal temporal point.
  */
 static GSERIALIZED *
-tpointseq_to_geo_measure_segmentize(const TSequence *seq,
+tpointcontseq_to_geo_measure_segmentize(const TSequence *seq,
   const TSequence *measure)
 {
   int count = (seq->count == 1) ? 1 : seq->count - 1;
   LWGEOM **geoms = palloc(sizeof(LWGEOM *) * count);
   if (measure)
-    tpointseq_to_geo_measure_segmentize1(seq, measure, geoms);
+    tpointcontseq_to_geo_measure_segmentize1(seq, measure, geoms);
   else
     tpointseq_to_geo_segmentize1(seq, geoms);
   GSERIALIZED *result;
@@ -459,7 +459,7 @@ tpointseqset_to_geo_measure_segmentize(const TSequenceSet *ss,
     seq = tsequenceset_seq_n(ss, 0);
     if (measure)
       m = tsequenceset_seq_n(measure, 0);
-    return tpointseq_to_geo_measure_segmentize(seq, m);
+    return tpointcontseq_to_geo_measure_segmentize(seq, m);
   }
 
   uint8_t colltype = 0;
@@ -472,7 +472,7 @@ tpointseqset_to_geo_measure_segmentize(const TSequenceSet *ss,
     if (measure)
     {
       m = tsequenceset_seq_n(measure, i);
-      k += tpointseq_to_geo_measure_segmentize1(seq, m, &geoms[k]);
+      k += tpointcontseq_to_geo_measure_segmentize1(seq, m, &geoms[k]);
     }
     else
       k += tpointseq_to_geo_segmentize1(seq, &geoms[k]);
@@ -540,9 +540,9 @@ tpoint_to_geo_measure(const Temporal *tpoint, const Temporal *measure,
         (TSequence *) sync1, (TSequence *) sync2);
     else
       *result = segmentize ?
-        tpointseq_to_geo_measure_segmentize(
+        tpointcontseq_to_geo_measure_segmentize(
           (TSequence *) sync1, (TSequence *) sync2) :
-        tpointseq_to_geo_measure(
+        tpointcontseq_to_geo_measure(
           (TSequence *) sync1, (TSequence *) sync2);
   }
   else /* sync1->subtype == TSEQUENCESET */
@@ -813,9 +813,11 @@ tsequence_simplify_min_dist(const TSequence *seq, double dist)
         last = true;
     }
   }
+  if (! last)
+    instants[k++] = tsequence_inst_n(seq, seq->count - 1);
   TSequence *result = tsequence_make(instants, k,
     (k == 1) ? true : seq->period.lower_inc,
-    (k == 1 || ! last) ? true : seq->period.upper_inc, LINEAR, NORMALIZE);
+    (k == 1) ? true : seq->period.upper_inc, LINEAR, NORMALIZE);
   pfree(instants);
   return result;
 }
@@ -905,9 +907,11 @@ tsequence_simplify_min_tdelta(const TSequence *seq, const Interval *mint)
     }
     pfree(duration);
   }
+  if (! last)
+    instants[k++] = tsequence_inst_n(seq, seq->count - 1);
   TSequence *result = tsequence_make(instants, k,
     (k == 1) ? true : seq->period.lower_inc,
-    (k == 1 || ! last) ? true : seq->period.upper_inc, LINEAR, NORMALIZE);
+    (k == 1) ? true : seq->period.upper_inc, LINEAR, NORMALIZE);
   pfree(instants);
   return result;
 }
