@@ -171,13 +171,13 @@ SELECT ST_Extent(round(geoMeasure(temp, round(speed(temp),2)), 6)) FROM tbl_tgeo
 SELECT MAX(numInstants(minDistSimplify(temp, 4))) FROM tbl_tfloat;
  max 
 -----
-  46
+  47
 (1 row)
 
 SELECT MAX(numInstants(minDistSimplify(temp, 4))) FROM tbl_tgeompoint;
  max 
 -----
-  55
+  56
 (1 row)
 
 SELECT MAX(numInstants(minDistSimplify(temp, 4))) FROM tbl_tgeogpoint;
@@ -195,13 +195,13 @@ SELECT MAX(numInstants(minTimeDeltaSimplify(temp, '3 min'))) FROM tbl_tfloat;
 SELECT MAX(numInstants(minTimeDeltaSimplify(temp, '3 min'))) FROM tbl_tgeompoint;
  max 
 -----
-  43
+  47
 (1 row)
 
 SELECT MAX(numInstants(minTimeDeltaSimplify(temp, '3 min'))) FROM tbl_tgeogpoint;
  max 
 -----
-  38
+  39
 (1 row)
 
 SELECT MAX(numInstants(DouglasPeuckerSimplify(temp, 4))) FROM tbl_tfloat;
