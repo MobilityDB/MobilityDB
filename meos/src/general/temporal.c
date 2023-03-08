@@ -314,9 +314,9 @@ ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
     if (maxt != NULL && ! split)
     {
       Interval *duration = pg_timestamp_mi(instants[i]->t, instants[i - 1]->t);
-      int cmp = pg_interval_cmp(duration, maxt);
-      if (cmp > 0)
+      if (pg_interval_cmp(duration, maxt) > 0)
         split = true;
+      // CANNOT pfree(duration);
     }
     if (split)
       result[k++] = i;
@@ -1450,7 +1450,7 @@ temporal_tprecision_agg_values(const Temporal *temp)
   Datum result;
   if (tnumber_type(temp->temptype))
     result = Float8GetDatum(tnumber_twavg(temp));
-  else if (tgeo_type(temp->temptype))
+  else /* tgeo_type(temp->temptype) */
     result = PointerGetDatum(tpoint_twcentroid(temp));
   return result;
 }
@@ -3987,7 +3987,7 @@ tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
   bool use_geos_dist = seq->temptype != T_TFLOAT;
   bool geodetic = MOBDB_FLAGS_GET_GEODETIC(seq->flags);
 
-  const TInstant *inst1 = NULL, *inst2;
+  const TInstant *inst1 = NULL, *inst2 = NULL; /* make compiler quiet */
   GEOSGeometry *geom = NULL;
 
   if (use_geos_dist)

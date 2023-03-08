@@ -52,6 +52,7 @@
 #include "point/tpoint_spatialrels.h"
 #include "point/tpoint_spatialfuncs.h"
 /* MobilityDB */
+#include "pg_general/temporal.h"
 #include "pg_general/type_util.h"
 #include "pg_point/postgis.h"
 
@@ -108,20 +109,70 @@ Tpoint_to_geo_measure(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Temporal_simplify);
+PG_FUNCTION_INFO_V1(Temporal_simplify_min_dist);
 /**
- * @brief Simplify the temporal sequence (set) float or point using a
- * Douglas-Peucker line simplification algorithm.
+ * @brief Simplify the temporal sequence (set) float or point ensuring that
+ * consecutive values are at least a certain distance apart.
  */
 PGDLLEXPORT Datum
-Temporal_simplify(PG_FUNCTION_ARGS)
+Temporal_simplify_min_dist(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  double dist = PG_GETARG_FLOAT8(1);
+  /* Store fcinfo to compute the geodetic distance */
+  store_fcinfo(fcinfo);
+  Temporal *result = temporal_simplify_min_dist(temp, dist);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_simplify_min_tdelta);
+/**
+ * @brief Simplify the temporal sequence (set) float or point ensuring that
+ * consecutive values are at least a certain distance apart.
+ */
+PGDLLEXPORT Datum
+Temporal_simplify_min_tdelta(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Interval *mint = PG_GETARG_INTERVAL_P(1);
+  Temporal *result = temporal_simplify_min_tdelta(temp, mint);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_simplify_max_dist);
+/**
+ * @brief Simplify the temporal sequence (set) float or point using a
+ * single-pass Douglas-Peucker line simplification algorithm.
+ */
+PGDLLEXPORT Datum
+Temporal_simplify_max_dist(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   double dist = PG_GETARG_FLOAT8(1);
   bool syncdist = true;
   if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
     syncdist = PG_GETARG_BOOL(2);
-  Temporal *result = temporal_simplify(temp, dist, syncdist);
+  Temporal *result = temporal_simplify_max_dist(temp, dist, syncdist);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_simplify_dp);
+/**
+ * @brief Simplify the temporal sequence (set) float or point using a
+ * Douglas-Peucker line simplification algorithm.
+ */
+PGDLLEXPORT Datum
+Temporal_simplify_dp(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  double dist = PG_GETARG_FLOAT8(1);
+  bool syncdist = true;
+  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
+    syncdist = PG_GETARG_BOOL(2);
+  Temporal *result = temporal_simplify_dp(temp, dist, syncdist);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

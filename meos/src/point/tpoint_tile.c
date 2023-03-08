@@ -278,7 +278,8 @@ coord_print(int *coords, int numdims)
  * two input tiles
  *
  * @param[in] coords1, coords2 Coordinates of the input tiles
- * @param[in] numdims Number of dimensions of the grid
+ * @param[in] numdims Number of dimensions of the grid. It is either 2 (for 2D),
+ * 3 (for 3D or 2D+T) or 4 (3D+T)
  * @param[out] bm Bit matrix
  */
 static void
@@ -286,6 +287,7 @@ bresenham_bm(BitMatrix *bm, int *coords1, int *coords2, int numdims)
 {
   int i, j, delta[MAXDIMS], next[MAXDIMS], p[MAXDIMS], coords[MAXDIMS],
     neighbors[MAXDIMS];
+  assert(numdims >= 2);
   memset(delta, 0, sizeof(delta));
   memset(next, 0, sizeof(next));
   memset(p, 0, sizeof(p));
@@ -302,7 +304,7 @@ bresenham_bm(BitMatrix *bm, int *coords1, int *coords2, int numdims)
   }
   /* Compute the driving axis
    * At the end, the driving axis is the one in variable axis */
-  int axis;
+  int axis = 0; /* make compiler quiet */
   for (i = 0; i < numdims; i++)
   {
     /* We bet on the current i axis */

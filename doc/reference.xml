@@ -106,31 +106,31 @@
 	</sect1>
 
 	<sect1>
-		<title>Functions and Operators for Set and Span Types</title>
+		<title>Operations for Set and Span Types</title>
 
 		<sect2>
-			<title>Input/Output Functions</title>
+			<title>Input and Output</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="spantime_asBinary"><varname>asBinary</varname></link>: Get the Well-Known Binary (WKB) representation of a set or span type</para>
+					<para><link linkend="setspan_asBinary"><varname>asBinary</varname></link>: Get the Well-Known Binary (WKB) representation</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="spantime_asHexWKB"><varname>asHexWKB</varname></link>: Get the Hexadecimal Well-Known Binary (HexWKB) representation as text of a set or span type</para>
+					<para><link linkend="setspan_asHexWKB"><varname>asHexWKB</varname></link>: Get the Hexadecimal Well-Known Binary (HexWKB) representation as text</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="spantime_FromBinary"><varname>&lt;set&gt;FromBinary</varname>, <varname>&lt;span&gt;FromBinary</varname>, <varname>&lt;spanset&gt;FromBinary</varname></link>: Input a span or set type from a Well-Known Binary (WKB) representation</para>
+					<para><link linkend="setspan_FromBinary"><varname>&lt;set&gt;FromBinary</varname>, <varname>&lt;span&gt;FromBinary</varname>, <varname>&lt;spanset&gt;FromBinary</varname></link>: Input from a Well-Known Binary (WKB) representation</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="spantime_FromHexWKB"><varname>&lt;set&gt;FromHexWKB</varname>, <varname>&lt;span&gt;FromHexWKB</varname>, <varname>&lt;spanset&gt;FromHexWKB</varname></link>: Input a span or set type from an Hexadecimal Well-Known Binary (HexWKB) representation</para>
+					<para><link linkend="setspan_FromHexWKB"><varname>&lt;set&gt;FromHexWKB</varname>, <varname>&lt;span&gt;FromHexWKB</varname>, <varname>&lt;spanset&gt;FromHexWKB</varname></link>: Input from an Hexadecimal Well-Known Binary (HexWKB) representation</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
 
 		<sect2>
-			<title>Constructor Functions</title>
+			<title>Constructors</title>
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="set"><varname>set</varname></link>: Constructor for set values</para>
@@ -170,10 +170,9 @@
 				</listitem>
 			</itemizedlist>
 		</sect2>
+
 		<sect2>
-
-			<title>Accessor Functions</title>
-
+			<title>Accessors</title>
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="setspan_memSize"><varname>memSize</varname></link>: Get the memory size in bytes</para>
@@ -226,7 +225,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Modification Functions</title>
+			<title>Transformations</title>
 
 			<itemizedlist>
 				<listitem>
@@ -248,7 +247,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Comparison Operators</title>
+			<title>Comparisons</title>
 
 			<itemizedlist>
 				<listitem>
@@ -278,7 +277,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Set Operators</title>
+			<title>Set Operations</title>
 
 			<itemizedlist>
 				<listitem>
@@ -296,7 +295,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Topological and Relative Position Operators</title>
+			<title>Topological and Relative Position Operations</title>
 
 			<itemizedlist>
 				<listitem>
@@ -334,7 +333,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Distance Operators</title>
+			<title>Distance Operations</title>
 
 			<itemizedlist>
 				<listitem>
@@ -344,7 +343,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Aggregate Functions</title>
+			<title>Aggregations</title>
 
 			<itemizedlist>
 				<listitem>
@@ -356,17 +355,38 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tunion"><varname>tunion</varname></link>: Temporal union</para>
+					<para><link linkend="setspan_union_agg"><varname>set_union</varname>, <varname>span_union</varname></link>: Aggregate union</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
 	</sect1>
 
 	<sect1>
-		<title>Functions and Operators for Box Types</title>
+		<title>Operations for Box Types</title>
 
 		<sect2>
-			<title>Constructor Functions</title>
+			<title>Input and Output</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="box_asBinary"><varname>asBinary</varname></link>: Get the Well-Known Binary (WKB) representation</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="box_asHexWKB"><varname>asHexWKB</varname></link>: Get the Hexadecimal Well-Known Binary (HexWKB) representation as text</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="box_FromBinary"><varname>tboxFromBinary</varname>, <varname>stboxFromBinary</varname></link>: Input from a Well-Known Binary (WKB) representation</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="box_FromHexWKB"><varname>tboxFromHexWKB</varname>, <varname>stboxFromHexWKB</varname></link>: Input from an Hexadecimal Well-Known Binary (HexWKB) representation</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Constructors</title>
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="tbox"><varname>tbox</varname></link>: Constructor for <varname>tbox</varname></para>
@@ -401,7 +421,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Accessor Functions</title>
+			<title>Accessors</title>
 
 			<itemizedlist>
 				<listitem>
@@ -423,7 +443,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Modification Functions</title>
+			<title>Transformations</title>
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="expandValue"><varname>expandValue</varname></link>: Expand the numeric dimension of the bounding box by a float value</para>
@@ -445,7 +465,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Spatial Reference System Functions</title>
+			<title>Spatial Reference System</title>
 
 			<itemizedlist>
 				<listitem>
@@ -463,7 +483,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Aggregate Functions</title>
+			<title>Aggregations</title>
 
 			<itemizedlist>
 				<listitem>
@@ -473,7 +493,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Comparison Operators</title>
+			<title>Comparisons</title>
 			<itemizedlist>
 				<listitem>
 				<para><link linkend="box_eq"><varname>=</varname></link>: Are the bounding boxes equal?</para>
@@ -502,7 +522,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Set Operators</title>
+			<title>Set Operations</title>
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="box_union"><varname>+</varname></link>: Union of bounding boxes</para>
@@ -515,7 +535,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Topological Operators</title>
+			<title>Topological and Relative Position Operations</title>
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="box_overlap"><varname>&amp;&amp;</varname></link>: Do the bounding boxes overlap?</para>
@@ -536,12 +556,7 @@
 				<listitem>
 					<para><link linkend="box_adjacent"><varname>-|-</varname></link>: Are the bounding boxes adjacent?</para>
 				</listitem>
-			</itemizedlist>
-		</sect2>
 
-		<sect2>
-			<title>Relative Position Operators</title>
-			<itemizedlist>
 				<listitem>
 					<para><link linkend="tbox_left"><varname>&lt;&lt;</varname>, <varname>&lt;&lt;|</varname>, <varname>&lt;&lt;/</varname>, <varname>&lt;&lt;#</varname></link>: Are the X/Y/Z/T values of the first bounding box strictly less than those of the second one?</para>
 				</listitem>
@@ -562,10 +577,57 @@
 	</sect1>
 
 	<sect1>
-		<title>Functions and Operators for Temporal Types</title>
+		<title>Operations for Temporal Types: Generic Operations</title>
 
 		<sect2>
-			<title>Constructor Functions</title>
+			<title>Input and Output</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="temporal_asMFJSON"><varname>asMFJSON</varname></link>: Get the Moving Features JSON (MF-JSON) representation</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="temporal_asBinary"><varname>asBinary</varname></link>: Get the Well-Known Binary (WKB) representation</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="temporal_asHexWKB"><varname>asHexWKB</varname></link>: Get the Hexadecimal Well-Known Binary (HexWKB) representation as text</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="temporal_FromMFJSON"><varname>&lt;ttype&gt;FromMFJSON</varname></link>: Input from a Moving Features JSON (MF-JSON) representation</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="temporal_FromBinary"><varname>&lt;ttype&gt;FromBinary</varname></link>: Input from a Well-Known Binary (WKB) representation</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="temporal_FromHexWKB"><varname>&lt;ttype&gt;FromHexWKB</varname></link>: Input from an Hexadecimal Well-Known Binary (HexWKB) representation</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Constructors</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="set"><varname>set</varname></link>: Constructor for set values</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="span"><varname>span</varname></link>: Constructor for span values</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="spanset"><varname>spanset</varname></link>: Constructor for span set values</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+
+		<sect2>
+			<title>Constructors</title>
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="ttype_const"><varname>&lt;ttype&gt;</varname></link>: Constructor for temporal types from a base value and a time value</para>
@@ -609,7 +671,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Accessor Functions</title>
+			<title>Accessors</title>
 			<itemizedlist>
 				<listitem>
 				<para><link linkend="ttype_memSize"><varname>memSize</varname></link>: Get the memory size in bytes</para>
@@ -722,11 +784,11 @@
 		</sect2>
 
 		<sect2>
-			<title>Transformation Functions</title>
+			<title>Transformations</title>
 
 			<itemizedlist>
 				<listitem>
-				<para><link linkend="ttype_transform"><varname>&lt;ttype&gt;_inst, &lt;ttype&gt;_discseq, &lt;ttype&gt;_contseq, &lt;ttype&gt;_seqset</varname></link>: Transform a temporal value to another subtype</para>
+				<para><link linkend="ttype_subtype"><varname>&lt;ttype&gt;_inst, &lt;ttype&gt;_discseq, &lt;ttype&gt;_contseq, &lt;ttype&gt;_seqset</varname></link>: Transform a temporal value to another subtype</para>
 				</listitem>
 
 				<listitem>
@@ -756,7 +818,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Modification Functions</title>
+			<title>Modifications</title>
 
 			<itemizedlist>
 				<listitem>
@@ -787,7 +849,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Restriction Functions</title>
+			<title>Restrictions</title>
 
 			<itemizedlist>
 
@@ -822,10 +884,10 @@
 		</sect2>
 
 		<sect2>
-			<title>Comparison Operators</title>
+			<title>Comparisons</title>
 
 			<sect3>
-				<title>Traditional Comparison Operators</title>
+				<title>Traditional Comparisons</title>
 
 				<itemizedlist>
 					<listitem>
@@ -855,7 +917,7 @@
 			</sect3>
 
 			<sect3>
-				<title>Ever and Always Comparison Operators</title>
+				<title>Ever and Always Comparisons</title>
 
 				<itemizedlist>
 					<listitem>
@@ -885,7 +947,7 @@
 			</sect3>
 
 			<sect3>
-				<title>Temporal Comparison Operators</title>
+				<title>Temporal Comparisons</title>
 
 				<itemizedlist>
 					<listitem>
@@ -914,9 +976,13 @@
 				</itemizedlist>
 			</sect3>
 		</sect2>
+	</sect1>
+
+	<sect1>
+		<title>Temporal Types: Alphanumeric Operations</title>
 
 		<sect2>
-			<title>Mathematical Functions and Operators</title>
+			<title>Mathematical Operations</title>
 
 			<itemizedlist>
 				<listitem>
@@ -940,6 +1006,10 @@
 				</listitem>
 
 				<listitem>
+					<para><link linkend="deltaValue"><varname>deltaValue</varname></link>: Get the value difference between consecutive instants of the temporal number</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="round"><varname>round</varname></link>: Round the values to a number of decimal places</para>
 				</listitem>
 
@@ -954,7 +1024,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Boolean Functions and Operators</title>
+			<title>Boolean Operations</title>
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="tbool_and"><varname>&amp;</varname></link>: Temporal and</para>
@@ -975,7 +1045,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Text Functions and Operators</title>
+			<title>Text Operations</title>
 
 			<itemizedlist>
 				<listitem>
@@ -988,230 +1058,252 @@
 			</itemizedlist>
 		</sect2>
 
+	</sect1>
+
+	<sect1>
+		<title>Temporal Types: Spatial Operations</title>
+
 		<sect2>
-			<title>Spatial Functions and Operators</title>
+			<title>Input and Output</title>
 
-			<sect3>
-				<title>Input/Output Functions</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="asText"><varname>asText</varname></link>: Get the Well-Known Text (WKT) representation</para>
+				</listitem>
 
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="asText"><varname>asText</varname></link>: Get the Well-Known Text (WKT) representation</para>
-					</listitem>
+				<listitem>
+					<para><link linkend="asEWKT"><varname>asEWKT</varname></link>: Get the Extended Well-Known Text (EWKT) representation</para>
+				</listitem>
 
-					<listitem>
-						<para><link linkend="asEWKT"><varname>asEWKT</varname></link>: Get the Extended Well-Known Text (EWKT) representation</para>
-					</listitem>
+				<listitem>
+					<para><link linkend="asMFJSON"><varname>asMFJSON</varname></link>: Get the Moving Features JSON representation</para>
+				</listitem>
 
-					<listitem>
-						<para><link linkend="asMFJSON"><varname>asMFJSON</varname></link>: Get the Moving Features JSON representation</para>
-					</listitem>
+				<listitem>
+					<para><link linkend="asBinary"><varname>asBinary</varname></link>: Get the Well-Known Binary (WKB) representation</para>
+				</listitem>
 
-					<listitem>
-						<para><link linkend="asBinary"><varname>asBinary</varname></link>: Get the Well-Known Binary (WKB) representation</para>
-					</listitem>
+				<listitem>
+					<para><link linkend="asEWKB"><varname>asEWKB</varname></link>: Get the Extended Well-Known Binary (EWKB) representation</para>
+				</listitem>
 
-					<listitem>
-						<para><link linkend="asEWKB"><varname>asEWKB</varname></link>: Get the Extended Well-Known Binary (EWKB) representation</para>
-					</listitem>
+				<listitem>
+					<para><link linkend="asHexEWKB"><varname>asHexEWKB</varname></link>: Get the Hexadecimal Extended Well-Known Binary (EWKB) representation as text </para>
+				</listitem>
 
-					<listitem>
-						<para><link linkend="asHexEWKB"><varname>asHexEWKB</varname></link>: Get the Hexadecimal Extended Well-Known Binary (EWKB) representation as text </para>
-					</listitem>
+				<listitem>
+					<para><link linkend="tgeompointFromText"><varname>tgeompointFromText</varname>, <varname>tgeogpointFromText</varname></link>: Input a temporal geometry/geography point from a Well-Known Text (WKT) representation</para>
+				</listitem>
 
-					<listitem>
-						<para><link linkend="tgeompointFromText"><varname>tgeompointFromText</varname>, <varname>tgeogpointFromText</varname></link>: Input a temporal geometry/geography point from a Well-Known Text (WKT) representation</para>
-					</listitem>
+				<listitem>
+					<para><link linkend="tgeompointFromEWKT"><varname>tgeompointFromEWKT</varname>, <varname>tgeogpointFromEWKT</varname></link>: Input a temporal geometry/geography point from an Extended Well-Known Text (EWKT) representation</para>
+				</listitem>
 
-					<listitem>
-						<para><link linkend="tgeompointFromEWKT"><varname>tgeompointFromEWKT</varname>, <varname>tgeogpointFromEWKT</varname></link>: Input a temporal geometry/geography point from an Extended Well-Known Text (EWKT) representation</para>
-					</listitem>
+				<listitem>
+					<para><link linkend="tgeompointFromMFJSON"><varname>tgeompointFromMFJSON</varname>, <varname>tgeogpointFromMFJSON</varname></link>: Input a temporal geometry/geography point from a Moving Features JSON representation</para>
+				</listitem>
 
-					<listitem>
-						<para><link linkend="tgeompointFromMFJSON"><varname>tgeompointFromMFJSON</varname>, <varname>tgeogpointFromMFJSON</varname></link>: Input a temporal geometry/geography point from a Moving Features JSON representation</para>
-					</listitem>
+				<listitem>
+					<para><link linkend="tgeompointFromBinary"><varname>tgeompointFromBinary</varname>, <varname>tgeogpointFromBinary</varname></link>: Input a temporal geometry/geography point from a Well-Known Binary (WKB) representation</para>
+				</listitem>
 
-					<listitem>
-						<para><link linkend="tgeompointFromBinary"><varname>tgeompointFromBinary</varname>, <varname>tgeogpointFromBinary</varname></link>: Input a temporal geometry/geography point from a Well-Known Binary (WKB) representation</para>
-					</listitem>
+				<listitem>
+					<para><link linkend="tgeompointFromEWKB"><varname>tgeompointFromEWKB</varname>, <varname>tgeogpointFromEWKB</varname></link>: Input a temporal geometry/geography point from an Extended Well-Known Binary (EWKB) representation</para>
+				</listitem>
 
-					<listitem>
-						<para><link linkend="tgeompointFromEWKB"><varname>tgeompointFromEWKB</varname>, <varname>tgeogpointFromEWKB</varname></link>: Input a temporal geometry/geography point from an Extended Well-Known Binary (EWKB) representation</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tgeompointFromHexEWKB"><varname>tgeompointFromHexEWKB</varname>, <varname>tgeogpointFromHexEWKB</varname></link>: Input a temporal geometry/geography point from an Hexadecimal Extended Well-Known Binary (EWKB) representation as text </para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
-
-			<sect3>
-				<title>Spatial Reference System Functions</title>
-
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="tpoint_SRID"><varname>SRID</varname></link>: Get the spatial reference identifier</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tpoint_setSRID"><varname>setSRID</varname></link>: Set the spatial reference identifier</para>
-						</listitem>
-
-					<listitem>
-						<para><link linkend="tpoint_transform"><varname>transform</varname></link>: Transform to a different spatial reference</para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
-
-			<sect3>
-				<title>Bounding Box Functions</title>
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="tpoint_expandSpace"><varname>expandSpace</varname></link>: Get the spatiotemporal bounding box expanded in the spatial dimension by a float value</para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
-
-			<sect3>
-				<title>Accessor Functions</title>
-
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="getX"><varname>getX</varname>, <varname>getY</varname>, <varname>getZ</varname></link>: Get the X/Y/Z/T coordinate values as a temporal float</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="length"><varname>length</varname></link>: Get the length traversed by the temporal point</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="isSimple"><varname>isSimple</varname></link>: Return true if the temporal point does not spatially self-intersect</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="cumulativeLength"><varname>cumulativeLength</varname></link>: Get the cumulative length traversed by the temporal point</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="speed"><varname>speed</varname></link>: Get the speed of the temporal point in units per second</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="twCentroid"><varname>twCentroid</varname></link>: Get the time-weighted centroid</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="azimuth"><varname>azimuth</varname></link>: Get the temporal azimuth</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="bearing"><varname>bearing</varname></link>: Get the temporal bearing</para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
-
-			<sect3>
-				<title>Manipulation Functions</title>
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="tpoint_round"><varname>round</varname></link>: Round the coordinate values to a number of decimal places</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="makeSimple"><varname>makeSimple</varname></link>:  Return an array of fragments of the temporal point which are simple</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="simplify"><varname>simplify</varname></link>: Simplify a temporal point using the Douglas-Peucker algorithm</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="geoMeasure"><varname>geoMeasure</varname></link>: Construct a geometry/geography with M measure from a temporal point and a temporal float</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="asMVTGeom"><varname>asMVTGeom</varname></link>: Transform a temporal geometric point into the coordinate space of a Mapbox Vector Tile</para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
-
-			<sect3>
-				<title>Distance Functions and Operators</title>
-
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="smallest_distance"><varname>|=|</varname></link>: Get the smallest distance ever</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="nearestApproachInstant"><varname>nearestApproachInstant</varname></link>: Get the instant of the first temporal point at which the two arguments are at the nearest distance</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="shortestLine"><varname>shortestLine</varname></link>: Get the line connecting the nearest approach point</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="distance"><varname>&lt;-&gt;</varname></link>: Get the temporal distance</para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
-
-			<sect3>
-				<title>Ever Spatial Relationships</title>
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="econtains"><varname>econtains</varname></link>: Ever contains</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="edisjoint"><varname>edisjoint</varname></link>: Is ever disjoint</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="edwithin"><varname>edwithin</varname></link>: Is ever at distance within</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="eintersects"><varname>eintersects</varname></link>: Ever intersects</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="etouches"><varname>etouches</varname></link>: Ever touches</para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
-
-			<sect3>
-				<title>Temporal Spatial Relationships</title>
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="tcontains"><varname>tcontains</varname></link>: Temporal contains</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tdisjoint"><varname>tdisjoint</varname></link>: Temporal disjoint</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tdwithin"><varname>tdwithin</varname></link>: Temporal distance within</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tintersects"><varname>tintersects</varname></link>: Temporal intersects</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="ttouches"><varname>ttouches</varname></link>: Temporal touches</para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
+				<listitem>
+					<para><link linkend="tgeompointFromHexEWKB"><varname>tgeompointFromHexEWKB</varname>, <varname>tgeogpointFromHexEWKB</varname></link>: Input a temporal geometry/geography point from an Hexadecimal Extended Well-Known Binary (EWKB) representation as text </para>
+				</listitem>
+			</itemizedlist>
 		</sect2>
 
 		<sect2>
-			<title>Similarity Functions</title>
+			<title>Spatial Reference System</title>
 
 			<itemizedlist>
+				<listitem>
+					<para><link linkend="tpoint_SRID"><varname>SRID</varname></link>: Get the spatial reference identifier</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tpoint_setSRID"><varname>setSRID</varname></link>: Set the spatial reference identifier</para>
+					</listitem>
+
+				<listitem>
+					<para><link linkend="tpoint_transform"><varname>transform</varname></link>: Transform to a different spatial reference</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Bounding Box Operations</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tpoint_expandSpace"><varname>expandSpace</varname></link>: Get the spatiotemporal bounding box expanded in the spatial dimension by a float value</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Accessors</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="getX"><varname>getX</varname>, <varname>getY</varname>, <varname>getZ</varname></link>: Get the X/Y/Z/T coordinate values as a temporal float</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="length"><varname>length</varname></link>: Get the length traversed by the temporal point</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="isSimple"><varname>isSimple</varname></link>: Return true if the temporal point does not spatially self-intersect</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="cumulativeLength"><varname>cumulativeLength</varname></link>: Get the cumulative length traversed by the temporal point</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="speed"><varname>speed</varname></link>: Get the speed of the temporal point in units per second</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="twCentroid"><varname>twCentroid</varname></link>: Get the time-weighted centroid</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="direction"><varname>direction</varname></link>: Get the direction</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="azimuth"><varname>azimuth</varname></link>: Get the temporal azimuth</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="bearing"><varname>bearing</varname></link>: Get the temporal bearing</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Tranformations</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tpoint_round"><varname>round</varname></link>: Round the coordinate values to a number of decimal places</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="makeSimple"><varname>makeSimple</varname></link>:  Return an array of fragments of the temporal point which are simple</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="geoMeasure"><varname>geoMeasure</varname></link>: Construct a geometry/geography with M measure from a temporal point and a temporal float</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="asMVTGeom"><varname>asMVTGeom</varname></link>: Transform a temporal geometric point into the coordinate space of a Mapbox Vector Tile</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Distance Operations</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="smallest_distance"><varname>|=|</varname></link>: Get the smallest distance ever</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="nearestApproachInstant"><varname>nearestApproachInstant</varname></link>: Get the instant of the first temporal point at which the two arguments are at the nearest distance</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="shortestLine"><varname>shortestLine</varname></link>: Get the line connecting the nearest approach point</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="distance"><varname>&lt;-&gt;</varname></link>: Get the temporal distance</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Ever and Temporal Spatial Relationships</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="econtains"><varname>econtains</varname></link>: Ever contains</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="edisjoint"><varname>edisjoint</varname></link>: Is ever disjoint</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="edwithin"><varname>edwithin</varname></link>: Is ever at distance within</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="eintersects"><varname>eintersects</varname></link>: Ever intersects</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="etouches"><varname>etouches</varname></link>: Ever touches</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tcontains"><varname>tcontains</varname></link>: Temporal contains</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tdisjoint"><varname>tdisjoint</varname></link>: Temporal disjoint</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tdwithin"><varname>tdwithin</varname></link>: Temporal distance within</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tintersects"><varname>tintersects</varname></link>: Temporal intersects</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="ttouches"><varname>ttouches</varname></link>: Temporal touches</para>
+				</listitem>
+				</itemizedlist>
+		</sect2>
+	</sect1>
+
+	<sect1>
+		<title>Operations for Temporal Types: Analytics Operations</title>
+
+		<sect2>
+			<title>Simplification</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="minDistSimplify"><varname>minDistSimplify</varname></link>: Simplify a temporal float or a temporal point ensuring that consecutive values are at least a certain distance apart</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="minTimeDeltaSimplify"><varname>minTimeDeltaSimplify</varname></link>: Simplify a temporal float or a temporal point ensuring that consecutive values are at least a certain time interval apart</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="DouglasPeuckerSimplify"><varname>maxDistSimplify</varname>, <varname>DouglasPeuckerSimplify</varname></link>: Simplify a temporal float or a temporal point using the Douglas-Peucker algorithm</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Similarity</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="hausdorffDistance"><varname>hausdorffDistance</varname></link>: Get the discrete Hausdorff distance between two temporal values</para>
+				</listitem>
+
 				<listitem>
 					<para><link linkend="frechetDistance"><varname>frechetDistance</varname></link>: Get the discrete Fréchet distance between two temporal values</para>
 				</listitem>
@@ -1234,7 +1326,7 @@
 			<title>Multidimensional Tiling</title>
 
 			<sect3>
-				<title>Bucket Functions</title>
+				<title>Bucket Operations</title>
 
 				<itemizedlist>
 					<listitem>
@@ -1261,7 +1353,7 @@
 			</sect3>
 
 			<sect3>
-				<title>Grid Functions</title>
+				<title>Grid Operations</title>
 
 				<itemizedlist>
 					<listitem>
@@ -1275,7 +1367,7 @@
 			</sect3>
 
 			<sect3>
-				<title>Split Functions</title>
+				<title>Split Operations</title>
 
 				<itemizedlist>
 					<listitem>
@@ -1302,7 +1394,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Aggregate Functions</title>
+			<title>Aggregations</title>
 
 			<itemizedlist>
 				<listitem>
@@ -1379,13 +1471,13 @@
 	</sect1>
 
 	<sect1>
-		<title>Functions and Operators for Temporal Network Points</title>
+		<title>Operations for Temporal Network Points</title>
 
 		<sect2>
 			<title>Static Network Types</title>
 
 			<sect3>
-				<title>Constructor Functions</title>
+				<title>Constructors</title>
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="npoint"><varname>npoint</varname></link>: Constructor for network points</para>
@@ -1398,7 +1490,7 @@
 			</sect3>
 
 			<sect3>
-				<title>Accessor Functions</title>
+				<title>Accessors</title>
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="route"><varname>route</varname></link>: Get the route identifier</para>
@@ -1420,7 +1512,7 @@
 			</sect3>
 
 			<sect3>
-				<title>Modification Functions</title>
+				<title>Transformations</title>
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="npoint_round"><varname>round</varname></link>: Round the position(s) of the network point or the network segment to the number of decimal places</para>
@@ -1429,7 +1521,7 @@
 			</sect3>
 
 			<sect3>
-				<title>Spatial Functions</title>
+				<title>Spatial Operations</title>
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="npoint_geometry"><varname>::</varname></link>: Cast a network point to a geometry</para>
@@ -1446,7 +1538,7 @@
 			</sect3>
 
 			<sect3>
-				<title>Comparison Operators</title>
+				<title>Comparisons</title>
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="static_eq"><varname>=</varname></link>: Are the values equal?</para>
@@ -1513,7 +1605,7 @@
 			</sect3>
 
 			<sect3>
-				<title>Functions and Operators</title>
+				<title>Operations</title>
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="tnpoint_transform"><varname>tnpoint_inst, tnpoint_discseq, tnpoint_contseq, tnpoint_seqset</varname></link>: Transform a temporal network to another subtype</para>
@@ -1618,7 +1710,7 @@
 			</sect3>
 
 			<sect3>
-				<title>Aggregate Functions</title>
+				<title>Aggregations</title>
 
 				<itemizedlist>
 					<listitem>

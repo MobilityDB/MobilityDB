@@ -67,6 +67,23 @@ CREATE FUNCTION dynamicTimeWarp(tfloat, tfloat)
   AS 'MODULE_PATHNAME', 'Temporal_dynamic_time_warp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION hausdorffDistance(tint, tint)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Temporal_hausdorff_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION hausdorffDistance(tint, tfloat)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Temporal_hausdorff_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION hausdorffDistance(tfloat, tint)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Temporal_hausdorff_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION hausdorffDistance(tfloat, tfloat)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Temporal_hausdorff_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************/
 
 CREATE TYPE warp AS (

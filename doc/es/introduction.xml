@@ -48,29 +48,23 @@
 
 	<sect1 id="sponsors">
 		<title>Patrocinadores</title>
-		<sect2 id="research_sponsors">
-			<title>Patrocinadores de investigación</title>
-			<para>
-				Estas son organizaciones de financiación de investigación (en orden alfabético) que han contribuido con financiación monetaria al proyecto MobilityDB.
-				<itemizedlist>
-					<listitem><para><ulink url="https://ec.europa.eu/research/mariecurieactions/">European Commission</ulink></para></listitem>
-					<listitem><para><ulink url="https://www.frs-fnrs.be/en">Fonds de la Recherche Scientifique (FNRS), Belgium</ulink></para></listitem>
-					<listitem><para><ulink url="https://innoviris.brussels/">Innoviris, Belgium</ulink></para></listitem>
-				</itemizedlist>
-			</para>
-		</sect2>
+		<para>
+			Estas son organizaciones de financiación de investigación (en orden alfabético) que han contribuido con financiación monetaria al proyecto MobilityDB.
+			<itemizedlist>
+				<listitem><para><ulink url="https://ec.europa.eu/research/mariecurieactions/">European Commission</ulink></para></listitem>
+				<listitem><para><ulink url="https://www.frs-fnrs.be/en">Fonds de la Recherche Scientifique (FNRS), Belgium</ulink></para></listitem>
+				<listitem><para><ulink url="https://innoviris.brussels/">Innoviris, Belgium</ulink></para></listitem>
+			</itemizedlist>
+		</para>
 
-		<sect2 id="corporate_sponsors">
-			<title>Patrocinadores corporativos</title>
-			<para>
-				Estas son entidades corporativas (en orden alfabético) que han contribuido con tiempo de desarrollador o financiación monetaria al proyecto MobilityDB.
-				<itemizedlist>
-					<listitem><para><ulink url="https://www.adonmo.com/">Adonmo, India</ulink></para></listitem>
-					<listitem><para><ulink url="https://georepublic.info/en/">Georepublic, Germany</ulink></para></listitem>
-					<listitem><para><ulink url="https://www.ulb.be">Université libre de Bruxelles, Belgium</ulink></para></listitem>
-				</itemizedlist>
-			</para>
-		</sect2>
+		<para>
+			Estas son entidades corporativas (en orden alfabético) que han contribuido con tiempo de desarrollador o financiación monetaria al proyecto MobilityDB.
+			<itemizedlist>
+				<listitem><para><ulink url="https://www.adonmo.com/">Adonmo, India</ulink></para></listitem>
+				<listitem><para><ulink url="https://georepublic.info/en/">Georepublic, Germany</ulink></para></listitem>
+				<listitem><para><ulink url="https://www.ulb.be">Université libre de Bruxelles, Belgium</ulink></para></listitem>
+			</itemizedlist>
+		</para>
 	</sect1>
 
 	<sect1 id="license">

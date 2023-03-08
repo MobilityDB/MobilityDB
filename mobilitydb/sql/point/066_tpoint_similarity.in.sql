@@ -74,3 +74,15 @@ CREATE FUNCTION dynamicTimeWarpPath(tgeogpoint, tgeogpoint)
 
 /*****************************************************************************/
 
+CREATE FUNCTION hausdorffDistance(tgeompoint, tgeompoint)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Temporal_hausdorff_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION hausdorffDistance(tgeogpoint, tgeogpoint)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Temporal_hausdorff_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************/
+
+

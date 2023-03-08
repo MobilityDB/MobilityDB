@@ -74,11 +74,6 @@ enum TEMPORAL_FUNCTION_IDX
   EDWITHIN_IDX                    = 7,
 };
 
-static const int16 TemporalStrategies[] =
-{
-  /* There are currently no functions */
-};
-
 static const int16 TNumberStrategies[] =
 {
   /* Ever/always comparison functions */
@@ -156,8 +151,6 @@ static const IndexableFunction TNPointIndexableFunctions[] = {
 static int16
 temporal_get_strategy_by_type(meosType temptype, uint16_t index)
 {
-  if (talpha_type(temptype))
-    return TemporalStrategies[index];
   if (tnumber_type(temptype))
     return TNumberStrategies[index];
   if (tgeo_type(temptype))

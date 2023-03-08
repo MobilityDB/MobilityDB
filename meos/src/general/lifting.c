@@ -815,6 +815,7 @@ tfunc_tcontseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
   int k = 0;
   meosType basetype = temptype_basetype(seq1->temptype);
   meosType resbasetype = temptype_basetype(lfinfo->restype);
+  TimestampTz upper1 = DatumGetTimestampTz(seq1->period.upper);
   for (int i = 0; i < seq2->count; i++)
   {
     const TInstant *inst = tsequence_inst_n(seq2, i);
@@ -827,7 +828,7 @@ tfunc_tcontseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
       instants[k++] = tinstant_make(resvalue, lfinfo->restype, inst->t);
       DATUM_FREE(value1, basetype); DATUM_FREE(resvalue, resbasetype);
     }
-    if (DatumGetTimestampTz(seq1->period.upper) < inst->t)
+    if (upper1 < inst->t)
       break;
   }
   return tsequence_make_free(instants, k, true, true, DISCRETE,
@@ -935,13 +936,16 @@ tfunc_tcontseq_tcontseq_single(const TSequence *seq1, const TSequence *seq2,
    */
   TInstant *inst1 = (TInstant *) tsequence_inst_n(seq1, 0);
   TInstant *inst2 = (TInstant *) tsequence_inst_n(seq2, 0);
+  TInstant *prev1 = NULL, *prev2 = NULL; /* make compiler quiet */
+  TimestampTz lower = DatumGetTimestampTz(inter->lower);
+  TimestampTz upper = DatumGetTimestampTz(inter->upper);
   int i = 0, j = 0, k = 0, l = 0;
-  if (inst1->t < DatumGetTimestampTz(inter->lower))
+  if (inst1->t < lower)
   {
     i = tcontseq_find_timestamp(seq1, inter->lower) + 1;
     inst1 = (TInstant *) tsequence_inst_n(seq1, i);
   }
-  else if (inst2->t < DatumGetTimestampTz(inter->lower))
+  else if (inst2->t < lower)
   {
     j = tcontseq_find_timestamp(seq2, inter->lower) + 1;
     inst2 = (TInstant *) tsequence_inst_n(seq2, j);
@@ -952,8 +956,7 @@ tfunc_tcontseq_tcontseq_single(const TSequence *seq1, const TSequence *seq2,
   Datum value;
   meosType resbasetype = temptype_basetype(lfinfo->restype);
   while (i < seq1->count && j < seq2->count &&
-    (inst1->t <= DatumGetTimestampTz(inter->upper) ||
-     inst2->t <= DatumGetTimestampTz(inter->upper)))
+    (inst1->t <= upper || inst2->t <= upper))
   {
     /* Synchronize the start instant */
     int cmp = timestamptz_cmp_internal(inst1->t, inst2->t);
@@ -970,37 +973,38 @@ tfunc_tcontseq_tcontseq_single(const TSequence *seq1, const TSequence *seq2,
     else
     {
       j++;
-      inst1 = tcontseq_at_timestamp(seq1, inst2->t); // tsequence_at_timestamp(seq1, inst2->t);
+      inst1 = tcontseq_at_timestamp(seq1, inst2->t);
       tofree[l++] = inst1;
     }
     /* If not the first instant compute the function on the potential
        turning point before adding the new instants */
-    TInstant *prev1, *prev2;
-    Datum value1, value2;
-    TimestampTz tptime;
-    if (lfinfo->tpfunc != NULL && k > 0 &&
-      lfinfo->tpfunc(prev1, inst1, prev2, inst2, &value, &tptime))
+    if (lfinfo->tpfunc != NULL && k > 0)
     {
+      TimestampTz tptime;
+      bool found = lfinfo->tpfunc(prev1, inst1, prev2, inst2, &value, &tptime);
       /* Avoid adding a turning point at the same timestamp added next */
-      if (tptime != prev1->t)
+      if (found && tptime != prev1->t)
         instants[k++] = tinstant_make(value, lfinfo->restype, tptime);
     }
     /* Compute the function on the synchronized instants */
-    value1 = tinstant_value(inst1);
-    value2 = tinstant_value(inst2);
+    Datum value1 = tinstant_value(inst1);
+    Datum value2 = tinstant_value(inst2);
     value = tfunc_base_base(value1, value2, lfinfo);
     instants[k++] = tinstant_make(value, lfinfo->restype, inst1->t);
     DATUM_FREE(value, resbasetype);
     if (i == seq1->count || j == seq2->count)
+    {
       break;
-    prev1 = inst1; prev2 = inst2;
+    }
+    prev1 = inst1;
+    prev2 = inst2;
     inst1 = (TInstant *) tsequence_inst_n(seq1, i);
     inst2 = (TInstant *) tsequence_inst_n(seq2, j);
   }
   /* We are sure that k != 0 due to the period intersection test above */
   /* The last two values of sequences with step interpolation and
      exclusive upper bound must be equal */
-  if (! lfinfo->reslinear && !inter->upper_inc && k > 1)
+  if (! lfinfo->reslinear && ! inter->upper_inc && k > 1)
   {
     tofree[l++] = instants[k - 1];
     value = tinstant_value(instants[k - 2]);
@@ -1058,7 +1062,7 @@ tfunc_tcontseq_tcontseq_multi(const TSequence *seq1, const TSequence *seq2,
   bool linear2 = MOBDB_FLAGS_GET_LINEAR(seq2->flags);
   TInstant *instants[2];
   Datum startvalue1, startvalue2, startresult;
-  meosType basetype1, basetype2;
+  meosType basetype1 = 0, basetype2 = 0; /* make compiler quiet */
   if (discont)
   {
     basetype1 = temptype_basetype(seq1->temptype);
@@ -1119,7 +1123,7 @@ tfunc_tcontseq_tcontseq_multi(const TSequence *seq1, const TSequence *seq2,
       /* If both segments are constant compute the function at the start and
        * end instants */
       if (datum_eq(startvalue1, endvalue1, basetype1) &&
-        datum_eq(startvalue2, endvalue2, basetype2))
+          datum_eq(startvalue2, endvalue2, basetype2))
       {
         /* Single sequence */
         instants[0] = tinstant_make(startresult, lfinfo->restype, start1->t);
@@ -1335,15 +1339,16 @@ tfunc_tsequenceset_tcontseq(const TSequenceSet *ss, const TSequence *seq,
       count = (ss->totalcount + seq->count) * 2;
   }
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
+  TimestampTz upper = DatumGetTimestampTz(seq->period.upper);
   int k = 0;
   for (int i = loc; i < ss->count; i++)
   {
     const TSequence *seq1 = tsequenceset_seq_n(ss, i);
     k += tfunc_tcontseq_tcontseq_dispatch(seq1, seq, lfinfo, &sequences[k]);
-    int cmp = timestamptz_cmp_internal(DatumGetTimestampTz(seq->period.upper),
+    int cmp = timestamptz_cmp_internal(upper,
       DatumGetTimestampTz(seq1->period.upper));
     if (cmp < 0 ||
-      (cmp == 0 && (!seq->period.upper_inc || seq1->period.upper_inc)))
+      (cmp == 0 && (! seq->period.upper_inc || seq1->period.upper_inc)))
       break;
   }
   /* We need to normalize when discont is true */
@@ -1665,6 +1670,7 @@ static int
 efunc_tcontseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
   LiftedFunctionInfo *lfinfo)
 {
+  TimestampTz upper1 = DatumGetTimestampTz(seq1->period.upper);
   for (int i = 0; i < seq2->count; i++)
   {
     const TInstant *inst = tsequence_inst_n(seq2, i);
@@ -1676,7 +1682,7 @@ efunc_tcontseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
       if (DatumGetBool(tfunc_base_base(value1, value2, lfinfo)))
         return 1;
     }
-    if ( DatumGetTimestampTz(seq1->period.upper) < inst->t)
+    if ( upper1 < inst->t)
       break;
   }
   return 0;
@@ -1914,6 +1920,7 @@ static int
 efunc_tsequenceset_tcontseq(const TSequenceSet *ss, const TSequence *seq,
   LiftedFunctionInfo *lfinfo)
 {
+  TimestampTz upper = DatumGetTimestampTz(seq->period.upper);
   int loc;
   tsequenceset_find_timestamp(ss, seq->period.lower, &loc);
   /* We are sure that loc < ss->count due to the bounding period test made
@@ -1923,10 +1930,10 @@ efunc_tsequenceset_tcontseq(const TSequenceSet *ss, const TSequence *seq,
     const TSequence *seq1 = tsequenceset_seq_n(ss, i);
     if (efunc_tcontseq_tcontseq(seq1, seq, lfinfo) == 1)
       return 1;
-    int cmp = timestamptz_cmp_internal(DatumGetTimestampTz(seq->period.upper),
+    int cmp = timestamptz_cmp_internal(upper,
       DatumGetTimestampTz(seq1->period.upper));
     if (cmp < 0 ||
-      (cmp == 0 && (!seq->period.upper_inc || seq1->period.upper_inc)))
+      (cmp == 0 && (! seq->period.upper_inc || seq1->period.upper_inc)))
       break;
   }
   return 0;

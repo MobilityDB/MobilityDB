@@ -792,7 +792,7 @@ tbox_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
   int i;
   uint8 node;
   MemoryContext old_ctx;
-  TBox *centroid, *queries, *orderbys;
+  TBox *centroid, *queries = NULL, *orderbys = NULL; /* make compiler quiet */
   TboxNode *nodebox, infbox, next_nodebox;
 
   /* Fetch the centroid of this node. */

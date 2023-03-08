@@ -86,7 +86,7 @@ SELECT npoint 'Npoint(99999999, 1.0)';
 		<para>Damos a continuación las funciones y operadores para los tipos de redes estáticas.</para>
 
 		<sect2 id="constructor_functions">
-			<title>Funciones de constructor</title>
+			<title>Constructores</title>
 
 			<itemizedlist>
 				<listitem id="npoint">
@@ -110,7 +110,7 @@ SELECT nsegment(76, 0.3, 0.5);
 		</sect2>
 
 		<sect2>
-			<title>Funciones de transformación</title>
+			<title>Transformaciones</title>
 			<itemizedlist>
 				<listitem id="npoint_round">
 					<indexterm><primary><varname>npoint_round</varname></primary></indexterm>
@@ -127,7 +127,7 @@ SELECT round(nsegment(76, 0.123456789, 0.223456789), 6);
 		</sect2>
 
 		<sect2 id="accessor_functions">
-			<title>Funciones de accesor</title>
+			<title>Accesores</title>
 
 			<itemizedlist>
 				<listitem id="route">
@@ -169,7 +169,7 @@ SELECT endPosition(nsegment 'Nsegment(76, 0.3, 0.5)');
 		</sect2>
 
 		<sect2 id="spatial_functions">
-			<title>Funciones espaciales</title>
+			<title>Operaciones espaciales</title>
 
 			<itemizedlist>
 				<listitem id="npoint_srid">
@@ -243,7 +243,7 @@ SELECT equals(npoint(1, f1), npoint(2, f2)) FROM fractions;
 		</sect2>
 
 		<sect2 id="static_operators">
-			<title>Operadores de comparación</title>
+			<title>Comparaciones</title>
 
 			<para>Los operadores de comparación (=, &lt; y así sucesivamente) para tipos de red estáticos requieren que los argumentos izquierdo y derecho sean del mismo tipo. Excepto la igualdad y la desigualdad, los otros operadores de comparación no son útiles en el mundo real pero permiten que los índices de árbol B se construyan en tipos de red estáticos.</para>
 
@@ -354,10 +354,10 @@ SELECT tnpoint '{[NPoint(1, 0.2)@2001-01-01, NPoint(1, 0.3)@2001-01-02,
 </programlisting>
 	</sect1>
 
-	<sect1 id="validity_temporal_network_points">
+	<sect1 id="temporal_network_points_validity">
 		<title>Validez de los puntos de red temporal</title>
 
-		<para>Los valores de los puntos de red temporal deben satisfacer las restricciones especificadas en la <xref linkend="validity_temporal_types" /> para que estén bien definidos. Se genera un error cuando no se cumple una de estas restricciones. Ejemplos de valores incorrectos son los siguientes.</para>
+		<para>Los valores de los puntos de red temporal deben satisfacer las restricciones especificadas en la <xref linkend="temporal_types_validity" /> para que estén bien definidos. Se genera un error cuando no se cumple una de estas restricciones. Ejemplos de valores incorrectos son los siguientes.</para>
 		<programlisting language="sql" xml:space="preserve">
 -- No se permiten valores nulos
 SELECT tnpoint 'NULL@2001-01-01 08:05:00';
@@ -369,8 +369,8 @@ SELECT tnpoint '[Npoint(1, 0.2)@2001-01-01 09:00:00, Npoint(2, 0.2)@2001-01-01 0
 </programlisting>
 	</sect1>
 
-	<sect1 id="constructors_temporal_network_points">
-		<title>Constructores para puntos de red temporales</title>
+	<sect1 id="temporal_network_points_constructors">
+		<title>Constructores</title>
 
 			<itemizedlist>
 				<listitem id="tnpoint">
@@ -426,8 +426,8 @@ SELECT tnpoint_seqset(ARRAY[tnpoint '[Npoint(1,0.2)@2000-01-01, Npoint(1,0.4)@20
 			</itemizedlist>
 	</sect1>
 
-	<sect1 id="casting_temporal_network_types">
-		<title>Conversión de puntos de red temporales</title>
+	<sect1 id="temporal_network_points_casting">
+		<title>Conversión de tipos</title>
 
 		<para>Un valor de punto de red temporal se puede convertir en y desde un punto de geometría temporal. Esto se puede hacer usando un <varname>CAST</varname> explícito o usando la notación <varname>::</varname>. Se devuelve un valor nulo si alguno de los valores de puntos de geometría que componen no se puede convertir en un valor <varname>npoint</varname>.</para>
 		<itemizedlist>
@@ -460,10 +460,10 @@ SELECT tgeompoint '[POINT(23.057077727326 28.7666335767956)@2001-01-01,
 		<para>Damos a continuación las funciones y operadores para los tipos de puntos de red.</para>
 	</sect1>
 
-	<sect1 id="functions_temporal_network_points">
-		<title>Funciones y operadores para los tipos de puntos de red</title>
+	<sect1 id="temporal_network_points_operations">
+		<title>Operaciones para los tipos de puntos de red</title>
 
-		<para>Todas las funciones para tipos temporales descritas en el <xref linkend="manipulating_temporal_types_p1" /> y el <xref linkend="manipulating_temporal_types_p2" /> se pueden aplicar para tipos de puntos de red temporales. Por lo tanto, en las firmas de las funciones, la notación <varname>base</varname> también representa un <varname>npoint</varname> y las notaciones <varname>ttype</varname>, <varname>tpoint</varname> y <varname>tgeompoint</varname> también representan un <varname>tnpoint</varname>. Además, las funciones que tienen un argumento de tipo <varname>geometry</varname> aceptan además un argumento de tipo <varname>npoint</varname>. Para evitar la redundancia, a continuación solo presentamos algunos ejemplos de estas funciones y operadores para puntos de red temporales.</para>
+		<para>La mayoría de las funciones para tipos temporales descritas en los capítulos precendentes se pueden aplicar para tipos de puntos de red temporales. Por lo tanto, en las firmas de las funciones, la notación <varname>base</varname> también representa un <varname>npoint</varname> y las notaciones <varname>ttype</varname>, <varname>tpoint</varname> y <varname>tgeompoint</varname> también representan un <varname>tnpoint</varname>. Además, las funciones que tienen un argumento de tipo <varname>geometry</varname> aceptan además un argumento de tipo <varname>npoint</varname>. Para evitar la redundancia, a continuación solo presentamos algunos ejemplos de estas funciones y operadores para puntos de red temporales.</para>
 
 		<itemizedlist>
 			<listitem id="tnpoint_transform">
@@ -629,7 +629,7 @@ SELECT nearestApproachDistance(tnpoint '[NPoint(2, 0.3)@2001-01-01,
   NPoint(2, 0.7)@2001-01-02]', npoint 'NPoint(1, 0.5)');
 -- NPoint(2,0.592181)@2001-01-01 17:31:51.080405+01
 </programlisting>
-				<para>La función <varname>nearestApproachDistance</varname> tiene un operador asociado <varname>|=|</varname> que se puede utilizar para realizar búsquedas más cercanas utilizando un índice GiST (ver <xref linkend="indexing_temporal_types" />).</para>
+				<para>La función <varname>nearestApproachDistance</varname> tiene un operador asociado <varname>|=|</varname> que se puede utilizar para realizar búsquedas más cercanas utilizando un índice GiST (ver <xref linkend="temporal_types_indexing" />).</para>
 			</listitem>
 
 			<listitem id="tnpoint_shortestLine">
@@ -874,8 +874,8 @@ SELECT tdwithin(tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-03)'
 		</itemizedlist>
 	</sect1>
 
-	<sect1 id="aggregate_temporal_network_points">
-		<title>Funciones agregadas</title>
+	<sect1 id="temporal_network_points_aggregations">
+		<title>Agregacions</title>
 
 		<para>Las tres funciones agregadas para puntos de red temporales se ilustran a continuación.</para>
 
@@ -930,8 +930,8 @@ FROM Temp
 		</itemizedlist>
 	</sect1>
 
-	<sect1 id="indexing_temporal_network_points">
-		<title>Indexación de puntos de red temporales</title>
+	<sect1 id="temporal_network_points_indexing">
+		<title>Indexación</title>
 
 		<para>Se pueden crear índices GiST y SP-GiST para columnas de tabla de puntos de redes temporales. A continuación, se muestra un ejemplo de creación de índice:</para>
 		<programlisting language="sql" xml:space="preserve">

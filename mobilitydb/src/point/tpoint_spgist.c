@@ -965,8 +965,7 @@ Stbox_quadtree_picksplit(PG_FUNCTION_ARGS)
   double *highXs = palloc(sizeof(double) * in->nTuples);
   double *lowYs = palloc(sizeof(double) * in->nTuples);
   double *highYs = palloc(sizeof(double) * in->nTuples);
-  double *lowZs;
-  double *highZs;
+  double *lowZs = NULL, *highZs = NULL; /* make compiler quiet */
   if (hasz)
   {
     lowZs = palloc(sizeof(double) * in->nTuples);
@@ -1131,7 +1130,7 @@ stbox_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
   int i;
   uint16 node;
   MemoryContext old_ctx;
-  STBox *centroid, *queries, *orderbys;
+  STBox *centroid, *queries = NULL, *orderbys = NULL; /* make compiler quiet */
   STboxNode *nodebox, infbox, next_nodebox;
 
   /* Fetch the centroid of this node. */

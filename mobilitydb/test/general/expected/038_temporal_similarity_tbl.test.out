@@ -110,3 +110,27 @@ SELECT COUNT(*) FROM temp;
  75759
 (1 row)
 
+SELECT round(MAX(hausdorffDistance(t1.temp, t2.temp))::numeric, 6) FROM tbl_tint t1, tbl_tint t2 WHERE t1.k < t2.k;
+   round   
+-----------
+ 95.000000
+(1 row)
+
+SELECT round(MAX(hausdorffDistance(t1.temp, t2.temp))::numeric, 6) FROM tbl_tint t1, tbl_tfloat t2 WHERE t1.k < t2.k;
+   round   
+-----------
+ 94.970737
+(1 row)
+
+SELECT round(MAX(hausdorffDistance(t1.temp, t2.temp))::numeric, 6) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.k < t2.k;
+   round   
+-----------
+ 98.393268
+(1 row)
+
+SELECT round(MAX(hausdorffDistance(t1.temp, t2.temp))::numeric, 6) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.k < t2.k;
+   round   
+-----------
+ 98.364005
+(1 row)
+
