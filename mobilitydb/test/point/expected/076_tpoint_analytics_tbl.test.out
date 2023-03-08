@@ -204,6 +204,24 @@ SELECT MAX(numInstants(minTimeDeltaSimplify(temp, '3 min'))) FROM tbl_tgeogpoint
   39
 (1 row)
 
+SELECT MAX(numInstants(maxDistSimplify(temp, 4))) FROM tbl_tfloat;
+ max 
+-----
+  50
+(1 row)
+
+SELECT MAX(numInstants(maxDistSimplify(temp, 4))) FROM tbl_tgeompoint;
+ max 
+-----
+  56
+(1 row)
+
+SELECT MAX(numInstants(maxDistSimplify(temp, 4, false))) FROM tbl_tgeompoint;
+ max 
+-----
+  53
+(1 row)
+
 SELECT MAX(numInstants(DouglasPeuckerSimplify(temp, 4))) FROM tbl_tfloat;
  max 
 -----

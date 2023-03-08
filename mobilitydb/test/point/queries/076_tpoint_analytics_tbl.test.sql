@@ -94,6 +94,11 @@ SELECT MAX(numInstants(minTimeDeltaSimplify(temp, '3 min'))) FROM tbl_tfloat;
 SELECT MAX(numInstants(minTimeDeltaSimplify(temp, '3 min'))) FROM tbl_tgeompoint;
 SELECT MAX(numInstants(minTimeDeltaSimplify(temp, '3 min'))) FROM tbl_tgeogpoint;
 
+-- As for PostGIS function ST_Simplify, no support for tgeogpoint
+SELECT MAX(numInstants(maxDistSimplify(temp, 4))) FROM tbl_tfloat;
+SELECT MAX(numInstants(maxDistSimplify(temp, 4))) FROM tbl_tgeompoint;
+SELECT MAX(numInstants(maxDistSimplify(temp, 4, false))) FROM tbl_tgeompoint;
+
 SELECT MAX(numInstants(DouglasPeuckerSimplify(temp, 4))) FROM tbl_tfloat;
 SELECT MAX(numInstants(DouglasPeuckerSimplify(temp, 4))) FROM tbl_tgeompoint;
 SELECT MAX(numInstants(DouglasPeuckerSimplify(temp, 4, false))) FROM tbl_tgeompoint;

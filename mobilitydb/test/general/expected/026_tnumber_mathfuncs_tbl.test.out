@@ -298,6 +298,24 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE deltaValue(temp) IS NOT NULL;
     61
 (1 row)
 
+SELECT COUNT(*) FROM tbl_tint WHERE abs(temp) IS NOT NULL;
+ count 
+-------
+    96
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat WHERE abs(temp) IS NOT NULL;
+ count 
+-------
+    96
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat_step_seq WHERE abs(seq) IS NOT NULL;
+ count 
+-------
+    99
+(1 row)
+
 SELECT COUNT(*) FROM tbl_tfloat WHERE round(temp, 1) IS NOT NULL;
  count 
 -------

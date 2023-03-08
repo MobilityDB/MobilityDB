@@ -396,6 +396,9 @@ SELECT round(speed(tgeompoint 'Interp=Step;{[Point(1 1 1)@2000-01-01, Point(2 2 
 SELECT round(speed(tgeogpoint 'Interp=Step;[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]'), 6);
 SELECT round(speed(tgeogpoint 'Interp=Step;{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}'), 6);
 
+SELECT direction(tgeompoint '[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02]');
+SELECT direction(tgeompoint '{[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02]}');
+
 -- 2D
 SELECT ST_AsText(round(twcentroid(tgeompoint 'Point(1 1)@2000-01-01'), 6));
 SELECT ST_AsText(round(twcentroid(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'), 6));
