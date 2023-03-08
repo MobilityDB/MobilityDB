@@ -391,3 +391,21 @@ SELECT MAX(set_hash_extended(t, 1)) FROM tbl_tstzset;
  9173177012091756054
 (1 row)
 
+SELECT numValues(set_union(i)) FROM tbl_int;
+ numvalues 
+-----------
+        60
+(1 row)
+
+SELECT numValues(set_union(f)) FROM tbl_float;
+ numvalues 
+-----------
+        99
+(1 row)
+
+SELECT numValues(set_union(t)) FROM tbl_text;
+ numvalues 
+-----------
+        99
+(1 row)
+

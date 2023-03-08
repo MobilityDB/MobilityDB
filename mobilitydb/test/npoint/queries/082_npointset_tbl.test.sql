@@ -98,3 +98,8 @@ SELECT MAX(set_hash(n)) FROM tbl_npointset;
 SELECT MAX(set_hash_extended(n, 1)) FROM tbl_npointset;
 
 -------------------------------------------------------------------------------
+-- Aggregation functions
+
+SELECT numValues(set_union(np)) FROM tbl_npoint;
+
+-------------------------------------------------------------------------------

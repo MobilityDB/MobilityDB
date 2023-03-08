@@ -172,3 +172,10 @@ SELECT MAX(set_hash_extended(f, 1)) FROM tbl_floatset;
 SELECT MAX(set_hash_extended(t, 1)) FROM tbl_tstzset;
 
 -------------------------------------------------------------------------------
+-- Aggregation functions
+
+SELECT numValues(set_union(i)) FROM tbl_int;
+SELECT numValues(set_union(f)) FROM tbl_float;
+SELECT numValues(set_union(t)) FROM tbl_text;
+
+-------------------------------------------------------------------------------

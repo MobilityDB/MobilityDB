@@ -45,6 +45,8 @@ SELECT npoint 'npoint(1,0.5)xxx';
 SELECT nsegment 'nsegment(1,0.5,0.7)';
 SELECT nsegment '  nsegment  (  1  ,  0.5  ,  0.7 ) ';
 /* Errors */
+SELECT nsegment 'Nsegment 1, 1.1)';
+SELECT nsegment(1, 1.1);
 SELECT nsegment 'segment(1,0.5,0.7)';
 SELECT nsegment 'nsegment(1,0.5,0.7';
 SELECT nsegment 'nsegment(1 0.5 0.7)';

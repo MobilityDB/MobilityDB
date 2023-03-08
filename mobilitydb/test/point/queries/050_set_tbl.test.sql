@@ -140,3 +140,8 @@ SELECT MAX(set_hash(g)) FROM tbl_geogset;
 -- SELECT MAX(set_hash_extended(g, 1)) FROM tbl_geogset;
 
 -------------------------------------------------------------------------------
+-- Aggregation functions
+
+SELECT numValues(set_union(g)) FROM tbl_geom_point WHERE NOT ST_IsEmpty(g);
+
+-------------------------------------------------------------------------------

@@ -526,7 +526,8 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   size_t  nd_stats_size;          /* Size to allocate */
 
   double total_width = 0;         /* # of bytes used by sample */
-  double total_sample_volume = 0; /* Area/volume coverage of the sample */
+  // TODO currently not used
+  // double total_sample_volume = 0; /* Area/volume coverage of the sample */
   double total_cell_count = 0;    /* # of cells in histogram affected by sample */
 
   ND_BOX sum;                     /* Sum of extents of sample boxes */
@@ -881,7 +882,8 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     }
 
     /* Add feature volume (area) to our total */
-    total_sample_volume += tmp_volume;
+    // TODO currently not used
+    // total_sample_volume += tmp_volume;
 
     /*
      * Move through all the overlaped histogram cells values and
@@ -948,10 +950,10 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   /* Write the statistics data */
   stats->stakind[stats_slot] = (int16) stats_kind;
   stats->staop[stats_slot] = InvalidOid;
-  stats->stanumbers[stats_slot] = (float4*)nd_stats;
-  stats->numnumbers[stats_slot] = (int) (nd_stats_size/sizeof(float4));
-  stats->stanullfrac = (float4)null_cnt/sample_rows;
-  stats->stawidth = (int32) (total_width/notnull_cnt);
+  stats->stanumbers[stats_slot] = (float4 *) nd_stats;
+  stats->numnumbers[stats_slot] = (int) (nd_stats_size / sizeof(float4));
+  stats->stanullfrac = (float4) null_cnt / sample_rows;
+  stats->stawidth = (int32) (total_width / notnull_cnt);
   stats->stadistinct = -1.0f;
   stats->stats_valid = true;
 }

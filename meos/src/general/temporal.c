@@ -113,6 +113,7 @@ ensure_tinstarr(const TInstant **instants, int count)
   return;
 }
 
+#if 0 /* not used */
 /**
  * @brief Ensure that a temporal value has discrete interpolation
  */
@@ -134,6 +135,7 @@ ensure_continuous_interpolation(int16 flags)
     elog(ERROR, "The temporal value must have continuous interpolation");
   return;
 }
+#endif /* not used */
 
 /**
  * @brief Ensure that a temporal value does not have linear interpolation
