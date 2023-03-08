@@ -240,6 +240,14 @@ SELECT k%10, numSequences(tcount(ss)) FROM tbl_ttext_seqset GROUP BY k%10 ORDER 
 
 -------------------------------------------------------------------------------
 
+WITH Temp AS (
+  SELECT DISTINCT ON (getTimestamp(inst)) inst
+  FROM tbl_tint_inst
+  ORDER BY getTimestamp(inst) )
+SELECT numInstants(appendInstant(inst)) FROM temp;
+
+-------------------------------------------------------------------------------
+
 SET parallel_tuple_cost=100;
 SET parallel_setup_cost=100;
 SET force_parallel_mode=off;

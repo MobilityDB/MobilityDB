@@ -397,6 +397,12 @@ SELECT numValues(set_union(i)) FROM tbl_int;
         60
 (1 row)
 
+SELECT numValues(set_union(b)) FROM tbl_bigint;
+ numvalues 
+-----------
+        62
+(1 row)
+
 SELECT numValues(set_union(f)) FROM tbl_float;
  numvalues 
 -----------
@@ -408,4 +414,32 @@ SELECT numValues(set_union(t)) FROM tbl_text;
 -----------
         99
 (1 row)
+
+SELECT k%2, numValues(set_union(i)) FROM tbl_intset GROUP BY k%2 ORDER BY k%2;
+ ?column? | numvalues 
+----------+-----------
+        0 |       936
+        1 |       942
+(2 rows)
+
+SELECT k%2, numValues(set_union(b)) FROM tbl_bigintset GROUP BY k%2 ORDER BY k%2;
+ ?column? | numvalues 
+----------+-----------
+        0 |       928
+        1 |       937
+(2 rows)
+
+SELECT k%2, numValues(set_union(f)) FROM tbl_floatset GROUP BY k%2 ORDER BY k%2;
+ ?column? | numvalues 
+----------+-----------
+        0 |       356
+        1 |       357
+(2 rows)
+
+SELECT k%2, numValues(set_union(t)) FROM tbl_textset GROUP BY k%2 ORDER BY k%2;
+ ?column? | numvalues 
+----------+-----------
+        0 |       296
+        1 |       330
+(2 rows)
 

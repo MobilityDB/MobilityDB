@@ -45,6 +45,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/meos_catalog.h"
 #include "general/pg_types.h"
 #include "general/tnumber_mathfuncs.h"
 #include "general/type_parser.h"
@@ -460,30 +461,33 @@ span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
   meosType basetype, Span *s)
 {
   /* Canonicalize */
-  if (basetype == T_INT4) /** x **/
+  if (span_canon_basetype(basetype))
   {
-    if (! lower_inc)
+    if (basetype == T_INT4)
     {
-      lower = Int32GetDatum(DatumGetInt32(lower) + 1);
-      lower_inc = true;
+      if (! lower_inc)
+      {
+        lower = Int32GetDatum(DatumGetInt32(lower) + 1);
+        lower_inc = true;
+      }
+      if (upper_inc)
+      {
+        upper = Int32GetDatum(DatumGetInt32(upper) + 1);
+        upper_inc = false;
+      }
     }
-    if (upper_inc)
+    else /* basetype == T_INT8 */
     {
-      upper = Int32GetDatum(DatumGetInt32(upper) + 1);
-      upper_inc = false;
-    }
-  }
-  else if (basetype == T_INT8)
-  {
-    if (! lower_inc)
-    {
-      lower = Int64GetDatum(DatumGetInt64(lower) + 1);
-      lower_inc = true;
-    }
-    if (upper_inc)
-    {
-      upper = Int64GetDatum(DatumGetInt64(upper) + 1);
-      upper_inc = false;
+      if (! lower_inc)
+      {
+        lower = Int64GetDatum(DatumGetInt64(lower) + 1);
+        lower_inc = true;
+      }
+      if (upper_inc)
+      {
+        upper = Int64GetDatum(DatumGetInt64(upper) + 1);
+        upper_inc = false;
+      }
     }
   }
 
