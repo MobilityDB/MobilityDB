@@ -151,35 +151,35 @@ CREATE FUNCTION etouches(tnpoint, geometry)
  * Edwithin
  *****************************************************************************/
 
-CREATE FUNCTION _edwithin(npoint, tnpoint, dist float8)
+CREATE FUNCTION _edwithin(npoint, tnpoint, dist float)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edwithin_npoint_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION Edwithin(npoint, tnpoint, dist float8)
+CREATE FUNCTION Edwithin(npoint, tnpoint, dist float)
   RETURNS boolean
   AS 'SELECT @extschema@.expandSpace(stbox($1),$3) OPERATOR(@extschema@.&&) $2 AND @extschema@._edwithin($1, $2, $3)'
   LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION _edwithin(tnpoint, npoint, dist float8)
+CREATE FUNCTION _edwithin(tnpoint, npoint, dist float)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edwithin_tnpoint_npoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION Edwithin(tnpoint, npoint, dist float8)
+CREATE FUNCTION Edwithin(tnpoint, npoint, dist float)
   RETURNS boolean
   AS 'SELECT $1 OPERATOR(@extschema@.&&) @extschema@.expandSpace(stbox($2),$3) AND @extschema@._edwithin($1, $2, $3)'
   LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION Edwithin(geometry, tnpoint, dist float8)
+CREATE FUNCTION Edwithin(geometry, tnpoint, dist float)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edwithin_geo_tnpoint'
   SUPPORT tnpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION Edwithin(tnpoint, geometry, dist float8)
+CREATE FUNCTION Edwithin(tnpoint, geometry, dist float)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edwithin_tnpoint_geo'
   SUPPORT tnpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION Edwithin(tnpoint, tnpoint, dist float8)
+CREATE FUNCTION Edwithin(tnpoint, tnpoint, dist float)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edwithin_tnpoint_tnpoint'
   SUPPORT tnpoint_supportfn

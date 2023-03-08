@@ -147,15 +147,14 @@ PGDLLEXPORT Datum
 Span_union_transfn(PG_FUNCTION_ARGS)
 {
   MemoryContext aggContext;
-  ArrayBuildState *state;
-
-  if (!AggCheckCallContext(fcinfo, &aggContext))
+  if (! AggCheckCallContext(fcinfo, &aggContext))
     elog(ERROR, "span_union_transfn called in non-aggregate context");
 
   Oid spanoid = get_fn_expr_argtype(fcinfo->flinfo, 1);
   meosType spantype = oid_type(spanoid);
   ensure_span_type(spantype);
 
+  ArrayBuildState *state;
   if (PG_ARGISNULL(0))
     state = initArrayResult(spanoid, aggContext, false);
   else
@@ -179,7 +178,7 @@ PGDLLEXPORT Datum
 Spanset_union_transfn(PG_FUNCTION_ARGS)
 {
   MemoryContext aggContext;
-  if (!AggCheckCallContext(fcinfo, &aggContext))
+  if (! AggCheckCallContext(fcinfo, &aggContext))
     elog(ERROR, "Spanset_union_transfn called in non-aggregate context");
 
   Oid spansetoid = get_fn_expr_argtype(fcinfo->flinfo, 1);

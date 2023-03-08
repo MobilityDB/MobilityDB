@@ -1161,6 +1161,7 @@ extern Temporal *add_int_tint(int i, const Temporal *tnumber);
 extern Temporal *add_tfloat_float(const Temporal *tnumber, double d);
 extern Temporal *add_tint_int(const Temporal *tnumber, int i);
 extern Temporal *add_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2);
+extern double float_degrees(double value, bool normalize);
 extern Temporal *div_float_tfloat(double d, const Temporal *tnumber);
 extern Temporal *div_int_tint(int i, const Temporal *tnumber);
 extern Temporal *div_tfloat_float(const Temporal *tnumber, double d);
@@ -1176,10 +1177,11 @@ extern Temporal *sub_int_tint(int i, const Temporal *tnumber);
 extern Temporal *sub_tfloat_float(const Temporal *tnumber, double d);
 extern Temporal *sub_tint_int(const Temporal *tnumber, int i);
 extern Temporal *sub_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2);
-extern Temporal *tfloat_degrees(const Temporal *temp);
+extern Temporal *tfloat_degrees(const Temporal *temp, bool normalize);
 extern Temporal *tfloat_radians(const Temporal *temp);
 extern Temporal *tfloat_derivative(const Temporal *temp);
 extern Temporal *tnumber_abs(const Temporal *temp);
+extern Temporal *tnumber_delta_value(const Temporal *temp);
 
 /*****************************************************************************/
 
@@ -1604,7 +1606,9 @@ extern bool bearing_point_point(const GSERIALIZED *geo1, const GSERIALIZED *geo2
 extern Temporal *bearing_tpoint_point(const Temporal *temp, const GSERIALIZED *gs, bool invert);
 extern Temporal *bearing_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
 extern Temporal *tpoint_azimuth(const Temporal *temp);
+extern GSERIALIZED *tpoint_convex_hull(const Temporal *temp);
 extern Temporal *tpoint_cumulative_length(const Temporal *temp);
+extern bool tpoint_direction(const Temporal *temp, double *result);
 extern Temporal *tpoint_get_coord(const Temporal *temp, int coord);
 extern bool tpoint_is_simple(const Temporal *temp);
 extern double tpoint_length(const Temporal *temp);
@@ -1709,13 +1713,17 @@ extern double temporal_frechet_distance(const Temporal *temp1, const Temporal *t
 extern double temporal_dyntimewarp_distance(const Temporal *temp1, const Temporal *temp2);
 extern Match *temporal_frechet_path(const Temporal *temp1, const Temporal *temp2, int *count);
 extern Match *temporal_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2, int *count);
+extern double temporal_hausdorff_distance(const Temporal *temp1, const Temporal *temp2);
 
 /*****************************************************************************/
 
 /* Analytics functions for temporal types */
 
 Temporal *geo_to_tpoint(const GSERIALIZED *geo);
-Temporal *temporal_simplify(const Temporal *temp, double eps_dist, bool synchronized);
+Temporal *temporal_simplify_min_dist(const Temporal *temp, double dist);
+Temporal *temporal_simplify_min_tdelta(const Temporal *temp, const Interval *mint);
+Temporal *temporal_simplify_dp(const Temporal *temp, double eps_dist, bool synchronized);
+Temporal *temporal_simplify_max_dist(const Temporal *temp, double eps_dist, bool synchronized);
 bool tpoint_AsMVTGeom(const Temporal *temp, const STBox *bounds, int32_t extent,
   int32_t buffer, bool clip_geom, GSERIALIZED **geom, int64 **timesarr, int *count);
 bool tpoint_to_geo_measure(const Temporal *tpoint, const Temporal *measure, bool segmentize, GSERIALIZED **result);

@@ -1,9 +1,3 @@
-# Postgres version dependant files
-
-if (${POSTGRESQL_VERSION_NUMBER} GREATER_EQUAL 110000)
-  set(072_tpoint_spgist 072_tpoint_spgist)
-endif()
-
 SET(LOCAL_FILES
   050_geoset
   050_stbox
@@ -12,18 +6,18 @@ SET(LOCAL_FILES
   054_tpoint_compops
   055_geography_functions
   056_tpoint_spatialfuncs
-  057_tpoint_tile
-  058_tpoint_boxops
-  060_tpoint_posops
-  062_tpoint_distance
-  063_tpoint_similarity
-  064_tpoint_aggfuncs
-  066_tpoint_spatialrels
-  068_tpoint_tempspatialrels
-  070_tpoint_gist
-  ${072_tpoint_spgist}
-  074_tpoint_datagen
+  058_tpoint_tile
+  060_tpoint_boxops
+  062_tpoint_posops
+  064_tpoint_distance
+  066_tpoint_similarity
+  068_tpoint_aggfuncs
+  070_tpoint_spatialrels
+  072_tpoint_tempspatialrels
+  073_tpoint_gist
+  074_tpoint_spgist
   076_tpoint_analytics
+  078_tpoint_datagen
   )
 
 foreach (f ${LOCAL_FILES})

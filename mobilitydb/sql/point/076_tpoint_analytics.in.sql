@@ -86,14 +86,48 @@ LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 
-CREATE FUNCTION simplify(tfloat, float8, boolean DEFAULT TRUE)
+CREATE FUNCTION minDistSimplify(tfloat, float)
 RETURNS tfloat
-AS 'MODULE_PATHNAME', 'Temporal_simplify'
+AS 'MODULE_PATHNAME', 'Temporal_simplify_min_dist'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION minDistSimplify(tgeompoint, float)
+RETURNS tgeompoint
+AS 'MODULE_PATHNAME', 'Temporal_simplify_min_dist'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION minDistSimplify(tgeogpoint, float)
+RETURNS tgeompoint
+AS 'MODULE_PATHNAME', 'Temporal_simplify_min_dist'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION simplify(tgeompoint, float8, boolean DEFAULT TRUE)
+CREATE FUNCTION minTimeDeltaSimplify(tfloat, interval)
+RETURNS tfloat
+AS 'MODULE_PATHNAME', 'Temporal_simplify_min_tdelta'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION minTimeDeltaSimplify(tgeompoint, interval)
 RETURNS tgeompoint
-AS 'MODULE_PATHNAME', 'Temporal_simplify'
+AS 'MODULE_PATHNAME', 'Temporal_simplify_min_tdelta'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION minTimeDeltaSimplify(tgeogpoint, interval)
+RETURNS tgeompoint
+AS 'MODULE_PATHNAME', 'Temporal_simplify_min_tdelta'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION maxDistSimplify(tfloat, float, boolean DEFAULT TRUE)
+RETURNS tfloat
+AS 'MODULE_PATHNAME', 'Temporal_simplify_max_dist'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION maxDistSimplify(tgeompoint, float, boolean DEFAULT TRUE)
+RETURNS tgeompoint
+AS 'MODULE_PATHNAME', 'Temporal_simplify_max_dist'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION DouglasPeuckerSimplify(tfloat, float, boolean DEFAULT TRUE)
+RETURNS tfloat
+AS 'MODULE_PATHNAME', 'Temporal_simplify_dp'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION DouglasPeuckerSimplify(tgeompoint, float, boolean DEFAULT TRUE)
+RETURNS tgeompoint
+AS 'MODULE_PATHNAME', 'Temporal_simplify_dp'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE TYPE geom_times AS (

@@ -285,7 +285,7 @@ period_mfjson_buf(char *output, const Span *p)
   ptr += datetimes_mfjson_buf(ptr, DatumGetTimestampTz(p->lower));
   ptr += sprintf(ptr, ",\"end\":");
   ptr += datetimes_mfjson_buf(ptr, DatumGetTimestampTz(p->upper));
-  ptr += sprintf(ptr, ",\"lower_inc\":%s,'upper_inc':%s},",
+  ptr += sprintf(ptr, ",\"lower_inc\":%s,\"upper_inc\":%s},",
     p->lower_inc ? "true" : "false", p->upper_inc ? "true" : "false");
   return (ptr - output);
 }

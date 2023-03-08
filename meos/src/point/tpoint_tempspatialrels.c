@@ -156,7 +156,7 @@ TSequence *
 tinterrel_tpointdiscseq_geom(const TSequence *seq, Datum geom, bool tinter,
   Datum (*func)(Datum, Datum))
 {
-  const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = tsequence_inst_n(seq, i);
@@ -166,9 +166,8 @@ tinterrel_tpointdiscseq_geom(const TSequence *seq, Datum geom, bool tinter,
       result = ! result;
     instants[i] = tinstant_make(BoolGetDatum(result), T_TBOOL, inst->t);
   }
-  TSequence *result = tsequence_make(instants, seq->count, true, true,
+  TSequence *result = tsequence_make_free(instants, seq->count, true, true,
     DISCRETE, NORMALIZE_NO);
-  pfree_array((void **) instants, seq->count);
   return result;
 }
 

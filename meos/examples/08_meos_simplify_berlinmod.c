@@ -140,8 +140,8 @@ int main(void)
   /* Simplify the trips */
   for (i = 0; i < no_records; i++)
   {
-    trips_dp[i] = temporal_simplify(trips[i].trip, DELTA_DISTANCE, false);
-    trips_sed[i] = temporal_simplify(trips[i].trip, DELTA_DISTANCE, true);
+    trips_dp[i] = temporal_simplify_dp(trips[i].trip, DELTA_DISTANCE, false);
+    trips_sed[i] = temporal_simplify_dp(trips[i].trip, DELTA_DISTANCE, true);
     char *day_str = pg_date_out(trips[i].day);
     printf("Vehicle: %d, Date: %s, Seq: %d, No. of instants: %d, "
       "No. of instants DP: %d, No. of instants SED: %d\n",

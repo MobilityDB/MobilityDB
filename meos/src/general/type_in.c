@@ -996,7 +996,7 @@ text_from_wkb_state(wkb_parse_state *s)
 Datum
 point_from_wkb_state(wkb_parse_state *s)
 {
-  double x, y, z;
+  double x, y, z = 0; /* make compiler quiet */
   x = double_from_wkb_state(s);
   y = double_from_wkb_state(s);
   if (s->hasz)

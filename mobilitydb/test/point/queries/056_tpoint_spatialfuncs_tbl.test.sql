@@ -57,8 +57,8 @@ SELECT ST_AsText(transform_gk(geometry 'Linestring empty'));
 
 SELECT round(MAX(ST_X(startValue(transform_gk(temp))))::numeric, 6) FROM tbl_tgeompoint;
 
-SELECT round(MAX(ST_X(transform_gk(g)))::numeric, 6) FROM tbl_geom_point LIMIT 10;
-SELECT round(MAX(ST_X(ST_StartPoint(transform_gk(g))))::numeric, 6) FROM tbl_geom_linestring WHERE NOT ST_IsEmpty(g) LIMIT 10;
+SELECT round(MAX(ST_X(transform_gk(g)))::numeric, 6) FROM tbl_geom_point;
+SELECT round(MAX(ST_X(ST_StartPoint(transform_gk(g))))::numeric, 6) FROM tbl_geom_linestring WHERE NOT ST_IsEmpty(g);
 
 -------------------------------------------------------------------------------
 
@@ -89,10 +89,10 @@ SELECT round(MAX(twavg(getY(temp)))::numeric, 6) FROM tbl_tgeogpoint3D;
 SELECT round(MAX(twavg(getZ(temp)))::numeric, 6) FROM tbl_tgeompoint3D;
 SELECT round(MAX(twavg(getZ(temp)))::numeric, 6) FROM tbl_tgeogpoint3D;
 
-SELECT trajectory(temp) FROM tbl_tgeompoint ORDER BY k LIMIT 10 ;
-SELECT trajectory(temp) FROM tbl_tgeogpoint ORDER BY k LIMIT 10 ;
-SELECT trajectory(temp) FROM tbl_tgeompoint3D ORDER BY k LIMIT 10 ;
-SELECT trajectory(temp) FROM tbl_tgeogpoint3D ORDER BY k LIMIT 10 ;
+SELECT MAX(ST_NPoints(trajectory(temp))) FROM tbl_tgeompoint;
+SELECT MAX(ST_NPoints(trajectory(temp)::geometry)) FROM tbl_tgeogpoint;
+SELECT MAX(ST_NPoints(trajectory(temp))) FROM tbl_tgeompoint3D;
+SELECT MAX(ST_NPoints(trajectory(temp)::geometry)) FROM tbl_tgeogpoint3D;
 
 SELECT round(MAX(length(temp))::numeric, 6) FROM tbl_tgeompoint;
 SELECT round(MAX(length(temp))::numeric, 6) FROM tbl_tgeompoint3D;
@@ -113,8 +113,13 @@ AND abs(startValue(speed(temp)) - st_distance(startValue(temp), getValue(instant
 SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE startValue(speed(temp)) <> 0 AND startTimestamp(temp) = startTimestamp(speed(temp))
 AND abs(startValue(speed(temp)) - st_distance(startValue(temp), getValue(instantN(temp,2))) / EXTRACT(epoch FROM timestampN(temp,2) - startTimestamp(temp))) < 1e-5;
 
-SELECT ST_AsText(round(twcentroid(temp), 6)) FROM tbl_tgeompoint LIMIT 10;
-SELECT ST_AsText(round(twcentroid(temp), 6)) FROM tbl_tgeompoint3D LIMIT 10;
+SELECT MAX(length(ST_AsText(round(twcentroid(temp), 6)))) FROM tbl_tgeompoint;
+SELECT MAX(length(ST_AsText(round(twcentroid(temp), 6)))) FROM tbl_tgeompoint3D;
+
+SELECT round(AVG(degrees(direction(temp)))::numeric, 6) FROM tbl_tgeompoint;
+SELECT round(AVG(degrees(direction(temp)))::numeric, 6) FROM tbl_tgeogpoint;
+SELECT round(AVG(degrees(direction(temp)))::numeric, 6) FROM tbl_tgeompoint3D;
+SELECT round(AVG(degrees(direction(temp)))::numeric, 6) FROM tbl_tgeogpoint3D;
 
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE azimuth(temp) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE azimuth(temp) IS NOT NULL;
@@ -125,34 +130,34 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE azimuth(temp) IS NOT NULL;
 -------------------------------------------------------------------------------
 
 -- 2D
-SELECT maxValue(round(degrees(bearing(g, temp)), 6)) FROM tbl_geom_point t1, tbl_tgeompoint t2
-WHERE bearing(g, temp) IS NOT NULL ORDER BY 1 LIMIT 10;
-SELECT maxValue(round(degrees(bearing(temp, g)), 6)) FROM tbl_tgeompoint t1, tbl_geom_point t2
-WHERE bearing(temp, g) IS NOT NULL ORDER BY 1 LIMIT 10;
-SELECT maxValue(round(degrees(bearing(t1.temp, t2.temp)), 6)) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
-WHERE bearing(t1.temp, t2.temp) IS NOT NULL ORDER BY 1 LIMIT 10;
+SELECT MAX(maxValue(round(degrees(bearing(g, temp)), 6))) FROM tbl_geom_point t1, tbl_tgeompoint t2
+WHERE bearing(g, temp) IS NOT NULL;
+SELECT MAX(maxValue(round(degrees(bearing(temp, g)), 6))) FROM tbl_tgeompoint t1, tbl_geom_point t2
+WHERE bearing(temp, g) IS NOT NULL;
+SELECT MAX(maxValue(round(degrees(bearing(t1.temp, t2.temp)), 6))) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
+WHERE bearing(t1.temp, t2.temp) IS NOT NULL;
 
-SELECT maxValue(round(degrees(bearing(g, temp)), 6)) FROM tbl_geog_point t1, tbl_tgeogpoint t2
-WHERE bearing(g, temp) IS NOT NULL ORDER BY 1 LIMIT 10;
-SELECT maxValue(round(degrees(bearing(temp, g)), 6)) FROM tbl_tgeogpoint t1, tbl_geog_point t2
-WHERE bearing(temp, g) IS NOT NULL ORDER BY 1 LIMIT 10;
--- SELECT maxValue(round(degrees(bearing(t1.temp, t2.temp)), 6)) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
--- WHERE bearing(t1.temp, t2.temp) IS NOT NULL ORDER BY 1 LIMIT 10;
+SELECT MAX(maxValue(round(degrees(bearing(g, temp)), 6))) FROM tbl_geog_point t1, tbl_tgeogpoint t2
+WHERE bearing(g, temp) IS NOT NULL;
+SELECT MAX(maxValue(round(degrees(bearing(temp, g)), 6))) FROM tbl_tgeogpoint t1, tbl_geog_point t2
+WHERE bearing(temp, g) IS NOT NULL;
+-- SELECT MAX(maxValue(round(degrees(bearing(t1.temp, t2.temp)), 6))) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
+-- WHERE bearing(t1.temp, t2.temp) IS NOT NULL;
 
 -- 3D
-SELECT maxValue(round(degrees(bearing(g, temp)), 6)) FROM tbl_geom_point3D t1, tbl_tgeompoint3D t2
-WHERE bearing(g, temp) IS NOT NULL ORDER BY 1 LIMIT 10;
-SELECT maxValue(round(degrees(bearing(temp, g)), 6)) FROM tbl_tgeompoint3D t1, tbl_geom_point3D t2
-WHERE bearing(temp, g) IS NOT NULL ORDER BY 1 LIMIT 10;
-SELECT maxValue(round(degrees(bearing(t1.temp, t2.temp)), 6)) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2
-WHERE bearing(t1.temp, t2.temp) IS NOT NULL ORDER BY 1 LIMIT 10;
+SELECT MAX(maxValue(round(degrees(bearing(g, temp)), 6))) FROM tbl_geom_point3D t1, tbl_tgeompoint3D t2
+WHERE bearing(g, temp) IS NOT NULL;
+SELECT MAX(maxValue(round(degrees(bearing(temp, g)), 6))) FROM tbl_tgeompoint3D t1, tbl_geom_point3D t2
+WHERE bearing(temp, g) IS NOT NULL;
+SELECT MAX(maxValue(round(degrees(bearing(t1.temp, t2.temp)), 6))) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2
+WHERE bearing(t1.temp, t2.temp) IS NOT NULL;
 
-SELECT maxValue(round(degrees(bearing(g, temp)), 6)) FROM tbl_geog_point3D t1, tbl_tgeogpoint3D t2
-WHERE bearing(g, temp) IS NOT NULL ORDER BY 1 LIMIT 10;
-SELECT maxValue(round(degrees(bearing(temp, g)), 6)) FROM tbl_tgeogpoint3D t1, tbl_geog_point3D t2
-WHERE bearing(temp, g) IS NOT NULL ORDER BY 1 LIMIT 10;
--- SELECT maxValue(round(degrees(bearing(t1.temp, t2.temp)), 6)) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2
--- WHERE bearing(t1.temp, t2.temp) IS NOT NULL ORDER BY 1 LIMIT 10;
+SELECT MAX(maxValue(round(degrees(bearing(g, temp)), 6))) FROM tbl_geog_point3D t1, tbl_tgeogpoint3D t2
+WHERE bearing(g, temp) IS NOT NULL;
+SELECT MAX(maxValue(round(degrees(bearing(temp, g)), 6))) FROM tbl_tgeogpoint3D t1, tbl_geog_point3D t2
+WHERE bearing(temp, g) IS NOT NULL;
+-- SELECT MAX(maxValue(round(degrees(bearing(t1.temp, t2.temp)), 6))) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2
+-- WHERE bearing(t1.temp, t2.temp) IS NOT NULL;
 
 -------------------------------------------------------------------------------
 

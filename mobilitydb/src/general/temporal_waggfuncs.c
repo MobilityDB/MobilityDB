@@ -594,8 +594,8 @@ temporal_wagg_transfn(FunctionCallInfo fcinfo, datum_func2 func, bool min,
       errmsg("Operation not supported for temporal continuous float sequences")));
 
   store_fcinfo(fcinfo);
-  SkipList *result = temporal_wagg_transfn1(state, temp, interval,
-    func, min, crossings);
+  SkipList *result = temporal_wagg_transfn1(state, temp, interval, func, min,
+    crossings);
 
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);

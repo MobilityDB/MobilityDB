@@ -734,7 +734,7 @@ Span_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
   uint8 node;
   MemoryContext old_ctx;
   SpanNode *nodebox, infbox, next_nodespan;
-  Span *centroid, *queries, *orderbys;
+  Span *centroid, *queries = NULL, *orderbys = NULL; /* make compiler quiet */
 
   /* Fetch the centroid of this node. */
   assert(in->hasPrefix);

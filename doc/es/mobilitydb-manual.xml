@@ -15,11 +15,13 @@
 
 <!ENTITY introduction SYSTEM "introduction.xml">
 <!ENTITY set_span_types SYSTEM "set_span_types.xml">
+<!ENTITY box_types SYSTEM "box_types.xml">
 <!ENTITY temporal_types SYSTEM "temporal_types.xml">
-<!ENTITY manipulating_box_types SYSTEM "manipulating_box_types.xml">
-<!ENTITY manipulating_temporal_types_p1 SYSTEM "manipulating_temporal_types_p1.xml">
-<!ENTITY manipulating_temporal_types_p2 SYSTEM "manipulating_temporal_types_p2.xml">
-<!ENTITY spatial_functions SYSTEM "spatial_functions.xml">
+<!ENTITY temporal_types_ops_p1 SYSTEM "temporal_types_ops_p1.xml">
+<!ENTITY temporal_types_ops_p2 SYSTEM "temporal_types_ops_p2.xml">
+<!ENTITY temporal_types_alpha SYSTEM "temporal_types_alpha.xml">
+<!ENTITY temporal_types_spatial SYSTEM "temporal_types_spatial.xml">
+<!ENTITY temporal_types_analytics SYSTEM "temporal_types_analytics.xml">
 <!ENTITY temporal_network_points SYSTEM "temporal_network_points.xml">
 <!ENTITY reference SYSTEM "reference.xml">
 <!ENTITY data_generator SYSTEM "data_generator.xml">
@@ -110,10 +112,13 @@
 
 	&introduction;
 	&set_span_types;
+	&box_types;
 	&temporal_types;
-	&manipulating_box_types;
-	&manipulating_temporal_types_p1;
-	&manipulating_temporal_types_p2;
+	&temporal_types_ops_p1;
+	&temporal_types_ops_p2;
+	&temporal_types_alpha;
+	&temporal_types_spatial;
+	&temporal_types_analytics;
 	&temporal_network_points;
 	&reference;
 	&data_generator;

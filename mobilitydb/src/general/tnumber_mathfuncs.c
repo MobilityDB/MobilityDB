@@ -366,6 +366,40 @@ Tnumber_abs(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PG_FUNCTION_INFO_V1(Tnumber_delta_value);
+/**
+ * @ingroup mobilitydb_temporal_math
+ * @brief Get the delta value of a temporal number
+ * @sqlfunc deltaValue()
+ */
+PGDLLEXPORT Datum
+Tnumber_delta_value(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tnumber_delta_value(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Float_degrees);
+/**
+ * @ingroup mobilitydb_temporal_math
+ * @brief Convert a number from radians to degrees
+ * @sqlfunc degrees()
+ */
+PGDLLEXPORT Datum
+Float_degrees(PG_FUNCTION_ARGS)
+{
+  double value = PG_GETARG_FLOAT8(0);
+  bool normalize = false;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+    normalize = PG_GETARG_BOOL(1);
+  double result = float_degrees(value, normalize);
+  PG_RETURN_FLOAT8(result);
+}
+
 PG_FUNCTION_INFO_V1(Tfloat_degrees);
 /**
  * @ingroup mobilitydb_temporal_math
@@ -376,7 +410,10 @@ PGDLLEXPORT Datum
 Tfloat_degrees(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = tfloat_degrees(temp);
+  bool normalize = false;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+    normalize = PG_GETARG_BOOL(1);
+  Temporal *result = tfloat_degrees(temp, normalize);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

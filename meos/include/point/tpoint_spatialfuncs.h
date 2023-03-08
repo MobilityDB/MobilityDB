@@ -67,10 +67,10 @@
 /**
  * @brief Definition for the internal aspects of  the GSERIALIZED struct
  */
-#define LWFLAG_EXTFLAGS    0x20
+// #define LWFLAG_EXTFLAGS    0x20
 #define LWFLAG_VERSBIT2    0x80
 
-#define FLAGS_GET_EXTFLAGS(flags)     (((flags) & LWFLAG_EXTFLAGS)>>5)
+// #define FLAGS_GET_EXTFLAGS(flags)     (((flags) & LWFLAG_EXTFLAGS)>>5)
 #define FLAGS_GET_VERSBIT2(flags)     (((flags) & LWFLAG_VERSBIT2)>>7)
 
 #define GS_POINT_PTR(gs)    ( (uint8_t *) gs->data + 8 + \
@@ -205,8 +205,7 @@ extern Temporal *tpoint_get_coord(const Temporal *temp, int coord);
 
 extern TSequence **tpointseq_at_geometry(const TSequence *seq,
   const GSERIALIZED *gs, int *count);
-extern Temporal *tpoint_at_stbox1(const Temporal *temp, const STBox *box,
-  bool upper_inc);
+extern Temporal *tpoint_at_stbox1(const Temporal *temp, const STBox *box);
 extern Temporal *tpoint_minus_stbox(const Temporal *temp, const STBox *box);
 extern Span **tpointseq_interperiods(const TSequence *seq,
   GSERIALIZED *gsinter, int *count);
