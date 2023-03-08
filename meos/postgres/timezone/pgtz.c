@@ -23,7 +23,7 @@
 #include "utils/timestamp_def.h"
 #include "pgtz.h"
 
-#include <lib/simplehash.h> /* MobilityDB */
+// #include <lib/simplehash.h> /* MobilityDB */
 
 /* Function in findtimezone.c */
 extern const char *select_default_timezone(const char *share_path);
