@@ -91,7 +91,7 @@ double
 tinstant_distance(const TInstant *inst1, const TInstant *inst2,
   datum_func2 func)
 {
-  assert (tnumber_type(inst1->temptype) || tgeo_type(inst1->temptype))
+  assert (tnumber_type(inst1->temptype) || tgeo_type(inst1->temptype));
   if (tnumber_type(inst1->temptype))
     return tnumberinst_distance(inst1, inst2);
   else /* tgeo_type(inst1->temptype) */
