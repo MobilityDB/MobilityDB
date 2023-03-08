@@ -149,7 +149,7 @@ Set_union_finalfn(PG_FUNCTION_ARGS)
   Datum *values = palloc0(sizeof(Datum) * count);
   for (int i = 0; i < count; i++)
   {
-    values[i] = state->dvalues[i];
+    values[i] = PointerGetDatum(PG_DETOAST_DATUM(state->dvalues[i]));
     if (! typbyval)
       pfree(DatumGetPointer(state->dvalues[i]));
   }

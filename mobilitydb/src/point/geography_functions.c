@@ -123,10 +123,6 @@ Datum geography_closestpoint(PG_FUNCTION_ARGS)
   ensure_same_srid(gserialized_get_srid(g1), gserialized_get_srid(g2));
 
   point = geography_tree_closestpoint(g1, g2, FP_TOLERANCE);
-
-  if (lwgeom_is_empty(point))
-    PG_RETURN_NULL();
-
   result = geography_serialize(point);
   lwgeom_free(point);
 
