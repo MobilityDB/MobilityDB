@@ -146,10 +146,11 @@ Set_union_finalfn(PG_FUNCTION_ARGS)
   meosType settype = oid_type(setoid);
   meosType basetype = settype_basetype(settype);
   bool typbyval = basetype_byvalue(basetype);
+  int16 typlen = basetype_length(basetype);
 
   Datum *values = palloc0(sizeof(Datum) * count);
   for (int i = 0; i < count; i++)
-    values[i] = typbyval ? state->dvalues[i] :
+    values[i] = typlen > 0 ? state->dvalues[i] :
       PointerGetDatum(PG_DETOAST_DATUM(state->dvalues[i]));
 
   Set *result = set_make_exp(values, count, count, basetype, ORDERED);
