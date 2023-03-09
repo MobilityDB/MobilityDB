@@ -178,6 +178,23 @@ else()
   set(DEF_WORDS_BIGENDIAN "#undef")
 endif()
 
+#-------------------------------------------------------
+# Customize the meos.in.h and meos_internal.in.h files
+#-------------------------------------------------------
+
+# Read files
+file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos.in.h" MEOS_IN_H)
+file(READ "${CMAKE_SOURCE_DIR}/meos/include/postgres_int_defs.in.h" POSTGRES_INT_DEFS_IN_H)
+file(READ "${CMAKE_SOURCE_DIR}/meos/include/postgis_int_defs.in.h" POSTGIS_INT_DEFS_IN_H)
+file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos_internal.in.h" MEOS_INTERNAL_IN_H)
+# Generate meos.h
+string(REGEX REPLACE @POSTGRES_DEFS@ "${POSTGRES_INT_DEFS_IN_H}" MEOS_1_H "${MEOS_IN_H}")
+string(REGEX REPLACE @POSTGIS_DEFS@ "${POSTGIS_INT_DEFS_IN_H}" MEOS_2_H "${MEOS_1_H}")
+file(WRITE "${CMAKE_SOURCE_DIR}/meos/include/meos.h" "${MEOS_2_H}")
+# Generate meos.h
+string(REGEX REPLACE @GENERAL_DIR@ "general/" MEOS_INTERNAL_H "${MEOS_INTERNAL_IN_H}")
+file(WRITE "${CMAKE_SOURCE_DIR}/meos/include/meos_internal.h" "${MEOS_INTERNAL_H}")
+
 #-------------------------------------
 # Build either MobilityDB or MEOS
 #-------------------------------------

@@ -38,7 +38,7 @@
 #include <json-c/json.h>
 /* PostgreSQL */
 /* MEOS */
-#include "meos_catalog.h" /* For meosType */
+#include "@GENERAL_DIR@meos_catalog.h" /* For meosType */
 
 /*****************************************************************************
  * Miscellaneous functions
@@ -65,6 +65,7 @@ extern void set_expand_bbox(Datum d, meosType basetype, void *box);
 extern void *set_bbox_ptr(const Set *s);
 extern size_t *set_offsets_ptr(const Set *s);
 extern Set *set_make(const Datum *values, int count, meosType basetype, bool ordered);
+extern Set *set_make_exp(const Datum *values, int count, int maxcount, meosType basetype, bool ordered);
 extern Set *set_make_free(Datum *values, int count, meosType basetype, bool ordered);
 extern Set *set_copy(const Set *s);
 extern Span *span_make(Datum lower, Datum upper, bool lower_inc, bool upper_inc, meosType basetype);
@@ -100,6 +101,7 @@ extern void tstzset_set_period(const Set *ts, Span *p);
 extern void span_shift(Span *s, Datum value);
 extern void spanset_shift(SpanSet *s, Datum value);
 extern void lower_upper_shift_tscale(TimestampTz *lower, TimestampTz *upper, const Interval *shift, const Interval *duration);
+extern void floatspan_set_numspan(const Span *s1, Span *s2, meosType basetype);
 
 /*****************************************************************************/
 
@@ -236,6 +238,7 @@ extern void periodset_set_tbox(const SpanSet *ps, TBox *box);
 extern TBox *number_timestamp_to_tbox(Datum d, meosType basetype, TimestampTz t);
 extern TBox *number_period_to_tbox(Datum d, meosType basetype, const Span *p);
 
+extern void point_get_coords(const GSERIALIZED *point, bool hasz, bool geodetic, double *x, double *y, double *z);
 extern bool geo_set_stbox(const GSERIALIZED *gs, STBox *box);
 extern void geoarr_set_stbox(const Datum *values, int count, STBox *box);
 extern void timestamp_set_stbox(TimestampTz t, STBox *box);
@@ -402,6 +405,7 @@ extern Datum temporal_end_value(const Temporal *temp);
 extern Datum temporal_max_value(const Temporal *temp);
 extern Datum temporal_min_value(const Temporal *temp);
 extern void temporal_set_bbox(const Temporal *temp, void *box);
+extern void tnumber_set_span(const Temporal *temp, Span *span);
 extern Datum temporal_start_value(const Temporal *temp);
 extern Datum *temporal_values(const Temporal *temp, int *count);
 extern SpanSet *tfloatinst_spanset(const TInstant *inst);
@@ -758,6 +762,14 @@ extern double tnumberseqset_integral(const TSequenceSet *ss);
 extern double tnumberseqset_twavg(const TSequenceSet *ss);
 extern GSERIALIZED *tpointseq_twcentroid(const TSequence *seq);
 extern GSERIALIZED *tpointseqset_twcentroid(const TSequenceSet *ss);
+
+/*****************************************************************************/
+
+/* Compact functions for final append aggregate */
+
+extern Temporal *temporal_compact(const Temporal *temp);
+extern TSequence *tsequence_compact(const TSequence *seq);
+extern TSequenceSet *tsequenceset_compact(const TSequenceSet *ss);
 
 /*****************************************************************************/
 
