@@ -280,6 +280,8 @@ int16
 basetype_length(meosType type)
 {
   ensure_basetype(type);
+  if (basetype_byvalue(type))
+    return sizeof(Datum);
   if (type == T_DOUBLE2)
     return sizeof(double2);
   if (type == T_DOUBLE3)
