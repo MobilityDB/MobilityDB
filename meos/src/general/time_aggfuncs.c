@@ -169,7 +169,7 @@ timestamp_tcount_transfn(SkipList *state, TimestampTz t)
   TInstant **instants = timestamp_transform_tcount(t);
   if (! state)
   {
-    state = skiplist_make((void **) instants, 1, TEMPORAL);
+    state = skiplist_make((void **) instants, 1);
   }
   else
   {
@@ -195,7 +195,7 @@ tstzset_tcount_transfn(SkipList *state, const Set *ts)
 
   if (! state)
   {
-    state = skiplist_make((void **) instants, count, TEMPORAL);
+    state = skiplist_make((void **) instants, count);
   }
   else
   {
@@ -218,7 +218,7 @@ period_tcount_transfn(SkipList *state, const Span *p)
   TSequence *seq = period_transform_tcount(p);
   if (! state)
   {
-    state = skiplist_make((void **) &seq, 1, TEMPORAL);
+    state = skiplist_make((void **) &seq, 1);
   }
   else
   {
@@ -242,7 +242,7 @@ periodset_tcount_transfn(SkipList *state, const SpanSet *ps)
   int start = 0;
   if (! state)
   {
-    state = skiplist_make((void **) &sequences[0], 1, TEMPORAL);
+    state = skiplist_make((void **) &sequences[0], 1);
     start++;
   }
   else

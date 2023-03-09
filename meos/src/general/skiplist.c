@@ -328,10 +328,9 @@ skiplist_tailval(SkipList *list)
  *
  * @param[in] values Array of values
  * @param[in] count Number of elements in the array
- * @param[in] elemtype Type of the elements
  */
 SkipList *
-skiplist_make(void **values, int count, SkipListElemType elemtype)
+skiplist_make(void **values, int count)
 {
   assert(count > 0);
 
@@ -345,7 +344,6 @@ skiplist_make(void **values, int count, SkipListElemType elemtype)
   SkipList *result = palloc0(sizeof(SkipList));
   result->elems = palloc0(sizeof(SkipListElem) * capacity);
   int height = (int) ceil(log2(count - 1));
-  result->elemtype = elemtype;
   result->capacity = capacity;
   result->next = count;
   result->length = count - 2;
@@ -355,14 +353,7 @@ skiplist_make(void **values, int count, SkipListElemType elemtype)
   /* Fill values first */
   result->elems[0].value = NULL; /* set head value to NULL */
   for (int i = 0; i < count - 2; i++)
-  {
-    if (elemtype == TIMESTAMPTZ)
-      result->elems[i + 1].value = values[i];
-    else if (elemtype == PERIOD)
-      result->elems[i + 1].value = span_copy((Span *) values[i]);
-    else /* state->elemtype == TEMPORAL */
-      result->elems[i + 1].value = temporal_copy((Temporal *) values[i]);
-  }
+    result->elems[i + 1].value = temporal_copy((Temporal *) values[i]);
   result->elems[count - 1].value = NULL; /* set tail value to NULL */
   result->tail = count - 1;
 #if ! MEOS
@@ -454,7 +445,6 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
 #endif /* ! MEOS */
 
   assert(list->length > 0);
-  assert(list->elemtype == TEMPORAL);
 
   /* Temporal aggregation cannot mix instants and sequences */
   Temporal *temp1 = (Temporal *) skiplist_headval(list);
@@ -642,7 +632,6 @@ skiplist_values(SkipList *list)
 Temporal **
 skiplist_temporal_values(SkipList *list)
 {
-  assert(list->elemtype == TEMPORAL);
   Temporal **result = palloc(sizeof(Temporal *) * list->length);
   int cur = list->elems[0].next[0];
   int count = 0;

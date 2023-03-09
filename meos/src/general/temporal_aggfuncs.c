@@ -455,7 +455,7 @@ tinstant_tagg_transfn(SkipList *state, const TInstant *inst, datum_func2 func)
   const TInstant **instants = palloc(sizeof(TInstant *));
   instants[0] = inst;
   if (! state)
-    result = skiplist_make((void **) instants, 1, TEMPORAL);
+    result = skiplist_make((void **) instants, 1);
   else
   {
     skiplist_splice(state, (void **) instants, 1, func, false);
@@ -478,7 +478,7 @@ tdiscseq_tagg_transfn(SkipList *state, const TSequence *seq, datum_func2 func)
   const TInstant **instants = tsequence_instants(seq);
   SkipList *result;
   if (! state)
-    result = skiplist_make((void **) instants, seq->count, TEMPORAL);
+    result = skiplist_make((void **) instants, seq->count);
   else
   {
     skiplist_splice(state, (void **) instants, seq->count, func, false);
@@ -503,7 +503,7 @@ tcontseq_tagg_transfn(SkipList *state, const TSequence *seq,
 {
   SkipList *result;
   if (! state)
-    result = skiplist_make((void **) &seq, 1, TEMPORAL);
+    result = skiplist_make((void **) &seq, 1);
   else
   {
     skiplist_splice(state, (void **) &seq, 1, func, crossings);
@@ -528,7 +528,7 @@ tsequenceset_tagg_transfn(SkipList *state, const TSequenceSet *ss,
   const TSequence **sequences = tsequenceset_sequences_p(ss);
   SkipList *result;
   if (! state)
-    result = skiplist_make((void **) sequences, ss->count, TEMPORAL);
+    result = skiplist_make((void **) sequences, ss->count);
   else
   {
     skiplist_splice(state, (void **) sequences, ss->count, func, crossings);
@@ -858,7 +858,7 @@ temporal_tagg_transform_transfn(SkipList *state, const Temporal *temp,
   int count;
   Temporal **temparr = temporal_transform_tagg(temp, &count, transform);
   if (! state)
-    state = skiplist_make((void **) temparr, count, TEMPORAL);
+    state = skiplist_make((void **) temparr, count);
   else
     skiplist_splice(state, (void **) temparr, count, func, crossings);
 
@@ -989,7 +989,7 @@ temporal_tcount_transfn(SkipList *state, const Temporal *temp)
   int count;
   Temporal **temparr = temporal_transform_tcount(temp, &count);
   if (! state)
-    state = skiplist_make((void **) temparr, count, TEMPORAL);
+    state = skiplist_make((void **) temparr, count);
   else
     skiplist_splice(state, (void **) temparr, count, &datum_sum_int32, false);
   pfree_array((void **) temparr, count);

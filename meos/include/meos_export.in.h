@@ -223,19 +223,11 @@ typedef struct
   int next[SKIPLIST_MAXLEVEL];
 } SkipListElem;
 
-typedef enum
-{
-  TIMESTAMPTZ,
-  PERIOD,
-  TEMPORAL
-} SkipListElemType;
-
 /**
  * Structure to represent skiplists that keep the current state of an aggregation
  */
 typedef struct
 {
-  SkipListElemType elemtype;
   int capacity;
   int next;
   int length;
