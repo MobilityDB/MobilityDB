@@ -95,35 +95,16 @@ aggstate_write(SkipList *state, StringInfo buf)
 {
   int i;
   void **values = skiplist_values(state);
-  pq_sendint32(buf, (uint32) state->elemtype);
   pq_sendint32(buf, (uint32) state->length);
-  if (state->elemtype == TIMESTAMPTZ)
+  for (i = 0; i < state->length; i ++)
   {
-    for (i = 0; i < state->length; i ++)
-    {
-      bytea *time = call_send(T_TIMESTAMPTZ,
-        TimestampTzGetDatum((TimestampTz) values[i]));
-      pq_sendbytes(buf, VARDATA(time), VARSIZE(time) - VARHDRSZ);
-      pfree(time);
-    }
+    SPI_connect();
+    temporal_write((Temporal *) values[i], buf);
+    SPI_finish();
   }
-  else if (state->elemtype == PERIOD)
-  {
-    for (i = 0; i < state->length; i ++)
-      span_write((const Span *) values[i], buf);
-  }
-  else /* state->elemtype == TEMPORAL */
-  {
-    for (i = 0; i < state->length; i ++)
-    {
-      SPI_connect();
-      temporal_write((Temporal *) values[i], buf);
-      SPI_finish();
-    }
-    pq_sendint64(buf, state->extrasize);
-    if (state->extra)
-      pq_sendbytes(buf, state->extra, (int) state->extrasize);
-  }
+  pq_sendint64(buf, state->extrasize);
+  if (state->extra)
+    pq_sendbytes(buf, state->extra, (int) state->extrasize);
   pfree(values);
   return;
 }
@@ -135,37 +116,19 @@ aggstate_write(SkipList *state, StringInfo buf)
 static SkipList *
 aggstate_read(StringInfo buf)
 {
-  SkipListElemType elemtype = (SkipListElemType) pq_getmsgint(buf, 4);
   int length = pq_getmsgint(buf, 4);
   void **values = palloc0(sizeof(void *) * length);
   SkipList *result = NULL; /* make compiler quiet */
-  if (elemtype == TIMESTAMPTZ)
+  for (int i = 0; i < length; i ++)
+    values[i] = temporal_recv(buf);
+  size_t extrasize = (size_t) pq_getmsgint64(buf);
+  result = skiplist_make(values, length);
+  if (extrasize)
   {
-    for (int i = 0; i < length; i ++)
-      values[i] = (void **) DatumGetTimestampTz(call_recv(T_TIMESTAMPTZ, buf));
-    result = skiplist_make(values, length, TIMESTAMPTZ);
-    pfree(values);
+    const char *extra = pq_getmsgbytes(buf, (int) extrasize);
+    aggstate_set_extra(result, (void *) extra, extrasize);
   }
-  else if (elemtype == PERIOD)
-  {
-    for (int i = 0; i < length; i ++)
-      values[i] = span_recv(buf);
-    result = skiplist_make(values, length, PERIOD);
-    pfree_array(values, length);
-  }
-  else /* elemtype == TEMPORAL */
-  {
-    for (int i = 0; i < length; i ++)
-      values[i] = temporal_recv(buf);
-    size_t extrasize = (size_t) pq_getmsgint64(buf);
-    result = skiplist_make(values, length, TEMPORAL);
-    if (extrasize)
-    {
-      const char *extra = pq_getmsgbytes(buf, (int) extrasize);
-      aggstate_set_extra(result, (void *) extra, extrasize);
-    }
-    pfree_array(values, length);
-  }
+  pfree_array(values, length);
   return result;
 }
 

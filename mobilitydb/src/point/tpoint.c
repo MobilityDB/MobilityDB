@@ -572,25 +572,4 @@ Tne_tpoint_geo(PG_FUNCTION_ARGS)
   return tcomp_tpoint_point_ext(fcinfo, &datum2_ne2);
 }
 
-/*****************************************************************************
- * Assemble the trajectory/values of a temporal point as a single
- * geometry/geography
- *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(Tpoint_traversed_values);
-/**
- * @ingroup mobilitydb_temporal_accessor
- * @brief Return the base values (that is, the trajectory) of a temporal point
- * value as a geometry/geography
- * @sqlfunc getValues()
- */
-PGDLLEXPORT Datum
-Tpoint_traversed_values(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Datum result = PointerGetDatum(tpoint_trajectory(temp));
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
-}
-
 /*****************************************************************************/

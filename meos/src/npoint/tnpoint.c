@@ -480,7 +480,9 @@ tnpoint_routes(const Temporal *temp)
   if (temp->subtype == TINSTANT)
     result = tnpointinst_routes((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
-    result = tnpointdiscseq_routes((TSequence *) temp);
+    result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
+      tnpointdiscseq_routes((TSequence *) temp) :
+      tnpointcontseq_routes((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
     result = tnpointseqset_routes((TSequenceSet *) temp);
   return result;

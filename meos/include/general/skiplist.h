@@ -44,8 +44,7 @@
 
 extern void aggstate_set_extra(SkipList *state, void *data, size_t size);
 
-extern SkipList *skiplist_make(void **values, int count,
-  SkipListElemType elemtype);
+extern SkipList *skiplist_make(void **values, int count);
 extern void *skiplist_headval(SkipList *list);
 extern void skiplist_splice(SkipList *list, void **values, int count,
   datum_func2 func, bool crossings);

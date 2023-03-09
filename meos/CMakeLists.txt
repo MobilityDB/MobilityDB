@@ -95,13 +95,19 @@ add_subdirectory("src")
 # Build MEOS library
 #--------------------------------
 
-# Customize the meos.h file for external include with MEOS library
-file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos_export.in.h" MEOS_EXP_H_IN)
-file(READ "${CMAKE_SOURCE_DIR}/meos/include/pg_ext_defs.in.h" PG_EXT_DEFS_H)
-file(READ "${CMAKE_SOURCE_DIR}/meos/include/postgis_ext_defs.in.h" POSTGIS_EXT_DEFS_H)
-string(REGEX REPLACE @POSTGRES_DEFS@ "${PG_EXT_DEFS_H}" MEOS_EXP_1_H "${MEOS_EXP_H_IN}")
-string(REGEX REPLACE @POSTGIS_DEFS@ "${POSTGIS_EXT_DEFS_H}" MEOS_EXP_2_H "${MEOS_EXP_1_H}")
+# Customize the meos.in.h and meos_internal.in.h files for external include with MEOS library
+# Read files
+file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos.h" MEOS_H)
+file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos_internal.h" MEOS_INTERNAL_H)
+file(READ "${CMAKE_SOURCE_DIR}/meos/include/postgres_ext_defs.in.h" POSTGRES_EXT_DEFS_IN_H)
+file(READ "${CMAKE_SOURCE_DIR}/meos/include/postgis_ext_defs.in.h" POSTGIS_EXT_DEFS_IN_H)
+# Generate meos_export.h
+string(REGEX REPLACE "#include \"postgres_int_defs.h\"" "${POSTGRES_EXT_DEFS_IN_H}" MEOS_EXP_1_H "${MEOS_H}")
+string(REGEX REPLACE "#include <liblwgeom.h>" "${POSTGIS_EXT_DEFS_IN_H}" MEOS_EXP_2_H "${MEOS_EXP_1_H}")
 file(WRITE "${CMAKE_BINARY_DIR}/meos_export.h" "${MEOS_EXP_2_H}")
+# Generate meos_internal_export.h
+string(REGEX REPLACE "#include \"general/meos_catalog.h\"" "#include \"meos_catalog.h\"" MEOS_INTERNAL_EXP_H "${MEOS_INTERNAL_H}")
+file(WRITE "${CMAKE_BINARY_DIR}/meos_internal_export.h" "${MEOS_INTERNAL_EXP_H}")
 
 # MEOS
 set(PROJECT_OBJECTS "$<TARGET_OBJECTS:general>")
@@ -147,7 +153,7 @@ install(
   DESTINATION "/usr/local/include"
   RENAME "meos.h")
 install(
-  FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_internal_export.h"
+  FILES "${CMAKE_BINARY_DIR}/meos_internal_export.h"
   DESTINATION "/usr/local/include"
   RENAME "meos_internal.h")
 install(

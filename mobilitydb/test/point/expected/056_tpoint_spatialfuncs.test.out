@@ -1609,6 +1609,18 @@ SELECT round(speed(tgeogpoint 'Interp=Step;{[Point(1.5 1.5 1.5)@2000-01-01, Poin
  
 (1 row)
 
+SELECT direction(tgeompoint '[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02]');
+ direction 
+-----------
+          
+(1 row)
+
+SELECT direction(tgeompoint '{[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02]}');
+ direction 
+-----------
+          
+(1 row)
+
 SELECT ST_AsText(round(twcentroid(tgeompoint 'Point(1 1)@2000-01-01'), 6));
  st_astext  
 ------------

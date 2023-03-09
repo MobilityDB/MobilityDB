@@ -655,6 +655,25 @@ SELECT COUNT(*) FROM tbl_ttext_big WHERE temp #&> ttext '[AAA@2001-01-01, BBB@20
 -------------------------------------------------------------------------------
 -- Index support functions
 
+CREATE INDEX tbl_tint_big_rtree_idx ON tbl_tint_big USING GIST(temp);
+CREATE INDEX tbl_tfloat_big_rtree_idx ON tbl_tfloat_big USING GIST(temp);
+
+-- EXPLAIN ANALYZE
+SELECT temp |=| intspan '[90,100]'::tbox FROM tbl_tint_big ORDER BY 1 LIMIT 3;
+SELECT temp |=| tint '[1@2001-06-01, 2@2001-07-01]' FROM tbl_tint_big ORDER BY 1 LIMIT 3;
+
+WITH test AS (
+  SELECT temp |=| floatspan '[100,100]'::tbox AS distance FROM tbl_tfloat_big ORDER BY 1 LIMIT 3 )
+SELECT round(distance::numeric, 6) FROM test;
+WITH test AS (
+  SELECT temp |=| tfloat '[1.5@2001-06-01, 2.5@2001-07-01]' AS distance FROM tbl_tfloat_big ORDER BY 1 LIMIT 3 )
+SELECT round(distance::numeric, 6) FROM test;
+
+DROP INDEX tbl_tint_big_rtree_idx;
+DROP INDEX tbl_tfloat_big_rtree_idx;
+
+-------------------------------------------------------------------------------
+
 CREATE INDEX tbl_tint_big_quadtree_idx ON tbl_tint_big USING SPGIST(temp);
 CREATE INDEX tbl_tfloat_big_quadtree_idx ON tbl_tfloat_big USING SPGIST(temp);
 

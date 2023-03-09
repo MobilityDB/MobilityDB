@@ -39,6 +39,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/set.h"
+#include "general/type_util.h"
 #include "general/skiplist.h"
 /* MobilityDB */
 #include "pg_general/skiplist.h"
@@ -145,19 +146,20 @@ Set_union_finalfn(PG_FUNCTION_ARGS)
   meosType settype = oid_type(setoid);
   meosType basetype = settype_basetype(settype);
   bool typbyval = basetype_byvalue(basetype);
+  int16 typlen = basetype_length(basetype);
 
   Datum *values = palloc0(sizeof(Datum) * count);
   for (int i = 0; i < count; i++)
-  {
-    values[i] = state->dvalues[i];
-    if (! typbyval)
-      pfree(DatumGetPointer(state->dvalues[i]));
-  }
+    values[i] = typlen > 0 ? state->dvalues[i] :
+      PointerGetDatum(PG_DETOAST_DATUM(state->dvalues[i]));
 
   Set *result = set_make_exp(values, count, count, basetype, ORDERED);
 
   /* Free memory */
-  pfree(values);
+  if (typbyval)
+    pfree(values);
+  else
+    pfree_array((void **) values, count);
 
   PG_RETURN_POINTER(result);
 }

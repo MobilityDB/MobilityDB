@@ -896,8 +896,6 @@ Tpoint_convex_hull(PG_FUNCTION_ARGS)
   store_fcinfo(fcinfo);
   GSERIALIZED *result = tpoint_convex_hull(temp);
   PG_FREE_IF_COPY(temp, 0);
-  if (! result)
-    PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
 

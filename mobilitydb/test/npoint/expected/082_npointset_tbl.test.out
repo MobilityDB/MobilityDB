@@ -145,3 +145,9 @@ SELECT MAX(set_hash_extended(n, 1)) FROM tbl_npointset;
  9222373586350389408
 (1 row)
 
+SELECT numValues(set_union(np)) FROM tbl_npoint;
+ numvalues 
+-----------
+       100
+(1 row)
+

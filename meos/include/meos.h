@@ -38,9 +38,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 /* PostgreSQL */
-#include "../postgres/postgres.h"
-#include "../postgres/utils/timestamp_def.h"
-#include "../postgres/utils/date.h"
+#include "postgres_int_defs.h"
 /* PostGIS */
 #include <liblwgeom.h>
 
@@ -226,19 +224,11 @@ typedef struct
   int next[SKIPLIST_MAXLEVEL];
 } SkipListElem;
 
-typedef enum
-{
-  TIMESTAMPTZ,
-  PERIOD,
-  TEMPORAL
-} SkipListElemType;
-
 /**
  * Structure to represent skiplists that keep the current state of an aggregation
  */
 typedef struct
 {
-  SkipListElemType elemtype;
   int capacity;
   int next;
   int length;
@@ -1084,9 +1074,9 @@ extern Temporal *temporal_to_tinstant(const Temporal *temp);
 extern Temporal *temporal_to_tdiscseq(const Temporal *temp);
 extern Temporal *temporal_to_tcontseq(const Temporal *temp);
 extern Temporal *temporal_to_tsequenceset(const Temporal *temp);
+extern Temporal *temporal_tscale(const Temporal *temp, const Interval *duration);
 extern Temporal *temporal_tprecision(const Temporal *temp, const Interval *duration, TimestampTz origin);
 extern Temporal *temporal_tsample(const Temporal *temp, const Interval *duration, TimestampTz origin);
-extern Temporal *temporal_tscale(const Temporal *temp, const Interval *duration);
 
 /*****************************************************************************/
 

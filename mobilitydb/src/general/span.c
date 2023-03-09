@@ -85,40 +85,6 @@ Span_out(PG_FUNCTION_ARGS)
   PG_RETURN_CSTRING(span_out(s, Int32GetDatum(OUT_DEFAULT_DECIMAL_DIGITS)));
 }
 
-/* Needed for time aggregation */
-
-/**
- * @brief Return a span from its binary representation read from a buffer.
- */
-Span *
-span_recv(StringInfo buf)
-{
-  Span *result = palloc0(sizeof(Span));
-  result->spantype = (char) pq_getmsgbyte(buf);
-  result->basetype = spantype_basetype(result->spantype);
-  result->lower = call_recv(result->basetype, buf);
-  result->upper = call_recv(result->basetype, buf);
-  result->lower_inc = (char) pq_getmsgbyte(buf);
-  result->upper_inc = (char) pq_getmsgbyte(buf);
-  return result;
-}
-
-/**
- * @brief Write the binary representation of a span into a buffer.
- */
-void
-span_write(const Span *s, StringInfo buf)
-{
-  pq_sendbyte(buf, s->spantype);
-  bytea *lower = call_send(s->basetype, s->lower);
-  bytea *upper = call_send(s->basetype, s->upper);
-  pq_sendbytes(buf, VARDATA(lower), VARSIZE(lower) - VARHDRSZ);
-  pq_sendbytes(buf, VARDATA(upper), VARSIZE(upper) - VARHDRSZ);
-  pq_sendbyte(buf, s->lower_inc ? (uint8) 1 : (uint8) 0);
-  pq_sendbyte(buf, s->upper_inc ? (uint8) 1 : (uint8) 0);
-  pfree(lower); pfree(upper);
-}
-
 PG_FUNCTION_INFO_V1(Span_recv);
 /**
  * @ingroup mobilitydb_setspan_inout

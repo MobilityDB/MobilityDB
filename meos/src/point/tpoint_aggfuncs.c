@@ -218,7 +218,7 @@ tpoint_tcentroid_transfn(SkipList *state, Temporal *temp)
     skiplist_splice(state, (void **) temparr, count, func, false);
   else
   {
-    state = skiplist_make((void **) temparr, count, TEMPORAL);
+    state = skiplist_make((void **) temparr, count);
     struct GeoAggregateState extra =
     {
       .srid = tpoint_srid(temp),

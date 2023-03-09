@@ -308,3 +308,9 @@ SELECT MAX(set_hash(g)) FROM tbl_geogset;
  2135464549
 (1 row)
 
+SELECT numValues(set_union(g)) FROM tbl_geom_point WHERE NOT ST_IsEmpty(g);
+ numvalues 
+-----------
+        99
+(1 row)
+
