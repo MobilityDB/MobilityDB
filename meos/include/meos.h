@@ -38,9 +38,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 /* PostgreSQL */
-@POSTGRES_DEFS@
+#include "postgres_int_defs.h"
 /* PostGIS */
-@POSTGIS_DEFS@
+#include <liblwgeom.h>
+
 
 /*****************************************************************************
  * Type definitions
