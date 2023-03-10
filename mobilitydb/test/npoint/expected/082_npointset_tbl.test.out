@@ -21,10 +21,10 @@ SELECT COUNT(*) FROM tbl_npointset WHERE npointsetFromHexWKB(asHexWKB(n)) <> n;
      0
 (1 row)
 
-SELECT memSize(set(array_agg(DISTINCT np ORDER BY np))) FROM tbl_npoint WHERE np IS NOT NULL LIMIT 10;
- memsize 
----------
-    2504
+SELECT numValues(set(array_agg(DISTINCT np ORDER BY np))) FROM tbl_npoint WHERE np IS NOT NULL;
+ numvalues 
+-----------
+       100
 (1 row)
 
 SELECT COUNT(*) FROM tbl_npoint WHERE np::npointset IS NOT NULL;

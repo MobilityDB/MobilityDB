@@ -64,31 +64,9 @@ Tpoint_extent_transfn(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_ARGISNULL(0) ? NULL : PG_GETARG_STBOX_P(0);
   Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL_P(1);
-
-  /* Can't do anything with null inputs */
-  if (! box && ! temp)
+  STBox *result = tpoint_extent_transfn(box, temp);
+  if (! result)
     PG_RETURN_NULL();
-  STBox *result = palloc0(sizeof(STBox));
-  /* Null box and non-null temporal, return the bbox of the temporal */
-  if (temp && ! box )
-  {
-    temporal_set_bbox(temp, result);
-    PG_RETURN_POINTER(result);
-  }
-  /* Non-null box and null temporal, return the box */
-  if (box && ! temp)
-  {
-    memcpy(result, box, sizeof(STBox));
-    PG_RETURN_POINTER(result);
-  }
-
-  /* Both box and temporal are not null */
-  ensure_same_srid_tpoint_stbox(temp, box);
-  ensure_same_dimensionality(temp->flags, box->flags);
-  ensure_same_geodetic(temp->flags, box->flags);
-  temporal_set_bbox(temp, result);
-  stbox_expand(box, result);
-  PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
 }
 
@@ -112,7 +90,6 @@ Tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(state);
 }
-
 
 /*****************************************************************************/
 
@@ -153,22 +130,10 @@ PG_FUNCTION_INFO_V1(Tpoint_tcentroid_finalfn);
 PGDLLEXPORT Datum
 Tpoint_tcentroid_finalfn(PG_FUNCTION_ARGS)
 {
-  /* The final function is strict, we do not need to test for null values */
   SkipList *state = (SkipList *) PG_GETARG_POINTER(0);
-  if (state->length == 0)
+  Temporal *result = tpoint_tcentroid_finalfn(state);
+  if (! result)
     PG_RETURN_NULL();
-
-  Temporal **values = (Temporal **) skiplist_values(state);
-  int32_t srid = ((struct GeoAggregateState *) state->extra)->srid;
-  Temporal *result;
-  assert(values[0]->subtype == TINSTANT || values[0]->subtype == TSEQUENCE);
-  if (values[0]->subtype == TINSTANT)
-    result = (Temporal *) tpointinst_tcentroid_finalfn((TInstant **) values,
-      state->length, srid);
-  else /* values[0]->subtype == TSEQUENCE */
-    result = (Temporal *) tpointseq_tcentroid_finalfn((TSequence **) values,
-      state->length, srid);
-  pfree(values);
   PG_RETURN_POINTER(result);
 }
 

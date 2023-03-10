@@ -48,7 +48,7 @@ SELECT COUNT(*) FROM tbl_npointset WHERE npointsetFromHexWKB(asHexWKB(n)) <> n;
 -------------------------------------------------------------------------------
 -- Constructor
 
-SELECT memSize(set(array_agg(DISTINCT np ORDER BY np))) FROM tbl_npoint WHERE np IS NOT NULL LIMIT 10;
+SELECT numValues(set(array_agg(DISTINCT np ORDER BY np))) FROM tbl_npoint WHERE np IS NOT NULL;
 
 -------------------------------------------------------------------------------
 -- Cast
