@@ -501,6 +501,7 @@ SELECT round((geometry 'Point (0 0 0)' |=| stbox 'STBOX ZT(((1,1,1),(1,1,1)),[20
 /* Errors */
 SELECT round((stbox 'STBOX XT(((1,1),(1,1)),[2000-01-01,2000-01-02])' |=| geometry 'SRID=5676;Point(0 0)')::numeric, 6);
 SELECT round((stbox 'STBOX XT(((1,1),(1,1)),[2000-01-01,2000-01-02])' |=| geometry 'Point(0 0 0)')::numeric, 6);
+SELECT stbox 'STBOX X(((1.0,2.0),(3.0,4.0)))' |=| stbox 'STBOX Z(((1.0,2.0,3.0),(4.0,5.0,6.0)))';
 
 SELECT round((tgeompoint 'Point(1 1)@2000-01-01' |=| stbox 'STBOX XT(((2,2),(2,2)),[2000-01-01,2000-01-02])')::numeric, 6);
 SELECT round((tgeompoint 'Point(1 1)@2000-01-01' |=| stbox 'STBOX XT(((2,2),(2,2)),[2000-01-02,2000-01-03])')::numeric, 6);

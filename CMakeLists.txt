@@ -162,7 +162,7 @@ endif()
 # Set compiler optimizations for release
 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O2")
 # Disable compiler optimizations for debugging
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Og")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
 
 # Check machine architecture: big endian vs. little endian
 # Needed for WKB support in MobilityDB and PostGIS (file postgis_config.h.in)

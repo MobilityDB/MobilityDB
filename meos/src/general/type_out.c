@@ -119,20 +119,18 @@ text_mfjson_buf(char *output, text *txt)
 static size_t
 temporal_basevalue_mfjson_size(Datum value, meosType temptype, int precision)
 {
-  switch (temptype)
+  ensure_talphanum_type(temptype);
+  if (temptype == T_TBOOL)
+    return MOBDB_WKT_BOOL_SIZE;
+  if (temptype == T_TINT)
+    return MOBDB_WKT_INT4_SIZE;
+  if (temptype == T_TFLOAT)
   {
-    case T_TBOOL:
-      return MOBDB_WKT_BOOL_SIZE;
-    case T_TINT:
-      return MOBDB_WKT_INT4_SIZE;
-    case T_TFLOAT:
-      assert(precision <= OUT_MAX_DOUBLE_PRECISION);
-      return (OUT_MAX_DIGS_DOUBLE + precision);
-    case T_TTEXT:
-      return VARSIZE_ANY_EXHDR(DatumGetTextP(value)) + sizeof("''") + 1;
-    default: /* Error! */
-      elog(ERROR, "Unknown temporal type: %d", temptype);
+    assert(precision <= OUT_MAX_DOUBLE_PRECISION);
+    return (OUT_MAX_DIGS_DOUBLE + precision);
   }
+  else /* temptype == T_TTEXT */
+    return VARSIZE_ANY_EXHDR(DatumGetTextP(value)) + sizeof("''") + 1;
 }
 
 /**
@@ -142,19 +140,15 @@ static size_t
 temporal_basevalue_mfjson_buf(char *output, Datum value, meosType temptype,
   int precision)
 {
-  switch (temptype)
-  {
-    case T_TBOOL:
-      return bool_mfjson_buf(output, DatumGetBool(value));
-    case T_TINT:
-      return int32_mfjson_buf(output, DatumGetInt32(value));
-    case T_TFLOAT:
-      return double_mfjson_buf(output, DatumGetFloat8(value), precision);
-    case T_TTEXT:
-      return text_mfjson_buf(output, DatumGetTextP(value));
-    default: /* Error! */
-      elog(ERROR, "Unknown temporal type: %d", temptype);
-  }
+  ensure_talphanum_type(temptype);
+  if (temptype == T_TBOOL)
+    return bool_mfjson_buf(output, DatumGetBool(value));
+  if (temptype == T_TINT)
+    return int32_mfjson_buf(output, DatumGetInt32(value));
+  if (temptype == T_TFLOAT)
+    return double_mfjson_buf(output, DatumGetFloat8(value), precision);
+  else /* temptype == T_TTEXT */
+    return text_mfjson_buf(output, DatumGetTextP(value));
 }
 
 /*****************************************************************************/

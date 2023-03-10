@@ -82,6 +82,10 @@ SELECT nsegment 'nsegment(1,0.5,0.7)xxx';
 ERROR:  Could not parse network segment value
 LINE 1: SELECT nsegment 'nsegment(1,0.5,0.7)xxx';
                         ^
+SELECT nsegment 'NSegment(1, 1, 1.5)';
+ERROR:  The relative position must be a real number between 0 and 1
+LINE 1: SELECT nsegment 'NSegment(1, 1, 1.5)';
+                        ^
 SELECT npoint(1, 0.5);
     npoint     
 ---------------

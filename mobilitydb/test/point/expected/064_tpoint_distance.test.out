@@ -2359,6 +2359,8 @@ SELECT round((stbox 'STBOX XT(((1,1),(1,1)),[2000-01-01,2000-01-02])' |=| geomet
 ERROR:  Operation on mixed SRID
 SELECT round((stbox 'STBOX XT(((1,1),(1,1)),[2000-01-01,2000-01-02])' |=| geometry 'Point(0 0 0)')::numeric, 6);
 ERROR:  The spatiotemporal box and the geometry must be of the same dimensionality
+SELECT stbox 'STBOX X(((1.0,2.0),(3.0,4.0)))' |=| stbox 'STBOX Z(((1.0,2.0,3.0),(4.0,5.0,6.0)))';
+ERROR:  Operation on mixed 2D/3D dimensions
 SELECT round((tgeompoint 'Point(1 1)@2000-01-01' |=| stbox 'STBOX XT(((2,2),(2,2)),[2000-01-01,2000-01-02])')::numeric, 6);
   round   
 ----------

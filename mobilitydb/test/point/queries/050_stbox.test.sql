@@ -50,6 +50,12 @@ SELECT stbox 'STBOX(1, 2, 3)';
 SELECT stbox 'STBOX((AA, 2, 3))';
 SELECT stbox 'STBOX((1, AA, 3))';
 SELECT stbox 'STBOX((,),(,))';
+SELECT stbox 'STBOX X(1.0,2.0),(3.0,4.0)))';
+SELECT stbox 'STBOX X(((1.0,2.0,(3.0,4.0)))';
+SELECT stbox 'STBOX X(((1.0,2.0),3.0,4.0)))';
+SELECT stbox 'STBOX X(((1.0,2.0),(3.0,4.0';
+SELECT stbox 'STBOX X(((1.0,2.0),(3.0,4.0)';
+SELECT stbox 'STBOX X(((1.0,2.0),(3.0,4.0))';
 SELECT stbox 'STBOX Z((1, 2, AA))';
 SELECT stbox 'STBOX T((1, 2, AA))';
 SELECT stbox 'STBOX((1, 2, 3))';
@@ -218,6 +224,7 @@ SELECT stbox 'STBOX X(((1.0,1.0),(2.0,2.0)))' -|- stbox 'STBOX XT(((1.0,2.0),(1.
 SELECT stbox 'STBOX X(((1.0,1.0),(2.0,2.0)))' ~= stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])';
 SELECT stbox 'STBOX Z(((1.0,1.0,1.0),(2.0,2.0,2.0)))' ~= stbox 'STBOX Z(((1.0,1.0,1.0),(2.0,2.0,3.0)))';
 
+SELECT stbox 'STBOX Z(((0 0 0),(2 2 2)))' -|- stbox 'STBOX Z(((1 1 1),(3 3 3)))';
 SELECT tstzspan '[2000-01-01, 2000-01-02]'::stbox -|- tstzspan '[2000-01-02, 2000-01-03]'::stbox;
 
 /* Errors */

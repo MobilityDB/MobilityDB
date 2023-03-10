@@ -244,6 +244,8 @@ extern void ensure_temptype_continuous(meosType temptype);
 extern bool basetype_byvalue(meosType type);
 extern bool basetype_varlength(meosType type);
 extern int16 basetype_length(meosType basetype);
+extern bool talphanum_type(meosType type);
+extern void ensure_talphanum_type(meosType type);
 extern bool talpha_type(meosType temptype);
 extern bool tnumber_type(meosType temptype);
 extern void ensure_tnumber_type(meosType temptype);

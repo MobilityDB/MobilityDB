@@ -52,6 +52,7 @@
  * Parameter tests
  *****************************************************************************/
 
+#if 0 /* not used */
 /**
  * @brief Ensure that a temporal network point and a STBox have the same SRID
  */
@@ -63,6 +64,7 @@ ensure_same_srid_tnpoint_stbox(const Temporal *temp, const STBox *box)
     elog(ERROR, "The temporal network point and the box must be in the same SRID");
   return;
 }
+#endif /* not used */
 
 /**
  * @brief Ensure that two temporal network point instants have the same route

@@ -754,6 +754,28 @@ ensure_temptype_continuous(meosType type)
 }
 
 /**
+ * @brief Return true if the type is a temporal alphanumeric type
+ */
+bool
+talphanum_type(meosType type)
+{
+  if (type == T_TBOOL || type == T_TINT || type == T_TFLOAT || type == T_TTEXT)
+    return true;
+  return false;
+}
+
+/**
+ * @brief Return true if the type is a temporal alphanumeric type
+ */
+void
+ensure_talphanum_type(meosType type)
+{
+  if (! talphanum_type(type))
+    elog(ERROR, "unknown temporal alphanumeric type: %d", type);
+  return;
+}
+
+/**
  * @brief Return true if the type is a temporal alpha type (i.e., those whose
  * bounding box is a period)
  */

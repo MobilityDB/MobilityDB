@@ -82,6 +82,7 @@ SELECT minusGeometry(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 
 SELECT minusGeometry(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', geometry 'SRID=5676;Polygon empty');
 
 SELECT equals(npoint(1, 0.5), npoint(1, 0.50000001));
+SELECT equals(npoint 'Npoint(1, 1)', npoint 'Npoint(2, 1)');
 -- TODO
 -- SELECT equals(npoint(1, 0.7744007411523213), npoint(2, 0.6952992297355585));
 
