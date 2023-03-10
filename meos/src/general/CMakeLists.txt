@@ -6,7 +6,7 @@ add_library(general OBJECT
   pg_types.c
   skiplist.c
   set.c
-  set_aggfuncs.c
+  set_aggfuncs_meos.c
   set_ops.c
   span.c
   span_aggfuncs.c
