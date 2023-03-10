@@ -475,19 +475,6 @@ Contains_tnumber_numspan(PG_FUNCTION_ARGS)
   return boxop_tnumber_numspan_ext(fcinfo, &contains_span_span);
 }
 
-PG_FUNCTION_INFO_V1(Contains_numspanset_tnumber);
-/**
- * @ingroup mobilitydb_temporal_topo
- * @brief Return true if the span set contains the bounding box of the temporal number
- * @sqlfunc contains_bbox()
- * @sqlop @p \@>
- */
-PGDLLEXPORT Datum
-Contains_numspanset_tnumber(PG_FUNCTION_ARGS)
-{
-  return boxop_numspan_tnumber_ext(fcinfo, &contains_span_span);
-}
-
 PG_FUNCTION_INFO_V1(Contains_tbox_tnumber);
 /**
  * @ingroup mobilitydb_temporal_topo

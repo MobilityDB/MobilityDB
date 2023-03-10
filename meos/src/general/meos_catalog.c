@@ -371,6 +371,7 @@ time_type(meosType type)
   return false;
 }
 
+#if 0 /* not used */
 /**
  * @brief Ensure that the type corresponds to a time type
  */
@@ -381,6 +382,7 @@ ensure_time_type(meosType type)
     elog(ERROR, "unknown time type: %d", type);
   return;
 }
+#endif /* not used */
 
 /*****************************************************************************/
 
@@ -855,6 +857,7 @@ ensure_tnumber_spantype(meosType type)
   return;
 }
 
+#if MEOS
 /**
  * @brief Return true if the type is a span set number type
  */
@@ -876,6 +879,7 @@ ensure_tnumber_spansettype(meosType type)
     elog(ERROR, "unknown number span set type: %d", type);
   return;
 }
+#endif /* MEOS */
 
 /**
  * @brief Return true if the type is a spatiotemporal type

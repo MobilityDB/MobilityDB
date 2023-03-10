@@ -93,9 +93,34 @@ SELECT memSize(set_union(g)) FROM tbl_geog_point3D WHERE g IS NOT NULL AND NOT S
 (1 row)
 
 SELECT MAX(memSize(set(g))) FROM tbl_geom_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g);
-ERROR:  Only point geometries accepted
+ max 
+-----
+ 152
+(1 row)
+
 SELECT MAX(memSize(set(g))) FROM tbl_geog_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g::geometry);
-ERROR:  Only point geometries accepted
+ max 
+-----
+ 152
+(1 row)
+
+DROP TABLE IF EXISTS test;
+NOTICE:  table "test" does not exist, skipping
+DROP TABLE
+CREATE TABLE test(ps) AS
+WITH test(ps) AS (
+  SELECT span(day, day + interval '1 hour')
+  FROM generate_series(timestamptz '2000-01-01', timestamptz '2000-04-01', '1 day') AS day )
+SELECT spanset(array_agg(ps)) FROM test;
+SELECT 1
+SELECT ps::stbox FROM test;
+                            ps                             
+-----------------------------------------------------------
+ STBOX T([2000-01-01 00:00:00+00, 2000-04-01 01:00:00+00))
+(1 row)
+
+DROP TABLE test;
+DROP TABLE
 SELECT MIN(ST_X(startValue(round(g, 6)))) FROM tbl_geomset;
     min     
 ------------
