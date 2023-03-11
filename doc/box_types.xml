@@ -39,9 +39,9 @@ SELECT tbox 'TBOX XT((2000-01-01,2000-01-02))';
 		<para>An <varname>stbox</varname> is composed of a spatial and/or time dimensions, where the coordinates of the spatial dimension may be 2D or 3D. For the temporal dimension a <varname>tstzspan</varname> is given and for the spatial dimension minimum and maximum coordinate values are given, where the latter may be Cartesian (planar) or geodetic (spherical). The SRID of the coordinates may be specified; if it is not the case, a value of 0 (unknown) and 4326 (corresponding to WGS84) is assumed, respectively, for planar and geodetic boxes. Geodetic boxes always have a Z dimension to account for the curvature of the underlying sphere or spheroid. Examples of input of <varname>stbox</varname> values are as follows:
 			<programlisting language="sql" xml:space="preserve">
 -- Only value dimension with X and Y coordinates
-SELECT stbox 'STBOX X(((1.0,2.0),(1.0,2.0)))';
+SELECT stbox 'STBOX X((1.0,2.0),(1.0,2.0))';
 -- Only value dimension with X, Y, and Z coordinates
-SELECT stbox 'STBOX Z(((1.0,2.0,3.0),(1.0,2.0,3.0)))';
+SELECT stbox 'STBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
 -- Both value (with X and Y coordinates) and time dimensions
 SELECT stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2001-01-03,2001-01-03])';
 -- Both value (with X, Y, and Z coordinates) and time dimensions
@@ -49,14 +49,14 @@ SELECT stbox 'STBOX ZT(((1.0,2.0,3.0),(1.0,2.0,3.0)),[2001-01-01,2001-01-03])';
 -- Only time dimension
 SELECT stbox 'STBOX T([2001-01-03,2001-01-03])';
 -- Only value dimension with X, Y, and Z geodetic coordinates
-SELECT stbox 'GEODSTBOX Z(((1.0,2.0,3.0),(1.0,2.0,3.0)))';
+SELECT stbox 'GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
 -- Both value (with X, Y and Z geodetic coordinates) and time dimension
 SELECT stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(1.0,2.0,3.0)),[2001-01-04,2001-01-04])';
 -- Only time dimension for geodetic box
 SELECT stbox 'GEODSTBOX T([2001-01-03,2001-01-03])';
 -- SRID is given
 SELECT stbox 'SRID=5676;STBOX XT(((1.0,2.0),(1.0,2.0)),[2001-01-04,2001-01-04])';
-SELECT stbox 'SRID=4326;GEODSTBOX Z(((1.0,2.0,3.0),(1.0,2.0,3.0)))';
+SELECT stbox 'SRID=4326;GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
 </programlisting>
 		</para>
 
@@ -75,7 +75,7 @@ SELECT asBinary(tbox 'TBOX XT([1,2),[2000-01-01,2000-01-02))');
 -- \x01030a0001005c6c29ffffffff00bc434713000000060001000000000000f03f0000000000000040
 SELECT asBinary(tbox 'TBOX XT([1,2),[2000-01-01,2000-01-02))', 'XDR');
 -- \x0003000a01ffffffff296c5c00000000134743bc000006013ff00000000000004000000000000000
-SELECT asBinary(stbox 'STBOX X(((1,1),(2,2)))');
+SELECT asBinary(stbox 'STBOX X((1,1),(2,2))');
 -- \x0101000000000000f03f0000000000000040000000000000f03f0000000000000040
 </programlisting>
 				</listitem>
@@ -90,7 +90,7 @@ SELECT asHexWKB(tbox 'TBOX XT([1,2),[2000-01-01,2000-01-02))');
 -- 01030A0001005C6C29FFFFFFFF00BC434713000000060001000000000000F03F0000000000000040
 SELECT asHexWKB(tbox 'TBOX XT([1,2),[2000-01-01,2000-01-02))', 'XDR');
 -- 0003000A01FFFFFFFF296C5C00000000134743BC000006013FF00000000000004000000000000000
-SELECT asHexWKB(stbox 'STBOX X(((1,1),(2,2)))');
+SELECT asHexWKB(stbox 'STBOX X((1,1),(2,2))');
 -- 0101000000000000F03F0000000000000040000000000000F03F0000000000000040
 </programlisting>
 				</listitem>
@@ -107,7 +107,7 @@ SELECT tboxFromBinary(
 -- TBOX XT([1,2),[2000-01-01,2000-01-02))
 SELECT stboxFromBinary(
   '\x0101000000000000f03f0000000000000040000000000000f03f0000000000000040');
---  STBOX X(((1,1),(2,2)))
+--  STBOX X((1,1),(2,2))
 </programlisting>
 				</listitem>
 
@@ -123,7 +123,7 @@ SELECT tboxFromHexWKB(
 -- TBOX XT([1,2],[2000-01-01,2000-01-02)))
 SELECT stboxFromHexWKB(
   '0101000000000000F03F0000000000000040000000000000F03F0000000000000040');
--- STBOX X(((1,1),(2,2)))
+-- STBOX X((1,1),(2,2))
 </programlisting>
 				</listitem>
 			</itemizedlist>
@@ -263,7 +263,7 @@ SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(5,5,5)),[2000-01-01,2000-01
 				<para><varname>{geo,time,tpoint}::stbox</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT geometry 'Linestring(1 1,2 2)'::stbox;
--- STBOX X(((1,1),(2,2)))
+-- STBOX X((1,1),(2,2))
 SELECT tstzspanset '{(2001-01-01,2001-01-02),(2001-01-03,2001-01-04)}'::stbox;
 -- STBOX T((2001-01-01,2001-01-04))
 </programlisting>
@@ -286,13 +286,13 @@ SELECT tstzspanset '{(2001-01-01,2001-01-02),(2001-01-03,2001-01-04)}'::stbox;
 				<programlisting language="sql" xml:space="preserve">
 SELECT hasX(tbox 'TBOX T([2000-01-01,2000-01-03))');
 -- false
-SELECT hasX(stbox 'STBOX X(((1.0,2.0),(3.0,4.0)))');
+SELECT hasX(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
 -- true
-SELECT hasZ(stbox 'STBOX X(((1.0,2.0),(3.0,4.0)))');
+SELECT hasZ(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
 -- false
 SELECT hasT(tbox 'TBOX XT((1.0,3.0),[2000-01-01,2000-01-03])');
 -- true
-SELECT hasT(stbox 'STBOX X(((1.0,2.0),(3.0,4.0)))');
+SELECT hasT(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
 -- false
 </programlisting>
 			</listitem>
@@ -302,7 +302,7 @@ SELECT hasT(stbox 'STBOX X(((1.0,2.0),(3.0,4.0)))');
 				<para>Is geodetic?</para>
 				<para><varname>isGeodetic(stbox) → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT isGeodetic(stbox 'GEODSTBOX Z(((1.0,1.0,0.0),(3.0,3.0,1.0)))');
+SELECT isGeodetic(stbox 'GEODSTBOX Z((1.0,1.0,0.0),(3.0,3.0,1.0))');
 -- true
 SELECT isGeodetic(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-02])');
 -- false
@@ -322,9 +322,9 @@ SELECT isGeodetic(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-02])
 				<programlisting language="sql" xml:space="preserve">
 SELECT Xmin(tbox 'TBOX XT((1.0,3.0),[2000-01-01,2000-01-03))');
 -- 1
-SELECT Ymin(stbox 'STBOX X(((1.0,2.0),(3.0,4.0)))');
+SELECT Ymin(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
 -- 2
-SELECT Zmin(stbox 'STBOX Z(((1.0,2.0,3.0),(4.0,5.0,6.0)))');
+SELECT Zmin(stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))');
 -- 3
 SELECT Tmin(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 -- 2001-01-01
@@ -342,11 +342,11 @@ SELECT Tmin(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 				<para><varname>Zmax(stbox) → float</varname></para>
 				<para><varname>Tmax(box) → timestamptz</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT Xmax(stbox 'STBOX X(((1.0,2.0),(3.0,4.0)))');
+SELECT Xmax(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
 -- 3
-SELECT Ymax(stbox 'STBOX X(((1.0,2.0),(3.0,4.0)))');
+SELECT Ymax(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
 -- 4
-SELECT Zmax(stbox 'STBOX Z(((1.0,2.0,3.0),(4.0,5.0,6.0)))');
+SELECT Zmax(stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))');
 -- 6
 SELECT Tmax(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 -- 2001-01-03
@@ -475,12 +475,12 @@ WITH boxes(b) AS (
 SELECT extent(b) FROM boxes;
 -- TBOX XT((1,8),[2000-01-01,2000-01-08])
 WITH boxes(b) AS (
-  SELECT stbox 'STBOX Z(((1,1,1),(3,3,3)))' UNION
-  SELECT stbox 'STBOX Z(((5,5,5),(7,7,7)))' UNION
-  SELECT stbox 'STBOX Z(((6,6,6),(8,8,8)))'
+  SELECT stbox 'STBOX Z((1,1,1),(3,3,3))' UNION
+  SELECT stbox 'STBOX Z((5,5,5),(7,7,7))' UNION
+  SELECT stbox 'STBOX Z((6,6,6),(8,8,8))'
 )
 SELECT extent(b) FROM boxes;
--- STBOX Z(((1,1,1),(8,8,8)))
+-- STBOX Z((1,1,1),(8,8,8))
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -592,8 +592,8 @@ SELECT tbox 'TBOX XT([1,3),[2001-01-01,2001-01-03])' *
   tbox 'TBOX T([2001-01-02,2001-01-04))';
 -- TBOX T([2001-01-02,2001-01-03))
 SELECT stbox 'STBOX ZT(((1,1,1),(3,3,3)),[2001-01-01,2001-01-02])' *
-  stbox 'STBOX X(((2,2),(4,4)))';
--- STBOX X(((2,2),(3,3)))
+  stbox 'STBOX X((2,2),(4,4))';
+-- STBOX X((2,2),(3,3))
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -629,7 +629,7 @@ SELECT stbox 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])' &amp;&amp;
 SELECT tbox 'TBOX XT((1,4),[2001-01-01,2001-01-04])' @&gt;
   tbox 'TBOX XT((2,3),[2001-01-01,2001-01-02])';
 -- true
-SELECT stbox 'STBOX Z(((1,1,1),(3,3,3)))' @&gt;
+SELECT stbox 'STBOX Z((1,1,1),(3,3,3))' @&gt;
   stbox 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])';
 -- true
 </programlisting>
@@ -658,7 +658,7 @@ SELECT tbox 'TBOX XT((1,2),[2001-01-01,2001-01-02])' ~=
   tbox 'TBOX T([2001-01-01,2001-01-02])';
 -- true
 SELECT stbox 'STBOX XT(((1,1),(3,3)),[2001-01-01,2001-01-03])' ~=
-  stbox 'STBOX Z(((1,1,1),(3,3,3)))';
+  stbox 'STBOX Z((1,1,1),(3,3,3))';
 -- true
 </programlisting>
 			</listitem>
@@ -701,9 +701,9 @@ SELECT tbox 'TBOX XT((1,2),[2001-01-01,2001-01-02])' &lt;&lt;
 SELECT tbox 'TBOX XT((1,2),[2001-01-01,2001-01-02])' &lt;&lt;
   tbox 'TBOX T([2001-01-03,2001-01-04])';
 -- ERROR:  The box must have value dimension
-SELECT stbox 'STBOX Z(((1,1,1),(2,2,2)))' &lt;&lt;| stbox 'STBOX Z(((3,3,3),(4,4,4)))';
+SELECT stbox 'STBOX Z((1,1,1),(2,2,2))' &lt;&lt;| stbox 'STBOX Z((3,3,3),(4,4,4))';
 -- true
-SELECT stbox 'STBOX Z(((1,1,1),(2,2,2)))' &lt;&lt;/ stbox 'STBOX Z(((3,3,3),(4,4,4)))';
+SELECT stbox 'STBOX Z((1,1,1),(2,2,2))' &lt;&lt;/ stbox 'STBOX Z((3,3,3),(4,4,4))';
 -- true
 SELECT tbox 'TBOX XT((1,2),[2000-01-01,2000-01-02])' &lt;&lt;#
   tbox 'TBOX XT((3,4),[2000-01-03,2000-01-04])';
@@ -725,9 +725,9 @@ SELECT tbox 'TBOX XT((1,2),[2000-01-01,2000-01-02])' &lt;&lt;#
 SELECT tbox 'TBOX XT((3,4),[2001-01-03,2001-01-04])' &gt;&gt;
   tbox 'TBOX XT((1,2),[2001-01-01,2001-01-02])';
 -- true
-SELECT stbox 'STBOX Z(((3,3,3),(4,4,4)))' |&gt;&gt; stbox 'STBOX Z(((1,1,1),(2,2,2)))';
+SELECT stbox 'STBOX Z((3,3,3),(4,4,4))' |&gt;&gt; stbox 'STBOX Z((1,1,1),(2,2,2))';
 -- true
-SELECT stbox 'STBOX Z(((3,3,3),(4,4,4)))' /&gt;&gt; stbox 'STBOX Z(((1,1,1),(2,2,2)))';
+SELECT stbox 'STBOX Z((3,3,3),(4,4,4))' /&gt;&gt; stbox 'STBOX Z((1,1,1),(2,2,2))';
 -- true
 SELECT stbox 'STBOX XT(((3,3),(4,4)),[2000-01-03,2000-01-04])'  #&gt;&gt;
   stbox 'STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-02])';
@@ -749,9 +749,9 @@ SELECT stbox 'STBOX XT(((3,3),(4,4)),[2000-01-03,2000-01-04])'  #&gt;&gt;
 SELECT tbox 'TBOX XT((1,4),[2001-01-01,2001-01-04])' &amp;&lt;
   tbox 'TBOX XT((3,4),[2001-01-03,2001-01-04])';
 -- true
-SELECT stbox 'STBOX Z(((1,1,1),(4,4,4)))' &amp;&lt;| stbox 'STBOX Z(((3,3,3),(4,4,4)))';
+SELECT stbox 'STBOX Z((1,1,1),(4,4,4))' &amp;&lt;| stbox 'STBOX Z((3,3,3),(4,4,4))';
 -- true
-SELECT stbox 'STBOX Z(((1,1,1),(4,4,4)))' &amp;&lt;/ stbox 'STBOX Z(((3,3,3),(4,4,4)))';
+SELECT stbox 'STBOX Z((1,1,1),(4,4,4))' &amp;&lt;/ stbox 'STBOX Z((3,3,3),(4,4,4))';
 -- true
 SELECT tbox 'TBOX XT((1,4),[2000-01-01,2000-01-04])' &amp;&lt;#
   tbox 'TBOX XT((3,4),[2000-01-03,2000-01-04])';
@@ -773,9 +773,9 @@ SELECT tbox 'TBOX XT((1,4),[2000-01-01,2000-01-04])' &amp;&lt;#
 SELECT tbox 'TBOX XT((1,2),[2001-01-01,2001-01-02])' &amp;&gt;
   tbox 'TBOX XT((1,4),[2001-01-01,2001-01-04])';
 -- true
-SELECT stbox 'STBOX Z(((3,3,3),(4,4,4)))' |&amp;&gt; stbox 'STBOX Z(((1,1,1),(2,2,2)))';
+SELECT stbox 'STBOX Z((3,3,3),(4,4,4))' |&amp;&gt; stbox 'STBOX Z((1,1,1),(2,2,2))';
 -- false
-SELECT stbox 'STBOX Z(((3,3,3),(4,4,4)))' /&amp;&gt; stbox 'STBOX Z(((1,1,1),(2,2,2)))';
+SELECT stbox 'STBOX Z((3,3,3),(4,4,4))' /&amp;&gt; stbox 'STBOX Z((1,1,1),(2,2,2))';
 -- true
 SELECT stbox 'STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-02])' #&amp;&gt;
   stbox 'STBOX XT(((1,1),(4,4)),[2000-01-01,2000-01-04])';

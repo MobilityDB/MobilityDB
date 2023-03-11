@@ -368,21 +368,21 @@ SELECT tileList(tfloat '[15@2000-01-15,25@2000-01-25]'::tbox, 2.0, '2 days', 11.
 -- ...
 SELECT tileList(tgeompoint '[Point(3 3)@2000-01-15,
   Point(15 15)@2000-01-25]'::stbox, 2.0);
--- (1,"STBOX X(((2,2),(4,4)))")
--- (2,"STBOX X(((4,2),(6,4)))")
--- (3,"STBOX X(((6,2),(8,4)))")
+-- (1,"STBOX X((2,2),(4,4))")
+-- (2,"STBOX X((4,2),(6,4))")
+-- (3,"STBOX X((6,2),(8,4))")
 -- ...
 SELECT tileList(tgeompoint 'SRID=3812;[Point(3 3)@2000-01-15,
   Point(15 15)@2000-01-25]'::stbox, 2.0, geometry 'Point(3 3)');
--- (1,"SRID=3812;STBOX X(((3,3),(5,5)))")
--- (2,"SRID=3812;STBOX X(((5,3),(7,5)))")
--- (3,"SRID=3812;STBOX X(((7,3),(9,5)))")
+-- (1,"SRID=3812;STBOX X((3,3),(5,5))")
+-- (2,"SRID=3812;STBOX X((5,3),(7,5))")
+-- (3,"SRID=3812;STBOX X((7,3),(9,5))")
 -- ...
 SELECT tileList(tgeompoint '[Point(3 3 3)@2000-01-15,
   Point(15 15 15)@2000-01-25]'::stbox, 2.0, geometry 'Point(3 3 3)');
--- (1,"STBOX Z(((3,3,3),(5,5,5))")
--- (2,"STBOX Z(((5,3,3),(7,5,5))")
--- (3,"STBOX Z(((7,3,3),(9,5,5))")
+-- (1,"STBOX Z((3,3,3),(5,5,5))")
+-- (2,"STBOX Z((5,3,3),(7,5,5))")
+-- (3,"STBOX Z((7,3,3),(9,5,5))")
 -- ...
 SELECT tileList(tgeompoint '[Point(3 3)@2000-01-15,
   Point(15 15)@2000-01-25]'::stbox, 2.0, interval '2 days');
@@ -415,7 +415,7 @@ SELECT tile(15, '2000-01-15', 2, interval '2 days');
 SELECT tile(15, '2000-01-15', 2, interval '2 days', 1, '2000-01-02');
 -- TBOX XT([15,17),[2000-01-14,2000-01-16))
 SELECT tile(geometry 'Point(1 1 1)', 2.0);
--- STBOX Z(((0,0,0),(2,2,2)))
+-- STBOX Z((0,0,0),(2,2,2))
 SELECT tile(geometry 'Point(1 1)', '2000-01-01', 2.0, interval '2 days');
 -- STBOX XT(((0,0),(2,2)),[2000-01-01, 2000-01-03))
 SELECT tile(geometry 'Point(1 1)', '2000-01-01', 2.0, '2 days', 'Point(1 1)',

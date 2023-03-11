@@ -85,9 +85,13 @@ SELECT stbox 'STBOX((,),(,))';
 ERROR:  Could not parse span: Missing opening bracket/parenthesis
 LINE 1: SELECT stbox 'STBOX((,),(,))';
                      ^
-SELECT stbox 'STBOX X(1.0,2.0),(3.0,4.0)))';
+SELECT stbox 'STBOX X 1,2),(3,4))';
 ERROR:  Could not parse spatiotemporal box: Missing opening parenthesis
-LINE 1: SELECT stbox 'STBOX X(1.0,2.0),(3.0,4.0)))';
+LINE 1: SELECT stbox 'STBOX X 1,2),(3,4))';
+                     ^
+SELECT stbox 'STBOX X(1.0,2.0),(3.0,4.0))';
+ERROR:  Could not parse spatiotemporal box: Missing opening parenthesis
+LINE 1: SELECT stbox 'STBOX X(1.0,2.0),(3.0,4.0))';
                      ^
 SELECT stbox 'STBOX X((1.0,2.0,(3.0,4.0))';
 ERROR:  Could not parse spatiotemporal box: Missing closing parenthesis
@@ -136,6 +140,10 @@ LINE 1: SELECT stbox 'STBOX Z((1, 2, 3),(1,2)';
 SELECT stbox 'STBOX T((1, 2, 2001-01-03),(1,2)';
 ERROR:  invalid input syntax for type timestamp with time zone: "1"
 LINE 1: SELECT stbox 'STBOX T((1, 2, 2001-01-03),(1,2)';
+                     ^
+SELECT stbox 'STBOX T([2000-01-01, 2000-01-02]';
+ERROR:  Could not parse spatiotemporal box: Missing closing parenthesis
+LINE 1: SELECT stbox 'STBOX T([2000-01-01, 2000-01-02]';
                      ^
 SELECT stbox 'STBOX T((1, 2, 2001-01-03),(1,2,2001-01-03)';
 ERROR:  invalid input syntax for type timestamp with time zone: "1"
