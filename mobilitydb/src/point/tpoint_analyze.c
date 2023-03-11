@@ -1148,8 +1148,7 @@ Spatialset_analyze(PG_FUNCTION_ARGS)
   VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
 
   /* Ensure type has a STBox as a bounding box */
-  meosType type = oid_type(stats->attrtypid);
-  assert(spatialset_type(type));
+  assert(spatialset_type(oid_type(stats->attrtypid)));
 
   /*
    * Call the standard typanalyze function. It may fail to find needed

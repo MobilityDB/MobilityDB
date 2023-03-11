@@ -1472,8 +1472,7 @@ tsequence_append_tsequence(TSequence *seq1, const TSequence *seq2,
   /* Ensure validity of the arguments */
   assert(seq1->temptype == seq2->temptype);
   interpType interp1 = MOBDB_FLAGS_GET_INTERP(seq1->flags);
-  interpType interp2 = MOBDB_FLAGS_GET_INTERP(seq1->flags);
-  assert(interp1 == interp2);
+  assert(interp1 == MOBDB_FLAGS_GET_INTERP(seq2->flags));
   const TInstant *inst1 = tsequence_inst_n(seq1, seq1->count - 1);
   const TInstant *inst2 = tsequence_inst_n(seq2, 0);
   /* We cannot call ensure_increasing_timestamps since we must take into
@@ -2593,11 +2592,17 @@ tsequence_value_at_timestamp(const TSequence *seq, TimestampTz t, bool strict,
   {
     const TInstant *inst = tsequence_inst_n(seq, 0);
     /* Instantaneous sequence or t is at lower bound */
-    if (seq->count == 1 || inst->t == t)
-      return tinstant_value_at_timestamp(inst, t, result);
+    if (inst->t == t)
+    {
+      *result = tinstant_value_copy(inst);
+      return true;
+    }
     inst = tsequence_inst_n(seq, seq->count - 1);
     if (inst->t == t)
-      return tinstant_value_at_timestamp(inst, t, result);
+    {
+      *result = tinstant_value_copy(inst);
+      return true;
+    }
   }
 
   /* Bounding box test */

@@ -226,6 +226,7 @@ extern void ensure_span_basetype(meosType type);
 extern bool span_canon_basetype(meosType type);
 extern bool span_type(meosType type);
 extern void ensure_span_type(meosType type);
+extern bool span_bbox_type(meosType type);
 extern bool numspan_basetype(meosType type);
 extern bool numspan_type(meosType type);
 extern bool timespan_basetype(meosType type);

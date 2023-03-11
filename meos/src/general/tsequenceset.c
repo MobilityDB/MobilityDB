@@ -1175,13 +1175,15 @@ tsequenceset_value_at_timestamp(const TSequenceSet *ss, TimestampTz t,
 
   /* Singleton sequence set */
   if (ss->count == 1)
-    return tsequence_value_at_timestamp(tsequenceset_seq_n(ss, 0), t, true, result);
+    return tsequence_value_at_timestamp(tsequenceset_seq_n(ss, 0), t, true,
+      result);
 
   /* General case */
   int loc;
   if (! tsequenceset_find_timestamp(ss, t, &loc))
     return false;
-  return tsequence_value_at_timestamp(tsequenceset_seq_n(ss, loc), t, true, result);
+  return tsequence_value_at_timestamp(tsequenceset_seq_n(ss, loc), t, true,
+    result);
 }
 
 /*****************************************************************************

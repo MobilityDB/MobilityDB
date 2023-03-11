@@ -54,6 +54,7 @@ stbox_parse(const char **str)
   int srid = 0;
   bool hassrid = false;
 
+  /* Determine whether the box has an SRID */
   p_whitespace(str);
   if (strncasecmp(*str,"SRID=",5) == 0)
   {
@@ -71,6 +72,8 @@ stbox_parse(const char **str)
     *str += delim + 1;
     hassrid = true;
   }
+
+  /* Determine whether the box is geodetic or not */
   if (strncasecmp(*str, "STBox", 5) == 0)
   {
     *str += 5;
@@ -87,6 +90,7 @@ stbox_parse(const char **str)
   else
     elog(ERROR, "Could not parse spatiotemporal box");
 
+  /* Determine whether the box has X, Z, and/or T dimensions */
   if (strncasecmp(*str, "ZT", 2) == 0)
   {
     hasx = hasz = hast = true;

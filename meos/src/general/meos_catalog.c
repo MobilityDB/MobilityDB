@@ -562,6 +562,18 @@ ensure_span_type(meosType type)
 }
 
 /**
+ * @brief Return true if the type is a span type
+ */
+bool
+span_bbox_type(meosType type)
+{
+  if (set_span_type(type) || span_type(type) || spanset_type(type) ||
+    talpha_type(type))
+    return true;
+  return false;
+}
+
+/**
  * @brief Return true if the type is a numeric span type
  */
 bool
