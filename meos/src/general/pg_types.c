@@ -542,6 +542,7 @@ pg_timestamptz_in(const char *str, int32 typmod)
   return timestamp_in_common(str, typmod, true);
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_pg_types
  * @brief Convert a string to a timestamp without time zone.
@@ -552,6 +553,7 @@ pg_timestamp_in(const char *str, int32 typmod)
 {
   return (Timestamp) timestamp_in_common(str, typmod, false);
 }
+#endif /* MEOS */
 
 /**
  * @brief Convert either a timestamp or a timestamp to a string.
@@ -591,6 +593,7 @@ pg_timestamptz_out(TimestampTz dt)
   return timestamp_out_common(dt, true);
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_pg_types
  * @brief Convert a timestamp without timezone to a string.
@@ -601,6 +604,7 @@ pg_timestamp_out(Timestamp dt)
 {
   return timestamp_out_common((Timestamp) dt, false);
 }
+#endif /* MEOS */
 
 /*****************************************************************************/
 

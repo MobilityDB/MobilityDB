@@ -247,7 +247,7 @@ bitmatrix_print(const BitMatrix *bm)
   }
   printf("Total tiles: %d, Tiles set: %d\n", totalcount, count);
 }
-#endif
+#endif /* DEBUG_BUILD */
 
 /*****************************************************************************
  * N-dimensional version of Bresenham's line algorithm

@@ -296,7 +296,7 @@ basetype_length(meosType type)
   if (type == T_NPOINT)
     return sizeof(Npoint);
 #endif
-  elog(ERROR, "unknown basetype_length function for base type: %d", type);
+  elog(ERROR, "unknown base type: %d", type);
 }
 
 #if 0 /* not used */
@@ -505,7 +505,7 @@ spatialset_type(meosType type)
 /*****************************************************************************/
 
 /**
- * @brief Return true if the type is a set base type
+ * @brief Return true if the type is a span base type
  */
 bool
 span_basetype(meosType type)
@@ -561,6 +561,7 @@ ensure_span_type(meosType type)
   return;
 }
 
+#ifdef DEBUG_BUILD
 /**
  * @brief Return true if the type is a span type
  */
@@ -572,6 +573,7 @@ span_bbox_type(meosType type)
     return true;
   return false;
 }
+#endif /* DEBUG_BUILD */
 
 /**
  * @brief Return true if the type is a numeric span type

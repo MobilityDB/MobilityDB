@@ -140,6 +140,19 @@ tsequenceset_set_bbox(const TSequenceSet *ss, void *box)
   return;
 }
 
+#ifdef DEBUG_BUILD
+/**
+ * @brief Function version of the the macro TSEQUENCESET_OFFSETS_PTR for
+ * debugging purposes
+ */
+size_t *
+tsequenceset_offsets_ptr(const TSequenceSet *ss)
+{
+  return (size_t *)(((char *)(ss)) + DOUBLE_PAD(sizeof(TSequenceSet)) +
+    DOUBLE_PAD((ss)->bboxsize - sizeof(Span)));
+}
+#endif /* DEBUG_BUILD */
+
 /**
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the n-th sequence of a temporal sequence set.
@@ -151,9 +164,9 @@ tsequenceset_seq_n(const TSequenceSet *ss, int index)
 {
   return (TSequence *)(
     /* start of data */
-    ((char *)ss) + DOUBLE_PAD(sizeof(TSequenceSet)) +
+    ((char *) ss) + DOUBLE_PAD(sizeof(TSequenceSet)) +
       /* The period component of the bbox is already declared in the struct */
-      (ss->bboxsize - sizeof(Span)) + ss->count * sizeof(size_t) +
+      (ss->bboxsize - sizeof(Span)) + sizeof(size_t) * ss->maxcount +
       /* offset */
       (TSEQUENCESET_OFFSETS_PTR(ss))[index]);
 }
@@ -238,25 +251,24 @@ tsequenceset_make1_exp(const TSequence **sequences, int count, int maxcount,
   MOBDB_FLAGS_SET_T(result->flags, true);
   if (tgeo_type(sequences[0]->temptype))
   {
-    MOBDB_FLAGS_SET_Z(result->flags,
-      MOBDB_FLAGS_GET_Z(sequences[0]->flags));
+    MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(sequences[0]->flags));
     MOBDB_FLAGS_SET_GEODETIC(result->flags,
       MOBDB_FLAGS_GET_GEODETIC(sequences[0]->flags));
   }
   /* Initialization of the variable-length part */
   /*
    * Compute the bounding box
-   * Only external types have bounding box, internal types such
-   * as double2, double3, or double4 do not have bounding box
+   * Only external types have bounding box, internal types such as doubleN,
+   * do not have bounding box but require to set the period attribute
    */
   if (bboxsize != 0)
   {
     tseqarr_compute_bbox((const TSequence **) normseqs, newcount,
       TSEQUENCESET_BBOX_PTR(result));
   }
-  /* Store the composing instants */
-  size_t pdata = DOUBLE_PAD(sizeof(TSequenceSet)) +
-    DOUBLE_PAD(bboxsize - sizeof(Span)) + newcount * sizeof(size_t);
+  /* Store the composing sequences */
+  size_t pdata = DOUBLE_PAD(sizeof(TSequenceSet)) + bboxsize_extra +
+    sizeof(size_t) * maxcount;
   size_t pos = 0;
   for (int i = 0; i < newcount; i++)
   {
@@ -2109,7 +2121,8 @@ tsequenceset_restrict_periodset(const TSequenceSet *ss, const SpanSet *ps,
  * @sqlfunc appendInstant()
  */
 TSequenceSet *
-tsequenceset_append_tinstant(TSequenceSet *ss, const TInstant *inst, bool expand)
+tsequenceset_append_tinstant(TSequenceSet *ss, const TInstant *inst,
+  bool expand)
 {
   assert(ss->temptype == inst->temptype);
   TSequence *seq = (TSequence *) tsequenceset_seq_n(ss, ss->count - 1);
@@ -2244,38 +2257,27 @@ tsequenceset_append_tsequence(TSequenceSet *ss, const TSequence *seq,
   bool removelast, removefirst;
   bool join = tsequence_join_test(last, seq, &removelast, &removefirst);
   /* We are sure that the result will be a SINGLE sequence */
-  TSequence *newseq = (! join) ? NULL :
-    (TSequence *) tsequence_append_tsequence(last, seq, expand);
-  int count = (join) ? ss->count : ss->count + 1;
+  TSequence *newseq = join ?
+    (TSequence *) tsequence_append_tsequence(last, seq, expand) : NULL;
+  int count = join ? ss->count : ss->count + 1;
 
-#if MEOS
   /* Account for expandable structures
    * A while is used instead of an if to be able to break the loop if there is
    * not enough available space to append the new sequence */
   while (expand && count <= ss->maxcount)
   {
     /* Determine whether there is enough available space */
-    size_t size = 0;
-    if (join)
-      size += DOUBLE_PAD(VARSIZE(newseq)) - DOUBLE_PAD(VARSIZE(last));
-    else
-      size += DOUBLE_PAD(VARSIZE(seq));
+    size_t size_last = DOUBLE_PAD(VARSIZE(last));
+    size_t size_seq = DOUBLE_PAD(VARSIZE(seq));
+    size_t size = join ? DOUBLE_PAD(VARSIZE(newseq)) - size_last : size_seq;
     /* Remove the size of the current last sequence */
     size_t avail_size = ((char *) ss + VARSIZE(ss)) -
-      ((char *) last + DOUBLE_PAD(VARSIZE(last)));
+      ((char *) last + size_last);
     if (size > avail_size)
       /* There is not enough available space */
       break;
 
     /* There is enough space to add the new sequence */
-    if (! join)
-    {
-      /* Update the offsets array and the counts when adding one sequence */
-      (TSEQUENCESET_OFFSETS_PTR(ss))[count - 1] =
-        (TSEQUENCESET_OFFSETS_PTR(ss))[count - 2] + DOUBLE_PAD(VARSIZE(last));
-      ss->count++;
-      ss->totalcount += seq->count;
-    }
     if (join)
     {
       /* Set to 0 in case the new sequence is smaller than the current one */
@@ -2284,14 +2286,19 @@ tsequenceset_append_tsequence(TSequenceSet *ss, const TSequence *seq,
     }
     else
     {
-      last = (TSequence *) ((char *) last + DOUBLE_PAD(VARSIZE(last)));
-      memcpy(last, newseq, VARSIZE(newseq));
+      /* Update the offsets array and the counts when adding one sequence */
+      (TSEQUENCESET_OFFSETS_PTR(ss))[count - 1] =
+        (TSEQUENCESET_OFFSETS_PTR(ss))[count - 2] + size_last;
+      ss->count++;
+      ss->totalcount += seq->count;
+      /* Copy the sequence at the end */
+      TSequence *new = (TSequence *) ((char *) last + size_last);
+      memcpy(new, seq, VARSIZE(seq));
     }
     /* Expand the bounding box and return */
     tsequenceset_expand_bbox(ss, seq);
     return ss;
   }
-#endif /* MEOS */
 
   /* This is the first time we use an expandable structure or there is not
    * enough available space */

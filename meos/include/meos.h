@@ -191,6 +191,7 @@ typedef struct
                              composing TSequence elements */
   int32 maxcount;       /**< Maximum number of TSequence elements */
   int16 bboxsize;       /**< Size of the bounding box */
+  int16 padding;        /**< Not used */
   Span period;          /**< Time span (24 bytes). All bounding boxes
                              start with a period so actually it is also
                              the begining of the bounding box. The extra

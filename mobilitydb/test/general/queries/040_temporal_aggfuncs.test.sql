@@ -278,6 +278,20 @@ SELECT appendInstant(inst ORDER BY inst) FROM temp;
 
 -------------------------------------------------------------------------------
 
+WITH temp(k, seq) AS (
+  SELECT 1, tint '[1@2000-01-01, 2@2000-01-02]' UNION
+  SELECT 2, tint '[2@2000-01-02, 3@2000-01-03]' UNION
+  SELECT 3, tint '[3@2000-01-03, 4@2000-01-04]' UNION
+  SELECT 4, tint '[4@2000-01-04, 5@2000-01-05]' UNION
+  SELECT 5, tint '[5@2000-01-05, 6@2000-01-06]' )
+SELECT appendSequence(seq ORDER BY k) FROM temp;
+
+WITH temp(k, seq) AS (
+  SELECT 1, tint '[1@2000-01-01, 2@2000-01-02]' UNION
+  SELECT 2, tint '[3@2000-01-03, 4@2000-01-04]' UNION
+  SELECT 3, tint '[5@2000-01-05, 6@2000-01-06]' )
+SELECT appendSequence(seq ORDER BY k) FROM temp;
+
 WITH temp1(k, inst) AS (
   SELECT 1, tint '1@2000-01-01' UNION
   SELECT 2, tint '2@2000-01-02' UNION
@@ -286,7 +300,7 @@ WITH temp1(k, inst) AS (
   SELECT 5, tint '5@2000-01-05' UNION
   SELECT 6, tint '5@2000-01-06' UNION
   SELECT 7, tint '5@2000-01-07' UNION
-  SELECT 8, tint '5@2000-01-08'  ),
+  SELECT 8, tint '5@2000-01-08' ),
 temp2(k, seq) AS (
   SELECT k / 3, appendInstant(inst ORDER BY inst)
   FROM temp1

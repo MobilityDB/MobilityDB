@@ -850,9 +850,8 @@ tsequence_make1_exp(const TInstant **instants, int count, int maxcount,
   /* Initialization of the variable-length part */
   /*
    * Compute the bounding box
-   * Only external types have bounding box, internal types such
-   * as double2, double3, or double4 do not have bounding box but
-   * require to set the period attribute
+   * Only external types have bounding box, internal types such as doubleN,
+   * do not have bounding box but require to set the period attribute
    */
   if (bboxsize != 0)
   {
@@ -1342,8 +1341,7 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, bool expand)
   assert(seq->temptype == inst->temptype);
   interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
   meosType basetype = temptype_basetype(seq->temptype);
-  TInstant *penult, *last, *new;
-  last = (TInstant *) tsequence_inst_n(seq, seq->count - 1);
+  TInstant *last = (TInstant *) tsequence_inst_n(seq, seq->count - 1);
 #if NPOINT
   if (last->temptype == T_TNPOINT && interp != DISCRETE)
     ensure_same_rid_tnpointinst(inst, last);
@@ -1393,7 +1391,7 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, bool expand)
   /* Normalize the result */
   if (interp != DISCRETE && seq->count > 1)
   {
-    penult = (TInstant *) tsequence_inst_n(seq, seq->count - 2);
+    TInstant *penult = (TInstant *) tsequence_inst_n(seq, seq->count - 2);
     Datum value2 = tinstant_value(penult);
     if (tsequence_norm_test(value2, value1, value, basetype, interp,
       penult->t, last->t, inst->t))
@@ -1413,7 +1411,7 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, bool expand)
     /* Get the last instant to keep. It is either the last instant or the
      * penultimate one if the last one is redundant through normalization */
     last = (TInstant *) tsequence_inst_n(seq, count - 2);
-    new = (TInstant *) ((char *) last + DOUBLE_PAD(VARSIZE(last)));
+    TInstant *new = (TInstant *) ((char *) last + DOUBLE_PAD(VARSIZE(last)));
     size_t avail_size = (char *) seq + VARSIZE(seq) - (char *) new;
     if (size > avail_size)
       /* There is not enough available space */
