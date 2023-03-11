@@ -800,10 +800,10 @@ SELECT * FROM Trips WHERE Trip &amp;&amp;
 
 		<para>Para acelerar algunas de las funciones de los tipos temporales, se puede agregar en la cláusula <varname>WHERE</varname> de las consultas una comparación de cuadro delimitador que hace uso de los índices disponibles. Por ejemplo, este sería típicamente el caso de las funciones que proyectan los tipos temporales a las dimensiones de valor/espacio y/o tiempo. Esto filtrará las tuplas con un índice como se muestra en la siguiente consulta.
 			<programlisting language="sql" xml:space="preserve">
-SELECT atTime(T.Trip, tstzspan(2001-01-01, 2001-01-02))
+SELECT atTime(T.Trip, tstzspan '[2001-01-01, 2001-01-02)')
 FROM Trips T
 -- Filtro de índice con cuadro delimitador
-WHERE T.Trip &amp;&amp; tstzspan(2001-01-01, 2001-01-02)
+WHERE T.Trip &amp;&amp; tstzspan '[2001-01-01, 2001-01-02)';
 </programlisting>
 		</para>
 
