@@ -261,6 +261,14 @@ WITH temp(inst) AS (
 SELECT appendInstant(inst ORDER BY inst) FROM temp;
 
 WITH temp(inst) AS (
+  SELECT ttext 'AA@2000-01-01' UNION
+  SELECT ttext 'BB@2000-01-02' UNION
+  SELECT ttext 'CC@2000-01-03' UNION
+  SELECT ttext 'DD@2000-01-04' UNION
+  SELECT ttext 'EE@2000-01-05'  )
+SELECT appendInstant(inst ORDER BY inst) FROM temp;
+
+WITH temp(inst) AS (
   SELECT tint(extract(day from d)::int % 2, d)
   FROM generate_series(timestamptz '1900-01-01', '2000-01-10', interval '1 day') AS d )
 SELECT numInstants(appendInstant(inst ORDER BY inst)) FROM temp;
@@ -321,6 +329,14 @@ temp2(seq) AS (
   FROM temp1
   GROUP BY k / 3)
 SELECT appendSequence(seq ORDER BY seq) FROM temp2;
+
+WITH temp(k, seq) AS (
+  SELECT 1, ttext '[AA@2000-01-01, BB@2000-01-02]' UNION
+  SELECT 2, ttext '[BB@2000-01-02, CC@2000-01-03]' UNION
+  SELECT 3, ttext '[CC@2000-01-03, DD@2000-01-04]' UNION
+  SELECT 4, ttext '[DD@2000-01-04, EE@2000-01-05]' UNION
+  SELECT 5, ttext '[EE@2000-01-05, FF@2000-01-06]' )
+SELECT appendSequence(seq ORDER BY k) FROM temp;
 
 WITH temp(seq) AS (
   SELECT NULL UNION
