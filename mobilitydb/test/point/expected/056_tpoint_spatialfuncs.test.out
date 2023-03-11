@@ -16,10 +16,10 @@ SELECT srid(stbox 'STBOX T([2000-01-01,2000-01-02])');
     0
 (1 row)
 
-SELECT setSRID(stbox 'STBOX X(((1,1),(2,2)))', 5676);
-             setsrid              
-----------------------------------
- SRID=5676;STBOX X(((1,1),(2,2)))
+SELECT setSRID(stbox 'STBOX X((1,1),(2,2))', 5676);
+            setsrid             
+--------------------------------
+ SRID=5676;STBOX X((1,1),(2,2))
 (1 row)
 
 SELECT setSRID(stbox 'STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-02])', 5676);
@@ -28,7 +28,7 @@ SELECT setSRID(stbox 'STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-02])', 5676);
  SRID=5676;STBOX XT(((1,1),(2,2)),[2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00])
 (1 row)
 
-SELECT setSRID(stbox 'STBOX Z(((1,1,1),(2,2,2)))', 5676);
+SELECT setSRID(stbox 'STBOX Z((1,1,1),(2,2,2))', 5676);
               setsrid               
 ------------------------------------
  SRID=5676;STBOX Z((1,1,1),(2,2,2))
@@ -46,7 +46,7 @@ SELECT setSRID(stbox 'STBOX T([2000-01-01,2000-01-02])', 5676);
  STBOX T([2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00])
 (1 row)
 
-SELECT setSRID(stbox 'GEODSTBOX Z(((1,1,1),(2,2,2)))', 4326);
+SELECT setSRID(stbox 'GEODSTBOX Z((1,1,1),(2,2,2))', 4326);
                 setsrid                 
 ----------------------------------------
  SRID=4326;GEODSTBOX Z((1,1,1),(2,2,2))
@@ -64,10 +64,10 @@ SELECT setSRID(stbox 'GEODSTBOX T([2000-01-01,2000-01-02])', 4326);
  GEODSTBOX T([2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00])
 (1 row)
 
-SELECT round(transform(transform(stbox 'SRID=4326;STBOX X(((1,1),(2,2)))', 5676), 4326), 1);
-              round               
-----------------------------------
- SRID=4326;STBOX X(((1,1),(2,2)))
+SELECT round(transform(transform(stbox 'SRID=4326;STBOX X((1,1),(2,2))', 5676), 4326), 1);
+             round              
+--------------------------------
+ SRID=4326;STBOX X((1,1),(2,2))
 (1 row)
 
 SELECT round(transform(transform(stbox 'SRID=4326;STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-02])', 5676), 4326), 1);
@@ -76,7 +76,7 @@ SELECT round(transform(transform(stbox 'SRID=4326;STBOX XT(((1,1),(2,2)),[2000-0
  SRID=4326;STBOX XT(((1,1),(2,2)),[2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00])
 (1 row)
 
-SELECT round(transform(transform(stbox 'SRID=4326;STBOX Z(((1,1,1),(2,2,2)))', 5676), 4326), 1);
+SELECT round(transform(transform(stbox 'SRID=4326;STBOX Z((1,1,1),(2,2,2))', 5676), 4326), 1);
                round                
 ------------------------------------
  SRID=4326;STBOX Z((1,1,1),(2,2,2))
@@ -88,7 +88,7 @@ SELECT round(transform(transform(stbox 'SRID=4326;STBOX ZT(((1,1,1),(2,2,2)),[20
  SRID=4326;STBOX ZT(((1,1,1),(2,2,2)),[2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00])
 (1 row)
 
-SELECT round(transform(transform(stbox 'SRID=4326;GEODSTBOX Z(((1,1,1),(2,2,2)))', 4269), 4326), 1);
+SELECT round(transform(transform(stbox 'SRID=4326;GEODSTBOX Z((1,1,1),(2,2,2))', 4269), 4326), 1);
                  round                  
 ----------------------------------------
  SRID=4326;GEODSTBOX Z((1,1,1),(2,2,2))
@@ -3271,7 +3271,7 @@ SELECT asText(atStbox(tgeompoint 'Interp=Step;{[Point(1 1)@2000-01-01, Point(2 2
  Interp=Step;{[POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-02 00:00:00+00]}
 (1 row)
 
-SELECT asText(atStbox(tgeompoint 'Point(1 1)@2000-01-01', 'STBOX X(((1,1),(2,2)))'));
+SELECT asText(atStbox(tgeompoint 'Point(1 1)@2000-01-01', 'STBOX X((1,1),(2,2))'));
               astext               
 -----------------------------------
  POINT(1 1)@2000-01-01 00:00:00+00

@@ -213,7 +213,7 @@ stbox_out(const STBox *box, int maxdd)
         srid, boxtype, xmin, ymin, zmin, xmax, ymax, zmax);
     }
     else
-      snprintf(str, size, "%s%s X(((%s,%s),(%s,%s)))",
+      snprintf(str, size, "%s%s X((%s,%s),(%s,%s))",
         srid, boxtype, xmin, ymin, xmax, ymax);
   }
   else /* hast */

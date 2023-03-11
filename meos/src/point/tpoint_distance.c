@@ -658,7 +658,6 @@ NAI_tpointseq_linear_geo(const TSequence *seq, const LWGEOM *geo)
   TimestampTz t;
   NAI_tpointseq_linear_geo2(seq, geo, DBL_MAX, &t);
   /* The closest point may be at an exclusive bound */
-  assert(contains_period_timestamp(&seq->period, t));
   Datum value;
   tsequence_value_at_timestamp(seq, t, false, &value);
   TInstant *result = tinstant_make(value, seq->temptype, t);
@@ -690,7 +689,6 @@ NAI_tpointseqset_linear_geo(const TSequenceSet *ss, const LWGEOM *geo)
   }
   /* The closest point may be at an exclusive bound. */
   Datum value;
-  assert(contains_period_timestamp(&ss->period, t));
   tsequenceset_value_at_timestamp(ss, t, false, &value);
   TInstant *result = tinstant_make(value, ss->temptype, t);
   pfree(DatumGetPointer(value));

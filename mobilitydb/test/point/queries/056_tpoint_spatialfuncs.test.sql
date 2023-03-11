@@ -34,21 +34,21 @@ SELECT srid(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02
 SELECT srid(stbox 'SRID=4326;STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');
 SELECT srid(stbox 'STBOX T([2000-01-01,2000-01-02])');
 
-SELECT setSRID(stbox 'STBOX X(((1,1),(2,2)))', 5676);
+SELECT setSRID(stbox 'STBOX X((1,1),(2,2))', 5676);
 SELECT setSRID(stbox 'STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-02])', 5676);
-SELECT setSRID(stbox 'STBOX Z(((1,1,1),(2,2,2)))', 5676);
+SELECT setSRID(stbox 'STBOX Z((1,1,1),(2,2,2))', 5676);
 SELECT setSRID(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2000-01-01,2000-01-02])', 5676);
 SELECT setSRID(stbox 'STBOX T([2000-01-01,2000-01-02])', 5676);
-SELECT setSRID(stbox 'GEODSTBOX Z(((1,1,1),(2,2,2)))', 4326);
+SELECT setSRID(stbox 'GEODSTBOX Z((1,1,1),(2,2,2))', 4326);
 SELECT setSRID(stbox 'GEODSTBOX ZT(((1,1,1),(2,2,2)),[2000-01-01,2000-01-02])', 4326);
 SELECT setSRID(stbox 'GEODSTBOX T([2000-01-01,2000-01-02])', 4326);
 
 -- Tests independent of PROJ version
-SELECT round(transform(transform(stbox 'SRID=4326;STBOX X(((1,1),(2,2)))', 5676), 4326), 1);
+SELECT round(transform(transform(stbox 'SRID=4326;STBOX X((1,1),(2,2))', 5676), 4326), 1);
 SELECT round(transform(transform(stbox 'SRID=4326;STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-02])', 5676), 4326), 1);
-SELECT round(transform(transform(stbox 'SRID=4326;STBOX Z(((1,1,1),(2,2,2)))', 5676), 4326), 1);
+SELECT round(transform(transform(stbox 'SRID=4326;STBOX Z((1,1,1),(2,2,2))', 5676), 4326), 1);
 SELECT round(transform(transform(stbox 'SRID=4326;STBOX ZT(((1,1,1),(2,2,2)),[2000-01-01,2000-01-02])', 5676), 4326), 1);
-SELECT round(transform(transform(stbox 'SRID=4326;GEODSTBOX Z(((1,1,1),(2,2,2)))', 4269), 4326), 1);
+SELECT round(transform(transform(stbox 'SRID=4326;GEODSTBOX Z((1,1,1),(2,2,2))', 4269), 4326), 1);
 SELECT round(transform(transform(stbox 'SRID=4326;GEODSTBOX ZT(((1,1,1),(2,2,2)),[2000-01-01,2000-01-02])', 4269), 4326), 1);
 
 SELECT DISTINCT SRID(b) FROM tbl_stbox;
@@ -795,7 +795,7 @@ SELECT asText(atStbox(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02
 SELECT asText(atStbox(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', 'STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-02])'));
 SELECT asText(atStbox(tgeompoint 'Interp=Step;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 'STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-02])'));
 
-SELECT asText(atStbox(tgeompoint 'Point(1 1)@2000-01-01', 'STBOX X(((1,1),(2,2)))'));
+SELECT asText(atStbox(tgeompoint 'Point(1 1)@2000-01-01', 'STBOX X((1,1),(2,2))'));
 SELECT asText(atStbox(tgeompoint 'Point(1 1)@2000-01-01', 'STBOX T([2000-01-01,2000-01-02])'));
 SELECT asText(atStbox(tgeompoint '(Point(2 2)@2000-01-02, Point(3 3)@2000-01-03]', 'STBOX T([2000-01-01,2000-01-02])'));
 
