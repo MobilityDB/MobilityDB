@@ -473,124 +473,171 @@ CREATE AGGREGATE merge(ttext) (
  *****************************************************************************/
 
 -- The function is not STRICT
-CREATE FUNCTION temporal_app_inst_transfn(tbool, tbool)
+CREATE FUNCTION temporal_app_tinst_transfn(tbool, tbool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Temporal_app_inst_transfn'
+  AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION temporal_app_inst_transfn(tint, tint)
+CREATE FUNCTION temporal_app_tinst_transfn(tint, tint)
   RETURNS tint
-  AS 'MODULE_PATHNAME', 'Temporal_app_inst_transfn'
+  AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION temporal_app_inst_transfn(tfloat, tfloat)
+CREATE FUNCTION temporal_app_tinst_transfn(tfloat, tfloat)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Temporal_app_inst_transfn'
+  AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION temporal_app_inst_transfn(ttext, ttext)
+CREATE FUNCTION temporal_app_tinst_transfn(ttext, ttext)
   RETURNS ttext
-  AS 'MODULE_PATHNAME', 'Temporal_app_inst_transfn'
+  AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION temporal_app_inst_finalfn(tbool)
+-- The function is not STRICT
+CREATE FUNCTION temporal_app_tinst_transfn(tbool, tbool,
+    maxt interval DEFAULT NULL)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Temporal_app_inst_finalfn'
+  AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION temporal_app_inst_finalfn(tint)
+CREATE FUNCTION temporal_app_tinst_transfn(tint, tint,
+    maxdist float DEFAULT NULL, maxt interval DEFAULT NULL)
   RETURNS tint
-  AS 'MODULE_PATHNAME', 'Temporal_app_inst_finalfn'
+  AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION temporal_app_inst_finalfn(tfloat)
+CREATE FUNCTION temporal_app_tinst_transfn(tfloat, tfloat,
+    maxdist float DEFAULT NULL, maxt interval DEFAULT NULL)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Temporal_app_inst_finalfn'
+  AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION temporal_app_inst_finalfn(ttext)
+CREATE FUNCTION temporal_app_tinst_transfn(ttext, ttext,
+    maxt interval DEFAULT NULL)
   RETURNS ttext
-  AS 'MODULE_PATHNAME', 'Temporal_app_inst_finalfn'
+  AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+CREATE FUNCTION temporal_app_tinst_finalfn(tbool)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Temporal_app_tinst_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION temporal_app_tinst_finalfn(tint)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_app_tinst_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION temporal_app_tinst_finalfn(tfloat)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Temporal_app_tinst_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION temporal_app_tinst_finalfn(ttext)
+  RETURNS ttext
+  AS 'MODULE_PATHNAME', 'Temporal_app_tinst_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE appendInstant(tbool) (
-  SFUNC = temporal_app_inst_transfn,
+  SFUNC = temporal_app_tinst_transfn,
   STYPE = tbool,
-  FINALFUNC = temporal_app_inst_finalfn,
+  FINALFUNC = temporal_app_tinst_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendInstant(tint) (
-  SFUNC = temporal_app_inst_transfn,
+  SFUNC = temporal_app_tinst_transfn,
   STYPE = tint,
-  FINALFUNC = temporal_app_inst_finalfn,
+  FINALFUNC = temporal_app_tinst_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendInstant(tfloat) (
-  SFUNC = temporal_app_inst_transfn,
+  SFUNC = temporal_app_tinst_transfn,
   STYPE = tfloat,
-  FINALFUNC = temporal_app_inst_finalfn,
+  FINALFUNC = temporal_app_tinst_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendInstant(ttext) (
-  SFUNC = temporal_app_inst_transfn,
+  SFUNC = temporal_app_tinst_transfn,
   STYPE = ttext,
-  FINALFUNC = temporal_app_inst_finalfn,
+  FINALFUNC = temporal_app_tinst_finalfn,
+  PARALLEL = safe
+);
+
+CREATE AGGREGATE appendInstant(tbool, interval) (
+  SFUNC = temporal_app_tinst_transfn,
+  STYPE = tbool,
+  FINALFUNC = temporal_app_tinst_finalfn,
+  PARALLEL = safe
+);
+CREATE AGGREGATE appendInstant(tint, float, interval) (
+  SFUNC = temporal_app_tinst_transfn,
+  STYPE = tint,
+  FINALFUNC = temporal_app_tinst_finalfn,
+  PARALLEL = safe
+);
+CREATE AGGREGATE appendInstant(tfloat, float, interval) (
+  SFUNC = temporal_app_tinst_transfn,
+  STYPE = tfloat,
+  FINALFUNC = temporal_app_tinst_finalfn,
+  PARALLEL = safe
+);
+CREATE AGGREGATE appendInstant(ttext, interval) (
+  SFUNC = temporal_app_tinst_transfn,
+  STYPE = ttext,
+  FINALFUNC = temporal_app_tinst_finalfn,
   PARALLEL = safe
 );
 
 /*****************************************************************************/
 
 -- The function is not STRICT
-CREATE FUNCTION temporal_app_seq_transfn(tbool, tbool)
+CREATE FUNCTION temporal_app_tseq_transfn(tbool, tbool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Temporal_app_seq_transfn'
+  AS 'MODULE_PATHNAME', 'Temporal_app_tseq_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION temporal_app_seq_transfn(tint, tint)
+CREATE FUNCTION temporal_app_tseq_transfn(tint, tint)
   RETURNS tint
-  AS 'MODULE_PATHNAME', 'Temporal_app_seq_transfn'
+  AS 'MODULE_PATHNAME', 'Temporal_app_tseq_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION temporal_app_seq_transfn(tfloat, tfloat)
+CREATE FUNCTION temporal_app_tseq_transfn(tfloat, tfloat)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Temporal_app_seq_transfn'
+  AS 'MODULE_PATHNAME', 'Temporal_app_tseq_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION temporal_app_seq_transfn(ttext, ttext)
+CREATE FUNCTION temporal_app_tseq_transfn(ttext, ttext)
   RETURNS ttext
-  AS 'MODULE_PATHNAME', 'Temporal_app_seq_transfn'
+  AS 'MODULE_PATHNAME', 'Temporal_app_tseq_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION temporal_app_seq_finalfn(tbool)
+CREATE FUNCTION temporal_app_tseq_finalfn(tbool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Temporal_app_seq_finalfn'
+  AS 'MODULE_PATHNAME', 'Temporal_app_tseq_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION temporal_app_seq_finalfn(tint)
+CREATE FUNCTION temporal_app_tseq_finalfn(tint)
   RETURNS tint
-  AS 'MODULE_PATHNAME', 'Temporal_app_seq_finalfn'
+  AS 'MODULE_PATHNAME', 'Temporal_app_tseq_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION temporal_app_seq_finalfn(tfloat)
+CREATE FUNCTION temporal_app_tseq_finalfn(tfloat)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Temporal_app_seq_finalfn'
+  AS 'MODULE_PATHNAME', 'Temporal_app_tseq_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION temporal_app_seq_finalfn(ttext)
+CREATE FUNCTION temporal_app_tseq_finalfn(ttext)
   RETURNS ttext
-  AS 'MODULE_PATHNAME', 'Temporal_app_seq_finalfn'
+  AS 'MODULE_PATHNAME', 'Temporal_app_tseq_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE appendSequence(tbool) (
-  SFUNC = temporal_app_seq_transfn,
+  SFUNC = temporal_app_tseq_transfn,
   STYPE = tbool,
-  FINALFUNC = temporal_app_seq_finalfn,
+  FINALFUNC = temporal_app_tseq_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendSequence(tint) (
-  SFUNC = temporal_app_seq_transfn,
+  SFUNC = temporal_app_tseq_transfn,
   STYPE = tint,
-  FINALFUNC = temporal_app_seq_finalfn,
+  FINALFUNC = temporal_app_tseq_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendSequence(tfloat) (
-  SFUNC = temporal_app_seq_transfn,
+  SFUNC = temporal_app_tseq_transfn,
   STYPE = tfloat,
-  FINALFUNC = temporal_app_seq_finalfn,
+  FINALFUNC = temporal_app_tseq_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendSequence(ttext) (
-  SFUNC = temporal_app_seq_transfn,
+  SFUNC = temporal_app_tseq_transfn,
   STYPE = ttext,
-  FINALFUNC = temporal_app_seq_finalfn,
+  FINALFUNC = temporal_app_tseq_finalfn,
   PARALLEL = safe
 );
 

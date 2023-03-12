@@ -296,9 +296,9 @@ ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
     ensure_valid_tinstarr1(instants[i - 1], instants[i], merge, interp);
     bool split = false;
     Datum value2 = tinstant_value(instants[i]);
-    if (maxdist > 0 && ! datum_eq(value1, value2, basetype))
+    if (maxdist > 0.0 && ! datum_eq(value1, value2, basetype))
     {
-      double dist = -1;
+      double dist = -1.0;
       if (tnumber_basetype(basetype))
         dist = (basetype == T_INT4) ?
           (double) DatumGetInt32(number_distance(value1, value2, basetype, basetype)) :
@@ -824,11 +824,14 @@ tgeogpoint_from_base(const GSERIALIZED *gs, const Temporal *temp, interpType int
  * @brief Append an instant to the end of a temporal value.
  * @param[in,out] temp Temporal value
  * @param[in] inst Temporal instant
+ * @param[in] maxdist Maximum distance for defining a gap
+ * @param[in] maxt Maximum time interval for defining a gap
  * @param[in] expand True when reserving space for additional instants
- * @sqlfunc appendInstant
+ * @sqlfunc appendInstantGaps
  */
 Temporal *
-temporal_append_tinstant(Temporal *temp, const TInstant *inst, bool expand)
+temporal_append_tinstant(Temporal *temp, const TInstant *inst,
+  double maxdist, Interval *maxt, bool expand)
 {
   /* Validity tests */
   if (inst->subtype != TINSTANT)
@@ -844,11 +847,11 @@ temporal_append_tinstant(Temporal *temp, const TInstant *inst, bool expand)
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tinstant_merge((const TInstant *) temp, inst);
   else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tsequence_append_tinstant((TSequence *) temp, inst,
-      expand);
+    result = (Temporal *) tsequence_append_tinstant((TSequence *) temp,
+      inst, maxdist, maxt, expand);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tsequenceset_append_tinstant((TSequenceSet *) temp,
-      inst, expand);
+      inst, maxdist, maxt, expand);
   return result;
 }
 

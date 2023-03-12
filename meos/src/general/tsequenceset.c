@@ -374,7 +374,7 @@ tsequenceset_make_valid_gaps(const TInstant **instants, int count,
  */
 TSequenceSet *
 tsequenceset_make_gaps(const TInstant **instants, int count, interpType interp,
-  float maxdist, Interval *maxt)
+  double maxdist, Interval *maxt)
 {
   /* Set the interval to NULL if it is negative or zero */
   Interval intervalzero;
@@ -2117,78 +2117,80 @@ tsequenceset_restrict_periodset(const TSequenceSet *ss, const SpanSet *ps,
  * @brief Append an instant to a temporal sequence set.
  * @param[in,out] ss Temporal sequence set
  * @param[in] inst Temporal instant
+ * @param[in] maxdist Maximum distance for defining a gap
+ * @param[in] maxt Maximum time interval for defining a gap
  * @param[in] expand True when reserving space for additional instants
- * @sqlfunc appendInstant()
+ * @sqlfunc appendInstantGaps()
  */
 TSequenceSet *
 tsequenceset_append_tinstant(TSequenceSet *ss, const TInstant *inst,
-  bool expand)
+  double maxdist, const Interval *maxt, bool expand)
 {
   assert(ss->temptype == inst->temptype);
-  TSequence *seq = (TSequence *) tsequenceset_seq_n(ss, ss->count - 1);
-  Temporal *temp = tsequence_append_tinstant(seq, inst, expand);
-  TSequenceSet *ss1;
+  /* Append the instant to the last sequence */
+  TSequence *last = (TSequence *) tsequenceset_seq_n(ss, ss->count - 1);
+  Temporal *temp = tsequence_append_tinstant(last, inst, maxdist, maxt,
+    expand);
+  /* The result may be a single sequence or a sequence set with 2 sequences */
+  TSequence *seq1 = NULL, *seq2 = NULL;
+  TSequenceSet *ss1 = NULL;
+  int count;
+  if (temp->subtype == TSEQUENCE)
+  {
+    seq1 = (TSequence *) temp;
+    count = ss->count;
+  }
+  else /* temp->subtype == TSEQUENCESET */
+  {
+    ss1 = (TSequenceSet *) temp;
+    seq1 = (TSequence *) tsequenceset_seq_n(ss1, 0);
+    seq2 = (TSequence *) tsequenceset_seq_n(ss1, 1);
+    count = ss->count + 1;
+  }
 
-#if MEOS
   /* Account for expandable structures
    * A while is used instead of an if to enable to break the loop if there is
    * no more available space */
-  int count = (temp->subtype == TSEQUENCE) ? ss->count : ss->count + 1;
   while (expand && count <= ss->maxcount)
   {
-    size_t size = 0;
     /* Append the new sequence(s) if there is enough space: only one if the
      * instant was appended to the last sequence, or the two sequences
      * composing the sequence set that results from appending the instant */
-    const TSequence *newseq1 = NULL, *newseq2 = NULL; /* make compiler quiet */
-    if (count == ss->count)
-      size += DOUBLE_PAD(VARSIZE(temp));
-    else /* temp->subtype == TSEQUENCESET */
+    size_t size_last = DOUBLE_PAD(VARSIZE(last));
+    size_t size_seq1 = DOUBLE_PAD(VARSIZE(seq1));
+    size_t size_seq2 = 0; /* make compiler quiet */
+    size_t size = size_seq1;
+    if (temp->subtype == TSEQUENCESET)
     {
-      ss1 = (TSequenceSet *) temp;
-      newseq1 = tsequenceset_seq_n(ss1, 0);
-      newseq2 = tsequenceset_seq_n(ss1, 1);
-      size += DOUBLE_PAD(VARSIZE(newseq1));
-      size += DOUBLE_PAD(VARSIZE(newseq2));
+      size_seq2 = DOUBLE_PAD(VARSIZE(seq2));
+      size += size_seq1 + size_seq2;
     }
     /* Remove the size of the current last sequence */
-    TSequence *last = (TSequence *) tsequenceset_seq_n(ss, ss->count - 1);
     size_t avail_size = ((char *) ss + VARSIZE(ss)) -
-      ((char *) last + DOUBLE_PAD(VARSIZE(last)));
+      ((char *) last + size_last);
     if (size > avail_size)
       break;
+
+    /* There is enough space to add the new sequence(s) */
+    /* Copy the new sequence if its address is different from last */
+    if (last != seq1)
+      memcpy(last, seq1, VARSIZE(seq1));
     /* Update the offsets array and the counts when adding two sequences */
-    if (count != ss->count)
+    if (temp->subtype == TSEQUENCESET)
     {
       (TSEQUENCESET_OFFSETS_PTR(ss))[count - 1] =
-        (TSEQUENCESET_OFFSETS_PTR(ss))[count - 2] + DOUBLE_PAD(VARSIZE(newseq1));
+        (TSEQUENCESET_OFFSETS_PTR(ss))[count - 2] + size_seq1;
       ss->count++;
       ss->totalcount++;
-    }
-    /* There is enough space to add the new sequence(s) */
-    if (count == ss->count)
-    {
-      memset(last, 0, size);
-      memcpy(last, temp, VARSIZE(temp));
-    }
-    else /* temp->subtype == TSEQUENCESET */
-    {
-      memset(last, 0, size);
-      memcpy(last, newseq1, VARSIZE(newseq1));
-      last = (TSequence *) ((char *) last + DOUBLE_PAD(VARSIZE(newseq1)));
-      memcpy(last, newseq2, VARSIZE(newseq2));
+      last = (TSequence *) ((char *) last + size_seq1);
+      memcpy(last, seq2, VARSIZE(seq2));
     }
     /* Expand the bounding box and return */
-    if (count == ss->count)
-      tsequenceset_expand_bbox(ss, (TSequence *) temp);
-    else /* temp->subtype == TSEQUENCESET */
-    {
-      tsequenceset_expand_bbox(ss, newseq1);
-      tsequenceset_expand_bbox(ss, newseq2);
-    }
+    tsequenceset_expand_bbox(ss, (TSequence *) seq1);
+    if (temp->subtype == TSEQUENCESET)
+      tsequenceset_expand_bbox(ss, seq2);
     return ss;
   }
-#endif /* MEOS */
 
   /* This is the first time we use an expandable structure or there is no more
    * free space */

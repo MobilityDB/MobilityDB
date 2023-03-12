@@ -446,8 +446,8 @@ eintersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
   if (gserialized_is_empty(gs))
     return -1;
   datum_func2 func = get_intersects_fn_gs(temp->flags, gs->gflags);
-  bool result = espatialrel_tpoint_geo(temp, gs, (Datum) NULL, (varfunc) func, 2,
-    INVERT_NO);
+  bool result = espatialrel_tpoint_geo(temp, gs, (Datum) NULL, (varfunc) func,
+    2, INVERT_NO);
   return result ? 1 : 0;
 }
 

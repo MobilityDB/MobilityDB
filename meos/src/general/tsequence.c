@@ -54,8 +54,10 @@
 #include "general/spanset.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_boxops.h"
+#include "general/tnumber_distance.h"
 #include "general/type_parser.h"
 #include "point/tpoint_boxops.h"
+#include "point/tpoint_distance.h"
 #include "point/tpoint_parser.h"
 #include "point/tpoint_spatialfuncs.h"
 #if NPOINT
@@ -1325,22 +1327,28 @@ tgeogpointseq_from_base_time(const GSERIALIZED *gs, const Span *p,
 
 /**
  * @ingroup libmeos_internal_temporal_transf
- * @brief Append an instant to a temporal sequence.
+ * @brief Append an instant to a temporal sequence accounting for potential gaps.
  * @param[in,out] seq Temporal sequence
  * @param[in] inst Temporal instant
+ * @param[in] maxdist Maximum distance for defining a gap
+ * @param[in] maxt Maximum time interval for defining a gap
  * @param[in] expand True when reserving space for additional instants
- * @sqlfunc appendInstant()
+ * @sqlfunc appendInstantGaps
  * @note It is the responsibility of the calling function to free the memory,
  * that is, delete the old value of seq when it is expanded or when the
  * result is a sequence set.
  */
 Temporal *
-tsequence_append_tinstant(TSequence *seq, const TInstant *inst, bool expand)
+tsequence_append_tinstant(TSequence *seq, const TInstant *inst,
+  double maxdist, const Interval *maxt, bool expand)
 {
   /* Ensure validity of the arguments */
   assert(seq->temptype == inst->temptype);
   interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
   meosType basetype = temptype_basetype(seq->temptype);
+  datum_func2 point_distance = NULL;
+  if (geo_basetype(basetype))
+    point_distance = pt_distance_fn(inst->flags);
   TInstant *last = (TInstant *) tsequence_inst_n(seq, seq->count - 1);
 #if NPOINT
   if (last->temptype == T_TNPOINT && interp != DISCRETE)
@@ -1381,6 +1389,49 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, bool expand)
       sequences[1] = tinstant_to_tsequence(inst, LINEAR);
       TSequenceSet *result = tsequenceset_make((const TSequence **) sequences,
         2, NORMALIZE_NO);
+      pfree(sequences[1]);
+      return (Temporal *) result;
+    }
+  }
+
+  /* Take into account the maximum distance and/or the maximum interval */
+  if (maxdist > 0.0 || maxt != NULL)
+  {
+    bool split = false;
+    if (maxdist > 0.0 && ! datum_eq(value1, value, basetype))
+    {
+      double dist = -1.0;
+      if (tnumber_basetype(basetype))
+        dist = (basetype == T_INT4) ?
+          (double) DatumGetInt32(number_distance(value1, value, basetype, basetype)) :
+          DatumGetFloat8(number_distance(value1, value, basetype, basetype));
+      else if (geo_basetype(basetype))
+        dist = DatumGetFloat8(point_distance(value1, value));
+#if NPOINT
+      else if (basetype == T_NPOINT)
+        dist = DatumGetFloat8(npoint_distance(value1, value));
+#endif
+      if (dist > maxdist)
+        split = true;
+    }
+    /* If there is not already a split by distance */
+    if (maxt != NULL && ! split)
+    {
+      Interval *duration = pg_timestamp_mi(inst->t, last->t);
+      if (pg_interval_cmp(duration, maxt) > 0)
+        split = true;
+      // CANNOT pfree(duration);
+    }
+    /* If split => result is a sequence set */
+    if (split)
+    {
+      TSequence *sequences[2];
+      sequences[0] = (TSequence *) seq;
+      /* Arbitrary initialization to 64 elements if in expandable mode */
+      sequences[1] = tsequence_make_exp((const TInstant **) &inst, 1,
+        expand ? 64 : 1, true, true, interp, NORMALIZE_NO);
+      TSequenceSet *result = tsequenceset_make_exp(
+        (const TSequence **) sequences, 2, expand ? 64 : 2, NORMALIZE_NO);
       pfree(sequences[1]);
       return (Temporal *) result;
     }
