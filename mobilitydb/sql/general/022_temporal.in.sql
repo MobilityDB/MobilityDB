@@ -213,6 +213,8 @@ CREATE CAST (ttext AS ttext) WITH FUNCTION ttext(ttext, integer) AS IMPLICIT;
  * Constructors
  ******************************************************************************/
 
+CREATE TYPE interpolation AS ENUM ('discrete', 'linear', 'step');
+
 CREATE FUNCTION tbool(boolean, timestamptz)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tinstant_constructor'
@@ -283,78 +285,44 @@ CREATE FUNCTION ttext(text, tstzspanset)
 
 /******************************************************************************/
 
-CREATE FUNCTION tbool_discseq(tbool[])
+CREATE FUNCTION tbool_seq(tbool[], interpolation DEFAULT 'step',
+    lower_inc boolean DEFAULT true, upper_inc boolean DEFAULT true)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tdiscseq_constructor'
+  AS 'MODULE_PATHNAME', 'Tsequence_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tint_discseq(tint[])
+CREATE FUNCTION tbool_seq(tint[], interpolation DEFAULT 'step',
+    lower_inc boolean DEFAULT true, upper_inc boolean DEFAULT true)
   RETURNS tint
-  AS 'MODULE_PATHNAME', 'Tdiscseq_constructor'
+  AS 'MODULE_PATHNAME', 'Tsequence_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tfloat_discseq(tfloat[])
+CREATE FUNCTION tbool_seq(tfloat[], interpolation DEFAULT 'linear',
+    lower_inc boolean DEFAULT true, upper_inc boolean DEFAULT true)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Tdiscseq_constructor'
+  AS 'MODULE_PATHNAME', 'Tsequence_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ttext_discseq(ttext[])
+CREATE FUNCTION tbool_seq(ttext[], interpolation DEFAULT 'step',
+    lower_inc boolean DEFAULT true, upper_inc boolean DEFAULT true)
   RETURNS ttext
-  AS 'MODULE_PATHNAME', 'Tdiscseq_constructor'
+  AS 'MODULE_PATHNAME', 'Tsequence_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tbool_contseq(tbool[], lower_inc boolean DEFAULT true,
-  upper_inc boolean DEFAULT true)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tstepseq_constructor'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tint_contseq(tint[], lower_inc boolean DEFAULT true,
-  upper_inc boolean DEFAULT true)
-  RETURNS tint
-  AS 'MODULE_PATHNAME', 'Tstepseq_constructor'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tfloat_contseq(tfloat[], lower_inc boolean DEFAULT true,
-  upper_inc boolean DEFAULT true, linear bool DEFAULT true)
-  RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Tlinearseq_constructor'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ttext_contseq(ttext[], lower_inc boolean DEFAULT true,
-  upper_inc boolean DEFAULT true)
-  RETURNS ttext
-  AS 'MODULE_PATHNAME', 'Tstepseq_constructor'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION tbool_seqset(tbool[])
+CREATE FUNCTION tbool_seqset(tbool[], maxt interval DEFAULT NULL)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tsequenceset_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tint_seqset(tint[])
+CREATE FUNCTION tint_seqset(tint[], maxt interval DEFAULT NULL,
+    maxdist float DEFAULT)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Tsequenceset_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tfloat_seqset(tfloat[])
+CREATE FUNCTION tfloat_seqset(tfloat[], maxt interval DEFAULT NULL,
+    maxdist float DEFAULT )
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tsequenceset_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ttext_seqset(ttext[])
+CREATE FUNCTION ttext_seqset(ttext[], maxt interval DEFAULT NULL)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Tsequenceset_constructor'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION tbool_seqset_gaps(tbool[], maxt interval DEFAULT '0 minutes')
-  RETURNS tint
-  AS 'MODULE_PATHNAME', 'Tscalarseqset_constructor_gaps'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tint_seqset_gaps(tint[], maxdist float DEFAULT 0.0,
-    maxt interval DEFAULT '0 minutes')
-  RETURNS tint
-  AS 'MODULE_PATHNAME', 'Tstepseqset_constructor_gaps'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tfloat_seqset_gaps(tfloat[], linear bool DEFAULT true,
-    maxdist float DEFAULT 0.0, maxt interval DEFAULT '0 minutes')
-  RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Tlinearseqset_constructor_gaps'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ttext_seqset_gaps(ttext[], maxt interval DEFAULT '0 minutes')
-  RETURNS ttext
-  AS 'MODULE_PATHNAME', 'Tscalarseqset_constructor_gaps'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************

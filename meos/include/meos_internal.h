@@ -423,12 +423,11 @@ extern bool tinstant_value_at_timestamp(const TInstant *inst, TimestampTz t, Dat
 extern Datum tinstant_value_copy(const TInstant *inst);
 extern Datum *tinstant_values(const TInstant *inst, int *count);
 extern uint32 tdiscseq_hash(const TSequence *seq);
-extern const TInstant *tsequence_inst_n(const TSequence *seq, int index);
 extern bool tdiscseq_value_at_timestamp(const TSequence *seq, TimestampTz t, Datum *result);
 extern Interval *tsequence_duration(const TSequence *seq);
 extern TimestampTz tsequence_end_timestamp(const TSequence *seq);
 extern uint32 tsequence_hash(const TSequence *seq);
-extern const TInstant *tsequence_inst_n(const TSequence *seq, int index);
+// extern const TInstant *tsequence_inst_n(const TSequence *seq, int index);
 extern const TInstant **tsequence_instants(const TSequence *seq);
 extern const TInstant *tsequence_max_instant(const TSequence *seq);
 extern Datum tsequence_max_value(const TSequence *seq);
