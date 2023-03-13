@@ -50,16 +50,6 @@
   (size_t *)(((char *)(ss)) + DOUBLE_PAD(sizeof(TSequenceSet)) + \
     DOUBLE_PAD((ss)->bboxsize - sizeof(Span))) )
 
-/**
- * @brief Return the n-th sequence of a temporal sequence set.
- * @pre The argument @p index is less than the number of sequences in the
- * sequence set
- */
-#define TSEQUENCESET_SEQ_N(ss, index) ( \
-  (TSequence *)(((char *) (ss)) + DOUBLE_PAD(sizeof(TSequenceSet)) + \
-    (((seq)->bboxsize == 0) ? 0 : ((ss)->bboxsize - sizeof(Span))) + \
-    sizeof(size_t) * ss->maxcount + (TSEQUENCESET_OFFSETS_PTR(ss))[index]) )
-
 /*****************************************************************************/
 
 /* General functions */
