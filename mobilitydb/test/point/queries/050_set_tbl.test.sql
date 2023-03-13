@@ -73,6 +73,16 @@ SELECT memSize(set_union(g)) FROM tbl_geog_point3D WHERE g IS NOT NULL AND NOT S
 SELECT MAX(memSize(set(g))) FROM tbl_geom_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g);
 SELECT MAX(memSize(set(g))) FROM tbl_geog_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g::geometry);
 
+-- Coverage of periodset_stbox_slice
+DROP TABLE IF EXISTS test;
+CREATE TABLE test(ps) AS
+WITH test(ps) AS (
+  SELECT span(day, day + interval '1 hour')
+  FROM generate_series(timestamptz '2000-01-01', timestamptz '2000-04-01', '1 day') AS day )
+SELECT spanset(array_agg(ps)) FROM test;
+SELECT ps::stbox FROM test;
+DROP TABLE test;
+
 -------------------------------------------------------------------------------
 -- Transformation functions
 

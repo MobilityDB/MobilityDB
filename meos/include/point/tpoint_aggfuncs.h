@@ -66,6 +66,7 @@ extern TSequence *tpointinst_tcentroid_finalfn(TInstant **instants, int count,
   int srid);
 extern TSequenceSet *tpointseq_tcentroid_finalfn(TSequence **sequences,
   int count, int srid);
+extern Temporal *tpoint_tcentroid_finalfn(SkipList *state);
 
 /*****************************************************************************/
 

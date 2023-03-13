@@ -424,20 +424,17 @@ pgis_lwgeom_boundary(LWGEOM *lwgeom)
 GSERIALIZED *
 gserialized_boundary(const GSERIALIZED *geom1)
 {
-  GSERIALIZED *result;
-  LWGEOM *lwgeom, *lwresult;
-
   /* Empty.Boundary() == Empty, but of other dimension, so can't shortcut */
 
-  lwgeom = lwgeom_from_gserialized(geom1);
-  lwresult = pgis_lwgeom_boundary(lwgeom);
+  LWGEOM *lwgeom = lwgeom_from_gserialized(geom1);
+  LWGEOM *lwresult = pgis_lwgeom_boundary(lwgeom);
   if (!lwresult)
   {
     lwgeom_free(lwgeom);
     return NULL;
   }
 
-  result = geo_serialize(lwresult);
+  GSERIALIZED *result = geo_serialize(lwresult);
 
   lwgeom_free(lwgeom);
   lwgeom_free(lwresult);
@@ -535,12 +532,11 @@ bool
 gserialized_3Dintersects(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
 {
   ensure_same_srid(gserialized_get_srid(geom1), gserialized_get_srid(geom2));
-  double mindist;
   LWGEOM *lwgeom1 = lwgeom_from_gserialized(geom1);
   LWGEOM *lwgeom2 = lwgeom_from_gserialized(geom2);
-  mindist = lwgeom_mindistance3d_tolerance(lwgeom1, lwgeom2, 0.0);
-  /*empty geometries cases should be right handled since return from underlying
-    functions should be FLT_MAX which causes false as answer*/
+  double mindist = lwgeom_mindistance3d_tolerance(lwgeom1, lwgeom2, 0.0);
+  /* empty geometries cases should be right handled since return from
+     underlying functions should be FLT_MAX which causes false as answer */
   return (0.0 == mindist);
 }
 

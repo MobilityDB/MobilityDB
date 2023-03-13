@@ -48,6 +48,11 @@
  *****************************************************************************/
 
 /**
+ * @brief Align to double
+ */
+#define DOUBLE_PAD(size) ( (size) + ((size) % 8 ? (8 - (size) % 8) : 0 ) )
+
+/**
  * Structure to represent sets of values
  */
 typedef struct
@@ -191,6 +196,7 @@ typedef struct
                              composing TSequence elements */
   int32 maxcount;       /**< Maximum number of TSequence elements */
   int16 bboxsize;       /**< Size of the bounding box */
+  int16 padding;        /**< Not used */
   Span period;          /**< Time span (24 bytes). All bounding boxes
                              start with a period so actually it is also
                              the begining of the bounding box. The extra
@@ -990,7 +996,7 @@ extern TSequence *tsequence_make_free(TInstant **instants, int count, bool lower
 extern TSequenceSet *tsequenceset_make(const TSequence **sequences, int count, bool normalize);
 extern TSequenceSet *tsequenceset_make_exp(const TSequence **sequences, int count, int maxcount, bool normalize);
 extern TSequenceSet *tsequenceset_make_free(TSequence **sequences, int count, bool normalize);
-extern TSequenceSet *tsequenceset_make_gaps(const TInstant **instants, int count, interpType interp, float maxdist, Interval *maxt);
+extern TSequenceSet *tsequenceset_make_gaps(const TInstant **instants, int count, interpType interp, double maxdist, Interval *maxt);
 extern Temporal *ttext_from_base(const text *txt, const Temporal *temp);
 extern TInstant *ttextinst_make(const text *txt, TimestampTz t);
 extern TSequence *ttextdiscseq_from_base_time(const text *txt, const Set *ts);
@@ -1063,7 +1069,7 @@ extern text **ttext_values(const Temporal *temp, int *count);
 
 /* Transformation functions for temporal types */
 
-extern Temporal *temporal_append_tinstant(Temporal *temp, const TInstant *inst, bool expand);
+extern Temporal *temporal_append_tinstant(Temporal *temp, const TInstant *inst, double maxdist, Interval *maxt, bool expand);
 extern Temporal *temporal_append_tsequence(Temporal *temp, const TSequence *seq, bool expand);
 extern Temporal *temporal_merge(const Temporal *temp1, const Temporal *temp2);
 extern Temporal *temporal_merge_array(Temporal **temparr, int count);

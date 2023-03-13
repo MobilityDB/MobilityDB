@@ -206,7 +206,7 @@ Value_to_set(PG_FUNCTION_ARGS)
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   /* Detoast the value if necessary */
   if (basetype_varlength(basetype))
-    d = PointerGetDatum(PG_DETOAST_DATUM_PACKED(d));
+    d = PointerGetDatum(PG_DETOAST_DATUM(d));
   Set *result = value_to_set(d, basetype);
   PG_RETURN_POINTER(result);
 }

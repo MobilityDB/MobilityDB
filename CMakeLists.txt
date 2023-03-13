@@ -12,24 +12,21 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
   You may need to remove 'CMakeCache.txt' and 'CMakeFiles/'.")
 endif()
 
+# Set a default build type if none was specified
+# https://www.kitware.com/cmake-and-the-default-build-type/
+set(default_build_type "Release")
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
+  set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE
+      STRING "Choose the type of build." FORCE)
+  # Set the possible values of build type for cmake-gui
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
+    "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+endif()
+
 # Specify search path for CMake modules to be loaded
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 include(CheckSymbolExists)
-
-# check if _GNU_SOURCE is available
-# this is needed for the MEOS hash table management
-# if (NOT _GNU_SOURCE)
-    # check_symbol_exists(__GNU_LIBRARY__ "features.h" _GNU_SOURCE)
-
-    # if (NOT _GNU_SOURCE)
-        # unset(_GNU_SOURCE CACHE)
-        # check_symbol_exists(_GNU_SOURCE "features.h" _GNU_SOURCE)
-    # endif ()
-# endif ()
-
-# if (_GNU_SOURCE)
-    # add_definitions(-D_GNU_SOURCE)
-# endif ()
 
 #-------------------------------------
 # RPATH settings
@@ -147,7 +144,7 @@ endif()
 # endif()
 
 # MobilityDB compiler flags
-add_definitions(-Wall -Wextra -std=gnu1x -Wunused-parameter)
+add_definitions(-Wall -Wextra -std=gnu1x -Wunused-parameter -Wno-strict-aliasing)
 # add_definitions(-Wall -Wextra -std=gnu1x -Wno-unused-parameter)
 
 # Code coverage
@@ -162,7 +159,7 @@ endif()
 # Set compiler optimizations for release
 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O2")
 # Disable compiler optimizations for debugging
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Og")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
 
 # Check machine architecture: big endian vs. little endian
 # Needed for WKB support in MobilityDB and PostGIS (file postgis_config.h.in)

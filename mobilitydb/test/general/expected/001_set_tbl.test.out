@@ -137,10 +137,10 @@ SELECT COUNT(*) FROM tbl_tstzset WHERE tstzsetFromHexWKB(asHexWKB(t)) <> t;
      0
 (1 row)
 
-SELECT memSize(set(array_agg(DISTINCT t ORDER BY t))) FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10;
- memsize 
----------
-     816
+SELECT numValues(set(array_agg(DISTINCT t ORDER BY t))) FROM tbl_timestamptz WHERE t IS NOT NULL;
+ numvalues 
+-----------
+        99
 (1 row)
 
 SELECT COUNT(*) FROM tbl_timestamptz WHERE t::tstzset IS NOT NULL;

@@ -236,12 +236,10 @@ PGDLLEXPORT Datum
 Spanset_to_multirange(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  const Span *span = spanset_sp_n(ss, 0);
-  assert(span->spantype == T_INTSPAN || span->spantype == T_TSTZSPAN);
-  MultirangeType *mrange;
-  mrange = multirange_make(ss);
+  assert(ss->spantype == T_INTSPAN || ss->spantype == T_TSTZSPAN);
+  MultirangeType *result = multirange_make(ss);
   PG_FREE_IF_COPY(ss, 0);
-  PG_RETURN_POINTER(mrange);
+  PG_RETURN_POINTER(result);
 }
 
 PG_FUNCTION_INFO_V1(Multirange_to_spanset);

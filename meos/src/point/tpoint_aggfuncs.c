@@ -235,7 +235,6 @@ tpoint_tcentroid_transfn(SkipList *state, Temporal *temp)
  * Extent
  *****************************************************************************/
 
-#if MEOS
 /**
  * @brief Transition function for temporal extent aggregation of temporal point values
  */
@@ -267,7 +266,6 @@ tpoint_extent_transfn(STBox *box, const Temporal *temp)
   stbox_expand(box, result);
   return result;
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Centroid
@@ -355,6 +353,32 @@ tpointseq_tcentroid_finalfn(TSequence **sequences, int count, int srid)
     pfree(seq);
   }
   TSequenceSet *result = tsequenceset_make_free(newsequences, count, NORMALIZE);
+  return result;
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Final function for temporal centroid aggregation of temporal point
+ * values
+ */
+Temporal *
+tpoint_tcentroid_finalfn(SkipList *state)
+{
+  if (state->length == 0)
+    return NULL;
+
+  Temporal **values = (Temporal **) skiplist_values(state);
+  int32_t srid = ((struct GeoAggregateState *) state->extra)->srid;
+  Temporal *result;
+  assert(values[0]->subtype == TINSTANT || values[0]->subtype == TSEQUENCE);
+  if (values[0]->subtype == TINSTANT)
+    result = (Temporal *) tpointinst_tcentroid_finalfn((TInstant **) values,
+      state->length, srid);
+  else /* values[0]->subtype == TSEQUENCE */
+    result = (Temporal *) tpointseq_tcentroid_finalfn((TSequence **) values,
+      state->length, srid);
+  pfree(values);
   return result;
 }
 

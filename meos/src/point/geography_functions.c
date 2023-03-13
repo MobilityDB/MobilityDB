@@ -128,9 +128,6 @@ geography_shortestline_internal(const GSERIALIZED *g1, const GSERIALIZED *g2,
 
   LWGEOM *line = geography_tree_shortestline(g1, g2, FP_TOLERANCE, &s);
 
-  if (lwgeom_is_empty(line))
-    return NULL;
-
 #if ! MEOS
   GSERIALIZED *result = geography_serialize(line);
 #else

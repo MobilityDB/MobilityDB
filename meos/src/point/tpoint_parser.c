@@ -54,6 +54,7 @@ stbox_parse(const char **str)
   int srid = 0;
   bool hassrid = false;
 
+  /* Determine whether the box has an SRID */
   p_whitespace(str);
   if (strncasecmp(*str,"SRID=",5) == 0)
   {
@@ -71,6 +72,8 @@ stbox_parse(const char **str)
     *str += delim + 1;
     hassrid = true;
   }
+
+  /* Determine whether the box is geodetic or not */
   if (strncasecmp(*str, "STBox", 5) == 0)
   {
     *str += 5;
@@ -87,6 +90,7 @@ stbox_parse(const char **str)
   else
     elog(ERROR, "Could not parse spatiotemporal box");
 
+  /* Determine whether the box has X, Z, and/or T dimensions */
   if (strncasecmp(*str, "ZT", 2) == 0)
   {
     hasx = hasz = hast = true;
@@ -113,10 +117,13 @@ stbox_parse(const char **str)
     hast = true;
   }
 
-  /* Parse opening parenthesis */
-  p_whitespace(str);
-  if (!p_oparen(str))
-    elog(ERROR, "Could not parse spatiotemporal box: Missing opening parenthesis");
+  /* Parse first opening parenthesis (if any) */
+  if (hast)
+  {
+    p_whitespace(str);
+    if (!p_oparen(str))
+      elog(ERROR, "Could not parse spatiotemporal box: Missing opening parenthesis");
+  }
 
   if (hasx)
   {
@@ -190,10 +197,13 @@ stbox_parse(const char **str)
   if (hast)
     period = span_parse(str, T_TSTZSPAN, false, true);
 
-  /* Parse closing parenthesis */
-  p_whitespace(str);
-  if (!p_cparen(str))
-    elog(ERROR, "Could not parse spatiotemporal box: Missing closing parenthesis");
+  /* Parse last closing parenthesis (if any) */
+  if (hast)
+  {
+    p_whitespace(str);
+    if (!p_cparen(str))
+      elog(ERROR, "Could not parse spatiotemporal box: Missing closing parenthesis");
+  }
 
   /* Ensure there is no more input */
   ensure_end_input(str, true, "spatiotemporal box");

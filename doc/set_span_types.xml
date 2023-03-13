@@ -256,9 +256,9 @@ SELECT tstzspansetFromHexWKB(
 				<para>Constructor for set types</para>
 				<para><varname>set(base[]) → set</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT textset (ARRAY['highway', 'primary', 'secondary']);
---  {"highway", "primary", "secondary"}
-SELECT tstzset(ARRAY[timestamptz '2001-01-01 08:00:00', '2001-01-03 09:30:00']);
+SELECT set(ARRAY['highway', 'primary', 'secondary']);
+-- {"highway", "primary", "secondary"}
+SELECT set(ARRAY[timestamptz '2001-01-01 08:00:00', '2001-01-03 09:30:00']);
 -- {2001-01-01 08:00:00+00, 2001-01-03 09:30:00+00}
 </programlisting>
 			</listitem>
@@ -273,14 +273,14 @@ SELECT tstzset(ARRAY[timestamptz '2001-01-01 08:00:00', '2001-01-03 09:30:00']);
 				<para><varname>span(base,base,left_inc=true,right_inc=false) → span</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 -- Float span defined with two arguments
-SELECT floatspan(20.5, 25);
+SELECT span(20.5, 25);
 -- [20.5, 25)
 -- Integer span defined with four arguments
-SELECT SELECT intspan (20, 25, false, true);
+SELECT span(20, 25, false, true);
 -- [21, 26)
 -- Time span defined with four arguments
-SELECT tstzspan('2001-01-01 08:00:00', '2001-01-03 09:30:00', false, true);
--- (2001-01-01 08:00:00+01, 2001-01-03 09:30:00+01]
+SELECT span(timestamptz '2001-01-01 08:00:00', '2001-01-03 09:30:00', false, true);
+-- (2001-01-01 08:00:00, 2001-01-03 09:30:00]
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -293,11 +293,11 @@ SELECT tstzspan('2001-01-01 08:00:00', '2001-01-03 09:30:00', false, true);
 				<para>Constructor for span set types</para>
 				<para><varname>spanset(span[]) → spanset</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT intspanset(ARRAY[intspan '[10,12]', '[13,15]']);
+SELECT spanset(ARRAY[intspan '[10,12]', '[13,15]']);
 -- {[10, 16)}
-SELECT floatspanset(ARRAY[floatspan '[10.5,12.5]', '[13.5,15.5]']);
+SELECT spanset(ARRAY[floatspan '[10.5,12.5]', '[13.5,15.5]']);
 -- {[10.5, 12.5], [13.5, 15.5]}
-SELECT tstzspanset(ARRAY[tstzspan '[2001-01-01 08:00, 2001-01-01 08:10]',
+SELECT spanset(ARRAY[tstzspan '[2001-01-01 08:00, 2001-01-01 08:10]',
   '[2001-01-01 08:20, 2001-01-01 08:40]']);
 -- {[2001-01-01 08:00, 2001-01-01 08:10], [2001-01-01 08:20, 2001-01-01 08:40]};
 </programlisting>
@@ -324,11 +324,11 @@ SELECT tstzspanset(ARRAY[tstzspan '[2001-01-01 08:00, 2001-01-01 08:10]',
 				<para><varname>spanset(base)</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT CAST(timestamptz '2001-01-01 08:00:00' AS tstzset);
--- {2001-01-01 08:00:00+01}
+-- {2001-01-01 08:00:00}
 SELECT timestamptz '2001-01-01 08:00:00'::tstzspan;
--- [2001-01-01 08:00:00+01, 2001-01-01 08:00:00+01]
+-- [2001-01-01 08:00:00, 2001-01-01 08:00:00]
 SELECT spanset(timestamptz '2001-01-01 08:00:00');
--- {[2001-01-01 08:00:00+01, 2001-01-01 08:00:00+01]}
+-- {[2001-01-01 08:00:00, 2001-01-01 08:00:00]}
 </programlisting>
 			</listitem>
 
@@ -340,9 +340,9 @@ SELECT spanset(timestamptz '2001-01-01 08:00:00');
 				<programlisting language="sql" xml:space="preserve">
 SELECT spanset(tstzset '{2001-01-01 08:00:00, 2001-01-01 08:15:00,
   2001-01-01 08:25:00}');
-/* {[2001-01-01 08:00:00+01, 2001-01-01 08:00:00+01],
-   [2001-01-01 08:15:00+01, 2001-01-01 08:15:00+01],
-   [2001-01-01 08:25:00+01, 2001-01-01 08:25:00+01]} */
+/* {[2001-01-01 08:00:00, 2001-01-01 08:00:00],
+   [2001-01-01 08:15:00, 2001-01-01 08:15:00],
+   [2001-01-01 08:25:00, 2001-01-01 08:25:00]} */
 </programlisting>
 			</listitem>
 
@@ -356,7 +356,7 @@ SELECT spanset(tstzset '{2001-01-01 08:00:00, 2001-01-01 08:15:00,
 SELECT floatspan '[1.5,2.5]'::floatspanset;
 -- {[1.5, 2.5]}
 SELECT tstzspan '[2001-01-01 08:00:00, 2001-01-01 08:30:00)'::tstzspanset;
--- {[2001-01-01 08:00:00+01, 2001-01-01 08:30:00+01)}
+-- {[2001-01-01 08:00:00, 2001-01-01 08:30:00)}
 </programlisting>
 			</listitem>
 
@@ -374,7 +374,7 @@ SELECT tstzspan '[2001-01-01 08:00:00, 2001-01-01 08:30:00)'::tstzspanset;
 SELECT intspan '[10, 20)'::int4range;
 -- [10,20)
 SELECT tstzspan '[2001-01-01 08:00:00, 2001-01-01 08:30:00)'::tstzrange;
--- ["2001-01-01 08:00:00+01","2001-01-01 08:30:00+01")
+-- ["2001-01-01 08:00:00","2001-01-01 08:30:00")
 SELECT int4range '[10, 20)'::intspan;
 -- [10,20)
 SELECT int4range 'empty'::intspan;
@@ -382,7 +382,7 @@ SELECT int4range 'empty'::intspan;
 SELECT int4range '[10,)'::intspan;
 -- ERROR:  Range bounds cannot be infinite
 SELECT tstzrange '[2001-01-01 08:00:00, 2001-01-01 08:30:00)'::tstzspan;
--- [2001-01-01 08:00:00+01, 2001-01-01 08:30:00+01)
+-- [2001-01-01 08:00:00, 2001-01-01 08:30:00)
 </programlisting>
 			</listitem>
 			<listitem id="multirange_cast">

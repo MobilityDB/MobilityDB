@@ -52,6 +52,7 @@
  * Parameter tests
  *****************************************************************************/
 
+#if 0 /* not used */
 /**
  * @brief Ensure that a temporal network point and a STBox have the same SRID
  */
@@ -63,6 +64,7 @@ ensure_same_srid_tnpoint_stbox(const Temporal *temp, const STBox *box)
     elog(ERROR, "The temporal network point and the box must be in the same SRID");
   return;
 }
+#endif /* not used */
 
 /**
  * @brief Ensure that two temporal network point instants have the same route
@@ -630,29 +632,26 @@ tnpointsegm_azimuth1(const TInstant *inst1, const TInstant *inst2, int *count)
   }
 
 /* Find all vertices in the segment */
-  Datum traj = tnpointseqsegm_trajectory(np1, np2);
-  int countVertices = gserialized_numpoints_linestring(
-    DatumGetGserializedP(traj));
+  GSERIALIZED *traj = DatumGetGserializedP(tnpointseqsegm_trajectory(np1, np2));
+  int countVertices = gserialized_numpoints_linestring(traj);
   TInstant **result = palloc(sizeof(TInstant *) * countVertices);
-  GSERIALIZED *vertex1 = gserialized_pointn_linestring(
-    DatumGetGserializedP(traj), 1); /* 1-based */
+  GSERIALIZED *vertex1 = gserialized_pointn_linestring(traj, 1); /* 1-based */
   double azimuth;
   TimestampTz time = inst1->t;
   for (int i = 0; i < countVertices - 1; i++)
   {
-    GSERIALIZED *vertex2 = gserialized_pointn_linestring(
-      DatumGetGserializedP(traj), i + 2); /* 1-based */
-    double fraction = gserialized_line_locate_point(DatumGetGserializedP(traj),
-      vertex2);
-    bool found = gserialized_azimuth(vertex1, vertex2, &azimuth);
-    assert(found);
+    GSERIALIZED *vertex2 = gserialized_pointn_linestring(traj, i + 2); /* 1-based */
+    double fraction = gserialized_line_locate_point(traj, vertex2);
+    assert(! datum_point_eq(PointerGetDatum(vertex1),
+      PointerGetDatum(vertex2)));
+    gserialized_azimuth(vertex1, vertex2, &azimuth);
     result[i] = tinstant_make(Float8GetDatum(azimuth), T_TFLOAT, time);
-    pfree(DatumGetPointer(vertex1));
+    pfree(vertex1);
     vertex1 = vertex2;
     time =  inst1->t + (long) ((double) (inst2->t - inst1->t) * fraction);
   }
-  pfree(DatumGetPointer(traj));
-  pfree(DatumGetPointer(vertex1));
+  pfree(traj);
+  pfree(vertex1);
   *count = countVertices - 1;
   return result;
 }

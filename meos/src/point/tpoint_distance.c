@@ -659,8 +659,7 @@ NAI_tpointseq_linear_geo(const TSequence *seq, const LWGEOM *geo)
   NAI_tpointseq_linear_geo2(seq, geo, DBL_MAX, &t);
   /* The closest point may be at an exclusive bound */
   Datum value;
-  bool found = tsequence_value_at_timestamp(seq, t, false, &value);
-  assert(found);
+  tsequence_value_at_timestamp(seq, t, false, &value);
   TInstant *result = tinstant_make(value, seq->temptype, t);
   pfree(DatumGetPointer(value));
   return result;
@@ -690,8 +689,7 @@ NAI_tpointseqset_linear_geo(const TSequenceSet *ss, const LWGEOM *geo)
   }
   /* The closest point may be at an exclusive bound. */
   Datum value;
-  bool found = tsequenceset_value_at_timestamp(ss, t, false, &value);
-  assert(found);
+  tsequenceset_value_at_timestamp(ss, t, false, &value);
   TInstant *result = tinstant_make(value, ss->temptype, t);
   pfree(DatumGetPointer(value));
   return result;
@@ -745,10 +743,9 @@ nai_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
   if (dist != NULL)
   {
     const TInstant *min = temporal_min_instant(dist);
-    /* The closest point may be at an exclusive bound. */
+    /* The closest point may be at an exclusive bound => 3rd argument = false */
     Datum value;
-    bool found = temporal_value_at_timestamp(temp1, min->t, false, &value);
-    assert(found);
+    temporal_value_at_timestamp(temp1, min->t, false, &value);
     result = tinstant_make(value, temp1->temptype, min->t);
     pfree(dist); pfree(DatumGetPointer(value));
   }
@@ -948,10 +945,8 @@ shortestline_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
   const TInstant *inst = temporal_min_instant(dist);
   /* Timestamp t may be at an exclusive bound */
   Datum value1, value2;
-  bool found1 = temporal_value_at_timestamp(temp1, inst->t, false, &value1);
-  bool found2 = temporal_value_at_timestamp(temp2, inst->t, false, &value2);
-  assert (found1 && found2);
-
+  temporal_value_at_timestamp(temp1, inst->t, false, &value1);
+  temporal_value_at_timestamp(temp2, inst->t, false, &value2);
   LWGEOM *line = (LWGEOM *) lwline_make(value1, value2);
   *result = geo_serialize(line);
   lwgeom_free(line);

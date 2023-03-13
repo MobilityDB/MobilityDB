@@ -703,7 +703,7 @@ tsequenceset_constructor_gaps_ext(FunctionCallInfo fcinfo, bool get_linear,
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
   ensure_non_empty_array(array);
   interpType interp;
-  float maxdist = 0;
+  double maxdist = 0;
   Interval *maxt;
   if (get_linear)
   {
@@ -1915,7 +1915,7 @@ Temporal_append_tinstant(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TInstant *inst = PG_GETARG_TINSTANT_P(1);
-  Temporal *result = temporal_append_tinstant(temp, inst, false);
+  Temporal *result = temporal_append_tinstant(temp, inst, 0.0, NULL, false);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(inst, 1);
   PG_RETURN_POINTER(result);
@@ -2573,7 +2573,7 @@ PGDLLEXPORT Datum
 Temporal_stops(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  float maxdist = PG_GETARG_FLOAT8(1);
+  double maxdist = PG_GETARG_FLOAT8(1);
   Interval *minduration = PG_GETARG_INTERVAL_P(2);
   /* Store fcinfo into a global variable */
   /* Needed for the distance function for temporal geographic points */

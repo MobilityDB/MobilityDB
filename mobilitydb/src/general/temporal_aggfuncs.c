@@ -498,10 +498,11 @@ Temporal_merge_combinefn(PG_FUNCTION_ARGS)
 
 /**
  * @ingroup libmeos_internal_temporal_agg
- * @brief Transition function for append tinstant aggregate
+ * @brief Transition function for append temporal instant aggregate
  */
 Temporal *
-temporal_app_inst_transfn(Temporal *state, TInstant *inst)
+temporal_app_tinst_transfn(Temporal *state, const TInstant *inst,
+  double maxdist, Interval *maxt)
 {
   /* Null state: create a new temporal sequence with the instant */
   if (! state)
@@ -519,17 +520,21 @@ temporal_app_inst_transfn(Temporal *state, TInstant *inst)
     return result;
   }
 
-  return temporal_append_tinstant(state, inst, true);
+  return temporal_append_tinstant(state, inst, maxdist, maxt, true);
 }
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Temporal_app_inst_transfn);
 /**
- * @brief Transition function for set aggregation of values
+ * @brief Transition function for append temporal instant aggregate
+ */
+// TODO generalize for discrete interpolation
+PG_FUNCTION_INFO_V1(Temporal_app_tinst_transfn);
+/**
+ * @brief Transition function for append temporal instant aggregate
  */
 PGDLLEXPORT Datum
-Temporal_app_inst_transfn(PG_FUNCTION_ARGS)
+Temporal_app_tinst_transfn(PG_FUNCTION_ARGS)
 {
   MemoryContext ctx = set_aggregation_context(fcinfo);
   Temporal *state = PG_ARGISNULL(0) ? NULL : PG_GETARG_TEMPORAL_P(0);
@@ -540,21 +545,39 @@ Temporal_app_inst_transfn(PG_FUNCTION_ARGS)
     else
       PG_RETURN_NULL();
   }
-  unset_aggregation_context(ctx);
   Temporal *inst = PG_GETARG_TEMPORAL_P(1);
+  unset_aggregation_context(ctx);
+  double maxdist = -1.0;
+  Interval *maxt = NULL;
+  /* Take into account the arguments for the gaps */
+  if (PG_NARGS() > 2)
+  {
+    if (PG_NARGS() == 3)
+    {
+      if (! PG_ARGISNULL(2))
+        maxt = PG_GETARG_INTERVAL_P(2);
+    }
+    else /* PG_NARGS() == 4 */
+    {
+      if (! PG_ARGISNULL(2))
+        maxdist = PG_GETARG_FLOAT8(2);
+      if (! PG_ARGISNULL(3))
+        maxt = PG_GETARG_INTERVAL_P(3);
+    }
+  }
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  state = temporal_app_inst_transfn(state, (TInstant *) inst);
+  state = temporal_app_tinst_transfn(state, (TInstant *) inst, maxdist, maxt);
   PG_FREE_IF_COPY(inst, 1);
   PG_RETURN_POINTER(state);
 }
 
-PG_FUNCTION_INFO_V1(Temporal_app_inst_finalfn);
+PG_FUNCTION_INFO_V1(Temporal_append_finalfn);
 /**
- * @brief Combine function for set aggregate of set types
+ * @brief Combine function for append temporal instant/sequence aggregate
  */
 PGDLLEXPORT Datum
-Temporal_app_inst_finalfn(PG_FUNCTION_ARGS)
+Temporal_append_finalfn(PG_FUNCTION_ARGS)
 {
   MemoryContext ctx = set_aggregation_context(fcinfo);
   Temporal *state = PG_GETARG_TEMPORAL_P(0);
@@ -569,10 +592,10 @@ Temporal_app_inst_finalfn(PG_FUNCTION_ARGS)
 
 /**
  * @ingroup libmeos_internal_temporal_agg
- * @brief Transition function for append tsequence aggregate
+ * @brief Transition function for append temporal sequence aggregate
  */
 Temporal *
-temporal_app_seq_transfn(Temporal *state, TSequence *seq)
+temporal_app_tseq_transfn(Temporal *state, const TSequence *seq)
 {
   /* Null state: create a new temporal sequence with the sequence */
   if (! state)
@@ -594,12 +617,12 @@ temporal_app_seq_transfn(Temporal *state, TSequence *seq)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Temporal_app_seq_transfn);
+PG_FUNCTION_INFO_V1(Temporal_app_tseq_transfn);
 /**
- * @brief Transition function for set aggregation of values
+ * @brief Transition function for append temporal sequence aggregate
  */
 PGDLLEXPORT Datum
-Temporal_app_seq_transfn(PG_FUNCTION_ARGS)
+Temporal_app_tseq_transfn(PG_FUNCTION_ARGS)
 {
   MemoryContext ctx = set_aggregation_context(fcinfo);
   Temporal *state = PG_ARGISNULL(0) ? NULL : PG_GETARG_TEMPORAL_P(0);
@@ -614,25 +637,9 @@ Temporal_app_seq_transfn(PG_FUNCTION_ARGS)
   Temporal *seq = PG_GETARG_TEMPORAL_P(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  state = temporal_app_seq_transfn(state, (TSequence *) seq);
+  state = temporal_app_tseq_transfn(state, (TSequence *) seq);
   PG_FREE_IF_COPY(seq, 1);
   PG_RETURN_POINTER(state);
-}
-
-PG_FUNCTION_INFO_V1(Temporal_app_seq_finalfn);
-/**
- * @brief Combine function for set aggregate of set types
- */
-PGDLLEXPORT Datum
-Temporal_app_seq_finalfn(PG_FUNCTION_ARGS)
-{
-  MemoryContext ctx = set_aggregation_context(fcinfo);
-  Temporal *state = PG_GETARG_TEMPORAL_P(0);
-  unset_aggregation_context(ctx);
-  Temporal *result = temporal_compact(state);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************/

@@ -1223,8 +1223,7 @@ bool
 tpointsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
   Datum value, TimestampTz *t)
 {
-  GSERIALIZED *gs = DatumGetGserializedP(value);
-  assert(! gserialized_is_empty(gs));
+  assert(! gserialized_is_empty(DatumGetGserializedP(value)));
 
   /* We are sure that the trajectory is a line */
   Datum start = tinstant_value(inst1);
@@ -3470,7 +3469,7 @@ tpointcontseq_split(const TSequence *seq, bool *splits, int count)
       tinstant_value(instants[end - start])))
     {
       Datum value = tinstant_value(instants[end - start - 1]);
-      TimestampTz t = tsequence_inst_n(seq, end - start)->t;
+      TimestampTz t = (tsequence_inst_n(seq, end - start))->t;
       instants[end - start] = tinstant_make(value, seq->temptype, t);
       tofree = true;
       upper_inc1 = false;

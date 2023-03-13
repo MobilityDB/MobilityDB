@@ -220,33 +220,33 @@ SELECT asText(DouglasPeuckerSimplify(tgeompoint '[Point(1 1)@2000-01-01, Point(2
 -- PostGIS 3.3 changed the output of MULTIPOINT
 -- SELECT ST_AsText((mvt).geom)
 -- FROM (SELECT asMVTGeom(tgeompoint '{Point(0 0 0)@2000-01-01, Point(100 100 100)@2000-04-10}',
-  -- stbox 'STBOX X(((0,0),(1000,1000)))') AS mvt ) AS t;
+  -- stbox 'STBOX X((0,0),(1000,1000))') AS mvt ) AS t;
 SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(ST_AsText((mvt).geom))
 FROM (SELECT asMVTGeom(tgeompoint '{Point(0 0 0)@2000-01-01, Point(100 100 100)@2000-04-10}',
-  stbox 'STBOX X(((0,0),(1000,1000)))') AS mvt ) AS t) AS t(dp);
+  stbox 'STBOX X((0,0),(1000,1000))') AS mvt ) AS t) AS t(dp);
 SELECT ST_AsText((mvt).geom)
 FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-04-10]',
-  stbox 'STBOX X(((40,40),(60,60)))', clip := false) AS mvt ) AS t;
+  stbox 'STBOX X((40,40),(60,60))', clip := false) AS mvt ) AS t;
 SELECT ST_AsText((mvt).geom)
 FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-04-10]',
-  stbox 'STBOX X(((40,40),(60,60)))') AS mvt ) AS t;
+  stbox 'STBOX X((40,40),(60,60))') AS mvt ) AS t;
 SELECT ST_AsText((mvt).geom)
 FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0 0)@2000-01-01, Point(100 100 100)@2000-04-10]',
-  stbox 'STBOX X(((40,40),(60,60)))') AS mvt ) AS t;
+  stbox 'STBOX X((40,40),(60,60))') AS mvt ) AS t;
 SELECT ST_AsText((mvt).geom)
 FROM (SELECT asMVTGeom(tgeompoint '{[Point(0 0)@2000-01-01], [Point(100 100)@2000-04-10]}',
-  stbox 'STBOX X(((0,0),(60,60)))') AS mvt ) AS t;
+  stbox 'STBOX X((0,0),(60,60))') AS mvt ) AS t;
 SELECT ST_AsText((mvt).geom)
 FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(0 0)@2000-02-10, Point(100 100)@2000-04-10]',
-  stbox 'STBOX X(((0,0),(60,60)))') AS mvt ) AS t;
+  stbox 'STBOX X((0,0),(60,60))') AS mvt ) AS t;
 SELECT ST_AsText((mvt).geom)
 FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-02-10, Point(100 100)@2000-04-10]',
-  stbox 'STBOX X(((0,0),(60,60)))') AS mvt ) AS t;
+  stbox 'STBOX X((0,0),(60,60))') AS mvt ) AS t;
 
 /* Errors */
 SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-04-10]',
-  stbox 'STBOX X(((40,40),(40,40)))');
+  stbox 'STBOX X((40,40),(40,40))');
 SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-04-10]',
-  stbox 'STBOX X(((40,40),(60,60)))', 0);
+  stbox 'STBOX X((40,40),(60,60))', 0);
 
 -------------------------------------------------------------------------------

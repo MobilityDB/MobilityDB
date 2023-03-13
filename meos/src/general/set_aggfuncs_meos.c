@@ -35,21 +35,10 @@
 #include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
-#if ! MEOS
-  #include <fmgr.h>
-  #include <utils/memutils.h>
-#endif /* MEOS */
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/type_util.h"
-
-#if ! MEOS
-  extern FunctionCallInfo fetch_fcinfo();
-  extern void store_fcinfo(FunctionCallInfo fcinfo);
-  extern MemoryContext set_aggregation_context(FunctionCallInfo fcinfo);
-  extern void unset_aggregation_context(MemoryContext ctx);
-#endif /* ! MEOS */
 
 /*****************************************************************************
  * Aggregate functions for set types
@@ -120,14 +109,8 @@ set_append_value(Set *set, Datum d, meosType basetype)
   printf(" set -> %d\n", maxcount);
 #endif /* DEBUG_BUILD */
 
-#if ! MEOS
-  MemoryContext ctx = set_aggregation_context(fetch_fcinfo());
-#endif /* ! MEOS */
   Set *result = set_make_exp(values, set->count + 1, maxcount, set->basetype,
     ORDERED_NO);
-#if ! MEOS
-  unset_aggregation_context(ctx);
-#endif /* ! MEOS */
   pfree(values);
   // pfree(set);
   return result;
@@ -143,21 +126,14 @@ value_union_transfn(Set *state, Datum d, meosType basetype)
   /* Null state: create a new state with the value */
   if (! state)
   {
-#if ! MEOS
-    MemoryContext ctx = set_aggregation_context(fetch_fcinfo());
-#endif /* ! MEOS */
     /* Arbitrary initialization to 64 elements */
     Set *result = set_make_exp(&d, 1, 64, basetype, ORDERED_NO);
-#if ! MEOS
-    unset_aggregation_context(ctx);
-#endif /* ! MEOS */
     return result;
   }
 
   return set_append_value(state, d, basetype);
 }
 
-#if MEOS
 /**
  * @ingroup libmeos_setspan_agg
  * @brief Transition function for set aggregate of values
@@ -207,7 +183,6 @@ text_union_transfn(Set *state, const text *txt)
 {
   return value_union_transfn(state, PointerGetDatum(txt), T_TEXT);
 }
-#endif /* MEOS */
 
 /**
  * @ingroup libmeos_internal_setspan_agg
@@ -221,16 +196,10 @@ set_union_transfn(Set *state, Set *set)
   /* Null state: create a new state with the first value of the set */
   if (! state)
   {
-#if ! MEOS
-    MemoryContext ctx = set_aggregation_context(fetch_fcinfo());
-#endif /* ! MEOS */
     start = 1;
     d = set_val_n(set, 0);
     /* Arbitrary initialization to 64 elements */
     state = set_make_exp(&d, 1, 64, set->basetype, ORDERED_NO);
-#if ! MEOS
-    unset_aggregation_context(ctx);
-#endif /* ! MEOS */
   }
 
   for (int i = start; i < set->count; i++)

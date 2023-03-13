@@ -296,7 +296,7 @@ basetype_length(meosType type)
   if (type == T_NPOINT)
     return sizeof(Npoint);
 #endif
-  elog(ERROR, "unknown basetype_length function for base type: %d", type);
+  elog(ERROR, "unknown base type: %d", type);
 }
 
 #if 0 /* not used */
@@ -371,6 +371,7 @@ time_type(meosType type)
   return false;
 }
 
+#if 0 /* not used */
 /**
  * @brief Ensure that the type corresponds to a time type
  */
@@ -381,6 +382,7 @@ ensure_time_type(meosType type)
     elog(ERROR, "unknown time type: %d", type);
   return;
 }
+#endif /* not used */
 
 /*****************************************************************************/
 
@@ -503,7 +505,7 @@ spatialset_type(meosType type)
 /*****************************************************************************/
 
 /**
- * @brief Return true if the type is a set base type
+ * @brief Return true if the type is a span base type
  */
 bool
 span_basetype(meosType type)
@@ -558,6 +560,20 @@ ensure_span_type(meosType type)
     elog(ERROR, "unknown span type: %d", type);
   return;
 }
+
+#ifdef DEBUG_BUILD
+/**
+ * @brief Return true if the type is a span type
+ */
+bool
+span_bbox_type(meosType type)
+{
+  if (set_span_type(type) || span_type(type) || spanset_type(type) ||
+    talpha_type(type))
+    return true;
+  return false;
+}
+#endif /* DEBUG_BUILD */
 
 /**
  * @brief Return true if the type is a numeric span type
@@ -752,6 +768,28 @@ ensure_temptype_continuous(meosType type)
 }
 
 /**
+ * @brief Return true if the type is a temporal alphanumeric type
+ */
+bool
+talphanum_type(meosType type)
+{
+  if (type == T_TBOOL || type == T_TINT || type == T_TFLOAT || type == T_TTEXT)
+    return true;
+  return false;
+}
+
+/**
+ * @brief Return true if the type is a temporal alphanumeric type
+ */
+void
+ensure_talphanum_type(meosType type)
+{
+  if (! talphanum_type(type))
+    elog(ERROR, "unknown temporal alphanumeric type: %d", type);
+  return;
+}
+
+/**
  * @brief Return true if the type is a temporal alpha type (i.e., those whose
  * bounding box is a period)
  */
@@ -855,6 +893,7 @@ ensure_tnumber_spantype(meosType type)
   return;
 }
 
+#if MEOS
 /**
  * @brief Return true if the type is a span set number type
  */
@@ -876,6 +915,7 @@ ensure_tnumber_spansettype(meosType type)
     elog(ERROR, "unknown number span set type: %d", type);
   return;
 }
+#endif /* MEOS */
 
 /**
  * @brief Return true if the type is a spatiotemporal type

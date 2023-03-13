@@ -53,6 +53,7 @@ SELECT nsegment 'nsegment(1 0.5 0.7)';
 SELECT nsegment 'nsegment(1000,0.5,0.7)';
 SELECT nsegment 'nsegment(1,1.5,0.7)';
 SELECT nsegment 'nsegment(1,0.5,0.7)xxx';
+SELECT nsegment 'NSegment(1, 1, 1.5)';
 
 -------------------------------------------------------------------------------
 -- Constructors

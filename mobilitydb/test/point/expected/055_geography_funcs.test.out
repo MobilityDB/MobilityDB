@@ -99,7 +99,7 @@ SELECT round(MAX(ST_Distance(ST_ClosestPoint(t1.g, t2.g), 'Point(50 50 50)'))::n
  4790369.580943
 (1 row)
 
-SELECT round(MAX(ST_Length(ST_ShortestLine(t1.g, t2.g)))::numeric, 6) FROM tbl_geog_linestring3D t1, tbl_geog_linestring3D t2;
+SELECT round(MAX(ST_Length(ST_ShortestLine(t1.g, t2.g, false)))::numeric, 6) FROM tbl_geog_linestring3D t1, tbl_geog_linestring3D t2;
      round      
 ----------------
  3215502.296386

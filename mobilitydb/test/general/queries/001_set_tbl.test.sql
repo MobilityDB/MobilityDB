@@ -85,7 +85,7 @@ SELECT COUNT(*) FROM tbl_tstzset WHERE tstzsetFromHexWKB(asHexWKB(t)) <> t;
 -------------------------------------------------------------------------------
 -- Constructor
 
-SELECT memSize(set(array_agg(DISTINCT t ORDER BY t))) FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10;
+SELECT numValues(set(array_agg(DISTINCT t ORDER BY t))) FROM tbl_timestamptz WHERE t IS NOT NULL;
 
 -------------------------------------------------------------------------------
 -- Cast

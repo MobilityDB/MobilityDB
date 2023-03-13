@@ -1,9 +1,9 @@
 SELECT tileList(b, 2.5, geometry 'Point(10 10)'), COUNT(*) FROM tbl_stbox GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
-               tilelist               | count 
---------------------------------------+-------
- (1,"STBOX X(((2.5,15),(5,17.5)))")   |     2
- (1,"STBOX X(((30,72.5),(32.5,75)))") |     2
- (1,"STBOX X(((40,95),(42.5,97.5)))") |     2
+              tilelist              | count 
+------------------------------------+-------
+ (1,"STBOX X((2.5,15),(5,17.5))")   |     2
+ (1,"STBOX X((30,72.5),(32.5,75))") |     2
+ (1,"STBOX X((40,95),(42.5,97.5))") |     2
 (3 rows)
 
 SELECT tileList(b, 2.5, interval '1 week'), COUNT(*) FROM tbl_stbox GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
@@ -24,16 +24,16 @@ SELECT tileList(b, 2.5, interval '1 week', 'Point(10 10)', '2001-06-01'), COUNT(
 
 SELECT extent(tile(g, 2.5)) FROM
 (SELECT * FROM tbl_geom_point WHERE g IS NOT NULL LIMIT 10) t1;
-           extent           
-----------------------------
- STBOX X(((0,0),(2.5,2.5)))
+          extent          
+--------------------------
+ STBOX X((0,0),(2.5,2.5))
 (1 row)
 
 SELECT extent(tile(g, 2.5, geometry 'Point(10 10)')) FROM
 (SELECT * FROM tbl_geom_point WHERE g IS NOT NULL LIMIT 10) t1;
-             extent             
---------------------------------
- STBOX X(((10,10),(12.5,12.5)))
+            extent            
+------------------------------
+ STBOX X((10,10),(12.5,12.5))
 (1 row)
 
 SELECT extent(tile(g, 2.5)) FROM
