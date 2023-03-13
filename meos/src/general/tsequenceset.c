@@ -2158,13 +2158,9 @@ tsequenceset_append_tinstant(TSequenceSet *ss, const TInstant *inst,
      * composing the sequence set that results from appending the instant */
     size_t size_last = DOUBLE_PAD(VARSIZE(last));
     size_t size_seq1 = DOUBLE_PAD(VARSIZE(seq1));
-    size_t size_seq2 = 0; /* make compiler quiet */
     size_t size = size_seq1;
     if (temp->subtype == TSEQUENCESET)
-    {
-      size_seq2 = DOUBLE_PAD(VARSIZE(seq2));
-      size += size_seq1 + size_seq2;
-    }
+      size += DOUBLE_PAD(VARSIZE(seq2));
     /* Remove the size of the current last sequence */
     size_t avail_size = ((char *) ss + VARSIZE(ss)) -
       ((char *) last + size_last);
@@ -2209,6 +2205,8 @@ tsequenceset_append_tinstant(TSequenceSet *ss, const TInstant *inst,
   }
   TSequenceSet *result = tsequenceset_make(sequences, k, NORMALIZE_NO);
   pfree(sequences);
+  if ((void *) last != (void *) temp)
+    pfree(temp);
   return result;
 }
 

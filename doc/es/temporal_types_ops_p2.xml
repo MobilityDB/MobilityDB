@@ -131,9 +131,9 @@ SELECT asText(deleteTime(tgeompoint '{[Point(1 1 1)@2000-01-01,
 				<indexterm><primary><varname>appendInstant</varname></primary></indexterm>
 				<para>Anexar un instante temporal a un valor temporal</para>
 				<para><varname>appendInstant(ttype,ttype_inst) → ttype</varname></para>
-				<para><varname>appendInstant(ttype_inst,maxdist=0.0,maxt='0 minutes') → ttype_seq</varname></para>
+				<para><varname>appendInstant(ttype_inst,maxdist=NULL,maxt=NULL) → ttype_seq</varname></para>
 				<para>La primera versión de la función devuelve el resultado de agregar el segundo argumento al primero. Si cualquiera de las entradas es NULL, se devuelve NULL.</para>
-				<para>La segunda versión de la función anterior es una función de <emphasis>agregación</emphasis> que devuelve el resultado de agregar sucesivamente un conjunto de filas de valores temporales. Esto significa que funciona de la misma manera que las funciones <varname>SUM()</varname> y <varname>AVG()</varname> y, como la mayoría de los agregados, también ignora los valores NULL. Dos argumentos opcionales establecen una distancia máxima y un intervalo de tiempo máximo de modo que se introduce una brecha de tiempo cada vez que dos instantes consecutivos tienen una distancia o un intervalo de tiempo mayor que estos valores. Para puntos temporales, la distancia se especifica en unidades del sistema de coordenadas. Si estos argumentos no se dan, se asume un valor cero, que no se tiene en cuenta para determinar las brechas.</para>
+				<para>La segunda versión de la función anterior es una función de <emphasis>agregación</emphasis> que devuelve el resultado de agregar sucesivamente un conjunto de filas de valores temporales. Esto significa que funciona de la misma manera que las funciones <varname>SUM()</varname> y <varname>AVG()</varname> y, como la mayoría de los agregados, también ignora los valores NULL. Dos argumentos opcionales establecen una distancia máxima y un intervalo de tiempo máximo de modo que se introduce una brecha de tiempo cada vez que dos instantes consecutivos tienen una distancia o un intervalo de tiempo mayor que estos valores. Para puntos temporales, la distancia se especifica en unidades del sistema de coordenadas. Si uno de estos argumentos no se dan, no se tiene en cuenta para determinar las brechas.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT appendInstant(tint '1@2000-01-01', tint '1@2000-01-02');
 -- {1@2000-01-01, 1@2000-01-02}
@@ -173,7 +173,7 @@ WITH temp(inst) AS (
   SELECT tfloat '4@2000-01-04' UNION
   SELECT tfloat '5@2000-01-05' UNION
   SELECT tfloat '7@2000-01-07' )
-SELECT appendInstantGaps(inst, 0.0, '1 day' ORDER BY inst) FROM temp;
+SELECT appendInstant(inst, 0.0, '1 day' ORDER BY inst) FROM temp;
 -- {[1@2000-01-01, 2@2000-01-02], [4@2000-01-04, 5@2000-01-05], [7@2000-01-07]}
 WITH temp(inst) AS (
   SELECT tgeompoint 'Point(1 1)@2000-01-01' UNION
@@ -181,7 +181,7 @@ WITH temp(inst) AS (
   SELECT tgeompoint 'Point(4 4)@2000-01-04' UNION
   SELECT tgeompoint 'Point(5 5)@2000-01-05' UNION
   SELECT tgeompoint 'Point(7 7)@2000-01-07' )
-SELECT asText(appendInstantGaps(inst, sqrt(2), '1 day' ORDER BY inst)) FROM temp;
+SELECT asText(appendInstant(inst, sqrt(2), '1 day' ORDER BY inst)) FROM temp;
 /* {[POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02],
    [POINT(4 4)@2000-01-04, POINT(5 5)@2000-01-05], [POINT(7 7)@2000-01-07]} */
 </programlisting>

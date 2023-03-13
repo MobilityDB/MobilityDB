@@ -128,6 +128,24 @@ SELECT asText(appendInstant(inst ORDER BY inst)) FROM temp;
 
 -------------------------------------------------------------------------------
 
+WITH temp(inst) AS (
+  SELECT tgeompoint 'Point(1 1)@2000-01-01' UNION
+  SELECT tgeompoint 'Point(2 2)@2000-01-02' UNION
+  SELECT tgeompoint 'Point(4 4)@2000-01-04' UNION
+  SELECT tgeompoint 'Point(5 5)@2000-01-05' UNION
+  SELECT tgeompoint 'Point(7 7)@2000-01-07' )
+SELECT asText(appendInstant(inst, sqrt(2), NULL ORDER BY inst)) FROM temp;
+
+WITH temp(inst) AS (
+  SELECT tgeompoint 'Point(1 1 1)@2000-01-01' UNION
+  SELECT tgeompoint 'Point(2 2 2)@2000-01-02' UNION
+  SELECT tgeompoint 'Point(2 2 2)@2000-01-04' UNION
+  SELECT tgeompoint 'Point(5 5 5)@2000-01-05' UNION
+  SELECT tgeompoint 'Point(7 7 7)@2000-01-07' )
+SELECT asText(appendInstant(inst, sqrt(3), '1 day' ORDER BY inst)) FROM temp;
+
+-------------------------------------------------------------------------------
+
 WITH temp1(k, inst) AS (
   SELECT 1, tgeompoint 'Point(1 1)@2000-01-01' UNION
   SELECT 2, tgeompoint 'Point(2 2)@2000-01-02' UNION

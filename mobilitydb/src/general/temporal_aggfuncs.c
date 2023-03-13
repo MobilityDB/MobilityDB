@@ -572,12 +572,12 @@ Temporal_app_tinst_transfn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(state);
 }
 
-PG_FUNCTION_INFO_V1(Temporal_app_tinst_finalfn);
+PG_FUNCTION_INFO_V1(Temporal_append_finalfn);
 /**
- * @brief Combine function for append temporal instant aggregate
+ * @brief Combine function for append temporal instant/sequence aggregate
  */
 PGDLLEXPORT Datum
-Temporal_app_tinst_finalfn(PG_FUNCTION_ARGS)
+Temporal_append_finalfn(PG_FUNCTION_ARGS)
 {
   MemoryContext ctx = set_aggregation_context(fcinfo);
   Temporal *state = PG_GETARG_TEMPORAL_P(0);
@@ -640,22 +640,6 @@ Temporal_app_tseq_transfn(PG_FUNCTION_ARGS)
   state = temporal_app_tseq_transfn(state, (TSequence *) seq);
   PG_FREE_IF_COPY(seq, 1);
   PG_RETURN_POINTER(state);
-}
-
-PG_FUNCTION_INFO_V1(Temporal_app_tseq_finalfn);
-/**
- * @brief Combine function for append temporal sequence aggregate
- */
-PGDLLEXPORT Datum
-Temporal_app_tseq_finalfn(PG_FUNCTION_ARGS)
-{
-  MemoryContext ctx = set_aggregation_context(fcinfo);
-  Temporal *state = PG_GETARG_TEMPORAL_P(0);
-  unset_aggregation_context(ctx);
-  Temporal *result = temporal_compact(state);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************/

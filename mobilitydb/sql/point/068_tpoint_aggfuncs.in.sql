@@ -212,38 +212,38 @@ CREATE FUNCTION temporal_app_tinst_transfn(tgeogpoint, tgeogpoint,
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION temporal_app_tinst_finalfn(tgeompoint)
+CREATE FUNCTION temporal_append_finalfn(tgeompoint)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Temporal_app_tinst_finalfn'
+  AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION temporal_app_tinst_finalfn(tgeogpoint)
+CREATE FUNCTION temporal_append_finalfn(tgeogpoint)
   RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'Temporal_app_tinst_finalfn'
+  AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE appendInstant(tgeompoint) (
   SFUNC = temporal_app_tinst_transfn,
   STYPE = tgeompoint,
-  FINALFUNC = temporal_app_tinst_finalfn,
+  FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendInstant(tgeogpoint) (
   SFUNC = temporal_app_tinst_transfn,
   STYPE = tgeogpoint,
-  FINALFUNC = temporal_app_tinst_finalfn,
+  FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 
 CREATE AGGREGATE appendInstant(tgeompoint, float, interval) (
   SFUNC = temporal_app_tinst_transfn,
   STYPE = tgeompoint,
-  FINALFUNC = temporal_app_tinst_finalfn,
+  FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendInstant(tgeogpoint, float, interval) (
   SFUNC = temporal_app_tinst_transfn,
   STYPE = tgeogpoint,
-  FINALFUNC = temporal_app_tinst_finalfn,
+  FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 
@@ -259,25 +259,16 @@ CREATE FUNCTION temporal_app_tseq_transfn(tgeogpoint, tgeogpoint)
   AS 'MODULE_PATHNAME', 'Temporal_app_tseq_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION temporal_app_tseq_finalfn(tgeompoint)
-  RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Temporal_app_tseq_finalfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION temporal_app_tseq_finalfn(tgeogpoint)
-  RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'Temporal_app_tseq_finalfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-
 CREATE AGGREGATE appendSequence(tgeompoint) (
   SFUNC = temporal_app_tseq_transfn,
   STYPE = tgeompoint,
-  FINALFUNC = temporal_app_tseq_finalfn,
+  FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE appendSequence(tgeogpoint) (
   SFUNC = temporal_app_tseq_transfn,
   STYPE = tgeogpoint,
-  FINALFUNC = temporal_app_tseq_finalfn,
+  FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 

@@ -238,7 +238,7 @@ WITH temp(inst) AS (
   SELECT tint '2@2000-01-02' UNION
   SELECT tint '3@2000-01-03' UNION
   SELECT tint '4@2000-01-04' UNION
-  SELECT tint '5@2000-01-05'  )
+  SELECT tint '5@2000-01-05' )
 SELECT appendInstant(inst ORDER BY inst) FROM temp;
 
 WITH temp(inst) AS (
@@ -248,7 +248,7 @@ WITH temp(inst) AS (
   SELECT tint '2@2000-01-02' UNION
   SELECT tint '3@2000-01-03' UNION
   SELECT tint '4@2000-01-04' UNION
-  SELECT tint '5@2000-01-05'  )
+  SELECT tint '5@2000-01-05' )
 SELECT appendInstant(inst ORDER BY inst) FROM temp;
 
 WITH temp(inst) AS (
@@ -265,7 +265,7 @@ WITH temp(inst) AS (
   SELECT ttext 'BB@2000-01-02' UNION
   SELECT ttext 'CC@2000-01-03' UNION
   SELECT ttext 'DD@2000-01-04' UNION
-  SELECT ttext 'EE@2000-01-05'  )
+  SELECT ttext 'EE@2000-01-05' )
 SELECT appendInstant(inst ORDER BY inst) FROM temp;
 
 WITH temp(inst) AS (
@@ -281,8 +281,26 @@ WITH temp(inst) AS (
   SELECT tint '2@2000-01-02' UNION
   SELECT tint '3@2000-01-03' UNION
   SELECT tint '4@2000-01-04' UNION
-  SELECT tint '5@2000-01-05'  )
+  SELECT tint '5@2000-01-05' )
 SELECT appendInstant(inst ORDER BY inst) FROM temp;
+
+-------------------------------------------------------------------------------
+
+WITH temp(inst) AS (
+  SELECT tint '1@2000-01-01' UNION
+  SELECT tint '2@2000-01-02' UNION
+  SELECT tint '4@2000-01-04' UNION
+  SELECT tint '5@2000-01-05' UNION
+  SELECT tint '7@2000-01-07' )
+SELECT appendInstant(inst, NULL, interval '1 day' ORDER BY inst) FROM temp;
+
+WITH temp(inst) AS (
+  SELECT ttext 'AA@2000-01-01' UNION
+  SELECT ttext 'BB@2000-01-02' UNION
+  SELECT ttext 'CC@2000-01-04' UNION
+  SELECT ttext 'DD@2000-01-05' UNION
+  SELECT ttext 'EE@2000-01-07' )
+SELECT appendInstant(inst, interval '1 day' ORDER BY inst) FROM temp;
 
 -------------------------------------------------------------------------------
 
