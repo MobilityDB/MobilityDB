@@ -213,7 +213,7 @@ CREATE CAST (ttext AS ttext) WITH FUNCTION ttext(ttext, integer) AS IMPLICIT;
  * Constructors
  ******************************************************************************/
 
-CREATE TYPE interpolation AS ENUM ('discrete', 'linear', 'step');
+CREATE TYPE interp AS ENUM ('discrete', 'linear', 'step');
 
 CREATE FUNCTION tbool(boolean, timestamptz)
   RETURNS tbool
