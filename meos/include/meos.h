@@ -48,6 +48,11 @@
  *****************************************************************************/
 
 /**
+ * @brief Align to double
+ */
+#define DOUBLE_PAD(size) ( (size) + ((size) % 8 ? (8 - (size) % 8) : 0 ) )
+
+/**
  * Structure to represent sets of values
  */
 typedef struct

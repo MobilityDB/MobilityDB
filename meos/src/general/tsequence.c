@@ -1042,7 +1042,7 @@ tdiscseq_from_base(Datum value, meosType temptype, const TSequence *seq)
 {
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
-    instants[i] = tinstant_make(value, temptype, tsequence_inst_n(seq, i)->t);
+    instants[i] = tinstant_make(value, temptype, (tsequence_inst_n(seq, i))->t);
   return tsequence_make_free(instants, seq->count, true, true,
     DISCRETE, NORMALIZE_NO);
 }
@@ -2511,7 +2511,7 @@ int
 tsequence_timestamps1(const TSequence *seq, TimestampTz *times)
 {
   for (int i = 0; i < seq->count; i++)
-    times[i] = tsequence_inst_n(seq, i)->t;
+    times[i] = (tsequence_inst_n(seq, i))->t;
   return seq->count;
 }
 

@@ -338,7 +338,7 @@ tsequence_expand_bbox(TSequence *seq, const TInstant *inst)
   /* Only external types have bounding box */
   ensure_temporal_type(seq->temptype);
   if (talpha_type(seq->temptype))
-    span_set(TimestampTzGetDatum(tsequence_inst_n(seq, 0)->t),
+    span_set(TimestampTzGetDatum((tsequence_inst_n(seq, 0))->t),
       TimestampTzGetDatum(inst->t), seq->period.lower_inc, true, T_TIMESTAMPTZ,
       (Span *) TSEQUENCE_BBOX_PTR(seq));
   else if (tnumber_type(seq->temptype))

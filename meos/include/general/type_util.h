@@ -42,16 +42,8 @@
 
 /*****************************************************************************/
 
-/**
- * @brief Align to double
- */
-#define DOUBLE_PAD(size) ( (size) + ((size) % 8 ? (8 - (size) % 8) : 0 ) )
-
-/*****************************************************************************/
-
 /* Miscellaneous functions */
 
-extern size_t double_pad(size_t size);
 extern Datum datum_copy(Datum value, meosType typid);
 extern double datum_double(Datum d, meosType basetype);
 extern Datum double_datum(double d, meosType basetype);

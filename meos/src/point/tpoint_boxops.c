@@ -274,8 +274,8 @@ tgeogpointseq_set_stbox(const TSequence *seq, STBox *box)
   bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
   int32 srid = tpointseq_srid(seq);
   Span period;
-  span_set(tsequence_inst_n(seq, 0)->t,
-    tsequence_inst_n(seq, seq->count - 1)->t, true, true, T_TIMESTAMPTZ,
+  span_set((tsequence_inst_n(seq, 0))->t,
+    (tsequence_inst_n(seq, seq->count - 1))->t, true, true, T_TIMESTAMPTZ,
     &period);
   stbox_set(true, hasz, true, srid, gbox.xmin, gbox.xmax, gbox.ymin,
     gbox.ymax, gbox.zmin, gbox.zmax, &period, box);

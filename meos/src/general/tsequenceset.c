@@ -1061,10 +1061,10 @@ tsequenceset_num_timestamps(const TSequenceSet *ss)
     result += seq->count;
     if (! first)
     {
-      if (lasttime == tsequence_inst_n(seq, 0)->t)
+      if (lasttime == (tsequence_inst_n(seq, 0))->t)
         result --;
     }
-    lasttime = tsequence_inst_n(seq, seq->count - 1)->t;
+    lasttime = (tsequence_inst_n(seq, seq->count - 1))->t;
     first = false;
   }
   return result;
@@ -1083,7 +1083,7 @@ tsequenceset_timestamp_n(const TSequenceSet *ss, int n, TimestampTz *result)
     return false;
   if (n == 1)
   {
-    *result = tsequence_inst_n(tsequenceset_seq_n(ss, 0), 0)->t;
+    *result = (tsequence_inst_n(tsequenceset_seq_n(ss, 0), 0))->t;
     return true;
   }
 
@@ -1096,19 +1096,19 @@ tsequenceset_timestamp_n(const TSequenceSet *ss, int n, TimestampTz *result)
   {
     const TSequence *seq = tsequenceset_seq_n(ss, i);
     count += seq->count;
-    if (! first && prev == tsequence_inst_n(seq, 0)->t)
+    if (! first && prev == (tsequence_inst_n(seq, 0))->t)
     {
         prevcount --;
         count --;
     }
     if (prevcount <= n && n < count)
     {
-      next = tsequence_inst_n(seq, n - prevcount)->t;
+      next = (tsequence_inst_n(seq, n - prevcount))->t;
       found = true;
       break;
     }
     prevcount = count;
-    prev = tsequence_inst_n(seq, seq->count - 1)->t;
+    prev = (tsequence_inst_n(seq, seq->count - 1))->t;
     first = false;
     i++;
   }
@@ -2899,23 +2899,6 @@ tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2)
   TSequence **normseqs = tseqarr_normalize(sequences, k, &newcount);
   result = tsequenceset_make_free(normseqs, newcount, NORMALIZE_NO);
   pfree_array((void **) tofree, l);
-  return result;
-}
-
-/**
- * @ingroup libmeos_internal_temporal_modif
- * @brief Update the first temporal value with the second one.
- */
-TSequenceSet *
-tsequenceset_update(const TSequenceSet *ss1, const TSequenceSet *ss2)
-{ // TODO BBOX TEST
-  SpanSet *ps = tsequenceset_time(ss2);
-  TSequenceSet *rest = tsequenceset_restrict_periodset(ss1, ps, REST_MINUS);
-  pfree(ps);
-  if (! rest)
-    return tsequenceset_copy(ss2);
-  TSequenceSet *result = tsequenceset_insert(rest, ss2);
-  pfree(rest);
   return result;
 }
 

@@ -3469,7 +3469,7 @@ tpointcontseq_split(const TSequence *seq, bool *splits, int count)
       tinstant_value(instants[end - start])))
     {
       Datum value = tinstant_value(instants[end - start - 1]);
-      TimestampTz t = tsequence_inst_n(seq, end - start)->t;
+      TimestampTz t = (tsequence_inst_n(seq, end - start))->t;
       instants[end - start] = tinstant_make(value, seq->temptype, t);
       tofree = true;
       upper_inc1 = false;
