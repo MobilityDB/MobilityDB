@@ -50,16 +50,6 @@
   (size_t *)(((char *) (seq)) + DOUBLE_PAD(sizeof(TSequence)) + \
   (((seq)->bboxsize == 0) ? 0 : DOUBLE_PAD((seq)->bboxsize - sizeof(Span)))) )
 
-/**
- * @brief Return the n-th instant of a temporal sequence.
- * @pre The argument @p index is less than the number of instants in the
- * sequence
- */
-#define tsequence_inst_n(seq, index) \
-  (TInstant *)(((char *) (seq)) + DOUBLE_PAD(sizeof(TSequence)) + \
-    (((seq)->bboxsize == 0) ? 0 : ((seq)->bboxsize - sizeof(Span))) + \
-    sizeof(size_t) * (seq)->maxcount + (TSEQUENCE_OFFSETS_PTR(seq))[index])
-
 /*****************************************************************************/
 
 /* General functions */

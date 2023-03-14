@@ -759,23 +759,23 @@ tsequence_set_bbox(const TSequence *seq, void *box)
   return;
 }
 
-// /**
- // * @ingroup libmeos_internal_temporal_accessor
- // * @brief Return the n-th instant of a temporal sequence.
- // * @pre The argument @p index is less than the number of instants in the
- // * sequence
- // */
-// const TInstant *
-// tsequence_inst_n(const TSequence *seq, int index)
-// {
-  // return (TInstant *)(
-    // /* start of data */
-    // ((char *) seq) + DOUBLE_PAD(sizeof(TSequence)) +
-      // ((seq->bboxsize == 0) ? 0 : (seq->bboxsize - sizeof(Span))) +
-      // sizeof(size_t) * seq->maxcount +
-      // /* offset */
-      // (TSEQUENCE_OFFSETS_PTR(seq))[index]);
-// }
+/**
+ * @ingroup libmeos_internal_temporal_accessor
+ * @brief Return the n-th instant of a temporal sequence.
+ * @pre The argument @p index is less than the number of instants in the
+ * sequence
+ */
+const TInstant *
+tsequence_inst_n(const TSequence *seq, int index)
+{
+  return (TInstant *)(
+    /* start of data */
+    ((char *) seq) + DOUBLE_PAD(sizeof(TSequence)) +
+      ((seq->bboxsize == 0) ? 0 : (seq->bboxsize - sizeof(Span))) +
+      sizeof(size_t) * seq->maxcount +
+      /* offset */
+      (TSEQUENCE_OFFSETS_PTR(seq))[index]);
+}
 
 /**
  * @brief Construct a temporal sequence from an array of temporal instants
