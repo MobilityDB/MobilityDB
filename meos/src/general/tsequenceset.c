@@ -374,20 +374,13 @@ tsequenceset_make_valid_gaps(const TInstant **instants, int count,
  */
 TSequenceSet *
 tsequenceset_make_gaps(const TInstant **instants, int count, interpType interp,
-  double maxdist, Interval *maxt)
+  Interval *maxt, double maxdist)
 {
-  /* Set the interval to NULL if it is negative or zero */
-  Interval intervalzero;
-  memset(&intervalzero, 0, sizeof(Interval));
-  int cmp = pg_interval_cmp(maxt, &intervalzero);
-  if (cmp <= 0)
-    maxt = NULL;
-
   TSequence *seq;
   TSequenceSet *result;
 
   /* If no gaps are given construt call the standard sequence constructor */
-  if (maxdist <= 0.0 && maxt == NULL)
+  if (maxt == NULL && maxdist <= 0.0)
   {
     seq = tsequence_make((const TInstant **) instants, count, true, true,
       interp, NORMALIZE);

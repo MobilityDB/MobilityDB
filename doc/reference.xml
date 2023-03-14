@@ -634,11 +634,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_discseq"><varname>&lt;ttype&gt;_discseq</varname></link>: Constructor for temporal types of sequence subtype and discrete interpolation</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="ttype_contseq"><varname>&lt;ttype&gt;_contseq</varname></link>: Constructor for temporal types of sequence subtype and continuous interpolation</para>
+					<para><link linkend="ttype_seq"><varname>&lt;ttype&gt;_discseq</varname></link>: Constructor for temporal types of sequence subtype</para>
 				</listitem>
 
 				<listitem>
@@ -788,7 +784,7 @@
 
 			<itemizedlist>
 				<listitem>
-				<para><link linkend="ttype_subtype"><varname>&lt;ttype&gt;_inst, &lt;ttype&gt;_discseq, &lt;ttype&gt;_contseq, &lt;ttype&gt;_seqset</varname></link>: Transform a temporal value to another subtype</para>
+				<para><link linkend="ttype_subtype"><varname>&lt;ttype&gt;_inst, &lt;ttype&gt;_seq, &lt;ttype&gt;_seqset</varname></link>: Transform a temporal value to another subtype</para>
 				</listitem>
 
 				<listitem>

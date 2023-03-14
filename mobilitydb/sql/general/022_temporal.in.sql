@@ -213,112 +213,95 @@ CREATE CAST (ttext AS ttext) WITH FUNCTION ttext(ttext, integer) AS IMPLICIT;
  * Constructors
  ******************************************************************************/
 
-CREATE FUNCTION tbool(boolean, timestamptz)
+CREATE FUNCTION tbool_inst(boolean, timestamptz)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tinstant_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tint(integer, timestamptz)
+CREATE FUNCTION tint_inst(integer, timestamptz)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Tinstant_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tfloat(float, timestamptz)
+CREATE FUNCTION tfloat_inst(float, timestamptz)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tinstant_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ttext(text, timestamptz)
+CREATE FUNCTION ttext_inst(text, timestamptz)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Tinstant_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tbool(boolean, tstzset)
+CREATE FUNCTION tbool_seq(boolean, tstzset)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tdiscseq_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tint(integer, tstzset)
+CREATE FUNCTION tint_seq(integer, tstzset)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Tdiscseq_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tfloat(float, tstzset)
+CREATE FUNCTION tfloat_seq(float, tstzset)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tdiscseq_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ttext(text, tstzset)
+CREATE FUNCTION ttext_seq(text, tstzset)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Tdiscseq_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tbool(boolean, tstzspan)
+CREATE FUNCTION tbool_seq(boolean, tstzspan)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tsequence_from_base_time'
+  AS 'MODULE_PATHNAME', 'Tcontseq_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tint(integer, tstzspan)
+CREATE FUNCTION tint_seq(integer, tstzspan)
   RETURNS tint
-  AS 'MODULE_PATHNAME', 'Tsequence_from_base_time'
+  AS 'MODULE_PATHNAME', 'Tcontseq_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tfloat(float, tstzspan, boolean DEFAULT true)
+CREATE FUNCTION tfloat_seq(float, tstzspan, boolean DEFAULT true)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Tsequence_from_base_time'
+  AS 'MODULE_PATHNAME', 'Tcontseq_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ttext(text, tstzspan)
+CREATE FUNCTION ttext_seq(text, tstzspan)
   RETURNS ttext
-  AS 'MODULE_PATHNAME', 'Tsequence_from_base_time'
+  AS 'MODULE_PATHNAME', 'Tcontseq_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tbool(boolean, tstzspanset)
+CREATE FUNCTION tbool_seqset(boolean, tstzspanset)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tint(integer, tstzspanset)
+CREATE FUNCTION tint_seqset(integer, tstzspanset)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tfloat(float, tstzspanset, boolean DEFAULT true)
+CREATE FUNCTION tfloat_seqset(float, tstzspanset, boolean DEFAULT true)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ttext(text, tstzspanset)
+CREATE FUNCTION ttext_seqset(text, tstzspanset)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************/
 
-CREATE FUNCTION tbool_discseq(tbool[])
+CREATE FUNCTION tbool_seq(tbool[], text DEFAULT 'step',
+    lower_inc boolean DEFAULT true, upper_inc boolean DEFAULT true)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tdiscseq_constructor'
+  AS 'MODULE_PATHNAME', 'Tsequence_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tint_discseq(tint[])
+CREATE FUNCTION tint_seq(tint[], text DEFAULT 'step',
+    lower_inc boolean DEFAULT true, upper_inc boolean DEFAULT true)
   RETURNS tint
-  AS 'MODULE_PATHNAME', 'Tdiscseq_constructor'
+  AS 'MODULE_PATHNAME', 'Tsequence_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tfloat_discseq(tfloat[])
+CREATE FUNCTION tfloat_seq(tfloat[], text DEFAULT 'linear',
+    lower_inc boolean DEFAULT true, upper_inc boolean DEFAULT true)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Tdiscseq_constructor'
+  AS 'MODULE_PATHNAME', 'Tsequence_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ttext_discseq(ttext[])
+CREATE FUNCTION ttext_seq(ttext[], text DEFAULT 'step',
+    lower_inc boolean DEFAULT true, upper_inc boolean DEFAULT true)
   RETURNS ttext
-  AS 'MODULE_PATHNAME', 'Tdiscseq_constructor'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION tbool_contseq(tbool[], lower_inc boolean DEFAULT true,
-  upper_inc boolean DEFAULT true)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tstepseq_constructor'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tint_contseq(tint[], lower_inc boolean DEFAULT true,
-  upper_inc boolean DEFAULT true)
-  RETURNS tint
-  AS 'MODULE_PATHNAME', 'Tstepseq_constructor'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tfloat_contseq(tfloat[], lower_inc boolean DEFAULT true,
-  upper_inc boolean DEFAULT true, linear bool DEFAULT true)
-  RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Tlinearseq_constructor'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ttext_contseq(ttext[], lower_inc boolean DEFAULT true,
-  upper_inc boolean DEFAULT true)
-  RETURNS ttext
-  AS 'MODULE_PATHNAME', 'Tstepseq_constructor'
+  AS 'MODULE_PATHNAME', 'Tsequence_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tbool_seqset(tbool[])
@@ -338,24 +321,25 @@ CREATE FUNCTION ttext_seqset(ttext[])
   AS 'MODULE_PATHNAME', 'Tsequenceset_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tbool_seqset_gaps(tbool[], maxt interval DEFAULT '0 minutes')
+-- The function is not strict
+CREATE FUNCTION tbool_seqset_gaps(tbool[], maxt interval DEFAULT NULL)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Tsequenceset_constructor_gaps'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION tint_seqset_gaps(tint[], maxt interval DEFAULT NULL,
+    maxdist float DEFAULT NULL)
   RETURNS tint
-  AS 'MODULE_PATHNAME', 'Tscalarseqset_constructor_gaps'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tint_seqset_gaps(tint[], maxdist float DEFAULT 0.0,
-    maxt interval DEFAULT '0 minutes')
-  RETURNS tint
-  AS 'MODULE_PATHNAME', 'Tstepseqset_constructor_gaps'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tfloat_seqset_gaps(tfloat[], linear bool DEFAULT true,
-    maxdist float DEFAULT 0.0, maxt interval DEFAULT '0 minutes')
+  AS 'MODULE_PATHNAME', 'Tsequenceset_constructor_gaps'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION tfloat_seqset_gaps(tfloat[], maxt interval DEFAULT NULL,
+    maxdist float DEFAULT NULL, text DEFAULT 'linear')
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Tlinearseqset_constructor_gaps'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ttext_seqset_gaps(ttext[], maxt interval DEFAULT '0 minutes')
+  AS 'MODULE_PATHNAME', 'Tsequenceset_constructor_gaps'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION ttext_seqset_gaps(ttext[], maxt interval DEFAULT NULL)
   RETURNS ttext
-  AS 'MODULE_PATHNAME', 'Tscalarseqset_constructor_gaps'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  AS 'MODULE_PATHNAME', 'Tsequenceset_constructor_gaps'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 /******************************************************************************
  * Casting
@@ -1425,38 +1409,25 @@ CREATE FUNCTION ttext_inst(ttext)
   AS 'MODULE_PATHNAME', 'Temporal_to_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tbool_discseq(tbool)
+CREATE FUNCTION tbool_seq(tbool, text DEFAULT 'step',
+    left_inc boolean DEFAULT true, right_inc boolean DEFAULT true)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Temporal_to_tdiscseq'
+  AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tint_discseq(tint)
+CREATE FUNCTION tint_seq(tint, text DEFAULT 'step',
+    left_inc boolean DEFAULT true, right_inc boolean DEFAULT true)
   RETURNS tint
-  AS 'MODULE_PATHNAME', 'Temporal_to_tdiscseq'
+  AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tfloat_discseq(tfloat)
+CREATE FUNCTION tfloat_seq(tfloat, text DEFAULT 'linear',
+    left_inc boolean DEFAULT true, right_inc boolean DEFAULT true)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Temporal_to_tdiscseq'
+  AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ttext_discseq(ttext)
+CREATE FUNCTION ttext_seq(ttext, text DEFAULT 'step',
+    left_inc boolean DEFAULT true, right_inc boolean DEFAULT true)
   RETURNS ttext
-  AS 'MODULE_PATHNAME', 'Temporal_to_tdiscseq'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION tbool_contseq(tbool)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Temporal_to_tcontseq'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tint_contseq(tint)
-  RETURNS tint
-  AS 'MODULE_PATHNAME', 'Temporal_to_tcontseq'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tfloat_contseq(tfloat)
-  RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Temporal_to_tcontseq'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ttext_contseq(ttext)
-  RETURNS ttext
-  AS 'MODULE_PATHNAME', 'Temporal_to_tcontseq'
+  AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tbool_seqset(tbool)

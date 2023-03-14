@@ -69,6 +69,12 @@ extern Datum interval_cmp(PG_FUNCTION_ARGS);
  */
 PG_MODULE_MAGIC;
 
+/**
+ * @brief Global variable defining the input string stating interpolation types
+ * @see There is a corresponding enumeration type interpType defined in meos.happy
+ */
+char* interp[] = {"discrete","step","linear"};
+
 /*****************************************************************************
  * Initialization function
  *****************************************************************************/
@@ -610,18 +616,44 @@ Tinstant_constructor(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+interpType
+interp_from_string(const char *interp_str)
+{
+
+  if (pg_strncasecmp(interp_str, "discrete", 8) == 0)
+    return DISCRETE;
+  if (pg_strncasecmp(interp_str, "linear", 5) == 0)
+    return LINEAR;
+  if (pg_strncasecmp(interp_str, "step", 4) == 0)
+    return STEP;
+  /* Arrive here only on error */
+  elog(ERROR, "Unknown interpolation type: %s", interp_str);
+  return INTERP_NONE;
+}
+
+PG_FUNCTION_INFO_V1(Tsequence_constructor);
 /**
- * @brief Construct a temporal sequence from the array of temporal instants
+ * @ingroup mobilitydb_temporal_constructor
+ * @brief Construct a temporal sequence from an array of temporal instants
+ * @sqlfunc tbool_seq(), tint_seq(), tfloat_seq(), ttext_seq(), ...
  */
-static Datum
-tsequence_constructor_ext(FunctionCallInfo fcinfo, bool get_bounds,
-  bool get_linear)
+PGDLLEXPORT Datum
+Tsequence_constructor(PG_FUNCTION_ARGS)
 {
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-  bool lower_inc = (! get_bounds) ? true : PG_GETARG_BOOL(1);
-  bool upper_inc = (! get_bounds) ? true : PG_GETARG_BOOL(2);
-  bool linear = get_linear ? PG_GETARG_BOOL(3) : false;
-  interpType interp = (! get_bounds) ? DISCRETE : (linear ? LINEAR : STEP);
+  interpType interp = LINEAR;
+  if (PG_NARGS() > 1 && !PG_ARGISNULL(1))
+  {
+    text *interp_txt = PG_GETARG_TEXT_P(1);
+    char *interp_str = text2cstring(interp_txt);
+    interp = interp_from_string(interp_str);
+    pfree(interp_str);
+  }
+  bool lower_inc = true, upper_inc = true;
+  if (PG_NARGS() > 2 && !PG_ARGISNULL(2))
+    lower_inc = PG_GETARG_BOOL(2);
+  if (PG_NARGS() > 3 && !PG_ARGISNULL(3))
+    upper_inc = PG_GETARG_BOOL(3);
   ensure_non_empty_array(array);
   int count;
   TInstant **instants = (TInstant **) temporalarr_extract(array, &count);
@@ -630,45 +662,6 @@ tsequence_constructor_ext(FunctionCallInfo fcinfo, bool get_bounds,
   pfree(instants);
   PG_FREE_IF_COPY(array, 0);
   PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Tdiscseq_constructor);
-/**
- * @ingroup mobilitydb_temporal_constructor
- * @brief Construct a temporal sequence with discrete interpolation from the
- * array of temporal instants
- * @sqlfunc tbool_seq(), tint_seq(), ttext_seq(),
- */
-PGDLLEXPORT Datum
-Tdiscseq_constructor(PG_FUNCTION_ARGS)
-{
-  return tsequence_constructor_ext(fcinfo, false, false);
-}
-
-PG_FUNCTION_INFO_V1(Tstepseq_constructor);
-/**
- * @ingroup mobilitydb_temporal_constructor
- * @brief Construct a temporal sequence with step interpolation from the
- * array of temporal instants
- * @sqlfunc tbool_seq(), tint_seq(), ttext_seq(),
- */
-PGDLLEXPORT Datum
-Tstepseq_constructor(PG_FUNCTION_ARGS)
-{
-  return tsequence_constructor_ext(fcinfo, true, false);
-}
-
-PG_FUNCTION_INFO_V1(Tlinearseq_constructor);
-/**
- * @ingroup mobilitydb_temporal_constructor
- * @brief Construct a temporal sequence with linear interpolation from the
- * array of temporal instants
- * @sqlfunc tfloat_seq()
- */
-PGDLLEXPORT Datum
-Tlinearseq_constructor(PG_FUNCTION_ARGS)
-{
-  return tsequence_constructor_ext(fcinfo, true, true);
 }
 
 PG_FUNCTION_INFO_V1(Tsequenceset_constructor);
@@ -691,36 +684,36 @@ Tsequenceset_constructor(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PG_FUNCTION_INFO_V1(Tsequenceset_constructor_gaps);
 /**
- * @brief Construct a temporal sequence set from the array of temporal instants
- * that are split in various sequences if two consecutive instants have a
- * distance and/or temporal gap greater than the arguments
+ * @ingroup mobilitydb_temporal_constructor
+ * @brief Construct a temporal sequence set from an array of temporal instants
+ * accounting for potential gaps
+ * @note The SQL function is not strict
+ * @sqlfunc tint_seqset_gaps(), tfloat_seqset_gaps(), tgeompoint_seqset_gaps()
  */
-Datum
-tsequenceset_constructor_gaps_ext(FunctionCallInfo fcinfo, bool get_linear,
-  bool get_dist)
+PGDLLEXPORT Datum
+Tsequenceset_constructor_gaps(PG_FUNCTION_ARGS)
 {
+  if (PG_ARGISNULL(0))
+    PG_RETURN_NULL();
+
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
   ensure_non_empty_array(array);
-  interpType interp;
-  double maxdist = 0;
-  Interval *maxt;
-  if (get_linear)
-  {
-    interp = PG_GETARG_BOOL(1) ? LINEAR : STEP;
-    maxdist = PG_GETARG_FLOAT8(2);
-    maxt = PG_GETARG_INTERVAL_P(3);
-  }
-  else
-  {
-    interp = STEP;
-    if (get_dist)
-    {
-      maxdist = PG_GETARG_FLOAT8(1);
-      maxt = PG_GETARG_INTERVAL_P(2);
-    }
-    else
+  double maxdist = -1.0;
+  Interval *maxt = NULL;
+  meosType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
+  interpType interp = temptype_continuous(temptype) ? LINEAR : STEP;
+  if (PG_NARGS() > 1 && !PG_ARGISNULL(1))
     maxt = PG_GETARG_INTERVAL_P(1);
+  if (PG_NARGS() > 2 && !PG_ARGISNULL(2))
+    maxdist = PG_GETARG_FLOAT8(2);
+  if (PG_NARGS() > 3 && !PG_ARGISNULL(3))
+  {
+    text *interp_txt = PG_GETARG_TEXT_P(3);
+    char *interp_str = text2cstring(interp_txt);
+    interp = interp_from_string(interp_str);
+    pfree(interp_str);
   }
   /* Store fcinfo into a global variable */
   /* Needed for the distance function for temporal geographic points */
@@ -729,50 +722,10 @@ tsequenceset_constructor_gaps_ext(FunctionCallInfo fcinfo, bool get_linear,
   int count;
   TInstant **instants = (TInstant **) temporalarr_extract(array, &count);
   TSequenceSet *result = tsequenceset_make_gaps((const TInstant **) instants,
-    count, interp, maxdist, maxt);
+    count, interp, maxt, maxdist);
   pfree(instants);
   PG_FREE_IF_COPY(array, 0);
   PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Tscalarseqset_constructor_gaps);
-/**
- * @ingroup mobilitydb_temporal_constructor
- * @brief Construct a temporal sequence set with step interpolation
- * from the array of temporal instants with scalar base type, that is,
- * a base type that does not have distance.
- * @sqlfunc tbool_seqset_gaps(), ttext_seqset_gaps(),
- */
-PGDLLEXPORT Datum
-Tscalarseqset_constructor_gaps(PG_FUNCTION_ARGS)
-{
-  return tsequenceset_constructor_gaps_ext(fcinfo, false, false);
-}
-
-PG_FUNCTION_INFO_V1(Tstepseqset_constructor_gaps);
-/**
- * @ingroup mobilitydb_temporal_constructor
- * @brief Construct a temporal sequence set with step interpolation from the
- * array of temporal instants
- * @sqlfunc tint_seqset_gaps()
- */
-PGDLLEXPORT Datum
-Tstepseqset_constructor_gaps(PG_FUNCTION_ARGS)
-{
-  return tsequenceset_constructor_gaps_ext(fcinfo, false, true);
-}
-
-PG_FUNCTION_INFO_V1(Tlinearseqset_constructor_gaps);
-/**
- * @ingroup mobilitydb_temporal_constructor
- * @brief Construct a temporal sequence set with linear or step interpolation
- * from the array of temporal instants
- * @sqlfunc tfloat_seqset_gaps(), tgeompoint_seqset_gaps()
- */
-PGDLLEXPORT Datum
-Tlinearseqset_constructor_gaps(PG_FUNCTION_ARGS)
-{
-  return tsequenceset_constructor_gaps_ext(fcinfo, true, true);
 }
 
 /*****************************************************************************/
@@ -795,14 +748,14 @@ Tdiscseq_from_base_time(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Tsequence_from_base_time);
+PG_FUNCTION_INFO_V1(Tcontseq_from_base_time);
 /**
  * @ingroup mobilitydb_temporal_constructor
  * @brief Construct a temporal sequence from a base value and a period
  * @sqlfunc tbool_seq(), tint_seq(), tfloat_seq(), ttext_seq()
  */
 PGDLLEXPORT Datum
-Tsequence_from_base_time(PG_FUNCTION_ARGS)
+Tcontseq_from_base_time(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   Span *p = PG_GETARG_SPAN_P(1);
@@ -1751,33 +1704,26 @@ Temporal_to_tinstant(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Temporal_to_tdiscseq);
-/**
- * @ingroup mobilitydb_temporal_transf
- * @brief Transform a temporal value into a temporal sequence with discrete
- * interpolation
- * @sqlfunc tbool_discseq(), tint_discseq(), tfloat_discseq(), ttext_discseq()
- */
-PGDLLEXPORT Datum
-Temporal_to_tdiscseq(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = temporal_to_tdiscseq(temp);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Temporal_to_tcontseq);
+PG_FUNCTION_INFO_V1(Temporal_to_tsequence);
 /**
  * @ingroup mobilitydb_temporal_transf
  * @brief Transform a temporal value into a temporal sequence
  * @sqlfunc tbool_seq(), tint_seq(), tfloat_seq(), ttext_seq()
  */
 PGDLLEXPORT Datum
-Temporal_to_tcontseq(PG_FUNCTION_ARGS)
+Temporal_to_tsequence(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = temporal_to_tcontseq(temp);
+  interpType interp = MOBDB_FLAGS_GET_CONTINUOUS(temp->flags) ? LINEAR : STEP;
+  if (PG_NARGS() > 1 && !PG_ARGISNULL(1))
+  {
+    text *interp_txt = PG_GETARG_TEXT_P(1);
+    char *interp_str = text2cstring(interp_txt);
+    interp = interp_from_string(interp_str);
+    pfree(interp_str);
+  }
+  Temporal *result = (interp == DISCRETE) ?
+    temporal_to_tdiscseq(temp) : temporal_to_tcontseq(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
