@@ -105,7 +105,7 @@ SELECT round(_mobdb_span_sel('tbl_tstzspan'::regclass, 'p', '@>(tstzspan,tstzspa
 SELECT round(_mobdb_span_joinsel('tbl_intspan'::regclass, 'i', 'tbl_intspan'::regclass, 'i', '&&(intspan,intspan)'::regoperator)::numeric, 6);
   round   
 ----------
- 0.102886
+ 0.102668
 (1 row)
 
 SELECT round(_mobdb_span_joinsel('tbl_intspan'::regclass, 'i', 'tbl_intspan'::regclass, 'i', '@>(intspan,intspan)'::regoperator)::numeric, 6);
@@ -117,7 +117,7 @@ SELECT round(_mobdb_span_joinsel('tbl_intspan'::regclass, 'i', 'tbl_intspan'::re
 SELECT round(_mobdb_span_joinsel('tbl_floatspan'::regclass, 'f', 'tbl_floatspan'::regclass, 'f', '&&(floatspan,floatspan)'::regoperator)::numeric, 6);
   round   
 ----------
- 0.115721
+ 0.115656
 (1 row)
 
 SELECT round(_mobdb_span_joinsel('tbl_floatspan'::regclass, 'f', 'tbl_floatspan'::regclass, 'f', '@>(floatspan,floatspan)'::regoperator)::numeric, 6);
@@ -129,7 +129,7 @@ SELECT round(_mobdb_span_joinsel('tbl_floatspan'::regclass, 'f', 'tbl_floatspan'
 SELECT round(_mobdb_span_joinsel('tbl_tstzspan'::regclass, 'p', 'tbl_tstzspan'::regclass, 'p', '&&(tstzspan,tstzspan)'::regoperator)::numeric, 6);
   round   
 ----------
- 0.000202
+ 0.000186
 (1 row)
 
 SELECT round(_mobdb_span_joinsel('tbl_tstzspan'::regclass, 'p', 'tbl_tstzspan'::regclass, 'p', '@>(tstzspan,tstzspan)'::regoperator)::numeric, 6);
@@ -144,7 +144,7 @@ ERROR:  Oid 1184 does not refer to a table
 SELECT _mobdb_span_sel('tbl_tstzspan'::regclass, 'X', '&&(tstzspan,tstzspan)'::regoperator, tstzspan '[2001-06-01, 2001-07-01]');
 ERROR:  attribute "X" does not exist
 SELECT _mobdb_span_sel('tbl_tstzspan'::regclass, 'p', '<(text,text)'::regoperator, tstzspan '[2001-06-01, 2001-07-01]');
-ERROR:  Unknown span operator 664
+ERROR:  Unknown operator Oid 664
 SELECT _mobdb_span_joinsel(1184, 'X', 'tbl_tstzspan'::regclass, 'p', '&&(tstzspan,tstzspan)'::regoperator);
 ERROR:  Oid 1184 does not refer to a table
 SELECT _mobdb_span_joinsel('tbl_tstzspan'::regclass, 'X', 'tbl_tstzspan'::regclass, 'p', '&&(tstzspan,tstzspan)'::regoperator);

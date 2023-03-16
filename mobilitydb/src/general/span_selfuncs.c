@@ -1082,19 +1082,74 @@ _mobdb_span_sel(PG_FUNCTION_ARGS)
  *    val1 / 2 + val2 + val3 + val4 + ... + val_n-1 + val_n / 2
  * The first and last terms above are computed out of the loop. The rest is
  * computed in the loop.
+ * @note Based on the article https://www.mdpi.com/2227-7390/11/6/1383
  */
 static double
 span_joinsel_scalar(const SpanBound *hist1, int nhist1,
-  const SpanBound *hist2, int nhist2, bool equal)
+  const SpanBound *hist2, int nhist2, bool equal __attribute__((unused)))
 {
-  Selectivity selec = (Selectivity)
-    (span_sel_scalar(&hist1[0], hist2, nhist2, equal) / 2);
-  for (int i = 1; i < nhist1 - 1; ++i)
-    selec += (Selectivity)
-      span_sel_scalar(&hist1[i], hist2, nhist2, equal);
-  selec += (Selectivity)
-    (span_sel_scalar(&hist1[nhist1 - 1], hist2, nhist2, equal) / 2);
-  return selec / (nhist1 - 1);
+  int i, j;
+  double selectivity, cur_sel1, cur_sel2, prev_sel1, prev_sel2;
+  SpanBound cur_sync;
+
+  /*
+   * Histograms will never be empty. In fact, a histogram will never have
+   * less than 2 values (1 bin)
+   */
+  assert(nhist1 > 1);
+  assert(nhist2 > 1);
+
+  /* Fast-forwards i and j to start of iteration */
+  for (i = 0; span_bound_cmp(&hist1[i], &hist2[0]) < 0; i++);
+  for (j = 0; span_bound_cmp(&hist2[j], &hist1[0]) < 0; j++);
+
+  if (span_bound_cmp(&hist1[i], &hist2[j]) < 0)
+    cur_sync = hist1[i++];
+  else if (span_bound_cmp(&hist1[i], &hist2[j]) > 0)
+    cur_sync = hist2[j++];
+  else
+  {
+    /* If equal, skip one */
+    cur_sync = hist1[i];
+    i++;
+    j++;
+  }
+  prev_sel1 = span_sel_scalar(&cur_sync, hist1, nhist1, false);
+  prev_sel2 = span_sel_scalar(&cur_sync, hist2, nhist2, false);
+
+  /*
+   * Do the estimation on overlapping region
+   */
+  selectivity = 0.0;
+  while (i < nhist1 && j < nhist2)
+  {
+    if (span_bound_cmp(&hist1[i], &hist2[j]) < 0)
+      cur_sync = hist1[i++];
+    else if (span_bound_cmp(&hist1[i], &hist2[j]) > 0)
+      cur_sync = hist2[j++];
+    else
+    {
+      /* If equal, skip one */
+      cur_sync = hist1[i];
+      i++;
+      j++;
+    }
+    cur_sel1 = span_sel_scalar(&cur_sync, hist1, nhist1, false);
+    cur_sel2 = span_sel_scalar(&cur_sync, hist2, nhist2, false);
+
+    selectivity += (prev_sel1 + cur_sel1) * (cur_sel2 - prev_sel2);
+
+    /* Prepare for the next iteration */
+    prev_sel1 = cur_sel1;
+    prev_sel2 = cur_sel2;
+  }
+  selectivity /= 2;
+
+  /* Include remainder of hist2 if any */
+  if (j < nhist2)
+    selectivity += 1 - prev_sel2;
+
+  return selectivity;
 }
 
 /**
@@ -1110,9 +1165,9 @@ span_joinsel_overlaps(SpanBound *lower1, SpanBound *upper1,
       span_bound_cmp(&lower2[0], &upper1[nhist1 - 1]) > 0)
     return 0.0;
 
-  double selec = span_joinsel_scalar(lower1, nhist1, upper2, nhist2, false);
-  selec += (1.0 - span_joinsel_scalar(upper1, nhist1, lower2, nhist2, true));
-  selec = 1.0 - selec;
+  double selec = 1.0;
+  selec -= span_joinsel_scalar(upper1, nhist1, lower2, nhist2, false);
+  selec -= span_joinsel_scalar(upper2, nhist2, lower1, nhist1, true);
 
   return selec;
 }
