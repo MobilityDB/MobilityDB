@@ -202,15 +202,12 @@ temptype_without_bbox(meosType temptype)
 size_t
 temporal_bbox_size(meosType temptype)
 {
-  if (talpha_type(temptype))
+  if (talpha_type(temptype) || temptype_without_bbox(temptype))
     return sizeof(Span);
   if (tnumber_type(temptype))
     return sizeof(TBox);
   if (tspatial_type(temptype))
     return sizeof(STBox);
-  /* Types without bounding box, such as tdoubleN, must be explicity stated */
-  if (temptype_without_bbox(temptype))
-    return 0;
   elog(ERROR, "unknown temporal type for bounding box function: %d", temptype);
 }
 
@@ -286,7 +283,7 @@ tinstarr_compute_bbox(const TInstant **instants, int count, bool lower_inc,
   bool upper_inc, interpType interp, void *box)
 {
   assert(temporal_type(instants[0]->temptype));
-  if (talpha_type(instants[0]->temptype))
+  if (talpha_type(temptype) || temptype_without_bbox(temptype))
     span_set(TimestampTzGetDatum(instants[0]->t),
       TimestampTzGetDatum(instants[count - 1]->t), lower_inc, upper_inc,
       T_TIMESTAMPTZ, (Span *) box);

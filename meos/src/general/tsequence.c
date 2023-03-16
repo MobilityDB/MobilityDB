@@ -759,9 +759,22 @@ tsequence_set_bbox(const TSequence *seq, void *box)
   return;
 }
 
+#ifdef DEBUG_BUILD
+/**
+ * @brief Function version of the the macro TSEQUENCESET_OFFSETS_PTR for
+ * debugging purposes
+ */
+size_t *
+tsequence_offsets_ptr(const TSequence *seq)
+{
+  return (size_t *)(((char *)(seq)) + DOUBLE_PAD(sizeof(TSequence)) +
+    DOUBLE_PAD((seq)->bboxsize - sizeof(Span)));
+}
+
 /**
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the n-th instant of a temporal sequence.
+ * @note The period component of the bbox is already declared in the struct
  * @pre The argument @p index is less than the number of instants in the
  * sequence
  */
@@ -769,13 +782,11 @@ const TInstant *
 tsequence_inst_n(const TSequence *seq, int index)
 {
   return (TInstant *)(
-    /* start of data */
     ((char *) seq) + DOUBLE_PAD(sizeof(TSequence)) +
-      ((seq->bboxsize == 0) ? 0 : (seq->bboxsize - sizeof(Span))) +
-      sizeof(size_t) * seq->maxcount +
-      /* offset */
-      (TSEQUENCE_OFFSETS_PTR(seq))[index]);
+    seq->bboxsize - sizeof(Span) + sizeof(size_t) * seq->maxcount +
+    (tsequence_offsets_ptr(seq))[index]);
 }
+#endif /* DEBUG_BUILD */
 
 /**
  * @brief Construct a temporal sequence from an array of temporal instants
@@ -810,7 +821,7 @@ tsequence_make1_exp(const TInstant **instants, int count, int maxcount,
   /* Get the bounding box size */
   size_t bboxsize = DOUBLE_PAD(temporal_bbox_size(instants[0]->temptype));
   /* The period component of the bbox is already declared in the struct */
-  size_t bboxsize_extra = (bboxsize == 0) ? 0 : bboxsize - sizeof(Span);
+  size_t bboxsize_extra = bboxsize - sizeof(Span);
 
   /* Compute the size of the temporal sequence */
   size_t insts_size = 0;
@@ -850,22 +861,9 @@ tsequence_make1_exp(const TInstant **instants, int count, int maxcount,
       MOBDB_FLAGS_GET_GEODETIC(instants[0]->flags));
   }
   /* Initialization of the variable-length part */
-  /*
-   * Compute the bounding box
-   * Only external types have bounding box, internal types such as doubleN,
-   * do not have bounding box but require to set the period attribute
-   */
-  if (bboxsize != 0)
-  {
-    tinstarr_compute_bbox((const TInstant **) norminsts, newcount, lower_inc,
-      upper_inc, interp, TSEQUENCE_BBOX_PTR(result));
-  }
-  else
-  {
-    span_set(TimestampTzGetDatum(norminsts[0]->t),
-      TimestampTzGetDatum(norminsts[newcount - 1]->t), lower_inc, upper_inc,
-      T_TIMESTAMPTZ, &result->period);
-  }
+  /* Compute the bounding box */
+  tinstarr_compute_bbox((const TInstant **) norminsts, newcount, lower_inc,
+    upper_inc, interp, TSEQUENCE_BBOX_PTR(result));
   /* Store the composing instants */
   size_t pdata = DOUBLE_PAD(sizeof(TSequence)) + bboxsize_extra +
     sizeof(size_t) * maxcount;
@@ -874,7 +872,7 @@ tsequence_make1_exp(const TInstant **instants, int count, int maxcount,
   {
     memcpy(((char *) result) + pdata + pos, norminsts[i],
       VARSIZE(norminsts[i]));
-    (TSEQUENCE_OFFSETS_PTR(result))[i] = pos;
+    (tsequence_offsets_ptr(result))[i] = pos;
     pos += DOUBLE_PAD(VARSIZE(norminsts[i]));
   }
   if (interp != DISCRETE && normalize && count > 1)
@@ -1472,8 +1470,8 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst,
     if (count != seq->count)
     {
       /* Update the offsets array and the count when adding one instant */
-      (TSEQUENCE_OFFSETS_PTR(seq))[count - 1] =
-        (TSEQUENCE_OFFSETS_PTR(seq))[count - 2] + size;
+      (tsequence_offsets_ptr(seq))[count - 1] =
+        (tsequence_offsets_ptr(seq))[count - 2] + size;
       seq->count++;
     }
     memcpy(new, inst, size);
@@ -1811,8 +1809,7 @@ TSequence *
 tsequence_compact(const TSequence *seq)
 {
   /* Compute the new total size of the sequence and allocate memory for it */
-  size_t bboxsize_extra = (seq->bboxsize == 0) ? 0 :
-    seq->bboxsize - sizeof(Span);
+  size_t bboxsize_extra = seq->bboxsize - sizeof(Span);
   /* Size of composing instants */
   size_t insts_size = 0;
   for (int i = 0; i < seq->count; i++)
