@@ -115,43 +115,38 @@ CREATE FUNCTION asHexWKB(tnpoint, endianenconding text DEFAULT '')
  * Constructors
  ******************************************************************************/
 
-CREATE FUNCTION tnpoint(npoint, timestamptz)
+CREATE FUNCTION tnpoint_inst(npoint, timestamptz)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Tinstant_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tnpoint(npoint, tstzset)
+CREATE FUNCTION tnpoint_seq(npoint, tstzset)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Tdiscseq_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tnpoint(npoint, tstzspan, boolean DEFAULT true)
+CREATE FUNCTION tnpoint_seq(npoint, tstzspan, text DEFAULT 'linear')
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Tsequence_from_base_time'
+  AS 'MODULE_PATHNAME', 'Tcontseq_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tnpoint(npoint, tstzspanset, boolean DEFAULT true)
+CREATE FUNCTION tnpoint_seqset(npoint, tstzspanset, text DEFAULT 'linear')
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************/
 
-CREATE FUNCTION tnpoint_discseq(tnpoint[])
+CREATE FUNCTION tnpoint_seq(tnpoint[], text DEFAULT 'linear',
+    lower_inc boolean DEFAULT true, upper_inc boolean DEFAULT true)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Tdiscseq_constructor'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tnpoint_contseq(tnpoint[], lower_inc boolean DEFAULT true,
-    upper_inc boolean DEFAULT true, linear bool DEFAULT true)
-  RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Tlinearseq_constructor'
+  AS 'MODULE_PATHNAME', 'Tsequence_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnpoint_seqset(tnpoint[])
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Tsequenceset_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION tnpoint_seqset_gaps(tnpoint[], linear bool DEFAULT true,
-    maxdist float DEFAULT 0.0, maxt interval DEFAULT '0 minutes')
+CREATE FUNCTION tnpoint_seqset_gaps(tnpoint[], maxt interval DEFAULT NULL,
+    maxdist float DEFAULT NULL, text DEFAULT 'linear')
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Tlinearseqset_constructor_gaps'
+  AS 'MODULE_PATHNAME', 'Tsequenceset_constructor_gaps'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
@@ -183,13 +178,9 @@ CREATE FUNCTION tnpoint_inst(tnpoint)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_to_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tnpoint_discseq(tnpoint)
+CREATE FUNCTION tnpoint_seq(tnpoint, text DEFAULT 'linear')
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Temporal_to_tdiscseq'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tnpoint_contseq(tnpoint)
-  RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Temporal_to_tcontseq'
+  AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnpoint_seqset(tnpoint)
   RETURNS tnpoint

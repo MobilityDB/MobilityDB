@@ -322,26 +322,26 @@ SELECT tnpointFromHexWKB(asHexWKB(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2000-01-
  Interp=Step;{[NPoint(1,0.2)@2000-01-01 00:00:00+00, NPoint(1,0.4)@2000-01-02 00:00:00+00, NPoint(1,0.5)@2000-01-03 00:00:00+00], [NPoint(2,0.6)@2000-01-04 00:00:00+00, NPoint(2,0.6)@2000-01-05 00:00:00+00]}
 (1 row)
 
-SELECT tnpoint('npoint(1,0)'::npoint, '2012-01-01'::timestamp);
-              tnpoint               
+SELECT tnpoint_inst('npoint(1,0)'::npoint, '2012-01-01'::timestamp);
+            tnpoint_inst            
 ------------------------------------
  NPoint(1,0)@2012-01-01 00:00:00+00
 (1 row)
 
-SELECT tnpoint_discseq(ARRAY['npoint(1,0)@2012-01-01'::tnpoint, 'npoint(2,1)@2012-02-01'::tnpoint]);
-                             tnpoint_discseq                              
+SELECT tnpoint_seq(ARRAY['npoint(1,0)@2012-01-01'::tnpoint, 'npoint(2,1)@2012-02-01'::tnpoint], 'discrete');
+                               tnpoint_seq                                
 --------------------------------------------------------------------------
  {NPoint(1,0)@2012-01-01 00:00:00+00, NPoint(2,1)@2012-02-01 00:00:00+00}
 (1 row)
 
-SELECT tnpoint_contseq(ARRAY['npoint(1,0)@2012-01-01'::tnpoint, 'npoint(1,1)@2012-02-01'::tnpoint], true, false);
-                             tnpoint_contseq                              
+SELECT tnpoint_seq(ARRAY['npoint(1,0)@2012-01-01'::tnpoint, 'npoint(1,1)@2012-02-01'::tnpoint], 'linear', true, false);
+                               tnpoint_seq                                
 --------------------------------------------------------------------------
  [NPoint(1,0)@2012-01-01 00:00:00+00, NPoint(1,1)@2012-02-01 00:00:00+00)
 (1 row)
 
 /* Error */
-SELECT tnpoint_contseq(ARRAY['npoint(1,0)@2012-01-01'::tnpoint, 'npoint(2,1)@2012-02-01'::tnpoint], true, false);
+SELECT tnpoint_seq(ARRAY['npoint(1,0)@2012-01-01'::tnpoint, 'npoint(2,1)@2012-02-01'::tnpoint], 'linear', true, false);
 ERROR:  All network points composing a temporal sequence must have same route identifier
 SELECT tnpoint_seqset(ARRAY[tnpoint '[npoint(1,0)@2012-01-01, npoint(1,1)@2012-02-01]', '[npoint(2,0)@2012-03-01, npoint(2,1)@2012-04-01]']);
                                                                     tnpoint_seqset                                                                    
@@ -355,14 +355,14 @@ SELECT tnpoint_inst(tnpoint 'Npoint(1, 0.5)@2000-01-01');
  NPoint(1,0.5)@2000-01-01 00:00:00+00
 (1 row)
 
-SELECT tnpoint_discseq(tnpoint 'Npoint(1, 0.5)@2000-01-01');
-            tnpoint_discseq             
+SELECT tnpoint_seq(tnpoint 'Npoint(1, 0.5)@2000-01-01', 'discrete');
+              tnpoint_seq               
 ----------------------------------------
  {NPoint(1,0.5)@2000-01-01 00:00:00+00}
 (1 row)
 
-SELECT tnpoint_contseq(tnpoint 'Npoint(1, 0.5)@2000-01-01');
-            tnpoint_contseq             
+SELECT tnpoint_seq(tnpoint 'Npoint(1, 0.5)@2000-01-01');
+              tnpoint_seq               
 ----------------------------------------
  [NPoint(1,0.5)@2000-01-01 00:00:00+00]
 (1 row)
@@ -379,14 +379,14 @@ SELECT tnpoint_inst(tnpoint '{Npoint(1, 0.3)@2000-01-01}');
  NPoint(1,0.3)@2000-01-01 00:00:00+00
 (1 row)
 
-SELECT tnpoint_discseq(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
-                                                  tnpoint_discseq                                                   
+SELECT tnpoint_seq(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 'discrete');
+                                                    tnpoint_seq                                                     
 --------------------------------------------------------------------------------------------------------------------
  {NPoint(1,0.3)@2000-01-01 00:00:00+00, NPoint(1,0.5)@2000-01-02 00:00:00+00, NPoint(1,0.5)@2000-01-03 00:00:00+00}
 (1 row)
 
-SELECT tnpoint_contseq(tnpoint '{Npoint(1, 0.3)@2000-01-01}');
-            tnpoint_contseq             
+SELECT tnpoint_seq(tnpoint '{Npoint(1, 0.3)@2000-01-01}');
+              tnpoint_seq               
 ----------------------------------------
  [NPoint(1,0.3)@2000-01-01 00:00:00+00]
 (1 row)
@@ -403,14 +403,14 @@ SELECT tnpoint_inst(tnpoint '[Npoint(1, 0.3)@2000-01-01]');
  NPoint(1,0.3)@2000-01-01 00:00:00+00
 (1 row)
 
-SELECT tnpoint_discseq(tnpoint '[Npoint(1, 0.3)@2000-01-01]');
-            tnpoint_discseq             
+SELECT tnpoint_seq(tnpoint '[Npoint(1, 0.3)@2000-01-01]', 'discrete');
+              tnpoint_seq               
 ----------------------------------------
  {NPoint(1,0.3)@2000-01-01 00:00:00+00}
 (1 row)
 
-SELECT tnpoint_contseq(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
-                                                  tnpoint_contseq                                                   
+SELECT tnpoint_seq(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+                                                    tnpoint_seq                                                     
 --------------------------------------------------------------------------------------------------------------------
  [NPoint(1,0.2)@2000-01-01 00:00:00+00, NPoint(1,0.4)@2000-01-02 00:00:00+00, NPoint(1,0.5)@2000-01-03 00:00:00+00]
 (1 row)
@@ -427,14 +427,14 @@ SELECT tnpoint_inst(tnpoint '{[Npoint(1, 0.3)@2000-01-01]}');
  NPoint(1,0.3)@2000-01-01 00:00:00+00
 (1 row)
 
-SELECT tnpoint_discseq(tnpoint '{[Npoint(1, 0.3)@2000-01-01], [Npoint(2, 0.6)@2000-01-04]}');
-                               tnpoint_discseq                                
+SELECT tnpoint_seq(tnpoint '{[Npoint(1, 0.3)@2000-01-01], [Npoint(2, 0.6)@2000-01-04]}', 'discrete');
+                                 tnpoint_seq                                  
 ------------------------------------------------------------------------------
  {NPoint(1,0.3)@2000-01-01 00:00:00+00, NPoint(2,0.6)@2000-01-04 00:00:00+00}
 (1 row)
 
-SELECT tnpoint_contseq(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]}');
-                                                  tnpoint_contseq                                                   
+SELECT tnpoint_seq(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]}');
+                                                    tnpoint_seq                                                     
 --------------------------------------------------------------------------------------------------------------------
  [NPoint(1,0.2)@2000-01-01 00:00:00+00, NPoint(1,0.4)@2000-01-02 00:00:00+00, NPoint(1,0.5)@2000-01-03 00:00:00+00]
 (1 row)

@@ -46,6 +46,7 @@
 #include <meos_internal.h>
 #include "general/lifting.h"
 #include "general/set.h"
+#include "general/tsequence.h"
 #include "general/type_util.h"
 /* MobilityDB */
 #include "pg_general/temporal.h"

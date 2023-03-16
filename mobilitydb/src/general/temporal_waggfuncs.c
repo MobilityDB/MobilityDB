@@ -40,6 +40,7 @@
 #include "general/doublen.h"
 #include "general/temporal_aggfuncs.h"
 #include "general/time_aggfuncs.h"
+#include "general/tsequence.h"
 /* MobilityDB */
 #include "pg_general/skiplist.h"
 #include "pg_general/temporal.h"
