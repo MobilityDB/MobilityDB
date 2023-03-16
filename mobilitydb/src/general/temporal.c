@@ -152,6 +152,19 @@ ensure_non_empty_array(ArrayType *array)
   return;
 }
 
+/**
+ * @brief Ensure that the interpolation is valid
+ * @note Used for the constructor functions
+ */
+void
+ensure_valid_interpolation(meosType temptype, interpType interp)
+{
+  if (interp == LINEAR && ! temptype_continuous(temptype))
+    ereport(ERROR, (errcode(ERRCODE_ARRAY_ELEMENT_ERROR),
+      errmsg("The temporal type cannot have linear interpolation")));
+  return;
+}
+
 /*****************************************************************************
  * Typmod functions
  *****************************************************************************/
@@ -641,12 +654,14 @@ PGDLLEXPORT Datum
 Tsequence_constructor(PG_FUNCTION_ARGS)
 {
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-  interpType interp = LINEAR;
+  meosType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
+  interpType interp = temptype_continuous(temptype) ? LINEAR : STEP;
   if (PG_NARGS() > 1 && !PG_ARGISNULL(1))
   {
     text *interp_txt = PG_GETARG_TEXT_P(1);
     char *interp_str = text2cstring(interp_txt);
     interp = interp_from_string(interp_str);
+    ensure_valid_interpolation(temptype, interp);
     pfree(interp_str);
   }
   bool lower_inc = true, upper_inc = true;
@@ -713,6 +728,7 @@ Tsequenceset_constructor_gaps(PG_FUNCTION_ARGS)
     text *interp_txt = PG_GETARG_TEXT_P(3);
     char *interp_str = text2cstring(interp_txt);
     interp = interp_from_string(interp_str);
+    ensure_valid_interpolation(temptype, interp);
     pfree(interp_str);
   }
   /* Store fcinfo into a global variable */
@@ -761,8 +777,14 @@ Tcontseq_from_base_time(PG_FUNCTION_ARGS)
   Span *p = PG_GETARG_SPAN_P(1);
   meosType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
   interpType interp = temptype_continuous(temptype) ? LINEAR : STEP;
-  if (PG_NARGS() > 2)
-    interp = PG_GETARG_BOOL(2) ? LINEAR : STEP;
+  if (PG_NARGS() > 2 && !PG_ARGISNULL(2))
+  {
+    text *interp_txt = PG_GETARG_TEXT_P(2);
+    char *interp_str = text2cstring(interp_txt);
+    interp = interp_from_string(interp_str);
+    ensure_valid_interpolation(temptype, interp);
+    pfree(interp_str);
+  }
   TSequence *result = tsequence_from_base_time(value, temptype, p, interp);
   PG_RETURN_POINTER(result);
 }
@@ -781,8 +803,14 @@ Tsequenceset_from_base_time(PG_FUNCTION_ARGS)
   SpanSet *ps = PG_GETARG_SPANSET_P(1);
   meosType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
   interpType interp = temptype_continuous(temptype) ? LINEAR : STEP;
-  if (PG_NARGS() > 2)
-    interp = PG_GETARG_BOOL(2) ? LINEAR : STEP;
+  if (PG_NARGS() > 2 && !PG_ARGISNULL(2))
+  {
+    text *interp_txt = PG_GETARG_TEXT_P(2);
+    char *interp_str = text2cstring(interp_txt);
+    interp = interp_from_string(interp_str);
+    ensure_valid_interpolation(temptype, interp);
+    pfree(interp_str);
+  }
   TSequenceSet *result = tsequenceset_from_base_time(value, temptype, ps,
     interp);
   PG_FREE_IF_COPY(ps, 1);
@@ -1720,6 +1748,7 @@ Temporal_to_tsequence(PG_FUNCTION_ARGS)
     text *interp_txt = PG_GETARG_TEXT_P(1);
     char *interp_str = text2cstring(interp_txt);
     interp = interp_from_string(interp_str);
+    ensure_valid_interpolation(temp->temptype, interp);
     pfree(interp_str);
   }
   Temporal *result = (interp == DISCRETE) ?

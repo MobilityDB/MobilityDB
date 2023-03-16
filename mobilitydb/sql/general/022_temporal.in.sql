@@ -255,7 +255,7 @@ CREATE FUNCTION tint_seq(integer, tstzspan)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Tcontseq_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tfloat_seq(float, tstzspan, boolean DEFAULT true)
+CREATE FUNCTION tfloat_seq(float, tstzspan, text DEFAULT 'linear')
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tcontseq_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -272,7 +272,7 @@ CREATE FUNCTION tint_seqset(integer, tstzspanset)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tfloat_seqset(float, tstzspanset, boolean DEFAULT true)
+CREATE FUNCTION tfloat_seqset(float, tstzspanset, text DEFAULT 'linear')
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

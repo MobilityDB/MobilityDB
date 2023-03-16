@@ -153,20 +153,20 @@ CREATE FUNCTION tgeogpoint_seq(geography, tstzset)
   AS 'MODULE_PATHNAME', 'Tdiscseq_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tgeompoint_seq(geometry, tstzspan, linear bool DEFAULT true)
+CREATE FUNCTION tgeompoint_seq(geometry, tstzspan, text DEFAULT 'linear')
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Tcontseq_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeogpoint_seq(geography, tstzspan, linear bool DEFAULT true)
+CREATE FUNCTION tgeogpoint_seq(geography, tstzspan, text DEFAULT 'linear')
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Tcontseq_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tgeompoint_seqset(geometry, tstzspanset, linear bool DEFAULT true)
+CREATE FUNCTION tgeompoint_seqset(geometry, tstzspanset, text DEFAULT 'linear')
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeogpoint_seqset(geography, tstzspanset, linear bool DEFAULT true)
+CREATE FUNCTION tgeogpoint_seqset(geography, tstzspanset, text DEFAULT 'linear')
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

@@ -2331,6 +2331,36 @@ SELECT SUM(numInstants(deleteTime(t1.temp, t2.ps, false))) FROM tbl_ttext t1, tb
  94941
 (1 row)
 
+WITH temp AS (
+  SELECT DISTINCT ON (getTimestamp(inst)) inst
+  FROM tbl_tint_inst
+  ORDER BY getTimestamp(inst) )
+SELECT SUM(numInstants(insert(t1.inst, t2.inst))) FROM temp t1, temp t2 WHERE getTimestamp(t1.inst) < getTimestamp(t2.inst);
+ sum  
+------
+ 9312
+(1 row)
+
+WITH temp AS (
+  SELECT DISTINCT ON (getTimestamp(inst)) inst
+  FROM tbl_tfloat_inst
+  ORDER BY getTimestamp(inst) )
+SELECT SUM(numInstants(insert(t1.inst, t2.inst))) FROM temp t1, temp t2 WHERE getTimestamp(t1.inst) < getTimestamp(t2.inst);
+ sum  
+------
+ 9312
+(1 row)
+
+WITH temp AS (
+  SELECT DISTINCT ON (getTimestamp(inst)) inst
+  FROM tbl_ttext_inst
+  ORDER BY getTimestamp(inst) )
+SELECT SUM(numInstants(insert(t1.inst, t2.inst))) FROM temp t1, temp t2 WHERE getTimestamp(t1.inst) < getTimestamp(t2.inst);
+ sum  
+------
+ 9312
+(1 row)
+
 SELECT SUM(numInstants(update(t1.temp, t2.temp))) FROM tbl_tbool t1, tbl_tbool t2 WHERE t1.k < t2.k;
   sum  
 -------

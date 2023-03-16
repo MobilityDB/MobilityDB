@@ -259,7 +259,7 @@ SELECT tbool_seq(true, tstzspan '[2012-01-01, 2012-01-03]');
 SELECT tint_seq(1, tstzspan '[2012-01-01, 2012-01-03]');
 SELECT tfloat_seq(1.5, tstzspan '[2012-01-01, 2012-01-01]');
 SELECT tfloat_seq(1.5, tstzspan '[2012-01-01, 2012-01-03]');
-SELECT tfloat_seq(1.5, tstzspan '[2012-01-01, 2012-01-03]', false);
+SELECT tfloat_seq(1.5, tstzspan '[2012-01-01, 2012-01-03]', 'step');
 SELECT ttext_seq('AAA', tstzspan '[2012-01-01, 2012-01-03]');
 -- NULL
 SELECT tbool_seq(NULL, tstzspan '[2012-01-01, 2012-01-03]');
@@ -270,7 +270,7 @@ SELECT ttext_seq(NULL, tstzspan '[2012-01-01, 2012-01-03]');
 SELECT tbool_seqset(true, tstzspanset '{[2012-01-01, 2012-01-03]}');
 SELECT tint_seqset(1, tstzspanset '{[2012-01-01, 2012-01-03]}');
 SELECT tfloat_seqset(1.5, tstzspanset '{[2012-01-01, 2012-01-03]}');
-SELECT tfloat_seqset(1.5, tstzspanset '{[2012-01-01, 2012-01-03]}', false);
+SELECT tfloat_seqset(1.5, tstzspanset '{[2012-01-01, 2012-01-03]}', 'step');
 SELECT ttext_seqset('AAA', tstzspanset '{[2012-01-01, 2012-01-03]}');
 -- NULL
 SELECT tbool_seqset(NULL, tstzspanset '{[2012-01-01, 2012-01-03]}');
@@ -422,6 +422,8 @@ SELECT tint_seqset_gaps(ARRAY[tint '1@2000-01-01', '3@2000-01-02', '4@2000-01-03
 SELECT tint_seqset_gaps(ARRAY[tint '1@2000-01-01', '3@2000-01-02', '4@2000-01-03', '5@2000-01-05'], NULL, 1);
 SELECT tint_seqset_gaps(ARRAY[tint '1@2000-01-01', '3@2000-01-02', '4@2000-01-03', '5@2000-01-05'], '1 day', NULL);
 SELECT tint_seqset_gaps(ARRAY[tint '1@2000-01-01', '3@2000-01-02', '4@2000-01-03', '5@2000-01-05'], '1 day', 1);
+-- NULL
+SELECT tint_seqset_gaps(NULL);
 
 SELECT tfloat_seqset_gaps(ARRAY[tfloat '1@2000-01-01', '3@2000-01-02', '4@2000-01-03', '5@2000-01-05']);
 SELECT tfloat_seqset_gaps(ARRAY[tfloat '1@2000-01-01', '3@2000-01-02', '4@2000-01-03', '5@2000-01-05'], NULL, NULL, 'linear');

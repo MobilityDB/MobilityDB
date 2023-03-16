@@ -595,15 +595,15 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="temporal_FromMFJSON"><varname>&lt;ttype&gt;FromMFJSON</varname></link>: Input from a Moving Features JSON (MF-JSON) representation</para>
+					<para><link linkend="temporal_FromMFJSON"><varname>ttypeFromMFJSON</varname></link>: Input from a Moving Features JSON (MF-JSON) representation</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="temporal_FromBinary"><varname>&lt;ttype&gt;FromBinary</varname></link>: Input from a Well-Known Binary (WKB) representation</para>
+					<para><link linkend="temporal_FromBinary"><varname>ttypeFromBinary</varname></link>: Input from a Well-Known Binary (WKB) representation</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="temporal_FromHexWKB"><varname>&lt;ttype&gt;FromHexWKB</varname></link>: Input from an Hexadecimal Well-Known Binary (HexWKB) representation</para>
+					<para><link linkend="temporal_FromHexWKB"><varname>ttypeFromHexWKB</varname></link>: Input from an Hexadecimal Well-Known Binary (HexWKB) representation</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -630,15 +630,15 @@
 			<title>Constructors</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="ttype_const"><varname>&lt;ttype&gt;</varname></link>: Constructor for temporal types from a base value and a time value</para>
+					<para><link linkend="ttype_const"><varname>ttype</varname></link>: Constructor for temporal types from a base value and a time value</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_seq"><varname>&lt;ttype&gt;_discseq</varname></link>: Constructor for temporal types of sequence subtype</para>
+					<para><link linkend="ttype_seq"><varname>ttype_discseq</varname></link>: Constructor for temporal types of sequence subtype</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_seqset"><varname>&lt;ttype&gt;_seqset</varname>, <varname>&lt;ttype&gt;_seqset_gaps</varname></link>: Constructor for temporal types of sequence set subtype</para>
+					<para><link linkend="ttype_seqset"><varname>ttype_seqset</varname>, <varname>ttype_seqset_gaps</varname></link>: Constructor for temporal types of sequence set subtype</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -784,7 +784,7 @@
 
 			<itemizedlist>
 				<listitem>
-				<para><link linkend="ttype_subtype"><varname>&lt;ttype&gt;_inst, &lt;ttype&gt;_seq, &lt;ttype&gt;_seqset</varname></link>: Transform a temporal value to another subtype</para>
+				<para><link linkend="ttype_subtype"><varname>ttype_inst, ttype_seq, ttype_seqset</varname></link>: Transform a temporal value to another subtype</para>
 				</listitem>
 
 				<listitem>

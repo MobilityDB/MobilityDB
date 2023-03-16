@@ -409,16 +409,16 @@ SELECT asEWKT(tgeompoint_seq(NULL, tstzset '{2012-01-01, 2012-01-02, 2012-01-03}
 
 SELECT asEWKT(tgeompoint_seq(ST_Point(1,1), tstzspan '[2012-01-01, 2012-01-03]'));
 SELECT asEWKT(tgeogpoint_seq(ST_Point(1,1), tstzspan '[2012-01-01, 2012-01-03]'));
-SELECT asEWKT(tgeompoint_seq(ST_Point(1,1), tstzspan '[2012-01-01, 2012-01-03]', false));
-SELECT asEWKT(tgeogpoint_seq(ST_Point(1,1), tstzspan '[2012-01-01, 2012-01-03]', false));
+SELECT asEWKT(tgeompoint_seq(ST_Point(1,1), tstzspan '[2012-01-01, 2012-01-03]', 'step'));
+SELECT asEWKT(tgeogpoint_seq(ST_Point(1,1), tstzspan '[2012-01-01, 2012-01-03]', 'step'));
 -- NULL
 SELECT asEWKT(tgeompoint_seq(NULL, tstzspan '[2012-01-01, 2012-01-03]'));
 SELECT asEWKT(tgeogpoint_seq(NULL, tstzspan '[2012-01-01, 2012-01-03]'));
 
 SELECT asEWKT(tgeompoint_seqset(ST_Point(1,1), tstzspanset '{[2012-01-01, 2012-01-03]}'));
 SELECT asEWKT(tgeogpoint_seqset(ST_Point(1,1), tstzspanset '{[2012-01-01, 2012-01-03]}'));
-SELECT asEWKT(tgeompoint_seqset(ST_Point(1,1), tstzspanset '{[2012-01-01, 2012-01-03]}', false));
-SELECT asEWKT(tgeogpoint_seqset(ST_Point(1,1), tstzspanset '{[2012-01-01, 2012-01-03]}', false));
+SELECT asEWKT(tgeompoint_seqset(ST_Point(1,1), tstzspanset '{[2012-01-01, 2012-01-03]}', 'step'));
+SELECT asEWKT(tgeogpoint_seqset(ST_Point(1,1), tstzspanset '{[2012-01-01, 2012-01-03]}', 'step'));
 -- NULL
 SELECT asEWKT(tgeompoint_seqset(NULL, tstzspanset '{[2012-01-01, 2012-01-03]}'));
 SELECT asEWKT(tgeompoint_seqset(NULL, tstzspanset '{[2012-01-01, 2012-01-03]}'));

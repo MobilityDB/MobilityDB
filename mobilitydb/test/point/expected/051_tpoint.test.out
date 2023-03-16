@@ -1017,13 +1017,13 @@ SELECT asEWKT(tgeogpoint_seq(ST_Point(1,1), tstzspan '[2012-01-01, 2012-01-03]')
  SRID=4326;[POINT(1 1)@2012-01-01 00:00:00+00, POINT(1 1)@2012-01-03 00:00:00+00]
 (1 row)
 
-SELECT asEWKT(tgeompoint_seq(ST_Point(1,1), tstzspan '[2012-01-01, 2012-01-03]', false));
+SELECT asEWKT(tgeompoint_seq(ST_Point(1,1), tstzspan '[2012-01-01, 2012-01-03]', 'step'));
                                        asewkt                                       
 ------------------------------------------------------------------------------------
  Interp=Step;[POINT(1 1)@2012-01-01 00:00:00+00, POINT(1 1)@2012-01-03 00:00:00+00]
 (1 row)
 
-SELECT asEWKT(tgeogpoint_seq(ST_Point(1,1), tstzspan '[2012-01-01, 2012-01-03]', false));
+SELECT asEWKT(tgeogpoint_seq(ST_Point(1,1), tstzspan '[2012-01-01, 2012-01-03]', 'step'));
                                             asewkt                                            
 ----------------------------------------------------------------------------------------------
  SRID=4326,Interp=Step;[POINT(1 1)@2012-01-01 00:00:00+00, POINT(1 1)@2012-01-03 00:00:00+00]
@@ -1053,13 +1053,13 @@ SELECT asEWKT(tgeogpoint_seqset(ST_Point(1,1), tstzspanset '{[2012-01-01, 2012-0
  SRID=4326;{[POINT(1 1)@2012-01-01 00:00:00+00, POINT(1 1)@2012-01-03 00:00:00+00]}
 (1 row)
 
-SELECT asEWKT(tgeompoint_seqset(ST_Point(1,1), tstzspanset '{[2012-01-01, 2012-01-03]}', false));
+SELECT asEWKT(tgeompoint_seqset(ST_Point(1,1), tstzspanset '{[2012-01-01, 2012-01-03]}', 'step'));
                                         asewkt                                        
 --------------------------------------------------------------------------------------
  Interp=Step;{[POINT(1 1)@2012-01-01 00:00:00+00, POINT(1 1)@2012-01-03 00:00:00+00]}
 (1 row)
 
-SELECT asEWKT(tgeogpoint_seqset(ST_Point(1,1), tstzspanset '{[2012-01-01, 2012-01-03]}', false));
+SELECT asEWKT(tgeogpoint_seqset(ST_Point(1,1), tstzspanset '{[2012-01-01, 2012-01-03]}', 'step'));
                                              asewkt                                             
 ------------------------------------------------------------------------------------------------
  SRID=4326,Interp=Step;{[POINT(1 1)@2012-01-01 00:00:00+00, POINT(1 1)@2012-01-03 00:00:00+00]}
