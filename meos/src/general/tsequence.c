@@ -761,7 +761,7 @@ tsequence_set_bbox(const TSequence *seq, void *box)
 
 #ifdef DEBUG_BUILD
 /**
- * @brief Function version of the the macro TSEQUENCESET_OFFSETS_PTR for
+ * @brief Function version of the the macro of the same name for
  * debugging purposes
  */
 size_t *
