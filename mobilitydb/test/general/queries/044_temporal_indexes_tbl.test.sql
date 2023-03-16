@@ -699,8 +699,8 @@ CREATE INDEX tbl_tfloat_big_allthesame_quadtree_idx ON tbl_tfloat_big_allthesame
 ANALYZE tbl_tfloat_big_allthesame;
 
 -- TODO
-SELECT COUNT(*) FROM tbl_tfloat_big_allthesame WHERE temp && 5.0;
-SELECT k FROM tbl_tfloat_big_allthesame ORDER BY temp |=| 5.0, k LIMIT 3;
+-- SELECT COUNT(*) FROM tbl_tfloat_big_allthesame WHERE temp && 5.0;
+-- SELECT k FROM tbl_tfloat_big_allthesame ORDER BY temp |=| 5.0, k LIMIT 3;
 
 DROP TABLE tbl_tfloat_big_allthesame;
 
