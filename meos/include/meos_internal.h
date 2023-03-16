@@ -287,6 +287,53 @@ extern void stbox_set_box3d(const STBox *box, BOX3D *box3d);
  * Functions for temporal types
  *****************************************************************************/
 
+/* Macros for speeding up access to components of temporal sequences (sets)*/
+
+#ifdef DEBUG_BUILD
+extern const TInstant *tsequence_inst_n(const TSequence *seq, int index);
+extern const TSequence *tsequenceset_seq_n(const TSequenceSet *ss, int index);
+#else
+/**
+ * @brief Return a pointer to the offsets array of a temporal sequence
+ * @note The period component of the bbox is already declared in the struct
+ */
+#define tsequence_offsets_ptr(seq) ( \
+  (size_t *)(((char *) (seq)) + DOUBLE_PAD(sizeof(TSequence)) + \
+  DOUBLE_PAD((seq)->bboxsize - sizeof(Span))) )
+
+/**
+ * @brief Return the n-th instant of a temporal sequence.
+ * @note The period component of the bbox is already declared in the struct
+ * @pre The argument @p index is less than the number of instants in the
+ * sequence
+ */
+#define tsequence_inst_n(seq, index) ( (TInstant *)( \
+  ((char *) (seq)) + DOUBLE_PAD(sizeof(TSequence)) + \
+  ((seq)->bboxsize - sizeof(Span)) + (sizeof(size_t) * (seq)->maxcount) + \
+  (tsequence_offsets_ptr(seq))[index]) )
+
+/**
+ * @brief Return a pointer to the offsets array of a temporal sequence set
+ * @note The period component of the bbox is already declared in the struct
+ */
+#define tsequenceset_offsets_ptr(ss) ( \
+  (size_t *)(((char *)(ss)) + DOUBLE_PAD(sizeof(TSequenceSet)) + \
+  DOUBLE_PAD((ss)->bboxsize - sizeof(Span))) )
+
+/**
+ * @brief Return the n-th sequence of a temporal sequence set
+ * @note The period component of the bbox is already declared in the struct
+ * @pre The argument @p index is less than the number of sequences in the
+ * sequence set
+ */
+#define tsequenceset_seq_n(ss, index) ( (TSequence *)( \
+  ((char *) (ss)) + DOUBLE_PAD(sizeof(TSequenceSet)) +  \
+  ((ss)->bboxsize - sizeof(Span)) + (sizeof(size_t) * (ss)->maxcount) + \
+  (tsequenceset_offsets_ptr(ss))[index]) )
+#endif /* DEBUG_BUILD */
+
+/*****************************************************************************/
+
 /* Input/output functions for temporal types */
 
 extern char **geoarr_as_text(const Datum *geoarr, int count, int maxdd, bool extended);
@@ -428,15 +475,12 @@ extern bool tdiscseq_value_at_timestamp(const TSequence *seq, TimestampTz t, Dat
 extern Interval *tsequence_duration(const TSequence *seq);
 extern TimestampTz tsequence_end_timestamp(const TSequence *seq);
 extern uint32 tsequence_hash(const TSequence *seq);
-extern const TInstant *tsequence_inst_n(const TSequence *seq, int index);
 extern const TInstant **tsequence_instants(const TSequence *seq);
 extern const TInstant *tsequence_max_instant(const TSequence *seq);
 extern Datum tsequence_max_value(const TSequence *seq);
 extern const TInstant *tsequence_min_instant(const TSequence *seq);
 extern Datum tsequence_min_value(const TSequence *seq);
-extern size_t *tsequence_offsets_ptr(const TSequence *seq);
 extern TSequence **tsequence_segments(const TSequence *seq, int *count);
-extern const TSequence *tsequenceset_seq_n(const TSequenceSet *ss, int index);
 extern TSequence **tsequence_sequences(const TSequence *seq, int *count);
 extern void tsequence_set_bbox(const TSequence *seq, void *box);
 extern void tsequence_expand_bbox(TSequence *seq, const TInstant *inst);
