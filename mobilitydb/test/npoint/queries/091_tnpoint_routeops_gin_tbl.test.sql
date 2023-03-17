@@ -48,19 +48,40 @@ CREATE TABLE test_topops(
 -------------------------------------------------------------------------------
 
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '@@', 'tnpoint', 'bigintset', COUNT(*) FROM tbl_tnpoint WHERE temp @@ bigintset '{25, 35}';
+SELECT '@@', 'tnpoint', 'bigintset', COUNT(*) FROM tbl_tnpoint
+WHERE temp @@ bigintset '{25, 35}';
 
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '@@', 'tnpoint', 'bigint', COUNT(*) FROM tbl_tnpoint WHERE temp @? 25;
+SELECT '@@', 'tnpoint', 'tnpoint', COUNT(*) FROM tbl_tnpoint
+WHERE temp @@ tnpoint '{NPoint(37,0.5)@2001-08-16, NPoint(78,0.5)@2001-08-17}';
 
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '@?', 'tnpoint', 'bigintset', COUNT(*) FROM tbl_tnpoint WHERE temp @? bigintset '{25, 35}';
+SELECT '@@', 'tnpoint', 'bigint', COUNT(*) FROM tbl_tnpoint
+WHERE temp @? 25;
 
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '?@', 'tnpoint', 'bigintset', COUNT(*) FROM tbl_tnpoint WHERE temp ?@ bigintset '{25, 35}';
+SELECT '@?', 'tnpoint', 'bigintset', COUNT(*) FROM tbl_tnpoint
+WHERE temp @? bigintset '{25, 35}';
 
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '@=', 'tnpoint', 'bigintset', COUNT(*) FROM tbl_tnpoint WHERE temp @= bigintset '{25, 35}';
+SELECT '@?', 'tnpoint', 'tnpoint', COUNT(*) FROM tbl_tnpoint
+WHERE temp @? tnpoint '{NPoint(37,0.5)@2001-08-16, NPoint(78,0.5)@2001-08-17}';
+
+INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
+SELECT '?@', 'tnpoint', 'bigintset', COUNT(*) FROM tbl_tnpoint
+WHERE temp ?@ bigintset '{25, 35}';
+
+INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
+SELECT '?@', 'tnpoint', 'tnpoint', COUNT(*) FROM tbl_tnpoint
+WHERE temp ?@ tnpoint '{NPoint(37,0.5)@2001-08-16, NPoint(78,0.5)@2001-08-17}';
+
+INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
+SELECT '@=', 'tnpoint', 'bigintset', COUNT(*) FROM tbl_tnpoint
+WHERE temp @= bigintset '{25, 35}';
+
+INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
+SELECT '@=', 'tnpoint', 'tnpoint', COUNT(*) FROM tbl_tnpoint
+WHERE temp @= tnpoint '{NPoint(37,0.5)@2001-08-16, NPoint(78,0.5)@2001-08-17}';
 
 -------------------------------------------------------------------------------
 
@@ -73,6 +94,11 @@ SET gin_idx = ( SELECT COUNT(*) FROM tbl_tnpoint WHERE temp @@ bigintset '{25, 3
 WHERE op = '@@' AND leftarg = 'tnpoint' AND rightarg = 'bigintset';
 
 UPDATE test_topops
+SET gin_idx = ( SELECT COUNT(*) FROM tbl_tnpoint WHERE temp @@
+  tnpoint '{NPoint(37,0.5)@2001-08-16, NPoint(78,0.5)@2001-08-17}' )
+WHERE op = '@@' AND leftarg = 'tnpoint' AND rightarg = 'tnpoint';
+
+UPDATE test_topops
 SET gin_idx = ( SELECT COUNT(*) FROM tbl_tnpoint WHERE temp @? 25 )
 WHERE op = '@@' AND leftarg = 'tnpoint' AND rightarg = 'bigint';
 
@@ -81,12 +107,27 @@ SET gin_idx = ( SELECT COUNT(*) FROM tbl_tnpoint WHERE temp @? bigintset '{25, 3
 WHERE op = '@?' AND leftarg = 'tnpoint' AND rightarg = 'bigintset';
 
 UPDATE test_topops
+SET gin_idx = ( SELECT COUNT(*) FROM tbl_tnpoint WHERE temp @?
+  tnpoint '{NPoint(37,0.5)@2001-08-16, NPoint(78,0.5)@2001-08-17}' )
+WHERE op = '@?' AND leftarg = 'tnpoint' AND rightarg = 'tnpoint';
+
+UPDATE test_topops
 SET gin_idx = ( SELECT COUNT(*) FROM tbl_tnpoint WHERE temp ?@ bigintset '{25, 35}' )
 WHERE op = '?@' AND leftarg = 'tnpoint' AND rightarg = 'bigintset';
 
 UPDATE test_topops
+SET gin_idx = ( SELECT COUNT(*) FROM tbl_tnpoint WHERE temp ?@
+  tnpoint '{NPoint(37,0.5)@2001-08-16, NPoint(78,0.5)@2001-08-17}' )
+WHERE op = '?@' AND leftarg = 'tnpoint' AND rightarg = 'tnpoint';
+
+UPDATE test_topops
 SET gin_idx = ( SELECT COUNT(*) FROM tbl_tnpoint WHERE temp @= bigintset '{25, 35}' )
 WHERE op = '@=' AND leftarg = 'tnpoint' AND rightarg = 'bigintset';
+
+UPDATE test_topops
+SET gin_idx = ( SELECT COUNT(*) FROM tbl_tnpoint WHERE temp @=
+  tnpoint '{NPoint(37,0.5)@2001-08-16, NPoint(78,0.5)@2001-08-17}' )
+WHERE op = '@=' AND leftarg = 'tnpoint' AND rightarg = 'tnpoint';
 
 -------------------------------------------------------------------------------
 
