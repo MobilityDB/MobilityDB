@@ -1085,8 +1085,8 @@ _mobdb_span_sel(PG_FUNCTION_ARGS)
  * @note Based on the article https://www.mdpi.com/2227-7390/11/6/1383
  */
 static double
-span_joinsel_scalar(const SpanBound *hist1, int nhist1,
-  const SpanBound *hist2, int nhist2, bool equal __attribute__((unused)))
+span_joinsel_scalar(const SpanBound *hist1, int nhist1, const SpanBound *hist2,
+  int nhist2, bool equal __attribute__((unused)))
 {
   int i, j;
   double selectivity, cur_sel1, cur_sel2, prev_sel1, prev_sel2;
@@ -1157,8 +1157,8 @@ span_joinsel_scalar(const SpanBound *hist1, int nhist1,
  * value in the second histogram
  */
 static double
-span_joinsel_overlaps(SpanBound *lower1, SpanBound *upper1,
-  int nhist1, SpanBound *lower2, SpanBound *upper2, int nhist2)
+span_joinsel_overlaps(SpanBound *lower1, SpanBound *upper1, int nhist1,
+  SpanBound *lower2, SpanBound *upper2, int nhist2)
 {
   /* If the spans do not overlap return 0.0 */
   if (span_bound_cmp(&lower1[0], &upper2[nhist2 - 1]) > 0 ||
@@ -1177,9 +1177,9 @@ span_joinsel_overlaps(SpanBound *lower1, SpanBound *upper1,
  * value in the second histogram
  */
 static double
-span_joinsel_contains(SpanBound *lower1, SpanBound *upper1,
-  int nhist1, SpanBound *lower2, SpanBound *upper2, int nhist2,
-  Datum *length, int length_nvalues)
+span_joinsel_contains(SpanBound *lower1, SpanBound *upper1, int nhist1,
+  SpanBound *lower2, SpanBound *upper2, int nhist2, Datum *length,
+  int length_nvalues)
 {
   /* If the spans do not overlap return 0.0 */
   if (span_bound_cmp(&lower1[0], &upper2[nhist2 - 1]) > 0 ||
@@ -1198,9 +1198,9 @@ span_joinsel_contains(SpanBound *lower1, SpanBound *upper1,
  * contained in a value in the second histogram
  */
 static double
-span_joinsel_contained(SpanBound *lower1, SpanBound *upper1,
-  int nhist1, SpanBound *lower2, SpanBound *upper2, int nhist2,
-  Datum *length, int length_nvalues)
+span_joinsel_contained(SpanBound *lower1, SpanBound *upper1, int nhist1,
+  SpanBound *lower2, SpanBound *upper2, int nhist2, Datum *length,
+  int length_nvalues)
 {
   /* If the spans do not overlap return 0.0 */
   if (span_bound_cmp(&lower1[0], &upper2[nhist2 - 1]) > 0 ||
