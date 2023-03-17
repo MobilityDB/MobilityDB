@@ -669,6 +669,10 @@ temporal_parse(const char **str, meosType temptype)
     *str += 12;
     interp = STEP;
   }
+
+  /* Allow spaces after the Interpolation */
+  p_whitespace(str);
+
   if (**str != '{' && **str != '[' && **str != '(')
     result = (Temporal *) tinstant_parse(str, temptype, true, true);
   else if (**str == '[' || **str == '(')
