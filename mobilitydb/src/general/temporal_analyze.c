@@ -129,7 +129,7 @@ temporal_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   SpanBound *time_lowers, *time_uppers;
   double total_width = 0;
   meosType type = oid_type(stats->attrtypid);
-  ensure_temporal_type(type);
+  assert(temporal_type(type));
   bool tnumber = tnumber_type(type);
 
   /* Store in global variable */

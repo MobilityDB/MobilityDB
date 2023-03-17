@@ -363,8 +363,8 @@ ensure_valid_tseqarr(const TSequence **sequences, int count)
 void
 ensure_positive_datum(Datum size, meosType basetype)
 {
-  ensure_span_basetype(basetype);
-  if (basetype == T_INT4) /** x **/
+  assert(span_basetype(basetype));
+  if (basetype == T_INT4)
   {
     int isize = DatumGetInt32(size);
     if (isize <= 0)
@@ -1202,7 +1202,7 @@ temporal_to_period(const Temporal *temp)
 void
 tnumber_set_span(const Temporal *temp, Span *s)
 {
-  ensure_tnumber_type(temp->temptype);
+  assert(tnumber_type(temp->temptype));
   ensure_valid_tempsubtype(temp->subtype);
   meosType basetype = temptype_basetype(temp->temptype);
   if (temp->subtype == TINSTANT)
@@ -3549,7 +3549,7 @@ tnumber_at_tbox(const Temporal *temp, const TBox *box)
   if (hasx)
   {
     /* Ensure function is called for temporal numbers */
-    ensure_tnumber_type(temp->temptype);
+    assert(tnumber_type(temp->temptype));
     result = tnumber_restrict_span(temp1, &box->span, REST_AT);
   }
   else

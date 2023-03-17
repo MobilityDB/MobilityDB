@@ -52,7 +52,7 @@
 Datum
 span_value_min(Datum l, Datum r, meosType type)
 {
-  ensure_span_basetype(type);
+  assert(span_basetype(type));
   if (type == T_TIMESTAMPTZ)
     return TimestampTzGetDatum(Min(DatumGetTimestampTz(l),
       DatumGetTimestampTz(r)));
@@ -70,7 +70,7 @@ span_value_min(Datum l, Datum r, meosType type)
 Datum
 span_value_max(Datum l, Datum r, meosType type)
 {
-  ensure_span_basetype(type);
+  assert(span_basetype(type));
   if (type == T_TIMESTAMPTZ)
     return TimestampTzGetDatum(Max(DatumGetTimestampTz(l),
       DatumGetTimestampTz(r)));
@@ -1382,9 +1382,9 @@ minus_span_span(const Span *s1, const Span *s2)
 double
 distance_value_value(Datum l, Datum r, meosType typel, meosType typer)
 {
-  ensure_span_basetype(typel);
+  assert(span_basetype(typel));
   if (typel != typer)
-    ensure_span_basetype(typer);
+    assert(span_basetype(typer));
   if (typel == T_INT4 && typer == T_INT4)
     return (double) abs(DatumGetInt32(l) - DatumGetInt32(r));
   if (typel == T_INT8 && typer == T_INT8)

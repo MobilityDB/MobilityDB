@@ -31,6 +31,8 @@
  * @brief Aggregate functions for set types.
  */
 
+/* C */
+#include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <utils/memutils.h>
@@ -66,7 +68,7 @@ Value_union_transfn(PG_FUNCTION_ARGS)
 
   Oid valueoid = get_fn_expr_argtype(fcinfo->flinfo, 1);
   meosType basetype = oid_type(valueoid);
-  ensure_set_basetype(basetype);
+  assert(set_basetype(basetype));
 
   ArrayBuildState *state;
   if (PG_ARGISNULL(0))
@@ -97,7 +99,7 @@ Set_union_transfn(PG_FUNCTION_ARGS)
 
   Oid setoid = get_fn_expr_argtype(fcinfo->flinfo, 1);
   meosType settype = oid_type(setoid);
-  ensure_set_type(settype);
+  assert(set_type(settype));
   meosType basetype = settype_basetype(settype);
   Oid baseoid = type_oid(basetype);
 

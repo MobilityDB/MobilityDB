@@ -31,6 +31,8 @@
  * @brief Aggregate function for span types.
  */
 
+/* C */
+#include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <fmgr.h>
@@ -152,7 +154,7 @@ Span_union_transfn(PG_FUNCTION_ARGS)
 
   Oid spanoid = get_fn_expr_argtype(fcinfo->flinfo, 1);
   meosType spantype = oid_type(spanoid);
-  ensure_span_type(spantype);
+  assert(span_type(spantype));
 
   ArrayBuildState *state;
   if (PG_ARGISNULL(0))
@@ -183,7 +185,7 @@ Spanset_union_transfn(PG_FUNCTION_ARGS)
 
   Oid spansetoid = get_fn_expr_argtype(fcinfo->flinfo, 1);
   meosType spansettype = oid_type(spansetoid);
-  ensure_spanset_type(spansettype);
+  assert(spanset_type(spansettype));
   meosType spantype = spansettype_spantype(spansettype);
   Oid spanoid = type_oid(spantype);
 

@@ -55,7 +55,7 @@
 Span *
 spanbase_extent_transfn(Span *s, Datum d, meosType basetype)
 {
-  ensure_span_basetype(basetype);
+  assert(span_basetype(basetype));
 
   /* Null span: return the span of the base value */
   if (! s)

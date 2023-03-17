@@ -111,7 +111,7 @@ spannode_init(SpanNode *nodebox, meosType spantype, meosType basetype)
 {
   memset(nodebox, 0, sizeof(SpanNode));
   Datum min, max;
-  ensure_span_type(spantype);
+  assert(span_type(spantype));
   if (spantype == T_TSTZSPAN)
   {
     min = TimestampTzGetDatum(DT_NOBEGIN);

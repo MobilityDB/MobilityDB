@@ -305,7 +305,7 @@ temporal_supportfn_ext(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
     rightoid = exprType(lsecond(req->args));
     meosType ltype = oid_type(leftoid);
     meosType rtype = oid_type(rightoid);
-    /* Convert base type to span type */
+    /* Convert base type to bbox type */
     meosType ltype1 = type_to_bbox(ltype);
     meosType rtype1 = type_to_bbox(rtype);
     operid = oper_oid(OVERLAPS_OP, ltype1, rtype1);
@@ -529,16 +529,6 @@ temporal_supportfn_ext(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
   }
 
   PG_RETURN_POINTER(ret);
-}
-
-PG_FUNCTION_INFO_V1(Temporal_supportfn);
-/**
- * @brief Support function for temporal types
- */
-PGDLLEXPORT Datum
-Temporal_supportfn(PG_FUNCTION_ARGS)
-{
-  return temporal_supportfn_ext(fcinfo, TEMPORALTYPE);
 }
 
 PG_FUNCTION_INFO_V1(Tnumber_supportfn);

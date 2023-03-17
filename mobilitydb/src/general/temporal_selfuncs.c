@@ -120,7 +120,7 @@ tnumber_const_to_span_period(const Node *other, Span **s, Span **p,
   else if (type == T_TBOX)
   {
     const TBox *box = DatumGetTboxP(((Const *) other)->constvalue);
-    ensure_span_basetype(basetype);
+    assert(span_basetype(basetype));
     *s = tbox_to_floatspan(box);
     *p = tbox_to_period(box);
   }

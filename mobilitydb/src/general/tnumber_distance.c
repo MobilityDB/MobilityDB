@@ -36,6 +36,7 @@
 /* C */
 #include <float.h>
 #include <math.h>
+#include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <fmgr.h>
@@ -219,8 +220,8 @@ NAD_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  ensure_tnumber_type(temp1->temptype);
-  ensure_tnumber_type(temp2->temptype);
+  assert(tnumber_type(temp1->temptype));
+  assert(tnumber_type(temp2->temptype));
   /* Result of the distance function is a tint iff both arguments are tint */
   meosType restype = (temp1->temptype == T_TINT && temp2->temptype == T_TINT) ?
     T_TINT : T_TFLOAT;

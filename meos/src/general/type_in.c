@@ -1080,7 +1080,7 @@ static size_t
 span_basevalue_from_wkb_size(wkb_parse_state *s)
 {
   size_t result = 0;
-  ensure_span_basetype(s->basetype);
+  assert(span_basetype(s->basetype));
   switch (s->basetype)
   {
     case T_INT4:

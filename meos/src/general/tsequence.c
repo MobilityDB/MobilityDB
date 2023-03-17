@@ -2565,7 +2565,7 @@ tsegment_value_at_timestamp(const TInstant *inst1, const TInstant *inst2,
   long double ratio = duration1 / duration2;
   // TEST !!!! USED FOR ASSESSING FLOATINGING POINT PRECISION IN MOBILITYDB !!!
   // long double ratio = (double)(t - inst1->t) / (double)(inst2->t - inst1->t);
-  ensure_temptype_continuous(inst1->temptype);
+  assert(temptype_continuous(inst1->temptype));
   if (inst1->temptype == T_TFLOAT)
   {
     double start = DatumGetFloat8(value1);
@@ -3001,7 +3001,7 @@ tlinearsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
       datum_eq2(value, value2, basetype, temptype_basetype(inst2->temptype)))
     return false;
 
-  ensure_temptype_continuous(inst1->temptype);
+  assert(temptype_continuous(inst1->temptype));
   bool result = false; /* make compiler quiet */
   if (inst1->temptype == T_TFLOAT)
     result = tfloatsegm_intersection_value(inst1, inst2, value, basetype, t);
@@ -3125,7 +3125,7 @@ tsegment_intersection(const TInstant *start1, const TInstant *end1,
   else
   {
     /* Both segments have linear interpolation */
-    ensure_temporal_type(start1->temptype);
+    assert(temporal_type(start1->temptype));
     if (tnumber_type(start1->temptype))
       result = tnumbersegm_intersection(start1, end1, start2, end2, t);
     else if (start1->temptype == T_TGEOMPOINT)

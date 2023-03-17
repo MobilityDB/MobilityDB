@@ -117,7 +117,7 @@ tinstant_set(TInstant *inst, Datum value, TimestampTz t)
 double
 tnumberinst_double(const TInstant *inst)
 {
-  ensure_tnumber_type(inst->temptype);
+  assert(tnumber_type(inst->temptype));
   Datum d = tinstant_value(inst);
   if (inst->temptype == T_TINT)
     return (double)(DatumGetInt32(d));

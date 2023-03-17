@@ -216,7 +216,7 @@ distance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 double
 nad_tnumber_number(const Temporal *temp, Datum value, meosType basetype)
 {
-  ensure_tnumber_basetype(basetype);
+  assert(tnumber_basetype(basetype));
   TBox box1, box2;
   temporal_set_bbox(temp, &box1);
   number_set_tbox(value, basetype, &box2);
