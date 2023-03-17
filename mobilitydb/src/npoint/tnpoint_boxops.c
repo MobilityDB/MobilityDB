@@ -92,6 +92,25 @@ Nsegment_to_stbox(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+PG_FUNCTION_INFO_V1(Npointset_to_stbox);
+/**
+ * @ingroup mobilitydb_setspan_cast
+ * @brief Transform a network point set to a spatiotemporal box
+ * @sqlfunc stbox()
+ * @sqlop @p ::
+ */
+PGDLLEXPORT Datum
+Npointset_to_stbox(PG_FUNCTION_ARGS)
+{
+  Set *set = PG_GETARG_SET_P(0);
+  STBox *result = palloc(sizeof(STBox));
+  spatialset_set_stbox(set, result);
+  PG_FREE_IF_COPY(set, 0);
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************/
+
 PG_FUNCTION_INFO_V1(Npoint_timestamp_to_stbox);
 /**
  * @ingroup mobilitydb_temporal_cast

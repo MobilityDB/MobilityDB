@@ -441,7 +441,7 @@ extern TimestampTz tstzset_end_timestamp(const Set *ts);
 extern int tstzset_num_timestamps(const Set *ts);
 extern TimestampTz tstzset_start_timestamp(const Set *ts);
 extern bool tstzset_timestamp_n(const Set *ts, int n, TimestampTz *result);
-extern TimestampTz *tstzset_timestamps(const Set *ts);
+extern TimestampTz *tstzset_values(const Set *ts);
 extern int geoset_srid(const Set *set);
 
 /*****************************************************************************/

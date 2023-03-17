@@ -161,12 +161,14 @@ datum_cmp2(Datum l, Datum r, meosType typel, meosType typer)
     return float8_cmp_internal(DatumGetFloat8(l), (double) DatumGetInt32(r));
   if (typel == T_TEXT && typer == T_TEXT)
     return text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID);
+#if 0 /* not used */
   if (typel == T_DOUBLE2 && typel == typer)
     return double2_cmp(DatumGetDouble2P(l), DatumGetDouble2P(r));
   if (typel == T_DOUBLE3 && typel == typer)
     return double3_cmp(DatumGetDouble3P(l), DatumGetDouble3P(r));
   if (typel == T_DOUBLE4 && typel == typer)
     return double4_cmp(DatumGetDouble4P(l), DatumGetDouble4P(r));
+#endif /* not used */
   if ((typel == T_GEOMETRY || typel == T_GEOGRAPHY) && typel == typer)
     return gserialized_cmp(DatumGetGserializedP(l), DatumGetGserializedP(r));
 #if NPOINT

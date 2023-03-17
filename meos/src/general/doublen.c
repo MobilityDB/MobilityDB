@@ -116,6 +116,7 @@ double2_eq(const double2 *d1, const double2 *d2)
   return (d1->a == d2->a && d1->b == d2->b);
 }
 
+#if 0 /* not used */
 /**
  * @brief Return -1, 0, or 1 depending on whether the first double2
  * is less than, equal, or greater than the second one
@@ -128,6 +129,7 @@ double2_cmp(const double2 *d1, const double2 *d2)
     cmp = float8_cmp_internal(d1->b, d2->b);
   return cmp;
 }
+#endif /* not used */
 
 /*****************************************************************************
  * Double3
@@ -199,6 +201,7 @@ double3_eq(const double3 *d1, const double3 *d2)
   return (d1->a == d2->a && d1->b == d2->b && d1->c == d2->c);
 }
 
+#if 0 /* not used */
 /**
  * @brief Return -1, 0, or 1 depending on whether the first double3
  * is less than, equal, or greater than the second one
@@ -215,6 +218,7 @@ double3_cmp(const double3 *d1, const double3 *d2)
   }
   return cmp;
 }
+#endif /* not used */
 
 /*****************************************************************************
  * Double4
@@ -292,6 +296,7 @@ double4_eq(const double4 *d1, const double4 *d2)
     d1->d == d2->d);
 }
 
+#if 0 /* not used */
 /**
  * @brief Return -1, 0, or 1 depending on whether the first double4
  * is less than, equal, or greater than the second one
@@ -312,6 +317,7 @@ double4_cmp(const double4 *d1, const double4 *d2)
   }
   return cmp;
 }
+#endif /* not used */
 
 /*****************************************************************************/
 

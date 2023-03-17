@@ -156,6 +156,14 @@ CREATE FUNCTION stbox(geography)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Geo_to_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION stbox(geomset)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'Geoset_to_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION stbox(geogset)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'Geoset_to_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stbox(timestamptz)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Timestamp_to_stbox'
@@ -191,6 +199,8 @@ CREATE FUNCTION stbox(geography, tstzspan)
 
 CREATE CAST (geometry AS stbox) WITH FUNCTION stbox(geometry);
 CREATE CAST (geography AS stbox) WITH FUNCTION stbox(geography);
+CREATE CAST (geomset AS stbox) WITH FUNCTION stbox(geomset);
+CREATE CAST (geogset AS stbox) WITH FUNCTION stbox(geogset);
 CREATE CAST (timestamptz AS stbox) WITH FUNCTION stbox(timestamptz);
 CREATE CAST (tstzset AS stbox) WITH FUNCTION stbox(tstzset);
 CREATE CAST (tstzspan AS stbox) WITH FUNCTION stbox(tstzspan);
