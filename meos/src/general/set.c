@@ -300,6 +300,7 @@ valuearr_compute_bbox(const Datum *values, meosType basetype, int count,
   return;
 }
 
+#if MEOS
 /**
  * @brief Set a bounding box from an array of set values
  *
@@ -332,6 +333,7 @@ set_expand_bbox(Datum d, meosType basetype, void *box)
     elog(ERROR, "unknown set type for expanding bounding box: %d", basetype);
   return;
 }
+#endif /* MEOS */
 
 /**
  * @brief Return a pointer to the bounding box of a temporal sequence

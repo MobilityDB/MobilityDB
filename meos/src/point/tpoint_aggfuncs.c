@@ -359,13 +359,14 @@ tpointseq_tcentroid_finalfn(TSequence **sequences, int count, int srid)
 /*****************************************************************************/
 
 /**
+ * @ingroup libmeos_temporal_agg
  * @brief Final function for temporal centroid aggregation of temporal point
  * values
  */
 Temporal *
 tpoint_tcentroid_finalfn(SkipList *state)
 {
-  if (state->length == 0)
+  if (state == NULL || state->length == 0)
     return NULL;
 
   Temporal **values = (Temporal **) skiplist_values(state);
@@ -379,6 +380,7 @@ tpoint_tcentroid_finalfn(SkipList *state)
     result = (Temporal *) tpointseq_tcentroid_finalfn((TSequence **) values,
       state->length, srid);
   pfree(values);
+  // skiplist_free(state);
   return result;
 }
 

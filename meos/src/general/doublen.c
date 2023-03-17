@@ -54,7 +54,7 @@
  * Double2
  *****************************************************************************/
 
-#if MEOS
+#if MEOS || DEBUG_BUILD
 /**
  * @brief Create a double2 value from the double values
  */
@@ -133,7 +133,7 @@ double2_cmp(const double2 *d1, const double2 *d2)
  * Double3
  *****************************************************************************/
 
-#if MEOS
+#if MEOS || DEBUG_BUILD
 /**
  * @brief Create a double3 value from the double values
  */
@@ -150,7 +150,7 @@ double3_make(double a, double b, double c)
  * @brief Output function for double3 values
  */
 char *
-double3_out(double3 *d, int maxdd)
+double3_out(const double3 *d, int maxdd)
 {
   char *astr = float8_out(d->a, maxdd);
   char *bstr = float8_out(d->b, maxdd);
@@ -220,7 +220,7 @@ double3_cmp(const double3 *d1, const double3 *d2)
  * Double4
  *****************************************************************************/
 
-#if MEOS
+#if MEOS || DEBUG_BUILD
 /**
  * @brief Create a double2 value from the double values
  */

@@ -218,10 +218,9 @@ tgeogpointinst_in(const char *str)
 
 /**
  * @brief Return the Well-Known Text (WKT) representation of a temporal instant.
- *
  * @param[in] inst Temporal instant
- * @param[in] maxdd Maximum number of decimal digits to output for floating point
- * values
+ * @param[in] maxdd Maximum number of decimal digits to output for floating
+ * point values
  * @param[in] value_out Function called to output the base value depending on
  * its type
  */

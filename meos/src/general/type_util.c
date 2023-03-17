@@ -1119,8 +1119,16 @@ basetype_out(Datum value, meosType basetype, int maxdd)
       pfree(str);
       return result;
     }
+#if DEBUG_BUILD
+    case T_DOUBLE2:
+      return double2_out(DatumGetDouble2P(value), maxdd);
+    case T_DOUBLE3:
+      return double3_out(DatumGetDouble3P(value), maxdd);
+    case T_DOUBLE4:
+      return double4_out(DatumGetDouble4P(value), maxdd);
+#endif
     case T_GEOMETRY:
-    return gserialized_out(DatumGetGserializedP(value));
+      return gserialized_out(DatumGetGserializedP(value));
     case T_GEOGRAPHY:
       return gserialized_geog_out(DatumGetGserializedP(value));
 #if NPOINT
