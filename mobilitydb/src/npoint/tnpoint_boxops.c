@@ -180,11 +180,9 @@ boxop_stbox_tnpoint_ext(FunctionCallInfo fcinfo,
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   STBox box1;
   temporal_set_bbox(temp, &box1);
-  int result = func(box, &box1);
+  bool result = func(box, &box1);
   PG_FREE_IF_COPY(temp, 1);
-  if (result < 0)
-    PG_RETURN_NULL();
-  PG_RETURN_BOOL(result ? true : false);
+  PG_RETURN_BOOL(result);
 }
 
 /**
@@ -200,11 +198,9 @@ boxop_tnpoint_stbox_ext(FunctionCallInfo fcinfo,
   STBox *box = PG_GETARG_STBOX_P(1);
   STBox box1;
   temporal_set_bbox(temp, &box1);
-  int result = func(&box1, box);
+  bool result = func(&box1, box);
   PG_FREE_IF_COPY(temp, 0);
-  if (result < 0)
-    PG_RETURN_NULL();
-  PG_RETURN_BOOL(result ? true : false);
+  PG_RETURN_BOOL(result);
 }
 
 /**

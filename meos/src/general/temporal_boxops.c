@@ -345,8 +345,8 @@ tsequence_expand_bbox(TSequence *seq, const TInstant *inst)
   else if (seq->temptype == T_TGEOGPOINT)
     tgeogpointseq_expand_stbox(seq, inst);
 #if NPOINT
-  // else if (seq->temptype == T_TNPOINT)
-    // tnpointseq_expand_stbox(seq, (STBox *) TSEQUENCE_BBOX_PTR(seq));
+  else if (seq->temptype == T_TNPOINT)
+    tnpointseq_expand_stbox(seq, inst);
 #endif
   else
     elog(ERROR, "unknown temporal type for bounding box function: %d",
@@ -370,13 +370,9 @@ tsequenceset_expand_bbox(TSequenceSet *ss, const TSequence *seq)
     tbox_expand((TBox *) TSEQUENCE_BBOX_PTR(seq),
       (TBox *) TSEQUENCE_BBOX_PTR(ss));
   // TODO Generalize as for tgeogpointseq_expand_stbox
-  else if (tgeo_type(ss->temptype))
+  else if (tspatial_type(ss->temptype))
     stbox_expand((STBox *) TSEQUENCE_BBOX_PTR(seq),
       (STBox *) TSEQUENCE_BBOX_PTR(ss));
-#if NPOINT
-  // else if (ss->temptype == T_TNPOINT)
-    // tnpointseqset_expand_stbox(ss, (STBox *) TSEQUENCE_BBOX_PTR(seq));
-#endif
   else
     elog(ERROR, "unknown temporal type for bounding box function: %d",
       ss->temptype);

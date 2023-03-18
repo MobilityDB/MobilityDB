@@ -1088,41 +1088,20 @@ static double
 span_joinsel_scalar(const SpanBound *hist1, int nhist1, const SpanBound *hist2,
   int nhist2, bool equal __attribute__((unused)))
 {
-  int i, j;
-  double selectivity, cur_sel1, cur_sel2, prev_sel1, prev_sel2;
-  SpanBound cur_sync;
-
-  /*
-   * Histograms will never be empty. In fact, a histogram will never have
-   * less than 2 values (1 bin)
-   */
+  /* A histogram will never have less than 2 values (1 bin) */
   assert(nhist1 > 1);
   assert(nhist2 > 1);
 
   /* Fast-forwards i and j to start of iteration */
+  int i, j;
   for (i = 0; span_bound_cmp(&hist1[i], &hist2[0]) < 0; i++);
   for (j = 0; span_bound_cmp(&hist2[j], &hist1[0]) < 0; j++);
 
-  if (span_bound_cmp(&hist1[i], &hist2[j]) < 0)
-    cur_sync = hist1[i++];
-  else if (span_bound_cmp(&hist1[i], &hist2[j]) > 0)
-    cur_sync = hist2[j++];
-  else
-  {
-    /* If equal, skip one */
-    cur_sync = hist1[i];
-    i++;
-    j++;
-  }
-  prev_sel1 = span_sel_scalar(&cur_sync, hist1, nhist1, false);
-  prev_sel2 = span_sel_scalar(&cur_sync, hist2, nhist2, false);
-
-  /*
-   * Do the estimation on overlapping region
-   */
-  selectivity = 0.0;
+  /* Do the estimation on overlapping regions */
+  double selectivity = 0.0, prev_sel1 = -1.0, prev_sel2;
   while (i < nhist1 && j < nhist2)
   {
+    SpanBound cur_sync;
     if (span_bound_cmp(&hist1[i], &hist2[j]) < 0)
       cur_sync = hist1[i++];
     else if (span_bound_cmp(&hist1[i], &hist2[j]) > 0)
@@ -1134,10 +1113,12 @@ span_joinsel_scalar(const SpanBound *hist1, int nhist1, const SpanBound *hist2,
       i++;
       j++;
     }
-    cur_sel1 = span_sel_scalar(&cur_sync, hist1, nhist1, false);
-    cur_sel2 = span_sel_scalar(&cur_sync, hist2, nhist2, false);
+    double cur_sel1 = span_sel_scalar(&cur_sync, hist1, nhist1, false);
+    double cur_sel2 = span_sel_scalar(&cur_sync, hist2, nhist2, false);
 
-    selectivity += (prev_sel1 + cur_sel1) * (cur_sel2 - prev_sel2);
+    /* Skip the first iteration */
+    if (prev_sel1 >= 0)
+      selectivity += (prev_sel1 + cur_sel1) * (cur_sel2 - prev_sel2);
 
     /* Prepare for the next iteration */
     prev_sel1 = cur_sel1;

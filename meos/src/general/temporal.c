@@ -887,17 +887,25 @@ temporal_append_tsequence(Temporal *temp, const TSequence *seq, bool expand)
   }
   else if (temp->subtype == TSEQUENCE)
   {
-    interpType interp1 = MOBDB_FLAGS_GET_INTERP(temp->flags);
-    if (interp1 == interp2 && (interp1 == LINEAR || interp1 == STEP))
+    if (interp2 == DISCRETE)
+    {
       result = (Temporal *) tsequence_append_tsequence((TSequence *) temp,
         seq, expand);
+    }
     else
     {
-      const TSequenceSet *seqsets[2];
-      seqsets[0] = tsequence_to_tsequenceset((TSequence *) temp);
-      seqsets[1] = tsequence_to_tsequenceset(seq);
-      result = (Temporal *) tsequenceset_merge_array(seqsets, 2);
-      pfree((void *) seqsets[0]); pfree((void *) seqsets[1]);
+      interpType interp1 = MOBDB_FLAGS_GET_INTERP(temp->flags);
+      if (interp1 == interp2)
+        result = (Temporal *) tsequence_append_tsequence((TSequence *) temp,
+          seq, expand);
+      else
+      {
+        const TSequenceSet *seqsets[2];
+        seqsets[0] = tsequence_to_tsequenceset((TSequence *) temp);
+        seqsets[1] = tsequence_to_tsequenceset(seq);
+        result = (Temporal *) tsequenceset_merge_array(seqsets, 2);
+        pfree((void *) seqsets[0]); pfree((void *) seqsets[1]);
+      }
     }
   }
   else /* temp->subtype == TSEQUENCESET */

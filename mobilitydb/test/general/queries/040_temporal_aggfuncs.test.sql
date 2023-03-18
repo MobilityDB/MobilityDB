@@ -297,6 +297,14 @@ WITH temp(inst) AS (
   SELECT tint '4@2000-01-04' UNION
   SELECT tint '5@2000-01-05' UNION
   SELECT tint '7@2000-01-07' )
+SELECT appendInstant(inst, 1, NULL ORDER BY inst) FROM temp;
+
+WITH temp(inst) AS (
+  SELECT tint '1@2000-01-01' UNION
+  SELECT tint '2@2000-01-02' UNION
+  SELECT tint '4@2000-01-04' UNION
+  SELECT tint '5@2000-01-05' UNION
+  SELECT tint '7@2000-01-07' )
 SELECT appendInstant(inst, NULL, interval '1 day' ORDER BY inst) FROM temp;
 
 WITH temp(inst) AS (

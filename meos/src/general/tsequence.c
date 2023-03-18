@@ -5150,6 +5150,7 @@ tcontseq_at_period(const TSequence *seq, const Span *p)
   return result;
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal sequence to a period.
@@ -5163,6 +5164,7 @@ tsequence_at_period(const TSequence *seq, const Span *p)
   else
     return tcontseq_at_period(seq, p);
 }
+#endif /* MEOS */
 
 /**
  * Restrict a temporal sequence to the complement of a period.

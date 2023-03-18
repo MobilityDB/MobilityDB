@@ -610,8 +610,10 @@ SELECT appendInstant(tfloat '[1@2000-01-01, 2@2000-01-03]', '1@2000-01-02');
 SELECT appendSequence(tfloat '{[1@2000-01-01, 1@2000-01-02)}', '[2@2000-01-02]');
 SELECT appendSequence(tfloat '{[1@2000-01-01, 2@2000-01-02]}', '[2@2000-01-02]');
 
-
 /* Errors */
+SELECT appendSequence(tfloat '[1@2000-01-01, 1@2000-01-03]', tfloat '[2@2000-01-02]');
+SELECT appendSequence(tfloat '[1@2000-01-01, 2@2000-01-02]', tfloat '[1@2000-01-02]');
+
 SELECT appendSequence(tfloat '{[1@2000-01-01, 1@2000-01-02)}', tfloat '2@2000-01-02');
 SELECT appendSequence(tfloat '{1@2000-01-01, 2@2000-01-02}', tfloat '[2@2000-01-01]');
 SELECT appendSequence(tfloat '{[1@2000-01-01, 1@2000-01-03]}', tfloat '[2@2000-01-02]');
