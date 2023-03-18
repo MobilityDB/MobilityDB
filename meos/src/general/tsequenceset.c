@@ -148,8 +148,7 @@ tsequenceset_set_bbox(const TSequenceSet *ss, void *box)
 size_t *
 tsequenceset_offsets_ptr(const TSequenceSet *ss)
 {
-  return (size_t *)(((char *)(ss)) + DOUBLE_PAD(sizeof(TSequenceSet)) +
-    DOUBLE_PAD((ss)->bboxsize - sizeof(Span)));
+  return (size_t *)( ((char *) &ss->period) + ss->bboxsize );
 }
 
 /**
@@ -163,9 +162,8 @@ const TSequence *
 tsequenceset_seq_n(const TSequenceSet *ss, int index)
 {
   return (TSequence *)(
-    ((char *) ss) + DOUBLE_PAD(sizeof(TSequenceSet)) +
-    (ss->bboxsize - sizeof(Span)) + sizeof(size_t) * ss->maxcount +
-    (tsequenceset_offsets_ptr(ss))[index] );
+    ((char *) &ss->period) + ss->bboxsize +
+    (sizeof(size_t) * ss->maxcount) + (tsequenceset_offsets_ptr(ss))[index] );
 }
 #endif /* DEBUG_BUILD */
 
@@ -208,7 +206,7 @@ tsequenceset_make1_exp(const TSequence **sequences, int count, int maxcount,
     normseqs = tseqarr_normalize(sequences, count, &newcount);
 
   /* Get the bounding box size */
-  size_t bboxsize = temporal_bbox_size(sequences[0]->temptype);
+  size_t bboxsize = DOUBLE_PAD(temporal_bbox_size(sequences[0]->temptype));
   /* The period component of the bbox is already declared in the struct */
   size_t bboxsize_extra = bboxsize - sizeof(Span);
 
@@ -231,7 +229,8 @@ tsequenceset_make1_exp(const TSequence **sequences, int count, int maxcount,
     maxcount = newcount;
   /* Size of the struct and the offset array */
   size_t memsize = DOUBLE_PAD(sizeof(TSequenceSet)) + bboxsize_extra +
-    maxcount * sizeof(size_t) + seqs_size;
+    sizeof(size_t) * maxcount + seqs_size;
+
   /* Create the temporal sequence set */
   TSequenceSet *result = palloc0(memsize);
   SET_VARSIZE(result, memsize);

@@ -173,10 +173,11 @@ typedef struct
   int32 count;          /**< Number of TInstant elements */
   int32 maxcount;       /**< Maximum number of TInstant elements */
   int16 bboxsize;       /**< Size of the bounding box */
-  Span period;          /**< Time span (24 bytes). All bounding boxes
-                             start with a period so actually it is also
-                             the begining of the bounding box. The extra
-                             bytes needed are added upon creation. */
+  char padding[6];      /**< Not used */
+  Span period;          /**< Time span (24 bytes). All bounding boxes start
+                             with a period so actually it is also the begining
+                             of the bounding box. The extra bytes needed for
+                             the bounding box are added upon creation. */
   /* variable-length data follows */
 } TSequence;
 
@@ -197,10 +198,10 @@ typedef struct
   int32 maxcount;       /**< Maximum number of TSequence elements */
   int16 bboxsize;       /**< Size of the bounding box */
   int16 padding;        /**< Not used */
-  Span period;          /**< Time span (24 bytes). All bounding boxes
-                             start with a period so actually it is also
-                             the begining of the bounding box. The extra
-                             bytes needed are added upon creation. */
+  Span period;          /**< Time span (24 bytes). All bounding boxes start
+                             with a period so actually it is also the begining
+                             of the bounding box. The extra bytes needed for
+                             the bounding box are added upon creation. */
   /* variable-length data follows */
 } TSequenceSet;
 
