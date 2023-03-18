@@ -767,8 +767,7 @@ tsequence_set_bbox(const TSequence *seq, void *box)
 size_t *
 tsequence_offsets_ptr(const TSequence *seq)
 {
-  return (size_t *)(((char *)(seq)) + DOUBLE_PAD(sizeof(TSequence)) +
-    DOUBLE_PAD((seq)->bboxsize - sizeof(Span)));
+  return (size_t *)( ((char *) &seq->period) + seq->bboxsize );
 }
 
 /**
@@ -782,9 +781,8 @@ const TInstant *
 tsequence_inst_n(const TSequence *seq, int index)
 {
   return (TInstant *)(
-    ((char *) seq) + DOUBLE_PAD(sizeof(TSequence)) +
-    seq->bboxsize - sizeof(Span) + sizeof(size_t) * seq->maxcount +
-    (tsequence_offsets_ptr(seq))[index]);
+    ((char *) &seq->period) + seq->bboxsize +
+    sizeof(size_t) * seq->maxcount + (tsequence_offsets_ptr(seq))[index] );
 }
 #endif /* DEBUG_BUILD */
 
@@ -839,7 +837,7 @@ tsequence_make1_exp(const TInstant **instants, int count, int maxcount,
     maxcount = newcount;
   /* Total size of the struct */
   size_t memsize = DOUBLE_PAD(sizeof(TSequence)) + bboxsize_extra +
-    maxcount * sizeof(size_t) + insts_size;
+    sizeof(size_t) * maxcount + insts_size;
 
   /* Create the temporal sequence */
   TSequence *result = palloc0(memsize);

@@ -2496,7 +2496,7 @@ temporal_start_instant(const Temporal *temp)
   if (temp->subtype == TINSTANT)
     result = (TInstant *) temp;
   else if (temp->subtype == TSEQUENCE)
-    result = tsequence_inst_n((TSequence *) temp, 0);
+    result = tsequence_inst_n((TSequence *)(temp), 0);
   else /* temp->subtype == TSEQUENCESET */
   {
     const TSequence *seq = tsequenceset_seq_n((TSequenceSet *) temp, 0);

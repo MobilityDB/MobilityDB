@@ -298,8 +298,7 @@ extern const TSequence *tsequenceset_seq_n(const TSequenceSet *ss, int index);
  * @note The period component of the bbox is already declared in the struct
  */
 #define tsequence_offsets_ptr(seq) ( \
-  (size_t *)(((char *) (seq)) + DOUBLE_PAD(sizeof(TSequence)) + \
-  DOUBLE_PAD((seq)->bboxsize - sizeof(Span))) )
+  ((char *) &(seq)->period) + (seq)->bboxsize )
 
 /**
  * @brief Return the n-th instant of a temporal sequence.
@@ -308,17 +307,15 @@ extern const TSequence *tsequenceset_seq_n(const TSequenceSet *ss, int index);
  * sequence
  */
 #define tsequence_inst_n(seq, index) ( (TInstant *)( \
-  ((char *) (seq)) + DOUBLE_PAD(sizeof(TSequence)) + \
-  ((seq)->bboxsize - sizeof(Span)) + (sizeof(size_t) * (seq)->maxcount) + \
-  (tsequence_offsets_ptr(seq))[index]) )
+  ((char *) &(seq)->period) + (seq)->bboxsize + \
+  (sizeof(size_t) * (seq)->maxcount) + (tsequence_offsets_ptr(seq))[index] )
 
 /**
  * @brief Return a pointer to the offsets array of a temporal sequence set
  * @note The period component of the bbox is already declared in the struct
  */
 #define tsequenceset_offsets_ptr(ss) ( \
-  (size_t *)(((char *)(ss)) + DOUBLE_PAD(sizeof(TSequenceSet)) + \
-  DOUBLE_PAD((ss)->bboxsize - sizeof(Span))) )
+  ((char *) &(ss)->period) + (ss)->bboxsize )
 
 /**
  * @brief Return the n-th sequence of a temporal sequence set
@@ -327,9 +324,8 @@ extern const TSequence *tsequenceset_seq_n(const TSequenceSet *ss, int index);
  * sequence set
  */
 #define tsequenceset_seq_n(ss, index) ( (TSequence *)( \
-  ((char *) (ss)) + DOUBLE_PAD(sizeof(TSequenceSet)) +  \
-  ((ss)->bboxsize - sizeof(Span)) + (sizeof(size_t) * (ss)->maxcount) + \
-  (tsequenceset_offsets_ptr(ss))[index]) )
+  ((char *) &(ss)->period) + (ss)->bboxsize + \
+  (sizeof(size_t) * (ss)->maxcount) + (tsequenceset_offsets_ptr(ss))[index] )
 #endif /* DEBUG_BUILD */
 
 /*****************************************************************************/
