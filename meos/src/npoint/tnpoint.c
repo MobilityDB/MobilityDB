@@ -400,8 +400,8 @@ tnpointinst_route(const TInstant *inst)
 int64
 tnpoint_route(const Temporal *temp)
 {
-  if ( ! (temp->subtype == TINSTANT ||
-    (temp->subtype == TSEQUENCE && MOBDB_FLAGS_GET_CONTINUOUS(temp->flags))) )
+  if ( temp->subtype != TINSTANT ||
+    (temp->subtype == TSEQUENCE && MOBDB_FLAGS_GET_DISCRETE(temp->flags)) )
     elog(ERROR, "Input must be a temporal instant or a temporal sequence with continuous interpolation");
 
   const TInstant *inst = (temp->subtype == TINSTANT) ?
