@@ -312,26 +312,24 @@ tsequence_join_test(const TSequence *seq1, const TSequence *seq2,
   bool result = false;
   TInstant *last2 = (seq1->count == 1 || interp == DISCRETE) ? NULL :
     (TInstant *) tsequence_inst_n(seq1, seq1->count - 2);
-  Datum last2value = (seq1->count == 1 || interp == DISCRETE) ? 0 :
-    tinstant_value(last2);
+  Datum last2value = ! last2 ? 0 : tinstant_value(last2);
   TInstant *last1 = (TInstant *) tsequence_inst_n(seq1, seq1->count - 1);
   Datum last1value = tinstant_value(last1);
   TInstant *first1 = (TInstant *) tsequence_inst_n(seq2, 0);
   Datum first1value = tinstant_value(first1);
   TInstant *first2 = (seq2->count == 1 || interp == DISCRETE) ? NULL :
     (TInstant *) tsequence_inst_n(seq2, 1);
-  Datum first2value = (seq2->count == 1 || interp == DISCRETE) ? 0 :
-    tinstant_value(first2);
-  bool eq_last2_last1 = (last2 == NULL) ? false :
+  Datum first2value = ! first2 ? 0 : tinstant_value(first2);
+  bool eq_last2_last1 = ! last2 ? false :
     datum_eq(last2value, last1value, basetype);
   bool eq_last1_first1 = datum_eq(last1value, first1value, basetype);
-  bool eq_first1_first2 = (first2 == NULL) ? false :
+  bool eq_first1_first2 = ! first2 ? false :
     datum_eq(first1value, first2value, basetype);
 
   bool adjacent = seq1->period.upper == seq2->period.lower &&
     (seq1->period.upper_inc || seq2->period.lower_inc);
   /* If they are adjacent and not instantaneous */
-  if (adjacent && last2 != NULL && first2 != NULL &&
+  if (adjacent && last2 && first2 &&
     (
     /* If step and the last segment of the first sequence is constant
        ..., 1@t1, 1@t2) [1@t2, 1@t3, ... -> ..., 1@t1, 2@t3, ...
