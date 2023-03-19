@@ -375,7 +375,7 @@ edisjoint_tpointseq_geo(const TSequence *seq, Datum geo,
 {
   for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = tsequence_inst_n(seq, i);
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     if (DatumGetBool(func(tinstant_value(inst), geo)))
       return true;
   }
@@ -395,7 +395,7 @@ edisjoint_tpointseqset_geo(const TSequenceSet *ss, Datum geo,
 {
   for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     if (edisjoint_tpointseq_geo(seq, geo, func))
       return true;
   }
@@ -539,8 +539,8 @@ edwithin_tpointdiscseq_tpointdiscseq(const TSequence *seq1,
 {
   for (int i = 0; i < seq1->count; i++)
   {
-    const TInstant *inst1 = tsequence_inst_n(seq1, i);
-    const TInstant *inst2 = tsequence_inst_n(seq2, i);
+    const TInstant *inst1 = TSEQUENCE_INST_N(seq1, i);
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq2, i);
     if (edwithin_tpointinst_tpointinst(inst1, inst2, dist, func))
       return true;
   }
@@ -561,13 +561,13 @@ edwithin_tpointseq_tpointseq(const TSequence *seq1, const TSequence *seq2,
   const TInstant *start1, *start2;
   if (seq1->count == 1)
   {
-    start1 = tsequence_inst_n(seq1, 0);
-    start2 = tsequence_inst_n(seq2, 0);
+    start1 = TSEQUENCE_INST_N(seq1, 0);
+    start2 = TSEQUENCE_INST_N(seq2, 0);
     return edwithin_tpointinst_tpointinst(start1, start2, dist, func);
   }
 
-  start1 = tsequence_inst_n(seq1, 0);
-  start2 = tsequence_inst_n(seq2, 0);
+  start1 = TSEQUENCE_INST_N(seq1, 0);
+  start2 = TSEQUENCE_INST_N(seq2, 0);
   Datum sv1 = tinstant_value(start1);
   Datum sv2 = tinstant_value(start2);
 
@@ -578,8 +578,8 @@ edwithin_tpointseq_tpointseq(const TSequence *seq1, const TSequence *seq2,
   bool lower_inc = seq1->period.lower_inc;
   for (int i = 1; i < seq1->count; i++)
   {
-    const TInstant *end1 = tsequence_inst_n(seq1, i);
-    const TInstant *end2 = tsequence_inst_n(seq2, i);
+    const TInstant *end1 = TSEQUENCE_INST_N(seq1, i);
+    const TInstant *end2 = TSEQUENCE_INST_N(seq2, i);
     Datum ev1 = tinstant_value(end1);
     Datum ev2 = tinstant_value(end2);
     TimestampTz upper = end1->t;
@@ -631,8 +631,8 @@ edwithin_tpointseqset_tpointseqset(const TSequenceSet *ss1,
 {
   for (int i = 0; i < ss1->count; i++)
   {
-    const TSequence *seq1 = tsequenceset_seq_n(ss1, i);
-    const TSequence *seq2 = tsequenceset_seq_n(ss2, i);
+    const TSequence *seq1 = TSEQUENCESET_SEQ_N(ss1, i);
+    const TSequence *seq2 = TSEQUENCESET_SEQ_N(ss2, i);
     if (edwithin_tpointseq_tpointseq(seq1, seq2, dist, func))
       return true;
   }

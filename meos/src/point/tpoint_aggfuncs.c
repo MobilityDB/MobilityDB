@@ -128,7 +128,7 @@ tpointdiscseq_transform_tcentroid(const TSequence *seq)
   TInstant **result = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = tsequence_inst_n(seq, i);
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     result[i] = tpointinst_transform_tcentroid(inst);
   }
   return result;
@@ -156,7 +156,7 @@ tpointseqset_transform_tcentroid(const TSequenceSet *ts)
   TSequence **result = palloc(sizeof(TSequence *) * ts->count);
   for (int i = 0; i < ts->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ts, i);
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ts, i);
     result[i] = tpointseq_transform_tcentroid(seq);
   }
   return result;
@@ -342,7 +342,7 @@ tpointseq_tcentroid_finalfn(TSequence **sequences, int count, int srid)
     TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
     for (int j = 0; j < seq->count; j++)
     {
-      const TInstant *inst = tsequence_inst_n(seq, j);
+      const TInstant *inst = TSEQUENCE_INST_N(seq, j);
       Datum value = doublen_to_point(inst, srid);
       instants[j] = tinstant_make(value, T_TGEOMPOINT, inst->t);
       pfree(DatumGetPointer(value));

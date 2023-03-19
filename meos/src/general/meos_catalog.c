@@ -587,7 +587,9 @@ bool
 temporal_type(meosType type)
 {
   if (type == T_TBOOL || type == T_TINT || type == T_TFLOAT ||
-      type == T_TTEXT || type == T_TGEOMPOINT || type == T_TGEOGPOINT
+      type == T_TTEXT || type == T_TGEOMPOINT || type == T_TGEOGPOINT ||
+      /* The doubleX are internal types used for temporal aggregation */
+      type == T_TDOUBLE2 || type == T_TDOUBLE3 || type == T_TDOUBLE4
 #if NPOINT
     || type == T_TNPOINT
 #endif

@@ -291,8 +291,8 @@ tinstant_make(Datum value, meosType temptype, TimestampTz t)
   else
   {
     /* For base types passed by reference */
-    value_from = DatumGetPointer(value);
     int16 typlen = basetype_length(basetype);
+    value_from = DatumGetPointer(value);
     value_size = (typlen != -1) ? DOUBLE_PAD((unsigned int) typlen) :
       DOUBLE_PAD(VARSIZE(value_from));
   }
@@ -308,7 +308,6 @@ tinstant_make(Datum value, meosType temptype, TimestampTz t)
   MOBDB_FLAGS_SET_BYVAL(result->flags, typbyval);
   bool continuous = temptype_continuous(temptype);
   MOBDB_FLAGS_SET_CONTINUOUS(result->flags, continuous);
-  // MOBDB_FLAGS_SET_INTERP(result->flags, DISCRETE);
   MOBDB_FLAGS_SET_X(result->flags, true);
   MOBDB_FLAGS_SET_T(result->flags, true);
   if (tgeo_type(temptype))
@@ -555,7 +554,7 @@ tsequence_to_tinstant(const TSequence *seq)
   if (seq->count != 1)
     elog(ERROR, "Cannot transform input to a temporal instant");
 
-  return tinstant_copy(tsequence_inst_n(seq, 0));
+  return tinstant_copy(TSEQUENCE_INST_N(seq, 0));
 }
 
 /**
@@ -566,11 +565,11 @@ tsequence_to_tinstant(const TSequence *seq)
 TInstant *
 tsequenceset_to_tinstant(const TSequenceSet *ts)
 {
-  const TSequence *seq = tsequenceset_seq_n(ts, 0);
+  const TSequence *seq = TSEQUENCESET_SEQ_N(ts, 0);
   if (ts->count != 1 || seq->count != 1)
     elog(ERROR, "Cannot transform input to a temporal instant");
 
-   return tinstant_copy(tsequence_inst_n(seq, 0));
+   return tinstant_copy(TSEQUENCE_INST_N(seq, 0));
 }
 
 /**

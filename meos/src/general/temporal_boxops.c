@@ -202,15 +202,12 @@ temptype_without_bbox(meosType temptype)
 size_t
 temporal_bbox_size(meosType temptype)
 {
-  if (talpha_type(temptype))
+  if (talpha_type(temptype) || temptype_without_bbox(temptype))
     return sizeof(Span);
   if (tnumber_type(temptype))
     return sizeof(TBox);
   if (tspatial_type(temptype))
     return sizeof(STBox);
-  /* Types without bounding box, such as tdoubleN, must be explicity stated */
-  if (temptype_without_bbox(temptype))
-    return 0;
   elog(ERROR, "unknown temporal type for bounding box function: %d", temptype);
 }
 
@@ -285,24 +282,25 @@ void
 tinstarr_compute_bbox(const TInstant **instants, int count, bool lower_inc,
   bool upper_inc, interpType interp, void *box)
 {
-  assert(temporal_type(instants[0]->temptype));
-  if (talpha_type(instants[0]->temptype))
+  meosType temptype = instants[0]->temptype;
+  assert(temporal_type(temptype));
+  if (talpha_type(temptype) || temptype_without_bbox(temptype))
     span_set(TimestampTzGetDatum(instants[0]->t),
       TimestampTzGetDatum(instants[count - 1]->t), lower_inc, upper_inc,
       T_TIMESTAMPTZ, (Span *) box);
-  else if (tnumber_type(instants[0]->temptype))
+  else if (tnumber_type(temptype))
     tnumberinstarr_set_tbox(instants, count, (TBox *) box);
-  else if (instants[0]->temptype == T_TGEOMPOINT)
+  else if (temptype == T_TGEOMPOINT)
     tgeompointinstarr_set_stbox(instants, count, (STBox *) box);
-  else if (instants[0]->temptype == T_TGEOGPOINT)
+  else if (temptype == T_TGEOGPOINT)
     tgeogpointinstarr_set_stbox(instants, count, interp, (STBox *) box);
 #if NPOINT
-  else if (instants[0]->temptype == T_TNPOINT)
+  else if (temptype == T_TNPOINT)
     tnpointinstarr_set_stbox(instants, count, interp, (STBox *) box);
 #endif
   else
     elog(ERROR, "unknown temporal type for bounding box function: %d",
-      instants[0]->temptype);
+      temptype);
   /* Set the lower_inc and upper_inc bounds of the period at the beginning
    * of the bounding box */
   Span *p = (Span *) box;
@@ -335,7 +333,7 @@ tsequence_expand_bbox(TSequence *seq, const TInstant *inst)
 {
   assert(temporal_type(seq->temptype));
   if (talpha_type(seq->temptype))
-    span_set(TimestampTzGetDatum((tsequence_inst_n(seq, 0))->t),
+    span_set(TimestampTzGetDatum((TSEQUENCE_INST_N(seq, 0))->t),
       TimestampTzGetDatum(inst->t), seq->period.lower_inc, true, T_TIMESTAMPTZ,
       (Span *) TSEQUENCE_BBOX_PTR(seq));
   else if (tnumber_type(seq->temptype))
@@ -445,7 +443,7 @@ tsequence_compute_bbox(TSequence *seq)
 {
   const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
-    instants[i] = tsequence_inst_n(seq, i);
+    instants[i] = TSEQUENCE_INST_N(seq, i);
   interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
   tinstarr_compute_bbox(instants, seq->count, seq->period.lower_inc,
     seq->period.upper_inc, interp, TSEQUENCESET_BBOX_PTR(seq));
@@ -463,7 +461,7 @@ tsequenceset_compute_bbox(TSequenceSet *ss)
 {
   const TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
-    sequences[i] = tsequenceset_seq_n(ss, i);
+    sequences[i] = TSEQUENCESET_SEQ_N(ss, i);
   tseqarr_compute_bbox(sequences, ss->count, TSEQUENCESET_BBOX_PTR(ss));
   pfree(sequences);
   return;
