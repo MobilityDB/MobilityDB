@@ -213,7 +213,7 @@ tpointseq_transform(const TSequence *seq, int srid)
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    TInstant *inst = tpointinst_transform(tsequence_inst_n(seq, 0),
+    TInstant *inst = tpointinst_transform(TSEQUENCE_INST_N(seq, 0),
       Int32GetDatum(srid));
     TSequence *result = tinstant_to_tsequence(inst, interp);
     pfree(inst);
@@ -231,7 +231,7 @@ tpointseq_transform(const TSequence *seq, int srid)
   for (int i = 0; i < seq->count; i++)
   {
     Datum point = PointerGetDatum(geo_serialize((LWGEOM *) (lwmpoint->geoms[i])));
-    const TInstant *inst = tsequence_inst_n(seq, i);
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     instants[i] = tinstant_make(point, inst->temptype, inst->t);
     pfree(DatumGetPointer(point));
   }
@@ -255,7 +255,7 @@ tpointseqset_transform(const TSequenceSet *ss, int srid)
   /* Singleton sequence set */
   if (ss->count == 1)
   {
-    TSequence *seq1 = tpointseq_transform(tsequenceset_seq_n(ss, 0),
+    TSequence *seq1 = tpointseq_transform(TSEQUENCESET_SEQ_N(ss, 0),
       Int32GetDatum(srid));
     TSequenceSet *result = tsequence_to_tsequenceset(seq1);
     pfree(seq1);
@@ -269,11 +269,11 @@ tpointseqset_transform(const TSequenceSet *ss, int srid)
   int maxcount = -1; /* number of instants of the longest sequence */
   for (int i = 0; i < ss->count; i++)
   {
-    seq = tsequenceset_seq_n(ss, i);
+    seq = TSEQUENCESET_SEQ_N(ss, i);
     maxcount = Max(maxcount, seq->count);
     for (int j = 0; j < seq->count; j++)
     {
-      Datum value = tinstant_value(tsequence_inst_n(seq, j));
+      Datum value = tinstant_value(TSEQUENCE_INST_N(seq, j));
       GSERIALIZED *gsvalue = DatumGetGserializedP(value);
       points[k++] = lwgeom_from_gserialized(gsvalue);
     }
@@ -291,11 +291,11 @@ tpointseqset_transform(const TSequenceSet *ss, int srid)
   k = 0;
   for (int i = 0; i < ss->count; i++)
   {
-    seq = tsequenceset_seq_n(ss, i);
+    seq = TSEQUENCESET_SEQ_N(ss, i);
     for (int j = 0; j < seq->count; j++)
     {
       Datum point = PointerGetDatum(geo_serialize((LWGEOM *) (lwmpoint->geoms[k++])));
-      const TInstant *inst = tsequence_inst_n(seq, j);
+      const TInstant *inst = TSEQUENCE_INST_N(seq, j);
       instants[j] = tinstant_make(point, inst->temptype, inst->t);
       pfree(DatumGetPointer(point));
     }

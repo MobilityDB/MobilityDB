@@ -500,7 +500,7 @@ NAI_tpointseq_discstep_geo1(const TSequence *seq, const LWGEOM *geo,
 {
   for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = tsequence_inst_n(seq, i);
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     Datum value = tinstant_value(inst);
     GSERIALIZED *gs = DatumGetGserializedP(value);
     LWGEOM *point = lwgeom_from_gserialized(gs);
@@ -542,7 +542,7 @@ NAI_tpointseqset_step_geo(const TSequenceSet *ss, const LWGEOM *geo)
   double mindist = DBL_MAX;
   for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     mindist = NAI_tpointseq_discstep_geo1(seq, geo, mindist, &inst);
   }
   assert(inst != NULL);
@@ -611,7 +611,7 @@ NAI_tpointseq_linear_geo2(const TSequence *seq, const LWGEOM *geo,
   double mindist, TimestampTz *t)
 {
   double dist;
-  const TInstant *inst1 = tsequence_inst_n(seq, 0);
+  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
 
   if (seq->count == 1)
   {
@@ -633,7 +633,7 @@ NAI_tpointseq_linear_geo2(const TSequence *seq, const LWGEOM *geo,
     TimestampTz t1;
     for (int i = 0; i < seq->count - 1; i++)
     {
-      const TInstant *inst2 = tsequence_inst_n(seq, i + 1);
+      const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
       dist = NAI_tpointsegm_linear_geo1(inst1, inst2, geo, &t1);
       if (dist < mindist)
       {
@@ -676,7 +676,7 @@ NAI_tpointseqset_linear_geo(const TSequenceSet *ss, const LWGEOM *geo)
   double mindist = DBL_MAX;
   for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     TimestampTz t1;
     double dist = NAI_tpointseq_linear_geo2(seq, geo, mindist, &t1);
     if (dist < mindist)

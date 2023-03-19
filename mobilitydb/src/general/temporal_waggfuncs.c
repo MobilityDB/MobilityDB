@@ -100,7 +100,7 @@ tdiscseq_extend(const TSequence *seq, const Interval *interval,
 {
   for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = tsequence_inst_n(seq, i);
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     tinstant_extend(inst, interval, &result[i]);
   }
   return seq->count;
@@ -119,17 +119,17 @@ tcontseq_extend(const TSequence *seq, const Interval *interval, bool min,
   TSequence **result)
 {
   if (seq->count == 1)
-    return tinstant_extend(tsequence_inst_n(seq, 0), interval, result);
+    return tinstant_extend(TSEQUENCE_INST_N(seq, 0), interval, result);
 
   TInstant *instants[3];
-  TInstant *inst1 = (TInstant *) tsequence_inst_n(seq, 0);
+  TInstant *inst1 = (TInstant *) TSEQUENCE_INST_N(seq, 0);
   Datum value1 = tinstant_value(inst1);
   interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
   bool lower_inc = seq->period.lower_inc;
   meosType basetype = temptype_basetype(seq->temptype);
   for (int i = 0; i < seq->count - 1; i++)
   {
-    TInstant *inst2 = (TInstant *) tsequence_inst_n(seq, i + 1);
+    TInstant *inst2 = (TInstant *) TSEQUENCE_INST_N(seq, i + 1);
     Datum value2 = tinstant_value(inst2);
     bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false;
 
@@ -196,7 +196,7 @@ tsequenceset_extend(const TSequenceSet *ss, const Interval *interval, bool min,
   int k = 0;
   for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     k += tcontseq_extend(seq, interval, min, &result[k]);
   }
   return k;
@@ -290,7 +290,7 @@ tdiscseq_transform_wcount(const TSequence *seq, const Interval *interval,
 {
   for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = tsequence_inst_n(seq, i);
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     tinstant_transform_wcount(inst, interval, &result[i]);
   }
   return seq->count;
@@ -308,14 +308,14 @@ tcontseq_transform_wcount(const TSequence *seq, const Interval *interval,
   TSequence **result)
 {
   if (seq->count == 1)
-    return tinstant_transform_wcount(tsequence_inst_n(seq, 0), interval,
+    return tinstant_transform_wcount(TSEQUENCE_INST_N(seq, 0), interval,
       result);
 
-  const TInstant *inst1 = tsequence_inst_n(seq, 0);
+  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   bool lower_inc = seq->period.lower_inc;
   for (int i = 0; i < seq->count - 1; i++)
   {
-    const TInstant *inst2 = tsequence_inst_n(seq, i + 1);
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
     bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false;
     result[i] = tinstant_transform_wcount1(inst1->t, inst2->t, lower_inc,
       upper_inc, interval);
@@ -339,7 +339,7 @@ tsequenceset_transform_wcount(const TSequenceSet *ss, const Interval *interval,
   int k = 0;
   for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     k += tcontseq_transform_wcount(seq, interval, &result[k]);
   }
   return k;
@@ -427,7 +427,7 @@ tnumberdiscseq_transform_wavg(const TSequence *seq, const Interval *interval,
 {
   for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = tsequence_inst_n(seq, i);
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     tnumberinst_transform_wavg(inst, interval, &result[i]);
   }
   return seq->count;
@@ -453,17 +453,17 @@ tintseq_transform_wavg(const TSequence *seq, const Interval *interval,
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    inst1 = tsequence_inst_n(seq, 0);
+    inst1 = TSEQUENCE_INST_N(seq, 0);
     tnumberinst_transform_wavg(inst1, interval, &result[0]);
     return 1;
   }
 
   /* General case */
-  inst1 = tsequence_inst_n(seq, 0);
+  inst1 = TSEQUENCE_INST_N(seq, 0);
   bool lower_inc = seq->period.lower_inc;
   for (int i = 0; i < seq->count - 1; i++)
   {
-    const TInstant *inst2 = tsequence_inst_n(seq, i + 1);
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
     bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false;
     double value = DatumGetInt32(tinstant_value(inst1));
     double2 dvalue;
@@ -497,7 +497,7 @@ tintseqset_transform_wavg(const TSequenceSet *ss, const Interval *interval,
   int k = 0;
   for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     k += tintseq_transform_wavg(seq, interval, &result[k]);
   }
   return k;

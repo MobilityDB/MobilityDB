@@ -299,8 +299,8 @@ tsequence_tagg1(const TSequence *seq1, const TSequence *seq2,
   TInstant **instants = palloc(sizeof(TInstant *) * syncseq1->count);
   for (int i = 0; i < syncseq1->count; i++)
   {
-    const TInstant *inst1 = tsequence_inst_n(syncseq1, i);
-    const TInstant *inst2 = tsequence_inst_n(syncseq2, i);
+    const TInstant *inst1 = TSEQUENCE_INST_N(syncseq1, i);
+    const TInstant *inst2 = TSEQUENCE_INST_N(syncseq2, i);
     if (func != NULL)
       instants[i] = tinstant_make(
         func(tinstant_value(inst1), tinstant_value(inst2)), seq1->temptype,
@@ -762,7 +762,7 @@ tdiscseq_transform_tagg(const TSequence *seq,
   TInstant **result = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = tsequence_inst_n(seq, i);
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     result[i] = func(inst);
   }
   return result;
@@ -778,7 +778,7 @@ tcontseq_transform_tagg(const TSequence *seq,
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = tsequence_inst_n(seq, i);
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     instants[i] = func(inst);
   }
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
@@ -795,7 +795,7 @@ tsequenceset_transform_tagg(const TSequenceSet *ss,
   TSequence **result = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     result[i] = tcontseq_transform_tagg(seq, func);
   }
   return result;
@@ -891,7 +891,7 @@ tdiscseq_transform_tcount(const TSequence *seq)
   Datum datum_one = Int32GetDatum(1);
   for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = tsequence_inst_n(seq, i);
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     TimestampTz t = inst->t;
     result[i] = tinstant_make(datum_one, T_TINT, t);
   }
@@ -936,7 +936,7 @@ tsequenceset_transform_tcount(const TSequenceSet *ss)
   TSequence **result = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     result[i] = tcontseq_transform_tcount(seq);
   }
   return result;
@@ -1046,7 +1046,7 @@ tsequence_tavg_finalfn(TSequence **sequences, int count)
     TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
     for (int j = 0; j < seq->count; j++)
     {
-      const TInstant *inst = tsequence_inst_n(seq, j);
+      const TInstant *inst = TSEQUENCE_INST_N(seq, j);
       double2 *value2 = (double2 *) DatumGetPointer(&inst->value);
       double value = value2->a / value2->b;
       instants[j] = tinstant_make(Float8GetDatum(value), T_TFLOAT, inst->t);

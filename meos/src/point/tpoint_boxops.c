@@ -144,7 +144,7 @@ tgeogpointseq_expand_stbox(TSequence *seq, const TInstant *inst)
   FLAGS_SET_Z(edge_gbox.flags, 1);
   FLAGS_SET_M(edge_gbox.flags, 0);
   FLAGS_SET_GEODETIC(edge_gbox.flags, 1);
-  const TInstant *last = tsequence_inst_n(seq, seq->count - 1);
+  const TInstant *last = TSEQUENCE_INST_N(seq, seq->count - 1);
   const POINT2D *p1 = DATUM_POINT2D_P(&last->value);
   const POINT2D *p2 = DATUM_POINT2D_P(&inst->value);
   ll2cart(p1, &A1);
@@ -203,7 +203,7 @@ tgeogpointseq_set_gbox(const TSequence *seq, GBOX *box)
   LWPOINT **points = palloc(sizeof(LWPOINT *) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = tsequence_inst_n(seq, i);
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     GSERIALIZED *gs = DatumGetGserializedP(&inst->value);
     points[i] = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
   }
@@ -274,8 +274,8 @@ tgeogpointseq_set_stbox(const TSequence *seq, STBox *box)
   bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
   int32 srid = tpointseq_srid(seq);
   Span period;
-  span_set((tsequence_inst_n(seq, 0))->t,
-    (tsequence_inst_n(seq, seq->count - 1))->t, true, true, T_TIMESTAMPTZ,
+  span_set((TSEQUENCE_INST_N(seq, 0))->t,
+    (TSEQUENCE_INST_N(seq, seq->count - 1))->t, true, true, T_TIMESTAMPTZ,
     &period);
   stbox_set(true, hasz, true, srid, gbox.xmin, gbox.xmax, gbox.ymin,
     gbox.ymax, gbox.zmin, gbox.zmax, &period, box);
@@ -323,17 +323,17 @@ tpointseq_stboxes1(const TSequence *seq, STBox *result)
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    inst1 = tsequence_inst_n(seq, 0);
+    inst1 = TSEQUENCE_INST_N(seq, 0);
     tpointinst_set_stbox(inst1, &result[0]);
     return 1;
   }
 
   /* Temporal sequence has at least 2 instants */
-  inst1 = tsequence_inst_n(seq, 0);
+  inst1 = TSEQUENCE_INST_N(seq, 0);
   for (int i = 0; i < seq->count - 1; i++)
   {
     tpointinst_set_stbox(inst1, &result[i]);
-    const TInstant *inst2 = tsequence_inst_n(seq, i + 1);
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
     STBox box;
     tpointinst_set_stbox(inst2, &box);
     stbox_expand(&box, &result[i]);
@@ -375,7 +375,7 @@ tpointseqset_stboxes(const TSequenceSet *ss, int *count)
   int k = 0;
   for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     k += tpointseq_stboxes1(seq, &result[k]);
   }
   *count = k;

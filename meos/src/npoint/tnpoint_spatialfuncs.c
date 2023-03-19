@@ -191,7 +191,7 @@ tnpointseq_step_npoints(const TSequence *seq, int *count)
   Npoint **result = palloc(sizeof(Npoint *) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = tsequence_inst_n(seq, i);
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     result[i] = DatumGetNpointP(&inst->value);
   }
   *count = seq->count;
@@ -212,10 +212,10 @@ tnpointseqset_step_npoints(const TSequenceSet *ss, int *count)
   int k = 0;
   for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     for (int j = 0; j < seq->count; j++)
     {
-      const TInstant *inst = tsequence_inst_n(seq, j);
+      const TInstant *inst = TSEQUENCE_INST_N(seq, j);
       result[k++] = DatumGetNpointP(&inst->value);
     }
   }
@@ -250,7 +250,7 @@ tnpointseq_geom(const TSequence *seq)
 {
   /* Instantaneous sequence */
   if (seq->count == 1)
-    return tnpointinst_geom(tsequence_inst_n(seq, 0));
+    return tnpointinst_geom(TSEQUENCE_INST_N(seq, 0));
 
   GSERIALIZED *result;
   if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
@@ -280,7 +280,7 @@ tnpointseqset_geom(const TSequenceSet *ss)
 {
   /* Singleton sequence set */
   if (ss->count == 1)
-    return tnpointseq_geom(tsequenceset_seq_n(ss, 0));
+    return tnpointseq_geom(TSEQUENCESET_SEQ_N(ss, 0));
 
   int count;
   GSERIALIZED *result;
@@ -380,13 +380,13 @@ tnpointseq_length(const TSequence *seq)
   if (seq->count == 1)
     return 0;
 
-  const TInstant *inst = tsequence_inst_n(seq, 0);
+  const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
   Npoint *np1 = DatumGetNpointP(&inst->value);
   double length = route_length(np1->rid);
   double fraction = 0;
   for (int i = 1; i < seq->count; i++)
   {
-    inst = tsequence_inst_n(seq, i);
+    inst = TSEQUENCE_INST_N(seq, i);
     Npoint *np2 = DatumGetNpointP(&inst->value);
     fraction += fabs(np2->pos - np1->pos);
     np1 = np2;
@@ -403,7 +403,7 @@ tnpointseqset_length(const TSequenceSet *ss)
   double result = 0;
   for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     result += tnpointseq_length(seq);
   }
   return result;
@@ -443,7 +443,7 @@ tnpointseq_cumulative_length(const TSequence *seq, double prevlength)
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    inst1 = tsequence_inst_n(seq, 0);
+    inst1 = TSEQUENCE_INST_N(seq, 0);
     TInstant *inst = tinstant_make(Float8GetDatum(prevlength), T_TFLOAT,
       inst1->t);
     TSequence *result = tinstant_to_tsequence(inst, LINEAR);
@@ -453,14 +453,14 @@ tnpointseq_cumulative_length(const TSequence *seq, double prevlength)
 
   /* General case */
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  inst1 = tsequence_inst_n(seq, 0);
+  inst1 = TSEQUENCE_INST_N(seq, 0);
   Npoint *np1 = DatumGetNpointP(&inst1->value);
   double rlength = route_length(np1->rid);
   double length = prevlength;
   instants[0] = tinstant_make(Float8GetDatum(length), T_TFLOAT, inst1->t);
   for (int i = 1; i < seq->count; i++)
   {
-    const TInstant *inst2 = tsequence_inst_n(seq, i);
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
     Npoint *np2 = DatumGetNpointP(&inst2->value);
     length += fabs(np2->pos - np1->pos) * rlength;
     instants[i] = tinstant_make(Float8GetDatum(length), T_TFLOAT, inst2->t);
@@ -480,9 +480,9 @@ tnpointseqset_cumulative_length(const TSequenceSet *ss)
   double length = 0;
   for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     sequences[i] = tnpointseq_cumulative_length(seq, length);
-    const TInstant *end = tsequence_inst_n(sequences[i], seq->count - 1);
+    const TInstant *end = TSEQUENCE_INST_N(sequences[i], seq->count - 1);
     length += DatumGetFloat8(tinstant_value(end));
   }
   return tsequenceset_make_free(sequences, ss->count, NORMALIZE_NO);
@@ -527,21 +527,21 @@ tnpointseq_speed(const TSequence *seq)
     Datum length = Float8GetDatum(0.0);
     for (int i = 0; i < seq->count; i++)
     {
-      const TInstant *inst = tsequence_inst_n(seq, i);
+      const TInstant *inst = TSEQUENCE_INST_N(seq, i);
       instants[i] = tinstant_make(length, T_TFLOAT, inst->t);
     }
   }
   else
   /* Linear interpolation */
   {
-    const TInstant *inst1 = tsequence_inst_n(seq, 0);
+    const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
     Npoint *np1 = DatumGetNpointP(&inst1->value);
     double rlength = route_length(np1->rid);
     const TInstant *inst2 = NULL; /* make the compiler quiet */
     double speed = 0; /* make the compiler quiet */
     for (int i = 0; i < seq->count - 1; i++)
     {
-      inst2 = tsequence_inst_n(seq, i + 1);
+      inst2 = TSEQUENCE_INST_N(seq, i + 1);
       Npoint *np2 = DatumGetNpointP(&inst2->value);
       double length = fabs(np2->pos - np1->pos) * rlength;
       speed = length / (((double)(inst2->t) - (double)(inst1->t)) / 1000000);
@@ -568,7 +568,7 @@ tnpointseqset_speed(const TSequenceSet *ss)
   int k = 0;
   for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     TSequence *seq1 = tnpointseq_speed(seq);
     if (seq1 != NULL)
       sequences[k++] = seq1;
@@ -694,11 +694,11 @@ tnpointseq_azimuth2(const TSequence *seq, TSequence **result)
   int totalinsts = 0; /* number of created instants so far */
   int l = 0; /* number of created sequences */
   int m = 0; /* index of the segment from which to assemble instants */
-  const TInstant *inst1 = tsequence_inst_n(seq, 0);
+  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   bool lower_inc = seq->period.lower_inc;
   for (int i = 0; i < seq->count - 1; i++)
   {
-    const TInstant *inst2 = tsequence_inst_n(seq, i + 1);
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
     instants[i] = tnpointsegm_azimuth1(inst1, inst2, &countinsts[i]);
     /* If constant segment */
     if (countinsts[i] == 0)
@@ -748,13 +748,13 @@ static TSequenceSet *
 tnpointseqset_azimuth(const TSequenceSet *ss)
 {
   if (ss->count == 1)
-    return tnpointseq_azimuth(tsequenceset_seq_n(ss, 0));
+    return tnpointseq_azimuth(TSEQUENCESET_SEQ_N(ss, 0));
 
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->totalcount);
   int k = 0;
   for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     int countstep = tnpointseq_azimuth2(seq, &sequences[k]);
     k += countstep;
   }

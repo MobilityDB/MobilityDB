@@ -287,16 +287,15 @@ valuearr_compute_bbox(const Datum *values, meosType basetype, int count,
 {
   /* Currently, only geo set types have bounding box */
   ensure_set_basetype(basetype);
-  if (alphanum_basetype(basetype))
-    ;
-  else if (geo_basetype(basetype))
+  assert(! alphanum_basetype(basetype));
+  if (geo_basetype(basetype))
     geoarr_set_stbox(values, count, (STBox *) box);
 #if NPOINT
   else if (basetype == T_NPOINT)
    npointarr_set_stbox(values, count, (STBox *) box);
 #endif
   else
-    elog(ERROR, "unknown set type for computint bounding box: %d", basetype);
+    elog(ERROR, "unknown set type for computing bounding box: %d", basetype);
   return;
 }
 
@@ -312,9 +311,8 @@ set_expand_bbox(Datum d, meosType basetype, void *box)
 {
   /* Currently, only geo set types have bounding box */
   ensure_set_basetype(basetype);
-  if (alphanum_basetype(basetype))
-    ;
-  else if (geo_basetype(basetype))
+  assert(! alphanum_basetype(basetype));
+  if (geo_basetype(basetype))
   {
     STBox box1;
     geo_set_stbox(DatumGetGserializedP(d), &box1);

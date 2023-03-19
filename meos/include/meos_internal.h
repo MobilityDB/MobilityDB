@@ -290,14 +290,14 @@ extern void stbox_set_box3d(const STBox *box, BOX3D *box3d);
 /* Macros for speeding up access to components of temporal sequences (sets)*/
 
 #ifdef DEBUG_BUILD
-extern const TInstant *tsequence_inst_n(const TSequence *seq, int index);
-extern const TSequence *tsequenceset_seq_n(const TSequenceSet *ss, int index);
+extern const TInstant *TSEQUENCE_INST_N(const TSequence *seq, int index);
+extern const TSequence *TSEQUENCESET_SEQ_N(const TSequenceSet *ss, int index);
 #else
 /**
  * @brief Return a pointer to the offsets array of a temporal sequence
  * @note The period component of the bbox is already declared in the struct
  */
-#define tsequence_offsets_ptr(seq) ( (size_t *)( \
+#define TSEQUENCE_OFFSETS_PTR(seq) ( (size_t *)( \
   ((char *) &((seq)->period)) + (seq)->bboxsize ) )
 
 /**
@@ -306,15 +306,15 @@ extern const TSequence *tsequenceset_seq_n(const TSequenceSet *ss, int index);
  * @pre The argument @p index is less than the number of instants in the
  * sequence
  */
-#define tsequence_inst_n(seq, index) ( (TInstant *)( \
+#define TSEQUENCE_INST_N(seq, index) ( (TInstant *)( \
   ((char *) &((seq)->period)) + (seq)->bboxsize + \
-  (sizeof(size_t) * (seq)->maxcount) + (tsequence_offsets_ptr(seq))[index] ) )
+  (sizeof(size_t) * (seq)->maxcount) + (TSEQUENCE_OFFSETS_PTR(seq))[index] ) )
 
 /**
  * @brief Return a pointer to the offsets array of a temporal sequence set
  * @note The period component of the bbox is already declared in the struct
  */
-#define tsequenceset_offsets_ptr(ss) ( (size_t *)( \
+#define TSEQUENCESET_OFFSETS_PTR(ss) ( (size_t *)( \
   ((char *) &((ss)->period)) + (ss)->bboxsize ) )
 
 /**
@@ -323,9 +323,9 @@ extern const TSequence *tsequenceset_seq_n(const TSequenceSet *ss, int index);
  * @pre The argument @p index is less than the number of sequences in the
  * sequence set
  */
-#define tsequenceset_seq_n(ss, index) ( (TSequence *)( \
+#define TSEQUENCESET_SEQ_N(ss, index) ( (TSequence *)( \
   ((char *) &((ss)->period)) + (ss)->bboxsize + \
-  (sizeof(size_t) * (ss)->maxcount) + (tsequenceset_offsets_ptr(ss))[index] ) )
+  (sizeof(size_t) * (ss)->maxcount) + (TSEQUENCESET_OFFSETS_PTR(ss))[index] ) )
 #endif /* DEBUG_BUILD */
 
 /*****************************************************************************/

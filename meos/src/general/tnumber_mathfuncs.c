@@ -307,7 +307,7 @@ tnumberseq_iter_abs(const TSequence *seq)
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = tsequence_inst_n(seq, i);
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     instants[i] = tnumberinst_abs(inst);
   }
   TSequence *result = tsequence_make_free(instants, seq->count,
@@ -325,7 +325,7 @@ tnumberseq_linear_abs(const TSequence *seq)
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    inst1 = tsequence_inst_n(seq, 0);
+    inst1 = TSEQUENCE_INST_N(seq, 0);
     TInstant *inst2 = tnumberinst_abs(inst1);
     result = tinstant_to_tsequence(inst2, LINEAR);
     pfree(inst2);
@@ -334,7 +334,7 @@ tnumberseq_linear_abs(const TSequence *seq)
 
   /* General case */
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count * 2);
-  inst1 = tsequence_inst_n(seq, 0);
+  inst1 = TSEQUENCE_INST_N(seq, 0);
   instants[0] = tnumberinst_abs(inst1);
   Datum value1 = tinstant_value(inst1);
   double dvalue1 = datum_double(value1, basetype);
@@ -342,7 +342,7 @@ tnumberseq_linear_abs(const TSequence *seq)
   Datum dzero = (basetype == T_INT4) ? Int32GetDatum(0) : Float8GetDatum(0);
   for (int i = 1; i < seq->count; i++)
   {
-    const TInstant *inst2 = tsequence_inst_n(seq, i);
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
     Datum value2 = tinstant_value(inst2);
     double dvalue2 = datum_double(value2, basetype);
     /* Add the instant when the segment has value equal to zero */
@@ -370,7 +370,7 @@ tnumberseqset_abs(const TSequenceSet *ss)
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     sequences[i] = MOBDB_FLAGS_GET_LINEAR(ss->flags) ?
       tnumberseq_linear_abs(seq) : tnumberseq_iter_abs(seq);
   }
@@ -431,13 +431,13 @@ tnumberseq_delta_value(const TSequence *seq)
   /* General case */
   /* We are sure that there are at least 2 instants */
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  const TInstant *inst1 = tsequence_inst_n(seq, 0);
+  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   Datum value1 = tinstant_value(inst1);
   meosType basetype = temptype_basetype(seq->temptype);
   Datum delta = 0; /* make compiler quiet */
   for (int i = 1; i < seq->count; i++)
   {
-    const TInstant *inst2 = tsequence_inst_n(seq, i);
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
     Datum value2 = tinstant_value(inst2);
     delta = delta_value(value1, value2, basetype);
     instants[i - 1] = tinstant_make(delta, seq->temptype, inst1->t);
@@ -463,7 +463,7 @@ tnumberseqset_delta_value(const TSequenceSet *ss)
   /* Singleton sequence set */
   if (ss->count == 1)
   {
-    delta = tnumberseq_delta_value(tsequenceset_seq_n(ss, 0));
+    delta = tnumberseq_delta_value(TSEQUENCESET_SEQ_N(ss, 0));
     TSequenceSet *result = tsequence_to_tsequenceset(delta);
     pfree(delta);
     return result;
@@ -474,7 +474,7 @@ tnumberseqset_delta_value(const TSequenceSet *ss)
   int k = 0;
   for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     delta = tnumberseq_delta_value(seq);
     if (delta)
       sequences[k++] = delta;
@@ -572,13 +572,13 @@ tfloatseq_derivative(const TSequence *seq)
   /* General case */
   meosType basetype = temptype_basetype(seq->temptype);
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  const TInstant *inst1 = tsequence_inst_n(seq, 0);
+  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   Datum value1 = tinstant_value(inst1);
   double dvalue1 = datum_double(value1, basetype);
   double derivative = 0.0; /* make compiler quiet */
   for (int i = 0; i < seq->count - 1; i++)
   {
-    const TInstant *inst2 = tsequence_inst_n(seq, i + 1);
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
     Datum value2 = tinstant_value(inst2);
     double dvalue2 = datum_double(value2, basetype);
     derivative = datum_eq(value1, value2, basetype) ? 0.0 :
@@ -609,7 +609,7 @@ tfloatseqset_derivative(const TSequenceSet *ss)
   int k = 0;
   for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     if (seq->count > 1)
       sequences[k++] = tfloatseq_derivative(seq);
   }

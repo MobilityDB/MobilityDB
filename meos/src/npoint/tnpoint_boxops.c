@@ -193,7 +193,7 @@ tnpointseq_expand_bbox(const TSequence *seq, const TInstant *inst)
   STBox box;
   if (interp == LINEAR)
   {
-    const TInstant *last = tsequence_inst_n(seq, seq->count - 1);
+    const TInstant *last = TSEQUENCE_INST_N(seq, seq->count - 1);
     Npoint *np1 = DatumGetNpointP(&last->value);
     Npoint *np2 = DatumGetNpointP(&inst->value);
     int64 rid = np1->rid;

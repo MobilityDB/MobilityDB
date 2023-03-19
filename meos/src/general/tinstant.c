@@ -555,7 +555,7 @@ tsequence_to_tinstant(const TSequence *seq)
   if (seq->count != 1)
     elog(ERROR, "Cannot transform input to a temporal instant");
 
-  return tinstant_copy(tsequence_inst_n(seq, 0));
+  return tinstant_copy(TSEQUENCE_INST_N(seq, 0));
 }
 
 /**
@@ -566,11 +566,11 @@ tsequence_to_tinstant(const TSequence *seq)
 TInstant *
 tsequenceset_to_tinstant(const TSequenceSet *ts)
 {
-  const TSequence *seq = tsequenceset_seq_n(ts, 0);
+  const TSequence *seq = TSEQUENCESET_SEQ_N(ts, 0);
   if (ts->count != 1 || seq->count != 1)
     elog(ERROR, "Cannot transform input to a temporal instant");
 
-   return tinstant_copy(tsequence_inst_n(seq, 0));
+   return tinstant_copy(TSEQUENCE_INST_N(seq, 0));
 }
 
 /**

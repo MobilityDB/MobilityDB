@@ -335,7 +335,7 @@ tsequence_expand_bbox(TSequence *seq, const TInstant *inst)
   /* Only external types have bounding box */
   ensure_temporal_type(seq->temptype);
   if (talpha_type(seq->temptype))
-    span_set(TimestampTzGetDatum((tsequence_inst_n(seq, 0))->t),
+    span_set(TimestampTzGetDatum((TSEQUENCE_INST_N(seq, 0))->t),
       TimestampTzGetDatum(inst->t), seq->period.lower_inc, true, T_TIMESTAMPTZ,
       (Span *) TSEQUENCE_BBOX_PTR(seq));
   else if (tnumber_type(seq->temptype))
@@ -451,7 +451,7 @@ tsequence_compute_bbox(TSequence *seq)
 {
   const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
-    instants[i] = tsequence_inst_n(seq, i);
+    instants[i] = TSEQUENCE_INST_N(seq, i);
   interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
   tinstarr_compute_bbox(instants, seq->count, seq->period.lower_inc,
     seq->period.upper_inc, interp, TSEQUENCESET_BBOX_PTR(seq));
@@ -469,7 +469,7 @@ tsequenceset_compute_bbox(TSequenceSet *ss)
 {
   const TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
-    sequences[i] = tsequenceset_seq_n(ss, i);
+    sequences[i] = TSEQUENCESET_SEQ_N(ss, i);
   tseqarr_compute_bbox(sequences, ss->count, TSEQUENCESET_BBOX_PTR(ss));
   pfree(sequences);
   return;
