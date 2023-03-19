@@ -1393,9 +1393,7 @@ span_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
   if (oper == CONTAINS_OP || oper == CONTAINED_OP)
     free_attstatsslot(&lslot);
 
-#if DEBUG_BUILD
-  elog(WARNING, "Join selectivity: %lf", selec);
-#endif /* DEBUG_BUILD */
+  // elog(WARNING, "Join selectivity: %lf", selec);
 
   return selec;
 }

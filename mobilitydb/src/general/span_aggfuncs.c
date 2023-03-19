@@ -64,24 +64,6 @@ Span_extent_transfn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Spanbase_extent_transfn);
-/**
- * @brief Transition function for extent aggregation of base values of span types
- */
-PGDLLEXPORT Datum
-Spanbase_extent_transfn(PG_FUNCTION_ARGS)
-{
-  Span *s = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
-  if (PG_ARGISNULL(1))
-    PG_RETURN_POINTER(s);
-  Datum d = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  s = spanbase_extent_transfn(s, d, basetype);
-  if (! s)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(s);
-}
-
 PG_FUNCTION_INFO_V1(Span_extent_combinefn);
 /**
  * @brief Combine function for temporal extent aggregation
@@ -102,7 +84,39 @@ Span_extent_combinefn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PG_FUNCTION_INFO_V1(Span_extent_finalfn);
+/**
+ * @brief Final function for extent aggregation of base, set, span, and
+ * spanset values resulting in a span value
+ */
+PGDLLEXPORT Datum
+Span_extent_finalfn(PG_FUNCTION_ARGS)
+{
+  Span *span = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
+  if (! span)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(span);
+}
+
 /*****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Spanbase_extent_transfn);
+/**
+ * @brief Transition function for extent aggregation of base values of span types
+ */
+PGDLLEXPORT Datum
+Spanbase_extent_transfn(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
+  if (PG_ARGISNULL(1))
+    PG_RETURN_POINTER(s);
+  Datum d = PG_GETARG_DATUM(1);
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  s = spanbase_extent_transfn(s, d, basetype);
+  if (! s)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(s);
+}
 
 PG_FUNCTION_INFO_V1(Set_extent_transfn);
 /**

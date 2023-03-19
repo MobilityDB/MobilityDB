@@ -59,6 +59,29 @@ SELECT numSpans(span_union(temp::tstzspan)) from tbl_tfloat_big;
 
 -------------------------------------------------------------------------------
 
+-- NULL
+SELECT extent(NULL::int) FROM generate_series(1,10);
+SELECT extent(NULL::bigint) FROM generate_series(1,10);
+SELECT extent(NULL::float) FROM generate_series(1,10);
+SELECT extent(NULL::timestamptz) FROM generate_series(1,10);
+
+SELECT extent(NULL::intset) FROM generate_series(1,10);
+SELECT extent(NULL::bigintset) FROM generate_series(1,10);
+SELECT extent(NULL::floatset) FROM generate_series(1,10);
+SELECT extent(NULL::tstzset) FROM generate_series(1,10);
+
+SELECT extent(NULL::intspan) FROM generate_series(1,10);
+SELECT extent(NULL::bigintspan) FROM generate_series(1,10);
+SELECT extent(NULL::floatspan) FROM generate_series(1,10);
+SELECT extent(NULL::tstzspan) FROM generate_series(1,10);
+
+SELECT extent(NULL::intspanset) FROM generate_series(1,10);
+SELECT extent(NULL::bigintspanset) FROM generate_series(1,10);
+SELECT extent(NULL::floatspanset) FROM generate_series(1,10);
+SELECT extent(NULL::tstzspanset) FROM generate_series(1,10);
+
+-------------------------------------------------------------------------------
+
 SELECT tcount(temp) FROM (VALUES
 (NULL::tstzset),(NULL::tstzset)) t(temp);
 SELECT tcount(temp) FROM (VALUES
