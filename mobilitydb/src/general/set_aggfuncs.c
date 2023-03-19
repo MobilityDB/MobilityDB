@@ -67,8 +67,7 @@ Value_union_transfn(PG_FUNCTION_ARGS)
     elog(ERROR, "Value_union_transfn called in non-aggregate context");
 
   Oid valueoid = get_fn_expr_argtype(fcinfo->flinfo, 1);
-  meosType basetype = oid_type(valueoid);
-  assert(set_basetype(basetype));
+  assert(set_basetype(oid_type(valueoid)));
 
   ArrayBuildState *state;
   if (PG_ARGISNULL(0))

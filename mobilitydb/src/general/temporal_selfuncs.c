@@ -102,8 +102,7 @@ temporal_const_to_period(Node *other, Span *period)
  * @brief Transform the constant into a temporal box
  */
 bool
-tnumber_const_to_span_period(const Node *other, Span **s, Span **p,
-  meosType basetype)
+tnumber_const_to_span_period(const Node *other, Span **s, Span **p)
 {
   Oid consttypid = ((Const *) other)->consttype;
   meosType type = oid_type(consttypid);
@@ -120,7 +119,6 @@ tnumber_const_to_span_period(const Node *other, Span **s, Span **p,
   else if (type == T_TBOX)
   {
     const TBox *box = DatumGetTboxP(((Const *) other)->constvalue);
-    assert(span_basetype(basetype));
     *s = tbox_to_floatspan(box);
     *p = tbox_to_period(box);
   }
@@ -686,12 +684,15 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
   }
   else if (tempfamily == TNUMBERTYPE)
   {
+#if DEBUG_BUILD
     /* Get the base type of the temporal column */
     meosType basetype = temptype_basetype(oid_type(vardata.atttype));
+    assert(span_basetype(basetype));
+#endif /* DEBUG_BUILD */
     /* Transform the constant into a span and/or a period */
     Span *s = NULL;
     Span *p = NULL;
-    if (! tnumber_const_to_span_period(other, &s, &p, basetype))
+    if (! tnumber_const_to_span_period(other, &s, &p))
       /* In the case of unknown constant */
       return tnumber_sel_default(oper);
 

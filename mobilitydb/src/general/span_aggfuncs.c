@@ -153,8 +153,10 @@ Span_union_transfn(PG_FUNCTION_ARGS)
     elog(ERROR, "span_union_transfn called in non-aggregate context");
 
   Oid spanoid = get_fn_expr_argtype(fcinfo->flinfo, 1);
+#if DEBUG_BUILD
   meosType spantype = oid_type(spanoid);
   assert(span_type(spantype));
+#endif /* DEBUG_BUILD */
 
   ArrayBuildState *state;
   if (PG_ARGISNULL(0))
