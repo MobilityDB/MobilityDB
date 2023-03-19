@@ -751,7 +751,7 @@ tdiscseq_set_tiles(const TSequence *seq, bool hasz, bool hast,
   memset(coords, 0, sizeof(coords));
   for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = tsequence_inst_n(seq, i);
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     tpointinst_get_coords(coords, inst, hasz, hast, state);
     bitmatrix_set_cell(bm, coords, true);
   }
@@ -774,11 +774,11 @@ tcontseq_set_tiles(const TSequence *seq, bool hasz, bool hast,
   int coords1[MAXDIMS], coords2[MAXDIMS];
   memset(coords1, 0, sizeof(coords1));
   memset(coords2, 0, sizeof(coords2));
-  const TInstant *inst1 = tsequence_inst_n(seq, 0);
+  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   tpointinst_get_coords(coords1, inst1, hasz, hast, state);
   for (int i = 1; i < seq->count; i++)
   {
-    const TInstant *inst2 = tsequence_inst_n(seq, i);
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
     tpointinst_get_coords(coords2, inst2, hasz, hast, state);
     bresenham_bm(bm, coords1, coords2, numdims);
   }
@@ -799,7 +799,7 @@ tpointseqset_set_tiles(const TSequenceSet *ss, bool hasz, bool hast,
 {
   for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     tcontseq_set_tiles(seq, hasz, hast, state, bm);
   }
   return;

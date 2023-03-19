@@ -491,7 +491,7 @@ tsequence_write(const TSequence *seq, StringInfo buf)
   pq_sendbyte(buf, (uint8) MOBDB_FLAGS_GET_INTERP(seq->flags));
   for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = tsequence_inst_n(seq, i);
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     tinstant_write(inst, buf);
   }
   return;

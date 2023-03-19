@@ -1506,7 +1506,7 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
   for (int i = 0; i < seq->count; i++)
   {
     /* Get the next instant */
-    TInstant *inst = (TInstant *) tsequence_inst_n(seq, i);
+    TInstant *inst = (TInstant *) TSEQUENCE_INST_N(seq, i);
     /* If the instant is not in the current bucket */
     if (k > 0 && timestamptz_cmp_internal(inst->t, upper) > 0)
     {
@@ -1677,8 +1677,8 @@ tsequence_tsample(const TSequence *seq, const Interval *duration,
   TInstant **instants = palloc(sizeof(TInstant *) * count);
   interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
-  const TInstant *start = tsequence_inst_n(seq, 0);
-  const TInstant *end = tsequence_inst_n(seq, 1);
+  const TInstant *start = TSEQUENCE_INST_N(seq, 0);
+  const TInstant *end = TSEQUENCE_INST_N(seq, 1);
   lower = lower_bucket;
   /* Loop for each segment */
   bool lower_inc = seq->period.lower_inc;
@@ -1708,7 +1708,7 @@ tsequence_tsample(const TSequence *seq, const Interval *duration,
       if (i == seq->count - 1)
         break;
       start = end;
-      end = tsequence_inst_n(seq, ++i);
+      end = TSEQUENCE_INST_N(seq, ++i);
     }
   }
   if (k == 0)
@@ -1733,7 +1733,7 @@ tsequenceset_tsample(const TSequenceSet *ss, const Interval *duration,
   int k = 0;
   for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     TSequence *sample = tsequence_tsample(seq, duration, torigin);
     if (sample)
       sequences[k++] = sample;
@@ -2011,11 +2011,11 @@ temporal_start_value(const Temporal *temp)
   if (temp->subtype == TINSTANT)
     result = tinstant_value_copy((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
-    result = tinstant_value_copy(tsequence_inst_n((TSequence *) temp, 0));
+    result = tinstant_value_copy(TSEQUENCE_INST_N((TSequence *) temp, 0));
   else /* temp->subtype == TSEQUENCESET */
   {
-    const TSequence *seq = tsequenceset_seq_n((TSequenceSet *) temp, 0);
-    result = tinstant_value_copy(tsequence_inst_n(seq, 0));
+    const TSequence *seq = TSEQUENCESET_SEQ_N((TSequenceSet *) temp, 0);
+    result = tinstant_value_copy(TSEQUENCE_INST_N(seq, 0));
   }
   return result;
 }
@@ -2094,13 +2094,13 @@ temporal_end_value(const Temporal *temp)
   if (temp->subtype == TINSTANT)
     result = tinstant_value_copy((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
-    result = tinstant_value_copy(tsequence_inst_n((TSequence *) temp,
+    result = tinstant_value_copy(TSEQUENCE_INST_N((TSequence *) temp,
       ((TSequence *) temp)->count - 1));
   else /* temp->subtype == TSEQUENCESET */
   {
-    const TSequence *seq = tsequenceset_seq_n((TSequenceSet *) temp,
+    const TSequence *seq = TSEQUENCESET_SEQ_N((TSequenceSet *) temp,
       ((TSequenceSet *) temp)->count - 1);
-    result = tinstant_value_copy(tsequence_inst_n(seq, seq->count - 1));
+    result = tinstant_value_copy(TSEQUENCE_INST_N(seq, seq->count - 1));
   }
   return result;
 }
@@ -2378,7 +2378,7 @@ temporal_start_sequence(const Temporal *temp)
   else /* temp->subtype == TSEQUENCESET */
   {
     const TSequenceSet *ss = (const TSequenceSet *) temp;
-    result = tsequence_copy(tsequenceset_seq_n(ss, 0));
+    result = tsequence_copy(TSEQUENCESET_SEQ_N(ss, 0));
   }
   return result;
 }
@@ -2398,7 +2398,7 @@ temporal_end_sequence(const Temporal *temp)
   else /* temp->subtype == TSEQUENCESET */
   {
     const TSequenceSet *ss = (const TSequenceSet *) temp;
-    result = tsequence_copy(tsequenceset_seq_n(ss, ss->count - 1));
+    result = tsequence_copy(TSEQUENCESET_SEQ_N(ss, ss->count - 1));
   }
   return result;
 }
@@ -2423,7 +2423,7 @@ temporal_sequence_n(const Temporal *temp, int i)
   {
     const TSequenceSet *ss = (const TSequenceSet *) temp;
     if (i >= 1 && i <= ss->count)
-      result = tsequence_copy(tsequenceset_seq_n(ss, i - 1));
+      result = tsequence_copy(TSEQUENCESET_SEQ_N(ss, i - 1));
   }
   return result;
 }
@@ -2504,11 +2504,11 @@ temporal_start_instant(const Temporal *temp)
   if (temp->subtype == TINSTANT)
     result = (TInstant *) temp;
   else if (temp->subtype == TSEQUENCE)
-    result = tsequence_inst_n((TSequence *) temp, 0);
+    result = TSEQUENCE_INST_N((TSequence *) temp, 0);
   else /* temp->subtype == TSEQUENCESET */
   {
-    const TSequence *seq = tsequenceset_seq_n((TSequenceSet *) temp, 0);
-    result = tsequence_inst_n(seq, 0);
+    const TSequence *seq = TSEQUENCESET_SEQ_N((TSequenceSet *) temp, 0);
+    result = TSEQUENCE_INST_N(seq, 0);
   }
   return result;
 }
@@ -2528,13 +2528,13 @@ temporal_end_instant(const Temporal *temp)
   if (temp->subtype == TINSTANT)
     result = (TInstant *) temp;
   else if (temp->subtype == TSEQUENCE)
-    result = tsequence_inst_n((TSequence *) temp,
+    result = TSEQUENCE_INST_N((TSequence *) temp,
       ((TSequence *) temp)->count - 1);
   else /* temp->subtype == TSEQUENCESET */
   {
-    const TSequence *seq = tsequenceset_seq_n((TSequenceSet *) temp,
+    const TSequence *seq = TSEQUENCESET_SEQ_N((TSequenceSet *) temp,
       ((TSequenceSet *) temp)->count - 1);
-    result = tsequence_inst_n(seq, seq->count - 1);
+    result = TSEQUENCE_INST_N(seq, seq->count - 1);
   }
   return result;
 }
@@ -2559,7 +2559,7 @@ temporal_instant_n(const Temporal *temp, int n)
   else if (temp->subtype == TSEQUENCE)
   {
     if (n >= 1 && n <= ((TSequence *) temp)->count)
-      result = tsequence_inst_n((TSequence *) temp, n - 1);
+      result = TSEQUENCE_INST_N((TSequence *) temp, n - 1);
   }
   else /* temp->subtype == TSEQUENCESET */
   {
@@ -2679,7 +2679,7 @@ temporal_timestamp_n(const Temporal *temp, int n, TimestampTz *result)
   {
     if (n >= 1 && n <= ((TSequence *) temp)->count)
     {
-      *result = (tsequence_inst_n((TSequence *) temp, n - 1))->t;
+      *result = (TSEQUENCE_INST_N((TSequence *) temp, n - 1))->t;
       return true;
     }
   }
@@ -3810,11 +3810,11 @@ mrr_distance_scalar(const TSequence *seq, int start, int end)
 {
   assert(seq->temptype == T_TFLOAT);
   double min_value, max_value, curr_value;
-  min_value = DatumGetFloat8(tinstant_value(tsequence_inst_n(seq, start)));
+  min_value = DatumGetFloat8(tinstant_value(TSEQUENCE_INST_N(seq, start)));
   max_value = min_value;
   for (int i = start + 1; i < end + 1; ++i)
   {
-    curr_value = DatumGetFloat8(tinstant_value(tsequence_inst_n(seq, i)));
+    curr_value = DatumGetFloat8(tinstant_value(TSEQUENCE_INST_N(seq, i)));
     min_value = fmin(min_value, curr_value);
     max_value = fmax(max_value, curr_value);
   }
@@ -3939,11 +3939,11 @@ multipoint_make(const TSequence *seq, int start, int end)
   {
     if (tgeo_type(seq->temptype))
       gs = DatumGetGserializedP(
-        tinstant_value(tsequence_inst_n(seq, start + i)));
+        tinstant_value(TSEQUENCE_INST_N(seq, start + i)));
 #if NPOINT
     else if (seq->temptype == T_TNPOINT)
       gs = npoint_geom(DatumGetNpointP(
-        tinstant_value(tsequence_inst_n(seq, start + i))));
+        tinstant_value(TSEQUENCE_INST_N(seq, start + i))));
 #endif
     else
       elog(ERROR, "Sequence must have a spatial base type");
@@ -4016,13 +4016,13 @@ tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
 
   for (end = 0; end < seq->count; ++end)
   {
-    inst1 = tsequence_inst_n(seq, start);
-    inst2 = tsequence_inst_n(seq, end);
+    inst1 = TSEQUENCE_INST_N(seq, start);
+    inst2 = TSEQUENCE_INST_N(seq, end);
 
     while (!is_stopped && end - start > 1
       && (int64)(inst2->t - inst1->t) >= mintunits)
     {
-      inst1 = tsequence_inst_n(seq, ++start);
+      inst1 = TSEQUENCE_INST_N(seq, ++start);
       rebuild_geom = true;
     }
 
@@ -4043,13 +4043,13 @@ tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
     else
       is_stopped = mrr_distance_scalar(seq, start, end) <= maxdist;
 
-    inst2 = tsequence_inst_n(seq, end - 1);
+    inst2 = TSEQUENCE_INST_N(seq, end - 1);
     if (!is_stopped && previously_stopped
       && (int64)(inst2->t - inst1->t) >= mintunits) // Found a stop
     {
       const TInstant **insts = palloc(sizeof(TInstant *) * (end - start));
       for (int i = 0; i < end - start; ++i)
-          insts[i] = tsequence_inst_n(seq, start + i);
+          insts[i] = TSEQUENCE_INST_N(seq, start + i);
       result[k++] = tsequence_make(insts, end - start,
         true, true, LINEAR, NORMALIZE_NO);
       start = end;
@@ -4064,12 +4064,12 @@ tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
   if (use_geos_dist)
     GEOSGeom_destroy(geom);
 
-  inst2 = tsequence_inst_n(seq, end - 1);
+  inst2 = TSEQUENCE_INST_N(seq, end - 1);
   if (is_stopped && (int64)(inst2->t - inst1->t) >= mintunits)
   {
     const TInstant **insts = palloc(sizeof(TInstant *) * (end - start));
     for (int i = 0; i < end - start; ++i)
-        insts[i] = tsequence_inst_n(seq, start + i);
+        insts[i] = TSEQUENCE_INST_N(seq, start + i);
     result[k++] = tsequence_make(insts, end - start,
       true, true, LINEAR, NORMALIZE_NO);
   }
@@ -4112,7 +4112,7 @@ tsequenceset_stops(const TSequenceSet *ss, double maxdist, int64 mintunits)
   int k = 0;
   for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     k += tsequence_stops1(seq, maxdist, mintunits, &sequences[k]);
   }
   TSequenceSet *result = tsequenceset_make_free(sequences, k, NORMALIZE);
@@ -4264,7 +4264,7 @@ temporal_eq(const Temporal *temp1, const Temporal *temp2)
       seq = (TSequence *) temp2;
       if (seq->count != 1)
         return false;
-      inst1 = tsequence_inst_n(seq, 0);
+      inst1 = TSEQUENCE_INST_N(seq, 0);
       return tinstant_eq(inst, inst1);
     }
     if (temp2->subtype == TSEQUENCESET)
@@ -4272,10 +4272,10 @@ temporal_eq(const Temporal *temp1, const Temporal *temp2)
       ss = (TSequenceSet *) temp2;
       if (ss->count != 1)
         return false;
-      seq = tsequenceset_seq_n(ss, 0);
+      seq = TSEQUENCESET_SEQ_N(ss, 0);
       if (seq->count != 1)
         return false;
-      inst1 = tsequence_inst_n(seq, 0);
+      inst1 = TSEQUENCE_INST_N(seq, 0);
       return tinstant_eq(inst, inst1);
     }
   }
@@ -4286,11 +4286,11 @@ temporal_eq(const Temporal *temp1, const Temporal *temp2)
   {
     for (int i = 0; i < seq->count; i ++)
     {
-      const TSequence *seq1 = tsequenceset_seq_n(ss, i);
+      const TSequence *seq1 = TSEQUENCESET_SEQ_N(ss, i);
       if (seq1->count != 1)
         return false;
-      inst1 = tsequence_inst_n(seq, i);
-      const TInstant *inst2 = tsequence_inst_n(seq1, 0);
+      inst1 = TSEQUENCE_INST_N(seq, i);
+      const TInstant *inst2 = TSEQUENCE_INST_N(seq1, 0);
       if (! tinstant_eq(inst1, inst2))
         return false;
     }
@@ -4300,7 +4300,7 @@ temporal_eq(const Temporal *temp1, const Temporal *temp2)
   {
     if (ss->count != 1)
       return false;
-    const TSequence *seq1 = tsequenceset_seq_n(ss, 0);
+    const TSequence *seq1 = TSEQUENCESET_SEQ_N(ss, 0);
     return tsequence_eq(seq, seq1);
   }
 }
