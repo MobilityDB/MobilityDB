@@ -282,24 +282,25 @@ void
 tinstarr_compute_bbox(const TInstant **instants, int count, bool lower_inc,
   bool upper_inc, interpType interp, void *box)
 {
-  assert(temporal_type(instants[0]->temptype));
+  meosType temptype = instants[0]->temptype;
+  assert(temporal_type(temptype));
   if (talpha_type(temptype) || temptype_without_bbox(temptype))
     span_set(TimestampTzGetDatum(instants[0]->t),
       TimestampTzGetDatum(instants[count - 1]->t), lower_inc, upper_inc,
       T_TIMESTAMPTZ, (Span *) box);
-  else if (tnumber_type(instants[0]->temptype))
+  else if (tnumber_type(temptype))
     tnumberinstarr_set_tbox(instants, count, (TBox *) box);
-  else if (instants[0]->temptype == T_TGEOMPOINT)
+  else if (temptype == T_TGEOMPOINT)
     tgeompointinstarr_set_stbox(instants, count, (STBox *) box);
-  else if (instants[0]->temptype == T_TGEOGPOINT)
+  else if (temptype == T_TGEOGPOINT)
     tgeogpointinstarr_set_stbox(instants, count, interp, (STBox *) box);
 #if NPOINT
-  else if (instants[0]->temptype == T_TNPOINT)
+  else if (temptype == T_TNPOINT)
     tnpointinstarr_set_stbox(instants, count, interp, (STBox *) box);
 #endif
   else
     elog(ERROR, "unknown temporal type for bounding box function: %d",
-      instants[0]->temptype);
+      temptype);
   /* Set the lower_inc and upper_inc bounds of the period at the beginning
    * of the bounding box */
   Span *p = (Span *) box;
