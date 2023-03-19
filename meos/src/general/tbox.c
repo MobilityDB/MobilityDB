@@ -199,7 +199,7 @@ tbox_copy(const TBox *box)
 void
 number_set_tbox(Datum value, meosType basetype, TBox *box)
 {
-  ensure_tnumber_basetype(basetype);
+  assert(tnumber_basetype(basetype));
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBox));
   Datum dvalue = Float8GetDatum(datum_double(value, basetype));
@@ -419,7 +419,7 @@ period_to_tbox(const Span *p)
 void
 numspanset_set_tbox(const SpanSet *ss, TBox *box)
 {
-  ensure_tnumber_spansettype(ss->spansettype);
+  assert(tnumber_spansettype(ss->spansettype));
   numspan_set_tbox(&ss->span, box);
   return;
 }
@@ -571,7 +571,7 @@ float_period_to_tbox(double d, const Span *p)
 TBox *
 span_timestamp_to_tbox(const Span *span, TimestampTz t)
 {
-  ensure_tnumber_spantype(span->spantype);
+  assert(tnumber_spantype(span->spantype));
   TBox *result = palloc(sizeof(TBox));
   numspan_set_floatspan(span, &result->span);
   Datum dt = TimestampTzGetDatum(t);
@@ -589,7 +589,7 @@ span_timestamp_to_tbox(const Span *span, TimestampTz t)
 TBox *
 span_period_to_tbox(const Span *span, const Span *p)
 {
-  ensure_tnumber_spantype(span->spantype);
+  assert(tnumber_spantype(span->spantype));
   assert(p->basetype == T_TIMESTAMPTZ);
   TBox *result = palloc(sizeof(TBox));
   numspan_set_floatspan(span, &result->span);

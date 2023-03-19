@@ -945,10 +945,6 @@ CREATE FUNCTION unnest(ttext)
  * Index Support Functions
  *****************************************************************************/
 
-CREATE FUNCTION temporal_supportfn(internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'Temporal_supportfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnumber_supportfn(internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tnumber_supportfn'

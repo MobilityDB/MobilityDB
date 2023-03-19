@@ -100,6 +100,14 @@ SELECT DISTINCT tempSubtype(tnpoint_seqset(ss)) FROM tbl_tnpoint_seqset;
 --  Append functions
 -------------------------------------------------------------------------------
 
+WITH temp(inst) AS (
+  SELECT tnpoint 'Npoint(1, 0.1)@2000-01-01' UNION
+  SELECT tnpoint 'Npoint(1, 0.2)@2000-01-02' UNION
+  SELECT tnpoint 'Npoint(1, 0.4)@2000-01-04' UNION
+  SELECT tnpoint 'Npoint(1, 0.5)@2000-01-05' UNION
+  SELECT tnpoint 'Npoint(1, 0.7)@2000-01-07' )
+SELECT appendInstant(inst, 1, NULL ORDER BY inst) FROM temp;
+
 SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) FROM tbl_tnpoint;
 
 -------------------------------------------------------------------------------

@@ -92,6 +92,25 @@ Nsegment_to_stbox(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+PG_FUNCTION_INFO_V1(Npointset_to_stbox);
+/**
+ * @ingroup mobilitydb_setspan_cast
+ * @brief Transform a network point set to a spatiotemporal box
+ * @sqlfunc stbox()
+ * @sqlop @p ::
+ */
+PGDLLEXPORT Datum
+Npointset_to_stbox(PG_FUNCTION_ARGS)
+{
+  Set *set = PG_GETARG_SET_P(0);
+  STBox *result = palloc(sizeof(STBox));
+  spatialset_set_stbox(set, result);
+  PG_FREE_IF_COPY(set, 0);
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************/
+
 PG_FUNCTION_INFO_V1(Npoint_timestamp_to_stbox);
 /**
  * @ingroup mobilitydb_temporal_cast
@@ -161,11 +180,9 @@ boxop_stbox_tnpoint_ext(FunctionCallInfo fcinfo,
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   STBox box1;
   temporal_set_bbox(temp, &box1);
-  int result = func(box, &box1);
+  bool result = func(box, &box1);
   PG_FREE_IF_COPY(temp, 1);
-  if (result < 0)
-    PG_RETURN_NULL();
-  PG_RETURN_BOOL(result ? true : false);
+  PG_RETURN_BOOL(result);
 }
 
 /**
@@ -181,11 +198,9 @@ boxop_tnpoint_stbox_ext(FunctionCallInfo fcinfo,
   STBox *box = PG_GETARG_STBOX_P(1);
   STBox box1;
   temporal_set_bbox(temp, &box1);
-  int result = func(&box1, box);
+  bool result = func(&box1, box);
   PG_FREE_IF_COPY(temp, 0);
-  if (result < 0)
-    PG_RETURN_NULL();
-  PG_RETURN_BOOL(result ? true : false);
+  PG_RETURN_BOOL(result);
 }
 
 /**

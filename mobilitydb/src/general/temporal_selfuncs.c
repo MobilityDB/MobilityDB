@@ -102,34 +102,11 @@ temporal_const_to_period(Node *other, Span *period)
  * @brief Transform the constant into a temporal box
  */
 bool
-tnumber_const_to_span_period(const Node *other, Span **s, Span **p,
-  meosType basetype)
+tnumber_const_to_span_period(const Node *other, Span **s, Span **p)
 {
   Oid consttypid = ((Const *) other)->consttype;
   meosType type = oid_type(consttypid);
-  if (tnumber_basetype(type))
-  {
-    Datum value = ((Const *) other)->constvalue;
-    *s = value_to_span(value, type);
-  }
-  else if (type == T_TIMESTAMPTZ)
-  {
-    TimestampTz t = DatumGetTimestampTz(((Const *) other)->constvalue);
-    *p = timestamp_to_period(t);
-  }
-  else if (numset_type(type))
-  {
-    Set *os = DatumGetSetP(((Const *) other)->constvalue);
-    *s = palloc(sizeof(Span));
-    set_set_span(os, *s);
-  }
-  else if (type == T_TSTZSET)
-  {
-    Set *os = DatumGetSetP(((Const *) other)->constvalue);
-    *p = palloc(sizeof(Span));
-    set_set_span(os, *p);
-  }
-  else if (numspan_type(type))
+  if (numspan_type(type))
   {
     Span *span = DatumGetSpanP(((Const *) other)->constvalue);
     *s = span_copy(span);
@@ -139,20 +116,9 @@ tnumber_const_to_span_period(const Node *other, Span **s, Span **p,
     Span *period = DatumGetSpanP(((Const *) other)->constvalue);
     *p = span_copy(period);
   }
-  else if (numspanset_type(type))
-  {
-    *s = palloc(sizeof(Span));
-    spanset_span_slice(((Const *) other)->constvalue, *s);
-  }
-  else if (type == T_TSTZSPANSET)
-  {
-    *p = palloc(sizeof(Span));
-    spanset_span_slice(((Const *) other)->constvalue, *p);
-  }
   else if (type == T_TBOX)
   {
     const TBox *box = DatumGetTboxP(((Const *) other)->constvalue);
-    ensure_span_basetype(basetype);
     *s = tbox_to_floatspan(box);
     *p = tbox_to_period(box);
   }
@@ -181,14 +147,8 @@ tpoint_const_to_stbox(Node *other, STBox *box)
   meosType type = oid_type(consttype);
   if (geo_basetype(type))
     geo_set_stbox((GSERIALIZED *) PointerGetDatum(constvalue), box);
-  else if (type == T_TIMESTAMPTZ)
-    timestamp_set_stbox(DatumGetTimestampTz(constvalue), box);
-  else if (type == T_TSTZSET)
-    tstzset_set_stbox(DatumGetSetP(constvalue), box);
   else if (type == T_TSTZSPAN)
     period_set_stbox(DatumGetSpanP(constvalue), box);
-  else if (type == T_TSTZSPANSET)
-    periodset_stbox_slice(constvalue, box);
   else if (type == T_STBOX)
     memcpy(box, DatumGetSTboxP(constvalue), sizeof(STBox));
   else if (tspatial_type(type))
@@ -724,12 +684,15 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
   }
   else if (tempfamily == TNUMBERTYPE)
   {
+#if DEBUG_BUILD
     /* Get the base type of the temporal column */
     meosType basetype = temptype_basetype(oid_type(vardata.atttype));
+    assert(span_basetype(basetype));
+#endif /* DEBUG_BUILD */
     /* Transform the constant into a span and/or a period */
     Span *s = NULL;
     Span *p = NULL;
-    if (! tnumber_const_to_span_period(other, &s, &p, basetype))
+    if (! tnumber_const_to_span_period(other, &s, &p))
       /* In the case of unknown constant */
       return tnumber_sel_default(oper);
 

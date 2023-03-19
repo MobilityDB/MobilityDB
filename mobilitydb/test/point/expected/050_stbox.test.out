@@ -379,6 +379,12 @@ SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(1,1,1)),[2000-01-01,2000-01
 /* Errors */
 SELECT stbox 'STBOX T([2000-01-01, 2000-01-02])'::geometry;
 ERROR:  The box must have XY(Z) dimension
+SELECT geomset '{"Point(1 1 1)", "Point(2 2 2)", "Point(3 3 3)"}'::stbox;
+          stbox           
+--------------------------
+ STBOX Z((1,1,1),(3,3,3))
+(1 row)
+
 SELECT MAX(duration(b::tstzspan)) FROM tbl_stbox;
    max    
 ----------

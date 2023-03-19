@@ -161,6 +161,14 @@ SELECT appendInstant(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01
 SELECT appendInstant(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05] }', tnpoint 'Npoint(1, 0.7)@2000-01-06');
 
 -------------------------------------------------------------------------------
+
+SELECT appendSequence(tnpoint '{Npoint(1, 0.2)@2000-01-01, Npoint(2, 0.4)@2000-01-02}', tnpoint '{Npoint(3, 0.6)@2000-01-03}');
+SELECT appendSequence(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02]', tnpoint '[Npoint(1, 0.6)@2000-01-03]');
+
+/* Errors */
+SELECT appendSequence(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02]', tnpoint '[Npoint(2, 0.6)@2000-01-03]');
+
+-------------------------------------------------------------------------------
 -- Cast functions
 -------------------------------------------------------------------------------
 

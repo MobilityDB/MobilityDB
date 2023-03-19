@@ -608,10 +608,16 @@ SELECT appendInstant(tfloat '[1@2000-01-01, 2@2000-01-03]', '1@2000-01-02');
 -------------------------------------------------------------------------------
 
 SELECT appendSequence(tfloat '{[1@2000-01-01, 1@2000-01-02)}', '[2@2000-01-02]');
+SELECT appendSequence(tfloat '{[1@2000-01-01, 2@2000-01-02]}', '[2@2000-01-02]');
 
 /* Errors */
+SELECT appendSequence(tfloat '[1@2000-01-01, 1@2000-01-03]', tfloat '[2@2000-01-02]');
+SELECT appendSequence(tfloat '[1@2000-01-01, 2@2000-01-02]', tfloat '[1@2000-01-02]');
+
 SELECT appendSequence(tfloat '{[1@2000-01-01, 1@2000-01-02)}', tfloat '2@2000-01-02');
 SELECT appendSequence(tfloat '{1@2000-01-01, 2@2000-01-02}', tfloat '[2@2000-01-01]');
+SELECT appendSequence(tfloat '{[1@2000-01-01, 1@2000-01-03]}', tfloat '[2@2000-01-02]');
+SELECT appendSequence(tfloat '{[1@2000-01-01, 1@2000-01-02]}', tfloat '[2@2000-01-02]');
 
 -------------------------------------------------------------------------------
 
@@ -2255,6 +2261,23 @@ SELECT minusTBox(tfloat 'Interp=Step;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-
 -- Modification functions
 -------------------------------------------------------------------------------
 
+SELECT insert(
+  tfloat '{[1@2000-01-01, 2@2000-01-02], [3@2000-01-03, 4@2000-01-04], [5@2000-01-05, 6@2000-01-06]}',
+  tfloat '{[2@2000-01-02, 3@2000-01-03], [4@2000-01-04, 5@2000-01-05]}');
+SELECT insert(
+  tfloat '{[1@2000-01-01, 2@2000-01-02], [4@2000-01-04, 5@2000-01-05]}',
+  tfloat '{[2@2000-01-02, 3@2000-01-03]}', false);
+/* Errors */
+SELECT insert(
+  tfloat '[1@2000-01-01, 2@2000-01-02]',
+  tfloat '[3@2000-01-02, 3@2000-01-03]');
+SELECT insert(
+  tfloat '{[1@2000-01-01, 2@2000-01-02], [3@2000-01-03, 4@2000-01-04], [5@2000-01-05, 6@2000-01-06]}',
+  tfloat '{[3@2000-01-02, 3@2000-01-03], [4@2000-01-04, 5@2000-01-05]}', false);
+SELECT insert(
+  tfloat '{[1@2000-01-01, 2@2000-01-02], [3@2000-01-03, 4@2000-01-04], [5@2000-01-05, 6@2000-01-06]}',
+  tfloat '{[2@2000-01-02, 4@2000-01-03], [4@2000-01-04, 5@2000-01-05]}', false);
+
 SELECT deleteTime(tbool 't@2000-01-01', timestamptz '2000-01-01');
 SELECT deleteTime(tbool 't@2000-01-02', timestamptz '2000-01-01');
 SELECT deleteTime(tbool 't@2000-01-01', timestamptz '2000-01-02');
@@ -2311,6 +2334,8 @@ SELECT deleteTime(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', tstz
 SELECT deleteTime(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]}', tstzset '{2000-01-01}');
 SELECT deleteTime(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', tstzset '{2000-01-01}');
 
+SELECT deleteTime(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]}', tstzset '{2000-01-01, 2000-01-03}');
+
 SELECT deleteTime(tbool 't@2000-01-01', tstzspan '[2000-01-01,2000-01-02]');
 SELECT deleteTime(tbool '{t@2000-01-01}', tstzspan '[2000-01-01,2000-01-02]');
 SELECT deleteTime(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', tstzspan '[2000-01-01,2000-01-02]');
@@ -2362,6 +2387,17 @@ SELECT deleteTime(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', tstz
 SELECT deleteTime(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', tstzspanset '{[2000-01-01,2000-01-02]}');
 SELECT deleteTime(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]}', tstzspanset '{[2000-01-01,2000-01-02]}');
 SELECT deleteTime(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', tstzspanset '{[2000-01-01,2000-01-02]}');
+
+SELECT deleteTime(tfloat '[1@2000-01-01, 2@2000-01-02]', tstzset '{2000-01-02}');
+SELECT deleteTime(tfloat '[1@2000-01-01, 2@2000-01-02]', tstzset '{2000-01-01,2000-01-02}');
+SELECT deleteTime(tfloat '[1@2000-01-01, 3@2000-01-03]', tstzset '{2000-01-01,2000-01-02}');
+SELECT deleteTime(tfloat '[1@2000-01-01]', tstzset '{2000-01-01,2000-01-02}');
+SELECT deleteTime(tfloat '[2@2000-01-02]', tstzset '{2000-01-01,2000-01-03}');
+SELECT deleteTime(tfloat '[1@2000-01-01]', tstzspanset '{[2000-01-01,2000-01-02], [2000-01-03,2000-01-04]}');
+SELECT deleteTime(tfloat '[3@2000-01-03]', tstzspanset '{[2000-01-01,2000-01-02], [2000-01-04,2000-01-05]}');
+SELECT deleteTime(tfloat '[3@2000-01-03, 4@2000-01-04]', tstzspanset '{[2000-01-01,2000-01-02], [2000-01-05,2000-01-06]}');
+SELECT deleteTime(tfloat '[1@2000-01-01, 2@2000-01-02]', tstzspanset '{[2000-01-01,2000-01-02], [2000-01-05,2000-01-06]}');
+SELECT deleteTime(tfloat '[1@2000-01-01, 4@2000-01-04]', tstzspanset '{[2000-01-01,2000-01-02], [2000-01-05,2000-01-06]}');
 
 -------------------------------------------------------------------------------
 --  Value Aggregate Functions

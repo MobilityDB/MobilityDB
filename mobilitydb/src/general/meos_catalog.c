@@ -405,6 +405,7 @@ name_oper(const char *name)
   return UNKNOWN_OP;
 }
 
+#if 0 /* not used */
 /**
  * @brief Return the string name from an operator number
  */
@@ -413,6 +414,7 @@ oper_name(meosOper oper)
 {
   return _oper_names[oper];
 }
+#endif /* not used */
 
 /**
  * @brief Fetch from the cache the Oid of an operator

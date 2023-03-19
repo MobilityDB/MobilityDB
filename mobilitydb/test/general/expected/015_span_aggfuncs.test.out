@@ -103,6 +103,102 @@ SELECT numSpans(span_union(temp::tstzspan)) from tbl_tfloat_big;
      3995
 (1 row)
 
+SELECT extent(NULL::int) FROM generate_series(1,10);
+ extent 
+--------
+ 
+(1 row)
+
+SELECT extent(NULL::bigint) FROM generate_series(1,10);
+ extent 
+--------
+ 
+(1 row)
+
+SELECT extent(NULL::float) FROM generate_series(1,10);
+ extent 
+--------
+ 
+(1 row)
+
+SELECT extent(NULL::timestamptz) FROM generate_series(1,10);
+ extent 
+--------
+ 
+(1 row)
+
+SELECT extent(NULL::intset) FROM generate_series(1,10);
+ extent 
+--------
+ 
+(1 row)
+
+SELECT extent(NULL::bigintset) FROM generate_series(1,10);
+ extent 
+--------
+ 
+(1 row)
+
+SELECT extent(NULL::floatset) FROM generate_series(1,10);
+ extent 
+--------
+ 
+(1 row)
+
+SELECT extent(NULL::tstzset) FROM generate_series(1,10);
+ extent 
+--------
+ 
+(1 row)
+
+SELECT extent(NULL::intspan) FROM generate_series(1,10);
+ extent 
+--------
+ 
+(1 row)
+
+SELECT extent(NULL::bigintspan) FROM generate_series(1,10);
+ extent 
+--------
+ 
+(1 row)
+
+SELECT extent(NULL::floatspan) FROM generate_series(1,10);
+ extent 
+--------
+ 
+(1 row)
+
+SELECT extent(NULL::tstzspan) FROM generate_series(1,10);
+ extent 
+--------
+ 
+(1 row)
+
+SELECT extent(NULL::intspanset) FROM generate_series(1,10);
+ extent 
+--------
+ 
+(1 row)
+
+SELECT extent(NULL::bigintspanset) FROM generate_series(1,10);
+ extent 
+--------
+ 
+(1 row)
+
+SELECT extent(NULL::floatspanset) FROM generate_series(1,10);
+ extent 
+--------
+ 
+(1 row)
+
+SELECT extent(NULL::tstzspanset) FROM generate_series(1,10);
+ extent 
+--------
+ 
+(1 row)
+
 SELECT tcount(temp) FROM (VALUES
 (NULL::tstzset),(NULL::tstzset)) t(temp);
  tcount 

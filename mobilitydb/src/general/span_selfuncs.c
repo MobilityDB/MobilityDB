@@ -1043,120 +1043,142 @@ _mobdb_span_sel(PG_FUNCTION_ARGS)
  * Join selectivity
  *****************************************************************************/
 
-/**
- * @brief Given two histograms of span bounds, estimate the fraction of values in
- * the first histogram that are less than (or equal to, if 'equal' argument
+/*
+ * @brief Given two histograms of span bounds, estimate the fraction of values
+ * in the first histogram that are less than (or equal to, if `equal` argument
  * is true) a value in the second histogram. The join selectivity estimation
- * for all span operators is expressed using this function.
+ * for all span operators is expressed using this function. This estimation
+ * is described in the following paper:
  *
- * The general idea is to iteratively decompose (var op var) into a summation
- * of (var op const) using the span bounds present in first histogram as
- * const. Then, (var op const) is calculated using the function
- * span_sel_scalar, which estimates the restriction selectivity.
+ * Diogo Repas, Zhicheng Luo, Maxime Schoemans, and Mahmoud Sakr, 2022
+ * Selectivity Estimation of Inequality Joins In Databases
+ * https://doi.org/10.48550/arXiv.2206.07396
  *
- * Consider two variables Var1 and Var2 whose distributions are given by
- * hist1 and hist2, respectively. To estimate:
+ * The attributes being joined will be treated as random variables that follow
+ * a distribution modeled by a Probability Density Function (PDF). Let the two
+ * attributes be denoted X, Y. This function finds the probability P(X < Y).
+ * Note that the PDFs of the two variables can easily be obtained from their
+ * bounds histogram, respectively `hist1` and `hist2`.
  *
- * P(Var1 < Var2)
+ * Let the PDF of X, Y be denoted as f_X, f_Y. The probability P(X < Y) can be
+ * formalized as follows:
+ * P(X < Y)= integral_-inf^inf( integral_-inf^y ( f_X(x) * f_Y(y) dx dy ) )
+ *         = integral_-inf^inf( F_X(y) * f_Y(y) dy )
+ * where F_X(y) denote the Cumulative Distribution Function of X at y. Note
+ * that F_X is the restriction (non-join) selectivity estimation, which is
+ * implemented using the function `span_sel_scalar`.
  *
- * we need to compute for each bin in the first histogram
+ * Now given the histograms of the two attributes X, Y, we note the following:
+ * - The PDF of Y is a step (that is, constant piece-wise) function where each
+ *   piece is defined in a bin of Y's histogram
+ * - The CDF of X is linear piece-wise, where each piece is defined in a bin
+ *   of X's histogram)
+ * This leads to the conclusion that their product (used to calculate the
+ * equation above) is also linear piece-wise. A new piece starts whenever
+ * either the bin of X or the bin of Y changes. By performing a parallel scan
+ * of the two span bound histograms of X and Y, we evaluate one piece of the
+ * result between every two consecutive span bounds in the union of the two
+ * histograms.
  *
- * P(Var1 < Var2 | Var2 is in bin) * P(Var2 is in bin)
+ * Given that the product F_X * f_y is linear in the interval between every two
+ * consecutive span bounds, let them be denoted `prev`, `cur`, it can be shown
+ * that the above formula can be discretized into the following:
+ * P(X < Y) =
+ *   0.5 * sum_0^{n+m-1} ( ( F_X(prev) + F_X(cur) ) * ( F_Y(cur) - F_Y(prev) ) )
+ * where n, m are the lengths of the two histograms.
  *
- * The second probability is the difference between the selectivity of the
- * upper and lower bounds of the bin, which can be directly computed by
- * calling span_sel_scalar.
- *
- * The first probability, however, cannot be directly computed because we do
- * not have a concrete value for Var2. Instead, we can under and over estimate
- * it by respectively setting the value of Var2 to the lower and upper bound
- * of the bin, then compute the average.
- *
- * P(Var1 < lower bound of bin) <=
- * P(Var1 < Var2 | Var2 is in bin) <=
- * P(Var1 < upper bound of bin)
- *
- * Therefore, we need to add the average selectivity of every bin, given by
- *    (val1 + val2) / 2 + (val2 + val3) / 2 +  ... + (val_n-1 + val_n) / 2
- * which is equal to
- *    val1 / 2 + val2 + val3 + val4 + ... + val_n-1 + val_n / 2
- * The first and last terms above are computed out of the loop. The rest is
- * computed in the loop.
+ * As such, it is possible to fully compute the join selectivity as a summation
+ * of CDFs, iterating over the bounds of the two histograms. This maximizes
+ * code reuse, since the CDF is computed using the `span_sel_scalar` function,
+ * which is used for restriction (non-join) selectivity estimation.
  */
 static double
-span_joinsel_scalar(const SpanBound *hist1, int nhist1,
-  const SpanBound *hist2, int nhist2, bool equal)
+span_joinsel_scalar(const SpanBound *hist1, int nhist1, const SpanBound *hist2,
+  int nhist2, bool equal __attribute__((unused)))
 {
-  Selectivity selec = (Selectivity)
-    (span_sel_scalar(&hist1[0], hist2, nhist2, equal) / 2);
-  for (int i = 1; i < nhist1 - 1; ++i)
-    selec += (Selectivity)
-      span_sel_scalar(&hist1[i], hist2, nhist2, equal);
-  selec += (Selectivity)
-    (span_sel_scalar(&hist1[nhist1 - 1], hist2, nhist2, equal) / 2);
-  return selec / (nhist1 - 1);
-}
+  /* A histogram will never have less than 2 values (1 bin) */
+  assert(nhist1 > 1);
+  assert(nhist2 > 1);
 
-/**
- * @brief Look up the fraction of values in the first histogram that overlap a
- * value in the second histogram
- */
-static double
-span_joinsel_overlaps(SpanBound *lower1, SpanBound *upper1,
-  int nhist1, SpanBound *lower2, SpanBound *upper2, int nhist2)
-{
-  /* If the spans do not overlap return 0.0 */
-  if (span_bound_cmp(&lower1[0], &upper2[nhist2 - 1]) > 0 ||
-      span_bound_cmp(&lower2[0], &upper1[nhist1 - 1]) > 0)
-    return 0.0;
+  /* Fast-forward i and j to start of iteration */
+  int i, j;
+  for (i = 0; span_bound_cmp(&hist1[i], &hist2[0]) < 0; i++);
+  for (j = 0; span_bound_cmp(&hist2[j], &hist1[0]) < 0; j++);
 
-  double selec = span_joinsel_scalar(lower1, nhist1, upper2, nhist2, false);
-  selec += (1.0 - span_joinsel_scalar(upper1, nhist1, lower2, nhist2, true));
-  selec = 1.0 - selec;
+  /* Do the estimation on overlapping regions */
+  double selec = 0.0,  /* initialisation */
+    prev_sel1 = -1.0,  /* to skip the first iteration */
+    prev_sel2 = 0.0;   /* make compiler quiet */
+  while (i < nhist1 && j < nhist2)
+  {
+    SpanBound cur_sync;
+    if (span_bound_cmp(&hist1[i], &hist2[j]) < 0)
+      cur_sync = hist1[i++];
+    else if (span_bound_cmp(&hist1[i], &hist2[j]) > 0)
+      cur_sync = hist2[j++];
+    else
+    {
+      /* If equal, skip one */
+      cur_sync = hist1[i];
+      i++;
+      j++;
+    }
+    double cur_sel1 = span_sel_scalar(&cur_sync, hist1, nhist1, false);
+    double cur_sel2 = span_sel_scalar(&cur_sync, hist2, nhist2, false);
+
+    /* Skip the first iteration */
+    if (prev_sel1 >= 0)
+      selec += (prev_sel1 + cur_sel1) * (cur_sel2 - prev_sel2);
+
+    /* Prepare for the next iteration */
+    prev_sel1 = cur_sel1;
+    prev_sel2 = cur_sel2;
+  }
+  selec /= 2;
+
+  /* Include remainder of hist2 if any */
+  if (j < nhist2)
+    selec += 1 - prev_sel2;
 
   return selec;
 }
 
 /**
- * @brief Look up the fraction of values in the first histogram that contain a
- * value in the second histogram
+ * @brief Look up the fraction of values in the first histogram that satisfy an
+ * operator with respect to a value in the second histogram
  */
 static double
-span_joinsel_contains(SpanBound *lower1, SpanBound *upper1,
-  int nhist1, SpanBound *lower2, SpanBound *upper2, int nhist2,
-  Datum *length, int length_nvalues)
+span_joinsel_oper(SpanBound *lower1, SpanBound *upper1, int nhist1,
+  SpanBound *lower2, SpanBound *upper2, int nhist2, Datum *length,
+  int length_nvalues, meosOper oper)
 {
   /* If the spans do not overlap return 0.0 */
   if (span_bound_cmp(&lower1[0], &upper2[nhist2 - 1]) > 0 ||
       span_bound_cmp(&lower2[0], &upper1[nhist1 - 1]) > 0)
     return 0.0;
 
-  Selectivity selec = 0.0;
-  for (int i = 0; i < nhist1 - 1; ++i)
-    selec += (Selectivity) span_sel_contains(&lower1[i], &upper1[i],
-      lower2, nhist2, length, length_nvalues);
-  return selec / (nhist1 - 1);
-}
-
-/**
- * @brief Look up the fraction of values in the first histogram that is
- * contained in a value in the second histogram
- */
-static double
-span_joinsel_contained(SpanBound *lower1, SpanBound *upper1,
-  int nhist1, SpanBound *lower2, SpanBound *upper2, int nhist2,
-  Datum *length, int length_nvalues)
-{
-  /* If the spans do not overlap return 0.0 */
-  if (span_bound_cmp(&lower1[0], &upper2[nhist2 - 1]) > 0 ||
-      span_bound_cmp(&lower2[0], &upper1[nhist1 - 1]) > 0)
-    return 0.0;
-
-  Selectivity selec = 0.0;
-  for (int i = 0; i < nhist1 - 1; ++i)
-    selec += (Selectivity) span_sel_contained(&lower1[i], &upper1[i],
-      lower2, nhist2, length, length_nvalues);
-  return selec / (nhist1 - 1);
+  double selec = 0.0; /* make compiler quiet */
+  if (oper == OVERLAPS_OP)
+  {
+    selec = 1.0;
+    selec -= span_joinsel_scalar(upper1, nhist1, lower2, nhist2, false);
+    selec -= span_joinsel_scalar(upper2, nhist2, lower1, nhist1, true);
+  }
+  else if (oper == CONTAINS_OP)
+  {
+    for (int i = 0; i < nhist1 - 1; ++i)
+      selec += span_sel_contains(&lower1[i], &upper1[i], lower2, nhist2,
+        length, length_nvalues);
+    selec /= (nhist1 - 1);
+  }
+  else if (oper == CONTAINED_OP)
+  {
+    for (int i = 0; i < nhist1 - 1; ++i)
+      selec += span_sel_contained(&lower1[i], &upper1[i], lower2, nhist2,
+        length, length_nvalues);
+    selec /= (nhist1 - 1);
+  }
+  return selec;
 }
 
 /**
@@ -1179,18 +1201,13 @@ span_joinsel_hist1(AttStatsSlot *hslot1, AttStatsSlot *hslot2,
   lower1 = palloc(sizeof(SpanBound) * nhist1);
   upper1 = palloc(sizeof(SpanBound) * nhist1);
   for (i = 0; i < nhist1; i++)
-  {
-    span_deserialize(DatumGetSpanP(hslot1->values[i]),
-      &lower1[i], &upper1[i]);
-  }
+    span_deserialize(DatumGetSpanP(hslot1->values[i]), &lower1[i], &upper1[i]);
+
   nhist2 = hslot2->nvalues;
   lower2 = palloc(sizeof(SpanBound) * nhist2);
   upper2 = palloc(sizeof(SpanBound) * nhist2);
   for (i = 0; i < nhist2; i++)
-  {
-    span_deserialize(DatumGetSpanP(hslot2->values[i]),
-      &lower2[i], &upper2[i]);
-  }
+    span_deserialize(DatumGetSpanP(hslot2->values[i]), &lower2[i], &upper2[i]);
 
   /*
    * Calculate the join selectivity of the various operators.
@@ -1209,8 +1226,7 @@ span_joinsel_hist1(AttStatsSlot *hslot1, AttStatsSlot *hslot2,
    * the fraction of values less than (or less than or equal to) a given
    * constant in the histograms of span bounds.
    *
-   * The other operators (&&, @>, <@, and -|-) have specific procedures
-   * above.
+   * The other operators (&&, @>, and <@) have specific procedures above.
    */
   if (oper == LT_OP)
     selec = span_joinsel_scalar(lower1, nhist1, lower2, nhist2, false);
@@ -1244,14 +1260,10 @@ span_joinsel_hist1(AttStatsSlot *hslot1, AttStatsSlot *hslot2,
   else if (oper == OVERAFTER_OP)
     /* var1 #&> var2 when lower(var1) >= lower(var2) */
     selec = 1.0 - span_joinsel_scalar(lower2, nhist2, lower1, nhist1, false);
-  else if (oper == OVERLAPS_OP)
-    selec = span_joinsel_overlaps(lower1, upper1, nhist1, lower2, upper2, nhist2);
-  else if (oper == CONTAINS_OP)
-    selec = span_joinsel_contains(lower1, upper1, nhist1, lower2, upper2,
-      nhist2, lslot->values, lslot->nvalues);
-  else if (oper == CONTAINED_OP)
-    selec = span_joinsel_contained(lower1, upper1, nhist1, lower2, upper2,
-      nhist2, lslot->values, lslot->nvalues);
+  else if (oper == OVERLAPS_OP || oper == CONTAINS_OP || oper == CONTAINED_OP)
+    /* specific function for these operators */
+    selec = span_joinsel_oper(lower1, upper1, nhist1, lower2, upper2, nhist2,
+      lslot->values, lslot->nvalues, oper);
   else if (oper == ADJACENT_OP)
     // TO DO
     selec = span_joinsel_default(InvalidOid);
@@ -1313,7 +1325,7 @@ span_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
     }
   }
 
-  if (!have_hist1 || !have_hist2)
+  if (! have_hist1 || ! have_hist2)
   {
     /*
      * We do not have histograms for both sides.  Estimate the join
@@ -1382,6 +1394,7 @@ span_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
     free_attstatsslot(&lslot);
 
   // elog(WARNING, "Join selectivity: %lf", selec);
+
   return selec;
 }
 

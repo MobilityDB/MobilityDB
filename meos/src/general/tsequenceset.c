@@ -98,7 +98,7 @@ tsequenceset_find_timestamp(const TSequenceSet *ss, TimestampTz t, int *loc)
     else
       first = middle + 1;
   }
-  if (t >= DatumGetTimestampTz(seq->period.upper))
+  if (seq && t >= DatumGetTimestampTz(seq->period.upper))
     middle++;
   *loc = middle;
   return false;

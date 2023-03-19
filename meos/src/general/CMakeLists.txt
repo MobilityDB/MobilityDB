@@ -6,7 +6,6 @@ add_library(general OBJECT
   pg_types.c
   skiplist.c
   set.c
-  set_aggfuncs_meos.c
   set_ops.c
   span.c
   span_aggfuncs.c
@@ -14,27 +13,33 @@ add_library(general OBJECT
   spanset.c
   spanset_ops.c
   tbool_boolops.c
-  tbool_boolops_meos.c
   tbox.c
   temporal.c
   temporal_aggfuncs.c
   temporal_boxops.c
   temporal_compops.c
-  temporal_compops_meos.c
-  temporal_meos.c
   temporal_similarity.c
   temporal_tile.c
   time_aggfuncs.c
   tinstant.c
   tnumber_distance.c
   tnumber_mathfuncs.c
-  tnumber_mathfuncs_meos.c
   tsequence.c
   tsequenceset.c
   ttext_textfuncs.c
-  ttext_textfuncs_meos.c
   type_in.c
   type_out.c
   type_parser.c
   type_util.c
 )
+
+if(MEOS)
+add_library(general OBJECT
+  set_aggfuncs_meos.c
+  tbool_boolops_meos.c
+  temporal_compops_meos.c
+  temporal_meos.c
+  tnumber_mathfuncs_meos.c
+  ttext_textfuncs_meos.c
+)
+endif()

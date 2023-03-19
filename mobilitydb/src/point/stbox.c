@@ -336,6 +336,23 @@ Geo_to_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PG_FUNCTION_INFO_V1(Geoset_to_stbox);
+/**
+ * @ingroup mobilitydb_box_cast
+ * @brief Transform a geometry/geography to a spatiotemporal box
+ * @sqlfunc stbox()
+ * @sqlfunc @p ::
+ */
+PGDLLEXPORT Datum
+Geoset_to_stbox(PG_FUNCTION_ARGS)
+{
+  Set *set = PG_GETARG_SET_P(0);
+  STBox *result = palloc(sizeof(STBox));
+  spatialset_set_stbox(set, result);
+  PG_FREE_IF_COPY(set, 0);
+  PG_RETURN_POINTER(result);
+}
+
 PG_FUNCTION_INFO_V1(Timestamp_to_stbox);
 /**
  * @ingroup mobilitydb_box_cast

@@ -536,7 +536,7 @@ span_copy(const Span *s)
 void
 value_set_span(Datum d, meosType basetype, Span *s)
 {
-  ensure_span_basetype(basetype);
+  assert(span_basetype(basetype));
   span_set(d, d, true, true, basetype, s);
   return;
 }

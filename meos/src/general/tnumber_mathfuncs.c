@@ -199,7 +199,7 @@ arithop_tnumber_number(const Temporal *temp, Datum value, meosType basetype,
   TArithmetic oper,
   Datum (*func)(Datum, Datum, meosType, meosType), bool invert)
 {
-  ensure_tnumber_basetype(basetype);
+  assert(tnumber_basetype(basetype));
   /* If division test whether the denominator is zero */
   if (oper == DIV)
   {

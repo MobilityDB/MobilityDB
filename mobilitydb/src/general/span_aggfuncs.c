@@ -31,6 +31,8 @@
  * @brief Aggregate function for span types.
  */
 
+/* C */
+#include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <fmgr.h>
@@ -62,24 +64,6 @@ Span_extent_transfn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Spanbase_extent_transfn);
-/**
- * @brief Transition function for extent aggregation of base values of span types
- */
-PGDLLEXPORT Datum
-Spanbase_extent_transfn(PG_FUNCTION_ARGS)
-{
-  Span *s = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
-  if (PG_ARGISNULL(1))
-    PG_RETURN_POINTER(s);
-  Datum d = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  s = spanbase_extent_transfn(s, d, basetype);
-  if (! s)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(s);
-}
-
 PG_FUNCTION_INFO_V1(Span_extent_combinefn);
 /**
  * @brief Combine function for temporal extent aggregation
@@ -100,7 +84,37 @@ Span_extent_combinefn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PG_FUNCTION_INFO_V1(Span_extent_finalfn);
+/**
+ * @brief Final function for extent aggregation of base, set, span, and
+ * spanset values resulting in a span value
+ */
+PGDLLEXPORT Datum
+Span_extent_finalfn(PG_FUNCTION_ARGS)
+{
+  Span *span = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
+  if (! span)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(span);
+}
+
 /*****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Spanbase_extent_transfn);
+/**
+ * @brief Transition function for extent aggregation of base values of span types
+ */
+PGDLLEXPORT Datum
+Spanbase_extent_transfn(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
+  if (PG_ARGISNULL(1))
+    PG_RETURN_POINTER(s);
+  Datum d = PG_GETARG_DATUM(1);
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+  s = spanbase_extent_transfn(s, d, basetype);
+  PG_RETURN_POINTER(s);
+}
 
 PG_FUNCTION_INFO_V1(Set_extent_transfn);
 /**
@@ -151,8 +165,10 @@ Span_union_transfn(PG_FUNCTION_ARGS)
     elog(ERROR, "span_union_transfn called in non-aggregate context");
 
   Oid spanoid = get_fn_expr_argtype(fcinfo->flinfo, 1);
+#if DEBUG_BUILD
   meosType spantype = oid_type(spanoid);
-  ensure_span_type(spantype);
+  assert(span_type(spantype));
+#endif /* DEBUG_BUILD */
 
   ArrayBuildState *state;
   if (PG_ARGISNULL(0))
@@ -183,7 +199,7 @@ Spanset_union_transfn(PG_FUNCTION_ARGS)
 
   Oid spansetoid = get_fn_expr_argtype(fcinfo->flinfo, 1);
   meosType spansettype = oid_type(spansetoid);
-  ensure_spanset_type(spansettype);
+  assert(spanset_type(spansettype));
   meosType spantype = spansettype_spantype(spansettype);
   Oid spanoid = type_oid(spantype);
 

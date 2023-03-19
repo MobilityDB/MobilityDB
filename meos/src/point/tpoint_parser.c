@@ -445,6 +445,10 @@ tpoint_parse(const char **str, meosType temptype)
     *str += 12;
     interp = STEP;
   }
+
+  /* Allow spaces after the SRID and/or Interpolation */
+  p_whitespace(str);
+
   Temporal *result = NULL; /* keep compiler quiet */
   /* Determine the type of the temporal point */
   if (**str != '{' && **str != '[' && **str != '(')

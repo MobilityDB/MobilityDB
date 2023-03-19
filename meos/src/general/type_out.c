@@ -119,7 +119,7 @@ text_mfjson_buf(char *output, text *txt)
 static size_t
 temporal_basevalue_mfjson_size(Datum value, meosType temptype, int precision)
 {
-  ensure_talphanum_type(temptype);
+  assert(talphanum_type(temptype));
   if (temptype == T_TBOOL)
     return MOBDB_WKT_BOOL_SIZE;
   if (temptype == T_TINT)
@@ -140,7 +140,7 @@ static size_t
 temporal_basevalue_mfjson_buf(char *output, Datum value, meosType temptype,
   int precision)
 {
-  ensure_talphanum_type(temptype);
+  assert(talphanum_type(temptype));
   if (temptype == T_TBOOL)
     return bool_mfjson_buf(output, DatumGetBool(value));
   if (temptype == T_TINT)
@@ -439,7 +439,7 @@ static size_t
 temptype_mfjson_size(meosType temptype)
 {
   size_t size;
-  ensure_temporal_type(temptype);
+  assert(temporal_type(temptype));
   switch (temptype)
   {
     case T_TBOOL:
@@ -474,7 +474,7 @@ static size_t
 temptype_mfjson_buf(char *output, meosType temptype)
 {
   char *ptr = output;
-  ensure_temporal_type(temptype);
+  assert(temporal_type(temptype));
   switch (temptype)
   {
     case T_TBOOL:
@@ -1086,7 +1086,7 @@ basetype_to_wkb_size(Datum value, meosType basetype, int16 flags)
 static size_t
 set_basetype_to_wkb_size(Datum value, meosType basetype, int16 flags)
 {
-  ensure_set_basetype(basetype);
+  assert(set_basetype(basetype));
   return basetype_to_wkb_size(value, basetype, flags);
 }
 
@@ -1138,7 +1138,7 @@ set_to_wkb_size(const Set *set, uint8_t variant)
 static size_t
 span_basetype_to_wkb_size(const Span *s)
 {
-  ensure_span_basetype(s->basetype);
+  assert(span_basetype(s->basetype));
   /* Only the second parameter is used for spans */
   return basetype_to_wkb_size(0, s->basetype, 0);
 }
@@ -1254,7 +1254,7 @@ stbox_to_wkb_size(const STBox *box, uint8_t variant)
 static size_t
 temporal_basetype_to_wkb_size(Datum value, meosType basetype, int16 flags)
 {
-  ensure_temporal_basetype(basetype);
+  assert(temporal_basetype(basetype));
   return basetype_to_wkb_size(value, basetype, flags);
 }
 
@@ -1765,7 +1765,7 @@ bounds_to_wkb_buf(bool lower_inc, bool upper_inc, uint8_t *buf, uint8_t variant)
 static uint8_t *
 lower_upper_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant)
 {
-  ensure_span_basetype(s->basetype);
+  assert(span_basetype(s->basetype));
   switch (s->basetype)
   {
     case T_INT4:
@@ -2029,7 +2029,7 @@ tinstant_basevalue_time_to_wkb_buf(const TInstant *inst, uint8_t *buf,
 {
   Datum value = tinstant_value(inst);
   meosType basetype = temptype_basetype(inst->temptype);
-  ensure_temporal_basetype(basetype);
+  assert(temporal_basetype(basetype));
   buf = basevalue_to_wkb_buf(value, basetype, inst->flags, buf, variant);
   buf = timestamp_to_wkb_buf(inst->t, buf, variant);
   return buf;

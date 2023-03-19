@@ -349,7 +349,7 @@ spanset_copy(const SpanSet *ps)
 SpanSet *
 value_to_spanset(Datum d, meosType basetype)
 {
-  ensure_span_basetype(basetype);
+  assert(span_basetype(basetype));
   Span s;
   Span *s1 = &s;
   span_set(d, d, true, true, basetype, &s);

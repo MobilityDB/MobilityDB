@@ -2067,7 +2067,7 @@ point_get_z(Datum point)
 Temporal *
 tpoint_get_coord(const Temporal *temp, int coord)
 {
-  ensure_tgeo_type(temp->temptype);
+  assert(tgeo_type(temp->temptype));
   if (coord == 2)
     ensure_has_Z(temp->flags);
   /* We only need to fill these parameters for tfunc_temporal */

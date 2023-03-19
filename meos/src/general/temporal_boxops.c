@@ -44,6 +44,8 @@
 
 #include "general/temporal_boxops.h"
 
+/* C */
+#include <assert.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -117,8 +119,7 @@ bbox_max_dims(meosType bboxtype)
 bool
 temporal_bbox_eq(const void *box1, const void *box2, meosType temptype)
 {
-  /* Only external types have bounding box */
-  ensure_temporal_type(temptype);
+  assert(temporal_type(temptype));
   if (talpha_type(temptype))
     return span_eq((Span *) box1, (Span *) box2);
   if (tnumber_type(temptype))
@@ -143,8 +144,7 @@ temporal_bbox_eq(const void *box1, const void *box2, meosType temptype)
 int
 temporal_bbox_cmp(const void *box1, const void *box2, meosType temptype)
 {
-  /* Only external types have bounding box */
-  ensure_temporal_type(temptype);
+  assert(temporal_type(temptype));
   if (talpha_type(temptype))
     return span_cmp((Span *) box1, (Span *) box2);
   if (tnumber_type(temptype))
@@ -165,7 +165,7 @@ void
 temporal_bbox_shift_tscale(void *box, meosType temptype, const Interval *shift,
   const Interval *duration)
 {
-  ensure_temporal_type(temptype);
+  assert(temporal_type(temptype));
   if (talpha_type(temptype))
     period_shift_tscale((Span *) box, shift, duration);
   else if (tnumber_type(temptype))
@@ -225,8 +225,7 @@ temporal_bbox_size(meosType temptype)
 void
 tinstant_set_bbox(const TInstant *inst, void *box)
 {
-  /* Only external types have bounding box */
-  ensure_temporal_type(inst->temptype);
+  assert(temporal_type(inst->temptype));
   if (talpha_type(inst->temptype))
     span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
       true, true, T_TIMESTAMPTZ, (Span *) box);
@@ -286,8 +285,7 @@ void
 tinstarr_compute_bbox(const TInstant **instants, int count, bool lower_inc,
   bool upper_inc, interpType interp, void *box)
 {
-  /* Only external types have bounding box */
-  ensure_temporal_type(instants[0]->temptype);
+  assert(temporal_type(instants[0]->temptype));
   if (talpha_type(instants[0]->temptype))
     span_set(TimestampTzGetDatum(instants[0]->t),
       TimestampTzGetDatum(instants[count - 1]->t), lower_inc, upper_inc,
@@ -335,8 +333,7 @@ tnumberseq_expand_tbox(TSequence *seq, const TInstant *inst)
 void
 tsequence_expand_bbox(TSequence *seq, const TInstant *inst)
 {
-  /* Only external types have bounding box */
-  ensure_temporal_type(seq->temptype);
+  assert(temporal_type(seq->temptype));
   if (talpha_type(seq->temptype))
     span_set(TimestampTzGetDatum((tsequence_inst_n(seq, 0))->t),
       TimestampTzGetDatum(inst->t), seq->period.lower_inc, true, T_TIMESTAMPTZ,
@@ -348,8 +345,8 @@ tsequence_expand_bbox(TSequence *seq, const TInstant *inst)
   else if (seq->temptype == T_TGEOGPOINT)
     tgeogpointseq_expand_stbox(seq, inst);
 #if NPOINT
-  // else if (seq->temptype == T_TNPOINT)
-    // tnpointseq_expand_stbox(seq, (STBox *) TSEQUENCE_BBOX_PTR(seq));
+  else if (seq->temptype == T_TNPOINT)
+    tnpointseq_expand_stbox(seq, inst);
 #endif
   else
     elog(ERROR, "unknown temporal type for bounding box function: %d",
@@ -366,21 +363,16 @@ tsequence_expand_bbox(TSequence *seq, const TInstant *inst)
 void
 tsequenceset_expand_bbox(TSequenceSet *ss, const TSequence *seq)
 {
-  /* Only external types have bounding box */
-  ensure_temporal_type(ss->temptype);
+  assert(temporal_type(ss->temptype));
   if (talpha_type(ss->temptype))
     span_expand(&seq->period, &ss->period);
   else if (tnumber_type(ss->temptype))
     tbox_expand((TBox *) TSEQUENCE_BBOX_PTR(seq),
       (TBox *) TSEQUENCE_BBOX_PTR(ss));
   // TODO Generalize as for tgeogpointseq_expand_stbox
-  else if (tgeo_type(ss->temptype))
+  else if (tspatial_type(ss->temptype))
     stbox_expand((STBox *) TSEQUENCE_BBOX_PTR(seq),
       (STBox *) TSEQUENCE_BBOX_PTR(ss));
-#if NPOINT
-  // else if (ss->temptype == T_TNPOINT)
-    // tnpointseqset_expand_stbox(ss, (STBox *) TSEQUENCE_BBOX_PTR(seq));
-#endif
   else
     elog(ERROR, "unknown temporal type for bounding box function: %d",
       ss->temptype);
@@ -427,8 +419,7 @@ tnumberseqarr_set_tbox(const TSequence **sequences, int count, TBox *box)
 void
 tseqarr_compute_bbox(const TSequence **sequences, int count, void *box)
 {
-  /* Only external types have bounding box */ // TODO
-  ensure_temporal_type(sequences[0]->temptype);
+  assert(temporal_type(sequences[0]->temptype));
   if (talpha_type(sequences[0]->temptype))
     tseqarr_set_period(sequences, count, (Span *) box);
   else if (tnumber_type(sequences[0]->temptype))

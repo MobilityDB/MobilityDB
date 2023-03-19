@@ -7,13 +7,18 @@ add_library(point OBJECT
   tpoint_analytics.c
   tpoint_boxops.c
   tpoint_distance.c
-  tpoint_meos.c
   tpoint_out.c
   tpoint_parser.c
   tpoint_spatialfuncs.c
   tpoint_spatialrels.c
-  tpoint_spatialrels_meos.c
   tpoint_tempspatialrels.c
-  tpoint_tempspatialrels_meos.c
   tpoint_tile.c
 )
+
+if(MEOS)
+add_library(general OBJECT
+  tpoint_meos.c
+  tpoint_spatialrels_meos.c
+  tpoint_tempspatialrels_meos.c
+)
+endif()

@@ -299,8 +299,8 @@ Datum
 datum_bucket(Datum value, Datum size, Datum origin, meosType basetype)
 {
   ensure_positive_datum(size, basetype);
-  ensure_span_basetype(basetype);
-  if (basetype == T_INT4) /** xx **/
+  assert(span_basetype(basetype));
+  if (basetype == T_INT4)
     return Int32GetDatum(int_bucket(DatumGetInt32(value),
       DatumGetInt32(size), DatumGetInt32(origin)));
   else if (basetype == T_FLOAT8)
@@ -911,7 +911,7 @@ temporal_time_split1(const Temporal *temp, TimestampTz start, TimestampTz end,
 static int
 bucket_position(Datum value, Datum size, Datum origin, meosType type)
 {
-  ensure_tnumber_basetype(type);
+  assert(tnumber_basetype(type));
   if (type == T_INT4) /** xx **/
     return (DatumGetInt32(value) - DatumGetInt32(origin)) /
       DatumGetInt32(size);

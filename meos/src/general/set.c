@@ -286,20 +286,19 @@ valuearr_compute_bbox(const Datum *values, meosType basetype, int count,
   void *box)
 {
   /* Currently, only geo set types have bounding box */
-  ensure_set_basetype(basetype);
-  if (alphanum_basetype(basetype))
-    ;
-  else if (geo_basetype(basetype))
+  assert(set_basetype(basetype));
+  if (geo_basetype(basetype))
     geoarr_set_stbox(values, count, (STBox *) box);
 #if NPOINT
   else if (basetype == T_NPOINT)
    npointarr_set_stbox(values, count, (STBox *) box);
 #endif
   else
-    elog(ERROR, "unknown set type for computint bounding box: %d", basetype);
+    elog(ERROR, "unknown set type for computing bounding box: %d", basetype);
   return;
 }
 
+#if MEOS
 /**
  * @brief Set a bounding box from an array of set values
  *
@@ -311,10 +310,8 @@ void
 set_expand_bbox(Datum d, meosType basetype, void *box)
 {
   /* Currently, only geo set types have bounding box */
-  ensure_set_basetype(basetype);
-  if (alphanum_basetype(basetype))
-    ;
-  else if (geo_basetype(basetype))
+  assert(set_basetype(basetype));
+  if (geo_basetype(basetype))
   {
     STBox box1;
     geo_set_stbox(DatumGetGserializedP(d), &box1);
@@ -332,6 +329,7 @@ set_expand_bbox(Datum d, meosType basetype, void *box)
     elog(ERROR, "unknown set type for expanding bounding box: %d", basetype);
   return;
 }
+#endif /* MEOS */
 
 /**
  * @brief Return a pointer to the bounding box of a temporal sequence
@@ -482,6 +480,7 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
       values_size = DOUBLE_PAD(typlen) * newcount;
   }
 
+#if MEOS
   /* Compute the total size for maxcount elements as a proportion of the size
    * of the count elements provided. Note that this is only an INITIAL
    * ESTIMATION. The functions adding elements to a set must verify BOTH
@@ -489,6 +488,7 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
    * additional variable-length element of arbitrary size */
   if (count != maxcount)
     values_size = (double) values_size * (double) maxcount / (double) count;
+#endif /* MEOS */
 
   /* Total size of the struct */
   size_t memsize = DOUBLE_PAD(sizeof(Set)) + DOUBLE_PAD(bboxsize) +
@@ -700,6 +700,7 @@ spatialset_set_stbox(const Set *set, STBox *box)
   return;
 }
 
+#if MEOS
 /**
  * @ingroup libmeos_setspan_cast
  * @brief Return the bounding box of a spatial set.
@@ -714,6 +715,7 @@ spatialset_to_stbox(const Set *s)
   spatialset_set_stbox(s, result);
   return result;
 }
+#endif /* MEOS */
 
 /*****************************************************************************
  * Accessor functions
@@ -1038,7 +1040,6 @@ floatset_values(const Set *s)
     result[i] = DatumGetFloat8(set_val_n(s, i));
   return result;
 }
-#endif /* MEOS */
 
 /**
  * @ingroup libmeos_setspan_accessor
@@ -1047,13 +1048,14 @@ floatset_values(const Set *s)
  * @pymeosfunc timestamps()
  */
 TimestampTz *
-tstzset_timestamps(const Set *ts)
+tstzset_values(const Set *ts)
 {
   TimestampTz *result = palloc(sizeof(TimestampTz) * ts->count);
   for (int i = 0; i < ts->count; i++)
     result[i] = DatumGetTimestampTz(set_val_n(ts, i));
   return result;
 }
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_internal_setspan_accessor

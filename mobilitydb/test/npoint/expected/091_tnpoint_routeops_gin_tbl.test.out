@@ -13,25 +13,51 @@ CREATE TABLE test_topops(
 );
 CREATE TABLE
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '@@', 'tnpoint', 'bigintset', COUNT(*) FROM tbl_tnpoint WHERE temp @@ bigintset '{25, 35}';
+SELECT '@@', 'tnpoint', 'bigintset', COUNT(*) FROM tbl_tnpoint
+WHERE temp @@ bigintset '{25, 35}';
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '@@', 'tnpoint', 'bigint', COUNT(*) FROM tbl_tnpoint WHERE temp @? 25;
+SELECT '@@', 'tnpoint', 'tnpoint', COUNT(*) FROM tbl_tnpoint
+WHERE temp @@ tnpoint '{NPoint(37,0.5)@2001-08-16, NPoint(78,0.5)@2001-08-17}';
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '@?', 'tnpoint', 'bigintset', COUNT(*) FROM tbl_tnpoint WHERE temp @? bigintset '{25, 35}';
+SELECT '@@', 'tnpoint', 'bigint', COUNT(*) FROM tbl_tnpoint
+WHERE temp @? 25;
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '?@', 'tnpoint', 'bigintset', COUNT(*) FROM tbl_tnpoint WHERE temp ?@ bigintset '{25, 35}';
+SELECT '@?', 'tnpoint', 'bigintset', COUNT(*) FROM tbl_tnpoint
+WHERE temp @? bigintset '{25, 35}';
 INSERT 0 1
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
-SELECT '@=', 'tnpoint', 'bigintset', COUNT(*) FROM tbl_tnpoint WHERE temp @= bigintset '{25, 35}';
+SELECT '@?', 'tnpoint', 'tnpoint', COUNT(*) FROM tbl_tnpoint
+WHERE temp @? tnpoint '{NPoint(37,0.5)@2001-08-16, NPoint(78,0.5)@2001-08-17}';
+INSERT 0 1
+INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
+SELECT '?@', 'tnpoint', 'bigintset', COUNT(*) FROM tbl_tnpoint
+WHERE temp ?@ bigintset '{25, 35}';
+INSERT 0 1
+INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
+SELECT '?@', 'tnpoint', 'tnpoint', COUNT(*) FROM tbl_tnpoint
+WHERE temp ?@ tnpoint '{NPoint(37,0.5)@2001-08-16, NPoint(78,0.5)@2001-08-17}';
+INSERT 0 1
+INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
+SELECT '@=', 'tnpoint', 'bigintset', COUNT(*) FROM tbl_tnpoint
+WHERE temp @= bigintset '{25, 35}';
+INSERT 0 1
+INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
+SELECT '@=', 'tnpoint', 'tnpoint', COUNT(*) FROM tbl_tnpoint
+WHERE temp @= tnpoint '{NPoint(37,0.5)@2001-08-16, NPoint(78,0.5)@2001-08-17}';
 INSERT 0 1
 CREATE INDEX tbl_tnpoint_gin_idx ON tbl_tnpoint USING GIN(temp);
 CREATE INDEX
 UPDATE test_topops
 SET gin_idx = ( SELECT COUNT(*) FROM tbl_tnpoint WHERE temp @@ bigintset '{25, 35}' )
 WHERE op = '@@' AND leftarg = 'tnpoint' AND rightarg = 'bigintset';
+UPDATE 1
+UPDATE test_topops
+SET gin_idx = ( SELECT COUNT(*) FROM tbl_tnpoint WHERE temp @@
+  tnpoint '{NPoint(37,0.5)@2001-08-16, NPoint(78,0.5)@2001-08-17}' )
+WHERE op = '@@' AND leftarg = 'tnpoint' AND rightarg = 'tnpoint';
 UPDATE 1
 UPDATE test_topops
 SET gin_idx = ( SELECT COUNT(*) FROM tbl_tnpoint WHERE temp @? 25 )
@@ -42,12 +68,27 @@ SET gin_idx = ( SELECT COUNT(*) FROM tbl_tnpoint WHERE temp @? bigintset '{25, 3
 WHERE op = '@?' AND leftarg = 'tnpoint' AND rightarg = 'bigintset';
 UPDATE 1
 UPDATE test_topops
+SET gin_idx = ( SELECT COUNT(*) FROM tbl_tnpoint WHERE temp @?
+  tnpoint '{NPoint(37,0.5)@2001-08-16, NPoint(78,0.5)@2001-08-17}' )
+WHERE op = '@?' AND leftarg = 'tnpoint' AND rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_topops
 SET gin_idx = ( SELECT COUNT(*) FROM tbl_tnpoint WHERE temp ?@ bigintset '{25, 35}' )
 WHERE op = '?@' AND leftarg = 'tnpoint' AND rightarg = 'bigintset';
 UPDATE 1
 UPDATE test_topops
+SET gin_idx = ( SELECT COUNT(*) FROM tbl_tnpoint WHERE temp ?@
+  tnpoint '{NPoint(37,0.5)@2001-08-16, NPoint(78,0.5)@2001-08-17}' )
+WHERE op = '?@' AND leftarg = 'tnpoint' AND rightarg = 'tnpoint';
+UPDATE 1
+UPDATE test_topops
 SET gin_idx = ( SELECT COUNT(*) FROM tbl_tnpoint WHERE temp @= bigintset '{25, 35}' )
 WHERE op = '@=' AND leftarg = 'tnpoint' AND rightarg = 'bigintset';
+UPDATE 1
+UPDATE test_topops
+SET gin_idx = ( SELECT COUNT(*) FROM tbl_tnpoint WHERE temp @=
+  tnpoint '{NPoint(37,0.5)@2001-08-16, NPoint(78,0.5)@2001-08-17}' )
+WHERE op = '@=' AND leftarg = 'tnpoint' AND rightarg = 'tnpoint';
 UPDATE 1
 DROP INDEX tbl_tnpoint_gin_idx;
 DROP INDEX

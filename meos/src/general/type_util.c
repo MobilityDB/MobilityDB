@@ -138,9 +138,9 @@ datum_ge(Datum l, Datum r, meosType type)
 int
 datum_cmp2(Datum l, Datum r, meosType typel, meosType typer)
 {
-  ensure_basetype(typel);
+  assert(meos_basetype(typel));
   if (typel != typer)
-    ensure_basetype(typer);
+    assert(meos_basetype(typer));
   if (typel == T_TIMESTAMPTZ && typer == T_TIMESTAMPTZ)
     return timestamptz_cmp_internal(DatumGetTimestampTz(l),
       DatumGetTimestampTz(r));
@@ -161,12 +161,14 @@ datum_cmp2(Datum l, Datum r, meosType typel, meosType typer)
     return float8_cmp_internal(DatumGetFloat8(l), (double) DatumGetInt32(r));
   if (typel == T_TEXT && typer == T_TEXT)
     return text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID);
+#if 0 /* not used */
   if (typel == T_DOUBLE2 && typel == typer)
     return double2_cmp(DatumGetDouble2P(l), DatumGetDouble2P(r));
   if (typel == T_DOUBLE3 && typel == typer)
     return double3_cmp(DatumGetDouble3P(l), DatumGetDouble3P(r));
   if (typel == T_DOUBLE4 && typel == typer)
     return double4_cmp(DatumGetDouble4P(l), DatumGetDouble4P(r));
+#endif /* not used */
   if ((typel == T_GEOMETRY || typel == T_GEOGRAPHY) && typel == typer)
     return gserialized_cmp(DatumGetGserializedP(l), DatumGetGserializedP(r));
 #if NPOINT
@@ -183,9 +185,9 @@ datum_cmp2(Datum l, Datum r, meosType typel, meosType typer)
 bool
 datum_eq2(Datum l, Datum r, meosType typel, meosType typer)
 {
-  ensure_basetype(typel);
+  assert(meos_basetype(typel));
   if (typel != typer)
-    ensure_basetype(typer);
+    assert(meos_basetype(typer));
   if ((typel == T_TIMESTAMPTZ && typer == T_TIMESTAMPTZ) ||
     (typel == T_BOOL && typer == T_BOOL) ||
     (typel == T_INT4 && typer == T_INT4) ||
@@ -482,7 +484,7 @@ datum_div(Datum l, Datum r, meosType typel, meosType typer)
 uint32
 datum_hash(Datum d, meosType type)
 {
-  ensure_basetype(type);
+  assert(meos_basetype(type));
   if (type == T_TIMESTAMPTZ)
     return pg_hashint8(TimestampTzGetDatum(d));
   else if (type == T_BOOL)
@@ -512,7 +514,7 @@ datum_hash(Datum d, meosType type)
 uint64
 datum_hash_extended(Datum d, meosType type, uint64 seed)
 {
-  ensure_basetype(type);
+  assert(meos_basetype(type));
   if (type == T_TIMESTAMPTZ)
     return pg_hashint8extended(TimestampTzGetDatum(d), seed);
   else if (type == T_BOOL)
@@ -563,7 +565,7 @@ datum_copy(Datum value, meosType basetype)
 double
 datum_double(Datum d, meosType basetype)
 {
-  ensure_tnumber_basetype(basetype);
+  assert(tnumber_basetype(basetype));
   if (basetype == T_INT4)
     return (double) DatumGetInt32(d);
   if (basetype == T_INT8)
@@ -578,7 +580,7 @@ datum_double(Datum d, meosType basetype)
 Datum
 double_datum(double d, meosType basetype)
 {
-  ensure_tnumber_basetype(basetype);
+  assert(tnumber_basetype(basetype));
   if (basetype == T_INT4)
     return Int32GetDatum((int32) d);
   if (basetype == T_INT8)
@@ -1063,7 +1065,7 @@ basetype_in(const char *str, meosType basetype, bool end)
 basetype_in(const char *str, meosType basetype, bool end __attribute__((unused)))
 #endif
 {
-  ensure_basetype(basetype);
+  assert(meos_basetype(basetype));
   switch (basetype)
   {
     case T_TIMESTAMPTZ:
@@ -1098,7 +1100,7 @@ basetype_in(const char *str, meosType basetype, bool end __attribute__((unused))
 char *
 basetype_out(Datum value, meosType basetype, int maxdd)
 {
-  ensure_basetype(basetype);
+  assert(meos_basetype(basetype));
   switch (basetype)
   {
     case T_TIMESTAMPTZ:
@@ -1119,8 +1121,16 @@ basetype_out(Datum value, meosType basetype, int maxdd)
       pfree(str);
       return result;
     }
+#if DEBUG_BUILD
+    case T_DOUBLE2:
+      return double2_out(DatumGetDouble2P(value), maxdd);
+    case T_DOUBLE3:
+      return double3_out(DatumGetDouble3P(value), maxdd);
+    case T_DOUBLE4:
+      return double4_out(DatumGetDouble4P(value), maxdd);
+#endif
     case T_GEOMETRY:
-    return gserialized_out(DatumGetGserializedP(value));
+      return gserialized_out(DatumGetGserializedP(value));
     case T_GEOGRAPHY:
       return gserialized_geog_out(DatumGetGserializedP(value));
 #if NPOINT

@@ -512,11 +512,11 @@ bool
 tpoint_to_geo_measure(const Temporal *tpoint, const Temporal *measure,
   bool segmentize, GSERIALIZED **result)
 {
-  ensure_tgeo_type(tpoint->temptype);
+  assert(tgeo_type(tpoint->temptype));
   Temporal *sync1, *sync2;
   if (measure)
   {
-    ensure_tnumber_type(measure->temptype);
+    assert(tnumber_type(measure->temptype));
     /* Return false if the temporal values do not intersect in time
      * The operation is synchronization without adding crossings */
     if (! intersection_temporal_temporal(tpoint, measure, SYNCHRONIZE_NOCROSS,

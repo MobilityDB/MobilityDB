@@ -526,8 +526,6 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   size_t  nd_stats_size;          /* Size to allocate */
 
   double total_width = 0;         /* # of bytes used by sample */
-  // TODO currently not used
-  // double total_sample_volume = 0; /* Area/volume coverage of the sample */
   double total_cell_count = 0;    /* # of cells in histogram affected by sample */
 
   ND_BOX sum;                     /* Sum of extents of sample boxes */
@@ -854,7 +852,6 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     ND_IBOX nd_ibox;
     int at[ND_DIMS];
     double num_cells = 0;
-    double tmp_volume = 1.0;
     double min[ND_DIMS] = {0.0, 0.0, 0.0, 0.0};
     double max[ND_DIMS] = {0.0, 0.0, 0.0, 0.0};
     double cellsize[ND_DIMS] = {0.0, 0.0, 0.0, 0.0};
@@ -876,14 +873,7 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
       min[d] = nd_stats->extent.min[d];
       max[d] = nd_stats->extent.max[d];
       cellsize[d] = (max[d] - min[d])/(nd_stats->size[d]);
-
-      /* What's the volume (area) of this feature's box? */
-      tmp_volume *= (nd_box->max[d] - nd_box->min[d]);
     }
-
-    /* Add feature volume (area) to our total */
-    // TODO currently not used
-    // total_sample_volume += tmp_volume;
 
     /*
      * Move through all the overlaped histogram cells values and

@@ -117,7 +117,7 @@ tinstant_set(TInstant *inst, Datum value, TimestampTz t)
 double
 tnumberinst_double(const TInstant *inst)
 {
-  ensure_tnumber_type(inst->temptype);
+  assert(tnumber_type(inst->temptype));
   Datum d = tinstant_value(inst);
   if (inst->temptype == T_TINT)
     return (double)(DatumGetInt32(d));
@@ -218,10 +218,9 @@ tgeogpointinst_in(const char *str)
 
 /**
  * @brief Return the Well-Known Text (WKT) representation of a temporal instant.
- *
  * @param[in] inst Temporal instant
- * @param[in] maxdd Maximum number of decimal digits to output for floating point
- * values
+ * @param[in] maxdd Maximum number of decimal digits to output for floating
+ * point values
  * @param[in] value_out Function called to output the base value depending on
  * its type
  */

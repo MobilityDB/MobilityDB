@@ -273,6 +273,11 @@ WITH temp(inst) AS (
   FROM generate_series(timestamptz '1900-01-01', '2000-01-10', interval '1 day') AS d )
 SELECT numInstants(appendInstant(inst ORDER BY inst)) FROM temp;
 
+WITH temp(inst) AS (
+  SELECT tint_seq(tint_inst(extract(day from d)::int % 2, d))
+  FROM generate_series(timestamptz '1900-01-01', '2000-01-10', interval '1 day') AS d )
+SELECT numInstants(appendSequence(inst ORDER BY inst)) FROM temp;
+
 /* Errors */
 WITH temp(inst) AS (
   SELECT tint '1@2000-01-01' UNION
@@ -285,6 +290,14 @@ WITH temp(inst) AS (
 SELECT appendInstant(inst ORDER BY inst) FROM temp;
 
 -------------------------------------------------------------------------------
+
+WITH temp(inst) AS (
+  SELECT tint '1@2000-01-01' UNION
+  SELECT tint '2@2000-01-02' UNION
+  SELECT tint '4@2000-01-04' UNION
+  SELECT tint '5@2000-01-05' UNION
+  SELECT tint '7@2000-01-07' )
+SELECT appendInstant(inst, 1, NULL ORDER BY inst) FROM temp;
 
 WITH temp(inst) AS (
   SELECT tint '1@2000-01-01' UNION

@@ -31,6 +31,8 @@
  * @brief Window aggregate functions for temporal types.
  */
 
+/* C */
+#include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
 /* MEOS */
@@ -397,7 +399,7 @@ tnumberinst_transform_wavg(const TInstant *inst, const Interval *interval,
 {
   /* TODO: Should be an additional attribute */
   float8 value = 0.0;
-  ensure_tnumber_type(inst->temptype);
+  assert(tnumber_type(inst->temptype));
   if (inst->temptype == T_TINT)
     value = DatumGetInt32(tinstant_value(inst));
   else /* inst->temptype == T_TFLOAT */
