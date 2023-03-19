@@ -310,7 +310,7 @@ valuearr_compute_bbox(const Datum *values, meosType basetype, int count,
 void
 set_expand_bbox(Datum d, meosType basetype, void *box)
 {
-  /* Currently, only geo set types have bounding box */
+  /* Currently, only spatial set types have bounding box */
   assert(set_basetype(basetype));
   assert(! alphanum_basetype(basetype));
   if (geo_basetype(basetype))
