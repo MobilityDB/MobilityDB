@@ -713,7 +713,7 @@ nai_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 
   LWGEOM *geo = lwgeom_from_gserialized(gs);
   TInstant *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = tinstant_copy((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)

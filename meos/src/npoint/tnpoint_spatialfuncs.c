@@ -164,7 +164,7 @@ int
 tnpoint_srid(const Temporal *temp)
 {
   int result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = tnpointinst_srid((const TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
@@ -309,7 +309,7 @@ GSERIALIZED *
 tnpoint_geom(const Temporal *temp)
 {
   GSERIALIZED *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = tnpointinst_geom((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
@@ -417,7 +417,7 @@ double
 tnpoint_length(const Temporal *temp)
 {
   double result = 0.0;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     ;
   else if (temp->subtype == TSEQUENCE)
@@ -496,7 +496,7 @@ Temporal *
 tnpoint_cumulative_length(const Temporal *temp)
 {
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     result = temporal_from_base(Float8GetDatum(0.0), T_TFLOAT, temp,
       MOBDB_FLAGS_GET_INTERP(temp->flags));
@@ -586,7 +586,7 @@ Temporal *
 tnpoint_speed(const Temporal *temp)
 {
   Temporal *result = NULL;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT || MOBDB_FLAGS_GET_DISCRETE(temp->flags))
     ;
   else if (temp->subtype == TSEQUENCE)
@@ -771,7 +771,7 @@ Temporal *
 tnpoint_azimuth(const Temporal *temp)
 {
   Temporal *result = NULL;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     ;
   else if (temp->subtype == TSEQUENCE)

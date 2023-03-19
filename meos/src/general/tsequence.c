@@ -2186,7 +2186,7 @@ tfloatseq_spans(const TSequence *seq, Span **result)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Return the array of spans of base values of a temporal float sequence.
+ * @brief Return the span set of base values of a temporal float sequence.
  *
  * For temporal floats with linear interpolation the result is a singleton,
  * which is the result of @ref tfloatseq_span. Otherwise, the result is a span

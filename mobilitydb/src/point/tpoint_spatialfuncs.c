@@ -323,7 +323,7 @@ Temporal *
 tpoint_transform(const Temporal *temp, int srid)
 {
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tpointinst_transform((TInstant *) temp, srid);
   else if (temp->subtype == TSEQUENCE)

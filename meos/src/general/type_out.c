@@ -991,7 +991,7 @@ temporal_as_mfjson(const Temporal *temp, bool with_bbox, int flags,
   int precision, char *srs)
 {
   char *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = tinstant_as_mfjson((TInstant *) temp, precision, with_bbox, srs);
   else if (temp->subtype == TSEQUENCE)
@@ -1364,7 +1364,7 @@ static size_t
 temporal_to_wkb_size(const Temporal *temp, uint8_t variant)
 {
   size_t size = 0;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     size = tinstant_to_wkb_size((TInstant *) temp, variant);
   else if (temp->subtype == TSEQUENCE)
@@ -2152,7 +2152,7 @@ tsequenceset_to_wkb_buf(const TSequenceSet *ss, uint8_t *buf, uint8_t variant)
 static uint8_t *
 temporal_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
 {
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     buf = tinstant_to_wkb_buf((TInstant *) temp, buf, variant);
   else if (temp->subtype == TSEQUENCE)

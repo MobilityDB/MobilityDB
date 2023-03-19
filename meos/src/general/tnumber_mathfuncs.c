@@ -388,7 +388,7 @@ Temporal *
 tnumber_abs(const Temporal *temp)
 {
   Temporal *result = NULL;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tnumberinst_abs((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
@@ -492,7 +492,7 @@ Temporal *
 tnumber_delta_value(const Temporal *temp)
 {
   Temporal *result = NULL;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     ;
   else if (temp->subtype == TSEQUENCE)
@@ -628,7 +628,7 @@ Temporal *
 tfloat_derivative(const Temporal *temp)
 {
   Temporal *result = NULL;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     ;
   else if (temp->subtype == TSEQUENCE)

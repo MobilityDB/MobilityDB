@@ -96,7 +96,7 @@ char *
 tpoint_as_text(const Temporal *temp, int maxdd)
 {
   char *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = tinstant_to_string((TInstant *) temp, maxdd, &wkt_out);
   else if (temp->subtype == TSEQUENCE)

@@ -391,7 +391,7 @@ STBox *
 tpoint_stboxes(const Temporal *temp, int *count)
 {
   STBox *result = NULL;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT || MOBDB_FLAGS_GET_DISCRETE(temp->flags))
     ;
   else if (temp->subtype == TSEQUENCE)

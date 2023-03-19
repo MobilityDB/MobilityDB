@@ -879,7 +879,7 @@ temporal_time_split1(const Temporal *temp, TimestampTz start, TimestampTz end,
   assert(count > 0);
   /* Split the temporal value */
   Temporal **fragments;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     fragments = (Temporal **) tinstant_time_split((const TInstant *) temp,
       tunits, torigin, buckets, newcount);
@@ -1386,7 +1386,7 @@ tnumber_value_split1(const Temporal *temp, Datum start_bucket, Datum size,
   assert(count > 0);
   /* Split the temporal value */
   Temporal **fragments;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     fragments = (Temporal **) tnumberinst_value_split((const TInstant *) temp,
       start_bucket, size, buckets, newcount);

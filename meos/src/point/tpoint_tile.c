@@ -817,7 +817,7 @@ tpoint_set_tiles(const Temporal *temp, const STboxGridState *state,
 {
   bool hasz = MOBDB_FLAGS_GET_Z(state->box.flags);
   bool hast = (state->tunits > 0);
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     tpointinst_set_tiles((TInstant *) temp, hasz, hast, state, bm);
   else if (temp->subtype == TSEQUENCE)

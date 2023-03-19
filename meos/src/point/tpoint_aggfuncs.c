@@ -169,7 +169,7 @@ Temporal **
 tpoint_transform_tcentroid(const Temporal *temp, int *count)
 {
   Temporal **result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
   {
     result = palloc(sizeof(Temporal *));
