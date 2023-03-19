@@ -159,7 +159,7 @@ tinterrel_tpointdiscseq_geom(const TSequence *seq, Datum geom, bool tinter,
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = tsequence_inst_n(seq, i);
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     bool result = DatumGetBool(func(tinstant_value(inst), geom));
     /* For disjoint we need to invert the result */
     if (! tinter)
@@ -188,11 +188,11 @@ tinterrel_tpointseq_step_geom(const TSequence *seq, Datum geom, bool tinter,
   TSequence **result = palloc(sizeof(TSequence *) * seq->count);
   bool lower_inc1 = seq->period.lower_inc;
   int k = 0;
-  const TInstant *inst1 = tsequence_inst_n(seq, 0);
+  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst2 = (i < seq->count - 1) ?
-      tsequence_inst_n(seq, i + 1) : NULL;
+      TSEQUENCE_INST_N(seq, i + 1) : NULL;
     /* If last instant exclusive upper bound */
     if (inst2 == NULL && ! seq->period.upper_inc)
       break;
@@ -267,8 +267,8 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom,
     return result;
   }
 
-  const TInstant *start = tsequence_inst_n(seq, 0);
-  const TInstant *end = tsequence_inst_n(seq, seq->count - 1);
+  const TInstant *start = TSEQUENCE_INST_N(seq, 0);
+  const TInstant *end = TSEQUENCE_INST_N(seq, seq->count - 1);
   /* If the trajectory is a point the result is true due to the
    * non-empty intersection test above */
   if (seq->count == 2 &&
@@ -349,7 +349,7 @@ tinterrel_tpointcontseq_geom1(const TSequence *seq, Datum geom, const STBox *box
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    TInstant *inst = tinterrel_tpointinst_geom(tsequence_inst_n(seq, 0),
+    TInstant *inst = tinterrel_tpointinst_geom(TSEQUENCE_INST_N(seq, 0),
       geom, tinter, func);
     TSequence **result = palloc(sizeof(TSequence *));
     result[0] = tinstant_to_tsequence(inst, STEP);
@@ -419,7 +419,7 @@ tinterrel_tpointseqset_geom(const TSequenceSet *ss, Datum geom,
 {
   /* Singleton sequence set */
   if (ss->count == 1)
-    return tinterrel_tpointcontseq_geom(tsequenceset_seq_n(ss, 0), geom, box,
+    return tinterrel_tpointcontseq_geom(TSEQUENCESET_SEQ_N(ss, 0), geom, box,
       tinter, func);
 
   TSequence ***sequences = palloc(sizeof(TSequence *) * ss->count);
@@ -428,7 +428,7 @@ tinterrel_tpointseqset_geom(const TSequenceSet *ss, Datum geom,
   int totalcount = 0;
   for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     sequences[i] = tinterrel_tpointcontseq_geom1(seq, geom, box, tinter, func,
         &countseqs[i]);
     totalcount += countseqs[i];
@@ -807,8 +807,8 @@ static int
 tdwithin_tpointseq_tpointseq2(const TSequence *seq1, const TSequence *seq2,
   Datum dist, datum_func3 func, TSequence **result)
 {
-  const TInstant *start1 = tsequence_inst_n(seq1, 0);
-  const TInstant *start2 = tsequence_inst_n(seq2, 0);
+  const TInstant *start1 = TSEQUENCE_INST_N(seq1, 0);
+  const TInstant *start2 = TSEQUENCE_INST_N(seq2, 0);
   if (seq1->count == 1)
   {
     TInstant *inst = tinstant_make(func(tinstant_value(start1),
@@ -837,8 +837,8 @@ tdwithin_tpointseq_tpointseq2(const TSequence *seq1, const TSequence *seq2,
   for (int i = 1; i < seq1->count; i++)
   {
     /* Each iteration of the for loop adds between one and three sequences */
-    const TInstant *end1 = tsequence_inst_n(seq1, i);
-    const TInstant *end2 = tsequence_inst_n(seq2, i);
+    const TInstant *end1 = TSEQUENCE_INST_N(seq1, i);
+    const TInstant *end2 = TSEQUENCE_INST_N(seq2, i);
     Datum ev1 = tinstant_value(end1);
     Datum ev2 = tinstant_value(end2);
     TimestampTz upper = end1->t;
@@ -922,15 +922,15 @@ tdwithin_tpointseqset_tpointseqset(const TSequenceSet *ss1,
 {
   /* Singleton sequence set */
   if (ss1->count == 1)
-    return tdwithin_tpointseq_tpointseq(tsequenceset_seq_n(ss1, 0),
-      tsequenceset_seq_n(ss2, 0), dist, func);
+    return tdwithin_tpointseq_tpointseq(TSEQUENCESET_SEQ_N(ss1, 0),
+      TSEQUENCESET_SEQ_N(ss2, 0), dist, func);
 
   TSequence **sequences = palloc(sizeof(TSequence *) * ss1->totalcount * 4);
   int k = 0;
   for (int i = 0; i < ss1->count; i++)
   {
-    const TSequence *seq1 = tsequenceset_seq_n(ss1, i);
-    const TSequence *seq2 = tsequenceset_seq_n(ss2, i);
+    const TSequence *seq1 = TSEQUENCESET_SEQ_N(ss1, i);
+    const TSequence *seq2 = TSEQUENCESET_SEQ_N(ss2, i);
     k += tdwithin_tpointseq_tpointseq2(seq1, seq2, Float8GetDatum(dist), func,
       &sequences[k]);
   }
@@ -955,7 +955,7 @@ static int
 tdwithin_tpointseq_point1(const TSequence *seq, Datum point, Datum dist,
   datum_func3 func, TSequence **result)
 {
-  const TInstant *start = tsequence_inst_n(seq, 0);
+  const TInstant *start = TSEQUENCE_INST_N(seq, 0);
   Datum sv = tinstant_value(start);
   if (seq->count == 1)
   {
@@ -981,7 +981,7 @@ tdwithin_tpointseq_point1(const TSequence *seq, Datum point, Datum dist,
   for (int i = 1; i < seq->count; i++)
   {
     /* Each iteration of the for loop adds between one and three sequences */
-    const TInstant *end = tsequence_inst_n(seq, i);
+    const TInstant *end = TSEQUENCE_INST_N(seq, i);
     Datum ev = tinstant_value(end);
     TimestampTz upper = end->t;
     bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
@@ -1054,14 +1054,14 @@ tdwithin_tpointseqset_point(const TSequenceSet *ss, Datum point, Datum dist,
 {
   /* Singleton sequence set */
   if (ss->count == 1)
-    return tdwithin_tpointseq_point(tsequenceset_seq_n(ss, 0), point, dist,
+    return tdwithin_tpointseq_point(TSEQUENCESET_SEQ_N(ss, 0), point, dist,
       func);
 
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->totalcount * 4);
   int k = 0;
   for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     k += tdwithin_tpointseq_point1(seq, point, dist, func, &sequences[k]);
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);

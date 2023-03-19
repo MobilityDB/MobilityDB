@@ -287,6 +287,7 @@ valuearr_compute_bbox(const Datum *values, meosType basetype, int count,
 {
   /* Currently, only geo set types have bounding box */
   assert(set_basetype(basetype));
+  assert(! alphanum_basetype(basetype));
   if (geo_basetype(basetype))
     geoarr_set_stbox(values, count, (STBox *) box);
 #if NPOINT
@@ -311,6 +312,7 @@ set_expand_bbox(Datum d, meosType basetype, void *box)
 {
   /* Currently, only geo set types have bounding box */
   assert(set_basetype(basetype));
+  assert(! alphanum_basetype(basetype));
   if (geo_basetype(basetype))
   {
     STBox box1;

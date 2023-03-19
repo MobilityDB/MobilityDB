@@ -139,10 +139,10 @@ tpointdiscseq_to_geo_measure(const TSequence *seq, const TSequence *measure)
   LWGEOM **points = palloc(sizeof(LWGEOM *) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = tsequence_inst_n(seq, i);
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     if (measure)
     {
-      const TInstant *m = tsequence_inst_n(measure, i);
+      const TInstant *m = TSEQUENCE_INST_N(measure, i);
       points[i] = (LWGEOM *) point_measure_to_lwpoint(tinstant_value(inst),
         tinstant_value(m));
     }
@@ -180,16 +180,16 @@ tpointcontseq_to_geo_measure1(const TSequence *seq, const TSequence *measure)
 {
   LWPOINT **points = palloc(sizeof(LWPOINT *) * seq->count);
   /* Remove two consecutive points if they are equal */
-  const TInstant *inst = tsequence_inst_n(seq, 0);
-  const TInstant *m = tsequence_inst_n(measure, 0);
+  const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
+  const TInstant *m = TSEQUENCE_INST_N(measure, 0);
   LWPOINT *value1 = point_measure_to_lwpoint(tinstant_value(inst),
     tinstant_value(m));
   points[0] = value1;
   int k = 1;
   for (int i = 1; i < seq->count; i++)
   {
-    inst = tsequence_inst_n(seq, i);
-    m = tsequence_inst_n(measure, i);
+    inst = TSEQUENCE_INST_N(seq, i);
+    m = TSEQUENCE_INST_N(measure, i);
     LWPOINT *value2 = point_measure_to_lwpoint(tinstant_value(inst),
       tinstant_value(m));
     /* Add point only if previous point is different from the current one */
@@ -228,7 +228,7 @@ tpointseq_to_geo1(const TSequence *seq)
   LWGEOM **points = palloc(sizeof(LWGEOM *) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = tsequence_inst_n(seq, i);
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     points[i] = (LWGEOM *) tpointinst_to_lwpoint(inst);
   }
   LWGEOM *result;
@@ -283,9 +283,9 @@ tpointseqset_to_geo_measure(const TSequenceSet *ss, const TSequenceSet *measure)
   /* Instantaneous sequence */
   if (ss->count == 1)
   {
-    seq = tsequenceset_seq_n(ss, 0);
+    seq = TSEQUENCESET_SEQ_N(ss, 0);
     if (measure)
-      m = tsequenceset_seq_n(measure, 0);
+      m = TSEQUENCESET_SEQ_N(measure, 0);
     return tpointcontseq_to_geo_measure(seq, m);
   }
 
@@ -294,10 +294,10 @@ tpointseqset_to_geo_measure(const TSequenceSet *ss, const TSequenceSet *measure)
   LWGEOM **geoms = palloc(sizeof(LWGEOM *) * ss->count);
   for (int i = 0; i < ss->count; i++)
   {
-    seq = tsequenceset_seq_n(ss, i);
+    seq = TSEQUENCESET_SEQ_N(ss, i);
     if (measure)
     {
-      m = tsequenceset_seq_n(measure, i);
+      m = TSEQUENCESET_SEQ_N(measure, i);
       geoms[i] = tpointcontseq_to_geo_measure1(seq, m);
     }
     else
@@ -340,8 +340,8 @@ static int
 tpointcontseq_to_geo_measure_segmentize1(const TSequence *seq,
   const TSequence *measure, LWGEOM **result)
 {
-  const TInstant *inst = tsequence_inst_n(seq, 0);
-  const TInstant *m = tsequence_inst_n(measure, 0);
+  const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
+  const TInstant *m = TSEQUENCE_INST_N(measure, 0);
   LWPOINT *points[2];
 
   /* Instantaneous sequence */
@@ -357,13 +357,13 @@ tpointcontseq_to_geo_measure_segmentize1(const TSequence *seq,
   {
     points[0] = point_measure_to_lwpoint(tinstant_value(inst),
       tinstant_value(m));
-    inst = tsequence_inst_n(seq, i + 1);
+    inst = TSEQUENCE_INST_N(seq, i + 1);
     points[1] = point_measure_to_lwpoint(tinstant_value(inst),
       tinstant_value(m));
     result[i] = (LWGEOM *) lwline_from_lwgeom_array(points[0]->srid, 2,
       (LWGEOM **) points);
     lwpoint_free(points[0]); lwpoint_free(points[1]);
-    m = tsequence_inst_n(measure, i + 1);
+    m = TSEQUENCE_INST_N(measure, i + 1);
   }
   return seq->count - 1;
 }
@@ -383,7 +383,7 @@ tpointcontseq_to_geo_measure_segmentize1(const TSequence *seq,
 static int
 tpointseq_to_geo_segmentize1(const TSequence *seq, LWGEOM **result)
 {
-  const TInstant *inst = tsequence_inst_n(seq, 0);
+  const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
   LWPOINT *points[2];
 
   /* Instantaneous sequence */
@@ -397,7 +397,7 @@ tpointseq_to_geo_segmentize1(const TSequence *seq, LWGEOM **result)
   for (int i = 0; i < seq->count - 1; i++)
   {
     points[0] = tpointinst_to_lwpoint(inst);
-    inst = tsequence_inst_n(seq, i + 1);
+    inst = TSEQUENCE_INST_N(seq, i + 1);
     points[1] = tpointinst_to_lwpoint(inst);
     result[i] = (LWGEOM *) lwline_from_lwgeom_array(points[0]->srid, 2,
       (LWGEOM **) points);
@@ -456,9 +456,9 @@ tpointseqset_to_geo_measure_segmentize(const TSequenceSet *ss,
   /* Instantaneous sequence */
   if (ss->count == 1)
   {
-    seq = tsequenceset_seq_n(ss, 0);
+    seq = TSEQUENCESET_SEQ_N(ss, 0);
     if (measure)
-      m = tsequenceset_seq_n(measure, 0);
+      m = TSEQUENCESET_SEQ_N(measure, 0);
     return tpointcontseq_to_geo_measure_segmentize(seq, m);
   }
 
@@ -468,10 +468,10 @@ tpointseqset_to_geo_measure_segmentize(const TSequenceSet *ss,
   for (int i = 0; i < ss->count; i++)
   {
 
-    seq = tsequenceset_seq_n(ss, i);
+    seq = TSEQUENCESET_SEQ_N(ss, i);
     if (measure)
     {
-      m = tsequenceset_seq_n(measure, i);
+      m = TSEQUENCESET_SEQ_N(measure, i);
       k += tpointcontseq_to_geo_measure_segmentize1(seq, m, &geoms[k]);
     }
     else
@@ -793,7 +793,7 @@ TSequence *
 tsequence_simplify_min_dist(const TSequence *seq, double dist)
 {
   datum_func2 func = pt_distance_fn(seq->flags);
-  const TInstant *inst1 = tsequence_inst_n(seq, 0);
+  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   /* Add first instant to the output sequence */
   const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   instants[0] = inst1;
@@ -802,7 +802,7 @@ tsequence_simplify_min_dist(const TSequence *seq, double dist)
   /* Loop for every instant */
   for (int i = 1; i < seq->count; i++)
   {
-    const TInstant *inst2 = tsequence_inst_n(seq, i);
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
     double d = tinstant_distance(inst1, inst2, func);
     if (d > dist)
     {
@@ -814,7 +814,7 @@ tsequence_simplify_min_dist(const TSequence *seq, double dist)
     }
   }
   if (seq->count > 1 && ! last)
-    instants[k++] = tsequence_inst_n(seq, seq->count - 1);
+    instants[k++] = TSEQUENCE_INST_N(seq, seq->count - 1);
   TSequence *result = tsequence_make(instants, k,
     (k == 1) ? true : seq->period.lower_inc,
     (k == 1) ? true : seq->period.upper_inc, LINEAR, NORMALIZE);
@@ -834,7 +834,7 @@ tsequenceset_simplify_min_dist(const TSequenceSet *ss, double dist)
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     sequences[i] = tsequence_simplify_min_dist(seq, dist);
   }
   return tsequenceset_make_free(sequences, ss->count, NORMALIZE);
@@ -886,7 +886,7 @@ temporal_simplify_min_dist(const Temporal *temp, double dist)
 TSequence *
 tsequence_simplify_min_tdelta(const TSequence *seq, const Interval *mint)
 {
-  const TInstant *inst1 = tsequence_inst_n(seq, 0);
+  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   /* Add first instant to the output sequence */
   const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   instants[0] = inst1;
@@ -895,7 +895,7 @@ tsequence_simplify_min_tdelta(const TSequence *seq, const Interval *mint)
   /* Loop for every instant */
   for (int i = 1; i < seq->count; i++)
   {
-    const TInstant *inst2 = tsequence_inst_n(seq, i);
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
     Interval *duration = pg_timestamp_mi(inst2->t, inst1->t);
     if (pg_interval_cmp(duration, mint) > 0)
     {
@@ -908,7 +908,7 @@ tsequence_simplify_min_tdelta(const TSequence *seq, const Interval *mint)
     pfree(duration);
   }
   if (seq->count > 1 && ! last)
-    instants[k++] = tsequence_inst_n(seq, seq->count - 1);
+    instants[k++] = TSEQUENCE_INST_N(seq, seq->count - 1);
   TSequence *result = tsequence_make(instants, k,
     (k == 1) ? true : seq->period.lower_inc,
     (k == 1) ? true : seq->period.upper_inc, LINEAR, NORMALIZE);
@@ -928,7 +928,7 @@ tsequenceset_simplify_min_tdelta(const TSequenceSet *ss, const Interval *mint)
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     sequences[i] = tsequence_simplify_min_tdelta(seq, mint);
   }
   return tsequenceset_make_free(sequences, ss->count, NORMALIZE);
@@ -987,15 +987,15 @@ tfloatseq_findsplit(const TSequence *seq, int i1, int i2, int *split,
   if (i1 + 1 >= i2)
     return;
 
-  const TInstant *start = tsequence_inst_n(seq, i1);
-  const TInstant *end = tsequence_inst_n(seq, i2);
+  const TInstant *start = TSEQUENCE_INST_N(seq, i1);
+  const TInstant *end = TSEQUENCE_INST_N(seq, i2);
   double startval = DatumGetFloat8(tinstant_value(start));
   double endval = DatumGetFloat8(tinstant_value(end));
   double duration2 = (double) (end->t - start->t);
   /* Loop for every instant between i1 and i2 */
   for (int k = i1 + 1; k < i2; k++)
   {
-    const TInstant *inst = tsequence_inst_n(seq, k);
+    const TInstant *inst = TSEQUENCE_INST_N(seq, k);
     double value = DatumGetFloat8(tinstant_value(inst));
     /*
      * The following is equivalent to
@@ -1133,8 +1133,8 @@ tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool syncdist,
     return;
 
   /* Initialization of values wrt instants i1 and i2 */
-  const TInstant *start = tsequence_inst_n(seq, i1);
-  const TInstant *end = tsequence_inst_n(seq, i2);
+  const TInstant *start = TSEQUENCE_INST_N(seq, i1);
+  const TInstant *end = TSEQUENCE_INST_N(seq, i2);
   if (hasz)
   {
     p3a = datum_point3dz(tinstant_value(start));
@@ -1150,7 +1150,7 @@ tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool syncdist,
   for (int k = i1 + 1; k < i2; k++)
   {
     double d_tmp;
-    const TInstant *inst = tsequence_inst_n(seq, k);
+    const TInstant *inst = TSEQUENCE_INST_N(seq, k);
     if (hasz)
     {
       p3k = datum_point3dz(tinstant_value(inst));
@@ -1210,7 +1210,7 @@ tsequence_simplify_max_dist(const TSequence *seq, double dist, bool syncdist,
   double d;           /* Distance */
   for (int i = 0; i < seq->count; i++)
   {
-    cur = tsequence_inst_n(seq, i);
+    cur = TSEQUENCE_INST_N(seq, i);
     if (prev == NULL)
     {
       instants[k++] = cur;
@@ -1226,7 +1226,7 @@ tsequence_simplify_max_dist(const TSequence *seq, double dist, bool syncdist,
     if (dosplit)
     {
       prev = cur;
-      instants[k++] = tsequence_inst_n(seq, split);
+      instants[k++] = TSEQUENCE_INST_N(seq, split);
       start = split;
       continue;
     }
@@ -1256,7 +1256,7 @@ tsequenceset_simplify_max_dist(const TSequenceSet *ss, double dist,
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     sequences[i] = tsequence_simplify_max_dist(seq, dist, syncdist, minpts);
   }
   return tsequenceset_make_free(sequences, ss->count, NORMALIZE);
@@ -1371,7 +1371,7 @@ tsequence_simplify_dp(const TSequence *seq, double dist, bool syncdist,
   /* Create a new temporal sequence */
   const TInstant **instants = palloc(sizeof(TInstant *) * outn);
   for (i = 0; i < outn; i++)
-    instants[i] = tsequence_inst_n(seq, outlist[i]);
+    instants[i] = TSEQUENCE_INST_N(seq, outlist[i]);
   TSequence *result = tsequence_make(instants, outn, seq->period.lower_inc,
     seq->period.upper_inc, LINEAR, NORMALIZE);
   pfree(instants);
@@ -1401,7 +1401,7 @@ tsequenceset_simplify_dp(const TSequenceSet *ss, double dist, bool syncdist,
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     sequences[i] = tsequence_simplify_dp(seq, dist, syncdist, minpts);
   }
   return tsequenceset_make_free(sequences, ss->count, NORMALIZE);
@@ -1457,13 +1457,13 @@ tpointseq_remove_repeated_points(const TSequence *seq, double tolerance,
   double dsq = FLT_MAX;
 
   const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  instants[0] = tsequence_inst_n(seq, 0);
+  instants[0] = TSEQUENCE_INST_N(seq, 0);
   const POINT2D *last = DATUM_POINT2D_P(&instants[0]->value);
   int k = 1;
   for (int i = 1; i < seq->count; i++)
   {
     bool last_point = (i == seq->count - 1);
-    const TInstant *inst = tsequence_inst_n(seq, i);
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     const POINT2D *pt = DATUM_POINT2D_P(&inst->value);
 
     /* Don't drop points if we are running short of points */
@@ -1518,7 +1518,7 @@ tpointseqset_remove_repeated_points(const TSequenceSet *ss, double tolerance,
   /* Singleton sequence set */
   if (ss->count == 1)
   {
-    seq = tsequenceset_seq_n(ss, 0);
+    seq = TSEQUENCESET_SEQ_N(ss, 0);
     TSequence *seq1 = tpointseq_remove_repeated_points(seq, tolerance,
       min_points);
     TSequenceSet *result = tsequence_to_tsequenceset(seq1);
@@ -1535,7 +1535,7 @@ tpointseqset_remove_repeated_points(const TSequenceSet *ss, double tolerance,
   int npoints = 0;
   for (int i = 0; i < ss->count; i++)
   {
-    seq = tsequenceset_seq_n(ss, i);
+    seq = TSEQUENCESET_SEQ_N(ss, i);
     /* Don't drop sequences if we are running short of points */
     if (ss->totalcount - npoints > min_points)
     {
@@ -1638,7 +1638,7 @@ tpointseq_affine(const TSequence *seq, const AFFINE *a)
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = tsequence_inst_n(seq, i);
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     tpointinst_affine1(inst, a, srid, hasz, &instants[i]);
   }
   /* Construct the result */
@@ -1656,7 +1656,7 @@ tpointseqset_affine(const TSequenceSet *ss, const AFFINE *a)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
-    sequences[i] = tpointseq_affine(tsequenceset_seq_n(ss, i), a);
+    sequences[i] = tpointseq_affine(TSEQUENCESET_SEQ_N(ss, i), a);
   return tsequenceset_make_free(sequences, ss->count, NORMALIZE);
 }
 
@@ -1733,7 +1733,7 @@ tpointseq_grid(const TSequence *seq, const gridspec *grid, bool filter_pts)
   for (int i = 0; i < seq->count; i++)
   {
     POINT4D p, prev_p = { 0 }; /* make compiler quiet */
-    const TInstant *inst = tsequence_inst_n(seq, i);
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     Datum value = tinstant_value(inst);
     point_grid(value, hasz, grid, &p);
     /* Skip duplicates */
@@ -1772,7 +1772,7 @@ tpointseqset_grid(const TSequenceSet *ss, const gridspec *grid, bool filter_pts)
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
   {
-    TSequence *seq = tpointseq_grid(tsequenceset_seq_n(ss, i), grid, filter_pts);
+    TSequence *seq = tpointseq_grid(TSEQUENCESET_SEQ_N(ss, i), grid, filter_pts);
     if (seq != NULL)
       sequences[k++] = seq;
   }
@@ -1899,7 +1899,7 @@ tpointseq_decouple1(const TSequence *seq, int64 *times)
   LWGEOM **points = palloc(sizeof(LWGEOM *) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = tsequence_inst_n(seq, i);
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     Datum value = tinstant_value(inst);
     GSERIALIZED *gs = DatumGetGserializedP(value);
     points[i] = lwgeom_from_gserialized(gs);
@@ -1944,7 +1944,7 @@ tpointseqset_decouple(const TSequenceSet *ss, int64 **timesarr, int *count)
 {
   /* Singleton sequence set */
   if (ss->count == 1)
-    return tpointseq_decouple(tsequenceset_seq_n(ss, 0), timesarr, count);
+    return tpointseq_decouple(TSEQUENCESET_SEQ_N(ss, 0), timesarr, count);
 
   /* General case */
   uint32_t colltype = 0;
@@ -1953,7 +1953,7 @@ tpointseqset_decouple(const TSequenceSet *ss, int64 **timesarr, int *count)
   int k = 0;
   for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     geoms[i] = tpointseq_decouple1(seq, &times[k]);
     k += seq->count;
     /* If output type not initialized make geom type as output type */

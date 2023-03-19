@@ -657,7 +657,7 @@ tsequence_mfjson_size(const TSequence *seq, bool isgeo, bool hasz,
   {
     for (int i = 0; i < seq->count; i++)
     {
-      Datum value = tinstant_value(tsequence_inst_n(seq, i));
+      Datum value = tinstant_value(TSEQUENCE_INST_N(seq, i));
       size += temporal_basevalue_mfjson_size(value, seq->temptype, precision) +
         sizeof(",");
     }
@@ -687,7 +687,7 @@ tsequence_mfjson_buf(const TSequence *seq, bool isgeo, bool hasz,
   for (int i = 0; i < seq->count; i++)
   {
     if (i) ptr += sprintf(ptr, ",");
-    const TInstant *inst = tsequence_inst_n(seq, i);
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     ptr += isgeo ? coordinates_mfjson_buf(ptr, inst, precision) :
       temporal_basevalue_mfjson_buf(ptr, tinstant_value(inst), inst->temptype,
       precision);
@@ -696,7 +696,7 @@ tsequence_mfjson_buf(const TSequence *seq, bool isgeo, bool hasz,
   for (int i = 0; i < seq->count; i++)
   {
     if (i) ptr += sprintf(ptr, ",");
-    const TInstant *inst = tsequence_inst_n(seq, i);
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     ptr += datetimes_mfjson_buf(ptr, inst->t);
   }
   ptr += sprintf(ptr, "],\"lower_inc\":%s,\"upper_inc\":%s,\"interpolation\":\"%s\"}",
@@ -821,10 +821,10 @@ tsequenceset_mfjson_size(const TSequenceSet *ss, bool isgeo, bool hasz,
   {
     for (int i = 0; i < ss->count; i++)
     {
-      const TSequence *seq = tsequenceset_seq_n(ss, i);
+      const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
       for (int j = 0; j < seq->count; j++)
       {
-        Datum value = tinstant_value(tsequence_inst_n(seq, j));
+        Datum value = tinstant_value(TSEQUENCE_INST_N(seq, j));
         size += temporal_basevalue_mfjson_size(value, seq->temptype, precision) +
           sizeof(",");
       }
@@ -852,13 +852,13 @@ tsequenceset_mfjson_buf(const TSequenceSet *ss, bool isgeo, bool hasz,
   ptr += sprintf(ptr, "\"sequences\":[");
   for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     if (i) ptr += sprintf(ptr, ",");
     ptr += sprintf(ptr, "{\"%s\":[", isgeo ? "coordinates" : "values");
     for (int j = 0; j < seq->count; j++)
     {
       if (j) ptr += sprintf(ptr, ",");
-      const TInstant *inst = tsequence_inst_n(seq, j);
+      const TInstant *inst = TSEQUENCE_INST_N(seq, j);
       ptr += isgeo ? coordinates_mfjson_buf(ptr, inst, precision) :
         temporal_basevalue_mfjson_buf(ptr, tinstant_value(inst),
           inst->temptype, precision);
@@ -867,7 +867,7 @@ tsequenceset_mfjson_buf(const TSequenceSet *ss, bool isgeo, bool hasz,
     for (int j = 0; j < seq->count; j++)
     {
       if (j) ptr += sprintf(ptr, ",");
-      const TInstant *inst = tsequence_inst_n(seq, j);
+      const TInstant *inst = TSEQUENCE_INST_N(seq, j);
       ptr += datetimes_mfjson_buf(ptr, inst->t);
     }
     ptr += sprintf(ptr, "],\"lower_inc\":%s,\"upper_inc\":%s}",
@@ -2092,7 +2092,7 @@ tsequence_to_wkb_buf(const TSequence *seq, uint8_t *buf, uint8_t variant)
   /* Write the array of instants */
   for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = tsequence_inst_n(seq, i);
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     buf = tinstant_basevalue_time_to_wkb_buf(inst, buf, variant);
   }
   return buf;
@@ -2129,7 +2129,7 @@ tsequenceset_to_wkb_buf(const TSequenceSet *ss, uint8_t *buf, uint8_t variant)
   /* Write the sequences */
   for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ss, i);
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     /* Write the number of instants */
     buf = int32_to_wkb_buf(seq->count, buf, variant);
     /* Write the period bounds */
@@ -2138,7 +2138,7 @@ tsequenceset_to_wkb_buf(const TSequenceSet *ss, uint8_t *buf, uint8_t variant)
     /* Write the array of instants */
     for (int j = 0; j < seq->count; j++)
     {
-      const TInstant *inst = tsequence_inst_n(seq, j);
+      const TInstant *inst = TSEQUENCE_INST_N(seq, j);
       buf = tinstant_basevalue_time_to_wkb_buf(inst, buf, variant);
     }
   }
