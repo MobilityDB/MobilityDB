@@ -113,8 +113,6 @@ Spanbase_extent_transfn(PG_FUNCTION_ARGS)
   Datum d = PG_GETARG_DATUM(1);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   s = spanbase_extent_transfn(s, d, basetype);
-  if (! s)
-    PG_RETURN_NULL();
   PG_RETURN_POINTER(s);
 }
 

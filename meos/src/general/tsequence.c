@@ -5463,7 +5463,6 @@ tcontseq_delete_timestamp(const TSequence *seq, TimestampTz t)
   /* General case */
   TInstant **instants = palloc0(sizeof(TInstant *) * seq->count);
   int k = 0;
-  bool found = false;
   bool lower_inc1 = seq->period.lower_inc;
   bool upper_inc1 = seq->period.upper_inc;
   for (int i = 0; i < seq->count; i++)
@@ -5473,18 +5472,18 @@ tcontseq_delete_timestamp(const TSequence *seq, TimestampTz t)
       instants[k++] = (TInstant *) inst;
     else /* inst->t == t */
     {
-      found = true;
       if (i == 0)
         lower_inc1 = true;
       else if (i == seq->count - 1)
         upper_inc1 = false;
     }
   }
-  int count = seq->count;
-  if (found)
-    count--;
+  if (k == 0)
+    return NULL;
+  else if (k == 1)
+    lower_inc1 = upper_inc1 = true;
   interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
-  TSequence *result = tsequence_make((const TInstant **) instants, count,
+  TSequence *result = tsequence_make((const TInstant **) instants, k,
     lower_inc1, upper_inc1, interp, NORMALIZE);
   pfree(instants);
   return result;
@@ -5523,7 +5522,7 @@ tcontseq_delete_timestampset(const TSequence *seq, const Set *ts)
   if (seq->count == 1)
   {
     inst = tsequence_inst_n(seq, 0);
-    if (! contains_set_value(ts, TimestampTzGetDatum(inst->t),
+    if (contains_set_value(ts, TimestampTzGetDatum(inst->t),
         T_TIMESTAMPTZ))
       return NULL;
     return tsequence_copy(seq);
