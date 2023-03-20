@@ -420,15 +420,15 @@ tinstant_values(const TInstant *inst, int *count)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Return the span set of a temporal instant float.
+ * @brief Return the span set of a temporal instant number.
  * @sqlfunc getValues()
  */
 SpanSet *
-tfloatinst_spanset(const TInstant *inst)
+tnumberinst_spanset(const TInstant *inst)
 {
   Datum value = tinstant_value(inst);
   Span s;
-  span_set(value, value, true, true, T_FLOAT8, &s);
+  span_set(value, value, true, true, temptype_basetype(inst->temptype), &s);
   return span_to_spanset(&s);
 }
 

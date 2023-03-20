@@ -1773,7 +1773,7 @@ temporal_tsample(const Temporal *temp, const Interval *duration,
  *****************************************************************************/
 
 #define MOBDB_SUBTYPE_STR_MAXLEN 12
-#define MOBDB_INTERPOLATION_STR_MAXLEN 12
+#define MOBDB_INTERPOLATION_STR_MAXLEN 9
 
 #if MEOS
 /**
@@ -1821,7 +1821,9 @@ temporal_interpolation(const Temporal *temp)
   char *result = palloc(sizeof(char) * MOBDB_INTERPOLATION_STR_MAXLEN);
   assert(temptype_subtype(temp->subtype));
   interpType interp = MOBDB_FLAGS_GET_INTERP(temp->flags);
-  if (temp->subtype == TINSTANT || interp == DISCRETE)
+  if (temp->subtype == TINSTANT)
+    strcpy(result, "None");
+  else if (interp == DISCRETE)
     strcpy(result, "Discrete");
   else if (interp == STEP)
     strcpy(result, "Step");
@@ -1964,16 +1966,17 @@ tpoint_values(const Temporal *temp, int *count)
  * @pymeosfunc TFloat.getValues
  */
 SpanSet *
-tfloat_spanset(const Temporal *temp)
+tnumber_spanset(const Temporal *temp)
 {
   SpanSet *result;
+  assert(tnumber_type(temp->temptype));
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
-    result = tfloatinst_spanset((TInstant *) temp);
+    result = tnumberinst_spanset((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
-    result = tfloatseq_spanset((TSequence *) temp);
+    result = tnumberseq_spanset((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
-    result = tfloatseqset_spanset((TSequenceSet *) temp);
+    result = tnumberseqset_spanset((TSequenceSet *) temp);
   return result;
 }
 

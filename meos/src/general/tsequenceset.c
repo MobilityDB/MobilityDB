@@ -662,24 +662,59 @@ tsequenceset_values(const TSequenceSet *ss, int *count)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Return the span set of a temporal float sequence set.
+ * @brief Return the span of a temporal number sequence set.
  * @sqlfunc getValues()
  */
-SpanSet *
-tfloatseqset_spanset(const TSequenceSet *ss)
+Span *
+tnumberseqset_span(const TSequenceSet *ss)
 {
-  int count1 = MOBDB_FLAGS_GET_LINEAR(ss->flags) ? ss->count : ss->totalcount;
-  Span **spans = palloc(sizeof(Span *) * count1);
-  int k = 0;
-  for (int i = 0; i < ss->count; i++)
+  Span *span = palloc(sizeof(Span *));
+  memcpy(span, TSEQUENCESET_BBOX_PTR(ss), ss->bboxsize);
+  return span;
+}
+
+/**
+ * @ingroup libmeos_internal_temporal_accessor
+ * @brief Return the span set of a temporal number sequence set
+ * @sqlfunc trajectory()
+ */
+SpanSet *
+tnumberseqset_spanset(const TSequenceSet *ss)
+{
+  int count, i;
+  Span **spans;
+  Span *spans_buf;
+  meosType basetype = temptype_basetype(ss->temptype);
+
+  /* Temporal sequence number with discrete or step interpolation */
+  if (! MOBDB_FLAGS_GET_LINEAR(ss->flags))
+  {
+    Datum *values = tsequenceset_values(ss, &count);
+    spans = palloc(sizeof(Span *) * count);
+    spans_buf = palloc(sizeof(Span) * count);
+    for (i = 0; i < count; i++)
+    {
+      spans[i] = &spans_buf[i];
+      span_set(values[i], values[i], true, true, basetype, spans[i]);
+    }
+    SpanSet *result = spanset_make((const Span **) spans, count, NORMALIZE);
+    pfree(values); pfree(spans); pfree(spans_buf);
+    return result;
+  }
+
+  /* Temporal sequence number with linear interpolation */
+  spans = palloc(sizeof(Span *) * ss->count);
+  spans_buf = palloc(sizeof(Span) * ss->count);
+  for (i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    k += tfloatseq_spans(seq, &spans[k]);
+    TBox *box = TSEQUENCE_BBOX_PTR(seq);
+    spans[i] = &spans_buf[i];
+    floatspan_set_numspan(&box->span, spans[i], basetype);
   }
-  int count;
-  Span **normspans = spanarr_normalize(spans, k, SORT, &count);
-  pfree_array((void **) spans, k);
-  return spanset_make_free(normspans, count, NORMALIZE_NO);
+  Span **normspans = spanarr_normalize(spans, ss->count, SORT, &count);
+  pfree(spans); pfree(spans_buf);
+  return spanset_make_free(normspans, count, NORMALIZE);
 }
 
 /**

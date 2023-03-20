@@ -495,9 +495,13 @@ CREATE FUNCTION getValues(ttext)
   AS 'MODULE_PATHNAME', 'Temporal_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION trajectory(tint)
+  RETURNS floatspanset
+  AS 'MODULE_PATHNAME', 'Tnumber_spanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION trajectory(tfloat)
   RETURNS floatspanset
-  AS 'MODULE_PATHNAME', 'Tfloat_spanset'
+  AS 'MODULE_PATHNAME', 'Tnumber_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION startValue(tbool)
