@@ -662,19 +662,6 @@ tsequenceset_values(const TSequenceSet *ss, int *count)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Return the span of a temporal number sequence set.
- * @sqlfunc getValues()
- */
-Span *
-tnumberseqset_span(const TSequenceSet *ss)
-{
-  Span *span = palloc(sizeof(Span *));
-  memcpy(span, TSEQUENCESET_BBOX_PTR(ss), ss->bboxsize);
-  return span;
-}
-
-/**
- * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the span set of a temporal number sequence set
  * @sqlfunc trajectory()
  */
