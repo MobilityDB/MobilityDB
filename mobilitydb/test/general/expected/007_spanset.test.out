@@ -105,7 +105,7 @@ SELECT tstzspan '[2000-01-01,2000-01-02]'::tstzspanset;
 SELECT shift(intspanset '{[1,2),[3,4),[5,6)}', 2);
           shift           
 --------------------------
- {[3, 5), [5, 7), [7, 9)}
+ {[3, 4), [5, 6), [7, 8)}
 (1 row)
 
 SELECT shift(tstzspanset '{[2000-01-01,2000-01-01]}', '5 min');

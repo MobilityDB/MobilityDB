@@ -456,7 +456,8 @@ extern void intspan_set_floatspan(const Span *s1, Span *s2);
 extern void numspan_set_floatspan(const Span *s1, Span *s2);
 extern Span *period_tprecision(const Span *s, const Interval *duration, TimestampTz torigin);
 extern SpanSet *periodset_tprecision(const SpanSet *ss, const Interval *duration, TimestampTz torigin);
-extern void period_shift_tscale(Span *p, const Interval *shift, const Interval *duration);
+extern void period_shift_tscale(Span *p, const Interval *shift, const Interval *duration,
+  TimestampTz *delta, double *scale);
 extern SpanSet *periodset_shift_tscale(const SpanSet *ps, const Interval *shift, const Interval *duration);
 extern Set *set_shift(const Set *s, Datum shift);
 extern void span_expand(const Span *s1, Span *s2);
@@ -835,11 +836,9 @@ extern int32 stbox_srid(const STBox *box);
 /* Transformation functions for box types */
 
 extern void tbox_expand(const TBox *box1, TBox *box2);
-extern void tbox_shift_tscale(TBox *box, const Interval *start, const Interval *duration);
 extern TBox *tbox_expand_value(const TBox *box, const double d);
 extern TBox *tbox_expand_time(const TBox *box, const Interval *interval);
 extern void stbox_expand(const STBox *box1, STBox *box2);
-extern void stbox_shift_tscale(STBox *box, const Interval *start, const Interval *duration);
 extern STBox *stbox_set_srid(const STBox *box, int32 srid);
 extern STBox *stbox_expand_space(const STBox *box, double d);
 extern STBox *stbox_expand_time(const STBox *box, const Interval *interval);
