@@ -2096,85 +2096,6 @@ tsequence_values(const TSequence *seq, int *count)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Return the float span of a temporal sequence float.
- * @sqlop @p ::
- */
-Span *
-tfloatseq_span(const TSequence *seq)
-{
-  TBox *box = TSEQUENCE_BBOX_PTR(seq);
-  Datum min = box->span.lower;
-  Datum max = box->span.upper;
-  /* It step interpolation or equal bounding box bounds */
-  if (! MOBDB_FLAGS_GET_LINEAR(seq->flags) ||
-      box->span.lower == box->span.upper)
-    return span_make(min, max, true, true, T_FLOAT8);
-
-  /* For sequences with linear interpolation the bounds of the span are
-   * those in the bounding box but we need to determine whether the bounds
-   * are inclusive or not */
-  Datum start = tinstant_value(TSEQUENCE_INST_N(seq, 0));
-  Datum end = tinstant_value(TSEQUENCE_INST_N(seq, seq->count - 1));
-  Datum lower, upper;
-  bool lower_inc, upper_inc;
-  if (datum_lt(start, end, T_FLOAT8))
-  {
-    lower = start; lower_inc = seq->period.lower_inc;
-    upper = end; upper_inc = seq->period.upper_inc;
-  }
-  else
-  {
-    lower = end; lower_inc = seq->period.upper_inc;
-    upper = start; upper_inc = seq->period.lower_inc;
-  }
-  bool min_inc = datum_lt(box->span.lower, lower, T_FLOAT8) ||
-    (box->span.lower == lower && lower_inc);
-  bool max_inc = datum_gt(box->span.upper, upper, T_FLOAT8) ||
-    (box->span.upper == upper && upper_inc);
-  /* Determine whether the minimum and/or maximum appear inside the sequence */
-  if (! min_inc || ! max_inc)
-  {
-    for (int i = 1; i < seq->count - 1; i++)
-    {
-      Datum value = tinstant_value(TSEQUENCE_INST_N(seq, i));
-      min_inc |= (box->span.lower == value);
-      max_inc |= (box->span.upper == value);
-      if (min_inc && max_inc)
-        break;
-    }
-  }
-  return span_make(min, max, min_inc, max_inc, T_FLOAT8);
-}
-
-/**
- * Return the float spans of a temporal float
- *
- * @param[in] seq Temporal sequence
- * @param[out] result Array on which the pointers of the newly constructed
- * spans are stored
- * @result Number of spans in the result
- */
-int
-tfloatseq_spans(const TSequence *seq, Span **result)
-{
-  /* Temporal float with linear interpolation */
-  if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
-  {
-    result[0] = tfloatseq_span(seq);
-    return 1;
-  }
-
-  /* Temporal float with discrete or step interpolation */
-  int count;
-  Datum *values = tsequence_values(seq, &count);
-  for (int i = 0; i < count; i++)
-    result[i] = span_make(values[i], values[i], true, true, T_FLOAT8);
-  pfree(values);
-  return count;
-}
-
-/**
- * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the span set of base values of a temporal float sequence.
  *
  * For temporal floats with linear interpolation the result is a singleton,
@@ -2183,12 +2104,30 @@ tfloatseq_spans(const TSequence *seq, Span **result)
  * @sqlfunc getValues()
  */
 SpanSet *
-tfloatseq_spanset(const TSequence *seq)
+tnumberseq_spanset(const TSequence *seq)
 {
-  int count = MOBDB_FLAGS_GET_LINEAR(seq->flags) ? 1 : seq->count;
+  /* Temporal sequence number with linear interpolation */
+  if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
+  {
+    Span span;
+    memcpy(&span, &((TBox *) TSEQUENCE_BBOX_PTR(seq))->span, sizeof(Span));
+    return span_to_spanset(&span);
+  }
+
+  /* Temporal sequence number with discrete or step interpolation */
+  int count;
+  meosType basetype = temptype_basetype(seq->temptype);
+  Datum *values = tsequence_values(seq, &count);
   Span **spans = palloc(sizeof(Span *) * count);
-  int count1 = tfloatseq_spans(seq, spans);
-  return spanset_make_free(spans, count1, NORMALIZE);
+  Span *spans_buf = palloc(sizeof(Span) * count);
+  for (int i = 0; i < count; i++)
+  {
+    spans[i] = &spans_buf[i];
+    span_set(values[i], values[i], true, true, basetype, spans[i]);
+  }
+  SpanSet *result = spanset_make((const Span **) spans, count, NORMALIZE);
+  pfree(values); pfree(spans); pfree(spans_buf);
+  return result;
 }
 
 /**

@@ -231,18 +231,68 @@ tinstant_set_bbox(const TInstant *inst, void *box)
  * @brief Set a temporal box from an array of temporal number instants
  * @param[in] instants Temporal instants
  * @param[in] count Number of elements in the array
+ * @param[in] lower_inc, upper_inc True when the corresponding bound is
+ * inclusive, false otherwise
+ * @param[in] interp Interpolation
  * @param[in] box Box
  */
 static void
-tnumberinstarr_set_tbox(const TInstant **instants, int count, TBox *box)
+tnumberinstarr_set_tbox(const TInstant **instants, int count, bool lower_inc,
+  bool upper_inc, interpType interp, TBox *box)
 {
-  tinstant_set_bbox(instants[0], box);
+  assert(tnumber_type(instants[0]->temptype));
+  meosType basetype = temptype_basetype(instants[0]->temptype);
+  /* For discrete or step interpolation the bounds are always inclusive */
+  bool lower_inc1 = lower_inc;
+  bool upper_inc1 = upper_inc;
+  if (interp != LINEAR)
+  {
+    lower_inc1 = upper_inc1 = true;
+  }
+  /* Compute the value span */
+  Datum min = tinstant_value(instants[0]);
+  Datum max = min;
+  bool min_inc = lower_inc1, max_inc = lower_inc1;
   for (int i = 1; i < count; i++)
   {
-    TBox box1;
-    tinstant_set_bbox(instants[i], &box1);
-    tbox_expand(&box1, box);
+    Datum value = tinstant_value(instants[i]);
+    int min_cmp = datum_cmp(value, min, basetype);
+    int max_cmp = datum_cmp(value, max, basetype);
+    if (min_cmp <= 0)
+    {
+      min = value;
+      if (min_cmp == 0)
+        min_inc |= (i < count - 1) ? true : upper_inc1;
+      else
+        min_inc = (i < count - 1) ? true : upper_inc1;
+    }
+    if (max_cmp >= 0)
+    {
+      max = value;
+      if (max_cmp == 0)
+        max_inc |= (i < count - 1) ? true : upper_inc1;
+      else
+        max_inc = (i < count - 1) ? true : upper_inc1;
+    }
   }
+  /* TBox always has a float span */
+  if (basetype == T_INT4)
+  {
+    min = Float8GetDatum((double) DatumGetInt32(min));
+    max = Float8GetDatum((double) DatumGetInt32(max));
+  }
+  if (datum_eq(min, max, T_FLOAT8))
+  {
+    min_inc = max_inc = true;
+  }
+  span_set(min, max, min_inc, max_inc, T_FLOAT8, &box->span);
+  /* Compute the time span */
+  span_set(TimestampTzGetDatum(instants[0]->t),
+    TimestampTzGetDatum(instants[count - 1]->t), lower_inc, upper_inc,
+    T_TIMESTAMPTZ, &box->period);
+  /* Set the flags */
+  MOBDB_FLAGS_SET_X(box->flags, true);
+  MOBDB_FLAGS_SET_T(box->flags, true);
   return;
 }
 
@@ -265,7 +315,8 @@ tinstarr_compute_bbox(const TInstant **instants, int count, bool lower_inc,
       TimestampTzGetDatum(instants[count - 1]->t), lower_inc, upper_inc,
       T_TIMESTAMPTZ, (Span *) box);
   else if (tnumber_type(temptype))
-    tnumberinstarr_set_tbox(instants, count, (TBox *) box);
+    tnumberinstarr_set_tbox(instants, count, lower_inc, upper_inc,
+      interp, (TBox *) box);
   else if (temptype == T_TGEOMPOINT)
     tgeompointinstarr_set_stbox(instants, count, (STBox *) box);
   else if (temptype == T_TGEOGPOINT)

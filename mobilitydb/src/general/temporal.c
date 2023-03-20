@@ -1001,17 +1001,17 @@ Temporal_values(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Tfloat_spanset);
+PG_FUNCTION_INFO_V1(Tnumber_spanset);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the base values of a temporal float as an array of spans
  * @sqlfunc getValues()
  */
 PGDLLEXPORT Datum
-Tfloat_spanset(PG_FUNCTION_ARGS)
+Tnumber_spanset(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  SpanSet *result = tfloat_spanset(temp);
+  SpanSet *result = tnumber_spanset(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
