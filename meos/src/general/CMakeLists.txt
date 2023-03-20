@@ -31,15 +31,13 @@ add_library(general OBJECT
   type_out.c
   type_parser.c
   type_util.c
-)
-
-if(MEOS)
-add_library(general OBJECT
+#if MEOS
   set_aggfuncs_meos.c
   tbool_boolops_meos.c
   temporal_compops_meos.c
   temporal_meos.c
   tnumber_mathfuncs_meos.c
   ttext_textfuncs_meos.c
+#endif /* MEOS */
 )
-endif()
+

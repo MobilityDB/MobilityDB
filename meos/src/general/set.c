@@ -299,40 +299,6 @@ valuearr_compute_bbox(const Datum *values, meosType basetype, int count,
   return;
 }
 
-#if MEOS
-/**
- * @brief Set a bounding box from an array of set values
- *
- * @param[in] d Value to append to the set
- * @param[in] basetype Type of the value
- * @param[out] box Bounding box
- */
-void
-set_expand_bbox(Datum d, meosType basetype, void *box)
-{
-  /* Currently, only spatial set types have bounding box */
-  assert(set_basetype(basetype));
-  assert(! alphanum_basetype(basetype));
-  if (geo_basetype(basetype))
-  {
-    STBox box1;
-    geo_set_stbox(DatumGetGserializedP(d), &box1);
-    stbox_expand(&box1, (STBox *) box);
-  }
-#if NPOINT
-  else if (basetype == T_NPOINT)
-  {
-    STBox box1;
-    npoint_set_stbox(DatumGetNpointP(d), &box1);
-    stbox_expand(&box1, (STBox *) box);
-  }
-#endif
-  else
-    elog(ERROR, "unknown set type for expanding bounding box: %d", basetype);
-  return;
-}
-#endif /* MEOS */
-
 /**
  * @brief Return a pointer to the bounding box of a temporal sequence
  */
@@ -560,6 +526,114 @@ set_make(const Datum *values, int count, meosType basetype, bool ordered)
 {
   return set_make_exp(values, count, count, basetype, ordered);
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_setspan_constructor
+ * @brief Construct a set from an array of timestamp values.
+*/
+Set *
+tstzset_make(const TimestampTz *values, int count)
+{
+  Datum *datums = palloc(sizeof(Datum *) * count);
+  for (int i=0; i<count; ++i)
+    datums[i] = TimestampTzGetDatum(values[i]);
+  return set_make(datums, count, T_TIMESTAMPTZ, ORDERED);
+}
+
+/**
+ * @ingroup libmeos_setspan_constructor
+ * @brief Construct a set from an array of text values.
+*/
+Set *
+textset_make(const text **values, int count)
+{
+  Datum *datums = palloc(sizeof(Datum *) * count);
+  for (int i=0; i<count; ++i)
+    datums[i] = PointerGetDatum(values[i]);
+  return set_make(datums, count, T_TEXT, ORDERED);
+}
+
+/**
+ * @ingroup libmeos_setspan_constructor
+ * @brief Construct a set from an array of integer values.
+*/
+Set *
+intset_make(const int *values, int count)
+{
+  Datum *datums = palloc(sizeof(Datum *) * count);
+  for (int i=0; i<count; ++i)
+    datums[i] = Int32GetDatum(values[i]);
+  return set_make(datums, count, T_INT4, ORDERED);
+}
+
+/**
+ * @ingroup libmeos_setspan_constructor
+ * @brief Construct a set from an array of big integer values.
+*/
+Set *
+bigintset_make(const int64 *values, int count)
+{
+  Datum *datums = palloc(sizeof(Datum *) * count);
+  for (int i=0; i<count; ++i)
+    datums[i] = Int64GetDatum(values[i]);
+  return set_make(datums, count, T_INT8, ORDERED);
+}
+
+/**
+ * @ingroup libmeos_setspan_constructor
+ * @brief Construct a set from an array of float values.
+*/
+Set *
+floatset_make(const double *values, int count)
+{
+  Datum *datums = palloc(sizeof(Datum *) * count);
+  for (int i=0; i<count; ++i)
+    datums[i] = Float8GetDatum(values[i]);
+  return set_make(datums, count, T_FLOAT8, ORDERED);
+}
+
+/**
+ * @ingroup libmeos_setspan_constructor
+ * @brief Construct a set from an array of geometry values.
+*/
+Set *
+geomset_make(const GSERIALIZED **values, int count)
+{
+  Datum *datums = palloc(sizeof(Datum *) * count);
+  for (int i=0; i<count; ++i)
+    datums[i] = PointerGetDatum(values[i]);
+  return set_make(datums, count, T_GEOMETRY, ORDERED);
+}
+
+/**
+ * @ingroup libmeos_setspan_constructor
+ * @brief Construct a set from an array of geography values.
+*/
+Set *
+geogset_make(const GSERIALIZED **values, int count)
+{
+  Datum *datums = palloc(sizeof(Datum *) * count);
+  for (int i=0; i<count; ++i)
+    datums[i] = PointerGetDatum(values[i]);
+  return set_make(datums, count, T_GEOGRAPHY, ORDERED);
+}
+
+#if NPOINT
+/**
+ * @ingroup libmeos_setspan_constructor
+ * @brief Construct a set from an array of network point values.
+*/
+Set *
+npointset_make(const Npoint *values, int count)
+{
+  Datum *datums = palloc(sizeof(Datum *) * count);
+  for (int i=0; i<count; ++i)
+    datums[i] = PointerGetDatum(values[i]);
+  return set_make(datums, count, T_NPOINT, ORDERED);
+}
+#endif /* NPOINT */
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_internal_setspan_constructor

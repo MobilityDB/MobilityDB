@@ -306,7 +306,7 @@ extern const TSequence *TSEQUENCESET_SEQ_N(const TSequenceSet *ss, int index);
  * @pre The argument @p index is less than the number of instants in the
  * sequence
  */
-#define TSEQUENCE_INST_N(seq, index) ( (TInstant *)( \
+#define TSEQUENCE_INST_N(seq, index) ( (const TInstant *)( \
   ((char *) &((seq)->period)) + (seq)->bboxsize + \
   (sizeof(size_t) * (seq)->maxcount) + (TSEQUENCE_OFFSETS_PTR(seq))[index] ) )
 
@@ -323,7 +323,7 @@ extern const TSequence *TSEQUENCESET_SEQ_N(const TSequenceSet *ss, int index);
  * @pre The argument @p index is less than the number of sequences in the
  * sequence set
  */
-#define TSEQUENCESET_SEQ_N(ss, index) ( (TSequence *)( \
+#define TSEQUENCESET_SEQ_N(ss, index) ( (const TSequence *)( \
   ((char *) &((ss)->period)) + (ss)->bboxsize + \
   (sizeof(size_t) * (ss)->maxcount) + (TSEQUENCESET_OFFSETS_PTR(ss))[index] ) )
 #endif /* DEBUG_BUILD */

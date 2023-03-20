@@ -247,7 +247,7 @@ Stbox_tile(PG_FUNCTION_ARGS)
  * |               x
  * |               x
  * |---------------x
- * @code
+ * @endcode
  */
 static GSERIALIZED *
 stbox_to_tile_border(const STBox *box)

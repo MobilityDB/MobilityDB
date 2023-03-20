@@ -259,12 +259,17 @@ periodset_out(const SpanSet *ss)
  *
  * @param[in] spans Array of spans
  * @param[in] count Number of elements in the array
+ * @param[in] maxcount Maximum number of elements in the array
  * @param[in] normalize True if the resulting value should be normalized
+ * @param[in] ordered True for ordered sets
  * @sqlfunc spanset()
  */
 SpanSet *
-spanset_make(const Span **spans, int count, bool normalize)
+spanset_make_exp(const Span **spans, int count, int maxcount, bool normalize,
+  bool ordered __attribute__((unused)))
 {
+  assert(maxcount >= count);
+
   /* Test the validity of the spans */
   for (int i = 0; i < count - 1; i++)
   {
@@ -300,6 +305,21 @@ spanset_make(const Span **spans, int count, bool normalize)
   if (normalize && count > 1)
     pfree_array((void **) newspans, newcount);
   return result;
+}
+
+
+/**
+ * @ingroup libmeos_setspan_constructor
+ * @brief Construct a span set from an array of disjoint span.
+ * @param[in] spans Array of spans
+ * @param[in] count Number of elements in the array
+ * @param[in] normalize True if the resulting value should be normalized
+ * @sqlfunc spanset()
+ */
+SpanSet *
+spanset_make(const Span **spans, int count, bool normalize)
+{
+  return spanset_make_exp(spans, count, count, normalize, true);
 }
 
 /**

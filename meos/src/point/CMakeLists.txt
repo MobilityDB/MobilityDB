@@ -13,12 +13,9 @@ add_library(point OBJECT
   tpoint_spatialrels.c
   tpoint_tempspatialrels.c
   tpoint_tile.c
-)
-
-if(MEOS)
-add_library(general OBJECT
+#if MEOS
   tpoint_meos.c
   tpoint_spatialrels_meos.c
   tpoint_tempspatialrels_meos.c
+#endif /* MEOS */
 )
-endif()

@@ -39,10 +39,43 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/type_util.h"
+#include "npoint/tnpoint_boxops.h"
 
 /*****************************************************************************
  * Aggregate functions for set types
  *****************************************************************************/
+
+/**
+ * @brief Set a bounding box from an array of set values
+ *
+ * @param[in] d Value to append to the set
+ * @param[in] basetype Type of the value
+ * @param[out] box Bounding box
+ */
+void
+set_expand_bbox(Datum d, meosType basetype, void *box)
+{
+  /* Currently, only spatial set types have bounding box */
+  assert(set_basetype(basetype));
+  assert(! alphanum_basetype(basetype));
+  if (geo_basetype(basetype))
+  {
+    STBox box1;
+    geo_set_stbox(DatumGetGserializedP(d), &box1);
+    stbox_expand(&box1, (STBox *) box);
+  }
+#if NPOINT
+  else if (basetype == T_NPOINT)
+  {
+    STBox box1;
+    npoint_set_stbox(DatumGetNpointP(d), &box1);
+    stbox_expand(&box1, (STBox *) box);
+  }
+#endif
+  else
+    elog(ERROR, "unknown set type for expanding bounding box: %d", basetype);
+  return;
+}
 
 /**
  * @ingroup libmeos_internal_temporal_transf

@@ -2042,14 +2042,14 @@ tsequence_shift_tscale(const TSequence *seq, const Interval *shift,
   period_shift_tscale(&result->period, shift, duration, &delta, &scale);
 
   /* Set the first instant */
-  TInstant *inst = TSEQUENCE_INST_N(result, 0);
+  TInstant *inst = (TInstant *) TSEQUENCE_INST_N(result, 0);
   inst->t = result->period.lower;
   if (seq->count > 1)
   {
     /* Shift and/or scale from the second to the penultimate instant */
     for (int i = 1; i < seq->count - 1; i++)
     {
-      inst = TSEQUENCE_INST_N(result, i);
+      inst = (TInstant *) TSEQUENCE_INST_N(result, i);
       if (shift != NULL)
         inst->t += delta;
       if (duration != NULL && ! instant)
@@ -2057,7 +2057,7 @@ tsequence_shift_tscale(const TSequence *seq, const Interval *shift,
           (inst->t - result->period.lower) * scale;
     }
     /* Set the last instant */
-    inst = TSEQUENCE_INST_N(result, seq->count - 1);
+    inst = (TInstant *) TSEQUENCE_INST_N(result, seq->count - 1);
     inst->t = result->period.upper;
   }
   return result;
