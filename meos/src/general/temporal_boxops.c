@@ -154,30 +154,6 @@ temporal_bbox_cmp(const void *box1, const void *box2, meosType temptype)
   elog(ERROR, "unknown temporal type for bounding box function: %d", temptype);
 }
 
-/**
- * @brief Shift and/or scale the time span of the bounding box by the intervals
- * @param[in] box Bounding box
- * @param[in] shift Interval to shift
- * @param[in] duration Interval to scale
- * @param[in] temptype Temporal type
- */
-void
-temporal_bbox_shift_tscale(void *box, meosType temptype, const Interval *shift,
-  const Interval *duration)
-{
-  assert(temporal_type(temptype));
-  if (talpha_type(temptype))
-    period_shift_tscale((Span *) box, shift, duration);
-  else if (tnumber_type(temptype))
-    tbox_shift_tscale((TBox *) box, shift, duration);
-  else if (tspatial_type(temptype))
-    stbox_shift_tscale((STBox *) box, shift, duration);
-  else
-    elog(ERROR, "unknown temporal type for bounding box function: %d",
-      temptype);
-  return;
-}
-
 /*****************************************************************************
  * Compute the bounding box at the creation of temporal values
  * Only external types have precomputed bbox, internal types such as double2,

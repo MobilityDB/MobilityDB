@@ -86,18 +86,6 @@ stbox_expand(const STBox *box1, STBox *box2)
   return;
 }
 
-/**
- * @ingroup libmeos_box_transf
- * @brief Shift and/or scale a spatiotemporal box by the intervals
- * @sqlfunc shift(), tscale(), shiftTscale()
- */
-void
-stbox_shift_tscale(STBox *box, const Interval *shift, const Interval *duration)
-{
-  period_shift_tscale(&box->period, shift, duration);
-  return;
-}
-
 /*****************************************************************************
  * Parameter tests
  *****************************************************************************/

@@ -488,17 +488,13 @@ periodset_shift_tscale(const SpanSet *ps, const Interval *shift,
 
   /* Copy the input period set to the output period set */
   SpanSet *result = spanset_copy(ps);
+
   /* Shift and/or scale the bounding period */
-  period_shift_tscale(&result->span, shift, duration);
-  /* Shift and/or scale the periods of the period set */
-  TimestampTz delta;
-  if (shift != NULL)
-    delta = result->span.lower - ps->span.lower;
-  /* If the periodset is instantaneous we cannot scale */
-  double scale;
-  if (duration != NULL && ! instant)
-    scale = (double) (result->span.upper - result->span.lower) /
-      (double) (ps->span.upper - ps->span.lower);
+  TimestampTz delta = 0; /* Default value in case shift == NULL */
+  double scale = 1; /* Default value in case duration == NULL */
+  period_shift_tscale(&result->span, shift, duration, &delta, &scale);
+
+  /* Shift and/or scale the periodset */
   for (int i = 0; i < ps->count; i++)
   {
     if (shift != NULL)

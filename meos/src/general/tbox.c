@@ -751,19 +751,6 @@ tbox_expand(const TBox *box1, TBox *box2)
 
 /**
  * @ingroup libmeos_box_transf
- * @brief Return a temporal box shifted and/or scaled in the time dimension by
- * the intervals
- * @sqlfunc shift(), tscale(), shiftTscale()
- */
-void
-tbox_shift_tscale(TBox *box, const Interval *shift, const Interval *duration)
-{
-  period_shift_tscale(&box->period, shift, duration);
-  return;
-}
-
-/**
- * @ingroup libmeos_box_transf
  * @brief Return a temporal box expanded in the value dimension by a double.
  * @sqlfunc @p expandValue()
  */

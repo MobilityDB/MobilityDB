@@ -136,7 +136,7 @@ ERROR:  Range cannot be empty
 SELECT shift(intspan '[1,2)', 2);
  shift  
 --------
- [3, 5)
+ [3, 4)
 (1 row)
 
 SELECT shift(tstzspan '[2000-01-01,2000-01-01]', '5 min');

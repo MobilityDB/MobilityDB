@@ -875,22 +875,30 @@ void
 span_shift(Span *s, Datum shift)
 {
   s->lower = datum_add(s->lower, shift, s->basetype, s->basetype);
-  s->upper = datum_add(s->lower, shift, s->basetype, s->basetype);
+  s->upper = datum_add(s->upper, shift, s->basetype, s->basetype);
   return;
 }
 
 /**
  * @ingroup libmeos_setspan_transf
  * @brief Shift and/or scale a period by the intervals.
+ * @note Returns the delta and scale of the transformation
  * @sqlfunc shift(), tscale(), shiftTscale()
  * @pymeosfunc shift()
  */
 void
-period_shift_tscale(Span *p, const Interval *shift, const Interval *duration)
+period_shift_tscale(Span *p, const Interval *shift, const Interval *duration,
+  TimestampTz *delta, double *scale)
 {
   TimestampTz lower = DatumGetTimestampTz(p->lower);
   TimestampTz upper = DatumGetTimestampTz(p->upper);
   lower_upper_shift_tscale(&lower, &upper, shift, duration);
+  /* Compute delta and scale before overwriting p.lower and p.upper */
+  if (delta != NULL && shift != NULL)
+    *delta = lower - p->lower;
+  /* If the period is instantaneous we cannot scale */
+  if (scale != NULL && duration != NULL && p->lower != p->upper)
+    *scale = (double) (upper - lower) / (double) (p->upper - p->lower);
   p->lower = TimestampTzGetDatum(lower);
   p->upper = TimestampTzGetDatum(upper);
   return;
