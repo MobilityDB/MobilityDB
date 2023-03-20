@@ -1507,7 +1507,7 @@ temporal_from_wkb_state(wkb_parse_state *s)
     s->srid = SRID_DEFAULT;
 
   /* Read the temporal value */
-  ensure_valid_tempsubtype(s->subtype);
+  assert(temptype_subtype(s->subtype));
   if (s->subtype == TINSTANT)
     return (Temporal *) tinstant_from_wkb_state(s);
   else if (s->subtype == TSEQUENCE)

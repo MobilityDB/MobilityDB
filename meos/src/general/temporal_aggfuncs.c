@@ -551,7 +551,7 @@ SkipList *
 temporal_tagg_transfn(SkipList *state, const Temporal *temp, datum_func2 func,
   bool crossings)
 {
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   SkipList *result;
   if (temp->subtype == TINSTANT)
     result =  tinstant_tagg_transfn(state, (TInstant *) temp, func);

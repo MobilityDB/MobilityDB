@@ -431,8 +431,8 @@ typedef Datum (*datum_func3) (Datum, Datum, Datum);
 
 /* Parameter tests */
 
-extern void ensure_valid_tempsubtype(int16 type);
-extern void ensure_valid_tempsubtype_all(int16 type);
+extern bool temptype_subtype(int16 subtype);
+extern bool temptype_subtype_all(int16 subtype);
 extern void ensure_continuous(const Temporal *temp);
 extern void ensure_continuous(const Temporal *temp);
 extern void ensure_tinstarr(const TInstant **instants, int count);

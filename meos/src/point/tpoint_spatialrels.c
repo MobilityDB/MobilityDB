@@ -418,7 +418,7 @@ edisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
   ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
   varfunc func = (varfunc) get_disjoint_fn_gs(temp->flags, gs->gflags);
   bool result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = edisjoint_tpointinst_geo((TInstant *) temp, PointerGetDatum(gs),
       func);
@@ -652,7 +652,7 @@ edwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
 {
   datum_func3 func = get_dwithin_fn(sync1->flags, sync2->flags);
   bool result;
-  ensure_valid_tempsubtype(sync1->subtype);
+  assert(temptype_subtype(sync1->subtype));
   if (sync1->subtype == TINSTANT)
     result = edwithin_tpointinst_tpointinst((TInstant *) sync1,
       (TInstant *) sync2, dist, func);

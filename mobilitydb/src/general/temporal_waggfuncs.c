@@ -216,7 +216,7 @@ static TSequence **
 temporal_extend(Temporal *temp, Interval *interval, bool min, int *count)
 {
   TSequence **result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
   {
     TInstant *inst = (TInstant *) temp;
@@ -358,7 +358,7 @@ static TSequence **
 temporal_transform_wcount(const Temporal *temp, const Interval *interval,
   int *count)
 {
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   TSequence **result;
   if (temp->subtype == TINSTANT)
   {
@@ -519,7 +519,7 @@ tnumber_transform_wavg(const Temporal *temp, const Interval *interval,
   int *count)
 {
   TSequence **result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
   {
     TInstant *inst = (TInstant *) temp;

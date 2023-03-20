@@ -141,7 +141,7 @@ Temporal *
 tnpoint_tgeompoint(const Temporal *temp)
 {
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tnpointinst_tgeompointinst((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
@@ -226,7 +226,7 @@ tgeompoint_tnpoint(const Temporal *temp)
   int32_t srid_ways = get_srid_ways();
   ensure_same_srid(srid_tpoint, srid_ways);
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tgeompointinst_tnpointinst((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
@@ -370,7 +370,7 @@ Nsegment **
 tnpoint_positions(const Temporal *temp, int *count)
 {
   Nsegment **result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
   {
     result = tnpointinst_positions((TInstant *) temp);
@@ -477,7 +477,7 @@ Set *
 tnpoint_routes(const Temporal *temp)
 {
   Set *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = tnpointinst_routes((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)

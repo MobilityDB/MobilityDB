@@ -474,7 +474,7 @@ tinterrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
     FLAGS_GET_Z(gs->gflags) ? &geom_intersects3d : &geom_intersects2d;
 
   Temporal *result = NULL;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tinterrel_tpointinst_geom((TInstant *) temp,
       PointerGetDatum(gs), tinter, func);
@@ -1182,7 +1182,7 @@ tdwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
   lfinfo.restype = T_TBOOL;
   lfinfo.invert = INVERT_NO;
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tfunc_tinstant_base((TInstant *) temp,
       PointerGetDatum(gs), &lfinfo);
@@ -1219,7 +1219,7 @@ tdwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
 {
   datum_func3 func = get_dwithin_fn(sync1->flags, sync2->flags);
   Temporal *result;
-  ensure_valid_tempsubtype(sync1->subtype);
+  assert(temptype_subtype(sync1->subtype));
   if (sync1->subtype == TINSTANT || MOBDB_FLAGS_GET_DISCRETE(sync1->flags))
   {
     LiftedFunctionInfo lfinfo;

@@ -244,7 +244,7 @@ Temporal *
 tfunc_temporal(const Temporal *temp, LiftedFunctionInfo *lfinfo)
 {
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tfunc_tinstant((TInstant *) temp, lfinfo);
   else if (temp->subtype == TSEQUENCE)
@@ -600,7 +600,7 @@ tfunc_temporal_base(const Temporal *temp, Datum value,
   LiftedFunctionInfo *lfinfo)
 {
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tfunc_tinstant_base((TInstant *) temp, value, lfinfo);
   else if (temp->subtype == TSEQUENCE)
@@ -1434,8 +1434,8 @@ tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
     return NULL;
 
   Temporal *result = NULL;
-  ensure_valid_tempsubtype(temp1->subtype);
-  ensure_valid_tempsubtype(temp2->subtype);
+  assert(temptype_subtype(temp1->subtype));
+  assert(temptype_subtype(temp2->subtype));
   if (temp1->subtype == TINSTANT)
   {
     if (temp2->subtype == TINSTANT)
@@ -2008,8 +2008,8 @@ efunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
     return -1;
 
   int result;
-  ensure_valid_tempsubtype(temp1->subtype);
-  ensure_valid_tempsubtype(temp2->subtype);
+  assert(temptype_subtype(temp1->subtype));
+  assert(temptype_subtype(temp2->subtype));
   if (temp1->subtype == TINSTANT)
   {
     if (temp2->subtype == TINSTANT)

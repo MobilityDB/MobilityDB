@@ -529,7 +529,7 @@ tpoint_to_geo_measure(const Temporal *tpoint, const Temporal *measure,
     sync2 = NULL;
   }
 
-  ensure_valid_tempsubtype(sync1->subtype);
+  assert(temptype_subtype(sync1->subtype));
   if (sync1->subtype == TINSTANT)
     *result = tpointinst_to_geo_measure(
       (TInstant *) sync1, (TInstant *) sync2);
@@ -860,7 +860,7 @@ temporal_simplify_min_dist(const Temporal *temp, double dist)
 {
   ensure_positive_datum(Float8GetDatum(dist), T_FLOAT8);
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     result = temporal_copy(temp);
   else if (temp->subtype == TSEQUENCE)
@@ -953,7 +953,7 @@ temporal_simplify_min_tdelta(const Temporal *temp, const Interval *mint)
 {
   ensure_valid_duration(mint);
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     result = temporal_copy(temp);
   else if (temp->subtype == TSEQUENCE)
@@ -1280,7 +1280,7 @@ Temporal *
 temporal_simplify_max_dist(const Temporal *temp, double dist, bool syncdist)
 {
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     result = temporal_copy(temp);
   else if (temp->subtype == TSEQUENCE)
@@ -1425,7 +1425,7 @@ Temporal *
 temporal_simplify_dp(const Temporal *temp, double dist, bool syncdist)
 {
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     result = temporal_copy(temp);
   else if (temp->subtype == TSEQUENCE)
@@ -1561,7 +1561,7 @@ tpoint_remove_repeated_points(const Temporal *temp, double tolerance,
   int min_points)
 {
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tinstant_copy((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
@@ -1667,7 +1667,7 @@ static Temporal *
 tpoint_affine(const Temporal *temp, const AFFINE *a)
 {
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tpointinst_affine((TInstant *) temp, a);
   else if (temp->subtype == TSEQUENCE)
@@ -1790,7 +1790,7 @@ static Temporal *
 tpoint_grid(const Temporal *temp, const gridspec *grid, bool filter_pts)
 {
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tpointinst_grid((TInstant *) temp, grid);
   else if (temp->subtype == TSEQUENCE)
@@ -1985,7 +1985,7 @@ static GSERIALIZED *
 tpoint_decouple(const Temporal *temp, int64 **timesarr, int *count)
 {
   GSERIALIZED *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = tpointinst_decouple((TInstant *) temp, timesarr, count);
   else if (temp->subtype == TSEQUENCE)

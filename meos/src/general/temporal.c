@@ -66,25 +66,25 @@
  * @brief Ensure that the subtype of a temporal value is valid
  * @note Used for the dispatch functions
  */
-void
-ensure_valid_tempsubtype(int16 subtype)
+bool
+temptype_subtype(int16 subtype)
 {
-  if (subtype != TINSTANT && subtype != TSEQUENCE && subtype != TSEQUENCESET)
-    elog(ERROR, "unknown subtype for temporal type: %d", subtype);
-  return;
+  if (subtype == TINSTANT || subtype == TSEQUENCE || subtype == TSEQUENCESET)
+    return true;
+  return false;
 }
 
 /**
  * @brief Ensure that the subtype of a temporal value is valid
  * @note Used for the the analyze and selectivity functions
  */
-void
-ensure_valid_tempsubtype_all(int16 subtype)
+bool
+temptype_subtype_all(int16 subtype)
 {
-  if (subtype != ANYTEMPSUBTYPE &&
-    subtype != TINSTANT && subtype != TSEQUENCE && subtype != TSEQUENCESET)
-    elog(ERROR, "unknown subtype for temporal type: %d", subtype);
-  return;
+  if (subtype == ANYTEMPSUBTYPE ||
+    subtype == TINSTANT || subtype == TSEQUENCE || subtype == TSEQUENCESET)
+    return true;
+  return false;
 }
 
 /**
@@ -93,7 +93,7 @@ ensure_valid_tempsubtype_all(int16 subtype)
 void
 ensure_continuous(const Temporal *temp)
 {
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT || MOBDB_FLAGS_GET_DISCRETE(temp->flags))
     elog(ERROR, "Input must be a temporal continuous sequence (set)");
   return;
@@ -435,8 +435,8 @@ intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   SyncMode mode, Temporal **inter1, Temporal **inter2)
 {
   bool result = false;
-  ensure_valid_tempsubtype(temp1->subtype);
-  ensure_valid_tempsubtype(temp2->subtype);
+  assert(temptype_subtype(temp1->subtype));
+  assert(temptype_subtype(temp2->subtype));
   if (temp1->subtype == TINSTANT)
   {
     if (temp2->subtype == TINSTANT)
@@ -643,7 +643,7 @@ char *
 temporal_out(const Temporal *temp, int maxdd)
 {
   char *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = tinstant_out((TInstant *) temp, maxdd);
   else if (temp->subtype == TSEQUENCE)
@@ -734,7 +734,7 @@ temporal_from_base(Datum value, meosType temptype, const Temporal *temp,
   interpType interp)
 {
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tinstant_make(value, temptype,
       ((TInstant *) temp)->t);
@@ -843,7 +843,7 @@ temporal_append_tinstant(Temporal *temp, const TInstant *inst,
   ensure_spatial_validity(temp, (const Temporal *) inst);
 
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tinstant_merge((const TInstant *) temp, inst);
   else if (temp->subtype == TSEQUENCE)
@@ -926,9 +926,9 @@ static void
 temporal_convert_same_subtype(const Temporal *temp1, const Temporal *temp2,
   Temporal **out1, Temporal **out2)
 {
+  assert(temptype_subtype(temp1->subtype));
+  assert(temptype_subtype(temp2->subtype));
   assert(temp1->temptype == temp2->temptype);
-  ensure_valid_tempsubtype(temp1->subtype);
-  ensure_valid_tempsubtype(temp2->subtype);
 
   /* If both are of the same subtype do nothing */
   if (temp1->subtype == temp2->subtype)
@@ -1015,7 +1015,7 @@ temporal_merge(const Temporal *temp1, const Temporal *temp2)
   Temporal *new1, *new2;
   temporal_convert_same_subtype(temp1, temp2, &new1, &new2);
 
-  ensure_valid_tempsubtype(new1->subtype);
+  assert(temptype_subtype(new1->subtype));
   if (new1->subtype == TINSTANT)
     result = tinstant_merge((TInstant *) new1, (TInstant *) new2);
   else if (new1->subtype == TSEQUENCE)
@@ -1043,7 +1043,7 @@ static Temporal **
 temporalarr_convert_subtype(Temporal **temparr, int count, uint8 subtype,
   interpType interp)
 {
-  ensure_valid_tempsubtype(subtype);
+  assert(temptype_subtype(subtype));
   Temporal **result = palloc(sizeof(Temporal *) * count);
   for (int i = 0; i < count; i++)
   {
@@ -1112,7 +1112,7 @@ temporal_merge_array(Temporal **temparr, int count)
     newtemps = temparr;
 
   Temporal *result;
-  ensure_valid_tempsubtype(subtype);
+  assert(temptype_subtype(subtype));
   if (subtype == TINSTANT)
     result = (Temporal *) tinstant_merge_array(
       (const TInstant **) newtemps, count);
@@ -1140,7 +1140,7 @@ Temporal *
 tint_to_tfloat(const Temporal *temp)
 {
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tintinst_to_tfloatinst((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
@@ -1159,7 +1159,7 @@ Temporal *
 tfloat_to_tint(const Temporal *temp)
 {
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tfloatinst_to_tintinst((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
@@ -1176,7 +1176,7 @@ tfloat_to_tint(const Temporal *temp)
 void
 temporal_set_period(const Temporal *temp, Span *p)
 {
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     tinstant_set_period((TInstant *) temp, p);
   else if (temp->subtype == TSEQUENCE)
@@ -1211,7 +1211,7 @@ void
 tnumber_set_span(const Temporal *temp, Span *s)
 {
   assert(tnumber_type(temp->temptype));
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   meosType basetype = temptype_basetype(temp->temptype);
   if (temp->subtype == TINSTANT)
   {
@@ -1267,7 +1267,7 @@ tnumber_to_tbox(const Temporal *temp)
 void
 temporal_restart(Temporal *temp, int last)
 {
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
   {
     elog(ERROR, "Input must be a temporal sequence (set)");
@@ -1289,7 +1289,7 @@ Temporal *
 temporal_to_tinstant(const Temporal *temp)
 {
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tinstant_copy((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
@@ -1310,7 +1310,7 @@ Temporal *
 temporal_to_tdiscseq(const Temporal *temp)
 {
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tinstant_to_tsequence((TInstant *) temp, DISCRETE);
   else if (temp->subtype == TSEQUENCE)
@@ -1331,7 +1331,7 @@ Temporal *
 temporal_to_tcontseq(const Temporal *temp)
 {
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tinstant_to_tsequence((TInstant *) temp,
       MOBDB_FLAGS_GET_CONTINUOUS(temp->flags) ? LINEAR : STEP);
@@ -1351,7 +1351,7 @@ Temporal *
 temporal_to_tsequenceset(const Temporal *temp)
 {
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tinstant_to_tsequenceset((TInstant *) temp,
       MOBDB_FLAGS_GET_CONTINUOUS(temp->flags) ? LINEAR : STEP);
@@ -1402,7 +1402,7 @@ temporal_shift_tscale(const Temporal *temp, const Interval *shift,
     ensure_valid_duration(duration);
 
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (shift != NULL) ?
       (Temporal *) tinstant_shift((TInstant *) temp, shift) :
@@ -1622,7 +1622,7 @@ temporal_tprecision(const Temporal *temp, const Interval *duration,
   TimestampTz torigin)
 {
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tinstant_tprecision((TInstant *) temp, duration,
       torigin);
@@ -1755,7 +1755,7 @@ temporal_tsample(const Temporal *temp, const Interval *duration,
   TimestampTz torigin)
 {
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tinstant_tsample((TInstant *) temp, duration,
       torigin);
@@ -1798,7 +1798,7 @@ char *
 temporal_subtype(const Temporal *temp)
 {
   char *result = palloc(sizeof(char) * MOBDB_SUBTYPE_STR_MAXLEN);
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     strcpy(result, "Instant");
   else if (temp->subtype == TSEQUENCE)
@@ -1819,7 +1819,7 @@ char *
 temporal_interpolation(const Temporal *temp)
 {
   char *result = palloc(sizeof(char) * MOBDB_INTERPOLATION_STR_MAXLEN);
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   interpType interp = MOBDB_FLAGS_GET_INTERP(temp->flags);
   if (temp->subtype == TINSTANT || interp == DISCRETE)
     strcpy(result, "Discrete");
@@ -1841,7 +1841,7 @@ temporal_interpolation(const Temporal *temp)
 void
 temporal_set_bbox(const Temporal *temp, void *box)
 {
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     tinstant_set_bbox((TInstant *) temp, box);
   else if (temp->subtype == TSEQUENCE)
@@ -1859,8 +1859,8 @@ temporal_set_bbox(const Temporal *temp, void *box)
 Datum *
 temporal_values(const Temporal *temp, int *count)
 {
-  Datum *result;  /* make the compiler quiet */
-  ensure_valid_tempsubtype(temp->subtype);
+  Datum *result;
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = tinstant_values((TInstant *) temp, count);
   else if (temp->subtype == TSEQUENCE)
@@ -1873,7 +1873,7 @@ temporal_values(const Temporal *temp, int *count)
 #if MEOS
 /**
  * @ingroup libmeos_temporal_accessor
- * @brief Return the the array of base values of a temporal boolean
+ * @brief Return the array of base values of a temporal boolean
  * @sqlfunc values
  * @pymeosfunc getValues
  */
@@ -1890,7 +1890,7 @@ tbool_values(const Temporal *temp, int *count)
 
 /**
  * @ingroup libmeos_temporal_accessor
- * @brief Return the the array of base values of a temporal integer
+ * @brief Return the array of base values of a temporal integer
  * @sqlfunc values
  * @pymeosfunc getValues
  */
@@ -1907,7 +1907,7 @@ tint_values(const Temporal *temp, int *count)
 
 /**
  * @ingroup libmeos_temporal_accessor
- * @brief Return the the array of base values of a temporal float
+ * @brief Return the array of base values of a temporal float
  * @sqlfunc values
  * @pymeosfunc getValues
  */
@@ -1924,7 +1924,7 @@ tfloat_values(const Temporal *temp, int *count)
 
 /**
  * @ingroup libmeos_temporal_accessor
- * @brief Return the the array of base values of a temporal text
+ * @brief Return the array of base values of a temporal text
  * @sqlfunc values
  * @pymeosfunc getValues
  */
@@ -1941,7 +1941,7 @@ ttext_values(const Temporal *temp, int *count)
 
 /**
  * @ingroup libmeos_temporal_accessor
- * @brief Return the the array of base values of a temporal geometric point
+ * @brief Return the array of base values of a temporal geometric point
  * @sqlfunc values
  * @pymeosfunc getValues
  */
@@ -1959,7 +1959,7 @@ tpoint_values(const Temporal *temp, int *count)
 
 /**
  * @ingroup libmeos_temporal_accessor
- * @brief Return the base values of a temporal float as an array of spans.
+ * @brief Return the base values of a temporal float as a span set.
  * @sqlfunc getValues
  * @pymeosfunc TFloat.getValues
  */
@@ -1967,7 +1967,7 @@ SpanSet *
 tfloat_spanset(const Temporal *temp)
 {
   SpanSet *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = tfloatinst_spanset((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
@@ -1987,7 +1987,7 @@ SpanSet *
 temporal_time(const Temporal *temp)
 {
   SpanSet *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = tinstant_time((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
@@ -2007,7 +2007,7 @@ Datum
 temporal_start_value(const Temporal *temp)
 {
   Datum result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = tinstant_value_copy((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
@@ -2090,7 +2090,7 @@ Datum
 temporal_end_value(const Temporal *temp)
 {
   Datum result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = tinstant_value_copy((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
@@ -2176,7 +2176,7 @@ temporal_min_value(const Temporal *temp)
 {
   Datum result;
   meosType basetype = temptype_basetype(temp->temptype);
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = tinstant_value_copy((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
@@ -2235,7 +2235,7 @@ temporal_max_value(const Temporal *temp)
 {
   Datum result;
   meosType basetype = temptype_basetype(temp->temptype);
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = tinstant_value_copy((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
@@ -2298,7 +2298,7 @@ const TInstant *
 temporal_min_instant(const Temporal *temp)
 {
   const TInstant *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (TInstant *) temp;
   else if (temp->subtype == TSEQUENCE)
@@ -2318,7 +2318,7 @@ const TInstant *
 temporal_max_instant(const Temporal *temp)
 {
   const TInstant *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (TInstant *) temp;
   else if (temp->subtype == TSEQUENCE)
@@ -2338,7 +2338,7 @@ Interval *
 temporal_duration(const Temporal *temp, bool boundspan)
 {
   Interval *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT || MOBDB_FLAGS_GET_DISCRETE(temp->flags))
     result = palloc0(sizeof(Interval));
   else if (temp->subtype == TSEQUENCE)
@@ -2480,7 +2480,7 @@ int
 temporal_num_instants(const Temporal *temp)
 {
   int result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = 1;
   else if (temp->subtype == TSEQUENCE)
@@ -2500,7 +2500,7 @@ const TInstant *
 temporal_start_instant(const Temporal *temp)
 {
   const TInstant *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (TInstant *) temp;
   else if (temp->subtype == TSEQUENCE)
@@ -2524,7 +2524,7 @@ const TInstant *
 temporal_end_instant(const Temporal *temp)
 {
   const TInstant *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (TInstant *) temp;
   else if (temp->subtype == TSEQUENCE)
@@ -2550,7 +2550,7 @@ const TInstant *
 temporal_instant_n(const Temporal *temp, int n)
 {
   const TInstant *result = NULL;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
   {
     if (n == 1)
@@ -2580,7 +2580,7 @@ const TInstant **
 temporal_instants(const Temporal *temp, int *count)
 {
   const TInstant **result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = tinstant_instants((TInstant *) temp, count);
   else if (temp->subtype == TSEQUENCE)
@@ -2606,7 +2606,7 @@ int
 temporal_num_timestamps(const Temporal *temp)
 {
   int result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = 1;
   else if (temp->subtype == TSEQUENCE)
@@ -2626,7 +2626,7 @@ TimestampTz
 temporal_start_timestamp(const Temporal *temp)
 {
   TimestampTz result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = ((TInstant *) temp)->t;
   else if (temp->subtype == TSEQUENCE)
@@ -2646,7 +2646,7 @@ TimestampTz
 temporal_end_timestamp(const Temporal *temp)
 {
   TimestampTz result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = ((TInstant *) temp)->t;
   else if (temp->subtype == TSEQUENCE)
@@ -2666,7 +2666,7 @@ temporal_end_timestamp(const Temporal *temp)
 bool
 temporal_timestamp_n(const Temporal *temp, int n, TimestampTz *result)
 {
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
   {
     if (n == 1)
@@ -2698,7 +2698,7 @@ TimestampTz *
 temporal_timestamps(const Temporal *temp, int *count)
 {
   TimestampTz *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = tinstant_timestamps((TInstant *) temp, count);
   else if (temp->subtype == TSEQUENCE)
@@ -2794,7 +2794,7 @@ bool
 temporal_ever_eq(const Temporal *temp, Datum value)
 {
   bool result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = tinstant_ever_eq((TInstant *) temp, value);
   else if (temp->subtype == TSEQUENCE)
@@ -2854,7 +2854,7 @@ bool
 temporal_always_eq(const Temporal *temp, Datum value)
 {
   bool result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = tinstant_always_eq((TInstant *) temp, value);
   else if (temp->subtype == TSEQUENCE)
@@ -2914,7 +2914,7 @@ bool
 temporal_ever_lt(const Temporal *temp, Datum value)
 {
   bool result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = tinstant_ever_lt((TInstant *) temp, value);
   else if (temp->subtype == TSEQUENCE)
@@ -2964,7 +2964,7 @@ bool
 temporal_always_lt(const Temporal *temp, Datum value)
 {
   bool result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = tinstant_always_lt((TInstant *) temp, value);
   else if (temp->subtype == TSEQUENCE)
@@ -3015,7 +3015,7 @@ bool
 temporal_ever_le(const Temporal *temp, Datum value)
 {
   bool result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = tinstant_ever_le((TInstant *) temp, value);
   else if (temp->subtype == TSEQUENCE)
@@ -3067,7 +3067,7 @@ bool
 temporal_always_le(const Temporal *temp, Datum value)
 {
   bool result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = tinstant_always_le((TInstant *) temp, value);
   else if (temp->subtype == TSEQUENCE)
@@ -3191,7 +3191,7 @@ temporal_restrict_value(const Temporal *temp, Datum value, bool atfunc)
   }
 
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tinstant_restrict_value((TInstant *) temp, value,
       atfunc);
@@ -3260,7 +3260,7 @@ temporal_restrict_values(const Temporal *temp, const Set *set, bool atfunc)
   }
 
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tinstant_restrict_values((TInstant *) temp, set,
       atfunc);
@@ -3298,7 +3298,7 @@ tnumber_restrict_span(const Temporal *temp, const Span *span, bool atfunc)
   }
 
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tnumberinst_restrict_span((TInstant *) temp,
       span, atfunc);
@@ -3341,7 +3341,7 @@ tnumber_restrict_spanset(const Temporal *temp, const SpanSet *ss, bool atfunc)
   }
 
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tnumberinst_restrict_spanset((TInstant *) temp, ss,
       atfunc);
@@ -3368,7 +3368,7 @@ Temporal *
 temporal_restrict_minmax(const Temporal *temp, bool min, bool atfunc)
 {
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = atfunc ? (Temporal *) tinstant_copy((TInstant *) temp) : NULL;
   else if (temp->subtype == TSEQUENCE)
@@ -3392,7 +3392,7 @@ Temporal *
 temporal_restrict_timestamp(const Temporal *temp, TimestampTz t, bool atfunc)
 {
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tinstant_restrict_timestamp((TInstant *) temp, t, atfunc);
   else if (temp->subtype == TSEQUENCE)
@@ -3425,7 +3425,7 @@ temporal_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
   Datum *result)
 {
   bool found = false;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     found = tinstant_value_at_timestamp((TInstant *) temp, t, result);
   else if (temp->subtype == TSEQUENCE)
@@ -3449,7 +3449,7 @@ Temporal *
 temporal_restrict_timestampset(const Temporal *temp, const Set *ts, bool atfunc)
 {
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tinstant_restrict_timestampset(
       (TInstant *) temp, ts, atfunc);
@@ -3480,7 +3480,7 @@ Temporal *
 temporal_restrict_period(const Temporal *temp, const Span *p, bool atfunc)
 {
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tinstant_restrict_period(
       (TInstant *) temp, p, atfunc);
@@ -3513,7 +3513,7 @@ temporal_restrict_periodset(const Temporal *temp, const SpanSet *ps,
   bool atfunc)
 {
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tinstant_restrict_periodset(
       (TInstant *) temp, ps, atfunc);
@@ -3616,7 +3616,7 @@ temporal_insert(const Temporal *temp1, const Temporal *temp2, bool connect)
   temporal_convert_same_subtype(temp1, temp2, &new1, &new2);
 
   Temporal *result;
-  ensure_valid_tempsubtype(new1->subtype);
+  assert(temptype_subtype(new1->subtype));
   if (new1->subtype == TINSTANT)
     result = tinstant_merge((TInstant *) new1, (TInstant *) new2);
   else if (new1->subtype == TSEQUENCE)
@@ -3670,7 +3670,7 @@ Temporal *
 temporal_delete_timestamp(const Temporal *temp, TimestampTz t, bool connect)
 {
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tinstant_restrict_timestamp((TInstant *) temp, t,
       REST_MINUS);
@@ -3704,7 +3704,7 @@ temporal_delete_timestampset(const Temporal *temp, const Set *ts,
   bool connect)
 {
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tinstant_restrict_timestampset((TInstant *) temp, ts,
       REST_MINUS);
@@ -3738,7 +3738,7 @@ Temporal *
 temporal_delete_period(const Temporal *temp, const Span *p, bool connect)
 {
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tinstant_restrict_period((TInstant *) temp, p,
       REST_MINUS);
@@ -3772,7 +3772,7 @@ temporal_delete_periodset(const Temporal *temp, const SpanSet *ps,
   bool connect)
 {
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tinstant_restrict_periodset((TInstant *) temp, ps,
       REST_MINUS);
@@ -4141,7 +4141,7 @@ temporal_stops(const Temporal *temp, double maxdist,
   int64 mintunits = interval_units(minduration);
 
   TSequenceSet *result = NULL;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
   {
     elog(ERROR, "Input must be a temporal sequence (set) with linear interpolation");
@@ -4166,7 +4166,7 @@ double
 tnumber_integral(const Temporal *temp)
 {
   double result = 0.0;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT || MOBDB_FLAGS_GET_DISCRETE(temp->flags))
     ;
   else if (temp->subtype == TSEQUENCE)
@@ -4185,7 +4185,7 @@ double
 tnumber_twavg(const Temporal *temp)
 {
   double result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = tnumberinst_double((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
@@ -4207,7 +4207,7 @@ Temporal *
 temporal_compact(const Temporal *temp)
 {
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tinstant_copy((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
@@ -4232,8 +4232,8 @@ bool
 temporal_eq(const Temporal *temp1, const Temporal *temp2)
 {
   assert(temp1->temptype == temp2->temptype);
-  ensure_valid_tempsubtype(temp1->subtype);
-  ensure_valid_tempsubtype(temp2->subtype);
+  assert(temptype_subtype(temp1->subtype));
+  assert(temptype_subtype(temp2->subtype));
 
   const TInstant *inst1;
   const TSequence *seq;
@@ -4352,7 +4352,7 @@ temporal_cmp(const Temporal *temp1, const Temporal *temp2)
   /* If both are of the same temporal type use the specific comparison */
   if (temp1->subtype == temp2->subtype)
   {
-    ensure_valid_tempsubtype(temp1->subtype);
+    assert(temptype_subtype(temp1->subtype));
     if (temp1->subtype == TINSTANT)
       return tinstant_cmp((TInstant *) temp1, (TInstant *) temp2);
     else if (temp1->subtype == TSEQUENCE)
@@ -4454,7 +4454,7 @@ uint32
 temporal_hash(const Temporal *temp)
 {
   uint32 result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = tinstant_hash((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)

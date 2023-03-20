@@ -731,7 +731,7 @@ tpoint_ever_eq(const Temporal *temp, Datum value)
   ensure_same_dimensionality_tpoint_gs(temp, gs);
 
   bool result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = tpointinst_ever_eq((TInstant *) temp, value);
   else if (temp->subtype == TSEQUENCE)
@@ -833,7 +833,7 @@ tpoint_always_eq(const Temporal *temp, Datum value)
   ensure_same_dimensionality_tpoint_gs(temp, gs);
 
   bool result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = tpointinst_always_eq((TInstant *) temp, value);
   else if (temp->subtype == TSEQUENCE)
@@ -1726,7 +1726,7 @@ GSERIALIZED *
 tpoint_trajectory(const Temporal *temp)
 {
   GSERIALIZED *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = DatumGetGserializedP(tinstant_value_copy((TInstant *) temp));
   else if (temp->subtype == TSEQUENCE)
@@ -1787,7 +1787,7 @@ int
 tpoint_srid(const Temporal *temp)
 {
   int result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = tpointinst_srid((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
@@ -2007,7 +2007,7 @@ Temporal *
 tgeompoint_tgeogpoint(const Temporal *temp, bool oper)
 {
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tgeompointinst_tgeogpointinst((TInstant *) temp,
       oper);
@@ -2188,7 +2188,7 @@ double
 tpoint_length(const Temporal *temp)
 {
   double result = 0.0;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     ;
   else if (temp->subtype == TSEQUENCE)
@@ -2273,7 +2273,7 @@ Temporal *
 tpoint_cumulative_length(const Temporal *temp)
 {
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     result = temporal_from_base(Float8GetDatum(0.0), T_TFLOAT, temp,
       MOBDB_FLAGS_GET_INTERP(temp->flags));
@@ -2374,7 +2374,7 @@ Temporal *
 tpoint_speed(const Temporal *temp)
 {
   Temporal *result = NULL;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     ;
   else if (temp->subtype == TSEQUENCE)
@@ -2489,7 +2489,7 @@ GSERIALIZED *
 tpoint_twcentroid(const Temporal *temp)
 {
   GSERIALIZED *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = DatumGetGserializedP(tinstant_value_copy((TInstant *) temp));
   else if (temp->subtype == TSEQUENCE)
@@ -2609,7 +2609,7 @@ bool
 tpoint_direction(const Temporal *temp, double *result)
 {
   bool found = false;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     ;
   else if (temp->subtype == TSEQUENCE)
@@ -2733,7 +2733,7 @@ Temporal *
 tpoint_azimuth(const Temporal *temp)
 {
   Temporal *result = NULL;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     ;
   else if (temp->subtype == TSEQUENCE)
@@ -3388,7 +3388,7 @@ bool
 tpoint_is_simple(const Temporal *temp)
 {
   bool result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = true;
   else if (temp->subtype == TSEQUENCE)
@@ -3586,7 +3586,7 @@ Temporal **
 tpoint_make_simple(const Temporal *temp, int *count)
 {
   Temporal **result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
   {
     result = palloc0(sizeof(TInstant *));
@@ -4264,7 +4264,7 @@ tpoint_restrict_geometry(const Temporal *temp, const GSERIALIZED *gs,
     return atfunc ? NULL : temporal_copy(temp);
 
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tpointinst_restrict_geometry((TInstant *) temp,
       gs, atfunc);
