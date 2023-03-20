@@ -1432,7 +1432,7 @@ tsequenceset_shift_tscale(const TSequenceSet *ss, const Interval *shift,
   /* Shift and/or scale each composing sequence */
   for (int i = 0; i < ss->count; i++)
   {
-    TSequence *seq = TSEQUENCESET_SEQ_N(result, i);
+    TSequence *seq = (TSequence *) TSEQUENCESET_SEQ_N(result, i);
     /* Shift and/or scale the bounding period of the sequence */
     if (shift != NULL)
     {
@@ -1450,7 +1450,7 @@ tsequenceset_shift_tscale(const TSequenceSet *ss, const Interval *shift,
     /* Shift and/or scale each composing instant */
     for (int j = 0; j < seq->count; j++)
     {
-      TInstant *inst = TSEQUENCE_INST_N(seq, j);
+      TInstant *inst = (TInstant *) TSEQUENCE_INST_N(seq, j);
       /* Shift and/or scale the bounding period of the sequence */
       if (shift != NULL)
         inst->t += delta;

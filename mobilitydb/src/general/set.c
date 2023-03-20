@@ -524,7 +524,7 @@ PG_FUNCTION_INFO_V1(Set_cmp);
  * @ingroup mobilitydb_setspan_comp
  * @brief Return -1, 0, or 1 depending on whether the first set
  * is less than, equal, or greater than the second temporal value
- * @sqlfunc tstzset_cmp()
+ * @sqlfunc set_cmp()
  */
 PGDLLEXPORT Datum
 Set_cmp(PG_FUNCTION_ARGS)
@@ -541,7 +541,7 @@ PG_FUNCTION_INFO_V1(Set_eq);
 /**
  * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first set is equal to the second one
- * @sqlfunc tstzset_eq()
+ * @sqlfunc set_eq()
  * @sqlop @p =
  */
 PGDLLEXPORT Datum
@@ -559,7 +559,7 @@ PG_FUNCTION_INFO_V1(Set_ne);
 /**
  * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first set is different from the second one
- * @sqlfunc tstzset_ne()
+ * @sqlfunc set_ne()
  * @sqlop @p <>
  */
 PGDLLEXPORT Datum
@@ -577,7 +577,7 @@ PG_FUNCTION_INFO_V1(Set_lt);
 /**
  * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first set is less than the second one
- * @sqlfunc tstzset_lt()
+ * @sqlfunc set_lt()
  * @sqlop @p <
  */
 PGDLLEXPORT Datum
@@ -596,7 +596,7 @@ PG_FUNCTION_INFO_V1(Set_le);
  * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first set is less than
  * or equal to the second one
- * @sqlfunc tstzset_le()
+ * @sqlfunc set_le()
  * @sqlop @p <=
  */
 PGDLLEXPORT Datum
@@ -615,7 +615,7 @@ PG_FUNCTION_INFO_V1(Set_ge);
  * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first set is greater than
  * or equal to the second one
- * @sqlfunc tstzset_ge()
+ * @sqlfunc set_ge()
  * @sqlop @p >=
  */
 PGDLLEXPORT Datum
@@ -633,7 +633,7 @@ PG_FUNCTION_INFO_V1(Set_gt);
 /**
  * @ingroup mobilitydb_setspan_comp
  * @brief Return true if the first set is greater than the second one
- * @sqlfunc tstzset_gt()
+ * @sqlfunc set_gt()
  * @sqlop @p >
  */
 PGDLLEXPORT Datum

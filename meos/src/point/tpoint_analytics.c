@@ -1196,6 +1196,9 @@ tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool syncdist,
  * checks whether the provided distance threshold is exceeded.
  * @param[in] seq Temporal value
  * @param[in] dist Minimum distance
+ * @param[in] syncdist True when computing the Synchronized Euclidean
+ * Distance (SED), false when computing the spatial only distance.
+ * @param[in] minpts Minimum number of points
  */
 TSequence *
 tsequence_simplify_max_dist(const TSequence *seq, double dist, bool syncdist,
