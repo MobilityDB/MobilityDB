@@ -1,3 +1,9 @@
+if(MEOS)
+  set(tpoint_meos.c tpoint_meos.c)
+  set(tpoint_spatialrels_meos.c tpoint_spatialrels_meos.c)
+  set(tpoint_spatialrels_meos.c tpoint_spatialrels_meos.c)
+endif()
+
 add_library(point OBJECT
   geography_functions.c
   pgis_call.c
@@ -13,9 +19,7 @@ add_library(point OBJECT
   tpoint_spatialrels.c
   tpoint_tempspatialrels.c
   tpoint_tile.c
-#if MEOS
-  tpoint_meos.c
-  tpoint_spatialrels_meos.c
-  tpoint_tempspatialrels_meos.c
-#endif /* MEOS */
+  ${tpoint_meos.c}
+  ${tpoint_spatialrels_meos.c}
+  ${tpoint_tempspatialrels_meos.c}
 )
