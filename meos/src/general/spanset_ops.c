@@ -108,6 +108,7 @@ periodset_tprecision(const SpanSet *ss, const Interval *duration,
   /* Number of buckets */
   int count = (int) (((int64) upper_bucket - (int64) lower_bucket) / tunits);
   Span **spans = palloc(sizeof(Span *) * count);
+  Span *spans_buf = palloc(sizeof(Span) * count);
   lower = lower_bucket;
   upper = lower_bucket + tunits;
   int k = 0;
@@ -118,11 +119,17 @@ periodset_tprecision(const SpanSet *ss, const Interval *duration,
     span_set(TimestampTzGetDatum(lower),TimestampTzGetDatum(upper),
       true, false, T_TIMESTAMPTZ, &s);
     if (overlaps_spanset_span(ss, &s))
-      spans[k++] = span_copy(&s);
+    {
+      spans[k] = &spans_buf[k];
+      memcpy(spans[k++], &s, sizeof(Span));
+    }
     lower += tunits;
     upper += tunits;
   }
-  SpanSet *result = spanset_make_free(spans, k, NORMALIZE);
+  SpanSet *result = NULL;
+  if (k > 0)
+    result = spanset_make((const Span **) spans, k, NORMALIZE);
+  pfree(spans); pfree(spans_buf);
   return result;
 }
 
@@ -1407,18 +1414,26 @@ intersection_spanset_span(const SpanSet *ss, const Span *s)
   /* General case */
   int loc;
   spanset_find_value(ss, s->lower, &loc);
-  Span **spans = palloc(sizeof(Span *) * (ss->count - loc));
+  int count = ss->count - loc;
+  Span **spans = palloc(sizeof(Span *) * count);
+  Span *spans_buf = palloc(sizeof(Span) * count);
   int k = 0;
   for (int i = loc; i < ss->count; i++)
   {
     const Span *s1 = spanset_sp_n(ss, i);
     Span s2;
     if (inter_span_span(s1, s, &s2))
-      spans[k++] = span_copy(&s2);
+    {
+      spans[k] = &spans_buf[k];
+      memcpy(spans[k++], &s2, sizeof(Span));
+    }
     if (s->upper < s1->upper)
       break;
   }
-  SpanSet *result = spanset_make_free(spans, k, NORMALIZE_NO);
+  SpanSet *result = NULL;
+  if (k > 0)
+    result = spanset_make((const Span **) spans, k, NORMALIZE_NO);
+  pfree(spans); pfree(spans_buf);
   return result;
 }
 
@@ -1438,8 +1453,9 @@ intersection_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
   int loc1, loc2;
   spanset_find_value(ss1, s.lower, &loc1);
   spanset_find_value(ss2, s.lower, &loc2);
-  Span **spans = palloc(sizeof(Span *) *
-    (ss1->count + ss2->count - loc1 - loc2));
+  int count = ss1->count + ss2->count - loc1 - loc2;
+  Span **spans = palloc(sizeof(Span *) * count);
+  Span *spans_buf = palloc(sizeof(Span) * count);
   int i = loc1, j = loc2, k = 0;
   while (i < ss1->count && j < ss2->count)
   {
@@ -1447,7 +1463,10 @@ intersection_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
     const Span *s2 = spanset_sp_n(ss2, j);
     Span inter;
     if (inter_span_span(s1, s2, &inter))
-      spans[k++] = span_copy(&inter);
+    {
+      spans[k] = &spans_buf[k];
+      memcpy(spans[k++], &inter, sizeof(Span));
+    }
     int cmp = datum_cmp(s1->upper, s2->upper, s1->basetype);
     if (cmp == 0 && s1->upper_inc == s2->upper_inc)
     {
@@ -1458,7 +1477,10 @@ intersection_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
     else
       j++;
   }
-  SpanSet *result = spanset_make_free(spans, k, NORMALIZE);
+  SpanSet *result = NULL;
+  if (k > 0)
+    result = spanset_make((const Span **) spans, k, NORMALIZE);
+  pfree(spans); pfree(spans_buf);
   return result;
 }
 
@@ -1621,7 +1643,9 @@ minus_spanset_value(const SpanSet *ss, Datum d, meosType basetype)
     const Span *p = spanset_sp_n(ss, i);
     k += minus_span_value1(p, d, basetype, &spans[k]);
   }
-  SpanSet *result = spanset_make_free(spans, k, NORMALIZE_NO);
+  SpanSet *result = NULL;
+  if (k > 0)
+    result = spanset_make_free(spans, k, NORMALIZE_NO);
   return result;
 }
 
@@ -1691,7 +1715,9 @@ minus_spanset_span(const SpanSet *ss, const Span *s)
     const Span *s1 = spanset_sp_n(ss, i);
     k += minus_span_span1(s1, s, &spans[k]);
   }
-  SpanSet *result = spanset_make_free(spans, k, NORMALIZE_NO);
+  SpanSet *result = NULL;
+  if (k > 0)
+    result = spanset_make_free(spans, k, NORMALIZE_NO);
   return result;
 }
 

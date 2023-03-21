@@ -432,12 +432,15 @@ SpanSet *
 set_to_spanset(const Set *s)
 {
   Span **spans = palloc(sizeof(Span *) * s->count);
+  Span *spans_buf = palloc(sizeof(Span) * s->count);
   for (int i = 0; i < s->count; i++)
   {
     Datum d = set_val_n(s, i);
-    spans[i] = span_make(d, d, true, true, s->basetype);
+    spans[i] = &spans_buf[i];
+    span_set(d, d, true, true, s->basetype, spans[i]);
   }
-  SpanSet *result = spanset_make_free(spans, s->count, NORMALIZE_NO);
+  SpanSet *result = spanset_make((const Span **) spans, s->count, NORMALIZE_NO);
+  pfree(spans); pfree(spans_buf);
   return result;
 }
 
