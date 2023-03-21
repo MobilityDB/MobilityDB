@@ -260,6 +260,27 @@ SELECT expandSpace(tgeompoint 'Point(0 0)@2001-01-01', 2);
 	<sect1 id="tpoint_accessors">
 		<title>Accessors</title>
 		<itemizedlist>
+			<listitem id="trajectory">
+				<indexterm><primary><varname>trajectory</varname></primary></indexterm>
+				<para>Get the trajectory &Z_support; &geography_support;</para>
+				<para><varname>trajectory(tpoint) → geo</varname></para>
+				<para>This function is equivalent to <link linkend="getValues"><varname>getValues</varname></link> for temporal alphanumeric values</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT ST_AsText(trajectory(tgeompoint '{[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02),
+  [Point(0 1)@2001-01-03, Point(1 1)@2001-01-04)}'));
+-- MULTILINESTRING((0 0,0 1),(0 1,1 1))
+SELECT ST_AsText(trajectory(tgeompoint 'Interp=Step;{[Point(0 0)@2001-01-01,
+  Point(0 1)@2001-01-02], [Point(0 1)@2001-01-03, Point(1 1)@2001-01-04]}'));
+-- GEOMETRYCOLLECTION(MULTIPOINT(0 0,0 1),MULTIPOINT(0 1,1 1))
+SELECT ST_AsText(trajectory(tgeompoint '{Point(0 0)@2001-01-01, Point(0 1)@2001-01-02}'));
+-- MULTIPOINT(0 0,0 1)
+SELECT ST_AsText(trajectory(tgeompoint '{[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02),
+  [Point(1 1)@2001-01-03, Point(1 1)@2001-01-04),
+  [Point(2 1)@2001-01-05, Point(2 2)@2001-01-06)}'));
+-- GEOMETRYCOLLECTION(POINT(1 1),LINESTRING(0 0,0 1),LINESTRING(2 1,2 2))
+</programlisting>
+			</listitem>
+
 			<listitem id="getX">
 				<indexterm><primary><varname>getX</varname></primary></indexterm>
 				<indexterm><primary><varname>getY</varname></primary></indexterm>

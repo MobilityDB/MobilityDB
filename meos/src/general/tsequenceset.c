@@ -631,16 +631,14 @@ tgeogpointseqset_from_base_time(const GSERIALIZED *gs, const SpanSet *ps,
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Return the array of distinct base values of a temporal sequence set
- * with step interpolation
- *
+ * @brief Return the base values of a temporal sequence set as a set
  * @param[in] ss Temporal sequence set
  * @param[out] count Number of elements in the output array
  * @result Array of Datums
- * @sqlfunc getValues()
+ * @sqlfunc valueSet()
  */
 Datum *
-tsequenceset_values(const TSequenceSet *ss, int *count)
+tsequenceset_valueset(const TSequenceSet *ss, int *count)
 {
   Datum *result = palloc(sizeof(Datum *) * ss->totalcount);
   int k = 0;
@@ -662,11 +660,11 @@ tsequenceset_values(const TSequenceSet *ss, int *count)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Return the span set of a temporal number sequence set
- * @sqlfunc trajectory()
+ * @brief Return the base values of a temporal number sequence set as a span set
+ * @sqlfunc getValues()
  */
 SpanSet *
-tnumberseqset_spanset(const TSequenceSet *ss)
+tnumberseqset_values(const TSequenceSet *ss)
 {
   int count, i;
   Span **spans;
@@ -676,7 +674,7 @@ tnumberseqset_spanset(const TSequenceSet *ss)
   /* Temporal sequence number with discrete or step interpolation */
   if (! MOBDB_FLAGS_GET_LINEAR(ss->flags))
   {
-    Datum *values = tsequenceset_values(ss, &count);
+    Datum *values = tsequenceset_valueset(ss, &count);
     spans = palloc(sizeof(Span *) * count);
     spans_buf = palloc(sizeof(Span) * count);
     for (i = 0; i < count; i++)

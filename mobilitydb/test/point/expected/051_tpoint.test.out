@@ -1865,61 +1865,61 @@ SELECT ST_AsEWKT(getValue(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)
 ERROR:  The temporal value must be of subtype instant
 SELECT ST_AsEWKT(getValue(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'));
 ERROR:  The temporal value must be of subtype instant
-SELECT asEWKT(getValues(tgeompoint 'Point(1 1)@2000-01-01'));
+SELECT asEWKT(valueSet(tgeompoint 'Point(1 1)@2000-01-01'));
      asewkt     
 ----------------
  {"POINT(1 1)"}
 (1 row)
 
-SELECT asEWKT(getValues(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'));
+SELECT asEWKT(valueSet(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'));
             asewkt            
 ------------------------------
  {"POINT(1 1)", "POINT(2 2)"}
 (1 row)
 
-SELECT asEWKT(getValues(tgeompoint '{Point(1 1)@2000-01-01, Point(1 1)@2000-01-02}'));
+SELECT asEWKT(valueSet(tgeompoint '{Point(1 1)@2000-01-01, Point(1 1)@2000-01-02}'));
      asewkt     
 ----------------
  {"POINT(1 1)"}
 (1 row)
 
-SELECT asEWKT(getValues(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'));
+SELECT asEWKT(valueSet(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'));
             asewkt            
 ------------------------------
  {"POINT(1 1)", "POINT(2 2)"}
 (1 row)
 
-SELECT asEWKT(getValues(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
+SELECT asEWKT(valueSet(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
                    asewkt                   
 --------------------------------------------
  {"POINT(1 1)", "POINT(2 2)", "POINT(3 3)"}
 (1 row)
 
-SELECT asEWKT(getValues(tgeogpoint 'Point(1.5 1.5)@2000-01-01'));
+SELECT asEWKT(valueSet(tgeogpoint 'Point(1.5 1.5)@2000-01-01'));
             asewkt            
 ------------------------------
  {"SRID=4326;POINT(1.5 1.5)"}
 (1 row)
 
-SELECT asEWKT(getValues(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}'));
+SELECT asEWKT(valueSet(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}'));
                           asewkt                          
 ----------------------------------------------------------
  {"SRID=4326;POINT(1.5 1.5)", "SRID=4326;POINT(2.5 2.5)"}
 (1 row)
 
-SELECT asEWKT(getValues(tgeogpoint '{Point(1 1)@2000-01-01, Point(1 1)@2000-01-02}'));
+SELECT asEWKT(valueSet(tgeogpoint '{Point(1 1)@2000-01-01, Point(1 1)@2000-01-02}'));
           asewkt          
 --------------------------
  {"SRID=4326;POINT(1 1)"}
 (1 row)
 
-SELECT asEWKT(getValues(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]'));
+SELECT asEWKT(valueSet(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]'));
                           asewkt                          
 ----------------------------------------------------------
  {"SRID=4326;POINT(1.5 1.5)", "SRID=4326;POINT(2.5 2.5)"}
 (1 row)
 
-SELECT asEWKT(getValues(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'));
+SELECT asEWKT(valueSet(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'));
                                         asewkt                                        
 --------------------------------------------------------------------------------------
  {"SRID=4326;POINT(1.5 1.5)", "SRID=4326;POINT(3.5 3.5)", "SRID=4326;POINT(2.5 2.5)"}

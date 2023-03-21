@@ -237,11 +237,12 @@ SELECT round(MAX(getValue(inst))::numeric, 6) FROM tbl_tfloat_inst;
 SELECT MAX(getValue(inst)) FROM tbl_ttext_inst;
 
 SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_tbool;
-SELECT MAX(numValues(getValues(temp))) FROM tbl_tint;
-SELECT MAX(numValues(getValues(temp))) FROM tbl_tfloat;
+SELECT MAX(numSpans(getValues(temp))) FROM tbl_tint;
+SELECT MAX(numSpans(getValues(temp))) FROM tbl_tfloat;
 SELECT MAX(numValues(getValues(temp))) FROM tbl_ttext;
 
-SELECT MAX(numSpans(trajectory(temp))) FROM tbl_tfloat;
+SELECT MAX(numValues(valueSet(temp))) FROM tbl_tint;
+SELECT MAX(numValues(valueSet(temp))) FROM tbl_tfloat;
 
 SELECT DISTINCT startValue(temp) FROM tbl_tbool;
 SELECT MAX(startValue(temp)) FROM tbl_tint;

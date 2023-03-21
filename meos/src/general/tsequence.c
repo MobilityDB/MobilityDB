@@ -2069,8 +2069,7 @@ tsequence_shift_tscale(const TSequence *seq, const Interval *shift,
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Return the array of base values of a temporal sequence with step
- * interpolation.
+ * @brief Return the base values of a temporal sequence as a set.
  *
  * @param[in] seq Temporal sequence
  * @param[out] count Number of values in the resulting array
@@ -2078,7 +2077,7 @@ tsequence_shift_tscale(const TSequence *seq, const Interval *shift,
  * @sqlfunc getValues()
  */
 Datum *
-tsequence_values(const TSequence *seq, int *count)
+tsequence_valueset(const TSequence *seq, int *count)
 {
   Datum *result = palloc(sizeof(Datum *) * seq->count);
   for (int i = 0; i < seq->count; i++)
@@ -2096,7 +2095,7 @@ tsequence_values(const TSequence *seq, int *count)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Return the span set of base values of a temporal float sequence.
+ * @brief Return the base values of a temporal number sequence as a span set.
  *
  * For temporal floats with linear interpolation the result is a singleton,
  * which is the result of @ref tfloatseq_span. Otherwise, the result is a span
@@ -2104,7 +2103,7 @@ tsequence_values(const TSequence *seq, int *count)
  * @sqlfunc getValues()
  */
 SpanSet *
-tnumberseq_spanset(const TSequence *seq)
+tnumberseq_values(const TSequence *seq)
 {
   /* Temporal sequence number with linear interpolation */
   if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
@@ -2117,7 +2116,7 @@ tnumberseq_spanset(const TSequence *seq)
   /* Temporal sequence number with discrete or step interpolation */
   int count;
   meosType basetype = temptype_basetype(seq->temptype);
-  Datum *values = tsequence_values(seq, &count);
+  Datum *values = tsequence_valueset(seq, &count);
   Span **spans = palloc(sizeof(Span *) * count);
   Span *spans_buf = palloc(sizeof(Span) * count);
   for (int i = 0; i < count; i++)

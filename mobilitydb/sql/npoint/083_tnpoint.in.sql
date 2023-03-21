@@ -246,7 +246,7 @@ CREATE FUNCTION getValue(tnpoint)
 -- values is a reserved word in SQL
 CREATE FUNCTION getValues(tnpoint)
   RETURNS npointset
-  AS 'MODULE_PATHNAME', 'Temporal_values'
+  AS 'MODULE_PATHNAME', 'Temporal_valueset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION positions(tnpoint)

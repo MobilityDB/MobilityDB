@@ -120,11 +120,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_FromBinary"><varname>&lt;set&gt;FromBinary</varname>, <varname>&lt;span&gt;FromBinary</varname>, <varname>&lt;spanset&gt;FromBinary</varname></link>: Input from a Well-Known Binary (WKB) representation</para>
+					<para><link linkend="setspan_FromBinary"><varname>settypeFromBinary</varname>, <varname>spantypeFromBinary</varname>, <varname>spansettypeFromBinary</varname></link>: Input from a Well-Known Binary (WKB) representation</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_FromHexWKB"><varname>&lt;set&gt;FromHexWKB</varname>, <varname>&lt;span&gt;FromHexWKB</varname>, <varname>&lt;spanset&gt;FromHexWKB</varname></link>: Input from an Hexadecimal Well-Known Binary (HexWKB) representation</para>
+					<para><link linkend="setspan_FromHexWKB"><varname>settypeFromHexWKB</varname>, <varname>spantypeFromHexWKB</varname>, <varname>spansettypeFromHexWKB</varname></link>: Input from an Hexadecimal Well-Known Binary (HexWKB) representation</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -203,7 +203,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_startValue"><varname>startValue</varname>, <varname>endValue</varname>, <varname>valueN</varname></link>: Get the start/end/n-th value</para>
+					<para><link linkend="setspan_startValue"><varname>startValue</varname>, <varname>endValue</varname>, <varname>valueN</varname></link>: Get the start, end, or n-th value</para>
 				</listitem>
 
 				<listitem>
@@ -215,7 +215,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="startSpan"><varname>startSpan</varname>, <varname>endSpan</varname>, <varname>spanN</varname></link>: Get the start/end/n-th span</para>
+					<para><link linkend="startSpan"><varname>startSpan</varname>, <varname>endSpan</varname>, <varname>spanN</varname></link>: Get the start, end, or n-th span</para>
 				</listitem>
 
 				<listitem>
@@ -682,31 +682,31 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="getValue"><varname>getValue</varname></link>: Get the value</para>
+					<para><link linkend="getValue"><varname>getValue</varname>, <varname>getTimestamp</varname></link>: Get the value or the timestamp of an instant</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="getValues"><varname>getValues</varname></link>: Get the values</para>
+					<para><link linkend="getValues"><varname>getValues</varname>, <varname>getTime</varname></link>: Get the values or the time on which the temporal value is defined</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="trajectory"><varname>trajectory</varname></link>: Get the values traversed by the temporal value</para>
+					<para><link linkend="valueSpan"><varname>valueSpan</varname>, <varname>timeSpan</varname></link>: Get the value or time span</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="startValue"><varname>startValue</varname>, <varname>endValue</varname></link>: Get the start/end value</para>
+					<para><link linkend="valueSet"><varname>valueSet</varname></link>: Get the values of the temporal number as a set</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="minValue"><varname>minValue</varname>, <varname>maxValue</varname></link>: Get the minimum/maximum value</para>
+					<para><link linkend="startValue"><varname>startValue</varname>, <varname>endValue</varname></link>: Get the start or end value</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="minInstant"><varname>minInstant</varname>, <varname>maxInstant</varname></link>: Get the instant with the minimum/maximum value</para>
+					<para><link linkend="minValue"><varname>minValue</varname>, <varname>maxValue</varname></link>: Get the minimum or maximum value</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="valueSpan"><varname>valueSpan</varname>, <varname>timeSpan</varname></link>: Get the value/time span</para>
+					<para><link linkend="minInstant"><varname>minInstant</varname>, <varname>maxInstant</varname></link>: Get the instant with the minimum or maximum value</para>
 				</listitem>
 
 				<listitem>
@@ -714,19 +714,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="getTimestamp"><varname>getTimestamp</varname></link>: Get the timestamp</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="getTime"><varname>getTime</varname></link>: Get the time</para>
-				</listitem>
-
-				<listitem>
 					<para><link linkend="ttype_duration"><varname>duration</varname></link>: Get the duration</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="ttype_timespan"><varname>timespan</varname></link>: Get the time span on which the temporal value is defined ignoring the potential time gaps</para>
 				</listitem>
 
 				<listitem>
@@ -734,7 +722,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="startInstant"><varname>startInstant</varname>, <varname>endInstant</varname>, <varname>instantN</varname></link>: Get the start/end/n-th instant</para>
+					<para><link linkend="startInstant"><varname>startInstant</varname>, <varname>endInstant</varname>, <varname>instantN</varname></link>: Get the start, end, or n-th instant</para>
 				</listitem>
 
 				<listitem>
@@ -746,7 +734,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_startTimestamp"><varname>startTimestamp</varname>, <varname>endTimestamp</varname>, <varname>timestampN</varname></link>: Get the start/end/n-th timestamp</para>
+					<para><link linkend="ttype_startTimestamp"><varname>startTimestamp</varname>, <varname>endTimestamp</varname>, <varname>timestampN</varname></link>: Get the start, end, or n-th timestamp</para>
 				</listitem>
 
 				<listitem>
@@ -758,7 +746,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="startSequence"><varname>startSequence</varname>, <varname>endSequence</varname>, <varname>sequenceN</varname></link>: Get the start/end/n-th sequence</para>
+					<para><link linkend="startSequence"><varname>startSequence</varname>, <varname>endSequence</varname>, <varname>sequenceN</varname></link>: Get the start, end, or n-th sequence</para>
 				</listitem>
 
 				<listitem>
@@ -874,7 +862,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="atStbox"><varname>atStbox</varname>, <varname>minusStbox</varname></link>: Restrict to an <varname>stbox</varname></para>
+					<para><link linkend="atStbox"><varname>atStbox</varname>, <varname>minusStbox</varname></link>: Restrict to (the complement of) an <varname>stbox</varname></para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1144,6 +1132,10 @@
 			<title>Accessors</title>
 
 			<itemizedlist>
+				<listitem>
+					<para><link linkend="trajectory"><varname>trajectory</varname></link>: Get the trajectory</para>
+				</listitem>
+
 				<listitem>
 					<para><link linkend="getX"><varname>getX</varname>, <varname>getY</varname>, <varname>getZ</varname></link>: Get the X/Y/Z/T coordinate values as a temporal float</para>
 				</listitem>

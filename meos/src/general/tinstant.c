@@ -405,12 +405,12 @@ tinstant_copy(const TInstant *inst)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Return the singleton array of base values of a temporal instant.
+ * @brief Return the singleton base value of a temporal instant.
  * @post The output parameter @p count is equal to 1
  * @sqlfunc getValues()
  */
 Datum *
-tinstant_values(const TInstant *inst, int *count)
+tinstant_valueset(const TInstant *inst, int *count)
 {
   Datum *result = palloc(sizeof(Datum));
   result[0] = tinstant_value(inst);
@@ -420,11 +420,11 @@ tinstant_values(const TInstant *inst, int *count)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Return the span set of a temporal instant number.
+ * @brief Return the base values of a temporal instant number as a span set.
  * @sqlfunc getValues()
  */
 SpanSet *
-tnumberinst_spanset(const TInstant *inst)
+tnumberinst_values(const TInstant *inst)
 {
   Datum value = tinstant_value(inst);
   Span s;

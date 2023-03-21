@@ -1854,21 +1854,21 @@ temporal_set_bbox(const Temporal *temp, void *box)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_accessor
- * @brief Return the array of base values of a temporal value.
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the base values of a temporal value as a set.
  * @sqlfunc values
  */
 Datum *
-temporal_values(const Temporal *temp, int *count)
+temporal_valueset(const Temporal *temp, int *count)
 {
   Datum *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
-    result = tinstant_values((TInstant *) temp, count);
+    result = tinstant_valueset((TInstant *) temp, count);
   else if (temp->subtype == TSEQUENCE)
-    result = tsequence_values((TSequence *) temp, count);
+    result = tsequence_valueset((TSequence *) temp, count);
   else /* temp->subtype == TSEQUENCESET */
-    result = tsequenceset_values((TSequenceSet *) temp, count);
+    result = tsequenceset_valueset((TSequenceSet *) temp, count);
   return result;
 }
 
@@ -1961,22 +1961,22 @@ tpoint_values(const Temporal *temp, int *count)
 
 /**
  * @ingroup libmeos_temporal_accessor
- * @brief Return the base values of a temporal float as a span set.
+ * @brief Return the base values of a temporal number as a span set.
  * @sqlfunc getValues
  * @pymeosfunc TFloat.getValues
  */
 SpanSet *
-tnumber_spanset(const Temporal *temp)
+tnumber_values(const Temporal *temp)
 {
   SpanSet *result;
   assert(tnumber_type(temp->temptype));
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
-    result = tnumberinst_spanset((TInstant *) temp);
+    result = tnumberinst_values((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
-    result = tnumberseq_spanset((TSequence *) temp);
+    result = tnumberseq_values((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
-    result = tnumberseqset_spanset((TSequenceSet *) temp);
+    result = tnumberseqset_values((TSequenceSet *) temp);
   return result;
 }
 

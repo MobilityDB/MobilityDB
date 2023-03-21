@@ -37,6 +37,10 @@
 			</listitem>
 
 			<listitem>
+				<para><varname>talpha</varname> represents any temporal alphanumeric type, such as, <varname>tint</varname> or <varname>ttext</varname>,</para>
+			</listitem>
+
+			<listitem>
 				<para><varname>tnumber</varname> represents any temporal number type, that is, <varname>tint</varname> or <varname>tfloat</varname>,</para>
 			</listitem>
 
@@ -665,8 +669,10 @@ SELECT tempSubtype(tint '[1@2001-01-01, 2@2001-01-02, 3@2001-01-03]');
 			<listitem id="interpolation">
 				<indexterm><primary><varname>interpolation</varname></primary></indexterm>
 				<para>Get the interpolation</para>
-				<para><varname>interpolation(ttype) → {'Discrete','Step','Linear'}</varname></para>
+				<para><varname>interpolation(ttype) → {'None', 'Discrete','Step','Linear'}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
+SELECT interpolation(tbool 'true@2001-01-01');
+-- None
 SELECT interpolation(tfloat '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03}');
 -- Discrete
 SELECT interpolation(tint '[1@2001-01-01, 2@2001-01-02, 3@2001-01-03]');
@@ -683,109 +689,51 @@ SELECT interpolation(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01,
 
 			<listitem id="getValue">
 				<indexterm><primary><varname>getValue</varname></primary></indexterm>
-				<para>Get the value</para>
+				<indexterm><primary><varname>getTimestamp</varname></primary></indexterm>
+				<para>Get the value or the timestamp of an instant</para>
 				<para><varname>getValue(ttype_inst) → base</varname></para>
+				<para><varname>getTimestamp(ttype_inst) → timestamptz</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT getValue(tint '1@2001-01-01');
 -- 1
-SELECT ST_AsText(getValue(tgeompoint 'Point(0 0)@2001-01-01'));
--- POINT(0 0)
+SELECT getTimestamp(tfloat '1@2001-01-01');
+-- 2001-01-01
 </programlisting>
 			</listitem>
 
 			<listitem id="getValues">
 				<indexterm><primary><varname>getValues</varname></primary></indexterm>
-				<para>Get the values</para>
-				<para><varname>getValues(ttype) → {bool[],set}</varname></para>
+				<para>Get the values or the time on which the temporal value is defined</para>
+				<para><varname>getValues(talpha) → {bool[],spanset,textset}</varname></para>
+				<para><varname>getTime(ttype) → tstzspanset</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT getValues(tint '[1@2001-01-01, 2@2001-01-03]');
--- {1, 2}
-SELECT getValues(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 4@2001-01-05)}');
--- {1, 2, 3, 4}
-SELECT asText(getValues(tgeompoint '{[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02),
-  [Point(0 1)@2001-01-03, Point(1 1)@2001-01-04)}'));
--- {"POINT(0 0)", "POINT(1 1)", "POINT(0 1)"}
-</programlisting>
-			</listitem>
-
-			<listitem id="trajectory">
-				<indexterm><primary><varname>trajectory</varname></primary></indexterm>
-				<para>Get the base values traversed by the temporal value</para>
-				<para><varname>trajectory(tnumber,tpoint) → {spanset,geo}</varname></para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT trajectory(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
+SELECT getValues(tbool '[false@2000-01-01, true@2000-01-02, false@2000-01-03]');
+-- {f,t}
+SELECT getValues(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
 -- {[1, 3)}
-SELECT trajectory(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],
+SELECT getValues(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],
   [3@2000-01-04, 3@2000-01-05]}');
 -- {[1, 4)}
-SELECT trajectory(tfloat '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
+SELECT getValues(tfloat '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
 -- {[1, 1], [2, 2]}
-SELECT trajectory(tfloat 'Interp=Step;{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],
+SELECT getValues(tfloat 'Interp=Step;{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],
   [3@2000-01-04, 3@2000-01-05]}');
-SELECT trajectory(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
+-- {[1, 1], [2, 2], [3, 3]}
+SELECT getValues(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
 -- {[1, 2]}
-SELECT trajectory(tfloat '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],
+SELECT getValues(tfloat '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],
   [3@2000-01-04, 3@2000-01-05]}');
 -- {[1, 2], [3, 3]}
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
-SELECT ST_AsText(trajectory(tgeompoint '{[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02),
-  [Point(0 1)@2001-01-03, Point(1 1)@2001-01-04)}'));
--- MULTILINESTRING((0 0,0 1),(0 1,1 1))
-SELECT ST_AsText(trajectory(tgeompoint 'Interp=Step;{[Point(0 0)@2001-01-01,
-  Point(0 1)@2001-01-02], [Point(0 1)@2001-01-03, Point(1 1)@2001-01-04]}'));
--- GEOMETRYCOLLECTION(MULTIPOINT(0 0,0 1),MULTIPOINT(0 1,1 1))
-SELECT ST_AsText(trajectory(tgeompoint '{Point(0 0)@2001-01-01, Point(0 1)@2001-01-02}'));
--- MULTIPOINT(0 0,0 1)
-SELECT ST_AsText(trajectory(tgeompoint '{[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02),
-  [Point(1 1)@2001-01-03, Point(1 1)@2001-01-04),
-  [Point(2 1)@2001-01-05, Point(2 2)@2001-01-06)}'));
--- GEOMETRYCOLLECTION(POINT(1 1),LINESTRING(0 0,0 1),LINESTRING(2 1,2 2))
-</programlisting>
-			</listitem>
-
-			<listitem id="startValue">
-				<indexterm><primary><varname>startValue</varname></primary></indexterm>
-				<indexterm><primary><varname>endValue</varname></primary></indexterm>
-				<para>Get the start/end value</para>
-				<para><varname>startValue(ttype) → base</varname></para>
-				<para><varname>endValue(ttype) → base</varname></para>
-				<para>The functions do not take into account whether the bounds are inclusive or not.</para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT startValue(tfloat '(1@2001-01-01, 2@2001-01-03)');
--- 1
-SELECT endValue(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 5@2001-01-05)}');
--- 5
-</programlisting>
-			</listitem>
-
-			<listitem id="minValue">
-				<indexterm><primary><varname>minValue</varname></primary></indexterm>
-				<indexterm><primary><varname>maxValue</varname></primary></indexterm>
-				<para>Get the minimum/maximum value</para>
-				<para><varname>minValue(torder) → base</varname></para>
-				<para><varname>maxValue(torder) → base</varname></para>
-				<para>The functions do not take into account whether the bounds are inclusive or not.</para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT minValue(tfloat '{1@2001-01-01, 2@2001-01-03, 3@2001-01-05}');
--- 1
-SELECT maxValue(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 5@2001-01-05)}');
--- 5
-</programlisting>
-			</listitem>
-
-			<listitem id="minInstant">
-				<indexterm><primary><varname>minInstant</varname></primary></indexterm>
-				<indexterm><primary><varname>maxInstant</varname></primary></indexterm>
-				<para>Get the instant with the minimum/maximum value</para>
-				<para><varname>minInstant(torder) → base</varname></para>
-				<para><varname>maxInstant(torder) → base</varname></para>
-				<para>The function does not take into account whether the bounds are inclusive or not. If several instants have the minimum value, the first one is returned.</para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT minInstant(tfloat '{1@2001-01-01, 2@2001-01-03, 3@2001-01-05}');
--- 1@2001-01-01
-SELECT maxInstant(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 5@2001-01-05)}');
--- 5@2001-01-05
+SELECT getTime(ttext 'walking@2001-01-01');
+-- {[2001-01-01, 2001-01-01]}
+SELECT getTime(tfloat '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
+{[2000-01-01, 2000-01-01], [2000-01-02, 2000-01-02], [2000-01-03, 2000-01-03]}
+SELECT getTime(tint '[1@2001-01-01, 1@2001-01-15)');
+-- {[2001-01-01, 2001-01-15)}
+SELECT getTime(tfloat '{[1@2001-01-01, 1@2001-01-10), [12@2001-01-12, 12@2001-01-15]}');
+-- {[2001-01-01, 2001-01-10), [2001-01-12, 2001-01-15]}
 </programlisting>
 			</listitem>
 
@@ -809,6 +757,66 @@ SELECT timeSpan(tfloat '{[1@2001-01-01, 1@2001-01-02), [2@2001-01-03, 3@2001-01-
 </programlisting>
 			</listitem>
 
+			<listitem id="valueSet">
+				<indexterm><primary><varname>valueSet</varname></primary></indexterm>
+				<para>Get the values of the temporal number or point as a set</para>
+				<para><varname>valueSet(tnumber, tpoint) → {numset,geoset}</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT valueSet(tint '[1@2001-01-01, 2@2001-01-03]');
+-- {1, 2}
+SELECT valueSet(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 4@2001-01-05)}');
+-- {1, 2, 3, 4}
+SELECT asText(valueSet(tgeompoint '{[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02),
+  [Point(0 1)@2001-01-03, Point(1 1)@2001-01-04)}'));
+-- {"POINT(0 0)", "POINT(1 1)", "POINT(0 1)"}
+</programlisting>
+			</listitem>
+
+			<listitem id="startValue">
+				<indexterm><primary><varname>startValue</varname></primary></indexterm>
+				<indexterm><primary><varname>endValue</varname></primary></indexterm>
+				<para>Get the start or end value</para>
+				<para><varname>startValue(ttype) → base</varname></para>
+				<para><varname>endValue(ttype) → base</varname></para>
+				<para>The functions do not take into account whether the bounds are inclusive or not.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT startValue(tfloat '(1@2001-01-01, 2@2001-01-03)');
+-- 1
+SELECT endValue(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 5@2001-01-05)}');
+-- 5
+</programlisting>
+			</listitem>
+
+			<listitem id="minValue">
+				<indexterm><primary><varname>minValue</varname></primary></indexterm>
+				<indexterm><primary><varname>maxValue</varname></primary></indexterm>
+				<para>Get the minimum or maximum value</para>
+				<para><varname>minValue(torder) → base</varname></para>
+				<para><varname>maxValue(torder) → base</varname></para>
+				<para>The functions do not take into account whether the bounds are inclusive or not.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT minValue(tfloat '{1@2001-01-01, 2@2001-01-03, 3@2001-01-05}');
+-- 1
+SELECT maxValue(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 5@2001-01-05)}');
+-- 5
+</programlisting>
+			</listitem>
+
+			<listitem id="minInstant">
+				<indexterm><primary><varname>minInstant</varname></primary></indexterm>
+				<indexterm><primary><varname>maxInstant</varname></primary></indexterm>
+				<para>Get the instant with the minimum or maximum value</para>
+				<para><varname>minInstant(torder) → base</varname></para>
+				<para><varname>maxInstant(torder) → base</varname></para>
+				<para>The function does not take into account whether the bounds are inclusive or not. If several instants have the minimum value, the first one is returned.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT minInstant(tfloat '{1@2001-01-01, 2@2001-01-03, 3@2001-01-05}');
+-- 1@2001-01-01
+SELECT maxInstant(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 5@2001-01-05)}');
+-- 5@2001-01-05
+</programlisting>
+			</listitem>
+
 			<listitem id="valueAtTimestamp">
 				<indexterm><primary><varname>valueAtTimestamp</varname></primary></indexterm>
 				<para>Get the value at a timestamp</para>
@@ -819,33 +827,9 @@ SELECT valueAtTimestamp(tfloat '[1@2001-01-01, 4@2001-01-04)', '2001-01-02');
 </programlisting>
 			</listitem>
 
-			<listitem id="getTimestamp">
-				<indexterm><primary><varname>getTimestamp</varname></primary></indexterm>
-				<para>Get the timestamp</para>
-				<para><varname>getTimestamp(ttype_inst) → timestamptz</varname></para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT getTimestamp(tint '1@2001-01-01');
--- 2001-01-01
-</programlisting>
-			</listitem>
-
-			<listitem id="getTime">
-				<indexterm><primary><varname>getTime</varname></primary></indexterm>
-				<para>Get the time</para>
-				<para><varname>getTime(ttype) → tstzspanset</varname></para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT getTime(ttext 'walking@2001-01-01');
--- {[2001-01-01, 2001-01-01]}
-SELECT getTime(tint '[1@2001-01-01, 1@2001-01-15)');
--- {[2001-01-01, 2001-01-15)}
-SELECT getTime(tfloat '{[1@2001-01-01, 1@2001-01-10), [12@2001-01-12, 12@2001-01-15]}');
--- {[2001-01-01, 2001-01-10), [2001-01-12, 2001-01-15]}
-</programlisting>
-			</listitem>
-
 			<listitem id="ttype_duration">
 				<indexterm><primary><varname>duration</varname></primary></indexterm>
-				<para>Get the duration</para>
+				<para>Get the time interval</para>
 				<para><varname>duration(ttype,boundspan=false) → interval</varname></para>
 				<para>An additional parameter can be set to true to compute the duration of the bounding time span, thus ignoring the potential time gaps</para>
 				<programlisting language="sql" xml:space="preserve">
@@ -877,7 +861,7 @@ SELECT numInstants(tfloat '{[1@2000-01-01, 2@2000-01-02), (2@2000-01-02, 3@2000-
 				<indexterm><primary><varname>startInstant</varname></primary></indexterm>
 				<indexterm><primary><varname>endInstant</varname></primary></indexterm>
 				<indexterm><primary><varname>instantN</varname></primary></indexterm>
-				<para>Get the start/end/n-th instant</para>
+				<para>Get the start, end, or n-th instant</para>
 				<para><varname>startInstant(ttype) → ttype_inst</varname></para>
 				<para><varname>endInstant(ttype) → ttype_inst</varname></para>
 				<para><varname>instantN(ttype,integer) → ttype_inst</varname></para>
@@ -918,7 +902,7 @@ SELECT numTimestamps(tfloat '{[1@2001-01-01, 2@2001-01-03),
 				<indexterm><primary><varname>startTimestamp</varname></primary></indexterm>
 				<indexterm><primary><varname>endTimestamp</varname></primary></indexterm>
 				<indexterm><primary><varname>timestampN</varname></primary></indexterm>
-				<para>Get the start/end/n-th timestamp</para>
+				<para>Get the start, end, or n-th timestamp</para>
 				<para><varname>startTimestamp(ttype) → timestamptz</varname></para>
 				<para><varname>endTimestamp(ttype) → timestamptz</varname></para>
 				<para><varname>timestampN(ttype,integer) → timestamptz</varname></para>
@@ -960,7 +944,7 @@ SELECT numSequences(tfloat '{[1@2001-01-01, 2@2001-01-03),
 				<indexterm><primary><varname>startSequence</varname></primary></indexterm>
 				<indexterm><primary><varname>endSequence</varname></primary></indexterm>
 				<indexterm><primary><varname>sequenceN</varname></primary></indexterm>
-				<para>Get the start/end/n-th sequence</para>
+				<para>Get the start, end, or n-th sequence</para>
 				<para><varname>startSequence({ttype_contseq,ttype_seqset}) → ttype_contseq</varname></para>
 				<para><varname>endSequence({ttype_contseq,ttype_seqset}) → ttype_contseq</varname></para>
 				<para><varname>sequenceN({ttype_contseq,ttype_seqset},integer) → ttype_contseq</varname></para>

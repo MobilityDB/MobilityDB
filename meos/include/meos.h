@@ -970,7 +970,7 @@ extern int tint_max_value(const Temporal *temp);
 extern int tint_min_value(const Temporal *temp);
 extern int tint_start_value(const Temporal *temp);
 extern int *tint_values(const Temporal *temp, int *count);
-extern SpanSet *tnumber_spanset(const Temporal *temp);
+extern SpanSet *tnumber_values(const Temporal *temp);
 extern GSERIALIZED *tpoint_end_value(const Temporal *temp);
 extern GSERIALIZED *tpoint_start_value(const Temporal *temp);
 extern GSERIALIZED **tpoint_values(const Temporal *temp, int *count);

@@ -480,28 +480,28 @@ CREATE FUNCTION getValue(ttext)
 -- values is a reserved word in SQL
 CREATE FUNCTION getValues(tbool)
   RETURNS boolean[]
-  AS 'MODULE_PATHNAME', 'Temporal_values'
+  AS 'MODULE_PATHNAME', 'Temporal_valueset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION getValues(tint)
-  RETURNS intset
-  AS 'MODULE_PATHNAME', 'Temporal_values'
+  RETURNS intspanset
+  AS 'MODULE_PATHNAME', 'Tnumber_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION getValues(tfloat)
-  RETURNS floatset
-  AS 'MODULE_PATHNAME', 'Temporal_values'
+  RETURNS floatspanset
+  AS 'MODULE_PATHNAME', 'Tnumber_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION getValues(ttext)
   RETURNS textset
-  AS 'MODULE_PATHNAME', 'Temporal_values'
+  AS 'MODULE_PATHNAME', 'Temporal_valueset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION trajectory(tint)
-  RETURNS floatspanset
-  AS 'MODULE_PATHNAME', 'Tnumber_spanset'
+CREATE FUNCTION valueSet(tint)
+  RETURNS intset
+  AS 'MODULE_PATHNAME', 'Temporal_valueset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION trajectory(tfloat)
-  RETURNS floatspanset
-  AS 'MODULE_PATHNAME', 'Tnumber_spanset'
+CREATE FUNCTION valueSet(tfloat)
+  RETURNS floatset
+  AS 'MODULE_PATHNAME', 'Temporal_valueset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION startValue(tbool)
