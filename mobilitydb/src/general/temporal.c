@@ -600,7 +600,8 @@ PGDLLEXPORT Datum
 Temporal_send(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  uint8_t variant = 0;
+  /* Add SRID to binary representation */
+  uint8_t variant = WKB_EXTENDED;
   size_t wkb_size = VARSIZE_ANY_EXHDR(temp);
   uint8_t *wkb = temporal_as_wkb(temp, variant, &wkb_size);
   bytea *result = bstring2bytea(wkb, wkb_size);
