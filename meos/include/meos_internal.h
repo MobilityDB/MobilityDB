@@ -56,6 +56,7 @@
 #ifdef DEBUG_BUILD
 extern void *SET_BBOX_PTR(const Set *s);
 extern size_t *SET_OFFSETS_PTR(const Set *s);
+extern Datum SET_VAL_N(const Set *s, int index);
 #else
 /**
  * @brief Return a pointer to the bounding box of a set (if any)
