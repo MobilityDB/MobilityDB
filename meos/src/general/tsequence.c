@@ -942,11 +942,7 @@ TSequence *
 tsequence_make_free_exp(TInstant **instants, int count, int maxcount,
   bool lower_inc, bool upper_inc, interpType interp, bool normalize)
 {
-  if (count == 0)
-  {
-    pfree(instants);
-    return NULL;
-  }
+  assert(count > 0);
   TSequence *result = tsequence_make_exp((const TInstant **) instants, count,
     maxcount, lower_inc, upper_inc, interp, normalize);
   pfree_array((void **) instants, count);
@@ -1037,8 +1033,8 @@ tdiscseq_from_base(Datum value, meosType temptype, const TSequence *seq)
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
     instants[i] = tinstant_make(value, temptype, (TSEQUENCE_INST_N(seq, i))->t);
-  return tsequence_make_free(instants, seq->count, true, true,
-    DISCRETE, NORMALIZE_NO);
+  return tsequence_make_free(instants, seq->count, true, true, DISCRETE,
+    NORMALIZE_NO);
 }
 
 /**
@@ -3689,6 +3685,11 @@ tcontseq_restrict_value(const TSequence *seq, Datum value, bool atfunc)
     count *= 2;
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
   int newcount = tcontseq_restrict_value1(seq, value, atfunc, sequences);
+  if (newcount == 0)
+  {
+    pfree(sequences);
+    return NULL;
+  }
   return tsequenceset_make_free(sequences, newcount, NORMALIZE);
 }
 
@@ -3769,6 +3770,11 @@ tcontseq_restrict_values(const TSequence *seq, const Set *set, bool atfunc)
   TSequence **sequences = palloc(sizeof(TSequence *) * seq->count *
     set->count * 2);
   int newcount = tsequence_at_values1(seq, set, sequences);
+  if (newcount == 0)
+  {
+    pfree(sequences);
+    return NULL;
+  }
   TSequenceSet *atresult = tsequenceset_make_free(sequences, newcount, NORMALIZE);
   if (atfunc)
     return atresult;
@@ -4204,6 +4210,11 @@ tnumbercontseq_restrict_span(const TSequence *seq, const Span *span,
     count *= 2;
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
   int newcount = tnumbercontseq_restrict_span2(seq, span, atfunc, sequences);
+  if (newcount == 0)
+  {
+    pfree(sequences);
+    return NULL;
+  }
   return tsequenceset_make_free(sequences, newcount, NORMALIZE);
 }
 
@@ -4316,6 +4327,11 @@ tnumbercontseq_restrict_spanset(const TSequence *seq, const SpanSet *ss,
     maxcount *= 2;
   TSequence **sequences = palloc(sizeof(TSequence *) * maxcount);
   int newcount = tnumbercontseq_restrict_spanset1(seq, ss, atfunc, sequences);
+  if (newcount == 0)
+  {
+    pfree(sequences);
+    return NULL;
+  }
   return tsequenceset_make_free(sequences, newcount, NORMALIZE);
 }
 
@@ -4857,8 +4873,12 @@ tcontseq_at_timestampset(const TSequence *seq, const Set *ts)
     if (inst != NULL)
       instants[k++] = inst;
   }
-  return tsequence_make_free(instants, k, true, true, DISCRETE,
-    NORMALIZE_NO);
+  if (k == 0)
+  {
+    pfree(instants);
+    return NULL;
+  }
+  return tsequence_make_free(instants, k, true, true, DISCRETE, NORMALIZE_NO);
 }
 
 /*****************************************************************************/
@@ -4994,6 +5014,11 @@ tcontseq_minus_timestampset(const TSequence *seq, const Set *ts)
 {
   TSequence **sequences = palloc0(sizeof(TSequence *) * (ts->count + 1));
   int count = tcontseq_minus_timestampset1(seq, ts, sequences);
+  if (count == 0)
+  {
+    pfree(sequences);
+    return NULL;
+  }
   return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
 
@@ -5284,6 +5309,11 @@ tcontseq_restrict_periodset(const TSequence *seq, const SpanSet *ps,
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
   int count1 = atfunc ? tcontseq_at_periodset1(seq, ps, sequences) :
     tcontseq_minus_periodset1(seq, ps, 0, sequences);
+  if (count1 == 0)
+  {
+    pfree(sequences);
+    return NULL;
+  }
   return tsequenceset_make_free(sequences, count1, NORMALIZE_NO);
 }
 

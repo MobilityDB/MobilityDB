@@ -112,6 +112,10 @@ file(WRITE "${CMAKE_BINARY_DIR}/meos_internal_export.h" "${MEOS_INTERNAL_EXP_H}"
 # MEOS
 set(PROJECT_OBJECTS "$<TARGET_OBJECTS:general>")
 set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:point>")
+if(MEOS)
+  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:general_meos>")
+  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:point_meos>")
+endif()
 if(NPOINT)
   message(STATUS "Including network points")
   set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:npoint>")

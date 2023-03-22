@@ -319,7 +319,6 @@ TSequence *
 tnumberseq_linear_abs(const TSequence *seq)
 {
   const TInstant *inst1;
-  TSequence *result;
   meosType basetype = temptype_basetype(seq->temptype);
 
   /* Instantaneous sequence */
@@ -327,7 +326,7 @@ tnumberseq_linear_abs(const TSequence *seq)
   {
     inst1 = TSEQUENCE_INST_N(seq, 0);
     TInstant *inst2 = tnumberinst_abs(inst1);
-    result = tinstant_to_tsequence(inst2, LINEAR);
+    TSequence *result = tinstant_to_tsequence(inst2, LINEAR);
     pfree(inst2);
     return result;
   }
@@ -359,9 +358,13 @@ tnumberseq_linear_abs(const TSequence *seq)
     value1 = value2;
     dvalue1 = dvalue2;
   }
-  result = tsequence_make_free(instants, k, seq->period.lower_inc,
+  if (k == 0)
+  {
+    pfree(instants);
+    return NULL;
+  }
+  return tsequence_make_free(instants, k, seq->period.lower_inc,
     seq->period.upper_inc, LINEAR, NORMALIZE);
-  return result;
 }
 
 TSequenceSet *
@@ -478,6 +481,11 @@ tnumberseqset_delta_value(const TSequenceSet *ss)
     delta = tnumberseq_delta_value(seq);
     if (delta)
       sequences[k++] = delta;
+  }
+  if (k == 0)
+  {
+    pfree(sequences);
+    return NULL;
   }
   /* Resulting sequence set has step interpolation */
   return tsequenceset_make_free(sequences, k, NORMALIZE);
@@ -612,6 +620,11 @@ tfloatseqset_derivative(const TSequenceSet *ss)
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     if (seq->count > 1)
       sequences[k++] = tfloatseq_derivative(seq);
+  }
+  if (k == 0)
+  {
+    pfree(sequences);
+    return NULL;
   }
   /* The resulting sequence set has step interpolation */
   return tsequenceset_make_free(sequences, k, NORMALIZE);

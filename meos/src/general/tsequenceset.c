@@ -322,11 +322,7 @@ tsequenceset_make(const TSequence **sequences, int count, bool normalize)
 TSequenceSet *
 tsequenceset_make_free(TSequence **sequences, int count, bool normalize)
 {
-  if (count == 0)
-  {
-    pfree(sequences);
-    return NULL;
-  }
+  assert(count > 0);
   TSequenceSet *result = tsequenceset_make((const TSequence **) sequences,
     count, normalize);
   pfree_array((void **) sequences, count);
@@ -1425,6 +1421,11 @@ tstepseqset_to_linear(const TSequenceSet *ss)
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     k += tstepseq_to_linear1(seq, &sequences[k]);
   }
+  if (k == 0)
+  {
+    pfree(sequences);
+    return NULL;
+  }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
 
@@ -1651,6 +1652,11 @@ tsequenceset_restrict_value(const TSequenceSet *ss, Datum value, bool atfunc)
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     k += tcontseq_restrict_value1(seq, value, atfunc, &sequences[k]);
   }
+  if (k == 0)
+  {
+    pfree(sequences);
+    return NULL;
+  }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
 
@@ -1683,7 +1689,9 @@ tsequenceset_restrict_values(const TSequenceSet *ss, const Set *set,
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     k += tsequence_at_values1(seq, set, &sequences[k]);
   }
-  TSequenceSet *atresult = tsequenceset_make_free(sequences, k, NORMALIZE);
+  TSequenceSet *atresult = NULL;
+  if (k > 0)
+    atresult = tsequenceset_make_free(sequences, k, NORMALIZE);
   if (atfunc)
     return atresult;
 
@@ -1735,6 +1743,11 @@ tnumberseqset_restrict_span(const TSequenceSet *ss, const Span *span,
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     k += tnumbercontseq_restrict_span2(seq, span, atfunc, &sequences[k]);
   }
+  if (k == 0)
+  {
+    pfree(sequences);
+    return NULL;
+  }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
 
@@ -1770,6 +1783,11 @@ tnumberseqset_restrict_spanset(const TSequenceSet *ss, const SpanSet *spanset,
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     k += tnumbercontseq_restrict_spanset1(seq, spanset, atfunc,
       &sequences[k]);
+  }
+  if (k == 0)
+  {
+    pfree(sequences);
+    return NULL;
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
@@ -1906,6 +1924,11 @@ tsequenceset_restrict_timestampset(const TSequenceSet *ss, const Set *ts,
           j++;
       }
     }
+    if (count == 0)
+    {
+      pfree(instants);
+      return NULL;
+    }
     return (Temporal *) tsequence_make_free(instants, count, true, true,
       DISCRETE, NORMALIZE_NO);
   }
@@ -1921,6 +1944,11 @@ tsequenceset_restrict_timestampset(const TSequenceSet *ss, const Set *ts,
       seq = TSEQUENCESET_SEQ_N(ss, i);
       k += tcontseq_minus_timestampset1(seq, ts, &sequences[k]);
 
+    }
+    if (k == 0)
+    {
+      pfree(sequences);
+      return NULL;
     }
     return (Temporal *) tsequenceset_make_free(sequences, k, NORMALIZE);
   }
@@ -2094,6 +2122,11 @@ tsequenceset_restrict_periodset(const TSequenceSet *ss, const SpanSet *ps,
     /* For minus copy the sequences after the period set */
     while (i < ss->count)
       sequences[k++] = tsequence_copy(TSEQUENCESET_SEQ_N(ss, i++));
+  }
+  if (k == 0)
+  {
+    pfree(sequences);
+    return NULL;
   }
   /* It is necessary to normalize despite the fact that both the tsequenceset
   * and the periodset are normalized */
@@ -2934,6 +2967,11 @@ tsequenceset_delete_timestamp(const TSequenceSet *ss, TimestampTz t)
     if (seq1)
       sequences[k++] = seq1;
   }
+  if (k == 0)
+  {
+    pfree(sequences);
+    return NULL;
+  }
   return tsequenceset_make_free(sequences, k, NORMALIZE_NO);
 }
 
@@ -2981,6 +3019,11 @@ tsequenceset_delete_timestampset(const TSequenceSet *ss,
     seq1 = tcontseq_delete_timestampset(seq, ts);
     if (seq1)
       sequences[k++] = seq1;
+  }
+  if (k == 0)
+  {
+    pfree(sequences);
+    return NULL;
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }

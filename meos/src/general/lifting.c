@@ -545,6 +545,11 @@ tfunc_tlinearseq_base(const TSequence *seq, Datum value,
   if (lfinfo->discont)
   {
     int k = tfunc_tlinearseq_base_discont(seq, value, lfinfo, sequences);
+    if (k == 0)
+    {
+      pfree(sequences);
+      return NULL;
+    }
     return (Temporal *) tsequenceset_make_free(sequences, k, NORMALIZE);
   }
   else
@@ -584,6 +589,11 @@ tfunc_tsequenceset_base(const TSequenceSet *ss, Datum value,
       k += tfunc_tlinearseq_base_turnpt(seq, value, lfinfo, &sequences[k]);
     else
       sequences[k++] = tfunc_tsequence_base(seq, value, lfinfo);
+  }
+  if (k == 0)
+  {
+    pfree(sequences);
+    return NULL;
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
@@ -797,6 +807,11 @@ tfunc_tdiscseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
     else
       inst2 = TSEQUENCE_INST_N(seq2, ++j);
   }
+  if (k == 0)
+  {
+    pfree(instants);
+    return NULL;
+  }
   return tsequence_make_free(instants, k, true, true, DISCRETE,
     NORMALIZE_NO);
 }
@@ -831,8 +846,12 @@ tfunc_tcontseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
     if (upper1 < inst->t)
       break;
   }
-  return tsequence_make_free(instants, k, true, true, DISCRETE,
-    NORMALIZE_NO);
+  if (k == 0)
+  {
+    pfree(instants);
+    return NULL;
+  }
+  return tsequence_make_free(instants, k, true, true, DISCRETE, NORMALIZE_NO);
 }
 
 /**
@@ -887,8 +906,12 @@ tfunc_tsequenceset_tdiscseq(const TSequenceSet *ss, const TSequence *seq,
     else
       j++;
   }
-  return tsequence_make_free(instants, k, true, true, DISCRETE,
-    NORMALIZE_NO);
+  if (k == 0)
+  {
+    pfree(instants);
+    return NULL;
+  }
+  return tsequence_make_free(instants, k, true, true, DISCRETE, NORMALIZE_NO);
 }
 
 /**
@@ -1351,6 +1374,11 @@ tfunc_tsequenceset_tcontseq(const TSequenceSet *ss, const TSequence *seq,
       (cmp == 0 && (! seq->period.upper_inc || seq1->period.upper_inc)))
       break;
   }
+  if (k == 0)
+  {
+    pfree(sequences);
+    return NULL;
+  }
   /* We need to normalize when discont is true */
   return (Temporal *) tsequenceset_make_free(sequences, k, NORMALIZE);
 }
@@ -1409,6 +1437,11 @@ tfunc_tsequenceset_tsequenceset(const TSequenceSet *ss1,
       i++;
     else
       j++;
+  }
+  if (k == 0)
+  {
+    pfree(sequences);
+    return NULL;
   }
   /* We need to normalize if the function has instantaneous discontinuities */
   return tsequenceset_make_free(sequences, k, NORMALIZE);

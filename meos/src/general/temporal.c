@@ -1607,6 +1607,11 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
     lower += tunits;
     upper += tunits;
   }
+  if (k == 0)
+  {
+    pfree(sequences);
+    return NULL;
+  }
   TSequenceSet *result = tsequenceset_make_free(sequences, k, NORMALIZE);
   return result;
 }
@@ -1712,10 +1717,11 @@ tsequence_tsample(const TSequence *seq, const Interval *duration,
     }
   }
   if (k == 0)
+  {
+    pfree(instants);
     return NULL;
-  TSequence *result = tsequence_make_free(instants, k, true, true, interp,
-    NORMALIZE);
-  return result;
+  }
+  return tsequence_make_free(instants, k, true, true, interp, NORMALIZE);
 }
 
 /**
@@ -1739,7 +1745,10 @@ tsequenceset_tsample(const TSequenceSet *ss, const Interval *duration,
       sequences[k++] = sample;
   }
   if (k == 0)
+  {
+    pfree(sequences);
     return NULL;
+  }
   TSequenceSet *result = tsequenceset_make_free(sequences, k, NORMALIZE);
   return result;
 }
@@ -4096,10 +4105,12 @@ tsequence_stops(const TSequence *seq, double maxdist, int64 mintunits)
   /* General case */
   TSequence **sequences = palloc(sizeof(TSequence *) * seq->count);
   int k = tsequence_stops1(seq, maxdist, mintunits, sequences);
-  TSequenceSet *result = NULL;
-  if (k > 0)
-    result = tsequenceset_make_free(sequences, k, NORMALIZE);
-  return result;
+  if (k == 0)
+  {
+    pfree(sequences);
+    return NULL;
+  }
+  return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
 
 /**
@@ -4118,8 +4129,12 @@ tsequenceset_stops(const TSequenceSet *ss, double maxdist, int64 mintunits)
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     k += tsequence_stops1(seq, maxdist, mintunits, &sequences[k]);
   }
-  TSequenceSet *result = tsequenceset_make_free(sequences, k, NORMALIZE);
-  return result;
+  if (k == 0)
+  {
+    pfree(sequences);
+    return NULL;
+  }
+  return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
 
 /*****************************************************************************/
