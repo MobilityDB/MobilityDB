@@ -3239,7 +3239,7 @@ temporal_bbox_restrict_set(const Temporal *temp, const Set *set)
   {
     STBox box;
     temporal_set_bbox(temp, &box);
-    return contains_stbox_stbox(&box, (STBox *) set_bbox_ptr(set));
+    return contains_stbox_stbox(&box, (STBox *) SET_BBOX_PTR(set));
   }
   return true;
 }

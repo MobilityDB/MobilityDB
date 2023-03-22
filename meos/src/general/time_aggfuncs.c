@@ -84,11 +84,11 @@ tstzset_transform_tcount(const Set *ts, int *newcount)
 {
   TInstant **result = palloc(sizeof(TInstant *) * ts->count);
 
-  TimestampTz t = DatumGetTimestampTz(set_val_n(ts, 0));
+  TimestampTz t = DatumGetTimestampTz(SET_VAL_N(ts, 0));
   int k = 0, count = 1;
   for (int i = 1; i < ts->count; i++)
   {
-    TimestampTz t1 = DatumGetTimestampTz(set_val_n(ts, i));
+    TimestampTz t1 = DatumGetTimestampTz(SET_VAL_N(ts, i));
     if (timestamptz_cmp_internal(t, t1) == 0)
       count++;
     else

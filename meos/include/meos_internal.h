@@ -51,6 +51,35 @@
  * Functions for set and span types
  *****************************************************************************/
 
+/* Macros for speeding up access to component values of sets*/
+
+#ifdef DEBUG_BUILD
+extern void *SET_BBOX_PTR(const Set *s);
+extern size_t *SET_OFFSETS_PTR(const Set *s);
+#else
+/**
+ * @brief Return a pointer to the bounding box of a set (if any)
+ */
+#define SET_BBOX_PTR(s) ( (void *)( \
+  ((char *) (s)) + DOUBLE_PAD(sizeof(Set)) ) )
+
+/**
+ * @brief Return a pointer to the offsets array of a set
+ */
+#define SET_OFFSETS_PTR(s) ( (size_t *)( \
+  ((char *) (s)) + DOUBLE_PAD(sizeof(Set)) + DOUBLE_PAD((s)->bboxsize) ) )
+
+/**
+ * @brief Return the n-th value of a set
+ * @pre The argument @p index is less than the number of values in the set
+ */
+#define SET_VAL_N(s, index) ( (Datum) ( \
+  MOBDB_FLAGS_GET_BYVAL((s)->flags) ? (SET_OFFSETS_PTR(s))[index] : \
+  PointerGetDatum( ((char *) (s)) + DOUBLE_PAD(sizeof(Set)) + \
+    DOUBLE_PAD((s)->bboxsize) + (sizeof(size_t) * (s)->maxcount) + \
+    (SET_OFFSETS_PTR(s))[index] ) ) )
+#endif
+
 /* Input/output functions for set and span types */
 
 extern Set *set_in(const char *str, meosType basetype);
@@ -86,7 +115,6 @@ extern SpanSet *value_to_spanset(Datum d, meosType basetype);
 
 extern uint32 datum_hash(Datum d, meosType basetype);
 extern uint64 datum_hash_extended(Datum d, meosType basetype, uint64 seed);
-extern Datum set_val_n(const Set *ts, int index);
 extern Datum set_start_value(const Set *s);
 extern Datum set_end_value(const Set *s);
 extern bool set_value_n(const Set *s, int n, Datum *result);

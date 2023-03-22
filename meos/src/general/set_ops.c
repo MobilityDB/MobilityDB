@@ -52,10 +52,10 @@ bool
 bbox_overlaps_set_set(const Set *s1, const Set *s2)
 {
   assert(s1->settype == s2->settype);
-  Datum min1 = set_val_n(s1, MINIDX);
-  Datum min2 = set_val_n(s2, MINIDX);
-  Datum max1 = set_val_n(s1, s1->MAXIDX);
-  Datum max2 = set_val_n(s2, s2->MAXIDX);
+  Datum min1 = SET_VAL_N(s1, MINIDX);
+  Datum min2 = SET_VAL_N(s2, MINIDX);
+  Datum max1 = SET_VAL_N(s1, s1->MAXIDX);
+  Datum max2 = SET_VAL_N(s2, s2->MAXIDX);
   if (datum_le(min1, max2, s1->basetype) && datum_le(min2, max1, s1->basetype))
     return true;
   return false;
@@ -69,10 +69,10 @@ bool
 bbox_contains_set_set(const Set *s1, const Set *s2)
 {
   assert(s1->settype == s2->settype);
-  Datum min1 = set_val_n(s1, MINIDX);
-  Datum min2 = set_val_n(s2, MINIDX);
-  Datum max1 = set_val_n(s1, s1->MAXIDX);
-  Datum max2 = set_val_n(s2, s2->MAXIDX);
+  Datum min1 = SET_VAL_N(s1, MINIDX);
+  Datum min2 = SET_VAL_N(s2, MINIDX);
+  Datum max1 = SET_VAL_N(s1, s1->MAXIDX);
+  Datum max2 = SET_VAL_N(s2, s2->MAXIDX);
   if (datum_le(min1, min2, s1->basetype) && datum_le(max2, max1, s1->basetype))
     return true;
   return false;
@@ -85,8 +85,8 @@ bool
 bbox_contains_set_value(const Set *s, Datum d, meosType basetype)
 {
   assert(s->basetype == basetype);
-  Datum min = set_val_n(s, MINIDX);
-  Datum max = set_val_n(s, s->MAXIDX);
+  Datum min = SET_VAL_N(s, MINIDX);
+  Datum max = SET_VAL_N(s, s->MAXIDX);
   if (datum_le(min, d, basetype) && datum_le(d, max, basetype))
     return true;
   return false;
@@ -117,8 +117,8 @@ setop_set_set(const Set *s1, const Set *s2, SetOper setop)
     count = s1->count;
   Datum *values = palloc(sizeof(Datum) * count);
   int i = 0, j = 0, k = 0;
-  Datum d1 = set_val_n(s1, 0);
-  Datum d2 = set_val_n(s2, 0);
+  Datum d1 = SET_VAL_N(s1, 0);
+  Datum d2 = SET_VAL_N(s2, 0);
   meosType basetype = s1->basetype;
   while (i < s1->count && j < s2->count)
   {
@@ -130,8 +130,8 @@ setop_set_set(const Set *s1, const Set *s2, SetOper setop)
       i++; j++;
       if (i == s1->count || j == s2->count)
         break;
-      d1 = set_val_n(s1, i);
-      d2 = set_val_n(s2, j);
+      d1 = SET_VAL_N(s1, i);
+      d2 = SET_VAL_N(s2, j);
     }
     else if (cmp < 0)
     {
@@ -141,7 +141,7 @@ setop_set_set(const Set *s1, const Set *s2, SetOper setop)
       if (i == s1->count)
         break;
       else
-        d1 = set_val_n(s1, i);
+        d1 = SET_VAL_N(s1, i);
     }
     else
     {
@@ -151,18 +151,18 @@ setop_set_set(const Set *s1, const Set *s2, SetOper setop)
       if (j == s2->count)
         break;
       else
-        d2 = set_val_n(s2, j);
+        d2 = SET_VAL_N(s2, j);
     }
   }
   if (setop == UNION || setop == MINUS)
   {
     while (i < s1->count)
-      values[k++] = set_val_n(s1, i++);
+      values[k++] = SET_VAL_N(s1, i++);
   }
   if (setop == UNION)
   {
     while (j < s2->count)
-      values[k++] = set_val_n(s2, j++);
+      values[k++] = SET_VAL_N(s2, j++);
   }
   return set_make_free(values, k, basetype, ORDERED);
 }
@@ -257,8 +257,8 @@ contains_set_set(const Set *s1, const Set *s2)
   int i = 0, j = 0;
   while (j < s2->count)
   {
-    Datum d1 = set_val_n(s1, i);
-    Datum d2 = set_val_n(s2, j);
+    Datum d1 = SET_VAL_N(s1, i);
+    Datum d2 = SET_VAL_N(s2, j);
     int cmp = datum_cmp(d1, d2, s1->basetype);
     if (cmp == 0)
     {
@@ -374,8 +374,8 @@ overlaps_set_set(const Set *s1, const Set *s2)
   int i = 0, j = 0;
   while (i < s1->count && j < s2->count)
   {
-    Datum d1 = set_val_n(s1, i);
-    Datum d2 = set_val_n(s2, j);
+    Datum d1 = SET_VAL_N(s1, i);
+    Datum d2 = SET_VAL_N(s2, j);
     int cmp = datum_cmp(d1, d2, s1->basetype);
     if (cmp == 0)
       return true;
@@ -398,7 +398,7 @@ overlaps_set_set(const Set *s1, const Set *s2)
 bool
 left_value_set(Datum d, meosType basetype, const Set *s)
 {
-  Datum d1 = set_val_n(s, MINIDX);
+  Datum d1 = SET_VAL_N(s, MINIDX);
   return datum_lt2(d, d1, s->basetype, basetype);
 }
 
@@ -466,7 +466,7 @@ before_timestamp_timestampset(TimestampTz t, const Set *ts)
 bool
 left_set_value(const Set *s, Datum d, meosType basetype)
 {
-  Datum d1 = set_val_n(s, s->MAXIDX);
+  Datum d1 = SET_VAL_N(s, s->MAXIDX);
   return datum_lt2(d1, d, s->basetype, basetype);
 }
 
@@ -536,8 +536,8 @@ before_timestampset_timestamp(const Set *s, TimestampTz t)
 bool
 left_set_set(const Set *s1, const Set *s2)
 {
-  Datum d1 = set_val_n(s1, s1->count - 1);
-  Datum d2 = set_val_n(s2, 0);
+  Datum d1 = SET_VAL_N(s1, s1->count - 1);
+  Datum d2 = SET_VAL_N(s2, 0);
   return (datum_lt2(d1, d2, s1->basetype, s2->basetype));
 }
 
@@ -703,7 +703,7 @@ right_set_set(const Set *s1, const Set *s2)
 bool
 overleft_value_set(Datum d, meosType basetype, const Set *s)
 {
-  Datum d1 = set_val_n(s, s->MAXIDX);
+  Datum d1 = SET_VAL_N(s, s->MAXIDX);
   return datum_le2(d, d1, basetype, s->basetype);
 }
 
@@ -772,7 +772,7 @@ overbefore_timestamp_timestampset(TimestampTz t, const Set *ts)
 bool
 overleft_set_value(const Set *s, Datum d, meosType basetype)
 {
-  Datum d1 = set_val_n(s, s->MAXIDX);
+  Datum d1 = SET_VAL_N(s, s->MAXIDX);
   return datum_le2(d1, d, s->basetype, basetype);
 }
 
@@ -842,8 +842,8 @@ overbefore_timestampset_timestamp(const Set *s, TimestampTz t)
 bool
 overleft_set_set(const Set *s1, const Set *s2)
 {
-  Datum d1 = set_val_n(s1, s1->count - 1);
-  Datum d2 = set_val_n(s2, s2->count - 1);
+  Datum d1 = SET_VAL_N(s1, s1->count - 1);
+  Datum d2 = SET_VAL_N(s2, s2->count - 1);
   return datum_le2(d1, d2, s1->basetype, s2->basetype);
 }
 
@@ -858,7 +858,7 @@ overleft_set_set(const Set *s1, const Set *s2)
 bool
 overright_value_set(Datum d, meosType basetype, const Set *s)
 {
-  Datum d1 = set_val_n(s, MINIDX);
+  Datum d1 = SET_VAL_N(s, MINIDX);
   return datum_ge2(d, d1, basetype, s->basetype);
 }
 
@@ -915,7 +915,7 @@ overafter_timestamp_timestampset(TimestampTz t, const Set *ts)
 bool
 overright_set_value(const Set *s, Datum d, meosType basetype)
 {
-  Datum d1 = set_val_n(s, MINIDX);
+  Datum d1 = SET_VAL_N(s, MINIDX);
   return datum_ge2(d1, d, s->basetype, basetype);
 }
 
@@ -985,8 +985,8 @@ overafter_timestampset_timestamp(const Set *s, TimestampTz t)
 bool
 overright_set_set(const Set *s1, const Set *s2)
 {
-  Datum d1 = set_val_n(s1, 0);
-  Datum d2 = set_val_n(s2, 0);
+  Datum d1 = SET_VAL_N(s1, 0);
+  Datum d2 = SET_VAL_N(s2, 0);
   return datum_ge2(d1, d2, s1->basetype, s2->basetype);
 }
 
@@ -1007,7 +1007,7 @@ union_set_value(const Set *s, Datum d, meosType basetype)
   bool found = false;
   for (int i = 0; i < s->count; i++)
   {
-    Datum d1 = set_val_n(s, i);
+    Datum d1 = SET_VAL_N(s, i);
     if (! found)
     {
       int cmp = datum_cmp(d, d1, basetype);
@@ -1303,7 +1303,7 @@ minus_set_value(const Set *s, Datum d, meosType basetype)
   Datum v = d;
   for (int i = 0; i < s->count; i++)
   {
-    Datum v1 = set_val_n(s, i);
+    Datum v1 = SET_VAL_N(s, i);
     if (datum_ne(v, v1, basetype))
       values[k++] = v1;
   }
@@ -1374,7 +1374,7 @@ minus_timestampset_timestamp(const Set *ts, TimestampTz t)
   Datum v = TimestampTzGetDatum(t);
   for (int i = 0; i < ts->count; i++)
   {
-    Datum v1 = set_val_n(ts, i);
+    Datum v1 = SET_VAL_N(ts, i);
     if (datum_ne(v, v1, T_TIMESTAMPTZ))
       values[k++] = v1;
   }

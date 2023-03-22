@@ -89,7 +89,7 @@ same_rid_tnpoint_bigint(const Temporal *temp, int64 rid,
 {
   Set *routes = tnpoint_routes(temp);
   return (routes->count == 1) &&
-    (DatumGetInt64(set_val_n(routes, 0)) == rid);
+    (DatumGetInt64(SET_VAL_N(routes, 0)) == rid);
 }
 
 /*****************************************************************************/
@@ -180,7 +180,7 @@ same_rid_tnpoint_npoint(const Temporal *temp, const Npoint *np,
 {
   Set *routes = tnpoint_routes(temp);
   return (routes->count == 1) &&
-    (DatumGetInt64(set_val_n(routes, 0)) == np->rid);
+    (DatumGetInt64(SET_VAL_N(routes, 0)) == np->rid);
 }
 
 /*****************************************************************************/

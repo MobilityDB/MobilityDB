@@ -284,15 +284,17 @@ spanset_make_exp(const Span **spans, int count, int maxcount, bool normalize,
   int newcount = count;
   if (normalize && count > 1)
     newspans = spanarr_normalize((Span **) spans, count, SORT_NO, &newcount);
+
   /* Notice that the first span is already declared in the struct */
   size_t memsize = DOUBLE_PAD(sizeof(SpanSet)) +
-    DOUBLE_PAD(sizeof(Span)) * (newcount - 1);
+    DOUBLE_PAD(sizeof(Span)) * (maxcount - 1);
   SpanSet *result = palloc0(memsize);
   SET_VARSIZE(result, memsize);
   result->spansettype = spantype_spansettype(spans[0]->spantype);
   result->spantype = spans[0]->spantype;
   result->basetype = spans[0]->basetype;
   result->count = newcount;
+  result->maxcount = maxcount;
 
   /* Compute the bounding span */
   span_set(newspans[0]->lower, newspans[newcount - 1]->upper,
@@ -306,7 +308,6 @@ spanset_make_exp(const Span **spans, int count, int maxcount, bool normalize,
     pfree_array((void **) newspans, newcount);
   return result;
 }
-
 
 /**
  * @ingroup libmeos_setspan_constructor
@@ -435,7 +436,7 @@ set_to_spanset(const Set *s)
   Span *spans_buf = palloc(sizeof(Span) * s->count);
   for (int i = 0; i < s->count; i++)
   {
-    Datum d = set_val_n(s, i);
+    Datum d = SET_VAL_N(s, i);
     spans[i] = &spans_buf[i];
     span_set(d, d, true, true, s->basetype, spans[i]);
   }

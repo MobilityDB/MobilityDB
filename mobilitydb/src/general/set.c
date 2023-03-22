@@ -336,8 +336,7 @@ floatset_round(const Set *s, Datum size)
 {
   Set *result = set_copy(s);
   for (int i = 0; i < s->count; i++)
-    (set_offsets_ptr(result))[i] =
-      datum_round_float(set_val_n(s, i), size);
+    (SET_OFFSETS_PTR(result))[i] = datum_round_float(SET_VAL_N(s, i), size);
   return result;
 }
 

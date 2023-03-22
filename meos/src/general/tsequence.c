@@ -1050,7 +1050,7 @@ tdiscseq_from_base_time(Datum value, meosType temptype, const Set *ts)
   TInstant **instants = palloc(sizeof(TInstant *) * ts->count);
   for (int i = 0; i < ts->count; i++)
     instants[i] = tinstant_make(value, temptype,
-      DatumGetTimestampTz(set_val_n(ts, i)));
+      DatumGetTimestampTz(SET_VAL_N(ts, i)));
   return tsequence_make_free(instants, ts->count, true, true, DISCRETE,
     NORMALIZE_NO);
 }
@@ -3739,7 +3739,7 @@ tsequence_at_values1(const TSequence *seq, const Set *set, TSequence **result)
     for (int j = 0; j < set->count; j++)
       /* Each iteration adds between 0 and 2 sequences */
       k += tsegment_restrict_value(inst1, inst2, interp, lower_inc, upper_inc,
-        set_val_n(set, j), REST_AT, &result[k]);
+        SET_VAL_N(set, j), REST_AT, &result[k]);
     inst1 = inst2;
     lower_inc = true;
   }
@@ -4477,9 +4477,9 @@ tdiscseq_restrict_timestampset(const TSequence *seq, const Set *ts,
   {
     Temporal *temp = atfunc ?
       (Temporal *) tdiscseq_at_timestamp(seq,
-        DatumGetTimestampTz(set_val_n(ts, 0))) :
+        DatumGetTimestampTz(SET_VAL_N(ts, 0))) :
       (Temporal *) tdiscseq_minus_timestamp(seq,
-        DatumGetTimestampTz(set_val_n(ts, 0)));
+        DatumGetTimestampTz(SET_VAL_N(ts, 0)));
     if (temp == NULL || ! atfunc)
       return (TSequence *) temp;
     /* Transform the result of tdiscseq_at_timestamp into a sequence */
@@ -4509,7 +4509,7 @@ tdiscseq_restrict_timestampset(const TSequence *seq, const Set *ts,
   while (i < seq->count && j < ts->count)
   {
     inst = TSEQUENCE_INST_N(seq, i);
-    TimestampTz t = DatumGetTimestampTz(set_val_n(ts, j));
+    TimestampTz t = DatumGetTimestampTz(SET_VAL_N(ts, j));
     int cmp = timestamptz_cmp_internal(inst->t, t);
     if (cmp == 0)
     {
@@ -4834,7 +4834,7 @@ tcontseq_at_timestampset(const TSequence *seq, const Set *ts)
   if (ts->count == 1)
   {
     inst = tsequence_at_timestamp(seq,
-      DatumGetTimestampTz(set_val_n(ts, 0)));
+      DatumGetTimestampTz(SET_VAL_N(ts, 0)));
     if (inst == NULL)
       return NULL;
     TSequence *result = tinstant_to_tsequence((const TInstant *) inst, DISCRETE);
@@ -4861,14 +4861,14 @@ tcontseq_at_timestampset(const TSequence *seq, const Set *ts)
 
   /* General case */
   TimestampTz t = Max(DatumGetTimestampTz(seq->period.lower),
-    DatumGetTimestampTz(set_val_n(ts, 0)));
+    DatumGetTimestampTz(SET_VAL_N(ts, 0)));
   int loc;
   set_find_value(ts, TimestampTzGetDatum(t), &loc);
   TInstant **instants = palloc(sizeof(TInstant *) * (ts->count - loc));
   int k = 0;
   for (int i = loc; i < ts->count; i++)
   {
-    t = DatumGetTimestampTz(set_val_n(ts, i));
+    t = DatumGetTimestampTz(SET_VAL_N(ts, i));
     inst = tcontseq_at_timestamp(seq, t);
     if (inst != NULL)
       instants[k++] = inst;
@@ -4899,7 +4899,7 @@ tcontseq_minus_timestampset1(const TSequence *seq, const Set *ts,
   /* Singleton timestamp set */
   if (ts->count == 1)
     return tcontseq_minus_timestamp1(seq,
-      DatumGetTimestampTz(set_val_n(ts, 0)), result);
+      DatumGetTimestampTz(SET_VAL_N(ts, 0)), result);
 
   /* Bounding box test */
   Span p;
@@ -4936,7 +4936,7 @@ tcontseq_minus_timestampset1(const TSequence *seq, const Set *ts,
   while (i < seq->count && j < ts->count)
   {
     inst = TSEQUENCE_INST_N(seq, i);
-    TimestampTz t = DatumGetTimestampTz(set_val_n(ts, j));
+    TimestampTz t = DatumGetTimestampTz(SET_VAL_N(ts, j));
     if (inst->t < t)
     {
       instants[l++] = (TInstant *) inst;
@@ -5458,7 +5458,7 @@ tcontseq_delete_timestampset(const TSequence *seq, const Set *ts)
   /* Singleton timestamp set */
   if (ts->count == 1)
     return tcontseq_delete_timestamp(seq,
-      DatumGetTimestampTz(set_val_n(ts, 0)));
+      DatumGetTimestampTz(SET_VAL_N(ts, 0)));
 
   /* Bounding box test */
   Span p;
@@ -5488,7 +5488,7 @@ tcontseq_delete_timestampset(const TSequence *seq, const Set *ts)
   while (i < seq->count && j < ts->count)
   {
     inst = TSEQUENCE_INST_N(seq, i);
-    TimestampTz t = DatumGetTimestampTz(set_val_n(ts, j));
+    TimestampTz t = DatumGetTimestampTz(SET_VAL_N(ts, j));
     if (inst->t < t)
     {
       instants[k++] = (TInstant *) inst;

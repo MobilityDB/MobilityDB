@@ -1877,7 +1877,7 @@ tsequenceset_restrict_timestampset(const TSequenceSet *ss, const Set *ts,
   if (ts->count == 1)
   {
     Temporal *temp = tsequenceset_restrict_timestamp(ss,
-      DatumGetTimestampTz(set_val_n(ts, 0)), atfunc);
+      DatumGetTimestampTz(SET_VAL_N(ts, 0)), atfunc);
     if (atfunc && temp != NULL)
     {
       Temporal *result = (Temporal *) tinstant_to_tsequence(
@@ -1910,7 +1910,7 @@ tsequenceset_restrict_timestampset(const TSequenceSet *ss, const Set *ts,
     while (i < ts->count && j < ss->count)
     {
       seq = TSEQUENCESET_SEQ_N(ss, j);
-      TimestampTz t = DatumGetTimestampTz(set_val_n(ts, i));
+      TimestampTz t = DatumGetTimestampTz(SET_VAL_N(ts, i));
       if (contains_period_timestamp(&seq->period, t))
       {
         instants[count++] = tsequence_at_timestamp(seq, t);
@@ -2987,7 +2987,7 @@ tsequenceset_delete_timestampset(const TSequenceSet *ss,
   /* Singleton timestamp set */
   if (ts->count == 1)
     return tsequenceset_delete_timestamp(ss,
-      DatumGetTimestampTz(set_val_n(ts, 0)));
+      DatumGetTimestampTz(SET_VAL_N(ts, 0)));
 
   /* Bounding box test */
   Span s;

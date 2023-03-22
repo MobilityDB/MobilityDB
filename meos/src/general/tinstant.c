@@ -698,7 +698,7 @@ tinstant_restrict_values_test(const TInstant *inst, const Set *set,
   meosType basetype = temptype_basetype(inst->temptype);
   for (int i = 0; i < set->count; i++)
   {
-    if (datum_eq(value, set_val_n(set, i), basetype))
+    if (datum_eq(value, SET_VAL_N(set, i), basetype))
       return atfunc ? true : false;
   }
   return atfunc ? false : true;
@@ -821,7 +821,7 @@ tinstant_restrict_timestampset_test(const TInstant *inst, const Set *ts,
   bool atfunc)
 {
   for (int i = 0; i < ts->count; i++)
-    if (inst->t == DatumGetTimestampTz(set_val_n(ts, i)))
+    if (inst->t == DatumGetTimestampTz(SET_VAL_N(ts, i)))
       return atfunc ? true : false;
   return atfunc ? false : true;
 }

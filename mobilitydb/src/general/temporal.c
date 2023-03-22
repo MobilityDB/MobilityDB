@@ -2013,7 +2013,7 @@ temporal_restrict_values_ext(FunctionCallInfo fcinfo, bool atfunc)
    * bounding box function */
   Temporal *result = (set->count > 1) ?
     temporal_restrict_values(temp, set, atfunc) :
-    temporal_restrict_value(temp, set_val_n(set, 0), atfunc);
+    temporal_restrict_value(temp, SET_VAL_N(set, 0), atfunc);
 
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(set, 1);

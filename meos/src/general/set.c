@@ -87,7 +87,7 @@ set_find_value(const Set *s, Datum d, int *loc)
   while (first <= last)
   {
     middle = (first + last) / 2;
-    Datum d1 = set_val_n(s, middle);
+    Datum d1 = SET_VAL_N(s, middle);
     int cmp = datum_cmp(d, d1, s->basetype);
     if (cmp == 0)
     {
@@ -121,7 +121,7 @@ rset_find_value(const Set *s, Datum d, int *loc)
 {
   for (int i = 0; i < s->count; i++)
   {
-    Datum d1 = set_val_n(s, i);
+    Datum d1 = SET_VAL_N(s, i);
     if (datum_eq(d, d1, s->basetype))
     {
       *loc = i;
@@ -214,7 +214,7 @@ set_out_fn(const Set *s, int maxdd, outfunc value_out)
   size_t outlen = 0;
   for (int i = 0; i < s->count; i++)
   {
-    Datum d = set_val_n(s, i);
+    Datum d = SET_VAL_N(s, i);
     strings[i] = value_out(d, s->basetype, maxdd);
     outlen += strlen(strings[i]) + 1;
   }
@@ -299,11 +299,12 @@ valuearr_compute_bbox(const Datum *values, meosType basetype, int count,
   return;
 }
 
+#ifdef DEBUG_BUILD
 /**
  * @brief Return a pointer to the bounding box of a temporal sequence
  */
 void *
-set_bbox_ptr(const Set *s)
+SET_BBOX_PTR(const Set *s)
 {
   return (void *)( ((char *) s) + DOUBLE_PAD(sizeof(Set)) );
 }
@@ -312,7 +313,7 @@ set_bbox_ptr(const Set *s)
  * @brief Return a pointer to the offsets array of a set
  */
 size_t *
-set_offsets_ptr(const Set *s)
+SET_OFFSETS_PTR(const Set *s)
 {
   return (size_t *)( ((char *) s) + DOUBLE_PAD(sizeof(Set)) +
     DOUBLE_PAD(s->bboxsize) );
@@ -324,19 +325,20 @@ set_offsets_ptr(const Set *s)
  * @pre The argument @p index is less than the number of values in the set
  */
 Datum
-set_val_n(const Set *s, int index)
+SET_VAL_N(const Set *s, int index)
 {
   assert(index >= 0);
   /* For base types passed by value */
   if (MOBDB_FLAGS_GET_BYVAL(s->flags))
-    return (set_offsets_ptr(s))[index];
+    return (SET_OFFSETS_PTR(s))[index];
   /* For base types passed by reference */
   return PointerGetDatum(
     /* start of data : start address + size of struct + size of bbox + */
     ((char *) s) + DOUBLE_PAD(sizeof(Set)) + DOUBLE_PAD(s->bboxsize) +
       /* offset array + offset */
-      (sizeof(size_t) * s->maxcount) + (set_offsets_ptr(s))[index] );
+      (sizeof(size_t) * s->maxcount) + (SET_OFFSETS_PTR(s))[index] );
 }
+#endif /* DEBUG_BUILD */
 
 /**
  * @ingroup libmeos_internal_setspan_constructor
@@ -482,7 +484,7 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
   if (typbyval)
   {
     for (int i = 0; i < newcount; i++)
-      (set_offsets_ptr(result))[i] = newvalues[i];
+      (SET_OFFSETS_PTR(result))[i] = newvalues[i];
   }
   else
   {
@@ -497,14 +499,14 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
         VARSIZE_ANY(newvalues[i]) : (uint32) typlen;
       memcpy(((char *) result) + pdata + pos, DatumGetPointer(newvalues[i]),
         size_elem);
-      (set_offsets_ptr(result))[i] = pos;
+      (SET_OFFSETS_PTR(result))[i] = pos;
       pos += DOUBLE_PAD(size_elem);
     }
   }
 
   /* Compute the bounding box */
   if (bboxsize != 0)
-    valuearr_compute_bbox(newvalues, basetype, newcount, set_bbox_ptr(result));
+    valuearr_compute_bbox(newvalues, basetype, newcount, SET_BBOX_PTR(result));
 
   if (ordered && count > 1)
     pfree(newvalues);
@@ -741,7 +743,7 @@ timestamp_to_tstzset(TimestampTz t)
 void
 set_set_span(const Set *set, Span *s)
 {
-  span_set(set_val_n(set, MINIDX), set_val_n(set, set->MAXIDX), true, true,
+  span_set(SET_VAL_N(set, MINIDX), SET_VAL_N(set, set->MAXIDX), true, true,
     set->basetype, s);
   return;
 }
@@ -772,7 +774,7 @@ spatialset_set_stbox(const Set *set, STBox *box)
 {
   assert(spatialset_type(set->settype));
   memset(box, 0, sizeof(STBox));
-  memcpy(box, set_bbox_ptr(set), sizeof(STBox));
+  memcpy(box, SET_BBOX_PTR(set), sizeof(STBox));
   return;
 }
 
@@ -831,7 +833,7 @@ set_num_values(const Set *s)
 Datum
 set_start_value(const Set *s)
 {
-  return set_val_n(s, 0);
+  return SET_VAL_N(s, 0);
 }
 
 #if MEOS
@@ -844,7 +846,7 @@ set_start_value(const Set *s)
 int
 intset_start_value(const Set *s)
 {
-  int result = DatumGetInt32(set_val_n(s, 0));
+  int result = DatumGetInt32(SET_VAL_N(s, 0));
   return result;
 }
 
@@ -857,7 +859,7 @@ intset_start_value(const Set *s)
 int64
 bigintset_start_value(const Set *s)
 {
-  int64 result = DatumGetInt64(set_val_n(s, 0));
+  int64 result = DatumGetInt64(SET_VAL_N(s, 0));
   return result;
 }
 
@@ -870,7 +872,7 @@ bigintset_start_value(const Set *s)
 double
 floatset_start_value(const Set *s)
 {
-  double result = DatumGetFloat8(set_val_n(s, 0));
+  double result = DatumGetFloat8(SET_VAL_N(s, 0));
   return result;
 }
 
@@ -883,7 +885,7 @@ floatset_start_value(const Set *s)
 TimestampTz
 tstzset_start_timestamp(const Set *ts)
 {
-  TimestampTz result = DatumGetTimestampTz(set_val_n(ts, 0));
+  TimestampTz result = DatumGetTimestampTz(SET_VAL_N(ts, 0));
   return result;
 }
 #endif /* MEOS */
@@ -897,7 +899,7 @@ tstzset_start_timestamp(const Set *ts)
 Datum
 set_end_value(const Set *s)
 {
-  return set_val_n(s, s->count - 1);
+  return SET_VAL_N(s, s->count - 1);
 }
 
 #if MEOS
@@ -910,7 +912,7 @@ set_end_value(const Set *s)
 int
 intset_end_value(const Set *s)
 {
-  int result = DatumGetInt32(set_val_n(s, 0));
+  int result = DatumGetInt32(SET_VAL_N(s, 0));
   return result;
 }
 
@@ -923,7 +925,7 @@ intset_end_value(const Set *s)
 int64
 bigintset_end_value(const Set *s)
 {
-  int64 result = DatumGetInt64(set_val_n(s, 0));
+  int64 result = DatumGetInt64(SET_VAL_N(s, 0));
   return result;
 }
 
@@ -936,7 +938,7 @@ bigintset_end_value(const Set *s)
 double
 floatset_end_value(const Set *s)
 {
-  double result = DatumGetFloat8(set_val_n(s, 0));
+  double result = DatumGetFloat8(SET_VAL_N(s, 0));
   return result;
 }
 
@@ -949,7 +951,7 @@ floatset_end_value(const Set *s)
 TimestampTz
 tstzset_end_timestamp(const Set *ts)
 {
-  TimestampTz result = DatumGetTimestampTz(set_val_n(ts, ts->count - 1));
+  TimestampTz result = DatumGetTimestampTz(SET_VAL_N(ts, ts->count - 1));
   return result;
 }
 #endif /* MEOS */
@@ -970,7 +972,7 @@ set_value_n(const Set *s, int n, Datum *result)
 {
   if (n < 1 || n > s->count)
     return false;
-  *result = set_val_n(s, n - 1);
+  *result = SET_VAL_N(s, n - 1);
   return true;
 }
 
@@ -991,7 +993,7 @@ intset_value_n(const Set *s, int n, int *result)
 {
   if (n < 1 || n > s->count)
     return false;
-  *result = DatumGetInt32(set_val_n(s, n - 1));
+  *result = DatumGetInt32(SET_VAL_N(s, n - 1));
   return true;
 }
 
@@ -1011,7 +1013,7 @@ bigintset_value_n(const Set *s, int n, int64 *result)
 {
   if (n < 1 || n > s->count)
     return false;
-  *result = DatumGetInt64(set_val_n(s, n - 1));
+  *result = DatumGetInt64(SET_VAL_N(s, n - 1));
   return true;
 }
 
@@ -1031,7 +1033,7 @@ floatset_value_n(const Set *s, int n, double *result)
 {
   if (n < 1 || n > s->count)
     return false;
-  *result = DatumGetFloat8(set_val_n(s, n - 1));
+  *result = DatumGetFloat8(SET_VAL_N(s, n - 1));
   return true;
 }
 
@@ -1051,7 +1053,7 @@ tstzset_timestamp_n(const Set *ts, int n, TimestampTz *result)
 {
   if (n < 1 || n > ts->count)
     return false;
-  *result = DatumGetTimestampTz(set_val_n(ts, n - 1));
+  *result = DatumGetTimestampTz(SET_VAL_N(ts, n - 1));
   return true;
 }
 #endif /* MEOS */
@@ -1067,7 +1069,7 @@ set_values(const Set *s)
 {
   Datum *result = palloc(sizeof(Datum) * s->count);
   for (int i = 0; i < s->count; i++)
-    result[i] = set_val_n(s, i);
+    result[i] = SET_VAL_N(s, i);
   return result;
 }
 
@@ -1083,7 +1085,7 @@ intset_values(const Set *s)
 {
   int *result = palloc(sizeof(int) * s->count);
   for (int i = 0; i < s->count; i++)
-    result[i] = DatumGetInt32(set_val_n(s, i));
+    result[i] = DatumGetInt32(SET_VAL_N(s, i));
   return result;
 }
 
@@ -1098,7 +1100,7 @@ bigintset_values(const Set *s)
 {
   int64 *result = palloc(sizeof(int64) * s->count);
   for (int i = 0; i < s->count; i++)
-    result[i] = DatumGetInt64(set_val_n(s, i));
+    result[i] = DatumGetInt64(SET_VAL_N(s, i));
   return result;
 }
 
@@ -1113,7 +1115,7 @@ floatset_values(const Set *s)
 {
   double *result = palloc(sizeof(double) * s->count);
   for (int i = 0; i < s->count; i++)
-    result[i] = DatumGetFloat8(set_val_n(s, i));
+    result[i] = DatumGetFloat8(SET_VAL_N(s, i));
   return result;
 }
 
@@ -1128,7 +1130,7 @@ tstzset_values(const Set *ts)
 {
   TimestampTz *result = palloc(sizeof(TimestampTz) * ts->count);
   for (int i = 0; i < ts->count; i++)
-    result[i] = DatumGetTimestampTz(set_val_n(ts, i));
+    result[i] = DatumGetTimestampTz(SET_VAL_N(ts, i));
   return result;
 }
 #endif /* MEOS */
@@ -1142,7 +1144,7 @@ int
 geoset_srid(const Set *set)
 {
   assert(geo_basetype(set->basetype));
-  GSERIALIZED *gs = DatumGetGserializedP(set_val_n(set, 0));
+  GSERIALIZED *gs = DatumGetGserializedP(SET_VAL_N(set, 0));
   return gserialized_get_srid(gs);
 }
 
@@ -1159,8 +1161,8 @@ set_shift(const Set *s, Datum shift)
   assert(MOBDB_FLAGS_GET_BYVAL(s->flags));
   Set *result = set_copy(s);
   for (int i = 0; i < s->count; i++)
-    (set_offsets_ptr(result))[i] =
-      datum_add(set_val_n(s, i), shift, s->basetype, s->basetype);
+    (SET_OFFSETS_PTR(result))[i] =
+      datum_add(SET_VAL_N(s, i), shift, s->basetype, s->basetype);
   return result;
 }
 
@@ -1181,11 +1183,11 @@ tstzset_shift_tscale(const Set *s, const Interval *shift,
 
   /* Set the first and last instants */
   TimestampTz lower, lower1, upper, upper1;
-  lower = lower1 = DatumGetTimestampTz(set_val_n(s, 0));
-  upper = upper1 = DatumGetTimestampTz(set_val_n(s, s->count - 1));
+  lower = lower1 = DatumGetTimestampTz(SET_VAL_N(s, 0));
+  upper = upper1 = DatumGetTimestampTz(SET_VAL_N(s, s->count - 1));
   lower_upper_shift_tscale(&lower1, &upper1, shift, duration);
-  (set_offsets_ptr(result))[0] = TimestampTzGetDatum(lower1);
-  (set_offsets_ptr(result))[s->count - 1] = TimestampTzGetDatum(upper1);
+  (SET_OFFSETS_PTR(result))[0] = TimestampTzGetDatum(lower1);
+  (SET_OFFSETS_PTR(result))[s->count - 1] = TimestampTzGetDatum(upper1);
   if (s->count > 1)
   {
     /* Shift and/or scale from the second to the penultimate instant */
@@ -1198,10 +1200,10 @@ tstzset_shift_tscale(const Set *s, const Interval *shift,
     for (int i = 1; i < s->count - 1; i++)
     {
       if (shift != NULL)
-        (set_offsets_ptr(result))[i] += delta;
+        (SET_OFFSETS_PTR(result))[i] += delta;
       if (duration != NULL)
-        (set_offsets_ptr(result))[i] = lower1 +
-          (set_val_n(result, i) - lower1) * scale;
+        (SET_OFFSETS_PTR(result))[i] = lower1 +
+          (SET_VAL_N(result, i) - lower1) * scale;
     }
   }
   return result;
@@ -1227,8 +1229,8 @@ set_eq(const Set *s1, const Set *s2)
   /* s1 and s2 have the same number of values */
   for (int i = 0; i < s1->count; i++)
   {
-    Datum v1 = set_val_n(s1, i);
-    Datum v2 = set_val_n(s2, i);
+    Datum v1 = SET_VAL_N(s1, i);
+    Datum v2 = SET_VAL_N(s2, i);
     if (datum_ne(v1, v2, s1->basetype))
       return false;
   }
@@ -1264,8 +1266,8 @@ set_cmp(const Set *s1, const Set *s2)
   int result = 0;
   for (int i = 0; i < count; i++)
   {
-    Datum v1 = set_val_n(s1, i);
-    Datum v2 = set_val_n(s2, i);
+    Datum v1 = SET_VAL_N(s1, i);
+    Datum v2 = SET_VAL_N(s2, i);
     result = datum_cmp(v1, v2, s1->basetype);
     if (result)
       break;
@@ -1346,7 +1348,7 @@ set_hash(const Set *s)
   uint32 result = 1;
   for (int i = 0; i < s->count; i++)
   {
-    Datum d = set_val_n(s, i);
+    Datum d = SET_VAL_N(s, i);
     uint32 value_hash = datum_hash(d, s->basetype);
     result = (result << 5) - result + value_hash;
   }
@@ -1364,7 +1366,7 @@ set_hash_extended(const Set *s, uint64 seed)
   uint64 result = 1;
   for (int i = 0; i < s->count; i++)
   {
-    Datum d = set_val_n(s, i);
+    Datum d = SET_VAL_N(s, i);
     uint64 value_hash = datum_hash_extended(d, s->basetype, seed);
     result = (result << 5) - result + value_hash;
   }
