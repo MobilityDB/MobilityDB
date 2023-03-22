@@ -1119,7 +1119,7 @@ set_to_wkb_size(const Set *set, uint8_t variant)
   /* Compute the size of the values which may be of variable length*/
   for (int i = 0; i < set->count; i++)
   {
-    Datum value = set_val_n(set, i);
+    Datum value = SET_VAL_N(set, i);
     result += set_basetype_to_wkb_size(value, basetype, set->flags);
   }
   if (geoset_wkb_needs_srid(set, variant))
@@ -1724,7 +1724,7 @@ set_to_wkb_buf(const Set *set, uint8_t *buf, uint8_t variant)
   buf = int32_to_wkb_buf(set->count, buf, variant);
   /* Write the values */
   for (int i = 0; i < set->count; i++)
-    buf = basevalue_to_wkb_buf(set_val_n(set, i), set->basetype, set->flags,
+    buf = basevalue_to_wkb_buf(SET_VAL_N(set, i), set->basetype, set->flags,
       buf, variant);
   return buf;
 }

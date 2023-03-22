@@ -975,18 +975,18 @@ Tinstant_get_value(PG_FUNCTION_ARGS)
   PG_RETURN_DATUM(result);
 }
 
-PG_FUNCTION_INFO_V1(Temporal_values);
+PG_FUNCTION_INFO_V1(Temporal_valueset);
 /**
  * @ingroup mobilitydb_temporal_accessor
- * @brief Return the base values of a temporal value as an array
+ * @brief Return the base values of a temporal value as a set
  * @sqlfunc getValues()
  */
 PGDLLEXPORT Datum
-Temporal_values(PG_FUNCTION_ARGS)
+Temporal_valueset(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int count;
-  Datum *values = temporal_values(temp, &count);
+  Datum *values = temporal_valueset(temp, &count);
   meosType basetype = temptype_basetype(temp->temptype);
   /* Currently, there is no boolset type */
   if (temp->temptype == T_TBOOL)
@@ -1002,17 +1002,17 @@ Temporal_values(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Tfloat_spanset);
+PG_FUNCTION_INFO_V1(Tnumber_values);
 /**
  * @ingroup mobilitydb_temporal_accessor
- * @brief Return the base values of a temporal float as an array of spans
+ * @brief Return the base values of a temporal float as a span set
  * @sqlfunc getValues()
  */
 PGDLLEXPORT Datum
-Tfloat_spanset(PG_FUNCTION_ARGS)
+Tnumber_values(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  SpanSet *result = tfloat_spanset(temp);
+  SpanSet *result = tnumber_values(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -1490,7 +1490,7 @@ Temporal_unnest(PG_FUNCTION_ARGS)
     ensure_nonlinear_interpolation(temp->flags);
     /* Create function state */
     int count;
-    Datum *values = temporal_values(temp, &count);
+    Datum *values = temporal_valueset(temp, &count);
     funcctx->user_fctx = temporal_unnest_state_make(temp, values, count);
     /* Build a tuple description for the function output */
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
@@ -2013,7 +2013,7 @@ temporal_restrict_values_ext(FunctionCallInfo fcinfo, bool atfunc)
    * bounding box function */
   Temporal *result = (set->count > 1) ?
     temporal_restrict_values(temp, set, atfunc) :
-    temporal_restrict_value(temp, set_val_n(set, 0), atfunc);
+    temporal_restrict_value(temp, SET_VAL_N(set, 0), atfunc);
 
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(set, 1);

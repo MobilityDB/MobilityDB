@@ -120,11 +120,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_FromBinary"><varname>&lt;set&gt;FromBinary</varname>, <varname>&lt;span&gt;FromBinary</varname>, <varname>&lt;spanset&gt;FromBinary</varname></link>: Obtener a partir de la representación binaria conocida (WKB)</para>
+					<para><link linkend="setspan_FromBinary"><varname>settypeFromBinary</varname>, <varname>spantypeFromBinary</varname>, <varname>spansettypeFromBinary</varname></link>: Obtener a partir de la representación binaria conocida (WKB)</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_FromHexWKB"><varname>&lt;set&gt;FromHexWKB</varname>, <varname>&lt;span&gt;FromHexWKB</varname>, <varname>&lt;spanset&gt;FromHexWKB</varname></link>: Obtener a partir de la representación hexadecimal binaria conocida (HexWKB)</para>
+					<para><link linkend="setspan_FromHexWKB"><varname>settypeFromHexWKB</varname>, <varname>spantypeFromHexWKB</varname>, <varname>spansettypeFromHexWKB</varname></link>: Obtener a partir de la representación hexadecimal binaria conocida (HexWKB)</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -204,7 +204,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_startTimestamp"><varname>startValue</varname>, <varname>endValue</varname>, <varname>valueN</varname></link>: Obtener el valor inicial/final/enésimo</para>
+					<para><link linkend="setspan_startTimestamp"><varname>startValue</varname>, <varname>endValue</varname>, <varname>valueN</varname></link>: Obtener el valor inicial, final o enésimo</para>
 				</listitem>
 
 				<listitem>
@@ -216,7 +216,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="startSpan"><varname>startSpan</varname>, <varname>endSpan</varname>, <varname>spanN</varname></link>: Obtener el rango inicial/final/enésimo</para>
+					<para><link linkend="startSpan"><varname>startSpan</varname>, <varname>endSpan</varname>, <varname>spanN</varname></link>: Obtener el rango inicial, final o enésimo</para>
 				</listitem>
 
 				<listitem>
@@ -664,31 +664,31 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="getValue"><varname>getValue</varname></link>: Obtener el valor</para>
+					<para><link linkend="getValue"><varname>getValue</varname>, <varname>getTimestamp</varname></link>: Obtener el valor o el tiempo del instante</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="getValues"><varname>getValues</varname></link>: Obtener los valores</para>
+					<para><link linkend="getValues"><varname>getValues</varname>, <varname>getTime</varname></link>: Obtener los valores o el tiempo en el que se define el valor temporal</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="trajectory"><varname>trajectory</varname></link>: Obtener los valores de base transitados por el valor temporal</para>
+					<para><link linkend="valueSpan"><varname>valueSpan</varname>, <varname>timeSpan</varname></link>: Obtener el rango de valores o de tiempo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="startValue"><varname>startValue</varname>, <varname>endValue</varname></link>: Obtener el valor inicial/final</para>
+					<para><link linkend="valueSet"><varname>valueSet</varname></link>: Obtener los valores del número o punto temporal number como un conjunto</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="minValue"><varname>minValue</varname>, <varname>maxValue</varname></link>: Obtener el valor mínimo/máximo</para>
+					<para><link linkend="startValue"><varname>startValue</varname>, <varname>endValue</varname></link>: Obtener el valor inicial o final</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="minInstant"><varname>minInstant</varname>, <varname>maxInstant</varname></link>: Obtener el instante con el valor mínimo/máximo</para>
+					<para><link linkend="minValue"><varname>minValue</varname>, <varname>maxValue</varname></link>: Obtener el valor mínimo o máximo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="valueSpan"><varname>valueSpan</varname></link>: Obtener el rango de valores</para>
+					<para><link linkend="minInstant"><varname>minInstant</varname>, <varname>maxInstant</varname></link>: Obtener el instante con el valor mínimo o máximo</para>
 				</listitem>
 
 				<listitem>
@@ -696,19 +696,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="getTimestamp"><varname>getTimestamp</varname></link>: Obtener la marca de tiempo</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="getTime"><varname>getTime</varname></link>: Obtener el tiempo</para>
-				</listitem>
-
-				<listitem>
 					<para><link linkend="ttype_duration"><varname>duration</varname></link>: Obtener el intervalo de tiempo</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="ttype_timespan"><varname>timespan</varname></link>: Obtener el lapso de tiempo del valor temporal ignorando las posibles brechas de tiempo</para>
 				</listitem>
 
 				<listitem>
@@ -716,7 +704,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="startInstant"><varname>startInstant</varname>, <varname>endInstant</varname>, <varname>instantN</varname></link>: Obtener el instante inicial/final/enésimo</para>
+					<para><link linkend="startInstant"><varname>startInstant</varname>, <varname>endInstant</varname>, <varname>instantN</varname></link>: Obtener el instante inicial, final o enésimo</para>
 				</listitem>
 
 				<listitem>
@@ -728,7 +716,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_startTimestamp"><varname>startTimestamp</varname>, <varname>endTimestamp</varname>, <varname>timestampN</varname></link>: Obtener la marca de tiempo inicial/final/enésima</para>
+					<para><link linkend="ttype_startTimestamp"><varname>startTimestamp</varname>, <varname>endTimestamp</varname>, <varname>timestampN</varname></link>: Obtener la marca de tiempo inicial, final o enésima</para>
 				</listitem>
 
 				<listitem>
@@ -740,7 +728,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="startSequence"><varname>startSequence</varname>, <varname>endSequence</varname>, <varname>sequenceN</varname></link>: Obtener la secuencia inicial/final/enésima</para>
+					<para><link linkend="startSequence"><varname>startSequence</varname>, <varname>endSequence</varname>, <varname>sequenceN</varname></link>: Obtener la secuencia inicial, final o enésima</para>
 				</listitem>
 
 				<listitem>
@@ -1136,6 +1124,10 @@
 		<sect2>
 			<title>Accesores</title>
 			<itemizedlist>
+				<listitem>
+					<para><link linkend="trajectory"><varname>trajectory</varname></link>: Obtener la trayectoria</para>
+				</listitem>
+
 				<listitem>
 					<para><link linkend="getX"><varname>getX</varname>, <varname>getY</varname>, <varname>getZ</varname></link>: Obtener los valores de las coordenadas X/Y/Z como un número flotante temporal</para>
 				</listitem>

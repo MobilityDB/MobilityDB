@@ -736,16 +736,16 @@ SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_tbool;
    2
 (1 row)
 
-SELECT MAX(numValues(getValues(temp))) FROM tbl_tint;
+SELECT MAX(numSpans(getValues(temp))) FROM tbl_tint;
  max 
 -----
-  35
+  25
 (1 row)
 
-SELECT MAX(numValues(getValues(temp))) FROM tbl_tfloat;
+SELECT MAX(numSpans(getValues(temp))) FROM tbl_tfloat;
  max 
 -----
-  52
+   9
 (1 row)
 
 SELECT MAX(numValues(getValues(temp))) FROM tbl_ttext;
@@ -754,10 +754,16 @@ SELECT MAX(numValues(getValues(temp))) FROM tbl_ttext;
   54
 (1 row)
 
-SELECT MAX(numSpans(trajectory(temp))) FROM tbl_tfloat;
+SELECT MAX(numValues(valueSet(temp))) FROM tbl_tint;
  max 
 -----
-   9
+  35
+(1 row)
+
+SELECT MAX(numValues(valueSet(temp))) FROM tbl_tfloat;
+ max 
+-----
+  52
 (1 row)
 
 SELECT DISTINCT startValue(temp) FROM tbl_tbool;

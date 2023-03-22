@@ -402,6 +402,11 @@ tinterrel_tpointcontseq_geom(const TSequence *seq, Datum geom, const STBox *box,
   int count;
   TSequence **sequences = tinterrel_tpointcontseq_geom1(seq, geom, box, tinter,
     func, &count);
+  if (count == 0)
+  {
+    pfree(sequences);
+    return NULL;
+  }
   return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
 
@@ -905,6 +910,11 @@ tdwithin_tpointseq_tpointseq(const TSequence *seq1, const TSequence *seq2,
   TSequence **sequences = palloc(sizeof(TSequence *) * seq1->count * 4);
   int count = tdwithin_tpointseq_tpointseq2(seq1, seq2, Float8GetDatum(dist),
     func, sequences);
+  if (count == 0)
+  {
+    pfree(sequences);
+    return NULL;
+  }
   return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
 
@@ -933,6 +943,11 @@ tdwithin_tpointseqset_tpointseqset(const TSequenceSet *ss1,
     const TSequence *seq2 = TSEQUENCESET_SEQ_N(ss2, i);
     k += tdwithin_tpointseq_tpointseq2(seq1, seq2, Float8GetDatum(dist), func,
       &sequences[k]);
+  }
+  if (k == 0)
+  {
+    pfree(sequences);
+    return NULL;
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
@@ -1037,6 +1052,11 @@ tdwithin_tpointseq_point(const TSequence *seq, Datum point, Datum dist,
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * seq->count * 4);
   int count = tdwithin_tpointseq_point1(seq, point, dist, func, sequences);
+  if (count == 0)
+  {
+    pfree(sequences);
+    return NULL;
+  }
   return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
 
@@ -1063,6 +1083,11 @@ tdwithin_tpointseqset_point(const TSequenceSet *ss, Datum point, Datum dist,
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     k += tdwithin_tpointseq_point1(seq, point, dist, func, &sequences[k]);
+  }
+  if (k == 0)
+  {
+    pfree(sequences);
+    return NULL;
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }

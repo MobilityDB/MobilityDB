@@ -27,7 +27,7 @@ SELECT COUNT(*) FROM tbl_intspan_big WHERE i @> 50;
 SELECT COUNT(*) FROM tbl_intspan_big WHERE i -|- 50;
  count 
 -------
-   105
+   215
 (1 row)
 
 SELECT COUNT(*) FROM tbl_intspan_big WHERE i << 15;
@@ -229,7 +229,7 @@ SELECT COUNT(*) FROM tbl_intspan_big WHERE i @> 50;
 SELECT COUNT(*) FROM tbl_intspan_big WHERE i -|- 50;
  count 
 -------
-   105
+   215
 (1 row)
 
 SELECT COUNT(*) FROM tbl_intspan_big WHERE i << 15;

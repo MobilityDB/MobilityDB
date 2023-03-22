@@ -200,14 +200,14 @@ SELECT asHexWKB(intspanset '{[1, 2], [4, 5]}', 'XDR');
 			</listitem>
 
 			<listitem id="setspan_FromBinary">
-				<indexterm><primary><varname>&lt;set&gt;FromBinary</varname></primary></indexterm>
-				<indexterm><primary><varname>&lt;span&gt;FromBinary</varname></primary></indexterm>
-				<indexterm><primary><varname>&lt;spanset&gt;FromBinary</varname></primary></indexterm>
+				<indexterm><primary><varname>settypeFromBinary</varname></primary></indexterm>
+				<indexterm><primary><varname>spantypeFromBinary</varname></primary></indexterm>
+				<indexterm><primary><varname>spansettypeFromBinary</varname></primary></indexterm>
 				<para>Input from a Well-Known Binary (WKB) representation</para>
 				<para>There is one function per base type, the name of the function has as prefix the name of the set type</para>
-				<para><varname>&lt;set&gt;FromBinary(bytea) → set</varname></para>
-				<para><varname>&lt;span&gt;FromBinary(bytea) → span</varname></para>
-				<para><varname>&lt;spanset&gt;FromBinary(bytea) → spanset</varname></para>
+				<para><varname>settypeFromBinary(bytea) → set</varname></para>
+				<para><varname>spantypeFromBinary(bytea) → span</varname></para>
+				<para><varname>spansettypeFromBinary(bytea) → spanset</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tstzsetFromBinary('\x01020000000fce0136a58010000bc8f4f92580100');
 -- {2001-01-01, 2001-01-03}
@@ -220,14 +220,14 @@ SELECT tstzspansetFromBinary(
 			</listitem>
 
 			<listitem id="setspan_FromHexWKB">
-				<indexterm><primary><varname>&lt;set&gt;FromHexWKB</varname></primary></indexterm>
-				<indexterm><primary><varname>&lt;span&gt;FromHexWKB</varname></primary></indexterm>
-				<indexterm><primary><varname>&lt;spanset&gt;FromHexWKB</varname></primary></indexterm>
+				<indexterm><primary><varname>settypeFromHexWKB</varname></primary></indexterm>
+				<indexterm><primary><varname>spantypeFromHexWKB</varname></primary></indexterm>
+				<indexterm><primary><varname>spansettypeFromHexWKB</varname></primary></indexterm>
 				<para>Input from an Hexadecimal Well-Known Binary (HexWKB) representation</para>
 				<para>There is one function per set type, the name of the function has as prefix the name of the set type.</para>
-				<para><varname>&lt;set&gt;FromHexWKB(text) → set</varname></para>
-				<para><varname>&lt;span&gt;FromHexWKB(text) → span</varname></para>
-				<para><varname>&lt;spanset&gt;FromHexWKB(text) → spanset</varname></para>
+				<para><varname>settypeFromHexWKB(text) → set</varname></para>
+				<para><varname>spantypeFromHexWKB(text) → span</varname></para>
+				<para><varname>spansettypeFromHexWKB(text) → spanset</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tstzsetFromHexWKB('010200000000FCE0136A58010000BC8F4F92580100');
 -- {2001-01-01, 2001-01-03}

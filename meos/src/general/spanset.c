@@ -259,12 +259,17 @@ periodset_out(const SpanSet *ss)
  *
  * @param[in] spans Array of spans
  * @param[in] count Number of elements in the array
+ * @param[in] maxcount Maximum number of elements in the array
  * @param[in] normalize True if the resulting value should be normalized
+ * @param[in] ordered True for ordered sets
  * @sqlfunc spanset()
  */
 SpanSet *
-spanset_make(const Span **spans, int count, bool normalize)
+spanset_make_exp(const Span **spans, int count, int maxcount, bool normalize,
+  bool ordered __attribute__((unused)))
 {
+  assert(maxcount >= count);
+
   /* Test the validity of the spans */
   for (int i = 0; i < count - 1; i++)
   {
@@ -279,15 +284,17 @@ spanset_make(const Span **spans, int count, bool normalize)
   int newcount = count;
   if (normalize && count > 1)
     newspans = spanarr_normalize((Span **) spans, count, SORT_NO, &newcount);
+
   /* Notice that the first span is already declared in the struct */
   size_t memsize = DOUBLE_PAD(sizeof(SpanSet)) +
-    DOUBLE_PAD(sizeof(Span)) * (newcount - 1);
+    DOUBLE_PAD(sizeof(Span)) * (maxcount - 1);
   SpanSet *result = palloc0(memsize);
   SET_VARSIZE(result, memsize);
   result->spansettype = spantype_spansettype(spans[0]->spantype);
   result->spantype = spans[0]->spantype;
   result->basetype = spans[0]->basetype;
   result->count = newcount;
+  result->maxcount = maxcount;
 
   /* Compute the bounding span */
   span_set(newspans[0]->lower, newspans[newcount - 1]->upper,
@@ -300,6 +307,20 @@ spanset_make(const Span **spans, int count, bool normalize)
   if (normalize && count > 1)
     pfree_array((void **) newspans, newcount);
   return result;
+}
+
+/**
+ * @ingroup libmeos_setspan_constructor
+ * @brief Construct a span set from an array of disjoint span.
+ * @param[in] spans Array of spans
+ * @param[in] count Number of elements in the array
+ * @param[in] normalize True if the resulting value should be normalized
+ * @sqlfunc spanset()
+ */
+SpanSet *
+spanset_make(const Span **spans, int count, bool normalize)
+{
+  return spanset_make_exp(spans, count, count, normalize, true);
 }
 
 /**
@@ -412,12 +433,15 @@ SpanSet *
 set_to_spanset(const Set *s)
 {
   Span **spans = palloc(sizeof(Span *) * s->count);
+  Span *spans_buf = palloc(sizeof(Span) * s->count);
   for (int i = 0; i < s->count; i++)
   {
-    Datum d = set_val_n(s, i);
-    spans[i] = span_make(d, d, true, true, s->basetype);
+    Datum d = SET_VAL_N(s, i);
+    spans[i] = &spans_buf[i];
+    span_set(d, d, true, true, s->basetype, spans[i]);
   }
-  SpanSet *result = spanset_make_free(spans, s->count, NORMALIZE_NO);
+  SpanSet *result = spanset_make((const Span **) spans, s->count, NORMALIZE_NO);
+  pfree(spans); pfree(spans_buf);
   return result;
 }
 

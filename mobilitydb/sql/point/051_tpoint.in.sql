@@ -338,13 +338,22 @@ CREATE FUNCTION getValue(tgeogpoint)
   AS 'MODULE_PATHNAME', 'Tinstant_get_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION getValues(tgeompoint)
-  RETURNS geomset
-  AS 'MODULE_PATHNAME', 'Temporal_values'
+CREATE FUNCTION getTimestamp(tgeompoint)
+  RETURNS timestamptz
+  AS 'MODULE_PATHNAME', 'Tinstant_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION getValues(tgeogpoint)
+CREATE FUNCTION getTimestamp(tgeogpoint)
+  RETURNS timestamptz
+  AS 'MODULE_PATHNAME', 'Tinstant_timestamp'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION valueSet(tgeompoint)
+  RETURNS geomset
+  AS 'MODULE_PATHNAME', 'Temporal_valueset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION valueSet(tgeogpoint)
   RETURNS geogset
-  AS 'MODULE_PATHNAME', 'Temporal_values'
+  AS 'MODULE_PATHNAME', 'Temporal_valueset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- time is a reserved word in SQL
@@ -355,15 +364,6 @@ CREATE FUNCTION getTime(tgeompoint)
 CREATE FUNCTION getTime(tgeogpoint)
   RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Temporal_time'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION getTimestamp(tgeompoint)
-  RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'Tinstant_timestamp'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION getTimestamp(tgeogpoint)
-  RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'Tinstant_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION startValue(tgeompoint)

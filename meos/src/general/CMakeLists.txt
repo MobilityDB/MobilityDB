@@ -33,8 +33,7 @@ add_library(general OBJECT
   type_util.c
 )
 
-if(MEOS)
-add_library(general OBJECT
+add_library(general_meos OBJECT
   set_aggfuncs_meos.c
   tbool_boolops_meos.c
   temporal_compops_meos.c
@@ -42,4 +41,4 @@ add_library(general OBJECT
   tnumber_mathfuncs_meos.c
   ttext_textfuncs_meos.c
 )
-endif()
+

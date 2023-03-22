@@ -70,7 +70,7 @@ Tnpoint_gin_extract_value(PG_FUNCTION_ARGS)
   /* Transform the routes into Datums */
   Datum *elems = palloc(sizeof(Datum) * routes->count);
   for (int i = 0; i < routes->count; i++)
-    elems[i] = Int64GetDatum(set_val_n(routes, i));
+    elems[i] = Int64GetDatum(SET_VAL_N(routes, i));
   pfree(routes);
   *nkeys = routes->count;
   *nullFlags = NULL;
@@ -121,7 +121,7 @@ Tnpoint_gin_extract_query(PG_FUNCTION_ARGS)
       /* Transform the routes into Datums */
       elems = palloc(sizeof(Datum) * routes->count);
       for (int i = 0; i < routes->count; i++)
-        elems[i] = Int64GetDatum(set_val_n(routes, i));
+        elems[i] = Int64GetDatum(SET_VAL_N(routes, i));
       pfree(routes);
       *nkeys = routes->count;
       *searchMode = GIN_SEARCH_MODE_DEFAULT;

@@ -2361,6 +2361,11 @@ tpointseqset_speed(const TSequenceSet *ss)
     if (seq->count > 1)
       sequences[k++] = tpointseq_speed(seq);
   }
+  if (k == 0)
+  {
+    pfree(sequences);
+    return NULL;
+  }
   /* The resulting sequence set has step interpolation */
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
@@ -2698,6 +2703,11 @@ tpointseq_azimuth(const TSequence *seq)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * seq->count);
   int count = tpointseq_azimuth1(seq, sequences);
+  if (count == 0)
+  {
+    pfree(sequences);
+    return NULL;
+  }
   /* Resulting sequence set has step interpolation */
   return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
@@ -2719,6 +2729,11 @@ tpointseqset_azimuth(const TSequenceSet *ss)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     k += tpointseq_azimuth1(seq, &sequences[k]);
+  }
+  if (k == 0)
+  {
+    pfree(sequences);
+    return NULL;
   }
   /* Resulting sequence set has step interpolation */
   return tsequenceset_make_free(sequences, k, NORMALIZE);

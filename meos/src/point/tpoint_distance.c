@@ -72,6 +72,7 @@ tnumberinst_distance(const TInstant *inst1, const TInstant *inst2)
 /**
  * @brief Compute the distance between two temporal instants.
  * @param[in] inst1,inst2 Temporal instants
+ * @param[in] func Distance function
  */
 double
 tpointinst_distance(const TInstant *inst1, const TInstant *inst2,
@@ -86,6 +87,7 @@ tpointinst_distance(const TInstant *inst1, const TInstant *inst2,
 /**
  * @brief Compute the distance between two temporal instants.
  * @param[in] inst1,inst2 Temporal instants
+ * @param[in] func Distance function
  */
 double
 tinstant_distance(const TInstant *inst1, const TInstant *inst2,

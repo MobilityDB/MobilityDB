@@ -405,12 +405,12 @@ tinstant_copy(const TInstant *inst)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Return the singleton array of base values of a temporal instant.
+ * @brief Return the singleton base value of a temporal instant.
  * @post The output parameter @p count is equal to 1
  * @sqlfunc getValues()
  */
 Datum *
-tinstant_values(const TInstant *inst, int *count)
+tinstant_valueset(const TInstant *inst, int *count)
 {
   Datum *result = palloc(sizeof(Datum));
   result[0] = tinstant_value(inst);
@@ -420,15 +420,15 @@ tinstant_values(const TInstant *inst, int *count)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Return the span set of a temporal instant float.
+ * @brief Return the base values of a temporal instant number as a span set.
  * @sqlfunc getValues()
  */
 SpanSet *
-tfloatinst_spanset(const TInstant *inst)
+tnumberinst_values(const TInstant *inst)
 {
   Datum value = tinstant_value(inst);
   Span s;
-  span_set(value, value, true, true, T_FLOAT8, &s);
+  span_set(value, value, true, true, temptype_basetype(inst->temptype), &s);
   return span_to_spanset(&s);
 }
 
@@ -698,7 +698,7 @@ tinstant_restrict_values_test(const TInstant *inst, const Set *set,
   meosType basetype = temptype_basetype(inst->temptype);
   for (int i = 0; i < set->count; i++)
   {
-    if (datum_eq(value, set_val_n(set, i), basetype))
+    if (datum_eq(value, SET_VAL_N(set, i), basetype))
       return atfunc ? true : false;
   }
   return atfunc ? false : true;
@@ -821,7 +821,7 @@ tinstant_restrict_timestampset_test(const TInstant *inst, const Set *ts,
   bool atfunc)
 {
   for (int i = 0; i < ts->count; i++)
-    if (inst->t == DatumGetTimestampTz(set_val_n(ts, i)))
+    if (inst->t == DatumGetTimestampTz(SET_VAL_N(ts, i)))
       return atfunc ? true : false;
   return atfunc ? false : true;
 }

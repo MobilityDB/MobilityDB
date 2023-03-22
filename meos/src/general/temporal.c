@@ -1607,6 +1607,11 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
     lower += tunits;
     upper += tunits;
   }
+  if (k == 0)
+  {
+    pfree(sequences);
+    return NULL;
+  }
   TSequenceSet *result = tsequenceset_make_free(sequences, k, NORMALIZE);
   return result;
 }
@@ -1712,10 +1717,11 @@ tsequence_tsample(const TSequence *seq, const Interval *duration,
     }
   }
   if (k == 0)
+  {
+    pfree(instants);
     return NULL;
-  TSequence *result = tsequence_make_free(instants, k, true, true, interp,
-    NORMALIZE);
-  return result;
+  }
+  return tsequence_make_free(instants, k, true, true, interp, NORMALIZE);
 }
 
 /**
@@ -1739,7 +1745,10 @@ tsequenceset_tsample(const TSequenceSet *ss, const Interval *duration,
       sequences[k++] = sample;
   }
   if (k == 0)
+  {
+    pfree(sequences);
     return NULL;
+  }
   TSequenceSet *result = tsequenceset_make_free(sequences, k, NORMALIZE);
   return result;
 }
@@ -1773,7 +1782,7 @@ temporal_tsample(const Temporal *temp, const Interval *duration,
  *****************************************************************************/
 
 #define MOBDB_SUBTYPE_STR_MAXLEN 12
-#define MOBDB_INTERPOLATION_STR_MAXLEN 12
+#define MOBDB_INTERPOLATION_STR_MAXLEN 9
 
 #if MEOS
 /**
@@ -1821,7 +1830,9 @@ temporal_interpolation(const Temporal *temp)
   char *result = palloc(sizeof(char) * MOBDB_INTERPOLATION_STR_MAXLEN);
   assert(temptype_subtype(temp->subtype));
   interpType interp = MOBDB_FLAGS_GET_INTERP(temp->flags);
-  if (temp->subtype == TINSTANT || interp == DISCRETE)
+  if (temp->subtype == TINSTANT)
+    strcpy(result, "None");
+  else if (interp == DISCRETE)
     strcpy(result, "Discrete");
   else if (interp == STEP)
     strcpy(result, "Step");
@@ -1852,21 +1863,21 @@ temporal_set_bbox(const Temporal *temp, void *box)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_accessor
- * @brief Return the array of base values of a temporal value.
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the base values of a temporal value as a set.
  * @sqlfunc values
  */
 Datum *
-temporal_values(const Temporal *temp, int *count)
+temporal_valueset(const Temporal *temp, int *count)
 {
   Datum *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
-    result = tinstant_values((TInstant *) temp, count);
+    result = tinstant_valueset((TInstant *) temp, count);
   else if (temp->subtype == TSEQUENCE)
-    result = tsequence_values((TSequence *) temp, count);
+    result = tsequence_valueset((TSequence *) temp, count);
   else /* temp->subtype == TSEQUENCESET */
-    result = tsequenceset_values((TSequenceSet *) temp, count);
+    result = tsequenceset_valueset((TSequenceSet *) temp, count);
   return result;
 }
 
@@ -1959,21 +1970,22 @@ tpoint_values(const Temporal *temp, int *count)
 
 /**
  * @ingroup libmeos_temporal_accessor
- * @brief Return the base values of a temporal float as a span set.
+ * @brief Return the base values of a temporal number as a span set.
  * @sqlfunc getValues
  * @pymeosfunc TFloat.getValues
  */
 SpanSet *
-tfloat_spanset(const Temporal *temp)
+tnumber_values(const Temporal *temp)
 {
   SpanSet *result;
+  assert(tnumber_type(temp->temptype));
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
-    result = tfloatinst_spanset((TInstant *) temp);
+    result = tnumberinst_values((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
-    result = tfloatseq_spanset((TSequence *) temp);
+    result = tnumberseq_values((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
-    result = tfloatseqset_spanset((TSequenceSet *) temp);
+    result = tnumberseqset_values((TSequenceSet *) temp);
   return result;
 }
 
@@ -3227,7 +3239,7 @@ temporal_bbox_restrict_set(const Temporal *temp, const Set *set)
   {
     STBox box;
     temporal_set_bbox(temp, &box);
-    return contains_stbox_stbox(&box, (STBox *) set_bbox_ptr(set));
+    return contains_stbox_stbox(&box, (STBox *) SET_BBOX_PTR(set));
   }
   return true;
 }
@@ -4093,10 +4105,12 @@ tsequence_stops(const TSequence *seq, double maxdist, int64 mintunits)
   /* General case */
   TSequence **sequences = palloc(sizeof(TSequence *) * seq->count);
   int k = tsequence_stops1(seq, maxdist, mintunits, sequences);
-  TSequenceSet *result = NULL;
-  if (k > 0)
-    result = tsequenceset_make_free(sequences, k, NORMALIZE);
-  return result;
+  if (k == 0)
+  {
+    pfree(sequences);
+    return NULL;
+  }
+  return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
 
 /**
@@ -4115,8 +4129,12 @@ tsequenceset_stops(const TSequenceSet *ss, double maxdist, int64 mintunits)
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     k += tsequence_stops1(seq, maxdist, mintunits, &sequences[k]);
   }
-  TSequenceSet *result = tsequenceset_make_free(sequences, k, NORMALIZE);
-  return result;
+  if (k == 0)
+  {
+    pfree(sequences);
+    return NULL;
+  }
+  return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
 
 /*****************************************************************************/

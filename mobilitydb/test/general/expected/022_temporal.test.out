@@ -929,6 +929,10 @@ SELECT tfloat_seq('{}'::tfloat[], 'discrete');
 ERROR:  The input array cannot be empty
 SELECT ttext_seq('{}'::ttext[], 'discrete');
 ERROR:  The input array cannot be empty
+SELECT tbool_seq(ARRAY[tbool '1@2000-01-01', '1@2000-01-02', '1@2000-01-03'], 'xxxx');
+ERROR:  Unknown interpolation type: xxxx
+SELECT tbool_seq(ARRAY[tbool '1@2000-01-01', '1@2000-01-02', '1@2000-01-03'], 'linear');
+ERROR:  The temporal type cannot have linear interpolation
 SELECT tbool_seq(ARRAY[tbool '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]'], 'discrete');
 ERROR:  Input values must be temporal instants
 SELECT tint_seq(ARRAY[tint '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]'], 'discrete');
@@ -2540,7 +2544,7 @@ SELECT tempSubtype(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC
 SELECT interpolation(tbool 't@2000-01-01');
  interpolation 
 ---------------
- Discrete
+ None
 (1 row)
 
 SELECT interpolation(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
@@ -2564,7 +2568,7 @@ SELECT interpolation(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-
 SELECT interpolation(tint '1@2000-01-01');
  interpolation 
 ---------------
- Discrete
+ None
 (1 row)
 
 SELECT interpolation(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
@@ -2594,7 +2598,7 @@ SELECT interpolation(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-0
 SELECT interpolation(tfloat '1.5@2000-01-01');
  interpolation 
 ---------------
- Discrete
+ None
 (1 row)
 
 SELECT interpolation(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
@@ -2630,7 +2634,7 @@ SELECT interpolation(tfloat 'Interp=Step;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2
 SELECT interpolation(ttext 'AAA@2000-01-01');
  interpolation 
 ---------------
- Discrete
+ None
 (1 row)
 
 SELECT interpolation(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
@@ -2839,61 +2843,61 @@ SELECT getValues(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-0
 SELECT getValues(tint '1@2000-01-01');
  getvalues 
 -----------
- {1}
+ {[1, 2)}
 (1 row)
 
 SELECT getValues(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
  getvalues 
 -----------
- {1, 2}
+ {[1, 3)}
 (1 row)
 
 SELECT getValues(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
  getvalues 
 -----------
- {1, 2}
+ {[1, 3)}
 (1 row)
 
 SELECT getValues(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
  getvalues 
 -----------
- {1, 2, 3}
+ {[1, 4)}
 (1 row)
 
 SELECT getValues(tfloat '1.5@2000-01-01');
- getvalues 
------------
- {1.5}
+  getvalues   
+--------------
+ {[1.5, 1.5]}
 (1 row)
 
 SELECT getValues(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
- getvalues  
-------------
- {1.5, 2.5}
+        getvalues         
+--------------------------
+ {[1.5, 1.5], [2.5, 2.5]}
 (1 row)
 
 SELECT getValues(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
- getvalues  
-------------
- {1.5, 2.5}
+  getvalues   
+--------------
+ {[1.5, 2.5]}
 (1 row)
 
 SELECT getValues(tfloat 'Interp=Step;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
- getvalues  
-------------
- {1.5, 2.5}
+        getvalues         
+--------------------------
+ {[1.5, 1.5], [2.5, 2.5]}
 (1 row)
 
 SELECT getValues(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
-    getvalues    
------------------
- {1.5, 2.5, 3.5}
+        getvalues         
+--------------------------
+ {[1.5, 2.5], [3.5, 3.5]}
 (1 row)
 
 SELECT getValues(tfloat 'Interp=Step;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
-    getvalues    
------------------
- {1.5, 2.5, 3.5}
+              getvalues               
+--------------------------------------
+ {[1.5, 1.5], [2.5, 2.5], [3.5, 3.5]}
 (1 row)
 
 SELECT getValues(ttext 'AAA@2000-01-01');
@@ -2920,46 +2924,70 @@ SELECT getValues(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2
  {"AAA", "BBB", "CCC"}
 (1 row)
 
-SELECT trajectory(tfloat '1.5@2000-01-01');
-  trajectory  
---------------
- {[1.5, 1.5]}
+SELECT valueSet(tint '1@2000-01-01');
+ valueset 
+----------
+ {1}
 (1 row)
 
-SELECT trajectory(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
-        trajectory        
---------------------------
- {[1.5, 1.5], [2.5, 2.5]}
+SELECT valueSet(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
+ valueset 
+----------
+ {1, 2}
 (1 row)
 
-SELECT trajectory(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
-  trajectory  
---------------
- {[1.5, 2.5]}
+SELECT valueSet(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
+ valueset 
+----------
+ {1, 2}
 (1 row)
 
-SELECT trajectory(tfloat 'Interp=Step;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
-        trajectory        
---------------------------
- {[1.5, 1.5], [2.5, 2.5]}
+SELECT valueSet(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
+ valueset  
+-----------
+ {1, 2, 3}
 (1 row)
 
-SELECT trajectory(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
-        trajectory        
---------------------------
- {[1.5, 2.5], [3.5, 3.5]}
+SELECT valueSet(tfloat '1.5@2000-01-01');
+ valueset 
+----------
+ {1.5}
 (1 row)
 
-SELECT trajectory(tfloat 'Interp=Step;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
-              trajectory              
---------------------------------------
- {[1.5, 1.5], [2.5, 2.5], [3.5, 3.5]}
-(1 row)
-
-SELECT trajectory(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 2@2000-01-04)');
- trajectory 
+SELECT valueSet(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
+  valueset  
 ------------
- {[1, 2]}
+ {1.5, 2.5}
+(1 row)
+
+SELECT valueSet(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
+  valueset  
+------------
+ {1.5, 2.5}
+(1 row)
+
+SELECT valueSet(tfloat 'Interp=Step;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
+  valueset  
+------------
+ {1.5, 2.5}
+(1 row)
+
+SELECT valueSet(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
+    valueset     
+-----------------
+ {1.5, 2.5, 3.5}
+(1 row)
+
+SELECT valueSet(tfloat 'Interp=Step;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
+    valueset     
+-----------------
+ {1.5, 2.5, 3.5}
+(1 row)
+
+SELECT valueSet(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 2@2000-01-04)');
+ valueset 
+----------
+ {1, 2}
 (1 row)
 
 SELECT startValue(tbool 't@2000-01-01');

@@ -1196,6 +1196,9 @@ tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool syncdist,
  * checks whether the provided distance threshold is exceeded.
  * @param[in] seq Temporal value
  * @param[in] dist Minimum distance
+ * @param[in] syncdist True when computing the Synchronized Euclidean
+ * Distance (SED), false when computing the spatial only distance.
+ * @param[in] minpts Minimum number of points
  */
 TSequence *
 tsequence_simplify_max_dist(const TSequence *seq, double dist, bool syncdist,
@@ -1750,6 +1753,11 @@ tpointseq_grid(const TSequence *seq, const gridspec *grid, bool filter_pts)
     pfree(gs);
     memcpy(&prev_p, &p, sizeof(POINT4D));
   }
+  if (k == 0)
+  {
+    pfree(instants);
+    return NULL;
+  }
   if (filter_pts && k == 1)
   {
     pfree_array((void **) instants, 1);
@@ -1775,6 +1783,11 @@ tpointseqset_grid(const TSequenceSet *ss, const gridspec *grid, bool filter_pts)
     TSequence *seq = tpointseq_grid(TSEQUENCESET_SEQ_N(ss, i), grid, filter_pts);
     if (seq != NULL)
       sequences[k++] = seq;
+  }
+  if (k == 0)
+  {
+    pfree(sequences);
+    return NULL;
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }

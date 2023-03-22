@@ -723,7 +723,7 @@ geoset_round(const Set *s, Datum prec)
   Datum *values = palloc(sizeof(Datum) * s->count);
   for (int i = 0; i < s->count; i++)
   {
-    Datum value = set_val_n(s, i);
+    Datum value = SET_VAL_N(s, i);
     values[i] = datum_round_geo(value, prec);
   }
   Set *result = set_make(values, s->count, s->basetype, ORDERED);

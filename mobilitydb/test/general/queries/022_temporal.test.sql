@@ -74,7 +74,7 @@ SELECT tint '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03';
 SELECT tint '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03},';
 
 -------------------------------------------------------------------------------
--- Temporal sequence
+-- Temporal continuous sequence
 
 SELECT tbool ' [ true@2001-01-01 08:00:00 , false@2001-01-01 08:05:00 , true@2001-01-01 08:06:00 ] ';
 SELECT tbool '[true@2001-01-01 08:00:00,false@2001-01-01 08:05:00,true@2001-01-01 08:06:00]';
@@ -306,6 +306,8 @@ SELECT tbool_seq('{}'::tbool[], 'discrete');
 SELECT tint_seq('{}'::tint[], 'discrete');
 SELECT tfloat_seq('{}'::tfloat[], 'discrete');
 SELECT ttext_seq('{}'::ttext[], 'discrete');
+SELECT tbool_seq(ARRAY[tbool '1@2000-01-01', '1@2000-01-02', '1@2000-01-03'], 'xxxx');
+SELECT tbool_seq(ARRAY[tbool '1@2000-01-01', '1@2000-01-02', '1@2000-01-03'], 'linear');
 SELECT tbool_seq(ARRAY[tbool '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]'], 'discrete');
 SELECT tint_seq(ARRAY[tint '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]'], 'discrete');
 SELECT tfloat_seq(ARRAY[tfloat '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]'], 'discrete');
@@ -841,13 +843,18 @@ SELECT getValues(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
 SELECT getValues(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
 SELECT getValues(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
 
-SELECT trajectory(tfloat '1.5@2000-01-01');
-SELECT trajectory(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
-SELECT trajectory(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
-SELECT trajectory(tfloat 'Interp=Step;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
-SELECT trajectory(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
-SELECT trajectory(tfloat 'Interp=Step;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
-SELECT trajectory(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 2@2000-01-04)');
+SELECT valueSet(tint '1@2000-01-01');
+SELECT valueSet(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
+SELECT valueSet(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
+SELECT valueSet(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
+
+SELECT valueSet(tfloat '1.5@2000-01-01');
+SELECT valueSet(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
+SELECT valueSet(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
+SELECT valueSet(tfloat 'Interp=Step;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
+SELECT valueSet(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
+SELECT valueSet(tfloat 'Interp=Step;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
+SELECT valueSet(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 2@2000-01-04)');
 
 SELECT startValue(tbool 't@2000-01-01');
 SELECT startValue(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');

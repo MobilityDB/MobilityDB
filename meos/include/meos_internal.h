@@ -51,6 +51,36 @@
  * Functions for set and span types
  *****************************************************************************/
 
+/* Macros for speeding up access to component values of sets*/
+
+#ifdef DEBUG_BUILD
+extern void *SET_BBOX_PTR(const Set *s);
+extern size_t *SET_OFFSETS_PTR(const Set *s);
+extern Datum SET_VAL_N(const Set *s, int index);
+#else
+/**
+ * @brief Return a pointer to the bounding box of a set (if any)
+ */
+#define SET_BBOX_PTR(s) ( (void *)( \
+  ((char *) (s)) + DOUBLE_PAD(sizeof(Set)) ) )
+
+/**
+ * @brief Return a pointer to the offsets array of a set
+ */
+#define SET_OFFSETS_PTR(s) ( (size_t *)( \
+  ((char *) (s)) + DOUBLE_PAD(sizeof(Set)) + DOUBLE_PAD((s)->bboxsize) ) )
+
+/**
+ * @brief Return the n-th value of a set
+ * @pre The argument @p index is less than the number of values in the set
+ */
+#define SET_VAL_N(s, index) ( (Datum) ( \
+  MOBDB_FLAGS_GET_BYVAL((s)->flags) ? (SET_OFFSETS_PTR(s))[index] : \
+  PointerGetDatum( ((char *) (s)) + DOUBLE_PAD(sizeof(Set)) + \
+    DOUBLE_PAD((s)->bboxsize) + (sizeof(size_t) * (s)->maxcount) + \
+    (SET_OFFSETS_PTR(s))[index] ) ) )
+#endif
+
 /* Input/output functions for set and span types */
 
 extern Set *set_in(const char *str, meosType basetype);
@@ -86,7 +116,6 @@ extern SpanSet *value_to_spanset(Datum d, meosType basetype);
 
 extern uint32 datum_hash(Datum d, meosType basetype);
 extern uint64 datum_hash_extended(Datum d, meosType basetype, uint64 seed);
-extern Datum set_val_n(const Set *ts, int index);
 extern Datum set_start_value(const Set *s);
 extern Datum set_end_value(const Set *s);
 extern bool set_value_n(const Set *s, int n, Datum *result);
@@ -306,7 +335,7 @@ extern const TSequence *TSEQUENCESET_SEQ_N(const TSequenceSet *ss, int index);
  * @pre The argument @p index is less than the number of instants in the
  * sequence
  */
-#define TSEQUENCE_INST_N(seq, index) ( (TInstant *)( \
+#define TSEQUENCE_INST_N(seq, index) ( (const TInstant *)( \
   ((char *) &((seq)->period)) + (seq)->bboxsize + \
   (sizeof(size_t) * (seq)->maxcount) + (TSEQUENCE_OFFSETS_PTR(seq))[index] ) )
 
@@ -323,7 +352,7 @@ extern const TSequence *TSEQUENCESET_SEQ_N(const TSequenceSet *ss, int index);
  * @pre The argument @p index is less than the number of sequences in the
  * sequence set
  */
-#define TSEQUENCESET_SEQ_N(ss, index) ( (TSequence *)( \
+#define TSEQUENCESET_SEQ_N(ss, index) ( (const TSequence *)( \
   ((char *) &((ss)->period)) + (ss)->bboxsize + \
   (sizeof(size_t) * (ss)->maxcount) + (TSEQUENCESET_OFFSETS_PTR(ss))[index] ) )
 #endif /* DEBUG_BUILD */
@@ -450,12 +479,10 @@ extern Datum temporal_min_value(const Temporal *temp);
 extern void temporal_set_bbox(const Temporal *temp, void *box);
 extern void tnumber_set_span(const Temporal *temp, Span *span);
 extern Datum temporal_start_value(const Temporal *temp);
-extern Datum *temporal_values(const Temporal *temp, int *count);
-extern SpanSet *tfloatinst_spanset(const TInstant *inst);
-extern Span *tfloatseq_span(const TSequence *seq);
-extern SpanSet *tfloatseq_spanset(const TSequence *seq);
-extern Span *tfloatseqset_span(const TSequenceSet *ss);
-extern SpanSet *tfloatseqset_spanset(const TSequenceSet *ss);
+extern Datum *temporal_valueset(const Temporal *temp, int *count);
+extern SpanSet *tnumberinst_values(const TInstant *inst);
+extern SpanSet *tnumberseq_values(const TSequence *seq);
+extern SpanSet *tnumberseqset_values(const TSequenceSet *ss);
 extern uint32 tinstant_hash(const TInstant *inst);
 extern const TInstant **tinstant_instants(const TInstant *inst, int *count);
 extern void tinstant_set_bbox(const TInstant *inst, void *box);
@@ -464,7 +491,7 @@ extern TimestampTz *tinstant_timestamps(const TInstant *inst, int *count);
 extern Datum tinstant_value(const TInstant *inst);
 extern bool tinstant_value_at_timestamp(const TInstant *inst, TimestampTz t, Datum *result);
 extern Datum tinstant_value_copy(const TInstant *inst);
-extern Datum *tinstant_values(const TInstant *inst, int *count);
+extern Datum *tinstant_valueset(const TInstant *inst, int *count);
 extern uint32 tdiscseq_hash(const TSequence *seq);
 extern bool tdiscseq_value_at_timestamp(const TSequence *seq, TimestampTz t, Datum *result);
 extern Interval *tsequence_duration(const TSequence *seq);
@@ -484,7 +511,7 @@ extern TimestampTz tsequence_start_timestamp(const TSequence *seq);
 extern SpanSet *tsequence_time(const TSequence *seq);
 extern TimestampTz *tsequence_timestamps(const TSequence *seq, int *count);
 extern bool tsequence_value_at_timestamp(const TSequence *seq, TimestampTz t, bool strict, Datum *result);
-extern Datum *tsequence_values(const TSequence *seq, int *count);
+extern Datum *tsequence_valueset(const TSequence *seq, int *count);
 extern Interval *tsequenceset_duration(const TSequenceSet *ss, bool boundspan);
 extern TimestampTz tsequenceset_end_timestamp(const TSequenceSet *ss);
 extern uint32 tsequenceset_hash(const TSequenceSet *ss);
@@ -506,7 +533,7 @@ extern Interval *tsequenceset_timespan(const TSequenceSet *ss);
 extern bool tsequenceset_timestamp_n(const TSequenceSet *ss, int n, TimestampTz *result);
 extern TimestampTz *tsequenceset_timestamps(const TSequenceSet *ss, int *count);
 extern bool tsequenceset_value_at_timestamp(const TSequenceSet *ss, TimestampTz t, bool strict, Datum *result);
-extern Datum *tsequenceset_values(const TSequenceSet *ss, int *count);
+extern Datum *tsequenceset_valueset(const TSequenceSet *ss, int *count);
 
 // RENAME
 // extern const TInstant *tsequenceset_inst_n(const TSequenceSet *ss, int n);
