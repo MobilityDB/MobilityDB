@@ -482,7 +482,6 @@ span_type(meosType type)
   return false;
 }
 
-#ifdef DEBUG_BUILD
 /**
  * @brief Return true if the type is a span type
  */
@@ -494,7 +493,6 @@ span_bbox_type(meosType type)
     return true;
   return false;
 }
-#endif /* DEBUG_BUILD */
 
 /**
  * @brief Return true if the type is a numeric span type
@@ -650,7 +648,8 @@ talphanum_type(meosType type)
 bool
 talpha_type(meosType type)
 {
-  if (type == T_TBOOL || type == T_TTEXT)
+  if (type == T_TBOOL || type == T_TTEXT || type == T_TDOUBLE2 ||
+      type == T_TDOUBLE3 || type == T_TDOUBLE4)
     return true;
   return false;
 }
