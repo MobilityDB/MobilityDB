@@ -929,6 +929,10 @@ SELECT tfloat_seq('{}'::tfloat[], 'discrete');
 ERROR:  The input array cannot be empty
 SELECT ttext_seq('{}'::ttext[], 'discrete');
 ERROR:  The input array cannot be empty
+SELECT tbool_seq(ARRAY[tbool '1@2000-01-01', '1@2000-01-02', '1@2000-01-03'], 'xxxx');
+ERROR:  Unknown interpolation type: xxxx
+SELECT tbool_seq(ARRAY[tbool '1@2000-01-01', '1@2000-01-02', '1@2000-01-03'], 'linear');
+ERROR:  The temporal type cannot have linear interpolation
 SELECT tbool_seq(ARRAY[tbool '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]'], 'discrete');
 ERROR:  Input values must be temporal instants
 SELECT tint_seq(ARRAY[tint '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]'], 'discrete');
