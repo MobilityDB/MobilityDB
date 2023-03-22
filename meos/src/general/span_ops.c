@@ -276,12 +276,9 @@ overlaps_span_span(const Span *s1, const Span *s2)
 bool
 adjacent_span_value(const Span *s, Datum d, meosType basetype)
 {
-  /*
-   * A timestamp A and a span C..D are adjacent if and only if
-   * A is adjacent to C, or D is adjacent to A.
-   */
-  return (datum_eq2(d, s->lower, basetype, s->basetype) && ! s->lower_inc) ||
-    (datum_eq2(s->upper, d, s->basetype, basetype) && ! s->upper_inc);
+  Span s1;
+  span_set(d, d, true, true, basetype, &s1);
+  return adjacent_span_span(s, &s1);
 }
 
 #if MEOS
