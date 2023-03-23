@@ -2114,15 +2114,11 @@ tnumberseq_values(const TSequence *seq)
   int count;
   meosType basetype = temptype_basetype(seq->temptype);
   Datum *values = tsequence_valueset(seq, &count);
-  Span **spans = palloc(sizeof(Span *) * count);
-  Span *spans_buf = palloc(sizeof(Span) * count);
+  Span *spans = palloc(sizeof(Span) * count);
   for (int i = 0; i < count; i++)
-  {
-    spans[i] = &spans_buf[i];
-    span_set(values[i], values[i], true, true, basetype, spans[i]);
-  }
-  SpanSet *result = spanset_make((const Span **) spans, count, NORMALIZE);
-  pfree(values); pfree(spans); pfree(spans_buf);
+    span_set(values[i], values[i], true, true, basetype, &spans[i]);
+  SpanSet *result = spanset_make_free(spans, count, NORMALIZE);
+  pfree(values);
   return result;
 }
 
@@ -2139,11 +2135,11 @@ tsequence_time(const TSequence *seq)
     return span_to_spanset(&seq->period);
 
   /* Discrete sequence */
-  Span **periods = palloc(sizeof(Span *) * seq->count);
+  Span *periods = palloc(sizeof(Span) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    periods[i] = span_make(inst->t, inst->t, true, true, T_TIMESTAMPTZ);
+    span_set(inst->t, inst->t, true, true, T_TIMESTAMPTZ, &periods[i]);
   }
   SpanSet *result = spanset_make_free(periods, seq->count, NORMALIZE_NO);
   return result;

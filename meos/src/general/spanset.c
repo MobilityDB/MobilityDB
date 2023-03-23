@@ -118,7 +118,7 @@ periodset_find_timestamp(const SpanSet *ps, TimestampTz t, int *loc)
 const Span *
 spanset_sp_n(const SpanSet *ss, int index)
 {
-  return (Span *) &ss->elems[index];
+  return &ss->elems[index];
 }
 
 /*****************************************************************************
@@ -265,7 +265,7 @@ periodset_out(const SpanSet *ss)
  * @sqlfunc spanset()
  */
 SpanSet *
-spanset_make_exp(const Span **spans, int count, int maxcount, bool normalize,
+spanset_make_exp(Span *spans, int count, int maxcount, bool normalize,
   bool ordered __attribute__((unused)))
 {
   assert(maxcount >= count);
@@ -273,39 +273,38 @@ spanset_make_exp(const Span **spans, int count, int maxcount, bool normalize,
   /* Test the validity of the spans */
   for (int i = 0; i < count - 1; i++)
   {
-    int cmp = datum_cmp(spans[i]->upper, spans[i + 1]->lower,
-      spans[i]->basetype);
+    int cmp = datum_cmp(spans[i].upper, spans[i + 1].lower, spans[i].basetype);
     if (cmp > 0 ||
-      (cmp == 0 && spans[i]->upper_inc && spans[i + 1]->lower_inc))
+      (cmp == 0 && spans[i].upper_inc && spans[i + 1].lower_inc))
       elog(ERROR, "Invalid value for span set");
   }
 
-  Span **newspans = (Span **) spans;
+  Span *newspans = (Span *) spans;
   int newcount = count;
   if (normalize && count > 1)
-    newspans = spanarr_normalize((Span **) spans, count, SORT_NO, &newcount);
+    newspans = spanarr_normalize(spans, count, SORT_NO, &newcount);
 
   /* Notice that the first span is already declared in the struct */
   size_t memsize = DOUBLE_PAD(sizeof(SpanSet)) +
     DOUBLE_PAD(sizeof(Span)) * (maxcount - 1);
   SpanSet *result = palloc0(memsize);
   SET_VARSIZE(result, memsize);
-  result->spansettype = spantype_spansettype(spans[0]->spantype);
-  result->spantype = spans[0]->spantype;
-  result->basetype = spans[0]->basetype;
+  result->spansettype = spantype_spansettype(spans[0].spantype);
+  result->spantype = spans[0].spantype;
+  result->basetype = spans[0].basetype;
   result->count = newcount;
   result->maxcount = maxcount;
 
   /* Compute the bounding span */
-  span_set(newspans[0]->lower, newspans[newcount - 1]->upper,
-    newspans[0]->lower_inc, newspans[newcount - 1]->upper_inc,
+  span_set(newspans[0].lower, newspans[newcount - 1].upper,
+    newspans[0].lower_inc, newspans[newcount - 1].upper_inc,
     result->basetype, &result->span);
   /* Copy the span array */
   for (int i = 0; i < newcount; i++)
-    memcpy(&result->elems[i], newspans[i], sizeof(Span));
+    memcpy(&result->elems[i], &newspans[i], sizeof(Span));
   /* Free after normalization */
   if (normalize && count > 1)
-    pfree_array((void **) newspans, newcount);
+    pfree(newspans);
   return result;
 }
 
@@ -318,7 +317,7 @@ spanset_make_exp(const Span **spans, int count, int maxcount, bool normalize,
  * @sqlfunc spanset()
  */
 SpanSet *
-spanset_make(const Span **spans, int count, bool normalize)
+spanset_make(Span *spans, int count, bool normalize)
 {
   return spanset_make_exp(spans, count, count, normalize, true);
 }
@@ -335,11 +334,11 @@ spanset_make(const Span **spans, int count, bool normalize)
  * @sqlfunc spanset()
  */
 SpanSet *
-spanset_make_free(Span **spans, int count, bool normalize)
+spanset_make_free(Span *spans, int count, bool normalize)
 {
-  assert (count >= 0);
-  SpanSet *result = spanset_make((const Span **) spans, count, normalize);
-  pfree_array((void **) spans, count);
+  assert(count >= 0);
+  SpanSet *result = spanset_make(spans, count, normalize);
+  pfree(spans);
   return result;
 }
 
@@ -368,9 +367,8 @@ value_to_spanset(Datum d, meosType basetype)
 {
   assert(span_basetype(basetype));
   Span s;
-  Span *s1 = &s;
   span_set(d, d, true, true, basetype, &s);
-  SpanSet *result = spanset_make((const Span **) &s1, 1, NORMALIZE_NO);
+  SpanSet *result = spanset_make(&s, 1, NORMALIZE_NO);
   return result;
 }
 
@@ -428,17 +426,13 @@ timestamp_to_periodset(TimestampTz t)
 SpanSet *
 set_to_spanset(const Set *s)
 {
-  Span **spans = palloc(sizeof(Span *) * s->count);
-  Span *spans_buf = palloc(sizeof(Span) * s->count);
+  Span *spans = palloc(sizeof(Span) * s->count);
   for (int i = 0; i < s->count; i++)
   {
     Datum d = SET_VAL_N(s, i);
-    spans[i] = &spans_buf[i];
-    span_set(d, d, true, true, s->basetype, spans[i]);
+    span_set(d, d, true, true, s->basetype, &spans[i]);
   }
-  SpanSet *result = spanset_make((const Span **) spans, s->count, NORMALIZE_NO);
-  pfree(spans); pfree(spans_buf);
-  return result;
+  return spanset_make_free(spans, s->count, NORMALIZE_NO);
 }
 
 /**
@@ -449,7 +443,7 @@ set_to_spanset(const Set *s)
 SpanSet *
 span_to_spanset(const Span *s)
 {
-  return spanset_make((const Span **) &s, 1, NORMALIZE_NO);
+  return spanset_make((Span *) s, 1, NORMALIZE_NO);
 }
 
 #if MEOS

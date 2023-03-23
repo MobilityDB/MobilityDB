@@ -207,25 +207,26 @@ span_upper_cmp(const Span *a, const Span *b)
  * @param[out] newcount Number of elements in the output array
  * @pre i
  */
-Span **
-spanarr_normalize(Span **spans, int count, bool sort, int *newcount)
+Span *
+spanarr_normalize(Span *spans, int count, bool sort, int *newcount)
 {
   /* Sort the spans before normalization */
   if (sort)
     spanarr_sort(spans, count);
   int k = 0;
-  Span **result = palloc(sizeof(Span *) * count);
-  Span *current = span_copy(spans[0]);
+  Span *result = palloc(sizeof(Span) * count);
+  Span current = spans[0];
   for (int i = 1; i < count; i++)
   {
-    Span *next = spans[i];
-    if (overlaps_span_span(current, next) || adjacent_span_span(current, next))
+    Span next = spans[i];
+    if (overlaps_span_span(&current, &next) ||
+        adjacent_span_span(&current, &next))
       /* Compute the union of the spans */
-      span_expand(next, current);
+      span_expand(&next, &current);
     else
     {
       result[k++] = current;
-      current = span_copy(next);
+      current = next;
     }
   }
   result[k++] = current;

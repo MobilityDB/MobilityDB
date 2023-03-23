@@ -1171,18 +1171,12 @@ spanset_from_wkb_state(wkb_parse_state *s)
 
   /* Read the number of spans and allocate space for them */
   int count = int32_from_wkb_state(s);
-  Span **spans = palloc(sizeof(Span *) * count);
-  Span *spans_buf = palloc(sizeof(Span) * count);
+  Span *spans = palloc(sizeof(Span) * count);
 
   /* Read and create the span set */
   for (int i = 0; i < count; i++)
-  {
-    spans[i] = &spans_buf[i];
-    span_from_wkb_state1(s, spans[i]);
-  }
-  SpanSet *result = spanset_make((const Span **) spans, count, NORMALIZE);
-  pfree(spans); pfree(spans_buf);
-  return result;
+    span_from_wkb_state1(s, &spans[i]);
+  return spanset_make_free(spans, count, NORMALIZE);
 }
 
 /*****************************************************************************/

@@ -246,16 +246,16 @@ Span_union_finalfn(PG_FUNCTION_ARGS)
   if (count == 0)
     PG_RETURN_NULL();
 
-  Span **spans = palloc0(sizeof(Span *) * count);
+  Span *spans = palloc0(sizeof(Span) * count);
   for (int i = 0; i < count; i++)
-    spans[i] = DatumGetSpanP(state->dvalues[i]);
+    spans[i] = *(DatumGetSpanP(state->dvalues[i]));
 
   int newcount;
-  Span **normspans = spanarr_normalize(spans, count, true, &newcount);
+  Span *normspans = spanarr_normalize(spans, count, true, &newcount);
   SpanSet *result = spanset_make_free(normspans, newcount, NORMALIZE_NO);
 
   /* Free memory */
-  pfree_array((void **) spans, count);
+  pfree(spans);
 
   PG_RETURN_POINTER(result);
 }

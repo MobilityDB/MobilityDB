@@ -199,10 +199,15 @@ datumarr_extract(ArrayType *array, int *count)
 /**
  * @brief Extract a C array from a PostgreSQL array containing spans
  */
-Span **
+Span *
 spanarr_extract(ArrayType *array, int *count)
 {
-  return (Span **) datumarr_extract(array, count);
+  Span **spans = (Span **) datumarr_extract(array, count);
+  Span *result = palloc(sizeof(Span) * *count);
+  for (int i = 0; i < *count; i++)
+    result[i] = *spans[i];
+  pfree(spans);
+  return result;
 }
 
 /**

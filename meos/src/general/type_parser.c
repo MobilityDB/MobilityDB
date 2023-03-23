@@ -473,17 +473,14 @@ spanset_parse(const char **str, meosType spansettype)
 
   /* Second parsing */
   *str = bak;
-  Span **spans = palloc(sizeof(Span *) * count);
-  Span *spans_buf = palloc(sizeof(Span) * count);
+  Span *spans = palloc(sizeof(Span) * count);
   for (int i = 0; i < count; i++)
   {
     p_comma(str);
-    spans[i] = &spans_buf[i];
-    span_parse(str, spantype, false, spans[i]);
+    span_parse(str, spantype, false, &spans[i]);
   }
   p_cbrace(str);
-  SpanSet *result = spanset_make((const Span **) spans, count, NORMALIZE);
-  pfree(spans); pfree(spans_buf);
+  SpanSet *result = spanset_make_free(spans, count, NORMALIZE);
   return result;
 }
 

@@ -663,38 +663,31 @@ SpanSet *
 tnumberseqset_values(const TSequenceSet *ss)
 {
   int count, i;
-  Span **spans;
-  Span *spans_buf;
+  Span *spans;
   meosType basetype = temptype_basetype(ss->temptype);
 
   /* Temporal sequence number with discrete or step interpolation */
   if (! MOBDB_FLAGS_GET_LINEAR(ss->flags))
   {
     Datum *values = tsequenceset_valueset(ss, &count);
-    spans = palloc(sizeof(Span *) * count);
-    spans_buf = palloc(sizeof(Span) * count);
+    spans = palloc(sizeof(Span) * count);
     for (i = 0; i < count; i++)
-    {
-      spans[i] = &spans_buf[i];
-      span_set(values[i], values[i], true, true, basetype, spans[i]);
-    }
-    SpanSet *result = spanset_make((const Span **) spans, count, NORMALIZE);
-    pfree(values); pfree(spans); pfree(spans_buf);
+      span_set(values[i], values[i], true, true, basetype, &spans[i]);
+    SpanSet *result = spanset_make(spans, count, NORMALIZE);
+    pfree(values); pfree(spans);
     return result;
   }
 
   /* Temporal sequence number with linear interpolation */
-  spans = palloc(sizeof(Span *) * ss->count);
-  spans_buf = palloc(sizeof(Span) * ss->count);
+  spans = palloc(sizeof(Span) * ss->count);
   for (i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     TBox *box = TSEQUENCE_BBOX_PTR(seq);
-    spans[i] = &spans_buf[i];
-    floatspan_set_numspan(&box->span, spans[i], basetype);
+    floatspan_set_numspan(&box->span, &spans[i], basetype);
   }
-  Span **normspans = spanarr_normalize(spans, ss->count, SORT, &count);
-  pfree(spans); pfree(spans_buf);
+  Span *normspans = spanarr_normalize(spans, ss->count, SORT, &count);
+  pfree(spans);
   return spanset_make_free(normspans, count, NORMALIZE);
 }
 
@@ -831,11 +824,11 @@ tsequenceset_max_value(const TSequenceSet *ss)
 SpanSet *
 tsequenceset_time(const TSequenceSet *ss)
 {
-  const Span **periods = palloc(sizeof(Span *) * ss->count);
+  Span *periods = palloc(sizeof(Span) * ss->count);
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    periods[i] = &seq->period;
+    periods[i] = seq->period;
   }
   SpanSet *result = spanset_make(periods, ss->count, NORMALIZE_NO);
   pfree(periods);
