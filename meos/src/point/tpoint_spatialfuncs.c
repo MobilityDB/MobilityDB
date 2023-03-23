@@ -4066,6 +4066,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
     /* It is necessary to sort the periods */
     spanarr_sort(allperiods, totalcount);
   }
+  /* We are sure that totalcount > 0 */
   SpanSet *ps = spanset_make_free(allperiods, totalcount, NORMALIZE);
   TSequence **result = palloc(sizeof(TSequence *) * totalcount);
   *count = tcontseq_at_periodset1(seq, ps, result);

@@ -333,12 +333,29 @@ Span_gist_penalty(PG_FUNCTION_ARGS)
  * GiST picksplit method for span types
  *****************************************************************************/
 
+/**
+ * @ingroup libmeos_setspan_set
+ * @brief Return the union of the spans.
+ * @note The result of the function is always a span even if the spans do not
+ * overlap
+ * @note This function is similar to `bbox_union_span_span` with memory
+ * allocation
+ */
+static Span *
+super_union_span_span(const Span *s1, const Span *s2)
+{
+  assert(s1->spantype == s2->spantype);
+  Span *result = span_copy(s1);
+  span_expand(s2, result);
+  return result;
+}
+
 /* Helper macros to place an entry in the left or right group during split */
 /* Note direct access to variables v, left_span, right_span */
 #define PLACE_LEFT(span, off)          \
   do {                    \
     if (v->spl_nleft > 0)          \
-      left_span = bbox_union_span_span(left_span, span); \
+      left_span = super_union_span_span(left_span, span); \
     else                  \
       left_span = (span);        \
     v->spl_left[v->spl_nleft++] = (off);  \
@@ -347,7 +364,7 @@ Span_gist_penalty(PG_FUNCTION_ARGS)
 #define PLACE_RIGHT(span, off)        \
   do {                    \
     if (v->spl_nright > 0)          \
-      right_span = bbox_union_span_span(right_span, span); \
+      right_span = super_union_span_span(right_span, span); \
     else                  \
       right_span = (span);      \
     v->spl_right[v->spl_nright++] = (off);  \

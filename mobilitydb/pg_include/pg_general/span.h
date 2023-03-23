@@ -49,11 +49,12 @@ extern void span_write(const Span *s, StringInfo buf);
 
 /* Cast functions */
 
-extern Span *range_to_span(RangeType *range, TypeCacheEntry *typcache);
+extern void range_set_span(RangeType *range, TypeCacheEntry *typcache,
+  Span *result);
 
 /* Transformation functions */
 
-extern Span *floatspan_round(const Span *span, Datum size);
+extern void floatspan_round(const Span *span, Datum size, Span *result);
 
 /*****************************************************************************/
 

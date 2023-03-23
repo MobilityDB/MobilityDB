@@ -876,13 +876,14 @@ overright_span_span(const Span *s1, const Span *s2)
  * overlap
  * @sqlop @p +
  */
-Span *
-bbox_union_span_span(const Span *s1, const Span *s2)
+void
+bbox_union_span_span(const Span *s1, const Span *s2, Span *result)
 {
   assert(s1->spantype == s2->spantype);
-  Span *result = span_copy(s1);
+  memset(result, 0, sizeof(Span));
+  memcpy(result, s1, sizeof(Span));
   span_expand(s2, result);
-  return result;
+  return;
 }
 
 /**

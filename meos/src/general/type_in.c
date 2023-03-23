@@ -1120,8 +1120,8 @@ bounds_from_wkb_state(uint8_t wkb_bounds, bool *lower_inc, bool *upper_inc)
  * @brief Return a span from its WKB representation when reading components spans
  * in a span set (which does not repeat the spantype for every component
  */
-static Span *
-span_from_wkb_state1(wkb_parse_state *s)
+static void
+span_from_wkb_state1(wkb_parse_state *s, Span *result)
 {
   /* Read the span bounds */
   uint8_t wkb_bounds = (uint8_t) byte_from_wkb_state(s);
@@ -1135,8 +1135,8 @@ span_from_wkb_state1(wkb_parse_state *s)
   /* Read the values and create the span */
   Datum lower = basevalue_from_wkb_state(s);
   Datum upper = basevalue_from_wkb_state(s);
-  Span *result = span_make(lower, upper, lower_inc, upper_inc, s->basetype);
-  return result;
+  span_set(lower, upper, lower_inc, upper_inc, s->basetype, result);
+  return;
 }
 
 /**
@@ -1149,7 +1149,9 @@ span_from_wkb_state(wkb_parse_state *s)
   uint16_t wkb_spantype = (uint16_t) int16_from_wkb_state(s);
   s->spantype = wkb_spantype;
   s->basetype = spantype_basetype(wkb_spantype);
-  return span_from_wkb_state1(s);
+  Span *result = palloc(sizeof(Span));
+  span_from_wkb_state1(s, result);
+  return result;
 }
 
 /*****************************************************************************/
@@ -1170,11 +1172,16 @@ spanset_from_wkb_state(wkb_parse_state *s)
   /* Read the number of spans and allocate space for them */
   int count = int32_from_wkb_state(s);
   Span **spans = palloc(sizeof(Span *) * count);
+  Span *spans_buf = palloc(sizeof(Span) * count);
 
   /* Read and create the span set */
   for (int i = 0; i < count; i++)
-    spans[i] = (Span *) span_from_wkb_state1(s);
-  SpanSet *result = spanset_make_free(spans, count, NORMALIZE);
+  {
+    spans[i] = &spans_buf[i];
+    span_from_wkb_state1(s, spans[i]);
+  }
+  SpanSet *result = spanset_make((const Span **) spans, count, NORMALIZE);
+  pfree(spans); pfree(spans_buf);
   return result;
 }
 

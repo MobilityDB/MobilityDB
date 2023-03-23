@@ -208,8 +208,8 @@ Span_to_range(PG_FUNCTION_ARGS)
 /**
  * @brief Convert the PostgreSQL range value as a span value
  */
-Span *
-range_to_span(RangeType *range, TypeCacheEntry *typcache)
+void
+range_set_span(RangeType *range, TypeCacheEntry *typcache, Span *result)
 {
   char flags = range_get_flags(range);
   if (flags & RANGE_EMPTY)
@@ -224,9 +224,9 @@ range_to_span(RangeType *range, TypeCacheEntry *typcache)
   range_deserialize(typcache, range, &lower, &upper, &empty);
   meosType basetype = (typcache->rngelemtype->type_id == INT4OID) ?
     T_INT4 : T_TIMESTAMPTZ;
-  Span *result = span_make(lower.val, upper.val, lower.inclusive,
-    upper.inclusive, basetype);
-  return result;
+  span_set(lower.val, upper.val, lower.inclusive, upper.inclusive, basetype,
+    result);
+  return;
 }
 
 PG_FUNCTION_INFO_V1(Range_to_span);
@@ -243,8 +243,9 @@ Range_to_span(PG_FUNCTION_ARGS)
   TypeCacheEntry *typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
   assert(typcache->rngelemtype->type_id == INT4OID ||
     typcache->rngelemtype->type_id == TIMESTAMPTZOID);
-  Span *span = range_to_span(range, typcache);
-  PG_RETURN_POINTER(span);
+  Span *result = palloc(sizeof(Span));
+  range_set_span(range, typcache, result);
+  PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************
@@ -342,16 +343,16 @@ Period_duration(PG_FUNCTION_ARGS)
 /**
  * @brief Set the precision of the float span to the number of decimal places.
  */
-Span *
-floatspan_round(const Span *span, Datum size)
+void
+floatspan_round(const Span *span, Datum size, Span *result)
 {
   /* Set precision of bounds */
   Datum lower = datum_round_float(span->lower, size);
   Datum upper = datum_round_float(span->upper, size);
-  /* Create resulting span */
-  Span *result = span_make(lower, upper, span->lower_inc, span->upper_inc,
-    span->basetype);
-  return result;
+  /* Set resulting span */
+  span_set(lower, upper, span->lower_inc, span->upper_inc, span->basetype,
+    result);
+  return;
 }
 
 PG_FUNCTION_INFO_V1(Floatspan_round);
@@ -365,7 +366,8 @@ Floatspan_round(PG_FUNCTION_ARGS)
 {
   Span *span = PG_GETARG_SPAN_P(0);
   Datum size = PG_GETARG_DATUM(1);
-  Span *result = floatspan_round(span, size);
+  Span *result = palloc(sizeof(Span));
+  floatspan_round(span, size, result);
   PG_RETURN_POINTER(result);
 }
 

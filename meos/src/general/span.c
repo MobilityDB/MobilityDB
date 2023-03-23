@@ -245,7 +245,9 @@ spanarr_normalize(Span **spans, int count, bool sort, int *newcount)
 Span *
 span_in(const char *str, meosType spantype)
 {
-  return span_parse(&str, spantype, true, true);
+  Span *result = palloc(sizeof(Span));
+  span_parse(&str, spantype, true, result);
+  return result;
 }
 
 #if MEOS
@@ -256,7 +258,7 @@ span_in(const char *str, meosType spantype)
 Span *
 intspan_in(const char *str)
 {
-  return span_parse(&str, T_INTSPAN, true, true);
+  return span_in(&str, T_INTSPAN);
 }
 
 /**
@@ -266,7 +268,7 @@ intspan_in(const char *str)
 Span *
 bigintspan_in(const char *str)
 {
-  return span_parse(&str, T_BIGINTSPAN, true, true);
+  return span_in(&str, T_BIGINTSPAN);
 }
 
 /**
@@ -276,7 +278,7 @@ bigintspan_in(const char *str)
 Span *
 floatspan_in(const char *str)
 {
-  return span_parse(&str, T_FLOATSPAN, true, true);
+  return span_in(&str, T_FLOATSPAN);
 }
 
 /**
@@ -286,7 +288,7 @@ floatspan_in(const char *str)
 Span *
 period_in(const char *str)
 {
-  return span_parse(&str, T_TSTZSPAN, true, true);
+  return span_in(&str, T_TSTZSPAN);
 }
 #endif /* MEOS */
 

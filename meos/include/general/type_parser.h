@@ -56,7 +56,7 @@ extern Datum temporal_basetype_parse(const char **str, meosType basetypid);
 extern double double_parse(const char **str);
 extern Datum elem_parse(const char **str, meosType basetype);
 extern Set *set_parse(const char **str, meosType basetype);
-extern Span *span_parse(const char **str, meosType spantype, bool end, bool make);
+extern void span_parse(const char **str, meosType spantype, bool end, Span *span);
 extern SpanSet *spanset_parse(const char **str, meosType spantype);
 extern TBox *tbox_parse(const char **str);
 extern TimestampTz timestamp_parse(const char **str);

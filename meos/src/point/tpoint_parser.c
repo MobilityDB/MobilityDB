@@ -49,7 +49,7 @@ stbox_parse(const char **str)
 {
   /* make compiler quiet */
   double xmin = 0, xmax = 0, ymin = 0, ymax = 0, zmin = 0, zmax = 0;
-  Span *period = NULL;
+  Span period;
   bool hasx = false, hasz = false, hast = false, geodetic = false;
   int srid = 0;
   bool hassrid = false;
@@ -195,7 +195,7 @@ stbox_parse(const char **str)
   }
 
   if (hast)
-    period = span_parse(str, T_TSTZSPAN, false, true);
+    span_parse(str, T_TSTZSPAN, false, &period);
 
   /* Parse last closing parenthesis (if any) */
   if (hast)
@@ -208,11 +208,8 @@ stbox_parse(const char **str)
   /* Ensure there is no more input */
   ensure_end_input(str, true, "spatiotemporal box");
 
-  STBox *result = stbox_make(hasx, hasz, geodetic, srid, xmin, xmax, ymin,
-    ymax, zmin, zmax, period);
-  if (period)
-    pfree(period);
-  return result;
+  return stbox_make(hasx, hasz, geodetic, srid, xmin, xmax, ymin, ymax, zmin,
+     zmax, hast ? &period : NULL);
 }
 
 /*****************************************************************************/

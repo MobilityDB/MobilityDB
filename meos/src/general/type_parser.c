@@ -238,8 +238,8 @@ TBox *
 tbox_parse(const char **str)
 {
   bool hasx = false, hast = false;
-  Span *span = NULL;
-  Span *period = NULL;
+  Span span;
+  Span period;
 
   p_whitespace(str);
   if (strncasecmp(*str, "TBOX", 4) == 0)
@@ -276,7 +276,7 @@ tbox_parse(const char **str)
 
   if (hasx)
   {
-    span = span_parse(str, T_FLOATSPAN, false, true);
+    span_parse(str, T_FLOATSPAN, false, &span);
     if (hast)
     {
       /* Consume the comma separating the span and the period */
@@ -287,7 +287,7 @@ tbox_parse(const char **str)
   }
 
   if (hast)
-    period = span_parse(str, T_TSTZSPAN, false, true);
+    span_parse(str, T_TSTZSPAN, false, &period);
 
   p_whitespace(str);
   if (!p_cparen(str))
@@ -297,12 +297,7 @@ tbox_parse(const char **str)
   /* Ensure there is no more input */
   ensure_end_input(str, true, "temporal box");
 
-  TBox *result = tbox_make(period, span);
-  if (hast)
-    pfree(period);
-  if (hasx)
-    pfree(span);
-  return result;
+  return tbox_make(hast ? &period : NULL, hasx ? &span: NULL);
 }
 
 /*****************************************************************************/
@@ -422,8 +417,8 @@ bound_parse(const char **str, meosType basetype)
 /**
  * @brief Parse a span value from the buffer
  */
-Span *
-span_parse(const char **str, meosType spantype, bool end, bool make)
+void
+span_parse(const char **str, meosType spantype, bool end, Span *span)
 {
   bool lower_inc = false, upper_inc = false;
   if (p_obracket(str))
@@ -449,9 +444,9 @@ span_parse(const char **str, meosType spantype, bool end, bool make)
   /* Ensure there is no more input */
   ensure_end_input(str, end, "span");
 
-  if (! make)
-    return NULL;
-  return span_make(lower, upper, lower_inc, upper_inc, basetype);
+  if (! span)
+    return;
+  return span_set(lower, upper, lower_inc, upper_inc, basetype, span);
 }
 
 /**
@@ -460,32 +455,35 @@ span_parse(const char **str, meosType spantype, bool end, bool make)
 SpanSet *
 spanset_parse(const char **str, meosType spansettype)
 {
-  if (!p_obrace(str))
+  if (! p_obrace(str))
     elog(ERROR, "Could not parse span set");
 
   meosType spantype = spansettype_spantype(spansettype);
   /* First parsing */
   const char *bak = *str;
-  span_parse(str, spantype, false, false);
+  span_parse(str, spantype, false, NULL);
   int count = 1;
   while (p_comma(str))
   {
     count++;
-    span_parse(str, spantype, false, false);
+    span_parse(str, spantype, false, NULL);
   }
-  if (!p_cbrace(str))
+  if (! p_cbrace(str))
     elog(ERROR, "Could not parse span set");
 
   /* Second parsing */
   *str = bak;
   Span **spans = palloc(sizeof(Span *) * count);
+  Span *spans_buf = palloc(sizeof(Span) * count);
   for (int i = 0; i < count; i++)
   {
     p_comma(str);
-    spans[i] = span_parse(str, spantype, false, true);
+    spans[i] = &spans_buf[i];
+    span_parse(str, spantype, false, spans[i]);
   }
   p_cbrace(str);
-  SpanSet *result = spanset_make_free(spans, count, NORMALIZE);
+  SpanSet *result = spanset_make((const Span **) spans, count, NORMALIZE);
+  pfree(spans); pfree(spans_buf);
   return result;
 }
 

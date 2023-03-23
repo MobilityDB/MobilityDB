@@ -257,14 +257,16 @@ Multirange_to_spanset(PG_FUNCTION_ARGS)
     MultirangeTypeGetOid(mrange));
 
   Span **spans = palloc(sizeof(Span *) * mrange->rangeCount);
+  Span *spans_buf = palloc(sizeof(Span) * mrange->rangeCount);
   for (uint32 i = 0; i < mrange->rangeCount; i++)
   {
     RangeType *range = multirange_get_range(typcache->rngtype, mrange, i);
-    spans[i] = range_to_span(range, typcache->rngtype);
+    spans[i] = &spans_buf[i];
+    range_set_span(range, typcache->rngtype, spans[i]);
   }
   SpanSet *ss = spanset_make((const Span **) spans, mrange->rangeCount,
     NORMALIZE);
-  pfree_array((void **) spans, mrange->rangeCount);
+  pfree(spans); pfree(spans_buf);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_POINTER(ss);
 }
@@ -543,13 +545,15 @@ static SpanSet *
 floatspanset_round(SpanSet *ss, Datum size)
 {
   Span **spans = palloc(sizeof(Span *) * ss->count);
+  Span *spans_buf = palloc(sizeof(Span) * ss->count);
   for (int i = 0; i < ss->count; i++)
   {
     const Span *span = spanset_sp_n(ss, i);
-    spans[i] = floatspan_round(span, size);
+    spans[i] = &spans_buf[i];
+    floatspan_round(span, size, spans[i]);
   }
   SpanSet *result = spanset_make((const Span**) spans, ss->count, NORMALIZE);
-  pfree_array((void **) spans, ss->count);
+  pfree(spans); pfree(spans_buf);
   return result;
 }
 

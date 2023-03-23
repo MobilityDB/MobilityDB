@@ -80,7 +80,8 @@ Span_extent_combinefn(PG_FUNCTION_ARGS)
   if (s2 && ! s1)
     PG_RETURN_POINTER(s2);
   /* Non-strict union */
-  Span *result = bbox_union_span_span(s1, s2);
+  Span *result = palloc(sizeof(Span));
+  bbox_union_span_span(s1, s2, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -245,7 +246,7 @@ Span_union_finalfn(PG_FUNCTION_ARGS)
   if (count == 0)
     PG_RETURN_NULL();
 
-  Span **spans = palloc0(count * sizeof(Span *));
+  Span **spans = palloc0(sizeof(Span *) * count);
   for (int i = 0; i < count; i++)
     spans[i] = DatumGetSpanP(state->dvalues[i]);
 

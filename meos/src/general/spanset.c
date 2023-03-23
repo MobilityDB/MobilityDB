@@ -337,11 +337,7 @@ spanset_make(const Span **spans, int count, bool normalize)
 SpanSet *
 spanset_make_free(Span **spans, int count, bool normalize)
 {
-  if (count == 0)
-  {
-    pfree(spans);
-    return NULL;
-  }
+  assert (count >= 0);
   SpanSet *result = spanset_make((const Span **) spans, count, normalize);
   pfree_array((void **) spans, count);
   return result;
