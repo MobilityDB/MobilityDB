@@ -1142,15 +1142,15 @@ span_from_wkb_state1(wkb_parse_state *s, Span *result)
 /**
  * @brief Return a span from its WKB representation
  */
-Span *
+Span
 span_from_wkb_state(wkb_parse_state *s)
 {
   /* Read the span type */
   uint16_t wkb_spantype = (uint16_t) int16_from_wkb_state(s);
   s->spantype = wkb_spantype;
   s->basetype = spantype_basetype(wkb_spantype);
-  Span *result = palloc(sizeof(Span));
-  span_from_wkb_state1(s, result);
+  Span result;
+  span_from_wkb_state1(s, &result);
   return result;
 }
 
@@ -1265,8 +1265,7 @@ tbox_from_wkb_state(wkb_parse_state *s)
   tbox_flags_from_wkb_state(s, wkb_flags);
 
   /* Read and create the box */
-  Span *span = NULL;
-  Span *period = NULL;
+  Span span, period;
   /* Read the temporal dimension if any */
   if (s->hast)
     period = span_from_wkb_state(s);
@@ -1274,7 +1273,7 @@ tbox_from_wkb_state(wkb_parse_state *s)
   if (s->hasx)
     span = span_from_wkb_state(s);
   /* Create the temporal box */
-  TBox *result = tbox_make(period, span);
+  TBox *result = tbox_make(s->hast ? &period : NULL, s->hasx ? &span : NULL);
   return result;
 }
 
@@ -1323,7 +1322,7 @@ stbox_from_wkb_state(wkb_parse_state *s)
 
   /* Read and create the box */
   double xmin = 0, xmax = 0, ymin = 0, ymax = 0, zmin = 0, zmax = 0;
-  Span *period = NULL;
+  Span period;
   if (s->hast)
     period = span_from_wkb_state(s);
   if (s->hasx)
@@ -1338,11 +1337,8 @@ stbox_from_wkb_state(wkb_parse_state *s)
       zmax = double_from_wkb_state(s);
     }
   }
-  STBox *result = stbox_make(s->hasx, s->hasz, s->geodetic, s->srid,
-    xmin, xmax, ymin, ymax, zmin, zmax, period);
-  if (s->hast)
-    pfree(period);
-  return result;
+  return stbox_make(s->hasx, s->hasz, s->geodetic, s->srid,
+    xmin, xmax, ymin, ymax, zmin, zmax, &period);
 }
 
 /*****************************************************************************/
@@ -1550,7 +1546,11 @@ datum_from_wkb(const uint8_t *wkb, int size, meosType type)
   if (set_type(type))
     result = PointerGetDatum(set_from_wkb_state(&s));
   else if (span_type(type))
-    result = PointerGetDatum(span_from_wkb_state(&s));
+  {
+    Span *span = palloc(sizeof(Span));
+    *span = span_from_wkb_state(&s);
+    result = PointerGetDatum(span);
+  }
   else if (spanset_type(type))
     result = PointerGetDatum(spanset_from_wkb_state(&s));
   else if (type == T_TBOX)
