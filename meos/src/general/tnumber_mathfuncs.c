@@ -358,11 +358,7 @@ tnumberseq_linear_abs(const TSequence *seq)
     value1 = value2;
     dvalue1 = dvalue2;
   }
-  if (k == 0)
-  {
-    pfree(instants);
-    return NULL;
-  }
+  /* We are sure that k > 0 */
   return tsequence_make_free(instants, k, seq->period.lower_inc,
     seq->period.upper_inc, LINEAR, NORMALIZE);
 }

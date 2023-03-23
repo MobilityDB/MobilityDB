@@ -1421,11 +1421,7 @@ tstepseqset_to_linear(const TSequenceSet *ss)
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     k += tstepseq_to_linear1(seq, &sequences[k]);
   }
-  if (k == 0)
-  {
-    pfree(sequences);
-    return NULL;
-  }
+  /* We are sure that k > 0 */
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
 

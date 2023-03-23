@@ -2395,6 +2395,8 @@ SELECT deleteTime(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', tstz
 SELECT deleteTime(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]}', tstzspanset '{[2000-01-01,2000-01-02]}');
 SELECT deleteTime(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', tstzspanset '{[2000-01-01,2000-01-02]}');
 
+SELECT deleteTime(tfloat '{[1@2000-01-01]}', timestamptz '2000-01-01');
+SELECT deleteTime(tfloat '{[1@2000-01-01]}', tstzset '{2000-01-01, 2000-01-02}');
 SELECT deleteTime(tfloat '[1@2000-01-01, 2@2000-01-02]', tstzset '{2000-01-02}');
 SELECT deleteTime(tfloat '[1@2000-01-01, 2@2000-01-02]', tstzset '{2000-01-01,2000-01-02}');
 SELECT deleteTime(tfloat '[1@2000-01-01, 3@2000-01-03]', tstzset '{2000-01-01,2000-01-02}');

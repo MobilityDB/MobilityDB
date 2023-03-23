@@ -2917,3 +2917,15 @@ SELECT round(derivative(tfloat 'Interp=Step;{[1@2000-01-01, 2@2000-01-02, 1@2000
  
 (1 row)
 
+SELECT round(derivative(tfloat '{[1@2000-01-01],[2@2000-01-02]}'));
+ round 
+-------
+ 
+(1 row)
+
+SELECT deltaValue(tfloat '{[1@2000-01-01],[2@2000-01-02]}');
+ deltavalue 
+------------
+ 
+(1 row)
+
