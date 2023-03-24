@@ -133,7 +133,7 @@ set_append_value(Set *set, Datum d, meosType basetype)
 
   /* This is the first time we use an expandable structure or there is no more
    * free space */
-  Datum *values = palloc(sizeof(Datum) * set->count + 1);
+  Datum *values = palloc(sizeof(Datum) * (set->count + 1));
   for (int i = 0; i < set->count; i++)
     values[i] = SET_VAL_N(set, i);
   values[set->count] = d;

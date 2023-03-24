@@ -407,7 +407,7 @@ meos_timezone_initialize(const char *name)
 void
 meos_initialize(const char *tz_str)
 {
-  if (tz_str == NULL)
+  if (tz_str == NULL || strlen(tz_str) == 0)
     /* fetch local timezone */
     tz_str = select_default_timezone(NULL);
   if (tz_str == NULL)

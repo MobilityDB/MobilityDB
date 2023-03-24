@@ -354,6 +354,7 @@ extern Span *tstzspan_make(TimestampTz lower, TimestampTz upper, bool lower_inc,
 extern Span *span_copy(const Span *s);
 extern SpanSet *spanset_copy(const SpanSet *ps);
 extern SpanSet *spanset_make(Span *spans, int count, bool normalize);
+extern SpanSet *spanset_make_exp(Span *spans, int count, int maxcount, bool normalize, bool ordered);
 extern SpanSet *spanset_make_free(Span *spans, int count, bool normalize);
 extern Set *tstzset_make(const TimestampTz *times, int count);
 

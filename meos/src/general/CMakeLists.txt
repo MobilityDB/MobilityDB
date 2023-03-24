@@ -35,6 +35,7 @@ add_library(general OBJECT
 
 add_library(general_meos OBJECT
   set_aggfuncs_meos.c
+  span_aggfuncs_meos.c
   tbool_boolops_meos.c
   temporal_compops_meos.c
   temporal_meos.c

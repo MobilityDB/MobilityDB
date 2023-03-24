@@ -259,7 +259,7 @@ span_in(const char *str, meosType spantype)
 Span *
 intspan_in(const char *str)
 {
-  return span_in(&str, T_INTSPAN);
+  return span_in(str, T_INTSPAN);
 }
 
 /**
@@ -269,7 +269,7 @@ intspan_in(const char *str)
 Span *
 bigintspan_in(const char *str)
 {
-  return span_in(&str, T_BIGINTSPAN);
+  return span_in(str, T_BIGINTSPAN);
 }
 
 /**
@@ -279,7 +279,7 @@ bigintspan_in(const char *str)
 Span *
 floatspan_in(const char *str)
 {
-  return span_in(&str, T_FLOATSPAN);
+  return span_in(str, T_FLOATSPAN);
 }
 
 /**
@@ -289,7 +289,7 @@ floatspan_in(const char *str)
 Span *
 period_in(const char *str)
 {
-  return span_in(&str, T_TSTZSPAN);
+  return span_in(str, T_TSTZSPAN);
 }
 #endif /* MEOS */
 

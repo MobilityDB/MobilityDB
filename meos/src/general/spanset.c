@@ -261,30 +261,35 @@ periodset_out(const SpanSet *ss)
  * @param[in] count Number of elements in the array
  * @param[in] maxcount Maximum number of elements in the array
  * @param[in] normalize True if the resulting value should be normalized
- * @param[in] ordered True for ordered sets
+ * @param[in] ordered True for verifying that the input spans are ordered
  * @sqlfunc spanset()
  */
 SpanSet *
 spanset_make_exp(Span *spans, int count, int maxcount, bool normalize,
-  bool ordered __attribute__((unused)))
+  bool ordered)
 {
   assert(maxcount >= count);
 
   /* Test the validity of the spans */
-  for (int i = 0; i < count - 1; i++)
+  if (ordered)
   {
-    int cmp = datum_cmp(spans[i].upper, spans[i + 1].lower, spans[i].basetype);
-    if (cmp > 0 ||
-      (cmp == 0 && spans[i].upper_inc && spans[i + 1].lower_inc))
-      elog(ERROR, "Invalid value for span set");
+    for (int i = 0; i < count - 1; i++)
+    {
+      int cmp = datum_cmp(spans[i].upper, spans[i + 1].lower, spans[i].basetype);
+      if (cmp > 0 ||
+        (cmp == 0 && spans[i].upper_inc && spans[i + 1].lower_inc))
+        elog(ERROR, "Invalid value for span set");
+    }
   }
 
-  Span *newspans = (Span *) spans;
+  /* Sort the values and remove duplicates */
+  Span *newspans = spans;
   int newcount = count;
   if (normalize && count > 1)
-    newspans = spanarr_normalize(spans, count, SORT_NO, &newcount);
+    /* Sort the values and remove duplicates */
+    newspans = spanarr_normalize(spans, count, true, &newcount);
 
-  /* Notice that the first span is already declared in the struct */
+  /* The first element span is already declared in the struct */
   size_t memsize = DOUBLE_PAD(sizeof(SpanSet)) +
     DOUBLE_PAD(sizeof(Span)) * (maxcount - 1);
   SpanSet *result = palloc0(memsize);
@@ -301,7 +306,7 @@ spanset_make_exp(Span *spans, int count, int maxcount, bool normalize,
     result->basetype, &result->span);
   /* Copy the span array */
   for (int i = 0; i < newcount; i++)
-    memcpy(&result->elems[i], &newspans[i], sizeof(Span));
+    result->elems[i] = newspans[i];
   /* Free after normalization */
   if (normalize && count > 1)
     pfree(newspans);
