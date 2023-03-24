@@ -617,15 +617,6 @@ timestamp_sort_cmp(const TimestampTz *l, const TimestampTz *r)
 }
 
 /**
- * @brief Comparator function for spans
- */
-static int
-span_sort_cmp(const Span **l, const Span **r)
-{
-  return span_cmp(*l, *r);
-}
-
-/**
  * @brief Comparator function for temporal instants
  */
 static int
@@ -691,10 +682,10 @@ double3arr_sort(double3 *triples, int count)
  * @brief Sort function for spans
  */
 void
-spanarr_sort(Span **spans, int count)
+spanarr_sort(Span *spans, int count)
 {
-  qsort(spans, (size_t) count, sizeof(Span *),
-    (qsort_comparator) &span_sort_cmp);
+  qsort(spans, (size_t) count, sizeof(Span),
+    (qsort_comparator) &span_cmp);
 }
 
 /**

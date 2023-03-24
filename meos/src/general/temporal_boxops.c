@@ -156,21 +156,7 @@ temporal_bbox_cmp(const void *box1, const void *box2, meosType temptype)
 
 /*****************************************************************************
  * Compute the bounding box at the creation of temporal values
- * Only external types have precomputed bbox, internal types such as double2,
- * double3, or double4 do not have precomputed bounding box.
  *****************************************************************************/
-
-/**
- * @brief Return true if a temporal type does not have bounding box
- */
-static bool
-temptype_without_bbox(meosType temptype)
-{
-  if (temptype == T_TDOUBLE2 || temptype == T_TDOUBLE3 ||
-      temptype == T_TDOUBLE4)
-    return true;
-  return false;
-}
 
 /**
  * @brief Return the size of a bounding box of a temporal type
@@ -178,7 +164,7 @@ temptype_without_bbox(meosType temptype)
 size_t
 temporal_bbox_size(meosType temptype)
 {
-  if (talpha_type(temptype) || temptype_without_bbox(temptype))
+  if (talpha_type(temptype))
     return sizeof(Span);
   if (tnumber_type(temptype))
     return sizeof(TBox);
@@ -310,7 +296,7 @@ tinstarr_compute_bbox(const TInstant **instants, int count, bool lower_inc,
 {
   meosType temptype = instants[0]->temptype;
   assert(temporal_type(temptype));
-  if (talpha_type(temptype) || temptype_without_bbox(temptype))
+  if (talpha_type(temptype))
     span_set(TimestampTzGetDatum(instants[0]->t),
       TimestampTzGetDatum(instants[count - 1]->t), lower_inc, upper_inc,
       T_TIMESTAMPTZ, (Span *) box);

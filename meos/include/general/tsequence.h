@@ -103,7 +103,7 @@ extern int tstepseq_tlinearseq1(const TSequence *seq, TSequence **result);
 
 /* Accessor functions */
 
-extern int tfloatseq_spans(const TSequence *seq, Span **result);
+extern int tfloatseq_spans(const TSequence *seq, Span *result);
 extern int tsequence_segments1(const TSequence *seq, TSequence **result);
 extern int tsequence_timestamps1(const TSequence *seq, TimestampTz *result);
 extern int tsequence_values1(const TSequence *seq, Datum *result);

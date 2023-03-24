@@ -545,11 +545,7 @@ tfunc_tlinearseq_base(const TSequence *seq, Datum value,
   if (lfinfo->discont)
   {
     int k = tfunc_tlinearseq_base_discont(seq, value, lfinfo, sequences);
-    if (k == 0)
-    {
-      pfree(sequences);
-      return NULL;
-    }
+    /* We are sure that k > 0 */
     return (Temporal *) tsequenceset_make_free(sequences, k, NORMALIZE);
   }
   else
@@ -590,11 +586,7 @@ tfunc_tsequenceset_base(const TSequenceSet *ss, Datum value,
     else
       sequences[k++] = tfunc_tsequence_base(seq, value, lfinfo);
   }
-  if (k == 0)
-  {
-    pfree(sequences);
-    return NULL;
-  }
+  /* We are sure that k > 0 */
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
 

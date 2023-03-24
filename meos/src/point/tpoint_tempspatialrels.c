@@ -285,7 +285,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom,
 
   /* Get the periods at which the temporal point intersects the geometry */
   int countper;
-  Span **periods = tpointseq_interperiods(seq, gsinter, &countper);
+  Span *periods = tpointseq_interperiods(seq, gsinter, &countper);
   if (countper == 0)
   {
     result = palloc(sizeof(TSequence *));
@@ -297,12 +297,12 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom,
   }
   SpanSet *ps;
   if (countper == 1)
-    ps = minus_span_span(&seq->period, periods[0]);
+    ps = minus_span_span(&seq->period, &periods[0]);
   else
   {
     /* It is necessary to sort the periods */
     spanarr_sort(periods, countper);
-    SpanSet *ps1 = spanset_make((const Span **) periods, countper, NORMALIZE);
+    SpanSet *ps1 = spanset_make(periods, countper, NORMALIZE);
     ps = minus_span_spanset(&seq->period, ps1);
     pfree(ps1);
   }
@@ -311,7 +311,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom,
     newcount += ps->count;
   result = palloc(sizeof(TSequence *) * newcount);
   for (int i = 0; i < countper; i++)
-    result[i] = tsequence_from_base_time(datum_yes, T_TBOOL, periods[i],
+    result[i] = tsequence_from_base_time(datum_yes, T_TBOOL, &periods[i],
       STEP);
   if (ps != NULL)
   {
@@ -324,7 +324,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom,
     tseqarr_sort(result, newcount);
     pfree(ps);
   }
-  pfree_array((void **) periods, countper);
+  pfree(periods);
   *count = newcount;
   return result;
 }
@@ -377,8 +377,7 @@ tinterrel_tpointcontseq_geom1(const TSequence *seq, Datum geom, const STBox *box
     totalcount += countseqs[i];
   }
   *count = totalcount;
-  return tseqarr2_to_tseqarr(sequences, countseqs,
-    newcount, totalcount);
+  return tseqarr2_to_tseqarr(sequences, countseqs, newcount, totalcount);
 }
 
 /**
@@ -402,11 +401,7 @@ tinterrel_tpointcontseq_geom(const TSequence *seq, Datum geom, const STBox *box,
   int count;
   TSequence **sequences = tinterrel_tpointcontseq_geom1(seq, geom, box, tinter,
     func, &count);
-  if (count == 0)
-  {
-    pfree(sequences);
-    return NULL;
-  }
+  /* We are sure that count > 0 since the geometry is not empty */
   return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
 
@@ -910,11 +905,7 @@ tdwithin_tpointseq_tpointseq(const TSequence *seq1, const TSequence *seq2,
   TSequence **sequences = palloc(sizeof(TSequence *) * seq1->count * 4);
   int count = tdwithin_tpointseq_tpointseq2(seq1, seq2, Float8GetDatum(dist),
     func, sequences);
-  if (count == 0)
-  {
-    pfree(sequences);
-    return NULL;
-  }
+  /* We are sure that count > 0 */
   return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
 
@@ -944,11 +935,7 @@ tdwithin_tpointseqset_tpointseqset(const TSequenceSet *ss1,
     k += tdwithin_tpointseq_tpointseq2(seq1, seq2, Float8GetDatum(dist), func,
       &sequences[k]);
   }
-  if (k == 0)
-  {
-    pfree(sequences);
-    return NULL;
-  }
+  /* We are sure that k > 0 */
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
 
@@ -1052,11 +1039,7 @@ tdwithin_tpointseq_point(const TSequence *seq, Datum point, Datum dist,
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * seq->count * 4);
   int count = tdwithin_tpointseq_point1(seq, point, dist, func, sequences);
-  if (count == 0)
-  {
-    pfree(sequences);
-    return NULL;
-  }
+  /* We are sure that k > 0 since the point is non-empty */
   return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
 
@@ -1084,11 +1067,7 @@ tdwithin_tpointseqset_point(const TSequenceSet *ss, Datum point, Datum dist,
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     k += tdwithin_tpointseq_point1(seq, point, dist, func, &sequences[k]);
   }
-  if (k == 0)
-  {
-    pfree(sequences);
-    return NULL;
-  }
+  /* We are sure that k > 0 since the point is non-empty */
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
 

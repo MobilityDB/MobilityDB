@@ -3868,7 +3868,7 @@ tpointseq_timestamp_at_value(const TSequence *seq, Datum value,
  * @pre The temporal sequence is simple, that is, non self-intersecting and
  * the intersection is non empty
  */
-Span **
+Span *
 tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter, int *count)
 {
   /* The temporal sequence has at least 2 instants since
@@ -3878,15 +3878,15 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter, int *count)
   assert(seq->count > 1);
   const TInstant *start = TSEQUENCE_INST_N(seq, 0);
   const TInstant *end = TSEQUENCE_INST_N(seq, seq->count - 1);
-  Span **result;
+  Span *result;
 
   /* If the sequence is stationary the whole sequence intersects with the
    * geometry since gsinter is not empty */
   if (seq->count == 2 &&
     datum_point_eq(tinstant_value(start), tinstant_value(end)))
   {
-    result = palloc(sizeof(Span *));
-    result[0] = span_copy(&seq->period);
+    result = palloc(sizeof(Span));
+    result[0] = seq->period;
     *count = 1;
     return result;
   }
@@ -3915,7 +3915,7 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter, int *count)
     coll = lwgeom_as_lwcollection(lwgeom_inter);
     countinter = coll->ngeoms;
   }
-  Span **periods = palloc(sizeof(Span *) * countinter);
+  Span *periods = palloc(sizeof(Span) * countinter);
   int k = 0;
   for (int i = 0; i < countinter; i++)
   {
@@ -3940,7 +3940,7 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter, int *count)
       /* If the intersection is not at an exclusive bound */
       if ((seq->period.lower_inc || t1 > start->t) &&
           (seq->period.upper_inc || t1 < end->t))
-        periods[k++] = span_make(t1, t1, true, true, T_TIMESTAMPTZ);
+        span_set(t1, t1, true, true, T_TIMESTAMPTZ, &periods[k++]);
     }
     else
     {
@@ -3959,7 +3959,7 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter, int *count)
       {
         if ((seq->period.lower_inc || t1 > start->t) &&
             (seq->period.upper_inc || t1 < end->t))
-          periods[k++] = span_make(t1, t1, true, true, T_TIMESTAMPTZ);
+          span_set(t1, t1, true, true, T_TIMESTAMPTZ, &periods[k++]);
       }
       else
       {
@@ -3967,8 +3967,8 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter, int *count)
         TimestampTz upper1 = Max(t1, t2);
         bool lower_inc1 = (lower1 == start->t) ? seq->period.lower_inc : true;
         bool upper_inc1 = (upper1 == end->t) ? seq->period.upper_inc : true;
-        periods[k++] = span_make(lower1, upper1, lower_inc1, upper_inc1,
-          T_TIMESTAMPTZ);
+        span_set(lower1, upper1, lower_inc1, upper_inc1, T_TIMESTAMPTZ,
+          &periods[k++]);
       }
     }
   }
@@ -3988,6 +3988,7 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter, int *count)
 
   int newcount;
   result = spanarr_normalize(periods, k, SORT, &newcount);
+  pfree(periods);
   *count = newcount;
   return result;
 }
@@ -4007,7 +4008,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
    * temporal points */
   int countsimple;
   TSequence **simpleseqs = tpointseq_make_simple(seq, &countsimple);
-  Span **allperiods = NULL; /* make compiler quiet */
+  Span *allperiods = NULL; /* make compiler quiet */
   int totalcount = 0;
 
   if (countsimple == 1)
@@ -4030,7 +4031,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
   else
   {
     /* General case: Allocate memory for the result */
-    Span ***periods = palloc(sizeof(Span *) * countsimple);
+    Span **periods = palloc(sizeof(Span *) * countsimple);
     int *countpers = palloc0(sizeof(int) * countsimple);
     /* Loop for every simple piece of the sequence */
     for (int i = 0; i < countsimple; i++)
@@ -4054,7 +4055,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
       return NULL;
     }
     /* Assemble the periods into a single array */
-    allperiods = palloc(sizeof(Span *) * totalcount);
+    allperiods = palloc(sizeof(Span) * totalcount);
     int k = 0;
     for (int i = 0; i < countsimple; i++)
     {
@@ -4066,6 +4067,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
     /* It is necessary to sort the periods */
     spanarr_sort(allperiods, totalcount);
   }
+  /* We are sure that totalcount > 0 */
   SpanSet *ps = spanset_make_free(allperiods, totalcount, NORMALIZE);
   TSequence **result = palloc(sizeof(TSequence *) * totalcount);
   *count = tcontseq_at_periodset1(seq, ps, result);
@@ -4139,9 +4141,9 @@ tpointseq_minus_geometry(const TSequence *seq, const GSERIALIZED *gs,
     return result;
   }
 
-  const Span **periods = palloc(sizeof(Span *) * countinter);
+  Span *periods = palloc(sizeof(Span) * countinter);
   for (int i = 0; i < countinter; i++)
-    periods[i] = &sequences[i]->period;
+    periods[i] = sequences[i]->period;
   SpanSet *ps1 = spanset_make(periods, countinter, NORMALIZE_NO);
   SpanSet *ps2 = minus_span_spanset(&seq->period, ps1);
   pfree(ps1); pfree(periods);

@@ -353,8 +353,8 @@ extern Set *set_copy(const Set *ts);
 extern Span *tstzspan_make(TimestampTz lower, TimestampTz upper, bool lower_inc, bool upper_inc);
 extern Span *span_copy(const Span *s);
 extern SpanSet *spanset_copy(const SpanSet *ps);
-extern SpanSet *spanset_make(const Span **spans, int count, bool normalize);
-extern SpanSet *spanset_make_free(Span **spans, int count, bool normalize);
+extern SpanSet *spanset_make(Span *spans, int count, bool normalize);
+extern SpanSet *spanset_make_free(Span *spans, int count, bool normalize);
 extern Set *tstzset_make(const TimestampTz *times, int count);
 
 /*****************************************************************************/
@@ -569,7 +569,7 @@ extern bool right_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2);
 
 /* Set functions for set and span types */
 
-extern Span *bbox_union_span_span(const Span *s1, const Span *s2);
+extern void bbox_union_span_span(const Span *s1, const Span *s2, Span *result);
 extern Set *intersection_set_set(const Set *s1, const Set *s2);
 extern bool intersection_period_timestamp(const Span *p, TimestampTz t, TimestampTz *result);
 extern bool intersection_periodset_timestamp(const SpanSet *ps, TimestampTz t, TimestampTz *result);

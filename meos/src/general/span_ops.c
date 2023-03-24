@@ -876,13 +876,14 @@ overright_span_span(const Span *s1, const Span *s2)
  * overlap
  * @sqlop @p +
  */
-Span *
-bbox_union_span_span(const Span *s1, const Span *s2)
+void
+bbox_union_span_span(const Span *s1, const Span *s2, Span *result)
 {
   assert(s1->spantype == s2->spantype);
-  Span *result = span_copy(s1);
+  memset(result, 0, sizeof(Span));
+  memcpy(result, s1, sizeof(Span));
   span_expand(s2, result);
-  return result;
+  return;
 }
 
 /**
@@ -957,19 +958,18 @@ union_span_span(const Span *s1, const Span *s2)
   if (! overlaps_span_span(s1, s2) &&
     !adjacent_span_span(s1, s2))
   {
-    const Span *spans[2];
+    Span spans[2];
     if (datum_lt(s1->lower, s2->lower, s1->basetype))
     {
-      spans[0] = s1;
-      spans[1] = s2;
+      spans[0] = *s1;
+      spans[1] = *s2;
     }
     else
     {
-      spans[0] = s2;
-      spans[1] = s1;
+      spans[0] = *s2;
+      spans[1] = *s1;
     }
-    SpanSet *result = spanset_make((const Span **) spans, 2, NORMALIZE_NO);
-    return result;
+    return spanset_make(spans, 2, NORMALIZE_NO);
   }
 
   /* Compute the union of the overlapping spans */
@@ -1176,11 +1176,11 @@ minus_timestamp_period(TimestampTz t, const Span *p, TimestampTz *result)
  * @brief Return the difference of a span and a value.
  */
 int
-minus_span_value1(const Span *s, Datum d, meosType basetype, Span **result)
+minus_span_value1(const Span *s, Datum d, meosType basetype, Span *result)
 {
   if (! contains_span_value(s, d, basetype))
   {
-    result[0] = span_copy(s);
+    result[0] = *s;
     return 1;
   }
 
@@ -1200,21 +1200,21 @@ minus_span_value1(const Span *s, Datum d, meosType basetype, Span **result)
 
   if (eqlower)
   {
-    result[0] = span_make(s->lower, s->upper, false, s->upper_inc, basetype);
+    span_set(s->lower, s->upper, false, s->upper_inc, basetype, &result[0]);
     return 1;
   }
 
   if (equpper)
   {
     if (basetype == T_INT4 || basetype == T_INT8) /** xx **/
-      result[0] = span_make(s->lower, upper1, true, false, basetype);
+      span_set(s->lower, upper1, true, false, basetype, &result[0]);
     else
-      result[0] = span_make(s->lower, s->upper, s->lower_inc, false, basetype);
+      span_set(s->lower, s->upper, s->lower_inc, false, basetype, &result[0]);
     return 1;
   }
 
-  result[0] = span_make(s->lower, d, s->lower_inc, false, basetype);
-  result[1] = span_make(d, s->upper, false, s->upper_inc, basetype);
+  span_set(s->lower, d, s->lower_inc, false, basetype, &result[0]);
+  span_set(d, s->upper, false, s->upper_inc, basetype, &result[1]);
   return 2;
 }
 
@@ -1225,15 +1225,11 @@ minus_span_value1(const Span *s, Datum d, meosType basetype, Span **result)
 SpanSet *
 minus_span_value(const Span *s, Datum d, meosType basetype)
 {
-  Span *spans[2];
+  Span spans[2];
   int count = minus_span_value1(s, d, basetype, spans);
   if (count == 0)
     return NULL;
-  SpanSet *result = spanset_make((const Span **) spans, count,
-    NORMALIZE_NO);
-  for (int i = 0; i < count; i++)
-    pfree(spans[i]);
-  return result;
+  return spanset_make(spans, count, NORMALIZE_NO);
 }
 
 #if MEOS
@@ -1288,7 +1284,7 @@ minus_period_timestamp(const Span *p, TimestampTz t)
  * enabling the result to be two spans
  */
 int
-minus_span_span1(const Span *s1, const Span *s2, Span **result)
+minus_span_span1(const Span *s1, const Span *s2, Span *result)
 {
   SpanBound lower1, lower2, upper1, upper2;
   span_deserialize((const Span *) s1, &lower1, &upper1);
@@ -1313,10 +1309,10 @@ minus_span_span1(const Span *s1, const Span *s2, Span **result)
    */
   if (cmp_l1l2 < 0 && cmp_u1u2 > 0)
   {
-    result[0] = span_make(s1->lower, s2->lower, s1->lower_inc,
-      !(s2->lower_inc), s1->basetype);
-    result[1] = span_make(s2->upper, s1->upper, !(s2->upper_inc),
-      s1->upper_inc, s1->basetype);
+    span_set(s1->lower, s2->lower, s1->lower_inc, !(s2->lower_inc),
+      s1->basetype, &result[0]);
+    span_set(s2->upper, s1->upper, !(s2->upper_inc), s1->upper_inc,
+      s1->basetype, &result[1]);
     return 2;
   }
 
@@ -1328,7 +1324,7 @@ minus_span_span1(const Span *s1, const Span *s2, Span **result)
    * result      |----|
    */
   if (cmp_l1u2 > 0 || cmp_u1l2 < 0)
-    result[0] = span_copy(s1);
+    result[0] = *s1;
 
   /*
    * s1           |-----|
@@ -1336,16 +1332,16 @@ minus_span_span1(const Span *s1, const Span *s2, Span **result)
    * result       |---|
    */
   else if (cmp_l1l2 <= 0 && cmp_u1u2 <= 0)
-    result[0] = span_make(s1->lower, s2->lower, s1->lower_inc,
-      !(s2->lower_inc), s1->basetype);
+    span_set(s1->lower, s2->lower, s1->lower_inc, !(s2->lower_inc),
+      s1->basetype, &result[0]);
   /*
    * s1         |-----|
    * s2      |----|
    * result       |---|
    */
   else if (cmp_l1l2 >= 0 && cmp_u1u2 >= 0)
-    result[0] = span_make(s2->upper, s1->upper, !(s2->upper_inc),
-      s1->upper_inc, s1->basetype);
+    span_set(s2->upper, s1->upper, !(s2->upper_inc), s1->upper_inc,
+      s1->basetype, &result[0]);
   return 1;
 }
 
@@ -1357,15 +1353,11 @@ minus_span_span1(const Span *s1, const Span *s2, Span **result)
 SpanSet *
 minus_span_span(const Span *s1, const Span *s2)
 {
-  Span *spans[2];
+  Span spans[2];
   int count = minus_span_span1(s1, s2, spans);
   if (count == 0)
     return NULL;
-  SpanSet *result = spanset_make((const Span **) spans, count,
-    NORMALIZE_NO);
-  for (int i = 0; i < count; i++)
-    pfree(spans[i]);
-  return result;
+  return spanset_make(spans, count, NORMALIZE_NO);
 }
 
 /******************************************************************************

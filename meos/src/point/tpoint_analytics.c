@@ -1753,11 +1753,7 @@ tpointseq_grid(const TSequence *seq, const gridspec *grid, bool filter_pts)
     pfree(gs);
     memcpy(&prev_p, &p, sizeof(POINT4D));
   }
-  if (k == 0)
-  {
-    pfree(instants);
-    return NULL;
-  }
+  /* We are sure that k > 0 */
   if (filter_pts && k == 1)
   {
     pfree_array((void **) instants, 1);

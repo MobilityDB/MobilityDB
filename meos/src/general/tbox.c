@@ -1051,12 +1051,12 @@ union_tbox_tbox(const TBox *box1, const TBox *box2)
 
   bool hasx = MOBDB_FLAGS_GET_X(box1->flags);
   bool hast = MOBDB_FLAGS_GET_T(box1->flags);
-  Span *period = NULL, *span = NULL;
+  Span period, span;
   if (hast)
-    period = bbox_union_span_span(&box1->period, &box2->period);
+    bbox_union_span_span(&box1->period, &box2->period, &period);
   if (hasx)
-    span = bbox_union_span_span(&box1->span, &box2->span);
-  TBox *result = tbox_make(period, span);
+    bbox_union_span_span(&box1->span, &box2->span, &span);
+  TBox *result = tbox_make(hast ? &period : NULL, hasx ? &span : NULL);
   return result;
 }
 

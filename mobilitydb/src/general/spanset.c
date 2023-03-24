@@ -138,9 +138,8 @@ Spanset_constructor(PG_FUNCTION_ARGS)
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
   ensure_non_empty_array(array);
   int count;
-  Span **spans = spanarr_extract(array, &count);
-  SpanSet *result = spanset_make((const Span **) spans, count, NORMALIZE);
-  pfree(spans);
+  Span *spans = spanarr_extract(array, &count);
+  SpanSet *result = spanset_make_free(spans, count, NORMALIZE);
   PG_FREE_IF_COPY(array, 0);
   PG_RETURN_POINTER(result);
 }
@@ -256,15 +255,14 @@ Multirange_to_spanset(PG_FUNCTION_ARGS)
   TypeCacheEntry *typcache = multirange_get_typcache(fcinfo,
     MultirangeTypeGetOid(mrange));
 
-  Span **spans = palloc(sizeof(Span *) * mrange->rangeCount);
+  Span *spans = palloc(sizeof(Span) * mrange->rangeCount);
   for (uint32 i = 0; i < mrange->rangeCount; i++)
   {
     RangeType *range = multirange_get_range(typcache->rngtype, mrange, i);
-    spans[i] = range_to_span(range, typcache->rngtype);
+    range_set_span(range, typcache->rngtype, &spans[i]);
   }
-  SpanSet *ss = spanset_make((const Span **) spans, mrange->rangeCount,
-    NORMALIZE);
-  pfree_array((void **) spans, mrange->rangeCount);
+  SpanSet *ss = spanset_make(spans, mrange->rangeCount, NORMALIZE);
+  pfree(spans);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_POINTER(ss);
 }
@@ -542,14 +540,13 @@ Spanset_spans(PG_FUNCTION_ARGS)
 static SpanSet *
 floatspanset_round(SpanSet *ss, Datum size)
 {
-  Span **spans = palloc(sizeof(Span *) * ss->count);
+  Span *spans = palloc(sizeof(Span) * ss->count);
   for (int i = 0; i < ss->count; i++)
   {
     const Span *span = spanset_sp_n(ss, i);
-    spans[i] = floatspan_round(span, size);
+    floatspan_round(span, size, &spans[i]);
   }
-  SpanSet *result = spanset_make((const Span**) spans, ss->count, NORMALIZE);
-  pfree_array((void **) spans, ss->count);
+  SpanSet *result = spanset_make_free(spans, ss->count, NORMALIZE);
   return result;
 }
 

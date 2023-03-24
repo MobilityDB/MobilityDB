@@ -11097,6 +11097,18 @@ SELECT deleteTime(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@
  {("BBB"@2000-01-02 00:00:00+00, "AAA"@2000-01-03 00:00:00+00], ["CCC"@2000-01-04 00:00:00+00, "CCC"@2000-01-05 00:00:00+00]}
 (1 row)
 
+SELECT deleteTime(tfloat '{[1@2000-01-01]}', timestamptz '2000-01-01');
+ deletetime 
+------------
+ 
+(1 row)
+
+SELECT deleteTime(tfloat '{[1@2000-01-01]}', tstzset '{2000-01-01, 2000-01-02}');
+ deletetime 
+------------
+ 
+(1 row)
+
 SELECT deleteTime(tfloat '[1@2000-01-01, 2@2000-01-02]', tstzset '{2000-01-02}');
          deletetime         
 ----------------------------

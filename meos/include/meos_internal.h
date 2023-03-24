@@ -206,8 +206,8 @@ extern bool intersection_spanset_value(const SpanSet *ss, Datum d, meosType base
 extern bool intersection_value_value(Datum d1, Datum d2, meosType basetype, Datum *result);
 
 extern Set *minus_set_value(const Set *s, Datum d, meosType basetype);
-extern int minus_span_span1(const Span *s1, const Span *s2, Span **result);
-extern int minus_span_value1(const Span *s, Datum d, meosType basetype, Span **result);
+extern int minus_span_span1(const Span *s1, const Span *s2, Span *result);
+extern int minus_span_value1(const Span *s, Datum d, meosType basetype, Span *result);
 extern SpanSet *minus_span_value(const Span *s, Datum d, meosType basetype);
 extern SpanSet *minus_spanset_value(const SpanSet *ss, Datum d, meosType basetype);
 extern bool minus_value_set(Datum d, meosType basetype, const Set *s, Datum *result);
