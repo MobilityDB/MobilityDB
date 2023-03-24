@@ -1891,7 +1891,7 @@ temporal_valueset(const Temporal *temp, int *count)
 bool *
 tbool_values(const Temporal *temp, int *count)
 {
-  Datum *datumarr = temporal_values(temp, count);
+  Datum *datumarr = temporal_valueset(temp, count);
   bool *result = palloc(sizeof(bool) * *count);
   for (int i = 0; i < *count; i++)
     result[i] = DatumGetBool(datumarr[i]);
@@ -1908,7 +1908,7 @@ tbool_values(const Temporal *temp, int *count)
 int *
 tint_values(const Temporal *temp, int *count)
 {
-  Datum *datumarr = temporal_values(temp, count);
+  Datum *datumarr = temporal_valueset(temp, count);
   int *result = palloc(sizeof(int) * *count);
   for (int i = 0; i < *count; i++)
     result[i] = DatumGetInt32(datumarr[i]);
@@ -1925,7 +1925,7 @@ tint_values(const Temporal *temp, int *count)
 double *
 tfloat_values(const Temporal *temp, int *count)
 {
-  Datum *datumarr = temporal_values(temp, count);
+  Datum *datumarr = temporal_valueset(temp, count);
   double *result = palloc(sizeof(double) * *count);
   for (int i = 0; i < *count; i++)
     result[i] = DatumGetFloat8(datumarr[i]);
@@ -1942,7 +1942,7 @@ tfloat_values(const Temporal *temp, int *count)
 text **
 ttext_values(const Temporal *temp, int *count)
 {
-  Datum *datumarr = temporal_values(temp, count);
+  Datum *datumarr = temporal_valueset(temp, count);
   text **result = palloc(sizeof(text *) * *count);
   for (int i = 0; i < *count; i++)
     result[i] = DatumGetTextP(datumarr[i]);
@@ -1959,7 +1959,7 @@ ttext_values(const Temporal *temp, int *count)
 GSERIALIZED **
 tpoint_values(const Temporal *temp, int *count)
 {
-  Datum *datumarr = temporal_values(temp, count);
+  Datum *datumarr = temporal_valueset(temp, count);
   GSERIALIZED **result = palloc(sizeof(GSERIALIZED *) * *count);
   for (int i = 0; i < *count; i++)
     result[i] = DatumGetGserializedP(datumarr[i]);

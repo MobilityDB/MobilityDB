@@ -139,6 +139,9 @@ extern void floatspan_set_numspan(const Span *s1, Span *s2, meosType basetype);
 extern Set *value_union_transfn(Set *state, Datum d, meosType basetype);
 extern Set *set_union_transfn(Set *state, Set *set);
 extern Span *spanbase_extent_transfn(Span *s, Datum d, meosType basetype);
+extern SpanSet *span_union_transfn(SpanSet *state, const Span *span);
+extern SpanSet *spanset_union_transfn(SpanSet *state, const SpanSet *ss);
+extern SpanSet *spanset_union_finalfn(SpanSet *state);
 
 /*****************************************************************************
  * Bounding box functions for set and span types

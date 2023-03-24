@@ -2204,7 +2204,7 @@ tsequenceset_append_tinstant(TSequenceSet *ss, const TInstant *inst,
 
   /* This is the first time we use an expandable structure or there is no more
    * free space */
-  const TSequence **sequences = palloc(sizeof(TSequence *) * ss->count + 1);
+  const TSequence **sequences = palloc(sizeof(TSequence *) * (ss->count + 1));
   int k = 0;
   for (int i = 0; i < ss->count - 1; i++)
     sequences[k++] = TSEQUENCESET_SEQ_N(ss, i);
