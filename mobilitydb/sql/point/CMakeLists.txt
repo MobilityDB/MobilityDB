@@ -1,8 +1,8 @@
 SET(LOCAL_FILES
   050_geoset
-  050_stbox
-  051_tpoint
-  052_tpoint_inout
+  051_stbox
+  052_tpoint
+  053_tpoint_inout
   054_tpoint_compops
   055_geography_functions
   056_tpoint_spatialfuncs
