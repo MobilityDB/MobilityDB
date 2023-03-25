@@ -305,31 +305,37 @@ extern bool pgis_gserialized_same(const GSERIALIZED *geom1, const GSERIALIZED *g
 /* Input/output functions for set and span types */
 
 extern Set *bigintset_in(const char *str);
+extern char *bigintset_out(const Set *set);
 extern Span *bigintspan_in(const char *str);
 extern char *bigintspan_out(const Span *s);
 extern SpanSet *bigintspanset_in(const char *str);
 extern char *bigintspanset_out(const SpanSet *ss);
 extern Set *floatset_in(const char *str);
+extern char *floatset_out(const Set *set, int maxdd);
 extern Span *floatspan_in(const char *str);
 extern char *floatspan_out(const Span *s, int maxdd);
 extern SpanSet *floatspanset_in(const char *str);
 extern char *floatspanset_out(const SpanSet *ss, int maxdd);
+extern char *geogset_out(const Set *set, int maxdd);
+extern char *geomset_out(const Set *set, int maxdd);
 extern char *geoset_as_text(const Set *set, int maxdd);
 extern char *geoset_as_ewkt(const Set *set, int maxdd);
 extern Set *intset_in(const char *str);
+extern char *intset_out(const Set *set);
 extern Span *intspan_in(const char *str);
 extern char *intspan_out(const Span *s);
 extern SpanSet *intspanset_in(const char *str);
 extern char *intspanset_out(const SpanSet *ss);
+extern char *npointset_out(const Set *set, int maxdd);
+extern Span *period_in(const char *str);
+extern char *period_out(const Span *s);
+extern SpanSet *periodset_in(const char *str);
+extern char *periodset_out(const SpanSet *ss);
 extern uint8_t *set_as_wkb(const Set *s, uint8_t variant, size_t *size_out);
 extern char *set_as_hexwkb(const Set *s, uint8_t variant, size_t *size_out);
 extern Set *set_from_hexwkb(const char *hexwkb);
 extern Set *set_from_wkb(const uint8_t *wkb, int size);
 extern char *set_out(const Set *s, int maxdd);
-extern Span *period_in(const char *str);
-extern char *period_out(const Span *s);
-extern SpanSet *periodset_in(const char *str);
-extern char *periodset_out(const SpanSet *ss);
 extern uint8_t *span_as_wkb(const Span *s, uint8_t variant, size_t *size_out);
 extern char *span_as_hexwkb(const Span *s, uint8_t variant, size_t *size_out);
 extern Span *span_from_hexwkb(const char *hexwkb);
@@ -340,7 +346,10 @@ extern char *spanset_as_hexwkb(const SpanSet *ss, uint8_t variant, size_t *size_
 extern SpanSet *spanset_from_hexwkb(const char *hexwkb);
 extern SpanSet *spanset_from_wkb(const uint8_t *wkb, int size);
 extern char *spanset_out(const SpanSet *ss, int maxdd);
+extern Set *textset_in(const char *str);
+extern char *textset_out(const Set *set);
 extern Set *tstzset_in(const char *str);
+extern char *tstzset_out(const Set *set);
 
 /*****************************************************************************/
 

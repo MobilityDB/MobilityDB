@@ -41,7 +41,7 @@
  *
  * The program can be build as follows
  * @code
- * gcc -Wall -g -I/usr/local/include -o meos_expand_intspanset meos_expand_intspanset.c -L/usr/local/lib -lmeos
+ * gcc -Wall -g -I/usr/local/include -o meos_expand_floatspanset meos_expand_floatspanset.c -L/usr/local/lib -lmeos
  * @endcode
  */
 
@@ -55,12 +55,14 @@
 #define MAX_LENGTH_HEADER 1024
 /* Maximum length in characters of a span set in the input data */
 #define MAX_LENGTH_SPANSET 1024
+/* Number of groups for accumulating the input span sets */
+#define NUMBER_GROUPS 10
 
 typedef struct
 {
   int k;
   SpanSet *ss;
-} intspan_record;
+} floatspanset_record;
 
 /* Main program */
 int main(void)
@@ -73,10 +75,10 @@ int main(void)
   t = clock();
 
   /* Spanset for aggregating the spans */
-  SpanSet *state = NULL;
+  SpanSet *state[NUMBER_GROUPS] = {0};
 
   /* Substitute the full file path in the first argument of fopen */
-  FILE *file = fopen("intspanset.csv", "r");
+  FILE *file = fopen("floatspanset.csv", "r");
 
   if (! file)
   {
@@ -84,7 +86,7 @@ int main(void)
     return 1;
   }
 
-  intspan_record rec;
+  floatspanset_record rec;
   int no_records = 0;
   int no_nulls = 0;
   char header_buffer[MAX_LENGTH_HEADER];
@@ -114,9 +116,9 @@ int main(void)
     no_records++;
 
     /* Transform the string representing the timestamp into a timestamp value */
-    rec.ss = intspanset_in(spanset_buffer);
+    rec.ss = floatspanset_in(spanset_buffer);
 
-    state = spanset_union_transfn(state, rec.ss);
+    state[rec.k%10] = spanset_union_transfn(state[rec.k%10], rec.ss);
 
     /*
      * Create the instants and append them in the corresponding ship record.
@@ -124,7 +126,7 @@ int main(void)
      * - The coordinates are given in the WGS84 geographic coordinate system
      * - The timestamps are given in GMT time zone
      */
-    char *spanset_out = intspanset_out(rec.ss);
+    char *spanset_out = floatspanset_out(rec.ss, 3);
     printf("k: %d, spanset: %s\n", rec.k, spanset_out);
     free(spanset_out);
     free(rec.ss);
@@ -137,14 +139,19 @@ int main(void)
   fclose(file);
 
   /* Compute the final result */
-  SpanSet *final = spanset_union_finalfn(state);
-
-  /* Print the accumulated span set */
-  char *spanset_out = intspanset_out(final);
-  printf("spanset: %s\n", spanset_out);
-  free(spanset_out);
-  free(state);
-  free(final);
+  for (int i = 0; i < NUMBER_GROUPS; i++)
+  {
+    SpanSet *final = spanset_union_finalfn(state[i]);
+    /* Print the accumulated span set */
+    printf("----------\n");
+    printf("Group: %d\n", i + 1);
+    printf("----------\n");
+    char *spanset_out = floatspanset_out(final, 3);
+    printf("spanset: %s\n", spanset_out);
+    free(spanset_out);
+    free(state[i]);
+    free(final);
+  }
 
   /* Calculate the elapsed time */
   t = clock() - t;
