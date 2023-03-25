@@ -282,7 +282,7 @@ tbox_parse(const char **str)
       /* Consume the comma separating the span and the period */
       p_whitespace(str);
       if (! p_comma(str))
-        elog(ERROR, "Could not parse temporal box: Missing opening parenthesis");
+        elog(ERROR, "Could not parse temporal box: Missing comma between value and time spans");
     }
   }
 

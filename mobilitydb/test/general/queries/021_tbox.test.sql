@@ -47,6 +47,7 @@ SELECT tbox 'TBOX X((1, AA))';
 SELECT tbox 'TBOX X((1, 2000-01-01))';
 SELECT tbox 'TBOX X((1, 2), 2, 2))';
 SELECT tbox 'TBOX X((1, 2),(AA, 2))';
+SELECT tbox 'TBOX XT([1,2][2000-01-01,2000-01-02])';
 SELECT tbox 'TBOX X((1, 2),(2000-01-01, AA))';
 SELECT tbox 'TBOX X((1, 2),(2000-01-01, 2000-01-02)';
 SELECT tbox 'TBOX X((2,2000-01-02),(1,2000-01-01))XXXX';

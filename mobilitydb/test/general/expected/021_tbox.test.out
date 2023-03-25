@@ -63,6 +63,10 @@ SELECT tbox 'TBOX X((1, 2),(AA, 2))';
 ERROR:  Could not parse temporal box: Missing closing parenthesis
 LINE 1: SELECT tbox 'TBOX X((1, 2),(AA, 2))';
                     ^
+SELECT tbox 'TBOX XT([1,2][2000-01-01,2000-01-02])';
+ERROR:  Could not parse temporal box: Missing comma between value and time spans
+LINE 1: SELECT tbox 'TBOX XT([1,2][2000-01-01,2000-01-02])';
+                    ^
 SELECT tbox 'TBOX X((1, 2),(2000-01-01, AA))';
 ERROR:  Could not parse temporal box: Missing closing parenthesis
 LINE 1: SELECT tbox 'TBOX X((1, 2),(2000-01-01, AA))';
