@@ -141,7 +141,7 @@ int main(void)
 
   /* Print the accumulated set */
   char *set_out = textset_out(final);
-  printf("set: %s\n", set_out);
+  printf("set: %d\n%s\n", final->count, set_out);
   free(set_out);
   free(state);
   free(final);

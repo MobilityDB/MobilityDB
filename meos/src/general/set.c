@@ -505,8 +505,8 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
   if (ordered && count > 1)
   {
   /* Sort the values and remove duplicates */
-    newvalues = palloc(sizeof(Datum *) * count);
-    memcpy(newvalues, values, sizeof(Datum *) * count);
+    newvalues = palloc(sizeof(Datum) * count);
+    memcpy(newvalues, values, sizeof(Datum) * count);
     datumarr_sort(newvalues, count, basetype);
     newcount = datumarr_remove_duplicates(newvalues, count, basetype);
   }
