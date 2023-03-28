@@ -2758,6 +2758,25 @@ tpoint_azimuth(const Temporal *temp)
   return result;
 }
 
+/**
+ * @ingroup libmeos_temporal_spatial_accessor
+ * @brief Return the temporal angular difference of a temporal geometry point.
+ * @sqlfunc azimuth()
+ */
+Temporal *
+tpoint_angular_difference(const Temporal *temp)
+{
+  Temporal *tazimuth = tpoint_azimuth(temp);
+  Temporal *result = NULL;
+  if (tazimuth)
+  {
+    Temporal *tazimuth_deg = tfloat_degrees(tazimuth, false);
+    result = tnumber_angular_difference(tazimuth_deg);
+    pfree(tazimuth_deg);
+  }
+  return result;
+}
+
 /*****************************************************************************
  * Temporal bearing
  *****************************************************************************/

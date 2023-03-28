@@ -991,6 +991,29 @@ Tpoint_azimuth(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * Temporal angular difference
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Tpoint_angular_difference);
+/**
+ * @ingroup mobilitydb_temporal_spatial_accessor
+ * @brief Return the temporal angular difference of a temporal geometry point
+ * @sqlfunc angularDifference()
+ */
+PGDLLEXPORT Datum
+Tpoint_angular_difference(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  Temporal *result = tpoint_angular_difference(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
  * Temporal bearing
  *****************************************************************************/
 
