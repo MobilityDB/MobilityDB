@@ -308,6 +308,22 @@ WITH temp(inst) AS (
 SELECT appendInstant(inst, NULL, interval '1 day' ORDER BY inst) FROM temp;
 
 WITH temp(inst) AS (
+  SELECT tfloat '1@2000-01-01' UNION
+  SELECT tfloat '2@2000-01-02' UNION
+  SELECT tfloat '4@2000-01-04' UNION
+  SELECT tfloat '5@2000-01-05' UNION
+  SELECT tfloat '7@2000-01-07' )
+SELECT appendInstant(inst, 1, NULL ORDER BY inst) FROM temp;
+
+WITH temp(inst) AS (
+  SELECT tfloat '1@2000-01-01' UNION
+  SELECT tfloat '2@2000-01-02' UNION
+  SELECT tfloat '4@2000-01-04' UNION
+  SELECT tfloat '5@2000-01-05' UNION
+  SELECT tfloat '7@2000-01-07' )
+SELECT appendInstant(inst, NULL, interval '1 day' ORDER BY inst) FROM temp;
+
+WITH temp(inst) AS (
   SELECT ttext 'AA@2000-01-01' UNION
   SELECT ttext 'BB@2000-01-02' UNION
   SELECT ttext 'CC@2000-01-04' UNION

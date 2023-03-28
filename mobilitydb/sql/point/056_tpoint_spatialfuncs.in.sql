@@ -209,6 +209,15 @@ CREATE FUNCTION azimuth(tgeogpoint)
   AS 'MODULE_PATHNAME', 'Tpoint_azimuth'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION angularDifference(tgeompoint)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Tpoint_angular_difference'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION angularDifference(tgeogpoint)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Tpoint_angular_difference'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************/
 
 -- The following two functions are meant to be included in PostGIS one day

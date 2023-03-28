@@ -137,7 +137,8 @@ set_append_value(Set *set, Datum d, meosType basetype)
   for (int i = 0; i < set->count; i++)
     values[i] = SET_VAL_N(set, i);
   values[set->count] = d;
-  int maxcount = set->maxcount * 2;
+  int maxcount = (set->count < set->maxcount) ?
+    set->maxcount : set->maxcount * 2;
 #ifdef DEBUG_BUILD
   printf(" set -> %d\n", maxcount);
 #endif /* DEBUG_BUILD */
@@ -145,7 +146,7 @@ set_append_value(Set *set, Datum d, meosType basetype)
   Set *result = set_make_exp(values, set->count + 1, maxcount, set->basetype,
     ORDERED_NO);
   pfree(values);
-  // pfree(set);
+  pfree(set);
   return result;
 }
 
@@ -238,7 +239,7 @@ set_union_transfn(Set *state, Set *set)
   for (int i = start; i < set->count; i++)
   {
     d = SET_VAL_N(set, i);
-    set_append_value(state, d, set->basetype);
+    state = set_append_value(state, d, set->basetype);
   }
   return state;
 }
@@ -246,6 +247,8 @@ set_union_transfn(Set *state, Set *set)
 /**
  * @ingroup libmeos_internal_setspan_agg
  * @brief Transition function for set aggregate of values
+ * @note The input state is NOT freed, this should be done by the calling
+ * function
  */
 Set *
 set_union_finalfn(Set *state)
@@ -261,7 +264,6 @@ set_union_finalfn(Set *state)
   Set *result = set_make_exp(values, state->count, state->count,
     state->basetype, ORDERED);
   pfree(values);
-  pfree(state);
   return result;
 }
 

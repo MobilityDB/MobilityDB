@@ -183,6 +183,16 @@ floatset_in(const char *str)
  * @brief Return a set from its Well-Known Text (WKT) representation.
  */
 Set *
+textset_in(const char *str)
+{
+  return set_parse(&str, T_TEXTSET);
+}
+
+/**
+ * @ingroup libmeos_setspan_inout
+ * @brief Return a set from its Well-Known Text (WKT) representation.
+ */
+Set *
 tstzset_in(const char *str)
 {
   return set_parse(&str, T_TSTZSET);
@@ -232,6 +242,90 @@ set_out(const Set *s, int maxdd)
 {
   return set_out_fn(s, maxdd, &basetype_out);
 }
+
+#if MEOS
+/**
+ * @ingroup libmeos_setspan_inout
+ * @brief Output a set of timestamps.
+*/
+char *
+tstzset_out(const Set *set)
+{
+  return set_out(set, 0);
+}
+
+/**
+ * @ingroup libmeos_setspan_inout
+ * @brief Output a set of texts.
+*/
+char *
+textset_out(const Set *set)
+{
+  return set_out(set, 0);
+}
+
+/**
+ * @ingroup libmeos_setspan_inout
+ * @brief Output a set of integers.
+*/
+char *
+intset_out(const Set *set)
+{
+  return set_out(set, 0);
+}
+
+/**
+ * @ingroup libmeos_setspan_inout
+ * @brief Output a set of big integers.
+*/
+char *
+bigintset_out(const Set *set)
+{
+  return set_out(set, 0);
+}
+
+/**
+ * @ingroup libmeos_setspan_inout
+ * @brief Output a set of floats.
+*/
+char *
+floatset_out(const Set *set, int maxdd)
+{
+  return set_out(set, maxdd);
+}
+
+/**
+ * @ingroup libmeos_setspan_inout
+ * @brief Output a set of geometries.
+*/
+char *
+geomset_out(const Set *set, int maxdd)
+{
+  return set_out(set, maxdd);
+}
+
+/**
+ * @ingroup libmeos_setspan_inout
+ * @brief Output a set of geographies.
+*/
+char *
+geogset_out(const Set *set, int maxdd)
+{
+  return set_out(set, maxdd);
+}
+
+#if NPOINT
+/**
+ * @ingroup libmeos_setspan_inout
+ * @brief Output a set of network points.
+*/
+Set *
+npointset_out(const Set *set, int maxdd)
+{
+  return set_out(set, maxdd);
+}
+#endif /* NPOINT */
+#endif /* MEOS */
 
 /**
  * @ingroup libmeos_spanset_inout
@@ -411,8 +505,8 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
   if (ordered && count > 1)
   {
   /* Sort the values and remove duplicates */
-    newvalues = palloc(sizeof(Datum *) * count);
-    memcpy(newvalues, values, sizeof(Datum *) * count);
+    newvalues = palloc(sizeof(Datum) * count);
+    memcpy(newvalues, values, sizeof(Datum) * count);
     datumarr_sort(newvalues, count, basetype);
     newcount = datumarr_remove_duplicates(newvalues, count, basetype);
   }

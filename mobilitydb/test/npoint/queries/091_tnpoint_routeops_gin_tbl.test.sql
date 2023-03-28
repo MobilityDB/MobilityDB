@@ -92,6 +92,10 @@ SELECT '@=', 'tnpoint', 'npoint', COUNT(*) FROM tbl_tnpoint
 WHERE temp @= npoint 'NPoint(37,0.5)';
 
 INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
+SELECT '@=', 'npoint', 'tnpoint', COUNT(*) FROM tbl_tnpoint
+WHERE npoint 'NPoint(37,0.5)' @= temp;
+
+INSERT INTO test_topops(op, leftarg, rightarg, no_idx)
 SELECT '@=', 'tnpoint', 'tnpoint', COUNT(*) FROM tbl_tnpoint
 WHERE temp @= tnpoint '{NPoint(37,0.5)@2001-08-16, NPoint(78,0.5)@2001-08-17}';
 
@@ -155,6 +159,10 @@ WHERE op = '?@' AND leftarg = 'npoint' AND rightarg = 'tnpoint';
 UPDATE test_topops
 SET gin_idx = ( SELECT COUNT(*) FROM tbl_tnpoint WHERE temp @= npoint 'NPoint(37,0.5)' )
 WHERE op = '@=' AND leftarg = 'tnpoint' AND rightarg = 'npoint';
+
+UPDATE test_topops
+SET gin_idx = ( SELECT COUNT(*) FROM tbl_tnpoint WHERE npoint 'NPoint(37,0.5)' @= temp)
+WHERE op = '@=' AND leftarg = 'npoint' AND rightarg = 'tnpoint';
 
 UPDATE test_topops
 SET gin_idx = ( SELECT COUNT(*) FROM tbl_tnpoint WHERE temp @=

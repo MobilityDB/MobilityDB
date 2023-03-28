@@ -470,6 +470,18 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE azimuth(temp) IS NOT NULL;
     41
 (1 row)
 
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE angularDifference(temp) IS NOT NULL;
+ count 
+-------
+    48
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE angularDifference(temp) IS NOT NULL;
+ count 
+-------
+    47
+(1 row)
+
 SELECT MAX(maxValue(round(degrees(bearing(g, temp)), 6))) FROM tbl_geom_point t1, tbl_tgeompoint t2
 WHERE bearing(g, temp) IS NOT NULL;
     max     

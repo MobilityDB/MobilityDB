@@ -62,4 +62,6 @@ SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE tdwithin(t1.temp, t2.np
 
 SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE tdwithin(t1.temp, t2.temp, 0.01) IS NOT NULL AND t1.k%25 < 5 AND t2.k%25 < 5;
 
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE tdwithin(t1.temp, t2.temp, 0.01, true) IS NOT NULL AND t1.k%25 < 5 AND t2.k%25 < 5;
+
 -------------------------------------------------------------------------------
