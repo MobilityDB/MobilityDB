@@ -565,6 +565,8 @@ tnumberseq_angular_difference(const TSequence *seq)
   /* We are sure that there are at least 2 instants */
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   int k = tnumberseq_angular_difference1(seq, instants);
+  if (k == 0)
+    return NULL;
   /* Resulting sequence has discrete interpolation */
   return tsequence_make_free(instants, k, true, true, DISCRETE, NORMALIZE);
 }
