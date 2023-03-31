@@ -525,7 +525,35 @@ angular_difference(Datum degrees1, Datum degrees2)
 
 /**
  * @brief Return the temporal angular difference of a temporal number.
+ * @brief This functions
  */
+static int
+tnumberseq_angular_difference1(const TSequence *seq, TInstant **result)
+{
+  /* Instantaneous sequence */
+  if (seq->count == 1)
+    return 0;
+
+  /* General case */
+  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
+  Datum value1 = tinstant_value(inst1);
+  Datum angdiff = Float8GetDatum(0);
+  int k = 0;
+  if (seq->period.lower_inc)
+    result[k++] = tinstant_make(angdiff, seq->temptype, inst1->t);
+  for (int i = 1; i < seq->count; i++)
+  {
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
+    Datum value2 = tinstant_value(inst2);
+    angdiff = angular_difference(value1, value2);
+    if (i != seq->count - 1 || seq->period.upper_inc)
+      result[k++] = tinstant_make(angdiff, seq->temptype, inst2->t);
+    inst1 = inst2;
+    value1 = value2;
+  }
+  return k;
+}
+
 static TSequence *
 tnumberseq_angular_difference(const TSequence *seq)
 {
@@ -536,59 +564,33 @@ tnumberseq_angular_difference(const TSequence *seq)
   /* General case */
   /* We are sure that there are at least 2 instants */
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
-  Datum value1 = tinstant_value(inst1);
-  Datum angdiff = Float8GetDatum(0);
-  instants[0] = tinstant_make(angdiff, seq->temptype, inst1->t);
-  for (int i = 1; i < seq->count; i++)
-  {
-    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
-    Datum value2 = tinstant_value(inst2);
-    angdiff = angular_difference(value1, value2);
-    instants[i] = tinstant_make(angdiff, seq->temptype, inst2->t);
-    inst1 = inst2;
-    value1 = value2;
-  }
-  // instants[seq->count - 1] = tinstant_make(angdiff, seq->temptype, inst1->t);
+  int k = tnumberseq_angular_difference1(seq, instants);
   /* Resulting sequence has discrete interpolation */
-  return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
-    false, DISCRETE, NORMALIZE);
+  return tsequence_make_free(instants, k, true, true, DISCRETE, NORMALIZE);
 }
 
 /**
  * @brief Return the temporal delta_value of a temporal number.
  */
-static TSequenceSet *
+static TSequence *
 tnumberseqset_angular_difference(const TSequenceSet *ss)
 {
-  TSequence *angdiff;
-
   /* Singleton sequence set */
   if (ss->count == 1)
-  {
-    angdiff = tnumberseq_angular_difference(TSEQUENCESET_SEQ_N(ss, 0));
-    TSequenceSet *result = tsequence_to_tsequenceset(angdiff);
-    pfree(angdiff);
-    return result;
-  }
+    return tnumberseq_angular_difference(TSEQUENCESET_SEQ_N(ss, 0));
 
   /* General case */
-  TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
+  TInstant **instants = palloc(sizeof(TSequence *) * ss->totalcount);
   int k = 0;
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    angdiff = tnumberseq_angular_difference(seq);
-    if (angdiff)
-      sequences[k++] = angdiff;
+    k += tnumberseq_angular_difference1(seq, &instants[k]);
   }
   if (k == 0)
-  {
-    pfree(sequences);
     return NULL;
-  }
-  /* Resulting sequence set has step interpolation */
-  return tsequenceset_make_free(sequences, k, NORMALIZE);
+  /* Resulting sequence has discrete interpolation */
+  return tsequence_make_free(instants, k, true, true, DISCRETE, NORMALIZE);
 }
 
 /**

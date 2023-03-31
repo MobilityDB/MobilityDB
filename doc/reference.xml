@@ -1169,6 +1169,10 @@
 				</listitem>
 
 				<listitem>
+					<para><link linkend="angularDifference"><varname>angularDifference</varname></link>: Get the temporal angular difference</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="bearing"><varname>bearing</varname></link>: Get the temporal bearing</para>
 				</listitem>
 			</itemizedlist>
