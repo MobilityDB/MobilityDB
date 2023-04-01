@@ -1,85 +1,41 @@
 name: Build for Windows
 
-# This action runs:
-# - When this file changes
-# - When changes on code (src, include)
-# - When changes on data or testing scripts (tools/testers)
-# - When the way the build changes (CMakeLists.txt)
-#
-# Test is done on:
-# - the preinstalled postgres version
-# - postgis 3
-#
-
 on:
   push:
-    paths:
-      - '.github/workflows/windows.yml'
-      - 'src/**'
-      - 'include/**'
-      - 'tools/testers/**'
-      - 'CMakeLists.txt'
-
-    branches-ignore:
-      - 'gh-pages'
-
-    tags: []
-
+    branches: [ main develop ]
   pull_request:
-    paths:
-      - '.github/workflows/windows.yml'
-      - 'src/**'
-      - 'include/**'
-      - 'tools/testers/**'
-      - 'CMakeLists.txt'
-
-    branches-ignore:
-      - 'gh-pages'
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
-permissions:
-  contents: read
-
-env:
-  postgis_version: 3
+    branches: [ main develop ]
+  workflow_dispatch:
 
 jobs:
   build:
     name: windows
     runs-on: windows-latest
 
-    strategy:
-      matrix:
-        # pg_major: [12.14, 13.10, 14.7, 15.2]
-        pg_major: [14.7]
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: 'Setup'
+        uses: msys2/setup-msys2@v2
+        with:
+          install: >-
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-make
+            mingw-w64-ucrt-x86_64-postgresql
+            mingw-w64-ucrt-x86_64-postgis
+            mingw-w64-ucrt-x86_64-gsl
+          update: true
+
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v1.3.1
 
-      - name: Install PostgreSQL
-        run: |
-          curl https://get.enterprisedb.com/postgresql/postgresql-${{ matrix.pg_major }}-1-windows-x64-binaries.zip --output pgsql.zip
-          Expand-Archive 'pgsql.zip' -Force
-          $env:path += ";$(Get-Location)\pgsql\pgsql\bin\"
-          $env:path -split ";"
-          initdb -D pgsql\data -U postgres
-          pg_ctl -D pgsql\data start
-          echo "POSTGRESQL_DIR=$pwd\pgsql\pgsql" >> $env:GITHUB_ENV
-      - name: Check Postgres running
-        run: |
-          ${{ env.POSTGRESQL_DIR }}\bin\psql -U postgres -d postgres -c "SELECT version()"
       - name: Configure
         run: |
           mkdir build
           cd build
-          cmake -DPOSTGRESQL_BIN=${{ env.POSTGRESQL_DIR }}\bin -DPOSTGRESQL_INCLUDE_DIR="${{ env.POSTGRESQL_DIR }}\include;${{ env.POSTGRESQL_DIR }}\include\server" -G"Visual Studio 17 2022" -DCMAKE_BUILD_TYPE=Release -DWITH_DOC=OFF ..
+          cmake -G"Visual Studio 17 2022" -DCMAKE_BUILD_TYPE=Release ..
 
       - name: build
         run: |
