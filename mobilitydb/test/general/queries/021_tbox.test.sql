@@ -34,6 +34,7 @@
 SELECT tbox 'TBOX XT([1.0, 1.0],[2000-01-01,2000-01-02])'; -- Both X and T dimensions
 SELECT tbox 'TBOX X([1.0, 1.0])'; -- Only X dimension
 SELECT tbox 'TBOX T([2000-01-01,2000-01-02])'; -- Only T dimension
+SELECT tbox 'TBOX XT([1,2][2000-01-01,2000-01-02])'; -- Optional comma
 
 /* Errors */
 SELECT tbox 'XXX(1, 2000-01-02)';
@@ -47,7 +48,6 @@ SELECT tbox 'TBOX X((1, AA))';
 SELECT tbox 'TBOX X((1, 2000-01-01))';
 SELECT tbox 'TBOX X((1, 2), 2, 2))';
 SELECT tbox 'TBOX X((1, 2),(AA, 2))';
-SELECT tbox 'TBOX XT([1,2][2000-01-01,2000-01-02])';
 SELECT tbox 'TBOX X((1, 2),(2000-01-01, AA))';
 SELECT tbox 'TBOX X((1, 2),(2000-01-01, 2000-01-02)';
 SELECT tbox 'TBOX X((2,2000-01-02),(1,2000-01-01))XXXX';

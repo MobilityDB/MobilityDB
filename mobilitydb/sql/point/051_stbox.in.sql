@@ -281,8 +281,13 @@ CREATE FUNCTION Tmax(stbox)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
- * Functions for expanding the bounding box
+ * Transformation functions
  *****************************************************************************/
+
+CREATE FUNCTION getSpace(stbox)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'Stbox_get_space'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION expandSpace(stbox, float)
   RETURNS stbox
@@ -544,6 +549,15 @@ CREATE OPERATOR * (
   LEFTARG = stbox, RIGHTARG = stbox,
   COMMUTATOR = *
 );
+
+/*****************************************************************************
+ * Split functions
+ *****************************************************************************/
+
+CREATE FUNCTION quadSplit(stbox)
+  RETURNS stbox[]
+  AS 'MODULE_PATHNAME', 'Stbox_quad_split'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
  * Extent aggreation

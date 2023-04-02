@@ -766,6 +766,7 @@ extern TBox *tbox_expand_value(const TBox *box, const double d);
 extern TBox *tbox_expand_time(const TBox *box, const Interval *interval);
 extern void stbox_expand(const STBox *box1, STBox *box2);
 extern STBox *stbox_set_srid(const STBox *box, int32 srid);
+extern STBox *stbox_get_space(const STBox *box);
 extern STBox *stbox_expand_space(const STBox *box, double d);
 extern STBox *stbox_expand_time(const STBox *box, const Interval *interval);
 
@@ -823,6 +824,12 @@ extern TBox *intersection_tbox_tbox(const TBox *box1, const TBox *box2);
 extern STBox *union_stbox_stbox(const STBox *box1, const STBox *box2, bool strict);
 extern bool inter_stbox_stbox(const STBox *box1, const STBox *box2, STBox *result);
 extern STBox *intersection_stbox_stbox(const STBox *box1, const STBox *box2);
+
+/*****************************************************************************/
+
+/* Split functions */
+
+extern STBox *stbox_quad_split(const STBox *box);
 
 /*****************************************************************************/
 

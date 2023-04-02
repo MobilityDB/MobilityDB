@@ -89,6 +89,14 @@ ensure_same_dimensionality_tbox(const TBox *box1, const TBox *box2)
 /**
  * @ingroup libmeos_box_inout
  * @brief Return a temporal box from its Well-Known Text (WKT) representation.
+ *
+ * Examples of input:
+ * @code
+ * TBOX X([1.0, 4.0)) -> only value
+ * TBOX XT([1.0, 4.0),[2001-01-01, 2001-01-02]) -> value and time
+ * TBOX T([2001-01-01, 2001-01-02]) -> only time
+ * @endcode
+ * where the commas are optional.
  */
 TBox *
 tbox_in(const char *str)
