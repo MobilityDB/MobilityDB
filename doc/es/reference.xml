@@ -447,6 +447,10 @@
 			<title>Transformaciones</title>
 			<itemizedlist>
 				<listitem>
+					<para><link linkend="getSpace"><varname>getSpace</varname></link>: Obtener la dimensión espacial del cuadro delimitador, eliminando la dimensión temporal, si existe</para>
+					</listitem>
+
+				<listitem>
 					<para><link linkend="expandValue"><varname>expandValue</varname></link>: Extender la dimensión numérica del cuadro delimitador con un valor flotante</para>
 					</listitem>
 

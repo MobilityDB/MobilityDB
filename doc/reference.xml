@@ -446,6 +446,10 @@
 			<title>Transformations</title>
 			<itemizedlist>
 				<listitem>
+					<para><link linkend="getSpace"><varname>getSpace</varname></link>: Get the spatial dimension of the bounding box, removing the temporal dimension if any</para>
+					</listitem>
+
+				<listitem>
 					<para><link linkend="expandValue"><varname>expandValue</varname></link>: Expand the numeric dimension of the bounding box by a float value</para>
 					</listitem>
 
