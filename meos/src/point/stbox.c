@@ -97,7 +97,7 @@ void
 ensure_has_X_stbox(const STBox *box)
 {
   if (! MOBDB_FLAGS_GET_X(box->flags))
-    elog(ERROR, "The box must have XY(Z) dimension");
+    elog(ERROR, "The box must have space dimension");
   return;
 }
 

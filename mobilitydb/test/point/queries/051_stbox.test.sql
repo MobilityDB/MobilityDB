@@ -217,6 +217,18 @@ SELECT MIN(tmin(b)) FROM tbl_stbox;
 SELECT MAX(tmax(b)) FROM tbl_stbox;
 
 -------------------------------------------------------------------------------
+-- Transformation function
+-------------------------------------------------------------------------------
+
+SELECT getSpace(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])');
+SELECT expandSpace(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])', 2.0);
+SELECT expandTime(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])', '1 day');
+/* Errors */
+SELECT getSpace(stbox 'STBOX T([2000-01-01,2000-01-01])');
+SELECT expandSpace(stbox 'STBOX T([2000-01-01,2000-01-01])', 2.0);
+SELECT expandTime(stbox 'STBOX X((1.0,2.0),(1.0,2.0))', '1 day');
+
+-------------------------------------------------------------------------------
 -- Topological operators
 -------------------------------------------------------------------------------
 
