@@ -829,7 +829,7 @@ extern STBox *intersection_stbox_stbox(const STBox *box1, const STBox *box2);
 
 /* Split functions */
 
-extern STBox *stbox_quad_split(const STBox *box);
+extern STBox *stbox_quad_split(const STBox *box, int *count);
 
 /*****************************************************************************/
 

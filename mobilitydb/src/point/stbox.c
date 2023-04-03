@@ -1206,8 +1206,8 @@ PGDLLEXPORT Datum
 Stbox_quad_split(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
-  int count = MOBDB_FLAGS_GET_Z(box->flags) ? 8 : 4;
-  STBox *boxes = stbox_quad_split(box);
+  int count;
+  STBox *boxes = stbox_quad_split(box, &count);
   ArrayType *result = stboxarr_to_array(boxes, count);
   pfree(boxes);
   PG_RETURN_POINTER(result);

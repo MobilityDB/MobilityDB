@@ -1505,15 +1505,15 @@ intersection_stbox_stbox(const STBox *box1, const STBox *box2)
  * @sqlfunc quadSplit
  */
 STBox *
-stbox_quad_split(const STBox *box)
+stbox_quad_split(const STBox *box, int *count)
 {
   ensure_has_X_stbox(box);
   bool hasz = MOBDB_FLAGS_GET_Z(box->flags);
   bool hast = MOBDB_FLAGS_GET_T(box->flags);
   bool geodetic = MOBDB_FLAGS_GET_GEODETIC(box->flags);
   Span *period = hast ? (Span *) &box->period : NULL;
-  int count = hasz ? 8 : 4;
-  STBox *result = palloc(sizeof(STBox) * count);
+  *count = hasz ? 8 : 4;
+  STBox *result = palloc(sizeof(STBox) * *count);
   double deltax = (box->xmax - box->xmin) / 2.0;
   double deltay = (box->ymax - box->ymin) / 2.0;
   double deltaz = hasz ? (box->zmax - box->zmin) / 2.0 : 0.0;
