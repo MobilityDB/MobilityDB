@@ -1513,7 +1513,7 @@ stbox_quad_split(const STBox *box, int *count)
   bool geodetic = MOBDB_FLAGS_GET_GEODETIC(box->flags);
   Span *period = hast ? (Span *) &box->period : NULL;
   *count = hasz ? 8 : 4;
-  STBox *result = palloc(sizeof(STBox) * *count);
+  STBox *result = palloc(sizeof(STBox) * (*count));
   double deltax = (box->xmax - box->xmin) / 2.0;
   double deltay = (box->ymax - box->ymin) / 2.0;
   double deltaz = hasz ? (box->zmax - box->zmin) / 2.0 : 0.0;
