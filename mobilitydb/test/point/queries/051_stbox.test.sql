@@ -217,6 +217,18 @@ SELECT MIN(tmin(b)) FROM tbl_stbox;
 SELECT MAX(tmax(b)) FROM tbl_stbox;
 
 -------------------------------------------------------------------------------
+-- Transformation function
+-------------------------------------------------------------------------------
+
+SELECT getSpace(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])');
+SELECT expandSpace(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])', 2.0);
+SELECT expandTime(stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])', '1 day');
+/* Errors */
+SELECT getSpace(stbox 'STBOX T([2000-01-01,2000-01-01])');
+SELECT expandSpace(stbox 'STBOX T([2000-01-01,2000-01-01])', 2.0);
+SELECT expandTime(stbox 'STBOX X((1.0,2.0),(1.0,2.0))', '1 day');
+
+-------------------------------------------------------------------------------
 -- Topological operators
 -------------------------------------------------------------------------------
 
@@ -449,6 +461,13 @@ reset parallel_setup_cost;
 reset parallel_tuple_cost;
 reset min_parallel_table_scan_size;
 reset max_parallel_workers_per_gather;
+
+-------------------------------------------------------------------------------
+-- Split function
+-------------------------------------------------------------------------------
+
+SELECT quadSplit(stbox 'STBOX X((0,0),(4,4))');
+SELECT quadSplit(stbox 'STBOX Z((0,0,0),(4,4,4))');
 
 -------------------------------------------------------------------------------
 -- Comparison functions

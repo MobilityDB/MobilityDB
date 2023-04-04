@@ -446,6 +446,10 @@
 			<title>Transformations</title>
 			<itemizedlist>
 				<listitem>
+					<para><link linkend="getSpace"><varname>getSpace</varname></link>: Get the spatial dimension of the bounding box, removing the temporal dimension if any</para>
+					</listitem>
+
+				<listitem>
 					<para><link linkend="expandValue"><varname>expandValue</varname></link>: Expand the numeric dimension of the bounding box by a float value</para>
 					</listitem>
 
@@ -1166,6 +1170,10 @@
 
 				<listitem>
 					<para><link linkend="azimuth"><varname>azimuth</varname></link>: Get the temporal azimuth</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="angularDifference"><varname>angularDifference</varname></link>: Get the temporal angular difference</para>
 				</listitem>
 
 				<listitem>

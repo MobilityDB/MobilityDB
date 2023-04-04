@@ -148,6 +148,16 @@ p_oparen(const char **str)
 }
 
 /**
+ * @brief Ensure to input an opening parenthesis from the buffer
+ */
+void
+ensure_oparen(const char **str, const char *type)
+{
+  if (!p_oparen(str))
+    elog(ERROR, "Could not parse %s: Missing opening parenthesis", type);
+}
+
+/**
  * @brief Input a closing parenthesis from the buffer
  */
 bool
@@ -160,6 +170,16 @@ p_cparen(const char **str)
     return true;
   }
   return false;
+}
+
+/**
+ * @brief Ensure to input a closing parenthesis from the buffer
+ */
+void
+ensure_cparen(const char **str, const char *type)
+{
+  if (!p_cparen(str))
+    elog(ERROR, "Could not parse %s: Missing closing parenthesis", type);
 }
 
 /**
@@ -250,6 +270,7 @@ tbox_parse(const char **str)
   else
     elog(ERROR, "Could not parse temporal box");
 
+  /* Determine whether the box has X and/or T dimensions */
   if (strncasecmp(*str, "XT", 2) == 0)
   {
     hasx = hast = true;
@@ -262,37 +283,35 @@ tbox_parse(const char **str)
     *str += 1;
     p_whitespace(str);
   }
-  else /* strncasecmp(*str, "T", 1) == 0 */
+  else if (strncasecmp(*str, "T", 1) == 0)
   {
     hast = true;
     *str += 1;
     p_whitespace(str);
   }
-
+  else
+    elog(ERROR, "Could not parse temporal box: Missing dimension information");
 
   /* Parse opening parenthesis */
-  if (! p_oparen(str))
-    elog(ERROR, "Could not parse temporal box: Missing opening parenthesis");
+  ensure_oparen(str, "temporal box");
 
   if (hasx)
   {
     span_parse(str, T_FLOATSPAN, false, &span);
     if (hast)
     {
-      /* Consume the comma separating the span and the period */
+      /* Consume the optional comma separating the span and the period */
       p_whitespace(str);
-      if (! p_comma(str))
-        elog(ERROR, "Could not parse temporal box: Missing comma between value and time spans");
+      p_comma(str);
     }
   }
 
   if (hast)
     span_parse(str, T_TSTZSPAN, false, &period);
 
+  /* Parse closing parenthesis */
   p_whitespace(str);
-  if (!p_cparen(str))
-    elog(ERROR, "Could not parse temporal box: Missing closing parenthesis");
-  p_whitespace(str);
+  ensure_cparen(str, "temporal box");
 
   /* Ensure there is no more input */
   ensure_end_input(str, true, "temporal box");

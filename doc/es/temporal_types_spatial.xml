@@ -414,6 +414,21 @@ SELECT degrees(azimuth(tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-0
 </programlisting>
 			</listitem>
 
+			<listitem id="angularDifference">
+				<indexterm><primary><varname>angularDifference</varname></primary></indexterm>
+				<para>Obtener la diferencia angular temporal &geography_support;</para>
+				<para><varname>angularDifference(tpoint) → tfloat</varname></para>
+				<para>El resultado se expresa en grados.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT round(angulardifference(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02,
+  Point(1 1)@2000-01-03]'), 3);
+-- {0@2000-01-01, 180@2000-01-02, 0@2000-01-03}
+SELECT round(degrees(angularDifference(tgeompoint '{[Point(1 1)@2000-01-01,
+  Point(2 2)@2000-01-02], [Point(2 2)@2000-01-03, Point(1 1)@2000-01-04]}')), 3);
+-- {0@2000-01-01, 0@2000-01-02, 0@2000-01-03, 0@2000-01-04}
+</programlisting>
+			</listitem>
+
 			<listitem id="bearing">
 				<indexterm><primary><varname>bearing</varname></primary></indexterm>
 				<para>Obtener el rumbo temporal &Z_support; &geography_support;</para>

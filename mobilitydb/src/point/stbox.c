@@ -48,6 +48,7 @@
 /* MobilityDB */
 #include "pg_general/temporal.h"
 #include "pg_general/tnumber_mathfuncs.h"
+#include "pg_general/type_util.h"
 #include "pg_point/postgis.h"
 #include "pg_point/tpoint_spatialfuncs.h"
 
@@ -753,6 +754,20 @@ Stbox_transform(PG_FUNCTION_ARGS)
  * Transformation functions
  *****************************************************************************/
 
+PG_FUNCTION_INFO_V1(Stbox_get_space);
+/**
+ * @ingroup mobilitydb_box_transf
+ * @brief Return a copy of the spatiotemporal box keeping only the space
+ * dimension
+ * @sqlfunc getSpace()
+ */
+PGDLLEXPORT Datum
+Stbox_get_space(PG_FUNCTION_ARGS)
+{
+  STBox *box = PG_GETARG_STBOX_P(0);
+  PG_RETURN_POINTER(stbox_get_space(box));
+}
+
 PG_FUNCTION_INFO_V1(Stbox_expand_space);
 /**
  * @ingroup mobilitydb_box_transf
@@ -1173,6 +1188,28 @@ Intersection_stbox_stbox(PG_FUNCTION_ARGS)
   STBox *result = intersection_stbox_stbox(box1, box2);
   if (! result)
     PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Split functions
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Stbox_quad_split);
+/**
+ * @ingroup mobilitydb_box_set
+ * @brief Return the intersection of the spatiotemporal boxes
+ * @sqlfunc stbox_intersection()
+ * @sqlop @p *
+ */
+PGDLLEXPORT Datum
+Stbox_quad_split(PG_FUNCTION_ARGS)
+{
+  STBox *box = PG_GETARG_STBOX_P(0);
+  int count;
+  STBox *boxes = stbox_quad_split(box, &count);
+  ArrayType *result = stboxarr_to_array(boxes, count);
+  pfree(boxes);
   PG_RETURN_POINTER(result);
 }
 

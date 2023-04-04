@@ -97,7 +97,7 @@ void
 ensure_has_X_stbox(const STBox *box)
 {
   if (! MOBDB_FLAGS_GET_X(box->flags))
-    elog(ERROR, "The box must have XY(Z) dimension");
+    elog(ERROR, "The box must have space dimension");
   return;
 }
 
@@ -123,16 +123,16 @@ ensure_has_T_stbox(const STBox *box)
  *
  * Examples of input:
  * @code
- * STBOX((1.0, 2.0), (3.0, 4.0)) -> only spatial
- * STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0)) -> only spatial
- * STBOX T([2001-01-01, 2001-01-02], ((1.0, 2.0), (3.0, 4.0))) -> spatiotemporal
- * STBOX ZT([2001-01-01, 2001-01-02], ((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))) -> spatiotemporal
+ * STBOX X((1.0, 2.0), (3.0, 4.0)) -> only spatial 2D
+ * STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0)) -> only spatial 3D
+ * STBOX XT(((1.0, 2.0), (3.0, 4.0)),[2001-01-01, 2001-01-02]) -> spatiotemporal 2D+T
+ * STBOX ZT(((1.0, 2.0, 3.0), (4.0, 5.0, 6.0)),[2001-01-01, 2001-01-02]) -> spatiotemporal 3D+T
  * STBOX T([2001-01-01, 2001-01-02]) -> only temporal
- * SRID=xxxx;STBOX... (any of the above)
+ * SRID=xxxx;STBOX... -> Any of the above with SRID
  * GEODSTBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0)) -> only spatial
  * GEODSTBOX T([2001-01-01, 2001-01-02]) -> only temporal
- * GEODSTBOX ZT([2001-01-01, 2001-01-02], ((1.0, 2.0, 3.0), (4.0, 5.0, 6.0)) -> spatiotemporal
- * SRID=xxxx;GEODSTBOX... (any of the above)
+ * GEODSTBOX ZT(((1.0, 2.0, 3.0),(4.0, 5.0, 6.0)),[2001-01-01, 2001-01-02]) -> spatiotemporal
+ * SRID=xxxx;GEODSTBOX... -> Any of the above with SRID
  * @endcode
  * where the commas are optional and the SRID is optional. If the SRID is not
  * stated it is by default 0 for non geodetic boxes and 4326 for geodetic boxes
@@ -921,6 +921,23 @@ stbox_set_srid(const STBox *box, int32 srid)
  *****************************************************************************/
 
 /**
+ * @ingroup libmeos_temporal_box_transf
+ * @brief Return a copy of the spatiotemporal box keeping only the space
+ * dimension
+ * @sqlfunc getSpace()
+ */
+STBox *
+stbox_get_space(const STBox *box)
+{
+  ensure_has_X_stbox(box);
+  STBox *result = palloc(sizeof(STBox));
+  stbox_set(true, MOBDB_FLAGS_GET_Z(box->flags),
+    MOBDB_FLAGS_GET_GEODETIC(box->flags), box->srid, box->xmin, box->xmax,
+    box->ymin, box->ymax, box->zmin, box->zmax, NULL, result);
+  return result;
+}
+
+/**
  * @ingroup libmeos_box_transf
  * @brief Return a spatiotemporal box expanded in the spatial dimension by a
  * double.
@@ -1465,6 +1482,80 @@ intersection_stbox_stbox(const STBox *box1, const STBox *box2)
   {
     pfree(result);
     return NULL;
+  }
+  return result;
+}
+
+/*****************************************************************************
+ * Split functions
+ *****************************************************************************/
+
+/**
+ * @ingroup libmeos_box_transf
+ * @brief Split the spatiotemporal box with respect to its space dimension in
+ * four quadrants/octants numbered as follows
+ * @code
+ *   (front)        (back if has Z dimension)
+ * -------------   -------------
+ * |  2  |  3  |   |  6  |  7  |
+ * ------------- + -------------
+ * |  0  |  1  |   |  4  |  5  |
+ * -------------   -------------
+ * @endcode
+ * @sqlfunc quadSplit
+ */
+STBox *
+stbox_quad_split(const STBox *box, int *count)
+{
+  ensure_has_X_stbox(box);
+  bool hasz = MOBDB_FLAGS_GET_Z(box->flags);
+  bool hast = MOBDB_FLAGS_GET_T(box->flags);
+  bool geodetic = MOBDB_FLAGS_GET_GEODETIC(box->flags);
+  Span *period = hast ? (Span *) &box->period : NULL;
+  *count = hasz ? 8 : 4;
+  STBox *result = palloc(sizeof(STBox) * (*count));
+  double deltax = (box->xmax - box->xmin) / 2.0;
+  double deltay = (box->ymax - box->ymin) / 2.0;
+  double deltaz = hasz ? (box->zmax - box->zmin) / 2.0 : 0.0;
+  if (hasz)
+  {
+    /* Front */
+    stbox_set(true, hasz, geodetic, box->srid, box->xmin, box->xmin + deltax,
+      box->ymin, box->ymin + deltay, box->zmin, box->zmin + deltaz,
+      period, &result[0]);
+    stbox_set(true, hasz, geodetic, box->srid, box->xmin + deltax,
+      box->xmax, box->ymin, box->ymin + deltay, box->zmin, box->zmin + deltaz,
+      period, &result[1]);
+    stbox_set(true, hasz, geodetic, box->srid, box->xmin, box->xmin + deltax,
+      box->ymin + deltay, box->ymax, box->zmin, box->zmin + deltaz,
+      period, &result[2]);
+    stbox_set(true, hasz, geodetic, box->srid, box->xmin + deltax, box->xmax,
+      box->ymin + deltay, box->ymax, box->zmin, box->zmin + deltaz,
+      period, &result[3]);
+    /* Back */
+    stbox_set(true, hasz, geodetic, box->srid, box->xmin, box->xmin + deltax,
+      box->ymin, box->ymin + deltay, box->zmin + deltaz, box->zmax,
+      period, &result[4]);
+    stbox_set(true, hasz, geodetic, box->srid, box->xmin + deltax,
+      box->xmax, box->ymin, box->ymin + deltay, box->zmin + deltaz, box->zmax,
+      period, &result[5]);
+    stbox_set(true, hasz, geodetic, box->srid, box->xmin, box->xmin + deltax,
+      box->ymin + deltay, box->ymax, box->zmin + deltaz, box->zmax,
+      period, &result[6]);
+    stbox_set(true, hasz, geodetic, box->srid, box->xmin + deltax, box->xmax,
+      box->ymin + deltay, box->ymax, box->zmin + deltaz, box->zmax,
+      period , &result[7]);
+  }
+  else
+  {
+    stbox_set(true, hasz, geodetic, box->srid, box->xmin, box->xmin + deltax,
+      box->ymin, box->ymin + deltay, 0.0, 0.0, period, &result[0]);
+    stbox_set(true, hasz, geodetic, box->srid, box->xmin + deltax,
+      box->xmax, box->ymin, box->ymin + deltay, 0.0, 0.0, period, &result[1]);
+    stbox_set(true, hasz, geodetic, box->srid, box->xmin, box->xmin + deltax,
+      box->ymin + deltay, box->ymax, 0.0, 0.0, period, &result[2]);
+    stbox_set(true, hasz, geodetic, box->srid, box->xmin + deltax, box->xmax,
+      box->ymin + deltay, box->ymax, 0.0, 0.0, period , &result[3]);
   }
   return result;
 }
