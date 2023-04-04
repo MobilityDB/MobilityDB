@@ -1570,15 +1570,11 @@
 				<title>Constructors</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tnpoint"><varname>tnpoint</varname></link>: Constructor for temporal network points from a base value and a time value</para>
+						<para><link linkend="tnpoint_inst"><varname>tnpoint_inst</varname></link>: Constructor for temporal network points from a base value and a time value</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_discseq"><varname>tnpoint_discseq</varname></link>: Constructors for temporal network points of sequence subtype and discrete interpolation</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tnpoint_contseq"><varname>tnpoint_contseq</varname></link>: Constructor for temporal network points of sequence subtype and continuous interpolation, that is, linear or step interpolation</para>
+						<para><link linkend="tnpoint_seq"><varname>tnpoint_discseq</varname></link>: Constructors for temporal network points of sequence subtype</para>
 					</listitem>
 
 					<listitem>

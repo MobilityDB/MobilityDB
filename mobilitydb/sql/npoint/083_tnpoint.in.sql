@@ -187,9 +187,9 @@ CREATE FUNCTION tnpoint_seqset(tnpoint)
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequenceset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION toLinear(tnpoint)
+CREATE FUNCTION setInterp(tnpoint, text)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Tempstep_to_templinear'
+  AS 'MODULE_PATHNAME', 'Temporal_set_interp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION round(tnpoint, int DEFAULT 0)

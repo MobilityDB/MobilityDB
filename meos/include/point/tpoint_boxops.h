@@ -61,7 +61,7 @@ extern void tgeogpointseq_expand_stbox(TSequence *seq, const TInstant *inst);
 /* Boxes functions */
 
 extern STBox *tpointseq_stboxes(const TSequence *seq, int *count);
-extern STBox *tpointseqset_stboxes(const TSequenceSet *ts, int *count);
+extern STBox *tpointseqset_stboxes(const TSequenceSet *ss, int *count);
 extern STBox * tpoint_stboxes(const Temporal *temp, int *count);
 
 /* Generic box functions */

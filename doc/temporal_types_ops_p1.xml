@@ -432,7 +432,9 @@ SELECT ttextFromHexWKB('01170001040000000000000041414100009C57D3C11C0000');
 			<listitem id="ttype_const">
 				<para>Constructors for temporal types having a constant value</para>
 				<para>These contructors have two arguments, a base type and a time value, where the latter is a <varname>timestamptz</varname>, a <varname>tstzset</varname>, a <varname>tstzspan</varname>, or a <varname>tstzspanset</varname> value for constructing, respectively, an instant, a sequence with discrete interpolation, a sequence with linear or step interpolation, or a sequence set value. The functions for sequence or sequence set values with continuous base type have an optional third argument stating whether the resulting temporal value has linear or step interpolation. Linear interpolation is assumed by default if the argument is not specified.</para>
-				<indexterm><primary><varname>ttype</varname></primary></indexterm>
+				<indexterm><primary><varname>ttype_inst</varname></primary></indexterm>
+				<indexterm><primary><varname>ttype_seq</varname></primary></indexterm>
+				<indexterm><primary><varname>ttype_seqset</varname></primary></indexterm>
 				<para><varname>ttype_inst(base,timestamptz) → ttype_inst</varname></para>
 				<para><varname>ttype_seq(base,tstzset) → ttype_discseq</varname></para>
 				<para><varname>ttype_seq(base,tstzspan,interp='linear') → ttype_contseq</varname></para>
@@ -1026,7 +1028,7 @@ SELECT twAvg(tfloat '{[1@2001-01-01, 2@2001-01-03), [2@2001-01-04, 2@2001-01-06)
 SELECT tbool_inst(tbool '{[true@2001-01-01]}');
 -- t@2001-01-01
 SELECT tbool_inst(tbool '{[true@2001-01-01, true@2001-01-02]}');
--- ERROR: Cannot transform input to a temporal instant
+-- ERROR: Cannot transform input value to a temporal instant
 SELECT tbool_seq(tbool 'true@2001-01-01','discrete');
 -- {t@2001-01-01}
 SELECT tint_seq(tint '1@2001-01-01');

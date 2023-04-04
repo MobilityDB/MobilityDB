@@ -64,7 +64,7 @@ extern int tnpointinst_srid(const TInstant *inst);
 extern int tnpoint_srid(const Temporal *temp);
 extern GSERIALIZED *tnpointinst_geom(const TInstant *inst);
 extern GSERIALIZED *tnpointseq_geom(const TSequence *seq);
-extern GSERIALIZED *tnpointseqset_geom(const TSequenceSet *ts);
+extern GSERIALIZED *tnpointseqset_geom(const TSequenceSet *ss);
 extern GSERIALIZED *tnpoint_geom(const Temporal *temp);
 
 extern bool npoint_same(const Npoint *np1, const Npoint *np2);

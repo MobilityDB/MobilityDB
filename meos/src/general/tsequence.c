@@ -1892,60 +1892,76 @@ tinstant_to_tsequence(const TInstant *inst, interpType interp)
   return tsequence_make(&inst, 1, true, true, interp, NORMALIZE_NO);
 }
 
+/*****************************************************************************/
+
+/**
+ * @ingroup libmeos_internal_temporal_transf
+ * @brief Transform a temporal discrete sequence to a given interpolation.
+ */
+Temporal *
+tdiscseq_set_interp(const TSequence *seq, interpType interp)
+{
+  assert(MOBDB_FLAGS_GET_DISCRETE(seq->flags));
+  /* If the requested interpolation is discrete return a copy */
+  if (interp == DISCRETE)
+    return (Temporal *) tsequence_copy(seq);
+
+  /* Instantaneous sequence */
+  if (seq->count == 1)
+  {
+    const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
+    return (Temporal *) tsequence_make(&inst, 1, true, true, interp,
+      NORMALIZE_NO);
+  }
+
+  /* General case */
+  TSequence **sequences = palloc(sizeof(TSequence *) * seq->count);
+  for (int i = 0; i < seq->count; i++)
+  {
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+    sequences[i] = tinstant_to_tsequence(inst, interp);
+  }
+  return (Temporal *) tsequenceset_make_free(sequences, seq->count,
+    NORMALIZE_NO);
+}
+
 /**
  * @ingroup libmeos_internal_temporal_transf
  * @brief Return a temporal sequence transformed into discrete interpolation.
- * @return Return an error if a temporal sequence has more than one instant
- * @sqlfunc tbool_discseq(), tint_discseq(), tfloat_discseq(), ttext_discseq(),
- * etc.
  */
 TSequence *
-tsequence_to_tdiscseq(const TSequence *seq)
+tcontseq_to_discrete(const TSequence *seq)
 {
-  /* If the sequence has discrete interpolation return a copy */
-  if (MOBDB_FLAGS_GET_DISCRETE(seq->flags))
-    return tsequence_copy(seq);
-
-  /* General case */
+  assert(MOBDB_FLAGS_GET_CONTINUOUS(seq->flags));
   if (seq->count != 1)
     elog(ERROR, "Cannot transform input value to a temporal discrete sequence");
-
-  const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
-  return tinstant_to_tsequence(inst, DISCRETE);
+  return tinstant_to_tsequence(TSEQUENCE_INST_N(seq, 0), DISCRETE);
 }
 
 /**
  * @ingroup libmeos_internal_temporal_transf
- * @brief Return a temporal sequence transformed to continuous interpolation.
- * @sqlfunc tbool_seq(), tint_seq(), tfloat_seq(), ttext_seq(), etc.
+ * @brief Return a temporal sequence transformed to step interpolation.
  */
 TSequence *
-tsequence_to_tcontseq(const TSequence *seq)
+tcontseq_to_step(const TSequence *seq)
 {
-  if (MOBDB_FLAGS_GET_DISCRETE(seq->flags))
-  {
-   if (seq->count != 1)
-      elog(ERROR, "Cannot transform input value to a temporal continuous sequence");
-    return tinstant_to_tsequence(TSEQUENCE_INST_N(seq, 0),
-      MOBDB_FLAGS_GET_CONTINUOUS(seq->flags) ? LINEAR : STEP);
-  }
-  else
-    /* The sequence has continuous interpolation return a copy */
+  /* If the sequence has step interpolation return a copy */
+  if (MOBDB_FLAGS_GET_STEP(seq->flags))
     return tsequence_copy(seq);
-}
 
-/**
- * @ingroup libmeos_internal_temporal_transf
- * @brief Return a temporal sequence set transformed into a temporal sequence
- * value.
- * @sqlfunc tbool_seq(), tint_seq(), tfloat_seq(), ttext_seq(), etc.
- */
-TSequence *
-tsequenceset_to_tsequence(const TSequenceSet *ss)
-{
-  if (ss->count != 1)
-    elog(ERROR, "Cannot transform input to a temporal sequence");
-  return tsequence_copy(TSEQUENCESET_SEQ_N(ss, 0));
+  /* interp == LINEAR */
+  if (seq->count > 2)
+    elog(ERROR, "Cannot transform input value to step interpolation");
+
+  meosType basetype = temptype_basetype(seq->temptype);
+  const TInstant *instants[2];
+  for (int i = 0; i < seq->count; i++)
+    instants[i] = TSEQUENCE_INST_N(seq, i);
+  if (seq->count == 2 && ! datum_eq(tinstant_value(instants[0]),
+      tinstant_value(instants[1]), basetype))
+    elog(ERROR, "Cannot transform input value to step interpolation");
+  return tsequence_make(instants, 2, seq->period.lower, seq->period.upper,
+    STEP, NORMALIZE_NO);
 }
 
 /**
@@ -2016,6 +2032,43 @@ tstepseq_to_linear(const TSequence *seq)
   /* We are sure that count > 0 */
   return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
+
+/**
+ * @ingroup libmeos_internal_temporal_transf
+ * @brief Return a temporal sequence transformed to linear interpolation.
+ */
+Temporal *
+tcontseq_to_linear(const TSequence *seq)
+{
+  /* If the sequence has linear interpolation return a copy */
+  if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
+    return (Temporal *) tsequence_copy(seq);
+
+  /* interp == STEP */
+  return (Temporal *) tstepseq_to_linear(seq);
+}
+
+/**
+ * @ingroup libmeos_temporal_transf
+ * @brief Return a temporal value transformed to the given interpolation.
+ * @sqlfunc setInterp
+ */
+Temporal *
+tsequence_set_interp(const TSequence *seq, interpType interp)
+{
+  interpType seq_interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
+  if (seq_interp == DISCRETE)
+    return tdiscseq_set_interp(seq, interp);
+
+  if (interp == DISCRETE)
+    return (Temporal *) tcontseq_to_discrete(seq);
+  else if (interp == STEP)
+    return (Temporal *) tcontseq_to_step(seq);
+  else /* interp == LINEAR */
+    return tcontseq_to_linear(seq);
+}
+
+/*****************************************************************************/
 
 /**
  * @ingroup libmeos_internal_temporal_transf

@@ -2470,18 +2470,18 @@ tpointseqset_twcentroid(const TSequenceSet *ss)
     tpointseq_twcentroid1(seq, hasz, interp, &sequencesx[i], &sequencesy[i],
       &sequencesz[i]);
   }
-  TSequenceSet *tsx = tsequenceset_make_free(sequencesx, ss->count, NORMALIZE);
-  TSequenceSet *tsy = tsequenceset_make_free(sequencesy, ss->count, NORMALIZE);
-  TSequenceSet *tsz = hasz ?
+  TSequenceSet *ssx = tsequenceset_make_free(sequencesx, ss->count, NORMALIZE);
+  TSequenceSet *ssy = tsequenceset_make_free(sequencesy, ss->count, NORMALIZE);
+  TSequenceSet *ssz = hasz ?
     tsequenceset_make_free(sequencesz, ss->count, NORMALIZE) : NULL;
 
-  double twavgx = tnumberseqset_twavg(tsx);
-  double twavgy = tnumberseqset_twavg(tsy);
-  double twavgz = hasz ? tnumberseqset_twavg(tsz) : 0;
+  double twavgx = tnumberseqset_twavg(ssx);
+  double twavgy = tnumberseqset_twavg(ssy);
+  double twavgz = hasz ? tnumberseqset_twavg(ssz) : 0;
   GSERIALIZED *result = gspoint_make(twavgx, twavgy, twavgz, hasz, false, srid);
-  pfree(tsx); pfree(tsy);
+  pfree(ssx); pfree(ssy);
   if (hasz)
-    pfree(tsz);
+    pfree(ssz);
   return result;
 }
 

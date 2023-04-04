@@ -1270,6 +1270,7 @@ tnumberseq_value_split(const TSequence *seq, Datum start_bucket, Datum size,
   int count, Datum **buckets, int *newcount)
 {
   meosType basetype = temptype_basetype(seq->temptype);
+  interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
@@ -1287,7 +1288,7 @@ tnumberseq_value_split(const TSequence *seq, Datum start_bucket, Datum size,
   TSequence **sequences = palloc(sizeof(TSequence *) * seq->count * count);
   /* palloc0 to initialize the counters to 0 */
   int *numseqs = palloc0(sizeof(int) * count);
-  if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
+  if (interp == LINEAR)
     tnumberseq_linear_value_split(seq, start_bucket, size, count, sequences,
       numseqs, seq->count);
   else

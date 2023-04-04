@@ -251,13 +251,13 @@ CREATE FUNCTION tgeogpoint_seqset(tgeogpoint)
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequenceset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION toLinear(tgeompoint)
+CREATE FUNCTION setInterp(tgeompoint, text)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Tempstep_to_templinear'
+  AS 'MODULE_PATHNAME', 'Temporal_set_interp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION toLinear(tgeogpoint)
+CREATE FUNCTION setInterp(tgeogpoint, text)
   RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'Tempstep_to_templinear'
+  AS 'MODULE_PATHNAME', 'Temporal_set_interp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION appendInstant(tgeompoint, tgeompoint)

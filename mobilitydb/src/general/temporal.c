@@ -1752,8 +1752,7 @@ Temporal_to_tsequence(PG_FUNCTION_ARGS)
     ensure_valid_interpolation(temp->temptype, interp);
     pfree(interp_str);
   }
-  Temporal *result = (interp == DISCRETE) ?
-    temporal_to_tdiscseq(temp) : temporal_to_tcontseq(temp);
+  Temporal *result = temporal_to_tsequence(temp, interp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -1773,18 +1772,23 @@ Temporal_to_tsequenceset(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Tempstep_to_templinear);
+PG_FUNCTION_INFO_V1(Temporal_set_interp);
 /**
  * @ingroup mobilitydb_temporal_transf
  * @brief Transform a temporal value with continuous base type from step
  * to linear interpolation
- * @sqlfunc toLinear  ()
+ * @sqlfunc toLinear()
  */
 PGDLLEXPORT Datum
-Tempstep_to_templinear(PG_FUNCTION_ARGS)
+Temporal_set_interp(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = temporal_step_to_linear(temp);
+  text *interp_txt = PG_GETARG_TEXT_P(1);
+  char *interp_str = text2cstring(interp_txt);
+  interpType interp = interp_from_string(interp_str);
+  ensure_valid_interpolation(temp->temptype, interp);
+  pfree(interp_str);
+  Temporal *result = temporal_set_interp(temp, interp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

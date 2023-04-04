@@ -493,12 +493,12 @@ SELECT quadSplit(stbox 'STBOX Z((0,0,0),(4,4,4))');
 		</itemizedlist>
 		<para>Notice that the above function is a <emphasis>set-returning function</emphasis> (also known as a <emphasis>table function</emphasis>) since it typically return more than one value. Therefore, the function is marked with the &SRF; symbol. This function is typically used for multiresolution grids, where the space is split in cells such that the cells have a maximum number of elements. <xref linkend="berlinmod_grid" /> shows an example of the result of using this function using synthetic trajectories in Brussels.</para>
 		<figure id="berlinmod_grid" float="start">
-			<title>Multiresolution grid on Brussels data obtained using the MobilityDB-BerlinMOD generator. Each cell contains at most 10,000 (left) and 1,000 (right) instants across the entire simulation period (four days in this case). On the left, we can see the high density of the traffic in the ring around Brussels, while on the right we can see other main axes in the city.</title>
+			<title>Multiresolution grid on Brussels data obtained using the <ulink url="https://github.com/MobilityDB/MobilityDB-BerlinMOD">BerlinMOD</ulink> generator. Each cell contains at most 10,000 (left) and 1,000 (right) instants across the entire simulation period (four days in this case). On the left, we can see the high density of the traffic in the ring around Brussels, while on the right we can see other main axes in the city.</title>
 			<mediaobject>
-				<imageobject><imagedata scale='60' fileref='images/berlinmod_grid10k.png' /></imageobject>
+				<imageobject><imagedata scale='65' fileref='images/berlinmod_grid10k.png' /></imageobject>
 			</mediaobject>
 			<mediaobject>
-				<imageobject><imagedata scale='60' fileref='images/berlinmod_grid1k.png' /></imageobject>
+				<imageobject><imagedata scale='65' fileref='images/berlinmod_grid1k.png' /></imageobject>
 			</mediaobject>
 		</figure>
 	</sect1>

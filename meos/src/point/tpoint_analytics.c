@@ -1517,7 +1517,6 @@ tpointseqset_remove_repeated_points(const TSequenceSet *ss, double tolerance,
   int min_points)
 {
   const TSequence *seq;
-
   /* Singleton sequence set */
   if (ss->count == 1)
   {

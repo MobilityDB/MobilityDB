@@ -552,6 +552,10 @@ extern Temporal *tinstant_merge_array(const TInstant **instants, int count);
 extern TInstant *tinstant_shift(const TInstant *inst, const Interval *interval);
 extern TSequence *tinstant_to_tsequence(const TInstant *inst, interpType interp);
 extern TSequenceSet *tinstant_to_tsequenceset(const TInstant *inst, interpType interp);
+extern Temporal *tdiscseq_set_interp(const TSequence *seq, interpType interp);
+extern TSequence *tcontseq_to_discrete(const TSequence *seq);
+extern Temporal *tcontseq_to_linear(const TSequence *seq);
+extern TSequence *tcontseq_to_step(const TSequence *seq);
 extern Temporal *tdiscseq_merge(const TSequence *is1, const TSequence *is2);
 extern Temporal *tdiscseq_merge_array(const TSequence **sequences, int count);
 extern TSequence *tdiscseq_to_tsequence(const TSequence *seq, interpType interp);
@@ -560,18 +564,22 @@ extern Temporal *tsequence_append_tinstant(TSequence *seq, const TInstant *inst,
 extern Temporal *tsequence_append_tsequence(TSequence *seq1, const TSequence *seq2, bool expand);
 extern Temporal *tsequence_merge(const TSequence *seq1, const TSequence *seq2);
 extern Temporal *tsequence_merge_array(const TSequence **sequences, int count);
+extern Temporal *tsequence_set_interp(const TSequence *seq, interpType interp);
 extern TSequence *tsequence_shift_tscale(const TSequence *seq, const Interval *start, const Interval *duration);
 extern TInstant *tsequence_to_tinstant(const TSequence *seq);
 extern TSequence *tsequence_to_tdiscseq(const TSequence *seq);
-extern TSequence *tsequence_to_tcontseq(const TSequence *seq);
+extern TSequence *tsequence_to_tcontseq(const TSequence *seq, interpType interp);
 extern TSequenceSet *tsequence_to_tsequenceset(const TSequence *seq);
 extern TSequenceSet *tsequenceset_append_tinstant(TSequenceSet *ss, const TInstant *inst, double maxdist, const Interval *maxt, bool expand);
 extern TSequenceSet *tsequenceset_append_tsequence(TSequenceSet *ss, const TSequence *seq, bool expand);
 extern TSequenceSet *tsequenceset_merge(const TSequenceSet *ss1, const TSequenceSet *ss2);
 extern TSequenceSet *tsequenceset_merge_array(const TSequenceSet **seqsets, int count);
+extern Temporal *tsequenceset_set_interp(const TSequenceSet *ss, interpType interp);
 extern TSequenceSet *tsequenceset_shift_tscale(const TSequenceSet *ss, const Interval *start, const Interval *duration);
-extern TInstant *tsequenceset_to_tinstant(const TSequenceSet *ts);
-extern TSequence *tsequenceset_to_tdiscseq(const TSequenceSet *ts);
+extern TInstant *tsequenceset_to_tinstant(const TSequenceSet *ss);
+extern TSequence *tsequenceset_to_discrete(const TSequenceSet *ss);
+extern TSequenceSet *tsequenceset_to_step(const TSequenceSet *ss);
+extern TSequenceSet *tsequenceset_to_linear(const TSequenceSet *ss);
 extern TSequence *tsequenceset_to_tsequence(const TSequenceSet *ss);
 extern TSequenceSet *tstepseq_to_linear(const TSequence *seq);
 extern int tstepseq_to_linear1(const TSequence *seq, TSequence **result);
@@ -651,7 +659,7 @@ extern Temporal *tpoint_restrict_stbox(const Temporal *temp, const STBox *box, b
 /* Mathematical functions for temporal types */
 
 extern TSequence *tnumberseq_derivative(const TSequence *seq);
-extern TSequenceSet *tnumberseqset_derivative(const TSequenceSet *ts);
+extern TSequenceSet *tnumberseqset_derivative(const TSequenceSet *ss);
 
 /*****************************************************************************/
 

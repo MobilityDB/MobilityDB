@@ -151,12 +151,12 @@ tpointseq_transform_tcentroid(const TSequence *seq)
  * double3/double4 value for performing temporal centroid aggregation
  */
 static TSequence **
-tpointseqset_transform_tcentroid(const TSequenceSet *ts)
+tpointseqset_transform_tcentroid(const TSequenceSet *ss)
 {
-  TSequence **result = palloc(sizeof(TSequence *) * ts->count);
-  for (int i = 0; i < ts->count; i++)
+  TSequence **result = palloc(sizeof(TSequence *) * ss->count);
+  for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = TSEQUENCESET_SEQ_N(ts, i);
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     result[i] = tpointseq_transform_tcentroid(seq);
   }
   return result;
