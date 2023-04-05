@@ -153,16 +153,10 @@ ensure_continuous(const Temporal *temp)
 /**
  * @brief Ensure that two temporal values have the same interpolation
  * @param[in] temp1,temp2 Input values
- * @param[in] strict True when the interpolations must be equal, false when
- * one of the input values may be of instant subtype and thus the interpolation
- * would be INTERP_NONE which is compatible with any other interpolation
  */
 void
-ensure_same_interpolation(const Temporal *temp1, const Temporal *temp2,
-  bool strict)
+ensure_same_interpolation(const Temporal *temp1, const Temporal *temp2)
 {
-  if (! strict || (temp1->subtype == TINSTANT || temp2->subtype == TINSTANT))
-    return;
   interpType interp1 = MEOS_FLAGS_GET_INTERP(temp1->flags);
   interpType interp2 = MEOS_FLAGS_GET_INTERP(temp2->flags);
   if (interp1 != interp2)
@@ -356,7 +350,7 @@ ensure_valid_tseqarr(const TSequence **sequences, int count)
   for (int i = 1; i < count; i++)
   {
     ensure_same_interpolation((Temporal *) sequences[i - 1],
-      (Temporal *) sequences[i], true);
+      (Temporal *) sequences[i]);
     TimestampTz upper1 = DatumGetTimestampTz(sequences[i - 1]->period.upper);
     TimestampTz lower2 = DatumGetTimestampTz(sequences[i]->period.lower);
     if ( upper1 > lower2 ||
@@ -887,7 +881,7 @@ temporal_append_tsequence(Temporal *temp, const TSequence *seq, bool expand)
   if (seq->subtype != TSEQUENCE)
     elog(ERROR, "The second argument must be of sequence subtype");
   ensure_same_temptype(temp, (Temporal *) seq);
-  ensure_same_interpolation(temp, (Temporal *) seq, true);
+  ensure_same_interpolation(temp, (Temporal *) seq);
   /* The test to ensure the increasing timestamps must be done in the
    * subtype function since the inclusive/exclusive bounds must be
    * taken into account for temporal sequences and sequence sets */
@@ -1005,7 +999,6 @@ temporal_merge(const Temporal *temp1, const Temporal *temp2)
 
   /* Both arguments are temporal */
   ensure_same_temptype(temp1, temp2);
-  ensure_same_interpolation(temp1, temp2, false);
 
   /* Convert to the same subtype */
   Temporal *new1, *new2;
@@ -1085,7 +1078,6 @@ temporal_merge_array(Temporal **temparr, int count)
   bool convert = false;
   for (int i = 1; i < count; i++)
   {
-    ensure_same_interpolation(temparr[0], temparr[i], false);
     uint8 subtype1 = temparr[i]->subtype;
     interpType interp1 = MEOS_FLAGS_GET_INTERP(temparr[i]->flags);
     if (subtype != subtype1 || interp != interp1)
@@ -3595,7 +3587,6 @@ Temporal *
 temporal_insert(const Temporal *temp1, const Temporal *temp2, bool connect)
 {
   ensure_same_temptype(temp1, temp2);
-  ensure_same_interpolation(temp1, temp2, false);
 
   /* Convert to the same subtype */
   Temporal *new1, *new2;
