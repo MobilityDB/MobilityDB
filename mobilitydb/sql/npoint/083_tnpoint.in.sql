@@ -147,7 +147,7 @@ CREATE FUNCTION tnpoint_seqset_gaps(tnpoint[], maxt interval DEFAULT NULL,
     maxdist float DEFAULT NULL, text DEFAULT 'linear')
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Tsequenceset_constructor_gaps'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 /******************************************************************************
  * Cast functions

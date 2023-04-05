@@ -38,7 +38,7 @@ SELECT DISTINCT tempSubtype(tgeompoint_inst(inst)) FROM tbl_tgeompoint_inst;
  Instant
 (1 row)
 
-SELECT DISTINCT tempSubtype(tgeompoint_seq(inst, 'discrete')) FROM tbl_tgeompoint_inst;
+SELECT DISTINCT tempSubtype(setInterp(inst, 'discrete')) FROM tbl_tgeompoint_inst;
  tempsubtype 
 -------------
  Sequence
@@ -62,7 +62,7 @@ SELECT DISTINCT tempSubtype(tgeompoint_inst(inst)) FROM tbl_tgeompoint3D_inst;
  Instant
 (1 row)
 
-SELECT DISTINCT tempSubtype(tgeompoint_seq(inst, 'discrete')) FROM tbl_tgeompoint3D_inst;
+SELECT DISTINCT tempSubtype(setInterp(inst, 'discrete')) FROM tbl_tgeompoint3D_inst;
  tempsubtype 
 -------------
  Sequence
@@ -86,7 +86,7 @@ SELECT DISTINCT tempSubtype(tgeogpoint_inst(inst)) FROM tbl_tgeogpoint_inst;
  Instant
 (1 row)
 
-SELECT DISTINCT tempSubtype(tgeogpoint_seq(inst, 'discrete')) FROM tbl_tgeogpoint_inst;
+SELECT DISTINCT tempSubtype(setInterp(inst, 'discrete')) FROM tbl_tgeogpoint_inst;
  tempsubtype 
 -------------
  Sequence
@@ -110,7 +110,7 @@ SELECT DISTINCT tempSubtype(tgeogpoint_inst(inst)) FROM tbl_tgeogpoint3D_inst;
  Instant
 (1 row)
 
-SELECT DISTINCT tempSubtype(tgeogpoint_seq(inst, 'discrete')) FROM tbl_tgeogpoint3D_inst;
+SELECT DISTINCT tempSubtype(setInterp(inst, 'discrete')) FROM tbl_tgeogpoint3D_inst;
  tempsubtype 
 -------------
  Sequence
@@ -134,7 +134,7 @@ SELECT DISTINCT tempSubtype(tgeompoint_inst(ti)) FROM tbl_tgeompoint_discseq WHE
  Instant
 (1 row)
 
-SELECT DISTINCT tempSubtype(tgeompoint_seq(ti, 'discrete')) FROM tbl_tgeompoint_discseq;
+SELECT DISTINCT tempSubtype(setInterp(ti, 'discrete')) FROM tbl_tgeompoint_discseq;
  tempsubtype 
 -------------
  Sequence
@@ -158,7 +158,7 @@ SELECT DISTINCT tempSubtype(tgeompoint_inst(ti)) FROM tbl_tgeompoint3D_discseq W
  Instant
 (1 row)
 
-SELECT DISTINCT tempSubtype(tgeompoint_seq(ti, 'discrete')) FROM tbl_tgeompoint3D_discseq;
+SELECT DISTINCT tempSubtype(setInterp(ti, 'discrete')) FROM tbl_tgeompoint3D_discseq;
  tempsubtype 
 -------------
  Sequence
@@ -182,7 +182,7 @@ SELECT DISTINCT tempSubtype(tgeogpoint_inst(ti)) FROM tbl_tgeogpoint_discseq WHE
  Instant
 (1 row)
 
-SELECT DISTINCT tempSubtype(tgeogpoint_seq(ti, 'discrete')) FROM tbl_tgeogpoint_discseq;
+SELECT DISTINCT tempSubtype(setInterp(ti, 'discrete')) FROM tbl_tgeogpoint_discseq;
  tempsubtype 
 -------------
  Sequence
@@ -206,7 +206,7 @@ SELECT DISTINCT tempSubtype(tgeogpoint_inst(ti)) FROM tbl_tgeogpoint3D_discseq W
  Instant
 (1 row)
 
-SELECT DISTINCT tempSubtype(tgeogpoint_seq(ti, 'discrete')) FROM tbl_tgeogpoint3D_discseq;
+SELECT DISTINCT tempSubtype(setInterp(ti, 'discrete')) FROM tbl_tgeogpoint3D_discseq;
  tempsubtype 
 -------------
  Sequence
@@ -230,7 +230,7 @@ SELECT DISTINCT tempSubtype(tgeompoint_inst(seq)) FROM tbl_tgeompoint_seq WHERE 
  Instant
 (1 row)
 
-SELECT DISTINCT tempSubtype(tgeompoint_seq(seq, 'discrete')) FROM tbl_tgeompoint_seq WHERE numInstants(seq) = 1;
+SELECT DISTINCT tempSubtype(setInterp(seq, 'discrete')) FROM tbl_tgeompoint_seq WHERE numInstants(seq) = 1;
  tempsubtype 
 -------------
  Sequence
@@ -254,7 +254,7 @@ SELECT DISTINCT tempSubtype(tgeompoint_inst(seq)) FROM tbl_tgeompoint3D_seq WHER
  Instant
 (1 row)
 
-SELECT DISTINCT tempSubtype(tgeompoint_seq(seq, 'discrete')) FROM tbl_tgeompoint3D_seq WHERE numInstants(seq) = 1;
+SELECT DISTINCT tempSubtype(setInterp(seq, 'discrete')) FROM tbl_tgeompoint3D_seq WHERE numInstants(seq) = 1;
  tempsubtype 
 -------------
  Sequence
@@ -278,7 +278,7 @@ SELECT DISTINCT tempSubtype(tgeogpoint_inst(seq)) FROM tbl_tgeogpoint_seq WHERE 
  Instant
 (1 row)
 
-SELECT DISTINCT tempSubtype(tgeogpoint_seq(seq, 'discrete')) FROM tbl_tgeogpoint_seq WHERE numInstants(seq) = 1;
+SELECT DISTINCT tempSubtype(setInterp(seq, 'discrete')) FROM tbl_tgeogpoint_seq WHERE numInstants(seq) = 1;
  tempsubtype 
 -------------
  Sequence
@@ -302,7 +302,7 @@ SELECT DISTINCT tempSubtype(tgeogpoint_inst(seq)) FROM tbl_tgeogpoint3D_seq WHER
  Instant
 (1 row)
 
-SELECT DISTINCT tempSubtype(tgeogpoint_seq(seq, 'discrete')) FROM tbl_tgeogpoint3D_seq WHERE numInstants(seq) = 1;
+SELECT DISTINCT tempSubtype(setInterp(seq, 'discrete')) FROM tbl_tgeogpoint3D_seq WHERE numInstants(seq) = 1;
  tempsubtype 
 -------------
  Sequence
@@ -326,7 +326,7 @@ SELECT DISTINCT tempSubtype(tgeompoint_inst(ss)) FROM tbl_tgeompoint_seqset WHER
  Instant
 (1 row)
 
-SELECT DISTINCT tempSubtype(tgeompoint_seq(ss, 'discrete')) FROM tbl_tgeompoint_seqset WHERE duration(ss) = '00:00:00';
+SELECT DISTINCT tempSubtype(setInterp(ss, 'discrete')) FROM tbl_tgeompoint_seqset WHERE duration(ss) = '00:00:00';
  tempsubtype 
 -------------
  Sequence
@@ -350,7 +350,7 @@ SELECT DISTINCT tempSubtype(tgeompoint_inst(ss)) FROM tbl_tgeompoint3D_seqset WH
  Instant
 (1 row)
 
-SELECT DISTINCT tempSubtype(tgeompoint_seq(ss, 'discrete')) FROM tbl_tgeompoint3D_seqset WHERE duration(ss) = '00:00:00';
+SELECT DISTINCT tempSubtype(setInterp(ss, 'discrete')) FROM tbl_tgeompoint3D_seqset WHERE duration(ss) = '00:00:00';
  tempsubtype 
 -------------
  Sequence
@@ -374,7 +374,7 @@ SELECT DISTINCT tempSubtype(tgeogpoint_inst(ss)) FROM tbl_tgeogpoint_seqset WHER
  Instant
 (1 row)
 
-SELECT DISTINCT tempSubtype(tgeogpoint_seq(ss, 'discrete')) FROM tbl_tgeogpoint_seqset WHERE duration(ss) = '00:00:00';
+SELECT DISTINCT tempSubtype(setInterp(ss, 'discrete')) FROM tbl_tgeogpoint_seqset WHERE duration(ss) = '00:00:00';
  tempsubtype 
 -------------
  Sequence
@@ -398,7 +398,7 @@ SELECT DISTINCT tempSubtype(tgeogpoint_inst(ss)) FROM tbl_tgeogpoint3D_seqset WH
  Instant
 (1 row)
 
-SELECT DISTINCT tempSubtype(tgeogpoint_seq(ss, 'discrete')) FROM tbl_tgeogpoint3D_seqset WHERE duration(ss) = '00:00:00';
+SELECT DISTINCT tempSubtype(setInterp(ss, 'discrete')) FROM tbl_tgeogpoint3D_seqset WHERE duration(ss) = '00:00:00';
  tempsubtype 
 -------------
  Sequence

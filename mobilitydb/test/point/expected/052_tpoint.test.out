@@ -1226,13 +1226,13 @@ SELECT asEWKT(tgeompoint_inst(tgeompoint 'Point(1 1)@2000-01-01'));
  POINT(1 1)@2000-01-01 00:00:00+00
 (1 row)
 
-SELECT asEWKT(tgeompoint_seq(tgeompoint 'Point(1 1)@2000-01-01', 'discrete'));
+SELECT asEWKT(setInterp(tgeompoint 'Point(1 1)@2000-01-01', 'discrete'));
                asewkt                
 -------------------------------------
  {POINT(1 1)@2000-01-01 00:00:00+00}
 (1 row)
 
-SELECT asEWKT(tgeompoint_seq(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', 'discrete'));
+SELECT asEWKT(setInterp(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', 'discrete'));
                                                   asewkt                                                   
 -----------------------------------------------------------------------------------------------------------
  {POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-02 00:00:00+00, POINT(1 1)@2000-01-03 00:00:00+00}
@@ -1281,9 +1281,9 @@ SELECT asEWKT(tgeompoint_inst(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@200
 ERROR:  Cannot transform input value to a temporal instant
 SELECT asEWKT(tgeompoint_inst(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
 ERROR:  Cannot transform input value to a temporal instant
-SELECT asEWKT(tgeompoint_seq(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', 'discrete'));
+SELECT asEWKT(setInterp(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', 'discrete'));
 ERROR:  Cannot transform input value to a temporal discrete sequence
-SELECT asEWKT(tgeompoint_seq(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 'discrete'));
+SELECT asEWKT(setInterp(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 'discrete'));
 ERROR:  Cannot transform input value to a temporal discrete sequence
 SELECT asEWKT(tgeompoint_seq(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
 ERROR:  Cannot transform input value to a temporal sequence
@@ -1293,13 +1293,13 @@ SELECT asEWKT(tgeogpoint_inst(tgeogpoint 'Point(1.5 1.5)@2000-01-01'));
  SRID=4326;POINT(1.5 1.5)@2000-01-01 00:00:00+00
 (1 row)
 
-SELECT asEWKT(tgeogpoint_seq(tgeogpoint 'Point(1.5 1.5)@2000-01-01', 'discrete'));
+SELECT asEWKT(setInterp(tgeogpoint 'Point(1.5 1.5)@2000-01-01', 'discrete'));
                       asewkt                       
 ---------------------------------------------------
  SRID=4326;{POINT(1.5 1.5)@2000-01-01 00:00:00+00}
 (1 row)
 
-SELECT asEWKT(tgeogpoint_seq(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', 'discrete'));
+SELECT asEWKT(setInterp(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', 'discrete'));
                                                              asewkt                                                              
 ---------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;{POINT(1.5 1.5)@2000-01-01 00:00:00+00, POINT(2.5 2.5)@2000-01-02 00:00:00+00, POINT(1.5 1.5)@2000-01-03 00:00:00+00}
@@ -1348,9 +1348,9 @@ SELECT asEWKT(tgeogpoint_inst(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 
 ERROR:  Cannot transform input value to a temporal instant
 SELECT asEWKT(tgeogpoint_inst(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'));
 ERROR:  Cannot transform input value to a temporal instant
-SELECT asEWKT(tgeogpoint_seq(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', 'discrete'));
+SELECT asEWKT(setInterp(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', 'discrete'));
 ERROR:  Cannot transform input value to a temporal discrete sequence
-SELECT asEWKT(tgeogpoint_seq(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', 'discrete'));
+SELECT asEWKT(setInterp(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', 'discrete'));
 ERROR:  Cannot transform input value to a temporal discrete sequence
 SELECT asEWKT(tgeogpoint_seq(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'));
 ERROR:  Cannot transform input value to a temporal sequence

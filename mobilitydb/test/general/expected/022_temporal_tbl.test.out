@@ -181,7 +181,7 @@ SELECT DISTINCT tempSubtype(tbool_inst(inst)) FROM tbl_tbool_inst;
  Instant
 (2 rows)
 
-SELECT DISTINCT tempSubtype(tbool_seq(inst, 'discrete')) FROM tbl_tbool_inst;
+SELECT DISTINCT tempSubtype(setInterp(inst, 'discrete')) FROM tbl_tbool_inst;
  tempsubtype 
 -------------
  
@@ -209,7 +209,7 @@ SELECT DISTINCT tempSubtype(tint_inst(inst)) FROM tbl_tint_inst;
  Instant
 (2 rows)
 
-SELECT DISTINCT tempSubtype(tint_seq(inst, 'discrete')) FROM tbl_tint_inst;
+SELECT DISTINCT tempSubtype(setInterp(inst, 'discrete')) FROM tbl_tint_inst;
  tempsubtype 
 -------------
  
@@ -237,7 +237,7 @@ SELECT DISTINCT tempSubtype(tfloat_inst(inst)) FROM tbl_tfloat_inst;
  Instant
 (2 rows)
 
-SELECT DISTINCT tempSubtype(tfloat_seq(inst, 'discrete')) FROM tbl_tfloat_inst;
+SELECT DISTINCT tempSubtype(setInterp(inst, 'discrete')) FROM tbl_tfloat_inst;
  tempsubtype 
 -------------
  
@@ -265,7 +265,7 @@ SELECT DISTINCT tempSubtype(ttext_inst(inst)) FROM tbl_ttext_inst;
  Instant
 (2 rows)
 
-SELECT DISTINCT tempSubtype(ttext_seq(inst, 'discrete')) FROM tbl_ttext_inst;
+SELECT DISTINCT tempSubtype(setInterp(inst, 'discrete')) FROM tbl_ttext_inst;
  tempsubtype 
 -------------
  
@@ -292,7 +292,7 @@ SELECT DISTINCT tempSubtype(tbool_inst(ti)) FROM tbl_tbool_discseq WHERE numInst
  Instant
 (1 row)
 
-SELECT DISTINCT tempSubtype(tbool_seq(ti, 'discrete')) FROM tbl_tbool_discseq;
+SELECT DISTINCT tempSubtype(setInterp(ti, 'discrete')) FROM tbl_tbool_discseq;
  tempsubtype 
 -------------
  
@@ -318,7 +318,7 @@ SELECT DISTINCT tempSubtype(tint_inst(ti)) FROM tbl_tint_discseq WHERE numInstan
  Instant
 (1 row)
 
-SELECT DISTINCT tempSubtype(tint_seq(ti, 'discrete')) FROM tbl_tint_discseq;
+SELECT DISTINCT tempSubtype(setInterp(ti, 'discrete')) FROM tbl_tint_discseq;
  tempsubtype 
 -------------
  
@@ -344,7 +344,7 @@ SELECT DISTINCT tempSubtype(tfloat_inst(ti)) FROM tbl_tfloat_discseq WHERE numIn
  Instant
 (1 row)
 
-SELECT DISTINCT tempSubtype(tfloat_seq(ti, 'discrete')) FROM tbl_tfloat_discseq;
+SELECT DISTINCT tempSubtype(setInterp(ti, 'discrete')) FROM tbl_tfloat_discseq;
  tempsubtype 
 -------------
  
@@ -370,7 +370,7 @@ SELECT DISTINCT tempSubtype(ttext_inst(ti)) FROM tbl_ttext_discseq WHERE numInst
  Instant
 (1 row)
 
-SELECT DISTINCT tempSubtype(ttext_seq(ti, 'discrete')) FROM tbl_ttext_discseq;
+SELECT DISTINCT tempSubtype(setInterp(ti, 'discrete')) FROM tbl_ttext_discseq;
  tempsubtype 
 -------------
  
@@ -396,7 +396,7 @@ SELECT DISTINCT tempSubtype(tbool_inst(seq)) FROM tbl_tbool_seq WHERE numInstant
  Instant
 (1 row)
 
-SELECT DISTINCT tempSubtype(tbool_seq(seq, 'discrete')) FROM tbl_tbool_seq WHERE numInstants(seq) = 1;
+SELECT DISTINCT tempSubtype(setInterp(seq, 'discrete')) FROM tbl_tbool_seq WHERE numInstants(seq) = 1;
  tempsubtype 
 -------------
  Sequence
@@ -422,7 +422,7 @@ SELECT DISTINCT tempSubtype(tint_inst(seq)) FROM tbl_tint_seq WHERE numInstants(
  Instant
 (1 row)
 
-SELECT DISTINCT tempSubtype(tint_seq(seq, 'discrete')) FROM tbl_tint_seq WHERE numInstants(seq) = 1;
+SELECT DISTINCT tempSubtype(setInterp(seq, 'discrete')) FROM tbl_tint_seq WHERE numInstants(seq) = 1;
  tempsubtype 
 -------------
  Sequence
@@ -448,7 +448,7 @@ SELECT DISTINCT tempSubtype(tfloat_inst(seq)) FROM tbl_tfloat_seq WHERE numInsta
  Instant
 (1 row)
 
-SELECT DISTINCT tempSubtype(tfloat_seq(seq, 'discrete')) FROM tbl_tfloat_seq WHERE numInstants(seq) = 1;
+SELECT DISTINCT tempSubtype(setInterp(seq, 'discrete')) FROM tbl_tfloat_seq WHERE numInstants(seq) = 1;
  tempsubtype 
 -------------
  Sequence
@@ -474,7 +474,7 @@ SELECT DISTINCT tempSubtype(ttext_inst(seq)) FROM tbl_ttext_seq WHERE numInstant
  Instant
 (1 row)
 
-SELECT DISTINCT tempSubtype(ttext_seq(seq, 'discrete')) FROM tbl_ttext_seq WHERE numInstants(seq) = 1;
+SELECT DISTINCT tempSubtype(setInterp(seq, 'discrete')) FROM tbl_ttext_seq WHERE numInstants(seq) = 1;
  tempsubtype 
 -------------
  Sequence
@@ -499,7 +499,7 @@ SELECT DISTINCT tempSubtype(tbool_inst(ss)) FROM tbl_tbool_seqset WHERE numInsta
 -------------
 (0 rows)
 
-SELECT DISTINCT tempSubtype(tbool_seq(ss, 'discrete')) FROM tbl_tbool_seqset WHERE duration(ss) = '00:00:00';
+SELECT DISTINCT tempSubtype(setInterp(ss, 'discrete')) FROM tbl_tbool_seqset WHERE duration(ss) = '00:00:00';
  tempsubtype 
 -------------
 (0 rows)
@@ -523,7 +523,7 @@ SELECT DISTINCT tempSubtype(tint_inst(ss)) FROM tbl_tint_seqset WHERE numInstant
  Instant
 (1 row)
 
-SELECT DISTINCT tempSubtype(tint_seq(ss, 'discrete')) FROM tbl_tint_seqset WHERE duration(ss) = '00:00:00';
+SELECT DISTINCT tempSubtype(setInterp(ss, 'discrete')) FROM tbl_tint_seqset WHERE duration(ss) = '00:00:00';
  tempsubtype 
 -------------
  Sequence
@@ -548,7 +548,7 @@ SELECT DISTINCT tempSubtype(tfloat_inst(ss)) FROM tbl_tfloat_seqset WHERE numIns
  Instant
 (1 row)
 
-SELECT DISTINCT tempSubtype(tfloat_seq(ss, 'discrete')) FROM tbl_tfloat_seqset WHERE duration(ss) = '00:00:00';
+SELECT DISTINCT tempSubtype(setInterp(ss, 'discrete')) FROM tbl_tfloat_seqset WHERE duration(ss) = '00:00:00';
  tempsubtype 
 -------------
  Sequence
@@ -572,7 +572,7 @@ SELECT DISTINCT tempSubtype(ttext_inst(ss)) FROM tbl_ttext_seqset WHERE numInsta
 -------------
 (0 rows)
 
-SELECT DISTINCT tempSubtype(ttext_seq(ss, 'discrete')) FROM tbl_ttext_seqset WHERE duration(ss) = '00:00:00';
+SELECT DISTINCT tempSubtype(setInterp(ss, 'discrete')) FROM tbl_ttext_seqset WHERE duration(ss) = '00:00:00';
  tempsubtype 
 -------------
 (0 rows)
@@ -614,25 +614,25 @@ SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) F
   59
 (1 row)
 
-select MAX(numinstants(appendSequence(temp, tbool_seq(shift(endinstant(temp), '5 min'))))) from tbl_tbool;
+select MAX(numinstants(appendSequence(temp, setInterp(shift(endinstant(temp), '5 min'), interp(temp))))) from tbl_tbool;
  max 
 -----
   53
 (1 row)
 
-SELECT MAX(numInstants(appendSequence(temp, tint_seq(shift(endInstant(temp), '5 min'))))) FROM tbl_tint;
+SELECT MAX(numInstants(appendSequence(temp, setInterp(shift(endInstant(temp), '5 min'), interp(temp))))) FROM tbl_tint;
  max 
 -----
   46
 (1 row)
 
-SELECT MAX(numInstants(appendSequence(temp, tfloat_seq(shift(endInstant(temp), '5 min'))))) FROM tbl_tfloat;
+SELECT MAX(numInstants(appendSequence(temp, setInterp(shift(endInstant(temp), '5 min'), interp(temp))))) FROM tbl_tfloat;
  max 
 -----
   53
 (1 row)
 
-SELECT MAX(numInstants(appendSequence(temp, ttext_seq(shift(endInstant(temp), '5 min'))))) FROM tbl_ttext;
+SELECT MAX(numInstants(appendSequence(temp, setInterp(shift(endInstant(temp), '5 min'), interp(temp))))) FROM tbl_ttext;
  max 
 -----
   60

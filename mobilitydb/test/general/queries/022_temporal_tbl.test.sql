@@ -205,10 +205,10 @@ SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) F
 
 -------------------------------------------------------------------------------
 
-select MAX(numinstants(appendSequence(temp, setInterp(shift(endinstant(temp), '5 min'))))) from tbl_tbool;
-SELECT MAX(numInstants(appendSequence(temp, setInterp(shift(endInstant(temp), '5 min'))))) FROM tbl_tint;
-SELECT MAX(numInstants(appendSequence(temp, setInterp(shift(endInstant(temp), '5 min'))))) FROM tbl_tfloat;
-SELECT MAX(numInstants(appendSequence(temp, setInterp(shift(endInstant(temp), '5 min'))))) FROM tbl_ttext;
+select MAX(numinstants(appendSequence(temp, setInterp(shift(endinstant(temp), '5 min'), interp(temp))))) from tbl_tbool;
+SELECT MAX(numInstants(appendSequence(temp, setInterp(shift(endInstant(temp), '5 min'), interp(temp))))) FROM tbl_tint;
+SELECT MAX(numInstants(appendSequence(temp, setInterp(shift(endInstant(temp), '5 min'), interp(temp))))) FROM tbl_tfloat;
+SELECT MAX(numInstants(appendSequence(temp, setInterp(shift(endInstant(temp), '5 min'), interp(temp))))) FROM tbl_ttext;
 
 -------------------------------------------------------------------------------
 -- Accessor functions
