@@ -193,6 +193,7 @@ CREATE FUNCTION tgeogpoint_seqset(tgeogpoint[])
   AS 'MODULE_PATHNAME', 'Tsequenceset_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- The function is not strict
 CREATE FUNCTION tgeompoint_seqset_gaps(tgeompoint[], maxt interval DEFAULT NULL,
     maxdist float DEFAULT NULL, text DEFAULT 'linear')
   RETURNS tgeompoint

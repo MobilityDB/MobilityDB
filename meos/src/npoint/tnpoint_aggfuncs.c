@@ -56,7 +56,7 @@ tnpoint_tcentroid_transfn(SkipList *state, Temporal *temp)
 {
   Temporal *temp1 = tnpoint_tgeompoint(temp);
   geoaggstate_check_temp(state, temp1);
-  Datum (*func)(Datum, Datum) = MOBDB_FLAGS_GET_Z(temp1->flags) ?
+  Datum (*func)(Datum, Datum) = MEOS_FLAGS_GET_Z(temp1->flags) ?
     &datum_sum_double4 : &datum_sum_double3;
 
   int count;
@@ -69,7 +69,7 @@ tnpoint_tcentroid_transfn(SkipList *state, Temporal *temp)
     struct GeoAggregateState extra =
     {
       .srid = tpoint_srid(temp1),
-      .hasz = MOBDB_FLAGS_GET_Z(temp1->flags) != 0
+      .hasz = MEOS_FLAGS_GET_Z(temp1->flags) != 0
     };
     aggstate_set_extra(state, &extra, sizeof(struct GeoAggregateState));
   }

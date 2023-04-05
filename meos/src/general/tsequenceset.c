@@ -114,13 +114,13 @@ tsequenceset_find_timestamp(const TSequenceSet *ss, TimestampTz t, int *loc)
 static void
 tsequenceset_make_valid(const TSequence **sequences, int count)
 {
-  bool linear = MOBDB_FLAGS_GET_LINEAR(sequences[0]->flags);
+  bool linear = MEOS_FLAGS_GET_LINEAR(sequences[0]->flags);
   /* Ensure that all values are of sequence subtype and of the same interpolation */
   for (int i = 0; i < count; i++)
   {
     if (sequences[i]->subtype != TSEQUENCE)
       elog(ERROR, "Input values must be temporal sequences");
-    if (MOBDB_FLAGS_GET_LINEAR(sequences[i]->flags) != linear)
+    if (MEOS_FLAGS_GET_LINEAR(sequences[i]->flags) != linear)
       elog(ERROR, "Input sequences must have the same interpolation");
   }
   return;
@@ -240,17 +240,17 @@ tsequenceset_make1_exp(const TSequence **sequences, int count, int maxcount,
   result->temptype = sequences[0]->temptype;
   result->subtype = TSEQUENCESET;
   result->bboxsize = bboxsize;
-  MOBDB_FLAGS_SET_CONTINUOUS(result->flags,
-    MOBDB_FLAGS_GET_CONTINUOUS(sequences[0]->flags));
-  MOBDB_FLAGS_SET_INTERP(result->flags,
-    MOBDB_FLAGS_GET_INTERP(sequences[0]->flags));
-  MOBDB_FLAGS_SET_X(result->flags, true);
-  MOBDB_FLAGS_SET_T(result->flags, true);
+  MEOS_FLAGS_SET_CONTINUOUS(result->flags,
+    MEOS_FLAGS_GET_CONTINUOUS(sequences[0]->flags));
+  MEOS_FLAGS_SET_INTERP(result->flags,
+    MEOS_FLAGS_GET_INTERP(sequences[0]->flags));
+  MEOS_FLAGS_SET_X(result->flags, true);
+  MEOS_FLAGS_SET_T(result->flags, true);
   if (tgeo_type(sequences[0]->temptype))
   {
-    MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(sequences[0]->flags));
-    MOBDB_FLAGS_SET_GEODETIC(result->flags,
-      MOBDB_FLAGS_GET_GEODETIC(sequences[0]->flags));
+    MEOS_FLAGS_SET_Z(result->flags, MEOS_FLAGS_GET_Z(sequences[0]->flags));
+    MEOS_FLAGS_SET_GEODETIC(result->flags,
+      MEOS_FLAGS_GET_GEODETIC(sequences[0]->flags));
   }
   /* Initialization of the variable-length part */
   /* Compute the bounding box */
@@ -667,7 +667,7 @@ tnumberseqset_values(const TSequenceSet *ss)
   meosType basetype = temptype_basetype(ss->temptype);
 
   /* Temporal sequence number with discrete or step interpolation */
-  if (! MOBDB_FLAGS_GET_LINEAR(ss->flags))
+  if (! MEOS_FLAGS_GET_LINEAR(ss->flags))
   {
     Datum *values = tsequenceset_valueset(ss, &count);
     spans = palloc(sizeof(Span) * count);
@@ -1204,8 +1204,8 @@ tintseqset_to_tfloatseqset(const TSequenceSet *ss)
 {
   TSequenceSet *result = tsequenceset_copy(ss);
   result->temptype = T_TFLOAT;
-  MOBDB_FLAGS_SET_CONTINUOUS(result->flags, true);
-  MOBDB_FLAGS_SET_INTERP(result->flags, STEP);
+  MEOS_FLAGS_SET_CONTINUOUS(result->flags, true);
+  MEOS_FLAGS_SET_INTERP(result->flags, STEP);
   for (int i = 0; i < ss->count; i++)
   {
     TSequence *seq = (TSequence *) TSEQUENCESET_SEQ_N(result, i);
@@ -1228,12 +1228,12 @@ tintseqset_to_tfloatseqset(const TSequenceSet *ss)
 TSequenceSet *
 tfloatseqset_to_tintseqset(const TSequenceSet *ss)
 {
-  if (MOBDB_FLAGS_GET_LINEAR(ss->flags))
+  if (MEOS_FLAGS_GET_LINEAR(ss->flags))
     elog(ERROR, "Cannot cast temporal float with linear interpolation to temporal integer");
   TSequenceSet *result = tsequenceset_copy(ss);
   result->temptype = T_TINT;
-  MOBDB_FLAGS_SET_CONTINUOUS(result->flags, false);
-  MOBDB_FLAGS_SET_INTERP(result->flags, STEP);
+  MEOS_FLAGS_SET_CONTINUOUS(result->flags, false);
+  MEOS_FLAGS_SET_INTERP(result->flags, STEP);
   for (int i = 0; i < ss->count; i++)
   {
     TSequence *seq = (TSequence *) TSEQUENCESET_SEQ_N(result, i);
@@ -1357,9 +1357,9 @@ tsequence_to_tsequenceset(const TSequence *seq)
 {
   /* For discrete sequences, each composing instant will be transformed in
    * an instantaneous sequence in the resulting sequence set */
-  if (MOBDB_FLAGS_GET_DISCRETE(seq->flags))
+  if (MEOS_FLAGS_GET_DISCRETE(seq->flags))
   {
-    interpType interp = MOBDB_FLAGS_GET_CONTINUOUS(seq->flags) ? LINEAR : STEP;
+    interpType interp = MEOS_FLAGS_GET_CONTINUOUS(seq->flags) ? LINEAR : STEP;
     return tdiscseq_to_tsequenceset(seq, interp);
   }
   return tsequenceset_make(&seq, 1, NORMALIZE_NO);
@@ -1417,7 +1417,7 @@ TSequenceSet *
 tsequenceset_to_step(const TSequenceSet *ss)
 {
   /* If the sequence set has step interpolation return a copy */
-  if (MOBDB_FLAGS_GET_LINEAR(ss->flags))
+  if (MEOS_FLAGS_GET_LINEAR(ss->flags))
     return tsequenceset_copy(ss);
 
   if (ss->count != ss->totalcount)
@@ -1444,7 +1444,7 @@ TSequenceSet *
 tsequenceset_to_linear(const TSequenceSet *ss)
 {
   /* If the sequence set has linear interpolation return a copy */
-  if (MOBDB_FLAGS_GET_LINEAR(ss->flags))
+  if (MEOS_FLAGS_GET_LINEAR(ss->flags))
     return tsequenceset_copy(ss);
 
   /* Singleton sequence set */
@@ -1695,7 +1695,7 @@ tsequenceset_restrict_value(const TSequenceSet *ss, Datum value, bool atfunc)
   /* General case */
   int count = ss->totalcount;
   /* For minus and linear interpolation we need the double of the count */
-  if (! atfunc && MOBDB_FLAGS_GET_LINEAR(ss->flags))
+  if (! atfunc && MEOS_FLAGS_GET_LINEAR(ss->flags))
     count *= 2;
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
   int k = 0;
@@ -1786,7 +1786,7 @@ tnumberseqset_restrict_span(const TSequenceSet *ss, const Span *span,
   /* General case */
   int count = ss->totalcount;
   /* For minus and linear interpolation we need the double of the count */
-  if (! atfunc && MOBDB_FLAGS_GET_LINEAR(ss->flags))
+  if (! atfunc && MEOS_FLAGS_GET_LINEAR(ss->flags))
     count *= 2;
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
   int k = 0;
@@ -1826,7 +1826,7 @@ tnumberseqset_restrict_spanset(const TSequenceSet *ss, const SpanSet *spanset,
   /* General case */
   int maxcount = ss->totalcount * spanset->count;
   /* For minus and linear interpolation we need the double of the count */
-  if (! atfunc && MOBDB_FLAGS_GET_LINEAR(ss->flags))
+  if (! atfunc && MEOS_FLAGS_GET_LINEAR(ss->flags))
     maxcount *= 2;
   TSequence **sequences = palloc(sizeof(TSequence *) * maxcount);
   int k = 0;
@@ -2793,8 +2793,8 @@ tsequenceset_to_string(const TSequenceSet *ss, int maxdd, outfunc value_out)
   char **strings = palloc(sizeof(char *) * ss->count);
   size_t outlen = 0;
   char prefix[20];
-  if (MOBDB_FLAGS_GET_CONTINUOUS(ss->flags) &&
-      ! MOBDB_FLAGS_GET_LINEAR(ss->flags))
+  if (MEOS_FLAGS_GET_CONTINUOUS(ss->flags) &&
+      ! MEOS_FLAGS_GET_LINEAR(ss->flags))
     sprintf(prefix, "Interp=Step;");
   else
     prefix[0] = '\0';
@@ -2831,7 +2831,7 @@ tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2)
 {
   TSequenceSet *result;
   const TInstant *instants[2] = {0};
-  interpType interp = MOBDB_FLAGS_GET_INTERP(ss1->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(ss1->flags);
   int count;
 
   /* Order the two sequence sets */
@@ -3107,7 +3107,7 @@ tsequenceset_delete_periodset(const TSequenceSet *ss, const SpanSet *ps)
 
   TSequence *seq;
   TSequenceSet *result = NULL;
-  interpType interp = MOBDB_FLAGS_GET_INTERP(ss->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(ss->flags);
 
   /* Singleton sequence set */
   if (ss->count == 1)

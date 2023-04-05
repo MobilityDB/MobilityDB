@@ -413,11 +413,16 @@ SELECT tnpoint_seq(ARRAY[tnpoint 'Npoint(1, 0.2)@2000-01-01',
 					<indexterm><primary><varname>tnpoint_seqset</varname></primary></indexterm>
 					<para>Constructor para puntos de red temporal de subtipo conjunto de secuencias</para>
 					<para><varname>tnpoint_seqset(tnpoint[]) → tnpoint_seqset</varname></para>
+					<para><varname>tnpoint_seqset_gaps(tnpoint_inst[],maxt=NULL,maxdist=NULL,interp='linear') →</varname></para>
+					<para><varname>  tnpoint_seqset</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT tnpoint_seqset(ARRAY[tnpoint '[Npoint(1,0.2)@2000-01-01, Npoint(1,0.4)@2000-01-02,
   Npoint(1,0.5)@2000-01-03]', '[Npoint(2,0.6)@2000-01-04, Npoint(2,0.6)@2000-01-05]']);
 /* {[NPoint(1,0.2)@2000-01-01, NPoint(1,0.4)@2000-01-02, NPoint(1,0.5)@2000-01-03],
    [NPoint(2,0.6)@2000-01-04, NPoint(2,0.6)@2000-01-05]} */
+SELECT tnpoint_seqset_gaps(ARRAY[tnpoint 'NPoint(1,0.1)@2000-01-01',
+  'NPoint(1,0.3)@2000-01-03', 'NPoint(1,0.5)@2000-01-05'], '1 day');
+-- {[NPoint(1,0.1)@2000-01-01], [NPoint(1,0.3)@2000-01-03], [NPoint(1,0.5)@2000-01-05]}
 </programlisting>
 				</listitem>
 			</itemizedlist>
@@ -463,7 +468,7 @@ SELECT tgeompoint '[POINT(23.057077727326 28.7666335767956)@2001-01-01,
 		<para>La mayoría de las funciones para tipos temporales descritas en los capítulos precendentes se pueden aplicar para tipos de puntos de red temporales. Por lo tanto, en las firmas de las funciones, la notación <varname>base</varname> también representa un <varname>npoint</varname> y las notaciones <varname>ttype</varname>, <varname>tpoint</varname> y <varname>tgeompoint</varname> también representan un <varname>tnpoint</varname>. Además, las funciones que tienen un argumento de tipo <varname>geometry</varname> aceptan además un argumento de tipo <varname>npoint</varname>. Para evitar la redundancia, a continuación solo presentamos algunos ejemplos de estas funciones y operadores para puntos de red temporales.</para>
 
 		<itemizedlist>
-			<listitem id="tnpoint_transform">
+			<listitem id="tnpoint_subtype">
 				<indexterm><primary><varname>tnpoint_inst</varname></primary></indexterm>
 				<indexterm><primary><varname>tnpoint_seq</varname></primary></indexterm>
 				<indexterm><primary><varname>tnpoint_seqset</varname></primary></indexterm>
@@ -478,6 +483,19 @@ SELECT tnpoint_contseq(tnpoint 'NPoint(1, 0.5)@2001-01-01');
 -- [NPoint(1,0.5)@2001-01-01]
 SELECT tnpoint_seqset(tnpoint 'NPoint(1, 0.5)@2001-01-01');
 -- {[NPoint(1,0.5)@2001-01-01]}
+</programlisting>
+			</listitem>
+
+			<listitem id="tnpoint_setInterp">
+				<indexterm><primary><varname>setInterp</varname></primary></indexterm>
+				<para>Transformar un punto de red temporal en otra interpolación</para>
+				<para><varname>setInterp(tnpoint, interp) → tnpoint</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT setInterp(tnpoint 'NPoint(1,0.2)@2001-01-01','linear');
+-- [NPoint(1,0.2)@2001-01-01]
+SELECT setInterp(tnpoint '{[NPoint(1,0.1)@2000-01-01], [NPoint(1,0.2)@2000-01-02]}',
+  'discrete');
+-- {NPoint(1,0.1)@2000-01-01, NPoint(1,0.2)@2000-01-02}
 </programlisting>
 			</listitem>
 

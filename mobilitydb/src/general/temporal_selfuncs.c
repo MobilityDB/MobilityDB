@@ -712,7 +712,7 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
       /* In the case of unknown constant */
       return tpoint_sel_default(oper);
 
-    assert(MOBDB_FLAGS_GET_X(box.flags) || MOBDB_FLAGS_GET_T(box.flags));
+    assert(MEOS_FLAGS_GET_X(box.flags) || MEOS_FLAGS_GET_T(box.flags));
 
     /* Enable the multiplication of the selectivity of the spatial and time
      * dimensions since either may be missing */
@@ -721,7 +721,7 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
     /*
      * Estimate selectivity for the spatial dimension
      */
-    if (MOBDB_FLAGS_GET_X(box.flags))
+    if (MEOS_FLAGS_GET_X(box.flags))
     {
       /* PostGIS does not provide selectivity for the traditional
        * comparisons <, <=, >, >= */
@@ -733,7 +733,7 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
     /*
      * Estimate selectivity for the time dimension
      */
-    if (MOBDB_FLAGS_GET_T(box.flags))
+    if (MEOS_FLAGS_GET_T(box.flags))
     {
       /* Transform the STBox into a Period */
       Span period;

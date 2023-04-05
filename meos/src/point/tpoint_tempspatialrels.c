@@ -359,7 +359,7 @@ tinterrel_tpointcontseq_geom1(const TSequence *seq, Datum geom, const STBox *box
   }
 
   /* Step interpolation */
-  if (! MOBDB_FLAGS_GET_LINEAR(seq->flags))
+  if (! MEOS_FLAGS_GET_LINEAR(seq->flags))
     return tinterrel_tpointseq_step_geom(seq, geom, tinter, func, count);
 
   /* Split the temporal point in an array of non self-intersecting
@@ -470,7 +470,7 @@ tinterrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
     return temporal_from_base(datum_no, T_TBOOL, temp, STEP);
 
   /* 3D only if both arguments are 3D */
-  Datum (*func)(Datum, Datum) = MOBDB_FLAGS_GET_Z(temp->flags) &&
+  Datum (*func)(Datum, Datum) = MEOS_FLAGS_GET_Z(temp->flags) &&
     FLAGS_GET_Z(gs->gflags) ? &geom_intersects3d : &geom_intersects2d;
 
   Temporal *result = NULL;
@@ -479,7 +479,7 @@ tinterrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
     result = (Temporal *) tinterrel_tpointinst_geom((TInstant *) temp,
       PointerGetDatum(gs), tinter, func);
   else if (temp->subtype == TSEQUENCE)
-    result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
+    result = MEOS_FLAGS_GET_DISCRETE(temp->flags) ?
       (Temporal *) tinterrel_tpointdiscseq_geom((TSequence *) temp,
         PointerGetDatum(gs), tinter, func) :
       (Temporal *) tinterrel_tpointcontseq_geom((TSequence *) temp,
@@ -730,7 +730,7 @@ tdwithin_tpointsegm_tpointsegm(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
     /* Compute the intersection of the two intervals */
     long double t7 = Max(0.0, t5);
     long double t8 = Min(1.0, t6);
-    if (fabsl(t7 - t8) < MOBDB_EPSILON)
+    if (fabsl(t7 - t8) < MEOS_EPSILON)
     {
       *t1 = *t2 = lower + (TimestampTz) (t7 * duration);
       return 1;
@@ -819,9 +819,9 @@ tdwithin_tpointseq_tpointseq2(const TSequence *seq1, const TSequence *seq2,
   }
 
   int k = 0;
-  bool linear1 = MOBDB_FLAGS_GET_LINEAR(seq1->flags);
-  bool linear2 = MOBDB_FLAGS_GET_LINEAR(seq2->flags);
-  bool hasz = MOBDB_FLAGS_GET_Z(seq1->flags);
+  bool linear1 = MEOS_FLAGS_GET_LINEAR(seq1->flags);
+  bool linear2 = MEOS_FLAGS_GET_LINEAR(seq2->flags);
+  bool hasz = MEOS_FLAGS_GET_Z(seq1->flags);
   Datum sv1 = tinstant_value(start1);
   Datum sv2 = tinstant_value(start2);
   TimestampTz lower = start1->t;
@@ -968,8 +968,8 @@ tdwithin_tpointseq_point1(const TSequence *seq, Datum point, Datum dist,
   }
 
   int k = 0;
-  bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
-  bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
+  bool linear = MEOS_FLAGS_GET_LINEAR(seq->flags);
+  bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
   TimestampTz lower = start->t;
   bool lower_inc = seq->period.lower_inc;
   const Datum datum_true = BoolGetDatum(true);
@@ -1174,7 +1174,7 @@ tdwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
   ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
   datum_func3 func =
     /* 3D only if both arguments are 3D */
-    MOBDB_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->gflags) ?
+    MEOS_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->gflags) ?
     &geom_dwithin3d : &geom_dwithin2d;
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -1191,7 +1191,7 @@ tdwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
     result = (Temporal *) tfunc_tinstant_base((TInstant *) temp,
       PointerGetDatum(gs), &lfinfo);
   else if (temp->subtype == TSEQUENCE)
-    result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
+    result = MEOS_FLAGS_GET_DISCRETE(temp->flags) ?
       (Temporal *) tfunc_tsequence_base((TSequence *) temp,
         PointerGetDatum(gs), &lfinfo) :
       (Temporal *) tdwithin_tpointseq_point((TSequence *) temp,
@@ -1224,7 +1224,7 @@ tdwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
   datum_func3 func = get_dwithin_fn(sync1->flags, sync2->flags);
   Temporal *result;
   assert(temptype_subtype(sync1->subtype));
-  if (sync1->subtype == TINSTANT || MOBDB_FLAGS_GET_DISCRETE(sync1->flags))
+  if (sync1->subtype == TINSTANT || MEOS_FLAGS_GET_DISCRETE(sync1->flags))
   {
     LiftedFunctionInfo lfinfo;
     memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));

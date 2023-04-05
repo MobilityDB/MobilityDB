@@ -103,7 +103,7 @@ distance_tnumber_number(const Temporal *temp, Datum value, meosType valuetype,
   lfinfo.argtype[0] = temptype_basetype(temp->temptype);
   lfinfo.argtype[1] = valuetype;
   lfinfo.restype = restype;
-  lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp->flags);
+  lfinfo.reslinear = MEOS_FLAGS_GET_LINEAR(temp->flags);
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc_base = &tlinearsegm_intersection_value;
@@ -177,8 +177,8 @@ distance_tnumber_tnumber1(const Temporal *temp1, const Temporal *temp2,
   lfinfo.argtype[0] = temptype_basetype(temp1->temptype);
   lfinfo.argtype[1] = temptype_basetype(temp2->temptype);
   lfinfo.restype = restype;
-  lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
-    MOBDB_FLAGS_GET_LINEAR(temp2->flags);
+  lfinfo.reslinear = MEOS_FLAGS_GET_LINEAR(temp1->flags) ||
+    MEOS_FLAGS_GET_LINEAR(temp2->flags);
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc = lfinfo.reslinear ? &tnumber_min_dist_at_timestamp : NULL;
@@ -262,7 +262,7 @@ nad_tbox_tbox(const TBox *box1, const TBox *box2)
   ensure_has_X_tbox(box1); ensure_has_X_tbox(box2);
 
   /* If the boxes do not intersect in the time dimension return infinity */
-  bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
+  bool hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
   if (hast && ! overlaps_span_span(&box1->period, &box2->period))
     return DBL_MAX;
 
@@ -290,7 +290,7 @@ nad_tnumber_tbox(const Temporal *temp, const TBox *box)
 {
   /* Test the validity of the arguments */
   ensure_has_X_tbox(box);
-  bool hast = MOBDB_FLAGS_GET_T(box->flags);
+  bool hast = MEOS_FLAGS_GET_T(box->flags);
   Span p, inter;
   if (hast)
   {

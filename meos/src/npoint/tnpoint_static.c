@@ -603,7 +603,7 @@ nsegment_geom(const Nsegment *ns)
 {
   GSERIALIZED *line = route_geom(ns->rid);
   GSERIALIZED *result;
-  if (fabs(ns->pos1 - ns->pos2) < MOBDB_EPSILON)
+  if (fabs(ns->pos1 - ns->pos2) < MEOS_EPSILON)
     result = gserialized_line_interpolate_point(line, ns->pos1, 0);
   else
     result = gserialized_line_substring(line, ns->pos1, ns->pos2);
@@ -708,7 +708,7 @@ nsegment_srid(const Nsegment *ns)
 bool
 npoint_eq(const Npoint *np1, const Npoint *np2)
 {
-  return np1->rid == np2->rid && fabs(np1->pos - np2->pos) < MOBDB_EPSILON;
+  return np1->rid == np2->rid && fabs(np1->pos - np2->pos) < MEOS_EPSILON;
 }
 
 /**
@@ -791,8 +791,8 @@ npoint_ge(const Npoint *np1, const Npoint *np2)
 bool
 nsegment_eq(const Nsegment *ns1, const Nsegment *ns2)
 {
-  return ns1->rid == ns2->rid && fabs(ns1->pos1 - ns2->pos1) < MOBDB_EPSILON &&
-    fabs(ns1->pos2 - ns2->pos2) < MOBDB_EPSILON;
+  return ns1->rid == ns2->rid && fabs(ns1->pos1 - ns2->pos1) < MEOS_EPSILON &&
+    fabs(ns1->pos2 - ns2->pos2) < MEOS_EPSILON;
 }
 
 /**

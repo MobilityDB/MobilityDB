@@ -57,7 +57,7 @@
 void
 ensure_has_X_tbox(const TBox *box)
 {
-  if (! MOBDB_FLAGS_GET_X(box->flags))
+  if (! MEOS_FLAGS_GET_X(box->flags))
     elog(ERROR, "The box must have value dimension");
 }
 
@@ -67,7 +67,7 @@ ensure_has_X_tbox(const TBox *box)
 void
 ensure_has_T_tbox(const TBox *box)
 {
-  if (! MOBDB_FLAGS_GET_T(box->flags))
+  if (! MEOS_FLAGS_GET_T(box->flags))
     elog(ERROR, "The box must have time dimension");
 }
 
@@ -77,8 +77,8 @@ ensure_has_T_tbox(const TBox *box)
 void
 ensure_same_dimensionality_tbox(const TBox *box1, const TBox *box2)
 {
-  if (MOBDB_FLAGS_GET_X(box1->flags) != MOBDB_FLAGS_GET_X(box2->flags) ||
-    MOBDB_FLAGS_GET_T(box1->flags) != MOBDB_FLAGS_GET_T(box2->flags))
+  if (MEOS_FLAGS_GET_X(box1->flags) != MEOS_FLAGS_GET_X(box2->flags) ||
+    MEOS_FLAGS_GET_T(box1->flags) != MEOS_FLAGS_GET_T(box2->flags))
     elog(ERROR, "The boxes must be of the same dimensionality");
 }
 
@@ -114,8 +114,8 @@ tbox_out(const TBox *box, int maxdd)
   static size_t size = MAXTBOXLEN + 1;
   char *result = palloc(size);
   char *period = NULL, *span = NULL;
-  bool hasx = MOBDB_FLAGS_GET_X(box->flags);
-  bool hast = MOBDB_FLAGS_GET_T(box->flags);
+  bool hasx = MEOS_FLAGS_GET_X(box->flags);
+  bool hast = MEOS_FLAGS_GET_T(box->flags);
   assert(hasx || hast);
 
   /* Generate the strings for the span and/or the period */
@@ -173,12 +173,12 @@ tbox_set(const Span *p, const Span *s, TBox *box)
   if (p)
   {
     memcpy(&box->period, p, sizeof(Span));
-    MOBDB_FLAGS_SET_T(box->flags, true);
+    MEOS_FLAGS_SET_T(box->flags, true);
   }
   if (s)
   {
     memcpy(&box->span, s, sizeof(Span));
-    MOBDB_FLAGS_SET_X(box->flags, true);
+    MEOS_FLAGS_SET_X(box->flags, true);
   }
   return;
 }
@@ -212,8 +212,8 @@ number_set_tbox(Datum value, meosType basetype, TBox *box)
   memset(box, 0, sizeof(TBox));
   Datum dvalue = Float8GetDatum(datum_double(value, basetype));
   span_set(dvalue, dvalue, true, true, T_FLOAT8, &box->span);
-  MOBDB_FLAGS_SET_X(box->flags, true);
-  MOBDB_FLAGS_SET_T(box->flags, false);
+  MEOS_FLAGS_SET_X(box->flags, true);
+  MEOS_FLAGS_SET_T(box->flags, false);
   return;
 }
 
@@ -229,8 +229,8 @@ int_set_tbox(int i, TBox *box)
   memset(box, 0, sizeof(TBox));
   Datum d = Float8GetDatum((double) i);
   span_set(d, d, true, true, T_FLOAT8, &box->span);
-  MOBDB_FLAGS_SET_X(box->flags, true);
-  MOBDB_FLAGS_SET_T(box->flags, false);
+  MEOS_FLAGS_SET_X(box->flags, true);
+  MEOS_FLAGS_SET_T(box->flags, false);
   return;
 }
 
@@ -259,8 +259,8 @@ float_set_tbox(double d, TBox *box)
   memset(box, 0, sizeof(TBox));
   Datum dd = Float8GetDatum(d);
   span_set(dd, dd, true, true, T_FLOAT8, &box->span);
-  MOBDB_FLAGS_SET_X(box->flags, true);
-  MOBDB_FLAGS_SET_T(box->flags, false);
+  MEOS_FLAGS_SET_X(box->flags, true);
+  MEOS_FLAGS_SET_T(box->flags, false);
   return;
 }
 
@@ -290,8 +290,8 @@ timestamp_set_tbox(TimestampTz t, TBox *box)
   memset(box, 0, sizeof(TBox));
   span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
     T_TIMESTAMPTZ, &box->period);
-  MOBDB_FLAGS_SET_X(box->flags, false);
-  MOBDB_FLAGS_SET_T(box->flags, true);
+  MEOS_FLAGS_SET_X(box->flags, false);
+  MEOS_FLAGS_SET_T(box->flags, true);
   return;
 }
 
@@ -323,8 +323,8 @@ numset_set_tbox(const Set *s, TBox *box)
   Span sp;
   set_set_span(s, &sp);
   numspan_set_floatspan(&sp, &box->span);
-  MOBDB_FLAGS_SET_X(box->flags, true);
-  MOBDB_FLAGS_SET_T(box->flags, false);
+  MEOS_FLAGS_SET_X(box->flags, true);
+  MEOS_FLAGS_SET_T(box->flags, false);
   return;
 }
 
@@ -354,8 +354,8 @@ tstzset_set_tbox(const Set *s, TBox *box)
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBox));
   set_set_span(s, &box->period);
-  MOBDB_FLAGS_SET_X(box->flags, false);
-  MOBDB_FLAGS_SET_T(box->flags, true);
+  MEOS_FLAGS_SET_X(box->flags, false);
+  MEOS_FLAGS_SET_T(box->flags, true);
   return;
 }
 
@@ -385,8 +385,8 @@ numspan_set_tbox(const Span *s, TBox *box)
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBox));
   numspan_set_floatspan(s, &box->span);
-  MOBDB_FLAGS_SET_X(box->flags, true);
-  MOBDB_FLAGS_SET_T(box->flags, false);
+  MEOS_FLAGS_SET_X(box->flags, true);
+  MEOS_FLAGS_SET_T(box->flags, false);
   return;
 }
 
@@ -416,8 +416,8 @@ period_set_tbox(const Span *p, TBox *box)
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBox));
   memcpy(&box->period, p, sizeof(Span));
-  MOBDB_FLAGS_SET_X(box->flags, false);
-  MOBDB_FLAGS_SET_T(box->flags, true);
+  MEOS_FLAGS_SET_X(box->flags, false);
+  MEOS_FLAGS_SET_T(box->flags, true);
   return;
 }
 
@@ -502,7 +502,7 @@ number_timestamp_to_tbox(Datum d, meosType basetype, TimestampTz t)
   number_set_tbox(d, basetype, result);
   Datum dt = TimestampTzGetDatum(t);
   span_set(dt, dt, true, true, T_TIMESTAMPTZ, &result->period);
-  MOBDB_FLAGS_SET_T(result->flags, true);
+  MEOS_FLAGS_SET_T(result->flags, true);
   return result;
 }
 
@@ -519,7 +519,7 @@ int_timestamp_to_tbox(int i, TimestampTz t)
   int_set_tbox(i, result);
   Datum dt = TimestampTzGetDatum(t);
   span_set(dt, dt, true, true, T_TIMESTAMPTZ, &result->period);
-  MOBDB_FLAGS_SET_T(result->flags, true);
+  MEOS_FLAGS_SET_T(result->flags, true);
   return result;
 }
 
@@ -535,7 +535,7 @@ float_timestamp_to_tbox(double d, TimestampTz t)
   float_set_tbox(d, result);
   Datum dt = TimestampTzGetDatum(t);
   span_set(dt, dt, true, true, T_TIMESTAMPTZ, &result->period);
-  MOBDB_FLAGS_SET_T(result->flags, true);
+  MEOS_FLAGS_SET_T(result->flags, true);
   return result;
 }
 #endif /* MEOS */
@@ -551,7 +551,7 @@ number_period_to_tbox(Datum d, meosType basetype, const Span *p)
   TBox *result = palloc(sizeof(TBox));
   number_set_tbox(d, basetype, result);
   memcpy(&result->period, p, sizeof(Span));
-  MOBDB_FLAGS_SET_T(result->flags, true);
+  MEOS_FLAGS_SET_T(result->flags, true);
   return result;
 }
 
@@ -567,7 +567,7 @@ int_period_to_tbox(int i, const Span *p)
   TBox *result = palloc(sizeof(TBox));
   int_set_tbox(i, result);
   memcpy(&result->period, p, sizeof(Span));
-  MOBDB_FLAGS_SET_T(result->flags, true);
+  MEOS_FLAGS_SET_T(result->flags, true);
   return result;
 }
 
@@ -582,7 +582,7 @@ float_period_to_tbox(double d, const Span *p)
   TBox *result = palloc(sizeof(TBox));
   float_set_tbox(d, result);
   memcpy(&result->period, p, sizeof(Span));
-  MOBDB_FLAGS_SET_T(result->flags, true);
+  MEOS_FLAGS_SET_T(result->flags, true);
   return result;
 }
 #endif /* MEOS */
@@ -600,8 +600,8 @@ span_timestamp_to_tbox(const Span *span, TimestampTz t)
   numspan_set_floatspan(span, &result->span);
   Datum dt = TimestampTzGetDatum(t);
   span_set(dt, dt, true, true, T_TIMESTAMPTZ, &result->period);
-  MOBDB_FLAGS_SET_X(result->flags, true);
-  MOBDB_FLAGS_SET_T(result->flags, true);
+  MEOS_FLAGS_SET_X(result->flags, true);
+  MEOS_FLAGS_SET_T(result->flags, true);
   return result;
 }
 
@@ -618,8 +618,8 @@ span_period_to_tbox(const Span *span, const Span *p)
   TBox *result = palloc(sizeof(TBox));
   numspan_set_floatspan(span, &result->span);
   memcpy(&result->period, p, sizeof(Span));
-  MOBDB_FLAGS_SET_X(result->flags, true);
-  MOBDB_FLAGS_SET_T(result->flags, true);
+  MEOS_FLAGS_SET_X(result->flags, true);
+  MEOS_FLAGS_SET_T(result->flags, true);
   return result;
 }
 
@@ -633,7 +633,7 @@ span_period_to_tbox(const Span *span, const Span *p)
 Span *
 tbox_to_floatspan(const TBox *box)
 {
-  if (! MOBDB_FLAGS_GET_X(box->flags))
+  if (! MEOS_FLAGS_GET_X(box->flags))
     return NULL;
   return span_copy(&box->span);
 }
@@ -646,7 +646,7 @@ tbox_to_floatspan(const TBox *box)
 Span *
 tbox_to_period(const TBox *box)
 {
-  if (! MOBDB_FLAGS_GET_T(box->flags))
+  if (! MEOS_FLAGS_GET_T(box->flags))
     return NULL;
   return span_copy(&box->period);
 }
@@ -663,7 +663,7 @@ tbox_to_period(const TBox *box)
 bool
 tbox_hasx(const TBox *box)
 {
-  bool result = MOBDB_FLAGS_GET_X(box->flags);
+  bool result = MEOS_FLAGS_GET_X(box->flags);
   return result;
 }
 
@@ -675,7 +675,7 @@ tbox_hasx(const TBox *box)
 bool
 tbox_hast(const TBox *box)
 {
-  bool result = MOBDB_FLAGS_GET_T(box->flags);
+  bool result = MEOS_FLAGS_GET_T(box->flags);
   return result;
 }
 
@@ -692,7 +692,7 @@ tbox_hast(const TBox *box)
 bool
 tbox_xmin(const TBox *box, double *result)
 {
-  if (! MOBDB_FLAGS_GET_X(box->flags))
+  if (! MEOS_FLAGS_GET_X(box->flags))
     return false;
   *result = DatumGetFloat8(box->span.lower);
   return true;
@@ -711,7 +711,7 @@ tbox_xmin(const TBox *box, double *result)
 bool
 tbox_xmax(const TBox *box, double *result)
 {
-  if (! MOBDB_FLAGS_GET_X(box->flags))
+  if (! MEOS_FLAGS_GET_X(box->flags))
     return false;
   *result = DatumGetFloat8(box->span.upper);
   return true;
@@ -730,7 +730,7 @@ tbox_xmax(const TBox *box, double *result)
 bool
 tbox_tmin(const TBox *box, TimestampTz *result)
 {
-  if (! MOBDB_FLAGS_GET_T(box->flags))
+  if (! MEOS_FLAGS_GET_T(box->flags))
     return false;
   *result = DatumGetTimestampTz(box->period.lower);
   return true;
@@ -749,7 +749,7 @@ tbox_tmin(const TBox *box, TimestampTz *result)
 bool
 tbox_tmax(const TBox *box, TimestampTz *result)
 {
-  if (! MOBDB_FLAGS_GET_T(box->flags))
+  if (! MEOS_FLAGS_GET_T(box->flags))
     return false;
   *result = DatumGetTimestampTz(box->period.upper);
   return true;
@@ -766,9 +766,9 @@ tbox_tmax(const TBox *box, TimestampTz *result)
 void
 tbox_expand(const TBox *box1, TBox *box2)
 {
-  if (MOBDB_FLAGS_GET_X(box2->flags))
+  if (MEOS_FLAGS_GET_X(box2->flags))
     span_expand(&box1->span, &box2->span);
-  if (MOBDB_FLAGS_GET_T(box2->flags))
+  if (MEOS_FLAGS_GET_T(box2->flags))
     span_expand(&box1->period, &box2->period);
   return;
 }
@@ -820,8 +820,8 @@ tbox_expand_time(const TBox *box, const Interval *interval)
 static void
 tbox_tbox_flags(const TBox *box1, const TBox *box2, bool *hasx, bool *hast)
 {
-  *hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
-  *hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
+  *hasx = MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags);
+  *hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
   return;
 }
 
@@ -835,8 +835,8 @@ static void
 topo_tbox_tbox_init(const TBox *box1, const TBox *box2, bool *hasx, bool *hast)
 {
   ensure_common_dimension(box1->flags, box2->flags);
-  *hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
-  *hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
+  *hasx = MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags);
+  *hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
   return;
 }
 
@@ -1057,8 +1057,8 @@ union_tbox_tbox(const TBox *box1, const TBox *box2)
   if (! overlaps_tbox_tbox(box1, box2))
     elog(ERROR, "Result of box union would not be contiguous");
 
-  bool hasx = MOBDB_FLAGS_GET_X(box1->flags);
-  bool hast = MOBDB_FLAGS_GET_T(box1->flags);
+  bool hasx = MEOS_FLAGS_GET_X(box1->flags);
+  bool hast = MEOS_FLAGS_GET_T(box1->flags);
   Span period, span;
   if (hast)
     bbox_union_span_span(&box1->period, &box2->period, &period);
@@ -1078,8 +1078,8 @@ union_tbox_tbox(const TBox *box1, const TBox *box2)
 bool
 inter_tbox_tbox(const TBox *box1, const TBox *box2, TBox *result)
 {
-  bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
-  bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
+  bool hasx = MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags);
+  bool hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
   /* If there is no common dimension */
   if ((! hasx && ! hast) ||
     /* If they do no intersect in one common dimension */
@@ -1127,8 +1127,8 @@ intersection_tbox_tbox(const TBox *box1, const TBox *box2)
 bool
 tbox_eq(const TBox *box1, const TBox *box2)
 {
-  if (MOBDB_FLAGS_GET_X(box1->flags) != MOBDB_FLAGS_GET_X(box2->flags) ||
-    MOBDB_FLAGS_GET_T(box1->flags) != MOBDB_FLAGS_GET_T(box2->flags))
+  if (MEOS_FLAGS_GET_X(box1->flags) != MEOS_FLAGS_GET_X(box2->flags) ||
+    MEOS_FLAGS_GET_T(box1->flags) != MEOS_FLAGS_GET_T(box2->flags))
       return false;
   if (! span_eq(&box1->span, &box2->span) ||
       ! span_eq(&box1->period, &box2->period))

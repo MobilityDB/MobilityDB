@@ -198,8 +198,8 @@ tinstant_set_bbox(const TInstant *inst, void *box)
       true, true, T_TIMESTAMPTZ, &tbox->period);
     /* TBox always has a float span */
     span_set(value, value, true, true, T_FLOAT8, &tbox->span);
-    MOBDB_FLAGS_SET_X(tbox->flags, true);
-    MOBDB_FLAGS_SET_T(tbox->flags, true);
+    MEOS_FLAGS_SET_X(tbox->flags, true);
+    MEOS_FLAGS_SET_T(tbox->flags, true);
   }
   else if (tgeo_type(inst->temptype))
     tpointinst_set_stbox(inst, (STBox *) box);
@@ -277,8 +277,8 @@ tnumberinstarr_set_tbox(const TInstant **instants, int count, bool lower_inc,
     TimestampTzGetDatum(instants[count - 1]->t), lower_inc, upper_inc,
     T_TIMESTAMPTZ, &box->period);
   /* Set the flags */
-  MOBDB_FLAGS_SET_X(box->flags, true);
-  MOBDB_FLAGS_SET_T(box->flags, true);
+  MEOS_FLAGS_SET_X(box->flags, true);
+  MEOS_FLAGS_SET_T(box->flags, true);
   return;
 }
 
@@ -457,7 +457,7 @@ tsequence_compute_bbox(TSequence *seq)
   const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
     instants[i] = TSEQUENCE_INST_N(seq, i);
-  interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   tinstarr_compute_bbox(instants, seq->count, seq->period.lower_inc,
     seq->period.upper_inc, interp, TSEQUENCESET_BBOX_PTR(seq));
   pfree(instants);

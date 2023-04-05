@@ -469,13 +469,12 @@ SELECT tgeogpoint_seq(ARRAY[tgeogpoint 'Point(1 1)@2001-01-01 08:00:00',
 			</listitem>
 
 			<listitem id="ttype_seqset">
-				<indexterm><primary><varname>ttype_seqset</varname></primary></indexterm>
-				<indexterm><primary><varname>ttype_seqset_gaps</varname></primary></indexterm>
 				<para>Constructores para tipos temporales de subtipo conjunto de secuencias</para>
-				<para>Un primer conjunto de constructores tiene un solo argumento, que es una matriz de valores de los valores de <emphasis>secuencia</emphasis> correspondientes. La interpolación del valor temporal resultante depende de la interpolación de las secuencias que lo componen. Se genera un error si las secuencias que componen la matriz tienen una interpolación diferente.</para>
 				<indexterm><primary><varname>ttype_seqset</varname></primary></indexterm>
 				<indexterm><primary><varname>ttype_seqset_gaps</varname></primary></indexterm>
 				<para><varname>ttype_seqset(ttype_contseq[]) → ttype_seqset</varname></para>
+				<para><varname>ttype_seqset_gaps(ttype_inst[],maxt=NULL,maxdist=NULL,interp='linear') → ttype_seqset</varname></para>
+				<para>Un primer conjunto de constructores tiene un solo argumento, que es una matriz de valores de los valores de <emphasis>secuencia</emphasis> correspondientes. La interpolación del valor temporal resultante depende de la interpolación de las secuencias que lo componen. Se genera un error si las secuencias que componen la matriz tienen una interpolación diferente.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbool_seqset(ARRAY[tbool '[false@2001-01-01 08:00:00, false@2001-01-01 08:05:00)',
   '[true@2001-01-01 08:05:00]','(false@2001-01-01 08:05:00, false@2001-01-01 08:10:00)']);
@@ -500,7 +499,6 @@ SELECT tfloat_seqset(ARRAY[tfloat 'Interp=Step;[1.0@2001-01-01 08:00:00,
 -- ERROR:  Input sequences must have the same interpolation
 </programlisting>
 				<para>Finalmente, otro conjunto de constructores para valores de conjunto de secuencias tiene como primer argumento una matriz de valores de <emphasis>instante</emphasis> correspondientes, y dos argumentos que establecen un intervalo de tiempo máximo y una distancia máxima tal que se introduce un espacio entre secuencias del resultado siempre que dos instantes de entrada consecutivos tengan un intervalo de tiempo o una distancia mayor que estos valores. Para puntos temporales, la distancia se especifica en unidades del sistema de coordenadas. Estos dos argumentos de brechas son opcionales, pero al menos uno de ellos debe especificarse. Además, cuando el tipo base es continuo, un último argumento adicional establece si la interpolación es escalonada o lineal. Si no se especifica este argumento, se asume que es lineal por defecto.</para>
-				<para><varname>ttype_seqset_gaps(ttype_inst[],maxt=NULL,maxdist=NULL,interp='linear') → ttype_seqset</varname></para>
 				<para>Los parámetros de la función dependen del tipo temporal. Por ejemplo, el parámetro de interpolación no está permitido para tipos temporales con subtipos discretos como <varname>tint</varname>. De manera similar, el parámetro <varname>maxdist</varname> no está permitido para tipos escalares como <varname>ttext</varname> que no tienen una función de distancia estándar.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tint_seqset_gaps(ARRAY[tint '1@2000-01-01', '3@2000-01-02', '4@2000-01-03',
