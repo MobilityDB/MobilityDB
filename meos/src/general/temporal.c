@@ -872,11 +872,14 @@ temporal_append_tsequence(Temporal *temp, const TSequence *seq, bool expand)
    * subtype function since the inclusive/exclusive bounds must be
    * taken into account for temporal sequences and sequence sets */
   ensure_spatial_validity(temp, (Temporal *) seq);
+  interpType interp1 = MOBDB_FLAGS_GET_INTERP(temp->flags);
+  interpType interp2 = MOBDB_FLAGS_GET_INTERP(seq->flags);
+  if (interp1 != interp2)
+    elog(ERROR, "The two arguments must have the same interpolation");
 
   Temporal *result;
   if (temp->subtype == TINSTANT)
   {
-    interpType interp2 = MOBDB_FLAGS_GET_INTERP(seq->flags);
     TSequence *seq1 = tinstant_to_tsequence((TInstant *) temp, interp2);
     result = (Temporal *) tsequence_append_tsequence((TSequence *) seq1,
       (TSequence *) seq, expand);
@@ -905,13 +908,13 @@ temporal_convert_same_subtype(const Temporal *temp1, const Temporal *temp2,
 {
   assert(temptype_subtype(temp1->subtype));
   assert(temp1->temptype == temp2->temptype);
-  interpType interp = MOBDB_FLAGS_GET_INTERP(temp1->flags);
-  assert(interp == MOBDB_FLAGS_GET_INTERP(temp2->flags));
 
   /* If both are of the same subtype do nothing */
   if (temp1->subtype == temp2->subtype)
   {
-    if (interp == DISCRETE)
+    bool discrete1 = MOBDB_FLAGS_GET_DISCRETE(temp1->flags);
+    bool discrete2 = MOBDB_FLAGS_GET_DISCRETE(temp2->flags);
+    if (discrete1 == discrete2)
     {
       *out1 = (Temporal *) temp1;
       *out2 = (Temporal *) temp2;
@@ -942,6 +945,7 @@ temporal_convert_same_subtype(const Temporal *temp1, const Temporal *temp2,
   Temporal *new;
   if (new1->subtype == TINSTANT)
   {
+    interpType interp = MOBDB_FLAGS_GET_INTERP(new2->flags);
     if (new2->subtype == TSEQUENCE)
       new = (Temporal *) tinstant_to_tsequence((TInstant *) new1, interp);
     else /* new2->subtype == TSEQUENCESET */

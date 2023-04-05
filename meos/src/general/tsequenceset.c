@@ -1327,12 +1327,41 @@ tinstant_to_tsequenceset(const TInstant *inst, interpType interp)
 
 /**
  * @ingroup libmeos_internal_temporal_transf
+ * @brief Return a temporal discrete sequence transformed into a temporal
+ * sequence set.
+ * @sqlfunc tbool_seqset(), tint_seqset(), tfloat_seqset(), ttext_seqset(), etc.
+ */
+TSequenceSet *
+tdiscseq_to_tsequenceset(const TSequence *seq, interpType interp)
+{
+  assert(interp == STEP || interp == LINEAR);
+  TSequence **sequences = palloc(sizeof(TSequence *) * seq->count);
+  for (int i = 0; i < seq->count; i++)
+  {
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+    sequences[i] = tinstant_to_tsequence(inst, interp);
+  }
+  TSequenceSet *result = tsequenceset_make((const TSequence **) sequences,
+    seq->count, NORMALIZE_NO);
+  pfree(sequences);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_internal_temporal_transf
  * @brief Return a temporal sequence transformed into a temporal sequence set.
  * @sqlfunc tbool_seqset(), tint_seqset(), tfloat_seqset(), ttext_seqset(), etc.
  */
 TSequenceSet *
 tsequence_to_tsequenceset(const TSequence *seq)
 {
+  /* For discrete sequences, each composing instant will be transformed in
+   * an instantaneous sequence in the resulting sequence set */
+  if (MOBDB_FLAGS_GET_DISCRETE(seq->flags))
+  {
+    interpType interp = MOBDB_FLAGS_GET_CONTINUOUS(seq->flags) ? LINEAR : STEP;
+    return tdiscseq_to_tsequenceset(seq, interp);
+  }
   return tsequenceset_make(&seq, 1, NORMALIZE_NO);
 }
 

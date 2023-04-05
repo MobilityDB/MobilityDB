@@ -1932,7 +1932,7 @@ tdiscseq_set_interp(const TSequence *seq, interpType interp)
 TSequence *
 tcontseq_to_discrete(const TSequence *seq)
 {
-  assert(MOBDB_FLAGS_GET_CONTINUOUS(seq->flags));
+  assert(! MOBDB_FLAGS_GET_DISCRETE(seq->flags));
   if (seq->count != 1)
     elog(ERROR, "Cannot transform input value to a temporal discrete sequence");
   return tinstant_to_tsequence(TSEQUENCE_INST_N(seq, 0), DISCRETE);
