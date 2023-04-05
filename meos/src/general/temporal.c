@@ -88,18 +88,6 @@ temptype_subtype_all(int16 subtype)
 }
 
 /**
- * @brief Ensure that the subtype of temporal type is a sequence (set)
- */
-void
-ensure_continuous(const Temporal *temp)
-{
-  assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || MOBDB_FLAGS_GET_DISCRETE(temp->flags))
-    elog(ERROR, "Input must be a temporal continuous sequence (set)");
-  return;
-}
-
-/**
  * @brief Ensure that the elements of an array are of instant subtype
  */
 void
@@ -138,6 +126,51 @@ ensure_continuous_interpolation(int16 flags)
 #endif /* not used */
 
 /**
+ * @brief Ensure that the interpolation is valid
+ * @note Used for the constructor functions
+ */
+void
+ensure_valid_interpolation(meosType temptype, interpType interp)
+{
+  if (interp == LINEAR && ! temptype_continuous(temptype))
+    ereport(ERROR, (errcode(ERRCODE_ARRAY_ELEMENT_ERROR),
+      errmsg("The temporal type cannot have linear interpolation")));
+  return;
+}
+
+/**
+ * @brief Ensure that the subtype of temporal type is a sequence (set)
+ */
+void
+ensure_continuous(const Temporal *temp)
+{
+  assert(temptype_subtype(temp->subtype));
+  if (temp->subtype == TINSTANT || MOBDB_FLAGS_GET_DISCRETE(temp->flags))
+    elog(ERROR, "Input must be a temporal continuous sequence (set)");
+  return;
+}
+
+/**
+ * @brief Ensure that two temporal values have the same interpolation
+ * @param[in] temp1,temp2 Input values
+ * @param[in] strict True when the interpolations must be equal, false when
+ * one of the input values may be of instant subtype and thus the interpolation
+ * would be INTERP_NONE which is compatible with any other interpolation
+ */
+void
+ensure_same_interpolation(const Temporal *temp1, const Temporal *temp2,
+  bool strict)
+{
+  if (! strict || (temp1->subtype == TINSTANT || temp2->subtype == TINSTANT))
+    return;
+  interpType interp1 = MOBDB_FLAGS_GET_INTERP(temp1->flags);
+  interpType interp2 = MOBDB_FLAGS_GET_INTERP(temp2->flags);
+  if (interp1 != interp2)
+    elog(ERROR, "The temporal values must have the same interpolation");
+  return;
+}
+
+/**
  * @brief Ensure that a temporal value does not have linear interpolation
  */
 void
@@ -169,20 +202,6 @@ ensure_same_temptype(const Temporal *temp1, const Temporal *temp2)
 {
   if (temp1->temptype != temp2->temptype)
     elog(ERROR, "The temporal values must be of the same temporal type");
-  return;
-}
-
-/**
- * @brief Ensure that two temporal values have the same interpolation
- */
-void
-ensure_same_continuous_interpolation(const Temporal *temp1, const Temporal *temp2)
-{
-  interpType interp1 = MOBDB_FLAGS_GET_INTERP(temp1->flags);
-  interpType interp2 = MOBDB_FLAGS_GET_INTERP(temp2->flags);
-  if ((interp1 == STEP && interp2 == LINEAR) ||
-      (interp2 == STEP && interp1 == LINEAR))
-    elog(ERROR, "The temporal values must have the same continuous interpolation");
   return;
 }
 
@@ -327,7 +346,7 @@ ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
 }
 
 /**
- * @brief Ensure that all temporal instants of the array have increasing
+ * @brief Ensure that all temporal sequences of the array have increasing
  * timestamp, and if they are temporal points, have the same srid and the
  * same dimensionality
  */
@@ -336,8 +355,8 @@ ensure_valid_tseqarr(const TSequence **sequences, int count)
 {
   for (int i = 1; i < count; i++)
   {
-    ensure_same_continuous_interpolation((Temporal *) sequences[i - 1],
-      (Temporal *) sequences[i]);
+    ensure_same_interpolation((Temporal *) sequences[i - 1],
+      (Temporal *) sequences[i], true);
     TimestampTz upper1 = DatumGetTimestampTz(sequences[i - 1]->period.upper);
     TimestampTz lower2 = DatumGetTimestampTz(sequences[i]->period.lower);
     if ( upper1 > lower2 ||
@@ -868,15 +887,13 @@ temporal_append_tsequence(Temporal *temp, const TSequence *seq, bool expand)
   if (seq->subtype != TSEQUENCE)
     elog(ERROR, "The second argument must be of sequence subtype");
   ensure_same_temptype(temp, (Temporal *) seq);
+  ensure_same_interpolation(temp, (Temporal *) seq, true);
   /* The test to ensure the increasing timestamps must be done in the
    * subtype function since the inclusive/exclusive bounds must be
    * taken into account for temporal sequences and sequence sets */
   ensure_spatial_validity(temp, (Temporal *) seq);
-  interpType interp1 = MOBDB_FLAGS_GET_INTERP(temp->flags);
-  interpType interp2 = MOBDB_FLAGS_GET_INTERP(seq->flags);
-  if (interp1 != interp2)
-    elog(ERROR, "The two arguments must have the same interpolation");
 
+  interpType interp2 = MOBDB_FLAGS_GET_INTERP(seq->flags);
   Temporal *result;
   if (temp->subtype == TINSTANT)
   {
@@ -988,7 +1005,7 @@ temporal_merge(const Temporal *temp1, const Temporal *temp2)
 
   /* Both arguments are temporal */
   ensure_same_temptype(temp1, temp2);
-  ensure_same_continuous_interpolation(temp1, temp2);
+  ensure_same_interpolation(temp1, temp2, false);
 
   /* Convert to the same subtype */
   Temporal *new1, *new2;
@@ -1068,7 +1085,7 @@ temporal_merge_array(Temporal **temparr, int count)
   bool convert = false;
   for (int i = 1; i < count; i++)
   {
-    ensure_same_continuous_interpolation(temparr[0], temparr[i]);
+    ensure_same_interpolation(temparr[0], temparr[i], false);
     uint8 subtype1 = temparr[i]->subtype;
     interpType interp1 = MOBDB_FLAGS_GET_INTERP(temparr[i]->flags);
     if (subtype != subtype1 || interp != interp1)
@@ -1284,18 +1301,17 @@ temporal_to_tinstant(const Temporal *temp)
  * @sqlfunc tbool_seq, tint_seq, tfloat_seq, ttext_seq, etc.
  */
 Temporal *
-temporal_to_tsequence(const Temporal *temp, interpType interp)
+temporal_to_tsequence(const Temporal *temp)
 {
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
-    result = (Temporal *) tinstant_to_tsequence((TInstant *) temp, interp);
+    result = (Temporal *) tinstant_to_tsequence((TInstant *) temp,
+      MOBDB_FLAGS_GET_CONTINUOUS(temp->flags) ? LINEAR : STEP);
   else if (temp->subtype == TSEQUENCE)
-    return tsequence_set_interp((TSequence *) temp, interp);
+    return (Temporal *) tsequence_copy((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
-    result = (interp == DISCRETE) ?
-      (Temporal *) tsequenceset_to_discrete((TSequenceSet *) temp) :
-      (Temporal *) tsequenceset_to_tsequence((TSequenceSet *) temp);
+    result = (Temporal *) tsequenceset_to_tsequence((TSequenceSet *) temp);
   return result;
 }
 
@@ -1327,10 +1343,11 @@ temporal_to_tsequenceset(const Temporal *temp)
 Temporal *
 temporal_set_interp(const Temporal *temp, interpType interp)
 {
+  ensure_valid_interpolation(temp->temptype, interp);
   Temporal *result;
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tinstant_to_tsequence((TInstant *) temp, interp);
-  if (temp->subtype == TSEQUENCE)
+  else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tsequence_set_interp((TSequence *) temp, interp);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tsequenceset_set_interp((TSequenceSet *) temp,
@@ -1737,7 +1754,7 @@ temporal_tsample(const Temporal *temp, const Interval *duration,
  *****************************************************************************/
 
 #define MOBDB_SUBTYPE_STR_MAXLEN 12
-#define MOBDB_INTERPOLATION_STR_MAXLEN 9
+#define MOBDB_INTERP_STR_MAXLEN 9
 
 #if MEOS
 /**
@@ -1776,13 +1793,13 @@ temporal_subtype(const Temporal *temp)
  * @ingroup libmeos_temporal_accessor
  * @brief Return the string representation of the interpolation of a temporal
  * value.
- * @sqlfunc interpolation
- * @pymeosfunc interpolation
+ * @sqlfunc interp
+ * @pymeosfunc interp
  */
 char *
-temporal_interpolation(const Temporal *temp)
+temporal_interp(const Temporal *temp)
 {
-  char *result = palloc(sizeof(char) * MOBDB_INTERPOLATION_STR_MAXLEN);
+  char *result = palloc(sizeof(char) * MOBDB_INTERP_STR_MAXLEN);
   assert(temptype_subtype(temp->subtype));
   interpType interp = MOBDB_FLAGS_GET_INTERP(temp->flags);
   if (temp->subtype == TINSTANT)
@@ -3578,7 +3595,7 @@ Temporal *
 temporal_insert(const Temporal *temp1, const Temporal *temp2, bool connect)
 {
   ensure_same_temptype(temp1, temp2);
-  ensure_same_continuous_interpolation(temp1, temp2);
+  ensure_same_interpolation(temp1, temp2, false);
 
   /* Convert to the same subtype */
   Temporal *new1, *new2;

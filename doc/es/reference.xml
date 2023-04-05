@@ -664,7 +664,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="interpolation"><varname>interpolation</varname></link>: Obtener la interpolación</para>
+					<para><link linkend="interp"><varname>interp</varname></link>: Obtener la interpolación</para>
 				</listitem>
 
 				<listitem>
@@ -762,7 +762,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="toLinear"><varname>toLinear</varname></link>: Transformar un valor temporal con tipo de base continuo de interpolación escalonada a lineal</para>
+					<para><link linkend="setInterp"><varname>setInterp</varname></link>: Transformar un valor temporal a otra interpolación</para>
 				</listitem>
 
 				<listitem>

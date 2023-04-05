@@ -152,19 +152,6 @@ ensure_non_empty_array(ArrayType *array)
   return;
 }
 
-/**
- * @brief Ensure that the interpolation is valid
- * @note Used for the constructor functions
- */
-void
-ensure_valid_interpolation(meosType temptype, interpType interp)
-{
-  if (interp == LINEAR && ! temptype_continuous(temptype))
-    ereport(ERROR, (errcode(ERRCODE_ARRAY_ELEMENT_ERROR),
-      errmsg("The temporal type cannot have linear interpolation")));
-  return;
-}
-
 /*****************************************************************************
  * Typmod functions
  *****************************************************************************/
@@ -633,7 +620,8 @@ Tinstant_constructor(PG_FUNCTION_ARGS)
 interpType
 interp_from_string(const char *interp_str)
 {
-
+  if (pg_strncasecmp(interp_str, "none", 8) == 0)
+    return INTERP_NONE;
   if (pg_strncasecmp(interp_str, "discrete", 8) == 0)
     return DISCRETE;
   if (pg_strncasecmp(interp_str, "linear", 5) == 0)
@@ -662,7 +650,6 @@ Tsequence_constructor(PG_FUNCTION_ARGS)
     text *interp_txt = PG_GETARG_TEXT_P(1);
     char *interp_str = text2cstring(interp_txt);
     interp = interp_from_string(interp_str);
-    ensure_valid_interpolation(temptype, interp);
     pfree(interp_str);
   }
   bool lower_inc = true, upper_inc = true;
@@ -729,7 +716,6 @@ Tsequenceset_constructor_gaps(PG_FUNCTION_ARGS)
     text *interp_txt = PG_GETARG_TEXT_P(3);
     char *interp_str = text2cstring(interp_txt);
     interp = interp_from_string(interp_str);
-    ensure_valid_interpolation(temptype, interp);
     pfree(interp_str);
   }
   /* Store fcinfo into a global variable */
@@ -783,7 +769,6 @@ Tcontseq_from_base_time(PG_FUNCTION_ARGS)
     text *interp_txt = PG_GETARG_TEXT_P(2);
     char *interp_str = text2cstring(interp_txt);
     interp = interp_from_string(interp_str);
-    ensure_valid_interpolation(temptype, interp);
     pfree(interp_str);
   }
   TSequence *result = tsequence_from_base_time(value, temptype, p, interp);
@@ -809,7 +794,6 @@ Tsequenceset_from_base_time(PG_FUNCTION_ARGS)
     text *interp_txt = PG_GETARG_TEXT_P(2);
     char *interp_str = text2cstring(interp_txt);
     interp = interp_from_string(interp_str);
-    ensure_valid_interpolation(temptype, interp);
     pfree(interp_str);
   }
   TSequenceSet *result = tsequenceset_from_base_time(value, temptype, ps,
@@ -926,17 +910,17 @@ Temporal_subtype(PG_FUNCTION_ARGS)
   PG_RETURN_TEXT_P(result);
 }
 
-PG_FUNCTION_INFO_V1(Temporal_interpolation);
+PG_FUNCTION_INFO_V1(Temporal_interp);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the string representation of the interpolation of a temporal value
- * @sqlfunc interpolation()
+ * @sqlfunc interp()
  */
 PGDLLEXPORT Datum
-Temporal_interpolation(PG_FUNCTION_ARGS)
+Temporal_interp(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  char *str = temporal_interpolation(temp);
+  char *str = temporal_interp(temp);
   text *result = cstring_to_text(str);
   pfree(str);
   PG_FREE_IF_COPY(temp, 0);
@@ -1743,16 +1727,7 @@ PGDLLEXPORT Datum
 Temporal_to_tsequence(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  interpType interp = MOBDB_FLAGS_GET_CONTINUOUS(temp->flags) ? LINEAR : STEP;
-  if (PG_NARGS() > 1 && !PG_ARGISNULL(1))
-  {
-    text *interp_txt = PG_GETARG_TEXT_P(1);
-    char *interp_str = text2cstring(interp_txt);
-    interp = interp_from_string(interp_str);
-    ensure_valid_interpolation(temp->temptype, interp);
-    pfree(interp_str);
-  }
-  Temporal *result = temporal_to_tsequence(temp, interp);
+  Temporal *result = temporal_to_tsequence(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -1786,7 +1761,6 @@ Temporal_set_interp(PG_FUNCTION_ARGS)
   text *interp_txt = PG_GETARG_TEXT_P(1);
   char *interp_str = text2cstring(interp_txt);
   interpType interp = interp_from_string(interp_str);
-  ensure_valid_interpolation(temp->temptype, interp);
   pfree(interp_str);
   Temporal *result = temporal_set_interp(temp, interp);
   PG_FREE_IF_COPY(temp, 0);

@@ -682,7 +682,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="interpolation"><varname>interpolation</varname></link>: Get the interpolation</para>
+					<para><link linkend="interp"><varname>interp</varname></link>: Get the interpolation</para>
 				</listitem>
 
 				<listitem>
@@ -780,7 +780,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="toLinear"><varname>toLinear</varname></link>: Transform a temporal value with continuous base type from step to linear interpolation</para>
+					<para><link linkend="setInterp"><varname>setInterp</varname></link>: Transform a temporal value to another interpolation</para>
 				</listitem>
 
 				<listitem>

@@ -425,21 +425,21 @@ CREATE FUNCTION tempSubtype(ttext)
   AS 'MODULE_PATHNAME', 'Temporal_subtype'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION interpolation(tbool)
+CREATE FUNCTION interp(tbool)
   RETURNS text
-  AS 'MODULE_PATHNAME', 'Temporal_interpolation'
+  AS 'MODULE_PATHNAME', 'Temporal_interp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION interpolation(tint)
+CREATE FUNCTION interp(tint)
   RETURNS text
-  AS 'MODULE_PATHNAME', 'Temporal_interpolation'
+  AS 'MODULE_PATHNAME', 'Temporal_interp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION interpolation(tfloat)
+CREATE FUNCTION interp(tfloat)
   RETURNS text
-  AS 'MODULE_PATHNAME', 'Temporal_interpolation'
+  AS 'MODULE_PATHNAME', 'Temporal_interp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION interpolation(ttext)
+CREATE FUNCTION interp(ttext)
   RETURNS text
-  AS 'MODULE_PATHNAME', 'Temporal_interpolation'
+  AS 'MODULE_PATHNAME', 'Temporal_interp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION memSize(tbool)
@@ -1409,23 +1409,19 @@ CREATE FUNCTION ttext_inst(ttext)
   AS 'MODULE_PATHNAME', 'Temporal_to_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tbool_seq(tbool, text DEFAULT 'step',
-    left_inc boolean DEFAULT true, right_inc boolean DEFAULT true)
+CREATE FUNCTION tbool_seq(tbool)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tint_seq(tint, text DEFAULT 'step',
-    left_inc boolean DEFAULT true, right_inc boolean DEFAULT true)
+CREATE FUNCTION tint_seq(tint)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tfloat_seq(tfloat, text DEFAULT 'linear',
-    left_inc boolean DEFAULT true, right_inc boolean DEFAULT true)
+CREATE FUNCTION tfloat_seq(tfloat)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ttext_seq(ttext, text DEFAULT 'step',
-    left_inc boolean DEFAULT true, right_inc boolean DEFAULT true)
+CREATE FUNCTION ttext_seq(ttext)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -1447,8 +1443,20 @@ CREATE FUNCTION ttext_seqset(ttext)
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequenceset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION setInterp(tbool, text)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Temporal_set_interp'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION setInterp(tint, text)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_set_interp'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION setInterp(tfloat, text)
   RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Temporal_set_interp'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION setInterp(ttext, text)
+  RETURNS ttext
   AS 'MODULE_PATHNAME', 'Temporal_set_interp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

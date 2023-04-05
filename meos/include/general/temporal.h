@@ -433,7 +433,7 @@ typedef Datum (*datum_func3) (Datum, Datum, Datum);
 
 extern bool temptype_subtype(int16 subtype);
 extern bool temptype_subtype_all(int16 subtype);
-extern void ensure_continuous(const Temporal *temp);
+extern void ensure_valid_interpolation(meosType temptype, interpType interp);
 extern void ensure_continuous(const Temporal *temp);
 extern void ensure_tinstarr(const TInstant **instants, int count);
 extern void ensure_continuous_interpolation(int16 flags);

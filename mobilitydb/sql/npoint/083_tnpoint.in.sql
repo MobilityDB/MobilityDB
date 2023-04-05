@@ -178,7 +178,7 @@ CREATE FUNCTION tnpoint_inst(tnpoint)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_to_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tnpoint_seq(tnpoint, text DEFAULT 'linear')
+CREATE FUNCTION tnpoint_seq(tnpoint)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -227,9 +227,9 @@ CREATE FUNCTION tempSubtype(tnpoint)
   AS 'MODULE_PATHNAME', 'Temporal_subtype'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION interpolation(tnpoint)
+CREATE FUNCTION interp(tnpoint)
   RETURNS text
-  AS 'MODULE_PATHNAME', 'Temporal_interpolation'
+  AS 'MODULE_PATHNAME', 'Temporal_interp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION memSize(tnpoint)

@@ -738,6 +738,7 @@ static void
 tsequence_make_valid(const TInstant **instants, int count, bool lower_inc,
   bool upper_inc, interpType interp)
 {
+  ensure_valid_interpolation(instants[0]->temptype, interp);
   tsequence_make_valid1(instants, count, lower_inc, upper_inc, interp);
   ensure_valid_tinstarr(instants, count, MERGE_NO, interp);
   return;
