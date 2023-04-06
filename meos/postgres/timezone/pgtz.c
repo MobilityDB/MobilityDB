@@ -393,7 +393,7 @@ pg_tzset_offset(long gmtoffset)
  * Initialize timezone library
  */
 void
-MOBDB_timezone_initialize(const char *name)
+meos_timezone_initialize(const char *name)
 {
   session_timezone = pg_tzset(name);
   if (! session_timezone)
@@ -411,9 +411,9 @@ meos_initialize(const char *tz_str)
     /* fetch local timezone */
     tz_str = select_default_timezone(NULL);
   if (tz_str == NULL)
-    MOBDB_timezone_initialize("GMT");
+    meos_timezone_initialize("GMT");
   else
-    MOBDB_timezone_initialize(tz_str);
+    meos_timezone_initialize(tz_str);
   return;
 }
 
