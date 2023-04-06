@@ -60,7 +60,7 @@
 void
 ensure_same_srid_tnpoint_stbox(const Temporal *temp, const STBox *box)
 {
-  if (MOBDB_FLAGS_GET_X(box->flags) &&
+  if (MEOS_FLAGS_GET_X(box->flags) &&
     tnpoint_srid(temp) != box->srid)
     elog(ERROR, "The temporal network point and the box must be in the same SRID");
   return;
@@ -125,7 +125,7 @@ tnpointsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
   double range = (max - min);
   double partial = (np->pos - min);
   double fraction = np1->pos < np2->pos ? partial / range : 1 - partial / range;
-  if (fabs(fraction) < MOBDB_EPSILON || fabs(fraction - 1.0) < MOBDB_EPSILON)
+  if (fabs(fraction) < MEOS_EPSILON || fabs(fraction - 1.0) < MEOS_EPSILON)
     return false;
 
   if (t != NULL)
@@ -254,7 +254,7 @@ tnpointseq_geom(const TSequence *seq)
     return tnpointinst_geom(TSEQUENCE_INST_N(seq, 0));
 
   GSERIALIZED *result;
-  if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
+  if (MEOS_FLAGS_GET_LINEAR(seq->flags))
   {
     Nsegment *segment = tnpointseq_linear_positions(seq);
     result = nsegment_geom(segment);
@@ -285,7 +285,7 @@ tnpointseqset_geom(const TSequenceSet *ss)
 
   int count;
   GSERIALIZED *result;
-  if (MOBDB_FLAGS_GET_LINEAR(ss->flags))
+  if (MEOS_FLAGS_GET_LINEAR(ss->flags))
   {
     Nsegment **segments = tnpointseqset_positions(ss, &count);
     result = nsegmentarr_geom(segments, count);
@@ -359,7 +359,7 @@ npoint_same(const Npoint *np1, const Npoint *np2)
 {
   /* Same route identifier */
   if (np1->rid == np2->rid)
-    return fabs(np1->pos - np2->pos) < MOBDB_EPSILON;
+    return fabs(np1->pos - np2->pos) < MEOS_EPSILON;
   Datum point1 = PointerGetDatum(npoint_geom(np1));
   Datum point2 = PointerGetDatum(npoint_geom(np2));
   bool result = datum_eq(point1, point2, T_GEOMETRY);
@@ -418,7 +418,7 @@ tnpoint_length(const Temporal *temp)
 {
   double result = 0.0;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
+  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_GET_LINEAR(temp->flags))
     ;
   else if (temp->subtype == TSEQUENCE)
     result = tnpointseq_length((TSequence *) temp);
@@ -438,7 +438,7 @@ tnpoint_length(const Temporal *temp)
 static TSequence *
 tnpointseq_cumulative_length(const TSequence *seq, double prevlength)
 {
-  assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
+  assert(MEOS_FLAGS_GET_LINEAR(seq->flags));
   const TInstant *inst1;
 
   /* Instantaneous sequence */
@@ -497,9 +497,9 @@ tnpoint_cumulative_length(const Temporal *temp)
 {
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
+  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_GET_LINEAR(temp->flags))
     result = temporal_from_base(Float8GetDatum(0.0), T_TFLOAT, temp,
-      MOBDB_FLAGS_GET_INTERP(temp->flags));
+      MEOS_FLAGS_GET_INTERP(temp->flags));
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tnpointseq_cumulative_length((TSequence *) temp, 0);
   else /* temp->subtype == TSEQUENCESET */
@@ -523,7 +523,7 @@ tnpointseq_speed(const TSequence *seq)
 
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   /* Step interpolation */
-  if (! MOBDB_FLAGS_GET_LINEAR(seq->flags))
+  if (! MEOS_FLAGS_GET_LINEAR(seq->flags))
   {
     Datum length = Float8GetDatum(0.0);
     for (int i = 0; i < seq->count; i++)
@@ -592,7 +592,7 @@ tnpoint_speed(const Temporal *temp)
 {
   Temporal *result = NULL;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || MOBDB_FLAGS_GET_DISCRETE(temp->flags))
+  if (temp->subtype == TINSTANT || MEOS_FLAGS_GET_DISCRETE(temp->flags))
     ;
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tnpointseq_speed((TSequence *) temp);
@@ -787,7 +787,7 @@ tnpoint_azimuth(const Temporal *temp)
 {
   Temporal *result = NULL;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
+  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_GET_LINEAR(temp->flags))
     ;
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tnpointseq_azimuth((TSequence *) temp);

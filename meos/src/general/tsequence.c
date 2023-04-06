@@ -82,7 +82,7 @@ static bool
 float_collinear(double x1, double x2, double x3, double ratio)
 {
   double x = x1 + (x3 - x1) * ratio;
-  return (fabs(x2 - x) <= MOBDB_EPSILON);
+  return (fabs(x2 - x) <= MEOS_EPSILON);
 }
 
 /**
@@ -100,8 +100,8 @@ double2_collinear(const double2 *x1, const double2 *x2, const double2 *x3,
   double2 x;
   x.a = x1->a + (x3->a - x1->a) * ratio;
   x.b = x1->b + (x3->b - x1->b) * ratio;
-  bool result = (fabs(x2->a - x.a) <= MOBDB_EPSILON &&
-    fabs(x2->b - x.b) <= MOBDB_EPSILON);
+  bool result = (fabs(x2->a - x.a) <= MEOS_EPSILON &&
+    fabs(x2->b - x.b) <= MEOS_EPSILON);
   return result;
 }
 
@@ -121,8 +121,8 @@ double3_collinear(const double3 *x1, const double3 *x2, const double3 *x3,
   x.a = x1->a + (x3->a - x1->a) * ratio;
   x.b = x1->b + (x3->b - x1->b) * ratio,
   x.c = x1->c + (x3->c - x1->c) * ratio;
-  bool result = (fabs(x2->a - x.a) <= MOBDB_EPSILON &&
-    fabs(x2->b - x.b) <= MOBDB_EPSILON && fabs(x2->c - x.c) <= MOBDB_EPSILON);
+  bool result = (fabs(x2->a - x.a) <= MEOS_EPSILON &&
+    fabs(x2->b - x.b) <= MEOS_EPSILON && fabs(x2->c - x.c) <= MEOS_EPSILON);
   return result;
 }
 
@@ -143,9 +143,9 @@ double4_collinear(const double4 *x1, const double4 *x2, const double4 *x3,
   x.b = x1->b + (x3->b - x1->b) * ratio;
   x.c = x1->c + (x3->c - x1->c) * ratio;
   x.d = x1->d + (x3->d - x1->d) * ratio;
-  bool result = (fabs(x2->a - x.a) <= MOBDB_EPSILON &&
-    fabs(x2->b - x.b) <= MOBDB_EPSILON && fabs(x2->c - x.c) <= MOBDB_EPSILON &&
-    fabs(x2->d - x.d) <= MOBDB_EPSILON);
+  bool result = (fabs(x2->a - x.a) <= MEOS_EPSILON &&
+    fabs(x2->b - x.b) <= MEOS_EPSILON && fabs(x2->c - x.c) <= MEOS_EPSILON &&
+    fabs(x2->d - x.d) <= MEOS_EPSILON);
   return result;
 }
 
@@ -308,7 +308,7 @@ tsequence_join_test(const TSequence *seq1, const TSequence *seq2,
 {
   assert(seq1->temptype == seq2->temptype);
   meosType basetype = temptype_basetype(seq1->temptype);
-  interpType interp = MOBDB_FLAGS_GET_INTERP(seq1->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq1->flags);
   bool result = false;
   TInstant *last2 = (seq1->count == 1 || interp == DISCRETE) ? NULL :
     (TInstant *) TSEQUENCE_INST_N(seq1, seq1->count - 2);
@@ -412,7 +412,7 @@ tsequence_join(const TSequence *seq1, const TSequence *seq2,
   for (i = start2; i < seq2->count; i++)
     instants[k++] = TSEQUENCE_INST_N(seq2, i);
   TSequence *result = tsequence_make1(instants, count, seq1->period.lower_inc,
-    seq2->period.upper_inc, MOBDB_FLAGS_GET_INTERP(seq1->flags), NORMALIZE_NO);
+    seq2->period.upper_inc, MEOS_FLAGS_GET_INTERP(seq1->flags), NORMALIZE_NO);
   pfree(instants);
   return result;
 }
@@ -670,8 +670,8 @@ tsequence_to_string(const TSequence *seq, int maxdd, bool component,
   char **strings = palloc(sizeof(char *) * seq->count);
   size_t outlen = 0;
   char prefix[20];
-  interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
-  if (! component && MOBDB_FLAGS_GET_CONTINUOUS(seq->flags) &&
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  if (! component && MEOS_FLAGS_GET_CONTINUOUS(seq->flags) &&
       interp == STEP)
     sprintf(prefix, "Interp=Step;");
   else
@@ -683,7 +683,7 @@ tsequence_to_string(const TSequence *seq, int maxdd, bool component,
     outlen += strlen(strings[i]) + 1;
   }
   char open, close;
-  if (MOBDB_FLAGS_GET_DISCRETE(seq->flags))
+  if (MEOS_FLAGS_GET_DISCRETE(seq->flags))
   {
     open = (char) '{';
     close = (char) '}';
@@ -846,16 +846,16 @@ tsequence_make1_exp(const TInstant **instants, int count, int maxcount,
   result->temptype = instants[0]->temptype;
   result->subtype = TSEQUENCE;
   result->bboxsize = bboxsize;
-  MOBDB_FLAGS_SET_CONTINUOUS(result->flags,
-    MOBDB_FLAGS_GET_CONTINUOUS(norminsts[0]->flags));
-  MOBDB_FLAGS_SET_INTERP(result->flags, interp);
-  MOBDB_FLAGS_SET_X(result->flags, true);
-  MOBDB_FLAGS_SET_T(result->flags, true);
+  MEOS_FLAGS_SET_CONTINUOUS(result->flags,
+    MEOS_FLAGS_GET_CONTINUOUS(norminsts[0]->flags));
+  MEOS_FLAGS_SET_INTERP(result->flags, interp);
+  MEOS_FLAGS_SET_X(result->flags, true);
+  MEOS_FLAGS_SET_T(result->flags, true);
   if (tgeo_type(instants[0]->temptype))
   {
-    MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(instants[0]->flags));
-    MOBDB_FLAGS_SET_GEODETIC(result->flags,
-      MOBDB_FLAGS_GET_GEODETIC(instants[0]->flags));
+    MEOS_FLAGS_SET_Z(result->flags, MEOS_FLAGS_GET_Z(instants[0]->flags));
+    MEOS_FLAGS_SET_GEODETIC(result->flags,
+      MEOS_FLAGS_GET_GEODETIC(instants[0]->flags));
   }
   /* Initialization of the variable-length part */
   /* Compute the bounding box */
@@ -1140,7 +1140,7 @@ TSequence *
 tsequence_from_base(Datum value, meosType temptype, const TSequence *seq,
   interpType interp)
 {
-  return MOBDB_FLAGS_GET_DISCRETE(seq->flags) ?
+  return MEOS_FLAGS_GET_DISCRETE(seq->flags) ?
     tdiscseq_from_base(value, temptype, seq) :
     tsequence_from_base_time(value, temptype, &seq->period, interp);
 }
@@ -1335,7 +1335,7 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst,
 {
   /* Ensure validity of the arguments */
   assert(seq->temptype == inst->temptype);
-  interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   meosType basetype = temptype_basetype(seq->temptype);
   datum_func2 point_distance = NULL;
   if (geo_basetype(basetype))
@@ -1511,8 +1511,8 @@ tsequence_append_tsequence(TSequence *seq1, const TSequence *seq2,
 {
   /* Ensure validity of the arguments */
   assert(seq1->temptype == seq2->temptype);
-  interpType interp1 = MOBDB_FLAGS_GET_INTERP(seq1->flags);
-  assert(interp1 == MOBDB_FLAGS_GET_INTERP(seq2->flags));
+  interpType interp1 = MEOS_FLAGS_GET_INTERP(seq1->flags);
+  assert(interp1 == MEOS_FLAGS_GET_INTERP(seq2->flags));
   const TInstant *inst1 = TSEQUENCE_INST_N(seq1, seq1->count - 1);
   const TInstant *inst2 = TSEQUENCE_INST_N(seq2, 0);
   /* We cannot call ensure_increasing_timestamps since we must take into
@@ -1721,7 +1721,7 @@ Temporal *
 tsequence_merge_array(const TSequence **sequences, int count)
 {
   /* Discrete sequences */
-  if (MOBDB_FLAGS_GET_DISCRETE(sequences[0]->flags))
+  if (MEOS_FLAGS_GET_DISCRETE(sequences[0]->flags))
     return tdiscseq_merge_array(sequences, count);
 
   /* Continuous sequences */
@@ -1754,8 +1754,8 @@ tintseq_to_tfloatseq(const TSequence *seq)
 {
   TSequence *result = tsequence_copy(seq);
   result->temptype = T_TFLOAT;
-  MOBDB_FLAGS_SET_CONTINUOUS(result->flags, true);
-  MOBDB_FLAGS_SET_INTERP(result->flags, MOBDB_FLAGS_GET_INTERP(result->flags));
+  MEOS_FLAGS_SET_CONTINUOUS(result->flags, true);
+  MEOS_FLAGS_SET_INTERP(result->flags, MEOS_FLAGS_GET_INTERP(result->flags));
   for (int i = 0; i < seq->count; i++)
   {
     TInstant *inst = (TInstant *) TSEQUENCE_INST_N(result, i);
@@ -1773,12 +1773,12 @@ tintseq_to_tfloatseq(const TSequence *seq)
 TSequence *
 tfloatseq_to_tintseq(const TSequence *seq)
 {
-  if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
+  if (MEOS_FLAGS_GET_LINEAR(seq->flags))
     elog(ERROR, "Cannot cast temporal float with linear interpolation to temporal integer");
   TSequence *result = tsequence_copy(seq);
   result->temptype = T_TINT;
-  MOBDB_FLAGS_SET_CONTINUOUS(result->flags, false);
-  MOBDB_FLAGS_SET_INTERP(result->flags, MOBDB_FLAGS_GET_INTERP(result->flags));
+  MEOS_FLAGS_SET_CONTINUOUS(result->flags, false);
+  MEOS_FLAGS_SET_INTERP(result->flags, MEOS_FLAGS_GET_INTERP(result->flags));
   for (int i = 0; i < seq->count; i++)
   {
     TInstant *inst = (TInstant *) TSEQUENCE_INST_N(result, i);
@@ -1872,7 +1872,7 @@ tsequence_subseq(const TSequence *seq, int from, int to, bool lower_inc,
   const TInstant **instants = palloc (sizeof(TInstant *) * count);
   for (int i = 0; i < to - from; i++)
     instants[i] = TSEQUENCE_INST_N(seq, i + from);
-  interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   TSequence *result = tsequence_make(instants, count, lower_inc, upper_inc,
     interp, NORMALIZE_NO);
   pfree(instants);
@@ -1902,7 +1902,7 @@ tinstant_to_tsequence(const TInstant *inst, interpType interp)
 Temporal *
 tdiscseq_set_interp(const TSequence *seq, interpType interp)
 {
-  assert(MOBDB_FLAGS_GET_DISCRETE(seq->flags));
+  assert(MEOS_FLAGS_GET_DISCRETE(seq->flags));
   /* If the requested interpolation is discrete return a copy */
   if (interp == DISCRETE)
     return (Temporal *) tsequence_copy(seq);
@@ -1933,7 +1933,7 @@ tdiscseq_set_interp(const TSequence *seq, interpType interp)
 TSequence *
 tcontseq_to_discrete(const TSequence *seq)
 {
-  assert(! MOBDB_FLAGS_GET_DISCRETE(seq->flags));
+  assert(! MEOS_FLAGS_GET_DISCRETE(seq->flags));
   if (seq->count != 1)
     elog(ERROR, "Cannot transform input value to a temporal discrete sequence");
   return tinstant_to_tsequence(TSEQUENCE_INST_N(seq, 0), DISCRETE);
@@ -1947,7 +1947,7 @@ TSequence *
 tcontseq_to_step(const TSequence *seq)
 {
   /* If the sequence has step interpolation return a copy */
-  if (MOBDB_FLAGS_GET_STEP(seq->flags))
+  if (MEOS_FLAGS_GET_STEP(seq->flags))
     return tsequence_copy(seq);
 
   /* interp == LINEAR */
@@ -1979,7 +1979,7 @@ tstepseq_to_linear1(const TSequence *seq, TSequence **result)
   if (seq->count == 1)
   {
     result[0] = tsequence_copy(seq);
-    MOBDB_FLAGS_SET_INTERP(result[0]->flags, LINEAR);
+    MEOS_FLAGS_SET_INTERP(result[0]->flags, LINEAR);
     return 1;
   }
 
@@ -2042,7 +2042,7 @@ Temporal *
 tcontseq_to_linear(const TSequence *seq)
 {
   /* If the sequence has linear interpolation return a copy */
-  if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
+  if (MEOS_FLAGS_GET_LINEAR(seq->flags))
     return (Temporal *) tsequence_copy(seq);
 
   /* interp == STEP */
@@ -2057,7 +2057,7 @@ tcontseq_to_linear(const TSequence *seq)
 Temporal *
 tsequence_set_interp(const TSequence *seq, interpType interp)
 {
-  interpType seq_interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
+  interpType seq_interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   if (seq_interp == DISCRETE)
     return tdiscseq_set_interp(seq, interp);
 
@@ -2157,7 +2157,7 @@ SpanSet *
 tnumberseq_values(const TSequence *seq)
 {
   /* Temporal sequence number with linear interpolation */
-  if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
+  if (MEOS_FLAGS_GET_LINEAR(seq->flags))
   {
     Span span;
     memcpy(&span, &((TBox *) TSEQUENCE_BBOX_PTR(seq))->span, sizeof(Span));
@@ -2185,7 +2185,7 @@ SpanSet *
 tsequence_time(const TSequence *seq)
 {
   /* Continuous sequence */
-  if (! MOBDB_FLAGS_GET_DISCRETE(seq->flags))
+  if (! MEOS_FLAGS_GET_DISCRETE(seq->flags))
     return span_to_spanset(&seq->period);
 
   /* Discrete sequence */
@@ -2361,7 +2361,7 @@ tsequence_sequences(const TSequence *seq, int *count)
 int
 tsequence_segments1(const TSequence *seq, TSequence **result)
 {
-  assert(! MOBDB_FLAGS_GET_DISCRETE(seq->flags));
+  assert(! MEOS_FLAGS_GET_DISCRETE(seq->flags));
   /* Singleton sequence */
   if (seq->count == 1)
   {
@@ -2371,7 +2371,7 @@ tsequence_segments1(const TSequence *seq, TSequence **result)
 
   /* General case */
   TInstant *instants[2];
-  interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   bool lower_inc = seq->period.lower_inc;
   TInstant *inst1, *inst2;
   int k = 0;
@@ -2416,10 +2416,10 @@ tsequence_segments(const TSequence *seq, int *count)
   TSequence **result = palloc(sizeof(TSequence *) * seq->count);
 
   /* Discrete sequence */
-  if (MOBDB_FLAGS_GET_DISCRETE(seq->flags))
+  if (MEOS_FLAGS_GET_DISCRETE(seq->flags))
   {
     /* Discrete sequence */
-    interpType interp = MOBDB_FLAGS_GET_CONTINUOUS(seq->flags) ? LINEAR : STEP;
+    interpType interp = MEOS_FLAGS_GET_CONTINUOUS(seq->flags) ? LINEAR : STEP;
     for (int i = 0; i < seq->count; i++)
     {
       const TInstant *inst = TSEQUENCE_INST_N(seq, i);
@@ -2640,7 +2640,7 @@ tsequence_value_at_timestamp(const TSequence *seq, TimestampTz t, bool strict,
   else
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, n + 1);
-    bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
+    bool linear = MEOS_FLAGS_GET_LINEAR(seq->flags);
     *result = tsegment_value_at_timestamp(inst1, inst2, linear, t);
   }
   return true;
@@ -2673,8 +2673,8 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
   if (! inter_span_span(&seq1->period, &seq2->period, &inter))
     return false;
 
-  interpType interp1 = MOBDB_FLAGS_GET_INTERP(seq1->flags);
-  interpType interp2 = MOBDB_FLAGS_GET_INTERP(seq2->flags);
+  interpType interp1 = MEOS_FLAGS_GET_INTERP(seq1->flags);
+  interpType interp2 = MEOS_FLAGS_GET_INTERP(seq2->flags);
   TInstant *inst1, *inst2;
 
   /* If the two sequences intersect at an instant */
@@ -2933,7 +2933,7 @@ tfloatsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
   double span = (max - min);
   double partial = (dvalue - min);
   double fraction = dvalue1 < dvalue2 ? partial / span : 1 - partial / span;
-  if (fraction < -1 * MOBDB_EPSILON || 1.0 + MOBDB_EPSILON < fraction)
+  if (fraction < -1 * MEOS_EPSILON || 1.0 + MEOS_EPSILON < fraction)
     return false;
 
   if (t != NULL)
@@ -3037,7 +3037,7 @@ tnumbersegm_intersection(const TInstant *start1, const TInstant *end1,
     return false;
 
   long double fraction = ((long double) (x3 - x1)) / denum;
-  if (fraction < -1 * MOBDB_EPSILON || 1.0 + MOBDB_EPSILON < fraction )
+  if (fraction < -1 * MEOS_EPSILON || 1.0 + MEOS_EPSILON < fraction )
     /* Intersection occurs out of the period */
     return false;
 
@@ -3163,7 +3163,7 @@ tsequence_ever_eq(const TSequence *seq, Datum value)
     return false;
 
   /* Step interpolation or instantaneous sequence */
-  if (! MOBDB_FLAGS_GET_LINEAR(seq->flags) || seq->count == 1)
+  if (! MEOS_FLAGS_GET_LINEAR(seq->flags) || seq->count == 1)
   {
     for (i = 0; i < seq->count; i++)
     {
@@ -3328,7 +3328,7 @@ tsequence_ever_le(const TSequence *seq, Datum value)
   meosType basetype = temptype_basetype(seq->temptype);
 
   /* Step interpolation or instantaneous sequence */
-  if (! MOBDB_FLAGS_GET_LINEAR(seq->flags) || seq->count == 1)
+  if (! MEOS_FLAGS_GET_LINEAR(seq->flags) || seq->count == 1)
   {
     for (i = 0; i < seq->count; i++)
     {
@@ -3372,7 +3372,7 @@ tsequence_always_lt(const TSequence *seq, Datum value)
   meosType basetype = temptype_basetype(seq->temptype);
 
   /* Step interpolation or instantaneous sequence */
-  if (! MOBDB_FLAGS_GET_LINEAR(seq->flags) || seq->count == 1)
+  if (! MEOS_FLAGS_GET_LINEAR(seq->flags) || seq->count == 1)
   {
     for (i = 0; i < seq->count; i++)
     {
@@ -3420,7 +3420,7 @@ tsequence_always_le(const TSequence *seq, Datum value)
   /* We are sure that the type has stewpwise interpolation since
    * there are currenty no other continuous base type besides tfloat
    * to which the always <= comparison applies */
-  assert(! MOBDB_FLAGS_GET_LINEAR(seq->flags));
+  assert(! MEOS_FLAGS_GET_LINEAR(seq->flags));
   meosType basetype = temptype_basetype(seq->temptype);
   for (int i = 0; i < seq->count; i++)
   {
@@ -3697,7 +3697,7 @@ tcontseq_restrict_value1(const TSequence *seq, Datum value, bool atfunc,
   }
 
   /* General case */
-  interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   inst1 = TSEQUENCE_INST_N(seq, 0);
   bool lower_inc = seq->period.lower_inc;
   int k = 0;
@@ -3732,7 +3732,7 @@ tcontseq_restrict_value(const TSequence *seq, Datum value, bool atfunc)
 {
   int count = seq->count;
   /* For minus and linear interpolation we need the double of the count */
-  if (! atfunc && MOBDB_FLAGS_GET_LINEAR(seq->flags))
+  if (! atfunc && MEOS_FLAGS_GET_LINEAR(seq->flags))
     count *= 2;
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
   int newcount = tcontseq_restrict_value1(seq, value, atfunc, sequences);
@@ -3779,7 +3779,7 @@ tsequence_at_values1(const TSequence *seq, const Set *set, TSequence **result)
     return 0;
 
   /* General case */
-  interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   inst1 = TSEQUENCE_INST_N(seq, 0);
   bool lower_inc = seq->period.lower_inc;
   int k = 0;
@@ -4223,7 +4223,7 @@ tnumbercontseq_restrict_span2(const TSequence *seq, const Span *span,
   }
 
   /* General case */
-  bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
+  bool linear = MEOS_FLAGS_GET_LINEAR(seq->flags);
   inst1 = TSEQUENCE_INST_N(seq, 0);
   bool lower_inc = seq->period.lower_inc;
   int k = 0;
@@ -4257,7 +4257,7 @@ tnumbercontseq_restrict_span(const TSequence *seq, const Span *span,
 {
   int count = seq->count;
   /* For minus and linear interpolation we need the double of the count */
-  if (! atfunc && MOBDB_FLAGS_GET_LINEAR(seq->flags))
+  if (! atfunc && MEOS_FLAGS_GET_LINEAR(seq->flags))
     count *= 2;
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
   int newcount = tnumbercontseq_restrict_span2(seq, span, atfunc, sequences);
@@ -4303,7 +4303,7 @@ tnumbercontseq_restrict_spanset1(const TSequence *seq, const SpanSet *ss,
   }
 
   /* General case */
-  bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
+  bool linear = MEOS_FLAGS_GET_LINEAR(seq->flags);
   if (atfunc)
   {
     /* AT function */
@@ -4374,7 +4374,7 @@ tnumbercontseq_restrict_spanset(const TSequence *seq, const SpanSet *ss,
   /* General case */
   int maxcount = seq->count * ss->count;
   /* For minus and linear interpolation we need the double of the count */
-  if (! atfunc && MOBDB_FLAGS_GET_LINEAR(seq->flags))
+  if (! atfunc && MEOS_FLAGS_GET_LINEAR(seq->flags))
     maxcount *= 2;
   TSequence **sequences = palloc(sizeof(TSequence *) * maxcount);
   int newcount = tnumbercontseq_restrict_spanset1(seq, ss, atfunc, sequences);
@@ -4743,7 +4743,7 @@ tcontseq_at_timestamp(const TSequence *seq, TimestampTz t)
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, n + 1);
     return tsegment_at_timestamp(inst1, inst2,
-      MOBDB_FLAGS_GET_LINEAR(seq->flags), t);
+      MEOS_FLAGS_GET_LINEAR(seq->flags), t);
   }
 }
 
@@ -4755,7 +4755,7 @@ tcontseq_at_timestamp(const TSequence *seq, TimestampTz t)
 TInstant *
 tsequence_at_timestamp(const TSequence *seq, TimestampTz t)
 {
-  if (MOBDB_FLAGS_GET_DISCRETE(seq->flags))
+  if (MEOS_FLAGS_GET_DISCRETE(seq->flags))
     return tdiscseq_at_timestamp(seq, t);
   else
     return tcontseq_at_timestamp(seq, t);
@@ -4792,7 +4792,7 @@ tcontseq_minus_timestamp1(const TSequence *seq, TimestampTz t,
   TInstant **instants = palloc0(sizeof(TInstant *) * seq->count);
   const TInstant *inst1, *inst2;
   inst1 = TSEQUENCE_INST_N(seq, 0);
-  interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   int i, k = 0;
   int n = tcontseq_find_timestamp(seq, t);
   /* Compute the first sequence until t */
@@ -4976,7 +4976,7 @@ tcontseq_minus_timestampset1(const TSequence *seq, const Set *ts,
   }
 
   /* General case */
-  interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   TInstant **instants = palloc0(sizeof(TInstant *) * seq->count);
   instants[0] = (TInstant *) TSEQUENCE_INST_N(seq, 0);
   bool lower_inc = seq->period.lower_inc;
@@ -5091,7 +5091,7 @@ tcontseq_at_period(const TSequence *seq, const Span *p)
     return tsequence_copy(seq);
 
   /* General case */
-  interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   TSequence *result;
   /* Intersecting period is instantaneous */
   if (inter.lower == inter.upper)
@@ -5155,7 +5155,7 @@ tcontseq_at_period(const TSequence *seq, const Span *p)
 TSequence *
 tsequence_at_period(const TSequence *seq, const Span *p)
 {
-  if(MOBDB_FLAGS_GET_DISCRETE(seq->flags))
+  if(MEOS_FLAGS_GET_DISCRETE(seq->flags))
     return tdiscseq_at_period(seq, p);
   else
     return tcontseq_at_period(seq, p);
@@ -5392,7 +5392,7 @@ tcontseq_insert(const TSequence *seq1, const TSequence *seq2)
   }
 
   /* Add the sequences in the array to merge */
-  interpType interp = MOBDB_FLAGS_GET_INTERP(seq1->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq1->flags);
   TSequence *tofree = NULL;
   const TSequence **sequences = palloc(sizeof(TSequence *) * 3);
   sequences[0] = seq1;
@@ -5483,7 +5483,7 @@ tcontseq_delete_timestamp(const TSequence *seq, TimestampTz t)
     return NULL;
   else if (k == 1)
     lower_inc1 = upper_inc1 = true;
-  interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   TSequence *result = tsequence_make((const TInstant **) instants, k,
     lower_inc1, upper_inc1, interp, NORMALIZE);
   pfree(instants);
@@ -5571,7 +5571,7 @@ tcontseq_delete_timestampset(const TSequence *seq, const Set *ts)
     return NULL;
   else if (k == 1)
     lower_inc1 = upper_inc1 = true;
-  interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   TSequence *result = tsequence_make((const TInstant **) instants, k,
     lower_inc1, upper_inc1, interp, NORMALIZE_NO);
   pfree(instants);
@@ -5618,7 +5618,7 @@ tcontseq_delete_period(const TSequence *seq, const Span *p)
     return NULL;
   else if (k == 1)
     lower_inc1 = upper_inc1 = true;
-  interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   TSequence *result = tsequence_make((const TInstant **) instants, k,
     lower_inc1, upper_inc1, interp, NORMALIZE);
   pfree(instants);
@@ -5676,7 +5676,7 @@ tcontseq_delete_periodset(const TSequence *seq, const SpanSet *ps)
     return NULL;
   else if (k == 1)
     lower_inc1 = upper_inc1 = true;
-  interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   TSequence *result = tsequence_make((const TInstant **) instants, k,
     lower_inc1, upper_inc1, interp, NORMALIZE);
   pfree(instants);
@@ -5700,7 +5700,7 @@ tnumberseq_integral(const TSequence *seq)
   for (int i = 1; i < seq->count; i++)
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
-    if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
+    if (MEOS_FLAGS_GET_LINEAR(seq->flags))
     {
       /* Linear interpolation */
       double min = Min(DatumGetFloat8(tinstant_value(inst1)),
@@ -5767,7 +5767,7 @@ tnumbercontseq_twavg(const TSequence *seq)
 double
 tnumberseq_twavg(const TSequence *seq)
 {
-  double result = MOBDB_FLAGS_GET_DISCRETE(seq->flags) ?
+  double result = MEOS_FLAGS_GET_DISCRETE(seq->flags) ?
       tnumberdiscseq_twavg(seq) : tnumbercontseq_twavg(seq);
   return result;
 }

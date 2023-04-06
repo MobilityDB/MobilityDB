@@ -101,7 +101,7 @@ tnpointinst_set_stbox(const TInstant *inst, STBox *box)
   npoint_set_stbox(DatumGetNpointP(&inst->value), box);
   span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
     true, true, T_TIMESTAMPTZ, &box->period);
-  MOBDB_FLAGS_SET_T(box->flags, true);
+  MEOS_FLAGS_SET_T(box->flags, true);
   return;
 }
 
@@ -153,7 +153,7 @@ tnpointinstarr_linear_set_stbox(const TInstant **instants, int count,
   geo_set_stbox(gs, box);
   span_set(TimestampTzGetDatum(tmin), TimestampTzGetDatum(tmax),
     true, true, T_TIMESTAMPTZ, &box->period);
-  MOBDB_FLAGS_SET_T(box->flags, true);
+  MEOS_FLAGS_SET_T(box->flags, true);
   pfree(DatumGetPointer(line));
   if (posmin != 0 || posmax != 1)
     pfree(gs);
@@ -190,7 +190,7 @@ tnpointseq_expand_stbox(const TSequence *seq, const TInstant *inst)
 {
   /* Compute the bounding box of the end point of the sequence and the instant */
   STBox box;
-  if (MOBDB_FLAGS_GET_INTERP(seq->flags) == LINEAR)
+  if (MEOS_FLAGS_GET_INTERP(seq->flags) == LINEAR)
   {
     const TInstant *last = TSEQUENCE_INST_N(seq, seq->count - 1);
     Npoint *np1 = DatumGetNpointP(&last->value);
@@ -204,7 +204,7 @@ tnpointseq_expand_stbox(const TSequence *seq, const TInstant *inst)
     geo_set_stbox(gs, &box);
     span_set(TimestampTzGetDatum(last->t), TimestampTzGetDatum(inst->t),
       true, true, T_TIMESTAMPTZ, &box.period);
-    MOBDB_FLAGS_SET_T(box.flags, true);
+    MEOS_FLAGS_SET_T(box.flags, true);
     pfree(DatumGetPointer(line));
     if (posmin != 0 || posmax != 1)
       pfree(gs);
@@ -239,7 +239,7 @@ npoint_timestamp_set_stbox(const Npoint *np, TimestampTz t, STBox *box)
   npoint_set_stbox(np, box);
   span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
     T_TIMESTAMPTZ, &box->period);
-  MOBDB_FLAGS_SET_T(box->flags, true);
+  MEOS_FLAGS_SET_T(box->flags, true);
   return true;
 }
 
@@ -251,7 +251,7 @@ npoint_period_set_stbox(const Npoint *np, const Span *p, STBox *box)
 {
   npoint_set_stbox(np, box);
   memcpy(&box->period, p, sizeof(Span));
-  MOBDB_FLAGS_SET_T(box->flags, true);
+  MEOS_FLAGS_SET_T(box->flags, true);
   return true;
 }
 

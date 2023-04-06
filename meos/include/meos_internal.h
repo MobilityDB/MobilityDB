@@ -75,48 +75,48 @@
  *****************************************************************************/
 
 /* The following flag is only used for Collection and TInstant */
-#define MOBDB_FLAG_BYVAL      0x0001  // 1
+#define MEOS_FLAG_BYVAL      0x0001  // 1
 /* The following flag is only used for Collection */
-#define MOBDB_FLAG_ORDERED    0x0002  // 2
+#define MEOS_FLAG_ORDERED    0x0002  // 2
 /* The following flag is only used for Temporal */
-#define MOBDB_FLAG_CONTINUOUS 0x0002  // 2
+#define MEOS_FLAG_CONTINUOUS 0x0002  // 2
 /* The following two interpolation flags are only used for TSequence and TSequenceSet */
-#define MOBDB_FLAGS_INTERP    0x000C  // 4 / 8
+#define MEOS_FLAGS_INTERP    0x000C  // 4 / 8
 /* The following two flags are used for both bounding boxes and temporal types */
-#define MOBDB_FLAG_X          0x0010  // 16
-#define MOBDB_FLAG_Z          0x0020  // 32
-#define MOBDB_FLAG_T          0x0040  // 64
-#define MOBDB_FLAG_GEODETIC   0x0080  // 128
+#define MEOS_FLAG_X          0x0010  // 16
+#define MEOS_FLAG_Z          0x0020  // 32
+#define MEOS_FLAG_T          0x0040  // 64
+#define MEOS_FLAG_GEODETIC   0x0080  // 128
 
-#define MOBDB_FLAGS_GET_BYVAL(flags)      ((bool) (((flags) & MOBDB_FLAG_BYVAL)))
-#define MOBDB_FLAGS_GET_ORDERED(flags)    ((bool) (((flags) & MOBDB_FLAG_ORDERED)>>1))
-#define MOBDB_FLAGS_GET_CONTINUOUS(flags) ((bool) (((flags) & MOBDB_FLAG_CONTINUOUS)>>1))
-#define MOBDB_FLAGS_GET_X(flags)          ((bool) (((flags) & MOBDB_FLAG_X)>>4))
-#define MOBDB_FLAGS_GET_Z(flags)          ((bool) (((flags) & MOBDB_FLAG_Z)>>5))
-#define MOBDB_FLAGS_GET_T(flags)          ((bool) (((flags) & MOBDB_FLAG_T)>>6))
-#define MOBDB_FLAGS_GET_GEODETIC(flags)   ((bool) (((flags) & MOBDB_FLAG_GEODETIC)>>7))
+#define MEOS_FLAGS_GET_BYVAL(flags)      ((bool) (((flags) & MEOS_FLAG_BYVAL)))
+#define MEOS_FLAGS_GET_ORDERED(flags)    ((bool) (((flags) & MEOS_FLAG_ORDERED)>>1))
+#define MEOS_FLAGS_GET_CONTINUOUS(flags) ((bool) (((flags) & MEOS_FLAG_CONTINUOUS)>>1))
+#define MEOS_FLAGS_GET_X(flags)          ((bool) (((flags) & MEOS_FLAG_X)>>4))
+#define MEOS_FLAGS_GET_Z(flags)          ((bool) (((flags) & MEOS_FLAG_Z)>>5))
+#define MEOS_FLAGS_GET_T(flags)          ((bool) (((flags) & MEOS_FLAG_T)>>6))
+#define MEOS_FLAGS_GET_GEODETIC(flags)   ((bool) (((flags) & MEOS_FLAG_GEODETIC)>>7))
 
-#define MOBDB_FLAGS_SET_BYVAL(flags, value) \
-  ((flags) = (value) ? ((flags) | MOBDB_FLAG_BYVAL) : ((flags) & ~MOBDB_FLAG_BYVAL))
-#define MOBDB_FLAGS_SET_ORDERED(flags, value) \
-  ((flags) = (value) ? ((flags) | MOBDB_FLAG_ORDERED) : ((flags) & ~MOBDB_FLAG_ORDERED))
-#define MOBDB_FLAGS_SET_CONTINUOUS(flags, value) \
-  ((flags) = (value) ? ((flags) | MOBDB_FLAG_CONTINUOUS) : ((flags) & ~MOBDB_FLAG_CONTINUOUS))
-#define MOBDB_FLAGS_SET_X(flags, value) \
-  ((flags) = (value) ? ((flags) | MOBDB_FLAG_X) : ((flags) & ~MOBDB_FLAG_X))
-#define MOBDB_FLAGS_SET_Z(flags, value) \
-  ((flags) = (value) ? ((flags) | MOBDB_FLAG_Z) : ((flags) & ~MOBDB_FLAG_Z))
-#define MOBDB_FLAGS_SET_T(flags, value) \
-  ((flags) = (value) ? ((flags) | MOBDB_FLAG_T) : ((flags) & ~MOBDB_FLAG_T))
-#define MOBDB_FLAGS_SET_GEODETIC(flags, value) \
-  ((flags) = (value) ? ((flags) | MOBDB_FLAG_GEODETIC) : ((flags) & ~MOBDB_FLAG_GEODETIC))
+#define MEOS_FLAGS_SET_BYVAL(flags, value) \
+  ((flags) = (value) ? ((flags) | MEOS_FLAG_BYVAL) : ((flags) & ~MEOS_FLAG_BYVAL))
+#define MEOS_FLAGS_SET_ORDERED(flags, value) \
+  ((flags) = (value) ? ((flags) | MEOS_FLAG_ORDERED) : ((flags) & ~MEOS_FLAG_ORDERED))
+#define MEOS_FLAGS_SET_CONTINUOUS(flags, value) \
+  ((flags) = (value) ? ((flags) | MEOS_FLAG_CONTINUOUS) : ((flags) & ~MEOS_FLAG_CONTINUOUS))
+#define MEOS_FLAGS_SET_X(flags, value) \
+  ((flags) = (value) ? ((flags) | MEOS_FLAG_X) : ((flags) & ~MEOS_FLAG_X))
+#define MEOS_FLAGS_SET_Z(flags, value) \
+  ((flags) = (value) ? ((flags) | MEOS_FLAG_Z) : ((flags) & ~MEOS_FLAG_Z))
+#define MEOS_FLAGS_SET_T(flags, value) \
+  ((flags) = (value) ? ((flags) | MEOS_FLAG_T) : ((flags) & ~MEOS_FLAG_T))
+#define MEOS_FLAGS_SET_GEODETIC(flags, value) \
+  ((flags) = (value) ? ((flags) | MEOS_FLAG_GEODETIC) : ((flags) & ~MEOS_FLAG_GEODETIC))
 
-#define MOBDB_FLAGS_GET_INTERP(flags) (((flags) & MOBDB_FLAGS_INTERP) >> 2)
-#define MOBDB_FLAGS_SET_INTERP(flags, value) ((flags) = (((flags) & ~MOBDB_FLAGS_INTERP) | ((value & 0x0003) << 2)))
+#define MEOS_FLAGS_GET_INTERP(flags) (((flags) & MEOS_FLAGS_INTERP) >> 2)
+#define MEOS_FLAGS_SET_INTERP(flags, value) ((flags) = (((flags) & ~MEOS_FLAGS_INTERP) | ((value & 0x0003) << 2)))
 
-#define MOBDB_FLAGS_GET_DISCRETE(flags)   ((bool) (MOBDB_FLAGS_GET_INTERP((flags)) == DISCRETE))
-#define MOBDB_FLAGS_GET_STEP(flags)       ((bool) (MOBDB_FLAGS_GET_INTERP((flags)) == STEP))
-#define MOBDB_FLAGS_GET_LINEAR(flags)     ((bool) (MOBDB_FLAGS_GET_INTERP((flags)) == LINEAR))
+#define MEOS_FLAGS_GET_DISCRETE(flags)   ((bool) (MEOS_FLAGS_GET_INTERP((flags)) == DISCRETE))
+#define MEOS_FLAGS_GET_STEP(flags)       ((bool) (MEOS_FLAGS_GET_INTERP((flags)) == STEP))
+#define MEOS_FLAGS_GET_LINEAR(flags)     ((bool) (MEOS_FLAGS_GET_INTERP((flags)) == LINEAR))
 
 /*****************************************************************************
  * Miscellaneous functions
@@ -153,7 +153,7 @@ extern Datum SET_VAL_N(const Set *s, int index);
  * @pre The argument @p index is less than the number of values in the set
  */
 #define SET_VAL_N(s, index) ( (Datum) ( \
-  MOBDB_FLAGS_GET_BYVAL((s)->flags) ? (SET_OFFSETS_PTR(s))[index] : \
+  MEOS_FLAGS_GET_BYVAL((s)->flags) ? (SET_OFFSETS_PTR(s))[index] : \
   PointerGetDatum( ((char *) (s)) + DOUBLE_PAD(sizeof(Set)) + \
     DOUBLE_PAD((s)->bboxsize) + (sizeof(size_t) * (s)->maxcount) + \
     (SET_OFFSETS_PTR(s))[index] ) ) )

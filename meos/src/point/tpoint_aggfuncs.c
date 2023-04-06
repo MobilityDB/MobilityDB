@@ -87,7 +87,7 @@ geoaggstate_check_state(const SkipList *state1, const SkipList *state2)
 void
 geoaggstate_check_temp(const SkipList *state, const Temporal *t)
 {
-  geoaggstate_check(state, tpoint_srid(t), MOBDB_FLAGS_GET_Z(t->flags) != 0);
+  geoaggstate_check(state, tpoint_srid(t), MEOS_FLAGS_GET_Z(t->flags) != 0);
   return;
 }
 
@@ -101,7 +101,7 @@ static TInstant *
 tpointinst_transform_tcentroid(const TInstant *inst)
 {
   TInstant *result;
-  if (MOBDB_FLAGS_GET_Z(inst->flags))
+  if (MEOS_FLAGS_GET_Z(inst->flags))
   {
     const POINT3DZ *point = DATUM_POINT3DZ_P(&inst->value);
     double4 dvalue;
@@ -143,7 +143,7 @@ tpointseq_transform_tcentroid(const TSequence *seq)
 {
   TInstant **instants = tpointdiscseq_transform_tcentroid(seq);
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
-    seq->period.upper_inc,  MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
+    seq->period.upper_inc,  MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
 }
 
 /**
@@ -178,7 +178,7 @@ tpoint_transform_tcentroid(const Temporal *temp, int *count)
   }
   else if (temp->subtype == TSEQUENCE)
   {
-    if (MOBDB_FLAGS_GET_DISCRETE(temp->flags))
+    if (MEOS_FLAGS_GET_DISCRETE(temp->flags))
     {
       result = (Temporal **) tpointdiscseq_transform_tcentroid((TSequence *) temp);
       *count = ((TSequence *) temp)->count;
@@ -209,7 +209,7 @@ SkipList *
 tpoint_tcentroid_transfn(SkipList *state, Temporal *temp)
 {
   geoaggstate_check_temp(state, temp);
-  datum_func2 func = MOBDB_FLAGS_GET_Z(temp->flags) ?
+  datum_func2 func = MEOS_FLAGS_GET_Z(temp->flags) ?
     &datum_sum_double4 : &datum_sum_double3;
 
   int count;
@@ -222,7 +222,7 @@ tpoint_tcentroid_transfn(SkipList *state, Temporal *temp)
     struct GeoAggregateState extra =
     {
       .srid = tpoint_srid(temp),
-      .hasz = MOBDB_FLAGS_GET_Z(temp->flags) != 0
+      .hasz = MEOS_FLAGS_GET_Z(temp->flags) != 0
     };
     aggstate_set_extra(state, &extra, sizeof(struct GeoAggregateState));
   }
@@ -349,7 +349,7 @@ tpointseq_tcentroid_finalfn(TSequence **sequences, int count, int srid)
     }
     newsequences[i] = tsequence_make_free(instants, seq->count,
       seq->period.lower_inc, seq->period.upper_inc,
-      MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
+      MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
     pfree(seq);
   }
   TSequenceSet *result = tsequenceset_make_free(newsequences, count, NORMALIZE);

@@ -714,7 +714,7 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, meosType bboxtype,
   if (bboxtype == T_STBOX)
   {
     box = DatumGetPointer(entryvec->vector[FirstOffsetNumber].key);
-    hasz = MOBDB_FLAGS_GET_Z(((STBox *) box)->flags);
+    hasz = MEOS_FLAGS_GET_Z(((STBox *) box)->flags);
   }
 
   /*

@@ -135,7 +135,7 @@ tpointinst_to_geo_measure(const TInstant *inst, const TInstant *measure)
 static GSERIALIZED *
 tpointdiscseq_to_geo_measure(const TSequence *seq, const TSequence *measure)
 {
-  bool geodetic = MOBDB_FLAGS_GET_GEODETIC(seq->flags);
+  bool geodetic = MEOS_FLAGS_GET_GEODETIC(seq->flags);
   LWGEOM **points = palloc(sizeof(LWGEOM *) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
@@ -205,7 +205,7 @@ tpointcontseq_to_geo_measure1(const TSequence *seq, const TSequence *measure)
   }
   else
   {
-    result = MOBDB_FLAGS_GET_LINEAR(seq->flags) ?
+    result = MEOS_FLAGS_GET_LINEAR(seq->flags) ?
       (LWGEOM *) lwline_from_lwgeom_array(points[0]->srid, (uint32_t) k,
         (LWGEOM **) points) :
       (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE, points[0]->srid, NULL,
@@ -239,13 +239,13 @@ tpointseq_to_geo1(const TSequence *seq)
   }
   else
   {
-    if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
+    if (MEOS_FLAGS_GET_LINEAR(seq->flags))
       result = (LWGEOM *) lwline_from_lwgeom_array(points[0]->srid,
         (uint32_t) seq->count, points);
     else
       result = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE,
         points[0]->srid, NULL, (uint32_t) seq->count, points);
-    FLAGS_SET_GEODETIC(result->flags, MOBDB_FLAGS_GET_GEODETIC(seq->flags));
+    FLAGS_SET_GEODETIC(result->flags, MEOS_FLAGS_GET_GEODETIC(seq->flags));
     for (int i = 0; i < seq->count; i++)
       lwpoint_free((LWPOINT *) points[i]);
     pfree(points);
@@ -289,7 +289,7 @@ tpointseqset_to_geo_measure(const TSequenceSet *ss, const TSequenceSet *measure)
     return tpointcontseq_to_geo_measure(seq, m);
   }
 
-  bool geodetic = MOBDB_FLAGS_GET_GEODETIC(ss->flags);
+  bool geodetic = MEOS_FLAGS_GET_GEODETIC(ss->flags);
   uint8_t colltype = 0;
   LWGEOM **geoms = palloc(sizeof(LWGEOM *) * ss->count);
   for (int i = 0; i < ss->count; i++)
@@ -535,7 +535,7 @@ tpoint_to_geo_measure(const Temporal *tpoint, const Temporal *measure,
       (TInstant *) sync1, (TInstant *) sync2);
   else if (sync1->subtype == TSEQUENCE)
   {
-    if (MOBDB_FLAGS_GET_DISCRETE(sync1->flags))
+    if (MEOS_FLAGS_GET_DISCRETE(sync1->flags))
       *result = tpointdiscseq_to_geo_measure(
         (TSequence *) sync1, (TSequence *) sync2);
     else
@@ -861,7 +861,7 @@ temporal_simplify_min_dist(const Temporal *temp, double dist)
   ensure_positive_datum(Float8GetDatum(dist), T_FLOAT8);
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
+  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_GET_LINEAR(temp->flags))
     result = temporal_copy(temp);
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tsequence_simplify_min_dist((TSequence *) temp, dist);
@@ -954,7 +954,7 @@ temporal_simplify_min_tdelta(const Temporal *temp, const Interval *mint)
   ensure_valid_duration(mint);
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
+  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_GET_LINEAR(temp->flags))
     result = temporal_copy(temp);
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tsequence_simplify_min_tdelta((TSequence *) temp,
@@ -1124,8 +1124,8 @@ tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool syncdist,
   POINT2D p2k, p2_sync, p2a, p2b;
   POINT3DZ p3k, p3_sync, p3a = { 0 }, p3b = { 0 }; /* make compiler quiet */
   Datum value;
-  bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
-  bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
+  bool linear = MEOS_FLAGS_GET_LINEAR(seq->flags);
+  bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
   double d = -1;
   *split = i1;
   *dist = -1;
@@ -1284,7 +1284,7 @@ temporal_simplify_max_dist(const Temporal *temp, double dist, bool syncdist)
 {
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
+  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_GET_LINEAR(temp->flags))
     result = temporal_copy(temp);
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tsequence_simplify_max_dist((TSequence *) temp, dist,
@@ -1329,7 +1329,7 @@ tsequence_simplify_dp(const TSequence *seq, double dist, bool syncdist,
   uint32_t i;
   double d;
 
-  assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
+  assert(MEOS_FLAGS_GET_LINEAR(seq->flags));
   assert(seq->temptype == T_TFLOAT || tgeo_type(seq->temptype));
   /* Do not try to simplify really short things */
   if (seq->count < 3)
@@ -1429,7 +1429,7 @@ temporal_simplify_dp(const Temporal *temp, double dist, bool syncdist)
 {
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
+  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_GET_LINEAR(temp->flags))
     result = temporal_copy(temp);
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tsequence_simplify_dp((TSequence *) temp, dist,
@@ -1503,7 +1503,7 @@ tpointseq_remove_repeated_points(const TSequence *seq, double tolerance,
   }
   /* Construct the result */
   TSequence *result = tsequence_make(instants, k, seq->period.lower_inc,
-    seq->period.upper_inc, MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
+    seq->period.upper_inc, MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
   pfree(instants);
   return result;
 }
@@ -1623,7 +1623,7 @@ static TInstant *
 tpointinst_affine(const TInstant *inst, const AFFINE *a)
 {
   int srid = tpointinst_srid(inst);
-  bool hasz = MOBDB_FLAGS_GET_Z(inst->flags);
+  bool hasz = MEOS_FLAGS_GET_Z(inst->flags);
   TInstant *result;
   tpointinst_affine1(inst, a, srid, hasz, &result);
   return result;
@@ -1636,7 +1636,7 @@ static TSequence *
 tpointseq_affine(const TSequence *seq, const AFFINE *a)
 {
   int srid = tpointseq_srid(seq);
-  bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
+  bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
@@ -1645,7 +1645,7 @@ tpointseq_affine(const TSequence *seq, const AFFINE *a)
   }
   /* Construct the result */
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
-    seq->period.upper_inc, MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
+    seq->period.upper_inc, MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
 }
 
 /**
@@ -1702,7 +1702,7 @@ point_grid(Datum value, bool hasz, const gridspec *grid, POINT4D *p)
 static TInstant *
 tpointinst_grid(const TInstant *inst, const gridspec *grid)
 {
-  bool hasz = MOBDB_FLAGS_GET_Z(inst->flags);
+  bool hasz = MEOS_FLAGS_GET_Z(inst->flags);
   if (grid->xsize == 0 && grid->ysize == 0 && (hasz ? grid->zsize == 0 : 1))
     return tinstant_copy(inst);
 
@@ -1728,7 +1728,7 @@ tpointinst_grid(const TInstant *inst, const gridspec *grid)
 static TSequence *
 tpointseq_grid(const TSequence *seq, const gridspec *grid, bool filter_pts)
 {
-  bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
+  bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
   int srid = tpointseq_srid(seq);
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   int k = 0;
@@ -1761,7 +1761,7 @@ tpointseq_grid(const TSequence *seq, const gridspec *grid, bool filter_pts)
 
   /* Construct the result */
   return tsequence_make_free(instants, k, k > 1 ? seq->period.lower_inc : true,
-    k > 1 ? seq->period.upper_inc : true, MOBDB_FLAGS_GET_INTERP(seq->flags),
+    k > 1 ? seq->period.upper_inc : true, MEOS_FLAGS_GET_INTERP(seq->flags),
     NORMALIZE);
 }
 
@@ -1914,7 +1914,7 @@ tpointseq_decouple1(const TSequence *seq, int64 *times)
     times[i] = (inst->t / 1e6) + DELTA_UNIX_POSTGRES_EPOCH;
   }
   LWGEOM *result = lwpointarr_make_trajectory(points, seq->count,
-    MOBDB_FLAGS_GET_LINEAR(seq->flags) ? LINEAR : STEP);
+    MEOS_FLAGS_GET_LINEAR(seq->flags) ? LINEAR : STEP);
   for (int i = 0; i < seq->count; i++)
     lwpoint_free((LWPOINT *) points[i]);
   pfree(points);

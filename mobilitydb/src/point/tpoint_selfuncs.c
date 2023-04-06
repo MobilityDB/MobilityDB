@@ -466,8 +466,8 @@ nd_box_from_stbox(const STBox *box, ND_BOX *nd_box)
   nd_box->min[d] = (float4) box->ymin;
   nd_box->max[d] = (float4) box->ymax;
   d++;
-  if (MOBDB_FLAGS_GET_GEODETIC(box->flags) ||
-    MOBDB_FLAGS_GET_Z(box->flags))
+  if (MEOS_FLAGS_GET_GEODETIC(box->flags) ||
+    MEOS_FLAGS_GET_Z(box->flags))
   {
     nd_box->min[d] = (float4) box->zmin;
     nd_box->max[d] = (float4) box->zmax;
@@ -524,7 +524,7 @@ geo_sel(VariableStatData *vardata, const STBox *box, meosOper oper)
   free_attstatsslot(&sslot);
 
   /* Calculate the number of common coordinate dimensions  on the histogram */
-  ndims = (int) Min(nd_stats->ndims, MOBDB_FLAGS_GET_Z(box->flags) ? 3 : 2);
+  ndims = (int) Min(nd_stats->ndims, MEOS_FLAGS_GET_Z(box->flags) ? 3 : 2);
 
   /* Initialize nd_box. */
   nd_box_from_stbox(box, &nd_box);

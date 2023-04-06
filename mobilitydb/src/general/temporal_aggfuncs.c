@@ -511,7 +511,7 @@ temporal_app_tinst_transfn(Temporal *state, const TInstant *inst,
     MemoryContext ctx = set_aggregation_context(fetch_fcinfo());
 #endif /* ! MEOS */
     /* Arbitrary initialization to 64 elements */
-    interpType interp = MOBDB_FLAGS_GET_CONTINUOUS(inst->flags) ? LINEAR : STEP;
+    interpType interp = MEOS_FLAGS_GET_CONTINUOUS(inst->flags) ? LINEAR : STEP;
     Temporal *result = (Temporal *) tsequence_make_exp(
       (const TInstant **) &inst, 1, 64, true, true, interp, NORMALIZE_NO);
 #if ! MEOS

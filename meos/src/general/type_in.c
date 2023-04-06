@@ -836,10 +836,10 @@ byte_from_wkb_state(wkb_parse_state *s)
 {
   char char_value = 0;
   /* Does the data we want to read exist? */
-  wkb_parse_state_check(s, MOBDB_WKB_BYTE_SIZE);
+  wkb_parse_state_check(s, MEOS_WKB_BYTE_SIZE);
   /* Get the data */
   char_value = s->pos[0];
-  s->pos += MOBDB_WKB_BYTE_SIZE;
+  s->pos += MEOS_WKB_BYTE_SIZE;
   return char_value;
 }
 
@@ -851,20 +851,20 @@ int16_from_wkb_state(wkb_parse_state *s)
 {
   uint16_t i = 0;
   /* Does the data we want to read exist? */
-  wkb_parse_state_check(s, MOBDB_WKB_INT2_SIZE);
+  wkb_parse_state_check(s, MEOS_WKB_INT2_SIZE);
   /* Get the data */
-  memcpy(&i, s->pos, MOBDB_WKB_INT2_SIZE);
+  memcpy(&i, s->pos, MEOS_WKB_INT2_SIZE);
   /* Swap? Copy into a stack-allocated integer. */
   if (s->swap_bytes)
   {
-    for (int j = 0; j < MOBDB_WKB_INT2_SIZE/2; j++)
+    for (int j = 0; j < MEOS_WKB_INT2_SIZE/2; j++)
     {
       uint8_t tmp = ((uint8_t*)(&i))[j];
-      ((uint8_t*)(&i))[j] = ((uint8_t*)(&i))[MOBDB_WKB_INT2_SIZE - j - 1];
-      ((uint8_t*)(&i))[MOBDB_WKB_INT2_SIZE - j - 1] = tmp;
+      ((uint8_t*)(&i))[j] = ((uint8_t*)(&i))[MEOS_WKB_INT2_SIZE - j - 1];
+      ((uint8_t*)(&i))[MEOS_WKB_INT2_SIZE - j - 1] = tmp;
     }
   }
-  s->pos += MOBDB_WKB_INT2_SIZE;
+  s->pos += MEOS_WKB_INT2_SIZE;
   return i;
 }
 
@@ -876,20 +876,20 @@ int32_from_wkb_state(wkb_parse_state *s)
 {
   uint32_t i = 0;
   /* Does the data we want to read exist? */
-  wkb_parse_state_check(s, MOBDB_WKB_INT4_SIZE);
+  wkb_parse_state_check(s, MEOS_WKB_INT4_SIZE);
   /* Get the data */
-  memcpy(&i, s->pos, MOBDB_WKB_INT4_SIZE);
+  memcpy(&i, s->pos, MEOS_WKB_INT4_SIZE);
   /* Swap? Copy into a stack-allocated integer. */
   if (s->swap_bytes)
   {
-    for (int j = 0; j < MOBDB_WKB_INT4_SIZE/2; j++)
+    for (int j = 0; j < MEOS_WKB_INT4_SIZE/2; j++)
     {
       uint8_t tmp = ((uint8_t*)(&i))[j];
-      ((uint8_t*)(&i))[j] = ((uint8_t*)(&i))[MOBDB_WKB_INT4_SIZE - j - 1];
-      ((uint8_t*)(&i))[MOBDB_WKB_INT4_SIZE - j - 1] = tmp;
+      ((uint8_t*)(&i))[j] = ((uint8_t*)(&i))[MEOS_WKB_INT4_SIZE - j - 1];
+      ((uint8_t*)(&i))[MEOS_WKB_INT4_SIZE - j - 1] = tmp;
     }
   }
-  s->pos += MOBDB_WKB_INT4_SIZE;
+  s->pos += MEOS_WKB_INT4_SIZE;
   return i;
 }
 
@@ -901,20 +901,20 @@ int64_from_wkb_state(wkb_parse_state *s)
 {
   uint64_t i = 0;
   /* Does the data we want to read exist? */
-  wkb_parse_state_check(s, MOBDB_WKB_INT8_SIZE);
+  wkb_parse_state_check(s, MEOS_WKB_INT8_SIZE);
   /* Get the data */
-  memcpy(&i, s->pos, MOBDB_WKB_INT8_SIZE);
+  memcpy(&i, s->pos, MEOS_WKB_INT8_SIZE);
   /* Swap? Copy into a stack-allocated integer. */
   if (s->swap_bytes)
   {
-    for (int j = 0; j < MOBDB_WKB_INT8_SIZE/2; j++)
+    for (int j = 0; j < MEOS_WKB_INT8_SIZE/2; j++)
     {
       uint8_t tmp = ((uint8_t*)(&i))[j];
-      ((uint8_t*)(&i))[j] = ((uint8_t*)(&i))[MOBDB_WKB_INT8_SIZE - j - 1];
-      ((uint8_t*)(&i))[MOBDB_WKB_INT8_SIZE - j - 1] = tmp;
+      ((uint8_t*)(&i))[j] = ((uint8_t*)(&i))[MEOS_WKB_INT8_SIZE - j - 1];
+      ((uint8_t*)(&i))[MEOS_WKB_INT8_SIZE - j - 1] = tmp;
     }
   }
-  s->pos += MOBDB_WKB_INT8_SIZE;
+  s->pos += MEOS_WKB_INT8_SIZE;
   return i;
 }
 
@@ -926,20 +926,20 @@ double_from_wkb_state(wkb_parse_state *s)
 {
   double d = 0;
   /* Does the data we want to read exist? */
-  wkb_parse_state_check(s, MOBDB_WKB_DOUBLE_SIZE);
+  wkb_parse_state_check(s, MEOS_WKB_DOUBLE_SIZE);
   /* Get the data */
-  memcpy(&d, s->pos, MOBDB_WKB_DOUBLE_SIZE);
+  memcpy(&d, s->pos, MEOS_WKB_DOUBLE_SIZE);
   /* Swap? Copy into a stack-allocated double */
   if (s->swap_bytes)
   {
-    for (int i = 0; i < MOBDB_WKB_DOUBLE_SIZE/2; i++)
+    for (int i = 0; i < MEOS_WKB_DOUBLE_SIZE/2; i++)
     {
       uint8_t tmp = ((uint8_t*)(&d))[i];
-      ((uint8_t*)(&d))[i] = ((uint8_t*)(&d))[MOBDB_WKB_DOUBLE_SIZE - i - 1];
-      ((uint8_t*)(&d))[MOBDB_WKB_DOUBLE_SIZE - i - 1] = tmp;
+      ((uint8_t*)(&d))[i] = ((uint8_t*)(&d))[MEOS_WKB_DOUBLE_SIZE - i - 1];
+      ((uint8_t*)(&d))[MEOS_WKB_DOUBLE_SIZE - i - 1] = tmp;
     }
   }
-  s->pos += MOBDB_WKB_DOUBLE_SIZE;
+  s->pos += MEOS_WKB_DOUBLE_SIZE;
   return d;
 }
 
@@ -951,20 +951,20 @@ timestamp_from_wkb_state(wkb_parse_state *s)
 {
   int64_t t = 0;
   /* Does the data we want to read exist? */
-  wkb_parse_state_check(s, MOBDB_WKB_TIMESTAMP_SIZE);
+  wkb_parse_state_check(s, MEOS_WKB_TIMESTAMP_SIZE);
   /* Get the data */
-  memcpy(&t, s->pos, MOBDB_WKB_TIMESTAMP_SIZE);
+  memcpy(&t, s->pos, MEOS_WKB_TIMESTAMP_SIZE);
   /* Swap? Copy into a stack-allocated timestamp */
   if (s->swap_bytes)
   {
-    for (int i = 0; i < MOBDB_WKB_TIMESTAMP_SIZE/2; i++)
+    for (int i = 0; i < MEOS_WKB_TIMESTAMP_SIZE/2; i++)
     {
       uint8_t tmp = ((uint8_t*)(&t))[i];
-      ((uint8_t*)(&t))[i] = ((uint8_t*)(&t))[MOBDB_WKB_TIMESTAMP_SIZE - i - 1];
-      ((uint8_t*)(&t))[MOBDB_WKB_TIMESTAMP_SIZE - i - 1] = tmp;
+      ((uint8_t*)(&t))[i] = ((uint8_t*)(&t))[MEOS_WKB_TIMESTAMP_SIZE - i - 1];
+      ((uint8_t*)(&t))[MEOS_WKB_TIMESTAMP_SIZE - i - 1] = tmp;
     }
   }
-  s->pos += MOBDB_WKB_TIMESTAMP_SIZE;
+  s->pos += MEOS_WKB_TIMESTAMP_SIZE;
   return (TimestampTz) t;
 }
 
@@ -1017,7 +1017,7 @@ Npoint *
 npoint_from_wkb_state(wkb_parse_state *s)
 {
   /* Does the data we want to read exist? */
-  wkb_parse_state_check(s, MOBDB_WKB_INT8_SIZE + MOBDB_WKB_DOUBLE_SIZE);
+  wkb_parse_state_check(s, MEOS_WKB_INT8_SIZE + MEOS_WKB_DOUBLE_SIZE);
   /* Get the data */
   int64 rid = int64_from_wkb_state(s);
   double pos = double_from_wkb_state(s);
@@ -1105,11 +1105,11 @@ span_basevalue_from_wkb_size(wkb_parse_state *s)
 static void
 bounds_from_wkb_state(uint8_t wkb_bounds, bool *lower_inc, bool *upper_inc)
 {
-  if (wkb_bounds & MOBDB_WKB_LOWER_INC)
+  if (wkb_bounds & MEOS_WKB_LOWER_INC)
     *lower_inc = true;
   else
     *lower_inc = false;
-  if (wkb_bounds & MOBDB_WKB_UPPER_INC)
+  if (wkb_bounds & MEOS_WKB_UPPER_INC)
     *upper_inc = true;
   else
     *upper_inc = false;
@@ -1190,16 +1190,16 @@ set_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
   s->hasz = false;
   s->geodetic = false;
   s->has_srid = false;
-  if (wkb_flags & MOBDB_WKB_ORDERED)
+  if (wkb_flags & MEOS_WKB_ORDERED)
     s->ordered = true;
   /* Get the flags */
   if (geo_basetype(s->basetype))
   {
-    if (wkb_flags & MOBDB_WKB_ZFLAG)
+    if (wkb_flags & MEOS_WKB_ZFLAG)
       s->hasz = true;
-    if (wkb_flags & MOBDB_WKB_GEODETICFLAG)
+    if (wkb_flags & MEOS_WKB_GEODETICFLAG)
       s->geodetic = true;
-    if (wkb_flags & MOBDB_WKB_SRIDFLAG)
+    if (wkb_flags & MEOS_WKB_SRIDFLAG)
       s->has_srid = true;
   }
   return;
@@ -1222,7 +1222,7 @@ set_from_wkb_state(wkb_parse_state *s)
   /* Read the SRID, if necessary */
   if (s->has_srid)
     s->srid = int32_from_wkb_state(s);
-  else if (wkb_flags & MOBDB_WKB_GEODETICFLAG)
+  else if (wkb_flags & MEOS_WKB_GEODETICFLAG)
     s->srid = SRID_DEFAULT;
 
   /* Read the number of values and allocate space for them */
@@ -1244,12 +1244,12 @@ set_from_wkb_state(wkb_parse_state *s)
 static void
 tbox_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
 {
-  assert(wkb_flags & MOBDB_WKB_XFLAG || wkb_flags & MOBDB_WKB_TFLAG);
+  assert(wkb_flags & MEOS_WKB_XFLAG || wkb_flags & MEOS_WKB_TFLAG);
   s->hasx = false;
   s->hast = false;
-  if (wkb_flags & MOBDB_WKB_XFLAG)
+  if (wkb_flags & MEOS_WKB_XFLAG)
     s->hasx = true;
-  if (wkb_flags & MOBDB_WKB_TFLAG)
+  if (wkb_flags & MEOS_WKB_TFLAG)
     s->hast = true;
   return;
 }
@@ -1285,21 +1285,21 @@ tbox_from_wkb_state(wkb_parse_state *s)
 static void
 stbox_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
 {
-  assert(wkb_flags & MOBDB_WKB_XFLAG || wkb_flags & MOBDB_WKB_TFLAG);
+  assert(wkb_flags & MEOS_WKB_XFLAG || wkb_flags & MEOS_WKB_TFLAG);
   s->hasx = false;
   s->hasz = false;
   s->hast = false;
   s->geodetic = false;
   s->has_srid = false;
-  if (wkb_flags & MOBDB_WKB_XFLAG)
+  if (wkb_flags & MEOS_WKB_XFLAG)
     s->hasx = true;
-  if (wkb_flags & MOBDB_WKB_ZFLAG)
+  if (wkb_flags & MEOS_WKB_ZFLAG)
     s->hasz = true;
-  if (wkb_flags & MOBDB_WKB_TFLAG)
+  if (wkb_flags & MEOS_WKB_TFLAG)
     s->hast = true;
-  if (wkb_flags & MOBDB_WKB_GEODETICFLAG)
+  if (wkb_flags & MEOS_WKB_GEODETICFLAG)
     s->geodetic = true;
-  if (wkb_flags & MOBDB_WKB_SRIDFLAG)
+  if (wkb_flags & MEOS_WKB_SRIDFLAG)
     s->has_srid = true;
   return;
 }
@@ -1317,7 +1317,7 @@ stbox_from_wkb_state(wkb_parse_state *s)
   /* Read the SRID, if necessary */
   if (s->has_srid)
     s->srid = int32_from_wkb_state(s);
-  else if (wkb_flags & MOBDB_WKB_GEODETICFLAG)
+  else if (wkb_flags & MEOS_WKB_GEODETICFLAG)
     s->srid = SRID_DEFAULT;
 
   /* Read and create the box */
@@ -1357,28 +1357,28 @@ temporal_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
   s->geodetic = false;
   s->has_srid = false;
   /* Get the interpolation */
-  s->interp = MOBDB_WKB_GET_INTERP(wkb_flags);
+  s->interp = MEOS_WKB_GET_INTERP(wkb_flags);
   /* Get the flags */
   if (tgeo_type(s->temptype))
   {
-    if (wkb_flags & MOBDB_WKB_ZFLAG)
+    if (wkb_flags & MEOS_WKB_ZFLAG)
       s->hasz = true;
-    if (wkb_flags & MOBDB_WKB_GEODETICFLAG)
+    if (wkb_flags & MEOS_WKB_GEODETICFLAG)
       s->geodetic = true;
-    if (wkb_flags & MOBDB_WKB_SRIDFLAG)
+    if (wkb_flags & MEOS_WKB_SRIDFLAG)
       s->has_srid = true;
   }
   /* Mask off the upper flags to get the subtype */
   wkb_flags &= (uint8_t) 0x03;
   switch (wkb_flags)
   {
-    case MOBDB_WKB_TINSTANT:
+    case MEOS_WKB_TINSTANT:
       s->subtype = TINSTANT;
       break;
-    case MOBDB_WKB_TSEQUENCE:
+    case MEOS_WKB_TSEQUENCE:
       s->subtype = TSEQUENCE;
       break;
-    case MOBDB_WKB_TSEQUENCESET:
+    case MEOS_WKB_TSEQUENCESET:
       s->subtype = TSEQUENCESET;
       break;
     default: /* Error! */
@@ -1500,7 +1500,7 @@ temporal_from_wkb_state(wkb_parse_state *s)
   /* Read the SRID, if necessary */
   if (s->has_srid)
     s->srid = int32_from_wkb_state(s);
-  else if (wkb_flags & MOBDB_WKB_GEODETICFLAG)
+  else if (wkb_flags & MEOS_WKB_GEODETICFLAG)
     s->srid = SRID_DEFAULT;
 
   /* Read the temporal value */
@@ -1534,10 +1534,10 @@ datum_from_wkb(const uint8_t *wkb, int size, meosType type)
   /* Check the endianness of our input */
   s.swap_bytes = false;
   /* Machine arch is big endian, request is for little */
-  if (MOBDB_IS_BIG_ENDIAN && wkb_little_endian)
+  if (MEOS_IS_BIG_ENDIAN && wkb_little_endian)
     s.swap_bytes = true;
   /* Machine arch is little endian, request is for big */
-  else if ((! MOBDB_IS_BIG_ENDIAN) && (! wkb_little_endian))
+  else if ((! MEOS_IS_BIG_ENDIAN) && (! wkb_little_endian))
     s.swap_bytes = true;
 
   /* Call the type-specific function */

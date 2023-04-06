@@ -215,7 +215,7 @@ tpoint_geo_min_dist_at_timestamp(const TInstant *start, const TInstant *end,
   Datum value2 = tinstant_value(end);
   double dist;
   long double fraction = geosegm_locate_point(value1, value2, point, &dist);
-  if (fraction <= MOBDB_EPSILON || fraction >= (1.0 - MOBDB_EPSILON))
+  if (fraction <= MEOS_EPSILON || fraction >= (1.0 - MEOS_EPSILON))
     return false;
   *value = Float8GetDatum(dist);
   *t = start->t + (TimestampTz) (duration * fraction);
@@ -305,7 +305,7 @@ tgeompoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
   double fraction;
   long double duration = (long double) (end1->t - start1->t);
 
-  bool hasz = MOBDB_FLAGS_GET_Z(start1->flags);
+  bool hasz = MEOS_FLAGS_GET_Z(start1->flags);
   if (hasz) /* 3D */
   {
     const POINT3DZ *p1 = DATUM_POINT3DZ_P(&start1->value);
@@ -326,7 +326,7 @@ tgeompoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
     if (!found)
       return false;
   }
-  if (fraction <= MOBDB_EPSILON || fraction >= (1.0 - MOBDB_EPSILON))
+  if (fraction <= MEOS_EPSILON || fraction >= (1.0 - MEOS_EPSILON))
     return false;
   *t = start1->t + (TimestampTz) (duration * fraction);
   /* We know that this function is called only for linear segments */
@@ -394,7 +394,7 @@ tgeogpoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
     fraction = length / seglength;
   }
 
-  if (fraction <= MOBDB_EPSILON || fraction >= (1.0 - MOBDB_EPSILON))
+  if (fraction <= MEOS_EPSILON || fraction >= (1.0 - MEOS_EPSILON))
     return false;
   long double duration = (long double) (end1->t - start1->t);
   *t = start1->t + (TimestampTz) (duration * fraction);
@@ -415,7 +415,7 @@ static bool
 tpoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
   const TInstant *start2, const TInstant *end2, Datum *value, TimestampTz *t)
 {
-  if (MOBDB_FLAGS_GET_GEODETIC(start1->flags))
+  if (MEOS_FLAGS_GET_GEODETIC(start1->flags))
     /* The distance output parameter is not used here */
     return tgeogpoint_min_dist_at_timestamp(start1, end1, start2, end2, value, t);
   else
@@ -445,7 +445,7 @@ distance_tpoint_geo(const Temporal *temp, const GSERIALIZED *geo)
   lfinfo.numparam = 0;
   lfinfo.argtype[0] = lfinfo.argtype[1] = temptype_basetype(temp->temptype);
   lfinfo.restype = T_TFLOAT;
-  lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp->flags);
+  lfinfo.reslinear = MEOS_FLAGS_GET_LINEAR(temp->flags);
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc_base = lfinfo.reslinear ?
@@ -471,8 +471,8 @@ distance_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
   lfinfo.func = (varfunc) pt_distance_fn(temp1->flags);
   lfinfo.numparam = 0;
   lfinfo.restype = T_TFLOAT;
-  lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
-    MOBDB_FLAGS_GET_LINEAR(temp2->flags);
+  lfinfo.reslinear = MEOS_FLAGS_GET_LINEAR(temp1->flags) ||
+    MEOS_FLAGS_GET_LINEAR(temp2->flags);
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc_base = NULL;
@@ -587,9 +587,9 @@ NAI_tpointsegm_linear_geo1(const TInstant *inst1, const TInstant *inst2,
   dist = lw_distance_fraction(line, geo, DIST_MIN, &fraction);
   lwgeom_free(line);
 
-  if (fabsl(fraction) < MOBDB_EPSILON)
+  if (fabsl(fraction) < MEOS_EPSILON)
     *t = inst1->t;
-  else if (fabsl(fraction - 1.0) < MOBDB_EPSILON)
+  else if (fabsl(fraction - 1.0) < MEOS_EPSILON)
     *t = inst2->t;
   else
   {
@@ -719,11 +719,11 @@ nai_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
   if (temp->subtype == TINSTANT)
     result = tinstant_copy((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
-    result = MOBDB_FLAGS_GET_LINEAR(temp->flags) ?
+    result = MEOS_FLAGS_GET_LINEAR(temp->flags) ?
       NAI_tpointseq_linear_geo((TSequence *) temp, geo) :
       NAI_tpointseq_discstep_geo((TSequence *) temp, geo);
   else /* temp->subtype == TSEQUENCESET */
-    result = MOBDB_FLAGS_GET_LINEAR(temp->flags) ?
+    result = MEOS_FLAGS_GET_LINEAR(temp->flags) ?
       NAI_tpointseqset_linear_geo((TSequenceSet *) temp, geo) :
       NAI_tpointseqset_step_geo((TSequenceSet *) temp, geo);
   lwgeom_free(geo);
@@ -814,7 +814,7 @@ nad_stbox_stbox(const STBox *box1, const STBox *box2)
   ensure_same_srid_stbox(box1, box2);
 
   /* If the boxes do not intersect in the time dimension return infinity */
-  bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
+  bool hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
   if (hast && ! overlaps_span_span(&box1->period, &box2->period))
       return DBL_MAX;
 
@@ -848,7 +848,7 @@ nad_tpoint_stbox(const Temporal *temp, const STBox *box)
   ensure_same_spatial_dimensionality_temp_box(temp->flags, box->flags);
   ensure_same_srid_tpoint_stbox(temp, box);
   /* Project the temporal point to the timespan of the box */
-  bool hast = MOBDB_FLAGS_GET_T(box->flags);
+  bool hast = MEOS_FLAGS_GET_T(box->flags);
   Span p, inter;
   if (hast)
   {
@@ -911,7 +911,7 @@ shortestline_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
   if (gserialized_is_empty(gs))
     return false;
   ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
-  bool geodetic = MOBDB_FLAGS_GET_GEODETIC(temp->flags);
+  bool geodetic = MEOS_FLAGS_GET_GEODETIC(temp->flags);
   if (geodetic)
     ensure_has_not_Z_gs(gs);
   ensure_same_dimensionality_tpoint_gs(temp, gs);
@@ -921,7 +921,7 @@ shortestline_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
     *result = geography_shortestline_internal(traj, gs, true);
   else
   {
-    *result = MOBDB_FLAGS_GET_Z(temp->flags) ?
+    *result = MEOS_FLAGS_GET_Z(temp->flags) ?
       gserialized_shortestline3d(traj, gs) :
       gserialized_shortestline2d(traj, gs);
   }

@@ -61,7 +61,7 @@ tcomp_temporal_base(const Temporal *temp, Datum value, meosType basetype,
   lfinfo.restype = T_TBOOL;
   lfinfo.reslinear = false;
   lfinfo.invert = invert;
-  lfinfo.discont = MOBDB_FLAGS_GET_LINEAR(temp->flags);
+  lfinfo.discont = MEOS_FLAGS_GET_LINEAR(temp->flags);
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
   return tfunc_temporal_base(temp, value, &lfinfo);
@@ -89,8 +89,8 @@ tcomp_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   lfinfo.restype = T_TBOOL;
   lfinfo.reslinear = false;
   lfinfo.invert = INVERT_NO;
-  lfinfo.discont = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
-    MOBDB_FLAGS_GET_LINEAR(temp2->flags);
+  lfinfo.discont = MEOS_FLAGS_GET_LINEAR(temp1->flags) ||
+    MEOS_FLAGS_GET_LINEAR(temp2->flags);
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
   Temporal *result = tfunc_temporal_temporal(temp1, temp2, &lfinfo);

@@ -70,7 +70,7 @@ Datum
 tinstant_value(const TInstant *inst)
 {
   /* For base types passed by value */
-  if (MOBDB_FLAGS_GET_BYVAL(inst->flags))
+  if (MEOS_FLAGS_GET_BYVAL(inst->flags))
     return inst->value;
   /* For base types passed by reference */
   return PointerGetDatum(&inst->value);
@@ -84,7 +84,7 @@ Datum
 tinstant_value_copy(const TInstant *inst)
 {
   /* For base types passed by value */
-  if (MOBDB_FLAGS_GET_BYVAL(inst->flags))
+  if (MEOS_FLAGS_GET_BYVAL(inst->flags))
     return inst->value;
   /* For base types passed by reference */
   int16 typlen =  basetype_length(temptype_basetype(inst->temptype));
@@ -305,16 +305,16 @@ tinstant_make(Datum value, meosType temptype, TimestampTz t)
   result->subtype = TINSTANT;
   result->t = t;
   SET_VARSIZE(result, size);
-  MOBDB_FLAGS_SET_BYVAL(result->flags, typbyval);
+  MEOS_FLAGS_SET_BYVAL(result->flags, typbyval);
   bool continuous = temptype_continuous(temptype);
-  MOBDB_FLAGS_SET_CONTINUOUS(result->flags, continuous);
-  MOBDB_FLAGS_SET_X(result->flags, true);
-  MOBDB_FLAGS_SET_T(result->flags, true);
+  MEOS_FLAGS_SET_CONTINUOUS(result->flags, continuous);
+  MEOS_FLAGS_SET_X(result->flags, true);
+  MEOS_FLAGS_SET_T(result->flags, true);
   if (tgeo_type(temptype))
   {
     GSERIALIZED *gs = DatumGetGserializedP(value);
-    MOBDB_FLAGS_SET_Z(result->flags, FLAGS_GET_Z(gs->gflags));
-    MOBDB_FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(gs->gflags));
+    MEOS_FLAGS_SET_Z(result->flags, FLAGS_GET_Z(gs->gflags));
+    MEOS_FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(gs->gflags));
     PG_FREE_IF_COPY_P(gs, DatumGetPointer(value));
   }
   return result;
@@ -519,7 +519,7 @@ tintinst_to_tfloatinst(const TInstant *inst)
 {
   TInstant *result = tinstant_copy(inst);
   result->temptype = T_TFLOAT;
-  MOBDB_FLAGS_SET_CONTINUOUS(result->flags, true);
+  MEOS_FLAGS_SET_CONTINUOUS(result->flags, true);
   result->value = Float8GetDatum((double) DatumGetInt32(tinstant_value(inst)));
   return result;
 }
@@ -534,7 +534,7 @@ tfloatinst_to_tintinst(const TInstant *inst)
 {
   TInstant *result = tinstant_copy(inst);
   result->temptype = T_TINT;
-  MOBDB_FLAGS_SET_CONTINUOUS(result->flags, false);
+  MEOS_FLAGS_SET_CONTINUOUS(result->flags, false);
   result->value = Int32GetDatum((double) DatumGetFloat8(tinstant_value(inst)));
   return result;
 }

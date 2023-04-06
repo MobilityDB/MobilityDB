@@ -116,7 +116,7 @@ tnpointcontseq_tgeompointcontseq(const TSequence *seq)
   pfree(DatumGetPointer(line));
   lwline_free(lwline);
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
-    seq->period.upper_inc, MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
+    seq->period.upper_inc, MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
 }
 
 /**
@@ -145,7 +145,7 @@ tnpoint_tgeompoint(const Temporal *temp)
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tnpointinst_tgeompointinst((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
-    result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
+    result = MEOS_FLAGS_GET_DISCRETE(temp->flags) ?
       (Temporal *) tnpointdiscseq_tgeompointdiscseq((TSequence *) temp) :
       (Temporal *) tnpointcontseq_tgeompointcontseq((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
@@ -190,7 +190,7 @@ tgeompointseq_tnpointseq(const TSequence *seq)
   }
   TSequence *result = tsequence_make_free(instants, seq->count,
     seq->period.lower_inc, seq->period.upper_inc,
-    MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
+    MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
   return result;
 }
 
@@ -299,7 +299,7 @@ tnpointseq_linear_positions(const TSequence *seq)
 Nsegment **
 tnpointseq_positions(const TSequence *seq, int *count)
 {
-  if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
+  if (MEOS_FLAGS_GET_LINEAR(seq->flags))
   {
     Nsegment **result = palloc(sizeof(Nsegment *));
     result[0] = tnpointseq_linear_positions(seq);
@@ -357,7 +357,7 @@ Nsegment **
 tnpointseqset_positions(const TSequenceSet *ss, int *count)
 {
   Nsegment **result;
-  result = (MOBDB_FLAGS_GET_LINEAR(ss->flags)) ?
+  result = (MEOS_FLAGS_GET_LINEAR(ss->flags)) ?
     tnpointseqset_linear_positions(ss, count) :
     tnpointseqset_step_positions(ss, count);
   return result;
@@ -401,7 +401,7 @@ tnpointinst_route(const TInstant *inst)
 int64
 tnpoint_route(const Temporal *temp)
 {
-  if ( temp->subtype != TINSTANT && MOBDB_FLAGS_GET_DISCRETE(temp->flags) )
+  if ( temp->subtype != TINSTANT && MEOS_FLAGS_GET_DISCRETE(temp->flags) )
     elog(ERROR, "Input must be a temporal instant or a temporal sequence with continuous interpolation");
 
   const TInstant *inst = (temp->subtype == TINSTANT) ?
@@ -481,7 +481,7 @@ tnpoint_routes(const Temporal *temp)
   if (temp->subtype == TINSTANT)
     result = tnpointinst_routes((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
-    result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
+    result = MEOS_FLAGS_GET_DISCRETE(temp->flags) ?
       tnpointdiscseq_routes((TSequence *) temp) :
       tnpointcontseq_routes((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */

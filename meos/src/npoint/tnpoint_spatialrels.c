@@ -114,8 +114,8 @@ espatialrel_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
   lfinfo.restype = T_TBOOL;
   lfinfo.reslinear = false;
   lfinfo.invert = INVERT_NO;
-  lfinfo.discont = MOBDB_FLAGS_GET_LINEAR(tpoint1->flags) ||
-    MOBDB_FLAGS_GET_LINEAR(tpoint2->flags);
+  lfinfo.discont = MEOS_FLAGS_GET_LINEAR(tpoint1->flags) ||
+    MEOS_FLAGS_GET_LINEAR(tpoint2->flags);
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
   int result = efunc_temporal_temporal(tpoint1, tpoint2, &lfinfo);
