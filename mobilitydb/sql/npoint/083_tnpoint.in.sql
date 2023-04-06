@@ -143,11 +143,12 @@ CREATE FUNCTION tnpoint_seqset(tnpoint[])
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Tsequenceset_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- The function is not strict
 CREATE FUNCTION tnpoint_seqset_gaps(tnpoint[], maxt interval DEFAULT NULL,
     maxdist float DEFAULT NULL, text DEFAULT 'linear')
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Tsequenceset_constructor_gaps'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 /******************************************************************************
  * Cast functions
@@ -178,7 +179,7 @@ CREATE FUNCTION tnpoint_inst(tnpoint)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_to_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tnpoint_seq(tnpoint, text DEFAULT 'linear')
+CREATE FUNCTION tnpoint_seq(tnpoint)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -187,9 +188,9 @@ CREATE FUNCTION tnpoint_seqset(tnpoint)
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequenceset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION toLinear(tnpoint)
+CREATE FUNCTION setInterp(tnpoint, text)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Tempstep_to_templinear'
+  AS 'MODULE_PATHNAME', 'Temporal_set_interp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION round(tnpoint, int DEFAULT 0)
@@ -227,9 +228,9 @@ CREATE FUNCTION tempSubtype(tnpoint)
   AS 'MODULE_PATHNAME', 'Temporal_subtype'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION interpolation(tnpoint)
+CREATE FUNCTION interp(tnpoint)
   RETURNS text
-  AS 'MODULE_PATHNAME', 'Temporal_interpolation'
+  AS 'MODULE_PATHNAME', 'Temporal_interp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION memSize(tnpoint)

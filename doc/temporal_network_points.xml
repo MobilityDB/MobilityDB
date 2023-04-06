@@ -373,54 +373,56 @@ SELECT tnpoint '[Npoint(1, 0.2)@2001-01-01 09:00:00, Npoint(2, 0.2)@2001-01-01 0
 		<title>Constructors</title>
 
 			<itemizedlist>
-				<listitem id="tnpoint">
-					<indexterm><primary><varname>=</varname></primary></indexterm>
-					<para>Constructor for temporal network points from a base value and a time value</para>
-					<para><varname>tnpoint(npoint,time,linear=true) → tnpoint</varname></para>
-					<para>When the second argument is a time span or span set, an optional Boolean argument states whether the resulting value has linear interpolation. If the argument is not given it assumed true by default.</para>
+				<listitem id="tnpoint_const">
+					<indexterm><primary><varname>tnpoint_inst</varname></primary></indexterm>
+					<indexterm><primary><varname>tnpoint_seq</varname></primary></indexterm>
+					<indexterm><primary><varname>tnpoint_seqset</varname></primary></indexterm>
+					<para>Constructor for temporal network points having a constant value</para>
+					<para><varname>tnpoint_inst(npoint,timestamptz) → tnpoint_inst</varname></para>
+					<para><varname>tnpoint_seq(npoint,tstzset) → tnpoint_discseq</varname></para>
+					<para><varname>tnpoint_seq(npoint,tstzspan,interp='linear') → tnpoint_contseq</varname></para>
+					<para><varname>tnpoint_seqset(npoint,tstzspanset,interp='linear') → tnpoint_seqset</varname></para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT tnpoint('Npoint(1, 0.5)', timestamptz '2000-01-01');
+SELECT tnpoint_inst('Npoint(1, 0.5)', timestamptz '2000-01-01');
 -- NPoint(1,0.5)@2000-01-01
-SELECT tnpoint('Npoint(1, 0.3)', tstzset '{2000-01-01, 2000-01-03, 2000-01-05}');
+SELECT tnpoint_seq('Npoint(1, 0.3)', tstzset '{2000-01-01, 2000-01-03, 2000-01-05}');
 -- {NPoint(1,0.3)@2000-01-01, NPoint(1,0.3)@2000-01-03, NPoint(1,0.3)@2000-01-05}
-SELECT tnpoint('Npoint(1, 0.5)', tstzspan '[2000-01-01, 2000-01-02]');
+SELECT tnpoint_seq('Npoint(1, 0.5)', tstzspan '[2000-01-01, 2000-01-02]');
 -- [NPoint(1,0.5)@2000-01-01, NPoint(1,0.5)@2000-01-02]
-SELECT tnpoint('Npoint(1, 0.2)', tstzspanset '{[2000-01-01, 2000-01-03]}', false);
+SELECT tnpoint_seqset('Npoint(1, 0.2)', tstzspanset '{[2000-01-01, 2000-01-03]}', 'step');
 -- Interp=Step;{[NPoint(1,0.2)@2000-01-01, NPoint(1,0.2)@2000-01-03]}
 </programlisting>
 				</listitem>
 
-				<listitem id="tnpoint_discseq">
+				<listitem id="tnpoint_seq">
 					<indexterm><primary><varname>=</varname></primary></indexterm>
-					<para>Constructor for temporal network points of sequence subtype and discrete interpolation</para>
-					<para><varname>tnpoint_discseq(tnpoint[]) → tnpoint_discseq</varname></para>
+					<para>Constructor for temporal network points of sequence subtype</para>
+					<para><varname>tnpoint_seq(tnpoint_inst[],interp={'step','linear'},left_inc=true,right_inc=true) →</varname></para>
+					<para><varname>  tnpoint_seq</varname></para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT tnpoint_discseq(ARRAY[tnpoint 'Npoint(1, 0.3)@2000-01-01',
+SELECT tnpoint_seq(ARRAY[tnpoint 'Npoint(1, 0.3)@2000-01-01',
   'Npoint(1, 0.5)@2000-01-02', 'Npoint(1, 0.5)@2000-01-03']);
 -- {NPoint(1,0.3)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.5)@2000-01-03}
-</programlisting>
-				</listitem>
-
-				<listitem id="tnpoint_contseq">
-					<indexterm><primary><varname>=</varname></primary></indexterm>
-					<para>Constructor for temporal network points of sequence subtype and linear or step interpolation</para>
-					<para><varname>tnpoint_contseq(tnpoint[],lower_inc=true,upper_inc=true,linear=true) → tnpoint_seq</varname></para>
-					<programlisting language="sql" xml:space="preserve">
-SELECT tnpoint_contseq(ARRAY[tnpoint 'Npoint(1, 0.2)@2000-01-01',
+SELECT tnpoint_seq(ARRAY[tnpoint 'Npoint(1, 0.2)@2000-01-01',
   'Npoint(1, 0.4)@2000-01-02', 'Npoint(1, 0.5)@2000-01-03']);
 -- [NPoint(1,0.2)@2000-01-01, NPoint(1,0.4)@2000-01-02, NPoint(1,0.5)@2000-01-03]
 </programlisting>
 				</listitem>
 
 				<listitem id="tnpoint_seqset">
-					<indexterm><primary><varname>=</varname></primary></indexterm>
+					<indexterm><primary><varname>tnpoint_seqset</varname></primary></indexterm>
 					<para>Constructor for temporal network points of sequence set subtype</para>
 					<para><varname>tnpoint_seqset(tnpoint[]) → tnpoint_seqset</varname></para>
+					<para><varname>tnpoint_seqset_gaps(tnpoint_inst[],maxt=NULL,maxdist=NULL,interp='linear') →</varname></para>
+					<para><varname>  tnpoint_seqset</varname></para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT tnpoint_seqset(ARRAY[tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02,
-  Npoint(1, 0.5)@2000-01-03]', '[Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]']);
+SELECT tnpoint_seqset(ARRAY[tnpoint '[Npoint(1,0.2)@2000-01-01, Npoint(1,0.4)@2000-01-02,
+  Npoint(1,0.5)@2000-01-03]', '[Npoint(2,0.6)@2000-01-04, Npoint(2,0.6)@2000-01-05]']);
 /* {[NPoint(1,0.2)@2000-01-01, NPoint(1,0.4)@2000-01-02, NPoint(1,0.5)@2000-01-03],
    [NPoint(2,0.6)@2000-01-04, NPoint(2,0.6)@2000-01-05]} */
+SELECT tnpoint_seqset_gaps(ARRAY[tnpoint 'NPoint(1,0.1)@2000-01-01',
+  'NPoint(1,0.3)@2000-01-03', 'NPoint(1,0.5)@2000-01-05'], '1 day');
+-- {[NPoint(1,0.1)@2000-01-01], [NPoint(1,0.3)@2000-01-03], [NPoint(1,0.5)@2000-01-05]}
 </programlisting>
 				</listitem>
 			</itemizedlist>
@@ -466,15 +468,13 @@ SELECT tgeompoint '[POINT(23.057077727326 28.7666335767956)@2001-01-01,
 		<para>Most functions for temporal types described in the previous chapters can be applied for temporal network point types. Therefore, in the signatures of the functions, the notation <varname>base</varname> also represents an <varname>npoint</varname> and the notations <varname>ttype</varname>, <varname>tpoint</varname>, and <varname>tgeompoint</varname> also represent a <varname>tnpoint</varname>. Furthermore, the functions that have an argument of type <varname>geometry</varname> accept in addition an argument of type <varname>npoint</varname>. To avoid redundancy, we only present next some examples of these functions and operators for temporal network points.</para>
 
 		<itemizedlist>
-			<listitem id="tnpoint_transform">
+			<listitem id="tnpoint_subtype">
 				<indexterm><primary><varname>tnpoint_inst</varname></primary></indexterm>
-				<indexterm><primary><varname>tnpoint_discseq</varname></primary></indexterm>
-				<indexterm><primary><varname>tnpoint_contseq</varname></primary></indexterm>
+				<indexterm><primary><varname>tnpoint_seq</varname></primary></indexterm>
 				<indexterm><primary><varname>tnpoint_seqset</varname></primary></indexterm>
 				<para>Transform a temporal network point to another subtype</para>
 				<para><varname>tnpoint_inst(tnpoint) → tnpoint_inst</varname></para>
-				<para><varname>tnpoint_discseq(tnpoint) → tnpoint_discseq</varname></para>
-				<para><varname>tnpoint_contseq(tnpoint) → tnpoint_contseq</varname></para>
+				<para><varname>tnpoint_seq(tnpoint) → tnpoint_seq</varname></para>
 				<para><varname>tnpoint_seqset(tnpoint) → tnpoint_seqset</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tnpoint_discseq(tnpoint 'NPoint(1, 0.5)@2001-01-01');
@@ -486,12 +486,25 @@ SELECT tnpoint_seqset(tnpoint 'NPoint(1, 0.5)@2001-01-01');
 </programlisting>
 			</listitem>
 
+			<listitem id="tnpoint_setInterp">
+				<indexterm><primary><varname>setInterp</varname></primary></indexterm>
+				<para>Transform a temporal network point to another interpolation</para>
+				<para><varname>setInterp(tnpoint, interp) → tnpoint</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT setInterp(tnpoint 'NPoint(1,0.2)@2001-01-01','linear');
+-- [NPoint(1,0.2)@2001-01-01]
+SELECT setInterp(tnpoint '{[NPoint(1,0.1)@2000-01-01], [NPoint(1,0.2)@2000-01-02]}',
+  'discrete');
+-- {NPoint(1,0.1)@2000-01-01, NPoint(1,0.2)@2000-01-02}
+</programlisting>
+			</listitem>
+
 			<listitem id="tnpoint_round">
 				<indexterm><primary><varname>round</varname></primary></indexterm>
 				<para>Round the fraction of the temporal network point to the number of decimal places</para>
 				<para><varname>round(tnpoint,integer) → tnpoint</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT round(tnpoint '{[NPoint(1, 0.123456789)@2001-01-01, NPoint(1, 0.5)@2001-01-02)}', 6);
+SELECT round(tnpoint '{[NPoint(1,0.123456789)@2001-01-01, NPoint(1,0.5)@2001-01-02)}', 6);
 -- {[NPoint(1,0.123457)@2001-01-01 00:00:00+01, NPoint(1,0.5)@2001-01-02 00:00:00+01)}
 </programlisting>
 			</listitem>

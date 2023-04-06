@@ -682,7 +682,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="interpolation"><varname>interpolation</varname></link>: Get the interpolation</para>
+					<para><link linkend="interp"><varname>interp</varname></link>: Get the interpolation</para>
 				</listitem>
 
 				<listitem>
@@ -780,7 +780,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="toLinear"><varname>toLinear</varname></link>: Transform a temporal value with continuous base type from step to linear interpolation</para>
+					<para><link linkend="setInterp"><varname>setInterp</varname></link>: Transform a temporal value to another interpolation</para>
 				</listitem>
 
 				<listitem>
@@ -1570,15 +1570,11 @@
 				<title>Constructors</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tnpoint"><varname>tnpoint</varname></link>: Constructor for temporal network points from a base value and a time value</para>
+						<para><link linkend="tnpoint_const"><varname>tnpoint_inst</varname>, <varname>tnpoint_seq</varname>, <varname>tnpoint_seqset</varname></link>: Constructor for temporal network points from a base value and a time value</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_discseq"><varname>tnpoint_discseq</varname></link>: Constructors for temporal network points of sequence subtype and discrete interpolation</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tnpoint_contseq"><varname>tnpoint_contseq</varname></link>: Constructor for temporal network points of sequence subtype and continuous interpolation, that is, linear or step interpolation</para>
+						<para><link linkend="tnpoint_seq"><varname>tnpoint_seq</varname></link>: Constructors for temporal network points of sequence subtype</para>
 					</listitem>
 
 					<listitem>
@@ -1604,7 +1600,11 @@
 				<title>Operations</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tnpoint_transform"><varname>tnpoint_inst, tnpoint_discseq, tnpoint_contseq, tnpoint_seqset</varname></link>: Transform a temporal network to another subtype</para>
+						<para><link linkend="tnpoint_subtype"><varname>tnpoint_inst, tnpoint_discseq, tnpoint_contseq, tnpoint_seqset</varname></link>: Transform a temporal network to another subtype</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_setInterp"><varname>setInterp</varname></link>: Transform a temporal network point in another interpolation</para>
 					</listitem>
 
 					<listitem>

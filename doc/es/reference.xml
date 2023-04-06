@@ -664,7 +664,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="interpolation"><varname>interpolation</varname></link>: Obtener la interpolación</para>
+					<para><link linkend="interp"><varname>interp</varname></link>: Obtener la interpolación</para>
 				</listitem>
 
 				<listitem>
@@ -762,7 +762,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="toLinear"><varname>toLinear</varname></link>: Transformar un valor temporal con tipo de base continuo de interpolación escalonada a lineal</para>
+					<para><link linkend="setInterp"><varname>setInterp</varname></link>: Transformar un valor temporal a otra interpolación</para>
 				</listitem>
 
 				<listitem>
@@ -1548,7 +1548,7 @@
 				<title>Constructores</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tnpoint"><varname>tnpoint</varname></link>: Constructor para puntos de red temporal a partir de un valor base y un valor de tiempo</para>
+						<para><link linkend="tnpoint_const"><varname>tnpoint_inst</varname>, <varname>tnpoint_seq</varname>, <varname>tnpoint_seqset</varname></link>: Constructor para puntos de red temporal a partir de un valor base y un valor de tiempo</para>
 					</listitem>
 
 					<listitem>
@@ -1578,7 +1578,11 @@
 				<title>Operaciones</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tnpoint_transform"><varname>tnpoint_inst, tnpoint_seq, tnpoint_seqset</varname></link>: Transformar un punto de red temporal en otro subtipo</para>
+						<para><link linkend="tnpoint_subtype"><varname>tnpoint_inst, tnpoint_seq, tnpoint_seqset</varname></link>: Transformar un punto de red temporal en otro subtipo</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_setInterp"><varname>setInterp</varname></link>: Transformar un punto de red temporal en otra interpolación</para>
 					</listitem>
 
 					<listitem>

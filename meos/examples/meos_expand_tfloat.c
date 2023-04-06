@@ -33,7 +33,7 @@
  * instants, and the distance travelled.
  *
  * Please read the assumptions made about the input file `aisinput.csv` in the
- * file `meos_read_ais.c` in the same directory. Furthermore, this program
+ * file `02_meos_read_ais.c` in the same directory. Furthermore, this program
  * assumes the input file contains less than 50K observations for at most
  * five ships. Also, the program does not cope with erroneous inputs, such as
  * two or more observations for the same ship with equal timestamp values and

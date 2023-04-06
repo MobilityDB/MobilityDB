@@ -476,10 +476,9 @@ SELECT tint(tfloat '{[1@2001-01-01, 1@2001-01-02], [2@2001-01-03, 2@2001-01-04]}
 -------------------------------------------------------------------------------
 
 SELECT tbool_inst(tbool 't@2000-01-01');
-SELECT tbool_seq(tbool 't@2000-01-01', 'discrete');
-SELECT tbool_seq(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', 'discrete');
 SELECT tbool_seq(tbool 't@2000-01-01');
 SELECT tbool_seq(tbool '{t@2000-01-01}');
+SELECT tbool_seq(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
 SELECT tbool_seq(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
 SELECT tbool_seqset(tbool 't@2000-01-01');
 SELECT tbool_seqset(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
@@ -489,16 +488,12 @@ SELECT tbool_seqset(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-0
 SELECT tbool_inst(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
 SELECT tbool_inst(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
 SELECT tbool_inst(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
-SELECT tbool_seq(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', 'discrete');
-SELECT tbool_seq(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', 'discrete');
-SELECT tbool_seq(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
 SELECT tbool_seq(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
 
 SELECT tint_inst(tint '1@2000-01-01');
-SELECT tint_seq(tint '1@2000-01-01', 'discrete');
-SELECT tint_seq(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', 'discrete');
 SELECT tint_seq(tint '1@2000-01-01');
 SELECT tint_seq(tint '{1@2000-01-01}');
+SELECT tint_seq(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
 SELECT tint_seq(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
 SELECT tint_seqset(tint '1@2000-01-01');
 SELECT tint_seqset(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
@@ -508,22 +503,15 @@ SELECT tint_seqset(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-
 SELECT tint_inst(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
 SELECT tint_inst(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
 SELECT tint_inst(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
-SELECT tint_seq(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', 'discrete');
-SELECT tint_seq(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', 'discrete');
-SELECT tint_seq(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
 SELECT tint_seq(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
 
 SELECT tfloat_inst(tfloat '1.5@2000-01-01');
 SELECT tfloat_inst(tfloat '{1.5@2000-01-01}');
 SELECT tfloat_inst(tfloat '[1.5@2000-01-01]');
 SELECT tfloat_inst(tfloat '{[1.5@2000-01-01]}');
-SELECT tfloat_seq(tfloat '1.5@2000-01-01', 'discrete');
-SELECT tfloat_seq(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', 'discrete');
-SELECT tfloat_seq(tfloat '[1.5@2000-01-01]', 'discrete');
-SELECT tfloat_seq(tfloat '{[1.5@2000-01-01], [2.5@2000-01-02], [1.5@2000-01-03]}', 'discrete');
 SELECT tfloat_seq(tfloat '1.5@2000-01-01');
 SELECT tfloat_seq(tfloat '{1.5@2000-01-01}');
-SELECT tfloat_seq(tfloat '{1.5@2000-01-01}');
+SELECT tfloat_seq(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
 SELECT tfloat_seq(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
 SELECT tfloat_seq(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]}');
 SELECT tfloat_seq(tfloat 'Interp=Step;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]}');
@@ -536,16 +524,12 @@ SELECT tfloat_seqset(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[
 SELECT tfloat_inst(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
 SELECT tfloat_inst(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
 SELECT tfloat_inst(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
-SELECT tfloat_seq(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', 'discrete');
-SELECT tfloat_seq(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', 'discrete');
-SELECT tfloat_seq(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
 SELECT tfloat_seq(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
 
 SELECT ttext_inst(ttext 'AAA@2000-01-01');
-SELECT ttext_seq(ttext 'AAA@2000-01-01', 'discrete');
-SELECT ttext_seq(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', 'discrete');
 SELECT ttext_seq(ttext 'AAA@2000-01-01');
 SELECT ttext_seq(ttext '{AAA@2000-01-01}');
+SELECT ttext_seq(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
 SELECT ttext_seq(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
 SELECT ttext_seqset(ttext 'AAA@2000-01-01');
 SELECT ttext_seqset(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
@@ -555,18 +539,34 @@ SELECT ttext_seqset(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CC
 SELECT ttext_inst(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
 SELECT ttext_inst(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
 SELECT ttext_inst(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
-SELECT ttext_seq(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', 'discrete');
-SELECT ttext_seq(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', 'discrete');
-SELECT ttext_seq(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
 SELECT ttext_seq(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
 
 -------------------------------------------------------------------------------
 
-SELECT toLinear(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 2@2000-01-04]');
-SELECT toLinear(tfloat 'Interp=Step;[1@2000-01-01]');
-SELECT toLinear(tfloat 'Interp=Step;[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 2@2000-01-04]');
-SELECT toLinear(tfloat 'Interp=Step;{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 2@2000-01-04], [3@2000-01-05, 4@2000-01-06]}');
-SELECT toLinear(tfloat 'Interp=Step;{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 2@2000-01-04]}');
+SELECT setInterp(tbool 't@2000-01-01', 'discrete');
+SELECT setInterp(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', 'discrete');
+SELECT setInterp(tint '1@2000-01-01', 'discrete');
+SELECT setInterp(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', 'discrete');
+SELECT setInterp(tfloat '1.5@2000-01-01', 'discrete');
+SELECT setInterp(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', 'discrete');
+SELECT setInterp(tfloat '[1.5@2000-01-01]', 'discrete');
+SELECT setInterp(tfloat '{[1.5@2000-01-01], [2.5@2000-01-02], [1.5@2000-01-03]}', 'discrete');
+SELECT setInterp(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 2@2000-01-04]', 'linear');
+SELECT setInterp(tfloat 'Interp=Step;[1@2000-01-01]', 'linear');
+SELECT setInterp(tfloat 'Interp=Step;[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 2@2000-01-04]', 'linear');
+SELECT setInterp(tfloat 'Interp=Step;{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 2@2000-01-04], [3@2000-01-05, 4@2000-01-06]}', 'linear');
+SELECT setInterp(tfloat 'Interp=Step;{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 2@2000-01-04]}', 'linear');
+SELECT setInterp(ttext 'AAA@2000-01-01', 'discrete');
+SELECT setInterp(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', 'discrete');
+/* Errors */
+SELECT setInterp(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', 'discrete');
+SELECT setInterp(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', 'discrete');
+SELECT setInterp(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', 'discrete');
+SELECT setInterp(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', 'discrete');
+SELECT setInterp(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', 'discrete');
+SELECT setInterp(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', 'discrete');
+SELECT setInterp(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', 'discrete');
+SELECT setInterp(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', 'discrete');
 
 -------------------------------------------------------------------------------
 
@@ -762,25 +762,25 @@ SELECT tempSubtype(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
 SELECT tempSubtype(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
 SELECT tempSubtype(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
 
-SELECT interpolation(tbool 't@2000-01-01');
-SELECT interpolation(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
-SELECT interpolation(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
-SELECT interpolation(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
-SELECT interpolation(tint '1@2000-01-01');
-SELECT interpolation(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
-SELECT interpolation(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
-SELECT interpolation(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
-SELECT interpolation(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
-SELECT interpolation(tfloat '1.5@2000-01-01');
-SELECT interpolation(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
-SELECT interpolation(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
-SELECT interpolation(tfloat 'Interp=Step;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
-SELECT interpolation(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
-SELECT interpolation(tfloat 'Interp=Step;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
-SELECT interpolation(ttext 'AAA@2000-01-01');
-SELECT interpolation(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
-SELECT interpolation(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
-SELECT interpolation(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
+SELECT interp(tbool 't@2000-01-01');
+SELECT interp(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
+SELECT interp(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
+SELECT interp(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
+SELECT interp(tint '1@2000-01-01');
+SELECT interp(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
+SELECT interp(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
+SELECT interp(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
+SELECT interp(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
+SELECT interp(tfloat '1.5@2000-01-01');
+SELECT interp(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
+SELECT interp(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
+SELECT interp(tfloat 'Interp=Step;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
+SELECT interp(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
+SELECT interp(tfloat 'Interp=Step;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
+SELECT interp(ttext 'AAA@2000-01-01');
+SELECT interp(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
+SELECT interp(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
+SELECT interp(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
 
 SELECT memSize(tbool 't@2000-01-01');
 SELECT memSize(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');

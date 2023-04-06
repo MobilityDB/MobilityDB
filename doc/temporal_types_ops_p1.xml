@@ -432,7 +432,9 @@ SELECT ttextFromHexWKB('01170001040000000000000041414100009C57D3C11C0000');
 			<listitem id="ttype_const">
 				<para>Constructors for temporal types having a constant value</para>
 				<para>These contructors have two arguments, a base type and a time value, where the latter is a <varname>timestamptz</varname>, a <varname>tstzset</varname>, a <varname>tstzspan</varname>, or a <varname>tstzspanset</varname> value for constructing, respectively, an instant, a sequence with discrete interpolation, a sequence with linear or step interpolation, or a sequence set value. The functions for sequence or sequence set values with continuous base type have an optional third argument stating whether the resulting temporal value has linear or step interpolation. Linear interpolation is assumed by default if the argument is not specified.</para>
-				<indexterm><primary><varname>ttype</varname></primary></indexterm>
+				<indexterm><primary><varname>ttype_inst</varname></primary></indexterm>
+				<indexterm><primary><varname>ttype_seq</varname></primary></indexterm>
+				<indexterm><primary><varname>ttype_seqset</varname></primary></indexterm>
 				<para><varname>ttype_inst(base,timestamptz) → ttype_inst</varname></para>
 				<para><varname>ttype_seq(base,tstzset) → ttype_discseq</varname></para>
 				<para><varname>ttype_seq(base,tstzspan,interp='linear') → ttype_contseq</varname></para>
@@ -474,10 +476,11 @@ SELECT tgeogpoint_seq(ARRAY[tgeogpoint 'Point(1 1)@2001-01-01 08:00:00',
 
 			<listitem id="ttype_seqset">
 				<para>Constructors for temporal types of sequence set subtype</para>
-				<para>A first set of contructors have a single argument, which is an array of values of the corresponding <emphasis>sequence</emphasis> values. The interpolation of the resulting temporal value depends on the interpolation of the composing sequences. An error is raised if the sequences composing the array have different interpolation.</para>
 				<indexterm><primary><varname>ttype_seqset</varname></primary></indexterm>
 				<indexterm><primary><varname>ttype_seqset_gaps</varname></primary></indexterm>
 				<para><varname>ttype_seqset(ttype_contseq[]) → ttype_seqset</varname></para>
+				<para><varname>ttype_seqset_gaps(ttype_inst[],maxt=NULL,maxdist=NULL,interp='linear') → ttype_seqset</varname></para>
+				<para>A first set of contructors have a single argument, which is an array of values of the corresponding <emphasis>sequence</emphasis> values. The interpolation of the resulting temporal value depends on the interpolation of the composing sequences. An error is raised if the sequences composing the array have different interpolation.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbool_seqset(ARRAY[tbool '[false@2001-01-01 08:00:00, false@2001-01-01 08:05:00)',
   '[true@2001-01-01 08:05:00]','(false@2001-01-01 08:05:00, false@2001-01-01 08:10:00)']);
@@ -502,7 +505,6 @@ SELECT tfloat_seqset(ARRAY[tfloat 'Interp=Step;[1.0@2001-01-01 08:00:00,
 -- ERROR:  Input sequences must have the same interpolation
 </programlisting>
 				<para>Finally, another set of constructors for sequence set values have as first argument an array of the corresponding <emphasis>instant</emphasis> values, and two optional arguments stating a maximum time interval and a maximum distance such that a gap is introduced between sequences of the result whenever two consecutive input instants have a time gap or a distance greater than these values. For temporal points, the distance is specified in units of the coordinate system. When none of the gap arguments are given, the resulting value will be a singleton sequence set. In addition, when the base type is continuous, an additional last argument states whether the interpolation is step or linear. It this argument is not specified it is assumed to be linear by default.</para>
-				<para><varname>ttype_seqset_gaps(ttype_inst[],maxt=NULL,maxdist=NULL,interp='linear') → ttype_seqset</varname></para>
 				<para>The parameters of the function depend on the temporal type. For example, the interpolation parameter is not allowed for temporal types with discrete subtype such as <varname>tint</varname>. Similarly, the parameter <varname>maxdist</varname> is not allowed for scalar types such as <varname>ttext</varname> that do not have a standard distance function.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tint_seqset_gaps(ARRAY[tint '1@2000-01-01', '3@2000-01-02', '4@2000-01-03',
@@ -666,22 +668,22 @@ SELECT tempSubtype(tint '[1@2001-01-01, 2@2001-01-02, 3@2001-01-03]');
 </programlisting>
 			</listitem>
 
-			<listitem id="interpolation">
+			<listitem id="interp">
 				<indexterm><primary><varname>interpolation</varname></primary></indexterm>
 				<para>Get the interpolation</para>
-				<para><varname>interpolation(ttype) → {'None', 'Discrete','Step','Linear'}</varname></para>
+				<para><varname>interp(ttype) → {'None', 'Discrete','Step','Linear'}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT interpolation(tbool 'true@2001-01-01');
+SELECT interp(tbool 'true@2001-01-01');
 -- None
-SELECT interpolation(tfloat '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03}');
+SELECT interp(tfloat '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03}');
 -- Discrete
-SELECT interpolation(tint '[1@2001-01-01, 2@2001-01-02, 3@2001-01-03]');
+SELECT interp(tint '[1@2001-01-01, 2@2001-01-02, 3@2001-01-03]');
 -- Step
-SELECT interpolation(tfloat '[1@2001-01-01, 2@2001-01-02, 3@2001-01-03]');
+SELECT interp(tfloat '[1@2001-01-01, 2@2001-01-02, 3@2001-01-03]');
 -- Linear
-SELECT interpolation(tfloat 'Interp=Step;[1@2001-01-01, 2@2001-01-02, 3@2001-01-03]');
+SELECT interp(tfloat 'Interp=Step;[1@2001-01-01, 2@2001-01-02, 3@2001-01-03]');
 -- Step
-SELECT interpolation(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01,
+SELECT interp(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01,
   Point(2 2)@2001-01-02, Point(3 3)@2001-01-03]');
 -- Step
 </programlisting>
@@ -1020,15 +1022,13 @@ SELECT twAvg(tfloat '{[1@2001-01-01, 2@2001-01-03), [2@2001-01-04, 2@2001-01-06)
 				<indexterm><primary><varname>ttype_seqset</varname></primary></indexterm>
 				<para>Transform a temporal value to another subtype</para>
 				<para><varname>ttype_inst(ttype) → ttype_inst</varname></para>
-				<para><varname>ttype_seq(ttype,interp) → ttype_seq</varname></para>
+				<para><varname>ttype_seq(ttype) → ttype_seq</varname></para>
 				<para><varname>ttype_seqset(ttype) → ttype_seqset</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbool_inst(tbool '{[true@2001-01-01]}');
 -- t@2001-01-01
 SELECT tbool_inst(tbool '{[true@2001-01-01, true@2001-01-02]}');
--- ERROR: Cannot transform input to a temporal instant
-SELECT tbool_seq(tbool 'true@2001-01-01','discrete');
--- {t@2001-01-01}
+-- ERROR: Cannot transform input value to a temporal instant
 SELECT tint_seq(tint '1@2001-01-01');
 -- [1@2001-01-01]
 SELECT tfloat_seqset(tfloat '2.5@2001-01-01');
@@ -1038,17 +1038,21 @@ SELECT tfloat_seqset(tfloat '{2.5@2001-01-01, 1.5@2001-01-02, 3.5@2001-01-03}');
 </programlisting>
 			</listitem>
 
-			<listitem id="toLinear">
-				<indexterm><primary><varname>toLinear</varname></primary></indexterm>
-				<para>Transform a temporal value with continuous base type from step to linear interpolation</para>
-				<para><varname>toLinear(ttype) → ttype</varname></para>
+			<listitem id="setInterp">
+				<indexterm><primary><varname>setInterp</varname></primary></indexterm>
+				<para>Transform a temporal value to another interpolation</para>
+				<para><varname>setInterp(ttype, interp) → ttype</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT toLinear(tfloat 'Interp=Step;[1@2000-01-01, 2@2000-01-02,
-  1@2000-01-03, 2@2000-01-04]');
+SELECT setInterp(tbool 'true@2001-01-01','discrete');
+-- {t@2001-01-01}
+SELECT setInterp(tfloat '{[1@2000-01-01], [2@2000-01-02], [1@2000-01-03]}', 'discrete');
+-- {1@2000-01-01, 2@2000-01-02, 1@2000-01-03}
+SELECT setInterp(tfloat 'Interp=Step;[1@2000-01-01, 2@2000-01-02,
+  1@2000-01-03, 2@2000-01-04]', 'linear');
 /* {[1@2000-01-01, 1@2000-01-02), [2@2000-01-02, 2@2000-01-03),
    [1@2000-01-03, 1@2000-01-04), [2@2000-01-04]} */
-SELECT asText(toLinear(tgeompoint 'Interp=Step;{[Point(1 1)@2000-01-01,
-  Point(2 2)@2000-01-02], [Point(3 3)@2000-01-05, Point(4 4)@2000-01-06]}'));
+SELECT asText(setInterp(tgeompoint 'Interp=Step;{[Point(1 1)@2000-01-01,
+  Point(2 2)@2000-01-02], [Point(3 3)@2000-01-05, Point(4 4)@2000-01-06]}', 'linear'));
 /* {[POINT(1 1)@2000-01-01, POINT(1 1)@2000-01-02), [POINT(2 2)@2000-01-02],
    [POINT(3 3)@2000-01-05, POINT(3 3)@2000-01-06), [POINT(4 4)@2000-01-06]} */
 </programlisting>

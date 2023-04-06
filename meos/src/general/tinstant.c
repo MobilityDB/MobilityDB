@@ -552,7 +552,7 @@ TInstant *
 tsequence_to_tinstant(const TSequence *seq)
 {
   if (seq->count != 1)
-    elog(ERROR, "Cannot transform input to a temporal instant");
+    elog(ERROR, "Cannot transform input value to a temporal instant");
 
   return tinstant_copy(TSEQUENCE_INST_N(seq, 0));
 }
@@ -563,13 +563,11 @@ tsequence_to_tinstant(const TSequence *seq)
  * @sqlfunc tbool_inst(), tint_inst(), tfloat_inst(), ttext_inst(), etc.
  */
 TInstant *
-tsequenceset_to_tinstant(const TSequenceSet *ts)
+tsequenceset_to_tinstant(const TSequenceSet *ss)
 {
-  const TSequence *seq = TSEQUENCESET_SEQ_N(ts, 0);
-  if (ts->count != 1 || seq->count != 1)
-    elog(ERROR, "Cannot transform input to a temporal instant");
-
-   return tinstant_copy(TSEQUENCE_INST_N(seq, 0));
+  if (ss->totalcount != 1)
+    elog(ERROR, "Cannot transform input value to a temporal instant");
+  return tinstant_copy(TSEQUENCE_INST_N(TSEQUENCESET_SEQ_N(ss, 0), 0));
 }
 
 /**

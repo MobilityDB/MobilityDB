@@ -458,7 +458,6 @@ static TSequenceSet *
 tnumberseqset_delta_value(const TSequenceSet *ss)
 {
   TSequence *delta;
-
   /* Singleton sequence set */
   if (ss->count == 1)
   {

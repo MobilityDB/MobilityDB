@@ -88,18 +88,6 @@ temptype_subtype_all(int16 subtype)
 }
 
 /**
- * @brief Ensure that the subtype of temporal type is a sequence (set)
- */
-void
-ensure_continuous(const Temporal *temp)
-{
-  assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || MOBDB_FLAGS_GET_DISCRETE(temp->flags))
-    elog(ERROR, "Input must be a temporal continuous sequence (set)");
-  return;
-}
-
-/**
  * @brief Ensure that the elements of an array are of instant subtype
  */
 void
@@ -138,6 +126,44 @@ ensure_continuous_interpolation(int16 flags)
 #endif /* not used */
 
 /**
+ * @brief Ensure that the interpolation is valid
+ * @note Used for the constructor functions
+ */
+void
+ensure_valid_interpolation(meosType temptype, interpType interp)
+{
+  if (interp == LINEAR && ! temptype_continuous(temptype))
+    elog(ERROR, "The temporal type cannot have linear interpolation");
+  return;
+}
+
+/**
+ * @brief Ensure that the subtype of temporal type is a sequence (set)
+ */
+void
+ensure_continuous(const Temporal *temp)
+{
+  assert(temptype_subtype(temp->subtype));
+  if (temp->subtype == TINSTANT || MOBDB_FLAGS_GET_DISCRETE(temp->flags))
+    elog(ERROR, "Input must be a temporal continuous sequence (set)");
+  return;
+}
+
+/**
+ * @brief Ensure that two temporal values have the same interpolation
+ * @param[in] temp1,temp2 Input values
+ */
+void
+ensure_same_interpolation(const Temporal *temp1, const Temporal *temp2)
+{
+  interpType interp1 = MOBDB_FLAGS_GET_INTERP(temp1->flags);
+  interpType interp2 = MOBDB_FLAGS_GET_INTERP(temp2->flags);
+  if (interp1 != interp2)
+    elog(ERROR, "The temporal values must have the same interpolation");
+  return;
+}
+
+/**
  * @brief Ensure that a temporal value does not have linear interpolation
  */
 void
@@ -169,22 +195,6 @@ ensure_same_temptype(const Temporal *temp1, const Temporal *temp2)
 {
   if (temp1->temptype != temp2->temptype)
     elog(ERROR, "The temporal values must be of the same temporal type");
-  return;
-}
-
-/**
- * @brief Ensure that two temporal values have the same interpolation
- */
-void
-ensure_same_interpolation(const Temporal *temp1, const Temporal *temp2)
-{
-  interpType interp1 = MOBDB_FLAGS_GET_INTERP(temp1->flags);
-  interpType interp2 = MOBDB_FLAGS_GET_INTERP(temp2->flags);
-  // /* A temporal instant (with INTERP_NONE) can match any interpolation */
-  // if (interp1 != INTERP_NONE && interp2 != INTERP_NONE && interp1 != interp2)
-  if ((interp1 == STEP && interp2 == LINEAR) ||
-      (interp2 == STEP && interp1 == LINEAR))
-    elog(ERROR, "The temporal values must have the same continuous interpolation");
   return;
 }
 
@@ -285,7 +295,8 @@ ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
   interpType interp, double maxdist, Interval *maxt, int *countsplits)
 {
   meosType basetype = temptype_basetype(instants[0]->temptype);
-  int *result = palloc(sizeof(int) * count);
+  /* Ensure that zero-fill is done */
+  int *result = palloc0(sizeof(int) * count);
   Datum value1 = tinstant_value(instants[0]);
   datum_func2 point_distance = NULL;
   if (geo_basetype(basetype))
@@ -329,7 +340,7 @@ ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
 }
 
 /**
- * @brief Ensure that all temporal instants of the array have increasing
+ * @brief Ensure that all temporal sequences of the array have increasing
  * timestamp, and if they are temporal points, have the same srid and the
  * same dimensionality
  */
@@ -886,28 +897,8 @@ temporal_append_tsequence(Temporal *temp, const TSequence *seq, bool expand)
     pfree(seq1);
   }
   else if (temp->subtype == TSEQUENCE)
-  {
-    if (interp2 == DISCRETE)
-    {
-      result = (Temporal *) tsequence_append_tsequence((TSequence *) temp,
-        seq, expand);
-    }
-    else
-    {
-      interpType interp1 = MOBDB_FLAGS_GET_INTERP(temp->flags);
-      if (interp1 == interp2)
-        result = (Temporal *) tsequence_append_tsequence((TSequence *) temp,
-          seq, expand);
-      else
-      {
-        const TSequenceSet *seqsets[2];
-        seqsets[0] = tsequence_to_tsequenceset((TSequence *) temp);
-        seqsets[1] = tsequence_to_tsequenceset(seq);
-        result = (Temporal *) tsequenceset_merge_array(seqsets, 2);
-        pfree((void *) seqsets[0]); pfree((void *) seqsets[1]);
-      }
-    }
-  }
+    result = (Temporal *) tsequence_append_tsequence((TSequence *) temp, seq,
+      expand);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tsequenceset_append_tsequence((TSequenceSet *) temp,
       seq, expand);
@@ -927,7 +918,6 @@ temporal_convert_same_subtype(const Temporal *temp1, const Temporal *temp2,
   Temporal **out1, Temporal **out2)
 {
   assert(temptype_subtype(temp1->subtype));
-  assert(temptype_subtype(temp2->subtype));
   assert(temp1->temptype == temp2->temptype);
 
   /* If both are of the same subtype do nothing */
@@ -1009,7 +999,6 @@ temporal_merge(const Temporal *temp1, const Temporal *temp2)
 
   /* Both arguments are temporal */
   ensure_same_temptype(temp1, temp2);
-  ensure_same_interpolation(temp1, temp2);
 
   /* Convert to the same subtype */
   Temporal *new1, *new2;
@@ -1089,7 +1078,6 @@ temporal_merge_array(Temporal **temparr, int count)
   bool convert = false;
   for (int i = 1; i < count; i++)
   {
-    ensure_same_interpolation(temparr[0], temparr[i]);
     uint8 subtype1 = temparr[i]->subtype;
     interpType interp1 = MOBDB_FLAGS_GET_INTERP(temparr[i]->flags);
     if (subtype != subtype1 || interp != interp1)
@@ -1301,34 +1289,11 @@ temporal_to_tinstant(const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_transf
- * @brief Return a temporal value transformed into a temporal sequence with
- * discrete interpolation.
- * @sqlfunc tbool_tdiscseq, tint_tdiscseq, tfloat_tdiscseq,
- * ttext_tdiscseq, etc.
+ * @brief Return a temporal value transformed into a temporal sequence
+ * @sqlfunc tbool_seq, tint_seq, tfloat_seq, ttext_seq, etc.
  */
 Temporal *
-temporal_to_tdiscseq(const Temporal *temp)
-{
-  Temporal *result;
-  assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT)
-    result = (Temporal *) tinstant_to_tsequence((TInstant *) temp, DISCRETE);
-  else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tsequence_to_tdiscseq((TSequence *) temp);
-  else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tsequenceset_to_tdiscseq((TSequenceSet *) temp);
-  return result;
-}
-
-/**
- * @ingroup libmeos_temporal_transf
- * @brief Return a temporal value transformed into a temporal sequence with
- * continuous interpolation.
- * @sqlfunc tbool_tcontseq, tint_tcontseq, tfloat_tcontseq,
- * ttext_contseq, etc.
- */
-Temporal *
-temporal_to_tcontseq(const Temporal *temp)
+temporal_to_tsequence(const Temporal *temp)
 {
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
@@ -1336,7 +1301,7 @@ temporal_to_tcontseq(const Temporal *temp)
     result = (Temporal *) tinstant_to_tsequence((TInstant *) temp,
       MOBDB_FLAGS_GET_CONTINUOUS(temp->flags) ? LINEAR : STEP);
   else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tsequence_to_tcontseq((TSequence *) temp);
+    return (Temporal *) tsequence_copy((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tsequenceset_to_tsequence((TSequenceSet *) temp);
   return result;
@@ -1364,22 +1329,21 @@ temporal_to_tsequenceset(const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_transf
- * @brief Return a temporal value with continuous base type transformed from
- * step to linear interpolation.
- * @sqlfunc toLinear
+ * @brief Return a temporal value transformed to the given interpolation.
+ * @sqlfunc setInterp
  */
 Temporal *
-temporal_step_to_linear(const Temporal *temp)
+temporal_set_interp(const Temporal *temp, interpType interp)
 {
-  ensure_continuous(temp);
-  if (MOBDB_FLAGS_GET_LINEAR(temp->flags))
-    return temporal_copy(temp);
-
+  ensure_valid_interpolation(temp->temptype, interp);
   Temporal *result;
-  if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tstepseq_to_linear((TSequence *) temp);
+  if (temp->subtype == TINSTANT)
+    result = (Temporal *) tinstant_to_tsequence((TInstant *) temp, interp);
+  else if (temp->subtype == TSEQUENCE)
+    result = (Temporal *) tsequence_set_interp((TSequence *) temp, interp);
   else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tstepseqset_to_linear((TSequenceSet *) temp);
+    result = (Temporal *) tsequenceset_set_interp((TSequenceSet *) temp,
+      interp);
   return result;
 }
 
@@ -1782,7 +1746,7 @@ temporal_tsample(const Temporal *temp, const Interval *duration,
  *****************************************************************************/
 
 #define MOBDB_SUBTYPE_STR_MAXLEN 12
-#define MOBDB_INTERPOLATION_STR_MAXLEN 9
+#define MOBDB_INTERP_STR_MAXLEN 9
 
 #if MEOS
 /**
@@ -1821,13 +1785,13 @@ temporal_subtype(const Temporal *temp)
  * @ingroup libmeos_temporal_accessor
  * @brief Return the string representation of the interpolation of a temporal
  * value.
- * @sqlfunc interpolation
- * @pymeosfunc interpolation
+ * @sqlfunc interp
+ * @pymeosfunc interp
  */
 char *
-temporal_interpolation(const Temporal *temp)
+temporal_interp(const Temporal *temp)
 {
-  char *result = palloc(sizeof(char) * MOBDB_INTERPOLATION_STR_MAXLEN);
+  char *result = palloc(sizeof(char) * MOBDB_INTERP_STR_MAXLEN);
   assert(temptype_subtype(temp->subtype));
   interpType interp = MOBDB_FLAGS_GET_INTERP(temp->flags);
   if (temp->subtype == TINSTANT)
@@ -3191,6 +3155,7 @@ Temporal *
 temporal_restrict_value(const Temporal *temp, Datum value, bool atfunc)
 {
   /* Bounding box test */
+  interpType interp = MOBDB_FLAGS_GET_INTERP(temp->flags);
   if (! temporal_bbox_restrict_value(temp, value))
   {
     if (atfunc)
@@ -3208,7 +3173,7 @@ temporal_restrict_value(const Temporal *temp, Datum value, bool atfunc)
     result = (Temporal *) tinstant_restrict_value((TInstant *) temp, value,
       atfunc);
   else if (temp->subtype == TSEQUENCE)
-    result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
+    result = (interp == DISCRETE) ?
       (Temporal *) tdiscseq_restrict_value((TSequence *) temp, value, atfunc) :
       (Temporal *) tcontseq_restrict_value((TSequence *) temp, value, atfunc);
   else /* temp->subtype == TSEQUENCESET */
@@ -3261,13 +3226,13 @@ temporal_restrict_values(const Temporal *temp, const Set *set, bool atfunc)
   }
 
   /* Bounding box test */
+  interpType interp = MOBDB_FLAGS_GET_INTERP(temp->flags);
   if (! temporal_bbox_restrict_set(temp, set))
   {
     if (atfunc)
       return NULL;
     else
-      return (temp->subtype != TSEQUENCE) ?
-        temporal_copy(temp) :
+      return (temp->subtype != TSEQUENCE) ? temporal_copy(temp) :
         (Temporal *) tsequence_to_tsequenceset((TSequence *) temp);
   }
 
@@ -3277,7 +3242,7 @@ temporal_restrict_values(const Temporal *temp, const Set *set, bool atfunc)
     result = (Temporal *) tinstant_restrict_values((TInstant *) temp, set,
       atfunc);
   else if (temp->subtype == TSEQUENCE)
-    result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
+    result = (interp == DISCRETE) ?
       (Temporal *) tdiscseq_restrict_values((TSequence *) temp, set, atfunc) :
       (Temporal *) tcontseq_restrict_values((TSequence *) temp, set, atfunc);
   else /* temp->subtype == TSEQUENCESET */
@@ -3298,13 +3263,13 @@ Temporal *
 tnumber_restrict_span(const Temporal *temp, const Span *span, bool atfunc)
 {
   /* Bounding box test */
+  interpType interp = MOBDB_FLAGS_GET_INTERP(temp->flags);
   if (! tnumber_bbox_restrict_span(temp, span))
   {
     if (atfunc)
       return NULL;
     else
-      return (temp->subtype == TSEQUENCE &&
-          ! MOBDB_FLAGS_GET_DISCRETE(temp->flags)) ?
+      return (temp->subtype == TSEQUENCE && interp != DISCRETE) ?
         (Temporal *) tsequence_to_tsequenceset((TSequence *) temp) :
         temporal_copy(temp);
   }
@@ -3315,7 +3280,7 @@ tnumber_restrict_span(const Temporal *temp, const Span *span, bool atfunc)
     result = (Temporal *) tnumberinst_restrict_span((TInstant *) temp,
       span, atfunc);
   else if (temp->subtype == TSEQUENCE)
-    result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
+    result = (interp == DISCRETE) ?
       (Temporal *) tnumberdiscseq_restrict_span((TSequence *) temp, span,
         atfunc) :
       (Temporal *) tnumbercontseq_restrict_span((TSequence *) temp, span,
@@ -3339,13 +3304,14 @@ tnumber_restrict_spanset(const Temporal *temp, const SpanSet *ss, bool atfunc)
   /* Bounding box test */
   Span s;
   tnumber_set_span(temp, &s);
+  interpType interp = MOBDB_FLAGS_GET_INTERP(temp->flags);
   if (! overlaps_span_span(&s, &ss->span))
   {
     if (atfunc)
       return NULL;
     else
     {
-      if (temp->subtype == TSEQUENCE && ! MOBDB_FLAGS_GET_DISCRETE(temp->flags))
+      if (temp->subtype == TSEQUENCE && interp != DISCRETE)
         return (Temporal *) tsequence_to_tsequenceset((TSequence *) temp);
       else
         return temporal_copy(temp);
@@ -3358,7 +3324,7 @@ tnumber_restrict_spanset(const Temporal *temp, const SpanSet *ss, bool atfunc)
     result = (Temporal *) tnumberinst_restrict_spanset((TInstant *) temp, ss,
       atfunc);
   else if (temp->subtype == TSEQUENCE)
-    result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
+    result = (interp == DISCRETE) ?
       (Temporal *) tnumberdiscseq_restrict_spanset((TSequence *) temp, ss,
         atfunc) :
       (Temporal *) tnumbercontseq_restrict_spanset((TSequence *) temp, ss,
@@ -3621,7 +3587,6 @@ Temporal *
 temporal_insert(const Temporal *temp1, const Temporal *temp2, bool connect)
 {
   ensure_same_temptype(temp1, temp2);
-  ensure_same_interpolation(temp1, temp2);
 
   /* Convert to the same subtype */
   Temporal *new1, *new2;

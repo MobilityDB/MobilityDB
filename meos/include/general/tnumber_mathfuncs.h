@@ -72,7 +72,7 @@ extern Temporal *arithop_tnumber_tnumber(const Temporal *temp1,
     const TInstant *, Datum *, TimestampTz *));
 
 extern TSequence *tfloatseq_derivative(const TSequence *seq);
-extern TSequenceSet *tfloatseqset_derivative(const TSequenceSet *ts);
+extern TSequenceSet *tfloatseqset_derivative(const TSequenceSet *ss);
 
 /*****************************************************************************/
 

@@ -193,16 +193,17 @@ CREATE FUNCTION tgeogpoint_seqset(tgeogpoint[])
   AS 'MODULE_PATHNAME', 'Tsequenceset_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- The function is not strict
 CREATE FUNCTION tgeompoint_seqset_gaps(tgeompoint[], maxt interval DEFAULT NULL,
     maxdist float DEFAULT NULL, text DEFAULT 'linear')
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Tsequenceset_constructor_gaps'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tgeogpoint_seqset_gaps(tgeogpoint[], maxt interval DEFAULT NULL,
     maxdist float DEFAULT NULL, text DEFAULT 'linear')
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Tsequenceset_constructor_gaps'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 /******************************************************************************
  * Casting
@@ -229,7 +230,7 @@ CREATE FUNCTION tgeompoint_inst(tgeompoint)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Temporal_to_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeompoint_seq(tgeompoint, text DEFAULT 'linear')
+CREATE FUNCTION tgeompoint_seq(tgeompoint)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -242,7 +243,7 @@ CREATE FUNCTION tgeogpoint_inst(tgeogpoint)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Temporal_to_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeogpoint_seq(tgeogpoint, text DEFAULT 'linear')
+CREATE FUNCTION tgeogpoint_seq(tgeogpoint)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -251,13 +252,13 @@ CREATE FUNCTION tgeogpoint_seqset(tgeogpoint)
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequenceset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION toLinear(tgeompoint)
+CREATE FUNCTION setInterp(tgeompoint, text)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Tempstep_to_templinear'
+  AS 'MODULE_PATHNAME', 'Temporal_set_interp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION toLinear(tgeogpoint)
+CREATE FUNCTION setInterp(tgeogpoint, text)
   RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'Tempstep_to_templinear'
+  AS 'MODULE_PATHNAME', 'Temporal_set_interp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION appendInstant(tgeompoint, tgeompoint)
@@ -310,13 +311,13 @@ CREATE FUNCTION tempSubtype(tgeogpoint)
   AS 'MODULE_PATHNAME', 'Temporal_subtype'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION interpolation(tgeompoint)
+CREATE FUNCTION interp(tgeompoint)
   RETURNS text
-  AS 'MODULE_PATHNAME', 'Temporal_interpolation'
+  AS 'MODULE_PATHNAME', 'Temporal_interp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION interpolation(tgeogpoint)
+CREATE FUNCTION interp(tgeogpoint)
   RETURNS text
-  AS 'MODULE_PATHNAME', 'Temporal_interpolation'
+  AS 'MODULE_PATHNAME', 'Temporal_interp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION memSize(tgeompoint)

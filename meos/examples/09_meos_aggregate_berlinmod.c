@@ -34,7 +34,7 @@
  * and performs a temporal count aggregation.
  *
  * Please read the assumptions made about the input file `trips.csv` in the
- * file `meos_disassemble_berlinmod.c` in the same directory.
+ * file `05_meos_disassemble_berlinmod.c` in the same directory.
  *
  * The program can be build as follows
  * @code

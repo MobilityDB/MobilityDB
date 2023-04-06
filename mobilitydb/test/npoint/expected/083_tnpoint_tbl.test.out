@@ -67,7 +67,7 @@ SELECT DISTINCT tempSubtype(tnpoint(inst)) FROM tbl_tnpoint_inst;
  Instant
 (1 row)
 
-SELECT DISTINCT tempSubtype(tnpoint_seq(inst, 'discrete')) FROM tbl_tnpoint_inst;
+SELECT DISTINCT tempSubtype(setInterp(inst, 'discrete')) FROM tbl_tnpoint_inst;
  tempsubtype 
 -------------
  Sequence
@@ -91,7 +91,7 @@ SELECT DISTINCT tempSubtype(tnpoint(ti)) FROM tbl_tnpoint_discseq WHERE numInsta
  Sequence
 (1 row)
 
-SELECT DISTINCT tempSubtype(tnpoint_seq(ti, 'discrete')) FROM tbl_tnpoint_discseq;
+SELECT DISTINCT tempSubtype(setInterp(ti, 'discrete')) FROM tbl_tnpoint_discseq;
  tempsubtype 
 -------------
  Sequence
@@ -115,7 +115,7 @@ SELECT DISTINCT tempSubtype(tnpoint(seq)) FROM tbl_tnpoint_seq WHERE numInstants
  Sequence
 (1 row)
 
-SELECT DISTINCT tempSubtype(tnpoint_seq(seq, 'discrete')) FROM tbl_tnpoint_seq WHERE numInstants(seq) = 1;
+SELECT DISTINCT tempSubtype(setInterp(seq, 'discrete')) FROM tbl_tnpoint_seq WHERE numInstants(seq) = 1;
  tempsubtype 
 -------------
  Sequence
@@ -139,7 +139,7 @@ SELECT DISTINCT tempSubtype(tnpoint(ss)) FROM tbl_tnpoint_seqset WHERE numInstan
  SequenceSet
 (1 row)
 
-SELECT DISTINCT tempSubtype(tnpoint_seq(ss, 'discrete')) FROM tbl_tnpoint_seqset WHERE duration(ss) = '00:00:00';
+SELECT DISTINCT tempSubtype(setInterp(ss, 'discrete')) FROM tbl_tnpoint_seqset WHERE duration(ss) = '00:00:00';
  tempsubtype 
 -------------
  Sequence

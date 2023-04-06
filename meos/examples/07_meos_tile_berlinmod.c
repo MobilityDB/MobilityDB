@@ -35,7 +35,7 @@
  * aggregate values of the count, duration, and distance of the tiles.
  *
  * Please read the assumptions made about the input file `trips.csv` in the
- * file `meos_disassemble_berlinmod.c` in the same directory. Notice that the
+ * file `05_meos_disassemble_berlinmod.c` in the same directory. Notice that the
  * program assumes that we already have computed the extent of the trips and
  * the speeds. Otherwise, a first scan of the CSV file is needed for computing
  * both extents and then proceed for the second scan as below.

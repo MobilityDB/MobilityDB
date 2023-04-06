@@ -397,7 +397,7 @@ tsequenceset_make_gaps(const TInstant **instants, int count, interpType interp,
     int j = 0, k = 0;
     for (int i = 0; i < count; i++)
     {
-      if (splits[j] == i)
+      if (j < countsplits && splits[j] == i)
       {
         /* Finalize the current sequence and start a new one */
         assert(k > 0);
@@ -408,7 +408,7 @@ tsequenceset_make_gaps(const TInstant **instants, int count, interpType interp,
       /* Continue with the current sequence */
       newinsts[k++] = instants[i];
     }
-    /* Construct last sequence */
+    /* Construct the last sequence */
     if (k > 0)
       sequences[newcount++] = tsequence_make1((const TInstant **) newinsts,
         k, true, true, interp, NORMALIZE);
@@ -1308,6 +1308,8 @@ tsequenceset_restart(TSequenceSet *ss, int last)
 }
 #endif /* MEOS */
 
+/*****************************************************************************/
+
 /**
  * @ingroup libmeos_internal_temporal_transf
  * @brief Return a temporal instant transformed into a temporal sequence set.
@@ -1347,44 +1349,14 @@ tdiscseq_to_tsequenceset(const TSequence *seq, interpType interp)
 
 /**
  * @ingroup libmeos_internal_temporal_transf
- * @brief Return a temporal sequence set transformed into discrete interpolation.
- * @return Return an error if any of the composing temporal sequences has
- * more than one instant
- * @sqlfunc tbool_discseq(), tint_discseq(), tfloat_discseq(), ttext_discseq(),
- * etc.
- */
-TSequence *
-tsequenceset_to_tdiscseq(const TSequenceSet *ss)
-{
-  const TSequence *seq;
-  for (int i = 0; i < ss->count; i++)
-  {
-    seq = TSEQUENCESET_SEQ_N(ss, i);
-    if (seq->count != 1)
-      elog(ERROR, "Cannot transform input to a temporal discrete sequence");
-  }
-
-  const TInstant **instants = palloc(sizeof(TInstant *) * ss->count);
-  for (int i = 0; i < ss->count; i++)
-  {
-    seq = TSEQUENCESET_SEQ_N(ss, i);
-    instants[i] = TSEQUENCE_INST_N(seq, 0);
-  }
-  TSequence *result = tsequence_make(instants, ss->count, true, true, DISCRETE,
-    NORMALIZE_NO);
-  pfree(instants);
-  return result;
-}
-
-/**
- * @ingroup libmeos_internal_temporal_transf
  * @brief Return a temporal sequence transformed into a temporal sequence set.
  * @sqlfunc tbool_seqset(), tint_seqset(), tfloat_seqset(), ttext_seqset(), etc.
  */
 TSequenceSet *
 tsequence_to_tsequenceset(const TSequence *seq)
 {
-  assert(seq);
+  /* For discrete sequences, each composing instant will be transformed in
+   * an instantaneous sequence in the resulting sequence set */
   if (MOBDB_FLAGS_GET_DISCRETE(seq->flags))
   {
     interpType interp = MOBDB_FLAGS_GET_CONTINUOUS(seq->flags) ? LINEAR : STEP;
@@ -1395,13 +1367,86 @@ tsequence_to_tsequenceset(const TSequence *seq)
 
 /**
  * @ingroup libmeos_internal_temporal_transf
+ * @brief Return a temporal sequence set transformed into a temporal sequence
+ * value.
+ * @sqlfunc tbool_seq(), tint_seq(), tfloat_seq(), ttext_seq(), etc.
+ */
+TSequence *
+tsequenceset_to_tsequence(const TSequenceSet *ss)
+{
+  if (ss->count != 1)
+    elog(ERROR, "Cannot transform input value to a temporal sequence");
+  return tsequence_copy(TSEQUENCESET_SEQ_N(ss, 0));
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup libmeos_internal_temporal_transf
+ * @brief Return a temporal sequence set transformed into a temporal discrete
+ * sequence.
+ * @note Return an error if any of the composing temporal sequences has
+ * more than one instant
+ * @sqlfunc tbool_discseq(), tint_discseq(), tfloat_discseq(), ttext_discseq(),
+ * etc.
+ */
+TSequence *
+tsequenceset_to_discrete(const TSequenceSet *ss)
+{
+  if (ss->count != ss->totalcount)
+    elog(ERROR, "Cannot transform input value to a temporal discrete sequence");
+
+  const TInstant **instants = palloc(sizeof(TInstant *) * ss->count);
+  for (int i = 0; i < ss->count; i++)
+  {
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
+    instants[i] = TSEQUENCE_INST_N(seq, 0);
+  }
+  TSequence *result = tsequence_make(instants, ss->count, true, true, DISCRETE,
+    NORMALIZE_NO);
+  pfree(instants);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_internal_temporal_transf
+ * @brief Return a temporal sequence set with continuous base type from
+ * linear to step interpolation.
+ */
+TSequenceSet *
+tsequenceset_to_step(const TSequenceSet *ss)
+{
+  /* If the sequence set has step interpolation return a copy */
+  if (MOBDB_FLAGS_GET_LINEAR(ss->flags))
+    return tsequenceset_copy(ss);
+
+  if (ss->count != ss->totalcount)
+    elog(ERROR, "Cannot transform input value to a temporal discrete sequence");
+
+  const TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
+  for (int i = 0; i < ss->count; i++)
+  {
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
+    sequences[i] = tinstant_to_tsequence(TSEQUENCE_INST_N(seq, 0), STEP);
+  }
+  TSequenceSet *result = tsequenceset_make(sequences, ss->count, NORMALIZE_NO);
+  pfree(sequences);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_internal_temporal_transf
  * @brief Return a temporal sequence set with continuous base type from
  * step to linear interpolation.
  * @sqlfunc toLinear()
  */
 TSequenceSet *
-tstepseqset_to_linear(const TSequenceSet *ss)
+tsequenceset_to_linear(const TSequenceSet *ss)
 {
+  /* If the sequence set has linear interpolation return a copy */
+  if (MOBDB_FLAGS_GET_LINEAR(ss->flags))
+    return tsequenceset_copy(ss);
+
   /* Singleton sequence set */
   if (ss->count == 1)
     return tstepseq_to_linear(TSEQUENCESET_SEQ_N(ss, 0));
@@ -1417,6 +1462,24 @@ tstepseqset_to_linear(const TSequenceSet *ss)
   /* We are sure that k > 0 */
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
+
+/**
+ * @ingroup libmeos_temporal_transf
+ * @brief Return a temporal value transformed to the given interpolation.
+ * @sqlfunc setInterp
+ */
+Temporal *
+tsequenceset_set_interp(const TSequenceSet *ss, interpType interp)
+{
+  if (interp == DISCRETE)
+    return (Temporal *) tsequenceset_to_discrete(ss);
+  else if (interp == STEP)
+    return (Temporal *) tsequenceset_to_step(ss);
+  else /* interp == LINEAR */
+    return (Temporal *) tsequenceset_to_linear(ss);
+}
+
+/*****************************************************************************/
 
 /**
  * @ingroup libmeos_internal_temporal_transf
@@ -2970,8 +3033,7 @@ tsequenceset_delete_timestamp(const TSequenceSet *ss, TimestampTz t)
  * @sqlfunc atTime(), minusTime()
  */
 TSequenceSet *
-tsequenceset_delete_timestampset(const TSequenceSet *ss,
-  const Set *ts)
+tsequenceset_delete_timestampset(const TSequenceSet *ss, const Set *ts)
 {
   /* Singleton timestamp set */
   if (ts->count == 1)
@@ -3045,6 +3107,7 @@ tsequenceset_delete_periodset(const TSequenceSet *ss, const SpanSet *ps)
 
   TSequence *seq;
   TSequenceSet *result = NULL;
+  interpType interp = MOBDB_FLAGS_GET_INTERP(ss->flags);
 
   /* Singleton sequence set */
   if (ss->count == 1)
@@ -3064,7 +3127,6 @@ tsequenceset_delete_periodset(const TSequenceSet *ss, const SpanSet *ps)
   TSequence **sequences = palloc(sizeof(TSequence *) * (minus->count * 2 - 1));
   TSequence **tofree = palloc(sizeof(TSequence *) * (minus->count - 1));
   const TInstant *instants[2] = {0};
-  interpType interp = MOBDB_FLAGS_GET_INTERP(ss->flags);
   sequences[0] = seq = (TSequence *) TSEQUENCESET_SEQ_N(minus, 0);
   const Span *p = spanset_sp_n(ps, 0);
   int i = 1, /* current composing sequence */

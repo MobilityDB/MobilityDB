@@ -54,7 +54,7 @@
  * This program is based on the libpq example programs
  * https://www.postgresql.org/docs/current/libpq-example.html
  * Please read the assumptions made about the input file `aisinput.csv` in the
- * file `meos_read_ais.c` in the same directory.
+ * file `02_meos_read_ais.c` in the same directory.
  *
  * The program can be build as follows
  * @code

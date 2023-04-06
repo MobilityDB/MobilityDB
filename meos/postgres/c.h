@@ -405,7 +405,7 @@ typedef unsigned char bool;
 #endif							/* not PG_USE_STDBOOL */
 #endif							/* not C++ */
 
-// #endif							/*__MEOS_H__ */
+// #endif							/* __MEOS_H__ */
 
 
 /* ----------------------------------------------------------------

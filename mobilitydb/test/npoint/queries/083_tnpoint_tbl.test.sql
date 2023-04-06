@@ -71,28 +71,28 @@ DROP TABLE tbl_tnpointinst_test;
 -------------------------------------------------------------------------------
 
 SELECT DISTINCT tempSubtype(tnpoint(inst)) FROM tbl_tnpoint_inst;
-SELECT DISTINCT tempSubtype(tnpoint_seq(inst, 'discrete')) FROM tbl_tnpoint_inst;
+SELECT DISTINCT tempSubtype(setInterp(inst, 'discrete')) FROM tbl_tnpoint_inst;
 SELECT DISTINCT tempSubtype(tnpoint_seq(inst)) FROM tbl_tnpoint_inst;
 SELECT DISTINCT tempSubtype(tnpoint_seqset(inst)) FROM tbl_tnpoint_inst;
 
 -------------------------------------------------------------------------------
 
 SELECT DISTINCT tempSubtype(tnpoint(ti)) FROM tbl_tnpoint_discseq WHERE numInstants(ti) = 1;
-SELECT DISTINCT tempSubtype(tnpoint_seq(ti, 'discrete')) FROM tbl_tnpoint_discseq;
+SELECT DISTINCT tempSubtype(setInterp(ti, 'discrete')) FROM tbl_tnpoint_discseq;
 SELECT DISTINCT tempSubtype(tnpoint_seq(ti)) FROM tbl_tnpoint_discseq WHERE numInstants(ti) = 1;
 SELECT DISTINCT tempSubtype(tnpoint_seqset(ti)) FROM tbl_tnpoint_discseq;
 
 -------------------------------------------------------------------------------
 
 SELECT DISTINCT tempSubtype(tnpoint(seq)) FROM tbl_tnpoint_seq WHERE numInstants(seq) = 1;
-SELECT DISTINCT tempSubtype(tnpoint_seq(seq, 'discrete')) FROM tbl_tnpoint_seq WHERE numInstants(seq) = 1;
+SELECT DISTINCT tempSubtype(setInterp(seq, 'discrete')) FROM tbl_tnpoint_seq WHERE numInstants(seq) = 1;
 SELECT DISTINCT tempSubtype(tnpoint_seq(seq)) FROM tbl_tnpoint_seq;
 SELECT DISTINCT tempSubtype(tnpoint_seqset(seq)) FROM tbl_tnpoint_seq;
 
 -------------------------------------------------------------------------------
 
 SELECT DISTINCT tempSubtype(tnpoint(ss)) FROM tbl_tnpoint_seqset WHERE numInstants(ss) = 1;
-SELECT DISTINCT tempSubtype(tnpoint_seq(ss, 'discrete')) FROM tbl_tnpoint_seqset WHERE duration(ss) = '00:00:00';
+SELECT DISTINCT tempSubtype(setInterp(ss, 'discrete')) FROM tbl_tnpoint_seqset WHERE duration(ss) = '00:00:00';
 SELECT DISTINCT tempSubtype(tnpoint_seq(ss)) FROM tbl_tnpoint_seqset WHERE numSequences(ss) = 1;
 SELECT DISTINCT tempSubtype(tnpoint_seqset(ss)) FROM tbl_tnpoint_seqset;
 

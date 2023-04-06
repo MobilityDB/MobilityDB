@@ -30,7 +30,7 @@
 				<listitem><para>Darafei Praliaskouski: integration with <ulink url="https://postgis.net/">PostGIS</ulink></para></listitem>
 				<listitem><para>Mahmoud Sakr: co-founder of the MobilityDB project, <ulink url="https://github.com/MobilityDB/MobilityDB-workshop">MobilityDB workshop</ulink>, co-chair of the OGC Moving Feature Standard Working Group (<ulink url="https://www.ogc.org/projects/groups/movfeatswg">MF-SWG</ulink>)</para></listitem>
 				<listitem><para>Vicky Vergara: integration with <ulink url="https://pgrouting.org/">pgRouting</ulink>, liason with <ulink url="https://osgeo.org/">OSGeo</ulink></para></listitem>
-				<listitem><para>Esteban Zimányi (chair): co-founder of the MobilityDB project, overall project coordination, main contributor of the backend code, <ulink url="https://github.com/MobilityDB/MobilityDB-BerlinMOD">BerlinMOD benchmark</ulink>, <ulink url="https://github.com/MobilityDB/MobilityDB-python">MobilityDB-python</ulink></para></listitem>
+				<listitem><para>Esteban Zimányi (chair): co-founder of the MobilityDB project, overall project coordination, main contributor of the backend code, <ulink url="https://github.com/MobilityDB/MobilityDB-BerlinMOD">BerlinMOD generator</ulink></para></listitem>
 			</itemizedlist>
 		</para>
 	</sect1>

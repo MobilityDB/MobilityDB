@@ -493,12 +493,12 @@ SELECT quadSplit(stbox 'STBOX Z((0,0,0),(4,4,4))');
 		</itemizedlist>
 		<para>Tenga en cuenta que la función anterior es una <emphasis>función de retorno de conjuntos</emphasis> (también conocida como <emphasis>función de tabla</emphasis>) ya que normalmente devuelve más de un valor. Por lo tanto, la función está marcada con el símbolo &SRF;. Esta función se usa normalmente para cuadrículas de resolución múltiple, donde el espacio se divide en celdas de modo que las celdas tengan un número máximo de elementos. <xref linkend="berlinmod_grid" /> muestra un ejemplo del resultado de usar esta función usando trayectorias sintéticas en Bruselas.</para>
 		<figure id="berlinmod_grid" float="start">
-			<title>Grilla multiresolución sobre datos de Bruselas obtenidos mediante el generador MobilityDB-BerlinMOD. Cada celda contiene como máximo 10.000 (izquierda) y 1.000 (derecha) instantes durante todo el período de simulación (cuatro días en este caso). A la izquierda, podemos ver la alta densidad de tráfico en el anillo alrededor de Bruselas, mientras que a la derecha podemos ver otros ejes principales de la ciudad.</title>
+			<title>Grilla multiresolución sobre datos de Bruselas obtenidos mediante el generador <ulink url="https://github.com/MobilityDB/MobilityDB-BerlinMOD">BerlinMOD</ulink>. Cada celda contiene como máximo 10.000 (izquierda) y 1.000 (derecha) instantes durante todo el período de simulación (cuatro días en este caso). A la izquierda, podemos ver la alta densidad de tráfico en el anillo alrededor de Bruselas, mientras que a la derecha podemos ver otros ejes principales de la ciudad.</title>
 			<mediaobject>
-				<imageobject><imagedata scale='60' fileref='../images/berlinmod_grid10k.png' /></imageobject>
+				<imageobject><imagedata scale='65' fileref='../images/berlinmod_grid10k.png' /></imageobject>
 			</mediaobject>
 			<mediaobject>
-				<imageobject><imagedata scale='60' fileref='../images/berlinmod_grid1k.png' /></imageobject>
+				<imageobject><imagedata scale='65' fileref='../images/berlinmod_grid1k.png' /></imageobject>
 			</mediaobject>
 		</figure>
 	</sect1>
