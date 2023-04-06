@@ -196,7 +196,7 @@ skiplist_delete(SkipList *list, int cur)
 }
 
 /**
- * @ingroup libMOBDB_spantime_agg
+ * @ingroup libmeos_spantime_agg
  * @brief Free the skiplist
  */
 void

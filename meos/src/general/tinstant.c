@@ -62,7 +62,7 @@
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_accessor
+ * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the base value of a temporal instant
  * @sqlfunc getValue()
  */
@@ -77,7 +77,7 @@ tinstant_value(const TInstant *inst)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_accessor
+ * @ingroup libmeos_internal_temporal_accessor
  * @brief Return a copy of the base value of a temporal instant
  */
 Datum
@@ -131,7 +131,7 @@ tnumberinst_double(const TInstant *inst)
 
 #if MEOS
 /**
- * @ingroup libMOBDB_internal_temporal_inout
+ * @ingroup libmeos_internal_temporal_inout
  * @brief Return a temporal instant from its Well-Known Text (WKT) representation.
  *
  * @param[in] str String
@@ -144,7 +144,7 @@ tinstant_in(const char *str, meosType temptype)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_inout
+ * @ingroup libmeos_internal_temporal_inout
  * @brief Return a temporal instant boolean from its Well-Known Text (WKT)
  * representation.
  */
@@ -155,7 +155,7 @@ tboolinst_in(const char *str)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_inout
+ * @ingroup libmeos_internal_temporal_inout
  * @brief Return a temporal instant integer from its Well-Known Text (WKT)
  * representation.
  */
@@ -166,7 +166,7 @@ tintinst_in(const char *str)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_inout
+ * @ingroup libmeos_internal_temporal_inout
  * @brief Return a temporal instant float from its Well-Known Text (WKT)
  * representation.
  */
@@ -177,7 +177,7 @@ tfloatinst_in(const char *str)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_inout
+ * @ingroup libmeos_internal_temporal_inout
  * @brief Return a temporal instant text from its Well-Known Text (WKT)
  * representation.
  */
@@ -188,7 +188,7 @@ ttextinst_in(const char *str)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_inout
+ * @ingroup libmeos_internal_temporal_inout
  * @brief Return a temporal instant geometric point from its Well-Known Text
  * (WKT) representation.
  */
@@ -202,7 +202,7 @@ tgeompointinst_in(const char *str)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_inout
+ * @ingroup libmeos_internal_temporal_inout
  * @brief Return a temporal instant geographic point from its Well-Known Text
  * (WKT) representation.
  */
@@ -238,7 +238,7 @@ tinstant_to_string(const TInstant *inst, int maxdd, outfunc value_out)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_inout
+ * @ingroup libmeos_internal_temporal_inout
  * @brief Return the Well-Known Text (WKT) representation of a temporal instant.
  */
 char *
@@ -252,7 +252,7 @@ tinstant_out(const TInstant *inst, int maxdd)
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_constructor
+ * @ingroup libmeos_internal_temporal_constructor
  * @brief Construct a temporal instant from the arguments.
  *
  * The memory structure of a temporal instant is as follows
@@ -322,7 +322,7 @@ tinstant_make(Datum value, meosType temptype, TimestampTz t)
 
 #if MEOS
 /**
- * @ingroup libMOBDB_temporal_constructor
+ * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal instant boolean from the arguments.
  * @sqlfunc tbool_inst()
  */
@@ -333,7 +333,7 @@ tboolinst_make(bool b, TimestampTz t)
 }
 
 /**
- * @ingroup libMOBDB_temporal_constructor
+ * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal instant integer from the arguments.
  * @sqlfunc tbool_inst(), tint_inst(), tfloat_inst(), ttext_inst(), etc.
  */
@@ -344,7 +344,7 @@ tintinst_make(int i, TimestampTz t)
 }
 
 /**
- * @ingroup libMOBDB_temporal_constructor
+ * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal instant float from the arguments.
  * @sqlfunc tfloat_inst()
  */
@@ -355,7 +355,7 @@ tfloatinst_make(double d, TimestampTz t)
 }
 
 /**
- * @ingroup libMOBDB_temporal_constructor
+ * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal instant text from the arguments.
  * @sqlfunc tint_inst()
  */
@@ -366,7 +366,7 @@ ttextinst_make(const text *txt, TimestampTz t)
 }
 
 /**
- * @ingroup libMOBDB_temporal_constructor
+ * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal instant geometric point from the arguments.
  * @sqlfunc tgeompoint_inst()
  */
@@ -376,7 +376,7 @@ tgeompointinst_make(const GSERIALIZED *gs, TimestampTz t)
   return tinstant_make(PointerGetDatum(gs), T_TGEOMPOINT, t);
 }
 /**
- * @ingroup libMOBDB_temporal_constructor
+ * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal instant geographic point from the arguments.
  * @sqlfunc tgeogpoint_inst().
  */
@@ -388,7 +388,7 @@ tgeogpointinst_make(const GSERIALIZED *gs, TimestampTz t)
 #endif /* MEOS */
 
 /**
- * @ingroup libMOBDB_internal_temporal_constructor
+ * @ingroup libmeos_internal_temporal_constructor
  * @brief Return a copy of a temporal instant.
  */
 TInstant *
@@ -404,7 +404,7 @@ tinstant_copy(const TInstant *inst)
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_accessor
+ * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the singleton base value of a temporal instant.
  * @post The output parameter @p count is equal to 1
  * @sqlfunc getValues()
@@ -419,7 +419,7 @@ tinstant_valueset(const TInstant *inst, int *count)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_accessor
+ * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the base values of a temporal instant number as a span set.
  * @sqlfunc getValues()
  */
@@ -433,7 +433,7 @@ tnumberinst_values(const TInstant *inst)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_accessor
+ * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the time frame of a temporal instant as a period set.
  * @sqlfunc getTime()
  */
@@ -445,7 +445,7 @@ tinstant_time(const TInstant *inst)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_cast
+ * @ingroup libmeos_internal_temporal_cast
  * @brief Return the bounding period of a temporal instant.
  * @sqlfunc period()
  * @sqlop @p ::
@@ -458,7 +458,7 @@ tinstant_set_period(const TInstant *inst, Span *p)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_accessor
+ * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the singleton array of timestamps of a temporal instant.
  * @post The output parameter @p count is equal to 1
  * @sqlfunc timestamps()
@@ -473,7 +473,7 @@ tinstant_timestamps(const TInstant *inst, int *count)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_accessor
+ * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the singleton array of instants of a temporal instant.
  * @post The output parameter @p count is equal to 1
  * @sqlfunc instants()
@@ -488,7 +488,7 @@ tinstant_instants(const TInstant *inst, int *count)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_accessor
+ * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the base value of a temporal instant at a timestamp.
  *
  * @note Since the corresponding function for temporal sequences need to
@@ -510,7 +510,7 @@ tinstant_value_at_timestamp(const TInstant *inst, TimestampTz t, Datum *result)
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_cast
+ * @ingroup libmeos_internal_temporal_cast
  * @brief Cast a temporal instant integer to a temporal instant float.
  * @sqlop @p ::
  */
@@ -525,7 +525,7 @@ tintinst_to_tfloatinst(const TInstant *inst)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_cast
+ * @ingroup libmeos_internal_temporal_cast
  * @brief Cast a temporal instant float to a temporal instant integer.
  * @sqlop @p ::
  */
@@ -544,7 +544,7 @@ tfloatinst_to_tintinst(const TInstant *inst)
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_transf
+ * @ingroup libmeos_internal_temporal_transf
  * @brief Return a temporal sequence transformed into a temporal instant.
  * @sqlfunc tbool_inst(), tint_inst(), tfloat_inst(), ttext_inst(), etc.
  */
@@ -558,7 +558,7 @@ tsequence_to_tinstant(const TSequence *seq)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_transf
+ * @ingroup libmeos_internal_temporal_transf
  * @brief Return a temporal sequence set transformed into a temporal instant.
  * @sqlfunc tbool_inst(), tint_inst(), tfloat_inst(), ttext_inst(), etc.
  */
@@ -571,7 +571,7 @@ tsequenceset_to_tinstant(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_transf
+ * @ingroup libmeos_internal_temporal_transf
  * @brief Return a temporal instant shifted by an interval.
  * @sqlfunc shift()
  */
@@ -588,7 +588,7 @@ tinstant_shift(const TInstant *inst, const Interval *interval)
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_ever
  * @brief Return true if a temporal instant is ever equal to a base value.
  * @sqlop @p ?=
  */
@@ -600,7 +600,7 @@ tinstant_ever_eq(const TInstant *inst, Datum value)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_ever
  * @brief Return true if a temporal instant is always equal to a base value.
  * @sqlop @p %=
  */
@@ -613,7 +613,7 @@ tinstant_always_eq(const TInstant *inst, Datum value)
 /*****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_ever
  * @brief Return true if a temporal instant is ever less than a base value.
  * @sqlop @p ?<
  */
@@ -625,7 +625,7 @@ tinstant_ever_lt(const TInstant *inst, Datum value)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_ever
  * @brief Return true if a temporal instant is ever less than or equal to
  * a base value.
  * @sqlop @p ?<=
@@ -638,7 +638,7 @@ tinstant_ever_le(const TInstant *inst, Datum value)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_ever
  * @brief Return true if a temporal instant is always less than a base value.
  * @sqlop @p %<
  */
@@ -650,7 +650,7 @@ tinstant_always_lt(const TInstant *inst, Datum value)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_ever
  * @brief Return true if a temporal instant is always less than or equal to a
  * base value.
  * @sqlop @p %<=
@@ -667,7 +667,7 @@ tinstant_always_le(const TInstant *inst, Datum value)
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal instant to (the complement of) a base value.
  * @sqlfunc atValue(), minusValue()
  */
@@ -703,7 +703,7 @@ tinstant_restrict_values_test(const TInstant *inst, const Set *set,
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal instant to an array of base values.
  * @sqlfunc atValues(), minusValues()
  */
@@ -737,7 +737,7 @@ tnumberinst_restrict_span_test(const TInstant *inst, const Span *span,
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal number instant to (the complement of) a span of
  * base values.
  *
@@ -778,7 +778,7 @@ tnumberinst_restrict_spanset_test(const TInstant *inst, const SpanSet *ss,
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal number instant to (the complement of) a span set.
  * @sqlfunc atSpanset(), minusSpanset()
  */
@@ -792,7 +792,7 @@ tnumberinst_restrict_spanset(const TInstant *inst, const SpanSet *ss,
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal instant to (the complement of) a timestamp.
  *
  * @note Since the corresponding function for temporal sequences need to
@@ -825,7 +825,7 @@ tinstant_restrict_timestampset_test(const TInstant *inst, const Set *ts,
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal instant to (the complement of) a timestamp set.
  * @sqlfunc atTstzSet(), minusTstzSet()
  */
@@ -839,7 +839,7 @@ tinstant_restrict_timestampset(const TInstant *inst, const Set *ts,
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal instant to (the complement of) a period.
  * @sqlfunc atPeriod(), minusPeriod()
  */
@@ -870,7 +870,7 @@ tinstant_restrict_periodset_test(const TInstant *inst, const SpanSet *ps,
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal instant to (the complement of) a period set.
  * @sqlfunc atTime(), minusTime()
  */
@@ -888,7 +888,7 @@ tinstant_restrict_periodset(const TInstant *inst,const  SpanSet *ps,
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_transf
+ * @ingroup libmeos_internal_temporal_transf
  * @brief Merge two temporal instants.
  */
 Temporal *
@@ -899,7 +899,7 @@ tinstant_merge(const TInstant *inst1, const TInstant *inst2)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_transf
+ * @ingroup libmeos_internal_temporal_transf
  * @brief Merge an array of temporal instants.
  *
  * @param[in] instants Array of instants
@@ -953,7 +953,7 @@ intersection_tinstant_tinstant(const TInstant *inst1, const TInstant *inst2,
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_comp
+ * @ingroup libmeos_internal_temporal_comp
  * @brief Return true if two temporal instants are equal.
  *
  * @pre The arguments are of the same base type
@@ -976,7 +976,7 @@ tinstant_eq(const TInstant *inst1, const TInstant *inst2)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_comp
+ * @ingroup libmeos_internal_temporal_comp
  * @brief Return -1, 0, or 1 depending on whether the first temporal instant is
  * less than, equal, or greater than the second one.
  *
@@ -1016,7 +1016,7 @@ tinstant_cmp(const TInstant *inst1, const TInstant *inst2)
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_accessor
+ * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the 32-bit hash value of a temporal instant.
  * @sqlfunc tbool_hash(), tint_hash(), tfloat_hash(), ttext_hash(), etc.
  */

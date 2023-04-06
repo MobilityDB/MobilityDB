@@ -551,7 +551,7 @@ tseqarr2_to_tseqarr(TSequence ***sequences, int *countseqs, int count,
 
 #if MEOS
 /**
- * @ingroup libMOBDB_internal_temporal_inout
+ * @ingroup libmeos_internal_temporal_inout
  * @brief Return a temporal sequence from its Well-Known Text (WKT) representation.
  *
  * @param[in] str String
@@ -568,7 +568,7 @@ tsequence_in(const char *str, meosType temptype, interpType interp)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_inout
+ * @ingroup libmeos_internal_temporal_inout
  * @brief Return a temporal sequence boolean from its Well-Known Text (WKT)
  * representation.
  */
@@ -582,7 +582,7 @@ tboolseq_in(const char *str, interpType interp)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_inout
+ * @ingroup libmeos_internal_temporal_inout
  * @brief Return a temporal sequence integer from its Well-Known Text (WKT)
  * representation.
  */
@@ -596,7 +596,7 @@ tintseq_in(const char *str, interpType interp)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_inout
+ * @ingroup libmeos_internal_temporal_inout
  * @brief Return a temporal sequence float from its Well-Known Text (WKT)
  * representation.
  */
@@ -610,7 +610,7 @@ tfloatseq_in(const char *str, interpType interp)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_inout
+ * @ingroup libmeos_internal_temporal_inout
  * @brief Return a temporal sequence text from its Well-Known Text (WKT)
  * representation.
  */
@@ -624,7 +624,7 @@ ttextseq_in(const char *str, interpType interp)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_inout
+ * @ingroup libmeos_internal_temporal_inout
  * @brief Return a temporal sequence geometric point from its Well-Known Text
  * (WKT) representation.
  */
@@ -638,7 +638,7 @@ tgeompointseq_in(const char *str, interpType interp __attribute__((unused)))
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_inout
+ * @ingroup libmeos_internal_temporal_inout
  * @brief Return a temporal sequence geographic point from its Well-Known Text
  * (WKT) representation.
  */
@@ -698,7 +698,7 @@ tsequence_to_string(const TSequence *seq, int maxdd, bool component,
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_inout
+ * @ingroup libmeos_internal_temporal_inout
  * @brief Return the Well-Known Text (WKT) representation of a temporal sequence.
  */
 char *
@@ -745,7 +745,7 @@ tsequence_make_valid(const TInstant **instants, int count, bool lower_inc,
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_accessor
+ * @ingroup libmeos_internal_temporal_accessor
  * @brief Set the second argument to the bounding box of a temporal sequence
  * @sqlfunc period(), tbox(), stbox()
  * @sqlop @p ::
@@ -770,7 +770,7 @@ TSEQUENCE_OFFSETS_PTR(const TSequence *seq)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_accessor
+ * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the n-th instant of a temporal sequence.
  * @note The period component of the bbox is already declared in the struct
  * @pre The argument @p index is less than the number of instants in the
@@ -909,7 +909,7 @@ tsequence_make_exp(const TInstant **instants, int count, int maxcount,
 }
 
 /**
- * @ingroup libMOBDB_temporal_constructor
+ * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal sequence from an array of temporal instants.
  *
  * @param[in] instants Array of instants
@@ -951,7 +951,7 @@ tsequence_make_free_exp(TInstant **instants, int count, int maxcount,
 }
 
 /**
- * @ingroup libMOBDB_temporal_constructor
+ * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal sequence from an array of temporal instants
  * and free the array and the instants after the creation.
  *
@@ -972,7 +972,7 @@ tsequence_make_free(TInstant **instants, int count, bool lower_inc,
 
 #if MEOS
 /**
- * @ingroup libMOBDB_temporal_constructor
+ * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal sequence from arrays of coordinates, one per
  * dimension, and timestamps.
  *
@@ -1008,7 +1008,7 @@ tpointseq_make_coords(const double *xcoords, const double *ycoords,
 #endif /* MEOS */
 
 /**
- * @ingroup libMOBDB_internal_temporal_constructor
+ * @ingroup libmeos_internal_temporal_constructor
  * @brief Return a copy of a temporal sequence.
  */
 TSequence *
@@ -1022,7 +1022,7 @@ tsequence_copy(const TSequence *seq)
 /*****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_constructor
+ * @ingroup libmeos_internal_temporal_constructor
  * @brief Construct a temporal discrete sequence from a base value and a
  * timestamp set.
  * @sqlfunc tbool_discseq(), tint_discseq(), tfloat_discseq(), ttext_discseq(),
@@ -1039,7 +1039,7 @@ tdiscseq_from_base(Datum value, meosType temptype, const TSequence *seq)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_constructor
+ * @ingroup libmeos_internal_temporal_constructor
  * @brief Construct a temporal discrete sequence from a base value and a
  * timestamp set.
  * @sqlfunc tbool_discseq(), tint_discseq(), tfloat_discseq(), ttext_discseq(),
@@ -1058,7 +1058,7 @@ tdiscseq_from_base_time(Datum value, meosType temptype, const Set *ts)
 
 #if MEOS
 /**
- * @ingroup libMOBDB_temporal_constructor
+ * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal boolean discrete sequence from a boolean and a
  * timestamp set.
  */
@@ -1069,7 +1069,7 @@ tbooldiscseq_from_base_time(bool b, const Set *ts)
 }
 
 /**
- * @ingroup libMOBDB_temporal_constructor
+ * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal integer discrete sequence from an integer and a
  * timestamp set.
  */
@@ -1080,7 +1080,7 @@ tintdiscseq_from_base_time(int i, const Set *ts)
 }
 
 /**
- * @ingroup libMOBDB_temporal_constructor
+ * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal float discrete sequence from a float and a
  * timestamp set.
  */
@@ -1091,7 +1091,7 @@ tfloatdiscseq_from_base_time(double d, const Set *ts)
 }
 
 /**
- * @ingroup libMOBDB_temporal_constructor
+ * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal text discrete sequence from a text and a
  * timestamp set.
  */
@@ -1102,7 +1102,7 @@ ttextdiscseq_from_base_time(const text *txt, const Set *ts)
 }
 
 /**
- * @ingroup libMOBDB_temporal_constructor
+ * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal geometric point discrete sequence from a point
  * and a timestamp set.
  */
@@ -1113,7 +1113,7 @@ tgeompointdiscseq_from_base_time(const GSERIALIZED *gs, const Set *ts)
 }
 
 /**
- * @ingroup libMOBDB_temporal_constructor
+ * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal geographic point discrete sequence from a point
  * and a timestamp set.
  */
@@ -1127,7 +1127,7 @@ tgeogpointdiscseq_from_base_time(const GSERIALIZED *gs, const Set *ts)
 /*****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_constructor
+ * @ingroup libmeos_internal_temporal_constructor
  * @brief Construct a temporal sequence from a base value and the time frame
  * of another temporal sequence.
  *
@@ -1147,7 +1147,7 @@ tsequence_from_base(Datum value, meosType temptype, const TSequence *seq,
 
 #if MEOS
 /**
- * @ingroup libMOBDB_temporal_constructor
+ * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal boolean sequence from a boolean and the time
  * frame of another temporal sequence.
  */
@@ -1158,7 +1158,7 @@ tboolseq_from_base(bool b, const TSequence *seq)
 }
 
 /**
- * @ingroup libMOBDB_temporal_constructor
+ * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal integer sequence from an integer and the time
  * frame of another temporal sequence.
  */
@@ -1169,7 +1169,7 @@ tintseq_from_base(int i, const TSequence *seq)
 }
 
 /**
- * @ingroup libMOBDB_temporal_constructor
+ * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal float sequence from a float and the time frame
  * of another temporal sequence.
  */
@@ -1180,7 +1180,7 @@ tfloatseq_from_base(double d, const TSequence *seq, interpType interp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_constructor
+ * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal text sequence from a text and the time frame
  * of another temporal sequence.
  */
@@ -1191,7 +1191,7 @@ ttextseq_from_base(const text *txt, const TSequence *seq)
 }
 
 /**
- * @ingroup libMOBDB_temporal_constructor
+ * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal geometric point sequence from a point and the
  * time frame of another temporal sequence.
  */
@@ -1203,7 +1203,7 @@ tgeompointseq_from_base(const GSERIALIZED *gs, const TSequence *seq,
 }
 
 /**
- * @ingroup libMOBDB_temporal_constructor
+ * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal geographic point sequence from a point and the
  * time frame of another temporal sequence.
  */
@@ -1218,7 +1218,7 @@ tgeogpointseq_from_base(const GSERIALIZED *gs, const TSequence *seq,
 /*****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_constructor
+ * @ingroup libmeos_internal_temporal_constructor
  * @brief Construct a temporal sequence from a base value and a period.
  *
  * @param[in] value Base value
@@ -1248,7 +1248,7 @@ tsequence_from_base_time(Datum value, meosType temptype, const Span *p,
 
 #if MEOS
 /**
- * @ingroup libMOBDB_temporal_constructor
+ * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal boolean sequence from a boolean and a period.
  */
 TSequence *
@@ -1258,7 +1258,7 @@ tboolseq_from_base_time(bool b, const Span *p)
 }
 
 /**
- * @ingroup libMOBDB_temporal_constructor
+ * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal integer sequence from an integer and a period.
  */
 TSequence *
@@ -1268,7 +1268,7 @@ tintseq_from_base_time(int i, const Span *p)
 }
 
 /**
- * @ingroup libMOBDB_temporal_constructor
+ * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal float sequence from a float and a period.
  */
 TSequence *
@@ -1278,7 +1278,7 @@ tfloatseq_from_base_time(double d, const Span *p, interpType interp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_constructor
+ * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal text sequence from a text and a period.
  */
 TSequence *
@@ -1288,7 +1288,7 @@ ttextseq_from_base_time(const text *txt, const Span *p)
 }
 
 /**
- * @ingroup libMOBDB_temporal_constructor
+ * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal geometric point sequence from a point and a
  * period.
  */
@@ -1300,7 +1300,7 @@ tgeompointseq_from_base_time(const GSERIALIZED *gs, const Span *p,
 }
 
 /**
- * @ingroup libMOBDB_temporal_constructor
+ * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal geographic point sequence from a point and a
  * period.
  */
@@ -1317,7 +1317,7 @@ tgeogpointseq_from_base_time(const GSERIALIZED *gs, const Span *p,
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_transf
+ * @ingroup libmeos_internal_temporal_transf
  * @brief Append an instant to a temporal sequence accounting for potential gaps.
  * @param[in,out] seq Temporal sequence
  * @param[in] inst Temporal instant
@@ -1495,7 +1495,7 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst,
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_transf
+ * @ingroup libmeos_internal_temporal_transf
  * @brief Append a sequence to a temporal sequence.
  * @param[in,out] seq1 Temporal sequence
  * @param[in] seq2 Temporal sequence to append
@@ -1567,7 +1567,7 @@ tsequence_append_tsequence(TSequence *seq1, const TSequence *seq2,
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_transf
+ * @ingroup libmeos_internal_temporal_transf
  * @brief Merge two temporal sequences.
  * @sqlfunc merge()
  */
@@ -1579,7 +1579,7 @@ tsequence_merge(const TSequence *seq1, const TSequence *seq2)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_transf
+ * @ingroup libmeos_internal_temporal_transf
  * @brief Merge an array of temporal discrete sequences.
  *
  * @note The function does not assume that the values in the array are strictly
@@ -1709,7 +1709,7 @@ tsequence_merge_array1(const TSequence **sequences, int count, int *totalcount)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_transf
+ * @ingroup libmeos_internal_temporal_transf
  * @brief Merge an array of temporal sequences.
  *
  * @param[in] sequences Array of values
@@ -1745,7 +1745,7 @@ tsequence_merge_array(const TSequence **sequences, int count)
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_cast
+ * @ingroup libmeos_internal_temporal_cast
  * @brief Cast a temporal sequence integer to a temporal sequence float.
  * @sqlop @p ::
  */
@@ -1766,7 +1766,7 @@ tintseq_to_tfloatseq(const TSequence *seq)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_cast
+ * @ingroup libmeos_internal_temporal_cast
  * @brief Cast a temporal sequence float to a temporal sequence integer.
  * @sqlop @p ::
  */
@@ -1793,7 +1793,7 @@ tfloatseq_to_tintseq(const TSequence *seq)
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_transf
+ * @ingroup libmeos_internal_temporal_transf
  * @brief Return a copy of a temporal sequence with no additional free space.
  * @note We cannot simply test whether seq->count == seq->maxcount since there
  * could be extra space allocated for the (variable-length) instants
@@ -1823,7 +1823,7 @@ tsequence_compact(const TSequence *seq)
 
 #if MEOS
 /**
- * @ingroup libMOBDB_internal_temporal_transf
+ * @ingroup libmeos_internal_temporal_transf
  * @brief Restart a temporal sequence by keeping only the last instants
  */
 void
@@ -1857,7 +1857,7 @@ tsequence_restart(TSequence *seq, int last)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_transf
+ * @ingroup libmeos_internal_temporal_transf
  * @brief Return a subsequence specified by the two component instants
  */
 TSequence *
@@ -1883,7 +1883,7 @@ tsequence_subseq(const TSequence *seq, int from, int to, bool lower_inc,
 /*****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_transf
+ * @ingroup libmeos_internal_temporal_transf
  * @brief Return a temporal instant transformed into a temporal sequence.
  * @sqlfunc tbool_seq(), tint_seq(), tfloat_seq(), ttext_seq(), etc.
  */
@@ -1896,7 +1896,7 @@ tinstant_to_tsequence(const TInstant *inst, interpType interp)
 /*****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_transf
+ * @ingroup libmeos_internal_temporal_transf
  * @brief Transform a temporal discrete sequence to a given interpolation.
  */
 Temporal *
@@ -1927,7 +1927,7 @@ tdiscseq_set_interp(const TSequence *seq, interpType interp)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_transf
+ * @ingroup libmeos_internal_temporal_transf
  * @brief Return a temporal sequence transformed into discrete interpolation.
  */
 TSequence *
@@ -1940,7 +1940,7 @@ tcontseq_to_discrete(const TSequence *seq)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_transf
+ * @ingroup libmeos_internal_temporal_transf
  * @brief Return a temporal sequence transformed to step interpolation.
  */
 TSequence *
@@ -2017,7 +2017,7 @@ tstepseq_to_linear1(const TSequence *seq, TSequence **result)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_transf
+ * @ingroup libmeos_internal_temporal_transf
  * @brief Return a temporal sequence with continuous base type transformed from
  * step to linear interpolation.
  *
@@ -2035,7 +2035,7 @@ tstepseq_to_linear(const TSequence *seq)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_transf
+ * @ingroup libmeos_internal_temporal_transf
  * @brief Return a temporal sequence transformed to linear interpolation.
  */
 Temporal *
@@ -2050,7 +2050,7 @@ tcontseq_to_linear(const TSequence *seq)
 }
 
 /**
- * @ingroup libMOBDB_temporal_transf
+ * @ingroup libmeos_temporal_transf
  * @brief Return a temporal value transformed to the given interpolation.
  * @sqlfunc setInterp
  */
@@ -2072,7 +2072,7 @@ tsequence_set_interp(const TSequence *seq, interpType interp)
 /*****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_transf
+ * @ingroup libmeos_internal_temporal_transf
  * @brief Return a temporal sequence shifted and/or scaled by the intervals.
  * @pre The duration is greater than 0 if it is not NULL
  * @sqlfunc shift(), tscale(), shiftTscale().
@@ -2119,7 +2119,7 @@ tsequence_shift_tscale(const TSequence *seq, const Interval *shift,
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_accessor
+ * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the base values of a temporal sequence as a set.
  *
  * @param[in] seq Temporal sequence
@@ -2145,7 +2145,7 @@ tsequence_valueset(const TSequence *seq, int *count)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_accessor
+ * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the base values of a temporal number sequence as a span set.
  *
  * For temporal floats with linear interpolation the result is a singleton.
@@ -2177,7 +2177,7 @@ tnumberseq_values(const TSequence *seq)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_accessor
+ * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the time frame of a temporal sequence as a period set.
  * @sqlfunc getTime()
  */
@@ -2200,7 +2200,7 @@ tsequence_time(const TSequence *seq)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_accessor
+ * @ingroup libmeos_internal_temporal_accessor
  * @brief Return a pointer to the instant with minimum base value of a
  * temporal sequence.
  *
@@ -2229,7 +2229,7 @@ tsequence_min_instant(const TSequence *seq)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_accessor
+ * @ingroup libmeos_internal_temporal_accessor
  * @brief Return a pointer to the instant with minimum base value of a
  * temporal sequence.
  *
@@ -2256,7 +2256,7 @@ tsequence_max_instant(const TSequence *seq)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_accessor
+ * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the minimum base value of a temporal sequence.
  * @sqlfunc minValue()
  */
@@ -2284,7 +2284,7 @@ tsequence_min_value(const TSequence *seq)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_accessor
+ * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the maximum base value of a temporal sequence.
  * @sqlfunc maxValue()
  */
@@ -2313,7 +2313,7 @@ tsequence_max_value(const TSequence *seq)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_accessor
+ * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the duration of a temporal sequence.
  * @sqlfunc duration()
  */
@@ -2324,7 +2324,7 @@ tsequence_duration(const TSequence *seq)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_cast
+ * @ingroup libmeos_internal_temporal_cast
  * @brief Return the bounding period of a temporal sequence
  * @sqlfunc period()
  * @sqlop @p ::
@@ -2337,7 +2337,7 @@ tsequence_set_period(const TSequence *seq, Span *p)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_accessor
+ * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the singleton array of sequences of a temporal sequence.
  * @sqlfunc sequences()
  */
@@ -2406,7 +2406,7 @@ tsequence_segments1(const TSequence *seq, TSequence **result)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_accessor
+ * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the array of segments of a temporal sequence.
  * @sqlfunc segments()
  */
@@ -2435,7 +2435,7 @@ tsequence_segments(const TSequence *seq, int *count)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_accessor
+ * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the array of distinct instants of a temporal sequence.
  * @note By definition, all instants of a sequence are distinct
  * @sqlfunc instants()
@@ -2450,7 +2450,7 @@ tsequence_instants(const TSequence *seq)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_accessor
+ * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the start timestamp of a temporal sequence.
  * @sqlfunc startTimestamp()
  */
@@ -2461,7 +2461,7 @@ tsequence_start_timestamp(const TSequence *seq)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_accessor
+ * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the end timestamp of a temporal sequence.
  * @sqlfunc endTimestamp()
  */
@@ -2483,7 +2483,7 @@ tsequence_timestamps1(const TSequence *seq, TimestampTz *times)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_accessor
+ * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the array of timestamps of a temporal sequence.
  *
  * @param[in] seq Temporal sequence
@@ -2589,7 +2589,7 @@ tsegment_value_at_timestamp(const TInstant *inst1, const TInstant *inst2,
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_accessor
+ * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the base value of a temporal sequence at a timestamp.
  *
  * @param[in] seq Temporal sequence
@@ -3147,7 +3147,7 @@ intersection_tinstant_tsequence(const TInstant *inst, const TSequence *seq,
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_ever
  * @brief Return true if a temporal sequence is ever equal to a base value.
  * @sqlop @p ?=
  */
@@ -3208,7 +3208,7 @@ tsequence_ever_eq(const TSequence *seq, Datum value)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_ever
  * @brief Return true if a temporal sequence is always equal to a base value.
  * @sqlop @p %=
  */
@@ -3289,7 +3289,7 @@ tlinearseq_always_lt1(Datum value1, Datum value2, meosType basetype,
 /*****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_ever
  * @brief Return true if a temporal sequence is ever less than a base value.
  * @sqlop @p ?<
  */
@@ -3311,7 +3311,7 @@ tsequence_ever_lt(const TSequence *seq, Datum value)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_ever
  * @brief Return true if a temporal sequence is ever less than or equal to a
  * base value
  * @sqlop @p ?<=
@@ -3356,7 +3356,7 @@ tsequence_ever_le(const TSequence *seq, Datum value)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_ever
  * @brief Return true if a temporal sequence is always less than a base value.
  * @sqlop @p %<
  */
@@ -3400,7 +3400,7 @@ tsequence_always_lt(const TSequence *seq, Datum value)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_ever
  * @brief Return true if a temporal sequence is always less than or equal to a
  * base value
  * @sqlop @p %<=
@@ -3436,7 +3436,7 @@ tsequence_always_le(const TSequence *seq, Datum value)
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal discrete sequence to (the complement of) a base
  * value.
  *
@@ -3479,7 +3479,7 @@ tdiscseq_restrict_value(const TSequence *seq, Datum value, bool atfunc)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal discrete sequence to (the complement of) an array
  * of base values.
  *
@@ -3715,7 +3715,7 @@ tcontseq_restrict_value1(const TSequence *seq, Datum value, bool atfunc,
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal sequence to (the complement of) a base value.
  *
  * @param[in] seq Temporal sequence
@@ -3801,7 +3801,7 @@ tsequence_at_values1(const TSequence *seq, const Set *set, TSequence **result)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal sequence to (the complement of) an array of base
  * values.
  *
@@ -3852,7 +3852,7 @@ tcontseq_restrict_values(const TSequence *seq, const Set *set, bool atfunc)
 /*****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal discrete number sequence to (the complement of) a
  * span of base values.
  *
@@ -3886,7 +3886,7 @@ tnumberdiscseq_restrict_span(const TSequence *seq, const Span *span,
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal discrete sequence number to (the complement of) an
  * array of spans of base values.
  *
@@ -4240,7 +4240,7 @@ tnumbercontseq_restrict_span2(const TSequence *seq, const Span *span,
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal sequence number to (the complement of) a span.
  *
  * @param[in] seq Temporal number
@@ -4358,7 +4358,7 @@ tnumbercontseq_restrict_spanset1(const TSequence *seq, const SpanSet *ss,
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal number to (the complement of) an array of spans.
  *
  * @param[in] seq Temporal number
@@ -4389,7 +4389,7 @@ tnumbercontseq_restrict_spanset(const TSequence *seq, const SpanSet *ss,
 /*****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal discrete sequence to (the complement of) its
  * minimum/maximum base value
  *
@@ -4407,7 +4407,7 @@ tdiscseq_restrict_minmax(const TSequence *seq, bool min, bool atfunc)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal sequence to (the complement of) its
  * minimum/maximum base value.
  *
@@ -4427,7 +4427,7 @@ tcontseq_restrict_minmax(const TSequence *seq, bool min, bool atfunc)
 /*****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_accessor
+ * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the base value of a temporal discrete sequence at a timestamp
  *
  * @note In order to be compatible with the corresponding functions for temporal
@@ -4448,7 +4448,7 @@ tdiscseq_value_at_timestamp(const TSequence *seq, TimestampTz t, Datum *result)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal discrete sequence to (the complement of) a timestamp.
  *
  * @note In order to be compatible with the corresponding functions for temporal
@@ -4477,7 +4477,7 @@ tdiscseq_at_timestamp(const TSequence *seq, TimestampTz t)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal discrete sequence to (the complement of) a timestamp.
  *
  * @note In order to be compatible with the corresponding functions for temporal
@@ -4512,7 +4512,7 @@ tdiscseq_minus_timestamp(const TSequence *seq, TimestampTz t)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal discrete sequence to (the complement of) a timestamp set.
  * @sqlfunc atTime(), minusTime()
  */
@@ -4591,7 +4591,7 @@ tdiscseq_restrict_timestampset(const TSequence *seq, const Set *ts,
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal discrete sequence to (the complement of) a period.
  * @sqlfunc atTime()
  */
@@ -4622,7 +4622,7 @@ tdiscseq_at_period(const TSequence *seq, const Span *period)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal discrete sequence to (the complement of) a period.
  * @sqlfunc minusTime()
  */
@@ -4653,7 +4653,7 @@ tdiscseq_minus_period(const TSequence *seq, const Span *period)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a discrete temporal sequence to (the complement of) a period set.
  * @sqlfunc atTime(), minusTime()
  */
@@ -4748,7 +4748,7 @@ tcontseq_at_timestamp(const TSequence *seq, TimestampTz t)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal sequence to a timestamp.
  * @sqlfunc atTimestamp()
  */
@@ -4847,7 +4847,7 @@ tcontseq_minus_timestamp1(const TSequence *seq, TimestampTz t,
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal sequence to the complement of a timestamp.
  *
  * @param[in] seq Temporal sequence
@@ -4872,7 +4872,7 @@ tcontseq_minus_timestamp(const TSequence *seq, TimestampTz t)
 /*****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal sequence to a timestamp set.
  * @sqlfunc atTstzSet()
  */
@@ -5056,7 +5056,7 @@ tcontseq_minus_timestampset1(const TSequence *seq, const Set *ts,
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal sequence to the complement of a timestamp set.
  * @sqlfunc minusTstzSet()
  */
@@ -5148,7 +5148,7 @@ tcontseq_at_period(const TSequence *seq, const Span *p)
 
 #if MEOS
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal sequence to a period.
  * @sqlfunc atPeriod()
  */
@@ -5200,7 +5200,7 @@ tcontseq_minus_period1(const TSequence *seq, const Span *p,
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal sequence to the complement of a period.
  * @sqlfunc minusPeriod()
  */
@@ -5329,7 +5329,7 @@ tcontseq_minus_periodset1(const TSequence *seq, const SpanSet *ps, int from,
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal sequence to (the complement of) a period set.
  *
  * @param[in] seq Temporal sequence
@@ -5373,7 +5373,7 @@ tcontseq_restrict_periodset(const TSequence *seq, const SpanSet *ps,
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_modif
+ * @ingroup libmeos_internal_temporal_modif
  * @brief Insert the second temporal value into the first one.
  */
 Temporal *
@@ -5438,7 +5438,7 @@ tcontseq_insert(const TSequence *seq1, const TSequence *seq2)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_transf
+ * @ingroup libmeos_internal_temporal_transf
  * @brief Delete a timestamp from a continuous temporal sequence.
  *
  * If an instant has the same timestamp, it will be removed. If the instant is
@@ -5491,7 +5491,7 @@ tcontseq_delete_timestamp(const TSequence *seq, TimestampTz t)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_transf
+ * @ingroup libmeos_internal_temporal_transf
  * @brief Delete a timestamp from a continuous temporal sequence.
  *
  * If an instant has the same timestamp, it will be removed. If the instant is
@@ -5579,7 +5579,7 @@ tcontseq_delete_timestampset(const TSequence *seq, const Set *ts)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_transf
+ * @ingroup libmeos_internal_temporal_transf
  * @brief Delete a period from a continuos temporal sequence.
  *
  * @param[in] seq Temporal sequence
@@ -5626,7 +5626,7 @@ tcontseq_delete_period(const TSequence *seq, const Span *p)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_modif
+ * @ingroup libmeos_internal_temporal_modif
  * @brief Delete a period set from a continuous temporal sequence.
  *
  * @param[in] seq Temporal sequence
@@ -5688,7 +5688,7 @@ tcontseq_delete_periodset(const TSequence *seq, const SpanSet *ps)
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_agg
+ * @ingroup libmeos_internal_temporal_agg
  * @brief Return the integral (area under the curve) of a temporal sequence
  * number.
  */
@@ -5721,7 +5721,7 @@ tnumberseq_integral(const TSequence *seq)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_agg
+ * @ingroup libmeos_internal_temporal_agg
  * @brief Return the time-weighted average of a temporal discrete sequence number
  * @note Since a discrete sequence does not have duration, the function returns
  * the traditional average of the values
@@ -5741,7 +5741,7 @@ tnumberdiscseq_twavg(const TSequence *seq)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_agg
+ * @ingroup libmeos_internal_temporal_agg
  * @brief Return the time-weighted average of a temporal sequence number.
  * @sqlfunc twAvg()
  */
@@ -5760,7 +5760,7 @@ tnumbercontseq_twavg(const TSequence *seq)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_agg
+ * @ingroup libmeos_internal_temporal_agg
  * @brief Return the time-weighted average of a temporal sequence number
  * @sqlfunc twAvg()
  */
@@ -5777,7 +5777,7 @@ tnumberseq_twavg(const TSequence *seq)
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_comp
+ * @ingroup libmeos_internal_temporal_comp
  * @brief Return true if two temporal sequences are equal.
  *
  * @pre The arguments are of the same base type
@@ -5810,7 +5810,7 @@ tsequence_eq(const TSequence *seq1, const TSequence *seq2)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_comp
+ * @ingroup libmeos_internal_temporal_comp
  * @brief Return -1, 0, or 1 depending on whether the first temporal sequence
  * is less than, equal, or greater than the second one.
  *
@@ -5856,7 +5856,7 @@ tsequence_cmp(const TSequence *seq1, const TSequence *seq2)
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_accessor
+ * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the 32-bit hash value of a temporal sequence.
  * @sqlfunc tbool_hash(), tint_hash(), tfloat_hash(), ttext_hash(), etc.
  */

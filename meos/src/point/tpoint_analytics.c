@@ -499,7 +499,7 @@ tpointseqset_to_geo_measure_segmentize(const TSequenceSet *ss,
 /*****************************************************************************/
 
 /**
- * @ingroup libMOBDB_temporal_analytics
+ * @ingroup libmeos_temporal_analytics
  * @brief Construct a geometry/geography with M measure from the temporal
  * point and
  * - either the temporal float given in the second argument (if any)
@@ -751,7 +751,7 @@ geo_to_tpointseqset(const GSERIALIZED *geo)
 }
 
 /**
- * @ingroup libMOBDB_temporal_analytics
+ * @ingroup libmeos_temporal_analytics
  * @brief Converts the PostGIS trajectory geometry/geography where the M
  * coordinates encode the timestamps in Unix epoch into a temporal point.
  * @sqlfunc tgeompoint(), tgeogpoint()
@@ -841,7 +841,7 @@ tsequenceset_simplify_min_dist(const TSequenceSet *ss, double dist)
 }
 
 /**
- * @ingroup libMOBDB_temporal_analytics
+ * @ingroup libmeos_temporal_analytics
  * @brief Simplify the temporal sequence float/point ensuring that consecutive
  * values are at least a certain distance apart.
  *
@@ -935,7 +935,7 @@ tsequenceset_simplify_min_tdelta(const TSequenceSet *ss, const Interval *mint)
 }
 
 /**
- * @ingroup libMOBDB_temporal_analytics
+ * @ingroup libmeos_temporal_analytics
  * @brief Simplify the temporal sequence float/point ensuring that consecutive
  * values are at least a certain time interval apart.
  *
@@ -1266,7 +1266,7 @@ tsequenceset_simplify_max_dist(const TSequenceSet *ss, double dist,
 }
 
 /**
- * @ingroup libMOBDB_temporal_analytics
+ * @ingroup libmeos_temporal_analytics
  * @brief Simplify the temporal float/point using a single-pass Douglas-Peucker
  * line simplification algorithm.
  * @param[in] temp Temporal value
@@ -1411,7 +1411,7 @@ tsequenceset_simplify_dp(const TSequenceSet *ss, double dist, bool syncdist,
 }
 
 /**
- * @ingroup libMOBDB_temporal_analytics
+ * @ingroup libmeos_temporal_analytics
  * @brief Simplify the temporal float/point using the Douglas-Peucker line
  * simplification algorithm.
  * @param[in] temp Temporal value
@@ -2006,7 +2006,7 @@ tpoint_decouple(const Temporal *temp, int64 **timesarr, int *count)
 /*****************************************************************************/
 
 /**
- * @ingroup libMOBDB_temporal_analytics
+ * @ingroup libmeos_temporal_analytics
  * @brief Transform the temporal point to Mapbox Vector Tile format
  * @sqlfunc AsMVTGeom()
  */

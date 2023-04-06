@@ -621,7 +621,7 @@ point_on_segment(Datum start, Datum end, Datum point)
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_ever
  * @brief Return true if a temporal instant point is ever equal to a point
  * @pre The validity of the parameters is verified in function @ref tpoint_ever_eq
  * @sqlop @p ?=
@@ -634,7 +634,7 @@ tpointinst_ever_eq(const TInstant *inst, Datum value)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_ever
  * @brief Return true if a temporal sequence point is ever equal to a point
  * @pre The validity of the parameters is verified in function @ref tpoint_ever_eq
  * @sqlop @p ?=
@@ -692,7 +692,7 @@ tpointseq_ever_eq(const TSequence *seq, Datum value)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_ever
  * @brief Return true if a temporal sequence set point is ever equal to a point
  * @pre The validity of the parameters is verified in function @ref tpoint_ever_eq
  * @sqlop @p ?=
@@ -714,7 +714,7 @@ tpointseqset_ever_eq(const TSequenceSet *ss, Datum value)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_ever
  * @brief Return true if a temporal point is ever equal to a point.
  * @see tpointinst_ever_eq
  * @see tpointseq_ever_eq
@@ -743,7 +743,7 @@ tpoint_ever_eq(const Temporal *temp, Datum value)
 
 #if MEOS
 /**
- * @ingroup libMOBDB_temporal_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal geometric point is ever equal to a point.
  * @sqlop @p ?=
  */
@@ -754,7 +754,7 @@ bool tgeompoint_ever_eq(const Temporal *temp, GSERIALIZED *gs)
 }
 
 /**
- * @ingroup libMOBDB_temporal_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal geographic point is ever equal to a point.
  * @sqlop @p ?=
  */
@@ -767,7 +767,7 @@ bool tgeogpoint_ever_eq(const Temporal *temp, GSERIALIZED *gs)
 /*****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_ever
  * @brief Return true if a temporal instant point is always equal to a point.
  * @pre The validity of the parameters is verified in function @ref tpoint_always_eq
  * @sqlop @p %=
@@ -779,7 +779,7 @@ tpointinst_always_eq(const TInstant *inst, Datum value)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_ever
  * @brief Return true if a temporal sequence point is always equal to a point.
  * @pre The validity of the parameters is verified in function @ref tpoint_always_eq
  * @sqlop @p %=
@@ -797,7 +797,7 @@ tpointseq_always_eq(const TSequence *seq, Datum value)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_ever
  * @brief Return true if a temporal sequence set point is always equal to a point.
  * @pre The validity of the parameters is verified in function @ref tpoint_always_eq
  * @sqlop @p %=
@@ -815,7 +815,7 @@ tpointseqset_always_eq(const TSequenceSet *ss, Datum value)
 }
 
 /**
- * @ingroup libMOBDB_temporal_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal point is always equal to a point.
  * @see tpointinst_always_eq
  * @see tpointseq_always_eq
@@ -845,7 +845,7 @@ tpoint_always_eq(const Temporal *temp, Datum value)
 
 #if MEOS
 /**
- * @ingroup libMOBDB_temporal_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal geometric point is always equal to a point.
  * @sqlop @p %=
  */
@@ -855,7 +855,7 @@ bool tgeompoint_always_eq(const Temporal *temp, GSERIALIZED *gs)
 }
 
 /**
- * @ingroup libMOBDB_temporal_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal geographic point is always equal to a point.
  * @sqlop @p %=
  */
@@ -1573,7 +1573,7 @@ lwline_make(Datum value1, Datum value2)
 /*****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_spatial_accessor
+ * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Compute the trajectory of a temporal discrete sequence point
  * @param[in] seq Temporal value
  * @note Notice that this function does not remove duplicate points
@@ -1603,7 +1603,7 @@ tpointdiscseq_trajectory(const TSequence *seq)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_spatial_accessor
+ * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the trajectory of a temporal sequence point
  * @param[in] seq Temporal sequence
  * @note Since the sequence has been already validated there is no
@@ -1643,7 +1643,7 @@ tpointcontseq_trajectory(const TSequence *seq)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_spatial_accessor
+ * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the trajectory of a temporal point with sequence set type
  * @note The function does not remove duplicates point/linestring components.
  * @sqlfunc trajectory()
@@ -1718,7 +1718,7 @@ tpointseqset_trajectory(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup libMOBDB_temporal_spatial_accessor
+ * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the trajectory of a temporal point.
  * @sqlfunc trajectory()
  */
@@ -1743,7 +1743,7 @@ tpoint_trajectory(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_spatial_accessor
+ * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the SRID of a temporal instant point.
  * @sqlfunc SRID()
  */
@@ -1755,7 +1755,7 @@ tpointinst_srid(const TInstant *inst)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_spatial_accessor
+ * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the SRID of a temporal sequence point.
  * @sqlfunc SRID()
  */
@@ -1767,7 +1767,7 @@ tpointseq_srid(const TSequence *seq)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_spatial_accessor
+ * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the SRID of a temporal sequence set point.
  * @sqlfunc SRID()
  */
@@ -1779,7 +1779,7 @@ tpointseqset_srid(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup libMOBDB_temporal_spatial_accessor
+ * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the SRID of a temporal point.
  * @sqlfunc SRID()
  */
@@ -1800,7 +1800,7 @@ tpoint_srid(const Temporal *temp)
 /*****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_spatial_transf
+ * @ingroup libmeos_internal_temporal_spatial_transf
  * @brief Set the SRID of a temporal instant point
  * @sqlfunc setSRID()
  */
@@ -1814,7 +1814,7 @@ tpointinst_set_srid(const TInstant *inst, int32 srid)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_spatial_transf
+ * @ingroup libmeos_internal_temporal_spatial_transf
  * @brief Set the SRID of a temporal sequence point
  * @sqlfunc setSRID()
  */
@@ -1836,7 +1836,7 @@ tpointseq_set_srid(const TSequence *seq, int32 srid)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_spatial_transf
+ * @ingroup libmeos_internal_temporal_spatial_transf
  * @brief Set the SRID of a temporal sequence set point
  * @sqlfunc setSRID()
  */
@@ -1867,7 +1867,7 @@ tpointseqset_set_srid(const TSequenceSet *ss, int32 srid)
 }
 
 /**
- * @ingroup libMOBDB_temporal_spatial_transf
+ * @ingroup libmeos_temporal_spatial_transf
  * @brief Set the SRID of a temporal point.
  * @see tpointinst_set_srid
  * @see tpointseq_set_srid
@@ -1916,7 +1916,7 @@ pt_force_geodetic(LWPOINT *point)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_spatial_transf
+ * @ingroup libmeos_internal_temporal_spatial_transf
  * @brief Convert a temporal point from/to a geometry/geography point
  * @param[in] inst Temporal instant point
  * @param[in] oper True when transforming from geometry to geography,
@@ -1952,7 +1952,7 @@ tgeompointinst_tgeogpointinst(const TInstant *inst, bool oper)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_spatial_transf
+ * @ingroup libmeos_internal_temporal_spatial_transf
  * @brief Convert a temporal point from/to a geometry/geography point
  * @param[in] seq Temporal sequence point
  * @param[in] oper True when transforming from geometry to geography,
@@ -1973,7 +1973,7 @@ tgeompointseq_tgeogpointseq(const TSequence *seq, bool oper)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_spatial_transf
+ * @ingroup libmeos_internal_temporal_spatial_transf
  * @brief Convert a temporal point from/to a geometry/geography point
  * @param[in] ss Temporal sequence set point
  * @param[in] oper True when transforming from geometry to geography,
@@ -1993,7 +1993,7 @@ tgeompointseqset_tgeogpointseqset(const TSequenceSet *ss, bool oper)
 }
 
 /**
- * @ingroup libMOBDB_temporal_spatial_transf
+ * @ingroup libmeos_temporal_spatial_transf
  * @brief Convert a temporal point to a geometry/geography point.
  * @param[in] temp Temporal point
  * @param[in] oper True when transforming from geometry to geography,
@@ -2058,7 +2058,7 @@ point_get_z(Datum point)
 }
 
 /**
- * @ingroup libMOBDB_temporal_spatial_accessor
+ * @ingroup libmeos_temporal_spatial_accessor
  * @brief Get one of the coordinates of a temporal point as a temporal float.
  * @param[in] temp Temporal point
  * @param[in] coord Coordinate number where 0 = X, 1 = Y, 2 = Z
@@ -2138,7 +2138,7 @@ tpointseq_length_3d(const TSequence *seq)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_spatial_accessor
+ * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the length traversed by a temporal sequence point.
  * @sqlfunc length()
  */
@@ -2165,7 +2165,7 @@ tpointseq_length(const TSequence *seq)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_spatial_accessor
+ * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the length traversed by a temporal sequence set point.
  * @sqlfunc length()
  */
@@ -2180,7 +2180,7 @@ tpointseqset_length(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup libMOBDB_temporal_spatial_accessor
+ * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the length traversed by a temporal sequence (set) point
  * @sqlfunc length()
  */
@@ -2201,7 +2201,7 @@ tpoint_length(const Temporal *temp)
 /*****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_spatial_accessor
+ * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the cumulative length traversed by a temporal point.
  * @pre The sequence has linear interpolation
  * @sqlfunc cumulativeLength()
@@ -2244,7 +2244,7 @@ tpointseq_cumulative_length(const TSequence *seq, double prevlength)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_spatial_accessor
+ * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the cumulative length traversed by a temporal point.
  * @sqlfunc cumulativeLength()
  */
@@ -2265,7 +2265,7 @@ tpointseqset_cumulative_length(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup libMOBDB_temporal_spatial_accessor
+ * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the cumulative length traversed by a temporal point.
  * @sqlfunc cumulativeLength()
  */
@@ -2287,7 +2287,7 @@ tpoint_cumulative_length(const Temporal *temp)
 /*****************************************************************************/
 
 /**
- * @ingroup libMOBDB_temporal_spatial_accessor
+ * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the convex hull of a temporal point.
  * @sqlfunc convexHull()
  */
@@ -2305,7 +2305,7 @@ tpoint_convex_hull(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_spatial_accessor
+ * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the speed of a temporal point.
  * @pre The temporal point has linear interpolation
  * @sqlfunc speed()
@@ -2346,7 +2346,7 @@ tpointseq_speed(const TSequence *seq)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_spatial_accessor
+ * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the speed of a temporal point
  * @sqlfunc speed()
  */
@@ -2371,7 +2371,7 @@ tpointseqset_speed(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup libMOBDB_temporal_spatial_accessor
+ * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the speed of a temporal point
  * @sqlfunc speed()
  */
@@ -2427,7 +2427,7 @@ tpointseq_twcentroid1(const TSequence *seq, bool hasz, interpType interp,
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_agg
+ * @ingroup libmeos_internal_temporal_agg
  * @brief Return the time-weighed centroid of a temporal geometry point.
  * @sqlfunc twCentroid()
  */
@@ -2450,7 +2450,7 @@ tpointseq_twcentroid(const TSequence *seq)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_agg
+ * @ingroup libmeos_internal_temporal_agg
  * @brief Return the time-weighed centroid of a temporal geometry point.
  * @sqlfunc twCentroid()
  */
@@ -2486,7 +2486,7 @@ tpointseqset_twcentroid(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup libMOBDB_temporal_agg
+ * @ingroup libmeos_temporal_agg
  * @brief Return the time-weighed centroid of a temporal geometry point.
  * @sqlfunc twCentroid()
  */
@@ -2540,7 +2540,7 @@ geog_azimuth(Datum geog1, Datum geog2)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_spatial_accessor
+ * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the direction of a temporal point.
  * @param[in] seq Temporal value
  * @param[out] result Azimuth between the first and last point
@@ -2572,7 +2572,7 @@ tpointseq_direction(const TSequence *seq, double *result)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_spatial_accessor
+ * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the direction of a temporal point.
  * @param[in] ss Temporal value
  * @param[out] result Azimuth between the first and last point
@@ -2606,7 +2606,7 @@ tpointseqset_direction(const TSequenceSet *ss, double *result)
 }
 
 /**
- * @ingroup libMOBDB_temporal_spatial_accessor
+ * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the direction of a temporal point.
  * @sqlfunc direction()
  */
@@ -2694,7 +2694,7 @@ tpointseq_azimuth1(const TSequence *seq, TSequence **result)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_spatial_accessor
+ * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the temporal azimuth of a temporal geometry point.
  * @sqlfunc azimuth()
  */
@@ -2713,7 +2713,7 @@ tpointseq_azimuth(const TSequence *seq)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_spatial_accessor
+ * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the temporal azimuth of a temporal geometry point.
  * @sqlfunc azimuth()
  */
@@ -2740,7 +2740,7 @@ tpointseqset_azimuth(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup libMOBDB_temporal_spatial_accessor
+ * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the temporal azimuth of a temporal geometry point.
  * @sqlfunc azimuth()
  */
@@ -2759,7 +2759,7 @@ tpoint_azimuth(const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_spatial_accessor
+ * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the temporal angular difference of a temporal geometry point.
  * @sqlfunc azimuth()
  */
@@ -3001,7 +3001,7 @@ tpointsegm_min_bearing_at_timestamp(const TInstant *start1,
 /*****************************************************************************/
 
 /**
- * @ingroup libMOBDB_temporal_spatial_accessor
+ * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the temporal bearing between two geometry/geography points
  * @note The following function could be included in PostGIS one day
  * @sqlfunc bearing()
@@ -3022,7 +3022,7 @@ bearing_point_point(const GSERIALIZED *geo1, const GSERIALIZED *geo2,
 }
 
 /**
- * @ingroup libMOBDB_temporal_spatial_accessor
+ * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the temporal bearing between a temporal point and a
  * geometry/geography point.
  * @sqlfunc bearing()
@@ -3053,7 +3053,7 @@ bearing_tpoint_point(const Temporal *temp, const GSERIALIZED *gs, bool invert)
 }
 
 /**
- * @ingroup libMOBDB_temporal_spatial_accessor
+ * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the temporal bearing between two temporal points
  * @sqlfunc bearing()
  */
@@ -3373,7 +3373,7 @@ tpointseq_discstep_is_simple(const TSequence *seq, int count)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_spatial_accessor
+ * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return true if a temporal point does not self-intersect.
  * @param[in] seq Temporal point
  * @sqlfunc isSimple();
@@ -3394,7 +3394,7 @@ tpointseq_is_simple(const TSequence *seq)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_spatial_accessor
+ * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return true if a temporal point does not self-intersect.
  * @param[in] ss Temporal point
  * @sqlfunc isSimple()
@@ -3414,7 +3414,7 @@ tpointseqset_is_simple(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup libMOBDB_temporal_spatial_accessor
+ * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return true if a temporal point does not self-intersect.
  * @sqlfunc isSimple()
  */
@@ -3532,7 +3532,7 @@ tpointcontseq_split(const TSequence *seq, bool *splits, int count)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_spatial_transf
+ * @ingroup libmeos_internal_temporal_spatial_transf
  * @brief Split a temporal sequence point into an array of non
  * self-intersecting fragments.
  * @param[in] seq Temporal sequence point
@@ -3577,7 +3577,7 @@ tpointseq_make_simple(const TSequence *seq, int *count)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_spatial_transf
+ * @ingroup libmeos_internal_temporal_spatial_transf
  * @brief Split a temporal sequence set point into an array of non
  * self-intersecting fragments.
  * @param[in] ss Temporal sequence set point
@@ -3607,7 +3607,7 @@ tpointseqset_make_simple(const TSequenceSet *ss, int *count)
 }
 
 /**
- * @ingroup libMOBDB_temporal_spatial_transf
+ * @ingroup libmeos_temporal_spatial_transf
  * @brief Split a temporal point into an array of non self-intersecting
  * fragments.
  * @param[in] temp Temporal point
@@ -3641,7 +3641,7 @@ tpoint_make_simple(const Temporal *temp, int *count)
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal point instant to (the complement of) a geometry.
  * @param[in] inst Temporal instant point
  * @param[in] gs Geometry
@@ -3662,7 +3662,7 @@ tpointinst_restrict_geometry(const TInstant *inst, const GSERIALIZED *gs,
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal point discrete sequence to (the complement of) a
  * geometry.
  * @param[in] seq Temporal discrete sequence point
@@ -4178,7 +4178,7 @@ tpointseq_minus_geometry(const TSequence *seq, const GSERIALIZED *gs,
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal point sequence to (the complement of a) geometry.
  * @param[in] seq Temporal sequence point
  * @param[in] gs Geometry
@@ -4206,7 +4206,7 @@ tpointcontseq_restrict_geometry(const TSequence *seq, const GSERIALIZED *gs,
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal point sequence set to (the complement of) a
  * geometry.
  * @param[in] ss Temporal sequence set point
@@ -4271,7 +4271,7 @@ tpointseqset_restrict_geometry(const TSequenceSet *ss, const GSERIALIZED *gs,
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal point to (the complement of) a geometry.
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
@@ -4317,7 +4317,7 @@ tpoint_restrict_geometry(const Temporal *temp, const GSERIALIZED *gs,
 
 #if MEOS
 /**
- * @ingroup libMOBDB_temporal_restrict
+ * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal point to (the complement of) a geometry.
  * @sqlfunc atGeometry(), minusGeometry()
  */
@@ -4329,7 +4329,7 @@ tpoint_at_geometry(const Temporal *temp, const GSERIALIZED *gs)
 }
 
 /**
- * @ingroup libMOBDB_temporal_restrict
+ * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal point to (the complement of) a geometry.
  * @sqlfunc atGeometry(), minusGeometry()
  */
@@ -4431,7 +4431,7 @@ tpoint_minus_stbox1(const Temporal *temp, const STBox *box)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal point to (the complement of) a spatiotemporal
  * box.
  *
@@ -4458,7 +4458,7 @@ tpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool atfunc)
 
 #if MEOS
 /**
- * @ingroup libMOBDB_temporal_restrict
+ * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal point to a spatiotemporal box.
  * @sqlfunc atStbox(), minusGeometry()
  */
@@ -4470,7 +4470,7 @@ tpoint_at_stbox(const Temporal *temp, const STBox *box)
 }
 
 /**
- * @ingroup libMOBDB_temporal_restrict
+ * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal point to the complement of a spatiotemporal box.
  * @sqlfunc minusStbox()
  */

@@ -343,7 +343,7 @@ tpointseq_stboxes1(const TSequence *seq, STBox *result)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_spatial_accessor
+ * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return an array of spatiotemporal boxes from the segments of a
  * temporal sequence point.
  * @param[in] seq Temporal value
@@ -361,7 +361,7 @@ tpointseq_stboxes(const TSequence *seq, int *count)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_spatial_accessor
+ * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return an array of spatiotemporal boxes from the segments of a
  * temporal sequence set point.
  * @param[in] ss Temporal value
@@ -383,7 +383,7 @@ tpointseqset_stboxes(const TSequenceSet *ss, int *count)
 }
 
 /**
- * @ingroup libMOBDB_temporal_spatial_accessor
+ * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return an array of spatiotemporal boxes from a temporal point
  * @sqlfunc stboxes()
  */

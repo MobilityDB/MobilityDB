@@ -597,7 +597,7 @@ temporal_tagg_combinefn(SkipList *state1, SkipList *state2, datum_func2 func,
 
 /**
  * @brief Generic final function for aggregating temporal values
- * @ingroup libMOBDB_temporal_agg
+ * @ingroup libmeos_temporal_agg
  *
  * @param[in] state State values
  */
@@ -622,7 +622,7 @@ temporal_tagg_finalfn(SkipList *state)
 
 #if MEOS
 /**
- * @ingroup libMOBDB_temporal_agg
+ * @ingroup libmeos_temporal_agg
  * @brief Transition function for temporal and of temporal booleans.
  * @sqlfunc tand()
  */
@@ -633,7 +633,7 @@ tbool_tand_transfn(SkipList *state, const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_agg
+ * @ingroup libmeos_temporal_agg
  * @brief Transition function for temporal count of temporal booleans.
  * @sqlfunc tor()
  */
@@ -644,7 +644,7 @@ tbool_tor_transfn(SkipList *state, const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_agg
+ * @ingroup libmeos_temporal_agg
  * @brief Transition function for temporal count of temporal values.
  * @sqlfunc tmin()
  */
@@ -655,7 +655,7 @@ tint_tmin_transfn(SkipList *state, const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_agg
+ * @ingroup libmeos_temporal_agg
  * @brief Transition function for temporal count of temporal values.
  * @sqlfunc tmin()
  */
@@ -666,7 +666,7 @@ tfloat_tmin_transfn(SkipList *state, const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_agg
+ * @ingroup libmeos_temporal_agg
  * @brief Transition function for temporal count of temporal values.
  * @sqlfunc tmax()
  */
@@ -677,7 +677,7 @@ tint_tmax_transfn(SkipList *state, const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_agg
+ * @ingroup libmeos_temporal_agg
  * @brief Transition function for temporal count of temporal values.
  * @sqlfunc tmax()
  */
@@ -688,7 +688,7 @@ tfloat_tmax_transfn(SkipList *state, const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_agg
+ * @ingroup libmeos_temporal_agg
  * @brief Transition function for temporal count of temporal values.
  * @sqlfunc tsum()
  */
@@ -699,7 +699,7 @@ tint_tsum_transfn(SkipList *state, const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_agg
+ * @ingroup libmeos_temporal_agg
  * @brief Transition function for temporal count of temporal values.
  * @sqlfunc tsum()
  */
@@ -710,7 +710,7 @@ tfloat_tsum_transfn(SkipList *state, const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_agg
+ * @ingroup libmeos_temporal_agg
  * @brief Transition function for temporal average of temporal numbers.
  * @sqlfunc tavg()
  */
@@ -722,7 +722,7 @@ tnumber_tavg_transfn(SkipList *state, const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_agg
+ * @ingroup libmeos_temporal_agg
  * @brief Transition function for temporal min of temporal text values.
  * @sqlfunc tmin()
  */
@@ -733,7 +733,7 @@ ttext_tmin_transfn(SkipList *state, const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_agg
+ * @ingroup libmeos_temporal_agg
  * @brief Transition function for temporal max of temporal text values.
  * @sqlfunc tmax()
  */
@@ -980,7 +980,7 @@ temporal_transform_tcount(const Temporal *temp, int *count)
 }
 
 /**
- * @ingroup libMOBDB_temporal_agg
+ * @ingroup libmeos_temporal_agg
  * @brief Generic transition function for temporal aggregation
  */
 SkipList *
@@ -1059,7 +1059,7 @@ tsequence_tavg_finalfn(TSequence **sequences, int count)
 }
 
 /**
- * @ingroup libMOBDB_temporal_agg
+ * @ingroup libmeos_temporal_agg
  * @brief Final function for temporal average aggregation
  */
 Temporal *

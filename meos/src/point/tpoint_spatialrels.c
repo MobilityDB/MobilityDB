@@ -327,7 +327,7 @@ econtains_geo_geo(Datum geom1, Datum geom2)
 }
 
 /**
- * @ingroup libMOBDB_temporal_spatial_rel
+ * @ingroup libmeos_temporal_spatial_rel
  * @brief Return 1 if a geometry ever contains a temporal point,
  * 0 if not, and -1 if the geometry is empty.
  * @sqlfunc contains()
@@ -403,7 +403,7 @@ edisjoint_tpointseqset_geo(const TSequenceSet *ss, Datum geo,
 }
 
 /**
- * @ingroup libMOBDB_temporal_spatial_rel
+ * @ingroup libmeos_temporal_spatial_rel
  * @brief Return 1 if a temporal point and a geometry are ever disjoint,
  * 0 if not, and -1 if the geometry is empty.
  * @param[in] temp Temporal point
@@ -436,7 +436,7 @@ edisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_temporal_spatial_rel
+ * @ingroup libmeos_temporal_spatial_rel
  * @brief Return 1 if a geometry and a temporal point ever intersect,
  * 0 if not, and -1 if the geometry is empty.
  * @sqlfunc intersects()
@@ -459,7 +459,7 @@ eintersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_temporal_spatial_rel
+ * @ingroup libmeos_temporal_spatial_rel
  * @brief Return 1 if a temporal point and a geometry ever touch, 0 if not, and
  * -1 if the geometry is empty
  * @sqlfunc touches()
@@ -492,7 +492,7 @@ etouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_temporal_spatial_rel
+ * @ingroup libmeos_temporal_spatial_rel
  * @brief Return 1 if a geometry and a temporal point are ever within the
  * given distance, 0 if not, -1 if a geometry is empty
  * @sqlfunc dwithin()
@@ -669,7 +669,7 @@ edwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
 }
 
 /**
- * @ingroup libMOBDB_temporal_spatial_rel
+ * @ingroup libmeos_temporal_spatial_rel
  * @brief Return 1 if the temporal points are ever within the given distance,
  * 0 if not, -1 if the temporal points do not intersect on time
  * @sqlfunc dwithin()

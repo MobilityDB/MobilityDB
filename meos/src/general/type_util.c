@@ -478,7 +478,7 @@ datum_div(Datum l, Datum r, meosType typel, meosType typer)
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_setspan_accessor
+ * @ingroup libmeos_internal_setspan_accessor
  * @brief Return the 32-bit hash of a value.
  */
 uint32
@@ -508,7 +508,7 @@ datum_hash(Datum d, meosType type)
 }
 
 /**
- * @ingroup libMOBDB_internal_setspan_accessor
+ * @ingroup libmeos_internal_setspan_accessor
  * @brief Return the 64-bit hash of a value using a seed.
  */
 uint64

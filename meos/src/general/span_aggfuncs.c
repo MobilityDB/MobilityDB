@@ -49,7 +49,7 @@
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_setspan_agg
+ * @ingroup libmeos_setspan_agg
  * @brief Transition function for extent aggregate of base types of spans
  */
 Span *
@@ -69,7 +69,7 @@ spanbase_extent_transfn(Span *s, Datum d, meosType basetype)
 
 #if MEOS
 /**
- * @ingroup libMOBDB_setspan_agg
+ * @ingroup libmeos_setspan_agg
  * @brief Transition function for extent aggregate of base types of spans
  */
 Span *
@@ -79,7 +79,7 @@ int_extent_transfn(Span *s, int i)
 }
 
 /**
- * @ingroup libMOBDB_setspan_agg
+ * @ingroup libmeos_setspan_agg
  * @brief Transition function for extent aggregate of base types of spans
  */
 Span *
@@ -89,7 +89,7 @@ bigint_extent_transfn(Span *s, int64 i)
 }
 
 /**
- * @ingroup libMOBDB_setspan_agg
+ * @ingroup libmeos_setspan_agg
  * @brief Transition function for extent aggregate of base types of spans
  */
 Span *
@@ -99,7 +99,7 @@ float_extent_transfn(Span *s, double d)
 }
 
 /**
- * @ingroup libMOBDB_setspan_agg
+ * @ingroup libmeos_setspan_agg
  * @brief Transition function for extent aggregate of base types of spans
  */
 Span *
@@ -110,7 +110,7 @@ timestamp_extent_transfn(Span *s, TimestampTz t)
 #endif /* MEOS */
 
 /**
- * @ingroup libMOBDB_setspan_agg
+ * @ingroup libmeos_setspan_agg
  * @brief Transition function for extent aggregate of timestamp set values
  */
 Span *
@@ -133,7 +133,7 @@ set_extent_transfn(Span *span, const Set *set)
 }
 
 /**
- * @ingroup libMOBDB_setspan_agg
+ * @ingroup libmeos_setspan_agg
  * @brief Transition function for extent aggregate of span values
  */
 Span *
@@ -154,7 +154,7 @@ span_extent_transfn(Span *s1, const Span *s2)
 }
 
 /**
- * @ingroup libMOBDB_setspan_agg
+ * @ingroup libmeos_setspan_agg
  * @brief Transition function for extent aggregate of span set values
  */
 Span *

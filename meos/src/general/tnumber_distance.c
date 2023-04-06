@@ -84,7 +84,7 @@ number_distance(Datum l, Datum r, meosType typel, meosType typer)
 /*****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_dist
+ * @ingroup libmeos_internal_temporal_dist
  * @brief Return the temporal distance between a temporal number and a number.
  * @param[in] temp Temporal number
  * @param[in] value Value
@@ -114,7 +114,7 @@ distance_tnumber_number(const Temporal *temp, Datum value, meosType valuetype,
 
 #if MEOS
 /**
- * @ingroup libMOBDB_temporal_dist
+ * @ingroup libmeos_temporal_dist
  * @brief Return the temporal distance between a temporal integer and an
  * integer.
  * @sqlop @p <->
@@ -126,7 +126,7 @@ distance_tint_int(const Temporal *temp, int i)
 }
 
 /**
- * @ingroup libMOBDB_temporal_dist
+ * @ingroup libmeos_temporal_dist
  * @brief Return the temporal distance between a temporal float and a float.
  * @sqlop @p <->
  */
@@ -188,7 +188,7 @@ distance_tnumber_tnumber1(const Temporal *temp1, const Temporal *temp2,
 
 #if MEOS
 /**
- * @ingroup libMOBDB_temporal_dist
+ * @ingroup libmeos_temporal_dist
  * @brief Return the temporal distance between two temporal numbers
  * @sqlop @p <->
  */
@@ -209,7 +209,7 @@ distance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_dist
+ * @ingroup libmeos_internal_temporal_dist
  * @brief Return the nearest approach distance between a temporal number
  * and a number.
  */
@@ -225,7 +225,7 @@ nad_tnumber_number(const Temporal *temp, Datum value, meosType basetype)
 
 #if MEOS
 /**
- * @ingroup libMOBDB_temporal_dist
+ * @ingroup libmeos_temporal_dist
  * @brief Return the nearest approach distance between a temporal number
  * and a number.
  * @sqlop @p |=|
@@ -238,7 +238,7 @@ nad_tint_int(const Temporal *temp, int i)
 }
 
 /**
- * @ingroup libMOBDB_temporal_dist
+ * @ingroup libmeos_temporal_dist
  * @brief Return the nearest approach distance between a temporal number
  * and a number.
  * @sqlop @p |=|
@@ -251,7 +251,7 @@ nad_tfloat_float(const Temporal *temp, double d)
 #endif /* MEOS */
 
 /**
- * @ingroup libMOBDB_temporal_dist
+ * @ingroup libmeos_temporal_dist
  * @brief Return the nearest approach distance between the temporal boxes.
  * @sqlop @p |=|
  */
@@ -280,7 +280,7 @@ nad_tbox_tbox(const TBox *box1, const TBox *box2)
 }
 
 /**
- * @ingroup libMOBDB_temporal_dist
+ * @ingroup libmeos_temporal_dist
  * @brief Return the nearest approach distance between a temporal number
  * and a temporal box.
  * @sqlop @p |=|
@@ -337,7 +337,7 @@ nad_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libMOBDB_temporal_dist
+ * @ingroup libmeos_temporal_dist
  * @brief Return the nearest approach distance between two temporal integers.
  * @sqlop @p |=|
  */
@@ -349,7 +349,7 @@ nad_tint_tint(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libMOBDB_temporal_dist
+ * @ingroup libmeos_temporal_dist
  * @brief Return the nearest approach distance between two temporal floats.
  * @sqlop @p |=|
  */

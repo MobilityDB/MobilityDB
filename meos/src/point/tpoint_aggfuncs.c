@@ -359,7 +359,7 @@ tpointseq_tcentroid_finalfn(TSequence **sequences, int count, int srid)
 /*****************************************************************************/
 
 /**
- * @ingroup libMOBDB_temporal_agg
+ * @ingroup libmeos_temporal_agg
  * @brief Final function for temporal centroid aggregation of temporal point
  * values
  */

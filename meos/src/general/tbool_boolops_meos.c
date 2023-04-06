@@ -41,7 +41,7 @@
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_temporal_bool
+ * @ingroup libmeos_temporal_bool
  * @brief Return the boolean and of a boolean and a temporal boolean
  * @sqlop @p &
  */
@@ -52,7 +52,7 @@ tand_bool_tbool(bool b, const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_bool
+ * @ingroup libmeos_temporal_bool
  * @brief Return the boolean and of a temporal boolean and a boolean
  * @sqlop @p &
  */
@@ -63,7 +63,7 @@ tand_tbool_bool(const Temporal *temp, bool b)
 }
 
 /**
- * @ingroup libMOBDB_temporal_bool
+ * @ingroup libmeos_temporal_bool
  * @brief Return the boolean and of the temporal booleans
  * @sqlop @p &
  */
@@ -78,7 +78,7 @@ tand_tbool_tbool(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_temporal_bool
+ * @ingroup libmeos_temporal_bool
  * @brief Return the boolean or of a boolean and a temporal boolean
  * @sqlop @p |
  */
@@ -89,7 +89,7 @@ tor_bool_tbool(bool b, const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_bool
+ * @ingroup libmeos_temporal_bool
  * @brief Return the boolean or of a temporal boolean and a boolean
  * @sqlop @p |
  */
@@ -100,7 +100,7 @@ tor_tbool_bool(const Temporal *temp, bool b)
 }
 
 /**
- * @ingroup libMOBDB_temporal_bool
+ * @ingroup libmeos_temporal_bool
  * @brief Return the boolean or of the temporal booleans
  * @sqlop @p |
  */

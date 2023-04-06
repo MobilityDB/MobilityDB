@@ -160,7 +160,7 @@ ensure_same_timetype_skiplist(SkipList *state, uint8 subtype)
 /*****************************************************************************/
 
 /**
- * @ingroup libMOBDB_setspan_agg
+ * @ingroup libmeos_setspan_agg
  * @brief Transition function for temporal count aggregate of timestamps
  */
 SkipList *
@@ -183,7 +183,7 @@ timestamp_tcount_transfn(SkipList *state, TimestampTz t)
 }
 
 /**
- * @ingroup libMOBDB_setspan_agg
+ * @ingroup libmeos_setspan_agg
  * @brief Transition function for temporal count aggregate of timestamp sets
  */
 SkipList *
@@ -209,7 +209,7 @@ tstzset_tcount_transfn(SkipList *state, const Set *ts)
 }
 
 /**
- * @ingroup libMOBDB_setspan_agg
+ * @ingroup libmeos_setspan_agg
  * @brief Transition function for temporal count aggregate of periods
  */
 SkipList *
@@ -232,7 +232,7 @@ period_tcount_transfn(SkipList *state, const Span *p)
 }
 
 /**
- * @ingroup libMOBDB_setspan_agg
+ * @ingroup libmeos_setspan_agg
  * @brief Transition function for temporal count aggregate of period sets
  */
 SkipList *

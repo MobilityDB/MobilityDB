@@ -1076,7 +1076,7 @@ tdwithin_tpointseqset_point(const TSequenceSet *ss, Datum point, Datum dist,
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_temporal_spatial_rel
+ * @ingroup libmeos_temporal_spatial_rel
  * @brief Return the temporal contains relationship between a geometry and
  * a temporal point
  * @sqlfunc tcontains()
@@ -1120,7 +1120,7 @@ tcontains_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp, bool restr,
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_temporal_spatial_rel
+ * @ingroup libmeos_temporal_spatial_rel
  * @brief Return the temporal touches relationship between a geometry and a
  * temporal point
  * @sqlfunc ttouches()
@@ -1159,7 +1159,7 @@ ttouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_temporal_spatial_rel
+ * @ingroup libmeos_temporal_spatial_rel
  * @brief Return a temporal Boolean that states whether a temporal point and
  * a geometry are within the given distance.
  * @sqlfunc tdwithin()
@@ -1258,7 +1258,7 @@ tdwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
 
 
 /**
- * @ingroup libMOBDB_temporal_spatial_rel
+ * @ingroup libmeos_temporal_spatial_rel
  * @brief Return a temporal Boolean that states whether the temporal points
  * are within the given distance.
  * @sqlfunc tdwithin()

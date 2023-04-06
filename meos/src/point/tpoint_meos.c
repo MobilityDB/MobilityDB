@@ -50,7 +50,7 @@
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_temporal_comp
+ * @ingroup libmeos_temporal_comp
  * @brief Return the temporal equality of a point and a temporal point
  * @sqlop @p #=
  */
@@ -61,7 +61,7 @@ teq_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 }
 
 /**
- * @ingroup libMOBDB_temporal_comp
+ * @ingroup libmeos_temporal_comp
  * @brief Return the temporal equality of a temporal point and a point
  * @sqlop @p #=
  */
@@ -72,7 +72,7 @@ teq_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 }
 
 /**
- * @ingroup libMOBDB_temporal_comp
+ * @ingroup libmeos_temporal_comp
  * @brief Return the temporal difference of a point and a temporal point
  * @sqlop @p #<>
  */
@@ -83,7 +83,7 @@ tne_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 }
 
 /**
- * @ingroup libMOBDB_temporal_comp
+ * @ingroup libmeos_temporal_comp
  * @brief Return the temporal difference of the temporal point and a point
  * @sqlop @p #<>
  */

@@ -54,7 +54,7 @@
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_temporal_math
+ * @ingroup libmeos_temporal_math
  * @brief Convert a number from radians to degrees
  * @sqlfunc degrees()
  */
@@ -379,7 +379,7 @@ tnumberseqset_abs(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup libMOBDB_temporal_math
+ * @ingroup libmeos_temporal_math
  * @brief Get the absolute value of a temporal number
  * @sqlfunc abs()
  */
@@ -618,7 +618,7 @@ tnumber_angular_difference(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_temporal_math
+ * @ingroup libmeos_temporal_math
  * @brief Convert a temporal number from radians to degrees
  * @sqlfunc degrees()
  */
@@ -641,7 +641,7 @@ tfloat_degrees(const Temporal *temp, bool normalize)
 }
 
 /**
- * @ingroup libMOBDB_temporal_math
+ * @ingroup libmeos_temporal_math
  * @brief Convert a temporal number from degrees to radians
  * @sqlfunc radians()
  */
@@ -667,7 +667,7 @@ tfloat_radians(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_math
+ * @ingroup libmeos_internal_temporal_math
  * @brief Return the derivative of a temporal sequence number.
  * @sqlfunc derivative()
  */
@@ -709,7 +709,7 @@ tfloatseq_derivative(const TSequence *seq)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_math
+ * @ingroup libmeos_internal_temporal_math
  * @brief Return the derivative of a temporal sequence set number
  * @sqlfunc derivative()
  */
@@ -734,7 +734,7 @@ tfloatseqset_derivative(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup libMOBDB_temporal_math
+ * @ingroup libmeos_temporal_math
  * @brief Return the derivative of a temporal number
  * @see tfloatseq_derivative
  * @see tfloatseqset_derivative

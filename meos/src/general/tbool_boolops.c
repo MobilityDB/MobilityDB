@@ -75,7 +75,7 @@ datum_not(Datum d)
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_temporal_bool
+ * @ingroup libmeos_temporal_bool
  * @brief Return the boolean not of a temporal boolean.
  * @sqlop @p ~
  */
@@ -132,7 +132,7 @@ boolop_tbool_tbool(const Temporal *temp1, const Temporal *temp2,
 /*****************************************************************************/
 
 /**
- * @ingroup libMOBDB_temporal_bool
+ * @ingroup libmeos_temporal_bool
  * @brief Return the time when the temporal boolean has value true.
  */
 SpanSet *

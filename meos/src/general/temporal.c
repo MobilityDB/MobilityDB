@@ -568,7 +568,7 @@ mobilitydb_full_version(void)
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_inout
+ * @ingroup libmeos_internal_temporal_inout
  * @brief Return a temporal value from its Well-Known Text (WKT) representation.
  *
  * @param[in] str String
@@ -582,7 +582,7 @@ temporal_in(const char *str, meosType temptype)
 
 #if MEOS
 /**
- * @ingroup libMOBDB_temporal_inout
+ * @ingroup libmeos_temporal_inout
  * @brief Return a temporal boolean from its Well-Known Text (WKT)
  * representation.
  */
@@ -593,7 +593,7 @@ tbool_in(const char *str)
 }
 
 /**
- * @ingroup libMOBDB_temporal_inout
+ * @ingroup libmeos_temporal_inout
  * @brief Return a temporal integer from its Well-Known Text (WKT)
  * representation.
  */
@@ -604,7 +604,7 @@ tint_in(const char *str)
 }
 
 /**
- * @ingroup libMOBDB_temporal_inout
+ * @ingroup libmeos_temporal_inout
  * @brief Return a temporal float from its Well-Known Text (WKT) representation.
  */
 Temporal *
@@ -614,7 +614,7 @@ tfloat_in(const char *str)
 }
 
 /**
- * @ingroup libMOBDB_temporal_inout
+ * @ingroup libmeos_temporal_inout
  * @brief Return a temporal text from its Well-Known Text (WKT) representation.
  */
 Temporal *
@@ -624,7 +624,7 @@ ttext_in(const char *str)
 }
 
 /**
- * @ingroup libMOBDB_temporal_inout
+ * @ingroup libmeos_temporal_inout
  * @brief Return a temporal geometric point from its Well-Known Text (WKT)
  * representation.
  */
@@ -634,7 +634,7 @@ tgeompoint_in(const char *str)
   return temporal_parse(&str, T_TGEOMPOINT);
 }
 /**
- * @ingroup libMOBDB_temporal_inout
+ * @ingroup libmeos_temporal_inout
  * @brief Return a temporal geographic point from its Well-Known Text (WKT)
  * representation.
  */
@@ -646,7 +646,7 @@ tgeogpoint_in(const char *str)
 #endif /* MEOS */
 
 /**
- * @ingroup libMOBDB_internal_temporal_inout
+ * @ingroup libmeos_internal_temporal_inout
  * @brief Return the Well-Known Text (WKT) representation of a temporal value.
  */
 char *
@@ -665,7 +665,7 @@ temporal_out(const Temporal *temp, int maxdd)
 
 #if MEOS
 /**
- * @ingroup libMOBDB_temporal_inout
+ * @ingroup libmeos_temporal_inout
  * @brief Return a temporal boolean from its Well-Known Text (WKT)
  * representation.
  */
@@ -676,7 +676,7 @@ tbool_out(const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_inout
+ * @ingroup libmeos_temporal_inout
  * @brief Return a temporal integer from its Well-Known Text (WKT)
  * representation.
  */
@@ -687,7 +687,7 @@ tint_out(const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_inout
+ * @ingroup libmeos_temporal_inout
  * @brief Return a temporal float from its Well-Known Text (WKT) representation.
  */
 char *
@@ -697,7 +697,7 @@ tfloat_out(const Temporal *temp, int maxdd)
 }
 
 /**
- * @ingroup libMOBDB_temporal_inout
+ * @ingroup libmeos_temporal_inout
  * @brief Return a temporal text from its Well-Known Text (WKT) representation.
  */
 char *
@@ -707,7 +707,7 @@ ttext_out(const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_inout
+ * @ingroup libmeos_temporal_inout
  * @brief Return a temporal geometric/geographic point from its Well-Known Text
  * (WKT) representation.
  */
@@ -723,7 +723,7 @@ tpoint_out(const Temporal *temp, int maxdd)
  ****************************************************************************/
 
 /**
- * @ingroup libMOBDB_temporal_constructor
+ * @ingroup libmeos_temporal_constructor
  * @brief Return a copy of a temporal value
  */
 Temporal *
@@ -735,7 +735,7 @@ temporal_copy(const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_constructor
+ * @ingroup libmeos_internal_temporal_constructor
  * @brief Construct a temporal value from a base value and the time frame of
  * another temporal value.
  */
@@ -759,7 +759,7 @@ temporal_from_base(Datum value, meosType temptype, const Temporal *temp,
 
 #if MEOS
 /**
- * @ingroup libMOBDB_temporal_constructor
+ * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal boolean from a boolean and the time frame of
  * another temporal value.
  */
@@ -770,7 +770,7 @@ tbool_from_base(bool b, const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_constructor
+ * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal integer from an integer and the time frame of
  * another temporal value.
  */
@@ -781,7 +781,7 @@ tint_from_base(int i, const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_constructor
+ * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal float from a float and the time frame of
  * another temporal value.
  */
@@ -792,7 +792,7 @@ tfloat_from_base(double d, const Temporal *temp, interpType interp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_constructor
+ * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal text from a text and the time frame of
  * another temporal value.
  */
@@ -803,7 +803,7 @@ ttext_from_base(const text *txt, const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_constructor
+ * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal geometric point from a point and the time frame
  * of another temporal value.
  */
@@ -814,7 +814,7 @@ tgeompoint_from_base(const GSERIALIZED *gs, const Temporal *temp, interpType int
 }
 
 /**
- * @ingroup libMOBDB_temporal_constructor
+ * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal geographic point from a point and the time frame
  * of another temporal value.
  */
@@ -830,7 +830,7 @@ tgeogpoint_from_base(const GSERIALIZED *gs, const Temporal *temp, interpType int
  ****************************************************************************/
 
 /**
- * @ingroup libMOBDB_temporal_transf
+ * @ingroup libmeos_temporal_transf
  * @brief Append an instant to the end of a temporal value.
  * @param[in,out] temp Temporal value
  * @param[in] inst Temporal instant
@@ -866,7 +866,7 @@ temporal_append_tinstant(Temporal *temp, const TInstant *inst,
 }
 
 /**
- * @ingroup libMOBDB_temporal_transf
+ * @ingroup libmeos_temporal_transf
  * @brief Append a sequence at the end of a temporal value.
  * @param[in,out] temp Temporal value
  * @param[in] seq Temporal sequence
@@ -977,7 +977,7 @@ temporal_convert_same_subtype(const Temporal *temp1, const Temporal *temp2,
 }
 
 /**
- * @ingroup libMOBDB_temporal_transf
+ * @ingroup libmeos_temporal_transf
  * @brief Merge two temporal values.
  * @result Merged value. Return NULL if both arguments are NULL.
  * If one argument is null the other argument is output.
@@ -1055,7 +1055,7 @@ temporalarr_convert_subtype(Temporal **temparr, int count, uint8 subtype,
 }
 
 /**
- * @ingroup libMOBDB_temporal_transf
+ * @ingroup libmeos_temporal_transf
  * @brief Merge an array of temporal values.
  * @sqlfunc merge
  */
@@ -1119,7 +1119,7 @@ temporal_merge_array(Temporal **temparr, int count)
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_temporal_cast
+ * @ingroup libmeos_temporal_cast
  * @brief Cast a temporal integer to a temporal float.
  * @sqlop @p ::
  */
@@ -1138,7 +1138,7 @@ tint_to_tfloat(const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_cast
+ * @ingroup libmeos_temporal_cast
  * @brief Cast a temporal float to a temporal integer.
  * @sqlop @p ::
  */
@@ -1157,7 +1157,7 @@ tfloat_to_tint(const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_cast
+ * @ingroup libmeos_internal_temporal_cast
  * @brief Set a period to the bounding period of a temporal value.
  */
 void
@@ -1175,7 +1175,7 @@ temporal_set_period(const Temporal *temp, Span *p)
 
 #if MEOS
 /**
- * @ingroup libMOBDB_temporal_cast
+ * @ingroup libmeos_temporal_cast
  * @brief Return the bounding period of a temporal value.
  * @sqlfunc period
  * @sqlop @p ::
@@ -1191,7 +1191,7 @@ temporal_to_period(const Temporal *temp)
 #endif /* MEOS */
 
 /**
- * @ingroup libMOBDB_internal_temporal_cast
+ * @ingroup libmeos_internal_temporal_cast
  * @brief Set a span with value span of a temporal number.
  */
 void
@@ -1214,7 +1214,7 @@ tnumber_set_span(const Temporal *temp, Span *s)
 }
 
 /**
- * @ingroup libMOBDB_temporal_cast
+ * @ingroup libmeos_temporal_cast
  * @brief Return the value span of a temporal number.
  * @sqlfunc valueSpan
  */
@@ -1228,7 +1228,7 @@ tnumber_to_span(const Temporal *temp)
 
 #if MEOS
 /**
- * @ingroup libMOBDB_box_cast
+ * @ingroup libmeos_box_cast
  * @brief Return the bounding box of a temporal number.
  * @sqlop @p ::
  */
@@ -1247,7 +1247,7 @@ tnumber_to_tbox(const Temporal *temp)
 
 #if MEOS
 /**
- * @ingroup libMOBDB_temporal_transf
+ * @ingroup libmeos_temporal_transf
  * @brief Restart a temporal sequence (set) by keeping only the last instants
  * or sequences.
  */
@@ -1268,7 +1268,7 @@ temporal_restart(Temporal *temp, int last)
 #endif /* MEOS */
 
 /**
- * @ingroup libMOBDB_temporal_transf
+ * @ingroup libmeos_temporal_transf
  * @brief Return a temporal value transformed into a temporal instant.
  * @sqlfunc tbool_inst, tint_inst, tfloat_inst, ttext_inst, etc.
  */
@@ -1287,7 +1287,7 @@ temporal_to_tinstant(const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_transf
+ * @ingroup libmeos_temporal_transf
  * @brief Return a temporal value transformed into a temporal sequence
  * @sqlfunc tbool_seq, tint_seq, tfloat_seq, ttext_seq, etc.
  */
@@ -1307,7 +1307,7 @@ temporal_to_tsequence(const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_transf
+ * @ingroup libmeos_temporal_transf
  * @brief Return a temporal value transformed into a temporal sequence set.
  * @sqlfunc tbool_seqset, tint_seqset, tfloat_seqset, ttext_seqset, etc.
  */
@@ -1327,7 +1327,7 @@ temporal_to_tsequenceset(const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_transf
+ * @ingroup libmeos_temporal_transf
  * @brief Return a temporal value transformed to the given interpolation.
  * @sqlfunc setInterp
  */
@@ -1347,7 +1347,7 @@ temporal_set_interp(const Temporal *temp, interpType interp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_transf
+ * @ingroup libmeos_temporal_transf
  * @brief Return a temporal value shifted and/or scaled by the intervals.
  * @param[in] temp Temporal value
  * @param[in] shift Interval for shift
@@ -1580,7 +1580,7 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
 }
 
 /**
- * @ingroup libMOBDB_temporal_transf
+ * @ingroup libmeos_temporal_transf
  * @brief Set the precision of a temporal value according to period buckets.
  * @sqlfunc tprecision;
  * @pymeosfunc tprecision
@@ -1717,7 +1717,7 @@ tsequenceset_tsample(const TSequenceSet *ss, const Interval *duration,
 }
 
 /**
- * @ingroup libMOBDB_temporal_transf
+ * @ingroup libmeos_temporal_transf
  * @brief Sample the temporal value according to period buckets.
  * @sqlfunc tsample
  * @pymeosfunc tsample
@@ -1749,7 +1749,7 @@ temporal_tsample(const Temporal *temp, const Interval *duration,
 
 #if MEOS
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the size in bytes of a temporal value
  * @sqlfunc memSize
  */
@@ -1761,7 +1761,7 @@ temporal_mem_size(const Temporal *temp)
 #endif /* MEOS */
 
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the string representation of the subtype of a temporal value.
  * @sqlfunc tempSubtype;
  * @pymeosfunc tempSubtype
@@ -1781,7 +1781,7 @@ temporal_subtype(const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the string representation of the interpolation of a temporal
  * value.
  * @sqlfunc interp
@@ -1805,7 +1805,7 @@ temporal_interp(const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_accessor
+ * @ingroup libmeos_internal_temporal_accessor
  * @brief Set the second argument to the bounding box of a temporal value
  * @note For temporal instants the bounding box must be computed. For the
  * other subtypes, a copy of the precomputed bounding box is made.
@@ -1826,7 +1826,7 @@ temporal_set_bbox(const Temporal *temp, void *box)
 }
 
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the base values of a temporal value as a set.
  * @sqlfunc values
  */
@@ -1846,7 +1846,7 @@ temporal_valueset(const Temporal *temp, int *count)
 
 #if MEOS
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the array of base values of a temporal boolean
  * @sqlfunc values
  * @pymeosfunc getValues
@@ -1863,7 +1863,7 @@ tbool_values(const Temporal *temp, int *count)
 }
 
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the array of base values of a temporal integer
  * @sqlfunc values
  * @pymeosfunc getValues
@@ -1880,7 +1880,7 @@ tint_values(const Temporal *temp, int *count)
 }
 
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the array of base values of a temporal float
  * @sqlfunc values
  * @pymeosfunc getValues
@@ -1897,7 +1897,7 @@ tfloat_values(const Temporal *temp, int *count)
 }
 
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the array of base values of a temporal text
  * @sqlfunc values
  * @pymeosfunc getValues
@@ -1914,7 +1914,7 @@ ttext_values(const Temporal *temp, int *count)
 }
 
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the array of base values of a temporal geometric point
  * @sqlfunc values
  * @pymeosfunc getValues
@@ -1932,7 +1932,7 @@ tpoint_values(const Temporal *temp, int *count)
 #endif /* MEOS */
 
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the base values of a temporal number as a span set.
  * @sqlfunc getValues
  * @pymeosfunc TFloat.getValues
@@ -1953,7 +1953,7 @@ tnumber_values(const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the time frame of a temporal value as a period set.
  * @sqlfunc getTime
  * @pymeosfunc getTime
@@ -1973,7 +1973,7 @@ temporal_time(const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_accessor
+ * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the start base value of a temporal value
  * @sqlfunc startValue
  * @pymeosfunc startValue
@@ -1997,7 +1997,7 @@ temporal_start_value(const Temporal *temp)
 
 #if MEOS
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the start value of a temporal boolean
  * @sqlfunc startValue
  * @pymeosfunc startValue
@@ -2009,7 +2009,7 @@ tbool_start_value(const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the start value of a temporal integer
  * @sqlfunc startValue
  * @pymeosfunc startValue
@@ -2021,7 +2021,7 @@ tint_start_value(const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the start value of a temporal float
  * @sqlfunc startValue
  * @pymeosfunc startValue
@@ -2033,7 +2033,7 @@ tfloat_start_value(const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the start value of a temporal text
  * @sqlfunc startValue
  * @pymeosfunc startValue
@@ -2045,7 +2045,7 @@ ttext_start_value(const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the start value of a temporal geometric point
  * @sqlfunc startValue
  * @pymeosfunc startValue
@@ -2058,7 +2058,7 @@ tpoint_start_value(const Temporal *temp)
 #endif /* MEOS */
 
 /**
- * @ingroup libMOBDB_internal_temporal_accessor
+ * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the end base value of a temporal value
  */
 Datum
@@ -2082,7 +2082,7 @@ temporal_end_value(const Temporal *temp)
 
 #if MEOS
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the end value of a temporal boolean
  * @sqlfunc endValue
  * @pymeosfunc endValue
@@ -2094,7 +2094,7 @@ tbool_end_value(const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the end value of a temporal integer
  * @sqlfunc endValue
  * @pymeosfunc endValue
@@ -2106,7 +2106,7 @@ tint_end_value(const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the end value of a temporal float
  * @sqlfunc endValue
  * @pymeosfunc endValue
@@ -2118,7 +2118,7 @@ tfloat_end_value(const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the end value of a temporal text
  * @sqlfunc endValue
  * @pymeosfunc endValue
@@ -2130,7 +2130,7 @@ ttext_end_value(const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the end value of a temporal point
  * @sqlfunc endValue
  * @pymeosfunc endValue
@@ -2143,7 +2143,7 @@ tpoint_end_value(const Temporal *temp)
 #endif /* MEOS */
 
 /**
- * @ingroup libMOBDB_internal_temporal_accessor
+ * @ingroup libmeos_internal_temporal_accessor
  * @brief Return a copy of the minimum base value of a temporal value
  */
 Datum
@@ -2163,7 +2163,7 @@ temporal_min_value(const Temporal *temp)
 
 #if MEOS
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the minimum value of a temporal integer
  * @sqlfunc minValue
  * @pymeosfunc minValue
@@ -2175,7 +2175,7 @@ tint_min_value(const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the minimum value of a temporal float
  * @sqlfunc minValue
  * @pymeosfunc minValue
@@ -2187,7 +2187,7 @@ tfloat_min_value(const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the minimum value of a temporal text
  * @sqlfunc minValue
  * @pymeosfunc minValue
@@ -2200,7 +2200,7 @@ ttext_min_value(const Temporal *temp)
 #endif /* MEOS */
 
 /**
- * @ingroup libMOBDB_internal_temporal_accessor
+ * @ingroup libmeos_internal_temporal_accessor
  * @brief Return a copy of the maximum base value of a temporal value.
  * @sqlfunc maxValue
  * @pymeosfunc maxValue
@@ -2222,7 +2222,7 @@ temporal_max_value(const Temporal *temp)
 
 #if MEOS
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the maximum value of a temporal integer
  * @sqlfunc maxValue
  * @pymeosfunc maxValue
@@ -2234,7 +2234,7 @@ tint_max_value(const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the maximum value of a temporal float
  * @sqlfunc maxValue
  * @pymeosfunc maxValue
@@ -2246,7 +2246,7 @@ tfloat_max_value(const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the maximum value of a temporal text
  * @sqlfunc maxValue
  * @pymeosfunc maxValue
@@ -2259,7 +2259,7 @@ ttext_max_value(const Temporal *temp)
 #endif /* MEOS */
 
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return a pointer to the instant with minimum base value of a
  * temporal value.
  *
@@ -2284,7 +2284,7 @@ temporal_min_instant(const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return a pointer to the instant with maximum base value of a
  * temporal value.
  * @sqlfunc maxInstant
@@ -2304,7 +2304,7 @@ temporal_max_instant(const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the duration of a temporal value.
  * @sqlfunc duration
  * @pymeosfunc duration
@@ -2324,7 +2324,7 @@ temporal_duration(const Temporal *temp, bool boundspan)
 }
 
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the number of sequences of a temporal sequence (set).
  * @sqlfunc numSequences
  */
@@ -2339,7 +2339,7 @@ temporal_num_sequences(const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the start sequence of a temporal sequence (set).
  * @sqlfunc startSequence
  */
@@ -2359,7 +2359,7 @@ temporal_start_sequence(const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the end sequence of a temporal sequence (set).
  * @sqlfunc endSequence
  */
@@ -2379,7 +2379,7 @@ temporal_end_sequence(const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the n-th sequence of a temporal sequence (set).
  * @note n is assumed to be 1-based.
  * @sqlfunc sequenceN
@@ -2404,7 +2404,7 @@ temporal_sequence_n(const Temporal *temp, int i)
 }
 
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the array of sequences of a temporal sequence (set).
  * @sqlfunc sequences
  */
@@ -2427,7 +2427,7 @@ temporal_sequences(const Temporal *temp, int *count)
 }
 
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the array of segments of a temporal value.
  * @sqlfunc segments
  */
@@ -2446,7 +2446,7 @@ temporal_segments(const Temporal *temp, int *count)
 }
 
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the number of distinct instants of a temporal value.
  * @sqlfunc numInstants
  * @pymeosfunc numInstants
@@ -2466,7 +2466,7 @@ temporal_num_instants(const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the start instant of a temporal value.
  * @sqlfunc startInstant
  * @pymeosfunc startInstant
@@ -2489,7 +2489,7 @@ temporal_start_instant(const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the end instant of a temporal value.
  * @note This function is used for validity testing.
  * @sqlfunc endInstant
@@ -2515,7 +2515,7 @@ temporal_end_instant(const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the n-th instant of a temporal value.
  * @note n is assumed 1-based
  * @sqlfunc instantN
@@ -2546,7 +2546,7 @@ temporal_instant_n(const Temporal *temp, int n)
 }
 
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the array of instants of a temporal value.
  * @sqlfunc instants
  * @pymeosfunc instants
@@ -2572,7 +2572,7 @@ temporal_instants(const Temporal *temp, int *count)
 }
 
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the number of distinct timestamps of a temporal value.
  * @sqlfunc numTimestamps
  * @pymeosfunc numTimestamps
@@ -2592,7 +2592,7 @@ temporal_num_timestamps(const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the start timestamp of a temporal value.
  * @sqlfunc startTimestamp
  * @pymeosfunc startTimestamp
@@ -2612,7 +2612,7 @@ temporal_start_timestamp(const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the end timestamp of a temporal value.
  * @sqlfunc endTimestamp
  * @pymeosfunc endTimestamp
@@ -2632,7 +2632,7 @@ temporal_end_timestamp(const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the n-th distinct timestamp of a temporal value.
  * @note n is assumed 1-based
  * @sqlfunc timestampN
@@ -2664,7 +2664,7 @@ temporal_timestamp_n(const Temporal *temp, int n, TimestampTz *result)
 }
 
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the array of distinct timestamps of a temporal value.
  * @sqlfunc timestamps
  * @pymeosfunc timestamps
@@ -2762,7 +2762,7 @@ temporal_bbox_ev_al_lt_le(const Temporal *temp, Datum value, bool ever)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_ever
  * @brief Return true if a temporal value is ever equal to a base value.
  */
 bool
@@ -2781,7 +2781,7 @@ temporal_ever_eq(const Temporal *temp, Datum value)
 
 #if MEOS
 /**
- * @ingroup libMOBDB_temporal_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal boolean is ever equal to a boolean.
  * @sqlop @p ?=
  */
@@ -2791,7 +2791,7 @@ bool tbool_ever_eq(const Temporal *temp, bool b)
 }
 
 /**
- * @ingroup libMOBDB_temporal_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal integer is ever equal to an integer.
  * @sqlop @p ?=
  */
@@ -2801,7 +2801,7 @@ bool tint_ever_eq(const Temporal *temp, int i)
 }
 
 /**
- * @ingroup libMOBDB_temporal_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal float is ever equal to a float.
  * @sqlop @p ?=
  */
@@ -2811,7 +2811,7 @@ bool tfloat_ever_eq(const Temporal *temp, double d)
 }
 
 /**
- * @ingroup libMOBDB_temporal_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal text is ever equal to a text.
  * @sqlop @p ?=
  */
@@ -2822,7 +2822,7 @@ bool ttext_ever_eq(const Temporal *temp, text *txt)
 #endif /* MEOS */
 
 /**
- * @ingroup libMOBDB_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_ever
  * @brief Return true if a temporal value is always equal to a base value.
  */
 bool
@@ -2841,7 +2841,7 @@ temporal_always_eq(const Temporal *temp, Datum value)
 
 #if MEOS
 /**
- * @ingroup libMOBDB_temporal_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal boolean is always equal to a boolean.
  * @sqlop @p %=
  */
@@ -2851,7 +2851,7 @@ bool tbool_always_eq(const Temporal *temp, bool b)
 }
 
 /**
- * @ingroup libMOBDB_temporal_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal integer is always equal to an integer.
  * @sqlop @p %=
  */
@@ -2861,7 +2861,7 @@ bool tint_always_eq(const Temporal *temp, int i)
 }
 
 /**
- * @ingroup libMOBDB_temporal_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal float is always equal to a float.
  * @sqlop @p %=
  */
@@ -2871,7 +2871,7 @@ bool tfloat_always_eq(const Temporal *temp, double d)
 }
 
 /**
- * @ingroup libMOBDB_temporal_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal text is always equal to a text.
  * @sqlop @p %=
  */
@@ -2882,7 +2882,7 @@ bool ttext_always_eq(const Temporal *temp, text *txt)
 #endif /* MEOS */
 
 /**
- * @ingroup libMOBDB_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_ever
  * @brief Return true if a temporal value is ever less than a base value.
  */
 bool
@@ -2901,7 +2901,7 @@ temporal_ever_lt(const Temporal *temp, Datum value)
 
 #if MEOS
 /**
- * @ingroup libMOBDB_temporal_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal integer is ever less than an integer.
  * @sqlop @p ?<
  */
@@ -2911,7 +2911,7 @@ bool tint_ever_lt(const Temporal *temp, int i)
 }
 
 /**
- * @ingroup libMOBDB_temporal_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal float is ever less than a float.
  * @sqlop @p ?<
  */
@@ -2921,7 +2921,7 @@ bool tfloat_ever_lt(const Temporal *temp, double d)
 }
 
 /**
- * @ingroup libMOBDB_temporal_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal text is ever less than a text.
  * @sqlop @p ?<
  */
@@ -2932,7 +2932,7 @@ bool ttext_ever_lt(const Temporal *temp, text *txt)
 #endif /* MEOS */
 
 /**
- * @ingroup libMOBDB_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_ever
  * @brief Return true if a temporal value is always less than a base value.
  */
 bool
@@ -2951,7 +2951,7 @@ temporal_always_lt(const Temporal *temp, Datum value)
 
 #if MEOS
 /**
- * @ingroup libMOBDB_temporal_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal integer is always less than an integer.
  * @sqlop @p %<
  */
@@ -2961,7 +2961,7 @@ bool tint_always_lt(const Temporal *temp, int i)
 }
 
 /**
- * @ingroup libMOBDB_temporal_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal float is always less than  a float.
  * @sqlop @p %<
  */
@@ -2971,7 +2971,7 @@ bool tfloat_always_lt(const Temporal *temp, double d)
 }
 
 /**
- * @ingroup libMOBDB_temporal_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal text is always less than  a text.
  * @sqlop @p %<
  */
@@ -2982,7 +2982,7 @@ bool ttext_always_lt(const Temporal *temp, text *txt)
 #endif /* MEOS */
 
 /**
- * @ingroup libMOBDB_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_ever
  * @brief Return true if a temporal value is ever less than or equal to a
  * base value.
  */
@@ -3002,7 +3002,7 @@ temporal_ever_le(const Temporal *temp, Datum value)
 
 #if MEOS
 /**
- * @ingroup libMOBDB_temporal_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal integer is ever less than or equal to an integer.
  * @sqlop @p ?<=
  */
@@ -3013,7 +3013,7 @@ bool tint_ever_le(const Temporal *temp, int i)
 }
 
 /**
- * @ingroup libMOBDB_temporal_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal float is ever less than or equal to a float.
  * @sqlop @p ?<=
  */
@@ -3023,7 +3023,7 @@ bool tfloat_ever_le(const Temporal *temp, double d)
 }
 
 /**
- * @ingroup libMOBDB_temporal_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal text is ever less than or equal to a text.
  * @sqlop @p ?<=
  */
@@ -3034,7 +3034,7 @@ bool ttext_ever_le(const Temporal *temp, text *txt)
 #endif /* MEOS */
 
 /**
- * @ingroup libMOBDB_internal_temporal_ever
+ * @ingroup libmeos_internal_temporal_ever
  * @brief Return true if a temporal value is always less than or equal to a
  * base value.
  */
@@ -3054,7 +3054,7 @@ temporal_always_le(const Temporal *temp, Datum value)
 
 #if MEOS
 /**
- * @ingroup libMOBDB_temporal_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal integer is always less than or equal to an integer.
  * @sqlop @p %<=
  */
@@ -3064,7 +3064,7 @@ bool tint_always_le(const Temporal *temp, int i)
 }
 
 /**
- * @ingroup libMOBDB_temporal_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal float is always less than or equal to a float.
  * @sqlop @p %<=
  */
@@ -3074,7 +3074,7 @@ bool tfloat_always_le(const Temporal *temp, double d)
 }
 
 /**
- * @ingroup libMOBDB_temporal_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if a temporal text is always less than or equal to a text.
  * @sqlop @p %<=
  */
@@ -3143,7 +3143,7 @@ tnumber_bbox_restrict_span(const Temporal *temp, const Span *span)
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) a base value.
  * @note This function does a bounding box test for the temporal types
  * different from instant. The singleton tests are done in the functions for
@@ -3184,7 +3184,7 @@ temporal_restrict_value(const Temporal *temp, Datum value, bool atfunc)
 /*****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Return true if the bounding box of the temporal and the set overlap
  * values.
  */
@@ -3209,7 +3209,7 @@ temporal_bbox_restrict_set(const Temporal *temp, const Set *set)
 }
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) an array of base
  * values.
  * @sqlfunc atValues, minusValues
@@ -3254,7 +3254,7 @@ temporal_restrict_values(const Temporal *temp, const Set *set, bool atfunc)
 /*****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) a span of base values.
  * @sqlfunc atSpan, minusSpan
  */
@@ -3293,7 +3293,7 @@ tnumber_restrict_span(const Temporal *temp, const Span *span, bool atfunc)
 /*****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) a span set.
  * @sqlfunc atSpanset, minusSpanset
  */
@@ -3337,7 +3337,7 @@ tnumber_restrict_spanset(const Temporal *temp, const SpanSet *ss, bool atfunc)
 /*****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) a minimum base value
  * @sqlfunc atMin, atMax, minusMin, minusMax
  */
@@ -3361,7 +3361,7 @@ temporal_restrict_minmax(const Temporal *temp, bool min, bool atfunc)
 /*****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal value to a timestamp.
  * @sqlfunc atTime, minusTime
  */
@@ -3392,7 +3392,7 @@ temporal_restrict_timestamp(const Temporal *temp, TimestampTz t, bool atfunc)
 /*****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Return the base value of a temporal value at the timestamp
  * @sqlfunc valueAtTimestamp
  * @pymeosfunc valueAtTimestamp
@@ -3418,7 +3418,7 @@ temporal_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
 /*****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) a timestamp set
  * @sqlfunc atTime, minusTime
  */
@@ -3449,7 +3449,7 @@ temporal_restrict_timestampset(const Temporal *temp, const Set *ts, bool atfunc)
 /*****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) a period.
  * @sqlfunc atTime, minusTime
  */
@@ -3481,7 +3481,7 @@ temporal_restrict_period(const Temporal *temp, const Span *p, bool atfunc)
 /*****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_restrict
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal value to (the complement of) a period set.
  * @sqlfunc atTime, minusTime
  */
@@ -3507,7 +3507,7 @@ temporal_restrict_periodset(const Temporal *temp, const SpanSet *ps,
 /*****************************************************************************/
 
 /**
- * @ingroup libMOBDB_temporal_restrict
+ * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal number to a temporal box.
  * @sqlfunc atTbox
  */
@@ -3545,7 +3545,7 @@ tnumber_at_tbox(const Temporal *temp, const TBox *box)
 }
 
 /**
- * @ingroup libMOBDB_temporal_restrict
+ * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal number to the complement of a temporal box.
  *
  * It is not possible to make the difference from each dimension separately,
@@ -3578,7 +3578,7 @@ tnumber_minus_tbox(const Temporal *temp, const TBox *box)
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_temporal_transf
+ * @ingroup libmeos_temporal_transf
  * @brief Insert the second temporal value into the first one.
  * @sqlfunc insert
  */
@@ -3620,7 +3620,7 @@ temporal_insert(const Temporal *temp1, const Temporal *temp2, bool connect)
 }
 
 /**
- * @ingroup libMOBDB_temporal_transf
+ * @ingroup libmeos_temporal_transf
  * @brief Update the first temporal value with the second one.
  * @sqlfunc update
  */
@@ -3637,7 +3637,7 @@ temporal_update(const Temporal *temp1, const Temporal *temp2, bool connect)
 }
 
 /**
- * @ingroup libMOBDB_temporal_modif
+ * @ingroup libmeos_temporal_modif
  * @brief Delete a timestamp from a temporal value connecting the instants
  * before and after the given timestamp (if any).
  * @sqlfunc deleteTime
@@ -3670,7 +3670,7 @@ temporal_delete_timestamp(const Temporal *temp, TimestampTz t, bool connect)
 }
 
 /**
- * @ingroup libMOBDB_temporal_modif
+ * @ingroup libmeos_temporal_modif
  * @brief Delete a timestamp set from a temporal value connecting the instants
  * before and after the given timestamp (if any).
  * @sqlfunc deleteTime
@@ -3705,7 +3705,7 @@ temporal_delete_timestampset(const Temporal *temp, const Set *ts,
 }
 
 /**
- * @ingroup libMOBDB_temporal_modif
+ * @ingroup libmeos_temporal_modif
  * @brief Delete a period from a temporal value connecting the instants
  * before and after the given timestamp (if any).
  * @sqlfunc deleteTime
@@ -3738,7 +3738,7 @@ temporal_delete_period(const Temporal *temp, const Span *p, bool connect)
 }
 
 /**
- * @ingroup libMOBDB_temporal_modif
+ * @ingroup libmeos_temporal_modif
  * @brief Delete a period set from a temporal value connecting the instants
  * before and after the given timestamp (if any).
  * @sqlfunc deleteTime
@@ -4054,7 +4054,7 @@ tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
 }
 
 /**
- * @ingroup libMOBDB_temporal_transf
+ * @ingroup libmeos_temporal_transf
  * @brief Return the subsequences where the objects stays within
  * an area with a given maximum size (maxdist) for at least
  * the specified duration (minunits).
@@ -4078,7 +4078,7 @@ tsequence_stops(const TSequence *seq, double maxdist, int64 mintunits)
 }
 
 /**
- * @ingroup libMOBDB_temporal_transf
+ * @ingroup libmeos_temporal_transf
  * @brief Return the subsequences where the objects stays within
  * an area with a given maximum size (maxdist) for at least
  * the specified duration (minunits).
@@ -4104,7 +4104,7 @@ tsequenceset_stops(const TSequenceSet *ss, double maxdist, int64 mintunits)
 /*****************************************************************************/
 
 /**
- * @ingroup libMOBDB_temporal_transf
+ * @ingroup libmeos_temporal_transf
  * @brief Return the subsequences where the objects stays within
  * an area with a given maximum size (maxdist) for at least
  * the specified duration (minduration).
@@ -4141,7 +4141,7 @@ temporal_stops(const Temporal *temp, double maxdist,
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_temporal_agg
+ * @ingroup libmeos_temporal_agg
  * @brief Return the integral (area under the curve) of a temporal number
  */
 double
@@ -4159,7 +4159,7 @@ tnumber_integral(const Temporal *temp)
 }
 
 /**
- * @ingroup libMOBDB_temporal_agg
+ * @ingroup libmeos_temporal_agg
  * @brief Return the time-weighted average of a temporal number
  * @sqlfunc twAvg
  */
@@ -4182,7 +4182,7 @@ tnumber_twavg(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_agg
+ * @ingroup libmeos_internal_temporal_agg
  * @brief Compact the temporal value by removing extra storage space
  */
 Temporal *
@@ -4204,7 +4204,7 @@ temporal_compact(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_temporal_comp
+ * @ingroup libmeos_temporal_comp
  * @brief Return true if the temporal values are equal.
  * @note The internal B-tree comparator is not used to increase efficiency
  * @sqlop @p =
@@ -4288,7 +4288,7 @@ temporal_eq(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libMOBDB_temporal_comp
+ * @ingroup libmeos_temporal_comp
  * @brief Return true if the temporal values are different
  * @sqlop @p <>
  */
@@ -4302,7 +4302,7 @@ temporal_ne(const Temporal *temp1, const Temporal *temp2)
 /*****************************************************************************/
 
 /**
- * @ingroup libMOBDB_temporal_comp
+ * @ingroup libmeos_temporal_comp
  * @brief Return -1, 0, or 1 depending on whether the first temporal value is
  * less than, equal, or greater than the second one.
  * @note Function used for B-tree comparison
@@ -4375,7 +4375,7 @@ temporal_cmp(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libMOBDB_temporal_comp
+ * @ingroup libmeos_temporal_comp
  * @brief Return true if the first temporal value is less than the second one
  * @sqlop @p <
  */
@@ -4387,7 +4387,7 @@ temporal_lt(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libMOBDB_temporal_comp
+ * @ingroup libmeos_temporal_comp
  * @brief Return true if the first temporal value is less than or equal to
  * the second one
  * @sqlop @p <=
@@ -4400,7 +4400,7 @@ temporal_le(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libMOBDB_temporal_comp
+ * @ingroup libmeos_temporal_comp
  * @brief Return true if the first temporal value is greater than or equal to
  * the second one
  * @sqlop @p >
@@ -4413,7 +4413,7 @@ temporal_ge(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libMOBDB_temporal_comp
+ * @ingroup libmeos_temporal_comp
  * @brief Return true if the first temporal value is greater than the second one
  * @sqlop @p >=
  */
@@ -4429,7 +4429,7 @@ temporal_gt(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_temporal_accessor
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the 32-bit hash value of a temporal value.
  */
 uint32

@@ -497,7 +497,7 @@ Temporal_merge_combinefn(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_agg
+ * @ingroup libmeos_internal_temporal_agg
  * @brief Transition function for append temporal instant aggregate
  */
 Temporal *
@@ -591,7 +591,7 @@ Temporal_append_finalfn(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /**
- * @ingroup libMOBDB_internal_temporal_agg
+ * @ingroup libmeos_internal_temporal_agg
  * @brief Transition function for append temporal sequence aggregate
  */
 Temporal *

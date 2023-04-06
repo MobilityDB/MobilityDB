@@ -732,7 +732,7 @@ geoset_round(const Set *s, Datum prec)
 }
 
 /**
- * @ingroup libMOBDB_temporal_spatial_transf
+ * @ingroup libmeos_temporal_spatial_transf
  * @brief Set the precision of the coordinates of a temporal point to a
  * number of decimal places.
  * @sqlfunc round()
