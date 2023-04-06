@@ -34,7 +34,7 @@
  * the assembled trips.
  *
  * Please read the assumptions made about the input file `aisinput.csv` in the
- * file `MOBDB_read_ais.c` in the same directory. Furthermore, this program
+ * file `02_meos_read_ais.c` in the same directory. Furthermore, this program
  * assumes the input file contains less than 50K observations for at most
  * five ships. Also, the program does not cope with erroneous inputs, such as
  * two or more observations for the same ship with equal timestamp values and
@@ -42,7 +42,7 @@
  *
  * The program can be build as follows
  * @code
- * gcc -Wall -g -I/usr/local/include -o 03_MOBDB_assemble_ais 03_MOBDB_assemble_ais.c -L/usr/local/lib -lmeos
+ * gcc -Wall -g -I/usr/local/include -o 03_meos_assemble_ais 03_meos_assemble_ais.c -L/usr/local/lib -lmeos
  * @endcode
  */
 
@@ -110,7 +110,7 @@ int windowManager(int size, trip_record *trips, int ship ,FILE *fileOut, int *co
 int main(void)
 {
   /* Initialize MEOS */
-  MOBDB_initialize("UTC");
+  meos_initialize("UTC");
 
   /* Get start time */
   clock_t t;
@@ -131,7 +131,7 @@ int main(void)
   if (! file)
   {
     printf("Error opening file\n");
-    MOBDB_finalize();
+    meos_finalize();
     return 1;
   }
 
@@ -281,7 +281,7 @@ cleanup:
   }
 
   /* Finalize MEOS */
-  MOBDB_finalize();
+  meos_finalize();
 
   return return_value;
 }

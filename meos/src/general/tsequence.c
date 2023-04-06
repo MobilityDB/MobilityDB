@@ -2148,9 +2148,9 @@ tsequence_valueset(const TSequence *seq, int *count)
  * @ingroup libMOBDB_internal_temporal_accessor
  * @brief Return the base values of a temporal number sequence as a span set.
  *
- * For temporal floats with linear interpolation the result is a singleton,
- * which is the result of @ref tfloatseq_span. Otherwise, the result is a span
- * set composed of instantenous spans, one for each distinct value.
+ * For temporal floats with linear interpolation the result is a singleton.
+ * Otherwise, the result is a span set composed of instantenous spans, one for
+ * each distinct value.
  * @sqlfunc getValues()
  */
 SpanSet *

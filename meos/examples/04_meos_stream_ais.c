@@ -33,7 +33,7 @@
  * database when they reach a given number of instants in order to free
  * the memory and ingest the newest observations.
  *
- * This program is similar to `04_MOBDB_store_ais` but illustrates the use of
+ * This program is similar to `04_meos_store_ais` but illustrates the use of
  * MEOS expandable data structures, which were designed to cope with the
  * requirements of stream applications. In this setting, the expandable data
  * structures accumulate the observations that have been received so far.
@@ -63,11 +63,11 @@
  * This program is based on the libpq example programs
  * https://www.postgresql.org/docs/current/libpq-example.html
  * Please read the assumptions made about the input file `aisinput.csv` in the
- * file `MOBDB_read_ais.c` in the same directory.
+ * file `02_meos_read_ais.c` in the same directory.
  *
  * The program can be build as follows
  * @code
- * gcc -Wall -g -I/usr/local/include -I/usr/include/postgresql -o 04_MOBDB_stream_ais 04_MOBDB_stream_ais.c -L/usr/local/lib -lmeos -lpq
+ * gcc -Wall -g -I/usr/local/include -I/usr/include/postgresql -o 04_meos_stream_ais 04_meos_stream_ais.c -L/usr/local/lib -lmeos -lpq
  * @endcode
  */
 
@@ -224,7 +224,7 @@ main(int argc, char **argv)
    ***************************************************************************/
 
   /* Initialize MEOS */
-  MOBDB_initialize(NULL);
+  meos_initialize(NULL);
 
   /* You may substitute the full file path in the first argument of fopen */
   FILE *file = fopen("aisinput.csv", "r");
@@ -346,7 +346,7 @@ cleanup:
     free(trips[i].trip);
 
   /* Finalize MEOS */
-  MOBDB_finalize();
+  meos_finalize();
 
   /* Close the connection to the database and cleanup */
   PQfinish(conn);

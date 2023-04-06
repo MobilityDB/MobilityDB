@@ -50,6 +50,7 @@
  * @brief Append a span to an unordered span set.
  * @param[in,out] ss Span set
  * @param[in] span Span to append
+ * @param[in] expand True when using expandable structures
  */
 SpanSet *
 spanset_append_span(SpanSet *ss, const Span *span, bool expand)
@@ -89,6 +90,7 @@ spanset_append_span(SpanSet *ss, const Span *span, bool expand)
  * @brief Append a span set to an unordered span set.
  * @param[in,out] ss1 Span set
  * @param[in] ss2 Span set to append
+ * @param[in] expand True when using expandable structures
  */
 SpanSet *
 spanset_append_spanset(SpanSet *ss1, const SpanSet *ss2, bool expand)

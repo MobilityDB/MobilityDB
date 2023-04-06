@@ -31,8 +31,8 @@
  * @brief Internal API of the Mobility Engine Open Source(MEOS) library.
  */
 
-#ifndef __MOBDB_INTERNAL_H__
-#define __MOBDB_INTERNAL_H__
+#ifndef __MEOS_INTERNAL_H__
+#define __MEOS_INTERNAL_H__
 
 /* JSON-C */
 #include <json-c/json.h>

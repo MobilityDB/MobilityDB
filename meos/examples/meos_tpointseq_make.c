@@ -33,7 +33,7 @@
  *
  * The program can be build as follows
  * @code
- * gcc -Wall -g -I/usr/local/include -o MOBDB_tpointseq_make MOBDB_tpointseq_make.c -L/usr/local/lib -lmeos
+ * gcc -Wall -g -I/usr/local/include -o meos_tpointseq_make meos_tpointseq_make.c -L/usr/local/lib -lmeos
  * @endcode
  */
 
@@ -54,7 +54,7 @@ int main()
   TimestampTz times[MAX_COUNT];
 
   /* Initialize MEOS */
-  MOBDB_initialize();
+  meos_initialize();
 
   for (int i = 0; i < 4; i++)
     times[i] = pg_timestamptz_in(times_str[i], -1);
@@ -80,7 +80,7 @@ int main()
   free(seq3); free(seq3_wkt);
 
   /* Finalize MEOS */
-  MOBDB_finalize();
+  meos_finalize();
 
   /* Return */
   return 0;

@@ -33,7 +33,7 @@
  * when they reach a given number of instants in order to free
  * the memory and ingest the newest observations.
  *
- * This program is similar to `04_MOBDB_stream_ais` but illustrates the use of
+ * This program is similar to `04_meos_stream_ais` but illustrates the use of
  * a logfile. In this setting, the expandable data structures accumulate the
  * observations that have been received so far and appends to the file.
  * Depending on application requirements and the available memory, the
@@ -41,7 +41,7 @@
  *
  * The program can be build as follows
  * @code
- * gcc -Wall -g -I/usr/local/include -o 04_MOBDB_stream_file_ais 04_MOBDB_stream_file_ais.c -L/usr/local/lib -lmeos
+ * gcc -Wall -g -I/usr/local/include -o 04_meos_stream_file_ais 04_meos_stream_file_ais.c -L/usr/local/lib -lmeos
  * @endcode
  */
 
@@ -143,7 +143,7 @@ main(int argc, char **argv)
    ***************************************************************************/
 
   /* Initialize MEOS */
-  MOBDB_initialize(NULL);
+  meos_initialize(NULL);
 
   /* You may substitute the full file path in the first argument of fopen */
   FILE *fileIn = fopen("aisinput.csv", "r");
@@ -248,7 +248,7 @@ cleanup:
     free(trips[i].trip);
 
   /* Finalize MEOS */
-  MOBDB_finalize();
+  meos_finalize();
 
   /* Close the connection to the logfile */
   fclose(fileOut);

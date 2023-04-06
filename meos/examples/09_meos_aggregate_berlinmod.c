@@ -34,11 +34,11 @@
  * and performs a temporal count aggregation.
  *
  * Please read the assumptions made about the input file `trips.csv` in the
- * file `MOBDB_disassemble_berlinmod.c` in the same directory.
+ * file `05_meos_disassemble_berlinmod.c` in the same directory.
  *
  * The program can be build as follows
  * @code
- * gcc -Wall -g -I/usr/local/include -o 09_MOBDB_aggregate_berlinmod 09_MOBDB_aggregate_berlinmod.c -L/usr/local/lib -lmeos
+ * gcc -Wall -g -I/usr/local/include -o 09_meos_aggregate_berlinmod 09_meos_aggregate_berlinmod.c -L/usr/local/lib -lmeos
  * @endcode
  */
 
@@ -74,7 +74,7 @@ int main(void)
   char trip_buffer[MAX_LENGTH_TRIP];
 
   /* Initialize MEOS */
-  MOBDB_initialize(NULL);
+  meos_initialize(NULL);
 
   /* You may substitute the full file path in the first argument of fopen */
   FILE *file = fopen("trips.csv", "r");
@@ -160,7 +160,7 @@ int main(void)
   fclose(file);
 
   /* Finalize MEOS */
-  MOBDB_finalize();
+  meos_finalize();
 
   return 0;
 }

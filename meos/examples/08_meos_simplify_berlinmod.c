@@ -37,11 +37,11 @@
  * instants of the two simplified trips.
  *
  * Please read the assumptions made about the input file `trips.csv` in the
- * file `MOBDB_disassemble_berlinmod.c` in the same directory.
+ * file `05_meos_disassemble_berlinmod.c` in the same directory.
  *
  * The program can be build as follows
  * @code
- * gcc -Wall -g -I/usr/local/include -o 08_MOBDB_simplify_berlinmod 08_MOBDB_simplify_berlinmod.c -L/usr/local/lib -lmeos
+ * gcc -Wall -g -I/usr/local/include -o 08_meos_simplify_berlinmod 08_meos_simplify_berlinmod.c -L/usr/local/lib -lmeos
  * @endcode
  */
 
@@ -87,7 +87,7 @@ int main(void)
   int i = 0, j;
 
   /* Initialize MEOS */
-  MOBDB_initialize(NULL);
+  meos_initialize(NULL);
 
   /* Substitute the full file path in the first argument of fopen */
   FILE *file = fopen("trips.csv", "r");
@@ -164,7 +164,7 @@ int main(void)
   fclose(file);
 
   /* Finalize MEOS */
-  MOBDB_finalize();
+  meos_finalize();
 
   return 0;
 }

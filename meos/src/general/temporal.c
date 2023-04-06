@@ -133,8 +133,7 @@ void
 ensure_valid_interpolation(meosType temptype, interpType interp)
 {
   if (interp == LINEAR && ! temptype_continuous(temptype))
-    ereport(ERROR, (errcode(ERRCODE_ARRAY_ELEMENT_ERROR),
-      errmsg("The temporal type cannot have linear interpolation")));
+    elog(ERROR, "The temporal type cannot have linear interpolation");
   return;
 }
 

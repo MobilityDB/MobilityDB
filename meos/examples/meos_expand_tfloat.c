@@ -33,7 +33,7 @@
  * instants, and the distance travelled.
  *
  * Please read the assumptions made about the input file `aisinput.csv` in the
- * file `MOBDB_read_ais.c` in the same directory. Furthermore, this program
+ * file `02_meos_read_ais.c` in the same directory. Furthermore, this program
  * assumes the input file contains less than 50K observations for at most
  * five ships. Also, the program does not cope with erroneous inputs, such as
  * two or more observations for the same ship with equal timestamp values and
@@ -41,7 +41,7 @@
  *
  * The program can be build as follows
  * @code
- * gcc -Wall -g -I/usr/local/include -o MOBDB_expand_tfloat MOBDB_expand_tfloat.c -L/usr/local/lib -lmeos
+ * gcc -Wall -g -I/usr/local/include -o meos_expand_tfloat meos_expand_tfloat.c -L/usr/local/lib -lmeos
  * @endcode
  */
 
@@ -57,7 +57,7 @@
 int main(void)
 {
   /* Initialize MEOS */
-  MOBDB_initialize(NULL);
+  meos_initialize(NULL);
 
   /* Get start time */
   clock_t tm;
@@ -98,7 +98,7 @@ int main(void)
   free(seq);
 
   /* Finalize MEOS */
-  MOBDB_finalize();
+  meos_finalize();
 
   return 0;
 }

@@ -39,7 +39,7 @@
  *
  * The program can be build as follows
  * @code
- * gcc -Wall -g -I/usr/local/include -o 02_MOBDB_read_ais 02_MOBDB_read_ais.c -L/usr/local/lib -lmeos
+ * gcc -Wall -g -I/usr/local/include -o 02_meos_read_ais 02_meos_read_ais.c -L/usr/local/lib -lmeos
  * @endcode
  */
 
@@ -67,7 +67,7 @@ typedef struct
 int main(void)
 {
   /* Initialize MEOS */
-  MOBDB_initialize(NULL);
+  meos_initialize(NULL);
 
   /* You may substitute the full file path in the first argument of fopen */
   FILE *file = fopen("aisinput.csv", "r");
@@ -140,7 +140,7 @@ int main(void)
   fclose(file);
 
   /* Finalize MEOS */
-  MOBDB_finalize();
+  meos_finalize();
 
   return 0;
 }

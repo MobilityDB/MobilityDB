@@ -49,7 +49,7 @@
  *
  * The program can be build as follows
  * @code
- * gcc -Wall -g -I/usr/local/include -o 06_MOBDB_clip_berlinmod 06_MOBDB_clip_berlinmod.c -L/usr/local/lib -lmeos
+ * gcc -Wall -g -I/usr/local/include -o 06_meos_clip_berlinmod 06_meos_clip_berlinmod.c -L/usr/local/lib -lmeos
  * @endcode
  */
 
@@ -289,7 +289,7 @@ matrix_print(double distance[NO_VEHICLES + 1][NO_COMMUNES + 3],
 int main(void)
 {
   /* Initialize MEOS */
-  MOBDB_initialize(NULL);
+  meos_initialize(NULL);
 
   /* Read communes file */
   read_communes();
@@ -397,7 +397,7 @@ int main(void)
   fclose(file);
 
   /* Finalize MEOS */
-  MOBDB_finalize();
+  meos_finalize();
 
   return 0;
 }

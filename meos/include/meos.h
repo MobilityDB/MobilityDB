@@ -31,8 +31,8 @@
  * @brief API of the Mobility Engine Open Source (MEOS) library.
  */
 
-#ifndef __MOBDB_H__
-#define __MOBDB_H__
+#ifndef __MEOS_H__
+#define __MEOS_H__
 
 /* C */
 #include <stdbool.h>

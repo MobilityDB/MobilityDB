@@ -37,7 +37,7 @@
  *
  * The program can be build as follows
  * @code
- * gcc -Wall -g -I/usr/local/include -o MOBDB_assemble_tpoint MOBDB_assemble_tpoint.c -L/usr/local/lib -lmeos
+ * gcc -Wall -g -I/usr/local/include -o meos_assemble_tpoint meos_assemble_tpoint.c -L/usr/local/lib -lmeos
  * @endcode
  */
 
@@ -61,7 +61,7 @@
 int main(void)
 {
   /* Initialize MEOS */
-  MOBDB_initialize(NULL);
+  meos_initialize(NULL);
 
   /* Get start time */
   clock_t time;
@@ -112,7 +112,7 @@ int main(void)
   printf("Accumulating the instants and constructing the sequence at the end\n");
 
   /* Finalize MEOS */
-  MOBDB_finalize();
+  meos_finalize();
 
   return 0;
 }
