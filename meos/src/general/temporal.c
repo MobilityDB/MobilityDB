@@ -295,7 +295,8 @@ ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
   interpType interp, double maxdist, Interval *maxt, int *countsplits)
 {
   meosType basetype = temptype_basetype(instants[0]->temptype);
-  int *result = palloc(sizeof(int) * count);
+  /* Ensure that zero-fill is done */
+  int *result = palloc0(sizeof(int) * count);
   Datum value1 = tinstant_value(instants[0]);
   datum_func2 point_distance = NULL;
   if (geo_basetype(basetype))

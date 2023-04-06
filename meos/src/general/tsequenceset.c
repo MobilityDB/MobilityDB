@@ -397,7 +397,7 @@ tsequenceset_make_gaps(const TInstant **instants, int count, interpType interp,
     int j = 0, k = 0;
     for (int i = 0; i < count; i++)
     {
-      if (splits[j] == i)
+      if (j < countsplits && splits[j] == i)
       {
         /* Finalize the current sequence and start a new one */
         assert(k > 0);
@@ -408,7 +408,7 @@ tsequenceset_make_gaps(const TInstant **instants, int count, interpType interp,
       /* Continue with the current sequence */
       newinsts[k++] = instants[i];
     }
-    /* Construct last sequence */
+    /* Construct the last sequence */
     if (k > 0)
       sequences[newcount++] = tsequence_make1((const TInstant **) newinsts,
         k, true, true, interp, NORMALIZE);

@@ -41,6 +41,7 @@
 #include "npoint/tnpoint_spatialrels.h"
 
 /* MEOS */
+#include <meos_internal.h>
 #include "general/lifting.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_spatialrels.h"

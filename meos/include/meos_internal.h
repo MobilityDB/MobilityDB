@@ -41,6 +41,84 @@
 #include "general/meos_catalog.h" /* For meosType */
 
 /*****************************************************************************
+ * General definitions
+ *****************************************************************************/
+
+/*****************************************************************************
+ * Concrete subtype of temporal types
+ *****************************************************************************/
+
+/**
+ * Enumeration for the concrete subtype of temporal types
+ */
+#define ANYTEMPSUBTYPE  0
+#define TINSTANT        1
+#define TSEQUENCE       2
+#define TSEQUENCESET    3
+
+/*****************************************************************************
+ * Macros for manipulating the 'flags' element where the less significant
+ * bits are GTZXIICB, where
+ *   G: coordinates are geodetic
+ *   T: has T coordinate,
+ *   Z: has Z coordinate
+ *   X: has value or X coordinate
+ *   II: interpolation, whose values are
+ *   - 00: INTERP_NONE (undetermined) for TInstant
+ *   - 01: DISCRETE
+ *   - 10: STEP
+ *   - 11: LINEAR
+ *   C: continuous base type / Ordered collection
+ *   B: base type passed by value
+ * Notice that formally speaking the interpolation flags are only needed
+ * for sequence and sequence set subtypes.
+ *****************************************************************************/
+
+/* The following flag is only used for Collection and TInstant */
+#define MOBDB_FLAG_BYVAL      0x0001  // 1
+/* The following flag is only used for Collection */
+#define MOBDB_FLAG_ORDERED    0x0002  // 2
+/* The following flag is only used for Temporal */
+#define MOBDB_FLAG_CONTINUOUS 0x0002  // 2
+/* The following two interpolation flags are only used for TSequence and TSequenceSet */
+#define MOBDB_FLAGS_INTERP    0x000C  // 4 / 8
+/* The following two flags are used for both bounding boxes and temporal types */
+#define MOBDB_FLAG_X          0x0010  // 16
+#define MOBDB_FLAG_Z          0x0020  // 32
+#define MOBDB_FLAG_T          0x0040  // 64
+#define MOBDB_FLAG_GEODETIC   0x0080  // 128
+
+#define MOBDB_FLAGS_GET_BYVAL(flags)      ((bool) (((flags) & MOBDB_FLAG_BYVAL)))
+#define MOBDB_FLAGS_GET_ORDERED(flags)    ((bool) (((flags) & MOBDB_FLAG_ORDERED)>>1))
+#define MOBDB_FLAGS_GET_CONTINUOUS(flags) ((bool) (((flags) & MOBDB_FLAG_CONTINUOUS)>>1))
+#define MOBDB_FLAGS_GET_X(flags)          ((bool) (((flags) & MOBDB_FLAG_X)>>4))
+#define MOBDB_FLAGS_GET_Z(flags)          ((bool) (((flags) & MOBDB_FLAG_Z)>>5))
+#define MOBDB_FLAGS_GET_T(flags)          ((bool) (((flags) & MOBDB_FLAG_T)>>6))
+#define MOBDB_FLAGS_GET_GEODETIC(flags)   ((bool) (((flags) & MOBDB_FLAG_GEODETIC)>>7))
+
+#define MOBDB_FLAGS_SET_BYVAL(flags, value) \
+  ((flags) = (value) ? ((flags) | MOBDB_FLAG_BYVAL) : ((flags) & ~MOBDB_FLAG_BYVAL))
+#define MOBDB_FLAGS_SET_ORDERED(flags, value) \
+  ((flags) = (value) ? ((flags) | MOBDB_FLAG_ORDERED) : ((flags) & ~MOBDB_FLAG_ORDERED))
+#define MOBDB_FLAGS_SET_CONTINUOUS(flags, value) \
+  ((flags) = (value) ? ((flags) | MOBDB_FLAG_CONTINUOUS) : ((flags) & ~MOBDB_FLAG_CONTINUOUS))
+#define MOBDB_FLAGS_SET_X(flags, value) \
+  ((flags) = (value) ? ((flags) | MOBDB_FLAG_X) : ((flags) & ~MOBDB_FLAG_X))
+#define MOBDB_FLAGS_SET_Z(flags, value) \
+  ((flags) = (value) ? ((flags) | MOBDB_FLAG_Z) : ((flags) & ~MOBDB_FLAG_Z))
+#define MOBDB_FLAGS_SET_T(flags, value) \
+  ((flags) = (value) ? ((flags) | MOBDB_FLAG_T) : ((flags) & ~MOBDB_FLAG_T))
+#define MOBDB_FLAGS_SET_GEODETIC(flags, value) \
+  ((flags) = (value) ? ((flags) | MOBDB_FLAG_GEODETIC) : ((flags) & ~MOBDB_FLAG_GEODETIC))
+
+#define MOBDB_FLAGS_GET_INTERP(flags) (((flags) & MOBDB_FLAGS_INTERP) >> 2)
+#define MOBDB_FLAGS_SET_INTERP(flags, value) ((flags) = (((flags) & ~MOBDB_FLAGS_INTERP) | ((value & 0x0003) << 2)))
+
+#define MOBDB_FLAGS_GET_DISCRETE(flags)   ((bool) (MOBDB_FLAGS_GET_INTERP((flags)) == DISCRETE))
+#define MOBDB_FLAGS_GET_STEP(flags)       ((bool) (MOBDB_FLAGS_GET_INTERP((flags)) == STEP))
+#define MOBDB_FLAGS_GET_LINEAR(flags)     ((bool) (MOBDB_FLAGS_GET_INTERP((flags)) == LINEAR))
+
+/*****************************************************************************
  * Miscellaneous functions
  *****************************************************************************/
 
