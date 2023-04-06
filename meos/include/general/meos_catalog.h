@@ -200,7 +200,7 @@ extern meosType basetype_settype(meosType basetype);
 
 /* Catalog functions */
 
-extern bool MOBDB_basetype(meosType type);
+extern bool meos_basetype(meosType type);
 extern bool alpha_basetype(meosType basetype);
 extern bool number_basetype(meosType basetype);
 extern bool alphanum_basetype(meosType basetype);

@@ -138,9 +138,9 @@ datum_ge(Datum l, Datum r, meosType type)
 int
 datum_cmp2(Datum l, Datum r, meosType typel, meosType typer)
 {
-  assert(MOBDB_basetype(typel));
+  assert(meos_basetype(typel));
   if (typel != typer)
-    assert(MOBDB_basetype(typer));
+    assert(meos_basetype(typer));
   if (typel == T_TIMESTAMPTZ && typer == T_TIMESTAMPTZ)
     return timestamptz_cmp_internal(DatumGetTimestampTz(l),
       DatumGetTimestampTz(r));
@@ -185,9 +185,9 @@ datum_cmp2(Datum l, Datum r, meosType typel, meosType typer)
 bool
 datum_eq2(Datum l, Datum r, meosType typel, meosType typer)
 {
-  assert(MOBDB_basetype(typel));
+  assert(meos_basetype(typel));
   if (typel != typer)
-    assert(MOBDB_basetype(typer));
+    assert(meos_basetype(typer));
   if ((typel == T_TIMESTAMPTZ && typer == T_TIMESTAMPTZ) ||
     (typel == T_BOOL && typer == T_BOOL) ||
     (typel == T_INT4 && typer == T_INT4) ||
@@ -484,7 +484,7 @@ datum_div(Datum l, Datum r, meosType typel, meosType typer)
 uint32
 datum_hash(Datum d, meosType type)
 {
-  assert(MOBDB_basetype(type));
+  assert(meos_basetype(type));
   if (type == T_TIMESTAMPTZ)
     return pg_hashint8(TimestampTzGetDatum(d));
   else if (type == T_BOOL)
@@ -514,7 +514,7 @@ datum_hash(Datum d, meosType type)
 uint64
 datum_hash_extended(Datum d, meosType type, uint64 seed)
 {
-  assert(MOBDB_basetype(type));
+  assert(meos_basetype(type));
   if (type == T_TIMESTAMPTZ)
     return pg_hashint8extended(TimestampTzGetDatum(d), seed);
   else if (type == T_BOOL)
@@ -1056,7 +1056,7 @@ basetype_in(const char *str, meosType basetype, bool end)
 basetype_in(const char *str, meosType basetype, bool end __attribute__((unused)))
 #endif
 {
-  assert(MOBDB_basetype(basetype));
+  assert(meos_basetype(basetype));
   switch (basetype)
   {
     case T_TIMESTAMPTZ:
@@ -1091,7 +1091,7 @@ basetype_in(const char *str, meosType basetype, bool end __attribute__((unused))
 char *
 basetype_out(Datum value, meosType basetype, int maxdd)
 {
-  assert(MOBDB_basetype(basetype));
+  assert(meos_basetype(basetype));
   switch (basetype)
   {
     case T_TIMESTAMPTZ:

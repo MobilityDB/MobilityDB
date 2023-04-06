@@ -405,7 +405,7 @@ MOBDB_timezone_initialize(const char *name)
  * Initialize timezone library
  */
 void
-MOBDB_initialize(const char *tz_str)
+meos_initialize(const char *tz_str)
 {
   if (tz_str == NULL || strlen(tz_str) == 0)
     /* fetch local timezone */
@@ -421,7 +421,7 @@ MOBDB_initialize(const char *tz_str)
  * Initialize timezone library
  */
 void
-MOBDB_finalize(void)
+meos_finalize(void)
 {
   if (session_timezone)
 #ifdef NO_HSEARCH_R

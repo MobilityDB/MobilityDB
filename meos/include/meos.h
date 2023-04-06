@@ -254,8 +254,8 @@ typedef struct
  * Initialization of the MEOS library
  *****************************************************************************/
 
-extern void MOBDB_initialize(const char *tz_str);
-extern void MOBDB_finalize(void);
+extern void meos_initialize(const char *tz_str);
+extern void meos_finalize(void);
 
 /*****************************************************************************
  * Functions for input/output PostgreSQL time types

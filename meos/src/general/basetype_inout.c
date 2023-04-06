@@ -215,7 +215,7 @@ int4_in(const char *str)
  * version < 14
  */
 static int
-MOBDB_ltoa(int32 value, char *a)
+mobdb_ltoa(int32 value, char *a)
 {
 	uint32		uvalue = (uint32) value;
 	int			len = 0;
@@ -240,7 +240,7 @@ int4_out(int32 val)
 {
   char *result = palloc(12);  /* sign, 10 digits, '\0' */
 #if POSTGRESQL_VERSION_NUMBER >= 130000
-  MOBDB_ltoa(val, result);
+  mobdb_ltoa(val, result);
 #else
   sprintf(result, "%d", val);
 #endif
@@ -282,7 +282,7 @@ int8_in(const char *str)
  * version < 14
  */
 int
-MOBDB_lltoa(int64 value, char *a)
+mobdb_lltoa(int64 value, char *a)
 {
   uint64    uvalue = value;
   int      len = 0;
@@ -309,7 +309,7 @@ int8_out(int64 val)
   char *result;
 #if POSTGRESQL_VERSION_NUMBER >= 130000
   char buf[MAXINT8LEN + 1];
-  int len = MOBDB_lltoa(val, buf) + 1;
+  int len = mobdb_lltoa(val, buf) + 1;
   /*
    * Since the length is already known, we do a manual palloc() and memcpy()
    * to avoid the strlen() call that would otherwise be done in pstrdup().
