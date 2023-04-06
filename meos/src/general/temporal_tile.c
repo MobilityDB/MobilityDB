@@ -671,7 +671,7 @@ tsequence_time_split1(const TSequence *seq, TimestampTz start, TimestampTz end,
 
   const TInstant **instants = palloc(sizeof(TInstant *) * seq->count * count);
   TInstant **tofree = palloc(sizeof(TInstant *) * seq->count * count);
-  bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
+  bool linear = MEOS_FLAGS_GET_LINEAR(seq->flags);
   int i = 0,  /* counter for instants of temporal value */
       k = 0,  /* counter for instants of next split */
       l = 0,  /* counter for instants to free */
@@ -884,7 +884,7 @@ temporal_time_split1(const Temporal *temp, TimestampTz start, TimestampTz end,
     fragments = (Temporal **) tinstant_time_split((const TInstant *) temp,
       tunits, torigin, buckets, newcount);
   else if (temp->subtype == TSEQUENCE)
-    fragments = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
+    fragments = MEOS_FLAGS_GET_DISCRETE(temp->flags) ?
       (Temporal **) tnumberseq_disc_time_split((const TSequence *) temp,
         start, tunits, count, buckets, newcount) :
       (Temporal **) tsequence_time_split((const TSequence *) temp,
@@ -1032,7 +1032,7 @@ static void
 tnumberseq_step_value_split(const TSequence *seq, Datum start_bucket,
   Datum size, int count, TSequence **result, int *numseqs, int numcols)
 {
-  assert(! MOBDB_FLAGS_GET_LINEAR(seq->flags));
+  assert(! MEOS_FLAGS_GET_LINEAR(seq->flags));
   meosType basetype = temptype_basetype(seq->temptype);
   Datum value, bucket_value;
   int bucket_no, seq_no;
@@ -1106,7 +1106,7 @@ static void
 tnumberseq_linear_value_split(const TSequence *seq, Datum start_bucket,
   Datum size, int count, TSequence **result, int *numseqs, int numcols)
 {
-  assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
+  assert(MEOS_FLAGS_GET_LINEAR(seq->flags));
   meosType basetype = temptype_basetype(seq->temptype);
   Datum value1, bucket_value1;
   int bucket_no1, seq_no;
@@ -1270,7 +1270,7 @@ tnumberseq_value_split(const TSequence *seq, Datum start_bucket, Datum size,
   int count, Datum **buckets, int *newcount)
 {
   meosType basetype = temptype_basetype(seq->temptype);
-  interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
@@ -1344,7 +1344,7 @@ tnumberseqset_value_split(const TSequenceSet *ss, Datum start_bucket,
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    if (MOBDB_FLAGS_GET_LINEAR(ss->flags))
+    if (MEOS_FLAGS_GET_LINEAR(ss->flags))
       tnumberseq_linear_value_split(seq, start_bucket, size, count, bucketseqs,
         numseqs, ss->totalcount);
     else
@@ -1392,7 +1392,7 @@ tnumber_value_split1(const Temporal *temp, Datum start_bucket, Datum size,
     fragments = (Temporal **) tnumberinst_value_split((const TInstant *) temp,
       start_bucket, size, buckets, newcount);
   else if (temp->subtype == TSEQUENCE)
-    fragments = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
+    fragments = MEOS_FLAGS_GET_DISCRETE(temp->flags) ?
       (Temporal **) tnumberseq_disc_value_split((const TSequence *) temp,
         start_bucket, size, count, buckets, newcount) :
       (Temporal **) tnumberseq_value_split((const TSequence *) temp,

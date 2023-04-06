@@ -61,13 +61,13 @@ extern char *text_to_cstring(const text *t);
 /**
  * Floating point precision
  */
-#define MOBDB_EPSILON   1.0e-06
-#define MOBDB_FP_EQ(A, B) (fabs((A)-(B)) <= MOBDB_EPSILON)
-#define MOBDB_FP_NE(A, B) (fabs((A)-(B)) > MOBDB_EPSILON)
-#define MOBDB_FP_LT(A, B) (((A) + MOBDB_EPSILON) < (B))
-#define MOBDB_FP_LE(A, B) (((A) - MOBDB_EPSILON) <= (B))
-#define MOBDB_FP_GT(A, B) (((A) - MOBDB_EPSILON) > (B))
-#define MOBDB_FP_GE(A, B) (((A) + MOBDB_EPSILON) >= (B))
+#define MEOS_EPSILON   1.0e-06
+#define MEOS_FP_EQ(A, B) (fabs((A)-(B)) <= MEOS_EPSILON)
+#define MEOS_FP_NE(A, B) (fabs((A)-(B)) > MEOS_EPSILON)
+#define MEOS_FP_LT(A, B) (((A) + MEOS_EPSILON) < (B))
+#define MEOS_FP_LE(A, B) (((A) - MEOS_EPSILON) <= (B))
+#define MEOS_FP_GT(A, B) (((A) - MEOS_EPSILON) > (B))
+#define MEOS_FP_GE(A, B) (((A) + MEOS_EPSILON) >= (B))
 
 /**
  * Precision for distance operations
@@ -170,24 +170,24 @@ typedef enum
  *****************************************************************************/
 
 /* Data type size */
-#define MOBDB_WKB_TIMESTAMP_SIZE   8
-#define MOBDB_WKB_DOUBLE_SIZE      8
-#define MOBDB_WKB_INT2_SIZE        2
-#define MOBDB_WKB_INT4_SIZE        4
-#define MOBDB_WKB_INT8_SIZE        8
-#define MOBDB_WKB_BYTE_SIZE        1
+#define MEOS_WKB_TIMESTAMP_SIZE   8
+#define MEOS_WKB_DOUBLE_SIZE      8
+#define MEOS_WKB_INT2_SIZE        2
+#define MEOS_WKB_INT4_SIZE        4
+#define MEOS_WKB_INT8_SIZE        8
+#define MEOS_WKB_BYTE_SIZE        1
 
 /* Temporal subtype */
-enum MOBDB_WKB_TSUBTYPE
+enum MEOS_WKB_TSUBTYPE
 {
-  MOBDB_WKB_TINSTANT =         1,  /**< temporal instant subtype */
-  MOBDB_WKB_TSEQUENCE =        2,  /**< temporal sequence subtype */
-  MOBDB_WKB_TSEQUENCESET =     3,  /**< temporal sequence set subtype */
+  MEOS_WKB_TINSTANT =         1,  /**< temporal instant subtype */
+  MEOS_WKB_TSEQUENCE =        2,  /**< temporal sequence subtype */
+  MEOS_WKB_TSEQUENCESET =     3,  /**< temporal sequence set subtype */
 };
 
 /* Span bounds */
-#define MOBDB_WKB_LOWER_INC        0x01
-#define MOBDB_WKB_UPPER_INC        0x02
+#define MEOS_WKB_LOWER_INC        0x01
+#define MEOS_WKB_UPPER_INC        0x02
 
 /* Machine endianness */
 #define XDR                        0  /* big endian */
@@ -201,18 +201,18 @@ enum MOBDB_WKB_TSUBTYPE
  * - Temporal types: xxSS where SS correspond to the subtype
  * and x are unused bits
  */
-#define MOBDB_WKB_ORDERED          0x01  // 1
-#define MOBDB_WKB_XFLAG            0x01  // 1
-#define MOBDB_WKB_TFLAG            0x02  // 2
-#define MOBDB_WKB_INTERPFLAGS      0x0C  // 4 + 8
-#define MOBDB_WKB_ZFLAG            0x10  // 16
-#define MOBDB_WKB_GEODETICFLAG     0x20  // 32
-#define MOBDB_WKB_SRIDFLAG         0x40  // 64
+#define MEOS_WKB_ORDERED          0x01  // 1
+#define MEOS_WKB_XFLAG            0x01  // 1
+#define MEOS_WKB_TFLAG            0x02  // 2
+#define MEOS_WKB_INTERPFLAGS      0x0C  // 4 + 8
+#define MEOS_WKB_ZFLAG            0x10  // 16
+#define MEOS_WKB_GEODETICFLAG     0x20  // 32
+#define MEOS_WKB_SRIDFLAG         0x40  // 64
 
-#define MOBDB_WKB_GET_INTERP(flags) (((flags) & MOBDB_WKB_INTERPFLAGS) >> 2)
-#define MOBDB_WKB_SET_INTERP(flags, value) ((flags) = (((flags) & ~MOBDB_WKB_INTERPFLAGS) | ((value & 0x0003) << 2)))
+#define MEOS_WKB_GET_INTERP(flags) (((flags) & MEOS_WKB_INTERPFLAGS) >> 2)
+#define MEOS_WKB_SET_INTERP(flags, value) ((flags) = (((flags) & ~MEOS_WKB_INTERPFLAGS) | ((value & 0x0003) << 2)))
 
-// #define MOBDB_WKB_GET_LINEAR(flags)     ((bool) (((flags) & MOBDB_WKB_LINEARFLAG)>>3))
+// #define MEOS_WKB_GET_LINEAR(flags)     ((bool) (((flags) & MEOS_WKB_LINEARFLAG)>>3))
 
 /*****************************************************************************
  * Definitions for bucketing and tiling

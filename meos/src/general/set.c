@@ -423,7 +423,7 @@ SET_VAL_N(const Set *s, int index)
 {
   assert(index >= 0);
   /* For base types passed by value */
-  if (MOBDB_FLAGS_GET_BYVAL(s->flags))
+  if (MEOS_FLAGS_GET_BYVAL(s->flags))
     return (SET_OFFSETS_PTR(s))[index];
   /* For base types passed by reference */
   return PointerGetDatum(
@@ -561,13 +561,13 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
   /* Create the Set */
   Set *result = palloc0(memsize);
   SET_VARSIZE(result, memsize);
-  MOBDB_FLAGS_SET_BYVAL(result->flags, typbyval);
-  MOBDB_FLAGS_SET_ORDERED(result->flags, ordered);
+  MEOS_FLAGS_SET_BYVAL(result->flags, typbyval);
+  MEOS_FLAGS_SET_ORDERED(result->flags, ordered);
   if (geo_basetype(basetype))
   {
-    MOBDB_FLAGS_SET_X(result->flags, true);
-    MOBDB_FLAGS_SET_Z(result->flags, hasz);
-    MOBDB_FLAGS_SET_GEODETIC(result->flags, isgeodetic);
+    MEOS_FLAGS_SET_X(result->flags, true);
+    MEOS_FLAGS_SET_Z(result->flags, hasz);
+    MEOS_FLAGS_SET_GEODETIC(result->flags, isgeodetic);
   }
   result->count = newcount;
   result->maxcount = maxcount;
@@ -1252,7 +1252,7 @@ geoset_srid(const Set *set)
 Set *
 set_shift(const Set *s, Datum shift)
 {
-  assert(MOBDB_FLAGS_GET_BYVAL(s->flags));
+  assert(MEOS_FLAGS_GET_BYVAL(s->flags));
   Set *result = set_copy(s);
   for (int i = 0; i < s->count; i++)
     (SET_OFFSETS_PTR(result))[i] =

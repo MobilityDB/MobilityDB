@@ -95,7 +95,7 @@ set_append_value(Set *set, Datum d, meosType basetype)
   while (set->count < set->maxcount)
   {
     /* If passed by value, set datum in the offsets array */
-    if (MOBDB_FLAGS_GET_BYVAL(set->flags))
+    if (MEOS_FLAGS_GET_BYVAL(set->flags))
     {
       (SET_OFFSETS_PTR(set))[set->count++] = d;
       return set;

@@ -181,11 +181,11 @@ static datum_func2
 get_disjoint_fn_gs(int16 flags1, uint8_t flags2)
 {
   datum_func2 result;
-  if (MOBDB_FLAGS_GET_GEODETIC(flags1))
+  if (MEOS_FLAGS_GET_GEODETIC(flags1))
     result = &geog_disjoint;
   else
     /* 3D only if both arguments are 3D */
-    result = MOBDB_FLAGS_GET_Z(flags1) && FLAGS_GET_Z(flags2) ?
+    result = MEOS_FLAGS_GET_Z(flags1) && FLAGS_GET_Z(flags2) ?
       &geom_disjoint3d : &geom_disjoint2d;
   return result;
 }
@@ -198,11 +198,11 @@ static datum_func2
 get_intersects_fn_gs(int16 flags1, uint8_t flags2)
 {
   datum_func2 result;
-  if (MOBDB_FLAGS_GET_GEODETIC(flags1))
+  if (MEOS_FLAGS_GET_GEODETIC(flags1))
     result = &geog_intersects;
   else
     /* 3D only if both arguments are 3D */
-    result = MOBDB_FLAGS_GET_Z(flags1) && FLAGS_GET_Z(flags2) ?
+    result = MEOS_FLAGS_GET_Z(flags1) && FLAGS_GET_Z(flags2) ?
       &geom_intersects3d : &geom_intersects2d;
   return result;
 }
@@ -215,11 +215,11 @@ datum_func3
 get_dwithin_fn(int16 flags1, int16 flags2)
 {
   datum_func3 result;
-  if (MOBDB_FLAGS_GET_GEODETIC(flags1))
+  if (MEOS_FLAGS_GET_GEODETIC(flags1))
     result = &geog_dwithin;
   else
     /* 3D only if both arguments are 3D */
-    result = MOBDB_FLAGS_GET_Z(flags1) && MOBDB_FLAGS_GET_Z(flags2) ?
+    result = MEOS_FLAGS_GET_Z(flags1) && MEOS_FLAGS_GET_Z(flags2) ?
       &geom_dwithin3d : &geom_dwithin2d;
   return result;
 }
@@ -232,11 +232,11 @@ static datum_func3
 get_dwithin_fn_gs(int16 flags1, uint8_t flags2)
 {
   datum_func3 result;
-  if (MOBDB_FLAGS_GET_GEODETIC(flags1))
+  if (MEOS_FLAGS_GET_GEODETIC(flags1))
     result = &geog_dwithin;
   else
     /* 3D only if both arguments are 3D */
-    result = MOBDB_FLAGS_GET_Z(flags1) && FLAGS_GET_Z(flags2) ?
+    result = MEOS_FLAGS_GET_Z(flags1) && FLAGS_GET_Z(flags2) ?
       &geom_dwithin3d : &geom_dwithin2d;
   return result;
 }
@@ -296,8 +296,8 @@ espatialrel_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
   lfinfo.restype = T_TBOOL;
   lfinfo.reslinear = false;
   lfinfo.invert = INVERT_NO;
-  lfinfo.discont = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
-    MOBDB_FLAGS_GET_LINEAR(temp2->flags);
+  lfinfo.discont = MEOS_FLAGS_GET_LINEAR(temp1->flags) ||
+    MEOS_FLAGS_GET_LINEAR(temp2->flags);
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
   int result = efunc_temporal_temporal(temp1, temp2, &lfinfo);
@@ -477,7 +477,7 @@ etouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
   if (! gserialized_is_empty(gsbound))
   {
     varfunc func =
-      (MOBDB_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->gflags)) ?
+      (MEOS_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->gflags)) ?
       (varfunc) &geom_intersects3d : (varfunc) &geom_intersects2d;
     result = espatialrel_tpoint_geo(temp, gsbound, (Datum) NULL, func, 2,
       INVERT_NO);
@@ -571,9 +571,9 @@ edwithin_tpointseq_tpointseq(const TSequence *seq1, const TSequence *seq2,
   Datum sv1 = tinstant_value(start1);
   Datum sv2 = tinstant_value(start2);
 
-  bool linear1 = MOBDB_FLAGS_GET_LINEAR(seq1->flags);
-  bool linear2 = MOBDB_FLAGS_GET_LINEAR(seq2->flags);
-  bool hasz = MOBDB_FLAGS_GET_Z(seq1->flags);
+  bool linear1 = MEOS_FLAGS_GET_LINEAR(seq1->flags);
+  bool linear2 = MEOS_FLAGS_GET_LINEAR(seq2->flags);
+  bool hasz = MEOS_FLAGS_GET_Z(seq1->flags);
   TimestampTz lower = start1->t;
   bool lower_inc = seq1->period.lower_inc;
   for (int i = 1; i < seq1->count; i++)
@@ -657,7 +657,7 @@ edwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
     result = edwithin_tpointinst_tpointinst((TInstant *) sync1,
       (TInstant *) sync2, dist, func);
   else if (sync1->subtype == TSEQUENCE)
-    result = MOBDB_FLAGS_GET_DISCRETE(sync1->flags) ?
+    result = MEOS_FLAGS_GET_DISCRETE(sync1->flags) ?
       edwithin_tpointdiscseq_tpointdiscseq((TSequence *) sync1,
         (TSequence *) sync2, dist, func) :
       edwithin_tpointseq_tpointseq((TSequence *) sync1, (TSequence *) sync2,

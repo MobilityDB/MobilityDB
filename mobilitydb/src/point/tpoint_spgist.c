@@ -164,7 +164,7 @@ getOctant8D(const STBox *centroid, const STBox *inBox)
 {
   uint8 quadrant = 0;
 
-  if (MOBDB_FLAGS_GET_Z(centroid->flags))
+  if (MEOS_FLAGS_GET_Z(centroid->flags))
   {
     if (inBox->zmin > centroid->zmin)
       quadrant |= 0x80;
@@ -239,7 +239,7 @@ stboxnode_quadtree_next(const STboxNode *nodebox, const STBox *centroid,
 {
   memcpy(next_nodebox, nodebox, sizeof(STboxNode));
 
-  if (MOBDB_FLAGS_GET_Z(centroid->flags))
+  if (MEOS_FLAGS_GET_Z(centroid->flags))
   {
     if (quadrant & 0x80)
       next_nodebox->left.zmin = centroid->zmin;
@@ -294,7 +294,7 @@ static void
 stboxnode_kdtree_next(const STboxNode *nodebox, const STBox *centroid,
   uint8 node, int level, STboxNode *next_nodebox)
 {
-  bool hasz = MOBDB_FLAGS_GET_Z(centroid->flags);
+  bool hasz = MEOS_FLAGS_GET_Z(centroid->flags);
   memcpy(next_nodebox, nodebox, sizeof(STboxNode));
   int mod = hasz ? level % 8 : level % 6 ;
   if (mod == 0)
@@ -372,15 +372,15 @@ overlap8D(const STboxNode *nodebox, const STBox *query)
 {
   bool result = true;
   /* Result value is computed only for the dimensions of the query */
-  if (MOBDB_FLAGS_GET_X(query->flags))
+  if (MEOS_FLAGS_GET_X(query->flags))
     result &= nodebox->left.xmin <= query->xmax &&
       nodebox->right.xmax >= query->xmin &&
       nodebox->left.ymin <= query->ymax &&
       nodebox->right.ymax >= query->ymin;
-  if (MOBDB_FLAGS_GET_Z(query->flags))
+  if (MEOS_FLAGS_GET_Z(query->flags))
     result &= nodebox->left.zmin <= query->zmax &&
       nodebox->right.zmax >= query->zmin;
-  if (MOBDB_FLAGS_GET_T(query->flags))
+  if (MEOS_FLAGS_GET_T(query->flags))
     result &=
       datum_le(nodebox->left.period.lower, query->period.upper, T_TIMESTAMPTZ) &&
       datum_ge(nodebox->right.period.upper, query->period.lower, T_TIMESTAMPTZ);
@@ -393,11 +393,11 @@ overlap8D(const STboxNode *nodebox, const STBox *query)
 static bool
 overlapKD(const STboxNode *nodebox, const STBox *query, int level)
 {
-  bool hasz = MOBDB_FLAGS_GET_Z(nodebox->left.flags);
+  bool hasz = MEOS_FLAGS_GET_Z(nodebox->left.flags);
   int mod = hasz ? level % 8 : level % 6;
   bool result = true;
   /* Result value is computed only for the dimensions of the query */
-  if (MOBDB_FLAGS_GET_X(query->flags))
+  if (MEOS_FLAGS_GET_X(query->flags))
   {
     if (mod == 0)
       result &= nodebox->left.xmin <= query->xmax;
@@ -408,14 +408,14 @@ overlapKD(const STboxNode *nodebox, const STBox *query, int level)
     else if (mod == 3)
       result &= nodebox->right.ymax >= query->ymin;
   }
-  if (MOBDB_FLAGS_GET_Z(query->flags))
+  if (MEOS_FLAGS_GET_Z(query->flags))
   {
     if (hasz && mod == 4)
       result &= nodebox->left.zmin <= query->zmax;
     else if (hasz && mod == 5)
       result &= nodebox->right.zmax >= query->zmin;
   }
-  if (MOBDB_FLAGS_GET_T(query->flags))
+  if (MEOS_FLAGS_GET_T(query->flags))
   {
     if ((hasz && mod == 6) || (! hasz && mod == 4))
       result &= datum_le(nodebox->left.period.lower, query->period.upper,
@@ -435,15 +435,15 @@ contain8D(const STboxNode *nodebox, const STBox *query)
 {
   bool result = true;
   /* Result value is computed only for the dimensions of the query */
-  if (MOBDB_FLAGS_GET_X(query->flags))
+  if (MEOS_FLAGS_GET_X(query->flags))
     result &= nodebox->right.xmax >= query->xmax &&
       nodebox->left.xmin <= query->xmin &&
       nodebox->right.ymax >= query->ymax &&
       nodebox->left.ymin <= query->ymin;
-  if (MOBDB_FLAGS_GET_Z(query->flags))
+  if (MEOS_FLAGS_GET_Z(query->flags))
     result &= nodebox->right.zmax >= query->zmax &&
       nodebox->left.zmin <= query->zmin;
-  if (MOBDB_FLAGS_GET_T(query->flags))
+  if (MEOS_FLAGS_GET_T(query->flags))
     result &=
       datum_ge(nodebox->right.period.upper, query->period.upper, T_TIMESTAMPTZ) &&
       datum_le(nodebox->left.period.lower, query->period.lower, T_TIMESTAMPTZ);
@@ -456,11 +456,11 @@ contain8D(const STboxNode *nodebox, const STBox *query)
 static bool
 containKD(const STboxNode *nodebox, const STBox *query, int level)
 {
-  bool hasz = MOBDB_FLAGS_GET_Z(nodebox->left.flags);
+  bool hasz = MEOS_FLAGS_GET_Z(nodebox->left.flags);
   int mod = hasz ? level % 8 : level % 6;
   bool result = true;
   /* Result value is computed only for the dimensions of the query */
-  if (MOBDB_FLAGS_GET_X(query->flags))
+  if (MEOS_FLAGS_GET_X(query->flags))
   {
     if (mod == 0)
       result &= nodebox->left.xmin <= query->xmin;
@@ -471,14 +471,14 @@ containKD(const STboxNode *nodebox, const STBox *query, int level)
     else if (mod == 3)
       result &= nodebox->right.ymax >= query->ymax;
   }
-  if (MOBDB_FLAGS_GET_Z(query->flags))
+  if (MEOS_FLAGS_GET_Z(query->flags))
   {
     if (hasz && mod == 4)
       result &= nodebox->left.zmin <= query->zmin;
     else if (hasz && mod == 5)
       result &= nodebox->right.zmax >= query->zmax;
   }
-  if (MOBDB_FLAGS_GET_T(query->flags))
+  if (MEOS_FLAGS_GET_T(query->flags))
   {
     if ((hasz && mod == 6) || (! hasz && mod == 4))
       result &= datum_le(nodebox->left.period.lower, query->period.lower,
@@ -646,11 +646,11 @@ static double
 distance_stbox_nodebox(const STBox *query, const STboxNode *nodebox)
 {
   /* The query argument can be an empty geometry */
-  if (! MOBDB_FLAGS_GET_X(query->flags))
+  if (! MEOS_FLAGS_GET_X(query->flags))
       return DBL_MAX;
 
   /* If the boxes do not intersect in the time dimension return infinity */
-  bool hast = MOBDB_FLAGS_GET_T(query->flags);
+  bool hast = MEOS_FLAGS_GET_T(query->flags);
   if (hast && (
       datum_gt(query->period.lower, nodebox->right.period.upper, T_TIMESTAMPTZ) ||
       datum_gt(nodebox->left.period.lower, query->period.upper, T_TIMESTAMPTZ)))
@@ -671,7 +671,7 @@ distance_stbox_nodebox(const STBox *query, const STboxNode *nodebox)
   else
     dy = 0;
 
-  bool hasz = MOBDB_FLAGS_GET_Z(nodebox->left.flags);
+  bool hasz = MEOS_FLAGS_GET_Z(nodebox->left.flags);
   if (hasz)
   {
     if (query->zmax < nodebox->left.zmin)
@@ -799,7 +799,7 @@ Stbox_quadtree_choose(PG_FUNCTION_ARGS)
 static int
 stbox_xmin_cmp(const STBox *box1, const STBox *box2)
 {
-  assert(MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags));
+  assert(MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags));
   if (box1->xmin == box2->xmin)
     return 0;
   return (box1->xmin > box2->xmin) ? 1 : -1;
@@ -811,7 +811,7 @@ stbox_xmin_cmp(const STBox *box1, const STBox *box2)
 static int
 stbox_xmax_cmp(const STBox *box1, const STBox *box2)
 {
-  assert(MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags));
+  assert(MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags));
   if (box1->xmax == box2->xmax)
     return 0;
   return (box1->xmax > box2->xmax) ? 1 : -1;
@@ -823,7 +823,7 @@ stbox_xmax_cmp(const STBox *box1, const STBox *box2)
 static int
 stbox_ymin_cmp(const STBox *box1, const STBox *box2)
 {
-  assert(MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags));
+  assert(MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags));
   if (box1->ymin == box2->ymin)
     return 0;
   return (box1->ymin > box2->ymin) ? 1 : -1;
@@ -835,7 +835,7 @@ stbox_ymin_cmp(const STBox *box1, const STBox *box2)
 static int
 stbox_ymax_cmp(const STBox *box1, const STBox *box2)
 {
-  assert(MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags));
+  assert(MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags));
   if (box1->ymax == box2->ymax)
     return 0;
   return (box1->ymax > box2->ymax) ? 1 : -1;
@@ -847,7 +847,7 @@ stbox_ymax_cmp(const STBox *box1, const STBox *box2)
 static int
 stbox_zmin_cmp(const STBox *box1, const STBox *box2)
 {
-  assert(MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags));
+  assert(MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags));
   if (box1->zmin == box2->zmin)
     return 0;
   return (box1->zmin > box2->zmin) ? 1 : -1;
@@ -859,7 +859,7 @@ stbox_zmin_cmp(const STBox *box1, const STBox *box2)
 static int
 stbox_zmax_cmp(const STBox *box1, const STBox *box2)
 {
-  assert(MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags));
+  assert(MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags));
   if (box1->zmax == box2->zmax)
     return 0;
   return (box1->zmax > box2->zmax) ? 1 : -1;
@@ -871,7 +871,7 @@ stbox_zmax_cmp(const STBox *box1, const STBox *box2)
 static int
 stbox_tmin_cmp(const STBox *box1, const STBox *box2)
 {
-  assert(MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags));
+  assert(MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags));
   if (datum_eq2(box1->period.lower, box2->period.lower, box1->period.basetype,
         box2->period.basetype))
     return 0;
@@ -885,7 +885,7 @@ stbox_tmin_cmp(const STBox *box1, const STBox *box2)
 static int
 stbox_tmax_cmp(const STBox *box1, const STBox *box2)
 {
-  assert(MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags));
+  assert(MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags));
   if (datum_eq2(box1->period.upper, box2->period.upper, box1->period.basetype,
         box2->period.basetype))
     return 0;
@@ -898,7 +898,7 @@ stbox_tmax_cmp(const STBox *box1, const STBox *box2)
 static int
 stbox_level_cmp(STBox *centroid, STBox *query, int level)
 {
-  bool hasz = MOBDB_FLAGS_GET_Z(centroid->flags);
+  bool hasz = MEOS_FLAGS_GET_Z(centroid->flags);
   int mod = hasz ? level % 8 : level % 6;
   if (mod == 0)
     return stbox_xmin_cmp(query, centroid);
@@ -956,7 +956,7 @@ Stbox_quadtree_picksplit(PG_FUNCTION_ARGS)
   spgPickSplitIn *in = (spgPickSplitIn *) PG_GETARG_POINTER(0);
   spgPickSplitOut *out = (spgPickSplitOut *) PG_GETARG_POINTER(1);
   STBox *box = DatumGetSTboxP(in->datums[0]);
-  bool hasz = MOBDB_FLAGS_GET_Z(box->flags);
+  bool hasz = MEOS_FLAGS_GET_Z(box->flags);
   STBox *centroid = palloc0(sizeof(STBox));
   centroid->srid = box->srid;
   centroid->flags = box->flags;
@@ -1068,7 +1068,7 @@ Stbox_kdtree_picksplit(PG_FUNCTION_ARGS)
     memcpy(&sorted[i].box, DatumGetSTboxP(in->datums[i]), sizeof(STBox));
     sorted[i].i = i;
   }
-  bool hasz = MOBDB_FLAGS_GET_Z(sorted[0].box.flags);
+  bool hasz = MEOS_FLAGS_GET_Z(sorted[0].box.flags);
   int mod = hasz ? in->level % 8 : in->level % 6;
   qsort_comparator qsortfn;
   if (mod == 0)

@@ -51,10 +51,10 @@
   #include "npoint/tnpoint_static.h"
 #endif /* NPOINT */
 
-#define MOBDB_WKT_BOOL_SIZE sizeof("false")
-#define MOBDB_WKT_INT4_SIZE sizeof("+2147483647")
-#define MOBDB_WKT_INT8_SIZE sizeof("+9223372036854775807")
-#define MOBDB_WKT_TIMESTAMPTZ_SIZE sizeof("\"2019-08-06T18:35:48.021455+02:30\",")
+#define MEOS_WKT_BOOL_SIZE sizeof("false")
+#define MEOS_WKT_INT4_SIZE sizeof("+2147483647")
+#define MEOS_WKT_INT8_SIZE sizeof("+9223372036854775807")
+#define MEOS_WKT_TIMESTAMPTZ_SIZE sizeof("\"2019-08-06T18:35:48.021455+02:30\",")
 
 /* The following definitions are taken from PostGIS */
 
@@ -121,9 +121,9 @@ temporal_basevalue_mfjson_size(Datum value, meosType temptype, int precision)
 {
   assert(talphanum_type(temptype));
   if (temptype == T_TBOOL)
-    return MOBDB_WKT_BOOL_SIZE;
+    return MEOS_WKT_BOOL_SIZE;
   if (temptype == T_TINT)
-    return MOBDB_WKT_INT4_SIZE;
+    return MEOS_WKT_INT4_SIZE;
   if (temptype == T_TFLOAT)
   {
     assert(precision <= OUT_MAX_DOUBLE_PRECISION);
@@ -179,7 +179,7 @@ coordinates_mfjson_buf(char *output, const TInstant *inst, int precision)
   assert (precision <= OUT_MAX_DOUBLE_PRECISION);
   char *ptr = output;
   ptr += sprintf(ptr, "[");
-  if (MOBDB_FLAGS_GET_Z(inst->flags))
+  if (MEOS_FLAGS_GET_Z(inst->flags))
   {
     const POINT3DZ *pt = DATUM_POINT3DZ_P(&inst->value);
     ptr += lwprint_double(pt->x, precision, ptr);
@@ -211,7 +211,7 @@ coordinates_mfjson_buf(char *output, const TInstant *inst, int precision)
 static size_t
 datetimes_mfjson_size(int count)
 {
-  return MOBDB_WKT_TIMESTAMPTZ_SIZE * count + sizeof("[],");
+  return MEOS_WKT_TIMESTAMPTZ_SIZE * count + sizeof("[],");
 }
 
 /**
@@ -263,7 +263,7 @@ period_mfjson_size(void)
   /* The maximum size of a timestamptz is 35 characters, e.g.,
    * "2019-08-06 23:18:16.195062-09:30" */
   size_t size = sizeof("'period':{'begin':,'end':,'lower_inc':false,'upper_inc':false},") +
-    MOBDB_WKT_TIMESTAMPTZ_SIZE * 2;
+    MEOS_WKT_TIMESTAMPTZ_SIZE * 2;
   size += sizeof("'bbox':[,],");
   return size;
 }
@@ -294,7 +294,7 @@ tbox_mfjson_size(int precision)
   /* The maximum size of a timestamptz is 35 characters, e.g.,
    * "2019-08-06 23:18:16.195062-09:30" */
   size_t size = sizeof("'period':{'begin':,'end':},") +
-    MOBDB_WKT_TIMESTAMPTZ_SIZE * 2;
+    MEOS_WKT_TIMESTAMPTZ_SIZE * 2;
   size += sizeof("'bbox':[,],");
   size +=  2 * (OUT_MAX_DIGS_DOUBLE + precision);
   return size;
@@ -561,7 +561,7 @@ tinstant_as_mfjson(const TInstant *inst, int precision, bool with_bbox,
     bbox = &tmp;
   }
   bool isgeo = tgeo_type(inst->temptype);
-  bool hasz = MOBDB_FLAGS_GET_Z(inst->flags);
+  bool hasz = MEOS_FLAGS_GET_Z(inst->flags);
   size_t size = tinstant_mfjson_size(inst, isgeo, hasz, precision, bbox, srs);
   char *output = palloc(size);
   tinstant_mfjson_buf(inst, isgeo, hasz, precision, bbox, srs, output);
@@ -701,8 +701,8 @@ tsequence_mfjson_buf(const TSequence *seq, bool isgeo, bool hasz,
   }
   ptr += sprintf(ptr, "],\"lower_inc\":%s,\"upper_inc\":%s,\"interpolation\":\"%s\"}",
     seq->period.lower_inc ? "true" : "false", seq->period.upper_inc ? "true" : "false",
-    MOBDB_FLAGS_GET_DISCRETE(seq->flags) ? "Discrete" :
-    ( MOBDB_FLAGS_GET_LINEAR(seq->flags) ? "Linear" : "Step" ) );
+    MEOS_FLAGS_GET_DISCRETE(seq->flags) ? "Discrete" :
+    ( MEOS_FLAGS_GET_LINEAR(seq->flags) ? "Linear" : "Step" ) );
   return (ptr - output);
 }
 
@@ -722,7 +722,7 @@ tsequence_as_mfjson(const TSequence *seq, int precision, bool with_bbox,
     bbox = &tmp;
   }
   bool isgeo = tgeo_type(seq->temptype);
-  bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
+  bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
   size_t size = tsequence_mfjson_size(seq, isgeo, hasz, precision, bbox, srs);
   char *output = palloc(size);
   tsequence_mfjson_buf(seq, isgeo, hasz, precision, bbox, srs, output);
@@ -875,7 +875,7 @@ tsequenceset_mfjson_buf(const TSequenceSet *ss, bool isgeo, bool hasz,
         "true" : "false");
   }
   ptr += sprintf(ptr, "],\"interpolation\":\"%s\"}",
-    MOBDB_FLAGS_GET_LINEAR(ss->flags) ? "Linear" : "Step");
+    MEOS_FLAGS_GET_LINEAR(ss->flags) ? "Linear" : "Step");
   return (ptr - output);
 }
 
@@ -896,7 +896,7 @@ tsequenceset_as_mfjson(const TSequenceSet *ss, int precision, bool with_bbox,
     bbox = &tmp;
   }
   bool isgeo = tgeo_type(ss->temptype);
-  bool hasz = MOBDB_FLAGS_GET_Z(ss->flags);
+  bool hasz = MEOS_FLAGS_GET_Z(ss->flags);
   size_t size = tsequenceset_mfjson_size(ss, isgeo, hasz, precision, bbox,
     srs);
   char *output = palloc(size);
@@ -1053,26 +1053,26 @@ basetype_to_wkb_size(Datum value, meosType basetype, int16 flags)
   switch (basetype)
   {
     case T_BOOL:
-      return MOBDB_WKB_BYTE_SIZE;
+      return MEOS_WKB_BYTE_SIZE;
     case T_INT4:
-      return MOBDB_WKB_INT4_SIZE;
+      return MEOS_WKB_INT4_SIZE;
     case T_INT8:
-      return MOBDB_WKB_INT8_SIZE;
+      return MEOS_WKB_INT8_SIZE;
     case T_FLOAT8:
-      return MOBDB_WKB_DOUBLE_SIZE;
+      return MEOS_WKB_DOUBLE_SIZE;
     case T_TIMESTAMPTZ:
-      return MOBDB_WKB_TIMESTAMP_SIZE;
+      return MEOS_WKB_TIMESTAMP_SIZE;
     case T_TEXT:
-      return MOBDB_WKB_INT8_SIZE + VARSIZE_ANY_EXHDR(DatumGetTextP(value)) + 1;
+      return MEOS_WKB_INT8_SIZE + VARSIZE_ANY_EXHDR(DatumGetTextP(value)) + 1;
     case T_GEOMETRY:
     case T_GEOGRAPHY:
     {
-      int dims = MOBDB_FLAGS_GET_Z(flags) ? 3 : 2;
-      return MOBDB_WKB_DOUBLE_SIZE * dims;
+      int dims = MEOS_FLAGS_GET_Z(flags) ? 3 : 2;
+      return MEOS_WKB_DOUBLE_SIZE * dims;
     }
 #if NPOINT
     case T_NPOINT:
-      return MOBDB_WKB_INT8_SIZE + MOBDB_WKB_DOUBLE_SIZE;
+      return MEOS_WKB_INT8_SIZE + MEOS_WKB_DOUBLE_SIZE;
 #endif /* NPOINT */
     default: /* Error! */
       elog(ERROR, "Unknown temporal base type: %d", basetype);
@@ -1123,10 +1123,10 @@ set_to_wkb_size(const Set *set, uint8_t variant)
     result += set_basetype_to_wkb_size(value, basetype, set->flags);
   }
   if (geoset_wkb_needs_srid(set, variant))
-    result += MOBDB_WKB_INT4_SIZE;
+    result += MEOS_WKB_INT4_SIZE;
   /* Endian flag + settype + set flags + count + values */
-  result += MOBDB_WKB_BYTE_SIZE * 2 + MOBDB_WKB_INT2_SIZE +
-    MOBDB_WKB_INT4_SIZE;
+  result += MEOS_WKB_BYTE_SIZE * 2 + MEOS_WKB_INT2_SIZE +
+    MEOS_WKB_INT4_SIZE;
   return result;
 }
 
@@ -1151,7 +1151,7 @@ size_t
 span_to_wkb_size_int(const Span *s)
 {
   /* spantype + bounds flag + basetype values */
-  size_t size = MOBDB_WKB_INT2_SIZE + MOBDB_WKB_BYTE_SIZE +
+  size_t size = MEOS_WKB_INT2_SIZE + MEOS_WKB_BYTE_SIZE +
     span_basetype_to_wkb_size(s) * 2;
   return size;
 }
@@ -1164,7 +1164,7 @@ size_t
 span_to_wkb_size(const Span *s)
 {
   /* Endian flag + size of a component span */
-  size_t size = MOBDB_WKB_BYTE_SIZE + span_to_wkb_size_int(s);
+  size_t size = MEOS_WKB_BYTE_SIZE + span_to_wkb_size_int(s);
   return size;
 }
 
@@ -1181,8 +1181,8 @@ spanset_to_wkb_size(const SpanSet *ss)
 {
   size_t sizebase = span_basetype_to_wkb_size(&ss->elems[0]);
   /* Endian flag + spansettype + count + (bound flag + 2 values) * count */
-  size_t size = MOBDB_WKB_BYTE_SIZE + MOBDB_WKB_INT2_SIZE +
-    MOBDB_WKB_INT4_SIZE + (MOBDB_WKB_BYTE_SIZE + sizebase * 2) * ss->count;
+  size_t size = MEOS_WKB_BYTE_SIZE + MEOS_WKB_INT2_SIZE +
+    MEOS_WKB_INT4_SIZE + (MEOS_WKB_BYTE_SIZE + sizebase * 2) * ss->count;
   return size;
 }
 
@@ -1196,12 +1196,12 @@ static size_t
 tbox_to_wkb_size(const TBox *box)
 {
   /* Endian flag + temporal flag */
-  size_t size = MOBDB_WKB_BYTE_SIZE * 2;
+  size_t size = MEOS_WKB_BYTE_SIZE * 2;
   /* If there is a value dimension */
-  if (MOBDB_FLAGS_GET_X(box->flags))
+  if (MEOS_FLAGS_GET_X(box->flags))
     size += span_to_wkb_size_int(&box->span);
   /* If there is a time dimension */
-  if (MOBDB_FLAGS_GET_T(box->flags))
+  if (MEOS_FLAGS_GET_T(box->flags))
     size += span_to_wkb_size_int(&box->period);
   return size;
 }
@@ -1230,18 +1230,18 @@ static size_t
 stbox_to_wkb_size(const STBox *box, uint8_t variant)
 {
   /* Endian flag + temporal flag */
-  size_t size = MOBDB_WKB_BYTE_SIZE * 2;
+  size_t size = MEOS_WKB_BYTE_SIZE * 2;
   /* If there is a time dimension */
-  if (MOBDB_FLAGS_GET_T(box->flags))
+  if (MEOS_FLAGS_GET_T(box->flags))
     size += span_to_wkb_size_int(&box->period);
   /* If there is a value dimension */
-  if (MOBDB_FLAGS_GET_X(box->flags))
+  if (MEOS_FLAGS_GET_X(box->flags))
   {
     if (stbox_wkb_needs_srid(box, variant))
-      size += MOBDB_WKB_INT4_SIZE;
-    size += MOBDB_WKB_DOUBLE_SIZE * 4;
-    if (MOBDB_FLAGS_GET_Z(box->flags))
-      size += MOBDB_WKB_DOUBLE_SIZE * 2;
+      size += MEOS_WKB_INT4_SIZE;
+    size += MEOS_WKB_DOUBLE_SIZE * 4;
+    if (MEOS_FLAGS_GET_Z(box->flags))
+      size += MEOS_WKB_DOUBLE_SIZE * 2;
   }
   return size;
 }
@@ -1274,7 +1274,7 @@ tinstarr_to_wkb_size(const TInstant **instants, int count)
       instants[i]->flags);
   }
   /* size of the TInstant array */
-  result += count * MOBDB_WKB_TIMESTAMP_SIZE;
+  result += count * MEOS_WKB_TIMESTAMP_SIZE;
   return result;
 }
 
@@ -1300,11 +1300,11 @@ static size_t
 tinstant_to_wkb_size(const TInstant *inst, uint8_t variant)
 {
   /* Endian flag + temporal type + temporal flag */
-  size_t size = MOBDB_WKB_BYTE_SIZE * 2 + MOBDB_WKB_INT2_SIZE;
+  size_t size = MEOS_WKB_BYTE_SIZE * 2 + MEOS_WKB_INT2_SIZE;
   /* Extended WKB needs space for optional SRID integer */
   if (tgeo_type(inst->temptype) &&
       tpoint_wkb_needs_srid((Temporal *) inst, variant))
-    size += MOBDB_WKB_INT4_SIZE;
+    size += MEOS_WKB_INT4_SIZE;
   /* TInstant */
   size += tinstarr_to_wkb_size(&inst, 1);
   return size;
@@ -1318,13 +1318,13 @@ static size_t
 tsequence_to_wkb_size(const TSequence *seq, uint8_t variant)
 {
   /* Endian flag + temporal type + temporal flag */
-  size_t size = MOBDB_WKB_BYTE_SIZE * 2 + MOBDB_WKB_INT2_SIZE;
+  size_t size = MEOS_WKB_BYTE_SIZE * 2 + MEOS_WKB_INT2_SIZE;
   /* Extended WKB needs space for optional SRID integer */
   if (tgeo_type(seq->temptype) &&
       tpoint_wkb_needs_srid((Temporal *) seq, variant))
-    size += MOBDB_WKB_INT4_SIZE;
+    size += MEOS_WKB_INT4_SIZE;
   /* Include the number of instants and the period bounds flag */
-  size += MOBDB_WKB_INT4_SIZE + MOBDB_WKB_BYTE_SIZE;
+  size += MEOS_WKB_INT4_SIZE + MEOS_WKB_BYTE_SIZE;
   const TInstant **instants = tsequence_instants(seq);
   /* Include the TInstant array */
   size += tinstarr_to_wkb_size(instants, seq->count);
@@ -1340,15 +1340,15 @@ static size_t
 tsequenceset_to_wkb_size(const TSequenceSet *ss, uint8_t variant)
 {
   /* Endian flag + temporal type + temporal flag */
-  size_t size = MOBDB_WKB_BYTE_SIZE * 2 + MOBDB_WKB_INT2_SIZE;
+  size_t size = MEOS_WKB_BYTE_SIZE * 2 + MEOS_WKB_INT2_SIZE;
   /* Extended WKB needs space for optional SRID integer */
   if (tgeo_type(ss->temptype) &&
       tpoint_wkb_needs_srid((Temporal *) ss, variant))
-    size += MOBDB_WKB_INT4_SIZE;
+    size += MEOS_WKB_INT4_SIZE;
   /* Include the number of sequences */
-  size += MOBDB_WKB_INT4_SIZE;
+  size += MEOS_WKB_INT4_SIZE;
   /* For each sequence include the number of instants and the period bounds flag */
-  size += ss->count * (MOBDB_WKB_INT4_SIZE + MOBDB_WKB_BYTE_SIZE);
+  size += ss->count * (MEOS_WKB_INT4_SIZE + MEOS_WKB_BYTE_SIZE);
   /* Include all the instants of all the sequences */
   const TInstant **instants = tsequenceset_instants(ss);
   size += tinstarr_to_wkb_size(instants, ss->totalcount);
@@ -1418,8 +1418,8 @@ static inline bool
 wkb_swap_bytes(uint8_t variant)
 {
   /* If requested variant matches machine arch, we don't have to swap! */
-  if (((variant & WKB_NDR) && ! MOBDB_IS_BIG_ENDIAN) ||
-      ((! (variant & WKB_NDR)) && MOBDB_IS_BIG_ENDIAN))
+  if (((variant & WKB_NDR) && ! MEOS_IS_BIG_ENDIAN) ||
+      ((! (variant & WKB_NDR)) && MEOS_IS_BIG_ENDIAN))
     return false;
   return true;
 }
@@ -1487,11 +1487,11 @@ endian_to_wkb_buf(uint8_t *buf, uint8_t variant)
 static uint8_t *
 bool_to_wkb_buf(bool b, uint8_t *buf, uint8_t variant)
 {
-  if (sizeof(bool) != MOBDB_WKB_BYTE_SIZE)
-    elog(ERROR, "Machine bool size is not %d bytes!", MOBDB_WKB_BYTE_SIZE);
+  if (sizeof(bool) != MEOS_WKB_BYTE_SIZE)
+    elog(ERROR, "Machine bool size is not %d bytes!", MEOS_WKB_BYTE_SIZE);
 
   char *bptr = (char *)(&b);
-  return bytes_to_wkb_buf(bptr, MOBDB_WKB_BYTE_SIZE, buf, variant);
+  return bytes_to_wkb_buf(bptr, MEOS_WKB_BYTE_SIZE, buf, variant);
 }
 
 /**
@@ -1500,11 +1500,11 @@ bool_to_wkb_buf(bool b, uint8_t *buf, uint8_t variant)
 static uint8_t *
 uint8_to_wkb_buf(const uint8_t i, uint8_t *buf, uint8_t variant)
 {
-  if (sizeof(int8) != MOBDB_WKB_BYTE_SIZE)
-    elog(ERROR, "Machine int8 size is not %d bytes!", MOBDB_WKB_BYTE_SIZE);
+  if (sizeof(int8) != MEOS_WKB_BYTE_SIZE)
+    elog(ERROR, "Machine int8 size is not %d bytes!", MEOS_WKB_BYTE_SIZE);
 
   char *iptr = (char *)(&i);
-  return bytes_to_wkb_buf(iptr, MOBDB_WKB_BYTE_SIZE, buf, variant);
+  return bytes_to_wkb_buf(iptr, MEOS_WKB_BYTE_SIZE, buf, variant);
 }
 
 /**
@@ -1513,11 +1513,11 @@ uint8_to_wkb_buf(const uint8_t i, uint8_t *buf, uint8_t variant)
 static uint8_t *
 int16_to_wkb_buf(const int16 i, uint8_t *buf, uint8_t variant)
 {
-  if (sizeof(int16) != MOBDB_WKB_INT2_SIZE)
-    elog(ERROR, "Machine int16 size is not %d bytes!", MOBDB_WKB_INT2_SIZE);
+  if (sizeof(int16) != MEOS_WKB_INT2_SIZE)
+    elog(ERROR, "Machine int16 size is not %d bytes!", MEOS_WKB_INT2_SIZE);
 
   char *iptr = (char *)(&i);
-  return bytes_to_wkb_buf(iptr, MOBDB_WKB_INT2_SIZE, buf, variant);
+  return bytes_to_wkb_buf(iptr, MEOS_WKB_INT2_SIZE, buf, variant);
 }
 
 /**
@@ -1526,11 +1526,11 @@ int16_to_wkb_buf(const int16 i, uint8_t *buf, uint8_t variant)
 uint8_t *
 int32_to_wkb_buf(const int i, uint8_t *buf, uint8_t variant)
 {
-  if (sizeof(int) != MOBDB_WKB_INT4_SIZE)
-    elog(ERROR, "Machine int32 size is not %d bytes!", MOBDB_WKB_INT4_SIZE);
+  if (sizeof(int) != MEOS_WKB_INT4_SIZE)
+    elog(ERROR, "Machine int32 size is not %d bytes!", MEOS_WKB_INT4_SIZE);
 
   char *iptr = (char *)(&i);
-  return bytes_to_wkb_buf(iptr, MOBDB_WKB_INT4_SIZE, buf, variant);
+  return bytes_to_wkb_buf(iptr, MEOS_WKB_INT4_SIZE, buf, variant);
 }
 
 /**
@@ -1539,11 +1539,11 @@ int32_to_wkb_buf(const int i, uint8_t *buf, uint8_t variant)
 uint8_t *
 int64_to_wkb_buf(const int64 i, uint8_t *buf, uint8_t variant)
 {
-  if (sizeof(int64) != MOBDB_WKB_INT8_SIZE)
-    elog(ERROR, "Machine int64 size is not %d bytes!", MOBDB_WKB_INT8_SIZE);
+  if (sizeof(int64) != MEOS_WKB_INT8_SIZE)
+    elog(ERROR, "Machine int64 size is not %d bytes!", MEOS_WKB_INT8_SIZE);
 
   char *iptr = (char *)(&i);
-  return bytes_to_wkb_buf(iptr, MOBDB_WKB_INT8_SIZE, buf, variant);
+  return bytes_to_wkb_buf(iptr, MEOS_WKB_INT8_SIZE, buf, variant);
 }
 
 /**
@@ -1552,11 +1552,11 @@ int64_to_wkb_buf(const int64 i, uint8_t *buf, uint8_t variant)
 uint8_t*
 double_to_wkb_buf(const double d, uint8_t *buf, uint8_t variant)
 {
-  if (sizeof(double) != MOBDB_WKB_DOUBLE_SIZE)
-    elog(ERROR, "Machine double size is not %d bytes!", MOBDB_WKB_DOUBLE_SIZE);
+  if (sizeof(double) != MEOS_WKB_DOUBLE_SIZE)
+    elog(ERROR, "Machine double size is not %d bytes!", MEOS_WKB_DOUBLE_SIZE);
 
   char *dptr = (char *)(&d);
-  return bytes_to_wkb_buf(dptr, MOBDB_WKB_DOUBLE_SIZE, buf, variant);
+  return bytes_to_wkb_buf(dptr, MEOS_WKB_DOUBLE_SIZE, buf, variant);
 }
 
 /**
@@ -1566,12 +1566,12 @@ double_to_wkb_buf(const double d, uint8_t *buf, uint8_t variant)
 uint8_t *
 timestamp_to_wkb_buf(const TimestampTz t, uint8_t *buf, uint8_t variant)
 {
-  if (sizeof(TimestampTz) != MOBDB_WKB_TIMESTAMP_SIZE)
+  if (sizeof(TimestampTz) != MEOS_WKB_TIMESTAMP_SIZE)
     elog(ERROR, "Machine timestamp size is not %d bytes!",
-      MOBDB_WKB_TIMESTAMP_SIZE);
+      MEOS_WKB_TIMESTAMP_SIZE);
 
   char *tptr = (char *)(&t);
-  return bytes_to_wkb_buf(tptr, MOBDB_WKB_TIMESTAMP_SIZE, buf, variant);
+  return bytes_to_wkb_buf(tptr, MEOS_WKB_TIMESTAMP_SIZE, buf, variant);
 }
 
 /**
@@ -1597,7 +1597,7 @@ text_to_wkb_buf(const text *txt, uint8_t *buf, uint8_t variant)
 uint8_t *
 coords_to_wkb_buf(Datum value, int16 flags, uint8_t *buf, uint8_t variant)
 {
-  if (MOBDB_FLAGS_GET_Z(flags))
+  if (MEOS_FLAGS_GET_Z(flags))
   {
     const POINT3DZ *point = DATUM_POINT3DZ_P(value);
     buf = double_to_wkb_buf(point->x, buf, variant);
@@ -1686,15 +1686,15 @@ static uint8_t *
 set_flags_to_wkb_buf(const Set *set, uint8_t *buf, uint8_t variant)
 {
   /* Set the flags */
-  uint8_t wkb_flags = MOBDB_WKB_ORDERED;
+  uint8_t wkb_flags = MEOS_WKB_ORDERED;
   if (geo_basetype(set->basetype))
   {
-    if (MOBDB_FLAGS_GET_Z(set->flags))
-      wkb_flags |= MOBDB_WKB_ZFLAG;
-    if (MOBDB_FLAGS_GET_GEODETIC(set->flags))
-      wkb_flags |= MOBDB_WKB_GEODETICFLAG;
+    if (MEOS_FLAGS_GET_Z(set->flags))
+      wkb_flags |= MEOS_WKB_ZFLAG;
+    if (MEOS_FLAGS_GET_GEODETIC(set->flags))
+      wkb_flags |= MEOS_WKB_GEODETICFLAG;
     if (geoset_wkb_needs_srid(set, variant))
-      wkb_flags |= MOBDB_WKB_SRIDFLAG;
+      wkb_flags |= MEOS_WKB_SRIDFLAG;
   }
   /* Write the flags */
   return uint8_to_wkb_buf(wkb_flags, buf, variant);
@@ -1742,9 +1742,9 @@ bounds_to_wkb_buf(bool lower_inc, bool upper_inc, uint8_t *buf, uint8_t variant)
 {
   uint8_t wkb_bounds = 0;
   if (lower_inc)
-    wkb_bounds |= MOBDB_WKB_LOWER_INC;
+    wkb_bounds |= MEOS_WKB_LOWER_INC;
   if (upper_inc)
-    wkb_bounds |= MOBDB_WKB_UPPER_INC;
+    wkb_bounds |= MEOS_WKB_UPPER_INC;
   if (variant & WKB_HEX)
   {
     buf[0] = '0';
@@ -1878,10 +1878,10 @@ static uint8_t *
 tbox_to_wkb_flags_buf(const TBox *box, uint8_t *buf, uint8_t variant)
 {
   uint8_t wkb_flags = 0;
-  if (MOBDB_FLAGS_GET_X(box->flags))
-    wkb_flags |= MOBDB_WKB_XFLAG;
-  if (MOBDB_FLAGS_GET_T(box->flags))
-    wkb_flags |= MOBDB_WKB_TFLAG;
+  if (MEOS_FLAGS_GET_X(box->flags))
+    wkb_flags |= MEOS_WKB_XFLAG;
+  if (MEOS_FLAGS_GET_T(box->flags))
+    wkb_flags |= MEOS_WKB_TFLAG;
   if (variant & WKB_HEX)
   {
     buf[0] = '0';
@@ -1911,10 +1911,10 @@ tbox_to_wkb_buf(const TBox *box, uint8_t *buf, uint8_t variant)
   /* Write the temporal flags */
   buf = tbox_to_wkb_flags_buf(box, buf, variant);
   /* Write the temporal dimension if any */
-  if (MOBDB_FLAGS_GET_T(box->flags))
+  if (MEOS_FLAGS_GET_T(box->flags))
     buf = span_to_wkb_buf_int(&box->period, buf, variant);
   /* Write the value dimension if any */
-  if (MOBDB_FLAGS_GET_X(box->flags))
+  if (MEOS_FLAGS_GET_X(box->flags))
     buf = span_to_wkb_buf_int(&box->span, buf, variant);
   return buf;
 }
@@ -1931,16 +1931,16 @@ static uint8_t *
 stbox_flags_to_wkb_buf(const STBox *box, uint8_t *buf, uint8_t variant)
 {
   uint8_t wkb_flags = 0;
-  if (MOBDB_FLAGS_GET_X(box->flags))
-    wkb_flags |= MOBDB_WKB_XFLAG;
-  if (MOBDB_FLAGS_GET_Z(box->flags))
-    wkb_flags |= MOBDB_WKB_ZFLAG;
-  if (MOBDB_FLAGS_GET_T(box->flags))
-    wkb_flags |= MOBDB_WKB_TFLAG;
-  if (MOBDB_FLAGS_GET_GEODETIC(box->flags))
-    wkb_flags |= MOBDB_WKB_GEODETICFLAG;
+  if (MEOS_FLAGS_GET_X(box->flags))
+    wkb_flags |= MEOS_WKB_XFLAG;
+  if (MEOS_FLAGS_GET_Z(box->flags))
+    wkb_flags |= MEOS_WKB_ZFLAG;
+  if (MEOS_FLAGS_GET_T(box->flags))
+    wkb_flags |= MEOS_WKB_TFLAG;
+  if (MEOS_FLAGS_GET_GEODETIC(box->flags))
+    wkb_flags |= MEOS_WKB_GEODETICFLAG;
   if (stbox_wkb_needs_srid(box, variant))
-    wkb_flags |= MOBDB_WKB_SRIDFLAG;
+    wkb_flags |= MEOS_WKB_SRIDFLAG;
   /* Write the flags */
   return uint8_to_wkb_buf(wkb_flags, buf, variant);
 }
@@ -1967,17 +1967,17 @@ stbox_to_wkb_buf(const STBox *box, uint8_t *buf, uint8_t variant)
   if (stbox_wkb_needs_srid(box, variant))
     buf = int32_to_wkb_buf(stbox_srid(box), buf, variant);
   /* Write the temporal dimension if any */
-  if (MOBDB_FLAGS_GET_T(box->flags))
+  if (MEOS_FLAGS_GET_T(box->flags))
     buf = span_to_wkb_buf_int(&box->period, buf, variant);
   /* Write the value dimension if any */
-  if (MOBDB_FLAGS_GET_X(box->flags))
+  if (MEOS_FLAGS_GET_X(box->flags))
   {
     /* Write the coordinates */
     buf = double_to_wkb_buf(box->xmin, buf, variant);
     buf = double_to_wkb_buf(box->xmax, buf, variant);
     buf = double_to_wkb_buf(box->ymin, buf, variant);
     buf = double_to_wkb_buf(box->ymax, buf, variant);
-    if (MOBDB_FLAGS_GET_Z(box->flags))
+    if (MEOS_FLAGS_GET_Z(box->flags))
     {
       buf = double_to_wkb_buf(box->zmin, buf, variant);
       buf = double_to_wkb_buf(box->zmax, buf, variant);
@@ -2002,16 +2002,16 @@ temporal_flags_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
 {
   /* Set the subtype and the interpolation */
   uint8_t wkb_flags = (uint8_t) temp->subtype;
-  MOBDB_WKB_SET_INTERP(wkb_flags, MOBDB_FLAGS_GET_INTERP(temp->flags));
+  MEOS_WKB_SET_INTERP(wkb_flags, MEOS_FLAGS_GET_INTERP(temp->flags));
   /* Set the flags */
   if (tgeo_type(temp->temptype))
   {
-    if (MOBDB_FLAGS_GET_Z(temp->flags))
-      wkb_flags |= MOBDB_WKB_ZFLAG;
-    if (MOBDB_FLAGS_GET_GEODETIC(temp->flags))
-      wkb_flags |= MOBDB_WKB_GEODETICFLAG;
+    if (MEOS_FLAGS_GET_Z(temp->flags))
+      wkb_flags |= MEOS_WKB_ZFLAG;
+    if (MEOS_FLAGS_GET_GEODETIC(temp->flags))
+      wkb_flags |= MEOS_WKB_GEODETICFLAG;
     if (tpoint_wkb_needs_srid(temp, variant))
-      wkb_flags |= MOBDB_WKB_SRIDFLAG;
+      wkb_flags |= MEOS_WKB_SRIDFLAG;
   }
   /* Write the flags */
   return uint8_to_wkb_buf(wkb_flags, buf, variant);
@@ -2227,7 +2227,7 @@ datum_as_wkb(Datum value, meosType type, uint8_t variant, size_t *size_out)
   if (! (variant & WKB_NDR || variant & WKB_XDR) ||
     (variant & WKB_NDR && variant & WKB_XDR))
   {
-    if (MOBDB_IS_BIG_ENDIAN)
+    if (MEOS_IS_BIG_ENDIAN)
       variant = variant | (uint8_t) WKB_XDR;
     else
       variant = variant | (uint8_t) WKB_NDR;

@@ -122,7 +122,7 @@ tnumber_arithop_tp_at_timestamp1(const TInstant *start1, const TInstant *end1,
   long double max = Max(d1, d2);
   long double fraction = min + (max - min)/2;
   long double duration = (long double) (end1->t - start1->t);
-  if (fraction <= MOBDB_EPSILON || fraction >= (1.0 - MOBDB_EPSILON))
+  if (fraction <= MEOS_EPSILON || fraction >= (1.0 - MEOS_EPSILON))
     /* Minimum/maximum occurs out of the period */
     return false;
 
@@ -211,7 +211,7 @@ arithop_tnumber_number(const Temporal *temp, Datum value, meosType basetype,
     else
     {
       double d = datum_double(value, basetype);
-      if (fabs(d) < MOBDB_EPSILON)
+      if (fabs(d) < MEOS_EPSILON)
         elog(ERROR, "Division by zero");
     }
   }
@@ -247,8 +247,8 @@ arithop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
   bool (*tpfunc)(const TInstant *, const TInstant *, const TInstant *,
     const TInstant *, Datum *, TimestampTz *))
 {
-  bool linear1 = MOBDB_FLAGS_GET_LINEAR(temp1->flags);
-  bool linear2 = MOBDB_FLAGS_GET_LINEAR(temp2->flags);
+  bool linear1 = MEOS_FLAGS_GET_LINEAR(temp1->flags);
+  bool linear2 = MEOS_FLAGS_GET_LINEAR(temp2->flags);
 
   /* If division test whether the denominator will ever be zero during
    * the common timespan */
@@ -303,7 +303,7 @@ tnumberinst_abs(const TInstant *inst)
 TSequence *
 tnumberseq_iter_abs(const TSequence *seq)
 {
-  interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
@@ -370,7 +370,7 @@ tnumberseqset_abs(const TSequenceSet *ss)
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    sequences[i] = MOBDB_FLAGS_GET_LINEAR(ss->flags) ?
+    sequences[i] = MEOS_FLAGS_GET_LINEAR(ss->flags) ?
       tnumberseq_linear_abs(seq) : tnumberseq_iter_abs(seq);
   }
   TSequenceSet *result = tsequenceset_make_free(sequences, ss->count,
@@ -391,7 +391,7 @@ tnumber_abs(const Temporal *temp)
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tnumberinst_abs((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
-    result = MOBDB_FLAGS_GET_LINEAR(temp->flags) ?
+    result = MEOS_FLAGS_GET_LINEAR(temp->flags) ?
       (Temporal *) tnumberseq_linear_abs((TSequence *) temp) :
       (Temporal *) tnumberseq_iter_abs((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
@@ -445,7 +445,7 @@ tnumberseq_delta_value(const TSequence *seq)
   }
   instants[seq->count - 1] = tinstant_make(delta, seq->temptype, inst1->t);
   /* Resulting sequence has discrete or step interpolation */
-  interpType interp = MOBDB_FLAGS_GET_DISCRETE(seq->flags) ?
+  interpType interp = MEOS_FLAGS_GET_DISCRETE(seq->flags) ?
     DISCRETE : STEP;
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
     false, interp, NORMALIZE);
@@ -674,7 +674,7 @@ tfloat_radians(const Temporal *temp)
 TSequence *
 tfloatseq_derivative(const TSequence *seq)
 {
-  assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
+  assert(MEOS_FLAGS_GET_LINEAR(seq->flags));
 
   /* Instantaneous sequence */
   if (seq->count == 1)
@@ -745,7 +745,7 @@ tfloat_derivative(const Temporal *temp)
 {
   Temporal *result = NULL;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
+  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_GET_LINEAR(temp->flags))
     ;
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tfloatseq_derivative((TSequence *) temp);

@@ -68,20 +68,20 @@ extern void ll2cart(const POINT2D *g, POINT3D *p);
 void
 stbox_expand(const STBox *box1, STBox *box2)
 {
-  if (MOBDB_FLAGS_GET_X(box2->flags))
+  if (MEOS_FLAGS_GET_X(box2->flags))
   {
     box2->xmin = Min(box1->xmin, box2->xmin);
     box2->xmax = Max(box1->xmax, box2->xmax);
     box2->ymin = Min(box1->ymin, box2->ymin);
     box2->ymax = Max(box1->ymax, box2->ymax);
-    if (MOBDB_FLAGS_GET_Z(box2->flags) ||
-      MOBDB_FLAGS_GET_GEODETIC(box2->flags))
+    if (MEOS_FLAGS_GET_Z(box2->flags) ||
+      MEOS_FLAGS_GET_GEODETIC(box2->flags))
     {
       box2->zmin = Min(box1->zmin, box2->zmin);
       box2->zmax = Max(box1->zmax, box2->zmax);
     }
   }
-  if (MOBDB_FLAGS_GET_T(box2->flags))
+  if (MEOS_FLAGS_GET_T(box2->flags))
     span_expand(&box1->period, &box2->period);
   return;
 }
@@ -96,7 +96,7 @@ stbox_expand(const STBox *box1, STBox *box2)
 void
 ensure_has_X_stbox(const STBox *box)
 {
-  if (! MOBDB_FLAGS_GET_X(box->flags))
+  if (! MEOS_FLAGS_GET_X(box->flags))
     elog(ERROR, "The box must have space dimension");
   return;
 }
@@ -107,7 +107,7 @@ ensure_has_X_stbox(const STBox *box)
 void
 ensure_has_T_stbox(const STBox *box)
 {
-  if (! MOBDB_FLAGS_GET_T(box->flags))
+  if (! MEOS_FLAGS_GET_T(box->flags))
     elog(ERROR, "The box must have time dimension");
   return;
 }
@@ -153,10 +153,10 @@ stbox_out(const STBox *box, int maxdd)
   static size_t size = MAXSTBOXLEN + 1;
   char *xmin = NULL, *xmax = NULL, *ymin = NULL, *ymax = NULL, *zmin = NULL,
     *zmax = NULL, *period = NULL;
-  bool hasx = MOBDB_FLAGS_GET_X(box->flags);
-  bool hasz = MOBDB_FLAGS_GET_Z(box->flags);
-  bool hast = MOBDB_FLAGS_GET_T(box->flags);
-  bool geodetic = MOBDB_FLAGS_GET_GEODETIC(box->flags);
+  bool hasx = MEOS_FLAGS_GET_X(box->flags);
+  bool hasz = MEOS_FLAGS_GET_Z(box->flags);
+  bool hast = MEOS_FLAGS_GET_T(box->flags);
+  bool geodetic = MEOS_FLAGS_GET_GEODETIC(box->flags);
   assert(hasx || hast);
 
   char *str = palloc(size);
@@ -255,16 +255,16 @@ stbox_set(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin,
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBox));
-  MOBDB_FLAGS_SET_X(box->flags, hasx);
-  MOBDB_FLAGS_SET_Z(box->flags, hasz);
-  MOBDB_FLAGS_SET_GEODETIC(box->flags, geodetic);
+  MEOS_FLAGS_SET_X(box->flags, hasx);
+  MEOS_FLAGS_SET_Z(box->flags, hasz);
+  MEOS_FLAGS_SET_GEODETIC(box->flags, geodetic);
   box->srid = srid;
 
   if (p)
   {
     /* Process T min/max */
     memcpy(&box->period, p, sizeof(Span));
-    MOBDB_FLAGS_SET_T(box->flags, true);
+    MEOS_FLAGS_SET_T(box->flags, true);
   }
   if (hasx)
   {
@@ -316,14 +316,14 @@ stbox_set_gbox(const STBox *box, GBOX *gbox)
   gbox->xmax = box->xmax;
   gbox->ymin = box->ymin;
   gbox->ymax = box->ymax;
-  if (MOBDB_FLAGS_GET_Z(box->flags))
+  if (MEOS_FLAGS_GET_Z(box->flags))
   {
     gbox->zmin = box->zmin;
     gbox->zmax = box->zmax;
   }
-  FLAGS_SET_Z(gbox->flags, MOBDB_FLAGS_GET_Z(box->flags));
+  FLAGS_SET_Z(gbox->flags, MEOS_FLAGS_GET_Z(box->flags));
   FLAGS_SET_M(gbox->flags, false);
-  FLAGS_SET_GEODETIC(gbox->flags, MOBDB_FLAGS_GET_GEODETIC(box->flags));
+  FLAGS_SET_GEODETIC(gbox->flags, MEOS_FLAGS_GET_GEODETIC(box->flags));
   return;
 }
 
@@ -343,7 +343,7 @@ stbox_set_box3d(const STBox *box, BOX3D *box3d)
   box3d->xmax = box->xmax;
   box3d->ymin = box->ymin;
   box3d->ymax = box->ymax;
-  if (MOBDB_FLAGS_GET_Z(box->flags))
+  if (MEOS_FLAGS_GET_Z(box->flags))
   {
     box3d->zmin = box->zmin;
     box3d->zmax = box->zmax;
@@ -364,7 +364,7 @@ stbox_to_geo(const STBox *box)
   ensure_has_X_stbox(box);
   LWGEOM *geo;
   GSERIALIZED *result;
-  if (MOBDB_FLAGS_GET_Z(box->flags) || MOBDB_FLAGS_GET_GEODETIC(box->flags))
+  if (MEOS_FLAGS_GET_Z(box->flags) || MEOS_FLAGS_GET_GEODETIC(box->flags))
   {
     BOX3D box3d;
     stbox_set_box3d(box, &box3d);
@@ -376,7 +376,7 @@ stbox_to_geo(const STBox *box)
     stbox_set_gbox(box, &box2d);
     geo = box2d_to_lwgeom(&box2d, box->srid);
   }
-  FLAGS_SET_GEODETIC(geo->flags, MOBDB_FLAGS_GET_GEODETIC(box->flags));
+  FLAGS_SET_GEODETIC(geo->flags, MEOS_FLAGS_GET_GEODETIC(box->flags));
   result = geo_serialize(geo);
   lwgeom_free(geo);
   return result;
@@ -390,7 +390,7 @@ stbox_to_geo(const STBox *box)
 Span *
 stbox_to_period(const STBox *box)
 {
-  if (! MOBDB_FLAGS_GET_T(box->flags))
+  if (! MEOS_FLAGS_GET_T(box->flags))
     return NULL;
   return span_copy(&box->period);
 }
@@ -452,10 +452,10 @@ geo_set_stbox(const GSERIALIZED *gs, STBox *box)
   bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
   bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->gflags);
   box->srid = gserialized_get_srid(gs);
-  MOBDB_FLAGS_SET_X(box->flags, true);
-  MOBDB_FLAGS_SET_Z(box->flags, hasz);
-  MOBDB_FLAGS_SET_T(box->flags, false);
-  MOBDB_FLAGS_SET_GEODETIC(box->flags, geodetic);
+  MEOS_FLAGS_SET_X(box->flags, true);
+  MEOS_FLAGS_SET_Z(box->flags, hasz);
+  MEOS_FLAGS_SET_T(box->flags, false);
+  MEOS_FLAGS_SET_GEODETIC(box->flags, geodetic);
 
   /* Short-circuit the case where the geometry/geography is a point */
   if (gserialized_get_type(gs) == POINTTYPE)
@@ -535,9 +535,9 @@ timestamp_set_stbox(TimestampTz t, STBox *box)
   memset(box, 0, sizeof(STBox));
   span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
     T_TIMESTAMPTZ, &box->period);
-  MOBDB_FLAGS_SET_X(box->flags, false);
-  MOBDB_FLAGS_SET_Z(box->flags, false);
-  MOBDB_FLAGS_SET_T(box->flags, true);
+  MEOS_FLAGS_SET_X(box->flags, false);
+  MEOS_FLAGS_SET_Z(box->flags, false);
+  MEOS_FLAGS_SET_T(box->flags, true);
   return;
 }
 
@@ -567,7 +567,7 @@ tstzset_set_stbox(const Set *ts, STBox *box)
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBox));
   set_set_span(ts, &box->period);
-  MOBDB_FLAGS_SET_T(box->flags, true);
+  MEOS_FLAGS_SET_T(box->flags, true);
   return;
 }
 
@@ -597,7 +597,7 @@ period_set_stbox(const Span *p, STBox *box)
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBox));
   memcpy(&box->period, p, sizeof(Span));
-  MOBDB_FLAGS_SET_T(box->flags, true);
+  MEOS_FLAGS_SET_T(box->flags, true);
   return;
 }
 
@@ -627,7 +627,7 @@ periodset_set_stbox(const SpanSet *ps, STBox *box)
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBox));
   memcpy(&box->period, &ps->span, sizeof(Span));
-  MOBDB_FLAGS_SET_T(box->flags, true);
+  MEOS_FLAGS_SET_T(box->flags, true);
   return;
 }
 
@@ -661,7 +661,7 @@ geo_timestamp_to_stbox(const GSERIALIZED *gs, TimestampTz t)
   geo_set_stbox(gs, result);
   span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
     T_TIMESTAMPTZ, &result->period);
-  MOBDB_FLAGS_SET_T(result->flags, true);
+  MEOS_FLAGS_SET_T(result->flags, true);
   return result;
 }
 
@@ -678,7 +678,7 @@ geo_period_to_stbox(const GSERIALIZED *gs, const Span *p)
   STBox *result = palloc(sizeof(STBox));
   geo_set_stbox(gs, result);
   memcpy(&result->period, p, sizeof(Span));
-  MOBDB_FLAGS_SET_T(result->flags, true);
+  MEOS_FLAGS_SET_T(result->flags, true);
   return result;
 }
 
@@ -694,7 +694,7 @@ geo_period_to_stbox(const GSERIALIZED *gs, const Span *p)
 bool
 stbox_hasx(const STBox *box)
 {
-  bool result = MOBDB_FLAGS_GET_X(box->flags);
+  bool result = MEOS_FLAGS_GET_X(box->flags);
   return result;
 }
 
@@ -706,7 +706,7 @@ stbox_hasx(const STBox *box)
 bool
 stbox_hasz(const STBox *box)
 {
-  bool result = MOBDB_FLAGS_GET_Z(box->flags);
+  bool result = MEOS_FLAGS_GET_Z(box->flags);
   return result;
 }
 
@@ -718,7 +718,7 @@ stbox_hasz(const STBox *box)
 bool
 stbox_hast(const STBox *box)
 {
-  bool result = MOBDB_FLAGS_GET_T(box->flags);
+  bool result = MEOS_FLAGS_GET_T(box->flags);
   return result;
 }
 
@@ -731,7 +731,7 @@ stbox_hast(const STBox *box)
 bool
 stbox_isgeodetic(const STBox *box)
 {
-  bool result = MOBDB_FLAGS_GET_GEODETIC(box->flags);
+  bool result = MEOS_FLAGS_GET_GEODETIC(box->flags);
   return result;
 }
 
@@ -748,7 +748,7 @@ stbox_isgeodetic(const STBox *box)
 bool
 stbox_xmin(const STBox *box, double *result)
 {
-  if (! MOBDB_FLAGS_GET_X(box->flags))
+  if (! MEOS_FLAGS_GET_X(box->flags))
     return false;
   *result = box->xmin;
   return true;
@@ -767,7 +767,7 @@ stbox_xmin(const STBox *box, double *result)
 bool
 stbox_xmax(const STBox *box, double *result)
 {
-  if (! MOBDB_FLAGS_GET_X(box->flags))
+  if (! MEOS_FLAGS_GET_X(box->flags))
     return false;
   *result = box->xmax;
   return true;
@@ -786,7 +786,7 @@ stbox_xmax(const STBox *box, double *result)
 bool
 stbox_ymin(const STBox *box, double *result)
 {
-  if (! MOBDB_FLAGS_GET_X(box->flags))
+  if (! MEOS_FLAGS_GET_X(box->flags))
     return false;
   *result = box->ymin;
   return true;
@@ -805,7 +805,7 @@ stbox_ymin(const STBox *box, double *result)
 bool
 stbox_ymax(const STBox *box, double *result)
 {
-  if (! MOBDB_FLAGS_GET_X(box->flags))
+  if (! MEOS_FLAGS_GET_X(box->flags))
     return false;
   *result = box->ymax;
   return true;
@@ -824,7 +824,7 @@ stbox_ymax(const STBox *box, double *result)
 bool
 stbox_zmin(const STBox *box, double *result)
 {
-  if (! MOBDB_FLAGS_GET_Z(box->flags))
+  if (! MEOS_FLAGS_GET_Z(box->flags))
     return false;
   *result = box->zmin;
   return true;
@@ -843,7 +843,7 @@ stbox_zmin(const STBox *box, double *result)
 bool
 stbox_zmax(const STBox *box, double *result)
 {
-  if (! MOBDB_FLAGS_GET_Z(box->flags))
+  if (! MEOS_FLAGS_GET_Z(box->flags))
     return false;
   *result = box->zmax;
   return true;
@@ -862,7 +862,7 @@ stbox_zmax(const STBox *box, double *result)
 bool
 stbox_tmin(const STBox *box, TimestampTz *result)
 {
-  if (! MOBDB_FLAGS_GET_T(box->flags))
+  if (! MEOS_FLAGS_GET_T(box->flags))
     return false;
   *result = DatumGetTimestampTz(box->period.lower);
   return true;
@@ -881,7 +881,7 @@ stbox_tmin(const STBox *box, TimestampTz *result)
 bool
 stbox_tmax(const STBox *box, TimestampTz *result)
 {
-  if (! MOBDB_FLAGS_GET_T(box->flags))
+  if (! MEOS_FLAGS_GET_T(box->flags))
     return false;
   *result = DatumGetTimestampTz(box->period.upper);
   return true;
@@ -931,8 +931,8 @@ stbox_get_space(const STBox *box)
 {
   ensure_has_X_stbox(box);
   STBox *result = palloc(sizeof(STBox));
-  stbox_set(true, MOBDB_FLAGS_GET_Z(box->flags),
-    MOBDB_FLAGS_GET_GEODETIC(box->flags), box->srid, box->xmin, box->xmax,
+  stbox_set(true, MEOS_FLAGS_GET_Z(box->flags),
+    MEOS_FLAGS_GET_GEODETIC(box->flags), box->srid, box->xmin, box->xmax,
     box->ymin, box->ymax, box->zmin, box->zmax, NULL, result);
   return result;
 }
@@ -952,7 +952,7 @@ stbox_expand_space(const STBox *box, double d)
   result->ymin -= d;
   result->xmax += d;
   result->ymax += d;
-  if (MOBDB_FLAGS_GET_Z(box->flags) || MOBDB_FLAGS_GET_GEODETIC(box->flags))
+  if (MEOS_FLAGS_GET_Z(box->flags) || MEOS_FLAGS_GET_GEODETIC(box->flags))
   {
     result->zmin -= d;
     result->zmax += d;
@@ -993,11 +993,11 @@ static void
 stbox_stbox_flags(const STBox *box1, const STBox *box2, bool *hasx,
   bool *hasz, bool *hast, bool *geodetic)
 {
-  *hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
-  *hasz = MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags);
-  *hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
-  *geodetic = MOBDB_FLAGS_GET_GEODETIC(box1->flags) &&
-    MOBDB_FLAGS_GET_GEODETIC(box2->flags);
+  *hasx = MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags);
+  *hasz = MEOS_FLAGS_GET_Z(box1->flags) && MEOS_FLAGS_GET_Z(box2->flags);
+  *hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
+  *geodetic = MEOS_FLAGS_GET_GEODETIC(box1->flags) &&
+    MEOS_FLAGS_GET_GEODETIC(box2->flags);
   return;
 }
 
@@ -1014,7 +1014,7 @@ topo_stbox_stbox_init(const STBox *box1, const STBox *box2, bool *hasx,
   bool *hasz, bool *hast, bool *geodetic)
 {
   ensure_common_dimension(box1->flags, box2->flags);
-  if (MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags))
+  if (MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags))
   {
     ensure_same_geodetic(box1->flags, box2->flags);
     ensure_same_srid_stbox(box1, box2);
@@ -1430,10 +1430,10 @@ inter_stbox_stbox(const STBox *box1, const STBox *box2, STBox *result)
   ensure_same_geodetic(box1->flags, box2->flags);
   ensure_same_srid_stbox(box1, box2);
 
-  bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
-  bool hasz = MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags);
-  bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
-  bool geodetic = MOBDB_FLAGS_GET_GEODETIC(box1->flags) && MOBDB_FLAGS_GET_GEODETIC(box2->flags);
+  bool hasx = MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags);
+  bool hasz = MEOS_FLAGS_GET_Z(box1->flags) && MEOS_FLAGS_GET_Z(box2->flags);
+  bool hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
+  bool geodetic = MEOS_FLAGS_GET_GEODETIC(box1->flags) && MEOS_FLAGS_GET_GEODETIC(box2->flags);
   /* If there is no common dimension */
   if ((! hasx && ! hast) ||
     /* If they do no intersect in one common dimension */
@@ -1508,9 +1508,9 @@ STBox *
 stbox_quad_split(const STBox *box, int *count)
 {
   ensure_has_X_stbox(box);
-  bool hasz = MOBDB_FLAGS_GET_Z(box->flags);
-  bool hast = MOBDB_FLAGS_GET_T(box->flags);
-  bool geodetic = MOBDB_FLAGS_GET_GEODETIC(box->flags);
+  bool hasz = MEOS_FLAGS_GET_Z(box->flags);
+  bool hast = MEOS_FLAGS_GET_T(box->flags);
+  bool geodetic = MEOS_FLAGS_GET_GEODETIC(box->flags);
   Span *period = hast ? (Span *) &box->period : NULL;
   *count = hasz ? 8 : 4;
   STBox *result = palloc(sizeof(STBox) * (*count));
