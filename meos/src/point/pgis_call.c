@@ -684,7 +684,7 @@ gserialized_is_poly(const GSERIALIZED* g)
  * the cache
  */
 static int
-meos_point_in_polygon(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
+MOBDB_point_in_polygon(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
   bool inter)
 {
   const GSERIALIZED *gpoly = gserialized_is_poly(geom1) ? geom1 : geom2;
@@ -778,7 +778,7 @@ GEOS2POSTGIS(GEOSGeom geom, char want3d)
  * call the GEOS function passed as argument
  */
 static char
-meos_call_geos2(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
+MOBDB_call_geos2(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
   char (*func)(const GEOSGeometry *g1, const GEOSGeometry *g2))
 {
   initGEOS(lwnotice, lwgeom_geos_error);
@@ -842,7 +842,7 @@ gserialized_inter_contains(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
   if ((gserialized_is_point(geom1) && gserialized_is_poly(geom2)) ||
       (gserialized_is_poly(geom1) && gserialized_is_point(geom2)))
   {
-    int pip_result = meos_point_in_polygon(geom1, geom2, inter);
+    int pip_result = MOBDB_point_in_polygon(geom1, geom2, inter);
     return inter ?
       (pip_result != -1) : /* not outside */
       (pip_result == 1); /* inside */
@@ -850,8 +850,8 @@ gserialized_inter_contains(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
 
   /* Call GEOS function */
   bool result = inter ?
-    (bool) meos_call_geos2(geom1, geom2, &GEOSIntersects) :
-    (bool) meos_call_geos2(geom1, geom2, &GEOSContains);
+    (bool) MOBDB_call_geos2(geom1, geom2, &GEOSIntersects) :
+    (bool) MOBDB_call_geos2(geom1, geom2, &GEOSContains);
 
   return result;
 }
@@ -884,7 +884,7 @@ gserialized_touches(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
   }
 
   /* Call GEOS function */
-  bool result = (bool) meos_call_geos2(geom1, geom2, &GEOSTouches);
+  bool result = (bool) MOBDB_call_geos2(geom1, geom2, &GEOSTouches);
 
   return result;
 }
@@ -1360,7 +1360,7 @@ postgis_valid_typmod(GSERIALIZED *gser, int32_t typmod)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_pgis_types
+ * @ingroup libMOBDB_pgis_types
  * @brief Input function for geometries
  *
  * Format is '[SRID=#;]wkt|wkb'
@@ -1464,7 +1464,7 @@ gserialized_in(char *input, int32 geom_typmod)
 }
 
 /**
- * @ingroup libmeos_pgis_types
+ * @ingroup libMOBDB_pgis_types
  * @brief Output function for geometries
  *
  * LWGEOM_out(lwgeom) --> cstring
@@ -1483,7 +1483,7 @@ gserialized_out(const GSERIALIZED *geom)
 
 #if MEOS
 /**
- * @ingroup libmeos_pgis_types
+ * @ingroup libMOBDB_pgis_types
  * @brief Return a geometry from its WKT representation (and optionally a SRID)
  * @note This is a a stricter version of geometry_in, where we refuse to accept
  *  (HEX)WKB or EWKT.
@@ -1517,7 +1517,7 @@ gserialized_from_text(char *wkt, int srid)
 }
 
 /**
- * @ingroup libmeos_pgis_types
+ * @ingroup libMOBDB_pgis_types
  * @brief Return the WKT representation (and optionally a SRID) of a geometry
  * @note This is a a stricter version of geometry_in, where we refuse to accept
  * (HEX)WKB or EWKT.
@@ -1531,7 +1531,7 @@ gserialized_as_text(const GSERIALIZED *geom, int precision)
 }
 
 /**
- * @ingroup libmeos_pgis_types
+ * @ingroup libMOBDB_pgis_types
  * @brief Return the EWKT representation (and optionally a SRID) of a geometry
  * @note This is a a stricter version of geometry_in, where we refuse to accept
  * (HEX)WKB or EWKT.
@@ -1546,7 +1546,7 @@ gserialized_as_ewkt(const GSERIALIZED *geom, int precision)
 
 
 /**
- * @ingroup libmeos_pgis_types
+ * @ingroup libMOBDB_pgis_types
  * @brief Return a geometry from its WKT representation
  * @note This is a a stricter version of geometry_in, where we refuse to accept
  * (HEX)WKB or EWKT.
@@ -1559,7 +1559,7 @@ gserialized_from_hexewkb(const char *wkt)
 }
 
 /**
- * @ingroup libmeos_pgis_types
+ * @ingroup libMOBDB_pgis_types
  * @brief Return the WKB representation of a geometry in hex-encoded ASCII.
  * @note PostGIS function: AsHEXEWKB(geom, string)
  */
@@ -1584,7 +1584,7 @@ gserialized_as_hexewkb(const GSERIALIZED *geom, const char *type)
 }
 
 /**
- * @ingroup libmeos_pgis_types
+ * @ingroup libMOBDB_pgis_types
  * @brief Return a geometry from its EWKB representation
  * @note PostGIS function: LWGEOMFromEWKB(wkb, [SRID])
  * @note wkb is in *binary* not hex form
@@ -1611,7 +1611,7 @@ gserialized_from_ewkb(const bytea *bytea_wkb, int32 srid)
 }
 
 /**
- * @ingroup libmeos_pgis_types
+ * @ingroup libMOBDB_pgis_types
  * @brief Return the EWKB representation of a geometry
  * @note PostGIS function: WKBFromLWGEOM(lwgeom) --> wkb
  */
@@ -1639,7 +1639,7 @@ gserialized_as_ewkb(const GSERIALIZED *geom, char *type)
 }
 
 /**
- * @ingroup libmeos_pgis_types
+ * @ingroup libMOBDB_pgis_types
  * @brief Input a geometry from GeoJSON format
  * @note PostGIS function: geom_from_geojson(PG_FUNCTION_ARGS)
  */
@@ -1673,7 +1673,7 @@ gserialized_from_geojson(const char *geojson)
 }
 
 /**
- * @ingroup libmeos_pgis_types
+ * @ingroup libMOBDB_pgis_types
  * @brief Output a geometry in GeoJSON format
  * @note PostGIS function: LWGEOM_asGeoJson(PG_FUNCTION_ARGS)
  */
@@ -1726,7 +1726,7 @@ gserialized_as_geojson(const GSERIALIZED *geom, int option, int precision,
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_pgis_types
+ * @ingroup libMOBDB_pgis_types
  * @brief Return true if the geometries are the same
  * @note The `pgis_` prefix is needed since there is a PostGIS function
  * `gserialized_same` in file `gserialized_gist_nd.c`

@@ -288,7 +288,7 @@ parse_mfjson_datetimes(json_object *mfjson, int *count)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_temporal_inout
+ * @ingroup libMOBDB_internal_temporal_inout
  * @brief Return a temporal instant from its MF-JSON representation.
  */
 TInstant *
@@ -367,7 +367,7 @@ tinstant_from_mfjson(json_object *mfjson, bool isgeo, int srid,
 
 #if MEOS
 /**
- * @ingroup libmeos_internal_temporal_inout
+ * @ingroup libMOBDB_internal_temporal_inout
  * @brief Return a temporal instant boolean from its MF-JSON representation.
  * @sqlfunc tboolFromMFJSON()
  */
@@ -378,7 +378,7 @@ tboolinst_from_mfjson(json_object *mfjson)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_inout
+ * @ingroup libMOBDB_internal_temporal_inout
  * @brief Return a temporal instant integer from its MF-JSON representation.
  * @sqlfunc tintFromMFJSON()
  */
@@ -389,7 +389,7 @@ tintinst_from_mfjson(json_object *mfjson)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_inout
+ * @ingroup libMOBDB_internal_temporal_inout
  * @brief Return a temporal instant float from its MF-JSON representation.
  * @sqlfunc tfloatFromMFJSON()
  */
@@ -400,7 +400,7 @@ tfloatinst_from_mfjson(json_object *mfjson)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_inout
+ * @ingroup libMOBDB_internal_temporal_inout
  * @brief Return a temporal instant text from its MF-JSON representation.
  * @sqlfunc ttextFromMFJSON()
  */
@@ -411,7 +411,7 @@ ttextinst_from_mfjson(json_object *mfjson)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_inout
+ * @ingroup libMOBDB_internal_temporal_inout
  * @brief Return a temporal instant geometric point from its MF-JSON
  * representation.
  * @sqlfunc tgeompointFromMFJSON()
@@ -423,7 +423,7 @@ tgeompointinst_from_mfjson(json_object *mfjson, int srid)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_inout
+ * @ingroup libMOBDB_internal_temporal_inout
  * @brief Return a temporal instant geographic point from its MF-JSON
  * representation.
  * @sqlfunc tgeogpointFromMFJSON()
@@ -472,7 +472,7 @@ tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int srid,
 }
 
 /**
- * @ingroup libmeos_internal_temporal_inout
+ * @ingroup libMOBDB_internal_temporal_inout
  * @brief Return a temporal sequence point from its MF-JSON representation.
  */
 TSequence *
@@ -505,7 +505,7 @@ tsequence_from_mfjson(json_object *mfjson, bool isgeo, int srid,
 
 #if MEOS
 /**
- * @ingroup libmeos_internal_temporal_inout
+ * @ingroup libMOBDB_internal_temporal_inout
  * @brief Return a temporal sequence boolean from its MF-JSON representation.
  * @sqlfunc tboolFromMFJSON()
  */
@@ -516,7 +516,7 @@ tboolseq_from_mfjson(json_object *mfjson)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_inout
+ * @ingroup libMOBDB_internal_temporal_inout
  * @brief Return a temporal sequence integer from its MF-JSON representation.
  * @sqlfunc  tintFromMFJSON()
  */
@@ -527,7 +527,7 @@ tintseq_from_mfjson(json_object *mfjson)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_inout
+ * @ingroup libMOBDB_internal_temporal_inout
  * @brief Return a temporal sequence float from its MF-JSON representation.
  * @sqlfunc tfloattFromMFJSON()
  */
@@ -538,7 +538,7 @@ tfloatseq_from_mfjson(json_object *mfjson, interpType interp)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_inout
+ * @ingroup libMOBDB_internal_temporal_inout
  * @brief Return a temporal sequence text from its MF-JSON representation.
  * @sqlfunc ttextFromMFJSON()
  */
@@ -549,7 +549,7 @@ ttextseq_from_mfjson(json_object *mfjson)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_inout
+ * @ingroup libMOBDB_internal_temporal_inout
  * @brief Return a temporal sequence geometric point from its MF-JSON
  * representation.
  * @sqlfunc tgeompointFromMFJSON()
@@ -561,7 +561,7 @@ tgeompointseq_from_mfjson(json_object *mfjson, int srid, interpType interp)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_inout
+ * @ingroup libMOBDB_internal_temporal_inout
  * @brief Return a temporal sequence geographic point from its MF-JSON
  * representation.
  * @sqlfunc tgeogpointFromMFJSON()
@@ -574,7 +574,7 @@ tgeogpointseq_from_mfjson(json_object *mfjson, int srid, interpType interp)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_temporal_inout
+ * @ingroup libMOBDB_internal_temporal_inout
  * @brief Return a temporal sequence set point from its MF-JSON representation.
  */
 TSequenceSet *
@@ -605,7 +605,7 @@ tsequenceset_from_mfjson(json_object *mfjson, bool isgeo, int srid,
 
 #if MEOS
 /**
- * @ingroup libmeos_internal_temporal_inout
+ * @ingroup libMOBDB_internal_temporal_inout
  * @brief Return a temporal sequence set boolean from its MF-JSON
  * representation.
  * @sqlfunc tboolFromMFJSON()
@@ -617,7 +617,7 @@ tboolseqset_from_mfjson(json_object *mfjson)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_inout
+ * @ingroup libMOBDB_internal_temporal_inout
  * @brief Return a temporal sequence set integer from its MF-JSON representation.
  * @sqlfunc tintFromMFJSON()
  */
@@ -628,7 +628,7 @@ tintseqset_from_mfjson(json_object *mfjson)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_inout
+ * @ingroup libMOBDB_internal_temporal_inout
  * @brief Return a temporal sequence set float from its MF-JSON representation.
  * @sqlfunc tfloatFromMFJSON()
  */
@@ -639,7 +639,7 @@ tfloatseqset_from_mfjson(json_object *mfjson, interpType interp)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_inout
+ * @ingroup libMOBDB_internal_temporal_inout
  * @brief Return a temporal sequence set text from its MF-JSON representation.
  * @sqlfunc ttextFromMFJSON()
  */
@@ -650,7 +650,7 @@ ttextseqset_from_mfjson(json_object *mfjson)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_inout
+ * @ingroup libMOBDB_internal_temporal_inout
  * @brief Return a temporal sequence set geometric point from its MF-JSON
  * representation.
  * @sqlfunc tgeompointFromMFJSON()
@@ -662,7 +662,7 @@ tgeompointseqset_from_mfjson(json_object *mfjson, int srid, interpType interp)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_inout
+ * @ingroup libMOBDB_internal_temporal_inout
  * @brief Return a temporal sequence set geographic point from its MF-JSON
  * representation.
  * @sqlfunc tgeogpointFromMFJSON()
@@ -686,7 +686,7 @@ ensure_temptype_mfjson(const char *typestr)
 }
 
 /**
- * @ingroup libmeos_temporal_inout
+ * @ingroup libMOBDB_temporal_inout
  * @brief Return a temporal point from its MF-JSON representation
  */
 Temporal *
@@ -836,10 +836,10 @@ byte_from_wkb_state(wkb_parse_state *s)
 {
   char char_value = 0;
   /* Does the data we want to read exist? */
-  wkb_parse_state_check(s, MEOS_WKB_BYTE_SIZE);
+  wkb_parse_state_check(s, MOBDB_WKB_BYTE_SIZE);
   /* Get the data */
   char_value = s->pos[0];
-  s->pos += MEOS_WKB_BYTE_SIZE;
+  s->pos += MOBDB_WKB_BYTE_SIZE;
   return char_value;
 }
 
@@ -851,20 +851,20 @@ int16_from_wkb_state(wkb_parse_state *s)
 {
   uint16_t i = 0;
   /* Does the data we want to read exist? */
-  wkb_parse_state_check(s, MEOS_WKB_INT2_SIZE);
+  wkb_parse_state_check(s, MOBDB_WKB_INT2_SIZE);
   /* Get the data */
-  memcpy(&i, s->pos, MEOS_WKB_INT2_SIZE);
+  memcpy(&i, s->pos, MOBDB_WKB_INT2_SIZE);
   /* Swap? Copy into a stack-allocated integer. */
   if (s->swap_bytes)
   {
-    for (int j = 0; j < MEOS_WKB_INT2_SIZE/2; j++)
+    for (int j = 0; j < MOBDB_WKB_INT2_SIZE/2; j++)
     {
       uint8_t tmp = ((uint8_t*)(&i))[j];
-      ((uint8_t*)(&i))[j] = ((uint8_t*)(&i))[MEOS_WKB_INT2_SIZE - j - 1];
-      ((uint8_t*)(&i))[MEOS_WKB_INT2_SIZE - j - 1] = tmp;
+      ((uint8_t*)(&i))[j] = ((uint8_t*)(&i))[MOBDB_WKB_INT2_SIZE - j - 1];
+      ((uint8_t*)(&i))[MOBDB_WKB_INT2_SIZE - j - 1] = tmp;
     }
   }
-  s->pos += MEOS_WKB_INT2_SIZE;
+  s->pos += MOBDB_WKB_INT2_SIZE;
   return i;
 }
 
@@ -876,20 +876,20 @@ int32_from_wkb_state(wkb_parse_state *s)
 {
   uint32_t i = 0;
   /* Does the data we want to read exist? */
-  wkb_parse_state_check(s, MEOS_WKB_INT4_SIZE);
+  wkb_parse_state_check(s, MOBDB_WKB_INT4_SIZE);
   /* Get the data */
-  memcpy(&i, s->pos, MEOS_WKB_INT4_SIZE);
+  memcpy(&i, s->pos, MOBDB_WKB_INT4_SIZE);
   /* Swap? Copy into a stack-allocated integer. */
   if (s->swap_bytes)
   {
-    for (int j = 0; j < MEOS_WKB_INT4_SIZE/2; j++)
+    for (int j = 0; j < MOBDB_WKB_INT4_SIZE/2; j++)
     {
       uint8_t tmp = ((uint8_t*)(&i))[j];
-      ((uint8_t*)(&i))[j] = ((uint8_t*)(&i))[MEOS_WKB_INT4_SIZE - j - 1];
-      ((uint8_t*)(&i))[MEOS_WKB_INT4_SIZE - j - 1] = tmp;
+      ((uint8_t*)(&i))[j] = ((uint8_t*)(&i))[MOBDB_WKB_INT4_SIZE - j - 1];
+      ((uint8_t*)(&i))[MOBDB_WKB_INT4_SIZE - j - 1] = tmp;
     }
   }
-  s->pos += MEOS_WKB_INT4_SIZE;
+  s->pos += MOBDB_WKB_INT4_SIZE;
   return i;
 }
 
@@ -901,20 +901,20 @@ int64_from_wkb_state(wkb_parse_state *s)
 {
   uint64_t i = 0;
   /* Does the data we want to read exist? */
-  wkb_parse_state_check(s, MEOS_WKB_INT8_SIZE);
+  wkb_parse_state_check(s, MOBDB_WKB_INT8_SIZE);
   /* Get the data */
-  memcpy(&i, s->pos, MEOS_WKB_INT8_SIZE);
+  memcpy(&i, s->pos, MOBDB_WKB_INT8_SIZE);
   /* Swap? Copy into a stack-allocated integer. */
   if (s->swap_bytes)
   {
-    for (int j = 0; j < MEOS_WKB_INT8_SIZE/2; j++)
+    for (int j = 0; j < MOBDB_WKB_INT8_SIZE/2; j++)
     {
       uint8_t tmp = ((uint8_t*)(&i))[j];
-      ((uint8_t*)(&i))[j] = ((uint8_t*)(&i))[MEOS_WKB_INT8_SIZE - j - 1];
-      ((uint8_t*)(&i))[MEOS_WKB_INT8_SIZE - j - 1] = tmp;
+      ((uint8_t*)(&i))[j] = ((uint8_t*)(&i))[MOBDB_WKB_INT8_SIZE - j - 1];
+      ((uint8_t*)(&i))[MOBDB_WKB_INT8_SIZE - j - 1] = tmp;
     }
   }
-  s->pos += MEOS_WKB_INT8_SIZE;
+  s->pos += MOBDB_WKB_INT8_SIZE;
   return i;
 }
 
@@ -926,20 +926,20 @@ double_from_wkb_state(wkb_parse_state *s)
 {
   double d = 0;
   /* Does the data we want to read exist? */
-  wkb_parse_state_check(s, MEOS_WKB_DOUBLE_SIZE);
+  wkb_parse_state_check(s, MOBDB_WKB_DOUBLE_SIZE);
   /* Get the data */
-  memcpy(&d, s->pos, MEOS_WKB_DOUBLE_SIZE);
+  memcpy(&d, s->pos, MOBDB_WKB_DOUBLE_SIZE);
   /* Swap? Copy into a stack-allocated double */
   if (s->swap_bytes)
   {
-    for (int i = 0; i < MEOS_WKB_DOUBLE_SIZE/2; i++)
+    for (int i = 0; i < MOBDB_WKB_DOUBLE_SIZE/2; i++)
     {
       uint8_t tmp = ((uint8_t*)(&d))[i];
-      ((uint8_t*)(&d))[i] = ((uint8_t*)(&d))[MEOS_WKB_DOUBLE_SIZE - i - 1];
-      ((uint8_t*)(&d))[MEOS_WKB_DOUBLE_SIZE - i - 1] = tmp;
+      ((uint8_t*)(&d))[i] = ((uint8_t*)(&d))[MOBDB_WKB_DOUBLE_SIZE - i - 1];
+      ((uint8_t*)(&d))[MOBDB_WKB_DOUBLE_SIZE - i - 1] = tmp;
     }
   }
-  s->pos += MEOS_WKB_DOUBLE_SIZE;
+  s->pos += MOBDB_WKB_DOUBLE_SIZE;
   return d;
 }
 
@@ -951,20 +951,20 @@ timestamp_from_wkb_state(wkb_parse_state *s)
 {
   int64_t t = 0;
   /* Does the data we want to read exist? */
-  wkb_parse_state_check(s, MEOS_WKB_TIMESTAMP_SIZE);
+  wkb_parse_state_check(s, MOBDB_WKB_TIMESTAMP_SIZE);
   /* Get the data */
-  memcpy(&t, s->pos, MEOS_WKB_TIMESTAMP_SIZE);
+  memcpy(&t, s->pos, MOBDB_WKB_TIMESTAMP_SIZE);
   /* Swap? Copy into a stack-allocated timestamp */
   if (s->swap_bytes)
   {
-    for (int i = 0; i < MEOS_WKB_TIMESTAMP_SIZE/2; i++)
+    for (int i = 0; i < MOBDB_WKB_TIMESTAMP_SIZE/2; i++)
     {
       uint8_t tmp = ((uint8_t*)(&t))[i];
-      ((uint8_t*)(&t))[i] = ((uint8_t*)(&t))[MEOS_WKB_TIMESTAMP_SIZE - i - 1];
-      ((uint8_t*)(&t))[MEOS_WKB_TIMESTAMP_SIZE - i - 1] = tmp;
+      ((uint8_t*)(&t))[i] = ((uint8_t*)(&t))[MOBDB_WKB_TIMESTAMP_SIZE - i - 1];
+      ((uint8_t*)(&t))[MOBDB_WKB_TIMESTAMP_SIZE - i - 1] = tmp;
     }
   }
-  s->pos += MEOS_WKB_TIMESTAMP_SIZE;
+  s->pos += MOBDB_WKB_TIMESTAMP_SIZE;
   return (TimestampTz) t;
 }
 
@@ -1017,7 +1017,7 @@ Npoint *
 npoint_from_wkb_state(wkb_parse_state *s)
 {
   /* Does the data we want to read exist? */
-  wkb_parse_state_check(s, MEOS_WKB_INT8_SIZE + MEOS_WKB_DOUBLE_SIZE);
+  wkb_parse_state_check(s, MOBDB_WKB_INT8_SIZE + MOBDB_WKB_DOUBLE_SIZE);
   /* Get the data */
   int64 rid = int64_from_wkb_state(s);
   double pos = double_from_wkb_state(s);
@@ -1105,11 +1105,11 @@ span_basevalue_from_wkb_size(wkb_parse_state *s)
 static void
 bounds_from_wkb_state(uint8_t wkb_bounds, bool *lower_inc, bool *upper_inc)
 {
-  if (wkb_bounds & MEOS_WKB_LOWER_INC)
+  if (wkb_bounds & MOBDB_WKB_LOWER_INC)
     *lower_inc = true;
   else
     *lower_inc = false;
-  if (wkb_bounds & MEOS_WKB_UPPER_INC)
+  if (wkb_bounds & MOBDB_WKB_UPPER_INC)
     *upper_inc = true;
   else
     *upper_inc = false;
@@ -1190,16 +1190,16 @@ set_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
   s->hasz = false;
   s->geodetic = false;
   s->has_srid = false;
-  if (wkb_flags & MEOS_WKB_ORDERED)
+  if (wkb_flags & MOBDB_WKB_ORDERED)
     s->ordered = true;
   /* Get the flags */
   if (geo_basetype(s->basetype))
   {
-    if (wkb_flags & MEOS_WKB_ZFLAG)
+    if (wkb_flags & MOBDB_WKB_ZFLAG)
       s->hasz = true;
-    if (wkb_flags & MEOS_WKB_GEODETICFLAG)
+    if (wkb_flags & MOBDB_WKB_GEODETICFLAG)
       s->geodetic = true;
-    if (wkb_flags & MEOS_WKB_SRIDFLAG)
+    if (wkb_flags & MOBDB_WKB_SRIDFLAG)
       s->has_srid = true;
   }
   return;
@@ -1222,7 +1222,7 @@ set_from_wkb_state(wkb_parse_state *s)
   /* Read the SRID, if necessary */
   if (s->has_srid)
     s->srid = int32_from_wkb_state(s);
-  else if (wkb_flags & MEOS_WKB_GEODETICFLAG)
+  else if (wkb_flags & MOBDB_WKB_GEODETICFLAG)
     s->srid = SRID_DEFAULT;
 
   /* Read the number of values and allocate space for them */
@@ -1244,12 +1244,12 @@ set_from_wkb_state(wkb_parse_state *s)
 static void
 tbox_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
 {
-  assert(wkb_flags & MEOS_WKB_XFLAG || wkb_flags & MEOS_WKB_TFLAG);
+  assert(wkb_flags & MOBDB_WKB_XFLAG || wkb_flags & MOBDB_WKB_TFLAG);
   s->hasx = false;
   s->hast = false;
-  if (wkb_flags & MEOS_WKB_XFLAG)
+  if (wkb_flags & MOBDB_WKB_XFLAG)
     s->hasx = true;
-  if (wkb_flags & MEOS_WKB_TFLAG)
+  if (wkb_flags & MOBDB_WKB_TFLAG)
     s->hast = true;
   return;
 }
@@ -1285,21 +1285,21 @@ tbox_from_wkb_state(wkb_parse_state *s)
 static void
 stbox_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
 {
-  assert(wkb_flags & MEOS_WKB_XFLAG || wkb_flags & MEOS_WKB_TFLAG);
+  assert(wkb_flags & MOBDB_WKB_XFLAG || wkb_flags & MOBDB_WKB_TFLAG);
   s->hasx = false;
   s->hasz = false;
   s->hast = false;
   s->geodetic = false;
   s->has_srid = false;
-  if (wkb_flags & MEOS_WKB_XFLAG)
+  if (wkb_flags & MOBDB_WKB_XFLAG)
     s->hasx = true;
-  if (wkb_flags & MEOS_WKB_ZFLAG)
+  if (wkb_flags & MOBDB_WKB_ZFLAG)
     s->hasz = true;
-  if (wkb_flags & MEOS_WKB_TFLAG)
+  if (wkb_flags & MOBDB_WKB_TFLAG)
     s->hast = true;
-  if (wkb_flags & MEOS_WKB_GEODETICFLAG)
+  if (wkb_flags & MOBDB_WKB_GEODETICFLAG)
     s->geodetic = true;
-  if (wkb_flags & MEOS_WKB_SRIDFLAG)
+  if (wkb_flags & MOBDB_WKB_SRIDFLAG)
     s->has_srid = true;
   return;
 }
@@ -1317,7 +1317,7 @@ stbox_from_wkb_state(wkb_parse_state *s)
   /* Read the SRID, if necessary */
   if (s->has_srid)
     s->srid = int32_from_wkb_state(s);
-  else if (wkb_flags & MEOS_WKB_GEODETICFLAG)
+  else if (wkb_flags & MOBDB_WKB_GEODETICFLAG)
     s->srid = SRID_DEFAULT;
 
   /* Read and create the box */
@@ -1357,28 +1357,28 @@ temporal_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
   s->geodetic = false;
   s->has_srid = false;
   /* Get the interpolation */
-  s->interp = MEOS_WKB_GET_INTERP(wkb_flags);
+  s->interp = MOBDB_WKB_GET_INTERP(wkb_flags);
   /* Get the flags */
   if (tgeo_type(s->temptype))
   {
-    if (wkb_flags & MEOS_WKB_ZFLAG)
+    if (wkb_flags & MOBDB_WKB_ZFLAG)
       s->hasz = true;
-    if (wkb_flags & MEOS_WKB_GEODETICFLAG)
+    if (wkb_flags & MOBDB_WKB_GEODETICFLAG)
       s->geodetic = true;
-    if (wkb_flags & MEOS_WKB_SRIDFLAG)
+    if (wkb_flags & MOBDB_WKB_SRIDFLAG)
       s->has_srid = true;
   }
   /* Mask off the upper flags to get the subtype */
   wkb_flags &= (uint8_t) 0x03;
   switch (wkb_flags)
   {
-    case MEOS_WKB_TINSTANT:
+    case MOBDB_WKB_TINSTANT:
       s->subtype = TINSTANT;
       break;
-    case MEOS_WKB_TSEQUENCE:
+    case MOBDB_WKB_TSEQUENCE:
       s->subtype = TSEQUENCE;
       break;
-    case MEOS_WKB_TSEQUENCESET:
+    case MOBDB_WKB_TSEQUENCESET:
       s->subtype = TSEQUENCESET;
       break;
     default: /* Error! */
@@ -1500,7 +1500,7 @@ temporal_from_wkb_state(wkb_parse_state *s)
   /* Read the SRID, if necessary */
   if (s->has_srid)
     s->srid = int32_from_wkb_state(s);
-  else if (wkb_flags & MEOS_WKB_GEODETICFLAG)
+  else if (wkb_flags & MOBDB_WKB_GEODETICFLAG)
     s->srid = SRID_DEFAULT;
 
   /* Read the temporal value */
@@ -1582,7 +1582,7 @@ datum_from_hexwkb(const char *hexwkb, int size, meosType type)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_setspan_inout
+ * @ingroup libMOBDB_setspan_inout
  * @brief Return a set from its Well-Known Binary (WKB)
  * representation.
  * @sqlfunc tstzsetFromBinary()
@@ -1595,7 +1595,7 @@ set_from_wkb(const uint8_t *wkb, int size)
 }
 
 /**
- * @ingroup libmeos_setspan_inout
+ * @ingroup libMOBDB_setspan_inout
  * @brief Return a set from its WKB representation in hex-encoded
  * ASCII.
  * @sqlfunc tstzsetFromHexWKB()
@@ -1611,7 +1611,7 @@ set_from_hexwkb(const char *hexwkb)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_setspan_inout
+ * @ingroup libMOBDB_setspan_inout
  * @brief Return a span from its Well-Known Binary (WKB)
  * representation.
  * @sqlfunc intspanFromBinary(), floatspanFromBinary(), periodFromBinary(),
@@ -1624,7 +1624,7 @@ span_from_wkb(const uint8_t *wkb, int size)
 }
 
 /**
- * @ingroup libmeos_setspan_inout
+ * @ingroup libMOBDB_setspan_inout
  * @brief Return a span from its WKB representation in hex-encoded ASCII.
  * @sqlfunc intspanFromHexWKB(), floatspanFromHexWKB(), periodFromHexWKB(),
  */
@@ -1639,7 +1639,7 @@ span_from_hexwkb(const char *hexwkb)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_setspan_inout
+ * @ingroup libMOBDB_setspan_inout
  * @brief Return a period set from its Well-Known Binary (WKB)
  * representation.
  * @sqlfunc periodsetFromBinary()
@@ -1652,7 +1652,7 @@ spanset_from_wkb(const uint8_t *wkb, int size)
 }
 
 /**
- * @ingroup libmeos_setspan_inout
+ * @ingroup libMOBDB_setspan_inout
  * @brief Return a period set from its WKB representation in hex-encoded ASCII
  * @sqlfunc periodsetFromHexWKB()
  */
@@ -1667,7 +1667,7 @@ spanset_from_hexwkb(const char *hexwkb)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_box_inout
+ * @ingroup libMOBDB_box_inout
  * @brief Return a temporal box from its Well-Known Binary (WKB)
  * representation.
  * @sqlfunc tboxFromBinary()
@@ -1679,7 +1679,7 @@ tbox_from_wkb(const uint8_t *wkb, int size)
 }
 
 /**
- * @ingroup libmeos_box_inout
+ * @ingroup libMOBDB_box_inout
  * @brief Return a temporal box from its WKB representation in hex-encoded ASCII
  * @sqlfunc tboxFromHexWKB()
  */
@@ -1693,7 +1693,7 @@ tbox_from_hexwkb(const char *hexwkb)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_box_inout
+ * @ingroup libMOBDB_box_inout
  * @brief Return a spatiotemporal box from its Well-Known Binary (WKB)
  * representation.
  * @sqlfunc stboxFromBinary()
@@ -1705,7 +1705,7 @@ stbox_from_wkb(const uint8_t *wkb, int size)
 }
 
 /**
- * @ingroup libmeos_box_inout
+ * @ingroup libMOBDB_box_inout
  * @brief Return a spatiotemporal box from its WKB representation in
  * hex-encoded ASCII
  * @sqlfunc stboxFromWKB()
@@ -1720,7 +1720,7 @@ stbox_from_hexwkb(const char *hexwkb)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_inout
+ * @ingroup libMOBDB_temporal_inout
  * @brief Return a temporal value from its Well-Known Binary (WKB)
  * representation.
  * @sqlfunc tboolFromBinary(), tintFromBinary(), tfloatFromBinary(),
@@ -1734,7 +1734,7 @@ temporal_from_wkb(const uint8_t *wkb, int size)
 }
 
 /**
- * @ingroup libmeos_temporal_inout
+ * @ingroup libMOBDB_temporal_inout
  * @brief Return a temporal value from its HexEWKB representation
  * @sqlfunc tboolFromHexWKB(), tintFromHexWKB(), tfloatFromHexWKB(),
  * ttextFromHexWKB(), etc.

@@ -116,7 +116,7 @@ tpoint_valid_typmod(Temporal *temp, int32_t typmod)
   /* If there is no geometry type */
   if (typmod == 0)
     typmod = -1;
-  int32 tpoint_z = MEOS_FLAGS_GET_Z(temp->flags);
+  int32 tpoint_z = MOBDB_FLAGS_GET_Z(temp->flags);
   int32 typmod_srid = TYPMOD_GET_SRID(typmod);
   int32 typmod_type = TYPMOD_GET_TYPE(typmod);
   int32 typmod_z = TYPMOD_GET_Z(typmod);

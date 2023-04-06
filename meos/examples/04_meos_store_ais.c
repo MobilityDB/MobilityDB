@@ -54,11 +54,11 @@
  * This program is based on the libpq example programs
  * https://www.postgresql.org/docs/current/libpq-example.html
  * Please read the assumptions made about the input file `aisinput.csv` in the
- * file `meos_read_ais.c` in the same directory.
+ * file `MOBDB_read_ais.c` in the same directory.
  *
  * The program can be build as follows
  * @code
- * gcc -Wall -g -I/usr/local/include -I/usr/include/postgresql -o 04_meos_store_ais 04_meos_store_ais.c -L/usr/local/lib -lmeos -lpq
+ * gcc -Wall -g -I/usr/local/include -I/usr/include/postgresql -o 04_MOBDB_store_ais 04_MOBDB_store_ais.c -L/usr/local/lib -lmeos -lpq
  * @endcode
  */
 
@@ -150,7 +150,7 @@ main(int argc, char **argv)
    ***************************************************************************/
 
   /* Initialize MEOS */
-  meos_initialize(NULL);
+  MOBDB_initialize(NULL);
 
   /* You may substitute the full file path in the first argument of fopen */
   FILE *file = fopen("aisinput.csv", "r");
@@ -262,7 +262,7 @@ main(int argc, char **argv)
   fclose(file);
 
   /* Finalize MEOS */
-  meos_finalize();
+  MOBDB_finalize();
 
   /* Close the connection to the database and cleanup */
   PQfinish(conn);

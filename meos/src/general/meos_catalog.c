@@ -238,7 +238,7 @@ basetype_settype(meosType basetype)
  * that is, Set, Span, SpanSet, and Temporal
  */
 bool
-meos_basetype(meosType type)
+MOBDB_basetype(meosType type)
 {
   if (type == T_BOOL || type == T_TEXT || type == T_INT4 ||
     type == T_INT8 || type == T_FLOAT8 || type == T_TIMESTAMPTZ ||
@@ -256,7 +256,7 @@ meos_basetype(meosType type)
 bool
 basetype_byvalue(meosType type)
 {
-  assert(meos_basetype(type));
+  assert(MOBDB_basetype(type));
   if (type == T_BOOL || type == T_INT4 || type == T_INT8 || type == T_FLOAT8 ||
       type == T_TIMESTAMPTZ)
     return true;
@@ -269,7 +269,7 @@ basetype_byvalue(meosType type)
 bool
 basetype_varlength(meosType type)
 {
-  assert(meos_basetype(type));
+  assert(MOBDB_basetype(type));
   if (type == T_TEXT || type == T_GEOMETRY || type == T_GEOGRAPHY)
     return true;
   return false;
@@ -281,7 +281,7 @@ basetype_varlength(meosType type)
 int16
 basetype_length(meosType type)
 {
-  assert(meos_basetype(type));
+  assert(MOBDB_basetype(type));
   if (basetype_byvalue(type))
     return sizeof(Datum);
   if (type == T_DOUBLE2)

@@ -60,7 +60,7 @@ extern void ll2cart(const POINT2D *g, POINT3D *p);
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_box_transf
+ * @ingroup libMOBDB_box_transf
  * @brief Expand the second spatiotemporal box with the first one.
  * @pre No tests are made concerning the srid, dimensionality, etc.
  * This should be ensured by the calling function.
@@ -68,20 +68,20 @@ extern void ll2cart(const POINT2D *g, POINT3D *p);
 void
 stbox_expand(const STBox *box1, STBox *box2)
 {
-  if (MEOS_FLAGS_GET_X(box2->flags))
+  if (MOBDB_FLAGS_GET_X(box2->flags))
   {
     box2->xmin = Min(box1->xmin, box2->xmin);
     box2->xmax = Max(box1->xmax, box2->xmax);
     box2->ymin = Min(box1->ymin, box2->ymin);
     box2->ymax = Max(box1->ymax, box2->ymax);
-    if (MEOS_FLAGS_GET_Z(box2->flags) ||
-      MEOS_FLAGS_GET_GEODETIC(box2->flags))
+    if (MOBDB_FLAGS_GET_Z(box2->flags) ||
+      MOBDB_FLAGS_GET_GEODETIC(box2->flags))
     {
       box2->zmin = Min(box1->zmin, box2->zmin);
       box2->zmax = Max(box1->zmax, box2->zmax);
     }
   }
-  if (MEOS_FLAGS_GET_T(box2->flags))
+  if (MOBDB_FLAGS_GET_T(box2->flags))
     span_expand(&box1->period, &box2->period);
   return;
 }
@@ -96,7 +96,7 @@ stbox_expand(const STBox *box1, STBox *box2)
 void
 ensure_has_X_stbox(const STBox *box)
 {
-  if (! MEOS_FLAGS_GET_X(box->flags))
+  if (! MOBDB_FLAGS_GET_X(box->flags))
     elog(ERROR, "The box must have space dimension");
   return;
 }
@@ -107,7 +107,7 @@ ensure_has_X_stbox(const STBox *box)
 void
 ensure_has_T_stbox(const STBox *box)
 {
-  if (! MEOS_FLAGS_GET_T(box->flags))
+  if (! MOBDB_FLAGS_GET_T(box->flags))
     elog(ERROR, "The box must have time dimension");
   return;
 }
@@ -118,7 +118,7 @@ ensure_has_T_stbox(const STBox *box)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_box_inout
+ * @ingroup libMOBDB_box_inout
  * @brief Return a spatiotemporal box from its Well-Known Text (WKT) representation.
  *
  * Examples of input:
@@ -144,7 +144,7 @@ stbox_in(const char *str)
 }
 
 /**
- * @ingroup libmeos_box_inout
+ * @ingroup libMOBDB_box_inout
  * @brief Return the Well-Known Text (WKT) representation of a spatiotemporal box.
  */
 char *
@@ -153,10 +153,10 @@ stbox_out(const STBox *box, int maxdd)
   static size_t size = MAXSTBOXLEN + 1;
   char *xmin = NULL, *xmax = NULL, *ymin = NULL, *ymax = NULL, *zmin = NULL,
     *zmax = NULL, *period = NULL;
-  bool hasx = MEOS_FLAGS_GET_X(box->flags);
-  bool hasz = MEOS_FLAGS_GET_Z(box->flags);
-  bool hast = MEOS_FLAGS_GET_T(box->flags);
-  bool geodetic = MEOS_FLAGS_GET_GEODETIC(box->flags);
+  bool hasx = MOBDB_FLAGS_GET_X(box->flags);
+  bool hasz = MOBDB_FLAGS_GET_Z(box->flags);
+  bool hast = MOBDB_FLAGS_GET_T(box->flags);
+  bool geodetic = MOBDB_FLAGS_GET_GEODETIC(box->flags);
   assert(hasx || hast);
 
   char *str = palloc(size);
@@ -226,7 +226,7 @@ stbox_out(const STBox *box, int maxdd)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_box_constructor
+ * @ingroup libMOBDB_box_constructor
  * @brief Construct a spatiotemporal box from the arguments.
  * @sqlfunc stbox()
  */
@@ -243,7 +243,7 @@ stbox_make(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin,
 }
 
 /**
- * @ingroup libmeos_box_constructor
+ * @ingroup libMOBDB_box_constructor
  * @brief Set a spatiotemporal box from the arguments.
  * @note This function is equivalent to @ref stbox_make without memory
  * allocation
@@ -255,16 +255,16 @@ stbox_set(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin,
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBox));
-  MEOS_FLAGS_SET_X(box->flags, hasx);
-  MEOS_FLAGS_SET_Z(box->flags, hasz);
-  MEOS_FLAGS_SET_GEODETIC(box->flags, geodetic);
+  MOBDB_FLAGS_SET_X(box->flags, hasx);
+  MOBDB_FLAGS_SET_Z(box->flags, hasz);
+  MOBDB_FLAGS_SET_GEODETIC(box->flags, geodetic);
   box->srid = srid;
 
   if (p)
   {
     /* Process T min/max */
     memcpy(&box->period, p, sizeof(Span));
-    MEOS_FLAGS_SET_T(box->flags, true);
+    MOBDB_FLAGS_SET_T(box->flags, true);
   }
   if (hasx)
   {
@@ -285,7 +285,7 @@ stbox_set(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin,
 }
 
 /**
- * @ingroup libmeos_box_constructor
+ * @ingroup libMOBDB_box_constructor
  * @brief Return a copy of a spatiotemporal box.
  */
 STBox *
@@ -301,7 +301,7 @@ stbox_copy(const STBox *box)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libMOBDB_internal_box_cast
  * @brief Set a PostGIS GBOX from a spatiotemporal box.
  * @sqlop @p ::
  */
@@ -316,19 +316,19 @@ stbox_set_gbox(const STBox *box, GBOX *gbox)
   gbox->xmax = box->xmax;
   gbox->ymin = box->ymin;
   gbox->ymax = box->ymax;
-  if (MEOS_FLAGS_GET_Z(box->flags))
+  if (MOBDB_FLAGS_GET_Z(box->flags))
   {
     gbox->zmin = box->zmin;
     gbox->zmax = box->zmax;
   }
-  FLAGS_SET_Z(gbox->flags, MEOS_FLAGS_GET_Z(box->flags));
+  FLAGS_SET_Z(gbox->flags, MOBDB_FLAGS_GET_Z(box->flags));
   FLAGS_SET_M(gbox->flags, false);
-  FLAGS_SET_GEODETIC(gbox->flags, MEOS_FLAGS_GET_GEODETIC(box->flags));
+  FLAGS_SET_GEODETIC(gbox->flags, MOBDB_FLAGS_GET_GEODETIC(box->flags));
   return;
 }
 
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libMOBDB_internal_box_cast
  * @brief Set a PostGIS BOX3D from a spatiotemporal box
  * @sqlop @p ::
  */
@@ -343,7 +343,7 @@ stbox_set_box3d(const STBox *box, BOX3D *box3d)
   box3d->xmax = box->xmax;
   box3d->ymin = box->ymin;
   box3d->ymax = box->ymax;
-  if (MEOS_FLAGS_GET_Z(box->flags))
+  if (MOBDB_FLAGS_GET_Z(box->flags))
   {
     box3d->zmin = box->zmin;
     box3d->zmax = box->zmax;
@@ -354,7 +354,7 @@ stbox_set_box3d(const STBox *box, BOX3D *box3d)
 }
 
 /**
- * @ingroup libmeos_box_cast
+ * @ingroup libMOBDB_box_cast
  * @brief Cast a spatiotemporal box as a PostGIS geometry
  * @sqlop @p ::
  */
@@ -364,7 +364,7 @@ stbox_to_geo(const STBox *box)
   ensure_has_X_stbox(box);
   LWGEOM *geo;
   GSERIALIZED *result;
-  if (MEOS_FLAGS_GET_Z(box->flags) || MEOS_FLAGS_GET_GEODETIC(box->flags))
+  if (MOBDB_FLAGS_GET_Z(box->flags) || MOBDB_FLAGS_GET_GEODETIC(box->flags))
   {
     BOX3D box3d;
     stbox_set_box3d(box, &box3d);
@@ -376,21 +376,21 @@ stbox_to_geo(const STBox *box)
     stbox_set_gbox(box, &box2d);
     geo = box2d_to_lwgeom(&box2d, box->srid);
   }
-  FLAGS_SET_GEODETIC(geo->flags, MEOS_FLAGS_GET_GEODETIC(box->flags));
+  FLAGS_SET_GEODETIC(geo->flags, MOBDB_FLAGS_GET_GEODETIC(box->flags));
   result = geo_serialize(geo);
   lwgeom_free(geo);
   return result;
 }
 
 /**
- * @ingroup libmeos_box_cast
+ * @ingroup libMOBDB_box_cast
  * @brief Cast a temporal box as a period
  * @sqlop @p ::
  */
 Span *
 stbox_to_period(const STBox *box)
 {
-  if (! MEOS_FLAGS_GET_T(box->flags))
+  if (! MOBDB_FLAGS_GET_T(box->flags))
     return NULL;
   return span_copy(&box->period);
 }
@@ -438,7 +438,7 @@ point_get_coords(const GSERIALIZED *point, bool hasz, bool geodetic,
 }
 
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libMOBDB_internal_box_cast
  * @brief Set a spatiotemporal box from a geometry/geography.
  */
 bool
@@ -452,10 +452,10 @@ geo_set_stbox(const GSERIALIZED *gs, STBox *box)
   bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
   bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->gflags);
   box->srid = gserialized_get_srid(gs);
-  MEOS_FLAGS_SET_X(box->flags, true);
-  MEOS_FLAGS_SET_Z(box->flags, hasz);
-  MEOS_FLAGS_SET_T(box->flags, false);
-  MEOS_FLAGS_SET_GEODETIC(box->flags, geodetic);
+  MOBDB_FLAGS_SET_X(box->flags, true);
+  MOBDB_FLAGS_SET_Z(box->flags, hasz);
+  MOBDB_FLAGS_SET_T(box->flags, false);
+  MOBDB_FLAGS_SET_GEODETIC(box->flags, geodetic);
 
   /* Short-circuit the case where the geometry/geography is a point */
   if (gserialized_get_type(gs) == POINTTYPE)
@@ -490,7 +490,7 @@ geo_set_stbox(const GSERIALIZED *gs, STBox *box)
 
 #if MEOS
 /**
- * @ingroup libmeos_box_cast
+ * @ingroup libMOBDB_box_cast
  * @brief Cast a geometry/geography to a spatiotemporal box.
  * @sqlfunc stbox()
  * @sqlop @p ::
@@ -525,7 +525,7 @@ geoarr_set_stbox(const Datum *values, int count, STBox *box)
 }
 
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libMOBDB_internal_box_cast
  * @brief Set a spatiotemporal box from a timestamp.
  */
 void
@@ -535,15 +535,15 @@ timestamp_set_stbox(TimestampTz t, STBox *box)
   memset(box, 0, sizeof(STBox));
   span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
     T_TIMESTAMPTZ, &box->period);
-  MEOS_FLAGS_SET_X(box->flags, false);
-  MEOS_FLAGS_SET_Z(box->flags, false);
-  MEOS_FLAGS_SET_T(box->flags, true);
+  MOBDB_FLAGS_SET_X(box->flags, false);
+  MOBDB_FLAGS_SET_Z(box->flags, false);
+  MOBDB_FLAGS_SET_T(box->flags, true);
   return;
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_box_cast
+ * @ingroup libMOBDB_box_cast
  * @brief Cast a timestamp to a spatiotemporal box.
  * @sqlfunc stbox()
  * @sqlop @p ::
@@ -558,7 +558,7 @@ timestamp_to_stbox(TimestampTz t)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libMOBDB_internal_box_cast
  * @brief Set a spatiotemporal box from a timestamp set.
  */
 void
@@ -567,13 +567,13 @@ tstzset_set_stbox(const Set *ts, STBox *box)
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBox));
   set_set_span(ts, &box->period);
-  MEOS_FLAGS_SET_T(box->flags, true);
+  MOBDB_FLAGS_SET_T(box->flags, true);
   return;
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_box_cast
+ * @ingroup libMOBDB_box_cast
  * @brief Cast a timestamp set to a spatiotemporal box.
  * @sqlfunc stbox()
  * @sqlop @p ::
@@ -588,7 +588,7 @@ tstzset_to_stbox(const Set *ts)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libMOBDB_internal_box_cast
  * @brief Set a spatiotemporal box from a period.
  */
 void
@@ -597,13 +597,13 @@ period_set_stbox(const Span *p, STBox *box)
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBox));
   memcpy(&box->period, p, sizeof(Span));
-  MEOS_FLAGS_SET_T(box->flags, true);
+  MOBDB_FLAGS_SET_T(box->flags, true);
   return;
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_box_cast
+ * @ingroup libMOBDB_box_cast
  * @brief Cast a period to a spatiotemporal box.
  * @sqlfunc stbox()
  * @sqlop @p ::
@@ -618,7 +618,7 @@ period_to_stbox(const Span *p)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libMOBDB_internal_box_cast
  * @brief Set a spatiotemporal box from a period set.
  */
 void
@@ -627,13 +627,13 @@ periodset_set_stbox(const SpanSet *ps, STBox *box)
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBox));
   memcpy(&box->period, &ps->span, sizeof(Span));
-  MEOS_FLAGS_SET_T(box->flags, true);
+  MOBDB_FLAGS_SET_T(box->flags, true);
   return;
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_box_cast
+ * @ingroup libMOBDB_box_cast
  * @brief Cast a period set to a spatiotemporal box.
  * @sqlfunc stbox()
  * @sqlop @p ::
@@ -648,7 +648,7 @@ periodset_to_stbox(const SpanSet *ps)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_box_cast
+ * @ingroup libMOBDB_box_cast
  * @brief Return a spatiotemporal box from a geometry/geography and a timestamp.
  * @sqlfunc stbox()
  */
@@ -661,12 +661,12 @@ geo_timestamp_to_stbox(const GSERIALIZED *gs, TimestampTz t)
   geo_set_stbox(gs, result);
   span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
     T_TIMESTAMPTZ, &result->period);
-  MEOS_FLAGS_SET_T(result->flags, true);
+  MOBDB_FLAGS_SET_T(result->flags, true);
   return result;
 }
 
 /**
- * @ingroup libmeos_box_cast
+ * @ingroup libMOBDB_box_cast
  * @brief Return a spatiotemporal box from a geometry/geography and a period
  * @sqlfunc stbox()
  */
@@ -678,7 +678,7 @@ geo_period_to_stbox(const GSERIALIZED *gs, const Span *p)
   STBox *result = palloc(sizeof(STBox));
   geo_set_stbox(gs, result);
   memcpy(&result->period, p, sizeof(Span));
-  MEOS_FLAGS_SET_T(result->flags, true);
+  MOBDB_FLAGS_SET_T(result->flags, true);
   return result;
 }
 
@@ -687,43 +687,43 @@ geo_period_to_stbox(const GSERIALIZED *gs, const Span *p)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_box_accessor
+ * @ingroup libMOBDB_box_accessor
  * @brief Return true if a spatiotemporal box has value dimension
  * @sqlfunc hasX()
  */
 bool
 stbox_hasx(const STBox *box)
 {
-  bool result = MEOS_FLAGS_GET_X(box->flags);
+  bool result = MOBDB_FLAGS_GET_X(box->flags);
   return result;
 }
 
 /**
- * @ingroup libmeos_box_accessor
+ * @ingroup libMOBDB_box_accessor
  * @brief Return true if a spatiotemporal box has Z dimension
  * @sqlfunc hasZ()
  */
 bool
 stbox_hasz(const STBox *box)
 {
-  bool result = MEOS_FLAGS_GET_Z(box->flags);
+  bool result = MOBDB_FLAGS_GET_Z(box->flags);
   return result;
 }
 
 /**
- * @ingroup libmeos_box_accessor
+ * @ingroup libMOBDB_box_accessor
  * @brief Return true if a spatiotemporal box has time dimension
  * @sqlfunc hasT()
  */
 bool
 stbox_hast(const STBox *box)
 {
-  bool result = MEOS_FLAGS_GET_T(box->flags);
+  bool result = MOBDB_FLAGS_GET_T(box->flags);
   return result;
 }
 
 /**
- * @ingroup libmeos_box_accessor
+ * @ingroup libMOBDB_box_accessor
  * @brief Return true if a spatiotemporal box is geodetic
  * @sqlfunc isGeodetic()
  * @pymeosfunc geodetic()
@@ -731,12 +731,12 @@ stbox_hast(const STBox *box)
 bool
 stbox_isgeodetic(const STBox *box)
 {
-  bool result = MEOS_FLAGS_GET_GEODETIC(box->flags);
+  bool result = MOBDB_FLAGS_GET_GEODETIC(box->flags);
   return result;
 }
 
 /**
- * @ingroup libmeos_box_accessor
+ * @ingroup libMOBDB_box_accessor
  * @brief Return true if the spatiotemporal box has value dimension. In that
  * case, the minimum X value is returned in the output argument.
  *
@@ -748,14 +748,14 @@ stbox_isgeodetic(const STBox *box)
 bool
 stbox_xmin(const STBox *box, double *result)
 {
-  if (! MEOS_FLAGS_GET_X(box->flags))
+  if (! MOBDB_FLAGS_GET_X(box->flags))
     return false;
   *result = box->xmin;
   return true;
 }
 
 /**
- * @ingroup libmeos_box_accessor
+ * @ingroup libMOBDB_box_accessor
  * @brief Return true if the spatiotemporal box has value dimension. In that
  * case, the maximum X value is returned in the output argument.
  *
@@ -767,14 +767,14 @@ stbox_xmin(const STBox *box, double *result)
 bool
 stbox_xmax(const STBox *box, double *result)
 {
-  if (! MEOS_FLAGS_GET_X(box->flags))
+  if (! MOBDB_FLAGS_GET_X(box->flags))
     return false;
   *result = box->xmax;
   return true;
 }
 
 /**
- * @ingroup libmeos_box_accessor
+ * @ingroup libMOBDB_box_accessor
  * @brief Return true if the spatiotemporal box has value dimension. In that
  * case, the minimum Y value is returned in the output argument.
  *
@@ -786,14 +786,14 @@ stbox_xmax(const STBox *box, double *result)
 bool
 stbox_ymin(const STBox *box, double *result)
 {
-  if (! MEOS_FLAGS_GET_X(box->flags))
+  if (! MOBDB_FLAGS_GET_X(box->flags))
     return false;
   *result = box->ymin;
   return true;
 }
 
 /**
- * @ingroup libmeos_box_accessor
+ * @ingroup libMOBDB_box_accessor
  * @brief Return true if the spatiotemporal box has value dimension. In that
  * case, the maximum Y value is returned in the output argument.
  *
@@ -805,14 +805,14 @@ stbox_ymin(const STBox *box, double *result)
 bool
 stbox_ymax(const STBox *box, double *result)
 {
-  if (! MEOS_FLAGS_GET_X(box->flags))
+  if (! MOBDB_FLAGS_GET_X(box->flags))
     return false;
   *result = box->ymax;
   return true;
 }
 
 /**
- * @ingroup libmeos_box_accessor
+ * @ingroup libMOBDB_box_accessor
  * @brief Return true if the spatiotemporal box has Z dimension. In that
  * case, the minimum Z value is returned in the output argument.
  *
@@ -824,14 +824,14 @@ stbox_ymax(const STBox *box, double *result)
 bool
 stbox_zmin(const STBox *box, double *result)
 {
-  if (! MEOS_FLAGS_GET_Z(box->flags))
+  if (! MOBDB_FLAGS_GET_Z(box->flags))
     return false;
   *result = box->zmin;
   return true;
 }
 
 /**
- * @ingroup libmeos_box_accessor
+ * @ingroup libMOBDB_box_accessor
  * @brief Return true if the spatiotemporal box has Z dimension. In that
  * case, the maximum Z value is returned in the output argument.
  *
@@ -843,14 +843,14 @@ stbox_zmin(const STBox *box, double *result)
 bool
 stbox_zmax(const STBox *box, double *result)
 {
-  if (! MEOS_FLAGS_GET_Z(box->flags))
+  if (! MOBDB_FLAGS_GET_Z(box->flags))
     return false;
   *result = box->zmax;
   return true;
 }
 
 /**
- * @ingroup libmeos_box_accessor
+ * @ingroup libMOBDB_box_accessor
  * @brief Return true if the spatiotemporal box has time dimension. In that
  * case, the minimum timestamp is returned in the output argument.
  *
@@ -862,14 +862,14 @@ stbox_zmax(const STBox *box, double *result)
 bool
 stbox_tmin(const STBox *box, TimestampTz *result)
 {
-  if (! MEOS_FLAGS_GET_T(box->flags))
+  if (! MOBDB_FLAGS_GET_T(box->flags))
     return false;
   *result = DatumGetTimestampTz(box->period.lower);
   return true;
 }
 
 /**
- * @ingroup libmeos_box_accessor
+ * @ingroup libMOBDB_box_accessor
  * @brief Return true if the spatiotemporal box has time dimension. In that
  * case, the maximum timestamp is returned in the output argument.
  *
@@ -881,7 +881,7 @@ stbox_tmin(const STBox *box, TimestampTz *result)
 bool
 stbox_tmax(const STBox *box, TimestampTz *result)
 {
-  if (! MEOS_FLAGS_GET_T(box->flags))
+  if (! MOBDB_FLAGS_GET_T(box->flags))
     return false;
   *result = DatumGetTimestampTz(box->period.upper);
   return true;
@@ -892,7 +892,7 @@ stbox_tmax(const STBox *box, TimestampTz *result)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_box_accessor
+ * @ingroup libMOBDB_box_accessor
  * @brief Return the SRID of a spatiotemporal box.
  * @sqlfunc SRID()
  * @pymeosfunc srid()
@@ -904,7 +904,7 @@ stbox_srid(const STBox *box)
 }
 
 /**
- * @ingroup libmeos_box_transf
+ * @ingroup libMOBDB_box_transf
  * @brief Set the SRID of a spatiotemporal box.
  * @sqlfunc setSRID()
  */
@@ -921,7 +921,7 @@ stbox_set_srid(const STBox *box, int32 srid)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_box_transf
+ * @ingroup libMOBDB_temporal_box_transf
  * @brief Return a copy of the spatiotemporal box keeping only the space
  * dimension
  * @sqlfunc getSpace()
@@ -931,14 +931,14 @@ stbox_get_space(const STBox *box)
 {
   ensure_has_X_stbox(box);
   STBox *result = palloc(sizeof(STBox));
-  stbox_set(true, MEOS_FLAGS_GET_Z(box->flags),
-    MEOS_FLAGS_GET_GEODETIC(box->flags), box->srid, box->xmin, box->xmax,
+  stbox_set(true, MOBDB_FLAGS_GET_Z(box->flags),
+    MOBDB_FLAGS_GET_GEODETIC(box->flags), box->srid, box->xmin, box->xmax,
     box->ymin, box->ymax, box->zmin, box->zmax, NULL, result);
   return result;
 }
 
 /**
- * @ingroup libmeos_box_transf
+ * @ingroup libMOBDB_box_transf
  * @brief Return a spatiotemporal box expanded in the spatial dimension by a
  * double.
  * @sqlfunc expandSpace()
@@ -952,7 +952,7 @@ stbox_expand_space(const STBox *box, double d)
   result->ymin -= d;
   result->xmax += d;
   result->ymax += d;
-  if (MEOS_FLAGS_GET_Z(box->flags) || MEOS_FLAGS_GET_GEODETIC(box->flags))
+  if (MOBDB_FLAGS_GET_Z(box->flags) || MOBDB_FLAGS_GET_GEODETIC(box->flags))
   {
     result->zmin -= d;
     result->zmax += d;
@@ -961,7 +961,7 @@ stbox_expand_space(const STBox *box, double d)
 }
 
 /**
- * @ingroup libmeos_box_transf
+ * @ingroup libMOBDB_box_transf
  * @brief Return a spatiotemporal box expanded in the temporal dimension by
  * an interval
  * @sqlfunc expandTime()
@@ -993,11 +993,11 @@ static void
 stbox_stbox_flags(const STBox *box1, const STBox *box2, bool *hasx,
   bool *hasz, bool *hast, bool *geodetic)
 {
-  *hasx = MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags);
-  *hasz = MEOS_FLAGS_GET_Z(box1->flags) && MEOS_FLAGS_GET_Z(box2->flags);
-  *hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
-  *geodetic = MEOS_FLAGS_GET_GEODETIC(box1->flags) &&
-    MEOS_FLAGS_GET_GEODETIC(box2->flags);
+  *hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
+  *hasz = MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags);
+  *hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
+  *geodetic = MOBDB_FLAGS_GET_GEODETIC(box1->flags) &&
+    MOBDB_FLAGS_GET_GEODETIC(box2->flags);
   return;
 }
 
@@ -1014,7 +1014,7 @@ topo_stbox_stbox_init(const STBox *box1, const STBox *box2, bool *hasx,
   bool *hasz, bool *hast, bool *geodetic)
 {
   ensure_common_dimension(box1->flags, box2->flags);
-  if (MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags))
+  if (MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags))
   {
     ensure_same_geodetic(box1->flags, box2->flags);
     ensure_same_srid_stbox(box1, box2);
@@ -1024,7 +1024,7 @@ topo_stbox_stbox_init(const STBox *box1, const STBox *box2, bool *hasx,
 }
 
 /**
- * @ingroup libmeos_box_topo
+ * @ingroup libMOBDB_box_topo
  * @brief Return true if the first spatiotemporal box contains the second one.
  * @sqlop @p \@>
  */
@@ -1046,7 +1046,7 @@ contains_stbox_stbox(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_topo
+ * @ingroup libMOBDB_box_topo
  * @brief Return true if the first spatiotemporal box is contained by the
  * second one
  * @sqlop @p <@
@@ -1058,7 +1058,7 @@ contained_stbox_stbox(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_topo
+ * @ingroup libMOBDB_box_topo
  * @brief Return true if the spatiotemporal boxes overlap
  * @sqlop @p &&
  */
@@ -1080,7 +1080,7 @@ overlaps_stbox_stbox(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_topo
+ * @ingroup libMOBDB_box_topo
  * @brief Return true if the spatiotemporal boxes are equal on the common
  * dimensions.
  * @sqlop @p ~=
@@ -1102,7 +1102,7 @@ same_stbox_stbox(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_topo
+ * @ingroup libMOBDB_box_topo
  * @brief Return true if the spatiotemporal boxes are adjacent.
  * @sqlop @p -|-
  */
@@ -1156,7 +1156,7 @@ pos_stbox_stbox_test(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libMOBDB_box_pos
  * @brief Return true if the first spatiotemporal box is strictly to the
  * left of the second one
  * @sqlop @p <<
@@ -1171,7 +1171,7 @@ left_stbox_stbox(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libMOBDB_box_pos
  * @brief Return true if the first spatiotemporal box does not extend to the
  * right of the second one
  * @sqlop @p &<
@@ -1186,7 +1186,7 @@ overleft_stbox_stbox(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libMOBDB_box_pos
  * @brief Return true if the first spatiotemporal box is strictly to the right
  * of the second one
  * @sqlop @p >>
@@ -1201,7 +1201,7 @@ right_stbox_stbox(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libMOBDB_box_pos
  * @brief Return true if the first spatio temporal box does not extend to the
  * left of the second one.
  * @sqlop @p &>
@@ -1216,7 +1216,7 @@ overright_stbox_stbox(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libMOBDB_box_pos
  * @brief Return true if the first spatiotemporal box is strictly below of
  * the second one.
  * @sqlop @p <<|
@@ -1231,7 +1231,7 @@ below_stbox_stbox(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libMOBDB_box_pos
  * @brief Return true if the first spatiotemporal box does not extend above of
  * the second one.
  * @sqlop @p &<|
@@ -1246,7 +1246,7 @@ overbelow_stbox_stbox(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libMOBDB_box_pos
  * @brief Return true if the first spatiotemporal box is strictly above of the
  * second one.
  * @sqlop @p |>>
@@ -1261,7 +1261,7 @@ above_stbox_stbox(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libMOBDB_box_pos
  * @brief Return true if the first spatiotemporal box does not extend below of
  * the second one.
  * @sqlop @p |&>
@@ -1276,7 +1276,7 @@ overabove_stbox_stbox(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libMOBDB_box_pos
  * @brief Return true if the first spatiotemporal box is strictly in front of
  * the second one.
  * @sqlop @p <</
@@ -1291,7 +1291,7 @@ front_stbox_stbox(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libMOBDB_box_pos
  * @brief Return true if the first spatiotemporal box does not extend to the
  * back of the second one.
  * @sqlop @p &</
@@ -1306,7 +1306,7 @@ overfront_stbox_stbox(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libMOBDB_box_pos
  * @brief Return true if the first spatiotemporal box is strictly back of the
  * second one
  * @sqlop @p />>
@@ -1321,7 +1321,7 @@ back_stbox_stbox(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libMOBDB_box_pos
  * @brief Return true if the first spatiotemporal box does not extend to the
  * front of the second one.
  * @sqlop @p /&>
@@ -1336,7 +1336,7 @@ overback_stbox_stbox(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libMOBDB_box_pos
  * @brief Return true if the first spatiotemporal box is strictly before the
  * second one
  * @sqlop @p <<#
@@ -1351,7 +1351,7 @@ before_stbox_stbox(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libMOBDB_box_pos
  * @brief Return true if the first temporal box does not extend after the
  * second one
  * @sqlop @p &<#
@@ -1365,7 +1365,7 @@ overbefore_stbox_stbox(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libMOBDB_box_pos
  * @brief Return true if the first spatiotemporal box is strictly after
  * the second one.
  * @sqlop @p #>>
@@ -1379,7 +1379,7 @@ after_stbox_stbox(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libMOBDB_box_pos
  * @brief Return true if the first temporal box does not extend before the
  * second one.
  * @sqlop @p #&>
@@ -1397,7 +1397,7 @@ overafter_stbox_stbox(const STBox *box1, const STBox *box2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_box_set
+ * @ingroup libMOBDB_box_set
  * @brief Return the union of the spatiotemporal boxes.
  * @sqlop @p +
  */
@@ -1418,7 +1418,7 @@ union_stbox_stbox(const STBox *box1, const STBox *box2, bool strict)
 }
 
 /**
- * @ingroup libmeos_box_set
+ * @ingroup libMOBDB_box_set
  * @brief Set a spatiotemporal box with the result of the intersection of the
  * first two boxes
  * @note This function is equivalent to @ref intersection_stbox_stbox without
@@ -1430,10 +1430,10 @@ inter_stbox_stbox(const STBox *box1, const STBox *box2, STBox *result)
   ensure_same_geodetic(box1->flags, box2->flags);
   ensure_same_srid_stbox(box1, box2);
 
-  bool hasx = MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags);
-  bool hasz = MEOS_FLAGS_GET_Z(box1->flags) && MEOS_FLAGS_GET_Z(box2->flags);
-  bool hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
-  bool geodetic = MEOS_FLAGS_GET_GEODETIC(box1->flags) && MEOS_FLAGS_GET_GEODETIC(box2->flags);
+  bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
+  bool hasz = MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags);
+  bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
+  bool geodetic = MOBDB_FLAGS_GET_GEODETIC(box1->flags) && MOBDB_FLAGS_GET_GEODETIC(box2->flags);
   /* If there is no common dimension */
   if ((! hasx && ! hast) ||
     /* If they do no intersect in one common dimension */
@@ -1467,7 +1467,7 @@ inter_stbox_stbox(const STBox *box1, const STBox *box2, STBox *result)
 }
 
 /**
- * @ingroup libmeos_box_set
+ * @ingroup libMOBDB_box_set
  * @brief Return the intersection of the spatiotemporal boxes.
  * @sqlop @p *
  */
@@ -1491,7 +1491,7 @@ intersection_stbox_stbox(const STBox *box1, const STBox *box2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_box_transf
+ * @ingroup libMOBDB_box_transf
  * @brief Split the spatiotemporal box with respect to its space dimension in
  * four quadrants/octants numbered as follows
  * @code
@@ -1508,9 +1508,9 @@ STBox *
 stbox_quad_split(const STBox *box, int *count)
 {
   ensure_has_X_stbox(box);
-  bool hasz = MEOS_FLAGS_GET_Z(box->flags);
-  bool hast = MEOS_FLAGS_GET_T(box->flags);
-  bool geodetic = MEOS_FLAGS_GET_GEODETIC(box->flags);
+  bool hasz = MOBDB_FLAGS_GET_Z(box->flags);
+  bool hast = MOBDB_FLAGS_GET_T(box->flags);
+  bool geodetic = MOBDB_FLAGS_GET_GEODETIC(box->flags);
   Span *period = hast ? (Span *) &box->period : NULL;
   *count = hasz ? 8 : 4;
   STBox *result = palloc(sizeof(STBox) * (*count));
@@ -1565,7 +1565,7 @@ stbox_quad_split(const STBox *box, int *count)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_box_comp
+ * @ingroup libMOBDB_box_comp
  * @brief Return true if the spatiotemporal boxes are equal.
  * @note The internal B-tree comparator is not used to increase efficiency
  * @sqlop @p =
@@ -1584,7 +1584,7 @@ stbox_eq(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_comp
+ * @ingroup libMOBDB_box_comp
  * @brief Return true if the spatiotemporal boxes are different
  * @sqlop @p <>
  */
@@ -1595,7 +1595,7 @@ stbox_ne(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_comp
+ * @ingroup libMOBDB_box_comp
  * @brief Return -1, 0, or 1 depending on whether the first spatiotemporal
  * box is less than, equal, or greater than the second one
  * @sqlfunc stbox_cmp()
@@ -1663,7 +1663,7 @@ stbox_cmp(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_comp
+ * @ingroup libMOBDB_box_comp
  * @brief Return true if the first spatiotemporal box is less than the second one
  * @sqlop @p <
  */
@@ -1675,7 +1675,7 @@ stbox_lt(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_comp
+ * @ingroup libMOBDB_box_comp
  * @brief Return true if the first spatiotemporal box is less than or equal to
  * the second one
  * @sqlop @p <=
@@ -1688,7 +1688,7 @@ stbox_le(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_comp
+ * @ingroup libMOBDB_box_comp
  * @brief Return true if the first spatiotemporal box is greater than or equal to
  * the second one
  * @sqlop @p >=
@@ -1701,7 +1701,7 @@ stbox_ge(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_comp
+ * @ingroup libMOBDB_box_comp
  * @brief Return true if the first spatiotemporal box is greater than the second one
  * @sqlop @p >
  */

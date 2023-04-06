@@ -433,9 +433,9 @@ static double
 stbox_size(const STBox *box)
 {
   double result_size = 1;
-  bool  hasx = MEOS_FLAGS_GET_X(box->flags),
-        hasz = MEOS_FLAGS_GET_Z(box->flags),
-        hast = MEOS_FLAGS_GET_T(box->flags);
+  bool  hasx = MOBDB_FLAGS_GET_X(box->flags),
+        hasz = MOBDB_FLAGS_GET_Z(box->flags),
+        hast = MOBDB_FLAGS_GET_T(box->flags);
   /*
    * Check for zero-width cases.  Note that we define the size of a zero-
    * by-infinity box as zero.  It's important to special-case this somehow,

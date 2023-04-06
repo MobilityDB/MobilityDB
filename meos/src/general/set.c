@@ -55,7 +55,7 @@
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_accessor
+ * @ingroup libMOBDB_internal_setspan_accessor
  * @brief Return the location of a value in a set using binary search.
  *
  * If the value is found, the index of the value is returned in the output
@@ -105,7 +105,7 @@ set_find_value(const Set *s, Datum d, int *loc)
 
 #if 0 /* not used */
 /**
- * @ingroup libmeos_internal_setspan_accessor
+ * @ingroup libMOBDB_internal_setspan_accessor
  * @brief Return the location of a value in a ranked set (which is unordered)
  * using sequential search.
  * @note Contrary to function `set_find_value`, if the value is not found the
@@ -138,7 +138,7 @@ rset_find_value(const Set *s, Datum d, int *loc)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_inout
+ * @ingroup libMOBDB_internal_setspan_inout
  * @brief Return a set from its Well-Known Text (WKT) representation.
  */
 Set *
@@ -149,7 +149,7 @@ set_in(const char *str, meosType settype)
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_inout
+ * @ingroup libMOBDB_setspan_inout
  * @brief Return a set from its Well-Known Text (WKT) representation.
  */
 Set *
@@ -159,7 +159,7 @@ intset_in(const char *str)
 }
 
 /**
- * @ingroup libmeos_setspan_inout
+ * @ingroup libMOBDB_setspan_inout
  * @brief Return a set from its Well-Known Text (WKT) representation.
  */
 Set *
@@ -169,7 +169,7 @@ bigintset_in(const char *str)
 }
 
 /**
- * @ingroup libmeos_setspan_inout
+ * @ingroup libMOBDB_setspan_inout
  * @brief Return a set from its Well-Known Text (WKT) representation.
  */
 Set *
@@ -179,7 +179,7 @@ floatset_in(const char *str)
 }
 
 /**
- * @ingroup libmeos_setspan_inout
+ * @ingroup libMOBDB_setspan_inout
  * @brief Return a set from its Well-Known Text (WKT) representation.
  */
 Set *
@@ -189,7 +189,7 @@ textset_in(const char *str)
 }
 
 /**
- * @ingroup libmeos_setspan_inout
+ * @ingroup libMOBDB_setspan_inout
  * @brief Return a set from its Well-Known Text (WKT) representation.
  */
 Set *
@@ -201,7 +201,7 @@ tstzset_in(const char *str)
 
 
 /**
- * @ingroup libmeos_setspan_inout
+ * @ingroup libMOBDB_setspan_inout
  * @brief Return true if the base type value is output enclosed into quotes.
  */
 static bool
@@ -214,7 +214,7 @@ set_basetype_quotes(meosType type)
 }
 
 /**
- * @ingroup libmeos_internal_setspan_inout
+ * @ingroup libMOBDB_internal_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a set.
  */
 char *
@@ -234,7 +234,7 @@ set_out_fn(const Set *s, int maxdd, outfunc value_out)
 }
 
 /**
- * @ingroup libmeos_setspan_inout
+ * @ingroup libMOBDB_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a set.
  */
 char *
@@ -245,7 +245,7 @@ set_out(const Set *s, int maxdd)
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_inout
+ * @ingroup libMOBDB_setspan_inout
  * @brief Output a set of timestamps.
 */
 char *
@@ -255,7 +255,7 @@ tstzset_out(const Set *set)
 }
 
 /**
- * @ingroup libmeos_setspan_inout
+ * @ingroup libMOBDB_setspan_inout
  * @brief Output a set of texts.
 */
 char *
@@ -265,7 +265,7 @@ textset_out(const Set *set)
 }
 
 /**
- * @ingroup libmeos_setspan_inout
+ * @ingroup libMOBDB_setspan_inout
  * @brief Output a set of integers.
 */
 char *
@@ -275,7 +275,7 @@ intset_out(const Set *set)
 }
 
 /**
- * @ingroup libmeos_setspan_inout
+ * @ingroup libMOBDB_setspan_inout
  * @brief Output a set of big integers.
 */
 char *
@@ -285,7 +285,7 @@ bigintset_out(const Set *set)
 }
 
 /**
- * @ingroup libmeos_setspan_inout
+ * @ingroup libMOBDB_setspan_inout
  * @brief Output a set of floats.
 */
 char *
@@ -295,7 +295,7 @@ floatset_out(const Set *set, int maxdd)
 }
 
 /**
- * @ingroup libmeos_setspan_inout
+ * @ingroup libMOBDB_setspan_inout
  * @brief Output a set of geometries.
 */
 char *
@@ -305,7 +305,7 @@ geomset_out(const Set *set, int maxdd)
 }
 
 /**
- * @ingroup libmeos_setspan_inout
+ * @ingroup libMOBDB_setspan_inout
  * @brief Output a set of geographies.
 */
 char *
@@ -316,7 +316,7 @@ geogset_out(const Set *set, int maxdd)
 
 #if NPOINT
 /**
- * @ingroup libmeos_setspan_inout
+ * @ingroup libMOBDB_setspan_inout
  * @brief Output a set of network points.
 */
 Set *
@@ -328,7 +328,7 @@ npointset_out(const Set *set, int maxdd)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_spanset_inout
+ * @ingroup libMOBDB_spanset_inout
  * @brief Return the Well-Known Text (WKT) representation a geoset.
  * @sqlfunc asText()
  */
@@ -339,7 +339,7 @@ geoset_as_text(const Set *set, int maxdd)
 }
 
 /**
- * @ingroup libmeos_spanset_inout
+ * @ingroup libMOBDB_spanset_inout
  * @brief Return the Extended Well-Known Text (EWKT) representation a geoset.
  * @sqlfunc asEWKT()
  */
@@ -414,7 +414,7 @@ SET_OFFSETS_PTR(const Set *s)
 }
 
 /**
- * @ingroup libmeos_internal_setspan_accessor
+ * @ingroup libMOBDB_internal_setspan_accessor
  * @brief Return the n-th value of a set
  * @pre The argument @p index is less than the number of values in the set
  */
@@ -423,7 +423,7 @@ SET_VAL_N(const Set *s, int index)
 {
   assert(index >= 0);
   /* For base types passed by value */
-  if (MEOS_FLAGS_GET_BYVAL(s->flags))
+  if (MOBDB_FLAGS_GET_BYVAL(s->flags))
     return (SET_OFFSETS_PTR(s))[index];
   /* For base types passed by reference */
   return PointerGetDatum(
@@ -435,7 +435,7 @@ SET_VAL_N(const Set *s, int index)
 #endif /* DEBUG_BUILD */
 
 /**
- * @ingroup libmeos_internal_setspan_constructor
+ * @ingroup libMOBDB_internal_setspan_constructor
  * @brief Construct a set from an array of values.
  *
  * The memory structure depends on whether the value is passed by value or
@@ -561,13 +561,13 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
   /* Create the Set */
   Set *result = palloc0(memsize);
   SET_VARSIZE(result, memsize);
-  MEOS_FLAGS_SET_BYVAL(result->flags, typbyval);
-  MEOS_FLAGS_SET_ORDERED(result->flags, ordered);
+  MOBDB_FLAGS_SET_BYVAL(result->flags, typbyval);
+  MOBDB_FLAGS_SET_ORDERED(result->flags, ordered);
   if (geo_basetype(basetype))
   {
-    MEOS_FLAGS_SET_X(result->flags, true);
-    MEOS_FLAGS_SET_Z(result->flags, hasz);
-    MEOS_FLAGS_SET_GEODETIC(result->flags, isgeodetic);
+    MOBDB_FLAGS_SET_X(result->flags, true);
+    MOBDB_FLAGS_SET_Z(result->flags, hasz);
+    MOBDB_FLAGS_SET_GEODETIC(result->flags, isgeodetic);
   }
   result->count = newcount;
   result->maxcount = maxcount;
@@ -608,7 +608,7 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
 }
 
 /**
- * @ingroup libmeos_internal_setspan_constructor
+ * @ingroup libMOBDB_internal_setspan_constructor
  * @brief Construct a set from an array of values.
  * @param[in] values Array of values
  * @param[in] count Number of elements in the array
@@ -625,7 +625,7 @@ set_make(const Datum *values, int count, meosType basetype, bool ordered)
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_constructor
+ * @ingroup libMOBDB_setspan_constructor
  * @brief Construct a set from an array of timestamp values.
 */
 Set *
@@ -638,7 +638,7 @@ tstzset_make(const TimestampTz *values, int count)
 }
 
 /**
- * @ingroup libmeos_setspan_constructor
+ * @ingroup libMOBDB_setspan_constructor
  * @brief Construct a set from an array of text values.
 */
 Set *
@@ -651,7 +651,7 @@ textset_make(const text **values, int count)
 }
 
 /**
- * @ingroup libmeos_setspan_constructor
+ * @ingroup libMOBDB_setspan_constructor
  * @brief Construct a set from an array of integer values.
 */
 Set *
@@ -664,7 +664,7 @@ intset_make(const int *values, int count)
 }
 
 /**
- * @ingroup libmeos_setspan_constructor
+ * @ingroup libMOBDB_setspan_constructor
  * @brief Construct a set from an array of big integer values.
 */
 Set *
@@ -677,7 +677,7 @@ bigintset_make(const int64 *values, int count)
 }
 
 /**
- * @ingroup libmeos_setspan_constructor
+ * @ingroup libMOBDB_setspan_constructor
  * @brief Construct a set from an array of float values.
 */
 Set *
@@ -690,7 +690,7 @@ floatset_make(const double *values, int count)
 }
 
 /**
- * @ingroup libmeos_setspan_constructor
+ * @ingroup libMOBDB_setspan_constructor
  * @brief Construct a set from an array of geometry values.
 */
 Set *
@@ -703,7 +703,7 @@ geomset_make(const GSERIALIZED **values, int count)
 }
 
 /**
- * @ingroup libmeos_setspan_constructor
+ * @ingroup libMOBDB_setspan_constructor
  * @brief Construct a set from an array of geography values.
 */
 Set *
@@ -717,7 +717,7 @@ geogset_make(const GSERIALIZED **values, int count)
 
 #if NPOINT
 /**
- * @ingroup libmeos_setspan_constructor
+ * @ingroup libMOBDB_setspan_constructor
  * @brief Construct a set from an array of network point values.
 */
 Set *
@@ -732,7 +732,7 @@ npointset_make(const Npoint *values, int count)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_setspan_constructor
+ * @ingroup libMOBDB_internal_setspan_constructor
  * @brief Construct a set from the array of values and free the array after
  * the creation.
  * @param[in] values Array of values
@@ -754,7 +754,7 @@ set_make_free(Datum *values, int count, meosType basetype, bool ordered)
 }
 
 /**
- * @ingroup libmeos_setspan_constructor
+ * @ingroup libMOBDB_setspan_constructor
  * @brief Return a copy of a set.
  */
 Set *
@@ -770,7 +770,7 @@ set_copy(const Set *s)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_cast
+ * @ingroup libMOBDB_internal_setspan_cast
  * @brief Cast a value as a set
  * @sqlop @p ::
  */
@@ -782,7 +782,7 @@ value_to_set(Datum d, meosType basetype)
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_cast
+ * @ingroup libMOBDB_setspan_cast
  * @brief Cast a value as a set
  * @sqlop @p ::
  */
@@ -794,7 +794,7 @@ int_to_intset(int i)
 }
 
 /**
- * @ingroup libmeos_setspan_cast
+ * @ingroup libMOBDB_setspan_cast
  * @brief Cast a value as a set
  * @sqlop @p ::
  */
@@ -806,7 +806,7 @@ bigint_to_bigintset(int64 i)
 }
 
 /**
- * @ingroup libmeos_setspan_cast
+ * @ingroup libMOBDB_setspan_cast
  * @brief Cast a value as a set
  * @sqlop @p ::
  */
@@ -818,7 +818,7 @@ float_to_floatset(double d)
 }
 
 /**
- * @ingroup libmeos_setspan_cast
+ * @ingroup libMOBDB_setspan_cast
  * @brief Cast a value as a set
  * @sqlop @p ::
  */
@@ -831,7 +831,7 @@ timestamp_to_tstzset(TimestampTz t)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_setspan_cast
+ * @ingroup libMOBDB_setspan_cast
  * @brief Set the last argument to the bounding span of a set.
  */
 void
@@ -843,7 +843,7 @@ set_set_span(const Set *set, Span *s)
 }
 
 /**
- * @ingroup libmeos_setspan_cast
+ * @ingroup libMOBDB_setspan_cast
  * @brief Return the bounding span of a set.
  * @sqlfunc span()
  * @sqlop @p ::
@@ -860,7 +860,7 @@ set_to_span(const Set *s)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_setspan_cast
+ * @ingroup libMOBDB_setspan_cast
  * @brief Set the last argument to the bounding box of a spatial set.
  */
 void
@@ -874,7 +874,7 @@ spatialset_set_stbox(const Set *set, STBox *box)
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_cast
+ * @ingroup libMOBDB_setspan_cast
  * @brief Return the bounding box of a spatial set.
  * @sqlfunc stbox()
  * @sqlop @p ::
@@ -895,7 +895,7 @@ spatialset_to_stbox(const Set *s)
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup libMOBDB_setspan_accessor
  * @brief Return the size in bytes of a set.
  * @sqlfunc memSize()
  */
@@ -907,7 +907,7 @@ set_mem_size(const Set *s)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup libMOBDB_setspan_accessor
  * @brief Return the number of values of a set.
  * @sqlfunc numTimestamps()
  * @pymeosfunc numTimestamps()
@@ -919,7 +919,7 @@ set_num_values(const Set *s)
 }
 
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup libMOBDB_setspan_accessor
  * @brief Return the start value of a set.
  * @sqlfunc startTimestamp()
  * @pymeosfunc startTimestamp()
@@ -932,7 +932,7 @@ set_start_value(const Set *s)
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup libMOBDB_setspan_accessor
  * @brief Return the start value of an integer set.
  * @sqlfunc startValue()
  * @pymeosfunc startValue()
@@ -945,7 +945,7 @@ intset_start_value(const Set *s)
 }
 
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup libMOBDB_setspan_accessor
  * @brief Return the start value of a big integer set.
  * @sqlfunc startValue()
  * @pymeosfunc startValue()
@@ -958,7 +958,7 @@ bigintset_start_value(const Set *s)
 }
 
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup libMOBDB_setspan_accessor
  * @brief Return the start value of a float set.
  * @sqlfunc startValue()
  * @pymeosfunc startValue()
@@ -971,7 +971,7 @@ floatset_start_value(const Set *s)
 }
 
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup libMOBDB_setspan_accessor
  * @brief Return the start value of a set.
  * @sqlfunc startTimestamp()
  * @pymeosfunc startTimestamp()
@@ -985,7 +985,7 @@ tstzset_start_timestamp(const Set *ts)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup libMOBDB_setspan_accessor
  * @brief Return the end value of a set.
  * @sqlfunc endTimestamp()
  * @pymeosfunc endTimestamp()
@@ -998,7 +998,7 @@ set_end_value(const Set *s)
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup libMOBDB_setspan_accessor
  * @brief Return the end value of an integer set.
  * @sqlfunc endValue()
  * @pymeosfunc endValue()
@@ -1011,7 +1011,7 @@ intset_end_value(const Set *s)
 }
 
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup libMOBDB_setspan_accessor
  * @brief Return the end value of a big integer set.
  * @sqlfunc endValue()
  * @pymeosfunc endValue()
@@ -1024,7 +1024,7 @@ bigintset_end_value(const Set *s)
 }
 
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup libMOBDB_setspan_accessor
  * @brief Return the end value of a float set.
  * @sqlfunc endValue()
  * @pymeosfunc endValue()
@@ -1037,7 +1037,7 @@ floatset_end_value(const Set *s)
 }
 
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup libMOBDB_setspan_accessor
  * @brief Return the end value of a set.
  * @sqlfunc endTimestamp()
  * @pymeosfunc endTimestamp()
@@ -1051,7 +1051,7 @@ tstzset_end_timestamp(const Set *ts)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup libMOBDB_setspan_accessor
  * @brief Return the n-th value of a set.
  * @param[in] s Set
  * @param[in] n Number
@@ -1072,7 +1072,7 @@ set_value_n(const Set *s, int n, Datum *result)
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup libMOBDB_setspan_accessor
  * @brief Return the n-th value of an integer set.
  * @param[in] s Integer set
  * @param[in] n Number
@@ -1092,7 +1092,7 @@ intset_value_n(const Set *s, int n, int *result)
 }
 
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup libMOBDB_setspan_accessor
  * @brief Return the n-th value of a big integer set.
  * @param[in] s Integer set
  * @param[in] n Number
@@ -1112,7 +1112,7 @@ bigintset_value_n(const Set *s, int n, int64 *result)
 }
 
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup libMOBDB_setspan_accessor
  * @brief Return the n-th value of a float set.
  * @param[in] s Float set
  * @param[in] n Number
@@ -1132,7 +1132,7 @@ floatset_value_n(const Set *s, int n, double *result)
 }
 
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup libMOBDB_setspan_accessor
  * @brief Return the n-th value of a set.
  * @param[in] ts Timestamp set
  * @param[in] n Number
@@ -1153,7 +1153,7 @@ tstzset_timestamp_n(const Set *ts, int n, TimestampTz *result)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup libMOBDB_setspan_accessor
  * @brief Return the array of values of a set.
  * @sqlfunc values(), timestamps()
  * @pymeosfunc timestamps()
@@ -1169,7 +1169,7 @@ set_values(const Set *s)
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup libMOBDB_setspan_accessor
  * @brief Return the array of values of an integer set.
  * @sqlfunc values()
  * @pymeosfunc values()
@@ -1184,7 +1184,7 @@ intset_values(const Set *s)
 }
 
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup libMOBDB_setspan_accessor
  * @brief Return the array of values of a big integer set.
  * @sqlfunc values()
  * @pymeosfunc values()
@@ -1199,7 +1199,7 @@ bigintset_values(const Set *s)
 }
 
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup libMOBDB_setspan_accessor
  * @brief Return the array of values of a float set.
  * @sqlfunc values()
  * @pymeosfunc values()
@@ -1214,7 +1214,7 @@ floatset_values(const Set *s)
 }
 
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup libMOBDB_setspan_accessor
  * @brief Return the array of timestamps of a set.
  * @sqlfunc timestamps()
  * @pymeosfunc timestamps()
@@ -1230,7 +1230,7 @@ tstzset_values(const Set *ts)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_setspan_accessor
+ * @ingroup libMOBDB_internal_setspan_accessor
  * @brief Return the SRID of a geoset point.
  * @sqlfunc SRID()
  */
@@ -1252,7 +1252,7 @@ geoset_srid(const Set *set)
 Set *
 set_shift(const Set *s, Datum shift)
 {
-  assert(MEOS_FLAGS_GET_BYVAL(s->flags));
+  assert(MOBDB_FLAGS_GET_BYVAL(s->flags));
   Set *result = set_copy(s);
   for (int i = 0; i < s->count; i++)
     (SET_OFFSETS_PTR(result))[i] =
@@ -1261,7 +1261,7 @@ set_shift(const Set *s, Datum shift)
 }
 
 /**
- * @ingroup libmeos_setspan_transf
+ * @ingroup libMOBDB_setspan_transf
  * @brief Return a timestamp set uned and/or scaled by the intervals
  * @sqlfunc shift(), tscale(), shiftTscale()
  * @pymeosfunc shift()
@@ -1308,7 +1308,7 @@ tstzset_shift_tscale(const Set *s, const Interval *shift,
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_setspan_comp
+ * @ingroup libMOBDB_setspan_comp
  * @brief Return true if the first set is equal to the second one.
  * @note The internal B-tree comparator is not used to increase efficiency
  * @sqlop @p =
@@ -1333,7 +1333,7 @@ set_eq(const Set *s1, const Set *s2)
 }
 
 /**
- * @ingroup libmeos_setspan_comp
+ * @ingroup libMOBDB_setspan_comp
  * @brief Return true if the first set is different from the
  * second one.
  * @note The internal B-tree comparator is not used to increase efficiency
@@ -1346,7 +1346,7 @@ set_ne(const Set *s1, const Set *s2)
 }
 
 /**
- * @ingroup libmeos_setspan_comp
+ * @ingroup libMOBDB_setspan_comp
  * @brief Return -1, 0, or 1 depending on whether the first set is less
  * than, equal, or greater than the second one.
  * @note Function used for B-tree comparison
@@ -1380,7 +1380,7 @@ set_cmp(const Set *s1, const Set *s2)
 }
 
 /**
- * @ingroup libmeos_setspan_comp
+ * @ingroup libMOBDB_setspan_comp
  * @brief Return true if the first set is less than the second one
  * @sqlop @p <
  */
@@ -1391,7 +1391,7 @@ set_lt(const Set *s1, const Set *s2)
 }
 
 /**
- * @ingroup libmeos_setspan_comp
+ * @ingroup libMOBDB_setspan_comp
  * @brief Return true if the first set is less than or equal to the
  * second one
  * @sqlop @p <=
@@ -1403,7 +1403,7 @@ set_le(const Set *s1, const Set *s2)
 }
 
 /**
- * @ingroup libmeos_setspan_comp
+ * @ingroup libMOBDB_setspan_comp
  * @brief Return true if the first set is greater than or equal to
  * the second one
  * @sqlop @p >=
@@ -1415,7 +1415,7 @@ set_ge(const Set *s1, const Set *s2)
 }
 
 /**
- * @ingroup libmeos_setspan_comp
+ * @ingroup libMOBDB_setspan_comp
  * @brief Return true if the first set is greater than the second one
  * @sqlop @p >
  */
@@ -1432,7 +1432,7 @@ set_gt(const Set *s1, const Set *s2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup libMOBDB_setspan_accessor
  * @brief Return the 32-bit hash of a set.
  * @sqlfunc tstzset_hash()
  */
@@ -1450,7 +1450,7 @@ set_hash(const Set *s)
 }
 
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup libMOBDB_setspan_accessor
  * @brief Return the 64-bit hash of a set using a seed.
  * @sqlfunc tstzset_hash_extended()
  */

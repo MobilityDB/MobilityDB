@@ -44,7 +44,7 @@
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libMOBDB_temporal_restrict
  * @brief Restrict a temporal boolean to a boolean.
  * @sqlfunc atValue()
  */
@@ -56,7 +56,7 @@ tbool_at_value(const Temporal *temp, bool b)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libMOBDB_temporal_restrict
  * @brief Restrict a temporal integer to an integer.
  * @sqlfunc atValue()
  */
@@ -68,7 +68,7 @@ tint_at_value(const Temporal *temp, int i)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libMOBDB_temporal_restrict
  * @brief Restrict a temporal float to a float.
  * @sqlfunc atValue()
  */
@@ -80,7 +80,7 @@ tfloat_at_value(const Temporal *temp, double d)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libMOBDB_temporal_restrict
  * @brief Restrict a temporal text to a text.
  * @sqlfunc atValue()
  */
@@ -92,7 +92,7 @@ ttext_at_value(const Temporal *temp, text *txt)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libMOBDB_temporal_restrict
  * @brief Restrict a temporal point to a point.
  * @sqlfunc atValue()
  */
@@ -104,7 +104,7 @@ tpoint_at_value(const Temporal *temp, GSERIALIZED *gs)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libMOBDB_temporal_restrict
  * @brief Restrict a temporal boolean to the complement of a boolean.
  * @sqlfunc minusValue()
  */
@@ -116,7 +116,7 @@ tbool_minus_value(const Temporal *temp, bool b)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libMOBDB_temporal_restrict
  * @brief Restrict a temporal integer to the complement of an integer.
  * @sqlfunc minusValue()
  */
@@ -128,7 +128,7 @@ tint_minus_value(const Temporal *temp, int i)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libMOBDB_temporal_restrict
  * @brief Restrict a temporal float to the complement of a float.
  * @sqlfunc minusValue()
  */
@@ -140,7 +140,7 @@ tfloat_minus_value(const Temporal *temp, double d)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libMOBDB_temporal_restrict
  * @brief Restrict a temporal text to the complement of a text.
  * @sqlfunc minusValue()
  */
@@ -152,7 +152,7 @@ ttext_minus_value(const Temporal *temp, text *txt)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libMOBDB_temporal_restrict
  * @brief Restrict a temporal point to the complement of a point.
  * @sqlfunc minusValue()
  */
@@ -166,7 +166,7 @@ tpoint_minus_value(const Temporal *temp, GSERIALIZED *gs)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libMOBDB_temporal_restrict
  * @brief Restrict a temporal value to a set of values.
  * @sqlfunc atValues()
  */
@@ -177,7 +177,7 @@ temporal_at_values(const Temporal *temp, const Set *set)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libMOBDB_temporal_restrict
  * @brief Restrict a temporal value to the complement of a set of values.
  * @sqlfunc minusValues()
  */
@@ -190,7 +190,7 @@ temporal_minus_values(const Temporal *temp, const Set *set)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libMOBDB_temporal_restrict
  * @brief Return the value of a temporal boolean at a timestamp
  * @sqlfunc valueAtTimestamp()
  */
@@ -207,7 +207,7 @@ tbool_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libMOBDB_temporal_restrict
  * @brief Return the value of a temporal integer at a timestamp
  * @sqlfunc valueAtTimestamp()
  */
@@ -224,7 +224,7 @@ tint_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libMOBDB_temporal_restrict
  * @brief Return the value of a temporal integer at a timestamp
  * @sqlfunc valueAtTimestamp()
  */
@@ -241,7 +241,7 @@ tfloat_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libMOBDB_temporal_restrict
  * @brief Return the value of a temporal integer at a timestamp
  * @sqlfunc valueAtTimestamp()
  */
@@ -258,7 +258,7 @@ ttext_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libMOBDB_temporal_restrict
  * @brief Return the value of a temporal geometric point at a timestamp
  * @sqlfunc valueAtTimestamp()
  */
@@ -277,7 +277,7 @@ tpoint_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict,
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libMOBDB_temporal_restrict
  * @brief Restrict a temporal value to its minimum base value
  * @sqlfunc atMin()
  */
@@ -289,7 +289,7 @@ temporal_at_min(const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libMOBDB_temporal_restrict
  * @brief Restrict a temporal value to the complement of its minimum base value
  * @sqlfunc minusMin()
  */
@@ -301,7 +301,7 @@ temporal_minus_min(const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libMOBDB_temporal_restrict
  * @brief Restrict a temporal value to its maximum base value
  * @sqlfunc atMax()
  */
@@ -313,7 +313,7 @@ temporal_at_max(const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libMOBDB_temporal_restrict
  * @brief Restrict a temporal value to the complement of its maximum base value
  * @sqlfunc minusMax()
  */
@@ -327,7 +327,7 @@ temporal_minus_max(const Temporal *temp)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libMOBDB_temporal_restrict
  * @brief Restrict a temporal value to a span of base values.
  * @sqlfunc atSpan()
  */
@@ -339,7 +339,7 @@ tnumber_at_span(const Temporal *temp, const Span *span)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libMOBDB_temporal_restrict
  * @brief Restrict a temporal value to the complement of a span of base values.
  * @sqlfunc minusSpan()
  */
@@ -351,7 +351,7 @@ tnumber_minus_span(const Temporal *temp, const Span *span)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libMOBDB_temporal_restrict
  * @brief Restrict a temporal value to an array of spans of base values.
  * @sqlfunc minusSpans()
  */
@@ -363,7 +363,7 @@ tnumber_at_spanset(const Temporal *temp, const SpanSet *ss)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libMOBDB_temporal_restrict
  * @brief Restrict a temporal value to the complement of an array of spans
  * of base values.
  * @sqlfunc minusSpans()
@@ -378,7 +378,7 @@ tnumber_minus_spanset(const Temporal *temp, const SpanSet *ss)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libMOBDB_temporal_restrict
  * @brief Restrict a temporal value to a timestamp
  * @sqlfunc atTime()
  */
@@ -390,7 +390,7 @@ temporal_at_timestamp(const Temporal *temp, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libMOBDB_temporal_restrict
  * @brief Restrict a temporal value to the complement of a timestamp
  * @sqlfunc minusTime()
  */
@@ -402,7 +402,7 @@ temporal_minus_timestamp(const Temporal *temp, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libMOBDB_temporal_restrict
  * @brief Restrict a temporal value to a timestamp set
  * @sqlfunc atTime()
  */
@@ -414,7 +414,7 @@ temporal_at_timestampset(const Temporal *temp, const Set *ts)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libMOBDB_temporal_restrict
  * @brief Restrict a temporal value to the complement of a timestamp set
  * @sqlfunc minusTime()
  */
@@ -426,7 +426,7 @@ temporal_minus_timestampset(const Temporal *temp, const Set *ts)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libMOBDB_temporal_restrict
  * @brief Restrict a temporal value to a period
  * @sqlfunc atTime()
  */
@@ -438,7 +438,7 @@ temporal_at_period(const Temporal *temp, const Span *p)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libMOBDB_temporal_restrict
  * @brief Restrict a temporal value to the complement of a period
  * @sqlfunc minusTime()
  */
@@ -450,7 +450,7 @@ temporal_minus_period(const Temporal *temp, const Span *p)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libMOBDB_temporal_restrict
  * @brief Restrict a temporal value to a period set
  * @sqlfunc atTime()
  */
@@ -462,7 +462,7 @@ temporal_at_periodset(const Temporal *temp, const SpanSet *ps)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libMOBDB_temporal_restrict
  * @brief Restrict a temporal value to the complement of a period set
  * @sqlfunc minusTime()
  */

@@ -35,14 +35,14 @@
  * aggregate values of the count, duration, and distance of the tiles.
  *
  * Please read the assumptions made about the input file `trips.csv` in the
- * file `meos_disassemble_berlinmod.c` in the same directory. Notice that the
+ * file `MOBDB_disassemble_berlinmod.c` in the same directory. Notice that the
  * program assumes that we already have computed the extent of the trips and
  * the speeds. Otherwise, a first scan of the CSV file is needed for computing
  * both extents and then proceed for the second scan as below.
  *
  * The program can be build as follows
  * @code
- * gcc -Wall -g -I/usr/local/include -o 07_meos_tile_berlinmod 07_meos_tile_berlinmod.c -L/usr/local/lib -lmeos
+ * gcc -Wall -g -I/usr/local/include -o 07_MOBDB_tile_berlinmod 07_MOBDB_tile_berlinmod.c -L/usr/local/lib -lmeos
  * @endcode
  */
 
@@ -88,7 +88,7 @@ int main(void)
   int i, j, k;
 
   /* Initialize MEOS */
-  meos_initialize(NULL);
+  MOBDB_initialize(NULL);
 
   /* Compute the spatial tiles for trips */
   int no_rows, no_cols, *no_cells;
@@ -258,7 +258,7 @@ int main(void)
   fclose(file);
 
   /* Finalize MEOS */
-  meos_finalize();
+  MOBDB_finalize();
 
   return 0;
 }

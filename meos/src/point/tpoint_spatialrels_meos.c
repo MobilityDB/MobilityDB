@@ -61,7 +61,7 @@
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
+ * @ingroup libMOBDB_temporal_spatial_rel
  * @brief Return 1 if the temporal points are ever disjoint, 0 if not, and
  * -1 if the temporal points do not intersect in time
  * @sqlfunc disjoint()
@@ -78,7 +78,7 @@ edisjoint_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
+ * @ingroup libMOBDB_temporal_spatial_rel
  * @brief Return 1 if the temporal points ever intersect, 0 if not, and
  * -1 if the temporal points do not intersect in time
  * @sqlfunc intersects()

@@ -31,8 +31,8 @@
  * @brief Functions for building a cache of type and operator Oids.
  */
 
-#ifndef __PG_MEOS_CATALOG_H__
-#define __PG_MEOS_CATALOG_H__
+#ifndef __PG_MOBDB_CATALOG_H__
+#define __PG_MOBDB_CATALOG_H__
 
 /* PostgreSQL */
 #include <postgres.h>
@@ -53,5 +53,5 @@ extern meosOper oid_oper(Oid operOid, meosType *ltype, meosType *rtype);
 
 /*****************************************************************************/
 
-#endif /* __PG_MEOS_CATALOG_H__ */
+#endif /* __PG_MOBDB_CATALOG_H__ */
 

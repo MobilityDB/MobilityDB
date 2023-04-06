@@ -196,7 +196,7 @@ skiplist_delete(SkipList *list, int cur)
 }
 
 /**
- * @ingroup libmeos_spantime_agg
+ * @ingroup libMOBDB_spantime_agg
  * @brief Free the skiplist
  */
 void
@@ -451,8 +451,8 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
   Temporal *temp2 = (Temporal *) values[0];
   if (temp1->subtype != temp2->subtype)
     elog(ERROR, "Cannot aggregate temporal values of different type");
-  if (MEOS_FLAGS_GET_LINEAR(temp1->flags) !=
-      MEOS_FLAGS_GET_LINEAR(temp2->flags))
+  if (MOBDB_FLAGS_GET_LINEAR(temp1->flags) !=
+      MOBDB_FLAGS_GET_LINEAR(temp2->flags))
     elog(ERROR, "Cannot aggregate temporal values of different interpolation");
 
   /* Compute the span of the new values */

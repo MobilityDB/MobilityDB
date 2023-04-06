@@ -84,7 +84,7 @@ number_distance(Datum l, Datum r, meosType typel, meosType typer)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_temporal_dist
+ * @ingroup libMOBDB_internal_temporal_dist
  * @brief Return the temporal distance between a temporal number and a number.
  * @param[in] temp Temporal number
  * @param[in] value Value
@@ -103,7 +103,7 @@ distance_tnumber_number(const Temporal *temp, Datum value, meosType valuetype,
   lfinfo.argtype[0] = temptype_basetype(temp->temptype);
   lfinfo.argtype[1] = valuetype;
   lfinfo.restype = restype;
-  lfinfo.reslinear = MEOS_FLAGS_GET_LINEAR(temp->flags);
+  lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp->flags);
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc_base = &tlinearsegm_intersection_value;
@@ -114,7 +114,7 @@ distance_tnumber_number(const Temporal *temp, Datum value, meosType valuetype,
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_dist
+ * @ingroup libMOBDB_temporal_dist
  * @brief Return the temporal distance between a temporal integer and an
  * integer.
  * @sqlop @p <->
@@ -126,7 +126,7 @@ distance_tint_int(const Temporal *temp, int i)
 }
 
 /**
- * @ingroup libmeos_temporal_dist
+ * @ingroup libMOBDB_temporal_dist
  * @brief Return the temporal distance between a temporal float and a float.
  * @sqlop @p <->
  */
@@ -177,8 +177,8 @@ distance_tnumber_tnumber1(const Temporal *temp1, const Temporal *temp2,
   lfinfo.argtype[0] = temptype_basetype(temp1->temptype);
   lfinfo.argtype[1] = temptype_basetype(temp2->temptype);
   lfinfo.restype = restype;
-  lfinfo.reslinear = MEOS_FLAGS_GET_LINEAR(temp1->flags) ||
-    MEOS_FLAGS_GET_LINEAR(temp2->flags);
+  lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
+    MOBDB_FLAGS_GET_LINEAR(temp2->flags);
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc = lfinfo.reslinear ? &tnumber_min_dist_at_timestamp : NULL;
@@ -188,7 +188,7 @@ distance_tnumber_tnumber1(const Temporal *temp1, const Temporal *temp2,
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_dist
+ * @ingroup libMOBDB_temporal_dist
  * @brief Return the temporal distance between two temporal numbers
  * @sqlop @p <->
  */
@@ -209,7 +209,7 @@ distance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_temporal_dist
+ * @ingroup libMOBDB_internal_temporal_dist
  * @brief Return the nearest approach distance between a temporal number
  * and a number.
  */
@@ -225,7 +225,7 @@ nad_tnumber_number(const Temporal *temp, Datum value, meosType basetype)
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_dist
+ * @ingroup libMOBDB_temporal_dist
  * @brief Return the nearest approach distance between a temporal number
  * and a number.
  * @sqlop @p |=|
@@ -238,7 +238,7 @@ nad_tint_int(const Temporal *temp, int i)
 }
 
 /**
- * @ingroup libmeos_temporal_dist
+ * @ingroup libMOBDB_temporal_dist
  * @brief Return the nearest approach distance between a temporal number
  * and a number.
  * @sqlop @p |=|
@@ -251,7 +251,7 @@ nad_tfloat_float(const Temporal *temp, double d)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_temporal_dist
+ * @ingroup libMOBDB_temporal_dist
  * @brief Return the nearest approach distance between the temporal boxes.
  * @sqlop @p |=|
  */
@@ -262,7 +262,7 @@ nad_tbox_tbox(const TBox *box1, const TBox *box2)
   ensure_has_X_tbox(box1); ensure_has_X_tbox(box2);
 
   /* If the boxes do not intersect in the time dimension return infinity */
-  bool hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
+  bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
   if (hast && ! overlaps_span_span(&box1->period, &box2->period))
     return DBL_MAX;
 
@@ -280,7 +280,7 @@ nad_tbox_tbox(const TBox *box1, const TBox *box2)
 }
 
 /**
- * @ingroup libmeos_temporal_dist
+ * @ingroup libMOBDB_temporal_dist
  * @brief Return the nearest approach distance between a temporal number
  * and a temporal box.
  * @sqlop @p |=|
@@ -290,7 +290,7 @@ nad_tnumber_tbox(const Temporal *temp, const TBox *box)
 {
   /* Test the validity of the arguments */
   ensure_has_X_tbox(box);
-  bool hast = MEOS_FLAGS_GET_T(box->flags);
+  bool hast = MOBDB_FLAGS_GET_T(box->flags);
   Span p, inter;
   if (hast)
   {
@@ -337,7 +337,7 @@ nad_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_dist
+ * @ingroup libMOBDB_temporal_dist
  * @brief Return the nearest approach distance between two temporal integers.
  * @sqlop @p |=|
  */
@@ -349,7 +349,7 @@ nad_tint_tint(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_dist
+ * @ingroup libMOBDB_temporal_dist
  * @brief Return the nearest approach distance between two temporal floats.
  * @sqlop @p |=|
  */

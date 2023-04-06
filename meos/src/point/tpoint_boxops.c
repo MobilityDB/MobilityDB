@@ -72,7 +72,7 @@ tpointinst_set_stbox(const TInstant *inst, STBox *box)
   geo_set_stbox(point, box);
   span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
     true, true, T_TIMESTAMPTZ, &box->period);
-  MEOS_FLAGS_SET_T(box->flags, true);
+  MOBDB_FLAGS_SET_T(box->flags, true);
 }
 
 /**
@@ -89,8 +89,8 @@ tgeompointinstarr_set_stbox(const TInstant **instants, int count, STBox *box)
   tpointinst_set_stbox(instants[0], box);
   /* Prepare for the iteration */
   GSERIALIZED *point = DatumGetGserializedP(&instants[0]->value);
-  bool hasz = MEOS_FLAGS_GET_Z(instants[0]->flags);
-  bool geodetic = MEOS_FLAGS_GET_GEODETIC(instants[0]->flags);
+  bool hasz = MOBDB_FLAGS_GET_Z(instants[0]->flags);
+  bool geodetic = MOBDB_FLAGS_GET_GEODETIC(instants[0]->flags);
   for (int i = 1; i < count; i++)
   {
     point = DatumGetGserializedP(&instants[i]->value);
@@ -150,7 +150,7 @@ tgeogpointseq_expand_stbox(TSequence *seq, const TInstant *inst)
   ll2cart(p1, &A1);
   ll2cart(p2, &A2);
   edge_calculate_gbox(&A1, &A2, &edge_gbox);
-  bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
+  bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
   int32 srid = tpointseq_srid(seq);
   Span period;
   span_set(last->t, inst->t, true, true, T_TIMESTAMPTZ, &period);
@@ -199,7 +199,7 @@ tgeogpointinstarr_set_gbox(const TInstant **instants, int count,
 static void
 tgeogpointseq_set_gbox(const TSequence *seq, GBOX *box)
 {
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
   LWPOINT **points = palloc(sizeof(LWPOINT *) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
@@ -243,7 +243,7 @@ tgeogpointinstarr_set_stbox(const TInstant **instants, int count,
   FLAGS_SET_M(gbox.flags, 0);
   FLAGS_SET_GEODETIC(gbox.flags, 1);
   tgeogpointinstarr_set_gbox(instants, count, interp, &gbox);
-  bool hasz = MEOS_FLAGS_GET_Z(instants[0]->flags);
+  bool hasz = MOBDB_FLAGS_GET_Z(instants[0]->flags);
   int32 srid = tpointinst_srid(instants[0]);
   Span period;
   span_set(instants[0]->t, instants[count - 1]->t, true, true, T_TIMESTAMPTZ,
@@ -271,7 +271,7 @@ tgeogpointseq_set_stbox(const TSequence *seq, STBox *box)
   FLAGS_SET_M(gbox.flags, 0);
   FLAGS_SET_GEODETIC(gbox.flags, 1);
   tgeogpointseq_set_gbox(seq, &gbox);
-  bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
+  bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
   int32 srid = tpointseq_srid(seq);
   Span period;
   span_set((TSEQUENCE_INST_N(seq, 0))->t,
@@ -317,7 +317,7 @@ tpointseqarr_set_stbox(const TSequence **sequences, int count, STBox *box)
 static int
 tpointseq_stboxes1(const TSequence *seq, STBox *result)
 {
-  assert(MEOS_FLAGS_GET_LINEAR(seq->flags));
+  assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
   const TInstant *inst1;
 
   /* Instantaneous sequence */
@@ -343,7 +343,7 @@ tpointseq_stboxes1(const TSequence *seq, STBox *result)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_spatial_accessor
+ * @ingroup libMOBDB_internal_temporal_spatial_accessor
  * @brief Return an array of spatiotemporal boxes from the segments of a
  * temporal sequence point.
  * @param[in] seq Temporal value
@@ -352,7 +352,7 @@ tpointseq_stboxes1(const TSequence *seq, STBox *result)
 STBox *
 tpointseq_stboxes(const TSequence *seq, int *count)
 {
-  assert(MEOS_FLAGS_GET_LINEAR(seq->flags));
+  assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
   int newcount = seq->count == 1 ? 1 : seq->count - 1;
   STBox *result = palloc(sizeof(STBox) * newcount);
   tpointseq_stboxes1(seq, result);
@@ -361,7 +361,7 @@ tpointseq_stboxes(const TSequence *seq, int *count)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_spatial_accessor
+ * @ingroup libMOBDB_internal_temporal_spatial_accessor
  * @brief Return an array of spatiotemporal boxes from the segments of a
  * temporal sequence set point.
  * @param[in] ss Temporal value
@@ -370,7 +370,7 @@ tpointseq_stboxes(const TSequence *seq, int *count)
 STBox *
 tpointseqset_stboxes(const TSequenceSet *ss, int *count)
 {
-  assert(MEOS_FLAGS_GET_LINEAR(ss->flags));
+  assert(MOBDB_FLAGS_GET_LINEAR(ss->flags));
   STBox *result = palloc(sizeof(STBox) * ss->totalcount);
   int k = 0;
   for (int i = 0; i < ss->count; i++)
@@ -383,7 +383,7 @@ tpointseqset_stboxes(const TSequenceSet *ss, int *count)
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_accessor
+ * @ingroup libMOBDB_temporal_spatial_accessor
  * @brief Return an array of spatiotemporal boxes from a temporal point
  * @sqlfunc stboxes()
  */
@@ -392,7 +392,7 @@ tpoint_stboxes(const Temporal *temp, int *count)
 {
   STBox *result = NULL;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || MEOS_FLAGS_GET_DISCRETE(temp->flags))
+  if (temp->subtype == TINSTANT || MOBDB_FLAGS_GET_DISCRETE(temp->flags))
     ;
   else if (temp->subtype == TSEQUENCE)
     result = tpointseq_stboxes((TSequence *)temp, count);

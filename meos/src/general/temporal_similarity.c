@@ -164,7 +164,7 @@ temporal_similarity(const Temporal *temp1, const Temporal *temp2,
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_similarity
+ * @ingroup libMOBDB_temporal_similarity
  * @brief Compute the Frechet distance between two temporal values.
  * @param[in] temp1,temp2 Temporal values
  * @sqlfunc frechetDistance()
@@ -176,7 +176,7 @@ temporal_frechet_distance(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_similarity
+ * @ingroup libMOBDB_temporal_similarity
  * @brief Compute the Dynamic Time Warp distance between two temporal values.
  * @param[in] temp1,temp2 Temporal values
  * @sqlfunc dynamicTimeWarp()
@@ -404,7 +404,7 @@ temporal_similarity_path(const Temporal *temp1, const Temporal *temp2,
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_similarity
+ * @ingroup libMOBDB_temporal_similarity
  * @brief Compute the Frechet distance between two temporal values.
  * @param[in] temp1,temp2 Temporal values
  * @param[out] count Number of elements of the output array
@@ -417,7 +417,7 @@ temporal_frechet_path(const Temporal *temp1, const Temporal *temp2, int *count)
 }
 
 /**
- * @ingroup libmeos_temporal_similarity
+ * @ingroup libMOBDB_temporal_similarity
  * @brief Compute the Dynamic Time Warp distance between two temporal values.
  * @param[in] temp1,temp2 Temporal values
  * @param[out] count Number of elements of the output array

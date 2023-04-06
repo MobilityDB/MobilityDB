@@ -31,8 +31,8 @@
  * @brief API of the Mobility Engine Open Source (MEOS) library.
  */
 
-#ifndef __MEOS_H__
-#define __MEOS_H__
+#ifndef __MOBDB_H__
+#define __MOBDB_H__
 
 /* C */
 #include <stdbool.h>
@@ -254,8 +254,8 @@ typedef struct
  * Initialization of the MEOS library
  *****************************************************************************/
 
-extern void meos_initialize(const char *tz_str);
-extern void meos_finalize(void);
+extern void MOBDB_initialize(const char *tz_str);
+extern void MOBDB_finalize(void);
 
 /*****************************************************************************
  * Functions for input/output PostgreSQL time types

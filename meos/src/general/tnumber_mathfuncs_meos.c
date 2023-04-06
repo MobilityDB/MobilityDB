@@ -47,7 +47,7 @@
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup libMOBDB_temporal_math
  * @brief Return the temporal addition of an integer and a temporal integer
  * @sqlop @p +
  */
@@ -59,7 +59,7 @@ add_int_tint(int i, const Temporal *tnumber)
 }
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup libMOBDB_temporal_math
  * @brief Return the temporal addition of a float and a temporal float
  * @sqlop @p +
  */
@@ -71,7 +71,7 @@ add_float_tfloat(double d, const Temporal *tnumber)
 }
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup libMOBDB_temporal_math
  * @brief Return the temporal addition of a temporal integer and an integer
  * @sqlop @p +
  */
@@ -83,7 +83,7 @@ add_tint_int(const Temporal *tnumber, int i)
 }
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup libMOBDB_temporal_math
  * @brief Return the temporal addition of a temporal float and a float
  * @sqlop @p +
  */
@@ -95,7 +95,7 @@ add_tfloat_float(const Temporal *tnumber, double d)
 }
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup libMOBDB_temporal_math
  * @brief Return the temporal addition of the temporal numbers
  * @sqlop @p +
  */
@@ -110,7 +110,7 @@ add_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup libMOBDB_temporal_math
  * @brief Return the temporal subtraction of an integer and a temporal integer
  * @sqlop @p -
  */
@@ -122,7 +122,7 @@ sub_int_tint(int i, const Temporal *tnumber)
 }
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup libMOBDB_temporal_math
  * @brief Return the temporal subtraction of a float and a temporal float
  * @sqlop @p -
  */
@@ -134,7 +134,7 @@ sub_float_tfloat(double d, const Temporal *tnumber)
 }
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup libMOBDB_temporal_math
  * @brief Return the temporal subtraction of a temporal integer and an integer
  * @sqlop @p -
  */
@@ -146,7 +146,7 @@ sub_tint_int(const Temporal *tnumber, int i)
 }
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup libMOBDB_temporal_math
  * @brief Return the temporal subtraction of a temporal float and a float
  * @sqlop @p -
  */
@@ -158,7 +158,7 @@ sub_tfloat_float(const Temporal *tnumber, double d)
 }
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup libMOBDB_temporal_math
  * @brief Return the temporal subtraction of the temporal numbers
  * @sqlop @p -
  */
@@ -173,7 +173,7 @@ sub_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup libMOBDB_temporal_math
  * @brief Return the temporal multiplication of an integer and a temporal integer
  * @sqlop @p *
  */
@@ -185,7 +185,7 @@ mult_int_tint(int i, const Temporal *tnumber)
 }
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup libMOBDB_temporal_math
  * @brief Return the temporal multiplication of a float and a temporal float
  * @sqlop @p *
  */
@@ -197,7 +197,7 @@ mult_float_tfloat(double d, const Temporal *tnumber)
 }
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup libMOBDB_temporal_math
  * @brief Return the temporal multiplication of a temporal integer and an integer
  * @sqlop @p *
  */
@@ -209,7 +209,7 @@ mult_tint_int(const Temporal *tnumber, int i)
 }
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup libMOBDB_temporal_math
  * @brief Return the temporal multiplication of a temporal float and a float
  * @sqlop @p *
  */
@@ -221,7 +221,7 @@ mult_tfloat_float(const Temporal *tnumber, double d)
 }
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup libMOBDB_temporal_math
  * @brief Return the temporal multiplication of the temporal numbers
  * @sqlop @p *
  */
@@ -237,7 +237,7 @@ mult_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup libMOBDB_temporal_math
  * @brief Return the temporal division of an integer and a temporal integer
  * @sqlop @p /
  */
@@ -249,7 +249,7 @@ div_int_tint(int i, const Temporal *tnumber)
 }
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup libMOBDB_temporal_math
  * @brief Return the temporal division of a float and a temporal float
  * @sqlop @p /
  */
@@ -261,7 +261,7 @@ div_float_tfloat(double d, const Temporal *tnumber)
 }
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup libMOBDB_temporal_math
  * @brief Return the temporal division of a temporal integer and an integer
  * @sqlop @p /
  */
@@ -273,7 +273,7 @@ div_tint_int(const Temporal *tnumber, int i)
 }
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup libMOBDB_temporal_math
  * @brief Return the temporal division of a temporal float and a float
  * @sqlop @p /
  */
@@ -285,7 +285,7 @@ div_tfloat_float(const Temporal *tnumber, double d)
 }
 
 /**
- * @ingroup libmeos_temporal_math
+ * @ingroup libMOBDB_temporal_math
  * @brief Return the temporal division of the temporal numbers
  * @sqlop @p /
  */

@@ -209,7 +209,7 @@ tpointinst_transform(const TInstant *inst, int srid)
 TSequence *
 tpointseq_transform(const TSequence *seq, int srid)
 {
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
 
   /* Instantaneous sequence */
   if (seq->count == 1)
@@ -288,7 +288,7 @@ tpointseqset_transform(const TSequenceSet *ss, int srid)
   LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   TInstant **instants = palloc(sizeof(TInstant *) * maxcount);
-  interpType interp = MEOS_FLAGS_GET_INTERP(ss->flags);
+  interpType interp = MOBDB_FLAGS_GET_INTERP(ss->flags);
   k = 0;
   for (int i = 0; i < ss->count; i++)
   {
@@ -732,7 +732,7 @@ geoset_round(const Set *s, Datum prec)
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_transf
+ * @ingroup libMOBDB_temporal_spatial_transf
  * @brief Set the precision of the coordinates of a temporal point to a
  * number of decimal places.
  * @sqlfunc round()

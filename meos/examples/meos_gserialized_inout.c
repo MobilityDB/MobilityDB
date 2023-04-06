@@ -33,7 +33,7 @@
  *
  * The program can be build as follows
  * @code
- * gcc -Wall -g -I/usr/local/include -o meos_gserialized_inout meos_gserialized_inout.c -L/usr/local/lib -lmeos
+ * gcc -Wall -g -I/usr/local/include -o MOBDB_gserialized_inout MOBDB_gserialized_inout.c -L/usr/local/lib -lmeos
  * @endcode
  */
 
@@ -44,7 +44,7 @@
 int main()
 {
   /* Initialize MEOS */
-  meos_initialize();
+  MOBDB_initialize();
 
   /* Input geometries in WKT format */
   char *point_wkt = "POINT(1 1)";
@@ -167,7 +167,7 @@ int main()
   free(polygon_text); free(polygon_geojson); free(polygon_hexwkb);
 
   /* Finalize MEOS */
-  meos_finalize();
+  MOBDB_finalize();
 
   /* Return */
   return 0;

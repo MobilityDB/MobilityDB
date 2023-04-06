@@ -95,7 +95,7 @@ Stbox_tile_list(PG_FUNCTION_ARGS)
     ensure_point_type(sorigin);
     /* Since we pass by default Point(0 0 0) as origin independently of the input
      * STBox, we test the same spatial dimensionality only for STBox Z */
-    if (MEOS_FLAGS_GET_Z(bounds->flags))
+    if (MOBDB_FLAGS_GET_Z(bounds->flags))
       ensure_same_spatial_dimensionality_stbox_gs(bounds, sorigin);
     int32 srid = bounds->srid;
     int32 gs_srid = gserialized_get_srid(sorigin);
@@ -253,8 +253,8 @@ static GSERIALIZED *
 stbox_to_tile_border(const STBox *box)
 {
   ensure_has_X_stbox(box);
-  assert(! MEOS_FLAGS_GET_Z(box->flags));
-  assert(! MEOS_FLAGS_GET_GEODETIC(box->flags));
+  assert(! MOBDB_FLAGS_GET_Z(box->flags));
+  assert(! MOBDB_FLAGS_GET_GEODETIC(box->flags));
   /* Since there is no M value a 0 value is passed */
   POINTARRAY *pa = ptarray_construct_empty(false, 0, 3);
   /* Initialize the 3 vertices of the line */
@@ -322,7 +322,7 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
     temporal_set_bbox(temp, &bounds);
     if (! timesplit)
       /* Disallow T dimension for generating a spatial only grid */
-      MEOS_FLAGS_SET_T(bounds.flags, false);
+      MOBDB_FLAGS_SET_T(bounds.flags, false);
 
     /* Ensure parameter validity */
     ensure_positive_datum(Float8GetDatum(size), T_FLOAT8);
@@ -334,7 +334,7 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
     if (gs_srid != SRID_UNKNOWN)
       ensure_same_srid(srid, gs_srid);
     POINT3DZ pt;
-    bool hasz = (bool) MEOS_FLAGS_GET_Z(temp->flags);
+    bool hasz = (bool) MOBDB_FLAGS_GET_Z(temp->flags);
     if (hasz)
     {
       ensure_has_Z_gs(sorigin);
@@ -362,7 +362,7 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
       /* We need to add 1 to take into account the last bucket for each dimension */
       count[0] = ( (state->box.xmax - state->box.xmin) / state->size ) + 1;
       count[1] = ( (state->box.ymax - state->box.ymin) / state->size ) + 1;
-      if (MEOS_FLAGS_GET_Z(state->box.flags))
+      if (MOBDB_FLAGS_GET_Z(state->box.flags))
         count[numdims++] = ( (state->box.zmax - state->box.zmin) / state->size ) + 1;
       if (state->tunits)
         count[numdims++] = ( (DatumGetTimestampTz(state->box.period.upper) -
@@ -420,7 +420,7 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
     /* Remove the right and lower bound of the tile */
     STBox box2d;
     memcpy(&box2d, &box, sizeof(STBox));
-    MEOS_FLAGS_SET_Z(box2d.flags, false);
+    MOBDB_FLAGS_SET_Z(box2d.flags, false);
     GSERIALIZED *geo = stbox_to_tile_border(&box2d);
     Temporal *atstbox1 = tpoint_restrict_geometry(atstbox, geo, REST_MINUS);
     pfree(geo); pfree(atstbox);
@@ -428,7 +428,7 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
     if (atstbox == NULL)
       continue;
     /* Form tuple and return */
-    hasz = MEOS_FLAGS_GET_Z(state->temp->flags);
+    hasz = MOBDB_FLAGS_GET_Z(state->temp->flags);
     int i = 0;
     tuple_arr[i++] = PointerGetDatum(gspoint_make(box.xmin, box.ymin, box.zmin,
       hasz, false, box.srid));

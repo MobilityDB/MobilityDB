@@ -334,7 +334,7 @@ Span_gist_penalty(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup libMOBDB_setspan_set
  * @brief Return the union of the spans.
  * @note The result of the function is always a span even if the spans do not
  * overlap

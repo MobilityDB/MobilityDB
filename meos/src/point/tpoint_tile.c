@@ -461,8 +461,8 @@ stbox_tile_state_make(const Temporal *temp, const STBox *box, double size,
   }
   state->box.srid = box->srid;
   state->box.flags = box->flags;
-  MEOS_FLAGS_SET_T(state->box.flags,
-    MEOS_FLAGS_GET_T(box->flags) && tunits > 0);
+  MOBDB_FLAGS_SET_T(state->box.flags,
+    MOBDB_FLAGS_GET_T(box->flags) && tunits > 0);
   state->x = state->box.xmin;
   state->y = state->box.ymin;
   state->z = state->box.zmin;
@@ -493,7 +493,7 @@ stbox_tile_state_next(STboxGridState *state)
     state->coords[1]++;
     if (state->y > state->box.ymax)
     {
-      if (MEOS_FLAGS_GET_Z(state->box.flags))
+      if (MOBDB_FLAGS_GET_Z(state->box.flags))
       {
         /* has Z */
         state->x = state->box.xmin;
@@ -503,7 +503,7 @@ stbox_tile_state_next(STboxGridState *state)
         state->coords[2]++;
         if (state->z > state->box.zmax)
         {
-          if (MEOS_FLAGS_GET_T(state->box.flags))
+          if (MOBDB_FLAGS_GET_T(state->box.flags))
           {
             /* has Z and has T */
             state->x = state->box.xmin;
@@ -528,7 +528,7 @@ stbox_tile_state_next(STboxGridState *state)
       }
       else
       {
-        if (MEOS_FLAGS_GET_T(state->box.flags))
+        if (MOBDB_FLAGS_GET_T(state->box.flags))
         {
           /* does not have Z and has T */
           state->x = state->box.xmin;
@@ -576,8 +576,8 @@ stbox_tile_state_get(STboxGridState *state, STBox *box)
         return false;
     }
   }
-  bool hasz = MEOS_FLAGS_GET_Z(state->box.flags);
-  bool hast = MEOS_FLAGS_GET_T(state->box.flags);
+  bool hasz = MOBDB_FLAGS_GET_Z(state->box.flags);
+  bool hast = MOBDB_FLAGS_GET_T(state->box.flags);
   stbox_tile_set(state->x, state->y, state->z, state->t, state->size,
     state->tunits, hasz, hast, state->box.srid, box);
   return true;
@@ -609,7 +609,7 @@ stbox_tile_list(STBox *bounds, double size, const Interval *duration,
   ensure_point_type(sorigin);
   /* Since we pass by default Point(0 0 0) as origin independently of the input
    * STBox, we test the same spatial dimensionality only for STBox Z */
-  if (MEOS_FLAGS_GET_Z(bounds->flags))
+  if (MOBDB_FLAGS_GET_Z(bounds->flags))
     ensure_same_spatial_dimensionality_stbox_gs(bounds, sorigin);
   int32 srid = bounds->srid;
   int32 gs_srid = gserialized_get_srid(sorigin);
@@ -629,8 +629,8 @@ stbox_tile_list(STBox *bounds, double size, const Interval *duration,
 
   STboxGridState *state = stbox_tile_state_make(NULL, bounds, size, tunits, pt,
     torigin);
-  bool hasz = MEOS_FLAGS_GET_Z(state->box.flags);
-  bool hast = MEOS_FLAGS_GET_T(state->box.flags);
+  bool hasz = MOBDB_FLAGS_GET_Z(state->box.flags);
+  bool hast = MOBDB_FLAGS_GET_T(state->box.flags);
   int *cellcount = palloc0(sizeof(int) * MAXDIMS);
   cellcount[0] = ceil((state->box.xmax - state->box.xmin) / state->size) + 1;
   cellcount[1] = ceil((state->box.ymax - state->box.ymin) / state->size) + 1;
@@ -677,9 +677,9 @@ tile_get_coords(int *coords, double x, double y, double z, TimestampTz t,
   int k = 0;
   coords[k++] = (x - state->box.xmin) / state->size;
   coords[k++] = (y - state->box.ymin) / state->size;
-  if (MEOS_FLAGS_GET_Z(state->box.flags))
+  if (MOBDB_FLAGS_GET_Z(state->box.flags))
     coords[k++] = (z - state->box.zmin) / state->size;
-  if (MEOS_FLAGS_GET_T(state->box.flags))
+  if (MOBDB_FLAGS_GET_T(state->box.flags))
     coords[k++] = (t - DatumGetTimestampTz(state->box.period.lower)) /
       state->tunits;
   return;
@@ -815,14 +815,14 @@ void
 tpoint_set_tiles(const Temporal *temp, const STboxGridState *state,
   BitMatrix *bm)
 {
-  bool hasz = MEOS_FLAGS_GET_Z(state->box.flags);
+  bool hasz = MOBDB_FLAGS_GET_Z(state->box.flags);
   bool hast = (state->tunits > 0);
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     tpointinst_set_tiles((TInstant *) temp, hasz, hast, state, bm);
   else if (temp->subtype == TSEQUENCE)
   {
-    if (MEOS_FLAGS_GET_DISCRETE(temp->flags))
+    if (MOBDB_FLAGS_GET_DISCRETE(temp->flags))
       tdiscseq_set_tiles((TSequence *) temp, hasz, hast, state, bm);
     else
       tcontseq_set_tiles((TSequence *) temp, hasz, hast, state, bm);

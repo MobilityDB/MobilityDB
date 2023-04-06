@@ -138,7 +138,7 @@ parse_bool_with_len(const char *value, size_t len, bool *result)
 }
 
 /**
- * @ingroup libmeos_pg_types
+ * @ingroup libMOBDB_pg_types
  * @brief Convert "t" or "f" to 1 or 0
  *
  * Check explicitly for "true/false" and TRUE/FALSE, 1/0, YES/NO, ON/OFF.
@@ -175,7 +175,7 @@ bool_in(const char *in_str)
 }
 
 /**
- * @ingroup libmeos_pg_types
+ * @ingroup libMOBDB_pg_types
  * @brief Convert 1 or 0 to "t" or "f"
  * @note PostgreSQL function: Datum boolout(PG_FUNCTION_ARGS)
  */
@@ -215,7 +215,7 @@ int4_in(const char *str)
  * version < 14
  */
 static int
-meos_ltoa(int32 value, char *a)
+MOBDB_ltoa(int32 value, char *a)
 {
 	uint32		uvalue = (uint32) value;
 	int			len = 0;
@@ -240,7 +240,7 @@ int4_out(int32 val)
 {
   char *result = palloc(12);  /* sign, 10 digits, '\0' */
 #if POSTGRESQL_VERSION_NUMBER >= 130000
-  meos_ltoa(val, result);
+  MOBDB_ltoa(val, result);
 #else
   sprintf(result, "%d", val);
 #endif
@@ -282,7 +282,7 @@ int8_in(const char *str)
  * version < 14
  */
 int
-meos_lltoa(int64 value, char *a)
+MOBDB_lltoa(int64 value, char *a)
 {
   uint64    uvalue = value;
   int      len = 0;
@@ -309,7 +309,7 @@ int8_out(int64 val)
   char *result;
 #if POSTGRESQL_VERSION_NUMBER >= 130000
   char buf[MAXINT8LEN + 1];
-  int len = meos_lltoa(val, buf) + 1;
+  int len = MOBDB_lltoa(val, buf) + 1;
   /*
    * Since the length is already known, we do a manual palloc() and memcpy()
    * to avoid the strlen() call that would otherwise be done in pstrdup().

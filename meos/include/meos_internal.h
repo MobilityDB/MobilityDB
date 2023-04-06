@@ -31,8 +31,8 @@
  * @brief Internal API of the Mobility Engine Open Source(MEOS) library.
  */
 
-#ifndef __MEOS_INTERNAL_H__
-#define __MEOS_INTERNAL_H__
+#ifndef __MOBDB_INTERNAL_H__
+#define __MOBDB_INTERNAL_H__
 
 /* JSON-C */
 #include <json-c/json.h>
@@ -75,7 +75,7 @@ extern Datum SET_VAL_N(const Set *s, int index);
  * @pre The argument @p index is less than the number of values in the set
  */
 #define SET_VAL_N(s, index) ( (Datum) ( \
-  MEOS_FLAGS_GET_BYVAL((s)->flags) ? (SET_OFFSETS_PTR(s))[index] : \
+  MOBDB_FLAGS_GET_BYVAL((s)->flags) ? (SET_OFFSETS_PTR(s))[index] : \
   PointerGetDatum( ((char *) (s)) + DOUBLE_PAD(sizeof(Set)) + \
     DOUBLE_PAD((s)->bboxsize) + (sizeof(size_t) * (s)->maxcount) + \
     (SET_OFFSETS_PTR(s))[index] ) ) )

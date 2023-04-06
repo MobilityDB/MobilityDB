@@ -181,10 +181,10 @@ datum_func2
 distance_fn(int16 flags)
 {
   datum_func2 result;
-  if (MEOS_FLAGS_GET_GEODETIC(flags))
+  if (MOBDB_FLAGS_GET_GEODETIC(flags))
     result = &geog_distance;
   else
-    result = MEOS_FLAGS_GET_Z(flags) ?
+    result = MOBDB_FLAGS_GET_Z(flags) ?
       &geom_distance3d : &geom_distance2d;
   return result;
 }
@@ -196,10 +196,10 @@ datum_func2
 pt_distance_fn(int16 flags)
 {
   datum_func2 result;
-  if (MEOS_FLAGS_GET_GEODETIC(flags))
+  if (MOBDB_FLAGS_GET_GEODETIC(flags))
     result = &geog_distance;
   else
-    result = MEOS_FLAGS_GET_Z(flags) ?
+    result = MOBDB_FLAGS_GET_Z(flags) ?
       &pt_distance3d : &pt_distance2d;
   return result;
 }
@@ -292,7 +292,7 @@ ensure_spatial_validity(const Temporal *temp1, const Temporal *temp2)
 void
 ensure_not_geodetic(int16 flags)
 {
-  if (MEOS_FLAGS_GET_GEODETIC(flags))
+  if (MOBDB_FLAGS_GET_GEODETIC(flags))
     elog(ERROR, "Only planar coordinates supported");
   return;
 }
@@ -304,8 +304,8 @@ ensure_not_geodetic(int16 flags)
 void
 ensure_same_geodetic(int16 flags1, int16 flags2)
 {
-  if (MEOS_FLAGS_GET_X(flags1) && MEOS_FLAGS_GET_X(flags2) &&
-    MEOS_FLAGS_GET_GEODETIC(flags1) != MEOS_FLAGS_GET_GEODETIC(flags2))
+  if (MOBDB_FLAGS_GET_X(flags1) && MOBDB_FLAGS_GET_X(flags2) &&
+    MOBDB_FLAGS_GET_GEODETIC(flags1) != MOBDB_FLAGS_GET_GEODETIC(flags2))
     elog(ERROR, "Operation on mixed planar and geodetic coordinates");
   return;
 }
@@ -327,7 +327,7 @@ ensure_same_srid(int32_t srid1, int32_t srid2)
 void
 ensure_same_srid_stbox(const STBox *box1, const STBox *box2)
 {
-  if (MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags) &&
+  if (MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags) &&
     box1->srid != box2->srid)
     elog(ERROR, "Operation on mixed SRID");
   return;
@@ -340,7 +340,7 @@ ensure_same_srid_stbox(const STBox *box1, const STBox *box2)
 void
 ensure_same_srid_tpoint_stbox(const Temporal *temp, const STBox *box)
 {
-  if (MEOS_FLAGS_GET_X(box->flags) &&
+  if (MOBDB_FLAGS_GET_X(box->flags) &&
     tpoint_srid(temp) != box->srid)
     elog(ERROR, "Operation on mixed SRID");
   return;
@@ -365,9 +365,9 @@ ensure_same_srid_stbox_gs(const STBox *box, const GSERIALIZED *gs)
 void
 ensure_same_dimensionality(int16 flags1, int16 flags2)
 {
-  if (MEOS_FLAGS_GET_X(flags1) != MEOS_FLAGS_GET_X(flags2) ||
-    MEOS_FLAGS_GET_Z(flags1) != MEOS_FLAGS_GET_Z(flags2) ||
-    MEOS_FLAGS_GET_T(flags1) != MEOS_FLAGS_GET_T(flags2))
+  if (MOBDB_FLAGS_GET_X(flags1) != MOBDB_FLAGS_GET_X(flags2) ||
+    MOBDB_FLAGS_GET_Z(flags1) != MOBDB_FLAGS_GET_Z(flags2) ||
+    MOBDB_FLAGS_GET_T(flags1) != MOBDB_FLAGS_GET_T(flags2))
     elog(ERROR, "The arguments must be of the same dimensionality");
   return;
 }
@@ -379,8 +379,8 @@ ensure_same_dimensionality(int16 flags1, int16 flags2)
 void
 ensure_same_spatial_dimensionality(int16 flags1, int16 flags2)
 {
-  if (MEOS_FLAGS_GET_X(flags1) != MEOS_FLAGS_GET_X(flags2) ||
-    MEOS_FLAGS_GET_Z(flags1) != MEOS_FLAGS_GET_Z(flags2))
+  if (MOBDB_FLAGS_GET_X(flags1) != MOBDB_FLAGS_GET_X(flags2) ||
+    MOBDB_FLAGS_GET_Z(flags1) != MOBDB_FLAGS_GET_Z(flags2))
     elog(ERROR, "Operation on mixed 2D/3D dimensions");
   return;
 }
@@ -392,10 +392,10 @@ ensure_same_spatial_dimensionality(int16 flags1, int16 flags2)
 void
 ensure_same_spatial_dimensionality_temp_box(int16 flags1, int16 flags2)
 {
-  if (MEOS_FLAGS_GET_X(flags1) != MEOS_FLAGS_GET_X(flags2) ||
+  if (MOBDB_FLAGS_GET_X(flags1) != MOBDB_FLAGS_GET_X(flags2) ||
       /* Geodetic boxes are always in 3D */
-      (! MEOS_FLAGS_GET_GEODETIC(flags2) &&
-      MEOS_FLAGS_GET_Z(flags1) != MEOS_FLAGS_GET_Z(flags2)))
+      (! MOBDB_FLAGS_GET_GEODETIC(flags2) &&
+      MOBDB_FLAGS_GET_Z(flags1) != MOBDB_FLAGS_GET_Z(flags2)))
     elog(ERROR, "Operation on mixed 2D/3D dimensions");
   return;
 }
@@ -418,7 +418,7 @@ ensure_same_dimensionality_gs(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 void
 ensure_same_dimensionality_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs)
 {
-  if (MEOS_FLAGS_GET_Z(temp->flags) != FLAGS_GET_Z(gs->gflags))
+  if (MOBDB_FLAGS_GET_Z(temp->flags) != FLAGS_GET_Z(gs->gflags))
     elog(ERROR, "Operation on mixed 2D/3D dimensions");
   return;
 }
@@ -430,10 +430,10 @@ ensure_same_dimensionality_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs
 void
 ensure_same_spatial_dimensionality_stbox_gs(const STBox *box, const GSERIALIZED *gs)
 {
-  if (! MEOS_FLAGS_GET_X(box->flags) ||
+  if (! MOBDB_FLAGS_GET_X(box->flags) ||
       /* Geodetic boxes are always in 3D */
-     (! MEOS_FLAGS_GET_GEODETIC(box->flags) &&
-        MEOS_FLAGS_GET_Z(box->flags) != FLAGS_GET_Z(gs->gflags)))
+     (! MOBDB_FLAGS_GET_GEODETIC(box->flags) &&
+        MOBDB_FLAGS_GET_Z(box->flags) != FLAGS_GET_Z(gs->gflags)))
     elog(ERROR, "The spatiotemporal box and the geometry must be of the same dimensionality");
   return;
 }
@@ -444,7 +444,7 @@ ensure_same_spatial_dimensionality_stbox_gs(const STBox *box, const GSERIALIZED 
 void
 ensure_has_Z(int16 flags)
 {
-  if (! MEOS_FLAGS_GET_Z(flags))
+  if (! MOBDB_FLAGS_GET_Z(flags))
     elog(ERROR, "The temporal point must have Z dimension");
   return;
 }
@@ -455,7 +455,7 @@ ensure_has_Z(int16 flags)
 void
 ensure_has_not_Z(int16 flags)
 {
-  if (MEOS_FLAGS_GET_Z(flags))
+  if (MOBDB_FLAGS_GET_Z(flags))
     elog(ERROR, "The temporal point cannot have Z dimension");
   return;
 }
@@ -545,7 +545,7 @@ point2d_on_segment(const POINT2D *p, const POINT2D *A, const POINT2D *B)
 {
   double crossproduct = (p->y - A->y) * (B->x - A->x) -
     (p->x - A->x) * (B->y - A->y);
-  if (fabs(crossproduct) >= MEOS_EPSILON)
+  if (fabs(crossproduct) >= MOBDB_EPSILON)
     return false;
   double dotproduct = (p->x - A->x) * (B->x - A->x) +
     (p->y - A->y) * (B->y - A->y);
@@ -565,8 +565,8 @@ point3dz_on_segment(const POINT3DZ *p, const POINT3DZ *A, const POINT3DZ *B)
   double i = (p->y - A->y) * (B->z - A->z) - (p->z - A->z) * (B->y - A->y);
   double j = (p->z - A->z) * (B->x - A->x) - (p->x - A->x) * (B->z - A->z);
   double k = (p->x - A->x) * (B->y - A->y) - (p->y - A->y) * (B->x - A->x);
-  if (fabs(i) >= MEOS_EPSILON || fabs(j) >= MEOS_EPSILON ||
-    fabs(k) >= MEOS_EPSILON)
+  if (fabs(i) >= MOBDB_EPSILON || fabs(j) >= MOBDB_EPSILON ||
+    fabs(k) >= MOBDB_EPSILON)
     return false;
   double dotproduct = (p->x - A->x) * (B->x - A->x) +
     (p->y - A->y) * (B->y - A->y) + (p->z - A->z) * (B->z - A->z);
@@ -582,7 +582,7 @@ point_on_segment_sphere(const POINT4D *p, const POINT4D *A, const POINT4D *B)
   POINT4D closest;
   double dist;
   closest_point_on_segment_sphere(p, A, B, &closest, &dist);
-  return (dist > MEOS_EPSILON) && (FP_EQUALS(p->z, closest.z));
+  return (dist > MOBDB_EPSILON) && (FP_EQUALS(p->z, closest.z));
 }
 
 /**
@@ -621,7 +621,7 @@ point_on_segment(Datum start, Datum end, Datum point)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_temporal_ever
+ * @ingroup libMOBDB_internal_temporal_ever
  * @brief Return true if a temporal instant point is ever equal to a point
  * @pre The validity of the parameters is verified in function @ref tpoint_ever_eq
  * @sqlop @p ?=
@@ -634,7 +634,7 @@ tpointinst_ever_eq(const TInstant *inst, Datum value)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_ever
+ * @ingroup libMOBDB_internal_temporal_ever
  * @brief Return true if a temporal sequence point is ever equal to a point
  * @pre The validity of the parameters is verified in function @ref tpoint_ever_eq
  * @sqlop @p ?=
@@ -650,7 +650,7 @@ tpointseq_ever_eq(const TSequence *seq, Datum value)
     return false;
 
   /* Step interpolation or instantaneous sequence */
-  if (! MEOS_FLAGS_GET_LINEAR(seq->flags) || seq->count == 1)
+  if (! MOBDB_FLAGS_GET_LINEAR(seq->flags) || seq->count == 1)
   {
     for (i = 0; i < seq->count; i++)
     {
@@ -692,7 +692,7 @@ tpointseq_ever_eq(const TSequence *seq, Datum value)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_ever
+ * @ingroup libMOBDB_internal_temporal_ever
  * @brief Return true if a temporal sequence set point is ever equal to a point
  * @pre The validity of the parameters is verified in function @ref tpoint_ever_eq
  * @sqlop @p ?=
@@ -714,7 +714,7 @@ tpointseqset_ever_eq(const TSequenceSet *ss, Datum value)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_ever
+ * @ingroup libMOBDB_internal_temporal_ever
  * @brief Return true if a temporal point is ever equal to a point.
  * @see tpointinst_ever_eq
  * @see tpointseq_ever_eq
@@ -743,7 +743,7 @@ tpoint_ever_eq(const Temporal *temp, Datum value)
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libMOBDB_temporal_ever
  * @brief Return true if a temporal geometric point is ever equal to a point.
  * @sqlop @p ?=
  */
@@ -754,7 +754,7 @@ bool tgeompoint_ever_eq(const Temporal *temp, GSERIALIZED *gs)
 }
 
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libMOBDB_temporal_ever
  * @brief Return true if a temporal geographic point is ever equal to a point.
  * @sqlop @p ?=
  */
@@ -767,7 +767,7 @@ bool tgeogpoint_ever_eq(const Temporal *temp, GSERIALIZED *gs)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_temporal_ever
+ * @ingroup libMOBDB_internal_temporal_ever
  * @brief Return true if a temporal instant point is always equal to a point.
  * @pre The validity of the parameters is verified in function @ref tpoint_always_eq
  * @sqlop @p %=
@@ -779,7 +779,7 @@ tpointinst_always_eq(const TInstant *inst, Datum value)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_ever
+ * @ingroup libMOBDB_internal_temporal_ever
  * @brief Return true if a temporal sequence point is always equal to a point.
  * @pre The validity of the parameters is verified in function @ref tpoint_always_eq
  * @sqlop @p %=
@@ -797,7 +797,7 @@ tpointseq_always_eq(const TSequence *seq, Datum value)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_ever
+ * @ingroup libMOBDB_internal_temporal_ever
  * @brief Return true if a temporal sequence set point is always equal to a point.
  * @pre The validity of the parameters is verified in function @ref tpoint_always_eq
  * @sqlop @p %=
@@ -815,7 +815,7 @@ tpointseqset_always_eq(const TSequenceSet *ss, Datum value)
 }
 
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libMOBDB_temporal_ever
  * @brief Return true if a temporal point is always equal to a point.
  * @see tpointinst_always_eq
  * @see tpointseq_always_eq
@@ -845,7 +845,7 @@ tpoint_always_eq(const Temporal *temp, Datum value)
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libMOBDB_temporal_ever
  * @brief Return true if a temporal geometric point is always equal to a point.
  * @sqlop @p %=
  */
@@ -855,7 +855,7 @@ bool tgeompoint_always_eq(const Temporal *temp, GSERIALIZED *gs)
 }
 
 /**
- * @ingroup libmeos_temporal_ever
+ * @ingroup libMOBDB_temporal_ever
  * @brief Return true if a temporal geographic point is always equal to a point.
  * @sqlop @p %=
  */
@@ -1230,7 +1230,7 @@ tpointsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
   Datum end = tinstant_value(inst2);
   double dist;
   double fraction = geosegm_locate_point(start, end, value, &dist);
-  if (fabs(dist) >= MEOS_EPSILON)
+  if (fabs(dist) >= MOBDB_EPSILON)
     return false;
   if (t != NULL)
   {
@@ -1256,7 +1256,7 @@ tgeompointsegm_intersection(const TInstant *start1, const TInstant *end1,
   const TInstant *start2, const TInstant *end2, TimestampTz *t)
 {
   long double fraction, xfraction = 0, yfraction = 0, xdenum, ydenum;
-  if (MEOS_FLAGS_GET_Z(start1->flags)) /* 3D */
+  if (MOBDB_FLAGS_GET_Z(start1->flags)) /* 3D */
   {
     long double zfraction = 0, zdenum;
     const POINT3DZ *p1 = DATUM_POINT3DZ_P(&start1->value);
@@ -1273,34 +1273,34 @@ tgeompointsegm_intersection(const TInstant *start1, const TInstant *end1,
     if (xdenum != 0)
     {
       xfraction = (p3->x - p1->x) / xdenum;
-      if (xfraction < -1 * MEOS_EPSILON || 1.0 + MEOS_EPSILON < xfraction)
+      if (xfraction < -1 * MOBDB_EPSILON || 1.0 + MOBDB_EPSILON < xfraction)
         /* Intersection occurs out of the period */
         return false;
     }
     if (ydenum != 0)
     {
       yfraction = (p3->y - p1->y) / ydenum;
-      if (yfraction < -1 * MEOS_EPSILON || 1.0 + MEOS_EPSILON < yfraction)
+      if (yfraction < -1 * MOBDB_EPSILON || 1.0 + MOBDB_EPSILON < yfraction)
         /* Intersection occurs out of the period */
         return false;
     }
     if (zdenum != 0)
     {
       zfraction = (p3->z - p1->z) / zdenum;
-      if (zfraction < -1 * MEOS_EPSILON || 1.0 + MEOS_EPSILON < zfraction)
+      if (zfraction < -1 * MOBDB_EPSILON || 1.0 + MOBDB_EPSILON < zfraction)
         /* Intersection occurs out of the period */
         return false;
     }
     /* If intersection occurs at different timestamps on each dimension */
     if ((xdenum != 0 && ydenum != 0 && zdenum != 0 &&
-        fabsl(xfraction - yfraction) > MEOS_EPSILON &&
-        fabsl(xfraction - zfraction) > MEOS_EPSILON) ||
+        fabsl(xfraction - yfraction) > MOBDB_EPSILON &&
+        fabsl(xfraction - zfraction) > MOBDB_EPSILON) ||
       (xdenum == 0 && ydenum != 0 && zdenum != 0 &&
-        fabsl(yfraction - zfraction) > MEOS_EPSILON) ||
+        fabsl(yfraction - zfraction) > MOBDB_EPSILON) ||
       (xdenum != 0 && ydenum == 0 && zdenum != 0 &&
-        fabsl(xfraction - zfraction) > MEOS_EPSILON) ||
+        fabsl(xfraction - zfraction) > MOBDB_EPSILON) ||
       (xdenum != 0 && ydenum != 0 && zdenum == 0 &&
-        fabsl(xfraction - yfraction) > MEOS_EPSILON))
+        fabsl(xfraction - yfraction) > MOBDB_EPSILON))
       return false;
     if (xdenum != 0)
       fraction = xfraction;
@@ -1324,20 +1324,20 @@ tgeompointsegm_intersection(const TInstant *start1, const TInstant *end1,
     if (xdenum != 0)
     {
       xfraction = (p3->x - p1->x) / xdenum;
-      if (xfraction < -1 * MEOS_EPSILON || 1.0 + MEOS_EPSILON < xfraction)
+      if (xfraction < -1 * MOBDB_EPSILON || 1.0 + MOBDB_EPSILON < xfraction)
         /* Intersection occurs out of the period */
         return false;
     }
     if (ydenum != 0)
     {
       yfraction = (p3->y - p1->y) / ydenum;
-      if (yfraction < -1 * MEOS_EPSILON || 1.0 + MEOS_EPSILON < yfraction)
+      if (yfraction < -1 * MOBDB_EPSILON || 1.0 + MOBDB_EPSILON < yfraction)
         /* Intersection occurs out of the period */
         return false;
     }
     /* If intersection occurs at different timestamps on each dimension */
     if (xdenum != 0 && ydenum != 0 &&
-        fabsl(xfraction - yfraction) > MEOS_EPSILON)
+        fabsl(xfraction - yfraction) > MOBDB_EPSILON)
       return false;
     fraction = xdenum != 0 ? xfraction : yfraction;
   }
@@ -1434,9 +1434,9 @@ geopoint_collinear(Datum value1, Datum value2, Datum value3,
     interpolate_point4d(&p1, &p3, &p, ratio);
 
   bool result = hasz ?
-    fabs(p2.x - p.x) <= MEOS_EPSILON && fabs(p2.y - p.y) <= MEOS_EPSILON &&
-      fabs(p2.z - p.z) <= MEOS_EPSILON :
-    fabs(p2.x - p.x) <= MEOS_EPSILON && fabs(p2.y - p.y) <= MEOS_EPSILON;
+    fabs(p2.x - p.x) <= MOBDB_EPSILON && fabs(p2.y - p.y) <= MOBDB_EPSILON &&
+      fabs(p2.z - p.z) <= MOBDB_EPSILON :
+    fabs(p2.x - p.x) <= MOBDB_EPSILON && fabs(p2.y - p.y) <= MOBDB_EPSILON;
   return result;
 }
 
@@ -1573,7 +1573,7 @@ lwline_make(Datum value1, Datum value2)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_temporal_spatial_accessor
+ * @ingroup libMOBDB_internal_temporal_spatial_accessor
  * @brief Compute the trajectory of a temporal discrete sequence point
  * @param[in] seq Temporal value
  * @note Notice that this function does not remove duplicate points
@@ -1603,7 +1603,7 @@ tpointdiscseq_trajectory(const TSequence *seq)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_spatial_accessor
+ * @ingroup libMOBDB_internal_temporal_spatial_accessor
  * @brief Return the trajectory of a temporal sequence point
  * @param[in] seq Temporal sequence
  * @note Since the sequence has been already validated there is no
@@ -1633,7 +1633,7 @@ tpointcontseq_trajectory(const TSequence *seq)
       points[k++] = lwpoint;
   }
   LWGEOM *lwgeom = lwpointarr_make_trajectory((LWGEOM **) points, k,
-    MEOS_FLAGS_GET_INTERP(seq->flags));
+    MOBDB_FLAGS_GET_INTERP(seq->flags));
   GSERIALIZED *result = geo_serialize(lwgeom);
   pfree(lwgeom);
   for (int i = 0; i < k; i++)
@@ -1643,7 +1643,7 @@ tpointcontseq_trajectory(const TSequence *seq)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_spatial_accessor
+ * @ingroup libMOBDB_internal_temporal_spatial_accessor
  * @brief Return the trajectory of a temporal point with sequence set type
  * @note The function does not remove duplicates point/linestring components.
  * @sqlfunc trajectory()
@@ -1655,7 +1655,7 @@ tpointseqset_trajectory(const TSequenceSet *ss)
   if (ss->count == 1)
     return tpointcontseq_trajectory(TSEQUENCESET_SEQ_N(ss, 0));
 
-  bool geodetic = MEOS_FLAGS_GET_GEODETIC(ss->flags);
+  bool geodetic = MOBDB_FLAGS_GET_GEODETIC(ss->flags);
   LWPOINT **points = palloc(sizeof(LWPOINT *) * ss->totalcount);
   LWGEOM **geoms = palloc(sizeof(LWGEOM *) * ss->count);
   int k = 0, l = 0;
@@ -1718,7 +1718,7 @@ tpointseqset_trajectory(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_accessor
+ * @ingroup libMOBDB_temporal_spatial_accessor
  * @brief Return the trajectory of a temporal point.
  * @sqlfunc trajectory()
  */
@@ -1730,7 +1730,7 @@ tpoint_trajectory(const Temporal *temp)
   if (temp->subtype == TINSTANT)
     result = DatumGetGserializedP(tinstant_value_copy((TInstant *) temp));
   else if (temp->subtype == TSEQUENCE)
-    result = MEOS_FLAGS_GET_DISCRETE(temp->flags) ?
+    result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
       tpointdiscseq_trajectory((TSequence *) temp) :
       tpointcontseq_trajectory((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
@@ -1743,7 +1743,7 @@ tpoint_trajectory(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_temporal_spatial_accessor
+ * @ingroup libMOBDB_internal_temporal_spatial_accessor
  * @brief Return the SRID of a temporal instant point.
  * @sqlfunc SRID()
  */
@@ -1755,7 +1755,7 @@ tpointinst_srid(const TInstant *inst)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_spatial_accessor
+ * @ingroup libMOBDB_internal_temporal_spatial_accessor
  * @brief Return the SRID of a temporal sequence point.
  * @sqlfunc SRID()
  */
@@ -1767,7 +1767,7 @@ tpointseq_srid(const TSequence *seq)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_spatial_accessor
+ * @ingroup libMOBDB_internal_temporal_spatial_accessor
  * @brief Return the SRID of a temporal sequence set point.
  * @sqlfunc SRID()
  */
@@ -1779,7 +1779,7 @@ tpointseqset_srid(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_accessor
+ * @ingroup libMOBDB_temporal_spatial_accessor
  * @brief Return the SRID of a temporal point.
  * @sqlfunc SRID()
  */
@@ -1800,7 +1800,7 @@ tpoint_srid(const Temporal *temp)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_temporal_spatial_transf
+ * @ingroup libMOBDB_internal_temporal_spatial_transf
  * @brief Set the SRID of a temporal instant point
  * @sqlfunc setSRID()
  */
@@ -1814,7 +1814,7 @@ tpointinst_set_srid(const TInstant *inst, int32 srid)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_spatial_transf
+ * @ingroup libMOBDB_internal_temporal_spatial_transf
  * @brief Set the SRID of a temporal sequence point
  * @sqlfunc setSRID()
  */
@@ -1836,7 +1836,7 @@ tpointseq_set_srid(const TSequence *seq, int32 srid)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_spatial_transf
+ * @ingroup libMOBDB_internal_temporal_spatial_transf
  * @brief Set the SRID of a temporal sequence set point
  * @sqlfunc setSRID()
  */
@@ -1867,7 +1867,7 @@ tpointseqset_set_srid(const TSequenceSet *ss, int32 srid)
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_transf
+ * @ingroup libMOBDB_temporal_spatial_transf
  * @brief Set the SRID of a temporal point.
  * @see tpointinst_set_srid
  * @see tpointseq_set_srid
@@ -1916,7 +1916,7 @@ pt_force_geodetic(LWPOINT *point)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_spatial_transf
+ * @ingroup libMOBDB_internal_temporal_spatial_transf
  * @brief Convert a temporal point from/to a geometry/geography point
  * @param[in] inst Temporal instant point
  * @param[in] oper True when transforming from geometry to geography,
@@ -1952,7 +1952,7 @@ tgeompointinst_tgeogpointinst(const TInstant *inst, bool oper)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_spatial_transf
+ * @ingroup libMOBDB_internal_temporal_spatial_transf
  * @brief Convert a temporal point from/to a geometry/geography point
  * @param[in] seq Temporal sequence point
  * @param[in] oper True when transforming from geometry to geography,
@@ -1969,11 +1969,11 @@ tgeompointseq_tgeogpointseq(const TSequence *seq, bool oper)
     instants[i] = tgeompointinst_tgeogpointinst(inst, oper);
   }
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
-    seq->period.upper_inc, MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
+    seq->period.upper_inc, MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
 }
 
 /**
- * @ingroup libmeos_internal_temporal_spatial_transf
+ * @ingroup libMOBDB_internal_temporal_spatial_transf
  * @brief Convert a temporal point from/to a geometry/geography point
  * @param[in] ss Temporal sequence set point
  * @param[in] oper True when transforming from geometry to geography,
@@ -1993,7 +1993,7 @@ tgeompointseqset_tgeogpointseqset(const TSequenceSet *ss, bool oper)
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_transf
+ * @ingroup libMOBDB_temporal_spatial_transf
  * @brief Convert a temporal point to a geometry/geography point.
  * @param[in] temp Temporal point
  * @param[in] oper True when transforming from geometry to geography,
@@ -2058,7 +2058,7 @@ point_get_z(Datum point)
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_accessor
+ * @ingroup libMOBDB_temporal_spatial_accessor
  * @brief Get one of the coordinates of a temporal point as a temporal float.
  * @param[in] temp Temporal point
  * @param[in] coord Coordinate number where 0 = X, 1 = Y, 2 = Z
@@ -2138,20 +2138,20 @@ tpointseq_length_3d(const TSequence *seq)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_spatial_accessor
+ * @ingroup libMOBDB_internal_temporal_spatial_accessor
  * @brief Return the length traversed by a temporal sequence point.
  * @sqlfunc length()
  */
 double
 tpointseq_length(const TSequence *seq)
 {
-  assert(MEOS_FLAGS_GET_LINEAR(seq->flags));
+  assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
   if (seq->count == 1)
     return 0;
 
-  if (! MEOS_FLAGS_GET_GEODETIC(seq->flags))
+  if (! MOBDB_FLAGS_GET_GEODETIC(seq->flags))
   {
-    return MEOS_FLAGS_GET_Z(seq->flags) ?
+    return MOBDB_FLAGS_GET_Z(seq->flags) ?
       tpointseq_length_3d(seq) : tpointseq_length_2d(seq);
   }
   else
@@ -2165,14 +2165,14 @@ tpointseq_length(const TSequence *seq)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_spatial_accessor
+ * @ingroup libMOBDB_internal_temporal_spatial_accessor
  * @brief Return the length traversed by a temporal sequence set point.
  * @sqlfunc length()
  */
 double
 tpointseqset_length(const TSequenceSet *ss)
 {
-  assert(MEOS_FLAGS_GET_LINEAR(ss->flags));
+  assert(MOBDB_FLAGS_GET_LINEAR(ss->flags));
   double result = 0;
   for (int i = 0; i < ss->count; i++)
     result += tpointseq_length(TSEQUENCESET_SEQ_N(ss, i));
@@ -2180,7 +2180,7 @@ tpointseqset_length(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_accessor
+ * @ingroup libMOBDB_temporal_spatial_accessor
  * @brief Return the length traversed by a temporal sequence (set) point
  * @sqlfunc length()
  */
@@ -2189,7 +2189,7 @@ tpoint_length(const Temporal *temp)
 {
   double result = 0.0;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_GET_LINEAR(temp->flags))
+  if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     ;
   else if (temp->subtype == TSEQUENCE)
     result = tpointseq_length((TSequence *) temp);
@@ -2201,7 +2201,7 @@ tpoint_length(const Temporal *temp)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_temporal_spatial_accessor
+ * @ingroup libMOBDB_internal_temporal_spatial_accessor
  * @brief Return the cumulative length traversed by a temporal point.
  * @pre The sequence has linear interpolation
  * @sqlfunc cumulativeLength()
@@ -2209,7 +2209,7 @@ tpoint_length(const Temporal *temp)
 TSequence *
 tpointseq_cumulative_length(const TSequence *seq, double prevlength)
 {
-  assert(MEOS_FLAGS_GET_LINEAR(seq->flags));
+  assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
   const TInstant *inst1;
 
   /* Instantaneous sequence */
@@ -2244,7 +2244,7 @@ tpointseq_cumulative_length(const TSequence *seq, double prevlength)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_spatial_accessor
+ * @ingroup libMOBDB_internal_temporal_spatial_accessor
  * @brief Return the cumulative length traversed by a temporal point.
  * @sqlfunc cumulativeLength()
  */
@@ -2265,7 +2265,7 @@ tpointseqset_cumulative_length(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_accessor
+ * @ingroup libMOBDB_temporal_spatial_accessor
  * @brief Return the cumulative length traversed by a temporal point.
  * @sqlfunc cumulativeLength()
  */
@@ -2274,9 +2274,9 @@ tpoint_cumulative_length(const Temporal *temp)
 {
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_GET_LINEAR(temp->flags))
+  if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     result = temporal_from_base(Float8GetDatum(0.0), T_TFLOAT, temp,
-      MEOS_FLAGS_GET_INTERP(temp->flags));
+      MOBDB_FLAGS_GET_INTERP(temp->flags));
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tpointseq_cumulative_length((TSequence *) temp, 0);
   else /* temp->subtype == TSEQUENCESET */
@@ -2287,7 +2287,7 @@ tpoint_cumulative_length(const Temporal *temp)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial_accessor
+ * @ingroup libMOBDB_temporal_spatial_accessor
  * @brief Return the convex hull of a temporal point.
  * @sqlfunc convexHull()
  */
@@ -2305,7 +2305,7 @@ tpoint_convex_hull(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_temporal_spatial_accessor
+ * @ingroup libMOBDB_internal_temporal_spatial_accessor
  * @brief Return the speed of a temporal point.
  * @pre The temporal point has linear interpolation
  * @sqlfunc speed()
@@ -2313,7 +2313,7 @@ tpoint_convex_hull(const Temporal *temp)
 TSequence *
 tpointseq_speed(const TSequence *seq)
 {
-  assert(MEOS_FLAGS_GET_LINEAR(seq->flags));
+  assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
 
   /* Instantaneous sequence */
   if (seq->count == 1)
@@ -2346,7 +2346,7 @@ tpointseq_speed(const TSequence *seq)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_spatial_accessor
+ * @ingroup libMOBDB_internal_temporal_spatial_accessor
  * @brief Return the speed of a temporal point
  * @sqlfunc speed()
  */
@@ -2371,7 +2371,7 @@ tpointseqset_speed(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_accessor
+ * @ingroup libMOBDB_temporal_spatial_accessor
  * @brief Return the speed of a temporal point
  * @sqlfunc speed()
  */
@@ -2380,7 +2380,7 @@ tpoint_speed(const Temporal *temp)
 {
   Temporal *result = NULL;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_GET_LINEAR(temp->flags))
+  if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     ;
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tpointseq_speed((TSequence *) temp);
@@ -2427,7 +2427,7 @@ tpointseq_twcentroid1(const TSequence *seq, bool hasz, interpType interp,
 }
 
 /**
- * @ingroup libmeos_internal_temporal_agg
+ * @ingroup libMOBDB_internal_temporal_agg
  * @brief Return the time-weighed centroid of a temporal geometry point.
  * @sqlfunc twCentroid()
  */
@@ -2435,8 +2435,8 @@ GSERIALIZED *
 tpointseq_twcentroid(const TSequence *seq)
 {
   int srid = tpointseq_srid(seq);
-  bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
+  interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
   TSequence *seqx, *seqy, *seqz;
   tpointseq_twcentroid1(seq, hasz, interp, &seqx, &seqy, &seqz);
   double twavgx = tnumberseq_twavg(seqx);
@@ -2450,7 +2450,7 @@ tpointseq_twcentroid(const TSequence *seq)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_agg
+ * @ingroup libMOBDB_internal_temporal_agg
  * @brief Return the time-weighed centroid of a temporal geometry point.
  * @sqlfunc twCentroid()
  */
@@ -2458,8 +2458,8 @@ GSERIALIZED *
 tpointseqset_twcentroid(const TSequenceSet *ss)
 {
   int srid = tpointseqset_srid(ss);
-  bool hasz = MEOS_FLAGS_GET_Z(ss->flags);
-  interpType interp = MEOS_FLAGS_GET_INTERP(ss->flags);
+  bool hasz = MOBDB_FLAGS_GET_Z(ss->flags);
+  interpType interp = MOBDB_FLAGS_GET_INTERP(ss->flags);
   TSequence **sequencesx = palloc(sizeof(TSequence *) * ss->count);
   TSequence **sequencesy = palloc(sizeof(TSequence *) * ss->count);
   TSequence **sequencesz = hasz ?
@@ -2486,7 +2486,7 @@ tpointseqset_twcentroid(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup libmeos_temporal_agg
+ * @ingroup libMOBDB_temporal_agg
  * @brief Return the time-weighed centroid of a temporal geometry point.
  * @sqlfunc twCentroid()
  */
@@ -2540,7 +2540,7 @@ geog_azimuth(Datum geog1, Datum geog2)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_spatial_accessor
+ * @ingroup libMOBDB_internal_temporal_spatial_accessor
  * @brief Return the direction of a temporal point.
  * @param[in] seq Temporal value
  * @param[out] result Azimuth between the first and last point
@@ -2556,7 +2556,7 @@ tpointseq_direction(const TSequence *seq, double *result)
     return false;
 
   /* Determine the PostGIS function to call */
-  datum_func2 func = MEOS_FLAGS_GET_GEODETIC(seq->flags) ?
+  datum_func2 func = MOBDB_FLAGS_GET_GEODETIC(seq->flags) ?
     &geog_azimuth : &geom_azimuth;
 
   /* We are sure that there are at least 2 instants */
@@ -2572,7 +2572,7 @@ tpointseq_direction(const TSequence *seq, double *result)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_spatial_accessor
+ * @ingroup libMOBDB_internal_temporal_spatial_accessor
  * @brief Return the direction of a temporal point.
  * @param[in] ss Temporal value
  * @param[out] result Azimuth between the first and last point
@@ -2588,7 +2588,7 @@ tpointseqset_direction(const TSequenceSet *ss, double *result)
     return tpointseq_direction(TSEQUENCESET_SEQ_N(ss, 0), result);
 
   /* Determine the PostGIS function to call */
-  datum_func2 func = MEOS_FLAGS_GET_GEODETIC(ss->flags) ?
+  datum_func2 func = MOBDB_FLAGS_GET_GEODETIC(ss->flags) ?
     &geog_azimuth : &geom_azimuth;
 
   /* We are sure that there are at least 2 instants */
@@ -2606,7 +2606,7 @@ tpointseqset_direction(const TSequenceSet *ss, double *result)
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_accessor
+ * @ingroup libMOBDB_temporal_spatial_accessor
  * @brief Return the direction of a temporal point.
  * @sqlfunc direction()
  */
@@ -2643,7 +2643,7 @@ tpointseq_azimuth1(const TSequence *seq, TSequence **result)
     return 0;
 
   /* Determine the PostGIS function to call */
-  datum_func2 func = MEOS_FLAGS_GET_GEODETIC(seq->flags) ?
+  datum_func2 func = MOBDB_FLAGS_GET_GEODETIC(seq->flags) ?
     &geog_azimuth : &geom_azimuth;
 
   /* We are sure that there are at least 2 instants */
@@ -2694,7 +2694,7 @@ tpointseq_azimuth1(const TSequence *seq, TSequence **result)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_spatial_accessor
+ * @ingroup libMOBDB_internal_temporal_spatial_accessor
  * @brief Return the temporal azimuth of a temporal geometry point.
  * @sqlfunc azimuth()
  */
@@ -2713,7 +2713,7 @@ tpointseq_azimuth(const TSequence *seq)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_spatial_accessor
+ * @ingroup libMOBDB_internal_temporal_spatial_accessor
  * @brief Return the temporal azimuth of a temporal geometry point.
  * @sqlfunc azimuth()
  */
@@ -2740,7 +2740,7 @@ tpointseqset_azimuth(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_accessor
+ * @ingroup libMOBDB_temporal_spatial_accessor
  * @brief Return the temporal azimuth of a temporal geometry point.
  * @sqlfunc azimuth()
  */
@@ -2749,7 +2749,7 @@ tpoint_azimuth(const Temporal *temp)
 {
   Temporal *result = NULL;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_GET_LINEAR(temp->flags))
+  if (temp->subtype == TINSTANT || ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     ;
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tpointseq_azimuth((TSequence *) temp);
@@ -2759,7 +2759,7 @@ tpoint_azimuth(const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_accessor
+ * @ingroup libMOBDB_temporal_spatial_accessor
  * @brief Return the temporal angular difference of a temporal geometry point.
  * @sqlfunc azimuth()
  */
@@ -2805,14 +2805,14 @@ geom_bearing(Datum point1, Datum point2)
 {
   const POINT2D *p1 = DATUM_POINT2D_P(point1);
   const POINT2D *p2 = DATUM_POINT2D_P(point2);
-  if ((fabs(p1->x - p2->x) <= MEOS_EPSILON) &&
-      (fabs(p1->y - p2->y) <= MEOS_EPSILON))
+  if ((fabs(p1->x - p2->x) <= MOBDB_EPSILON) &&
+      (fabs(p1->y - p2->y) <= MOBDB_EPSILON))
     return 0.0;
-  if (fabs(p1->y - p2->y) > MEOS_EPSILON)
+  if (fabs(p1->y - p2->y) > MOBDB_EPSILON)
   {
     double bearing = pg_datan((p1->x - p2->x) / (p1->y - p2->y)) +
       alpha(p1, p2);
-    if (fabs(bearing) <= MEOS_EPSILON)
+    if (fabs(bearing) <= MOBDB_EPSILON)
       bearing = 0.0;
     return Float8GetDatum(bearing);
   }
@@ -2837,8 +2837,8 @@ geog_bearing(Datum point1, Datum point2)
 {
   const POINT2D *p1 = DATUM_POINT2D_P(point1);
   const POINT2D *p2 = DATUM_POINT2D_P(point2);
-  if ((fabs(p1->x - p2->x) <= MEOS_EPSILON) &&
-      (fabs(p1->y - p2->y) <= MEOS_EPSILON))
+  if ((fabs(p1->x - p2->x) <= MOBDB_EPSILON) &&
+      (fabs(p1->y - p2->y) <= MOBDB_EPSILON))
     return 0.0;
 
   double lat1 = float8_mul(p1->y, RADIANS_PER_DEGREE);
@@ -2862,7 +2862,7 @@ static datum_func2
 get_bearing_fn(int16 flags)
 {
   datum_func2 result;
-  if (MEOS_FLAGS_GET_GEODETIC(flags))
+  if (MOBDB_FLAGS_GET_GEODETIC(flags))
     result = &geog_bearing;
   else
     result = &geom_bearing;
@@ -2893,7 +2893,7 @@ tpoint_geo_min_bearing_at_timestamp(const TInstant *start, const TInstant *end,
   const POINT2D *q;
   long double fraction;
   Datum proj;
-  bool geodetic = MEOS_FLAGS_GET_GEODETIC(start->flags);
+  bool geodetic = MOBDB_FLAGS_GET_GEODETIC(start->flags);
   if (geodetic)
   {
     GEOGRAPHIC_EDGE e, e1;
@@ -2920,7 +2920,7 @@ tpoint_geo_min_bearing_at_timestamp(const TInstant *start, const TInstant *end,
       return false;
     fraction = (long double)(p->x - p1->x) / (long double)(p2->x - p1->x);
   }
-  if (fraction <= MEOS_EPSILON || fraction >= (1.0 - MEOS_EPSILON))
+  if (fraction <= MOBDB_EPSILON || fraction >= (1.0 - MOBDB_EPSILON))
     return false;
   long double duration = (end->t - start->t);
   *t = start->t + (TimestampTz) (duration * fraction);
@@ -2949,7 +2949,7 @@ tpointsegm_min_bearing_at_timestamp(const TInstant *start1,
   const TInstant *end1, const TInstant *start2,
   const TInstant *end2, Datum *value, TimestampTz *t)
 {
-  assert(!MEOS_FLAGS_GET_GEODETIC(start1->flags));
+  assert(!MOBDB_FLAGS_GET_GEODETIC(start1->flags));
   const POINT2D *sp1 = DATUM_POINT2D_P(&start1->value);
   const POINT2D *ep1 = DATUM_POINT2D_P(&end1->value);
   const POINT2D *sp2 = DATUM_POINT2D_P(&start2->value);
@@ -2979,7 +2979,7 @@ tpointsegm_min_bearing_at_timestamp(const TInstant *start1,
   long double max = Max(d1, d2);
   long double fraction = min + (max - min)/2;
   long double duration = (long double) (end1->t - start1->t);
-  if (fraction <= MEOS_EPSILON || fraction >= (1.0 - MEOS_EPSILON))
+  if (fraction <= MOBDB_EPSILON || fraction >= (1.0 - MOBDB_EPSILON))
     /* Minimum/maximum occurs out of the period */
     return false;
 
@@ -2990,7 +2990,7 @@ tpointsegm_min_bearing_at_timestamp(const TInstant *start1,
   Datum value2 = tsegment_value_at_timestamp(start2, end2, true, *t);
   sp1 = DATUM_POINT2D_P(value1);
   sp2 = DATUM_POINT2D_P(value2);
-  if (sp1->y > sp2->y) // TODO Use MEOS_EPSILON
+  if (sp1->y > sp2->y) // TODO Use MOBDB_EPSILON
     return false;
  /* We know that the bearing is 0 */
   if (value)
@@ -3001,7 +3001,7 @@ tpointsegm_min_bearing_at_timestamp(const TInstant *start1,
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial_accessor
+ * @ingroup libMOBDB_temporal_spatial_accessor
  * @brief Return the temporal bearing between two geometry/geography points
  * @note The following function could be included in PostGIS one day
  * @sqlfunc bearing()
@@ -3022,7 +3022,7 @@ bearing_point_point(const GSERIALIZED *geo1, const GSERIALIZED *geo2,
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_accessor
+ * @ingroup libMOBDB_temporal_spatial_accessor
  * @brief Return the temporal bearing between a temporal point and a
  * geometry/geography point.
  * @sqlfunc bearing()
@@ -3043,7 +3043,7 @@ bearing_tpoint_point(const Temporal *temp, const GSERIALIZED *gs, bool invert)
   lfinfo.args = true;
   lfinfo.argtype[0] = lfinfo.argtype[1] = temptype_basetype(temp->temptype);
   lfinfo.restype = T_TFLOAT;
-  lfinfo.reslinear = MEOS_FLAGS_GET_LINEAR(temp->flags);
+  lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp->flags);
   lfinfo.invert = invert;
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc_base = &tpoint_geo_min_bearing_at_timestamp;
@@ -3053,7 +3053,7 @@ bearing_tpoint_point(const Temporal *temp, const GSERIALIZED *gs, bool invert)
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_accessor
+ * @ingroup libMOBDB_temporal_spatial_accessor
  * @brief Return the temporal bearing between two temporal points
  * @sqlfunc bearing()
  */
@@ -3071,8 +3071,8 @@ bearing_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
   lfinfo.argtype[0] = temptype_basetype(temp1->temptype);
   lfinfo.argtype[1] = temptype_basetype(temp2->temptype);
   lfinfo.restype = T_TFLOAT;
-  lfinfo.reslinear = MEOS_FLAGS_GET_LINEAR(temp1->flags) ||
-    MEOS_FLAGS_GET_LINEAR(temp2->flags);
+  lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
+    MOBDB_FLAGS_GET_LINEAR(temp2->flags);
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc_base = NULL;
@@ -3093,15 +3093,15 @@ bearing_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
  */
 enum
 {
-  MEOS_SEG_NO_INTERSECTION,  /* Segments do not intersect */
-  MEOS_SEG_OVERLAP,          /* Segments overlap */
-  MEOS_SEG_CROSS,            /* Segments cross */
-  MEOS_SEG_TOUCH,            /* Segments touch in a vertex */
-} MEOS_SEG_INTER_TYPE;
+  MOBDB_SEG_NO_INTERSECTION,  /* Segments do not intersect */
+  MOBDB_SEG_OVERLAP,          /* Segments overlap */
+  MOBDB_SEG_CROSS,            /* Segments cross */
+  MOBDB_SEG_TOUCH,            /* Segments touch in a vertex */
+} MOBDB_SEG_INTER_TYPE;
 
 /**
  * @brief Find the UNIQUE point of intersection p between two closed
- * collinear segments ab and cd. Return p and a MEOS_SEG_INTER_TYPE value.
+ * collinear segments ab and cd. Return p and a MOBDB_SEG_INTER_TYPE value.
  * @note If the segments overlap no point is returned since they
  * can be an infinite number of them.
  * @pre This function is called after verifying that the points are
@@ -3118,30 +3118,30 @@ parseg2d_intersection(const POINT2D a, const POINT2D b, const POINT2D c,
   double ymax = Min(Max(a.y, b.y), Max(c.y, d.y));
   /* If the intersection of the bounding boxes is not a point */
   if (xmin < xmax || ymin < ymax )
-    return MEOS_SEG_OVERLAP;
+    return MOBDB_SEG_OVERLAP;
   /* We are sure that the segments touch each other */
   if ((b.x == c.x && b.y == c.y) ||
       (b.x == d.x && b.y == d.y))
   {
     p->x = b.x;
     p->y = b.y;
-    return MEOS_SEG_TOUCH;
+    return MOBDB_SEG_TOUCH;
   }
   if ((a.x == c.x && a.y == c.y) ||
       (a.x == d.x && a.y == d.y))
   {
     p->x = a.x;
     p->y = a.y;
-    return MEOS_SEG_TOUCH;
+    return MOBDB_SEG_TOUCH;
   }
   /* We should never arrive here since this function is called after verifying
    * that the bounding boxes of the segments intersect */
-  return MEOS_SEG_NO_INTERSECTION;
+  return MOBDB_SEG_NO_INTERSECTION;
 }
 
 /**
  * @brief Find the UNIQUE point of intersection p between two closed segments
- * ab and cd. Return p and a MEOS_SEG_INTER_TYPE value.
+ * ab and cd. Return p and a MOBDB_SEG_INTER_TYPE value.
  * @note If the segments overlap no point is returned since they can be an
  * infinite number of them
  */
@@ -3157,7 +3157,7 @@ seg2d_intersection(const POINT2D a, const POINT2D b, const POINT2D c,
           d.x * (b.y - a.y) + c.x * (a.y - b.y);
 
   /* If denom is zero, then segments are parallel: handle separately */
-  if (fabs(denom) < MEOS_EPSILON)
+  if (fabs(denom) < MOBDB_EPSILON)
     return parseg2d_intersection(a, b, c, d, p);
 
   num = a.x * (d.y - c.y) + c.x * (a.y - d.y) + d.x * (c.y - a.y);
@@ -3167,11 +3167,11 @@ seg2d_intersection(const POINT2D a, const POINT2D b, const POINT2D c,
   t = num / denom;
 
   if ((0.0 == s || s == 1.0) && (0.0 == t || t == 1.0))
-   result = MEOS_SEG_TOUCH;
+   result = MOBDB_SEG_TOUCH;
   else if (0.0 <= s && s <= 1.0 && 0.0 <= t && t <= 1.0)
-   result = MEOS_SEG_CROSS;
+   result = MOBDB_SEG_CROSS;
   else
-   result = MEOS_SEG_NO_INTERSECTION;
+   result = MOBDB_SEG_NO_INTERSECTION;
 
   p->x = a.x + s * (b.x - a.x);
   p->y = a.y + s * (b.y - a.y);
@@ -3195,7 +3195,7 @@ seg2d_intersection(const POINT2D a, const POINT2D b, const POINT2D c,
 static bool *
 tpointseq_discstep_find_splits(const TSequence *seq, int *count)
 {
-  assert(! MEOS_FLAGS_GET_LINEAR(seq->flags));
+  assert(! MOBDB_FLAGS_GET_LINEAR(seq->flags));
   int count1 = seq->count;
   assert(count1 > 1);
   /* bitarr is an array of bool for collecting the splits */
@@ -3304,7 +3304,7 @@ tpointseq_linear_find_splits(const TSequence *seq, int *count)
         if (intertype > 0 &&
           /* Exclude the case when two consecutive segments that
            * necessarily touch each other in their common point */
-          (intertype != MEOS_SEG_TOUCH || j != i + 1 ||
+          (intertype != MOBDB_SEG_TOUCH || j != i + 1 ||
            p.x != points[j].x || p.y != points[j].y))
         {
           /* Set the new end */
@@ -3373,7 +3373,7 @@ tpointseq_discstep_is_simple(const TSequence *seq, int count)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_spatial_accessor
+ * @ingroup libMOBDB_internal_temporal_spatial_accessor
  * @brief Return true if a temporal point does not self-intersect.
  * @param[in] seq Temporal point
  * @sqlfunc isSimple();
@@ -3384,7 +3384,7 @@ tpointseq_is_simple(const TSequence *seq)
   if (seq->count == 1)
     return true;
 
-  if (! MEOS_FLAGS_GET_LINEAR(seq->flags))
+  if (! MOBDB_FLAGS_GET_LINEAR(seq->flags))
     return tpointseq_discstep_is_simple(seq, seq->count);
 
   int numsplits;
@@ -3394,7 +3394,7 @@ tpointseq_is_simple(const TSequence *seq)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_spatial_accessor
+ * @ingroup libMOBDB_internal_temporal_spatial_accessor
  * @brief Return true if a temporal point does not self-intersect.
  * @param[in] ss Temporal point
  * @sqlfunc isSimple()
@@ -3414,7 +3414,7 @@ tpointseqset_is_simple(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_accessor
+ * @ingroup libMOBDB_temporal_spatial_accessor
  * @brief Return true if a temporal point does not self-intersect.
  * @sqlfunc isSimple()
  */
@@ -3479,7 +3479,7 @@ static TSequence **
 tpointcontseq_split(const TSequence *seq, bool *splits, int count)
 {
   assert(seq->count > 2);
-  bool linear = MEOS_FLAGS_GET_LINEAR(seq->flags);
+  bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   TSequence **result = palloc(sizeof(TSequence *) * count);
   /* Create the splits */
@@ -3532,7 +3532,7 @@ tpointcontseq_split(const TSequence *seq, bool *splits, int count)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_spatial_transf
+ * @ingroup libMOBDB_internal_temporal_spatial_transf
  * @brief Split a temporal sequence point into an array of non
  * self-intersecting fragments.
  * @param[in] seq Temporal sequence point
@@ -3543,7 +3543,7 @@ tpointcontseq_split(const TSequence *seq, bool *splits, int count)
 TSequence **
 tpointseq_make_simple(const TSequence *seq, int *count)
 {
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  interpType interp = MOBDB_FLAGS_GET_INTERP(seq->flags);
   TSequence **result;
   /* Special cases when the input sequence has 1 or 2 instants */
   if ((interp == DISCRETE && seq->count == 1) ||
@@ -3577,7 +3577,7 @@ tpointseq_make_simple(const TSequence *seq, int *count)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_spatial_transf
+ * @ingroup libMOBDB_internal_temporal_spatial_transf
  * @brief Split a temporal sequence set point into an array of non
  * self-intersecting fragments.
  * @param[in] ss Temporal sequence set point
@@ -3607,7 +3607,7 @@ tpointseqset_make_simple(const TSequenceSet *ss, int *count)
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_transf
+ * @ingroup libMOBDB_temporal_spatial_transf
  * @brief Split a temporal point into an array of non self-intersecting
  * fragments.
  * @param[in] temp Temporal point
@@ -3641,7 +3641,7 @@ tpoint_make_simple(const Temporal *temp, int *count)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_temporal_restrict
+ * @ingroup libMOBDB_internal_temporal_restrict
  * @brief Restrict a temporal point instant to (the complement of) a geometry.
  * @param[in] inst Temporal instant point
  * @param[in] gs Geometry
@@ -3662,7 +3662,7 @@ tpointinst_restrict_geometry(const TInstant *inst, const GSERIALIZED *gs,
 }
 
 /**
- * @ingroup libmeos_internal_temporal_restrict
+ * @ingroup libMOBDB_internal_temporal_restrict
  * @brief Restrict a temporal point discrete sequence to (the complement of) a
  * geometry.
  * @param[in] seq Temporal discrete sequence point
@@ -3773,7 +3773,7 @@ tpointseq_step_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
  *
  * This function must take into account the roundoff errors and thus it uses
  * the datum_point_eq_eps for comparing two values so the coordinates of the
- * values may differ by MEOS_EPSILON. Furthermore, we must drop the Z values
+ * values may differ by MOBDB_EPSILON. Furthermore, we must drop the Z values
  * since this function may be called for finding the intersection of a sequence
  * and a geometry and the Z values crrently given by PostGIS/GEOS are not
  * necessarily extact, they "are copied, averaged or interpolated" as stated in
@@ -3790,7 +3790,7 @@ static bool
 tpointsegm_timestamp_at_value1(const TInstant *inst1, const TInstant *inst2,
   Datum value, TimestampTz *t)
 {
-  bool hasz = MEOS_FLAGS_GET_Z(inst1->flags);
+  bool hasz = MOBDB_FLAGS_GET_Z(inst1->flags);
   Datum value1, value2, val;
   GSERIALIZED *gs1, *gs2, *gs;
   if (hasz)
@@ -3824,7 +3824,7 @@ tpointsegm_timestamp_at_value1(const TInstant *inst1, const TInstant *inst2,
   {
     double dist;
     double fraction = geosegm_locate_point(value1, value2, val, &dist);
-    if (fabs(dist) >= MEOS_EPSILON)
+    if (fabs(dist) >= MOBDB_EPSILON)
       result = false;
     else
     {
@@ -4123,7 +4123,7 @@ tpointseq_at_geometry(const TSequence *seq, const GSERIALIZED *gs, int *count)
     *count = 1;
     return result;
   }
-  if (MEOS_FLAGS_GET_LINEAR(seq->flags))
+  if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
     return tpointseq_linear_at_geometry(seq, gs, count);
   else
     return tpointseq_step_at_geometry(seq, gs, count);
@@ -4178,7 +4178,7 @@ tpointseq_minus_geometry(const TSequence *seq, const GSERIALIZED *gs,
 }
 
 /**
- * @ingroup libmeos_internal_temporal_restrict
+ * @ingroup libMOBDB_internal_temporal_restrict
  * @brief Restrict a temporal point sequence to (the complement of a) geometry.
  * @param[in] seq Temporal sequence point
  * @param[in] gs Geometry
@@ -4206,7 +4206,7 @@ tpointcontseq_restrict_geometry(const TSequence *seq, const GSERIALIZED *gs,
 }
 
 /**
- * @ingroup libmeos_internal_temporal_restrict
+ * @ingroup libMOBDB_internal_temporal_restrict
  * @brief Restrict a temporal point sequence set to (the complement of) a
  * geometry.
  * @param[in] ss Temporal sequence set point
@@ -4271,7 +4271,7 @@ tpointseqset_restrict_geometry(const TSequenceSet *ss, const GSERIALIZED *gs,
 }
 
 /**
- * @ingroup libmeos_internal_temporal_restrict
+ * @ingroup libMOBDB_internal_temporal_restrict
  * @brief Restrict a temporal point to (the complement of) a geometry.
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
@@ -4305,7 +4305,7 @@ tpoint_restrict_geometry(const Temporal *temp, const GSERIALIZED *gs,
     result = (Temporal *) tpointinst_restrict_geometry((TInstant *) temp,
       gs, atfunc);
   else if (temp->subtype == TSEQUENCE)
-    result = MEOS_FLAGS_GET_DISCRETE(temp->flags) ?
+    result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
       (Temporal *) tpointdiscseq_restrict_geometry((TSequence *) temp, gs, atfunc) :
       (Temporal *) tpointcontseq_restrict_geometry((TSequence *) temp, gs, atfunc);
   else /* temp->subtype == TSEQUENCESET */
@@ -4317,7 +4317,7 @@ tpoint_restrict_geometry(const Temporal *temp, const GSERIALIZED *gs,
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libMOBDB_temporal_restrict
  * @brief Restrict a temporal point to (the complement of) a geometry.
  * @sqlfunc atGeometry(), minusGeometry()
  */
@@ -4329,7 +4329,7 @@ tpoint_at_geometry(const Temporal *temp, const GSERIALIZED *gs)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libMOBDB_temporal_restrict
  * @brief Restrict a temporal point to (the complement of) a geometry.
  * @sqlfunc atGeometry(), minusGeometry()
  */
@@ -4352,9 +4352,9 @@ tpoint_minus_geometry(const Temporal *temp, const GSERIALIZED *gs)
 Temporal *
 tpoint_at_stbox1(const Temporal *temp, const STBox *box)
 {
-  /* At least one of MEOS_FLAGS_GET_X and MEOS_FLAGS_GET_T is true */
-  bool hasx = MEOS_FLAGS_GET_X(box->flags);
-  bool hast = MEOS_FLAGS_GET_T(box->flags);
+  /* At least one of MOBDB_FLAGS_GET_X and MOBDB_FLAGS_GET_T is true */
+  bool hasx = MOBDB_FLAGS_GET_X(box->flags);
+  bool hast = MOBDB_FLAGS_GET_T(box->flags);
   assert(hasx || hast);
 
   /* Bounding box test */
@@ -4381,7 +4381,7 @@ tpoint_at_stbox1(const Temporal *temp, const STBox *box)
     /* Convert the stbox to a 2D polygon */
     STBox box2d;
     memcpy(&box2d, box, sizeof(STBox));
-    MEOS_FLAGS_SET_Z(box2d.flags, false);
+    MOBDB_FLAGS_SET_Z(box2d.flags, false);
     GSERIALIZED *geo = stbox_to_geo(&box2d);
     /* Notice that if the stbox is 2D and the point is 3D we keep the Z
      * coordinate in the result */
@@ -4431,7 +4431,7 @@ tpoint_minus_stbox1(const Temporal *temp, const STBox *box)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_restrict
+ * @ingroup libMOBDB_internal_temporal_restrict
  * @brief Restrict a temporal point to (the complement of) a spatiotemporal
  * box.
  *
@@ -4445,7 +4445,7 @@ Temporal *
 tpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool atfunc)
 {
   ensure_common_dimension(temp->flags, box->flags);
-  if (MEOS_FLAGS_GET_X(box->flags))
+  if (MOBDB_FLAGS_GET_X(box->flags))
   {
     ensure_same_geodetic(temp->flags, box->flags);
     ensure_same_srid_tpoint_stbox(temp, box);
@@ -4458,7 +4458,7 @@ tpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool atfunc)
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libMOBDB_temporal_restrict
  * @brief Restrict a temporal point to a spatiotemporal box.
  * @sqlfunc atStbox(), minusGeometry()
  */
@@ -4470,7 +4470,7 @@ tpoint_at_stbox(const Temporal *temp, const STBox *box)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libMOBDB_temporal_restrict
  * @brief Restrict a temporal point to the complement of a spatiotemporal box.
  * @sqlfunc minusStbox()
  */

@@ -172,7 +172,7 @@ setop_set_set(const Set *s1, const Set *s2, SetOper setop)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_topo
+ * @ingroup libMOBDB_internal_setspan_topo
  * @brief Return true if a set contains a value.
  */
 bool
@@ -187,7 +187,7 @@ contains_set_value(const Set *s, Datum d, meosType basetype)
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup libMOBDB_setspan_topo
  * @brief Return true if a set contains a value.
  * @sqlop @p \@>
  */
@@ -198,7 +198,7 @@ contains_intset_int(const Set *s, int i)
 }
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup libMOBDB_setspan_topo
  * @brief Return true if a set contains a value.
  * @sqlop @p \@>
  */
@@ -209,7 +209,7 @@ contains_bigintset_bigint(const Set *s, int64 i)
 }
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup libMOBDB_setspan_topo
  * @brief Return true if a set contains a value.
  * @sqlop @p \@>
  */
@@ -220,7 +220,7 @@ contains_floatset_float(const Set *s, double d)
 }
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup libMOBDB_setspan_topo
  * @brief Return true if a set contains a value.
  * @sqlop @p \@>
  */
@@ -231,7 +231,7 @@ contains_textset_text(const Set *s, text *t)
 }
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup libMOBDB_setspan_topo
  * @brief Return true if a timestamp set contains a timestamp.
  * @sqlop @p \@>
  */
@@ -243,7 +243,7 @@ contains_timestampset_timestamp(const Set *ts, TimestampTz t)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup libMOBDB_setspan_topo
  * @brief Return true if the first set contains the second one.
  * @sqlop @p \@>
  */
@@ -277,7 +277,7 @@ contains_set_set(const Set *s1, const Set *s2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_topo
+ * @ingroup libMOBDB_internal_setspan_topo
  * @brief Return true if a value is contained by a set
  */
 bool
@@ -288,7 +288,7 @@ contained_value_set(Datum d, meosType basetype, const Set *s)
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup libMOBDB_setspan_topo
  * @brief Return true if a value is contained by a set
  * @sqlop @p <@
  */
@@ -299,7 +299,7 @@ contained_int_intset(int i, const Set *s)
 }
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup libMOBDB_setspan_topo
  * @brief Return true if a value is contained by a set
  * @sqlop @p <@
  */
@@ -310,7 +310,7 @@ contained_bigint_bigintset(int64 i, const Set *s)
 }
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup libMOBDB_setspan_topo
  * @brief Return true if a value is contained by a set
  * @sqlop @p <@
  */
@@ -321,7 +321,7 @@ contained_float_floatset(double d, const Set *s)
 }
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup libMOBDB_setspan_topo
  * @brief Return true if a value is contained by a set
  * @sqlop @p <@
  */
@@ -332,7 +332,7 @@ contained_text_textset(text *txt, const Set *s)
 }
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup libMOBDB_setspan_topo
  * @brief Return true if a timestamp is contained by a timestamp set
  * @sqlop @p <@
  */
@@ -344,7 +344,7 @@ contained_timestamp_timestampset(TimestampTz t, const Set *ts)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup libMOBDB_setspan_topo
  * @brief Return true if a set is contained by the second one
  * @sqlop @p <@
  */
@@ -360,7 +360,7 @@ contained_set_set(const Set *s1,
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_setspan_topo
+ * @ingroup libMOBDB_setspan_topo
  * @brief Return true if the sets overlap.
  * @sqlop @p &&
  */
@@ -392,7 +392,7 @@ overlaps_set_set(const Set *s1, const Set *s2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_pos
+ * @ingroup libMOBDB_internal_setspan_pos
  * @brief Return true if a value is strictly to the left of a set.
  */
 bool
@@ -404,7 +404,7 @@ left_value_set(Datum d, meosType basetype, const Set *s)
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libMOBDB_setspan_pos
  * @brief Return true if a value is strictly to the left of a span set.
  * @sqlop @p <<, @p <<#
  */
@@ -415,7 +415,7 @@ left_int_intset(int i, const Set *s)
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libMOBDB_setspan_pos
  * @brief Return true if a value is strictly to the left of a span set.
  * @sqlop @p <<, @p <<#
  */
@@ -426,7 +426,7 @@ left_bigint_bigintset(int64 i, const Set *s)
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libMOBDB_setspan_pos
  * @brief Return true if a value is strictly to the left of a span set.
  * @sqlop @p <<, @p <<#
  */
@@ -437,7 +437,7 @@ left_float_floatset(double d, const Set *s)
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libMOBDB_setspan_pos
  * @brief Return true if a value is strictly to the left of a span set.
  * @sqlop @p <<, @p <<#
  */
@@ -448,7 +448,7 @@ left_text_textset(text *txt, const Set *s)
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libMOBDB_setspan_pos
  * @brief Return true if a timestamp is strictly before the second one.
  * @sqlop @p <<#
  */
@@ -460,7 +460,7 @@ before_timestamp_timestampset(TimestampTz t, const Set *ts)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_setspan_pos
+ * @ingroup libMOBDB_internal_setspan_pos
  * @brief Return true if a set is strictly to the left of a value.
  */
 bool
@@ -472,7 +472,7 @@ left_set_value(const Set *s, Datum d, meosType basetype)
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libMOBDB_setspan_pos
  * @brief Return true if a set is strictly to the left of a value.
  * @sqlop @p <<, @p <<#
  */
@@ -483,7 +483,7 @@ left_intset_int(const Set *s, int i)
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libMOBDB_setspan_pos
  * @brief Return true if a set is strictly to the left of a value.
  * @sqlop @p <<, @p <<#
  */
@@ -494,7 +494,7 @@ left_bigintset_bigint(const Set *s, int64 i)
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libMOBDB_setspan_pos
  * @brief Return true if a set is strictly to the left of a value.
  * @sqlop @p <<, @p <<#
  */
@@ -505,7 +505,7 @@ left_floatset_float(const Set *s, double d)
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libMOBDB_setspan_pos
  * @brief Return true if a set is strictly to the left of a value.
  * @sqlop @p <<, @p <<#
  */
@@ -516,7 +516,7 @@ left_textset_text(const Set *s, text *txt)
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libMOBDB_setspan_pos
  * @brief Return true if a set is strictly to the left of a value.
  * @sqlop @p <<, @p <<#
  */
@@ -528,7 +528,7 @@ before_timestampset_timestamp(const Set *s, TimestampTz t)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libMOBDB_setspan_pos
  * @brief Return true if the first set is strictly to the left of a
  * second one.
  * @sqlop @p <<, <<#
@@ -546,7 +546,7 @@ left_set_set(const Set *s1, const Set *s2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_pos
+ * @ingroup libMOBDB_internal_setspan_pos
  * @brief Return true if a value is strictly to the right of a set.
  */
 bool
@@ -557,7 +557,7 @@ right_value_set(Datum d, meosType basetype, const Set *s)
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libMOBDB_setspan_pos
  * @brief Return true if a value is strictly to the right of a span set.
  * @sqlop @p >>, @p #>>
  */
@@ -568,7 +568,7 @@ right_int_intset(int i, const Set *s)
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libMOBDB_setspan_pos
  * @brief Return true if a value is strictly to the right of a span set.
  * @sqlop @p >>, @p #>>
  */
@@ -579,7 +579,7 @@ right_bigint_bigintset(int64 i, const Set *s)
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libMOBDB_setspan_pos
  * @brief Return true if a value is strictly to the right of a span set.
  * @sqlop @p >>, @p #>>
  */
@@ -590,7 +590,7 @@ right_float_floatset(double d, const Set *s)
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libMOBDB_setspan_pos
  * @brief Return true if a value is strictly to the right of a span set.
  * @sqlop @p >>, @p #>>
  */
@@ -601,7 +601,7 @@ right_text_textset(text *txt, const Set *s)
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libMOBDB_setspan_pos
  * @brief Return true if a timestamp is strictly after a timestamp set.
  * @sqlop @p #>>
  */
@@ -613,7 +613,7 @@ after_timestamp_timestampset(TimestampTz t, const Set *ts)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_setspan_pos
+ * @ingroup libMOBDB_internal_setspan_pos
  * @brief Return true if a set is strictly to the right of a value.
  * @sqlop @p >>, @p #>>
  */
@@ -625,7 +625,7 @@ right_set_value(const Set *s, Datum d, meosType basetype)
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libMOBDB_setspan_pos
  * @brief Return true if a set is strictly to the right of a value.
  * @sqlop @p >>, @p #>>
  */
@@ -636,7 +636,7 @@ right_intset_int(const Set *s, int i)
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libMOBDB_setspan_pos
  * @brief Return true if a set is strictly to the right of a value.
  * @sqlop @p >>, @p #>>
  */
@@ -647,7 +647,7 @@ right_bigintset_bigint(const Set *s, int64 i)
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libMOBDB_setspan_pos
  * @brief Return true if a set is strictly to the right of a value.
  * @sqlop @p >>, @p #>>
  */
@@ -658,7 +658,7 @@ right_floatset_float(const Set *s, double d)
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libMOBDB_setspan_pos
  * @brief Return true if a set is strictly to the right of a value.
  * @sqlop @p >>, @p #>>
  */
@@ -669,7 +669,7 @@ right_textset_text(const Set *s, text *txt)
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libMOBDB_setspan_pos
  * @brief Return true if a set is strictly to the right of a value.
  * @sqlop @p >>, @p #>>
  */
@@ -681,7 +681,7 @@ after_timestampset_timestamptz(const Set *s, TimestampTz t)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libMOBDB_setspan_pos
  * @brief Return true if the first set is strictly to the right of the
  * second one.
  * @sqlop @p >>, @p #>>
@@ -697,7 +697,7 @@ right_set_set(const Set *s1, const Set *s2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_pos
+ * @ingroup libMOBDB_internal_setspan_pos
  * @brief Return true if a value does not extend to the right of a set.
  */
 bool
@@ -709,7 +709,7 @@ overleft_value_set(Datum d, meosType basetype, const Set *s)
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libMOBDB_setspan_pos
  * @brief Return true if a value does not extend to the right of a set.
  * @sqlop @p &<, @p &<#
  */
@@ -720,7 +720,7 @@ overleft_int_intset(int i, const Set *s)
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libMOBDB_setspan_pos
  * @brief Return true if a value does not extend to the right of a set.
  * @sqlop @p &<, @p &<#
  */
@@ -731,7 +731,7 @@ overleft_bigint_bigintset(int64 i, const Set *s)
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libMOBDB_setspan_pos
  * @brief Return true if a value does not extend to the right of a set.
  * @sqlop @p &<, @p &<#
  */
@@ -742,7 +742,7 @@ overleft_float_floatset(double d, const Set *s)
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libMOBDB_setspan_pos
  * @brief Return true if a value does not extend to the right of a set.
  * @sqlop @p &<, @p &<#
  */
@@ -753,7 +753,7 @@ overleft_text_textset(text *txt, const Set *s)
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libMOBDB_setspan_pos
  * @brief Return true if a timestamp is not after a timestamp set.
  * @sqlop @p &<#
  */
@@ -765,7 +765,7 @@ overbefore_timestamp_timestampset(TimestampTz t, const Set *ts)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_setspan_pos
+ * @ingroup libMOBDB_internal_setspan_pos
  * @brief Return true if a set does not extend to the right of a value.
  * @sqlop @p &<, @p &<#
  */
@@ -778,7 +778,7 @@ overleft_set_value(const Set *s, Datum d, meosType basetype)
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libMOBDB_setspan_pos
  * @brief Return true if a set does not extend to the right of a value.
  * @sqlop @p &<
  */
@@ -789,7 +789,7 @@ overleft_intset_int(const Set *s, int i)
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libMOBDB_setspan_pos
  * @brief Return true if a set does not extend to the right of a value.
  * @sqlop @p &<
  */
@@ -800,7 +800,7 @@ overleft_bigintset_bigint(const Set *s, int64 i)
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libMOBDB_setspan_pos
  * @brief Return true if a set does not extend to the right of a value.
  * @sqlop @p &<
  */
@@ -811,7 +811,7 @@ overleft_floatset_float(const Set *s, double d)
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libMOBDB_setspan_pos
  * @brief Return true if a set does not extend to the right of a value.
  * @sqlop @p &<#
  */
@@ -822,7 +822,7 @@ overleft_textset_text(const Set *s, text *txt)
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libMOBDB_setspan_pos
  * @brief Return true if a set does not extend to the right of a value.
  * @sqlop @p &<#
  */
@@ -834,7 +834,7 @@ overbefore_timestampset_timestamp(const Set *s, TimestampTz t)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libMOBDB_setspan_pos
  * @brief Return true if the first set does not extend to the right of
  * the second one.
  * @sqlop @p &<, &<#
@@ -852,7 +852,7 @@ overleft_set_set(const Set *s1, const Set *s2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_pos
+ * @ingroup libMOBDB_internal_setspan_pos
  * @brief Return true if a value does not extend to the the left of a set.
  */
 bool
@@ -864,7 +864,7 @@ overright_value_set(Datum d, meosType basetype, const Set *s)
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libMOBDB_setspan_pos
  * @brief Return true if a value does not extend to the the left of a set.
  * @sqlop @p &>
  */
@@ -875,7 +875,7 @@ overright_int_intset(int i, const Set *s)
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libMOBDB_setspan_pos
  * @brief Return true if a value does not extend to the the left of a set.
  * @sqlop @p &>
  */
@@ -886,7 +886,7 @@ overright_bigint_bigintset(int64 i, const Set *s)
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libMOBDB_setspan_pos
  * @brief Return true if a value does not extend to the the left of a set.
  * @sqlop @p &>
  */
@@ -897,7 +897,7 @@ overright_float_floatset(double d, const Set *s)
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libMOBDB_setspan_pos
  * @brief Return true if a timestamp is not before a timestamp set.
  * @sqlop @p #&>
  */
@@ -909,7 +909,7 @@ overafter_timestamp_timestampset(TimestampTz t, const Set *ts)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_setspan_pos
+ * @ingroup libMOBDB_internal_setspan_pos
  * @brief Return true if a set does not extend to the left of a value.
  */
 bool
@@ -921,7 +921,7 @@ overright_set_value(const Set *s, Datum d, meosType basetype)
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libMOBDB_setspan_pos
  * @brief Return true if a set does not extend to the left of a value.
  * @sqlop @p &>, @p #&>
  */
@@ -932,7 +932,7 @@ overright_intset_int(const Set *s, int i)
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libMOBDB_setspan_pos
  * @brief Return true if a set does not extend to the left of a value.
  * @sqlop @p &>, @p #&>
  */
@@ -943,7 +943,7 @@ overright_bigintset_bigint(const Set *s, int64 i)
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libMOBDB_setspan_pos
  * @brief Return true if a set does not extend to the left of a value.
  * @sqlop @p &>, @p #&>
  */
@@ -954,7 +954,7 @@ overright_floatset_float(const Set *s, double d)
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libMOBDB_setspan_pos
  * @brief Return true if a set does not extend to the left of a value.
  * @sqlop @p &>, @p #&>
  */
@@ -965,7 +965,7 @@ overright_textset_text(const Set *s, text *txt)
 }
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libMOBDB_setspan_pos
  * @brief Return true if a set does not extend to the left of a value.
  * @sqlop @p &>, @p #&>
  */
@@ -977,7 +977,7 @@ overafter_timestampset_timestamp(const Set *s, TimestampTz t)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_setspan_pos
+ * @ingroup libMOBDB_setspan_pos
  * @brief Return true if the first set does not extend to the left of
  * the second one.
  * @sqlop @p &>, @p #&>
@@ -995,7 +995,7 @@ overright_set_set(const Set *s1, const Set *s2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_set
+ * @ingroup libMOBDB_internal_setspan_set
  * @brief Return the union of a value and a set.
  */
 Set *
@@ -1028,7 +1028,7 @@ union_set_value(const Set *s, Datum d, meosType basetype)
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup libMOBDB_setspan_set
  * @brief Return the union of a set and a value
  * @sqlop @p +
  */
@@ -1039,7 +1039,7 @@ union_intset_int(const Set *s, int i)
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup libMOBDB_setspan_set
  * @brief Return the union of a set and a value
  * @sqlop @p +
  */
@@ -1050,7 +1050,7 @@ union_bigintset_bigint(const Set *s, int64 i)
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup libMOBDB_setspan_set
  * @brief Return the union of a set and a value
  * @sqlop @p +
  */
@@ -1061,7 +1061,7 @@ union_floatset_float(const Set *s, double d)
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup libMOBDB_setspan_set
  * @brief Return the union of a set and a value
  * @sqlop @p +
  */
@@ -1072,7 +1072,7 @@ union_textset_text(const Set *s, text *txt)
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup libMOBDB_setspan_set
  * @brief Return the union of a timestamp set and a timestamp
  * @sqlop @p +
  */
@@ -1083,7 +1083,7 @@ union_timestampset_timestamp(const Set *ts, const TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup libMOBDB_setspan_set
  * @brief Return the union of a timestamp and a timestamp set
  * @sqlop @p +
  */
@@ -1095,7 +1095,7 @@ union_timestamp_timestampset(const TimestampTz t, const Set *ts)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup libMOBDB_setspan_set
  * @brief Return the union of two sets.
  * @sqlop @p +
  */
@@ -1110,7 +1110,7 @@ union_set_set(const Set *s1, const Set *s2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_set
+ * @ingroup libMOBDB_internal_setspan_set
  * @brief Return the intersection of a set and a value
  */
 bool
@@ -1126,7 +1126,7 @@ intersection_set_value(const Set *s, Datum d, meosType basetype,
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup libMOBDB_setspan_set
  * @brief Return the intersection of a set and a value
  * @sqlop @p *
  */
@@ -1140,7 +1140,7 @@ intersection_intset_int(const Set *s, int i, int *result)
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup libMOBDB_setspan_set
  * @brief Return the intersection of a set and a value
  * @sqlop @p *
  */
@@ -1154,7 +1154,7 @@ intersection_bigintset_bigint(const Set *s, int64 i, int64 *result)
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup libMOBDB_setspan_set
  * @brief Return the intersection of a set and a value
  * @sqlop @p *
  */
@@ -1168,7 +1168,7 @@ intersection_floatset_float(const Set *s, double d, double *result)
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup libMOBDB_setspan_set
  * @brief Return the intersection of a set and a value
  * @sqlop @p *
  */
@@ -1182,7 +1182,7 @@ intersection_textset_text(const Set *s, const text *txt, text **result)
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup libMOBDB_setspan_set
  * @brief Return the intersection of a timestamp set and a timestamp
  * @sqlop @p *
  */
@@ -1199,7 +1199,7 @@ intersection_timestampset_timestamp(const Set *ts, TimestampTz t,
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup libMOBDB_setspan_set
  * @brief Return the intersection of two sets.
  * @sqlop @p *
  */
@@ -1215,7 +1215,7 @@ intersection_set_set(const Set *s1, const Set *s2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_set
+ * @ingroup libMOBDB_internal_setspan_set
  * @brief Return the difference of a value and a set
  * @sqlop @p -
  */
@@ -1231,7 +1231,7 @@ minus_value_set(Datum d, meosType basetype, const Set *s,
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup libMOBDB_setspan_set
  * @brief Return the difference of a value and a set
  * @sqlop @p -
  */
@@ -1245,7 +1245,7 @@ minus_int_intset(int i, const Set *s, int *result)
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup libMOBDB_setspan_set
  * @brief Return the difference of a value and a set
  * @sqlop @p -
  */
@@ -1259,7 +1259,7 @@ minus_bigint_bigintset(int64 i, const Set *s, int64 *result)
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup libMOBDB_setspan_set
  * @brief Return the intersection of a value and a span set
  * @sqlop @p -
  */
@@ -1273,7 +1273,7 @@ minus_float_floatset(double d, const Set *s, double *result)
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup libMOBDB_setspan_set
  * @brief Return the intersection of a value and a span set
  * @sqlop @p -
  */
@@ -1288,7 +1288,7 @@ minus_text_textset(const text *txt, const Set *s, text **result)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_setspan_set
+ * @ingroup libMOBDB_internal_setspan_set
  * @brief Return the difference of a set and a value.
  */
 Set *
@@ -1312,7 +1312,7 @@ minus_set_value(const Set *s, Datum d, meosType basetype)
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup libMOBDB_setspan_set
  * @brief Return the difference of a set and a value.
  * @sqlop @p -
  */
@@ -1323,7 +1323,7 @@ minus_intset_int(const Set *s, int i)
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup libMOBDB_setspan_set
  * @brief Return the difference of a set and a value.
  * @sqlop @p -
  */
@@ -1334,7 +1334,7 @@ minus_bigintset_bigint(const Set *s, int64 i)
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup libMOBDB_setspan_set
  * @brief Return the difference of a set and a value.
  * @sqlop @p -
  */
@@ -1345,7 +1345,7 @@ minus_floatset_float(const Set *s, double d)
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup libMOBDB_setspan_set
  * @brief Return the difference of a set and a value.
  * @sqlop @p -
  */
@@ -1356,7 +1356,7 @@ minus_textset_text(const Set *s, const text *txt)
 }
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup libMOBDB_setspan_set
  * @brief Return the difference of a timestamp set and a timestamp.
  * @sqlop @p -
  */
@@ -1383,7 +1383,7 @@ minus_timestampset_timestamp(const Set *ts, TimestampTz t)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_setspan_set
+ * @ingroup libMOBDB_setspan_set
  * @brief Return the difference of two sets.
  * @sqlop @p -
  */
@@ -1399,7 +1399,7 @@ minus_set_set(const Set *s1, const Set *s2)
 
 #if MEOS
 /**
- * @ingroup libmeos_internal_setspan_dist
+ * @ingroup libMOBDB_internal_setspan_dist
  * @brief Return the distance between a set and a value
  */
 double
@@ -1411,7 +1411,7 @@ distance_set_value(const Set *s, Datum d, meosType basetype)
 }
 
 /**
- * @ingroup libmeos_setspan_dist
+ * @ingroup libMOBDB_setspan_dist
  * @brief Return the distance between a set and a value
  * @sqlop @p <->
  */
@@ -1422,7 +1422,7 @@ distance_intset_int(const Set *s, int i)
 }
 
 /**
- * @ingroup libmeos_setspan_dist
+ * @ingroup libMOBDB_setspan_dist
  * @brief Return the distance between a set and a value
  * @sqlop @p <->
  */
@@ -1433,7 +1433,7 @@ distance_bigintset_bigint(const Set *s, int64 i)
 }
 
 /**
- * @ingroup libmeos_setspan_dist
+ * @ingroup libMOBDB_setspan_dist
  * @brief Return the distance between a set and a value
  * @sqlop @p <->
  */
@@ -1444,7 +1444,7 @@ distance_floatset_float(const Set *s, double d)
 }
 
 /**
- * @ingroup libmeos_setspan_dist
+ * @ingroup libMOBDB_setspan_dist
  * @brief Return the distance between a set and a value
  * @sqlop @p <->
  */
@@ -1455,7 +1455,7 @@ distance_textset_text(const Set *s, const text *txt)
 }
 
 /**
- * @ingroup libmeos_setspan_dist
+ * @ingroup libMOBDB_setspan_dist
  * @brief Return the distance in seconds between a timestamp set and a timestamp
  * @sqlop @p <->
  */
@@ -1466,7 +1466,7 @@ distance_timestampset_timestamp(const Set *ts, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_setspan_dist
+ * @ingroup libMOBDB_setspan_dist
  * @brief Return the distance between two sets
  * @sqlop @p <->
  */

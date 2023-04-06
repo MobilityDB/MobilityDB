@@ -290,12 +290,12 @@ overlap4D(const TboxNode *nodebox, const TBox *query)
 {
   bool result = true;
   /* If the dimension is not missing */
-  if (MEOS_FLAGS_GET_X(query->flags))
+  if (MOBDB_FLAGS_GET_X(query->flags))
     result &=
       datum_le(nodebox->left.span.lower, query->span.upper, T_FLOAT8) &&
       datum_ge(nodebox->right.span.upper, query->span.lower, T_FLOAT8);
   /* If the dimension is not missing */
-  if (MEOS_FLAGS_GET_T(query->flags))
+  if (MOBDB_FLAGS_GET_T(query->flags))
     result &=
       datum_le(nodebox->left.period.lower, query->period.upper, T_TIMESTAMPTZ) &&
       datum_ge(nodebox->right.period.upper, query->period.lower, T_TIMESTAMPTZ);
@@ -310,12 +310,12 @@ contain4D(const TboxNode *nodebox, const TBox *query)
 {
   bool result = true;
   /* If the dimension is not missing */
-  if (MEOS_FLAGS_GET_X(query->flags))
+  if (MOBDB_FLAGS_GET_X(query->flags))
     result &=
       datum_ge(nodebox->right.span.upper, query->span.upper, T_FLOAT8) &&
       datum_le(nodebox->left.span.lower, query->span.lower, T_FLOAT8);
   /* If the dimension is not missing */
-  if (MEOS_FLAGS_GET_T(query->flags))
+  if (MOBDB_FLAGS_GET_T(query->flags))
     result &=
       datum_ge(nodebox->right.period.upper, query->period.upper, T_TIMESTAMPTZ) &&
       datum_le(nodebox->left.period.lower, query->period.lower, T_TIMESTAMPTZ);
@@ -406,7 +406,7 @@ static double
 distance_tbox_nodebox(const TBox *query, const TboxNode *nodebox)
 {
   /* If the boxes do not intersect in the time dimension return infinity */
-  bool hast = MEOS_FLAGS_GET_T(query->flags);
+  bool hast = MOBDB_FLAGS_GET_T(query->flags);
   if (hast && (
       datum_gt(query->period.lower, nodebox->right.period.upper, T_TIMESTAMPTZ) ||
       datum_gt(nodebox->left.period.lower, query->period.upper, T_TIMESTAMPTZ)))
@@ -460,7 +460,7 @@ tnumber_spgist_get_tbox(const ScanKeyData *scankey, TBox *result)
 static int
 tbox_xmin_cmp(const TBox *box1, const TBox *box2)
 {
-  assert(MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags));
+  assert(MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags));
   if (datum_eq2(box1->span.lower, box2->span.lower, box1->span.basetype,
         box2->span.basetype))
     return 0;
@@ -474,7 +474,7 @@ tbox_xmin_cmp(const TBox *box1, const TBox *box2)
 static int
 tbox_xmax_cmp(const TBox *box1, const TBox *box2)
 {
-  assert(MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags));
+  assert(MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags));
   if (datum_eq2(box1->span.upper, box2->span.upper, box1->span.basetype,
         box2->span.basetype))
     return 0;
@@ -488,7 +488,7 @@ tbox_xmax_cmp(const TBox *box1, const TBox *box2)
 static int
 tbox_tmin_cmp(const TBox *box1, const TBox *box2)
 {
-  assert(MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags));
+  assert(MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags));
   if (datum_eq2(box1->period.lower, box2->period.lower, box1->period.basetype,
         box2->period.basetype))
     return 0;
@@ -502,7 +502,7 @@ tbox_tmin_cmp(const TBox *box1, const TBox *box2)
 static int
 tbox_tmax_cmp(const TBox *box1, const TBox *box2)
 {
-  assert(MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags));
+  assert(MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags));
   if (datum_eq2(box1->period.upper, box2->period.upper, box1->period.basetype,
         box2->period.basetype))
     return 0;

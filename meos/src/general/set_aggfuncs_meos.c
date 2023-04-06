@@ -78,7 +78,7 @@ set_expand_bbox(Datum d, meosType basetype, void *box)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_transf
+ * @ingroup libMOBDB_internal_temporal_transf
  * @brief Append a value to an unordered array.
  * @param[in,out] set Set
  * @param[in] d Value
@@ -95,7 +95,7 @@ set_append_value(Set *set, Datum d, meosType basetype)
   while (set->count < set->maxcount)
   {
     /* If passed by value, set datum in the offsets array */
-    if (MEOS_FLAGS_GET_BYVAL(set->flags))
+    if (MOBDB_FLAGS_GET_BYVAL(set->flags))
     {
       (SET_OFFSETS_PTR(set))[set->count++] = d;
       return set;
@@ -151,7 +151,7 @@ set_append_value(Set *set, Datum d, meosType basetype)
 }
 
 /**
- * @ingroup libmeos_internal_setspan_agg
+ * @ingroup libMOBDB_internal_setspan_agg
  * @brief Transition function for set aggregate of values
  */
 Set *
@@ -169,7 +169,7 @@ value_union_transfn(Set *state, Datum d, meosType basetype)
 }
 
 /**
- * @ingroup libmeos_setspan_agg
+ * @ingroup libMOBDB_setspan_agg
  * @brief Transition function for set aggregate of values
  */
 Set *
@@ -179,7 +179,7 @@ int_union_transfn(Set *state, int32 i)
 }
 
 /**
- * @ingroup libmeos_setspan_agg
+ * @ingroup libMOBDB_setspan_agg
  * @brief Transition function for set aggregate of values
  */
 Set *
@@ -189,7 +189,7 @@ bigint_union_transfn(Set *state, int64 i)
 }
 
 /**
- * @ingroup libmeos_setspan_agg
+ * @ingroup libMOBDB_setspan_agg
  * @brief Transition function for set aggregate of values
  */
 Set *
@@ -199,7 +199,7 @@ float_union_transfn(Set *state, double d)
 }
 
 /**
- * @ingroup libmeos_setspan_agg
+ * @ingroup libMOBDB_setspan_agg
  * @brief Transition function for set aggregate of values
  */
 Set *
@@ -209,7 +209,7 @@ timestamp_union_transfn(Set *state, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_setspan_agg
+ * @ingroup libMOBDB_setspan_agg
  * @brief Transition function for set aggregate of values
  */
 Set *
@@ -219,7 +219,7 @@ text_union_transfn(Set *state, const text *txt)
 }
 
 /**
- * @ingroup libmeos_internal_setspan_agg
+ * @ingroup libMOBDB_internal_setspan_agg
  * @brief Transition function for set aggregate of values
  */
 Set *
@@ -245,7 +245,7 @@ set_union_transfn(Set *state, Set *set)
 }
 
 /**
- * @ingroup libmeos_internal_setspan_agg
+ * @ingroup libMOBDB_internal_setspan_agg
  * @brief Transition function for set aggregate of values
  * @note The input state is NOT freed, this should be done by the calling
  * function

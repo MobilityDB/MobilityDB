@@ -700,8 +700,8 @@ stbox_transform(const STBox *box, int32 srid)
   ensure_has_X_stbox(box);
   STBox *result = stbox_copy(box);
   result->srid = DatumGetInt32(srid);
-  bool hasz = MEOS_FLAGS_GET_Z(box->flags);
-  bool geodetic = MEOS_FLAGS_GET_GEODETIC(box->flags);
+  bool hasz = MOBDB_FLAGS_GET_Z(box->flags);
+  bool geodetic = MOBDB_FLAGS_GET_GEODETIC(box->flags);
   Datum min = PointerGetDatum(gspoint_make(box->xmin, box->ymin, box->zmin,
     hasz, geodetic, box->srid));
   Datum max = PointerGetDatum(gspoint_make(box->xmax, box->ymax, box->zmax,
@@ -808,7 +808,7 @@ stbox_round(const STBox *box, Datum prec)
   result->xmax = DatumGetFloat8(datum_round_float(Float8GetDatum(box->xmax), prec));
   result->ymin = DatumGetFloat8(datum_round_float(Float8GetDatum(box->ymin), prec));
   result->ymax = DatumGetFloat8(datum_round_float(Float8GetDatum(box->ymax), prec));
-  if (MEOS_FLAGS_GET_Z(box->flags) || MEOS_FLAGS_GET_GEODETIC(box->flags))
+  if (MOBDB_FLAGS_GET_Z(box->flags) || MOBDB_FLAGS_GET_GEODETIC(box->flags))
   {
     result->zmin = DatumGetFloat8(datum_round_float(Float8GetDatum(box->zmin), prec));
     result->zmax = DatumGetFloat8(datum_round_float(Float8GetDatum(box->zmax), prec));

@@ -76,7 +76,7 @@
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
+ * @ingroup libMOBDB_temporal_spatial_rel
  * @brief Return the temporal intersects relationship between a temporal point
  * and a geometry
  * @sqlfunc tdisjoint()
@@ -94,7 +94,7 @@ tdisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *geo,
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
+ * @ingroup libMOBDB_temporal_spatial_rel
  * @brief Return the temporal intersects relationship between a temporal point
  * and a geometry
  * @sqlfunc tintersects()

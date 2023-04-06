@@ -31,8 +31,8 @@
  * @brief Functions for building a cache of temporal types and operators.
  */
 
-#ifndef __MEOS_CATALOG_H__
-#define __MEOS_CATALOG_H__
+#ifndef __MOBDB_CATALOG_H__
+#define __MOBDB_CATALOG_H__
 
 /* C */
 #include <stdbool.h>
@@ -200,7 +200,7 @@ extern meosType basetype_settype(meosType basetype);
 
 /* Catalog functions */
 
-extern bool meos_basetype(meosType type);
+extern bool MOBDB_basetype(meosType type);
 extern bool alpha_basetype(meosType basetype);
 extern bool number_basetype(meosType basetype);
 extern bool alphanum_basetype(meosType basetype);
@@ -250,5 +250,5 @@ extern bool tgeo_type(meosType basetype);
 
 /*****************************************************************************/
 
-#endif /* __MEOS_CATALOG_H__ */
+#endif /* __MOBDB_CATALOG_H__ */
 

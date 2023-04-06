@@ -61,13 +61,13 @@ extern char *text_to_cstring(const text *t);
 /**
  * Floating point precision
  */
-#define MEOS_EPSILON   1.0e-06
-#define MEOS_FP_EQ(A, B) (fabs((A)-(B)) <= MEOS_EPSILON)
-#define MEOS_FP_NE(A, B) (fabs((A)-(B)) > MEOS_EPSILON)
-#define MEOS_FP_LT(A, B) (((A) + MEOS_EPSILON) < (B))
-#define MEOS_FP_LE(A, B) (((A) - MEOS_EPSILON) <= (B))
-#define MEOS_FP_GT(A, B) (((A) - MEOS_EPSILON) > (B))
-#define MEOS_FP_GE(A, B) (((A) + MEOS_EPSILON) >= (B))
+#define MOBDB_EPSILON   1.0e-06
+#define MOBDB_FP_EQ(A, B) (fabs((A)-(B)) <= MOBDB_EPSILON)
+#define MOBDB_FP_NE(A, B) (fabs((A)-(B)) > MOBDB_EPSILON)
+#define MOBDB_FP_LT(A, B) (((A) + MOBDB_EPSILON) < (B))
+#define MOBDB_FP_LE(A, B) (((A) - MOBDB_EPSILON) <= (B))
+#define MOBDB_FP_GT(A, B) (((A) - MOBDB_EPSILON) > (B))
+#define MOBDB_FP_GE(A, B) (((A) + MOBDB_EPSILON) >= (B))
 
 /**
  * Precision for distance operations
@@ -196,72 +196,72 @@ typedef enum
  *****************************************************************************/
 
 /* The following flag is only used for Collection and TInstant */
-#define MEOS_FLAG_BYVAL      0x0001  // 1
+#define MOBDB_FLAG_BYVAL      0x0001  // 1
 /* The following flag is only used for Collection */
-#define MEOS_FLAG_ORDERED    0x0002  // 2
+#define MOBDB_FLAG_ORDERED    0x0002  // 2
 /* The following flag is only used for Temporal */
-#define MEOS_FLAG_CONTINUOUS 0x0002  // 2
+#define MOBDB_FLAG_CONTINUOUS 0x0002  // 2
 /* The following two interpolation flags are only used for TSequence and TSequenceSet */
-#define MEOS_FLAGS_INTERP    0x000C  // 4 / 8
+#define MOBDB_FLAGS_INTERP    0x000C  // 4 / 8
 /* The following two flags are used for both bounding boxes and temporal types */
-#define MEOS_FLAG_X          0x0010  // 16
-#define MEOS_FLAG_Z          0x0020  // 32
-#define MEOS_FLAG_T          0x0040  // 64
-#define MEOS_FLAG_GEODETIC   0x0080  // 128
+#define MOBDB_FLAG_X          0x0010  // 16
+#define MOBDB_FLAG_Z          0x0020  // 32
+#define MOBDB_FLAG_T          0x0040  // 64
+#define MOBDB_FLAG_GEODETIC   0x0080  // 128
 
-#define MEOS_FLAGS_GET_BYVAL(flags)      ((bool) (((flags) & MEOS_FLAG_BYVAL)))
-#define MEOS_FLAGS_GET_ORDERED(flags)    ((bool) (((flags) & MEOS_FLAG_ORDERED)>>1))
-#define MEOS_FLAGS_GET_CONTINUOUS(flags) ((bool) (((flags) & MEOS_FLAG_CONTINUOUS)>>1))
-#define MEOS_FLAGS_GET_X(flags)          ((bool) (((flags) & MEOS_FLAG_X)>>4))
-#define MEOS_FLAGS_GET_Z(flags)          ((bool) (((flags) & MEOS_FLAG_Z)>>5))
-#define MEOS_FLAGS_GET_T(flags)          ((bool) (((flags) & MEOS_FLAG_T)>>6))
-#define MEOS_FLAGS_GET_GEODETIC(flags)   ((bool) (((flags) & MEOS_FLAG_GEODETIC)>>7))
+#define MOBDB_FLAGS_GET_BYVAL(flags)      ((bool) (((flags) & MOBDB_FLAG_BYVAL)))
+#define MOBDB_FLAGS_GET_ORDERED(flags)    ((bool) (((flags) & MOBDB_FLAG_ORDERED)>>1))
+#define MOBDB_FLAGS_GET_CONTINUOUS(flags) ((bool) (((flags) & MOBDB_FLAG_CONTINUOUS)>>1))
+#define MOBDB_FLAGS_GET_X(flags)          ((bool) (((flags) & MOBDB_FLAG_X)>>4))
+#define MOBDB_FLAGS_GET_Z(flags)          ((bool) (((flags) & MOBDB_FLAG_Z)>>5))
+#define MOBDB_FLAGS_GET_T(flags)          ((bool) (((flags) & MOBDB_FLAG_T)>>6))
+#define MOBDB_FLAGS_GET_GEODETIC(flags)   ((bool) (((flags) & MOBDB_FLAG_GEODETIC)>>7))
 
-#define MEOS_FLAGS_SET_BYVAL(flags, value) \
-  ((flags) = (value) ? ((flags) | MEOS_FLAG_BYVAL) : ((flags) & ~MEOS_FLAG_BYVAL))
-#define MEOS_FLAGS_SET_ORDERED(flags, value) \
-  ((flags) = (value) ? ((flags) | MEOS_FLAG_ORDERED) : ((flags) & ~MEOS_FLAG_ORDERED))
-#define MEOS_FLAGS_SET_CONTINUOUS(flags, value) \
-  ((flags) = (value) ? ((flags) | MEOS_FLAG_CONTINUOUS) : ((flags) & ~MEOS_FLAG_CONTINUOUS))
-#define MEOS_FLAGS_SET_X(flags, value) \
-  ((flags) = (value) ? ((flags) | MEOS_FLAG_X) : ((flags) & ~MEOS_FLAG_X))
-#define MEOS_FLAGS_SET_Z(flags, value) \
-  ((flags) = (value) ? ((flags) | MEOS_FLAG_Z) : ((flags) & ~MEOS_FLAG_Z))
-#define MEOS_FLAGS_SET_T(flags, value) \
-  ((flags) = (value) ? ((flags) | MEOS_FLAG_T) : ((flags) & ~MEOS_FLAG_T))
-#define MEOS_FLAGS_SET_GEODETIC(flags, value) \
-  ((flags) = (value) ? ((flags) | MEOS_FLAG_GEODETIC) : ((flags) & ~MEOS_FLAG_GEODETIC))
+#define MOBDB_FLAGS_SET_BYVAL(flags, value) \
+  ((flags) = (value) ? ((flags) | MOBDB_FLAG_BYVAL) : ((flags) & ~MOBDB_FLAG_BYVAL))
+#define MOBDB_FLAGS_SET_ORDERED(flags, value) \
+  ((flags) = (value) ? ((flags) | MOBDB_FLAG_ORDERED) : ((flags) & ~MOBDB_FLAG_ORDERED))
+#define MOBDB_FLAGS_SET_CONTINUOUS(flags, value) \
+  ((flags) = (value) ? ((flags) | MOBDB_FLAG_CONTINUOUS) : ((flags) & ~MOBDB_FLAG_CONTINUOUS))
+#define MOBDB_FLAGS_SET_X(flags, value) \
+  ((flags) = (value) ? ((flags) | MOBDB_FLAG_X) : ((flags) & ~MOBDB_FLAG_X))
+#define MOBDB_FLAGS_SET_Z(flags, value) \
+  ((flags) = (value) ? ((flags) | MOBDB_FLAG_Z) : ((flags) & ~MOBDB_FLAG_Z))
+#define MOBDB_FLAGS_SET_T(flags, value) \
+  ((flags) = (value) ? ((flags) | MOBDB_FLAG_T) : ((flags) & ~MOBDB_FLAG_T))
+#define MOBDB_FLAGS_SET_GEODETIC(flags, value) \
+  ((flags) = (value) ? ((flags) | MOBDB_FLAG_GEODETIC) : ((flags) & ~MOBDB_FLAG_GEODETIC))
 
-#define MEOS_FLAGS_GET_INTERP(flags) (((flags) & MEOS_FLAGS_INTERP) >> 2)
-#define MEOS_FLAGS_SET_INTERP(flags, value) ((flags) = (((flags) & ~MEOS_FLAGS_INTERP) | ((value & 0x0003) << 2)))
+#define MOBDB_FLAGS_GET_INTERP(flags) (((flags) & MOBDB_FLAGS_INTERP) >> 2)
+#define MOBDB_FLAGS_SET_INTERP(flags, value) ((flags) = (((flags) & ~MOBDB_FLAGS_INTERP) | ((value & 0x0003) << 2)))
 
-#define MEOS_FLAGS_GET_DISCRETE(flags)   ((bool) (MEOS_FLAGS_GET_INTERP((flags)) == DISCRETE))
-#define MEOS_FLAGS_GET_STEP(flags)       ((bool) (MEOS_FLAGS_GET_INTERP((flags)) == STEP))
-#define MEOS_FLAGS_GET_LINEAR(flags)     ((bool) (MEOS_FLAGS_GET_INTERP((flags)) == LINEAR))
+#define MOBDB_FLAGS_GET_DISCRETE(flags)   ((bool) (MOBDB_FLAGS_GET_INTERP((flags)) == DISCRETE))
+#define MOBDB_FLAGS_GET_STEP(flags)       ((bool) (MOBDB_FLAGS_GET_INTERP((flags)) == STEP))
+#define MOBDB_FLAGS_GET_LINEAR(flags)     ((bool) (MOBDB_FLAGS_GET_INTERP((flags)) == LINEAR))
 
 /*****************************************************************************
  * Well-Known Binary (WKB)
  *****************************************************************************/
 
 /* Data type size */
-#define MEOS_WKB_TIMESTAMP_SIZE   8
-#define MEOS_WKB_DOUBLE_SIZE      8
-#define MEOS_WKB_INT2_SIZE        2
-#define MEOS_WKB_INT4_SIZE        4
-#define MEOS_WKB_INT8_SIZE        8
-#define MEOS_WKB_BYTE_SIZE        1
+#define MOBDB_WKB_TIMESTAMP_SIZE   8
+#define MOBDB_WKB_DOUBLE_SIZE      8
+#define MOBDB_WKB_INT2_SIZE        2
+#define MOBDB_WKB_INT4_SIZE        4
+#define MOBDB_WKB_INT8_SIZE        8
+#define MOBDB_WKB_BYTE_SIZE        1
 
 /* Temporal subtype */
-enum MEOS_WKB_TSUBTYPE
+enum MOBDB_WKB_TSUBTYPE
 {
-  MEOS_WKB_TINSTANT =         1,  /**< temporal instant subtype */
-  MEOS_WKB_TSEQUENCE =        2,  /**< temporal sequence subtype */
-  MEOS_WKB_TSEQUENCESET =     3,  /**< temporal sequence set subtype */
+  MOBDB_WKB_TINSTANT =         1,  /**< temporal instant subtype */
+  MOBDB_WKB_TSEQUENCE =        2,  /**< temporal sequence subtype */
+  MOBDB_WKB_TSEQUENCESET =     3,  /**< temporal sequence set subtype */
 };
 
 /* Span bounds */
-#define MEOS_WKB_LOWER_INC        0x01
-#define MEOS_WKB_UPPER_INC        0x02
+#define MOBDB_WKB_LOWER_INC        0x01
+#define MOBDB_WKB_UPPER_INC        0x02
 
 /* Machine endianness */
 #define XDR                        0  /* big endian */
@@ -275,18 +275,18 @@ enum MEOS_WKB_TSUBTYPE
  * - Temporal types: xxSS where SS correspond to the subtype
  * and x are unused bits
  */
-#define MEOS_WKB_ORDERED          0x01  // 1
-#define MEOS_WKB_XFLAG            0x01  // 1
-#define MEOS_WKB_TFLAG            0x02  // 2
-#define MEOS_WKB_INTERPFLAGS      0x0C  // 4 + 8
-#define MEOS_WKB_ZFLAG            0x10  // 16
-#define MEOS_WKB_GEODETICFLAG     0x20  // 32
-#define MEOS_WKB_SRIDFLAG         0x40  // 64
+#define MOBDB_WKB_ORDERED          0x01  // 1
+#define MOBDB_WKB_XFLAG            0x01  // 1
+#define MOBDB_WKB_TFLAG            0x02  // 2
+#define MOBDB_WKB_INTERPFLAGS      0x0C  // 4 + 8
+#define MOBDB_WKB_ZFLAG            0x10  // 16
+#define MOBDB_WKB_GEODETICFLAG     0x20  // 32
+#define MOBDB_WKB_SRIDFLAG         0x40  // 64
 
-#define MEOS_WKB_GET_INTERP(flags) (((flags) & MEOS_WKB_INTERPFLAGS) >> 2)
-#define MEOS_WKB_SET_INTERP(flags, value) ((flags) = (((flags) & ~MEOS_WKB_INTERPFLAGS) | ((value & 0x0003) << 2)))
+#define MOBDB_WKB_GET_INTERP(flags) (((flags) & MOBDB_WKB_INTERPFLAGS) >> 2)
+#define MOBDB_WKB_SET_INTERP(flags, value) ((flags) = (((flags) & ~MOBDB_WKB_INTERPFLAGS) | ((value & 0x0003) << 2)))
 
-// #define MEOS_WKB_GET_LINEAR(flags)     ((bool) (((flags) & MEOS_WKB_LINEARFLAG)>>3))
+// #define MOBDB_WKB_GET_LINEAR(flags)     ((bool) (((flags) & MOBDB_WKB_LINEARFLAG)>>3))
 
 /*****************************************************************************
  * Definitions for bucketing and tiling

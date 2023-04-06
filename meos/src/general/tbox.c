@@ -57,7 +57,7 @@
 void
 ensure_has_X_tbox(const TBox *box)
 {
-  if (! MEOS_FLAGS_GET_X(box->flags))
+  if (! MOBDB_FLAGS_GET_X(box->flags))
     elog(ERROR, "The box must have value dimension");
 }
 
@@ -67,7 +67,7 @@ ensure_has_X_tbox(const TBox *box)
 void
 ensure_has_T_tbox(const TBox *box)
 {
-  if (! MEOS_FLAGS_GET_T(box->flags))
+  if (! MOBDB_FLAGS_GET_T(box->flags))
     elog(ERROR, "The box must have time dimension");
 }
 
@@ -77,8 +77,8 @@ ensure_has_T_tbox(const TBox *box)
 void
 ensure_same_dimensionality_tbox(const TBox *box1, const TBox *box2)
 {
-  if (MEOS_FLAGS_GET_X(box1->flags) != MEOS_FLAGS_GET_X(box2->flags) ||
-    MEOS_FLAGS_GET_T(box1->flags) != MEOS_FLAGS_GET_T(box2->flags))
+  if (MOBDB_FLAGS_GET_X(box1->flags) != MOBDB_FLAGS_GET_X(box2->flags) ||
+    MOBDB_FLAGS_GET_T(box1->flags) != MOBDB_FLAGS_GET_T(box2->flags))
     elog(ERROR, "The boxes must be of the same dimensionality");
 }
 
@@ -87,7 +87,7 @@ ensure_same_dimensionality_tbox(const TBox *box1, const TBox *box2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_box_inout
+ * @ingroup libMOBDB_box_inout
  * @brief Return a temporal box from its Well-Known Text (WKT) representation.
  *
  * Examples of input:
@@ -105,7 +105,7 @@ tbox_in(const char *str)
 }
 
 /**
- * @ingroup libmeos_box_inout
+ * @ingroup libMOBDB_box_inout
  * @brief Return the Well-Known Text (WKT) representation of a temporal box.
  */
 char *
@@ -114,8 +114,8 @@ tbox_out(const TBox *box, int maxdd)
   static size_t size = MAXTBOXLEN + 1;
   char *result = palloc(size);
   char *period = NULL, *span = NULL;
-  bool hasx = MEOS_FLAGS_GET_X(box->flags);
-  bool hast = MEOS_FLAGS_GET_T(box->flags);
+  bool hasx = MOBDB_FLAGS_GET_X(box->flags);
+  bool hast = MOBDB_FLAGS_GET_T(box->flags);
   assert(hasx || hast);
 
   /* Generate the strings for the span and/or the period */
@@ -144,7 +144,7 @@ tbox_out(const TBox *box, int maxdd)
  * Constructor functions
  *****************************************************************************/
 /**
- * @ingroup libmeos_box_constructor
+ * @ingroup libMOBDB_box_constructor
  * @brief Construct a temporal box from the arguments.
  * @sqlfunc tbox()
  */
@@ -158,7 +158,7 @@ tbox_make(const Span *p, const Span *s)
 }
 
 /**
- * @ingroup libmeos_box_constructor
+ * @ingroup libMOBDB_box_constructor
  * @brief Set a temporal box from the arguments
  * @note This function is equivalent to @ref tbox_make without memory
  * allocation
@@ -173,18 +173,18 @@ tbox_set(const Span *p, const Span *s, TBox *box)
   if (p)
   {
     memcpy(&box->period, p, sizeof(Span));
-    MEOS_FLAGS_SET_T(box->flags, true);
+    MOBDB_FLAGS_SET_T(box->flags, true);
   }
   if (s)
   {
     memcpy(&box->span, s, sizeof(Span));
-    MEOS_FLAGS_SET_X(box->flags, true);
+    MOBDB_FLAGS_SET_X(box->flags, true);
   }
   return;
 }
 
 /**
- * @ingroup libmeos_box_constructor
+ * @ingroup libMOBDB_box_constructor
  * @brief Return a copy of a temporal box.
  */
 TBox *
@@ -201,7 +201,7 @@ tbox_copy(const TBox *box)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libMOBDB_internal_box_cast
  * @brief Set a temporal box from a number.
  */
 void
@@ -212,14 +212,14 @@ number_set_tbox(Datum value, meosType basetype, TBox *box)
   memset(box, 0, sizeof(TBox));
   Datum dvalue = Float8GetDatum(datum_double(value, basetype));
   span_set(dvalue, dvalue, true, true, T_FLOAT8, &box->span);
-  MEOS_FLAGS_SET_X(box->flags, true);
-  MEOS_FLAGS_SET_T(box->flags, false);
+  MOBDB_FLAGS_SET_X(box->flags, true);
+  MOBDB_FLAGS_SET_T(box->flags, false);
   return;
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libMOBDB_internal_box_cast
  * @brief Set a temporal box from an integer.
  */
 void
@@ -229,13 +229,13 @@ int_set_tbox(int i, TBox *box)
   memset(box, 0, sizeof(TBox));
   Datum d = Float8GetDatum((double) i);
   span_set(d, d, true, true, T_FLOAT8, &box->span);
-  MEOS_FLAGS_SET_X(box->flags, true);
-  MEOS_FLAGS_SET_T(box->flags, false);
+  MOBDB_FLAGS_SET_X(box->flags, true);
+  MOBDB_FLAGS_SET_T(box->flags, false);
   return;
 }
 
 /**
- * @ingroup libmeos_box_cast
+ * @ingroup libMOBDB_box_cast
  * @brief Cast an integer to a temporal box.
  * @sqlfunc tbox()
  * @sqlop @p ::
@@ -249,7 +249,7 @@ int_to_tbox(int i)
 }
 
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libMOBDB_internal_box_cast
  * @brief Set a temporal box from a float.
  */
 void
@@ -259,13 +259,13 @@ float_set_tbox(double d, TBox *box)
   memset(box, 0, sizeof(TBox));
   Datum dd = Float8GetDatum(d);
   span_set(dd, dd, true, true, T_FLOAT8, &box->span);
-  MEOS_FLAGS_SET_X(box->flags, true);
-  MEOS_FLAGS_SET_T(box->flags, false);
+  MOBDB_FLAGS_SET_X(box->flags, true);
+  MOBDB_FLAGS_SET_T(box->flags, false);
   return;
 }
 
 /**
- * @ingroup libmeos_box_cast
+ * @ingroup libMOBDB_box_cast
  * @brief Cast a float to a temporal box.
  * @sqlfunc tbox()
  * @sqlop @p ::
@@ -280,7 +280,7 @@ float_to_tbox(double d)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libMOBDB_internal_box_cast
  * @brief Set a temporal box from a timestamp.
  */
 void
@@ -290,14 +290,14 @@ timestamp_set_tbox(TimestampTz t, TBox *box)
   memset(box, 0, sizeof(TBox));
   span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
     T_TIMESTAMPTZ, &box->period);
-  MEOS_FLAGS_SET_X(box->flags, false);
-  MEOS_FLAGS_SET_T(box->flags, true);
+  MOBDB_FLAGS_SET_X(box->flags, false);
+  MOBDB_FLAGS_SET_T(box->flags, true);
   return;
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_box_cast
+ * @ingroup libMOBDB_box_cast
  * @brief Cast a timestamp to a temporal box.
  * @sqlfunc tbox()
  * @sqlop @p ::
@@ -312,7 +312,7 @@ timestamp_to_tbox(TimestampTz t)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libMOBDB_internal_box_cast
  * @brief Set a temporal box from a number set.
  */
 void
@@ -323,14 +323,14 @@ numset_set_tbox(const Set *s, TBox *box)
   Span sp;
   set_set_span(s, &sp);
   numspan_set_floatspan(&sp, &box->span);
-  MEOS_FLAGS_SET_X(box->flags, true);
-  MEOS_FLAGS_SET_T(box->flags, false);
+  MOBDB_FLAGS_SET_X(box->flags, true);
+  MOBDB_FLAGS_SET_T(box->flags, false);
   return;
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_box_cast
+ * @ingroup libMOBDB_box_cast
  * @brief Cast a set to a temporal box.
  * @sqlfunc tbox()
  * @sqlop @p ::
@@ -345,7 +345,7 @@ numset_to_tbox(const Set *s)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libMOBDB_internal_box_cast
  * @brief Set a temporal box from a timestamp set.
  */
 void
@@ -354,14 +354,14 @@ tstzset_set_tbox(const Set *s, TBox *box)
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBox));
   set_set_span(s, &box->period);
-  MEOS_FLAGS_SET_X(box->flags, false);
-  MEOS_FLAGS_SET_T(box->flags, true);
+  MOBDB_FLAGS_SET_X(box->flags, false);
+  MOBDB_FLAGS_SET_T(box->flags, true);
   return;
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_box_cast
+ * @ingroup libMOBDB_box_cast
  * @brief Cast a timestamp set to a temporal box.
  * @sqlfunc tbox()
  * @sqlop @p ::
@@ -376,7 +376,7 @@ tstzset_to_tbox(const Set *s)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libMOBDB_internal_box_cast
  * @brief Set a temporal box from a number span.
  */
 void
@@ -385,14 +385,14 @@ numspan_set_tbox(const Span *s, TBox *box)
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBox));
   numspan_set_floatspan(s, &box->span);
-  MEOS_FLAGS_SET_X(box->flags, true);
-  MEOS_FLAGS_SET_T(box->flags, false);
+  MOBDB_FLAGS_SET_X(box->flags, true);
+  MOBDB_FLAGS_SET_T(box->flags, false);
   return;
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_box_cast
+ * @ingroup libMOBDB_box_cast
  * @brief Cast a span to a temporal box.
  * @sqlfunc tbox()
  * @sqlop @p ::
@@ -407,7 +407,7 @@ numspan_to_tbox(const Span *s)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libMOBDB_internal_box_cast
  * @brief Set a temporal box from a period.
  */
 void
@@ -416,14 +416,14 @@ period_set_tbox(const Span *p, TBox *box)
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBox));
   memcpy(&box->period, p, sizeof(Span));
-  MEOS_FLAGS_SET_X(box->flags, false);
-  MEOS_FLAGS_SET_T(box->flags, true);
+  MOBDB_FLAGS_SET_X(box->flags, false);
+  MOBDB_FLAGS_SET_T(box->flags, true);
   return;
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_box_cast
+ * @ingroup libMOBDB_box_cast
  * @brief Cast a period to a temporal box.
  * @sqlfunc tbox()
  * @sqlop @p ::
@@ -437,7 +437,7 @@ period_to_tbox(const Span *p)
 }
 
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libMOBDB_internal_box_cast
  * @brief Set a temporal box from a span set.
  */
 void
@@ -449,7 +449,7 @@ numspanset_set_tbox(const SpanSet *ss, TBox *box)
 }
 
 /**
- * @ingroup libmeos_box_cast
+ * @ingroup libMOBDB_box_cast
  * @brief Cast a span set to a temporal box.
  * @sqlfunc tbox()
  * @sqlop @p ::
@@ -463,7 +463,7 @@ numspanset_to_tbox(const SpanSet *ss)
 }
 
 /**
- * @ingroup libmeos_internal_box_cast
+ * @ingroup libMOBDB_internal_box_cast
  * @brief Set a temporal box from a period set.
  */
 void
@@ -474,7 +474,7 @@ periodset_set_tbox(const SpanSet *ps, TBox *box)
 }
 
 /**
- * @ingroup libmeos_box_cast
+ * @ingroup libMOBDB_box_cast
  * @brief Cast a period set to a temporal box.
  * @sqlfunc tbox()
  * @sqlop @p ::
@@ -491,7 +491,7 @@ periodset_to_tbox(const SpanSet *ps)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_box_cast
+ * @ingroup libMOBDB_box_cast
  * @brief Return a temporal box from an integer and a timestamp
  * @sqlfunc tbox()
  */
@@ -502,13 +502,13 @@ number_timestamp_to_tbox(Datum d, meosType basetype, TimestampTz t)
   number_set_tbox(d, basetype, result);
   Datum dt = TimestampTzGetDatum(t);
   span_set(dt, dt, true, true, T_TIMESTAMPTZ, &result->period);
-  MEOS_FLAGS_SET_T(result->flags, true);
+  MOBDB_FLAGS_SET_T(result->flags, true);
   return result;
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_box_cast
+ * @ingroup libMOBDB_box_cast
  * @brief Return a temporal box from an integer and a timestamp
  * @sqlfunc tbox()
  */
@@ -519,12 +519,12 @@ int_timestamp_to_tbox(int i, TimestampTz t)
   int_set_tbox(i, result);
   Datum dt = TimestampTzGetDatum(t);
   span_set(dt, dt, true, true, T_TIMESTAMPTZ, &result->period);
-  MEOS_FLAGS_SET_T(result->flags, true);
+  MOBDB_FLAGS_SET_T(result->flags, true);
   return result;
 }
 
 /**
- * @ingroup libmeos_box_cast
+ * @ingroup libMOBDB_box_cast
  * @brief Return a temporal box from a float and a timestamp
  * @sqlfunc tbox()
  */
@@ -535,13 +535,13 @@ float_timestamp_to_tbox(double d, TimestampTz t)
   float_set_tbox(d, result);
   Datum dt = TimestampTzGetDatum(t);
   span_set(dt, dt, true, true, T_TIMESTAMPTZ, &result->period);
-  MEOS_FLAGS_SET_T(result->flags, true);
+  MOBDB_FLAGS_SET_T(result->flags, true);
   return result;
 }
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_box_cast
+ * @ingroup libMOBDB_box_cast
  * @brief Return a temporal box from an integer and a period
  * @sqlfunc tbox()
  */
@@ -551,13 +551,13 @@ number_period_to_tbox(Datum d, meosType basetype, const Span *p)
   TBox *result = palloc(sizeof(TBox));
   number_set_tbox(d, basetype, result);
   memcpy(&result->period, p, sizeof(Span));
-  MEOS_FLAGS_SET_T(result->flags, true);
+  MOBDB_FLAGS_SET_T(result->flags, true);
   return result;
 }
 
 #if MEOS
 /**
- * @ingroup libmeos_box_cast
+ * @ingroup libMOBDB_box_cast
  * @brief Return a temporal box from an integer and a period
  * @sqlfunc tbox()
  */
@@ -567,12 +567,12 @@ int_period_to_tbox(int i, const Span *p)
   TBox *result = palloc(sizeof(TBox));
   int_set_tbox(i, result);
   memcpy(&result->period, p, sizeof(Span));
-  MEOS_FLAGS_SET_T(result->flags, true);
+  MOBDB_FLAGS_SET_T(result->flags, true);
   return result;
 }
 
 /**
- * @ingroup libmeos_box_cast
+ * @ingroup libMOBDB_box_cast
  * @brief Return a temporal box from a float and a period
  * @sqlfunc tbox()
  */
@@ -582,13 +582,13 @@ float_period_to_tbox(double d, const Span *p)
   TBox *result = palloc(sizeof(TBox));
   float_set_tbox(d, result);
   memcpy(&result->period, p, sizeof(Span));
-  MEOS_FLAGS_SET_T(result->flags, true);
+  MOBDB_FLAGS_SET_T(result->flags, true);
   return result;
 }
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_box_cast
+ * @ingroup libMOBDB_box_cast
  * @brief Return a temporal box from a span and a timestamp
  * @sqlfunc tbox()
  */
@@ -600,13 +600,13 @@ span_timestamp_to_tbox(const Span *span, TimestampTz t)
   numspan_set_floatspan(span, &result->span);
   Datum dt = TimestampTzGetDatum(t);
   span_set(dt, dt, true, true, T_TIMESTAMPTZ, &result->period);
-  MEOS_FLAGS_SET_X(result->flags, true);
-  MEOS_FLAGS_SET_T(result->flags, true);
+  MOBDB_FLAGS_SET_X(result->flags, true);
+  MOBDB_FLAGS_SET_T(result->flags, true);
   return result;
 }
 
 /**
- * @ingroup libmeos_box_cast
+ * @ingroup libMOBDB_box_cast
  * @brief Return a temporal box from a span and a period
  * @sqlfunc tbox()
  */
@@ -618,35 +618,35 @@ span_period_to_tbox(const Span *span, const Span *p)
   TBox *result = palloc(sizeof(TBox));
   numspan_set_floatspan(span, &result->span);
   memcpy(&result->period, p, sizeof(Span));
-  MEOS_FLAGS_SET_X(result->flags, true);
-  MEOS_FLAGS_SET_T(result->flags, true);
+  MOBDB_FLAGS_SET_X(result->flags, true);
+  MOBDB_FLAGS_SET_T(result->flags, true);
   return result;
 }
 
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_box_cast
+ * @ingroup libMOBDB_box_cast
  * @brief Cast a temporal box as a span.
  * @sqlop @p ::
  */
 Span *
 tbox_to_floatspan(const TBox *box)
 {
-  if (! MEOS_FLAGS_GET_X(box->flags))
+  if (! MOBDB_FLAGS_GET_X(box->flags))
     return NULL;
   return span_copy(&box->span);
 }
 
 /**
- * @ingroup libmeos_box_cast
+ * @ingroup libMOBDB_box_cast
  * @brief Cast a temporal box as a period
  * @sqlop @p ::
  */
 Span *
 tbox_to_period(const TBox *box)
 {
-  if (! MEOS_FLAGS_GET_T(box->flags))
+  if (! MOBDB_FLAGS_GET_T(box->flags))
     return NULL;
   return span_copy(&box->period);
 }
@@ -656,31 +656,31 @@ tbox_to_period(const TBox *box)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_box_accessor
+ * @ingroup libMOBDB_box_accessor
  * @brief Return true if a temporal box has value dimension
  * @sqlfunc hasX()
  */
 bool
 tbox_hasx(const TBox *box)
 {
-  bool result = MEOS_FLAGS_GET_X(box->flags);
+  bool result = MOBDB_FLAGS_GET_X(box->flags);
   return result;
 }
 
 /**
- * @ingroup libmeos_box_accessor
+ * @ingroup libMOBDB_box_accessor
  * @brief Return true if a temporal box has time dimension
  * @sqlfunc hasT()
  */
 bool
 tbox_hast(const TBox *box)
 {
-  bool result = MEOS_FLAGS_GET_T(box->flags);
+  bool result = MOBDB_FLAGS_GET_T(box->flags);
   return result;
 }
 
 /**
- * @ingroup libmeos_box_accessor
+ * @ingroup libMOBDB_box_accessor
  * @brief Return true if the temporal box has value dimension. In that case,
  * the minimum value is returned in the output argument.
  *
@@ -692,14 +692,14 @@ tbox_hast(const TBox *box)
 bool
 tbox_xmin(const TBox *box, double *result)
 {
-  if (! MEOS_FLAGS_GET_X(box->flags))
+  if (! MOBDB_FLAGS_GET_X(box->flags))
     return false;
   *result = DatumGetFloat8(box->span.lower);
   return true;
 }
 
 /**
- * @ingroup libmeos_box_accessor
+ * @ingroup libMOBDB_box_accessor
  * @brief Return true if the temporal box has value dimension. In that case,
  * the maximum value is returned in the output argument.
  *
@@ -711,14 +711,14 @@ tbox_xmin(const TBox *box, double *result)
 bool
 tbox_xmax(const TBox *box, double *result)
 {
-  if (! MEOS_FLAGS_GET_X(box->flags))
+  if (! MOBDB_FLAGS_GET_X(box->flags))
     return false;
   *result = DatumGetFloat8(box->span.upper);
   return true;
 }
 
 /**
- * @ingroup libmeos_box_accessor
+ * @ingroup libMOBDB_box_accessor
  * @brief Return true if the temporal box has time dimension. In that case,
  * the minimum timestamp is returned in the output argument.
  *
@@ -730,14 +730,14 @@ tbox_xmax(const TBox *box, double *result)
 bool
 tbox_tmin(const TBox *box, TimestampTz *result)
 {
-  if (! MEOS_FLAGS_GET_T(box->flags))
+  if (! MOBDB_FLAGS_GET_T(box->flags))
     return false;
   *result = DatumGetTimestampTz(box->period.lower);
   return true;
 }
 
 /**
- * @ingroup libmeos_box_accessor
+ * @ingroup libMOBDB_box_accessor
  * @brief Return true if the temporal box has time dimension. In that case,
  * the maximum timestamp is returned in the output argument.
  *
@@ -749,7 +749,7 @@ tbox_tmin(const TBox *box, TimestampTz *result)
 bool
 tbox_tmax(const TBox *box, TimestampTz *result)
 {
-  if (! MEOS_FLAGS_GET_T(box->flags))
+  if (! MOBDB_FLAGS_GET_T(box->flags))
     return false;
   *result = DatumGetTimestampTz(box->period.upper);
   return true;
@@ -760,21 +760,21 @@ tbox_tmax(const TBox *box, TimestampTz *result)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_box_transf
+ * @ingroup libMOBDB_box_transf
  * @brief Expand the second temporal box with the first one
  */
 void
 tbox_expand(const TBox *box1, TBox *box2)
 {
-  if (MEOS_FLAGS_GET_X(box2->flags))
+  if (MOBDB_FLAGS_GET_X(box2->flags))
     span_expand(&box1->span, &box2->span);
-  if (MEOS_FLAGS_GET_T(box2->flags))
+  if (MOBDB_FLAGS_GET_T(box2->flags))
     span_expand(&box1->period, &box2->period);
   return;
 }
 
 /**
- * @ingroup libmeos_box_transf
+ * @ingroup libMOBDB_box_transf
  * @brief Return a temporal box expanded in the value dimension by a double.
  * @sqlfunc @p expandValue()
  */
@@ -789,7 +789,7 @@ tbox_expand_value(const TBox *box, const double d)
 }
 
 /**
- * @ingroup libmeos_box_transf
+ * @ingroup libMOBDB_box_transf
  * @brief Return a temporal box expanded in the time dimension by an interval.
  * @sqlfunc expandTime()
  */
@@ -820,8 +820,8 @@ tbox_expand_time(const TBox *box, const Interval *interval)
 static void
 tbox_tbox_flags(const TBox *box1, const TBox *box2, bool *hasx, bool *hast)
 {
-  *hasx = MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags);
-  *hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
+  *hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
+  *hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
   return;
 }
 
@@ -835,13 +835,13 @@ static void
 topo_tbox_tbox_init(const TBox *box1, const TBox *box2, bool *hasx, bool *hast)
 {
   ensure_common_dimension(box1->flags, box2->flags);
-  *hasx = MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags);
-  *hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
+  *hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
+  *hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
   return;
 }
 
 /**
- * @ingroup libmeos_box_topo
+ * @ingroup libMOBDB_box_topo
  * @brief Return true if the first temporal box contains the second one.
  * @sqlop @p \@>
  */
@@ -858,7 +858,7 @@ contains_tbox_tbox(const TBox *box1, const TBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_topo
+ * @ingroup libMOBDB_box_topo
  * @brief Return true if the first temporal box is contained by the second one.
  * @sqlop @p <@
  */
@@ -869,7 +869,7 @@ contained_tbox_tbox(const TBox *box1, const TBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_topo
+ * @ingroup libMOBDB_box_topo
  * @brief Return true if the temporal boxes overlap.
  * @sqlop @p &&
  */
@@ -886,7 +886,7 @@ overlaps_tbox_tbox(const TBox *box1, const TBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_topo
+ * @ingroup libMOBDB_box_topo
  * @brief Return true if the temporal boxes are equal on the common dimensions.
  * @sqlop @p ~=
  */
@@ -903,7 +903,7 @@ same_tbox_tbox(const TBox *box1, const TBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_topo
+ * @ingroup libMOBDB_box_topo
  * @brief Return true if the temporal boxes are adjacent.
  * @sqlop @p -|-
  */
@@ -929,7 +929,7 @@ adjacent_tbox_tbox(const TBox *box1, const TBox *box2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libMOBDB_box_pos
  * @brief Return true if the first temporal box is strictly to the left of
  * the second one.
  * @sqlop @p <<
@@ -943,7 +943,7 @@ left_tbox_tbox(const TBox *box1, const TBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libMOBDB_box_pos
  * @brief Return true if the first temporal box does not extend to the right
  * of the second one.
  * @sqlop @p &<
@@ -957,7 +957,7 @@ overleft_tbox_tbox(const TBox *box1, const TBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libMOBDB_box_pos
  * @brief Return true if the first temporal box is strictly to the right of
  * the second one.
  * @sqlop @p >>
@@ -971,7 +971,7 @@ right_tbox_tbox(const TBox *box1, const TBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libMOBDB_box_pos
  * @brief Return true if the first temporal box does not extend to the left of
  * the second one.
  * @sqlop @p &>
@@ -985,7 +985,7 @@ overright_tbox_tbox(const TBox *box1, const TBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libMOBDB_box_pos
  * @brief Return true if the first temporal box is strictly before
  * the second one.
  * @sqlop @p <<#
@@ -999,7 +999,7 @@ before_tbox_tbox(const TBox *box1, const TBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libMOBDB_box_pos
  * @brief Return true if the first temporal box does not extend after
  * the second one.
  * @sqlop @p &<#
@@ -1013,7 +1013,7 @@ overbefore_tbox_tbox(const TBox *box1, const TBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libMOBDB_box_pos
  * @brief Return true if the first temporal box is strictly after the
  * second one.
  * @sqlop @p #>>
@@ -1027,7 +1027,7 @@ after_tbox_tbox(const TBox *box1, const TBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_pos
+ * @ingroup libMOBDB_box_pos
  * @brief Return true if the first temporal box does not extend before
  * the second one.
  * @sqlop @p #&>
@@ -1045,7 +1045,7 @@ overafter_tbox_tbox(const TBox *box1, const TBox *box2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_box_set
+ * @ingroup libMOBDB_box_set
  * @brief Return the union of the temporal boxes.
  * @sqlop @p +
  */
@@ -1057,8 +1057,8 @@ union_tbox_tbox(const TBox *box1, const TBox *box2)
   if (! overlaps_tbox_tbox(box1, box2))
     elog(ERROR, "Result of box union would not be contiguous");
 
-  bool hasx = MEOS_FLAGS_GET_X(box1->flags);
-  bool hast = MEOS_FLAGS_GET_T(box1->flags);
+  bool hasx = MOBDB_FLAGS_GET_X(box1->flags);
+  bool hast = MOBDB_FLAGS_GET_T(box1->flags);
   Span period, span;
   if (hast)
     bbox_union_span_span(&box1->period, &box2->period, &period);
@@ -1069,7 +1069,7 @@ union_tbox_tbox(const TBox *box1, const TBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_set
+ * @ingroup libMOBDB_box_set
  * @brief Set a temporal box with the result of the intersection of the first
  * two temporal boxes.
  * @note This function is equivalent to @ref intersection_tbox_tbox without
@@ -1078,8 +1078,8 @@ union_tbox_tbox(const TBox *box1, const TBox *box2)
 bool
 inter_tbox_tbox(const TBox *box1, const TBox *box2, TBox *result)
 {
-  bool hasx = MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags);
-  bool hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
+  bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
+  bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
   /* If there is no common dimension */
   if ((! hasx && ! hast) ||
     /* If they do no intersect in one common dimension */
@@ -1097,7 +1097,7 @@ inter_tbox_tbox(const TBox *box1, const TBox *box2, TBox *result)
 }
 
 /**
- * @ingroup libmeos_box_set
+ * @ingroup libMOBDB_box_set
  * @brief Return the intersection of the spatiotemporal boxes.
  * @sqlop @p *
  */
@@ -1118,7 +1118,7 @@ intersection_tbox_tbox(const TBox *box1, const TBox *box2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_box_comp
+ * @ingroup libMOBDB_box_comp
  * @brief Return true if the temporal boxes are equal
  * @note The internal B-tree comparator is not used to increase efficiency
  * @sqlop @p =
@@ -1127,8 +1127,8 @@ intersection_tbox_tbox(const TBox *box1, const TBox *box2)
 bool
 tbox_eq(const TBox *box1, const TBox *box2)
 {
-  if (MEOS_FLAGS_GET_X(box1->flags) != MEOS_FLAGS_GET_X(box2->flags) ||
-    MEOS_FLAGS_GET_T(box1->flags) != MEOS_FLAGS_GET_T(box2->flags))
+  if (MOBDB_FLAGS_GET_X(box1->flags) != MOBDB_FLAGS_GET_X(box2->flags) ||
+    MOBDB_FLAGS_GET_T(box1->flags) != MOBDB_FLAGS_GET_T(box2->flags))
       return false;
   if (! span_eq(&box1->span, &box2->span) ||
       ! span_eq(&box1->period, &box2->period))
@@ -1138,7 +1138,7 @@ tbox_eq(const TBox *box1, const TBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_comp
+ * @ingroup libMOBDB_box_comp
  * @brief Return true if the temporal boxes are different
  * @sqlop @p <>
  */
@@ -1149,7 +1149,7 @@ tbox_ne(const TBox *box1, const TBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_comp
+ * @ingroup libMOBDB_box_comp
  * @brief Return -1, 0, or 1 depending on whether the first temporal box
  * is less than, equal to, or greater than the second one.
  *
@@ -1187,7 +1187,7 @@ tbox_cmp(const TBox *box1, const TBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_comp
+ * @ingroup libMOBDB_box_comp
  * @brief Return true if the first temporal box is less than the second one
  * @sqlop @p <
  */
@@ -1199,7 +1199,7 @@ tbox_lt(const TBox *box1, const TBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_comp
+ * @ingroup libMOBDB_box_comp
  * @brief Return true if the first temporal box is less than or equal to
  * the second one
  * @sqlop @p <=
@@ -1212,7 +1212,7 @@ tbox_le(const TBox *box1, const TBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_comp
+ * @ingroup libMOBDB_box_comp
  * @brief Return true if the first temporal box is greater than or equal
  * to the second one
  * @sqlop @p >=
@@ -1225,7 +1225,7 @@ tbox_ge(const TBox *box1, const TBox *box2)
 }
 
 /**
- * @ingroup libmeos_box_comp
+ * @ingroup libMOBDB_box_comp
  * @brief Return true if the first temporal box is greater than the second one
  * @sqlop @p >
  */

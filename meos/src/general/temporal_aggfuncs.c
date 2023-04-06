@@ -314,7 +314,7 @@ tsequence_tagg1(const TSequence *seq1, const TSequence *seq2,
     }
   }
   sequences[k++] = tsequence_make_free(instants, syncseq1->count,
-    lower_inc, upper_inc, MEOS_FLAGS_GET_INTERP(seq1->flags), NORMALIZE);
+    lower_inc, upper_inc, MOBDB_FLAGS_GET_INTERP(seq1->flags), NORMALIZE);
   pfree(syncseq1); pfree(syncseq2);
 
   /* Compute the aggregation on the period after the intersection of the
@@ -556,7 +556,7 @@ temporal_tagg_transfn(SkipList *state, const Temporal *temp, datum_func2 func,
   if (temp->subtype == TINSTANT)
     result =  tinstant_tagg_transfn(state, (TInstant *) temp, func);
   else if (temp->subtype == TSEQUENCE)
-    result = MEOS_FLAGS_GET_DISCRETE(temp->flags) ?
+    result = MOBDB_FLAGS_GET_DISCRETE(temp->flags) ?
       tdiscseq_tagg_transfn(state, (TSequence *) temp, func) :
       tcontseq_tagg_transfn(state, (TSequence *) temp, func, crossings);
   else /* temp->subtype == TSEQUENCESET */
@@ -597,7 +597,7 @@ temporal_tagg_combinefn(SkipList *state1, SkipList *state2, datum_func2 func,
 
 /**
  * @brief Generic final function for aggregating temporal values
- * @ingroup libmeos_temporal_agg
+ * @ingroup libMOBDB_temporal_agg
  *
  * @param[in] state State values
  */
@@ -622,7 +622,7 @@ temporal_tagg_finalfn(SkipList *state)
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_agg
+ * @ingroup libMOBDB_temporal_agg
  * @brief Transition function for temporal and of temporal booleans.
  * @sqlfunc tand()
  */
@@ -633,7 +633,7 @@ tbool_tand_transfn(SkipList *state, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_agg
+ * @ingroup libMOBDB_temporal_agg
  * @brief Transition function for temporal count of temporal booleans.
  * @sqlfunc tor()
  */
@@ -644,7 +644,7 @@ tbool_tor_transfn(SkipList *state, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_agg
+ * @ingroup libMOBDB_temporal_agg
  * @brief Transition function for temporal count of temporal values.
  * @sqlfunc tmin()
  */
@@ -655,7 +655,7 @@ tint_tmin_transfn(SkipList *state, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_agg
+ * @ingroup libMOBDB_temporal_agg
  * @brief Transition function for temporal count of temporal values.
  * @sqlfunc tmin()
  */
@@ -666,7 +666,7 @@ tfloat_tmin_transfn(SkipList *state, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_agg
+ * @ingroup libMOBDB_temporal_agg
  * @brief Transition function for temporal count of temporal values.
  * @sqlfunc tmax()
  */
@@ -677,7 +677,7 @@ tint_tmax_transfn(SkipList *state, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_agg
+ * @ingroup libMOBDB_temporal_agg
  * @brief Transition function for temporal count of temporal values.
  * @sqlfunc tmax()
  */
@@ -688,7 +688,7 @@ tfloat_tmax_transfn(SkipList *state, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_agg
+ * @ingroup libMOBDB_temporal_agg
  * @brief Transition function for temporal count of temporal values.
  * @sqlfunc tsum()
  */
@@ -699,7 +699,7 @@ tint_tsum_transfn(SkipList *state, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_agg
+ * @ingroup libMOBDB_temporal_agg
  * @brief Transition function for temporal count of temporal values.
  * @sqlfunc tsum()
  */
@@ -710,7 +710,7 @@ tfloat_tsum_transfn(SkipList *state, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_agg
+ * @ingroup libMOBDB_temporal_agg
  * @brief Transition function for temporal average of temporal numbers.
  * @sqlfunc tavg()
  */
@@ -722,7 +722,7 @@ tnumber_tavg_transfn(SkipList *state, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_agg
+ * @ingroup libMOBDB_temporal_agg
  * @brief Transition function for temporal min of temporal text values.
  * @sqlfunc tmin()
  */
@@ -733,7 +733,7 @@ ttext_tmin_transfn(SkipList *state, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_agg
+ * @ingroup libMOBDB_temporal_agg
  * @brief Transition function for temporal max of temporal text values.
  * @sqlfunc tmax()
  */
@@ -782,7 +782,7 @@ tcontseq_transform_tagg(const TSequence *seq,
     instants[i] = func(inst);
   }
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
-    seq->period.upper_inc, MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
+    seq->period.upper_inc, MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
 }
 
 /**
@@ -817,7 +817,7 @@ temporal_transform_tagg(const Temporal *temp, int *count,
   }
   else if (temp->subtype == TSEQUENCE)
   {
-    if (MEOS_FLAGS_GET_DISCRETE(temp->flags))
+    if (MOBDB_FLAGS_GET_DISCRETE(temp->flags))
     {
       result = (Temporal **) tdiscseq_transform_tagg((TSequence *) temp,
         func);
@@ -958,7 +958,7 @@ temporal_transform_tcount(const Temporal *temp, int *count)
   }
   else if (temp->subtype == TSEQUENCE)
   {
-    if (MEOS_FLAGS_GET_DISCRETE(temp->flags))
+    if (MOBDB_FLAGS_GET_DISCRETE(temp->flags))
     {
       result = (Temporal **) tdiscseq_transform_tcount((TSequence *) temp);
       *count = ((TSequence *) temp)->count;
@@ -980,7 +980,7 @@ temporal_transform_tcount(const Temporal *temp, int *count)
 }
 
 /**
- * @ingroup libmeos_temporal_agg
+ * @ingroup libMOBDB_temporal_agg
  * @brief Generic transition function for temporal aggregation
  */
 SkipList *
@@ -1053,13 +1053,13 @@ tsequence_tavg_finalfn(TSequence **sequences, int count)
     }
     newsequences[i] = tsequence_make_free(instants, seq->count,
       seq->period.lower_inc, seq->period.upper_inc,
-      MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
+      MOBDB_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
   }
   return tsequenceset_make_free(newsequences, count, NORMALIZE);
 }
 
 /**
- * @ingroup libmeos_temporal_agg
+ * @ingroup libMOBDB_temporal_agg
  * @brief Final function for temporal average aggregation
  */
 Temporal *

@@ -46,7 +46,7 @@
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_temporal_transf
+ * @ingroup libMOBDB_internal_temporal_transf
  * @brief Append a span to an unordered span set.
  * @param[in,out] ss Span set
  * @param[in] span Span to append
@@ -85,7 +85,7 @@ spanset_append_span(SpanSet *ss, const Span *span, bool expand)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_transf
+ * @ingroup libMOBDB_internal_temporal_transf
  * @brief Append a span set to an unordered span set.
  * @param[in,out] ss1 Span set
  * @param[in] ss2 Span set to append
@@ -131,7 +131,7 @@ spanset_append_spanset(SpanSet *ss1, const SpanSet *ss2, bool expand)
 }
 
 /**
- * @ingroup libmeos_internal_setspan_agg
+ * @ingroup libMOBDB_internal_setspan_agg
  * @brief Transition function for span set aggregate union
  */
 SpanSet *
@@ -146,7 +146,7 @@ span_union_transfn(SpanSet *state, const Span *span)
 }
 
 /**
- * @ingroup libmeos_internal_setspan_agg
+ * @ingroup libMOBDB_internal_setspan_agg
  * @brief Transition function for span set aggregate union
  */
 SpanSet *
@@ -165,7 +165,7 @@ spanset_union_transfn(SpanSet *state, const SpanSet *ss)
 }
 
 /**
- * @ingroup libmeos_internal_setspan_agg
+ * @ingroup libMOBDB_internal_setspan_agg
  * @brief Transition function for set aggregate of values
  */
 SpanSet *

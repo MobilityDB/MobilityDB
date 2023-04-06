@@ -33,7 +33,7 @@
  *
  * The program can be build as follows
  * @code
- * gcc -Wall -g -I/usr/local/include -o 01_meos_hello_world 01_meos_hello_world.c -L/usr/local/lib -lmeos
+ * gcc -Wall -g -I/usr/local/include -o 01_MOBDB_hello_world 01_MOBDB_hello_world.c -L/usr/local/lib -lmeos
  * @endcode
  */
 
@@ -45,7 +45,7 @@
 int main()
 {
   /* Initialize MEOS */
-  meos_initialize(NULL);
+  MOBDB_initialize(NULL);
 
   /* Input temporal points in WKT format */
   char *inst_wkt = "POINT(1 1)@2000-01-01";
@@ -130,7 +130,7 @@ int main()
   free(ss_step); free(ss_step_mfjson);
 
   /* Finalize MEOS */
-  meos_finalize();
+  MOBDB_finalize();
 
   /* Return */
   return 0;
