@@ -879,7 +879,7 @@ char *
 stringarr_to_string(char **strings, int count, size_t outlen, char *prefix,
   char open, char close, bool quotes, bool spaces)
 {
-  int size = strlen(prefix) + outlen + 3;
+  size_t size = strlen(prefix) + outlen + 3;
   if (quotes)
     size += count * 4;
   if (spaces)

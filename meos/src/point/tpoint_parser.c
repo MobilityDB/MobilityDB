@@ -56,7 +56,7 @@ stbox_parse(const char **str)
 
   /* Determine whether the box has an SRID */
   p_whitespace(str);
-  if (strncasecmp(*str,"SRID=",5) == 0)
+  if (pg_strncasecmp(*str,"SRID=",5) == 0)
   {
     /* Move str to the start of the number part */
     *str += 5;
@@ -74,12 +74,12 @@ stbox_parse(const char **str)
   }
 
   /* Determine whether the box is geodetic or not */
-  if (strncasecmp(*str, "STBOX", 5) == 0)
+  if (pg_strncasecmp(*str, "STBOX", 5) == 0)
   {
     *str += 5;
     p_whitespace(str);
   }
-  else if (strncasecmp(*str, "GEODSTBOX", 9) == 0)
+  else if (pg_strncasecmp(*str, "GEODSTBOX", 9) == 0)
   {
     *str += 9;
     geodetic = true;
@@ -91,27 +91,27 @@ stbox_parse(const char **str)
     elog(ERROR, "Could not parse spatiotemporal box");
 
   /* Determine whether the box has X, Z, and/or T dimensions */
-  if (strncasecmp(*str, "ZT", 2) == 0)
+  if (pg_strncasecmp(*str, "ZT", 2) == 0)
   {
     hasx = hasz = hast = true;
     *str += 2;
   }
-  else if (strncasecmp(*str, "XT", 2) == 0)
+  else if (pg_strncasecmp(*str, "XT", 2) == 0)
   {
     hasx = hast = true;
     *str += 2;
   }
-  else if (strncasecmp(*str, "Z", 1) == 0)
+  else if (pg_strncasecmp(*str, "Z", 1) == 0)
   {
     *str += 1;
     hasx = hasz = true;
   }
-  else if (strncasecmp(*str, "X", 1) == 0)
+  else if (pg_strncasecmp(*str, "X", 1) == 0)
   {
     *str += 1;
     hasx = true;
   }
-  else if (strncasecmp(*str, "T", 1) == 0)
+  else if (pg_strncasecmp(*str, "T", 1) == 0)
   {
     *str += 1;
     hast = true;
@@ -411,7 +411,7 @@ tpoint_parse(const char **str, meosType temptype)
    * modify the string in case it must be passed to the tpointinst_parse
    * function. */
   const char *bak = *str;
-  if (strncasecmp(*str, "SRID=", 5) == 0)
+  if (pg_strncasecmp(*str, "SRID=", 5) == 0)
   {
     /* Move str to the start of the number part */
     *str += 5;
@@ -435,7 +435,7 @@ tpoint_parse(const char **str, meosType temptype)
 
   interpType interp = temptype_continuous(temptype) ? LINEAR : STEP;
   /* Starts with "Interp=Step" */
-  if (strncasecmp(*str, "Interp=Step;", 12) == 0)
+  if (pg_strncasecmp(*str, "Interp=Step;", 12) == 0)
   {
     /* Move str after the semicolon */
     *str += 12;

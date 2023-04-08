@@ -503,7 +503,6 @@ periodset_shift_tscale(const SpanSet *ps, const Interval *shift,
   assert(shift != NULL || duration != NULL);
   if (duration != NULL)
     ensure_valid_duration(duration);
-  bool instant = (ps->span.lower == ps->span.upper);
 
   /* Copy the input period set to the output period set */
   SpanSet *result = spanset_copy(ps);
@@ -518,15 +517,22 @@ periodset_shift_tscale(const SpanSet *ps, const Interval *shift,
   {
     if (shift != NULL)
     {
-      result->elems[i].lower += delta;
-      result->elems[i].upper += delta;
+      result->elems[i].lower = TimestampTzGetDatum(
+        DatumGetTimestampTz(result->elems[i].lower) + delta);
+      result->elems[i].upper = TimestampTzGetDatum(
+        DatumGetTimestampTz(result->elems[i].upper) + delta);
     }
+    bool instant = (result->elems[i].lower == result->elems[i].upper);
     if (duration != NULL && ! instant)
     {
-      result->elems[i].lower = result->span.lower +
-        (result->elems[i].lower - result->span.lower) * scale;
-      result->elems[i].upper = result->span.lower +
-        (result->elems[i].upper - result->span.lower) * scale;
+      result->elems[i].lower = TimestampTzGetDatum(
+        DatumGetTimestampTz(result->span.lower) +
+        (TimestampTz) ((DatumGetTimestampTz(result->elems[i].lower) -
+          DatumGetTimestampTz(result->span.lower)) * scale));
+      result->elems[i].upper = TimestampTzGetDatum(
+        DatumGetTimestampTz(result->span.lower) +
+        (TimestampTz) ((DatumGetTimestampTz(result->elems[i].upper) -
+          DatumGetTimestampTz(result->span.lower)) * scale));
     }
   }
   return result;

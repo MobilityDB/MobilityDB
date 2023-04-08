@@ -1113,7 +1113,7 @@ pg_interval_justify_hours(const Interval *span)
 
   TimeOffset wholeday = 0; /* make compiler quiet */
   TMODULO(result->time, wholeday, USECS_PER_DAY);
-  result->day += wholeday;  /* could overflow... */
+  result->day += (int32) wholeday;  /* could overflow... */
 
   if (result->day > 0 && result->time < 0)
   {
@@ -1179,7 +1179,7 @@ interval_cmp_value(const Interval *interval)
   span = (INT128) dayfraction;
 
   /* Scale up days to microseconds, forming a 128-bit product */
-  span += (int128) days * (int128) USECS_PER_DAY;
+  span += (INT128) days * (INT128) USECS_PER_DAY;
 
   return span;
 }
@@ -1361,7 +1361,7 @@ pg_hashfloat8extended(float8 key, uint64 seed)
 uint32
 pg_hashtext(text *key)
 {
-  uint32 result = UInt32GetDatum(hash_any((unsigned char *) VARDATA_ANY(key),
+  uint32 result = DatumGetUInt32(hash_any((unsigned char *) VARDATA_ANY(key),
     VARSIZE_ANY_EXHDR(key)));
   return result;
 }

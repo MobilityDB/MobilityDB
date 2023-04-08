@@ -262,7 +262,7 @@ tbox_parse(const char **str)
   Span period;
 
   p_whitespace(str);
-  if (strncasecmp(*str, "TBOX", 4) == 0)
+  if (pg_strncasecmp(*str, "TBOX", 4) == 0)
   {
     *str += 4;
     p_whitespace(str);
@@ -271,19 +271,19 @@ tbox_parse(const char **str)
     elog(ERROR, "Could not parse temporal box");
 
   /* Determine whether the box has X and/or T dimensions */
-  if (strncasecmp(*str, "XT", 2) == 0)
+  if (pg_strncasecmp(*str, "XT", 2) == 0)
   {
     hasx = hast = true;
     *str += 2;
     p_whitespace(str);
   }
-  else if (strncasecmp(*str, "X", 1) == 0)
+  else if (pg_strncasecmp(*str, "X", 1) == 0)
   {
     hasx = true;
     *str += 1;
     p_whitespace(str);
   }
-  else if (strncasecmp(*str, "T", 1) == 0)
+  else if (pg_strncasecmp(*str, "T", 1) == 0)
   {
     hast = true;
     *str += 1;
@@ -678,7 +678,7 @@ temporal_parse(const char **str, meosType temptype)
   Temporal *result = NULL;  /* keep compiler quiet */
   interpType interp = temptype_continuous(temptype) ? LINEAR : STEP;
   /* Starts with "Interp=Step;" */
-  if (strncasecmp(*str, "Interp=Step;", 12) == 0)
+  if (pg_strncasecmp(*str, "Interp=Step;", 12) == 0)
   {
     /* Move str after the semicolon */
     *str += 12;

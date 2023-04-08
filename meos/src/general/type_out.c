@@ -1437,7 +1437,7 @@ bytes_to_wkb_buf(char *valptr, size_t size, uint8_t *buf, uint8_t variant)
     /* Machine/request arch mismatch, so flip byte order */
     for (size_t i = 0; i < size; i++)
     {
-      int j = (swap ? size - 1 - i : i);
+      int j = (int) (swap ? size - 1 - i : i);
       uint8_t b = (uint8_t) valptr[j];
       /* Top four bits to 0-F */
       buf[2*i] = (uint8_t) hexchr[b >> 4];

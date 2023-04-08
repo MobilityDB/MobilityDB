@@ -196,9 +196,10 @@ get_endian_variant(const text *txt)
   /* When the endian is not given the default value is an empty text */
   if (strlen(endian) == 0)
     ;
-  else if (strncasecmp(endian, "ndr", 3) != 0 && strncasecmp(endian, "xdr", 3) != 0)
+  else if (pg_strncasecmp(endian, "ndr", 3) != 0 &&
+      pg_strncasecmp(endian, "xdr", 3) != 0)
     elog(ERROR, "Invalid value for endian flag");
-  else if (strncasecmp(endian, "ndr", 3) == 0)
+  else if (pg_strncasecmp(endian, "ndr", 3) == 0)
     variant = variant | (uint8_t) WKB_NDR;
   else /* txt = XDR */
     variant = variant | (uint8_t) WKB_XDR;

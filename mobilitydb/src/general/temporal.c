@@ -233,7 +233,7 @@ tempsubtype_from_string(const char *str, int16 *subtype)
   {
     if (len == strnlen(tempsubtype_struct_array[i].subtypeName,
         TEMPSUBTYPE_MAX_LEN) &&
-      ! strncasecmp(tmpstr, tempsubtype_struct_array[i].subtypeName,
+      ! pg_strncasecmp(tmpstr, tempsubtype_struct_array[i].subtypeName,
         TEMPSUBTYPE_MAX_LEN))
     {
       *subtype = tempsubtype_struct_array[i].subtype;

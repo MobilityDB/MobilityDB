@@ -130,7 +130,7 @@ tnpointsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
 
   if (t != NULL)
   {
-    double duration = (inst2->t - inst1->t);
+    double duration = (double) (inst2->t - inst1->t);
     *t = inst1->t + (long) (duration * fraction);
   }
   return true;

@@ -2940,7 +2940,7 @@ tfloatsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
 
   if (t != NULL)
   {
-    double duration = (inst2->t - inst1->t);
+    double duration = (double) (inst2->t - inst1->t);
     /* Note that due to roundoff errors it may be the case that the
      * resulting timestamp t may be equal to inst1->t or to inst2->t */
     *t = inst1->t + (TimestampTz) (duration * fraction);
@@ -3043,7 +3043,7 @@ tnumbersegm_intersection(const TInstant *start1, const TInstant *end1,
     /* Intersection occurs out of the period */
     return false;
 
-  double duration = (end1->t - start1->t);
+  double duration = (double) (end1->t - start1->t);
   *t = start1->t + (TimestampTz) (duration * fraction);
   /* Note that due to roundoff errors it may be the case that the
    * resulting timestamp t may be equal to inst1->t or to inst2->t */
@@ -5873,7 +5873,7 @@ tsequence_hash(const TSequence *seq)
     flags |= 0x01;
   if (seq->period.upper_inc)
     flags |= 0x02;
-  uint32 result = UInt32GetDatum(hash_uint32((uint32) flags));
+  uint32 result = hash_bytes_uint32((uint32) flags);
 
   /* Merge with hash of instants */
   for (int i = 0; i < seq->count; i++)

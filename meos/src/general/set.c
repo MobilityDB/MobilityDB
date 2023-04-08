@@ -572,7 +572,7 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
   result->maxcount = maxcount;
   result->settype = settype;
   result->basetype = basetype;
-  result->bboxsize = bboxsize;
+  result->bboxsize = (int16) bboxsize;
   /* Copy the array of values */
   if (typbyval)
   {
@@ -1296,7 +1296,7 @@ tstzset_shift_tscale(const Set *s, const Interval *shift,
         (SET_OFFSETS_PTR(result))[i] += delta;
       if (duration != NULL)
         (SET_OFFSETS_PTR(result))[i] = lower1 +
-          (SET_VAL_N(result, i) - lower1) * scale;
+          (TimestampTz) ((SET_VAL_N(result, i) - lower1) * scale);
     }
   }
   return result;

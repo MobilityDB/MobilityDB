@@ -148,10 +148,10 @@ skiplist_alloc(SkipList *list)
      * beyond MaxAllocSize, we allocate the maximum number of elements that
      * fit within MaxAllocSize. If this maximum has been previously reached
      * and more capacity is required, an error is generated. */
-    if (list->capacity == floor(MaxAllocSize / sizeof(SkipListElem)))
+    if (list->capacity == (int) floor(MaxAllocSize / sizeof(SkipListElem)))
       elog(ERROR, "No more memory available to compute the aggregation");
     if (sizeof(SkipListElem) * (list->capacity << 2) > MaxAllocSize)
-      list->capacity = floor(MaxAllocSize / sizeof(SkipListElem));
+      list->capacity = (int) floor(MaxAllocSize / sizeof(SkipListElem));
     else
       list->capacity <<= SKIPLIST_GROW;
     list->elems = repalloc(list->elems, sizeof(SkipListElem) * list->capacity);

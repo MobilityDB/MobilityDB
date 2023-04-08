@@ -1519,7 +1519,7 @@ temporal_from_wkb_state(wkb_parse_state *s)
  * @brief Return a value from its Well-Known Binary (WKB) representation.
  */
 Datum
-datum_from_wkb(const uint8_t *wkb, int size, meosType type)
+datum_from_wkb(const uint8_t *wkb, size_t size, meosType type)
 {
   /* Initialize the state appropriately */
   wkb_parse_state s;
@@ -1569,7 +1569,7 @@ datum_from_wkb(const uint8_t *wkb, int size, meosType type)
  * @brief Return a temporal type from its HexEWKB representation
  */
 Datum
-datum_from_hexwkb(const char *hexwkb, int size, meosType type)
+datum_from_hexwkb(const char *hexwkb, size_t size, meosType type)
 {
   uint8_t *wkb = bytes_from_hexbytes(hexwkb, size);
   Datum result = datum_from_wkb(wkb, size / 2, type);
@@ -1588,7 +1588,7 @@ datum_from_hexwkb(const char *hexwkb, int size, meosType type)
  * @sqlfunc tstzsetFromBinary()
  */
 Set *
-set_from_wkb(const uint8_t *wkb, int size)
+set_from_wkb(const uint8_t *wkb, size_t size)
 {
   /* We pass ANY set type, the actual type is read from the byte string */
   return DatumGetSetP(datum_from_wkb(wkb, size, T_INTSET));
@@ -1603,7 +1603,7 @@ set_from_wkb(const uint8_t *wkb, int size)
 Set *
 set_from_hexwkb(const char *hexwkb)
 {
-  int size = strlen(hexwkb);
+  size_t size = strlen(hexwkb);
   /* We pass ANY set type, the actual type is read from the byte string */
   return DatumGetSetP(datum_from_hexwkb(hexwkb, size, T_INTSET));
 }
@@ -1617,7 +1617,7 @@ set_from_hexwkb(const char *hexwkb)
  * @sqlfunc intspanFromBinary(), floatspanFromBinary(), periodFromBinary(),
  */
 Span *
-span_from_wkb(const uint8_t *wkb, int size)
+span_from_wkb(const uint8_t *wkb, size_t size)
 {
   /* We pass ANY span type, the actual type is read from the byte string */
   return DatumGetSpanP(datum_from_wkb(wkb, size, T_INTSPAN));
@@ -1631,7 +1631,7 @@ span_from_wkb(const uint8_t *wkb, int size)
 Span *
 span_from_hexwkb(const char *hexwkb)
 {
-  int size = strlen(hexwkb);
+  size_t size = strlen(hexwkb);
   /* We pass ANY span type, the actual type is read from the byte string */
   return DatumGetSpanP(datum_from_hexwkb(hexwkb, size, T_INTSPAN));
 }
@@ -1645,7 +1645,7 @@ span_from_hexwkb(const char *hexwkb)
  * @sqlfunc periodsetFromBinary()
  */
 SpanSet *
-spanset_from_wkb(const uint8_t *wkb, int size)
+spanset_from_wkb(const uint8_t *wkb, size_t size)
 {
   /* We pass ANY span set type, the actual type is read from the byte string */
   return DatumGetSpanSetP(datum_from_wkb(wkb, size, T_INTSPANSET));
@@ -1659,7 +1659,7 @@ spanset_from_wkb(const uint8_t *wkb, int size)
 SpanSet *
 spanset_from_hexwkb(const char *hexwkb)
 {
-  int size = strlen(hexwkb);
+  size_t size = strlen(hexwkb);
   /* We pass ANY span set type, the actual type is read from the byte string */
   return DatumGetSpanSetP(datum_from_hexwkb(hexwkb, size, T_INTSPANSET));
 }
@@ -1673,7 +1673,7 @@ spanset_from_hexwkb(const char *hexwkb)
  * @sqlfunc tboxFromBinary()
  */
 TBox *
-tbox_from_wkb(const uint8_t *wkb, int size)
+tbox_from_wkb(const uint8_t *wkb, size_t size)
 {
   return DatumGetTboxP(datum_from_wkb(wkb, size, T_TBOX));
 }
@@ -1686,7 +1686,7 @@ tbox_from_wkb(const uint8_t *wkb, int size)
 TBox *
 tbox_from_hexwkb(const char *hexwkb)
 {
-  int size = strlen(hexwkb);
+  size_t size = strlen(hexwkb);
   return DatumGetTboxP(datum_from_hexwkb(hexwkb, size, T_TBOX));
 }
 
@@ -1699,7 +1699,7 @@ tbox_from_hexwkb(const char *hexwkb)
  * @sqlfunc stboxFromBinary()
  */
 STBox *
-stbox_from_wkb(const uint8_t *wkb, int size)
+stbox_from_wkb(const uint8_t *wkb, size_t size)
 {
   return DatumGetSTboxP(datum_from_wkb(wkb, size, T_STBOX));
 }
@@ -1713,7 +1713,7 @@ stbox_from_wkb(const uint8_t *wkb, int size)
 STBox *
 stbox_from_hexwkb(const char *hexwkb)
 {
-  int size = strlen(hexwkb);
+  size_t size = strlen(hexwkb);
   return DatumGetSTboxP(datum_from_hexwkb(hexwkb, size, T_STBOX));
 }
 
@@ -1727,7 +1727,7 @@ stbox_from_hexwkb(const char *hexwkb)
  * ttextFromBinary(), etc.
  */
 Temporal *
-temporal_from_wkb(const uint8_t *wkb, int size)
+temporal_from_wkb(const uint8_t *wkb, size_t size)
 {
   /* We pass ANY temporal type, the actual type is read from the byte string */
   return DatumGetTemporalP(datum_from_wkb(wkb, size, T_TINT));
@@ -1742,7 +1742,7 @@ temporal_from_wkb(const uint8_t *wkb, int size)
 Temporal *
 temporal_from_hexwkb(const char *hexwkb)
 {
-  int size = strlen(hexwkb);
+  size_t size = strlen(hexwkb);
   /* We pass ANY temporal type, the actual type is read from the byte string */
   return DatumGetTemporalP(datum_from_hexwkb(hexwkb, size, T_TINT));
 }

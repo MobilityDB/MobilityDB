@@ -1040,14 +1040,14 @@ span_hash(const Span *s)
 
   /* Create type from the spantype and basetype values */
   uint16 type = ((uint16) (s->spantype) << 8) | (uint16) (s->basetype);
-  uint32 type_hash = hash_uint32((int32) type);
+  uint32 type_hash = hash_bytes_uint32((int32) type);
 
   /* Apply the hash function to each bound */
   uint32 lower_hash = datum_hash(s->lower, s->basetype);
   uint32 upper_hash = datum_hash(s->upper, s->basetype);
 
   /* Merge hashes of flags, type, and bounds */
-  uint32 result = DatumGetUInt32(hash_uint32((uint32) flags));
+  uint32 result = hash_bytes_uint32((uint32) flags);
   result ^= type_hash;
   result = (result << 1) | (result >> 31);
   result ^= lower_hash;

@@ -1389,15 +1389,15 @@ gserialized_in(char *input, int32 geom_typmod)
   }
 
   /* Starts with "SRID=" */
-  if( strncasecmp(str,"SRID=",5) == 0 )
+  if (pg_strncasecmp(str,"SRID=",5) == 0)
   {
     /* Roll forward to semi-colon */
     char *tmp = str;
-    while ( tmp && *tmp != ';' )
+    while (tmp && *tmp != ';')
       tmp++;
 
     /* Check next character to see if we have WKB  */
-    if ( tmp && *(tmp+1) == '0' )
+    if (tmp && *(tmp+1) == '0')
     {
       /* Null terminate the SRID= string */
       *tmp = '\0';

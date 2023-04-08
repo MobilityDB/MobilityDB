@@ -50,7 +50,7 @@ npoint_parse(const char **str, bool end)
 {
   p_whitespace(str);
 
-  if (strncasecmp(*str, "NPOINT", 6) != 0)
+  if (pg_strncasecmp(*str, "NPOINT", 6) != 0)
     elog(ERROR, "Could not parse network point");
 
   *str += 6;
@@ -88,7 +88,7 @@ nsegment_parse(const char **str)
 {
   p_whitespace(str);
 
-  if (strncasecmp(*str, "NSEGMENT", 8) != 0)
+  if (pg_strncasecmp(*str, "NSEGMENT", 8) != 0)
     elog(ERROR, "Could not parse network segment");
 
   *str += 8;
