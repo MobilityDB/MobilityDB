@@ -291,7 +291,8 @@ proj_crs_is_swapped(const PJ *pj_crs)
 
 		/* Only swap Lat/Lon systems */
 		/* Use whatever ordering planar systems default to */
-		if (strcasecmp(out_abbrev, "Lat") == 0)
+		/* MobilityDB: changed to pg_strcasecmp for Windows build */
+		if (pg_strcasecmp(out_abbrev, "Lat") == 0)
 			rv = LW_TRUE;
 		else
 			rv = LW_FALSE;

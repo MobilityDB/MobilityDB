@@ -224,7 +224,7 @@ tsequenceset_make1_exp(const TSequence **sequences, int count, int maxcount,
    * both the maximum number of sequences and the remaining space for adding an
    * additional variable-length sequences of arbitrary size */
   if (count != maxcount)
-    seqs_size *= (double) maxcount / count;
+    seqs_size *= maxcount / count;
   else
     maxcount = newcount;
   /* Size of the struct and the offset array */
@@ -239,7 +239,7 @@ tsequenceset_make1_exp(const TSequence **sequences, int count, int maxcount,
   result->totalcount = totalcount;
   result->temptype = sequences[0]->temptype;
   result->subtype = TSEQUENCESET;
-  result->bboxsize = bboxsize;
+  result->bboxsize = (int16) bboxsize;
   MEOS_FLAGS_SET_CONTINUOUS(result->flags,
     MEOS_FLAGS_GET_CONTINUOUS(sequences[0]->flags));
   MEOS_FLAGS_SET_INTERP(result->flags,

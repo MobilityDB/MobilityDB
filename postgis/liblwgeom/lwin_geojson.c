@@ -75,7 +75,8 @@ findMemberByName(json_object *poObj, const char *pszName)
 		     (it.entry ? (it.key = (char *)it.entry->k, it.val = (json_object *)it.entry->v, it.entry) : 0);
 		     it.entry = it.entry->next)
 		{
-			if (strcasecmp((char *)it.key, pszName) == 0)
+			/* MobilityDB: changed to pg_strcasecmp for Windows build */
+			if (pg_strcasecmp((char *)it.key, pszName) == 0)
 				return it.val;
 		}
 	}

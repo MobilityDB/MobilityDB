@@ -111,7 +111,7 @@ findMemberByName(json_object *poObj, const char *pszName)
           it.val = (json_object *) it.entry->v, it.entry) : 0);
         it.entry = it.entry->next)
     {
-      if (strcasecmp(it.key, pszName) == 0)
+      if (pg_strcasecmp(it.key, pszName) == 0)
         return it.val;
     }
   }
@@ -129,7 +129,7 @@ parse_mfjson_coord(json_object *poObj, int srid, bool geodetic)
   if (json_type_array != json_object_get_type(poObj))
     elog(ERROR, "Invalid value of the 'coordinates' array in MFJSON string");
 
-  const int numcoord = json_object_array_length(poObj);
+  int numcoord = json_object_array_length(poObj);
   if (numcoord < 2)
     elog(ERROR, "Too few elements in 'coordinates' values in MFJSON string");
   if (numcoord > 3)
