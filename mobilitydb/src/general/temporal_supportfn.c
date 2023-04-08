@@ -532,32 +532,35 @@ temporal_supportfn_ext(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
   PG_RETURN_POINTER(ret);
 }
 
+PGDLLEXPORT Datum Tnumber_supportfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_supportfn);
 /**
  * @brief Support function for temporal number types
  */
-PGDLLEXPORT Datum
+Datum
 Tnumber_supportfn(PG_FUNCTION_ARGS)
 {
   return temporal_supportfn_ext(fcinfo, TNUMBERTYPE);
 }
 
+PGDLLEXPORT Datum Tpoint_supportfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_supportfn);
 /**
  * @brief Support function for temporal number types
  */
-PGDLLEXPORT Datum
+Datum
 Tpoint_supportfn(PG_FUNCTION_ARGS)
 {
   return temporal_supportfn_ext(fcinfo, TPOINTTYPE);
 }
 
 #if NPOINT
+PGDLLEXPORT Datum Tnpoint_supportfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnpoint_supportfn);
 /**
  * @brief Support function for temporal number types
  */
-PGDLLEXPORT Datum
+Datum
 Tnpoint_supportfn(PG_FUNCTION_ARGS)
 {
   return temporal_supportfn_ext(fcinfo, TNPOINTTYPE);

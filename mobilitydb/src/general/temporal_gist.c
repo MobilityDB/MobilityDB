@@ -48,11 +48,12 @@
  * GiST compress method for temporal values
  *****************************************************************************/
 
+PGDLLEXPORT Datum Temporal_gist_compress(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_gist_compress);
 /**
  * @brief GiST compress method for temporal values
  */
-PGDLLEXPORT Datum
+Datum
 Temporal_gist_compress(PG_FUNCTION_ARGS)
 {
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);

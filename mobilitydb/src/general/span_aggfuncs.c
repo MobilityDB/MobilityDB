@@ -49,11 +49,12 @@
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Span_extent_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_extent_transfn);
 /**
  * @brief Transition function for extent aggregation of span values
  */
-PGDLLEXPORT Datum
+Datum
 Span_extent_transfn(PG_FUNCTION_ARGS)
 {
   Span *s1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
@@ -64,11 +65,12 @@ Span_extent_transfn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Span_extent_combinefn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_extent_combinefn);
 /**
  * @brief Combine function for temporal extent aggregation
  */
-PGDLLEXPORT Datum
+Datum
 Span_extent_combinefn(PG_FUNCTION_ARGS)
 {
   Span *s1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
@@ -85,12 +87,13 @@ Span_extent_combinefn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Span_extent_finalfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_extent_finalfn);
 /**
  * @brief Final function for extent aggregation of base, set, span, and
  * spanset values resulting in a span value
  */
-PGDLLEXPORT Datum
+Datum
 Span_extent_finalfn(PG_FUNCTION_ARGS)
 {
   Span *span = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
@@ -101,11 +104,12 @@ Span_extent_finalfn(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Spanbase_extent_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanbase_extent_transfn);
 /**
  * @brief Transition function for extent aggregation of base values of span types
  */
-PGDLLEXPORT Datum
+Datum
 Spanbase_extent_transfn(PG_FUNCTION_ARGS)
 {
   Span *s = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
@@ -117,11 +121,12 @@ Spanbase_extent_transfn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(s);
 }
 
+PGDLLEXPORT Datum Set_extent_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_extent_transfn);
 /**
  * @brief Transition function for extent aggregation of set values
  */
-PGDLLEXPORT Datum
+Datum
 Set_extent_transfn(PG_FUNCTION_ARGS)
 {
   Span *span = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
@@ -133,11 +138,12 @@ Set_extent_transfn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(span);
 }
 
+PGDLLEXPORT Datum Spanset_extent_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_extent_transfn);
 /**
  * @brief Transition function for extent aggregation of span set values
  */
-PGDLLEXPORT Datum
+Datum
 Spanset_extent_transfn(PG_FUNCTION_ARGS)
 {
   Span *s = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
@@ -151,6 +157,7 @@ Spanset_extent_transfn(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Span_union_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_union_transfn);
 /*
  * @brief Transition function for aggregating spans
@@ -158,7 +165,7 @@ PG_FUNCTION_INFO_V1(Span_union_transfn);
  * All we do here is gather the input spans into an array
  * so that the finalfn can sort and combine them.
  */
-PGDLLEXPORT Datum
+Datum
 Span_union_transfn(PG_FUNCTION_ARGS)
 {
   MemoryContext aggContext;
@@ -184,6 +191,7 @@ Span_union_transfn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(state);
 }
 
+PGDLLEXPORT Datum Spanset_union_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_union_transfn);
 /*
  * @brief Transition function for aggregating spans
@@ -191,7 +199,7 @@ PG_FUNCTION_INFO_V1(Spanset_union_transfn);
  * All we do here is gather the input span sets' spans into an array so
  * that the finalfn can sort and combine them.
  */
-PGDLLEXPORT Datum
+Datum
 Spanset_union_transfn(PG_FUNCTION_ARGS)
 {
   MemoryContext aggContext;
@@ -223,12 +231,13 @@ Spanset_union_transfn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(state);
 }
 
+PGDLLEXPORT Datum Span_union_finalfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_union_finalfn);
 /*
  * @brief use our internal array to merge overlapping/touching spans.
  * @note Shared by Span_union_finalfn() and Spanset_union_finalfn().
  */
-PGDLLEXPORT Datum
+Datum
 Span_union_finalfn(PG_FUNCTION_ARGS)
 {
   MemoryContext aggContext;

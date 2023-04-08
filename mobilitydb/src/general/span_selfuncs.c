@@ -921,11 +921,12 @@ span_sel(PlannerInfo *root, Oid operid, List *args, int varRelid)
   return selec;
 }
 
+PGDLLEXPORT Datum Span_sel(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_sel);
 /**
  * @brief Restriction selectivity for span operators
  */
-PGDLLEXPORT Datum
+Datum
 Span_sel(PG_FUNCTION_ARGS)
 {
   PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
@@ -938,13 +939,14 @@ Span_sel(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum _mobdb_span_sel(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(_mobdb_span_sel);
 /**
  * @brief Utility function to read the calculated selectivity for a given
  * table/column, operator, and search span.
  * Used for debugging the selectivity code.
  */
-PGDLLEXPORT Datum
+Datum
 _mobdb_span_sel(PG_FUNCTION_ARGS)
 {
   Oid table_oid = PG_GETARG_OID(0);
@@ -1421,6 +1423,7 @@ span_joinsel(PlannerInfo *root, meosOper oper, List *args,
   return selec;
 }
 
+PGDLLEXPORT Datum Span_joinsel(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_joinsel);
 /**
  * @brief Join selectivity for spans.
@@ -1432,7 +1435,7 @@ PG_FUNCTION_INFO_V1(Span_joinsel);
  *
  * This function is inspired from function eqjoinsel in file selfuncs.c
  */
-PGDLLEXPORT Datum
+Datum
 Span_joinsel(PG_FUNCTION_ARGS)
 {
   PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
@@ -1473,13 +1476,14 @@ Span_joinsel(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(selec);
 }
 
+PGDLLEXPORT Datum _mobdb_span_joinsel(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(_mobdb_span_joinsel);
 /**
  * @brief Utility function to read the calculated selectivity for a given
  * couple of table/column, and operator.
  * @note Used for testing the selectivity code.
  */
-PGDLLEXPORT Datum
+Datum
 _mobdb_span_joinsel(PG_FUNCTION_ARGS)
 {
   Oid table1_oid = PG_GETARG_OID(0);

@@ -461,13 +461,14 @@ oid_oper(Oid oproid, meosType *ltype, meosType *rtype)
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum fill_oid_cache(PG_FUNCTION_ARGS __attribute__((unused)));
 PG_FUNCTION_INFO_V1(fill_oid_cache);
 /**
  * @brief Function executed during the `CREATE EXTENSION` to precompute the
  * operator cache and store it in table `mobilitydb_opcache`
  * @see populate_operoid_cache
  */
-PGDLLEXPORT Datum
+Datum
 fill_oid_cache(PG_FUNCTION_ARGS __attribute__((unused)))
 {
   /* Fill the Oid type cache */

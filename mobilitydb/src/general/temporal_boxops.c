@@ -136,6 +136,7 @@ boxop_temporal_temporal_ext(FunctionCallInfo fcinfo,
  * Bounding box operators for temporal types
  *****************************************************************************/
 
+PGDLLEXPORT Datum Contains_period_temporal(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contains_period_temporal);
 /**
  * @ingroup mobilitydb_temporal_topo
@@ -143,12 +144,13 @@ PG_FUNCTION_INFO_V1(Contains_period_temporal);
  * @sqlfunc contains_bbox()
  * @sqlop @p \@>
  */
-PGDLLEXPORT Datum
+Datum
 Contains_period_temporal(PG_FUNCTION_ARGS)
 {
   return boxop_period_temporal_ext(fcinfo, &contains_span_span);
 }
 
+PGDLLEXPORT Datum Contains_temporal_period(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contains_temporal_period);
 /**
  * @ingroup mobilitydb_temporal_topo
@@ -156,12 +158,13 @@ PG_FUNCTION_INFO_V1(Contains_temporal_period);
  * @sqlfunc contains_bbox()
  * @sqlop @p \@>
  */
-PGDLLEXPORT Datum
+Datum
 Contains_temporal_period(PG_FUNCTION_ARGS)
 {
   return boxop_temporal_period_ext(fcinfo, &contains_span_span);
 }
 
+PGDLLEXPORT Datum Contains_temporal_temporal(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contains_temporal_temporal);
 /**
  * @ingroup mobilitydb_temporal_topo
@@ -170,7 +173,7 @@ PG_FUNCTION_INFO_V1(Contains_temporal_temporal);
  * @sqlfunc contains_bbox()
  * @sqlop @p \@>
  */
-PGDLLEXPORT Datum
+Datum
 Contains_temporal_temporal(PG_FUNCTION_ARGS)
 {
   return boxop_temporal_temporal_ext(fcinfo, &contains_span_span);
@@ -178,6 +181,7 @@ Contains_temporal_temporal(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Contained_period_temporal(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_period_temporal);
 /**
  * @ingroup mobilitydb_temporal_topo
@@ -186,12 +190,13 @@ PG_FUNCTION_INFO_V1(Contained_period_temporal);
  * @sqlfunc contained_bbox()
  * @sqlop @p <@
  */
-PGDLLEXPORT Datum
+Datum
 Contained_period_temporal(PG_FUNCTION_ARGS)
 {
   return boxop_period_temporal_ext(fcinfo, &contained_span_span);
 }
 
+PGDLLEXPORT Datum Contained_temporal_period(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_temporal_period);
 /**
  * @ingroup mobilitydb_temporal_topo
@@ -200,12 +205,13 @@ PG_FUNCTION_INFO_V1(Contained_temporal_period);
  * @sqlfunc contained_bbox()
  * @sqlop @p <@
  */
-PGDLLEXPORT Datum
+Datum
 Contained_temporal_period(PG_FUNCTION_ARGS)
 {
   return boxop_temporal_period_ext(fcinfo, &contained_span_span);
 }
 
+PGDLLEXPORT Datum Contained_temporal_temporal(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_temporal_temporal);
 /**
  * @ingroup mobilitydb_temporal_topo
@@ -214,7 +220,7 @@ PG_FUNCTION_INFO_V1(Contained_temporal_temporal);
  * @sqlfunc contained_bbox()
  * @sqlop @p <@
  */
-PGDLLEXPORT Datum
+Datum
 Contained_temporal_temporal(PG_FUNCTION_ARGS)
 {
   return boxop_temporal_temporal_ext(fcinfo, &contained_span_span);
@@ -222,6 +228,7 @@ Contained_temporal_temporal(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Overlaps_period_temporal(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overlaps_period_temporal);
 /**
  * @ingroup mobilitydb_temporal_topo
@@ -230,12 +237,13 @@ PG_FUNCTION_INFO_V1(Overlaps_period_temporal);
  * @sqlfunc overlaps_bbox()
  * @sqlop @p &&
  */
-PGDLLEXPORT Datum
+Datum
 Overlaps_period_temporal(PG_FUNCTION_ARGS)
 {
   return boxop_period_temporal_ext(fcinfo, &overlaps_span_span);
 }
 
+PGDLLEXPORT Datum Overlaps_temporal_period(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overlaps_temporal_period);
 /**
  * @ingroup mobilitydb_temporal_topo
@@ -244,12 +252,13 @@ PG_FUNCTION_INFO_V1(Overlaps_temporal_period);
  * @sqlfunc overlaps_bbox()
  * @sqlop @p &&
  */
-PGDLLEXPORT Datum
+Datum
 Overlaps_temporal_period(PG_FUNCTION_ARGS)
 {
   return boxop_temporal_period_ext(fcinfo, &overlaps_span_span);
 }
 
+PGDLLEXPORT Datum Overlaps_temporal_temporal(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overlaps_temporal_temporal);
 /**
  * @ingroup mobilitydb_temporal_topo
@@ -257,7 +266,7 @@ PG_FUNCTION_INFO_V1(Overlaps_temporal_temporal);
  * @sqlfunc overlaps_bbox()
  * @sqlop @p &&
  */
-PGDLLEXPORT Datum
+Datum
 Overlaps_temporal_temporal(PG_FUNCTION_ARGS)
 {
   return boxop_temporal_temporal_ext(fcinfo, &overlaps_span_span);
@@ -265,6 +274,7 @@ Overlaps_temporal_temporal(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Same_period_temporal(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Same_period_temporal);
 /**
  * @ingroup mobilitydb_temporal_topo
@@ -273,12 +283,13 @@ PG_FUNCTION_INFO_V1(Same_period_temporal);
  * @sqlfunc same_bbox()
  * @sqlop @p ~=
  */
-PGDLLEXPORT Datum
+Datum
 Same_period_temporal(PG_FUNCTION_ARGS)
 {
   return boxop_period_temporal_ext(fcinfo, &span_eq);
 }
 
+PGDLLEXPORT Datum Same_temporal_period(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Same_temporal_period);
 /**
  * @ingroup mobilitydb_temporal_topo
@@ -287,12 +298,13 @@ PG_FUNCTION_INFO_V1(Same_temporal_period);
  * @sqlfunc same_bbox()
  * @sqlop @p ~=
  */
-PGDLLEXPORT Datum
+Datum
 Same_temporal_period(PG_FUNCTION_ARGS)
 {
   return boxop_temporal_period_ext(fcinfo, &span_eq);
 }
 
+PGDLLEXPORT Datum Same_temporal_temporal(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Same_temporal_temporal);
 /**
  * @ingroup mobilitydb_temporal_topo
@@ -300,7 +312,7 @@ PG_FUNCTION_INFO_V1(Same_temporal_temporal);
  * @sqlfunc same_bbox()
  * @sqlop @p ~=
  */
-PGDLLEXPORT Datum
+Datum
 Same_temporal_temporal(PG_FUNCTION_ARGS)
 {
   return boxop_temporal_temporal_ext(fcinfo, &span_eq);
@@ -308,6 +320,7 @@ Same_temporal_temporal(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Adjacent_period_temporal(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Adjacent_period_temporal);
 /**
  * @ingroup mobilitydb_temporal_topo
@@ -316,12 +329,13 @@ PG_FUNCTION_INFO_V1(Adjacent_period_temporal);
  * @sqlfunc adjacent_bbox()
  * @sqlop @p -|-
  */
-PGDLLEXPORT Datum
+Datum
 Adjacent_period_temporal(PG_FUNCTION_ARGS)
 {
   return boxop_period_temporal_ext(fcinfo, &adjacent_span_span);
 }
 
+PGDLLEXPORT Datum Adjacent_temporal_period(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Adjacent_temporal_period);
 /**
  * @ingroup mobilitydb_temporal_topo
@@ -330,12 +344,13 @@ PG_FUNCTION_INFO_V1(Adjacent_temporal_period);
  * @sqlfunc adjacent_bbox()
  * @sqlop @p -|-
  */
-PGDLLEXPORT Datum
+Datum
 Adjacent_temporal_period(PG_FUNCTION_ARGS)
 {
   return boxop_temporal_period_ext(fcinfo, &adjacent_span_span);
 }
 
+PGDLLEXPORT Datum Adjacent_temporal_temporal(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Adjacent_temporal_temporal);
 /**
  * @ingroup mobilitydb_temporal_topo
@@ -343,7 +358,7 @@ PG_FUNCTION_INFO_V1(Adjacent_temporal_temporal);
  * @sqlfunc adjacent_bbox()
  * @sqlop @p -|-
  */
-PGDLLEXPORT Datum
+Datum
 Adjacent_temporal_temporal(PG_FUNCTION_ARGS)
 {
   return boxop_temporal_temporal_ext(fcinfo, &adjacent_span_span);
@@ -449,6 +464,7 @@ boxop_tnumber_tnumber_ext(FunctionCallInfo fcinfo,
  * Bounding box operators for temporal numbers
  *****************************************************************************/
 
+PGDLLEXPORT Datum Contains_numspan_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contains_numspan_tnumber);
 /**
  * @ingroup mobilitydb_temporal_topo
@@ -456,12 +472,13 @@ PG_FUNCTION_INFO_V1(Contains_numspan_tnumber);
  * @sqlfunc contains_bbox()
  * @sqlop @p \@>
  */
-PGDLLEXPORT Datum
+Datum
 Contains_numspan_tnumber(PG_FUNCTION_ARGS)
 {
   return boxop_numspan_tnumber_ext(fcinfo, &contains_span_span);
 }
 
+PGDLLEXPORT Datum Contains_tnumber_numspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contains_tnumber_numspan);
 /**
  * @ingroup mobilitydb_temporal_topo
@@ -469,12 +486,13 @@ PG_FUNCTION_INFO_V1(Contains_tnumber_numspan);
  * @sqlfunc contains_bbox()
  * @sqlop @p \@>
  */
-PGDLLEXPORT Datum
+Datum
 Contains_tnumber_numspan(PG_FUNCTION_ARGS)
 {
   return boxop_tnumber_numspan_ext(fcinfo, &contains_span_span);
 }
 
+PGDLLEXPORT Datum Contains_tbox_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contains_tbox_tnumber);
 /**
  * @ingroup mobilitydb_temporal_topo
@@ -483,12 +501,13 @@ PG_FUNCTION_INFO_V1(Contains_tbox_tnumber);
  * @sqlfunc contains_bbox()
  * @sqlop @p \@>
  */
-PGDLLEXPORT Datum
+Datum
 Contains_tbox_tnumber(PG_FUNCTION_ARGS)
 {
   return boxop_tbox_tnumber_ext(fcinfo, &contains_tbox_tbox);
 }
 
+PGDLLEXPORT Datum Contains_tnumber_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contains_tnumber_tbox);
 /**
  * @ingroup mobilitydb_temporal_topo
@@ -497,12 +516,13 @@ PG_FUNCTION_INFO_V1(Contains_tnumber_tbox);
  * @sqlfunc contains_bbox()
  * @sqlop @p \@>
  */
-PGDLLEXPORT Datum
+Datum
 Contains_tnumber_tbox(PG_FUNCTION_ARGS)
 {
   return boxop_tnumber_tbox_ext(fcinfo, &contains_tbox_tbox);
 }
 
+PGDLLEXPORT Datum Contains_tnumber_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contains_tnumber_tnumber);
 /**
  * @ingroup mobilitydb_temporal_topo
@@ -511,7 +531,7 @@ PG_FUNCTION_INFO_V1(Contains_tnumber_tnumber);
  * @sqlfunc contains_bbox()
  * @sqlop @p \@>
  */
-PGDLLEXPORT Datum
+Datum
 Contains_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
   return boxop_tnumber_tnumber_ext(fcinfo, &contains_tbox_tbox);
@@ -519,6 +539,7 @@ Contains_tnumber_tnumber(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Contained_numspan_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_numspan_tnumber);
 /**
  * @ingroup mobilitydb_temporal_topo
@@ -527,12 +548,13 @@ PG_FUNCTION_INFO_V1(Contained_numspan_tnumber);
  * @sqlfunc contained_bbox()
  * @sqlop @p <@
  */
-PGDLLEXPORT Datum
+Datum
 Contained_numspan_tnumber(PG_FUNCTION_ARGS)
 {
   return boxop_numspan_tnumber_ext(fcinfo, &contained_span_span);
 }
 
+PGDLLEXPORT Datum Contained_tnumber_numspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_tnumber_numspan);
 /**
  * @ingroup mobilitydb_temporal_topo
@@ -541,12 +563,13 @@ PG_FUNCTION_INFO_V1(Contained_tnumber_numspan);
  * @sqlfunc contained_bbox()
  * @sqlop @p <@
  */
-PGDLLEXPORT Datum
+Datum
 Contained_tnumber_numspan(PG_FUNCTION_ARGS)
 {
   return boxop_tnumber_numspan_ext(fcinfo, &contained_span_span);
 }
 
+PGDLLEXPORT Datum Contained_tbox_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_tbox_tnumber);
 /**
  * @ingroup mobilitydb_temporal_topo
@@ -555,12 +578,13 @@ PG_FUNCTION_INFO_V1(Contained_tbox_tnumber);
  * @sqlfunc contained_bbox()
  * @sqlop @p <@
  */
-PGDLLEXPORT Datum
+Datum
 Contained_tbox_tnumber(PG_FUNCTION_ARGS)
 {
   return boxop_tbox_tnumber_ext(fcinfo, &contained_tbox_tbox);
 }
 
+PGDLLEXPORT Datum Contained_tnumber_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_tnumber_tbox);
 /**
  * @ingroup mobilitydb_temporal_topo
@@ -569,12 +593,13 @@ PG_FUNCTION_INFO_V1(Contained_tnumber_tbox);
  * @sqlfunc contained_bbox()
  * @sqlop @p <@
  */
-PGDLLEXPORT Datum
+Datum
 Contained_tnumber_tbox(PG_FUNCTION_ARGS)
 {
   return boxop_tnumber_tbox_ext(fcinfo, &contained_tbox_tbox);
 }
 
+PGDLLEXPORT Datum Contained_tnumber_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_tnumber_tnumber);
 /**
  * @ingroup mobilitydb_temporal_topo
@@ -583,7 +608,7 @@ PG_FUNCTION_INFO_V1(Contained_tnumber_tnumber);
  * @sqlfunc contained_bbox()
  * @sqlop @p <@
  */
-PGDLLEXPORT Datum
+Datum
 Contained_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
   return boxop_tnumber_tnumber_ext(fcinfo, &contained_tbox_tbox);
@@ -591,6 +616,7 @@ Contained_tnumber_tnumber(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Overlaps_numspan_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overlaps_numspan_tnumber);
 /**
  * @ingroup mobilitydb_temporal_topo
@@ -599,12 +625,13 @@ PG_FUNCTION_INFO_V1(Overlaps_numspan_tnumber);
  * @sqlfunc overlaps_bbox()
  * @sqlop @p &&
  */
-PGDLLEXPORT Datum
+Datum
 Overlaps_numspan_tnumber(PG_FUNCTION_ARGS)
 {
   return boxop_numspan_tnumber_ext(fcinfo, &overlaps_span_span);
 }
 
+PGDLLEXPORT Datum Overlaps_tnumber_numspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overlaps_tnumber_numspan);
 /**
  * @ingroup mobilitydb_temporal_topo
@@ -613,12 +640,13 @@ PG_FUNCTION_INFO_V1(Overlaps_tnumber_numspan);
  * @sqlfunc overlaps_bbox()
  * @sqlop @p &&
  */
-PGDLLEXPORT Datum
+Datum
 Overlaps_tnumber_numspan(PG_FUNCTION_ARGS)
 {
   return boxop_tnumber_numspan_ext(fcinfo, &overlaps_span_span);
 }
 
+PGDLLEXPORT Datum Overlaps_tbox_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overlaps_tbox_tnumber);
 /**
  * @ingroup mobilitydb_temporal_topo
@@ -627,12 +655,13 @@ PG_FUNCTION_INFO_V1(Overlaps_tbox_tnumber);
  * @sqlfunc overlaps_bbox()
  * @sqlop @p &&
  */
-PGDLLEXPORT Datum
+Datum
 Overlaps_tbox_tnumber(PG_FUNCTION_ARGS)
 {
   return boxop_tbox_tnumber_ext(fcinfo, &overlaps_tbox_tbox);
 }
 
+PGDLLEXPORT Datum Overlaps_tnumber_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overlaps_tnumber_tbox);
 /**
  * @ingroup mobilitydb_temporal_topo
@@ -641,12 +670,13 @@ PG_FUNCTION_INFO_V1(Overlaps_tnumber_tbox);
  * @sqlfunc overlaps_bbox()
  * @sqlop @p &&
  */
-PGDLLEXPORT Datum
+Datum
 Overlaps_tnumber_tbox(PG_FUNCTION_ARGS)
 {
   return boxop_tnumber_tbox_ext(fcinfo, &overlaps_tbox_tbox);
 }
 
+PGDLLEXPORT Datum Overlaps_tnumber_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overlaps_tnumber_tnumber);
 /**
  * @ingroup mobilitydb_temporal_topo
@@ -654,7 +684,7 @@ PG_FUNCTION_INFO_V1(Overlaps_tnumber_tnumber);
  * @sqlfunc overlaps_bbox()
  * @sqlop @p &&
  */
-PGDLLEXPORT Datum
+Datum
 Overlaps_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
   return boxop_tnumber_tnumber_ext(fcinfo, &overlaps_tbox_tbox);
@@ -662,6 +692,7 @@ Overlaps_tnumber_tnumber(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Same_numspan_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Same_numspan_tnumber);
 /**
  * @ingroup mobilitydb_temporal_topo
@@ -670,12 +701,13 @@ PG_FUNCTION_INFO_V1(Same_numspan_tnumber);
  * @sqlfunc same_bbox()
  * @sqlop @p ~=
  */
-PGDLLEXPORT Datum
+Datum
 Same_numspan_tnumber(PG_FUNCTION_ARGS)
 {
   return boxop_numspan_tnumber_ext(fcinfo, &span_eq);
 }
 
+PGDLLEXPORT Datum Same_tnumber_numspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Same_tnumber_numspan);
 /**
  * @ingroup mobilitydb_temporal_topo
@@ -684,12 +716,13 @@ PG_FUNCTION_INFO_V1(Same_tnumber_numspan);
  * @sqlfunc same_bbox()
  * @sqlop @p ~=
  */
-PGDLLEXPORT Datum
+Datum
 Same_tnumber_numspan(PG_FUNCTION_ARGS)
 {
   return boxop_tnumber_numspan_ext(fcinfo, &span_eq);
 }
 
+PGDLLEXPORT Datum Same_tbox_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Same_tbox_tnumber);
 /**
  * @ingroup mobilitydb_temporal_topo
@@ -698,12 +731,13 @@ PG_FUNCTION_INFO_V1(Same_tbox_tnumber);
  * @sqlfunc same_bbox()
  * @sqlop @p ~=
  */
-PGDLLEXPORT Datum
+Datum
 Same_tbox_tnumber(PG_FUNCTION_ARGS)
 {
   return boxop_tbox_tnumber_ext(fcinfo, &same_tbox_tbox);
 }
 
+PGDLLEXPORT Datum Same_tnumber_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Same_tnumber_tbox);
 /**
  * @ingroup mobilitydb_temporal_topo
@@ -712,12 +746,13 @@ PG_FUNCTION_INFO_V1(Same_tnumber_tbox);
  * @sqlfunc same_bbox()
  * @sqlop @p ~=
  */
-PGDLLEXPORT Datum
+Datum
 Same_tnumber_tbox(PG_FUNCTION_ARGS)
 {
   return boxop_tnumber_tbox_ext(fcinfo, &same_tbox_tbox);
 }
 
+PGDLLEXPORT Datum Same_tnumber_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Same_tnumber_tnumber);
 /**
  * @ingroup mobilitydb_temporal_topo
@@ -726,7 +761,7 @@ PG_FUNCTION_INFO_V1(Same_tnumber_tnumber);
  * @sqlfunc same_bbox()
  * @sqlop @p ~=
  */
-PGDLLEXPORT Datum
+Datum
 Same_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
   return boxop_tnumber_tnumber_ext(fcinfo, &same_tbox_tbox);
@@ -734,6 +769,7 @@ Same_tnumber_tnumber(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Adjacent_numspan_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Adjacent_numspan_tnumber);
 /**
  * @ingroup mobilitydb_temporal_topo
@@ -742,12 +778,13 @@ PG_FUNCTION_INFO_V1(Adjacent_numspan_tnumber);
  * @sqlfunc adjacent_bbox()
  * @sqlop @p -|-
  */
-PGDLLEXPORT Datum
+Datum
 Adjacent_numspan_tnumber(PG_FUNCTION_ARGS)
 {
   return boxop_numspan_tnumber_ext(fcinfo, &adjacent_span_span);
 }
 
+PGDLLEXPORT Datum Adjacent_tnumber_numspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Adjacent_tnumber_numspan);
 /**
  * @ingroup mobilitydb_temporal_topo
@@ -756,12 +793,13 @@ PG_FUNCTION_INFO_V1(Adjacent_tnumber_numspan);
  * @sqlfunc adjacent_bbox()
  * @sqlop @p -|-
  */
-PGDLLEXPORT Datum
+Datum
 Adjacent_tnumber_numspan(PG_FUNCTION_ARGS)
 {
   return boxop_tnumber_numspan_ext(fcinfo, &adjacent_span_span);
 }
 
+PGDLLEXPORT Datum Adjacent_tbox_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Adjacent_tbox_tnumber);
 /**
  * @ingroup mobilitydb_temporal_topo
@@ -770,12 +808,13 @@ PG_FUNCTION_INFO_V1(Adjacent_tbox_tnumber);
  * @sqlfunc adjacent_bbox()
  * @sqlop @p -|-
  */
-PGDLLEXPORT Datum
+Datum
 Adjacent_tbox_tnumber(PG_FUNCTION_ARGS)
 {
   return boxop_tbox_tnumber_ext(fcinfo, &adjacent_tbox_tbox);
 }
 
+PGDLLEXPORT Datum Adjacent_tnumber_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Adjacent_tnumber_tbox);
 /**
  * @ingroup mobilitydb_temporal_topo
@@ -784,12 +823,13 @@ PG_FUNCTION_INFO_V1(Adjacent_tnumber_tbox);
  * @sqlfunc adjacent_bbox()
  * @sqlop @p -|-
  */
-PGDLLEXPORT Datum
+Datum
 Adjacent_tnumber_tbox(PG_FUNCTION_ARGS)
 {
   return boxop_tnumber_tbox_ext(fcinfo, &adjacent_tbox_tbox);
 }
 
+PGDLLEXPORT Datum Adjacent_tnumber_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Adjacent_tnumber_tnumber);
 /**
  * @ingroup mobilitydb_temporal_topo
@@ -797,7 +837,7 @@ PG_FUNCTION_INFO_V1(Adjacent_tnumber_tnumber);
  * @sqlfunc adjacent_bbox()
  * @sqlop @p -|-
  */
-PGDLLEXPORT Datum
+Datum
 Adjacent_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
   return boxop_tnumber_tnumber_ext(fcinfo, &adjacent_tbox_tbox);

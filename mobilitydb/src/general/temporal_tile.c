@@ -55,11 +55,12 @@
  * Number bucket functions
  *****************************************************************************/
 
+PGDLLEXPORT Datum Number_bucket(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Number_bucket);
 /**
  * @brief Return the initial value of the bucket in which an integer value falls.
  */
-PGDLLEXPORT Datum
+Datum
 Number_bucket(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_DATUM(0);
@@ -74,11 +75,12 @@ Number_bucket(PG_FUNCTION_ARGS)
  * Timestamp bucket functions
  *****************************************************************************/
 
+PGDLLEXPORT Datum Timestamptz_bucket(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Timestamptz_bucket);
 /**
  * @brief Return the initial timestamp of the bucket in which a timestamp falls.
  */
-PGDLLEXPORT Datum
+Datum
 Timestamptz_bucket(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
@@ -165,21 +167,23 @@ Span_bucket_list_ext(FunctionCallInfo fcinfo, bool valuelist)
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Span_bucket_list(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_bucket_list);
 /**
  * @brief Generate a span bucket list.
  */
-PGDLLEXPORT Datum
+Datum
 Span_bucket_list(PG_FUNCTION_ARGS)
 {
   return Span_bucket_list_ext(fcinfo, true);
 }
 
+PGDLLEXPORT Datum Period_bucket_list(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Period_bucket_list);
 /**
  * @brief Generate a period bucket list.
  */
-PGDLLEXPORT Datum
+Datum
 Period_bucket_list(PG_FUNCTION_ARGS)
 {
   return Span_bucket_list_ext(fcinfo, false);
@@ -187,11 +191,12 @@ Period_bucket_list(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Span_bucket(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_bucket);
 /**
  * @brief Generate an integer or float span bucket in a bucket list for spans.
 */
-PGDLLEXPORT Datum
+Datum
 Span_bucket(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_DATUM(0);
@@ -203,11 +208,12 @@ Span_bucket(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Period_bucket(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Period_bucket);
 /**
  * @brief Generate a bucket in a bucket list for periods.
 */
-PGDLLEXPORT Datum
+Datum
 Period_bucket(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
@@ -222,11 +228,12 @@ Period_bucket(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Tbox_tile_list(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_tile_list);
 /**
  * @brief Generate a multidimensional grid for temporal numbers.
  */
-PGDLLEXPORT Datum
+Datum
 Tbox_tile_list(PG_FUNCTION_ARGS)
 {
   FuncCallContext *funcctx;
@@ -296,11 +303,12 @@ Tbox_tile_list(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Tbox_tile(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_tile);
 /**
  * @brief Generate a tile in a multidimensional grid for temporal numbers.
 */
-PGDLLEXPORT Datum
+Datum
 Tbox_tile(PG_FUNCTION_ARGS)
 {
   double value = PG_GETARG_FLOAT8(0);
@@ -468,32 +476,35 @@ Temporal_value_time_split_ext(FunctionCallInfo fcinfo, bool valuesplit,
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Temporal_time_split(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_time_split);
 /**
  * @brief Split a temporal value into fragments with respect to period buckets.
  */
-PGDLLEXPORT Datum
+Datum
 Temporal_time_split(PG_FUNCTION_ARGS)
 {
   return Temporal_value_time_split_ext(fcinfo, false, true);
 }
 
+PGDLLEXPORT Datum Tnumber_value_split(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_value_split);
 /**
  * @brief Split a temporal value into fragments with respect to period tiles.
  */
-PGDLLEXPORT Datum
+Datum
 Tnumber_value_split(PG_FUNCTION_ARGS)
 {
   return Temporal_value_time_split_ext(fcinfo, true, false);
 }
 
+PGDLLEXPORT Datum Tnumber_value_time_split(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_value_time_split);
 /**
  * @brief Split a temporal value into fragments with respect to span and period
  * tiles.
  */
-PGDLLEXPORT Datum
+Datum
 Tnumber_value_time_split(PG_FUNCTION_ARGS)
 {
   return Temporal_value_time_split_ext(fcinfo, true, true);

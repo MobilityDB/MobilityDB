@@ -414,11 +414,12 @@ span_spgist_get_span(const ScanKeyData *scankey, Span *result)
  * SP-GiST config function
  *****************************************************************************/
 
+PGDLLEXPORT Datum Intspan_spgist_config(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Intspan_spgist_config);
 /**
  * @brief SP-GiST config function for span types
  */
-PGDLLEXPORT Datum
+Datum
 Intspan_spgist_config(PG_FUNCTION_ARGS)
 {
   spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
@@ -430,11 +431,12 @@ Intspan_spgist_config(PG_FUNCTION_ARGS)
   PG_RETURN_VOID();
 }
 
+PGDLLEXPORT Datum Bigintspan_spgist_config(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Bigintspan_spgist_config);
 /**
  * @brief SP-GiST config function for span types
  */
-PGDLLEXPORT Datum
+Datum
 Bigintspan_spgist_config(PG_FUNCTION_ARGS)
 {
   spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
@@ -446,11 +448,12 @@ Bigintspan_spgist_config(PG_FUNCTION_ARGS)
   PG_RETURN_VOID();
 }
 
+PGDLLEXPORT Datum Floatspan_spgist_config(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Floatspan_spgist_config);
 /**
  * @brief SP-GiST config function for span types
  */
-PGDLLEXPORT Datum
+Datum
 Floatspan_spgist_config(PG_FUNCTION_ARGS)
 {
   spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
@@ -462,11 +465,12 @@ Floatspan_spgist_config(PG_FUNCTION_ARGS)
   PG_RETURN_VOID();
 }
 
+PGDLLEXPORT Datum Period_spgist_config(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Period_spgist_config);
 /**
  * @brief SP-GiST config function for span types
  */
-PGDLLEXPORT Datum
+Datum
 Period_spgist_config(PG_FUNCTION_ARGS)
 {
   spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
@@ -502,11 +506,12 @@ Period_spgist_config(PG_FUNCTION_ARGS)
  * quadrant 0.
  */
 
+PGDLLEXPORT Datum Span_quadtree_choose(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_quadtree_choose);
 /**
  * @brief SP-GiST choose function for span types
  */
-PGDLLEXPORT Datum
+Datum
 Span_quadtree_choose(PG_FUNCTION_ARGS)
 {
   spgChooseIn *in = (spgChooseIn *) PG_GETARG_POINTER(0);
@@ -580,11 +585,12 @@ span_level_cmp(Span *centroid, Span *query, int level)
     return span_upper_cmp(query, centroid);
 }
 
+PGDLLEXPORT Datum Span_kdtree_choose(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_kdtree_choose);
 /**
  * @brief K-d tree choose function for span types
  */
-PGDLLEXPORT Datum
+Datum
 Span_kdtree_choose(PG_FUNCTION_ARGS)
 {
   spgChooseIn *in = (spgChooseIn *) PG_GETARG_POINTER(0);
@@ -605,6 +611,7 @@ Span_kdtree_choose(PG_FUNCTION_ARGS)
  * SP-GiST pick-split function
  *****************************************************************************/
 
+PGDLLEXPORT Datum Span_quadtree_picksplit(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_quadtree_picksplit);
 /**
  * @brief SP-GiST pick-split function for span types
@@ -612,7 +619,7 @@ PG_FUNCTION_INFO_V1(Span_quadtree_picksplit);
  * It splits a list of span types into quadrants by choosing a central 4D
  * point as the median of the coordinates of the span types.
  */
-PGDLLEXPORT Datum
+Datum
 Span_quadtree_picksplit(PG_FUNCTION_ARGS)
 {
   spgPickSplitIn *in = (spgPickSplitIn *) PG_GETARG_POINTER(0);
@@ -669,11 +676,12 @@ Span_quadtree_picksplit(PG_FUNCTION_ARGS)
  * K-d tree pick-split function
  *****************************************************************************/
 
+PGDLLEXPORT Datum Span_kdtree_picksplit(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_kdtree_picksplit);
 /**
  * @brief K-d tree pick-split function for span types
  */
-PGDLLEXPORT Datum
+Datum
 Span_kdtree_picksplit(PG_FUNCTION_ARGS)
 {
   spgPickSplitIn *in = (spgPickSplitIn *) PG_GETARG_POINTER(0);
@@ -914,21 +922,23 @@ Span_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
   PG_RETURN_VOID();
 }
 
+PGDLLEXPORT Datum Span_quadtree_inner_consistent(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_quadtree_inner_consistent);
 /**
  * @brief Quad-tree inner consistent function for span types
  */
-PGDLLEXPORT Datum
+Datum
 Span_quadtree_inner_consistent(PG_FUNCTION_ARGS)
 {
   return Span_spgist_inner_consistent(fcinfo, SPGIST_QUADTREE);
 }
 
+PGDLLEXPORT Datum Span_kdtree_inner_consistent(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_kdtree_inner_consistent);
 /**
  * @brief K-d tree inner consistent function for span types
  */
-PGDLLEXPORT Datum
+Datum
 Span_kdtree_inner_consistent(PG_FUNCTION_ARGS)
 {
   return Span_spgist_inner_consistent(fcinfo, SPGIST_KDTREE);
@@ -938,11 +948,12 @@ Span_kdtree_inner_consistent(PG_FUNCTION_ARGS)
  * SP-GiST leaf-level consistency function
  *****************************************************************************/
 
+PGDLLEXPORT Datum Span_spgist_leaf_consistent(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_spgist_leaf_consistent);
 /**
  * @brief SP-GiST leaf-level consistency function for span types
  */
-PGDLLEXPORT Datum
+Datum
 Span_spgist_leaf_consistent(PG_FUNCTION_ARGS)
 {
   spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
@@ -1001,11 +1012,12 @@ Span_spgist_leaf_consistent(PG_FUNCTION_ARGS)
  * SP-GiST compress functions
  *****************************************************************************/
 
+PGDLLEXPORT Datum Set_spgist_compress(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_spgist_compress);
 /**
  * @brief SP-GiST compress function for timestamp sets
  */
-PGDLLEXPORT Datum
+Datum
 Set_spgist_compress(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
@@ -1014,11 +1026,12 @@ Set_spgist_compress(PG_FUNCTION_ARGS)
   PG_RETURN_SPAN_P(result);
 }
 
+PGDLLEXPORT Datum Spanset_spgist_compress(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_spgist_compress);
 /**
  * @brief SP-GiST compress function for period sets
  */
-PGDLLEXPORT Datum
+Datum
 Spanset_spgist_compress(PG_FUNCTION_ARGS)
 {
   Datum psdatum = PG_GETARG_DATUM(0);

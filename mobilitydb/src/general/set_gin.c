@@ -54,6 +54,7 @@
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Set_gin_extract_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_gin_extract_value);
 /**
  * @brief extractValue support function
@@ -71,6 +72,7 @@ Set_gin_extract_value(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(elems);
 }
 
+PGDLLEXPORT Datum Set_gin_extract_query(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_gin_extract_query);
 /**
  * @brief extractQuery support function
@@ -110,6 +112,7 @@ Set_gin_extract_query(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(elems);
 }
 
+PGDLLEXPORT Datum Set_gin_triconsistent(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_gin_triconsistent);
 /**
  * @brief triconsistent support function

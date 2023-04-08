@@ -52,6 +52,7 @@
  * Aggregate functions for set types
  *****************************************************************************/
 
+PGDLLEXPORT Datum Value_union_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Value_union_transfn);
 /*
  * @brief Transition function for aggregating spans
@@ -59,7 +60,7 @@ PG_FUNCTION_INFO_V1(Value_union_transfn);
  * All we do here is gather the input spans into an array
  * so that the finalfn can sort and combine them.
  */
-PGDLLEXPORT Datum
+Datum
 Value_union_transfn(PG_FUNCTION_ARGS)
 {
   MemoryContext aggContext;
@@ -82,6 +83,7 @@ Value_union_transfn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(state);
 }
 
+PGDLLEXPORT Datum Set_union_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_union_transfn);
 /*
  * @brief Transition function for aggregating spans
@@ -89,7 +91,7 @@ PG_FUNCTION_INFO_V1(Set_union_transfn);
  * All we do here is gather the input span sets' spans into an array so
  * that the finalfn can sort and combine them.
  */
-PGDLLEXPORT Datum
+Datum
 Set_union_transfn(PG_FUNCTION_ARGS)
 {
   MemoryContext aggContext;
@@ -120,12 +122,13 @@ Set_union_transfn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(state);
 }
 
+PGDLLEXPORT Datum Set_union_finalfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_union_finalfn);
 /*
  * @brief use our internal array to merge overlapping/touching spans.
  * @note Shared by Span_union_finalfn() and Spanset_union_finalfn().
  */
-PGDLLEXPORT Datum
+Datum
 Set_union_finalfn(PG_FUNCTION_ARGS)
 {
   MemoryContext aggContext;

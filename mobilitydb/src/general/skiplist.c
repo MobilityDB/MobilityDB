@@ -132,11 +132,12 @@ aggstate_read(StringInfo buf)
   return result;
 }
 
+Datum Tagg_serialize(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tagg_serialize);
 /**
  * @brief Serialize the state value
  */
-PGDLLEXPORT Datum
+Datum
 Tagg_serialize(PG_FUNCTION_ARGS)
 {
   SkipList *state = (SkipList *) PG_GETARG_POINTER(0);
@@ -146,11 +147,12 @@ Tagg_serialize(PG_FUNCTION_ARGS)
   PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
 }
 
+Datum Tagg_deserialize(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tagg_deserialize);
 /**
  * @brief Deserialize the state value
  */
-PGDLLEXPORT Datum
+Datum
 Tagg_deserialize(PG_FUNCTION_ARGS)
 {
   bytea *data = PG_GETARG_BYTEA_P(0);

@@ -194,11 +194,12 @@ span_gist_get_span(FunctionCallInfo fcinfo, Span *result, Oid typid)
   return true;
 }
 
+PGDLLEXPORT Datum Span_gist_consistent(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_gist_consistent);
 /**
  * @brief GiST consistent method for span types
  */
-PGDLLEXPORT Datum
+Datum
 Span_gist_consistent(PG_FUNCTION_ARGS)
 {
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
@@ -231,11 +232,12 @@ Span_gist_consistent(PG_FUNCTION_ARGS)
  * GiST union method
  *****************************************************************************/
 
+PGDLLEXPORT Datum Span_gist_union(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_gist_union);
 /**
  * @brief GiST union method for span types
  */
-PGDLLEXPORT Datum
+Datum
 Span_gist_union(PG_FUNCTION_ARGS)
 {
   GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
@@ -250,11 +252,12 @@ Span_gist_union(PG_FUNCTION_ARGS)
  * GiST compress methods
  *****************************************************************************/
 
+PGDLLEXPORT Datum Set_gist_compress(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_gist_compress);
 /**
  * @brief GiST compress method for timestamp sets
  */
-PGDLLEXPORT Datum
+Datum
 Set_gist_compress(PG_FUNCTION_ARGS)
 {
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
@@ -270,11 +273,12 @@ Set_gist_compress(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(entry);
 }
 
+PGDLLEXPORT Datum Spanset_gist_compress(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_gist_compress);
 /**
  * @brief GiST compress method for span sets
  */
-PGDLLEXPORT Datum
+Datum
 Spanset_gist_compress(PG_FUNCTION_ARGS)
 {
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
@@ -294,6 +298,7 @@ Spanset_gist_compress(PG_FUNCTION_ARGS)
  * GiST penalty method for span types
  *****************************************************************************/
 
+PGDLLEXPORT Datum Span_gist_penalty(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_gist_penalty);
 /**
  * @brief GiST page split penalty function for spans.
@@ -304,7 +309,7 @@ PG_FUNCTION_INFO_V1(Span_gist_penalty);
  *   predicate
  * - Favor adding spans to narrower original predicates
  */
-PGDLLEXPORT Datum
+Datum
 Span_gist_penalty(PG_FUNCTION_ARGS)
 {
   GISTENTRY *origentry = (GISTENTRY *) PG_GETARG_POINTER(0);
@@ -830,6 +835,7 @@ span_gist_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
  * GiST picksplit method
  *****************************************************************************/
 
+PGDLLEXPORT Datum Span_gist_picksplit(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_gist_picksplit);
 /**
  * @brief GiST picksplit method for span types
@@ -837,7 +843,7 @@ PG_FUNCTION_INFO_V1(Span_gist_picksplit);
  * It splits a list of spans into quadrants by choosing a central 4D
  * point as the median of the coordinates of the spans.
  */
-PGDLLEXPORT Datum
+Datum
 Span_gist_picksplit(PG_FUNCTION_ARGS)
 {
   GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
@@ -859,11 +865,12 @@ Span_gist_picksplit(PG_FUNCTION_ARGS)
  * GiST same method
  *****************************************************************************/
 
+PGDLLEXPORT Datum Span_gist_same(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_gist_same);
 /**
  * @brief GiST same method for span types
  */
-PGDLLEXPORT Datum
+Datum
 Span_gist_same(PG_FUNCTION_ARGS)
 {
   Span *s1 = PG_GETARG_SPAN_P(0);
@@ -877,12 +884,13 @@ Span_gist_same(PG_FUNCTION_ARGS)
  * GiST distance method
  *****************************************************************************/
 
+PGDLLEXPORT Datum Span_gist_distance(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_gist_distance);
 /**
  * @brief GiST support function. Take in a query and an entry and return the
  * "distance" between them.
 */
-PGDLLEXPORT Datum
+Datum
 Span_gist_distance(PG_FUNCTION_ARGS)
 {
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
@@ -914,11 +922,12 @@ Span_gist_distance(PG_FUNCTION_ARGS)
  * GiST fetch method
  *****************************************************************************/
 
+PGDLLEXPORT Datum Span_gist_fetch(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_gist_fetch);
 /**
  * @brief GiST fetch method for span types (result in a span)
  */
-PGDLLEXPORT Datum
+Datum
 Span_gist_fetch(PG_FUNCTION_ARGS)
 {
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);

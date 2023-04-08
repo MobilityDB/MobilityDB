@@ -94,11 +94,12 @@ Temporal_tagg_combinefn(FunctionCallInfo fcinfo, datum_func2 func,
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Temporal_tagg_finalfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_tagg_finalfn);
 /**
  * @brief Generic final function for temporal aggregation
  */
-PGDLLEXPORT Datum
+Datum
 Temporal_tagg_finalfn(PG_FUNCTION_ARGS)
 {
   MemoryContext ctx = set_aggregation_context(fcinfo);
@@ -138,11 +139,12 @@ Temporal_tagg_transform_transfn(FunctionCallInfo fcinfo, datum_func2 func,
  * Temporal count
  *****************************************************************************/
 
+PGDLLEXPORT Datum Temporal_tcount_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_tcount_transfn);
 /**
  * @brief Generic transition function for temporal aggregation
  */
-PGDLLEXPORT Datum
+Datum
 Temporal_tcount_transfn(PG_FUNCTION_ARGS)
 {
   SkipList *state;
@@ -154,11 +156,12 @@ Temporal_tcount_transfn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(state);
 }
 
+PGDLLEXPORT Datum Temporal_tcount_combinefn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_tcount_combinefn);
 /**
  * @brief Combine function for temporal count aggregation
  */
-PGDLLEXPORT Datum
+Datum
 Temporal_tcount_combinefn(PG_FUNCTION_ARGS)
 {
   return Temporal_tagg_combinefn(fcinfo, &datum_sum_int32, false);
@@ -168,12 +171,13 @@ Temporal_tcount_combinefn(PG_FUNCTION_ARGS)
  * Temporal extent
  *****************************************************************************/
 
+PGDLLEXPORT Datum Temporal_extent_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_extent_transfn);
 /**
  * @brief Transition function for temporal extent aggregation of temporal
  * values with period bounding box
  */
-PGDLLEXPORT Datum
+Datum
 Temporal_extent_transfn(PG_FUNCTION_ARGS)
 {
   Span *p = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
@@ -187,12 +191,13 @@ Temporal_extent_transfn(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Tnumber_extent_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_extent_transfn);
 /**
  * @brief Transition function for temporal extent aggregation for temporal
  * numbers
  */
-PGDLLEXPORT Datum
+Datum
 Tnumber_extent_transfn(PG_FUNCTION_ARGS)
 {
   TBox *box = PG_ARGISNULL(0) ? NULL : PG_GETARG_TBOX_P(0);
@@ -208,45 +213,49 @@ Tnumber_extent_transfn(PG_FUNCTION_ARGS)
  * Temporal boolean functions
  *****************************************************************************/
 
+PGDLLEXPORT Datum Tbool_tand_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbool_tand_transfn);
 /**
  * @brief Transition function for temporal and aggregation of temporal boolean
  * values
  */
-PGDLLEXPORT Datum
+Datum
 Tbool_tand_transfn(PG_FUNCTION_ARGS)
 {
   return Temporal_tagg_transfn(fcinfo, &datum_and, CROSSINGS_NO);
 }
 
+PGDLLEXPORT Datum Tbool_tand_combinefn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbool_tand_combinefn);
 /**
  * @brief Combine function for temporal and aggregation of temporal boolean
  * values
  */
-PGDLLEXPORT Datum
+Datum
 Tbool_tand_combinefn(PG_FUNCTION_ARGS)
 {
   return Temporal_tagg_combinefn(fcinfo, &datum_and, CROSSINGS_NO);
 }
 
+PGDLLEXPORT Datum Tbool_tor_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbool_tor_transfn);
 /**
  * @brief Transition function for temporal or aggregation of temporal boolean
  * values
  */
-PGDLLEXPORT Datum
+Datum
 Tbool_tor_transfn(PG_FUNCTION_ARGS)
 {
   return Temporal_tagg_transfn(fcinfo, &datum_or, CROSSINGS_NO);
 }
 
+PGDLLEXPORT Datum Tbool_tor_combinefn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbool_tor_combinefn);
 /**
  * @brief Combine function for temporal or aggregation of temporal boolean
  * values
  */
-PGDLLEXPORT Datum
+Datum
 Tbool_tor_combinefn(PG_FUNCTION_ARGS)
 {
   return Temporal_tagg_combinefn(fcinfo, &datum_or, CROSSINGS_NO);
@@ -254,132 +263,144 @@ Tbool_tor_combinefn(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Tint_tmin_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tint_tmin_transfn);
 /**
  * @brief Transition function for temporal minimum aggregation of temporal
  * integer values
  */
-PGDLLEXPORT Datum
+Datum
 Tint_tmin_transfn(PG_FUNCTION_ARGS)
 {
   return Temporal_tagg_transfn(fcinfo, &datum_min_int32, CROSSINGS_NO);
 }
 
+PGDLLEXPORT Datum Tint_tmin_combinefn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tint_tmin_combinefn);
 /**
  * @brief Combine function for temporal minimum aggregation of temporal
  * integer values
  */
-PGDLLEXPORT Datum
+Datum
 Tint_tmin_combinefn(PG_FUNCTION_ARGS)
 {
   return Temporal_tagg_combinefn(fcinfo, &datum_min_int32, CROSSINGS_NO);
 }
 
+PGDLLEXPORT Datum Tfloat_tmin_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tfloat_tmin_transfn);
 /**
  * @brief Transition function for temporal minimum aggregation of temporal
  * float values
  */
-PGDLLEXPORT Datum
+Datum
 Tfloat_tmin_transfn(PG_FUNCTION_ARGS)
 {
   return Temporal_tagg_transfn(fcinfo, &datum_min_float8, CROSSINGS);
 }
 
+PGDLLEXPORT Datum Tfloat_tmin_combinefn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tfloat_tmin_combinefn);
 /**
  * @brief Combine function for temporal minimum aggregation of temporal float
  * values
  */
-PGDLLEXPORT Datum
+Datum
 Tfloat_tmin_combinefn(PG_FUNCTION_ARGS)
 {
   return Temporal_tagg_combinefn(fcinfo, &datum_min_float8, CROSSINGS);
 }
 
+PGDLLEXPORT Datum Tint_tmax_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tint_tmax_transfn);
 /**
  * @brief Transition function for temporal maximum aggregation of temporal
  * integer values
  */
-PGDLLEXPORT Datum
+Datum
 Tint_tmax_transfn(PG_FUNCTION_ARGS)
 {
   return Temporal_tagg_transfn(fcinfo, &datum_max_int32, CROSSINGS_NO);
 }
 
+PGDLLEXPORT Datum Tint_tmax_combinefn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tint_tmax_combinefn);
 /**
  * @brief Combine function for temporal maximum aggregation of temporal integer
  * values
  */
-PGDLLEXPORT Datum
+Datum
 Tint_tmax_combinefn(PG_FUNCTION_ARGS)
 {
   return Temporal_tagg_combinefn(fcinfo, &datum_max_int32, CROSSINGS_NO);
 }
 
+PGDLLEXPORT Datum Tfloat_tmax_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tfloat_tmax_transfn);
 /**
  * @brief Transition function for temporal maximum aggregation of temporal
  * float values
  */
-PGDLLEXPORT Datum
+Datum
 Tfloat_tmax_transfn(PG_FUNCTION_ARGS)
 {
   return Temporal_tagg_transfn(fcinfo, &datum_max_float8, CROSSINGS);
 }
 
+PGDLLEXPORT Datum Tfloat_tmax_combinefn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tfloat_tmax_combinefn);
 /**
  * @brief Combine function for temporal maximum aggregation of temporal float
  * values
  */
-PGDLLEXPORT Datum
+Datum
 Tfloat_tmax_combinefn(PG_FUNCTION_ARGS)
 {
   return Temporal_tagg_combinefn(fcinfo, &datum_max_float8, CROSSINGS);
 }
 
+PGDLLEXPORT Datum Tint_tsum_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tint_tsum_transfn);
 /**
  * @brief Transition function for temporal sum aggregation of temporal integer
  * values
  */
-PGDLLEXPORT Datum
+Datum
 Tint_tsum_transfn(PG_FUNCTION_ARGS)
 {
   return Temporal_tagg_transfn(fcinfo, &datum_sum_int32, CROSSINGS_NO);
 }
 
+PGDLLEXPORT Datum Tint_tsum_combinefn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tint_tsum_combinefn);
 /**
  * @brief Combine function for temporal sum aggregation of temporal integer
  * values
  */
-PGDLLEXPORT Datum
+Datum
 Tint_tsum_combinefn(PG_FUNCTION_ARGS)
 {
   return Temporal_tagg_combinefn(fcinfo, &datum_sum_int32, CROSSINGS_NO);
 }
 
+PGDLLEXPORT Datum Tfloat_tsum_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tfloat_tsum_transfn);
 /**
  * @brief Transition function for temporal sum aggregation of temporal float
  * values
  */
-PGDLLEXPORT Datum
+Datum
 Tfloat_tsum_transfn(PG_FUNCTION_ARGS)
 {
   return Temporal_tagg_transfn(fcinfo, &datum_sum_float8, CROSSINGS_NO);
 }
 
+PGDLLEXPORT Datum Tfloat_tsum_combinefn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tfloat_tsum_combinefn);
 /**
  * @brief Combine function for temporal sum aggregation of temporal float values
  */
-PGDLLEXPORT Datum
+Datum
 Tfloat_tsum_combinefn(PG_FUNCTION_ARGS)
 {
   return Temporal_tagg_combinefn(fcinfo, &datum_sum_float8, CROSSINGS_NO);
@@ -387,45 +408,49 @@ Tfloat_tsum_combinefn(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Ttext_tmin_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Ttext_tmin_transfn);
 /**
  * @brief Transition function for temporal minimum aggregation of temporal text
  * values
  */
-PGDLLEXPORT Datum
+Datum
 Ttext_tmin_transfn(PG_FUNCTION_ARGS)
 {
   return Temporal_tagg_transfn(fcinfo, &datum_min_text, CROSSINGS_NO);
 }
 
+PGDLLEXPORT Datum Ttext_tmin_combinefn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Ttext_tmin_combinefn);
 /**
  * @brief Combine function for temporal minimum aggregation of temporal text
  * values
  */
-PGDLLEXPORT Datum
+Datum
 Ttext_tmin_combinefn(PG_FUNCTION_ARGS)
 {
   return Temporal_tagg_combinefn(fcinfo, &datum_min_text, CROSSINGS_NO);
 }
 
+PGDLLEXPORT Datum Ttext_tmax_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Ttext_tmax_transfn);
 /**
  * @brief Transition function for temporal maximum aggregation of temporal text
  * values
  */
-PGDLLEXPORT Datum
+Datum
 Ttext_tmax_transfn(PG_FUNCTION_ARGS)
 {
   return Temporal_tagg_transfn(fcinfo, &datum_max_text, CROSSINGS_NO);
 }
 
+PGDLLEXPORT Datum Ttext_tmax_combinefn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Ttext_tmax_combinefn);
 /**
  * @brief Combine function for temporal maximum aggregation of temporal text
  * values
  */
-PGDLLEXPORT Datum
+Datum
 Ttext_tmax_combinefn(PG_FUNCTION_ARGS)
 {
   return Temporal_tagg_combinefn(fcinfo, &datum_max_text, CROSSINGS_NO);
@@ -435,32 +460,35 @@ Ttext_tmax_combinefn(PG_FUNCTION_ARGS)
  * Temporal average
  *****************************************************************************/
 
+PGDLLEXPORT Datum Tnumber_tavg_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_tavg_transfn);
 /**
  * @brief Transition function for temporal average aggregation
  */
-PGDLLEXPORT Datum
+Datum
 Tnumber_tavg_transfn(PG_FUNCTION_ARGS)
 {
   return Temporal_tagg_transform_transfn(fcinfo, &datum_sum_double2,
     CROSSINGS_NO, &tnumberinst_transform_tavg);
 }
 
+PGDLLEXPORT Datum Tnumber_tavg_combinefn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_tavg_combinefn);
 /**
  * @brief Combine function for temporal average aggregation
  */
-PGDLLEXPORT Datum
+Datum
 Tnumber_tavg_combinefn(PG_FUNCTION_ARGS)
 {
   return Temporal_tagg_combinefn(fcinfo, &datum_sum_double2, false);
 }
 
+PGDLLEXPORT Datum Tnumber_tavg_finalfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_tavg_finalfn);
 /**
  * @brief Final function for temporal average aggregation
  */
-PGDLLEXPORT Datum
+Datum
 Tnumber_tavg_finalfn(PG_FUNCTION_ARGS)
 {
   SkipList *state = (SkipList *) PG_GETARG_POINTER(0);
@@ -472,21 +500,23 @@ Tnumber_tavg_finalfn(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Temporal_merge_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_merge_transfn);
 /**
  * @brief Transition function for union aggregate of periods
  */
-PGDLLEXPORT Datum
+Datum
 Temporal_merge_transfn(PG_FUNCTION_ARGS)
 {
   return Temporal_tagg_transfn(fcinfo, NULL, CROSSINGS_NO);
 }
 
+PGDLLEXPORT Datum Temporal_merge_combinefn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_merge_combinefn);
 /**
  * @brief Combine function for union aggregate of time types
  */
-PGDLLEXPORT Datum
+Datum
 Temporal_merge_combinefn(PG_FUNCTION_ARGS)
 {
   return Temporal_tagg_combinefn(fcinfo, NULL, CROSSINGS_NO);
@@ -529,11 +559,12 @@ temporal_app_tinst_transfn(Temporal *state, const TInstant *inst,
  * @brief Transition function for append temporal instant aggregate
  */
 // TODO generalize for discrete interpolation
+PGDLLEXPORT Datum Temporal_app_tinst_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_app_tinst_transfn);
 /**
  * @brief Transition function for append temporal instant aggregate
  */
-PGDLLEXPORT Datum
+Datum
 Temporal_app_tinst_transfn(PG_FUNCTION_ARGS)
 {
   MemoryContext ctx = set_aggregation_context(fcinfo);
@@ -572,11 +603,12 @@ Temporal_app_tinst_transfn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(state);
 }
 
+PGDLLEXPORT Datum Temporal_append_finalfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_append_finalfn);
 /**
  * @brief Combine function for append temporal instant/sequence aggregate
  */
-PGDLLEXPORT Datum
+Datum
 Temporal_append_finalfn(PG_FUNCTION_ARGS)
 {
   MemoryContext ctx = set_aggregation_context(fcinfo);
@@ -617,11 +649,12 @@ temporal_app_tseq_transfn(Temporal *state, const TSequence *seq)
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Temporal_app_tseq_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_app_tseq_transfn);
 /**
  * @brief Transition function for append temporal sequence aggregate
  */
-PGDLLEXPORT Datum
+Datum
 Temporal_app_tseq_transfn(PG_FUNCTION_ARGS)
 {
   MemoryContext ctx = set_aggregation_context(fcinfo);

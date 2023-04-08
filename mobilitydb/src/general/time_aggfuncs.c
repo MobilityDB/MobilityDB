@@ -45,11 +45,12 @@
  * Aggregate transition functions for time types
  *****************************************************************************/
 
+PGDLLEXPORT Datum Timestamp_tcount_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Timestamp_tcount_transfn);
 /**
  * @brief Transition function for temporal count aggregate of timestamps
  */
-PGDLLEXPORT Datum
+Datum
 Timestamp_tcount_transfn(PG_FUNCTION_ARGS)
 {
   SkipList *state;
@@ -60,11 +61,12 @@ Timestamp_tcount_transfn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(state);
 }
 
+PGDLLEXPORT Datum Tstzset_tcount_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzset_tcount_transfn);
 /**
  * @brief Transition function for temporal count aggregate of timestamp sets
  */
-PGDLLEXPORT Datum
+Datum
 Tstzset_tcount_transfn(PG_FUNCTION_ARGS)
 {
   SkipList *state;
@@ -76,11 +78,12 @@ Tstzset_tcount_transfn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(state);
 }
 
+PGDLLEXPORT Datum Period_tcount_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Period_tcount_transfn);
 /**
  * @brief Transition function for temporal count aggregate of periods
  */
-PGDLLEXPORT Datum
+Datum
 Period_tcount_transfn(PG_FUNCTION_ARGS)
 {
   SkipList *state;
@@ -91,11 +94,12 @@ Period_tcount_transfn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(state);
 }
 
+PGDLLEXPORT Datum Periodset_tcount_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Periodset_tcount_transfn);
 /**
  * @brief Transition function for temporal count aggregate of period sets
  */
-PGDLLEXPORT Datum
+Datum
 Periodset_tcount_transfn(PG_FUNCTION_ARGS)
 {
   SkipList *state;
