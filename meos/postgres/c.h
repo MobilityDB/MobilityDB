@@ -1328,15 +1328,6 @@ extern unsigned long long strtoull(const char *str, char **endptr, int base);
 #endif
 
 /*
- * Under MSVC, functions exported by a loadable module must be marked
- * "dllexport".  Other compilers don't need that.
- * Taken from the file win32.h
- */
-#ifdef _MSC_VER
-#define PGDLLEXPORT __declspec (dllexport)
-#endif
-
-/*
  * The following is used as the arg list for signal handlers.  Any ports
  * that take something other than an int argument should override this in
  * their pg_config_os.h file.  Note that variable names are required

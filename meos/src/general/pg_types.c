@@ -1163,23 +1163,20 @@ static inline INT128
 interval_cmp_value(const Interval *interval)
 {
   INT128 span;
-  int64 dayfraction;
   int64 days;
 
   /*
-   * Separate time field into days and dayfraction, then add the month and
-   * day fields to the days part.  We cannot overflow int64 days here.
+   * Combine the month and day fields into an integral number of days.
+   * Because the inputs are int32, int64 arithmetic suffices here.
    */
-  dayfraction = interval->time % USECS_PER_DAY;
-  days = interval->time / USECS_PER_DAY;
-  days += interval->month * INT64CONST(30);
+  days = interval->month * INT64CONST(30);
   days += interval->day;
 
-  /* Widen dayfraction to 128 bits */
-  span = (INT128) dayfraction;
+  /* Widen time field to 128 bits */
+  span = int64_to_int128(interval->time);
 
   /* Scale up days to microseconds, forming a 128-bit product */
-  span += (INT128) days * (INT128) USECS_PER_DAY;
+  int128_add_int64_mul_int64(&span, days, USECS_PER_DAY);
 
   return span;
 }

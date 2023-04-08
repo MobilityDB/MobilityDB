@@ -1146,8 +1146,8 @@ Span
 span_from_wkb_state(wkb_parse_state *s)
 {
   /* Read the span type */
-  uint16_t wkb_spantype = (uint16_t) int16_from_wkb_state(s);
-  s->spantype = wkb_spantype;
+  uint16_t wkb_spantype = int16_from_wkb_state(s);
+  s->spantype = (uint8_t) wkb_spantype;
   s->basetype = spantype_basetype(wkb_spantype);
   Span result;
   span_from_wkb_state1(s, &result);
@@ -1163,9 +1163,9 @@ static SpanSet *
 spanset_from_wkb_state(wkb_parse_state *s)
 {
   /* Read the span type */
-  uint16_t wkb_spansettype = (uint16_t) int16_from_wkb_state(s);
+  uint16_t wkb_spansettype = int16_from_wkb_state(s);
   /* For template classes it is necessary to store the specific type */
-  s->type = wkb_spansettype;
+  s->type = (uint8_t) wkb_spansettype;
   s->spantype = spansettype_spantype(s->type);
   s->basetype = spantype_basetype(s->spantype);
 
@@ -1212,9 +1212,9 @@ static Set *
 set_from_wkb_state(wkb_parse_state *s)
 {
   /* Read the set type */
-  uint16_t wkb_settype = (uint16_t) int16_from_wkb_state(s);
+  uint16_t wkb_settype = int16_from_wkb_state(s);
   /* For template classes it is necessary to store the specific type */
-  s->type = wkb_settype;
+  s->type = (uint8_t) wkb_settype;
   s->basetype = settype_basetype(s->type);
   /* Read the set flags */
   uint8_t wkb_flags = (uint8_t) byte_from_wkb_state(s);
@@ -1489,8 +1489,8 @@ static Temporal *
 temporal_from_wkb_state(wkb_parse_state *s)
 {
   /* Read the temporal type */
-  uint16_t wkb_temptype = (uint16_t) int16_from_wkb_state(s);
-  s->temptype = wkb_temptype;
+  uint16_t wkb_temptype = int16_from_wkb_state(s);
+  s->temptype = (uint8_t) wkb_temptype;
   s->basetype = temptype_basetype(s->temptype);
 
   /* Read the temporal and interpolation flags */
