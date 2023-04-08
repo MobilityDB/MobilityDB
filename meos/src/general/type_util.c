@@ -176,6 +176,7 @@ datum_cmp2(Datum l, Datum r, meosType typel, meosType typer)
     return npoint_cmp(DatumGetNpointP(l), DatumGetNpointP(r));
 #endif
   elog(ERROR, "unknown compare function for base type: %d", typel);
+  return 0; /* make compiler quiet */
 }
 
 /**
@@ -216,6 +217,7 @@ datum_eq2(Datum l, Datum r, meosType typel, meosType typer)
     return npoint_eq(DatumGetNpointP(l), DatumGetNpointP(r));
 #endif
   elog(ERROR, "unknown datum_eq2 function for base type: %d", typel);
+  return false; /* make compiler quiet */
 }
 
 /**
@@ -503,8 +505,8 @@ datum_hash(Datum d, meosType type)
   else if (type == T_NPOINT)
     return npoint_hash(DatumGetNpointP(d));
 #endif
-  else
-    elog(ERROR, "unknown hash function for base type: %d", type);
+  elog(ERROR, "unknown hash function for base type: %d", type);
+  return (uint32) 0; /* make compiler quiet */
 }
 
 /**
@@ -534,8 +536,8 @@ datum_hash_extended(Datum d, meosType type, uint64 seed)
   else if (type == T_NPOINT)
     return npoint_hash_extended(DatumGetNpointP(d), seed);
 #endif
-  else
-    elog(ERROR, "unknown extended hash function for base type: %d", type);
+  elog(ERROR, "unknown extended hash function for base type: %d", type);
+  return (uint64) 0; /* make compiler quiet */
 }
 
 /*****************************************************************************
@@ -1081,7 +1083,7 @@ basetype_in(const char *str, meosType basetype, bool end __attribute__((unused))
 #endif
     default: /* Error! */
       elog(ERROR, "Unknown base type: %d", basetype);
-      break;
+      return Int32GetDatum(0); /* make compiler quiet */
   }
 }
 
@@ -1130,7 +1132,7 @@ basetype_out(Datum value, meosType basetype, int maxdd)
 #endif
     default: /* Error! */
       elog(ERROR, "Unknown base type: %d", basetype);
-      break;
+      return NULL; /* make compiler quiet */
   }
 }
 

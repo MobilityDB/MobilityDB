@@ -364,6 +364,7 @@ set_bbox_size(meosType settype)
   if (spatialset_type(settype))
     return sizeof(STBox);
   elog(ERROR, "unknown set_bbox_size function for set type: %d", settype);
+  return 0; /* make compiler quiet */
 }
 
 /**

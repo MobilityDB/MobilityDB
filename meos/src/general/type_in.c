@@ -129,7 +129,7 @@ parse_mfjson_coord(json_object *poObj, int srid, bool geodetic)
   if (json_type_array != json_object_get_type(poObj))
     elog(ERROR, "Invalid value of the 'coordinates' array in MFJSON string");
 
-  int numcoord = json_object_array_length(poObj);
+  int numcoord = (int) json_object_array_length(poObj);
   if (numcoord < 2)
     elog(ERROR, "Too few elements in 'coordinates' values in MFJSON string");
   if (numcoord > 3)
@@ -179,7 +179,7 @@ parse_mfjson_values(json_object *mfjson, meosType temptype, int *count)
   if (json_object_get_type(jvalues) != json_type_array)
     elog(ERROR, "Invalid 'values' array in MFJSON string");
 
-  int numvalues = json_object_array_length(jvalues);
+  int numvalues = (int) json_object_array_length(jvalues);
   if (numvalues < 1)
     elog(ERROR, "Invalid value of 'values' array in MFJSON string");
 
@@ -234,7 +234,7 @@ parse_mfjson_points(json_object *mfjson, int srid, bool geodetic,
   if (json_object_get_type(coordinates) != json_type_array)
     elog(ERROR, "Invalid 'coordinates' array in MFJSON string");
 
-  int numpoints = json_object_array_length(coordinates);
+  int numpoints = (int) json_object_array_length(coordinates);
   if (numpoints < 1)
     elog(ERROR, "Invalid value of 'coordinates' array in MFJSON string");
 
@@ -261,7 +261,7 @@ parse_mfjson_datetimes(json_object *mfjson, int *count)
   if (json_object_get_type(datetimes) != json_type_array)
     elog(ERROR, "Invalid 'datetimes' array in MFJSON string");
 
-  int numdates = json_object_array_length(datetimes);
+  int numdates = (int) json_object_array_length(datetimes);
   if (numdates < 1)
     elog(ERROR, "Invalid value of 'datetimes' array in MFJSON string");
 
@@ -588,7 +588,7 @@ tsequenceset_from_mfjson(json_object *mfjson, bool isgeo, int srid,
    * then call this function */
   if (json_object_get_type(seqs) != json_type_array)
     elog(ERROR, "Invalid 'sequences' array in MFJSON string");
-  int numseqs = json_object_array_length(seqs);
+  int numseqs = (int) json_object_array_length(seqs);
   if (numseqs < 1)
     elog(ERROR, "Invalid value of 'sequences' array in MFJSON string");
 

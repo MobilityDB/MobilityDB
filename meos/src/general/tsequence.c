@@ -204,6 +204,7 @@ datum_collinear(Datum value1, Datum value2, Datum value3, meosType basetype,
       DatumGetNpointP(value3), ratio);
 #endif
   elog(ERROR, "unknown collinear operation for base type: %d", basetype);
+  return false; /* make compiler quiet */
 }
 
 /*****************************************************************************
@@ -2588,6 +2589,7 @@ tsegment_value_at_timestamp(const TInstant *inst1, const TInstant *inst2,
 #endif
   elog(ERROR, "unknown interpolation function for continuous temporal type: %d",
     inst1->temptype);
+  return 0; /* make compiler quiet */
 }
 
 /**

@@ -1388,9 +1388,9 @@ distance_value_value(Datum l, Datum r, meosType typel, meosType typer)
     return fabs((double) DatumGetInt32(l) - DatumGetFloat8(r));
   if (typel == T_FLOAT8 && typer == T_INT4)
     return fabs(DatumGetFloat8(l) - (double) DatumGetInt32(r));
-  else
-    elog(ERROR, "Unknown types for distance between values: %d, %d",
-      typel, typer);
+  elog(ERROR, "Unknown types for distance between values: %d, %d",
+    typel, typer);
+  return 0; /* make compiler quiet */
 }
 
 /**

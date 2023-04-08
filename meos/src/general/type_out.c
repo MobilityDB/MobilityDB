@@ -403,6 +403,7 @@ bbox_mfjson_size(meosType temptype, bool hasz, int precision)
       break;
     default: /* Error! */
       elog(ERROR, "Unknown temporal type: %d", temptype);
+      return 0; /* make compiler quiet */
   }
   return size;
 }
@@ -428,6 +429,7 @@ bbox_mfjson_buf(meosType temptype, char *output, const bboxunion *bbox,
       return stbox_mfjson_buf(output, (STBox *) bbox, hasz, precision);
     default: /* Error! */
       elog(ERROR, "Unknown temporal type: %d", temptype);
+      return 0; /* make compiler quiet */
   }
 }
 

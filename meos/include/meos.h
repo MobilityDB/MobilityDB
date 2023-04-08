@@ -43,16 +43,20 @@
 #include <liblwgeom.h>
 
 /*****************************************************************************
- * Toolchain definitions
+ * Toolchain dependent definitions
  *****************************************************************************/
 
+#ifdef _MSC_VER
 /*
  * Under MSVC, functions exported by a loadable module must be marked
  * "dllexport".  Other compilers don't need that.
  * Borrowed from PostgreSQL file win32.h
  */
-#ifdef _MSC_VER
 #define PGDLLEXPORT __declspec (dllexport)
+/*
+ * Avoids warning C4996: 'strdup': The POSIX name for this item is deprecated.
+ */
+#define strdup _strdup
 #endif
 
 /*****************************************************************************
