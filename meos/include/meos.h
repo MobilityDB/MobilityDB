@@ -42,6 +42,18 @@
 /* PostGIS */
 #include <liblwgeom.h>
 
+/*****************************************************************************
+ * Toolchain definitions
+ *****************************************************************************/
+
+/*
+ * Under MSVC, functions exported by a loadable module must be marked
+ * "dllexport".  Other compilers don't need that.
+ * Borrowed from PostgreSQL file win32.h
+ */
+#ifdef _MSC_VER
+#define PGDLLEXPORT __declspec (dllexport)
+#endif
 
 /*****************************************************************************
  * Type definitions

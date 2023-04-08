@@ -38,6 +38,7 @@
 #include <access/stratnum.h>
 #include <access/gist.h>
 /* MEOS */
+#include <meos.h>
 #include "general/meos_catalog.h"
 #include "general/temporal.h"
 /* MobilityDB */

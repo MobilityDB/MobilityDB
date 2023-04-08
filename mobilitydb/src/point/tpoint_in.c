@@ -35,6 +35,7 @@
 #include <postgres.h>
 #include <fmgr.h>
 /* MEOS */
+#include <meos.h>
 #include "general/type_util.h"
 #include "point/tpoint_parser.h"
 /* MobilityDB */

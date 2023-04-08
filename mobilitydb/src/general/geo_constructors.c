@@ -43,6 +43,8 @@
 #include <utils/float.h>
 #include "utils/geo_decls.h"
 #include "utils/lsyscache.h"
+/* MEOS */
+#include <meos.h>
 
 /*****************************************************************************/
 

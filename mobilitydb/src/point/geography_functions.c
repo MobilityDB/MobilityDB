@@ -48,6 +48,8 @@
 #include <liblwgeom_internal.h>
 #include <lwgeom_pg.h>
 #include <lwgeodetic_tree.h>
+/* MEOS */
+#include <meos.h>
 /* MobilityDB */
 #include "point/tpoint_spatialfuncs.h"
 

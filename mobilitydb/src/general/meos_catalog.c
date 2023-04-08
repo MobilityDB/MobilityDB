@@ -64,6 +64,7 @@
 #include <lib/simplehash.h>
 #include <utils/rel.h>
 /* MEOS */
+#include <meos.h>
 #include "general/temporaltypes.h"
 #if NPOINT
   #include "npoint/tnpoint_static.h"

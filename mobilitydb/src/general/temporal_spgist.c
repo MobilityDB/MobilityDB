@@ -39,6 +39,7 @@
 #include <postgres.h>
 #include <access/spgist.h>
 /* MEOS */
+#include <meos.h>
 #include "general/meos_catalog.h"
 #include "general/span.h"
 #include "general/temporal.h"

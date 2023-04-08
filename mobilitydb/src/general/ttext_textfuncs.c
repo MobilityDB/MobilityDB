@@ -35,6 +35,7 @@
 #include <postgres.h>
 #include <fmgr.h>
 /* MEOS */
+#include <meos.h>
 #include "general/temporal.h"
 #include "general/ttext_textfuncs.h"
 #include "general/type_util.h"

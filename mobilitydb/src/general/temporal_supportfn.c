@@ -55,6 +55,7 @@
 #include <utils/numeric.h>
 #include <utils/syscache.h>
 /* MEOS */
+#include <meos.h>
 #include "general/meos_catalog.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
