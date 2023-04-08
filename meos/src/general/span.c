@@ -846,8 +846,8 @@ span_expand(const Span *s1, Span *s2)
  * @param[in,out] lower,upper Bounds of the period
  */
 void
-lower_upper_shift_tscale(TimestampTz *lower, TimestampTz *upper,
-  const Interval *shift, const Interval *duration)
+lower_upper_shift_tscale(const Interval *shift, const Interval *duration,
+  TimestampTz *lower, TimestampTz *upper)
 {
   assert(shift != NULL || duration != NULL);
   if (duration != NULL)
@@ -895,13 +895,14 @@ period_shift_tscale(Span *p, const Interval *shift, const Interval *duration,
 {
   TimestampTz lower = DatumGetTimestampTz(p->lower);
   TimestampTz upper = DatumGetTimestampTz(p->upper);
-  lower_upper_shift_tscale(&lower, &upper, shift, duration);
+  lower_upper_shift_tscale(shift, duration, &lower, &upper);
   /* Compute delta and scale before overwriting p.lower and p.upper */
   if (delta != NULL && shift != NULL)
-    *delta = lower - p->lower;
+    *delta = lower - DatumGetTimestampTz(p->lower);
   /* If the period is instantaneous we cannot scale */
   if (scale != NULL && duration != NULL && p->lower != p->upper)
-    *scale = (double) (upper - lower) / (double) (p->upper - p->lower);
+    *scale = (double) (upper - lower) /
+      (double) (DatumGetTimestampTz(p->upper) - DatumGetTimestampTz(p->lower));
   p->lower = TimestampTzGetDatum(lower);
   p->upper = TimestampTzGetDatum(upper);
   return;

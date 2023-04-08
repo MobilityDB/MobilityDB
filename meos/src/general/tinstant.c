@@ -453,8 +453,9 @@ tinstant_time(const TInstant *inst)
 void
 tinstant_set_period(const TInstant *inst, Span *p)
 {
-  return span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
+  span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
     true, true, T_TIMESTAMPTZ, p);
+  return;
 }
 
 /**

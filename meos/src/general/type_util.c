@@ -876,7 +876,7 @@ pfree_datumarr(Datum *array, int count)
  * @param[in] spaces True when elements should be separated by spaces
  */
 char *
-stringarr_to_string(char **strings, int count, int outlen, char *prefix,
+stringarr_to_string(char **strings, int count, size_t outlen, char *prefix,
   char open, char close, bool quotes, bool spaces)
 {
   int size = strlen(prefix) + outlen + 3;

@@ -465,7 +465,8 @@ span_parse(const char **str, meosType spantype, bool end, Span *span)
 
   if (! span)
     return;
-  return span_set(lower, upper, lower_inc, upper_inc, basetype, span);
+  span_set(lower, upper, lower_inc, upper_inc, basetype, span);
+  return;
 }
 
 /**

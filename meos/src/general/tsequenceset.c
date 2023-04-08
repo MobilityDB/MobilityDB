@@ -845,14 +845,17 @@ tsequenceset_duration(const TSequenceSet *ss, bool boundspan)
 {
   /* Compute the duration of the bounding period */
   if (boundspan)
-    return pg_timestamp_mi(ss->period.upper, ss->period.lower);
+    return pg_timestamp_mi(DatumGetTimestampTz(ss->period.upper),
+      DatumGetTimestampTz(ss->period.lower));
 
   const TSequence *seq = TSEQUENCESET_SEQ_N(ss, 0);
-  Interval *result = pg_timestamp_mi(seq->period.upper, seq->period.lower);
+  Interval *result = pg_timestamp_mi(DatumGetTimestampTz(seq->period.upper),
+    DatumGetTimestampTz(seq->period.lower));
   for (int i = 1; i < ss->count; i++)
   {
     seq = TSEQUENCESET_SEQ_N(ss, i);
-    Interval *interval1 = pg_timestamp_mi(seq->period.upper, seq->period.lower);
+    Interval *interval1 = pg_timestamp_mi(DatumGetTimestampTz(seq->period.upper),
+      DatumGetTimestampTz(seq->period.lower));
     Interval *interval2 = pg_interval_pl(result, interval1);
     pfree(result); pfree(interval1);
     result = interval2;
@@ -1021,7 +1024,7 @@ TimestampTz
 tsequenceset_start_timestamp(const TSequenceSet *ss)
 {
   const TSequence *seq = TSEQUENCESET_SEQ_N(ss, 0);
-  return seq->period.lower;
+  return DatumGetTimestampTz(seq->period.lower);
 }
 
 /**
@@ -1033,7 +1036,7 @@ TimestampTz
 tsequenceset_end_timestamp(const TSequenceSet *ss)
 {
   const TSequence *seq = TSEQUENCESET_SEQ_N(ss, ss->count - 1);
-  return seq->period.upper;
+  return DatumGetTimestampTz(seq->period.upper);
 }
 
 /**
@@ -1492,7 +1495,6 @@ tsequenceset_shift_tscale(const TSequenceSet *ss, const Interval *shift,
   const Interval *duration)
 {
   assert(shift != NULL || duration != NULL);
-  bool instant = (ss->period.lower == ss->period.upper);
 
   /* Copy the input sequence set to the result */
   TSequenceSet *result = tsequenceset_copy(ss);
@@ -1509,16 +1511,24 @@ tsequenceset_shift_tscale(const TSequenceSet *ss, const Interval *shift,
     /* Shift and/or scale the bounding period of the sequence */
     if (shift != NULL)
     {
-      seq->period.lower += delta;
-      seq->period.upper += delta;
+      seq->period.lower =
+        TimestampTzGetDatum(DatumGetTimestampTz(seq->period.lower) + delta);
+      seq->period.upper =
+        TimestampTzGetDatum(DatumGetTimestampTz(seq->period.upper) + delta);
     }
+    /* We do not use DatumGetTimestampTz() for testing equality */
+    bool instant = (seq->period.lower == seq->period.upper);
     /* If the sequence is instantaneous we cannot scale */
     if (duration != NULL && ! instant)
     {
-      seq->period.lower = result->period.lower +
-        (seq->period.lower - result->period.lower) * scale;
-      seq->period.upper = result->period.lower +
-        (seq->period.upper - result->period.lower) * scale;
+      seq->period.lower = TimestampTzGetDatum(
+        DatumGetTimestampTz(result->period.lower) + (TimestampTz)
+        ((DatumGetTimestampTz(seq->period.lower) -
+          DatumGetTimestampTz(result->period.lower)) * scale));
+      seq->period.upper = TimestampTzGetDatum(
+        DatumGetTimestampTz(result->period.lower) + (TimestampTz)
+        ((DatumGetTimestampTz(seq->period.upper) -
+          DatumGetTimestampTz(result->period.lower)) * scale));
     }
     /* Shift and/or scale each composing instant */
     for (int j = 0; j < seq->count; j++)
@@ -1529,7 +1539,8 @@ tsequenceset_shift_tscale(const TSequenceSet *ss, const Interval *shift,
         inst->t += delta;
       /* If the sequence is instantaneous we cannot scale */
       if (duration != NULL && ! instant)
-        inst->t = result->period.lower + (inst->t - result->period.lower) * scale;
+        inst->t = DatumGetTimestampTz(result->period.lower) + (TimestampTz)
+          ((inst->t - DatumGetTimestampTz(result->period.lower)) * scale);
     }
   }
   return result;
@@ -1901,7 +1912,7 @@ tsequenceset_restrict_timestamp(const TSequenceSet *ss, TimestampTz t,
     {
       seq = TSEQUENCESET_SEQ_N(ss, i);
       k += tcontseq_minus_timestamp1(seq, t, &sequences[k]);
-      if (t < (TimestampTz) seq->period.upper)
+      if (t < DatumGetTimestampTz(seq->period.upper))
       {
         i++;
         break;
@@ -1970,9 +1981,9 @@ tsequenceset_restrict_timestampset(const TSequenceSet *ss, const Set *ts,
       }
       else
       {
-        if (t <= (TimestampTz) seq->period.lower)
+        if (t <= DatumGetTimestampTz(seq->period.lower))
           i++;
-        if (t >= (TimestampTz) seq->period.upper)
+        if (t >= DatumGetTimestampTz(seq->period.upper))
           j++;
       }
     }
@@ -2041,7 +2052,7 @@ tsequenceset_restrict_period(const TSequenceSet *ss, const Span *p,
   {
     /* AT */
     int loc;
-    tsequenceset_find_timestamp(ss, p->lower, &loc);
+    tsequenceset_find_timestamp(ss, DatumGetTimestampTz(p->lower), &loc);
     /* We are sure that loc < ss->count due to the bounding period test above */
     TSequence **sequences = palloc(sizeof(TSequence *) * (ss->count - loc));
     TSequence *tofree[2];
@@ -2472,7 +2483,7 @@ synchronize_tsequenceset_tsequence(const TSequenceSet *ss, const TSequence *seq,
     return false;
 
   int loc;
-  tsequenceset_find_timestamp(ss, seq->period.lower, &loc);
+  tsequenceset_find_timestamp(ss, DatumGetTimestampTz(seq->period.lower), &loc);
   /* We are sure that loc < ss->count due to the bounding period test above */
   TSequence **sequences1 = palloc(sizeof(TSequence *) * ss->count - loc);
   TSequence **sequences2 = palloc(sizeof(TSequence *) * ss->count - loc);
@@ -2493,7 +2504,7 @@ synchronize_tsequenceset_tsequence(const TSequenceSet *ss, const TSequence *seq,
     int cmp = timestamptz_cmp_internal(DatumGetTimestampTz(seq->period.upper),
       DatumGetTimestampTz(seq1->period.upper));
     if (cmp < 0 ||
-      (cmp == 0 && (!seq->period.upper_inc || seq1->period.upper_inc)))
+      (cmp == 0 && (! seq->period.upper_inc || seq1->period.upper_inc)))
       break;
   }
   if (k == 0)
@@ -2901,9 +2912,11 @@ tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2)
   {
     seq1 = TSEQUENCESET_SEQ_N(ss1, i);
     seq2 = TSEQUENCESET_SEQ_N(ss2, j);
-    int cmp1 = timestamptz_cmp_internal(sequences[k - 1]->period.upper,
-      seq2->period.lower);
-    int cmp2 = timestamptz_cmp_internal(seq2->period.upper, seq1->period.lower);
+    int cmp1 = timestamptz_cmp_internal(
+      DatumGetTimestampTz(sequences[k - 1]->period.upper),
+      DatumGetTimestampTz(seq2->period.lower));
+    int cmp2 = timestamptz_cmp_internal(DatumGetTimestampTz(seq2->period.upper),
+      DatumGetTimestampTz(seq1->period.lower));
     /* If seq2 is between the last sequence added and seq1 */
     if (cmp1 <= 0 && cmp2 <= 0)
     {
@@ -3200,7 +3213,8 @@ tsequenceset_interval_double(const TSequenceSet *ss)
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    result += (double) (seq->period.upper - seq->period.lower);
+    result += (double) (DatumGetTimestampTz(seq->period.upper) -
+      DatumGetTimestampTz(seq->period.lower));
   }
   return result;
 }

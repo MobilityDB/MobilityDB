@@ -326,6 +326,7 @@ tsequence_join_test(const TSequence *seq1, const TSequence *seq2,
   bool eq_first1_first2 = ! first2 ? false :
     datum_eq(first1value, first2value, basetype);
 
+  /* We do not use DatumGetTimestampTz() for testing equality */
   bool adjacent = seq1->period.upper == seq2->period.lower &&
     (seq1->period.upper_inc || seq2->period.lower_inc);
   /* If they are adjacent and not instantaneous */
@@ -831,7 +832,7 @@ tsequence_make1_exp(const TInstant **instants, int count, int maxcount,
    * the maximum number of instants and the remaining space for adding an
    * additional variable-length instant of arbitrary size */
   if (count != maxcount)
-    insts_size *= (double) maxcount / count;
+    insts_size *= maxcount / count;
   else
     maxcount = newcount;
   /* Total size of the struct */
@@ -845,7 +846,7 @@ tsequence_make1_exp(const TInstant **instants, int count, int maxcount,
   result->maxcount = maxcount;
   result->temptype = instants[0]->temptype;
   result->subtype = TSEQUENCE;
-  result->bboxsize = bboxsize;
+  result->bboxsize = (int16) bboxsize;
   MEOS_FLAGS_SET_CONTINUOUS(result->flags,
     MEOS_FLAGS_GET_CONTINUOUS(norminsts[0]->flags));
   MEOS_FLAGS_SET_INTERP(result->flags, interp);
@@ -1961,8 +1962,8 @@ tcontseq_to_step(const TSequence *seq)
   if (seq->count == 2 && ! datum_eq(tinstant_value(instants[0]),
       tinstant_value(instants[1]), basetype))
     elog(ERROR, "Cannot transform input value to step interpolation");
-  return tsequence_make(instants, 2, seq->period.lower, seq->period.upper,
-    STEP, NORMALIZE_NO);
+  return tsequence_make(instants, 2, seq->period.lower_inc,
+    seq->period.upper_inc, STEP, NORMALIZE_NO);
 }
 
 /**
@@ -2082,6 +2083,7 @@ tsequence_shift_tscale(const TSequence *seq, const Interval *shift,
   const Interval *duration)
 {
   assert(shift != NULL || duration != NULL);
+  /* We do not use DatumGetTimestampTz() for testing equality */
   bool instant = (seq->period.lower == seq->period.upper);
 
   /* Copy the input sequence to the result */
@@ -2094,7 +2096,7 @@ tsequence_shift_tscale(const TSequence *seq, const Interval *shift,
 
   /* Set the first instant */
   TInstant *inst = (TInstant *) TSEQUENCE_INST_N(result, 0);
-  inst->t = result->period.lower;
+  inst->t = DatumGetTimestampTz(result->period.lower);
   if (seq->count > 1)
   {
     /* Shift and/or scale from the second to the penultimate instant */
@@ -2104,12 +2106,12 @@ tsequence_shift_tscale(const TSequence *seq, const Interval *shift,
       if (shift != NULL)
         inst->t += delta;
       if (duration != NULL && ! instant)
-        inst->t = result->period.lower +
-          (inst->t - result->period.lower) * scale;
+        inst->t = DatumGetTimestampTz(result->period.lower) + (TimestampTz)
+          ((inst->t - DatumGetTimestampTz(result->period.lower)) * scale);
     }
     /* Set the last instant */
     inst = (TInstant *) TSEQUENCE_INST_N(result, seq->count - 1);
-    inst->t = result->period.upper;
+    inst->t = DatumGetTimestampTz(result->period.upper);
   }
   return result;
 }
@@ -2395,7 +2397,7 @@ tsequence_segments1(const TSequence *seq, TSequence **result)
       pfree(instants[1]);
     lower_inc = true;
   }
-  if (interp != LINEAR && seq->period.upper)
+  if (interp != LINEAR && seq->period.upper_inc)
   {
     inst1 = (TInstant *) TSEQUENCE_INST_N(seq, seq->count - 1);
     inst2 = (TInstant *) TSEQUENCE_INST_N(seq, seq->count - 2);
@@ -4981,9 +4983,9 @@ tcontseq_minus_timestampset1(const TSequence *seq, const Set *ts,
   instants[0] = (TInstant *) TSEQUENCE_INST_N(seq, 0);
   bool lower_inc = seq->period.lower_inc;
   int i = 1,  /* current instant of the argument sequence */
-    j = 0,  /* current timestamp of the argument timestamp set */
-    k = 0,  /* current number of new sequences */
-    l = 1;  /* number of instants in the currently constructed sequence */
+    j = 0,     /* current timestamp of the argument timestamp set */
+    k = 0,     /* current number of new sequences */
+    l = 1;     /* number of instants in the currently constructed sequence */
   while (i < seq->count && j < ts->count)
   {
     inst = TSEQUENCE_INST_N(seq, i);
@@ -5258,6 +5260,7 @@ tcontseq_at_periodset1(const TSequence *seq, const SpanSet *ps,
 
   /* General case */
   int loc;
+  /* The second argument in the following call should be a Datum */
   spanset_find_value(ps, seq->period.lower, &loc);
   int k = 0;
   for (int i = loc; i < ps->count; i++)
@@ -5266,7 +5269,7 @@ tcontseq_at_periodset1(const TSequence *seq, const SpanSet *ps,
     TSequence *seq1 = tcontseq_at_period(seq, p);
     if (seq1 != NULL)
       result[k++] = seq1;
-    if (datum_lt(seq->period.upper, p->upper, T_TIMESTAMPTZ))
+    if (DatumGetTimestampTz(seq->period.upper) < DatumGetTimestampTz(p->upper))
       break;
   }
   return k;
@@ -5531,9 +5534,9 @@ tcontseq_delete_timestampset(const TSequence *seq, const Set *ts)
   /* General case */
   TInstant **instants = palloc0(sizeof(TInstant *) * seq->count);
   int i = 0,  /* current instant of the argument sequence */
-    j = 0,  /* current timestamp of the argument timestamp set */
-    k = 0,  /* number of instants in the currently constructed sequence */
-    l = 0;  /* number of instants removed */
+    j = 0,     /* current timestamp of the argument timestamp set */
+    k = 0,     /* number of instants in the currently constructed sequence */
+    l = 0;     /* number of instants removed */
   bool lower_inc1 = seq->period.lower_inc;
   bool upper_inc1 = seq->period.upper_inc;
   while (i < seq->count && j < ts->count)
@@ -5748,7 +5751,8 @@ tnumberdiscseq_twavg(const TSequence *seq)
 double
 tnumbercontseq_twavg(const TSequence *seq)
 {
-  double duration = (double) (seq->period.upper - seq->period.lower);
+  double duration = (double) (DatumGetTimestampTz(seq->period.upper) -
+    DatumGetTimestampTz(seq->period.lower));
   double result;
   if (duration == 0.0)
     /* Instantaneous sequence */

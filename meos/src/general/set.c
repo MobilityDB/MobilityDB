@@ -363,8 +363,7 @@ set_bbox_size(meosType settype)
     return 0;
   if (spatialset_type(settype))
     return sizeof(STBox);
-  elog(ERROR, "unknown set_bbox_size function for set type: %d",
-    settype);
+  elog(ERROR, "unknown set_bbox_size function for set type: %d", settype);
 }
 
 /**
@@ -1279,7 +1278,7 @@ tstzset_shift_tscale(const Set *s, const Interval *shift,
   TimestampTz lower, lower1, upper, upper1;
   lower = lower1 = DatumGetTimestampTz(SET_VAL_N(s, 0));
   upper = upper1 = DatumGetTimestampTz(SET_VAL_N(s, s->count - 1));
-  lower_upper_shift_tscale(&lower1, &upper1, shift, duration);
+  lower_upper_shift_tscale(shift, duration, &lower1, &upper1);
   (SET_OFFSETS_PTR(result))[0] = TimestampTzGetDatum(lower1);
   (SET_OFFSETS_PTR(result))[s->count - 1] = TimestampTzGetDatum(upper1);
   if (s->count > 1)

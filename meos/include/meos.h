@@ -63,7 +63,7 @@ typedef struct
   int16 flags;          /**< Flags */
   int32 count;          /**< Number of elements */
   int32 maxcount;       /**< Maximum number of elements */
-  int32 bboxsize;       /**< Size of the bouding box */
+  int16 bboxsize;       /**< Size of the bouding box */
 } Set;
 
 /**

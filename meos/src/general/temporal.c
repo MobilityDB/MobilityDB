@@ -4267,7 +4267,7 @@ temporal_eq(const Temporal *temp1, const Temporal *temp2)
   ss = (TSequenceSet *) temp2;
   if (MEOS_FLAGS_GET_DISCRETE(seq->flags))
   {
-    for (int i = 0; i < seq->count; i ++)
+    for (int i = 0; i < seq->count; i++)
     {
       const TSequence *seq1 = TSEQUENCESET_SEQ_N(ss, i);
       if (seq1->count != 1)

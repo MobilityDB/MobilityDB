@@ -207,7 +207,7 @@ extern void tstzset_set_period(const Set *ts, Span *p);
 
 extern void span_shift(Span *s, Datum value);
 extern void spanset_shift(SpanSet *s, Datum value);
-extern void lower_upper_shift_tscale(TimestampTz *lower, TimestampTz *upper, const Interval *shift, const Interval *duration);
+extern void lower_upper_shift_tscale(const Interval *shift, const Interval *duration, TimestampTz *lower, TimestampTz *upper);
 extern void floatspan_set_numspan(const Span *s1, Span *s2, meosType basetype);
 
 /*****************************************************************************/
