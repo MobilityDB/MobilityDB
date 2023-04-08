@@ -1083,7 +1083,7 @@ temporal_merge_array(Temporal **temparr, int count)
     if (subtype != subtype1 || interp != interp1)
     {
       convert = true;
-      int16 newsubtype = Max(subtype, subtype1);
+      uint8 newsubtype = Max(subtype, subtype1);
       interpType newinterp = Max(interp, interp1);
       /* A discrete TSequence cannot be converted to a continuous TSequence */
       if (subtype == TSEQUENCE && subtype1 == TSEQUENCE && interp != newinterp)

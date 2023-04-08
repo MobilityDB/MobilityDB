@@ -516,15 +516,15 @@ datum_hash_extended(Datum d, meosType type, uint64 seed)
 {
   assert(meos_basetype(type));
   if (type == T_TIMESTAMPTZ)
-    return pg_hashint8extended(TimestampTzGetDatum(d), seed);
+    return pg_hashint8extended(DatumGetTimestampTz(d), seed);
   else if (type == T_BOOL)
     return hash_bytes_uint32_extended((int32) DatumGetBool(d), seed);
   else if (type == T_INT4)
     return hash_bytes_uint32_extended(DatumGetInt32(d), seed);
   else if (type == T_INT8)
-    return pg_hashint8extended(Int64GetDatum(d), seed);
+    return pg_hashint8extended(DatumGetInt64(d), seed);
   else if (type == T_FLOAT8)
-    return pg_hashfloat8extended(Float8GetDatum(d), seed);
+    return pg_hashfloat8extended(DatumGetFloat8(d), seed);
   else if (type == T_TEXT)
     return pg_hashtextextended(DatumGetTextP(d), seed);
   // PostGIS currently does not provide an extended hash function
