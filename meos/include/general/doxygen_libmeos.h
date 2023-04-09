@@ -45,7 +45,7 @@
  * @ingroup libmeos
  * @brief API of the Mobility Engine Open Source (MEOS) library.
  *
- * @defgroup libmeos_int Internal functions of the MEOS library
+ * @defgroup libmeos_internal Internal functions of the MEOS library
  * @ingroup libmeos
  * @brief Internal functions of Mobility Engine Open Source (MEOS) library.
  */
@@ -59,32 +59,32 @@
  * @ingroup libmeos_api
  * @brief Functions for PostGIS types.
 
- * @defgroup libmeos_spantime Functions for set and span types
+ * @defgroup libmeos_setspan Functions for set and span types
  * @ingroup libmeos_api
  * @brief Functions for set and span types.
  *
  * @defgroup libmeos_setspan_inout Input/output functions
- * @ingroup libmeos_spantime
+ * @ingroup libmeos_setspan
  * @brief Input/output functions for set and span types.
  *
  * @defgroup libmeos_setspan_constructor Constructor functions
- * @ingroup libmeos_spantime
+ * @ingroup libmeos_setspan
  * @brief Constructor functions for set and span types.
  *
  * @defgroup libmeos_setspan_cast Cast functions
- * @ingroup libmeos_spantime
+ * @ingroup libmeos_setspan
  * @brief Cast functions for set and span types.
  *
  * @defgroup libmeos_setspan_accessor Accessor functions
- * @ingroup libmeos_spantime
+ * @ingroup libmeos_setspan
  * @brief Accessor functions for set and span types.
  *
  * @defgroup libmeos_setspan_transf Transformation functions
- * @ingroup libmeos_spantime
+ * @ingroup libmeos_setspan
  * @brief Transformation functions for set and span types.
  *
  * @defgroup libmeos_setspan_bbox Bounding box functions
- * @ingroup libmeos_spantime
+ * @ingroup libmeos_setspan
  * @brief Bounding box functions for set and span types.
  *
  * @defgroup libmeos_setspan_topo Topological functions
@@ -96,19 +96,19 @@
  * @brief Position functions for set and span types.
  *
  * @defgroup libmeos_setspan_set Set functions
- * @ingroup libmeos_spantime
+ * @ingroup libmeos_setspan
  * @brief Set functions for set and span types.
  *
  * @defgroup libmeos_setspan_dist Distance functions
- * @ingroup libmeos_spantime
+ * @ingroup libmeos_setspan
  * @brief Distance functions for set and span types.
  *
  * @defgroup libmeos_setspan_agg Aggregate functions
- * @ingroup libmeos_spantime
+ * @ingroup libmeos_setspan
  * @brief Aggregate functions for set and span types.
  *
  * @defgroup libmeos_setspan_comp Comparison functions
- * @ingroup libmeos_spantime
+ * @ingroup libmeos_setspan
  * @brief Comparison functions for set and span types.
  */
 
@@ -265,32 +265,32 @@
  *****************************************************************************/
 
 /**
- * @defgroup libmeos_internal_spantime Functions for set and span types
- * @ingroup libmeos_int
+ * @defgroup libmeos_internal_setspan Functions for set and span types
+ * @ingroup libmeos_internal
  * @brief Functions for set and span types.
  *
  * @defgroup libmeos_internal_setspan_inout Input/output functions
- * @ingroup libmeos_internal_spantime
+ * @ingroup libmeos_internal_setspan
  * @brief Input/output functions for set and span types.
  *
  * @defgroup libmeos_internal_setspan_constructor Constructor functions
- * @ingroup libmeos_internal_spantime
+ * @ingroup libmeos_internal_setspan
  * @brief Constructor functions for set and span types.
  *
  * @defgroup libmeos_internal_setspan_cast Cast functions
- * @ingroup libmeos_internal_spantime
+ * @ingroup libmeos_internal_setspan
  * @brief Cast functions for set and span types.
  *
  * @defgroup libmeos_internal_setspan_accessor Accessor functions
- * @ingroup libmeos_internal_spantime
+ * @ingroup libmeos_internal_setspan
  * @brief Accessor functions for set and span types.
  *
  * @defgroup libmeos_internal_setspan_transf Transformation functions
- * @ingroup libmeos_internal_spantime
+ * @ingroup libmeos_internal_setspan
  * @brief Transformation functions for set and span types.
  *
  * @defgroup libmeos_internal_setspan_bbox Bounding box functions
- * @ingroup libmeos_internal_spantime
+ * @ingroup libmeos_internal_setspan
  * @brief Bounding box functions for set and span types.
  *
  * @defgroup libmeos_internal_setspan_topo Topological functions
@@ -302,25 +302,25 @@
  * @brief Position functions for set and span types.
  *
  * @defgroup libmeos_internal_setspan_set Set functions
- * @ingroup libmeos_internal_spantime
+ * @ingroup libmeos_internal_setspan
  * @brief Set functions for set and span types.
  *
  * @defgroup libmeos_internal_setspan_dist Distance functions
- * @ingroup libmeos_internal_spantime
+ * @ingroup libmeos_internal_setspan
  * @brief Distance functions for set and span types.
  *
  * @defgroup libmeos_internal_setspan_agg Aggregate functions
- * @ingroup libmeos_internal_spantime
+ * @ingroup libmeos_internal_setspan
  * @brief Aggregate functions for set and span types.
  *
  * @defgroup libmeos_internal_setspan_comp Comparison functions
- * @ingroup libmeos_internal_spantime
+ * @ingroup libmeos_internal_setspan
  * @brief Comparison functions for set and span types.
  */
 
 /**
  * @defgroup libmeos_internal_box Functions for box types
- * @ingroup libmeos_int
+ * @ingroup libmeos_internal
  * @brief Functions for box types.
  *
  * @defgroup libmeos_internal_box_inout Input/output functions
@@ -362,7 +362,7 @@
 
 /**
  * @defgroup libmeos_internal_temporal Functions for temporal types
- * @ingroup libmeos_int
+ * @ingroup libmeos_internal
  * @brief Functions for temporal types.
  *
  * @defgroup libmeos_internal_temporal_inout Input/output functions

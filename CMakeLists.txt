@@ -56,10 +56,8 @@ include(CheckSymbolExists)
 # MobilityDB definitions
 #-------------------------------------
 
-<<<<<<< Updated upstream
-=======
 # Windows build with MSVC
-if(${CMAKE_C_COMPILER_ID} STREQUAL "MSVC")
+if("${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC")
   set(MSVC 1)
   # Disable native language support
   set(ENABLE_NLS OFF)
@@ -67,7 +65,6 @@ if(${CMAKE_C_COMPILER_ID} STREQUAL "MSVC")
   add_definitions(-D_CRT_SECURE_NO_WARNINGS=1)
 endif()
 
->>>>>>> Stashed changes
 # Option for including network points
 option(MEOS
   "Set MEOS (default=OFF) to build the MEOS library instead of the MobilityDB
