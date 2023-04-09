@@ -920,7 +920,7 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     return;
   }
 
-  nd_stats->histogram_features = histogram_features;
+  nd_stats->histogram_features = (float4) histogram_features;
   nd_stats->histogram_cells = (float4) histo_cells;
   nd_stats->cells_covered = (float4) total_cell_count;
 

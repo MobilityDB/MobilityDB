@@ -394,5 +394,7 @@ SELECT tdwithin(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 
 SELECT tdwithin(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01', 2);
 SELECT tdwithin(geometry 'Linestring(1 1,2 2)', tgeompoint 'Point(1 1)@2000-01-01', 2);
 SELECT tdwithin(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(1 1,2 2)', 2);
+SELECT tdwithin(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Point(0 0)', -1);
+SELECT tdwithin(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(0 0 0)', -1);
 
 -------------------------------------------------------------------------------

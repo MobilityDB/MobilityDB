@@ -336,7 +336,7 @@ Edwithin_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Datum dist = PG_GETARG_DATUM(2);
+  double dist = PG_GETARG_FLOAT8(2);
   Datum result = edwithin_tnpoint_npoint(temp, np, dist);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_DATUM(result);
@@ -377,7 +377,7 @@ Edwithin_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Npoint *np = PG_GETARG_NPOINT_P(1);
-  Datum dist = PG_GETARG_DATUM(2);
+  double dist = PG_GETARG_FLOAT8(2);
   Datum result = edwithin_tnpoint_npoint(temp, np, dist);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_DATUM(result);
