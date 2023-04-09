@@ -136,7 +136,6 @@ espatialrel_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
  * @param[in] temp Temporal network point
  * @param[in] gs Geometry
  * @param[in] dist Distance
- * @param[in] invert True if the arguments should be inverted
  */
 int
 edwithin_tnpoint_geom(const Temporal *temp, const GSERIALIZED *gs, double dist)
@@ -157,7 +156,6 @@ edwithin_tnpoint_geom(const Temporal *temp, const GSERIALIZED *gs, double dist)
  * @param[in] temp Temporal network point
  * @param[in] np Network point
  * @param[in] dist Distance
- * @param[in] invert True if the arguments should be inverted
  */
 Datum
 edwithin_tnpoint_npoint(const Temporal *temp, const Npoint *np, double dist)

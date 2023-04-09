@@ -183,6 +183,26 @@ floatset_in(const char *str)
  * @brief Return a set from its Well-Known Text (WKT) representation.
  */
 Set *
+geogset_in(const char *str)
+{
+  return set_parse(&str, T_GEOMETRY);
+}
+
+/**
+ * @ingroup libmeos_setspan_inout
+ * @brief Return a set from its Well-Known Text (WKT) representation.
+ */
+Set *
+geomset_in(const char *str)
+{
+  return set_parse(&str, T_GEOGRAPHY);
+}
+
+/**
+ * @ingroup libmeos_setspan_inout
+ * @brief Return a set from its Well-Known Text (WKT) representation.
+ */
+Set *
 textset_in(const char *str)
 {
   return set_parse(&str, T_TEXTSET);
@@ -201,7 +221,6 @@ tstzset_in(const char *str)
 
 
 /**
- * @ingroup libmeos_setspan_inout
  * @brief Return true if the base type value is output enclosed into quotes.
  */
 static bool
@@ -313,22 +332,10 @@ geogset_out(const Set *set, int maxdd)
 {
   return set_out(set, maxdd);
 }
-
-#if NPOINT
-/**
- * @ingroup libmeos_setspan_inout
- * @brief Output a set of network points.
-*/
-Set *
-npointset_out(const Set *set, int maxdd)
-{
-  return set_out(set, maxdd);
-}
-#endif /* NPOINT */
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_spanset_inout
+ * @ingroup libmeos_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation a geoset.
  * @sqlfunc asText()
  */
@@ -339,7 +346,7 @@ geoset_as_text(const Set *set, int maxdd)
 }
 
 /**
- * @ingroup libmeos_spanset_inout
+ * @ingroup libmeos_setspan_inout
  * @brief Return the Extended Well-Known Text (EWKT) representation a geoset.
  * @sqlfunc asEWKT()
  */
