@@ -676,13 +676,13 @@ tile_get_coords(int *coords, double x, double y, double z, TimestampTz t,
 {
   /* Transform the minimum values of the tile into matrix coordinates */
   int k = 0;
-  coords[k++] = (x - state->box.xmin) / state->size;
-  coords[k++] = (y - state->box.ymin) / state->size;
+  coords[k++] = (int) ((x - state->box.xmin) / state->size);
+  coords[k++] = (int) ((y - state->box.ymin) / state->size);
   if (MEOS_FLAGS_GET_Z(state->box.flags))
-    coords[k++] = (z - state->box.zmin) / state->size;
+    coords[k++] = (int) ((z - state->box.zmin) / state->size);
   if (MEOS_FLAGS_GET_T(state->box.flags))
-    coords[k++] = (t - DatumGetTimestampTz(state->box.period.lower)) /
-      state->tunits;
+    coords[k++] = (int) ((t - DatumGetTimestampTz(state->box.period.lower)) /
+      state->tunits);
   return;
 }
 

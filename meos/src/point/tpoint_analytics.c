@@ -1319,7 +1319,7 @@ static TSequence *
 tsequence_simplify_dp(const TSequence *seq, double dist, bool syncdist,
   uint32_t minpts)
 {
-  static size_t stack_size = 256;
+  size_t stack_size = 256;
   int *stack, *outlist; /* recursion stack */
   int stack_static[stack_size];
   int outlist_static[stack_size];
@@ -1887,7 +1887,7 @@ static GSERIALIZED *
 tpointinst_decouple(const TInstant *inst, int64 **timesarr, int *count)
 {
   int64 *times = palloc(sizeof(int64));
-  times[0] = (inst->t / 1e6) + DELTA_UNIX_POSTGRES_EPOCH;
+  times[0] = (inst->t / 1000000) + DELTA_UNIX_POSTGRES_EPOCH;
   *timesarr = times;
   *count = 1;
   return DatumGetGserializedP(tinstant_value_copy(inst));
@@ -1911,7 +1911,7 @@ tpointseq_decouple1(const TSequence *seq, int64 *times)
     Datum value = tinstant_value(inst);
     GSERIALIZED *gs = DatumGetGserializedP(value);
     points[i] = lwgeom_from_gserialized(gs);
-    times[i] = (inst->t / 1e6) + DELTA_UNIX_POSTGRES_EPOCH;
+    times[i] = (inst->t / 1000000) + DELTA_UNIX_POSTGRES_EPOCH;
   }
   LWGEOM *result = lwpointarr_make_trajectory(points, seq->count,
     MEOS_FLAGS_GET_LINEAR(seq->flags) ? LINEAR : STEP);

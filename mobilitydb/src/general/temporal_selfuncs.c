@@ -428,10 +428,11 @@ temporal_oper_sel_family(meosOper oper __attribute__((unused)), meosType ltype,
   meosType rtype, TemporalFamily tempfamily)
 {
   /* Get enumeration value associated to the operator */
-  assert(tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE ||
 #if NPOINT
+  assert(tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE ||
     tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE);
 #else
+  assert(tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE ||
     tempfamily == TPOINTTYPE);
 #endif /* NPOINT */
 

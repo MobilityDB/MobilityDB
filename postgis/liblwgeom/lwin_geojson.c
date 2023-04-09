@@ -24,8 +24,6 @@
  *
  **********************************************************************/
 
-/* MobilityDB: Added for pg_strcasecmp */
-#include <postgres.h>
 #include "liblwgeom.h"
 #include "lwgeom_log.h"
 #include "../postgis_config.h"
@@ -49,6 +47,8 @@
 
 /* Prototype */
 static LWGEOM *parse_geojson(json_object *geojson, int *hasz);
+/* MobilityDB: Added pg_strcasecmp */
+extern int pg_strcasecmp(const char *s1, const char *s2);
 
 static inline json_object *
 findMemberByName(json_object *poObj, const char *pszName)

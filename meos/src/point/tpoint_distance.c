@@ -372,7 +372,7 @@ tgeogpoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
   {
     /* We know that the distance is 0 */
     if (mindist)
-      *mindist = 0.0;
+      *mindist = Float8GetDatum(0.0);
     bool found = point3d_min_dist((const POINT3DZ *) &A1, (const POINT3DZ *) &A2,
       (const POINT3DZ *) &B1, (const POINT3DZ *) &B2, &fraction);
     if (!found)
@@ -387,7 +387,8 @@ tgeogpoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
       return false;
     /* Compute distance between closest points */
     if (mindist)
-      *mindist = WGS84_RADIUS * sphere_distance(&close1, &close2);
+      *mindist = Float8GetDatum(WGS84_RADIUS * sphere_distance(&close1,
+        &close2));
     /* Compute distance from beginning of the segment to one closest point */
     long double seglength = sphere_distance(&(e1.start), &(e1.end));
     long double length = sphere_distance(&(e1.start), &close1);
@@ -593,7 +594,7 @@ NAI_tpointsegm_linear_geo1(const TInstant *inst1, const TInstant *inst2,
     *t = inst2->t;
   else
   {
-    double duration = (inst2->t - inst1->t);
+    double duration = (double) (inst2->t - inst1->t);
     *t = inst1->t + (TimestampTz) (duration * fraction);
   }
   return dist;

@@ -165,11 +165,10 @@ static double
 total_double(const double *vals, int nvals)
 {
   int i;
-  float total = 0;
+  double total = 0;
   /* Calculate total */
   for (i = 0; i < nvals; i++)
     total += vals[i];
-
   return total;
 }
 
@@ -354,7 +353,7 @@ nd_increment(ND_IBOX *ibox, int ndims, int *counter)
  * proportion of total width to add.
  */
 static int
-nd_box_expand(ND_BOX *nd_box, double expansion_factor)
+nd_box_expand(ND_BOX *nd_box, float expansion_factor)
 {
   for (int d = 0; d < ND_DIMS; d++)
   {
@@ -826,12 +825,12 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   /* Initialize the #ND_STATS objects */
   nd_stats->ndims = ndims;
   nd_stats->extent = histo_extent;
-  nd_stats->sample_features = sample_rows;
+  nd_stats->sample_features = (float4) sample_rows;
   nd_stats->table_features = (float4) total_rows;
-  nd_stats->not_null_features = notnull_cnt;
+  nd_stats->not_null_features = (float4) notnull_cnt;
   /* Copy in the histogram dimensions */
   for ( d = 0; d < ndims; d++ )
-    nd_stats->size[d] = histo_size[d];
+    nd_stats->size[d] = (float4) histo_size[d];
 
   /*
    * Fourth scan:
@@ -896,7 +895,7 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
        * 0.5 added on.
        */
       ratio = nd_box_ratio_overlaps(&nd_cell, nd_box, (int) nd_stats->ndims);
-      nd_stats->value[nd_stats_value_index(nd_stats, at)] += ratio;
+      nd_stats->value[nd_stats_value_index(nd_stats, at)] += (float4) ratio;
       num_cells += ratio;
     }
     while ( nd_increment(&nd_ibox, (int) nd_stats->ndims, at) );
@@ -922,7 +921,7 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   }
 
   nd_stats->histogram_features = histogram_features;
-  nd_stats->histogram_cells = histo_cells;
+  nd_stats->histogram_cells = (float4) histo_cells;
   nd_stats->cells_covered = (float4) total_cell_count;
 
   /* Put this histogram data into the right slot/kind */

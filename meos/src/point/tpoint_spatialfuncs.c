@@ -1234,7 +1234,7 @@ tpointsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
     return false;
   if (t != NULL)
   {
-    double duration = (inst2->t - inst1->t);
+    double duration = (double) (inst2->t - inst1->t);
     /* Note that due to roundoff errors it may be the case that the
      * resulting timestamp t may be equal to inst1->t or to inst2->t */
     *t = inst1->t + (TimestampTz) (duration * fraction);
@@ -1341,7 +1341,7 @@ tgeompointsegm_intersection(const TInstant *start1, const TInstant *end1,
       return false;
     fraction = xdenum != 0 ? xfraction : yfraction;
   }
-  double duration = (end1->t - start1->t);
+  double duration = (double) (end1->t - start1->t);
   *t = start1->t + (TimestampTz) (duration * fraction);
   /* Note that due to roundoff errors it may be the case that the
    * resulting timestamp t may be equal to inst1->t or to inst2->t */
@@ -1394,7 +1394,7 @@ tgeogpointsegm_intersection(const TInstant *start1, const TInstant *end1,
   long double length = sphere_distance(&(e1.start), &inter);
   long double fraction = length / seglength;
 
-  long double duration = (end1->t - start1->t);
+  long double duration = (long double) (end1->t - start1->t);
   *t = start1->t + (TimestampTz) (duration * fraction);
   /* Note that due to roundoff errors it may be the case that the
    * resulting timestamp t may be equal to inst1->t or to inst2->t */
@@ -2567,7 +2567,7 @@ tpointseq_direction(const TSequence *seq, double *result)
   if (datum_point_eq(value1, value2))
     return false;
 
-  *result = func(value1, value2);
+  *result = DatumGetFloat8(func(value1, value2));
   return true;
 }
 
@@ -2601,7 +2601,7 @@ tpointseqset_direction(const TSequenceSet *ss, double *result)
   if (datum_point_eq(value1, value2))
     return false;
 
-  *result = func(value1, value2);
+  *result = DatumGetFloat8(func(value1, value2));
   return true;
 }
 
@@ -2807,7 +2807,7 @@ geom_bearing(Datum point1, Datum point2)
   const POINT2D *p2 = DATUM_POINT2D_P(point2);
   if ((fabs(p1->x - p2->x) <= MEOS_EPSILON) &&
       (fabs(p1->y - p2->y) <= MEOS_EPSILON))
-    return 0.0;
+    return Float8GetDatum(0.0);
   if (fabs(p1->y - p2->y) > MEOS_EPSILON)
   {
     double bearing = pg_datan((p1->x - p2->x) / (p1->y - p2->y)) +
@@ -2839,7 +2839,7 @@ geog_bearing(Datum point1, Datum point2)
   const POINT2D *p2 = DATUM_POINT2D_P(point2);
   if ((fabs(p1->x - p2->x) <= MEOS_EPSILON) &&
       (fabs(p1->y - p2->y) <= MEOS_EPSILON))
-    return 0.0;
+    return Float8GetDatum(0.0);
 
   double lat1 = float8_mul(p1->y, RADIANS_PER_DEGREE);
   double lat2 = float8_mul(p2->y, RADIANS_PER_DEGREE);
@@ -2922,7 +2922,7 @@ tpoint_geo_min_bearing_at_timestamp(const TInstant *start, const TInstant *end,
   }
   if (fraction <= MEOS_EPSILON || fraction >= (1.0 - MEOS_EPSILON))
     return false;
-  long double duration = (end->t - start->t);
+  long double duration = (long double) (end->t - start->t);
   *t = start->t + (TimestampTz) (duration * fraction);
   *value = (Datum) 0;
   /* Compute the projected value only for geometries */
@@ -3828,7 +3828,7 @@ tpointsegm_timestamp_at_value1(const TInstant *inst1, const TInstant *inst2,
       result = false;
     else
     {
-      double duration = (inst2->t - inst1->t);
+      double duration = (double) (inst2->t - inst1->t);
       *t = inst1->t + (TimestampTz) (duration * fraction);
     }
   }
