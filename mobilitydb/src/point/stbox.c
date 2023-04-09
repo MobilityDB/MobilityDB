@@ -840,18 +840,18 @@ Stbox_expand_time(PG_FUNCTION_ARGS)
  * @brief Sets the precision of the coordinates of the spatiotemporal box.
  */
 static STBox *
-stbox_round(const STBox *box, Datum prec)
+stbox_round(const STBox *box, Datum size)
 {
   ensure_has_X_stbox(box);
   STBox *result = stbox_copy(box);
-  result->xmin = DatumGetFloat8(datum_round_float(Float8GetDatum(box->xmin), prec));
-  result->xmax = DatumGetFloat8(datum_round_float(Float8GetDatum(box->xmax), prec));
-  result->ymin = DatumGetFloat8(datum_round_float(Float8GetDatum(box->ymin), prec));
-  result->ymax = DatumGetFloat8(datum_round_float(Float8GetDatum(box->ymax), prec));
+  result->xmin = DatumGetFloat8(datum_round_float(Float8GetDatum(box->xmin), size));
+  result->xmax = DatumGetFloat8(datum_round_float(Float8GetDatum(box->xmax), size));
+  result->ymin = DatumGetFloat8(datum_round_float(Float8GetDatum(box->ymin), size));
+  result->ymax = DatumGetFloat8(datum_round_float(Float8GetDatum(box->ymax), size));
   if (MEOS_FLAGS_GET_Z(box->flags) || MEOS_FLAGS_GET_GEODETIC(box->flags))
   {
-    result->zmin = DatumGetFloat8(datum_round_float(Float8GetDatum(box->zmin), prec));
-    result->zmax = DatumGetFloat8(datum_round_float(Float8GetDatum(box->zmax), prec));
+    result->zmin = DatumGetFloat8(datum_round_float(Float8GetDatum(box->zmin), size));
+    result->zmax = DatumGetFloat8(datum_round_float(Float8GetDatum(box->zmax), size));
   }
   return result;
 }
@@ -867,8 +867,8 @@ Datum
 Stbox_round(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
-  Datum prec = PG_GETARG_DATUM(1);
-  PG_RETURN_POINTER(stbox_round(box, prec));
+  Datum size = PG_GETARG_DATUM(1);
+  PG_RETURN_POINTER(stbox_round(box, size));
 }
 
 /*****************************************************************************

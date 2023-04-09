@@ -1377,13 +1377,13 @@ distance_value_value(Datum l, Datum r, meosType typel, meosType typer)
   if (typel == T_INT4 && typer == T_INT4)
     return (double) abs(DatumGetInt32(l) - DatumGetInt32(r));
   if (typel == T_INT8 && typer == T_INT8)
-    return (double) labs(DatumGetInt64(l) - DatumGetInt64(r));
+    return (double) llabs(DatumGetInt64(l) - DatumGetInt64(r));
   if (typel == T_FLOAT8 && typer == T_FLOAT8)
     return fabs(DatumGetFloat8(l) - DatumGetFloat8(r));
   if (typel == T_TIMESTAMPTZ && typer == T_TIMESTAMPTZ)
     /* Distance in seconds if the base type is TimestampTz */
-    return (double) (labs((DatumGetTimestampTz(l) - DatumGetTimestampTz(r)))) /
-      USECS_PER_SEC;
+    return (double) (llabs((DatumGetTimestampTz(l) -
+      DatumGetTimestampTz(r)))) / USECS_PER_SEC;
   if (typel == T_INT4 && typer == T_FLOAT8)
     return fabs((double) DatumGetInt32(l) - DatumGetFloat8(r));
   if (typel == T_FLOAT8 && typer == T_INT4)

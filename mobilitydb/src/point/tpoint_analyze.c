@@ -359,8 +359,8 @@ nd_box_expand(ND_BOX *nd_box, float expansion_factor)
   {
     double size = nd_box->max[d] - nd_box->min[d];
     if (size <= 0) continue;
-    nd_box->min[d] -= size * expansion_factor / 2;
-    nd_box->max[d] += size * expansion_factor / 2;
+    nd_box->min[d] -= (float4) (size * expansion_factor / 2);
+    nd_box->max[d] += (float4) (size * expansion_factor / 2);
   }
   return true;
 }
@@ -725,7 +725,7 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
    * Expand the box slightly (1%) to avoid edge effects
    * with objects that are on the boundary
    */
-  nd_box_expand(&histo_extent_new, 0.01);
+  nd_box_expand(&histo_extent_new, (float4) 0.01);
   histo_extent = histo_extent_new;
 
   /*
@@ -823,7 +823,7 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   MemoryContextSwitchTo(old_context);
 
   /* Initialize the #ND_STATS objects */
-  nd_stats->ndims = ndims;
+  nd_stats->ndims = (float4) ndims;
   nd_stats->extent = histo_extent;
   nd_stats->sample_features = (float4) sample_rows;
   nd_stats->table_features = (float4) total_rows;

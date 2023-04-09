@@ -192,8 +192,8 @@ Datum
 Npointset_round(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
-  int prec = PG_GETARG_INT32(1);
-  PG_RETURN_POINTER(npointset_round(s, Int32GetDatum(prec)));
+  Datum size = PG_GETARG_DATUM(1);
+  PG_RETURN_POINTER(npointset_round(s, size));
 }
 
 /*****************************************************************************

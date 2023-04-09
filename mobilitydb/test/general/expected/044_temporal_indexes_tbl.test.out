@@ -2361,7 +2361,7 @@ SELECT COUNT(*) FROM tbl_tint_big WHERE temp &< tint '[1@2001-01-01, 10@2001-02-
 SELECT COUNT(*) FROM tbl_tint_big WHERE temp >> tint '[1@2001-01-01, 10@2001-02-01]';
  count 
 -------
-  5478
+  5594
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint_big WHERE temp &> tint '[1@2001-01-01, 10@2001-02-01]';
@@ -2439,7 +2439,7 @@ SELECT COUNT(*) FROM tbl_tint_big WHERE temp &< tfloat '[1@2001-01-01, 10@2001-0
 SELECT COUNT(*) FROM tbl_tint_big WHERE temp >> tfloat '[1@2001-01-01, 10@2001-02-01]';
  count 
 -------
-  5478
+  5594
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint_big WHERE temp &> tfloat '[1@2001-01-01, 10@2001-02-01]';
@@ -2595,7 +2595,7 @@ SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &< tbox 'TBOX XT([1,50],[2001-01-
 SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp >> tbox 'TBOX XT([1,50],[2001-01-01,2001-02-01])';
  count 
 -------
-  1737
+  1775
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &> tbox 'TBOX XT([1,50],[2001-01-01,2001-02-01])';
@@ -2697,7 +2697,7 @@ SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &< tint '[1@2001-01-01, 10@2001-0
 SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp >> tint '[1@2001-01-01, 10@2001-02-01]';
  count 
 -------
-  5375
+  5651
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &> tint '[1@2001-01-01, 10@2001-02-01]';
@@ -2775,7 +2775,7 @@ SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &< tfloat '[1@2001-01-01, 10@2001
 SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp >> tfloat '[1@2001-01-01, 10@2001-02-01]';
  count 
 -------
-  5375
+  5651
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp &> tfloat '[1@2001-01-01, 10@2001-02-01]';

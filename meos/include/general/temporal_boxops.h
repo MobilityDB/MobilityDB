@@ -51,7 +51,7 @@ extern bool bbox_type(meosType bboxtype);
 extern void ensure_bbox_type(meosType bboxtype);
 extern size_t bbox_get_size(meosType bboxtype);
 extern int bbox_max_dims(meosType bboxtype);
-extern uint32_t temporal_max_header_size(void);
+extern size_t temporal_max_header_size(void);
 extern bool temporal_bbox_eq(const void *box1, const void *box2,
   meosType temptype);
 extern int temporal_bbox_cmp(const void *box1, const void *box2,

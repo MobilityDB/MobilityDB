@@ -49,10 +49,10 @@ extern Datum espatialrel_tnpoint_npoint(const Temporal *temp, const Npoint *np,
 extern int espatialrel_tnpoint_tnpoint(const Temporal *temp1,
   const Temporal *temp2, Datum (*func)(Datum, Datum));
 
-extern Datum espatialrel3_tnpoint_geom(const Temporal *temp, Datum geom,
-  Datum param, Datum (*func)(Datum, Datum, Datum), bool invert);
-extern Datum espatialrel3_tnpoint_npoint(const Temporal *temp, const Npoint *np,
-  Datum param, Datum (*func)(Datum, Datum, Datum), bool invert);
+extern int edwithin_tnpoint_geom(const Temporal *temp, const GSERIALIZED *gs,
+  double dist);
+extern Datum edwithin_tnpoint_npoint(const Temporal *temp, const Npoint *np,
+  double dist);
 
 extern int edwithin_tnpoint_tnpoint(const Temporal *temp1,
   const Temporal *temp2, double dist);

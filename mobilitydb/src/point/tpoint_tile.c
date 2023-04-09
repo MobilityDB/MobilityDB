@@ -362,13 +362,13 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
       memset(&count, 0, sizeof(count));
       int numdims = 2;
       /* We need to add 1 to take into account the last bucket for each dimension */
-      count[0] = ( (state->box.xmax - state->box.xmin) / state->size ) + 1;
-      count[1] = ( (state->box.ymax - state->box.ymin) / state->size ) + 1;
+      count[0] = (int) ((state->box.xmax - state->box.xmin) / state->size) + 1;
+      count[1] = (int) ((state->box.ymax - state->box.ymin) / state->size) + 1;
       if (MEOS_FLAGS_GET_Z(state->box.flags))
-        count[numdims++] = ( (state->box.zmax - state->box.zmin) / state->size ) + 1;
+        count[numdims++] = (int) ((state->box.zmax - state->box.zmin) / state->size) + 1;
       if (state->tunits)
-        count[numdims++] = ( (DatumGetTimestampTz(state->box.period.upper) -
-          DatumGetTimestampTz(state->box.period.lower)) / state->tunits ) + 1;
+        count[numdims++] = (int) ((DatumGetTimestampTz(state->box.period.upper) -
+          DatumGetTimestampTz(state->box.period.lower)) / state->tunits) + 1;
       state->bm = bitmatrix_make(count, numdims);
       tpoint_set_tiles(temp, state, state->bm);
     }

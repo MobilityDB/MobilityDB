@@ -447,8 +447,11 @@ oid_oper(Oid oproid, meosType *ltype, meosType *rtype)
     populate_operoid_cache();
   _oid_oper_entry *entry = opertable_lookup(_oid_oper, oproid);
   if (! entry)
+  {
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("Unknown operator Oid %d", oproid)));
+    return UNKNOWN_OP; /* make compiler quiet */
+  }
   else
   {
     if (ltype)

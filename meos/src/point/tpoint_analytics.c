@@ -1311,6 +1311,8 @@ int_cmp(const void *a, const void *b)
   return *ia - *ib;
 }
 
+#define DP_STACK_SIZE 256
+
 /**
  * @brief Simplify the temporal sequence set float/point using the
  * Douglas-Peucker line simplification algorithm.
@@ -1319,10 +1321,9 @@ static TSequence *
 tsequence_simplify_dp(const TSequence *seq, double dist, bool syncdist,
   uint32_t minpts)
 {
-  size_t stack_size = 256;
   int *stack, *outlist; /* recursion stack */
-  int stack_static[stack_size];
-  int outlist_static[stack_size];
+  int stack_static[DP_STACK_SIZE];
+  int outlist_static[DP_STACK_SIZE];
   int sp = -1; /* recursion stack pointer */
   int i1, split;
   uint32_t outn = 0;
@@ -1336,7 +1337,7 @@ tsequence_simplify_dp(const TSequence *seq, double dist, bool syncdist,
     return tsequence_copy(seq);
 
   /* Only heap allocate book-keeping arrays if necessary */
-  if ((unsigned int) seq->count > stack_size)
+  if ((unsigned int) seq->count > DP_STACK_SIZE)
   {
     stack = palloc(sizeof(int) * seq->count);
     outlist = palloc(sizeof(int) * seq->count);

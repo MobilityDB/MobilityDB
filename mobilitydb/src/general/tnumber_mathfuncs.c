@@ -311,7 +311,7 @@ Div_tnumber_tnumber(PG_FUNCTION_ARGS)
  * @brief Round a number to a given number of decimal places
  */
 Datum
-datum_round_float(Datum value, Datum prec)
+datum_round_float(Datum value, Datum size)
 {
   Datum result = value;
   double d = DatumGetFloat8(value);
@@ -319,7 +319,7 @@ datum_round_float(Datum value, Datum prec)
   if (d != -1 * inf && d != inf)
   {
     Datum number = call_function1(float8_numeric, value);
-    Datum roundnumber = call_function2(numeric_round, number, prec);
+    Datum roundnumber = call_function2(numeric_round, number, size);
     result = call_function1(numeric_float8, roundnumber);
   }
   return result;
@@ -358,8 +358,8 @@ Datum
 Tfloat_round(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Datum digits = PG_GETARG_DATUM(1);
-  Temporal *result = tfloat_round(temp, digits);
+  Datum size = PG_GETARG_DATUM(1);
+  Temporal *result = tfloat_round(temp, size);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

@@ -50,6 +50,8 @@
 #include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_spatialrels.h"
 #include "npoint/tnpoint_spatialfuncs.h"
+/* MobilityDB */
+#include "pg_point/postgis.h"
 
 /*****************************************************************************
  * Generic binary functions for tnpoint <rel> (geo | Npoint)
@@ -310,12 +312,14 @@ PG_FUNCTION_INFO_V1(Edwithin_geo_tnpoint);
 Datum
 Edwithin_geo_tnpoint(PG_FUNCTION_ARGS)
 {
-  Datum geom = PG_GETARG_DATUM(0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Datum dist = PG_GETARG_DATUM(2);
-  Datum result = espatialrel3_tnpoint_geom(temp, geom, dist, &geom_dwithin2d,
-    INVERT);
+  double dist = PG_GETARG_FLOAT8(2);
+  int result = edwithin_tnpoint_geom(temp, gs, dist);
+  PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
+  if (result < 0)
+    PG_RETURN_NULL();
   PG_RETURN_DATUM(result);
 }
 
@@ -333,8 +337,7 @@ Edwithin_npoint_tnpoint(PG_FUNCTION_ARGS)
   Npoint *np = PG_GETARG_NPOINT_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Datum dist = PG_GETARG_DATUM(2);
-  Datum result = espatialrel3_tnpoint_npoint(temp, np, dist, &geom_dwithin2d,
-    INVERT);
+  Datum result = edwithin_tnpoint_npoint(temp, np, dist);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_DATUM(result);
 }
@@ -351,11 +354,13 @@ Datum
 Edwithin_tnpoint_geo(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Datum geom = PG_GETARG_DATUM(1);
-  Datum dist = PG_GETARG_DATUM(2);
-  Datum result = espatialrel3_tnpoint_geom(temp, geom, dist, &geom_dwithin2d,
-    INVERT_NO);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+  double dist = PG_GETARG_FLOAT8(2);
+  int result = edwithin_tnpoint_geom(temp, gs, dist);
   PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(gs, 1);
+  if (result < 0)
+    PG_RETURN_NULL();
   PG_RETURN_DATUM(result);
 }
 
@@ -373,8 +378,7 @@ Edwithin_tnpoint_npoint(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Npoint *np = PG_GETARG_NPOINT_P(1);
   Datum dist = PG_GETARG_DATUM(2);
-  Datum result = espatialrel3_tnpoint_npoint(temp, np, dist, &geom_dwithin2d,
-    INVERT_NO);
+  Datum result = edwithin_tnpoint_npoint(temp, np, dist);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_DATUM(result);
 }

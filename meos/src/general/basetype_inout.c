@@ -35,8 +35,10 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <utils/float.h>
-/* PostgreSQL */
+/* PostGIS */
 #include <liblwgeom_internal.h> /* for OUT_DOUBLE_BUFFER_SIZE */
+/* MEOS */
+#include <meos.h>
 
 #if POSTGRESQL_VERSION_NUMBER >= 150000 || MEOS
   extern int64 pg_strtoint64(const char *s);

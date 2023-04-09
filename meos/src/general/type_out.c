@@ -1078,6 +1078,7 @@ basetype_to_wkb_size(Datum value, meosType basetype, int16 flags)
 #endif /* NPOINT */
     default: /* Error! */
       elog(ERROR, "Unknown temporal base type: %d", basetype);
+      return 0; /* make compiler quiet */
   }
 }
 

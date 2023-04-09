@@ -708,7 +708,8 @@ tpointinst_get_coords(int *coords, const TInstant *inst, bool hasz, bool hast,
   if (hasz)
     z = float_bucket(p.z, state->size, state->box.zmin);
   if (hast)
-    t = timestamptz_bucket1(inst->t, state->tunits, state->box.ymin);
+    t = timestamptz_bucket1(inst->t, state->tunits,
+      (TimestampTz) (state->box.ymin));
   /* Transform the minimum values of the tile into matrix coordinates */
   tile_get_coords(coords, x, y, z, t, state);
   return;

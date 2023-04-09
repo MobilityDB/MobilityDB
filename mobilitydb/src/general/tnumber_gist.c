@@ -750,9 +750,9 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, meosType bboxtype,
         else
         {
           intervalsLower[i - FirstOffsetNumber].lower =
-            DatumGetTimestampTz(((TBox *) box)->period.lower);
+            (double) DatumGetTimestampTz(((TBox *) box)->period.lower);
           intervalsLower[i - FirstOffsetNumber].upper =
-            DatumGetTimestampTz(((TBox *) box)->period.upper);
+            (double) DatumGetTimestampTz(((TBox *) box)->period.upper);
         }
       }
       else /* bboxtype == T_STBOX */
@@ -775,9 +775,9 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, meosType bboxtype,
         else
         {
           intervalsLower[i - FirstOffsetNumber].lower =
-            DatumGetTimestampTz(((STBox *) box)->period.lower);
+            (double) DatumGetTimestampTz(((STBox *) box)->period.lower);
           intervalsLower[i - FirstOffsetNumber].upper =
-            DatumGetTimestampTz(((STBox *) box)->period.upper);
+            (double) DatumGetTimestampTz(((STBox *) box)->period.upper);
         }
       }
     }

@@ -528,7 +528,7 @@ Tbox_expand_time(PG_FUNCTION_ARGS)
  * the number of decimal places.
  */
 static TBox *
-tbox_round(const TBox *box, int size)
+tbox_round(const TBox *box, Datum size)
 {
   ensure_has_X_tbox(box);
   TBox *result = tbox_copy(box);
@@ -549,7 +549,7 @@ Datum
 Tbox_round(PG_FUNCTION_ARGS)
 {
   TBox *box = PG_GETARG_TBOX_P(0);
-  int size = PG_GETARG_INT32(1);
+  Datum size = PG_GETARG_DATUM(1);
   PG_RETURN_POINTER(tbox_round(box, size));
 }
 

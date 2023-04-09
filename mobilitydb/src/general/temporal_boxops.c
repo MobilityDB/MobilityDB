@@ -63,7 +63,7 @@
  * information from a temporal: Temporal struct (i.e., TInstant, TSequence,
  * or TSequenceSet) and bounding box size
 */
-uint32_t
+size_t
 temporal_max_header_size(void)
 {
   size_t sz1 = Max(sizeof(TInstant), sizeof(TSequence));
