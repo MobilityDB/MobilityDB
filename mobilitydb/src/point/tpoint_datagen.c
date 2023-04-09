@@ -462,6 +462,7 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
   return result;
 }
 
+PGDLLEXPORT Datum create_trip(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(create_trip);
 /**
  * @brief Create a trip using the BerlinMOD data generator.

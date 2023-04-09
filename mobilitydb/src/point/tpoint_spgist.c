@@ -714,11 +714,12 @@ tpoint_spgist_get_stbox(const ScanKeyData *scankey, STBox *result)
  * SP-GiST config function
  *****************************************************************************/
 
+PGDLLEXPORT Datum Stbox_spgist_config(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_spgist_config);
 /**
  * @brief SP-GiST config function for temporal points
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_spgist_config(PG_FUNCTION_ARGS)
 {
   spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
@@ -735,11 +736,12 @@ Stbox_spgist_config(PG_FUNCTION_ARGS)
  * SP-GiST choose function
  *****************************************************************************/
 
+PGDLLEXPORT Datum Stbox_quadtree_choose(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_quadtree_choose);
 /**
  * @brief SP-GiST choose function for temporal points
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_quadtree_choose(PG_FUNCTION_ARGS)
 {
   spgChooseIn *in = (spgChooseIn *) PG_GETARG_POINTER(0);
@@ -918,11 +920,12 @@ stbox_level_cmp(STBox *centroid, STBox *query, int level)
     return stbox_tmax_cmp(query, centroid);
 }
 
+PGDLLEXPORT Datum Stbox_kdtree_choose(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_kdtree_choose);
 /**
  * @brief K-d tree choose function for time types
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_kdtree_choose(PG_FUNCTION_ARGS)
 {
   spgChooseIn *in = (spgChooseIn *) PG_GETARG_POINTER(0);
@@ -943,6 +946,7 @@ Stbox_kdtree_choose(PG_FUNCTION_ARGS)
  * SP-GiST pick-split function
  *****************************************************************************/
 
+PGDLLEXPORT Datum Stbox_quadtree_picksplit(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_quadtree_picksplit);
 /**
  * @brief SP-GiST pick-split function for temporal points
@@ -950,7 +954,7 @@ PG_FUNCTION_INFO_V1(Stbox_quadtree_picksplit);
  * It splits a list of boxes into quadrants by choosing a central 8D
  * point as the median of the coordinates of the boxes.
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_quadtree_picksplit(PG_FUNCTION_ARGS)
 {
   spgPickSplitIn *in = (spgPickSplitIn *) PG_GETARG_POINTER(0);
@@ -1050,11 +1054,12 @@ Stbox_quadtree_picksplit(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Stbox_kdtree_picksplit(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_kdtree_picksplit);
 /**
  * @brief K-d tree pick-split function for spatiotemporal boxes
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_kdtree_picksplit(PG_FUNCTION_ARGS)
 {
   spgPickSplitIn *in = (spgPickSplitIn *) PG_GETARG_POINTER(0);
@@ -1336,21 +1341,23 @@ stbox_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
   PG_RETURN_VOID();
 }
 
+PGDLLEXPORT Datum Stbox_quadtree_inner_consistent(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_quadtree_inner_consistent);
 /**
  * @brief Quad-tree inner consistent function for temporal numbers
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
 {
   return stbox_spgist_inner_consistent(fcinfo, SPGIST_QUADTREE);
 }
 
+PGDLLEXPORT Datum Stbox_kdtree_inner_consistent(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_kdtree_inner_consistent);
 /**
  * @brief Kd-tree inner consistent function for temporal numbers
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_kdtree_inner_consistent(PG_FUNCTION_ARGS)
 {
   return stbox_spgist_inner_consistent(fcinfo, SPGIST_KDTREE);
@@ -1360,11 +1367,12 @@ Stbox_kdtree_inner_consistent(PG_FUNCTION_ARGS)
  * SP-GiST leaf-level consistency function
  *****************************************************************************/
 
+PGDLLEXPORT Datum Stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_spgist_leaf_consistent);
 /**
  * @brief SP-GiST leaf-level consistency function for temporal points
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
 {
   spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
@@ -1419,11 +1427,12 @@ Stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
  * SP-GiST compress functions
  *****************************************************************************/
 
+PGDLLEXPORT Datum Tpoint_spgist_compress(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_spgist_compress);
 /**
  * @brief SP-GiST compress functions for temporal points
  */
-PGDLLEXPORT Datum
+Datum
 Tpoint_spgist_compress(PG_FUNCTION_ARGS)
 {
   Datum tempdatum = PG_GETARG_DATUM(0);

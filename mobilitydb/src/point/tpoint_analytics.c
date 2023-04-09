@@ -58,13 +58,14 @@
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Tpoint_to_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_to_geo);
 /**
  * @brief Convert the temporal point into a PostGIS trajectory geometry or
  * geography where the M coordinates encode the timestamps in number of seconds
  * since '1970-01-01'
  */
-PGDLLEXPORT Datum
+Datum
 Tpoint_to_geo(PG_FUNCTION_ARGS)
 {
   Temporal *tpoint = PG_GETARG_TEMPORAL_P(0);
@@ -75,12 +76,13 @@ Tpoint_to_geo(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Geo_to_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geo_to_tpoint);
 /**
  * @brief Convert the PostGIS trajectory geometry or geography where the M
  * coordinates encode the timestamps in Unix epoch into a temporal point.
  */
-PGDLLEXPORT Datum
+Datum
 Geo_to_tpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(0);
@@ -89,12 +91,13 @@ Geo_to_tpoint(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Tpoint_to_geo_measure(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_to_geo_measure);
 /**
  * @brief Construct a geometry/geography with M measure from the temporal point
  * and the temporal float
  */
-PGDLLEXPORT Datum
+Datum
 Tpoint_to_geo_measure(PG_FUNCTION_ARGS)
 {
   Temporal *tpoint = PG_GETARG_TEMPORAL_P(0);
@@ -109,12 +112,13 @@ Tpoint_to_geo_measure(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Temporal_simplify_min_dist(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_simplify_min_dist);
 /**
  * @brief Simplify the temporal sequence (set) float or point ensuring that
  * consecutive values are at least a certain distance apart.
  */
-PGDLLEXPORT Datum
+Datum
 Temporal_simplify_min_dist(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
@@ -126,12 +130,13 @@ Temporal_simplify_min_dist(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Temporal_simplify_min_tdelta(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_simplify_min_tdelta);
 /**
  * @brief Simplify the temporal sequence (set) float or point ensuring that
  * consecutive values are at least a certain distance apart.
  */
-PGDLLEXPORT Datum
+Datum
 Temporal_simplify_min_tdelta(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
@@ -141,12 +146,13 @@ Temporal_simplify_min_tdelta(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Temporal_simplify_max_dist(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_simplify_max_dist);
 /**
  * @brief Simplify the temporal sequence (set) float or point using a
  * single-pass Douglas-Peucker line simplification algorithm.
  */
-PGDLLEXPORT Datum
+Datum
 Temporal_simplify_max_dist(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
@@ -159,12 +165,13 @@ Temporal_simplify_max_dist(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Temporal_simplify_dp(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_simplify_dp);
 /**
  * @brief Simplify the temporal sequence (set) float or point using a
  * Douglas-Peucker line simplification algorithm.
  */
-PGDLLEXPORT Datum
+Datum
 Temporal_simplify_dp(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
@@ -181,11 +188,12 @@ Temporal_simplify_dp(PG_FUNCTION_ARGS)
  * Mapbox Vector Tile functions for temporal points.
  *****************************************************************************/
 
+PGDLLEXPORT Datum Tpoint_AsMVTGeom(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_AsMVTGeom);
 /**
  * @brief Transform the temporal point to Mapbox Vector Tile format
  */
-PGDLLEXPORT Datum
+Datum
 Tpoint_AsMVTGeom(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);

@@ -45,6 +45,7 @@
  * Input in EWKT format
  *****************************************************************************/
 
+PGDLLEXPORT Datum Tpoint_from_ewkt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_from_ewkt);
 /**
  * @ingroup mobilitydb_temporal_inout
@@ -55,7 +56,7 @@ PG_FUNCTION_INFO_V1(Tpoint_from_ewkt);
  * @sqlfunc tgeompointFromText(), tgeogpointFromText(), tgeompointFromEWKT(),
  * tgeogpointFromEWKT()
  */
-PGDLLEXPORT Datum
+Datum
 Tpoint_from_ewkt(PG_FUNCTION_ARGS)
 {
   text *wkt_text = PG_GETARG_TEXT_P(0);

@@ -357,6 +357,7 @@ routeop_tnpoint_tnpoint_ext(FunctionCallInfo fcinfo,
  * Overlaps
  *****************************************************************************/
 
+PGDLLEXPORT Datum Overlaps_rid_bigintset_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overlaps_rid_bigintset_tnpoint);
 /**
  * @ingroup mobilitydb_tnpoint_routes
@@ -365,7 +366,7 @@ PG_FUNCTION_INFO_V1(Overlaps_rid_bigintset_tnpoint);
  * @sqlfunc overlaps_rid()
  * @sqlop @p @@
  */
-PGDLLEXPORT Datum
+Datum
 Overlaps_rid_bigintset_tnpoint(PG_FUNCTION_ARGS)
 {
   return routeop_bigintset_tnpoint_ext(fcinfo, &overlaps_rid_tnpoint_bigintset);
@@ -373,6 +374,7 @@ Overlaps_rid_bigintset_tnpoint(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Overlaps_rid_tnpoint_bigintset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overlaps_rid_tnpoint_bigintset);
 /**
  * @ingroup mobilitydb_tnpoint_routes
@@ -381,12 +383,13 @@ PG_FUNCTION_INFO_V1(Overlaps_rid_tnpoint_bigintset);
  * @sqlfunc overlaps_rid()
  * @sqlop @p @@
  */
-PGDLLEXPORT Datum
+Datum
 Overlaps_rid_tnpoint_bigintset(PG_FUNCTION_ARGS)
 {
   return routeop_tnpoint_bigintset_ext(fcinfo, &overlaps_rid_tnpoint_bigintset);
 }
 
+PGDLLEXPORT Datum Overlaps_rid_tnpoint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overlaps_rid_tnpoint_tnpoint);
 /**
  * @ingroup mobilitydb_tnpoint_routes
@@ -395,7 +398,7 @@ PG_FUNCTION_INFO_V1(Overlaps_rid_tnpoint_tnpoint);
  * @sqlfunc overlaps_rid()
  * @sqlop @p @@
  */
-PGDLLEXPORT Datum
+Datum
 Overlaps_rid_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
   return routeop_tnpoint_tnpoint_ext(fcinfo, &overlaps_rid_tnpoint_tnpoint);
@@ -405,6 +408,7 @@ Overlaps_rid_tnpoint_tnpoint(PG_FUNCTION_ARGS)
  * contains
  *****************************************************************************/
 
+PGDLLEXPORT Datum Contains_rid_bigintset_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contains_rid_bigintset_tnpoint);
 /**
  * @ingroup mobilitydb_tnpoint_routes
@@ -413,7 +417,7 @@ PG_FUNCTION_INFO_V1(Contains_rid_bigintset_tnpoint);
  * @sqlfunc contains_rid()
  * @sqlop @p \@?
  */
-PGDLLEXPORT Datum
+Datum
 Contains_rid_bigintset_tnpoint(PG_FUNCTION_ARGS)
 {
   return routeop_bigintset_tnpoint_ext(fcinfo, &contains_rid_tnpoint_bigintset);
@@ -421,6 +425,7 @@ Contains_rid_bigintset_tnpoint(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Contains_rid_tnpoint_bigint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contains_rid_tnpoint_bigint);
 /**
  * @ingroup mobilitydb_tnpoint_routes
@@ -429,12 +434,13 @@ PG_FUNCTION_INFO_V1(Contains_rid_tnpoint_bigint);
  * @sqlfunc contains_rid()
  * @sqlop @p \@?
  */
-PGDLLEXPORT Datum
+Datum
 Contains_rid_tnpoint_bigint(PG_FUNCTION_ARGS)
 {
   return routeop_tnpoint_bigint_ext(fcinfo, &contains_rid_tnpoint_bigint);
 }
 
+PGDLLEXPORT Datum Contains_rid_tnpoint_bigintset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contains_rid_tnpoint_bigintset);
 /**
  * @ingroup mobilitydb_tnpoint_routes
@@ -443,12 +449,13 @@ PG_FUNCTION_INFO_V1(Contains_rid_tnpoint_bigintset);
  * @sqlfunc contains_rid()
  * @sqlop @p \@?
  */
-PGDLLEXPORT Datum
+Datum
 Contains_rid_tnpoint_bigintset(PG_FUNCTION_ARGS)
 {
   return routeop_tnpoint_bigintset_ext(fcinfo, &contains_rid_tnpoint_bigintset);
 }
 
+PGDLLEXPORT Datum Contains_rid_tnpoint_npoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contains_rid_tnpoint_npoint);
 /**
  * @ingroup mobilitydb_tnpoint_routes
@@ -457,12 +464,13 @@ PG_FUNCTION_INFO_V1(Contains_rid_tnpoint_npoint);
  * @sqlfunc contains_rid()
  * @sqlop @p \@?
  */
-PGDLLEXPORT Datum
+Datum
 Contains_rid_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
   return routeop_tnpoint_npoint_ext(fcinfo, &contains_rid_tnpoint_npoint);
 }
 
+PGDLLEXPORT Datum Contains_rid_tnpoint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contains_rid_tnpoint_tnpoint);
 /**
  * @ingroup mobilitydb_tnpoint_routes
@@ -471,7 +479,7 @@ PG_FUNCTION_INFO_V1(Contains_rid_tnpoint_tnpoint);
  * @sqlfunc contains_rid()
  * @sqlop @p \@?
  */
-PGDLLEXPORT Datum
+Datum
 Contains_rid_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
   return routeop_tnpoint_tnpoint_ext(fcinfo, &contains_rid_tnpoint_tnpoint);
@@ -481,6 +489,7 @@ Contains_rid_tnpoint_tnpoint(PG_FUNCTION_ARGS)
  * Contained
  *****************************************************************************/
 
+PGDLLEXPORT Datum Contained_rid_bigint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_rid_bigint_tnpoint);
 /**
  * @ingroup mobilitydb_tnpoint_routes
@@ -489,12 +498,13 @@ PG_FUNCTION_INFO_V1(Contained_rid_bigint_tnpoint);
  * @sqlfunc contained_rid()
  * @sqlop @p ?@
  */
-PGDLLEXPORT Datum
+Datum
 Contained_rid_bigint_tnpoint(PG_FUNCTION_ARGS)
 {
   return routeop_bigint_tnpoint_ext(fcinfo, &contained_rid_tnpoint_bigint);
 }
 
+PGDLLEXPORT Datum Contained_rid_bigintset_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_rid_bigintset_tnpoint);
 /**
  * @ingroup mobilitydb_tnpoint_routes
@@ -503,12 +513,13 @@ PG_FUNCTION_INFO_V1(Contained_rid_bigintset_tnpoint);
  * @sqlfunc contained_rid()
  * @sqlop @p ?@
  */
-PGDLLEXPORT Datum
+Datum
 Contained_rid_bigintset_tnpoint(PG_FUNCTION_ARGS)
 {
   return routeop_bigintset_tnpoint_ext(fcinfo, &contained_rid_tnpoint_bigintset);
 }
 
+PGDLLEXPORT Datum Contained_rid_npoint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_rid_npoint_tnpoint);
 /**
  * @ingroup mobilitydb_tnpoint_routes
@@ -517,7 +528,7 @@ PG_FUNCTION_INFO_V1(Contained_rid_npoint_tnpoint);
  * @sqlfunc contained_rid()
  * @sqlop @p ?@
  */
-PGDLLEXPORT Datum
+Datum
 Contained_rid_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
   return routeop_npoint_tnpoint_ext(fcinfo, &contained_rid_npoint_tnpoint);
@@ -525,6 +536,7 @@ Contained_rid_npoint_tnpoint(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Contained_rid_tnpoint_bigintset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_rid_tnpoint_bigintset);
 /**
  * @ingroup mobilitydb_tnpoint_routes
@@ -533,12 +545,13 @@ PG_FUNCTION_INFO_V1(Contained_rid_tnpoint_bigintset);
  * @sqlfunc contained_rid()
  * @sqlop @p ?@
  */
-PGDLLEXPORT Datum
+Datum
 Contained_rid_tnpoint_bigintset(PG_FUNCTION_ARGS)
 {
   return routeop_tnpoint_bigintset_ext(fcinfo, &contained_rid_tnpoint_bigintset);
 }
 
+PGDLLEXPORT Datum Contained_rid_tnpoint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_rid_tnpoint_tnpoint);
 /**
  * @ingroup mobilitydb_tnpoint_routes
@@ -547,7 +560,7 @@ PG_FUNCTION_INFO_V1(Contained_rid_tnpoint_tnpoint);
  * @sqlfunc contained_rid()
  * @sqlop @p ?@
  */
-PGDLLEXPORT Datum
+Datum
 Contained_rid_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
   return routeop_tnpoint_tnpoint_ext(fcinfo, &contained_rid_tnpoint_tnpoint);
@@ -557,6 +570,7 @@ Contained_rid_tnpoint_tnpoint(PG_FUNCTION_ARGS)
  * Same
  *****************************************************************************/
 
+PGDLLEXPORT Datum Same_rid_bigint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Same_rid_bigint_tnpoint);
 /**
  * @ingroup mobilitydb_tnpoint_routes
@@ -565,12 +579,13 @@ PG_FUNCTION_INFO_V1(Same_rid_bigint_tnpoint);
  * @sqlfunc same_rid()
  * @sqlop @p @=
  */
-PGDLLEXPORT Datum
+Datum
 Same_rid_bigint_tnpoint(PG_FUNCTION_ARGS)
 {
   return routeop_bigint_tnpoint_ext(fcinfo, &same_rid_tnpoint_bigint);
 }
 
+PGDLLEXPORT Datum Same_rid_bigintset_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Same_rid_bigintset_tnpoint);
 /**
  * @ingroup mobilitydb_tnpoint_routes
@@ -579,12 +594,13 @@ PG_FUNCTION_INFO_V1(Same_rid_bigintset_tnpoint);
  * @sqlfunc same_rid()
  * @sqlop @p @=
  */
-PGDLLEXPORT Datum
+Datum
 Same_rid_bigintset_tnpoint(PG_FUNCTION_ARGS)
 {
   return routeop_bigintset_tnpoint_ext(fcinfo, &same_rid_tnpoint_bigintset);
 }
 
+PGDLLEXPORT Datum Same_rid_npoint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Same_rid_npoint_tnpoint);
 /**
  * @ingroup mobilitydb_tnpoint_routes
@@ -593,7 +609,7 @@ PG_FUNCTION_INFO_V1(Same_rid_npoint_tnpoint);
  * @sqlfunc same_rid()
  * @sqlop @p @=
  */
-PGDLLEXPORT Datum
+Datum
 Same_rid_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
   return routeop_npoint_tnpoint_ext(fcinfo, &same_rid_tnpoint_npoint);
@@ -601,6 +617,7 @@ Same_rid_npoint_tnpoint(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Same_rid_tnpoint_bigint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Same_rid_tnpoint_bigint);
 /**
  * @ingroup mobilitydb_tnpoint_routes
@@ -609,12 +626,13 @@ PG_FUNCTION_INFO_V1(Same_rid_tnpoint_bigint);
  * @sqlfunc same_rid()
  * @sqlop @p @=
  */
-PGDLLEXPORT Datum
+Datum
 Same_rid_tnpoint_bigint(PG_FUNCTION_ARGS)
 {
   return routeop_tnpoint_bigint_ext(fcinfo, &same_rid_tnpoint_bigint);
 }
 
+PGDLLEXPORT Datum Same_rid_tnpoint_bigintset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Same_rid_tnpoint_bigintset);
 /**
  * @ingroup mobilitydb_tnpoint_routes
@@ -623,12 +641,13 @@ PG_FUNCTION_INFO_V1(Same_rid_tnpoint_bigintset);
  * @sqlfunc same_rid()
  * @sqlop @p @=
  */
-PGDLLEXPORT Datum
+Datum
 Same_rid_tnpoint_bigintset(PG_FUNCTION_ARGS)
 {
   return routeop_tnpoint_bigintset_ext(fcinfo, &same_rid_tnpoint_bigintset);
 }
 
+PGDLLEXPORT Datum Same_rid_tnpoint_npoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Same_rid_tnpoint_npoint);
 /**
  * @ingroup mobilitydb_tnpoint_routes
@@ -637,12 +656,13 @@ PG_FUNCTION_INFO_V1(Same_rid_tnpoint_npoint);
  * @sqlfunc same_rid()
  * @sqlop @p @=
  */
-PGDLLEXPORT Datum
+Datum
 Same_rid_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
   return routeop_tnpoint_npoint_ext(fcinfo, &same_rid_tnpoint_npoint);
 }
 
+PGDLLEXPORT Datum Same_rid_tnpoint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Same_rid_tnpoint_tnpoint);
 /**
  * @ingroup mobilitydb_tnpoint_routes
@@ -651,7 +671,7 @@ PG_FUNCTION_INFO_V1(Same_rid_tnpoint_tnpoint);
  * @sqlfunc same_rid()
  * @sqlop @p @=
  */
-PGDLLEXPORT Datum
+Datum
 Same_rid_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
   return routeop_tnpoint_tnpoint_ext(fcinfo, &same_rid_tnpoint_tnpoint);

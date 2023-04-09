@@ -56,6 +56,7 @@
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Tnpoint_gin_extract_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnpoint_gin_extract_value);
 /**
  * @brief extractValue support function
@@ -78,6 +79,7 @@ Tnpoint_gin_extract_value(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(elems);
 }
 
+PGDLLEXPORT Datum Tnpoint_gin_extract_query(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnpoint_gin_extract_query);
 /**
  * @brief extractQuery support function

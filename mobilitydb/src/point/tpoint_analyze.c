@@ -1128,11 +1128,12 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Spatialset_analyze(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spatialset_analyze);
 /**
  * @brief Compute the statistics for spatial set columns
  */
-PGDLLEXPORT Datum
+Datum
 Spatialset_analyze(PG_FUNCTION_ARGS)
 {
   VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
@@ -1153,11 +1154,12 @@ Spatialset_analyze(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(true);
 }
 
+PGDLLEXPORT Datum Tpoint_analyze(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_analyze);
 /**
  * @brief Compute the statistics for temporal point columns
  */
-PGDLLEXPORT Datum
+Datum
 Tpoint_analyze(PG_FUNCTION_ARGS)
 {
   return temporal_analyze(fcinfo, &tpoint_compute_stats);

@@ -89,13 +89,14 @@ espatialrel_tpoint_tpoint_ext(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datu
  * PostGIS ST_Relate function
  *****************************************************************************/
 
+PGDLLEXPORT Datum Econtains_geo_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Econtains_geo_tpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
  * @brief Return true if a geometry ever contains a temporal point
  * @sqlfunc econtains
  */
-PGDLLEXPORT Datum
+Datum
 Econtains_geo_tpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
@@ -112,13 +113,14 @@ Econtains_geo_tpoint(PG_FUNCTION_ARGS)
  * Ever disjoint (for both geometry and geography)
  *****************************************************************************/
 
+PGDLLEXPORT Datum Edisjoint_geo_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Edisjoint_geo_tpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
  * @brief Return true if a geometry and a temporal point are ever disjoint
  * @sqlfunc edisjoint
  */
-PGDLLEXPORT Datum
+Datum
 Edisjoint_geo_tpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
@@ -133,13 +135,14 @@ Edisjoint_geo_tpoint(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result ? true : false);
 }
 
+PGDLLEXPORT Datum Edisjoint_tpoint_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Edisjoint_tpoint_geo);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
  * @brief Return true if a temporal point and a geometry are ever disjoint
  * @sqlfunc edisjoint
  */
-PGDLLEXPORT Datum
+Datum
 Edisjoint_tpoint_geo(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
@@ -154,13 +157,14 @@ Edisjoint_tpoint_geo(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result ? true : false);
 }
 
+PGDLLEXPORT Datum Edisjoint_tpoint_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Edisjoint_tpoint_tpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
  * @brief Return true if the temporal points are ever disjoint
  * @sqlfunc edisjoint
  */
-PGDLLEXPORT Datum
+Datum
 Edisjoint_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
   return espatialrel_tpoint_tpoint_ext(fcinfo, &datum2_point_ne);
@@ -170,13 +174,14 @@ Edisjoint_tpoint_tpoint(PG_FUNCTION_ARGS)
  * Ever intersects (for both geometry and geography)
  *****************************************************************************/
 
+PGDLLEXPORT Datum Eintersects_geo_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Eintersects_geo_tpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
  * @brief Return true if a geometry and a temporal point ever intersect
  * @sqlfunc eintersects
  */
-PGDLLEXPORT Datum
+Datum
 Eintersects_geo_tpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
@@ -191,13 +196,14 @@ Eintersects_geo_tpoint(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
+PGDLLEXPORT Datum Eintersects_tpoint_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Eintersects_tpoint_geo);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
  * @brief Return true if a temporal point and a geometry ever intersect
  * @sqlfunc eintersects
  */
-PGDLLEXPORT Datum
+Datum
 Eintersects_tpoint_geo(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
@@ -212,13 +218,14 @@ Eintersects_tpoint_geo(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
+PGDLLEXPORT Datum Eintersects_tpoint_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Eintersects_tpoint_tpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
  * @brief Return true if the temporal points ever intersect
  * @sqlfunc eintersects
  */
-PGDLLEXPORT Datum
+Datum
 Eintersects_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
   return espatialrel_tpoint_tpoint_ext(fcinfo, &datum2_point_eq);
@@ -230,13 +237,14 @@ Eintersects_tpoint_tpoint(PG_FUNCTION_ARGS)
  * ST_Boundary function
  *****************************************************************************/
 
+PGDLLEXPORT Datum Etouches_geo_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Etouches_geo_tpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
  * @brief Return true if a geometry and a temporal point ever touch
  * @sqlfunc etouches
  */
-PGDLLEXPORT Datum
+Datum
 Etouches_geo_tpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
@@ -249,13 +257,14 @@ Etouches_geo_tpoint(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
+PGDLLEXPORT Datum Etouches_tpoint_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Etouches_tpoint_geo);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
  * @brief Return true if a temporal point and a geometry ever touch
  * @sqlfunc etouches
  */
-PGDLLEXPORT Datum
+Datum
 Etouches_tpoint_geo(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
@@ -273,6 +282,7 @@ Etouches_tpoint_geo(PG_FUNCTION_ARGS)
  * The function only accepts points and not arbitrary geometries/geographies
  *****************************************************************************/
 
+PGDLLEXPORT Datum Edwithin_geo_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Edwithin_geo_tpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
@@ -280,7 +290,7 @@ PG_FUNCTION_INFO_V1(Edwithin_geo_tpoint);
  * given distance
  * @sqlfunc edwithin
  */
-PGDLLEXPORT Datum
+Datum
 Edwithin_geo_tpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
@@ -296,6 +306,7 @@ Edwithin_geo_tpoint(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
+PGDLLEXPORT Datum Edwithin_tpoint_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Edwithin_tpoint_geo);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
@@ -303,7 +314,7 @@ PG_FUNCTION_INFO_V1(Edwithin_tpoint_geo);
  * given distance
  * @sqlfunc edwithin
  */
-PGDLLEXPORT Datum
+Datum
 Edwithin_tpoint_geo(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
@@ -319,13 +330,14 @@ Edwithin_tpoint_geo(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
+PGDLLEXPORT Datum Edwithin_tpoint_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Edwithin_tpoint_tpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
  * @brief Return true if the temporal points are even within the given distance
  * @sqlfunc edwithin
  */
-PGDLLEXPORT Datum
+Datum
 Edwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);

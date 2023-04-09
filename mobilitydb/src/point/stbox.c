@@ -56,39 +56,42 @@
  * Input/Ouput functions
  *****************************************************************************/
 
+PGDLLEXPORT Datum Stbox_in(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_in);
 /**
  * @ingroup mobilitydb_box_inout
  * @brief Input function for spatiotemporal boxes.
  * @sqlfunc stbox_in()
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_in(PG_FUNCTION_ARGS)
 {
   const char *input = PG_GETARG_CSTRING(0);
   PG_RETURN_POINTER(stbox_in(input));
 }
 
+PGDLLEXPORT Datum Stbox_out(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_out);
 /**
  * @ingroup mobilitydb_box_inout
  * @brief Output function for spatiotemporal boxes.
  * @sqlfunc stbox_out()
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_out(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
   PG_RETURN_CSTRING(stbox_out(box, OUT_DEFAULT_DECIMAL_DIGITS));
 }
 
+PGDLLEXPORT Datum Stbox_recv(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_recv);
 /**
  * @ingroup mobilitydb_box_inout
  * @brief Receive function for STBox
  * @sqlfunc stbox_recv()
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_recv(PG_FUNCTION_ARGS)
 {
   StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
@@ -98,13 +101,14 @@ Stbox_recv(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Stbox_send(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_send);
 /**
  * @ingroup mobilitydb_box_inout
  * @brief Send function for STBox
  * @sqlfunc stbox_send()
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_send(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
@@ -120,13 +124,14 @@ Stbox_send(PG_FUNCTION_ARGS)
  * Output in WKT format
  *****************************************************************************/
 
+PGDLLEXPORT Datum Stbox_as_text(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_as_text);
 /**
  * @ingroup mobilitydb_box_inout
  * @brief Output function for spatiotemporal boxes.
  * @sqlfunc asText()
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_as_text(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
@@ -189,13 +194,14 @@ stbox_constructor_ext(FunctionCallInfo fcinfo, bool hasx, bool hasz,
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Stbox_constructor_t(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_constructor_t);
 /**
  * @ingroup mobilitydb_box_constructor
  * @brief Construct a spatiotemporal box from the arguments
  * @sqlfunc stbox_t()
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_constructor_t(PG_FUNCTION_ARGS)
 {
   if (PG_NARGS() > 1)
@@ -203,37 +209,40 @@ Stbox_constructor_t(PG_FUNCTION_ARGS)
   return stbox_constructor_ext(fcinfo, false, false, true, false);
 }
 
+PGDLLEXPORT Datum Stbox_constructor(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_constructor);
 /**
  * @ingroup mobilitydb_box_constructor
  * @brief Construct a spatiotemporal box from the arguments
  * @sqlfunc stbox()
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_constructor(PG_FUNCTION_ARGS)
 {
   return stbox_constructor_ext(fcinfo, true, false, false, false);
 }
 
+PGDLLEXPORT Datum Stbox_constructor_z(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_constructor_z);
 /**
  * @ingroup mobilitydb_box_constructor
  * @brief Construct a spatiotemporal box from the arguments
  * @sqlfunc stbox_z()
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_constructor_z(PG_FUNCTION_ARGS)
 {
   return stbox_constructor_ext(fcinfo, true, true, false, false);
 }
 
+PGDLLEXPORT Datum Stbox_constructor_zt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_constructor_zt);
 /**
  * @ingroup mobilitydb_box_constructor
  * @brief Construct a spatiotemporal box from the arguments
  * @sqlfunc stbox_zt()
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_constructor_zt(PG_FUNCTION_ARGS)
 {
   return stbox_constructor_ext(fcinfo, true, true, true, false);
@@ -242,37 +251,40 @@ Stbox_constructor_zt(PG_FUNCTION_ARGS)
 /* The names of the SQL and C functions are different, otherwise there is
  * ambiguity and explicit casting of the arguments to ::timestamptz is needed */
 
+PGDLLEXPORT Datum Geodstbox_constructor_t(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geodstbox_constructor_t);
 /**
  * @ingroup mobilitydb_box_constructor
  * @brief Construct a spatiotemporal box from the arguments
  * @sqlfunc geodstbox_t()
  */
-PGDLLEXPORT Datum
+Datum
 Geodstbox_constructor_t(PG_FUNCTION_ARGS)
 {
   return stbox_constructor_ext(fcinfo, false, false, true, true);
 }
 
+PGDLLEXPORT Datum Geodstbox_constructor_z(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geodstbox_constructor_z);
 /**
  * @ingroup mobilitydb_box_constructor
  * @brief Construct a spatiotemporal box from the arguments
  * @sqlfunc geodstbox_z()
  */
-PGDLLEXPORT Datum
+Datum
 Geodstbox_constructor_z(PG_FUNCTION_ARGS)
 {
   return stbox_constructor_ext(fcinfo, true, true, false, true);
 }
 
+PGDLLEXPORT Datum Geodstbox_constructor_zt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geodstbox_constructor_zt);
 /**
  * @ingroup mobilitydb_box_constructor
  * @brief Construct a spatiotemporal box from the arguments
  * @sqlfunc geodstbox_zt()
  */
-PGDLLEXPORT Datum
+Datum
 Geodstbox_constructor_zt(PG_FUNCTION_ARGS)
 {
   return stbox_constructor_ext(fcinfo, true, true, true, true);
@@ -282,6 +294,7 @@ Geodstbox_constructor_zt(PG_FUNCTION_ARGS)
  * Casting
  *****************************************************************************/
 
+PGDLLEXPORT Datum Stbox_to_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_to_geo);
 /**
  * @ingroup mobilitydb_box_cast
@@ -289,7 +302,7 @@ PG_FUNCTION_INFO_V1(Stbox_to_geo);
  * @sqlfunc geometry()
  * @sqlfunc @p ::
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_to_geo(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
@@ -297,6 +310,7 @@ Stbox_to_geo(PG_FUNCTION_ARGS)
   PG_RETURN_DATUM(result);
 }
 
+PGDLLEXPORT Datum Stbox_to_period(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_to_period);
 /**
  * @ingroup mobilitydb_box_cast
@@ -304,7 +318,7 @@ PG_FUNCTION_INFO_V1(Stbox_to_period);
  * @sqlfunc period()
  * @sqlfunc @p ::
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_to_period(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
@@ -318,6 +332,7 @@ Stbox_to_period(PG_FUNCTION_ARGS)
  * Transform a <Type> to a STBox
  *****************************************************************************/
 
+PGDLLEXPORT Datum Geo_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geo_to_stbox);
 /**
  * @ingroup mobilitydb_box_cast
@@ -325,7 +340,7 @@ PG_FUNCTION_INFO_V1(Geo_to_stbox);
  * @sqlfunc stbox()
  * @sqlfunc @p ::
  */
-PGDLLEXPORT Datum
+Datum
 Geo_to_stbox(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
@@ -337,6 +352,7 @@ Geo_to_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Geoset_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geoset_to_stbox);
 /**
  * @ingroup mobilitydb_box_cast
@@ -344,7 +360,7 @@ PG_FUNCTION_INFO_V1(Geoset_to_stbox);
  * @sqlfunc stbox()
  * @sqlfunc @p ::
  */
-PGDLLEXPORT Datum
+Datum
 Geoset_to_stbox(PG_FUNCTION_ARGS)
 {
   Set *set = PG_GETARG_SET_P(0);
@@ -354,6 +370,7 @@ Geoset_to_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Timestamp_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Timestamp_to_stbox);
 /**
  * @ingroup mobilitydb_box_cast
@@ -361,7 +378,7 @@ PG_FUNCTION_INFO_V1(Timestamp_to_stbox);
  * @sqlfunc stbox()
  * @sqlfunc @p ::
  */
-PGDLLEXPORT Datum
+Datum
 Timestamp_to_stbox(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
@@ -370,6 +387,7 @@ Timestamp_to_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Tstzset_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzset_to_stbox);
 /**
  * @ingroup mobilitydb_box_cast
@@ -377,7 +395,7 @@ PG_FUNCTION_INFO_V1(Tstzset_to_stbox);
  * @sqlfunc stbox()
  * @sqlfunc @p ::
  */
-PGDLLEXPORT Datum
+Datum
 Tstzset_to_stbox(PG_FUNCTION_ARGS)
 {
   Set *ts = PG_GETARG_SET_P(0);
@@ -386,6 +404,7 @@ Tstzset_to_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Period_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Period_to_stbox);
 /**
  * @ingroup mobilitydb_box_cast
@@ -393,7 +412,7 @@ PG_FUNCTION_INFO_V1(Period_to_stbox);
  * @sqlfunc stbox()
  * @sqlfunc @p ::
  */
-PGDLLEXPORT Datum
+Datum
 Period_to_stbox(PG_FUNCTION_ARGS)
 {
   Span *p = PG_GETARG_SPAN_P(0);
@@ -420,6 +439,7 @@ periodset_stbox_slice(Datum psdatum, STBox *box)
   return;
 }
 
+PGDLLEXPORT Datum Periodset_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Periodset_to_stbox);
 /**
  * @ingroup mobilitydb_box_cast
@@ -427,7 +447,7 @@ PG_FUNCTION_INFO_V1(Periodset_to_stbox);
  * @sqlfunc stbox()
  * @sqlfunc @p ::
  */
-PGDLLEXPORT Datum
+Datum
 Periodset_to_stbox(PG_FUNCTION_ARGS)
 {
   Datum psdatum = PG_GETARG_DATUM(0);
@@ -438,6 +458,7 @@ Periodset_to_stbox(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Geo_timestamp_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geo_timestamp_to_stbox);
 /**
  * @ingroup mobilitydb_box_cast
@@ -445,7 +466,7 @@ PG_FUNCTION_INFO_V1(Geo_timestamp_to_stbox);
  * @sqlfunc stbox()
  * @sqlfunc @p ::
  */
-PGDLLEXPORT Datum
+Datum
 Geo_timestamp_to_stbox(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
@@ -457,13 +478,14 @@ Geo_timestamp_to_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Geo_period_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geo_period_to_stbox);
 /**
  * @ingroup mobilitydb_box_cast
  * @brief Transform a geometry/geography and a period to a spatiotemporal box
  * @sqlfunc stbox()
  */
-PGDLLEXPORT Datum
+Datum
 Geo_period_to_stbox(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
@@ -479,65 +501,70 @@ Geo_period_to_stbox(PG_FUNCTION_ARGS)
  * Accessor functions
  *****************************************************************************/
 
+PGDLLEXPORT Datum Stbox_hasx(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_hasx);
 /**
  * @ingroup mobilitydb_box_accessor
  * @brief Return true if a spatiotemporal box has value dimension
  * @sqlfunc hasX()
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_hasx(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
   PG_RETURN_BOOL(stbox_hasx(box));
 }
 
+PGDLLEXPORT Datum Stbox_hasz(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_hasz);
 /**
  * @ingroup mobilitydb_box_accessor
  * @brief Return true if a spatiotemporal box has Z dimension
  * @sqlfunc hasZ()
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_hasz(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
   PG_RETURN_BOOL(stbox_hasz(box));
 }
 
+PGDLLEXPORT Datum Stbox_hast(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_hast);
 /**
  * @ingroup mobilitydb_box_accessor
  * @brief Return true if a spatiotemporal box has time dimension
  * @sqlfunc hasT()
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_hast(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
   PG_RETURN_BOOL(stbox_hast(box));
 }
 
+PGDLLEXPORT Datum Stbox_isgeodetic(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_isgeodetic);
 /**
  * @ingroup mobilitydb_box_accessor
  * @brief Return true if a spatiotemporal box is geodetic
  * @sqlfunc isGeodetic()
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_isgeodetic(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
   PG_RETURN_BOOL(stbox_isgeodetic(box));
 }
 
+PGDLLEXPORT Datum Stbox_xmin(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_xmin);
 /**
  * @ingroup mobilitydb_box_accessor
  * @brief Return the minimum X value of a spatiotemporal box, if any.
  * @sqlfunc Xmin()
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_xmin(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
@@ -547,13 +574,14 @@ Stbox_xmin(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 }
 
+PGDLLEXPORT Datum Stbox_xmax(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_xmax);
 /**
  * @ingroup mobilitydb_box_accessor
  * @brief Return the maximum X value of a spatiotemporal box, if any.
  * @sqlfunc Xmax()
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_xmax(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
@@ -563,13 +591,14 @@ Stbox_xmax(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 }
 
+PGDLLEXPORT Datum Stbox_ymin(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_ymin);
 /**
  * @ingroup mobilitydb_box_accessor
  * @brief Return the minimum Y value of a spatiotemporal box, if any.
  * @sqlfunc Ymin()
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_ymin(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
@@ -579,13 +608,14 @@ Stbox_ymin(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 }
 
+PGDLLEXPORT Datum Stbox_ymax(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_ymax);
 /**
  * @ingroup mobilitydb_box_accessor
  * @brief Return the maximum Y value of a spatiotemporal box, if any.
  * @sqlfunc Ymax()
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_ymax(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
@@ -595,13 +625,14 @@ Stbox_ymax(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 }
 
+PGDLLEXPORT Datum Stbox_zmin(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_zmin);
 /**
  * @ingroup mobilitydb_box_accessor
  * @brief Return the minimum Z value of a spatiotemporal box, if any.
  * @sqlfunc Zmin()
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_zmin(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
@@ -611,13 +642,14 @@ Stbox_zmin(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 }
 
+PGDLLEXPORT Datum Stbox_zmax(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_zmax);
 /**
  * @ingroup mobilitydb_box_accessor
  * @brief Return the maximum Z value of a spatiotemporal box, if any.
  * @sqlfunc Zmax()
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_zmax(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
@@ -627,13 +659,14 @@ Stbox_zmax(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 }
 
+PGDLLEXPORT Datum Stbox_tmin(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_tmin);
 /**
  * @ingroup mobilitydb_box_accessor
  * @brief Return the minimum T value of a spatiotemporal box, if any.
  * @sqlfunc Tmin()
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_tmin(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
@@ -643,13 +676,14 @@ Stbox_tmin(PG_FUNCTION_ARGS)
   PG_RETURN_TIMESTAMPTZ(result);
 }
 
+PGDLLEXPORT Datum Stbox_tmax(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_tmax);
 /**
  * @ingroup mobilitydb_box_accessor
  * @brief Return the maximum T value of a spatiotemporal box, if any.
  * @sqlfunc Tmax()
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_tmax(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
@@ -663,26 +697,28 @@ Stbox_tmax(PG_FUNCTION_ARGS)
  * Functions for spatial reference systems
  *****************************************************************************/
 
+PGDLLEXPORT Datum Stbox_get_srid(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_get_srid);
 /**
  * @ingroup mobilitydb_box_spatial
  * @brief Return the SRID of a spatiotemporal box
  * @sqlfunc SRID()
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_get_srid(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
   PG_RETURN_INT32(stbox_srid(box));
 }
 
+PGDLLEXPORT Datum Stbox_set_srid(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_set_srid);
 /**
  * @ingroup mobilitydb_box_spatial
  * @brief Sets the SRID of a spatiotemporal box
  * @sqlfunc setSRID()
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_set_srid(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
@@ -733,13 +769,14 @@ stbox_transform(const STBox *box, int32 srid)
   return result;
 }
 
+PGDLLEXPORT Datum Stbox_transform(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_transform);
 /**
  * @ingroup mobilitydb_box_spatial
  * @brief Transform a spatiotemporal box into another spatial reference system
  * @sqlfunc transform()
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_transform(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
@@ -754,6 +791,7 @@ Stbox_transform(PG_FUNCTION_ARGS)
  * Transformation functions
  *****************************************************************************/
 
+PGDLLEXPORT Datum Stbox_get_space(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_get_space);
 /**
  * @ingroup mobilitydb_box_transf
@@ -761,20 +799,21 @@ PG_FUNCTION_INFO_V1(Stbox_get_space);
  * dimension
  * @sqlfunc getSpace()
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_get_space(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
   PG_RETURN_POINTER(stbox_get_space(box));
 }
 
+PGDLLEXPORT Datum Stbox_expand_space(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_expand_space);
 /**
  * @ingroup mobilitydb_box_transf
  * @brief Return a spatiotemporal box expanded in the spatial dimension of by a double
  * @sqlfunc expandSpace()
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_expand_space(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
@@ -782,13 +821,14 @@ Stbox_expand_space(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(stbox_expand_space(box, d));
 }
 
+PGDLLEXPORT Datum Stbox_expand_time(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_expand_time);
 /**
  * @ingroup mobilitydb_box_transf
  * @brief Return a spatiotemporal box expanded in the temporal dimension by an interval
  * @sqlfunc Stbox_expand_time()
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_expand_time(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
@@ -816,13 +856,14 @@ stbox_round(const STBox *box, Datum prec)
   return result;
 }
 
+PGDLLEXPORT Datum Stbox_round(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_round);
 /**
  * @ingroup mobilitydb_box_transf
  * @brief Sets the precision of the coordinates of a spatiotemporal box
  * @sqlfunc round()
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_round(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
@@ -834,6 +875,7 @@ Stbox_round(PG_FUNCTION_ARGS)
  * Topological operators
  *****************************************************************************/
 
+PGDLLEXPORT Datum Contains_stbox_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contains_stbox_stbox);
 /**
  * @ingroup mobilitydb_box_topo
@@ -841,7 +883,7 @@ PG_FUNCTION_INFO_V1(Contains_stbox_stbox);
  * @sqlfunc stbox_contains()
  * @sqlop @p \@>
  */
-PGDLLEXPORT Datum
+Datum
 Contains_stbox_stbox(PG_FUNCTION_ARGS)
 {
   STBox *box1 = PG_GETARG_STBOX_P(0);
@@ -849,6 +891,7 @@ Contains_stbox_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(contains_stbox_stbox(box1, box2));
 }
 
+PGDLLEXPORT Datum Contained_stbox_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_stbox_stbox);
 /**
  * @ingroup mobilitydb_box_topo
@@ -856,7 +899,7 @@ PG_FUNCTION_INFO_V1(Contained_stbox_stbox);
  * @sqlfunc stbox_contained()
  * @sqlop @p <@
  */
-PGDLLEXPORT Datum
+Datum
 Contained_stbox_stbox(PG_FUNCTION_ARGS)
 {
   STBox *box1 = PG_GETARG_STBOX_P(0);
@@ -864,6 +907,7 @@ Contained_stbox_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(contained_stbox_stbox(box1, box2));
 }
 
+PGDLLEXPORT Datum Overlaps_stbox_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overlaps_stbox_stbox);
 /**
  * @ingroup mobilitydb_box_topo
@@ -871,7 +915,7 @@ PG_FUNCTION_INFO_V1(Overlaps_stbox_stbox);
  * @sqlfunc stbox_overlaps()
  * @sqlop @p &&
  */
-PGDLLEXPORT Datum
+Datum
 Overlaps_stbox_stbox(PG_FUNCTION_ARGS)
 {
   STBox *box1 = PG_GETARG_STBOX_P(0);
@@ -879,6 +923,7 @@ Overlaps_stbox_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(overlaps_stbox_stbox(box1, box2));
 }
 
+PGDLLEXPORT Datum Same_stbox_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Same_stbox_stbox);
 /**
  * @ingroup mobilitydb_box_topo
@@ -886,7 +931,7 @@ PG_FUNCTION_INFO_V1(Same_stbox_stbox);
  * @sqlfunc stbox_same()
  * @sqlop @p ~=
  */
-PGDLLEXPORT Datum
+Datum
 Same_stbox_stbox(PG_FUNCTION_ARGS)
 {
   STBox *box1 = PG_GETARG_STBOX_P(0);
@@ -894,6 +939,7 @@ Same_stbox_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(same_stbox_stbox(box1, box2));
 }
 
+PGDLLEXPORT Datum Adjacent_stbox_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Adjacent_stbox_stbox);
 /**
  * @ingroup mobilitydb_box_topo
@@ -901,7 +947,7 @@ PG_FUNCTION_INFO_V1(Adjacent_stbox_stbox);
  * @sqlfunc stbox_adjacent()
  * @sqlop @p -|-
  */
-PGDLLEXPORT Datum
+Datum
 Adjacent_stbox_stbox(PG_FUNCTION_ARGS)
 {
   STBox *box1 = PG_GETARG_STBOX_P(0);
@@ -913,6 +959,7 @@ Adjacent_stbox_stbox(PG_FUNCTION_ARGS)
  * Position operators
  *****************************************************************************/
 
+PGDLLEXPORT Datum Left_stbox_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Left_stbox_stbox);
 /**
  * @ingroup mobilitydb_box_pos
@@ -920,7 +967,7 @@ PG_FUNCTION_INFO_V1(Left_stbox_stbox);
  * @sqlfunc temporal_below()
  * @sqlop @p >>
  */
-PGDLLEXPORT Datum
+Datum
 Left_stbox_stbox(PG_FUNCTION_ARGS)
 {
   STBox *box1 = PG_GETARG_STBOX_P(0);
@@ -928,6 +975,7 @@ Left_stbox_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(left_stbox_stbox(box1, box2));
 }
 
+PGDLLEXPORT Datum Overleft_stbox_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overleft_stbox_stbox);
 /**
  * @ingroup mobilitydb_box_pos
@@ -935,7 +983,7 @@ PG_FUNCTION_INFO_V1(Overleft_stbox_stbox);
  * @sqlfunc temporal_below()
  * @sqlop @p &>
  */
-PGDLLEXPORT Datum
+Datum
 Overleft_stbox_stbox(PG_FUNCTION_ARGS)
 {
   STBox *box1 = PG_GETARG_STBOX_P(0);
@@ -943,6 +991,7 @@ Overleft_stbox_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(overleft_stbox_stbox(box1, box2));
 }
 
+PGDLLEXPORT Datum Right_stbox_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Right_stbox_stbox);
 /**
  * @ingroup mobilitydb_box_pos
@@ -950,7 +999,7 @@ PG_FUNCTION_INFO_V1(Right_stbox_stbox);
  * @sqlfunc temporal_below()
  * @sqlop @p <<
  */
-PGDLLEXPORT Datum
+Datum
 Right_stbox_stbox(PG_FUNCTION_ARGS)
 {
   STBox *box1 = PG_GETARG_STBOX_P(0);
@@ -958,6 +1007,7 @@ Right_stbox_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(right_stbox_stbox(box1, box2));
 }
 
+PGDLLEXPORT Datum Overright_stbox_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overright_stbox_stbox);
 /**
  * @ingroup mobilitydb_box_pos
@@ -965,7 +1015,7 @@ PG_FUNCTION_INFO_V1(Overright_stbox_stbox);
  * @sqlfunc temporal_below()
  * @sqlop @p &<
  */
-PGDLLEXPORT Datum
+Datum
 Overright_stbox_stbox(PG_FUNCTION_ARGS)
 {
   STBox *box1 = PG_GETARG_STBOX_P(0);
@@ -973,6 +1023,7 @@ Overright_stbox_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(overright_stbox_stbox(box1, box2));
 }
 
+PGDLLEXPORT Datum Below_stbox_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Below_stbox_stbox);
 /**
  * @ingroup mobilitydb_box_pos
@@ -980,7 +1031,7 @@ PG_FUNCTION_INFO_V1(Below_stbox_stbox);
  * @sqlfunc temporal_below()
  * @sqlop @p <<|
  */
-PGDLLEXPORT Datum
+Datum
 Below_stbox_stbox(PG_FUNCTION_ARGS)
 {
   STBox *box1 = PG_GETARG_STBOX_P(0);
@@ -988,6 +1039,7 @@ Below_stbox_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(below_stbox_stbox(box1, box2));
 }
 
+PGDLLEXPORT Datum Overbelow_stbox_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overbelow_stbox_stbox);
 /**
  * @ingroup mobilitydb_box_pos
@@ -995,7 +1047,7 @@ PG_FUNCTION_INFO_V1(Overbelow_stbox_stbox);
  * @sqlfunc temporal_below()
  * @sqlop @p &<|
  */
-PGDLLEXPORT Datum
+Datum
 Overbelow_stbox_stbox(PG_FUNCTION_ARGS)
 {
   STBox *box1 = PG_GETARG_STBOX_P(0);
@@ -1003,6 +1055,7 @@ Overbelow_stbox_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(overbelow_stbox_stbox(box1, box2));
 }
 
+PGDLLEXPORT Datum Above_stbox_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Above_stbox_stbox);
 /**
  * @ingroup mobilitydb_box_pos
@@ -1010,7 +1063,7 @@ PG_FUNCTION_INFO_V1(Above_stbox_stbox);
  * @sqlfunc temporal_below()
  * @sqlop @p |>>
  */
-PGDLLEXPORT Datum
+Datum
 Above_stbox_stbox(PG_FUNCTION_ARGS)
 {
   STBox *box1 = PG_GETARG_STBOX_P(0);
@@ -1018,6 +1071,7 @@ Above_stbox_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(above_stbox_stbox(box1, box2));
 }
 
+PGDLLEXPORT Datum Overabove_stbox_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overabove_stbox_stbox);
 /**
  * @ingroup mobilitydb_box_pos
@@ -1025,7 +1079,7 @@ PG_FUNCTION_INFO_V1(Overabove_stbox_stbox);
  * @sqlfunc temporal_below()
  * @sqlop @p |&>
  */
-PGDLLEXPORT Datum
+Datum
 Overabove_stbox_stbox(PG_FUNCTION_ARGS)
 {
   STBox *box1 = PG_GETARG_STBOX_P(0);
@@ -1033,6 +1087,7 @@ Overabove_stbox_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(overabove_stbox_stbox(box1, box2));
 }
 
+PGDLLEXPORT Datum Front_stbox_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Front_stbox_stbox);
 /**
  * @ingroup mobilitydb_box_pos
@@ -1040,7 +1095,7 @@ PG_FUNCTION_INFO_V1(Front_stbox_stbox);
  * @sqlfunc temporal_below()
  * @sqlop @p <</
  */
-PGDLLEXPORT Datum
+Datum
 Front_stbox_stbox(PG_FUNCTION_ARGS)
 {
   STBox *box1 = PG_GETARG_STBOX_P(0);
@@ -1048,6 +1103,7 @@ Front_stbox_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(front_stbox_stbox(box1, box2));
 }
 
+PGDLLEXPORT Datum Overfront_stbox_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overfront_stbox_stbox);
 /**
  * @ingroup mobilitydb_box_pos
@@ -1055,7 +1111,7 @@ PG_FUNCTION_INFO_V1(Overfront_stbox_stbox);
  * @sqlfunc temporal_below()
  * @sqlop @p &</
  */
-PGDLLEXPORT Datum
+Datum
 Overfront_stbox_stbox(PG_FUNCTION_ARGS)
 {
   STBox *box1 = PG_GETARG_STBOX_P(0);
@@ -1063,6 +1119,7 @@ Overfront_stbox_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(overfront_stbox_stbox(box1, box2));
 }
 
+PGDLLEXPORT Datum Back_stbox_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Back_stbox_stbox);
 /**
  * @ingroup mobilitydb_box_pos
@@ -1070,7 +1127,7 @@ PG_FUNCTION_INFO_V1(Back_stbox_stbox);
  * @sqlfunc temporal_below()
  * @sqlop @p />>
  */
-PGDLLEXPORT Datum
+Datum
 Back_stbox_stbox(PG_FUNCTION_ARGS)
 {
   STBox *box1 = PG_GETARG_STBOX_P(0);
@@ -1078,6 +1135,7 @@ Back_stbox_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(back_stbox_stbox(box1, box2));
 }
 
+PGDLLEXPORT Datum Overback_stbox_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overback_stbox_stbox);
 /**
  * @ingroup mobilitydb_box_pos
@@ -1085,7 +1143,7 @@ PG_FUNCTION_INFO_V1(Overback_stbox_stbox);
  * @sqlfunc temporal_below()
  * @sqlop @p /&>
  */
-PGDLLEXPORT Datum
+Datum
 Overback_stbox_stbox(PG_FUNCTION_ARGS)
 {
   STBox *box1 = PG_GETARG_STBOX_P(0);
@@ -1093,6 +1151,7 @@ Overback_stbox_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(overback_stbox_stbox(box1, box2));
 }
 
+PGDLLEXPORT Datum Before_stbox_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Before_stbox_stbox);
 /**
  * @ingroup mobilitydb_box_pos
@@ -1100,7 +1159,7 @@ PG_FUNCTION_INFO_V1(Before_stbox_stbox);
  * @sqlfunc temporal_below()
  * @sqlop @p <<#
  */
-PGDLLEXPORT Datum
+Datum
 Before_stbox_stbox(PG_FUNCTION_ARGS)
 {
   STBox *box1 = PG_GETARG_STBOX_P(0);
@@ -1108,6 +1167,7 @@ Before_stbox_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(before_stbox_stbox(box1, box2));
 }
 
+PGDLLEXPORT Datum Overbefore_stbox_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overbefore_stbox_stbox);
 /**
  * @ingroup mobilitydb_box_pos
@@ -1115,7 +1175,7 @@ PG_FUNCTION_INFO_V1(Overbefore_stbox_stbox);
  * @sqlfunc temporal_below()
  * @sqlop @p &<#
  */
-PGDLLEXPORT Datum
+Datum
 Overbefore_stbox_stbox(PG_FUNCTION_ARGS)
 {
   STBox *box1 = PG_GETARG_STBOX_P(0);
@@ -1123,6 +1183,7 @@ Overbefore_stbox_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(overbefore_stbox_stbox(box1, box2));
 }
 
+PGDLLEXPORT Datum After_stbox_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(After_stbox_stbox);
 /**
  * @ingroup mobilitydb_box_pos
@@ -1130,7 +1191,7 @@ PG_FUNCTION_INFO_V1(After_stbox_stbox);
  * @sqlfunc temporal_below()
  * @sqlop @p #>>
  */
-PGDLLEXPORT Datum
+Datum
 After_stbox_stbox(PG_FUNCTION_ARGS)
 {
   STBox *box1 = PG_GETARG_STBOX_P(0);
@@ -1138,6 +1199,7 @@ After_stbox_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(after_stbox_stbox(box1, box2));
 }
 
+PGDLLEXPORT Datum Overafter_stbox_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overafter_stbox_stbox);
 /**
  * @ingroup mobilitydb_box_pos
@@ -1145,7 +1207,7 @@ PG_FUNCTION_INFO_V1(Overafter_stbox_stbox);
  * @sqlfunc temporal_below()
  * @sqlop @p #&>
  */
-PGDLLEXPORT Datum
+Datum
 Overafter_stbox_stbox(PG_FUNCTION_ARGS)
 {
   STBox *box1 = PG_GETARG_STBOX_P(0);
@@ -1157,6 +1219,7 @@ Overafter_stbox_stbox(PG_FUNCTION_ARGS)
  * Set operators
  *****************************************************************************/
 
+PGDLLEXPORT Datum Union_stbox_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Union_stbox_stbox);
 /**
  * @ingroup mobilitydb_box_set
@@ -1164,7 +1227,7 @@ PG_FUNCTION_INFO_V1(Union_stbox_stbox);
  * @sqlfunc stbox_union()
  * @sqlop @p +
  */
-PGDLLEXPORT Datum
+Datum
 Union_stbox_stbox(PG_FUNCTION_ARGS)
 {
   STBox *box1 = PG_GETARG_STBOX_P(0);
@@ -1173,6 +1236,7 @@ Union_stbox_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Intersection_stbox_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Intersection_stbox_stbox);
 /**
  * @ingroup mobilitydb_box_set
@@ -1180,7 +1244,7 @@ PG_FUNCTION_INFO_V1(Intersection_stbox_stbox);
  * @sqlfunc stbox_intersection()
  * @sqlop @p *
  */
-PGDLLEXPORT Datum
+Datum
 Intersection_stbox_stbox(PG_FUNCTION_ARGS)
 {
   STBox *box1 = PG_GETARG_STBOX_P(0);
@@ -1195,6 +1259,7 @@ Intersection_stbox_stbox(PG_FUNCTION_ARGS)
  * Split functions
  *****************************************************************************/
 
+PGDLLEXPORT Datum Stbox_quad_split(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_quad_split);
 /**
  * @ingroup mobilitydb_box_set
@@ -1202,7 +1267,7 @@ PG_FUNCTION_INFO_V1(Stbox_quad_split);
  * @sqlfunc stbox_intersection()
  * @sqlop @p *
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_quad_split(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
@@ -1217,11 +1282,12 @@ Stbox_quad_split(PG_FUNCTION_ARGS)
  * Extent aggregation
  *****************************************************************************/
 
+PGDLLEXPORT Datum Stbox_extent_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_extent_transfn);
 /**
  * @brief Transition function for extent aggregation for boxes
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_extent_transfn(PG_FUNCTION_ARGS)
 {
   STBox *box1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_STBOX_P(0);
@@ -1252,11 +1318,12 @@ Stbox_extent_transfn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Stbox_extent_combinefn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_extent_combinefn);
 /**
  * @brief Combine function for extent aggregation for boxes
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_extent_combinefn(PG_FUNCTION_ARGS)
 {
   STBox *box1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_STBOX_P(0);
@@ -1278,6 +1345,7 @@ Stbox_extent_combinefn(PG_FUNCTION_ARGS)
  * Comparison functions
  *****************************************************************************/
 
+PGDLLEXPORT Datum Stbox_cmp(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_cmp);
 /**
  * @ingroup mobilitydb_box_comp
@@ -1286,7 +1354,7 @@ PG_FUNCTION_INFO_V1(Stbox_cmp);
  * @note Function used for B-tree comparison
  * @sqlfunc stbox_cmp()
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_cmp(PG_FUNCTION_ARGS)
 {
   STBox *box1 = PG_GETARG_STBOX_P(0);
@@ -1294,6 +1362,7 @@ Stbox_cmp(PG_FUNCTION_ARGS)
   PG_RETURN_INT32(stbox_cmp(box1, box2));
 }
 
+PGDLLEXPORT Datum Stbox_lt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_lt);
 /**
  * @ingroup mobilitydb_box_comp
@@ -1301,7 +1370,7 @@ PG_FUNCTION_INFO_V1(Stbox_lt);
  * @sqlfunc stbox_lt()
  * @sqlop @p <
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_lt(PG_FUNCTION_ARGS)
 {
   STBox *box1 = PG_GETARG_STBOX_P(0);
@@ -1309,6 +1378,7 @@ Stbox_lt(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(stbox_lt(box1, box2));
 }
 
+PGDLLEXPORT Datum Stbox_le(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_le);
 /**
  * @ingroup mobilitydb_box_comp
@@ -1317,7 +1387,7 @@ PG_FUNCTION_INFO_V1(Stbox_le);
  * @sqlfunc stbox_le()
  * @sqlop @p <=
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_le(PG_FUNCTION_ARGS)
 {
   STBox *box1 = PG_GETARG_STBOX_P(0);
@@ -1325,6 +1395,7 @@ Stbox_le(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(stbox_le(box1, box2));
 }
 
+PGDLLEXPORT Datum Stbox_ge(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_ge);
 /**
  * @ingroup mobilitydb_box_comp
@@ -1333,7 +1404,7 @@ PG_FUNCTION_INFO_V1(Stbox_ge);
  * @sqlfunc stbox_ge()
  * @sqlop @p >=
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_ge(PG_FUNCTION_ARGS)
 {
   STBox *box1 = PG_GETARG_STBOX_P(0);
@@ -1341,6 +1412,7 @@ Stbox_ge(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(stbox_ge(box1, box2));
 }
 
+PGDLLEXPORT Datum Stbox_gt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_gt);
 /**
  * @ingroup mobilitydb_box_comp
@@ -1348,7 +1420,7 @@ PG_FUNCTION_INFO_V1(Stbox_gt);
  * @sqlfunc stbox_gt()
  * @sqlop @p >
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_gt(PG_FUNCTION_ARGS)
 {
   STBox *box1 = PG_GETARG_STBOX_P(0);
@@ -1356,6 +1428,7 @@ Stbox_gt(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(stbox_gt(box1, box2));
 }
 
+PGDLLEXPORT Datum Stbox_eq(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_eq);
 /**
  * @ingroup mobilitydb_box_comp
@@ -1363,7 +1436,7 @@ PG_FUNCTION_INFO_V1(Stbox_eq);
  * @sqlfunc stbox_eq()
  * @sqlop @p =
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_eq(PG_FUNCTION_ARGS)
 {
   STBox *box1 = PG_GETARG_STBOX_P(0);
@@ -1371,6 +1444,7 @@ Stbox_eq(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(stbox_eq(box1, box2));
 }
 
+PGDLLEXPORT Datum Stbox_ne(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_ne);
 /**
  * @ingroup mobilitydb_box_comp
@@ -1378,7 +1452,7 @@ PG_FUNCTION_INFO_V1(Stbox_ne);
  * @sqlfunc stbox_ne()
  * @sqlop @p <>
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_ne(PG_FUNCTION_ARGS)
 {
   STBox *box1 = PG_GETARG_STBOX_P(0);

@@ -281,11 +281,12 @@ tgeompoint_transform_gk(const Temporal *temp)
   return result;
 }
 
+PGDLLEXPORT Datum Geometry_transform_gk(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geometry_transform_gk);
 /**
  * @brief Transform a geometry into the Gauss-Krueger projection used in Secondo
  */
-PGDLLEXPORT Datum
+Datum
 Geometry_transform_gk(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
@@ -294,12 +295,13 @@ Geometry_transform_gk(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Tgeompoint_transform_gk(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tgeompoint_transform_gk);
 /**
  * @brief Transform a temporal point into the Gauss-Krueger projection used in
  * Secondo
  */
-PGDLLEXPORT Datum
+Datum
 Tgeompoint_transform_gk(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
