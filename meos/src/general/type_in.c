@@ -297,7 +297,7 @@ tinstant_from_mfjson(json_object *mfjson, bool isgeo, int srid,
 {
   bool geodetic = (temptype == T_TGEOGPOINT);
   bool byvalue = basetype_byvalue(temptype_basetype(temptype));
-  Datum value;
+  Datum value = 0; /* make compiler quiet */
   if (! isgeo)
   {
     /* Get values */
@@ -1035,42 +1035,32 @@ npoint_from_wkb_state(wkb_parse_state *s)
 static Datum
 basevalue_from_wkb_state(wkb_parse_state *s)
 {
-  Datum result;
   switch (s->basetype)
   {
     case T_BOOL:
-      result = BoolGetDatum(byte_from_wkb_state(s));
-      break;
+      return BoolGetDatum(byte_from_wkb_state(s));
     case T_INT4:
-      result = Int32GetDatum(int32_from_wkb_state(s));
-      break;
+      return Int32GetDatum(int32_from_wkb_state(s));
     case T_INT8:
-      result = Int64GetDatum(int64_from_wkb_state(s));
-      break;
+      return Int64GetDatum(int64_from_wkb_state(s));
     case T_FLOAT8:
-      result = Float8GetDatum(double_from_wkb_state(s));
-      break;
+      return Float8GetDatum(double_from_wkb_state(s));
     case T_TIMESTAMPTZ:
-      result = TimestampTzGetDatum(timestamp_from_wkb_state(s));
-      break;
+      return TimestampTzGetDatum(timestamp_from_wkb_state(s));
     case T_TEXT:
-      result = PointerGetDatum(text_from_wkb_state(s));
-      break;
+      return PointerGetDatum(text_from_wkb_state(s));
     case T_GEOMETRY:
     case T_GEOGRAPHY:
       /* Notice that only point geometries/geographies are allowed */
-      result = point_from_wkb_state(s);
-      break;
+      return point_from_wkb_state(s);
 #if NPOINT
     case T_NPOINT:
-      result = PointerGetDatum(npoint_from_wkb_state(s));
-      break;
+      return PointerGetDatum(npoint_from_wkb_state(s));
 #endif /* NPOINT */
     default: /* Error! */
       elog(ERROR, "Unknown base type: %d", s->basetype);
-      break;
+      return 0; /* make compiler quiet */
   }
-  return result;
 }
 
 /**
@@ -1542,27 +1532,25 @@ datum_from_wkb(const uint8_t *wkb, size_t size, meosType type)
 
   /* Call the type-specific function */
   s.type = type;
-  Datum result;
   if (set_type(type))
-    result = PointerGetDatum(set_from_wkb_state(&s));
-  else if (span_type(type))
+    return PointerGetDatum(set_from_wkb_state(&s));
+  if (span_type(type))
   {
     Span *span = palloc(sizeof(Span));
     *span = span_from_wkb_state(&s);
-    result = PointerGetDatum(span);
+    return PointerGetDatum(span);
   }
-  else if (spanset_type(type))
-    result = PointerGetDatum(spanset_from_wkb_state(&s));
-  else if (type == T_TBOX)
-    result = PointerGetDatum(tbox_from_wkb_state(&s));
-  else if (type == T_STBOX)
-    result = PointerGetDatum(stbox_from_wkb_state(&s));
-  else if (temporal_type(type))
-    result = PointerGetDatum(temporal_from_wkb_state(&s));
-  else /* Error! */
-    elog(ERROR, "Unknown WKB type: %d", type);
-
-  return result;
+  if (spanset_type(type))
+    return PointerGetDatum(spanset_from_wkb_state(&s));
+  if (type == T_TBOX)
+    return PointerGetDatum(tbox_from_wkb_state(&s));
+  if (type == T_STBOX)
+    return PointerGetDatum(stbox_from_wkb_state(&s));
+  if (temporal_type(type))
+    return PointerGetDatum(temporal_from_wkb_state(&s));
+  /* Error! */
+  elog(ERROR, "Unknown WKB type: %d", type);
+  return 0;
 }
 
 /**

@@ -2893,7 +2893,7 @@ tpoint_geo_min_bearing_at_timestamp(const TInstant *start, const TInstant *end,
   const POINT2D *p = DATUM_POINT2D_P(point);
   const POINT2D *q;
   long double fraction;
-  Datum proj;
+  Datum proj = 0; /* make compiler quiet */
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(start->flags);
   if (geodetic)
   {

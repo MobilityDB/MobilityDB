@@ -35,8 +35,6 @@
  *    overlaps, contains, contained, same
  */
 
-// #include "npoint/tnpoint_boxops.h"
-
 /* PostgreSQL */
 #include <postgres.h>
 #include <utils/timestamp.h>
@@ -115,9 +113,7 @@ contains_rid_tnpoint_bigintset(const Temporal *temp, const Set *s,
   bool invert)
 {
   Set *routes = tnpoint_routes(temp);
-  return invert ?
-    contains_set_set(s, routes) :
-    contains_set_set(routes, s);
+  return invert ? contains_set_set(s, routes) : contains_set_set(routes, s);
 }
 
 /**

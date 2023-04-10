@@ -547,8 +547,8 @@ Temporal_out(PG_FUNCTION_ARGS)
 Temporal *
 temporal_recv(StringInfo buf)
 {
-  uint8 temptype = pq_getmsgbyte(buf);
-  uint8 subtype = pq_getmsgbyte(buf);
+  uint8 temptype = (uint8) pq_getmsgbyte(buf);
+  uint8 subtype = (uint8) pq_getmsgbyte(buf);
   Temporal *result;
   assert(subtype == TINSTANT || subtype == TSEQUENCE);
   if (subtype == TINSTANT)

@@ -297,9 +297,9 @@ box3d_to_lwgeom(BOX3D *box)
 LWGEOM *
 pgis_lwgeom_boundary(LWGEOM *lwgeom)
 {
-  int32_t srid = lwgeom_get_srid(lwgeom);
-  uint8_t hasz = lwgeom_has_z(lwgeom);
-  uint8_t hasm = lwgeom_has_m(lwgeom);
+  int32_t srid = (uint8_t) lwgeom_get_srid(lwgeom);
+  uint8_t hasz = (uint8_t) lwgeom_has_z(lwgeom);
+  uint8_t hasm = (uint8_t) lwgeom_has_m(lwgeom);
 
   switch (lwgeom->type)
   {
@@ -972,7 +972,7 @@ gserialized_array_union(GSERIALIZED **gsarr, int nelems)
 
   bool is3d = false, gotsrid = false;
   int curgeom = 0;
-  int empty_type = 0;
+  uint8_t empty_type = 0;
   int32_t srid = SRID_UNKNOWN;
   GSERIALIZED *gser_out = NULL;
   GEOSGeometry *g = NULL;
@@ -1003,7 +1003,7 @@ gserialized_array_union(GSERIALIZED **gsarr, int nelems)
     /* Don't include empties in the union */
     if (gserialized_is_empty(gsarr[i]))
     {
-      int gser_type = gserialized_get_type(gsarr[i]);
+      uint8_t gser_type = (uint8_t) gserialized_get_type(gsarr[i]);
       if (gser_type > empty_type)
         empty_type = gser_type;
     }
@@ -1085,7 +1085,7 @@ gserialized_convex_hull(const GSERIALIZED *geom)
 
   GEOSSetSRID(g3, srid);
 
-  LWGEOM *lwout = GEOS2LWGEOM(g3, gserialized_has_z(geom));
+  LWGEOM *lwout = GEOS2LWGEOM(g3, (uint8_t) gserialized_has_z(geom));
   GEOSGeom_destroy(g3);
 
   if (!lwout)
@@ -2023,7 +2023,7 @@ gserialized_line_substring(GSERIALIZED *geom, double from, double to)
   LWGEOM *olwgeom;
   POINTARRAY *opa;
   GSERIALIZED *ret;
-  int type = gserialized_get_type(geom);
+  uint8_t type = (uint8_t) gserialized_get_type(geom);
 
   if ( from < 0 || from > 1 )
   {

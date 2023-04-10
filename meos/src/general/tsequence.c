@@ -3557,8 +3557,8 @@ tsegment_restrict_value(const TInstant *inst1, const TInstant *inst2,
     datum_ne(value2, value, basetype);
   /* For linear interpolation and not constant segment is the value in the
    * interior of the segment? */
-  Datum projvalue;
-  TimestampTz t;
+  Datum projvalue = 0; /* make compiler quiet */
+  TimestampTz t = 0; /* make compiler quiet */
   bool interior = (interp == LINEAR) && ! isconst &&
     tlinearsegm_intersection_value(inst1, inst2, value, basetype, &projvalue, &t);
 
