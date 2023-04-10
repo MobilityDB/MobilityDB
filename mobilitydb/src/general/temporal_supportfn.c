@@ -232,7 +232,7 @@ makeExpandExpr(Node *arg, Node *radiusarg, Oid argoid, Oid retoid,
 
   /* Expand function must be in same namespace as the caller */
   char *nspname = get_namespace_name(get_func_namespace(callingfunc));
-  char *funcname;
+  char *funcname = NULL; /* make compiler quiet */
   meosType argtype = oid_type(argoid);
   if (argtype == T_GEOMETRY || argtype == T_GEOGRAPHY || argtype == T_STBOX ||
       argtype == T_TGEOMPOINT || argtype == T_TGEOGPOINT

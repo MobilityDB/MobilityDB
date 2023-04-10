@@ -109,7 +109,7 @@ Tpoint_as_ewkt(PG_FUNCTION_ARGS)
  * array in Well-Known Text (WKT) format
  */
 static Datum
-geoarr_as_text_ext(FunctionCallInfo fcinfo, bool temparr, bool extended)
+geoarr_as_text_ext(FunctionCallInfo fcinfo, bool temporal, bool extended)
 {
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
   /* Return NULL on empty array */
@@ -124,7 +124,7 @@ geoarr_as_text_ext(FunctionCallInfo fcinfo, bool temparr, bool extended)
     dbl_dig_for_wkt = PG_GETARG_INT32(1);
 
   char **strarr;
-  if (temparr)
+  if (temporal)
   {
     Temporal **temparr = temporalarr_extract(array, &count);
     strarr = tpointarr_as_text((const Temporal **) temparr, count,

@@ -1042,23 +1042,24 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, meosType bboxtype,
      */
     for (i = 0; i < commonEntriesCount; i++)
     {
-      box = DatumGetPointer(entryvec->vector[commonEntries[i].index].key);
+      OffsetNumber idx = (OffsetNumber) (commonEntries[i].index);
+      box = DatumGetPointer(entryvec->vector[idx].key);
 
       /*
        * Check if we have to place this entry in either group to achieve
        * LIMIT_RATIO.
        */
       if (v->spl_nleft + (commonEntriesCount - i) <= m)
-        PLACE_LEFT(box, commonEntries[i].index);
+        PLACE_LEFT(box, idx);
       else if (v->spl_nright + (commonEntriesCount - i) <= m)
-        PLACE_RIGHT(box, commonEntries[i].index);
+        PLACE_RIGHT(box, idx);
       else
       {
         /* Otherwise select the group by minimal penalty */
         if (tbox_penalty(leftBox, box) < tbox_penalty(rightBox, box))
-          PLACE_LEFT(box, commonEntries[i].index);
+          PLACE_LEFT(box, idx);
         else
-          PLACE_RIGHT(box, commonEntries[i].index);
+          PLACE_RIGHT(box, idx);
       }
     }
   }

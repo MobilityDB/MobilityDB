@@ -85,7 +85,7 @@ Set_gin_extract_query(PG_FUNCTION_ARGS)
   bool **nullFlags = (bool **) PG_GETARG_POINTER(5);
   int32 *searchMode = (int32 *) PG_GETARG_POINTER(6);
   Set *s;
-  Datum *elems;
+  Datum *elems = NULL;
   *nullFlags = NULL;
   *searchMode = GIN_SEARCH_MODE_DEFAULT;
 

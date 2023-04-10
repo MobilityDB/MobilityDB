@@ -392,7 +392,7 @@ tgeogpoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
     /* Compute distance from beginning of the segment to one closest point */
     long double seglength = sphere_distance(&(e1.start), &(e1.end));
     long double length = sphere_distance(&(e1.start), &close1);
-    fraction = length / seglength;
+    fraction = (double) (length / seglength);
   }
 
   if (fraction <= MEOS_EPSILON || fraction >= (1.0 - MEOS_EPSILON))

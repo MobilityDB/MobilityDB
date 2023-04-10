@@ -1500,17 +1500,10 @@ _mobdb_span_joinsel(PG_FUNCTION_ARGS)
       errmsg("Oid %u does not refer to a table", table1_oid)));
   const char *att1_name = text_to_cstring(att1_text);
   AttrNumber att1_num;
-  /* We know the name? Look up the num */
-  if (att1_text)
-  {
-    /* Get the attribute number */
-    att1_num = get_attnum(table1_oid, att1_name);
-    if (! att1_num)
-      elog(ERROR, "attribute \"%s\" does not exist", att1_name);
-  }
-  else
-    elog(ERROR, "attribute name is null");
-
+  /* Get the attribute number */
+  att1_num = get_attnum(table1_oid, att1_name);
+  if (! att1_num)
+    elog(ERROR, "attribute \"%s\" does not exist", att1_name);
   // /* Get the attribute type */
   // meosType atttype1 = oid_type(get_atttype(table1_oid, att1_num));
 
@@ -1520,19 +1513,13 @@ _mobdb_span_joinsel(PG_FUNCTION_ARGS)
       errmsg("Oid %u does not refer to a table", table2_oid)));
   const char *att2_name = text_to_cstring(att2_text);
   AttrNumber att2_num;
-  /* We know the name? Look up the num */
-  if (att2_text)
-  {
-    /* Get the attribute number */
-    att2_num = get_attnum(table2_oid, att2_name);
-    if (! att2_num)
-      elog(ERROR, "attribute \"%s\" does not exist", att2_name);
-  }
-  else
-    elog(ERROR, "attribute name is null");
-
+  /* Get the attribute number */
+  att2_num = get_attnum(table2_oid, att2_name);
+  if (! att2_num)
+    elog(ERROR, "attribute \"%s\" does not exist", att2_name);
   // /* Get the attribute type */
   // meosType atttype2 = oid_type(get_atttype(table1_oid, att1_num));
+
   /* Determine whether we can estimate selectivity for the operator */
   meosType ltype, rtype;
   meosOper oper = oid_oper(operid, &ltype, &rtype);

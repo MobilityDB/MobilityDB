@@ -584,7 +584,7 @@ ptarray_locate_point_spheroid(const POINTARRAY *pa, const POINT4D *p4d,
   const SPHEROID *s, double tolerance, double *mindistout, POINT4D *proj4d)
 {
   GEOGRAPHIC_EDGE e;
-  GEOGRAPHIC_POINT a, b, nearest;
+  GEOGRAPHIC_POINT a, b, nearest = {0}; /* make compiler quiet */
   POINT4D p1, p2;
   const POINT2D *p;
   POINT2D proj;

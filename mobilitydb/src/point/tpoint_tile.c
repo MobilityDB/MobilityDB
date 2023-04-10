@@ -172,11 +172,11 @@ Stbox_tile(PG_FUNCTION_ARGS)
   GSERIALIZED *point = PG_GETARG_GSERIALIZED_P(0);
   ensure_non_empty(point);
   ensure_point_type(point);
-  TimestampTz t;
+  TimestampTz t = 0; /* make compiler quiet */
   double size;
   int64 tunits = 0; /* make compiler quiet */
   GSERIALIZED *sorigin;
-  TimestampTz torigin;
+  TimestampTz torigin = 0; /* make compiler quiet */
   bool hast = false;
   if (PG_NARGS() == 3)
   {

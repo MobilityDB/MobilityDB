@@ -656,7 +656,7 @@ distance_stbox_nodebox(const STBox *query, const STboxNode *nodebox)
       datum_gt(nodebox->left.period.lower, query->period.upper, T_TIMESTAMPTZ)))
     return DBL_MAX;
 
-  double dx, dy, dz;
+  double dx, dy, dz = 0; /* make compiler quiet */
   if (query->xmax < nodebox->left.xmin)
     dx = nodebox->left.xmin - query->xmax;
   else if (query->xmin > nodebox->right.xmax)

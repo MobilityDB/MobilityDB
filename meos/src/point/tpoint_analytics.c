@@ -79,13 +79,13 @@ point_measure_to_lwpoint(Datum point, Datum measure)
   LWPOINT *result;
   if (FLAGS_GET_Z(gs->gflags))
   {
-    const POINT3DZ *point = GSERIALIZED_POINT3DZ_P(gs);
-    result = lwpoint_make4d(srid, point->x, point->y, point->z, d);
+    const POINT3DZ *pt = GSERIALIZED_POINT3DZ_P(gs);
+    result = lwpoint_make4d(srid, pt->x, pt->y, pt->z, d);
   }
   else
   {
-    const POINT2D *point = GSERIALIZED_POINT2D_P(gs);
-    result = lwpoint_make3dm(srid, point->x, point->y, d);
+    const POINT2D *pt = GSERIALIZED_POINT2D_P(gs);
+    result = lwpoint_make3dm(srid, pt->x, pt->y, d);
   }
   FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(gs->gflags));
   return result;
