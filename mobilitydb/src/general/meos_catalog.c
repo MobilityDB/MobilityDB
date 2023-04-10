@@ -108,9 +108,10 @@ typedef struct
  *****************************************************************************/
 
 /**
- * @brief Global array containing type names used in MobilityDB.
+ * @brief Global array containing the type names corresponding to the
+ * enumeration meosType defined in file meos_catalog.h.
  */
-const char *_type_names[] =
+const char *_meosType_names[] =
 {
   [T_UNKNOWN] = "",
   [T_BOOL] = "bool",
@@ -154,18 +155,17 @@ const char *_type_names[] =
   [T_GEOGSET] = "geogset",
   [T_TGEOMPOINT] = "tgeompoint",
   [T_TGEOGPOINT] = "tgeogpoint",
-#if NPOINT
   [T_NPOINT] = "npoint",
   [T_NPOINTSET] = "npointset",
   [T_NSEGMENT] = "nsegment",
   [T_TNPOINT] = "tnpoint",
-#endif
 };
 
 /**
- * @brief Global array containing operator names used in MobilityDB.
+ * @brief Global array containing the operator names corresponding to the
+ * enumeration meosOper defined in file meos_catalog.h.
  */
-const char *_oper_names[] =
+const char *_meosOper_names[] =
 {
   [UNKNOWN_OP] = "",
   [EQ_OP] = "=",
@@ -221,7 +221,7 @@ bool _oid_cache_ready = false;
 /**
  * @brief Global array that keeps the type Oids used in MobilityDB.
  */
-Oid _type_oids[sizeof(_type_names) / sizeof(char *)];
+Oid _type_oids[sizeof(_meosType_names) / sizeof(char *)];
 
 /**
  * @brief Global hash table that keeps the operator Oids used in MobilityDB.
@@ -236,9 +236,9 @@ struct opertable_hash *_oid_oper = NULL;
  * the cell of the array if the operator class is not defined for the left and
  * right types.
  */
-Oid _oper_oid[sizeof(_oper_names) / sizeof(char *)]
-  [sizeof(_type_names) / sizeof(char *)]
-  [sizeof(_type_names) / sizeof(char *)];
+Oid _oper_oid[sizeof(_meosOper_names) / sizeof(char *)]
+  [sizeof(_meosType_names) / sizeof(char *)]
+  [sizeof(_meosType_names) / sizeof(char *)];
 
 /*****************************************************************************
  * Catalog functions
@@ -265,13 +265,13 @@ populate_typeoid_cache()
   if (_oid_cache_ready)
     return;
   /* Fill the cache */
-  int n = sizeof(_type_names) / sizeof(char *);
+  int n = sizeof(_meosType_names) / sizeof(char *);
   for (int i = 0; i < n; i++)
   {
     /* Depending on the PG version some types may not exist (e.g.,
-     * multirangetype) and in this case _type_names[i] will be equal to 0 */
-    if (_type_names[i] && ! internal_type(_type_names[i]))
-      _type_oids[i] = TypenameGetTypid(_type_names[i]);
+     * multirangetype) and in this case _meosType_names[i] will be equal to 0 */
+    if (_meosType_names[i] && ! internal_type(_meosType_names[i]))
+      _type_oids[i] = TypenameGetTypid(_meosType_names[i]);
   }
   return;
 }
@@ -379,7 +379,7 @@ oid_type(Oid typid)
 {
   if (!_oid_cache_ready)
     populate_operoid_cache();
-  int n = sizeof(_type_names) / sizeof(char *);
+  int n = sizeof(_meosType_names) / sizeof(char *);
   for (int i = 0; i < n; i++)
   {
     if (_type_oids[i] == typid)
@@ -397,10 +397,10 @@ oid_type(Oid typid)
 meosOper
 name_oper(const char *name)
 {
-  int n = sizeof(_oper_names) / sizeof(char *);
+  int n = sizeof(_meosOper_names) / sizeof(char *);
   for (int i = 0; i < n; i++)
   {
-    if (strcmp(_oper_names[i], name) == 0)
+    if (strcmp(_meosOper_names[i], name) == 0)
       return i;
   }
   return UNKNOWN_OP;
@@ -413,7 +413,7 @@ name_oper(const char *name)
 const char *
 oper_name(meosOper oper)
 {
-  return _oper_names[oper];
+  return _meosOper_names[oper];
 }
 #endif /* not used */
 

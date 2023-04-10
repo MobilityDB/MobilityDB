@@ -62,9 +62,19 @@
 #include <string.h>
 #include <stddef.h>
 #include <stdarg.h>
-#ifdef HAVE_STRINGS_H
-#include <strings.h>
+
+// MobilityDB: commented out for Windows build
+// #ifdef HAVE_STRINGS_H
+// #include <strings.h>
+// #endif
+// MobilityDB: replaced for Windows build
+#ifdef HAVE_STRING_H
+#  include <string.h>
 #endif
+#if defined(HAVE_STRINGS_H) && !defined(_WIN32)
+#  include <strings.h>
+#endif
+
 #include <stdint.h>
 #include <sys/types.h>
 #include <errno.h>
@@ -72,9 +82,10 @@
 #include <fcntl.h>				/* ensure O_BINARY is available */
 #endif
 #include <locale.h>
-#ifdef ENABLE_NLS
-#include <libintl.h>
-#endif
+// MobilityDB: commented out for Windows build
+// #ifdef ENABLE_NLS
+// #include <libintl.h>
+// #endif
 
 
 /* ----------------------------------------------------------------

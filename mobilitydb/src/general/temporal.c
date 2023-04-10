@@ -70,10 +70,18 @@ extern PGDLLEXPORT Datum interval_cmp(PG_FUNCTION_ARGS);
 PG_MODULE_MAGIC;
 
 /**
- * @brief Global variable defining the input string stating interpolation types
- * @see There is a corresponding enumeration type interpType defined in meos.happy
+ * @brief Global array containing the interpolation names corresponding to the
+ * enumeration interpType defined in file meos_catalog.h.
  */
-char* interp[] = {"discrete","step","linear"};
+char * _interpType_names[] =
+{
+  [INTERP_NONE] = "none",
+  [DISCRETE] = "discrete",
+  [STEP] = "step",
+  [LINEAR] = "linear"
+};
+
+#define INTERP_STR_MAX_LEN 8
 
 /*****************************************************************************
  * Initialization function
@@ -627,20 +635,21 @@ Tinstant_constructor(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+/**
+ * @brief Get the interpolation type from the interpolation string
+ */
 interpType
 interp_from_string(const char *interp_str)
 {
-  if (pg_strncasecmp(interp_str, "none", 8) == 0)
-    return INTERP_NONE;
-  if (pg_strncasecmp(interp_str, "discrete", 8) == 0)
-    return DISCRETE;
-  if (pg_strncasecmp(interp_str, "linear", 5) == 0)
-    return LINEAR;
-  if (pg_strncasecmp(interp_str, "step", 4) == 0)
-    return STEP;
-  /* Arrive here only on error */
+  int n = sizeof(_interpType_names) / sizeof(char *);
+  for (int i = 0; i < n; i++)
+  {
+    if (pg_strncasecmp(interp_str, _interpType_names[i], INTERP_STR_MAX_LEN) == 0)
+      return i;
+  }
+  /* Error */
   elog(ERROR, "Unknown interpolation type: %s", interp_str);
-  return INTERP_NONE;
+  return INTERP_NONE; /* make compiler quiet */
 }
 
 PGDLLEXPORT Datum Tsequence_constructor(PG_FUNCTION_ARGS);
