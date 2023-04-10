@@ -313,28 +313,6 @@ CREATE CAST (bigintspan AS bigintspanset) WITH FUNCTION spanset(bigintspan);
 CREATE CAST (floatspan AS floatspanset) WITH FUNCTION spanset(floatspan);
 CREATE CAST (tstzspan AS tstzspanset) WITH FUNCTION spanset(tstzspan);
 
-CREATE FUNCTION span(intspanset)
-  RETURNS intspan
-  AS 'MODULE_PATHNAME', 'Spanset_to_span'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span(bigintspanset)
-  RETURNS bigintspan
-  AS 'MODULE_PATHNAME', 'Spanset_to_span'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span(floatspanset)
-  RETURNS floatspan
-  AS 'MODULE_PATHNAME', 'Spanset_to_span'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span(tstzspanset)
-  RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Spanset_to_span'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE CAST (intspanset AS intspan) WITH FUNCTION span(intspanset);
-CREATE CAST (bigintspanset AS bigintspan) WITH FUNCTION span(bigintspanset);
-CREATE CAST (floatspanset AS floatspan) WITH FUNCTION span(floatspanset);
-CREATE CAST (tstzspanset AS tstzspan) WITH FUNCTION span(tstzspanset);
-
 #if POSTGRESQL_VERSION_NUMBER >= 140000
 CREATE FUNCTION multirange(intspanset)
   RETURNS int4multirange
@@ -415,6 +393,23 @@ CREATE FUNCTION memSize(floatspanset)
 CREATE FUNCTION memSize(tstzspanset)
   RETURNS int
   AS 'MODULE_PATHNAME', 'Spanset_mem_size'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION span(intspanset)
+  RETURNS intspan
+  AS 'MODULE_PATHNAME', 'Spanset_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span(bigintspanset)
+  RETURNS bigintspan
+  AS 'MODULE_PATHNAME', 'Spanset_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span(floatspanset)
+  RETURNS floatspan
+  AS 'MODULE_PATHNAME', 'Spanset_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span(tstzspanset)
+  RETURNS tstzspan
+  AS 'MODULE_PATHNAME', 'Spanset_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION lower(intspanset)

@@ -219,15 +219,15 @@ Value_to_set(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Set_to_span(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Set_to_span);
+PGDLLEXPORT Datum Set_span(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Set_span);
 /**
  * @ingroup mobilitydb_setspan_accessor
- * @brief Return the span of a set
- * @sqlfunc timespan()
+ * @brief Return the bounding span of a set
+ * @sqlfunc span()
  */
 Datum
-Set_to_span(PG_FUNCTION_ARGS)
+Set_span(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
   Span *result = palloc(sizeof(Span));

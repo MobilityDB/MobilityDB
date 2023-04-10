@@ -366,7 +366,7 @@ spanset_copy(const SpanSet *ps)
 
 /**
  * @ingroup libmeos_internal_setspan_cast
- * @brief Cast an element as a span set
+ * @brief Cast a value as a span set
  */
 SpanSet *
 value_to_spanset(Datum d, meosType basetype)
@@ -381,7 +381,7 @@ value_to_spanset(Datum d, meosType basetype)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_cast
- * @brief Cast an element as a span set
+ * @brief Cast an integer as a span set
  * @sqlop @p ::
  */
 SpanSet *
@@ -392,7 +392,7 @@ int_to_intspanset(int i)
 
 /**
  * @ingroup libmeos_setspan_cast
- * @brief Cast an element as a span set
+ * @brief Cast a big integer as a span set
  * @sqlop @p ::
  */
 SpanSet *
@@ -403,11 +403,11 @@ bigint_to_bigintspanset(int i)
 
 /**
  * @ingroup libmeos_setspan_cast
- * @brief Cast an element as a span set
+ * @brief Cast a float as a span set
  * @sqlop @p ::
  */
 SpanSet *
-float_to_floaspanset(double d)
+float_to_floatspanset(double d)
 {
   return value_to_spanset(d, T_FLOAT8);
 }
@@ -451,23 +451,6 @@ span_to_spanset(const Span *s)
 {
   return spanset_make((Span *) s, 1, NORMALIZE_NO);
 }
-
-#if MEOS
-/**
- * @ingroup libmeos_setspan_cast
- * @brief Return the bounding span of a span set.
- * @sqlfunc intspan(), floatspan(), period()
- * @sqlop @p ::
- * @pymeosfunc period()
- */
-Span *
-spanset_to_span(const SpanSet *ss)
-{
-  Span *result = palloc(sizeof(Span));
-  memcpy(result, &ss->span, sizeof(Span));
-  return result;
-}
-#endif /* MEOS */
 
 /*****************************************************************************
  * Transformation functions
@@ -546,13 +529,27 @@ periodset_shift_tscale(const SpanSet *ps, const Interval *shift,
 #if MEOS
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the size in bytes of a period set
+ * @brief Return the size in bytes of a span set
  * @sqlfunc memSize()
  */
 int
 spanset_mem_size(const SpanSet *ss)
 {
   return (int) VARSIZE(DatumGetPointer(ss));
+}
+
+/**
+ * @ingroup libmeos_setspan_accessor
+ * @brief Return the bounding span of a span set.
+ * @sqlfunc span()
+ * @pymeosfunc period()
+ */
+Span *
+spanset_span(const SpanSet *ss)
+{
+  Span *result = palloc(sizeof(Span));
+  memcpy(result, &ss->span, sizeof(Span));
+  return result;
 }
 
 /**
@@ -590,7 +587,7 @@ floatspanset_lower(const SpanSet *ss)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the lower bound of a period
+ * @brief Return the lower bound of a period set
  * @sqlfunc lower()
  * @pymeosfunc lower()
  */
@@ -832,7 +829,7 @@ periodset_timestamp_n(const SpanSet *ps, int n, TimestampTz *result)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the timestamps of a period set
+ * @brief Return the array of timestamps of a period set
  * @sqlfunc timestamps()
  * @pymeosfunc timestamps()
  */

@@ -216,15 +216,15 @@ spanset_span_slice(Datum d, Span *s)
   return;
 }
 
-PGDLLEXPORT Datum Spanset_to_span(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Spanset_to_span);
+PGDLLEXPORT Datum Spanset_span(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Spanset_span);
 /**
- * @ingroup mobilitydb_setspan_cast
+ * @ingroup mobilitydb_setspan_accessor
  * @brief Return the bounding span on which a span set is defined
- * @sqlfunc instspan(), floatspan(), period()
+ * @sqlfunc span()
  */
 Datum
-Spanset_to_span(PG_FUNCTION_ARGS)
+Spanset_span(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
   Span *result = palloc(sizeof(Span));
@@ -458,7 +458,7 @@ PGDLLEXPORT Datum Periodset_timestamps(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Periodset_timestamps);
 /**
  * @ingroup mobilitydb_setspan_accessor
- * @brief Return the timestamps of a period set
+ * @brief Return the array of timestamps of a period set
  * @sqlfunc timestamps()
  */
 Datum

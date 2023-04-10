@@ -121,7 +121,7 @@ set_extent_transfn(Span *span, const Set *set)
     return NULL;
   /* Null period and non-null timestamp set, return the bbox of the timestamp set */
   if (! span)
-    return set_to_span(set);
+    return set_span(set);
   /* Non-null period and null timestamp set, return the period */
   if (! set)
     return span;

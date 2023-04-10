@@ -775,7 +775,7 @@ value_to_set(Datum d, meosType basetype)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_cast
- * @brief Cast a value as a set
+ * @brief Cast an integer as a set
  * @sqlop @p ::
  */
 Set *
@@ -787,7 +787,7 @@ int_to_intset(int i)
 
 /**
  * @ingroup libmeos_setspan_cast
- * @brief Cast a value as a set
+ * @brief Cast a big integer as a set
  * @sqlop @p ::
  */
 Set *
@@ -799,7 +799,7 @@ bigint_to_bigintset(int64 i)
 
 /**
  * @ingroup libmeos_setspan_cast
- * @brief Cast a value as a set
+ * @brief Cast a float as a set
  * @sqlop @p ::
  */
 Set *
@@ -811,7 +811,7 @@ float_to_floatset(double d)
 
 /**
  * @ingroup libmeos_setspan_cast
- * @brief Cast a value as a set
+ * @brief Cast a timestamp as a set
  * @sqlop @p ::
  */
 Set *
@@ -823,7 +823,7 @@ timestamp_to_tstzset(TimestampTz t)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_setspan_cast
+ * @ingroup libmeos_internal_setspan_cast
  * @brief Set the last argument to the bounding span of a set.
  */
 void
@@ -834,25 +834,10 @@ set_set_span(const Set *set, Span *s)
   return;
 }
 
-/**
- * @ingroup libmeos_setspan_cast
- * @brief Return the bounding span of a set.
- * @sqlfunc span()
- * @sqlop @p ::
- * @pymeosfunc span()
- */
-Span *
-set_to_span(const Set *s)
-{
-  Span *result = palloc(sizeof(Span));
-  set_set_span(s, result);
-  return result;
-}
-
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_setspan_cast
+ * @ingroup libmeos_internal_setspan_accessor
  * @brief Set the last argument to the bounding box of a spatial set.
  */
 void
@@ -863,23 +848,6 @@ spatialset_set_stbox(const Set *set, STBox *box)
   memcpy(box, SET_BBOX_PTR(set), sizeof(STBox));
   return;
 }
-
-#if MEOS
-/**
- * @ingroup libmeos_setspan_cast
- * @brief Return the bounding box of a spatial set.
- * @sqlfunc stbox()
- * @sqlop @p ::
- * @pymeosfunc stbox()
- */
-STBox *
-spatialset_to_stbox(const Set *s)
-{
-  STBox *result = palloc(sizeof(STBox));
-  spatialset_set_stbox(s, result);
-  return result;
-}
-#endif /* MEOS */
 
 /*****************************************************************************
  * Accessor functions
@@ -900,6 +868,36 @@ set_mem_size(const Set *s)
 
 /**
  * @ingroup libmeos_setspan_accessor
+ * @brief Return the bounding span of a set.
+ * @sqlfunc span()
+ * @sqlop @p ::
+ * @pymeosfunc span()
+ */
+Span *
+set_span(const Set *s)
+{
+  Span *result = palloc(sizeof(Span));
+  set_set_span(s, result);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_setspan_accessor
+ * @brief Return the bounding box of a spatial set.
+ * @sqlfunc stbox()
+ * @sqlop @p ::
+ * @pymeosfunc stbox()
+ */
+STBox *
+spatialset_stbox(const Set *s)
+{
+  STBox *result = palloc(sizeof(STBox));
+  spatialset_set_stbox(s, result);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the number of values of a set.
  * @sqlfunc numTimestamps()
  * @pymeosfunc numTimestamps()
@@ -911,7 +909,7 @@ set_num_values(const Set *s)
 }
 
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup libmeos_internal_setspan_accessor
  * @brief Return the start value of a set.
  * @sqlfunc startTimestamp()
  * @pymeosfunc startTimestamp()
@@ -964,7 +962,7 @@ floatset_start_value(const Set *s)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the start value of a set.
+ * @brief Return the start value of a timestamp set.
  * @sqlfunc startTimestamp()
  * @pymeosfunc startTimestamp()
  */
@@ -977,7 +975,7 @@ tstzset_start_timestamp(const Set *ts)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup libmeos_internal_setspan_accessor
  * @brief Return the end value of a set.
  * @sqlfunc endTimestamp()
  * @pymeosfunc endTimestamp()
@@ -1030,7 +1028,7 @@ floatset_end_value(const Set *s)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the end value of a set.
+ * @brief Return the end value of a timestamp set.
  * @sqlfunc endTimestamp()
  * @pymeosfunc endTimestamp()
  */
@@ -1043,7 +1041,7 @@ tstzset_end_timestamp(const Set *ts)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup libmeos_internal_setspan_accessor
  * @brief Return the n-th value of a set.
  * @param[in] s Set
  * @param[in] n Number
@@ -1125,7 +1123,7 @@ floatset_value_n(const Set *s, int n, double *result)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the n-th value of a set.
+ * @brief Return the n-th value of a timestamp set.
  * @param[in] ts Timestamp set
  * @param[in] n Number
  * @param[out] result Timestamp
@@ -1145,7 +1143,7 @@ tstzset_timestamp_n(const Set *ts, int n, TimestampTz *result)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup libmeos_internal_setspan_accessor
  * @brief Return the array of values of a set.
  * @sqlfunc values(), timestamps()
  * @pymeosfunc timestamps()
@@ -1207,7 +1205,7 @@ floatset_values(const Set *s)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the array of timestamps of a set.
+ * @brief Return the array of values of a timestamp set.
  * @sqlfunc timestamps()
  * @pymeosfunc timestamps()
  */
@@ -1222,7 +1220,7 @@ tstzset_values(const Set *ts)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_setspan_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the SRID of a geoset point.
  * @sqlfunc SRID()
  */

@@ -199,19 +199,26 @@ extern uint32 datum_hash(Datum d, meosType basetype);
 extern uint64 datum_hash_extended(Datum d, meosType basetype, uint64 seed);
 extern Datum set_start_value(const Set *s);
 extern Datum set_end_value(const Set *s);
+extern void set_set_span(const Set *os, Span *s);
 extern bool set_value_n(const Set *s, int n, Datum *result);
 extern Datum *set_values(const Set *s);
 extern const Span *spanset_sp_n(const SpanSet *ss, int index);
+extern void spatialset_set_stbox(const Set *set, STBox *box);
 extern void tstzset_set_period(const Set *ts, Span *p);
 
 /*****************************************************************************/
 
 /* Transformation functions for set and span types */
 
+extern void floatspan_set_intspan(const Span *s1, Span *s2);
+extern void floatspan_set_numspan(const Span *s1, Span *s2, meosType basetype);
+extern void intspan_set_floatspan(const Span *s1, Span *s2);
+extern void numspan_set_floatspan(const Span *s1, Span *s2);
 extern void span_shift(Span *s, Datum value);
 extern void spanset_shift(SpanSet *s, Datum value);
 extern void lower_upper_shift_tscale(const Interval *shift, const Interval *duration, TimestampTz *lower, TimestampTz *upper);
 extern void floatspan_set_numspan(const Span *s1, Span *s2, meosType basetype);
+extern Set *set_shift(const Set *s, Datum shift);
 
 /*****************************************************************************/
 

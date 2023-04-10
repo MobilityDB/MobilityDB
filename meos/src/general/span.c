@@ -589,7 +589,7 @@ bigint_to_bigintspan(int i)
  * @sqlop @p ::
  */
 Span *
-float_to_floaspan(double d)
+float_to_floatspan(double d)
 {
   Span *result = span_make(Float8GetDatum(d), Float8GetDatum(d), true, true,
     T_FLOAT8);
@@ -791,9 +791,36 @@ floatspan_set_numspan(const Span *s1, Span *s2, meosType basetype)
 
 /*****************************************************************************/
 
+#if MEOS
 /**
  * @ingroup libmeos_setspan_transf
- * @brief Set the second span with the first one transformed to floatspan
+ * @brief Transform an integer span to a float span
+ */
+Span *
+intspan_floatspan(const Span *s)
+{
+  Span *result = malloc(sizeof(Span));
+  intspan_set_floatspan(s, result);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Transform a float span to an integer span
+ */
+Span *
+floatspan_intspan(const Span *s)
+{
+  Span *result = malloc(sizeof(Span));
+  floatspan_set_intspan(s, result);
+  return result;
+}
+#endif /* MEOS */
+
+
+/**
+ * @ingroup libmeos_internal_setspan_transf
+ * @brief Set the second span with the first one transformed to a float span
  */
 void
 intspan_set_floatspan(const Span *s1, Span *s2)
@@ -806,8 +833,8 @@ intspan_set_floatspan(const Span *s1, Span *s2)
 }
 
 /**
- * @ingroup libmeos_setspan_transf
- * @brief Set the second span with the first one transformed to intspan
+ * @ingroup libmeos_internal_setspan_transf
+ * @brief Set the second span with the first one transformed to a integer span
  */
 void
 floatspan_set_intspan(const Span *s1, Span *s2)
@@ -883,7 +910,7 @@ span_shift(Span *s, Datum shift)
 }
 
 /**
- * @ingroup libmeos_setspan_transf
+ * @ingroup libmeos_internal_setspan_transf
  * @brief Shift and/or scale a period by the intervals.
  * @note Returns the delta and scale of the transformation
  * @sqlfunc shift(), tscale(), shiftTscale()
