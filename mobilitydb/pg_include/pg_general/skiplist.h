@@ -45,7 +45,7 @@
 
 /*****************************************************************************/
 
-extern FunctionCallInfo fetch_fcinfo();
+extern FunctionCallInfo fetch_fcinfo(void);
 extern void store_fcinfo(FunctionCallInfo fcinfo);
 extern MemoryContext set_aggregation_context(FunctionCallInfo fcinfo);
 extern void unset_aggregation_context(MemoryContext ctx);

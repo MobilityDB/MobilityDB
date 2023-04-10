@@ -372,17 +372,23 @@ extern char *tstzset_out(const Set *set);
 
 /* Constructor functions for set and span types */
 
+extern Set *bigintset_make(const int64 *values, int count);
 extern Span *bigintspan_make(int64 lower, int64 upper, bool lower_inc, bool upper_inc);
+extern Set *floatset_make(const double *values, int count);
 extern Span *floatspan_make(double lower, double upper, bool lower_inc, bool upper_inc);
+extern Set *geogset_make(const GSERIALIZED **values, int count);
+extern Set *geomset_make(const GSERIALIZED **values, int count);
+extern Set *intset_make(const int *values, int count);
 extern Span *intspan_make(int lower, int upper, bool lower_inc, bool upper_inc);
-extern Set *set_copy(const Set *ts);
-extern Span *tstzspan_make(TimestampTz lower, TimestampTz upper, bool lower_inc, bool upper_inc);
+extern Set *set_copy(const Set *s);
 extern Span *span_copy(const Span *s);
 extern SpanSet *spanset_copy(const SpanSet *ps);
 extern SpanSet *spanset_make(Span *spans, int count, bool normalize);
 extern SpanSet *spanset_make_exp(Span *spans, int count, int maxcount, bool normalize, bool ordered);
 extern SpanSet *spanset_make_free(Span *spans, int count, bool normalize);
-extern Set *tstzset_make(const TimestampTz *times, int count);
+extern Set *textset_make(const text **values, int count);
+extern Set *tstzset_make(const TimestampTz *values, int count);
+extern Span *tstzspan_make(TimestampTz lower, TimestampTz upper, bool lower_inc, bool upper_inc);
 
 /*****************************************************************************/
 

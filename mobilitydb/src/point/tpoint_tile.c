@@ -336,7 +336,7 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
     if (gs_srid != SRID_UNKNOWN)
       ensure_same_srid(srid, gs_srid);
     POINT3DZ pt;
-    bool hasz = (bool) MEOS_FLAGS_GET_Z(temp->flags);
+    hasz = (bool) MEOS_FLAGS_GET_Z(temp->flags);
     if (hasz)
     {
       ensure_has_Z_gs(sorigin);
@@ -352,8 +352,7 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
     }
 
     /* Create function state */
-    STboxGridState *state = stbox_tile_state_make(temp, &bounds, size, tunits,
-      pt, torigin);
+    state = stbox_tile_state_make(temp, &bounds, size, tunits, pt, torigin);
     /* If a bit matrix is used to speed up the process */
     if (bitmatrix)
     {

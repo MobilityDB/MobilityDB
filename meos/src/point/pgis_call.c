@@ -1963,7 +1963,7 @@ gserialized_geom_from_geog(GSERIALIZED *geom)
  */
 LWGEOM *
 lwgeom_line_interpolate_point(LWGEOM *lwgeom, double fraction, int32_t srid,
-  int repeat)
+  char repeat)
 {
   assert(fraction >= 0 && fraction <= 1);
   assert(lwgeom->type == LINETYPE);
@@ -1983,7 +1983,7 @@ lwgeom_line_interpolate_point(LWGEOM *lwgeom, double fraction, int32_t srid,
  */
 GSERIALIZED *
 gserialized_line_interpolate_point(GSERIALIZED *gser, double distance_fraction,
-  int repeat)
+  char repeat)
 {
   GSERIALIZED *result;
   int32_t srid = gserialized_get_srid(gser);

@@ -116,14 +116,14 @@ extern GSERIALIZED *gserialized_geom_from_geog(GSERIALIZED *g_ser);
 /* Functions adapted from lwgeom_functions_analytic.c */
 
 extern GSERIALIZED *gserialized_line_interpolate_point(GSERIALIZED *gser,
-  double distance_fraction, int repeat);
+  double distance_fraction, char repeat);
 extern GSERIALIZED *gserialized_line_substring(GSERIALIZED *geom, double from,
   double to);
 
 /* Functions adapted from lwgeom_lrs.c */
 
 extern LWGEOM *lwgeom_line_interpolate_point(LWGEOM *lwgeom, double fraction,
-  int32_t srid, int repeat);
+  int32_t srid, char repeat);
 extern double gserialized_line_locate_point(GSERIALIZED *geom1,
   GSERIALIZED *geom2);
 

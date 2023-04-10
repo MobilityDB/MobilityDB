@@ -91,6 +91,18 @@ add_subdirectory("postgres")
 include_directories("include")
 add_subdirectory("src")
 
+# Must be after add_library
+if(CMAKE_GENERATOR STREQUAL "Visual Studio 17 2022")
+  # Disable all warnings on embeded code from PostgreSQL and PostGIS
+  target_compile_options(liblwgeom PRIVATE "/W0")
+  target_compile_options(libpgcommon PRIVATE "/W0")
+  target_compile_options(ryu PRIVATE "/W0")
+  # Enable all warnings on MEOS and MobilityDB
+  target_compile_options(general PRIVATE "/W4")
+  target_compile_options(point PRIVATE "/W4")
+  target_compile_options(npoint PRIVATE "/W4")
+endif()
+
 #--------------------------------
 # Build MEOS library
 #--------------------------------
