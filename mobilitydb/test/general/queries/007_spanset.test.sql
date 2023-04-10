@@ -57,9 +57,6 @@ SELECT spanset('{}'::tstzspan[]);
 -- Casting
 -------------------------------------------------------------------------------
 
-SELECT intspanset '{[1,2),[3,4),[5,6)}'::intspan;
-SELECT floatspanset '{[1,2),[3,4),[5,6)}'::floatspan;
-
 SELECT spanset(timestamptz '2000-01-01');
 SELECT spanset(tstzset '{2000-01-01,2000-01-02}');
 SELECT spanset(tstzspan '[2000-01-01,2000-01-02]');
@@ -108,6 +105,9 @@ SELECT memSize(tstzspanset '{(2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(20
 SELECT memSize(tstzspanset '{[2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(2000-01-05,2000-01-06)}');
 SELECT memSize(tstzspanset '{(2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(2000-01-05,2000-01-06]}');
 SELECT memSize(tstzspanset '{[2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(2000-01-05,2000-01-06]}');
+
+SELECT span(intspanset '{[1,2),[3,4),[5,6)}');
+SELECT span(floatspanset '{[1,2),[3,4),[5,6)}');
 
 SELECT lower(intspanset '{[1,2),[3,4),[5,6)}');
 SELECT lower(floatspanset '{[1,2),[3,4),[5,6)}');

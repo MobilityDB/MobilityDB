@@ -297,7 +297,7 @@ box3d_to_lwgeom(BOX3D *box)
 LWGEOM *
 pgis_lwgeom_boundary(LWGEOM *lwgeom)
 {
-  int32_t srid = (uint8_t) lwgeom_get_srid(lwgeom);
+  int32_t srid = lwgeom_get_srid(lwgeom);
   uint8_t hasz = (uint8_t) lwgeom_has_z(lwgeom);
   uint8_t hasm = (uint8_t) lwgeom_has_m(lwgeom);
 
