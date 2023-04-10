@@ -1254,7 +1254,7 @@ set_shift(const Set *s, Datum shift)
 
 /**
  * @ingroup libmeos_setspan_transf
- * @brief Return a timestamp set uned and/or scaled by the intervals
+ * @brief Return a timestamp set shifted and/or scaled by the intervals
  * @sqlfunc shift(), tscale(), shiftTscale()
  * @pymeosfunc shift()
  */
@@ -1277,10 +1277,10 @@ tstzset_shift_tscale(const Set *s, const Interval *shift,
   if (s->count > 1)
   {
     /* Shift and/or scale from the second to the penultimate instant */
-    TimestampTz delta;
+    TimestampTz delta = 0; /* make compiler quiet */
+    double scale = 0; /* make compiler quiet */
     if (shift != NULL)
       delta = lower1 - lower;
-    double scale;
     if (duration != NULL)
       scale = (double) (upper1 - lower1) / (double) (upper - lower);
     for (int i = 1; i < s->count - 1; i++)

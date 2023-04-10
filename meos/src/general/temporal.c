@@ -3910,7 +3910,7 @@ mrr_distance_geos(GEOSGeometry *geom, bool geodetic)
 static GEOSGeometry *
 multipoint_make(const TSequence *seq, int start, int end)
 {
-  GSERIALIZED *gs;
+  GSERIALIZED *gs = NULL; /* make compiler quiet */
   GEOSGeometry **geoms = palloc(sizeof(GEOSGeometry *) * (end - start + 1));
   for (int i = 0; i < end - start + 1; ++i)
   {
@@ -3940,7 +3940,7 @@ multipoint_make(const TSequence *seq, int start, int end)
 static GEOSGeometry *
 multipoint_add_inst_free(GEOSGeometry *geom, const TInstant *inst)
 {
-  GSERIALIZED *gs;
+  GSERIALIZED *gs = NULL; /* make compiler quiet */
   if (tgeo_type(inst->temptype))
     gs = DatumGetGserializedP(tinstant_value(inst));
 #if NPOINT

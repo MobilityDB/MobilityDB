@@ -812,7 +812,7 @@ span_gist_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
      */
     for (i = 0; i < common_entries_count; i++)
     {
-      int idx = common_entries[i].index;
+      OffsetNumber idx = (OffsetNumber) (common_entries[i].index);
       Span *span = DatumGetSpanP(entryvec->vector[idx].key);
 
       /*

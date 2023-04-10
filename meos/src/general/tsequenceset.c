@@ -934,7 +934,7 @@ tsequenceset_segments(const TSequenceSet *ss, int *count)
 int
 tsequenceset_num_instants(const TSequenceSet *ss)
 {
-  const TInstant *lastinst;
+  const TInstant *lastinst = NULL; /* make compiler quiet */
   bool first = true;
   int result = 0;
   for (int i = 0; i < ss->count; i++)
@@ -966,7 +966,7 @@ tsequenceset_inst_n(const TSequenceSet *ss, int n)
 
   /* Continue the search 0-based */
   n--;
-  const TInstant *prev, *next;
+  const TInstant *prev = NULL, *next = NULL; /* make compiler quiet */
   bool first = true, found = false;
   int i = 0, count = 0, prevcount = 0;
   while (i < ss->count)
@@ -1047,7 +1047,7 @@ tsequenceset_end_timestamp(const TSequenceSet *ss)
 int
 tsequenceset_num_timestamps(const TSequenceSet *ss)
 {
-  TimestampTz lasttime;
+  TimestampTz lasttime = 0; /* make compilier quiet */
   bool first = true;
   int result = 0;
   for (int i = 0; i < ss->count; i++)
@@ -1084,7 +1084,7 @@ tsequenceset_timestamp_n(const TSequenceSet *ss, int n, TimestampTz *result)
 
   /* Continue the search 0-based */
   n--;
-  TimestampTz prev, next;
+  TimestampTz prev = 0, next = 0; /* make compiler quiet */
   bool first = true;
   int i = 0, count = 0, prevcount = 0;
   while (i < ss->count)

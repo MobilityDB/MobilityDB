@@ -464,6 +464,7 @@ temptype_mfjson_size(meosType temptype)
       break;
     default: /* Error! */
       elog(ERROR, "Unknown temporal type: %d", temptype);
+      size = 0; /* make compiler quiet */
       break;
   }
   return size;
@@ -1385,24 +1386,21 @@ temporal_to_wkb_size(const Temporal *temp, uint8_t variant)
 static size_t
 datum_to_wkb_size(Datum value, meosType type, uint8_t variant)
 {
-  size_t result;
   if (set_type(type))
-    result = set_to_wkb_size((Set *) DatumGetPointer(value), variant);
-  else if (span_type(type))
-    result = span_to_wkb_size((Span *) DatumGetPointer(value));
-  else if (spanset_type(type))
-    result = spanset_to_wkb_size((SpanSet *) DatumGetPointer(value));
-  else if (type == T_TBOX)
-    result = tbox_to_wkb_size((TBox *) DatumGetPointer(value));
-  else if (type == T_STBOX)
-    result = stbox_to_wkb_size((STBox *) DatumGetPointer(value), variant);
-  else if (temporal_type(type))
-    result = temporal_to_wkb_size((Temporal *) DatumGetPointer(value),
-      variant);
-  else /* Error! */
-    elog(ERROR, "Unknown WKB type: %d", type);
-
-  return result;
+    return set_to_wkb_size((Set *) DatumGetPointer(value), variant);
+  if (span_type(type))
+    return span_to_wkb_size((Span *) DatumGetPointer(value));
+  if (spanset_type(type))
+    return spanset_to_wkb_size((SpanSet *) DatumGetPointer(value));
+  if (type == T_TBOX)
+    return tbox_to_wkb_size((TBox *) DatumGetPointer(value));
+  if (type == T_STBOX)
+    return stbox_to_wkb_size((STBox *) DatumGetPointer(value), variant);
+  if (temporal_type(type))
+    return temporal_to_wkb_size((Temporal *) DatumGetPointer(value), variant);
+  /* Error! */
+  elog(ERROR, "Unknown WKB type: %d", type);
+  return 0; /* make compiler quiet */
 }
 
 /*****************************************************************************

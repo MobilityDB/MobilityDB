@@ -69,7 +69,7 @@
 int32_t
 get_srid_ways()
 {
-  int32_t srid_ways;
+  int32_t srid_ways = 0; /* make compiler quiet */
   bool isNull = true;
   SPI_connect();
   int ret = SPI_execute("SELECT ST_SRID(the_geom) FROM public.ways LIMIT 1;", true, 1);
