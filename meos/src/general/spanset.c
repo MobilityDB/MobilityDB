@@ -178,7 +178,7 @@ periodset_in(const char *str)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_setspan_inout
+ * @ingroup libmeos_internal_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a span set.
  */
 char *
@@ -245,7 +245,8 @@ periodset_out(const SpanSet *ss)
 
 /**
  * @ingroup libmeos_setspan_constructor
- * @brief Construct a span set from an array of disjoint span.
+ * @brief Construct a span set from an array of disjoint spans enabling the
+ * data structure to expand.
  *
  * For example, the memory structure of a SpanSet with 3 span is as
  * follows
@@ -315,7 +316,7 @@ spanset_make_exp(Span *spans, int count, int maxcount, bool normalize,
 
 /**
  * @ingroup libmeos_setspan_constructor
- * @brief Construct a span set from an array of disjoint span.
+ * @brief Construct a span set from an array of disjoint spans.
  * @param[in] spans Array of spans
  * @param[in] count Number of elements in the array
  * @param[in] normalize True if the resulting value should be normalized
@@ -329,8 +330,8 @@ spanset_make(Span *spans, int count, bool normalize)
 
 /**
  * @ingroup libmeos_setspan_constructor
- * @brief Construct a span set from an array of spans and free the array
- * and the spans after the creation.
+ * @brief Construct a span set from an array of spans and free the input array
+ * of spans after the creation.
  *
  * @param[in] spans Array of spans
  * @param[in] count Number of elements in the array

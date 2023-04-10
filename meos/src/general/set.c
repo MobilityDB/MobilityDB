@@ -253,7 +253,7 @@ set_out_fn(const Set *s, int maxdd, outfunc value_out)
 }
 
 /**
- * @ingroup libmeos_setspan_inout
+ * @ingroup libmeos_internal_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a set.
  */
 char *
@@ -336,7 +336,7 @@ geogset_out(const Set *set, int maxdd)
 
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Return the Well-Known Text (WKT) representation a geoset.
+ * @brief Return the Well-Known Text (WKT) representation of a geoset.
  * @sqlfunc asText()
  */
 char *
@@ -347,7 +347,7 @@ geoset_as_text(const Set *set, int maxdd)
 
 /**
  * @ingroup libmeos_setspan_inout
- * @brief Return the Extended Well-Known Text (EWKT) representation a geoset.
+ * @brief Return the Extended Well-Known Text (EWKT) representation of a geoset.
  * @sqlfunc asEWKT()
  */
 char *
@@ -633,7 +633,7 @@ set_make(const Datum *values, int count, meosType basetype, bool ordered)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_constructor
- * @brief Construct a set from an array of timestamp values.
+ * @brief Construct a timestamp with time zone set from an array of values.
 */
 Set *
 tstzset_make(const TimestampTz *values, int count)
@@ -646,7 +646,7 @@ tstzset_make(const TimestampTz *values, int count)
 
 /**
  * @ingroup libmeos_setspan_constructor
- * @brief Construct a set from an array of text values.
+ * @brief Construct a text set from an array of values.
 */
 Set *
 textset_make(const text **values, int count)
@@ -659,7 +659,7 @@ textset_make(const text **values, int count)
 
 /**
  * @ingroup libmeos_setspan_constructor
- * @brief Construct a set from an array of integer values.
+ * @brief Construct an integer set from an array of values.
 */
 Set *
 intset_make(const int *values, int count)
@@ -672,7 +672,7 @@ intset_make(const int *values, int count)
 
 /**
  * @ingroup libmeos_setspan_constructor
- * @brief Construct a set from an array of big integer values.
+ * @brief Construct a big integer set from an array of values.
 */
 Set *
 bigintset_make(const int64 *values, int count)
@@ -685,7 +685,7 @@ bigintset_make(const int64 *values, int count)
 
 /**
  * @ingroup libmeos_setspan_constructor
- * @brief Construct a set from an array of float values.
+ * @brief Construct a float set from an array of values.
 */
 Set *
 floatset_make(const double *values, int count)
@@ -698,7 +698,7 @@ floatset_make(const double *values, int count)
 
 /**
  * @ingroup libmeos_setspan_constructor
- * @brief Construct a set from an array of geometry values.
+ * @brief Construct a geometry set from an array of values.
 */
 Set *
 geomset_make(const GSERIALIZED **values, int count)
@@ -711,7 +711,7 @@ geomset_make(const GSERIALIZED **values, int count)
 
 /**
  * @ingroup libmeos_setspan_constructor
- * @brief Construct a set from an array of geography values.
+ * @brief Construct a geography set from an array of values.
 */
 Set *
 geogset_make(const GSERIALIZED **values, int count)
@@ -721,27 +721,12 @@ geogset_make(const GSERIALIZED **values, int count)
     datums[i] = PointerGetDatum(values[i]);
   return set_make(datums, count, T_GEOGRAPHY, ORDERED);
 }
-
-#if NPOINT
-/**
- * @ingroup libmeos_setspan_constructor
- * @brief Construct a set from an array of network point values.
-*/
-Set *
-npointset_make(const Npoint *values, int count)
-{
-  Datum *datums = palloc(sizeof(Datum *) * count);
-  for (int i=0; i<count; ++i)
-    datums[i] = PointerGetDatum(values[i]);
-  return set_make(datums, count, T_NPOINT, ORDERED);
-}
-#endif /* NPOINT */
 #endif /* MEOS */
 
 /**
  * @ingroup libmeos_internal_setspan_constructor
- * @brief Construct a set from the array of values and free the array after
- * the creation.
+ * @brief Construct a set from the array of values and free the input array
+ * after the creation.
  * @param[in] values Array of values
  * @param[in] count Number of elements in the array
  * @param[in] basetype Base type

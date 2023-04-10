@@ -162,8 +162,11 @@ extern Datum SET_VAL_N(const Set *s, int index);
 /* Input/output functions for set and span types */
 
 extern Set *set_in(const char *str, meosType basetype);
+extern char *set_out(const Set *s, int maxdd);
 extern Span *span_in(const char *str, meosType spantype);
+extern char *span_out(const Span *s, int maxdd);
 extern SpanSet *spanset_in(const char *str, meosType spantype);
+extern char *spanset_out(const SpanSet *ss, int maxdd);
 
 /*****************************************************************************/
 

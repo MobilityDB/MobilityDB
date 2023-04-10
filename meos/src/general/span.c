@@ -315,7 +315,7 @@ unquote(char *str)
 }
 
 /**
- * @ingroup libmeos_setspan_inout
+ * @ingroup libmeos_internal_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a span.
  */
 char *
@@ -409,7 +409,7 @@ intspan_make(int lower, int upper, bool lower_inc, bool upper_inc)
 
 /**
  * @ingroup libmeos_setspan_constructor
- * @brief Construct an integer span from the bounds.
+ * @brief Construct a big integer span from the bounds.
  * @sqlfunc bigintspan()
  */
 Span *
@@ -424,7 +424,7 @@ bigintspan_make(int64 lower, int64 upper, bool lower_inc, bool upper_inc)
 
 /**
  * @ingroup libmeos_setspan_constructor
- * @brief Construct a span from the bounds.
+ * @brief Construct a float span from the bounds.
  * @sqlfunc floatspan()
  */
 Span *
@@ -439,7 +439,7 @@ floatspan_make(double lower, double upper, bool lower_inc, bool upper_inc)
 
 /**
  * @ingroup libmeos_setspan_constructor
- * @brief Construct a period from the bounds.
+ * @brief Construct a timestamp with time zone span from the bounds.
  * @sqlfunc period()
  */
 Span *
