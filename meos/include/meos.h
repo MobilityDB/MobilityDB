@@ -352,14 +352,17 @@ extern char *set_as_hexwkb(const Set *s, uint8_t variant, size_t *size_out);
 extern uint8_t *set_as_wkb(const Set *s, uint8_t variant, size_t *size_out);
 extern Set *set_from_hexwkb(const char *hexwkb);
 extern Set *set_from_wkb(const uint8_t *wkb, size_t size);
-extern char *span_as_hexwkb(const Span *s, uint8_t variant, size_t *size_out);
+extern char *set_out(const Set *s, int maxdd);
 extern uint8_t *span_as_wkb(const Span *s, uint8_t variant, size_t *size_out);
+extern char *span_as_hexwkb(const Span *s, uint8_t variant, size_t *size_out);
 extern Span *span_from_hexwkb(const char *hexwkb);
 extern Span *span_from_wkb(const uint8_t *wkb, size_t size);
-extern char *spanset_as_hexwkb(const SpanSet *ss, uint8_t variant, size_t *size_out);
+extern char *span_out(const Span *s, int maxdd);
 extern uint8_t *spanset_as_wkb(const SpanSet *ss, uint8_t variant, size_t *size_out);
+extern char *spanset_as_hexwkb(const SpanSet *ss, uint8_t variant, size_t *size_out);
 extern SpanSet *spanset_from_hexwkb(const char *hexwkb);
 extern SpanSet *spanset_from_wkb(const uint8_t *wkb, size_t size);
+extern char *spanset_out(const SpanSet *ss, int maxdd);
 extern Set *textset_in(const char *str);
 extern char *textset_out(const Set *set);
 extern Set *tstzset_in(const char *str);
@@ -369,22 +372,16 @@ extern char *tstzset_out(const Set *set);
 
 /* Constructor functions for set and span types */
 
-extern Set *bigintset_make(const int64 *values, int count);
 extern Span *bigintspan_make(int64 lower, int64 upper, bool lower_inc, bool upper_inc);
-extern Set *floatset_make(const double *values, int count);
 extern Span *floatspan_make(double lower, double upper, bool lower_inc, bool upper_inc);
-extern Set *geogset_make(const GSERIALIZED **values, int count);
-extern Set *geomset_make(const GSERIALIZED **values, int count);
-extern Set *intset_make(const int *values, int count);
 extern Span *intspan_make(int lower, int upper, bool lower_inc, bool upper_inc);
 extern Set *set_copy(const Set *ts);
+extern Span *tstzspan_make(TimestampTz lower, TimestampTz upper, bool lower_inc, bool upper_inc);
 extern Span *span_copy(const Span *s);
 extern SpanSet *spanset_copy(const SpanSet *ps);
 extern SpanSet *spanset_make(Span *spans, int count, bool normalize);
 extern SpanSet *spanset_make_exp(Span *spans, int count, int maxcount, bool normalize, bool ordered);
 extern SpanSet *spanset_make_free(Span *spans, int count, bool normalize);
-extern Set *textset_make(const text **values, int count);
-extern Span *tstzspan_make(TimestampTz lower, TimestampTz upper, bool lower_inc, bool upper_inc);
 extern Set *tstzset_make(const TimestampTz *times, int count);
 
 /*****************************************************************************/
