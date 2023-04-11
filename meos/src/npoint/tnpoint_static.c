@@ -316,7 +316,7 @@ void
 npoint_set(int64 rid, double pos, Npoint *np)
 {
   if (!route_exists(rid))
-    elog(ERROR, "There is no route with gid value %lu in table ways", rid);
+    elog(ERROR, "There is no route with gid value %llu in table ways", rid);
   if (pos < 0 || pos > 1)
     elog(ERROR, "The relative position must be a real number between 0 and 1");
 
@@ -346,7 +346,7 @@ void
 nsegment_set(int64 rid, double pos1, double pos2, Nsegment *ns)
 {
   if (! route_exists(rid))
-    elog(ERROR, "There is no route with gid value %lu in table ways", rid);
+    elog(ERROR, "There is no route with gid value %llu in table ways", rid);
   if (pos1 < 0 || pos1 > 1 || pos2 < 0 || pos2 > 1)
     elog(ERROR, "The relative position of a network segment must be a real number between 0 and 1");
 
@@ -428,7 +428,7 @@ bool
 route_exists(int64 rid)
 {
   char sql[64];
-  sprintf(sql, "SELECT true FROM public.ways WHERE gid = %ld", rid);
+  sprintf(sql, "SELECT true FROM public.ways WHERE gid = %lld", rid);
   bool isNull = true;
   bool result = false;
   SPI_connect();
@@ -452,7 +452,7 @@ double
 route_length(int64 rid)
 {
   char sql[64];
-  sprintf(sql, "SELECT length FROM public.ways WHERE gid = %ld", rid);
+  sprintf(sql, "SELECT length FROM public.ways WHERE gid = %lld", rid);
   bool isNull = true;
   double result = 0;
   SPI_connect();
@@ -467,7 +467,7 @@ route_length(int64 rid)
   SPI_finish();
 
   if (isNull)
-    elog(ERROR, "Cannot get the length for route %ld", rid);
+    elog(ERROR, "Cannot get the length for route %lld", rid);
 
   return result;
 }
@@ -480,7 +480,7 @@ GSERIALIZED *
 route_geom(int64 rid)
 {
   char sql[64];
-  sprintf(sql, "SELECT the_geom FROM public.ways WHERE gid = %ld", rid);
+  sprintf(sql, "SELECT the_geom FROM public.ways WHERE gid = %lld", rid);
   bool isNull = true;
   GSERIALIZED *result = NULL;
   SPI_connect();
@@ -501,7 +501,7 @@ route_geom(int64 rid)
   SPI_finish();
 
   if (isNull)
-    elog(ERROR, "Cannot get the geometry for route %ld", rid);
+    elog(ERROR, "Cannot get the geometry for route %lld", rid);
 
   ensure_non_empty(result);
 
