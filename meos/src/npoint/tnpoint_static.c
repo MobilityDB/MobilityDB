@@ -428,7 +428,7 @@ bool
 route_exists(int64 rid)
 {
   char sql[64];
-  sprintf(sql, "SELECT true FROM public.ways WHERE gid = %lld", rid);
+  sprintf(sql, "SELECT true FROM public.ways WHERE gid = %ld", rid);
   bool isNull = true;
   bool result = false;
   SPI_connect();
@@ -452,7 +452,7 @@ double
 route_length(int64 rid)
 {
   char sql[64];
-  sprintf(sql, "SELECT length FROM public.ways WHERE gid = %lld", rid);
+  sprintf(sql, "SELECT length FROM public.ways WHERE gid = %ld", rid);
   bool isNull = true;
   double result = 0;
   SPI_connect();
@@ -467,7 +467,7 @@ route_length(int64 rid)
   SPI_finish();
 
   if (isNull)
-    elog(ERROR, "Cannot get the length for route %lld", rid);
+    elog(ERROR, "Cannot get the length for route %ld", rid);
 
   return result;
 }
@@ -480,7 +480,7 @@ GSERIALIZED *
 route_geom(int64 rid)
 {
   char sql[64];
-  sprintf(sql, "SELECT the_geom FROM public.ways WHERE gid = %lld", rid);
+  sprintf(sql, "SELECT the_geom FROM public.ways WHERE gid = %ld", rid);
   bool isNull = true;
   GSERIALIZED *result = NULL;
   SPI_connect();
@@ -501,7 +501,7 @@ route_geom(int64 rid)
   SPI_finish();
 
   if (isNull)
-    elog(ERROR, "Cannot get the geometry for route %lld", rid);
+    elog(ERROR, "Cannot get the geometry for route %ld", rid);
 
   ensure_non_empty(result);
 
