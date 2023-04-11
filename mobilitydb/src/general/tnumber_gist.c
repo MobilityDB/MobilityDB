@@ -230,11 +230,12 @@ tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBox *result, Oid typid)
   return true;
 }
 
+PGDLLEXPORT Datum Tnumber_gist_consistent(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_gist_consistent);
 /**
  * @brief GiST consistent method for temporal numbers
  */
-PGDLLEXPORT Datum
+Datum
 Tnumber_gist_consistent(PG_FUNCTION_ARGS)
 {
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
@@ -296,13 +297,14 @@ tbox_adjust(void *bbox1, void *bbox2)
   return;
 }
 
+PGDLLEXPORT Datum Tbox_gist_union(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_gist_union);
 /**
  * @brief GiST union method for temporal numbers.
  *
  * Return the minimal bounding box that encloses all the entries in entryvec
  */
-PGDLLEXPORT Datum
+Datum
 Tbox_gist_union(PG_FUNCTION_ARGS)
 {
   GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
@@ -317,11 +319,12 @@ Tbox_gist_union(PG_FUNCTION_ARGS)
  * GiST compress method
  *****************************************************************************/
 
+PGDLLEXPORT Datum Tnumber_gist_compress(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_gist_compress);
 /**
  * @brief GiST compress method for temporal numbers
  */
-PGDLLEXPORT Datum
+Datum
 Tnumber_gist_compress(PG_FUNCTION_ARGS)
 {
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
@@ -410,12 +413,13 @@ tbox_penalty(void *bbox1, void *bbox2)
   return tbox_size(&unionbox) - tbox_size(original);
 }
 
+PGDLLEXPORT Datum Tbox_gist_penalty(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_gist_penalty);
 /**
  * @brief GiST penalty method for temporal boxes.
  * As in the R-tree paper, we use change in area as our penalty metric
  */
-PGDLLEXPORT Datum
+Datum
 Tbox_gist_penalty(PG_FUNCTION_ARGS)
 {
   GISTENTRY *origentry = (GISTENTRY *) PG_GETARG_POINTER(0);
@@ -746,9 +750,9 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, meosType bboxtype,
         else
         {
           intervalsLower[i - FirstOffsetNumber].lower =
-            DatumGetTimestampTz(((TBox *) box)->period.lower);
+            (double) DatumGetTimestampTz(((TBox *) box)->period.lower);
           intervalsLower[i - FirstOffsetNumber].upper =
-            DatumGetTimestampTz(((TBox *) box)->period.upper);
+            (double) DatumGetTimestampTz(((TBox *) box)->period.upper);
         }
       }
       else /* bboxtype == T_STBOX */
@@ -771,9 +775,9 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, meosType bboxtype,
         else
         {
           intervalsLower[i - FirstOffsetNumber].lower =
-            DatumGetTimestampTz(((STBox *) box)->period.lower);
+            (double) DatumGetTimestampTz(((STBox *) box)->period.lower);
           intervalsLower[i - FirstOffsetNumber].upper =
-            DatumGetTimestampTz(((STBox *) box)->period.upper);
+            (double) DatumGetTimestampTz(((STBox *) box)->period.upper);
         }
       }
     }
@@ -1038,23 +1042,24 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, meosType bboxtype,
      */
     for (i = 0; i < commonEntriesCount; i++)
     {
-      box = DatumGetPointer(entryvec->vector[commonEntries[i].index].key);
+      OffsetNumber idx = (OffsetNumber) (commonEntries[i].index);
+      box = DatumGetPointer(entryvec->vector[idx].key);
 
       /*
        * Check if we have to place this entry in either group to achieve
        * LIMIT_RATIO.
        */
       if (v->spl_nleft + (commonEntriesCount - i) <= m)
-        PLACE_LEFT(box, commonEntries[i].index);
+        PLACE_LEFT(box, idx);
       else if (v->spl_nright + (commonEntriesCount - i) <= m)
-        PLACE_RIGHT(box, commonEntries[i].index);
+        PLACE_RIGHT(box, idx);
       else
       {
         /* Otherwise select the group by minimal penalty */
         if (tbox_penalty(leftBox, box) < tbox_penalty(rightBox, box))
-          PLACE_LEFT(box, commonEntries[i].index);
+          PLACE_LEFT(box, idx);
         else
-          PLACE_RIGHT(box, commonEntries[i].index);
+          PLACE_RIGHT(box, idx);
       }
     }
   }
@@ -1064,11 +1069,12 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, meosType bboxtype,
   PG_RETURN_POINTER(v);
 }
 
+PGDLLEXPORT Datum Tbox_gist_picksplit(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_gist_picksplit);
 /**
  * @brief GiST picksplit method for temporal numbers
  */
-PGDLLEXPORT Datum
+Datum
 Tbox_gist_picksplit(PG_FUNCTION_ARGS)
 {
   return bbox_gist_picksplit_ext(fcinfo, T_TBOX, &tbox_adjust, &tbox_penalty);
@@ -1077,6 +1083,7 @@ Tbox_gist_picksplit(PG_FUNCTION_ARGS)
  * GiST same method
  *****************************************************************************/
 
+PGDLLEXPORT Datum Tbox_gist_same(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_gist_same);
 /**
  * @brief GiST same method for temporal numbers.
@@ -1084,7 +1091,7 @@ PG_FUNCTION_INFO_V1(Tbox_gist_same);
  * comparisons here without breaking index consistency; therefore, this isn't
  * equivalent to box_same().
  */
-PGDLLEXPORT Datum
+Datum
 Tbox_gist_same(PG_FUNCTION_ARGS)
 {
   TBox *b1 = PG_GETARG_TBOX_P(0);
@@ -1107,12 +1114,13 @@ Tbox_gist_same(PG_FUNCTION_ARGS)
  * GiST distance method
  *****************************************************************************/
 
+PGDLLEXPORT Datum Tbox_gist_distance(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_gist_distance);
 /**
  * @brief GiST support function. Take in a query and an entry and return the
  * "distance" between them.
 */
-PGDLLEXPORT Datum
+Datum
 Tbox_gist_distance(PG_FUNCTION_ARGS)
 {
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);

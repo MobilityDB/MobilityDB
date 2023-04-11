@@ -49,7 +49,8 @@
  *****************************************************************************/
 
 /**
- * @brief Set the precision of a time value according to time buckets.
+ * @ingroup libmeos_setspan_transf
+ * @brief Set the precision of a timestamp according to time buckets.
  * @param[in] t Time value
  * @param[in] duration Size of the time buckets
  * @param[in] torigin Time origin of the buckets
@@ -64,7 +65,8 @@ timestamp_tprecision(TimestampTz t, const Interval *duration,
 }
 
 /**
- * @brief Set the precision of a time value according to period buckets.
+ * @ingroup libmeos_setspan_transf
+ * @brief Set the precision of a period according to period buckets.
  * @param[in] s Time value
  * @param[in] duration Size of the time buckets
  * @param[in] torigin Time origin of the buckets
@@ -87,7 +89,8 @@ period_tprecision(const Span *s, const Interval *duration, TimestampTz torigin)
 }
 
 /**
- * @brief Set the precision of a time value into an array of disjoint fragments
+ * @ingroup libmeos_setspan_transf
+ * @brief Set the precision of a period according to period buckets.
  * @param[in] ss Time value
  * @param[in] duration Size of the time buckets
  * @param[in] torigin Time origin of the buckets

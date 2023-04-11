@@ -64,8 +64,8 @@ typedef struct
   bool (*tpfunc_base)(const TInstant *, const TInstant *, Datum, meosType,
     Datum *, TimestampTz *); /**< Turning point function for temporal and base types*/
   bool (*tpfunc)(const TInstant *, const TInstant *, const TInstant *,
-    const TInstant *, Datum *,
-    TimestampTz *);          /**< Turning point function for two temporal types */
+    const TInstant *,
+    Datum *, TimestampTz *); /**< Turning point function for two temporal types */
 } LiftedFunctionInfo;
 
 /*****************************************************************************/

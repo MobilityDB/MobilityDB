@@ -75,18 +75,20 @@ Tpoint_as_text_ext(FunctionCallInfo fcinfo, bool extended)
   PG_RETURN_TEXT_P(result);
 }
 
+PGDLLEXPORT Datum Tpoint_as_text(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_as_text);
 /**
  * @ingroup mobilitydb_temporal_inout
  * @brief Output a temporal point in Well-Known Text (WKT) format
  * @sqlfunc asText()
  */
-PGDLLEXPORT Datum
+Datum
 Tpoint_as_text(PG_FUNCTION_ARGS)
 {
   return Tpoint_as_text_ext(fcinfo, false);
 }
 
+PGDLLEXPORT Datum Tpoint_as_ewkt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_as_ewkt);
 /**
  * @ingroup mobilitydb_temporal_inout
@@ -94,7 +96,7 @@ PG_FUNCTION_INFO_V1(Tpoint_as_ewkt);
  * that is, in WKT format prefixed with the SRID
  * @sqlfunc asEWKT()
  */
-PGDLLEXPORT Datum
+Datum
 Tpoint_as_ewkt(PG_FUNCTION_ARGS)
 {
   return Tpoint_as_text_ext(fcinfo, true);
@@ -107,7 +109,7 @@ Tpoint_as_ewkt(PG_FUNCTION_ARGS)
  * array in Well-Known Text (WKT) format
  */
 static Datum
-geoarr_as_text_ext(FunctionCallInfo fcinfo, bool temparr, bool extended)
+geoarr_as_text_ext(FunctionCallInfo fcinfo, bool temporal, bool extended)
 {
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
   /* Return NULL on empty array */
@@ -122,7 +124,7 @@ geoarr_as_text_ext(FunctionCallInfo fcinfo, bool temparr, bool extended)
     dbl_dig_for_wkt = PG_GETARG_INT32(1);
 
   char **strarr;
-  if (temparr)
+  if (temporal)
   {
     Temporal **temparr = temporalarr_extract(array, &count);
     strarr = tpointarr_as_text((const Temporal **) temparr, count,
@@ -141,18 +143,20 @@ geoarr_as_text_ext(FunctionCallInfo fcinfo, bool temparr, bool extended)
   PG_RETURN_ARRAYTYPE_P(result);
 }
 
+PGDLLEXPORT Datum Geoarr_as_text(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geoarr_as_text);
 /**
  * @ingroup mobilitydb_temporal_inout
  * @brief Output a geometry/geography array in Well-Known Text (WKT) format
  * @sqlfunc asText()
  */
-PGDLLEXPORT Datum
+Datum
 Geoarr_as_text(PG_FUNCTION_ARGS)
 {
   return geoarr_as_text_ext(fcinfo, false, false);
 }
 
+PGDLLEXPORT Datum Geoarr_as_ewkt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geoarr_as_ewkt);
 /**
  * @ingroup mobilitydb_temporal_inout
@@ -160,24 +164,26 @@ PG_FUNCTION_INFO_V1(Geoarr_as_ewkt);
  * that is, in WKT format prefixed with the SRID
  * @sqlfunc asEWKT()
  */
-PGDLLEXPORT Datum
+Datum
 Geoarr_as_ewkt(PG_FUNCTION_ARGS)
 {
   return geoarr_as_text_ext(fcinfo, false, true);
 }
 
+PGDLLEXPORT Datum Tpointarr_as_text(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpointarr_as_text);
 /**
  * @ingroup mobilitydb_temporal_inout
  * @brief Output a temporal point array in Well-Known Text (WKT) format
  * @sqlfunc asText()
  */
-PGDLLEXPORT Datum
+Datum
 Tpointarr_as_text(PG_FUNCTION_ARGS)
 {
   return geoarr_as_text_ext(fcinfo, true, false);
 }
 
+PGDLLEXPORT Datum Tpointarr_as_ewkt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpointarr_as_ewkt);
 /**
  * @ingroup mobilitydb_temporal_inout
@@ -185,7 +191,7 @@ PG_FUNCTION_INFO_V1(Tpointarr_as_ewkt);
  * that is, in WKT format prefixed with the SRID
  * @sqlfunc asEWKT()
  */
-PGDLLEXPORT Datum
+Datum
 Tpointarr_as_ewkt(PG_FUNCTION_ARGS)
 {
   return geoarr_as_text_ext(fcinfo, true, true);

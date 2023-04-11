@@ -57,13 +57,14 @@
  * Input/output functions
  *****************************************************************************/
 
+PGDLLEXPORT Datum Span_in(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_in);
 /**
  * @ingroup mobilitydb_setspan_inout
  * @brief Input function for periods
  * @sqlfunc span_in()
  */
-PGDLLEXPORT Datum
+Datum
 Span_in(PG_FUNCTION_ARGS)
 {
   const char *input = PG_GETARG_CSTRING(0);
@@ -72,26 +73,28 @@ Span_in(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Span_out(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_out);
 /**
  * @ingroup mobilitydb_setspan_inout
  * @brief Output function for periods
  * @sqlfunc span_out()
  */
-PGDLLEXPORT Datum
+Datum
 Span_out(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   PG_RETURN_CSTRING(span_out(s, Int32GetDatum(OUT_DEFAULT_DECIMAL_DIGITS)));
 }
 
+PGDLLEXPORT Datum Span_recv(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_recv);
 /**
  * @ingroup mobilitydb_setspan_inout
  * @brief Generic receive function for spans
  * @sqlfunc span_recv()
  */
-PGDLLEXPORT Datum
+Datum
 Span_recv(PG_FUNCTION_ARGS)
 {
   StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
@@ -101,13 +104,14 @@ Span_recv(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Span_send(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_send);
 /*
  * @ingroup mobilitydb_setspan_inout
  * @brief Generic send function for spans
  * @sqlfunc span_send()
  */
-PGDLLEXPORT Datum
+Datum
 Span_send(PG_FUNCTION_ARGS)
 {
   Span *span = PG_GETARG_SPAN_P(0);
@@ -124,13 +128,14 @@ Span_send(PG_FUNCTION_ARGS)
  * Output in WKT format
  *****************************************************************************/
 
+PGDLLEXPORT Datum Span_as_text(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_as_text);
 /**
  * @ingroup mobilitydb_setspan_inout
  * @brief Output function for periods
  * @sqlfunc asText()
  */
-PGDLLEXPORT Datum
+Datum
 Span_as_text(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
@@ -147,13 +152,14 @@ Span_as_text(PG_FUNCTION_ARGS)
  * Constructor functions
  *****************************************************************************/
 
+PGDLLEXPORT Datum Span_constructor(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_constructor);
 /**
  * @ingroup mobilitydb_setspan_constructor
  * @brief Construct a span from the four arguments
  * @sqlfunc intspan(), bigintspan(), floatspan(), period()
  */
-PGDLLEXPORT Datum
+Datum
 Span_constructor(PG_FUNCTION_ARGS)
 {
   Datum lower = PG_GETARG_DATUM(0);
@@ -171,6 +177,7 @@ Span_constructor(PG_FUNCTION_ARGS)
  * Casting
  *****************************************************************************/
 
+PGDLLEXPORT Datum Value_to_span(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Value_to_span);
 /**
  * @ingroup mobilitydb_setspan_cast
@@ -178,7 +185,7 @@ PG_FUNCTION_INFO_V1(Value_to_span);
  * @sqlfunc intspan(), bigintspan(), floatspan(), period()
  * @sqlop @p ::
  */
-PGDLLEXPORT Datum
+Datum
 Value_to_span(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
@@ -187,6 +194,7 @@ Value_to_span(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Span_to_range(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_to_range);
 /**
  * @ingroup mobilitydb_setspan_cast
@@ -194,7 +202,7 @@ PG_FUNCTION_INFO_V1(Span_to_range);
  * @sqlfunc int4range(), tstzrange()
  * @sqlop @p ::
  */
-PGDLLEXPORT Datum
+Datum
 Span_to_range(PG_FUNCTION_ARGS)
 {
   Span *span = PG_GETARG_SPAN_P(0);
@@ -229,6 +237,7 @@ range_set_span(RangeType *range, TypeCacheEntry *typcache, Span *result)
   return;
 }
 
+PGDLLEXPORT Datum Range_to_span(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Range_to_span);
 /**
  * @ingroup mobilitydb_setspan_cast
@@ -236,7 +245,7 @@ PG_FUNCTION_INFO_V1(Range_to_span);
  * @sqlfunc intspan(), period()
  * @sqlop @p ::
  */
-PGDLLEXPORT Datum
+Datum
 Range_to_span(PG_FUNCTION_ARGS)
 {
   RangeType *range = PG_GETARG_RANGE_P(0);
@@ -254,26 +263,28 @@ Range_to_span(PG_FUNCTION_ARGS)
 
 /* span -> timestamptz functions */
 
+PGDLLEXPORT Datum Span_lower(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_lower);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the lower bound value
  * @sqlfunc lower()
  */
-PGDLLEXPORT Datum
+Datum
 Span_lower(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   PG_RETURN_DATUM(s->lower);
 }
 
+PGDLLEXPORT Datum Span_upper(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_upper);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the upper bound value
  * @sqlfunc upper()
  */
-PGDLLEXPORT Datum
+Datum
 Span_upper(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
@@ -282,39 +293,42 @@ Span_upper(PG_FUNCTION_ARGS)
 
 /* span -> bool functions */
 
+PGDLLEXPORT Datum Span_lower_inc(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_lower_inc);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return true if the lower bound value is inclusive
  * @sqlfunc lower_inc()
  */
-PGDLLEXPORT Datum
+Datum
 Span_lower_inc(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   PG_RETURN_BOOL(s->lower_inc != 0);
 }
 
+PGDLLEXPORT Datum Span_upper_inc(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_upper_inc);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return true if the upper bound value is inclusive
  * @sqlfunc lower_inc()
  */
-PGDLLEXPORT Datum
+Datum
 Span_upper_inc(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   PG_RETURN_BOOL(s->upper_inc != 0);
 }
 
+PGDLLEXPORT Datum Span_width(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_width);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the width of a numeric span
  * @sqlfunc width()
  */
-PGDLLEXPORT Datum
+Datum
 Span_width(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
@@ -322,13 +336,14 @@ Span_width(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 }
 
+PGDLLEXPORT Datum Period_duration(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Period_duration);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the duration of the period
  * @sqlfunc duration()
  */
-PGDLLEXPORT Datum
+Datum
 Period_duration(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
@@ -355,13 +370,14 @@ floatspan_round(const Span *span, Datum size, Span *result)
   return;
 }
 
+PGDLLEXPORT Datum Floatspan_round(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Floatspan_round);
 /**
  * @ingroup mobilitydb_setspan_transf
  * @brief Set the precision of the float span to the number of decimal places
  * @sqlfunc round()
  */
-PGDLLEXPORT Datum
+Datum
 Floatspan_round(PG_FUNCTION_ARGS)
 {
   Span *span = PG_GETARG_SPAN_P(0);
@@ -373,13 +389,14 @@ Floatspan_round(PG_FUNCTION_ARGS)
 
 /******************************************************************************/
 
+PGDLLEXPORT Datum Span_shift(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_shift);
 /**
  * @ingroup mobilitydb_setspan_transf
  * @brief Shift the span by a value
  * @sqlfunc shift()
  */
-PGDLLEXPORT Datum
+Datum
 Span_shift(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
@@ -389,13 +406,14 @@ Span_shift(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Period_shift(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Period_shift);
 /**
  * @ingroup mobilitydb_setspan_transf
  * @brief Shift the period value by the interval
  * @sqlfunc shift()
  */
-PGDLLEXPORT Datum
+Datum
 Period_shift(PG_FUNCTION_ARGS)
 {
   Span *p = PG_GETARG_SPAN_P(0);
@@ -405,13 +423,14 @@ Period_shift(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Period_tscale(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Period_tscale);
 /**
  * @ingroup mobilitydb_setspan_transf
  * @brief Shift the period  value by the interval
  * @sqlfunc tscale()
  */
-PGDLLEXPORT Datum
+Datum
 Period_tscale(PG_FUNCTION_ARGS)
 {
   Span *p = PG_GETARG_SPAN_P(0);
@@ -421,13 +440,14 @@ Period_tscale(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Period_shift_tscale(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Period_shift_tscale);
 /**
  * @ingroup mobilitydb_setspan_transf
  * @brief Shift the period value by the interval
  * @sqlfunc shiftTscale()
  */
-PGDLLEXPORT Datum
+Datum
 Period_shift_tscale(PG_FUNCTION_ARGS)
 {
   Span *p = PG_GETARG_SPAN_P(0);
@@ -442,6 +462,7 @@ Period_shift_tscale(PG_FUNCTION_ARGS)
  * Btree support
  *****************************************************************************/
 
+PGDLLEXPORT Datum Span_eq(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_eq);
 /**
  * @ingroup mobilitydb_setspan_comp
@@ -449,7 +470,7 @@ PG_FUNCTION_INFO_V1(Span_eq);
  * @sqlfunc span_eq()
  * @sqlop @p =
  */
-PGDLLEXPORT Datum
+Datum
 Span_eq(PG_FUNCTION_ARGS)
 {
   Span *s1 = PG_GETARG_SPAN_P(0);
@@ -457,6 +478,7 @@ Span_eq(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(span_eq(s1, s2));
 }
 
+PGDLLEXPORT Datum Span_ne(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_ne);
 /**
  * @ingroup mobilitydb_setspan_comp
@@ -464,7 +486,7 @@ PG_FUNCTION_INFO_V1(Span_ne);
  * @sqlfunc span_ne()
  * @sqlop @p <>
  */
-PGDLLEXPORT Datum
+Datum
 Span_ne(PG_FUNCTION_ARGS)
 {
   Span *s1 = PG_GETARG_SPAN_P(0);
@@ -472,6 +494,7 @@ Span_ne(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(span_ne(s1, s2));
 }
 
+PGDLLEXPORT Datum Span_cmp(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_cmp);
 /**
  * @ingroup mobilitydb_setspan_comp
@@ -479,7 +502,7 @@ PG_FUNCTION_INFO_V1(Span_cmp);
  * is less than, equal, or greater than the second one
  * @sqlfunc span_cmp()
  */
-PGDLLEXPORT Datum
+Datum
 Span_cmp(PG_FUNCTION_ARGS)
 {
   Span *s1 = PG_GETARG_SPAN_P(0);
@@ -487,6 +510,7 @@ Span_cmp(PG_FUNCTION_ARGS)
   PG_RETURN_INT32(span_cmp(s1, s2));
 }
 
+PGDLLEXPORT Datum Span_lt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_lt);
 /**
  * @ingroup mobilitydb_setspan_comp
@@ -494,7 +518,7 @@ PG_FUNCTION_INFO_V1(Span_lt);
  * @sqlfunc span_lt()
  * @sqlop @p <
  */
-PGDLLEXPORT Datum
+Datum
 Span_lt(PG_FUNCTION_ARGS)
 {
   Span *s1 = PG_GETARG_SPAN_P(0);
@@ -502,6 +526,7 @@ Span_lt(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(span_lt(s1, s2));
 }
 
+PGDLLEXPORT Datum Span_le(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_le);
 /**
  * @ingroup mobilitydb_setspan_comp
@@ -509,7 +534,7 @@ PG_FUNCTION_INFO_V1(Span_le);
  * @sqlfunc span_le()
  * @sqlop @p <=
  */
-PGDLLEXPORT Datum
+Datum
 Span_le(PG_FUNCTION_ARGS)
 {
   Span *s1 = PG_GETARG_SPAN_P(0);
@@ -517,6 +542,7 @@ Span_le(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(span_le(s1, s2));
 }
 
+PGDLLEXPORT Datum Span_ge(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_ge);
 /**
  * @ingroup mobilitydb_setspan_comp
@@ -524,7 +550,7 @@ PG_FUNCTION_INFO_V1(Span_ge);
  * @sqlfunc span_ge()
  * @sqlop @p >=
  */
-PGDLLEXPORT Datum
+Datum
 Span_ge(PG_FUNCTION_ARGS)
 {
   Span *s1 = PG_GETARG_SPAN_P(0);
@@ -532,6 +558,7 @@ Span_ge(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(span_ge(s1, s2));
 }
 
+PGDLLEXPORT Datum Span_gt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_gt);
 /**
  * @ingroup mobilitydb_setspan_comp
@@ -539,7 +566,7 @@ PG_FUNCTION_INFO_V1(Span_gt);
  * @sqlfunc span_gt()
  * @sqlop @p >
  */
-PGDLLEXPORT Datum
+Datum
 Span_gt(PG_FUNCTION_ARGS)
 {
   Span *s1 = PG_GETARG_SPAN_P(0);
@@ -551,13 +578,14 @@ Span_gt(PG_FUNCTION_ARGS)
  * Hash support
  *****************************************************************************/
 
+PGDLLEXPORT Datum Span_hash(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_hash);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the 32-bit hash value of a span.
  * @sqlfunc span_hash()
  */
-PGDLLEXPORT Datum
+Datum
 Span_hash(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
@@ -565,13 +593,14 @@ Span_hash(PG_FUNCTION_ARGS)
   PG_RETURN_UINT32(result);
 }
 
+PGDLLEXPORT Datum Span_hash_extended(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_hash_extended);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the 64-bit hash value of a span obtained with a seed.
  * @sqlfunc span_hash_extended()
  */
-PGDLLEXPORT Datum
+Datum
 Span_hash_extended(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);

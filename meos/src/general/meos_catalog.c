@@ -131,6 +131,7 @@ temptype_basetype(meosType temptype)
   }
   /* We only arrive here on error */
   elog(ERROR, "type %u is not a temporal type", temptype);
+  return T_UNKNOWN; /* make compiler quiet */
 }
 
 /**
@@ -147,6 +148,7 @@ spantype_basetype(meosType spantype)
   }
   /* We only arrive here on error */
   elog(ERROR, "type %u is not a span type", spantype);
+  return T_UNKNOWN; /* make compiler quiet */
 }
 
 /**
@@ -163,6 +165,7 @@ spansettype_spantype(meosType spansettype)
   }
   /* We only arrive here on error */
   elog(ERROR, "type %u is not a span set type", spansettype);
+  return T_UNKNOWN; /* make compiler quiet */
 }
 
 /**
@@ -179,6 +182,7 @@ basetype_spantype(meosType basetype)
   }
   /* We only arrive here on error */
   elog(ERROR, "type %u is not a span type", basetype);
+  return T_UNKNOWN; /* make compiler quiet */
 }
 
 /**
@@ -195,6 +199,7 @@ spantype_spansettype(meosType spantype)
   }
   /* We only arrive here on error */
   elog(ERROR, "type %u is not a span type", spantype);
+  return T_UNKNOWN; /* make compiler quiet */
 }
 
 /**
@@ -211,6 +216,7 @@ settype_basetype(meosType settype)
   }
   /* We only arrive here on error */
   elog(ERROR, "type %u is not a set type", settype);
+  return T_UNKNOWN; /* make compiler quiet */
 }
 
 /**
@@ -227,6 +233,7 @@ basetype_settype(meosType basetype)
   }
   /* We only arrive here on error */
   elog(ERROR, "type %u is not a set type", basetype);
+  return T_UNKNOWN; /* make compiler quiet */
 }
 
 /*****************************************************************************
@@ -299,6 +306,7 @@ basetype_length(meosType type)
     return sizeof(Npoint);
 #endif
   elog(ERROR, "unknown base type: %d", type);
+  return 0; /* make compiler quiet */
 }
 
 /**

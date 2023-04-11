@@ -50,12 +50,13 @@
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Tnpoint_tcentroid_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnpoint_tcentroid_transfn);
 /**
  * @brief Transition function for temporal centroid aggregation of temporal
  * network points
  */
-PGDLLEXPORT Datum
+Datum
 Tnpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
 {
   SkipList *state;

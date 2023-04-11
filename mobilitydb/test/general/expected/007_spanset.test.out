@@ -54,18 +54,6 @@ SELECT spanset(ARRAY [tstzspan '[2000-01-01, 2000-01-03]', '[2000-01-02,2000-01-
 ERROR:  Invalid value for span set
 SELECT spanset('{}'::tstzspan[]);
 ERROR:  The input array cannot be empty
-SELECT intspanset '{[1,2),[3,4),[5,6)}'::intspan;
- intspan 
----------
- [1, 6)
-(1 row)
-
-SELECT floatspanset '{[1,2),[3,4),[5,6)}'::floatspan;
- floatspan 
------------
- [1, 6)
-(1 row)
-
 SELECT spanset(timestamptz '2000-01-01');
                       spanset                       
 ----------------------------------------------------
@@ -262,6 +250,18 @@ SELECT memSize(tstzspanset '{[2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(20
  memsize 
 ---------
      112
+(1 row)
+
+SELECT span(intspanset '{[1,2),[3,4),[5,6)}');
+  span  
+--------
+ [1, 6)
+(1 row)
+
+SELECT span(floatspanset '{[1,2),[3,4),[5,6)}');
+  span  
+--------
+ [1, 6)
 (1 row)
 
 SELECT lower(intspanset '{[1,2),[3,4),[5,6)}');

@@ -101,7 +101,7 @@ tnpointcontseq_tgeompointcontseq(const TSequence *seq)
   LWLINE *lwline = (LWLINE *) lwgeom_from_gserialized(line);
   for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+    inst = TSEQUENCE_INST_N(seq, i);
     np = DatumGetNpointP(&inst->value);
     POINTARRAY *opa = lwline_interpolate_points(lwline, np->pos, 0);
     LWGEOM *lwpoint;

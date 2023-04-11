@@ -403,6 +403,7 @@ bbox_mfjson_size(meosType temptype, bool hasz, int precision)
       break;
     default: /* Error! */
       elog(ERROR, "Unknown temporal type: %d", temptype);
+      return 0; /* make compiler quiet */
   }
   return size;
 }
@@ -428,6 +429,7 @@ bbox_mfjson_buf(meosType temptype, char *output, const bboxunion *bbox,
       return stbox_mfjson_buf(output, (STBox *) bbox, hasz, precision);
     default: /* Error! */
       elog(ERROR, "Unknown temporal type: %d", temptype);
+      return 0; /* make compiler quiet */
   }
 }
 
@@ -462,6 +464,7 @@ temptype_mfjson_size(meosType temptype)
       break;
     default: /* Error! */
       elog(ERROR, "Unknown temporal type: %d", temptype);
+      size = 0; /* make compiler quiet */
       break;
   }
   return size;
@@ -1076,6 +1079,7 @@ basetype_to_wkb_size(Datum value, meosType basetype, int16 flags)
 #endif /* NPOINT */
     default: /* Error! */
       elog(ERROR, "Unknown temporal base type: %d", basetype);
+      return 0; /* make compiler quiet */
   }
 }
 
@@ -1382,24 +1386,21 @@ temporal_to_wkb_size(const Temporal *temp, uint8_t variant)
 static size_t
 datum_to_wkb_size(Datum value, meosType type, uint8_t variant)
 {
-  size_t result;
   if (set_type(type))
-    result = set_to_wkb_size((Set *) DatumGetPointer(value), variant);
-  else if (span_type(type))
-    result = span_to_wkb_size((Span *) DatumGetPointer(value));
-  else if (spanset_type(type))
-    result = spanset_to_wkb_size((SpanSet *) DatumGetPointer(value));
-  else if (type == T_TBOX)
-    result = tbox_to_wkb_size((TBox *) DatumGetPointer(value));
-  else if (type == T_STBOX)
-    result = stbox_to_wkb_size((STBox *) DatumGetPointer(value), variant);
-  else if (temporal_type(type))
-    result = temporal_to_wkb_size((Temporal *) DatumGetPointer(value),
-      variant);
-  else /* Error! */
-    elog(ERROR, "Unknown WKB type: %d", type);
-
-  return result;
+    return set_to_wkb_size((Set *) DatumGetPointer(value), variant);
+  if (span_type(type))
+    return span_to_wkb_size((Span *) DatumGetPointer(value));
+  if (spanset_type(type))
+    return spanset_to_wkb_size((SpanSet *) DatumGetPointer(value));
+  if (type == T_TBOX)
+    return tbox_to_wkb_size((TBox *) DatumGetPointer(value));
+  if (type == T_STBOX)
+    return stbox_to_wkb_size((STBox *) DatumGetPointer(value), variant);
+  if (temporal_type(type))
+    return temporal_to_wkb_size((Temporal *) DatumGetPointer(value), variant);
+  /* Error! */
+  elog(ERROR, "Unknown WKB type: %d", type);
+  return 0; /* make compiler quiet */
 }
 
 /*****************************************************************************
@@ -1437,7 +1438,7 @@ bytes_to_wkb_buf(char *valptr, size_t size, uint8_t *buf, uint8_t variant)
     /* Machine/request arch mismatch, so flip byte order */
     for (size_t i = 0; i < size; i++)
     {
-      int j = (swap ? size - 1 - i : i);
+      int j = (int) (swap ? size - 1 - i : i);
       uint8_t b = (uint8_t) valptr[j];
       /* Top four bits to 0-F */
       buf[2*i] = (uint8_t) hexchr[b >> 4];
@@ -2237,7 +2238,7 @@ datum_as_wkb(Datum value, meosType type, uint8_t variant, size_t *size_out)
   buf = palloc(buf_size);
   if (buf == NULL)
   {
-    elog(ERROR, "Unable to allocate %lu bytes for WKB output buffer.", buf_size);
+    elog(ERROR, "Unable to allocate %llu bytes for WKB output buffer.", buf_size);
     return NULL;
   }
 

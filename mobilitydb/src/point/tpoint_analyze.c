@@ -165,11 +165,10 @@ static double
 total_double(const double *vals, int nvals)
 {
   int i;
-  float total = 0;
+  double total = 0;
   /* Calculate total */
   for (i = 0; i < nvals; i++)
     total += vals[i];
-
   return total;
 }
 
@@ -354,14 +353,14 @@ nd_increment(ND_IBOX *ibox, int ndims, int *counter)
  * proportion of total width to add.
  */
 static int
-nd_box_expand(ND_BOX *nd_box, double expansion_factor)
+nd_box_expand(ND_BOX *nd_box, float expansion_factor)
 {
   for (int d = 0; d < ND_DIMS; d++)
   {
     double size = nd_box->max[d] - nd_box->min[d];
     if (size <= 0) continue;
-    nd_box->min[d] -= size * expansion_factor / 2;
-    nd_box->max[d] += size * expansion_factor / 2;
+    nd_box->min[d] -= (float4) (size * expansion_factor / 2);
+    nd_box->max[d] += (float4) (size * expansion_factor / 2);
   }
   return true;
 }
@@ -726,7 +725,7 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
    * Expand the box slightly (1%) to avoid edge effects
    * with objects that are on the boundary
    */
-  nd_box_expand(&histo_extent_new, 0.01);
+  nd_box_expand(&histo_extent_new, (float4) 0.01);
   histo_extent = histo_extent_new;
 
   /*
@@ -824,14 +823,14 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   MemoryContextSwitchTo(old_context);
 
   /* Initialize the #ND_STATS objects */
-  nd_stats->ndims = ndims;
+  nd_stats->ndims = (float4) ndims;
   nd_stats->extent = histo_extent;
-  nd_stats->sample_features = sample_rows;
+  nd_stats->sample_features = (float4) sample_rows;
   nd_stats->table_features = (float4) total_rows;
-  nd_stats->not_null_features = notnull_cnt;
+  nd_stats->not_null_features = (float4) notnull_cnt;
   /* Copy in the histogram dimensions */
   for ( d = 0; d < ndims; d++ )
-    nd_stats->size[d] = histo_size[d];
+    nd_stats->size[d] = (float4) histo_size[d];
 
   /*
    * Fourth scan:
@@ -896,7 +895,7 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
        * 0.5 added on.
        */
       ratio = nd_box_ratio_overlaps(&nd_cell, nd_box, (int) nd_stats->ndims);
-      nd_stats->value[nd_stats_value_index(nd_stats, at)] += ratio;
+      nd_stats->value[nd_stats_value_index(nd_stats, at)] += (float4) ratio;
       num_cells += ratio;
     }
     while ( nd_increment(&nd_ibox, (int) nd_stats->ndims, at) );
@@ -921,8 +920,8 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     return;
   }
 
-  nd_stats->histogram_features = histogram_features;
-  nd_stats->histogram_cells = histo_cells;
+  nd_stats->histogram_features = (float4) histogram_features;
+  nd_stats->histogram_cells = (float4) histo_cells;
   nd_stats->cells_covered = (float4) total_cell_count;
 
   /* Put this histogram data into the right slot/kind */
@@ -1128,11 +1127,12 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Spatialset_analyze(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spatialset_analyze);
 /**
  * @brief Compute the statistics for spatial set columns
  */
-PGDLLEXPORT Datum
+Datum
 Spatialset_analyze(PG_FUNCTION_ARGS)
 {
   VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
@@ -1153,11 +1153,12 @@ Spatialset_analyze(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(true);
 }
 
+PGDLLEXPORT Datum Tpoint_analyze(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_analyze);
 /**
  * @brief Compute the statistics for temporal point columns
  */
-PGDLLEXPORT Datum
+Datum
 Tpoint_analyze(PG_FUNCTION_ARGS)
 {
   return temporal_analyze(fcinfo, &tpoint_compute_stats);

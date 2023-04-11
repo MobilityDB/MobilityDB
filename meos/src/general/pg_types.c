@@ -1113,7 +1113,7 @@ pg_interval_justify_hours(const Interval *span)
 
   TimeOffset wholeday = 0; /* make compiler quiet */
   TMODULO(result->time, wholeday, USECS_PER_DAY);
-  result->day += wholeday;  /* could overflow... */
+  result->day += (int32) wholeday;  /* could overflow... */
 
   if (result->day > 0 && result->time < 0)
   {
@@ -1163,23 +1163,20 @@ static inline INT128
 interval_cmp_value(const Interval *interval)
 {
   INT128 span;
-  int64 dayfraction;
-  int64 days;
+  int64 ndays;
 
   /*
-   * Separate time field into days and dayfraction, then add the month and
-   * day fields to the days part.  We cannot overflow int64 days here.
+   * Combine the month and day fields into an integral number of days.
+   * Because the inputs are int32, int64 arithmetic suffices here.
    */
-  dayfraction = interval->time % USECS_PER_DAY;
-  days = interval->time / USECS_PER_DAY;
-  days += interval->month * INT64CONST(30);
-  days += interval->day;
+  ndays = interval->month * INT64CONST(30);
+  ndays += interval->day;
 
-  /* Widen dayfraction to 128 bits */
-  span = (INT128) dayfraction;
+  /* Widen time field to 128 bits */
+  span = int64_to_int128(interval->time);
 
   /* Scale up days to microseconds, forming a 128-bit product */
-  span += (int128) days * (int128) USECS_PER_DAY;
+  int128_add_int64_mul_int64(&span, ndays, USECS_PER_DAY);
 
   return span;
 }
@@ -1361,7 +1358,7 @@ pg_hashfloat8extended(float8 key, uint64 seed)
 uint32
 pg_hashtext(text *key)
 {
-  uint32 result = UInt32GetDatum(hash_any((unsigned char *) VARDATA_ANY(key),
+  uint32 result = DatumGetUInt32(hash_any((unsigned char *) VARDATA_ANY(key),
     VARSIZE_ANY_EXHDR(key)));
   return result;
 }

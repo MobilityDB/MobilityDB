@@ -1083,7 +1083,7 @@ temporal_merge_array(Temporal **temparr, int count)
     if (subtype != subtype1 || interp != interp1)
     {
       convert = true;
-      int16 newsubtype = Max(subtype, subtype1);
+      uint8 newsubtype = Max(subtype, subtype1);
       interpType newinterp = Max(interp, interp1);
       /* A discrete TSequence cannot be converted to a continuous TSequence */
       if (subtype == TSEQUENCE && subtype1 == TSEQUENCE && interp != newinterp)
@@ -3910,7 +3910,7 @@ mrr_distance_geos(GEOSGeometry *geom, bool geodetic)
 static GEOSGeometry *
 multipoint_make(const TSequence *seq, int start, int end)
 {
-  GSERIALIZED *gs;
+  GSERIALIZED *gs = NULL; /* make compiler quiet */
   GEOSGeometry **geoms = palloc(sizeof(GEOSGeometry *) * (end - start + 1));
   for (int i = 0; i < end - start + 1; ++i)
   {
@@ -3940,7 +3940,7 @@ multipoint_make(const TSequence *seq, int start, int end)
 static GEOSGeometry *
 multipoint_add_inst_free(GEOSGeometry *geom, const TInstant *inst)
 {
-  GSERIALIZED *gs;
+  GSERIALIZED *gs = NULL; /* make compiler quiet */
   if (tgeo_type(inst->temptype))
     gs = DatumGetGserializedP(tinstant_value(inst));
 #if NPOINT
@@ -4267,7 +4267,7 @@ temporal_eq(const Temporal *temp1, const Temporal *temp2)
   ss = (TSequenceSet *) temp2;
   if (MEOS_FLAGS_GET_DISCRETE(seq->flags))
   {
-    for (int i = 0; i < seq->count; i ++)
+    for (int i = 0; i < seq->count; i++)
     {
       const TSequence *seq1 = TSEQUENCESET_SEQ_N(ss, i);
       if (seq1->count != 1)

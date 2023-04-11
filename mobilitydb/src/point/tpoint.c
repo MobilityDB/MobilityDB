@@ -146,6 +146,7 @@ tpoint_valid_typmod(Temporal *temp, int32_t typmod)
   return temp;
 }
 
+PGDLLEXPORT Datum Tpoint_in(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_in);
 /**
  * @ingroup mobilitydb_temporal_inout
@@ -165,7 +166,7 @@ PG_FUNCTION_INFO_V1(Tpoint_in);
  * @endcode
  * @sqlfunc tpoint_in()
  */
-PGDLLEXPORT Datum
+Datum
 Tpoint_in(PG_FUNCTION_ARGS)
 {
   const char *input = PG_GETARG_CSTRING(0);
@@ -310,11 +311,12 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
   return typmod;
 }
 
+PGDLLEXPORT Datum Tgeompoint_typmod_in(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tgeompoint_typmod_in);
 /**
  * @brief Input typmod information for temporal geometric points
  */
-PGDLLEXPORT Datum
+Datum
 Tgeompoint_typmod_in(PG_FUNCTION_ARGS)
 {
   ArrayType *array = (ArrayType *) DatumGetPointer(PG_GETARG_DATUM(0));
@@ -322,11 +324,12 @@ Tgeompoint_typmod_in(PG_FUNCTION_ARGS)
   PG_RETURN_INT32(typmod);
 }
 
+PGDLLEXPORT Datum Tgeogpoint_typmod_in(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tgeogpoint_typmod_in);
 /**
  * @brief Input typmod information for temporal geographic points
  */
-PGDLLEXPORT Datum
+Datum
 Tgeogpoint_typmod_in(PG_FUNCTION_ARGS)
 {
   ArrayType *array = (ArrayType *) DatumGetPointer(PG_GETARG_DATUM(0));
@@ -337,11 +340,12 @@ Tgeogpoint_typmod_in(PG_FUNCTION_ARGS)
   PG_RETURN_INT32(typmod);
 }
 
+PGDLLEXPORT Datum Tpoint_typmod_out(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_typmod_out);
 /**
  * @brief Output typmod information for temporal points
  */
-PGDLLEXPORT Datum
+Datum
 Tpoint_typmod_out(PG_FUNCTION_ARGS)
 {
   char *s = palloc(64);
@@ -380,12 +384,13 @@ Tpoint_typmod_out(PG_FUNCTION_ARGS)
   PG_RETURN_CSTRING(s);
 }
 
+PGDLLEXPORT Datum Tpoint_enforce_typmod(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_enforce_typmod);
 /**
  * @brief Enforce typmod information for temporal points with respect to
  * temporal type, dimensions, and SRID
  */
-PGDLLEXPORT Datum
+Datum
 Tpoint_enforce_typmod(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
@@ -399,13 +404,14 @@ Tpoint_enforce_typmod(PG_FUNCTION_ARGS)
  * Constructor functions
  *****************************************************************************/
 
+PGDLLEXPORT Datum Tpointinst_constructor(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpointinst_constructor);
 /**
  * @ingroup mobilitydb_temporal_constructor
  * @brief Construct a temporal instant point value from the arguments
  * @sqlfunc tgeompoint_inst(), tgeogpoint_inst(),
  */
-PGDLLEXPORT Datum
+Datum
 Tpointinst_constructor(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
@@ -424,6 +430,7 @@ Tpointinst_constructor(PG_FUNCTION_ARGS)
  * Cast functions
  *****************************************************************************/
 
+PGDLLEXPORT Datum Tpoint_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_to_stbox);
 /**
  * @ingroup mobilitydb_temporal_cast
@@ -431,7 +438,7 @@ PG_FUNCTION_INFO_V1(Tpoint_to_stbox);
  * @sqlfunc stbox()
  * @sqlop @p ::
  */
-PGDLLEXPORT Datum
+Datum
 Tpoint_to_stbox(PG_FUNCTION_ARGS)
 {
   Datum tempdatum = PG_GETARG_DATUM(0);
@@ -444,6 +451,7 @@ Tpoint_to_stbox(PG_FUNCTION_ARGS)
  * Expand functions
  *****************************************************************************/
 
+PGDLLEXPORT Datum Geo_expand_space(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geo_expand_space);
 /**
  * @ingroup mobilitydb_temporal_transf
@@ -451,7 +459,7 @@ PG_FUNCTION_INFO_V1(Geo_expand_space);
  * spatial dimension
  * @sqlfunc expandSpace()
  */
-PGDLLEXPORT Datum
+Datum
 Geo_expand_space(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
@@ -463,6 +471,7 @@ Geo_expand_space(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Tpoint_expand_space(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_expand_space);
 /**
  * @ingroup mobilitydb_temporal_transf
@@ -470,7 +479,7 @@ PG_FUNCTION_INFO_V1(Tpoint_expand_space);
  * spatial dimension
  * @sqlfunc expandSpace()
  */
-PGDLLEXPORT Datum
+Datum
 Tpoint_expand_space(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
@@ -520,6 +529,7 @@ tcomp_tpoint_point_ext(FunctionCallInfo fcinfo,
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Teq_geo_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Teq_geo_tpoint);
 /**
  * @ingroup mobilitydb_temporal_comp
@@ -527,12 +537,13 @@ PG_FUNCTION_INFO_V1(Teq_geo_tpoint);
  * @sqlfunc tpoint_teq()
  * @sqlop @p #=
  */
-PGDLLEXPORT Datum
+Datum
 Teq_geo_tpoint(PG_FUNCTION_ARGS)
 {
   return tcomp_geo_tpoint_ext(fcinfo, &datum2_eq2);
 }
 
+PGDLLEXPORT Datum Teq_tpoint_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Teq_tpoint_geo);
 /**
  * @ingroup mobilitydb_temporal_comp
@@ -540,12 +551,13 @@ PG_FUNCTION_INFO_V1(Teq_tpoint_geo);
  * @sqlfunc tpoint_teq()
  * @sqlop @p #=
  */
-PGDLLEXPORT Datum
+Datum
 Teq_tpoint_geo(PG_FUNCTION_ARGS)
 {
   return tcomp_tpoint_point_ext(fcinfo, &datum2_eq2);
 }
 
+PGDLLEXPORT Datum Tne_geo_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tne_geo_tpoint);
 /**
  * @ingroup mobilitydb_temporal_comp
@@ -553,12 +565,13 @@ PG_FUNCTION_INFO_V1(Tne_geo_tpoint);
  * @sqlfunc tpoint_tne()
  * @sqlop @p #=
  */
-PGDLLEXPORT Datum
+Datum
 Tne_geo_tpoint(PG_FUNCTION_ARGS)
 {
   return tcomp_geo_tpoint_ext(fcinfo, &datum2_ne2);
 }
 
+PGDLLEXPORT Datum Tne_tpoint_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tne_tpoint_geo);
 /**
  * @ingroup mobilitydb_temporal_comp
@@ -566,7 +579,7 @@ PG_FUNCTION_INFO_V1(Tne_tpoint_geo);
  * @sqlfunc tpoint_tne()
  * @sqlop @p #=
  */
-PGDLLEXPORT Datum
+Datum
 Tne_tpoint_geo(PG_FUNCTION_ARGS)
 {
   return tcomp_tpoint_point_ext(fcinfo, &datum2_ne2);

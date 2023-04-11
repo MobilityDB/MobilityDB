@@ -337,12 +337,13 @@ temporal_analyze(FunctionCallInfo fcinfo,
   PG_RETURN_BOOL(true);
 }
 
+PGDLLEXPORT Datum Temporal_analyze(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_analyze);
 /**
  * @brief Compute the statistics for temporal columns where only the time
  * dimension is considered
  */
-PGDLLEXPORT Datum
+Datum
 Temporal_analyze(PG_FUNCTION_ARGS)
 {
   return temporal_analyze(fcinfo, &temporal_compute_stats);

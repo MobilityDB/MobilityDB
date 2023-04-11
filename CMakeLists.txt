@@ -56,6 +56,17 @@ include(CheckSymbolExists)
 # MobilityDB definitions
 #-------------------------------------
 
+# Windows build with MSVC
+
+if(CMAKE_GENERATOR STREQUAL "Visual Studio 17 2022")
+  message(STATUS "Setting options for Visual Studio")
+  set(MSVC 1)
+  # Disable native language support
+  add_definitions(-DENABLE_NLS=0)
+  # Disable warning C4996: 'strcpy': This function or variable may be unsafe.
+  add_definitions(-D_CRT_SECURE_NO_WARNINGS=1)
+endif()
+
 # Option for including network points
 option(MEOS
   "Set MEOS (default=OFF) to build the MEOS library instead of the MobilityDB
@@ -143,12 +154,17 @@ endif()
   # add_definitions(-DNO_HSEARCH_R)
 # endif()
 
-# MobilityDB compiler flags
-add_definitions(-Wall -Wextra -std=gnu1x -Wunused-parameter -Wno-strict-aliasing)
-# add_definitions(-Wall -Wextra -std=gnu1x -Wno-unused-parameter)
+# Added to build on Windows to avoid the error 'M_PI': undeclared identifier
+add_compile_definitions(_USE_MATH_DEFINES)
 
-# Code coverage
+# Set default compile flags and code coverage for GCC
 if(CMAKE_COMPILER_IS_GNUCC)
+  # MobilityDB compiler flags
+  add_definitions(-Wall -Wextra -std=gnu1x -Wunused-parameter -Wno-strict-aliasing)
+  # -Wno-strict-aliasing was removed to access directly PostGIS points
+  # See file tpoint_spatialfuncs.h
+  # add_definitions(-Wall -Wextra -std=gnu1x -Wno-unused-parameter)
+  # Code coverage
   if(WITH_COVERAGE)
     message(STATUS "Generating code coverage")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage")

@@ -192,7 +192,7 @@ extern uint32_t time_max_header_size(void);
 
 /* PostgreSQL cache functions */
 
-extern FunctionCallInfo fetch_fcinfo();
+extern FunctionCallInfo fetch_fcinfo(void);
 extern void store_fcinfo(FunctionCallInfo fcinfo);
 
 /* Typmod functions */

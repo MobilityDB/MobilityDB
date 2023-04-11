@@ -54,12 +54,13 @@
  * Extent
  *****************************************************************************/
 
+PGDLLEXPORT Datum Tpoint_extent_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_extent_transfn);
 /**
  * @brief Transition function for temporal extent aggregation of temporal point
  * values
  */
-PGDLLEXPORT Datum
+Datum
 Tpoint_extent_transfn(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_ARGISNULL(0) ? NULL : PG_GETARG_STBOX_P(0);
@@ -74,12 +75,13 @@ Tpoint_extent_transfn(PG_FUNCTION_ARGS)
  * Centroid
  *****************************************************************************/
 
+PGDLLEXPORT Datum Tpoint_tcentroid_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_tcentroid_transfn);
 /**
  * @brief Transition function for temporal centroid aggregation of temporal
  * network points
  */
-PGDLLEXPORT Datum
+Datum
 Tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
 {
   SkipList *state;
@@ -93,12 +95,13 @@ Tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_tcentroid_combinefn);
 /**
  * @brief Combine function for temporal centroid aggregation of temporal point
  * values
  */
-PGDLLEXPORT Datum
+Datum
 Tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS)
 {
   SkipList *state1 = PG_ARGISNULL(0) ? NULL :
@@ -122,12 +125,13 @@ Tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Tpoint_tcentroid_finalfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_tcentroid_finalfn);
 /**
  * @brief Final function for temporal centroid aggregation of temporal point
  * values
  */
-PGDLLEXPORT Datum
+Datum
 Tpoint_tcentroid_finalfn(PG_FUNCTION_ARGS)
 {
   SkipList *state = (SkipList *) PG_GETARG_POINTER(0);

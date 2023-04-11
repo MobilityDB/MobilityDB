@@ -66,7 +66,8 @@ span_bucket_set(Datum lower, Datum size, meosType basetype, Span *span)
   Datum upper = (basetype == T_TIMESTAMPTZ) ?
     TimestampTzGetDatum(DatumGetTimestampTz(lower) + DatumGetInt64(size)) :
     datum_add(lower, size, basetype, basetype);
-  return span_set(lower, upper, true, false, basetype, span);
+  span_set(lower, upper, true, false, basetype, span);
+  return;
 }
 
 /**
@@ -211,7 +212,7 @@ float_bucket(double value, double size, double origin)
       elog(ERROR, "number out of span");
     value -= origin;
   }
-  float result = floor(value / size) * size;
+  double result = floor(value / size) * size;
   /* Notice that by using the floor function above we remove the need to
    * add the additional if needed for the integer case to take into account
    * that integer division truncates toward 0 in C99 */
@@ -1439,8 +1440,8 @@ temporal_value_time_split1(Temporal *temp, Datum size, Interval *duration,
     value_count = (basetype == T_INT4) ? /** xx **/
       (DatumGetInt32(end_bucket) - DatumGetInt32(start_bucket)) /
         DatumGetInt32(size) :
-      floor((DatumGetFloat8(end_bucket) - DatumGetFloat8(start_bucket)) /
-        DatumGetFloat8(size));
+      (int) (floor((DatumGetFloat8(end_bucket) - DatumGetFloat8(start_bucket)) /
+        DatumGetFloat8(size)));
   }
 
   /* Compute the time bounds, if any */

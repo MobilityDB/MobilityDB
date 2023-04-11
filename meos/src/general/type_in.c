@@ -111,7 +111,7 @@ findMemberByName(json_object *poObj, const char *pszName)
           it.val = (json_object *) it.entry->v, it.entry) : 0);
         it.entry = it.entry->next)
     {
-      if (strcasecmp(it.key, pszName) == 0)
+      if (pg_strcasecmp(it.key, pszName) == 0)
         return it.val;
     }
   }
@@ -129,7 +129,7 @@ parse_mfjson_coord(json_object *poObj, int srid, bool geodetic)
   if (json_type_array != json_object_get_type(poObj))
     elog(ERROR, "Invalid value of the 'coordinates' array in MFJSON string");
 
-  const int numcoord = json_object_array_length(poObj);
+  int numcoord = (int) json_object_array_length(poObj);
   if (numcoord < 2)
     elog(ERROR, "Too few elements in 'coordinates' values in MFJSON string");
   if (numcoord > 3)
@@ -179,7 +179,7 @@ parse_mfjson_values(json_object *mfjson, meosType temptype, int *count)
   if (json_object_get_type(jvalues) != json_type_array)
     elog(ERROR, "Invalid 'values' array in MFJSON string");
 
-  int numvalues = json_object_array_length(jvalues);
+  int numvalues = (int) json_object_array_length(jvalues);
   if (numvalues < 1)
     elog(ERROR, "Invalid value of 'values' array in MFJSON string");
 
@@ -234,7 +234,7 @@ parse_mfjson_points(json_object *mfjson, int srid, bool geodetic,
   if (json_object_get_type(coordinates) != json_type_array)
     elog(ERROR, "Invalid 'coordinates' array in MFJSON string");
 
-  int numpoints = json_object_array_length(coordinates);
+  int numpoints = (int) json_object_array_length(coordinates);
   if (numpoints < 1)
     elog(ERROR, "Invalid value of 'coordinates' array in MFJSON string");
 
@@ -261,7 +261,7 @@ parse_mfjson_datetimes(json_object *mfjson, int *count)
   if (json_object_get_type(datetimes) != json_type_array)
     elog(ERROR, "Invalid 'datetimes' array in MFJSON string");
 
-  int numdates = json_object_array_length(datetimes);
+  int numdates = (int) json_object_array_length(datetimes);
   if (numdates < 1)
     elog(ERROR, "Invalid value of 'datetimes' array in MFJSON string");
 
@@ -297,7 +297,7 @@ tinstant_from_mfjson(json_object *mfjson, bool isgeo, int srid,
 {
   bool geodetic = (temptype == T_TGEOGPOINT);
   bool byvalue = basetype_byvalue(temptype_basetype(temptype));
-  Datum value;
+  Datum value = 0; /* make compiler quiet */
   if (! isgeo)
   {
     /* Get values */
@@ -588,7 +588,7 @@ tsequenceset_from_mfjson(json_object *mfjson, bool isgeo, int srid,
    * then call this function */
   if (json_object_get_type(seqs) != json_type_array)
     elog(ERROR, "Invalid 'sequences' array in MFJSON string");
-  int numseqs = json_object_array_length(seqs);
+  int numseqs = (int) json_object_array_length(seqs);
   if (numseqs < 1)
     elog(ERROR, "Invalid value of 'sequences' array in MFJSON string");
 
@@ -1035,42 +1035,32 @@ npoint_from_wkb_state(wkb_parse_state *s)
 static Datum
 basevalue_from_wkb_state(wkb_parse_state *s)
 {
-  Datum result;
   switch (s->basetype)
   {
     case T_BOOL:
-      result = BoolGetDatum(byte_from_wkb_state(s));
-      break;
+      return BoolGetDatum(byte_from_wkb_state(s));
     case T_INT4:
-      result = Int32GetDatum(int32_from_wkb_state(s));
-      break;
+      return Int32GetDatum(int32_from_wkb_state(s));
     case T_INT8:
-      result = Int64GetDatum(int64_from_wkb_state(s));
-      break;
+      return Int64GetDatum(int64_from_wkb_state(s));
     case T_FLOAT8:
-      result = Float8GetDatum(double_from_wkb_state(s));
-      break;
+      return Float8GetDatum(double_from_wkb_state(s));
     case T_TIMESTAMPTZ:
-      result = TimestampTzGetDatum(timestamp_from_wkb_state(s));
-      break;
+      return TimestampTzGetDatum(timestamp_from_wkb_state(s));
     case T_TEXT:
-      result = PointerGetDatum(text_from_wkb_state(s));
-      break;
+      return PointerGetDatum(text_from_wkb_state(s));
     case T_GEOMETRY:
     case T_GEOGRAPHY:
       /* Notice that only point geometries/geographies are allowed */
-      result = point_from_wkb_state(s);
-      break;
+      return point_from_wkb_state(s);
 #if NPOINT
     case T_NPOINT:
-      result = PointerGetDatum(npoint_from_wkb_state(s));
-      break;
+      return PointerGetDatum(npoint_from_wkb_state(s));
 #endif /* NPOINT */
     default: /* Error! */
       elog(ERROR, "Unknown base type: %d", s->basetype);
-      break;
+      return 0; /* make compiler quiet */
   }
-  return result;
 }
 
 /**
@@ -1146,8 +1136,8 @@ Span
 span_from_wkb_state(wkb_parse_state *s)
 {
   /* Read the span type */
-  uint16_t wkb_spantype = (uint16_t) int16_from_wkb_state(s);
-  s->spantype = wkb_spantype;
+  uint16_t wkb_spantype = int16_from_wkb_state(s);
+  s->spantype = (uint8_t) wkb_spantype;
   s->basetype = spantype_basetype(wkb_spantype);
   Span result;
   span_from_wkb_state1(s, &result);
@@ -1163,9 +1153,9 @@ static SpanSet *
 spanset_from_wkb_state(wkb_parse_state *s)
 {
   /* Read the span type */
-  uint16_t wkb_spansettype = (uint16_t) int16_from_wkb_state(s);
+  uint16_t wkb_spansettype = int16_from_wkb_state(s);
   /* For template classes it is necessary to store the specific type */
-  s->type = wkb_spansettype;
+  s->type = (uint8_t) wkb_spansettype;
   s->spantype = spansettype_spantype(s->type);
   s->basetype = spantype_basetype(s->spantype);
 
@@ -1212,9 +1202,9 @@ static Set *
 set_from_wkb_state(wkb_parse_state *s)
 {
   /* Read the set type */
-  uint16_t wkb_settype = (uint16_t) int16_from_wkb_state(s);
+  uint16_t wkb_settype = int16_from_wkb_state(s);
   /* For template classes it is necessary to store the specific type */
-  s->type = wkb_settype;
+  s->type = (uint8_t) wkb_settype;
   s->basetype = settype_basetype(s->type);
   /* Read the set flags */
   uint8_t wkb_flags = (uint8_t) byte_from_wkb_state(s);
@@ -1489,8 +1479,8 @@ static Temporal *
 temporal_from_wkb_state(wkb_parse_state *s)
 {
   /* Read the temporal type */
-  uint16_t wkb_temptype = (uint16_t) int16_from_wkb_state(s);
-  s->temptype = wkb_temptype;
+  uint16_t wkb_temptype = int16_from_wkb_state(s);
+  s->temptype = (uint8_t) wkb_temptype;
   s->basetype = temptype_basetype(s->temptype);
 
   /* Read the temporal and interpolation flags */
@@ -1519,7 +1509,7 @@ temporal_from_wkb_state(wkb_parse_state *s)
  * @brief Return a value from its Well-Known Binary (WKB) representation.
  */
 Datum
-datum_from_wkb(const uint8_t *wkb, int size, meosType type)
+datum_from_wkb(const uint8_t *wkb, size_t size, meosType type)
 {
   /* Initialize the state appropriately */
   wkb_parse_state s;
@@ -1542,34 +1532,32 @@ datum_from_wkb(const uint8_t *wkb, int size, meosType type)
 
   /* Call the type-specific function */
   s.type = type;
-  Datum result;
   if (set_type(type))
-    result = PointerGetDatum(set_from_wkb_state(&s));
-  else if (span_type(type))
+    return PointerGetDatum(set_from_wkb_state(&s));
+  if (span_type(type))
   {
     Span *span = palloc(sizeof(Span));
     *span = span_from_wkb_state(&s);
-    result = PointerGetDatum(span);
+    return PointerGetDatum(span);
   }
-  else if (spanset_type(type))
-    result = PointerGetDatum(spanset_from_wkb_state(&s));
-  else if (type == T_TBOX)
-    result = PointerGetDatum(tbox_from_wkb_state(&s));
-  else if (type == T_STBOX)
-    result = PointerGetDatum(stbox_from_wkb_state(&s));
-  else if (temporal_type(type))
-    result = PointerGetDatum(temporal_from_wkb_state(&s));
-  else /* Error! */
-    elog(ERROR, "Unknown WKB type: %d", type);
-
-  return result;
+  if (spanset_type(type))
+    return PointerGetDatum(spanset_from_wkb_state(&s));
+  if (type == T_TBOX)
+    return PointerGetDatum(tbox_from_wkb_state(&s));
+  if (type == T_STBOX)
+    return PointerGetDatum(stbox_from_wkb_state(&s));
+  if (temporal_type(type))
+    return PointerGetDatum(temporal_from_wkb_state(&s));
+  /* Error! */
+  elog(ERROR, "Unknown WKB type: %d", type);
+  return 0;
 }
 
 /**
  * @brief Return a temporal type from its HexEWKB representation
  */
 Datum
-datum_from_hexwkb(const char *hexwkb, int size, meosType type)
+datum_from_hexwkb(const char *hexwkb, size_t size, meosType type)
 {
   uint8_t *wkb = bytes_from_hexbytes(hexwkb, size);
   Datum result = datum_from_wkb(wkb, size / 2, type);
@@ -1588,7 +1576,7 @@ datum_from_hexwkb(const char *hexwkb, int size, meosType type)
  * @sqlfunc tstzsetFromBinary()
  */
 Set *
-set_from_wkb(const uint8_t *wkb, int size)
+set_from_wkb(const uint8_t *wkb, size_t size)
 {
   /* We pass ANY set type, the actual type is read from the byte string */
   return DatumGetSetP(datum_from_wkb(wkb, size, T_INTSET));
@@ -1603,7 +1591,7 @@ set_from_wkb(const uint8_t *wkb, int size)
 Set *
 set_from_hexwkb(const char *hexwkb)
 {
-  int size = strlen(hexwkb);
+  size_t size = strlen(hexwkb);
   /* We pass ANY set type, the actual type is read from the byte string */
   return DatumGetSetP(datum_from_hexwkb(hexwkb, size, T_INTSET));
 }
@@ -1617,7 +1605,7 @@ set_from_hexwkb(const char *hexwkb)
  * @sqlfunc intspanFromBinary(), floatspanFromBinary(), periodFromBinary(),
  */
 Span *
-span_from_wkb(const uint8_t *wkb, int size)
+span_from_wkb(const uint8_t *wkb, size_t size)
 {
   /* We pass ANY span type, the actual type is read from the byte string */
   return DatumGetSpanP(datum_from_wkb(wkb, size, T_INTSPAN));
@@ -1631,7 +1619,7 @@ span_from_wkb(const uint8_t *wkb, int size)
 Span *
 span_from_hexwkb(const char *hexwkb)
 {
-  int size = strlen(hexwkb);
+  size_t size = strlen(hexwkb);
   /* We pass ANY span type, the actual type is read from the byte string */
   return DatumGetSpanP(datum_from_hexwkb(hexwkb, size, T_INTSPAN));
 }
@@ -1645,7 +1633,7 @@ span_from_hexwkb(const char *hexwkb)
  * @sqlfunc periodsetFromBinary()
  */
 SpanSet *
-spanset_from_wkb(const uint8_t *wkb, int size)
+spanset_from_wkb(const uint8_t *wkb, size_t size)
 {
   /* We pass ANY span set type, the actual type is read from the byte string */
   return DatumGetSpanSetP(datum_from_wkb(wkb, size, T_INTSPANSET));
@@ -1659,7 +1647,7 @@ spanset_from_wkb(const uint8_t *wkb, int size)
 SpanSet *
 spanset_from_hexwkb(const char *hexwkb)
 {
-  int size = strlen(hexwkb);
+  size_t size = strlen(hexwkb);
   /* We pass ANY span set type, the actual type is read from the byte string */
   return DatumGetSpanSetP(datum_from_hexwkb(hexwkb, size, T_INTSPANSET));
 }
@@ -1673,7 +1661,7 @@ spanset_from_hexwkb(const char *hexwkb)
  * @sqlfunc tboxFromBinary()
  */
 TBox *
-tbox_from_wkb(const uint8_t *wkb, int size)
+tbox_from_wkb(const uint8_t *wkb, size_t size)
 {
   return DatumGetTboxP(datum_from_wkb(wkb, size, T_TBOX));
 }
@@ -1686,7 +1674,7 @@ tbox_from_wkb(const uint8_t *wkb, int size)
 TBox *
 tbox_from_hexwkb(const char *hexwkb)
 {
-  int size = strlen(hexwkb);
+  size_t size = strlen(hexwkb);
   return DatumGetTboxP(datum_from_hexwkb(hexwkb, size, T_TBOX));
 }
 
@@ -1699,7 +1687,7 @@ tbox_from_hexwkb(const char *hexwkb)
  * @sqlfunc stboxFromBinary()
  */
 STBox *
-stbox_from_wkb(const uint8_t *wkb, int size)
+stbox_from_wkb(const uint8_t *wkb, size_t size)
 {
   return DatumGetSTboxP(datum_from_wkb(wkb, size, T_STBOX));
 }
@@ -1713,7 +1701,7 @@ stbox_from_wkb(const uint8_t *wkb, int size)
 STBox *
 stbox_from_hexwkb(const char *hexwkb)
 {
-  int size = strlen(hexwkb);
+  size_t size = strlen(hexwkb);
   return DatumGetSTboxP(datum_from_hexwkb(hexwkb, size, T_STBOX));
 }
 
@@ -1727,7 +1715,7 @@ stbox_from_hexwkb(const char *hexwkb)
  * ttextFromBinary(), etc.
  */
 Temporal *
-temporal_from_wkb(const uint8_t *wkb, int size)
+temporal_from_wkb(const uint8_t *wkb, size_t size)
 {
   /* We pass ANY temporal type, the actual type is read from the byte string */
   return DatumGetTemporalP(datum_from_wkb(wkb, size, T_TINT));
@@ -1742,7 +1730,7 @@ temporal_from_wkb(const uint8_t *wkb, int size)
 Temporal *
 temporal_from_hexwkb(const char *hexwkb)
 {
-  int size = strlen(hexwkb);
+  size_t size = strlen(hexwkb);
   /* We pass ANY temporal type, the actual type is read from the byte string */
   return DatumGetTemporalP(datum_from_hexwkb(hexwkb, size, T_TINT));
 }

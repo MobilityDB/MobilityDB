@@ -44,7 +44,7 @@
 /*****************************************************************************/
 
 /* Fetch from and store in the cache the fcinfo of the external function */
-extern FunctionCallInfo fetch_fcinfo();
+extern FunctionCallInfo fetch_fcinfo(void);
 extern void store_fcinfo(FunctionCallInfo fcinfo);
 
 /*****************************************************************************/

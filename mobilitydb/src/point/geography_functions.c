@@ -48,6 +48,8 @@
 #include <liblwgeom_internal.h>
 #include <lwgeom_pg.h>
 #include <lwgeodetic_tree.h>
+/* MEOS */
+#include <meos.h>
 /* MobilityDB */
 #include "point/tpoint_spatialfuncs.h"
 
@@ -96,12 +98,14 @@ geography_tree_closestpoint(const GSERIALIZED* g1, const GSERIALIZED* g2, double
   return result;
 }
 
+PGDLLEXPORT Datum geography_closestpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(geography_closestpoint);
 /**
  * @brief Return the point in first input geography that is closest to the
  * second input geography in 2d
 */
-Datum geography_closestpoint(PG_FUNCTION_ARGS)
+Datum
+geography_closestpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED* g1 = NULL;
   GSERIALIZED* g2 = NULL;
@@ -133,12 +137,14 @@ Datum geography_closestpoint(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum geography_shortestline(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(geography_shortestline);
 /**
  * @brief Return the point in first input geography that is closest to the
  * second input geography in 2d
 */
-Datum geography_shortestline(PG_FUNCTION_ARGS)
+Datum
+geography_shortestline(PG_FUNCTION_ARGS)
 {
   /* Get our geography objects loaded into memory. */
   GSERIALIZED *g1 = PG_GETARG_GSERIALIZED_P(0);
@@ -333,11 +339,13 @@ END:
   return dpa;
 }
 
+PGDLLEXPORT Datum geography_line_substring(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(geography_line_substring);
 /**
  * @brief Return the part of a line between two fractional locations.
  */
-Datum geography_line_substring(PG_FUNCTION_ARGS)
+Datum
+geography_line_substring(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   double from_fraction = PG_GETARG_FLOAT8(1);
@@ -490,11 +498,13 @@ geography_interpolate_points(const LWLINE *line, double length_fraction,
   return opa;
 }
 
+PGDLLEXPORT Datum geography_line_interpolate_point(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(geography_line_interpolate_point);
 /**
  * @brief Interpolate a point along a geographic line.
  */
-Datum geography_line_interpolate_point(PG_FUNCTION_ARGS)
+Datum
+geography_line_interpolate_point(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   double distance_fraction = PG_GETARG_FLOAT8(1);
@@ -574,7 +584,7 @@ ptarray_locate_point_spheroid(const POINTARRAY *pa, const POINT4D *p4d,
   const SPHEROID *s, double tolerance, double *mindistout, POINT4D *proj4d)
 {
   GEOGRAPHIC_EDGE e;
-  GEOGRAPHIC_POINT a, b, nearest;
+  GEOGRAPHIC_POINT a, b, nearest = {0}; /* make compiler quiet */
   POINT4D p1, p2;
   const POINT2D *p;
   POINT2D proj;
@@ -751,11 +761,13 @@ ptarray_locate_point_spheroid(const POINTARRAY *pa, const POINT4D *p4d,
   return partlength / totlength;
 }
 
+PGDLLEXPORT Datum geography_line_locate_point(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(geography_line_locate_point);
 /**
  * @brief Locate a point along a geographic line.
  */
-Datum geography_line_locate_point(PG_FUNCTION_ARGS)
+Datum
+geography_line_locate_point(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs1 = PG_GETARG_GSERIALIZED_P(0);
   GSERIALIZED *gs2 = PG_GETARG_GSERIALIZED_P(1);

@@ -428,10 +428,11 @@ temporal_oper_sel_family(meosOper oper __attribute__((unused)), meosType ltype,
   meosType rtype, TemporalFamily tempfamily)
 {
   /* Get enumeration value associated to the operator */
-  assert(tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE ||
 #if NPOINT
+  assert(tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE ||
     tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE);
 #else
+  assert(tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE ||
     tempfamily == TPOINTTYPE);
 #endif /* NPOINT */
 
@@ -767,47 +768,51 @@ temporal_sel_ext(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
   return result;
 }
 
+PGDLLEXPORT Datum Temporal_sel(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_sel);
 /**
  * @brief Estimate the selectivity value of the operators for temporal types
  * whose bounding box is a period, that is, tbool and ttext.
  */
-PGDLLEXPORT Datum
+Datum
 Temporal_sel(PG_FUNCTION_ARGS)
 {
-  return temporal_sel_ext(fcinfo, TEMPORALTYPE);
+  return Float8GetDatum(temporal_sel_ext(fcinfo, TEMPORALTYPE));
 }
 
+PGDLLEXPORT Datum Tnumber_sel(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_sel);
 /**
  * @brief Estimate the selectivity value of the operators for temporal numbers
  */
-PGDLLEXPORT Datum
+Datum
 Tnumber_sel(PG_FUNCTION_ARGS)
 {
-  return temporal_sel_ext(fcinfo, TNUMBERTYPE);
+  return Float8GetDatum(temporal_sel_ext(fcinfo, TNUMBERTYPE));
 }
 
+PGDLLEXPORT Datum Tpoint_sel(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_sel);
 /**
  * @brief Estimate the restriction selectivity of the operators for temporal
  * points
  */
-PGDLLEXPORT Datum
+Datum
 Tpoint_sel(PG_FUNCTION_ARGS)
 {
-  return temporal_sel_ext(fcinfo, TPOINTTYPE);
+  return Float8GetDatum(temporal_sel_ext(fcinfo, TPOINTTYPE));
 }
 
+PGDLLEXPORT Datum Tnpoint_sel(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnpoint_sel);
 /**
  * @brief Estimate the restriction selectivity of the operators for temporal
  * network points
  */
-PGDLLEXPORT Datum
+Datum
 Tnpoint_sel(PG_FUNCTION_ARGS)
 {
-  return temporal_sel_ext(fcinfo, TNPOINTTYPE);
+  return Float8GetDatum(temporal_sel_ext(fcinfo, TNPOINTTYPE));
 }
 
 /*****************************************************************************
@@ -1039,59 +1044,63 @@ temporal_joinsel_ext(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
 
   /* Check length of args and punt on > 2 */
   if (list_length(args) != 2)
-    PG_RETURN_FLOAT8(DEFAULT_TEMP_JOINSEL);
+    return DEFAULT_TEMP_JOINSEL;
 
   /* Only respond to an inner join/unknown context join */
   if (jointype != JOIN_INNER)
-    PG_RETURN_FLOAT8(DEFAULT_TEMP_JOINSEL);
+    return DEFAULT_TEMP_JOINSEL;
 
   float8 result = temporal_joinsel(root, operid, args, jointype, sjinfo,
       tempfamily);
   return result;
 }
 
+PGDLLEXPORT Datum Temporal_joinsel(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_joinsel);
 /*
  * Estimate the join selectivity value of the operators for temporal types
  * whose bounding box is a period, that is, tbool and ttext.
  */
-PGDLLEXPORT Datum
+Datum
 Temporal_joinsel(PG_FUNCTION_ARGS)
 {
-  return temporal_joinsel_ext(fcinfo, TEMPORALTYPE);
+  return Float8GetDatum(temporal_joinsel_ext(fcinfo, TEMPORALTYPE));
 }
 
+PGDLLEXPORT Datum Tnumber_joinsel(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_joinsel);
 /**
  * @brief Estimate the join selectivity value of the operators for temporal
  * numbers
  */
-PGDLLEXPORT Datum
+Datum
 Tnumber_joinsel(PG_FUNCTION_ARGS)
 {
-  return temporal_joinsel_ext(fcinfo, TNUMBERTYPE);
+  return Float8GetDatum(temporal_joinsel_ext(fcinfo, TNUMBERTYPE));
 }
 
+PGDLLEXPORT Datum Tnpoint_joinsel(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnpoint_joinsel);
 /**
  * @brief Estimate the join selectivity of the operators for temporal network
  * points
  */
-PGDLLEXPORT Datum
+Datum
 Tnpoint_joinsel(PG_FUNCTION_ARGS)
 {
-  return temporal_joinsel_ext(fcinfo, TNPOINTTYPE);
+  return Float8GetDatum(temporal_joinsel_ext(fcinfo, TNPOINTTYPE));
 }
 
+PGDLLEXPORT Datum Tpoint_joinsel(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_joinsel);
 /**
  * @brief Estimate the join selectivity value of the operators for temporal
  * points.
  */
-PGDLLEXPORT Datum
+Datum
 Tpoint_joinsel(PG_FUNCTION_ARGS)
 {
-  return temporal_joinsel_ext(fcinfo, TPOINTTYPE);
+  return Float8GetDatum(temporal_joinsel_ext(fcinfo, TPOINTTYPE));
 }
 
 /*****************************************************************************/

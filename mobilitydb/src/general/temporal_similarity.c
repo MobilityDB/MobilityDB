@@ -65,33 +65,36 @@ temporal_similarity_ext(FunctionCallInfo fcinfo, SimFunc simfunc)
   PG_RETURN_FLOAT8(result);
 }
 
+PGDLLEXPORT Datum Temporal_frechet_distance(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_frechet_distance);
 /**
  * @brief Compute the discrete Frechet distance between two temporal values.
  */
-PGDLLEXPORT Datum
+Datum
 Temporal_frechet_distance(PG_FUNCTION_ARGS)
 {
   return temporal_similarity_ext(fcinfo, FRECHET);
 }
 
+PGDLLEXPORT Datum Temporal_dynamic_time_warp(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_dynamic_time_warp);
 /**
  * @brief Compute the Dynamic Time Match (DTW) distance between two temporal
  * values.
  */
-PGDLLEXPORT Datum
+Datum
 Temporal_dynamic_time_warp(PG_FUNCTION_ARGS)
 {
   return temporal_similarity_ext(fcinfo, DYNTIMEWARP);
 }
 
+PGDLLEXPORT Datum Temporal_hausdorff_distance(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_hausdorff_distance);
 /**
  * @brief Compute the Dynamic Time Match (DTW) distance between two temporal
  * values.
  */
-PGDLLEXPORT Datum
+Datum
 Temporal_hausdorff_distance(PG_FUNCTION_ARGS)
 {
   return temporal_similarity_ext(fcinfo, HAUSDORFF);
@@ -211,21 +214,23 @@ temporal_similarity_path_ext(FunctionCallInfo fcinfo, SimFunc simfunc)
   SRF_RETURN_NEXT(funcctx, result);
 }
 
+PGDLLEXPORT Datum Temporal_frechet_path(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_frechet_path);
 /**
  * @brief Compute the Frechet path between two temporal values.
  */
-PGDLLEXPORT Datum
+Datum
 Temporal_frechet_path(PG_FUNCTION_ARGS)
 {
   return temporal_similarity_path_ext(fcinfo, FRECHET);
 }
 
+PGDLLEXPORT Datum Temporal_dynamic_time_warp_path(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_dynamic_time_warp_path);
 /**
  * @brief Compute the Dynamic Time Warp (DTW) path between two temporal values.
  */
-PGDLLEXPORT Datum
+Datum
 Temporal_dynamic_time_warp_path(PG_FUNCTION_ARGS)
 {
   return temporal_similarity_path_ext(fcinfo, DYNTIMEWARP);

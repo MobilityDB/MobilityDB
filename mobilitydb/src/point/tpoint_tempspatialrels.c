@@ -147,6 +147,7 @@ tinterrel_tpoint_geo_ext(FunctionCallInfo fcinfo, bool tinter)
  * Temporal contains
  *****************************************************************************/
 
+PGDLLEXPORT Datum Tcontains_geo_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tcontains_geo_tpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
@@ -154,7 +155,7 @@ PG_FUNCTION_INFO_V1(Tcontains_geo_tpoint);
  * temporal point
  * @sqlfunc tcontains()
  */
-PGDLLEXPORT Datum
+Datum
 Tcontains_geo_tpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
@@ -178,6 +179,7 @@ Tcontains_geo_tpoint(PG_FUNCTION_ARGS)
  * Temporal disjoint
  *****************************************************************************/
 
+PGDLLEXPORT Datum Tdisjoint_geo_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tdisjoint_geo_tpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
@@ -185,12 +187,13 @@ PG_FUNCTION_INFO_V1(Tdisjoint_geo_tpoint);
  * and a geometry
  * @sqlfunc tdisjoint()
  */
-PGDLLEXPORT Datum
+Datum
 Tdisjoint_geo_tpoint(PG_FUNCTION_ARGS)
 {
   return tinterrel_geo_tpoint_ext(fcinfo, TDISJOINT);
 }
 
+PGDLLEXPORT Datum Tdisjoint_tpoint_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tdisjoint_tpoint_geo);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
@@ -198,7 +201,7 @@ PG_FUNCTION_INFO_V1(Tdisjoint_tpoint_geo);
  * and a geometry
  * @sqlfunc tdisjoint()
  */
-PGDLLEXPORT Datum
+Datum
 Tdisjoint_tpoint_geo(PG_FUNCTION_ARGS)
 {
   return tinterrel_tpoint_geo_ext(fcinfo, TDISJOINT);
@@ -209,6 +212,7 @@ Tdisjoint_tpoint_geo(PG_FUNCTION_ARGS)
  * Available for temporal geography points
  *****************************************************************************/
 
+PGDLLEXPORT Datum Tintersects_geo_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tintersects_geo_tpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
@@ -216,12 +220,13 @@ PG_FUNCTION_INFO_V1(Tintersects_geo_tpoint);
  * and a geometry
  * @sqlfunc tintersects()
  */
-PGDLLEXPORT Datum
+Datum
 Tintersects_geo_tpoint(PG_FUNCTION_ARGS)
 {
   return tinterrel_geo_tpoint_ext(fcinfo, TINTERSECTS);
 }
 
+PGDLLEXPORT Datum Tintersects_tpoint_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tintersects_tpoint_geo);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
@@ -229,7 +234,7 @@ PG_FUNCTION_INFO_V1(Tintersects_tpoint_geo);
  * and a geometry
  * @sqlfunc tintersects()
  */
-PGDLLEXPORT Datum
+Datum
 Tintersects_tpoint_geo(PG_FUNCTION_ARGS)
 {
   return tinterrel_tpoint_geo_ext(fcinfo, TINTERSECTS);
@@ -239,6 +244,7 @@ Tintersects_tpoint_geo(PG_FUNCTION_ARGS)
  * Temporal touches
  *****************************************************************************/
 
+PGDLLEXPORT Datum Ttouches_geo_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Ttouches_geo_tpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
@@ -246,7 +252,7 @@ PG_FUNCTION_INFO_V1(Ttouches_geo_tpoint);
  * temporal point
  * @sqlfunc ttouches()
  */
-PGDLLEXPORT Datum
+Datum
 Ttouches_geo_tpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
@@ -266,6 +272,7 @@ Ttouches_geo_tpoint(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Ttouches_tpoint_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Ttouches_tpoint_geo);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
@@ -273,7 +280,7 @@ PG_FUNCTION_INFO_V1(Ttouches_tpoint_geo);
  * and a geometry
  * @sqlfunc ttouches()
  */
-PGDLLEXPORT Datum
+Datum
 Ttouches_tpoint_geo(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
@@ -298,6 +305,7 @@ Ttouches_tpoint_geo(PG_FUNCTION_ARGS)
  * Available for temporal geography points
  *****************************************************************************/
 
+PGDLLEXPORT Datum Tdwithin_geo_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tdwithin_geo_tpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
@@ -305,7 +313,7 @@ PG_FUNCTION_INFO_V1(Tdwithin_geo_tpoint);
  * temporal point are within the given distance
  * @sqlfunc tdwithin()
  */
-PGDLLEXPORT Datum
+Datum
 Tdwithin_geo_tpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
@@ -328,6 +336,7 @@ Tdwithin_geo_tpoint(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Tdwithin_tpoint_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tdwithin_tpoint_geo);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
@@ -335,7 +344,7 @@ PG_FUNCTION_INFO_V1(Tdwithin_tpoint_geo);
  * a geometry are within the given distance
  * @sqlfunc tdwithin()
  */
-PGDLLEXPORT Datum
+Datum
 Tdwithin_tpoint_geo(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
@@ -360,6 +369,7 @@ Tdwithin_tpoint_geo(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Tdwithin_tpoint_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tdwithin_tpoint_tpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
@@ -367,7 +377,7 @@ PG_FUNCTION_INFO_V1(Tdwithin_tpoint_tpoint);
  * are within the given distance
  * @sqlfunc tdwithin()
  */
-PGDLLEXPORT Datum
+Datum
 Tdwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);

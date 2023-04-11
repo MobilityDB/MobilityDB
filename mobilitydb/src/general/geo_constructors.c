@@ -43,9 +43,12 @@
 #include <utils/float.h>
 #include "utils/geo_decls.h"
 #include "utils/lsyscache.h"
+/* MEOS */
+#include <meos.h>
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum point_constructor(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(point_constructor);
 /**
  * @brief Point constructor
@@ -62,6 +65,7 @@ point_constructor(PG_FUNCTION_ARGS)
   PG_RETURN_POINT_P(point);
 }
 
+PGDLLEXPORT Datum line_constructor(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(line_constructor);
 /**
  * @brief LINE constructor
@@ -80,6 +84,7 @@ line_constructor(PG_FUNCTION_ARGS)
   PG_RETURN_LINE_P(line);
 }
 
+PGDLLEXPORT Datum lseg_constructor(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(lseg_constructor);
 /**
  * @brief LSEG constructor
@@ -98,6 +103,7 @@ lseg_constructor(PG_FUNCTION_ARGS)
   PG_RETURN_LSEG_P(lseg);
 }
 
+PGDLLEXPORT Datum box_constructor(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(box_constructor);
 /**
  * @brief BOX constructor
@@ -116,6 +122,7 @@ box_constructor(PG_FUNCTION_ARGS)
   PG_RETURN_BOX_P(box);
 }
 
+PGDLLEXPORT Datum circle_constructor(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(circle_constructor);
 /**
  * @brief CIRCLE constructor
@@ -133,6 +140,7 @@ circle_constructor(PG_FUNCTION_ARGS)
   PG_RETURN_CIRCLE_P(circle);
 }
 
+PGDLLEXPORT Datum path_constructor(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(path_constructor);
 /**
  * @brief PATH constructor
@@ -220,6 +228,7 @@ make_bound_box(POLYGON *poly)
   return;
 }
 
+PGDLLEXPORT Datum poly_constructor(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(poly_constructor);
 /**
  * @brief POLYGON constructor

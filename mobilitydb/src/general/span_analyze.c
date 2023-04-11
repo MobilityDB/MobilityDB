@@ -330,11 +330,12 @@ span_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Span_analyze(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_analyze);
 /**
  * @brief Compute statistics for span columns
  */
-PGDLLEXPORT Datum
+Datum
 Span_analyze(PG_FUNCTION_ARGS)
 {
   VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);

@@ -800,8 +800,10 @@ geo_joinsel(const ND_STATS *s1, const ND_STATS *s2)
 
   /* Q: What's the largest possible join size these relations can create? */
   /* A: The product of the # of non-null rows in each relation. */
-  ntuples_not_null1 = s1->table_features * (s1->not_null_features / s1->sample_features);
-  ntuples_not_null2 = s2->table_features * (s2->not_null_features / s2->sample_features);
+  ntuples_not_null1 = s1->table_features *
+    (s1->not_null_features / s1->sample_features);
+  ntuples_not_null2 = s2->table_features *
+    (s2->not_null_features / s2->sample_features);
   ntuples_max = ntuples_not_null1 * ntuples_not_null2;
 
   /* Get the ndims as ints */
@@ -852,8 +854,8 @@ geo_joinsel(const ND_STATS *s1, const ND_STATS *s2)
     nd_box_init(&nd_cell1);
     for ( d = 0; d < ndims1; d++ )
     {
-      nd_cell1.min[d] = min1[d] + (at1[d]+0) * cellsize1[d];
-      nd_cell1.max[d] = min1[d] + (at1[d]+1) * cellsize1[d];
+      nd_cell1.min[d] = (float4) (min1[d] + (at1[d]+0) * cellsize1[d]);
+      nd_cell1.max[d] = (float4) (min1[d] + (at1[d]+1) * cellsize1[d]);
     }
 
     /* Find the cells of s2 that cell1 overlaps.. */
@@ -879,8 +881,8 @@ geo_joinsel(const ND_STATS *s1, const ND_STATS *s2)
       nd_box_init(&nd_cell2);
       for ( d = 0; d < ndims2; d++ )
       {
-        nd_cell2.min[d] = min2[d] + (at2[d]+0) * cellsize2[d];
-        nd_cell2.max[d] = min2[d] + (at2[d]+1) * cellsize2[d];
+        nd_cell2.min[d] = (float4) (min2[d] + (at2[d]+0) * cellsize2[d]);
+        nd_cell2.max[d] = (float4) (min2[d] + (at2[d]+1) * cellsize2[d]);
       }
 
       /* Calculate overlap ratio of the cells */

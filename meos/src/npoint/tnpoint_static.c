@@ -69,7 +69,7 @@
 int32_t
 get_srid_ways()
 {
-  int32_t srid_ways;
+  int32_t srid_ways = 0; /* make compiler quiet */
   bool isNull = true;
   SPI_connect();
   int ret = SPI_execute("SELECT ST_SRID(the_geom) FROM public.ways LIMIT 1;", true, 1);
@@ -316,7 +316,7 @@ void
 npoint_set(int64 rid, double pos, Npoint *np)
 {
   if (!route_exists(rid))
-    elog(ERROR, "There is no route with gid value %lu in table ways", rid);
+    elog(ERROR, "There is no route with gid value %llu in table ways", rid);
   if (pos < 0 || pos > 1)
     elog(ERROR, "The relative position must be a real number between 0 and 1");
 
@@ -346,7 +346,7 @@ void
 nsegment_set(int64 rid, double pos1, double pos2, Nsegment *ns)
 {
   if (! route_exists(rid))
-    elog(ERROR, "There is no route with gid value %lu in table ways", rid);
+    elog(ERROR, "There is no route with gid value %llu in table ways", rid);
   if (pos1 < 0 || pos1 > 1 || pos2 < 0 || pos2 > 1)
     elog(ERROR, "The relative position of a network segment must be a real number between 0 and 1");
 
@@ -902,7 +902,7 @@ uint64
 npoint_hash_extended(const Npoint *np, uint64 seed)
 {
   /* Compute hashes of value and position */
-  uint64 rid_hash = pg_hashfloat8extended(np->rid, seed);
+  uint64 rid_hash = pg_hashint8extended(np->rid, seed);
   uint64 pos_hash = pg_hashfloat8extended(np->pos, seed);
 
   /* Merge hashes of value and position */

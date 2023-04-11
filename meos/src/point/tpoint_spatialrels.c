@@ -504,7 +504,7 @@ edwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
     return -1;
   datum_func3 func = get_dwithin_fn_gs(temp->flags, gs->gflags);
   bool result = espatialrel_tpoint_geo(temp, gs, Float8GetDatum(dist),
-    (varfunc) func, 3, INVERT);
+    (varfunc) func, 3, INVERT_NO);
   return result ? 1 : 0;
 }
 

@@ -44,6 +44,7 @@
 /*****************************************************************************/
 /* contains? */
 
+PGDLLEXPORT Datum Contains_set_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contains_set_value);
 /**
  * @ingroup mobilitydb_setspan_topo
@@ -51,7 +52,7 @@ PG_FUNCTION_INFO_V1(Contains_set_value);
  * @sqlfunc time_contains()
  * @sqlop @p \@>
  */
-PGDLLEXPORT Datum
+Datum
 Contains_set_value(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
@@ -62,6 +63,7 @@ Contains_set_value(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
+PGDLLEXPORT Datum Contains_set_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contains_set_set);
 /**
  * @ingroup mobilitydb_setspan_topo
@@ -69,7 +71,7 @@ PG_FUNCTION_INFO_V1(Contains_set_set);
  * @sqlfunc time_contains()
  * @sqlop @p \@>
  */
-PGDLLEXPORT Datum
+Datum
 Contains_set_set(PG_FUNCTION_ARGS)
 {
   Set *s1 = PG_GETARG_SET_P(0);
@@ -83,6 +85,7 @@ Contains_set_set(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 /* contained? */
 
+PGDLLEXPORT Datum Contained_value_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_value_set);
 /**
  * @ingroup mobilitydb_setspan_topo
@@ -90,7 +93,7 @@ PG_FUNCTION_INFO_V1(Contained_value_set);
  * @sqlfunc time_contained()
  * @sqlop @p <@
  */
-PGDLLEXPORT Datum
+Datum
 Contained_value_set(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
@@ -101,6 +104,7 @@ Contained_value_set(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
+PGDLLEXPORT Datum Contained_set_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_set_set);
 /**
  * @ingroup mobilitydb_setspan_topo
@@ -108,7 +112,7 @@ PG_FUNCTION_INFO_V1(Contained_set_set);
  * @sqlfunc time_contained()
  * @sqlop @p <@
  */
-PGDLLEXPORT Datum
+Datum
 Contained_set_set(PG_FUNCTION_ARGS)
 {
   Set *s1 = PG_GETARG_SET_P(0);
@@ -122,6 +126,7 @@ Contained_set_set(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 /* overlaps? */
 
+PGDLLEXPORT Datum Overlaps_set_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overlaps_set_set);
 /**
  * @ingroup mobilitydb_setspan_topo
@@ -129,7 +134,7 @@ PG_FUNCTION_INFO_V1(Overlaps_set_set);
  * @sqlfunc time_overlaps()
  * @sqlop @p &&
  */
-PGDLLEXPORT Datum
+Datum
 Overlaps_set_set(PG_FUNCTION_ARGS)
 {
   Set *s1 = PG_GETARG_SET_P(0);
@@ -143,6 +148,7 @@ Overlaps_set_set(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 /* strictly left of? */
 
+PGDLLEXPORT Datum Overlaps_set_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Left_value_set);
 /**
  * @ingroup mobilitydb_setspan_pos
@@ -150,7 +156,7 @@ PG_FUNCTION_INFO_V1(Left_value_set);
  * @sqlfunc time_left()
  * @sqlop @p <<#
  */
-PGDLLEXPORT Datum
+Datum
 Left_value_set(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
@@ -161,6 +167,7 @@ Left_value_set(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
+PGDLLEXPORT Datum Left_set_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Left_set_value);
 /**
  * @ingroup mobilitydb_setspan_pos
@@ -168,7 +175,7 @@ PG_FUNCTION_INFO_V1(Left_set_value);
  * @sqlfunc time_left()
  * @sqlop @p <<#
  */
-PGDLLEXPORT Datum
+Datum
 Left_set_value(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
@@ -179,6 +186,7 @@ Left_set_value(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
+PGDLLEXPORT Datum Left_set_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Left_set_set);
 /**
  * @ingroup mobilitydb_setspan_pos
@@ -186,7 +194,7 @@ PG_FUNCTION_INFO_V1(Left_set_set);
  * @sqlfunc time_left()
  * @sqlop @p <<#
  */
-PGDLLEXPORT Datum
+Datum
 Left_set_set(PG_FUNCTION_ARGS)
 {
   Set *s1 = PG_GETARG_SET_P(0);
@@ -200,6 +208,7 @@ Left_set_set(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 /* strictly right of? */
 
+PGDLLEXPORT Datum Right_value_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Right_value_set);
 /**
  * @ingroup mobilitydb_setspan_pos
@@ -207,7 +216,7 @@ PG_FUNCTION_INFO_V1(Right_value_set);
  * @sqlfunc time_right()
  * @sqlop @p #>>
  */
-PGDLLEXPORT Datum
+Datum
 Right_value_set(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
@@ -218,6 +227,7 @@ Right_value_set(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
+PGDLLEXPORT Datum Right_set_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Right_set_value);
 /**
  * @ingroup mobilitydb_setspan_pos
@@ -225,7 +235,7 @@ PG_FUNCTION_INFO_V1(Right_set_value);
  * @sqlfunc time_right()
  * @sqlop @p #>>
  */
-PGDLLEXPORT Datum
+Datum
 Right_set_value(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
@@ -236,6 +246,7 @@ Right_set_value(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
+PGDLLEXPORT Datum Right_set_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Right_set_set);
 /**
  * @ingroup mobilitydb_setspan_pos
@@ -243,7 +254,7 @@ PG_FUNCTION_INFO_V1(Right_set_set);
  * @sqlfunc time_right()
  * @sqlop @p #>>
  */
-PGDLLEXPORT Datum
+Datum
 Right_set_set(PG_FUNCTION_ARGS)
 {
   Set *s1 = PG_GETARG_SET_P(0);
@@ -257,6 +268,7 @@ Right_set_set(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 /* does not extend to right of? */
 
+PGDLLEXPORT Datum Overleft_value_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overleft_value_set);
 /**
  * @ingroup mobilitydb_setspan_pos
@@ -264,7 +276,7 @@ PG_FUNCTION_INFO_V1(Overleft_value_set);
  * @sqlfunc time_overleft()
  * @sqlop @p &<#
  */
-PGDLLEXPORT Datum
+Datum
 Overleft_value_set(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
@@ -275,6 +287,7 @@ Overleft_value_set(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
+PGDLLEXPORT Datum Overleft_set_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overleft_set_value);
 /**
  * @ingroup mobilitydb_setspan_pos
@@ -282,7 +295,7 @@ PG_FUNCTION_INFO_V1(Overleft_set_value);
  * @sqlfunc time_overleft()
  * @sqlop @p &<#
  */
-PGDLLEXPORT Datum
+Datum
 Overleft_set_value(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
@@ -293,6 +306,7 @@ Overleft_set_value(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
+PGDLLEXPORT Datum Overleft_set_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overleft_set_set);
 /**
  * @ingroup mobilitydb_setspan_pos
@@ -300,7 +314,7 @@ PG_FUNCTION_INFO_V1(Overleft_set_set);
  * @sqlfunc time_overleft()
  * @sqlop @p &<#
  */
-PGDLLEXPORT Datum
+Datum
 Overleft_set_set(PG_FUNCTION_ARGS)
 {
   Set *s1 = PG_GETARG_SET_P(0);
@@ -314,6 +328,7 @@ Overleft_set_set(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 /* does not extend to left of? */
 
+PGDLLEXPORT Datum Overright_value_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overright_value_set);
 /**
  * @ingroup mobilitydb_setspan_pos
@@ -321,7 +336,7 @@ PG_FUNCTION_INFO_V1(Overright_value_set);
  * @sqlfunc time_overright()
  * @sqlop @p
  */
-PGDLLEXPORT Datum
+Datum
 Overright_value_set(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
@@ -332,6 +347,7 @@ Overright_value_set(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
+PGDLLEXPORT Datum Overright_set_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overright_set_value);
 /**
  * @ingroup mobilitydb_setspan_pos
@@ -339,7 +355,7 @@ PG_FUNCTION_INFO_V1(Overright_set_value);
  * @sqlfunc time_overright()
  * @sqlop @p #&>
  */
-PGDLLEXPORT Datum
+Datum
 Overright_set_value(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
@@ -350,6 +366,7 @@ Overright_set_value(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
+PGDLLEXPORT Datum Overright_set_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overright_set_set);
 /**
  * @ingroup mobilitydb_setspan_pos
@@ -357,7 +374,7 @@ PG_FUNCTION_INFO_V1(Overright_set_set);
  * @sqlfunc time_overright()
  * @sqlop @p #&>
  */
-PGDLLEXPORT Datum
+Datum
 Overright_set_set(PG_FUNCTION_ARGS)
 {
   Set *s1 = PG_GETARG_SET_P(0);
@@ -372,6 +389,7 @@ Overright_set_set(PG_FUNCTION_ARGS)
  * Set union
  *****************************************************************************/
 
+PGDLLEXPORT Datum Union_value_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Union_value_set);
 /**
  * @ingroup mobilitydb_setspan_set
@@ -379,7 +397,7 @@ PG_FUNCTION_INFO_V1(Union_value_set);
  * @sqlfunc time_union()
  * @sqlop @p +
  */
-PGDLLEXPORT Datum
+Datum
 Union_value_set(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
@@ -392,6 +410,7 @@ Union_value_set(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Union_set_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Union_set_value);
 /**
  * @ingroup mobilitydb_setspan_set
@@ -399,7 +418,7 @@ PG_FUNCTION_INFO_V1(Union_set_value);
  * @sqlfunc time_union()
  * @sqlop @p +
  */
-PGDLLEXPORT Datum
+Datum
 Union_set_value(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
@@ -410,6 +429,7 @@ Union_set_value(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Union_set_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Union_set_set);
 /**
  * @ingroup mobilitydb_setspan_set
@@ -417,7 +437,7 @@ PG_FUNCTION_INFO_V1(Union_set_set);
  * @sqlfunc time_union()
  * @sqlop @p +
  */
-PGDLLEXPORT Datum
+Datum
 Union_set_set(PG_FUNCTION_ARGS)
 {
   Set *s1 = PG_GETARG_SET_P(0);
@@ -432,6 +452,7 @@ Union_set_set(PG_FUNCTION_ARGS)
  * Set intersection
  *****************************************************************************/
 
+PGDLLEXPORT Datum Intersection_value_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Intersection_value_set);
 /**
  * @ingroup mobilitydb_setspan_set
@@ -439,7 +460,7 @@ PG_FUNCTION_INFO_V1(Intersection_value_set);
  * @sqlfunc time_intersection()
  * @sqlop @p *
  */
-PGDLLEXPORT Datum
+Datum
 Intersection_value_set(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
@@ -453,6 +474,7 @@ Intersection_value_set(PG_FUNCTION_ARGS)
   PG_RETURN_DATUM(result);
 }
 
+PGDLLEXPORT Datum Intersection_set_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Intersection_set_value);
 /**
  * @ingroup mobilitydb_setspan_set
@@ -460,7 +482,7 @@ PG_FUNCTION_INFO_V1(Intersection_set_value);
  * @sqlfunc time_intersection()
  * @sqlop @p *
  */
-PGDLLEXPORT Datum
+Datum
 Intersection_set_value(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
@@ -474,6 +496,7 @@ Intersection_set_value(PG_FUNCTION_ARGS)
   PG_RETURN_DATUM(result);
 }
 
+PGDLLEXPORT Datum Intersection_set_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Intersection_set_set);
 /**
  * @ingroup mobilitydb_setspan_set
@@ -481,7 +504,7 @@ PG_FUNCTION_INFO_V1(Intersection_set_set);
  * @sqlfunc time_intersection()
  * @sqlop @p *
  */
-PGDLLEXPORT Datum
+Datum
 Intersection_set_set(PG_FUNCTION_ARGS)
 {
   Set *s1 = PG_GETARG_SET_P(0);
@@ -499,6 +522,7 @@ Intersection_set_set(PG_FUNCTION_ARGS)
  * The functions produce new results that must be freed right
  *****************************************************************************/
 
+PGDLLEXPORT Datum Minus_value_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Minus_value_set);
 /**
  * @ingroup mobilitydb_setspan_set
@@ -506,7 +530,7 @@ PG_FUNCTION_INFO_V1(Minus_value_set);
  * @sqlfunc time_minus()
  * @sqlop @p -
  */
-PGDLLEXPORT Datum
+Datum
 Minus_value_set(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
@@ -522,6 +546,7 @@ Minus_value_set(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Minus_set_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Minus_set_value);
 /**
  * @ingroup mobilitydb_setspan_set
@@ -529,7 +554,7 @@ PG_FUNCTION_INFO_V1(Minus_set_value);
  * @sqlfunc time_minus()
  * @sqlop @p -
  */
-PGDLLEXPORT Datum
+Datum
 Minus_set_value(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
@@ -542,6 +567,7 @@ Minus_set_value(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Minus_set_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Minus_set_set);
 /**
  * @ingroup mobilitydb_setspan_set
@@ -549,7 +575,7 @@ PG_FUNCTION_INFO_V1(Minus_set_set);
  * @sqlfunc time_minus()
  * @sqlop @p -
  */
-PGDLLEXPORT Datum
+Datum
 Minus_set_set(PG_FUNCTION_ARGS)
 {
   Set *s1 = PG_GETARG_SET_P(0);
@@ -566,6 +592,7 @@ Minus_set_set(PG_FUNCTION_ARGS)
  * Distance functions returning a double representing the number of seconds
  ******************************************************************************/
 
+PGDLLEXPORT Datum Distance_value_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Distance_value_set);
 /**
  * @ingroup mobilitydb_setspan_dist
@@ -573,7 +600,7 @@ PG_FUNCTION_INFO_V1(Distance_value_set);
  * @sqlfunc time_distance()
  * @sqlop @p <->
  */
-PGDLLEXPORT Datum
+Datum
 Distance_value_set(PG_FUNCTION_ARGS)
 {
   Datum d = PG_GETARG_DATUM(0);
@@ -586,6 +613,7 @@ Distance_value_set(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 }
 
+PGDLLEXPORT Datum Distance_set_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Distance_set_value);
 /**
  * @ingroup mobilitydb_setspan_dist
@@ -593,7 +621,7 @@ PG_FUNCTION_INFO_V1(Distance_set_value);
  * @sqlfunc time_distance()
  * @sqlop @p <->
  */
-PGDLLEXPORT Datum
+Datum
 Distance_set_value(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
@@ -606,6 +634,7 @@ Distance_set_value(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 }
 
+PGDLLEXPORT Datum Distance_set_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Distance_set_set);
 /**
  * @ingroup mobilitydb_setspan_dist
@@ -613,7 +642,7 @@ PG_FUNCTION_INFO_V1(Distance_set_set);
  * @sqlfunc time_distance()
  * @sqlop @p <->
  */
-PGDLLEXPORT Datum
+Datum
 Distance_set_set(PG_FUNCTION_ARGS)
 {
   Set *os1 = PG_GETARG_SET_P(0);

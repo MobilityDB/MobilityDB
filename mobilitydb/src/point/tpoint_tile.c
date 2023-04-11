@@ -51,13 +51,14 @@
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Stbox_tile_list(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_tile_list);
 /**
  * @brief @ingroup mobilitydb_temporal_tile
  * @brief Generate a multidimensional grid for temporal points.
  * @sqlfunc multidimGrid()
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_tile_list(PG_FUNCTION_ARGS)
 {
   FuncCallContext *funcctx;
@@ -158,23 +159,24 @@ Stbox_tile_list(PG_FUNCTION_ARGS)
   SRF_RETURN_NEXT(funcctx, result);
 }
 
+PGDLLEXPORT Datum Stbox_tile(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_tile);
 /**
  * @ingroup mobilitydb_temporal_tile
  * @brief Generate a tile in a multidimensional grid for temporal points.
  * @sqlfunc multidimTile()
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_tile(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *point = PG_GETARG_GSERIALIZED_P(0);
   ensure_non_empty(point);
   ensure_point_type(point);
-  TimestampTz t;
+  TimestampTz t = 0; /* make compiler quiet */
   double size;
   int64 tunits = 0; /* make compiler quiet */
   GSERIALIZED *sorigin;
-  TimestampTz torigin;
+  TimestampTz torigin = 0; /* make compiler quiet */
   bool hast = false;
   if (PG_NARGS() == 3)
   {
@@ -334,7 +336,7 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
     if (gs_srid != SRID_UNKNOWN)
       ensure_same_srid(srid, gs_srid);
     POINT3DZ pt;
-    bool hasz = (bool) MEOS_FLAGS_GET_Z(temp->flags);
+    hasz = (bool) MEOS_FLAGS_GET_Z(temp->flags);
     if (hasz)
     {
       ensure_has_Z_gs(sorigin);
@@ -350,8 +352,7 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
     }
 
     /* Create function state */
-    STboxGridState *state = stbox_tile_state_make(temp, &bounds, size, tunits,
-      pt, torigin);
+    state = stbox_tile_state_make(temp, &bounds, size, tunits, pt, torigin);
     /* If a bit matrix is used to speed up the process */
     if (bitmatrix)
     {
@@ -360,13 +361,13 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
       memset(&count, 0, sizeof(count));
       int numdims = 2;
       /* We need to add 1 to take into account the last bucket for each dimension */
-      count[0] = ( (state->box.xmax - state->box.xmin) / state->size ) + 1;
-      count[1] = ( (state->box.ymax - state->box.ymin) / state->size ) + 1;
+      count[0] = (int) ((state->box.xmax - state->box.xmin) / state->size) + 1;
+      count[1] = (int) ((state->box.ymax - state->box.ymin) / state->size) + 1;
       if (MEOS_FLAGS_GET_Z(state->box.flags))
-        count[numdims++] = ( (state->box.zmax - state->box.zmin) / state->size ) + 1;
+        count[numdims++] = (int) ((state->box.zmax - state->box.zmin) / state->size) + 1;
       if (state->tunits)
-        count[numdims++] = ( (DatumGetTimestampTz(state->box.period.upper) -
-          DatumGetTimestampTz(state->box.period.lower)) / state->tunits ) + 1;
+        count[numdims++] = (int) ((DatumGetTimestampTz(state->box.period.upper) -
+          DatumGetTimestampTz(state->box.period.lower)) / state->tunits) + 1;
       state->bm = bitmatrix_make(count, numdims);
       tpoint_set_tiles(temp, state, state->bm);
     }
@@ -441,25 +442,27 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
   }
 }
 
+PGDLLEXPORT Datum Tpoint_space_split(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_space_split);
 /**
  * @ingroup mobilitydb_temporal_tile
  * @brief Split a temporal point with respect to a spatial grid.
  * @sqlfunc spaceSplit()
  */
-PGDLLEXPORT Datum
+Datum
 Tpoint_space_split(PG_FUNCTION_ARGS)
 {
   return Tpoint_space_time_split_ext(fcinfo, false);
 }
 
+PGDLLEXPORT Datum Tpoint_space_time_split(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_space_time_split);
 /**
  * @ingroup mobilitydb_temporal_tile
  * @brief Split a temporal point with respect to a spatiotemporal grid.
  * @sqlfunc spaceTimeSplit()
  */
-PGDLLEXPORT Datum
+Datum
 Tpoint_space_time_split(PG_FUNCTION_ARGS)
 {
   return Tpoint_space_time_split_ext(fcinfo, true);

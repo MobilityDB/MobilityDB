@@ -298,11 +298,12 @@ tpoint_gist_get_stbox(FunctionCallInfo fcinfo, STBox *result, meosType type)
   return true;
 }
 
+PGDLLEXPORT Datum Stbox_gist_consistent(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_gist_consistent);
 /**
  * @brief GiST consistent method for temporal points
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_gist_consistent(PG_FUNCTION_ARGS)
 {
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
@@ -356,13 +357,14 @@ stbox_adjust(void *bbox1, void *bbox2)
   return;
 }
 
+PGDLLEXPORT Datum Stbox_gist_union(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_gist_union);
 /**
  * @brief GiST union method for temporal points
  *
  * Return the minimal bounding box that encloses all the entries in entryvec
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_gist_union(PG_FUNCTION_ARGS)
 {
   GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
@@ -377,11 +379,12 @@ Stbox_gist_union(PG_FUNCTION_ARGS)
  * GiST compress methods
  *****************************************************************************/
 
+PGDLLEXPORT Datum Tpoint_gist_compress(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_gist_compress);
 /**
  * @brief GiST compress methods for temporal points
  */
-PGDLLEXPORT Datum
+Datum
 Tpoint_gist_compress(PG_FUNCTION_ARGS)
 {
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
@@ -487,12 +490,13 @@ stbox_penalty(void *bbox1, void *bbox2)
   return stbox_size(&unionbox) - stbox_size(original);
 }
 
+PGDLLEXPORT Datum Stbox_gist_penalty(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_gist_penalty);
 /**
  * @brief GiST penalty method for temporal points.
  * As in the R-tree paper, we use change in area as our penalty metric
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_gist_penalty(PG_FUNCTION_ARGS)
 {
   GISTENTRY *origentry = (GISTENTRY *) PG_GETARG_POINTER(0);
@@ -508,6 +512,7 @@ Stbox_gist_penalty(PG_FUNCTION_ARGS)
  * GiST picksplit method
  *****************************************************************************/
 
+PGDLLEXPORT Datum Stbox_gist_picksplit(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_gist_picksplit);
 /**
  * @brief GiST picksplit method for temporal points.
@@ -533,7 +538,7 @@ PG_FUNCTION_INFO_V1(Stbox_gist_picksplit);
  * "A new double sorting-based node splitting algorithm for R-tree", A. Korotkov
  * http://syrcose.ispras.ru/2011/files/SYRCoSE2011_Proceedings.pdf#page=36
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_gist_picksplit(PG_FUNCTION_ARGS)
 {
   return bbox_gist_picksplit_ext(fcinfo, T_STBOX, &stbox_adjust, &stbox_penalty);
@@ -542,6 +547,7 @@ Stbox_gist_picksplit(PG_FUNCTION_ARGS)
  * GiST same method
  *****************************************************************************/
 
+PGDLLEXPORT Datum Stbox_gist_same(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_gist_same);
 /**
  * @brief GiST same method for temporal points.
@@ -550,7 +556,7 @@ PG_FUNCTION_INFO_V1(Stbox_gist_same);
  * comparisons here without breaking index consistency; therefore, this isn't
  * equivalent to stbox_same().
  */
-PGDLLEXPORT Datum
+Datum
 Stbox_gist_same(PG_FUNCTION_ARGS)
 {
   STBox *b1 = PG_GETARG_STBOX_P(0);
@@ -572,12 +578,13 @@ Stbox_gist_same(PG_FUNCTION_ARGS)
  * GiST distance method
  *****************************************************************************/
 
+PGDLLEXPORT Datum Stbox_gist_distance(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_gist_distance);
 /**
  * @brief GiST support function. Take in a query and an entry and return the
  * "distance" between them.
 */
-PGDLLEXPORT Datum
+Datum
 Stbox_gist_distance(PG_FUNCTION_ARGS)
 {
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);

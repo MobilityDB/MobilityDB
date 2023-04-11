@@ -45,10 +45,13 @@
 #include <utils/palloc.h>
 #include <fmgr.h>
 /* MEOS */
+#include <meos.h>
 #include "general/lifting.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_spatialrels.h"
 #include "npoint/tnpoint_spatialfuncs.h"
+/* MobilityDB */
+#include "pg_point/postgis.h"
 
 /*****************************************************************************
  * Generic binary functions for tnpoint <rel> (geo | Npoint)
@@ -134,6 +137,7 @@ espatialrel_tnpoint_tnpoint_ext(FunctionCallInfo fcinfo,
  * Ever contains
  *****************************************************************************/
 
+PGDLLEXPORT Datum Econtains_geo_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Econtains_geo_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
@@ -141,7 +145,7 @@ PG_FUNCTION_INFO_V1(Econtains_geo_tnpoint);
  * point
  * @sqlfunc econtains
  */
-PGDLLEXPORT Datum
+Datum
 Econtains_geo_tnpoint(PG_FUNCTION_ARGS)
 {
   return espatialrel_geo_tnpoint_ext(fcinfo, &geom_contains);
@@ -151,6 +155,7 @@ Econtains_geo_tnpoint(PG_FUNCTION_ARGS)
  * Ever disjoint
  *****************************************************************************/
 
+PGDLLEXPORT Datum Edisjoint_geo_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Edisjoint_geo_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
@@ -158,12 +163,13 @@ PG_FUNCTION_INFO_V1(Edisjoint_geo_tnpoint);
  * point are disjoint
  * @sqlfunc edisjoint
  */
-PGDLLEXPORT Datum
+Datum
 Edisjoint_geo_tnpoint(PG_FUNCTION_ARGS)
 {
   return espatialrel_geo_tnpoint_ext(fcinfo, &geom_disjoint2d);
 }
 
+PGDLLEXPORT Datum Edisjoint_npoint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Edisjoint_npoint_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
@@ -171,12 +177,13 @@ PG_FUNCTION_INFO_V1(Edisjoint_npoint_tnpoint);
  * network point are disjoint
  * @sqlfunc edisjoint
  */
-PGDLLEXPORT Datum
+Datum
 Edisjoint_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
   return espatialrel_npoint_tnpoint_ext(fcinfo, &geom_disjoint2d);
 }
 
+PGDLLEXPORT Datum Edisjoint_tnpoint_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Edisjoint_tnpoint_geo);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
@@ -184,12 +191,13 @@ PG_FUNCTION_INFO_V1(Edisjoint_tnpoint_geo);
  * geometry are disjoint
  * @sqlfunc edisjoint
  */
-PGDLLEXPORT Datum
+Datum
 Edisjoint_tnpoint_geo(PG_FUNCTION_ARGS)
 {
   return espatialrel_tnpoint_geo_ext(fcinfo, &geom_disjoint2d);
 }
 
+PGDLLEXPORT Datum Edisjoint_tnpoint_npoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Edisjoint_tnpoint_npoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
@@ -197,19 +205,20 @@ PG_FUNCTION_INFO_V1(Edisjoint_tnpoint_npoint);
  * network point are disjoint
  * @sqlfunc edisjoint
  */
-PGDLLEXPORT Datum
+Datum
 Edisjoint_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
   return espatialrel_tnpoint_npoint_ext(fcinfo, &geom_disjoint2d);
 }
 
+PGDLLEXPORT Datum Edisjoint_tnpoint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Edisjoint_tnpoint_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
  * @brief Return true if the temporal points are ever disjoint
  * @sqlfunc edisjoint
  */
-PGDLLEXPORT Datum
+Datum
 Edisjoint_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
   return espatialrel_tnpoint_tnpoint_ext(fcinfo, &datum2_point_ne);
@@ -219,6 +228,7 @@ Edisjoint_tnpoint_tnpoint(PG_FUNCTION_ARGS)
  * Ever intersects
  *****************************************************************************/
 
+PGDLLEXPORT Datum Eintersects_geo_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Eintersects_geo_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
@@ -226,12 +236,13 @@ PG_FUNCTION_INFO_V1(Eintersects_geo_tnpoint);
  * point intersect
  * @sqlfunc eintersects
  */
-PGDLLEXPORT Datum
+Datum
 Eintersects_geo_tnpoint(PG_FUNCTION_ARGS)
 {
   return espatialrel_geo_tnpoint_ext(fcinfo, &geom_intersects2d);
 }
 
+PGDLLEXPORT Datum Eintersects_npoint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Eintersects_npoint_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
@@ -239,12 +250,13 @@ PG_FUNCTION_INFO_V1(Eintersects_npoint_tnpoint);
  * point intersect
  * @sqlfunc eintersects
  */
-PGDLLEXPORT Datum
+Datum
 Eintersects_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
   return espatialrel_npoint_tnpoint_ext(fcinfo, &geom_intersects2d);
 }
 
+PGDLLEXPORT Datum Eintersects_tnpoint_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Eintersects_tnpoint_geo);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
@@ -252,12 +264,13 @@ PG_FUNCTION_INFO_V1(Eintersects_tnpoint_geo);
  * geometry intersect
  * @sqlfunc eintersects
  */
-PGDLLEXPORT Datum
+Datum
 Eintersects_tnpoint_geo(PG_FUNCTION_ARGS)
 {
   return espatialrel_tnpoint_geo_ext(fcinfo, &geom_intersects2d);
 }
 
+PGDLLEXPORT Datum Eintersects_tnpoint_npoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Eintersects_tnpoint_npoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
@@ -265,19 +278,20 @@ PG_FUNCTION_INFO_V1(Eintersects_tnpoint_npoint);
  * point intersect
  * @sqlfunc intersects()
  */
-PGDLLEXPORT Datum
+Datum
 Eintersects_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
   return espatialrel_tnpoint_npoint_ext(fcinfo, &geom_intersects2d);
 }
 
+PGDLLEXPORT Datum Eintersects_tnpoint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Eintersects_tnpoint_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
  * @brief Return true if the temporal points are ever disjoint
  * @sqlfunc intersects()
  */
-PGDLLEXPORT Datum
+Datum
 Eintersects_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
   return espatialrel_tnpoint_tnpoint_ext(fcinfo, &datum2_point_eq);
@@ -287,6 +301,7 @@ Eintersects_tnpoint_tnpoint(PG_FUNCTION_ARGS)
  * Ever dwithin
  *****************************************************************************/
 
+PGDLLEXPORT Datum Edwithin_geo_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Edwithin_geo_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
@@ -294,18 +309,21 @@ PG_FUNCTION_INFO_V1(Edwithin_geo_tnpoint);
  * point are within the given distance
  * @sqlfunc edwithin
  */
-PGDLLEXPORT Datum
+Datum
 Edwithin_geo_tnpoint(PG_FUNCTION_ARGS)
 {
-  Datum geom = PG_GETARG_DATUM(0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   double dist = PG_GETARG_FLOAT8(2);
-  Datum result = espatialrel3_tnpoint_geom(temp, geom, dist, &geom_dwithin2d,
-    INVERT);
+  int result = edwithin_tnpoint_geom(temp, gs, dist);
+  PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
+  if (result < 0)
+    PG_RETURN_NULL();
   PG_RETURN_DATUM(result);
 }
 
+PGDLLEXPORT Datum Edwithin_npoint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Edwithin_npoint_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
@@ -313,18 +331,18 @@ PG_FUNCTION_INFO_V1(Edwithin_npoint_tnpoint);
  * point are within the given distance
  * @sqlfunc edwithin
  */
-PGDLLEXPORT Datum
+Datum
 Edwithin_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   double dist = PG_GETARG_FLOAT8(2);
-  Datum result = espatialrel3_tnpoint_npoint(temp, np, dist, &geom_dwithin2d,
-    INVERT);
+  Datum result = edwithin_tnpoint_npoint(temp, np, dist);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_DATUM(result);
 }
 
+PGDLLEXPORT Datum Edwithin_tnpoint_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Edwithin_tnpoint_geo);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
@@ -332,18 +350,21 @@ PG_FUNCTION_INFO_V1(Edwithin_tnpoint_geo);
  * geometry are within the given distance
  * @sqlfunc edwithin
  */
-PGDLLEXPORT Datum
+Datum
 Edwithin_tnpoint_geo(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Datum geom = PG_GETARG_DATUM(1);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   double dist = PG_GETARG_FLOAT8(2);
-  Datum result = espatialrel3_tnpoint_geom(temp, geom, dist, &geom_dwithin2d,
-    INVERT_NO);
+  int result = edwithin_tnpoint_geom(temp, gs, dist);
   PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(gs, 1);
+  if (result < 0)
+    PG_RETURN_NULL();
   PG_RETURN_DATUM(result);
 }
 
+PGDLLEXPORT Datum Edwithin_tnpoint_npoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Edwithin_tnpoint_npoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
@@ -351,18 +372,18 @@ PG_FUNCTION_INFO_V1(Edwithin_tnpoint_npoint);
  * network point are within the given distance
  * @sqlfunc edwithin
  */
-PGDLLEXPORT Datum
+Datum
 Edwithin_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Npoint *np = PG_GETARG_NPOINT_P(1);
   double dist = PG_GETARG_FLOAT8(2);
-  Datum result = espatialrel3_tnpoint_npoint(temp, np, dist, &geom_dwithin2d,
-    INVERT_NO);
+  Datum result = edwithin_tnpoint_npoint(temp, np, dist);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_DATUM(result);
 }
 
+PGDLLEXPORT Datum Edwithin_tnpoint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Edwithin_tnpoint_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
@@ -370,7 +391,7 @@ PG_FUNCTION_INFO_V1(Edwithin_tnpoint_tnpoint);
  * the given distance
  * @sqlfunc edwithin
  */
-PGDLLEXPORT Datum
+Datum
 Edwithin_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
@@ -388,6 +409,7 @@ Edwithin_tnpoint_tnpoint(PG_FUNCTION_ARGS)
  * Ever touches
  *****************************************************************************/
 
+PGDLLEXPORT Datum Etouches_geo_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Etouches_geo_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
@@ -395,12 +417,13 @@ PG_FUNCTION_INFO_V1(Etouches_geo_tnpoint);
  * point touch
  * @sqlfunc etouches
  */
-PGDLLEXPORT Datum
+Datum
 Etouches_geo_tnpoint(PG_FUNCTION_ARGS)
 {
   return espatialrel_geo_tnpoint_ext(fcinfo, &geom_touches);
 }
 
+PGDLLEXPORT Datum Etouches_npoint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Etouches_npoint_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
@@ -408,12 +431,13 @@ PG_FUNCTION_INFO_V1(Etouches_npoint_tnpoint);
  * network point touch
  * @sqlfunc etouches
  */
-PGDLLEXPORT Datum
+Datum
 Etouches_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
   return espatialrel_npoint_tnpoint_ext(fcinfo, &geom_touches);
 }
 
+PGDLLEXPORT Datum Etouches_tnpoint_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Etouches_tnpoint_geo);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
@@ -421,12 +445,13 @@ PG_FUNCTION_INFO_V1(Etouches_tnpoint_geo);
  * geometry touch
  * @sqlfunc etouches
  */
-PGDLLEXPORT Datum
+Datum
 Etouches_tnpoint_geo(PG_FUNCTION_ARGS)
 {
   return espatialrel_tnpoint_geo_ext(fcinfo, &geom_touches);
 }
 
+PGDLLEXPORT Datum Etouches_tnpoint_npoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Etouches_tnpoint_npoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel
@@ -434,7 +459,7 @@ PG_FUNCTION_INFO_V1(Etouches_tnpoint_npoint);
  * network point touch
  * @sqlfunc etouches
  */
-PGDLLEXPORT Datum
+Datum
 Etouches_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
   return espatialrel_tnpoint_npoint_ext(fcinfo, &geom_touches);

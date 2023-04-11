@@ -427,7 +427,7 @@ tfunc_tlinearseq_base_discont(const TSequence *seq, Datum value,
     bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
     Datum intvalue, intresult;
     bool lower_eq = false, upper_eq = false; /* make Codacy quiet */
-    TimestampTz inttime;
+    TimestampTz inttime = 0; /* make compilier quiet */
 
     /* If the segment is constant compute the function at the start and
      * end instants */
@@ -1133,7 +1133,7 @@ tfunc_tcontseq_tcontseq_multi(const TSequence *seq1, const TSequence *seq2,
     else
     {
       Datum intvalue1, intvalue2, intresult;
-      TimestampTz inttime;
+      TimestampTz inttime = 0; /* make compiler quiet */
       bool lower_eq = false, upper_eq = false;
       /* If both segments are constant compute the function at the start and
        * end instants */

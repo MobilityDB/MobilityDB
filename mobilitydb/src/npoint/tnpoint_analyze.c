@@ -37,14 +37,17 @@
 /* MobilityDB */
 #include "pg_general/temporal_analyze.h"
 #include "pg_point/tpoint_analyze.h"
+/* MEOS */
+#include <meos.h>
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Tnpoint_analyze(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnpoint_analyze);
 /**
  * @brief Compute the statistics for temporal network point columns
  */
-PGDLLEXPORT Datum
+Datum
 Tnpoint_analyze(PG_FUNCTION_ARGS)
 {
   return temporal_analyze(fcinfo, &tpoint_compute_stats);

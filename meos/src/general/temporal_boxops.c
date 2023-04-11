@@ -133,6 +133,7 @@ temporal_bbox_eq(const void *box1, const void *box2, meosType temptype)
     // a problem still remains (result != 0) even with the _cmp function
     return stbox_cmp((STBox *) box1, (STBox *) box2) == 0;
   elog(ERROR, "unknown temporal type for bounding box function: %d", temptype);
+  return false; /* make compiler quiet */
 }
 
 /**
@@ -152,6 +153,7 @@ temporal_bbox_cmp(const void *box1, const void *box2, meosType temptype)
   if (tspatial_type(temptype))
     return stbox_cmp((STBox *) box1, (STBox *) box2);
   elog(ERROR, "unknown temporal type for bounding box function: %d", temptype);
+  return 0; /* make compiler quiet */
 }
 
 /*****************************************************************************
@@ -171,6 +173,7 @@ temporal_bbox_size(meosType temptype)
   if (tspatial_type(temptype))
     return sizeof(STBox);
   elog(ERROR, "unknown temporal type for bounding box function: %d", temptype);
+  return 0; /* make compiler quiet */
 }
 
 /**

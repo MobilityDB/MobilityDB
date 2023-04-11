@@ -945,8 +945,8 @@ closest_point2d_on_segment_ratio(const POINT2D *p, const POINT2D *A,
 
   if (closest)
   {
-    closest->x = A->x + ( (B->x - A->x) * r );
-    closest->y = A->y + ( (B->y - A->y) * r );
+    closest->x = (double) (A->x + ( (B->x - A->x) * r ));
+    closest->y = (double) (A->y + ( (B->y - A->y) * r ));
   }
   return r;
 }
@@ -986,9 +986,9 @@ closest_point3dz_on_segment_ratio(const POINT3DZ *p, const POINT3DZ *A,
     return 1.0;
   }
 
-  closest->x = A->x + ( (B->x - A->x) * r );
-  closest->y = A->y + ( (B->y - A->y) * r );
-  closest->z = A->z + ( (B->z - A->z) * r );
+  closest->x = (double) (A->x + ( (B->x - A->x) * r ));
+  closest->y = (double) (A->y + ( (B->y - A->y) * r ));
+  closest->z = (double) (A->z + ( (B->z - A->z) * r ));
   return r;
 }
 
@@ -1033,8 +1033,8 @@ closest_point_on_segment_sphere(const POINT4D *p, const POINT4D *A,
     closest->y = rad2deg(proj.lat);
 
     /* Compute Z and M values for closest point */
-    closest->z = A->z + ((B->z - A->z) * result);
-    closest->m = A->m + ((B->m - A->m) * result);
+    closest->z = (double) (A->z + ((B->z - A->z) * result));
+    closest->m = (double) (A->m + ((B->m - A->m) * result));
   }
   return result;
 }
@@ -1115,16 +1115,16 @@ geosegm_interpolate_point(Datum start, Datum end, long double ratio)
     geographic_point_init(p2.x, p2.y, &g2);
     geog2cart(&g1, &q1);
     geog2cart(&g2, &q2);
-    interpolate_point4d_sphere(&q1, &q2, &p1, &p2, ratio, &p);
+    interpolate_point4d_sphere(&q1, &q2, &p1, &p2, (double) ratio, &p);
   }
   else
   {
     /* We cannot call the PostGIS function
      * interpolate_point4d(&p1, &p2, &p, ratio);
      * since it uses a double and not a long double for the interpolation */
-    p.x = p1.x + ((long double) (p2.x - p1.x) * ratio);
-    p.y = p1.y + ((long double) (p2.y - p1.y) * ratio);
-    p.z = p1.z + ((long double) (p2.z - p1.z) * ratio);
+    p.x = p1.x + (double) ((long double) (p2.x - p1.x) * ratio);
+    p.y = p1.y + (double) ((long double) (p2.y - p1.y) * ratio);
+    p.z = p1.z + (double) ((long double) (p2.z - p1.z) * ratio);
     p.m = 0.0;
   }
 
@@ -1229,12 +1229,12 @@ tpointsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
   Datum start = tinstant_value(inst1);
   Datum end = tinstant_value(inst2);
   double dist;
-  double fraction = geosegm_locate_point(start, end, value, &dist);
+  double fraction = (double) geosegm_locate_point(start, end, value, &dist);
   if (fabs(dist) >= MEOS_EPSILON)
     return false;
   if (t != NULL)
   {
-    double duration = (inst2->t - inst1->t);
+    double duration = (double) (inst2->t - inst1->t);
     /* Note that due to roundoff errors it may be the case that the
      * resulting timestamp t may be equal to inst1->t or to inst2->t */
     *t = inst1->t + (TimestampTz) (duration * fraction);
@@ -1341,7 +1341,7 @@ tgeompointsegm_intersection(const TInstant *start1, const TInstant *end1,
       return false;
     fraction = xdenum != 0 ? xfraction : yfraction;
   }
-  double duration = (end1->t - start1->t);
+  double duration = (double) (end1->t - start1->t);
   *t = start1->t + (TimestampTz) (duration * fraction);
   /* Note that due to roundoff errors it may be the case that the
    * resulting timestamp t may be equal to inst1->t or to inst2->t */
@@ -1394,7 +1394,7 @@ tgeogpointsegm_intersection(const TInstant *start1, const TInstant *end1,
   long double length = sphere_distance(&(e1.start), &inter);
   long double fraction = length / seglength;
 
-  long double duration = (end1->t - start1->t);
+  long double duration = (long double) (end1->t - start1->t);
   *t = start1->t + (TimestampTz) (duration * fraction);
   /* Note that due to roundoff errors it may be the case that the
    * resulting timestamp t may be equal to inst1->t or to inst2->t */
@@ -1558,7 +1558,7 @@ lwline_make(Datum value1, Datum value2)
   int hasz = FLAGS_GET_Z(gs->gflags);
   int isgeodetic = FLAGS_GET_GEODETIC(gs->gflags);
   /* Since there is no M value a 0 value is passed */
-  POINTARRAY *pa = ptarray_construct_empty(hasz, 0, 2);
+  POINTARRAY *pa = ptarray_construct_empty((char) hasz, 0, 2);
   POINT4D pt;
   datum_point4d(value1, &pt);
   ptarray_append_point(pa, &pt, LW_TRUE);
@@ -2567,7 +2567,7 @@ tpointseq_direction(const TSequence *seq, double *result)
   if (datum_point_eq(value1, value2))
     return false;
 
-  *result = func(value1, value2);
+  *result = DatumGetFloat8(func(value1, value2));
   return true;
 }
 
@@ -2601,7 +2601,7 @@ tpointseqset_direction(const TSequenceSet *ss, double *result)
   if (datum_point_eq(value1, value2))
     return false;
 
-  *result = func(value1, value2);
+  *result = DatumGetFloat8(func(value1, value2));
   return true;
 }
 
@@ -2652,7 +2652,8 @@ tpointseq_azimuth1(const TSequence *seq, TSequence **result)
   Datum value1 = tinstant_value(inst1);
   int k = 0, l = 0;
   Datum azimuth = 0; /* Make the compiler quiet */
-  bool lower_inc = seq->period.lower_inc, upper_inc;
+  bool lower_inc = seq->period.lower_inc;
+  bool upper_inc = false; /* make compiler quiet */
   for (int i = 1; i < seq->count; i++)
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
@@ -2807,7 +2808,7 @@ geom_bearing(Datum point1, Datum point2)
   const POINT2D *p2 = DATUM_POINT2D_P(point2);
   if ((fabs(p1->x - p2->x) <= MEOS_EPSILON) &&
       (fabs(p1->y - p2->y) <= MEOS_EPSILON))
-    return 0.0;
+    return Float8GetDatum(0.0);
   if (fabs(p1->y - p2->y) > MEOS_EPSILON)
   {
     double bearing = pg_datan((p1->x - p2->x) / (p1->y - p2->y)) +
@@ -2839,7 +2840,7 @@ geog_bearing(Datum point1, Datum point2)
   const POINT2D *p2 = DATUM_POINT2D_P(point2);
   if ((fabs(p1->x - p2->x) <= MEOS_EPSILON) &&
       (fabs(p1->y - p2->y) <= MEOS_EPSILON))
-    return 0.0;
+    return Float8GetDatum(0.0);
 
   double lat1 = float8_mul(p1->y, RADIANS_PER_DEGREE);
   double lat2 = float8_mul(p2->y, RADIANS_PER_DEGREE);
@@ -2892,7 +2893,7 @@ tpoint_geo_min_bearing_at_timestamp(const TInstant *start, const TInstant *end,
   const POINT2D *p = DATUM_POINT2D_P(point);
   const POINT2D *q;
   long double fraction;
-  Datum proj;
+  Datum proj = 0; /* make compiler quiet */
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(start->flags);
   if (geodetic)
   {
@@ -2922,7 +2923,7 @@ tpoint_geo_min_bearing_at_timestamp(const TInstant *start, const TInstant *end,
   }
   if (fraction <= MEOS_EPSILON || fraction >= (1.0 - MEOS_EPSILON))
     return false;
-  long double duration = (end->t - start->t);
+  long double duration = (long double) (end->t - start->t);
   *t = start->t + (TimestampTz) (duration * fraction);
   *value = (Datum) 0;
   /* Compute the projected value only for geometries */
@@ -3792,7 +3793,7 @@ tpointsegm_timestamp_at_value1(const TInstant *inst1, const TInstant *inst2,
 {
   bool hasz = MEOS_FLAGS_GET_Z(inst1->flags);
   Datum value1, value2, val;
-  GSERIALIZED *gs1, *gs2, *gs;
+  GSERIALIZED *gs1 = NULL, *gs2 = NULL, *gs = NULL; /* make compiler quiet */
   if (hasz)
   {
     /* We need to do the comparison in 2D since the Z values returned by PostGIS
@@ -3823,12 +3824,12 @@ tpointsegm_timestamp_at_value1(const TInstant *inst1, const TInstant *inst2,
   else
   {
     double dist;
-    double fraction = geosegm_locate_point(value1, value2, val, &dist);
+    double fraction = (double) geosegm_locate_point(value1, value2, val, &dist);
     if (fabs(dist) >= MEOS_EPSILON)
       result = false;
     else
     {
-      double duration = (inst2->t - inst1->t);
+      double duration = (double) (inst2->t - inst1->t);
       *t = inst1->t + (TimestampTz) (duration * fraction);
     }
   }
@@ -3916,7 +3917,7 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter, int *count)
   int countinter;
   LWPOINT *lwpoint_inter = NULL; /* make compiler quiet */
   LWLINE *lwline_inter = NULL; /* make compiler quiet */
-  LWCOLLECTION *coll;
+  LWCOLLECTION *coll = NULL; /* make compiler quiet */
   if (type == POINTTYPE)
   {
     countinter = 1;

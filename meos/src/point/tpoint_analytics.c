@@ -79,13 +79,13 @@ point_measure_to_lwpoint(Datum point, Datum measure)
   LWPOINT *result;
   if (FLAGS_GET_Z(gs->gflags))
   {
-    const POINT3DZ *point = GSERIALIZED_POINT3DZ_P(gs);
-    result = lwpoint_make4d(srid, point->x, point->y, point->z, d);
+    const POINT3DZ *pt = GSERIALIZED_POINT3DZ_P(gs);
+    result = lwpoint_make4d(srid, pt->x, pt->y, pt->z, d);
   }
   else
   {
-    const POINT2D *point = GSERIALIZED_POINT2D_P(gs);
-    result = lwpoint_make3dm(srid, point->x, point->y, d);
+    const POINT2D *pt = GSERIALIZED_POINT2D_P(gs);
+    result = lwpoint_make3dm(srid, pt->x, pt->y, d);
   }
   FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(gs->gflags));
   return result;
@@ -1311,6 +1311,8 @@ int_cmp(const void *a, const void *b)
   return *ia - *ib;
 }
 
+#define DP_STACK_SIZE 256
+
 /**
  * @brief Simplify the temporal sequence set float/point using the
  * Douglas-Peucker line simplification algorithm.
@@ -1319,10 +1321,9 @@ static TSequence *
 tsequence_simplify_dp(const TSequence *seq, double dist, bool syncdist,
   uint32_t minpts)
 {
-  static size_t stack_size = 256;
   int *stack, *outlist; /* recursion stack */
-  int stack_static[stack_size];
-  int outlist_static[stack_size];
+  int stack_static[DP_STACK_SIZE];
+  int outlist_static[DP_STACK_SIZE];
   int sp = -1; /* recursion stack pointer */
   int i1, split;
   uint32_t outn = 0;
@@ -1336,7 +1337,7 @@ tsequence_simplify_dp(const TSequence *seq, double dist, bool syncdist,
     return tsequence_copy(seq);
 
   /* Only heap allocate book-keeping arrays if necessary */
-  if ((unsigned int) seq->count > stack_size)
+  if ((unsigned int) seq->count > DP_STACK_SIZE)
   {
     stack = palloc(sizeof(int) * seq->count);
     outlist = palloc(sizeof(int) * seq->count);
@@ -1887,7 +1888,7 @@ static GSERIALIZED *
 tpointinst_decouple(const TInstant *inst, int64 **timesarr, int *count)
 {
   int64 *times = palloc(sizeof(int64));
-  times[0] = (inst->t / 1e6) + DELTA_UNIX_POSTGRES_EPOCH;
+  times[0] = (inst->t / 1000000) + DELTA_UNIX_POSTGRES_EPOCH;
   *timesarr = times;
   *count = 1;
   return DatumGetGserializedP(tinstant_value_copy(inst));
@@ -1911,7 +1912,7 @@ tpointseq_decouple1(const TSequence *seq, int64 *times)
     Datum value = tinstant_value(inst);
     GSERIALIZED *gs = DatumGetGserializedP(value);
     points[i] = lwgeom_from_gserialized(gs);
-    times[i] = (inst->t / 1e6) + DELTA_UNIX_POSTGRES_EPOCH;
+    times[i] = (inst->t / 1000000) + DELTA_UNIX_POSTGRES_EPOCH;
   }
   LWGEOM *result = lwpointarr_make_trajectory(points, seq->count,
     MEOS_FLAGS_GET_LINEAR(seq->flags) ? LINEAR : STEP);

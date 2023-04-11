@@ -45,11 +45,6 @@ set(PROJECT_SUPPORTED_LANGUAGES_STRING "Spanish")
 set(PROJECT_ENGLISH "en")
 set(PROJECT_ENGLISH_STRING "English")
 
-# TODO OLD->NEW and solve the problem
-if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.21.0")
-  cmake_policy(SET CMP0121 OLD)
-endif()
-
 #---------------------------------------------
 # Language options
 #---------------------------------------------
@@ -69,8 +64,8 @@ option(LANG_ALL
 
 # Defining the available language options
 foreach(lang ${PROJECT_SUPPORTED_LANGUAGES})
-  list(FIND PROJECT_SUPPORTED_LANGUAGES lang idx)
-  list(GET PROJECT_SUPPORTED_LANGUAGES_STRING idx lang_str)
+  list(FIND PROJECT_SUPPORTED_LANGUAGES ${lang} idx)
+  list(GET PROJECT_SUPPORTED_LANGUAGES_STRING ${idx} lang_str)
   string(TOUPPER ${lang} val)
   option(${val}
     "Set ON|OFF (default=OFF) build the ${lang_str} user's documentation" OFF)

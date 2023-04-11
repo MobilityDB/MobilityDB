@@ -176,6 +176,7 @@ datum_cmp2(Datum l, Datum r, meosType typel, meosType typer)
     return npoint_cmp(DatumGetNpointP(l), DatumGetNpointP(r));
 #endif
   elog(ERROR, "unknown compare function for base type: %d", typel);
+  return 0; /* make compiler quiet */
 }
 
 /**
@@ -216,6 +217,7 @@ datum_eq2(Datum l, Datum r, meosType typel, meosType typer)
     return npoint_eq(DatumGetNpointP(l), DatumGetNpointP(r));
 #endif
   elog(ERROR, "unknown datum_eq2 function for base type: %d", typel);
+  return false; /* make compiler quiet */
 }
 
 /**
@@ -503,8 +505,8 @@ datum_hash(Datum d, meosType type)
   else if (type == T_NPOINT)
     return npoint_hash(DatumGetNpointP(d));
 #endif
-  else
-    elog(ERROR, "unknown hash function for base type: %d", type);
+  elog(ERROR, "unknown hash function for base type: %d", type);
+  return (uint32) 0; /* make compiler quiet */
 }
 
 /**
@@ -516,15 +518,15 @@ datum_hash_extended(Datum d, meosType type, uint64 seed)
 {
   assert(meos_basetype(type));
   if (type == T_TIMESTAMPTZ)
-    return pg_hashint8extended(TimestampTzGetDatum(d), seed);
+    return pg_hashint8extended(DatumGetTimestampTz(d), seed);
   else if (type == T_BOOL)
     return hash_bytes_uint32_extended((int32) DatumGetBool(d), seed);
   else if (type == T_INT4)
     return hash_bytes_uint32_extended(DatumGetInt32(d), seed);
   else if (type == T_INT8)
-    return pg_hashint8extended(Int64GetDatum(d), seed);
+    return pg_hashint8extended(DatumGetInt64(d), seed);
   else if (type == T_FLOAT8)
-    return pg_hashfloat8extended(Float8GetDatum(d), seed);
+    return pg_hashfloat8extended(DatumGetFloat8(d), seed);
   else if (type == T_TEXT)
     return pg_hashtextextended(DatumGetTextP(d), seed);
   // PostGIS currently does not provide an extended hash function
@@ -534,8 +536,8 @@ datum_hash_extended(Datum d, meosType type, uint64 seed)
   else if (type == T_NPOINT)
     return npoint_hash_extended(DatumGetNpointP(d), seed);
 #endif
-  else
-    elog(ERROR, "unknown extended hash function for base type: %d", type);
+  elog(ERROR, "unknown extended hash function for base type: %d", type);
+  return (uint64) 0; /* make compiler quiet */
 }
 
 /*****************************************************************************
@@ -876,10 +878,10 @@ pfree_datumarr(Datum *array, int count)
  * @param[in] spaces True when elements should be separated by spaces
  */
 char *
-stringarr_to_string(char **strings, int count, int outlen, char *prefix,
+stringarr_to_string(char **strings, int count, size_t outlen, char *prefix,
   char open, char close, bool quotes, bool spaces)
 {
-  int size = strlen(prefix) + outlen + 3;
+  size_t size = strlen(prefix) + outlen + 3;
   if (quotes)
     size += count * 4;
   if (spaces)
@@ -1081,7 +1083,7 @@ basetype_in(const char *str, meosType basetype, bool end __attribute__((unused))
 #endif
     default: /* Error! */
       elog(ERROR, "Unknown base type: %d", basetype);
-      break;
+      return Int32GetDatum(0); /* make compiler quiet */
   }
 }
 
@@ -1130,7 +1132,7 @@ basetype_out(Datum value, meosType basetype, int maxdd)
 #endif
     default: /* Error! */
       elog(ERROR, "Unknown base type: %d", basetype);
-      break;
+      return NULL; /* make compiler quiet */
   }
 }
 

@@ -42,7 +42,6 @@
 /* MobilityDB */
 #include "pg_general/temporal.h"
 
-
 /*****************************************************************************
  * Operator strategy numbers used in the GIN set and tnpoint opclasses
  *****************************************************************************/
@@ -55,6 +54,7 @@
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Set_gin_extract_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_gin_extract_value);
 /**
  * @brief extractValue support function
@@ -72,6 +72,7 @@ Set_gin_extract_value(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(elems);
 }
 
+PGDLLEXPORT Datum Set_gin_extract_query(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_gin_extract_query);
 /**
  * @brief extractQuery support function
@@ -84,7 +85,7 @@ Set_gin_extract_query(PG_FUNCTION_ARGS)
   bool **nullFlags = (bool **) PG_GETARG_POINTER(5);
   int32 *searchMode = (int32 *) PG_GETARG_POINTER(6);
   Set *s;
-  Datum *elems;
+  Datum *elems = NULL;
   *nullFlags = NULL;
   *searchMode = GIN_SEARCH_MODE_DEFAULT;
 
@@ -111,6 +112,7 @@ Set_gin_extract_query(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(elems);
 }
 
+PGDLLEXPORT Datum Set_gin_triconsistent(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_gin_triconsistent);
 /**
  * @brief triconsistent support function

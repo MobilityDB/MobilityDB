@@ -35,6 +35,7 @@
 #include <postgres.h>
 #include <fmgr.h>
 /* MEOS */
+#include <meos.h>
 #include "general/temporal.h"
 #include "general/ttext_textfuncs.h"
 #include "general/type_util.h"
@@ -43,6 +44,7 @@
  * Text concatenation
  *****************************************************************************/
 
+PGDLLEXPORT Datum Textcat_text_ttext(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Textcat_text_ttext);
 /**
  * @ingroup mobilitydb_temporal_text
@@ -50,7 +52,7 @@ PG_FUNCTION_INFO_V1(Textcat_text_ttext);
  * @sqlfunc textcat()
  * @sqlop @p ||
  */
-PGDLLEXPORT Datum
+Datum
 Textcat_text_ttext(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_DATUM(0);
@@ -60,6 +62,7 @@ Textcat_text_ttext(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Textcat_ttext_text(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Textcat_ttext_text);
 /**
  * @ingroup mobilitydb_temporal_text
@@ -67,7 +70,7 @@ PG_FUNCTION_INFO_V1(Textcat_ttext_text);
  * @sqlfunc textcat()
  * @sqlop @p ||
  */
-PGDLLEXPORT Datum
+Datum
 Textcat_ttext_text(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
@@ -77,6 +80,7 @@ Textcat_ttext_text(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Textcat_ttext_ttext(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Textcat_ttext_ttext);
 /**
  * @ingroup mobilitydb_temporal_text
@@ -84,7 +88,7 @@ PG_FUNCTION_INFO_V1(Textcat_ttext_ttext);
  * @sqlfunc textcat()
  * @sqlop @p ||
  */
-PGDLLEXPORT Datum
+Datum
 Textcat_ttext_ttext(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
@@ -99,13 +103,14 @@ Textcat_ttext_ttext(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Ttext_upper(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Ttext_upper);
 /**
  * @ingroup mobilitydb_temporal_text
  * @brief Transform the temporal text value into uppercase
  * @sqlfunc upper()
  */
-PGDLLEXPORT Datum
+Datum
 Ttext_upper(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
@@ -114,13 +119,14 @@ Ttext_upper(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Ttext_lower(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Ttext_lower);
 /**
  * @ingroup mobilitydb_temporal_text
  * @brief Transform the temporal text value into lowercase
  * @sqlfunc lower()
  */
-PGDLLEXPORT Datum
+Datum
 Ttext_lower(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);

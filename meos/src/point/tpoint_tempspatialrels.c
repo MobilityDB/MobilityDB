@@ -605,7 +605,7 @@ tdwithin_tpointsegm_tpointsegm(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
   /* To reduce problems related to floating point arithmetic, lower and upper
    * are shifted, respectively, to 0 and 1 before computing the solutions
    * of the quadratic equation */
-  double duration = upper - lower;
+  double duration = (double) (upper - lower);
   long double a, b, c;
   if (hasz) /* 3D */
   {

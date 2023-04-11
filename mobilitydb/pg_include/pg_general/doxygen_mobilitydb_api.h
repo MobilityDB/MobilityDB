@@ -43,32 +43,32 @@
  */
 
 /**
- * @defgroup mobilitydb_spantime Functions for set and span types
+ * @defgroup mobilitydb_setspan Functions for set and span types
  * @ingroup mobilitydb_api
  * @brief Functions for set and span types.
  *
  * @defgroup mobilitydb_setspan_inout Input/output functions
- * @ingroup mobilitydb_spantime
+ * @ingroup mobilitydb_setspan
  * @brief Input/output functions for set and span types.
  *
  * @defgroup mobilitydb_setspan_constructor Constructor functions
- * @ingroup mobilitydb_spantime
+ * @ingroup mobilitydb_setspan
  * @brief Constructor functions for set and span types.
  *
  * @defgroup mobilitydb_setspan_cast Cast functions
- * @ingroup mobilitydb_spantime
+ * @ingroup mobilitydb_setspan
  * @brief Cast functions for set and span types.
  *
  * @defgroup mobilitydb_setspan_accessor Accessor functions
- * @ingroup mobilitydb_spantime
+ * @ingroup mobilitydb_setspan
  * @brief Accessor functions for set and span types.
  *
  * @defgroup mobilitydb_setspan_transf Transformation functions
- * @ingroup mobilitydb_spantime
+ * @ingroup mobilitydb_setspan
  * @brief Transformation functions for set and span types.
  *
  * @defgroup mobilitydb_setspan_bbox Bounding box functions
- * @ingroup mobilitydb_spantime
+ * @ingroup mobilitydb_setspan
  * @brief Bounding box functions for set and span types.
  *
  * @defgroup mobilitydb_setspan_topo Topological functions
@@ -80,15 +80,15 @@
  * @brief Position functions for set and span types.
  *
  * @defgroup mobilitydb_setspan_set Set functions
- * @ingroup mobilitydb_spantime
+ * @ingroup mobilitydb_setspan
  * @brief Set functions for set and span types.
  *
  * @defgroup mobilitydb_setspan_dist Distance functions
- * @ingroup mobilitydb_spantime
+ * @ingroup mobilitydb_setspan
  * @brief Distance functions for set and span types.
  *
  * @defgroup mobilitydb_setspan_comp Comparison functions
- * @ingroup mobilitydb_spantime
+ * @ingroup mobilitydb_setspan
  * @brief Comparison functions for set and span types.
  */
 

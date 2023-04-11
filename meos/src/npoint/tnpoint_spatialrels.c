@@ -134,19 +134,19 @@ espatialrel_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
  * geometry
  *
  * @param[in] temp Temporal network point
- * @param[in] geom Geometry
- * @param[in] param Parameter
- * @param[in] func PostGIS function to be called
- * @param[in] invert True if the arguments should be inverted
+ * @param[in] gs Geometry
+ * @param[in] dist Distance
  */
-Datum
-espatialrel3_tnpoint_geom(const Temporal *temp, Datum geom, Datum param,
-  Datum (*func)(Datum, Datum, Datum), bool invert)
+int
+edwithin_tnpoint_geom(const Temporal *temp, const GSERIALIZED *gs, double dist)
 {
+  if (gserialized_is_empty(gs))
+    return -1;
   Datum geom1 = PointerGetDatum(tnpoint_geom(temp));
-  Datum result = invert ? func(geom, geom1, param) : func(geom1, geom, param);
+  Datum result = geom_dwithin2d(geom1, PointerGetDatum(gs),
+    Float8GetDatum(dist));
   pfree(DatumGetPointer(geom1));
-  return result;
+  return result ? 1 : 0;
 }
 
 /**
@@ -155,18 +155,14 @@ espatialrel3_tnpoint_geom(const Temporal *temp, Datum geom, Datum param,
  *
  * @param[in] temp Temporal network point
  * @param[in] np Network point
- * @param[in] param Parameter
- * @param[in] func PostGIS function to be called
- * @param[in] invert True if the arguments should be inverted
+ * @param[in] dist Distance
  */
 Datum
-espatialrel3_tnpoint_npoint(const Temporal *temp, const Npoint *np, Datum param,
-  Datum (*func)(Datum, Datum, Datum), bool invert)
+edwithin_tnpoint_npoint(const Temporal *temp, const Npoint *np, double dist)
 {
   Datum geom1 = PointerGetDatum(tnpoint_geom(temp));
   Datum geom2 = PointerGetDatum(npoint_geom(np));
-  Datum result = invert ? func(geom2, geom1, param) :
-    func(geom1, geom2, param);
+  Datum result = geom_dwithin2d(geom1, geom2, Float8GetDatum(dist));
   pfree(DatumGetPointer(geom1));
   pfree(DatumGetPointer(geom2));
   return result;

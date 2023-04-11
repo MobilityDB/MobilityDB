@@ -528,11 +528,12 @@ tbox_level_cmp(TBox *centroid, TBox *query, int level)
  * SP-GiST config function
  *****************************************************************************/
 
+PGDLLEXPORT Datum Tbox_spgist_config(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_spgist_config);
 /**
  * @brief SP-GiST config function for temporal numbers
  */
-PGDLLEXPORT Datum
+Datum
 Tbox_spgist_config(PG_FUNCTION_ARGS)
 {
   spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
@@ -548,11 +549,12 @@ Tbox_spgist_config(PG_FUNCTION_ARGS)
  * SP-GiST choose function
  *****************************************************************************/
 
+PGDLLEXPORT Datum Tbox_quadtree_choose(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_quadtree_choose);
 /**
  * @brief SP-GiST choose function for temporal numbers
  */
-PGDLLEXPORT Datum
+Datum
 Tbox_quadtree_choose(PG_FUNCTION_ARGS)
 {
   spgChooseIn *in = (spgChooseIn *) PG_GETARG_POINTER(0);
@@ -606,11 +608,12 @@ Tbox_quadtree_choose(PG_FUNCTION_ARGS)
  * trigger the allTheSame logic.
  */
 
+PGDLLEXPORT Datum Tbox_kdtree_choose(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_kdtree_choose);
 /**
  * @brief K-d tree choose function for time types
  */
-PGDLLEXPORT Datum
+Datum
 Tbox_kdtree_choose(PG_FUNCTION_ARGS)
 {
   spgChooseIn *in = (spgChooseIn *) PG_GETARG_POINTER(0);
@@ -648,6 +651,7 @@ compareDoubles(const void *a, const void *b)
   return (x > y) ? 1 : -1;
 }
 
+PGDLLEXPORT Datum Tbox_quadtree_picksplit(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_quadtree_picksplit);
 /**
  * @brief SP-GiST pick-split function for temporal numbers
@@ -655,7 +659,7 @@ PG_FUNCTION_INFO_V1(Tbox_quadtree_picksplit);
  * It splits a list of boxes into quadrants by choosing a central 4D
  * point as the median of the coordinates of the boxes.
  */
-PGDLLEXPORT Datum
+Datum
 Tbox_quadtree_picksplit(PG_FUNCTION_ARGS)
 {
   spgPickSplitIn *in = (spgPickSplitIn *) PG_GETARG_POINTER(0);
@@ -718,11 +722,12 @@ Tbox_quadtree_picksplit(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Tbox_kdtree_picksplit(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_kdtree_picksplit);
 /**
  * @brief K-d tree pick-split function for time types
  */
-PGDLLEXPORT Datum
+Datum
 Tbox_kdtree_picksplit(PG_FUNCTION_ARGS)
 {
   spgPickSplitIn *in = (spgPickSplitIn *) PG_GETARG_POINTER(0);
@@ -963,21 +968,23 @@ tbox_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
   PG_RETURN_VOID();
 }
 
+PGDLLEXPORT Datum Tbox_quadtree_inner_consistent(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_quadtree_inner_consistent);
 /**
  * @brief Quad-tree inner consistent function for temporal numbers
  */
-PGDLLEXPORT Datum
+Datum
 Tbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
 {
   return tbox_spgist_inner_consistent(fcinfo, SPGIST_QUADTREE);
 }
 
+PGDLLEXPORT Datum Tbox_kdtree_inner_consistent(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_kdtree_inner_consistent);
 /**
  * @brief Kd-tree inner consistent function for temporal numbers
  */
-PGDLLEXPORT Datum
+Datum
 Tbox_kdtree_inner_consistent(PG_FUNCTION_ARGS)
 {
   return tbox_spgist_inner_consistent(fcinfo, SPGIST_KDTREE);
@@ -987,11 +994,12 @@ Tbox_kdtree_inner_consistent(PG_FUNCTION_ARGS)
  * SP-GiST leaf-level consistency function
  *****************************************************************************/
 
+PGDLLEXPORT Datum Tbox_spgist_leaf_consistent(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_spgist_leaf_consistent);
 /**
  * @brief SP-GiST leaf-level consistency function for temporal numbers
  */
-PGDLLEXPORT Datum
+Datum
 Tbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
 {
   spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
@@ -1046,11 +1054,12 @@ Tbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
  * SP-GiST compress function
  *****************************************************************************/
 
+PGDLLEXPORT Datum Tnumber_spgist_compress(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_spgist_compress);
 /**
  * @brief SP-GiST compress function for temporal numbers
  */
-PGDLLEXPORT Datum
+Datum
 Tnumber_spgist_compress(PG_FUNCTION_ARGS)
 {
   Datum tempdatum = PG_GETARG_DATUM(0);

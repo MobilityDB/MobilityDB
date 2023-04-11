@@ -417,8 +417,9 @@ stbox_tile_set(double x, double y, double z, TimestampTz t, double size,
     span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t + tunits), true,
       false, T_TIMESTAMPTZ, &p);
   }
-  return stbox_set(true, hasz, false, srid, xmin, xmax, ymin, ymax, zmin, zmax,
+  stbox_set(true, hasz, false, srid, xmin, xmax, ymin, ymax, zmin, zmax,
     hast ? &p : NULL, result);
+  return;
 }
 
 /**
@@ -675,13 +676,13 @@ tile_get_coords(int *coords, double x, double y, double z, TimestampTz t,
 {
   /* Transform the minimum values of the tile into matrix coordinates */
   int k = 0;
-  coords[k++] = (x - state->box.xmin) / state->size;
-  coords[k++] = (y - state->box.ymin) / state->size;
+  coords[k++] = (int) ((x - state->box.xmin) / state->size);
+  coords[k++] = (int) ((y - state->box.ymin) / state->size);
   if (MEOS_FLAGS_GET_Z(state->box.flags))
-    coords[k++] = (z - state->box.zmin) / state->size;
+    coords[k++] = (int) ((z - state->box.zmin) / state->size);
   if (MEOS_FLAGS_GET_T(state->box.flags))
-    coords[k++] = (t - DatumGetTimestampTz(state->box.period.lower)) /
-      state->tunits;
+    coords[k++] = (int) ((t - DatumGetTimestampTz(state->box.period.lower)) /
+      state->tunits);
   return;
 }
 
@@ -707,7 +708,8 @@ tpointinst_get_coords(int *coords, const TInstant *inst, bool hasz, bool hast,
   if (hasz)
     z = float_bucket(p.z, state->size, state->box.zmin);
   if (hast)
-    t = timestamptz_bucket1(inst->t, state->tunits, state->box.ymin);
+    t = timestamptz_bucket1(inst->t, state->tunits,
+      (TimestampTz) (state->box.ymin));
   /* Transform the minimum values of the tile into matrix coordinates */
   tile_get_coords(coords, x, y, z, t, state);
   return;

@@ -45,6 +45,7 @@
  * Temporal distance
  *****************************************************************************/
 
+PGDLLEXPORT Datum Distance_geo_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Distance_geo_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_dist
@@ -53,7 +54,7 @@ PG_FUNCTION_INFO_V1(Distance_geo_tnpoint);
  * @sqlfunc temporal_distance()
  * @sqlop @p <->
  */
-PGDLLEXPORT Datum
+Datum
 Distance_geo_tnpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(0);
@@ -66,6 +67,7 @@ Distance_geo_tnpoint(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Distance_tnpoint_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Distance_tnpoint_geo);
 /**
  * @ingroup mobilitydb_temporal_dist
@@ -74,7 +76,7 @@ PG_FUNCTION_INFO_V1(Distance_tnpoint_geo);
  * @sqlfunc temporal_distance()
  * @sqlop @p <->
  */
-PGDLLEXPORT Datum
+Datum
 Distance_tnpoint_geo(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
@@ -87,6 +89,7 @@ Distance_tnpoint_geo(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Distance_npoint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Distance_npoint_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_dist
@@ -95,7 +98,7 @@ PG_FUNCTION_INFO_V1(Distance_npoint_tnpoint);
  * @sqlfunc temporal_distance()
  * @sqlop @p <->
  */
-PGDLLEXPORT Datum
+Datum
 Distance_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
@@ -105,6 +108,7 @@ Distance_npoint_tnpoint(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Distance_tnpoint_npoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Distance_tnpoint_npoint);
 /**
  * @ingroup mobilitydb_temporal_dist
@@ -113,7 +117,7 @@ PG_FUNCTION_INFO_V1(Distance_tnpoint_npoint);
  * @sqlfunc temporal_distance()
  * @sqlop @p <->
  */
-PGDLLEXPORT Datum
+Datum
 Distance_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
@@ -123,6 +127,7 @@ Distance_tnpoint_npoint(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Distance_tnpoint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Distance_tnpoint_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_dist
@@ -131,7 +136,7 @@ PG_FUNCTION_INFO_V1(Distance_tnpoint_tnpoint);
  * @sqlfunc temporal_distance()
  * @sqlop @p <->
  */
-PGDLLEXPORT Datum
+Datum
 Distance_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
@@ -148,6 +153,7 @@ Distance_tnpoint_tnpoint(PG_FUNCTION_ARGS)
  * Nearest approach instant (NAI)
  *****************************************************************************/
 
+PGDLLEXPORT Datum NAI_geo_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAI_geo_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_dist
@@ -155,7 +161,7 @@ PG_FUNCTION_INFO_V1(NAI_geo_tnpoint);
  * network point
  * @sqlfunc nearestApproachInstant()
  */
-PGDLLEXPORT Datum
+Datum
 NAI_geo_tnpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(0);
@@ -170,6 +176,7 @@ NAI_geo_tnpoint(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum NAI_tnpoint_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAI_tnpoint_geo);
 /**
  * @ingroup mobilitydb_temporal_dist
@@ -177,7 +184,7 @@ PG_FUNCTION_INFO_V1(NAI_tnpoint_geo);
  * geometry
  * @sqlfunc nearestApproachInstant()
  */
-PGDLLEXPORT Datum
+Datum
 NAI_tnpoint_geo(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(1);
@@ -192,6 +199,7 @@ NAI_tnpoint_geo(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum NAI_npoint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAI_npoint_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_dist
@@ -199,7 +207,7 @@ PG_FUNCTION_INFO_V1(NAI_npoint_tnpoint);
  * network point
  * @sqlfunc nearestApproachInstant()
  */
-PGDLLEXPORT Datum
+Datum
 NAI_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
@@ -211,6 +219,7 @@ NAI_npoint_tnpoint(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum NAI_tnpoint_npoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAI_tnpoint_npoint);
 /**
  * @ingroup mobilitydb_temporal_dist
@@ -218,7 +227,7 @@ PG_FUNCTION_INFO_V1(NAI_tnpoint_npoint);
  * network point
  * @sqlfunc nearestApproachInstant()
  */
-PGDLLEXPORT Datum
+Datum
 NAI_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
@@ -230,13 +239,14 @@ NAI_tnpoint_npoint(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum NAI_tnpoint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAI_tnpoint_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_dist
  * @brief Return the nearest approach instant of the two temporal network points
  * @sqlfunc nearestApproachInstant()
  */
-PGDLLEXPORT Datum
+Datum
 NAI_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
@@ -253,6 +263,7 @@ NAI_tnpoint_tnpoint(PG_FUNCTION_ARGS)
  * Nearest approach distance (NAD)
  *****************************************************************************/
 
+PGDLLEXPORT Datum NAD_geo_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_geo_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_dist
@@ -260,7 +271,7 @@ PG_FUNCTION_INFO_V1(NAD_geo_tnpoint);
  * network point
  * @sqlfunc nearestApproachDistance()
  */
-PGDLLEXPORT Datum
+Datum
 NAD_geo_tnpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(0);
@@ -273,6 +284,7 @@ NAD_geo_tnpoint(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 }
 
+PGDLLEXPORT Datum NAD_tnpoint_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_tnpoint_geo);
 /**
  * @ingroup mobilitydb_temporal_dist
@@ -280,7 +292,7 @@ PG_FUNCTION_INFO_V1(NAD_tnpoint_geo);
  * geometry
  * @sqlfunc nearestApproachDistance()
  */
-PGDLLEXPORT Datum
+Datum
 NAD_tnpoint_geo(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(1);
@@ -293,6 +305,7 @@ NAD_tnpoint_geo(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 }
 
+PGDLLEXPORT Datum NAD_npoint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_npoint_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_dist
@@ -300,7 +313,7 @@ PG_FUNCTION_INFO_V1(NAD_npoint_tnpoint);
  * network point
  * @sqlfunc nearestApproachDistance()
  */
-PGDLLEXPORT Datum
+Datum
 NAD_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
@@ -310,6 +323,7 @@ NAD_npoint_tnpoint(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 }
 
+PGDLLEXPORT Datum NAD_tnpoint_npoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_tnpoint_npoint);
 /**
  * @ingroup mobilitydb_temporal_dist
@@ -317,7 +331,7 @@ PG_FUNCTION_INFO_V1(NAD_tnpoint_npoint);
  * network point
  * @sqlfunc nearestApproachDistance()
  */
-PGDLLEXPORT Datum
+Datum
 NAD_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
@@ -327,13 +341,14 @@ NAD_tnpoint_npoint(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 }
 
+PGDLLEXPORT Datum NAD_tnpoint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_tnpoint_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_dist
  * @brief Return the nearest approach distance of the two temporal network points
  * @sqlfunc nearestApproachDistance()
  */
-PGDLLEXPORT Datum
+Datum
 NAD_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
@@ -350,6 +365,7 @@ NAD_tnpoint_tnpoint(PG_FUNCTION_ARGS)
  * ShortestLine
  *****************************************************************************/
 
+PGDLLEXPORT Datum Shortestline_geo_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Shortestline_geo_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_dist
@@ -357,7 +373,7 @@ PG_FUNCTION_INFO_V1(Shortestline_geo_tnpoint);
  * and the temporal network point
  * @sqlfunc shortestLine()
  */
-PGDLLEXPORT Datum
+Datum
 Shortestline_geo_tnpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(0);
@@ -371,6 +387,7 @@ Shortestline_geo_tnpoint(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Shortestline_tnpoint_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Shortestline_tnpoint_geo);
 /**
  * @ingroup mobilitydb_temporal_dist
@@ -378,7 +395,7 @@ PG_FUNCTION_INFO_V1(Shortestline_tnpoint_geo);
  * network point and the geometry
  * @sqlfunc shortestLine()
  */
-PGDLLEXPORT Datum
+Datum
 Shortestline_tnpoint_geo(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
@@ -392,6 +409,7 @@ Shortestline_tnpoint_geo(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Shortestline_npoint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Shortestline_npoint_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_dist
@@ -399,7 +417,7 @@ PG_FUNCTION_INFO_V1(Shortestline_npoint_tnpoint);
  * point and the temporal network point
  * @sqlfunc shortestLine()
  */
-PGDLLEXPORT Datum
+Datum
 Shortestline_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
@@ -409,6 +427,7 @@ Shortestline_npoint_tnpoint(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Shortestline_tnpoint_npoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Shortestline_tnpoint_npoint);
 /**
  * @ingroup mobilitydb_temporal_dist
@@ -416,7 +435,7 @@ PG_FUNCTION_INFO_V1(Shortestline_tnpoint_npoint);
  * network point and the network point
  * @sqlfunc shortestLine()
  */
-PGDLLEXPORT Datum
+Datum
 Shortestline_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
@@ -428,6 +447,7 @@ Shortestline_tnpoint_npoint(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Shortestline_tnpoint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Shortestline_tnpoint_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_dist
@@ -435,7 +455,7 @@ PG_FUNCTION_INFO_V1(Shortestline_tnpoint_tnpoint);
  * temporal networks
  * @sqlfunc shortestLine()
  */
-PGDLLEXPORT Datum
+Datum
 Shortestline_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);

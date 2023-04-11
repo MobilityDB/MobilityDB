@@ -921,11 +921,12 @@ span_sel(PlannerInfo *root, Oid operid, List *args, int varRelid)
   return selec;
 }
 
+PGDLLEXPORT Datum Span_sel(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_sel);
 /**
  * @brief Restriction selectivity for span operators
  */
-PGDLLEXPORT Datum
+Datum
 Span_sel(PG_FUNCTION_ARGS)
 {
   PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
@@ -938,13 +939,14 @@ Span_sel(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum _mobdb_span_sel(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(_mobdb_span_sel);
 /**
  * @brief Utility function to read the calculated selectivity for a given
  * table/column, operator, and search span.
  * Used for debugging the selectivity code.
  */
-PGDLLEXPORT Datum
+Datum
 _mobdb_span_sel(PG_FUNCTION_ARGS)
 {
   Oid table_oid = PG_GETARG_OID(0);
@@ -1421,6 +1423,7 @@ span_joinsel(PlannerInfo *root, meosOper oper, List *args,
   return selec;
 }
 
+PGDLLEXPORT Datum Span_joinsel(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_joinsel);
 /**
  * @brief Join selectivity for spans.
@@ -1432,7 +1435,7 @@ PG_FUNCTION_INFO_V1(Span_joinsel);
  *
  * This function is inspired from function eqjoinsel in file selfuncs.c
  */
-PGDLLEXPORT Datum
+Datum
 Span_joinsel(PG_FUNCTION_ARGS)
 {
   PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
@@ -1473,13 +1476,14 @@ Span_joinsel(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(selec);
 }
 
+PGDLLEXPORT Datum _mobdb_span_joinsel(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(_mobdb_span_joinsel);
 /**
  * @brief Utility function to read the calculated selectivity for a given
  * couple of table/column, and operator.
  * @note Used for testing the selectivity code.
  */
-PGDLLEXPORT Datum
+Datum
 _mobdb_span_joinsel(PG_FUNCTION_ARGS)
 {
   Oid table1_oid = PG_GETARG_OID(0);
@@ -1496,17 +1500,10 @@ _mobdb_span_joinsel(PG_FUNCTION_ARGS)
       errmsg("Oid %u does not refer to a table", table1_oid)));
   const char *att1_name = text_to_cstring(att1_text);
   AttrNumber att1_num;
-  /* We know the name? Look up the num */
-  if (att1_text)
-  {
-    /* Get the attribute number */
-    att1_num = get_attnum(table1_oid, att1_name);
-    if (! att1_num)
-      elog(ERROR, "attribute \"%s\" does not exist", att1_name);
-  }
-  else
-    elog(ERROR, "attribute name is null");
-
+  /* Get the attribute number */
+  att1_num = get_attnum(table1_oid, att1_name);
+  if (! att1_num)
+    elog(ERROR, "attribute \"%s\" does not exist", att1_name);
   // /* Get the attribute type */
   // meosType atttype1 = oid_type(get_atttype(table1_oid, att1_num));
 
@@ -1516,19 +1513,13 @@ _mobdb_span_joinsel(PG_FUNCTION_ARGS)
       errmsg("Oid %u does not refer to a table", table2_oid)));
   const char *att2_name = text_to_cstring(att2_text);
   AttrNumber att2_num;
-  /* We know the name? Look up the num */
-  if (att2_text)
-  {
-    /* Get the attribute number */
-    att2_num = get_attnum(table2_oid, att2_name);
-    if (! att2_num)
-      elog(ERROR, "attribute \"%s\" does not exist", att2_name);
-  }
-  else
-    elog(ERROR, "attribute name is null");
-
+  /* Get the attribute number */
+  att2_num = get_attnum(table2_oid, att2_name);
+  if (! att2_num)
+    elog(ERROR, "attribute \"%s\" does not exist", att2_name);
   // /* Get the attribute type */
   // meosType atttype2 = oid_type(get_atttype(table1_oid, att1_num));
+
   /* Determine whether we can estimate selectivity for the operator */
   meosType ltype, rtype;
   meosOper oper = oid_oper(operid, &ltype, &rtype);

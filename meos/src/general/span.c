@@ -315,7 +315,7 @@ unquote(char *str)
 }
 
 /**
- * @ingroup libmeos_setspan_inout
+ * @ingroup libmeos_internal_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a span.
  */
 char *
@@ -409,7 +409,7 @@ intspan_make(int lower, int upper, bool lower_inc, bool upper_inc)
 
 /**
  * @ingroup libmeos_setspan_constructor
- * @brief Construct an integer span from the bounds.
+ * @brief Construct a big integer span from the bounds.
  * @sqlfunc bigintspan()
  */
 Span *
@@ -424,7 +424,7 @@ bigintspan_make(int64 lower, int64 upper, bool lower_inc, bool upper_inc)
 
 /**
  * @ingroup libmeos_setspan_constructor
- * @brief Construct a span from the bounds.
+ * @brief Construct a float span from the bounds.
  * @sqlfunc floatspan()
  */
 Span *
@@ -439,7 +439,7 @@ floatspan_make(double lower, double upper, bool lower_inc, bool upper_inc)
 
 /**
  * @ingroup libmeos_setspan_constructor
- * @brief Construct a period from the bounds.
+ * @brief Construct a timestamp with time zone span from the bounds.
  * @sqlfunc period()
  */
 Span *
@@ -589,7 +589,7 @@ bigint_to_bigintspan(int i)
  * @sqlop @p ::
  */
 Span *
-float_to_floaspan(double d)
+float_to_floatspan(double d)
 {
   Span *result = span_make(Float8GetDatum(d), Float8GetDatum(d), true, true,
     T_FLOAT8);
@@ -791,9 +791,36 @@ floatspan_set_numspan(const Span *s1, Span *s2, meosType basetype)
 
 /*****************************************************************************/
 
+#if MEOS
 /**
  * @ingroup libmeos_setspan_transf
- * @brief Set the second span with the first one transformed to floatspan
+ * @brief Transform an integer span to a float span
+ */
+Span *
+intspan_floatspan(const Span *s)
+{
+  Span *result = malloc(sizeof(Span));
+  intspan_set_floatspan(s, result);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Transform a float span to an integer span
+ */
+Span *
+floatspan_intspan(const Span *s)
+{
+  Span *result = malloc(sizeof(Span));
+  floatspan_set_intspan(s, result);
+  return result;
+}
+#endif /* MEOS */
+
+
+/**
+ * @ingroup libmeos_internal_setspan_transf
+ * @brief Set the second span with the first one transformed to a float span
  */
 void
 intspan_set_floatspan(const Span *s1, Span *s2)
@@ -806,8 +833,8 @@ intspan_set_floatspan(const Span *s1, Span *s2)
 }
 
 /**
- * @ingroup libmeos_setspan_transf
- * @brief Set the second span with the first one transformed to intspan
+ * @ingroup libmeos_internal_setspan_transf
+ * @brief Set the second span with the first one transformed to a integer span
  */
 void
 floatspan_set_intspan(const Span *s1, Span *s2)
@@ -846,8 +873,8 @@ span_expand(const Span *s1, Span *s2)
  * @param[in,out] lower,upper Bounds of the period
  */
 void
-lower_upper_shift_tscale(TimestampTz *lower, TimestampTz *upper,
-  const Interval *shift, const Interval *duration)
+lower_upper_shift_tscale(const Interval *shift, const Interval *duration,
+  TimestampTz *lower, TimestampTz *upper)
 {
   assert(shift != NULL || duration != NULL);
   if (duration != NULL)
@@ -883,7 +910,7 @@ span_shift(Span *s, Datum shift)
 }
 
 /**
- * @ingroup libmeos_setspan_transf
+ * @ingroup libmeos_internal_setspan_transf
  * @brief Shift and/or scale a period by the intervals.
  * @note Returns the delta and scale of the transformation
  * @sqlfunc shift(), tscale(), shiftTscale()
@@ -895,13 +922,14 @@ period_shift_tscale(Span *p, const Interval *shift, const Interval *duration,
 {
   TimestampTz lower = DatumGetTimestampTz(p->lower);
   TimestampTz upper = DatumGetTimestampTz(p->upper);
-  lower_upper_shift_tscale(&lower, &upper, shift, duration);
+  lower_upper_shift_tscale(shift, duration, &lower, &upper);
   /* Compute delta and scale before overwriting p.lower and p.upper */
   if (delta != NULL && shift != NULL)
-    *delta = lower - p->lower;
+    *delta = lower - DatumGetTimestampTz(p->lower);
   /* If the period is instantaneous we cannot scale */
   if (scale != NULL && duration != NULL && p->lower != p->upper)
-    *scale = (double) (upper - lower) / (double) (p->upper - p->lower);
+    *scale = (double) (upper - lower) /
+      (double) (DatumGetTimestampTz(p->upper) - DatumGetTimestampTz(p->lower));
   p->lower = TimestampTzGetDatum(lower);
   p->upper = TimestampTzGetDatum(upper);
   return;
@@ -1039,14 +1067,14 @@ span_hash(const Span *s)
 
   /* Create type from the spantype and basetype values */
   uint16 type = ((uint16) (s->spantype) << 8) | (uint16) (s->basetype);
-  uint32 type_hash = hash_uint32((int32) type);
+  uint32 type_hash = hash_bytes_uint32((int32) type);
 
   /* Apply the hash function to each bound */
   uint32 lower_hash = datum_hash(s->lower, s->basetype);
   uint32 upper_hash = datum_hash(s->upper, s->basetype);
 
   /* Merge hashes of flags, type, and bounds */
-  uint32 result = DatumGetUInt32(hash_uint32((uint32) flags));
+  uint32 result = hash_bytes_uint32((uint32) flags);
   result ^= type_hash;
   result = (result << 1) | (result >> 31);
   result ^= lower_hash;

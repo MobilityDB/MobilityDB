@@ -39,6 +39,7 @@
 #include <postgres.h>
 #include <access/spgist.h>
 /* MEOS */
+#include <meos.h>
 #include "general/meos_catalog.h"
 #include "general/span.h"
 #include "general/temporal.h"
@@ -49,11 +50,12 @@
  * SP-GiST compress functions
  *****************************************************************************/
 
+PGDLLEXPORT Datum Temporal_spgist_compress(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_spgist_compress);
 /**
  * @brief SP-GiST compress function for temporal values
  */
-PGDLLEXPORT Datum
+Datum
 Temporal_spgist_compress(PG_FUNCTION_ARGS)
 {
   Datum tempdatum = PG_GETARG_DATUM(0);

@@ -183,6 +183,26 @@ floatset_in(const char *str)
  * @brief Return a set from its Well-Known Text (WKT) representation.
  */
 Set *
+geogset_in(const char *str)
+{
+  return set_parse(&str, T_GEOMETRY);
+}
+
+/**
+ * @ingroup libmeos_setspan_inout
+ * @brief Return a set from its Well-Known Text (WKT) representation.
+ */
+Set *
+geomset_in(const char *str)
+{
+  return set_parse(&str, T_GEOGRAPHY);
+}
+
+/**
+ * @ingroup libmeos_setspan_inout
+ * @brief Return a set from its Well-Known Text (WKT) representation.
+ */
+Set *
 textset_in(const char *str)
 {
   return set_parse(&str, T_TEXTSET);
@@ -201,7 +221,6 @@ tstzset_in(const char *str)
 
 
 /**
- * @ingroup libmeos_setspan_inout
  * @brief Return true if the base type value is output enclosed into quotes.
  */
 static bool
@@ -234,7 +253,7 @@ set_out_fn(const Set *s, int maxdd, outfunc value_out)
 }
 
 /**
- * @ingroup libmeos_setspan_inout
+ * @ingroup libmeos_internal_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a set.
  */
 char *
@@ -313,23 +332,11 @@ geogset_out(const Set *set, int maxdd)
 {
   return set_out(set, maxdd);
 }
-
-#if NPOINT
-/**
- * @ingroup libmeos_setspan_inout
- * @brief Output a set of network points.
-*/
-Set *
-npointset_out(const Set *set, int maxdd)
-{
-  return set_out(set, maxdd);
-}
-#endif /* NPOINT */
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_spanset_inout
- * @brief Return the Well-Known Text (WKT) representation a geoset.
+ * @ingroup libmeos_setspan_inout
+ * @brief Return the Well-Known Text (WKT) representation of a geoset.
  * @sqlfunc asText()
  */
 char *
@@ -339,8 +346,8 @@ geoset_as_text(const Set *set, int maxdd)
 }
 
 /**
- * @ingroup libmeos_spanset_inout
- * @brief Return the Extended Well-Known Text (EWKT) representation a geoset.
+ * @ingroup libmeos_setspan_inout
+ * @brief Return the Extended Well-Known Text (EWKT) representation of a geoset.
  * @sqlfunc asEWKT()
  */
 char *
@@ -363,8 +370,8 @@ set_bbox_size(meosType settype)
     return 0;
   if (spatialset_type(settype))
     return sizeof(STBox);
-  elog(ERROR, "unknown set_bbox_size function for set type: %d",
-    settype);
+  elog(ERROR, "unknown set_bbox_size function for set type: %d", settype);
+  return 0; /* make compiler quiet */
 }
 
 /**
@@ -573,7 +580,7 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
   result->maxcount = maxcount;
   result->settype = settype;
   result->basetype = basetype;
-  result->bboxsize = bboxsize;
+  result->bboxsize = (int16) bboxsize;
   /* Copy the array of values */
   if (typbyval)
   {
@@ -626,7 +633,7 @@ set_make(const Datum *values, int count, meosType basetype, bool ordered)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_constructor
- * @brief Construct a set from an array of timestamp values.
+ * @brief Construct a timestamp with time zone set from an array of values.
 */
 Set *
 tstzset_make(const TimestampTz *values, int count)
@@ -639,7 +646,7 @@ tstzset_make(const TimestampTz *values, int count)
 
 /**
  * @ingroup libmeos_setspan_constructor
- * @brief Construct a set from an array of text values.
+ * @brief Construct a text set from an array of values.
 */
 Set *
 textset_make(const text **values, int count)
@@ -652,7 +659,7 @@ textset_make(const text **values, int count)
 
 /**
  * @ingroup libmeos_setspan_constructor
- * @brief Construct a set from an array of integer values.
+ * @brief Construct an integer set from an array of values.
 */
 Set *
 intset_make(const int *values, int count)
@@ -665,7 +672,7 @@ intset_make(const int *values, int count)
 
 /**
  * @ingroup libmeos_setspan_constructor
- * @brief Construct a set from an array of big integer values.
+ * @brief Construct a big integer set from an array of values.
 */
 Set *
 bigintset_make(const int64 *values, int count)
@@ -678,7 +685,7 @@ bigintset_make(const int64 *values, int count)
 
 /**
  * @ingroup libmeos_setspan_constructor
- * @brief Construct a set from an array of float values.
+ * @brief Construct a float set from an array of values.
 */
 Set *
 floatset_make(const double *values, int count)
@@ -691,7 +698,7 @@ floatset_make(const double *values, int count)
 
 /**
  * @ingroup libmeos_setspan_constructor
- * @brief Construct a set from an array of geometry values.
+ * @brief Construct a geometry set from an array of values.
 */
 Set *
 geomset_make(const GSERIALIZED **values, int count)
@@ -704,7 +711,7 @@ geomset_make(const GSERIALIZED **values, int count)
 
 /**
  * @ingroup libmeos_setspan_constructor
- * @brief Construct a set from an array of geography values.
+ * @brief Construct a geography set from an array of values.
 */
 Set *
 geogset_make(const GSERIALIZED **values, int count)
@@ -714,27 +721,12 @@ geogset_make(const GSERIALIZED **values, int count)
     datums[i] = PointerGetDatum(values[i]);
   return set_make(datums, count, T_GEOGRAPHY, ORDERED);
 }
-
-#if NPOINT
-/**
- * @ingroup libmeos_setspan_constructor
- * @brief Construct a set from an array of network point values.
-*/
-Set *
-npointset_make(const Npoint *values, int count)
-{
-  Datum *datums = palloc(sizeof(Datum *) * count);
-  for (int i=0; i<count; ++i)
-    datums[i] = PointerGetDatum(values[i]);
-  return set_make(datums, count, T_NPOINT, ORDERED);
-}
-#endif /* NPOINT */
 #endif /* MEOS */
 
 /**
  * @ingroup libmeos_internal_setspan_constructor
- * @brief Construct a set from the array of values and free the array after
- * the creation.
+ * @brief Construct a set from the array of values and free the input array
+ * after the creation.
  * @param[in] values Array of values
  * @param[in] count Number of elements in the array
  * @param[in] basetype Base type
@@ -783,7 +775,7 @@ value_to_set(Datum d, meosType basetype)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_cast
- * @brief Cast a value as a set
+ * @brief Cast an integer as a set
  * @sqlop @p ::
  */
 Set *
@@ -795,7 +787,7 @@ int_to_intset(int i)
 
 /**
  * @ingroup libmeos_setspan_cast
- * @brief Cast a value as a set
+ * @brief Cast a big integer as a set
  * @sqlop @p ::
  */
 Set *
@@ -807,7 +799,7 @@ bigint_to_bigintset(int64 i)
 
 /**
  * @ingroup libmeos_setspan_cast
- * @brief Cast a value as a set
+ * @brief Cast a float as a set
  * @sqlop @p ::
  */
 Set *
@@ -819,7 +811,7 @@ float_to_floatset(double d)
 
 /**
  * @ingroup libmeos_setspan_cast
- * @brief Cast a value as a set
+ * @brief Cast a timestamp as a set
  * @sqlop @p ::
  */
 Set *
@@ -831,7 +823,7 @@ timestamp_to_tstzset(TimestampTz t)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_setspan_cast
+ * @ingroup libmeos_internal_setspan_cast
  * @brief Set the last argument to the bounding span of a set.
  */
 void
@@ -842,25 +834,10 @@ set_set_span(const Set *set, Span *s)
   return;
 }
 
-/**
- * @ingroup libmeos_setspan_cast
- * @brief Return the bounding span of a set.
- * @sqlfunc span()
- * @sqlop @p ::
- * @pymeosfunc span()
- */
-Span *
-set_to_span(const Set *s)
-{
-  Span *result = palloc(sizeof(Span));
-  set_set_span(s, result);
-  return result;
-}
-
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_setspan_cast
+ * @ingroup libmeos_internal_setspan_accessor
  * @brief Set the last argument to the bounding box of a spatial set.
  */
 void
@@ -871,23 +848,6 @@ spatialset_set_stbox(const Set *set, STBox *box)
   memcpy(box, SET_BBOX_PTR(set), sizeof(STBox));
   return;
 }
-
-#if MEOS
-/**
- * @ingroup libmeos_setspan_cast
- * @brief Return the bounding box of a spatial set.
- * @sqlfunc stbox()
- * @sqlop @p ::
- * @pymeosfunc stbox()
- */
-STBox *
-spatialset_to_stbox(const Set *s)
-{
-  STBox *result = palloc(sizeof(STBox));
-  spatialset_set_stbox(s, result);
-  return result;
-}
-#endif /* MEOS */
 
 /*****************************************************************************
  * Accessor functions
@@ -908,6 +868,36 @@ set_mem_size(const Set *s)
 
 /**
  * @ingroup libmeos_setspan_accessor
+ * @brief Return the bounding span of a set.
+ * @sqlfunc span()
+ * @sqlop @p ::
+ * @pymeosfunc span()
+ */
+Span *
+set_span(const Set *s)
+{
+  Span *result = palloc(sizeof(Span));
+  set_set_span(s, result);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_setspan_accessor
+ * @brief Return the bounding box of a spatial set.
+ * @sqlfunc stbox()
+ * @sqlop @p ::
+ * @pymeosfunc stbox()
+ */
+STBox *
+spatialset_stbox(const Set *s)
+{
+  STBox *result = palloc(sizeof(STBox));
+  spatialset_set_stbox(s, result);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the number of values of a set.
  * @sqlfunc numTimestamps()
  * @pymeosfunc numTimestamps()
@@ -919,7 +909,7 @@ set_num_values(const Set *s)
 }
 
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup libmeos_internal_setspan_accessor
  * @brief Return the start value of a set.
  * @sqlfunc startTimestamp()
  * @pymeosfunc startTimestamp()
@@ -972,7 +962,7 @@ floatset_start_value(const Set *s)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the start value of a set.
+ * @brief Return the start value of a timestamp set.
  * @sqlfunc startTimestamp()
  * @pymeosfunc startTimestamp()
  */
@@ -985,7 +975,7 @@ tstzset_start_timestamp(const Set *ts)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup libmeos_internal_setspan_accessor
  * @brief Return the end value of a set.
  * @sqlfunc endTimestamp()
  * @pymeosfunc endTimestamp()
@@ -1038,7 +1028,7 @@ floatset_end_value(const Set *s)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the end value of a set.
+ * @brief Return the end value of a timestamp set.
  * @sqlfunc endTimestamp()
  * @pymeosfunc endTimestamp()
  */
@@ -1051,7 +1041,7 @@ tstzset_end_timestamp(const Set *ts)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup libmeos_internal_setspan_accessor
  * @brief Return the n-th value of a set.
  * @param[in] s Set
  * @param[in] n Number
@@ -1133,7 +1123,7 @@ floatset_value_n(const Set *s, int n, double *result)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the n-th value of a set.
+ * @brief Return the n-th value of a timestamp set.
  * @param[in] ts Timestamp set
  * @param[in] n Number
  * @param[out] result Timestamp
@@ -1153,7 +1143,7 @@ tstzset_timestamp_n(const Set *ts, int n, TimestampTz *result)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup libmeos_internal_setspan_accessor
  * @brief Return the array of values of a set.
  * @sqlfunc values(), timestamps()
  * @pymeosfunc timestamps()
@@ -1215,7 +1205,7 @@ floatset_values(const Set *s)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the array of timestamps of a set.
+ * @brief Return the array of values of a timestamp set.
  * @sqlfunc timestamps()
  * @pymeosfunc timestamps()
  */
@@ -1230,7 +1220,7 @@ tstzset_values(const Set *ts)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_setspan_accessor
+ * @ingroup libmeos_setspan_accessor
  * @brief Return the SRID of a geoset point.
  * @sqlfunc SRID()
  */
@@ -1262,7 +1252,7 @@ set_shift(const Set *s, Datum shift)
 
 /**
  * @ingroup libmeos_setspan_transf
- * @brief Return a timestamp set uned and/or scaled by the intervals
+ * @brief Return a timestamp set shifted and/or scaled by the intervals
  * @sqlfunc shift(), tscale(), shiftTscale()
  * @pymeosfunc shift()
  */
@@ -1279,16 +1269,16 @@ tstzset_shift_tscale(const Set *s, const Interval *shift,
   TimestampTz lower, lower1, upper, upper1;
   lower = lower1 = DatumGetTimestampTz(SET_VAL_N(s, 0));
   upper = upper1 = DatumGetTimestampTz(SET_VAL_N(s, s->count - 1));
-  lower_upper_shift_tscale(&lower1, &upper1, shift, duration);
+  lower_upper_shift_tscale(shift, duration, &lower1, &upper1);
   (SET_OFFSETS_PTR(result))[0] = TimestampTzGetDatum(lower1);
   (SET_OFFSETS_PTR(result))[s->count - 1] = TimestampTzGetDatum(upper1);
   if (s->count > 1)
   {
     /* Shift and/or scale from the second to the penultimate instant */
-    TimestampTz delta;
+    TimestampTz delta = 0; /* make compiler quiet */
+    double scale = 0; /* make compiler quiet */
     if (shift != NULL)
       delta = lower1 - lower;
-    double scale;
     if (duration != NULL)
       scale = (double) (upper1 - lower1) / (double) (upper - lower);
     for (int i = 1; i < s->count - 1; i++)
@@ -1297,7 +1287,7 @@ tstzset_shift_tscale(const Set *s, const Interval *shift,
         (SET_OFFSETS_PTR(result))[i] += delta;
       if (duration != NULL)
         (SET_OFFSETS_PTR(result))[i] = lower1 +
-          (SET_VAL_N(result, i) - lower1) * scale;
+          (TimestampTz) ((SET_VAL_N(result, i) - lower1) * scale);
     }
   }
   return result;

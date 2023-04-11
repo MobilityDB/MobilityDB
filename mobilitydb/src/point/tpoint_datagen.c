@@ -84,9 +84,8 @@ initialize_gsl()
 static double
 pt_angle(POINT2D p1, POINT2D p2, POINT2D p3)
 {
-  double az1, az2, result;
-  if (! azimuth_pt_pt(&p1, &p2, &az1) ||
-    ! azimuth_pt_pt(&p3, &p2, &az2))
+  double result, az1 = 0, az2 = 0; /* make compilier quiet */
+  if (! azimuth_pt_pt(&p1, &p2, &az1) ||  ! azimuth_pt_pt(&p3, &p2, &az2))
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("Cannot compute angle betwen equal points")));
   result = az2 - az1;
@@ -462,6 +461,7 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
   return result;
 }
 
+PGDLLEXPORT Datum create_trip(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(create_trip);
 /**
  * @brief Create a trip using the BerlinMOD data generator.
