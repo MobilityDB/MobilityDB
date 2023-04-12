@@ -99,6 +99,8 @@ extern char *tsequence_to_string(const TSequence *seq, int maxdd,
 
 /* Transformation functions */
 
+extern void tsequence_shift_tscale1(TSequence *seq, TimestampTz delta,
+  double scale);
 extern int tstepseq_tlinearseq1(const TSequence *seq, TSequence **result);
 
 /* Accessor functions */
