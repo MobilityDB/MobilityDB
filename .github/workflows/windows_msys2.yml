@@ -1,0 +1,54 @@
+name: Build for Windows
+
+on:
+  push:
+    # branches: [ main ]
+  pull_request:
+    # branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: windows
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: 'Setup'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-ninja
+            mingw-w64-ucrt-x86_64-postgresql
+            mingw-w64-ucrt-x86_64-postgis
+            mingw-w64-ucrt-x86_64-gsl
+
+      - name: Configure
+        run: |
+          mkdir build
+          cd build
+          cmake -DCMAKE_BUILD_TYPE=Release ..
+
+      - name: Build
+        run: |
+          cd build
+          cmake --build .
+          cmake --install .
+
+      - name: Test install
+        run: |
+          export PGDATA="D:/a/_temp/msys64/usr/local/pgsql/data"
+          initdb
+          pg_ctl start
+          createdb -U runneradmin mydb
+          psql -p 5432 -U runneradmin -d mydb -c "CREATE EXTENSION mobilitydb CASCADE; SELECT postgis_full_version(); SELECT mobilitydb_full_version();"
+
