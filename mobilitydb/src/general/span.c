@@ -418,8 +418,7 @@ Period_shift(PG_FUNCTION_ARGS)
 {
   Span *p = PG_GETARG_SPAN_P(0);
   Interval *shift = PG_GETARG_INTERVAL_P(1);
-  Span *result = span_copy(p);
-  period_shift_tscale(result, shift, NULL);
+  Span *result = period_shift_tscale(p, shift, NULL);
   PG_RETURN_POINTER(result);
 }
 
@@ -435,8 +434,7 @@ Period_tscale(PG_FUNCTION_ARGS)
 {
   Span *p = PG_GETARG_SPAN_P(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
-  Span *result = span_copy(p);
-  period_shift_tscale(result, NULL, duration);
+  Span *result = period_shift_tscale(p, NULL, duration);
   PG_RETURN_POINTER(result);
 }
 
@@ -453,8 +451,7 @@ Period_shift_tscale(PG_FUNCTION_ARGS)
   Span *p = PG_GETARG_SPAN_P(0);
   Interval *shift = PG_GETARG_INTERVAL_P(1);
   Interval *duration = PG_GETARG_INTERVAL_P(2);
-  Span *result = span_copy(p);
-  period_shift_tscale(result, shift, duration);
+  Span *result = period_shift_tscale(p, shift, duration);
   PG_RETURN_POINTER(result);
 }
 

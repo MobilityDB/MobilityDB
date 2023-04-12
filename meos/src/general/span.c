@@ -877,7 +877,7 @@ lower_upper_shift_tscale(const Interval *shift, const Interval *duration,
   TimestampTz *lower, TimestampTz *upper)
 {
   assert(shift != NULL || duration != NULL);
-  assert(lower != NULL && duration != upper);
+  assert(lower != NULL && upper != NULL);
   if (duration != NULL)
     ensure_valid_duration(duration);
   bool instant = (*lower == *upper);
@@ -934,40 +934,21 @@ period_shift_tscale1(Span *p, const Interval *shift, const Interval *duration,
 }
 
 /**
- * @brief Shift and/or scale a period by the intervals.
- */
-void
-period_shift_tscale1(Span *p, const Interval *shift, const Interval *duration)
-{
-  TimestampTz lower = DatumGetTimestampTz(p->lower);
-  TimestampTz upper = DatumGetTimestampTz(p->upper);
-  lower_upper_shift_tscale1(shift, duration, &lower, &upper);
-  /* Compute delta and scale before overwriting p.lower and p.upper */
-  if (delta != NULL && shift != NULL)
-    *delta = lower - DatumGetTimestampTz(p->lower);
-  /* If the period is instantaneous we cannot scale */
-  if (scale != NULL && duration != NULL && p->lower != p->upper)
-    *scale = (double) (upper - lower) /
-      (double) (DatumGetTimestampTz(p->upper) - DatumGetTimestampTz(p->lower));
-  p->lower = TimestampTzGetDatum(lower);
-  p->upper = TimestampTzGetDatum(upper);
-  return;
-}
-
-/**
  * @ingroup libmeos_setspan_transf
  * @brief Shift and/or scale a period by the intervals.
- * @note Returns the delta and scale of the transformation
  * @sqlfunc shift(), tscale(), shiftTscale()
- * @pymeosfunc shift()
+ * @pymeosfunc shiftTscale()
  */
-void
-period_shift_tscale(Span *p, const Interval *shift, const Interval *duration)
+Span *
+period_shift_tscale(const Span *p, const Interval *shift, const Interval *duration)
 {
   TimestampTz lower = DatumGetTimestampTz(p->lower);
   TimestampTz upper = DatumGetTimestampTz(p->upper);
-  lower_upper_shift_tscale1(shift, duration, &lower, &upper);
-  return;
+  lower_upper_shift_tscale(shift, duration, &lower, &upper);
+  Span *result = span_copy(p);
+  result->lower = TimestampTzGetDatum(lower);
+  result->upper = TimestampTzGetDatum(upper);
+  return result;
 }
 
 /*****************************************************************************

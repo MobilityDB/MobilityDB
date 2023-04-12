@@ -216,7 +216,6 @@ extern void intspan_set_floatspan(const Span *s1, Span *s2);
 extern void numspan_set_floatspan(const Span *s1, Span *s2);
 extern void span_shift(Span *s, Datum value);
 extern void spanset_shift(SpanSet *s, Datum value);
-extern void lower_upper_shift_tscale(const Interval *shift, const Interval *duration, TimestampTz *lower, TimestampTz *upper);
 extern void floatspan_set_numspan(const Span *s1, Span *s2, meosType basetype);
 extern Set *set_shift(const Set *s, Datum shift);
 

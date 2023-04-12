@@ -87,6 +87,8 @@ extern int span_upper_cmp(const Span *a, const Span *b);
 extern Span *spanarr_normalize(Span *spans, int count, bool sort,
   int *newcount);
 extern void span_bounds(const Span *s, double *xmin, double *xmax);
+extern void lower_upper_shift_tscale(const Interval *shift,
+  const Interval *duration, TimestampTz *lower, TimestampTz *upper);
 extern void period_shift_tscale1(Span *p, const Interval *shift,
   const Interval *duration, TimestampTz *delta, double *scale);
 

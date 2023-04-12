@@ -2093,7 +2093,7 @@ tsequence_shift_tscale(const TSequence *seq, const Interval *shift,
   /* Shift and/or scale the bounding period */
   TimestampTz delta = 0; /* Default value in case shift == NULL */
   double scale = 0; /* Default value in case duration == NULL */
-  period_shift_tscale(&result->period, shift, duration, &delta, &scale);
+  period_shift_tscale1(&result->period, shift, duration, &delta, &scale);
 
   /* Set the first instant */
   TInstant *inst = (TInstant *) TSEQUENCE_INST_N(result, 0);
