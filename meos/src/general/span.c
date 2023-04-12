@@ -877,6 +877,7 @@ lower_upper_shift_tscale(const Interval *shift, const Interval *duration,
   TimestampTz *lower, TimestampTz *upper)
 {
   assert(shift != NULL || duration != NULL);
+  assert(lower != NULL && duration != upper);
   if (duration != NULL)
     ensure_valid_duration(duration);
   bool instant = (*lower == *upper);
@@ -910,14 +911,11 @@ span_shift(Span *s, Datum shift)
 }
 
 /**
- * @ingroup libmeos_internal_setspan_transf
  * @brief Shift and/or scale a period by the intervals.
  * @note Returns the delta and scale of the transformation
- * @sqlfunc shift(), tscale(), shiftTscale()
- * @pymeosfunc shift()
  */
 void
-period_shift_tscale(Span *p, const Interval *shift, const Interval *duration,
+period_shift_tscale1(Span *p, const Interval *shift, const Interval *duration,
   TimestampTz *delta, double *scale)
 {
   TimestampTz lower = DatumGetTimestampTz(p->lower);
@@ -932,6 +930,43 @@ period_shift_tscale(Span *p, const Interval *shift, const Interval *duration,
       (double) (DatumGetTimestampTz(p->upper) - DatumGetTimestampTz(p->lower));
   p->lower = TimestampTzGetDatum(lower);
   p->upper = TimestampTzGetDatum(upper);
+  return;
+}
+
+/**
+ * @brief Shift and/or scale a period by the intervals.
+ */
+void
+period_shift_tscale1(Span *p, const Interval *shift, const Interval *duration)
+{
+  TimestampTz lower = DatumGetTimestampTz(p->lower);
+  TimestampTz upper = DatumGetTimestampTz(p->upper);
+  lower_upper_shift_tscale1(shift, duration, &lower, &upper);
+  /* Compute delta and scale before overwriting p.lower and p.upper */
+  if (delta != NULL && shift != NULL)
+    *delta = lower - DatumGetTimestampTz(p->lower);
+  /* If the period is instantaneous we cannot scale */
+  if (scale != NULL && duration != NULL && p->lower != p->upper)
+    *scale = (double) (upper - lower) /
+      (double) (DatumGetTimestampTz(p->upper) - DatumGetTimestampTz(p->lower));
+  p->lower = TimestampTzGetDatum(lower);
+  p->upper = TimestampTzGetDatum(upper);
+  return;
+}
+
+/**
+ * @ingroup libmeos_setspan_transf
+ * @brief Shift and/or scale a period by the intervals.
+ * @note Returns the delta and scale of the transformation
+ * @sqlfunc shift(), tscale(), shiftTscale()
+ * @pymeosfunc shift()
+ */
+void
+period_shift_tscale(Span *p, const Interval *shift, const Interval *duration)
+{
+  TimestampTz lower = DatumGetTimestampTz(p->lower);
+  TimestampTz upper = DatumGetTimestampTz(p->upper);
+  lower_upper_shift_tscale1(shift, duration, &lower, &upper);
   return;
 }
 
