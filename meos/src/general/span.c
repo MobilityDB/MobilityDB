@@ -867,36 +867,6 @@ span_expand(const Span *s1, Span *s2)
 
 /**
  * @ingroup libmeos_internal_setspan_transf
- * @brief Shift and/or scale period bounds by the intervals.
- * @param[in] shift Interval to shift the bounds
- * @param[in] duration Interval for the duration of the result
- * @param[in,out] lower,upper Bounds of the period
- */
-void
-lower_upper_shift_tscale(const Interval *shift, const Interval *duration,
-  TimestampTz *lower, TimestampTz *upper)
-{
-  assert(shift != NULL || duration != NULL);
-  assert(lower != NULL && upper != NULL);
-  if (duration != NULL)
-    ensure_valid_duration(duration);
-  bool instant = (*lower == *upper);
-
-  if (shift != NULL)
-  {
-    *lower = pg_timestamp_pl_interval(*lower, shift);
-    if (instant)
-      *upper = *lower;
-    else
-      *upper = pg_timestamp_pl_interval(*upper, shift);
-  }
-  if (duration != NULL && ! instant)
-    *upper = pg_timestamp_pl_interval(*lower, duration);
-  return;
-}
-
-/**
- * @ingroup libmeos_internal_setspan_transf
  * @brief Shift a span by a value.
  * @pre The value is of the same type as the span base type
  * @sqlfunc shift()
@@ -911,6 +881,68 @@ span_shift(Span *s, Datum shift)
 }
 
 /**
+ * @ingroup libmeos_internal_setspan_transf
+ * @brief Shift and/or scale period bounds by the intervals.
+ * @param[in] shift Interval to shift the bounds
+ * @param[in] duration Interval for the duration of the result
+ * @param[in,out] lower,upper Bounds of the period
+ */
+void
+lower_upper_shift_tscale(const Interval *shift, const Interval *duration,
+  TimestampTz *lower, TimestampTz *upper)
+{
+  assert(shift != NULL || duration != NULL);
+  assert(lower != NULL && upper != NULL);
+  if (duration != NULL)
+    ensure_valid_duration(duration);
+
+  bool instant = (*lower == *upper);
+  if (shift != NULL)
+  {
+    *lower = pg_timestamp_pl_interval(*lower, shift);
+    if (instant)
+      *upper = *lower;
+    else
+      *upper = pg_timestamp_pl_interval(*upper, shift);
+  }
+  if (duration != NULL && ! instant)
+    *upper = pg_timestamp_pl_interval(*lower, duration);
+  return;
+}
+
+
+/**
+ * @brief Shift and/or scale a period by a delta and a scale
+ */
+void
+period_delta_scale(Span *p, TimestampTz origin, TimestampTz delta, double scale)
+{
+  TimestampTz lower = DatumGetTimestampTz(p->lower);
+  TimestampTz upper = DatumGetTimestampTz(p->upper);
+  /* The default value when there is not shift is 0 */
+  if (delta != 0)
+  {
+    p->lower = TimestampTzGetDatum(lower + delta);
+    p->upper = TimestampTzGetDatum(upper + delta);
+  }
+  /* Shifted lower and upper */
+  lower = DatumGetTimestampTz(p->lower);
+  upper = DatumGetTimestampTz(p->upper);
+  /* The default value when there is not scale is 1.0 */
+  if (scale != 1.0)
+  {
+    /* The potential shift has been already taken care in the previous if */
+    p->lower = TimestampTzGetDatum(
+      origin + (TimestampTz) ((lower - origin) * scale));
+    if (lower == upper)
+      p->upper = p->lower;
+    else
+      p->upper = TimestampTzGetDatum(
+        origin + (TimestampTz) ((upper - origin) * scale));
+  }
+}
+
+/**
  * @brief Shift and/or scale a period by the intervals.
  * @note Returns the delta and scale of the transformation
  */
@@ -921,7 +953,9 @@ period_shift_tscale1(Span *p, const Interval *shift, const Interval *duration,
   TimestampTz lower = DatumGetTimestampTz(p->lower);
   TimestampTz upper = DatumGetTimestampTz(p->upper);
   lower_upper_shift_tscale(shift, duration, &lower, &upper);
-  /* Compute delta and scale before overwriting p.lower and p.upper */
+  /* Compute delta and scale before overwriting p->lower and p->upper */
+  // *delta = 0;   /* Default value when shift == NULL */
+  // *scale = 1.0; /* Default value when duration == NULL */
   if (delta != NULL && shift != NULL)
     *delta = lower - DatumGetTimestampTz(p->lower);
   /* If the period is instantaneous we cannot scale */
@@ -940,12 +974,19 @@ period_shift_tscale1(Span *p, const Interval *shift, const Interval *duration,
  * @pymeosfunc shiftTscale()
  */
 Span *
-period_shift_tscale(const Span *p, const Interval *shift, const Interval *duration)
+period_shift_tscale(const Span *p, const Interval *shift,
+  const Interval *duration)
 {
+  assert(shift != NULL || duration != NULL);
+  if (duration != NULL)
+    ensure_valid_duration(duration);
+
+  /* Copy the input period to the result */
+  Span *result = span_copy(p);
+  /* Shift and/or scale the resulting period */
   TimestampTz lower = DatumGetTimestampTz(p->lower);
   TimestampTz upper = DatumGetTimestampTz(p->upper);
   lower_upper_shift_tscale(shift, duration, &lower, &upper);
-  Span *result = span_copy(p);
   result->lower = TimestampTzGetDatum(lower);
   result->upper = TimestampTzGetDatum(upper);
   return result;

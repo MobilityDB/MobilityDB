@@ -1500,48 +1500,19 @@ tsequenceset_shift_tscale(const TSequenceSet *ss, const Interval *shift,
   TSequenceSet *result = tsequenceset_copy(ss);
 
   /* Shift and/or scale the bounding period */
-  TimestampTz delta = 0; /* Default value in case shift == NULL */
-  double scale = 0; /* Default value in case duration == NULL */
+  TimestampTz delta = 0; /* Default value when shift == NULL */
+  double scale = 1.0;    /* Default value when duration == NULL */
   period_shift_tscale1(&result->period, shift, duration, &delta, &scale);
+  TimestampTz origin = DatumGetTimestampTz(result->period.lower);
 
   /* Shift and/or scale each composing sequence */
   for (int i = 0; i < ss->count; i++)
   {
     TSequence *seq = (TSequence *) TSEQUENCESET_SEQ_N(result, i);
     /* Shift and/or scale the bounding period of the sequence */
-    if (shift != NULL)
-    {
-      seq->period.lower =
-        TimestampTzGetDatum(DatumGetTimestampTz(seq->period.lower) + delta);
-      seq->period.upper =
-        TimestampTzGetDatum(DatumGetTimestampTz(seq->period.upper) + delta);
-    }
-    /* We do not use DatumGetTimestampTz() for testing equality */
-    bool instant = (seq->period.lower == seq->period.upper);
-    /* If the sequence is instantaneous we cannot scale */
-    if (duration != NULL && ! instant)
-    {
-      seq->period.lower = TimestampTzGetDatum(
-        DatumGetTimestampTz(result->period.lower) + (TimestampTz)
-        ((DatumGetTimestampTz(seq->period.lower) -
-          DatumGetTimestampTz(result->period.lower)) * scale));
-      seq->period.upper = TimestampTzGetDatum(
-        DatumGetTimestampTz(result->period.lower) + (TimestampTz)
-        ((DatumGetTimestampTz(seq->period.upper) -
-          DatumGetTimestampTz(result->period.lower)) * scale));
-    }
-    /* Shift and/or scale each composing instant */
-    for (int j = 0; j < seq->count; j++)
-    {
-      TInstant *inst = (TInstant *) TSEQUENCE_INST_N(seq, j);
-      /* Shift and/or scale the bounding period of the sequence */
-      if (shift != NULL)
-        inst->t += delta;
-      /* If the sequence is instantaneous we cannot scale */
-      if (duration != NULL && ! instant)
-        inst->t = DatumGetTimestampTz(result->period.lower) + (TimestampTz)
-          ((inst->t - DatumGetTimestampTz(result->period.lower)) * scale);
-    }
+    period_delta_scale(&seq->period, origin, delta, scale);
+    /* Shift and/or scale each instant of the composing sequence */
+    tsequence_shift_tscale1(seq, delta, scale);
   }
   return result;
 }
