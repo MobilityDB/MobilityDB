@@ -310,7 +310,7 @@ tsequenceset_make(const TSequence **sequences, int count, bool normalize)
 }
 
 /**
- * @ingroup libmeos_temporal_constructor
+ * @ingroup libmeos_internal_temporal_constructor
  * @brief Construct a temporal sequence set from an array of temporal
  * sequences and free the array and the sequences after the creation.
  *
@@ -1276,13 +1276,13 @@ tsequenceset_compact(const TSequenceSet *ss)
 #if MEOS
 /**
  * @ingroup libmeos_internal_temporal_transf
- * @brief Restart a temporal sequence set by keeping only the last sequences
+ * @brief Restart a temporal sequence set by keeping only the last n sequences
  */
 void
-tsequenceset_restart(TSequenceSet *ss, int last)
+tsequenceset_restart(TSequenceSet *ss, int count)
 {
   /* Ensure validity of arguments */
-  assert (last > 0 && last < ss->count);
+  assert (count > 0 && count < ss->count);
   /* Singleton sequence set */
   if (ss->count == 1)
     return;
@@ -1292,17 +1292,17 @@ tsequenceset_restart(TSequenceSet *ss, int last)
   const TSequence *last_n;
   size_t seq_size = 0;
   int totalcount = 0;
-  for (int i = 0; i < last; i++)
+  for (int i = 0; i < count; i++)
   {
     last_n = TSEQUENCESET_SEQ_N(ss, ss->count - i - 1);
     totalcount += last_n->count;
     seq_size += DOUBLE_PAD(VARSIZE(last_n));
   }
   /* Copy the last instants at the beginning */
-  last_n = TSEQUENCESET_SEQ_N(ss, ss->count - last);
+  last_n = TSEQUENCESET_SEQ_N(ss, ss->count - count);
   memcpy(first, last_n, seq_size);
   /* Update the counts and the bounding box */
-  ss->count = last;
+  ss->count = count;
   ss->totalcount = totalcount;
   size_t bboxsize = DOUBLE_PAD(temporal_bbox_size(ss->temptype));
   if (bboxsize != 0)
@@ -1467,7 +1467,7 @@ tsequenceset_to_linear(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup libmeos_temporal_transf
+ * @ingroup libmeos_internal_temporal_transf
  * @brief Return a temporal value transformed to the given interpolation.
  * @sqlfunc setInterp
  */
@@ -2201,7 +2201,7 @@ tsequenceset_restrict_periodset(const TSequenceSet *ss, const SpanSet *ps,
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_temporal_transf
+ * @ingroup libmeos_internal_temporal_modif
  * @brief Append an instant to a temporal sequence set.
  * @param[in,out] ss Temporal sequence set
  * @param[in] inst Temporal instant
@@ -2299,7 +2299,7 @@ tsequenceset_append_tinstant(TSequenceSet *ss, const TInstant *inst,
 }
 
 /**
- * @ingroup libmeos_internal_temporal_transf
+ * @ingroup libmeos_internal_temporal_modif
  * @brief Append a sequence to a temporal sequence set.
  * @param[in,out] ss Temporal sequence set
  * @param[in] seq Temporal sequence
@@ -2416,7 +2416,7 @@ tsequenceset_append_tsequence(TSequenceSet *ss, const TSequence *seq,
 }
 
 /**
- * @ingroup libmeos_internal_temporal_transf
+ * @ingroup libmeos_internal_temporal_modif
  * @brief Merge two temporal sequence sets
  * @sqlfunc merge()
  */
@@ -2428,7 +2428,7 @@ tsequenceset_merge(const TSequenceSet *ss1, const TSequenceSet *ss2)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_transf
+ * @ingroup libmeos_internal_temporal_modif
  * @brief Merge an array of temporal sequence sets.
  *
  * The values in the array may overlap in a single instant.
@@ -2993,7 +2993,7 @@ tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_transf
+ * @ingroup libmeos_internal_temporal_modif
  * @brief Delete a timestamp from a temporal sequence set.
  *
  * @param[in] ss Temporal sequence set
@@ -3041,7 +3041,7 @@ tsequenceset_delete_timestamp(const TSequenceSet *ss, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_transf
+ * @ingroup libmeos_internal_temporal_modif
  * @brief Restrict a temporal sequence set to (the complement of) a timestamp set.
  * @sqlfunc atTime(), minusTime()
  */
@@ -3093,7 +3093,7 @@ tsequenceset_delete_timestampset(const TSequenceSet *ss, const Set *ts)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_transf
+ * @ingroup libmeos_internal_temporal_modif
  * @brief Delete a period from a temporal sequence set.
  * @sqlfunc deleteTime()
  */
@@ -3107,7 +3107,7 @@ tsequenceset_delete_period(const TSequenceSet *ss, const Span *p)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_transf
+ * @ingroup libmeos_internal_temporal_modif
  * @brief Delete a period from a temporal sequence set.
  * @sqlfunc deleteTime()
  */

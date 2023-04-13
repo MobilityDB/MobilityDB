@@ -1401,7 +1401,7 @@ minus_set_set(const Set *s1, const Set *s2)
 #if MEOS
 /**
  * @ingroup libmeos_internal_setspan_dist
- * @brief Return the distance between a set and a value expressed as a double
+ * @brief Return the distance between a set and a value as a double
  */
 double
 distance_set_value(const Set *s, Datum d, meosType basetype)
@@ -1426,7 +1426,7 @@ distance_intset_int(const Set *s, int i)
 /**
  * @ingroup libmeos_setspan_dist
  * @brief Return the distance between a big integer set and a big integer
- * expressed as a double
+ * as a double
  * @sqlop @p <->
  */
 double
@@ -1459,7 +1459,7 @@ distance_timestampset_timestamp(const Set *ts, TimestampTz t)
 
 /**
  * @ingroup libmeos_setspan_dist
- * @brief Return the distance between two sets expressed as a double
+ * @brief Return the distance between two sets as a double
  * @sqlop @p <->
  */
 double

@@ -927,7 +927,8 @@ PGDLLEXPORT Datum Same_stbox_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Same_stbox_stbox);
 /**
  * @ingroup mobilitydb_box_topo
- * @brief Return true if the spatiotemporal boxes are equal on the common dimensions
+ * @brief Return true if the spatiotemporal boxes are equal in the common
+ * dimensions
  * @sqlfunc stbox_same()
  * @sqlop @p ~=
  */

@@ -889,7 +889,7 @@ tinstant_restrict_periodset(const TInstant *inst,const  SpanSet *ps,
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_temporal_transf
+ * @ingroup libmeos_internal_temporal_modif
  * @brief Merge two temporal instants.
  */
 Temporal *
@@ -900,7 +900,7 @@ tinstant_merge(const TInstant *inst1, const TInstant *inst2)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_transf
+ * @ingroup libmeos_internal_temporal_modif
  * @brief Merge an array of temporal instants.
  *
  * @param[in] instants Array of instants

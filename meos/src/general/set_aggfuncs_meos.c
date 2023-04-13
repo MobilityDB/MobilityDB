@@ -218,7 +218,7 @@ text_union_transfn(Set *state, const text *txt)
 }
 
 /**
- * @ingroup libmeos_internal_setspan_agg
+ * @ingroup libmeos_setspan_agg
  * @brief Transition function for set union aggregate of sets
  */
 Set *
@@ -244,7 +244,7 @@ set_union_transfn(Set *state, Set *set)
 }
 
 /**
- * @ingroup libmeos_internal_setspan_agg
+ * @ingroup libmeos_setspan_agg
  * @brief Final function for set union aggregate
  * @note The input state is NOT freed, this should be done by the calling
  * function

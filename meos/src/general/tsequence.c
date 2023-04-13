@@ -953,7 +953,7 @@ tsequence_make_free_exp(TInstant **instants, int count, int maxcount,
 }
 
 /**
- * @ingroup libmeos_temporal_constructor
+ * @ingroup libmeos_internal_temporal_constructor
  * @brief Construct a temporal sequence from an array of temporal instants
  * and free the array and the instants after the creation.
  *
@@ -1319,7 +1319,7 @@ tgeogpointseq_from_base_time(const GSERIALIZED *gs, const Span *p,
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_temporal_transf
+ * @ingroup libmeos_internal_temporal_modif
  * @brief Append an instant to a temporal sequence accounting for potential gaps.
  * @param[in,out] seq Temporal sequence
  * @param[in] inst Temporal instant
@@ -1497,7 +1497,7 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst,
 }
 
 /**
- * @ingroup libmeos_internal_temporal_transf
+ * @ingroup libmeos_internal_temporal_modif
  * @brief Append a sequence to a temporal sequence.
  * @param[in,out] seq1 Temporal sequence
  * @param[in] seq2 Temporal sequence to append
@@ -1569,7 +1569,7 @@ tsequence_append_tsequence(TSequence *seq1, const TSequence *seq2,
 }
 
 /**
- * @ingroup libmeos_internal_temporal_transf
+ * @ingroup libmeos_internal_temporal_modif
  * @brief Merge two temporal sequences.
  * @sqlfunc merge()
  */
@@ -1581,13 +1581,11 @@ tsequence_merge(const TSequence *seq1, const TSequence *seq2)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_transf
+ * @ingroup libmeos_internal_temporal_modif
  * @brief Merge an array of temporal discrete sequences.
- *
  * @note The function does not assume that the values in the array are strictly
  * ordered on time, i.e., the intersection of the bounding boxes of two values
  * may be a period. For this reason two passes are necessary.
- *
  * @param[in] sequences Array of values
  * @param[in] count Number of elements in the array
  * @result Result value that can be either a temporal instant or a
@@ -1711,9 +1709,8 @@ tsequence_merge_array1(const TSequence **sequences, int count, int *totalcount)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_transf
+ * @ingroup libmeos_internal_temporal_modif
  * @brief Merge an array of temporal sequences.
- *
  * @param[in] sequences Array of values
  * @param[in] count Number of elements in the array
  * @note The values in the array may overlap on a single instant.
@@ -1826,13 +1823,13 @@ tsequence_compact(const TSequence *seq)
 #if MEOS
 /**
  * @ingroup libmeos_internal_temporal_transf
- * @brief Restart a temporal sequence by keeping only the last instants
+ * @brief Restart a temporal sequence by keeping only the last n instants
  */
 void
-tsequence_restart(TSequence *seq, int last)
+tsequence_restart(TSequence *seq, int count)
 {
   /* Ensure validity of arguments */
-  assert (last > 0 && last < seq->count);
+  assert (count > 0 && count < seq->count);
   /* Instantaneous sequence */
   if (seq->count == 1)
     return;
@@ -1842,16 +1839,16 @@ tsequence_restart(TSequence *seq, int last)
   const TInstant *last_n;
   size_t inst_size = 0;
   /* Compute the size of the instants to be copied */
-  for (int i = 0; i < last; i++)
+  for (int i = 0; i < count; i++)
   {
     last_n = TSEQUENCE_INST_N(seq, seq->count - i - 1);
     inst_size += DOUBLE_PAD(VARSIZE(last_n));
   }
   /* Copy the last instants at the beginning */
-  last_n = TSEQUENCE_INST_N(seq, seq->count - last);
+  last_n = TSEQUENCE_INST_N(seq, seq->count - count);
   memcpy(first, last_n, inst_size);
   /* Update the count and the bounding box */
-  seq->count = last;
+  seq->count = count;
   size_t bboxsize = DOUBLE_PAD(temporal_bbox_size(seq->temptype));
   if (bboxsize != 0)
     tsequence_compute_bbox(seq);
@@ -2052,7 +2049,7 @@ tcontseq_to_linear(const TSequence *seq)
 }
 
 /**
- * @ingroup libmeos_temporal_transf
+ * @ingroup libmeos_internal_temporal_transf
  * @brief Return a temporal value transformed to the given interpolation.
  * @sqlfunc setInterp
  */

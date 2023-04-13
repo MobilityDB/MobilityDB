@@ -831,8 +831,8 @@ tgeogpoint_from_base(const GSERIALIZED *gs, const Temporal *temp, interpType int
  ****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_transf
- * @brief Append an instant to the end of a temporal value.
+ * @ingroup libmeos_temporal_modif
+ * @brief Append an instant to a temporal value.
  * @param[in,out] temp Temporal value
  * @param[in] inst Temporal instant
  * @param[in] maxdist Maximum distance for defining a gap
@@ -867,8 +867,8 @@ temporal_append_tinstant(Temporal *temp, const TInstant *inst,
 }
 
 /**
- * @ingroup libmeos_temporal_transf
- * @brief Append a sequence at the end of a temporal value.
+ * @ingroup libmeos_temporal_modif
+ * @brief Append a sequence to a temporal value.
  * @param[in,out] temp Temporal value
  * @param[in] seq Temporal sequence
  * @param[in] expand True when reserving space for additional sequences
@@ -978,7 +978,7 @@ temporal_convert_same_subtype(const Temporal *temp1, const Temporal *temp2,
 }
 
 /**
- * @ingroup libmeos_temporal_transf
+ * @ingroup libmeos_temporal_modif
  * @brief Merge two temporal values.
  * @result Merged value. Return NULL if both arguments are NULL.
  * If one argument is null the other argument is output.
@@ -1056,7 +1056,7 @@ temporalarr_convert_subtype(Temporal **temparr, int count, uint8 subtype,
 }
 
 /**
- * @ingroup libmeos_temporal_transf
+ * @ingroup libmeos_temporal_modif
  * @brief Merge an array of temporal values.
  * @sqlfunc merge
  */
@@ -1248,12 +1248,12 @@ tnumber_to_tbox(const Temporal *temp)
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_transf
- * @brief Restart a temporal sequence (set) by keeping only the last instants
+ * @ingroup libmeos_internal_temporal_transf
+ * @brief Restart a temporal sequence (set) by keeping only the last n instants
  * or sequences.
  */
 void
-temporal_restart(Temporal *temp, int last)
+temporal_restart(Temporal *temp, int count)
 {
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -1261,9 +1261,9 @@ temporal_restart(Temporal *temp, int last)
     elog(ERROR, "Input must be a temporal sequence (set)");
   }
   else if (temp->subtype == TSEQUENCE)
-    tsequence_restart((TSequence *) temp, last);
+    tsequence_restart((TSequence *) temp, count);
   else /* temp->subtype == TSEQUENCESET */
-    tsequenceset_restart((TSequenceSet *) temp, last);
+    tsequenceset_restart((TSequenceSet *) temp, count);
   return;
 }
 #endif /* MEOS */
@@ -2634,7 +2634,8 @@ temporal_end_timestamp(const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_accessor
- * @brief Return the n-th distinct timestamp of a temporal value.
+ * @brief Return the n-th distinct timestamp of a temporal value in the last
+ * argument
  * @note n is assumed 1-based
  * @sqlfunc timestampN
  * @pymeosfunc timestampN
@@ -3579,7 +3580,7 @@ tnumber_minus_tbox(const Temporal *temp, const TBox *box)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_transf
+ * @ingroup libmeos_temporal_modif
  * @brief Insert the second temporal value into the first one.
  * @sqlfunc insert
  */
@@ -3621,7 +3622,7 @@ temporal_insert(const Temporal *temp1, const Temporal *temp2, bool connect)
 }
 
 /**
- * @ingroup libmeos_temporal_transf
+ * @ingroup libmeos_temporal_modif
  * @brief Update the first temporal value with the second one.
  * @sqlfunc update
  */
@@ -3960,9 +3961,9 @@ multipoint_add_inst_free(GEOSGeometry *geom, const TInstant *inst)
 }
 
 /**
- * @brief Return the subsequences where the objects stays within
- * an area with a given maximum size (maxdist) for at least
- * the specified duration (minunits).
+ * @brief Return the subsequences where the temporal value stays within an area
+ * with a given maximum size (maxdist) for at least the specified
+ * duration (minunits).
  */
 static int
 tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
@@ -4055,8 +4056,8 @@ tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
 }
 
 /**
- * @ingroup libmeos_temporal_transf
- * @brief Return the subsequences where the objects stays within
+ * @ingroup libmeos_internal_temporal_transf
+ * @brief Return the subsequences where the temporal value stays within
  * an area with a given maximum size (maxdist) for at least
  * the specified duration (minunits).
  */
@@ -4079,8 +4080,8 @@ tsequence_stops(const TSequence *seq, double maxdist, int64 mintunits)
 }
 
 /**
- * @ingroup libmeos_temporal_transf
- * @brief Return the subsequences where the objects stays within
+ * @ingroup libmeos_internal_temporal_transf
+ * @brief Return the subsequences where the temporal value stays within
  * an area with a given maximum size (maxdist) for at least
  * the specified duration (minunits).
  */
@@ -4105,8 +4106,8 @@ tsequenceset_stops(const TSequenceSet *ss, double maxdist, int64 mintunits)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_transf
- * @brief Return the subsequences where the objects stays within
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the subsequences where the temporal value stays within
  * an area with a given maximum size (maxdist) for at least
  * the specified duration (minduration).
  */
@@ -4135,7 +4136,6 @@ temporal_stops(const Temporal *temp, double maxdist,
     result = tsequenceset_stops((TSequenceSet *) temp, maxdist, mintunits);
   return result;
 }
-
 
 /*****************************************************************************
  * Local aggregate functions

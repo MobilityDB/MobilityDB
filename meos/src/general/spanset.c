@@ -329,7 +329,7 @@ spanset_make(Span *spans, int count, bool normalize)
 }
 
 /**
- * @ingroup libmeos_setspan_constructor
+ * @ingroup libmeos_internal_setspan_constructor
  * @brief Construct a span set from an array of spans and free the input array
  * of spans after the creation.
  *
@@ -774,7 +774,7 @@ periodset_end_timestamp(const SpanSet *ps)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the n-th timestamp of a period set.
+ * @brief Return the n-th timestamp of a period set in the last argument
  * @param[in] ps Period set
  * @param[in] n Number
  * @param[out] result Timestamp

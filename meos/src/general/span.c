@@ -866,7 +866,6 @@ span_expand(const Span *s1, Span *s2)
 }
 
 /**
- * @ingroup libmeos_internal_setspan_transf
  * @brief Shift and/or scale period bounds by the intervals.
  * @param[in] shift Interval to shift the bounds
  * @param[in] duration Interval for the duration of the result
@@ -1103,11 +1102,10 @@ span_hash(const Span *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the 64-bit hash of a span using a seed
- * @sqlfunc intspan_hash_extended(), floatspan_hash_extended(),
- * period_hash_extended()
+ * @sqlfunc hash_extended()
  */
 uint64
-span_hash_extended(const Span *s, Datum seed)
+span_hash_extended(const Span *s, uint64 seed)
 {
   uint64 result;
   char flags = '\0';

@@ -55,7 +55,7 @@
  *****************************************************************************/
 
 /**
- * Return the minimum value of the two arguments
+ * @brief Return the minimum value of the two arguments
  */
 Datum
 datum_min_int32(Datum l, Datum r)
@@ -64,7 +64,7 @@ datum_min_int32(Datum l, Datum r)
 }
 
 /**
- * Return the maximum value of the two arguments
+ * @brief Return the maximum value of the two arguments
  */
 Datum
 datum_max_int32(Datum l, Datum r)
@@ -73,7 +73,7 @@ datum_max_int32(Datum l, Datum r)
 }
 
 /**
- * Return the minimum value of the two arguments
+ * @brief Return the minimum value of the two arguments
  */
 Datum
 datum_min_float8(Datum l, Datum r)
@@ -82,7 +82,7 @@ datum_min_float8(Datum l, Datum r)
 }
 
 /**
- * Return the maximum value of the two arguments
+ * @brief Return the maximum value of the two arguments
  */
 Datum
 datum_max_float8(Datum l, Datum r)
@@ -91,7 +91,7 @@ datum_max_float8(Datum l, Datum r)
 }
 
 /**
- * Return the minimum value of the two arguments
+ * @brief Return the minimum value of the two arguments
  */
  Datum
 datum_min_text(Datum l, Datum r)
@@ -100,7 +100,7 @@ datum_min_text(Datum l, Datum r)
 }
 
 /**
- * Return the maximum value of the two arguments
+ * @brief Return the maximum value of the two arguments
  */
 Datum
 datum_max_text(Datum l, Datum r)
@@ -109,7 +109,7 @@ datum_max_text(Datum l, Datum r)
 }
 
 /**
- * Return the sum of the two arguments
+ * @brief Return the sum of the two arguments
  */
 Datum
 datum_sum_float8(Datum l, Datum r)
@@ -118,7 +118,7 @@ datum_sum_float8(Datum l, Datum r)
 }
 
 /**
- * Return the sum of the two arguments
+ * @brief Return the sum of the two arguments
  */
 Datum
 datum_sum_double2(Datum l, Datum r)
@@ -128,7 +128,7 @@ datum_sum_double2(Datum l, Datum r)
 }
 
 /**
- * Return the sum of the two arguments
+ * @brief Return the sum of the two arguments
  */
 Datum
 datum_sum_double3(Datum l, Datum r)
@@ -138,7 +138,7 @@ datum_sum_double3(Datum l, Datum r)
 }
 
 /**
- * Return the sum of the two arguments
+ * @brief Return the sum of the two arguments
  */
 Datum
 datum_sum_double4(Datum l, Datum r)
@@ -206,8 +206,7 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
 }
 
 /**
- * Generic aggregate function for temporal sequences
- *
+ * @brief Generic aggregate function for temporal sequences
  * @param[in] seq1,seq2 Temporal sequence values to be aggregated
  * @param[in] func Function
  * @param[in] crossings True if turning points are added in the segments
@@ -350,8 +349,7 @@ tsequence_tagg1(const TSequence *seq1, const TSequence *seq2,
 }
 
 /**
- * Generic aggregate function for temporal sequences.
- *
+ * @brief Generic aggregate function for temporal sequences.
  * @param[in] sequences1 Accumulated state
  * @param[in] count1 Number of elements in the accumulated state
  * @param[in] sequences2 Sequences of a temporal sequence set value
@@ -441,9 +439,8 @@ tsequence_tagg(TSequence **sequences1, int count1, TSequence **sequences2,
  *****************************************************************************/
 
 /**
- * Generic transition function for aggregating temporal values
+ * @brief Generic transition function for aggregating temporal values
  * of instant subtype
- *
  * @param[in,out] state Skiplist containing the state
  * @param[in] inst Temporal value
  * @param[in] func Function
@@ -466,8 +463,8 @@ tinstant_tagg_transfn(SkipList *state, const TInstant *inst, datum_func2 func)
 }
 
 /**
- * Generic transition function for aggregating temporal discrete sequence values
- *
+ * @brief Generic transition function for aggregating temporal discrete
+ * sequence values
  * @param[in,out] state Skiplist containing the state
  * @param[in] seq Temporal value
  * @param[in] func Function
@@ -489,9 +486,8 @@ tdiscseq_tagg_transfn(SkipList *state, const TSequence *seq, datum_func2 func)
 }
 
 /**
- * Generic transition function for aggregating temporal values
+ * @brief Generic transition function for aggregating temporal values
  * of sequence subtype
- *
  * @param[in,out] state Skiplist containing the state
  * @param[in] seq Temporal value
  * @param[in] func Function
@@ -513,9 +509,8 @@ tcontseq_tagg_transfn(SkipList *state, const TSequence *seq,
 }
 
 /**
- * Generic transition function for aggregating temporal values
+ * @brief Generic transition function for aggregating temporal values
  * of sequence set subtype
- *
  * @param[in,out] state Skiplist containing the state
  * @param[in] ss Temporal value
  * @param[in] func Function
@@ -539,9 +534,8 @@ tsequenceset_tagg_transfn(SkipList *state, const TSequenceSet *ss,
 }
 
 /**
- * Generic transition function for aggregating temporal values
+ * @brief Generic transition function for aggregating temporal values
  * of sequence set subtype
- *
  * @param[in,out] state Skiplist containing the state
  * @param[in] temp Temporal value
  * @param[in] func Function
@@ -566,8 +560,7 @@ temporal_tagg_transfn(SkipList *state, const Temporal *temp, datum_func2 func,
 }
 
 /**
- * Generic combine function for aggregating temporal values
- *
+ * @brief Generic combine function for aggregating temporal values
  * @param[in] state1, state2 State values
  * @param[in] func Aggregate function
  * @param[in] crossings True if turning points are added in the segments
@@ -596,9 +589,8 @@ temporal_tagg_combinefn(SkipList *state1, SkipList *state2, datum_func2 func,
 }
 
 /**
- * @brief Generic final function for aggregating temporal values
  * @ingroup libmeos_temporal_agg
- *
+ * @brief Generic final function for aggregating temporal values
  * @param[in] state State values
  */
 Temporal *
@@ -634,7 +626,7 @@ tbool_tand_transfn(SkipList *state, const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_agg
- * @brief Transition function for temporal count of temporal booleans.
+ * @brief Transition function for temporal or of temporal booleans.
  * @sqlfunc tor()
  */
 SkipList *
@@ -645,7 +637,7 @@ tbool_tor_transfn(SkipList *state, const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_agg
- * @brief Transition function for temporal count of temporal values.
+ * @brief Transition function for temporal minimum of temporal values.
  * @sqlfunc tmin()
  */
 SkipList *
@@ -656,7 +648,7 @@ tint_tmin_transfn(SkipList *state, const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_agg
- * @brief Transition function for temporal count of temporal values.
+ * @brief Transition function for temporal minimum of temporal values.
  * @sqlfunc tmin()
  */
 SkipList *
@@ -667,7 +659,7 @@ tfloat_tmin_transfn(SkipList *state, const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_agg
- * @brief Transition function for temporal count of temporal values.
+ * @brief Transition function for temporal maximum of temporal values.
  * @sqlfunc tmax()
  */
 SkipList *
@@ -678,7 +670,7 @@ tint_tmax_transfn(SkipList *state, const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_agg
- * @brief Transition function for temporal count of temporal values.
+ * @brief Transition function for temporal maximum of temporal values.
  * @sqlfunc tmax()
  */
 SkipList *
@@ -689,7 +681,7 @@ tfloat_tmax_transfn(SkipList *state, const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_agg
- * @brief Transition function for temporal count of temporal values.
+ * @brief Transition function for temporal sum of temporal values.
  * @sqlfunc tsum()
  */
 SkipList *
@@ -700,7 +692,7 @@ tint_tsum_transfn(SkipList *state, const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_agg
- * @brief Transition function for temporal count of temporal values.
+ * @brief Transition function for temporal sum of temporal values.
  * @sqlfunc tsum()
  */
 SkipList *
@@ -723,7 +715,7 @@ tnumber_tavg_transfn(SkipList *state, const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_agg
- * @brief Transition function for temporal min of temporal text values.
+ * @brief Transition function for temporal minimum of temporal text values.
  * @sqlfunc tmin()
  */
 SkipList *
@@ -734,7 +726,7 @@ ttext_tmin_transfn(SkipList *state, const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_agg
- * @brief Transition function for temporal max of temporal text values.
+ * @brief Transition function for temporal maximum of temporal text values.
  * @sqlfunc tmax()
  */
 SkipList *
@@ -753,7 +745,7 @@ ttext_tmax_transfn(SkipList *state, const Temporal *temp)
  *****************************************************************************/
 
 /**
- * Transform a temporal discrete sequence value for aggregation
+ * @brief Transform a temporal discrete sequence value for aggregation
  */
 TInstant **
 tdiscseq_transform_tagg(const TSequence *seq,
@@ -769,7 +761,7 @@ tdiscseq_transform_tagg(const TSequence *seq,
 }
 
 /**
- * Transform a temporal sequence value for aggregation
+ * @brief Transform a temporal sequence value for aggregation
  */
 TSequence *
 tcontseq_transform_tagg(const TSequence *seq,
@@ -786,7 +778,7 @@ tcontseq_transform_tagg(const TSequence *seq,
 }
 
 /**
- * Transform a temporal sequence set value for aggregation
+ * @brief Transform a temporal sequence set value for aggregation
  */
 TSequence **
 tsequenceset_transform_tagg(const TSequenceSet *ss,
@@ -802,7 +794,7 @@ tsequenceset_transform_tagg(const TSequenceSet *ss,
 }
 
 /**
- * Transform a temporal value for aggregation
+ * @brief Transform a temporal value for aggregation
  */
 Temporal **
 temporal_transform_tagg(const Temporal *temp, int *count,
@@ -842,9 +834,8 @@ temporal_transform_tagg(const Temporal *temp, int *count,
 }
 
 /**
- * Transition function for aggregating temporal values that require a
+ * @brief Transition function for aggregating temporal values that require a
  * transformation to each composing instant/sequence
- *
  * @param[in] state Current state
  * @param[in] temp New temporal value
  * @param[in] func Aggregate function
@@ -871,7 +862,7 @@ temporal_tagg_transform_transfn(SkipList *state, const Temporal *temp,
  *****************************************************************************/
 
 /**
- * Transform a temporal instant value into a temporal integer value for
+ * @brief Transform a temporal instant value into a temporal integer value for
  * performing temporal count aggregation
  */
 static TInstant *
@@ -881,7 +872,7 @@ tinstant_transform_tcount(const TInstant *inst)
 }
 
 /**
- * Transform a temporal discrete sequence value into a temporal integer value
+ * @brief Transform a temporal discrete sequence value into a temporal integer value
  * for performing temporal count aggregation
  */
 static TInstant **
@@ -899,7 +890,7 @@ tdiscseq_transform_tcount(const TSequence *seq)
 }
 
 /**
- * Transform a temporal sequence value into a temporal integer value for
+ * @brief Transform a temporal sequence value into a temporal integer value for
  * performing temporal count aggregation
  */
 static TSequence *
@@ -927,7 +918,7 @@ tcontseq_transform_tcount(const TSequence *seq)
 }
 
 /**
- * Transform a temporal sequence set value into a temporal integer value for
+ * @brief Transform a temporal sequence set value into a temporal integer value for
  * performing temporal count aggregation
  */
 static TSequence **
@@ -943,7 +934,7 @@ tsequenceset_transform_tcount(const TSequenceSet *ss)
 }
 
 /**
- * Transform a temporal value into a temporal integer value for
+ * @brief Transform a temporal value into a temporal integer value for
  * performing temporal count aggregation (dispatch function)
  */
 Temporal **
@@ -981,7 +972,7 @@ temporal_transform_tcount(const Temporal *temp, int *count)
 
 /**
  * @ingroup libmeos_temporal_agg
- * @brief Generic transition function for temporal aggregation
+ * @brief Generic transition function for temporal count aggregation
  */
 SkipList *
 temporal_tcount_transfn(SkipList *state, const Temporal *temp)
@@ -1001,7 +992,7 @@ temporal_tcount_transfn(SkipList *state, const Temporal *temp)
  *****************************************************************************/
 
 /**
- * Transform a temporal number into a temporal double2 value for
+ * @brief Transform a temporal number into a temporal double2 value for
  * performing temporal average aggregation
  */
 TInstant *
@@ -1016,7 +1007,8 @@ tnumberinst_transform_tavg(const TInstant *inst)
 }
 
 /**
- * Final function for temporal average aggregation of temporal instat values
+ * @brief Final function for temporal average aggregation of temporal instant
+ * values
  */
 TSequence *
 tinstant_tavg_finalfn(TInstant **instants, int count)
@@ -1034,7 +1026,8 @@ tinstant_tavg_finalfn(TInstant **instants, int count)
 }
 
 /**
- * Final function for temporal average aggregation of temporal sequence values
+ * @brief Final function for temporal average aggregation of temporal sequence
+ * values
  */
 TSequenceSet *
 tsequence_tavg_finalfn(TSequence **sequences, int count)

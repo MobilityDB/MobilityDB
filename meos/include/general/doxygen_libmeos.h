@@ -199,18 +199,6 @@
  * @ingroup libmeos_temporal
  * @brief Text functions for temporal types.
  *
- * @defgroup libmeos_temporal_bbox Bounding box functions
- * @ingroup libmeos_temporal
- * @brief Bounding box functions for temporal types.
- *
- * @defgroup libmeos_temporal_topo Topological functions
- * @ingroup libmeos_temporal_bbox
- * @brief Topological functions for temporal types.
- *
- * @defgroup libmeos_temporal_pos Position functions
- * @ingroup libmeos_temporal_bbox
- * @brief Position functions for temporal types.
- *
  * @defgroup libmeos_temporal_dist Distance functions
  * @ingroup libmeos_temporal
  * @brief Distance functions for temporal types.

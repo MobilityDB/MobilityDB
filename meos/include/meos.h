@@ -455,7 +455,7 @@ extern int set_mem_size(const Set *s);
 extern int set_num_values(const Set *s);
 extern Span *set_span(const Set *s);
 extern uint32 span_hash(const Span *s);
-extern uint64 span_hash_extended(const Span *s, Datum seed);
+extern uint64 span_hash_extended(const Span *s, uint64 seed);
 extern bool span_lower_inc(const Span *s);
 extern bool span_upper_inc(const Span *s);
 extern double span_width(const Span *s);
@@ -710,8 +710,8 @@ extern char *stbox_out(const STBox *box, int maxdd);
 
 /* Constructor functions for box types */
 
-extern TBox *tbox_make(const Span *p, const Span *s);
-extern void tbox_set(const Span *p, const Span *s, TBox *box);
+extern TBox *tbox_make(const Span *s, const Span *p);
+extern void tbox_set(const Span *s, const Span *p, TBox *box);
 extern TBox *tbox_copy(const TBox *box);
 extern STBox * stbox_make(bool hasx, bool hasz, bool geodetic, int32 srid,
   double xmin, double xmax, double ymin, double ymax, double zmin, double zmax, const Span *p);
@@ -1129,16 +1129,6 @@ extern Temporal *textcat_ttext_text(const Temporal *temp, const text *txt);
 extern Temporal *textcat_ttext_ttext(const Temporal *temp1, const Temporal *temp2);
 extern Temporal *ttext_upper(const Temporal *temp);
 extern Temporal *ttext_lower(const Temporal *temp);
-
-/*****************************************************************************
- * Bounding box functions for temporal types
- *****************************************************************************/
-
-/* Topological functions for temporal types */
-
-/*****************************************************************************/
-
-/* Position functions for temporal types */
 
 /*****************************************************************************/
 
