@@ -649,7 +649,6 @@ tnumberseq_disc_time_split(const TSequence *seq, TimestampTz start,
  * @param[in] count Number of buckets
  * @param[out] result Output array of fragments of the temporal value
  * @param[out] times Output array of bucket lower bounds
- *
  * @note This function is called for each sequence of a temporal sequence set
  */
 static int

@@ -2071,6 +2071,40 @@ tsequence_set_interp(const TSequence *seq, interpType interp)
 
 /*****************************************************************************/
 
+
+/**
+ * @brief Shift and/or scale the instants of a temporal sequence.
+ * @note This function is called for each sequence of a temporal sequence set.
+ */
+void
+tsequence_shift_tscale1(TSequence *seq, TimestampTz delta, double scale)
+{
+  /* Set the first instant from the bounding period which has been already
+   * shifted and/or scaled */
+  TInstant *inst = (TInstant *) TSEQUENCE_INST_N(seq, 0);
+  inst->t = DatumGetTimestampTz(seq->period.lower);
+  if (seq->count > 1)
+  {
+    /* Shift and/or scale from the second to the penultimate instant */
+    for (int i = 1; i < seq->count - 1; i++)
+    {
+      inst = (TInstant *) TSEQUENCE_INST_N(seq, i);
+      /* The default value when there is not shift is 0 */
+      if (delta != 0)
+        inst->t += delta;
+      /* The default value when there is not scale is 1.0 */
+      if (scale != 1.0)
+      /* The potential shift has been already taken care in the previous if */
+        inst->t = DatumGetTimestampTz(seq->period.lower) + (TimestampTz)
+          ((inst->t - DatumGetTimestampTz(seq->period.lower)) * scale);
+    }
+    /* Set the last instant */
+    inst = (TInstant *) TSEQUENCE_INST_N(seq, seq->count - 1);
+    inst->t = DatumGetTimestampTz(seq->period.upper);
+  }
+  return;
+}
+
 /**
  * @ingroup libmeos_internal_temporal_transf
  * @brief Return a temporal sequence shifted and/or scaled by the intervals.
@@ -2082,36 +2116,17 @@ tsequence_shift_tscale(const TSequence *seq, const Interval *shift,
   const Interval *duration)
 {
   assert(shift != NULL || duration != NULL);
-  /* We do not use DatumGetTimestampTz() for testing equality */
-  bool instant = (seq->period.lower == seq->period.upper);
 
   /* Copy the input sequence to the result */
   TSequence *result = tsequence_copy(seq);
 
   /* Shift and/or scale the bounding period */
-  TimestampTz delta = 0; /* Default value in case shift == NULL */
-  double scale = 0; /* Default value in case duration == NULL */
+  TimestampTz delta = 0; /* Default value when shift == NULL */
+  double scale = 1.0;    /* Default value when duration == NULL */
   period_shift_tscale1(&result->period, shift, duration, &delta, &scale);
 
-  /* Set the first instant */
-  TInstant *inst = (TInstant *) TSEQUENCE_INST_N(result, 0);
-  inst->t = DatumGetTimestampTz(result->period.lower);
-  if (seq->count > 1)
-  {
-    /* Shift and/or scale from the second to the penultimate instant */
-    for (int i = 1; i < seq->count - 1; i++)
-    {
-      inst = (TInstant *) TSEQUENCE_INST_N(result, i);
-      if (shift != NULL)
-        inst->t += delta;
-      if (duration != NULL && ! instant)
-        inst->t = DatumGetTimestampTz(result->period.lower) + (TimestampTz)
-          ((inst->t - DatumGetTimestampTz(result->period.lower)) * scale);
-    }
-    /* Set the last instant */
-    inst = (TInstant *) TSEQUENCE_INST_N(result, seq->count - 1);
-    inst->t = DatumGetTimestampTz(result->period.upper);
-  }
+  /* Shift and/or scale the result */
+  tsequence_shift_tscale1(result, delta, scale);
   return result;
 }
 
