@@ -90,7 +90,7 @@ PGDLLEXPORT Datum Contained_value_span(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_value_span);
 /**
  * @ingroup mobilitydb_setspan_topo
- * @brief Return true if a value is contained by a span
+ * @brief Return true if a value is contained in a span
  * @sqlfunc span_contained()
  * @sqlop @p <@
  */
@@ -107,7 +107,7 @@ PGDLLEXPORT Datum Contained_span_span(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_span_span);
 /**
  * @ingroup mobilitydb_setspan_topo
- * @brief Return true if the first span is contained by the second one
+ * @brief Return true if the first span is contained in the second one
  * @sqlfunc span_contained()
  * @sqlop @p <@
  */

@@ -213,7 +213,7 @@ textset_in(const char *str)
  * @brief Return a set from its Well-Known Text (WKT) representation.
  */
 Set *
-tstzset_in(const char *str)
+timestampset_in(const char *str)
 {
   return set_parse(&str, T_TSTZSET);
 }
@@ -268,7 +268,7 @@ set_out(const Set *s, int maxdd)
  * @brief Output a set of timestamps.
 */
 char *
-tstzset_out(const Set *set)
+timestampset_out(const Set *set)
 {
   return set_out(set, 0);
 }
@@ -636,7 +636,7 @@ set_make(const Datum *values, int count, meosType basetype, bool ordered)
  * @brief Construct a timestamp with time zone set from an array of values.
 */
 Set *
-tstzset_make(const TimestampTz *values, int count)
+timestampset_make(const TimestampTz *values, int count)
 {
   Datum *datums = palloc(sizeof(Datum *) * count);
   for (int i=0; i<count; ++i)
@@ -967,7 +967,7 @@ floatset_start_value(const Set *s)
  * @pymeosfunc startTimestamp()
  */
 TimestampTz
-tstzset_start_timestamp(const Set *ts)
+timestampset_start_timestamp(const Set *ts)
 {
   TimestampTz result = DatumGetTimestampTz(SET_VAL_N(ts, 0));
   return result;
@@ -1033,7 +1033,7 @@ floatset_end_value(const Set *s)
  * @pymeosfunc endTimestamp()
  */
 TimestampTz
-tstzset_end_timestamp(const Set *ts)
+timestampset_end_timestamp(const Set *ts)
 {
   TimestampTz result = DatumGetTimestampTz(SET_VAL_N(ts, ts->count - 1));
   return result;
@@ -1133,7 +1133,7 @@ floatset_value_n(const Set *s, int n, double *result)
  * @pymeosfunc timestampN()
  */
 bool
-tstzset_timestamp_n(const Set *ts, int n, TimestampTz *result)
+timestampset_timestamp_n(const Set *ts, int n, TimestampTz *result)
 {
   if (n < 1 || n > ts->count)
     return false;
@@ -1210,7 +1210,7 @@ floatset_values(const Set *s)
  * @pymeosfunc timestamps()
  */
 TimestampTz *
-tstzset_values(const Set *ts)
+timestampset_values(const Set *ts)
 {
   TimestampTz *result = palloc(sizeof(TimestampTz) * ts->count);
   for (int i = 0; i < ts->count; i++)
@@ -1257,7 +1257,7 @@ set_shift(const Set *s, Datum shift)
  * @pymeosfunc shift()
  */
 Set *
-tstzset_shift_tscale(const Set *s, const Interval *shift,
+timestampset_shift_tscale(const Set *s, const Interval *shift,
   const Interval *duration)
 {
   assert(shift != NULL || duration != NULL);
@@ -1424,7 +1424,7 @@ set_gt(const Set *s1, const Set *s2)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the 32-bit hash of a set.
- * @sqlfunc tstzset_hash()
+ * @sqlfunc hash()
  */
 uint32
 set_hash(const Set *s)
@@ -1442,7 +1442,7 @@ set_hash(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the 64-bit hash of a set using a seed.
- * @sqlfunc tstzset_hash_extended()
+ * @sqlfunc hash_extended()
  */
 uint64
 set_hash_extended(const Set *s, uint64 seed)

@@ -90,7 +90,7 @@ period_tprecision(const Span *s, const Interval *duration, TimestampTz torigin)
 
 /**
  * @ingroup libmeos_setspan_transf
- * @brief Set the precision of a period according to period buckets.
+ * @brief Set the precision of a period set according to period buckets.
  * @param[in] ss Time value
  * @param[in] duration Size of the time buckets
  * @param[in] torigin Time origin of the buckets
@@ -156,7 +156,7 @@ contains_spanset_value(const SpanSet *ss, Datum d, meosType basetype)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if a span set contains a value.
+ * @brief Return true if an integer span set contains an integer.
  * @sqlop @p \@>
  */
 bool
@@ -167,7 +167,7 @@ contains_intspanset_int(const SpanSet *ss, int i)
 
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if a span set contains a value.
+ * @brief Return true if a big integer span set contains a big integer.
  * @sqlop @p \@>
  */
 bool
@@ -178,7 +178,7 @@ contains_bigintspanset_bigint(const SpanSet *ss, int64 i)
 
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if a span set contains a value.
+ * @brief Return true if a float span set contains a float.
  * @sqlop @p \@>
  */
 bool
@@ -276,7 +276,7 @@ contains_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 
 /**
  * @ingroup libmeos_internal_setspan_topo
- * @brief Return true if a value is contained by a span
+ * @brief Return true if a value is contained in a span
  */
 bool
 contained_value_spanset(Datum d, meosType basetype, const SpanSet *ss)
@@ -287,7 +287,7 @@ contained_value_spanset(Datum d, meosType basetype, const SpanSet *ss)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if a value is contained by a span
+ * @brief Return true if an integer is contained in an integer span
  * @sqlop @p \@>
  */
 bool
@@ -298,7 +298,7 @@ contained_int_intspanset(int i, const SpanSet *ss)
 
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if a value is contained by a span
+ * @brief Return true if a big integer is contained in a big integer span
  * @sqlop @p \@>
  */
 bool
@@ -309,7 +309,7 @@ contained_bigint_bigintspanset(int64 i, const SpanSet *ss)
 
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if a value is contained by a span
+ * @brief Return true if a float is contained in a float span
  * @sqlop @p \@>
  */
 bool
@@ -321,7 +321,7 @@ contained_float_floatspanset(double d, const SpanSet *ss)
 
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if a span is contained by a span
+ * @brief Return true if a span is contained in a span set
  * @sqlop @p <@
  */
 bool
@@ -332,7 +332,7 @@ contained_span_spanset(const Span *s, const SpanSet *ss)
 
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if a span set is contained by a span
+ * @brief Return true if a span set is contained in a span
  * @sqlop @p <@
  */
 bool
@@ -343,7 +343,7 @@ contained_spanset_span(const SpanSet *ss, const Span *s)
 
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if the first span set is contained by the second one
+ * @brief Return true if the first span set is contained in the second one
  * @sqlop @p <@
  */
 bool
@@ -358,7 +358,7 @@ contained_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if a span and a span set overlap.
+ * @brief Return true if a span set and a span overlap.
  * @sqlop @p &&
  */
 bool
@@ -438,7 +438,7 @@ adjacent_spanset_value(const SpanSet *ss, Datum d, meosType basetype)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if a span set and a value are adjacent.
+ * @brief Return true if an integer span set and an integer are adjacent.
  * @sqlop @p -|-
  */
 bool
@@ -449,7 +449,7 @@ adjacent_intspanset_int(const SpanSet *ss, int i)
 
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if a span set and a value are adjacent.
+ * @brief Return true if a big integer span set and a big integer are adjacent.
  * @sqlop @p -|-
  */
 bool
@@ -460,7 +460,7 @@ adjacent_bigintspanset_bigint(const SpanSet *ss, int64 i)
 
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if a span set and a value are adjacent.
+ * @brief Return true if a float span set and a float are adjacent.
  * @sqlop @p -|-
  */
 bool
@@ -501,7 +501,7 @@ adjacent_spanset_span(const SpanSet *ss, const Span *s)
 
 /**
  * @ingroup libmeos_setspan_topo
- * @brief Return true if a span set and a span are adjacent.
+ * @brief Return true if two span sets are adjacent.
  * @sqlop @p -|-
  */
 bool
@@ -537,7 +537,7 @@ left_value_spanset(Datum d, meosType basetype, const SpanSet *ss)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a value is strictly to the left of a span set.
+ * @brief Return true if an integer is strictly to the left of an integer span set.
  * @sqlop @p <<
  */
 bool
@@ -548,7 +548,8 @@ left_int_intspanset(int i, const SpanSet *ss)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a value is strictly to the left of a span set.
+ * @brief Return true if a big integer is strictly to the left of a big integer
+ * span set.
  * @sqlop @p <<
  */
 bool
@@ -559,7 +560,7 @@ left_bigint_bigintspanset(int64 i, const SpanSet *ss)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a value is strictly to the left of a span set.
+ * @brief Return true if a float is strictly to the left of a float span set.
  * @sqlop @p <<
  */
 bool
@@ -570,7 +571,7 @@ left_float_floatspanset(double d, const SpanSet *ss)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a period set is strictly before a timestamp.
+ * @brief Return true if a timestamp is strictly before a period set.
  * @sqlop @p <<#
  */
 bool
@@ -606,7 +607,8 @@ left_spanset_value(const SpanSet *ss, Datum d, meosType basetype)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a span set is strictly to the left of a value.
+ * @brief Return true if an integer span set is strictly to the left of an
+ * integer.
  * @sqlop @p <<
  */
 bool
@@ -617,7 +619,8 @@ left_intspanset_int(const SpanSet *ss, int i)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a span set is strictly to the left of a value.
+ * @brief Return true if a big integer span set is strictly to the left of a
+ * big integer.
  * @sqlop @p <<
  */
 bool
@@ -628,7 +631,7 @@ left_bigintspanset_bigint(const SpanSet *ss, int64 i)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a span set is strictly to the left of a value.
+ * @brief Return true if a float span set is strictly to the left of a float.
  * @sqlop @p <<
  */
 bool
@@ -651,7 +654,7 @@ before_periodset_timestamp(const SpanSet *ps, TimestampTz t)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a span set is strictly before a span.
+ * @brief Return true if a span set is strictly to the left a span.
  * @sqlop @p <<
  */
 bool
@@ -663,7 +666,8 @@ left_spanset_span(const SpanSet *ss, const Span *s)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if the first span set is strictly before the second one.
+ * @brief Return true if the first span set is strictly to the left of the
+ * second one.
  * @sqlop @p <<
  */
 bool
@@ -691,7 +695,7 @@ right_value_spanset(Datum d, meosType basetype, const SpanSet *ss)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a value is strictly to the right of a span set.
+ * @brief Return true if an integer is strictly to the right of an integer span set.
  * @sqlop @p #&>
  */
 bool
@@ -702,7 +706,8 @@ right_int_intspanset(int i, const SpanSet *ss)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a value is strictly to the right of a span set.
+ * @brief Return true if a big integer is strictly to the right of a big
+ * integer span set.
  * @sqlop @p #&>
  */
 bool
@@ -713,7 +718,7 @@ right_bigint_bigintspanset(int64 i, const SpanSet *ss)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a value is strictly to the right of a span set.
+ * @brief Return true if a float is strictly to the right of a float span set.
  * @sqlop @p #&>
  */
 bool
@@ -724,7 +729,7 @@ right_float_floatspanset(double d, const SpanSet *ss)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a value is strictly to the right of a span set.
+ * @brief Return true if a timestamp is strictly after a period set.
  * @sqlop @p #&>
  */
 bool
@@ -758,7 +763,8 @@ right_spanset_value(const SpanSet *ss, Datum d, meosType basetype)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a span set is strictly to the right of a value.
+ * @brief Return true if an integer span set is strictly to the right of an
+ * integer.
  * @sqlop @p >>
  */
 bool
@@ -769,7 +775,8 @@ right_intspanset_int(const SpanSet *ss, int i)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a span set is strictly to the right of a value.
+ * @brief Return true if a big integer span set is strictly to the right of a
+ * big integer.
  * @sqlop @p >>
  */
 bool
@@ -780,7 +787,7 @@ right_bigintspanset_bigint(const SpanSet *ss, int64 i)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a span set is strictly to the right of a value.
+ * @brief Return true if a float span set is strictly to the right of a float.
  * @sqlop @p >>
  */
 bool
@@ -791,7 +798,7 @@ right_floatspanset_float(const SpanSet *ss, double d)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a span set is strictly to the right of a value.
+ * @brief Return true if a period set is strictly after a timestamp.
  * @sqlop @p >>
  */
 bool
@@ -803,7 +810,7 @@ after_periodset_timestamp(const SpanSet *ss, TimestampTz t)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a span set is strictly after a span.
+ * @brief Return true if a span set is strictly to the right of a span.
  * @sqlop @p >>
  */
 bool
@@ -814,7 +821,8 @@ right_spanset_span(const SpanSet *ss, const Span *s)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if the first span set is strictly after the second one.
+ * @brief Return true if the first span set is strictly to the right of the
+ * second one.
  * @sqlop @p >>
  */
 bool
@@ -841,7 +849,8 @@ overleft_spanset_value(const SpanSet *ss, Datum d, meosType basetype)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a span set does not extend to the right of a value.
+ * @brief Return true if an integer span set does not extend to the right of an
+ * integer.
  * @sqlop @p &<
  */
 bool
@@ -852,7 +861,8 @@ overleft_intspanset_int(const SpanSet *ss, int i)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a span set does not extend to the right of a value.
+ * @brief Return true if a big integer span set does not extend to the right of
+ * a big integer.
  * @sqlop @p &<
  */
 bool
@@ -863,7 +873,8 @@ overleft_bigintspanset_bigint(const SpanSet *ss, int64 i)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a span set does not extend to the right of a value.
+ * @brief Return true if a float span set does not extend to the right of a
+ * float.
  * @sqlop @p &<
  */
 bool
@@ -898,7 +909,8 @@ overleft_value_spanset(Datum d, meosType basetype, const SpanSet *ss)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a value does not extend to the right of a span set.
+ * @brief Return true if an integer does not extend to the right of an integer
+ * span set.
  * @sqlop @p &<
  */
 bool
@@ -909,7 +921,8 @@ overleft_int_intspanset(int i, const SpanSet *ss)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a value does not extend to the right of a span set.
+ * @brief Return true if a big integer does not extend to the right of a big
+ * integer span set.
  * @sqlop @p &<
  */
 bool
@@ -920,7 +933,7 @@ overleft_bigint_bigintspanset(int64 i, const SpanSet *ss)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a value does not extend to the right of a span set.
+ * @brief Return true if a float does not extend to the right of a float span set.
  * @sqlop @p &<
  */
 bool
@@ -997,7 +1010,8 @@ overright_value_spanset(Datum d, meosType basetype, const SpanSet *ss)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a value does not extend to the left of a span set.
+ * @brief Return true if an integer does not extend to the left of an integer
+ * span set.
  * @sqlop @p &>
  */
 bool
@@ -1008,7 +1022,8 @@ overright_int_intspanset(int i, const SpanSet *ss)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a value does not extend to the left of a span set.
+ * @brief Return true if a big integer does not extend to the left of a big
+ * integer span set.
  * @sqlop @p &>
  */
 bool
@@ -1019,7 +1034,7 @@ overright_bigint_bigintspanset(int64 i, const SpanSet *ss)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a value does not extend to the left of a span set.
+ * @brief Return true if a float does not extend to the left of a float span set.
  * @sqlop @p &>
  */
 bool
@@ -1066,7 +1081,8 @@ overright_spanset_value(const SpanSet *ss, Datum d, meosType basetype)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a span set does not extend to the left of a value.
+ * @brief Return true if an integer span set does not extend to the left of an
+ * integer.
  * @sqlop @p &>
  */
 bool
@@ -1077,7 +1093,8 @@ overright_intspanset_int(const SpanSet *ss, int i)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a span set does not extend to the left of a value.
+ * @brief Return true if a big integer span set does not extend to the left of
+ * a big integer.
  * @sqlop @p &>
  */
 bool
@@ -1088,7 +1105,7 @@ overright_bigintspanset_bigint(const SpanSet *ss, int64 i)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a span set does not extend to the left of a value.
+ * @brief Return true if a float span set does not extend to the left of a float.
  * @sqlop @p &>
  */
 bool
@@ -1099,7 +1116,7 @@ overright_floatspanset_float(const SpanSet *ss, double d)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a span set does not extend to the left of a value.
+ * @brief Return true if a period set is before a timestamp.
  * @sqlop @p &>
  */
 bool
@@ -1111,7 +1128,7 @@ overafter_periodset_timestamp(const SpanSet *ss, TimestampTz t)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if a span set does not extend to the right of a span.
+ * @brief Return true if a span set does not extend to the left of a span.
  * @sqlop @p &>
  */
 bool
@@ -1123,7 +1140,7 @@ overright_spanset_span(const SpanSet *ss, const Span *s)
 
 /**
  * @ingroup libmeos_setspan_pos
- * @brief Return true if the first span set does not extend to the right of the
+ * @brief Return true if the first span set does not extend to the left of the
  * second one.
  * @sqlop @p &>
  */
@@ -1155,10 +1172,10 @@ union_spanset_value(const SpanSet *ss, Datum d, meosType basetype)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the union of a span set and a value.
+ * @brief Return the union of an integer span set and an integer.
  * @sqlop @p +
  */
-bool
+SpanSet *
 union_intspanset_int(const SpanSet *ss, int i)
 {
   return union_spanset_value(ss, Int32GetDatum(i), T_INT4);
@@ -1166,10 +1183,10 @@ union_intspanset_int(const SpanSet *ss, int i)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the union of a span set and a value.
+ * @brief Return the union of a big integer span set and a big integer.
  * @sqlop @p +
  */
-bool
+SpanSet *
 union_bigintspanset_bigint(const SpanSet *ss, int64 i)
 {
   return union_spanset_value(ss, Int64GetDatum(i), T_INT8);
@@ -1177,10 +1194,10 @@ union_bigintspanset_bigint(const SpanSet *ss, int64 i)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the union of a span set and a value.
+ * @brief Return the union of a float span set and a float.
  * @sqlop @p +
  */
-bool
+SpanSet *
 union_floatspanset_float(const SpanSet *ss, double d)
 {
   return union_spanset_value(ss, Float8GetDatum(d), T_FLOAT8);
@@ -1313,7 +1330,8 @@ union_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 
 /**
  * @ingroup libmeos_internal_setspan_set
- * @brief Return the intersection of a span set and a value
+ * @brief Compute the intersection of a span set and a value in the last
+ * argument
  */
 bool
 intersection_spanset_value(const SpanSet *ss, Datum d, meosType basetype,
@@ -1328,7 +1346,8 @@ intersection_spanset_value(const SpanSet *ss, Datum d, meosType basetype,
 #if MEOS
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the intersection of a span set and a value
+ * @brief Compute the intersection of an integer span set and an integer in the
+ * last argument
  * @sqlop @p *
  */
 bool
@@ -1342,7 +1361,8 @@ intersection_intspanset_int(const SpanSet *ss, int i, int *result)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the intersection of a span set and a value
+ * @brief Compute the intersection of a big integer span set and a big integer
+ * in the last argument
  * @sqlop @p *
  */
 bool
@@ -1356,7 +1376,8 @@ intersection_bigintspanset_bigint(const SpanSet *ss, int64 i, int64 *result)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the intersection of a span set and a value
+ * @brief Compute the intersection of a float span set and a float in the last
+ * argument
  * @sqlop @p *
  */
 bool
@@ -1370,7 +1391,8 @@ intersection_floatspanset_float(const SpanSet *ss, double d, double *result)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the intersection of a period set and a timestamp
+ * @brief Compute the intersection of a period set and a timestamp in the last
+ * argument
  * @sqlop @p *
  */
 bool
@@ -1471,7 +1493,7 @@ intersection_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 
 /**
  * @ingroup libmeos_internal_setspan_set
- * @brief Return the difference of a value and a span set
+ * @brief Compute the difference of a value and a span set in the last argument
  */
 bool
 minus_value_spanset(Datum d, meosType basetype, const SpanSet *ss,
@@ -1486,7 +1508,8 @@ minus_value_spanset(Datum d, meosType basetype, const SpanSet *ss,
 #if MEOS
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the difference of a value and a span set
+ * @brief Compute the difference of an integer and an integer span set in the
+ * last argument
  * @sqlop @p -
  */
 bool
@@ -1500,7 +1523,8 @@ minus_int_intspanset(int i, const SpanSet *ss, int *result)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the difference of a value and a span set
+ * @brief Compute the difference of a big integer and a big integer span set in
+ * the last argument
  * @sqlop @p -
  */
 bool
@@ -1514,7 +1538,8 @@ minus_bigint_bigintspanset(int64 i, const SpanSet *ss, int64 *result)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the difference of a value and a span set
+ * @brief Compute the difference of a float and a float span set in the last
+ * argument
  * @sqlop @p -
  */
 bool
@@ -1528,7 +1553,8 @@ minus_float_floatspanset(double d, const SpanSet *ss, double *result)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the difference of a timestamp and a period set
+ * @brief Compute the difference of a timestamp and a period set in the last
+ * argument
  * @sqlop @p -
  */
 bool
@@ -1544,7 +1570,7 @@ minus_timestamp_periodset(TimestampTz t, const SpanSet *ps,
 #endif /* MEOS */
 
 /**
- * Return the difference of a span and a span set.
+ * @brief Compute the difference of a span and a span set in the last argument
  */
 static int
 minus_span_spanset1(const Span *s, const SpanSet *ss, int from, int to,
@@ -1637,7 +1663,7 @@ minus_spanset_value(const SpanSet *ss, Datum d, meosType basetype)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the difference of a span set and a value.
+ * @brief Return the difference of an integer span set and an integer.
  * @sqlop @p -
  */
 SpanSet *
@@ -1648,7 +1674,7 @@ minus_intspanset_int(const SpanSet *ss, int i)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the difference of a span set and a value.
+ * @brief Return the difference of a big integer span set and a big integer.
  * @sqlop @p -
  */
 SpanSet *
@@ -1659,7 +1685,7 @@ minus_bigintspanset_bigint(const SpanSet *ss, int64 i)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Return the difference of a span set and a value.
+ * @brief Return the difference of a float span set and a float.
  * @sqlop @p -
  */
 SpanSet *
@@ -1771,7 +1797,7 @@ minus_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 
 /**
  * @ingroup libmeos_internal_setspan_dist
- * @brief Return the distance between a timestamp and a span set
+ * @brief Return the distance between a span set and a value expressed as a double
  */
 double
 distance_spanset_value(const SpanSet *ss, Datum d, meosType basetype)
@@ -1782,7 +1808,8 @@ distance_spanset_value(const SpanSet *ss, Datum d, meosType basetype)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_dist
- * @brief Return the distance between a timestamp and a span set
+ * @brief Return the distance between an integer span set and an integer
+ * expressed as a double
  * @sqlop @p <->
  */
 double
@@ -1793,7 +1820,8 @@ distance_intspanset_int(const SpanSet *ss, int i)
 
 /**
  * @ingroup libmeos_setspan_dist
- * @brief Return the distance between a timestamp and a span set
+ * @brief Return the distance between a big integer span set and a big integer
+ * expressed as a double
  * @sqlop @p <->
  */
 double
@@ -1804,7 +1832,7 @@ distance_bigintspanset_bigint(const SpanSet *ss, int64 i)
 
 /**
  * @ingroup libmeos_setspan_dist
- * @brief Return the distance between a timestamp and a span set
+ * @brief Return the distance between a float span set and a float
  * @sqlop @p <->
  */
 double
@@ -1816,6 +1844,7 @@ distance_floatspanset_float(const SpanSet *ss, double d)
 /**
  * @ingroup libmeos_setspan_dist
  * @brief Return the distance in seconds between a period set and a timestamp
+ * expressed as a double
  * @sqlop @p <->
  */
 double
@@ -1827,7 +1856,7 @@ distance_periodset_timestamp(const SpanSet *ps, TimestampTz t)
 
 /**
  * @ingroup libmeos_setspan_dist
- * @brief Return the distance between a span set and a span
+ * @brief Return the distance between a span set and a span expressed as a double
  * @sqlop @p <->
  */
 double
@@ -1838,7 +1867,7 @@ distance_spanset_span(const SpanSet *ss, const Span *s)
 
 /**
  * @ingroup libmeos_setspan_dist
- * @brief Return the distance between two span sets
+ * @brief Return the distance between two span sets expressed as a double
  * @sqlop @p <->
  */
 double

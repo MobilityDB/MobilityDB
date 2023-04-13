@@ -356,17 +356,17 @@ CREATE FUNCTION shift(floatset, float)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shift(tstzset, interval)
   RETURNS tstzset
-  AS 'MODULE_PATHNAME', 'Tstzset_shift'
+  AS 'MODULE_PATHNAME', 'Timestampset_shift'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tscale(tstzset, interval)
   RETURNS tstzset
-  AS 'MODULE_PATHNAME', 'Tstzset_tscale'
+  AS 'MODULE_PATHNAME', 'Timestampset_tscale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION shiftTscale(tstzset, interval, interval)
   RETURNS tstzset
-  AS 'MODULE_PATHNAME', 'Tstzset_shift_tscale'
+  AS 'MODULE_PATHNAME', 'Timestampset_shift_tscale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************

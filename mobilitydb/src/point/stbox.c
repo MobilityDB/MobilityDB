@@ -387,8 +387,8 @@ Timestamp_to_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Tstzset_to_stbox(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tstzset_to_stbox);
+PGDLLEXPORT Datum Timestampset_to_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Timestampset_to_stbox);
 /**
  * @ingroup mobilitydb_box_cast
  * @brief Transform a timestamp set to a spatiotemporal box
@@ -396,11 +396,11 @@ PG_FUNCTION_INFO_V1(Tstzset_to_stbox);
  * @sqlfunc @p ::
  */
 Datum
-Tstzset_to_stbox(PG_FUNCTION_ARGS)
+Timestampset_to_stbox(PG_FUNCTION_ARGS)
 {
   Set *ts = PG_GETARG_SET_P(0);
   STBox *result = palloc(sizeof(STBox));
-  tstzset_set_stbox(ts, result);
+  timestampset_set_stbox(ts, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -895,7 +895,7 @@ PGDLLEXPORT Datum Contained_stbox_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_stbox_stbox);
 /**
  * @ingroup mobilitydb_box_topo
- * @brief Return true if the first spatiotemporal box is contained by the second one
+ * @brief Return true if the first spatiotemporal box is contained in the second one
  * @sqlfunc stbox_contained()
  * @sqlop @p <@
  */

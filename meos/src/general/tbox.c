@@ -349,7 +349,7 @@ numset_to_tbox(const Set *s)
  * @brief Set a temporal box from a timestamp set.
  */
 void
-tstzset_set_tbox(const Set *s, TBox *box)
+timestampset_set_tbox(const Set *s, TBox *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBox));
@@ -367,10 +367,10 @@ tstzset_set_tbox(const Set *s, TBox *box)
  * @sqlop @p ::
  */
 TBox *
-tstzset_to_tbox(const Set *s)
+timestampset_to_tbox(const Set *s)
 {
   TBox *result = palloc(sizeof(TBox));
-  tstzset_set_tbox(s, result);
+  timestampset_set_tbox(s, result);
   return result;
 }
 #endif /* MEOS */
@@ -541,7 +541,7 @@ float_timestamp_to_tbox(double d, TimestampTz t)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_box_cast
+ * @ingroup libmeos_internal_box_cast
  * @brief Return a temporal box from an integer and a period
  * @sqlfunc tbox()
  */
@@ -859,7 +859,7 @@ contains_tbox_tbox(const TBox *box1, const TBox *box2)
 
 /**
  * @ingroup libmeos_box_topo
- * @brief Return true if the first temporal box is contained by the second one.
+ * @brief Return true if the first temporal box is contained in the second one.
  * @sqlop @p <@
  */
 bool

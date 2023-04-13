@@ -54,7 +54,7 @@ CREATE FUNCTION tcount_transfn(internal, timestamptz)
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tcount_transfn(internal, tstzset)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'Tstzset_tcount_transfn'
+  AS 'MODULE_PATHNAME', 'Timestampset_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tcount_transfn(internal, tstzspan)
   RETURNS internal

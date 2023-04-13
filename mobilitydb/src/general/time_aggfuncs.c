@@ -61,19 +61,19 @@ Timestamp_tcount_transfn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(state);
 }
 
-PGDLLEXPORT Datum Tstzset_tcount_transfn(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tstzset_tcount_transfn);
+PGDLLEXPORT Datum Timestampset_tcount_transfn(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Timestampset_tcount_transfn);
 /**
  * @brief Transition function for temporal count aggregate of timestamp sets
  */
 Datum
-Tstzset_tcount_transfn(PG_FUNCTION_ARGS)
+Timestampset_tcount_transfn(PG_FUNCTION_ARGS)
 {
   SkipList *state;
   INPUT_AGG_TRANS_STATE(fcinfo, state);
   Set *ts = PG_GETARG_SET_P(1);
   store_fcinfo(fcinfo);
-  state = tstzset_tcount_transfn(state, ts);
+  state = timestampset_tcount_transfn(state, ts);
   PG_FREE_IF_COPY(ts, 1);
   PG_RETURN_POINTER(state);
 }

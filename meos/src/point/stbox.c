@@ -562,7 +562,7 @@ timestamp_to_stbox(TimestampTz t)
  * @brief Set a spatiotemporal box from a timestamp set.
  */
 void
-tstzset_set_stbox(const Set *ts, STBox *box)
+timestampset_set_stbox(const Set *ts, STBox *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBox));
@@ -579,10 +579,10 @@ tstzset_set_stbox(const Set *ts, STBox *box)
  * @sqlop @p ::
  */
 STBox *
-tstzset_to_stbox(const Set *ts)
+timestampset_to_stbox(const Set *ts)
 {
   STBox *result = palloc(sizeof(STBox));
-  tstzset_set_stbox(ts, result);
+  timestampset_set_stbox(ts, result);
   return result;
 }
 #endif /* MEOS */
@@ -1047,7 +1047,7 @@ contains_stbox_stbox(const STBox *box1, const STBox *box2)
 
 /**
  * @ingroup libmeos_box_topo
- * @brief Return true if the first spatiotemporal box is contained by the
+ * @brief Return true if the first spatiotemporal box is contained in the
  * second one
  * @sqlop @p <@
  */

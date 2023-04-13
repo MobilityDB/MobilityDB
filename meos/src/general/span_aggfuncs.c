@@ -49,8 +49,8 @@
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_setspan_agg
- * @brief Transition function for extent aggregate of base types of spans
+ * @ingroup libmeos_internal_setspan_agg
+ * @brief Transition function for span extent aggregate of values
  */
 Span *
 spanbase_extent_transfn(Span *s, Datum d, meosType basetype)
@@ -70,7 +70,7 @@ spanbase_extent_transfn(Span *s, Datum d, meosType basetype)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_agg
- * @brief Transition function for extent aggregate of base types of spans
+ * @brief Transition function for span extent aggregate of integers
  */
 Span *
 int_extent_transfn(Span *s, int i)
@@ -80,7 +80,7 @@ int_extent_transfn(Span *s, int i)
 
 /**
  * @ingroup libmeos_setspan_agg
- * @brief Transition function for extent aggregate of base types of spans
+ * @brief Transition function for span extent aggregate of big integers
  */
 Span *
 bigint_extent_transfn(Span *s, int64 i)
@@ -90,7 +90,7 @@ bigint_extent_transfn(Span *s, int64 i)
 
 /**
  * @ingroup libmeos_setspan_agg
- * @brief Transition function for extent aggregate of base types of spans
+ * @brief Transition function for span extent aggregate of floats
  */
 Span *
 float_extent_transfn(Span *s, double d)
@@ -100,7 +100,7 @@ float_extent_transfn(Span *s, double d)
 
 /**
  * @ingroup libmeos_setspan_agg
- * @brief Transition function for extent aggregate of base types of spans
+ * @brief Transition function for span extent aggregate of timestamps
  */
 Span *
 timestamp_extent_transfn(Span *s, TimestampTz t)
@@ -111,7 +111,7 @@ timestamp_extent_transfn(Span *s, TimestampTz t)
 
 /**
  * @ingroup libmeos_setspan_agg
- * @brief Transition function for extent aggregate of timestamp set values
+ * @brief Transition function for span extent aggregate of sets
  */
 Span *
 set_extent_transfn(Span *span, const Set *set)
@@ -134,7 +134,7 @@ set_extent_transfn(Span *span, const Set *set)
 
 /**
  * @ingroup libmeos_setspan_agg
- * @brief Transition function for extent aggregate of span values
+ * @brief Transition function for span extent aggregate of spans
  */
 Span *
 span_extent_transfn(Span *s1, const Span *s2)
@@ -155,7 +155,7 @@ span_extent_transfn(Span *s1, const Span *s2)
 
 /**
  * @ingroup libmeos_setspan_agg
- * @brief Transition function for extent aggregate of span set values
+ * @brief Transition function for span extent aggregate of span sets
  */
 Span *
 spanset_extent_transfn(Span *s, const SpanSet *ss)

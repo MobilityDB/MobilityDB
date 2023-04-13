@@ -204,7 +204,7 @@ extern bool set_value_n(const Set *s, int n, Datum *result);
 extern Datum *set_values(const Set *s);
 extern const Span *spanset_sp_n(const SpanSet *ss, int index);
 extern void spatialset_set_stbox(const Set *set, STBox *box);
-extern void tstzset_set_period(const Set *ts, Span *p);
+extern void timestampset_set_period(const Set *ts, Span *p);
 
 /*****************************************************************************/
 
@@ -349,7 +349,7 @@ extern void int_set_tbox(int i, TBox *box);
 extern void float_set_tbox(double d, TBox *box);
 extern void timestamp_set_tbox(TimestampTz t, TBox *box);
 extern void numset_set_tbox(const Set *s, TBox *box);
-extern void tstzset_set_tbox(const Set *ts, TBox *box);
+extern void timestampset_set_tbox(const Set *ts, TBox *box);
 extern void numspan_set_tbox(const Span *span, TBox *box);
 extern void numspanset_set_tbox(const SpanSet *ss, TBox *box);
 extern void period_set_tbox(const Span *p, TBox *box);
@@ -361,7 +361,7 @@ extern void point_get_coords(const GSERIALIZED *point, bool hasz, bool geodetic,
 extern bool geo_set_stbox(const GSERIALIZED *gs, STBox *box);
 extern void geoarr_set_stbox(const Datum *values, int count, STBox *box);
 extern void timestamp_set_stbox(TimestampTz t, STBox *box);
-extern void tstzset_set_stbox(const Set *ts, STBox *box);
+extern void timestampset_set_stbox(const Set *ts, STBox *box);
 extern void period_set_stbox(const Span *p, STBox *box);
 extern void periodset_set_stbox(const SpanSet *ps, STBox *box);
 

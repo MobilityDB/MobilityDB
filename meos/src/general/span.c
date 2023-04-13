@@ -443,7 +443,7 @@ floatspan_make(double lower, double upper, bool lower_inc, bool upper_inc)
  * @sqlfunc period()
  */
 Span *
-tstzspan_make(TimestampTz lower, TimestampTz upper, bool lower_inc,
+period_make(TimestampTz lower, TimestampTz upper, bool lower_inc,
   bool upper_inc)
 {
   /* Note: zero-fill is done in the span_set function */

@@ -338,7 +338,7 @@ rect_tree_ring_contains_point(RECT_NODE *node, const POINT2D *pt, int *on_bounda
 * Only pass in the head of an "area" type. Polygon or CurvePolygon.
 * Sums up containment of exterior (+1) and interior (-1) rings, so
 * that zero is uncontained, +1 is contained and negative is an error
-* (multiply contained by interior rings?)
+* (multiply contained in interior rings?)
 */
 static int
 rect_tree_area_contains_point(RECT_NODE *node, const POINT2D *pt)
@@ -363,7 +363,7 @@ rect_tree_area_contains_point(RECT_NODE *node, const POINT2D *pt)
 		/* Odd number of crossings => contained */
 		int contained = (edge_crossing_count % 2 == 1);
 		/* External rings return positive containment, interior ones negative, */
-		/* so that a point-in-hole case nets out to zero (contained by both */
+		/* so that a point-in-hole case nets out to zero (contained in both */
 		/* interior and exterior rings. */
 		if (node->i.ring_type == RECT_NODE_RING_INTERIOR)
 		{

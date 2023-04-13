@@ -489,7 +489,7 @@ PGDLLEXPORT Datum Contained_rid_bigint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_rid_bigint_tnpoint);
 /**
  * @ingroup mobilitydb_tnpoint_routes
- * @brief Return true if the routes is contained by the one of the
+ * @brief Return true if the routes is contained in the one of the
  * temporal network point
  * @sqlfunc contained_rid()
  * @sqlop @p ?@
@@ -504,7 +504,7 @@ PGDLLEXPORT Datum Contained_rid_bigintset_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_rid_bigintset_tnpoint);
 /**
  * @ingroup mobilitydb_tnpoint_routes
- * @brief Return true if the routes is contained by the one of the
+ * @brief Return true if the routes is contained in the one of the
  * temporal network point
  * @sqlfunc contained_rid()
  * @sqlop @p ?@
@@ -519,7 +519,7 @@ PGDLLEXPORT Datum Contained_rid_npoint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_rid_npoint_tnpoint);
 /**
  * @ingroup mobilitydb_tnpoint_routes
- * @brief Return true if the routes of the network point is contained by
+ * @brief Return true if the routes of the network point is contained in
  * the one of the temporal network point
  * @sqlfunc contained_rid()
  * @sqlop @p ?@
@@ -537,7 +537,7 @@ PG_FUNCTION_INFO_V1(Contained_rid_tnpoint_bigintset);
 /**
  * @ingroup mobilitydb_tnpoint_routes
  * @brief Return true if the routes of the temporal network point is
- * contained by the routes
+ * contained in the routes
  * @sqlfunc contained_rid()
  * @sqlop @p ?@
  */
@@ -552,7 +552,7 @@ PG_FUNCTION_INFO_V1(Contained_rid_tnpoint_tnpoint);
 /**
  * @ingroup mobilitydb_tnpoint_routes
  * @brief Return true if the routes of the first temporal network point
- * is contained by the one of the second temporal network point
+ * is contained in the one of the second temporal network point
  * @sqlfunc contained_rid()
  * @sqlop @p ?@
  */
