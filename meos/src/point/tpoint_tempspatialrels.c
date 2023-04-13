@@ -467,7 +467,7 @@ tinterrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
   /* Non-empty geometries have a bounding box */
   geo_set_stbox(gs, &box2);
   if (! overlaps_stbox_stbox(&box1, &box2))
-    return temporal_from_base(datum_no, T_TBOOL, temp, STEP);
+    return temporal_from_base_temp(datum_no, T_TBOOL, temp);
 
   /* 3D only if both arguments are 3D */
   Datum (*func)(Datum, Datum) = MEOS_FLAGS_GET_Z(temp->flags) &&
@@ -1141,7 +1141,7 @@ ttouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
     pfree(gsbound);
   }
   else
-    result = temporal_from_base(BoolGetDatum(false), T_TBOOL, temp, STEP);
+    result = temporal_from_base_temp(BoolGetDatum(false), T_TBOOL, temp);
   /* Restrict the result to the Boolean value in the third argument if any */
   if (result != NULL && restr)
   {

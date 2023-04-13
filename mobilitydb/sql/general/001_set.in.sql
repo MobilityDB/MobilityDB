@@ -582,7 +582,7 @@ CREATE FUNCTION floatset_union_finalfn(internal)
   RETURNS floatset
   AS 'MODULE_PATHNAME', 'Set_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tstzset_union_finalfn(internal)
+CREATE FUNCTION timestampset_union_finalfn(internal)
   RETURNS tstzset
   AS 'MODULE_PATHNAME', 'Set_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -612,7 +612,7 @@ CREATE AGGREGATE set_union(float) (
 CREATE AGGREGATE set_union(timestamptz) (
   SFUNC = set_union_transfn,
   STYPE = internal,
-  FINALFUNC = tstzset_union_finalfn,
+  FINALFUNC = timestampset_union_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE set_union(text) (
@@ -643,7 +643,7 @@ CREATE AGGREGATE set_union(floatset) (
 CREATE AGGREGATE set_union(tstzset) (
   SFUNC = set_union_transfn,
   STYPE = internal,
-  FINALFUNC = tstzset_union_finalfn,
+  FINALFUNC = timestampset_union_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE set_union(textset) (

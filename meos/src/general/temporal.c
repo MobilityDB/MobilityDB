@@ -741,8 +741,7 @@ temporal_copy(const Temporal *temp)
  * another temporal value.
  */
 Temporal *
-temporal_from_base(Datum value, meosType temptype, const Temporal *temp,
-  interpType interp)
+temporal_from_base_temp(Datum value, meosType temptype, const Temporal *temp)
 {
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
@@ -750,11 +749,11 @@ temporal_from_base(Datum value, meosType temptype, const Temporal *temp,
     result = (Temporal *) tinstant_make(value, temptype,
       ((TInstant *) temp)->t);
   else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tsequence_from_base(value, temptype,
-      (TSequence *) temp, interp);
+    result = (Temporal *) tsequence_from_base_temp(value, temptype,
+      (TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tsequenceset_from_base(value, temptype,
-      (TSequenceSet *) temp, interp);
+    result = (Temporal *) tsequenceset_from_base_temp(value, temptype,
+      (TSequenceSet *) temp);
   return result;
 }
 
@@ -765,9 +764,9 @@ temporal_from_base(Datum value, meosType temptype, const Temporal *temp,
  * another temporal value.
  */
 Temporal *
-tbool_from_base(bool b, const Temporal *temp)
+tbool_from_base_temp(bool b, const Temporal *temp)
 {
-  return temporal_from_base(BoolGetDatum(b), T_TBOOL, temp, false);
+  return temporal_from_base_temp(BoolGetDatum(b), T_TBOOL, temp);
 }
 
 /**
@@ -776,9 +775,9 @@ tbool_from_base(bool b, const Temporal *temp)
  * another temporal value.
  */
 Temporal *
-tint_from_base(int i, const Temporal *temp)
+tint_from_base_temp(int i, const Temporal *temp)
 {
-  return temporal_from_base(Int32GetDatum(i), T_TINT, temp, false);
+  return temporal_from_base_temp(Int32GetDatum(i), T_TINT, temp);
 }
 
 /**
@@ -787,9 +786,9 @@ tint_from_base(int i, const Temporal *temp)
  * another temporal value.
  */
 Temporal *
-tfloat_from_base(double d, const Temporal *temp, interpType interp)
+tfloat_from_base_temp(double d, const Temporal *temp)
 {
-  return temporal_from_base(Float8GetDatum(d), T_TFLOAT, temp, interp);
+  return temporal_from_base_temp(Float8GetDatum(d), T_TFLOAT, temp);
 }
 
 /**
@@ -798,9 +797,9 @@ tfloat_from_base(double d, const Temporal *temp, interpType interp)
  * another temporal value.
  */
 Temporal *
-ttext_from_base(const text *txt, const Temporal *temp)
+ttext_from_base_temp(const text *txt, const Temporal *temp)
 {
-  return temporal_from_base(PointerGetDatum(txt), T_TTEXT, temp, false);
+  return temporal_from_base_temp(PointerGetDatum(txt), T_TTEXT, temp);
 }
 
 /**
@@ -809,9 +808,9 @@ ttext_from_base(const text *txt, const Temporal *temp)
  * of another temporal value.
  */
 Temporal *
-tgeompoint_from_base(const GSERIALIZED *gs, const Temporal *temp, interpType interp)
+tgeompoint_from_base_temp(const GSERIALIZED *gs, const Temporal *temp)
 {
-  return temporal_from_base(PointerGetDatum(gs), T_TGEOMPOINT, temp, interp);
+  return temporal_from_base_temp(PointerGetDatum(gs), T_TGEOMPOINT, temp);
 }
 
 /**
@@ -820,9 +819,9 @@ tgeompoint_from_base(const GSERIALIZED *gs, const Temporal *temp, interpType int
  * of another temporal value.
  */
 Temporal *
-tgeogpoint_from_base(const GSERIALIZED *gs, const Temporal *temp, interpType interp)
+tgeogpoint_from_base_temp(const GSERIALIZED *gs, const Temporal *temp)
 {
-  return temporal_from_base(PointerGetDatum(gs), T_TGEOGPOINT, temp, interp);
+  return temporal_from_base_temp(PointerGetDatum(gs), T_TGEOGPOINT, temp);
 }
 #endif /* MEOS */
 

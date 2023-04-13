@@ -1024,14 +1024,11 @@ tsequence_copy(const TSequence *seq)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_temporal_constructor
  * @brief Construct a temporal discrete sequence from a base value and a
  * timestamp set.
- * @sqlfunc tbool_discseq(), tint_discseq(), tfloat_discseq(), ttext_discseq(),
- * etc.
  */
 TSequence *
-tdiscseq_from_base(Datum value, meosType temptype, const TSequence *seq)
+tdiscseq_from_base_temp(Datum value, meosType temptype, const TSequence *seq)
 {
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
@@ -1139,12 +1136,16 @@ tgeogpointseq_from_base_timestampset(const GSERIALIZED *gs, const Set *ts)
  * @param[in] interp Interpolation
  */
 TSequence *
-tsequence_from_base(Datum value, meosType temptype, const TSequence *seq,
-  interpType interp)
+tsequence_from_base_temp(Datum value, meosType temptype, const TSequence *seq)
 {
-  return MEOS_FLAGS_GET_DISCRETE(seq->flags) ?
-    tdiscseq_from_base(value, temptype, seq) :
-    tsequence_from_base_period(value, temptype, &seq->period, interp);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  if (interp == DISCRETE)
+    return tdiscseq_from_base_temp(value, temptype, seq);
+
+  bool continuous = temptype_continuous(temptype);
+  if (interp == LINEAR && ! continuous)
+    interp = STEP;
+  return tsequence_from_base_period(value, temptype, &seq->period, interp);
 }
 
 #if MEOS
@@ -1154,9 +1155,9 @@ tsequence_from_base(Datum value, meosType temptype, const TSequence *seq,
  * frame of another temporal sequence.
  */
 TSequence *
-tboolseq_from_base(bool b, const TSequence *seq)
+tboolseq_from_base_temp(bool b, const TSequence *seq)
 {
-  return tsequence_from_base(BoolGetDatum(b), T_TBOOL, seq, false);
+  return tsequence_from_base_temp(BoolGetDatum(b), T_TBOOL, seq);
 }
 
 /**
@@ -1165,9 +1166,9 @@ tboolseq_from_base(bool b, const TSequence *seq)
  * frame of another temporal sequence.
  */
 TSequence *
-tintseq_from_base(int i, const TSequence *seq)
+tintseq_from_base_temp(int i, const TSequence *seq)
 {
-  return tsequence_from_base(Int32GetDatum(i), T_TINT, seq, false);
+  return tsequence_from_base_temp(Int32GetDatum(i), T_TINT, seq);
 }
 
 /**
@@ -1176,9 +1177,9 @@ tintseq_from_base(int i, const TSequence *seq)
  * of another temporal sequence.
  */
 TSequence *
-tfloatseq_from_base(double d, const TSequence *seq, interpType interp)
+tfloatseq_from_base_temp(double d, const TSequence *seq)
 {
-  return tsequence_from_base(Float8GetDatum(d), T_TFLOAT, seq, interp);
+  return tsequence_from_base_temp(Float8GetDatum(d), T_TFLOAT, seq);
 }
 
 /**
@@ -1187,9 +1188,9 @@ tfloatseq_from_base(double d, const TSequence *seq, interpType interp)
  * of another temporal sequence.
  */
 TSequence *
-ttextseq_from_base(const text *txt, const TSequence *seq)
+ttextseq_from_base_temp(const text *txt, const TSequence *seq)
 {
-  return tsequence_from_base(PointerGetDatum(txt), T_TTEXT, seq, false);
+  return tsequence_from_base_temp(PointerGetDatum(txt), T_TTEXT, seq);
 }
 
 /**
@@ -1198,10 +1199,9 @@ ttextseq_from_base(const text *txt, const TSequence *seq)
  * time frame of another temporal sequence.
  */
 TSequence *
-tgeompointseq_from_base(const GSERIALIZED *gs, const TSequence *seq,
-  interpType interp)
+tgeompointseq_from_base_temp(const GSERIALIZED *gs, const TSequence *seq)
 {
-  return tsequence_from_base(PointerGetDatum(gs), T_TGEOMPOINT, seq, interp);
+  return tsequence_from_base_temp(PointerGetDatum(gs), T_TGEOMPOINT, seq);
 }
 
 /**
@@ -1210,10 +1210,9 @@ tgeompointseq_from_base(const GSERIALIZED *gs, const TSequence *seq,
  * time frame of another temporal sequence.
  */
 TSequence *
-tgeogpointseq_from_base(const GSERIALIZED *gs, const TSequence *seq,
-  interpType interp)
+tgeogpointseq_from_base_temp(const GSERIALIZED *gs, const TSequence *seq)
 {
-  return tsequence_from_base(PointerGetDatum(gs), T_TGEOGPOINT, seq, interp);
+  return tsequence_from_base_temp(PointerGetDatum(gs), T_TGEOGPOINT, seq);
 }
 #endif /* MEOS */
 
@@ -5584,7 +5583,7 @@ tcontseq_delete_timestampset(const TSequence *seq, const Set *ts)
 
 /**
  * @ingroup libmeos_internal_temporal_transf
- * @brief Delete a period from a continuos temporal sequence.
+ * @brief Delete a period from a continuous temporal sequence.
  *
  * @param[in] seq Temporal sequence
  * @param[in] p Period

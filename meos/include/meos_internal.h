@@ -528,7 +528,7 @@ extern TSequenceSet *ttextseqset_in(const char *str);
 
 /* Constructor functions for temporal types */
 
-extern Temporal *temporal_from_base(Datum value, meosType temptype, const Temporal *temp, interpType interp);
+extern Temporal *temporal_from_base_temp(Datum value, meosType temptype, const Temporal *temp);
 extern TInstant *tinstant_copy(const TInstant *inst);
 extern TInstant *tinstant_make(Datum value, meosType temptype, TimestampTz t);
 extern TSequence *tsequence_from_base_timestampset(Datum value, meosType temptype, const Set *ss);
@@ -536,12 +536,12 @@ extern TSequence *tsequence_compact(const TSequence *seq);
 extern void tsequence_restart(TSequence *seq, int last);
 extern TSequence *tsequence_subseq(const TSequence *seq, int from, int to, bool lower_inc, bool upper_inc);
 extern TSequence *tsequence_copy(const TSequence *seq);
-extern TSequence *tsequence_from_base(Datum value, meosType temptype, const TSequence *seq, interpType interp);
+extern TSequence *tsequence_from_base_temp(Datum value, meosType temptype, const TSequence *seq);
 extern TSequence *tsequence_from_base_period(Datum value, meosType temptype, const Span *p, interpType interp);
 extern TSequenceSet *tsequenceset_compact(const TSequenceSet *ss);
 extern void tsequenceset_restart(TSequenceSet *ss, int last);
 extern TSequenceSet *tsequenceset_copy(const TSequenceSet *ss);
-extern TSequenceSet *tsequenceset_from_base(Datum value, meosType temptype, const TSequenceSet *ss, interpType interp);
+extern TSequenceSet *tsequenceset_from_base_temp(Datum value, meosType temptype, const TSequenceSet *ss);
 extern TSequenceSet *tsequenceset_from_base_periodset(Datum value, meosType temptype, const SpanSet *ps, interpType interp);
 
 /*****************************************************************************/
