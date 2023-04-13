@@ -575,7 +575,9 @@ CREATE FUNCTION stbox_extent_combinefn(stbox, stbox)
 CREATE AGGREGATE extent(stbox) (
   SFUNC = stbox_extent_transfn,
   STYPE = stbox,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = stbox_extent_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   PARALLEL = safe
 );
 

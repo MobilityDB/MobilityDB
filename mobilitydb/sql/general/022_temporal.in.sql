@@ -232,53 +232,53 @@ CREATE FUNCTION ttext_inst(text, timestamptz)
 
 CREATE FUNCTION tbool_seq(boolean, tstzset)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tdiscseq_from_base_time'
+  AS 'MODULE_PATHNAME', 'Tsequence_from_base_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tint_seq(integer, tstzset)
   RETURNS tint
-  AS 'MODULE_PATHNAME', 'Tdiscseq_from_base_time'
+  AS 'MODULE_PATHNAME', 'Tsequence_from_base_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tfloat_seq(float, tstzset)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Tdiscseq_from_base_time'
+  AS 'MODULE_PATHNAME', 'Tsequence_from_base_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ttext_seq(text, tstzset)
   RETURNS ttext
-  AS 'MODULE_PATHNAME', 'Tdiscseq_from_base_time'
+  AS 'MODULE_PATHNAME', 'Tsequence_from_base_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tbool_seq(boolean, tstzspan)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tcontseq_from_base_time'
+  AS 'MODULE_PATHNAME', 'Tsequence_from_base_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tint_seq(integer, tstzspan)
   RETURNS tint
-  AS 'MODULE_PATHNAME', 'Tcontseq_from_base_time'
+  AS 'MODULE_PATHNAME', 'Tsequence_from_base_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tfloat_seq(float, tstzspan, text DEFAULT 'linear')
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Tcontseq_from_base_time'
+  AS 'MODULE_PATHNAME', 'Tsequence_from_base_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ttext_seq(text, tstzspan)
   RETURNS ttext
-  AS 'MODULE_PATHNAME', 'Tcontseq_from_base_time'
+  AS 'MODULE_PATHNAME', 'Tsequence_from_base_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tbool_seqset(boolean, tstzspanset)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_time'
+  AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tint_seqset(integer, tstzspanset)
   RETURNS tint
-  AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_time'
+  AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tfloat_seqset(float, tstzspanset, text DEFAULT 'linear')
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_time'
+  AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ttext_seqset(text, tstzspanset)
   RETURNS ttext
-  AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_time'
+  AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************/

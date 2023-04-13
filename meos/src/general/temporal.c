@@ -1555,16 +1555,16 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
   /* Loop for each bucket */
   for (int i = 0; i < count; i++)
   {
-    Span s;
+    Span p;
     span_set(TimestampTzGetDatum(lower), TimestampTzGetDatum(upper),
-      true, false, T_TIMESTAMPTZ, &s);
+      true, false, T_TIMESTAMPTZ, &p);
     span_set(TimestampTzGetDatum(lower),
-      TimestampTzGetDatum(upper), true, false, T_TIMESTAMPTZ, &s);
-    TSequenceSet *proj = tsequenceset_restrict_period(ss, &s, REST_AT);
+      TimestampTzGetDatum(upper), true, false, T_TIMESTAMPTZ, &p);
+    TSequenceSet *proj = tsequenceset_restrict_period(ss, &p, REST_AT);
     if (proj)
     {
       Datum value = temporal_tprecision_agg_values((Temporal *) proj);
-      sequences[k++] = tsequence_from_base_time(value, ss->temptype, &s,
+      sequences[k++] = tsequence_from_base_period(value, ss->temptype, &p,
         linear ? LINEAR : STEP);
       pfree(proj);
     }

@@ -451,7 +451,7 @@ tsequenceset_from_base(Datum value, meosType temptype, const TSequenceSet *ss,
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    sequences[i] = tsequence_from_base_time(value, temptype, &seq->period,
+    sequences[i] = tsequence_from_base_period(value, temptype, &seq->period,
       interp);
   }
   return tsequenceset_make_free(sequences, ss->count, NORMALIZE_NO);
@@ -539,14 +539,14 @@ tgeogpointseqset_from_base(const GSERIALIZED *gs, const TSequenceSet *ss,
  * @param[in] interp Interpolation
  */
 TSequenceSet *
-tsequenceset_from_base_time(Datum value, meosType temptype,
+tsequenceset_from_base_periodset(Datum value, meosType temptype,
   const SpanSet *ps, interpType interp)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ps->count);
   for (int i = 0; i < ps->count; i++)
   {
     const Span *p = spanset_sp_n(ps, i);
-    sequences[i] = tsequence_from_base_time(value, temptype, p, interp);
+    sequences[i] = tsequence_from_base_period(value, temptype, p, interp);
   }
   return tsequenceset_make_free(sequences, ps->count, NORMALIZE_NO);
 }
@@ -558,9 +558,9 @@ tsequenceset_from_base_time(Datum value, meosType temptype,
  * period set.
  */
 TSequenceSet *
-tboolseqset_from_base_time(bool b, const SpanSet *ps)
+tboolseqset_from_base_periodset(bool b, const SpanSet *ps)
 {
-  return tsequenceset_from_base_time(BoolGetDatum(b), T_TBOOL, ps, STEP);
+  return tsequenceset_from_base_periodset(BoolGetDatum(b), T_TBOOL, ps, STEP);
 }
 
 /**
@@ -569,9 +569,9 @@ tboolseqset_from_base_time(bool b, const SpanSet *ps)
  * period set.
  */
 TSequenceSet *
-tintseqset_from_base_time(int i, const SpanSet *ps)
+tintseqset_from_base_periodset(int i, const SpanSet *ps)
 {
-  return tsequenceset_from_base_time(Int32GetDatum(i), T_TINT, ps, STEP);
+  return tsequenceset_from_base_periodset(Int32GetDatum(i), T_TINT, ps, STEP);
 }
 
 /**
@@ -579,9 +579,10 @@ tintseqset_from_base_time(int i, const SpanSet *ps)
  * @brief Construct a temporal float sequence set from a float and a period set.
  */
 TSequenceSet *
-tfloatseqset_from_base_time(double d, const SpanSet *ps, interpType interp)
+tfloatseqset_from_base_periodset(double d, const SpanSet *ps, interpType interp)
 {
-  return tsequenceset_from_base_time(Float8GetDatum(d), T_TFLOAT, ps, interp);
+  return tsequenceset_from_base_periodset(Float8GetDatum(d), T_TFLOAT, ps,
+    interp);
 }
 
 /**
@@ -589,9 +590,10 @@ tfloatseqset_from_base_time(double d, const SpanSet *ps, interpType interp)
  * @brief Construct a temporal text sequence set from a text and a period set.
  */
 TSequenceSet *
-ttextseqset_from_base_time(const text *txt, const SpanSet *ps)
+ttextseqset_from_base_periodset(const text *txt, const SpanSet *ps)
 {
-  return tsequenceset_from_base_time(PointerGetDatum(txt), T_TTEXT, ps, false);
+  return tsequenceset_from_base_periodset(PointerGetDatum(txt), T_TTEXT, ps,
+    false);
 }
 
 /**
@@ -600,11 +602,11 @@ ttextseqset_from_base_time(const text *txt, const SpanSet *ps)
  * period set.
  */
 TSequenceSet *
-tgeompointseqset_from_base_time(const GSERIALIZED *gs, const SpanSet *ps,
+tgeompointseqset_from_base_periodset(const GSERIALIZED *gs, const SpanSet *ps,
   interpType interp)
 {
-  return tsequenceset_from_base_time(PointerGetDatum(gs), T_TGEOMPOINT, ps,
-    interp);
+  return tsequenceset_from_base_periodset(PointerGetDatum(gs), T_TGEOMPOINT,
+    ps, interp);
 }
 
 /**
@@ -613,11 +615,11 @@ tgeompointseqset_from_base_time(const GSERIALIZED *gs, const SpanSet *ps,
  * period set.
  */
 TSequenceSet *
-tgeogpointseqset_from_base_time(const GSERIALIZED *gs, const SpanSet *ps,
+tgeogpointseqset_from_base_periodset(const GSERIALIZED *gs, const SpanSet *ps,
   interpType interp)
 {
-  return tsequenceset_from_base_time(PointerGetDatum(gs), T_TGEOGPOINT, ps,
-    interp);
+  return tsequenceset_from_base_periodset(PointerGetDatum(gs), T_TGEOGPOINT,
+    ps, interp);
 }
 #endif /* MEOS */
 

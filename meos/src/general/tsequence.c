@@ -1048,7 +1048,7 @@ tdiscseq_from_base(Datum value, meosType temptype, const TSequence *seq)
  * etc.
  */
 TSequence *
-tdiscseq_from_base_time(Datum value, meosType temptype, const Set *ts)
+tsequence_from_base_timestampset(Datum value, meosType temptype, const Set *ts)
 {
   TInstant **instants = palloc(sizeof(TInstant *) * ts->count);
   for (int i = 0; i < ts->count; i++)
@@ -1065,9 +1065,9 @@ tdiscseq_from_base_time(Datum value, meosType temptype, const Set *ts)
  * timestamp set.
  */
 TSequence *
-tbooldiscseq_from_base_time(bool b, const Set *ts)
+tboolseq_from_base_timestampset(bool b, const Set *ts)
 {
-  return tdiscseq_from_base_time(BoolGetDatum(b), T_TBOOL, ts);
+  return tsequence_from_base_timestampset(BoolGetDatum(b), T_TBOOL, ts);
 }
 
 /**
@@ -1076,9 +1076,9 @@ tbooldiscseq_from_base_time(bool b, const Set *ts)
  * timestamp set.
  */
 TSequence *
-tintdiscseq_from_base_time(int i, const Set *ts)
+tintseq_from_base_timestampset(int i, const Set *ts)
 {
-  return tdiscseq_from_base_time(Int32GetDatum(i), T_TINT, ts);
+  return tsequence_from_base_timestampset(Int32GetDatum(i), T_TINT, ts);
 }
 
 /**
@@ -1087,9 +1087,9 @@ tintdiscseq_from_base_time(int i, const Set *ts)
  * timestamp set.
  */
 TSequence *
-tfloatdiscseq_from_base_time(double d, const Set *ts)
+tfloatseq_from_base_timestampset(double d, const Set *ts)
 {
-  return tdiscseq_from_base_time(Float8GetDatum(d), T_TFLOAT, ts);
+  return tsequence_from_base_timestampset(Float8GetDatum(d), T_TFLOAT, ts);
 }
 
 /**
@@ -1098,9 +1098,9 @@ tfloatdiscseq_from_base_time(double d, const Set *ts)
  * timestamp set.
  */
 TSequence *
-ttextdiscseq_from_base_time(const text *txt, const Set *ts)
+ttextseq_from_base_timestampset(const text *txt, const Set *ts)
 {
-  return tdiscseq_from_base_time(PointerGetDatum(txt), T_TTEXT, ts);
+  return tsequence_from_base_timestampset(PointerGetDatum(txt), T_TTEXT, ts);
 }
 
 /**
@@ -1109,9 +1109,9 @@ ttextdiscseq_from_base_time(const text *txt, const Set *ts)
  * and a timestamp set.
  */
 TSequence *
-tgeompointdiscseq_from_base_time(const GSERIALIZED *gs, const Set *ts)
+tgeompointseq_from_base_timestampset(const GSERIALIZED *gs, const Set *ts)
 {
-  return tdiscseq_from_base_time(PointerGetDatum(gs), T_TGEOMPOINT, ts);
+  return tsequence_from_base_timestampset(PointerGetDatum(gs), T_TGEOMPOINT, ts);
 }
 
 /**
@@ -1120,9 +1120,9 @@ tgeompointdiscseq_from_base_time(const GSERIALIZED *gs, const Set *ts)
  * and a timestamp set.
  */
 TSequence *
-tgeogpointdiscseq_from_base_time(const GSERIALIZED *gs, const Set *ts)
+tgeogpointseq_from_base_timestampset(const GSERIALIZED *gs, const Set *ts)
 {
-  return tdiscseq_from_base_time(PointerGetDatum(gs), T_TGEOGPOINT, ts);
+  return tsequence_from_base_timestampset(PointerGetDatum(gs), T_TGEOGPOINT, ts);
 }
 #endif /* MEOS */
 
@@ -1144,7 +1144,7 @@ tsequence_from_base(Datum value, meosType temptype, const TSequence *seq,
 {
   return MEOS_FLAGS_GET_DISCRETE(seq->flags) ?
     tdiscseq_from_base(value, temptype, seq) :
-    tsequence_from_base_time(value, temptype, &seq->period, interp);
+    tsequence_from_base_period(value, temptype, &seq->period, interp);
 }
 
 #if MEOS
@@ -1229,7 +1229,7 @@ tgeogpointseq_from_base(const GSERIALIZED *gs, const TSequence *seq,
  * @param[in] interp Interpolation
  */
 TSequence *
-tsequence_from_base_time(Datum value, meosType temptype, const Span *p,
+tsequence_from_base_period(Datum value, meosType temptype, const Span *p,
   interpType interp)
 {
   int count = 1;
@@ -1254,9 +1254,9 @@ tsequence_from_base_time(Datum value, meosType temptype, const Span *p,
  * @brief Construct a temporal boolean sequence from a boolean and a period.
  */
 TSequence *
-tboolseq_from_base_time(bool b, const Span *p)
+tboolseq_from_base_period(bool b, const Span *p)
 {
-  return tsequence_from_base_time(BoolGetDatum(b), T_TBOOL, p, STEP);
+  return tsequence_from_base_period(BoolGetDatum(b), T_TBOOL, p, STEP);
 }
 
 /**
@@ -1264,9 +1264,9 @@ tboolseq_from_base_time(bool b, const Span *p)
  * @brief Construct a temporal integer sequence from an integer and a period.
  */
 TSequence *
-tintseq_from_base_time(int i, const Span *p)
+tintseq_from_base_period(int i, const Span *p)
 {
-  return tsequence_from_base_time(Int32GetDatum(i), T_TINT, p, STEP);
+  return tsequence_from_base_period(Int32GetDatum(i), T_TINT, p, STEP);
 }
 
 /**
@@ -1274,9 +1274,9 @@ tintseq_from_base_time(int i, const Span *p)
  * @brief Construct a temporal float sequence from a float and a period.
  */
 TSequence *
-tfloatseq_from_base_time(double d, const Span *p, interpType interp)
+tfloatseq_from_base_period(double d, const Span *p, interpType interp)
 {
-  return tsequence_from_base_time(Float8GetDatum(d), T_TFLOAT, p, interp);
+  return tsequence_from_base_period(Float8GetDatum(d), T_TFLOAT, p, interp);
 }
 
 /**
@@ -1284,9 +1284,9 @@ tfloatseq_from_base_time(double d, const Span *p, interpType interp)
  * @brief Construct a temporal text sequence from a text and a period.
  */
 TSequence *
-ttextseq_from_base_time(const text *txt, const Span *p)
+ttextseq_from_base_period(const text *txt, const Span *p)
 {
-  return tsequence_from_base_time(PointerGetDatum(txt), T_TTEXT, p, STEP);
+  return tsequence_from_base_period(PointerGetDatum(txt), T_TTEXT, p, STEP);
 }
 
 /**
@@ -1295,10 +1295,11 @@ ttextseq_from_base_time(const text *txt, const Span *p)
  * period.
  */
 TSequence *
-tgeompointseq_from_base_time(const GSERIALIZED *gs, const Span *p,
+tgeompointseq_from_base_period(const GSERIALIZED *gs, const Span *p,
   interpType interp)
 {
-  return tsequence_from_base_time(PointerGetDatum(gs), T_TGEOMPOINT, p, interp);
+  return tsequence_from_base_period(PointerGetDatum(gs), T_TGEOMPOINT, p,
+    interp);
 }
 
 /**
@@ -1307,10 +1308,11 @@ tgeompointseq_from_base_time(const GSERIALIZED *gs, const Span *p,
  * period.
  */
 TSequence *
-tgeogpointseq_from_base_time(const GSERIALIZED *gs, const Span *p,
+tgeogpointseq_from_base_period(const GSERIALIZED *gs, const Span *p,
   interpType interp)
 {
-  return tsequence_from_base_time(PointerGetDatum(gs), T_TGEOGPOINT, p, interp);
+  return tsequence_from_base_period(PointerGetDatum(gs), T_TGEOGPOINT, p,
+    interp);
 }
 #endif /* MEOS */
 

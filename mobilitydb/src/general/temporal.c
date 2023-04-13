@@ -755,8 +755,8 @@ Tsequenceset_constructor_gaps(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Tdiscseq_from_base_time(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tdiscseq_from_base_time);
+PGDLLEXPORT Datum Tsequence_from_base_timestampset(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tsequence_from_base_timestampset);
 /**
  * @ingroup mobilitydb_temporal_constructor
  * @brief Construct a temporal discrete sequence from a base value and a
@@ -764,25 +764,25 @@ PG_FUNCTION_INFO_V1(Tdiscseq_from_base_time);
  * @sqlfunc tbool_discseq(), tint_discseq(), tfloat_discseq(), ttext_discseq()
  */
 Datum
-Tdiscseq_from_base_time(PG_FUNCTION_ARGS)
+Tsequence_from_base_timestampset(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   Set *ts = PG_GETARG_SET_P(1);
   meosType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
-  TSequence *result = tdiscseq_from_base_time(value, temptype, ts);
+  TSequence *result = tsequence_from_base_timestampset(value, temptype, ts);
   PG_FREE_IF_COPY(ts, 1);
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Tcontseq_from_base_time(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tcontseq_from_base_time);
+PGDLLEXPORT Datum Tsequence_from_base_period(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tsequence_from_base_period);
 /**
  * @ingroup mobilitydb_temporal_constructor
  * @brief Construct a temporal sequence from a base value and a period
  * @sqlfunc tbool_seq(), tint_seq(), tfloat_seq(), ttext_seq()
  */
 Datum
-Tcontseq_from_base_time(PG_FUNCTION_ARGS)
+Tsequence_from_base_period(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   Span *p = PG_GETARG_SPAN_P(1);
@@ -795,12 +795,12 @@ Tcontseq_from_base_time(PG_FUNCTION_ARGS)
     interp = interp_from_string(interp_str);
     pfree(interp_str);
   }
-  TSequence *result = tsequence_from_base_time(value, temptype, p, interp);
+  TSequence *result = tsequence_from_base_period(value, temptype, p, interp);
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Tsequenceset_from_base_time(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tsequenceset_from_base_time);
+PGDLLEXPORT Datum Tsequenceset_from_base_periodset(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tsequenceset_from_base_periodset);
 /**
  * @ingroup mobilitydb_temporal_constructor
  * @brief Construct a temporal sequence set from from a base value and a
@@ -808,7 +808,7 @@ PG_FUNCTION_INFO_V1(Tsequenceset_from_base_time);
  * @sqlfunc tbool_seqset(), tint_seqset(), tfloat_seqset(), ttext_seqset()
  */
 Datum
-Tsequenceset_from_base_time(PG_FUNCTION_ARGS)
+Tsequenceset_from_base_periodset(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   SpanSet *ps = PG_GETARG_SPANSET_P(1);
@@ -821,7 +821,7 @@ Tsequenceset_from_base_time(PG_FUNCTION_ARGS)
     interp = interp_from_string(interp_str);
     pfree(interp_str);
   }
-  TSequenceSet *result = tsequenceset_from_base_time(value, temptype, ps,
+  TSequenceSet *result = tsequenceset_from_base_periodset(value, temptype, ps,
     interp);
   PG_FREE_IF_COPY(ps, 1);
   PG_RETURN_POINTER(result);
