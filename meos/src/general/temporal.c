@@ -1157,8 +1157,8 @@ tfloat_to_tint(const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_cast
- * @brief Set a period to the bounding period of a temporal value.
+ * @ingroup libmeos_internal_temporal_accessor
+ * @brief Compute the bounding period of a temporal value.
  */
 void
 temporal_set_period(const Temporal *temp, Span *p)
@@ -1191,8 +1191,8 @@ temporal_to_period(const Temporal *temp)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_temporal_cast
- * @brief Set a span with value span of a temporal number.
+ * @ingroup libmeos_internal_temporal_accessor
+ * @brief Compute the bounding value span of a temporal number.
  */
 void
 tnumber_set_span(const Temporal *temp, Span *s)
@@ -1806,7 +1806,7 @@ temporal_interp(const Temporal *temp)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Set the second argument to the bounding box of a temporal value
+ * @brief Compute the bounding box of a temporal value
  * @note For temporal instants the bounding box must be computed. For the
  * other subtypes, a copy of the precomputed bounding box is made.
  * @sqlfunc period, tbox, stbox

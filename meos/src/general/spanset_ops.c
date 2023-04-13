@@ -1362,7 +1362,6 @@ intersection_intspanset_int(const SpanSet *ss, int i, int *result)
 /**
  * @ingroup libmeos_setspan_set
  * @brief Compute the intersection of a big integer span set and a big integer
- * in the last argument
  * @sqlop @p *
  */
 bool
@@ -1493,7 +1492,7 @@ intersection_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 
 /**
  * @ingroup libmeos_internal_setspan_set
- * @brief Compute the difference of a value and a span set in the last argument
+ * @brief Compute the difference of a value and a span set
  */
 bool
 minus_value_spanset(Datum d, meosType basetype, const SpanSet *ss,
@@ -1570,7 +1569,7 @@ minus_timestamp_periodset(TimestampTz t, const SpanSet *ps,
 #endif /* MEOS */
 
 /**
- * @brief Compute the difference of a span and a span set in the last argument
+ * @brief Compute the difference of a span and a span set
  */
 static int
 minus_span_spanset1(const Span *s, const SpanSet *ss, int from, int to,

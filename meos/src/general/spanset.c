@@ -754,7 +754,7 @@ periodset_end_timestamp(const SpanSet *ps)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the n-th timestamp of a period set in the last argument
+ * @brief Compute the n-th timestamp of a period set
  * @param[in] ps Period set
  * @param[in] n Number
  * @param[out] result Timestamp

@@ -876,7 +876,7 @@ overright_span_span(const Span *s1, const Span *s2)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Compute the bouding box union of two spans in the last argument
+ * @brief Compute the bouding box union of two spans
  * @note The result of the function is always a span even if the spans do not
  * overlap
  * @sqlop @p +
@@ -991,7 +991,7 @@ union_span_span(const Span *s1, const Span *s2)
 
 /**
  * @ingroup libmeos_internal_setspan_set
- * @brief Compute the intersection of a span and a value in the last argument
+ * @brief Compute the intersection of a span and a value
  */
 bool
 intersection_span_value(const Span *s, Datum d, meosType basetype,
@@ -1068,7 +1068,7 @@ intersection_period_timestamp(const Span *p, TimestampTz t,
 
 /**
  * @ingroup libmeos_internal_setspan_set
- * @brief Compute the intersection of two spans in the last argument
+ * @brief Compute the intersection of two spans
  * @note This function is equivalent to @ref intersection_span_span without
  * memory allocation
  */
@@ -1111,7 +1111,7 @@ intersection_span_span(const Span *s1, const Span *s2)
 
 /**
  * @ingroup libmeos_internal_setspan_set
- * @brief Compute the difference of a value and a span in the last argument
+ * @brief Compute the difference of a value and a span
  */
 bool
 minus_value_span(Datum d, meosType basetype, const Span *s,
@@ -1156,7 +1156,7 @@ minus_bigint_bigintspan(int64 i, const Span *s, int64 *result)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Compute the difference of a float and a float span in the last argument
+ * @brief Compute the difference of a float and a float span
  * @sqlop @p -
  */
 bool
@@ -1170,7 +1170,7 @@ minus_float_floatspan(double d, const Span *s, double *result)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Compute the difference of a timestamp and a period in the last argument
+ * @brief Compute the difference of a timestamp and a period
  * @sqlop @p -
  */
 bool
@@ -1184,7 +1184,7 @@ minus_timestamp_period(TimestampTz t, const Span *p, TimestampTz *result)
 #endif /* MEOS */
 
 /**
- * @brief Compute the difference of a span and a value in the last argument
+ * @brief Compute the difference of a span and a value
  */
 int
 minus_span_value1(const Span *s, Datum d, meosType basetype, Span *result)
@@ -1290,7 +1290,7 @@ minus_period_timestamp(const Span *p, TimestampTz t)
 #endif /* MEOS */
 
 /**
- * @brief Compute the difference of two spans in the last argument
+ * @brief Compute the difference of two spans
  */
 int
 minus_span_span1(const Span *s1, const Span *s2, Span *result)

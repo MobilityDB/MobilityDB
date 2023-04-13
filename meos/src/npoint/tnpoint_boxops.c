@@ -59,7 +59,6 @@
 
 /**
  * @brief Set the spatiotemporal box from the network point value.
- *
  * @param[in] np Network point
  * @param[out] box Spatiotemporal box
  */

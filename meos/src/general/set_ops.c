@@ -1108,7 +1108,7 @@ union_set_set(const Set *s1, const Set *s2)
 
 /**
  * @ingroup libmeos_internal_setspan_set
- * @brief Compute the intersection of a set and a value in the last argument
+ * @brief Compute the intersection of a set and a value
  */
 bool
 intersection_set_value(const Set *s, Datum d, meosType basetype,
@@ -1169,7 +1169,7 @@ intersection_floatset_float(const Set *s, double d, double *result)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Compute the intersection of a text set and a text in the last argument
+ * @brief Compute the intersection of a text set and a text
  * @sqlop @p *
  */
 bool
@@ -1217,7 +1217,7 @@ intersection_set_set(const Set *s1, const Set *s2)
 
 /**
  * @ingroup libmeos_internal_setspan_set
- * @brief Compute the difference of a value and a set in the last argument
+ * @brief Compute the difference of a value and a set
  * @sqlop @p -
  */
 bool
@@ -1232,7 +1232,7 @@ minus_value_set(Datum d, meosType basetype, const Set *s, Datum *result)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_set
- * @brief Compute the difference of an integer and an integer set in the last argument
+ * @brief Compute the difference of an integer and an integer set
  * @sqlop @p -
  */
 bool
@@ -1261,7 +1261,7 @@ minus_bigint_bigintset(int64 i, const Set *s, int64 *result)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Compute the difference of a float and a float set in the last argument
+ * @brief Compute the difference of a float and a float set
  * @sqlop @p -
  */
 bool
@@ -1275,7 +1275,7 @@ minus_float_floatset(double d, const Set *s, double *result)
 
 /**
  * @ingroup libmeos_setspan_set
- * @brief Compute the difference of a text and a text set in the last argument
+ * @brief Compute the difference of a text and a text set
  * @sqlop @p -
  */
 bool

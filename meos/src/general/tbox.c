@@ -681,7 +681,7 @@ tbox_hast(const TBox *box)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return the minimum X value of a temporal box in the last argument.
+ * @brief Compute the minimum X value of a temporal box.
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Xmin()
@@ -698,7 +698,7 @@ tbox_xmin(const TBox *box, double *result)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return the maximum X value of a temporal box in the last argument.
+ * @brief Compute the maximum X value of a temporal box.
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Xmax()
@@ -715,7 +715,7 @@ tbox_xmax(const TBox *box, double *result)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return the minimum T value of a temporal box in the last argument.
+ * @brief Compute the minimum T value of a temporal box.
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Tmin()
@@ -732,7 +732,7 @@ tbox_tmin(const TBox *box, TimestampTz *result)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return the maximum T value of a temporal box in the last argument.
+ * @brief Compute the maximum T value of a temporal box.
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Tmax()

@@ -128,7 +128,7 @@ tsequenceset_make_valid(const TSequence **sequences, int count)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Set the second argument to the bounding box of a temporal sequence set
+ * @brief Compute the bounding box of a temporal sequence set
  * @sqlfunc period(), tbox(), stbox()
  * @sqlop @p ::
  */
@@ -440,7 +440,6 @@ tsequenceset_copy(const TSequenceSet *ss)
  * @param[in] value Base value
  * @param[in] temptype Temporal type
  * @param[in] ss Period set
- * @param[in] interp Interpolation
  */
 TSequenceSet *
 tsequenceset_from_base_temp(Datum value, meosType temptype,
@@ -867,8 +866,8 @@ tsequenceset_duration(const TSequenceSet *ss, bool boundspan)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_cast
- * @brief Return the bounding period of a temporal sequence set.
+ * @ingroup libmeos_internal_temporal_accessor
+ * @brief Compute the bounding period of a temporal sequence set.
  * @sqlfunc period()
  * @sqlop @p ::
  */
@@ -1070,7 +1069,7 @@ tsequenceset_num_timestamps(const TSequenceSet *ss)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Return the n-th distinct timestamp of a temporal sequence set.
+ * @brief Compute the n-th distinct timestamp of a temporal sequence set.
  * @sqlfunc timestampN()
  */
 bool
@@ -1142,7 +1141,7 @@ tsequenceset_timestamps(const TSequenceSet *ss, int *count)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Return the base value of a temporal sequence set at a timestamp.
+ * @brief Compute the base value of a temporal sequence set at a timestamp.
  *
  * @param[in] ss Temporal sequence set
  * @param[in] t Timestamp

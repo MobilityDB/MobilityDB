@@ -445,8 +445,8 @@ tinstant_time(const TInstant *inst)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_cast
- * @brief Return the bounding period of a temporal instant.
+ * @ingroup libmeos_internal_temporal_accessor
+ * @brief Compute the bounding period of a temporal instant.
  * @sqlfunc period()
  * @sqlop @p ::
  */
@@ -490,8 +490,7 @@ tinstant_instants(const TInstant *inst, int *count)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Return the base value of a temporal instant at a timestamp.
- *
+ * @brief Compute the base value of a temporal instant at a timestamp.
  * @note Since the corresponding function for temporal sequences need to
  * interpolate the value, it is necessary to return a copy of the value
  * @sqlfunc valueAtTimestamp()

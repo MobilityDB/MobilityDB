@@ -739,7 +739,7 @@ stbox_isgeodetic(const STBox *box)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return the minimum X value of a spatiotemporal box in the last argument.
+ * @brief Compute the minimum X value of a spatiotemporal box
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Xmin()
@@ -756,7 +756,7 @@ stbox_xmin(const STBox *box, double *result)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return the maximum X value of a spatiotemporal box in the last argument.
+ * @brief Compute the maximum X value of a spatiotemporal box.
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Xmax()
@@ -773,7 +773,7 @@ stbox_xmax(const STBox *box, double *result)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return the minimum Y value of a spatiotemporal box in the last argument.
+ * @brief Compute the minimum Y value of a spatiotemporal box.
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Ymin()
@@ -790,7 +790,7 @@ stbox_ymin(const STBox *box, double *result)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return the maximum Y value of a spatiotemporal box in the last argument.
+ * @brief Compute the maximum Y value of a spatiotemporal box.
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Ymax()
@@ -807,7 +807,7 @@ stbox_ymax(const STBox *box, double *result)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return the minimum Z value of a spatiotemporal box in the last argument.
+ * @brief Compute the minimum Z value of a spatiotemporal box.
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Zmin()
@@ -824,7 +824,7 @@ stbox_zmin(const STBox *box, double *result)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return the maximum Z value of a spatiotemporal box in the last argument.
+ * @brief Compute the maximum Z value of a spatiotemporal box.
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Zmax()
@@ -841,7 +841,7 @@ stbox_zmax(const STBox *box, double *result)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return the minimum timestamp of a spatiotemporal box in the last argument.
+ * @brief Compute the minimum timestamp of a spatiotemporal box.
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Tmin()
@@ -858,7 +858,7 @@ stbox_tmin(const STBox *box, TimestampTz *result)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return the maximum timestamp of a spatiotemporal box in the last argument.
+ * @brief Compute the maximum timestamp of a spatiotemporal box.
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Tmax()

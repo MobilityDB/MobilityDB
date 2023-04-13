@@ -1042,7 +1042,7 @@ timestampset_end_timestamp(const Set *ts)
 
 /**
  * @ingroup libmeos_internal_setspan_accessor
- * @brief Return the n-th value of a set in the last argument
+ * @brief Compute the n-th value of a set
  * @param[in] s Set
  * @param[in] n Number
  * @param[out] result Timestamp
@@ -1063,7 +1063,7 @@ set_value_n(const Set *s, int n, Datum *result)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the n-th value of an integer set in the last argument
+ * @brief Compute the n-th value of an integer set
  * @param[in] s Integer set
  * @param[in] n Number
  * @param[out] result Value
@@ -1083,7 +1083,7 @@ intset_value_n(const Set *s, int n, int *result)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the n-th value of a big integer set in the last argument
+ * @brief Compute the n-th value of a big integer set
  * @param[in] s Integer set
  * @param[in] n Number
  * @param[out] result Value
@@ -1103,7 +1103,7 @@ bigintset_value_n(const Set *s, int n, int64 *result)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the n-th value of a float set in the last argument
+ * @brief Compute the n-th value of a float set
  * @param[in] s Float set
  * @param[in] n Number
  * @param[out] result Value
@@ -1123,7 +1123,7 @@ floatset_value_n(const Set *s, int n, double *result)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the n-th value of a timestamp set in the last argument
+ * @brief Compute the n-th value of a timestamp set
  * @param[in] ts Timestamp set
  * @param[in] n Number
  * @param[out] result Timestamp

@@ -748,7 +748,7 @@ tsequence_make_valid(const TInstant **instants, int count, bool lower_inc,
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Set the second argument to the bounding box of a temporal sequence
+ * @brief Compute the bounding box of a temporal sequence
  * @sqlfunc period(), tbox(), stbox()
  * @sqlop @p ::
  */
@@ -1133,7 +1133,6 @@ tgeogpointseq_from_base_timestampset(const GSERIALIZED *gs, const Set *ts)
  * @param[in] value Base value
  * @param[in] temptype Temporal type
  * @param[in] seq Temporal value
- * @param[in] interp Interpolation
  */
 TSequence *
 tsequence_from_base_temp(Datum value, meosType temptype, const TSequence *seq)
@@ -2340,8 +2339,8 @@ tsequence_duration(const TSequence *seq)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_cast
- * @brief Return the bounding period of a temporal sequence
+ * @ingroup libmeos_internal_temporal_accessor
+ * @brief Compute the bounding period of a temporal sequence
  * @sqlfunc period()
  * @sqlop @p ::
  */
@@ -2607,8 +2606,7 @@ tsegment_value_at_timestamp(const TInstant *inst1, const TInstant *inst2,
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Return the base value of a temporal sequence at a timestamp.
- *
+ * @brief Compute the base value of a temporal sequence at a timestamp.
  * @param[in] seq Temporal sequence
  * @param[in] t Timestamp
  * @param[in] strict True if inclusive/exclusive bounds are taken into account
@@ -4445,7 +4443,7 @@ tcontseq_restrict_minmax(const TSequence *seq, bool min, bool atfunc)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Return the base value of a temporal discrete sequence at a timestamp
+ * @brief Compute the base value of a temporal discrete sequence at a timestamp
  *
  * @note In order to be compatible with the corresponding functions for temporal
  * sequences that need to interpolate the value, it is necessary to return
