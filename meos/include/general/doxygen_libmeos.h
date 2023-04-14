@@ -249,6 +249,10 @@
  *****************************************************************************/
 
 /**
+ * @defgroup libmeos_internal_typefuncs Generic type functions
+ * @ingroup libmeos_internal
+ * @brief Generic type functions.
+ *
  * @defgroup libmeos_internal_setspan Functions for set and span types
  * @ingroup libmeos_internal
  * @brief Functions for set and span types.

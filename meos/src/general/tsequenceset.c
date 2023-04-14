@@ -491,7 +491,7 @@ tintseqset_from_base_temp(int i, const TSequenceSet *ss)
 TSequenceSet *
 tfloatseqset_from_base_temp(double d, const TSequenceSet *ss)
 {
-  return tsequenceset_from_base_temp(Float8GetDatum(d), T_TFLOAT);
+  return tsequenceset_from_base_temp(Float8GetDatum(d), T_TFLOAT, ss);
 }
 
 /**

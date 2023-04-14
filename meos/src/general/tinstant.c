@@ -48,6 +48,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/pg_types.h"
+#include "general/spanset.h"
 #include "general/temporaltypes.h"
 #include "general/type_parser.h"
 #include "general/type_util.h"

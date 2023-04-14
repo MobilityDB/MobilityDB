@@ -159,6 +159,15 @@ extern Datum SET_VAL_N(const Set *s, int index);
     (SET_OFFSETS_PTR(s))[index] ) ) )
 #endif
 
+/*****************************************************************************/
+
+/* Generic type functions */
+
+extern uint32 datum_hash(Datum d, meosType basetype);
+extern uint64 datum_hash_extended(Datum d, meosType basetype, uint64 seed);
+
+/*****************************************************************************/
+
 /* Input/output functions for set and span types */
 
 extern Set *set_in(const char *str, meosType basetype);
@@ -172,21 +181,17 @@ extern char *spanset_out(const SpanSet *ss, int maxdd);
 
 /* Constructor functions for set and span types */
 
-extern void set_expand_bbox(Datum d, meosType basetype, void *box);
-extern void *set_bbox_ptr(const Set *s);
-extern size_t *set_offsets_ptr(const Set *s);
 extern Set *set_make(const Datum *values, int count, meosType basetype, bool ordered);
 extern Set *set_make_exp(const Datum *values, int count, int maxcount, meosType basetype, bool ordered);
 extern Set *set_make_free(Datum *values, int count, meosType basetype, bool ordered);
-extern Set *set_copy(const Set *s);
 extern Span *span_make(Datum lower, Datum upper, bool lower_inc, bool upper_inc, meosType basetype);
 extern void span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc, meosType basetype, Span *s);
+extern SpanSet *spanset_make_free(Span *spans, int count, bool normalize);
 
 /*****************************************************************************/
 
 /* Cast functions for set and span types */
 
-extern void value_set_span(Datum d, meosType basetype, Span *s);
 extern Set *value_to_set(Datum d, meosType basetype);
 extern Span *value_to_span(Datum d, meosType basetype);
 extern SpanSet *value_to_spanset(Datum d, meosType basetype);
@@ -195,16 +200,15 @@ extern SpanSet *value_to_spanset(Datum d, meosType basetype);
 
 /* Accessor functions for set and span types */
 
-extern uint32 datum_hash(Datum d, meosType basetype);
-extern uint64 datum_hash_extended(Datum d, meosType basetype, uint64 seed);
-extern Datum set_start_value(const Set *s);
 extern Datum set_end_value(const Set *s);
+extern int set_mem_size(const Set *s);
 extern void set_set_span(const Set *os, Span *s);
+extern Datum set_start_value(const Set *s);
 extern bool set_value_n(const Set *s, int n, Datum *result);
 extern Datum *set_values(const Set *s);
-extern const Span *spanset_sp_n(const SpanSet *ss, int index);
+extern int spanset_mem_size(const SpanSet *ss);
 extern void spatialset_set_stbox(const Set *set, STBox *box);
-extern void timestampset_set_period(const Set *ts, Span *p);
+extern void value_set_span(Datum d, meosType basetype, Span *s);
 
 /*****************************************************************************/
 
@@ -214,21 +218,16 @@ extern void floatspan_set_intspan(const Span *s1, Span *s2);
 extern void floatspan_set_numspan(const Span *s1, Span *s2, meosType basetype);
 extern void intspan_set_floatspan(const Span *s1, Span *s2);
 extern void numspan_set_floatspan(const Span *s1, Span *s2);
+extern Set *set_shift(const Set *s, Datum shift);
 extern void span_shift(Span *s, Datum value);
 extern void spanset_shift(SpanSet *s, Datum value);
-extern void floatspan_set_numspan(const Span *s1, Span *s2, meosType basetype);
-extern Set *set_shift(const Set *s, Datum shift);
 
 /*****************************************************************************/
 
 /* Aggregate functions for set and span types */
 
-extern Set *value_union_transfn(Set *state, Datum d, meosType basetype);
-extern Set *set_union_transfn(Set *state, Set *set);
 extern Span *spanbase_extent_transfn(Span *s, Datum d, meosType basetype);
-extern SpanSet *span_union_transfn(SpanSet *state, const Span *span);
-extern SpanSet *spanset_union_transfn(SpanSet *state, const SpanSet *ss);
-extern SpanSet *spanset_union_finalfn(SpanSet *state);
+extern Set *value_union_transfn(Set *state, Datum d, meosType basetype);
 
 /*****************************************************************************
  * Bounding box functions for set and span types

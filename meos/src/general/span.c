@@ -534,7 +534,7 @@ span_copy(const Span *s)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_cast
+ * @ingroup libmeos_internal_setspan_accessor
  * @brief Cast a value as a span
  */
 void
@@ -882,7 +882,6 @@ span_shift(Span *s, Datum shift)
 }
 
 /**
- * @ingroup libmeos_internal_setspan_transf
  * @brief Shift and/or scale period bounds by the intervals.
  * @param[in] shift Interval to shift the bounds
  * @param[in] duration Interval for the duration of the result

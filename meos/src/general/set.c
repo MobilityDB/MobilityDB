@@ -56,7 +56,6 @@
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_accessor
  * @brief Return the location of a value in a set using binary search.
  *
  * If the value is found, the index of the value is returned in the output
@@ -234,8 +233,7 @@ set_basetype_quotes(meosType type)
 }
 
 /**
- * @ingroup libmeos_internal_setspan_inout
- * @brief Return the Well-Known Text (WKT) representation of a set.
+ * @brief Return the output representation of a set given by a function.
  */
 char *
 set_out_fn(const Set *s, int maxdd, outfunc value_out)
@@ -444,7 +442,8 @@ SET_VAL_N(const Set *s, int index)
 
 /**
  * @ingroup libmeos_internal_setspan_constructor
- * @brief Construct a set from an array of values.
+ * @brief Construct a set from an array of values enabling the data structure
+ * to expand.
  *
  * The memory structure depends on whether the value is passed by value or
  * by reference. For example, the memory structure of a set with 2 values
@@ -824,7 +823,7 @@ timestamp_to_tstzset(TimestampTz t)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_setspan_cast
+ * @ingroup libmeos_internal_setspan_accessor
  * @brief Set the last argument to the bounding span of a set.
  */
 void
@@ -1238,6 +1237,7 @@ geoset_srid(const Set *set)
  *****************************************************************************/
 
 /**
+ * @ingroup libmeos_internal_setspan_transf
  * @brief Shift the values of set.
  */
 Set *

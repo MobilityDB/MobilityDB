@@ -47,6 +47,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/set.h"
+#include "general/spanset.h"
 #include "general/type_out.h"
 #include "general/type_util.h"
 /* MobilityDB */

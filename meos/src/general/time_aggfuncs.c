@@ -43,6 +43,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/skiplist.h"
+#include "general/spanset.h"
 #include "general/temporal_aggfuncs.h"
 #include "general/temporal_tile.h"
 #include "general/type_util.h"

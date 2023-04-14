@@ -79,6 +79,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/lifting.h"
+#include "general/spanset.h"
 #include "general/temporaltypes.h"
 #include "general/tbool_boolops.h"
 #include "general/type_util.h"
