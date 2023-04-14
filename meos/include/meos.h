@@ -1329,12 +1329,14 @@ extern SkipList *tfloat_tsum_transfn(SkipList *state, const Temporal *temp);
 extern SkipList *tint_tmax_transfn(SkipList *state, const Temporal *temp);
 extern SkipList *tint_tmin_transfn(SkipList *state, const Temporal *temp);
 extern SkipList *tint_tsum_transfn(SkipList *state, const Temporal *temp);
-extern double tnumber_integral(const Temporal *temp);
 extern TBox *tnumber_extent_transfn(TBox *box, const Temporal *temp);
+extern double tnumber_integral(const Temporal *temp);
 extern Temporal *tnumber_tavg_finalfn(SkipList *state);
 extern SkipList *tnumber_tavg_transfn(SkipList *state, const Temporal *temp);
 extern double tnumber_twavg(const Temporal *temp);
 extern STBox *tpoint_extent_transfn(STBox *box, const Temporal *temp);
+extern Temporal *tpoint_tcentroid_finalfn(SkipList *state);
+extern SkipList *tpoint_tcentroid_transfn(SkipList *state, Temporal *temp);
 extern GSERIALIZED *tpoint_twcentroid(const Temporal *temp);
 extern SkipList *ttext_tmax_transfn(SkipList *state, const Temporal *temp);
 extern SkipList *ttext_tmin_transfn(SkipList *state, const Temporal *temp);
@@ -1343,32 +1345,28 @@ extern SkipList *ttext_tmin_transfn(SkipList *state, const Temporal *temp);
 
 /* Tile functions for temporal types */
 
-extern int int_bucket(int value, int size, int origin);
 extern double float_bucket(double value, double size, double origin);
-extern TimestampTz timestamptz_bucket(TimestampTz timestamp, const Interval *duration, TimestampTz origin);
-
-extern Span *intspan_bucket_list(const Span *bounds, int size, int origin, int *newcount);
 extern Span *floatspan_bucket_list(const Span *bounds, double size, double origin, int *newcount);
+extern int int_bucket(int value, int size, int origin);
+extern Span *intspan_bucket_list(const Span *bounds, int size, int origin, int *newcount);
 extern Span *period_bucket_list(const Span *bounds, const Interval *duration, TimestampTz origin, int *newcount);
-
+extern STBox *stbox_tile_list(const STBox *bounds, double size, const Interval *duration, GSERIALIZED *sorigin, TimestampTz torigin, int **cellcount);
 extern TBox *tbox_tile_list(const TBox *bounds, double xsize, const Interval *duration, double xorigin, TimestampTz torigin, int *rows, int *columns);
-
-extern Temporal **tint_value_split(Temporal *temp, int size, int origin, int *newcount);
-extern Temporal **tfloat_value_split(Temporal *temp, double size, double origin, int *newcount);
 extern Temporal **temporal_time_split(Temporal *temp, Interval *duration, TimestampTz torigin, int *newcount);
-extern Temporal **tint_value_time_split(Temporal *temp, int size, int vorigin, Interval *duration, TimestampTz torigin, int *newcount);
+extern Temporal **tfloat_value_split(Temporal *temp, double size, double origin, int *newcount);
 extern Temporal **tfloat_value_time_split(Temporal *temp, double size, double vorigin, Interval *duration, TimestampTz torigin, int *newcount);
-
-extern STBox *stbox_tile_list(STBox *bounds, double size, const Interval *duration, GSERIALIZED *sorigin, TimestampTz torigin, int **cellcount);
+extern TimestampTz timestamptz_bucket(TimestampTz timestamp, const Interval *duration, TimestampTz origin);
+extern Temporal **tint_value_split(Temporal *temp, int size, int origin, int *newcount);
+extern Temporal **tint_value_time_split(Temporal *temp, int size, int vorigin, Interval *duration, TimestampTz torigin, int *newcount);
 
 /*****************************************************************************/
 
 /* Similarity functions for temporal types */
 
-extern double temporal_frechet_distance(const Temporal *temp1, const Temporal *temp2);
 extern double temporal_dyntimewarp_distance(const Temporal *temp1, const Temporal *temp2);
-extern Match *temporal_frechet_path(const Temporal *temp1, const Temporal *temp2, int *count);
 extern Match *temporal_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2, int *count);
+extern double temporal_frechet_distance(const Temporal *temp1, const Temporal *temp2);
+extern Match *temporal_frechet_path(const Temporal *temp1, const Temporal *temp2, int *count);
 extern double temporal_hausdorff_distance(const Temporal *temp1, const Temporal *temp2);
 
 /*****************************************************************************/
@@ -1380,8 +1378,7 @@ Temporal *temporal_simplify_min_dist(const Temporal *temp, double dist);
 Temporal *temporal_simplify_min_tdelta(const Temporal *temp, const Interval *mint);
 Temporal *temporal_simplify_dp(const Temporal *temp, double eps_dist, bool synchronized);
 Temporal *temporal_simplify_max_dist(const Temporal *temp, double eps_dist, bool synchronized);
-bool tpoint_AsMVTGeom(const Temporal *temp, const STBox *bounds, int32_t extent,
-  int32_t buffer, bool clip_geom, GSERIALIZED **geom, int64 **timesarr, int *count);
+bool tpoint_AsMVTGeom(const Temporal *temp, const STBox *bounds, int32_t extent, int32_t buffer, bool clip_geom, GSERIALIZED **geom, int64 **timesarr, int *count);
 bool tpoint_to_geo_measure(const Temporal *tpoint, const Temporal *measure, bool segmentize, GSERIALIZED **result);
 
 /*****************************************************************************/

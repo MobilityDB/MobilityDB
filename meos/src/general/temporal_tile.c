@@ -501,7 +501,8 @@ tbox_tile_state_next(TboxGridState *state)
 
 #if MEOS
 /**
- * @brief Return the tile list from a TBox.
+ * @ingroup libmeos_temporal_tile
+ * @brief Generate a multidimensional grid for temporal numbers.
  * @param[in] bounds Input span to split
  * @param[in] xsize Value size of the tiles
  * @param[in] duration Interval defining the temporal size of the tiles
@@ -537,7 +538,6 @@ tbox_tile_list(const TBox *bounds, double xsize, const Interval *duration,
 }
 
 /**
- * @ingroup libmeos_temporal_tile
  * @brief Return the grid list from a span and a period.
  * @param[in] bounds Input value span to split
  * @param[in] xsize Value size of the tiles

@@ -227,10 +227,6 @@
  * @ingroup libmeos_temporal_spatial
  * @brief Spatial relationship functions for temporal point types.
  *
- * @defgroup libmeos_temporal_time Time functions
- * @ingroup libmeos_temporal
- * @brief Time functions for temporal types.
- *
  * @defgroup libmeos_temporal_agg Local and temporal aggregate functions
  * @ingroup libmeos_temporal
  * @brief Local and temporal aggregate functions for temporal types.

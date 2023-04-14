@@ -587,12 +587,12 @@ stbox_tile_state_get(STboxGridState *state, STBox *box)
 
 #if MEOS
 /**
- * @brief @ingroup mobilitydb_temporal_tile
+ * @ingroup libmeos_temporal_tile
  * @brief Generate a multidimensional grid for temporal points.
  * @sqlfunc multidimGrid()
  */
 STBox *
-stbox_tile_list(STBox *bounds, double size, const Interval *duration,
+stbox_tile_list(const STBox *bounds, double size, const Interval *duration,
   GSERIALIZED *sorigin, TimestampTz torigin, int **no_cells)
 {
   /* Get input parameters */

@@ -1079,6 +1079,7 @@ tnumber_tavg_finalfn(SkipList *state)
 /*****************************************************************************/
 
 /**
+ * @ingroup libmeos_temporal_agg
  * @brief Transition function for temporal extent aggregate of temporal values
  */
 Span *
@@ -1105,6 +1106,7 @@ temporal_extent_transfn(Span *p, const Temporal *temp)
 }
 
 /**
+ * @ingroup libmeos_temporal_agg
  * @brief Transition function for temporal extent aggregate of temporal numbers
  */
 TBox *
