@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Aggregate function for span types.
  */
 
@@ -87,21 +88,6 @@ Span_extent_combinefn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Span_extent_finalfn(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Span_extent_finalfn);
-/**
- * @brief Final function for extent aggregation of base, set, span, and
- * spanset values resulting in a span value
- */
-Datum
-Span_extent_finalfn(PG_FUNCTION_ARGS)
-{
-  Span *span = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
-  if (! span)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(span);
-}
-
 /*****************************************************************************/
 
 PGDLLEXPORT Datum Spanbase_extent_transfn(PG_FUNCTION_ARGS);
@@ -112,6 +98,8 @@ PG_FUNCTION_INFO_V1(Spanbase_extent_transfn);
 Datum
 Spanbase_extent_transfn(PG_FUNCTION_ARGS)
 {
+  if (PG_ARGISNULL(0) && PG_ARGISNULL(1))
+    PG_RETURN_NULL();
   Span *s = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
   if (PG_ARGISNULL(1))
     PG_RETURN_POINTER(s);

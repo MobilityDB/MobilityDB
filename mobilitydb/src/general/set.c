@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief General functions for set values composed of an ordered list of
  * distinct values.
  */
@@ -389,56 +390,56 @@ Set_shift(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Tstzset_shift(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tstzset_shift);
+PGDLLEXPORT Datum Timestampset_shift(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Timestampset_shift);
 /**
  * @ingroup mobilitydb_setspan_transf
  * @brief Shift a timestamp set by an interval
  * @sqlfunc shift()
  */
 Datum
-Tstzset_shift(PG_FUNCTION_ARGS)
+Timestampset_shift(PG_FUNCTION_ARGS)
 {
   Set *ts = PG_GETARG_SET_P(0);
   Interval *shift = PG_GETARG_INTERVAL_P(1);
-  Set *result = tstzset_shift_tscale(ts, shift, NULL);
+  Set *result = timestampset_shift_tscale(ts, shift, NULL);
   PG_FREE_IF_COPY(ts, 0);
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Tstzset_tscale(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tstzset_tscale);
+PGDLLEXPORT Datum Timestampset_tscale(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Timestampset_tscale);
 /**
  * @ingroup mobilitydb_setspan_transf
  * @brief Scale a timestamp set by an interval
  * @sqlfunc tscale()
  */
 Datum
-Tstzset_tscale(PG_FUNCTION_ARGS)
+Timestampset_tscale(PG_FUNCTION_ARGS)
 {
   Set *ts = PG_GETARG_SET_P(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
   ensure_valid_duration(duration);
-  Set *result = tstzset_shift_tscale(ts, NULL, duration);
+  Set *result = timestampset_shift_tscale(ts, NULL, duration);
   PG_FREE_IF_COPY(ts, 0);
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Tstzset_shift_tscale(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tstzset_shift_tscale);
+PGDLLEXPORT Datum Timestampset_shift_tscale(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Timestampset_shift_tscale);
 /**
  * @ingroup mobilitydb_setspan_transf
  * @brief Shift and scale a timestamp set by the intervals
  * @sqlfunc shiftTscale()
  */
 Datum
-Tstzset_shift_tscale(PG_FUNCTION_ARGS)
+Timestampset_shift_tscale(PG_FUNCTION_ARGS)
 {
   Set *ts = PG_GETARG_SET_P(0);
   Interval *shift = PG_GETARG_INTERVAL_P(1);
   Interval *duration = PG_GETARG_INTERVAL_P(2);
   ensure_valid_duration(duration);
-  Set *result = tstzset_shift_tscale(ts, shift, duration);
+  Set *result = timestampset_shift_tscale(ts, shift, duration);
   PG_RETURN_POINTER(result);
 }
 
@@ -683,7 +684,7 @@ PG_FUNCTION_INFO_V1(Set_hash);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the 32-bit hash of a set
- * @sqlfunc tstzset_hash()
+ * @sqlfunc hash()
  */
 Datum
 Set_hash(PG_FUNCTION_ARGS)
@@ -698,7 +699,7 @@ PG_FUNCTION_INFO_V1(Set_hash_extended);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the 64-bit hash of a set using a seed
- * @sqlfunc tstzset_hash_extended()
+ * @sqlfunc hash_extended()
  */
 Datum
 Set_hash_extended(PG_FUNCTION_ARGS)

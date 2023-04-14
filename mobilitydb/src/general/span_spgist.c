@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Quad-tree SP-GiST index for span types.
  *
  * The functions in this file are based on those in the file

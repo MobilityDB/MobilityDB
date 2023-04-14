@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Analytic functions for temporal points and temporal floats.
  */
 
@@ -501,7 +502,7 @@ tpointseqset_to_geo_measure_segmentize(const TSequenceSet *ss,
 /**
  * @ingroup libmeos_temporal_analytics
  * @brief Construct a geometry/geography with M measure from the temporal
- * point and
+ * point and the arguments. The latter can be
  * - either the temporal float given in the second argument (if any)
  * - or the time information of the temporal point where the M coordinates
  *   encode the timestamps in number of seconds since '1970-01-01'

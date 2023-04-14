@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief MobilityDB functions gserialized_func(...) corresponding to external
  * PostGIS functions xxx_func(PG_FUNCTION_ARGS). This avoids bypassing the
  * function manager fmgr.c.
@@ -734,7 +735,6 @@ meos_point_in_polygon(const GSERIALIZED *geom1, const GSERIALIZED *geom2,
   }
 }
 
-#if MEOS
 GEOSGeometry *
 POSTGIS2GEOS(const GSERIALIZED *pglwgeom)
 {
@@ -771,7 +771,6 @@ GEOS2POSTGIS(GEOSGeom geom, char want3d)
 
   return result;
 }
-#endif /* MEOS */
 
 /**
  * @brief Transform the GSERIALIZED geometries into GEOSGeometry and
@@ -1260,7 +1259,6 @@ gserialized_geog_distance(const GSERIALIZED *g1, const GSERIALIZED *g2)
  * Functions adapted from lwgeom_inout.c
  *****************************************************************************/
 
-#if MEOS
 /**
 * Check the consistency of the metadata we want to enforce in the typmod:
 * srid, type and dimensionality. If things are inconsistent, shut down the query.
@@ -1355,9 +1353,6 @@ postgis_valid_typmod(GSERIALIZED *gser, int32_t typmod)
 
   return gser;
 }
-#else
-  extern GSERIALIZED *postgis_valid_typmod(GSERIALIZED *gser, int32_t typmod);
-#endif /* MEOS */
 
 /**
  * @ingroup libmeos_pgis_types
@@ -1745,7 +1740,6 @@ pgis_gserialized_same(const GSERIALIZED *geom1, const GSERIALIZED *geom2)
  * Functions adapted from geography_inout.c
  *****************************************************************************/
 
-#if MEOS
 /**
 * The geography type only support POINT, LINESTRING, POLYGON, MULTI* variants
 * of same, and GEOMETRYCOLLECTION. If the input type is not one of those, shut
@@ -1797,11 +1791,6 @@ gserialized_geography_from_lwgeom(LWGEOM *lwgeom, int32 geog_typmod)
 
   return g_ser;
 }
-#else
-  extern void geography_valid_type(uint8_t type);
-  extern GSERIALIZED *gserialized_geography_from_lwgeom(LWGEOM *lwgeom,
-    int32 geog_typmod);
-#endif /* MEOS */
 
 /**
  * @brief Get a geography from in string

@@ -71,49 +71,36 @@ CREATE FUNCTION span_extent_combinefn(tstzspan, tstzspan)
   AS 'MODULE_PATHNAME', 'Span_extent_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION span_extent_finalfn(intspan)
-  RETURNS intspan
-  AS 'MODULE_PATHNAME', 'Span_extent_finalfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION span_extent_finalfn(bigintspan)
-  RETURNS bigintspan
-  AS 'MODULE_PATHNAME', 'Span_extent_finalfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION span_extent_finalfn(floatspan)
-  RETURNS floatspan
-  AS 'MODULE_PATHNAME', 'Span_extent_finalfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION span_extent_finalfn(tstzspan)
-  RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Span_extent_finalfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-
 CREATE AGGREGATE extent(intspan) (
   SFUNC = span_extent_transfn,
   STYPE = intspan,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = span_extent_combinefn,
-  FINALFUNC = span_extent_finalfn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   PARALLEL = safe
 );
 CREATE AGGREGATE extent(bigintspan) (
   SFUNC = span_extent_transfn,
   STYPE = bigintspan,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = span_extent_combinefn,
-  FINALFUNC = span_extent_finalfn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   PARALLEL = safe
 );
 CREATE AGGREGATE extent(floatspan) (
   SFUNC = span_extent_transfn,
   STYPE = floatspan,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = span_extent_combinefn,
-  FINALFUNC = span_extent_finalfn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   PARALLEL = safe
 );
 CREATE AGGREGATE extent(tstzspan) (
   SFUNC = span_extent_transfn,
   STYPE = tstzspan,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = span_extent_combinefn,
-  FINALFUNC = span_extent_finalfn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   PARALLEL = safe
 );
 
@@ -140,29 +127,33 @@ CREATE FUNCTION span_extent_transfn(tstzspan, timestamptz)
 CREATE AGGREGATE extent(int) (
   SFUNC = span_extent_transfn,
   STYPE = intspan,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = span_extent_combinefn,
-  FINALFUNC = span_extent_finalfn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   PARALLEL = safe
 );
 CREATE AGGREGATE extent(bigint) (
   SFUNC = span_extent_transfn,
   STYPE = bigintspan,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = span_extent_combinefn,
-  FINALFUNC = span_extent_finalfn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   PARALLEL = safe
 );
 CREATE AGGREGATE extent(float) (
   SFUNC = span_extent_transfn,
   STYPE = floatspan,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = span_extent_combinefn,
-  FINALFUNC = span_extent_finalfn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   PARALLEL = safe
 );
 CREATE AGGREGATE extent(timestamptz) (
   SFUNC = span_extent_transfn,
   STYPE = tstzspan,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = span_extent_combinefn,
-  FINALFUNC = span_extent_finalfn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   PARALLEL = safe
 );
 
@@ -189,29 +180,33 @@ CREATE FUNCTION set_extent_transfn(tstzspan, tstzset)
 CREATE AGGREGATE extent(intset) (
   SFUNC = set_extent_transfn,
   STYPE = intspan,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = span_extent_combinefn,
-  FINALFUNC = span_extent_finalfn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   PARALLEL = safe
 );
 CREATE AGGREGATE extent(bigintset) (
   SFUNC = set_extent_transfn,
   STYPE = bigintspan,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = span_extent_combinefn,
-  FINALFUNC = span_extent_finalfn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   PARALLEL = safe
 );
 CREATE AGGREGATE extent(floatset) (
   SFUNC = set_extent_transfn,
   STYPE = floatspan,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = span_extent_combinefn,
-  FINALFUNC = span_extent_finalfn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   PARALLEL = safe
 );
 CREATE AGGREGATE extent(tstzset) (
   SFUNC = set_extent_transfn,
   STYPE = tstzspan,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = span_extent_combinefn,
-  FINALFUNC = span_extent_finalfn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   PARALLEL = safe
 );
 
@@ -235,29 +230,33 @@ CREATE FUNCTION spanset_extent_transfn(tstzspan, tstzspanset)
 CREATE AGGREGATE extent(intspanset) (
   SFUNC = spanset_extent_transfn,
   STYPE = intspan,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = span_extent_combinefn,
-  FINALFUNC = span_extent_finalfn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   PARALLEL = safe
 );
 CREATE AGGREGATE extent(bigintspanset) (
   SFUNC = spanset_extent_transfn,
   STYPE = bigintspan,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = span_extent_combinefn,
-  FINALFUNC = span_extent_finalfn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   PARALLEL = safe
 );
 CREATE AGGREGATE extent(floatspanset) (
   SFUNC = spanset_extent_transfn,
   STYPE = floatspan,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = span_extent_combinefn,
-  FINALFUNC = span_extent_finalfn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   PARALLEL = safe
 );
 CREATE AGGREGATE extent(tstzspanset) (
   SFUNC = spanset_extent_transfn,
   STYPE = tstzspan,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = span_extent_combinefn,
-  FINALFUNC = span_extent_finalfn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   PARALLEL = safe
 );
 

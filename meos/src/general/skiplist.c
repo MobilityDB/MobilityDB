@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Functions manipulating skiplists.
  * @note See the description of skip lists in Wikipedia
  * https://en.wikipedia.org/wiki/Skip_list

@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Operators for set types.
  */
 
@@ -89,7 +90,7 @@ PGDLLEXPORT Datum Contained_value_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_value_set);
 /**
  * @ingroup mobilitydb_setspan_topo
- * @brief Return true if a timestamp is contained by a timestamp set
+ * @brief Return true if a timestamp is contained in a timestamp set
  * @sqlfunc time_contained()
  * @sqlop @p <@
  */
@@ -108,7 +109,7 @@ PGDLLEXPORT Datum Contained_set_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_set_set);
 /**
  * @ingroup mobilitydb_setspan_topo
- * @brief Return true if the first timestamp set is contained by the second one
+ * @brief Return true if the first timestamp set is contained in the second one
  * @sqlfunc time_contained()
  * @sqlop @p <@
  */

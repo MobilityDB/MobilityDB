@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief R-tree GiST index for temporal integers and temporal floats.
  *
  * These functions are based on those in the file `gistproc.c`.
@@ -794,7 +795,7 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, meosType bboxtype,
 
     /*----
      * The goal is to form a left and right interval, so that every entry
-     * interval is contained by either left or right interval (or both).
+     * interval is contained in either left or right interval (or both).
      *
      * For example, with the intervals (0,1), (1,3), (2,3), (2,4):
      *

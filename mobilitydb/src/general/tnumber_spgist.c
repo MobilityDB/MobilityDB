@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief SP-GiST implementation of 4-dimensional quad-tree and kd-tree over
  * temporal integers and temporal floats.
  *

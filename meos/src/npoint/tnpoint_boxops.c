@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Bounding box operators for temporal network points.
  *
  * These operators test the bounding boxes of temporal npoints, which are
@@ -59,7 +60,6 @@
 
 /**
  * @brief Set the spatiotemporal box from the network point value.
- *
  * @param[in] np Network point
  * @param[out] box Spatiotemporal box
  */

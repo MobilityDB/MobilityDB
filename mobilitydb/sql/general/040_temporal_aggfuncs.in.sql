@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /*
- * temporal_aggfuncs.sql
- * Temporal aggregate functions
+ * @brief Temporal aggregate functions
  */
 
 CREATE FUNCTION temporal_extent_transfn(tstzspan, tbool)

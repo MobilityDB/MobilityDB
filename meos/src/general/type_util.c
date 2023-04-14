@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief General utility functions for temporal types.
  */
 
@@ -480,7 +481,7 @@ datum_div(Datum l, Datum r, meosType typel, meosType typer)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_accessor
+ * @ingroup libmeos_internal_typefuncs
  * @brief Return the 32-bit hash of a value.
  */
 uint32
@@ -510,7 +511,7 @@ datum_hash(Datum d, meosType type)
 }
 
 /**
- * @ingroup libmeos_internal_setspan_accessor
+ * @ingroup libmeos_internal_typefuncs
  * @brief Return the 64-bit hash of a value using a seed.
  */
 uint64
@@ -774,8 +775,8 @@ bstring2bytea(const uint8_t *wkb, size_t size)
 }
 
 /**
+ * @ingroup libmeos_pg_types
  * @brief Convert a C string into a text value
- *
  * @note We don't include <utils/builtins.h> to avoid collisions with json-c/json.h
  * @note Function taken from PostGIS file lwgeom_in_geojson.c
  */
@@ -790,8 +791,8 @@ cstring2text(const char *cstring)
 }
 
 /**
+ * @ingroup libmeos_pg_types
  * @brief Convert a text value into a C string
- *
  * @note We don't include <utils/builtins.h> to avoid collisions with json-c/json.h
  * @note Function taken from PostGIS file lwgeom_in_geojson.c
  */

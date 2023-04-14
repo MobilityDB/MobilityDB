@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Functions for selectivity estimation of operators on temporal points.
  */
 

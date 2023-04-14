@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief General functions for set values composed of an ordered list of
  * distinct values.
  */
@@ -55,7 +56,6 @@
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_accessor
  * @brief Return the location of a value in a set using binary search.
  *
  * If the value is found, the index of the value is returned in the output
@@ -213,7 +213,7 @@ textset_in(const char *str)
  * @brief Return a set from its Well-Known Text (WKT) representation.
  */
 Set *
-tstzset_in(const char *str)
+timestampset_in(const char *str)
 {
   return set_parse(&str, T_TSTZSET);
 }
@@ -233,8 +233,7 @@ set_basetype_quotes(meosType type)
 }
 
 /**
- * @ingroup libmeos_internal_setspan_inout
- * @brief Return the Well-Known Text (WKT) representation of a set.
+ * @brief Return the output representation of a set given by a function.
  */
 char *
 set_out_fn(const Set *s, int maxdd, outfunc value_out)
@@ -268,7 +267,7 @@ set_out(const Set *s, int maxdd)
  * @brief Output a set of timestamps.
 */
 char *
-tstzset_out(const Set *set)
+timestampset_out(const Set *set)
 {
   return set_out(set, 0);
 }
@@ -443,7 +442,8 @@ SET_VAL_N(const Set *s, int index)
 
 /**
  * @ingroup libmeos_internal_setspan_constructor
- * @brief Construct a set from an array of values.
+ * @brief Construct a set from an array of values enabling the data structure
+ * to expand.
  *
  * The memory structure depends on whether the value is passed by value or
  * by reference. For example, the memory structure of a set with 2 values
@@ -636,7 +636,7 @@ set_make(const Datum *values, int count, meosType basetype, bool ordered)
  * @brief Construct a timestamp with time zone set from an array of values.
 */
 Set *
-tstzset_make(const TimestampTz *values, int count)
+timestampset_make(const TimestampTz *values, int count)
 {
   Datum *datums = palloc(sizeof(Datum *) * count);
   for (int i=0; i<count; ++i)
@@ -823,7 +823,7 @@ timestamp_to_tstzset(TimestampTz t)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_setspan_cast
+ * @ingroup libmeos_internal_setspan_accessor
  * @brief Set the last argument to the bounding span of a set.
  */
 void
@@ -855,7 +855,7 @@ spatialset_set_stbox(const Set *set, STBox *box)
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup libmeos_internal_setspan_accessor
  * @brief Return the size in bytes of a set.
  * @sqlfunc memSize()
  */
@@ -967,7 +967,7 @@ floatset_start_value(const Set *s)
  * @pymeosfunc startTimestamp()
  */
 TimestampTz
-tstzset_start_timestamp(const Set *ts)
+timestampset_start_timestamp(const Set *ts)
 {
   TimestampTz result = DatumGetTimestampTz(SET_VAL_N(ts, 0));
   return result;
@@ -1033,7 +1033,7 @@ floatset_end_value(const Set *s)
  * @pymeosfunc endTimestamp()
  */
 TimestampTz
-tstzset_end_timestamp(const Set *ts)
+timestampset_end_timestamp(const Set *ts)
 {
   TimestampTz result = DatumGetTimestampTz(SET_VAL_N(ts, ts->count - 1));
   return result;
@@ -1042,7 +1042,7 @@ tstzset_end_timestamp(const Set *ts)
 
 /**
  * @ingroup libmeos_internal_setspan_accessor
- * @brief Return the n-th value of a set.
+ * @brief Compute the n-th value of a set
  * @param[in] s Set
  * @param[in] n Number
  * @param[out] result Timestamp
@@ -1063,7 +1063,7 @@ set_value_n(const Set *s, int n, Datum *result)
 #if MEOS
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the n-th value of an integer set.
+ * @brief Compute the n-th value of an integer set
  * @param[in] s Integer set
  * @param[in] n Number
  * @param[out] result Value
@@ -1083,7 +1083,7 @@ intset_value_n(const Set *s, int n, int *result)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the n-th value of a big integer set.
+ * @brief Compute the n-th value of a big integer set
  * @param[in] s Integer set
  * @param[in] n Number
  * @param[out] result Value
@@ -1103,7 +1103,7 @@ bigintset_value_n(const Set *s, int n, int64 *result)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the n-th value of a float set.
+ * @brief Compute the n-th value of a float set
  * @param[in] s Float set
  * @param[in] n Number
  * @param[out] result Value
@@ -1123,7 +1123,7 @@ floatset_value_n(const Set *s, int n, double *result)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the n-th value of a timestamp set.
+ * @brief Compute the n-th value of a timestamp set
  * @param[in] ts Timestamp set
  * @param[in] n Number
  * @param[out] result Timestamp
@@ -1133,7 +1133,7 @@ floatset_value_n(const Set *s, int n, double *result)
  * @pymeosfunc timestampN()
  */
 bool
-tstzset_timestamp_n(const Set *ts, int n, TimestampTz *result)
+timestampset_timestamp_n(const Set *ts, int n, TimestampTz *result)
 {
   if (n < 1 || n > ts->count)
     return false;
@@ -1210,7 +1210,7 @@ floatset_values(const Set *s)
  * @pymeosfunc timestamps()
  */
 TimestampTz *
-tstzset_values(const Set *ts)
+timestampset_values(const Set *ts)
 {
   TimestampTz *result = palloc(sizeof(TimestampTz) * ts->count);
   for (int i = 0; i < ts->count; i++)
@@ -1237,6 +1237,7 @@ geoset_srid(const Set *set)
  *****************************************************************************/
 
 /**
+ * @ingroup libmeos_internal_setspan_transf
  * @brief Shift the values of set.
  */
 Set *
@@ -1257,7 +1258,7 @@ set_shift(const Set *s, Datum shift)
  * @pymeosfunc shift()
  */
 Set *
-tstzset_shift_tscale(const Set *s, const Interval *shift,
+timestampset_shift_tscale(const Set *s, const Interval *shift,
   const Interval *duration)
 {
   assert(shift != NULL || duration != NULL);
@@ -1424,7 +1425,7 @@ set_gt(const Set *s1, const Set *s2)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the 32-bit hash of a set.
- * @sqlfunc tstzset_hash()
+ * @sqlfunc hash()
  */
 uint32
 set_hash(const Set *s)
@@ -1442,7 +1443,7 @@ set_hash(const Set *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the 64-bit hash of a set using a seed.
- * @sqlfunc tstzset_hash_extended()
+ * @sqlfunc hash_extended()
  */
 uint64
 set_hash_extended(const Set *s, uint64 seed)

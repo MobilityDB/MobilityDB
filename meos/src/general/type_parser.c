@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Functions for parsing time types and temporal types
  *
  * Many functions make two passes for parsing, the first one to obtain the
@@ -316,7 +317,7 @@ tbox_parse(const char **str)
   /* Ensure there is no more input */
   ensure_end_input(str, true, "temporal box");
 
-  return tbox_make(hast ? &period : NULL, hasx ? &span: NULL);
+  return tbox_make(hasx ? &span: NULL, hast ? &period : NULL);
 }
 
 /*****************************************************************************/

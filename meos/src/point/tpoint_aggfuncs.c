@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Aggregate functions for temporal points.
  *
  * The only functions currently provided are extent and temporal centroid.
@@ -203,7 +204,9 @@ tpoint_transform_tcentroid(const Temporal *temp, int *count)
 /*****************************************************************************/
 
 /**
- * @brief Transition function for temporal centroid aggregation of temporal point values
+ * @ingroup libmeos_temporal_agg
+ * @brief Transition function for temporal centroid aggregation of temporal
+ * point values
  */
 SkipList *
 tpoint_tcentroid_transfn(SkipList *state, Temporal *temp)
@@ -236,6 +239,7 @@ tpoint_tcentroid_transfn(SkipList *state, Temporal *temp)
  *****************************************************************************/
 
 /**
+ * @ingroup libmeos_temporal_agg
  * @brief Transition function for temporal extent aggregation of temporal point values
  */
 STBox *

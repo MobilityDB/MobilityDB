@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Input of temporal types in WKT, MF-JSON, WKB, EWKB, and HexWKB format.
  */
 
@@ -1263,7 +1264,7 @@ tbox_from_wkb_state(wkb_parse_state *s)
   if (s->hasx)
     span = span_from_wkb_state(s);
   /* Create the temporal box */
-  TBox *result = tbox_make(s->hast ? &period : NULL, s->hasx ? &span : NULL);
+  TBox *result = tbox_make(s->hasx ? &span : NULL, s->hast ? &period : NULL);
   return result;
 }
 

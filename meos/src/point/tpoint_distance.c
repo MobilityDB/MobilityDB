@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Distance functions for temporal points.
  */
 
@@ -111,7 +112,7 @@ tinstant_distance(const TInstant *inst1, const TInstant *inst2,
  * @note Function inspired by PostGIS function lw_dist2d_distancepoint
  * from measures.c
  */
-static double
+double
 lw_distance_fraction(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
   long double *fraction)
 {

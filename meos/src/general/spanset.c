@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief General functions for set of disjoint spans.
  */
 
@@ -51,7 +52,6 @@
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_accessor
  * @brief Return the location of a value in a span set using binary search.
  *
  * If the value is found, the index of the span is returned in the output
@@ -109,7 +109,6 @@ periodset_find_timestamp(const SpanSet *ps, TimestampTz t, int *loc)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_setspan_accessor
  * @brief Return the n-th span of a span set.
  * @pre The argument @p index is less than the number of spans in the span set
  * @note This is the internal function equivalent to `spanset_span_n`.
@@ -329,7 +328,7 @@ spanset_make(Span *spans, int count, bool normalize)
 }
 
 /**
- * @ingroup libmeos_setspan_constructor
+ * @ingroup libmeos_internal_setspan_constructor
  * @brief Construct a span set from an array of spans and free the input array
  * of spans after the creation.
  *
@@ -508,7 +507,7 @@ periodset_shift_tscale(const SpanSet *ps, const Interval *shift,
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup libmeos_internal_setspan_accessor
  * @brief Return the size in bytes of a span set
  * @sqlfunc memSize()
  */
@@ -754,7 +753,7 @@ periodset_end_timestamp(const SpanSet *ps)
 
 /**
  * @ingroup libmeos_setspan_accessor
- * @brief Return the n-th timestamp of a period set.
+ * @brief Compute the n-th timestamp of a period set
  * @param[in] ps Period set
  * @param[in] n Number
  * @param[out] result Timestamp

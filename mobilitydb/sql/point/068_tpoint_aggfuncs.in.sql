@@ -44,13 +44,17 @@ CREATE FUNCTION tpoint_extent_transfn(stbox, tgeogpoint)
 CREATE AGGREGATE extent(tgeompoint) (
   SFUNC = tpoint_extent_transfn,
   STYPE = stbox,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = stbox_extent_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   PARALLEL = safe
 );
 CREATE AGGREGATE extent(tgeogpoint) (
   SFUNC = tpoint_extent_transfn,
   STYPE = stbox,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = stbox_extent_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   PARALLEL = safe
 );
 
@@ -170,7 +174,9 @@ CREATE FUNCTION tgeogpoint_tagg_finalfn(internal)
 CREATE AGGREGATE merge(tgeompoint) (
   SFUNC = temporal_merge_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = temporal_merge_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tgeompoint_tagg_finalfn,
   SERIALFUNC = tagg_serialize,
   DESERIALFUNC = tagg_deserialize,
@@ -179,7 +185,9 @@ CREATE AGGREGATE merge(tgeompoint) (
 CREATE AGGREGATE merge(tgeogpoint) (
   SFUNC = temporal_merge_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = temporal_merge_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tgeogpoint_tagg_finalfn,
   SERIALFUNC = tagg_serialize,
   DESERIALFUNC = tagg_deserialize,

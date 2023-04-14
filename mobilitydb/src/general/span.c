@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief General functions for spans (a.k.a. ranges) composed of two `Datum`
  * values and two Boolean values stating whether the bounds are inclusive.
  */
@@ -595,7 +596,7 @@ PG_FUNCTION_INFO_V1(Span_hash_extended);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the 64-bit hash value of a span obtained with a seed.
- * @sqlfunc span_hash_extended()
+ * @sqlfunc hash_extended()
  */
 Datum
 Span_hash_extended(PG_FUNCTION_ARGS)

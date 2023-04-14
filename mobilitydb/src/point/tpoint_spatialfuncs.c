@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Spatial functions for temporal points.
  */
 
@@ -742,7 +743,7 @@ geoset_round(const Set *s, Datum size)
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_transf
+ * @ingroup mobilitydb_temporal_spatial_transf
  * @brief Set the precision of the coordinates of a temporal point to a
  * number of decimal places.
  * @sqlfunc round()

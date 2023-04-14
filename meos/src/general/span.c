@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief General functions for spans (a.k.a. ranges) composed of two `Datum`
  * values and two `Boolean` values stating whether the bounds are inclusive.
  */
@@ -443,7 +444,7 @@ floatspan_make(double lower, double upper, bool lower_inc, bool upper_inc)
  * @sqlfunc period()
  */
 Span *
-tstzspan_make(TimestampTz lower, TimestampTz upper, bool lower_inc,
+period_make(TimestampTz lower, TimestampTz upper, bool lower_inc,
   bool upper_inc)
 {
   /* Note: zero-fill is done in the span_set function */
@@ -533,7 +534,7 @@ span_copy(const Span *s)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_setspan_cast
+ * @ingroup libmeos_internal_setspan_accessor
  * @brief Cast a value as a span
  */
 void
@@ -881,7 +882,6 @@ span_shift(Span *s, Datum shift)
 }
 
 /**
- * @ingroup libmeos_internal_setspan_transf
  * @brief Shift and/or scale period bounds by the intervals.
  * @param[in] shift Interval to shift the bounds
  * @param[in] duration Interval for the duration of the result
@@ -1144,11 +1144,10 @@ span_hash(const Span *s)
 /**
  * @ingroup libmeos_setspan_accessor
  * @brief Return the 64-bit hash of a span using a seed
- * @sqlfunc intspan_hash_extended(), floatspan_hash_extended(),
- * period_hash_extended()
+ * @sqlfunc hash_extended()
  */
 uint64
-span_hash_extended(const Span *s, Datum seed)
+span_hash_extended(const Span *s, uint64 seed)
 {
   uint64 result;
   char flags = '\0';

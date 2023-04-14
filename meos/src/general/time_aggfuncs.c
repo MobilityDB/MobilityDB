@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Aggregate functions for time types.
  */
 
@@ -42,6 +43,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/skiplist.h"
+#include "general/spanset.h"
 #include "general/temporal_aggfuncs.h"
 #include "general/temporal_tile.h"
 #include "general/type_util.h"
@@ -80,7 +82,7 @@ timestamp_transform_tcount(TimestampTz t)
  * performing temporal count aggregation
  */
 static TInstant **
-tstzset_transform_tcount(const Set *ts, int *newcount)
+timestampset_transform_tcount(const Set *ts, int *newcount)
 {
   TInstant **result = palloc(sizeof(TInstant *) * ts->count);
 
@@ -187,10 +189,10 @@ timestamp_tcount_transfn(SkipList *state, TimestampTz t)
  * @brief Transition function for temporal count aggregate of timestamp sets
  */
 SkipList *
-tstzset_tcount_transfn(SkipList *state, const Set *ts)
+timestampset_tcount_transfn(SkipList *state, const Set *ts)
 {
   int count;
-  TInstant **instants = tstzset_transform_tcount(ts, &count);
+  TInstant **instants = timestampset_transform_tcount(ts, &count);
   /* Due to the bucketing, it is possible that count < ts->count */
 
   if (! state)

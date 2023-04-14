@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief R-tree GiST index for temporal types where only the time dimension
  * is taken into account for indexing, currently, `tbool` and `ttext`.
  */

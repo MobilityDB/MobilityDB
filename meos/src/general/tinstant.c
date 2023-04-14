@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief General functions for temporal instants.
  */
 
@@ -47,6 +48,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/pg_types.h"
+#include "general/spanset.h"
 #include "general/temporaltypes.h"
 #include "general/type_parser.h"
 #include "general/type_util.h"
@@ -410,7 +412,7 @@ tinstant_copy(const TInstant *inst)
  * @sqlfunc getValues()
  */
 Datum *
-tinstant_valueset(const TInstant *inst, int *count)
+tinstant_values(const TInstant *inst, int *count)
 {
   Datum *result = palloc(sizeof(Datum));
   result[0] = tinstant_value(inst);
@@ -424,7 +426,7 @@ tinstant_valueset(const TInstant *inst, int *count)
  * @sqlfunc getValues()
  */
 SpanSet *
-tnumberinst_values(const TInstant *inst)
+tnumberinst_valuespans(const TInstant *inst)
 {
   Datum value = tinstant_value(inst);
   Span s;
@@ -445,8 +447,8 @@ tinstant_time(const TInstant *inst)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_cast
- * @brief Return the bounding period of a temporal instant.
+ * @ingroup libmeos_internal_temporal_accessor
+ * @brief Compute the bounding period of a temporal instant.
  * @sqlfunc period()
  * @sqlop @p ::
  */
@@ -490,8 +492,7 @@ tinstant_instants(const TInstant *inst, int *count)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Return the base value of a temporal instant at a timestamp.
- *
+ * @brief Compute the base value of a temporal instant at a timestamp.
  * @note Since the corresponding function for temporal sequences need to
  * interpolate the value, it is necessary to return a copy of the value
  * @sqlfunc valueAtTimestamp()
@@ -889,7 +890,7 @@ tinstant_restrict_periodset(const TInstant *inst,const  SpanSet *ps,
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_temporal_transf
+ * @ingroup libmeos_internal_temporal_modif
  * @brief Merge two temporal instants.
  */
 Temporal *
@@ -900,7 +901,7 @@ tinstant_merge(const TInstant *inst1, const TInstant *inst2)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_transf
+ * @ingroup libmeos_internal_temporal_modif
  * @brief Merge an array of temporal instants.
  *
  * @param[in] instants Array of instants

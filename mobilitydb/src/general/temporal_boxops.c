@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Bounding box operators for temporal types.
  *
  * The bounding box of temporal values are
@@ -696,8 +697,8 @@ PGDLLEXPORT Datum Same_numspan_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Same_numspan_tnumber);
 /**
  * @ingroup mobilitydb_temporal_topo
- * @brief Return true if the span and the bounding box of the temporal number are
- * equal on the common dimensions
+ * @brief Return true if the span and the value span of the bounding box of the
+ * temporal number are equal
  * @sqlfunc same_bbox()
  * @sqlop @p ~=
  */
@@ -711,8 +712,8 @@ PGDLLEXPORT Datum Same_tnumber_numspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Same_tnumber_numspan);
 /**
  * @ingroup mobilitydb_temporal_topo
- * @brief Return true if the bounding box of the temporal number and the span are
- * equal on the common dimensions
+ * @brief Return true if the value span of bounding box of the temporal number
+ * and the span are equal
  * @sqlfunc same_bbox()
  * @sqlop @p ~=
  */
@@ -726,8 +727,8 @@ PGDLLEXPORT Datum Same_tbox_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Same_tbox_tnumber);
 /**
  * @ingroup mobilitydb_temporal_topo
- * @brief Return true if the temporal box and the bounding box of the temporal number
- * are equal in the common dimensions
+ * @brief Return true if the temporal box and the bounding box of the temporal
+ * number are equal in the common dimensions
  * @sqlfunc same_bbox()
  * @sqlop @p ~=
  */
@@ -741,8 +742,8 @@ PGDLLEXPORT Datum Same_tnumber_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Same_tnumber_tbox);
 /**
  * @ingroup mobilitydb_temporal_topo
- * @brief Return true if the bounding box of the temporal number and the temporal box
- * are equal in the common dimensions
+ * @brief Return true if the bounding box of the temporal number and the
+ * temporal box are equal in the common dimensions
  * @sqlfunc same_bbox()
  * @sqlop @p ~=
  */
@@ -756,8 +757,7 @@ PGDLLEXPORT Datum Same_tnumber_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Same_tnumber_tnumber);
 /**
  * @ingroup mobilitydb_temporal_topo
- * @brief Return true if the bounding boxes of the temporal numbers are equal in the
- * common dimensions
+ * @brief Return true if the bounding boxes of the temporal numbers are equal
  * @sqlfunc same_bbox()
  * @sqlop @p ~=
  */

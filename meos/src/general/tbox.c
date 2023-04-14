@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Functions for temporal bounding boxes.
  */
 
@@ -145,40 +146,40 @@ tbox_out(const TBox *box, int maxdd)
  *****************************************************************************/
 /**
  * @ingroup libmeos_box_constructor
- * @brief Construct a temporal box from the arguments.
+ * @brief Construct a temporal box from a number span and a period.
  * @sqlfunc tbox()
  */
 TBox *
-tbox_make(const Span *p, const Span *s)
+tbox_make(const Span *s, const Span *p)
 {
   /* Note: zero-fill is done in function tbox_set */
   TBox *result = palloc(sizeof(TBox));
-  tbox_set(p, s, result);
+  tbox_set(s, p, result);
   return result;
 }
 
 /**
- * @ingroup libmeos_box_constructor
- * @brief Set a temporal box from the arguments
+ * @ingroup libmeos_internal_box_constructor
+ * @brief Set a temporal box from a number span and a period
  * @note This function is equivalent to @ref tbox_make without memory
  * allocation
  */
 void
-tbox_set(const Span *p, const Span *s, TBox *box)
+tbox_set(const Span *s, const Span *p, TBox *box)
 {
   /* At least on of the X or T dimensions should be given */
-  assert(p || s);
+  assert(s || p);
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBox));
-  if (p)
-  {
-    memcpy(&box->period, p, sizeof(Span));
-    MEOS_FLAGS_SET_T(box->flags, true);
-  }
   if (s)
   {
     memcpy(&box->span, s, sizeof(Span));
     MEOS_FLAGS_SET_X(box->flags, true);
+  }
+  if (p)
+  {
+    memcpy(&box->period, p, sizeof(Span));
+    MEOS_FLAGS_SET_T(box->flags, true);
   }
   return;
 }
@@ -192,6 +193,141 @@ tbox_copy(const TBox *box)
 {
   TBox *result = palloc(sizeof(TBox));
   memcpy(result, box, sizeof(TBox));
+  return result;
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup libmeos_internal_box_constructor
+ * @brief Return a temporal box from an integer and a timestamp
+ * @sqlfunc tbox()
+ */
+TBox *
+number_timestamp_to_tbox(Datum d, meosType basetype, TimestampTz t)
+{
+  TBox *result = palloc(sizeof(TBox));
+  number_set_tbox(d, basetype, result);
+  Datum dt = TimestampTzGetDatum(t);
+  span_set(dt, dt, true, true, T_TIMESTAMPTZ, &result->period);
+  MEOS_FLAGS_SET_T(result->flags, true);
+  return result;
+}
+
+#if MEOS
+/**
+ * @ingroup libmeos_box_constructor
+ * @brief Return a temporal box from an integer and a timestamp
+ * @sqlfunc tbox()
+ */
+TBox *
+int_timestamp_to_tbox(int i, TimestampTz t)
+{
+  TBox *result = palloc(sizeof(TBox));
+  int_set_tbox(i, result);
+  Datum dt = TimestampTzGetDatum(t);
+  span_set(dt, dt, true, true, T_TIMESTAMPTZ, &result->period);
+  MEOS_FLAGS_SET_T(result->flags, true);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_box_constructor
+ * @brief Return a temporal box from a float and a timestamp
+ * @sqlfunc tbox()
+ */
+TBox *
+float_timestamp_to_tbox(double d, TimestampTz t)
+{
+  TBox *result = palloc(sizeof(TBox));
+  float_set_tbox(d, result);
+  Datum dt = TimestampTzGetDatum(t);
+  span_set(dt, dt, true, true, T_TIMESTAMPTZ, &result->period);
+  MEOS_FLAGS_SET_T(result->flags, true);
+  return result;
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup libmeos_internal_box_constructor
+ * @brief Return a temporal box from an integer and a period
+ * @sqlfunc tbox()
+ */
+TBox *
+number_period_to_tbox(Datum d, meosType basetype, const Span *p)
+{
+  TBox *result = palloc(sizeof(TBox));
+  number_set_tbox(d, basetype, result);
+  memcpy(&result->period, p, sizeof(Span));
+  MEOS_FLAGS_SET_T(result->flags, true);
+  return result;
+}
+
+#if MEOS
+/**
+ * @ingroup libmeos_box_constructor
+ * @brief Return a temporal box from an integer and a period
+ * @sqlfunc tbox()
+ */
+TBox *
+int_period_to_tbox(int i, const Span *p)
+{
+  TBox *result = palloc(sizeof(TBox));
+  int_set_tbox(i, result);
+  memcpy(&result->period, p, sizeof(Span));
+  MEOS_FLAGS_SET_T(result->flags, true);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_box_constructor
+ * @brief Return a temporal box from a float and a period
+ * @sqlfunc tbox()
+ */
+TBox *
+float_period_to_tbox(double d, const Span *p)
+{
+  TBox *result = palloc(sizeof(TBox));
+  float_set_tbox(d, result);
+  memcpy(&result->period, p, sizeof(Span));
+  MEOS_FLAGS_SET_T(result->flags, true);
+  return result;
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup libmeos_box_constructor
+ * @brief Return a temporal box from a span and a timestamp
+ * @sqlfunc tbox()
+ */
+TBox *
+span_timestamp_to_tbox(const Span *span, TimestampTz t)
+{
+  assert(tnumber_spantype(span->spantype));
+  TBox *result = palloc(sizeof(TBox));
+  numspan_set_floatspan(span, &result->span);
+  Datum dt = TimestampTzGetDatum(t);
+  span_set(dt, dt, true, true, T_TIMESTAMPTZ, &result->period);
+  MEOS_FLAGS_SET_X(result->flags, true);
+  MEOS_FLAGS_SET_T(result->flags, true);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_box_constructor
+ * @brief Return a temporal box from a span and a period
+ * @sqlfunc tbox()
+ */
+TBox *
+span_period_to_tbox(const Span *span, const Span *p)
+{
+  assert(tnumber_spantype(span->spantype));
+  assert(p->basetype == T_TIMESTAMPTZ);
+  TBox *result = palloc(sizeof(TBox));
+  numspan_set_floatspan(span, &result->span);
+  memcpy(&result->period, p, sizeof(Span));
+  MEOS_FLAGS_SET_X(result->flags, true);
+  MEOS_FLAGS_SET_T(result->flags, true);
   return result;
 }
 
@@ -349,7 +485,7 @@ numset_to_tbox(const Set *s)
  * @brief Set a temporal box from a timestamp set.
  */
 void
-tstzset_set_tbox(const Set *s, TBox *box)
+timestampset_set_tbox(const Set *s, TBox *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBox));
@@ -367,10 +503,10 @@ tstzset_set_tbox(const Set *s, TBox *box)
  * @sqlop @p ::
  */
 TBox *
-tstzset_to_tbox(const Set *s)
+timestampset_to_tbox(const Set *s)
 {
   TBox *result = palloc(sizeof(TBox));
-  tstzset_set_tbox(s, result);
+  timestampset_set_tbox(s, result);
   return result;
 }
 #endif /* MEOS */
@@ -492,141 +628,6 @@ periodset_to_tbox(const SpanSet *ps)
 
 /**
  * @ingroup libmeos_box_cast
- * @brief Return a temporal box from an integer and a timestamp
- * @sqlfunc tbox()
- */
-TBox *
-number_timestamp_to_tbox(Datum d, meosType basetype, TimestampTz t)
-{
-  TBox *result = palloc(sizeof(TBox));
-  number_set_tbox(d, basetype, result);
-  Datum dt = TimestampTzGetDatum(t);
-  span_set(dt, dt, true, true, T_TIMESTAMPTZ, &result->period);
-  MEOS_FLAGS_SET_T(result->flags, true);
-  return result;
-}
-
-#if MEOS
-/**
- * @ingroup libmeos_box_cast
- * @brief Return a temporal box from an integer and a timestamp
- * @sqlfunc tbox()
- */
-TBox *
-int_timestamp_to_tbox(int i, TimestampTz t)
-{
-  TBox *result = palloc(sizeof(TBox));
-  int_set_tbox(i, result);
-  Datum dt = TimestampTzGetDatum(t);
-  span_set(dt, dt, true, true, T_TIMESTAMPTZ, &result->period);
-  MEOS_FLAGS_SET_T(result->flags, true);
-  return result;
-}
-
-/**
- * @ingroup libmeos_box_cast
- * @brief Return a temporal box from a float and a timestamp
- * @sqlfunc tbox()
- */
-TBox *
-float_timestamp_to_tbox(double d, TimestampTz t)
-{
-  TBox *result = palloc(sizeof(TBox));
-  float_set_tbox(d, result);
-  Datum dt = TimestampTzGetDatum(t);
-  span_set(dt, dt, true, true, T_TIMESTAMPTZ, &result->period);
-  MEOS_FLAGS_SET_T(result->flags, true);
-  return result;
-}
-#endif /* MEOS */
-
-/**
- * @ingroup libmeos_box_cast
- * @brief Return a temporal box from an integer and a period
- * @sqlfunc tbox()
- */
-TBox *
-number_period_to_tbox(Datum d, meosType basetype, const Span *p)
-{
-  TBox *result = palloc(sizeof(TBox));
-  number_set_tbox(d, basetype, result);
-  memcpy(&result->period, p, sizeof(Span));
-  MEOS_FLAGS_SET_T(result->flags, true);
-  return result;
-}
-
-#if MEOS
-/**
- * @ingroup libmeos_box_cast
- * @brief Return a temporal box from an integer and a period
- * @sqlfunc tbox()
- */
-TBox *
-int_period_to_tbox(int i, const Span *p)
-{
-  TBox *result = palloc(sizeof(TBox));
-  int_set_tbox(i, result);
-  memcpy(&result->period, p, sizeof(Span));
-  MEOS_FLAGS_SET_T(result->flags, true);
-  return result;
-}
-
-/**
- * @ingroup libmeos_box_cast
- * @brief Return a temporal box from a float and a period
- * @sqlfunc tbox()
- */
-TBox *
-float_period_to_tbox(double d, const Span *p)
-{
-  TBox *result = palloc(sizeof(TBox));
-  float_set_tbox(d, result);
-  memcpy(&result->period, p, sizeof(Span));
-  MEOS_FLAGS_SET_T(result->flags, true);
-  return result;
-}
-#endif /* MEOS */
-
-/**
- * @ingroup libmeos_box_cast
- * @brief Return a temporal box from a span and a timestamp
- * @sqlfunc tbox()
- */
-TBox *
-span_timestamp_to_tbox(const Span *span, TimestampTz t)
-{
-  assert(tnumber_spantype(span->spantype));
-  TBox *result = palloc(sizeof(TBox));
-  numspan_set_floatspan(span, &result->span);
-  Datum dt = TimestampTzGetDatum(t);
-  span_set(dt, dt, true, true, T_TIMESTAMPTZ, &result->period);
-  MEOS_FLAGS_SET_X(result->flags, true);
-  MEOS_FLAGS_SET_T(result->flags, true);
-  return result;
-}
-
-/**
- * @ingroup libmeos_box_cast
- * @brief Return a temporal box from a span and a period
- * @sqlfunc tbox()
- */
-TBox *
-span_period_to_tbox(const Span *span, const Span *p)
-{
-  assert(tnumber_spantype(span->spantype));
-  assert(p->basetype == T_TIMESTAMPTZ);
-  TBox *result = palloc(sizeof(TBox));
-  numspan_set_floatspan(span, &result->span);
-  memcpy(&result->period, p, sizeof(Span));
-  MEOS_FLAGS_SET_X(result->flags, true);
-  MEOS_FLAGS_SET_T(result->flags, true);
-  return result;
-}
-
-/*****************************************************************************/
-
-/**
- * @ingroup libmeos_box_cast
  * @brief Cast a temporal box as a span.
  * @sqlop @p ::
  */
@@ -681,9 +682,7 @@ tbox_hast(const TBox *box)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return true if the temporal box has value dimension. In that case,
- * the minimum value is returned in the output argument.
- *
+ * @brief Compute the minimum X value of a temporal box.
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Xmin()
@@ -700,9 +699,7 @@ tbox_xmin(const TBox *box, double *result)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return true if the temporal box has value dimension. In that case,
- * the maximum value is returned in the output argument.
- *
+ * @brief Compute the maximum X value of a temporal box.
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Xmax()
@@ -719,9 +716,7 @@ tbox_xmax(const TBox *box, double *result)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return true if the temporal box has time dimension. In that case,
- * the minimum timestamp is returned in the output argument.
- *
+ * @brief Compute the minimum T value of a temporal box.
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Tmin()
@@ -738,9 +733,7 @@ tbox_tmin(const TBox *box, TimestampTz *result)
 
 /**
  * @ingroup libmeos_box_accessor
- * @brief Return true if the temporal box has time dimension. In that case,
- * the maximum timestamp is returned in the output argument.
- *
+ * @brief Compute the maximum T value of a temporal box.
  * @param[in] box Box
  * @param[out] result Result
  * @sqlfunc Tmax()
@@ -859,7 +852,7 @@ contains_tbox_tbox(const TBox *box1, const TBox *box2)
 
 /**
  * @ingroup libmeos_box_topo
- * @brief Return true if the first temporal box is contained by the second one.
+ * @brief Return true if the first temporal box is contained in the second one.
  * @sqlop @p <@
  */
 bool
@@ -887,7 +880,7 @@ overlaps_tbox_tbox(const TBox *box1, const TBox *box2)
 
 /**
  * @ingroup libmeos_box_topo
- * @brief Return true if the temporal boxes are equal on the common dimensions.
+ * @brief Return true if the temporal boxes are equal in the common dimensions.
  * @sqlop @p ~=
  */
 bool
@@ -1064,12 +1057,12 @@ union_tbox_tbox(const TBox *box1, const TBox *box2)
     bbox_union_span_span(&box1->period, &box2->period, &period);
   if (hasx)
     bbox_union_span_span(&box1->span, &box2->span, &span);
-  TBox *result = tbox_make(hast ? &period : NULL, hasx ? &span : NULL);
+  TBox *result = tbox_make(hasx ? &span : NULL, hast ? &period : NULL);
   return result;
 }
 
 /**
- * @ingroup libmeos_box_set
+ * @ingroup libmeos_internal_box_set
  * @brief Set a temporal box with the result of the intersection of the first
  * two temporal boxes.
  * @note This function is equivalent to @ref intersection_tbox_tbox without
@@ -1092,13 +1085,13 @@ inter_tbox_tbox(const TBox *box1, const TBox *box2, TBox *result)
     inter_span_span(&box1->period, &box2->period, &period);
   if (hasx)
     inter_span_span(&box1->span, &box2->span, &span);
-  tbox_set(hast ? &period : NULL, hasx ? &span : NULL, result);
+  tbox_set(hasx ? &span : NULL, hast ? &period : NULL, result);
   return true;
 }
 
 /**
  * @ingroup libmeos_box_set
- * @brief Return the intersection of the spatiotemporal boxes.
+ * @brief Return the intersection of the temporal boxes.
  * @sqlop @p *
  */
 TBox *

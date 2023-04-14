@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Similarity distance for temporal values. Currently, discrete Frechet
  * distance and Dynamic Time Warping (DTW) distance are implemented.
  */
@@ -484,6 +485,7 @@ tinstarr_hausdorff_distance(const TInstant **instants1, int count1,
 }
 
 /**
+ * @ingroup libmeos_temporal_similarity
  * @brief Compute the Hausdorf distance between two temporal values.
  * @param[in] temp1,temp2 Temporal values
  */

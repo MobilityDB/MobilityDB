@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Temporal spatial relationships for temporal points.
  *
  * These relationships are applied at each instant and result in a temporal
@@ -78,6 +79,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/lifting.h"
+#include "general/spanset.h"
 #include "general/temporaltypes.h"
 #include "general/tbool_boolops.h"
 #include "general/type_util.h"
@@ -248,7 +250,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom,
   if (! overlaps_stbox_stbox(box1, box))
   {
     result = palloc(sizeof(TSequence *));
-    result[0] = tsequence_from_base_time(datum_no, T_TBOOL, &seq->period,
+    result[0] = tsequence_from_base_period(datum_no, T_TBOOL, &seq->period,
       STEP);
     *count = 1;
     return result;
@@ -260,7 +262,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom,
   if (gserialized_is_empty(gsinter))
   {
     result = palloc(sizeof(TSequence *));
-    result[0] = tsequence_from_base_time(datum_no, T_TBOOL, &seq->period,
+    result[0] = tsequence_from_base_period(datum_no, T_TBOOL, &seq->period,
       STEP);
     pfree(DatumGetPointer(inter));
     *count = 1;
@@ -275,7 +277,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom,
     datum_point_eq(tinstant_value(start), tinstant_value(end)))
   {
     result = palloc(sizeof(TSequence *));
-    result[0] = tsequence_from_base_time(datum_yes, T_TBOOL, &seq->period,
+    result[0] = tsequence_from_base_period(datum_yes, T_TBOOL, &seq->period,
       STEP);
     PG_FREE_IF_COPY_P(gsinter, DatumGetPointer(inter));
     pfree(DatumGetPointer(inter));
@@ -289,7 +291,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom,
   if (countper == 0)
   {
     result = palloc(sizeof(TSequence *));
-    result[0] = tsequence_from_base_time(datum_no, T_TBOOL, &seq->period,
+    result[0] = tsequence_from_base_period(datum_no, T_TBOOL, &seq->period,
       STEP);
     pfree(DatumGetPointer(gsinter));
     *count = 1;
@@ -311,14 +313,14 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom,
     newcount += ps->count;
   result = palloc(sizeof(TSequence *) * newcount);
   for (int i = 0; i < countper; i++)
-    result[i] = tsequence_from_base_time(datum_yes, T_TBOOL, &periods[i],
+    result[i] = tsequence_from_base_period(datum_yes, T_TBOOL, &periods[i],
       STEP);
   if (ps != NULL)
   {
     for (int i = 0; i < ps->count; i++)
     {
       const Span *p = spanset_sp_n(ps, i);
-      result[i + countper] = tsequence_from_base_time(datum_no, T_TBOOL, p,
+      result[i + countper] = tsequence_from_base_period(datum_no, T_TBOOL, p,
         STEP);
     }
     tseqarr_sort(result, newcount);
@@ -467,7 +469,7 @@ tinterrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
   /* Non-empty geometries have a bounding box */
   geo_set_stbox(gs, &box2);
   if (! overlaps_stbox_stbox(&box1, &box2))
-    return temporal_from_base(datum_no, T_TBOOL, temp, STEP);
+    return temporal_from_base_temp(datum_no, T_TBOOL, temp);
 
   /* 3D only if both arguments are 3D */
   Datum (*func)(Datum, Datum) = MEOS_FLAGS_GET_Z(temp->flags) &&
@@ -1141,7 +1143,7 @@ ttouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
     pfree(gsbound);
   }
   else
-    result = temporal_from_base(BoolGetDatum(false), T_TBOOL, temp, STEP);
+    result = temporal_from_base_temp(BoolGetDatum(false), T_TBOOL, temp);
   /* Restrict the result to the Boolean value in the third argument if any */
   if (result != NULL && restr)
   {

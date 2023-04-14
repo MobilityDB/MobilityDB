@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Aggregate functions for set types.
  */
 
@@ -46,8 +47,7 @@
  *****************************************************************************/
 
 /**
- * @brief Set a bounding box from an array of set values
- *
+ * @brief Expand a bounding box with a value
  * @param[in] d Value to append to the set
  * @param[in] basetype Type of the value
  * @param[out] box Bounding box
@@ -79,7 +79,7 @@ set_expand_bbox(Datum d, meosType basetype, void *box)
 
 /**
  * @ingroup libmeos_internal_temporal_transf
- * @brief Append a value to an unordered array.
+ * @brief Append a value to a set
  * @param[in,out] set Set
  * @param[in] d Value
  * @param[in] basetype Base type
@@ -152,7 +152,7 @@ set_append_value(Set *set, Datum d, meosType basetype)
 
 /**
  * @ingroup libmeos_internal_setspan_agg
- * @brief Transition function for set aggregate of values
+ * @brief Transition function for set union aggregate of values
  */
 Set *
 value_union_transfn(Set *state, Datum d, meosType basetype)
@@ -170,7 +170,7 @@ value_union_transfn(Set *state, Datum d, meosType basetype)
 
 /**
  * @ingroup libmeos_setspan_agg
- * @brief Transition function for set aggregate of values
+ * @brief Transition function for set union aggregate of integers
  */
 Set *
 int_union_transfn(Set *state, int32 i)
@@ -180,7 +180,7 @@ int_union_transfn(Set *state, int32 i)
 
 /**
  * @ingroup libmeos_setspan_agg
- * @brief Transition function for set aggregate of values
+ * @brief Transition function for set union aggregate of big integers
  */
 Set *
 bigint_union_transfn(Set *state, int64 i)
@@ -190,7 +190,7 @@ bigint_union_transfn(Set *state, int64 i)
 
 /**
  * @ingroup libmeos_setspan_agg
- * @brief Transition function for set aggregate of values
+ * @brief Transition function for set union aggregate of floats
  */
 Set *
 float_union_transfn(Set *state, double d)
@@ -200,7 +200,7 @@ float_union_transfn(Set *state, double d)
 
 /**
  * @ingroup libmeos_setspan_agg
- * @brief Transition function for set aggregate of values
+ * @brief Transition function for set union aggregate of timestamps
  */
 Set *
 timestamp_union_transfn(Set *state, TimestampTz t)
@@ -210,7 +210,7 @@ timestamp_union_transfn(Set *state, TimestampTz t)
 
 /**
  * @ingroup libmeos_setspan_agg
- * @brief Transition function for set aggregate of values
+ * @brief Transition function for set union aggregate of texts
  */
 Set *
 text_union_transfn(Set *state, const text *txt)
@@ -219,8 +219,8 @@ text_union_transfn(Set *state, const text *txt)
 }
 
 /**
- * @ingroup libmeos_internal_setspan_agg
- * @brief Transition function for set aggregate of values
+ * @ingroup libmeos_setspan_agg
+ * @brief Transition function for set union aggregate of sets
  */
 Set *
 set_union_transfn(Set *state, Set *set)
@@ -245,8 +245,8 @@ set_union_transfn(Set *state, Set *set)
 }
 
 /**
- * @ingroup libmeos_internal_setspan_agg
- * @brief Transition function for set aggregate of values
+ * @ingroup libmeos_setspan_agg
+ * @brief Final function for set union aggregate
  * @note The input state is NOT freed, this should be done by the calling
  * function
  */

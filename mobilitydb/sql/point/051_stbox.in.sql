@@ -170,7 +170,7 @@ CREATE FUNCTION stbox(timestamptz)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stbox(tstzset)
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Tstzset_to_stbox'
+  AS 'MODULE_PATHNAME', 'Timestampset_to_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stbox(tstzspan)
   RETURNS stbox
@@ -575,7 +575,9 @@ CREATE FUNCTION stbox_extent_combinefn(stbox, stbox)
 CREATE AGGREGATE extent(stbox) (
   SFUNC = stbox_extent_transfn,
   STYPE = stbox,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = stbox_extent_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   PARALLEL = safe
 );
 

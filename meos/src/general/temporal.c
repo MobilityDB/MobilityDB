@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Basic functions for temporal types of any subtype.
  */
 
@@ -741,8 +742,7 @@ temporal_copy(const Temporal *temp)
  * another temporal value.
  */
 Temporal *
-temporal_from_base(Datum value, meosType temptype, const Temporal *temp,
-  interpType interp)
+temporal_from_base_temp(Datum value, meosType temptype, const Temporal *temp)
 {
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
@@ -750,11 +750,11 @@ temporal_from_base(Datum value, meosType temptype, const Temporal *temp,
     result = (Temporal *) tinstant_make(value, temptype,
       ((TInstant *) temp)->t);
   else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tsequence_from_base(value, temptype,
-      (TSequence *) temp, interp);
+    result = (Temporal *) tsequence_from_base_temp(value, temptype,
+      (TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tsequenceset_from_base(value, temptype,
-      (TSequenceSet *) temp, interp);
+    result = (Temporal *) tsequenceset_from_base_temp(value, temptype,
+      (TSequenceSet *) temp);
   return result;
 }
 
@@ -765,9 +765,9 @@ temporal_from_base(Datum value, meosType temptype, const Temporal *temp,
  * another temporal value.
  */
 Temporal *
-tbool_from_base(bool b, const Temporal *temp)
+tbool_from_base_temp(bool b, const Temporal *temp)
 {
-  return temporal_from_base(BoolGetDatum(b), T_TBOOL, temp, false);
+  return temporal_from_base_temp(BoolGetDatum(b), T_TBOOL, temp);
 }
 
 /**
@@ -776,9 +776,9 @@ tbool_from_base(bool b, const Temporal *temp)
  * another temporal value.
  */
 Temporal *
-tint_from_base(int i, const Temporal *temp)
+tint_from_base_temp(int i, const Temporal *temp)
 {
-  return temporal_from_base(Int32GetDatum(i), T_TINT, temp, false);
+  return temporal_from_base_temp(Int32GetDatum(i), T_TINT, temp);
 }
 
 /**
@@ -787,9 +787,9 @@ tint_from_base(int i, const Temporal *temp)
  * another temporal value.
  */
 Temporal *
-tfloat_from_base(double d, const Temporal *temp, interpType interp)
+tfloat_from_base_temp(double d, const Temporal *temp)
 {
-  return temporal_from_base(Float8GetDatum(d), T_TFLOAT, temp, interp);
+  return temporal_from_base_temp(Float8GetDatum(d), T_TFLOAT, temp);
 }
 
 /**
@@ -798,9 +798,9 @@ tfloat_from_base(double d, const Temporal *temp, interpType interp)
  * another temporal value.
  */
 Temporal *
-ttext_from_base(const text *txt, const Temporal *temp)
+ttext_from_base_temp(const text *txt, const Temporal *temp)
 {
-  return temporal_from_base(PointerGetDatum(txt), T_TTEXT, temp, false);
+  return temporal_from_base_temp(PointerGetDatum(txt), T_TTEXT, temp);
 }
 
 /**
@@ -809,9 +809,9 @@ ttext_from_base(const text *txt, const Temporal *temp)
  * of another temporal value.
  */
 Temporal *
-tgeompoint_from_base(const GSERIALIZED *gs, const Temporal *temp, interpType interp)
+tgeompoint_from_base_temp(const GSERIALIZED *gs, const Temporal *temp)
 {
-  return temporal_from_base(PointerGetDatum(gs), T_TGEOMPOINT, temp, interp);
+  return temporal_from_base_temp(PointerGetDatum(gs), T_TGEOMPOINT, temp);
 }
 
 /**
@@ -820,9 +820,9 @@ tgeompoint_from_base(const GSERIALIZED *gs, const Temporal *temp, interpType int
  * of another temporal value.
  */
 Temporal *
-tgeogpoint_from_base(const GSERIALIZED *gs, const Temporal *temp, interpType interp)
+tgeogpoint_from_base_temp(const GSERIALIZED *gs, const Temporal *temp)
 {
-  return temporal_from_base(PointerGetDatum(gs), T_TGEOGPOINT, temp, interp);
+  return temporal_from_base_temp(PointerGetDatum(gs), T_TGEOGPOINT, temp);
 }
 #endif /* MEOS */
 
@@ -831,8 +831,8 @@ tgeogpoint_from_base(const GSERIALIZED *gs, const Temporal *temp, interpType int
  ****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_transf
- * @brief Append an instant to the end of a temporal value.
+ * @ingroup libmeos_temporal_modif
+ * @brief Append an instant to a temporal value.
  * @param[in,out] temp Temporal value
  * @param[in] inst Temporal instant
  * @param[in] maxdist Maximum distance for defining a gap
@@ -867,8 +867,8 @@ temporal_append_tinstant(Temporal *temp, const TInstant *inst,
 }
 
 /**
- * @ingroup libmeos_temporal_transf
- * @brief Append a sequence at the end of a temporal value.
+ * @ingroup libmeos_temporal_modif
+ * @brief Append a sequence to a temporal value.
  * @param[in,out] temp Temporal value
  * @param[in] seq Temporal sequence
  * @param[in] expand True when reserving space for additional sequences
@@ -978,7 +978,7 @@ temporal_convert_same_subtype(const Temporal *temp1, const Temporal *temp2,
 }
 
 /**
- * @ingroup libmeos_temporal_transf
+ * @ingroup libmeos_temporal_modif
  * @brief Merge two temporal values.
  * @result Merged value. Return NULL if both arguments are NULL.
  * If one argument is null the other argument is output.
@@ -1056,7 +1056,7 @@ temporalarr_convert_subtype(Temporal **temparr, int count, uint8 subtype,
 }
 
 /**
- * @ingroup libmeos_temporal_transf
+ * @ingroup libmeos_temporal_modif
  * @brief Merge an array of temporal values.
  * @sqlfunc merge
  */
@@ -1158,8 +1158,8 @@ tfloat_to_tint(const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_cast
- * @brief Set a period to the bounding period of a temporal value.
+ * @ingroup libmeos_internal_temporal_accessor
+ * @brief Compute the bounding period of a temporal value.
  */
 void
 temporal_set_period(const Temporal *temp, Span *p)
@@ -1192,8 +1192,8 @@ temporal_to_period(const Temporal *temp)
 #endif /* MEOS */
 
 /**
- * @ingroup libmeos_internal_temporal_cast
- * @brief Set a span with value span of a temporal number.
+ * @ingroup libmeos_internal_temporal_accessor
+ * @brief Compute the bounding value span of a temporal number.
  */
 void
 tnumber_set_span(const Temporal *temp, Span *s)
@@ -1248,12 +1248,12 @@ tnumber_to_tbox(const Temporal *temp)
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_transf
- * @brief Restart a temporal sequence (set) by keeping only the last instants
+ * @ingroup libmeos_internal_temporal_transf
+ * @brief Restart a temporal sequence (set) by keeping only the last n instants
  * or sequences.
  */
 void
-temporal_restart(Temporal *temp, int last)
+temporal_restart(Temporal *temp, int count)
 {
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -1261,9 +1261,9 @@ temporal_restart(Temporal *temp, int last)
     elog(ERROR, "Input must be a temporal sequence (set)");
   }
   else if (temp->subtype == TSEQUENCE)
-    tsequence_restart((TSequence *) temp, last);
+    tsequence_restart((TSequence *) temp, count);
   else /* temp->subtype == TSEQUENCESET */
-    tsequenceset_restart((TSequenceSet *) temp, last);
+    tsequenceset_restart((TSequenceSet *) temp, count);
   return;
 }
 #endif /* MEOS */
@@ -1381,12 +1381,20 @@ temporal_shift_tscale(const Temporal *temp, const Interval *shift,
 }
 
 #if MEOS
+/**
+ * @ingroup libmeos_temporal_transf
+ * @brief Return a temporal value shifted by the interval.
+ */
 Temporal *
 temporal_shift(const Temporal *temp, const Interval *shift)
 {
   return temporal_shift_tscale(temp, shift, NULL);
 }
 
+/**
+ * @ingroup libmeos_temporal_transf
+ * @brief Return a temporal value scaled by the interval.
+ */
 Temporal *
 temporal_tscale(const Temporal *temp, const Interval *duration)
 {
@@ -1555,16 +1563,16 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
   /* Loop for each bucket */
   for (int i = 0; i < count; i++)
   {
-    Span s;
+    Span p;
     span_set(TimestampTzGetDatum(lower), TimestampTzGetDatum(upper),
-      true, false, T_TIMESTAMPTZ, &s);
+      true, false, T_TIMESTAMPTZ, &p);
     span_set(TimestampTzGetDatum(lower),
-      TimestampTzGetDatum(upper), true, false, T_TIMESTAMPTZ, &s);
-    TSequenceSet *proj = tsequenceset_restrict_period(ss, &s, REST_AT);
+      TimestampTzGetDatum(upper), true, false, T_TIMESTAMPTZ, &p);
+    TSequenceSet *proj = tsequenceset_restrict_period(ss, &p, REST_AT);
     if (proj)
     {
       Datum value = temporal_tprecision_agg_values((Temporal *) proj);
-      sequences[k++] = tsequence_from_base_time(value, ss->temptype, &s,
+      sequences[k++] = tsequence_from_base_period(value, ss->temptype, &p,
         linear ? LINEAR : STEP);
       pfree(proj);
     }
@@ -1750,7 +1758,7 @@ temporal_tsample(const Temporal *temp, const Interval *duration,
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_accessor
+ * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the size in bytes of a temporal value
  * @sqlfunc memSize
  */
@@ -1807,7 +1815,7 @@ temporal_interp(const Temporal *temp)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Set the second argument to the bounding box of a temporal value
+ * @brief Compute the bounding box of a temporal value
  * @note For temporal instants the bounding box must be computed. For the
  * other subtypes, a copy of the precomputed bounding box is made.
  * @sqlfunc period, tbox, stbox
@@ -1828,20 +1836,20 @@ temporal_set_bbox(const Temporal *temp, void *box)
 
 /**
  * @ingroup libmeos_temporal_accessor
- * @brief Return the base values of a temporal value as a set.
+ * @brief Return the array of distinct base values of a temporal value.
  * @sqlfunc values
  */
 Datum *
-temporal_valueset(const Temporal *temp, int *count)
+temporal_values(const Temporal *temp, int *count)
 {
   Datum *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
-    result = tinstant_valueset((TInstant *) temp, count);
+    result = tinstant_values((TInstant *) temp, count);
   else if (temp->subtype == TSEQUENCE)
-    result = tsequence_valueset((TSequence *) temp, count);
+    result = tsequence_values((TSequence *) temp, count);
   else /* temp->subtype == TSEQUENCESET */
-    result = tsequenceset_valueset((TSequenceSet *) temp, count);
+    result = tsequenceset_values((TSequenceSet *) temp, count);
   return result;
 }
 
@@ -1855,7 +1863,7 @@ temporal_valueset(const Temporal *temp, int *count)
 bool *
 tbool_values(const Temporal *temp, int *count)
 {
-  Datum *datumarr = temporal_valueset(temp, count);
+  Datum *datumarr = temporal_values(temp, count);
   bool *result = palloc(sizeof(bool) * *count);
   for (int i = 0; i < *count; i++)
     result[i] = DatumGetBool(datumarr[i]);
@@ -1872,7 +1880,7 @@ tbool_values(const Temporal *temp, int *count)
 int *
 tint_values(const Temporal *temp, int *count)
 {
-  Datum *datumarr = temporal_valueset(temp, count);
+  Datum *datumarr = temporal_values(temp, count);
   int *result = palloc(sizeof(int) * *count);
   for (int i = 0; i < *count; i++)
     result[i] = DatumGetInt32(datumarr[i]);
@@ -1889,7 +1897,7 @@ tint_values(const Temporal *temp, int *count)
 double *
 tfloat_values(const Temporal *temp, int *count)
 {
-  Datum *datumarr = temporal_valueset(temp, count);
+  Datum *datumarr = temporal_values(temp, count);
   double *result = palloc(sizeof(double) * *count);
   for (int i = 0; i < *count; i++)
     result[i] = DatumGetFloat8(datumarr[i]);
@@ -1906,7 +1914,7 @@ tfloat_values(const Temporal *temp, int *count)
 text **
 ttext_values(const Temporal *temp, int *count)
 {
-  Datum *datumarr = temporal_valueset(temp, count);
+  Datum *datumarr = temporal_values(temp, count);
   text **result = palloc(sizeof(text *) * *count);
   for (int i = 0; i < *count; i++)
     result[i] = DatumGetTextP(datumarr[i]);
@@ -1923,7 +1931,7 @@ ttext_values(const Temporal *temp, int *count)
 GSERIALIZED **
 tpoint_values(const Temporal *temp, int *count)
 {
-  Datum *datumarr = temporal_valueset(temp, count);
+  Datum *datumarr = temporal_values(temp, count);
   GSERIALIZED **result = palloc(sizeof(GSERIALIZED *) * *count);
   for (int i = 0; i < *count; i++)
     result[i] = DatumGetGserializedP(datumarr[i]);
@@ -1939,17 +1947,17 @@ tpoint_values(const Temporal *temp, int *count)
  * @pymeosfunc TFloat.getValues
  */
 SpanSet *
-tnumber_values(const Temporal *temp)
+tnumber_valuespans(const Temporal *temp)
 {
   SpanSet *result;
   assert(tnumber_type(temp->temptype));
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
-    result = tnumberinst_values((TInstant *) temp);
+    result = tnumberinst_valuespans((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
-    result = tnumberseq_values((TSequence *) temp);
+    result = tnumberseq_valuespans((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
-    result = tnumberseqset_values((TSequenceSet *) temp);
+    result = tnumberseqset_valuespans((TSequenceSet *) temp);
   return result;
 }
 
@@ -2634,7 +2642,8 @@ temporal_end_timestamp(const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_accessor
- * @brief Return the n-th distinct timestamp of a temporal value.
+ * @brief Return the n-th distinct timestamp of a temporal value in the last
+ * argument
  * @note n is assumed 1-based
  * @sqlfunc timestampN
  * @pymeosfunc timestampN
@@ -3579,7 +3588,7 @@ tnumber_minus_tbox(const Temporal *temp, const TBox *box)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_transf
+ * @ingroup libmeos_temporal_modif
  * @brief Insert the second temporal value into the first one.
  * @sqlfunc insert
  */
@@ -3621,7 +3630,7 @@ temporal_insert(const Temporal *temp1, const Temporal *temp2, bool connect)
 }
 
 /**
- * @ingroup libmeos_temporal_transf
+ * @ingroup libmeos_temporal_modif
  * @brief Update the first temporal value with the second one.
  * @sqlfunc update
  */
@@ -3960,9 +3969,9 @@ multipoint_add_inst_free(GEOSGeometry *geom, const TInstant *inst)
 }
 
 /**
- * @brief Return the subsequences where the objects stays within
- * an area with a given maximum size (maxdist) for at least
- * the specified duration (minunits).
+ * @brief Return the subsequences where the temporal value stays within an area
+ * with a given maximum size (maxdist) for at least the specified
+ * duration (minunits).
  */
 static int
 tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
@@ -4055,8 +4064,8 @@ tsequence_stops1(const TSequence *seq, double maxdist, int64 mintunits,
 }
 
 /**
- * @ingroup libmeos_temporal_transf
- * @brief Return the subsequences where the objects stays within
+ * @ingroup libmeos_internal_temporal_transf
+ * @brief Return the subsequences where the temporal value stays within
  * an area with a given maximum size (maxdist) for at least
  * the specified duration (minunits).
  */
@@ -4079,8 +4088,8 @@ tsequence_stops(const TSequence *seq, double maxdist, int64 mintunits)
 }
 
 /**
- * @ingroup libmeos_temporal_transf
- * @brief Return the subsequences where the objects stays within
+ * @ingroup libmeos_internal_temporal_transf
+ * @brief Return the subsequences where the temporal value stays within
  * an area with a given maximum size (maxdist) for at least
  * the specified duration (minunits).
  */
@@ -4105,8 +4114,8 @@ tsequenceset_stops(const TSequenceSet *ss, double maxdist, int64 mintunits)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_transf
- * @brief Return the subsequences where the objects stays within
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the subsequences where the temporal value stays within
  * an area with a given maximum size (maxdist) for at least
  * the specified duration (minduration).
  */
@@ -4135,7 +4144,6 @@ temporal_stops(const Temporal *temp, double maxdist,
     result = tsequenceset_stops((TSequenceSet *) temp, maxdist, mintunits);
   return result;
 }
-
 
 /*****************************************************************************
  * Local aggregate functions

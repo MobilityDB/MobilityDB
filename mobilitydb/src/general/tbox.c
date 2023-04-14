@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Functions for temporal bounding boxes.
  */
 
@@ -292,7 +293,7 @@ Set_to_tbox(PG_FUNCTION_ARGS)
   if (numset_type(s->settype))
     numset_set_tbox(s, result);
   else
-    tstzset_set_tbox(s, result);
+    timestampset_set_tbox(s, result);
   PG_FREE_IF_COPY_P(s, 0);
   PG_RETURN_POINTER(result);
 }
@@ -576,7 +577,7 @@ PGDLLEXPORT Datum Contained_tbox_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_tbox_tbox);
 /**
  * @ingroup mobilitydb_box_topo
- * @brief Return true if the first temporal box is contained by the second one
+ * @brief Return true if the first temporal box is contained in the second one
  * @sqlfunc tbox_contained()
  */
 Datum

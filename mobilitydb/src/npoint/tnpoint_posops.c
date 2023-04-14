@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Relative position operators for temporal network points.
  *
  * The following operators are defined for the spatial dimension:

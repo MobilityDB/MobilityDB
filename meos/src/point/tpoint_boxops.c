@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Bounding box operators for temporal points.
  *
  * These operators test the bounding boxes of temporal points, which are an

@@ -27,14 +27,15 @@
  *
  *****************************************************************************/
 
-#include "general/temporal_tile.h"
-
 /**
+ * @file
  * @brief Bucket and tile functions for temporal types.
  *
  * @note The time bucket functions are inspired from TimescaleDB.
  * https://docs.timescale.com/latest/api#time_bucket
  */
+
+#include "general/temporal_tile.h"
 
 /* C */
 #include <assert.h>
@@ -418,7 +419,7 @@ tbox_tile_get(double value, TimestampTz t, double xsize, int64 tunits,
   Span span;
   span_set(tmin, tmax, true, false, T_TIMESTAMPTZ, &period);
   span_set(xmin, xmax, true, false, T_FLOAT8, &span);
-  tbox_set(&period, &span, box);
+  tbox_set(&span, &period, box);
   return;
 }
 
@@ -500,7 +501,8 @@ tbox_tile_state_next(TboxGridState *state)
 
 #if MEOS
 /**
- * @brief Return the tile list from a TBox.
+ * @ingroup libmeos_temporal_tile
+ * @brief Generate a multidimensional grid for temporal numbers.
  * @param[in] bounds Input span to split
  * @param[in] xsize Value size of the tiles
  * @param[in] duration Interval defining the temporal size of the tiles
@@ -536,7 +538,6 @@ tbox_tile_list(const TBox *bounds, double xsize, const Interval *duration,
 }
 
 /**
- * @ingroup libmeos_temporal_tile
  * @brief Return the grid list from a span and a period.
  * @param[in] bounds Input value span to split
  * @param[in] xsize Value size of the tiles

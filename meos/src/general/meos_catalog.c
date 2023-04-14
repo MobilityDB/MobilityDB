@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Create a cache of metadata information about temporal types and
  * span types in global arrays.
  */

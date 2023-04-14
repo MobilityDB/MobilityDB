@@ -27,6 +27,11 @@
  *
  *****************************************************************************/
 
+/**
+ * @file
+ * @brief GIN index for the rid of temporal network points.
+*/
+
 /* PostgreSQL */
 #include "postgres.h"
 #include "access/gin.h"

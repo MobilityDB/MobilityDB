@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Bounding box operators for temporal types.
  *
  * The bounding box of temporal values are
@@ -178,7 +179,7 @@ temporal_bbox_size(meosType temptype)
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Set the second argument to the bounding box of a temporal instant
+ * @brief Compute the bounding box of a temporal instant
  * @param[in] box Bounding box
  * @param[in] inst Temporal value
  * @sqlfunc period(), tbox(), stbox()

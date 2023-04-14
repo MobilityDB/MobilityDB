@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Functions for spatial and spatiotemporal tiles.
  */
 
@@ -283,7 +284,7 @@ coord_print(int *coords, int numdims)
  * @param[out] bm Bit matrix
  */
 static void
-bresenham_bm(BitMatrix *bm, int *coords1, int *coords2, int numdims)
+bresenham_bm(int *coords1, int *coords2, int numdims, BitMatrix *bm)
 {
   int i, j, delta[MAXDIMS], next[MAXDIMS], p[MAXDIMS], coords[MAXDIMS],
     neighbors[MAXDIMS];
@@ -586,12 +587,12 @@ stbox_tile_state_get(STboxGridState *state, STBox *box)
 
 #if MEOS
 /**
- * @brief @ingroup mobilitydb_temporal_tile
+ * @ingroup libmeos_temporal_tile
  * @brief Generate a multidimensional grid for temporal points.
  * @sqlfunc multidimGrid()
  */
 STBox *
-stbox_tile_list(STBox *bounds, double size, const Interval *duration,
+stbox_tile_list(const STBox *bounds, double size, const Interval *duration,
   GSERIALIZED *sorigin, TimestampTz torigin, int **no_cells)
 {
   /* Get input parameters */
@@ -671,8 +672,8 @@ stbox_tile_list(STBox *bounds, double size, const Interval *duration,
  * @param[out] coords Matrix coordinates
  */
 static void
-tile_get_coords(int *coords, double x, double y, double z, TimestampTz t,
-  const STboxGridState *state)
+tile_get_coords(double x, double y, double z, TimestampTz t,
+  const STboxGridState *state, int *coords)
 {
   /* Transform the minimum values of the tile into matrix coordinates */
   int k = 0;
@@ -695,8 +696,8 @@ tile_get_coords(int *coords, double x, double y, double z, TimestampTz t,
  * @param[out] coords Tile coordinates
  */
 static void
-tpointinst_get_coords(int *coords, const TInstant *inst, bool hasz, bool hast,
-  const STboxGridState *state)
+tpointinst_get_coords(const TInstant *inst, bool hasz, bool hast,
+  const STboxGridState *state, int *coords)
 {
   /* Read the point and compute the minimum values of the tile */
   POINT4D p;
@@ -711,7 +712,7 @@ tpointinst_get_coords(int *coords, const TInstant *inst, bool hasz, bool hast,
     t = timestamptz_bucket1(inst->t, state->tunits,
       (TimestampTz) (state->box.ymin));
   /* Transform the minimum values of the tile into matrix coordinates */
-  tile_get_coords(coords, x, y, z, t, state);
+  tile_get_coords(x, y, z, t, state, coords);
   return;
 }
 
@@ -730,7 +731,7 @@ tpointinst_set_tiles(const TInstant *inst, bool hasz, bool hast,
   /* Transform the point into tile coordinates */
   int coords[MAXDIMS];
   memset(coords, 0, sizeof(coords));
-  tpointinst_get_coords(coords, inst, hasz, hast, state);
+  tpointinst_get_coords(inst, hasz, hast, state, coords);
   /* Set the corresponding bit in the matix */
   bitmatrix_set_cell(bm, coords, true);
   return;
@@ -754,7 +755,7 @@ tdiscseq_set_tiles(const TSequence *seq, bool hasz, bool hast,
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    tpointinst_get_coords(coords, inst, hasz, hast, state);
+    tpointinst_get_coords(inst, hasz, hast, state, coords);
     bitmatrix_set_cell(bm, coords, true);
   }
   return;
@@ -777,12 +778,12 @@ tcontseq_set_tiles(const TSequence *seq, bool hasz, bool hast,
   memset(coords1, 0, sizeof(coords1));
   memset(coords2, 0, sizeof(coords2));
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
-  tpointinst_get_coords(coords1, inst1, hasz, hast, state);
+  tpointinst_get_coords(inst1, hasz, hast, state, coords1);
   for (int i = 1; i < seq->count; i++)
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
-    tpointinst_get_coords(coords2, inst2, hasz, hast, state);
-    bresenham_bm(bm, coords1, coords2, numdims);
+    tpointinst_get_coords(inst2, hasz, hast, state, coords2);
+    bresenham_bm(coords1, coords2, numdims, bm);
   }
   return;
 }

@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Operators for time types.
  */
 
@@ -179,7 +180,7 @@ PGDLLEXPORT Datum Contained_value_spanset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_value_spanset);
 /**
  * @ingroup mobilitydb_spantime_topo
- * @brief Return true if a value is contained by a span
+ * @brief Return true if a value is contained in a span
  * @sqlfunc span_contained()
  * @sqlop @p <@
  */
@@ -198,7 +199,7 @@ PGDLLEXPORT Datum Contained_span_spanset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_span_spanset);
 /**
  * @ingroup mobilitydb_spantime_topo
- * @brief Return true if a span is contained by a span set
+ * @brief Return true if a span is contained in a span set
  * @sqlfunc span_contained()
  * @sqlop @p <@
  */
@@ -216,7 +217,7 @@ PGDLLEXPORT Datum Contained_spanset_span(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_spanset_span);
 /**
  * @ingroup mobilitydb_spantime_topo
- * @brief Return true if a span set is contained by a span
+ * @brief Return true if a span set is contained in a span
  * @sqlfunc span_contained()
  * @sqlop @p <@
  */
@@ -234,7 +235,7 @@ PGDLLEXPORT Datum Contained_spanset_spanset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_spanset_spanset);
 /**
  * @ingroup mobilitydb_spantime_topo
- * @brief Return true if the first span set is contained by the second one
+ * @brief Return true if the first span set is contained in the second one
  * @sqlfunc span_contained()
  * @sqlop @p <@
  */
@@ -316,7 +317,7 @@ PGDLLEXPORT Datum Adjacent_value_spanset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Adjacent_value_spanset);
 /**
  * @ingroup mobilitydb_spantime_topo
- * @brief Return true if a value is contained by a span
+ * @brief Return true if a value is contained in a span
  * @sqlfunc span_adjacent()
  * @sqlop @p span_adjacent
  */
@@ -335,7 +336,7 @@ PGDLLEXPORT Datum Adjacent_spanset_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Adjacent_spanset_value);
 /**
  * @ingroup mobilitydb_spantime_topo
- * @brief Return true if a value is contained by a span
+ * @brief Return true if a value is contained in a span
  * @sqlfunc span_adjacent()
  * @sqlop @p -|-
  */

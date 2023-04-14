@@ -29,6 +29,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Mathematical operators (+, -, *, /) and functions (round, degrees, ...)
  * for temporal number.
  */

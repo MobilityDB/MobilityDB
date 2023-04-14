@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Generic functions for lifting functions and operators on temporal
  * types.
  *

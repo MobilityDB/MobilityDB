@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief R-tree GiST index for span and span set types.
  *
  * These functions are based on those in the file `rangetypes_gist.c`.
@@ -339,8 +340,7 @@ Span_gist_penalty(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_setspan_set
- * @brief Return the union of the spans.
+ * @brief Return the bounding union of two spans.
  * @note The result of the function is always a span even if the spans do not
  * overlap
  * @note This function is similar to `bbox_union_span_span` with memory
@@ -611,7 +611,7 @@ span_gist_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 
   /*----------
    * The goal is to form a left and right span, so that every entry
-   * span is contained by either left or right interval (or both).
+   * span is contained in either left or right interval (or both).
    *
    * For example, with the spans (0,1), (1,3), (2,3), (2,4):
    *

@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Bounding box operators for temporal network points.
  *
  * These operators test the bounding boxes of temporal npoints, which are
@@ -335,7 +336,7 @@ PGDLLEXPORT Datum Contained_stbox_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_stbox_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_bbox
- * @brief Return true if the spatiotemporal box is contained by the one of the
+ * @brief Return true if the spatiotemporal box is contained in the one of the
  * temporal network point
  * @sqlfunc contained_bbox()
  * @sqlop @p <@
@@ -351,7 +352,7 @@ PG_FUNCTION_INFO_V1(Contained_tnpoint_stbox);
 /**
  * @ingroup mobilitydb_temporal_bbox
  * @brief Return true if the spatiotemporal box of the temporal network point is
- * contained by the spatiotemporal box
+ * contained in the spatiotemporal box
  * @sqlfunc contained_bbox()
  * @sqlop @p <@
  */
@@ -366,7 +367,7 @@ PG_FUNCTION_INFO_V1(Contained_tnpoint_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_bbox
  * @brief Return true if the spatiotemporal box of the first temporal network point
- * is contained by the one of the second temporal network point
+ * is contained in the one of the second temporal network point
  * @sqlfunc contained_bbox()
  * @sqlop @p <@
  */

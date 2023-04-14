@@ -121,15 +121,15 @@ CREATE FUNCTION tnpoint_inst(npoint, timestamptz)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnpoint_seq(npoint, tstzset)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Tdiscseq_from_base_time'
+  AS 'MODULE_PATHNAME', 'Tsequence_from_base_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnpoint_seq(npoint, tstzspan, text DEFAULT 'linear')
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Tcontseq_from_base_time'
+  AS 'MODULE_PATHNAME', 'Tsequence_from_base_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnpoint_seqset(npoint, tstzspanset, text DEFAULT 'linear')
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_time'
+  AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************/

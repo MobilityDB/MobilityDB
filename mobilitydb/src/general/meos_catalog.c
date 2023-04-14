@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Create a cache of PostgreSQL type and operator Oids in global arrays
  * to avoid (slow) lookups. The arrays are initialized when the extension is
  * loaded.
