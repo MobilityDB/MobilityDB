@@ -484,11 +484,11 @@ CREATE FUNCTION getValues(tbool)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION getValues(tint)
   RETURNS intspanset
-  AS 'MODULE_PATHNAME', 'Tnumber_values'
+  AS 'MODULE_PATHNAME', 'Tnumber_valuespans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION getValues(tfloat)
   RETURNS floatspanset
-  AS 'MODULE_PATHNAME', 'Tnumber_values'
+  AS 'MODULE_PATHNAME', 'Tnumber_valuespans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION getValues(ttext)
   RETURNS textset

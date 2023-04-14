@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Basic functions for temporal types of any subtype.
  */
 
@@ -1005,7 +1006,7 @@ Temporal_valueset(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int count;
-  Datum *values = temporal_valueset(temp, &count);
+  Datum *values = temporal_values(temp, &count);
   meosType basetype = temptype_basetype(temp->temptype);
   /* Currently, there is no boolset type */
   if (temp->temptype == T_TBOOL)
@@ -1021,18 +1022,18 @@ Temporal_valueset(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Tnumber_values(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tnumber_values);
+PGDLLEXPORT Datum Tnumber_valuespans(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tnumber_valuespans);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the base values of a temporal float as a span set
  * @sqlfunc getValues()
  */
 Datum
-Tnumber_values(PG_FUNCTION_ARGS)
+Tnumber_valuespans(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  SpanSet *result = tnumber_values(temp);
+  SpanSet *result = tnumber_valuespans(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -1536,7 +1537,7 @@ Temporal_unnest(PG_FUNCTION_ARGS)
     ensure_nonlinear_interpolation(temp->flags);
     /* Create function state */
     int count;
-    Datum *values = temporal_valueset(temp, &count);
+    Datum *values = temporal_values(temp, &count);
     funcctx->user_fctx = temporal_unnest_state_make(temp, values, count);
     /* Build a tuple description for the function output */
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);

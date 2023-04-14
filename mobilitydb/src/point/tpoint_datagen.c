@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Data generator for MobilityDB.
  *
  * These functions are used in the BerlinMOD data generator

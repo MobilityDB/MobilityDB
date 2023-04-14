@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Input of temporal types in WKT, MF-JSON, WKB, EWKB, and HexWKB format.
  */
 

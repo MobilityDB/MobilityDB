@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Basic functions for temporal network points.
  */
 
@@ -261,7 +262,7 @@ tnpointseq_step_positions(const TSequence *seq, int *count)
 {
   int count1;
   /* The following function removes duplicate values */
-  Datum *values = tsequence_valueset(seq, &count1);
+  Datum *values = tsequence_values(seq, &count1);
   Nsegment **result = palloc(sizeof(Nsegment *) * count1);
   for (int i = 0; i < count1; i++)
   {
@@ -338,7 +339,7 @@ tnpointseqset_step_positions(const TSequenceSet *ss, int *count)
 {
   /* The following function removes duplicate values */
   int newcount;
-  Datum *values = tsequenceset_valueset(ss, &newcount);
+  Datum *values = tsequenceset_values(ss, &newcount);
   Nsegment **result = palloc(sizeof(Nsegment *) * newcount);
   for (int i = 0; i < newcount; i++)
   {

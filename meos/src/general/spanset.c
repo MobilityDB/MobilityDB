@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief General functions for set of disjoint spans.
  */
 
@@ -508,7 +509,7 @@ periodset_shift_tscale(const SpanSet *ps, const Interval *shift,
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup libmeos_internal_setspan_accessor
  * @brief Return the size in bytes of a span set
  * @sqlfunc memSize()
  */

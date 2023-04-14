@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief MobilityDB functions gserialized_func(...) corresponding to external
  * PostGIS functions xxx_func(PG_FUNCTION_ARGS). This avoids bypassing the
  * function manager fmgr.c.

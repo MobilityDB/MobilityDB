@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Functions for selectivity estimation of time types operators.
  *
  * These functions are based on those of the file `rangetypes_selfuncs.c`.

@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Ever spatial relationships for temporal network points.
  *
  * These relationships compute the ever spatial relationship between the

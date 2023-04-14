@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief R-tree GiST index for span and span set types.
  *
  * These functions are based on those in the file `rangetypes_gist.c`.

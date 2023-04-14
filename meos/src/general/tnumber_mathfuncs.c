@@ -29,6 +29,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Mathematical operators (+, -, *, /) and functions (round, degrees,...)
  * for temporal numbers.
  */
@@ -487,7 +488,7 @@ tnumberseqset_delta_value(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup mobilitydb_temporal_math
+ * @ingroup libmeos_temporal_math
  * @brief Return the delta value of a temporal number.
  * @sqlfunc deltaValue()
  */
@@ -595,7 +596,7 @@ tnumberseqset_angular_difference(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup mobilitydb_temporal_math
+ * @ingroup libmeos_temporal_math
  * @brief Return the angular difference of a temporal number.
  * @sqlfunc angularDifference()
  */

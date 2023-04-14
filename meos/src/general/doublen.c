@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Internal types used in particular for computing the average and
  * centroid temporal aggregates.
  *

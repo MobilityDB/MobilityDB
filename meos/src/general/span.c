@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief General functions for spans (a.k.a. ranges) composed of two `Datum`
  * values and two `Boolean` values stating whether the bounds are inclusive.
  */

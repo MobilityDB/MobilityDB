@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Analytic functions for temporal points and temporal floats.
  */
 

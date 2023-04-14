@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Temporal spatial relationships for temporal points.
  *
  * These relationships are applied at each instant and result in a temporal

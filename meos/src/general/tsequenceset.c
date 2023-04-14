@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief General functions for temporal sequence sets.
  */
 
@@ -274,8 +275,8 @@ tsequenceset_make1_exp(const TSequence **sequences, int count, int maxcount,
 
 /**
  * @ingroup libmeos_temporal_constructor
- * @brief Construct a temporal sequence set from an array of temporal sequences.
- *
+ * @brief Construct a temporal sequence set from an array of temporal sequences
+ * enabling the data structure to expand.
  * @param[in] sequences Array of sequences
  * @param[in] count Number of elements in the array
  * @param[in] maxcount Maximum number of elements in the array
@@ -629,14 +630,14 @@ tgeogpointseqset_from_base_periodset(const GSERIALIZED *gs, const SpanSet *ps,
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Return the base values of a temporal sequence set as a set
+ * @brief Return the array of distinct base values of a temporal sequence set
  * @param[in] ss Temporal sequence set
  * @param[out] count Number of elements in the output array
  * @result Array of Datums
  * @sqlfunc valueSet()
  */
 Datum *
-tsequenceset_valueset(const TSequenceSet *ss, int *count)
+tsequenceset_values(const TSequenceSet *ss, int *count)
 {
   Datum *result = palloc(sizeof(Datum *) * ss->totalcount);
   int k = 0;
@@ -662,7 +663,7 @@ tsequenceset_valueset(const TSequenceSet *ss, int *count)
  * @sqlfunc getValues()
  */
 SpanSet *
-tnumberseqset_values(const TSequenceSet *ss)
+tnumberseqset_valuespans(const TSequenceSet *ss)
 {
   int count, i;
   Span *spans;
@@ -671,7 +672,7 @@ tnumberseqset_values(const TSequenceSet *ss)
   /* Temporal sequence number with discrete or step interpolation */
   if (! MEOS_FLAGS_GET_LINEAR(ss->flags))
   {
-    Datum *values = tsequenceset_valueset(ss, &count);
+    Datum *values = tsequenceset_values(ss, &count);
     spans = palloc(sizeof(Span) * count);
     for (i = 0; i < count; i++)
       span_set(values[i], values[i], true, true, basetype, &spans[i]);

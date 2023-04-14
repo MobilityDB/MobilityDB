@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Basic functions for temporal types of any subtype.
  */
 
@@ -1380,12 +1381,20 @@ temporal_shift_tscale(const Temporal *temp, const Interval *shift,
 }
 
 #if MEOS
+/**
+ * @ingroup libmeos_temporal_transf
+ * @brief Return a temporal value shifted by the interval.
+ */
 Temporal *
 temporal_shift(const Temporal *temp, const Interval *shift)
 {
   return temporal_shift_tscale(temp, shift, NULL);
 }
 
+/**
+ * @ingroup libmeos_temporal_transf
+ * @brief Return a temporal value scaled by the interval.
+ */
 Temporal *
 temporal_tscale(const Temporal *temp, const Interval *duration)
 {
@@ -1749,7 +1758,7 @@ temporal_tsample(const Temporal *temp, const Interval *duration,
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_accessor
+ * @ingroup libmeos_internal_temporal_accessor
  * @brief Return the size in bytes of a temporal value
  * @sqlfunc memSize
  */
@@ -1827,20 +1836,20 @@ temporal_set_bbox(const Temporal *temp, void *box)
 
 /**
  * @ingroup libmeos_temporal_accessor
- * @brief Return the base values of a temporal value as a set.
+ * @brief Return the array of distinct base values of a temporal value.
  * @sqlfunc values
  */
 Datum *
-temporal_valueset(const Temporal *temp, int *count)
+temporal_values(const Temporal *temp, int *count)
 {
   Datum *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
-    result = tinstant_valueset((TInstant *) temp, count);
+    result = tinstant_values((TInstant *) temp, count);
   else if (temp->subtype == TSEQUENCE)
-    result = tsequence_valueset((TSequence *) temp, count);
+    result = tsequence_values((TSequence *) temp, count);
   else /* temp->subtype == TSEQUENCESET */
-    result = tsequenceset_valueset((TSequenceSet *) temp, count);
+    result = tsequenceset_values((TSequenceSet *) temp, count);
   return result;
 }
 
@@ -1854,7 +1863,7 @@ temporal_valueset(const Temporal *temp, int *count)
 bool *
 tbool_values(const Temporal *temp, int *count)
 {
-  Datum *datumarr = temporal_valueset(temp, count);
+  Datum *datumarr = temporal_values(temp, count);
   bool *result = palloc(sizeof(bool) * *count);
   for (int i = 0; i < *count; i++)
     result[i] = DatumGetBool(datumarr[i]);
@@ -1871,7 +1880,7 @@ tbool_values(const Temporal *temp, int *count)
 int *
 tint_values(const Temporal *temp, int *count)
 {
-  Datum *datumarr = temporal_valueset(temp, count);
+  Datum *datumarr = temporal_values(temp, count);
   int *result = palloc(sizeof(int) * *count);
   for (int i = 0; i < *count; i++)
     result[i] = DatumGetInt32(datumarr[i]);
@@ -1888,7 +1897,7 @@ tint_values(const Temporal *temp, int *count)
 double *
 tfloat_values(const Temporal *temp, int *count)
 {
-  Datum *datumarr = temporal_valueset(temp, count);
+  Datum *datumarr = temporal_values(temp, count);
   double *result = palloc(sizeof(double) * *count);
   for (int i = 0; i < *count; i++)
     result[i] = DatumGetFloat8(datumarr[i]);
@@ -1905,7 +1914,7 @@ tfloat_values(const Temporal *temp, int *count)
 text **
 ttext_values(const Temporal *temp, int *count)
 {
-  Datum *datumarr = temporal_valueset(temp, count);
+  Datum *datumarr = temporal_values(temp, count);
   text **result = palloc(sizeof(text *) * *count);
   for (int i = 0; i < *count; i++)
     result[i] = DatumGetTextP(datumarr[i]);
@@ -1922,7 +1931,7 @@ ttext_values(const Temporal *temp, int *count)
 GSERIALIZED **
 tpoint_values(const Temporal *temp, int *count)
 {
-  Datum *datumarr = temporal_valueset(temp, count);
+  Datum *datumarr = temporal_values(temp, count);
   GSERIALIZED **result = palloc(sizeof(GSERIALIZED *) * *count);
   for (int i = 0; i < *count; i++)
     result[i] = DatumGetGserializedP(datumarr[i]);
@@ -1938,17 +1947,17 @@ tpoint_values(const Temporal *temp, int *count)
  * @pymeosfunc TFloat.getValues
  */
 SpanSet *
-tnumber_values(const Temporal *temp)
+tnumber_valuespans(const Temporal *temp)
 {
   SpanSet *result;
   assert(tnumber_type(temp->temptype));
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
-    result = tnumberinst_values((TInstant *) temp);
+    result = tnumberinst_valuespans((TInstant *) temp);
   else if (temp->subtype == TSEQUENCE)
-    result = tnumberseq_values((TSequence *) temp);
+    result = tnumberseq_valuespans((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
-    result = tnumberseqset_values((TSequenceSet *) temp);
+    result = tnumberseqset_valuespans((TSequenceSet *) temp);
   return result;
 }
 

@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Route identifier operators for temporal network points.
  *
  * These operators test the set of routes of temporal network points, which are

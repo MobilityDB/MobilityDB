@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief General functions for temporal sequences.
  */
 
@@ -892,8 +893,9 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc,
 }
 
 /**
- * @brief Construct a temporal sequence from an array of temporal instants.
- *
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal sequence from an array of temporal instants
+ * enabling the data structure to expand.
  * @param[in] instants Array of instants
  * @param[in] count Number of elements in the array
  * @param[in] maxcount Maximum number of elements in the array
@@ -913,7 +915,6 @@ tsequence_make_exp(const TInstant **instants, int count, int maxcount,
 /**
  * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal sequence from an array of temporal instants.
- *
  * @param[in] instants Array of instants
  * @param[in] count Number of elements in the array
  * @param[in] lower_inc,upper_inc True if the respective bound is inclusive
@@ -974,10 +975,9 @@ tsequence_make_free(TInstant **instants, int count, bool lower_inc,
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_constructor
+ * @ingroup libmeos_internal_temporal_constructor
  * @brief Construct a temporal sequence from arrays of coordinates, one per
  * dimension, and timestamps.
- *
  * @param[in] xcoords Array of x coordinates
  * @param[in] ycoords Array of y coordinates
  * @param[in] zcoords Array of z coordinates
@@ -2135,15 +2135,14 @@ tsequence_shift_tscale(const TSequence *seq, const Interval *shift,
 
 /**
  * @ingroup libmeos_internal_temporal_accessor
- * @brief Return the base values of a temporal sequence as a set.
- *
+ * @brief Return the array of distinct values of a temporal sequence.
  * @param[in] seq Temporal sequence
  * @param[out] count Number of values in the resulting array
  * @result Array of values
  * @sqlfunc getValues()
  */
 Datum *
-tsequence_valueset(const TSequence *seq, int *count)
+tsequence_values(const TSequence *seq, int *count)
 {
   Datum *result = palloc(sizeof(Datum *) * seq->count);
   for (int i = 0; i < seq->count; i++)
@@ -2169,7 +2168,7 @@ tsequence_valueset(const TSequence *seq, int *count)
  * @sqlfunc getValues()
  */
 SpanSet *
-tnumberseq_values(const TSequence *seq)
+tnumberseq_valuespans(const TSequence *seq)
 {
   /* Temporal sequence number with linear interpolation */
   if (MEOS_FLAGS_GET_LINEAR(seq->flags))
@@ -2182,7 +2181,7 @@ tnumberseq_values(const TSequence *seq)
   /* Temporal sequence number with discrete or step interpolation */
   int count;
   meosType basetype = temptype_basetype(seq->temptype);
-  Datum *values = tsequence_valueset(seq, &count);
+  Datum *values = tsequence_values(seq, &count);
   Span *spans = palloc(sizeof(Span) * count);
   for (int i = 0; i < count; i++)
     span_set(values[i], values[i], true, true, basetype, &spans[i]);

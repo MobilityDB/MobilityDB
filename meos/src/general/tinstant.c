@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief General functions for temporal instants.
  */
 
@@ -410,7 +411,7 @@ tinstant_copy(const TInstant *inst)
  * @sqlfunc getValues()
  */
 Datum *
-tinstant_valueset(const TInstant *inst, int *count)
+tinstant_values(const TInstant *inst, int *count)
 {
   Datum *result = palloc(sizeof(Datum));
   result[0] = tinstant_value(inst);
@@ -424,7 +425,7 @@ tinstant_valueset(const TInstant *inst, int *count)
  * @sqlfunc getValues()
  */
 SpanSet *
-tnumberinst_values(const TInstant *inst)
+tnumberinst_valuespans(const TInstant *inst)
 {
   Datum value = tinstant_value(inst);
   Span s;

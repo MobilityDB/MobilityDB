@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief General functions for set values composed of an ordered list of
  * distinct values.
  */
@@ -855,7 +856,7 @@ spatialset_set_stbox(const Set *set, STBox *box)
 
 #if MEOS
 /**
- * @ingroup libmeos_setspan_accessor
+ * @ingroup libmeos_internal_setspan_accessor
  * @brief Return the size in bytes of a set.
  * @sqlfunc memSize()
  */

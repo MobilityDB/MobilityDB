@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief General functions for set values composed of an ordered list of
  * distinct values.
  */

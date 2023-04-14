@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Temporal comparison operators: #=, #<>, #<, #>, #<=, #>=.
+ * @file
+ * @brief Temporal comparison operators.
  */
 
 #include "general/temporal_compops.h"

@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief SP-GiST implementation of 8-dimensional quad-tree over temporal
  * points.
  *

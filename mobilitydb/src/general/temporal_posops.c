@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Relative position operators for temporal types.
  *
  * The following operators are defined:

@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Similarity distance for temporal values. Currently, discrete Frechet
  * distance and Dynamic Time Warping (DTW) distance are implemented.
  */

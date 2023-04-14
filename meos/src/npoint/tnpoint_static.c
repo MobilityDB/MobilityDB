@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Network-based static point and segment types.
  *
  * Several functions are commented out since they are not currently used.

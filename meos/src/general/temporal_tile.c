@@ -27,14 +27,15 @@
  *
  *****************************************************************************/
 
-#include "general/temporal_tile.h"
-
 /**
+ * @file
  * @brief Bucket and tile functions for temporal types.
  *
  * @note The time bucket functions are inspired from TimescaleDB.
  * https://docs.timescale.com/latest/api#time_bucket
  */
+
+#include "general/temporal_tile.h"
 
 /* C */
 #include <assert.h>

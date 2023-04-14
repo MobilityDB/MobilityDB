@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Implementation of the Gauss-Krueger projection used in Secondo.
  *
  * @note This projection does not correspond to any standard projection in
