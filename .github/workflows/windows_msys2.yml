@@ -44,15 +44,29 @@ jobs:
           cmake --build .
           cmake --install .
 
+      - name: Configure PostgreSQL
+        run: |
+          export PGDATA="D:/a/_temp/msys64/usr/local/pgsql/data"
+          {
+            echo "port = 5432"
+            echo "shared_preload_libraries = 'postgis-3.dll'"
+            echo "max_locks_per_transaction = 128"
+            echo "timezone = 'UTC'"
+            echo "parallel_tuple_cost = 100"
+            echo "parallel_setup_cost = 100"
+            echo "force_parallel_mode = off"
+            echo "min_parallel_table_scan_size = 0"
+            echo "min_parallel_index_scan_size = 0"
+          } >> "${PGDATA}/postgresql.conf"
+
       - name: Test install
         run: |
-          # Create a new PostgreSQL database cluster and create the database
-          export PGDATA="D:/a/_temp/msys64/usr/local/pgsql/data"
-          export PGPORT=5432
           initdb
           pg_ctl start
-          createdb -U runneradmin ___mobdb___test___
-          # Create and test the extension
-          psql -U runneradmin -d ___mobdb___test___ -c "CREATE EXTENSION mobilitydb CASCADE; SELECT postgis_full_version(); SELECT mobilitydb_full_version();"
-          psql -U runneradmin -d ___mobdb___test___ -c "SELECT tfloat '[1@2000-01-01]';"
+          createdb -U runneradmin mydb
+          psql -p 5432 -U runneradmin -d mydb -c "CREATE EXTENSION mobilitydb CASCADE; SELECT postgis_full_version(); SELECT mobilitydb_full_version(); SELECT tfloat '[1@2000-01-01]';"
 
+      - name: Setup tests
+        run: |
+          cd build
+          mkdir -p out
