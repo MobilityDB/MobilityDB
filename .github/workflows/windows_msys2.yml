@@ -46,24 +46,13 @@ jobs:
 
       - name: Test install
         run: |
-<<<<<<< Updated upstream
-=======
           # Create a new PostgreSQL database cluster and create the database
->>>>>>> Stashed changes
           export PGDATA="D:/a/_temp/msys64/usr/local/pgsql/data"
           export PGPORT=5432
           initdb
           pg_ctl start
-<<<<<<< Updated upstream
-          createdb -U runneradmin mydb
-          psql -p 5432 -U runneradmin -d mydb -c "CREATE EXTENSION mobilitydb CASCADE; SELECT postgis_full_version(); SELECT mobilitydb_full_version();"
-=======
           createdb -U runneradmin ___mobdb___test___
           # Create and test the extension
           psql -U runneradmin -d ___mobdb___test___ -c "CREATE EXTENSION mobilitydb CASCADE; SELECT postgis_full_version(); SELECT mobilitydb_full_version();"
           psql -U runneradmin -d ___mobdb___test___ -c "SELECT tfloat '[1@2000-01-01]';"
-
-
-
->>>>>>> Stashed changes
 
