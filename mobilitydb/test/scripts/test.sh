@@ -1,6 +1,8 @@
 #!/bin/bash
 
 #set -e
+
+# If any of the script steps fail (exit with non-zero), stop the script
 set -o pipefail
 
 CMD=$1
@@ -32,7 +34,9 @@ case ${CMD} in
 setup)
   rm -rf "${WORKDIR}"
   mkdir -p "${DBDIR}" "${WORKDIR}"/lock "${WORKDIR}"/out "${WORKDIR}"/log
+  echo "Test directories created"
   "${BIN_DIR}/initdb" -D "${DBDIR}" 2>&1 | tee "${WORKDIR}/log/initdb.log"
+  echo "Test database cluster created"
 
   echo "POSTGIS = ${POSTGIS}" >> "${WORKDIR}/log/initdb.log"
 
@@ -46,12 +50,13 @@ setup)
     echo "min_parallel_table_scan_size = 0"
     echo "min_parallel_index_scan_size = 0"
   } >> "${DBDIR}/postgresql.conf"
+  echo "File postgresql.conf configure"
 
-  if $PGCTL start 2>&1 | tee "$WORKDIR"/log/pg_start.log; then
+  if $PGCTL start 2>&1 | tee "${WORKDIR}"/log/pg_start.log; then
     sleep 2
     echo "the status start"
-    if ! pg_status >> "$WORKDIR"/log/pg_start.log; then
-      echo "Failed to start PostgreSQL" >> "$WORKDIR/log/pg_start.log"
+    if ! pg_status >> "${WORKDIR}"/log/pg_start.log; then
+      echo "Failed to start PostgreSQL" >> "${WORKDIR}"/log/pg_start.log
       exit 1
     fi
   fi
@@ -164,7 +169,7 @@ run_passfail)
   } >> "${WORKDIR}/out/${TESTNAME}.out"
 
   # capture error when reading data
-  if grep -q ERROR "$WORKDIR/out/$TESTNAME.out"; then exit 1; else exit 0; fi
+  if grep -q ERROR "${WORKDIR}/out/${TESTNAME}.out"; then exit 1; else exit 0; fi
 
 ;;
 
