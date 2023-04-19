@@ -35,6 +35,7 @@
 /* C */
 #include <assert.h>
 /* PostgreSQL */
+#include <float.h>
 #include <postgres.h>
 #include <utils/timestamp.h>
 /* PostGIS */
@@ -251,136 +252,94 @@ bitmatrix_print(const BitMatrix *bm)
 #endif /* DEBUG_BUILD */
 
 /*****************************************************************************
- * N-dimensional version of Bresenham's line algorithm
- * https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
- * setting in the bit array all the tiles connecting the two given tiles
+ * N-dimensional version of the fast voxel traversal algorithm
+ * setting in the bit array all the tiles connecting the two given tiles.
+ *
+ * Amanatides, John, and Andrew Woo.
+ * "A fast voxel traversal algorithm for ray tracing."
+ * Eurographics. Vol. 87. No. 3. 1987.
  *****************************************************************************/
-
-#ifdef DEBUG_BUILD
-/**
- * @brief Print the coordinates of a tile
- * @note This function is only used for debugging purposes
- */
-void
-coord_print(int *coords, int numdims)
-{
-  printf("(");
-  for (int i = 0; i < numdims; i++)
-  {
-    if (i > 0) printf(", ");
-    printf("%d", coords[i]);
-  }
-  printf(")\n");
-}
-#endif
 
 /**
  * @brief Set in the bit matrix the bits of the tiles connecting with a line the
  * two input tiles
  *
  * @param[in] coords1, coords2 Coordinates of the input tiles
+ * @param[in] eps1, eps2 Relative position of the points in the input tiles
  * @param[in] numdims Number of dimensions of the grid. It is either 2 (for 2D),
  * 3 (for 3D or 2D+T) or 4 (3D+T)
  * @param[out] bm Bit matrix
  */
 static void
-bresenham_bm(int *coords1, int *coords2, int numdims, BitMatrix *bm)
+fastvoxel_bm(int *coords1, double *eps1, int *coords2, double *eps2,
+  int numdims, BitMatrix *bm)
 {
-  int i, j, delta[MAXDIMS], next[MAXDIMS], p[MAXDIMS], coords[MAXDIMS],
-    neighbors[MAXDIMS];
-  assert(numdims >= 2);
-  memset(delta, 0, sizeof(delta));
-  memset(next, 0, sizeof(next));
-  memset(p, 0, sizeof(p));
-  memset(coords, 0, sizeof(coords));
-  memset(neighbors, 0, sizeof(neighbors));
-  /* Compute the delta and next values for every dimension */
-  for (i = 0; i < numdims; i++)
+  int i, k, coords[MAXDIMS], next[MAXDIMS];
+  double length, tMax[MAXDIMS], tDelta[MAXDIMS];
+  /* Compute manhattan distance */
+  k = 0;
+  for (i = 0; i < numdims; ++i)
+    k += abs(coords2[i] - coords1[i]);
+  /* Shortcut function if the segement covers only 1 or 2 cells */
+  if (k == 0)
   {
-    delta[i] = abs(coords2[i] - coords1[i]);
+    bitmatrix_set_cell(bm, coords1, true);
+    return;
+  }
+  else if (k == 1)
+  {
+    bitmatrix_set_cell(bm, coords1, true);
+    bitmatrix_set_cell(bm, coords2, true);
+    return;
+  }
+  /* Compute length of translation for normalization */
+  length = 0;
+  for (i = 0; i < numdims; ++i)
+    length += pow((double) coords2[i] + eps2[i]
+                - (double) coords1[i] - eps1[i], 2);
+  length = sqrt(length);
+  /* Initialize all vectors */
+  for (i = 0; i < numdims; ++i)
+  {
+    /* Compute the (normalized) tDelta */
+    tDelta[i] = length / fabs((double) coords2[i] + eps2[i]
+                           - (double) coords1[i] - eps1[i]);
+    /* Compute the direction of movement and tMax */
     if (coords2[i] > coords1[i])
+    {
       next[i] = 1;
-    else
+      tMax[i] = (1 - eps1[i]) * tDelta[i];
+    }
+    else if (coords2[i] < coords1[i])
+    {
       next[i] = -1;
-  }
-  /* Compute the driving axis
-   * At the end, the driving axis is the one in variable axis */
-  int axis = 0; /* make compiler quiet */
-  for (i = 0; i < numdims; i++)
-  {
-    /* We bet on the current i axis */
-    bool found = true;
-    axis = i;
-    for (j = 0; j < numdims; j++)
-    {
-      if (i == j) continue;
-      if (delta[i] < delta[j])
-      {
-        found = false;
-        break;
-      }
+      tMax[i] = eps1[i] * tDelta[i];
     }
-    if (found)
-      break;
+    else
+    {
+      next[i] = 0;
+      tMax[i] = DBL_MAX;
+    }
   }
-  for (i = 0; i < numdims; i++)
+  /* Set the starting bitmap cell */
+  memcpy(coords, coords1, sizeof(int)*numdims);
+  bitmatrix_set_cell(bm, coords, true);
+  for (i = 0; i < k; ++i)
   {
-    if (i == axis) continue;
-    p[i] = 2 * delta[i] - delta[axis];
-  }
-  /* Make a copy of the start coordinates */
-  memcpy(coords, coords1, sizeof(neighbors));
-  /* Loop from start to end tile
-   * The end of the loop is after printing the last element */
-  while (true)
-  {
-    /* Set the current Bresenham diagonal tile */
-    // coord_print(coords, numdims);
+    /* Find dimension with smallest tMax */
+    int idx = 0;
+    for (int j = 1; j < numdims; ++j)
+    {
+      if (tMax[j] < tMax[idx])
+        idx = j;
+    }
+    /* Progress to the next cell in that dimension */
+    tMax[idx] += tDelta[idx];
+    coords[idx] += next[idx];
+    /* Set the bitmap cell */
     bitmatrix_set_cell(bm, coords, true);
-    /* Exit the loop when finished */
-    if (coords[axis] == coords2[axis])
-      break;
-    /* Find neighbors of the Bresenham diagonal tile */
-    memcpy(neighbors, coords, sizeof(neighbors));
-    // printf("Neighbors\n");
-    for (i = 1; i < numdims; i++)
-    {
-      if (next[i] == 0) continue;
-      /* Bottom of the Bresenham diagonal cell for 2D */
-      neighbors[i] -= 1;
-      int min = Min(coords1[i], coords2[i]);
-      int max = Max(coords1[i], coords2[i]);
-      if (neighbors[i] >= min)
-      {
-        // coord_print(neighbors, numdims);
-        bitmatrix_set_cell(bm, coords, true);
-      }
-      /* Top of the Bresenham diagonal cell for 2D */
-      neighbors[i] += 2;
-      if (neighbors[i] <= max)
-      {
-        // coord_print(neighbors, numdims);
-        bitmatrix_set_cell(bm, coords, true);
-      }
-    }
-    // printf("-------\n");
-    /* Advance state */
-    coords[axis] += next[axis];
-    for (i = 0; i < numdims; i++)
-    {
-      if (i == axis) continue;
-      if (p[i] >= 0)
-      {
-        coords[i] += next[i];
-        p[i] -= 2 * delta[axis];
-      }
-    }
-    for (i = 0; i < numdims; i++)
-    {
-      if (i == axis) continue;
-      p[i] += 2 * delta[i];
-    }
   }
+  assert(memcmp(coords, coords2, sizeof(int)*numdims) == 0);
   return;
 }
 
@@ -688,16 +647,38 @@ tile_get_coords(double x, double y, double z, TimestampTz t,
 }
 
 /**
+ * @brief Transform the values in a tile into relative positions in matrix cells
+ * @param[in] dx,dy,dz,dt Values in a tile
+ * @param[in] state Grid information
+ * @param[out] eps Relative position of values in their matrix cells (between 0 and 1)
+ */
+static void
+tile_get_eps(double dx, double dy, double dz, TimestampTz dt,
+  const STboxGridState *state, double *eps)
+{
+  /* Transform the values in a tile into relative positions in matrix cells */
+  int k = 0;
+  eps[k++] = dx / state->size;
+  eps[k++] = dy / state->size;
+  if (MEOS_FLAGS_GET_Z(state->box.flags))
+    eps[k++] = dz / state->size;
+  if (MEOS_FLAGS_GET_T(state->box.flags))
+    eps[k++] = (double) dt / state->tunits;
+  return;
+}
+
+/**
  * @brief Get the coordinates of the tile corresponding the temporal instant point
  * @param[in] inst Temporal point
  * @param[in] hasz Whether the tile has Z dimension
  * @param[in] hast Whether the tile has T dimension
  * @param[in] state Grid definition
  * @param[out] coords Tile coordinates
+ * @param[out] eps    Relative position inside the tile
  */
 static void
-tpointinst_get_coords(const TInstant *inst, bool hasz, bool hast,
-  const STboxGridState *state, int *coords)
+tpointinst_get_coords_eps(const TInstant *inst, bool hasz, bool hast,
+  const STboxGridState *state, int *coords, double *eps)
 {
   /* Read the point and compute the minimum values of the tile */
   POINT4D p;
@@ -710,9 +691,12 @@ tpointinst_get_coords(const TInstant *inst, bool hasz, bool hast,
     z = float_bucket(p.z, state->size, state->box.zmin);
   if (hast)
     t = timestamptz_bucket1(inst->t, state->tunits,
-      (TimestampTz) (state->box.ymin));
+      DatumGetTimestampTz(state->box.period.lower));
   /* Transform the minimum values of the tile into matrix coordinates */
   tile_get_coords(x, y, z, t, state, coords);
+  /* Transform the values in a tile into relative positions in matrix cells */
+  if (eps != NULL) /* Some methods do not need this information */
+    tile_get_eps(p.x - x, p.y - y, p.z - z, inst->t - t, state, eps);
   return;
 }
 
@@ -731,7 +715,7 @@ tpointinst_set_tiles(const TInstant *inst, bool hasz, bool hast,
   /* Transform the point into tile coordinates */
   int coords[MAXDIMS];
   memset(coords, 0, sizeof(coords));
-  tpointinst_get_coords(inst, hasz, hast, state, coords);
+  tpointinst_get_coords_eps(inst, hasz, hast, state, coords, NULL);
   /* Set the corresponding bit in the matix */
   bitmatrix_set_cell(bm, coords, true);
   return;
@@ -755,7 +739,7 @@ tdiscseq_set_tiles(const TSequence *seq, bool hasz, bool hast,
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    tpointinst_get_coords(inst, hasz, hast, state, coords);
+    tpointinst_get_coords_eps(inst, hasz, hast, state, coords, NULL);
     bitmatrix_set_cell(bm, coords, true);
   }
   return;
@@ -775,16 +759,38 @@ tcontseq_set_tiles(const TSequence *seq, bool hasz, bool hast,
 {
   int numdims = 2 + (hasz ? 1 : 0) + (hast ? 1 : 0);
   int coords1[MAXDIMS], coords2[MAXDIMS];
+  double eps1[MAXDIMS], eps2[MAXDIMS];
   memset(coords1, 0, sizeof(coords1));
   memset(coords2, 0, sizeof(coords2));
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
-  tpointinst_get_coords(inst1, hasz, hast, state, coords1);
+  tpointinst_get_coords_eps(inst1, hasz, hast, state, coords1, eps1);
   for (int i = 1; i < seq->count; i++)
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
-    tpointinst_get_coords(inst2, hasz, hast, state, coords2);
-    bresenham_bm(coords1, coords2, numdims, bm);
+    tpointinst_get_coords_eps(inst2, hasz, hast, state, coords2, eps2);
+    fastvoxel_bm(coords1, eps1, coords2, eps2, numdims, bm);
+    memcpy(coords1, coords2, sizeof(coords1));
+    memcpy(eps1, eps2, sizeof(eps1));
   }
+  return;
+}
+
+/**
+ * @brief Set the bit corresponding to the tiles intersecting the temporal point
+ * @param[in] seq Temporal point
+ * @param[in] hasz Whether the tile has Z dimension
+ * @param[in] hast Whether the tile has T dimension
+ * @param[in] state Grid definition
+ * @param[out] bm Bit matrix
+ */
+static void
+tpointseq_set_tiles(const TSequence *seq, bool hasz, bool hast,
+  const STboxGridState *state, BitMatrix *bm)
+{
+  if (MEOS_FLAGS_GET_LINEAR(seq->flags))
+    tcontseq_set_tiles((TSequence *) seq, hasz, hast, state, bm);
+  else
+    tdiscseq_set_tiles((TSequence *) seq, hasz, hast, state, bm);
   return;
 }
 
@@ -803,7 +809,7 @@ tpointseqset_set_tiles(const TSequenceSet *ss, bool hasz, bool hast,
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    tcontseq_set_tiles(seq, hasz, hast, state, bm);
+    tpointseq_set_tiles(seq, hasz, hast, state, bm);
   }
   return;
 }
@@ -824,12 +830,7 @@ tpoint_set_tiles(const Temporal *temp, const STboxGridState *state,
   if (temp->subtype == TINSTANT)
     tpointinst_set_tiles((TInstant *) temp, hasz, hast, state, bm);
   else if (temp->subtype == TSEQUENCE)
-  {
-    if (MEOS_FLAGS_GET_DISCRETE(temp->flags))
-      tdiscseq_set_tiles((TSequence *) temp, hasz, hast, state, bm);
-    else
-      tcontseq_set_tiles((TSequence *) temp, hasz, hast, state, bm);
-  }
+    tpointseq_set_tiles((TSequence *) temp, hasz, hast, state, bm);
   else /* temp->subtype == TSEQUENCESET */
     tpointseqset_set_tiles((TSequenceSet *) temp, hasz, hast, state, bm);
   return;
