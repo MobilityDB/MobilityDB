@@ -6,12 +6,12 @@ set -o pipefail
 CMD=$1
 XZCAT=@XZCAT_EXECUTABLE@
 BUILDDIR="@CMAKE_BINARY_DIR@"
-TESTDIR="${BUILDDIR}/tmptest"
+WORKDIR="${BUILDDIR}/tmptest"
 EXTFILE="@MOBILITYDB_TEST_EXTENSION_FILE@"
 BIN_DIR="@POSTGRESQL_BIN_DIR@"
 
-PSQL="${BIN_DIR}/psql -h ${TESTDIR}/lock -e --set ON_ERROR_STOP=0 postgres"
-DBDIR="${TESTDIR}/db"
+PSQL="${BIN_DIR}/psql -h ${WORKDIR}/lock -e --set ON_ERROR_STOP=0 postgres"
+DBDIR="${WORKDIR}/db"
 
 MAX_RETRIES=10
 
@@ -23,17 +23,17 @@ pg_stop() {
   @POSTGRESQL_BIN_DIR@//pg_ctl -D "${DBDIR}" stop
 }
 
-PGCTL="${BIN_DIR}/pg_ctl -w -D ${DBDIR} -l ${TESTDIR}/log/postgres.log -o -k -o ${TESTDIR}/lock -o -h -o ''"
+PGCTL="${BIN_DIR}/pg_ctl -w -D ${DBDIR} -l ${WORKDIR}/log/postgres.log -o -k -o ${WORKDIR}/lock"
 
 POSTGIS="@POSTGIS_LIBRARY@"
 
 case ${CMD} in
 setup)
-  rm -rf "${TESTDIR}"
-  mkdir -p "${DBDIR}" "${TESTDIR}/lock" "${TESTDIR}/out" "${TESTDIR}/log"
-  "${BIN_DIR}/initdb" -D "${DBDIR}" 2>&1 | tee "${TESTDIR}/log/initdb.log"
+  rm -rf "${WORKDIR}"
+  mkdir -p "${DBDIR}" "${WORKDIR}/lock" "${WORKDIR}/out" "${WORKDIR}/log"
+  "${BIN_DIR}/initdb" -D "${DBDIR}" 2>&1 | tee "${WORKDIR}/log/initdb.log"
 
-  echo "POSTGIS = ${POSTGIS}" >> "${TESTDIR}/log/initdb.log"
+  echo "POSTGIS = ${POSTGIS}" >> "${WORKDIR}/log/initdb.log"
 
   {
     echo "shared_preload_libraries = '${POSTGIS}'"
@@ -46,16 +46,16 @@ setup)
     echo "min_parallel_index_scan_size = 0"
   } >> "${DBDIR}/postgresql.conf"
 
-  if $PGCTL start 2>&1 | tee "${TESTDIR}/log/pg_start.log"; then
+  if $PGCTL start 2>&1 | tee "${WORKDIR}/log/pg_start.log"; then
     sleep 2
     echo "the status start"
-    if ! pg_status >> "${TESTDIR}/log/pg_start.log"; then
-      echo "Failed to start PostgreSQL" >> "${TESTDIR}/log/pg_start.log"
+    if ! pg_status >> "${WORKDIR}/log/pg_start.log"; then
+      echo "Failed to start PostgreSQL" >> "${WORKDIR}/log/pg_start.log"
       exit 1
     fi
   fi
 
-echo "Setup OK" >> "${TESTDIR}/log/initdb.log"
+echo "Setup OK" >> "${WORKDIR}/log/initdb.log"
 exit 0
 ;;
 
@@ -73,16 +73,16 @@ create_ext)
     $PSQL -c "SELECT postgis_full_version()" 2>&1
     # After making a sudo make install the extension can be created with this command
     #echo "CREATE EXTENSION mobilitydb;" | $PSQL 2>&1
-  } >> "${TESTDIR}/log/create_ext.log"
+  } >> "${WORKDIR}/log/create_ext.log"
 
   # this loads mobilitydb without a "make install"
-  $PSQL -f $EXTFILE 2>"${TESTDIR}/log/create_ext.log" 1>/dev/null
+  $PSQL -f $EXTFILE 2>"${WORKDIR}/log/create_ext.log" 1>/dev/null
 
   # A printout to make sure the extension was created
-  $PSQL -c "SELECT mobilitydb_full_version()" >> "${TESTDIR}/log/create_ext.log" 2>&1
+  $PSQL -c "SELECT mobilitydb_full_version()" >> "${WORKDIR}/log/create_ext.log" 2>&1
 
   # capture error when creating the extension
-  if grep -q ERROR "${TESTDIR}/log/create_ext.log"; then exit 1; else exit 0; fi
+  if grep -q ERROR "${WORKDIR}/log/create_ext.log"; then exit 1; else exit 0; fi
 
   ;;
 
@@ -101,20 +101,20 @@ run_compare)
     sleep 1
     retries=$(( retries + 1 ))
     if (( retries == MAX_RETRIES )); then
-      echo "Failed to start PostgreSQL" >> "${TESTDIR}/out/${TESTNAME}.out"
+      echo "Failed to start PostgreSQL" >> "${WORKDIR}/out/${TESTNAME}.out"
       exit 1
     fi
   done
 
   if [ "${TESTFILE: -3}" == ".xz" ]; then
-    "${XZCAT}" "${TESTFILE}" | $PSQL 2>&1 | tee "${TESTDIR}/out/${TESTNAME}.out" > /dev/null
+    "${XZCAT}" "${TESTFILE}" | $PSQL 2>&1 | tee "${WORKDIR}/out/${TESTNAME}.out" > /dev/null
   else
-    $PSQL < "${TESTFILE}" 2>&1 | tee "${TESTDIR}/out/${TESTNAME}.out" > /dev/null
+    $PSQL < "${TESTFILE}" 2>&1 | tee "${WORKDIR}/out/${TESTNAME}.out" > /dev/null
   fi
 
   if [ -n "$TEST_GENERATE" ]; then
     echo "TEST_GENERATE is on; assuming correct output"
-    cat "${TESTDIR}/out/${TESTNAME}.out" > "$(dirname "${TESTFILE}")/../expected/$(basename "${TESTFILE}" .sql).out"
+    cat "${WORKDIR}/out/${TESTNAME}.out" > "$(dirname "${TESTFILE}")/../expected/$(basename "${TESTFILE}" .sql).out"
     exit 0
   else
     tmpactual=$(mktemp)
@@ -125,14 +125,14 @@ run_compare)
     #     the following error messages:
     #     * "WARNING:  cache reference leak:"
     #     * "CONTEXT:  SQL function"
-    sed -e's/^ERROR:.*/ERROR/' -e'/^WARNING:  cache reference leak:.*/d' -e'/^CONTEXT:  SQL function/d' "${TESTDIR}/out/${TESTNAME}.out" >> "$tmpactual"
+    sed -e's/^ERROR:.*/ERROR/' -e'/^WARNING:  cache reference leak:.*/d' -e'/^CONTEXT:  SQL function/d' "${WORKDIR}/out/${TESTNAME}.out" >> "$tmpactual"
     sed -e's/^ERROR:.*/ERROR/' "$(dirname "${TESTFILE}")/../expected/$(basename "${TESTFILE}" .sql).out" >> "$tmpexpected"
     echo
     echo "Differences"
     echo "==========="
     echo
-    diff -urdN "$tmpactual" "$tmpexpected" 2>&1 | tee "${TESTDIR}/out/${TESTNAME}.diff"
-    [ -s "${TESTDIR}/out/${TESTNAME}.diff" ] && exit 1 || exit 0
+    diff -urdN "$tmpactual" "$tmpexpected" 2>&1 | tee "${WORKDIR}/out/${TESTNAME}.diff"
+    [ -s "${WORKDIR}/out/${TESTNAME}.diff" ] && exit 1 || exit 0
   fi
   ;;
 
@@ -146,7 +146,7 @@ run_passfail)
     sleep 1
     retries=$(( retries + 1 ))
     if (( retries == MAX_RETRIES )); then
-      echo "Failed to start PostgreSQL" >> "${TESTDIR}/out/${TESTNAME}.out"
+      echo "Failed to start PostgreSQL" >> "${WORKDIR}/out/${TESTNAME}.out"
       exit 1
     fi
   done
@@ -160,10 +160,10 @@ run_passfail)
     else
       $PSQL < "${TESTFILE}" 2>&1
     fi
-  } >> "${TESTDIR}/out/${TESTNAME}.out"
+  } >> "${WORKDIR}/out/${TESTNAME}.out"
 
   # capture error when reading data
-  if grep -q ERROR "${TESTDIR}/out/${TESTNAME}.out"; then exit 1; else exit 0; fi
+  if grep -q ERROR "${WORKDIR}/out/${TESTNAME}.out"; then exit 1; else exit 0; fi
 
 ;;
 
