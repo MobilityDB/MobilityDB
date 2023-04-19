@@ -6,7 +6,7 @@ add_test(
   )
 
 set_tests_properties(load_tables PROPERTIES
-  DEPENDS setup
+  DEPENDS create_extension
   FIXTURES_SETUP DB
   RESOURCE_LOCK DBLOCK
   FIXTURES_REQUIRED DBSETUP)

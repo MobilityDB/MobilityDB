@@ -19,14 +19,14 @@ add_test(
 
 add_test(
   NAME create_extension
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
   # COMMAND test.sh create_ext
   COMMAND "${CMAKE_COMMAND}" -D TEST_ARGS="create_extension" -P "${CMAKE_BINARY_DIR}/mobilitydb/test/scripts/test.cmake"
   )
 
 add_test(
   NAME teardown
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
   COMMAND test.sh teardown
   )
 
@@ -36,7 +36,7 @@ set_tests_properties(test_setup PROPERTIES
   RESOURCE_LOCK DBLOCK)
 
 set_tests_properties(create_extension PROPERTIES
-  DEPENDS setup
+  DEPENDS test_setup
   FIXTURES_SETUP DBEXT
   RESOURCE_LOCK DBLOCK
   FIXTURES_REQUIRED DBSETUP)
