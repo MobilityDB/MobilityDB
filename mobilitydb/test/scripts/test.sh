@@ -23,7 +23,7 @@ pg_stop() {
   @POSTGRESQL_BIN_DIR@//pg_ctl -D "${DBDIR}" stop
 }
 
-PGCTL="${BIN_DIR}/pg_ctl -w -D ${DBDIR} -l ${WORKDIR}/log/postgres.log -o -k -o ${WORKDIR}/lock"
+PGCTL="${BIN_DIR}/pg_ctl -w -D ${DBDIR} -l ${WORKDIR}/log/postgres.log -o -k -o ${WORKDIR}/lock -o -h -o ''"
 
 POSTGIS="@POSTGIS_LIBRARY@"
 
