@@ -3,6 +3,7 @@ set(CTEST_PARALLEL_LEVEL 1)
 find_package(Xz REQUIRED)
 
 configure_file(test.sh test.sh @ONLY)
+configure_file(test.cmake test.cmake @ONLY)
 
 add_test(
   NAME build
@@ -10,15 +11,17 @@ add_test(
   )
 
 add_test(
-  NAME setup
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  COMMAND test.sh setup
+  NAME test_setup
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+  # COMMAND test.sh setup
+  COMMAND "${CMAKE_COMMAND}" -D TEST_ARGS="test_setup" -P "${CMAKE_BINARY_DIR}/mobilitydb/test/scripts/test.cmake"
   )
 
 add_test(
   NAME create_extension
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  COMMAND test.sh create_ext
+  # COMMAND test.sh create_ext
+  COMMAND "${CMAKE_COMMAND}" -D TEST_ARGS="create_extension" -P "${CMAKE_BINARY_DIR}/mobilitydb/test/scripts/test.cmake"
   )
 
 add_test(
@@ -27,7 +30,7 @@ add_test(
   COMMAND test.sh teardown
   )
 
-set_tests_properties(setup PROPERTIES
+set_tests_properties(test_setup PROPERTIES
   DEPENDS build
   FIXTURES_SETUP DBSETUP
   RESOURCE_LOCK DBLOCK)

@@ -6,10 +6,10 @@ add_test(
   )
 
 set_tests_properties(load_tables PROPERTIES
-  DEPENDS create_extension
+  DEPENDS setup
   FIXTURES_SETUP DB
   RESOURCE_LOCK DBLOCK
-  FIXTURES_REQUIRED DBEXT)
+  FIXTURES_REQUIRED DBSETUP)
 
 file(GLOB testfiles "queries/*.sql")
 list(SORT testfiles)
