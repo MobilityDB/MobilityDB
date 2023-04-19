@@ -87,7 +87,7 @@ message(STATUS "PostgreSQL configured for MobilityDB: ${DBDIR}/postgresql.conf")
 #-------------------------
 
 execute_process(
-  COMMAND ${POSTGRESQL_BIN_DIR}/pg_ctl -w -D ${DBDIR} -l ${TESTDIR}/log/postgres.log -o -k -o ${TESTDIR}/lock start
+  COMMAND ${POSTGRESQL_BIN_DIR}/pg_ctl -w -D ${DBDIR} -l ${TESTDIR}/log/postgres.log -o -k -o ${TESTDIR}/lock start -o -h -o ''
   OUTPUT_FILE ${TESTDIR}/log/pg_start.log
   ERROR_FILE ${TESTDIR}/log/pg_start.log
   ERROR_VARIABLE TEST_ERROR
