@@ -6,7 +6,7 @@ set -o pipefail
 CMD=$1
 XZCAT=@XZCAT_EXECUTABLE@
 BUILDDIR="@CMAKE_BINARY_DIR@"
-WORKDIR="${BUILDDIR}/tmptest"
+WORKDIR=${BUILDDIR}/tmptest
 EXTFILE="@MOBILITYDB_TEST_EXTENSION_FILE@"
 BIN_DIR="@POSTGRESQL_BIN_DIR@"
 
@@ -24,13 +24,14 @@ pg_stop() {
 }
 
 PGCTL="${BIN_DIR}/pg_ctl -w -D ${DBDIR} -l ${WORKDIR}/log/postgres.log -o -k -o ${WORKDIR}/lock -o -h -o ''"
+# -o -c -o enable_seqscan=off -o -c -o enable_bitmapscan=off -o -c -o enable_indexscan=on -o -c -o enable_indexonlyscan=on"
 
 POSTGIS="@POSTGIS_LIBRARY@"
 
 case ${CMD} in
 setup)
   rm -rf "${WORKDIR}"
-  mkdir -p "${DBDIR}" "${WORKDIR}/lock" "${WORKDIR}/out" "${WORKDIR}/log"
+  mkdir -p "${DBDIR}" "${WORKDIR}"/lock "${WORKDIR}"/out "${WORKDIR}"/log
   "${BIN_DIR}/initdb" -D "${DBDIR}" 2>&1 | tee "${WORKDIR}/log/initdb.log"
 
   echo "POSTGIS = ${POSTGIS}" >> "${WORKDIR}/log/initdb.log"
@@ -46,11 +47,11 @@ setup)
     echo "min_parallel_index_scan_size = 0"
   } >> "${DBDIR}/postgresql.conf"
 
-  if $PGCTL start 2>&1 | tee "${WORKDIR}/log/pg_start.log"; then
+  if $PGCTL start 2>&1 | tee "$WORKDIR"/log/pg_start.log; then
     sleep 2
     echo "the status start"
-    if ! pg_status >> "${WORKDIR}/log/pg_start.log"; then
-      echo "Failed to start PostgreSQL" >> "${WORKDIR}/log/pg_start.log"
+    if ! pg_status >> "$WORKDIR"/log/pg_start.log; then
+      echo "Failed to start PostgreSQL" >> "$WORKDIR/log/pg_start.log"
       exit 1
     fi
   fi
@@ -76,7 +77,7 @@ create_ext)
   } >> "${WORKDIR}/log/create_ext.log"
 
   # this loads mobilitydb without a "make install"
-  $PSQL -f $EXTFILE 2>"${WORKDIR}/log/create_ext.log" 1>/dev/null
+  $PSQL -f $EXTFILE 2>"${WORKDIR}"/log/create_ext.log  1>/dev/null
 
   # A printout to make sure the extension was created
   $PSQL -c "SELECT mobilitydb_full_version()" >> "${WORKDIR}/log/create_ext.log" 2>&1
@@ -107,14 +108,14 @@ run_compare)
   done
 
   if [ "${TESTFILE: -3}" == ".xz" ]; then
-    "${XZCAT}" "${TESTFILE}" | $PSQL 2>&1 | tee "${WORKDIR}/out/${TESTNAME}.out" > /dev/null
+    "${XZCAT}" "${TESTFILE}" | $PSQL 2>&1 | tee "${WORKDIR}"/out/"${TESTNAME}".out > /dev/null
   else
-    $PSQL < "${TESTFILE}" 2>&1 | tee "${WORKDIR}/out/${TESTNAME}.out" > /dev/null
+    $PSQL < "${TESTFILE}" 2>&1 | tee "${WORKDIR}"/out/"${TESTNAME}".out > /dev/null
   fi
 
   if [ -n "$TEST_GENERATE" ]; then
     echo "TEST_GENERATE is on; assuming correct output"
-    cat "${WORKDIR}/out/${TESTNAME}.out" > "$(dirname "${TESTFILE}")/../expected/$(basename "${TESTFILE}" .sql).out"
+    cat "${WORKDIR}"/out/"${TESTNAME}".out > "$(dirname "${TESTFILE}")/../expected/$(basename "${TESTFILE}" .sql).out"
     exit 0
   else
     tmpactual=$(mktemp)
@@ -125,14 +126,14 @@ run_compare)
     #     the following error messages:
     #     * "WARNING:  cache reference leak:"
     #     * "CONTEXT:  SQL function"
-    sed -e's/^ERROR:.*/ERROR/' -e'/^WARNING:  cache reference leak:.*/d' -e'/^CONTEXT:  SQL function/d' "${WORKDIR}/out/${TESTNAME}.out" >> "$tmpactual"
+    sed -e's/^ERROR:.*/ERROR/' -e'/^WARNING:  cache reference leak:.*/d' -e'/^CONTEXT:  SQL function/d' "${WORKDIR}"/out/"${TESTNAME}".out >> "$tmpactual"
     sed -e's/^ERROR:.*/ERROR/' "$(dirname "${TESTFILE}")/../expected/$(basename "${TESTFILE}" .sql).out" >> "$tmpexpected"
     echo
     echo "Differences"
     echo "==========="
     echo
-    diff -urdN "$tmpactual" "$tmpexpected" 2>&1 | tee "${WORKDIR}/out/${TESTNAME}.diff"
-    [ -s "${WORKDIR}/out/${TESTNAME}.diff" ] && exit 1 || exit 0
+    diff -urdN "$tmpactual" "$tmpexpected" 2>&1 | tee "${WORKDIR}"/out/"${TESTNAME}".diff
+    [ -s "${WORKDIR}"/out/"${TESTNAME}".diff ] && exit 1 || exit 0
   fi
   ;;
 
@@ -163,7 +164,7 @@ run_passfail)
   } >> "${WORKDIR}/out/${TESTNAME}.out"
 
   # capture error when reading data
-  if grep -q ERROR "${WORKDIR}/out/${TESTNAME}.out"; then exit 1; else exit 0; fi
+  if grep -q ERROR "$WORKDIR/out/$TESTNAME.out"; then exit 1; else exit 0; fi
 
 ;;
 
