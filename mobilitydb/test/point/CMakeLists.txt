@@ -9,7 +9,6 @@ set_tests_properties(load_point_tables PROPERTIES
   FIXTURES_SETUP DBPOINT
   FIXTURES_REQUIRED DB)
 
-
 file(GLOB testfiles "queries/*.sql")
 list(SORT testfiles)
 
@@ -39,7 +38,7 @@ foreach(file ${testfiles})
       COMMAND test.sh run_compare ${TESTNAME} ${file}
       )
     set_tests_properties(${TESTNAME} PROPERTIES
-      FIXTURES_REQUIRED DB
+      FIXTURES_REQUIRED DBPOINT
       RESOURCE_LOCK DBLOCK)
   endif()
 endforeach()
