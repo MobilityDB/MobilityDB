@@ -287,7 +287,6 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
 {
   FuncCallContext *funcctx;
   STboxGridState *state;
-  bool hasz;
   bool isnull[3] = {0,0,0}; /* needed to say no value is null */
   Datum tuple_arr[3]; /* used to construct the composite return value */
   HeapTuple tuple;
@@ -323,6 +322,8 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
     /* Set bounding box */
     STBox bounds;
     temporal_set_bbox(temp, &bounds);
+    /* Always disallow Z dimension, since at_stbox only works for 2D */
+    MEOS_FLAGS_SET_Z(bounds.flags, false);
     if (! timesplit)
       /* Disallow T dimension for generating a spatial only grid */
       MEOS_FLAGS_SET_T(bounds.flags, false);
@@ -337,20 +338,11 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
     if (gs_srid != SRID_UNKNOWN)
       ensure_same_srid(srid, gs_srid);
     POINT3DZ pt;
-    hasz = (bool) MEOS_FLAGS_GET_Z(temp->flags);
-    if (hasz)
-    {
-      ensure_has_Z_gs(sorigin);
-      pt = datum_point3dz(PointerGetDatum(sorigin));
-    }
-    else
-    {
-      /* Initialize to 0 the Z dimension if it is missing */
-      memset(&pt, 0, sizeof(POINT3DZ));
-      const POINT2D *p2d = GSERIALIZED_POINT2D_P(sorigin);
-      pt.x = p2d->x;
-      pt.y = p2d->y;
-    }
+    /* Initialize to 0 the Z dimension */
+    memset(&pt, 0, sizeof(POINT3DZ));
+    const POINT2D *p2d = GSERIALIZED_POINT2D_P(sorigin);
+    pt.x = p2d->x;
+    pt.y = p2d->y;
 
     /* Create function state */
     state = stbox_tile_state_make(temp, &bounds, size, tunits, pt, torigin);
@@ -364,8 +356,6 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
       /* We need to add 1 to take into account the last bucket for each dimension */
       count[0] = (int) ((state->box.xmax - state->box.xmin) / state->size) + 1;
       count[1] = (int) ((state->box.ymax - state->box.ymin) / state->size) + 1;
-      if (MEOS_FLAGS_GET_Z(state->box.flags))
-        count[numdims++] = (int) ((state->box.zmax - state->box.zmin) / state->size) + 1;
       if (state->tunits)
         count[numdims++] = (int) ((DatumGetTimestampTz(state->box.period.upper) -
           DatumGetTimestampTz(state->box.period.lower)) / state->tunits) + 1;
@@ -430,10 +420,9 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
     if (atstbox == NULL)
       continue;
     /* Form tuple and return */
-    hasz = MEOS_FLAGS_GET_Z(state->temp->flags);
     int i = 0;
     tuple_arr[i++] = PointerGetDatum(gspoint_make(box.xmin, box.ymin, box.zmin,
-      hasz, false, box.srid));
+      false, false, box.srid));
     if (timesplit)
       tuple_arr[i++] = box.period.lower;
     tuple_arr[i++] = PointerGetDatum(atstbox);
