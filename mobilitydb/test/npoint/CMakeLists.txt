@@ -7,7 +7,7 @@ add_test(
 set_tests_properties(load_npoint_tables PROPERTIES
   DEPENDS create_extension
   FIXTURES_SETUP DBNPOINT
-  FIXTURES_REQUIRED DB)
+  FIXTURES_REQUIRED DBPOINT)
 
 file(GLOB testfiles "queries/*.sql")
 list(SORT testfiles)

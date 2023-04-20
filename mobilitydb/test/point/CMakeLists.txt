@@ -38,7 +38,7 @@ foreach(file ${testfiles})
       COMMAND test.sh run_compare ${TESTNAME} ${file}
       )
     set_tests_properties(${TESTNAME} PROPERTIES
-      FIXTURES_REQUIRED DBPOINT
+      FIXTURES_REQUIRED DB
       RESOURCE_LOCK DBLOCK)
   endif()
 endforeach()
