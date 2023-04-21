@@ -59,9 +59,17 @@ endforeach()
 
 configure_file(${CMAKE_CURRENT_BINARY_DIR}/${MOBILITYDB_EXTENSION_FILE}.in ${CMAKE_BINARY_DIR}/${MOBILITYDB_EXTENSION_FILE} COPYONLY)
 
+# Set the library name extension according to the platform
+if(WIN32)
+  set(LIB_NAME_EXT ".dll")
+else()
+  set(LIB_NAME_EXT ".so")
+endif()
+message(STATUS "Library name extension: '${LIB_NAME_EXT}'")
+
 file(READ "${CMAKE_BINARY_DIR}/${MOBILITYDB_EXTENSION_FILE}" sql_commands)
-string(REGEX REPLACE "MODULE_PATHNAME" "${CMAKE_BINARY_DIR}/lib${MOBILITYDB_LIB_NAME}.so" sql_commands "${sql_commands}")
-message(STATUS "Substitution: ${CMAKE_BINARY_DIR}/lib${MOBILITYDB_LIB_NAME}.so")
+string(REGEX REPLACE "MODULE_PATHNAME" "${CMAKE_BINARY_DIR}/lib${MOBILITYDB_LIB_NAME}${LIB_NAME_EXT}" sql_commands "${sql_commands}")
+message(STATUS "Substitution: ${CMAKE_BINARY_DIR}/lib${MOBILITYDB_LIB_NAME}${LIB_NAME_EXT}")
 string(REGEX REPLACE "@extschema@" "public" sql_commands "${sql_commands}")
 file(WRITE ${MOBILITYDB_TEST_EXTENSION_FILE}.in "${sql_commands}")
 configure_file(${MOBILITYDB_TEST_EXTENSION_FILE}.in ${MOBILITYDB_TEST_EXTENSION_FILE} COPYONLY)

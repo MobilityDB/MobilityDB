@@ -20,7 +20,8 @@ set(POSTGIS_LIBRARY "@POSTGIS_LIBRARY@")
 set(XZCAT_EXECUTABLE "@XZCAT_EXECUTABLE@")
 
 set(TEST_DIR "${CMAKE_BINARY_DIR}/tmptest")
-set(DB_DIR "${TEST_DIR}/db")
+set(TEST_DIR_DB "${TEST_DIR}/db")
+set(TEST_DIR_OUT "${TEST_DIR}/out")
 
 #-------------------------------------------------------------------------------
 # Test setup
@@ -35,10 +36,10 @@ if(TEST_ARGS MATCHES "test_setup")
   execute_process(
     COMMAND ${CMAKE_COMMAND} -E remove_directory ${TEST_DIR}
     COMMAND ${CMAKE_COMMAND} -E make_directory ${TEST_DIR}
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${TEST_DIR}/db
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${TEST_DIR_DB}
     COMMAND ${CMAKE_COMMAND} -E make_directory ${TEST_DIR}/lock
     COMMAND ${CMAKE_COMMAND} -E make_directory ${TEST_DIR}/log
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${TEST_DIR}/out
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${TEST_DIR_OUT}
     ERROR_VARIABLE TEST_ERROR
     RESULT_VARIABLE TEST_RESULT
   )
@@ -54,7 +55,7 @@ if(TEST_ARGS MATCHES "test_setup")
   #-------------------------
 
   execute_process(
-    COMMAND ${POSTGRESQL_BIN_DIR}/initdb -D ${DB_DIR}
+    COMMAND ${POSTGRESQL_BIN_DIR}/initdb -D ${TEST_DIR_DB}
     OUTPUT_FILE ${TEST_DIR}/log/initdb.log
     ERROR_FILE ${TEST_DIR}/log/initdb.log
     ERROR_VARIABLE TEST_ERROR
@@ -80,16 +81,16 @@ if(TEST_ARGS MATCHES "test_setup")
   string(APPEND mobilitydb.config "min_parallel_table_scan_size = 0\n")
   string(APPEND mobilitydb.config "min_parallel_index_scan_size = 0\n")
 
-  file(APPEND ${DB_DIR}/postgresql.conf "${mobilitydb.config}")
+  file(APPEND ${TEST_DIR_DB}/postgresql.conf "${mobilitydb.config}")
 
-  message(STATUS "PostgreSQL configured for MobilityDB: ${DB_DIR}/postgresql.conf")
+  message(STATUS "PostgreSQL configured for MobilityDB: ${TEST_DIR_DB}/postgresql.conf")
 
   #-------------------------
   # Start PostgreSQL
   #-------------------------
 
   execute_process(
-    COMMAND ${POSTGRESQL_BIN_DIR}/pg_ctl -w -D ${DB_DIR} -l ${TEST_DIR}/log/postgres.log -o -k -o ${TEST_DIR}/lock start -o -h -o ''
+    COMMAND ${POSTGRESQL_BIN_DIR}/pg_ctl -w -D ${TEST_DIR_DB} -l ${TEST_DIR}/log/postgres.log -o -k -o ${TEST_DIR}/lock start -o -h -o ''
     OUTPUT_FILE ${TEST_DIR}/log/pg_start.log
     ERROR_FILE ${TEST_DIR}/log/pg_start.log
     ERROR_VARIABLE TEST_ERROR
@@ -139,12 +140,12 @@ elseif(TEST_ARGS MATCHES "run_compare")
   # Execute the test
   execute_process(
     # $PSQL < "${TEST_FILE}" 2>&1 | tee "${TEST_DIR}"/out/"${TESTNAME}".out > /dev/null
-    COMMAND ${POSTGRESQL_BIN_DIR}/psql -h ${TEST_DIR}/lock -e --set ON_ERROR_STOP=0 postgres -f ${TEST_FILE}
-    OUTPUT_FILE ${TEST_DIR}/out/${TESTNAME}.out
-    ERROR_FILE ${TEST_DIR}/out/${TESTNAME}.out
-    ERROR_VARIABLE TEST_ERROR
-    RESULT_VARIABLE TEST_RESULT
+    COMMAND ${POSTGRESQL_BIN_DIR}/psql -h ${TEST_DIR}/lock -e --set ON_ERROR_STOP=0 postgres
+    INPUT_FILE ${TEST_FILE}
+    OUTPUT_VARIABLE TEST_OUT
+    ERROR_VARIABLE TEST_OUT
   )
+  file(WRITE ${TEST_DIR_OUT}/${TEST_NAME}.out "${TEST_OUT}")
 
   # (1) Text of error messages may change across PostgreSQL/PostGIS/MobilityDB versions.
   #     For this reason we remove the error message and keep the line with only 'ERROR'
@@ -155,18 +156,19 @@ elseif(TEST_ARGS MATCHES "run_compare")
   # sed -e's/^ERROR:.*/ERROR/' -e'/^WARNING:  cache reference leak:.*/d' -e'/^CONTEXT:  SQL function/d' \
   #    "${TEST_DIR}"/out/"${TESTNAME}".out >> "$tmpactual"
   # sed -e's/^ERROR:.*/ERROR/' "$(dirname "${TEST_FILE}")/../expected/$(basename "${TEST_FILE}" .sql).out" >> "$tmpexpected"
-  file(READ ${TEST_DIR}/out/${TESTNAME}.out tmpactual)
+  file(READ ${TEST_NAME_OUT} tmpactual)
   string(REGEX REPLACE "^ERROR:.*" "ERROR" tmpactual "${tmpactual}")
   string(REGEX REPLACE "^WARNING:  cache reference leak:.*" "" tmpactual "${tmpactual}")
   string(REGEX REPLACE "^CONTEXT:  SQL function" "" tmpactual "${tmpactual}")
-  file(WRITE "${TEST_DIR}/${tmpactual}" "${tmpactual}")
+  file(WRITE ${TEST_DIR}/tmpactual "${tmpactual}")
 
   # "$(dirname "${TEST_FILE}")/../expected/$(basename "${TEST_FILE}" .sql).out"
   get_filename_component(TEST_FILE_DIR ${TEST_FILE} DIRECTORY)
+  string(REPLACE "/queries" "" TEST_FILE_DIR "${TEST_FILE_DIR}")
   get_filename_component(TEST_FILE_NAME ${TEST_FILE} NAME_WE)
-  file(READ ${TEST_FILE_DIR}/../expected/${TEST_FILE_NAME}.out tmpexpected)
+  file(READ ${TEST_FILE_DIR}/expected/${TEST_FILE_NAME}.test.out tmpexpected)
   string(REGEX REPLACE "^ERROR:.*" "ERROR" tmpexpected "${tmpexpected}")
-  file(WRITE "${TEST_DIR}/${tmpexpected}" "${tmpexpected}")
+  file(WRITE ${TEST_DIR}/tmpexpected "${tmpexpected}")
 
   message(STATUS "\nDifferences\n")
   message(STATUS "===========\n\n")
@@ -176,21 +178,21 @@ elseif(TEST_ARGS MATCHES "run_compare")
     # The compare files command in cmake does not provide detailed differences
     execute_process(
       COMMAND ${CMAKE_COMMAND} -E compare_files ${tmpactual} ${tmpexpected}
-      OUTPUT_FILE ${TEST_DIR}/out/${TESTNAME}.diff
-      ERROR_FILE ${TEST_DIR}/out/${TESTNAME}.diff
+      OUTPUT_FILE ${TEST_DIR_OUT}/${TEST_NAME}.diff
+      ERROR_FILE ${TEST_DIR_OUT}/${TEST_NAME}.diff
       RESULT_VARIABLE TEST_RESULT
       )
   else()
     execute_process(
       COMMAND diff -urdN ${tmpactual} ${tmpexpected}
-      OUTPUT_FILE ${TEST_DIR}/out/${TESTNAME}.diff
-      ERROR_FILE ${TEST_DIR}/out/${TESTNAME}.diff
+      OUTPUT_FILE ${TEST_DIR_OUT}/${TEST_NAME}.diff
+      ERROR_FILE ${TEST_DIR_OUT}/${TEST_NAME}.diff
       RESULT_VARIABLE TEST_RESULT
       )
   endif()
   # Remove the temporary files
-  file(REMOVE ${TEST_DIR}/${tmpactual})
-  file(REMOVE ${TEST_DIR}/${tmpexpected})
+  file(REMOVE ${TEST_DIR}/tmpactual)
+  file(REMOVE ${TEST_DIR}/tmpexpected)
 
   #[ -s "${TEST_DIR}"/out/"${TESTNAME}".diff ] && exit 1 || exit 0
   if(TEST_RESULT)
@@ -226,9 +228,10 @@ elseif(TEST_ARGS MATCHES "run_passfail")
     )
   else()
     execute_process(
-      COMMAND ${POSTGRESQL_BIN_DIR}/psql -h ${TEST_DIR}/lock -e --set ON_ERROR_STOP=0 postgres -f ${TEST_FILE}
-      OUTPUT_FILE ${TEST_DIR}/out/${TESTNAME}.out
-      ERROR_FILE ${TEST_DIR}/out/${TESTNAME}.out
+      COMMAND ${POSTGRESQL_BIN_DIR}/psql -h ${TEST_DIR}/lock -e --set ON_ERROR_STOP=0 postgres
+      INPUT_FILE ${TEST_FILE}
+      OUTPUT_FILE ${TEST_DIR_OUT}/${TESTNAME}.out
+      ERROR_FILE ${TEST_DIR_OUT}/${TESTNAME}.out
       ERROR_VARIABLE TEST_ERROR
       RESULT_VARIABLE TEST_RESULT
     )
@@ -247,7 +250,7 @@ elseif(TEST_ARGS MATCHES "run_passfail")
 elseif(TEST_ARGS MATCHES "teardown")
 
   execute_process(
-    COMMAND ${POSTGRESQL_BIN_DIR}/pg_ctl -w -D ${DB_DIR} stop
+    COMMAND ${POSTGRESQL_BIN_DIR}/pg_ctl -w -D ${TEST_DIR_DB} stop
     OUTPUT_FILE ${TEST_DIR}/log/pg_stop.log
     ERROR_FILE ${TEST_DIR}/log/pg_stop.log
     ERROR_VARIABLE TEST_ERROR

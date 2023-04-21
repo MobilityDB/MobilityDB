@@ -31,8 +31,11 @@ foreach(file ${testfiles})
   if(DOTEST)
     add_test(
       NAME ${TESTNAME}
-      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/mobilitydb/test/scripts
-      COMMAND test.sh run_compare ${TESTNAME} ${file}
+      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+      # COMMAND test.sh run_compare ${TESTNAME} ${file}
+      COMMAND ${CMAKE_COMMAND} -D TEST_ARGS=run_compare
+        -D TEST_NAME=${TESTNAME} -D TEST_FILE=${file}
+        -P ${CMAKE_BINARY_DIR}/mobilitydb/test/scripts/test.cmake
       )
     set_tests_properties(${TESTNAME} PROPERTIES
       FIXTURES_REQUIRED DB
