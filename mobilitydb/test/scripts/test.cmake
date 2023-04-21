@@ -33,6 +33,22 @@ if(TEST_OPER MATCHES "test_setup")
   # Create test directories
   #-------------------------
 
+  if (NOT EXISTS "${TEST_DIR}")
+    message(STATUS "Test directory '${TEST_DIR}' does not exits, nothing done")
+  else()
+    message(STATUS "Removing test directory: '${TEST_DIR}'")
+    execute_process(
+      COMMAND ${CMAKE_COMMAND} -E remove_directory ${TEST_DIR}
+      ERROR_VARIABLE TEST_ERROR
+      RESULT_VARIABLE TEST_RESULT
+    )
+    if(TEST_RESULT)
+      message(FATAL_ERROR "Failed to remove test directory:\n${TEST_ERROR}")
+    else()
+      message(STATUS "Test directory removed: '${TEST_DIR}'")
+    endif()
+  endif()
+
   execute_process(
     COMMAND ${CMAKE_COMMAND} -E remove_directory ${TEST_DIR}
     COMMAND ${CMAKE_COMMAND} -E make_directory ${TEST_DIR}
@@ -46,7 +62,7 @@ if(TEST_OPER MATCHES "test_setup")
   if(TEST_RESULT)
     message(FATAL_ERROR "Failed to create test directories:\n${TEST_ERROR}")
   elseif()
-    message(STATUS "Test directories created: ${TEST_DIR}")
+    message(STATUS "Test directories created: '${TEST_DIR}'")
   endif()
 
   #-------------------------
