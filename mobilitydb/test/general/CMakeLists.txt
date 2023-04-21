@@ -2,8 +2,7 @@
 add_test(
   NAME load_tables
   WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-  # COMMAND test.sh run_passfail load_tables "${CMAKE_CURRENT_SOURCE_DIR}/data/load.sql.xz"
-  COMMAND ${CMAKE_COMMAND} -D TEST_ARGS=run_passfail
+  COMMAND ${CMAKE_COMMAND} -D TEST_OPER=run_passfail
     -D TEST_NAME=load_tables -D TEST_FILE=${CMAKE_CURRENT_SOURCE_DIR}/data/load.sql.xz
     -P ${CMAKE_BINARY_DIR}/mobilitydb/test/scripts/test.cmake
   )
@@ -32,8 +31,7 @@ foreach(file ${testfiles})
     add_test(
       NAME ${TESTNAME}
       WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-      # COMMAND test.sh run_compare ${TESTNAME} ${file}
-      COMMAND ${CMAKE_COMMAND} -D TEST_ARGS=run_compare
+      COMMAND ${CMAKE_COMMAND} -D TEST_OPER=run_compare
         -D TEST_NAME=${TESTNAME} -D TEST_FILE=${file}
         -P ${CMAKE_BINARY_DIR}/mobilitydb/test/scripts/test.cmake
       )
