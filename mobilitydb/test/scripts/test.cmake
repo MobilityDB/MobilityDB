@@ -45,6 +45,8 @@ if(TEST_OPER MATCHES "test_setup")
   )
   if(TEST_RESULT)
     message(FATAL_ERROR "Failed to create test directories:\n${TEST_ERROR}")
+  elseif()
+    message(STATUS "Test directories created: ${TEST_DIR}")
   endif()
 
   #-------------------------
@@ -60,6 +62,8 @@ if(TEST_OPER MATCHES "test_setup")
   )
   if(TEST_RESULT)
     message(FATAL_ERROR "Failed to create database cluster with initdb:\n${TEST_ERROR}")
+  elseif()
+    message(STATUS "Database cluster created with initdb")
   endif()
 
   #--------------------------------
@@ -90,13 +94,13 @@ if(TEST_OPER MATCHES "test_setup")
   )
   if(TEST_RESULT)
     message(FATAL_ERROR "Failed to start PostgreSQL server:\n${TEST_ERROR}")
+  elseif()
+    message(STATUS "PostgreSQL server started")
   endif()
 
-#-------------------------------------------------------------------------------
-# Create PostGIS and MobilityDB extensions
-#-------------------------------------------------------------------------------
-
-elseif(TEST_OPER MATCHES "create_ext")
+  #------------------------------------------
+  # Create PostGIS and MobilityDB extensions
+  #------------------------------------------
 
   execute_process(
     COMMAND ${POSTGRESQL_BIN_DIR}/psql -h ${TEST_DIR_LOCK} -e --set ON_ERROR_STOP=0 postgres -c "CREATE EXTENSION mobilitydb CASCADE; SELECT postgis_full_version(); SELECT mobilitydb_full_version();"
@@ -106,7 +110,9 @@ elseif(TEST_OPER MATCHES "create_ext")
     RESULT_VARIABLE TEST_RESULT
   )
   if(TEST_RESULT)
-    message(FATAL_ERROR "Failed to load MobilityDB extension:\n${TEST_ERROR}")
+    message(FATAL_ERROR "Failed to create MobilityDB extension:\n${TEST_ERROR}")
+  elseif()
+    message(STATUS "MobilityDB extension created")
   endif()
 
 #-------------------------------------------------------------------------------

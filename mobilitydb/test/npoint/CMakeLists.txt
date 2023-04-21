@@ -7,7 +7,7 @@ add_test(
 )
 
 set_tests_properties(load_npoint_tables PROPERTIES
-  DEPENDS create_extension
+  DEPENDS test_setup
   FIXTURES_SETUP DBNPOINT
   FIXTURES_REQUIRED "DB;DBPOINT")
 
