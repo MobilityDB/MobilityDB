@@ -1,13 +1,16 @@
 add_test(
   NAME load_npoint_tables
-  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/mobilitydb/test/scripts
-  COMMAND test.sh run_passfail load_npoint_tables "${CMAKE_CURRENT_SOURCE_DIR}/data/load_npoint.sql.xz"
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+  # COMMAND test.sh run_passfail load_npoint_tables "${CMAKE_CURRENT_SOURCE_DIR}/data/load_npoint.sql.xz"
+  COMMAND ${CMAKE_COMMAND} -D TEST_ARGS=run_passfail
+    -D TEST_NAME=load_npoint_tables -D TEST_FILE=${CMAKE_CURRENT_SOURCE_DIR}/data/load_npoint.sql.xz
+    -P ${CMAKE_BINARY_DIR}/mobilitydb/test/scripts/test.cmake
 )
 
 set_tests_properties(load_npoint_tables PROPERTIES
   DEPENDS create_extension
   FIXTURES_SETUP DBNPOINT
-  FIXTURES_REQUIRED DBPOINT)
+  FIXTURES_REQUIRED DB)
 
 file(GLOB testfiles "queries/*.sql")
 list(SORT testfiles)
@@ -28,7 +31,7 @@ foreach(file ${testfiles})
       COMMAND test.sh run_compare ${TESTNAME} ${file}
       )
     set_tests_properties(${TESTNAME} PROPERTIES
-      FIXTURES_REQUIRED DBNPOINT
+      FIXTURES_REQUIRED DB
       RESOURCE_LOCK DBLOCK)
   endif()
 endforeach()

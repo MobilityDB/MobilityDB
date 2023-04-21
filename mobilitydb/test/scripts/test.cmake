@@ -14,6 +14,7 @@ message(STATUS "Test script called with TEST_ARGS=${TEST_ARGS}")
 #-----------------------------------------
 
 # Parameters modified by configure_file()
+set(SOURCE_DIR "@CMAKE_SOURCE_DIR@")
 set(POSTGRESQL_BIN_DIR "@POSTGRESQL_BIN_DIR@")
 set(POSTGIS_LIBRARY "@POSTGIS_LIBRARY@")
 set(XZCAT_EXECUTABLE "@XZCAT_EXECUTABLE@")
@@ -122,7 +123,7 @@ elseif(TEST_ARGS MATCHES "create_ext")
   endif()
 
 #-------------------------------------------------------------------------------
-# Compare the results
+# Compare the results of the test
 #-------------------------------------------------------------------------------
 
 elseif(TEST_ARGS MATCHES "run_compare")
@@ -135,29 +136,15 @@ elseif(TEST_ARGS MATCHES "run_compare")
     message(FATAL_ERROR "Argument TEST_FILE must be provided")
   endif(NOT TEST_FILE)
 
-  get_filename_component(TEST_FILE_NAME ${TEST_FILE} NAME)
-  if(${TEST_FILE_NAME} MATCHES ".xz")
-    # Load the data into the test database
-    execute_process(
-      # ${XZCAT_EXECUTABLE} ${TEST_FILE} | $PSQL 2>&1 | tee "${TEST_DIR}"/out/"${TESTNAME}".out > /dev/null
-      COMMAND ${XZCAT_EXECUTABLE} ${TEST_FILE}
-      COMMAND ${POSTGRESQL_BIN_DIR}/psql -h ${TEST_DIR}/lock -e --set ON_ERROR_STOP=0 postgres
-      OUTPUT_FILE ${TEST_DIR}/out/${TESTNAME}.out
-      ERROR_FILE ${TEST_DIR}/out/${TESTNAME}.out
-      ERROR_VARIABLE TEST_ERROR
-      RESULT_VARIABLE TEST_RESULT
-    )
-  else()
-    # Execute the test
-    execute_process(
-      # $PSQL < "${TEST_FILE}" 2>&1 | tee "${TEST_DIR}"/out/"${TESTNAME}".out > /dev/null
-      COMMAND ${POSTGRESQL_BIN_DIR}/psql -h ${TEST_DIR}/lock -e --set ON_ERROR_STOP=0 postgres -f ${TEST_FILE}
-      OUTPUT_FILE ${TEST_DIR}/out/${TESTNAME}.out
-      ERROR_FILE ${TEST_DIR}/out/${TESTNAME}.out
-      ERROR_VARIABLE TEST_ERROR
-      RESULT_VARIABLE TEST_RESULT
-    )
-  endif()
+  # Execute the test
+  execute_process(
+    # $PSQL < "${TEST_FILE}" 2>&1 | tee "${TEST_DIR}"/out/"${TESTNAME}".out > /dev/null
+    COMMAND ${POSTGRESQL_BIN_DIR}/psql -h ${TEST_DIR}/lock -e --set ON_ERROR_STOP=0 postgres -f ${TEST_FILE}
+    OUTPUT_FILE ${TEST_DIR}/out/${TESTNAME}.out
+    ERROR_FILE ${TEST_DIR}/out/${TESTNAME}.out
+    ERROR_VARIABLE TEST_ERROR
+    RESULT_VARIABLE TEST_RESULT
+  )
 
   # (1) Text of error messages may change across PostgreSQL/PostGIS/MobilityDB versions.
   #     For this reason we remove the error message and keep the line with only 'ERROR'
@@ -181,20 +168,29 @@ elseif(TEST_ARGS MATCHES "run_compare")
   string(REGEX REPLACE "^ERROR:.*" "ERROR" tmpexpected "${tmpexpected}")
   file(WRITE "${TEST_DIR}/${tmpexpected}" "${tmpexpected}")
 
-  set(DIFFS "\n")
-  string(APPEND DIFFS "Differences\n")
-  string(APPEND DIFFS "===========\n\n")
+  message(STATUS "\nDifferences\n")
+  message(STATUS "===========\n\n")
 
   # diff -urdN "$tmpactual" "$tmpexpected" 2>&1 | tee "${TEST_DIR}"/out/"${TESTNAME}".diff
-  execute_process(
-    COMMAND ${CMAKE_COMMAND} -E compare_files ${tmpactual} ${tmpexpected}
-    OUTPUT_FILE ${TEST_DIR}/out/${TESTNAME}.diff
-    ERROR_FILE ${TEST_DIR}/out/${TESTNAME}.diff
-    RESULT_VARIABLE TEST_RESULT
-    )
+  if(WIN32)
+    # The compare files command in cmake does not provide detailed differences
+    execute_process(
+      COMMAND ${CMAKE_COMMAND} -E compare_files ${tmpactual} ${tmpexpected}
+      OUTPUT_FILE ${TEST_DIR}/out/${TESTNAME}.diff
+      ERROR_FILE ${TEST_DIR}/out/${TESTNAME}.diff
+      RESULT_VARIABLE TEST_RESULT
+      )
+  else()
+    execute_process(
+      COMMAND diff -urdN ${tmpactual} ${tmpexpected}
+      OUTPUT_FILE ${TEST_DIR}/out/${TESTNAME}.diff
+      ERROR_FILE ${TEST_DIR}/out/${TESTNAME}.diff
+      RESULT_VARIABLE TEST_RESULT
+      )
+  endif()
   # Remove the temporary files
-  file(REMOVE "${TEST_DIR}/${tmpactual}")
-  file(REMOVE "${TEST_DIR}/${tmpexpected}")
+  file(REMOVE ${TEST_DIR}/${tmpactual})
+  file(REMOVE ${TEST_DIR}/${tmpexpected})
 
   #[ -s "${TEST_DIR}"/out/"${TESTNAME}".diff ] && exit 1 || exit 0
   if(TEST_RESULT)
@@ -204,7 +200,7 @@ elseif(TEST_ARGS MATCHES "run_compare")
   endif()
 
 #-------------------------------------------------------------------------------
-# Run pass or fail
+# Run pass or fail test
 #-------------------------------------------------------------------------------
 
 elseif(TEST_ARGS MATCHES "run_passfail")
@@ -217,15 +213,14 @@ elseif(TEST_ARGS MATCHES "run_passfail")
     message(FATAL_ERROR "Argument TEST_FILE must be provided")
   endif(NOT TEST_FILE)
 
-  get_filename_component(TEST_FILE_NAME ${TEST_FILE} NAME)
-  if(${TEST_FILE_NAME} MATCHES ".xz")
+  if(${TEST_FILE} MATCHES ".xz")
     # Load the data into the test database
+    get_filename_component(TEST_FILE_NAME ${TEST_FILE} NAME_WLE)
     execute_process(
       # ${XZCAT_EXECUTABLE} ${TEST_FILE} | $PSQL 2>&1 | tee "${TEST_DIR}"/out/"${TESTNAME}".out > /dev/null
       COMMAND ${XZCAT_EXECUTABLE} ${TEST_FILE}
       COMMAND ${POSTGRESQL_BIN_DIR}/psql -h ${TEST_DIR}/lock -e --set ON_ERROR_STOP=0 postgres
-      OUTPUT_FILE ${TEST_DIR}/out/${TESTNAME}.out
-      ERROR_FILE ${TEST_DIR}/out/${TESTNAME}.out
+      OUTPUT_QUIET
       ERROR_VARIABLE TEST_ERROR
       RESULT_VARIABLE TEST_RESULT
     )

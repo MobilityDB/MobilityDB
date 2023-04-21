@@ -1,7 +1,10 @@
 add_test(
   NAME load_point_tables
-  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/mobilitydb/test/scripts
-  COMMAND test.sh run_passfail load_point_tables "${CMAKE_CURRENT_SOURCE_DIR}/data/load_point.sql.xz"
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+  # COMMAND test.sh run_passfail load_point_tables "${CMAKE_CURRENT_SOURCE_DIR}/data/load_point.sql.xz"
+  COMMAND ${CMAKE_COMMAND} -D TEST_ARGS=run_passfail
+    -D TEST_NAME=load_point_tables -D TEST_FILE=${CMAKE_CURRENT_SOURCE_DIR}/data/load_point.sql.xz
+    -P ${CMAKE_BINARY_DIR}/mobilitydb/test/scripts/test.cmake
   )
 
 set_tests_properties(load_point_tables PROPERTIES
