@@ -543,8 +543,8 @@ geo_to_stbox(const GSERIALIZED *gs)
 #endif /* MEOS */
 
 /**
+ * @ingroup libmeos_internal_box_cast
  * @brief Set the spatiotemporal box from an array of geometries/geographies
- *
  * @param[in] values Values
  * @param[in] count Number of elements in the array
  * @param[out] box Spatiotemporal box
