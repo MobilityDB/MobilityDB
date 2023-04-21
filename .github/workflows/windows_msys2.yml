@@ -46,9 +46,23 @@ jobs:
 
       - name: Test install
         run: |
+          # Create a new PostgreSQL database cluster
           export PGDATA="D:/a/_temp/msys64/usr/local/pgsql/data"
           initdb
+          # Configure PostgreSQL for MobilityDB
+          {
+            echo "port = 5432"
+            echo "shared_preload_libraries = 'postgis-3.dll'"
+            echo "max_locks_per_transaction = 128"
+            echo "timezone = 'UTC'"
+            echo "parallel_tuple_cost = 100"
+            echo "parallel_setup_cost = 100"
+            echo "force_parallel_mode = off"
+            echo "min_parallel_table_scan_size = 0"
+            echo "min_parallel_index_scan_size = 0"
+          } >> "${PGDATA}/postgresql.conf"
+          # Start PostgreSQL
           pg_ctl start
+          # Create database and add the MobilityDB extension
           createdb -U runneradmin mydb
-          psql -p 5432 -U runneradmin -d mydb -c "CREATE EXTENSION mobilitydb CASCADE; SELECT postgis_full_version(); SELECT mobilitydb_full_version();"
-
+          psql -p 5432 -U runneradmin -d mydb -c "CREATE EXTENSION mobilitydb CASCADE; SELECT postgis_full_version(); SELECT mobilitydb_full_version(); SELECT tfloat '[1@2000-01-01]';"

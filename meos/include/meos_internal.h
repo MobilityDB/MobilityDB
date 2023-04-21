@@ -292,22 +292,15 @@ extern bool inter_span_span(const Span *s1, const Span *s2, Span *result);
 extern bool intersection_set_value(const Set *s, Datum d, meosType basetype, Datum *result);
 extern bool intersection_span_value(const Span *s, Datum d, meosType basetype, Datum *result);
 extern bool intersection_spanset_value(const SpanSet *ss, Datum d, meosType basetype, Datum *result);
-extern bool intersection_value_value(Datum d1, Datum d2, meosType basetype, Datum *result);
-
 extern Set *minus_set_value(const Set *s, Datum d, meosType basetype);
-extern int minus_span_span1(const Span *s1, const Span *s2, Span *result);
-extern int minus_span_value1(const Span *s, Datum d, meosType basetype, Span *result);
 extern SpanSet *minus_span_value(const Span *s, Datum d, meosType basetype);
 extern SpanSet *minus_spanset_value(const SpanSet *ss, Datum d, meosType basetype);
 extern bool minus_value_set(Datum d, meosType basetype, const Set *s, Datum *result);
 extern bool minus_value_span(Datum d, meosType basetype, const Span *s, Datum *result);
 extern bool minus_value_spanset(Datum d, meosType basetype, const SpanSet *ss, Datum *result);
-extern bool minus_value_value(Datum d1, Datum d2, meosType basetype, Datum *result);
-
 extern Set *union_set_value(const Set *s, const Datum d, meosType basetype);
 extern SpanSet *union_span_value(const Span *s, Datum v, meosType basetype);
 extern SpanSet *union_spanset_value(const SpanSet *ss, Datum d, meosType basetype);
-extern Set *union_value_value(Datum d1, Datum d2, meosType basetype);
 
 /*****************************************************************************/
 
@@ -331,75 +324,42 @@ extern uint64 datum_hash_extended(Datum d, meosType basetype, uint64 seed);
  * Functions for box types
  *****************************************************************************/
 
-/* Input/output functions for box types */
-
-
-/*****************************************************************************/
-
 /* Constructor functions for box types */
 
+extern TBox *number_period_to_tbox(Datum d, meosType basetype, const Span *p);
+extern TBox *number_timestamp_to_tbox(Datum d, meosType basetype, TimestampTz t);
+extern void stbox_set(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin, double xmax, double ymin, double ymax, double zmin, double zmax, const Span *p, STBox *box);
+extern void tbox_set(const Span *s, const Span *p, TBox *box);
 
 /*****************************************************************************/
 
 /* Cast functions for box types */
 
-extern void number_set_tbox(Datum d, meosType basetype, TBox *box);
-extern void int_set_tbox(int i, TBox *box);
 extern void float_set_tbox(double d, TBox *box);
-extern void timestamp_set_tbox(TimestampTz t, TBox *box);
-extern void numset_set_tbox(const Set *s, TBox *box);
-extern void timestampset_set_tbox(const Set *ts, TBox *box);
-extern void numspan_set_tbox(const Span *span, TBox *box);
-extern void numspanset_set_tbox(const SpanSet *ss, TBox *box);
-extern void period_set_tbox(const Span *p, TBox *box);
-extern void periodset_set_tbox(const SpanSet *ps, TBox *box);
-extern TBox *number_timestamp_to_tbox(Datum d, meosType basetype, TimestampTz t);
-extern TBox *number_period_to_tbox(Datum d, meosType basetype, const Span *p);
-
-extern void point_get_coords(const GSERIALIZED *point, bool hasz, bool geodetic, double *x, double *y, double *z);
 extern bool geo_set_stbox(const GSERIALIZED *gs, STBox *box);
 extern void geoarr_set_stbox(const Datum *values, int count, STBox *box);
-extern void timestamp_set_stbox(TimestampTz t, STBox *box);
-extern void timestampset_set_stbox(const Set *ts, STBox *box);
+extern void int_set_tbox(int i, TBox *box);
+extern void number_set_tbox(Datum d, meosType basetype, TBox *box);
+extern void numset_set_tbox(const Set *s, TBox *box);
+extern void numspan_set_tbox(const Span *span, TBox *box);
+extern void numspanset_set_tbox(const SpanSet *ss, TBox *box);
 extern void period_set_stbox(const Span *p, STBox *box);
+extern void period_set_tbox(const Span *p, TBox *box);
 extern void periodset_set_stbox(const SpanSet *ps, STBox *box);
-
-extern void number_set_tbox(Datum value, meosType basetype, TBox *box);
-extern void stbox_set_gbox(const STBox *box, GBOX *gbox);
+extern void periodset_set_tbox(const SpanSet *ps, TBox *box);
 extern void stbox_set_box3d(const STBox *box, BOX3D *box3d);
-
-/*****************************************************************************/
-
-/* Accessor functions for box types */
-
-
-/*****************************************************************************/
-
-/* Transformation functions for box types */
-
-
-
-/*****************************************************************************/
-
-/* Topological functions for box types */
-
-
-
-/*****************************************************************************/
-
-/* Position functions for box types */
-
+extern void stbox_set_gbox(const STBox *box, GBOX *gbox);
+extern void timestamp_set_stbox(TimestampTz t, STBox *box);
+extern void timestamp_set_tbox(TimestampTz t, TBox *box);
+extern void timestampset_set_stbox(const Set *ts, STBox *box);
+extern void timestampset_set_tbox(const Set *ts, TBox *box);
 
 /*****************************************************************************/
 
 /* Set functions for box types */
 
-
-/*****************************************************************************/
-
-/* Comparison functions for box types */
-
-
+extern bool inter_stbox_stbox(const STBox *box1, const STBox *box2, STBox *result);
+extern bool inter_tbox_tbox(const TBox *box1, const TBox *box2, TBox *result);
 
 /*****************************************************************************
  * Functions for temporal types
