@@ -315,13 +315,13 @@ ctest
 				To run a given test file
 			</para>
 			<programlisting language="bash" xml:space="preserve">
-ctest -R '21_tbox'
+ctest -R '021_tbox'
 </programlisting>
 			<para>
 				To run a set of given test files you can use wildcards
 			</para>
 			<programlisting language="bash" xml:space="preserve">
-ctest -R '22_*'
+ctest -R '022_*'
 </programlisting>
 		</sect2>
 

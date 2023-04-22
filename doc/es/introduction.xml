@@ -317,13 +317,13 @@ ctest
 				Para ejecutar un archivo de prueba dado
 			</para>
 			<programlisting language="bash" xml:space="preserve">
-ctest -R '21_tbox'
+ctest -R '021_tbox'
 </programlisting>
 			<para>
 				Para ejecutar un conjunto de archivos de prueba determinados se pueden utilizar comodines
 			</para>
 			<programlisting language="bash" xml:space="preserve">
-ctest -R '22_*'
+ctest -R '022_*'
 </programlisting>
 		</sect2>
 
