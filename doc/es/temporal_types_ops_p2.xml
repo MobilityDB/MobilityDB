@@ -451,8 +451,9 @@ SELECT atTbox(tfloat '[0@2001-01-01, 3@2001-01-04)',
 SELECT minusTbox(tfloat '[1@2001-01-01, 4@2001-01-04)',
   'TBOX XT((1,4),[2001-01-03, 2001-01-04])');
 -- {[1@2001-01-01, 3@2001-01-03)}
-WITH temp(temp, box) AS (SELECT tfloat '[1@2001-01-01, 4@2001-01-04)',
-  'TBOX XT((1,2),[2001-01-03, 2001-01-04])' )
+WITH temp(temp, box) AS (
+  SELECT tfloat '[1@2001-01-01, 4@2001-01-04)',
+    'TBOX XT((1,2),[2001-01-03, 2001-01-04])' )
 SELECT minusValues(minusTime(temp, box::tstzspan), box::floatspan) FROM temp;
 -- {[1@2001-01-01], [2@2001-01-02, 3@2001-01-03)}
 </programlisting>
@@ -461,21 +462,29 @@ SELECT minusValues(minusTime(temp, box::tstzspan), box::floatspan) FROM temp;
 			<listitem id="atStbox">
 				<indexterm><primary><varname>atStbox</varname></primary></indexterm>
 				<indexterm><primary><varname>minusStbox</varname></primary></indexterm>
-				<para>Restringir a (al complemento de) un <varname>stbox</varname></para>
+				<para>Restringir a (al complemento de) un <varname>stbox</varname> &Z_support;</para>
 				<para><varname>atStbox(tgeompoint,stbox) → tgeompoint</varname></para>
 				<para><varname>minusStbox(tgeompoint,stbox) → tgeompoint</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT asText(atStbox(tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-04)',
   stbox 'STBOX XT(((0,0),(2,2))),[2001-01-02, 2001-01-04]'));
 -- {[POINT(1 1)@2001-01-02, POINT(2 2)@2001-01-03]}
+SELECT asText(atStbox(tgeompoint '[Point(1 1 1)@2000-01-01, Point(3 3 3)@2000-01-03,
+  Point(3 3 2)@2000-01-04, Point(3 3 7)@2000-01-09]', stbox 'STBOX Z((2,2,2),(3,3,3))'));
+/* {[POINT Z (2 2 2)@2000-01-02, POINT Z (3 3 3)@2000-01-03, POINT Z (3 3 2)@2000-01-04,
+  POINT Z (3 3 3)@2000-01-05]} */
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
 SELECT asText(minusStbox(tgeompoint '[Point(1 1)@2001-01-01, Point(4 4)@2001-01-04)',
   stbox 'STBOX XT(((1,1),(4,4)),[2001-01-03,2001-01-04])'));
 -- {[POINT(1 1)@2001-01-01), POINT(3 3)@2001-01-03)}
-WITH temp(temp, box) AS (SELECT
-  tgeompoint '[Point(1 1)@2001-01-01, Point(4 4)@2001-01-04)',
-  stbox 'STBOX XT(((1,1),(2,2)),[2001-01-03,2001-01-04])')
+SELECT asText(minusStbox(tgeompoint '[Point(1 1 1)@2000-01-01, Point(3 3 3)@2000-01-03,
+  Point(3 3 2)@2000-01-04, Point(3 3 7)@2000-01-09]', stbox 'STBOX Z((2,2,2),(3,3,3))'));
+/* {[POINT Z (1 1 1)@2000-01-01, POINT Z (2 2 2)@2000-01-02), (POINT Z (3 3 3)@2000-01-05,
+  POINT Z (3 3 7)@2000-01-09]} */
+WITH temp(temp, box) AS (
+  SELECT tgeompoint '[Point(1 1)@2001-01-01, Point(4 4)@2001-01-04)',
+    stbox 'STBOX XT(((1,1),(2,2)),[2001-01-03,2001-01-04])')
 SELECT asText(minusGeometry(minusTime(temp, box::tstzspan), box::geometry)) FROM temp;
 -- {(POINT(2 2)@2001-01-02, POINT(3 3)@2001-01-03)}
 </programlisting>

@@ -2090,6 +2090,47 @@ tpoint_get_coord(const Temporal *temp, int coord)
 }
 
 /*****************************************************************************
+ * Force a temporal point to be 2D
+ *****************************************************************************/
+
+/**
+ * @brief For a point to be in 2D
+ */
+static Datum
+point_force2d(Datum point, Datum srid)
+{
+  const POINT2D *p = DATUM_POINT2D_P(point);
+  GSERIALIZED *gs = gspoint_make(p->x, p->y, 0.0, false, false,
+    DatumGetInt32(srid));
+  return PointerGetDatum(gs);
+}
+
+/**
+ * @ingroup libmeos_temporal_spatial_transf
+ * @brief Force a temporal point to be in 2D.
+ * @param[in] temp Temporal point
+ */
+Temporal *
+tpoint_force2d(const Temporal *temp)
+{
+  assert(tgeo_type(temp->temptype));
+  if (! MEOS_FLAGS_GET_Z(temp->flags))
+    return temporal_copy(temp);
+  /* We only need to fill these parameters for tfunc_temporal */
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) &point_force2d;
+  lfinfo.numparam = 1;
+  int32 srid = tpoint_srid(temp);
+  lfinfo.param[0] = Int32GetDatum(srid);
+  lfinfo.restype = T_TGEOMPOINT;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  Temporal *result = tfunc_temporal(temp, &lfinfo);
+  return result;
+}
+
+/*****************************************************************************
  * Length functions
  *****************************************************************************/
 
@@ -4384,23 +4425,39 @@ tpoint_at_stbox1(const Temporal *temp, const STBox *box)
     memcpy(&box2d, box, sizeof(STBox));
     MEOS_FLAGS_SET_Z(box2d.flags, false);
     GSERIALIZED *geo = stbox_to_geo(&box2d);
-    /* Notice that if the stbox is 2D and the point is 3D we keep the Z
-     * coordinate in the result */
-    Temporal *at2d = tpoint_restrict_geometry(temp1, geo, REST_AT);
+    /* Convert the point to 2D before the call otherwise PostGIS return empty */
+    Temporal *temp2d = NULL;
+    bool hasz = MEOS_FLAGS_GET_Z(temp->flags);
+    temp2d = hasz ? tpoint_force2d(temp1) : temp1;
+    Temporal *at2d = tpoint_restrict_geometry(temp2d, geo, REST_AT);
     pfree(geo);
-    if (! MEOS_FLAGS_GET_Z(temp->flags) || ! MEOS_FLAGS_GET_Z(box->flags) )
-      result = at2d;
-    else
+    /* If at2d is NULL we have finished */
+    if (at2d)
     {
-      /* Take care of the Z dimension */
-      Temporal *at2d_z = tpoint_get_coord(at2d, 2);
-      Span box_z;
-      span_set(Float8GetDatum(box->zmin), Float8GetDatum(box->zmax),
-        true, true, T_FLOAT8, &box_z);
-      Temporal *at2d_z_r = tnumber_restrict_span(at2d_z, &box_z, REST_AT);
-      SpanSet *ss = temporal_time(at2d_z_r);
-      result = temporal_restrict_periodset(at2d, ss, REST_AT);
-      pfree(at2d); pfree(at2d_z); pfree(at2d_z_r); pfree(ss);
+      if (hasz)
+        pfree(temp2d);
+      SpanSet *ss1, *ss2, *ss;
+      if (! MEOS_FLAGS_GET_Z(temp->flags) || ! MEOS_FLAGS_GET_Z(box->flags) )
+      {
+        ss = temporal_time(at2d);
+        result = temporal_restrict_periodset(temp, ss, REST_AT);
+        pfree(at2d); pfree(ss);
+      }
+      else
+      {
+        /* Take care of the Z dimension */
+        Temporal *temp_z = tpoint_get_coord(temp, 2);
+        Span box_z;
+        span_set(Float8GetDatum(box->zmin), Float8GetDatum(box->zmax),
+          true, true, T_FLOAT8, &box_z);
+        Temporal *temp_z_r = tnumber_restrict_span(temp_z, &box_z, REST_AT);
+        ss1 = temporal_time(at2d);
+        ss2 = temporal_time(temp_z_r);
+        ss = intersection_spanset_spanset(ss1, ss2);
+        result = temporal_restrict_periodset(temp, ss, REST_AT);
+        pfree(at2d); pfree(temp_z); pfree(temp_z_r);
+        pfree(ss1); pfree(ss2); pfree(ss);
+      }
     }
   }
   else
@@ -4430,18 +4487,11 @@ tpoint_minus_stbox1(const Temporal *temp, const STBox *box)
 
   Temporal *result = NULL;
   Temporal *temp1 = tpoint_at_stbox1(temp, box);
-  if (temp1 != NULL)
-  {
-    SpanSet *ps1 = temporal_time(temp);
-    SpanSet *ps2 = temporal_time(temp1);
-    SpanSet *ps = minus_spanset_spanset(ps1, ps2);
-    if (ps != NULL)
-    {
-      result = temporal_restrict_periodset(temp, ps, REST_MINUS);
-      pfree(ps);
-    }
-    pfree(temp1); pfree(ps1); pfree(ps2);
-  }
+  /* We are sure that temp1 is not NULL due to the bounding box test above */
+  assert(temp1);
+  SpanSet *ps = temporal_time(temp1);
+  result = temporal_restrict_periodset(temp, ps, REST_MINUS);
+  pfree(temp1); pfree(ps);
   return result;
 }
 
