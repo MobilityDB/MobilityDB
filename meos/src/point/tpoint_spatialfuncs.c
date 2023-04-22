@@ -4436,7 +4436,7 @@ tpoint_at_stbox1(const Temporal *temp, const STBox *box)
     {
       if (hasz)
         pfree(temp2d);
-      SpanSet *ss1, *ss2, *ss;
+      SpanSet *ss;
       if (! MEOS_FLAGS_GET_Z(temp->flags) || ! MEOS_FLAGS_GET_Z(box->flags) )
       {
         ss = temporal_time(at2d);
@@ -4451,12 +4451,19 @@ tpoint_at_stbox1(const Temporal *temp, const STBox *box)
         span_set(Float8GetDatum(box->zmin), Float8GetDatum(box->zmax),
           true, true, T_FLOAT8, &box_z);
         Temporal *temp_z_r = tnumber_restrict_span(temp_z, &box_z, REST_AT);
-        ss1 = temporal_time(at2d);
-        ss2 = temporal_time(temp_z_r);
-        ss = intersection_spanset_spanset(ss1, ss2);
-        result = temporal_restrict_periodset(temp, ss, REST_AT);
-        pfree(at2d); pfree(temp_z); pfree(temp_z_r);
-        pfree(ss1); pfree(ss2); pfree(ss);
+        if (temp_z_r)
+        {
+          SpanSet *ss1 = temporal_time(at2d);
+          SpanSet *ss2 = temporal_time(temp_z_r);
+          ss = intersection_spanset_spanset(ss1, ss2);
+          if (ss)
+          {
+            result = temporal_restrict_periodset(temp, ss, REST_AT);
+            pfree(ss);
+          }
+          pfree(temp_z_r); pfree(ss1); pfree(ss2);
+        }
+        pfree(at2d); pfree(temp_z);
       }
     }
   }
