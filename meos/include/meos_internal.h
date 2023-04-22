@@ -38,6 +38,7 @@
 #include <json-c/json.h>
 /* PostgreSQL */
 /* MEOS */
+#include <meos.h>
 #include "general/meos_catalog.h" /* For meosType */
 
 /*****************************************************************************

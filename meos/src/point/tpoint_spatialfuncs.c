@@ -3263,7 +3263,7 @@ tpointseq_linear_find_splits(const TSequence *seq, int *count)
     /* If stationary segment we need to split the sequence */
     if (points[i - 1].x == points[i].x && points[i - 1].y == points[i].y)
     {
-      if (i > 1)
+      if (i > 1 && ! bitarr[i - 1])
       {
         bitarr[i - 1] = true;
         numsplits++;
@@ -4386,8 +4386,22 @@ tpoint_at_stbox1(const Temporal *temp, const STBox *box)
     GSERIALIZED *geo = stbox_to_geo(&box2d);
     /* Notice that if the stbox is 2D and the point is 3D we keep the Z
      * coordinate in the result */
-    result = tpoint_restrict_geometry(temp1, geo, REST_AT);
+    Temporal *at2d = tpoint_restrict_geometry(temp1, geo, REST_AT);
     pfree(geo);
+    if (! MEOS_FLAGS_GET_Z(temp->flags) || ! MEOS_FLAGS_GET_Z(box->flags) )
+      result = at2d;
+    else
+    {
+      /* Take care of the Z dimension */
+      Temporal *at2d_z = tpoint_get_coord(at2d, 2);
+      Span box_z;
+      span_set(Float8GetDatum(box->zmin), Float8GetDatum(box->zmax),
+        true, true, T_FLOAT8, &box_z);
+      Temporal *at2d_z_r = tnumber_restrict_span(at2d_z, &box_z, REST_AT);
+      SpanSet *ss = temporal_time(at2d_z_r);
+      result = temporal_restrict_periodset(at2d, ss, REST_AT);
+      pfree(at2d); pfree(at2d_z); pfree(at2d_z_r); pfree(ss);
+    }
   }
   else
     result = temp1;
