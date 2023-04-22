@@ -43,14 +43,13 @@ if(TEST_OPER MATCHES "test_setup")
       RESULT_VARIABLE TEST_RESULT
     )
     if(TEST_RESULT)
-      message(FATAL_ERROR "Failed to remove test directory:\n${TEST_ERROR}")
+      message(FATAL_ERROR "Failed to remove test directory:\n${TEST_RESULT}\n${TEST_ERROR}")
     else()
       message(STATUS "Test directory removed: '${TEST_DIR}'")
     endif()
   endif()
 
   execute_process(
-    COMMAND ${CMAKE_COMMAND} -E remove_directory ${TEST_DIR}
     COMMAND ${CMAKE_COMMAND} -E make_directory ${TEST_DIR}
     COMMAND ${CMAKE_COMMAND} -E make_directory ${TEST_DIR_DB}
     COMMAND ${CMAKE_COMMAND} -E make_directory ${TEST_DIR_LOCK}
@@ -60,8 +59,8 @@ if(TEST_OPER MATCHES "test_setup")
     RESULT_VARIABLE TEST_RESULT
   )
   if(TEST_RESULT)
-    message(FATAL_ERROR "Failed to create test directories:\n${TEST_ERROR}")
-  elseif()
+    message(FATAL_ERROR "Failed to create test directories:\n${TEST_RESULT}\n${TEST_ERROR}")
+  else()
     message(STATUS "Test directories created: '${TEST_DIR}'")
   endif()
 
@@ -77,8 +76,8 @@ if(TEST_OPER MATCHES "test_setup")
     RESULT_VARIABLE TEST_RESULT
   )
   if(TEST_RESULT)
-    message(FATAL_ERROR "Failed to create database cluster with initdb:\n${TEST_ERROR}")
-  elseif()
+    message(FATAL_ERROR "Failed to create database cluster with initdb:\n${TEST_RESULT}\n${TEST_ERROR}")
+  else()
     message(STATUS "Database cluster created with initdb")
   endif()
 
@@ -109,8 +108,8 @@ if(TEST_OPER MATCHES "test_setup")
     RESULT_VARIABLE TEST_RESULT
   )
   if(TEST_RESULT)
-    message(FATAL_ERROR "Failed to start PostgreSQL server:\n${TEST_ERROR}")
-  elseif()
+    message(FATAL_ERROR "Failed to start PostgreSQL server:\n${TEST_RESULT}\n${TEST_ERROR}")
+  else()
     message(STATUS "PostgreSQL server started")
   endif()
 
@@ -126,8 +125,8 @@ if(TEST_OPER MATCHES "test_setup")
     RESULT_VARIABLE TEST_RESULT
   )
   if(TEST_RESULT)
-    message(FATAL_ERROR "Failed to create MobilityDB extension:\n${TEST_ERROR}")
-  elseif()
+    message(FATAL_ERROR "Failed to create MobilityDB extension:\n${TEST_RESULT}\n${TEST_ERROR}")
+  else()
     message(STATUS "MobilityDB extension created")
   endif()
 
@@ -199,7 +198,7 @@ elseif(TEST_OPER MATCHES "run_compare")
       message(STATUS "===========\n\n")
       message(STATUS "${DIFFS}\n\n")
     endif()
-    message(FATAL_ERROR "Test ${TEST_NAME} failed:\n${TEST_ERROR}")
+    message(FATAL_ERROR "Test ${TEST_NAME} failed:\n${TEST_RESULT}\n${TEST_ERROR}")
   endif()
 
 #-------------------------------------------------------------------------------
@@ -237,7 +236,7 @@ elseif(TEST_OPER MATCHES "run_passfail")
     )
   endif()
   if(TEST_RESULT)
-    message(FATAL_ERROR "Test ${TEST_NAME} failed:\n${TEST_ERROR}")
+    message(FATAL_ERROR "Test ${TEST_NAME} failed:\n${TEST_RESULT}\n${TEST_ERROR}")
   endif()
 
 #-------------------------------------------------------------------------------
@@ -254,7 +253,7 @@ elseif(TEST_OPER MATCHES "teardown")
     RESULT_VARIABLE TEST_RESULT
   )
   if(TEST_RESULT)
-    message(FATAL_ERROR "Failed to stop PostgreSQL server:\n${TEST_ERROR}")
+    message(FATAL_ERROR "Failed to stop PostgreSQL server:\n${TEST_RESULT}\n${TEST_ERROR}")
   endif()
 
 #-------------------------------------------------------------------------------

@@ -66,3 +66,8 @@ jobs:
           # Create database and add the MobilityDB extension
           createdb -U runneradmin mydb
           psql -p 5432 -U runneradmin -d mydb -c "CREATE EXTENSION mobilitydb CASCADE; SELECT postgis_full_version(); SELECT mobilitydb_full_version(); SELECT tfloat '[1@2000-01-01]';"
+
+      - name: Run tests
+        run: |
+          cd build
+          ctest
