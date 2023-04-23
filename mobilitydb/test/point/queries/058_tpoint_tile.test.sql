@@ -111,6 +111,10 @@ FROM (SELECT spaceSplit(tgeompoint 'Interp=Step;[Point(1 1 1)@2000-01-01, Point(
 SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceSplit(tgeompoint 'Interp=Step;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', 2.0, 'Point(0.5 0.5 0.5)') AS sp) t;
 
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint '[Point(1 1 1)@2000-01-01, Point(3 1 1)@2000-01-03, Point(3 1 3)@2000-01-05]',
+2.0, bitmatrix := false) AS sp) t;
+
 /* Errors */
 SELECT spaceSplit(tgeompoint 'SRID=5676;Point(1 1 1)@2000-01-01', 2.0, 'SRID=3812;Point(0.5 0.5 0.5)');
 

@@ -268,6 +268,16 @@ FROM (SELECT spaceSplit(tgeompoint 'Interp=Step;{[Point(1 1 1)@2000-01-01, Point
  POINT Z (2.5 2.5 2.5) | Interp=Step;{[POINT Z (3 3 3)@2000-01-04 00:00:00+00, POINT Z (3 3 3)@2000-01-05 00:00:00+00]}
 (2 rows)
 
+SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceSplit(tgeompoint '[Point(1 1 1)@2000-01-01, Point(3 1 1)@2000-01-03, Point(3 1 3)@2000-01-05]',
+2.0, bitmatrix := false) AS sp) t;
+      point      |                                                           tpoint                                                           
+-----------------+----------------------------------------------------------------------------------------------------------------------------
+ POINT Z (0 0 0) | {[POINT Z (1 1 1)@2000-01-01 00:00:00+00, POINT Z (2 1 1)@2000-01-02 00:00:00+00)}
+ POINT Z (2 0 0) | {[POINT Z (2 1 1)@2000-01-02 00:00:00+00, POINT Z (3 1 1)@2000-01-03 00:00:00+00, POINT Z (3 1 2)@2000-01-04 00:00:00+00)}
+ POINT Z (2 0 2) | {[POINT Z (3 1 2)@2000-01-04 00:00:00+00, POINT Z (3 1 3)@2000-01-05 00:00:00+00]}
+(3 rows)
+
 /* Errors */
 SELECT spaceSplit(tgeompoint 'SRID=5676;Point(1 1 1)@2000-01-01', 2.0, 'SRID=3812;Point(0.5 0.5 0.5)');
 ERROR:  Operation on mixed SRID
