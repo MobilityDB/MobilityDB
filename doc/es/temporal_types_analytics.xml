@@ -506,9 +506,9 @@ FROM (SELECT valueTimeSplit(tfloat '[1@2001-01-01, 10@2001-01-10)', 5.0, '5 days
 				<listitem id="spaceSplit">
 					<indexterm><primary><varname>spaceSplit</varname></primary></indexterm>
 					<para>Fragmentar el punto temporal con respecto a los mosaicos de una malla espacial &SRF;</para>
-					<para><varname>spaceSplit(value tgeompoint,width float,origin geometry='Point(0 0)',</varname></para>
+					<para><varname>spaceSplit(value tgeompoint,width float,origin geometry='Point(0 0 0)',</varname></para>
 					<para><varname>  bitmatrix=true) → {(point,tpoint)}</varname></para>
-					<para>Si el origen del espacio no se especifica, su valor se establece por defecto en <varname>'Point(0 0)'</varname>. Si no se especifica el argumento <varname>bitmatrix</varname>, el cálculo utilizará una matriz de bits para acelerar el proceso.</para>
+					<para>Si el origen del espacio no se especifica, su valor se establece por defecto en <varname>'Point(0 0 0)'</varname>. Si no se especifica el argumento <varname>bitmatrix</varname>, el cálculo utilizará una matriz de bits para acelerar el proceso.</para>
           <para>Nótese que está permitido mezclar geometrías 2D/3D, pero el cálculo sólo se realiza en 2D.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
@@ -520,10 +520,10 @@ FROM (SELECT spaceSplit(tgeompoint '[Point(1 1)@2020-03-01, Point(10 10)@2020-03
 -- ...
 SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceSplit(tgeompoint '[Point(1 1 1)@2020-03-01,
-  Point(10 10 10)@2020-03-10]', 2.0, 'Point(1 1)') AS sp) t;
--- POINT (1 1) | {[POINT Z (1 1 1)@2020-03-01, POINT Z (3 3 3)@2020-03-03)}
--- POINT (3 3) | {[POINT Z (3 3 3)@2020-03-03, POINT Z (5 5 5)@2020-03-05)}
--- POINT (5 5) | {[POINT Z (5 5 5)@2020-03-05, POINT Z (7 7 7)@2020-03-07)}
+  Point(10 10 10)@2020-03-10]', 2.0, 'Point(1 1 1)') AS sp) t;
+-- POINT (1 1 1) | {[POINT Z (1 1 1)@2020-03-01, POINT Z (3 3 3)@2020-03-03)}
+-- POINT (3 3 3) | {[POINT Z (3 3 3)@2020-03-03, POINT Z (5 5 5)@2020-03-05)}
+-- POINT (5 5 5) | {[POINT Z (5 5 5)@2020-03-05, POINT Z (7 7 7)@2020-03-07)}
 -- ...
 </programlisting>
 				</listitem>
@@ -531,9 +531,9 @@ FROM (SELECT spaceSplit(tgeompoint '[Point(1 1 1)@2020-03-01,
 					<indexterm><primary><varname>spaceTimeSplit</varname></primary></indexterm>
 					<para>Fragmentar el punto temporal con respecto a los mosaicos de una malla espacio-temporal &SRF;</para>
 					<para><varname>spaceTimeSplit(value tgeompoint,size float,duration interval,sorigin </varname></para>
-					<para><varname>  geometry='Point(0 0)',torigin timestamptz='2000-01-03', bitmatrix=true) → </varname></para>
+					<para><varname>  geometry='Point(0 0 0)',torigin timestamptz='2000-01-03', bitmatrix=true) → </varname></para>
 					<para><varname>  {(point,time,tpoint)}</varname></para>
-					<para>Si el origen del espacio y/o el tiempo no se especifica, su valor se establece por defecto en <varname>'Point(0 0)'</varname> y en el lunes 3 de enero de 2000, respectivamente. Si no se especifica el argumento <varname>bitmatrix</varname>, el cálculo utilizará una matriz de bits para acelerar el proceso.</para>
+					<para>Si el origen del espacio y/o el tiempo no se especifica, su valor se establece por defecto en <varname>'Point(0 0 0)'</varname> y en el lunes 3 de enero de 2000, respectivamente. Si no se especifica el argumento <varname>bitmatrix</varname>, el cálculo utilizará una matriz de bits para acelerar el proceso.</para>
           <para>Nótese que está permitido mezclar geometrías 2D/3D, pero el cálculo sólo se realiza en 2D.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
@@ -546,9 +546,9 @@ FROM (SELECT spaceTimeSplit(tgeompoint '[Point(1 1)@2020-03-01, Point(10 10)@202
 SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceTimeSplit(tgeompoint '[Point(1 1 1)@2020-03-01,
   Point(10 10 10)@2020-03-10]', 2.0, '2 days', 'Point(1 1)', '2020-03-01') AS sp) t;
--- POINT (1 1) | 2020-03-01 | {[POINT Z(1 1 1)@2020-03-01, POINT Z(3 3 3)@2020-03-03)}
--- POINT (3 3) | 2020-03-03 | {[POINT Z(3 3 3)@2020-03-03, POINT Z(5 5 5)@2020-03-05)}
--- POINT (5 5) | 2020-03-05 | {[POINT Z(5 5 5)@2020-03-05, POINT Z(7 7 7)@2020-03-07)}
+-- POINT Z(1 1 1) | 2020-03-01 | {[POINT Z(1 1 1)@2020-03-01, POINT Z(3 3 3)@2020-03-03)}
+-- POINT Z(3 3 3) | 2020-03-03 | {[POINT Z(3 3 3)@2020-03-03, POINT Z(5 5 5)@2020-03-05)}
+-- POINT Z(5 5 5) | 2020-03-05 | {[POINT Z(5 5 5)@2020-03-05, POINT Z(7 7 7)@2020-03-07)}
 -- ...
 </programlisting>
 				</listitem>
