@@ -241,9 +241,11 @@ basetype_settype(meosType basetype)
  * Catalog functions
  *****************************************************************************/
 
+#ifdef DEBUG_BUILD
 /**
  * @brief Return true if the type is a base type of one of the template types,
  * that is, Set, Span, SpanSet, and Temporal
+ * @note This function is only used in the asserts
  */
 bool
 meos_basetype(meosType type)
@@ -257,6 +259,7 @@ meos_basetype(meosType type)
     return true;
   return false;
 }
+#endif
 
 /**
  * @brief Return true if the values of the base type are passed by value.
@@ -310,8 +313,10 @@ basetype_length(meosType type)
   return 0; /* make compiler quiet */
 }
 
+#ifdef DEBUG_BUILD
 /**
  * @brief Return true if the type is an alphanumeric base type
+ * @note This function is only used in the asserts
  */
 bool
 alphanum_basetype(meosType type)
@@ -321,6 +326,7 @@ alphanum_basetype(meosType type)
     return true;
   return false;
 }
+#endif
 
 /**
  * @brief Return true if the type is a geo base type
@@ -360,8 +366,10 @@ time_type(meosType type)
 
 /*****************************************************************************/
 
+#ifdef DEBUG_BUILD
 /**
  * @brief Return true if the type is a base type of a set type
+ * @note This function is only used in the asserts
  */
 bool
 set_basetype(meosType type)
@@ -372,6 +380,7 @@ set_basetype(meosType type)
     return true;
   return false;
 }
+#endif
 
 /**
  * @brief Return true if the type is a set type
@@ -491,8 +500,10 @@ span_type(meosType type)
   return false;
 }
 
+#ifdef DEBUG_BUILD
 /**
  * @brief Return true if the type is a span type
+ * @note This function is only used in the asserts
  */
 bool
 span_bbox_type(meosType type)
@@ -502,6 +513,7 @@ span_bbox_type(meosType type)
     return true;
   return false;
 }
+#endif
 
 /**
  * @brief Return true if the type is a numeric span type
@@ -561,6 +573,7 @@ spanset_type(meosType type)
   return false;
 }
 
+#if 0 /* not used */
 /**
  * @brief Return true if the type is a numeric span type
  */
@@ -572,6 +585,7 @@ numspanset_type(meosType type)
     return true;
   return false;
 }
+#endif
 
 /**
  * @brief Return true if the type is a numeric span type
@@ -605,8 +619,10 @@ temporal_type(meosType type)
   return false;
 }
 
+#ifdef DEBUG_BUILD
 /**
  * @brief Return true if the type is a temporal base type
+ * @note This function is only used in the asserts
  */
 bool
 temporal_basetype(meosType type)
@@ -622,6 +638,7 @@ temporal_basetype(meosType type)
     return true;
   return false;
 }
+#endif
 
 /**
  * @brief Return true if the type is a temporal continuous type
@@ -639,8 +656,10 @@ temptype_continuous(meosType type)
   return false;
 }
 
+#ifdef DEBUG_BUILD
 /**
  * @brief Return true if the type is a temporal alphanumeric type
+ * @note This function is only used in the asserts
  */
 bool
 talphanum_type(meosType type)
@@ -649,6 +668,7 @@ talphanum_type(meosType type)
     return true;
   return false;
 }
+#endif
 
 /**
  * @brief Return true if the type is a temporal alpha type (i.e., those whose
