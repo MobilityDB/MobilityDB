@@ -489,9 +489,8 @@ stbox_tile_state_next(STboxGridState *state)
         if (MEOS_FLAGS_GET_T(state->box.flags))
         {
           /* does not have Z and has T */
-          state->x = state->box.xmin;
           state->y = state->box.ymin;
-          state->coords[0] = state->coords[1] = 0;
+          state->coords[1] = 0;
           state->t += state->tunits;
           state->coords[2]++;
           if (state->t > DatumGetTimestampTz(state->box.period.upper))
@@ -502,7 +501,7 @@ stbox_tile_state_next(STboxGridState *state)
         }
         else
         {
-          /* does not have Z and does have T */
+          /* does not have Z and does not have T */
           state->done = true;
           return;
         }
