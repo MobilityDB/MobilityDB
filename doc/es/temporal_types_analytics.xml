@@ -521,9 +521,9 @@ FROM (SELECT spaceSplit(tgeompoint '[Point(1 1)@2020-03-01, Point(10 10)@2020-03
 SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceSplit(tgeompoint '[Point(1 1 1)@2020-03-01,
   Point(10 10 10)@2020-03-10]', 2.0, 'Point(1 1 1)') AS sp) t;
--- POINT (1 1 1) | {[POINT Z (1 1 1)@2020-03-01, POINT Z (3 3 3)@2020-03-03)}
--- POINT (3 3 3) | {[POINT Z (3 3 3)@2020-03-03, POINT Z (5 5 5)@2020-03-05)}
--- POINT (5 5 5) | {[POINT Z (5 5 5)@2020-03-05, POINT Z (7 7 7)@2020-03-07)}
+-- POINT Z(1 1 1) | {[POINT Z (1 1 1)@2020-03-01, POINT Z (3 3 3)@2020-03-03)}
+-- POINT Z(3 3 3) | {[POINT Z (3 3 3)@2020-03-03, POINT Z (5 5 5)@2020-03-05)}
+-- POINT Z(5 5 5) | {[POINT Z (5 5 5)@2020-03-05, POINT Z (7 7 7)@2020-03-07)}
 -- ...
 </programlisting>
 				</listitem>
