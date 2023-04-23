@@ -457,9 +457,8 @@ stbox_tile_state_next(STboxGridState *state)
       if (MEOS_FLAGS_GET_Z(state->box.flags))
       {
         /* has Z */
-        state->x = state->box.xmin;
         state->y = state->box.ymin;
-        state->coords[0] = state->coords[1] = 0;
+        state->coords[1] = 0;
         state->z += state->size;
         state->coords[2]++;
         if (state->z > state->box.zmax)
@@ -467,10 +466,8 @@ stbox_tile_state_next(STboxGridState *state)
           if (MEOS_FLAGS_GET_T(state->box.flags))
           {
             /* has Z and has T */
-            state->x = state->box.xmin;
-            state->y = state->box.ymin;
             state->z = state->box.zmin;
-            state->coords[0] = state->coords[1] = state->coords[2] = 0;
+            state->coords[2] = 0;
             state->t += state->tunits;
             state->coords[3]++;
             if (state->t > DatumGetTimestampTz(state->box.period.upper))
