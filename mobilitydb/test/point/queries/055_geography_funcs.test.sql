@@ -36,6 +36,10 @@ SELECT ST_AsText(round(ST_LineInterpolatePoints(geography 'Linestring(4.35 50.85
 -- SELECT ST_AsText(round(ST_LineInterpolatePoints(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 0.1, true), 6));
 SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(round(ST_LineInterpolatePoints(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 0.1, true), 6)::geometry)) AS t(dp);
 
+SELECT ST_AsText(ST_LineSubstring(geography 'Linestring(1 1,2 2)', 0.1, 0.2));
+SELECT ST_AsText(ST_LineSubstring(geography 'Linestring(1 1,1.000000001 1.000000001)', 0.1, 0.10000001));
+SELECT ST_LineLocatePoint(geography 'Linestring(1 1,2 2)', 'Point(1 1)', false);
+
 -- Empty geography -> NULL
 SELECT ST_LineInterpolatePoint(geography 'Linestring empty', 0.1);
 SELECT ST_LineInterpolatePoints(geography 'Linestring empty', 0.1, true);
@@ -50,6 +54,10 @@ SELECT ST_LineInterpolatePoints(geography 'Point(4.35 50.85)', 0.5, true);
 SELECT ST_LineInterpolatePoints(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 2, true);
 SELECT ST_LineSubstring(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 2, 0.5);
 SELECT ST_LineSubstring(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 0.5, 2);
+SELECT ST_LineSubstring(geography 'Linestring(1 1,2 2)', 0.2, 0.1);
+SELECT ST_LineSubstring(geography 'Multipoint(1 1,2 2)', 0.1, 0.2);
+SELECT ST_LineLocatePoint(geography 'Multipoint(1 1,2 2)', 'Point(1 1)', false);
+SELECT ST_LineLocatePoint(geography 'Linestring(1 1,2 2)', 'Multipoint(1 1,2 2)', false);
 
 -------------------------------------------------------------------------------
 

@@ -2109,13 +2109,13 @@ point_force2d(Datum point, Datum srid)
  * @ingroup libmeos_temporal_spatial_transf
  * @brief Force a temporal point to be in 2D.
  * @param[in] temp Temporal point
+ * @pre The temporal point has Z dimension
  */
-Temporal *
+static Temporal *
 tpoint_force2d(const Temporal *temp)
 {
   assert(tgeo_type(temp->temptype));
-  if (! MEOS_FLAGS_GET_Z(temp->flags))
-    return temporal_copy(temp);
+  assert(MEOS_FLAGS_GET_Z(temp->flags));
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
