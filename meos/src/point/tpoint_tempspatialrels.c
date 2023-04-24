@@ -473,7 +473,7 @@ tinterrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
       return restr && atvalue ? NULL :
         temporal_from_base_temp(BoolGetDatum(false), T_TBOOL, temp);
     else
-      /* We are computing intersection */
+      /* We are computing disjoint */
       return restr && ! atvalue ? NULL :
         temporal_from_base_temp(BoolGetDatum(true), T_TBOOL, temp);
   }
