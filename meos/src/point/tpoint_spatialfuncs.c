@@ -2093,6 +2093,8 @@ tpoint_get_coord(const Temporal *temp, int coord)
  * Force a temporal point to be 2D
  *****************************************************************************/
 
+// Call this function in tpoint_restrict_geometry to avoid erroneous results
+#if 0 /* not used */
 /**
  * @brief For a point to be in 2D
  */
@@ -2129,6 +2131,7 @@ tpoint_force2d(const Temporal *temp)
   Temporal *result = tfunc_temporal(temp, &lfinfo);
   return result;
 }
+#endif
 
 /*****************************************************************************
  * Length functions
@@ -3688,16 +3691,16 @@ tpoint_make_simple(const Temporal *temp, int *count)
  * @param[in] inst Temporal instant point
  * @param[in] gs Geometry
  * @param[in] atfunc True if the restriction is at, false for minus
- * @pre The arguments are of the same dimensionality, have the same SRID,
- * and the geometry is not empty. This is verified in #tpoint_restrict_geometry
+ * @pre The arguments are of the same dimensionality, have the same SRID, the
+ * geometry is not empty. This is verified in #tpoint_restrict_geometry
  * @sqlfunc atGeometry(), minusGeometry()
  */
 TInstant *
 tpointinst_restrict_geometry(const TInstant *inst, const GSERIALIZED *gs,
   bool atfunc)
 {
-  bool inter = DatumGetBool(geom_intersects2d(tinstant_value(inst),
-    PointerGetDatum(gs)));
+  Datum value = tinstant_value(inst);
+  bool inter = DatumGetBool(geom_intersects2d(value, PointerGetDatum(gs)));
   if ((atfunc && ! inter) || (! atfunc && inter))
     return NULL;
   return tinstant_copy(inst);
@@ -3710,8 +3713,8 @@ tpointinst_restrict_geometry(const TInstant *inst, const GSERIALIZED *gs,
  * @param[in] seq Temporal discrete sequence point
  * @param[in] gs Geometry
  * @param[in] atfunc True if the restriction is at, false for minus
- * @pre The arguments are of the same dimensionality, have the same SRID,
- * and the geometry is not empty. This is verified in #tpoint_restrict_geometry
+ * @pre The arguments are of the same dimensionality, have the same SRID, the
+ * geometry is not empty. This is verified in #tpoint_restrict_geometry
  * @sqlfunc atGeometry(), minusGeometry()
  */
 TSequence *
@@ -3723,8 +3726,8 @@ tpointdiscseq_restrict_geometry(const TSequence *seq, const GSERIALIZED *gs,
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    bool inter = DatumGetBool(geom_intersects2d(tinstant_value(inst),
-      PointerGetDatum(gs)));
+    Datum value = tinstant_value(inst);
+    bool inter = DatumGetBool(geom_intersects2d(value, PointerGetDatum(gs)));
     if ((atfunc && inter) || (!atfunc && !inter))
       instants[k++] = inst;
   }
@@ -3786,13 +3789,14 @@ tpointseq_step_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
   /* Loop for every simple piece of the sequence */
   for (int i = 0; i < countsimple; i++)
   {
-    Datum traj = PointerGetDatum(tpointcontseq_trajectory(simpleseqs[i]));
-    Datum inter = geom_intersection2d(traj, PointerGetDatum(gs));
+    GSERIALIZED *traj = tpointcontseq_trajectory(simpleseqs[i]);
+    Datum inter = geom_intersection2d(PointerGetDatum(traj),
+     PointerGetDatum(gs));
     GSERIALIZED *gsinter = DatumGetGserializedP(inter);
     if (! gserialized_is_empty(gsinter))
       k += gsinter_get_points(&points[k], gsinter);
     PG_FREE_IF_COPY_P(gsinter, DatumGetPointer(inter));
-    pfree(DatumGetPointer(inter));
+    pfree(DatumGetPointer(inter)); pfree(traj);
   }
   pfree_array((void **) simpleseqs, countsimple);
   if (k == 0)
@@ -3895,9 +3899,9 @@ tpointsegm_timestamp_at_value1(const TInstant *inst1, const TInstant *inst2,
  * @param[in] value Base value
  * @param[out] t Timestamp
  * @result Return true if the point is found in the temporal point
- * @pre The point is known to belong to the temporal sequence (taking
- * into account roundoff errors), the temporal sequence has linear
- * interpolation, and it simple
+ * @pre The point is known to belong to the temporal sequence (taking into
+ * account roundoff errors), the temporal sequence has linear interpolation,
+ * and it simple
  * @note The resulting timestamp may be at an exclusive bound
  */
 static bool
@@ -4059,6 +4063,8 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter, int *count)
  * geometry
  * @param[in] seq Temporal point sequence
  * @param[in] gs Geometry
+ * @pre The arguments are of the same dimensionality, have the same SRID, the
+ * geometry is not empty. This is verified in #tpoint_restrict_geometry
  * @param[out] count Number of elements in the resulting array
  */
 static TSequence **
@@ -4071,18 +4077,20 @@ tpointseq_linear_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
   TSequence **simpleseqs = tpointseq_make_simple(seq, &countsimple);
   Span *allperiods = NULL; /* make compiler quiet */
   int totalcount = 0;
+  GSERIALIZED *traj, *gsinter;
+  Datum inter;
 
   if (countsimple == 1)
   {
     /* Particular case when the input sequence is simple */
     pfree_array((void **) simpleseqs, countsimple);
-    Datum traj = PointerGetDatum(tpointcontseq_trajectory(seq));
-    Datum inter = geom_intersection2d(traj, PointerGetDatum(gs));
-    GSERIALIZED *gsinter = DatumGetGserializedP(inter);
+    traj = tpointcontseq_trajectory(seq);
+    inter = geom_intersection2d(PointerGetDatum(traj), PointerGetDatum(gs));
+    gsinter = DatumGetGserializedP(inter);
     if (! gserialized_is_empty(gsinter))
       allperiods = tpointseq_interperiods(seq, gsinter, &totalcount);
     PG_FREE_IF_COPY_P(gsinter, DatumGetPointer(inter));
-    pfree(DatumGetPointer(inter));
+    pfree(DatumGetPointer(inter)); pfree(traj);
     if (totalcount == 0)
     {
       *count = 0;
@@ -4097,8 +4105,8 @@ tpointseq_linear_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
     /* Loop for every simple piece of the sequence */
     for (int i = 0; i < countsimple; i++)
     {
-      Datum traj = PointerGetDatum(tpointcontseq_trajectory(simpleseqs[i]));
-      Datum inter = geom_intersection2d(traj, PointerGetDatum(gs));
+      traj = tpointcontseq_trajectory(simpleseqs[i]);
+      inter = geom_intersection2d(PointerGetDatum(traj), PointerGetDatum(gs));
       GSERIALIZED *gsinter = DatumGetGserializedP(inter);
       if (! gserialized_is_empty(gsinter))
       {
@@ -4107,7 +4115,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
         totalcount += countpers[i];
       }
       PG_FREE_IF_COPY_P(gsinter, DatumGetPointer(inter));
-      pfree(DatumGetPointer(inter));
+      pfree(DatumGetPointer(inter)); pfree(traj);
     }
     pfree_array((void **) simpleseqs, countsimple);
     if (totalcount == 0)
@@ -4146,15 +4154,18 @@ tpointseq_linear_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
  * @param[in] gs Geometry
  * @param[out] count Number of elements in the resulting array
  * @pre The temporal sequence is simple, that is, does not self-intersect
+ * @pre The arguments are of the same dimensionality, have the same SRID, the
+ * geometry is not empty. This is verified in #tpoint_restrict_geometry
  */
 TSequence **
-tpointseq_at_geometry(const TSequence *seq, const GSERIALIZED *gs, int *count)
+tpointseq_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
+  int *count)
 {
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    TInstant *inst = tpointinst_restrict_geometry(TSEQUENCE_INST_N(seq, 0),
-      gs, REST_AT);
+    TInstant *inst = tpointinst_restrict_geometry(TSEQUENCE_INST_N(seq, 0), gs,
+      REST_AT);
     if (inst == NULL)
     {
       *count = 0;
@@ -4225,8 +4236,8 @@ tpointseq_minus_geometry(const TSequence *seq, const GSERIALIZED *gs,
  * @param[in] seq Temporal sequence point
  * @param[in] gs Geometry
  * @param[in] atfunc True if the restriction is at, false for minus
- * @pre The arguments are of the same dimensionality, have the same SRID,
- * and the geometry is not empty. This is verified in #tpoint_restrict_geometry
+ * @pre The arguments are of the same dimensionality, have the same SRID, the
+ * geometry is not empty. This is verified in #tpoint_restrict_geometry
  * @note The test for instantaneous sequences is done at the function
  * tpointseq_at_geometry since the latter function is called for each sequence
  * of a sequence set
@@ -4237,7 +4248,8 @@ tpointcontseq_restrict_geometry(const TSequence *seq, const GSERIALIZED *gs,
   bool atfunc)
 {
   int count;
-  TSequence **sequences = atfunc ? tpointseq_at_geometry(seq, gs, &count) :
+  TSequence **sequences = atfunc ?
+    tpointseq_at_geometry(seq, gs, &count) :
     tpointseq_minus_geometry(seq, gs, &count);
   if (sequences == NULL)
     return NULL;
@@ -4255,8 +4267,8 @@ tpointcontseq_restrict_geometry(const TSequence *seq, const GSERIALIZED *gs,
  * @param[in] gs Geometry
  * @param[in] box Bounding box of the geometry
  * @param[in] atfunc True if the restriction is at, false for minus
- * @pre The arguments are of the same dimensionality, have the same SRID,
- * and the geometry is not empty. This is verified in #tpoint_restrict_geometry
+ * @pre The arguments are of the same dimensionality, have the same SRID, the
+ * geometry is not empty. This is verified in #tpoint_restrict_geometry
  * @sqlfunc atGeometry(), minusGeometry()
  */
 TSequenceSet *
@@ -4307,8 +4319,8 @@ tpointseqset_restrict_geometry(const TSequenceSet *ss, const GSERIALIZED *gs,
     pfree(sequences); pfree(countseqs);
     return NULL;
   }
-  TSequence **allseqs = tseqarr2_to_tseqarr(sequences,
-    countseqs, ss->count, totalcount);
+  TSequence **allseqs = tseqarr2_to_tseqarr(sequences, countseqs, ss->count,
+    totalcount);
   return tsequenceset_make_free(allseqs, totalcount, NORMALIZE);
 }
 
@@ -4317,21 +4329,19 @@ tpointseqset_restrict_geometry(const TSequenceSet *ss, const GSERIALIZED *gs,
  * @brief Restrict a temporal point to (the complement of) a geometry.
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
+ * @param[in] spanz Span of values to restrict the Z dimension
  * @param[in] atfunc True if the restriction is at, false for minus
  * @sqlfunc atGeometry(), minusGeometry()
  */
 Temporal *
 tpoint_restrict_geometry(const Temporal *temp, const GSERIALIZED *gs,
-  bool atfunc)
+  const Span *spanz, bool atfunc)
 {
   if (gserialized_is_empty(gs))
-  {
-    if (atfunc)
-      return NULL;
-    else
-      return temporal_copy(temp);
-  }
+    return atfunc ? NULL : temporal_copy(temp);
   ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
+  if (spanz)
+    ensure_has_Z(temp->flags);
 
   /* Bounding box test */
   STBox box1, box2;
@@ -4348,13 +4358,34 @@ tpoint_restrict_geometry(const Temporal *temp, const GSERIALIZED *gs,
       gs, atfunc);
   else if (temp->subtype == TSEQUENCE)
     result = MEOS_FLAGS_GET_DISCRETE(temp->flags) ?
-      (Temporal *) tpointdiscseq_restrict_geometry((TSequence *) temp, gs, atfunc) :
-      (Temporal *) tpointcontseq_restrict_geometry((TSequence *) temp, gs, atfunc);
+      (Temporal *) tpointdiscseq_restrict_geometry((TSequence *) temp, gs,
+        atfunc) :
+      (Temporal *) tpointcontseq_restrict_geometry((TSequence *) temp, gs,
+        atfunc);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tpointseqset_restrict_geometry((TSequenceSet *) temp,
       gs, &box2, atfunc);
+  if (! spanz)
+    return result;
 
-  return result;
+  /* Restrict the result to the span for the Z dimension */
+  Temporal *result_spanz = NULL;
+  Temporal *result_z = tpoint_get_coord(result, 2);
+  Temporal *result_z_r = tnumber_restrict_span(result_z, spanz, REST_AT);
+  if (result_z_r)
+  {
+    SpanSet *ss1 = temporal_time(result);
+    SpanSet *ss2 = temporal_time(result_z_r);
+    SpanSet *ss = intersection_spanset_spanset(ss1, ss2);
+    if (ss)
+    {
+      result_spanz = temporal_restrict_periodset(temp, ss, REST_AT);
+      pfree(ss);
+    }
+    pfree(result_z_r); pfree(ss1); pfree(ss2);
+  }
+  pfree(result); pfree(result_z);
+  return result_spanz;
 }
 
 #if MEOS
@@ -4364,9 +4395,10 @@ tpoint_restrict_geometry(const Temporal *temp, const GSERIALIZED *gs,
  * @sqlfunc atGeometry(), minusGeometry()
  */
 Temporal *
-tpoint_at_geometry(const Temporal *temp, const GSERIALIZED *gs)
+tpoint_at_geometry(const Temporal *temp, const GSERIALIZED *gs,
+  const Span *spanz)
 {
-  Temporal *result = tpoint_restrict_geometry(temp, gs, REST_AT);
+  Temporal *result = tpoint_restrict_geometry(temp, gs, spanz, REST_AT);
   return result;
 }
 
@@ -4376,9 +4408,10 @@ tpoint_at_geometry(const Temporal *temp, const GSERIALIZED *gs)
  * @sqlfunc atGeometry(), minusGeometry()
  */
 Temporal *
-tpoint_minus_geometry(const Temporal *temp, const GSERIALIZED *gs)
+tpoint_minus_geometry(const Temporal *temp, const GSERIALIZED *gs,
+  const Span *spanz)
 {
-  Temporal *result = tpoint_restrict_geometry(temp, gs, REST_MINUS);
+  Temporal *result = tpoint_restrict_geometry(temp, gs, spanz, REST_MINUS);
   return result;
 }
 #endif /* MEOS */
@@ -4425,47 +4458,16 @@ tpoint_at_stbox1(const Temporal *temp, const STBox *box)
     memcpy(&box2d, box, sizeof(STBox));
     MEOS_FLAGS_SET_Z(box2d.flags, false);
     GSERIALIZED *geo = stbox_to_geo(&box2d);
-    /* Convert the point to 2D before the call otherwise PostGIS return empty */
-    Temporal *temp2d = NULL;
-    bool hasz = MEOS_FLAGS_GET_Z(temp->flags);
-    temp2d = hasz ? tpoint_force2d(temp1) : temp1;
-    Temporal *at2d = tpoint_restrict_geometry(temp2d, geo, REST_AT);
-    pfree(geo);
-    /* If at2d is NULL we have finished */
-    if (at2d)
+    if (! MEOS_FLAGS_GET_Z(temp1->flags) || ! MEOS_FLAGS_GET_Z(box->flags))
+      result = tpoint_restrict_geometry(temp1, geo, NULL, REST_AT);
+    else
     {
-      if (hasz)
-        pfree(temp2d);
-      SpanSet *ss;
-      if (! MEOS_FLAGS_GET_Z(temp->flags) || ! MEOS_FLAGS_GET_Z(box->flags) )
-      {
-        ss = temporal_time(at2d);
-        result = temporal_restrict_periodset(temp, ss, REST_AT);
-        pfree(at2d); pfree(ss);
-      }
-      else
-      {
-        /* Take care of the Z dimension */
-        Temporal *temp_z = tpoint_get_coord(temp, 2);
-        Span box_z;
-        span_set(Float8GetDatum(box->zmin), Float8GetDatum(box->zmax),
-          true, true, T_FLOAT8, &box_z);
-        Temporal *temp_z_r = tnumber_restrict_span(temp_z, &box_z, REST_AT);
-        if (temp_z_r)
-        {
-          SpanSet *ss1 = temporal_time(at2d);
-          SpanSet *ss2 = temporal_time(temp_z_r);
-          ss = intersection_spanset_spanset(ss1, ss2);
-          if (ss)
-          {
-            result = temporal_restrict_periodset(temp, ss, REST_AT);
-            pfree(ss);
-          }
-          pfree(temp_z_r); pfree(ss1); pfree(ss2);
-        }
-        pfree(at2d); pfree(temp_z);
-      }
+      Span spanz;
+      span_set(Float8GetDatum(box->xmin), Float8GetDatum(box->xmax),
+        true, true, T_FLOAT8, &spanz);
+      result = tpoint_restrict_geometry(temp1, geo, &spanz, REST_AT);
     }
+    pfree(geo);
   }
   else
     result = temp1;
