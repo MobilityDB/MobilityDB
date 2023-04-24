@@ -798,10 +798,6 @@ geography_line_locate_point(PG_FUNCTION_ARGS)
   // spheroid_init_from_srid(fcinfo, gserialized_get_srid(gs1), &s);
   spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
 
-  /* Set to sphere if requested */
-  if ( ! use_spheroid )
-    s.a = s.b = s.radius;
-
   if ( gserialized_get_type(gs1) != LINETYPE )
   {
     elog(ERROR,"line_locate_point: 1st arg isn't a line");
@@ -813,7 +809,7 @@ geography_line_locate_point(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   }
 
-  /* User requests spherical calculation, turn our spheroid into a sphere */
+  /* Set to sphere if requested */
   if ( ! use_spheroid )
     s.a = s.b = s.radius;
   else

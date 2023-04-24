@@ -81,7 +81,8 @@ BEGIN
   ymin = random_float(lowy, highy - maxdelta);
   tmin = random_timestamptz(lowtime, hightime - interval '1 minute' * maxminutes);
   RETURN stbox_t(xmin, xmin + random_float(1, maxdelta), ymin,
-    ymin + random_float(1, maxdelta), tstzspan(tmin + random_minutes(1, maxminutes)), srid);
+    ymin + random_float(1, maxdelta),
+    span(tmin, tmin + random_minutes(1, maxminutes)), srid);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
