@@ -73,7 +73,7 @@ CREATE TYPE point_tpoint AS (
 );
 
 CREATE FUNCTION spaceSplit(tgeompoint, float,
-    sorigin geometry DEFAULT 'Point(0 0)', bitmatrix boolean DEFAULT TRUE)
+    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE)
   RETURNS SETOF point_tpoint
   AS 'MODULE_PATHNAME', 'Tpoint_space_split'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
@@ -85,7 +85,7 @@ CREATE TYPE point_time_tpoint AS (
 );
 
 CREATE FUNCTION spaceTimeSplit(tgeompoint, float, interval,
-    sorigin geometry DEFAULT 'Point(0 0)',
+    sorigin geometry DEFAULT 'Point(0 0 0)',
     torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE)
   RETURNS SETOF point_time_tpoint
   AS 'MODULE_PATHNAME', 'Tpoint_space_time_split'

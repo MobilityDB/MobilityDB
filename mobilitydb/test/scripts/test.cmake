@@ -68,6 +68,9 @@ if(TEST_OPER MATCHES "test_setup")
   # Create database cluster
   #-------------------------
 
+  # Explanation of the parameters
+  # -D <directory> Directory where the database cluster should be stored.
+  #    If not given, the PGDATA environment variable is used.
   execute_process(
     COMMAND ${POSTGRESQL_BIN_DIR}/initdb -D ${TEST_DIR_DB}
     OUTPUT_FILE ${TEST_DIR_LOG}/initdb.log
@@ -100,8 +103,21 @@ if(TEST_OPER MATCHES "test_setup")
   # Start PostgreSQL
   #-------------------------
 
+  # Explanation of the parameters
+  # -w Wait for the operation to complete.
+  # -D <directory> File system location of the database configuration files.
+  #   If omitted, the environment variable PGDATA is used.
+  # -l <filename> Append the server log output to the file given
+  # -o "-k <directory>" Parameter passed to the database server (postgres)
+  #   Directory of the Unix-domain socket on which postgres is to listen for
+  #   connections from client applications
+  # -o "-h ''" Parameter passed to the database server (postgres)
+  #   Specifies the IP host name or address on which postgres is to listen for
+  #   TCP/IP connections from client applications. An empty value specifies not
+  #   listening on any IP addresses, in which case only Unix-domain sockets can
+  #   be used to connect to the server.
   execute_process(
-    COMMAND ${POSTGRESQL_BIN_DIR}/pg_ctl -w -D ${TEST_DIR_DB} -l ${TEST_DIR_LOG}/postgres.log -o -k -o ${TEST_DIR_LOCK} start -o -h -o ''
+    COMMAND ${POSTGRESQL_BIN_DIR}/pg_ctl -w -D ${TEST_DIR_DB} -l ${TEST_DIR_LOG}/postgres.log -o "-k ${TEST_DIR_LOCK}" -o "-h ''" start
     OUTPUT_FILE ${TEST_DIR_LOG}/pg_start.log
     ERROR_FILE ${TEST_DIR_LOG}/pg_start.log
     ERROR_VARIABLE TEST_ERROR
@@ -117,8 +133,17 @@ if(TEST_OPER MATCHES "test_setup")
   # Create PostGIS and MobilityDB extensions
   #------------------------------------------
 
+  # Explanation of the parameters
+  # -h <host> Host name of the machine on which the server is running.
+  #   If the value begins with a slash, it is used as the directory for the
+  #   Unix-domain socket.
+  # -e Copy all SQL commands sent to the server to standard output as well.
+  # --set ON_ERROR_STOP=0 The script will continue to execute after an SQL
+  #   error is encountered. This is the default mode.
+  # -d <database> Name of the database to connect to.
+  # -c <command> Specifies that psql is to execute the given command string
   execute_process(
-    COMMAND ${POSTGRESQL_BIN_DIR}/psql -h ${TEST_DIR_LOCK} -e --set ON_ERROR_STOP=0 postgres -c "CREATE EXTENSION mobilitydb CASCADE; SELECT postgis_full_version(); SELECT mobilitydb_full_version();"
+    COMMAND ${POSTGRESQL_BIN_DIR}/psql -h ${TEST_DIR_LOCK} -e --set ON_ERROR_STOP=0 -d postgres -c "CREATE EXTENSION mobilitydb CASCADE; SELECT postgis_full_version(); SELECT mobilitydb_full_version();"
     OUTPUT_FILE ${TEST_DIR_LOG}/create_ext.log
     ERROR_FILE ${TEST_DIR_LOG}/create_ext.log
     ERROR_VARIABLE TEST_ERROR
@@ -145,8 +170,9 @@ elseif(TEST_OPER MATCHES "run_compare")
   endif(NOT TEST_FILE)
 
   # Execute the test
+  # Explanation of the parameters for psql (see above)
   execute_process(
-    COMMAND ${POSTGRESQL_BIN_DIR}/psql -h ${TEST_DIR_LOCK} -e --set ON_ERROR_STOP=0 postgres
+    COMMAND ${POSTGRESQL_BIN_DIR}/psql -h ${TEST_DIR_LOCK} -e --set ON_ERROR_STOP=0 -d postgres
     INPUT_FILE ${TEST_FILE}
     OUTPUT_FILE ${TEST_DIR_OUT}/${TEST_NAME}.out
     ERROR_FILE ${TEST_DIR_OUT}/${TEST_NAME}.out
@@ -215,19 +241,20 @@ elseif(TEST_OPER MATCHES "run_passfail")
     message(FATAL_ERROR "Argument TEST_FILE must be provided")
   endif(NOT TEST_FILE)
 
+  # Explanation of the parameters for psql (see above)
   if(${TEST_FILE} MATCHES ".xz")
     # Load the data into the test database
     get_filename_component(TEST_FILE_NAME ${TEST_FILE} NAME_WLE)
     execute_process(
       COMMAND ${XZCAT_EXECUTABLE} ${TEST_FILE}
-      COMMAND ${POSTGRESQL_BIN_DIR}/psql -h ${TEST_DIR_LOCK} -e --set ON_ERROR_STOP=0 postgres
+      COMMAND ${POSTGRESQL_BIN_DIR}/psql -h ${TEST_DIR_LOCK} -e --set ON_ERROR_STOP=0 -d postgres
       OUTPUT_QUIET
       ERROR_VARIABLE TEST_ERROR
       RESULT_VARIABLE TEST_RESULT
     )
   else()
     execute_process(
-      COMMAND ${POSTGRESQL_BIN_DIR}/psql -h ${TEST_DIR_LOCK} -e --set ON_ERROR_STOP=0 postgres
+      COMMAND ${POSTGRESQL_BIN_DIR}/psql -h ${TEST_DIR_LOCK} -e --set ON_ERROR_STOP=0 -d postgres
       INPUT_FILE ${TEST_FILE}
       OUTPUT_FILE ${TEST_DIR_OUT}/${TESTNAME}.out
       ERROR_FILE ${TEST_DIR_OUT}/${TESTNAME}.out
@@ -245,6 +272,7 @@ elseif(TEST_OPER MATCHES "run_passfail")
 
 elseif(TEST_OPER MATCHES "teardown")
 
+  # Explanation of the parameters for pg_ctl (see above)
   execute_process(
     COMMAND ${POSTGRESQL_BIN_DIR}/pg_ctl -w -D ${TEST_DIR_DB} stop
     OUTPUT_FILE ${TEST_DIR_LOG}/pg_stop.log

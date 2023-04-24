@@ -526,10 +526,9 @@ FROM (SELECT valueTimeSplit(tfloat '[1@2001-01-01, 10@2001-01-10)', 5.0, '5 days
 				<listitem id="spaceSplit">
 					<indexterm><primary><varname>spaceSplit</varname></primary></indexterm>
 					<para>Fragment the temporal point with respect to the tiles in a spatial grid &Z_support; &SRF;</para>
-					<para><varname>spaceSplit(value tgeompoint,size float,origin geometry='Point(0 0)',</varname></para>
+					<para><varname>spaceSplit(value tgeompoint,size float,origin geometry='Point(0 0 0)',</varname></para>
 					<para><varname>  bitmatrix=true) → {(point,tpoint)}</varname></para>
-					<para>If the origin of the space dimension is not specified, it is set by default to <varname>'Point(0 0)'</varname>. If the argument <varname>bitmatrix</varname> is not specified, then the computation will use a bit matrix to speed up the process.</para>
-          <para>Notice that it is allowed to mix 2D/3D geometries but the computation is only performed on 2D.</para>
+					<para>If the origin of the space dimension is not specified, it is set by default to <varname>'Point(0 0 0)'</varname>. If the argument <varname>bitmatrix</varname> is not specified, then the computation will use a bit matrix to speed up the process.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceSplit(tgeompoint '[Point(1 1)@2020-03-01, Point(10 10)@2020-03-10]',
@@ -540,10 +539,10 @@ FROM (SELECT spaceSplit(tgeompoint '[Point(1 1)@2020-03-01, Point(10 10)@2020-03
 -- ...
 SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceSplit(tgeompoint '[Point(1 1 1)@2020-03-01,
-  Point(10 10 10)@2020-03-10]', 2.0, 'Point(1 1)') AS sp) t;
--- POINT (1 1) | {[POINT Z (1 1 1)@2020-03-01, POINT Z (3 3 3)@2020-03-03)}
--- POINT (3 3) | {[POINT Z (3 3 3)@2020-03-03, POINT Z (5 5 5)@2020-03-05)}
--- POINT (5 5) | {[POINT Z (5 5 5)@2020-03-05, POINT Z (7 7 7)@2020-03-07)}
+  Point(10 10 10)@2020-03-10]', 2.0, 'Point(1 1 1)') AS sp) t;
+-- POINT Z(1 1 1) | {[POINT Z (1 1 1)@2020-03-01, POINT Z (3 3 3)@2020-03-03)}
+-- POINT Z(3 3 3) | {[POINT Z (3 3 3)@2020-03-03, POINT Z (5 5 5)@2020-03-05)}
+-- POINT Z(5 5 5) | {[POINT Z (5 5 5)@2020-03-05, POINT Z (7 7 7)@2020-03-07)}
 -- ...
 </programlisting>
 				</listitem>
@@ -551,10 +550,9 @@ FROM (SELECT spaceSplit(tgeompoint '[Point(1 1 1)@2020-03-01,
 					<indexterm><primary><varname>spaceTimeSplit</varname></primary></indexterm>
 					<para>Fragment the temporal point with respect to the tiles in a spatiotemporal grid &Z_support; &SRF;</para>
 					<para><varname>spaceTimeSplit(value tgeompoint,size float,duration interval,sorigin </varname></para>
-					<para><varname>  geometry='Point(0 0)',torigin timestamptz='2000-01-03', bitmatrix=true) → </varname></para>
+					<para><varname>  geometry='Point(0 0 0)',torigin timestamptz='2000-01-03', bitmatrix=true) → </varname></para>
 					<para><varname>  {(point,time,tpoint)}</varname></para>
-					<para>If the origin of the space and time dimensions are not specified, they are set by default to <varname>'Point(0 0)'</varname> and Monday, January 3, 2000, respectively. If the argument <varname>bitmatrix</varname> is not specified, then the computation will use a bit matrix to speed up the process.</para>
-          <para>Notice that it is allowed to mix 2D/3D geometries but the computation is only performed on 2D.</para>
+					<para>If the origin of the space and time dimensions are not specified, they are set by default to <varname>'Point(0 0 0)'</varname> and Monday, January 3, 2000, respectively. If the argument <varname>bitmatrix</varname> is not specified, then the computation will use a bit matrix to speed up the process.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceTimeSplit(tgeompoint '[Point(1 1)@2020-03-01, Point(10 10)@2020-03-10]',
@@ -565,10 +563,10 @@ FROM (SELECT spaceTimeSplit(tgeompoint '[Point(1 1)@2020-03-01, Point(10 10)@202
 -- ...
 SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceTimeSplit(tgeompoint '[Point(1 1 1)@2020-03-01,
-  Point(10 10 10)@2020-03-10]', 2.0, '2 days', 'Point(1 1)', '2020-03-01') AS sp) t;
--- POINT (1 1) | 2020-03-01 | {[POINT Z(1 1 1)@2020-03-01, POINT Z(3 3 3)@2020-03-03)}
--- POINT (3 3) | 2020-03-03 | {[POINT Z(3 3 3)@2020-03-03, POINT Z(5 5 5)@2020-03-05)}
--- POINT (5 5) | 2020-03-05 | {[POINT Z(5 5 5)@2020-03-05, POINT Z(7 7 7)@2020-03-07)}
+  Point(10 10 10)@2020-03-10]', 2.0, '2 days', 'Point(1 1 1)', '2020-03-01') AS sp) t;
+-- POINT Z(1 1 1) | 2020-03-01 | {[POINT Z(1 1 1)@2020-03-01, POINT Z(3 3 3)@2020-03-03)}
+-- POINT Z(3 3 3) | 2020-03-03 | {[POINT Z(3 3 3)@2020-03-03, POINT Z(5 5 5)@2020-03-05)}
+-- POINT Z(5 5 5) | 2020-03-05 | {[POINT Z(5 5 5)@2020-03-05, POINT Z(7 7 7)@2020-03-07)}
 -- ...
 </programlisting>
 				</listitem>
