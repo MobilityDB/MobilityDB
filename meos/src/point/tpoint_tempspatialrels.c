@@ -460,8 +460,6 @@ tinterrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
     return NULL;
   ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
   ensure_has_not_Z(temp->flags); ensure_has_not_Z_gs(gs);
-  /* Result depends on whether we are computing tintersects or tdisjoint */
-  Datum datum_no = tinter ? BoolGetDatum(false) : BoolGetDatum(true);
 
   /* Bounding box test */
   STBox box1, box2;
@@ -469,7 +467,16 @@ tinterrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
   /* Non-empty geometries have a bounding box */
   geo_set_stbox(gs, &box2);
   if (! overlaps_stbox_stbox(&box1, &box2))
-    return temporal_from_base_temp(datum_no, T_TBOOL, temp);
+  {
+    if (tinter)
+      /* We are computing intersection */
+      return restr && atvalue ? NULL :
+        temporal_from_base_temp(BoolGetDatum(false), T_TBOOL, temp);
+    else
+      /* We are computing intersection */
+      return restr && ! atvalue ? NULL :
+        temporal_from_base_temp(BoolGetDatum(true), T_TBOOL, temp);
+  }
 
   /* 3D only if both arguments are 3D */
   Datum (*func)(Datum, Datum) = MEOS_FLAGS_GET_Z(temp->flags) &&

@@ -129,6 +129,10 @@ SELECT tdisjoint(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02,
 SELECT tdisjoint(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  npoint 'NPoint(2, 0.3)', false);
 SELECT tdisjoint(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  npoint 'NPoint(2, 0.3)', false);
 
+SELECT tdisjoint(tnpoint 'Npoint(1,0.5)@2000-01-01', npoint 'Npoint(1,0.6)');
+SELECT tdisjoint(tnpoint 'Npoint(1,0.5)@2000-01-01', npoint 'Npoint(1,0.6)', false);
+SELECT tdisjoint(tnpoint 'Npoint(1,0.5)@2000-01-01', npoint 'Npoint(1,0.6)', true);
+
 -------------------------------------------------------------------------------
 -- tintersects
 -------------------------------------------------------------------------------
@@ -162,6 +166,10 @@ SELECT tintersects(tnpoint 'Npoint(1, 0.5)@2000-01-01',  npoint 'NPoint(2, 0.3)'
 SELECT tintersects(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  npoint 'NPoint(2, 0.3)');
 SELECT tintersects(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  npoint 'NPoint(2, 0.3)');
 SELECT tintersects(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  npoint 'NPoint(2, 0.3)');
+
+SELECT tintersects(tnpoint 'Npoint(1,0.5)@2000-01-01', npoint 'Npoint(1,0.6)');
+SELECT tintersects(tnpoint 'Npoint(1,0.5)@2000-01-01', npoint 'Npoint(1,0.6)', false);
+SELECT tintersects(tnpoint 'Npoint(1,0.5)@2000-01-01', npoint 'Npoint(1,0.6)', true);
 
 -------------------------------------------------------------------------------
 -- ttouches
