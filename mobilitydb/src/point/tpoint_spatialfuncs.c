@@ -1187,10 +1187,10 @@ tpoint_restrict_geometry_ext(FunctionCallInfo fcinfo, bool atfunc)
     PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(1);
-  Span *spanz = NULL;
+  Span *zspan = NULL;
   if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
-    spanz = PG_GETARG_SPAN_P(2);
-  Temporal *result = tpoint_restrict_geometry(temp, geo, spanz, atfunc);
+    zspan = PG_GETARG_SPAN_P(2);
+  Temporal *result = tpoint_restrict_geometry(temp, geo, zspan, atfunc);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(geo, 1);
   if (! result)

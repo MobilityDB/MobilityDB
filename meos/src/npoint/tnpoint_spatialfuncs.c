@@ -805,7 +805,7 @@ tnpoint_azimuth(const Temporal *temp)
  */
 Temporal *
 tnpoint_restrict_geometry(const Temporal *temp, const GSERIALIZED *geo,
-  const Span *spanz, bool atfunc)
+  const Span *zspan, bool atfunc)
 {
   ensure_same_srid(tnpoint_srid(temp), gserialized_get_srid(geo));
   if (gserialized_is_empty(geo))
@@ -818,7 +818,7 @@ tnpoint_restrict_geometry(const Temporal *temp, const GSERIALIZED *geo,
   ensure_has_not_Z_gs(geo);
 
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  Temporal *resultgeom = tpoint_restrict_geometry(tempgeom, geo, spanz, atfunc);
+  Temporal *resultgeom = tpoint_restrict_geometry(tempgeom, geo, zspan, atfunc);
   Temporal *result = NULL;
   if (resultgeom != NULL)
   {

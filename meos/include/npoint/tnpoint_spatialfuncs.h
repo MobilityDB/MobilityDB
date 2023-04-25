@@ -75,7 +75,7 @@ extern Temporal *tnpoint_speed(const Temporal *temp);
 extern Datum tnpoint_twcentroid(const Temporal *temp);
 extern Temporal *tnpoint_azimuth(const Temporal *temp);
 extern Temporal *tnpoint_restrict_geometry(const Temporal *temp,
-  const GSERIALIZED *gs, const Span *spanz, bool atfunc);
+  const GSERIALIZED *gs, const Span *zspan, bool atfunc);
 
 /*****************************************************************************/
 
