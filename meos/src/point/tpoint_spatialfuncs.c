@@ -2093,8 +2093,6 @@ tpoint_get_coord(const Temporal *temp, int coord)
  * Force a temporal point to be 2D
  *****************************************************************************/
 
-// Call this function in tpoint_restrict_geometry to avoid erroneous results
-#if 0 /* not used */
 /**
  * @brief For a point to be in 2D
  */
@@ -2131,7 +2129,6 @@ tpoint_force2d(const Temporal *temp)
   Temporal *result = tfunc_temporal(temp, &lfinfo);
   return result;
 }
-#endif
 
 /*****************************************************************************
  * Length functions
@@ -4348,41 +4345,67 @@ tpoint_restrict_geometry(const Temporal *temp, const GSERIALIZED *gs,
   temporal_set_bbox(temp, &box1);
   /* Non-empty geometries have a bounding box */
   geo_set_stbox(gs, &box2);
+  if (spanz)
+  {
+    MEOS_FLAGS_SET_Z(box2.flags, true);
+    box2.zmin = DatumGetFloat8(spanz->lower);
+    box2.zmax = DatumGetFloat8(spanz->upper);
+  }
   if (! overlaps_stbox_stbox(&box1, &box2))
     return atfunc ? NULL : temporal_copy(temp);
 
-  Temporal *result;
+  /* Convert the point to 2D before computing the restriction to geometry */
+  bool hasz = MEOS_FLAGS_GET_Z(temp->flags);
+  Temporal *temp2d = hasz ? tpoint_force2d(temp) : (Temporal *) temp;
+
+  Temporal *result2d;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
-    result = (Temporal *) tpointinst_restrict_geometry((TInstant *) temp,
+    result2d = (Temporal *) tpointinst_restrict_geometry((TInstant *) temp2d,
       gs, atfunc);
   else if (temp->subtype == TSEQUENCE)
-    result = MEOS_FLAGS_GET_DISCRETE(temp->flags) ?
-      (Temporal *) tpointdiscseq_restrict_geometry((TSequence *) temp, gs,
+    result2d = MEOS_FLAGS_GET_DISCRETE(temp->flags) ?
+      (Temporal *) tpointdiscseq_restrict_geometry((TSequence *) temp2d, gs,
         atfunc) :
-      (Temporal *) tpointcontseq_restrict_geometry((TSequence *) temp, gs,
+      (Temporal *) tpointcontseq_restrict_geometry((TSequence *) temp2d, gs,
         atfunc);
   else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tpointseqset_restrict_geometry((TSequenceSet *) temp,
-      gs, &box2, atfunc);
+    result2d = (Temporal *)
+      tpointseqset_restrict_geometry((TSequenceSet *) temp2d, gs, &box2, atfunc);
+
+  if (! result2d)
+    return NULL;
+
+  /* Recover the 3D */
+  Temporal *result;
+  if (hasz)
+  {
+    SpanSet *ss = temporal_time(result2d);
+    /* We need to keep REST_AT in the next call */
+    result = temporal_restrict_periodset(temp, ss, REST_AT);
+    pfree(temp2d); pfree(result2d); pfree(ss);
+  }
+  else
+    result = result2d;
+
+  /* Finish is there is no restriction on Z */
   if (! spanz)
     return result;
 
   /* Restrict the result to the span for the Z dimension */
   Temporal *result_spanz = NULL;
   Temporal *result_z = tpoint_get_coord(result, 2);
-  Temporal *result_z_r = tnumber_restrict_span(result_z, spanz, REST_AT);
+  Temporal *result_z_r = tnumber_restrict_span(result_z, spanz, atfunc);
   if (result_z_r)
   {
-    SpanSet *ss1 = temporal_time(result);
-    SpanSet *ss2 = temporal_time(result_z_r);
-    SpanSet *ss = intersection_spanset_spanset(ss1, ss2);
+    SpanSet *ss = temporal_time(result_z_r);
     if (ss)
     {
-      result_spanz = temporal_restrict_periodset(temp, ss, REST_AT);
+      /* We need to keep REST_AT in the next call */
+      result_spanz = temporal_restrict_periodset(result, ss, REST_AT);
       pfree(ss);
     }
-    pfree(result_z_r); pfree(ss1); pfree(ss2);
+    pfree(result_z_r);
   }
   pfree(result); pfree(result_z);
   return result_spanz;
@@ -4463,7 +4486,7 @@ tpoint_at_stbox1(const Temporal *temp, const STBox *box)
     else
     {
       Span spanz;
-      span_set(Float8GetDatum(box->xmin), Float8GetDatum(box->xmax),
+      span_set(Float8GetDatum(box->zmin), Float8GetDatum(box->zmax),
         true, true, T_FLOAT8, &spanz);
       result = tpoint_restrict_geometry(temp1, geo, &spanz, REST_AT);
     }

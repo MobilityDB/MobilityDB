@@ -436,17 +436,17 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
     if (hasz)
     {
       Temporal *atstbox_z = tpoint_get_coord(atstbox, 2);
-      Span max_z;
+      Span zmax;
       span_set(Float8GetDatum(box.zmax), Float8GetDatum(box.zmax), true, true,
-        T_FLOAT8, &max_z);
-      Temporal *atstbox_z_r = tnumber_restrict_span(atstbox_z, &max_z, REST_AT);
+        T_FLOAT8, &zmax);
+      Temporal *atstbox_zmax = tnumber_restrict_span(atstbox_z, &zmax, REST_AT);
       pfree(atstbox_z);
-      if (atstbox_z_r)
+      if (atstbox_zmax)
       {
         SpanSet *ss1 = temporal_time(atstbox);
-        SpanSet *ss2 = temporal_time(atstbox_z_r);
+        SpanSet *ss2 = temporal_time(atstbox_zmax);
         SpanSet *ss = minus_spanset_spanset(ss1, ss2);
-        pfree(atstbox_z_r); pfree(ss1); pfree(ss2);
+        pfree(atstbox_zmax); pfree(ss1); pfree(ss2);
         if (! ss)
         {
           pfree(atstbox);
