@@ -232,7 +232,7 @@ tpointseq_transform(const TSequence *seq, int srid)
   /* General case */
   /* Call the discrete sequence function even for continuous sequences
    * to obtain a Multipoint that is sent to PostGIS for transformion */
-  Datum multipoint = PointerGetDatum(tpointdiscseq_trajectory(seq));
+  Datum multipoint = PointerGetDatum(tpointseq_disc_trajectory(seq));
   Datum transf = datum_transform(multipoint, srid);
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(transf);
   LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));

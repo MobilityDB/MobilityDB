@@ -535,7 +535,7 @@ edwithin_tpointinst_tpointinst(const TInstant *inst1, const TInstant *inst2,
  * @pre The temporal points are synchronized
  */
 static bool
-edwithin_tpointdiscseq_tpointdiscseq(const TSequence *seq1,
+edwithin_tpointseq_tpointseq_disc(const TSequence *seq1,
   const TSequence *seq2, double dist, datum_func3 func)
 {
   for (int i = 0; i < seq1->count; i++)
@@ -556,7 +556,7 @@ edwithin_tpointdiscseq_tpointdiscseq(const TSequence *seq1,
  * @pre The temporal points are synchronized
  */
 static bool
-edwithin_tpointseq_tpointseq(const TSequence *seq1, const TSequence *seq2,
+edwithin_tpointseq_tpointseq_cont(const TSequence *seq1, const TSequence *seq2,
   double dist, datum_func3 func)
 {
   const TInstant *start1, *start2;
@@ -634,7 +634,7 @@ edwithin_tpointseqset_tpointseqset(const TSequenceSet *ss1,
   {
     const TSequence *seq1 = TSEQUENCESET_SEQ_N(ss1, i);
     const TSequence *seq2 = TSEQUENCESET_SEQ_N(ss2, i);
-    if (edwithin_tpointseq_tpointseq(seq1, seq2, dist, func))
+    if (edwithin_tpointseq_tpointseq_cont(seq1, seq2, dist, func))
       return true;
   }
   return false;
@@ -659,9 +659,9 @@ edwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
       (TInstant *) sync2, dist, func);
   else if (sync1->subtype == TSEQUENCE)
     result = MEOS_FLAGS_GET_DISCRETE(sync1->flags) ?
-      edwithin_tpointdiscseq_tpointdiscseq((TSequence *) sync1,
+      edwithin_tpointseq_tpointseq_disc((TSequence *) sync1,
         (TSequence *) sync2, dist, func) :
-      edwithin_tpointseq_tpointseq((TSequence *) sync1, (TSequence *) sync2,
+      edwithin_tpointseq_tpointseq_cont((TSequence *) sync1, (TSequence *) sync2,
         dist, func);
   else /* sync1->subtype == TSEQUENCESET */
     result = edwithin_tpointseqset_tpointseqset((TSequenceSet *) sync1,

@@ -134,7 +134,7 @@ tpointinst_to_geo_measure(const TInstant *inst, const TInstant *measure)
  * @param[in] measure Temporal float
  */
 static GSERIALIZED *
-tpointdiscseq_to_geo_measure(const TSequence *seq, const TSequence *measure)
+tpointseq_disc_to_geo_measure(const TSequence *seq, const TSequence *measure)
 {
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(seq->flags);
   LWGEOM **points = palloc(sizeof(LWGEOM *) * seq->count);
@@ -177,7 +177,7 @@ tpointdiscseq_to_geo_measure(const TSequence *seq, const TSequence *measure)
  * @pre The temporal point and the measure are synchronized
  */
 static LWGEOM *
-tpointcontseq_to_geo_measure1(const TSequence *seq, const TSequence *measure)
+tpointseq_cont_to_geo_measure1(const TSequence *seq, const TSequence *measure)
 {
   LWPOINT **points = palloc(sizeof(LWPOINT *) * seq->count);
   /* Remove two consecutive points if they are equal */
@@ -261,10 +261,10 @@ tpointseq_to_geo1(const TSequence *seq)
  * @param[in] measure Temporal float
  */
 static GSERIALIZED *
-tpointcontseq_to_geo_measure(const TSequence *seq, const TSequence *measure)
+tpointseq_cont_to_geo_measure(const TSequence *seq, const TSequence *measure)
 {
   LWGEOM *lwgeom = measure ?
-    tpointcontseq_to_geo_measure1(seq, measure) : tpointseq_to_geo1(seq);
+    tpointseq_cont_to_geo_measure1(seq, measure) : tpointseq_to_geo1(seq);
   GSERIALIZED *result = geo_serialize(lwgeom);
   return result;
 }
@@ -287,7 +287,7 @@ tpointseqset_to_geo_measure(const TSequenceSet *ss, const TSequenceSet *measure)
     seq = TSEQUENCESET_SEQ_N(ss, 0);
     if (measure)
       m = TSEQUENCESET_SEQ_N(measure, 0);
-    return tpointcontseq_to_geo_measure(seq, m);
+    return tpointseq_cont_to_geo_measure(seq, m);
   }
 
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(ss->flags);
@@ -299,7 +299,7 @@ tpointseqset_to_geo_measure(const TSequenceSet *ss, const TSequenceSet *measure)
     if (measure)
     {
       m = TSEQUENCESET_SEQ_N(measure, i);
-      geoms[i] = tpointcontseq_to_geo_measure1(seq, m);
+      geoms[i] = tpointseq_cont_to_geo_measure1(seq, m);
     }
     else
       geoms[i] = tpointseq_to_geo1(seq);
@@ -338,7 +338,7 @@ tpointseqset_to_geo_measure(const TSequenceSet *ss, const TSequenceSet *measure)
  * sequences are stored
  */
 static int
-tpointcontseq_to_geo_measure_segmentize1(const TSequence *seq,
+tpointseq_cont_to_geo_measure_segmentize1(const TSequence *seq,
   const TSequence *measure, LWGEOM **result)
 {
   const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
@@ -408,20 +408,20 @@ tpointseq_to_geo_segmentize1(const TSequence *seq, LWGEOM **result)
 }
 
 /**
- * @brief Construct a geometry/geography with M measure from the temporal sequence
- * point and the temporal float.
+ * @brief Construct a geometry/geography with M measure from the temporal
+ * sequence point and the temporal float.
  *
  * Version that produces a Multilinestring when each composing linestring
  * corresponds to a segment of the orginal temporal point.
  */
 static GSERIALIZED *
-tpointcontseq_to_geo_measure_segmentize(const TSequence *seq,
+tpointseq_cont_to_geo_measure_segmentize(const TSequence *seq,
   const TSequence *measure)
 {
   int count = (seq->count == 1) ? 1 : seq->count - 1;
   LWGEOM **geoms = palloc(sizeof(LWGEOM *) * count);
   if (measure)
-    tpointcontseq_to_geo_measure_segmentize1(seq, measure, geoms);
+    tpointseq_cont_to_geo_measure_segmentize1(seq, measure, geoms);
   else
     tpointseq_to_geo_segmentize1(seq, geoms);
   GSERIALIZED *result;
@@ -460,7 +460,7 @@ tpointseqset_to_geo_measure_segmentize(const TSequenceSet *ss,
     seq = TSEQUENCESET_SEQ_N(ss, 0);
     if (measure)
       m = TSEQUENCESET_SEQ_N(measure, 0);
-    return tpointcontseq_to_geo_measure_segmentize(seq, m);
+    return tpointseq_cont_to_geo_measure_segmentize(seq, m);
   }
 
   uint8_t colltype = 0;
@@ -473,7 +473,7 @@ tpointseqset_to_geo_measure_segmentize(const TSequenceSet *ss,
     if (measure)
     {
       m = TSEQUENCESET_SEQ_N(measure, i);
-      k += tpointcontseq_to_geo_measure_segmentize1(seq, m, &geoms[k]);
+      k += tpointseq_cont_to_geo_measure_segmentize1(seq, m, &geoms[k]);
     }
     else
       k += tpointseq_to_geo_segmentize1(seq, &geoms[k]);
@@ -537,13 +537,13 @@ tpoint_to_geo_measure(const Temporal *tpoint, const Temporal *measure,
   else if (sync1->subtype == TSEQUENCE)
   {
     if (MEOS_FLAGS_GET_DISCRETE(sync1->flags))
-      *result = tpointdiscseq_to_geo_measure(
+      *result = tpointseq_disc_to_geo_measure(
         (TSequence *) sync1, (TSequence *) sync2);
     else
       *result = segmentize ?
-        tpointcontseq_to_geo_measure_segmentize(
+        tpointseq_cont_to_geo_measure_segmentize(
           (TSequence *) sync1, (TSequence *) sync2) :
-        tpointcontseq_to_geo_measure(
+        tpointseq_cont_to_geo_measure(
           (TSequence *) sync1, (TSequence *) sync2);
   }
   else /* sync1->subtype == TSEQUENCESET */
@@ -616,7 +616,7 @@ geo_to_tpointinst(const GSERIALIZED *geo)
  * sequence point.
  */
 static TSequence *
-geo_to_tpointdiscseq(const GSERIALIZED *geo)
+geo_to_tpointseq_disc(const GSERIALIZED *geo)
 {
   /* Geometry is a MULTIPOINT */
   LWGEOM *lwgeom = lwgeom_from_gserialized(geo);
@@ -768,7 +768,7 @@ geo_to_tpoint(const GSERIALIZED *geo)
   if (geomtype == POINTTYPE)
     result = (Temporal *) geo_to_tpointinst(geo);
   else if (geomtype == MULTIPOINTTYPE)
-    result = (Temporal *) geo_to_tpointdiscseq(geo);
+    result = (Temporal *) geo_to_tpointseq_disc(geo);
   else if (geomtype == LINETYPE)
     result = (Temporal *) geo_to_tpointseq(geo);
   else if (geomtype == MULTILINETYPE || geomtype == COLLECTIONTYPE)

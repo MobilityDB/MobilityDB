@@ -263,7 +263,7 @@ tpointinst_parse(const char **str, meosType temptype, bool end, bool make,
  * @param[in,out] tpoint_srid SRID of the temporal point
  */
 TSequence *
-tpointdiscseq_parse(const char **str, meosType temptype, int *tpoint_srid)
+tpointseq_disc_parse(const char **str, meosType temptype, int *tpoint_srid)
 {
   p_whitespace(str);
   /* We are sure to find an opening brace because that was the condition
@@ -307,7 +307,7 @@ tpointdiscseq_parse(const char **str, meosType temptype, int *tpoint_srid)
  * @param[in,out] tpoint_srid SRID of the temporal point
 */
 TSequence *
-tpointseq_parse(const char **str, meosType temptype, interpType interp,
+tpointseq_cont_parse(const char **str, meosType temptype, interpType interp,
   bool end, bool make, int *tpoint_srid)
 {
   p_whitespace(str);
@@ -371,12 +371,12 @@ tpointseqset_parse(const char **str, meosType temptype, interpType interp,
 
   /* First parsing */
   const char *bak = *str;
-  tpointseq_parse(str, temptype, interp, false, false, tpoint_srid);
+  tpointseq_cont_parse(str, temptype, interp, false, false, tpoint_srid);
   int count = 1;
   while (p_comma(str))
   {
     count++;
-    tpointseq_parse(str, temptype, interp, false, false, tpoint_srid);
+    tpointseq_cont_parse(str, temptype, interp, false, false, tpoint_srid);
   }
   if (!p_cbrace(str))
     elog(ERROR, "Could not parse temporal point value: Missing closing brace");
@@ -388,7 +388,7 @@ tpointseqset_parse(const char **str, meosType temptype, interpType interp,
   for (int i = 0; i < count; i++)
   {
     p_comma(str);
-    sequences[i] = tpointseq_parse(str, temptype, interp, false, true,
+    sequences[i] = tpointseq_cont_parse(str, temptype, interp, false, true,
       tpoint_srid);
   }
   p_cbrace(str);
@@ -456,7 +456,7 @@ tpoint_parse(const char **str, meosType temptype)
       &tpoint_srid);
   }
   else if (**str == '[' || **str == '(')
-    result = (Temporal *) tpointseq_parse(str, temptype, interp, true, true,
+    result = (Temporal *) tpointseq_cont_parse(str, temptype, interp, true, true,
       &tpoint_srid);
   else if (**str == '{')
   {
@@ -472,7 +472,7 @@ tpoint_parse(const char **str, meosType temptype)
     else
     {
       *str = bak;
-      result = (Temporal *) tpointdiscseq_parse(str, temptype, &tpoint_srid);
+      result = (Temporal *) tpointseq_disc_parse(str, temptype, &tpoint_srid);
     }
   }
   return result;

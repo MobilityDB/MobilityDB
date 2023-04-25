@@ -1581,7 +1581,7 @@ lwline_make(Datum value1, Datum value2)
  * @sqlfunc trajectory()
  */
 GSERIALIZED *
-tpointdiscseq_trajectory(const TSequence *seq)
+tpointseq_disc_trajectory(const TSequence *seq)
 {
   /* Singleton discrete sequence */
   if (seq->count == 1)
@@ -1613,7 +1613,7 @@ tpointdiscseq_trajectory(const TSequence *seq)
  * @sqlfunc trajectory()
  */
 GSERIALIZED *
-tpointcontseq_trajectory(const TSequence *seq)
+tpointseq_cont_trajectory(const TSequence *seq)
 {
   /* Instantaneous sequence */
   if (seq->count == 1)
@@ -1654,7 +1654,7 @@ tpointseqset_trajectory(const TSequenceSet *ss)
 {
   /* Singleton sequence set */
   if (ss->count == 1)
-    return tpointcontseq_trajectory(TSEQUENCESET_SEQ_N(ss, 0));
+    return tpointseq_cont_trajectory(TSEQUENCESET_SEQ_N(ss, 0));
 
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(ss->flags);
   LWPOINT **points = palloc(sizeof(LWPOINT *) * ss->totalcount);
@@ -1662,7 +1662,7 @@ tpointseqset_trajectory(const TSequenceSet *ss)
   int k = 0, l = 0;
   for (int i = 0; i < ss->count; i++)
   {
-    GSERIALIZED *traj = tpointcontseq_trajectory(TSEQUENCESET_SEQ_N(ss, i));
+    GSERIALIZED *traj = tpointseq_cont_trajectory(TSEQUENCESET_SEQ_N(ss, i));
     int geotype = gserialized_get_type(traj);
     if (geotype == POINTTYPE)
       points[l++] = lwgeom_as_lwpoint(lwgeom_from_gserialized(traj));
@@ -1732,8 +1732,8 @@ tpoint_trajectory(const Temporal *temp)
     result = DatumGetGserializedP(tinstant_value_copy((TInstant *) temp));
   else if (temp->subtype == TSEQUENCE)
     result = MEOS_FLAGS_GET_DISCRETE(temp->flags) ?
-      tpointdiscseq_trajectory((TSequence *) temp) :
-      tpointcontseq_trajectory((TSequence *) temp);
+      tpointseq_disc_trajectory((TSequence *) temp) :
+      tpointseq_cont_trajectory((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
     result = tpointseqset_trajectory((TSequenceSet *) temp);
   return result;
@@ -2199,7 +2199,7 @@ tpointseq_length(const TSequence *seq)
   else
   {
     /* We are sure that the trajectory is a line */
-    GSERIALIZED *traj = tpointcontseq_trajectory(seq);
+    GSERIALIZED *traj = tpointseq_cont_trajectory(seq);
     double result = gserialized_geog_length(traj, true);
     pfree(traj);
     return result;
@@ -3387,22 +3387,21 @@ tpointseq_linear_find_splits(const TSequence *seq, int *count)
 /**
  * @brief Return true if a temporal point does not self-intersect.
  * @param[in] seq Temporal point
- * @param[in] count Number of instants of the temporal point
  * @pre The temporal point sequence has discrete or step interpolation
  */
 static bool
-tpointseq_discstep_is_simple(const TSequence *seq, int count)
+tpointseq_discstep_is_simple(const TSequence *seq)
 {
-  assert(count > 1);
-  Datum *points = palloc(sizeof(Datum) * count);
-  for (int i = 0; i < count; i++)
+  assert(seq->count > 1);
+  Datum *points = palloc(sizeof(Datum) * seq->count);
+  for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     points[i] = tinstant_value(inst);
   }
-  datumarr_sort(points, count, temptype_basetype(seq->temptype));
+  datumarr_sort(points, seq->count, temptype_basetype(seq->temptype));
   bool found = false;
-  for (int i = 1; i < count; i++)
+  for (int i = 1; i < seq->count; i++)
   {
     if (datum_point_eq(points[i - 1], points[i]))
     {
@@ -3427,12 +3426,12 @@ tpointseq_is_simple(const TSequence *seq)
     return true;
 
   if (! MEOS_FLAGS_GET_LINEAR(seq->flags))
-    return tpointseq_discstep_is_simple(seq, seq->count);
+    return tpointseq_discstep_is_simple(seq);
 
   int numsplits;
   bool *splits = tpointseq_linear_find_splits(seq, &numsplits);
   pfree(splits);
-  return numsplits == 0;
+  return (numsplits == 0);
 }
 
 /**
@@ -3485,7 +3484,7 @@ tpoint_is_simple(const Temporal *temp)
  * @pre The discrete sequence has at least two instants
  */
 static TSequence **
-tpointdiscseq_split(const TSequence *seq, bool *splits, int count)
+tpointseq_disc_split(const TSequence *seq, bool *splits, int count)
 {
   assert(seq->count > 1);
   const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
@@ -3518,7 +3517,7 @@ tpointdiscseq_split(const TSequence *seq, bool *splits, int count)
  * @note This function is called for each sequence of a sequence set
  */
 static TSequence **
-tpointcontseq_split(const TSequence *seq, bool *splits, int count)
+tpointseq_cont_split(const TSequence *seq, bool *splits, int count)
 {
   assert(seq->count > 2);
   bool linear = MEOS_FLAGS_GET_LINEAR(seq->flags);
@@ -3611,8 +3610,8 @@ tpointseq_make_simple(const TSequence *seq, int *count)
   }
 
   result = (interp == DISCRETE) ?
-    tpointdiscseq_split(seq, splits, numsplits + 1) :
-    tpointcontseq_split(seq, splits, numsplits + 1);
+    tpointseq_disc_split(seq, splits, numsplits + 1) :
+    tpointseq_cont_split(seq, splits, numsplits + 1);
   pfree(splits);
   *count = numsplits + 1;
   return result;
@@ -3746,9 +3745,7 @@ gsinter_get_points(Datum *result, GSERIALIZED *gsinter)
   assert(gstype == POINTTYPE || gstype == MULTIPOINTTYPE);
   int k = 0;
   if (gstype == POINTTYPE)
-  {
     result[k++] = PointerGetDatum(gserialized_copy(gsinter));
-  }
   else
   /* It is a collection of type MULTIPOINTTYPE */
   {
@@ -3756,10 +3753,8 @@ gsinter_get_points(Datum *result, GSERIALIZED *gsinter)
     LWCOLLECTION *coll = lwgeom_as_lwcollection(lwinter);
     int countinter = coll->ngeoms;
     for (int i = 0; i < countinter; i++)
-    {
-      /* Find the i-th intersection */
+      /* Get the i-th intersection */
       result[k++] = PointerGetDatum(geo_serialize(coll->geoms[i]));
-    }
     lwgeom_free(lwinter);
   }
   return k;
@@ -3778,11 +3773,11 @@ tpointseq_step_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
 {
   /* Allocate memory for the intersection points */
   Datum *points = palloc(sizeof(Datum) * seq->count);
-  int k = 0;
   /* Compute the intersection of the multipoint trajectory and the geometry */
-  Datum traj = PointerGetDatum(tpointcontseq_trajectory(seq));
+  Datum traj = PointerGetDatum(tpointseq_cont_trajectory(seq));
   Datum inter = geom_intersection2d(traj, PointerGetDatum(gs));
   GSERIALIZED *gsinter = DatumGetGserializedP(inter);
+  int k = 0;
   if (! gserialized_is_empty(gsinter))
     k = gsinter_get_points(points, gsinter);
   PG_FREE_IF_COPY_P(gsinter, DatumGetPointer(inter));
@@ -3800,62 +3795,6 @@ tpointseq_step_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
   return result;
 }
 
-/**
- * @brief Restrict a temporal sequence point with step interpolation to a
- * geometry
- * @param[in] seq Temporal point
- * @param[in] gs Geometry
- * @param[out] count Number of elements in the resulting array
- */
-TSequence **
-tpointseq_step_restrict_geometry_test(const TSequence *seq, const GSERIALIZED *gs,
-  bool atfunc, int *count)
-{
-  const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  TSequence **sequences = palloc(sizeof(TSequence *) * seq->count);
-  bool lower_inc, upper_inc;
-  int k = 0, l = 0;
-  for (int i = 0; i < seq->count; i++)
-  {
-    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    Datum value = tinstant_value(inst);
-    bool inter = DatumGetBool(geom_intersects2d(value, PointerGetDatum(gs)));
-    if ((atfunc && inter) || (! atfunc && ! inter))
-    {
-      lower_inc = (i == 0) ? seq->period.lower_inc : true;
-      upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-      instants[k++] = inst;
-    }
-    else
-    {
-      /* Construct the next sequence with the instants collected so far */
-      if (k > 0)
-      {
-        sequences[l++] = tsequence_make(instants, k, k == 1 ? true : lower_inc,
-          k == 1 ? true : upper_inc, STEP, NORMALIZE_NO);
-        k = 0;
-      }
-    }
-  }
-  /* Construct the last sequence */
-  if (k > 0)
-  {
-    lower_inc = (l == 0) ? seq->period.lower_inc : true;
-    upper_inc = (k == 1) ? true : seq->period.upper_inc;
-    sequences[l++] = tsequence_make(instants, k, lower_inc, upper_inc,
-      STEP, NORMALIZE_NO);
-  }
-
-  pfree(instants);
-  *count = l;
-  if (l == 0)
-  {
-    pfree(sequences);
-    return NULL;
-  }
-  return sequences;
-}
-
 /*****************************************************************************/
 
 /**
@@ -3864,11 +3803,7 @@ tpointseq_step_restrict_geometry_test(const TSequence *seq, const GSERIALIZED *g
  *
  * This function must take into account the roundoff errors and thus it uses
  * the datum_point_eq_eps for comparing two values so the coordinates of the
- * values may differ by MEOS_EPSILON. Furthermore, we must drop the Z values
- * since this function may be called for finding the intersection of a sequence
- * and a geometry and the Z values crrently given by PostGIS/GEOS are not
- * necessarily extact, they "are copied, averaged or interpolated" as stated in
- * https://postgis.net/docs/ST_Intersection.html
+ * values may differ by MEOS_EPSILON.
  *
  * @param[in] inst1,inst2 Temporal values
  * @param[in] value Base value
@@ -3881,32 +3816,11 @@ static bool
 tpointsegm_timestamp_at_value1(const TInstant *inst1, const TInstant *inst2,
   Datum value, TimestampTz *t)
 {
-  bool hasz = MEOS_FLAGS_GET_Z(inst1->flags);
-  Datum value1, value2, val;
-  GSERIALIZED *gs1 = NULL, *gs2 = NULL, *gs = NULL; /* make compiler quiet */
-  if (hasz)
-  {
-    /* We need to do the comparison in 2D since the Z values returned by PostGIS
-     * may not be correct */
-    gs1 = DatumGetGserializedP(tinstant_value_copy(inst1));
-    gs2 = DatumGetGserializedP(tinstant_value_copy(inst2));
-    gs = gserialized_copy(DatumGetGserializedP(value));
-    FLAGS_SET_Z(gs1->gflags, false);
-    FLAGS_SET_Z(gs2->gflags, false);
-    FLAGS_SET_Z(gs->gflags, false);
-    value1 = PointerGetDatum(gs1);
-    value2 = PointerGetDatum(gs2);
-    val = PointerGetDatum(gs);
-  }
-  else
-  {
-    value1 = tinstant_value(inst1);
-    value2 = tinstant_value(inst2);
-    val = value;
-  }
+  Datum value1 = tinstant_value(inst1);
+  Datum value2 = tinstant_value(inst2);
   /* Is the lower bound the answer? */
   bool result = true;
-  if (datum_point_eq(value1, val))
+  if (datum_point_eq(value1, value))
     *t = inst1->t;
   /* Is the upper bound the answer? */
   else if (datum_point_eq(value2, value))
@@ -3914,7 +3828,7 @@ tpointsegm_timestamp_at_value1(const TInstant *inst1, const TInstant *inst2,
   else
   {
     double dist;
-    double fraction = (double) geosegm_locate_point(value1, value2, val, &dist);
+    double fraction = (double) geosegm_locate_point(value1, value2, value, &dist);
     if (fabs(dist) >= MEOS_EPSILON)
       result = false;
     else
@@ -3922,10 +3836,6 @@ tpointsegm_timestamp_at_value1(const TInstant *inst1, const TInstant *inst2,
       double duration = (double) (inst2->t - inst1->t);
       *t = inst1->t + (TimestampTz) (duration * fraction);
     }
-  }
-  if (hasz)
-  {
-    pfree(gs1); pfree(gs2); pfree(gs);
   }
   return result;
 }
@@ -4151,7 +4061,7 @@ tpointseq_cont_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
   {
     /* Particular case when the input sequence is simple */
     pfree_array((void **) simpleseqs, countsimple);
-    traj = tpointcontseq_trajectory(seq);
+    traj = tpointseq_cont_trajectory(seq);
     inter = geom_intersection2d(PointerGetDatum(traj), PointerGetDatum(gs));
     gsinter = DatumGetGserializedP(inter);
     if (! gserialized_is_empty(gsinter))
@@ -4172,7 +4082,7 @@ tpointseq_cont_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
     /* Loop for every simple piece of the sequence */
     for (int i = 0; i < countsimple; i++)
     {
-      traj = tpointcontseq_trajectory(simpleseqs[i]);
+      traj = tpointseq_cont_trajectory(simpleseqs[i]);
       inter = geom_intersection2d(PointerGetDatum(traj), PointerGetDatum(gs));
       GSERIALIZED *gsinter = DatumGetGserializedP(inter);
       if (! gserialized_is_empty(gsinter))
@@ -4361,6 +4271,13 @@ tpointseqset_restrict_geometry(const TSequenceSet *ss, const GSERIALIZED *gs,
  * @param[in] zspan Span of values to restrict the Z dimension
  * @param[in] atfunc True if the restriction is at, false for minus
  * @sqlfunc atGeometry(), minusGeometry()
+ * @note The computation is based on the PostGIS function ST_Intersection.
+ * The geometry must be in 2D. When computing the intersection the Z values of
+ * the temporal point are also dropped since the Z values "are copied, averaged
+ * or interpolated" as stated in
+ * https://postgis.net/docs/ST_Intersection.html
+ * After the computation the Z values are recovered to continue filtering on
+ * the Z span, if given.
  */
 Temporal *
 tpoint_restrict_geometry(const Temporal *temp, const GSERIALIZED *gs,
