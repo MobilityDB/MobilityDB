@@ -3735,32 +3735,6 @@ tpointseq_disc_restrict_geometry(const TSequence *seq, const GSERIALIZED *gs,
 }
 
 /**
- * @brief Get the intersection points
- */
-static int
-gsinter_get_points(Datum *result, GSERIALIZED *gsinter)
-{
-  int gstype = gserialized_get_type(gsinter);
-  /* The gserialized is of point or multipoint type */
-  assert(gstype == POINTTYPE || gstype == MULTIPOINTTYPE);
-  int k = 0;
-  if (gstype == POINTTYPE)
-    result[k++] = PointerGetDatum(gserialized_copy(gsinter));
-  else
-  /* It is a collection of type MULTIPOINTTYPE */
-  {
-    LWGEOM *lwinter = lwgeom_from_gserialized(gsinter);
-    LWCOLLECTION *coll = lwgeom_as_lwcollection(lwinter);
-    int countinter = coll->ngeoms;
-    for (int i = 0; i < countinter; i++)
-      /* Get the i-th intersection */
-      result[k++] = PointerGetDatum(geo_serialize(coll->geoms[i]));
-    lwgeom_free(lwinter);
-  }
-  return k;
-}
-
-/**
  * @brief Restrict a temporal sequence point with step interpolation to a
  * geometry
  * @param[in] seq Temporal point
@@ -3771,17 +3745,17 @@ static TSequence **
 tpointseq_step_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
   int *count)
 {
-  /* Allocate memory for the intersection points */
+  /* Select the intersecting points */
   Datum *points = palloc(sizeof(Datum) * seq->count);
-  /* Compute the intersection of the multipoint trajectory and the geometry */
-  Datum traj = PointerGetDatum(tpointseq_cont_trajectory(seq));
-  Datum inter = geom_intersection2d(traj, PointerGetDatum(gs));
-  GSERIALIZED *gsinter = DatumGetGserializedP(inter);
   int k = 0;
-  if (! gserialized_is_empty(gsinter))
-    k = gsinter_get_points(points, gsinter);
-  PG_FREE_IF_COPY_P(gsinter, DatumGetPointer(inter));
-  pfree(DatumGetPointer(inter));
+  for (int i = 0; i < seq->count; i++)
+  {
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+    Datum value = tinstant_value(inst);
+    bool inter = DatumGetBool(geom_intersects2d(value, PointerGetDatum(gs)));
+    if (inter)
+      points[k++] = value;
+  }
   /* Restrict the geometry to the intersecting points */
   if (k == 0)
   {
