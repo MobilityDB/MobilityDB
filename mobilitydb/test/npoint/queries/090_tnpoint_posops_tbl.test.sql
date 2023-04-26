@@ -171,9 +171,6 @@ WHERE op = '#&>' and leftarg = 'tnpoint' and rightarg = 'tnpoint';
 -------------------------------------------------------------------------------
 
 DROP INDEX tbl_tnpoint_rtree_idx;
-
--------------------------------------------------------------------------------
-
 CREATE INDEX tbl_tnpoint_quadtree_idx ON tbl_tnpoint USING SPGIST(temp);
 
 -------------------------------------------------------------------------------
@@ -248,9 +245,6 @@ WHERE op = '#&>' and leftarg = 'tnpoint' and rightarg = 'tnpoint';
 -------------------------------------------------------------------------------
 
 DROP INDEX IF EXISTS tbl_tnpoint_quadtree_idx;
-
--------------------------------------------------------------------------------
-
 CREATE INDEX tbl_tnpoint_kdtree_idx ON tbl_tnpoint USING SPGIST(temp tnpoint_kdtree_ops);
 
 -------------------------------------------------------------------------------

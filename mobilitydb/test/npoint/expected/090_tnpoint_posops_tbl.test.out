@@ -2,8 +2,10 @@ DROP INDEX IF EXISTS tbl_tnpoint_rtree_idx;
 NOTICE:  index "tbl_tnpoint_rtree_idx" does not exist, skipping
 DROP INDEX
 DROP INDEX IF EXISTS tbl_tnpoint_quadtree_idx;
+NOTICE:  index "tbl_tnpoint_quadtree_idx" does not exist, skipping
 DROP INDEX
 DROP INDEX IF EXISTS tbl_tnpoint_kdtree_idx;
+NOTICE:  index "tbl_tnpoint_kdtree_idx" does not exist, skipping
 DROP INDEX
 DROP TABLE IF EXISTS test_tnpoint_posops;
 NOTICE:  table "test_tnpoint_posops" does not exist, skipping

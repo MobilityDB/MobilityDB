@@ -4,6 +4,9 @@ DROP INDEX
 DROP INDEX IF EXISTS tbl_tnpoint_quadtree_idx;
 NOTICE:  index "tbl_tnpoint_quadtree_idx" does not exist, skipping
 DROP INDEX
+DROP INDEX IF EXISTS tbl_tnpoint_kdtree_idx;
+NOTICE:  index "tbl_tnpoint_kdtree_idx" does not exist, skipping
+DROP INDEX
 DROP TABLE if exists test_tnpoint_topops;
 NOTICE:  table "test_tnpoint_topops" does not exist, skipping
 DROP TABLE
@@ -402,6 +405,8 @@ UPDATE test_tnpoint_topops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.temp -|- t2.temp )
 WHERE op = '-|-' and leftarg = 'tnpoint' and rightarg = 'tnpoint';
 UPDATE 1
+DROP INDEX tbl_tnpoint_kdtree_idx;
+DROP INDEX
 SELECT * FROM test_tnpoint_topops
 WHERE no_idx <> rtree_idx OR no_idx <> quadtree_idx OR
   no_idx IS NULL OR rtree_idx IS NULL OR quadtree_idx IS NULL OR kdtree_idx IS NULL

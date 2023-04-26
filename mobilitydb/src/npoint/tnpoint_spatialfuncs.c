@@ -212,14 +212,9 @@ Tnpoint_azimuth(PG_FUNCTION_ARGS)
 static Datum
 tnpoint_restrict_geometry_ext(FunctionCallInfo fcinfo, bool atfunc)
 {
-  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
-    PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  Span *zspan = NULL;
-  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
-    zspan = PG_GETARG_SPAN_P(2);
-  Temporal *result = tnpoint_restrict_geometry(temp, gs, zspan, atfunc);
+  Temporal *result = tnpoint_restrict_geometry(temp, gs, NULL, atfunc);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   if (! result)
