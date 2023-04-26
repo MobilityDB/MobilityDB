@@ -188,7 +188,7 @@ tnpoint_srid(const Temporal *temp)
  * @note Only the particular cases returning points are covered
  */
 static Npoint **
-tnpointseq_step_npoints(const TSequence *seq, int *count)
+tnpointseq_discstep_npoints(const TSequence *seq, int *count)
 {
   Npoint **result = palloc(sizeof(Npoint *) * seq->count);
   for (int i = 0; i < seq->count; i++)
@@ -265,7 +265,7 @@ tnpointseq_geom(const TSequence *seq)
   {
     int count;
     /* The following function does not remove duplicate values */
-    Npoint **points = tnpointseq_step_npoints(seq, &count);
+    Npoint **points = tnpointseq_discstep_npoints(seq, &count);
     result = npointarr_geom(points, count);
     pfree(points);
   }
