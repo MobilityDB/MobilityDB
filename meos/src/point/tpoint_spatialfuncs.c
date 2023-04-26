@@ -3243,7 +3243,7 @@ tpointseq_discstep_find_splits(const TSequence *seq, int *count)
   bool *bitarr = palloc0(sizeof(bool) * seq->count);
   int numsplits = 0;
   int start = 0, end = seq->count - 1;
-  while (start < seq->count - 1)
+  while (start < end)
   {
     /* Find intersections in the piece defined by start and end in a
      * breadth-first search */
@@ -3275,7 +3275,7 @@ tpointseq_discstep_find_splits(const TSequence *seq, int *count)
         value2 = tinstant_value(TSEQUENCE_INST_N(seq, k));
       }
     }
-    if (k >= end)
+    if (k > end)
       break;
   }
   *count = numsplits;
@@ -3534,7 +3534,7 @@ tpointseq_cont_split(const TSequence *seq, bool *splits, int count)
     int end = start + 1;
     while (end < seq->count - 1 && ! splits[end])
       end++;
-    /* Construct piece from start to end inclusive */
+    /* Construct fragment from start to end inclusive */
     for (int j = 0; j <= end - start; j++)
       instants[j] = (TInstant *) TSEQUENCE_INST_N(seq, j + start);
     bool lower_inc1 = (start == 0) ? seq->period.lower_inc : true;
@@ -3543,12 +3543,12 @@ tpointseq_cont_split(const TSequence *seq, bool *splits, int count)
     /* The last two values of sequences with step interpolation and
      * exclusive upper bound must be equal */
     bool tofree = false;
-    if (! linear &&
+    if (! linear && ! upper_inc1 &&
       ! datum_point_eq(tinstant_value(instants[end - start - 1]),
       tinstant_value(instants[end - start])))
     {
       Datum value = tinstant_value(instants[end - start - 1]);
-      TimestampTz t = (TSEQUENCE_INST_N(seq, end - start))->t;
+      TimestampTz t = (instants[end - start])->t;
       instants[end - start] = tinstant_make(value, seq->temptype, t);
       tofree = true;
       upper_inc1 = false;
@@ -3564,9 +3564,9 @@ tpointseq_cont_split(const TSequence *seq, bool *splits, int count)
     /* Continue with the next split */
     start = end;
   }
-  if (seq->period.upper_inc && splits[seq->count - 1])
+  if (k < count)
   {
-    /* Construct piece containing last instant of sequence */
+    /* Construct last fragment containing the last instant of sequence */
     instants[0] = (TInstant *) TSEQUENCE_INST_N(seq, seq->count - 1);
     result[k++] = tsequence_make((const TInstant **) instants,
       seq->count - start, true, seq->period.upper_inc,
@@ -4062,7 +4062,7 @@ tpointseq_cont_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
     {
       traj = tpointseq_cont_trajectory(simpleseqs[i]);
       inter = geom_intersection2d(PointerGetDatum(traj), PointerGetDatum(gs));
-      GSERIALIZED *gsinter = DatumGetGserializedP(inter);
+      gsinter = DatumGetGserializedP(inter);
       if (! gserialized_is_empty(gsinter))
       {
         periods[i] = tpointseq_interperiods(simpleseqs[i], gsinter,

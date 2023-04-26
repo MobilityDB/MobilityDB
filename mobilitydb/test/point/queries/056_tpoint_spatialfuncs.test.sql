@@ -713,6 +713,30 @@ SELECT asText(makeSimple(tgeompoint '[Point(1 1)@2000-01-01, Point(3 1)@2000-01-
 SELECT asText(unnest(makeSimple(tgeompoint '[Point(1 1)@2000-01-01, Point(2 1)@2000-01-02, Point(3 2)@2000-01-03, Point(3 1)@2000-01-04, Point(2 1)@2000-01-05]')));
 SELECT asText(unnest(makeSimple(tgeompoint '[Point(1 1)@2000-01-01, Point(2 1)@2000-01-02, Point(2 2)@2000-01-03, Point(0 1)@2000-01-04, Point(1 1)@2000-01-05]')));
 
+-- Exhaustive tests
+SELECT asText(makeSimple(tgeompoint
+  '{Point(1 1)@2000-01-01, Point(1 1)@2000-01-02}'));
+SELECT asText(makeSimple(tgeompoint
+  '{Point(1 1)@2000-01-01, Point(1 1)@2000-01-02, Point(1 1)@2000-01-03}'));
+SELECT asText(makeSimple(tgeompoint
+  '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'));
+SELECT asText(makeSimple(tgeompoint
+  '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03, Point(2 2)@2000-01-04}'));
+
+SELECT asText(makeSimple(tgeompoint
+  'Interp=Step;[Point(1 1)@2000-01-01, Point(1 1)@2000-01-03]'));
+SELECT asText(makeSimple(tgeompoint
+  'Interp=Step;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'));
+SELECT asText(makeSimple(tgeompoint
+  'Interp=Step;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03, Point(2 2)@2000-01-04]'));
+
+SELECT asText(makeSimple(tgeompoint
+  '[Point(1 1)@2000-01-01, Point(1 1)@2000-01-03]'));
+SELECT asText(makeSimple(tgeompoint
+  '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'));
+SELECT asText(makeSimple(tgeompoint
+  '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03, Point(2 2)@2000-01-04]'));
+
 --------------------------------------------------------
 
 -- 2D
