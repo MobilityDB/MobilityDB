@@ -3238,41 +3238,45 @@ static bool *
 tpointseq_discstep_find_splits(const TSequence *seq, int *count)
 {
   assert(! MEOS_FLAGS_GET_LINEAR(seq->flags));
-  int count1 = seq->count;
-  assert(count1 > 1);
+  assert(seq->count > 1);
   /* bitarr is an array of bool for collecting the splits */
-  bool *bitarr = palloc0(sizeof(bool) * count1);
+  bool *bitarr = palloc0(sizeof(bool) * seq->count);
   int numsplits = 0;
-  int start = 0, end = count1 - 1;
-  while (start < count1 - 1)
+  int start = 0, end = seq->count - 1;
+  while (start < seq->count - 1)
   {
-    const TInstant *inst1 = TSEQUENCE_INST_N(seq, start);
-    Datum value1 = tinstant_value(inst1);
     /* Find intersections in the piece defined by start and end in a
      * breadth-first search */
     int j = start, k = start + 1;
-    while (k <= end)
+    Datum value1 = tinstant_value(TSEQUENCE_INST_N(seq, j));
+    Datum value2 = tinstant_value(TSEQUENCE_INST_N(seq, k));
+    while (true)
     {
-      const TInstant *inst2 = TSEQUENCE_INST_N(seq, k);
-      Datum value2 = tinstant_value(inst2);
       if (datum_point_eq(value1, value2))
       {
-        /* Set the new end */
-        end = k;
-        bitarr[end] = true;
+        /* Set the new start */
+        bitarr[k] = true;
         numsplits++;
+        start = k;
         break;
       }
       if (j < k - 1)
+      {
         j++;
+        value1 = tinstant_value(TSEQUENCE_INST_N(seq, j));
+      }
       else
       {
         k++;
+        if (k > end)
+          break;
         j = start;
+        value1 = tinstant_value(TSEQUENCE_INST_N(seq, j));
+        value2 = tinstant_value(TSEQUENCE_INST_N(seq, k));
       }
     }
-    /* Process the next split */
-    start = end;
+    if (k >= end)
+      break;
   }
   *count = numsplits;
   return bitarr;
