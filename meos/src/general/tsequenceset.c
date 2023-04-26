@@ -1423,20 +1423,14 @@ TSequenceSet *
 tsequenceset_to_step(const TSequenceSet *ss)
 {
   /* If the sequence set has step interpolation return a copy */
-  if (MEOS_FLAGS_GET_LINEAR(ss->flags))
+  if (! MEOS_FLAGS_GET_LINEAR(ss->flags))
     return tsequenceset_copy(ss);
 
   if (ss->count != ss->totalcount)
-    elog(ERROR, "Cannot transform input value to a temporal discrete sequence");
+    elog(ERROR, "Cannot transform input value to a temporal step sequence");
 
-  const TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
-  for (int i = 0; i < ss->count; i++)
-  {
-    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    sequences[i] = tinstant_to_tsequence(TSEQUENCE_INST_N(seq, 0), STEP);
-  }
-  TSequenceSet *result = tsequenceset_make(sequences, ss->count, NORMALIZE_NO);
-  pfree(sequences);
+  TSequenceSet *result = tsequenceset_copy(ss);
+  MEOS_FLAGS_SET_INTERP(result->flags, STEP);
   return result;
 }
 

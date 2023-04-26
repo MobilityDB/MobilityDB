@@ -1754,6 +1754,24 @@ SELECT setInterp(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', 'disc
  {"AAA"@2000-01-01 00:00:00+00, "BBB"@2000-01-02 00:00:00+00, "AAA"@2000-01-03 00:00:00+00}
 (1 row)
 
+SELECT setInterp(tfloat 'Interp=Step;{[1.5@2000-01-01], [2.5@2000-01-02], [1.5@2000-01-03]}', 'step');
+                                               setinterp                                                
+--------------------------------------------------------------------------------------------------------
+ Interp=Step;{[1.5@2000-01-01 00:00:00+00], [2.5@2000-01-02 00:00:00+00], [1.5@2000-01-03 00:00:00+00]}
+(1 row)
+
+SELECT setInterp(tfloat '{[1.5@2000-01-01], [2.5@2000-01-02], [1.5@2000-01-03]}', 'step');
+                                               setinterp                                                
+--------------------------------------------------------------------------------------------------------
+ Interp=Step;{[1.5@2000-01-01 00:00:00+00], [2.5@2000-01-02 00:00:00+00], [1.5@2000-01-03 00:00:00+00]}
+(1 row)
+
+SELECT setInterp(tfloat '{[1.5@2000-01-01], [2.5@2000-01-02], [1.5@2000-01-03]}', 'linear');
+                                         setinterp                                          
+--------------------------------------------------------------------------------------------
+ {[1.5@2000-01-01 00:00:00+00], [2.5@2000-01-02 00:00:00+00], [1.5@2000-01-03 00:00:00+00]}
+(1 row)
+
 /* Errors */
 SELECT setInterp(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', 'discrete');
 ERROR:  Cannot transform input value to a temporal discrete sequence
@@ -1771,6 +1789,8 @@ SELECT setInterp(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', 'disc
 ERROR:  Cannot transform input value to a temporal discrete sequence
 SELECT setInterp(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', 'discrete');
 ERROR:  Cannot transform input value to a temporal discrete sequence
+SELECT setInterp(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]}', 'step');
+ERROR:  Cannot transform input value to a temporal step sequence
 SELECT appendInstant(tbool 't@2000-01-01', tbool 't@2000-01-02');
                     appendinstant                     
 ------------------------------------------------------

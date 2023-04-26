@@ -836,6 +836,23 @@ set_set_span(const Set *set, Span *s)
 
 /*****************************************************************************/
 
+#if MEOS
+/**
+ * @ingroup libmeos_setspan_accessor
+ * @brief Return the bounding box of a spatial set.
+ * @sqlfunc stbox()
+ * @sqlop @p ::
+ * @pymeosfunc stbox()
+ */
+STBox *
+spatialset_stbox(const Set *s)
+{
+  STBox *result = palloc(sizeof(STBox));
+  spatialset_set_stbox(s, result);
+  return result;
+}
+#endif /* MEOS */
+
 /**
  * @ingroup libmeos_internal_setspan_accessor
  * @brief Set the last argument to the bounding box of a spatial set.
@@ -878,21 +895,6 @@ set_span(const Set *s)
 {
   Span *result = palloc(sizeof(Span));
   set_set_span(s, result);
-  return result;
-}
-
-/**
- * @ingroup libmeos_setspan_accessor
- * @brief Return the bounding box of a spatial set.
- * @sqlfunc stbox()
- * @sqlop @p ::
- * @pymeosfunc stbox()
- */
-STBox *
-spatialset_stbox(const Set *s)
-{
-  STBox *result = palloc(sizeof(STBox));
-  spatialset_set_stbox(s, result);
   return result;
 }
 
