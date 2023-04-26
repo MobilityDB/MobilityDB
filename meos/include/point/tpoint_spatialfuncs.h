@@ -46,6 +46,10 @@
 #define GEOM_TO_GEOG        true
 #define GEOG_TO_GEOM        false
 
+/** Symbolic constants for distinguishing between atGeometry and atGeometryTime */
+#define REST_TIME           true
+#define REST_TIME_NO        false
+
 /*****************************************************************************
  * Direct access to a single point in the GSERIALIZED struct
  *****************************************************************************/

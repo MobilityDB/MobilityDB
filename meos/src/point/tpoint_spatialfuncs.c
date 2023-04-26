@@ -3692,7 +3692,7 @@ tpoint_make_simple(const Temporal *temp, int *count)
  * @param[in] gs Geometry
  * @param[in] atfunc True if the restriction is at, false for minus
  * @pre The arguments are of the same dimensionality, have the same SRID, the
- * geometry is not empty. This is verified in #tpoint_restrict_geometry
+ * geometry is not empty. This is verified in #tpoint_restrict_geometry_time
  * @sqlfunc atGeometry(), minusGeometry()
  */
 TInstant *
@@ -3714,7 +3714,7 @@ tpointinst_restrict_geometry(const TInstant *inst, const GSERIALIZED *gs,
  * @param[in] gs Geometry
  * @param[in] atfunc True if the restriction is at, false for minus
  * @pre The arguments are of the same dimensionality, have the same SRID, the
- * geometry is not empty. This is verified in #tpoint_restrict_geometry
+ * geometry is not empty. This is verified in #tpoint_restrict_geometry_time
  * @sqlfunc atGeometry(), minusGeometry()
  */
 TSequence *
@@ -3997,7 +3997,7 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter, int *count)
  * @param[in] seq Temporal point sequence
  * @param[in] gs Geometry
  * @pre The arguments are of the same dimensionality, have the same SRID, the
- * geometry is not empty. This is verified in #tpoint_restrict_geometry
+ * geometry is not empty. This is verified in #tpoint_restrict_geometry_time
  * @param[out] count Number of elements in the resulting array
  */
 static TSequence **
@@ -4154,7 +4154,7 @@ tpointseq_cont_minus_geometry(const TSequence *seq, const GSERIALIZED *gs,
  * @param[in] gs Geometry
  * @param[in] atfunc True if the restriction is at, false for minus
  * @pre The arguments are of the same dimensionality, have the same SRID, the
- * geometry is not empty. This is verified in #tpoint_restrict_geometry
+ * geometry is not empty. This is verified in #tpoint_restrict_geometry_time
  * @note The test for instantaneous sequences is done at the function
  * tpointseq_at_geometry since the latter function is called for each sequence
  * of a sequence set
@@ -4185,7 +4185,7 @@ tpointseq_cont_restrict_geometry(const TSequence *seq, const GSERIALIZED *gs,
  * @param[in] box Bounding box of the geometry
  * @param[in] atfunc True if the restriction is at, false for minus
  * @pre The arguments are of the same dimensionality, have the same SRID, the
- * geometry is not empty. This is verified in #tpoint_restrict_geometry
+ * geometry is not empty. This is verified in #tpoint_restrict_geometry_time
  * @sqlfunc atGeometry(), minusGeometry()
  */
 TSequenceSet *
@@ -4258,8 +4258,8 @@ tpointseqset_restrict_geometry(const TSequenceSet *ss, const GSERIALIZED *gs,
  * the Z span, if given.
  */
 Temporal *
-tpoint_restrict_geometry(const Temporal *temp, const GSERIALIZED *gs,
-  const Span *zspan, bool atfunc)
+tpoint_restrict_geometry_time(const Temporal *temp, const GSERIALIZED *gs,
+  const Span *zspan, const Span *period, bool atfunc)
 {
   if (gserialized_is_empty(gs))
     return atfunc ? NULL : temporal_copy(temp);
@@ -4317,30 +4317,57 @@ tpoint_restrict_geometry(const Temporal *temp, const GSERIALIZED *gs,
   else
     result = result2d;
 
-  /* Finish is there is no restriction on Z */
-  if (! zspan)
+  /* Finish is there is no restriction on Z and no restriction on time */
+  if (! zspan && ! period)
     return result;
 
   /* Restrict the result to the span for the Z dimension */
-  Temporal *result_zspan = NULL;
-  Temporal *temp_z = tpoint_get_coord(temp, 2);
-  Temporal *temp_zspan = tnumber_restrict_span(temp_z, zspan, atfunc);
-  if (temp_zspan)
+  if (zspan)
+  {
+    Temporal *result_zspan = NULL;
+    Temporal *temp_z = tpoint_get_coord(temp, 2);
+    Temporal *temp_zspan = tnumber_restrict_span(temp_z, zspan, atfunc);
+    if (temp_zspan)
+    {
+      SpanSet *ss1 = temporal_time(result);
+      SpanSet *ss2 = temporal_time(temp_zspan);
+      SpanSet *ss = atfunc ? intersection_spanset_spanset(ss1, ss2) :
+        union_spanset_spanset(ss1, ss2);
+      if (ss)
+      {
+        /* We need to keep REST_AT in the next call */
+        result_zspan = temporal_restrict_periodset(temp, ss, REST_AT);
+        pfree(ss);
+      }
+      pfree(temp_zspan); pfree(ss1); pfree(ss2);
+    }
+    pfree(result); pfree(temp_z);
+    result = result_zspan;
+  }
+
+  /* Finish is there is no restriction on time */
+  if (! period)
+    return result;
+
+  /* Restrict the result to the period */
+  Temporal *result_period = NULL;
+  Temporal *temp_period = temporal_restrict_period(temp, period, atfunc);
+  if (temp_period)
   {
     SpanSet *ss1 = temporal_time(result);
-    SpanSet *ss2 = temporal_time(temp_zspan);
+    SpanSet *ss2 = temporal_time(temp_period);
     SpanSet *ss = atfunc ? intersection_spanset_spanset(ss1, ss2) :
       union_spanset_spanset(ss1, ss2);
     if (ss)
     {
       /* We need to keep REST_AT in the next call */
-      result_zspan = temporal_restrict_periodset(temp, ss, REST_AT);
+      result_period = temporal_restrict_periodset(temp, ss, REST_AT);
       pfree(ss);
     }
-    pfree(temp_zspan); pfree(ss1); pfree(ss2);
+    pfree(temp_period); pfree(ss1); pfree(ss2);
   }
-  pfree(result); pfree(temp_z);
-  return result_zspan;
+  pfree(result);
+  return result_period;
 }
 
 #if MEOS
@@ -4353,7 +4380,8 @@ Temporal *
 tpoint_at_geometry(const Temporal *temp, const GSERIALIZED *gs,
   const Span *zspan)
 {
-  Temporal *result = tpoint_restrict_geometry(temp, gs, zspan, REST_AT);
+  Temporal *result = tpoint_restrict_geometry_time(temp, gs, zspan, NULL,
+    REST_AT);
   return result;
 }
 
@@ -4366,7 +4394,8 @@ Temporal *
 tpoint_minus_geometry(const Temporal *temp, const GSERIALIZED *gs,
   const Span *zspan)
 {
-  Temporal *result = tpoint_restrict_geometry(temp, gs, zspan, REST_MINUS);
+  Temporal *result = tpoint_restrict_geometry_time(temp, gs, zspan, NULL,
+    REST_MINUS);
   return result;
 }
 #endif /* MEOS */
@@ -4414,13 +4443,15 @@ tpoint_at_stbox1(const Temporal *temp, const STBox *box)
     MEOS_FLAGS_SET_Z(box2d.flags, false);
     GSERIALIZED *geo = stbox_to_geo(&box2d);
     if (! MEOS_FLAGS_GET_Z(temp1->flags) || ! MEOS_FLAGS_GET_Z(box->flags))
-      result = tpoint_restrict_geometry(temp1, geo, NULL, REST_AT);
+      result = tpoint_restrict_geometry_time(temp1, geo, NULL, NULL,
+        REST_AT);
     else
     {
       Span zspan;
       span_set(Float8GetDatum(box->zmin), Float8GetDatum(box->zmax),
         true, true, T_FLOAT8, &zspan);
-      result = tpoint_restrict_geometry(temp1, geo, &zspan, REST_AT);
+      result = tpoint_restrict_geometry_time(temp1, geo, &zspan, NULL,
+        REST_AT);
     }
     pfree(geo);
   }

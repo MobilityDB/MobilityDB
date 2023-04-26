@@ -58,11 +58,21 @@ CREATE FUNCTION atGeometry(tnpoint, geometry)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Tnpoint_at_geometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- This function is not STRICT
+CREATE FUNCTION atGeometryTime(tnpoint, geometry, tstzspan)
+  RETURNS tnpoint
+  AS 'MODULE_PATHNAME', 'Tnpoint_at_geometry_time'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION minusGeometry(tnpoint, geometry)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Tnpoint_minus_geometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- This function is not STRICT
+CREATE FUNCTION minusGeometryTime(tnpoint, geometry, tstzspan)
+  RETURNS tnpoint
+  AS 'MODULE_PATHNAME', 'Tnpoint_minus_geometry_time'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 /*****************************************************************************
  * Equals

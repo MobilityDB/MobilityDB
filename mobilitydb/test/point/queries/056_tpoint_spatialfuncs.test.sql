@@ -835,9 +835,24 @@ SELECT minusGeometry(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(1 
 -- Equivalences
 WITH temp(trip, geo, zspan) AS (
   SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(3 1 1)@2000-01-03,
-    Point(3 1 3)@2000-01-05]', geometry 'Polygon((2 0,2 2,2 4,4 0,2 0))', floatspan '[0,2]' )
+    Point(3 1 3)@2000-01-05]', geometry 'Polygon((2 0,2 2,4 2,4 0,2 0))', floatspan '[0,2]' )
 SELECT trip = merge(atGeometry(trip, geo, zspan), minusGeometry(trip, geo, zspan))
 FROM temp;
+
+WITH temp(trip, geo, period) AS (
+  SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(5 1)@2000-01-05, Point(1 1)@2000-01-09]',
+    geometry 'Polygon((2 0,2 2,4 2,4 0,2 0))', tstzspan '[2000-01-03, 2000-01-05]' )
+SELECT trip = merge(atGeometryTime(trip, geo, NULL::floatspan, period),
+  minusGeometryTime(trip, geo, NULL::floatspan, period)) FROM temp;
+-- t
+
+WITH temp(trip, geo, zspan, period) AS (
+  SELECT tgeompoint '[Point(1 1 1)@2000-01-01,
+    Point(5 1 5)@2000-01-05, Point(1 1 9)@2000-01-09]',
+    geometry 'Polygon((2 0,2 2,4 2,4 0,2 0))', floatspan '[0,5]',
+    tstzspan '[2000-01-03, 2000-01-05]' )
+SELECT trip = merge(atGeometryTime(trip, geo, zspan, period),
+  minusGeometryTime(trip, geo, zspan, period)) FROM temp;
 
 --------------------------------------------------------
 

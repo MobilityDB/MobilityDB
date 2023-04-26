@@ -696,7 +696,7 @@ extern TInstant *tpointinst_restrict_geometry(const TInstant *inst, const GSERIA
 extern TSequence *tpointseq_disc_restrict_geometry(const TSequence *seq, const GSERIALIZED *gs, bool atfunc);
 extern TSequenceSet *tpointseq_cont_restrict_geometry(const TSequence *seq, const GSERIALIZED *gs, bool atfunc);
 extern TSequenceSet *tpointseqset_restrict_geometry(const TSequenceSet *ss, const GSERIALIZED *gs, const STBox *box, bool atfunc);
-extern Temporal *tpoint_restrict_geometry(const Temporal *temp, const GSERIALIZED *gs, const Span *zspan, bool atfunc);
+extern Temporal *tpoint_restrict_geometry_time(const Temporal *temp, const GSERIALIZED *gs, const Span *zspan, const Span *period, bool atfunce);
 extern Temporal *tpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool atfunc);
 
 /*****************************************************************************/
