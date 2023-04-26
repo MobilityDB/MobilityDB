@@ -301,8 +301,8 @@ UPDATE test_tnpoint_topops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.temp -|- t2.temp )
 WHERE op = '-|-' and leftarg = 'tnpoint' and rightarg = 'tnpoint';
 UPDATE 1
-DROP INDEX test_tnpoint_quadtree_idx;
-ERROR:  index "test_tnpoint_quadtree_idx" does not exist
+DROP INDEX tbl_tnpoint_quadtree_idx;
+DROP INDEX
 CREATE INDEX tbl_tnpoint_kdtree_idx ON tbl_tnpoint USING SPGIST(temp tnpoint_kdtree_ops);
 CREATE INDEX
 UPDATE test_tnpoint_topops

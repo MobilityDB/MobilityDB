@@ -290,7 +290,7 @@ WHERE op = '-|-' and leftarg = 'tnpoint' and rightarg = 'tnpoint';
 
 -------------------------------------------------------------------------------
 
-DROP INDEX test_tnpoint_quadtree_idx;
+DROP INDEX tbl_tnpoint_quadtree_idx;
 CREATE INDEX tbl_tnpoint_kdtree_idx ON tbl_tnpoint USING SPGIST(temp tnpoint_kdtree_ops);
 
 -------------------------------------------------------------------------------
