@@ -3743,33 +3743,79 @@ tpointseq_disc_restrict_geometry(const TSequence *seq, const GSERIALIZED *gs,
  * geometry
  * @param[in] seq Temporal point
  * @param[in] gs Geometry
+ * @param[in] atfunc True if the restriction is at, false for minus
  * @param[out] count Number of elements in the resulting array
  */
 static TSequence **
 tpointseq_step_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
   int *count)
 {
-  /* Select the intersecting points */
-  Datum *points = palloc(sizeof(Datum) * seq->count);
-  int k = 0;
+  TSequence **result;
+  const TInstant *inst;
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+
+  /* Singleton sequence */
+  if (seq->count == 1)
+  {
+    inst = TSEQUENCE_INST_N(seq, 0);
+    TInstant *inst1 = tpointinst_restrict_geometry(inst, gs, REST_AT);
+    if (! inst1)
+    {
+      *count = 0;
+      return NULL;
+    }
+    else
+    {
+      result = palloc(sizeof(TSequence *));
+      result[0] = tinstant_to_tsequence(inst1, interp);
+      pfree(inst1);
+      *count = 1;
+      return result;
+    }
+  }
+
+  /* General case */
+  result = palloc(sizeof(TSequence *) * seq->count);
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  TimestampTz start = DatumGetTimestampTz(seq->period.lower);
+  int k = 0, l = 0;
   for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+    inst = TSEQUENCE_INST_N(seq, i);
     Datum value = tinstant_value(inst);
     bool inter = DatumGetBool(geom_intersects2d(value, PointerGetDatum(gs)));
     if (inter)
-      points[k++] = value;
+      instants[k++] = (TInstant *) inst;
+    else
+    {
+      if (k > 0)
+      {
+        /* Continue the last instant of the sequence until the time of inst2 */
+        value = tinstant_value(instants[k - 1]);
+        instants[k++] = tinstant_make(value, seq->temptype, inst->t);
+        bool lower_inc = (instants[0]->t == start) ?
+          seq->period.lower_inc : true;
+        result[l++] = tsequence_make((const TInstant **) instants, k,
+          lower_inc, false, interp, NORMALIZE_NO);
+        pfree(instants[k - 1]);
+        k = 0;
+      }
+    }
   }
-  /* Restrict the geometry to the intersecting points */
-  if (k == 0)
+  /* Add a last sequence with the remaining instants */
+  if (k > 0)
   {
-    *count = 0;
+    result[l++] = tsequence_make((const TInstant **) instants, k, true,
+      seq->period.lower_inc, interp, NORMALIZE_NO);
+  }
+  /* Clean up and return */
+  pfree(instants);
+  *count = l;
+  if (l == 0)
+  {
+    pfree(result);
     return NULL;
   }
-  TSequence **result = palloc(sizeof(TSequence *) * seq->count);
-  Set *set = set_make_free(points, k, T_GEOMETRY, ORDERED);
-  int newcount = tsequence_at_values1(seq, set, result);
-  *count = newcount;
   return result;
 }
 
