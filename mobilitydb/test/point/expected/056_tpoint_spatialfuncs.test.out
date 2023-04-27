@@ -2974,6 +2974,18 @@ SELECT asText(atGeometry(tgeompoint 'Interp=Step;[Point(0 3)@2000-01-01, Point(1
  Interp=Step;{[POINT(1 1)@2000-01-02 00:00:00+00, POINT(1 1)@2000-01-03 00:00:00+00)}
 (1 row)
 
+SELECT asText(atGeometry(tgeompoint 'Interp=Step;(Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(2 2)@2000-01-03)', geometry 'Linestring(1 1,2 2)'));
+                                                         astext                                                          
+-------------------------------------------------------------------------------------------------------------------------
+ Interp=Step;{(POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-02 00:00:00+00, POINT(2 2)@2000-01-03 00:00:00+00)}
+(1 row)
+
+SELECT asText(atGeometry(tgeompoint 'Interp=Step;(Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(2 2)@2000-01-03)', geometry 'Point(2 2)'));
+                                        astext                                        
+--------------------------------------------------------------------------------------
+ Interp=Step;{[POINT(2 2)@2000-01-02 00:00:00+00, POINT(2 2)@2000-01-03 00:00:00+00)}
+(1 row)
+
 SELECT asText(atGeometry(tgeompoint 'Interp=Step;[Point(4 4)@2000-01-01, Point(3 3)@2000-01-02]', geometry 'Polygon((0 0,0 3,3 3,3 0,0 0))'));
                       astext                       
 ---------------------------------------------------

@@ -3752,14 +3752,17 @@ tpointseq_step_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
 {
   TSequence **result;
   const TInstant *inst;
+  Datum value;
+  bool inter, lower_inc;
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
 
   /* Singleton sequence */
   if (seq->count == 1)
   {
     inst = TSEQUENCE_INST_N(seq, 0);
-    TInstant *inst1 = tpointinst_restrict_geometry(inst, gs, REST_AT);
-    if (! inst1)
+    value = tinstant_value(inst);
+    inter = DatumGetBool(geom_intersects2d(value, PointerGetDatum(gs)));
+    if (! inter)
     {
       *count = 0;
       return NULL;
@@ -3767,8 +3770,7 @@ tpointseq_step_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
     else
     {
       result = palloc(sizeof(TSequence *));
-      result[0] = tinstant_to_tsequence(inst1, interp);
-      pfree(inst1);
+      result[0] = tinstant_to_tsequence(inst, interp);
       *count = 1;
       return result;
     }
@@ -3782,8 +3784,8 @@ tpointseq_step_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
   for (int i = 0; i < seq->count; i++)
   {
     inst = TSEQUENCE_INST_N(seq, i);
-    Datum value = tinstant_value(inst);
-    bool inter = DatumGetBool(geom_intersects2d(value, PointerGetDatum(gs)));
+    value = tinstant_value(inst);
+    inter = DatumGetBool(geom_intersects2d(value, PointerGetDatum(gs)));
     if (inter)
       instants[k++] = (TInstant *) inst;
     else
@@ -3793,8 +3795,7 @@ tpointseq_step_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
         /* Continue the last instant of the sequence until the time of inst2 */
         value = tinstant_value(instants[k - 1]);
         instants[k++] = tinstant_make(value, seq->temptype, inst->t);
-        bool lower_inc = (instants[0]->t == start) ?
-          seq->period.lower_inc : true;
+        lower_inc = (instants[0]->t == start) ? seq->period.lower_inc : true;
         result[l++] = tsequence_make((const TInstant **) instants, k,
           lower_inc, false, interp, NORMALIZE_NO);
         pfree(instants[k - 1]);
@@ -3805,8 +3806,12 @@ tpointseq_step_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
   /* Add a last sequence with the remaining instants */
   if (k > 0)
   {
-    result[l++] = tsequence_make((const TInstant **) instants, k, true,
-      seq->period.lower_inc, interp, NORMALIZE_NO);
+    lower_inc = (instants[0]->t == start) ? seq->period.lower_inc : true;
+    TimestampTz end = DatumGetTimestampTz(seq->period.upper);
+    bool upper_inc = (instants[k - 1]->t == end) ?
+      seq->period.upper_inc : false;
+    result[l++] = tsequence_make((const TInstant **) instants, k, lower_inc,
+      upper_inc, interp, NORMALIZE_NO);
   }
   /* Clean up and return */
   pfree(instants);
