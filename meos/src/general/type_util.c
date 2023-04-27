@@ -856,18 +856,6 @@ pfree_array(void **array, int count)
 }
 
 /**
- * @brief Free a C array of Datum pointers
- */
-void
-pfree_datumarr(Datum *array, int count)
-{
-  for (int i = 0; i < count; i++)
-    pfree(DatumGetPointer(array[i]));
-  pfree(array);
-  return;
-}
-
-/**
  * @brief Return the string resulting from assembling the array of strings.
  * The function frees the memory of the input strings after finishing.
  * @param[in] strings Array of strings to ouput

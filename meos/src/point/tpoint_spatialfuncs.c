@@ -4279,6 +4279,11 @@ tpoint_restrict_geometry_time(const Temporal *temp, const GSERIALIZED *gs,
     box2.zmin = DatumGetFloat8(zspan->lower);
     box2.zmax = DatumGetFloat8(zspan->upper);
   }
+  if (period)
+  {
+    MEOS_FLAGS_SET_T(box2.flags, true);
+    memcpy(&box2.period, period, sizeof(Span));
+  }
   if (! overlaps_stbox_stbox(&box1, &box2))
     return atfunc ? NULL : temporal_copy(temp);
 

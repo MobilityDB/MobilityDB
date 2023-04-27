@@ -3000,11 +3000,7 @@ tsequenceset_delete_timestamp(const TSequenceSet *ss, TimestampTz t)
     if (seq1)
       sequences[k++] = seq1;
   }
-  if (k == 0)
-  {
-    pfree(sequences);
-    return NULL;
-  }
+  assert(k > 0);
   return tsequenceset_make_free(sequences, k, NORMALIZE_NO);
 }
 

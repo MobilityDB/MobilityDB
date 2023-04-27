@@ -854,7 +854,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="atGeometry"><varname>atGeometry</varname>, <varname>minusGeometry</varname></link>: Restrict to (the complement of) a geometry, a Z span, and/or a period</para>
+					<para><link linkend="atGeometry"><varname>atGeometry</varname>, <varname>minusGeometry</varname>, <varname>atGeometryTime</varname>, <varname>minusGeometryTime</varname></link>: Restrict to (the complement of) a geometry, a Z span, and/or a period</para>
 				</listitem>
 
 				<listitem>

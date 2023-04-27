@@ -549,8 +549,12 @@ SELECT setInterp(tint '1@2000-01-01', 'discrete');
 SELECT setInterp(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', 'discrete');
 SELECT setInterp(tfloat '1.5@2000-01-01', 'discrete');
 SELECT setInterp(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', 'discrete');
+SELECT setInterp(tfloat '{1@2000-01-01}', 'linear');
+SELECT setInterp(tfloat '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', 'linear');
 SELECT setInterp(tfloat '[1.5@2000-01-01]', 'discrete');
 SELECT setInterp(tfloat '{[1.5@2000-01-01], [2.5@2000-01-02], [1.5@2000-01-03]}', 'discrete');
+SELECT setInterp(tfloat 'Interp=Step;[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 2@2000-01-04]', 'step');
+SELECT setInterp(tfloat '[1@2000-01-01, 1@2000-01-02]', 'step');
 SELECT setInterp(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 2@2000-01-04]', 'linear');
 SELECT setInterp(tfloat 'Interp=Step;[1@2000-01-01]', 'linear');
 SELECT setInterp(tfloat 'Interp=Step;[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 2@2000-01-04]', 'linear');
@@ -573,6 +577,8 @@ SELECT setInterp(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@
 SELECT setInterp(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', 'discrete');
 SELECT setInterp(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', 'discrete');
 SELECT setInterp(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]}', 'step');
+SELECT setInterp(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 2@2000-01-04]', 'step');
+SELECT setInterp(tfloat '[1@2000-01-01, 2@2000-01-02]', 'step');
 
 -------------------------------------------------------------------------------
 
@@ -2348,6 +2354,7 @@ SELECT deleteTime(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]}', ts
 SELECT deleteTime(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', tstzset '{2000-01-01}');
 
 SELECT deleteTime(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]}', tstzset '{2000-01-01, 2000-01-03}');
+SELECT deleteTime(tfloat '{[1@2000-01-01],[2@2000-01-02]}', tstzset '{2000-01-01, 2000-01-02}');
 
 SELECT deleteTime(tbool 't@2000-01-01', tstzspan '[2000-01-01,2000-01-02]');
 SELECT deleteTime(tbool '{t@2000-01-01}', tstzspan '[2000-01-01,2000-01-02]');
