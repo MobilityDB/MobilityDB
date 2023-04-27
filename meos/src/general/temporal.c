@@ -3472,16 +3472,7 @@ temporal_restrict_period(const Temporal *temp, const Span *p, bool atfunc)
     result = (Temporal *) tinstant_restrict_period(
       (TInstant *) temp, p, atfunc);
   else if (temp->subtype == TSEQUENCE)
-  {
-    if (MEOS_FLAGS_GET_DISCRETE(temp->flags))
-      result = atfunc ?
-        (Temporal *) tdiscseq_at_period((TSequence *) temp, p) :
-        (Temporal *) tdiscseq_minus_period((TSequence *) temp, p);
-    else
-      result = atfunc ?
-        (Temporal *) tcontseq_at_period((TSequence *) temp, p) :
-        (Temporal *) tcontseq_minus_period((TSequence *) temp, p);
-  }
+    result = tsequence_restrict_period((TSequence *) temp, p, atfunc);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tsequenceset_restrict_period(
       (TSequenceSet *) temp, p, atfunc);
@@ -3731,7 +3722,8 @@ temporal_delete_period(const Temporal *temp, const Span *p, bool connect)
   else if (temp->subtype == TSEQUENCE)
   {
     if (MEOS_FLAGS_GET_DISCRETE(temp->flags))
-      result = (Temporal *) tdiscseq_minus_period((TSequence *) temp, p);
+      result = (Temporal *) tdiscseq_restrict_period((TSequence *) temp, p,
+        REST_MINUS);
     else
       result = connect ?
         (Temporal *) tcontseq_delete_period((TSequence *) temp, p) :

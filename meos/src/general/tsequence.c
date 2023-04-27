@@ -4610,15 +4610,15 @@ tdiscseq_restrict_timestampset(const TSequence *seq, const Set *ts,
  * @sqlfunc atTime()
  */
 TSequence *
-tdiscseq_at_period(const TSequence *seq, const Span *period)
+tdiscseq_restrict_period(const TSequence *seq, const Span *period, bool atfunc)
 {
   /* Bounding box test */
   if (! overlaps_span_span(&seq->period, period))
-    return NULL;
+    return atfunc ? NULL : tsequence_copy(seq);
 
   /* Instantaneous sequence */
   if (seq->count == 1)
-    return tsequence_copy(seq);
+    return atfunc ? tsequence_copy(seq) : NULL;
 
   /* General case */
   const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
@@ -4626,38 +4626,8 @@ tdiscseq_at_period(const TSequence *seq, const Span *period)
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    if (contains_period_timestamp(period, inst->t))
-      instants[count++] = inst;
-  }
-  TSequence *result = (count == 0) ? NULL :
-    tsequence_make(instants, count, true, true, DISCRETE, NORMALIZE_NO);
-  pfree(instants);
-  return result;
-}
-
-/**
- * @ingroup libmeos_internal_temporal_restrict
- * @brief Restrict a temporal discrete sequence to (the complement of) a period.
- * @sqlfunc minusTime()
- */
-TSequence *
-tdiscseq_minus_period(const TSequence *seq, const Span *period)
-{
-  /* Bounding box test */
-  if (! overlaps_span_span(&seq->period, period))
-    return tsequence_copy(seq);
-
-  /* Instantaneous sequence */
-  if (seq->count == 1)
-    return NULL;
-
-  /* General case */
-  const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  int count = 0;
-  for (int i = 0; i < seq->count; i++)
-  {
-    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    if (! contains_period_timestamp(period, inst->t))
+    bool contains = contains_period_timestamp(period, inst->t);
+    if ((atfunc && contains) || (! atfunc && ! contains))
       instants[count++] = inst;
   }
   TSequence *result = (count == 0) ? NULL :
@@ -4679,9 +4649,7 @@ tdiscseq_restrict_periodset(const TSequence *seq, const SpanSet *ps,
 
   /* Singleton period set */
   if (ps->count == 1)
-    return atfunc ?
-      tdiscseq_at_period(seq, spanset_sp_n(ps, 0)) :
-      tdiscseq_minus_period(seq, spanset_sp_n(ps, 0));
+    return tdiscseq_restrict_period(seq, spanset_sp_n(ps, 0), atfunc);
 
   /* Bounding box test */
   if (! overlaps_span_span(&seq->period, &ps->span))
@@ -5170,7 +5138,7 @@ TSequence *
 tsequence_at_period(const TSequence *seq, const Span *p)
 {
   if(MEOS_FLAGS_GET_DISCRETE(seq->flags))
-    return tdiscseq_at_period(seq, p);
+    return tdiscseq_restrict_period(seq, p, REST_AT);
   else
     return tcontseq_at_period(seq, p);
 }
@@ -5229,6 +5197,24 @@ tcontseq_minus_period(const TSequence *seq, const Span *p)
     count, NORMALIZE_NO);
   for (int i = 0; i < count; i++)
     pfree(sequences[i]);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_internal_temporal_restrict
+ * @brief Restrict a temporal value to (the complement of) a period.
+ * @sqlfunc atTime, minusTime
+ */
+Temporal *
+tsequence_restrict_period(const TSequence *seq, const Span *p, bool atfunc)
+{
+  Temporal *result;
+  if (MEOS_FLAGS_GET_DISCRETE(seq->flags))
+    result = (Temporal *) tdiscseq_restrict_period(seq, p, atfunc);
+  else
+    result = atfunc ?
+      (Temporal *) tcontseq_at_period(seq, p) :
+      (Temporal *) tcontseq_minus_period(seq, p);
   return result;
 }
 

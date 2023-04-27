@@ -846,7 +846,6 @@ WITH temp(trip, geo, period) AS (
     geometry 'Polygon((2 0,2 2,4 2,4 0,2 0))', tstzspan '[2000-01-03, 2000-01-05]' )
 SELECT trip = merge(atGeometryTime(trip, geo, NULL::floatspan, period),
   minusGeometryTime(trip, geo, NULL::floatspan, period)) FROM temp;
--- t
 
 WITH temp(trip, geo, zspan, period) AS (
   SELECT tgeompoint '[Point(1 1 1)@2000-01-01,

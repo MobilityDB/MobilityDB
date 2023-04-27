@@ -671,8 +671,7 @@ extern TSequenceSet *tcontseq_restrict_minmax(const TSequence *seq, bool min, bo
 extern TInstant *tdiscseq_at_timestamp(const TSequence *seq, TimestampTz t);
 extern TSequence *tdiscseq_minus_timestamp(const TSequence *seq, TimestampTz t);
 extern TSequence *tdiscseq_restrict_timestampset(const TSequence *seq, const Set *ts, bool atfunc);
-extern TSequence *tdiscseq_at_period(const TSequence *seq, const Span *period);
-extern TSequence *tdiscseq_minus_period(const TSequence *seq, const Span *period);
+extern TSequence *tdiscseq_restrict_period(const TSequence *seq, const Span *period, bool atfunc);
 extern TSequence *tdiscseq_restrict_periodset(const TSequence *seq, const SpanSet *ps, bool atfunc);
 
 extern TInstant *tcontseq_at_timestamp(const TSequence *seq, TimestampTz t);
@@ -683,6 +682,7 @@ extern TSequence *tcontseq_at_period(const TSequence *seq, const Span *p);
 extern TSequenceSet *tcontseq_minus_period(const TSequence *seq, const Span *p);
 extern TSequenceSet *tcontseq_restrict_periodset(const TSequence *seq, const SpanSet *ps, bool atfunc);
 extern TSequence *tsequence_at_period(const TSequence *seq, const Span *p);
+extern Temporal *tsequence_restrict_period(const TSequence *seq, const Span *p, bool atfunc);
 extern TSequenceSet *tsequenceset_restrict_value(const TSequenceSet *ss, Datum value, bool atfunc);
 extern TSequenceSet *tsequenceset_restrict_values(const TSequenceSet *ss, const Set *set, bool atfunc);
 extern TSequenceSet *tnumberseqset_restrict_span(const TSequenceSet *ss, const Span *span, bool atfunc);
