@@ -187,8 +187,8 @@ extern LWLINE *lwline_make(Datum value1, Datum value2);
 /* Functions for spatial reference systems */
 
 extern TInstant *tpointinst_transform(const TInstant *inst, int srid);
-extern TSequence *tpointdiscseq_transform(const TSequence *is, int srid);
-extern TSequence *tpointcontseq_transform(const TSequence *seq, int srid);
+extern TSequence *tpointseq_disc_transform(const TSequence *is, int srid);
+extern TSequence *tpointseq_cont_transform(const TSequence *seq, int srid);
 extern TSequenceSet *tpointseqset_transform(const TSequenceSet *ss, int srid);
 extern Temporal *tpoint_transform(const Temporal *temp, int srid);
 

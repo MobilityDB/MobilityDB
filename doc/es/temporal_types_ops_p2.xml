@@ -375,10 +375,10 @@ SELECT minusMax(tfloat '{[1@2001-01-01, 3@2001-01-03), (3@2001-01-03, 1@2001-01-
 			<listitem id="atGeometry">
 				<indexterm><primary><varname>atGeometry</varname></primary></indexterm>
 				<indexterm><primary><varname>minusGeometry</varname></primary></indexterm>
-				<para>Restringir a (al complemento de) una geometría</para>
-				<para><varname>atGeometry(tgeompoint,geometry) → tgeompoint</varname></para>
-				<para><varname>minusGeometry(tgeompoint,geometry) → tgeompoint</varname></para>
-				<para>Nótese que está permitido mezclar geometrías 2D/3D, pero el cálculo sólo se realiza en 2D.</para>
+				<para>Restringir a (al complemento de) una geometría y un rango de Z opcional  &Z_support;</para>
+				<para><varname>atGeometry(tgeompoint,geometry,zspan=NULL) → tgeompoint</varname></para>
+				<para><varname>minusGeometry(tgeompoint,geometry,zspan=NULL) → tgeompoint</varname></para>
+				<para>La geometría debe estar en 2D y el cálculo se realiza en 2D. El resultado conserva la dimensión Z del punto temporal, si existe.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT asText(atGeometry(tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-04)',
   geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))'));
@@ -386,6 +386,9 @@ SELECT asText(atGeometry(tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-
 SELECT astext(atGeometry(tgeompoint '[Point(0 0 0)@2000-01-01, Point(4 4 4)@2000-01-05]',
   geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))'));
 -- {[POINT Z (1 1 1)@2000-01-02, POINT Z (2 2 2)@2000-01-03]}
+SELECT asText(atGeometry(tgeompoint '[Point(1 1 1)@2000-01-01, Point(3 1 1)@2000-01-03,
+  Point(3 1 3)@2000-01-05]', 'Polygon((2 0,2 2,2 4,4 0,2 0))', '[0,2]'));
+-- {[POINT Z (2 1 1)@2000-01-02, POINT Z (3 1 1)@2000-01-03, POINT Z (3 1 2)@2000-01-04]}
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
 SELECT asText(minusGeometry(tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-04)',
@@ -396,6 +399,10 @@ SELECT astext(minusGeometry(tgeompoint '[Point(0 0 0)@2000-01-01,
   Point(4 4 4)@2000-01-05]', geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))'));
 /* {[POINT Z (0 0 0)@2000-01-01, POINT Z (1 1 1)@2000-01-02),
    (POINT Z (2 2 2)@2000-01-03, POINT Z (4 4 4)@2000-01-05]} */
+SELECT asText(minusGeometry(tgeompoint '[Point(1 1 1)@2000-01-01, Point(3 1 1)@2000-01-03,
+  Point(3 1 3)@2000-01-05]', 'Polygon((2 0,2 2,2 4,4 0,2 0))', '[0,2]'));
+/* {[POINT Z (1 1 1)@2000-01-01, POINT Z (2 1 1)@2000-01-02),
+    (POINT Z (3 1 2)@2000-01-04, POINT Z (3 1 3)@2000-01-05]} */
 </programlisting>
 			</listitem>
 

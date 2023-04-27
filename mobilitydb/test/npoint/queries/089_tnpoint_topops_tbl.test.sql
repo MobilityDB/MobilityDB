@@ -30,8 +30,8 @@
 -------------------------------------------------------------------------------
 
 DROP INDEX IF EXISTS tbl_tnpoint_rtree_idx;
-
 DROP INDEX IF EXISTS tbl_tnpoint_quadtree_idx;
+DROP INDEX IF EXISTS tbl_tnpoint_kdtree_idx;
 
 -------------------------------------------------------------------------------
 
@@ -200,9 +200,6 @@ WHERE op = '-|-' and leftarg = 'tnpoint' and rightarg = 'tnpoint';
 -------------------------------------------------------------------------------
 
 DROP INDEX tbl_tnpoint_rtree_idx;
-
--------------------------------------------------------------------------------
-
 CREATE INDEX tbl_tnpoint_quadtree_idx ON tbl_tnpoint USING SPGIST(temp);
 
 -------------------------------------------------------------------------------
@@ -293,10 +290,7 @@ WHERE op = '-|-' and leftarg = 'tnpoint' and rightarg = 'tnpoint';
 
 -------------------------------------------------------------------------------
 
-DROP INDEX test_tnpoint_quadtree_idx;
-
--------------------------------------------------------------------------------
-
+DROP INDEX tbl_tnpoint_quadtree_idx;
 CREATE INDEX tbl_tnpoint_kdtree_idx ON tbl_tnpoint USING SPGIST(temp tnpoint_kdtree_ops);
 
 -------------------------------------------------------------------------------
@@ -384,6 +378,10 @@ WHERE op = '~=' and leftarg = 'tnpoint' and rightarg = 'tnpoint';
 UPDATE test_tnpoint_topops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.temp -|- t2.temp )
 WHERE op = '-|-' and leftarg = 'tnpoint' and rightarg = 'tnpoint';
+
+-------------------------------------------------------------------------------
+
+DROP INDEX tbl_tnpoint_kdtree_idx;
 
 -------------------------------------------------------------------------------
 

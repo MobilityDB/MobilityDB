@@ -558,6 +558,11 @@ SELECT setInterp(tfloat 'Interp=Step;{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03,
 SELECT setInterp(tfloat 'Interp=Step;{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 2@2000-01-04]}', 'linear');
 SELECT setInterp(ttext 'AAA@2000-01-01', 'discrete');
 SELECT setInterp(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', 'discrete');
+
+SELECT setInterp(tfloat 'Interp=Step;{[1.5@2000-01-01], [2.5@2000-01-02], [1.5@2000-01-03]}', 'step');
+SELECT setInterp(tfloat '{[1.5@2000-01-01], [2.5@2000-01-02], [1.5@2000-01-03]}', 'step');
+SELECT setInterp(tfloat '{[1.5@2000-01-01], [2.5@2000-01-02], [1.5@2000-01-03]}', 'linear');
+
 /* Errors */
 SELECT setInterp(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', 'discrete');
 SELECT setInterp(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', 'discrete');
@@ -567,6 +572,7 @@ SELECT setInterp(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', 'dis
 SELECT setInterp(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', 'discrete');
 SELECT setInterp(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', 'discrete');
 SELECT setInterp(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', 'discrete');
+SELECT setInterp(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]}', 'step');
 
 -------------------------------------------------------------------------------
 

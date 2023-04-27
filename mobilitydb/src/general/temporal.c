@@ -730,11 +730,11 @@ Tsequenceset_constructor_gaps(PG_FUNCTION_ARGS)
   Interval *maxt = NULL;
   meosType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
   interpType interp = temptype_continuous(temptype) ? LINEAR : STEP;
-  if (PG_NARGS() > 1 && !PG_ARGISNULL(1))
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
     maxt = PG_GETARG_INTERVAL_P(1);
-  if (PG_NARGS() > 2 && !PG_ARGISNULL(2))
+  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
     maxdist = PG_GETARG_FLOAT8(2);
-  if (PG_NARGS() > 3 && !PG_ARGISNULL(3))
+  if (PG_NARGS() > 3 && ! PG_ARGISNULL(3))
   {
     text *interp_txt = PG_GETARG_TEXT_P(3);
     char *interp_str = text2cstring(interp_txt);

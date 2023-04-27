@@ -82,26 +82,14 @@ timestamp_transform_tcount(TimestampTz t)
  * performing temporal count aggregation
  */
 static TInstant **
-timestampset_transform_tcount(const Set *ts, int *newcount)
+timestampset_transform_tcount(const Set *ts)
 {
   TInstant **result = palloc(sizeof(TInstant *) * ts->count);
-
-  TimestampTz t = DatumGetTimestampTz(SET_VAL_N(ts, 0));
-  int k = 0, count = 1;
-  for (int i = 1; i < ts->count; i++)
+  for (int i = 0; i < ts->count; i++)
   {
-    TimestampTz t1 = DatumGetTimestampTz(SET_VAL_N(ts, i));
-    if (timestamptz_cmp_internal(t, t1) == 0)
-      count++;
-    else
-    {
-      result[k++] = tinstant_make(Int32GetDatum(count), T_TINT, t);
-      count = 1;
-      t = t1;
-    }
+    TimestampTz t = DatumGetTimestampTz(SET_VAL_N(ts, i));
+    result[i] = tinstant_make(Int32GetDatum(1), T_TINT, t);
   }
-  result[k++] = tinstant_make(Int32GetDatum(count), T_TINT, t);
-  *newcount = k;
   return result;
 }
 
@@ -191,22 +179,19 @@ timestamp_tcount_transfn(SkipList *state, TimestampTz t)
 SkipList *
 timestampset_tcount_transfn(SkipList *state, const Set *ts)
 {
-  int count;
-  TInstant **instants = timestampset_transform_tcount(ts, &count);
-  /* Due to the bucketing, it is possible that count < ts->count */
-
+  TInstant **instants = timestampset_transform_tcount(ts);
   if (! state)
   {
-    state = skiplist_make((void **) instants, count);
+    state = skiplist_make((void **) instants, ts->count);
   }
   else
   {
     ensure_same_timetype_skiplist(state, TINSTANT);
-    skiplist_splice(state, (void **) instants, count, &datum_sum_int32,
+    skiplist_splice(state, (void **) instants, ts->count, &datum_sum_int32,
       CROSSINGS_NO);
   }
 
-  pfree_array((void **) instants, count);
+  pfree_array((void **) instants, ts->count);
   return state;
 }
 

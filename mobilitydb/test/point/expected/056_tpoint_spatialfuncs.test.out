@@ -2837,6 +2837,88 @@ SELECT asText(unnest(makeSimple(tgeompoint '[Point(1 1)@2000-01-01, Point(2 1)@2
  [POINT(0 1)@2000-01-04 00:00:00+00, POINT(1 1)@2000-01-05 00:00:00+00]
 (2 rows)
 
+SELECT asText(makeSimple(tgeompoint
+  '{Point(1 1)@2000-01-01, Point(1 1)@2000-01-02}'));
+                                    astext                                     
+-------------------------------------------------------------------------------
+ {"{POINT(1 1)@2000-01-01 00:00:00+00}","{POINT(1 1)@2000-01-02 00:00:00+00}"}
+(1 row)
+
+SELECT asText(makeSimple(tgeompoint
+  '{Point(1 1)@2000-01-01, Point(1 1)@2000-01-02, Point(1 1)@2000-01-03}'));
+                                                       astext                                                        
+---------------------------------------------------------------------------------------------------------------------
+ {"{POINT(1 1)@2000-01-01 00:00:00+00}","{POINT(1 1)@2000-01-02 00:00:00+00}","{POINT(1 1)@2000-01-03 00:00:00+00}"}
+(1 row)
+
+SELECT asText(makeSimple(tgeompoint
+  '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'));
+                                                      astext                                                      
+------------------------------------------------------------------------------------------------------------------
+ {"{POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-02 00:00:00+00}","{POINT(1 1)@2000-01-03 00:00:00+00}"}
+(1 row)
+
+SELECT asText(makeSimple(tgeompoint
+  '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03, Point(2 2)@2000-01-04}'));
+                                                                       astext                                                                        
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+ {"{POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-02 00:00:00+00}","{POINT(1 1)@2000-01-03 00:00:00+00, POINT(2 2)@2000-01-04 00:00:00+00}"}
+(1 row)
+
+SELECT asText(makeSimple(tgeompoint
+  'Interp=Step;[Point(1 1)@2000-01-01, Point(1 1)@2000-01-03]'));
+                                         astext                                         
+----------------------------------------------------------------------------------------
+ {"Interp=Step;[POINT(1 1)@2000-01-01 00:00:00+00, POINT(1 1)@2000-01-03 00:00:00+00]"}
+(1 row)
+
+SELECT asText(makeSimple(tgeompoint
+  'Interp=Step;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'));
+                                                                             astext                                                                              
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"Interp=Step;[POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-02 00:00:00+00, POINT(2 2)@2000-01-03 00:00:00+00)","[POINT(1 1)@2000-01-03 00:00:00+00]"}
+(1 row)
+
+SELECT asText(makeSimple(tgeompoint
+  'Interp=Step;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03, Point(2 2)@2000-01-04]'));
+                                                                                                     astext                                                                                                     
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"Interp=Step;[POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-02 00:00:00+00, POINT(2 2)@2000-01-03 00:00:00+00)","Interp=Step;[POINT(1 1)@2000-01-03 00:00:00+00, POINT(2 2)@2000-01-04 00:00:00+00]"}
+(1 row)
+
+SELECT asText(makeSimple(tgeompoint
+  '[Point(1 1)@2000-01-01, Point(1 1)@2000-01-03]'));
+                                   astext                                   
+----------------------------------------------------------------------------
+ {"[POINT(1 1)@2000-01-01 00:00:00+00, POINT(1 1)@2000-01-03 00:00:00+00]"}
+(1 row)
+
+SELECT asText(makeSimple(tgeompoint
+  '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'));
+                                                                       astext                                                                        
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+ {"[POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-02 00:00:00+00)","[POINT(2 2)@2000-01-02 00:00:00+00, POINT(1 1)@2000-01-03 00:00:00+00]"}
+(1 row)
+
+SELECT asText(makeSimple(tgeompoint
+  '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03, Point(2 2)@2000-01-04]'));
+                                                                                                            astext                                                                                                            
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"[POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-02 00:00:00+00)","[POINT(2 2)@2000-01-02 00:00:00+00, POINT(1 1)@2000-01-03 00:00:00+00)","[POINT(1 1)@2000-01-03 00:00:00+00, POINT(2 2)@2000-01-04 00:00:00+00]"}
+(1 row)
+
+SELECT asText(atGeometry(NULL::tgeompoint, geometry 'Linestring(0 0,3 3)'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(atGeometry(tgeompoint 'Point(1 1)@2000-01-01', NULL::geometry));
+ astext 
+--------
+ 
+(1 row)
+
 SELECT asText(atGeometry(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(0 0,3 3)'));
               astext               
 -----------------------------------
@@ -2940,55 +3022,55 @@ SELECT asText(atGeometry(tgeompoint 'Interp=Step;{[Point(1 1)@2000-01-01, Point(
  
 (1 row)
 
-SELECT asText(atGeometry(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Linestring(0 0 0,3 3 3)'));
+SELECT asText(atGeometry(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Linestring(0 0,3 3)'));
                  astext                 
 ----------------------------------------
  POINT Z (1 1 1)@2000-01-01 00:00:00+00
 (1 row)
 
-SELECT asText(atGeometry(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', geometry 'Linestring(0 0 0,3 3 3)'));
+SELECT asText(atGeometry(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', geometry 'Linestring(0 0,3 3)'));
                                                           astext                                                          
 --------------------------------------------------------------------------------------------------------------------------
  {POINT Z (1 1 1)@2000-01-01 00:00:00+00, POINT Z (2 2 2)@2000-01-02 00:00:00+00, POINT Z (1 1 1)@2000-01-03 00:00:00+00}
 (1 row)
 
-SELECT asText(atGeometry(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', geometry 'Linestring(0 0 0,3 3 3)'));
+SELECT asText(atGeometry(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', geometry 'Linestring(0 0,3 3)'));
                                                            astext                                                           
 ----------------------------------------------------------------------------------------------------------------------------
  {[POINT Z (1 1 1)@2000-01-01 00:00:00+00, POINT Z (2 2 2)@2000-01-02 00:00:00+00, POINT Z (1 1 1)@2000-01-03 00:00:00+00]}
 (1 row)
 
-SELECT asText(atGeometry(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', geometry 'Linestring(0 0 0,3 3 3)'));
+SELECT asText(atGeometry(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', geometry 'Linestring(0 0,3 3)'));
                                                                                                     astext                                                                                                    
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {[POINT Z (1 1 1)@2000-01-01 00:00:00+00, POINT Z (2 2 2)@2000-01-02 00:00:00+00, POINT Z (1 1 1)@2000-01-03 00:00:00+00], [POINT Z (3 3 3)@2000-01-04 00:00:00+00, POINT Z (3 3 3)@2000-01-05 00:00:00+00]}
 (1 row)
 
-SELECT asText(atGeometry(tgeompoint 'Interp=Step;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', geometry 'Linestring(0 0 0,3 3 3)'));
+SELECT asText(atGeometry(tgeompoint 'Interp=Step;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', geometry 'Linestring(0 0,3 3)'));
                                                                  astext                                                                 
 ----------------------------------------------------------------------------------------------------------------------------------------
  Interp=Step;{[POINT Z (1 1 1)@2000-01-01 00:00:00+00, POINT Z (2 2 2)@2000-01-02 00:00:00+00, POINT Z (1 1 1)@2000-01-03 00:00:00+00]}
 (1 row)
 
-SELECT asText(atGeometry(tgeompoint 'Interp=Step;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', geometry 'Linestring(0 0 0,3 3 3)'));
+SELECT asText(atGeometry(tgeompoint 'Interp=Step;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', geometry 'Linestring(0 0,3 3)'));
                                                                                                           astext                                                                                                          
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  Interp=Step;{[POINT Z (1 1 1)@2000-01-01 00:00:00+00, POINT Z (2 2 2)@2000-01-02 00:00:00+00, POINT Z (1 1 1)@2000-01-03 00:00:00+00], [POINT Z (3 3 3)@2000-01-04 00:00:00+00, POINT Z (3 3 3)@2000-01-05 00:00:00+00]}
 (1 row)
 
-SELECT asText(atGeometry(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Linestring Z empty'));
+SELECT asText(atGeometry(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Linestring empty'));
  astext 
 --------
  
 (1 row)
 
-SELECT asText(atGeometry(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', geometry 'Linestring Z empty'));
+SELECT asText(atGeometry(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', geometry 'Linestring empty'));
  astext 
 --------
  
 (1 row)
 
-SELECT asText(atGeometry(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', geometry 'Linestring Z empty'));
+SELECT asText(atGeometry(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', geometry 'Linestring empty'));
  astext 
 --------
  
@@ -3000,13 +3082,13 @@ SELECT asText(atGeometry(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@200
  
 (1 row)
 
-SELECT asText(atGeometry(tgeompoint 'Interp=Step;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', geometry 'Linestring Z empty'));
+SELECT asText(atGeometry(tgeompoint 'Interp=Step;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', geometry 'Linestring empty'));
  astext 
 --------
  
 (1 row)
 
-SELECT asText(atGeometry(tgeompoint 'Interp=Step;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', geometry 'Linestring Z empty'));
+SELECT asText(atGeometry(tgeompoint 'Interp=Step;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', geometry 'Linestring empty'));
  astext 
 --------
  
@@ -3060,21 +3142,11 @@ SELECT asText(atGeometry(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-
  
 (1 row)
 
-SELECT asText(atGeometry(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(1 1 1,2 2 2)'));
-              astext               
------------------------------------
- POINT(1 1)@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT asText(atGeometry(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Linestring(1 1,2 2)'));
-                 astext                 
-----------------------------------------
- POINT Z (1 1 1)@2000-01-01 00:00:00+00
-(1 row)
-
 /* Errors */
 SELECT atGeometry(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Linestring(1 1,2 2)');
 ERROR:  Operation on mixed SRID
+SELECT atGeometry(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(1 1 1,2 2 2)');
+ERROR:  The geometry cannot have Z dimension
 SELECT asText(minusGeometry(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(0 0,3 3)'));
  astext 
 --------
@@ -3147,73 +3219,73 @@ SELECT asText(minusGeometry(tgeompoint 'Interp=Step;{[Point(1 1)@2000-01-01, Poi
  Interp=Step;{[POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-02 00:00:00+00, POINT(1 1)@2000-01-03 00:00:00+00], [POINT(3 3)@2000-01-04 00:00:00+00, POINT(3 3)@2000-01-05 00:00:00+00]}
 (1 row)
 
-SELECT asText(minusGeometry(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Linestring(0 0 0,3 3 3)'));
+SELECT asText(minusGeometry(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Linestring(0 0,3 3)'));
  astext 
 --------
  
 (1 row)
 
-SELECT asText(minusGeometry(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', geometry 'Linestring(0 0 0,3 3 3)'));
+SELECT asText(minusGeometry(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', geometry 'Linestring(0 0,3 3)'));
  astext 
 --------
  
 (1 row)
 
-SELECT asText(minusGeometry(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', geometry 'Linestring(0 0 0,3 3 3)'));
+SELECT asText(minusGeometry(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', geometry 'Linestring(0 0,3 3)'));
  astext 
 --------
  
 (1 row)
 
-SELECT asText(minusGeometry(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', geometry 'Linestring(0 0 0,3 3 3)'));
+SELECT asText(minusGeometry(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', geometry 'Linestring(0 0,3 3)'));
  astext 
 --------
  
 (1 row)
 
-SELECT asText(minusGeometry(tgeompoint 'Interp=Step;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', geometry 'Linestring(0 0 0,3 3 3)'));
+SELECT asText(minusGeometry(tgeompoint 'Interp=Step;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', geometry 'Linestring(0 0,3 3)'));
  astext 
 --------
  
 (1 row)
 
-SELECT asText(minusGeometry(tgeompoint 'Interp=Step;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', geometry 'Linestring(0 0 0,3 3 3)'));
+SELECT asText(minusGeometry(tgeompoint 'Interp=Step;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', geometry 'Linestring(0 0,3 3)'));
  astext 
 --------
  
 (1 row)
 
-SELECT asText(minusGeometry(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Linestring Z empty'));
+SELECT asText(minusGeometry(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Linestring empty'));
                  astext                 
 ----------------------------------------
  POINT Z (1 1 1)@2000-01-01 00:00:00+00
 (1 row)
 
-SELECT asText(minusGeometry(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', geometry 'Linestring Z empty'));
+SELECT asText(minusGeometry(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', geometry 'Linestring empty'));
                                                           astext                                                          
 --------------------------------------------------------------------------------------------------------------------------
  {POINT Z (1 1 1)@2000-01-01 00:00:00+00, POINT Z (2 2 2)@2000-01-02 00:00:00+00, POINT Z (1 1 1)@2000-01-03 00:00:00+00}
 (1 row)
 
-SELECT asText(minusGeometry(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', geometry 'Linestring Z empty'));
+SELECT asText(minusGeometry(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', geometry 'Linestring empty'));
                                                           astext                                                          
 --------------------------------------------------------------------------------------------------------------------------
  [POINT Z (1 1 1)@2000-01-01 00:00:00+00, POINT Z (2 2 2)@2000-01-02 00:00:00+00, POINT Z (1 1 1)@2000-01-03 00:00:00+00]
 (1 row)
 
-SELECT asText(minusGeometry(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', geometry 'Linestring Z empty'));
+SELECT asText(minusGeometry(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', geometry 'Linestring empty'));
                                                                                                     astext                                                                                                    
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {[POINT Z (1 1 1)@2000-01-01 00:00:00+00, POINT Z (2 2 2)@2000-01-02 00:00:00+00, POINT Z (1 1 1)@2000-01-03 00:00:00+00], [POINT Z (3 3 3)@2000-01-04 00:00:00+00, POINT Z (3 3 3)@2000-01-05 00:00:00+00]}
 (1 row)
 
-SELECT asText(minusGeometry(tgeompoint 'Interp=Step;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', geometry 'Linestring Z empty'));
+SELECT asText(minusGeometry(tgeompoint 'Interp=Step;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', geometry 'Linestring empty'));
                                                                 astext                                                                
 --------------------------------------------------------------------------------------------------------------------------------------
  Interp=Step;[POINT Z (1 1 1)@2000-01-01 00:00:00+00, POINT Z (2 2 2)@2000-01-02 00:00:00+00, POINT Z (1 1 1)@2000-01-03 00:00:00+00]
 (1 row)
 
-SELECT asText(minusGeometry(tgeompoint 'Interp=Step;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', geometry 'Linestring Z empty'));
+SELECT asText(minusGeometry(tgeompoint 'Interp=Step;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', geometry 'Linestring empty'));
                                                                                                           astext                                                                                                          
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  Interp=Step;{[POINT Z (1 1 1)@2000-01-01 00:00:00+00, POINT Z (2 2 2)@2000-01-02 00:00:00+00, POINT Z (1 1 1)@2000-01-03 00:00:00+00], [POINT Z (3 3 3)@2000-01-04 00:00:00+00, POINT Z (3 3 3)@2000-01-05 00:00:00+00]}
@@ -3243,21 +3315,21 @@ SELECT asText(minusGeometry(tgeompoint '{[Point(1 1)@2000-01-01, Point(3 3)@2000
  {[POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-01 12:00:00+00), (POINT(2 2)@2000-01-01 12:00:00+00, POINT(3 3)@2000-01-02 00:00:00+00], [POINT(3 3)@2000-01-03 00:00:00+00]}
 (1 row)
 
-SELECT asText(minusGeometry(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(1 1 1,2 2 2)'));
- astext 
---------
- 
-(1 row)
-
-SELECT asText(minusGeometry(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Linestring(1 1,2 2)'));
- astext 
---------
- 
-(1 row)
-
 /* Errors */
 SELECT minusGeometry(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Linestring(1 1,2 2)');
 ERROR:  Operation on mixed SRID
+SELECT minusGeometry(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(1 1 1,2 2 2)');
+ERROR:  The geometry cannot have Z dimension
+WITH temp(trip, geo, zspan) AS (
+  SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(3 1 1)@2000-01-03,
+    Point(3 1 3)@2000-01-05]', geometry 'Polygon((2 0,2 2,2 4,4 0,2 0))', floatspan '[0,2]' )
+SELECT trip = merge(atGeometry(trip, geo, zspan), minusGeometry(trip, geo, zspan))
+FROM temp;
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT asText(atStbox(tgeompoint 'Point(1 1)@2000-01-01', 'STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-02])'));
               astext               
 -----------------------------------
@@ -3355,3 +3427,13 @@ SELECT asText(atStbox(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', 'STBOX XT(((
 ERROR:  Operation on mixed SRID
 SELECT asText(atStbox(tgeompoint 'Point(1 1)@2000-01-01', 'STBOX ZT(((1,1,1),(2,2,2)),[2000-01-01,2000-01-02])'));
 ERROR:  Operation on mixed 2D/3D dimensions
+WITH temp(trip, box) AS (
+  SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(3 1 1)@2000-01-03,
+    Point(3 1 3)@2000-01-05]', stbox 'STBox Z((2 0 0),(4 2 2))' )
+SELECT trip = merge(atStbox(trip, box), minusStbox(trip,box))
+FROM temp;
+ ?column? 
+----------
+ t
+(1 row)
+

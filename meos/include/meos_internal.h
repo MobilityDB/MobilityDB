@@ -693,10 +693,10 @@ extern Temporal *tsequenceset_restrict_timestampset(const TSequenceSet *ss1, con
 extern TSequenceSet *tsequenceset_restrict_period(const TSequenceSet *ss, const Span *p, bool atfunc);
 extern TSequenceSet *tsequenceset_restrict_periodset(const TSequenceSet *ss, const SpanSet *ps, bool atfunc);
 extern TInstant *tpointinst_restrict_geometry(const TInstant *inst, const GSERIALIZED *gs, bool atfunc);
-extern TSequence *tpointdiscseq_restrict_geometry(const TSequence *seq, const GSERIALIZED *gs, bool atfunc);
-extern TSequenceSet *tpointcontseq_restrict_geometry(const TSequence *seq, const GSERIALIZED *gs, bool atfunc);
+extern TSequence *tpointseq_disc_restrict_geometry(const TSequence *seq, const GSERIALIZED *gs, bool atfunc);
+extern TSequenceSet *tpointseq_cont_restrict_geometry(const TSequence *seq, const GSERIALIZED *gs, bool atfunc);
 extern TSequenceSet *tpointseqset_restrict_geometry(const TSequenceSet *ss, const GSERIALIZED *gs, const STBox *box, bool atfunc);
-extern Temporal *tpoint_restrict_geometry(const Temporal *temp, const GSERIALIZED *gs, bool atfunc);
+extern Temporal *tpoint_restrict_geometry(const Temporal *temp, const GSERIALIZED *gs, const Span *zspan, bool atfunc);
 extern Temporal *tpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool atfunc);
 
 /*****************************************************************************/
@@ -822,9 +822,8 @@ extern bool tsequenceset_eq(const TSequenceSet *ss1, const TSequenceSet *ss2);
 /* Spatial accessor functions for temporal point types */
 
 extern int tpointinst_srid(const TInstant *inst);
-extern bool tpointdiscseq_is_simple(const TSequence *seq);
-extern GSERIALIZED *tpointcontseq_trajectory(const TSequence *seq);
-extern GSERIALIZED *tpointdiscseq_trajectory(const TSequence *seq);
+extern GSERIALIZED *tpointseq_cont_trajectory(const TSequence *seq);
+extern GSERIALIZED *tpointseq_disc_trajectory(const TSequence *seq);
 extern TSequenceSet *tpointseq_azimuth(const TSequence *seq);
 extern TSequence *tpointseq_cumulative_length(const TSequence *seq, double prevlength);
 extern bool tpointseq_is_simple(const TSequence *seq);

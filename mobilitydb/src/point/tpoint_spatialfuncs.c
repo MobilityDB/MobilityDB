@@ -232,7 +232,7 @@ tpointseq_transform(const TSequence *seq, int srid)
   /* General case */
   /* Call the discrete sequence function even for continuous sequences
    * to obtain a Multipoint that is sent to PostGIS for transformion */
-  Datum multipoint = PointerGetDatum(tpointdiscseq_trajectory(seq));
+  Datum multipoint = PointerGetDatum(tpointseq_disc_trajectory(seq));
   Datum transf = datum_transform(multipoint, srid);
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(transf);
   LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
@@ -1183,9 +1183,14 @@ Tpoint_make_simple(PG_FUNCTION_ARGS)
 static Datum
 tpoint_restrict_geometry_ext(FunctionCallInfo fcinfo, bool atfunc)
 {
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
+    PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(1);
-  Temporal *result = tpoint_restrict_geometry(temp, geo, atfunc);
+  Span *zspan = NULL;
+  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
+    zspan = PG_GETARG_SPAN_P(2);
+  Temporal *result = tpoint_restrict_geometry(temp, geo, zspan, atfunc);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(geo, 1);
   if (! result)

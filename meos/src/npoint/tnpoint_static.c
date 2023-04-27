@@ -94,12 +94,13 @@ get_srid_ways()
 /*****************************************************************************/
 
 /**
- * Convert a network point array into a geometry
+ * @brief Convert an array of network points into a geometry
+ * @pre The number of network points is greater than 1
  */
 GSERIALIZED *
 npointarr_geom(Npoint **points, int count)
 {
-  assert(count > 0);
+  assert(count > 1);
   LWGEOM **geoms = palloc(sizeof(LWGEOM *) * count);
   for (int i = 0; i < count; i++)
   {
@@ -109,28 +110,23 @@ npointarr_geom(Npoint **points, int count)
     geoms[i] = lwgeom_line_interpolate_point(lwline, points[i]->pos, srid, 0);
     pfree(line); pfree(lwline);
   }
-  GSERIALIZED *result;
-  if (count == 1)
-    result = geo_serialize(geoms[0]);
-  else
-  {
-    int newcount;
-    LWGEOM **newgeoms = lwpointarr_remove_duplicates(geoms, count, &newcount);
-    LWGEOM *lwgeom = lwpointarr_make_trajectory(newgeoms, newcount, STEP);
-    result = geo_serialize(lwgeom);
-    pfree(newgeoms);
-  }
+  int newcount;
+  LWGEOM **newgeoms = lwpointarr_remove_duplicates(geoms, count, &newcount);
+  LWGEOM *lwgeom = lwpointarr_make_trajectory(newgeoms, newcount, STEP);
+  GSERIALIZED *result = geo_serialize(lwgeom);
+  pfree(newgeoms); pfree(lwgeom);
   pfree_array((void **) geoms, count);
   return result;
 }
 
 /**
- * Convert a network segment array into a geometry
+ * @brief Convert an array of network segments into a geometry
+ * @pre The number of network segments is greater than 1
  */
 GSERIALIZED *
 nsegmentarr_geom(Nsegment **segments, int count)
 {
-  assert(count > 0);
+  assert(count > 1);
   GSERIALIZED **geoms = palloc(sizeof(GSERIALIZED *) * count);
   for (int i = 0; i < count; i++)
   {
@@ -144,14 +140,8 @@ nsegmentarr_geom(Nsegment **segments, int count)
         segments[i]->pos2);
     pfree(line);
   }
-  GSERIALIZED *result;
-  if (count == 1)
-    result = geoms[0];
-  else
-  {
-    result = gserialized_array_union(geoms, count);
-    pfree_array((void **) geoms, count);
-  }
+  GSERIALIZED *result = gserialized_array_union(geoms, count);
+  pfree_array((void **) geoms, count);
   return result;
 }
 

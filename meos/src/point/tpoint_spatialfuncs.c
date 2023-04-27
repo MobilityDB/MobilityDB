@@ -1581,7 +1581,7 @@ lwline_make(Datum value1, Datum value2)
  * @sqlfunc trajectory()
  */
 GSERIALIZED *
-tpointdiscseq_trajectory(const TSequence *seq)
+tpointseq_disc_trajectory(const TSequence *seq)
 {
   /* Singleton discrete sequence */
   if (seq->count == 1)
@@ -1613,7 +1613,7 @@ tpointdiscseq_trajectory(const TSequence *seq)
  * @sqlfunc trajectory()
  */
 GSERIALIZED *
-tpointcontseq_trajectory(const TSequence *seq)
+tpointseq_cont_trajectory(const TSequence *seq)
 {
   /* Instantaneous sequence */
   if (seq->count == 1)
@@ -1654,7 +1654,7 @@ tpointseqset_trajectory(const TSequenceSet *ss)
 {
   /* Singleton sequence set */
   if (ss->count == 1)
-    return tpointcontseq_trajectory(TSEQUENCESET_SEQ_N(ss, 0));
+    return tpointseq_cont_trajectory(TSEQUENCESET_SEQ_N(ss, 0));
 
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(ss->flags);
   LWPOINT **points = palloc(sizeof(LWPOINT *) * ss->totalcount);
@@ -1662,7 +1662,7 @@ tpointseqset_trajectory(const TSequenceSet *ss)
   int k = 0, l = 0;
   for (int i = 0; i < ss->count; i++)
   {
-    GSERIALIZED *traj = tpointcontseq_trajectory(TSEQUENCESET_SEQ_N(ss, i));
+    GSERIALIZED *traj = tpointseq_cont_trajectory(TSEQUENCESET_SEQ_N(ss, i));
     int geotype = gserialized_get_type(traj);
     if (geotype == POINTTYPE)
       points[l++] = lwgeom_as_lwpoint(lwgeom_from_gserialized(traj));
@@ -1732,8 +1732,8 @@ tpoint_trajectory(const Temporal *temp)
     result = DatumGetGserializedP(tinstant_value_copy((TInstant *) temp));
   else if (temp->subtype == TSEQUENCE)
     result = MEOS_FLAGS_GET_DISCRETE(temp->flags) ?
-      tpointdiscseq_trajectory((TSequence *) temp) :
-      tpointcontseq_trajectory((TSequence *) temp);
+      tpointseq_disc_trajectory((TSequence *) temp) :
+      tpointseq_cont_trajectory((TSequence *) temp);
   else /* temp->subtype == TSEQUENCESET */
     result = tpointseqset_trajectory((TSequenceSet *) temp);
   return result;
@@ -2199,7 +2199,7 @@ tpointseq_length(const TSequence *seq)
   else
   {
     /* We are sure that the trajectory is a line */
-    GSERIALIZED *traj = tpointcontseq_trajectory(seq);
+    GSERIALIZED *traj = tpointseq_cont_trajectory(seq);
     double result = gserialized_geog_length(traj, true);
     pfree(traj);
     return result;
@@ -3238,41 +3238,45 @@ static bool *
 tpointseq_discstep_find_splits(const TSequence *seq, int *count)
 {
   assert(! MEOS_FLAGS_GET_LINEAR(seq->flags));
-  int count1 = seq->count;
-  assert(count1 > 1);
+  assert(seq->count > 1);
   /* bitarr is an array of bool for collecting the splits */
-  bool *bitarr = palloc0(sizeof(bool) * count1);
+  bool *bitarr = palloc0(sizeof(bool) * seq->count);
   int numsplits = 0;
-  int start = 0, end = count1 - 1;
-  while (start < count1 - 1)
+  int start = 0, end = seq->count - 1;
+  while (start < end)
   {
-    const TInstant *inst1 = TSEQUENCE_INST_N(seq, start);
-    Datum value1 = tinstant_value(inst1);
     /* Find intersections in the piece defined by start and end in a
      * breadth-first search */
     int j = start, k = start + 1;
-    while (k <= end)
+    Datum value1 = tinstant_value(TSEQUENCE_INST_N(seq, j));
+    Datum value2 = tinstant_value(TSEQUENCE_INST_N(seq, k));
+    while (true)
     {
-      const TInstant *inst2 = TSEQUENCE_INST_N(seq, k);
-      Datum value2 = tinstant_value(inst2);
       if (datum_point_eq(value1, value2))
       {
-        /* Set the new end */
-        end = k;
-        bitarr[end] = true;
+        /* Set the new start */
+        bitarr[k] = true;
         numsplits++;
+        start = k;
         break;
       }
       if (j < k - 1)
+      {
         j++;
+        value1 = tinstant_value(TSEQUENCE_INST_N(seq, j));
+      }
       else
       {
         k++;
+        if (k > end)
+          break;
         j = start;
+        value1 = tinstant_value(TSEQUENCE_INST_N(seq, j));
+        value2 = tinstant_value(TSEQUENCE_INST_N(seq, k));
       }
     }
-    /* Process the next split */
-    start = end;
+    if (k > end)
+      break;
   }
   *count = numsplits;
   return bitarr;
@@ -3387,22 +3391,21 @@ tpointseq_linear_find_splits(const TSequence *seq, int *count)
 /**
  * @brief Return true if a temporal point does not self-intersect.
  * @param[in] seq Temporal point
- * @param[in] count Number of instants of the temporal point
  * @pre The temporal point sequence has discrete or step interpolation
  */
 static bool
-tpointseq_discstep_is_simple(const TSequence *seq, int count)
+tpointseq_discstep_is_simple(const TSequence *seq)
 {
-  assert(count > 1);
-  Datum *points = palloc(sizeof(Datum) * count);
-  for (int i = 0; i < count; i++)
+  assert(seq->count > 1);
+  Datum *points = palloc(sizeof(Datum) * seq->count);
+  for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     points[i] = tinstant_value(inst);
   }
-  datumarr_sort(points, count, temptype_basetype(seq->temptype));
+  datumarr_sort(points, seq->count, temptype_basetype(seq->temptype));
   bool found = false;
-  for (int i = 1; i < count; i++)
+  for (int i = 1; i < seq->count; i++)
   {
     if (datum_point_eq(points[i - 1], points[i]))
     {
@@ -3427,12 +3430,12 @@ tpointseq_is_simple(const TSequence *seq)
     return true;
 
   if (! MEOS_FLAGS_GET_LINEAR(seq->flags))
-    return tpointseq_discstep_is_simple(seq, seq->count);
+    return tpointseq_discstep_is_simple(seq);
 
   int numsplits;
   bool *splits = tpointseq_linear_find_splits(seq, &numsplits);
   pfree(splits);
-  return numsplits == 0;
+  return (numsplits == 0);
 }
 
 /**
@@ -3485,7 +3488,7 @@ tpoint_is_simple(const Temporal *temp)
  * @pre The discrete sequence has at least two instants
  */
 static TSequence **
-tpointdiscseq_split(const TSequence *seq, bool *splits, int count)
+tpointseq_disc_split(const TSequence *seq, bool *splits, int count)
 {
   assert(seq->count > 1);
   const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
@@ -3518,7 +3521,7 @@ tpointdiscseq_split(const TSequence *seq, bool *splits, int count)
  * @note This function is called for each sequence of a sequence set
  */
 static TSequence **
-tpointcontseq_split(const TSequence *seq, bool *splits, int count)
+tpointseq_cont_split(const TSequence *seq, bool *splits, int count)
 {
   assert(seq->count > 2);
   bool linear = MEOS_FLAGS_GET_LINEAR(seq->flags);
@@ -3531,7 +3534,7 @@ tpointcontseq_split(const TSequence *seq, bool *splits, int count)
     int end = start + 1;
     while (end < seq->count - 1 && ! splits[end])
       end++;
-    /* Construct piece from start to end inclusive */
+    /* Construct fragment from start to end inclusive */
     for (int j = 0; j <= end - start; j++)
       instants[j] = (TInstant *) TSEQUENCE_INST_N(seq, j + start);
     bool lower_inc1 = (start == 0) ? seq->period.lower_inc : true;
@@ -3540,12 +3543,12 @@ tpointcontseq_split(const TSequence *seq, bool *splits, int count)
     /* The last two values of sequences with step interpolation and
      * exclusive upper bound must be equal */
     bool tofree = false;
-    if (! linear &&
+    if (! linear && ! upper_inc1 &&
       ! datum_point_eq(tinstant_value(instants[end - start - 1]),
       tinstant_value(instants[end - start])))
     {
       Datum value = tinstant_value(instants[end - start - 1]);
-      TimestampTz t = (TSEQUENCE_INST_N(seq, end - start))->t;
+      TimestampTz t = (instants[end - start])->t;
       instants[end - start] = tinstant_make(value, seq->temptype, t);
       tofree = true;
       upper_inc1 = false;
@@ -3561,9 +3564,9 @@ tpointcontseq_split(const TSequence *seq, bool *splits, int count)
     /* Continue with the next split */
     start = end;
   }
-  if (seq->period.upper_inc && splits[seq->count - 1])
+  if (k < count)
   {
-    /* Construct piece containing last instant of sequence */
+    /* Construct last fragment containing the last instant of sequence */
     instants[0] = (TInstant *) TSEQUENCE_INST_N(seq, seq->count - 1);
     result[k++] = tsequence_make((const TInstant **) instants,
       seq->count - start, true, seq->period.upper_inc,
@@ -3611,8 +3614,8 @@ tpointseq_make_simple(const TSequence *seq, int *count)
   }
 
   result = (interp == DISCRETE) ?
-    tpointdiscseq_split(seq, splits, numsplits + 1) :
-    tpointcontseq_split(seq, splits, numsplits + 1);
+    tpointseq_disc_split(seq, splits, numsplits + 1) :
+    tpointseq_cont_split(seq, splits, numsplits + 1);
   pfree(splits);
   *count = numsplits + 1;
   return result;
@@ -3688,16 +3691,16 @@ tpoint_make_simple(const Temporal *temp, int *count)
  * @param[in] inst Temporal instant point
  * @param[in] gs Geometry
  * @param[in] atfunc True if the restriction is at, false for minus
- * @pre The arguments are of the same dimensionality, have the same SRID,
- * and the geometry is not empty. This is verified in #tpoint_restrict_geometry
+ * @pre The arguments are of the same dimensionality, have the same SRID, the
+ * geometry is not empty. This is verified in #tpoint_restrict_geometry
  * @sqlfunc atGeometry(), minusGeometry()
  */
 TInstant *
 tpointinst_restrict_geometry(const TInstant *inst, const GSERIALIZED *gs,
   bool atfunc)
 {
-  bool inter = DatumGetBool(geom_intersects2d(tinstant_value(inst),
-    PointerGetDatum(gs)));
+  Datum value = tinstant_value(inst);
+  bool inter = DatumGetBool(geom_intersects2d(value, PointerGetDatum(gs)));
   if ((atfunc && ! inter) || (! atfunc && inter))
     return NULL;
   return tinstant_copy(inst);
@@ -3710,12 +3713,12 @@ tpointinst_restrict_geometry(const TInstant *inst, const GSERIALIZED *gs,
  * @param[in] seq Temporal discrete sequence point
  * @param[in] gs Geometry
  * @param[in] atfunc True if the restriction is at, false for minus
- * @pre The arguments are of the same dimensionality, have the same SRID,
- * and the geometry is not empty. This is verified in #tpoint_restrict_geometry
+ * @pre The arguments are of the same dimensionality, have the same SRID, the
+ * geometry is not empty. This is verified in #tpoint_restrict_geometry
  * @sqlfunc atGeometry(), minusGeometry()
  */
 TSequence *
-tpointdiscseq_restrict_geometry(const TSequence *seq, const GSERIALIZED *gs,
+tpointseq_disc_restrict_geometry(const TSequence *seq, const GSERIALIZED *gs,
   bool atfunc)
 {
   const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
@@ -3723,9 +3726,9 @@ tpointdiscseq_restrict_geometry(const TSequence *seq, const GSERIALIZED *gs,
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    bool inter = DatumGetBool(geom_intersects2d(tinstant_value(inst),
-      PointerGetDatum(gs)));
-    if ((atfunc && inter) || (!atfunc && !inter))
+    Datum value = tinstant_value(inst);
+    bool inter = DatumGetBool(geom_intersects2d(value, PointerGetDatum(gs)));
+    if ((atfunc && inter) || (! atfunc && ! inter))
       instants[k++] = inst;
   }
   TSequence *result = NULL;
@@ -3733,36 +3736,6 @@ tpointdiscseq_restrict_geometry(const TSequence *seq, const GSERIALIZED *gs,
     result = tsequence_make(instants, k, true, true, DISCRETE, NORMALIZE_NO);
   pfree(instants);
   return result;
-}
-
-/**
- * @brief Get the intersection points
- */
-static int
-gsinter_get_points(Datum *result, GSERIALIZED *gsinter)
-{
-  int gstype = gserialized_get_type(gsinter);
-  /* The gserialized is of point or multipoint type */
-  assert(gstype == POINTTYPE || gstype == MULTIPOINTTYPE);
-  int k = 0;
-  if (gstype == POINTTYPE)
-  {
-    result[k++] = PointerGetDatum(gserialized_copy(gsinter));
-  }
-  else
-  /* It is a collection of type MULTIPOINTTYPE */
-  {
-    LWGEOM *lwinter = lwgeom_from_gserialized(gsinter);
-    LWCOLLECTION *coll = lwgeom_as_lwcollection(lwinter);
-    int countinter = coll->ngeoms;
-    for (int i = 0; i < countinter; i++)
-    {
-      /* Find the i-th intersection */
-      result[k++] = PointerGetDatum(geo_serialize(coll->geoms[i]));
-    }
-    lwgeom_free(lwinter);
-  }
-  return k;
 }
 
 /**
@@ -3776,25 +3749,18 @@ static TSequence **
 tpointseq_step_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
   int *count)
 {
-  /* Split the temporal point in an array of non self-intersecting
-   * temporal points */
-  int countsimple;
-  TSequence **simpleseqs = tpointseq_make_simple(seq, &countsimple);
-  /* Allocate memory for the intersection points */
-  Datum *points = palloc(sizeof(Datum) * countsimple * seq->count);
+  /* Select the intersecting points */
+  Datum *points = palloc(sizeof(Datum) * seq->count);
   int k = 0;
-  /* Loop for every simple piece of the sequence */
-  for (int i = 0; i < countsimple; i++)
+  for (int i = 0; i < seq->count; i++)
   {
-    Datum traj = PointerGetDatum(tpointcontseq_trajectory(simpleseqs[i]));
-    Datum inter = geom_intersection2d(traj, PointerGetDatum(gs));
-    GSERIALIZED *gsinter = DatumGetGserializedP(inter);
-    if (! gserialized_is_empty(gsinter))
-      k += gsinter_get_points(&points[k], gsinter);
-    PG_FREE_IF_COPY_P(gsinter, DatumGetPointer(inter));
-    pfree(DatumGetPointer(inter));
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+    Datum value = tinstant_value(inst);
+    bool inter = DatumGetBool(geom_intersects2d(value, PointerGetDatum(gs)));
+    if (inter)
+      points[k++] = value;
   }
-  pfree_array((void **) simpleseqs, countsimple);
+  /* Restrict the geometry to the intersecting points */
   if (k == 0)
   {
     *count = 0;
@@ -3815,11 +3781,7 @@ tpointseq_step_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
  *
  * This function must take into account the roundoff errors and thus it uses
  * the datum_point_eq_eps for comparing two values so the coordinates of the
- * values may differ by MEOS_EPSILON. Furthermore, we must drop the Z values
- * since this function may be called for finding the intersection of a sequence
- * and a geometry and the Z values crrently given by PostGIS/GEOS are not
- * necessarily extact, they "are copied, averaged or interpolated" as stated in
- * https://postgis.net/docs/ST_Intersection.html
+ * values may differ by MEOS_EPSILON.
  *
  * @param[in] inst1,inst2 Temporal values
  * @param[in] value Base value
@@ -3832,32 +3794,11 @@ static bool
 tpointsegm_timestamp_at_value1(const TInstant *inst1, const TInstant *inst2,
   Datum value, TimestampTz *t)
 {
-  bool hasz = MEOS_FLAGS_GET_Z(inst1->flags);
-  Datum value1, value2, val;
-  GSERIALIZED *gs1 = NULL, *gs2 = NULL, *gs = NULL; /* make compiler quiet */
-  if (hasz)
-  {
-    /* We need to do the comparison in 2D since the Z values returned by PostGIS
-     * may not be correct */
-    gs1 = DatumGetGserializedP(tinstant_value_copy(inst1));
-    gs2 = DatumGetGserializedP(tinstant_value_copy(inst2));
-    gs = gserialized_copy(DatumGetGserializedP(value));
-    FLAGS_SET_Z(gs1->gflags, false);
-    FLAGS_SET_Z(gs2->gflags, false);
-    FLAGS_SET_Z(gs->gflags, false);
-    value1 = PointerGetDatum(gs1);
-    value2 = PointerGetDatum(gs2);
-    val = PointerGetDatum(gs);
-  }
-  else
-  {
-    value1 = tinstant_value(inst1);
-    value2 = tinstant_value(inst2);
-    val = value;
-  }
+  Datum value1 = tinstant_value(inst1);
+  Datum value2 = tinstant_value(inst2);
   /* Is the lower bound the answer? */
   bool result = true;
-  if (datum_point_eq(value1, val))
+  if (datum_point_eq(value1, value))
     *t = inst1->t;
   /* Is the upper bound the answer? */
   else if (datum_point_eq(value2, value))
@@ -3865,7 +3806,7 @@ tpointsegm_timestamp_at_value1(const TInstant *inst1, const TInstant *inst2,
   else
   {
     double dist;
-    double fraction = (double) geosegm_locate_point(value1, value2, val, &dist);
+    double fraction = (double) geosegm_locate_point(value1, value2, value, &dist);
     if (fabs(dist) >= MEOS_EPSILON)
       result = false;
     else
@@ -3873,10 +3814,6 @@ tpointsegm_timestamp_at_value1(const TInstant *inst1, const TInstant *inst2,
       double duration = (double) (inst2->t - inst1->t);
       *t = inst1->t + (TimestampTz) (duration * fraction);
     }
-  }
-  if (hasz)
-  {
-    pfree(gs1); pfree(gs2); pfree(gs);
   }
   return result;
 }
@@ -3895,9 +3832,9 @@ tpointsegm_timestamp_at_value1(const TInstant *inst1, const TInstant *inst2,
  * @param[in] value Base value
  * @param[out] t Timestamp
  * @result Return true if the point is found in the temporal point
- * @pre The point is known to belong to the temporal sequence (taking
- * into account roundoff errors), the temporal sequence has linear
- * interpolation, and it simple
+ * @pre The point is known to belong to the temporal sequence (taking into
+ * account roundoff errors), the temporal sequence has linear interpolation,
+ * and it simple
  * @note The resulting timestamp may be at an exclusive bound
  */
 static bool
@@ -4059,30 +3996,56 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter, int *count)
  * geometry
  * @param[in] seq Temporal point sequence
  * @param[in] gs Geometry
+ * @pre The arguments are of the same dimensionality, have the same SRID, the
+ * geometry is not empty. This is verified in #tpoint_restrict_geometry
  * @param[out] count Number of elements in the resulting array
  */
 static TSequence **
-tpointseq_linear_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
+tpointseq_cont_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
   int *count)
 {
+  /* Step interpolation */
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  if (interp == STEP)
+    return tpointseq_step_at_geometry(seq, gs, count);
+
+  /* Instantaneous sequence */
+  if (seq->count == 1)
+  {
+    TInstant *inst = tpointinst_restrict_geometry(TSEQUENCE_INST_N(seq, 0), gs,
+      REST_AT);
+    if (! inst)
+    {
+      *count = 0;
+      return NULL;
+    }
+    TSequence **result = palloc(sizeof(TSequence *));
+    result[0] = tsequence_copy(seq);
+    *count = 1;
+    return result;
+  }
+
+  /* Linear interpolation */
   /* Split the temporal point in an array of non self-intersecting
    * temporal points */
   int countsimple;
   TSequence **simpleseqs = tpointseq_make_simple(seq, &countsimple);
   Span *allperiods = NULL; /* make compiler quiet */
   int totalcount = 0;
+  GSERIALIZED *traj, *gsinter;
+  Datum inter;
 
   if (countsimple == 1)
   {
     /* Particular case when the input sequence is simple */
     pfree_array((void **) simpleseqs, countsimple);
-    Datum traj = PointerGetDatum(tpointcontseq_trajectory(seq));
-    Datum inter = geom_intersection2d(traj, PointerGetDatum(gs));
-    GSERIALIZED *gsinter = DatumGetGserializedP(inter);
+    traj = tpointseq_cont_trajectory(seq);
+    inter = geom_intersection2d(PointerGetDatum(traj), PointerGetDatum(gs));
+    gsinter = DatumGetGserializedP(inter);
     if (! gserialized_is_empty(gsinter))
       allperiods = tpointseq_interperiods(seq, gsinter, &totalcount);
     PG_FREE_IF_COPY_P(gsinter, DatumGetPointer(inter));
-    pfree(DatumGetPointer(inter));
+    pfree(DatumGetPointer(inter)); pfree(traj);
     if (totalcount == 0)
     {
       *count = 0;
@@ -4097,9 +4060,9 @@ tpointseq_linear_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
     /* Loop for every simple piece of the sequence */
     for (int i = 0; i < countsimple; i++)
     {
-      Datum traj = PointerGetDatum(tpointcontseq_trajectory(simpleseqs[i]));
-      Datum inter = geom_intersection2d(traj, PointerGetDatum(gs));
-      GSERIALIZED *gsinter = DatumGetGserializedP(inter);
+      traj = tpointseq_cont_trajectory(simpleseqs[i]);
+      inter = geom_intersection2d(PointerGetDatum(traj), PointerGetDatum(gs));
+      gsinter = DatumGetGserializedP(inter);
       if (! gserialized_is_empty(gsinter))
       {
         periods[i] = tpointseq_interperiods(simpleseqs[i], gsinter,
@@ -4107,7 +4070,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
         totalcount += countpers[i];
       }
       PG_FREE_IF_COPY_P(gsinter, DatumGetPointer(inter));
-      pfree(DatumGetPointer(inter));
+      pfree(DatumGetPointer(inter)); pfree(traj);
     }
     pfree_array((void **) simpleseqs, countsimple);
     if (totalcount == 0)
@@ -4137,41 +4100,6 @@ tpointseq_linear_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
 }
 
 /**
- * @brief Restrict a temporal point to (the complement of) a geometry.
- *
- * The function splits the temporal point in an array of temporal point
- * sequences that are simple (that is, not self-intersecting) and loops
- * for each piece
- * @param[in] seq Temporal sequence point
- * @param[in] gs Geometry
- * @param[out] count Number of elements in the resulting array
- * @pre The temporal sequence is simple, that is, does not self-intersect
- */
-TSequence **
-tpointseq_at_geometry(const TSequence *seq, const GSERIALIZED *gs, int *count)
-{
-  /* Instantaneous sequence */
-  if (seq->count == 1)
-  {
-    TInstant *inst = tpointinst_restrict_geometry(TSEQUENCE_INST_N(seq, 0),
-      gs, REST_AT);
-    if (inst == NULL)
-    {
-      *count = 0;
-      return NULL;
-    }
-    TSequence **result = palloc(sizeof(TSequence *));
-    result[0] = tsequence_copy(seq);
-    *count = 1;
-    return result;
-  }
-  if (MEOS_FLAGS_GET_LINEAR(seq->flags))
-    return tpointseq_linear_at_geometry(seq, gs, count);
-  else
-    return tpointseq_step_at_geometry(seq, gs, count);
-}
-
-/**
  * @brief Restrict a temporal sequence point to the complement of a geometry
  *
  * It is not possible to use a similar approach as for tpointseq_at_geometry1
@@ -4189,11 +4117,11 @@ tpointseq_at_geometry(const TSequence *seq, const GSERIALIZED *gs, int *count)
  * @param[out] count Number of elements in the resulting array
  */
 static TSequence **
-tpointseq_minus_geometry(const TSequence *seq, const GSERIALIZED *gs,
+tpointseq_cont_minus_geometry(const TSequence *seq, const GSERIALIZED *gs,
   int *count)
 {
   int countinter;
-  TSequence **sequences = tpointseq_at_geometry(seq, gs, &countinter);
+  TSequence **sequences = tpointseq_cont_at_geometry(seq, gs, &countinter);
   if (countinter == 0)
   {
     TSequence **result = palloc(sizeof(TSequence *));
@@ -4225,25 +4153,26 @@ tpointseq_minus_geometry(const TSequence *seq, const GSERIALIZED *gs,
  * @param[in] seq Temporal sequence point
  * @param[in] gs Geometry
  * @param[in] atfunc True if the restriction is at, false for minus
- * @pre The arguments are of the same dimensionality, have the same SRID,
- * and the geometry is not empty. This is verified in #tpoint_restrict_geometry
+ * @pre The arguments are of the same dimensionality, have the same SRID, the
+ * geometry is not empty. This is verified in #tpoint_restrict_geometry
  * @note The test for instantaneous sequences is done at the function
  * tpointseq_at_geometry since the latter function is called for each sequence
  * of a sequence set
  * @sqlfunc atGeometry(), minusGeometry()
  */
 TSequenceSet *
-tpointcontseq_restrict_geometry(const TSequence *seq, const GSERIALIZED *gs,
+tpointseq_cont_restrict_geometry(const TSequence *seq, const GSERIALIZED *gs,
   bool atfunc)
 {
   int count;
-  TSequence **sequences = atfunc ? tpointseq_at_geometry(seq, gs, &count) :
-    tpointseq_minus_geometry(seq, gs, &count);
+  TSequence **sequences = atfunc ?
+    tpointseq_cont_at_geometry(seq, gs, &count) :
+    tpointseq_cont_minus_geometry(seq, gs, &count);
   if (sequences == NULL)
     return NULL;
 
   /* It is necessary to sort the sequences */
-  tseqarr_sort((TSequence **) sequences, count);
+  tseqarr_sort(sequences, count);
   return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
 
@@ -4255,8 +4184,8 @@ tpointcontseq_restrict_geometry(const TSequence *seq, const GSERIALIZED *gs,
  * @param[in] gs Geometry
  * @param[in] box Bounding box of the geometry
  * @param[in] atfunc True if the restriction is at, false for minus
- * @pre The arguments are of the same dimensionality, have the same SRID,
- * and the geometry is not empty. This is verified in #tpoint_restrict_geometry
+ * @pre The arguments are of the same dimensionality, have the same SRID, the
+ * geometry is not empty. This is verified in #tpoint_restrict_geometry
  * @sqlfunc atGeometry(), minusGeometry()
  */
 TSequenceSet *
@@ -4265,7 +4194,7 @@ tpointseqset_restrict_geometry(const TSequenceSet *ss, const GSERIALIZED *gs,
 {
   /* Singleton sequence set */
   if (ss->count == 1)
-    return tpointcontseq_restrict_geometry(TSEQUENCESET_SEQ_N(ss, 0), gs,
+    return tpointseq_cont_restrict_geometry(TSEQUENCESET_SEQ_N(ss, 0), gs,
       atfunc);
 
   /* palloc0 used due to the bounding box test in the for loop below */
@@ -4282,7 +4211,7 @@ tpointseqset_restrict_geometry(const TSequenceSet *ss, const GSERIALIZED *gs,
     {
       if (overlaps)
       {
-        sequences[i] = tpointseq_at_geometry(seq, gs, &countseqs[i]);
+        sequences[i] = tpointseq_cont_at_geometry(seq, gs, &countseqs[i]);
         totalcount += countseqs[i];
       }
     }
@@ -4297,7 +4226,7 @@ tpointseqset_restrict_geometry(const TSequenceSet *ss, const GSERIALIZED *gs,
       }
       else
       {
-        sequences[i] = tpointseq_minus_geometry(seq, gs, &countseqs[i]);
+        sequences[i] = tpointseq_cont_minus_geometry(seq, gs, &countseqs[i]);
         totalcount += countseqs[i];
       }
     }
@@ -4307,8 +4236,8 @@ tpointseqset_restrict_geometry(const TSequenceSet *ss, const GSERIALIZED *gs,
     pfree(sequences); pfree(countseqs);
     return NULL;
   }
-  TSequence **allseqs = tseqarr2_to_tseqarr(sequences,
-    countseqs, ss->count, totalcount);
+  TSequence **allseqs = tseqarr2_to_tseqarr(sequences, countseqs, ss->count,
+    totalcount);
   return tsequenceset_make_free(allseqs, totalcount, NORMALIZE);
 }
 
@@ -4317,44 +4246,101 @@ tpointseqset_restrict_geometry(const TSequenceSet *ss, const GSERIALIZED *gs,
  * @brief Restrict a temporal point to (the complement of) a geometry.
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
+ * @param[in] zspan Span of values to restrict the Z dimension
  * @param[in] atfunc True if the restriction is at, false for minus
  * @sqlfunc atGeometry(), minusGeometry()
+ * @note The computation is based on the PostGIS function ST_Intersection.
+ * The geometry must be in 2D. When computing the intersection the Z values of
+ * the temporal point are also dropped since the Z values "are copied, averaged
+ * or interpolated" as stated in
+ * https://postgis.net/docs/ST_Intersection.html
+ * After the computation the Z values are recovered to continue filtering on
+ * the Z span, if given.
  */
 Temporal *
 tpoint_restrict_geometry(const Temporal *temp, const GSERIALIZED *gs,
-  bool atfunc)
+  const Span *zspan, bool atfunc)
 {
   if (gserialized_is_empty(gs))
-  {
-    if (atfunc)
-      return NULL;
-    else
-      return temporal_copy(temp);
-  }
+    return atfunc ? NULL : temporal_copy(temp);
   ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
+  ensure_has_not_Z_gs(gs);
+  if (zspan)
+    ensure_has_Z(temp->flags);
 
   /* Bounding box test */
   STBox box1, box2;
   temporal_set_bbox(temp, &box1);
   /* Non-empty geometries have a bounding box */
   geo_set_stbox(gs, &box2);
+  if (zspan)
+  {
+    MEOS_FLAGS_SET_Z(box2.flags, true);
+    box2.zmin = DatumGetFloat8(zspan->lower);
+    box2.zmax = DatumGetFloat8(zspan->upper);
+  }
   if (! overlaps_stbox_stbox(&box1, &box2))
     return atfunc ? NULL : temporal_copy(temp);
 
-  Temporal *result;
+  /* Convert the point to 2D before computing the restriction to geometry */
+  bool hasz = MEOS_FLAGS_GET_Z(temp->flags);
+  Temporal *temp2d = hasz ? tpoint_force2d(temp) : (Temporal *) temp;
+
+  Temporal *result2d;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
-    result = (Temporal *) tpointinst_restrict_geometry((TInstant *) temp,
+    result2d = (Temporal *) tpointinst_restrict_geometry((TInstant *) temp2d,
       gs, atfunc);
   else if (temp->subtype == TSEQUENCE)
-    result = MEOS_FLAGS_GET_DISCRETE(temp->flags) ?
-      (Temporal *) tpointdiscseq_restrict_geometry((TSequence *) temp, gs, atfunc) :
-      (Temporal *) tpointcontseq_restrict_geometry((TSequence *) temp, gs, atfunc);
+    result2d = MEOS_FLAGS_GET_DISCRETE(temp->flags) ?
+      (Temporal *) tpointseq_disc_restrict_geometry((TSequence *) temp2d,
+         gs, atfunc) :
+      (Temporal *) tpointseq_cont_restrict_geometry((TSequence *) temp2d,
+         gs, atfunc);
   else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tpointseqset_restrict_geometry((TSequenceSet *) temp,
-      gs, &box2, atfunc);
+    result2d = (Temporal *)
+      tpointseqset_restrict_geometry((TSequenceSet *) temp2d,
+        gs, &box2, atfunc);
 
-  return result;
+  if (! result2d)
+    return NULL;
+
+  /* Recover the 3D */
+  Temporal *result;
+  if (hasz)
+  {
+    SpanSet *ss = temporal_time(result2d);
+    /* We need to keep REST_AT in the next call */
+    result = temporal_restrict_periodset(temp, ss, REST_AT);
+    pfree(temp2d); pfree(result2d); pfree(ss);
+  }
+  else
+    result = result2d;
+
+  /* Finish is there is no restriction on Z */
+  if (! zspan)
+    return result;
+
+  /* Restrict the result to the span for the Z dimension */
+  Temporal *result_zspan = NULL;
+  Temporal *temp_z = tpoint_get_coord(temp, 2);
+  Temporal *temp_zspan = tnumber_restrict_span(temp_z, zspan, atfunc);
+  if (temp_zspan)
+  {
+    SpanSet *ss1 = temporal_time(result);
+    SpanSet *ss2 = temporal_time(temp_zspan);
+    SpanSet *ss = atfunc ? intersection_spanset_spanset(ss1, ss2) :
+      union_spanset_spanset(ss1, ss2);
+    if (ss)
+    {
+      /* We need to keep REST_AT in the next call */
+      result_zspan = temporal_restrict_periodset(temp, ss, REST_AT);
+      pfree(ss);
+    }
+    pfree(temp_zspan); pfree(ss1); pfree(ss2);
+  }
+  pfree(result); pfree(temp_z);
+  return result_zspan;
 }
 
 #if MEOS
@@ -4364,9 +4350,10 @@ tpoint_restrict_geometry(const Temporal *temp, const GSERIALIZED *gs,
  * @sqlfunc atGeometry(), minusGeometry()
  */
 Temporal *
-tpoint_at_geometry(const Temporal *temp, const GSERIALIZED *gs)
+tpoint_at_geometry(const Temporal *temp, const GSERIALIZED *gs,
+  const Span *zspan)
 {
-  Temporal *result = tpoint_restrict_geometry(temp, gs, REST_AT);
+  Temporal *result = tpoint_restrict_geometry(temp, gs, zspan, REST_AT);
   return result;
 }
 
@@ -4376,9 +4363,10 @@ tpoint_at_geometry(const Temporal *temp, const GSERIALIZED *gs)
  * @sqlfunc atGeometry(), minusGeometry()
  */
 Temporal *
-tpoint_minus_geometry(const Temporal *temp, const GSERIALIZED *gs)
+tpoint_minus_geometry(const Temporal *temp, const GSERIALIZED *gs,
+  const Span *zspan)
 {
-  Temporal *result = tpoint_restrict_geometry(temp, gs, REST_MINUS);
+  Temporal *result = tpoint_restrict_geometry(temp, gs, zspan, REST_MINUS);
   return result;
 }
 #endif /* MEOS */
@@ -4425,47 +4413,16 @@ tpoint_at_stbox1(const Temporal *temp, const STBox *box)
     memcpy(&box2d, box, sizeof(STBox));
     MEOS_FLAGS_SET_Z(box2d.flags, false);
     GSERIALIZED *geo = stbox_to_geo(&box2d);
-    /* Convert the point to 2D before the call otherwise PostGIS return empty */
-    Temporal *temp2d = NULL;
-    bool hasz = MEOS_FLAGS_GET_Z(temp->flags);
-    temp2d = hasz ? tpoint_force2d(temp1) : temp1;
-    Temporal *at2d = tpoint_restrict_geometry(temp2d, geo, REST_AT);
-    pfree(geo);
-    /* If at2d is NULL we have finished */
-    if (at2d)
+    if (! MEOS_FLAGS_GET_Z(temp1->flags) || ! MEOS_FLAGS_GET_Z(box->flags))
+      result = tpoint_restrict_geometry(temp1, geo, NULL, REST_AT);
+    else
     {
-      if (hasz)
-        pfree(temp2d);
-      SpanSet *ss;
-      if (! MEOS_FLAGS_GET_Z(temp->flags) || ! MEOS_FLAGS_GET_Z(box->flags) )
-      {
-        ss = temporal_time(at2d);
-        result = temporal_restrict_periodset(temp, ss, REST_AT);
-        pfree(at2d); pfree(ss);
-      }
-      else
-      {
-        /* Take care of the Z dimension */
-        Temporal *temp_z = tpoint_get_coord(temp, 2);
-        Span box_z;
-        span_set(Float8GetDatum(box->zmin), Float8GetDatum(box->zmax),
-          true, true, T_FLOAT8, &box_z);
-        Temporal *temp_z_r = tnumber_restrict_span(temp_z, &box_z, REST_AT);
-        if (temp_z_r)
-        {
-          SpanSet *ss1 = temporal_time(at2d);
-          SpanSet *ss2 = temporal_time(temp_z_r);
-          ss = intersection_spanset_spanset(ss1, ss2);
-          if (ss)
-          {
-            result = temporal_restrict_periodset(temp, ss, REST_AT);
-            pfree(ss);
-          }
-          pfree(temp_z_r); pfree(ss1); pfree(ss2);
-        }
-        pfree(at2d); pfree(temp_z);
-      }
+      Span zspan;
+      span_set(Float8GetDatum(box->zmin), Float8GetDatum(box->zmax),
+        true, true, T_FLOAT8, &zspan);
+      result = tpoint_restrict_geometry(temp1, geo, &zspan, REST_AT);
     }
+    pfree(geo);
   }
   else
     result = temp1;

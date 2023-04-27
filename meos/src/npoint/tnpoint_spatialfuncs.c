@@ -188,7 +188,7 @@ tnpoint_srid(const Temporal *temp)
  * @note Only the particular cases returning points are covered
  */
 static Npoint **
-tnpointseq_step_npoints(const TSequence *seq, int *count)
+tnpointseq_discstep_npoints(const TSequence *seq, int *count)
 {
   Npoint **result = palloc(sizeof(Npoint *) * seq->count);
   for (int i = 0; i < seq->count; i++)
@@ -265,7 +265,7 @@ tnpointseq_geom(const TSequence *seq)
   {
     int count;
     /* The following function does not remove duplicate values */
-    Npoint **points = tnpointseq_step_npoints(seq, &count);
+    Npoint **points = tnpointseq_discstep_npoints(seq, &count);
     result = npointarr_geom(points, count);
     pfree(points);
   }
@@ -805,7 +805,7 @@ tnpoint_azimuth(const Temporal *temp)
  */
 Temporal *
 tnpoint_restrict_geometry(const Temporal *temp, const GSERIALIZED *geo,
-  bool atfunc)
+  const Span *zspan, bool atfunc)
 {
   ensure_same_srid(tnpoint_srid(temp), gserialized_get_srid(geo));
   if (gserialized_is_empty(geo))
@@ -818,7 +818,7 @@ tnpoint_restrict_geometry(const Temporal *temp, const GSERIALIZED *geo,
   ensure_has_not_Z_gs(geo);
 
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  Temporal *resultgeom = tpoint_restrict_geometry(tempgeom, geo, atfunc);
+  Temporal *resultgeom = tpoint_restrict_geometry(tempgeom, geo, zspan, atfunc);
   Temporal *result = NULL;
   if (resultgeom != NULL)
   {

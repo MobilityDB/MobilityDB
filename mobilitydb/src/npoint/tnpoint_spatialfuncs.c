@@ -214,7 +214,7 @@ tnpoint_restrict_geometry_ext(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  Temporal *result = tnpoint_restrict_geometry(temp, gs, atfunc);
+  Temporal *result = tnpoint_restrict_geometry(temp, gs, NULL, atfunc);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   if (! result)
