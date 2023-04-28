@@ -30,41 +30,16 @@
 /**
  * @file
  * @brief Temporal spatial relationships for temporal points.
- *
  * These relationships are applied at each instant and result in a temporal
  * Boolean.
  *
- * The following relationships are supported for a temporal geometry point
- * and a geometry: `tcontains`, `tdisjoint`, `tintersects`, `ttouches`, and
- * `tdwithin`.
- *
- * The following relationships are supported for two temporal geometry points:
- * `tdwithin`.
- *
- * The following relationships are supported for two temporal geography points:
- * `tdisjoint`, `tintersects`, `tdwithin`.
- *
- * tintersects and tdisjoint for a temporal point and a geometry allow a fast
- * implementation by (1) using bounding box tests, and (2) splitting temporal
- * sequence points into an array of simple (that is, not self-intersecting)
- * fragments and the answer is computed for each fragment without any
- * additional call to PostGIS.
- *
- * The implementation of tcontains and ttouches involving a temporal point
- * and a geometry is derived from the above by computing the boundary of the
- * geometry and
- * (1) tcontains(geo, tpoint) = tintersects(geo, tpoint) &
- *     ~ tintersects(st_boundary(geo), tpoint)
- *     where & and ~ are the temporal boolean operators and and not
- * (2) ttouches(geo, tpoint) = tintersects(st_boundary(geo), tpoint)
- *
- * Notice also that twithin has a custom implementation as follows
- * - In the case of a temporal point and a geometry we (1) call PostGIS to
- *   compute a buffer of the geometry and the distance parameter d, and
- *   (2) compute the result from #tpointseq_at_geometry(seq, geo_buffer)
- * - In the case of two temporal points we need to compute the instants
- *   at which two temporal sequences have a distance d between each other,
- *   which amounts to solve the equation distance(seg1(t), seg2(t)) = d.
+ * Depending on the parameters various relationships are available
+ * - For a temporal geometry point and a geometry:
+ *   `tcontains`, `tdisjoint`, `tintersects`, `ttouches`, and `tdwithin`.
+ * - For two temporal **geometry** points:
+ *   `tdisjoint`, `tintersects`, `tdwithin`.
+ * - For two temporal **geography** points:
+ *   `tdisjoint`, `tintersects`.
  */
 
 #include "point/tpoint_tempspatialrels.h"
@@ -101,11 +76,13 @@
 static Datum
 tinterrel_geo_tpoint_ext(FunctionCallInfo fcinfo, bool tinter)
 {
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
+    PG_RETURN_NULL();
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   bool restr = false;
   bool atvalue = false;
-  if (PG_NARGS() == 3)
+  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
   {
     atvalue = PG_GETARG_BOOL(2);
     restr = true;
@@ -126,11 +103,13 @@ tinterrel_geo_tpoint_ext(FunctionCallInfo fcinfo, bool tinter)
 static Datum
 tinterrel_tpoint_geo_ext(FunctionCallInfo fcinfo, bool tinter)
 {
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
+    PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   bool restr = false;
   bool atvalue = false;
-  if (PG_NARGS() == 3)
+  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
   {
     atvalue = PG_GETARG_BOOL(2);
     restr = true;
@@ -159,11 +138,13 @@ PG_FUNCTION_INFO_V1(Tcontains_geo_tpoint);
 Datum
 Tcontains_geo_tpoint(PG_FUNCTION_ARGS)
 {
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
+    PG_RETURN_NULL();
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   bool restr = false;
   bool atvalue = false;
-  if (PG_NARGS() == 3)
+  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
   {
     atvalue = PG_GETARG_BOOL(2);
     restr = true;
@@ -256,11 +237,13 @@ PG_FUNCTION_INFO_V1(Ttouches_geo_tpoint);
 Datum
 Ttouches_geo_tpoint(PG_FUNCTION_ARGS)
 {
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
+    PG_RETURN_NULL();
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   bool restr = false;
   bool atvalue = false;
-  if (PG_NARGS() == 3)
+  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
   {
     atvalue = PG_GETARG_BOOL(2);
     restr = true;
@@ -284,11 +267,13 @@ PG_FUNCTION_INFO_V1(Ttouches_tpoint_geo);
 Datum
 Ttouches_tpoint_geo(PG_FUNCTION_ARGS)
 {
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
+    PG_RETURN_NULL();
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   bool restr = false;
   bool atvalue = false;
-  if (PG_NARGS() == 3)
+  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
   {
     atvalue = PG_GETARG_BOOL(2);
     restr = true;
@@ -317,12 +302,14 @@ PG_FUNCTION_INFO_V1(Tdwithin_geo_tpoint);
 Datum
 Tdwithin_geo_tpoint(PG_FUNCTION_ARGS)
 {
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1) || PG_ARGISNULL(2))
+    PG_RETURN_NULL();
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   double dist = PG_GETARG_FLOAT8(2);
   bool restr = false;
   bool atvalue = false;
-  if (PG_NARGS() == 4)
+  if (PG_NARGS() > 3 && ! PG_ARGISNULL(3))
   {
     atvalue = PG_GETARG_BOOL(3);
     restr = true;
@@ -348,12 +335,14 @@ PG_FUNCTION_INFO_V1(Tdwithin_tpoint_geo);
 Datum
 Tdwithin_tpoint_geo(PG_FUNCTION_ARGS)
 {
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1) || PG_ARGISNULL(2))
+    PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   double dist = PG_GETARG_FLOAT8(2);
   bool restr = false;
   bool atvalue = false;
-  if (PG_NARGS() == 4)
+  if (PG_NARGS() > 3 && ! PG_ARGISNULL(3))
   {
     atvalue = PG_GETARG_BOOL(3);
     restr = true;
@@ -381,12 +370,14 @@ PG_FUNCTION_INFO_V1(Tdwithin_tpoint_tpoint);
 Datum
 Tdwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1) || PG_ARGISNULL(2))
+    PG_RETURN_NULL();
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   double dist = PG_GETARG_FLOAT8(2);
   bool restr = false;
   bool atvalue = false;
-  if (PG_NARGS() == 4)
+  if (PG_NARGS() > 3 && ! PG_ARGISNULL(3))
   {
     atvalue = PG_GETARG_BOOL(3);
     restr = true;

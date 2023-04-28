@@ -56,11 +56,13 @@
 static Datum
 tinterrel_tnpoint_npoint_ext(FunctionCallInfo fcinfo, bool tinter)
 {
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
+    PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Npoint *np = PG_GETARG_NPOINT_P(1);
   bool restr = false;
   bool atvalue = false;
-  if (PG_NARGS() == 3)
+  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
   {
     atvalue = PG_GETARG_BOOL(2);
     restr = true;
@@ -79,11 +81,13 @@ tinterrel_tnpoint_npoint_ext(FunctionCallInfo fcinfo, bool tinter)
 static Datum
 tinterrel_npoint_tnpoint_ext(FunctionCallInfo fcinfo, bool tinter)
 {
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
+    PG_RETURN_NULL();
   Npoint *np = PG_GETARG_NPOINT_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   bool restr = false;
   bool atvalue = false;
-  if (PG_NARGS() == 3)
+  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
   {
     atvalue = PG_GETARG_BOOL(2);
     restr = true;
@@ -102,11 +106,13 @@ tinterrel_npoint_tnpoint_ext(FunctionCallInfo fcinfo, bool tinter)
 static Datum
 tinterrel_geo_tnpoint_ext(FunctionCallInfo fcinfo, bool tinter)
 {
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
+    PG_RETURN_NULL();
   GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   bool restr = false;
   bool atvalue = false;
-  if (PG_NARGS() == 3)
+  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
   {
     atvalue = PG_GETARG_BOOL(2);
     restr = true;
@@ -126,11 +132,13 @@ tinterrel_geo_tnpoint_ext(FunctionCallInfo fcinfo, bool tinter)
 static Datum
 tinterrel_tnpoint_geo_ext(FunctionCallInfo fcinfo, bool tinter)
 {
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
+    PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(1);
   bool restr = false;
   bool atvalue = false;
-  if (PG_NARGS() == 3)
+  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
   {
     atvalue = PG_GETARG_BOOL(2);
     restr = true;
@@ -158,11 +166,13 @@ PG_FUNCTION_INFO_V1(Tcontains_geo_tnpoint);
 Datum
 Tcontains_geo_tnpoint(PG_FUNCTION_ARGS)
 {
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
+    PG_RETURN_NULL();
   GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   bool restr = false;
   bool atvalue = false;
-  if (PG_NARGS() == 3)
+  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
   {
     atvalue = PG_GETARG_BOOL(2);
     restr = true;
@@ -310,11 +320,13 @@ PG_FUNCTION_INFO_V1(Ttouches_geo_tnpoint);
 Datum
 Ttouches_geo_tnpoint(PG_FUNCTION_ARGS)
 {
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
+    PG_RETURN_NULL();
   GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   bool restr = false;
   bool atvalue = false;
-  if (PG_NARGS() == 3)
+  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
   {
     atvalue = PG_GETARG_BOOL(2);
     restr = true;
@@ -338,11 +350,13 @@ PG_FUNCTION_INFO_V1(Ttouches_npoint_tnpoint);
 Datum
 Ttouches_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
+    PG_RETURN_NULL();
   Npoint *np = PG_GETARG_NPOINT_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   bool restr = false;
   bool atvalue = false;
-  if (PG_NARGS() == 3)
+  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
   {
     atvalue = PG_GETARG_BOOL(2);
     restr = true;
@@ -365,11 +379,13 @@ PG_FUNCTION_INFO_V1(Ttouches_tnpoint_geo);
 Datum
 Ttouches_tnpoint_geo(PG_FUNCTION_ARGS)
 {
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
+    PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(1);
   bool restr = false;
   bool atvalue = false;
-  if (PG_NARGS() == 3)
+  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
   {
     atvalue = PG_GETARG_BOOL(2);
     restr = true;
@@ -393,11 +409,13 @@ PG_FUNCTION_INFO_V1(Ttouches_tnpoint_npoint);
 Datum
 Ttouches_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
+    PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Npoint *np = PG_GETARG_NPOINT_P(1);
   bool restr = false;
   bool atvalue = false;
-  if (PG_NARGS() == 3)
+  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
   {
     atvalue = PG_GETARG_BOOL(2);
     restr = true;
@@ -424,12 +442,14 @@ PG_FUNCTION_INFO_V1(Tdwithin_geo_tnpoint);
 Datum
 Tdwithin_geo_tnpoint(PG_FUNCTION_ARGS)
 {
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1) || PG_ARGISNULL(2))
+    PG_RETURN_NULL();
   GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   double dist = PG_GETARG_FLOAT8(2);
   bool restr = false;
   bool atvalue = false;
-  if (PG_NARGS() == 4)
+  if (PG_NARGS() > 3 && ! PG_ARGISNULL(3))
   {
     atvalue = PG_GETARG_BOOL(3);
     restr = true;
@@ -453,12 +473,14 @@ PG_FUNCTION_INFO_V1(Tdwithin_tnpoint_geo);
 Datum
 Tdwithin_tnpoint_geo(PG_FUNCTION_ARGS)
 {
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1) || PG_ARGISNULL(2))
+    PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(1);
   double dist = PG_GETARG_FLOAT8(2);
   bool restr = false;
   bool atvalue = false;
-  if (PG_NARGS() == 4)
+  if (PG_NARGS() > 3 && ! PG_ARGISNULL(3))
   {
     atvalue = PG_GETARG_BOOL(3);
     restr = true;
@@ -482,12 +504,14 @@ PG_FUNCTION_INFO_V1(Tdwithin_npoint_tnpoint);
 Datum
 Tdwithin_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1) || PG_ARGISNULL(2))
+    PG_RETURN_NULL();
   Npoint *np  = PG_GETARG_NPOINT_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   double dist = PG_GETARG_FLOAT8(2);
   bool restr = false;
   bool atvalue = false;
-  if (PG_NARGS() == 4)
+  if (PG_NARGS() > 3 && ! PG_ARGISNULL(3))
   {
     atvalue = PG_GETARG_BOOL(3);
     restr = true;
@@ -510,12 +534,14 @@ PG_FUNCTION_INFO_V1(Tdwithin_tnpoint_npoint);
 Datum
 Tdwithin_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1) || PG_ARGISNULL(2))
+    PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Npoint *np  = PG_GETARG_NPOINT_P(1);
   double dist = PG_GETARG_FLOAT8(2);
   bool restr = false;
   bool atvalue = false;
-  if (PG_NARGS() == 4)
+  if (PG_NARGS() > 3 && ! PG_ARGISNULL(3))
   {
     atvalue = PG_GETARG_BOOL(3);
     restr = true;
@@ -538,12 +564,14 @@ PG_FUNCTION_INFO_V1(Tdwithin_tnpoint_tnpoint);
 Datum
 Tdwithin_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1) || PG_ARGISNULL(2))
+    PG_RETURN_NULL();
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   double dist = PG_GETARG_FLOAT8(2);
   bool restr = false;
   bool atvalue = false;
-  if (PG_NARGS() == 4)
+  if (PG_NARGS() > 3 && ! PG_ARGISNULL(3))
   {
     atvalue = PG_GETARG_BOOL(3);
     restr = true;

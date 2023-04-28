@@ -58,12 +58,13 @@
  *     where & and ~ are the temporal boolean operators and and not
  * (2) ttouches(geo, tpoint) = tintersects(st_boundary(geo), tpoint)
  *
- * Notice also that twithin has a custom implementation as follows
- * - In the case of a temporal point and a geometry we (1) call PostGIS to
- *   compute a buffer of the geometry and the distance parameter d, and
- *   (2) compute the result from tpointseq_at_geometry(seq, geo_buffer)
+ * Notice also that tdwithin has a custom implementation as follows
  * - In the case of two temporal points we need to compute the instants
  *   at which two temporal sequences have a distance d between each other,
+ *   which amounts for each pair of synchronized segments seg1, seg2 to solve
+ *   the equation distance(seg1(t), seg2(t)) = d.
+ * - In the case of a temporal point and a point we partly reuse the above
+ *   solution by making seg2 to be constant
  *   which amounts to solve the equation distance(seg1(t), seg2(t)) = d.
  */
 
@@ -960,7 +961,6 @@ tdwithin_tpointseqset_tpointseqset(const TSequenceSet *ss1,
  * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
  * @result Number of elements in the resulting array
- * @pre The temporal points must be synchronized.
  */
 static int
 tdwithin_tpointseq_point1(const TSequence *seq, Datum point, Datum dist,

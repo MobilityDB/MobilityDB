@@ -4176,7 +4176,6 @@ tpointseq_cont_at_geometry1(const TSequence *seq, const GSERIALIZED *gs,
  * @brief Restrict a temporal point sequence to (the complement of a) geometry.
  * @param[in] seq Temporal sequence point
  * @param[in] gs Geometry
- * @param[in] atfunc True if the restriction is at, false for minus
  * @pre The arguments have the same SRID, the geometry is 2D and is not empty.
  * This is verified in #tpoint_restrict_geometry_time
  * @note The test for instantaneous sequences is done at the function
@@ -4247,6 +4246,7 @@ tpointseqset_at_geometry(const TSequenceSet *ss, const GSERIALIZED *gs,
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
  * @param[in] zspan Span of values to restrict the Z dimension
+ * @param[in] period Period to restrict the T dimension
  * @param[in] atfunc True if the restriction is at, false for minus
  * @note The function first filters the temporal point wrt the time and the Z
  * dimensions to reduce the number of instants before computing the restriction

@@ -1194,7 +1194,7 @@ tpoint_restrict_geometry_time_ext(FunctionCallInfo fcinfo, bool atfunc,
   if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
     zspan = PG_GETARG_SPAN_P(2);
   Span *period = NULL;
-  if (PG_NARGS() > 3)
+  if (PG_NARGS() > 3 && ! PG_ARGISNULL(3))
     period = PG_GETARG_SPAN_P(3);
   Temporal *result = tpoint_restrict_geometry_time(temp, geo, zspan, period,
     atfunc);
