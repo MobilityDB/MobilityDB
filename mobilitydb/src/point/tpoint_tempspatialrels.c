@@ -61,7 +61,7 @@
  * Notice also that twithin has a custom implementation as follows
  * - In the case of a temporal point and a geometry we (1) call PostGIS to
  *   compute a buffer of the geometry and the distance parameter d, and
- *   (2) compute the result from tpointseq_at_geometry(seq, geo_buffer)
+ *   (2) compute the result from #tpointseq_at_geometry(seq, geo_buffer)
  * - In the case of two temporal points we need to compute the instants
  *   at which two temporal sequences have a distance d between each other,
  *   which amounts to solve the equation distance(seg1(t), seg2(t)) = d.

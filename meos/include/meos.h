@@ -1059,7 +1059,7 @@ extern Temporal *tnumber_at_tbox(const Temporal *temp, const TBox *box);
 extern Temporal *tnumber_minus_span(const Temporal *temp, const Span *span);
 extern Temporal *tnumber_minus_spanset(const Temporal *temp, const SpanSet *ss);
 extern Temporal *tnumber_minus_tbox(const Temporal *temp, const TBox *box);
-extern Temporal *tpoint_at_geometry(const Temporal *temp, const GSERIALIZED *gs, const Span *zspan);
+extern Temporal *tpoint_at_geometry_time(const Temporal *temp, const GSERIALIZED *gs, const Span *zspan, const Span *period);
 extern Temporal *tpoint_at_stbox(const Temporal *temp, const STBox *box);
 extern Temporal *tpoint_at_value(const Temporal *temp, GSERIALIZED *gs);
 extern Temporal *tpoint_minus_geometry(const Temporal *temp, const GSERIALIZED *gs, const Span *zspan);
