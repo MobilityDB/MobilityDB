@@ -4062,7 +4062,7 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter, int *count)
  * After the computation the Z values are recovered.
  */
 static TSequence **
-tpointseq_cont_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
+tpointseq_cont_at_geometry1(const TSequence *seq, const GSERIALIZED *gs,
   int *count)
 {
   /* Step interpolation */
@@ -4172,54 +4172,6 @@ tpointseq_cont_at_geometry(const TSequence *seq, const GSERIALIZED *gs,
 }
 
 /**
- * @brief Restrict a temporal sequence point to the complement of a geometry
- *
- * It is not possible to use a similar approach as for tpointseq_at_geometry
- * where instead of computing the intersections we compute the difference since
- * in PostGIS the following query
- * @code
- * select st_astext(st_difference(geometry 'Linestring(0 0,3 3)',
- *     geometry 'MultiPoint((1 1),(2 2),(3 3))'))
- * @endcode
- * returns `LINESTRING(0 0,3 3)`. Therefore we compute tpointseq_at_geometry
- * and then compute the complement of the value obtained
- *
- * @param[in] seq Temporal point sequence
- * @param[in] gs Geometry
- * @param[out] count Number of elements in the resulting array
- */
-static TSequence **
-tpointseq_cont_minus_geometry(const TSequence *seq, const GSERIALIZED *gs,
-  int *count)
-{
-  int countinter;
-  TSequence **sequences = tpointseq_cont_at_geometry(seq, gs, &countinter);
-  if (countinter == 0)
-  {
-    TSequence **result = palloc(sizeof(TSequence *));
-    result[0] = tsequence_copy(seq);
-    *count = 1;
-    return result;
-  }
-
-  Span *periods = palloc(sizeof(Span) * countinter);
-  for (int i = 0; i < countinter; i++)
-    periods[i] = sequences[i]->period;
-  SpanSet *ps1 = spanset_make(periods, countinter, NORMALIZE_NO);
-  SpanSet *ps2 = minus_span_spanset(&seq->period, ps1);
-  pfree(ps1); pfree(periods);
-  if (ps2 == NULL)
-  {
-    *count = 0;
-    return NULL;
-  }
-  TSequence **result = palloc(sizeof(TSequence *) * ps2->count);
-  *count = tcontseq_at_periodset1(seq, ps2, result);
-  pfree(ps2);
-  return result;
-}
-
-/**
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal point sequence to (the complement of a) geometry.
  * @param[in] seq Temporal sequence point
@@ -4233,43 +4185,35 @@ tpointseq_cont_minus_geometry(const TSequence *seq, const GSERIALIZED *gs,
  * @sqlfunc atGeometry(), minusGeometry()
  */
 TSequenceSet *
-tpointseq_cont_restrict_geometry(const TSequence *seq, const GSERIALIZED *gs,
-  bool atfunc)
+tpointseq_cont_at_geometry(const TSequence *seq, const GSERIALIZED *gs)
 {
   int count;
-  TSequence **sequences = atfunc ?
-    tpointseq_cont_at_geometry(seq, gs, &count) :
-    tpointseq_cont_minus_geometry(seq, gs, &count);
+  TSequence **sequences = tpointseq_cont_at_geometry1(seq, gs, &count);
   if (sequences == NULL)
     return NULL;
 
   /* It is necessary to sort the sequences */
   tseqarr_sort(sequences, count);
-  TSequenceSet *result = tsequenceset_make_free(sequences, count, NORMALIZE);
-
-  return result;
+  return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
 
 /**
  * @ingroup libmeos_internal_temporal_restrict
- * @brief Restrict a temporal point sequence set to (the complement of) a
- * geometry.
+ * @brief Restrict a temporal point sequence set to a geometry.
  * @param[in] ss Temporal sequence set point
  * @param[in] gs Geometry
  * @param[in] box Bounding box of the geometry
- * @param[in] atfunc True if the restriction is at, false for minus
  * @pre The arguments have the same SRID, the geometry is 2D and is not empty.
  * This is verified in #tpoint_restrict_geometry_time
  * @sqlfunc atGeometry(), minusGeometry()
  */
 TSequenceSet *
-tpointseqset_restrict_geometry(const TSequenceSet *ss, const GSERIALIZED *gs,
-  const STBox *box, bool atfunc)
+tpointseqset_at_geometry(const TSequenceSet *ss, const GSERIALIZED *gs,
+  const STBox *box)
 {
   /* Singleton sequence set */
   if (ss->count == 1)
-    return tpointseq_cont_restrict_geometry(TSEQUENCESET_SEQ_N(ss, 0), gs,
-      atfunc);
+    return tpointseq_cont_at_geometry(TSEQUENCESET_SEQ_N(ss, 0), gs);
 
   /* palloc0 used due to the bounding box test in the for loop below */
   TSequence ***sequences = palloc0(sizeof(TSequence *) * ss->count);
@@ -4281,28 +4225,10 @@ tpointseqset_restrict_geometry(const TSequenceSet *ss, const GSERIALIZED *gs,
     /* Bounding box test */
     STBox *box1 = TSEQUENCE_BBOX_PTR(seq);
     bool overlaps = overlaps_stbox_stbox(box1, box);
-    if (atfunc)
+    if (overlaps)
     {
-      if (overlaps)
-      {
-        sequences[i] = tpointseq_cont_at_geometry(seq, gs, &countseqs[i]);
-        totalcount += countseqs[i];
-      }
-    }
-    else
-    {
-      if (! overlaps)
-      {
-        sequences[i] = palloc(sizeof(TSequence *));
-        sequences[i][0] = tsequence_copy(seq);
-        countseqs[i] = 1;
-        totalcount ++;
-      }
-      else
-      {
-        sequences[i] = tpointseq_cont_minus_geometry(seq, gs, &countseqs[i]);
-        totalcount += countseqs[i];
-      }
+      sequences[i] = tpointseq_cont_at_geometry1(seq, gs, &countseqs[i]);
+      totalcount += countseqs[i];
     }
   }
   if (totalcount == 0)
@@ -4405,11 +4331,10 @@ tpoint_restrict_geometry_time(const Temporal *temp, const GSERIALIZED *gs,
     result_at = MEOS_FLAGS_GET_DISCRETE(temp_zt->flags) ?
       (Temporal *) tpointseq_disc_restrict_geometry((TSequence *) temp_zt,
          gs, REST_AT) :
-      (Temporal *) tpointseq_cont_restrict_geometry((TSequence *) temp_zt,
-         gs, REST_AT);
+      (Temporal *) tpointseq_cont_at_geometry((TSequence *) temp_zt, gs);
   else /* temp_zt->subtype == TSEQUENCESET */
-    result_at = (Temporal *) tpointseqset_restrict_geometry((TSequenceSet *)
-        temp_zt, gs, &box2, REST_AT);
+    result_at = (Temporal *) tpointseqset_at_geometry((TSequenceSet *) temp_zt,
+      gs, &box2);
 
   /* Finish if the result of the "at" restriction is NULL */
   if (! result_at)
