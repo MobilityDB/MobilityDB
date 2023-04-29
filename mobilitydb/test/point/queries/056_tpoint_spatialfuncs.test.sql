@@ -739,7 +739,7 @@ SELECT asText(makeSimple(tgeompoint
 
 --------------------------------------------------------
 
--- Take care of NULL inputs since the funtion is not STRICT
+-- Test for NULL inputs since the function is not STRICT
 SELECT asText(atGeometry(NULL::tgeompoint, geometry 'Linestring(0 0,3 3)'));
 SELECT asText(atGeometry(tgeompoint 'Point(1 1)@2000-01-01', NULL::geometry));
 

@@ -1,3 +1,15 @@
+SELECT tcontains(NULL::geometry, tgeompoint 'Point(1 1)@2000-01-01');
+ tcontains 
+-----------
+ 
+(1 row)
+
+SELECT tcontains(geometry 'Point(1 1)', NULL::tgeompoint);
+ tcontains 
+-----------
+ 
+(1 row)
+
 SELECT tcontains(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
         tcontains         
 --------------------------
@@ -109,6 +121,18 @@ SELECT tcontains(geometry 'Point(1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
 ERROR:  The temporal point cannot have Z dimension
 SELECT tcontains(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  The geometry cannot have Z dimension
+SELECT tdisjoint(NULL::geometry, tgeompoint 'Point(1 1)@2000-01-01');
+ tdisjoint 
+-----------
+ 
+(1 row)
+
+SELECT tdisjoint(geometry 'Point(1 1)', NULL::tgeompoint);
+ tdisjoint 
+-----------
+ 
+(1 row)
+
 SELECT tdisjoint(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
         tdisjoint         
 --------------------------
@@ -152,6 +176,18 @@ SELECT tdisjoint(geometry 'Point empty', tgeompoint '[Point(1 1)@2000-01-01, Poi
 (1 row)
 
 SELECT tdisjoint(geometry 'Point empty', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03], [Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ tdisjoint 
+-----------
+ 
+(1 row)
+
+SELECT tdisjoint(NULL::tgeompoint, geometry 'Point(1 1)');
+ tdisjoint 
+-----------
+ 
+(1 row)
+
+SELECT tdisjoint(tgeompoint 'Point(1 1)@2000-01-01', NULL::geometry);
  tdisjoint 
 -----------
  
@@ -376,6 +412,18 @@ SELECT tdisjoint(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  The geometry cannot have Z dimension
 SELECT tdisjoint(geometry 'Point(1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
 ERROR:  The temporal point cannot have Z dimension
+SELECT tintersects(NULL::geometry, tgeompoint 'Point(1 1)@2000-01-01');
+ tintersects 
+-------------
+ 
+(1 row)
+
+SELECT tintersects(geometry 'Point(1 1)', NULL::tgeompoint);
+ tintersects 
+-------------
+ 
+(1 row)
+
 SELECT tintersects(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
        tintersects        
 --------------------------
@@ -419,6 +467,18 @@ SELECT tintersects(geometry 'Point empty', tgeompoint '[Point(1 1)@2000-01-01, P
 (1 row)
 
 SELECT tintersects(geometry 'Point empty', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03], [Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ tintersects 
+-------------
+ 
+(1 row)
+
+SELECT tintersects(NULL::tgeompoint, geometry 'Point(1 1)');
+ tintersects 
+-------------
+ 
+(1 row)
+
+SELECT tintersects(tgeompoint 'Point(1 1)@2000-01-01', NULL::geometry);
  tintersects 
 -------------
  
@@ -667,6 +727,18 @@ SELECT tintersects(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  The geometry cannot have Z dimension
 SELECT tintersects(geometry 'Point(1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
 ERROR:  The temporal point cannot have Z dimension
+SELECT ttouches(NULL::geometry, tgeompoint 'Point(1 1)@2000-01-01');
+ ttouches 
+----------
+ 
+(1 row)
+
+SELECT ttouches(geometry 'Point(1 1)', NULL::tgeompoint);
+ ttouches 
+----------
+ 
+(1 row)
+
 SELECT ttouches(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
          ttouches         
 --------------------------
@@ -710,6 +782,18 @@ SELECT ttouches(geometry 'Point empty', tgeompoint '[Point(1 1)@2000-01-01, Poin
 (1 row)
 
 SELECT ttouches(geometry 'Point empty', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03], [Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ ttouches 
+----------
+ 
+(1 row)
+
+SELECT ttouches(NULL::tgeompoint, geometry 'Point(1 1)');
+ ttouches 
+----------
+ 
+(1 row)
+
+SELECT ttouches(tgeompoint 'Point(1 1)@2000-01-01', NULL::geometry);
  ttouches 
 ----------
  
@@ -874,6 +958,24 @@ SELECT ttouches(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  The geometry cannot have Z dimension
 SELECT ttouches(geometry 'Point(1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
 ERROR:  The temporal point cannot have Z dimension
+SELECT tdwithin(NULL::geometry, tgeompoint 'Point(1 1)@2000-01-01', 2);
+ tdwithin 
+----------
+ 
+(1 row)
+
+SELECT tdwithin(geometry 'Point(1 1)', NULL::tgeompoint, 2);
+ tdwithin 
+----------
+ 
+(1 row)
+
+SELECT tdwithin(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01', NULL);
+ tdwithin 
+----------
+ 
+(1 row)
+
 SELECT tdwithin(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01', 2);
          tdwithin         
 --------------------------
@@ -917,6 +1019,24 @@ SELECT tdwithin(geometry 'Point empty', tgeompoint '[Point(1 1)@2000-01-01, Poin
 (1 row)
 
 SELECT tdwithin(geometry 'Point empty', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03], [Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 2);
+ tdwithin 
+----------
+ 
+(1 row)
+
+SELECT tdwithin(NULL::tgeompoint, geometry 'Point(1 1)', 2);
+ tdwithin 
+----------
+ 
+(1 row)
+
+SELECT tdwithin(tgeompoint 'Point(1 1)@2000-01-01', NULL::geometry, 2);
+ tdwithin 
+----------
+ 
+(1 row)
+
+SELECT tdwithin(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Point(1 1)', NULL);
  tdwithin 
 ----------
  
@@ -1061,6 +1181,24 @@ SELECT tdwithin(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, P
 (1 row)
 
 SELECT tdwithin(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03], [Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', geometry 'Point Z empty', 2);
+ tdwithin 
+----------
+ 
+(1 row)
+
+SELECT tdwithin(NULL::tgeompoint, tgeompoint 'Point(1 1)@2000-01-01', 2);
+ tdwithin 
+----------
+ 
+(1 row)
+
+SELECT tdwithin(tgeompoint 'Point(1 1)@2000-01-01', NULL::tgeompoint, 2);
+ tdwithin 
+----------
+ 
+(1 row)
+
+SELECT tdwithin(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01', NULL);
  tdwithin 
 ----------
  

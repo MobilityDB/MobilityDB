@@ -31,6 +31,10 @@
 -- tcontains
 -------------------------------------------------------------------------------
 
+-- Test for NULL inputs since the function is not STRICT
+SELECT tcontains(NULL::geometry, tnpoint 'Npoint(1, 0.5)@2000-01-01');
+SELECT tcontains(geometry 'SRID=5676;Point(1 1)', NULL::tnpoint);
+
 SELECT tcontains(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
 SELECT tcontains(geometry 'SRID=5676;Point(1 1)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
 SELECT tcontains(geometry 'SRID=5676;Point(1 1)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
@@ -57,6 +61,10 @@ SELECT tcontains(geometry 'SRID=5676;Point(1 1)', tnpoint '{[Npoint(1, 0.2)@2000
 -- tdisjoint
 -------------------------------------------------------------------------------
 
+-- Test for NULL inputs since the function is not STRICT
+SELECT tdisjoint(NULL::geometry, tnpoint 'Npoint(1, 0.5)@2000-01-01');
+SELECT tdisjoint(geometry 'SRID=5676;Point(1 1)', NULL::tnpoint);
+
 SELECT tdisjoint(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
 SELECT tdisjoint(geometry 'SRID=5676;Point(1 1)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
 SELECT tdisjoint(geometry 'SRID=5676;Point(1 1)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
@@ -67,10 +75,18 @@ SELECT tdisjoint(geometry 'SRID=5676;Point empty', tnpoint '{Npoint(1, 0.3)@2000
 SELECT tdisjoint(geometry 'SRID=5676;Point empty', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
 SELECT tdisjoint(geometry 'SRID=5676;Point empty', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
 
+-- Test for NULL inputs since the function is not STRICT
+SELECT tdisjoint(NULL::npoint, tnpoint 'Npoint(1, 0.5)@2000-01-01');
+SELECT tdisjoint(npoint 'NPoint(2, 0.3)', NULL::tnpoint);
+
 SELECT tdisjoint(npoint 'NPoint(2, 0.3)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
 SELECT tdisjoint(npoint 'NPoint(2, 0.3)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
 SELECT tdisjoint(npoint 'NPoint(2, 0.3)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
 SELECT tdisjoint(npoint 'NPoint(2, 0.3)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+
+-- Test for NULL inputs since the function is not STRICT
+SELECT tdisjoint(tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL::geometry);
+SELECT tdisjoint(NULL::tnpoint, geometry 'SRID=5676;Point(1 1)');
 
 SELECT tdisjoint(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point(1 1)');
 SELECT tdisjoint(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point(1 1)');
@@ -81,6 +97,10 @@ SELECT tdisjoint(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point
 SELECT tdisjoint(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point empty');
 SELECT tdisjoint(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point empty');
 SELECT tdisjoint(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point empty');
+
+-- Test for NULL inputs since the function is not STRICT
+SELECT tdisjoint(tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL::npoint);
+SELECT tdisjoint(NULL::tnpoint, npoint 'NPoint(2, 0.3)');
 
 SELECT tdisjoint(tnpoint 'Npoint(1, 0.5)@2000-01-01',  npoint 'NPoint(2, 0.3)');
 SELECT tdisjoint(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  npoint 'NPoint(2, 0.3)');
@@ -137,6 +157,10 @@ SELECT tdisjoint(tnpoint 'Npoint(1,0.5)@2000-01-01', npoint 'Npoint(1,0.6)', tru
 -- tintersects
 -------------------------------------------------------------------------------
 
+-- Test for NULL inputs since the function is not STRICT
+SELECT tintersects(NULL::geometry, tnpoint 'Npoint(1, 0.5)@2000-01-01');
+SELECT tintersects(geometry 'SRID=5676;Point(1 1)', NULL::tnpoint);
+
 SELECT tintersects(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
 SELECT tintersects(geometry 'SRID=5676;Point(1 1)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
 SELECT tintersects(geometry 'SRID=5676;Point(1 1)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
@@ -147,10 +171,18 @@ SELECT tintersects(geometry 'SRID=5676;Point empty', tnpoint '{Npoint(1, 0.3)@20
 SELECT tintersects(geometry 'SRID=5676;Point empty', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
 SELECT tintersects(geometry 'SRID=5676;Point empty', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
 
+-- Test for NULL inputs since the function is not STRICT
+SELECT tintersects(NULL::npoint, tnpoint 'Npoint(1, 0.5)@2000-01-01');
+SELECT tintersects(npoint 'NPoint(2, 0.3)', NULL::tnpoint);
+
 SELECT tintersects(npoint 'NPoint(2, 0.3)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
 SELECT tintersects(npoint 'NPoint(2, 0.3)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
 SELECT tintersects(npoint 'NPoint(2, 0.3)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
 SELECT tintersects(npoint 'NPoint(2, 0.3)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+
+-- Test for NULL inputs since the function is not STRICT
+SELECT tintersects(tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL::geometry);
+SELECT tintersects(NULL::tnpoint, geometry 'SRID=5676;Point(1 1)');
 
 SELECT tintersects(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point(1 1)');
 SELECT tintersects(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point(1 1)');
@@ -161,6 +193,10 @@ SELECT tintersects(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Poi
 SELECT tintersects(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point empty');
 SELECT tintersects(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point empty');
 SELECT tintersects(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point empty');
+
+-- Test for NULL inputs since the function is not STRICT
+SELECT tintersects(tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL::npoint);
+SELECT tintersects(NULL::tnpoint, npoint 'NPoint(2, 0.3)');
 
 SELECT tintersects(tnpoint 'Npoint(1, 0.5)@2000-01-01',  npoint 'NPoint(2, 0.3)');
 SELECT tintersects(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  npoint 'NPoint(2, 0.3)');
@@ -175,6 +211,10 @@ SELECT tintersects(tnpoint 'Npoint(1,0.5)@2000-01-01', npoint 'Npoint(1,0.6)', t
 -- ttouches
 -------------------------------------------------------------------------------
 
+-- Test for NULL inputs since the function is not STRICT
+SELECT ttouches(NULL::geometry, tnpoint 'Npoint(1, 0.5)@2000-01-01');
+SELECT ttouches(geometry 'SRID=5676;Point(1 1)', NULL::tnpoint);
+
 SELECT ttouches(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
 SELECT ttouches(geometry 'SRID=5676;Point(1 1)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
 SELECT ttouches(geometry 'SRID=5676;Point(1 1)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
@@ -184,6 +224,10 @@ SELECT ttouches(geometry 'SRID=5676;Point empty', tnpoint 'Npoint(1, 0.5)@2000-0
 SELECT ttouches(geometry 'SRID=5676;Point empty', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
 SELECT ttouches(geometry 'SRID=5676;Point empty', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
 SELECT ttouches(geometry 'SRID=5676;Point empty', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+
+-- Test for NULL inputs since the function is not STRICT
+SELECT ttouches(NULL::npoint, tnpoint 'Npoint(1, 0.5)@2000-01-01');
+SELECT ttouches(npoint 'NPoint(2, 0.3)', NULL::tnpoint);
 
 SELECT ttouches(npoint 'NPoint(2, 0.3)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
 SELECT ttouches(npoint 'NPoint(2, 0.3)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
@@ -195,10 +239,18 @@ SELECT ttouches(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, 
 SELECT ttouches(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point(1 1)');
 SELECT ttouches(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point(1 1)');
 
+-- Test for NULL inputs since the function is not STRICT
+SELECT ttouches(tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL::geometry);
+SELECT ttouches(NULL::tnpoint, geometry 'SRID=5676;Point(1 1)');
+
 SELECT ttouches(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point empty');
 SELECT ttouches(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point empty');
 SELECT ttouches(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point empty');
 SELECT ttouches(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point empty');
+
+-- Test for NULL inputs since the function is not STRICT
+SELECT ttouches(tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL::npoint);
+SELECT ttouches(NULL::tnpoint, npoint 'NPoint(2, 0.3)');
 
 SELECT ttouches(tnpoint 'Npoint(1, 0.5)@2000-01-01',  npoint 'NPoint(2, 0.3)');
 SELECT ttouches(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  npoint 'NPoint(2, 0.3)');
@@ -231,6 +283,11 @@ SELECT ttouches(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02,
 -- tdwithin
 -------------------------------------------------------------------------------
 
+-- Test for NULL inputs since the function is not STRICT
+SELECT tdwithin(NULL::geometry, tnpoint 'Npoint(1, 0.5)@2000-01-01', 2);
+SELECT tdwithin(geometry 'SRID=5676;Point(1 1)', NULL::tnpoint, 2);
+SELECT tdwithin(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL);
+
 SELECT tdwithin(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01', 2);
 SELECT tdwithin(geometry 'SRID=5676;Point(1 1)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 2);
 SELECT tdwithin(geometry 'SRID=5676;Point(1 1)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 2);
@@ -241,10 +298,20 @@ SELECT tdwithin(geometry 'SRID=5676;Point empty', tnpoint '{Npoint(1, 0.3)@2000-
 SELECT tdwithin(geometry 'SRID=5676;Point empty', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 2);
 SELECT tdwithin(geometry 'SRID=5676;Point empty', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 2);
 
+-- Test for NULL inputs since the function is not STRICT
+SELECT tdwithin(NULL::npoint, tnpoint 'Npoint(1, 0.5)@2000-01-01', 2);
+SELECT tdwithin(npoint 'NPoint(2, 0.3)', NULL::tnpoint, 2);
+SELECT tdwithin(npoint 'NPoint(2, 0.3)', tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL);
+
 SELECT tdwithin(npoint 'NPoint(2, 0.3)', tnpoint 'Npoint(1, 0.5)@2000-01-01', 2);
 SELECT tdwithin(npoint 'NPoint(2, 0.3)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 2);
 SELECT tdwithin(npoint 'NPoint(2, 0.3)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 2);
 SELECT tdwithin(npoint 'NPoint(2, 0.3)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 2);
+
+-- Test for NULL inputs since the function is not STRICT
+SELECT tdwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL::geometry, 2);
+SELECT tdwithin(NULL::tnpoint, geometry 'SRID=5676;Point(1 1)', 2);
+SELECT tdwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point(1 1)', NULL);
 
 SELECT tdwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point(1 1)', 2);
 SELECT tdwithin(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point(1 1)', 2);
@@ -255,6 +322,11 @@ SELECT tdwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point 
 SELECT tdwithin(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point empty', 2);
 SELECT tdwithin(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point empty', 2);
 SELECT tdwithin(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point empty', 2);
+
+-- Test for NULL inputs since the function is not STRICT
+SELECT tdwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL::npoint, 2);
+SELECT tdwithin(NULL::tnpoint, npoint 'NPoint(2, 0.3)', 2);
+SELECT tdwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01',  npoint 'NPoint(2, 0.3)', NULL);
 
 SELECT tdwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01',  npoint 'NPoint(2, 0.3)', 2);
 SELECT tdwithin(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  npoint 'NPoint(2, 0.3)', 2);
