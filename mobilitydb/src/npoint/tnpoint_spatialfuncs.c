@@ -211,7 +211,7 @@ Tnpoint_azimuth(PG_FUNCTION_ARGS)
  * @brief Restrict a temporal network point to (the complement of) a geometry
  */
 static Datum
-tnpoint_restrict_geometry_time_ext(FunctionCallInfo fcinfo, bool atfunc,
+tnpoint_restrict_geom_time_ext(FunctionCallInfo fcinfo, bool atfunc,
   bool resttime)
 {
   if (PG_ARGISNULL(0) || PG_ARGISNULL(1)|| (resttime && PG_ARGISNULL(2)))
@@ -221,7 +221,7 @@ tnpoint_restrict_geometry_time_ext(FunctionCallInfo fcinfo, bool atfunc,
   Span *period = NULL;
   if (PG_NARGS() > 2)
     period = PG_GETARG_SPAN_P(2);
-  Temporal *result = tnpoint_restrict_geometry_time(temp, gs, NULL, period,
+  Temporal *result = tnpoint_restrict_geom_time(temp, gs, NULL, period,
     atfunc);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
@@ -230,56 +230,56 @@ tnpoint_restrict_geometry_time_ext(FunctionCallInfo fcinfo, bool atfunc,
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Tnpoint_at_geometry(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tnpoint_at_geometry);
+PGDLLEXPORT Datum Tnpoint_at_geom(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tnpoint_at_geom);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Restricts a temporal point to a geometry
  * @sqlfunc atGeometry()
  */
 Datum
-Tnpoint_at_geometry(PG_FUNCTION_ARGS)
+Tnpoint_at_geom(PG_FUNCTION_ARGS)
 {
-  return tnpoint_restrict_geometry_time_ext(fcinfo, REST_AT, REST_TIME_NO);
+  return tnpoint_restrict_geom_time_ext(fcinfo, REST_AT, REST_TIME_NO);
 }
 
-PGDLLEXPORT Datum Tnpoint_at_geometry_time(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tnpoint_at_geometry_time);
+PGDLLEXPORT Datum Tnpoint_at_geom_time(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tnpoint_at_geom_time);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Restricts a temporal point to a geometry
  * @sqlfunc atGeometry()
  */
 Datum
-Tnpoint_at_geometry_time(PG_FUNCTION_ARGS)
+Tnpoint_at_geom_time(PG_FUNCTION_ARGS)
 {
-  return tnpoint_restrict_geometry_time_ext(fcinfo, REST_AT, REST_TIME);
+  return tnpoint_restrict_geom_time_ext(fcinfo, REST_AT, REST_TIME);
 }
 
-PGDLLEXPORT Datum Tnpoint_minus_geometry(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tnpoint_minus_geometry);
+PGDLLEXPORT Datum Tnpoint_minus_geom(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tnpoint_minus_geom);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal point to the complement of a geometry
  * @sqlfunc minusGeometry()
  */
 Datum
-Tnpoint_minus_geometry(PG_FUNCTION_ARGS)
+Tnpoint_minus_geom(PG_FUNCTION_ARGS)
 {
-  return tnpoint_restrict_geometry_time_ext(fcinfo, REST_MINUS, REST_TIME_NO);
+  return tnpoint_restrict_geom_time_ext(fcinfo, REST_MINUS, REST_TIME_NO);
 }
 
-PGDLLEXPORT Datum Tnpoint_minus_geometry_time(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tnpoint_minus_geometry_time);
+PGDLLEXPORT Datum Tnpoint_minus_geom_time(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tnpoint_minus_geom_time);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Restrict a temporal point to the complement of a geometry
  * @sqlfunc minusGeometry()
  */
 Datum
-Tnpoint_minus_geometry_time(PG_FUNCTION_ARGS)
+Tnpoint_minus_geom_time(PG_FUNCTION_ARGS)
 {
-  return tnpoint_restrict_geometry_time_ext(fcinfo, REST_MINUS, REST_TIME);
+  return tnpoint_restrict_geom_time_ext(fcinfo, REST_MINUS, REST_TIME);
 }
 
 /*****************************************************************************/

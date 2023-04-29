@@ -3304,9 +3304,9 @@ SELECT asText(minusGeometry(tgeompoint 'Interp=Step;{[Point(1 1 1)@2000-01-01, P
 (1 row)
 
 SELECT asText(minusGeometry(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02)', geometry 'Linestring(0 1,2 1)'));
-                                 astext                                 
-------------------------------------------------------------------------
- [POINT(0 0)@2000-01-01 00:00:00+00, POINT(1 1)@2000-01-02 00:00:00+00)
+                                  astext                                  
+--------------------------------------------------------------------------
+ {[POINT(0 0)@2000-01-01 00:00:00+00, POINT(1 1)@2000-01-02 00:00:00+00)}
 (1 row)
 
 SELECT asText(minusGeometry(tgeompoint '{[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02)}', geometry 'Linestring(0 1,2 1)'));

@@ -207,7 +207,7 @@ extern Temporal *tpoint_get_coord(const Temporal *temp, int coord);
 
 /* Restriction functions */
 
-extern TSequence **tpointseq_at_geometry(const TSequence *seq,
+extern TSequence **tpointseq_at_geom(const TSequence *seq,
   const GSERIALIZED *gs, int *count);
 extern Temporal *tpoint_at_stbox1(const Temporal *temp, const STBox *box);
 extern Temporal *tpoint_minus_stbox(const Temporal *temp, const STBox *box);

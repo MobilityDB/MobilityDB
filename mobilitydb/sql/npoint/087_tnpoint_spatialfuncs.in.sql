@@ -56,22 +56,22 @@ CREATE FUNCTION trajectory(tnpoint)
 
 CREATE FUNCTION atGeometry(tnpoint, geometry)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Tnpoint_at_geometry'
+  AS 'MODULE_PATHNAME', 'Tnpoint_at_geom'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- This function is not STRICT
 CREATE FUNCTION atGeometryTime(tnpoint, geometry, tstzspan)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Tnpoint_at_geometry_time'
+  AS 'MODULE_PATHNAME', 'Tnpoint_at_geom_time'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION minusGeometry(tnpoint, geometry)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Tnpoint_minus_geometry'
+  AS 'MODULE_PATHNAME', 'Tnpoint_minus_geom'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- This function is not STRICT
 CREATE FUNCTION minusGeometryTime(tnpoint, geometry, tstzspan)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Tnpoint_minus_geometry_time'
+  AS 'MODULE_PATHNAME', 'Tnpoint_minus_geom_time'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 /*****************************************************************************

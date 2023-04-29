@@ -692,11 +692,11 @@ extern Temporal *tsequenceset_restrict_timestamp(const TSequenceSet *ss, Timesta
 extern Temporal *tsequenceset_restrict_timestampset(const TSequenceSet *ss1, const Set *ss2, bool atfunc);
 extern TSequenceSet *tsequenceset_restrict_period(const TSequenceSet *ss, const Span *p, bool atfunc);
 extern TSequenceSet *tsequenceset_restrict_periodset(const TSequenceSet *ss, const SpanSet *ps, bool atfunc);
-extern TInstant *tpointinst_restrict_geometry(const TInstant *inst, const GSERIALIZED *gs, const Span *zspan, const Span *period, bool atfunc);
-extern TSequence *tpointseq_disc_restrict_geometry(const TSequence *seq, const GSERIALIZED *gs, const Span *zspan, const Span *period, bool atfunc);
-extern TSequenceSet *tpointseq_cont_restrict_geometry(const TSequence *seq, const GSERIALIZED *gs, const Span *zspan, const Span *period, bool atfunc);
-extern TSequenceSet *tpointseqset_restrict_geometry(const TSequenceSet *ss, const GSERIALIZED *gs, const STBox *box, const Span *zspan, const Span *period, bool atfunc);
-extern Temporal *tpoint_restrict_geometry_time(const Temporal *temp, const GSERIALIZED *gs, const Span *zspan, const Span *period, bool atfunce);
+extern TInstant *tpointinst_restrict_geom_time(const TInstant *inst, const GSERIALIZED *gs, const Span *zspan, const Span *period, bool atfunc);
+extern TSequence *tpointseq_disc_restrict_geom_time(const TSequence *seq, const GSERIALIZED *gs, const Span *zspan, const Span *period, bool atfunc);
+extern TSequenceSet *tpointseq_cont_restrict_geom_time(const TSequence *seq, const GSERIALIZED *gs, const Span *zspan, const Span *period, bool atfunc);
+extern TSequenceSet *tpointseqset_restrict_geom_time(const TSequenceSet *ss, const GSERIALIZED *gs, const Span *zspan, const Span *period, bool atfunc);
+extern Temporal *tpoint_restrict_geom_time(const Temporal *temp, const GSERIALIZED *gs, const Span *zspan, const Span *period, bool atfunce);
 extern Temporal *tpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool atfunc);
 
 /*****************************************************************************/

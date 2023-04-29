@@ -273,23 +273,23 @@ CREATE FUNCTION makeSimple(tgeompoint)
 -- These functions are not STRICT
 CREATE FUNCTION atGeometry(tgeompoint, geometry, floatspan DEFAULT NULL)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Tpoint_at_geometry'
+  AS 'MODULE_PATHNAME', 'Tpoint_at_geom'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION atGeometryTime(tgeompoint, geometry, floatspan DEFAULT NULL,
   tstzspan DEFAULT NULL)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Tpoint_at_geometry_time'
+  AS 'MODULE_PATHNAME', 'Tpoint_at_geom_time'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 -- These functions are not STRICT
 CREATE FUNCTION minusGeometry(tgeompoint, geometry, floatspan DEFAULT NULL)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Tpoint_minus_geometry'
+  AS 'MODULE_PATHNAME', 'Tpoint_minus_geom'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION minusGeometryTime(tgeompoint, geometry, floatspan DEFAULT NULL,
   tstzspan DEFAULT NULL)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Tpoint_minus_geometry_time'
+  AS 'MODULE_PATHNAME', 'Tpoint_minus_geom_time'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION atStbox(tgeompoint, stbox)

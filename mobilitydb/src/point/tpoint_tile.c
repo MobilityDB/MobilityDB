@@ -425,8 +425,8 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
     memcpy(&box2d, &box, sizeof(STBox));
     MEOS_FLAGS_SET_Z(box2d.flags, false);
     GSERIALIZED *geo = stbox_to_tile_border(&box2d);
-    Temporal *atstbox1 = tpoint_restrict_geometry_time(atstbox, geo, NULL,
-      NULL, REST_MINUS);
+    Temporal *atstbox1 = tpoint_restrict_geom_time(atstbox, geo, NULL, NULL,
+      REST_MINUS);
     pfree(geo); pfree(atstbox);
     atstbox = atstbox1;
     if (! atstbox)
