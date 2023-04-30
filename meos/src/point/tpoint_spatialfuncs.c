@@ -3687,7 +3687,8 @@ tpoint_make_simple(const Temporal *temp, int *count)
 
 /**
  * @ingroup libmeos_internal_temporal_restrict
- * @brief Restrict a temporal point instant to (the complement of) a geometry.
+ * @brief Restrict a temporal point instant to (the complement of) a geometry
+ * and possibly a Z span and a period.
  * @param[in] inst Temporal instant point
  * @param[in] gs Geometry
  * @param[in] zspan Span of values to restrict the Z dimension
@@ -3695,7 +3696,7 @@ tpoint_make_simple(const Temporal *temp, int *count)
  * @param[in] atfunc True if the restriction is at, false for minus
  * @pre The arguments have the same SRID, the geometry is 2D and is not empty.
  * This is verified in #tpoint_restrict_geom_time
- * @sqlfunc atGeometry(), minusGeometry()
+ * @sqlfunc atGeometry(), minusGeometry(), atGeometryTime(), minusGeometryTime()
  */
 TInstant *
 tpointinst_restrict_geom_time(const TInstant *inst, const GSERIALIZED *gs,
@@ -3724,7 +3725,7 @@ tpointinst_restrict_geom_time(const TInstant *inst, const GSERIALIZED *gs,
 /**
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal point discrete sequence to (the complement of) a
- * geometry.
+ * geometry  and possibly a Z span and a period.
  * @param[in] seq Temporal discrete sequence point
  * @param[in] gs Geometry
  * @param[in] zspan Span of values to restrict the Z dimension
@@ -3732,7 +3733,7 @@ tpointinst_restrict_geom_time(const TInstant *inst, const GSERIALIZED *gs,
  * @param[in] atfunc True if the restriction is at, false for minus
  * @pre The arguments have the same SRID, the geometry is 2D and is not empty.
  * This is verified in #tpoint_restrict_geom_time
- * @sqlfunc atGeometry(), minusGeometry()
+ * @sqlfunc atGeometry(), minusGeometry(), atGeometryTime(), minusGeometryTime()
  */
 TSequence *
 tpointseq_disc_restrict_geom_time(const TSequence *seq, const GSERIALIZED *gs,
@@ -3770,7 +3771,7 @@ tpointseq_disc_restrict_geom_time(const TSequence *seq, const GSERIALIZED *gs,
 
 /**
  * @brief Restrict a temporal sequence point with step interpolation to a
- * geometry
+ * geometry and possibly a Z span and a period.
  * @param[in] seq Temporal point
  * @param[in] gs Geometry
  * @param[in] zspan Span of values to restrict the Z dimension
@@ -3779,6 +3780,7 @@ tpointseq_disc_restrict_geom_time(const TSequence *seq, const GSERIALIZED *gs,
  * @param[out] count Number of elements in the resulting array
  * @pre The arguments have the same SRID, the geometry is 2D and is not empty.
  * This is verified in #tpoint_restrict_geom_time
+ * @sqlfunc atGeometry(), atGeometryTime(), minusGeometry(), minusGeometryTime()
  */
 static TSequence **
 tpointseq_step_restrict_geom_time1(const TSequence *seq, const GSERIALIZED *gs,
@@ -3890,6 +3892,18 @@ tpointseq_step_restrict_geom_time1(const TSequence *seq, const GSERIALIZED *gs,
   return result;
 }
 
+/**
+ * @brief Restrict a temporal sequence point with step interpolation to a
+ * geometry and possibly a Z span and a period.
+ * @param[in] seq Temporal point
+ * @param[in] gs Geometry
+ * @param[in] zspan Span of values to restrict the Z dimension
+ * @param[in] period Period to restrict the T dimension
+ * @param[in] atfunc True if the restriction is at, false for minus
+ * @pre The arguments have the same SRID, the geometry is 2D and is not empty.
+ * This is verified in #tpoint_restrict_geom_time
+ * @sqlfunc atGeometry(), atGeometryTime(), minusGeometry(), minusGeometryTime()
+ */
 static TSequenceSet *
 tpointseq_step_restrict_geom_time(const TSequence *seq,
   const GSERIALIZED *gs, const Span *zspan, const Span *period, bool atfunc)
@@ -3951,11 +3965,12 @@ tpointsegm_timestamp_at_value1(const TInstant *inst1, const TInstant *inst2,
  * @brief Return the timestamp at which a temporal point sequence is equal to a
  * point
  *
- * This function is called by the atGeometry function to find the timestamp
- * at which an intersection point found by PostGIS is located. This function
- * differs from function tpointsegm_intersection_value in particular since the
- * latter is used for finding crossings during synchronization and thus it is
- * required that the timestamp in strictly between the timestamps of a segment.
+ * This function is called by the #tpointseq_interperiods function while
+ * computing atGeometry to find the timestamp at which an intersection point
+ * found by PostGIS is located. This function differs from function
+ * #tpointsegm_intersection_value in particular since the latter is used for
+ * finding crossings during synchronization and thus it is required that the
+ * timestamp in strictly between the timestamps of a segment.
  *
  * @param[in] seq Temporal point sequence
  * @param[in] value Base value
@@ -3963,7 +3978,7 @@ tpointsegm_timestamp_at_value1(const TInstant *inst1, const TInstant *inst2,
  * @result Return true if the point is found in the temporal point
  * @pre The point is known to belong to the temporal sequence (taking into
  * account roundoff errors), the temporal sequence has linear interpolation,
- * and it simple
+ * and is simple
  * @note The resulting timestamp may be at an exclusive bound
  */
 static bool
@@ -3993,7 +4008,7 @@ tpointseq_timestamp_at_value(const TSequence *seq, Datum value,
  * @param[in] gsinter Intersection of the temporal point and the geometry
  * @param[out] count Number of elements in the resulting array
  * @pre The temporal sequence is simple, that is, non self-intersecting and
- * the intersection is non empty
+ * the intersecting geometry is non empty
  */
 Span *
 tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter, int *count)
@@ -4125,14 +4140,16 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter, int *count)
  * geometry
  * @param[in] seq Temporal point sequence
  * @param[in] gs Geometry
- * @param[out] count Number of elements in the resulting array
  * @pre The arguments have the same SRID, the geometry is 2D and is not empty.
- * @note The computation for the linear case is based on the PostGIS function
- * ST_Intersection and the computation is done in GEOS. The geometry must be
- * in 2D. When computing the intersection the Z values of the temporal point
- * are also dropped since the Z values "are copied, averaged or interpolated"
+ * This is verified in #tpoint_restrict_geom_time
+ * @note The computation is based on the PostGIS function ST_Intersection
+ * which delegates the computation to GEOS. The geometry must be in 2D.
+ * When computing the intersection the Z values of the temporal point must
+ * be dropped since the Z values "are copied, averaged or interpolated"
  * as stated in https://postgis.net/docs/ST_Intersection.html
- * After the computation the Z values are recovered.
+ * After this computation, the Z values are recovered by restricting the
+ * original sequence to the time span of the 2D result.
+ * @sqlfunc atGeometry()
  */
 static TSequenceSet *
 tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
@@ -4234,24 +4251,29 @@ tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
   /* Compute the periodset */
   assert(totalcount > 0);
   SpanSet *ps = spanset_make_free(allperiods, totalcount, NORMALIZE);
+  /* Recover the Z values from the original sequence */
   result = tcontseq_restrict_periodset(seq, ps, REST_AT);
   pfree(ps);
   return result;
 }
 
 /**
- * @brief Restrict a temporal sequence point with continuous interpolation to a
- * geometry
+ * @brief Restrict a temporal sequence point with linear interpolation to a
+ * geometry and possibly a Z span and a period.
  * @param[in] seq Temporal point sequence
  * @param[in] gs Geometry
  * @param[in] zspan Span of values to restrict the Z dimension
  * @param[in] period Period to restrict the T dimension
- * @param[in] atfunc True if the restriction is at, false for minus
  * @param[out] count Number of elements in the resulting array
  * @pre The arguments have the same SRID, the geometry is 2D and is not empty.
  * This is verified in #tpoint_restrict_geom_time
  * @pre This function is called for each sequence of a sequence set and thus,
  * cannot compute the complement for the "minus" function.
+ * @note The function first filters the temporal point wrt the time dimension
+ * to reduce the number of instants before computing the restriction to the
+ * geometry, which is an expensive operation. Notice that we need to filter wrt
+ * the Z dimension after that since while doing this, the subtype of the
+ * temporal point may change from a sequence to a sequence set.
  */
 static TSequence **
 tpointseq_linear_at_geom_time1(const TSequence *seq, const GSERIALIZED *gs,
@@ -4277,8 +4299,7 @@ tpointseq_linear_at_geom_time1(const TSequence *seq, const GSERIALIZED *gs,
   TSequenceSet *seqset_xzt = NULL;
   TSequence **result = NULL;
 
-  /* Restrict the temporal point to the period for the T dimension
-   * The result is a single TSequence */
+  /* Restrict the temporal point to the T dimension */
   if (period)
   {
     /* Bounding box test for the T dimension */
@@ -4342,18 +4363,18 @@ tpointseq_linear_at_geom_time1(const TSequence *seq, const GSERIALIZED *gs,
 
 /**
  * @ingroup libmeos_internal_temporal_restrict
- * @brief Restrict a temporal point sequence to (the complement of a) geometry.
+ * @brief Restrict a temporal point sequence to a geometry and possibly a Z
+ * span and a period.
  * @param[in] seq Temporal sequence point
  * @param[in] gs Geometry
  * @param[in] zspan Span of values to restrict the Z dimension
  * @param[in] period Period to restrict the T dimension
- * @param[in] atfunc True if the restriction is at, false for minus
  * @pre The arguments have the same SRID, the geometry is 2D and is not empty.
  * This is verified in #tpoint_restrict_geom_time
  * @note The test for instantaneous sequences is done at the function
- * tpointseq_at_geom since the latter function is called for each sequence
- * of a sequence set
- * @sqlfunc atGeometry(), minusGeometry()
+ * #tpointseq_linear_at_geom_time1 since the latter function is called for
+ * each sequence of a sequence set
+ * @sqlfunc atGeometry(), atGeometryTime()
  */
 TSequenceSet *
 tpointseq_linear_at_geom_time(const TSequence *seq, const GSERIALIZED *gs,
@@ -4370,6 +4391,22 @@ tpointseq_linear_at_geom_time(const TSequence *seq, const GSERIALIZED *gs,
   return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
 
+/**
+ * @ingroup libmeos_internal_temporal_restrict
+ * @brief Restrict a temporal point sequence to (the complement of) a geometry
+ * and possibly a Z span and a period.
+ * @param[in] seq Temporal sequence point
+ * @param[in] gs Geometry
+ * @param[in] zspan Span of values to restrict the Z dimension
+ * @param[in] period Period to restrict the T dimension
+ * @param[in] atfunc True if the restriction is at, false for minus
+ * @pre The arguments have the same SRID, the geometry is 2D and is not empty.
+ * This is verified in #tpoint_restrict_geom_time
+ * @note For linear interpolation the function computes the "at" restriction on
+ * all dimensions and if the requested restriction is "minus", then it computes
+ * the complement of the "at" restriction with respect to the time dimension.
+ * @sqlfunc atGeometry(), minusGeometry(), atGeometryTime(), minusGeometryTime()
+ */
 Temporal *
 tpointseq_restrict_geom_time(const TSequence *seq, const GSERIALIZED *gs,
   const Span *zspan, const Span *period, bool atfunc)
@@ -4383,7 +4420,8 @@ tpointseq_restrict_geom_time(const TSequence *seq, const GSERIALIZED *gs,
       gs, zspan, period, atfunc);
 
   /* interp == LINEAR */
-  TSequenceSet *result_at = tpointseq_linear_at_geom_time(seq, gs, zspan, period);
+  TSequenceSet *result_at = tpointseq_linear_at_geom_time(seq, gs, zspan,
+    period);
 
   /* If "at" restriction return */
   if (atfunc)
@@ -4409,46 +4447,77 @@ tpointseq_restrict_geom_time(const TSequence *seq, const GSERIALIZED *gs,
 /**
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal point sequence set to (the complement of) a
- * geometry.
+ * geometry and possibly a Z span and a period.
  * @param[in] ss Temporal sequence set point
  * @param[in] gs Geometry
  * @param[in] zspan Span of values to restrict the Z dimension
  * @param[in] period Period to restrict the T dimension
  * @param[in] atfunc True if the restriction is at, false for minus
- * @param[in] box Bounding box of the geometry
  * @pre The arguments have the same SRID, the geometry is 2D and is not empty.
  * This is verified in #tpoint_restrict_geom_time
- * @sqlfunc atGeometry(), minusGeometry()
+ * @sqlfunc atGeometry(), minusGeometry(), atGeometryTime(), minusGeometryTime()
+ * @note For linear interpolation the function computes the "at" restriction on
+ * all dimensions and if the requested restriction is "minus", then it computes
+ * the complement of the "at" restriction with respect to the time dimension.
  */
 TSequenceSet *
 tpointseqset_restrict_geom_time(const TSequenceSet *ss, const GSERIALIZED *gs,
   const Span *zspan, const Span *period, bool atfunc)
 {
+  const TSequence *seq;
+  TSequence **allseqs = NULL;
   bool linear = MEOS_FLAGS_GET_LINEAR(ss->flags);
-
-  /* General case */
-  TSequence ***sequences = palloc(sizeof(TSequence *) * ss->count);
-  int *countseqs = palloc0(sizeof(int) * ss->count);
-  int totalcount = 0;
-  for (int i = 0; i < ss->count; i++)
+  int totalcount;
+  if (ss->count == 1)
   {
-    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    sequences[i] = linear ?
-      tpointseq_linear_at_geom_time1(seq, gs, zspan, period, &countseqs[i]) :
+    /* Singleton sequence set */
+    seq = TSEQUENCESET_SEQ_N(ss, 0);
+    allseqs = linear ?
+      tpointseq_linear_at_geom_time1(seq, gs, zspan, period, &totalcount) :
       tpointseq_step_restrict_geom_time1(seq, gs, zspan, period, atfunc,
-        &countseqs[i]);
-    totalcount += countseqs[i];
+        &totalcount);
   }
+  else
+  {
+    /* General case */
+    STBox box1, box2;
+    /* Non-empty geometries have a bounding box */
+    geo_set_stbox(gs, &box2);
 
+    TSequence ***sequences = palloc(sizeof(TSequence *) * ss->count);
+    int *countseqs = palloc0(sizeof(int) * ss->count);
+    totalcount = 0;
+    for (int i = 0; i < ss->count; i++)
+    {
+      /* Bounding box test */
+      const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
+      tsequence_set_bbox(seq, &box1);
+      bool overlaps = overlaps_stbox_stbox(&box1, &box2);
+      if (atfunc && ! overlaps)
+        continue;
+      else
+      {
+        sequences[i] = linear ?
+          tpointseq_linear_at_geom_time1(seq, gs, zspan, period, &countseqs[i]) :
+          tpointseq_step_restrict_geom_time1(seq, gs, zspan, period, atfunc,
+            &countseqs[i]);
+        totalcount += countseqs[i];
+      }
+    }
+    if (totalcount > 0)
+      allseqs = tseqarr2_to_tseqarr(sequences, countseqs, ss->count,
+        totalcount);
+    else
+    {
+      pfree(sequences); pfree(countseqs);
+    }
+  }
   if (totalcount == 0)
   {
-    pfree(sequences); pfree(countseqs);
     if (linear && ! atfunc)
       return tsequenceset_copy(ss);
     return NULL;
   }
-  TSequence **allseqs = tseqarr2_to_tseqarr(sequences, countseqs, ss->count,
-    totalcount);
   TSequenceSet *result = tsequenceset_make_free(allseqs, totalcount,
     NORMALIZE);
 
@@ -4471,21 +4540,13 @@ tpointseqset_restrict_geom_time(const TSequenceSet *ss, const GSERIALIZED *gs,
 
 /**
  * @ingroup libmeos_internal_temporal_restrict
- * @brief Restrict a temporal point to (the complement of) a geometry.
+ * @brief Restrict a temporal point to (the complement of) a geometry and
+ * possibly a Z span and a period.
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
  * @param[in] zspan Span of values to restrict the Z dimension
  * @param[in] period Period to restrict the T dimension
  * @param[in] atfunc True if the restriction is at, false for minus
- * @note The function first filters the temporal point wrt the time and the Z
- * dimensions to reduce the number of instants before computing the restriction
- * to the geometry, which is an expensive operation. While doing this, the
- * subtype of the temporal point may change from a sequence to a sequence set.
- * @note The function computes the "at" restriction on all the dimensions and
- * if the requested restriction is "minus", then it computes the complement of
- * the "at" restriction with respect to the time dimension. This avoids
- * computing the time span of the restriction to each dimension independently
- * and then computing the union of these spans to compute the final result.
  * @sqlfunc atGeometry(), minusGeometry(), atGeometryTime(), minusGeometryTime()
  */
 Temporal *
@@ -4499,6 +4560,15 @@ tpoint_restrict_geom_time(const Temporal *temp, const GSERIALIZED *gs,
   ensure_has_not_Z_gs(gs);
   if (zspan)
     ensure_has_Z(temp->flags);
+
+  /* Bounding box test */
+  STBox box1, box2;
+  temporal_set_bbox(temp, &box1);
+  /* Non-empty geometries have a bounding box */
+  geo_set_stbox(gs, &box2);
+  bool overlaps = overlaps_stbox_stbox(&box1, &box2);
+  if (! overlaps)
+    return atfunc ? NULL : temporal_copy(temp);
 
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
@@ -4517,30 +4587,26 @@ tpoint_restrict_geom_time(const Temporal *temp, const GSERIALIZED *gs,
 #if MEOS
 /**
  * @ingroup libmeos_temporal_restrict
- * @brief Restrict a temporal point to (the complement of) a geometry.
- * @sqlfunc atGeometry(), minusGeometry()
+ * @brief Restrict a temporal point to a geometry.
+ * @sqlfunc atGeometry()
  */
 Temporal *
 tpoint_at_geom(const Temporal *temp, const GSERIALIZED *gs,
   const Span *zspan)
 {
-  Temporal *result = tpoint_restrict_geom_time(temp, gs, zspan, NULL,
-    REST_AT);
-  return result;
+  return tpoint_restrict_geom_time(temp, gs, zspan, NULL, REST_AT);
 }
 
 /**
  * @ingroup libmeos_temporal_restrict
  * @brief Restrict a temporal point to (the complement of) a geometry.
- * @sqlfunc atGeometry(), minusGeometry()
+ * @sqlfunc minusGeometry()
  */
 Temporal *
 tpoint_minus_geom(const Temporal *temp, const GSERIALIZED *gs,
   const Span *zspan)
 {
-  Temporal *result = tpoint_restrict_geom_time(temp, gs, zspan, NULL,
-    REST_MINUS);
-  return result;
+  return tpoint_restrict_geom_time(temp, gs, zspan, NULL, REST_MINUS);
 }
 #endif /* MEOS */
 
