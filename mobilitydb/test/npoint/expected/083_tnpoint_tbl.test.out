@@ -411,7 +411,7 @@ SELECT COUNT(*) FROM tbl_tnpoint,
 WHERE minusValues(temp, s) IS NOT NULL;
  count 
 -------
-    82
+   100
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tnpoint, tbl_timestamptz

@@ -2402,11 +2402,6 @@ tpointseqset_speed(const TSequenceSet *ss)
     if (seq->count > 1)
       sequences[k++] = tpointseq_speed(seq);
   }
-  if (k == 0)
-  {
-    pfree(sequences);
-    return NULL;
-  }
   /* The resulting sequence set has step interpolation */
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
@@ -2745,11 +2740,6 @@ tpointseq_azimuth(const TSequence *seq)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * seq->count);
   int count = tpointseq_azimuth1(seq, sequences);
-  if (count == 0)
-  {
-    pfree(sequences);
-    return NULL;
-  }
   /* Resulting sequence set has step interpolation */
   return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
@@ -2771,11 +2761,6 @@ tpointseqset_azimuth(const TSequenceSet *ss)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     k += tpointseq_azimuth1(seq, &sequences[k]);
-  }
-  if (k == 0)
-  {
-    pfree(sequences);
-    return NULL;
   }
   /* Resulting sequence set has step interpolation */
   return tsequenceset_make_free(sequences, k, NORMALIZE);
@@ -3783,7 +3768,7 @@ tpointseq_disc_restrict_geom_time(const TSequence *seq, const GSERIALIZED *gs,
  * @sqlfunc atGeometry(), atGeometryTime(), minusGeometry(), minusGeometryTime()
  */
 static TSequence **
-tpointseq_step_restrict_geom_time1(const TSequence *seq, const GSERIALIZED *gs,
+tpointseq_step_restrict_geom_time_iter(const TSequence *seq, const GSERIALIZED *gs,
   const Span *zspan, const Span *period, bool atfunc, int *count)
 {
   /* Compute the time span of the result if period is given */
@@ -3909,7 +3894,7 @@ tpointseq_step_restrict_geom_time(const TSequence *seq,
   const GSERIALIZED *gs, const Span *zspan, const Span *period, bool atfunc)
 {
   int count;
-  TSequence **sequences = tpointseq_step_restrict_geom_time1(seq, gs,
+  TSequence **sequences = tpointseq_step_restrict_geom_time_iter(seq, gs,
     zspan, period, atfunc, &count);
   if (count == 0)
     return NULL;
@@ -4276,7 +4261,7 @@ tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
  * temporal point may change from a sequence to a sequence set.
  */
 static TSequence **
-tpointseq_linear_at_geom_time1(const TSequence *seq, const GSERIALIZED *gs,
+tpointseq_linear_at_geom_time_iter(const TSequence *seq, const GSERIALIZED *gs,
   const Span *zspan, const Span *period, int *count)
 {
   assert(MEOS_FLAGS_GET_LINEAR(seq->flags));
@@ -4372,7 +4357,7 @@ tpointseq_linear_at_geom_time1(const TSequence *seq, const GSERIALIZED *gs,
  * @pre The arguments have the same SRID, the geometry is 2D and is not empty.
  * This is verified in #tpoint_restrict_geom_time
  * @note The test for instantaneous sequences is done at the function
- * #tpointseq_linear_at_geom_time1 since the latter function is called for
+ * #tpointseq_linear_at_geom_time_iter since the latter function is called for
  * each sequence of a sequence set
  * @sqlfunc atGeometry(), atGeometryTime()
  */
@@ -4381,7 +4366,7 @@ tpointseq_linear_at_geom_time(const TSequence *seq, const GSERIALIZED *gs,
   const Span *zspan, const Span *period)
 {
   int count;
-  TSequence **sequences = tpointseq_linear_at_geom_time1(seq, gs, zspan,
+  TSequence **sequences = tpointseq_linear_at_geom_time_iter(seq, gs, zspan,
     period, &count);
   if (sequences == NULL)
     return NULL;
@@ -4473,8 +4458,8 @@ tpointseqset_restrict_geom_time(const TSequenceSet *ss, const GSERIALIZED *gs,
     /* Singleton sequence set */
     seq = TSEQUENCESET_SEQ_N(ss, 0);
     allseqs = linear ?
-      tpointseq_linear_at_geom_time1(seq, gs, zspan, period, &totalcount) :
-      tpointseq_step_restrict_geom_time1(seq, gs, zspan, period, atfunc,
+      tpointseq_linear_at_geom_time_iter(seq, gs, zspan, period, &totalcount) :
+      tpointseq_step_restrict_geom_time_iter(seq, gs, zspan, period, atfunc,
         &totalcount);
   }
   else
@@ -4498,9 +4483,10 @@ tpointseqset_restrict_geom_time(const TSequenceSet *ss, const GSERIALIZED *gs,
       else
       {
         sequences[i] = linear ?
-          tpointseq_linear_at_geom_time1(seq, gs, zspan, period, &countseqs[i]) :
-          tpointseq_step_restrict_geom_time1(seq, gs, zspan, period, atfunc,
-            &countseqs[i]);
+          tpointseq_linear_at_geom_time_iter(seq, gs, zspan, period,
+            &countseqs[i]) :
+          tpointseq_step_restrict_geom_time_iter(seq, gs, zspan, period,
+            atfunc, &countseqs[i]);
         totalcount += countseqs[i];
       }
     }

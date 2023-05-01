@@ -631,7 +631,7 @@ extern TSequenceSet *tsequenceset_to_step(const TSequenceSet *ss);
 extern TSequenceSet *tsequenceset_to_linear(const TSequenceSet *ss);
 extern TSequence *tsequenceset_to_tsequence(const TSequenceSet *ss);
 extern TSequenceSet *tstepseq_to_linear(const TSequence *seq);
-extern int tstepseq_to_linear1(const TSequence *seq, TSequence **result);
+extern int tstepseq_to_linear_iter(const TSequence *seq, TSequence **result);
 extern TSequenceSet *tstepseqset_to_linear(const TSequenceSet *ss);
 
 /*****************************************************************************/

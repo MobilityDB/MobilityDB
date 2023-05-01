@@ -1781,11 +1781,6 @@ tpointseqset_grid(const TSequenceSet *ss, const gridspec *grid, bool filter_pts)
     if (seq != NULL)
       sequences[k++] = seq;
   }
-  if (k == 0)
-  {
-    pfree(sequences);
-    return NULL;
-  }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
 

@@ -1707,6 +1707,8 @@ tsequence_merge_array1(const TSequence **sequences, int count, int *totalcount)
 Temporal *
 tsequence_merge_array(const TSequence **sequences, int count)
 {
+  assert(count > 0);
+
   /* Discrete sequences */
   if (MEOS_FLAGS_GET_DISCRETE(sequences[0]->flags))
     return tdiscseq_merge_array(sequences, count);
@@ -1959,9 +1961,10 @@ tcontseq_to_step(const TSequence *seq)
  * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
  * @return Number of resulting sequences returned
+ * @note This function is called for each sequence of a temporal sequence set.
  */
 int
-tstepseq_to_linear1(const TSequence *seq, TSequence **result)
+tstepseq_to_linear_iter(const TSequence *seq, TSequence **result)
 {
   if (seq->count == 1)
   {
@@ -2008,14 +2011,13 @@ tstepseq_to_linear1(const TSequence *seq, TSequence **result)
  * @brief Return a temporal sequence with continuous base type transformed from
  * step to linear interpolation.
  * @param[in] seq Temporal sequence
- * @return Resulting temporal sequence set
  * @sqlfunc toLinear()
  */
 TSequenceSet *
 tstepseq_to_linear(const TSequence *seq)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * seq->count);
-  int count = tstepseq_to_linear1(seq, sequences);
+  int count = tstepseq_to_linear_iter(seq, sequences);
   /* We are sure that count > 0 */
   return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
@@ -2063,7 +2065,7 @@ tsequence_set_interp(const TSequence *seq, interpType interp)
  * @note This function is called for each sequence of a temporal sequence set.
  */
 void
-tsequence_shift_tscale1(TSequence *seq, TimestampTz delta, double scale)
+tsequence_shift_tscale_iter(TSequence *seq, TimestampTz delta, double scale)
 {
   /* Set the first instant from the bounding period which has been already
    * shifted and/or scaled */
@@ -2112,7 +2114,7 @@ tsequence_shift_tscale(const TSequence *seq, const Interval *shift,
   period_shift_tscale1(&result->period, shift, duration, &delta, &scale);
 
   /* Shift and/or scale the result */
-  tsequence_shift_tscale1(result, delta, scale);
+  tsequence_shift_tscale_iter(result, delta, scale);
   return result;
 }
 
@@ -2357,10 +2359,10 @@ tsequence_sequences(const TSequence *seq, int *count)
  * @param[out] result Array on which the pointers of the newly constructed
  * segments are stored
  * @return Number of resulting sequences returned
- * @note This function is used when iterating
+ * @note This function is called for each sequence of a temporal sequence set
  */
 int
-tsequence_segments1(const TSequence *seq, TSequence **result)
+tsequence_segments_iter(const TSequence *seq, TSequence **result)
 {
   assert(! MEOS_FLAGS_GET_DISCRETE(seq->flags));
   /* Singleton sequence */
@@ -2431,7 +2433,7 @@ tsequence_segments(const TSequence *seq, int *count)
   }
 
   /* Continuous sequence */
-  *count = tsequence_segments1(seq, result);
+  *count = tsequence_segments_iter(seq, result);
   return result;
 }
 
@@ -2474,9 +2476,10 @@ tsequence_end_timestamp(const TSequence *seq)
 
 /**
  * @brief Return the array of timestamps of a temporal sequence
+ * @note This function is called for each sequence of a temporal sequence set
  */
 int
-tsequence_timestamps1(const TSequence *seq, TimestampTz *times)
+tsequence_timestamps_iter(const TSequence *seq, TimestampTz *times)
 {
   for (int i = 0; i < seq->count; i++)
     times[i] = (TSEQUENCE_INST_N(seq, i))->t;
@@ -2496,7 +2499,7 @@ TimestampTz *
 tsequence_timestamps(const TSequence *seq, int *count)
 {
   TimestampTz *result = palloc(sizeof(TimestampTz) * seq->count);
-  tsequence_timestamps1(seq, result);
+  tsequence_timestamps_iter(seq, result);
   *count = seq->count;
   return result;
 }
@@ -3652,7 +3655,7 @@ tsegment_restrict_value(const TInstant *inst1, const TInstant *inst2,
  * repeated here.
  */
 int
-tcontseq_restrict_value1(const TSequence *seq, Datum value, bool atfunc,
+tcontseq_restrict_value_iter(const TSequence *seq, Datum value, bool atfunc,
   TSequence **result)
 {
   const TInstant *inst1;
@@ -3719,12 +3722,7 @@ tcontseq_restrict_value(const TSequence *seq, Datum value, bool atfunc)
   if (! atfunc && MEOS_FLAGS_GET_LINEAR(seq->flags))
     count *= 2;
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
-  int newcount = tcontseq_restrict_value1(seq, value, atfunc, sequences);
-  if (newcount == 0)
-  {
-    pfree(sequences);
-    return NULL;
-  }
+  int newcount = tcontseq_restrict_value_iter(seq, value, atfunc, sequences);
   return tsequenceset_make_free(sequences, newcount, NORMALIZE);
 }
 
@@ -3741,7 +3739,8 @@ tcontseq_restrict_value(const TSequence *seq, Datum value, bool atfunc)
  * @note This function is called for each sequence of a temporal sequence set
  */
 int
-tsequence_at_values1(const TSequence *seq, const Set *set, TSequence **result)
+tsequence_at_values_iter(const TSequence *seq, const Set *set,
+  TSequence **result)
 {
   const TInstant *inst1, *inst2;
 
@@ -3790,9 +3789,8 @@ tsequence_at_values1(const TSequence *seq, const Set *set, TSequence **result)
  * @param[in] seq Temporal sequence
  * @param[in] set Set of base values
  * @param[in] atfunc True if the restriction is at, false for minus
- * @return Resulting temporal sequence set.
  * @note A bounding box test and an instantaneous sequence test are done in
- * the function tsequence_at_values1 since the latter is called
+ * the function #tsequence_at_values_iter since the latter is called
  * for each composing sequence of a temporal sequence set number.
  * @sqlfunc atValues(), minusValues()
  */
@@ -3802,12 +3800,7 @@ tcontseq_restrict_values(const TSequence *seq, const Set *set, bool atfunc)
   /* General case */
   TSequence **sequences = palloc(sizeof(TSequence *) * seq->count *
     set->count * 2);
-  int newcount = tsequence_at_values1(seq, set, sequences);
-  if (newcount == 0)
-  {
-    pfree(sequences);
-    return NULL;
-  }
+  int newcount = tsequence_at_values_iter(seq, set, sequences);
   TSequenceSet *atresult = tsequenceset_make_free(sequences, newcount, NORMALIZE);
   if (atfunc)
     return atresult;
@@ -3918,7 +3911,6 @@ tnumberdiscseq_restrict_spanset(const TSequence *seq, const SpanSet *ss,
  * @param[in] atfunc True if the restriction is at, false for minus
  * @param[out] result Array on which the pointers of the newly constructed
  * sequence is stored
- * @return Resulting temporal sequence
  */
 static int
 tnumbersegm_restrict_span(const TInstant *inst1, const TInstant *inst2,
@@ -4102,7 +4094,7 @@ tnumbersegm_restrict_span(const TInstant *inst1, const TInstant *inst2,
  * @note This function is called for each sequence of a temporal sequence set
  */
 int
-tnumbercontseq_restrict_span2(const TSequence *seq, const Span *span,
+tnumbercontseq_restrict_span_iter(const TSequence *seq, const Span *span,
   bool atfunc, TSequence **result)
 {
   /* Bounding box test */
@@ -4159,7 +4151,6 @@ tnumbercontseq_restrict_span2(const TSequence *seq, const Span *span,
  * @param[in] seq Temporal number
  * @param[in] span Span of base values
  * @param[in] atfunc True if the restriction is at, false for minus
- * @return Resulting temporal number
  * @note It is supposed that a bounding box test has been done in the dispatch
  * function.
  * @sqlfunc atSpan(), minusSpan()
@@ -4173,12 +4164,7 @@ tnumbercontseq_restrict_span(const TSequence *seq, const Span *span,
   if (! atfunc && MEOS_FLAGS_GET_LINEAR(seq->flags))
     count *= 2;
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
-  int newcount = tnumbercontseq_restrict_span2(seq, span, atfunc, sequences);
-  if (newcount == 0)
-  {
-    pfree(sequences);
-    return NULL;
-  }
+  int newcount = tnumbercontseq_restrict_span_iter(seq, span, atfunc, sequences);
   return tsequenceset_make_free(sequences, newcount, NORMALIZE);
 }
 
@@ -4197,7 +4183,7 @@ tnumbercontseq_restrict_span(const TSequence *seq, const Span *span,
  * @note This function is called for each sequence of a temporal sequence set
  */
 int
-tnumbercontseq_restrict_spanset1(const TSequence *seq, const SpanSet *ss,
+tnumbercontseq_restrict_spanset_iter(const TSequence *seq, const SpanSet *ss,
   bool atfunc, TSequence **result)
 {
   const TInstant *inst1, *inst2;
@@ -4275,7 +4261,6 @@ tnumbercontseq_restrict_spanset1(const TSequence *seq, const SpanSet *ss,
  * @param[in] seq Temporal number
  * @param[in] ss Span set
  * @param[in] atfunc True if the restriction is at, false for minus
- * @return Resulting temporal number
  * @sqlfunc atSpanset(), minusSpanset()
  */
 TSequenceSet *
@@ -4288,12 +4273,8 @@ tnumbercontseq_restrict_spanset(const TSequence *seq, const SpanSet *ss,
   if (! atfunc && MEOS_FLAGS_GET_LINEAR(seq->flags))
     maxcount *= 2;
   TSequence **sequences = palloc(sizeof(TSequence *) * maxcount);
-  int newcount = tnumbercontseq_restrict_spanset1(seq, ss, atfunc, sequences);
-  if (newcount == 0)
-  {
-    pfree(sequences);
-    return NULL;
-  }
+  int newcount = tnumbercontseq_restrict_spanset_iter(seq, ss, atfunc,
+    sequences);
   return tsequenceset_make_free(sequences, newcount, NORMALIZE);
 }
 
@@ -4649,7 +4630,7 @@ tsequence_at_timestamp(const TSequence *seq, TimestampTz t)
  * @note This function is called for each sequence of a temporal sequence set
  */
 int
-tcontseq_minus_timestamp1(const TSequence *seq, TimestampTz t,
+tcontseq_minus_timestamp_iter(const TSequence *seq, TimestampTz t,
   TSequence **result)
 {
   /* Bounding box test */
@@ -4726,14 +4707,13 @@ tcontseq_minus_timestamp1(const TSequence *seq, TimestampTz t,
  * @brief Restrict a temporal sequence to the complement of a timestamp.
  * @param[in] seq Temporal sequence
  * @param[in] t Timestamp
- * @return Resulting temporal sequence set
  * @sqlfunc minusTimestamp()
  */
 TSequenceSet *
 tcontseq_minus_timestamp(const TSequence *seq, TimestampTz t)
 {
   TSequence *sequences[2];
-  int count = tcontseq_minus_timestamp1(seq, t, sequences);
+  int count = tcontseq_minus_timestamp_iter(seq, t, sequences);
   if (count == 0)
     return NULL;
   TSequenceSet *result = tsequenceset_make((const TSequence **) sequences,
@@ -4814,15 +4794,16 @@ tcontseq_at_timestampset(const TSequence *seq, const Set *ts)
  * @param[in] ts Tstzset
  * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
+ * @note This function is called for each sequence of a temporal sequence set
  * @return Number of resulting sequences returned
  */
 int
-tcontseq_minus_timestampset1(const TSequence *seq, const Set *ts,
+tcontseq_minus_timestampset_iter(const TSequence *seq, const Set *ts,
   TSequence **result)
 {
   /* Singleton timestamp set */
   if (ts->count == 1)
-    return tcontseq_minus_timestamp1(seq,
+    return tcontseq_minus_timestamp_iter(seq,
       DatumGetTimestampTz(SET_VAL_N(ts, 0)), result);
 
   /* Bounding box test */
@@ -4937,12 +4918,7 @@ TSequenceSet *
 tcontseq_minus_timestampset(const TSequence *seq, const Set *ts)
 {
   TSequence **sequences = palloc0(sizeof(TSequence *) * (ts->count + 1));
-  int count = tcontseq_minus_timestampset1(seq, ts, sequences);
-  if (count == 0)
-  {
-    pfree(sequences);
-    return NULL;
-  }
+  int count = tcontseq_minus_timestampset_iter(seq, ts, sequences);
   return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
 
@@ -5117,7 +5093,7 @@ tsequence_restrict_period(const TSequence *seq, const Span *p, bool atfunc)
  * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
  * @return Number of resulting sequences returned
- * @note This function is not called for each sequence of a temporal sequence
+ * @note This function is NOT called for each sequence of a temporal sequence
  * set but is called when computing tpointseq minus geometry
  */
 int
@@ -5173,8 +5149,8 @@ tcontseq_at_periodset1(const TSequence *seq, const SpanSet *ps,
  * @note This function is called for each sequence of a temporal sequence set
  */
 int
-tcontseq_minus_periodset1(const TSequence *seq, const SpanSet *ps, int from,
-  TSequence **result)
+tcontseq_minus_periodset_iter(const TSequence *seq, const SpanSet *ps,
+  int from, TSequence **result)
 {
   /* Singleton period set */
   if (ps->count == 1)
@@ -5223,7 +5199,6 @@ tcontseq_minus_periodset1(const TSequence *seq, const SpanSet *ps, int from,
  * @param[in] seq Temporal sequence
  * @param[in] ps Period set
  * @param[in] atfunc True if the restriction is at, false for minus
- * @return Resulting temporal sequence set
  * @sqlfunc atTime(), minusTime()
  */
 TSequenceSet *
@@ -5247,12 +5222,7 @@ tcontseq_restrict_periodset(const TSequence *seq, const SpanSet *ps,
   int count = atfunc ? ps->count : ps->count + 1;
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
   int count1 = atfunc ? tcontseq_at_periodset1(seq, ps, sequences) :
-    tcontseq_minus_periodset1(seq, ps, 0, sequences);
-  if (count1 == 0)
-  {
-    pfree(sequences);
-    return NULL;
-  }
+    tcontseq_minus_periodset_iter(seq, ps, 0, sequences);
   return tsequenceset_make_free(sequences, count1, NORMALIZE_NO);
 }
 
@@ -5307,7 +5277,7 @@ tcontseq_insert(const TSequence *seq1, const TSequence *seq2)
       elog(ERROR, "The temporal values have different value at their common instant %s", str);
     }
   }
- sequences[k++] = (TSequence *) seq2;
+  sequences[k++] = (TSequence *) seq2;
 
   int count;
   TSequence **newseqs = tsequence_merge_array1(sequences, k, &count);
@@ -5517,7 +5487,6 @@ tcontseq_delete_period(const TSequence *seq, const Span *p)
  * @brief Delete a period set from a continuous temporal sequence.
  * @param[in] seq Temporal sequence
  * @param[in] ps Period set
- * @return Resulting temporal sequence set
  * @sqlfunc deleteTime()
  */
 TSequence *

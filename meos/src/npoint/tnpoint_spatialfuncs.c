@@ -574,14 +574,8 @@ tnpointseqset_speed(const TSequenceSet *ss)
     if (seq1 != NULL)
       sequences[k++] = seq1;
   }
-  if (k == 0)
-  {
-    pfree(sequences);
-    return NULL;
-  }
   /* The resulting sequence set has step interpolation */
-  TSequenceSet *result = tsequenceset_make_free(sequences, k, STEP);
-  return result;
+  return tsequenceset_make_free(sequences, k, STEP);
 }
 
 /**
@@ -689,7 +683,7 @@ tsequence_assemble_instants(TInstant ***instants, int *countinsts,
  * Temporal azimuth of a temporal network point of sequence subtype
  */
 static int
-tnpointseq_azimuth2(const TSequence *seq, TSequence **result)
+tnpointseq_azimuth_iter(const TSequence *seq, TSequence **result)
 {
   /* Instantaneous sequence */
   if (seq->count == 1)
@@ -744,15 +738,9 @@ static TSequenceSet *
 tnpointseq_azimuth(const TSequence *seq)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * (seq->count - 1));
-  int count = tnpointseq_azimuth2(seq, sequences);
-  if (count == 0)
-  {
-    pfree(sequences);
-    return NULL;
-  }
+  int count = tnpointseq_azimuth_iter(seq, sequences);
   /* Resulting sequence set has step interpolation */
-  TSequenceSet *result = tsequenceset_make_free(sequences, count, true);
-  return result;
+  return tsequenceset_make_free(sequences, count, true);
 }
 
 static TSequenceSet *
@@ -766,17 +754,11 @@ tnpointseqset_azimuth(const TSequenceSet *ss)
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    int countstep = tnpointseq_azimuth2(seq, &sequences[k]);
+    int countstep = tnpointseq_azimuth_iter(seq, &sequences[k]);
     k += countstep;
   }
-  if (k == 0)
-  {
-    pfree(sequences);
-    return NULL;
-  }
   /* Resulting sequence set has step interpolation */
-  TSequenceSet *result = tsequenceset_make_free(sequences, k, STEP);
-  return result;
+  return tsequenceset_make_free(sequences, k, STEP);
 }
 
 /**
