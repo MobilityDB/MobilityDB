@@ -296,7 +296,6 @@ tsequenceset_make_exp(const TSequence **sequences, int count, int maxcount,
 /**
  * @ingroup libmeos_temporal_constructor
  * @brief Construct a temporal sequence set from an array of temporal sequences.
- *
  * @param[in] sequences Array of sequences
  * @param[in] count Number of elements in the array
  * @param[in] normalize True if the resulting value should be normalized.
@@ -314,7 +313,6 @@ tsequenceset_make(const TSequence **sequences, int count, bool normalize)
  * @ingroup libmeos_internal_temporal_constructor
  * @brief Construct a temporal sequence set from an array of temporal
  * sequences and free the array and the sequences after the creation.
- *
  * @param[in] sequences Array of sequences
  * @param[in] count Number of elements in the array
  * @param[in] normalize True if the resulting value should be normalized.
@@ -350,7 +348,6 @@ tsequenceset_make_valid_gaps(const TInstant **instants, int count,
  * @brief Construct a temporal sequence set from an array of temporal instants
  * introducing a gap when two consecutive instants are separated from each
  * other by at least the given distance or the given time interval.
- *
  * @param[in] instants Array of instants
  * @param[in] count Number of elements in the array
  * @param[in] interp Interpolation
@@ -533,7 +530,6 @@ tgeogpointseqset_from_base_temp(const GSERIALIZED *gs, const TSequenceSet *ss)
 /**
  * @ingroup libmeos_internal_temporal_constructor
  * @brief Construct a temporal sequence set from a base value and a period set.
- *
  * @param[in] value Base value
  * @param[in] temptype Temporal type
  * @param[in] ps Period set
@@ -1143,7 +1139,6 @@ tsequenceset_timestamps(const TSequenceSet *ss, int *count)
 /**
  * @ingroup libmeos_internal_temporal_accessor
  * @brief Compute the base value of a temporal sequence set at a timestamp.
- *
  * @param[in] ss Temporal sequence set
  * @param[in] t Timestamp
  * @param[in] strict True if exclusive bounds are taken into account
@@ -1695,7 +1690,6 @@ tsequenceset_restrict_value(const TSequenceSet *ss, Datum value, bool atfunc)
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal sequence set to (the complement of) an array of
  * base values.
- *
  * @param[in] ss Temporal sequence set
  * @param[in] set Set of base values
  * @param[in] atfunc True if the restriction is at, false for minus
@@ -1749,7 +1743,6 @@ tsequenceset_restrict_values(const TSequenceSet *ss, const Set *set,
 /**
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal number to a span of base values.
- *
  * @note It is supposed that a bounding box test has been done in the dispatch
  * function.
  * @sqlfunc atSpan(), minusSpan()
@@ -1786,7 +1779,6 @@ tnumberseqset_restrict_span(const TSequenceSet *ss, const Span *span,
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal number to (the complement of) an array of
  * spans of base values
- *
  * @param[in] ss Temporal number
  * @param[in] spanset Span set
  * @param[in] atfunc True if the restriction is at, false for minus
@@ -1827,7 +1819,6 @@ tnumberseqset_restrict_spanset(const TSequenceSet *ss, const SpanSet *spanset,
  * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal sequence set to (the complement of) its
  * minimum/maximum base value
- *
  * @param[in] ss Temporal sequence set
  * @param[in] min True if restricted to the minumum value, false for the
  * maximum value
@@ -2488,7 +2479,6 @@ synchronize_tsequenceset_tsequence(const TSequenceSet *ss, const TSequence *seq,
 
 /**
  * @brief Temporally intersect or synchronize two temporal sequence sets
- *
  * @param[in] ss1,ss2 Input values
  * @param[in] mode Intersection or synchronization (with or without adding crossings)
  * @param[out] inter1, inter2 Output values
@@ -2550,7 +2540,6 @@ synchronize_tsequenceset_tsequenceset(const TSequenceSet *ss1,
 
 /**
  * @brief Temporally intersect two temporal values
- *
  * @param[in] ss,inst Input values
  * @param[out] inter1, inter2 Output values
  * @result Return false if the input values do not overlap on time
@@ -2571,7 +2560,6 @@ intersection_tsequenceset_tinstant(const TSequenceSet *ss, const TInstant *inst,
 
 /**
  * @brief Temporally intersect two temporal values
- *
  * @param[in] inst,ss Input values
  * @param[out] inter1, inter2 Output values
  * @result Return false if the input values do not overlap on time
@@ -2585,7 +2573,6 @@ intersection_tinstant_tsequenceset(const TInstant *inst, const TSequenceSet *ss,
 
 /**
  * @brief Temporally intersect two temporal values
- *
  * @param[in] ss,seq Input values
  * @param[out] inter1, inter2 Output values
  * @result Return false if the input values do not overlap on time
@@ -2637,7 +2624,6 @@ intersection_tsequenceset_tdiscseq(const TSequenceSet *ss,
 
 /**
  * @brief Temporally intersect two temporal values
- *
  * @param[in] seq,ss Input values
  * @param[out] inter1,inter2 Output values
  * @result Return false if the input values do not overlap on time
@@ -2651,7 +2637,6 @@ intersection_tdiscseq_tsequenceset(const TSequence *seq,
 
 /**
  * @brief Temporally intersect or synchronize two temporal values
- *
  * @param[in] seq,ss Input values
  * @param[in] mode Enumeration for either intersect or synchronize
  * @param[out] inter1, inter2 Output values
@@ -2672,7 +2657,6 @@ intersection_tsequence_tsequenceset(const TSequence *seq, const TSequenceSet *ss
 /**
  * @ingroup libmeos_internal_temporal_inout
  * @brief Return a temporal sequence set from its Well-Known Text (WKT) representation.
- *
  * @param[in] str String
  * @param[in] temptype Temporal type
  * @param[in] interp Interpolation
@@ -2760,7 +2744,6 @@ tgeogpointseqset_in(const char *str)
 
 /**
  * @brief Return the Well-Known Text (WKT) representation of a temporal sequence set.
- *
  * @param[in] ss Temporal sequence set
  * @param[in] maxdd Maximum number of decimal digits to output for floating point
  * values
@@ -2963,7 +2946,6 @@ tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2)
 /**
  * @ingroup libmeos_internal_temporal_modif
  * @brief Delete a timestamp from a temporal sequence set.
- *
  * @param[in] ss Temporal sequence set
  * @param[in] t Timestamp
  * @sqlfunc atTime(), minusTime()
@@ -3212,7 +3194,6 @@ tnumberseqset_twavg(const TSequenceSet *ss)
 /**
  * @ingroup libmeos_internal_temporal_comp
  * @brief Return true if two temporal sequence sets are equal.
- *
  * @pre The arguments are of the same base type
  * @note The internal B-tree comparator is not used to increase efficiency
  * @sqlop @p =
@@ -3243,9 +3224,8 @@ tsequenceset_eq(const TSequenceSet *ss1, const TSequenceSet *ss2)
 
 /**
  * @ingroup libmeos_internal_temporal_comp
- * @brief Return -1, 0, or 1 depending on whether the first Temporal sequence set
- * is less than, equal, or greater than the second one.
- *
+ * @brief Return -1, 0, or 1 depending on whether the first Temporal sequence
+ * set is less than, equal, or greater than the second one.
  * @pre The arguments are of the same base type
  * @note Period and bounding box comparison have been done by the calling
  * function @ref temporal_cmp

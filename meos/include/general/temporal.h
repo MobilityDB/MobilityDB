@@ -137,10 +137,6 @@ extern char *text_to_cstring(const text *t);
 #define VALUE_SEL       true
 #define TIME_SEL        false
 
-/* Determine whether reduce the roundoff errors with the span operations
- * by taking the bounds instead of the projected value at the timestamp */
-#define SPAN_ROUNDOFF  false
-
 /** Enumeration for the intersection/synchronization functions */
 typedef enum
 {
