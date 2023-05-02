@@ -3126,6 +3126,11 @@ bearing_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 
 /*****************************************************************************
  * Functions computing the intersection of two segments derived from PostGIS
+ * The seg2d_intersection function is a modified version of the PostGIS
+ * lw_segment_intersects function and also returns the intersection point
+ * in case the two segments intersect at equal endpoints.
+ * The intersection point is required in tpointseq_linear_find_splits
+ * only for this intersection type (MEOS_SEG_TOUCH_END).
  *****************************************************************************/
 
 /*
