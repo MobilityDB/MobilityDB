@@ -3187,6 +3187,23 @@ parseg2d_intersection(const POINT2D *a, const POINT2D *b, const POINT2D *c,
 }
 
 /**
+ * @brief Determines the side of segment P where Q lies
+ * Return -1  if point Q is left of segment P
+ * Return  1  if point Q is right of segment P
+ * Return  0  if point Q in on segment P
+ * @note adapted from lw_segment_side to take into account precision errors
+ */
+static int
+seg2d_side(const POINT2D *p1, const POINT2D *p2, const POINT2D *q)
+{
+  double side = ( (q->x - p1->x) * (p2->y - p1->y) - (p2->x - p1->x) * (q->y - p1->y) );
+  if (fabs(side) < MEOS_EPSILON)
+    return 0;
+  else
+    return SIGNUM(side);
+}
+
+/**
  * @brief Find the UNIQUE point of intersection p between two closed segments
  * ab and cd. Return p and a MEOS_SEG_INTER_TYPE value.
  * @note Currently, the function only computes p if the result value is
@@ -3206,14 +3223,14 @@ seg2d_intersection(const POINT2D *a, const POINT2D *b, const POINT2D *c,
     return MEOS_SEG_NO_INTERSECTION;
 
   /* Are the start and end points of q on the same side of p? */
-  pq1 = lw_segment_side(a,b,c);
-  pq2 = lw_segment_side(a,b,d);
+  pq1 = seg2d_side(a,b,c);
+  pq2 = seg2d_side(a,b,d);
   if ((pq1 > 0 && pq2 > 0) || (pq1 < 0 && pq2 < 0))
     return MEOS_SEG_NO_INTERSECTION;
 
   /* Are the start and end points of p on the same side of q? */
-  qp1 = lw_segment_side(c,d,a);
-  qp2 = lw_segment_side(c,d,b);
+  qp1 = seg2d_side(c,d,a);
+  qp2 = seg2d_side(c,d,b);
   if ((qp1 > 0 && qp2 > 0) || (qp1 < 0 && qp2 < 0))
     return MEOS_SEG_NO_INTERSECTION;
 
