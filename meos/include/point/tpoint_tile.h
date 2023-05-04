@@ -77,6 +77,7 @@ typedef struct STboxGridState
 extern BitMatrix *bitmatrix_make(int *count, int numdims);
 extern void tpoint_set_tiles(const Temporal *temp, const STboxGridState *state,
   BitMatrix *bm);
+extern Temporal *tpoint_at_tile(const Temporal *temp, const STBox *box);
 
 extern void stbox_tile_set(double x, double y, double z, TimestampTz t,
   double size, int64 tunits, bool hasz, bool hast, int32 srid, STBox *result);

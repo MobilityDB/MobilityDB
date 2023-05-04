@@ -9,6 +9,7 @@ add_library(point OBJECT
   tpoint_distance.c
   tpoint_out.c
   tpoint_parser.c
+  tpoint_restrfuncs.c
   tpoint_spatialfuncs.c
   tpoint_spatialrels.c
   tpoint_tempspatialrels.c

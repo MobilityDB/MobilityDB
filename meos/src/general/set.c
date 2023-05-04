@@ -492,7 +492,7 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
     /* Ensure the spatial validity of the elements */
     GSERIALIZED *gs1 = DatumGetGserializedP(values[0]);
     int srid = gserialized_get_srid(gs1);
-    hasz = FLAGS_GET_Z(gs1->gflags);
+    hasz = (bool) FLAGS_GET_Z(gs1->gflags);
     isgeodetic = FLAGS_GET_GEODETIC(gs1->gflags);
     /* Test the validity of the values */
     for (int i = 0; i < count; i++)

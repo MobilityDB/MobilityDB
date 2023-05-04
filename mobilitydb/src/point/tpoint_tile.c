@@ -241,136 +241,6 @@ Stbox_tile(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @brief Get the tile border that must be removed from a spatiotemporal box
- * during the tiling process as a PostGIS geometry
- *
- * The following figure shows the borders that are removed (represented by x)
- * for a 2D tile and 3D tile
- * @code
- * xxxxxxxxxxxxxxxxx
- * |               x
- * |               x
- * |---------------x
- *
- *   xxxxxxxxxxxxxxxxx
- *  xxxxxxxxxxxxxxxxxx
- * xxxxxxxxxxxxxxxxxxx
- * |               xxx
- * |               xx
- * |---------------x
- * @endcode
- */
-static GSERIALIZED *
-stbox_to_tile_border(const STBox *box)
-{
-  ensure_has_X_stbox(box);
-  assert(! MEOS_FLAGS_GET_Z(box->flags));
-  assert(! MEOS_FLAGS_GET_GEODETIC(box->flags));
-  /* Since there is no M value a 0 value is passed */
-  POINTARRAY *pa = ptarray_construct_empty(false, 0, 3);
-  /* Initialize the 3 vertices of the line */
-  POINT4D pt;
-  pt = (POINT4D) { box->xmin, box->ymax, 0.0, 0.0 };
-  ptarray_append_point(pa, &pt, LW_TRUE);
-  pt = (POINT4D) { box->xmax, box->ymax, 0.0, 0.0 };
-  ptarray_append_point(pa, &pt, LW_TRUE);
-  pt = (POINT4D) { box->xmax, box->ymin, 0.0, 0.0 };
-  ptarray_append_point(pa, &pt, LW_TRUE);
-  /* No bbox is passed as second argument */
-  LWLINE *line = lwline_construct(box->srid, NULL, pa);
-  FLAGS_SET_Z(line->flags, false);
-  FLAGS_SET_GEODETIC(line->flags, false);
-  LWGEOM *geo = lwline_as_lwgeom(line);
-  GSERIALIZED *result = geo_serialize(geo);
-  lwgeom_free(geo);
-  return result;
-}
-
-/**
- * @brief Restrict a temporal point to a tile defined by a spatiotemporal box.
- *
- * In addition to applying the atStbox() function we must remove the upper
- * bound for each dimension. The following figure shows the borders that
- * are removed (represented by x) for a 2D tile and 3D tile
- *
- * @code
- * xxxxxxxxxxxxxxxxx
- * |               x
- * |               x
- * |---------------x
- *
- *   xxxxxxxxxxxxxxxxx
- *  xxxxxxxxxxxxxxxxxx
- * xxxxxxxxxxxxxxxxxxx
- * |               xxx
- * |               xx
- * |---------------x
- * @endcode
- *
- * @param[in] temp Temporal point
- * @param[in] box Spatiotemporal box
- */
-Temporal *
-tpoint_at_tile(const Temporal *temp, const STBox *box)
-{
-  /* Call to atStbox() that includes the upper bounds for each coordinate */
-  Temporal *at_stbox = tpoint_restrict_stbox(temp, box, REST_AT);
-  /* Split the temporal point into temporal floats for each coordinate */
-  Temporal *temp_x = tpoint_get_coord(at_stbox, 0);
-  Temporal *temp_y = tpoint_get_coord(at_stbox, 1);
-  Temporal *temp_z = NULL;
-  bool hasz = MEOS_FLAGS_GET_Z(box->flags);
-  if (hasz)
-    temp_z = tpoint_get_coord(at_stbox, 2);
-  /* Remove from the temporal floats the upper bound for each coordinate */
-  Temporal *minus_x = temporal_restrict_value(temp_x, Float8GetDatum(box->xmax),
-    REST_MINUS);
-  Temporal *minus_y = temporal_restrict_value(temp_y, Float8GetDatum(box->ymax),
-    REST_MINUS);
-  Temporal *minus_z = NULL;
-  if (hasz)
-    minus_z = temporal_restrict_value(temp_z, Float8GetDatum(box->zmax),
-      REST_MINUS);
-  Temporal *result = NULL;
-  if (minus_x && minus_y && (! hasz || minus_z))
-  {
-    SpanSet *ps_x = temporal_time(minus_x);
-    SpanSet *ps_y = temporal_time(minus_y);
-    SpanSet *ps_xy = intersection_spanset_spanset(ps_x, ps_y);
-    if (ps_xy)
-    {
-      SpanSet *ps_z, *ps_xyz;
-      if (hasz)
-      {
-        ps_z = temporal_time(minus_z);
-        ps_xyz = intersection_spanset_spanset(ps_xy, ps_z);
-      }
-      else
-        ps_xyz = ps_xy;
-      if (ps_xyz)
-      {
-        result = temporal_restrict_periodset(temp, ps_xyz, REST_AT);
-        if (hasz)
-          pfree(ps_xyz);
-      }
-      pfree(ps_xy);
-      if (hasz)
-        pfree(ps_z);
-    }
-    pfree(ps_x); pfree(ps_y);
-  }
-  pfree(temp_x); pfree(temp_y);
-  if (minus_x) pfree(minus_x);
-  if (minus_y) pfree(minus_y);
-  if (hasz)
-  {
-    pfree(temp_z);
-    if (minus_z) pfree(minus_z);
-  }
-  return result;
-}
-
-/**
  * @brief Split a temporal point with respect to a spatial and possibly a
  * temporal grid.
  */
@@ -429,7 +299,7 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
     if (gs_srid != SRID_UNKNOWN)
       ensure_same_srid(srid, gs_srid);
     POINT3DZ pt;
-    hasz = (bool) MEOS_FLAGS_GET_Z(temp->flags);
+    hasz = MEOS_FLAGS_GET_Z(temp->flags);
     if (hasz)
     {
       ensure_has_Z_gs(sorigin);
@@ -508,49 +378,15 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
       SRF_RETURN_DONE(funcctx);
     }
     stbox_tile_state_next(state);
+
     /* Restrict the temporal point to the box */
-    Temporal *atstbox = tpoint_restrict_stbox(state->temp, &box, REST_AT);
+    Temporal *atstbox = tpoint_at_tile(state->temp, &box);
     if (atstbox == NULL)
       continue;
-    /* Remove the right and lower bound of the tile */
-    STBox box2d;
-    memcpy(&box2d, &box, sizeof(STBox));
-    MEOS_FLAGS_SET_Z(box2d.flags, false);
-    GSERIALIZED *geo = stbox_to_tile_border(&box2d);
-    Temporal *atstbox1 = tpoint_restrict_geom_time(atstbox, geo, NULL, NULL,
-      REST_MINUS);
-    pfree(geo); pfree(atstbox);
-    atstbox = atstbox1;
-    if (! atstbox)
-      continue;
-    /* Remove the face of the max Z dimension (if any) */
-    hasz = MEOS_FLAGS_GET_Z(state->temp->flags);
-    if (hasz)
-    {
-      Temporal *atstbox_z = tpoint_get_coord(atstbox, 2);
-      Span zmax;
-      span_set(Float8GetDatum(box.zmax), Float8GetDatum(box.zmax), true, true,
-        T_FLOAT8, &zmax);
-      Temporal *atstbox_zmax = tnumber_restrict_span(atstbox_z, &zmax, REST_AT);
-      pfree(atstbox_z);
-      if (atstbox_zmax)
-      {
-        SpanSet *ss1 = temporal_time(atstbox);
-        SpanSet *ss2 = temporal_time(atstbox_zmax);
-        SpanSet *ss = minus_spanset_spanset(ss1, ss2);
-        pfree(atstbox_zmax); pfree(ss1); pfree(ss2);
-        if (! ss)
-        {
-          pfree(atstbox);
-          continue;
-        }
-        atstbox1 = temporal_restrict_periodset(atstbox, ss, REST_AT);
-        pfree(atstbox); pfree(ss);
-        atstbox = atstbox1;
-     }
-    }
+
     /* Form tuple and return */
     int i = 0;
+    hasz = MEOS_FLAGS_GET_Z(state->temp->flags);
     tuple_arr[i++] = PointerGetDatum(gspoint_make(box.xmin, box.ymin, box.zmin,
       hasz, false, box.srid));
     if (timesplit)
