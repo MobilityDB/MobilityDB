@@ -72,6 +72,8 @@ extern bool synchronize_tsequence_tsequence(const TSequence *seq1,
 
 /* Intersection functions */
 
+extern bool tfloatsegm_intersection_value1(double value1, double value2,
+  double value, TimestampTz t1, TimestampTz t2, TimestampTz *t);
 extern bool tlinearsegm_intersection_value(const TInstant *inst1,
   const TInstant *inst2, Datum value, meosType basetype, Datum *inter,
   TimestampTz *t);
