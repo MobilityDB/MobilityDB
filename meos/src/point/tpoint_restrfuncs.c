@@ -1627,7 +1627,7 @@ tpoint_minus_geom(const Temporal *temp, const GSERIALIZED *gs,
  *****************************************************************************/
 
 /*
- * Cohen Sutherland algorithm for 2D line clipping.
+ * Cohen Sutherland algorithm for line clipping.
  * https://en.wikipedia.org/wiki/Cohen%E2%80%93Sutherland_algorithm
  */
 
@@ -1640,143 +1640,16 @@ const int TOP     = 8;  // 001000
 const int FRONT   = 16; // 010000
 const int BACK    = 32; // 100000
 
-
-/**
- * @brief Compute region code for a point(x, y)
- */
-static int
-computeCode2d(double x, double y, const STBox *box)
-{
-  /* Initialized as being inside */
-  int code = INSIDE;
-  if (x < box->xmin)      /* to the left of rectangle */
-    code |= LEFT;
-  else if (x > box->xmax) /* to the right of rectangle */
-    code |= RIGHT;
-  if (y < box->ymin)      /* below the rectangle */
-    code |= BOTTOM;
-  else if (y > box->ymax) /* above the rectangle */
-    code |= TOP;
-  return code;
-}
-
-/**
- * @brief Clipping a line from p1 = (x1, y1) to p2 = (x2, y2)
- * @param[in] p1,p2 Input points
- * @param[in] box Bounding box
- * @param[out] p3,p4 Output points
- * @result True if the line segment defined by p1,p2 intersects the bounding
- * box, false otherwise
- * @pre
- */
-bool
-cohenSutherlandClip2d(Datum p1, Datum p2, const STBox *box, Datum *p3, Datum *p4)
-{
-  assert(MEOS_FLAGS_GET_X(box->flags));
-  const GSERIALIZED *gs1 = DatumGetGserializedP(p1);
-  const GSERIALIZED *gs2 = DatumGetGserializedP(p2);
-  int srid = gserialized_get_srid(gs1);
-  assert(srid == gserialized_get_srid(gs2));
-
-  /* Get the input points */
-  const POINT2D *pt1 = GSERIALIZED_POINT2D_P(gs1);
-  const POINT2D *pt2 = GSERIALIZED_POINT2D_P(gs2);
-  double x1 = pt1->x;
-  double y1 = pt1->y;
-  double x2 = pt2->x;
-  double y2 = pt2->y;
-
-  /* Compute region codes for the input points */
-  int code1 = computeCode2d(x1, y1, box);
-  int code2 = computeCode2d(x2, y2, box);
-
-  /* Initialize line as outside the rectangular window */
-  bool found = false;
-  while (true)
-  {
-    if (!(code1 | code2))
-    {
-      /* If both endpoints lie within rectangle */
-      found = true;
-      break;
-    }
-    else if (code1 & code2)
-    {
-      /* If both endpoints are outside rectangle, in same region */
-      break;
-    }
-    else
-    {
-      /* Some segment of line lies within the rectangle */
-      int code_out;
-      double x, y;
-      /* At least one endpoint is outside the rectangle, pick it. */
-      if (code1 != 0)
-        code_out = code1;
-      else
-        code_out = code2;
-
-      /*
-       * Find intersection point using the following formulas
-       * y = y1 + slope * (x - x1),
-       * x = x1 + (1 / slope) * (y - y1)
-       */
-      if (code_out & TOP)
-      {
-        /* point is above the clip rectangle */
-        x = x1 + (x2 - x1) * (box->ymax - y1) / (y2 - y1);
-        y = box->ymax;
-      }
-      else if (code_out & BOTTOM)
-      {
-        /* point is below the rectangle */
-        x = x1 + (x2 - x1) * (box->ymin - y1) / (y2 - y1);
-        y = box->ymin;
-      }
-      else if (code_out & RIGHT)
-      {
-        /* point is to the right of rectangle */
-        y = y1 + (y2 - y1) * (box->xmax - x1) / (x2 - x1);
-        x = box->xmax;
-      }
-      else if (code_out & LEFT)
-      {
-        /* point is to the left of rectangle */
-        y = y1 + (y2 - y1) * (box->xmin - x1) / (x2 - x1);
-        x = box->xmin;
-      }
-
-      /*
-       * Now intersection point x, y is found.
-       * We replace point outside rectangle by intersection point
-       */
-      if (code_out == code1)
-      {
-        x1 = x;
-        y1 = y;
-        code1 = computeCode2d(x1, y1, box);
-      }
-      else
-      {
-        x2 = x;
-        y2 = y;
-        code2 = computeCode2d(x2, y2, box);
-      }
-    }
-  }
-  if (found)
-  {
-    *p3 = PointerGetDatum(gspoint_make(x1, y1, 0.0, false, false, srid));
-    *p4 = PointerGetDatum(gspoint_make(x2, y2, 0.0, false, false, srid));
-  }
-  return found;
-}
+/* Border codes */
+const int XMAX    = 1;  // 001
+const int YMAX    = 2;  // 010
+const int ZMAX    = 4;  // 100
 
 /**
  * @brief Compute region code for a point(x, y, z)
  */
 static int
-computeCode3d(double x, double y, double z, const STBox *box)
+computeCode(double x, double y, double z, bool hasz, const STBox *box)
 {
   /* Initialized as being inside */
   int code = INSIDE;
@@ -1788,10 +1661,32 @@ computeCode3d(double x, double y, double z, const STBox *box)
     code |= BOTTOM;
   else if (y > box->ymax) /* above the box */
     code |= TOP;
-  if (z < box->zmin)      /* in front of the box */
-    code |= FRONT;
-  else if (z > box->zmax) /* behind the the box */
-    code |= BACK;
+  if (hasz)
+  {
+    if (z < box->zmin)      /* in front of the box */
+      code |= FRONT;
+    else if (z > box->zmax) /* behind the the box */
+      code |= BACK;
+  }
+  return code;
+}
+
+/**
+ * @brief Compute max border code for a point(x, y, z)
+ */
+static int
+computeMaxBorderCode(double x, double y, double z, bool hasz, const STBox *box)
+{
+  /* Initialized as being inside */
+  int code = INSIDE;
+  /* Check if we are on a max border
+   * Note: After clipping, we don't need to apply fabs() */
+  if (box->xmax - x < MEOS_EPSILON) /* on xmax border */
+    code |= XMAX;
+  if (box->ymax - y < MEOS_EPSILON) /* on ymax border */
+    code |= YMAX;
+  if (hasz && box->zmax - z < MEOS_EPSILON) /* on zmax border */
+    code |= ZMAX;
   return code;
 }
 
@@ -1799,34 +1694,48 @@ computeCode3d(double x, double y, double z, const STBox *box)
  * @brief Clipping a line from p1 = (x1, y1, z1) to p2 = (x2, y2, z2)
  * @param[in] p1,p2 Input points
  * @param[in] box Bounding box
+ * @param[in] border Do we need to remove the max border?
  * @param[out] p3,p4 Output points
+ * @param[out] p3_incl,p4_incl Are the points included or not in the box?
  * @result True if the line segment defined by p1,p2 intersects the bounding
  * box, false otherwise
+ * @note When 'border = true', the max border is counted as outside of the box
+ * @note p3_incl and p4_incl are only written/returned when 'border = true'
  * @pre
  */
 bool
-cohenSutherlandClip3d(Datum p1, Datum p2, const STBox *box, Datum *p3, Datum *p4)
+cohenSutherlandClip(Datum p1, Datum p2, const STBox *box, bool hasz,
+  bool border, Datum *p3, Datum *p4, bool *p3_incl, bool *p4_incl)
 {
   assert(MEOS_FLAGS_GET_X(box->flags));
-  assert(MEOS_FLAGS_GET_Z(box->flags));
+  if (hasz)
+    assert(MEOS_FLAGS_GET_Z(box->flags));
   const GSERIALIZED *gs1 = DatumGetGserializedP(p1);
   const GSERIALIZED *gs2 = DatumGetGserializedP(p2);
   int srid = gserialized_get_srid(gs1);
   assert(srid == gserialized_get_srid(gs2));
 
   /* Get the input points */
-  const POINT3DZ *pt1 = GSERIALIZED_POINT3DZ_P(gs1);
-  const POINT3DZ *pt2 = GSERIALIZED_POINT3DZ_P(gs2);
-  double x1 = pt1->x;
-  double y1 = pt1->y;
-  double z1 = pt1->z;
-  double x2 = pt2->x;
-  double y2 = pt2->y;
-  double z2 = pt2->z;
+  double x1, y1, z1 = 0.0, x2, y2, z2 = 0.0;
+  if (hasz)
+  {
+    const POINT3DZ *pt1 = GSERIALIZED_POINT3DZ_P(gs1);
+    const POINT3DZ *pt2 = GSERIALIZED_POINT3DZ_P(gs2);
+    x1 = pt1->x; x2 = pt2->x;
+    y1 = pt1->y; y2 = pt2->y;
+    z1 = pt1->z; z2 = pt2->z;
+  }
+  else
+  {
+    const POINT2D *pt1 = GSERIALIZED_POINT2D_P(gs1);
+    const POINT2D *pt2 = GSERIALIZED_POINT2D_P(gs2);
+    x1 = pt1->x; x2 = pt2->x;
+    y1 = pt1->y; y2 = pt2->y;
+  }
 
   /* Compute region codes for the input points */
-  int code1 = computeCode3d(x1, y1, z1, box);
-  int code2 = computeCode3d(x2, y2, z2, box);
+  int code1 = computeCode(x1, y1, z1, hasz, box);
+  int code2 = computeCode(x2, y2, z2, hasz, box);
 
   /* Initialize line as outside the rectangular window */
   bool found = false;
@@ -1864,37 +1773,41 @@ cohenSutherlandClip3d(Datum p1, Datum p2, const STBox *box, Datum *p3, Datum *p4
         /* point is to the left of rectangle */
         x = box->xmin;
         y = y1 + (y2 - y1) * (box->xmin - x1) / (x2 - x1);
-        z = z1 + (z2 - z1) * (box->xmin - x1) / (x2 - x1);
+        if (hasz)
+          z = z1 + (z2 - z1) * (box->xmin - x1) / (x2 - x1);
       }
       else if (code_out & RIGHT)
       {
         /* point is to the right of rectangle */
         x = box->xmax;
         y = y1 + (y2 - y1) * (box->xmax - x1) / (x2 - x1);
-        z = z1 + (z2 - z1) * (box->xmax - x1) / (x2 - x1);
+        if (hasz)
+          z = z1 + (z2 - z1) * (box->xmax - x1) / (x2 - x1);
       }
       else if (code_out & BOTTOM)
       {
         /* point is below the rectangle */
         y = box->ymin;
         x = x1 + (x2 - x1) * (box->ymin - y1) / (y2 - y1);
-        z = z1 + (z2 - z1) * (box->ymin - y1) / (y2 - y1);
+        if (hasz)
+          z = z1 + (z2 - z1) * (box->ymin - y1) / (y2 - y1);
       }
       else if (code_out & TOP)
       {
         /* point is above the clip rectangle */
         y = box->ymax;
         x = x1 + (x2 - x1) * (box->ymax - y1) / (y2 - y1);
-        z = z1 + (z2 - z1) * (box->ymax - y1) / (y2 - y1);
+        if (hasz)
+          z = z1 + (z2 - z1) * (box->ymax - y1) / (y2 - y1);
       }
-      else if (code_out & FRONT)
+      else if (hasz && code_out & FRONT)
       {
         /* point is in front of the rectangle */
         z = box->zmin;
         x = x1 + (x2 - x1) * (box->zmin - z1) / (z2 - z1);
         y = y1 + (y2 - y1) * (box->zmin - z1) / (z2 - z1);
       }
-      else if (code_out & BACK)
+      else if (hasz && code_out & BACK)
       {
         /* point is behind the rectangle */
         z = box->zmax;
@@ -1910,22 +1823,37 @@ cohenSutherlandClip3d(Datum p1, Datum p2, const STBox *box, Datum *p3, Datum *p4
       {
         x1 = x;
         y1 = y;
-        z1 = z;
-        code1 = computeCode3d(x1, y1, z1, box);
+        if (hasz)
+          z1 = z;
+        code1 = computeCode(x1, y1, z1, hasz, box);
       }
       else
       {
         x2 = x;
         y2 = y;
-        z2 = z;
-        code2 = computeCode3d(x2, y2, z2, box);
+        if (hasz)
+          z2 = z;
+        code2 = computeCode(x2, y2, z2, hasz, box);
       }
     }
   }
   if (found)
   {
-    *p3 = PointerGetDatum(gspoint_make(x1, y1, z1, true, false, srid));
-    *p4 = PointerGetDatum(gspoint_make(x2, y2, z2, true, false, srid));
+    /* We need to remove the max border */
+    if (border)
+    {
+      /* Compute max border codes for the input points */
+      int max_code1 = computeMaxBorderCode(x1, y1, z1, hasz, box);
+      int max_code2 = computeMaxBorderCode(x2, y2, z2, hasz, box);
+      /* If the whole segment is on a max border, remove it */
+      if (max_code1 & max_code2)
+        return false;
+      /* Point is included if its max_code is 0 */
+      *p3_incl = !max_code1;
+      *p4_incl = !max_code2;
+    }
+    *p3 = PointerGetDatum(gspoint_make(x1, y1, z1, hasz, false, srid));
+    *p4 = PointerGetDatum(gspoint_make(x2, y2, z2, hasz, false, srid));
   }
   return found;
 }
@@ -1938,7 +1866,7 @@ cohenSutherlandClip3d(Datum p1, Datum p2, const STBox *box, Datum *p3, Datum *p4
  */
 bool
 tpointinst_restrict_stbox_iter(const TInstant *inst, const STBox *box,
-  bool atfunc)
+  bool border, bool atfunc)
 {
   bool hasz = MEOS_FLAGS_GET_Z(inst->flags) && MEOS_FLAGS_GET_Z(box->flags);
   bool hast = MEOS_FLAGS_GET_T(box->flags);
@@ -1957,7 +1885,6 @@ tpointinst_restrict_stbox_iter(const TInstant *inst, const STBox *box,
   /* Restrict to XY(Z) */
   Datum p = tinstant_value(inst);
   /* Get the input point */
-  int code;
   double x, y, z = 0.0;
   if (hasz)
   {
@@ -1965,17 +1892,19 @@ tpointinst_restrict_stbox_iter(const TInstant *inst, const STBox *box,
     x = pt->x;
     y = pt->y;
     z = pt->z;
-    code = computeCode3d(x, y, z, box);
   }
   else
   {
     const POINT2D *pt = DATUM_POINT2D_P(p);
     x = pt->x;
     y = pt->y;
-    code = computeCode2d(x, y, box);
   }
   /* Compute region code for the input point */
-  if (code != 0)
+  int code = computeCode(x, y, z, hasz, box);
+  int max_code = 0;
+  if (border)
+    max_code = computeMaxBorderCode(x, y, z, hasz, box);
+  if ((code | max_code) != 0)
   {
     minus = true;
     if (atfunc)
@@ -1999,9 +1928,10 @@ tpointinst_restrict_stbox_iter(const TInstant *inst, const STBox *box,
  * @sqlfunc atStbox(), minusStbox()
  */
 TInstant *
-tpointinst_restrict_stbox(const TInstant *inst, const STBox *box, bool atfunc)
+tpointinst_restrict_stbox(const TInstant *inst, const STBox *box, bool border,
+  bool atfunc)
 {
-  if (tpointinst_restrict_stbox_iter(inst, box, atfunc))
+  if (tpointinst_restrict_stbox_iter(inst, box, border, atfunc))
     return tinstant_copy(inst);
   return NULL;
 }
@@ -2019,13 +1949,14 @@ tpointinst_restrict_stbox(const TInstant *inst, const STBox *box, bool atfunc)
  */
 TSequence *
 tpointseq_disc_restrict_stbox(const TSequence *seq, const STBox *box,
-  bool atfunc)
+  bool border, bool atfunc)
 {
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    if (tpointinst_restrict_stbox_iter(TSEQUENCE_INST_N(seq, 0), box, atfunc))
+    if (tpointinst_restrict_stbox_iter(TSEQUENCE_INST_N(seq, 0), box, border,
+        atfunc))
       return tsequence_copy(seq);
     return NULL;
   }
@@ -2036,7 +1967,7 @@ tpointseq_disc_restrict_stbox(const TSequence *seq, const STBox *box,
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    if (tpointinst_restrict_stbox_iter(inst, box, atfunc))
+    if (tpointinst_restrict_stbox_iter(inst, box, border, atfunc))
       instants[k++] = inst;
   }
   TSequence *result = NULL;
@@ -2052,7 +1983,7 @@ tpointseq_disc_restrict_stbox(const TSequence *seq, const STBox *box,
  */
 static TSequence **
 tpointseq_step_at_stbox_iter(const TSequence *seq, const STBox *box,
-  int *count)
+  bool border, int *count)
 {
   /* Compute the time span of the result if the box has T dimension */
   bool hast = MEOS_FLAGS_GET_T(box->flags);
@@ -2076,7 +2007,7 @@ tpointseq_step_at_stbox_iter(const TSequence *seq, const STBox *box,
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    if (tpointinst_restrict_stbox_iter(inst, box, REST_AT))
+    if (tpointinst_restrict_stbox_iter(inst, box, border, REST_AT))
       instants[k++] = (TInstant *) inst;
     else
     {
@@ -2156,20 +2087,22 @@ tpointseq_step_at_stbox_iter(const TSequence *seq, const STBox *box,
  */
 static TSequenceSet *
 tpointseq_step_restrict_stbox(const TSequence *seq, const STBox *box,
-  bool atfunc)
+  bool border, bool atfunc)
 {
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) == STEP);
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    if (tpointinst_restrict_stbox_iter(TSEQUENCE_INST_N(seq, 0), box, atfunc))
+    const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
+    if (tpointinst_restrict_stbox_iter(inst, box, border, atfunc))
       return tsequence_to_tsequenceset(seq);
     return NULL;
   }
 
   /* General case */
   int count;
-  TSequence **sequences = tpointseq_step_at_stbox_iter(seq, box, &count);
+  TSequence **sequences = tpointseq_step_at_stbox_iter(seq, box, border,
+    &count);
   if (count == 0)
     return atfunc ? NULL : tsequence_to_tsequenceset(seq);
 
@@ -2204,16 +2137,18 @@ tpointseq_step_restrict_stbox(const TSequence *seq, const STBox *box,
  * the result of the Cohen-Sutherland line clipping algorithm
  */
 TSequence **
-tpointseq_linear_at_stbox_x(const TSequence *seq, const STBox *box, int *count)
+tpointseq_linear_at_stbox_x(const TSequence *seq, const STBox *box,
+  bool border, int *count)
 {
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) == LINEAR);
   TSequence **result = NULL;
+  *count = 0;
 
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
-    if (tpointinst_restrict_stbox_iter(inst, box, REST_AT))
+    if (tpointinst_restrict_stbox_iter(inst, box, border, REST_AT))
     {
       result = palloc(sizeof(TSequence *));
       result[0] = tsequence_copy(seq);
@@ -2263,10 +2198,16 @@ tpointseq_linear_at_stbox_x(const TSequence *seq, const STBox *box, int *count)
     }
     else
     {
-      found = hasz ? cohenSutherlandClip3d(p1, p2, box, &p3, &p4) :
-        cohenSutherlandClip2d(p1, p2, box, &p3, &p4);
+      bool p3_inc, p4_inc;
+      found = cohenSutherlandClip(p1, p2, box, hasz, border, &p3, &p4,
+        &p3_inc, &p4_inc);
       if (found)
       {
+        if (border)
+        {
+          lower_inc &= p3_inc;
+          upper_inc &= p4_inc;
+        }
         TimestampTz t1, t2;
         tpointsegm_timestamp_at_value1(inst1, inst2, p3, &t1);
         tpointsegm_timestamp_at_value1(inst1, inst2, p4, &t2);
@@ -2288,7 +2229,6 @@ tpointseq_linear_at_stbox_x(const TSequence *seq, const STBox *box, int *count)
         if (t1 != t2 || t1 != inst2->t || upper_inc)
         {
           int j = 0;
-
           instants[j++] = tinstant_make(inter1, inst1->temptype, t1);
           if (! datum_point_eq(inter1, inter2))
             instants[j++] = tinstant_make(inter2, inst1->temptype, t2);
@@ -2329,7 +2269,7 @@ tpointseq_linear_at_stbox_x(const TSequence *seq, const STBox *box, int *count)
  */
 static TSequence **
 tpointseq_linear_at_stbox_iter(const TSequence *seq, const STBox *box,
-  int *count)
+  bool border, int *count)
 {
   assert(MEOS_FLAGS_GET_LINEAR(seq->flags));
   bool hast = MEOS_FLAGS_GET_T(box->flags);
@@ -2339,7 +2279,8 @@ tpointseq_linear_at_stbox_iter(const TSequence *seq, const STBox *box,
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    if (tpointinst_restrict_stbox_iter(TSEQUENCE_INST_N(seq, 0), box, REST_AT))
+    const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
+    if (tpointinst_restrict_stbox_iter(inst, box, border, REST_AT))
     {
       result = palloc(sizeof(TSequence *));
       result[0] = tsequence_copy(seq);
@@ -2371,45 +2312,12 @@ tpointseq_linear_at_stbox_iter(const TSequence *seq, const STBox *box,
   else
     seq_t = (TSequence *) seq;
 
-  /* Split the temporal point in an array of non self-intersecting fragments */
-  int countsimple;
-  TSequence **simpleseqs = tpointseq_make_simple(seq_t, &countsimple);
-  TSequence ***sequences = palloc(sizeof(TSequence **) * countsimple);
-  int *countseqs = palloc0(sizeof(int) * countsimple);
-
-  /* Loop for every simple fragment of the sequence */
-  int totalcount = 0;
-  for (int i = 0; i < countsimple; i++)
-  {
-    /* Restrict to the spatial dimension */
-    sequences[i] = tpointseq_linear_at_stbox_x(simpleseqs[i], box,
-      &countseqs[i]);
-    totalcount += countseqs[i];
-  }
-
-  /* Assemble the results from each fragment of the sequence */
-  if (countsimple == 1)
-  {
-    result = sequences[0];
-    *count = countseqs[0];
-    pfree(sequences); pfree(countseqs);
-  }
-  else
-  {
-    if (totalcount == 0)
-    {
-      *count = 0;
-      pfree(sequences); pfree(countseqs);
-    }
-    else
-    {
-      result = tseqarr2_to_tseqarr(sequences, countseqs, countsimple, totalcount);
-      *count = totalcount;
-    }
-  }
+  /* Restrict to the spatial dimension */
+  int newcount;
+  result = tpointseq_linear_at_stbox_x(seq_t, box, border, &newcount);
+  *count = newcount;
   if (hast)
     pfree(seq_t);
-  pfree_array((void **) simpleseqs, countsimple);
   return result;
 }
 
@@ -2426,10 +2334,11 @@ tpointseq_linear_at_stbox_iter(const TSequence *seq, const STBox *box,
  * @sqlfunc atStbox()
  */
 TSequenceSet *
-tpointseq_linear_at_stbox(const TSequence *seq, const STBox *box)
+tpointseq_linear_at_stbox(const TSequence *seq, const STBox *box, bool border)
 {
   int count;
-  TSequence **sequences = tpointseq_linear_at_stbox_iter(seq, box, &count);
+  TSequence **sequences = tpointseq_linear_at_stbox_iter(seq, box, border,
+    &count);
   if (sequences == NULL)
     return NULL;
   return tsequenceset_make_free(sequences, count, NORMALIZE);
@@ -2450,21 +2359,23 @@ tpointseq_linear_at_stbox(const TSequence *seq, const STBox *box)
  * @sqlfunc atStbox(), minusStbox()
  */
 Temporal *
-tpointseq_restrict_stbox(const TSequence *seq, const STBox *box, bool atfunc)
+tpointseq_restrict_stbox(const TSequence *seq, const STBox *box, bool border,
+  bool atfunc)
 {
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   /* Discrete sequences can cope with "at" and "minus" in a single pass */
   if (interp == DISCRETE)
     return (Temporal *) tpointseq_disc_restrict_stbox((TSequence *) seq, box,
-      atfunc);
+      border, atfunc);
 
   /* Compute "at" for continuous sequences */
   TSequenceSet *result_at;
   if (interp == STEP)
-    result_at = tpointseq_step_restrict_stbox((TSequence *) seq, box, REST_AT);
+    result_at = tpointseq_step_restrict_stbox((TSequence *) seq, box, border,
+      REST_AT);
   else
     /* interp == LINEAR */
-    result_at = tpointseq_linear_at_stbox(seq, box);
+    result_at = tpointseq_linear_at_stbox(seq, box, border);
 
   /* If "at" restriction return */
   if (atfunc)
@@ -2503,7 +2414,7 @@ tpointseq_restrict_stbox(const TSequence *seq, const STBox *box, bool atfunc)
  */
 TSequenceSet *
 tpointseqset_restrict_stbox(const TSequenceSet *ss, const STBox *box,
-  bool atfunc)
+  bool border, bool atfunc)
 {
   const TSequence *seq;
   TSequence **allseqs = NULL;
@@ -2514,8 +2425,8 @@ tpointseqset_restrict_stbox(const TSequenceSet *ss, const STBox *box,
     /* Singleton sequence set */
     seq = TSEQUENCESET_SEQ_N(ss, 0);
     allseqs = linear ?
-      tpointseq_linear_at_stbox_iter(seq, box, &totalcount) :
-      tpointseq_step_at_stbox_iter(seq, box, &totalcount);
+      tpointseq_linear_at_stbox_iter(seq, box, border, &totalcount) :
+      tpointseq_step_at_stbox_iter(seq, box, border, &totalcount);
   }
   else
   {
@@ -2535,8 +2446,8 @@ tpointseqset_restrict_stbox(const TSequenceSet *ss, const STBox *box,
       else
       {
         sequences[i] = linear ?
-          tpointseq_linear_at_stbox_iter(seq, box, &countseqs[i]) :
-          tpointseq_step_at_stbox_iter(seq, box, &countseqs[i]);
+          tpointseq_linear_at_stbox_iter(seq, box, border, &countseqs[i]) :
+          tpointseq_step_at_stbox_iter(seq, box, border, &countseqs[i]);
         totalcount += countseqs[i];
       }
     }
@@ -2582,7 +2493,8 @@ tpointseqset_restrict_stbox(const TSequenceSet *ss, const STBox *box,
  * @sqlfunc atStbox(), minusStbox()
  */
 Temporal *
-tpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool atfunc)
+tpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool border,
+  bool atfunc)
 {
   /* At least one of MEOS_FLAGS_GET_X and MEOS_FLAGS_GET_T is true */
   bool hasx = MEOS_FLAGS_GET_X(box->flags);
@@ -2609,13 +2521,13 @@ tpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool atfunc)
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (Temporal *) tpointinst_restrict_stbox((TInstant *) temp,
-      box, atfunc);
+      box, border, atfunc);
   else if (temp->subtype == TSEQUENCE)
     result = (Temporal *) tpointseq_restrict_stbox((TSequence *) temp,
-      box, atfunc);
+      box, border, atfunc);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) tpointseqset_restrict_stbox((TSequenceSet *)
-      temp, box, atfunc);
+      temp, box, border, atfunc);
   return result;
 }
 

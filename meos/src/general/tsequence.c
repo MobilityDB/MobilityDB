@@ -2912,40 +2912,6 @@ intersection_tdiscseq_tcontseq(const TSequence *seq1, const TSequence *seq2,
  * @param[in] basetype Base type
  * @param[out] t Timestamp
  */
-bool
-tfloatsegm_intersection_value1(double value1, double value2, double value,
-  TimestampTz t1, TimestampTz t2, TimestampTz *t)
-{
-  double min = Min(value1, value2);
-  double max = Max(value1, value2);
-  /* if value is to the left or to the right of the span */
-  if (value < min || value > max)
-    return false;
-
-  double span = (max - min);
-  double partial = (value - min);
-  double fraction = value1 < value2 ? partial / span : 1 - partial / span;
-  if (fraction < -1 * MEOS_EPSILON || 1.0 + MEOS_EPSILON < fraction)
-    return false;
-
-  if (t != NULL)
-  {
-    double duration = (double) (t1 - t2);
-    /* Note that due to roundoff errors it may be the case that the
-     * resulting timestamp t may be equal to t1 or to t2 */
-    *t = t1 + (TimestampTz) (duration * fraction);
-  }
-  return true;
-}
-
-/**
- * @brief Return true if the segment of a temporal number intersects
- * the base value at a timestamp
- * @param[in] inst1,inst2 Temporal instants defining the segment
- * @param[in] value Base value
- * @param[in] basetype Base type
- * @param[out] t Timestamp
- */
 static bool
 tfloatsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
   Datum value, meosType basetype, TimestampTz *t)
@@ -2954,8 +2920,26 @@ tfloatsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
   double dvalue1 = DatumGetFloat8(tinstant_value(inst1));
   double dvalue2 = DatumGetFloat8(tinstant_value(inst2));
   double dvalue = datum_double(value, basetype);
-  return tfloatsegm_intersection_value1(dvalue1, dvalue2, dvalue,
-    inst1->t, inst2->t, t);
+  double min = Min(dvalue1, dvalue2);
+  double max = Max(dvalue1, dvalue2);
+  /* if value is to the left or to the right of the span */
+  if (dvalue < min || dvalue > max)
+    return false;
+
+  double span = (max - min);
+  double partial = (dvalue - min);
+  double fraction = dvalue1 < dvalue2 ? partial / span : 1 - partial / span;
+  if (fraction < -1 * MEOS_EPSILON || 1.0 + MEOS_EPSILON < fraction)
+    return false;
+
+  if (t != NULL)
+  {
+    double duration = (double) (inst2->t - inst1->t);
+    /* Note that due to roundoff errors it may be the case that the
+     * resulting timestamp t may be equal to inst1->t or to inst2->t */
+    *t = inst1->t + (TimestampTz) (duration * fraction);
+  }
+  return true;
 }
 
 /**
@@ -4029,7 +4013,9 @@ tnumbersegm_restrict_span(const TInstant *inst1, const TInstant *inst2,
   if (! datum_eq(lower, upper, basetype))
   {
     tfloatsegm_intersection_value(inst1, inst2, upper, basetype, &t2);
-    if (t2 == inst2->t)
+    if (t2 == inst1->t)
+      inter2 = (TInstant *) inst1;
+    else if (t2 == inst2->t)
       inter2 = (TInstant *) inst2;
     else
     {
@@ -4045,6 +4031,15 @@ tnumbersegm_restrict_span(const TInstant *inst1, const TInstant *inst2,
   k = 0;
   if (atfunc)
   {
+    /* We need order the instants */
+    if (j > 1 && inter1->t > inter2->t)
+    {
+      TInstant *swap = inter1;
+      inter1 = inter2;
+      inter2 = swap;
+      tofree1 = ! tofree1;
+      tofree2 = ! tofree2;
+    }
     instants[0] = inter1;
     if (j > 1)
       instants[1] = inter2;

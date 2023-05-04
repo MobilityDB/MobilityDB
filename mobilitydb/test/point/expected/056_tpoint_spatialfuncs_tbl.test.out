@@ -555,25 +555,25 @@ WHERE bearing(temp, g) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE isSimple(temp);
  count 
 -------
-    67
+    57
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE isSimple(temp);
  count 
 -------
-    65
+    61
 (1 row)
 
 SELECT SUM(numInstants(t)) FROM tbl_tgeompoint, unnest(makeSimple(temp)) t;
  sum  
 ------
- 1034
+ 1134
 (1 row)
 
 SELECT SUM(numInstants(t)) FROM tbl_tgeompoint3D, unnest(makeSimple(temp)) t;
  sum  
 ------
- 1028
+ 1120
 (1 row)
 
 SELECT DISTINCT merge(makeSimple(temp)) = temp from tbl_tgeompoint;

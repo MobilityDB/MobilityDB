@@ -380,7 +380,8 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
     stbox_tile_state_next(state);
 
     /* Restrict the temporal point to the box */
-    Temporal *atstbox = tpoint_at_tile(state->temp, &box);
+    Temporal *atstbox = tpoint_restrict_stbox(state->temp, &box, true,
+      REST_AT);
     if (atstbox == NULL)
       continue;
 
