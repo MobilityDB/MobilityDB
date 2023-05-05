@@ -1499,7 +1499,7 @@ tpointseqset_restrict_geom_time(const TSequenceSet *ss, const GSERIALIZED *gs,
     for (int i = 0; i < ss->count; i++)
     {
       /* Bounding box test */
-      const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
+      seq = TSEQUENCESET_SEQ_N(ss, i);
       tsequence_set_bbox(seq, &box1);
       bool overlaps = overlaps_stbox_stbox(&box1, &box2);
       if (atfunc && ! overlaps)
@@ -1699,16 +1699,20 @@ computeMaxBorderCode(double x, double y, double z, bool hasz, const STBox *box)
  * box, false otherwise
  * @note When 'border = true', the max border is counted as outside of the box
  * @note p3_incl and p4_incl are only written/returned when 'border = true'
+ * @note It is possible to mix 2D/3D geometries, the Z dimension is only
+ * considered if both the temporal point and the box have Z dimension
  */
 bool
 cohenSutherlandClip(Datum p1, Datum p2, const STBox *box, bool hasz,
   bool border, Datum *p3, Datum *p4, bool *p3_incl, bool *p4_incl)
 {
   assert(MEOS_FLAGS_GET_X(box->flags));
-  if (hasz)
-    assert(MEOS_FLAGS_GET_Z(box->flags));
   const GSERIALIZED *gs1 = DatumGetGserializedP(p1);
   const GSERIALIZED *gs2 = DatumGetGserializedP(p2);
+  if (hasz)
+    assert(MEOS_FLAGS_GET_Z(box->flags) && (bool) FLAGS_GET_Z(gs1->gflags) &&
+      (bool) FLAGS_GET_Z(gs2->gflags));
+
   int srid = gserialized_get_srid(gs1);
   assert(srid == gserialized_get_srid(gs2));
 
@@ -2160,7 +2164,9 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
   }
 
   /* General case */
-  bool hasz = MEOS_FLAGS_GET_Z(seq->flags) && MEOS_FLAGS_GET_Z(box->flags);
+  bool hasz_seq = MEOS_FLAGS_GET_Z(seq->flags);
+  bool hasz_box = MEOS_FLAGS_GET_Z(box->flags);
+  bool hasz = hasz_seq && hasz_box;
   result = palloc(sizeof(TSequence *) * seq->count);
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   Datum p1 = tinstant_value(inst1);
@@ -2211,8 +2217,20 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
           upper_inc &= p4_inc;
         }
         TimestampTz t1, t2;
-        tpointsegm_timestamp_at_value1(inst1, inst2, p3, &t1);
-        tpointsegm_timestamp_at_value1(inst1, inst2, p4, &t2);
+        if (hasz_seq && ! hasz)
+        {
+          /* Force the computation at 2D */
+          TInstant *inst1_2d = (TInstant *) tpoint_force2d((Temporal *) inst1);
+          TInstant *inst2_2d = (TInstant *) tpoint_force2d((Temporal *) inst2);
+          tpointsegm_timestamp_at_value1(inst1_2d, inst2, p3, &t1);
+          tpointsegm_timestamp_at_value1(inst1_2d, inst2, p4, &t2);
+          pfree(inst1_2d); pfree(inst2_2d);
+        }
+        else
+        {
+          tpointsegm_timestamp_at_value1(inst1, inst2, p3, &t1);
+          tpointsegm_timestamp_at_value1(inst1, inst2, p4, &t2);
+        }
         pfree(DatumGetPointer(p3)); pfree(DatumGetPointer(p4));
         /* To reduce roundoff errors we project the temporal points to the
          * timestamps instead of taking the intersection values returned by
@@ -2496,7 +2514,8 @@ tpointseqset_restrict_stbox(const TSequenceSet *ss, const STBox *box,
  * @param[in] border Do we need to remove the max border?
  * @param[in] atfunc True if the restriction is at, false for minus
  * @note It is possible to mix 2D/3D geometries, the Z dimension is only
- * considered if both the temporal point and the box have Z dimension * @sqlfunc atStbox(), minusStbox()
+ * considered if both the temporal point and the box have Z dimension
+ * @sqlfunc atStbox(), minusStbox()
  */
 Temporal *
 tpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool border,
@@ -2522,29 +2541,17 @@ tpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool border,
   if (! overlaps)
     return atfunc ? NULL : temporal_copy(temp);
 
-  /* Force a 3D temporal point to 2D if the box has not Z dimension */
-  Temporal *temp1;
-  bool force2d = MEOS_FLAGS_GET_Z(temp->flags) &&
-    ! MEOS_FLAGS_GET_Z(box->flags);
-  if (force2d)
-    temp1 = tpoint_force2d(temp);
-  else
-    temp1 = (Temporal *) temp;
-
   Temporal *result;
-  assert(temptype_subtype(temp1->subtype));
+  assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
-    result = (Temporal *) tpointinst_restrict_stbox((TInstant *) temp1,
+    result = (Temporal *) tpointinst_restrict_stbox((TInstant *) temp,
       box, border, atfunc);
   else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tpointseq_restrict_stbox((TSequence *) temp1,
+    result = (Temporal *) tpointseq_restrict_stbox((TSequence *) temp,
       box, border, atfunc);
   else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tpointseqset_restrict_stbox((TSequenceSet *) temp1,
+    result = (Temporal *) tpointseqset_restrict_stbox((TSequenceSet *) temp,
       box, border, atfunc);
-
-  if (force2d)
-    pfree(temp1);
   return result;
 }
 

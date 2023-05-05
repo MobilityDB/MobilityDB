@@ -875,10 +875,12 @@ SELECT asText(minusStbox(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01
 SELECT asText(minusStbox(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', 'STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-02])'));
 SELECT asText(minusStbox(tgeompoint 'Interp=Step;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 'STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-02])'));
 
+-- Mix 2D/3D
+SELECT asText(atStbox(tgeompoint 'Point(1 1)@2000-01-01', 'STBOX ZT(((1,1,1),(2,2,2)),[2000-01-01,2000-01-02])'));
+
 /* Errors */
 SELECT asText(atStbox(tgeompoint 'SRID=4326;Point(1 1)@2000-01-01', 'GEODSTBOX ZT(((1,1,1),(2,2,2)),[2000-01-01,2000-01-02])'));
 SELECT asText(atStbox(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', 'STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-02])'));
-SELECT asText(atStbox(tgeompoint 'Point(1 1)@2000-01-01', 'STBOX ZT(((1,1,1),(2,2,2)),[2000-01-01,2000-01-02])'));
 
 -------------------------------------------------------------------------------
 

@@ -3454,13 +3454,17 @@ SELECT asText(minusStbox(tgeompoint 'Interp=Step;{[Point(1 1)@2000-01-01, Point(
  Interp=Step;{(POINT(2 2)@2000-01-02 00:00:00+00, POINT(1 1)@2000-01-03 00:00:00+00], [POINT(3 3)@2000-01-04 00:00:00+00, POINT(3 3)@2000-01-05 00:00:00+00]}
 (1 row)
 
+SELECT asText(atStbox(tgeompoint 'Point(1 1)@2000-01-01', 'STBOX ZT(((1,1,1),(2,2,2)),[2000-01-01,2000-01-02])'));
+              astext               
+-----------------------------------
+ POINT(1 1)@2000-01-01 00:00:00+00
+(1 row)
+
 /* Errors */
 SELECT asText(atStbox(tgeompoint 'SRID=4326;Point(1 1)@2000-01-01', 'GEODSTBOX ZT(((1,1,1),(2,2,2)),[2000-01-01,2000-01-02])'));
 ERROR:  Operation on mixed planar and geodetic coordinates
 SELECT asText(atStbox(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', 'STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-02])'));
 ERROR:  Operation on mixed SRID
-SELECT asText(atStbox(tgeompoint 'Point(1 1)@2000-01-01', 'STBOX ZT(((1,1,1),(2,2,2)),[2000-01-01,2000-01-02])'));
-ERROR:  Operation on mixed 2D/3D dimensions
 WITH temp(trip, box) AS (
   SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(3 1 1)@2000-01-03,
     Point(3 1 3)@2000-01-05]', stbox 'STBox Z((2 0 0),(4 2 2))' )
