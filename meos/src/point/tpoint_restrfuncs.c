@@ -1174,12 +1174,10 @@ tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    TInstant *inst = tpointinst_restrict_geom_time(TSEQUENCE_INST_N(seq, 0),
-      gs, NULL, NULL, REST_AT);
-    if (! inst)
+    const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
+    if (! tpointinst_restrict_geom_time_iter(inst, gs, NULL, NULL, REST_AT))
       return NULL;
-    result = tinstant_to_tsequenceset(inst, LINEAR);
-    pfree(inst);
+    result = tsequence_to_tsequenceset(seq);
     return result;
   }
 
@@ -1296,9 +1294,8 @@ tpointseq_linear_at_geom_time_iter(const TSequence *seq, const GSERIALIZED *gs,
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    TInstant *inst = tpointinst_restrict_geom_time(TSEQUENCE_INST_N(seq, 0),
-      gs, zspan, period, REST_AT);
-    if (! inst)
+    const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
+    if (! tpointinst_restrict_geom_time_iter(inst, gs, zspan, period, REST_AT))
     {
       *count = 0;
       return NULL;
@@ -1627,7 +1624,7 @@ tpoint_minus_geom(const Temporal *temp, const GSERIALIZED *gs,
  *****************************************************************************/
 
 /*
- * Cohen Sutherland algorithm for line clipping.
+ * Cohen Sutherland algorithm for line clipping extended for 3D.
  * https://en.wikipedia.org/wiki/Cohen%E2%80%93Sutherland_algorithm
  */
 
@@ -1694,6 +1691,7 @@ computeMaxBorderCode(double x, double y, double z, bool hasz, const STBox *box)
  * @brief Clipping a line from p1 = (x1, y1, z1) to p2 = (x2, y2, z2)
  * @param[in] p1,p2 Input points
  * @param[in] box Bounding box
+ * @param[in] hasz Has Z dimension?
  * @param[in] border Do we need to remove the max border?
  * @param[out] p3,p4 Output points
  * @param[out] p3_incl,p4_incl Are the points included or not in the box?
@@ -1701,7 +1699,6 @@ computeMaxBorderCode(double x, double y, double z, bool hasz, const STBox *box)
  * box, false otherwise
  * @note When 'border = true', the max border is counted as outside of the box
  * @note p3_incl and p4_incl are only written/returned when 'border = true'
- * @pre
  */
 bool
 cohenSutherlandClip(Datum p1, Datum p2, const STBox *box, bool hasz,
@@ -1756,7 +1753,7 @@ cohenSutherlandClip(Datum p1, Datum p2, const STBox *box, bool hasz,
     {
       /* Some segment of line lies within the rectangle */
       int code_out;
-      double x, y, z;
+      double x, y, z = 0.0;
       /* At least one endpoint is outside the rectangle, pick it. */
       if (code1 != 0)
         code_out = code1;
@@ -1849,8 +1846,8 @@ cohenSutherlandClip(Datum p1, Datum p2, const STBox *box, bool hasz,
       if (max_code1 & max_code2)
         return false;
       /* Point is included if its max_code is 0 */
-      *p3_incl = !max_code1;
-      *p4_incl = !max_code2;
+      *p3_incl = ! max_code1;
+      *p4_incl = ! max_code2;
     }
     *p3 = PointerGetDatum(gspoint_make(x1, y1, z1, hasz, false, srid));
     *p4 = PointerGetDatum(gspoint_make(x2, y2, z2, hasz, false, srid));
@@ -1870,8 +1867,8 @@ tpointinst_restrict_stbox_iter(const TInstant *inst, const STBox *box,
 {
   bool hasz = MEOS_FLAGS_GET_Z(inst->flags) && MEOS_FLAGS_GET_Z(box->flags);
   bool hast = MEOS_FLAGS_GET_T(box->flags);
-  /* For minus, verify that the point does not overlap with at least one
-   * dimension */
+  /* For "minus", we must verify that the point does not overlap with at least
+   * one dimension */
   bool minus = false;
 
   /* Restrict to T */
@@ -1922,6 +1919,7 @@ tpointinst_restrict_stbox_iter(const TInstant *inst, const STBox *box,
  * spatiotemporal box.
  * @param[in] inst Temporal instant point
  * @param[in] box Spatiotemporal box
+ * @param[in] border Do we need to remove the max border?
  * @param[in] atfunc True if the restriction is at, false for minus
  * @pre The box has X dimension and the arguments have the same SRID.
  * This is verified in #tpoint_restrict_stbox
@@ -1942,6 +1940,7 @@ tpointinst_restrict_stbox(const TInstant *inst, const STBox *box, bool border,
  * spatiotemporal box.
  * @param[in] seq Temporal discrete sequence point
  * @param[in] box Spatiotemporal box
+ * @param[in] border Do we need to remove the max border?
  * @param[in] atfunc True if the restriction is at, false for minus
  * @pre The box has X dimension and the arguments have the same SRID.
  * This is verified in #tpoint_restrict_stbox
@@ -1955,8 +1954,8 @@ tpointseq_disc_restrict_stbox(const TSequence *seq, const STBox *box,
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    if (tpointinst_restrict_stbox_iter(TSEQUENCE_INST_N(seq, 0), box, border,
-        atfunc))
+    const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
+    if (tpointinst_restrict_stbox_iter(inst, box, border, atfunc))
       return tsequence_copy(seq);
     return NULL;
   }
@@ -1971,7 +1970,7 @@ tpointseq_disc_restrict_stbox(const TSequence *seq, const STBox *box,
       instants[k++] = inst;
   }
   TSequence *result = NULL;
-  if (k != 0)
+  if (k > 0)
     result = tsequence_make(instants, k, true, true, DISCRETE, NORMALIZE_NO);
   pfree(instants);
   return result;
@@ -2003,7 +2002,7 @@ tpointseq_step_at_stbox_iter(const TSequence *seq, const STBox *box,
   TSequence **result = palloc(sizeof(TSequence *) * seq->count);
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   TimestampTz start = DatumGetTimestampTz(seq->period.lower);
-  int k = 0, l = 0;
+  int k = 0, l = 0; /* k: number of instants, l: number of sequences */
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
@@ -2077,6 +2076,7 @@ tpointseq_step_at_stbox_iter(const TSequence *seq, const STBox *box,
  * spatiotemporal box.
  * @param[in] seq Temporal point
  * @param[in] box Spatiotemporal box
+ * @param[in] border Do we need to remove the max border?
  * @param[in] atfunc True if the restriction is at, false for minus
  * @pre The box has X dimension and the arguments have the same SRID.
  * This is verified in #tpoint_restrict_stbox
@@ -2112,7 +2112,7 @@ tpointseq_step_restrict_stbox(const TSequence *seq, const STBox *box,
   if (atfunc)
     return result_at;
 
-  /* If "minus" compute the complement wrt time for linear interpolation */
+  /* If "minus" compute the complement wrt time */
   SpanSet *ps1 = tsequence_time(seq);
   SpanSet *ps2 = tsequenceset_time(result_at);
   SpanSet *ps = minus_spanset_spanset(ps1, ps2);
@@ -2133,11 +2133,13 @@ tpointseq_step_restrict_stbox(const TSequence *seq, const STBox *box,
  * spatiotemporal box
  * @param[in] seq Temporal point sequence
  * @param[in] box Bounding box
+ * @param[in] border Do we need to remove the max border?
+ * @param[out] count Number of elements in the resulting array
  * @pre The sequence is simple in order to recover the time dimension from
  * the result of the Cohen-Sutherland line clipping algorithm
  */
 TSequence **
-tpointseq_linear_at_stbox_x(const TSequence *seq, const STBox *box,
+tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
   bool border, int *count)
 {
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) == LINEAR);
@@ -2258,6 +2260,7 @@ tpointseq_linear_at_stbox_x(const TSequence *seq, const STBox *box,
  * spatiotemporal box.
  * @param[in] seq Temporal point sequence
  * @param[in] box Spatiotemporal box
+ * @param[in] border Do we need to remove the max border?
  * @param[out] count Number of elements in the resulting array
  * @pre The box has X dimension and the arguments have the same SRID.
  * This is verified in #tpoint_restrict_stbox
@@ -2314,7 +2317,7 @@ tpointseq_linear_at_stbox_iter(const TSequence *seq, const STBox *box,
 
   /* Restrict to the spatial dimension */
   int newcount;
-  result = tpointseq_linear_at_stbox_x(seq_t, box, border, &newcount);
+  result = tpointseq_linear_at_stbox_xyz(seq_t, box, border, &newcount);
   *count = newcount;
   if (hast)
     pfree(seq_t);
@@ -2323,9 +2326,11 @@ tpointseq_linear_at_stbox_iter(const TSequence *seq, const STBox *box,
 
 /**
  * @ingroup libmeos_internal_temporal_restrict
- * @brief Restrict a temporal point sequence to a spatiotemporal box.
+ * @brief Restrict a temporal point sequence to (the complement of) a
+ * spatiotemporal box.
  * @param[in] seq Temporal sequence point
  * @param[in] box Spatiotemporal box
+ * @param[in] border Do we need to remove the max border?
  * @pre The box has X dimension and the arguments have the same SRID.
  * This is verified in #tpoint_restrict_stbox
  * @note The test for instantaneous sequences is done at the function
@@ -2334,14 +2339,34 @@ tpointseq_linear_at_stbox_iter(const TSequence *seq, const STBox *box,
  * @sqlfunc atStbox()
  */
 TSequenceSet *
-tpointseq_linear_at_stbox(const TSequence *seq, const STBox *box, bool border)
+tpointseq_linear_restrict_stbox(const TSequence *seq, const STBox *box,
+  bool border, bool atfunc)
 {
   int count;
   TSequence **sequences = tpointseq_linear_at_stbox_iter(seq, box, border,
     &count);
   if (sequences == NULL)
-    return NULL;
-  return tsequenceset_make_free(sequences, count, NORMALIZE);
+    return atfunc ? NULL : tsequence_to_tsequenceset(seq);
+
+  TSequenceSet *result_at = tsequenceset_make_free(sequences, count,
+    NORMALIZE);
+
+  /* If "at" restriction return */
+  if (atfunc)
+    return result_at;
+
+  /* If "minus" restriction, compute the complement wrt time */
+  SpanSet *ps1 = tsequence_time(seq);
+  SpanSet *ps2 = tsequenceset_time(result_at);
+  SpanSet *ps = minus_spanset_spanset(ps1, ps2);
+  TSequenceSet *result = NULL;
+  if (ps)
+  {
+    result = tcontseq_restrict_periodset(seq, ps, REST_AT);
+    pfree(ps);
+  }
+  pfree(ps1); pfree(ps2);
+  return result;
 }
 
 /**
@@ -2350,6 +2375,7 @@ tpointseq_linear_at_stbox(const TSequence *seq, const STBox *box, bool border)
  * spatiotemporal box.
  * @param[in] seq Temporal sequence point
  * @param[in] box Spatiotemporal box
+ * @param[in] border Do we need to remove the max border?
  * @param[in] atfunc True if the restriction is at, false for minus
  * @pre The box has X dimension and the arguments have the same SRID.
  * This is verified in #tpoint_restrict_stbox
@@ -2367,35 +2393,12 @@ tpointseq_restrict_stbox(const TSequence *seq, const STBox *box, bool border,
   if (interp == DISCRETE)
     return (Temporal *) tpointseq_disc_restrict_stbox((TSequence *) seq, box,
       border, atfunc);
-
-  /* Compute "at" for continuous sequences */
-  TSequenceSet *result_at;
-  if (interp == STEP)
-    result_at = tpointseq_step_restrict_stbox((TSequence *) seq, box, border,
-      REST_AT);
-  else
-    /* interp == LINEAR */
-    result_at = tpointseq_linear_at_stbox(seq, box, border);
-
-  /* If "at" restriction return */
-  if (atfunc)
-    return (Temporal *) result_at;
-
-  /* If "minus" restriction, compute the complement wrt time */
-  if (! result_at)
-    return (Temporal *) tsequence_to_tsequenceset(seq);
-
-  SpanSet *ps1 = tsequence_time(seq);
-  SpanSet *ps2 = tsequenceset_time(result_at);
-  SpanSet *ps = minus_spanset_spanset(ps1, ps2);
-  TSequenceSet *result = NULL;
-  if (ps)
-  {
-    result = tcontseq_restrict_periodset(seq, ps, REST_AT);
-    pfree(ps);
-  }
-  pfree(ps1); pfree(ps2);
-  return (Temporal *) result;
+  else if (interp == STEP)
+    return (Temporal *) tpointseq_step_restrict_stbox((TSequence *) seq, box,
+      border, atfunc);
+  else /* interp == LINEAR */
+    return (Temporal *) tpointseq_linear_restrict_stbox((TSequence *) seq, box,
+      border, atfunc);
 }
 
 /**
@@ -2404,6 +2407,7 @@ tpointseq_restrict_stbox(const TSequence *seq, const STBox *box, bool border,
  * spatiotemporal box.
  * @param[in] ss Temporal sequence set point
  * @param[in] box Spatiotemporal box
+ * @param[in] border Do we need to remove the max border?
  * @param[in] atfunc True if the restriction is at, false for minus
  * @pre The box has X dimension and the arguments have the same SRID.
  * This is verified in #tpoint_restrict_stbox
@@ -2470,7 +2474,7 @@ tpointseqset_restrict_stbox(const TSequenceSet *ss, const STBox *box,
   if (atfunc)
     return result_at;
 
-  /* If "minus" compute the complement wrt time for linear interpolation */
+  /* If "minus" compute the complement wrt time */
   SpanSet *ps1 = tsequenceset_time(ss);
   SpanSet *ps2 = tsequenceset_time(result_at);
   SpanSet *ps = minus_spanset_spanset(ps1, ps2);
@@ -2489,6 +2493,7 @@ tpointseqset_restrict_stbox(const TSequenceSet *ss, const STBox *box,
  * @brief Restrict a temporal point to (the complement of) a spatiotemporal box
  * @param[in] temp Temporal point
  * @param[in] box Spatiotemporal box
+ * @param[in] border Do we need to remove the max border?
  * @param[in] atfunc True if the restriction is at, false for minus
  * @sqlfunc atStbox(), minusStbox()
  */
@@ -2531,110 +2536,6 @@ tpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool border,
   return result;
 }
 
-/*****************************************************************************/
-
-/**
- * @brief Restrict a temporal point to a spatiotemporal box.
- * @note The temporal point may be 3D and the box MUST be 2D to be able to
- * restrict to the geometry
- * @pre The arguments have the same SRID
- */
-Temporal *
-tpoint_at_stbox1(const Temporal *temp, const STBox *box)
-{
-  /* At least one of MEOS_FLAGS_GET_X and MEOS_FLAGS_GET_T is true */
-  bool hasx = MEOS_FLAGS_GET_X(box->flags);
-  bool hast = MEOS_FLAGS_GET_T(box->flags);
-  assert(hasx || hast);
-
-  /* Bounding box test */
-  STBox box1;
-  temporal_set_bbox(temp, &box1);
-  if (! overlaps_stbox_stbox(box, &box1))
-    return NULL;
-
-  Temporal *result = NULL;
-  if (hasx)
-  {
-    /* Convert the stbox to a 2D polygon */
-    STBox box2d;
-    memcpy(&box2d, box, sizeof(STBox));
-    MEOS_FLAGS_SET_Z(box2d.flags, false);
-    GSERIALIZED *geo = stbox_to_geo(&box2d);
-    const Span *period = hast ? &box->period : NULL;
-    if (! MEOS_FLAGS_GET_Z(temp->flags) || ! MEOS_FLAGS_GET_Z(box->flags))
-      result = tpoint_restrict_geom_time(temp, geo, NULL, period,
-        REST_AT);
-    else
-    {
-      Span zspan;
-      span_set(Float8GetDatum(box->zmin), Float8GetDatum(box->zmax),
-        true, true, T_FLOAT8, &zspan);
-      result = tpoint_restrict_geom_time(temp, geo, &zspan, period,
-        REST_AT);
-    }
-    pfree(geo);
-  }
-  else
-    result = temporal_restrict_period(temp, &box->period, REST_AT);
-
-  return result;
-}
-
-/**
- * @brief Restrict a temporal point to the complement of a spatiotemporal box.
- *
- * We cannot make the difference from each dimension separately, i.e.,
- * restrict at the period and then restrict to the polygon. Therefore, we
- * compute the atStbox and then compute the complement of the value obtained.
- *
- * @pre The arguments are of the same dimensionality and have the same SRID
- */
-static Temporal *
-tpoint_minus_stbox1(const Temporal *temp, const STBox *box)
-{
-  /* Bounding box test */
-  STBox box1;
-  temporal_set_bbox(temp, &box1);
-  if (! overlaps_stbox_stbox(box, &box1))
-    return temporal_copy(temp);
-
-  Temporal *result = NULL;
-  Temporal *temp1 = tpoint_at_stbox1(temp, box);
-  /* We are sure that temp1 is not NULL due to the bounding box test above */
-  assert(temp1);
-  SpanSet *ps = temporal_time(temp1);
-  result = temporal_restrict_periodset(temp, ps, REST_MINUS);
-  pfree(temp1); pfree(ps);
-  return result;
-}
-
-/**
- * @ingroup libmeos_internal_temporal_restrict
- * @brief Restrict a temporal point to (the complement of) a spatiotemporal
- * box.
- *
- * @param[in] temp Temporal point
- * @param[in] box Box
- * @param[in] atfunc True if the restriction is at, false for minus
- * @note Mixing 2D/3D is enabled to compute, for example, 2.5D operations.
- * @sqlfunc atStbox(), minusStbox()
- */
-Temporal *
-tpoint_restrict_stbox_old(const Temporal *temp, const STBox *box, bool atfunc)
-{
-  ensure_common_dimension(temp->flags, box->flags);
-  if (MEOS_FLAGS_GET_X(box->flags))
-  {
-    ensure_same_geodetic(temp->flags, box->flags);
-    ensure_same_srid_tpoint_stbox(temp, box);
-    ensure_same_spatial_dimensionality_temp_box(temp->flags, box->flags);
-  }
-  Temporal *result = atfunc ? tpoint_at_stbox1(temp, box) :
-    tpoint_minus_stbox1(temp, box);
-  return result;
-}
-
 #if MEOS
 /**
  * @ingroup libmeos_temporal_restrict
@@ -2642,9 +2543,9 @@ tpoint_restrict_stbox_old(const Temporal *temp, const STBox *box, bool atfunc)
  * @sqlfunc atStbox(), minusGeometry()
  */
 Temporal *
-tpoint_at_stbox(const Temporal *temp, const STBox *box)
+tpoint_at_stbox(const Temporal *temp, const STBox *box, bool border)
 {
-  Temporal *result = tpoint_restrict_stbox(temp, box, REST_AT);
+  Temporal *result = tpoint_restrict_stbox(temp, box, border, REST_AT);
   return result;
 }
 
@@ -2654,9 +2555,9 @@ tpoint_at_stbox(const Temporal *temp, const STBox *box)
  * @sqlfunc minusStbox()
  */
 Temporal *
-tpoint_minus_stbox(const Temporal *temp, const STBox *box)
+tpoint_minus_stbox(const Temporal *temp, const STBox *box, bool border)
 {
-  Temporal *result = tpoint_restrict_stbox(temp, box, REST_MINUS);
+  Temporal *result = tpoint_restrict_stbox(temp, box, border, REST_MINUS);
   return result;
 }
 #endif /* MEOS */
