@@ -1312,7 +1312,7 @@ Stbox_extent_transfn(PG_FUNCTION_ARGS)
   }
 
   /* Both boxes are not null */
-  ensure_same_srid_stbox(box1, box2);
+  ensure_same_srid(stbox_srid(box1), stbox_srid(box2));
   ensure_same_dimensionality(box1->flags, box2->flags);
   ensure_same_geodetic(box1->flags, box2->flags);
   memcpy(result, box1, sizeof(STBox));

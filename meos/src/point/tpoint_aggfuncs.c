@@ -263,7 +263,7 @@ tpoint_extent_transfn(STBox *box, const Temporal *temp)
   }
 
   /* Both box and temporal are not null */
-  ensure_same_srid_tpoint_stbox(temp, box);
+  ensure_same_srid(tpoint_srid(temp), stbox_srid(box));
   ensure_same_dimensionality(temp->flags, box->flags);
   ensure_same_geodetic(temp->flags, box->flags);
   temporal_set_bbox(temp, result);

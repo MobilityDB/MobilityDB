@@ -1222,6 +1222,24 @@ SELECT tdwithin(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02,
  {[f@2000-01-01 00:00:00+00, f@2000-01-03 00:00:00+00], [f@2000-01-04 00:00:00+00, f@2000-01-05 00:00:00+00]}
 (1 row)
 
+SELECT tdwithin(NULL::tnpoint, tnpoint 'Npoint(1, 0.5)@2000-01-01', 2);
+ tdwithin 
+----------
+ 
+(1 row)
+
+SELECT tdwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL::tnpoint, 2);
+ tdwithin 
+----------
+ 
+(1 row)
+
+SELECT tdwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01', tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL);
+ tdwithin 
+----------
+ 
+(1 row)
+
 SELECT tdwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01', tnpoint 'Npoint(1, 0.5)@2000-01-01', 2);
          tdwithin         
 --------------------------

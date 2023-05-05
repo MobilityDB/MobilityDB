@@ -813,7 +813,7 @@ nad_stbox_stbox(const STBox *box1, const STBox *box2)
   ensure_has_X_stbox(box1); ensure_has_X_stbox(box2);
   ensure_same_geodetic(box1->flags, box2->flags);
   ensure_same_spatial_dimensionality(box1->flags, box2->flags);
-  ensure_same_srid_stbox(box1, box2);
+  ensure_same_srid(stbox_srid(box1), stbox_srid(box2));
 
   /* If the boxes do not intersect in the time dimension return infinity */
   bool hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
@@ -848,7 +848,7 @@ nad_tpoint_stbox(const Temporal *temp, const STBox *box)
   ensure_has_X_stbox(box);
   ensure_same_geodetic(temp->flags, box->flags);
   ensure_same_spatial_dimensionality_temp_box(temp->flags, box->flags);
-  ensure_same_srid_tpoint_stbox(temp, box);
+  ensure_same_srid(tpoint_srid(temp), stbox_srid(box));
   /* Project the temporal point to the timespan of the box */
   bool hast = MEOS_FLAGS_GET_T(box->flags);
   Span p, inter;

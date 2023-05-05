@@ -94,8 +94,12 @@ tpoint_force2d(const Temporal *temp)
 }
 
 /*****************************************************************************
- * Functions computing the intersection of two segments derived from
- * http://www.science.smith.edu/~jorourke/books/ftp.html
+ * Functions computing the intersection of two segments derived from PostGIS
+ * The seg2d_intersection function is a modified version of the PostGIS
+ * lw_segment_intersects function and also returns the intersection point
+ * in case the two segments intersect at equal endpoints.
+ * The intersection point is required in tpointseq_linear_find_splits
+ * only for this intersection type (MEOS_SEG_TOUCH_END).
  *****************************************************************************/
 
 /*
@@ -107,7 +111,8 @@ enum
   MEOS_SEG_NO_INTERSECTION,  /* Segments do not intersect */
   MEOS_SEG_OVERLAP,          /* Segments overlap */
   MEOS_SEG_CROSS,            /* Segments cross */
-  MEOS_SEG_TOUCH,            /* Segments touch in a vertex */
+  MEOS_SEG_TOUCH_END,        /* Segments touch in two equal enpoints */
+  MEOS_SEG_TOUCH,            /* Segments touch without equal enpoints */
 } MEOS_SEG_INTER_TYPE;
 
 /**
@@ -119,31 +124,31 @@ enum
  * collinear and that their bounding boxes intersect.
  */
 static int
-parseg2d_intersection(const POINT2D a, const POINT2D b, const POINT2D c,
-  const POINT2D d, POINT2D *p)
+parseg2d_intersection(const POINT2D *a, const POINT2D *b, const POINT2D *c,
+  const POINT2D *d, POINT2D *p)
 {
   /* Compute the intersection of the bounding boxes */
-  double xmin = Max(Min(a.x, b.x), Min(c.x, d.x));
-  double xmax = Min(Max(a.x, b.x), Max(c.x, d.x));
-  double ymin = Max(Min(a.y, b.y), Min(c.y, d.y));
-  double ymax = Min(Max(a.y, b.y), Max(c.y, d.y));
+  double xmin = Max(Min(a->x, b->x), Min(c->x, d->x));
+  double xmax = Min(Max(a->x, b->x), Max(c->x, d->x));
+  double ymin = Max(Min(a->y, b->y), Min(c->y, d->y));
+  double ymax = Min(Max(a->y, b->y), Max(c->y, d->y));
   /* If the intersection of the bounding boxes is not a point */
   if (xmin < xmax || ymin < ymax )
     return MEOS_SEG_OVERLAP;
   /* We are sure that the segments touch each other */
-  if ((b.x == c.x && b.y == c.y) ||
-      (b.x == d.x && b.y == d.y))
+  if ((b->x == c->x && b->y == c->y) ||
+      (b->x == d->x && b->y == d->y))
   {
-    p->x = b.x;
-    p->y = b.y;
-    return MEOS_SEG_TOUCH;
+    p->x = b->x;
+    p->y = b->y;
+    return MEOS_SEG_TOUCH_END;
   }
-  if ((a.x == c.x && a.y == c.y) ||
-      (a.x == d.x && a.y == d.y))
+  if ((a->x == c->x && a->y == c->y) ||
+      (a->x == d->x && a->y == d->y))
   {
-    p->x = a.x;
-    p->y = a.y;
-    return MEOS_SEG_TOUCH;
+    p->x = a->x;
+    p->y = a->y;
+    return MEOS_SEG_TOUCH_END;
   }
   /* We should never arrive here since this function is called after verifying
    * that the bounding boxes of the segments intersect */
@@ -151,75 +156,117 @@ parseg2d_intersection(const POINT2D a, const POINT2D b, const POINT2D c,
 }
 
 /**
- * @brief Find the UNIQUE point of intersection p between two closed segments
- * ab and cd. Return p and a MEOS_SEG_INTER_TYPE value.
- * @note If the segments overlap no point is returned since they can be an
- * infinite number of them
+ * @brief Determines the side of segment P where Q lies
+ * Return -1  if point Q is left of segment P
+ * Return  1  if point Q is right of segment P
+ * Return  0  if point Q in on segment P
+ * @note adapted from lw_segment_side to take into account precision errors
  */
 static int
-seg2d_intersection(const POINT2D a, const POINT2D b, const POINT2D c,
-  const POINT2D d, POINT2D *p)
+seg2d_side(const POINT2D *p1, const POINT2D *p2, const POINT2D *q)
 {
-  double s, t;        /* The two parameters of the parametric equations */
-  double num, denom;  /* Numerator and denominator of equations */
-  int result;         /* Return value characterizing the intersection */
-
-  denom = a.x * (d.y - c.y) + b.x * (c.y - d.y) +
-          d.x * (b.y - a.y) + c.x * (a.y - b.y);
-
-  /* If denom is zero, then segments are parallel: handle separately */
-  if (fabs(denom) < MEOS_EPSILON)
-    return parseg2d_intersection(a, b, c, d, p);
-
-  num = a.x * (d.y - c.y) + c.x * (a.y - d.y) + d.x * (c.y - a.y);
-  s = num / denom;
-
-  num = -(a.x * (c.y - b.y) + b.x * (a.y - c.y) + c.x * (b.y - a.y));
-  t = num / denom;
-
-  if ((0.0 == s || s == 1.0) && (0.0 == t || t == 1.0))
-   result = MEOS_SEG_TOUCH;
-  else if (0.0 <= s && s <= 1.0 && 0.0 <= t && t <= 1.0)
-   result = MEOS_SEG_CROSS;
+  double side = ( (q->x - p1->x) * (p2->y - p1->y) -
+    (p2->x - p1->x) * (q->y - p1->y) );
+  if (fabs(side) < MEOS_EPSILON)
+    return 0;
   else
-   result = MEOS_SEG_NO_INTERSECTION;
-
-  p->x = a.x + s * (b.x - a.x);
-  p->y = a.y + s * (b.y - a.y);
-
-  return result;
+    return SIGNUM(side);
 }
-
-/*****************************************************************************
- * Non self-intersecting (a.k.a. simple) functions
- *****************************************************************************/
 
 /**
  * @brief Function derived from PostGIS file lwalgorithm.c since it is declared
  * static
  */
 static bool
-lw_seg_interact(const POINT2D p1, const POINT2D p2, const POINT2D q1,
-  const POINT2D q2)
+lw_seg_interact(const POINT2D *p1, const POINT2D *p2, const POINT2D *q1,
+  const POINT2D *q2)
 {
-  double minq = FP_MIN(q1.x, q2.x);
-  double maxq = FP_MAX(q1.x, q2.x);
-  double minp = FP_MIN(p1.x, p2.x);
-  double maxp = FP_MAX(p1.x, p2.x);
+  double minq = FP_MIN(q1->x, q2->x);
+  double maxq = FP_MAX(q1->x, q2->x);
+  double minp = FP_MIN(p1->x, p2->x);
+  double maxp = FP_MAX(p1->x, p2->x);
 
   if (FP_GT(minp, maxq) || FP_LT(maxp, minq))
     return false;
 
-  minq = FP_MIN(q1.y, q2.y);
-  maxq = FP_MAX(q1.y, q2.y);
-  minp = FP_MIN(p1.y, p2.y);
-  maxp = FP_MAX(p1.y, p2.y);
+  minq = FP_MIN(q1->y, q2->y);
+  maxq = FP_MAX(q1->y, q2->y);
+  minp = FP_MIN(p1->y, p2->y);
+  maxp = FP_MAX(p1->y, p2->y);
 
   if (FP_GT(minp,maxq) || FP_LT(maxp,minq))
     return false;
 
   return true;
 }
+
+/**
+ * @brief Find the UNIQUE point of intersection p between two closed segments
+ * ab and cd. Return p and a MEOS_SEG_INTER_TYPE value.
+ * @note Currently, the function only computes p if the result value is
+ * MEOS_SEG_TOUCH_END, since the return value is never used in other cases.
+ * @note If the segments overlap no point is returned since they can be an
+ * infinite number of them.
+ */
+static int
+seg2d_intersection(const POINT2D *a, const POINT2D *b, const POINT2D *c,
+  const POINT2D *d, POINT2D *p)
+{
+  /* assume the following names: p = Segment(a, b), q = Segment(c, d) */
+  int pq1, pq2, qp1, qp2;
+
+  /* No envelope interaction => we are done. */
+  if (! lw_seg_interact(a, b, c, d))
+    return MEOS_SEG_NO_INTERSECTION;
+
+  /* Are the start and end points of q on the same side of p? */
+  pq1 = seg2d_side(a, b, c);
+  pq2 = seg2d_side(a, b, d);
+  if ((pq1 > 0 && pq2 > 0) || (pq1 < 0 && pq2 < 0))
+    return MEOS_SEG_NO_INTERSECTION;
+
+  /* Are the start and end points of p on the same side of q? */
+  qp1 = seg2d_side(c, d, a);
+  qp2 = seg2d_side(c, d, b);
+  if ((qp1 > 0 && qp2 > 0) || (qp1 < 0 && qp2 < 0))
+    return MEOS_SEG_NO_INTERSECTION;
+
+  /* Nobody is on one side or another? Must be colinear. */
+  if (pq1 == 0 && pq2 == 0 && qp1 == 0 && qp2 == 0)
+    return parseg2d_intersection(a, b, c, d, p);
+
+  /* Check if the intersection is an endpoint */
+  if (pq1 == 0 || pq2 == 0 || qp1 == 0 || qp2 == 0)
+  {
+    /* Check for two equal endpoints */
+    if ((b->x == c->x && b->y == c->y) ||
+        (b->x == d->x && b->y == d->y))
+    {
+      p->x = b->x;
+      p->y = b->y;
+      return MEOS_SEG_TOUCH_END;
+    }
+    if ((a->x == c->x && a->y == c->y) ||
+        (a->x == d->x && a->y == d->y))
+    {
+      p->x = a->x;
+      p->y = a->y;
+      return MEOS_SEG_TOUCH_END;
+    }
+
+    /* The intersection is inside one of the segments
+     * note: p is not compute for this type of intersection */
+    return MEOS_SEG_TOUCH;
+  }
+
+  /* Crossing
+   * note: p is not compute for this type of intersection */
+  return MEOS_SEG_CROSS;
+}
+
+/*****************************************************************************
+ * Non self-intersecting (a.k.a. simple) functions
+ *****************************************************************************/
 
 /**
  * @brief Split a temporal point sequence with discrete or step
@@ -336,17 +383,17 @@ tpointseq_linear_find_splits(const TSequence *seq, int *count)
     while (j < end)
     {
       /* If the bounding boxes of the segments intersect */
-      if (lw_seg_interact(points[i], points[i + 1],
-          points[j], points[j + 1]))
+      if (lw_seg_interact(&points[i], &points[i + 1], &points[j],
+        &points[j + 1]))
       {
         /* Candidate for intersection */
         POINT2D p = { 0 }; /* make compiler quiet */
-        int intertype = seg2d_intersection(points[i], points[i + 1],
-          points[j], points[j + 1], &p);
+        int intertype = seg2d_intersection(&points[i], &points[i + 1],
+          &points[j], &points[j + 1], &p);
         if (intertype > 0 &&
           /* Exclude the case when two consecutive segments that
            * necessarily touch each other in their common point */
-          (intertype != MEOS_SEG_TOUCH || j != i + 1 ||
+          (intertype != MEOS_SEG_TOUCH_END || j != i + 1 ||
            p.x != points[j].x || p.y != points[j].y))
         {
           /* Set the new end */
@@ -552,11 +599,8 @@ tpointseq_cont_split(const TSequence *seq, bool *splits, int count)
     result[k++] = tsequence_make((const TInstant **) instants, end - start + 1,
       lower_inc1, upper_inc1, linear ? LINEAR : STEP, NORMALIZE_NO);
     if (tofree)
-    {
       /* Free the last instant created for the step interpolation */
       pfree(instants[end - start]);
-      tofree = false;
-    }
     /* Continue with the next split */
     start = end;
   }
@@ -690,42 +734,23 @@ tpointinst_restrict_geom_time_iter(const TInstant *inst, const GSERIALIZED *gs,
   const Span *zspan, const Span *period, bool atfunc)
 {
   Datum value = tinstant_value(inst);
-  /* For minus, verify that the point does not overlap with at least one
-   * dimension */
-  bool minus = false;
 
   /* Restrict to the T dimension */
-  if (period)
-  {
-    if (! contains_span_value(period, TimestampTzGetDatum(inst->t),
-          T_TIMESTAMPTZ))
-    {
-      minus = true;
-      if (atfunc)
-        return false;
-    }
-  }
+  if (period && ! contains_span_value(period, TimestampTzGetDatum(inst->t),
+      T_TIMESTAMPTZ))
+    return ! atfunc;
   /* Restrict to the Z dimension */
   if (zspan)
   {
     const POINT3DZ *p = DATUM_POINT3DZ_P(value);
     if (! contains_span_value(zspan, Float8GetDatum(p->z), T_FLOAT8))
-    {
-      minus = true;
-      if (atfunc)
-        return false;
-    }
+      return ! atfunc;
   }
   /* Restrict to the XY dimension */
   if (! DatumGetBool(geom_intersects2d(value, PointerGetDatum(gs))))
-  {
-    minus = true;
-    if (atfunc)
-      return false;
-  }
-  if (! atfunc && ! minus)
-    return false;
-  return true;
+    return ! atfunc;
+  /* Point is inside the region */
+  return atfunc;
 }
 
 /**
@@ -908,27 +933,23 @@ tpointseq_step_restrict_geom_time(const TSequence *seq,
   int count;
   TSequence **sequences = tpointseq_step_at_geom_time_iter(seq, gs, zspan,
     period, &count);
+  /* Return if the computation of "at" is empty */
   if (count == 0)
     return atfunc ? NULL : tsequence_to_tsequenceset(seq);
 
+  /* Construct the result for "at" restriction */
   TSequenceSet *result_at = tsequenceset_make_free(sequences, count,
     NORMALIZE_NO);
-
+  /* If "at" return */
   if (atfunc)
     return result_at;
 
-  /* If "minus" compute the complement wrt time for linear interpolation */
-  SpanSet *ps1 = tsequence_time(seq);
-  SpanSet *ps2 = tsequenceset_time(result_at);
-  SpanSet *ps = minus_spanset_spanset(ps1, ps2);
-  TSequenceSet *result_comp = NULL;
-  if (ps)
-  {
-    result_comp = tcontseq_restrict_periodset(seq, ps, REST_AT);
-    pfree(ps);
-  }
-  pfree(ps1); pfree(ps2); pfree(result_at);
-  return result_comp;
+  /* If "minus" restriction, compute the complement wrt time */
+  SpanSet *ps = tsequenceset_time(result_at);
+  TSequenceSet *result = tcontseq_restrict_periodset(seq, ps, atfunc);
+  pfree(ps);
+  pfree(result_at);
+  return result;
 }
 
 /*****************************************************************************/
@@ -1290,23 +1311,26 @@ tpointseq_linear_at_geom_time_iter(const TSequence *seq, const GSERIALIZED *gs,
   const Span *zspan, const Span *period, int *count)
 {
   assert(MEOS_FLAGS_GET_LINEAR(seq->flags));
+  TSequence **result = NULL;
+  *count = 0;
 
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
-    if (! tpointinst_restrict_geom_time_iter(inst, gs, zspan, period, REST_AT))
+    if (tpointinst_restrict_geom_time_iter(inst, gs, zspan, period, REST_AT))
     {
-      *count = 0;
-      return NULL;
+      result = palloc(sizeof(TSequence *));
+      result[0] = tsequence_copy(seq);
+      *count = 1;
     }
+    return result;
   }
 
   /* General case */
   TSequence *seq_t = NULL;
   TSequenceSet *seqset_xt = NULL;
   TSequenceSet *seqset_xzt = NULL;
-  TSequence **result = NULL;
 
   /* Restrict the temporal point to the T dimension */
   if (period)
@@ -1331,9 +1355,8 @@ tpointseq_linear_at_geom_time_iter(const TSequence *seq, const GSERIALIZED *gs,
     if (zspan)
     {
       /* Bounding box test for the Z dimension */
-      STBox box1, box2;
+      STBox box1;
       tsequenceset_set_bbox(seqset_xt, &box1);
-      geo_set_stbox(gs, &box2);
       Span zspan1;
       span_set(Float8GetDatum(box1.zmin), Float8GetDatum(box1.zmax), true, true,
         T_FLOAT8, &zspan1);
@@ -1395,8 +1418,6 @@ tpointseq_linear_at_geom_time(const TSequence *seq, const GSERIALIZED *gs,
   if (sequences == NULL)
     return NULL;
 
-  /* It is necessary to sort the sequences */
-  tseqarr_sort(sequences, count);
   return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
 
@@ -1424,16 +1445,14 @@ tpointseq_restrict_geom_time(const TSequence *seq, const GSERIALIZED *gs,
   if (interp == DISCRETE)
     return (Temporal *) tpointseq_disc_restrict_geom_time((TSequence *) seq,
       gs, zspan, period, atfunc);
+  else if (interp == STEP)
+    return (Temporal *) tpointseq_step_restrict_geom_time((TSequence *) seq,
+      gs, zspan, period, atfunc);
 
-  TSequenceSet *result_at;
-  if (interp == STEP)
-    result_at = tpointseq_step_restrict_geom_time((TSequence *) seq,
-      gs, zspan, period, REST_AT);
-  else
-    /* interp == LINEAR */
-    result_at = tpointseq_linear_at_geom_time(seq, gs, zspan, period);
-
-  /* If "at" restriction return */
+  /* Linear interpolation */
+  TSequenceSet *result_at = tpointseq_linear_at_geom_time(seq, gs, zspan,
+    period);
+  /* If "at" restriction, return */
   if (atfunc)
     return (Temporal *) result_at;
 
@@ -1441,16 +1460,10 @@ tpointseq_restrict_geom_time(const TSequence *seq, const GSERIALIZED *gs,
   if (! result_at)
     return (Temporal *) tsequence_to_tsequenceset(seq);
 
-  SpanSet *ps1 = tsequence_time(seq);
-  SpanSet *ps2 = tsequenceset_time(result_at);
-  SpanSet *ps = minus_spanset_spanset(ps1, ps2);
-  TSequenceSet *result = NULL;
-  if (ps)
-  {
-    result = tcontseq_restrict_periodset(seq, ps, REST_AT);
-    pfree(ps);
-  }
-  pfree(ps1); pfree(ps2);
+  SpanSet *ps = tsequenceset_time(result_at);
+  TSequenceSet *result = tcontseq_restrict_periodset(seq, ps, atfunc);
+  pfree(ps);
+  pfree(result_at);
   return (Temporal *) result;
 }
 
@@ -1526,25 +1539,19 @@ tpointseqset_restrict_geom_time(const TSequenceSet *ss, const GSERIALIZED *gs,
   /* Return if the computation of "at" is empty */
   if (totalcount == 0)
     return atfunc ? NULL : tsequenceset_copy(ss);
-  /* Construct the result for "at" */
+  /* Construct the result for "at" restriction */
   TSequenceSet *result_at = tsequenceset_make_free(allseqs, totalcount,
     NORMALIZE);
-  /* Return if "at" */
+  /* If "at" restriction, return */
   if (atfunc)
     return result_at;
 
-  /* If "minus" compute the complement wrt time for linear interpolation */
-  SpanSet *ps1 = tsequenceset_time(ss);
-  SpanSet *ps2 = tsequenceset_time(result_at);
-  SpanSet *ps = minus_spanset_spanset(ps1, ps2);
-  TSequenceSet *result_comp = NULL;
-  if (ps)
-  {
-    result_comp = tsequenceset_restrict_periodset(ss, ps, REST_AT);
-    pfree(ps);
-  }
-  pfree(ps1); pfree(ps2); pfree(result_at);
-  return result_comp;
+  /* If "minus" restriction, compute the complement wrt time */
+  SpanSet *ps = tsequenceset_time(result_at);
+  TSequenceSet *result = tsequenceset_restrict_periodset(ss, ps, atfunc);
+  pfree(ps);
+  pfree(result_at);
+  return result;
 }
 
 /**
@@ -1575,6 +1582,17 @@ tpoint_restrict_geom_time(const Temporal *temp, const GSERIALIZED *gs,
   temporal_set_bbox(temp, &box1);
   /* Non-empty geometries have a bounding box */
   geo_set_stbox(gs, &box2);
+  if (zspan)
+  {
+    box2.zmin = DatumGetFloat8(zspan->lower);
+    box2.zmax = DatumGetFloat8(zspan->upper);
+    MEOS_FLAGS_SET_Z(box2.flags, true);
+  }
+  if (period)
+  {
+    memcpy(&box2.period, period, sizeof(Span));
+    MEOS_FLAGS_SET_T(box2.flags, true);
+  }
   bool overlaps = overlaps_stbox_stbox(&box1, &box2);
   if (! overlaps)
     return atfunc ? NULL : temporal_copy(temp);
@@ -2107,27 +2125,23 @@ tpointseq_step_restrict_stbox(const TSequence *seq, const STBox *box,
   int count;
   TSequence **sequences = tpointseq_step_at_stbox_iter(seq, box, border,
     &count);
+  /* Return if the computation of "at" is empty */
   if (count == 0)
     return atfunc ? NULL : tsequence_to_tsequenceset(seq);
 
+  /* Construct the result for "at" restriction */
   TSequenceSet *result_at = tsequenceset_make_free(sequences, count,
     NORMALIZE_NO);
-
+  /* If "at" restriction, return */
   if (atfunc)
     return result_at;
 
-  /* If "minus" compute the complement wrt time */
-  SpanSet *ps1 = tsequence_time(seq);
-  SpanSet *ps2 = tsequenceset_time(result_at);
-  SpanSet *ps = minus_spanset_spanset(ps1, ps2);
-  TSequenceSet *result_comp = NULL;
-  if (ps)
-  {
-    result_comp = tcontseq_restrict_periodset(seq, ps, REST_AT);
-    pfree(ps);
-  }
-  pfree(ps1); pfree(ps2); pfree(result_at);
-  return result_comp;
+  /* If "minus" restriction, compute the complement wrt time */
+  SpanSet *ps = tsequenceset_time(result_at);
+  TSequenceSet *result = tcontseq_restrict_periodset(seq, ps, atfunc);
+  pfree(ps);
+  pfree(result_at);
+  return result;
 }
 
 /*****************************************************************************/
@@ -2141,6 +2155,8 @@ tpointseq_step_restrict_stbox(const TSequence *seq, const STBox *box,
  * @param[out] count Number of elements in the resulting array
  * @pre The sequence is simple in order to recover the time dimension from
  * the result of the Cohen-Sutherland line clipping algorithm
+ * @note Since this function is called AFTER the restriction to the time
+ * dimension it is necessary to test for instantaneous sequence
  */
 TSequence **
 tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
@@ -2178,25 +2194,30 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
     bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
     Datum p2 = tinstant_value(inst2);
     Datum p3, p4;
-    bool found;
     TInstant *instants[2];
     if (datum2_point_eq(p1, p2))
     {
       /* Constant segment */
+      double x, y, z = 0.0;
       if (hasz)
       {
-        const POINT3DZ *pt1 = DATUM_POINT3DZ_P(p1);
-        found = (box->xmin <= pt1->x && pt1->x <= box->xmax) &&
-                (box->ymin <= pt1->y && pt1->y <= box->ymax) &&
-                (box->zmin <= pt1->z && pt1->z <= box->zmax);
+        const POINT3DZ *pt = DATUM_POINT3DZ_P(p1);
+        x = pt->x;
+        y = pt->y;
+        z = pt->z;
       }
       else
       {
-        const POINT2D *pt1 = DATUM_POINT2D_P(p1);
-        found = (box->xmin <= pt1->x && pt1->x <= box->xmax) &&
-                (box->ymin <= pt1->y && pt1->y <= box->xmax);
+        const POINT2D *pt = DATUM_POINT2D_P(p1);
+        x = pt->x;
+        y = pt->y;
       }
-      if (found)
+      /* Compute region code for the input point */
+      int code = computeCode(x, y, z, hasz, box);
+      int max_code = 0;
+      if (border)
+        max_code = computeMaxBorderCode(x, y, z, hasz, box);
+      if ((code | max_code) == 0)
       {
         instants[0] = (TInstant *) inst1;
         instants[1] = (TInstant *) inst2;
@@ -2207,7 +2228,7 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
     else
     {
       bool p3_inc, p4_inc;
-      found = cohenSutherlandClip(p1, p2, box, hasz, border, &p3, &p4,
+      bool found = cohenSutherlandClip(p1, p2, box, hasz, border, &p3, &p4,
         &p3_inc, &p4_inc);
       if (found)
       {
@@ -2306,9 +2327,8 @@ tpointseq_linear_at_stbox_iter(const TSequence *seq, const STBox *box,
       result = palloc(sizeof(TSequence *));
       result[0] = tsequence_copy(seq);
       *count = 1;
-      return result;
     }
-    return NULL;
+    return result;
   }
 
   /* Bounding box test */
@@ -2321,14 +2341,8 @@ tpointseq_linear_at_stbox_iter(const TSequence *seq, const STBox *box,
   TSequence *seq_t;
   if (hast)
   {
-    /* Bounding box test for the T dimension */
-    if (overlaps_span_span(&seq->period, &box->period))
-    {
-      /* Restrict to the period */
-      seq_t = tcontseq_at_period(seq, &box->period);
-      if (! seq_t)
-        return NULL;
-    }
+    /* Restrict to the period */
+    seq_t = tcontseq_at_period(seq, &box->period);
   }
   else
     seq_t = (TSequence *) seq;
@@ -2368,22 +2382,15 @@ tpointseq_linear_restrict_stbox(const TSequence *seq, const STBox *box,
 
   TSequenceSet *result_at = tsequenceset_make_free(sequences, count,
     NORMALIZE);
-
-  /* If "at" restriction return */
+  /* If "at" restriction, return */
   if (atfunc)
     return result_at;
 
   /* If "minus" restriction, compute the complement wrt time */
-  SpanSet *ps1 = tsequence_time(seq);
-  SpanSet *ps2 = tsequenceset_time(result_at);
-  SpanSet *ps = minus_spanset_spanset(ps1, ps2);
-  TSequenceSet *result = NULL;
-  if (ps)
-  {
-    result = tcontseq_restrict_periodset(seq, ps, REST_AT);
-    pfree(ps);
-  }
-  pfree(ps1); pfree(ps2);
+  SpanSet *ps = tsequenceset_time(result_at);
+  TSequenceSet *result = tcontseq_restrict_periodset(seq, ps, atfunc);
+  pfree(ps);
+  pfree(result_at);
   return result;
 }
 
@@ -2459,7 +2466,7 @@ tpointseqset_restrict_stbox(const TSequenceSet *ss, const STBox *box,
     for (int i = 0; i < ss->count; i++)
     {
       /* Bounding box test */
-      const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
+      seq = TSEQUENCESET_SEQ_N(ss, i);
       STBox box1;
       tsequence_set_bbox(seq, &box1);
       bool overlaps = overlaps_stbox_stbox(&box1, box);
@@ -2485,25 +2492,19 @@ tpointseqset_restrict_stbox(const TSequenceSet *ss, const STBox *box,
   /* Return if the computation of "at" is empty */
   if (totalcount == 0)
     return atfunc ? NULL : tsequenceset_copy(ss);
-  /* Construct the result for "at" */
+  /* Construct the result for "at" restriction */
   TSequenceSet *result_at = tsequenceset_make_free(allseqs, totalcount,
     NORMALIZE);
-  /* Return if "at" */
+  /* If "at" restriction, return */
   if (atfunc)
     return result_at;
 
-  /* If "minus" compute the complement wrt time */
-  SpanSet *ps1 = tsequenceset_time(ss);
-  SpanSet *ps2 = tsequenceset_time(result_at);
-  SpanSet *ps = minus_spanset_spanset(ps1, ps2);
-  TSequenceSet *result_comp = NULL;
-  if (ps)
-  {
-    result_comp = tsequenceset_restrict_periodset(ss, ps, REST_AT);
-    pfree(ps);
-  }
-  pfree(ps1); pfree(ps2); pfree(result_at);
-  return result_comp;
+  /* If "minus" restriction, compute the complement wrt time */
+  SpanSet *ps = tsequenceset_time(result_at);
+  TSequenceSet *result = tsequenceset_restrict_periodset(ss, ps, atfunc);
+  pfree(ps);
+  pfree(result_at);
+  return result;
 }
 
 /**

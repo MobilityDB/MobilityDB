@@ -1004,7 +1004,7 @@ topo_stbox_stbox_init(const STBox *box1, const STBox *box2, bool *hasx,
   if (MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags))
   {
     ensure_same_geodetic(box1->flags, box2->flags);
-    ensure_same_srid_stbox(box1, box2);
+    ensure_same_srid(stbox_srid(box1), stbox_srid(box2));
   }
   stbox_stbox_flags(box1, box2, hasx, hasz, hast, geodetic);
   return;
@@ -1059,9 +1059,7 @@ overlaps_stbox_stbox(const STBox *box1, const STBox *box2)
     return false;
   if ((hasz || geodetic) && (box1->zmax < box2->zmin || box1->zmin > box2->zmax))
     return false;
-  if (hast && (
-    datum_lt(box1->period.upper, box2->period.lower, T_TIMESTAMPTZ) ||
-    datum_gt(box1->period.lower, box2->period.upper, T_TIMESTAMPTZ)))
+  if (hast && ! overlaps_span_span(&box1->period, &box2->period))
     return false;
   return true;
 }
@@ -1138,7 +1136,7 @@ static void
 pos_stbox_stbox_test(const STBox *box1, const STBox *box2)
 {
   ensure_same_geodetic(box1->flags, box2->flags);
-  ensure_same_srid_stbox(box1, box2);
+  ensure_same_srid(stbox_srid(box1), stbox_srid(box2));
   return;
 }
 
@@ -1393,7 +1391,7 @@ union_stbox_stbox(const STBox *box1, const STBox *box2, bool strict)
 {
   ensure_same_geodetic(box1->flags, box2->flags);
   ensure_same_dimensionality(box1->flags, box2->flags);
-  ensure_same_srid_stbox(box1, box2);
+  ensure_same_srid(stbox_srid(box1), stbox_srid(box2));
   /* If the strict parameter is true, we need to ensure that the boxes
    * intersect, otherwise their union cannot be represented by a box */
   if (strict && ! overlaps_stbox_stbox(box1, box2))
@@ -1414,13 +1412,16 @@ union_stbox_stbox(const STBox *box1, const STBox *box2, bool strict)
 bool
 inter_stbox_stbox(const STBox *box1, const STBox *box2, STBox *result)
 {
-  ensure_same_geodetic(box1->flags, box2->flags);
-  ensure_same_srid_stbox(box1, box2);
-
   bool hasx = MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags);
+  if (hasx)
+  {
+    ensure_same_geodetic(box1->flags, box2->flags);
+    ensure_same_srid(stbox_srid(box1), stbox_srid(box2));
+  }
   bool hasz = MEOS_FLAGS_GET_Z(box1->flags) && MEOS_FLAGS_GET_Z(box2->flags);
   bool hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
-  bool geodetic = MEOS_FLAGS_GET_GEODETIC(box1->flags) && MEOS_FLAGS_GET_GEODETIC(box2->flags);
+  bool geodetic = MEOS_FLAGS_GET_GEODETIC(box1->flags);
+
   /* If there is no common dimension */
   if ((! hasx && ! hast) ||
     /* If they do no intersect in one common dimension */
@@ -1463,7 +1464,7 @@ intersection_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   ensure_same_geodetic(box1->flags, box2->flags);
   // ensure_same_dimensionality(box1->flags, box2->flags);
-  ensure_same_srid_stbox(box1, box2);
+  ensure_same_srid(stbox_srid(box1), stbox_srid(box2));
   STBox *result = palloc(sizeof(STBox));
   if (! inter_stbox_stbox(box1, box2, result))
   {

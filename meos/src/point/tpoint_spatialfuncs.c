@@ -331,31 +331,6 @@ ensure_same_srid(int32_t srid1, int32_t srid2)
 }
 
 /**
- * @brief Ensure that the spatiotemporal boxes have the same SRID
- */
-void
-ensure_same_srid_stbox(const STBox *box1, const STBox *box2)
-{
-  if (MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags) &&
-    box1->srid != box2->srid)
-    elog(ERROR, "Operation on mixed SRID");
-  return;
-}
-
-/**
- * @brief Ensure that a temporal point and a spatiotemporal boxes have the same
- * SRID
- */
-void
-ensure_same_srid_tpoint_stbox(const Temporal *temp, const STBox *box)
-{
-  if (MEOS_FLAGS_GET_X(box->flags) &&
-    tpoint_srid(temp) != box->srid)
-    elog(ERROR, "Operation on mixed SRID");
-  return;
-}
-
-/**
  * @brief Ensure that a temporal point and a geometry/geography have the same
  * SRID
  */

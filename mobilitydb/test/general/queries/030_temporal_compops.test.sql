@@ -31,6 +31,10 @@
 -- Temporal eq
 -------------------------------------------------------------------------------
 
+-- Test for NULL inputs since the function is not STRICT
+SELECT NULL #= tbool 't@2000-01-01';
+SELECT TRUE #= NULL::tbool;
+
 SELECT TRUE #= tbool 't@2000-01-01';
 SELECT TRUE #= tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}';
 SELECT TRUE #= tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]';
@@ -41,10 +45,18 @@ SELECT FALSE #= tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}';
 SELECT FALSE #= tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]';
 SELECT FALSE #= tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}';
 
+-- Test for NULL inputs since the function is not STRICT
+SELECT NULL::tbool #= TRUE;
+SELECT tbool 't@2000-01-01' #= NULL;
+
 SELECT tbool 't@2000-01-01' #= TRUE;
 SELECT tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}' #= TRUE;
 SELECT tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]' #= TRUE;
 SELECT tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}' #= TRUE;
+
+-- Test for NULL inputs since the function is not STRICT
+SELECT NULL::tbool #= tbool 't@2000-01-01';
+SELECT tbool 't@2000-01-01' #= NULL::tbool;
 
 SELECT tbool 't@2000-01-01' #= tbool 't@2000-01-01';
 SELECT tbool 't@2000-01-01' #= tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}';

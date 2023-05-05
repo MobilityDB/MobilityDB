@@ -124,9 +124,6 @@ extern void ensure_spatial_validity(const Temporal *temp1,
 extern void ensure_not_geodetic(int16 flags);
 extern void ensure_same_geodetic(int16 flags1, int16 flags2);
 extern void ensure_same_srid(int32_t srid1, int32_t srid2);
-extern void ensure_same_srid_stbox(const STBox *box1, const STBox *box2);
-extern void ensure_same_srid_tpoint_stbox(const Temporal *temp,
-  const STBox *box);
 extern void ensure_same_srid_stbox_gs(const STBox *box, const GSERIALIZED *gs);
 extern void ensure_same_dimensionality(int16 flags1, int16 flags2);
 extern void ensure_same_spatial_dimensionality(int16 flags1, int16 flags2);
