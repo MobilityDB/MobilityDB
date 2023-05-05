@@ -2495,7 +2495,8 @@ tpointseqset_restrict_stbox(const TSequenceSet *ss, const STBox *box,
  * @param[in] box Spatiotemporal box
  * @param[in] border Do we need to remove the max border?
  * @param[in] atfunc True if the restriction is at, false for minus
- * @sqlfunc atStbox(), minusStbox()
+ * @note It is possible to mix 2D/3D geometries, the Z dimension is only
+ * considered if both the temporal point and the box have Z dimension * @sqlfunc atStbox(), minusStbox()
  */
 Temporal *
 tpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool border,
@@ -2513,7 +2514,6 @@ tpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool border,
   /* Parameter test */
   ensure_same_srid(tpoint_srid(temp), stbox_srid(box));
   ensure_same_geodetic(temp->flags, box->flags);
-  ensure_same_spatial_dimensionality(temp->flags, box->flags);
 
   /* Bounding box test */
   STBox box1;
@@ -2522,17 +2522,29 @@ tpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool border,
   if (! overlaps)
     return atfunc ? NULL : temporal_copy(temp);
 
+  /* Force a 3D temporal point to 2D if the box has not Z dimension */
+  Temporal *temp1;
+  bool force2d = MEOS_FLAGS_GET_Z(temp->flags) &&
+    ! MEOS_FLAGS_GET_Z(box->flags);
+  if (force2d)
+    temp1 = tpoint_force2d(temp);
+  else
+    temp1 = (Temporal *) temp;
+
   Temporal *result;
-  assert(temptype_subtype(temp->subtype));
+  assert(temptype_subtype(temp1->subtype));
   if (temp->subtype == TINSTANT)
-    result = (Temporal *) tpointinst_restrict_stbox((TInstant *) temp,
+    result = (Temporal *) tpointinst_restrict_stbox((TInstant *) temp1,
       box, border, atfunc);
   else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tpointseq_restrict_stbox((TSequence *) temp,
+    result = (Temporal *) tpointseq_restrict_stbox((TSequence *) temp1,
       box, border, atfunc);
   else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tpointseqset_restrict_stbox((TSequenceSet *)
-      temp, box, border, atfunc);
+    result = (Temporal *) tpointseqset_restrict_stbox((TSequenceSet *) temp1,
+      box, border, atfunc);
+
+  if (force2d)
+    pfree(temp1);
   return result;
 }
 
