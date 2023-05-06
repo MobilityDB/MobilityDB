@@ -513,7 +513,7 @@ tdiscseq_find_timestamp(const TSequence *seq, TimestampTz t)
  * This function is called by all the functions in which the number of output
  * sequences cannot be determined in advance, typically when each segment
  * of the input sequence can produce an arbitrary number of output sequences,
- * as in the case of atGeometry.
+ * as in the case of tcontains.
  *
  * @param[in] sequences Array of array of temporal sequences
  * @param[in] countseqs Array of counters
@@ -533,7 +533,7 @@ tseqarr2_to_tseqarr(TSequence ***sequences, int *countseqs, int count,
   {
     for (int j = 0; j < countseqs[i]; j++)
       result[k++] = sequences[i][j];
-    if (countseqs[i] != 0)
+    if (countseqs[i])
       pfree(sequences[i]);
   }
   pfree(sequences); pfree(countseqs);
@@ -4586,6 +4586,7 @@ tsegment_at_timestamp(const TInstant *inst1, const TInstant *inst2,
 }
 
 /**
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a temporal continuous sequence to a timestamp.
  * @sqlfunc atTimestamp()
  */
@@ -4934,6 +4935,7 @@ tcontseq_minus_timestampset(const TSequence *seq, const Set *ts)
 /*****************************************************************************/
 
 /**
+ * @ingroup libmeos_internal_temporal_restrict
  * @brief Restrict a continuous temporal sequence to a period.
  */
 TSequence *
@@ -5153,7 +5155,6 @@ tcontseq_at_periodset1(const TSequence *seq, const SpanSet *ps,
  * @brief Restrict a temporal sequence to the complement of a period set
  * @param[in] seq Temporal sequence
  * @param[in] ps Period set
- * @param[in] from Index from which the processing starts
  * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
  * @return Number of elements in the output array

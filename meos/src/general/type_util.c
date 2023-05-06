@@ -850,7 +850,10 @@ void
 pfree_array(void **array, int count)
 {
   for (int i = 0; i < count; i++)
-    pfree(array[i]);
+  {
+    if (array[i])
+      pfree(array[i]);
+  }
   pfree(array);
   return;
 }

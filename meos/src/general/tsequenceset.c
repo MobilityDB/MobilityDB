@@ -433,6 +433,40 @@ tsequenceset_copy(const TSequenceSet *ss)
   return result;
 }
 
+/**
+ * @brief Convert an array of temporal sequence sets into an array of
+ * temporal sequences.
+ *
+ * This function is called by all the functions in which the number of output
+ * sequences cannot be determined in advance, typically when each segment
+ * of the input sequence can produce an arbitrary number of output sequences,
+ * as in the case of atGeometries.
+ *
+ * @param[in] seqsets Array of array of temporal sequence sets
+ * @param[in] count Number of elements in the input array
+ * @param[in] totalseqs Number of elements in the output array
+ * @pre count and totalseqs are greater than 0
+ */
+TSequenceSet *
+tseqsetarr_to_tseqset(TSequenceSet **seqsets, int count, int totalseqs)
+{
+  TSequence **sequences = palloc(sizeof(TSequence *) * totalseqs);
+  int k = 0;
+  for (int i = 0; i < count; i++)
+  {
+    TSequenceSet *ss1 = seqsets[i];
+    if (ss1)
+    {
+      for (int j = 0; j < ss1->count; j++)
+        sequences[k++] = (TSequence *) TSEQUENCESET_SEQ_N(ss1, j);
+    }
+  }
+  TSequenceSet *result = tsequenceset_make((const TSequence **) sequences, k,
+    NORMALIZE);
+  pfree(sequences);
+  return result;
+}
+
 /*****************************************************************************/
 
 /**
