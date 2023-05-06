@@ -1548,10 +1548,10 @@ tpoint_restrict_geom_time(const Temporal *temp, const GSERIALIZED *gs,
  * @sqlfunc atGeometry()
  */
 Temporal *
-tpoint_at_geom(const Temporal *temp, const GSERIALIZED *gs,
-  const Span *zspan)
+tpoint_at_geom_time(const Temporal *temp, const GSERIALIZED *gs,
+  const Span *zspan, const Span *period)
 {
-  return tpoint_restrict_geom_time(temp, gs, zspan, NULL, REST_AT);
+  return tpoint_restrict_geom_time(temp, gs, zspan, period, REST_AT);
 }
 
 /**
@@ -1560,10 +1560,10 @@ tpoint_at_geom(const Temporal *temp, const GSERIALIZED *gs,
  * @sqlfunc minusGeometry()
  */
 Temporal *
-tpoint_minus_geom(const Temporal *temp, const GSERIALIZED *gs,
-  const Span *zspan)
+tpoint_minus_geom_time(const Temporal *temp, const GSERIALIZED *gs,
+  const Span *zspan, const Span *period)
 {
-  return tpoint_restrict_geom_time(temp, gs, zspan, NULL, REST_MINUS);
+  return tpoint_restrict_geom_time(temp, gs, zspan, period, REST_MINUS);
 }
 #endif /* MEOS */
 
@@ -1812,39 +1812,35 @@ cohenSutherlandClip(Datum p1, Datum p2, const STBox *box, bool hasz,
 /**
  * @brief Restrict a temporal point instant to (the complement of) a
  * spatiotemporal box (iteration function).
+ * @pre The arguments have the same SRID. This is verified in
+ * #tpoint_restrict_stbox
  */
-bool
+static bool
 tpointinst_restrict_stbox_iter(const TInstant *inst, const STBox *box,
   bool border_inc, bool atfunc)
 {
   bool hasz = MEOS_FLAGS_GET_Z(inst->flags) && MEOS_FLAGS_GET_Z(box->flags);
   bool hast = MEOS_FLAGS_GET_T(box->flags);
-  /* For "minus", we must verify that the point does not overlap with at least
-   * one dimension */
-  bool minus = false;
 
   /* Restrict to T */
   if (hast && ! contains_span_value(&box->period, DatumGetTimestampTz(inst->t),
       T_TIMESTAMPTZ))
-  {
-    minus = true;
-    if (atfunc)
-      return false;
-  }
+    return ! atfunc;
+
   /* Restrict to XY(Z) */
-  Datum p = tinstant_value(inst);
+  Datum value = tinstant_value(inst);
   /* Get the input point */
   double x, y, z = 0.0;
   if (hasz)
   {
-    const POINT3DZ *pt = DATUM_POINT3DZ_P(p);
+    const POINT3DZ *pt = DATUM_POINT3DZ_P(value);
     x = pt->x;
     y = pt->y;
     z = pt->z;
   }
   else
   {
-    const POINT2D *pt = DATUM_POINT2D_P(p);
+    const POINT2D *pt = DATUM_POINT2D_P(value);
     x = pt->x;
     y = pt->y;
   }
@@ -1854,15 +1850,9 @@ tpointinst_restrict_stbox_iter(const TInstant *inst, const STBox *box,
   if (! border_inc)
     max_code = computeMaxBorderCode(x, y, z, hasz, box);
   if ((code | max_code) != 0)
-  {
-    minus = true;
-    if (atfunc)
-      return false;
-  }
-  /* Return */
-  if (! atfunc && ! minus)
-    return false;
-  return true;
+    return ! atfunc;
+  /* Point is inside the region */
+  return atfunc;
 }
 
 /**

@@ -23,7 +23,7 @@
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
  * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
- * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
  *
  *****************************************************************************/
 
@@ -1025,7 +1025,9 @@ contains_stbox_stbox(const STBox *box1, const STBox *box2)
       return false;
   if ((hasz || geodetic) && (box2->zmin < box1->zmin || box2->zmax > box1->zmax))
       return false;
-  if (hast && ! contains_span_span(&box1->period, &box2->period))
+  if (hast && (
+    datum_lt(box2->period.lower, box1->period.lower, T_TIMESTAMPTZ) ||
+    datum_gt(box2->period.upper, box1->period.upper, T_TIMESTAMPTZ)))
       return false;
   return true;
 }
@@ -1057,7 +1059,9 @@ overlaps_stbox_stbox(const STBox *box1, const STBox *box2)
     return false;
   if ((hasz || geodetic) && (box1->zmax < box2->zmin || box1->zmin > box2->zmax))
     return false;
-  if (hast && ! overlaps_span_span(&box1->period, &box2->period))
+  if (hast && (
+    datum_lt(box1->period.upper, box2->period.lower, T_TIMESTAMPTZ) ||
+    datum_gt(box1->period.lower, box2->period.upper, T_TIMESTAMPTZ)))
     return false;
   return true;
 }
@@ -1078,7 +1082,8 @@ same_stbox_stbox(const STBox *box1, const STBox *box2)
     return false;
   if ((hasz || geodetic) && (box1->zmin != box2->zmin || box1->zmax != box2->zmax))
     return false;
-  if (hast && ! span_eq(&box1->period, &box2->period))
+  if (hast && (box1->period.lower != box2->period.lower ||
+               box1->period.upper != box2->period.upper))
     return false;
   return true;
 }
@@ -1093,39 +1098,32 @@ adjacent_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   bool hasx, hasz, hast, geodetic;
   topo_stbox_stbox_init(box1, box2, &hasx, &hasz, &hast, &geodetic);
+  STBox inter;
+  if (! inter_stbox_stbox(box1, box2, &inter))
+    return false;
 
-  /* Compute the intersection of the spatial dimension only */
-  STBox box1_x, box2_x, inter;
-  if (hasx)
+  /* Boxes are adjacent if they share n dimensions and their intersection is
+   * at most of n-1 dimensions */
+  if (! hasx && hast)
+    return (inter.period.lower == inter.period.upper);
+  if (hasx && !hast)
   {
-    if (hast)
-    {
-      memcpy(&box1_x, box1, sizeof(STBox));
-      memcpy(&box2_x, box2, sizeof(STBox));
-      /* It is enough to unset the flag of only one box */
-      MEOS_FLAGS_SET_T(box1_x.flags, false);
-      if (! inter_stbox_stbox(&box1_x, &box2_x, &inter))
-        return false;
-    }
-    else
-    {
-      if (! inter_stbox_stbox(box1, box2, &inter))
-        return false;
-    }
-  }
-
-  /* Boxes are adjacent if they are adjacent in at least one dimension */
-  bool adjx = false, adjt = false;
-  if (hasx)
-  {
-    adjx |= (inter.xmin == inter.xmax);
-    adjx |= (inter.ymin == inter.ymax);
     if (hasz || geodetic)
-      adjx |= (inter.zmin == inter.zmax);
+      return (inter.xmin == inter.xmax || inter.ymin == inter.ymax ||
+           inter.zmin == inter.zmax);
+    else
+      return (inter.xmin == inter.xmax || inter.ymin == inter.ymax);
   }
-  if (hast)
-    adjt = adjacent_span_span(&box1->period, &box2->period);
-  return (adjx || adjt);
+  else
+  {
+    if (hasz || geodetic)
+      return (inter.xmin == inter.xmax || inter.ymin == inter.ymax ||
+           inter.zmin == inter.zmax ||
+           inter.period.lower == inter.period.upper);
+    else
+      return (inter.xmin == inter.xmax || inter.ymin == inter.ymax ||
+           inter.period.lower == inter.period.upper);
+  }
 }
 
 /*****************************************************************************
@@ -1417,15 +1415,9 @@ bool
 inter_stbox_stbox(const STBox *box1, const STBox *box2, STBox *result)
 {
   bool hasx = MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags);
-  if (hasx)
-  {
-    ensure_same_geodetic(box1->flags, box2->flags);
-    ensure_same_srid(stbox_srid(box1), stbox_srid(box2));
-  }
   bool hasz = MEOS_FLAGS_GET_Z(box1->flags) && MEOS_FLAGS_GET_Z(box2->flags);
   bool hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
-  bool geodetic = MEOS_FLAGS_GET_GEODETIC(box1->flags);
-
+  bool geodetic = MEOS_FLAGS_GET_GEODETIC(box1->flags) && MEOS_FLAGS_GET_GEODETIC(box2->flags);
   /* If there is no common dimension */
   if ((! hasx && ! hast) ||
     /* If they do no intersect in one common dimension */
@@ -1435,6 +1427,11 @@ inter_stbox_stbox(const STBox *box1, const STBox *box2, STBox *result)
     (hast && ! overlaps_span_span(&box1->period, &box2->period)))
     return false;
 
+  if (hasx)
+  {
+    ensure_same_geodetic(box1->flags, box2->flags);
+    ensure_same_srid(stbox_srid(box1), stbox_srid(box2));
+  }
   double xmin = 0, xmax = 0, ymin = 0, ymax = 0, zmin = 0, zmax = 0;
   Span period;
   if (hasx)

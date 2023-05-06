@@ -1062,7 +1062,7 @@ extern Temporal *tnumber_minus_tbox(const Temporal *temp, const TBox *box);
 extern Temporal *tpoint_at_geom_time(const Temporal *temp, const GSERIALIZED *gs, const Span *zspan, const Span *period);
 extern Temporal *tpoint_at_stbox(const Temporal *temp, const STBox *box, bool border_inc);
 extern Temporal *tpoint_at_value(const Temporal *temp, GSERIALIZED *gs);
-extern Temporal *tpoint_minus_geom(const Temporal *temp, const GSERIALIZED *gs, const Span *zspan);
+extern Temporal *tpoint_minus_geom_time(const Temporal *temp, const GSERIALIZED *gs, const Span *zspan, const Span *period);
 extern Temporal *tpoint_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc);
 extern Temporal *tpoint_minus_value(const Temporal *temp, GSERIALIZED *gs);
 extern bool tpoint_value_at_timestamp(const Temporal *temp, TimestampTz t, bool strict, GSERIALIZED **value);
