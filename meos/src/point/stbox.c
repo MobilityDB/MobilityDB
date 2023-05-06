@@ -1025,9 +1025,7 @@ contains_stbox_stbox(const STBox *box1, const STBox *box2)
       return false;
   if ((hasz || geodetic) && (box2->zmin < box1->zmin || box2->zmax > box1->zmax))
       return false;
-  if (hast && (
-    datum_lt(box2->period.lower, box1->period.lower, T_TIMESTAMPTZ) ||
-    datum_gt(box2->period.upper, box1->period.upper, T_TIMESTAMPTZ)))
+  if (hast && ! contains_span_span(&box1->period, &box2->period))
       return false;
   return true;
 }
@@ -1080,8 +1078,7 @@ same_stbox_stbox(const STBox *box1, const STBox *box2)
     return false;
   if ((hasz || geodetic) && (box1->zmin != box2->zmin || box1->zmax != box2->zmax))
     return false;
-  if (hast && (box1->period.lower != box2->period.lower ||
-               box1->period.upper != box2->period.upper))
+  if (hast && ! span_eq(&box1->period, &box2->period))
     return false;
   return true;
 }
@@ -1096,32 +1093,39 @@ adjacent_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   bool hasx, hasz, hast, geodetic;
   topo_stbox_stbox_init(box1, box2, &hasx, &hasz, &hast, &geodetic);
-  STBox inter;
-  if (! inter_stbox_stbox(box1, box2, &inter))
-    return false;
 
-  /* Boxes are adjacent if they share n dimensions and their intersection is
-   * at most of n-1 dimensions */
-  if (! hasx && hast)
-    return (inter.period.lower == inter.period.upper);
-  if (hasx && !hast)
+  /* Compute the intersection of the spatial dimension only */
+  STBox box1_x, box2_x, inter;
+  if (hasx)
   {
-    if (hasz || geodetic)
-      return (inter.xmin == inter.xmax || inter.ymin == inter.ymax ||
-           inter.zmin == inter.zmax);
+    if (hast)
+    {
+      memcpy(&box1_x, box1, sizeof(STBox));
+      memcpy(&box2_x, box2, sizeof(STBox));
+      /* It is enough to unset the flag of only one box */
+      MEOS_FLAGS_SET_T(box1_x.flags, false);
+      if (! inter_stbox_stbox(&box1_x, &box2_x, &inter))
+        return false;
+    }
     else
-      return (inter.xmin == inter.xmax || inter.ymin == inter.ymax);
+    {
+      if (! inter_stbox_stbox(box1, box2, &inter))
+        return false;
+    }
   }
-  else
+
+  /* Boxes are adjacent if they are adjacent in at least one dimension */
+  bool adjx = false, adjt = false;
+  if (hasx)
   {
+    adjx |= (inter.xmin == inter.xmax);
+    adjx |= (inter.ymin == inter.ymax);
     if (hasz || geodetic)
-      return (inter.xmin == inter.xmax || inter.ymin == inter.ymax ||
-           inter.zmin == inter.zmax ||
-           inter.period.lower == inter.period.upper);
-    else
-      return (inter.xmin == inter.xmax || inter.ymin == inter.ymax ||
-           inter.period.lower == inter.period.upper);
+      adjx |= (inter.zmin == inter.zmax);
   }
+  if (hast)
+    adjt = adjacent_span_span(&box1->period, &box2->period);
+  return (adjx || adjt);
 }
 
 /*****************************************************************************

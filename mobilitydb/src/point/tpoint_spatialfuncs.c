@@ -1272,7 +1272,7 @@ Tpoint_at_stbox(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   STBox *box = PG_GETARG_STBOX_P(1);
-  Temporal *result = tpoint_restrict_stbox(temp, box, false, REST_AT);
+  Temporal *result = tpoint_restrict_stbox(temp, box, BORDER_INC, REST_AT);
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
@@ -1291,7 +1291,7 @@ Tpoint_minus_stbox(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   STBox *box = PG_GETARG_STBOX_P(1);
-  Temporal *result = tpoint_restrict_stbox(temp, box, false, REST_MINUS);
+  Temporal *result = tpoint_restrict_stbox(temp, box, BORDER_INC, REST_MINUS);
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();

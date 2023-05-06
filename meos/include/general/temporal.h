@@ -99,8 +99,8 @@ extern char *text_to_cstring(const text *t);
 #define REST_MINUS      false
 
 /** Symbolic constants for the restriction functions with boxes */
-#define UPPER_INC       true
-#define UPPER_EXC       false
+#define BORDER_INC       true
+#define BORDER_EXC       false
 
 /** Symbolic constants for the ever/always functions */
 #define EVER            true
@@ -135,6 +135,10 @@ extern char *text_to_cstring(const text *t);
 
 /** Symbolic constants for the span selectivity functions */
 #define VALUE_SEL       true
+#define TIME_SEL        false
+
+/** Symbolic constants for the restriction functions */
+#define UPPER_EXC       true
 #define TIME_SEL        false
 
 /** Enumeration for the intersection/synchronization functions */
